@@ -1253,7 +1253,7 @@ word MonsterHP(byte type)
 	return monsType[type].hp;
 }
 
-const char *MonsterName(byte type)
+char *MonsterName(byte type)
 {
 	if(type>=NUM_MONSTERS)
 		return "NULL";

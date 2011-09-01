@@ -1112,26 +1112,29 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				Clamp(&me->dx,FIXAMT*12);
 				Clamp(&me->dy,FIXAMT*12);
 
-				if(me->dx>0)
+                                // extra braces and else-if to get rid of warning
+				if(me->dx>0) {
 					if(me->facing>8)
 						me->facing++;
 					else
 						me->facing--;
-				if(me->dx<0)
+                                } else if(me->dx<0) {
 					if(me->facing>8)
 						me->facing--;
 					else
 						me->facing++;
-				if(me->dy>0)
+                                }
+                                if(me->dy>0) {
 					if(me->facing>11 || me->facing<4)
 						me->facing++;
 					else
 						me->facing--;
-				if(me->dy<0)
+                                } else if(me->dy<0) {
 					if(me->facing>11 || me->facing<4)
 						me->facing--;
 					else
 						me->facing++;
+                                }
 
 				if(me->facing>200)
 					me->facing+=16;
@@ -1926,7 +1929,7 @@ void FireBulletZ(int x,int y,int z,byte facing,byte type,byte friendly)
 // this is used for the Megabeam to ensure that all the laser bits stay lined up nicely
 void FireBulletAfter(int x,int y,byte facing,byte type,bullet_t *thisone,byte friendly)
 {
-	int i,j,start;
+	int i,j,start=MAX_BULLETS; // default start to get rid of warning
 
 	for(j=0;j<MAX_BULLETS;j++)
 		if(&bullet[j]==thisone)
