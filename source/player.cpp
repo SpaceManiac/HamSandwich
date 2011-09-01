@@ -142,7 +142,7 @@ void PlayerRenderInterface(MGLDraw *mgl)
 					player.weapon,player.ammo,player.hamSpeed,mgl);
 }
 
-void SetCustomName(char *name)
+void SetCustomName(const char *name)
 {
 	strncpy(player.customName[player.worldNum],name,32);
 }

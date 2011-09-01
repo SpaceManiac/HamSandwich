@@ -1,7 +1,13 @@
 #include "jamulsound.h"
+
 #include <mmsystem.h>
 #include <dsound.h>
 #include "mgldraw.h"
+
+// Mingw shenanigans
+#ifdef __null
+#undef __null
+#endif
 
 #define MAX_FEW_SOUNDS	2	// most copies of a SND_FEW sound that can play at once
 
@@ -55,7 +61,8 @@ bool JamulSoundInit(HINSTANCE hInst,char *wndName, int numBuffers)
 	if(!dsoundHwnd)
 		return FALSE;
 
-	GM_registerMainWindow(dsoundHwnd);
+        // TODO: see if this is needed
+	// GM_registerMainWindow(dsoundHwnd);
 
 	if(DirectSoundCreate(NULL,&dsound,NULL)!=DS_OK)
 		return FALSE;
@@ -402,10 +409,10 @@ int JamulSoundGetFromMemory(byte *buf)
 	DWORD *sizeptr;
 	dword size;
 	int bufnum;
-	void* write1=0;
+	/*void* write1=0;
 	unsigned long length1=0;
 	void* write2=0;
-	unsigned long length2=0;
+	unsigned long length2=0;*/ // seemingly unused
 
 	if(buf==NULL)
 		return -1;

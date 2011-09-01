@@ -25,7 +25,7 @@ void FontFree(mfont_t *font)
 		free(font->data);
 }
 
-int FontLoad(char *fname,mfont_t *font)
+int FontLoad(const char *fname,mfont_t *font)
 {
 	FILE *f;
 	int i;
@@ -226,7 +226,7 @@ byte CharWidth(char c, mfont_t *font)
 	return *(font->chars[c]);
 }
 
-void FontPrintString(int x,int y,char *s,mfont_t *font)
+void FontPrintString(int x,int y,const char *s,mfont_t *font)
 {
 	int i;
 
@@ -237,7 +237,7 @@ void FontPrintString(int x,int y,char *s,mfont_t *font)
 	}
 }
 
-void FontPrintStringColor(int x,int y,char *s,mfont_t *font,byte color)
+void FontPrintStringColor(int x,int y,const char *s,mfont_t *font,byte color)
 {
 	int i;
 
@@ -248,7 +248,7 @@ void FontPrintStringColor(int x,int y,char *s,mfont_t *font,byte color)
 	}
 }
 
-void FontPrintStringBright(int x,int y,char *s,mfont_t *font,char bright)
+void FontPrintStringBright(int x,int y,const char *s,mfont_t *font,char bright)
 {
 	int i;
 
@@ -259,7 +259,7 @@ void FontPrintStringBright(int x,int y,char *s,mfont_t *font,char bright)
 	}
 }
 
-void FontPrintStringSolid(int x,int y,char *s,mfont_t *font,byte color)
+void FontPrintStringSolid(int x,int y,const char *s,mfont_t *font,byte color)
 {
 	int i;
 
@@ -270,7 +270,7 @@ void FontPrintStringSolid(int x,int y,char *s,mfont_t *font,byte color)
 	}
 }
 
-void FontPrintStringDropShadow(int x,int y,char *s,mfont_t *font,byte shadowColor,byte shadowOffset)
+void FontPrintStringDropShadow(int x,int y,const char *s,mfont_t *font,byte shadowColor,byte shadowOffset)
 {
 	int i;
 

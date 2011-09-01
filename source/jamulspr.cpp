@@ -1339,7 +1339,7 @@ sprite_set_t::sprite_set_t(void)
 	spr=NULL;
 }
 
-sprite_set_t::sprite_set_t(char *fname)
+sprite_set_t::sprite_set_t(const char *fname)
 {
 	count=0;
 	spr=NULL;
@@ -1352,7 +1352,7 @@ sprite_set_t::~sprite_set_t(void)
 }
 
 // REGULAR MEMBER FUNCTIONS
-bool sprite_set_t::Load(char *fname)
+bool sprite_set_t::Load(const char *fname)
 {
 	FILE *f;
 	int i;
@@ -1412,7 +1412,7 @@ bool sprite_set_t::Load(char *fname)
 	return TRUE;
 }
 
-bool sprite_set_t::Save(char *fname)
+bool sprite_set_t::Save(const char *fname)
 {
 	FILE *f;
 	int i;

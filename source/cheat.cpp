@@ -1,5 +1,6 @@
 #include "cheat.h"
 #include "items.h"
+#include <ctype.h> // for tolower
 
 #define NUM_CHEATS 10
 
@@ -38,7 +39,8 @@ void CheatKey(char c)
 	// and stick the new one on the end
 	lastKeys[15]=c;
 
-	_strlwr(&lastKeys[15]);
+	//strlwr(&lastKeys[15]);
+        lastKeys[15] = tolower(lastKeys[15]);
 
 	for(i=0;i<NUM_CHEATS;i++)
 	{

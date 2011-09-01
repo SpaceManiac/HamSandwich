@@ -2,7 +2,6 @@
 #define JAMULSOUND_H
 
 #include "winpch.h"
-#include "gm\gm.h"
 
 // internal sound playing flags
 #define SOUND_LOOP	 1	// loop the sound indefinitely

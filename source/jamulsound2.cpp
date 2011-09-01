@@ -83,7 +83,8 @@ bool JamulSoundInit(HINSTANCE hInst,char *wndName, int numBuffers)
 
 	nextOpenBuffer=0;
 
-	GM_registerMainWindow(dsoundHwnd);
+        // TODO: see if this is needed
+	// GM_registerMainWindow(dsoundHwnd);
 
 	for(i=0;i<MAX_SOUNDS_AT_ONCE;i++)
 	{
@@ -135,7 +136,8 @@ int JamulSoundCreateBuffer(int bufferLen, WAVEFORMATEX wfmtx)
 	// Set up buffer description.
 	memset(&dsbdesc, 0, sizeof(DSBUFFERDESC));
 	dsbdesc.dwSize = sizeof(DSBUFFERDESC);
-	dsbdesc.dwFlags = DSBCAPS_CTRLDEFAULT|DSBCAPS_STATIC;
+        // replace removed CTRLDEFAULT with its subcomponents
+	dsbdesc.dwFlags = DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | DSBCAPS_STATIC;
 	dsbdesc.dwBufferBytes = bufferLen;
 	dsbdesc.lpwfxFormat = &wfmtx;
 
@@ -403,10 +405,10 @@ int JamulSoundGetFromMemory(byte *buf)
 	DWORD *sizeptr;
 	dword size;
 	int bufnum;
-	void* write1=0;
+	/*void* write1=0;
 	unsigned long length1=0;
 	void* write2=0;
-	unsigned long length2=0;
+	unsigned long length2=0;*/ // apparently unused
 
 	if(buf==NULL)
 		return -1;

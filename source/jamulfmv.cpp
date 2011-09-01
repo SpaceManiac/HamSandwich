@@ -338,7 +338,7 @@ void FLI_skipfr(void)
   fseek(FLI_file,fhead.size-sizeof(frmheader),SEEK_CUR);
 }
 
-void FLI_play(char *name,byte loop,word wait,MGLDraw *mgl)
+void FLI_play(const char *name,byte loop,word wait,MGLDraw *mgl)
 {
   int frmon=0;
   long frsize;

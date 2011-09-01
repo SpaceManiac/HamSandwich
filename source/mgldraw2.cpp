@@ -122,10 +122,10 @@ void MGLDraw::ClearScreen(void)
 	MGL_clearDevice();
 }
 
-MGLDC *MGLDraw::GetDC(void)
+/*MGLDC *MGLDraw::GetDC(void)
 {
 	return gm->dc;
-}
+}*/
 
 byte *MGLDraw::GetScreen(void)
 {

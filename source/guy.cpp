@@ -1659,7 +1659,9 @@ void AddMapGuys(Map *map)
 			if(map->badguy[i].type>=20)
 #endif
 			{
-				MGL_fatalError("Illegal monster on level!");
+				//MGL_fatalError("Illegal monster on level!");
+                                // TODO: complain
+                            exit(1);
 			}
 			g=AddGuy((map->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
 				   (map->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
@@ -2055,6 +2057,7 @@ void AddPygmy(Map *map,world_t *world)
 	// decide which type to summon
 	switch(MGL_random(5))
 	{
+                default:
 		case 0:
 		case 1:
 			t=MONS_PYGMY;

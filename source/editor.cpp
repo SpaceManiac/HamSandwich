@@ -20,7 +20,7 @@ static char lastKey=0;
 static MGLDraw *editmgl;
 
 static world_t	world;
-static Map		*curMap;
+/*static*/ Map		*curMap;
 static byte		curMapNum;
 static int	   mouseX,mouseY;
 static int	   tileX,tileY;
@@ -50,7 +50,7 @@ byte InitEditor(void)
 
 	mouseX=320;
 	mouseY=240;
-	MS_moveTo(320,240);
+	// MS_moveTo(320,240); // TODO: move mouse to 320, 240
 	PutCamera(0,0);
 	gameStartTime=timeGetTime();
 	InitGuys(129);
@@ -641,8 +641,8 @@ void UpdateMouse(void)
 	int msx,msy;
 	int cx,cy;
 
-	MS_getPos(&msx,&msy);
-	MS_moveTo(320,240);
+	// MS_getPos(&msx,&msy); // TODO: read mouse position
+	// MS_moveTo(320,240); // TODO: move mouse to 320, 240
 
 	mouseX+=(msx-320);
 	mouseY+=(msy-240);
@@ -887,7 +887,7 @@ void ShowTarget(void)
 	editmgl->Box(x1,y1,x2,y2,col);
 }
 
-void RenderCheckbox(int x,int y,int v,char *txt)
+void RenderCheckbox(int x,int y,int v,const char *txt)
 {
 	if(v)
 		editmgl->FillBox(x,y,x+11,y+11,16);
@@ -1560,13 +1560,13 @@ void EditorLoadWorld(char *fname)
 	}
 }
 
-void EditorLoadTiles(char *fname)
+void EditorLoadTiles(const char *fname)
 {
 	editmgl->LoadBMP(fname);
 	SetTiles(editmgl->GetScreen());
 }
 
-void EditorSaveWorld(char *fname)
+void EditorSaveWorld(const char *fname)
 {
 	SaveWorld(&world,fname);
 }

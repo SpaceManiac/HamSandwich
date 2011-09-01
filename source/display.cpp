@@ -260,7 +260,7 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 	scry=(rscry>>FIXSHIFT);
 }
 
-void Print(int x,int y,char *s,char bright,byte font)
+void Print(int x,int y,const char *s,char bright,byte font)
 {
 	if(font==0)
 		FontPrintStringBright(x,y,s,gameFont[0],bright);
@@ -491,10 +491,11 @@ void DisplayList::Render(void)
 		{
 			if(dispObj[i].flags&DISPLAY_WALLTILE)
 			{
-				if(dispObj[i].flags&DISPLAY_TRANSTILE)
+                                // TODO: Uncomment me later.
+				/*if(dispObj[i].flags&DISPLAY_TRANSTILE)
 					RenderWallTileTrans(dispObj[i].x-scrx,dispObj[i].y-scry,(byte)dispObj[i].spr,dispObj[i].hue,dispObj[i].bright);
 				else
-					RenderWallTile(dispObj[i].x-scrx,dispObj[i].y-scry,(byte)dispObj[i].spr,dispObj[i].hue,dispObj[i].bright);
+					RenderWallTile(dispObj[i].x-scrx,dispObj[i].y-scry,(byte)dispObj[i].spr,dispObj[i].hue,dispObj[i].bright);*/
 			}
 			else if(dispObj[i].flags&DISPLAY_ROOFTILE)
 			{

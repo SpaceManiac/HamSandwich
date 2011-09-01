@@ -50,7 +50,7 @@ void LunaticInit(MGLDraw *mgl)
 	LoadOptions();
 	MusicInit();
 	mgl->SetLastKey(0);
-	MGL_srand(timeGetTime());
+	srand(timeGetTime()); // MGL_srand -> srand
 	InitControls();
 	InitPlayer(INIT_GAME,0,0);
 	msgFromOtherModules=0;
@@ -616,7 +616,7 @@ byte PlayALevel(byte map)
 	return exitcode;
 }
 
-byte LunaticWorld(byte world,char *worldName)
+byte LunaticWorld(byte world,const char *worldName)
 {
 	byte result;
 

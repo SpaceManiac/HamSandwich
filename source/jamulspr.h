@@ -39,12 +39,12 @@ class sprite_set_t
 {
 	public:
 		sprite_set_t(void);
-		sprite_set_t(char *fname);
+		sprite_set_t(const char *fname);
 
 		~sprite_set_t(void);
 
-		bool Save(char *fname);
-		bool Load(char *fname);
+		bool Save(const char *fname);
+		bool Load(const char *fname);
 		void Free(void);
 		sprite_t *GetSprite(int which);
 		word GetCount(void);

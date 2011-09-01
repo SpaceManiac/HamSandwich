@@ -66,7 +66,7 @@ byte LoadWorld(world_t *world,char *fname)
 	return 1;
 }
 
-byte SaveWorld(world_t *world,char *fname)
+byte SaveWorld(world_t *world,const char *fname)
 {
 	FILE *f;
 	int i;

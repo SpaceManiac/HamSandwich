@@ -13,6 +13,14 @@
 #include "sound.h"
 #include "music.h"
 
+// Replacement for missing MGL function
+int MGL_random(int max) {
+    return rand() % max;
+}
+long MGL_randoml(long max) {
+    return rand() % max;
+}
+
 // I'm very sorry about this.  It has to do with that whole no-function-pointers-to-member-functions
 // thing I mentioned earlier.
 MGLDraw *_globalMGLDraw;

@@ -12,7 +12,7 @@
 #include "jamulfont.h"
 #include "jamulsound.h"
 #include <shellapi.h>
-#include <crtdbg.h>
+//#include <crtdbg.h>
 
 #include "game.h"
 #include "editor.h"
@@ -39,7 +39,7 @@ void parseCmdLine(char *cmdLine)
 
 int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR cmdLine,int nCmdShow)
 {
-#ifndef NDEBUG
+/*#ifndef NDEBUG
 
 int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG); // Get current flag
 
@@ -47,7 +47,7 @@ flag |= _CRTDBG_LEAK_CHECK_DF; // Turn on leak-checking bit
 
 _CrtSetDbgFlag(flag); // Set flag to the new value
 
-#endif
+#endif*/
 
 	parseCmdLine(cmdLine);
 	mainmgl=new MGLDraw("Dr. Lunatic",640,480,8,windowedGame,hInstance);

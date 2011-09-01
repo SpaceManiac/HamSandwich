@@ -13,11 +13,21 @@
 #ifndef MGLDRAW_H
 #define MGLDRAW_H
 
-#pragma warning( disable:4103)
-#include "gm\gm.h"
+//#pragma warning( disable:4103)
+//#include "gm\gm.h"
+#include "PixelToaster.h"
 #include "winpch.h"
 #include "jamulsound.h"
 #include "control.h"
+
+// Replacement for missing palette_t
+typedef struct palette_t {
+    byte red, green, blue;
+} palette_t;
+
+// Replacement for missing MGL functions
+int MGL_random(int max);
+long MGL_randoml(long max);
 
 class MGLDraw
 {
@@ -30,7 +40,7 @@ class MGLDraw
 		bool Process(void);	// handle windows messages and such
 
 		HWND GetHWnd(void);
-		MGLDC *GetDC(void);
+		//MGLDC *GetDC(void);
 		byte *GetScreen(void); // get a pointer to the screen memory
 		int GetWidth(void);
 		int GetHeight(void);
@@ -43,7 +53,7 @@ class MGLDraw
 		void RealizePalette(void);
 		void DarkPalette(void);
 
-		bool LoadBMP(char *name);
+		bool LoadBMP(const char *name);
 
 		char LastKeyPressed(void);
 		char LastKeyPeek(void);
@@ -67,7 +77,7 @@ class MGLDraw
 	protected:
 		int xRes,yRes,bpp,pitch;
 		byte *scrn;
-		GMDC *gm;
+		// GMDC *gm;
 		palette_t pal[256];
 		bool readyToQuit;
 		dword elapsedTime;
@@ -79,9 +89,9 @@ class MGLDraw
 
 // ignore these functions.  They are only outside of the protected portion of the MGLDraw
 // class because I don't know how to make a function pointer point to a member function.
-int ASMAPI MGLDraw_Suspend(MGLDC *dc,int flags);
+//int ASMAPI MGLDraw_Suspend(MGLDC *dc,int flags);
 void MGLDraw_Activate(int active);
-void MGLDraw_SwitchModes(GM_modeInfo *mode,int windowed);
+//void MGLDraw_SwitchModes(GM_modeInfo *mode,int windowed);
 long FAR PASCAL MGLDraw_EventHandler(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 HWND MGLGetHWnd(void);	// augh.
 
