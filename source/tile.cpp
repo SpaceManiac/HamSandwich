@@ -108,57 +108,11 @@ void RenderFloorTile(int x,int y,int t,char light)
 	}
 
 
-	__asm
-	{
-		pusha
-		push ds
-		pop	 es
-		mov  esi,src
-		mov  edi,dst
-		mov  edx,hgt
-		mov  ecx,wid
-		mov  bh,light
-loop1:
-		mov  al,[esi]
-		mov  bl,al
-		and  bl,~31
-		add  al,bh
-		cmp  al,bl
-		jae	 okay1
-		cmp  bh,0
-		jl	 fine
-		mov  al,bl
-		add  al,31
-		jmp okay2
-fine:
-		mov  al,bl
-		jmp okay2
-okay1:
-		add  bl,31
-		cmp  al,bl
-		jb	 okay2
-		cmp  bh,0
-		jl   fine2
-		mov  al,bl
-		jmp  okay2
-fine2:
-		mov  al,bl
-		and  al,(~31)
-okay2:
-		mov  [edi],al
-		inc  esi
-		inc  edi
-		dec  ecx
-		jnz	 loop1
-		mov  ecx,wid
-		add  esi,TILE_WIDTH
-		sub	 esi,wid
-		add  edi,640
-		sub  edi,wid
-		dec  edx
-		jnz  loop1
-		popa
-	}
+#ifdef __MINGW32__
+#include "asm/tile_renderfloortile_mingw.h"
+#else
+#include "asm/tile_renderfloortile_vs.h"
+#endif
 }
 
 void RenderFloorTileShadow(int x,int y,int t,char light)
@@ -215,64 +169,11 @@ void RenderFloorTileShadow(int x,int y,int t,char light)
 	if(darkpart>wid)
 		light-=4;
 
-	__asm
-	{
-		pusha
-		push ds
-		pop	 es
-		mov  esi,src
-		mov  edi,dst
-		mov  edx,hgt
-		mov  ecx,wid
-		mov  bh,light
-loop1:
-		mov  al,[esi]
-		mov  bl,al
-		and  bl,~31
-		add  al,bh
-		cmp  al,bl
-		jae	 okay1
-		cmp  bh,0
-		jl	 fine
-		mov  al,bl
-		add  al,31
-		jmp okay2
-fine:
-		mov  al,bl
-		jmp okay2
-okay1:
-		add  bl,31
-		cmp  al,bl
-		jb	 okay2
-		cmp  bh,0
-		jl   fine2
-		mov  al,bl
-		jmp  okay2
-darkenit:
-		sub  bh,4
-		jmp  donedarken
-fine2:
-		mov  al,bl
-		and  al,(~31)
-okay2:
-		mov  [edi],al
-		inc  esi
-		inc  edi
-		cmp  ecx,darkpart
-		je   darkenit
-donedarken:
-		dec  ecx
-		jnz	 loop1
-		mov  bh,light
-		mov  ecx,wid
-		add  esi,TILE_WIDTH
-		sub	 esi,wid
-		add  edi,640
-		sub  edi,wid
-		dec  edx
-		jnz  loop1
-		popa
-	}
+#ifdef __MINGW32__
+#include "asm/tile_renderfloortileshadow_mingw.h"
+#else
+#include "asm/tile_renderfloortileshadow_vs.h"
+#endif
 }
 
 void RenderFloorTileUnlit(int x,int y,int t)
@@ -321,26 +222,11 @@ void RenderFloorTileUnlit(int x,int y,int t)
 	if(hgt<=0)
 		return;
 
-	__asm
-	{
-		pusha
-		push ds
-		pop	 es
-		mov  esi,src
-		mov  edi,dst
-		mov  edx,hgt
-		mov  ecx,wid
-loop1:
-		rep  movsb
-		mov  ecx,wid
-		add  esi,TILE_WIDTH
-		sub	 esi,wid
-		add  edi,640
-		sub  edi,wid
-		dec  edx
-		jnz  loop1
-		popa
-	}
+#ifdef __MINGW32__
+#include "asm/tile_renderfloortileunlit_mingw.h"
+#else
+#include "asm/tile_renderfloortileunlit_vs.h"
+#endif
 }
 
 void RenderFloorTileTrans(int x,int y,int t,char light)
@@ -389,60 +275,11 @@ void RenderFloorTileTrans(int x,int y,int t,char light)
 	if(hgt<=0)
 		return;
 
-	__asm
-	{
-		pusha
-		push ds
-		pop	 es
-		mov  esi,src
-		mov  edi,dst
-		mov  edx,hgt
-		mov  ecx,wid
-		mov  bh,light
-loop1:
-		mov  al,[esi]
-		cmp  al,0
-		je   trans
-		mov  bl,al
-		and  bl,~31
-		add  al,bh
-		cmp  al,bl
-		jae	 okay1
-		cmp  bh,0
-		jl	 fine
-		mov  al,bl
-		add  al,31
-		jmp okay2
-fine:
-		mov  al,bl
-		jmp okay2
-okay1:
-		add  bl,31
-		cmp  al,bl
-		jb	 okay2
-		cmp  bh,0
-		jl   fine2
-		mov  al,bl
-		jmp  okay2
-fine2:
-		mov  al,bl
-		and  al,(~31)
-okay2:
-		mov  [edi],al
-trans:
-		inc  esi
-		inc  edi
-		dec  ecx
-		jnz	 loop1
-		mov  ecx,wid
-		add  esi,TILE_WIDTH
-		sub	 esi,wid
-		add  edi,640
-		sub  edi,wid
-		dec  edx
-		jnz  loop1
-		popa
-	}
+#ifdef __MINGW32__
+#include "asm/tile_renderfloortiletrans_mingw.h"
+#else
+#include "asm/tile_renderfloortiletrans_vs.h"
+#endif
 }
 
 void RenderWallTile(int x,int y,byte w,byte f,char light)
