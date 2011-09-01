@@ -4,7 +4,7 @@
 # Configuration
 GLOBAL_OPTIONS=-std=c++0x
 LIBS=
-COMPILER_OPTIONS=-Iinclude/ -Wall ${GLOBAL_OPTIONS}
+COMPILER_OPTIONS=-Iinclude/ -ID:/libraries/directx-sdk/Include/ -Wall ${GLOBAL_OPTIONS}
 LINKER_OPTIONS=-Llib/ ${LIBS} ${GLOBAL_OPTIONS}
 
 OPTIONS_RELEASE=${COMPILER_OPTIONS} -DNDEBUG -DEXPANDO -O2 -s
@@ -18,7 +18,8 @@ MAKE_COMMAND=@make -f build/generated.make
 build: release debug demo
 
 clean:
-	@rm -rf bin/
+	@rm -rf build/*
+	@rm -rf bin/*
 
 # Project targets
 release:
