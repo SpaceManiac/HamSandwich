@@ -13,10 +13,9 @@ linkflags = argv[3]
 
 # don't compile certain files
 blacklist = [
-	'source/jamulspr.cpp',
 	'source/monster2.cpp',
 	'source/monster3.cpp',
-	'source/mgldraw2.cpp',
+	'source/jamulspr.cpp',
 	'source/tile.cpp'
 ]
 
@@ -26,7 +25,7 @@ def getFileList(dir):
 		if path.isdir(file):
 			result += getFileList(file)
 		else:
-			if file.endswith(".cpp") and not file in blacklist:
+			if file.find("old/") < 0 and file.endswith(".cpp") and not file in blacklist:
 				result += [file]
 	return result
 

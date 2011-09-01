@@ -1465,7 +1465,7 @@ void DemoSplashScreens(MGLDraw *mgl)
 		return;
 }
 
-void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound)
+void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
 {
 	int i,j,clock;
 	palette_t desiredpal[256],curpal[256];

@@ -666,7 +666,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 					break;
 				case 4:
 					NewMessage("Thermonuclear Heartburn!",75,0);
-					goodguy->GetShot(0,0,50,curMap,&curWorld);
+					goodguy->GetShot(0,0,50,GameCurrentMap(),&curWorld);
 					break;
 				case 5:
 					NewMessage("Atomic Inviso-Power!",75,0);
@@ -948,7 +948,7 @@ void PlayerFireWeapon(Guy *me)
 
 				g=AddGuy(me->x+Cosine(me->facing*32)*32,me->y+Sine(me->facing*32)*32,
 					FIXAMT*10,MONS_GOODTURRET);
-				if(g==NULL || !g->CanWalk(g->x,g->y,curMap,&curWorld))
+				if(g==NULL || !g->CanWalk(g->x,g->y,GameCurrentMap(),&curWorld))
 				{
 					MakeSound(SND_TURRETBZZT,me->x,me->y,SND_CUTOFF,1200);
 					if(g)

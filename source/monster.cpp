@@ -1255,8 +1255,9 @@ word MonsterHP(byte type)
 
 char *MonsterName(byte type)
 {
+    static char nullName[32] = "NULL";
 	if(type>=NUM_MONSTERS)
-		return "NULL";
+		return nullName;
 	return monsType[type].name;
 }
 

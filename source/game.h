@@ -54,13 +54,14 @@
 #define WORLD_LOAD	8
 #define WORLD_QUITGAME 9
 
-extern Map *curMap;
 extern world_t curWorld;
 extern FILE *logFile;
 
 // these are the major inits, just at the beginning and ending of a whole game
 void LunaticInit(MGLDraw *mgl);
 void LunaticExit(void);
+
+Map* GameCurrentMap(); // replaces extern Map *curMap
 
 // these are the minor inits, called every time you enter a new map
 byte InitLevel(byte map);

@@ -18,7 +18,7 @@ word numRunsToMakeUp;
 char lastKey=0;
 
 MGLDraw *gamemgl;
-Map		*curMap;
+static Map		*curMap;
 byte gameMode=GAMEMODE_PLAY;
 byte	mapToGoTo;
 byte	worldNum;
@@ -34,6 +34,10 @@ byte windingUp;
 byte windDownReason;
 static byte idleGame=0;
 FILE *logFile;
+
+Map* GameCurrentMap() {
+    return curMap;
+}
 
 void LunaticInit(MGLDraw *mgl)
 {

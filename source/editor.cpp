@@ -20,7 +20,7 @@ static char lastKey=0;
 static MGLDraw *editmgl;
 
 static world_t	world;
-/*static*/ Map		*curMap;
+static Map		*curMap;
 static byte		curMapNum;
 static int	   mouseX,mouseY;
 static int	   tileX,tileY;

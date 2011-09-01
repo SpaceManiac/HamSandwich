@@ -2,6 +2,9 @@
 
    A moderately cute little wrapper around MGL.
 
+   -- No longer actually an MGL wrapper! --
+   -- Currently using PixelToaster --
+
    For quick reference, to use MGL in a program, you must:
 
    link in gm.lib and mglfx.lib as the first two things in the list of things to link in.
@@ -13,12 +16,18 @@
 #include "sound.h"
 #include "music.h"
 
-// Replacement for missing MGL function
+using namespace PixelToaster;
+
+// Replacement for missing MGL functions
 int MGL_random(int max) {
     return rand() % max;
 }
 long MGL_randoml(long max) {
     return rand() % max;
+}
+void MGL_fatalError(const char* txt) {
+    fprintf(stderr, "%s", txt);
+    exit(0);
 }
 
 // I'm very sorry about this.  It has to do with that whole no-function-pointers-to-member-functions
@@ -26,28 +35,57 @@ long MGL_randoml(long max) {
 MGLDraw *_globalMGLDraw;
 byte needPalRealize=0;
 
-MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool window,HINSTANCE hInst)
-{
-    GM_modeInfo	info;
-	// the driver options are pretty much set up to go for directdraw only.  Pretty  much.
-	GM_driverOptions driverOpt =
-	{
-		true,			/* UseWinDirect		*/
-		true,			/* UseDirectDraw	*/
-		true,			/* UseVGA			*/
-		true,			/* UseVGAX			*/
-		true,			/* UseVBE			*/
-		true,			/* UseVBEAF			*/
-		true,			/* UseLinear		*/
-	    true,			/* UseFullscreenDIB	*/
-		false,			/* UseHWOpenGL		*/
-		MGL_GL_AUTO,	/* OpenGLType		*/
-		GM_MODE_8BPP,	/* modeFlags		*/
-	};
+// Pixel toaster callback thingies
+class PtListener : public Listener {
+    MGLDraw* mgldraw;
+public:
+    PtListener(MGLDraw* mgldraw) : mgldraw(mgldraw) {}
 
-	GM_setDriverOptions(&driverOpt);
-	if ((gm = GM_init(name)) == NULL)
-		MGL_fatalError(MGL_errorMsg(MGL_result()));
+    bool defaultKeyHandlers() const { return false; }
+    void onActivate(DisplayInterface & display, bool active);
+    void onKeyDown( DisplayInterface & display, Key key ) { ControlKeyDown((char) key); }
+    void onKeyPressed( DisplayInterface & display, Key key ) { mgldraw->SetLastKey((char) key); }
+    void onKeyUp( DisplayInterface & display, Key key ) { ControlKeyUp((char) key); }
+    void onMouseButtonDown( DisplayInterface & display, Mouse mouse ) { mgldraw->SetMouseDown(1); }
+    void onMouseButtonUp( DisplayInterface & display, Mouse mouse ) { mgldraw->SetMouseDown(0); }
+    void onMouseMove( DisplayInterface & display, Mouse mouse ) {}
+    bool onClose( DisplayInterface & display ) { return false; }
+};
+
+void PtListener::onActivate(DisplayInterface & display, bool active) {
+    if(active) {
+		SetGameIdle(0);
+		needPalRealize=1;
+	} else
+		SetGameIdle(1);
+}
+
+MGLDraw::MGLDraw(const char *name,int xRes,int yRes,int bpp,bool window,HINSTANCE hInst)
+{
+    //GM_modeInfo	info;
+	// the driver options are pretty much set up to go for directdraw only.  Pretty  much.
+	//GM_driverOptions driverOpt =
+	//{
+	//	true,			/* UseWinDirect		*/
+	//	true,			/* UseDirectDraw	*/
+	//	true,			/* UseVGA			*/
+	//	true,			/* UseVGAX			*/
+	//	true,			/* UseVBE			*/
+	//	true,			/* UseVBEAF			*/
+	//	true,			/* UseLinear		*/
+	//    true,			/* UseFullscreenDIB	*/
+	//	false,			/* UseHWOpenGL		*/
+	//	MGL_GL_AUTO,	/* OpenGLType		*/
+	//	GM_MODE_8BPP,	/* modeFlags		*/
+	//};
+
+    ptListener = new PtListener(this);
+    ptDisplay.open(name, xRes, yRes, window ? Output::Windowed : Output::Fullscreen, Mode::TrueColor);
+    ptDisplay.listener(ptListener);
+
+    if (!ptDisplay.open()) {
+        MGL_fatalError("Couldn't set display mode :V");
+    }
 
 	// must initialize sound after that stuff and before switching video modes,
 	// so it has to be in this constructor!  Sorry
@@ -55,8 +93,8 @@ MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool window,HINSTANCE hIns
 		SoundSystemExists();
 
 	//GM_registerEventProc(MGLDraw_EventHandler);
-	GM_setModeSwitchFunc(MGLDraw_SwitchModes);
-	GM_setAppActivate(MGLDraw_Activate);
+	//GM_setModeSwitchFunc(MGLDraw_SwitchModes);
+	//GM_setAppActivate(MGLDraw_Activate);
 	//GM_setSuspendAppCallback(MGLDraw_Suspend);
 
 	/*
@@ -80,30 +118,33 @@ MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool window,HINSTANCE hIns
 	//----------------------------------
 	*/
 
-	if (!GM_findMode(&info,xRes,yRes,bpp))
+
+
+	/*if (!GM_findMode(&info,xRes,yRes,bpp))
 		MGL_fatalError("Unable to find graphics mode!");
 	if (!GM_setMode(&info,window,2,true))
-		MGL_fatalError(MGL_errorMsg(MGL_result()));
+		MGL_fatalError(MGL_errorMsg(MGL_result()));*/
 
 	readyToQuit=false;
 	_globalMGLDraw=this;
 
 	// gimme windows colors
-	GM_initSysPalNoStatic(true);
 	this->xRes=xRes;
 	this->yRes=yRes;
 	this->bpp=bpp;
-	this->pitch=gm->dc->mi.bytesPerLine;
-	this->scrn=(byte *)gm->dc->surface;
+	this->pitch=xRes;
+	this->scrn=new byte[xRes * yRes];
+    ptBuffer = new TrueColorPixel[xRes * yRes];
 
 	mouseDown=0;
-	MS_hide();
 }
 
 MGLDraw::~MGLDraw(void)
 {
 	JamulSoundExit();
-	GM_cleanup();
+    delete ptListener;
+    delete[] ptBuffer;
+    delete[] scrn;
 }
 
 void MGLDraw::FatalError(char *msg)
@@ -135,38 +176,39 @@ float MGLDraw::FrameRate(void)
 
 bool MGLDraw::Process(void)
 {
-	GM_processEventsWin();
-	scrn=(byte *)gm->dc->surface;
 	return (!readyToQuit);
 }
 
 HWND MGLDraw::GetHWnd(void)
 {
-	return (HWND)gm->mainWindow;
+    // uh, fix later...?
+	//return (HWND)gm->mainWindow;
+    return NULL;
 }
 
 void MGLDraw::Flip(void)
 {
 	if(GetGameIdle())
 		GameIdle();
-	GM_swapBuffers(MGL_waitVRT);
-	scrn=(byte *)gm->dc->surface;
-	if(needPalRealize)
+
+    // This is probably super slow...
+    for (int i = 0; i < xRes * yRes; ++i) {
+        ptBuffer[i].r = pal[scrn[i]].red;
+        ptBuffer[i].g = pal[scrn[i]].green;
+        ptBuffer[i].b = pal[scrn[i]].blue;
+    }
+
+	/*if(needPalRealize)
 	{
 		needPalRealize=0;
 		if(_globalMGLDraw)
 			_globalMGLDraw->RealizePalette();
-	}
+	}*/
 }
 
 void MGLDraw::ClearScreen(void)
 {
-	MGL_clearDevice();
-}
-
-MGLDC *MGLDraw::GetDC(void)
-{
-	return gm->dc;
+    memset(ptBuffer, 0, 256*sizeof(TrueColorPixel));
 }
 
 byte *MGLDraw::GetScreen(void)
@@ -231,12 +273,15 @@ void MGLDraw::SetPalette(palette_t *pal2)
 
 void MGLDraw::RealizePalette(void)
 {
-	GM_setPalette(pal,256,0);
-	GM_realizePalette(256,0,true);
+	//GM_setPalette(pal,256,0);
+	//GM_realizePalette(256,0,true);
 }
 
 void MGLDraw::DarkPalette(void)
 {
+    return;
+    // TODO: fix? doesn't seem to be called anywhere.
+
 	palette_t darkpal[256];
 	int i;
 
@@ -253,8 +298,8 @@ void MGLDraw::DarkPalette(void)
 	darkpal[255].blue=pal[255].blue;
 	darkpal[255].red=pal[255].red;
 	darkpal[255].green=pal[255].green;
-	GM_setPalette(darkpal,256,0);
-	GM_realizePalette(256,0,true);
+	//GM_setPalette(darkpal,256,0);
+	//GM_realizePalette(256,0,true);
 }
 
 // 8-bit graphics only
@@ -356,7 +401,7 @@ char MGLDraw::LastKeyPeek(void)
 	return lastKeyPressed;
 }
 
-bool MGLDraw::LoadBMP(char *name)
+bool MGLDraw::LoadBMP(const char *name)
 {
 	FILE *f;
 	BITMAPFILEHEADER bmpFHead;
@@ -456,45 +501,7 @@ long FAR PASCAL MGLDraw_EventHandler(HWND hwnd, UINT message, WPARAM wParam, LPA
 	return 0L;
 }
 
-void MGLDraw_SwitchModes(GM_modeInfo *mode,int windowed)
-{
-	// need to do anything when switching from windowed to full-screen?
-	_globalMGLDraw->RealizePalette();
-}
-
-void MGLDraw_Activate(int active)
-{
-	// stuff to do whenever the program is switched away from or to, such as pausing CD music
-	if(active)
-	{
-		SetGameIdle(0);
-		needPalRealize=1;
-	}
-	else
-		SetGameIdle(1);
-}
-
-int ASMAPI MGLDraw_Suspend(MGLDC *dc,int flags)
-{
-	if (flags == MGL_DEACTIVATE)
-	{
-		/* We are switching back to GDI mode, so put code in here to disable
-		 * stuff when switched away from fullscreen mode. Note that this
-		 * function may get once to determine if the switch should occur,
-		 * and again when the switch actually happens.
-		 */
-	}
-	else if (flags == MGL_REACTIVATE)
-	{
-		/* We are now back in fullscreen mode, so put code in here to renable
-		 * stuff for fullscreen modes.
-		 */
-		_globalMGLDraw->RealizePalette();
-	}
-	return MGL_NO_SUSPEND_APP;
-}
-
-HWND MGLGetHWnd(void)
+HWND MGLGetHWnd(void) // "augh"
 {
 	return _globalMGLDraw->GetHWnd();
 }
