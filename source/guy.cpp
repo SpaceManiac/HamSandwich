@@ -1659,9 +1659,7 @@ void AddMapGuys(Map *map)
 			if(map->badguy[i].type>=20)
 #endif
 			{
-				//MGL_fatalError("Illegal monster on level!");
-                                // TODO: complain
-                            exit(1);
+				MGL_fatalError("Illegal monster on level!");
 			}
 			g=AddGuy((map->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
 				   (map->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,

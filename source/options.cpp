@@ -30,7 +30,7 @@ void ExitOptionsMenu(void)
 byte UpdateOptionsMenu(MGLDraw *mgl)
 {
 	char c;
-	byte c2;
+	byte c2 = 0; // warning prevention
 	dword btn,j;
 	int i;
 

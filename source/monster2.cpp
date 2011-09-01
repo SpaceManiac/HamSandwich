@@ -34,8 +34,10 @@ void AI_MineCart(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		else
 			dir=-1;
 	}
-	else
+	else {
 		dir=0;
+                diff = 0; // anti-warning
+        }
 
 	if(me->mind==0)
 	{

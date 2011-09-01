@@ -43,7 +43,7 @@ Map::Map(FILE *f)
 #endif
 }
 
-Map::Map(byte size,char *name)
+Map::Map(byte size,const char *name)
 {
 	switch(size)
 	{

@@ -49,7 +49,7 @@ void FontPrintStringDropShadow(int x,int y,const char *s,mfont_t *font,byte shad
 void FontPrintStringColor(int x,int y,const char *s,mfont_t *font,byte color);
 void FontPrintStringBright(int x,int y,const char *s,mfont_t *font,char bright);
 
-int FontStrLen(char *s,mfont_t *font);
+int FontStrLen(const char *s,mfont_t *font);
 void FontSetColors(byte first,byte count,byte *data);
 bool FontInputText(char *prompt,char *buffer,int len,void (*renderScrn)(mfont_t *),mfont_t *font);
 

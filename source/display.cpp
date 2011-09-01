@@ -292,7 +292,7 @@ void CenterPrint(int x,int y,char *s,char bright,byte font)
 	}
 }
 
-int GetStrLength(char *s)
+int GetStrLength(const char *s)
 {
 	return FontStrLen(s,gameFont[0]);
 }

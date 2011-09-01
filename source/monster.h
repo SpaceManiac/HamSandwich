@@ -233,7 +233,7 @@ void SetMonsterFlags(byte type,word flags);
 byte MonsterFrames(byte type);
 word MonsterHP(byte type);
 word MonsterPoints(byte type);
-char *MonsterName(byte type);
+const char *MonsterName(byte type);
 void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char bright,byte ouch,byte poison);
 void InstaRenderMonster(int x,int y,byte type,char bright,MGLDraw *mgl);
 sprite_t *GetMonsterSprite(byte type,byte seq,byte frm,byte facing);

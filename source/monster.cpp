@@ -1253,7 +1253,7 @@ word MonsterHP(byte type)
 	return monsType[type].hp;
 }
 
-char *MonsterName(byte type)
+const char *MonsterName(byte type)
 {
 	if(type>=NUM_MONSTERS)
 		return "NULL";
@@ -1652,6 +1652,8 @@ void FlailLock(Guy *me)
 			case 3:	// upper left
 				parentangle=10;
 				break;
+                    default:
+                        parentangle = me->parent->facing;
 		}
 	}
 	else
@@ -5667,6 +5669,8 @@ void AI_Roller(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		case 6:
 			f=ANIM_ATTACK;	// roll up
 			break;
+            default:
+                f=ANIM_IDLE; // anti-warning
 	}
 	if(me->seq!=f)
 	{

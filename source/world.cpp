@@ -142,7 +142,7 @@ void GetWorldName(char *fname,char *buf)
 	fclose(f);
 }
 
-int GetWorldPoints(char *fname)
+int GetWorldPoints(const char *fname)
 {
 	FILE *f;
 	char fname2[60];

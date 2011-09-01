@@ -109,7 +109,7 @@ struct world_t;
 class Map
 {
 	public:
-		Map(byte size,char *name);
+		Map(byte size,const char *name);
 		Map(Map *m);
 		Map(FILE *f);
 		~Map(void);

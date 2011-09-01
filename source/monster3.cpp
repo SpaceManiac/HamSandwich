@@ -396,8 +396,10 @@ void AI_BuddyBunny(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		else
 			dir=-1;
 	}
-	else
+	else {
 		dir=0;
+                diff = 0; // warning prevention
+        }
 
 	if(me->mind==0)
 	{
@@ -1662,6 +1664,8 @@ void AI_Snowball(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		case 6:
 			f=ANIM_ATTACK;	// roll up
 			break;
+                default:
+                        f = ANIM_IDLE; // warning prevention
 	}
 	if(me->seq!=f)
 	{

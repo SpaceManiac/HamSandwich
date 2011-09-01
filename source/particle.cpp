@@ -4,7 +4,7 @@
 
 Particle **particleList;
 int		maxParticles;
-static snowCount=0;
+static int snowCount=0; // explicit int
 
 Particle::Particle(void)
 {

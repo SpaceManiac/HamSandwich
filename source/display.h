@@ -72,7 +72,7 @@ void UpdateCamera(int x,int y,byte facing,Map *map);
 void Print(int x,int y,const char *s,char bright,byte font);
 void CenterPrint(int x,int y,const char *s,char bright,byte font);
 void RenderItAll(world_t *world,Map *map,byte flags);
-int GetStrLength(char *s);
+int GetStrLength(const char *s);
 
 void SprDraw(int x,int y,int z,byte hue,char bright,sprite_t *spr,word flags);
 void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,sprite_t *spr,word flags);

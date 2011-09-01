@@ -85,11 +85,12 @@ void FontPrintChar(int x, int y, char c, mfont_t *font)
 
 	c-=(char)font->firstChar;
 
-	chrWidth=*(font->chars[c]);
-	src=font->chars[c]+1;
+        // c -> (int)c to prevent warning: array subscript has type 'char'
+	chrWidth=*(font->chars[(int)c]);
+	src=font->chars[(int)c]+1;
 	for(j=0;j<font->height;j++)
 	{
-		for(i=0;i<(*font->chars[c]);i++)
+		for(i=0;i<(*font->chars[(int)c]);i++)
 		{
 			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
 				*dst=fontPal[*src];
@@ -118,12 +119,12 @@ void FontPrintCharColor(int x, int y, char c,byte color,mfont_t *font)
 
 	c-=(char)font->firstChar;
 
-	chrWidth=*(font->chars[c]);
-	src=font->chars[c]+1;
+	chrWidth=*(font->chars[(int)c]);
+	src=font->chars[(int)c]+1;
 	color*=32;
 	for(j=0;j<font->height;j++)
 	{
-		for(i=0;i<(*font->chars[c]);i++)
+		for(i=0;i<(*font->chars[(int)c]);i++)
 		{
 			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
 			{
@@ -158,12 +159,12 @@ void FontPrintCharBright(int x, int y, char c,char bright,mfont_t *font)
 
 	c-=(char)font->firstChar;
 
-	chrWidth=*(font->chars[c]);
-	src=font->chars[c]+1;
+	chrWidth=*(font->chars[(int)c]);
+	src=font->chars[(int)c]+1;
 
 	for(j=0;j<font->height;j++)
 	{
-		for(i=0;i<(*font->chars[c]);i++)
+		for(i=0;i<(*font->chars[(int)c]);i++)
 		{
 			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
 			{
@@ -198,11 +199,11 @@ void FontPrintCharSolid(int x, int y, char c, mfont_t *font, byte color)
 
 	c-=(char)font->firstChar;
 
-	chrWidth=*(font->chars[c]);
-	src=font->chars[c]+1;
+	chrWidth=*(font->chars[(int)c]);
+	src=font->chars[(int)c]+1;
 	for(j=0;j<font->height;j++)
 	{
-		for(i=0;i<(*font->chars[c]);i++)
+		for(i=0;i<(*font->chars[(int)c]);i++)
 		{
 			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
 				*dst=color;
@@ -223,7 +224,7 @@ byte CharWidth(char c, mfont_t *font)
 
 	c-=(char)font->firstChar;
 
-	return *(font->chars[c]);
+	return *(font->chars[(int)c]);
 }
 
 void FontPrintString(int x,int y,const char *s,mfont_t *font)
@@ -287,7 +288,7 @@ void FontSetColors(byte first,byte count,byte *data)
 	memcpy(&fontPal[first],data,count);
 }
 
-int FontStrLen(char *s,mfont_t *font)
+int FontStrLen(const char *s,mfont_t *font)
 {
 	int i,len=0;
 
@@ -319,7 +320,7 @@ bool FontInputText(char *prompt,char *buffer,int len,void (*renderScrn)(mfont_t 
 		fontmgl->Flip();
 		if(!fontmgl->Process())
 			return FALSE;
-		if(c=fontmgl->LastKeyPressed())
+		if((c=fontmgl->LastKeyPressed())) // extra pair of parentheses for a warning about assignment in truth value
 		{
 			if(c==8) // backspace
 			{

@@ -45,6 +45,6 @@ void FreeWorld(world_t *world);
 
 void InitWorld(world_t *world,byte worldNum);
 void GetWorldName(char *fname,char *buf);
-int  GetWorldPoints(char *fname);
+int  GetWorldPoints(const char *fname);
 
 #endif

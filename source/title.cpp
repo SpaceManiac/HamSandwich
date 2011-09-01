@@ -477,7 +477,7 @@ byte PickerRun(int *lastTime,MGLDraw *mgl)
 
 void PickerDraw(MGLDraw *mgl)
 {
-	int frm;
+	int frm = 0; // warning prevention
 	int i;
 	byte *scrn;
 	float f;
@@ -486,7 +486,7 @@ void PickerDraw(MGLDraw *mgl)
 
 	mgl->ClearScreen();
 
-	MGL_srand(123);
+	srand(123);
 	scrn=mgl->GetScreen();
 
 	for(i=0;i<220;i++)
@@ -673,7 +673,7 @@ byte WorldPicker(MGLDraw *mgl)
 	mgl->GammaCorrect(GetGamma());
 	delete planetSpr;
 	FontFree(&pickerFont);
-	MGL_srand(timeGetTime());
+	srand(timeGetTime());
 	return exitcode;
 }
 
@@ -1309,7 +1309,7 @@ void VictoryText(MGLDraw *mgl)
 	}
 }
 
-byte SpecialLoadBMP(char *name,MGLDraw *mgl,palette_t *pal)
+byte SpecialLoadBMP(const char *name,MGLDraw *mgl,palette_t *pal)
 {
 	FILE *f;
 	BITMAPFILEHEADER bmpFHead;
@@ -1347,7 +1347,7 @@ byte SpecialLoadBMP(char *name,MGLDraw *mgl,palette_t *pal)
 	return TRUE;
 }
 
-byte SpeedSplash(MGLDraw *mgl,char *fname)
+byte SpeedSplash(MGLDraw *mgl,const char *fname)
 {
 	int i,j,clock;
 	palette_t desiredpal[256],curpal[256];
