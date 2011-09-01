@@ -1,0 +1,49 @@
+# Lunatic Makefile
+# Tad Hardesty, aka SpaceManiac, 2011
+
+# Configuration
+GLOBAL_OPTIONS=-std=c++0x
+LIBS=
+COMPILER_OPTIONS=-Iinclude/ -Wall ${GLOBAL_OPTIONS}
+LINKER_OPTIONS=-Llib/ ${LIBS} ${GLOBAL_OPTIONS}
+
+OPTIONS_RELEASE=${COMPILER_OPTIONS} -DNDEBUG -DEXPANDO -O2 -s
+OPTIONS_DEBUG=${COMPILER_OPTIONS} -g -D_DEBUG -DLOG
+OPTIONS_DEMO=${COMPILER_OPTIONS} ${OPTIONS_RELEASE} -DDEMO
+
+GENERATE_COMMAND=@python tools/make.py
+MAKE_COMMAND=@make -f build/generated.make
+
+# Misc targets
+build: release debug demo
+
+clean:
+	@rm -rf bin/
+
+# Project targets
+release:
+	${GENERATE_COMMAND} lunatic "${OPTIONS_RELEASE}" "${LINKER_OPTIONS}"
+	${MAKE_COMMAND}
+	@cp bin/lunatic.exe game/lunatic.exe
+
+debug:
+	${GENERATE_COMMAND} lunatic_debug "${OPTIONS_DEBUG}" "${LINKER_OPTIONS}"
+	${MAKE_COMMAND}
+	@cp bin/lunatic.exe game/lunatic_debug.exe
+
+demo:
+	${GENERATE_COMMAND} lunatic_demo "${OPTIONS_DEMO}" "${LINKER_OPTIONS}"
+	${MAKE_COMMAND}
+
+# Run targets
+run: release
+	@cd game/
+	@lunatic.exe
+
+run-debug: debug
+	@cd game/
+	@lunatic_debug.exe
+
+run-demo: demo
+	@cd game/
+	@lunatic_demo.exe
