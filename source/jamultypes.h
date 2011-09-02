@@ -7,8 +7,10 @@
 // it warns when the compiler is generating overhead by converting the value to
 // a bool type, which in C++ means it actually forces it to be either 0 or 1, which
 // requires extra code.
-//#pragma warning( disable : 4800 )
-// (Removed by SM since Mingw gives a warning about ignoring #pragma warning)
+
+#ifndef __MINGW32__     // appears to be a Visual Studio thing
+#pragma warning( disable : 4800 )
+#endif
 
 #define FIXSHIFT (16)
 #define FIXAMT   (65536)

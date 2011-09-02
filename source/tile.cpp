@@ -109,9 +109,9 @@ void RenderFloorTile(int x,int y,int t,char light)
 
 
 #ifdef __MINGW32__
-#include "asm/tile_renderfloortile_mingw.h"
+#include "asm/mingw/tile_renderfloortile.h"
 #else
-#include "asm/tile_renderfloortile_vs.h"
+#include "asm/vs/tile_renderfloortile.h"
 #endif
 }
 
@@ -170,9 +170,9 @@ void RenderFloorTileShadow(int x,int y,int t,char light)
 		light-=4;
 
 #ifdef __MINGW32__
-#include "asm/tile_renderfloortileshadow_mingw.h"
+#include "asm/mingw/tile_renderfloortileshadow.h"
 #else
-#include "asm/tile_renderfloortileshadow_vs.h"
+#include "asm/vs/tile_renderfloortileshadow.h"
 #endif
 }
 
@@ -223,9 +223,9 @@ void RenderFloorTileUnlit(int x,int y,int t)
 		return;
 
 #ifdef __MINGW32__
-#include "asm/tile_renderfloortileunlit_mingw.h"
+#include "asm/mingw/tile_renderfloortileunlit.h"
 #else
-#include "asm/tile_renderfloortileunlit_vs.h"
+#include "asm/vs/tile_renderfloortileunlit.h"
 #endif
 }
 
@@ -276,9 +276,9 @@ void RenderFloorTileTrans(int x,int y,int t,char light)
 		return;
 
 #ifdef __MINGW32__
-#include "asm/tile_renderfloortiletrans_mingw.h"
+#include "asm/mingw/tile_renderfloortiletrans.h"
 #else
-#include "asm/tile_renderfloortiletrans_vs.h"
+#include "asm/vs/tile_renderfloortiletrans.h"
 #endif
 }
 

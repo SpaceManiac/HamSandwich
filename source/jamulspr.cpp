@@ -140,9 +140,9 @@ void sprite_t::Draw(int x,int y,MGLDraw *mgl)
 		sprHeight=mgl->GetHeight()-y;
 
 #ifdef __MINGW32__
-#include "asm/jamulspr_draw_mingw.h"
+#include "asm/mingw/jamulspr_draw.h"
 #else
-#include "asm/jamulspr_draw_vs.h"
+#include "asm/vs/jamulspr_draw.h"
 #endif
 }
 
@@ -186,9 +186,9 @@ void sprite_t::DrawBright(int x,int y,MGLDraw *mgl,char bright)
 		sprHeight=mgl->GetHeight()-y;
 
 #ifdef __MINGW32__
-#include "asm/jamulspr_drawbright_mingw.h"
+#include "asm/mingw/jamulspr_drawbright.h"
 #else
-#include "asm/jamulspr_drawbright_vs.h"
+#include "asm/vs/jamulspr_drawbright.h"
 #endif
 }
 
@@ -228,9 +228,9 @@ void sprite_t::DrawColored(int x,int y,MGLDraw *mgl,byte color,char bright)
 	color*=32;
 
 #ifdef __MINGW32__
-#include "asm/jamulspr_drawcolor_mingw.h"
+#include "asm/mingw/jamulspr_drawcolor.h"
 #else
-#include "asm/jamulspr_drawcolor_vs.h"
+#include "asm/vs/jamulspr_drawcolor.h"
 #endif
 }
 
@@ -268,9 +268,9 @@ void sprite_t::DrawOffColor(int x,int y,MGLDraw *mgl,byte fromColor,byte toColor
 	toColor*=32;
 
 #ifdef __MINGW32__
-#include "asm/jamulspr_drawoffcolor_mingw.h"
+#include "asm/mingw/jamulspr_drawoffcolor.h"
 #else
-#include "asm/jamulspr_drawoffcolor_vs.h"
+#include "asm/vs/jamulspr_drawoffcolor.h"
 #endif
 }
 
@@ -311,9 +311,9 @@ void sprite_t::DrawGhost(int x,int y,MGLDraw *mgl,char bright)
 		sprHeight=mgl->GetHeight()-y;
 
 #ifdef __MINGW32__
-#include "asm/jamulspr_drawghost_mingw.h"
+#include "asm/mingw/jamulspr_drawghost.h"
 #else
-#include "asm/jamulspr_drawghost_vs.h"
+#include "asm/vs/jamulspr_drawghost.h"
 #endif
 }
 
@@ -349,9 +349,9 @@ void sprite_t::DrawGlow(int x,int y,MGLDraw *mgl,char bright)
 		sprHeight=mgl->GetHeight()-y;
 
 #ifdef __MINGW32__
-#include "asm/jamulspr_drawglow_mingw.h"
+#include "asm/mingw/jamulspr_drawglow.h"
 #else
-#include "asm/jamulspr_drawglow_vs.h"
+#include "asm/vs/jamulspr_drawglow.h"
 #endif
 }
 
@@ -393,9 +393,9 @@ void sprite_t::DrawShadow(int x,int y,MGLDraw *mgl)
 		return;
 
 #ifdef __MINGW32__
-#include "asm/jamulspr_drawshadow_mingw.h"
+#include "asm/mingw/jamulspr_drawshadow.h"
 #else
-#include "asm/jamulspr_drawshadow_vs.h"
+#include "asm/vs/jamulspr_drawshadow.h"
 #endif
 }
 
