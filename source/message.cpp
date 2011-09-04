@@ -34,7 +34,7 @@ void NewMessage(const char *txt,int time,byte priority)
 	message.priority=priority;
 }
 
-void NoRepeatNewMessage(char *txt,int time,byte priority)
+void NoRepeatNewMessage(const char *txt,int time,byte priority)
 {
 	if(message.priority==1 && priority==0)
 		return;	// can't override it

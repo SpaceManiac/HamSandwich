@@ -1496,7 +1496,10 @@ inline void FaceGoodguy(Guy *me,Guy *goodguy)
 	}
 }
 
-inline int RangeToTarget(Guy *me,Guy *goodguy)
+#ifndef __MINGW32__
+inline // Mingw complains about an undefinied reference to this from guy.cpp
+#endif
+int RangeToTarget(Guy *me,Guy *goodguy)
 {
 	return abs(me->x-goodguy->x)+abs(me->y-goodguy->y);
 }

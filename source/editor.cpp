@@ -1540,7 +1540,7 @@ void EditorNewWorld(void)
 	AddMapGuys(curMap);
 }
 
-void EditorLoadWorld(char *fname)
+void EditorLoadWorld(const char *fname)
 {
 	FreeWorld(&world);
 	if(LoadWorld(&world,fname))

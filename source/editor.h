@@ -42,6 +42,6 @@ void EditorNewWorld(void);
 void EditorLoadWorld(const char *fname);
 void EditorSaveWorld(const char *fname);
 void EditorSelectMap(byte w);
-void EditorLoadTiles(char *fname);
+void EditorLoadTiles(const char *fname);
 
 #endif

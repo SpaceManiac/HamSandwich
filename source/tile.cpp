@@ -1,4 +1,5 @@
 #include "tile.h"
+#include "asm.h"
 
 tile_t tiles[NUMTILES];
 MGLDraw *tileMGL;
@@ -43,10 +44,13 @@ void LoadTiles(FILE *f)
 	fread(tiles,NUMTILES,sizeof(tile_t),f);
 }
 
-void RenderFloorTile(int x,int y,int t,char light)
+void RenderFloorTile(int x,int y,int t,char light_)
 {
-	byte *dst,*src;
-	int wid,hgt;
+    ASM_VAR(char, plain, light, light_);
+    ASM_VAR(byte*, plain, dst, NULL);
+    ASM_VAR(byte*, plain, src, NULL);
+    ASM_VAR(int, plain, wid, 0);
+    ASM_VAR(int, plain, hgt, 0);
 
 	if(light==0)
 	{
@@ -107,64 +111,66 @@ void RenderFloorTile(int x,int y,int t,char light)
 		return;
 	}
 
-	__asm
-	{
-		pusha
-		push ds
-		pop	 es
-		mov  esi,src
-		mov  edi,dst
-		mov  edx,hgt
-		mov  ecx,wid
-		mov  bh,light
-loop1:
-		mov  al,[esi]
-		mov  bl,al
-		and  bl,~31
-		add  al,bh
-		cmp  al,bl
-		jae	 okay1
-		cmp  bh,0
-		jl	 fine
-		mov  al,bl
-		add  al,31
-		jmp okay2
-fine:
-		mov  al,bl
-		jmp okay2
-okay1:
-		add  bl,31
-		cmp  al,bl
-		jb	 okay2
-		cmp  bh,0
-		jl   fine2
-		mov  al,bl
-		jmp  okay2
-fine2:
-		mov  al,bl
-		and  al,(~31)
-okay2:
-		mov  [edi],al
-		inc  esi
-		inc  edi
-		dec  ecx
-		jnz	 loop1
-		mov  ecx,wid
-		add  esi,TILE_WIDTH
-		sub	 esi,wid
-		add  edi,640
-		sub  edi,wid
-		dec  edx
-		jnz  loop1
-		popa
-	}
+    ASM_START()
+_(          pusha                )
+_(          push ds              )
+_(          pop     es           )
+_(          mov  esi,plain_src   )
+_(          mov  edi,plain_dst   )
+_(          mov  edx,plain_hgt   )
+_(          mov  ecx,plain_wid   )
+_(          mov  bh,plain_light  )
+_(  plain_loop1:                 )
+_(          mov  al,[esi]        )
+_(          mov  bl,al           )
+_(          and  bl,~31          )
+_(          add  al,bh           )
+_(          cmp  al,bl           )
+_(          jae  plain_okay1     )
+_(          cmp  bh,0            )
+_(          jl   plain_fine      )
+_(          mov  al,bl           )
+_(          add  al,31           )
+_(          jmp  plain_okay2     )
+_(  plain_fine:                  )
+_(          mov  al,bl           )
+_(          jmp plain_okay2      )
+_(  plain_okay1:                 )
+_(          add  bl,31           )
+_(          cmp  al,bl           )
+_(          jb   plain_okay2     )
+_(          cmp  bh,0            )
+_(          jl   plain_fine2     )
+_(          mov  al,bl           )
+_(          jmp  plain_okay2     )
+_(  plain_fine2:                 )
+_(          mov  al,bl           )
+_(          and  al,(~31)        )
+_(  plain_okay2:                 )
+_(          mov  [edi],al        )
+_(          inc  esi             )
+_(          inc  edi             )
+_(          dec  ecx             )
+_(          jnz  plain_loop1     )
+_(          mov  ecx,plain_wid   )
+_(          add  esi,32          ) // TILE_WIDTH -> 32
+_(          sub  esi,plain_wid   )
+_(          add  edi,640         )
+_(          sub  edi,plain_wid   )
+_(          dec  edx             )
+_(          jnz  plain_loop1     )
+_(          popa                 )
+    ASM_END()
 }
 
-void RenderFloorTileShadow(int x,int y,int t,char light)
+void RenderFloorTileShadow(int x,int y,int t,char light_)
 {
-	byte *dst,*src;
-	int wid,hgt;
-	int darkpart;
+    ASM_VAR(char, shadow, light, light_);
+    ASM_VAR(byte*, shadow, dst, NULL);
+    ASM_VAR(byte*, shadow, src, NULL);
+    ASM_VAR(int, shadow, wid, 0);
+    ASM_VAR(int, shadow, hgt, 0);
+    ASM_VAR(int, shadow, darkpart, 0);
 
 	if(x<0)
 	{
@@ -214,70 +220,71 @@ void RenderFloorTileShadow(int x,int y,int t,char light)
 	if(darkpart>wid)
 		light-=4;
 
-	__asm
-	{
-		pusha
-		push ds
-		pop	 es
-		mov  esi,src
-		mov  edi,dst
-		mov  edx,hgt
-		mov  ecx,wid
-		mov  bh,light
-loop1:
-		mov  al,[esi]
-		mov  bl,al
-		and  bl,~31
-		add  al,bh
-		cmp  al,bl
-		jae	 okay1
-		cmp  bh,0
-		jl	 fine
-		mov  al,bl
-		add  al,31
-		jmp okay2
-fine:
-		mov  al,bl
-		jmp okay2
-okay1:
-		add  bl,31
-		cmp  al,bl
-		jb	 okay2
-		cmp  bh,0
-		jl   fine2
-		mov  al,bl
-		jmp  okay2
-darkenit:
-		sub  bh,4
-		jmp  donedarken
-fine2:
-		mov  al,bl
-		and  al,(~31)
-okay2:
-		mov  [edi],al
-		inc  esi
-		inc  edi
-		cmp  ecx,darkpart
-		je   darkenit
-donedarken:
-		dec  ecx
-		jnz	 loop1
-		mov  bh,light
-		mov  ecx,wid
-		add  esi,TILE_WIDTH
-		sub	 esi,wid
-		add  edi,640
-		sub  edi,wid
-		dec  edx
-		jnz  loop1
-		popa
-	}
+    ASM_START()
+_(          pusha                )
+_(          push ds              )
+_(          pop     es           )
+_(          mov  esi,shadow_src   )
+_(          mov  edi,shadow_dst   )
+_(          mov  edx,shadow_hgt   )
+_(          mov  ecx,shadow_wid   )
+_(          mov  bh,shadow_light  )
+_(  shadow_loop1:                )
+_(          mov  al,[esi]        )
+_(          mov  bl,al           )
+_(          and  bl,~31          )
+_(          add  al,bh           )
+_(          cmp  al,bl           )
+_(          jae  shadow_okay1    )
+_(          cmp  bh,0            )
+_(          jl   shadow_fine     )
+_(          mov  al,bl           )
+_(          add  al,31           )
+_(          jmp shadow_okay2     )
+_(  shadow_fine:                 )
+_(          mov  al,bl           )
+_(          jmp shadow_okay2     )
+_(  shadow_okay1:                )
+_(          add  bl,31           )
+_(          cmp  al,bl           )
+_(          jb   shadow_okay2    )
+_(          cmp  bh,0            )
+_(          jl   shadow_fine2    )
+_(          mov  al,bl           )
+_(          jmp  shadow_okay2    )
+_(  shadow_darkenit:             )
+_(          sub  bh,4            )
+_(          jmp  shadow_donedarken)
+_(  shadow_fine2:                )
+_(          mov  al,bl           )
+_(          and  al,(~31)        )
+_(  shadow_okay2:                )
+_(          mov  [edi],al        )
+_(          inc  esi             )
+_(          inc  edi             )
+_(          cmp  ecx,shadow_darkpart)
+_(          je   shadow_darkenit )
+_(  shadow_donedarken:           )
+_(          dec  ecx             )
+_(          jnz  shadow_loop1    )
+_(          mov  bh,shadow_light )
+_(          mov  ecx,shadow_wid  )
+_(          add  esi,32          ) // TILE_WIDTH -> 32
+_(          sub  esi,shadow_wid  )
+_(          add  edi,640         )
+_(          sub  edi,shadow_wid  )
+_(          dec  edx             )
+_(          jnz  shadow_loop1    )
+_(          popa                 )
+    ASM_END()
 }
 
 void RenderFloorTileUnlit(int x,int y,int t)
 {
-	byte *dst,*src;
-	int wid,hgt;
+    ASM_VAR(byte*, unlit, dst, NULL);
+    ASM_VAR(byte*, unlit, src, NULL);
+    ASM_VAR(int, unlit, wid, 0);
+    ASM_VAR(int, unlit, hgt, 0);
 
 	if(x<0)
 	{
@@ -320,32 +327,34 @@ void RenderFloorTileUnlit(int x,int y,int t)
 	if(hgt<=0)
 		return;
 
-	__asm
-	{
-		pusha
-		push ds
-		pop	 es
-		mov  esi,src
-		mov  edi,dst
-		mov  edx,hgt
-		mov  ecx,wid
-loop1:
-		rep  movsb
-		mov  ecx,wid
-		add  esi,TILE_WIDTH
-		sub	 esi,wid
-		add  edi,640
-		sub  edi,wid
-		dec  edx
-		jnz  loop1
-		popa
-	}
+    ASM_START()
+_(          pusha                )
+_(          push ds              )
+_(          pop     es           )
+_(          mov  esi,unlit_src   )
+_(          mov  edi,unlit_dst   )
+_(          mov  edx,unlit_hgt   )
+_(          mov  ecx,unlit_wid   )
+_(  unlit_loop1:                 )
+_(          rep  movsb           )
+_(          mov  ecx,unlit_wid   )
+_(          add  esi,32          ) // TILE_WIDTH -> 32
+_(          sub  esi,unlit_wid   )
+_(          add  edi,640         )
+_(          sub  edi,unlit_wid   )
+_(          dec  edx             )
+_(          jnz  unlit_loop1     )
+_(          popa                 )
+    ASM_END()
 }
 
-void RenderFloorTileTrans(int x,int y,int t,char light)
+void RenderFloorTileTrans(int x,int y,int t,char light_)
 {
-	byte *dst,*src;
-	int wid,hgt;
+    ASM_VAR(char, trans, light, light_);
+    ASM_VAR(byte*, trans, dst, NULL);
+    ASM_VAR(byte*, trans, src, NULL);
+    ASM_VAR(int, trans, wid, 0);
+    ASM_VAR(int, trans, hgt, 0);
 
 	if(x<0)
 	{
@@ -388,60 +397,59 @@ void RenderFloorTileTrans(int x,int y,int t,char light)
 	if(hgt<=0)
 		return;
 
-	__asm
-	{
-		pusha
-		push ds
-		pop	 es
-		mov  esi,src
-		mov  edi,dst
-		mov  edx,hgt
-		mov  ecx,wid
-		mov  bh,light
-loop1:
-		mov  al,[esi]
-		cmp  al,0
-		je   trans
-		mov  bl,al
-		and  bl,~31
-		add  al,bh
-		cmp  al,bl
-		jae	 okay1
-		cmp  bh,0
-		jl	 fine
-		mov  al,bl
-		add  al,31
-		jmp okay2
-fine:
-		mov  al,bl
-		jmp okay2
-okay1:
-		add  bl,31
-		cmp  al,bl
-		jb	 okay2
-		cmp  bh,0
-		jl   fine2
-		mov  al,bl
-		jmp  okay2
-fine2:
-		mov  al,bl
-		and  al,(~31)
-okay2:
-		mov  [edi],al
-trans:
-		inc  esi
-		inc  edi
-		dec  ecx
-		jnz	 loop1
-		mov  ecx,wid
-		add  esi,TILE_WIDTH
-		sub	 esi,wid
-		add  edi,640
-		sub  edi,wid
-		dec  edx
-		jnz  loop1
-		popa
-	}
+    ASM_START()
+_(          pusha                )
+_(          push ds              )
+_(          pop     es           )
+_(          mov  esi,trans_src   )
+_(          mov  edi,trans_dst   )
+_(          mov  edx,trans_hgt   )
+_(          mov  ecx,trans_wid   )
+_(          mov  bh,trans_light  )
+_(  trans_loop1:                 )
+_(          mov  al,[esi]        )
+_(          cmp  al,0            )
+_(          je   trans           )
+_(          mov  bl,al           )
+_(          and  bl,~31          )
+_(          add  al,bh           )
+_(          cmp  al,bl           )
+_(          jae  trans_okay1     )
+_(          cmp  bh,0            )
+_(          jl   trans_fine      )
+_(          mov  al,bl           )
+_(          add  al,31           )
+_(          jmp  trans_okay2     )
+_(  trans_fine:                  )
+_(          mov  al,bl           )
+_(          jmp trans_okay2      )
+_(  trans_okay1:                 )
+_(          add  bl,31           )
+_(          cmp  al,bl           )
+_(          jb   trans_okay2     )
+_(          cmp  bh,0            )
+_(          jl   trans_fine2     )
+_(          mov  al,bl           )
+_(          jmp  trans_okay2     )
+_(  trans_fine2:                 )
+_(          mov  al,bl           )
+_(          and  al,(~31)        )
+_(  trans_okay2:                 )
+_(          mov  [edi],al        )
+_(  trans:                       )
+_(          inc  esi             )
+_(          inc  edi             )
+_(          dec  ecx             )
+_(          jnz  trans_loop1     )
+_(          mov  ecx,trans_wid   )
+_(          add  esi,32          ) // TILE_WIDTH -> 32
+_(          sub  esi,trans_wid   )
+_(          add  edi,640         )
+_(          sub  edi,trans_wid   )
+_(          dec  edx             )
+_(          jnz  trans_loop1     )
+_(          popa                 )
+	ASM_END()
 }
 
 void RenderWallTile(int x,int y,byte w,byte f,char light)

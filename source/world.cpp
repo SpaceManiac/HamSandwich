@@ -22,7 +22,7 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	return 1;
 }
 
-byte LoadWorld(world_t *world,char *fname)
+byte LoadWorld(world_t *world,const char *fname)
 {
 	FILE *f;
 	int i;

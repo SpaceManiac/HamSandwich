@@ -1,7 +1,7 @@
 # Lunatic make.py
 # Tad Hardesty, aka SpaceManiac, 2011
 # Autogenerates build/generated.make
-# usage: 'python bin/make.py target cxxflags lnflags'
+# usage: 'python tools/make.py target cxxflags lnflags'
 
 from glob import glob
 from sys import argv
@@ -16,7 +16,6 @@ blacklist = [
 	'source/monster2.cpp',
 	'source/monster3.cpp',
 	'source/jamulspr.cpp',
-	'source/tile.cpp'
 ]
 
 def getFileList(dir):

@@ -2,10 +2,11 @@
 # Tad Hardesty, aka SpaceManiac, 2011
 
 # Configuration
+DIRECTX=D:/libraries/directx-sdk
 GLOBAL_OPTIONS=-std=c++0x
-LIBS=
-COMPILER_OPTIONS=-Iinclude/ -ID:/libraries/directx-sdk/Include/ -Wall ${GLOBAL_OPTIONS}
-LINKER_OPTIONS=-Llib/ ${LIBS} ${GLOBAL_OPTIONS}
+LIBS=-lwinmm -ld3d9 -ld3dx9
+COMPILER_OPTIONS=-Iinclude/ -I${DIRECTX}/Include/ -Wall ${GLOBAL_OPTIONS} -masm=intel
+LINKER_OPTIONS=-L${DIRECTX}/Lib/x86/ ${LIBS} ${GLOBAL_OPTIONS}
 
 OPTIONS_RELEASE=${COMPILER_OPTIONS} -DNDEBUG -DEXPANDO -O2 -s
 OPTIONS_DEBUG=${COMPILER_OPTIONS} -g -D_DEBUG -DLOG
