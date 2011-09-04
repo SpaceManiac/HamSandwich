@@ -14,8 +14,7 @@ linkflags = argv[3]
 # don't compile certain files
 blacklist = [
 	'source/monster2.cpp',
-	'source/monster3.cpp',
-	'source/jamulspr.cpp',
+	'source/monster3.cpp'
 ]
 
 def getFileList(dir):

@@ -43,7 +43,8 @@ void LunaticInit(MGLDraw *mgl)
 {
 	gamemgl=mgl;
 
-	logFile=fopen("loonylog.txt","wt");
+	// logFile=fopen("loonylog.txt","wt");
+    logFile= stdout;
 	InitCosSin();
 	InitDisplay(gamemgl);
 	InitSound();
@@ -70,7 +71,7 @@ void LunaticExit(void)
 	ExitMonsters();
 	ExitPlayer();
 	ExitInterface();
-	fclose(logFile);
+	//fclose(logFile);
 }
 
 byte GetCurSong(void)

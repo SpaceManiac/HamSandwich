@@ -76,9 +76,13 @@ class MGLDraw
 		// mouse functions
 		byte MouseDown(void);
 		void SetMouseDown(byte w);
+        void SetMouse(int x, int y);
+        void TeleportMouse(int x, int y);
+        void GetMouse(int *x, int *y);
 
 	protected:
 		int xRes,yRes,bpp,pitch;
+        int mousex,mousey;
 		byte *scrn;
         PixelToaster::Display ptDisplay;
         PtListener* ptListener;

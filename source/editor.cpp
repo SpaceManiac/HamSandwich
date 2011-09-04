@@ -50,7 +50,7 @@ byte InitEditor(void)
 
 	mouseX=320;
 	mouseY=240;
-	// MS_moveTo(320,240); // TODO: move mouse to 320, 240
+    editmgl->TeleportMouse(320, 240);
 	PutCamera(0,0);
 	gameStartTime=timeGetTime();
 	InitGuys(129);
@@ -641,8 +641,8 @@ void UpdateMouse(void)
 	int msx,msy;
 	int cx,cy;
 
-	// MS_getPos(&msx,&msy); // TODO: read mouse position
-	// MS_moveTo(320,240); // TODO: move mouse to 320, 240
+    editmgl->GetMouse(&msx, &msy);
+    editmgl->TeleportMouse(320, 240);
 
 	mouseX+=(msx-320);
 	mouseY+=(msy-240);

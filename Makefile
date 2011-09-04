@@ -4,7 +4,7 @@
 # Configuration
 DIRECTX=D:/libraries/directx-sdk
 GLOBAL_OPTIONS=-std=c++0x
-LIBS=-lwinmm -ld3d9 -ld3dx9
+LIBS=-lwinmm -ld3d9 -ld3dx9 -lgdi32 -ldsound
 COMPILER_OPTIONS=-Iinclude/ -I${DIRECTX}/Include/ -Wall ${GLOBAL_OPTIONS} -masm=intel
 LINKER_OPTIONS=-L${DIRECTX}/Lib/x86/ ${LIBS} ${GLOBAL_OPTIONS}
 

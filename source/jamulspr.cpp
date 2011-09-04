@@ -139,7 +139,7 @@ void sprite_t::Draw(int x,int y,MGLDraw *mgl)
 	if(y>mgl->GetHeight()-height)
 		sprHeight=mgl->GetHeight()-y;
 
-	__asm
+/*	__asm
 	{
 		// esi = address of sprite data
 		// edi = screen address to draw at
@@ -226,7 +226,7 @@ linedone:
 		jmp loop1
 alldone:
 		popa
-	}
+	}*/
 }
 
 //   bright: how much to darken or lighten the whole thing (-16 to +16 reasonable)
@@ -268,7 +268,7 @@ void sprite_t::DrawBright(int x,int y,MGLDraw *mgl,char bright)
 	if(y>mgl->GetHeight()-height)
 		sprHeight=mgl->GetHeight()-y;
 
-	__asm
+/*	__asm
 	{
 		// esi = address of sprite data
 		// edi = screen address to draw at
@@ -406,7 +406,7 @@ linedone:
 		jmp loop1
 alldone:
 		popa
-	}
+	}*/
 }
 
 //	 color:  which hue (0-7) to use for the entire thing, ignoring its real hue
@@ -444,7 +444,7 @@ void sprite_t::DrawColored(int x,int y,MGLDraw *mgl,byte color,char bright)
 
 	color*=32;
 
-	__asm
+/*	__asm
 	{
 		// esi = address of sprite data
 		// edi = screen address to draw at
@@ -588,7 +588,7 @@ linedone:
 		jmp loop1
 alldone:
 		popa
-	}
+	}*/
 }
 
 void sprite_t::DrawOffColor(int x,int y,MGLDraw *mgl,byte fromColor,byte toColor,char bright)
@@ -624,7 +624,7 @@ void sprite_t::DrawOffColor(int x,int y,MGLDraw *mgl,byte fromColor,byte toColor
 
 	toColor*=32;
 
-	__asm
+/*	__asm
 	{
 		// esi = address of sprite data
 		// edi = screen address to draw at
@@ -774,7 +774,7 @@ linedone:
 		jmp loop1
 alldone:
 		popa
-	}
+	}*/
 }
 
 // a ghost sprite is rather special.  It is drawn normally (except lightened
@@ -813,7 +813,7 @@ void sprite_t::DrawGhost(int x,int y,MGLDraw *mgl,char bright)
 	if(y>mgl->GetHeight()-height)
 		sprHeight=mgl->GetHeight()-y;
 
-	__asm
+/*	__asm
 	{
 		// esi = address of sprite data
 		// edi = screen address to draw at
@@ -975,7 +975,7 @@ linedone:
 		jmp loop1
 alldone:
 		popa
-	}
+	}*/
 }
 
 void sprite_t::DrawGlow(int x,int y,MGLDraw *mgl,char bright)
@@ -1009,7 +1009,7 @@ void sprite_t::DrawGlow(int x,int y,MGLDraw *mgl,char bright)
 	if(y>mgl->GetHeight()-height)
 		sprHeight=mgl->GetHeight()-y;
 
-	__asm
+/*	__asm
 	{
 		// esi = address of sprite data
 		// edi = screen address to draw at
@@ -1158,7 +1158,7 @@ linedone:
 		jmp loop1
 alldone:
 		popa
-	}
+	}*/
 }
 
 void sprite_t::DrawShadow(int x,int y,MGLDraw *mgl)
@@ -1198,7 +1198,7 @@ void sprite_t::DrawShadow(int x,int y,MGLDraw *mgl)
 	if(sprHeight==0)
 		return;
 
-	__asm
+/*	__asm
 	{
 		// esi = address of sprite data
 		// edi = screen address to draw at
@@ -1325,7 +1325,7 @@ linedone2:
 		jmp loop1
 alldone:
 		popa
-	}
+	}*/
 }
 
 // -------------------------------------------------------------------------

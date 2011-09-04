@@ -48,8 +48,8 @@ public:
     void onKeyUp( DisplayInterface & display, Key key ) { ControlKeyUp((char) key); }
     void onMouseButtonDown( DisplayInterface & display, Mouse mouse ) { mgldraw->SetMouseDown(1); }
     void onMouseButtonUp( DisplayInterface & display, Mouse mouse ) { mgldraw->SetMouseDown(0); }
-    void onMouseMove( DisplayInterface & display, Mouse mouse ) {}
-    bool onClose( DisplayInterface & display ) { return false; }
+    void onMouseMove( DisplayInterface & display, Mouse mouse ) { mgldraw->SetMouse(mouse.x, mouse.y); }
+    bool onClose( DisplayInterface & display ) { mgldraw->Quit(); return false; }
 };
 
 void PtListener::onActivate(DisplayInterface & display, bool active) {
@@ -197,6 +197,8 @@ void MGLDraw::Flip(void)
         ptBuffer[i].g = pal[scrn[i]].green;
         ptBuffer[i].b = pal[scrn[i]].blue;
     }
+
+    ptDisplay.update(ptBuffer);
 
 	/*if(needPalRealize)
 	{
@@ -396,6 +398,24 @@ byte MGLDraw::MouseDown(void)
 	return mouseDown;
 }
 
+void MGLDraw::SetMouse(int x, int y)
+{
+    mousex = x;
+    mousey = y;
+}
+
+void MGLDraw::TeleportMouse(int x, int y)
+{
+    SetCursorPos(x, y);
+    SetMouse(x, y);
+}
+
+void MGLDraw::GetMouse(int *x, int *y)
+{
+    *x = mousex;
+    *y = mousey;
+}
+
 char MGLDraw::LastKeyPeek(void)
 {
 	return lastKeyPressed;
@@ -434,8 +454,8 @@ bool MGLDraw::LoadBMP(const char *name)
 
 	for(i=0;i<bmpIHead.biHeight;i++)
 	{
-		scr=(byte *)((int)scrn+(bmpIHead.biHeight-1-i)*pitch);
-		fread(scr,bmpIHead.biWidth,1,f);
+		scr = scrn + (i) * pitch;
+		//fread(scr,bmpIHead.biWidth,1,f);
 	}
 	fclose(f);
 	return TRUE;
@@ -475,6 +495,7 @@ void MGLDraw::GammaCorrect(byte gamma)
 
 long FAR PASCAL MGLDraw_EventHandler(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    printf("Imma event handler: %d\n", message);
 	switch(message)
 	{
 		case WM_LBUTTONDOWN:
