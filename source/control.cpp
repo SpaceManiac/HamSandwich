@@ -3,7 +3,7 @@
 #include "options.h"
 
 // text strings corresponding to scan codes 0-88
-char scanCodeTable[128][16]={
+/*char scanCodeTable[128][16]={
 	//0
 	"Null","Escape","1","2","3","4","5","6","7","8","9","0",
 	//12
@@ -19,7 +19,29 @@ char scanCodeTable[128][16]={
 	//71
 	"Home","Up","PageUp","Keypad-","Left","Keypad5","Right","Keypad+",
 	//79
-	"End","Down","PageDown","Insert","Delete","","","","F11","F12"};
+	"End","Down","PageDown","Insert","Delete","","","","F11","F12"};*/
+char scanCodeTable[256][16] = {
+    // 0
+    "Null","SOH","STX","Cancel","EOT","ENQ","ACK","BEL","Backspace","HT","LF","VT","Clear","CR","SO","SI",
+    // 16
+    "Shift","Control","Alt","Pause","CapsLock","Kana","SYN","ETB","Final","Kanji","SUB","Escape","Convert","NonConvert","Accept","ModeChange",
+    // 32
+    "Space","PageUp","PageDown","End","Home","Left","Up","Right","Down","","","",",","",".","/",
+    // 48
+    "0","1","2","3","4","5","6","7","8","9","",";","","=","","",
+    // 64
+    "","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O",
+    // 80
+    "P","Q","R","S","T","U","V","W","X","Y","Z","[","\\","]","","",
+    // 96
+    "Numpad0","Numpad1","Numpad2","Numpad3","Numpad4","Numpad5","Numpad6","Numpad7","Numpad8","Numpad9","Numpad*","Numpad+","Numpad--","Numpad-","Numpad.","Numpad/",
+    // 112
+    "F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12","F13","","","","Delete",
+    // 128
+    "","","","","","","","","","","","","","","","",
+    // 144
+    "NumLock","ScrollLock","","","","","","","","","PrintScreen","Insert","Help","Meta","",""
+};
 
 
 byte arrowState;
@@ -280,7 +302,10 @@ void SetKeys(byte keys[8])
 
 char *ScanCodeText(byte s)
 {
-	return scanCodeTable[s];
+    static char unknown[16] = "Unknown";
+	char* r = scanCodeTable[s];
+    if (r[0] == 0) return unknown; // empty string
+    return r;
 }
 
 void ApplyControlSettings(void)
