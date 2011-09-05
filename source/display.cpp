@@ -491,11 +491,11 @@ void DisplayList::Render(void)
 		{
 			if(dispObj[i].flags&DISPLAY_WALLTILE)
 			{
-                                // TODO: Uncomment me later.
-				/*if(dispObj[i].flags&DISPLAY_TRANSTILE)
-					RenderWallTileTrans(dispObj[i].x-scrx,dispObj[i].y-scry,(byte)dispObj[i].spr,dispObj[i].hue,dispObj[i].bright);
+                byte bSpr = (byte) (dword) dispObj[i].spr;
+				if(dispObj[i].flags&DISPLAY_TRANSTILE)
+					RenderWallTileTrans(dispObj[i].x-scrx,dispObj[i].y-scry,bSpr,dispObj[i].hue,dispObj[i].bright);
 				else
-					RenderWallTile(dispObj[i].x-scrx,dispObj[i].y-scry,(byte)dispObj[i].spr,dispObj[i].hue,dispObj[i].bright);*/
+					RenderWallTile(dispObj[i].x-scrx,dispObj[i].y-scry,bSpr,dispObj[i].hue,dispObj[i].bright);
 			}
 			else if(dispObj[i].flags&DISPLAY_ROOFTILE)
 			{
