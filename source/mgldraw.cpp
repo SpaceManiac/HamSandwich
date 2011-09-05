@@ -15,6 +15,7 @@
 #include "game.h"	// even sorrier about this crap (it's for MGLDraw_Activate only)
 #include "sound.h"
 #include "music.h"
+#include "ctype.h"
 
 using namespace PixelToaster;
 
@@ -38,19 +39,38 @@ byte needPalRealize=0;
 // Pixel toaster callback thingies
 class PtListener : public Listener {
     MGLDraw* mgldraw;
+    bool shift;
 public:
-    PtListener(MGLDraw* mgldraw) : mgldraw(mgldraw) {}
+    PtListener(MGLDraw* mgldraw) : mgldraw(mgldraw), shift(false) {}
 
     bool defaultKeyHandlers() const { return false; }
     void onActivate(DisplayInterface & display, bool active);
-    void onKeyDown( DisplayInterface & display, Key key ) { ControlKeyDown((char) key); }
-    void onKeyPressed( DisplayInterface & display, Key key ) { mgldraw->SetLastKey((char) key); }
-    void onKeyUp( DisplayInterface & display, Key key ) { ControlKeyUp((char) key); }
+    void onKeyDown( DisplayInterface & display, Key key );
+    void onKeyPressed( DisplayInterface & display, Key key );
+    void onKeyUp( DisplayInterface & display, Key key );
     void onMouseButtonDown( DisplayInterface & display, Mouse mouse ) { mgldraw->SetMouseDown(1); }
     void onMouseButtonUp( DisplayInterface & display, Mouse mouse ) { mgldraw->SetMouseDown(0); }
     void onMouseMove( DisplayInterface & display, Mouse mouse ) { mgldraw->SetMouse(mouse.x, mouse.y); }
     bool onClose( DisplayInterface & display ) { mgldraw->Quit(); return false; }
 };
+
+void PtListener::onKeyDown(DisplayInterface & display, Key key) {
+    if(key == Key::Shift) shift = true;
+    ControlKeyDown((char) key);
+}
+
+void PtListener::onKeyPressed(DisplayInterface & display, Key key) {
+    char chkey = (char) key;
+    if (!shift) {
+        chkey = tolower(chkey);
+    }
+    mgldraw->SetLastKey(chkey);
+}
+
+void PtListener::onKeyUp(DisplayInterface & display, Key key) {
+    if(key == Key::Shift) shift = false;
+    ControlKeyDown((char) key);
+}
 
 void PtListener::onActivate(DisplayInterface & display, bool active) {
     if(active) {
@@ -378,6 +398,7 @@ void MGLDraw::FillBox(int x,int y,int x2,int y2,byte c)
 
 void MGLDraw::SetLastKey(char c)
 {
+    printf("Set last key to %d = %c\n", (int)c, c);
 	lastKeyPressed=c;
 }
 
@@ -442,6 +463,12 @@ bool MGLDraw::LoadBMP(const char *name)
 	if(bmpIHead.biBitCount!=8)
 		return FALSE;
 
+    // Non-RLE BMPs only
+    if (bmpIHead.biCompression != 0) {
+        printf("bitmap %s is compressed (%lu)\n", name, bmpIHead.biCompression);
+        return FALSE;
+    }
+
 	fread(pal2,sizeof(pal2),1,f);
 	for(i=0;i<256;i++)
 	{
@@ -454,8 +481,8 @@ bool MGLDraw::LoadBMP(const char *name)
 
 	for(i=0;i<bmpIHead.biHeight;i++)
 	{
-		scr = scrn + (i) * pitch;
-		//fread(scr,bmpIHead.biWidth,1,f);
+		scr = scrn + (bmpIHead.biHeight-1-i) * pitch;
+		fread(scr,1,bmpIHead.biWidth,f);
 	}
 	fclose(f);
 	return TRUE;
