@@ -834,6 +834,24 @@ void MainMenuDisplay(MGLDraw *mgl,title_t title)
 	planetSpr->GetSprite(23)->DrawBright(280,190+title.titleBright*5-79*2+title.expando*2,mgl,title.titleBright);
 #endif
 
+    // debugging info
+    int y = 140, yd = 14;
+#ifdef NDEBUG
+    Print(10,y += yd,"NDEBUG",0,1);
+#endif
+#ifdef EXPANDO
+    Print(10,y += yd,"EXPANDO",0,1);
+#endif
+#ifdef _DEBUG
+    Print(10,y += yd,"_DEBUG",0,1);
+#endif
+#ifdef LOG
+    Print(10,y += yd,"LOG",0,1);
+#endif
+#ifdef DEMO
+    Print(10,y += yd,"DEMO",0,1);
+#endif
+
 	// now the menu options
 	planetSpr->GetSprite( 9+(title.cursor==0))->Draw(240,270,mgl);
 	planetSpr->GetSprite(11+(title.cursor==1))->Draw(260,300,mgl);
