@@ -61,27 +61,27 @@ void ControlKeyDown(char k)
 		}
 	}
 	// always track arrows, no matter what the keys are, for menus
-	if(k==72)
+	if(k==38)
 	{
 		arrowState|=CONTROL_UP;
 		arrowTap|=CONTROL_UP;
 	}
-	if(k==80)
+	if(k==40)
 	{
 		arrowState|=CONTROL_DN;
 		arrowTap|=CONTROL_DN;
 	}
-	if(k==75)
+	if(k==37)
 	{
 		arrowState|=CONTROL_LF;
 		arrowTap|=CONTROL_LF;
 	}
-	if(k==77)
+	if(k==39)
 	{
 		arrowState|=CONTROL_RT;
 		arrowTap|=CONTROL_RT;
 	}
-	if(k==28)
+	if(k==10)
 	{
 		arrowState|=CONTROL_B1;
 		arrowTap|=CONTROL_B1;
@@ -108,15 +108,16 @@ void ControlKeyUp(char k)
 	}
 
 	// always track arrows, no matter what the keys are, for menus
-	if(k==72)
+    // keys updated for PixelToaster
+	if(k==38)
 		arrowState&=(~CONTROL_UP);
-	if(k==80)
+    else if(k==40)
 		arrowState&=(~CONTROL_DN);
-	if(k==75)
+	else if(k==37)
 		arrowState&=(~CONTROL_LF);
-	if(k==77)
+	else if(k==39)
 		arrowState&=(~CONTROL_RT);
-	if(k==28)
+	else if(k==10)
 		arrowState&=(~CONTROL_B1);
 }
 

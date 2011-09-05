@@ -1,5 +1,5 @@
 // PixelToaster Implementation
-// Copyright © 2004-2007 Glenn Fiedler
+// Copyright ï¿½ 2004-2007 Glenn Fiedler
 // Part of the PixelToaster Framebuffer Library - http://www.pixeltoaster.com
 
 #ifndef PIXELTOASTER_NO_CRT
@@ -29,6 +29,12 @@
 	#include "PixelToasterWindows.h"
 	#define TimerClass WindowsTimer
 	#define DisplayClass WindowsDisplay
+
+// Shenanigans
+HWND pt_extractHWND(PixelToaster::Display* display) {
+    return ((PixelToaster::WindowsDisplay*) display->_internal())->handle();
+}
+
 #endif
 
 #if PIXELTOASTER_PLATFORM == PIXELTOASTER_NULL

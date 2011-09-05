@@ -1,5 +1,5 @@
-
 #include "jamulspr.h"
+#include "asm.h"
 
 // the sprites are 12 bytes, not including the data itself
 #define SPRITE_INFO_SIZE 16
@@ -110,13 +110,15 @@ void sprite_t::GetCoords(int x,int y,int *rx,int *ry,int *rx2,int *ry2)
 
 void sprite_t::Draw(int x,int y,MGLDraw *mgl)
 {
-	dword scrWidth=mgl->GetWidth();
-	dword dst;
-	byte *scrn=mgl->GetScreen();
-	byte *spr;
-	dword doDraw;
-	dword minX,maxX;
-	dword sprHeight,sprWidth;
+    ASM_VAR(dword, Draw, scrWidth, mgl->GetWidth());
+    ASM_VAR(dword, Draw, dst, 0);
+    ASM_VAR(byte*, Draw, scrn, mgl->GetScreen());
+    ASM_VAR(byte*, Draw, spr, 0);
+    ASM_VAR(dword, Draw, doDraw, 0);
+    ASM_VAR(dword, Draw, minX, 0);
+    ASM_VAR(dword, Draw, maxX, 0);
+    ASM_VAR(dword, Draw, sprHeight, 0);
+    ASM_VAR(dword, Draw, sprWidth, 0);
 
 	x-=ofsx;
 	y-=ofsy;
@@ -139,94 +141,93 @@ void sprite_t::Draw(int x,int y,MGLDraw *mgl)
 	if(y>mgl->GetHeight()-height)
 		sprHeight=mgl->GetHeight()-y;
 
-/*	__asm
-	{
+    ASM_START()
 		// esi = address of sprite data
 		// edi = screen address to draw at
 		// edx = doDraw (counts down until you can draw if sprite is partially above screen)
 		// ebx = sprite width counter
 		// ecx = placeholder for moving data
 		// eax = work register
-		pusha
-		push ds
-		pop  es
-		mov edi,scrn
-		add edi,dst
-		mov esi,spr
-		mov edx,doDraw
-		mov ebx,sprWidth
-		xor eax,eax			// zero out eax because we want it to work as a byte
-loop1:
-		cmp ebx,0			// check to see if this line is done (x has run out)
-		jz  linedone
-		mov al,ds:[esi]		// get next byte of source
-		inc esi
-		sal al,1
-		jnc	drawpixels		// if the byte is positive, draw a run of pixels
-							// otherwise we are skipping pixels
-		shr al,1
-		add edi,eax			// move destination forward by that much
-		sub ebx,eax			// and decrease width count by that much
-		jmp loop1
-drawpixels:
-		shr al,1
-		sub ebx,eax
-		cmp edx,0			// check to be sure we're not too high up
-		jnz dontplot
-		cmp edi,maxX		// check to be sure we're not off the end
-		jae dontplot
-		cmp edi,minX		// check to be sure we're not too far left either
-							// (in which case it may be partial)
-		jbe dontplotallofit
-
-		mov ecx,eax
-		add ecx,edi
-		cmp ecx,maxX		// check to see if this run will run off the end
-		jae cropit
-		mov ecx,eax
-		rep movsb			// move the data
-		jmp loop1
-cropit:
-		sub ecx,maxX
-		push ecx			// store the amount it runs over
-		sub eax,ecx			// chop off the amount it runs over by from the amount to draw
-		mov ecx,eax
-		rep movsb			// move the data
-		pop ecx
-		add esi,ecx			// move the source pointer up by the undrawn amount
-		add edi,ecx
-		jmp loop1
-dontplotallofit:
-		mov ecx,eax
-		add ecx,edi
-		cmp ecx,minX		// check to see if some of this run is onscreen
-		jbe dontplot		// nope, treat it as a complete ignore
-		sub ecx,minX
-		sub eax,ecx			// now eax contains how many to skip, and ecx contains how many to draw
-		add edi,eax
-		add esi,eax
-		rep movsb			// move the data (ecx was already set up)
-		jmp loop1
-dontplot:
-		add edi,eax
-		add esi,eax
-		jmp loop1			// just move the pointers and loop again
-linedone:
-		dec sprHeight
-		jz alldone			// All done!!!
-		mov ecx,scrWidth	// just handy for speed
-		mov ebx,sprWidth
-		sub edi,ebx			// subtract width from the destination, and...
-		add edi,ecx			// add one line's height
-		add maxX,ecx		// move the xMax and xMin down one line
-		add minX,ecx
-		cmp edx,0
-		jz	loop1
-		dec edx				// if doDraw (edx) was nonzero, count it down
-		jmp loop1
-alldone:
-		popa
-	}*/
+_(          pusha                   )
+_(          push ds                 )
+_(          pop  es                 )
+_(          mov edi,Draw_scrn       )
+_(          add edi,Draw_dst        )
+_(          mov esi,Draw_spr        )
+_(          mov edx,Draw_doDraw     )
+_(          mov ebx,Draw_sprWidth   )
+_(          xor eax,eax             )  // zero out eax because we want it to work as a byte
+_(  Draw_loop1:                     )
+_(          cmp ebx,0               )  // check to see if this line is done (x has run out)
+_(          jz  Draw_linedone       )
+_(          mov al,ds:[esi]         )  // get next byte of source
+_(          inc esi                 )
+_(          sal al,1                )
+_(          jnc Draw_drawpixels     )  // if the byte is positive, draw a run of pixels
+_(                                  )  // otherwise we are skipping pixels
+_(          shr al,1                )
+_(          add edi,eax             )  // move destination forward by that much
+_(          sub ebx,eax             )  // and decrease width count by that much
+_(          jmp Draw_loop1          )
+_(  Draw_drawpixels:                )
+_(          shr al,1                )
+_(          sub ebx,eax             )
+_(          cmp edx,0               )  // check to be sure we're not too high up
+_(          jnz Draw_dontplot       )
+_(          cmp edi,Draw_maxX       )  // check to be sure we're not off the end
+_(          jae Draw_dontplot       )
+_(          cmp edi,Draw_minX       )  // check to be sure we're not too far left either
+_(                                  )  // (in which case it may be partial)
+_(          jbe Draw_dontplotallofit     )
+_(                                  )
+_(          mov ecx,eax             )
+_(          add ecx,edi             )
+_(          cmp ecx,Draw_maxX       )  // check to see if this run will run off the end
+_(          jae Draw_cropit         )
+_(          mov ecx,eax             )
+_(          rep movsb               )  // move the data
+_(          jmp Draw_loop1          )
+_(  Draw_cropit:                    )
+_(          sub ecx,Draw_maxX       )
+_(          push ecx                )  // store the amount it runs over
+_(          sub eax,ecx             )  // chop off the amount it runs over by from the amount to draw
+_(          mov ecx,eax             )
+_(          rep movsb               )  // move the data
+_(          pop ecx                 )
+_(          add esi,ecx             )  // move the source pointer up by the undrawn amount
+_(          add edi,ecx             )
+_(          jmp Draw_loop1          )
+_(  Draw_dontplotallofit:           )
+_(          mov ecx,eax             )
+_(          add ecx,edi             )
+_(          cmp ecx,Draw_minX       )  // check to see if some of this run is onscreen
+_(          jbe Draw_dontplot       )  // nope, treat it as a complete ignore
+_(          sub ecx,Draw_minX       )
+_(          sub eax,ecx             )  // now eax contains how many to skip, and ecx contains how many to draw
+_(          add edi,eax             )
+_(          add esi,eax             )
+_(          rep movsb               )  // move the data (ecx was already set up)
+_(          jmp Draw_loop1          )
+_(  Draw_dontplot:                  )
+_(          add edi,eax             )
+_(          add esi,eax             )
+_(          jmp Draw_loop1          )  // just move the pointers and loop again
+_(  Draw_linedone:                  )
+_(          dec DWORD PTR Draw_sprHeight      )
+_(          jz Draw_alldone              )  // All done!!!
+_(          mov ecx,Draw_scrWidth   )  // just handy for speed
+_(          mov ebx,Draw_sprWidth   )
+_(          sub edi,ebx             )  // subtract width from the destination, and...
+_(          add edi,ecx             )  // add one line's height
+_(          add Draw_maxX,ecx       )  // move the xMax and xMin down one line
+_(          add Draw_minX,ecx       )
+_(          cmp edx,0               )
+_(          jz    Draw_loop1        )
+_(          dec edx                 )  // if doDraw (edx) was nonzero, count it down
+_(          jmp Draw_loop1          )
+_(  Draw_alldone:                   )
+_(          popa                    )
+    ASM_END()
 }
 
 //   bright: how much to darken or lighten the whole thing (-16 to +16 reasonable)

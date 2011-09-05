@@ -31,7 +31,7 @@ release:
 debug:
 	${GENERATE_COMMAND} lunatic_debug "${OPTIONS_DEBUG}" "${LINKER_OPTIONS}"
 	${MAKE_COMMAND}
-	@cp bin/lunatic.exe game/lunatic_debug.exe
+	@cp bin/lunatic_debug.exe game/lunatic_debug.exe
 
 demo:
 	${GENERATE_COMMAND} lunatic_demo "${OPTIONS_DEMO}" "${LINKER_OPTIONS}"

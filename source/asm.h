@@ -19,7 +19,7 @@
 
 #else
 // Visual Studio
-#define ASM_VAR(name) type ##name = value
+#define ASM_VAR(type, prefix, name, value) type prefix##_##name = value; type& name = prefix##_##name;
 #define ASM_START() asm {
 #define _(instr...) instr
 #define ASM_END() }

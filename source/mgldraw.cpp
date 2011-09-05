@@ -17,6 +17,9 @@
 #include "music.h"
 #include "ctype.h"
 
+// Shenanigans
+HWND pt_extractHWND(PixelToaster::Display* display);
+
 using namespace PixelToaster;
 
 // Replacement for missing MGL functions
@@ -69,10 +72,11 @@ void PtListener::onKeyPressed(DisplayInterface & display, Key key) {
 
 void PtListener::onKeyUp(DisplayInterface & display, Key key) {
     if(key == Key::Shift) shift = false;
-    ControlKeyDown((char) key);
+    ControlKeyUp((char) key);
 }
 
 void PtListener::onActivate(DisplayInterface & display, bool active) {
+    printf("onActive : %d\n", (int) active);
     if(active) {
 		SetGameIdle(0);
 		needPalRealize=1;
@@ -196,14 +200,13 @@ float MGLDraw::FrameRate(void)
 
 bool MGLDraw::Process(void)
 {
+    ptDisplay.update(ptBuffer);
 	return (!readyToQuit);
 }
 
 HWND MGLDraw::GetHWnd(void)
 {
-    // uh, fix later...?
-	//return (HWND)gm->mainWindow;
-    return NULL;
+    return pt_extractHWND(&ptDisplay);
 }
 
 void MGLDraw::Flip(void)
@@ -230,7 +233,7 @@ void MGLDraw::Flip(void)
 
 void MGLDraw::ClearScreen(void)
 {
-    memset(ptBuffer, 0, 256*sizeof(TrueColorPixel));
+    memset(scrn, 0, xRes * yRes);
 }
 
 byte *MGLDraw::GetScreen(void)
@@ -398,7 +401,6 @@ void MGLDraw::FillBox(int x,int y,int x2,int y2,byte c)
 
 void MGLDraw::SetLastKey(char c)
 {
-    printf("Set last key to %d = %c\n", (int)c, c);
 	lastKeyPressed=c;
 }
 
@@ -427,7 +429,9 @@ void MGLDraw::SetMouse(int x, int y)
 
 void MGLDraw::TeleportMouse(int x, int y)
 {
-    SetCursorPos(x, y);
+    POINT pt = { x, y };
+    ClientToScreen(GetHWnd(), &pt);
+    SetCursorPos(pt.x, pt.y);
     SetMouse(x, y);
 }
 
@@ -522,7 +526,7 @@ void MGLDraw::GammaCorrect(byte gamma)
 
 long FAR PASCAL MGLDraw_EventHandler(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    printf("Imma event handler: %d\n", message);
+    //printf("Imma event handler: %d\n", message);
 	switch(message)
 	{
 		case WM_LBUTTONDOWN:
