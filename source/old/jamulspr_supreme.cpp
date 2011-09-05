@@ -1,5 +1,5 @@
+
 #include "jamulspr.h"
-#include "asm.h"
 
 // the sprites are 12 bytes, not including the data itself
 #define SPRITE_INFO_SIZE 16
@@ -32,6 +32,8 @@ count structures:
 // -------------------------------------------------------------------------
 // ****************************** SPRITE_T *********************************
 // -------------------------------------------------------------------------
+
+static int constrainX=0,constrainY=0,constrainX2=639,constrainY2=479;
 
 // CONSTRUCTORS & DESTRUCTORS
 sprite_t::sprite_t(void)
@@ -110,104 +112,135 @@ void sprite_t::GetCoords(int x,int y,int *rx,int *ry,int *rx2,int *ry2)
 
 void sprite_t::Draw(int x,int y,MGLDraw *mgl)
 {
-	byte *src,*dst,b,skip;
-	dword pitch;
-	int srcx,srcy;
-	byte noDraw;
-
-    static const int constrainX = 0, constrainY = 0, constrainX2 = 639, constrainY2 = 479; // Supreme compatability
+	dword scrWidth=mgl->GetWidth();
+	dword dst;
+	byte *scrn=mgl->GetScreen();
+	byte *spr;
+	dword doDraw;
+	dword minX,maxX;
+	dword sprHeight,sprWidth;
 
 	x-=ofsx;
 	y-=ofsy;
 	if(x>constrainX2 || y>constrainY2)
 		return;	// whole sprite is offscreen
 
-	pitch=mgl->GetWidth();
-	src=data;
-	dst=mgl->GetScreen()+x+y*pitch;
+	dst=x+y*scrWidth;
 
-	srcx=x;
-	srcy=y;
-	if(srcy<constrainY)
-		noDraw=1;
-	else
-		noDraw=0;
-	while(srcy<height+y)
+	doDraw=0;
+	if(y<constrainY)
+		doDraw=constrainY-y;
+
+	minX=y*scrWidth+(dword)scrn+constrainX;
+	maxX=y*scrWidth+(dword)scrn+constrainX2+1;
+
+	spr=data;
+	sprHeight=height;
+	sprWidth=width;
+
+	if(y>constrainY2+1-height)
+		sprHeight=constrainY2+1-y;
+
+	__asm
 	{
-		if((*src)&128)	// transparent run
-		{
-			b=(*src)&127;
-			srcx+=b;
-			dst+=b;
-			src++;
-		}
-		else	// solid run
-		{
-			b=*src;
-			src++;
-			if(srcx<constrainX-b || srcx>constrainX2)
-			{
-				// don't draw this line
-				src+=b;
-				srcx+=b;
-				dst+=b;
-			}
-			else if(srcx<constrainX)
-			{
-				// skip some of the beginning
-				skip=(constrainX-srcx)-1;
-				src+=skip;
-				srcx+=skip;
-				dst+=skip;
-				b-=skip;
-				if(srcx>constrainX2-b)
-				{
-					skip=(b-(constrainX2-srcx))-1;
-					if(!noDraw)
-						memcpy(dst,src,b-skip);
-					src+=b;
-					srcx+=b;
-					dst+=b;
-				}
-				else
-				{
-					if(!noDraw)
-						memcpy(dst,src,b);
-					src+=b;
-					srcx+=b;
-					dst+=b;
-				}
-			}
-			else if(srcx>constrainX2-b)
-			{
-				// skip some of the end
-				skip=(srcx-(constrainX2-b))-1;
-				if(!noDraw)
-					memcpy(dst,src,b-skip);
-				src+=b;
-				srcx+=b;
-				dst+=b;
-			}
-			else
-			{
-				// do it all!
-				if(!noDraw)
-					memcpy(dst,src,b);
-				srcx+=b;
-				src+=b;
-				dst+=b;
-			}
-		}
-		if(srcx>=width+x)
-		{
-			srcx=x;
-			srcy++;
-			dst+=pitch-width;
-			if(srcy>=constrainY)
-				noDraw=0;
-			if(srcy>constrainY2)
-				return;
-		}
+		// esi = address of sprite data
+		// edi = screen address to draw at
+		// edx = doDraw (counts down until you can draw if sprite is partially above screen)
+		// ebx = sprite width counter
+		// ecx = placeholder for moving data
+		// eax = work register
+		pusha
+		push ds
+		pop  es
+		mov edi,scrn
+		add edi,dst
+		mov esi,spr
+		mov edx,doDraw
+		mov ebx,sprWidth
+		xor eax,eax			// zero out eax because we want it to work as a byte
+loop1:
+		cmp ebx,0			// check to see if this line is done (x has run out)
+		jz  linedone
+		mov al,ds:[esi]		// get next byte of source
+		inc esi
+		sal al,1
+		jnc	drawpixels		// if the byte is positive, draw a run of pixels
+							// otherwise we are skipping pixels
+		shr al,1
+		add edi,eax			// move destination forward by that much
+		sub ebx,eax			// and decrease width count by that much
+		jmp loop1
+drawpixels:
+		shr al,1
+		sub ebx,eax
+		cmp edx,0			// check to be sure we're not too high up
+		jnz dontplot
+		cmp edi,maxX		// check to be sure we're not off the end
+		jae dontplot
+		cmp edi,minX		// check to be sure we're not too far left either
+							// (in which case it may be partial)
+		jbe dontplotallofit
+
+		mov ecx,eax
+		add ecx,edi
+		cmp ecx,maxX		// check to see if this run will run off the end
+		jae cropit
+		mov ecx,eax
+		rep movsb			// move the data
+		jmp loop1
+cropit:
+		sub ecx,maxX
+		push ecx			// store the amount it runs over
+		sub eax,ecx			// chop off the amount it runs over by from the amount to draw
+		mov ecx,eax
+		rep movsb			// move the data
+		pop ecx
+		add esi,ecx			// move the source pointer up by the undrawn amount
+		add edi,ecx
+		jmp loop1
+dontplotallofit:
+		mov ecx,eax
+		add ecx,edi
+		cmp ecx,minX		// check to see if some of this run is onscreen
+		jbe	dontplot		// nope, treat it as a complete ignore
+		sub ecx,minX
+		sub eax,ecx			// now eax contains how many to skip, and ecx contains how many to draw
+		add edi,eax
+		add esi,eax
+		mov eax,ecx			// store ecx in eax
+		add eax,edi
+		cmp eax,maxX		// see if it's too big
+		jae dontplotall2
+		rep movsb
+		xor eax,eax
+		jmp loop1
+dontplotall2:
+		sub eax,maxX
+		sub ecx,eax
+		rep movsb
+		add edi,eax
+		add esi,eax
+		xor eax,eax
+		jmp loop1
+dontplot:
+		add edi,eax
+		add esi,eax
+		jmp loop1			// just move the pointers and loop again
+linedone:
+		dec sprHeight
+		jz alldone			// All done!!!
+		mov ecx,scrWidth	// just handy for speed
+		mov ebx,sprWidth
+		sub edi,ebx			// subtract width from the destination, and...
+		add edi,ecx			// add one line's height
+		add maxX,ecx		// move the xMax and xMin down one line
+		add minX,ecx
+		cmp edx,0
+		jz	loop1
+		dec edx				// if doDraw (edx) was nonzero, count it down
+		jmp loop1
+alldone:
+		popa
 	}
 }
 
@@ -231,26 +264,26 @@ void sprite_t::DrawBright(int x,int y,MGLDraw *mgl,char bright)
 
 	x-=ofsx;
 	y-=ofsy;
-	if(x>639 || y>479)
+	if(x>constrainX2 || y>constrainY2)
 		return;	// whole sprite is offscreen
 
 	dst=x+y*scrWidth;
 
 	doDraw=0;
-	if(y<0)
-		doDraw=-y;
+	if(y<constrainY)
+		doDraw=constrainY-y;
 
-	minX=y*scrWidth+(dword)scrn;
-	maxX=minX+scrWidth;
+	minX=y*scrWidth+(dword)scrn+constrainX;
+	maxX=y*scrWidth+(dword)scrn+constrainX2+1;
 
 	spr=data;
 	sprHeight=height;
 	sprWidth=width;
 
-	if(y>mgl->GetHeight()-height)
-		sprHeight=mgl->GetHeight()-y;
+	if(y>constrainY2+1-height)
+		sprHeight=constrainY2+1-y;
 
-/*	__asm
+	__asm
 	{
 		// esi = address of sprite data
 		// edi = screen address to draw at
@@ -316,7 +349,20 @@ dontplotallofit:
 		sub eax,ecx			// now eax contains how many to skip, and ecx contains how many to draw
 		add edi,eax
 		add esi,eax
+		mov eax,ecx			// store ecx in eax
+		add eax,edi
+		cmp eax,maxX		// see if it's too big
+		jae dontplotall2
 		call movedata
+		jmp loop1
+dontplotall2:
+		sub eax,maxX
+		sub ecx,eax
+		push eax
+		call movedata
+		pop eax
+		add edi,eax
+		add esi,eax
 		jmp loop1
 dontplot:
 		add edi,eax
@@ -388,7 +434,7 @@ linedone:
 		jmp loop1
 alldone:
 		popa
-	}*/
+	}
 }
 
 //	 color:  which hue (0-7) to use for the entire thing, ignoring its real hue
@@ -405,28 +451,28 @@ void sprite_t::DrawColored(int x,int y,MGLDraw *mgl,byte color,char bright)
 
 	x-=ofsx;
 	y-=ofsy;
-	if(x>639 || y>479)
+	if(x>constrainX2 || y>constrainY2)
 		return;	// whole sprite is offscreen
 
 	dst=x+y*scrWidth;
 
 	doDraw=0;
-	if(y<0)
-		doDraw=-y;
+	if(y<constrainY)
+		doDraw=constrainY-y;
 
-	minX=y*scrWidth+(dword)scrn;
-	maxX=minX+scrWidth;
+	minX=y*scrWidth+(dword)scrn+constrainX;
+	maxX=y*scrWidth+(dword)scrn+constrainX2+1;
 
 	spr=data;
 	sprHeight=height;
 	sprWidth=width;
 
-	if(y>mgl->GetHeight()-height)
-		sprHeight=mgl->GetHeight()-y;
+	if(y>constrainY2+1-height)
+		sprHeight=constrainY2+1-y;
 
 	color*=32;
 
-/*	__asm
+	__asm
 	{
 		// esi = address of sprite data
 		// edi = screen address to draw at
@@ -492,7 +538,20 @@ dontplotallofit:
 		sub eax,ecx			// now eax contains how many to skip, and ecx contains how many to draw
 		add edi,eax
 		add esi,eax
+		mov eax,ecx			// store ecx in eax
+		add eax,edi
+		cmp eax,maxX		// see if it's too big
+		jae dontplotall2
 		call movedata
+		jmp loop1
+dontplotall2:
+		sub eax,maxX
+		sub ecx,eax
+		push eax
+		call movedata
+		pop eax
+		add edi,eax
+		add esi,eax
 		jmp loop1
 dontplot:
 		add edi,eax
@@ -570,7 +629,7 @@ linedone:
 		jmp loop1
 alldone:
 		popa
-	}*/
+	}
 }
 
 void sprite_t::DrawOffColor(int x,int y,MGLDraw *mgl,byte fromColor,byte toColor,char bright)
@@ -585,28 +644,28 @@ void sprite_t::DrawOffColor(int x,int y,MGLDraw *mgl,byte fromColor,byte toColor
 
 	x-=ofsx;
 	y-=ofsy;
-	if(x>639 || y>479)
+	if(x>constrainX2 || y>constrainY2)
 		return;	// whole sprite is offscreen
 
 	dst=x+y*scrWidth;
 
 	doDraw=0;
-	if(y<0)
-		doDraw=-y;
+	if(y<constrainY)
+		doDraw=constrainY-y;
 
-	minX=y*scrWidth+(dword)scrn;
-	maxX=minX+scrWidth;
+	minX=y*scrWidth+(dword)scrn+constrainX;
+	maxX=y*scrWidth+(dword)scrn+constrainX2+1;
 
 	spr=data;
 	sprHeight=height;
 	sprWidth=width;
 
-	if(y>mgl->GetHeight()-height)
-		sprHeight=mgl->GetHeight()-y;
+	if(y>constrainY2+1-height)
+		sprHeight=constrainY2+1-y;
 
 	toColor*=32;
 
-/*	__asm
+	__asm
 	{
 		// esi = address of sprite data
 		// edi = screen address to draw at
@@ -672,7 +731,20 @@ dontplotallofit:
 		sub eax,ecx			// now eax contains how many to skip, and ecx contains how many to draw
 		add edi,eax
 		add esi,eax
+		mov eax,ecx			// store ecx in eax
+		add eax,edi
+		cmp eax,maxX		// see if it's too big
+		jae dontplotall2
 		call movedata
+		jmp loop1
+dontplotall2:
+		sub eax,maxX
+		sub ecx,eax
+		push eax
+		call movedata
+		pop eax
+		add edi,eax
+		add esi,eax
 		jmp loop1
 dontplot:
 		add edi,eax
@@ -756,7 +828,7 @@ linedone:
 		jmp loop1
 alldone:
 		popa
-	}*/
+	}
 }
 
 // a ghost sprite is rather special.  It is drawn normally (except lightened
@@ -776,26 +848,26 @@ void sprite_t::DrawGhost(int x,int y,MGLDraw *mgl,char bright)
 
 	x-=ofsx;
 	y-=ofsy;
-	if(x>639 || y>479)
+	if(x>constrainX2 || y>constrainY2)
 		return;	// whole sprite is offscreen
 
 	dst=x+y*scrWidth;
 
 	doDraw=0;
-	if(y<0)
-		doDraw=-y;
+	if(y<constrainY)
+		doDraw=constrainY-y;
 
-	minX=y*scrWidth+(dword)scrn;
-	maxX=minX+scrWidth;
+	minX=y*scrWidth+(dword)scrn+constrainX;
+	maxX=y*scrWidth+(dword)scrn+constrainX2+1;
 
 	spr=data;
 	sprHeight=height;
 	sprWidth=width;
 
-	if(y>mgl->GetHeight()-height)
-		sprHeight=mgl->GetHeight()-y;
+	if(y>constrainY2+1-height)
+		sprHeight=constrainY2+1-y;
 
-/*	__asm
+	__asm
 	{
 		// esi = address of sprite data
 		// edi = screen address to draw at
@@ -861,7 +933,20 @@ dontplotallofit:
 		sub eax,ecx			// now eax contains how many to skip, and ecx contains how many to draw
 		add edi,eax
 		add esi,eax
+		mov eax,ecx			// store ecx in eax
+		add eax,edi
+		cmp eax,maxX		// see if it's too big
+		jae dontplotall2
 		call movedata
+		jmp loop1
+dontplotall2:
+		sub eax,maxX
+		sub ecx,eax
+		push eax
+		call movedata
+		pop eax
+		add edi,eax
+		add esi,eax
 		jmp loop1
 dontplot:
 		add edi,eax
@@ -957,7 +1042,7 @@ linedone:
 		jmp loop1
 alldone:
 		popa
-	}*/
+	}
 }
 
 void sprite_t::DrawGlow(int x,int y,MGLDraw *mgl,char bright)
@@ -972,26 +1057,26 @@ void sprite_t::DrawGlow(int x,int y,MGLDraw *mgl,char bright)
 
 	x-=ofsx;
 	y-=ofsy;
-	if(x>639 || y>479)
+	if(x>constrainX2 || y>constrainY2)
 		return;	// whole sprite is offscreen
 
 	dst=x+y*scrWidth;
 
 	doDraw=0;
-	if(y<0)
-		doDraw=-y;
+	if(y<constrainY)
+		doDraw=constrainY-y;
 
-	minX=y*scrWidth+(dword)scrn;
-	maxX=minX+scrWidth;
+	minX=y*scrWidth+(dword)scrn+constrainX;
+	maxX=y*scrWidth+(dword)scrn+constrainX2+1;
 
 	spr=data;
 	sprHeight=height;
 	sprWidth=width;
 
-	if(y>mgl->GetHeight()-height)
-		sprHeight=mgl->GetHeight()-y;
+	if(y>constrainY2+1-height)
+		sprHeight=constrainY2+1-y;
 
-/*	__asm
+	__asm
 	{
 		// esi = address of sprite data
 		// edi = screen address to draw at
@@ -1057,7 +1142,20 @@ dontplotallofit:
 		sub eax,ecx			// now eax contains how many to skip, and ecx contains how many to draw
 		add edi,eax
 		add esi,eax
+		mov eax,ecx			// store ecx in eax
+		add eax,edi
+		cmp eax,maxX		// see if it's too big
+		jae dontplotall2
 		call movedata
+		jmp loop1
+dontplotall2:
+		sub eax,maxX
+		sub ecx,eax
+		push eax
+		call movedata
+		pop eax
+		add edi,eax
+		add esi,eax
 		jmp loop1
 dontplot:
 		add edi,eax
@@ -1140,7 +1238,7 @@ linedone:
 		jmp loop1
 alldone:
 		popa
-	}*/
+	}
 }
 
 void sprite_t::DrawShadow(int x,int y,MGLDraw *mgl)
@@ -1158,29 +1256,29 @@ void sprite_t::DrawShadow(int x,int y,MGLDraw *mgl)
 	//y-=ofsy-height/2;	// start the sprite half of it's height down
 	x-=ofsx+height/2;
 	y-=ofsy/2;
-	if(x>639 || y>479)
+	if(x>constrainX2 || y>constrainY2)
 		return;	// whole sprite is offscreen
 
 	dst=x+y*scrWidth;
 
 	doDraw=0;
-	if(y<0)
-		doDraw=-y*2;
+	if(y<constrainY)
+		doDraw=(constrainY-y)*2;
 
-	minX=y*scrWidth+(dword)scrn;
-	maxX=minX+scrWidth-1;
+	minX=y*scrWidth+(dword)scrn+constrainX;
+	maxX=y*scrWidth+(dword)scrn+constrainX2+1;
 
 	spr=data;
 	sprHeight=height/2;
 	sprWidth=width;
 
-	if(y>mgl->GetHeight()-(int)sprHeight)
-		sprHeight=mgl->GetHeight()-y;
+	if(y>constrainY2+1-(int)sprHeight)
+		sprHeight=constrainY2+1-y;
 
 	if(sprHeight==0)
 		return;
 
-/*	__asm
+	__asm
 	{
 		// esi = address of sprite data
 		// edi = screen address to draw at
@@ -1307,7 +1405,7 @@ linedone2:
 		jmp loop1
 alldone:
 		popa
-	}*/
+	}
 }
 
 // -------------------------------------------------------------------------
@@ -1321,7 +1419,7 @@ sprite_set_t::sprite_set_t(void)
 	spr=NULL;
 }
 
-sprite_set_t::sprite_set_t(const char *fname)
+sprite_set_t::sprite_set_t(char *fname)
 {
 	count=0;
 	spr=NULL;
@@ -1334,7 +1432,7 @@ sprite_set_t::~sprite_set_t(void)
 }
 
 // REGULAR MEMBER FUNCTIONS
-bool sprite_set_t::Load(const char *fname)
+bool sprite_set_t::Load(char *fname)
 {
 	FILE *f;
 	int i;
@@ -1394,7 +1492,7 @@ bool sprite_set_t::Load(const char *fname)
 	return TRUE;
 }
 
-bool sprite_set_t::Save(const char *fname)
+bool sprite_set_t::Save(char *fname)
 {
 	FILE *f;
 	int i;
@@ -1449,7 +1547,7 @@ void sprite_set_t::Free(void)
 
 sprite_t *sprite_set_t::GetSprite(int which)
 {
-	if(spr && which<=count && spr[which])
+	if(spr && which<count && spr[which])
 		return spr[which];
 	return NULL;
 }
@@ -1457,4 +1555,129 @@ sprite_t *sprite_set_t::GetSprite(int which)
 word sprite_set_t::GetCount(void)
 {
 	return count;
+}
+
+void SetSpriteConstraints(int x,int y,int x2,int y2)
+{
+	constrainX=x;
+	constrainX2=x2;
+	constrainY=y;
+	constrainY2=y2;
+}
+
+void sprite_t::DrawC(int x,int y,MGLDraw *mgl)
+{
+	byte *src,*dst,b,skip;
+	dword pitch;
+	int srcx,srcy;
+	byte noDraw;
+
+	x-=ofsx;
+	y-=ofsy;
+	if(x>constrainX2 || y>constrainY2)
+		return;	// whole sprite is offscreen
+
+	pitch=mgl->GetWidth();
+	src=data;
+	dst=mgl->GetScreen()+x+y*pitch;
+
+	srcx=x;
+	srcy=y;
+	if(srcy<constrainY)
+		noDraw=1;
+	else
+		noDraw=0;
+	while(srcy<height+y)
+	{
+		if((*src)&128)	// transparent run
+		{
+			b=(*src)&127;
+			srcx+=b;
+			dst+=b;
+			src++;
+		}
+		else	// solid run
+		{
+			b=*src;
+			src++;
+			if(srcx<constrainX-b || srcx>constrainX2)
+			{
+				// don't draw this line
+				src+=b;
+				srcx+=b;
+				dst+=b;
+			}
+			else if(srcx<constrainX)
+			{
+				// skip some of the beginning
+				skip=(constrainX-srcx)-1;
+				src+=skip;
+				srcx+=skip;
+				dst+=skip;
+				b-=skip;
+				if(srcx>constrainX2-b)
+				{
+					skip=(b-(constrainX2-srcx))-1;
+					if(!noDraw)
+						memcpy(dst,src,b-skip);
+					src+=b;
+					srcx+=b;
+					dst+=b;
+				}
+				else
+				{
+					if(!noDraw)
+						memcpy(dst,src,b);
+					src+=b;
+					srcx+=b;
+					dst+=b;
+				}
+			}
+			else if(srcx>constrainX2-b)
+			{
+				// skip some of the end
+				skip=(srcx-(constrainX2-b))-1;
+				if(!noDraw)
+					memcpy(dst,src,b-skip);
+				src+=b;
+				srcx+=b;
+				dst+=b;
+			}
+			else
+			{
+				// do it all!
+				if(!noDraw)
+					memcpy(dst,src,b);
+				srcx+=b;
+				src+=b;
+				dst+=b;
+			}
+		}
+		if(srcx>=width+x)
+		{
+			srcx=x;
+			srcy++;
+			dst+=pitch-width;
+			if(srcy>=constrainY)
+				noDraw=0;
+			if(srcy>constrainY2)
+				return;
+		}
+	}
+}
+
+void NewComputerSpriteFix(char *fname)
+{
+	int i;
+	sprite_set_t *s;
+
+	s=new sprite_set_t(fname);
+
+	for(i=0;i<s->GetCount();i++)
+	{
+		s->GetSprite(i)->ofsx+=1;
+		s->GetSprite(i)->ofsy-=2;
+	}
+	s->Save(fname);
+	delete s;
 }
