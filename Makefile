@@ -6,10 +6,10 @@ DIRECTX=D:/libraries/directx-sdk
 GLOBAL_OPTIONS=-std=c++0x
 LIBS=-lwinmm -ld3d9 -ld3dx9 -lgdi32 -ldsound
 COMPILER_OPTIONS=-Iinclude/ -I${DIRECTX}/Include/ -Wall ${GLOBAL_OPTIONS} -masm=intel
-LINKER_OPTIONS=-L${DIRECTX}/Lib/x86/ ${LIBS} ${GLOBAL_OPTIONS}
+LINKER_OPTIONS=-L${DIRECTX}/Lib/x86/ ${LIBS} ${GLOBAL_OPTIONS} -static-libgcc -static-libstdc++
 
 OPTIONS_RELEASE=${COMPILER_OPTIONS} -DNDEBUG -DEXPANDO -O2 -s
-OPTIONS_DEBUG=${COMPILER_OPTIONS} -g -D_DEBUG -DLOG -DEXPANDO
+OPTIONS_DEBUG=${COMPILER_OPTIONS} -g -D_DEBUG -DLOG
 OPTIONS_DEMO=${COMPILER_OPTIONS} ${OPTIONS_RELEASE} -DDEMO
 
 GENERATE_COMMAND=@python tools/make.py
@@ -36,16 +36,14 @@ debug:
 demo:
 	${GENERATE_COMMAND} lunatic_demo "${OPTIONS_DEMO}" "${LINKER_OPTIONS}"
 	${MAKE_COMMAND}
+	@cp bin/lunatic_demo.exe game/lunatic_demo.exe
 
 # Run targets
 run: release
-	@cd game/
-	@lunatic.exe
+	@cd game/ && ./lunatic.exe window
 
 run-debug: debug
-	@cd game/
-	@lunatic_debug.exe
+	@cd game/ && ./lunatic_debug.exe "window"
 
 run-demo: demo
-	@cd game/
-	@lunatic_demo.exe
+	@cd game/ && ./lunatic_demo.exe window

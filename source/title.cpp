@@ -1056,11 +1056,11 @@ void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 	// DR. LUNATIC:
 	planetSpr->GetSprite(3)->DrawBright(290,125,mgl,title.titleBright);
 	// version #:
-	Print(536,146,"Version 2.2",1,1);
-	Print(535,145,"Version 2.2",0,1);
+	Print(536,146,"Version 3.0",1,1);
+	Print(535,145,"Version 3.0",0,1);
 	// Copyright:
-	Print(3,467,"Copyright 1998-2000, Hamumu Software",1,1);
-	Print(2,466,"Copyright 1998-2000, Hamumu Software",0,1);
+	Print(3,467,"Copyright 1998-2001, Hamumu Software",1,1);
+	Print(2,466,"Copyright 1998-2001, Hamumu Software",0,1);
 // expandopak
 #ifdef EXPANDO
 	planetSpr->GetSprite(4+title.expando/16)->DrawBright(270,180,mgl,title.titleBright);

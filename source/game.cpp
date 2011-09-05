@@ -70,7 +70,7 @@ void LunaticExit(void)
 	ExitMonsters();
 	ExitPlayer();
 	ExitInterface();
-	//fclose(logFile);
+	fclose(logFile);
 }
 
 byte GetCurSong(void)

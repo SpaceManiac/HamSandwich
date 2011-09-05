@@ -55,7 +55,7 @@ _CrtSetDbgFlag(flag); // Set flag to the new value
 		return 0;
 
 	LunaticInit(mainmgl);
-	SplashScreen(mainmgl,"graphics\\test.bmp",128,2);
+	SplashScreen(mainmgl,"graphics\\hamumu.bmp",128,2);
 
 	while(1)
 	{
