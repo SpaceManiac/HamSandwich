@@ -5,23 +5,29 @@
 #include "pause.h"
 #include "options.h"
 
+#define VERSION "Version 3.0"
+#define COPYRIGHT "Copyright 1998-2011, Hamumu Software"
+
 // special codes in the credits:
 // @ = use GirlsRWeird font
 // # = draw a major horizontal line
 // % = draw a minor horizontal line
 // $ = last line of the whole deal
-char credits[][32]={
+char credits[][48]={
 	"SPISPOPD II",
 	"@DR. LUNATIC",
 	"",
 	"",
-	"Copyright 2000, Hamumu Software",
+	COPYRIGHT,
 	"#",
 	"Original Concept",
 	"Mike Hommel",
 	"%",
 	"Programming",
 	"Mike Hommel",
+    "%",
+    "Modernizing",
+    "Tad Hardesty",
 	"%",
 	"Character Design",
 	"Mike Hommel",
@@ -187,7 +193,7 @@ char victoryTxt[][64]={
 #endif
 
 // once the credits have scrolled to END_OF_CREDITS pixels, they end
-#define END_OF_CREDITS 480*4+100
+#define END_OF_CREDITS 480*4+180
 #ifndef DEMO
 #define END_OF_VICTORY 480*2
 #else
@@ -819,11 +825,11 @@ void MainMenuDisplay(MGLDraw *mgl,title_t title)
 	// DR. LUNATIC:
 	planetSpr->GetSprite(3)->DrawBright(290,125,mgl,title.titleBright);
 	// version #:
-	Print(536,146,"Version 3.0",1,1);
-	Print(535,145,"Version 3.0",0,1);
+	Print(536,146,VERSION,1,1);
+	Print(535,145,VERSION,0,1);
 	// Copyright:
-	Print(3,467,"Copyright 1998-2001, Hamumu Software",1,1);
-	Print(2,466,"Copyright 1998-2001, Hamumu Software",0,1);
+	Print(3,467,COPYRIGHT,1,1);
+	Print(2,466,COPYRIGHT,0,1);
 	// expandopak
 #ifdef EXPANDO
 	planetSpr->GetSprite(4+title.expando/16)->DrawBright(270,180,mgl,title.titleBright);
@@ -1056,11 +1062,11 @@ void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 	// DR. LUNATIC:
 	planetSpr->GetSprite(3)->DrawBright(290,125,mgl,title.titleBright);
 	// version #:
-	Print(536,146,"Version 3.0",1,1);
-	Print(535,145,"Version 3.0",0,1);
+	Print(536,146,VERSION,1,1);
+	Print(535,145,VERSION,0,1);
 	// Copyright:
-	Print(3,467,"Copyright 1998-2001, Hamumu Software",1,1);
-	Print(2,466,"Copyright 1998-2001, Hamumu Software",0,1);
+	Print(3,467,COPYRIGHT,1,1);
+	Print(2,466,COPYRIGHT,0,1);
 // expandopak
 #ifdef EXPANDO
 	planetSpr->GetSprite(4+title.expando/16)->DrawBright(270,180,mgl,title.titleBright);

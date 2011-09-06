@@ -3,20 +3,20 @@
 
 # Configuration
 DIRECTX=D:/libraries/directx-sdk
-GLOBAL_OPTIONS=-std=c++0x
+GLOBAL_OPTIONS=
 LIBS=-lwinmm -ld3d9 -ld3dx9 -lgdi32 -ldsound
-COMPILER_OPTIONS=-Iinclude/ -I${DIRECTX}/Include/ -Wall ${GLOBAL_OPTIONS} -masm=intel
-LINKER_OPTIONS=-L${DIRECTX}/Lib/x86/ ${LIBS} ${GLOBAL_OPTIONS} -static-libgcc -static-libstdc++
+COMPILER_OPTIONS=-std=c++0x -Iinclude/ -I${DIRECTX}/Include/ -Wall -masm=intel
+LINKER_OPTIONS=-static-libgcc -static-libstdc++ -L${DIRECTX}/Lib/x86/ ${LIBS}
 
 OPTIONS_RELEASE=${COMPILER_OPTIONS} -DNDEBUG -DEXPANDO -O2 -s
-OPTIONS_DEBUG=${COMPILER_OPTIONS} -g -D_DEBUG -DLOG
-OPTIONS_DEMO=${COMPILER_OPTIONS} ${OPTIONS_RELEASE} -DDEMO
+OPTIONS_DEBUG=${COMPILER_OPTIONS} -D_DEBUG -DLOG -g
+OPTIONS_DEMO=${COMPILER_OPTIONS} -DNDEBUG -DDEMO -O2 -s
 
 GENERATE_COMMAND=@python tools/make.py
 MAKE_COMMAND=@make -f build/generated.make
 
 # Misc targets
-build: release debug demo
+build: release debug #demo
 
 clean:
 	@rm -rf build/*
