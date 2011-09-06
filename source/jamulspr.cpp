@@ -1349,6 +1349,8 @@ bool sprite_set_t::Load(const char *fname)
 	// read the count
 	fread(&count,2,1,f);
 
+    printf("loading %s, count = %d\n", fname, count);
+
 	spr=(sprite_t **)malloc(sizeof(sprite_t *)*count);
 	if(!spr)
 	{
@@ -1391,6 +1393,11 @@ bool sprite_set_t::Load(const char *fname)
 	}
 	free(buffer);
 	fclose(f);
+
+    //printf("strcpy(%p,%s)\n", loadName, fname);
+    //strcpy(loadName, fname); // save filename for debugging
+    //printf(" = %s\n", loadName);
+
 	return TRUE;
 }
 
@@ -1451,6 +1458,7 @@ sprite_t *sprite_set_t::GetSprite(int which)
 {
 	if(spr && which<=count && spr[which])
 		return spr[which];
+    printf("Invalid sprite %d in %s\n", which, "???");
 	return NULL;
 }
 
