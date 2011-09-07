@@ -171,6 +171,17 @@ MGLDraw::~MGLDraw(void)
     delete[] scrn;
 }
 
+void MGLDraw::ReopenWindow()
+{
+    printf("attempting to reopen window\n");
+    char title[64];
+    strcpy(title, ptDisplay.title());
+    Output output = ptDisplay.output();
+    Mode mode = ptDisplay.mode();
+    ptDisplay.open(title, xRes, yRes, output, mode);
+    ptDisplay.open(title, xRes, yRes, output, mode);
+}
+
 void MGLDraw::FatalError(char *msg)
 {
 	MGL_fatalError(msg);

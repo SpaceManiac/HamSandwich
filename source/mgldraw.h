@@ -39,6 +39,8 @@ class MGLDraw
 		MGLDraw(const char *name,int xRes,int yRes,int bpp,bool window,HINSTANCE hInst);
 		~MGLDraw(void);
 
+        void ReopenWindow();
+
 		void FatalError(char *msg);
 
 		bool Process(void);	// handle windows messages and such

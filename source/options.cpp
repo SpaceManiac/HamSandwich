@@ -46,6 +46,12 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 				return 1;
 			}
 
+            if(c=='w')
+            {
+                // Testing stuff, 'w' to resize window
+                mgl->ReopenWindow();
+            }
+
 			if((c2&CONTROL_UP) && (!(oldc&CONTROL_UP)))
 			{
 				cursor--;
@@ -330,21 +336,21 @@ void LoadOptions(void)
 		opt.sound=1;
 		opt.music=MUSIC_ON;
 		opt.playAs=PLAYAS_BOUAPHA;
-		opt.wonGame=1;
+		opt.wonGame=1; // TODO: change back to 0 at some point
 		opt.gotAllSecrets=1;
 
-		opt.control[0][0]=72;	// up
-		opt.control[0][1]=80;	// down
-		opt.control[0][2]=75;	// left
-		opt.control[0][3]=77;	// right
-		opt.control[0][4]=29;	// hammer: CTRL
-		opt.control[0][5]=42;	// special: shift
+		opt.control[0][0]=38;	// up
+		opt.control[0][1]=40;	// down
+		opt.control[0][2]=37;	// left
+		opt.control[0][3]=39;	// right
+		opt.control[0][4]=17;	// hammer: CTRL
+		opt.control[0][5]=16;	// special: shift
 		opt.control[1][0]=0;	// up
 		opt.control[1][1]=0;	// down
 		opt.control[1][2]=0;	// left
 		opt.control[1][3]=0;	// right
-		opt.control[1][4]=44;	// hammer: Z
-		opt.control[1][5]=45;	// special: X
+		opt.control[1][4]=90;	// hammer: Z
+		opt.control[1][5]=88;	// special: X
 
 		opt.joyCtrl[0]=0;
 		opt.joyCtrl[1]=1;
