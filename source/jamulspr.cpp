@@ -34,7 +34,7 @@ count structures:
 // -------------------------------------------------------------------------
 
 // Helper shenanigans for C stuff
-static const int constrainX = 0, constrainY = 0, constrainX2 = 639, constrainY2 = 479; // Supreme compatability
+static const int constrainX = 0, constrainY = 0, constrainX2 = 639, constrainY2 = 479;
 
 static inline byte SprModifyColor(byte color, byte hue) {
     return (hue << 5) | (color & 31);
@@ -183,7 +183,7 @@ void sprite_t::Draw(int x,int y,MGLDraw *mgl)
 			else if(srcx<constrainX)
 			{
 				// skip some of the beginning
-				skip=(constrainX-srcx)-1;
+				skip=(constrainX-srcx);//-1;
 				src+=skip;
 				srcx+=skip;
 				dst+=skip;
@@ -291,7 +291,7 @@ void sprite_t::DrawBright(int x,int y,MGLDraw *mgl,char bright)
 			else if(srcx<constrainX)
 			{
 				// skip some of the beginning
-				skip=(constrainX-srcx)-1;
+				skip=(constrainX-srcx);//-1;
 				src+=skip;
 				srcx+=skip;
 				dst+=skip;
@@ -399,7 +399,7 @@ void sprite_t::DrawColored(int x,int y,MGLDraw *mgl,byte color,char bright)
 			else if(srcx<constrainX)
 			{
 				// skip some of the beginning
-				skip=(constrainX-srcx)-1;
+				skip=(constrainX-srcx);//-1;
 				src+=skip;
 				srcx+=skip;
 				dst+=skip;
@@ -505,7 +505,7 @@ void sprite_t::DrawOffColor(int x,int y,MGLDraw *mgl,byte fromColor,byte toColor
 			else if(srcx<constrainX)
 			{
 				// skip some of the beginning
-				skip=(constrainX-srcx)-1;
+				skip=(constrainX-srcx);//-1;
 				src+=skip;
 				srcx+=skip;
 				dst+=skip;
@@ -616,7 +616,7 @@ void sprite_t::DrawGhost(int x,int y,MGLDraw *mgl,char bright)
 			else if(srcx<constrainX)
 			{
 				// skip some of the beginning
-				skip=(constrainX-srcx)-1;
+				skip=(constrainX-srcx);//-1;
 				src+=skip;
 				srcx+=skip;
 				dst+=skip;
@@ -722,7 +722,7 @@ void sprite_t::DrawGlow(int x,int y,MGLDraw *mgl,char bright)
 			else if(srcx<constrainX)
 			{
 				// skip some of the beginning
-				skip=(constrainX-srcx)-1;
+				skip=(constrainX-srcx);//-1;
 				src+=skip;
 				srcx+=skip;
 				dst+=skip;
@@ -786,7 +786,7 @@ void sprite_t::DrawShadow(int x,int y,MGLDraw *mgl)
 {
 	byte *src,*dst,b,skip;
 	dword pitch;
-	int srcx,srcy;
+	int srcx,srcy,x2;
 	byte noDraw;
     byte alternate;
     int i;
@@ -798,7 +798,7 @@ void sprite_t::DrawShadow(int x,int y,MGLDraw *mgl)
 	if(x>constrainX2 || y>constrainY2)
 		return;	// whole sprite is offscreen
 
-    return; // shadows are crashy right now!
+    //return; // shadows are crashy right now!
 
     pitch = mgl->GetWidth();
 	src=data;
@@ -812,8 +812,9 @@ void sprite_t::DrawShadow(int x,int y,MGLDraw *mgl)
 		noDraw=0;
 
     alternate = 0;
+    x2 = x;
 
-	while(srcy<height+y)
+	while(srcy<height/2+y)
 	{
         //alternate = 1;
 		if((*src)&128)	// transparent run
@@ -837,7 +838,7 @@ void sprite_t::DrawShadow(int x,int y,MGLDraw *mgl)
 			else if(srcx<constrainX)
 			{
 				// skip some of the beginning
-				skip=(constrainX-srcx)-1;
+				skip=(constrainX-srcx);//-1;
 				src+=skip;
 				srcx+=skip;
 				dst+=skip;
@@ -884,12 +885,13 @@ void sprite_t::DrawShadow(int x,int y,MGLDraw *mgl)
 				dst+=b;
 			}
 		}
-		if(srcx>=width+x)
+		if(srcx>=width+x2)
 		{
             alternate = 1 - alternate;
-			srcx-=width;
-			srcy++;
-			dst+=(alternate?pitch:0)-width;
+            x2 += alternate;
+			srcx-=width-alternate;
+			srcy += alternate;
+			dst+=(alternate?pitch:1)-width;
 			if(srcy>=constrainY)
 				noDraw=0;
 			if(srcy>constrainY2)
