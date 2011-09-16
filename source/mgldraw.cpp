@@ -42,8 +42,9 @@ byte needPalRealize=0;
 // Pixel toaster callback thingies
 class PtListener : public Listener {
     MGLDraw* mgldraw;
-    bool shift;
 public:
+    bool shift;
+
     PtListener(MGLDraw* mgldraw) : mgldraw(mgldraw), shift(false) {}
 
     bool defaultKeyHandlers() const { return false; }
@@ -64,9 +65,22 @@ void PtListener::onKeyDown(DisplayInterface & display, Key key) {
 
 void PtListener::onKeyPressed(DisplayInterface & display, Key key) {
     char chkey = (char) key;
-    if (!shift) {
-        chkey = tolower(chkey);
+    int i = 9;
+    switch (chkey) {
+        case Key::NumPad0: --i;
+        case Key::NumPad1: --i;
+        case Key::NumPad2: --i;
+        case Key::NumPad3: --i;
+        case Key::NumPad4: --i;
+        case Key::NumPad5: --i;
+        case Key::NumPad6: --i;
+        case Key::NumPad7: --i;
+        case Key::NumPad8: --i;
+        case Key::NumPad9: chkey = '0' + i; break;
+        case Key::Subtract: chkey = '-'; break;
+        default: if (!shift) chkey = tolower(chkey);
     }
+    printf("key pressed: %d (%s) -> %d = '%c'\n", (int)key, ScanCodeText(key), (int)chkey, chkey);
     mgldraw->SetLastKey(chkey);
 }
 

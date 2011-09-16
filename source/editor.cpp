@@ -25,8 +25,8 @@ static byte		curMapNum;
 static int	   mouseX,mouseY;
 static int	   tileX,tileY;
 
-static byte  showStats=0;
-static dword gameStartTime,visFrameCount,updFrameCount;
+// static byte  showStats=0; // unused
+static dword gameStartTime,/*visFrameCount,*/updFrameCount; // visFrameCount is unused
 static word  numRunsToMakeUp;
 
 static byte plopCounter=0;
@@ -1274,7 +1274,7 @@ static void HandleKeyPresses(void)
 				if(editopt.curBadguy<1)
 					editopt.curBadguy=NUM_MONSTERS-2;
 				break;
-			case '\'':
+			case -34: // apostrophe (') - in a weird location under PixelToaster
 				editopt.curBadguy++;
 				if(editopt.curBadguy>=NUM_MONSTERS-1)
 					editopt.curBadguy=1;
@@ -1282,28 +1282,28 @@ static void HandleKeyPresses(void)
 			case 8:
 				Delete(tileX,tileY);
 				break;
-			case '4':
+            case '4': case 37: // left
 				GetCamera(&x,&y);
 				x-=TILE_WIDTH;
 				if(x<0)
 					x=0;
 				PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
 				break;
-			case '8':
+            case '8': case 38: // up
 				GetCamera(&x,&y);
 				y-=TILE_HEIGHT;
 				if(y<0)
 					y=0;
 				PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
 				break;
-			case '6':
+            case '6': case 39: // right
 				GetCamera(&x,&y);
 				x+=TILE_WIDTH;
 				if(x>curMap->width*TILE_WIDTH)
 					x=curMap->width*TILE_WIDTH;
 				PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
 				break;
-			case '2':
+            case '2': case 40: // down
 				GetCamera(&x,&y);
 				y+=TILE_HEIGHT;
 				if(y>curMap->height*TILE_HEIGHT)
