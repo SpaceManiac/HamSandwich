@@ -1,5 +1,6 @@
 #include "mapdialog.h"
 #include "editor.h"
+#include <ctype.h>
 
 #define MAX_MAPNAMES MAX_MAPS
 
@@ -87,10 +88,15 @@ byte MapDialogKey(char key)
 		return 1;
 	}
 
-	if(key==13)	// enter
+	if(key==10)	// enter
 	{
 		return 1;	// ignore it- what does enter do?  Load or save?
 	}
+
+    if (!isprint(key)) {
+        // non-printables keep ending up in the PixelToaster keyboard
+        return 1;
+    }
 
 	if(strlen(newmapname)<31)
 	{

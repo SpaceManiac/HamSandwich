@@ -201,7 +201,7 @@ char victoryTxt[][64]={
 #endif
 
 // the most custom worlds it will handle
-#define MAX_CUSTOM (64-5)
+#define MAX_CUSTOM (128-5)
 
 typedef struct title_t
 {

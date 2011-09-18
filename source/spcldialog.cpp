@@ -1,5 +1,6 @@
 #include "spcldialog.h"
 #include "editor.h"
+#include <ctype.h>
 
 static byte mapNum;
 static world_t *world;
@@ -158,10 +159,15 @@ byte SpclDialogKey(char key)
 		return 1;
 	}
 
-	if(key==13)	// enter
+	if(key==10)	// enter
 	{
 		return 1;
 	}
+
+    if (!isprint(key)) {
+        // non-printables keep ending up in the PixelToaster keyboard
+        return 1;
+    }
 
 	if(strlen(spcl->msg)<31)
 	{

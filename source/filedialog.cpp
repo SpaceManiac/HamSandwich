@@ -1,5 +1,6 @@
 #include "filedialog.h"
 #include "editor.h"
+#include <ctype.h>
 
 #define MAX_FILES 18
 
@@ -100,6 +101,11 @@ byte FileDialogKey(char key)
 	{
 		return 1;	// ignore it- what does enter do?  Load or save?
 	}
+
+    if (!isprint(key)) {
+        // non-printables keep ending up in the PixelToaster keyboard
+        return 1;
+    }
 
 	if(strlen(newfname)<30)
 	{

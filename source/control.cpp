@@ -22,7 +22,7 @@
 	"End","Down","PageDown","Insert","Delete","","","","F11","F12"};*/
 char scanCodeTable[256][16] = {
     // 0
-    "Null","SOH","STX","Cancel","EOT","ENQ","ACK","BEL","Backspace","HT","LF","VT","Clear","CR","SO","SI",
+    "Null","SOH","STX","Cancel","EOT","ENQ","ACK","BEL","Backspace","HT","Enter","VT","Clear","CR","SO","SI",
     // 16
     "Shift","Control","Alt","Pause","CapsLock","Kana","SYN","ETB","Final","Kanji","SUB","Escape","Convert","NonConvert","Accept","ModeChange",
     // 32

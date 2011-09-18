@@ -1,5 +1,6 @@
 #include "tiledialog.h"
 #include "editor.h"
+#include <ctype.h>
 
 #define MAX_FILES 18
 
@@ -84,10 +85,16 @@ byte TileDialogKey(char key)
 		return 1;
 	}
 
-	if(key==13)	// enter
+	if(key==10)	// enter
 	{
-		// load the named one
+		// load the named one -- SpaceManiac notes: apparently this didn't get implemented
+        return TileDialogClick(371, 181);
 	}
+
+    if (!isprint(key)) {
+        // non-printables keep ending up in the PixelToaster keyboard
+        return 1;
+    }
 
 	if(strlen(newfname)<30)
 	{

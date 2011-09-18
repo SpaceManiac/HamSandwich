@@ -80,7 +80,7 @@ void PtListener::onKeyPressed(DisplayInterface & display, Key key) {
         case Key::Subtract: chkey = '-'; break;
         default: if (!shift) chkey = tolower(chkey);
     }
-    printf("key pressed: %d (%s) -> %d = '%c'\n", (int)key, ScanCodeText(key), (int)chkey, chkey);
+    // printf("key pressed: %d (%s) -> %d = '%c'\n", (int)key, ScanCodeText(key), (int)chkey, chkey);
     mgldraw->SetLastKey(chkey);
 }
 
