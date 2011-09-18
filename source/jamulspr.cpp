@@ -811,7 +811,7 @@ void sprite_t::DrawShadow(int x,int y,MGLDraw *mgl)
 	else
 		noDraw=0;
 
-    alternate = 0;
+    alternate = 1;
     x2 = x;
 
 	while(srcy<height/2+y)
@@ -848,7 +848,7 @@ void sprite_t::DrawShadow(int x,int y,MGLDraw *mgl)
 					skip=(b-(constrainX2-srcx))-1;
 					if(!noDraw && alternate)
                         for (i = 0; i < b-skip; ++i)
-                            dst[i] = SprModifyLight(dst[i], -5);
+                            dst[i] = SprModifyLight(dst[i], -4);
 					src+=b;
 					srcx+=b;
 					dst+=b;
@@ -857,7 +857,7 @@ void sprite_t::DrawShadow(int x,int y,MGLDraw *mgl)
 				{
 					if(!noDraw && alternate)
                         for (i = 0; i < b; ++i)
-                            dst[i] = SprModifyLight(dst[i], -5);
+                            dst[i] = SprModifyLight(dst[i], -4);
 					src+=b;
 					srcx+=b;
 					dst+=b;
@@ -869,7 +869,7 @@ void sprite_t::DrawShadow(int x,int y,MGLDraw *mgl)
 				skip=(srcx-(constrainX2-b))-1;
 				if(!noDraw && alternate)
                     for (i = 0; i < b-skip; ++i)
-                        dst[i] = SprModifyLight(dst[i], -5);
+                        dst[i] = SprModifyLight(dst[i], -4);
 				src+=b;
 				srcx+=b;
 				dst+=b;
@@ -879,7 +879,7 @@ void sprite_t::DrawShadow(int x,int y,MGLDraw *mgl)
 				// do it all!
 				if(!noDraw && alternate)
                     for (i = 0; i < b; ++i)
-                        dst[i] = SprModifyLight(dst[i], -5);
+                        dst[i] = SprModifyLight(dst[i], -4);
 				srcx+=b;
 				src+=b;
 				dst+=b;
