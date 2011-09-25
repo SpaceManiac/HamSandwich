@@ -1,5 +1,4 @@
 #include "tile.h"
-#include "asm.h"
 
 tile_t tiles[NUMTILES];
 MGLDraw *tileMGL;
@@ -44,133 +43,80 @@ void LoadTiles(FILE *f)
 	fread(tiles,NUMTILES,sizeof(tile_t),f);
 }
 
-void RenderFloorTile(int x,int y,int t,char light_)
-{
-    ASM_VAR(char, plain, light, light_);
-    ASM_VAR(byte*, plain, dst, NULL);
-    ASM_VAR(byte*, plain, src, NULL);
-    ASM_VAR(int, plain, wid, 0);
-    ASM_VAR(int, plain, hgt, 0);
+// --- RENDERING!
+// Helper shenanigans for C stuff, see jamulspr.cpp
+extern byte SprModifyColor(byte color, byte hue);
+extern byte SprGetColor(byte color);
+extern byte SprModifyLight(byte color, char bright);
+extern byte SprModifyGhost(byte src, byte dst, char bright);
+extern byte SprModifyGlow(byte src, byte dst, char bright);
 
-	if(light==0)
-	{
-		RenderFloorTileUnlit(x,y,t);
-		return;
+void RenderFloorTile(int x,int y,int t,char light)
+{
+    byte *dst, *src;
+    int wid, hgt;
+
+	if(light==0) {
+		return RenderFloorTileUnlit(x,y,t);
 	}
 
-	if(x<0)
-	{
+	if(x<0) {
 		wid=TILE_WIDTH+x;
 		if(wid<1)
 			return;
 
 		dst=tileMGL->GetScreen()+y*640;
 		src=tiles[t]-x;
-	}
-	else if (x>640-TILE_WIDTH)
-	{
+	} else if (x>640-TILE_WIDTH) {
 		wid=TILE_WIDTH-(x-(640-TILE_WIDTH));
 		if(wid<1)
 			return;
 		dst=tileMGL->GetScreen()+x+y*640;
 		src=tiles[t];
-	}
-	else
-	{
+	} else {
 		wid=TILE_WIDTH;
 		dst=tileMGL->GetScreen()+x+y*640;
 		src=tiles[t];
 	}
 
-	if(y<0)
-	{
+	if(y<0) {
 		dst-=y*640;
 		src-=y*TILE_WIDTH;
 
 		hgt=TILE_HEIGHT+y;
-	}
-	else if(y>480-TILE_HEIGHT)
-	{
+	} else if(y>480-TILE_HEIGHT) {
 		hgt=TILE_HEIGHT-(y-(480-TILE_HEIGHT));
-	}
-	else
+	} else {
 		hgt=TILE_HEIGHT;
+    }
 
 	if(hgt<=0)
 		return;
 
-	if(light<-28)
-	{
+	if(light<-28) {
 		// just render a black box
-		while(hgt>0)
-		{
+		while(hgt>0) {
 			hgt--;
-			memset(dst,0,wid);
-			dst+=640;
+			memset(dst, 0, wid);
+			dst += 640;
 		}
 		return;
-	}
-
-    ASM_START()
-_(          pusha                )
-_(          push ds              )
-_(          pop     es           )
-_(          mov  esi,plain_src   )
-_(          mov  edi,plain_dst   )
-_(          mov  edx,plain_hgt   )
-_(          mov  ecx,plain_wid   )
-_(          mov  bh,plain_light  )
-_(  plain_loop1:                 )
-_(          mov  al,[esi]        )
-_(          mov  bl,al           )
-_(          and  bl,~31          )
-_(          add  al,bh           )
-_(          cmp  al,bl           )
-_(          jae  plain_okay1     )
-_(          cmp  bh,0            )
-_(          jl   plain_fine      )
-_(          mov  al,bl           )
-_(          add  al,31           )
-_(          jmp  plain_okay2     )
-_(  plain_fine:                  )
-_(          mov  al,bl           )
-_(          jmp plain_okay2      )
-_(  plain_okay1:                 )
-_(          add  bl,31           )
-_(          cmp  al,bl           )
-_(          jb   plain_okay2     )
-_(          cmp  bh,0            )
-_(          jl   plain_fine2     )
-_(          mov  al,bl           )
-_(          jmp  plain_okay2     )
-_(  plain_fine2:                 )
-_(          mov  al,bl           )
-_(          and  al,(~31)        )
-_(  plain_okay2:                 )
-_(          mov  [edi],al        )
-_(          inc  esi             )
-_(          inc  edi             )
-_(          dec  ecx             )
-_(          jnz  plain_loop1     )
-_(          mov  ecx,plain_wid   )
-_(          add  esi,32          ) // TILE_WIDTH -> 32
-_(          sub  esi,plain_wid   )
-_(          add  edi,640         )
-_(          sub  edi,plain_wid   )
-_(          dec  edx             )
-_(          jnz  plain_loop1     )
-_(          popa                 )
-    ASM_END()
+	} else {
+        while (hgt > 0) {
+            hgt--;
+            for (int i = 0; i < wid; ++i) {
+                dst[i] = SprModifyLight(src[i], light);
+            }
+            dst += 640;
+            src += 32;
+        }
+    }
 }
 
-void RenderFloorTileShadow(int x,int y,int t,char light_)
+void RenderFloorTileShadow(int x,int y,int t,char light)
 {
-    ASM_VAR(char, shadow, light, light_);
-    ASM_VAR(byte*, shadow, dst, NULL);
-    ASM_VAR(byte*, shadow, src, NULL);
-    ASM_VAR(int, shadow, wid, 0);
-    ASM_VAR(int, shadow, hgt, 0);
-    ASM_VAR(int, shadow, darkpart, 0);
+    byte *dst, *src;
+    int wid, hgt, darkpart;
 
 	if(x<0)
 	{
@@ -216,75 +162,20 @@ void RenderFloorTileShadow(int x,int y,int t,char light_)
 	if(hgt<=0)
 		return;
 
-	// if the whole thing is in shadow, deal
-	if(darkpart>wid)
-		light-=4;
-
-    ASM_START()
-_(          pusha                )
-_(          push ds              )
-_(          pop     es           )
-_(          mov  esi,shadow_src   )
-_(          mov  edi,shadow_dst   )
-_(          mov  edx,shadow_hgt   )
-_(          mov  ecx,shadow_wid   )
-_(          mov  bh,shadow_light  )
-_(  shadow_loop1:                )
-_(          mov  al,[esi]        )
-_(          mov  bl,al           )
-_(          and  bl,~31          )
-_(          add  al,bh           )
-_(          cmp  al,bl           )
-_(          jae  shadow_okay1    )
-_(          cmp  bh,0            )
-_(          jl   shadow_fine     )
-_(          mov  al,bl           )
-_(          add  al,31           )
-_(          jmp shadow_okay2     )
-_(  shadow_fine:                 )
-_(          mov  al,bl           )
-_(          jmp shadow_okay2     )
-_(  shadow_okay1:                )
-_(          add  bl,31           )
-_(          cmp  al,bl           )
-_(          jb   shadow_okay2    )
-_(          cmp  bh,0            )
-_(          jl   shadow_fine2    )
-_(          mov  al,bl           )
-_(          jmp  shadow_okay2    )
-_(  shadow_darkenit:             )
-_(          sub  bh,4            )
-_(          jmp  shadow_donedarken)
-_(  shadow_fine2:                )
-_(          mov  al,bl           )
-_(          and  al,(~31)        )
-_(  shadow_okay2:                )
-_(          mov  [edi],al        )
-_(          inc  esi             )
-_(          inc  edi             )
-_(          cmp  ecx,shadow_darkpart)
-_(          je   shadow_darkenit )
-_(  shadow_donedarken:           )
-_(          dec  ecx             )
-_(          jnz  shadow_loop1    )
-_(          mov  bh,shadow_light )
-_(          mov  ecx,shadow_wid  )
-_(          add  esi,32          ) // TILE_WIDTH -> 32
-_(          sub  esi,shadow_wid  )
-_(          add  edi,640         )
-_(          sub  edi,shadow_wid  )
-_(          dec  edx             )
-_(          jnz  shadow_loop1    )
-_(          popa                 )
-    ASM_END()
+    while (hgt > 0) {
+        hgt--;
+        for (int i = 0; i < wid; ++i) {
+            dst[i] = SprModifyLight(src[i], light - 4 * (i > wid-darkpart));
+        }
+        dst += 640;
+        src += 32;
+    }
 }
 
 void RenderFloorTileUnlit(int x,int y,int t)
 {
-    ASM_VAR(byte*, unlit, dst, NULL);
-    ASM_VAR(byte*, unlit, src, NULL);
-    ASM_VAR(int, unlit, wid, 0);
-    ASM_VAR(int, unlit, hgt, 0);
+    byte *dst, *src;
+    int wid, hgt;
 
 	if(x<0)
 	{
@@ -324,37 +215,18 @@ void RenderFloorTileUnlit(int x,int y,int t)
 	else
 		hgt=TILE_HEIGHT;
 
-	if(hgt<=0)
-		return;
-
-    ASM_START()
-_(          pusha                )
-_(          push ds              )
-_(          pop     es           )
-_(          mov  esi,unlit_src   )
-_(          mov  edi,unlit_dst   )
-_(          mov  edx,unlit_hgt   )
-_(          mov  ecx,unlit_wid   )
-_(  unlit_loop1:                 )
-_(          rep  movsb           )
-_(          mov  ecx,unlit_wid   )
-_(          add  esi,32          ) // TILE_WIDTH -> 32
-_(          sub  esi,unlit_wid   )
-_(          add  edi,640         )
-_(          sub  edi,unlit_wid   )
-_(          dec  edx             )
-_(          jnz  unlit_loop1     )
-_(          popa                 )
-    ASM_END()
+    while (hgt > 0) {
+        hgt--;
+        memcpy(dst, src, wid);
+        dst += 640;
+        src += 32;
+    }
 }
 
-void RenderFloorTileTrans(int x,int y,int t,char light_)
+void RenderFloorTileTrans(int x,int y,int t,char light)
 {
-    ASM_VAR(char, trans, light, light_);
-    ASM_VAR(byte*, trans, dst, NULL);
-    ASM_VAR(byte*, trans, src, NULL);
-    ASM_VAR(int, trans, wid, 0);
-    ASM_VAR(int, trans, hgt, 0);
+    byte *dst, *src;
+    int wid, hgt;
 
 	if(x<0)
 	{
@@ -397,59 +269,14 @@ void RenderFloorTileTrans(int x,int y,int t,char light_)
 	if(hgt<=0)
 		return;
 
-    ASM_START()
-_(          pusha                )
-_(          push ds              )
-_(          pop     es           )
-_(          mov  esi,trans_src   )
-_(          mov  edi,trans_dst   )
-_(          mov  edx,trans_hgt   )
-_(          mov  ecx,trans_wid   )
-_(          mov  bh,trans_light  )
-_(  trans_loop1:                 )
-_(          mov  al,[esi]        )
-_(          cmp  al,0            )
-_(          je   trans           )
-_(          mov  bl,al           )
-_(          and  bl,~31          )
-_(          add  al,bh           )
-_(          cmp  al,bl           )
-_(          jae  trans_okay1     )
-_(          cmp  bh,0            )
-_(          jl   trans_fine      )
-_(          mov  al,bl           )
-_(          add  al,31           )
-_(          jmp  trans_okay2     )
-_(  trans_fine:                  )
-_(          mov  al,bl           )
-_(          jmp trans_okay2      )
-_(  trans_okay1:                 )
-_(          add  bl,31           )
-_(          cmp  al,bl           )
-_(          jb   trans_okay2     )
-_(          cmp  bh,0            )
-_(          jl   trans_fine2     )
-_(          mov  al,bl           )
-_(          jmp  trans_okay2     )
-_(  trans_fine2:                 )
-_(          mov  al,bl           )
-_(          and  al,(~31)        )
-_(  trans_okay2:                 )
-_(          mov  [edi],al        )
-_(  trans:                       )
-_(          inc  esi             )
-_(          inc  edi             )
-_(          dec  ecx             )
-_(          jnz  trans_loop1     )
-_(          mov  ecx,trans_wid   )
-_(          add  esi,32          ) // TILE_WIDTH -> 32
-_(          sub  esi,trans_wid   )
-_(          add  edi,640         )
-_(          sub  edi,trans_wid   )
-_(          dec  edx             )
-_(          jnz  trans_loop1     )
-_(          popa                 )
-	ASM_END()
+    while (hgt > 0) {
+        hgt--;
+        for (int i = 0; i < wid; ++i) {
+            if (src[i]) dst[i] = SprModifyLight(src[i], light);
+        }
+        dst += 640;
+        src += 32;
+    }
 }
 
 void RenderWallTile(int x,int y,byte w,byte f,char light)

@@ -36,22 +36,22 @@ count structures:
 // Helper shenanigans for C stuff
 static const int constrainX = 0, constrainY = 0, constrainX2 = 639, constrainY2 = 479;
 
-static inline byte SprModifyColor(byte color, byte hue) {
+byte SprModifyColor(byte color, byte hue) {
     return (hue << 5) | (color & 31);
 }
 
-static inline byte SprGetColor(byte color) {
+byte SprGetColor(byte color) {
     return (color >> 5);
 }
 
-static byte SprModifyLight(byte color, char bright) {
+byte SprModifyLight(byte color, char bright) {
     byte value = (color & 31) + bright;
     if (value > 128) value = 0; // since byte is unsigned...
     else if (value > 31) value = 31;
     return (color & ~31) | value;
 }
 
-static byte SprModifyGhost(byte src, byte dst, char bright) {
+byte SprModifyGhost(byte src, byte dst, char bright) {
     if (src >> 5 == 0) {
         return SprModifyLight(dst, src);
     } else {
@@ -59,7 +59,7 @@ static byte SprModifyGhost(byte src, byte dst, char bright) {
     }
 }
 
-static byte SprModifyGlow(byte src, byte dst, char bright) {
+byte SprModifyGlow(byte src, byte dst, char bright) {
     return SprModifyLight(src, (dst & 31) + bright);
 }
 
