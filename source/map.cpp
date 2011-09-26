@@ -564,6 +564,25 @@ void Map::Copy(int sx,int sy,int blkwidth,int blkheight,int dx,int dy)
 	}
 }
 
+char Map::LightOf(int x, int y) {
+    x = (x < 0) ? 0 : (x > width-1) ? width-1 : x;
+    y = (y < 0) ? 0 : (y > height-1) ? height-1 : y;
+    return map[x+y*width].templight;
+}
+
+char* Map::MakeSmoothLighting(int x, int y) {
+    smoothLight[0] = LightOf(x-1,y-1);
+    smoothLight[1] = LightOf(x,y-1);
+    smoothLight[2] = LightOf(x+1,y-1);
+    smoothLight[3] = LightOf(x-1,y);
+    smoothLight[4] = LightOf(x,y);
+    smoothLight[5] = LightOf(x+1,y);
+    smoothLight[6] = LightOf(x-1,y+1);
+    smoothLight[7] = LightOf(x,y+1);
+    smoothLight[8] = LightOf(x+1,y+1);
+    return smoothLight;
+}
+
 void Map::Render(world_t *world,int camX,int camY,byte flags)
 {
 	int i,j;
@@ -645,19 +664,21 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 							(world->terrain[map[i+(j+1)*width].floor].flags&TF_TRANS)))
 						{
 							// if there's a wall to the right, draw a shadow on this tile
-							if((i<width-1) && (map[i+1+j*width].wall))
-								RenderFloorTileShadow(scrX,scrY,m->floor,lite);
-							else
-								RenderFloorTile(scrX,scrY,m->floor,lite);
+							//if((i<width-1) && (map[i+1+j*width].wall))
+							//	RenderFloorTileShadow(scrX,scrY,m->floor,lite);
+							//else
+							//	RenderFloorTile(scrX,scrY,m->floor,lite);
+                            RenderFloorTileFancy(scrX,scrY,m->floor,0,MakeSmoothLighting(i,j));
 						}
 					}
 					else
 					{
 						// if there's a wall to the right, draw a shadow on this tile
-						if((i<width-1) && (map[i+1+j*width].wall))
-							RenderFloorTileShadow(scrX,scrY,m->floor,lite);
-						else
-							RenderFloorTile(scrX,scrY,m->floor,lite);
+						//if((i<width-1) && (map[i+1+j*width].wall))
+						//	RenderFloorTileShadow(scrX,scrY,m->floor,lite);
+						//else
+						//	RenderFloorTile(scrX,scrY,m->floor,lite);
+                        RenderFloorTileFancy(scrX,scrY,m->floor,0,MakeSmoothLighting(i,j));
 					}
 				}
 			}

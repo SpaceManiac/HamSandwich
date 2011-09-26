@@ -1,5 +1,4 @@
 #include "jamulspr.h"
-#include "asm.h"
 
 // the sprites are 12 bytes, not including the data itself
 #define SPRITE_INFO_SIZE 16

@@ -23,5 +23,8 @@ void RenderWallTile(int x,int y,byte w,byte f,char light);
 void RenderWallTileTrans(int x,int y,byte w,byte f,char light);
 void PlotStar(int x,int y,byte col,byte tx,byte ty,byte tileNum);
 
+void RenderFloorTileFancy(int x,int y,int t,byte shadow,char *theLight);
+void RenderWallTileFancy(int x,int y,int t,char *theLight);
+void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,char *theLight);
 
 #endif

@@ -31,4 +31,7 @@ void SaveOptions(void);
 
 void OptionsMenu(MGLDraw *mgl);
 
+inline byte OptDisco() { return 0; }
+inline byte OptGourad() { return 1; }
+
 #endif
