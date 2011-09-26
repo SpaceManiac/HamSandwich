@@ -555,9 +555,9 @@ void RenderFloorTileFancy(int x,int y,int t,byte shadow,char *theLight)
 		return;	// no need to render
 
 
-	if(!OptGourad())
+	if(!opt.smoothLight)
 	{
-		if(shadow==1)
+		if(shadow==1 || shadow==2)
 			RenderFloorTileShadow(x,y,t,theLight[4]);
 		else
 			RenderFloorTile(x,y,t,theLight[4]);
@@ -579,7 +579,7 @@ void RenderFloorTileFancy(int x,int y,int t,byte shadow,char *theLight)
 			light[i]=(light[4]+light[i])/2;	// average each one with this tile's central light
 	}
 
-	if(j==9 && !shadow && !OptDisco())
+	if(j==9 && !shadow && !opt.discoMode)
 	{
 		RenderFloorTileUnlit(x,y,t);
 		return;
@@ -627,7 +627,7 @@ void RenderFloorTileFancy(int x,int y,int t,byte shadow,char *theLight)
 		light[7]-=8;
 	}
 
-	if(OptDisco())
+	if(opt.discoMode)
 	{
 		GouraudBoxDisco(x,y,tiles[t],light[0],light[1],light[3],light[4]);
 		GouraudBoxDisco(x+GB_WID,y,tiles[t]+GB_WID,light[1],light[2],light[4],light[5]);
@@ -657,7 +657,7 @@ void RenderWallTileFancy(int x,int y,int t,char *theLight)
 	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>639 || y>479)
 		return;	// no need to render
 
-	if(!OptGourad())
+	if(!opt.smoothLight)
 	{
 		RenderFloorTile(x,y,t,theLight[4]);
 		return;
@@ -684,13 +684,13 @@ void RenderWallTileFancy(int x,int y,int t,char *theLight)
 	light[2]=light[5];
 	light[1]=light[4];
 
-	if(j==9 && !OptDisco())
+	if(j==9 && !opt.discoMode)
 	{
 		RenderFloorTileUnlit(x,y,t);
 		return;
 	}
 
-	if(OptDisco())
+	if(opt.discoMode)
 	{
 		GouraudBoxDisco(x,y,tiles[t],light[0],light[1],light[3],light[4]);
 		GouraudBoxDisco(x+GB_WID,y,tiles[t]+GB_WID,light[1],light[2],light[4],light[5]);
@@ -721,7 +721,7 @@ void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,char *theLi
 		return;	// no need to render
 
 
-	if(!OptGourad())
+	if(!opt.smoothLight)
 	{
 		if(trans)
 			RenderFloorTileTrans(x,y,t,theLight[4]);
@@ -745,7 +745,7 @@ void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,char *theLi
 			light[i]=(light[4]+light[i])/2;	// average each one with this tile's central light
 	}
 
-	if(j==9 && !OptDisco())
+	if(j==9 && !opt.discoMode)
 	{
 		if(trans)
 			RenderFloorTileTrans(x,y,t,0);
@@ -788,7 +788,7 @@ void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,char *theLi
 	}
 	*/
 
-	if(OptDisco())
+	if(opt.discoMode)
 	{
 		if(!trans)
 		{

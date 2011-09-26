@@ -21,6 +21,9 @@ typedef struct options_t
 	byte wonGame;
 	byte gotAllSecrets;
 	byte youSuck;
+    // new options
+    byte discoMode;
+    byte smoothLight;
 } options_t;
 
 extern options_t opt;
@@ -30,8 +33,5 @@ void LoadOptions(void);
 void SaveOptions(void);
 
 void OptionsMenu(MGLDraw *mgl);
-
-inline byte OptDisco() { return 0; }
-inline byte OptGourad() { return 1; }
 
 #endif

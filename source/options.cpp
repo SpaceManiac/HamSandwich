@@ -55,13 +55,13 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 			if((c2&CONTROL_UP) && (!(oldc&CONTROL_UP)))
 			{
 				cursor--;
-				if(cursor>5)
-					cursor=5;
+				if(cursor>7)
+					cursor=7;
 			}
 			if((c2&CONTROL_DN) && (!(oldc&CONTROL_DN)))
 			{
 				cursor++;
-				if(cursor>5)
+				if(cursor>7)
 					cursor=0;
 			}
 			if((c2&(CONTROL_B1|CONTROL_B2|CONTROL_B3)) && (!(oldc&(CONTROL_B1|CONTROL_B2|CONTROL_B3))))
@@ -103,15 +103,25 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 							}
 						}
 						break;
-					case 3:
+                    case 3:
+						if(opt.wonGame && opt.smoothLight)
+						{
+                            opt.discoMode = 1-opt.discoMode;
+						}
+                        break;
+                    case 4:
+                        opt.smoothLight = 1-opt.smoothLight;
+                        if (opt.smoothLight == 0) opt.discoMode = 0;
+                        break;
+					case 5:
 						opt.youSuck=1-opt.youSuck;
 						break;
-					case 4:
+					case 6:
 						optMode=1;
 						controlX=0;
 						controlY=0;
 						break;
-					case 5:
+					case 7:
 						return 1;
 						break;
 				}
@@ -271,57 +281,66 @@ void RenderControls(int x,int y)
 	}
 	if(optMode==0)
 	{
-		CenterPrint(x+200,y+232,"Move with arrow keys, ENTER to select",0,1);
-		CenterPrint(x+200,y+252,"ESC to return to main menu",0,1);
+		CenterPrint(x+200,210+232,"Move with arrow keys, ENTER to select",0,1);
+		CenterPrint(x+200,210+252,"ESC to return to main menu",0,1);
 	}
 	else if(optMode==1)
 	{
-		CenterPrint(x+200,y+232,"Select with arrow keys, ENTER to set new control",0,1);
-		CenterPrint(x+200,y+252,"ESC to return to options",0,1);
+		CenterPrint(x+200,210+232,"Select with arrow keys, ENTER to set new control",0,1);
+		CenterPrint(x+200,210+252,"ESC to return to options",0,1);
 	}
 	else if(optMode==2)
 	{
 		sprintf(btnTxt,"Press a key for %s",dirName[controlY]);
-		CenterPrint(x+200,y+232,btnTxt,0,1);
-		CenterPrint(x+200,y+252,"ESC to cancel",0,1);
+		CenterPrint(x+200,210+232,btnTxt,0,1);
+		CenterPrint(x+200,210+252,"ESC to cancel",0,1);
 	}
 	else if(optMode==3)
 	{
 		sprintf(btnTxt,"Press a joystick button for %s",dirName[controlY]);
-		CenterPrint(x+200,y+232,btnTxt,0,1);
-		CenterPrint(x+200,y+252,"ESC to cancel",0,1);
+		CenterPrint(x+200,210+232,btnTxt,0,1);
+		CenterPrint(x+200,210+252,"ESC to cancel",0,1);
 	}
 }
 
 void RenderOptionsMenu(MGLDraw *mgl)
 {
 	char onoff[3][8]={"Off","On","Random"};
-	char playAs[3][18]={"Bouapha","Dr.Lunatic","Happy Stick Man"};
+	char playAs[3][18]={"Bouapha","Dr. Lunatic","Happy Stick Man"};
 	char youSuck[2][18]={"Sanitized","Classic"};
 
 	mgl->ClearScreen();
 	CenterPrint(320,2,"Game Options",0,0);
 
-	DrawFillBox(250,80-1+20*cursor,390,80+17+20*cursor,10);
+    int dy = 17, y = 80-dy;
 
-	CenterPrint(320,80,"Sound",0,1);
-	Print(392,80,onoff[opt.sound],0,1);
-	CenterPrint(320,100,"Music",0,1);
-	Print(392,100,onoff[opt.music],0,1);
-	if(!opt.wonGame)
-		CenterPrint(320,120,"?????",0,1);
-	else
-	{
-		CenterPrint(320,120,"Play As",0,1);
-		Print(392,120,playAs[opt.playAs],0,1);
+	DrawFillBox(250,80-1+dy*cursor,390,80+12+dy*cursor,10);
+
+	CenterPrint(320,y+=dy,"Sound",0,1);
+	Print(392,y,onoff[opt.sound],0,1);
+	CenterPrint(320,y+=dy,"Music",0,1);
+	Print(392,y,onoff[opt.music],0,1);
+	if(!opt.wonGame) {
+		CenterPrint(320,y+=dy,"?????",0,1);
+		CenterPrint(320,y+=dy,"?????",0,1);
+    } else {
+		CenterPrint(320,y+=dy,"Play As",0,1);
+		Print(392,y,playAs[opt.playAs],0,1);
+		CenterPrint(320,y+=dy,"Disco Mode",0,1);
+        if (opt.smoothLight)
+            Print(392,y,onoff[opt.discoMode],0,1);
+        else
+            Print(392,y,"N/A",0,1);
 	}
-	CenterPrint(320,140,"Game Over Msg.",0,1);
-	Print(392,140,youSuck[opt.youSuck],0,1);
+	CenterPrint(320,y+=dy,"Smooth Lighting",0,1);
+	Print(392,y,onoff[opt.smoothLight],0,1);
+	CenterPrint(320,y+=dy,"Game Over Msg.",0,1);
+	Print(392,y,youSuck[opt.youSuck],0,1);
 
-	CenterPrint(320,160,"Configure Controls",0,1);
-	CenterPrint(320,180,"Exit To Main Menu",0,1);
+	CenterPrint(320,y+=dy,"Configure Controls",0,1);
+	CenterPrint(320,y+=dy,"Exit To Main Menu",0,1);
 
-	RenderControls(120,210);
+	RenderControls(120,230);
 }
 
 //----------------
@@ -336,8 +355,10 @@ void LoadOptions(void)
 		opt.sound=1;
 		opt.music=MUSIC_ON;
 		opt.playAs=PLAYAS_BOUAPHA;
-		opt.wonGame=1; // TODO: change back to 0 at some point
+		opt.wonGame=1;     // TODO: change back to 0 at some point
 		opt.gotAllSecrets=1;
+        opt.smoothLight=1; // new
+        opt.discoMode=0;   // new
 
 		opt.control[0][0]=38;	// up
 		opt.control[0][1]=40;	// down
