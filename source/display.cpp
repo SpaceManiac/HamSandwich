@@ -341,16 +341,16 @@ void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,sprite_t *sp
 	dispList->DrawSprite(x,y,z,fromHue,hue,bright,spr,flags|DISPLAY_OFFCOLOR);
 }
 
-void WallDraw(int x,int y,byte wall,byte floor,char light,word flags)
+void WallDraw(int x,int y,byte wall,byte floor,Map* map,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
-	dispList->DrawSprite(x,y,0,0,floor,light,(sprite_t *)wall,flags);
+	dispList->DrawSprite(x,y,0,wall,floor,0,(sprite_t *)map,flags);
 }
 
-void RoofDraw(int x,int y,byte roof,char light,word flags)
+void RoofDraw(int x,int y,byte roof,Map* map,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
-	dispList->DrawSprite(x,y,TILE_HEIGHT,0,roof,light,(sprite_t *)1,flags);
+	dispList->DrawSprite(x,y,TILE_HEIGHT,0,roof,0,(sprite_t *)map,flags);
 }
 
 void ParticleDraw(int x,int y,int z,byte color,byte size,word flags)
@@ -491,18 +491,14 @@ void DisplayList::Render(void)
 		{
 			if(dispObj[i].flags&DISPLAY_WALLTILE)
 			{
-                byte bSpr = (byte) (dword) dispObj[i].spr;
-				if(dispObj[i].flags&DISPLAY_TRANSTILE)
-					RenderWallTileTrans(dispObj[i].x-scrx,dispObj[i].y-scry,bSpr,dispObj[i].hue,dispObj[i].bright);
-				else
-					RenderWallTile(dispObj[i].x-scrx,dispObj[i].y-scry,bSpr,dispObj[i].hue,dispObj[i].bright);
+                char* bright = ((Map*) dispObj[i].spr)->MakeSmoothLighting(dispObj[i].x/32, dispObj[i].y/24);
+                RenderWallTileFancy(dispObj[i].x-scrx,dispObj[i].y-scry,199+dispObj[i].z2,bright);
+                RenderRoofTileFancy(dispObj[i].x-scrx,dispObj[i].y-scry-TILE_HEIGHT,dispObj[i].hue,dispObj[i].flags&DISPLAY_TRANSTILE,0,bright);
 			}
 			else if(dispObj[i].flags&DISPLAY_ROOFTILE)
 			{
-				if(dispObj[i].flags&DISPLAY_TRANSTILE)
-					RenderFloorTileTrans(dispObj[i].x-scrx,dispObj[i].y-scry-TILE_HEIGHT,dispObj[i].hue,dispObj[i].bright);
-				else
-					RenderFloorTile(dispObj[i].x-scrx,dispObj[i].y-scry-TILE_HEIGHT,dispObj[i].hue,dispObj[i].bright);
+                char* bright = ((Map*) dispObj[i].spr)->MakeSmoothLighting(dispObj[i].x/32, dispObj[i].y/24);
+                RenderRoofTileFancy(dispObj[i].x-scrx,dispObj[i].y-scry-TILE_HEIGHT,dispObj[i].hue,dispObj[i].flags&DISPLAY_TRANSTILE,0,bright);
 			}
 			else if(dispObj[i].flags&DISPLAY_SHADOW)
 			{

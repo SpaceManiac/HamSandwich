@@ -655,7 +655,7 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 				else
 					lite=m->templight;
 
-				if(flags&MAP_SHOWITEMS)
+				if(m->item && (flags&MAP_SHOWITEMS))
 					RenderItem(scrX+camX+(TILE_WIDTH/2),scrY+camY+(TILE_HEIGHT/2),
 						m->item,lite);
 
@@ -669,27 +669,27 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 							(!(world->terrain[map[i+(j+1)*width].floor].flags&TF_TRANS)))
 						{
 							if(world->terrain[m->floor].flags&TF_TRANS)
-								RoofDraw(scrX+camX,scrY+camY,m->floor,lite,
+								RoofDraw(scrX+camX,scrY+camY,m->floor,this,
 										DISPLAY_DRAWME|DISPLAY_ROOFTILE|DISPLAY_TRANSTILE);
 							else
-								RoofDraw(scrX+camX,scrY+camY,m->floor,lite,DISPLAY_DRAWME|DISPLAY_ROOFTILE);
+								RoofDraw(scrX+camX,scrY+camY,m->floor,this,DISPLAY_DRAWME|DISPLAY_ROOFTILE);
 						}
 						else
 							if(world->terrain[m->floor].flags&TF_TRANS)
-								WallDraw(scrX+camX,scrY+camY,m->wall,m->floor,lite,
+								WallDraw(scrX+camX,scrY+camY,m->wall,m->floor,this,
 									DISPLAY_DRAWME|DISPLAY_WALLTILE|DISPLAY_TRANSTILE);
 							else
-								WallDraw(scrX+camX,scrY+camY,m->wall,m->floor,lite,
+								WallDraw(scrX+camX,scrY+camY,m->wall,m->floor,this,
 									DISPLAY_DRAWME|DISPLAY_WALLTILE);
 					}
 					// make wall tiles get drawn in sorted order unlike the floor tiles
 					else
 					{
 						if(world->terrain[m->floor].flags&TF_TRANS)
-							WallDraw(scrX+camX,scrY+camY,m->wall,m->floor,lite,
+							WallDraw(scrX+camX,scrY+camY,m->wall,m->floor,this,
 								DISPLAY_DRAWME|DISPLAY_WALLTILE|DISPLAY_TRANSTILE);
 						else
-							WallDraw(scrX+camX,scrY+camY,m->wall,m->floor,lite,
+							WallDraw(scrX+camX,scrY+camY,m->wall,m->floor,this,
 								DISPLAY_DRAWME|DISPLAY_WALLTILE);
 					}
 				}

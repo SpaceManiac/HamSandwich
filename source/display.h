@@ -77,8 +77,8 @@ int GetStrLength(const char *s);
 void SprDraw(int x,int y,int z,byte hue,char bright,sprite_t *spr,word flags);
 void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,sprite_t *spr,word flags);
 
-void WallDraw(int x,int y,byte wall,byte floor,char light,word flags);
-void RoofDraw(int x,int y,byte roof,char light,word flags);
+void WallDraw(int x,int y,byte wall,byte floor,Map* map,word flags);
+void RoofDraw(int x,int y,byte roof,Map* map,word flags);
 void ParticleDraw(int x,int y,int z,byte type,byte size,word flags);
 void LightningDraw(int x,int y,int x2,int y2,byte bright,char range);
 

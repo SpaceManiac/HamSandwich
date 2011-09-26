@@ -2,10 +2,10 @@
 # Tad Hardesty, aka SpaceManiac, 2011
 
 # Configuration
-DIRECTX=D:/libraries/directx-sdk
+DIRECTX=D:\\libraries\\directx-sdk
 GLOBAL_OPTIONS=
 LIBS=-lwinmm -ld3d9 -ld3dx9 -lgdi32 -ldsound
-COMPILER_OPTIONS=-std=c++0x -Iinclude/ -I${DIRECTX}/Include/ -Wall
+COMPILER_OPTIONS=-std=c++0x -Iinclude -Wall -I${DIRECTX}/Include/
 LINKER_OPTIONS=-static-libgcc -static-libstdc++ -L${DIRECTX}/Lib/x86/ ${LIBS}
 
 OPTIONS_RELEASE=${COMPILER_OPTIONS} -DNDEBUG -DEXPANDO -O2 -s
