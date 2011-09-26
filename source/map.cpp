@@ -570,6 +570,45 @@ char Map::LightOf(int x, int y) {
     return map[x+y*width].templight;
 }
 
+bool Map::Wall(int x, int y) {
+    x = (x < 0) ? 0 : (x > width-1) ? width-1 : x;
+    y = (y < 0) ? 0 : (y > height-1) ? height-1 : y;
+    return map[x+y*width].wall;
+}
+
+byte Map::MakeSmoothShadow(int x, int y) {
+    if (Wall(x, y + 1)) {
+        if (Wall(x + 1, y)) {
+            //if (Wall(x + 1, y - 1)) {
+                return 6;
+            //} else {
+            //    return 5;
+            //}
+        } else {
+            if (Wall(x + 1, y + 1)) {
+                return 4;
+            } else {
+                return 7;
+            }
+        }
+    } else {
+        if (Wall(x + 1, y)) {
+            if (Wall(x + 1, y + 1)) {
+                return 1;
+            } else {
+                return 2;
+            }
+        } else {
+            if (Wall(x + 1, y + 1)) {
+                return 3;
+            } else {
+                return 0;
+            }
+        }
+    }
+    //return 0;
+}
+
 char* Map::MakeSmoothLighting(int x, int y) {
     smoothLight[0] = LightOf(x-1,y-1);
     smoothLight[1] = LightOf(x,y-1);
@@ -663,22 +702,12 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 						if((!map[i+(j+1)*width].wall) || (!(flags&MAP_SHOWWALLS) ||
 							(world->terrain[map[i+(j+1)*width].floor].flags&TF_TRANS)))
 						{
-							// if there's a wall to the right, draw a shadow on this tile
-							//if((i<width-1) && (map[i+1+j*width].wall))
-							//	RenderFloorTileShadow(scrX,scrY,m->floor,lite);
-							//else
-							//	RenderFloorTile(scrX,scrY,m->floor,lite);
-                            RenderFloorTileFancy(scrX,scrY,m->floor,0,MakeSmoothLighting(i,j));
+                            RenderFloorTileFancy(scrX,scrY,m->floor,MakeSmoothShadow(i,j),MakeSmoothLighting(i,j));
 						}
 					}
 					else
 					{
-						// if there's a wall to the right, draw a shadow on this tile
-						//if((i<width-1) && (map[i+1+j*width].wall))
-						//	RenderFloorTileShadow(scrX,scrY,m->floor,lite);
-						//else
-						//	RenderFloorTile(scrX,scrY,m->floor,lite);
-                        RenderFloorTileFancy(scrX,scrY,m->floor,0,MakeSmoothLighting(i,j));
+                        RenderFloorTileFancy(scrX,scrY,m->floor,MakeSmoothShadow(i,j),MakeSmoothLighting(i,j));
 					}
 				}
 			}

@@ -140,6 +140,8 @@ class Map
         // Gourad stuff
         char smoothLight[9];
         char LightOf(int x, int y);
+        bool Wall(int x, int y);
+        byte MakeSmoothShadow(int x, int y);
         char* MakeSmoothLighting(int x, int y);
 
 	private:
