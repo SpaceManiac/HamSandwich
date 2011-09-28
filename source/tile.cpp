@@ -52,12 +52,28 @@ extern byte SprModifyLight(byte color, char bright);
 extern byte SprModifyGhost(byte src, byte dst, char bright);
 extern byte SprModifyGlow(byte src, byte dst, char bright);
 
+byte ModifyDiscoColor(byte color, byte disco) {
+    if (!opt.discoMode) return color;
+    else return (color & 31) | (disco);
+}
+
+// Disco!
+
+byte discoTab[]={1,3,4,5,6,7};
+
+static inline byte PickDiscoColor() {
+	return discoTab[rand() % 6]*32;
+}
+
+// Rendering for real!
+
 void RenderFloorTile(int x,int y,int t,char light)
 {
     byte *dst, *src;
     int wid, hgt;
+    byte disco = PickDiscoColor();
 
-	if(light==0) {
+	if(light==0 && !opt.discoMode) {
 		return RenderFloorTileUnlit(x,y,t);
 	}
 
@@ -106,7 +122,7 @@ void RenderFloorTile(int x,int y,int t,char light)
         while (hgt > 0) {
             hgt--;
             for (int i = 0; i < wid; ++i) {
-                dst[i] = SprModifyLight(src[i], light);
+                dst[i] = SprModifyLight(ModifyDiscoColor(src[i], disco), light);
             }
             dst += 640;
             src += 32;
@@ -118,6 +134,7 @@ void RenderFloorTileShadow(int x,int y,int t,char light)
 {
     byte *dst, *src;
     int wid, hgt, darkpart;
+    byte disco = PickDiscoColor();
 
 	if(x<0)
 	{
@@ -166,7 +183,7 @@ void RenderFloorTileShadow(int x,int y,int t,char light)
     while (hgt > 0) {
         hgt--;
         for (int i = 0; i < wid; ++i) {
-            dst[i] = SprModifyLight(src[i], light - 4 * (i > wid-darkpart));
+            dst[i] = SprModifyLight(ModifyDiscoColor(src[i], disco), light - 4 * (i > wid-darkpart));
         }
         dst += 640;
         src += 32;
@@ -228,6 +245,7 @@ void RenderFloorTileTrans(int x,int y,int t,char light)
 {
     byte *dst, *src;
     int wid, hgt;
+    byte disco = PickDiscoColor();
 
 	if(x<0)
 	{
@@ -273,14 +291,14 @@ void RenderFloorTileTrans(int x,int y,int t,char light)
     while (hgt > 0) {
         hgt--;
         for (int i = 0; i < wid; ++i) {
-            if (src[i]) dst[i] = SprModifyLight(src[i], light);
+            if (src[i]) dst[i] = SprModifyLight(ModifyDiscoColor(src[i], disco), light);
         }
         dst += 640;
         src += 32;
     }
 }
 
-void RenderWallTile(int x,int y,byte w,byte f,char light)
+/*void RenderWallTile(int x,int y,byte w,byte f,char light)
 {
 	RenderFloorTile(x,y,w+199,light);
 	RenderFloorTile(x,y-TILE_HEIGHT,f,light);
@@ -290,7 +308,7 @@ void RenderWallTileTrans(int x,int y,byte w,byte f,char light)
 {
 	RenderFloorTile(x,y,w+199,light);
 	RenderFloorTileTrans(x,y-TILE_HEIGHT,f,light);
-}
+}*/
 
 void PlotStar(int x,int y,byte col,byte tx,byte ty,byte tileNum)
 {
@@ -301,14 +319,6 @@ void PlotStar(int x,int y,byte col,byte tx,byte ty,byte tileNum)
 		dst=tileMGL->GetScreen()+x+y*640;
 		*dst=col;
 	}
-}
-
-// -- Disco!
-
-byte discoTab[]={1,3,4,5,6,7};
-
-static inline byte PickDiscoColor() {
-	return discoTab[rand() % 6]*32;
 }
 
 // -- Gourad!

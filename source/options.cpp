@@ -104,14 +104,13 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 						}
 						break;
                     case 3:
-						if(opt.wonGame && opt.smoothLight)
+						if(opt.wonGame)
 						{
                             opt.discoMode = 1-opt.discoMode;
 						}
                         break;
                     case 4:
                         opt.smoothLight = 1-opt.smoothLight;
-                        if (opt.smoothLight == 0) opt.discoMode = 0;
                         break;
 					case 5:
 						opt.youSuck=1-opt.youSuck;
@@ -327,10 +326,7 @@ void RenderOptionsMenu(MGLDraw *mgl)
 		CenterPrint(320,y+=dy,"Play As",0,1);
 		Print(392,y,playAs[opt.playAs],0,1);
 		CenterPrint(320,y+=dy,"Disco Mode",0,1);
-        if (opt.smoothLight)
-            Print(392,y,onoff[opt.discoMode],0,1);
-        else
-            Print(392,y,"N/A",0,1);
+        Print(392,y,onoff[opt.discoMode],0,1);
 	}
 	CenterPrint(320,y+=dy,"Smooth Lighting",0,1);
 	Print(392,y,onoff[opt.smoothLight],0,1);
