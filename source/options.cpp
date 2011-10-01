@@ -311,7 +311,7 @@ void RenderOptionsMenu(MGLDraw *mgl)
 	mgl->ClearScreen();
 	CenterPrint(320,2,"Game Options",0,0);
 
-    int dy = 17, y = 80-dy;
+    int dy = 18, y = 80-dy;
 
 	DrawFillBox(250,80-1+dy*cursor,390,80+12+dy*cursor,10);
 

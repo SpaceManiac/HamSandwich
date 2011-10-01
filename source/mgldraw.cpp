@@ -22,7 +22,7 @@ HWND pt_extractHWND(PixelToaster::Display* display);
 
 using namespace PixelToaster;
 
-// Replacement for missing MGL functions
+// Replacements for missing MGL functions
 int MGL_random(int max) {
     return rand() % max;
 }
@@ -37,7 +37,6 @@ void MGL_fatalError(const char* txt) {
 // I'm very sorry about this.  It has to do with that whole no-function-pointers-to-member-functions
 // thing I mentioned earlier.
 MGLDraw *_globalMGLDraw;
-byte needPalRealize=0;
 
 // Pixel toaster callback thingies
 class PtListener : public Listener {
@@ -91,77 +90,28 @@ void PtListener::onKeyUp(DisplayInterface & display, Key key) {
 
 void PtListener::onActivate(DisplayInterface & display, bool active) {
     printf("onActive : %d\n", (int) active);
-    if(active) {
+    if(active)
 		SetGameIdle(0);
-		needPalRealize=1;
-	} else
+	else
 		SetGameIdle(1);
 }
 
+// -- Actual MGLDraw
+
 MGLDraw::MGLDraw(const char *name,int xRes,int yRes,int bpp,bool window,HINSTANCE hInst)
 {
-    //GM_modeInfo	info;
-	// the driver options are pretty much set up to go for directdraw only.  Pretty  much.
-	//GM_driverOptions driverOpt =
-	//{
-	//	true,			/* UseWinDirect		*/
-	//	true,			/* UseDirectDraw	*/
-	//	true,			/* UseVGA			*/
-	//	true,			/* UseVGAX			*/
-	//	true,			/* UseVBE			*/
-	//	true,			/* UseVBEAF			*/
-	//	true,			/* UseLinear		*/
-	//    true,			/* UseFullscreenDIB	*/
-	//	false,			/* UseHWOpenGL		*/
-	//	MGL_GL_AUTO,	/* OpenGLType		*/
-	//	GM_MODE_8BPP,	/* modeFlags		*/
-	//};
-
     ptListener = new PtListener(this);
     ptDisplay.open(name, xRes, yRes, window ? Output::Windowed : Output::Fullscreen, Mode::TrueColor);
     ptDisplay.listener(ptListener);
 
     if (!ptDisplay.open()) {
-        MGL_fatalError("Couldn't set display mode :V");
+        MGL_fatalError("Couldn't set display mode :(");
     }
 
 	// must initialize sound after that stuff and before switching video modes,
-	// so it has to be in this constructor!  Sorry
+	// so it has to be in this constructor!  Sorry  [not sure if relevant to PixelToaster?]
 	if(JamulSoundInit(hInst,name,512))
 		SoundSystemExists();
-
-	//GM_registerEventProc(MGLDraw_EventHandler);
-	//GM_setModeSwitchFunc(MGLDraw_SwitchModes);
-	//GM_setAppActivate(MGLDraw_Activate);
-	//GM_setSuspendAppCallback(MGLDraw_Suspend);
-
-	/*
-	//------------------------------- CRAAZY DEBUGGING SHIT
-	{
-		FILE *f;
-		int i;
-
-		f=fopen("log.txt","wt");
-		i=0;
-		while(gm->modeList[i].mode!=0 && i<grMAXMODE)
-		{
-			fprintf(f,"Mode: %3d X:%4d Y:%4d B:%3d Page:%2d Flag: %12d Str: %d WSt: %d Name: %s\n",
-				gm->modeList[i].mode,gm->modeList[i].xRes,gm->modeList[i].yRes,
-				gm->modeList[i].bitsPerPixel,gm->modeList[i].pages,gm->modeList[i].flags,
-				gm->modeList[i].stretch,gm->modeList[i].windowedStretch,gm->modeList[i].driverName);
-			i++;
-		}
-		fclose(f);
-	}
-	//----------------------------------
-	*/
-
-
-
-	/*if (!GM_findMode(&info,xRes,yRes,bpp))
-		MGL_fatalError("Unable to find graphics mode!");
-	if (!GM_setMode(&info,window,2,true))
-		MGL_fatalError(MGL_errorMsg(MGL_result()));*/
 
 	readyToQuit=false;
 	_globalMGLDraw=this;
@@ -192,7 +142,7 @@ void MGLDraw::ReopenWindow()
     strcpy(title, ptDisplay.title());
     Output output = ptDisplay.output();
     Mode mode = ptDisplay.mode();
-    ptDisplay.open(title, xRes, yRes, output, mode);
+    ptDisplay.open(title, xRes, yRes, output, mode); // open twice... because apparently we have to
     ptDisplay.open(title, xRes, yRes, output, mode);
 }
 
@@ -239,7 +189,7 @@ void MGLDraw::Flip(void)
 	if(GetGameIdle())
 		GameIdle();
 
-    // This is probably super slow...
+    // This is nice and fast, thankfully
     for (int i = 0; i < xRes * yRes; ++i) {
         ptBuffer[i].r = pal[scrn[i]].red;
         ptBuffer[i].g = pal[scrn[i]].green;
@@ -247,13 +197,6 @@ void MGLDraw::Flip(void)
     }
 
     ptDisplay.update(ptBuffer);
-
-	/*if(needPalRealize)
-	{
-		needPalRealize=0;
-		if(_globalMGLDraw)
-			_globalMGLDraw->RealizePalette();
-	}*/
 }
 
 void MGLDraw::ClearScreen(void)
@@ -327,11 +270,10 @@ void MGLDraw::RealizePalette(void)
 	//GM_realizePalette(256,0,true);
 }
 
+// Doesn't appear to be used.
 void MGLDraw::DarkPalette(void)
 {
-    return;
-    // TODO: fix? doesn't seem to be called anywhere.
-
+    /*
 	palette_t darkpal[256];
 	int i;
 
@@ -348,8 +290,9 @@ void MGLDraw::DarkPalette(void)
 	darkpal[255].blue=pal[255].blue;
 	darkpal[255].red=pal[255].red;
 	darkpal[255].green=pal[255].green;
-	//GM_setPalette(darkpal,256,0);
-	//GM_realizePalette(256,0,true);
+	GM_setPalette(darkpal,256,0);
+	GM_realizePalette(256,0,true);
+    */
 }
 
 // 8-bit graphics only
@@ -551,19 +494,22 @@ void MGLDraw::GammaCorrect(byte gamma)
 
 long FAR PASCAL MGLDraw_EventHandler(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    //printf("Imma event handler: %d\n", message);
+    printf("Imma event handler: %d\n", message);
 	switch(message)
 	{
 		case WM_LBUTTONDOWN:
+            printf("WM_LBUTTONDOWN\n");
 			_globalMGLDraw->SetMouseDown(1);
 			break;
 		case WM_LBUTTONUP:
+            printf("WM_LBUTTONUP\n");
 			_globalMGLDraw->SetMouseDown(0);
 			break;
 		case WM_KEYUP:
 			ControlKeyUp((char)((lParam>>16)&255));
 			break;
 		case WM_CHAR:
+            printf("WM_CHAR\n");
 			_globalMGLDraw->SetLastKey((char)wParam);
 			break;
 		case WM_KEYDOWN:
