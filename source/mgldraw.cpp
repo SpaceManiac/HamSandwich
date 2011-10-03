@@ -31,7 +31,8 @@ long MGL_randoml(long max) {
     return rand() % max;
 }
 void MGL_fatalError(const char* txt) {
-    fprintf(stderr, "%s", txt);
+    set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
+    allegro_message(txt);
     exit(0);
 }
 
@@ -42,7 +43,11 @@ MGLDraw::MGLDraw(const char *name,int xRes,int yRes,int bpp,bool window,HINSTANC
     install_mouse();
     set_color_depth(32);
 
-    set_gfx_mode(window ? GFX_AUTODETECT_WINDOWED : GFX_AUTODETECT_FULLSCREEN, xRes, yRes, 0, 0);
+    if (set_gfx_mode(window ? GFX_AUTODETECT_WINDOWED : GFX_AUTODETECT_FULLSCREEN, xRes, yRes, 0, 0) != 0) {
+        char buf[256];
+        sprintf(buf, "Unable to set graphics mode: %s", allegro_error);
+        MGL_fatalError(buf);
+    }
     set_window_title(name);
     set_close_button_callback(&closeButtonCallback);
 
