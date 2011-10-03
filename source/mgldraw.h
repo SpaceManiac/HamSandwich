@@ -15,7 +15,8 @@
 #ifndef MGLDRAW_H
 #define MGLDRAW_H
 
-#include "PixelToaster.h"
+#include "allegro.h"
+#include <winalleg.h>
 #include "winpch.h"
 #include "jamulsound.h"
 #include "control.h"
@@ -30,16 +31,12 @@ int MGL_random(int max);
 long MGL_randoml(long max);
 void MGL_fatalError(const char* txt);
 
-class PtListener;
-
 class MGLDraw
 {
     friend class PtListener;
 	public:
 		MGLDraw(const char *name,int xRes,int yRes,int bpp,bool window,HINSTANCE hInst);
 		~MGLDraw(void);
-
-        void ReopenWindow();
 
 		void FatalError(char *msg);
 
@@ -86,9 +83,7 @@ class MGLDraw
 		int xRes,yRes,bpp,pitch;
         int mousex,mousey;
 		byte *scrn;
-        PixelToaster::Display ptDisplay;
-        PtListener* ptListener;
-        PixelToaster::TrueColorPixel *ptBuffer;
+        BITMAP* buffer;
 		palette_t pal[256];
 		bool readyToQuit;
 		dword elapsedTime;

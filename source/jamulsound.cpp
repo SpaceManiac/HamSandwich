@@ -26,43 +26,13 @@ int *soundHandle;
 
 bool JamulSoundInit(HINSTANCE hInst,const char *wndName, int numBuffers)
 {
-	WNDCLASS wc;
-	char className[]="dsoundWindow";
 	int i;
 
-	// first thing needed is to make a window, so directsound can have it
-	wc.style=CS_HREDRAW|CS_VREDRAW;
-	wc.lpfnWndProc=MGLDraw_EventHandler;
-	wc.cbClsExtra=0;
-	wc.cbWndExtra=0;
-	wc.hInstance=hInst;
-	wc.hIcon=LoadIcon(hInst,IDI_APPLICATION);
-	wc.hCursor=LoadCursor(NULL,IDC_ARROW);
-	wc.hbrBackground=NULL;
-	wc.lpszMenuName=NULL;
-	wc.lpszClassName=className;
-	if(!RegisterClass(&wc))
-		return FALSE;
-
-	dsoundHwnd=CreateWindowEx(
-		0,
-		className,
-		wndName,
-		WS_OVERLAPPEDWINDOW,
-		0,
-		0,
-		0,
-		0,
-		NULL,
-		NULL,
-		hInst,
-		NULL);
+    // Used to have to make another window, now we just steal Allegro's
+    dsoundHwnd = win_get_window();
 
 	if(!dsoundHwnd)
 		return FALSE;
-
-        // TODO: see if this is needed
-	// GM_registerMainWindow(dsoundHwnd);
 
 	if(DirectSoundCreate(NULL,&dsound,NULL)!=DS_OK)
 		return FALSE;

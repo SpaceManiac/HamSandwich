@@ -4,9 +4,10 @@
 # Configuration
 DIRECTX=D:\\libraries\\directx-sdk
 GLOBAL_OPTIONS=
-LIBS=-lwinmm -ld3d9 -ld3dx9 -lgdi32 -ldsound
-COMPILER_OPTIONS=-std=c++0x -Iinclude -Wall -I${DIRECTX}/Include/
-LINKER_OPTIONS=-static-libgcc -static-libstdc++ -L${DIRECTX}/Lib/x86/ ${LIBS}
+#-lwinmm -ld3d9 -ld3dx9 -lgdi32 -ldsound
+LIBS=-lwinmm -ldsound -lalleg44
+COMPILER_OPTIONS=-std=c++0x -Iinclude -Wall -I${DIRECTX}/Include/ -DALLEGRO_MINGW32
+LINKER_OPTIONS=-static-libgcc -static-libstdc++ -Linclude -L${DIRECTX}/Lib/x86/ ${LIBS}
 
 OPTIONS_RELEASE=${COMPILER_OPTIONS} -DNDEBUG -DEXPANDO -O2 -s
 OPTIONS_DEBUG=${COMPILER_OPTIONS} -D_DEBUG -DEXPANDO -DLOG -g

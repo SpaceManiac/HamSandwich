@@ -194,7 +194,7 @@ void CDPlay(int track)
 	memset(&play,0,sizeof(MCI_PLAY_PARMS));
 	play.dwFrom=MCI_MAKE_TMSF(track,0,0,0);
 	play.dwTo=MCI_MAKE_TMSF(track+1,0,0,0);	// play until the next track
-	play.dwCallback=(dword)MGLGetHWnd();
+	play.dwCallback=(dword) win_get_window(); // used to call mgldraw, this is an allegro thing
 	if(track==count)	// don't go "to" if it's the last, just end at the end
 		CDError=mciSendCommand(CDDevice,MCI_PLAY,MCI_FROM|MCI_NOTIFY,(dword)&play);
 	else

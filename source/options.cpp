@@ -46,12 +46,6 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 				return 1;
 			}
 
-            if(c=='w')
-            {
-                // Testing stuff, 'w' to resize window
-                mgl->ReopenWindow();
-            }
-
 			if((c2&CONTROL_UP) && (!(oldc&CONTROL_UP)))
 			{
 				cursor--;
@@ -190,7 +184,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 				mgl->LastKeyPressed();
 				return 0;
 			}
-			if(c2!=0)
+			if(c2!=0 && c2 != 67) //67 = enter
 			{
 				opt.control[controlX][controlY]=c2;
 				optMode=1;

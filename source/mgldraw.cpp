@@ -12,15 +12,16 @@
 */
 
 #include "mgldraw.h"
+#include "winpch.h"
 #include "game.h"	// even sorrier about this crap (it's for MGLDraw_Activate only)
 #include "sound.h"
 #include "music.h"
 #include "ctype.h"
 
-// Shenanigans
-HWND pt_extractHWND(PixelToaster::Display* display);
-
-using namespace PixelToaster;
+// Allegro shenanigans
+static char prevKey[KEY_MAX];
+static bool closeButtonPressed;
+void closeButtonCallback() { closeButtonPressed = true; }
 
 // Replacements for missing MGL functions
 int MGL_random(int max) {
@@ -34,87 +35,22 @@ void MGL_fatalError(const char* txt) {
     exit(0);
 }
 
-// I'm very sorry about this.  It has to do with that whole no-function-pointers-to-member-functions
-// thing I mentioned earlier.
-MGLDraw *_globalMGLDraw;
-
-// Pixel toaster callback thingies
-class PtListener : public Listener {
-    MGLDraw* mgldraw;
-public:
-    bool shift;
-
-    PtListener(MGLDraw* mgldraw) : mgldraw(mgldraw), shift(false) {}
-
-    bool defaultKeyHandlers() const { return false; }
-    void onActivate(DisplayInterface & display, bool active);
-    void onKeyDown( DisplayInterface & display, Key key );
-    void onKeyPressed( DisplayInterface & display, Key key );
-    void onKeyUp( DisplayInterface & display, Key key );
-    void onMouseButtonDown( DisplayInterface & display, Mouse mouse ) { mgldraw->SetMouseDown(1); }
-    void onMouseButtonUp( DisplayInterface & display, Mouse mouse ) { mgldraw->SetMouseDown(0); }
-    void onMouseMove( DisplayInterface & display, Mouse mouse ) { mgldraw->SetMouse(mouse.x, mouse.y); }
-    bool onClose( DisplayInterface & display ) { mgldraw->Quit(); return false; }
-};
-
-void PtListener::onKeyDown(DisplayInterface & display, Key key) {
-    if(key == Key::Shift) shift = true;
-    ControlKeyDown((char) key);
-}
-
-void PtListener::onKeyPressed(DisplayInterface & display, Key key) {
-    char chkey = (char) key;
-    int i = 9;
-    switch (chkey) {
-        case Key::NumPad0: --i;
-        case Key::NumPad1: --i;
-        case Key::NumPad2: --i;
-        case Key::NumPad3: --i;
-        case Key::NumPad4: --i;
-        case Key::NumPad5: --i;
-        case Key::NumPad6: --i;
-        case Key::NumPad7: --i;
-        case Key::NumPad8: --i;
-        case Key::NumPad9: chkey = '0' + i; break;
-        case Key::Subtract: chkey = '-'; break;
-        default: if (!shift) chkey = tolower(chkey);
-    }
-    // printf("key pressed: %d (%s) -> %d = '%c'\n", (int)key, ScanCodeText(key), (int)chkey, chkey);
-    mgldraw->SetLastKey(chkey);
-}
-
-void PtListener::onKeyUp(DisplayInterface & display, Key key) {
-    if(key == Key::Shift) shift = false;
-    ControlKeyUp((char) key);
-}
-
-void PtListener::onActivate(DisplayInterface & display, bool active) {
-    printf("onActive : %d\n", (int) active);
-    if(active)
-		SetGameIdle(0);
-	else
-		SetGameIdle(1);
-}
-
-// -- Actual MGLDraw
-
 MGLDraw::MGLDraw(const char *name,int xRes,int yRes,int bpp,bool window,HINSTANCE hInst)
 {
-    ptListener = new PtListener(this);
-    ptDisplay.open(name, xRes, yRes, window ? Output::Windowed : Output::Fullscreen, Mode::TrueColor);
-    ptDisplay.listener(ptListener);
+    allegro_init();
+    install_keyboard();
+    install_mouse();
+    set_color_depth(32);
 
-    if (!ptDisplay.open()) {
-        MGL_fatalError("Couldn't set display mode :(");
-    }
+    set_gfx_mode(window ? GFX_AUTODETECT_WINDOWED : GFX_AUTODETECT_FULLSCREEN, xRes, yRes, 0, 0);
+    set_window_title(name);
+    set_close_button_callback(&closeButtonCallback);
 
-	// must initialize sound after that stuff and before switching video modes,
-	// so it has to be in this constructor!  Sorry  [not sure if relevant to PixelToaster?]
+	// this used to have to be in a very specific place but now it doesn't, hooray!
 	if(JamulSoundInit(hInst,name,512))
 		SoundSystemExists();
 
 	readyToQuit=false;
-	_globalMGLDraw=this;
 
 	// gimme windows colors
 	this->xRes=xRes;
@@ -122,7 +58,7 @@ MGLDraw::MGLDraw(const char *name,int xRes,int yRes,int bpp,bool window,HINSTANC
 	this->bpp=bpp;
 	this->pitch=xRes;
 	this->scrn=new byte[xRes * yRes];
-    ptBuffer = new TrueColorPixel[xRes * yRes];
+    buffer = create_bitmap(xRes, yRes);
 
 	mouseDown=0;
 }
@@ -130,20 +66,8 @@ MGLDraw::MGLDraw(const char *name,int xRes,int yRes,int bpp,bool window,HINSTANC
 MGLDraw::~MGLDraw(void)
 {
 	JamulSoundExit();
-    delete ptListener;
-    delete[] ptBuffer;
+    destroy_bitmap(buffer);
     delete[] scrn;
-}
-
-void MGLDraw::ReopenWindow()
-{
-    printf("attempting to reopen window\n");
-    char title[64];
-    strcpy(title, ptDisplay.title());
-    Output output = ptDisplay.output();
-    Mode mode = ptDisplay.mode();
-    ptDisplay.open(title, xRes, yRes, output, mode); // open twice... because apparently we have to
-    ptDisplay.open(title, xRes, yRes, output, mode);
 }
 
 void MGLDraw::FatalError(char *msg)
@@ -175,13 +99,35 @@ float MGLDraw::FrameRate(void)
 
 bool MGLDraw::Process(void)
 {
-    ptDisplay.update(ptBuffer);
+    blit(buffer, screen, 0, 0, 0, 0, xRes, yRes);
+
+    while (keypressed()) {
+        int k = readkey();
+        SetLastKey((char) (k & 0xff));
+    }
+
+    for (int i = 0; i < KEY_MAX; ++i) {
+        if (key[i] && !prevKey[i]) {
+            ControlKeyDown(i);
+        } else if (!key[i] && prevKey[i]) {
+            ControlKeyUp(i);
+        }
+        prevKey[i] = key[i];
+    }
+
+    SetMouse(mouse_x, mouse_y);
+    SetMouseDown(mouse_b & 3);
+
+    if (closeButtonPressed) {
+        readyToQuit = true;
+    }
+
 	return (!readyToQuit);
 }
 
 HWND MGLDraw::GetHWnd(void)
 {
-    return pt_extractHWND(&ptDisplay);
+    return win_get_window();
 }
 
 void MGLDraw::Flip(void)
@@ -191,12 +137,10 @@ void MGLDraw::Flip(void)
 
     // This is nice and fast, thankfully
     for (int i = 0; i < xRes * yRes; ++i) {
-        ptBuffer[i].r = pal[scrn[i]].red;
-        ptBuffer[i].g = pal[scrn[i]].green;
-        ptBuffer[i].b = pal[scrn[i]].blue;
+        palette_t c = pal[scrn[i]];
+        putpixel(buffer, i%xRes, i/xRes, makecol(c.red, c.green, c.blue));
     }
-
-    ptDisplay.update(ptBuffer);
+    Process();
 }
 
 void MGLDraw::ClearScreen(void)
@@ -494,27 +438,8 @@ void MGLDraw::GammaCorrect(byte gamma)
 
 long FAR PASCAL MGLDraw_EventHandler(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    printf("Imma event handler: %d\n", message);
 	switch(message)
 	{
-		case WM_LBUTTONDOWN:
-            printf("WM_LBUTTONDOWN\n");
-			_globalMGLDraw->SetMouseDown(1);
-			break;
-		case WM_LBUTTONUP:
-            printf("WM_LBUTTONUP\n");
-			_globalMGLDraw->SetMouseDown(0);
-			break;
-		case WM_KEYUP:
-			ControlKeyUp((char)((lParam>>16)&255));
-			break;
-		case WM_CHAR:
-            printf("WM_CHAR\n");
-			_globalMGLDraw->SetLastKey((char)wParam);
-			break;
-		case WM_KEYDOWN:
-			ControlKeyDown((char)((lParam>>16)&255));
-			break;
 		case MM_MCINOTIFY:	// this is just tossed in because I have CD audio in there
 			CDNeedsUpdating();
 			break;
@@ -522,9 +447,4 @@ long FAR PASCAL MGLDraw_EventHandler(HWND hwnd, UINT message, WPARAM wParam, LPA
 			return DefWindowProc(hwnd,message,wParam,lParam);
 	}
 	return 0L;
-}
-
-HWND MGLGetHWnd(void) // "augh"
-{
-	return _globalMGLDraw->GetHWnd();
 }
