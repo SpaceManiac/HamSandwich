@@ -111,7 +111,6 @@ void FLI_docolor2(byte *p,MGLDraw *mgl)
   word pos=0;
   byte palpos=0;
   byte numcol;
-  byte b;
 
   memcpy(&numpak,p,2);
   pos=2;
@@ -120,10 +119,10 @@ void FLI_docolor2(byte *p,MGLDraw *mgl)
     palpos+=p[pos++];
     numcol=p[pos++];
     do {
-      memcpy(&FLI_pal[palpos],&p[pos],3);
-	  b=FLI_pal[palpos].blue;
-	  FLI_pal[palpos].blue=FLI_pal[palpos].red;
-	  FLI_pal[palpos].red=b;
+      memcpy(&FLI_pal[palpos],&p[pos],4);
+      FLI_pal[palpos].blue = FLI_pal[palpos].green;
+      FLI_pal[palpos].green = FLI_pal[palpos].red;
+      FLI_pal[palpos].red = FLI_pal[palpos].alpha;
 	  palpos++;
       pos+=3;
       --numcol;
