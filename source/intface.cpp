@@ -6,16 +6,10 @@
 #define SPR_MINIGAUGE	2
 #define SPR_NUMBERS		3
 #define SPR_WEAPONS		13
-/*
 #define SPR_KEYRING		29
 #define SPR_BRAINOMETER 40
 #define SPR_RAGE		42
-#define	SPR_RAGEGAUGE	47 */
-// I guess Expando added more weapon graphics in the middle which aren't in a normal Dr. L install
-#define SPR_KEYRING     24
-#define SPR_BRAINOMETER 35
-#define SPR_RAGE        37
-#define SPR_RAGEGAUGE   42
+#define	SPR_RAGEGAUGE	47
 
 #define KEYRINGX		40
 #define KEYRINGY		38

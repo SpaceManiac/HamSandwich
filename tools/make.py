@@ -33,6 +33,7 @@ def object(source):
 objectDir = 'build/' + target
 sourceFiles = getFileList('source')
 objectFiles = map(object, sourceFiles)
+objectFiles.append(objectDir + '/lunatic.res')
 
 out = open('build/generated.make', 'w')
 def write(ln): out.write(ln + '\n')
@@ -51,6 +52,9 @@ for source in sourceFiles:
 	write(obj + ': ' + source)
 	write('\t@mkdir -p ' + path.split(obj)[0])
 	write('\t$(COMPILE.cc) -o $@ ' + source)
+
+write(objectDir + '/lunatic.res: source/lunatic.rc')
+write('\twindres source/lunatic.rc -O coff -o ' + objectDir + '/lunatic.res')
 
 out.close()
 
