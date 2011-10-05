@@ -27,7 +27,7 @@ char credits[][48]={
 	"Mike Hommel",
     "%",
     "Modernizing",
-    "Tad Hardesty",
+    "Tad \"SpaceManiac\" Hardesty",
 	"%",
 	"Character Design",
 	"Mike Hommel",
