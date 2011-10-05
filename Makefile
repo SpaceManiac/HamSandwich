@@ -4,8 +4,7 @@
 # Configuration
 DIRECTX=D:\\libraries\\directx-sdk
 GLOBAL_OPTIONS=
-#-lwinmm -ld3d9 -ld3dx9 -lgdi32 -ldsound
-LIBS=-lwinmm -ldsound -lalleg44
+LIBS=-lwinmm -ldsound -lalleg44 -llogg -lvorbisfile -lvorbis -logg -lvorbisenc
 COMPILER_OPTIONS=-std=c++0x -Iinclude -Wall -I${DIRECTX}/Include/ -DALLEGRO_MINGW32
 LINKER_OPTIONS=-static-libgcc -static-libstdc++ -Linclude -L${DIRECTX}/Lib/x86/ ${LIBS}
 

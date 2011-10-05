@@ -41,6 +41,7 @@ MGLDraw::MGLDraw(const char *name,int xRes,int yRes,int bpp,bool window,HINSTANC
     allegro_init();
     install_keyboard();
     install_mouse();
+    install_sound(DIGI_AUTODETECT, MIDI_AUTODETECT, "donotuse.cfg");
     set_color_depth(32);
 
     if (set_gfx_mode(window ? GFX_AUTODETECT_WINDOWED : GFX_AUTODETECT_FULLSCREEN, xRes, yRes, 0, 0) != 0) {

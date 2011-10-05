@@ -14,19 +14,10 @@ byte MusicInit(void);
 void MusicExit(void);
 
 // CD audio functions
-byte InitCDPlayer(void);
-void ExitCDPlayer(void);
 byte CDLoaded(void);
-dword CDCurrentTrack(void);
-dword CDTrackCount(void);
-void CDPlay(int track);
+void CDPlay(int track); // Play given track
 void CDStop(void);
-byte CDIsPlaying(void);
 void CDPlayerUpdate(byte mode);
 void CDNeedsUpdating(void);
-
-// this kills the windows CD Player if it is on
-void ShutoffWindowsCD(void);
-BOOL CALLBACK FindCDPlayer( HWND hwnd, LPARAM lParam );
 
 #endif
