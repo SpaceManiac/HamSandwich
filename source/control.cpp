@@ -3,44 +3,23 @@
 #include "options.h"
 
 // text strings corresponding to scan codes 0-88
-/*char scanCodeTable[128][16]={
-	//0
-	"Null","Escape","1","2","3","4","5","6","7","8","9","0",
-	//12
-	"-","=","Backspace","Tab","Q","W","E","R","T","Y","U","I","O","P",
-	//26
-	"[","]","Enter","Control","A","S","D","F","G","H","J","K","L",";",
-	//40
-	"'","`","LeftShift","\\","Z","X","C","V","B","N","M",",",".","/",
-	//54
-	"RightShift","PrintScreen","Alt","Space","CapsLock","F1","F2","F3",
-	//62
-	"F4","F5","F6","F7","F8","F9","F10","NumLock","ScrollLock",
-	//71
-	"Home","Up","PageUp","Keypad-","Left","Keypad5","Right","Keypad+",
-	//79
-	"End","Down","PageDown","Insert","Delete","","","","F11","F12"};*/
-char scanCodeTable[256][16] = {
+char scanCodeTable[128][16] = {
     // 0
-    "Null","SOH","STX","Cancel","EOT","ENQ","ACK","BEL","Backspace","HT","Enter","VT","Clear","CR","SO","SI",
+    "Null","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O",
     // 16
-    "Shift","Control","Alt","Pause","CapsLock","Kana","SYN","ETB","Final","Kanji","SUB","Escape","Convert","NonConvert","Accept","ModeChange",
+    "P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3","4",
     // 32
-    "Space","PageUp","PageDown","End","Home","Left","Up","Right","Down","","","",",","",".","/",
+    "5","6","7","8","9","Numpad0","Numpad1","Numpad2","Numpad3","Numpad4","Numpad5","Numpad6","Numpad7","Numpad8","Numpad9","F1",
     // 48
-    "0","1","2","3","4","5","6","7","8","9","",";","","=","","",
+    "F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12","Escape","~","-","=","Backspace",
     // 64
-    "","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O",
+    "Tab","[","]","Enter",":","\"","\\","\\ 2",",","Stop","/","Space","Insert","Delete","Home","End",
     // 80
-    "P","Q","R","S","T","U","V","W","X","Y","Z","[","\\","]","","",
+    "PageUp","PageDown","Left","Right","Up","Down","Numpad/","Numpad*","Numpad-","Numpad+","NumpadDel","NumpadEnter","PrintScreen","Pause","ABNT-C1","Yen",
     // 96
-    "Numpad0","Numpad1","Numpad2","Numpad3","Numpad4","Numpad5","Numpad6","Numpad7","Numpad8","Numpad9","Numpad*","Numpad+","Numpad--","Numpad-","Numpad.","Numpad/",
+    "Kana","Convert","NoConvert","@","Circumflex",": 2","Kanji","Numpad=","`",";","Command","Unknown1","Unknown2","Unknown3","Unknown4","Unknown5",
     // 112
-    "F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12","F13","","","","Delete",
-    // 128
-    "","","","","","","","","","","","","","","","",
-    // 144
-    "NumLock","ScrollLock","","","","","","","","","PrintScreen","Insert","Help","Meta","",""
+    "Unknown6","Unknown7","Unknown8","LShift","RShift","LControl","RControl","Alt","AltGr","LWin","RWin","Menu","ScrollLock","NumLock","CapsLock","Maximum"
 };
 
 
