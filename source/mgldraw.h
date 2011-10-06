@@ -53,7 +53,6 @@ class MGLDraw
 		bool LoadPalette(char *name);
 		void SetPalette(palette_t *pal2);
 		void RealizePalette(void);
-		void DarkPalette(void);
 
 		bool LoadBMP(const char *name);
 
@@ -92,11 +91,5 @@ class MGLDraw
 		char lastKeyPressed;
 		byte mouseDown;
 };
-
-// ignore these functions.  They are only outside of the protected portion of the MGLDraw
-// class because I don't know how to make a function pointer point to a member function.
-
-long FAR PASCAL MGLDraw_EventHandler(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam); // needed by jamulsound
-HWND MGLGetHWnd(void);	// needed by music ("augh.")
 
 #endif

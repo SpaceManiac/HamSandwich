@@ -13,7 +13,7 @@
 
 #include "mgldraw.h"
 #include "winpch.h"
-#include "game.h"	// even sorrier about this crap (it's for MGLDraw_Activate only)
+#include "game.h"	// even sorrier about this crap (it's for SetGameIdle and GetGameIdle only)
 #include "sound.h"
 #include "music.h"
 #include "ctype.h"
@@ -22,6 +22,8 @@
 static char prevKey[KEY_MAX];
 static bool closeButtonPressed;
 void closeButtonCallback() { closeButtonPressed = true; }
+void switchInCallback() { SetGameIdle(0); }
+void switchOutCallback() { SetGameIdle(1); }
 
 // Replacements for missing MGL functions
 int MGL_random(int max) {
@@ -51,6 +53,9 @@ MGLDraw::MGLDraw(const char *name,int xRes,int yRes,int bpp,bool window,HINSTANC
     }
     set_window_title(name);
     set_close_button_callback(&closeButtonCallback);
+    set_display_switch_mode(SWITCH_BACKGROUND);
+    set_display_switch_callback(SWITCH_IN, switchInCallback);
+    set_display_switch_callback(SWITCH_OUT, switchOutCallback);
 
 	// this used to have to be in a very specific place but now it doesn't, hooray!
 	if(JamulSoundInit(hInst,name,512))
@@ -216,33 +221,7 @@ void MGLDraw::SetPalette(palette_t *pal2)
 
 void MGLDraw::RealizePalette(void)
 {
-	//GM_setPalette(pal,256,0);
-	//GM_realizePalette(256,0,true);
-}
-
-// Doesn't appear to be used.
-void MGLDraw::DarkPalette(void)
-{
-    /*
-	palette_t darkpal[256];
-	int i;
-
-	for(i=0;i<256;i++)
-	{
-		darkpal[i].blue=(byte)(pal[i].blue>>1);
-		darkpal[i].red=(byte)(pal[i].red>>1);
-		darkpal[i].green=(byte)(pal[i].green>>1);
-		darkpal[i].alpha=pal[i].alpha;
-	}
-	darkpal[175].blue=pal[175].blue;
-	darkpal[175].red=pal[175].red;
-	darkpal[175].green=pal[175].green;
-	darkpal[255].blue=pal[255].blue;
-	darkpal[255].red=pal[255].red;
-	darkpal[255].green=pal[255].green;
-	GM_setPalette(darkpal,256,0);
-	GM_realizePalette(256,0,true);
-    */
+	// Nothing!
 }
 
 // 8-bit graphics only
@@ -437,20 +416,4 @@ void MGLDraw::GammaCorrect(byte gamma)
 	}
 	this->RealizePalette();
 	memcpy(pal,temp,sizeof(palette_t)*256);
-}
-
-//--------------------------------------------------------------------------
-// these are all the event handling functions
-
-long FAR PASCAL MGLDraw_EventHandler(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	switch(message)
-	{
-		case MM_MCINOTIFY:	// this is just tossed in because I have CD audio in there
-			CDNeedsUpdating();
-			break;
- 		default:
-			return DefWindowProc(hwnd,message,wParam,lParam);
-	}
-	return 0L;
 }
