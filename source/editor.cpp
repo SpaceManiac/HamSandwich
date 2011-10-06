@@ -642,14 +642,9 @@ void EditorMenuClick(void)
 
 void UpdateMouse(void)
 {
-	int msx,msy;
 	int cx,cy;
 
-    editmgl->GetMouse(&msx, &msy);
-    editmgl->TeleportMouse(320, 240);
-
-	mouseX+=(msx-320);
-	mouseY+=(msy-240);
+    editmgl->GetMouse(&mouseX, &mouseY);
 
 	if(mouseX<0)
 		mouseX=0;
