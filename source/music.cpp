@@ -28,7 +28,7 @@ void MusicExit(void)
 // currently the only thing music does, but maybe midis will be added later
 
 void CDPlay(int track) {
-    char buf[16];
+    char buf[32];
     sprintf(buf, "sound/mus%03d.ogg", track);
     trackNum = track;
     if (currentMusic) destroy_sample(currentMusic);
