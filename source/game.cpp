@@ -54,7 +54,7 @@ void LunaticInit(MGLDraw *mgl)
 	LoadOptions();
 	MusicInit();
 	mgl->SetLastKey(0);
-	srand(timeGetTime()); // MGL_srand -> srand
+	MGL_srand(timeGetTime());
 	InitControls();
 	InitPlayer(INIT_GAME,0,0);
 	msgFromOtherModules=0;

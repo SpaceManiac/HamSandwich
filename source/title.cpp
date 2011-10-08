@@ -492,10 +492,10 @@ void PickerDraw(MGLDraw *mgl)
 
 	mgl->ClearScreen();
 
-	srand(123);
+	MGL_srand(123);
 	scrn=mgl->GetScreen();
 
-	for(i=0;i<220;i++)
+	for(i=0;i<221;i++)
 		scrn[MGL_random(640)+MGL_random(480)*640]=starColorTable[MGL_random(9)];
 
 	if(offsetdir==0)
@@ -679,7 +679,7 @@ byte WorldPicker(MGLDraw *mgl)
 	mgl->GammaCorrect(GetGamma());
 	delete planetSpr;
 	FontFree(&pickerFont);
-	srand(timeGetTime());
+	MGL_srand(timeGetTime());
 	return exitcode;
 }
 

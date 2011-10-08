@@ -29,10 +29,13 @@ MTRand mtRand;
 
 // Replacements for missing MGL functions
 int MGL_random(int max) {
-    return mtRand.randInt(max);
+    return mtRand.randInt(max - 1);
+}
+void MGL_srand(int seed) {
+    mtRand.seed(seed);
 }
 long MGL_randoml(long max) {
-    return mtRand.randInt(max);
+    return mtRand.randInt(max - 1);
 }
 void MGL_fatalError(const char* txt) {
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
