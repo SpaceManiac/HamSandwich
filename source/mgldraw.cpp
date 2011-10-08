@@ -17,6 +17,7 @@
 #include "sound.h"
 #include "music.h"
 #include "ctype.h"
+#include "twister.h"
 
 // Allegro shenanigans
 static char prevKey[KEY_MAX];
@@ -24,13 +25,14 @@ static bool closeButtonPressed;
 void closeButtonCallback() { closeButtonPressed = true; }
 void switchInCallback() { SetGameIdle(0); }
 void switchOutCallback() { SetGameIdle(1); }
+MTRand mtRand;
 
 // Replacements for missing MGL functions
 int MGL_random(int max) {
-    return rand() % max;
+    return mtRand.randInt(max);
 }
 long MGL_randoml(long max) {
-    return rand() % max;
+    return mtRand.randInt(max);
 }
 void MGL_fatalError(const char* txt) {
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
