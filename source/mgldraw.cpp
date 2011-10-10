@@ -18,6 +18,20 @@
 #include "music.h"
 #include "ctype.h"
 #include "twister.h"
+#include "shlobj.h"
+#include <stdio.h>
+
+// Appdata shenanigans
+FILE* AppdataOpen(const char* file, const char* mode) {
+    char buffer[MAX_PATH];
+    SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, buffer);
+    sprintf(buffer + strlen(buffer), "\\Hamumu Software");
+    mkdir(buffer);
+    sprintf(buffer + strlen(buffer), "\\DrLunatic");
+    mkdir(buffer);
+    sprintf(buffer + strlen(buffer), "\\%s", file);
+    return fopen(buffer, mode);
+}
 
 // Allegro shenanigans
 static char prevKey[KEY_MAX];

@@ -20,6 +20,10 @@
 #include "winpch.h"
 #include "jamulsound.h"
 #include "control.h"
+#include <stdio.h>
+
+// For appdata storage of stuff
+FILE* AppdataOpen(const char* filename, const char* mode);
 
 // Replacement for missing palette_t
 typedef struct palette_t {

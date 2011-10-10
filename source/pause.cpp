@@ -111,7 +111,7 @@ void InitPauseMenu(void)
 	lastKey=0;
 	subMode=0;
 
-	f=fopen("loony.sav","rb");
+	f=AppdataOpen("loony.sav","rb");
 	if(!f)
 	{
 		percent[0]=0.0;

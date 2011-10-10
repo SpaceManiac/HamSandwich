@@ -339,7 +339,7 @@ void LoadOptions(void)
 {
 	FILE *f;
 
-	f=fopen("lunatic.cfg","rb");
+	f=AppdataOpen("lunatic.cfg","rb");
 	if(!f)
 	{
 		opt.sound=1;
@@ -378,7 +378,7 @@ void SaveOptions(void)
 {
 	FILE *f;
 
-	f=fopen("lunatic.cfg","wb");
+	f=AppdataOpen("lunatic.cfg","wb");
 	fwrite(&opt,sizeof(options_t),1,f);
 	fclose(f);
 }
