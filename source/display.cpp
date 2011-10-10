@@ -491,13 +491,14 @@ void DisplayList::Render(void)
 		{
 			if(dispObj[i].flags&DISPLAY_WALLTILE)
 			{
-                char* bright = ((Map*) dispObj[i].spr)->MakeSmoothLighting(dispObj[i].x/32, dispObj[i].y/24);
+                // for tiles, DISPLAY_GHOST means lighting is disabled
+                char* bright = ((Map*) dispObj[i].spr)->MakeSmoothLighting(dispObj[i].flags&DISPLAY_GHOST, dispObj[i].x/32, dispObj[i].y/24);
                 RenderWallTileFancy(dispObj[i].x-scrx,dispObj[i].y-scry,199+dispObj[i].z2,bright);
                 RenderRoofTileFancy(dispObj[i].x-scrx,dispObj[i].y-scry-TILE_HEIGHT,dispObj[i].hue,dispObj[i].flags&DISPLAY_TRANSTILE,0,bright);
 			}
 			else if(dispObj[i].flags&DISPLAY_ROOFTILE)
 			{
-                char* bright = ((Map*) dispObj[i].spr)->MakeSmoothLighting(dispObj[i].x/32, dispObj[i].y/24);
+                char* bright = ((Map*) dispObj[i].spr)->MakeSmoothLighting(dispObj[i].flags&DISPLAY_GHOST, dispObj[i].x/32, dispObj[i].y/24);
                 RenderRoofTileFancy(dispObj[i].x-scrx,dispObj[i].y-scry-TILE_HEIGHT,dispObj[i].hue,dispObj[i].flags&DISPLAY_TRANSTILE,0,bright);
 			}
 			else if(dispObj[i].flags&DISPLAY_SHADOW)

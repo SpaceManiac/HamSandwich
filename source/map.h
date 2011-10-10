@@ -142,7 +142,7 @@ class Map
         char LightOf(int x, int y);
         bool Wall(int x, int y);
         byte MakeSmoothShadow(int x, int y);
-        char* MakeSmoothLighting(int x, int y);
+        char* MakeSmoothLighting(bool beZero, int x, int y);
 
 	private:
 		void LOSPoints(int x,int y,int curx,int cury,int *p1x,int *p1y,int *p2x,int *p2y);
