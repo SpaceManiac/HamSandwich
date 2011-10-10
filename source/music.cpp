@@ -7,6 +7,7 @@
 
 byte currentMode;
 LOGG_Stream* stream;
+int isPlaying;
 int trackNum;
 
 byte MusicInit(void)
@@ -18,6 +19,7 @@ byte MusicInit(void)
 
 void MusicExit(void)
 {
+	CDStop();
 }
 
 
@@ -25,7 +27,7 @@ void MusicExit(void)
 // LOGG AUDIO STUFF
 
 void CDPlay(int track) {
-    if (trackNum == track && !logg_update_stream(stream)) {
+    if (trackNum == track && stream != NULL && isPlaying) {
         return; // Already playing that track
     }
 
@@ -39,18 +41,15 @@ void CDPlay(int track) {
 void CDNeedsUpdating(void) {}
 
 void CDPlayerUpdate(byte mode) {
-    bool isPlaying = logg_update_stream(stream);
+    isPlaying = 0;
+	if (stream != NULL)
+		isPlaying = logg_update_stream(stream);
+    //printf("mode=%d, isPlaying = %d\n", (int)mode, (int)isPlaying);
     bool modeChanged = currentMode != mode;
     currentMode = mode;
 
     if (!isPlaying || modeChanged) {
         switch(currentMode) {
-            case CD_OFF:
-            default:
-                if (isPlaying) {
-                    CDStop();
-                }
-                break;
             case CD_LOOPTRACK:
                 CDPlay(trackNum);
                 break;
@@ -66,6 +65,12 @@ void CDPlayerUpdate(byte mode) {
                     int newTrack = trackNum + 1;
                     if (newTrack > 18) newTrack = 3;
                     CDPlay(newTrack);
+                }
+                break;
+			case CD_OFF:
+            default:
+                if (isPlaying) {
+                    CDStop();
                 }
                 break;
         }

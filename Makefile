@@ -5,8 +5,8 @@
 DIRECTX=D:\\libraries\\directx-sdk
 GLOBAL_OPTIONS=
 LIBS=-lwinmm -ldsound -lalleg44 -llogg -lvorbisfile -lvorbis -logg -lvorbisenc
-COMPILER_OPTIONS=-std=c++0x -Iinclude -Wall -I${DIRECTX}/Include/ -DALLEGRO_MINGW32
-LINKER_OPTIONS=-static-libgcc -static-libstdc++ -Linclude -L${DIRECTX}/Lib/x86/ ${LIBS}
+COMPILER_OPTIONS=-std=c++0x -Iinclude -Wall -I${DIRECTX}/Include/ -DALLEGRO_MINGW32 -mwindows
+LINKER_OPTIONS=-static-libgcc -static-libstdc++ -Linclude -L${DIRECTX}/Lib/x86/ ${LIBS} -mwindows
 
 OPTIONS_RELEASE=${COMPILER_OPTIONS} -DNDEBUG -DEXPANDO -O2 -s
 OPTIONS_DEBUG=${COMPILER_OPTIONS} -D_DEBUG -DEXPANDO -DLOG -g
