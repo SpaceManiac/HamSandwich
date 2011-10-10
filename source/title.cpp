@@ -1250,6 +1250,7 @@ void Credits(MGLDraw *mgl)
 		if(flip)
 			y+=1;
 
+        HandleCDMusic();
 		mgl->Flip();
 		if(!mgl->Process())
 			return;
@@ -1307,6 +1308,8 @@ void VictoryText(MGLDraw *mgl)
 		mgl->ClearScreen();
 		VictoryTextRender(y);
 		y+=1;
+
+        HandleCDMusic();
 		mgl->Flip();
 		if(!mgl->Process())
 			return;
@@ -1415,6 +1418,7 @@ byte SpeedSplash(MGLDraw *mgl,const char *fname)
 			return 0;
 		c=mgl->LastKeyPressed();
 
+        HandleCDMusic();
 		if(c==27)
 			return 0;
 		else if(c)

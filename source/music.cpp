@@ -73,7 +73,6 @@ void CDPlayerUpdate(byte mode) {
 }
 
 void CDStop(void) {
-    printf("CDStop()\n");
     if (stream) {
         logg_destroy_stream(stream);
         stream = NULL;
