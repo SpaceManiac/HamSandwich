@@ -6,15 +6,13 @@
 #define	CDAUDIO_CDPLAYER_LENGTH			( 10 )
 
 byte currentMode;
-int currentVoice;
-SAMPLE* currentMusic;
+LOGG_Stream* stream;
 int trackNum;
 
 byte MusicInit(void)
 {
     currentMode = CD_OFF;
-    currentVoice = -1;
-    currentMusic = NULL;
+    stream = NULL;
 	return 1;
 }
 
@@ -27,33 +25,26 @@ void MusicExit(void)
 // LOGG AUDIO STUFF
 
 void CDPlay(int track) {
-    if (trackNum == track && voice_check(currentVoice) == currentMusic) {
+    if (trackNum == track && !logg_update_stream(stream)) {
         return; // Already playing that track
     }
 
     char buf[32];
     sprintf(buf, "sound/mus%03d.ogg", track);
     trackNum = track;
-    if (currentMusic) destroy_sample(currentMusic);
-    currentMusic = logg_load(buf);
-    currentVoice = play_sample(currentMusic, 128, 128, 1000, 0);
+    if (stream != NULL) logg_destroy_stream(stream);
+    stream = logg_get_stream(buf, 128, 128, 0);
 }
 
 void CDNeedsUpdating(void) {}
 
-#define CD_OFF		  0
-#define CD_LOOPTRACK  1	// continuously loop the current track
-#define CD_INTROLOOP  2	// plays the chosen track, then loops the next one
-#define CD_RANDOM	  3 // after current track, jump to any other at random
-#define CD_NORMAL	  4 // just keep playing the tracks in order, loops at end of CD to beginning
-
 void CDPlayerUpdate(byte mode) {
-    bool isPlaying = currentMusic != NULL && voice_check(currentVoice) == currentMusic;
+    bool isPlaying = logg_update_stream(stream);
     bool modeChanged = currentMode != mode;
     currentMode = mode;
 
     if (!isPlaying || modeChanged) {
-        switch(mode) {
+        switch(currentMode) {
             case CD_OFF:
             default:
                 if (isPlaying) {
@@ -82,10 +73,10 @@ void CDPlayerUpdate(byte mode) {
 }
 
 void CDStop(void) {
-    if (currentMusic) {
-        stop_sample(currentMusic);
-        destroy_sample(currentMusic);
-        currentMusic = NULL;
+    printf("CDStop()\n");
+    if (stream) {
+        logg_destroy_stream(stream);
+        stream = NULL;
         trackNum = 0;
     }
 }

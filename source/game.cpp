@@ -166,6 +166,7 @@ void GameIdle(void)
 	start=timeGetTime();
 	while(idleGame)
 	{
+        HandleCDMusic();
 		if(!gamemgl->Process())
 			break;
 	}

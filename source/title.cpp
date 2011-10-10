@@ -658,6 +658,8 @@ byte WorldPicker(MGLDraw *mgl)
 	numRunsToMakeUp=0;
 	while(exitcode==254)
 	{
+        HandleCDMusic();
+
 		lastTime+=TimeLength();
 		StartClock();
 		exitcode=PickerRun(&lastTime,mgl);
