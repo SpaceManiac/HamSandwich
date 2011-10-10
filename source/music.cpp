@@ -25,9 +25,12 @@ void MusicExit(void)
 
 // ----------------------------------------------------------------------------------
 // LOGG AUDIO STUFF
-// currently the only thing music does, but maybe midis will be added later
 
 void CDPlay(int track) {
+    if (trackNum == track && voice_check(currentVoice) == currentMusic) {
+        return; // Already playing that track
+    }
+
     char buf[32];
     sprintf(buf, "sound/mus%03d.ogg", track);
     trackNum = track;
@@ -45,7 +48,7 @@ void CDNeedsUpdating(void) {}
 #define CD_NORMAL	  4 // just keep playing the tracks in order, loops at end of CD to beginning
 
 void CDPlayerUpdate(byte mode) {
-    bool isPlaying = voice_check(currentVoice) == currentMusic;
+    bool isPlaying = currentMusic != NULL && voice_check(currentVoice) == currentMusic;
     bool modeChanged = currentMode != mode;
     currentMode = mode;
 
@@ -54,9 +57,7 @@ void CDPlayerUpdate(byte mode) {
             case CD_OFF:
             default:
                 if (isPlaying) {
-                    stop_sample(currentMusic);
-                    destroy_sample(currentMusic);
-                    currentMusic = NULL;
+                    CDStop();
                 }
                 break;
             case CD_LOOPTRACK:
@@ -83,7 +84,9 @@ void CDPlayerUpdate(byte mode) {
 void CDStop(void) {
     if (currentMusic) {
         stop_sample(currentMusic);
+        destroy_sample(currentMusic);
         currentMusic = NULL;
+        trackNum = 0;
     }
 }
 
