@@ -25,7 +25,7 @@
 FILE* AppdataOpen(const char* file, const char* mode) {
     char buffer[MAX_PATH];
     SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, buffer);
-    sprintf(buffer + strlen(buffer), "\\Hamumu Software");
+    sprintf(buffer + strlen(buffer), "\\Hamumu");
     mkdir(buffer);
     sprintf(buffer + strlen(buffer), "\\DrLunatic");
     mkdir(buffer);
