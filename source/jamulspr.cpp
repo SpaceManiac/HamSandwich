@@ -935,7 +935,9 @@ bool sprite_set_t::Load(const char *fname)
 	// read the count
 	fread(&count,2,1,f);
 
+#ifndef NDEBUG
     printf("loading %s, count = %d\n", fname, count);
+#endif
 
 	spr=(sprite_t **)malloc(sizeof(sprite_t *)*count);
 	if(!spr)
@@ -1044,7 +1046,6 @@ sprite_t *sprite_set_t::GetSprite(int which)
 {
 	if(spr && which<=count && spr[which])
 		return spr[which];
-    printf("Invalid sprite %d in %s\n", which, "???");
 	return NULL;
 }
 
