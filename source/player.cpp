@@ -20,7 +20,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	if(initWhat==INIT_GAME)	// initialize everything, this is to start a whole new game
 	{
 		player.score=0;
-		for(i=0;i<64;i++)
+		for(i=0;i<MAX_CUSTOM;i++)
 		{
 			for(j=0;j<MAX_MAPS;j++)
 				player.levelPassed[i][j]=0;

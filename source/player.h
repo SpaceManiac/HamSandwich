@@ -38,20 +38,23 @@
 #define VE_MINECART 1
 #define VE_RAFT		2
 
+// the most custom worlds it will handle
+#define MAX_CUSTOM (128)
+
 typedef struct player_t
 {
 	// values for the overall game
 	byte musicSettings;
 	int prevScore;	// so you can lose all your points when you die
 	int score;
-	byte levelPassed[64][MAX_MAPS];
-	byte keychain[64][4];
+	byte levelPassed[MAX_CUSTOM][MAX_MAPS];
+	byte keychain[MAX_CUSTOM][4];
 		// total completion is how many "points" the world has in it
-	int  totalCompletion[64];
+	int  totalCompletion[MAX_CUSTOM];
 		// complete is how many of those points the player has, to create a percentage complete display
-	int  complete[64];
-	char customName[64][32];
-	byte lunacyKey[64];
+	int  complete[MAX_CUSTOM];
+	char customName[MAX_CUSTOM][32];
+	byte lunacyKey[MAX_CUSTOM];
 	// values reset for each world
 	byte levelsPassed;
 	byte worldNum;

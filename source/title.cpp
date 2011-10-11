@@ -200,9 +200,6 @@ char victoryTxt[][64]={
 #define END_OF_VICTORY 480*2-100
 #endif
 
-// the most custom worlds it will handle
-#define MAX_CUSTOM (128-5)
-
 typedef struct title_t
 {
 	int bouaphaX,doctorX;
@@ -284,21 +281,21 @@ int NextLegal(int now,byte dir)
 		{
 			now++;
 			if(now>MAX_CUSTOM-1)
-				now=0;
+				now=5;
 			tries++;
 		}
-		while(player.customName[now+5][0]=='\0' && tries<MAX_CUSTOM);
+		while(player.customName[now][0]=='\0' && tries<MAX_CUSTOM-5);
 	}
 	else
 	{
 		do
 		{
 			now--;
-			if(now<0)
+			if(now<5)
 				now=MAX_CUSTOM-1;
 			tries++;
 		}
-		while(player.customName[now+5][0]=='\0' && tries<MAX_CUSTOM);
+		while(player.customName[now][0]=='\0' && tries<MAX_CUSTOM-5);
 	}
 	return now;
 }
@@ -451,8 +448,8 @@ byte PickerRun(int *lastTime,MGLDraw *mgl)
 				return pickerpos;
 			else
 			{
-				if(player.customName[curCustom+5][0]!='\0')
-					return 5+curCustom;
+				if(player.customName[curCustom][0]!='\0')
+					return curCustom;
 				else	// can't pick a nonexistent level
 					MakeNormalSound(SND_BOUAPHAOUCH);
 			}
@@ -473,8 +470,8 @@ byte PickerRun(int *lastTime,MGLDraw *mgl)
 			GetWorldPoints(player.customName[pickerpos]);
 		else
 		{
-			GetWorldName(player.customName[curCustom+5],lvlName);
-			GetWorldPoints(player.customName[curCustom+5]);
+			GetWorldName(player.customName[curCustom],lvlName);
+			GetWorldPoints(player.customName[curCustom]);
 		}
 	}
 
@@ -595,8 +592,8 @@ void PickerDraw(MGLDraw *mgl)
 	}
 	else
 	{
-		f=PlayerGetPercent(curCustom+5)*100;
-		if(PlayerHasLunacyKey(curCustom+5))
+		f=PlayerGetPercent(curCustom)*100;
+		if(PlayerHasLunacyKey(curCustom))
 		{
 			planetSpr->GetSprite(24+(keyAnim/4))->Draw(570,400,mgl);
 		}
@@ -609,7 +606,7 @@ void PickerDraw(MGLDraw *mgl)
 
 	if(pickerpos==5)	// customs show which custom world is selected
 	{
-		if(player.customName[curCustom+5][0]=='\0')
+		if(player.customName[curCustom][0]=='\0')
 			FontPrintString(2,460,"None Available",&pickerFont);
 		else
 			FontPrintString(2,460,lvlName,&pickerFont);
@@ -652,7 +649,7 @@ byte WorldPicker(MGLDraw *mgl)
 #endif
 	pickeroffset=0;
 	offsetdir=0;
-	curCustom=0;
+	curCustom=5;
 	oldc=GetControls()|GetArrows();
 
 	numRunsToMakeUp=0;
@@ -673,7 +670,7 @@ byte WorldPicker(MGLDraw *mgl)
 		EndClock();
 	}
 	if(pickerpos==5)	// custom world
-		player.worldNum=curCustom+5;
+		player.worldNum=curCustom;
 
 	mgl->ClearScreen();
 	mgl->Flip();
@@ -692,7 +689,7 @@ void ScanWorldNames(void)
 	struct _finddata_t filedata;
 	int numFiles;
 
-	for(i=5;i<MAX_CUSTOM+5;i++)
+	for(i=5;i<MAX_CUSTOM;i++)
 		player.customName[i][0]='\0';
 
 	hFile=_findfirst("worlds\\*.dlw",&filedata);
@@ -745,7 +742,7 @@ void ReScanWorldNames(void)
 	struct _finddata_t filedata;
 	byte okay[MAX_CUSTOM];
 
-	for(i=0;i<MAX_CUSTOM;i++)
+	for(i=5;i<MAX_CUSTOM;i++)
 	{
 		if(player.customName[i][0]=='\0')
 			okay[i]=1;
@@ -766,7 +763,7 @@ void ReScanWorldNames(void)
 			(strcmp(filedata.name,"backup_load.dlw")) &&
 			(strcmp(filedata.name,"backup_exit.dlw")))
 		{
-			for(i=5;i<MAX_CUSTOM+5;i++)
+			for(i=5;i<MAX_CUSTOM;i++)
 			{
 				if(!strcmp(filedata.name,player.customName[i]))
 				{
@@ -774,10 +771,10 @@ void ReScanWorldNames(void)
 					break;
 				}
 			}
-			if(i==MAX_CUSTOM+5)	// none of the files matched, this is a new one
+			if(i==MAX_CUSTOM)	// none of the files matched, this is a new one
 			{
 				// add it in, if there's room
-				for(i=5;i<MAX_CUSTOM+5;i++)
+				for(i=5;i<MAX_CUSTOM;i++)
 				{
 					if(player.customName[i][0]=='\0')
 					{
@@ -793,7 +790,7 @@ void ReScanWorldNames(void)
 	_findclose(hFile);
 
 	// remove any that aren't valid
-	for(i=5;i<MAX_CUSTOM+5;i++)
+	for(i=5;i<MAX_CUSTOM;i++)
 	{
 		if(okay[i]==0)
 			player.customName[i][0]='\0';
@@ -1245,12 +1242,13 @@ void Credits(MGLDraw *mgl)
 		mgl->ClearScreen();
 		CreditsRender(y);
 
+        HandleCDMusic();
+
 		// only scroll every other frame
 		flip=1-flip;
 		if(flip)
 			y+=1;
 
-        HandleCDMusic();
 		mgl->Flip();
 		if(!mgl->Process())
 			return;
@@ -1307,9 +1305,8 @@ void VictoryText(MGLDraw *mgl)
 	{
 		mgl->ClearScreen();
 		VictoryTextRender(y);
-		y+=1;
-
         HandleCDMusic();
+		y+=1;
 		mgl->Flip();
 		if(!mgl->Process())
 			return;
@@ -1418,11 +1415,12 @@ byte SpeedSplash(MGLDraw *mgl,const char *fname)
 			return 0;
 		c=mgl->LastKeyPressed();
 
-        HandleCDMusic();
 		if(c==27)
 			return 0;
 		else if(c)
 			mode=2;
+
+        HandleCDMusic();
 
 		c=GetControls()|GetArrows();
 		if((c&(CONTROL_B1|CONTROL_B2)) && (!(oldc&(CONTROL_B1|CONTROL_B2))))
