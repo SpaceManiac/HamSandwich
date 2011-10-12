@@ -145,6 +145,7 @@ void ExitLevel(void)
 		CDStop();	// don't stop it if it's on random
 
 	delete curMap;
+    curMap = NULL;
 	PurgeMonsterSprites();
 }
 

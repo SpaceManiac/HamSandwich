@@ -1,4 +1,5 @@
 #include "jamulfmv.h"
+#include "game.h" // For HandleCDMusic()
 
 // different kinds of flic chunks
 #define FLI_COLOR		11
@@ -369,6 +370,7 @@ void FLI_play(const char *name,byte loop,word wait,MGLDraw *mgl)
     frmon++;
 	scrWidth=mgl->GetWidth();
     FLI_nextfr(mgl,scrWidth);
+    HandleCDMusic();
 	mgl->Flip();
     if(wait>0)
 		Sleep((dword)wait);
