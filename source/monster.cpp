@@ -1217,29 +1217,37 @@ void PurgeMonsterSprites(void)
 
 byte MonsterSize(byte type)
 {
+#ifdef EXPANDO
 	if(type==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
 		return monsType[MONS_PWRBOUAPHA].size;
+#endif
 	return monsType[type].size;
 }
 
 byte *MonsterAnim(byte type,byte anim)
 {
+#ifdef EXPANDO
 	if(type==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
 		return monsType[MONS_PWRBOUAPHA].anim[anim];
+#endif
 	return monsType[type].anim[anim];
 }
 
 word MonsterFlags(byte type)
 {
+#ifdef EXPANDO
 	if(type==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
 		return monsType[MONS_PWRBOUAPHA].flags;
+#endif
 	return monsType[type].flags;
 }
 
 byte MonsterFrames(byte type)
 {
+#ifdef EXPANDO
 	if(type==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
 		return monsType[MONS_PWRBOUAPHA].framesPerDir;
+#endif
 	return monsType[type].framesPerDir;
 }
 

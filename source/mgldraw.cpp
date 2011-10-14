@@ -2,23 +2,22 @@
 
    A moderately cute little wrapper around MGL.
 
-   -- No longer actually an MGL wrapper! --
-   -- Currently using PixelToaster --
-
    For quick reference, to use MGL in a program, you must:
 
    link in gm.lib and mglfx.lib as the first two things in the list of things to link in.
+
+   Note: no longer actually MGL.
 
 */
 
 #include "mgldraw.h"
 #include "winpch.h"
-#include "game.h"	// even sorrier about this crap (it's for SetGameIdle and GetGameIdle only)
+#include "game.h"	// for SetGameIdle and GetGameIdle only
 #include "sound.h"
 #include "music.h"
 #include "ctype.h"
 #include "twister.h"
-#include "shlobj.h"
+#include "shlobj.h" // for SHGetFolderPath
 #include <stdio.h>
 
 // Appdata shenanigans

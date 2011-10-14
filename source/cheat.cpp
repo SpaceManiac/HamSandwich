@@ -2,7 +2,7 @@
 #include "items.h"
 #include <ctype.h> // for tolower
 
-#define NUM_CHEATS 10
+#define NUM_CHEATS 13
 
 char cheatCode[NUM_CHEATS][16]={
 	"zappo",			// auto-win the level
@@ -15,6 +15,9 @@ char cheatCode[NUM_CHEATS][16]={
 	"stampy",			// keychains!
 	"brainz",			// get all brains
 	"itembright",		// light up items
+    "whereami",         // cloak d'invisible
+    "conwiz",           // conspiracies!
+    "arglebargle",      // fill with rage
 	};
 
 char lastKeys[17];	// the last 16 letter keys pressed
@@ -117,5 +120,15 @@ void DoCheat(byte w)
 		case 9:	// itemlight
 			ItemLightUp();
 			break;
+        case 10: // clock invisible
+            PlayerGetItem(ITM_INVIS,0,0);
+            break;
+        case 11: // conwiz!
+            NewBigMessage("Conspiracies",30);
+            break;
+        case 12: // fill with rage
+            NewMessage("Filling... with... RAGE!!",75,0);
+            player.rage=127*256;
+            break;
 	}
 }

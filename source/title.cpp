@@ -829,14 +829,13 @@ void MainMenuDisplay(MGLDraw *mgl,title_t title)
 	// Copyright:
 	Print(3,467,COPYRIGHT,1,1);
 	Print(2,466,COPYRIGHT,0,1);
+#ifdef DEMO
+	// DEMO!! message
+	planetSpr->GetSprite(23)->DrawBright(280,190+title.titleBright*5-79*2+title.expando*2,mgl,title.titleBright);
+#elif defined(EXPANDO)
 	// expandopak
-#ifdef EXPANDO
 	planetSpr->GetSprite(4+title.expando/16)->DrawBright(270,180,mgl,title.titleBright);
 	planetSpr->GetSprite(24)->DrawBright(190,185,mgl,title.titleBright);
-#endif
-	// DEMO!! message
-#ifdef DEMO
-	planetSpr->GetSprite(23)->DrawBright(280,190+title.titleBright*5-79*2+title.expando*2,mgl,title.titleBright);
 #endif
 
 	// now the menu options
