@@ -640,6 +640,8 @@ void Guy::MonsterControl(Map *map,world_t *world)
 		}
 	}
 
+    if (!target) return;
+
 	switch(type)
 	{
 		case MONS_BONEHEAD:
