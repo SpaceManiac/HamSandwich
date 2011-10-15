@@ -1047,8 +1047,11 @@ void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 	// Copyright:
 	Print(3,467,COPYRIGHT,1,1);
 	Print(2,466,COPYRIGHT,0,1);
-// expandopak
-#ifdef EXPANDO
+#ifdef DEMO
+	// DEMO!! message
+	planetSpr->GetSprite(23)->DrawBright(280,190+title.titleBright*5-79*2+title.expando*2,mgl,title.titleBright);
+#elif defined(EXPANDO)
+	// expandopak
 	planetSpr->GetSprite(4+title.expando/16)->DrawBright(270,180,mgl,title.titleBright);
 	planetSpr->GetSprite(24)->DrawBright(190,185,mgl,title.titleBright);
 #endif
@@ -1092,6 +1095,15 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title)
 		title->blueY-=8;
 	if(title->blueY<0)
 		title->blueY=0;
+
+	title->expando+=title->dexpando;
+	if(title->expando>79)
+	{
+		title->dexpando=-title->dexpando*13/16;
+		title->expando=79;
+	}
+	else
+		title->dexpando++;
 
 	// now real updating
 	c=GetControls()|GetArrows();
