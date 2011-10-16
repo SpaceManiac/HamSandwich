@@ -10,10 +10,10 @@ void InitCosSin(void)
 {
 	int i;
 
-	for(i=0;i<DEGREES;i++)
+	for (i = 0; i < DEGREES; i++)
 	{
-		costab[i]=(int)(cos((float)i*3.14159*2/DEGREES)*FIXAMT);
-		sintab[i]=(int)(sin((float)i*3.14159*2/DEGREES)*FIXAMT);
+		costab[i] = (int) (cos((float) i * 3.14159 * 2 / DEGREES) * FIXAMT);
+		sintab[i] = (int) (sin((float) i * 3.14159 * 2 / DEGREES) * FIXAMT);
 	}
 }
 
@@ -27,26 +27,26 @@ int Sine(int angle)
 	return sintab[angle];
 }
 
-void Dampen(int *value,int amt)
+void Dampen(int *value, int amt)
 {
-	if(*value>0)
+	if (*value > 0)
 	{
-		*value-=amt;
-		if(*value<0)
-			*value=0;
+		*value -= amt;
+		if (*value < 0)
+			*value = 0;
 	}
-	if(*value<0)
+	if (*value < 0)
 	{
-		*value+=amt;
-		if(*value>0)
-			*value=0;
+		*value += amt;
+		if (*value > 0)
+			*value = 0;
 	}
 }
 
-void Clamp(int *value,int amt)
+void Clamp(int *value, int amt)
 {
-	if(*value>amt)
-		*value=amt;
-	if(*value<-amt)
-		*value=-amt;
+	if (*value > amt)
+		*value = amt;
+	if (*value<-amt)
+		*value = -amt;
 }

@@ -16,69 +16,69 @@ typedef struct soundbuf_t
 	IDirectSoundBuffer *buf;
 } soundbuf_t;
 
-static IDirectSound *dsound=NULL;
-static int dsoundBufferCount=0,nextOpenBuffer=0;
-static soundbuf_t *soundbuf=NULL;
+static IDirectSound *dsound = NULL;
+static int dsoundBufferCount = 0, nextOpenBuffer = 0;
+static soundbuf_t *soundbuf = NULL;
 HWND dsoundHwnd;
 
 sound_t playBuffer[MAX_SOUNDS_AT_ONCE];
 int *soundHandle;
 
-bool JamulSoundInit(HINSTANCE hInst,const char *wndName, int numBuffers)
+bool JamulSoundInit(HINSTANCE hInst, const char *wndName, int numBuffers)
 {
 	int i;
 
-    // Used to have to make another window, now we just steal Allegro's
-    dsoundHwnd = win_get_window();
+	// Used to have to make another window, now we just steal Allegro's
+	dsoundHwnd = win_get_window();
 
-	if(!dsoundHwnd)
+	if (!dsoundHwnd)
 		return FALSE;
 
-	if(DirectSoundCreate(NULL,&dsound,NULL)!=DS_OK)
+	if (DirectSoundCreate(NULL, &dsound, NULL) != DS_OK)
 		return FALSE;
-	if(dsound->SetCooperativeLevel(dsoundHwnd, DSSCL_NORMAL)!=DS_OK)
+	if (dsound->SetCooperativeLevel(dsoundHwnd, DSSCL_NORMAL) != DS_OK)
 	{
 		dsound->Release();
 		return FALSE;
 	}
-	dsoundBufferCount=numBuffers;
-	soundbuf=(soundbuf_t*)calloc(sizeof(soundbuf_t)*(numBuffers+MAX_SOUNDS_AT_ONCE),1);
-	if(soundbuf==NULL)
+	dsoundBufferCount = numBuffers;
+	soundbuf = (soundbuf_t*) calloc(sizeof (soundbuf_t)*(numBuffers + MAX_SOUNDS_AT_ONCE), 1);
+	if (soundbuf == NULL)
 	{
 		dsound->Release();
 		return FALSE;
 	}
-	soundHandle=(int *)malloc(sizeof(int)*numBuffers);
-	if(soundHandle==NULL)
+	soundHandle = (int *) malloc(sizeof (int) *numBuffers);
+	if (soundHandle == NULL)
 	{
 		dsound->Release();
 		free(soundbuf);
 		return FALSE;
 	}
-	for(i=0;i<numBuffers;i++)
-		soundHandle[i]=-1;	// start them all empty
+	for (i = 0; i < numBuffers; i++)
+		soundHandle[i] = -1; // start them all empty
 
-	nextOpenBuffer=0;
+	nextOpenBuffer = 0;
 
-	for(i=0;i<MAX_SOUNDS_AT_ONCE;i++)
+	for (i = 0; i < MAX_SOUNDS_AT_ONCE; i++)
 	{
-		playBuffer[i].soundNum=-1;
-		playBuffer[i].dsHandle=-1;
-		playBuffer[i].flags=0;
+		playBuffer[i].soundNum = -1;
+		playBuffer[i].dsHandle = -1;
+		playBuffer[i].flags = 0;
 	}
 	return TRUE;
 }
 
 void JamulSoundDestroyBuffer(int which)
 {
-	if(soundbuf[which].buf)
+	if (soundbuf[which].buf)
 	{
-		if(JamulSoundIsPlaying(which))
+		if (JamulSoundIsPlaying(which))
 			JamulSoundStop(which);
 		soundbuf[which].buf->Release();
-		soundbuf[which].buf=NULL;
-		if(which<nextOpenBuffer)
-			nextOpenBuffer=which;
+		soundbuf[which].buf = NULL;
+		if (which < nextOpenBuffer)
+			nextOpenBuffer = which;
 	}
 }
 
@@ -86,48 +86,49 @@ void JamulSoundExit(void)
 {
 	int i;
 
-	if(soundbuf)
+	if (soundbuf)
 	{
-		for(i=0;i<dsoundBufferCount;i++)
+		for (i = 0; i < dsoundBufferCount; i++)
 			JamulSoundDestroyBuffer(i);
 		free(soundbuf);
 	}
 	free(soundHandle);
 
-	if(dsound)
+	if (dsound)
 		dsound->Release();
-	dsound=NULL;
+	dsound = NULL;
 }
 
 int JamulSoundCreateBuffer(int bufferLen, WAVEFORMATEX wfmtx)
 {
 	DSBUFFERDESC dsbdesc;
-	IDirectSoundBuffer* buffer=NULL;
+	IDirectSoundBuffer* buffer = NULL;
 	int bufnum;
 
-	if(nextOpenBuffer>=dsoundBufferCount)
+	if (nextOpenBuffer >= dsoundBufferCount)
 		return -1; // no more room
 
 	// Set up buffer description.
-	memset(&dsbdesc, 0, sizeof(DSBUFFERDESC));
-	dsbdesc.dwSize = sizeof(DSBUFFERDESC);
-	dsbdesc.dwFlags = DSBCAPS_CTRLPAN|DSBCAPS_CTRLFREQUENCY|DSBCAPS_CTRLVOLUME|DSBCAPS_STATIC;
+	memset(&dsbdesc, 0, sizeof (DSBUFFERDESC));
+	dsbdesc.dwSize = sizeof (DSBUFFERDESC);
+	dsbdesc.dwFlags = DSBCAPS_CTRLPAN | DSBCAPS_CTRLFREQUENCY | DSBCAPS_CTRLVOLUME | DSBCAPS_STATIC;
 	dsbdesc.dwBufferBytes = bufferLen;
 	dsbdesc.lpwfxFormat = &wfmtx;
 
 	// Create buffer.
-	if(dsound->CreateSoundBuffer(&dsbdesc, &buffer, 0)!=DS_OK)
+	if (dsound->CreateSoundBuffer(&dsbdesc, &buffer, 0) != DS_OK)
 		return -1;
 
-	bufnum=nextOpenBuffer;
-	soundbuf[nextOpenBuffer].buf=buffer;
-	while(soundbuf[nextOpenBuffer].buf && nextOpenBuffer<dsoundBufferCount)
+	bufnum = nextOpenBuffer;
+	soundbuf[nextOpenBuffer].buf = buffer;
+	while (soundbuf[nextOpenBuffer].buf && nextOpenBuffer < dsoundBufferCount)
 		nextOpenBuffer++;
 
 	return bufnum;
 }
 
 // just a part of JamulSoundLoad yanked out for no real reason
+
 bool JamulSoundWriteData(HMMIO file, int size, int bufnum)
 {
 	void* write1 = 0;
@@ -136,13 +137,13 @@ bool JamulSoundWriteData(HMMIO file, int size, int bufnum)
 	unsigned long length2 = 0;
 
 	// Lock the buffer.
-	if(soundbuf[bufnum].buf->Lock(0, size, &write1, &length1, &write2, &length2, 0)!=DS_OK)
+	if (soundbuf[bufnum].buf->Lock(0, size, &write1, &length1, &write2, &length2, 0) != DS_OK)
 		return FALSE;
 
 	if (write1 > 0)
 	{
 		// Copy the first bit of memory.
-		if (mmioRead(file, (char*)write1, length1) != (long)length1)
+		if (mmioRead(file, (char*) write1, length1) != (long) length1)
 		{
 			return FALSE;
 		}
@@ -151,14 +152,14 @@ bool JamulSoundWriteData(HMMIO file, int size, int bufnum)
 	if (write2 > 0)
 	{
 		// Copy the second bit of memory.
-		if (mmioRead(file, (char*)write2, length2) != (long)length2)
+		if (mmioRead(file, (char*) write2, length2) != (long) length2)
 		{
 			return FALSE;
 		}
 	}
 
 	// Unlock the buffer.
-	if(soundbuf[bufnum].buf->Unlock(write1, length1, write2, length2)!=DS_OK)
+	if (soundbuf[bufnum].buf->Unlock(write1, length1, write2, length2) != DS_OK)
 		return FALSE;
 
 	// data pumped in!
@@ -168,22 +169,23 @@ bool JamulSoundWriteData(HMMIO file, int size, int bufnum)
 // returns the number of the position in which it stored the sound (later use JamulSoundPlay(n) to play
 // sound #n.
 // -1 means it failed.
+
 int JamulSoundLoad(char *fname)
 {
 	HMMIO file;
-	MMCKINFO parent,child;
+	MMCKINFO parent, child;
 	WAVEFORMATEX wfmtx;
 	int bufnum;
 
-	file=mmioOpen(fname, 0, MMIO_READ | MMIO_ALLOCBUF);
-	if(!file)
+	file = mmioOpen(fname, 0, MMIO_READ | MMIO_ALLOCBUF);
+	if (!file)
 	{
 		return -1;
 	}
 
 	// Set up the specifer to find the wave data.
 
-	memset(&parent, 0, sizeof(MMCKINFO));
+	memset(&parent, 0, sizeof (MMCKINFO));
 	parent.fccType = mmioFOURCC('W', 'A', 'V', 'E');
 
 	if (mmioDescend(file, &parent, 0, MMIO_FINDRIFF))
@@ -193,7 +195,7 @@ int JamulSoundLoad(char *fname)
 	}
 
 	// Set up the specifer to find the fmt data.
-	memset(&child, 0, sizeof(MMCKINFO));
+	memset(&child, 0, sizeof (MMCKINFO));
 	child.fccType = mmioFOURCC('f', 'm', 't', ' ');
 
 	if (mmioDescend(file, &child, &parent, 0))
@@ -203,7 +205,7 @@ int JamulSoundLoad(char *fname)
 	}
 
 	// Read the format.
-	if (mmioRead(file, (char*)&wfmtx, sizeof(wfmtx)) != sizeof(wfmtx))
+	if (mmioRead(file, (char*) &wfmtx, sizeof (wfmtx)) != sizeof (wfmtx))
 	{
 		mmioClose(file, 0);
 		return -1;
@@ -233,20 +235,20 @@ int JamulSoundLoad(char *fname)
 	}
 
 	// Create the buffer.
-	bufnum=JamulSoundCreateBuffer(child.cksize, wfmtx);
+	bufnum = JamulSoundCreateBuffer(child.cksize, wfmtx);
 
-	if (bufnum==-1)
+	if (bufnum == -1)
 	{
 		mmioClose(file, 0);
 		return -1;
 	}
 
 	// Write the data.
-	if (!JamulSoundWriteData(file, child.cksize,bufnum))
+	if (!JamulSoundWriteData(file, child.cksize, bufnum))
 	{
 		soundbuf[bufnum].buf->Release();
-		soundbuf[bufnum].buf=NULL;
-		nextOpenBuffer=bufnum;
+		soundbuf[bufnum].buf = NULL;
+		nextOpenBuffer = bufnum;
 		mmioClose(file, 0);
 		return -1;
 	}
@@ -258,22 +260,23 @@ int JamulSoundLoad(char *fname)
 
 // loads in a WAV file.  If successful, it takes the WAV file and stores it in memory in
 // the format JamulSoundGetFromMemory requires.
+
 byte *JamulSoundLoadToMemory(char *fname)
 {
 	HMMIO file;
 	byte *buf;
-	MMCKINFO parent,child;
+	MMCKINFO parent, child;
 	WAVEFORMATEX wfmtx;
 
-	file=mmioOpen(fname, 0, MMIO_READ | MMIO_ALLOCBUF);
-	if(!file)
+	file = mmioOpen(fname, 0, MMIO_READ | MMIO_ALLOCBUF);
+	if (!file)
 	{
 		return NULL;
 	}
 
 	// Set up the specifer to find the wave data.
 
-	memset(&parent, 0, sizeof(MMCKINFO));
+	memset(&parent, 0, sizeof (MMCKINFO));
 	parent.fccType = mmioFOURCC('W', 'A', 'V', 'E');
 
 	if (mmioDescend(file, &parent, 0, MMIO_FINDRIFF))
@@ -283,7 +286,7 @@ byte *JamulSoundLoadToMemory(char *fname)
 	}
 
 	// Set up the specifer to find the fmt data.
-	memset(&child, 0, sizeof(MMCKINFO));
+	memset(&child, 0, sizeof (MMCKINFO));
 	child.fccType = mmioFOURCC('f', 'm', 't', ' ');
 
 	if (mmioDescend(file, &child, &parent, 0))
@@ -293,7 +296,7 @@ byte *JamulSoundLoadToMemory(char *fname)
 	}
 
 	// Read the format.
-	if (mmioRead(file, (char*)&wfmtx, sizeof(wfmtx)) != sizeof(wfmtx))
+	if (mmioRead(file, (char*) &wfmtx, sizeof (wfmtx)) != sizeof (wfmtx))
 	{
 		mmioClose(file, 0);
 		return NULL;
@@ -323,22 +326,23 @@ byte *JamulSoundLoadToMemory(char *fname)
 	}
 
 	// allocate space for: a dword for the size of the data, a waveformat record, and the data
-	buf=(byte *)malloc(sizeof(DWORD)+sizeof(WAVEFORMATEX)+child.cksize);
-	if(buf==NULL)
+	buf = (byte *) malloc(sizeof (DWORD) + sizeof (WAVEFORMATEX) + child.cksize);
+	if (buf == NULL)
 		return NULL;
 	// store the size
-	memcpy(buf,&(child.cksize),sizeof(DWORD));
+	memcpy(buf, &(child.cksize), sizeof (DWORD));
 	// store the waveformat record
-	memcpy(&(buf[sizeof(DWORD)]),&wfmtx,sizeof(WAVEFORMATEX));
+	memcpy(&(buf[sizeof (DWORD)]), &wfmtx, sizeof (WAVEFORMATEX));
 
 	// and load and store the data
-	mmioRead(file, (char*)&(buf[sizeof(DWORD)+sizeof(WAVEFORMATEX)]),child.cksize);
+	mmioRead(file, (char*) &(buf[sizeof (DWORD) + sizeof (WAVEFORMATEX)]), child.cksize);
 
 	mmioClose(file, 0);
 	return buf;
 }
 
 // just a part of JamulSoundGetFromMemory yanked out for convenience
+
 bool JamulSoundWriteDataFromMemory(byte *buf, int size, int bufnum)
 {
 	void* write1 = 0;
@@ -347,23 +351,23 @@ bool JamulSoundWriteDataFromMemory(byte *buf, int size, int bufnum)
 	unsigned long length2 = 0;
 
 	// Lock the buffer.
-	if(soundbuf[bufnum].buf->Lock(0, size, &write1, &length1, &write2, &length2, 0)!=DS_OK)
+	if (soundbuf[bufnum].buf->Lock(0, size, &write1, &length1, &write2, &length2, 0) != DS_OK)
 		return FALSE;
 
-	if (write1>0)
+	if (write1 > 0)
 	{
 		// Copy the first bit of memory.
-		memcpy(write1,buf,length1);
+		memcpy(write1, buf, length1);
 	}
 
-	if (write2>0)
+	if (write2 > 0)
 	{
 		// Copy the second bit of memory.
-		memcpy(write2,&(buf[length1]),length2);
+		memcpy(write2, &(buf[length1]), length2);
 	}
 
 	// Unlock the buffer.
-	if(soundbuf[bufnum].buf->Unlock(write1, length1, write2, length2)!=DS_OK)
+	if (soundbuf[bufnum].buf->Unlock(write1, length1, write2, length2) != DS_OK)
 		return FALSE;
 
 	// data pumped in!
@@ -373,6 +377,7 @@ bool JamulSoundWriteDataFromMemory(byte *buf, int size, int bufnum)
 // returns the number of the position in which it stored the sound (later use JamulSoundPlay(n) to play
 // sound #n.
 // -1 means it failed.
+
 int JamulSoundGetFromMemory(byte *buf)
 {
 	WAVEFORMATEX wfmtx;
@@ -384,16 +389,16 @@ int JamulSoundGetFromMemory(byte *buf)
 	void* write2=0;
 	unsigned long length2=0;*/ // seemingly unused
 
-	if(buf==NULL)
+	if (buf == NULL)
 		return -1;
 
-	sizeptr=(DWORD *)buf;
-	size=*sizeptr;
+	sizeptr = (DWORD *) buf;
+	size = *sizeptr;
 
-	if(size==0)
+	if (size == 0)
 		return -1;
 
-	memcpy(&wfmtx,&(buf[sizeof(DWORD)]),sizeof(WAVEFORMATEX));
+	memcpy(&wfmtx, &(buf[sizeof (DWORD)]), sizeof (WAVEFORMATEX));
 
 	// Make sure the wave data is the right format.
 	if (wfmtx.wFormatTag != WAVE_FORMAT_PCM)
@@ -402,20 +407,20 @@ int JamulSoundGetFromMemory(byte *buf)
 	}
 
 	// Create the buffer.
-	bufnum=JamulSoundCreateBuffer(size, wfmtx);
+	bufnum = JamulSoundCreateBuffer(size, wfmtx);
 
-	if (bufnum==-1)
+	if (bufnum == -1)
 	{
 		return -1;
 	}
 
 
 	// Write the data.
-	if (!JamulSoundWriteDataFromMemory(&buf[sizeof(DWORD)+sizeof(WAVEFORMATEX)], size,bufnum))
+	if (!JamulSoundWriteDataFromMemory(&buf[sizeof (DWORD) + sizeof (WAVEFORMATEX)], size, bufnum))
 	{
 		soundbuf[bufnum].buf->Release();
-		soundbuf[bufnum].buf=NULL;
-		nextOpenBuffer=bufnum;
+		soundbuf[bufnum].buf = NULL;
+		nextOpenBuffer = bufnum;
 		return -1;
 	}
 
@@ -423,64 +428,64 @@ int JamulSoundGetFromMemory(byte *buf)
 	return bufnum;
 }
 
-bool JamulSoundPlay(int which,long pan,long vol,byte playFlags)
+bool JamulSoundPlay(int which, long pan, long vol, byte playFlags)
 {
 	int flags;
 	// Play the sound.
-	if(playFlags&SOUND_LOOP)
-		flags=DSBPLAY_LOOPING;
+	if (playFlags & SOUND_LOOP)
+		flags = DSBPLAY_LOOPING;
 	else
-		flags=0;
+		flags = 0;
 
 	// if this copy is in use, can't play it
-	if(JamulSoundIsPlaying(which))
+	if (JamulSoundIsPlaying(which))
 	{
-		if(playFlags&SOUND_CUTOFF)
+		if (playFlags & SOUND_CUTOFF)
 		{
-			if(soundbuf[which].buf->SetCurrentPosition(0)!=DS_OK)
-				return FALSE;	// try to rewind, if it fails, can't play
+			if (soundbuf[which].buf->SetCurrentPosition(0) != DS_OK)
+				return FALSE; // try to rewind, if it fails, can't play
 			soundbuf[which].buf->SetPan(pan);
 			soundbuf[which].buf->SetVolume(vol);
-			return TRUE;	// it's already playing so ok
+			return TRUE; // it's already playing so ok
 		}
 		else
-			return FALSE;	// can't play if it's playing
+			return FALSE; // can't play if it's playing
 	}
-	if(soundbuf[which].buf)
+	if (soundbuf[which].buf)
 	{
 		soundbuf[which].buf->SetPan(pan);
 		soundbuf[which].buf->SetVolume(vol);
-		if(soundbuf[which].buf->Play(0, 0, flags)!=DS_OK)
-			return FALSE;	// couldn't play, sigh
+		if (soundbuf[which].buf->Play(0, 0, flags) != DS_OK)
+			return FALSE; // couldn't play, sigh
 	}
 
 	/* possible loss of buffers... do I care?
 	// See if the buffer was lost.
 	if (hr == DSERR_BUFFERLOST) { hr = buffer->Restore(); }
 	if (SUCCEEDED(hr)) { hr = buffer->Play(0, 0, flags); }
-	*/
+	 */
 	return TRUE;
 }
 
 bool JamulSoundStop(int which)
 {
-	if(!soundbuf[which].buf)
+	if (!soundbuf[which].buf)
 		return FALSE;
-	if(soundbuf[which].buf->Stop()!=DS_OK)
+	if (soundbuf[which].buf->Stop() != DS_OK)
 		return FALSE;
 
 	// Rewind the buffer.
-	if(soundbuf[which].buf->SetCurrentPosition(0)!=DS_OK)
+	if (soundbuf[which].buf->SetCurrentPosition(0) != DS_OK)
 		return FALSE;
 	return TRUE;
 }
 
 bool JamulSoundRewind(int which)
 {
-	if(!soundbuf[which].buf)
+	if (!soundbuf[which].buf)
 		return FALSE;
 	// Rewind the buffer.
-	if(soundbuf[which].buf->SetCurrentPosition(0)!=DS_OK)
+	if (soundbuf[which].buf->SetCurrentPosition(0) != DS_OK)
 		return FALSE;
 	return TRUE;
 }
@@ -488,13 +493,13 @@ bool JamulSoundRewind(int which)
 bool JamulSoundIsPlaying(int which)
 {
 	unsigned long status;
-	if(!soundbuf[which].buf)
+	if (!soundbuf[which].buf)
 		return FALSE; // ain't playin if it ain't there
 
-	if(soundbuf[which].buf->GetStatus(&status)!=DS_OK)
+	if (soundbuf[which].buf->GetStatus(&status) != DS_OK)
 		return FALSE; // call failed, guess it ain't playing
 
-	if(status&DSBSTATUS_PLAYING)
+	if (status & DSBSTATUS_PLAYING)
 		return TRUE;
 	else
 		return FALSE;
@@ -503,15 +508,15 @@ bool JamulSoundIsPlaying(int which)
 int JamulSoundCopy(int src)
 {
 	int w;
-	if(nextOpenBuffer>=dsoundBufferCount)
+	if (nextOpenBuffer >= dsoundBufferCount)
 		return -1;
-	if(soundbuf[src].buf==NULL)
+	if (soundbuf[src].buf == NULL)
 		return -1;
-	if(dsound->DuplicateSoundBuffer(soundbuf[src].buf, &soundbuf[nextOpenBuffer].buf)!=DS_OK)
+	if (dsound->DuplicateSoundBuffer(soundbuf[src].buf, &soundbuf[nextOpenBuffer].buf) != DS_OK)
 		return -1;
 
-	w=nextOpenBuffer;
-	while(soundbuf[nextOpenBuffer].buf && nextOpenBuffer<dsoundBufferCount)
+	w = nextOpenBuffer;
+	while (soundbuf[nextOpenBuffer].buf && nextOpenBuffer < dsoundBufferCount)
 		nextOpenBuffer++;
 	return w;
 }
@@ -522,13 +527,13 @@ void JamulSoundUpdate(void)
 {
 	int i;
 
-	for(i=0;i<MAX_SOUNDS_AT_ONCE;i++)
+	for (i = 0; i < MAX_SOUNDS_AT_ONCE; i++)
 	{
-		if(playBuffer[i].dsHandle!=-1 && playBuffer[i].flags&SND_PLAYING)
+		if (playBuffer[i].dsHandle != -1 && playBuffer[i].flags & SND_PLAYING)
 		{
-			if(!JamulSoundIsPlaying(playBuffer[i].dsHandle))
+			if (!JamulSoundIsPlaying(playBuffer[i].dsHandle))
 			{
-				playBuffer[i].flags&=(~SND_PLAYING);
+				playBuffer[i].flags &= (~SND_PLAYING);
 			}
 		}
 	}
@@ -538,115 +543,115 @@ void JamulSoundPurge(void)
 {
 	int i;
 
-	for(i=0;i<dsoundBufferCount;i++)
+	for (i = 0; i < dsoundBufferCount; i++)
 	{
-		if(soundHandle[i]!=-1)
+		if (soundHandle[i] != -1)
 		{
 			JamulSoundDestroyBuffer(soundHandle[i]);
-			soundHandle[i]=-1;
+			soundHandle[i] = -1;
 		}
 	}
 }
 
-void GoPlaySound(int num,long pan,long vol,byte flags,int priority)
+void GoPlaySound(int num, long pan, long vol, byte flags, int priority)
 {
 	char txt[32];
-	int i,best,count;
+	int i, best, count;
 
-	if(soundHandle[num]==-1)
+	if (soundHandle[num] == -1)
 	{
-		sprintf(txt,"sound\\snd%03d.wav",num);
-		soundHandle[num]=JamulSoundLoad(txt);
-		if(soundHandle[num]==-1)
-			return;	// can't play the sound, it won't load for some reason
+		sprintf(txt, "sound\\snd%03d.wav", num);
+		soundHandle[num] = JamulSoundLoad(txt);
+		if (soundHandle[num] == -1)
+			return; // can't play the sound, it won't load for some reason
 	}
 
-	priority+=vol;	// the quieter a sound, the lower the priority
-	if(flags&SND_MAXPRIORITY)
-		priority=MAX_SNDPRIORITY;
+	priority += vol; // the quieter a sound, the lower the priority
+	if (flags & SND_MAXPRIORITY)
+		priority = MAX_SNDPRIORITY;
 
-	if(flags&SND_ONE)
+	if (flags & SND_ONE)
 	{
-		for(i=0;i<MAX_SOUNDS_AT_ONCE;i++)
-			if(playBuffer[i].soundNum==num)
+		for (i = 0; i < MAX_SOUNDS_AT_ONCE; i++)
+			if (playBuffer[i].soundNum == num)
 			{
 				// if you want to cut it off, or it isn't playing, then start anew
-				if((flags&SND_CUTOFF) || (!(playBuffer[i].flags&SND_PLAYING)))
+				if ((flags & SND_CUTOFF) || (!(playBuffer[i].flags & SND_PLAYING)))
 				{
-					playBuffer[i].pan=pan;
-					playBuffer[i].vol=vol;
-					playBuffer[i].flags=flags|SND_PLAYING;
-					playBuffer[i].priority=priority;
-					JamulSoundPlay(playBuffer[i].dsHandle,playBuffer[i].pan,playBuffer[i].vol,SOUND_CUTOFF);
-					return;	// good job
+					playBuffer[i].pan = pan;
+					playBuffer[i].vol = vol;
+					playBuffer[i].flags = flags | SND_PLAYING;
+					playBuffer[i].priority = priority;
+					JamulSoundPlay(playBuffer[i].dsHandle, playBuffer[i].pan, playBuffer[i].vol, SOUND_CUTOFF);
+					return; // good job
 				}
 				else
-					return;	// can't be played because can't cut it off
+					return; // can't be played because can't cut it off
 			}
 		// if you fell through to here, it isn't playing, so go ahead as normal
 	}
-	if(flags&SND_FEW)
+	if (flags & SND_FEW)
 	{
-		count=0;
-		for(i=0;i<MAX_SOUNDS_AT_ONCE;i++)
-			if(playBuffer[i].soundNum==num && (playBuffer[i].flags&SND_PLAYING))
+		count = 0;
+		for (i = 0; i < MAX_SOUNDS_AT_ONCE; i++)
+			if (playBuffer[i].soundNum == num && (playBuffer[i].flags & SND_PLAYING))
 				count++;
 
-		if(count>=MAX_FEW_SOUNDS)
+		if (count >= MAX_FEW_SOUNDS)
 		{
-			for(i=0;i<MAX_SOUNDS_AT_ONCE;i++)
-				if(playBuffer[i].soundNum==num)
+			for (i = 0; i < MAX_SOUNDS_AT_ONCE; i++)
+				if (playBuffer[i].soundNum == num)
 				{
-					if((flags&SND_CUTOFF) && (playBuffer[i].flags&SND_PLAYING))
+					if ((flags & SND_CUTOFF) && (playBuffer[i].flags & SND_PLAYING))
 					{
-						playBuffer[i].pan=pan;
-						playBuffer[i].vol=vol;
-						playBuffer[i].flags=flags|SND_PLAYING;
-						playBuffer[i].priority=priority;
-						JamulSoundPlay(playBuffer[i].dsHandle,playBuffer[i].pan,playBuffer[i].vol,SOUND_CUTOFF);
-						return;	// good job
+						playBuffer[i].pan = pan;
+						playBuffer[i].vol = vol;
+						playBuffer[i].flags = flags | SND_PLAYING;
+						playBuffer[i].priority = priority;
+						JamulSoundPlay(playBuffer[i].dsHandle, playBuffer[i].pan, playBuffer[i].vol, SOUND_CUTOFF);
+						return; // good job
 					}
 				}
-			return;	// failed for some reason
+			return; // failed for some reason
 		}
 	}
-	best=-1;
-	for(i=0;i<MAX_SOUNDS_AT_ONCE;i++)
+	best = -1;
+	for (i = 0; i < MAX_SOUNDS_AT_ONCE; i++)
 	{
-		if(playBuffer[i].soundNum==-1 || (!(playBuffer[i].flags&SND_PLAYING)))
+		if (playBuffer[i].soundNum == -1 || (!(playBuffer[i].flags & SND_PLAYING)))
 		{
-			best=i;
-			break;	// can't beat that
+			best = i;
+			break; // can't beat that
 		}
-		if((playBuffer[i].priority<priority) || (playBuffer[i].soundNum==num && (flags&SND_CUTOFF)))
+		if ((playBuffer[i].priority < priority) || (playBuffer[i].soundNum == num && (flags & SND_CUTOFF)))
 		{
-			if(best==-1 || playBuffer[i].priority<playBuffer[best].priority)
-				best=i;
+			if (best == -1 || playBuffer[i].priority < playBuffer[best].priority)
+				best = i;
 		}
 	}
-	if(best==-1)
-		return;	// sound is not worthy to be played
+	if (best == -1)
+		return; // sound is not worthy to be played
 
-	if(playBuffer[best].soundNum!=num)	// if it was already playing that sound, don't waste time
+	if (playBuffer[best].soundNum != num) // if it was already playing that sound, don't waste time
 	{
-		playBuffer[best].soundNum=num;
-		if(playBuffer[best].dsHandle!=-1)
+		playBuffer[best].soundNum = num;
+		if (playBuffer[best].dsHandle != -1)
 		{
-			JamulSoundDestroyBuffer(playBuffer[best].dsHandle);	// slash & burn
+			JamulSoundDestroyBuffer(playBuffer[best].dsHandle); // slash & burn
 		}
-		playBuffer[best].dsHandle=JamulSoundCopy(soundHandle[num]);
+		playBuffer[best].dsHandle = JamulSoundCopy(soundHandle[num]);
 	}
 	else
 	{
 		JamulSoundRewind(playBuffer[best].dsHandle);
 	}
 
-	if(playBuffer[best].dsHandle==-1)
-		return;	// can't play it
-	playBuffer[best].priority=priority;
-	playBuffer[best].pan=pan;
-	playBuffer[best].vol=vol;
-	playBuffer[best].flags=flags|SND_PLAYING;
+	if (playBuffer[best].dsHandle == -1)
+		return; // can't play it
+	playBuffer[best].priority = priority;
+	playBuffer[best].pan = pan;
+	playBuffer[best].vol = vol;
+	playBuffer[best].flags = flags | SND_PLAYING;
 
-	JamulSoundPlay(playBuffer[best].dsHandle,playBuffer[best].pan,playBuffer[best].vol,0);
+	JamulSoundPlay(playBuffer[best].dsHandle, playBuffer[best].pan, playBuffer[best].vol, 0);
 }

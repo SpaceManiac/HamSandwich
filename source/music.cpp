@@ -12,8 +12,8 @@ int trackNum;
 
 byte MusicInit(void)
 {
-    currentMode = CD_OFF;
-    stream = NULL;
+	currentMode = CD_OFF;
+	stream = NULL;
 	return 1;
 }
 
@@ -26,63 +26,76 @@ void MusicExit(void)
 // ----------------------------------------------------------------------------------
 // LOGG AUDIO STUFF
 
-void CDPlay(int track) {
-    if (trackNum == track && stream != NULL && isPlaying) {
-        return; // Already playing that track
-    }
+void CDPlay(int track)
+{
+	if (trackNum == track && stream != NULL && isPlaying)
+	{
+		return; // Already playing that track
+	}
 
-    char buf[32];
-    sprintf(buf, "sound/mus%03d.ogg", track);
-    trackNum = track;
-    if (stream != NULL) logg_destroy_stream(stream);
-    stream = logg_get_stream(buf, 128, 128, 0);
+	char buf[32];
+	sprintf(buf, "sound/mus%03d.ogg", track);
+	trackNum = track;
+	if (stream != NULL) logg_destroy_stream(stream);
+	stream = logg_get_stream(buf, 128, 128, 0);
 }
 
-void CDNeedsUpdating(void) {}
+void CDNeedsUpdating(void)
+{
+}
 
-void CDPlayerUpdate(byte mode) {
-    isPlaying = 0;
+void CDPlayerUpdate(byte mode)
+{
+	isPlaying = 0;
 	if (stream != NULL)
 		isPlaying = logg_update_stream(stream);
-    //printf("mode=%d, isPlaying = %d\n", (int)mode, (int)isPlaying);
-    bool modeChanged = currentMode != mode;
-    currentMode = mode;
+	//printf("mode=%d, isPlaying = %d\n", (int)mode, (int)isPlaying);
+	bool modeChanged = currentMode != mode;
+	currentMode = mode;
 
-    if (!isPlaying || modeChanged) {
-        switch(currentMode) {
-            case CD_LOOPTRACK:
-                CDPlay(trackNum);
-                break;
-            case CD_INTROLOOP:
-                CDPlay(trackNum + 1);
-                currentMode = CD_LOOPTRACK;
-                break;
-            case CD_RANDOM:
-                CDPlay(3 + MGL_random(15));
-                break;
-            case CD_NORMAL:
-                if (!isPlaying) {
-                    int newTrack = trackNum + 1;
-                    if (newTrack > 18) newTrack = 3;
-                    CDPlay(newTrack);
-                }
-                break;
+	if (!isPlaying || modeChanged)
+	{
+		switch (currentMode) {
+			case CD_LOOPTRACK:
+				CDPlay(trackNum);
+				break;
+			case CD_INTROLOOP:
+				CDPlay(trackNum + 1);
+				currentMode = CD_LOOPTRACK;
+				break;
+			case CD_RANDOM:
+				CDPlay(3 + MGL_random(15));
+				break;
+			case CD_NORMAL:
+				if (!isPlaying)
+				{
+					int newTrack = trackNum + 1;
+					if (newTrack > 18) newTrack = 3;
+					CDPlay(newTrack);
+				}
+				break;
 			case CD_OFF:
-            default:
-                if (isPlaying) {
-                    CDStop();
-                }
-                break;
-        }
-    }
+			default:
+				if (isPlaying)
+				{
+					CDStop();
+				}
+				break;
+		}
+	}
 }
 
-void CDStop(void) {
-    if (stream) {
-        logg_destroy_stream(stream);
-        stream = NULL;
-        trackNum = 0;
-    }
+void CDStop(void)
+{
+	if (stream)
+	{
+		logg_destroy_stream(stream);
+		stream = NULL;
+		trackNum = 0;
+	}
 }
 
-byte CDLoaded(void) { return 1; }
+byte CDLoaded(void)
+{
+	return 1;
+}

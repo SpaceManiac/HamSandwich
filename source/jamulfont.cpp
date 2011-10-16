@@ -9,10 +9,10 @@ void FontInit(MGLDraw *mgl)
 {
 	int i;
 
-	fontmgl=mgl;
+	fontmgl = mgl;
 	// default translation is none for the font palette
-	for(i=0;i<256;i++)
-		fontPal[i]=(byte)i;
+	for (i = 0; i < 256; i++)
+		fontPal[i] = (byte) i;
 }
 
 void FontExit(void)
@@ -21,49 +21,49 @@ void FontExit(void)
 
 void FontFree(mfont_t *font)
 {
-	if(font->data)
+	if (font->data)
 		free(font->data);
 }
 
-int FontLoad(const char *fname,mfont_t *font)
+int FontLoad(const char *fname, mfont_t *font)
 {
 	FILE *f;
 	int i;
 
-	f=fopen(fname,"rb");
-	if(!f)
+	f = fopen(fname, "rb");
+	if (!f)
 		return FONT_FILENOTFOUND;
 
-	if(fread(font,sizeof(mfont_t),1,f)!=1)
+	if (fread(font, sizeof (mfont_t), 1, f) != 1)
 		return FONT_INVALIDFILE;
 
-	font->data=(byte *)malloc(font->dataSize);
-	if(!font->data)
+	font->data = (byte *) malloc(font->dataSize);
+	if (!font->data)
 		return FONT_CANTALLOC;
 
-	if(fread(font->data,font->dataSize,1,f)!=1)
+	if (fread(font->data, font->dataSize, 1, f) != 1)
 		return FONT_INVALIDFILE;
 
 	fclose(f);
-	font->chars[0]=font->data;
-	for(i=1;i<font->numChars;i++)
-		font->chars[i]=font->chars[i-1]+1+((*font->chars[i-1])*font->height);
+	font->chars[0] = font->data;
+	for (i = 1; i < font->numChars; i++)
+		font->chars[i] = font->chars[i - 1] + 1 + ((*font->chars[i - 1]) * font->height);
 
 	return FONT_OK;
 }
 
-int FontSave(char *fname,mfont_t *font)
+int FontSave(char *fname, mfont_t *font)
 {
 	FILE *f;
 
-	f=fopen(fname,"wb");
-	if(!f)
+	f = fopen(fname, "wb");
+	if (!f)
 		return FONT_FILENOTFOUND;
 
-	if(fwrite(font,sizeof(mfont_t),1,f)!=1)
+	if (fwrite(font, sizeof (mfont_t), 1, f) != 1)
 		return FONT_INVALIDFILE;
 
-	if(fwrite(font->data,font->dataSize,1,f)!=1)
+	if (fwrite(font->data, font->dataSize, 1, f) != 1)
 		return FONT_INVALIDFILE;
 
 	fclose(f);
@@ -72,278 +72,277 @@ int FontSave(char *fname,mfont_t *font)
 
 void FontPrintChar(int x, int y, char c, mfont_t *font)
 {
-	byte *dst,*src;
-	int scrWidth,scrHeight,chrWidth;
-	int i,j;
+	byte *dst, *src;
+	int scrWidth, scrHeight, chrWidth;
+	int i, j;
 
-	scrWidth=fontmgl->GetWidth();
-	scrHeight=fontmgl->GetHeight();
-	dst=fontmgl->GetScreen()+x+y*scrWidth;
+	scrWidth = fontmgl->GetWidth();
+	scrHeight = fontmgl->GetHeight();
+	dst = fontmgl->GetScreen() + x + y*scrWidth;
 
-	if(c<font->firstChar || c>=(font->firstChar+font->numChars))
+	if (c < font->firstChar || c >= (font->firstChar + font->numChars))
 		return; // unprintable
 
-	c-=(char)font->firstChar;
+	c -= (char) font->firstChar;
 
-        // c -> (int)c to prevent warning: array subscript has type 'char'
-	chrWidth=*(font->chars[(int)c]);
-	src=font->chars[(int)c]+1;
-	for(j=0;j<font->height;j++)
+	// c -> (int)c to prevent warning: array subscript has type 'char'
+	chrWidth = *(font->chars[(int) c]);
+	src = font->chars[(int) c] + 1;
+	for (j = 0; j < font->height; j++)
 	{
-		for(i=0;i<(*font->chars[(int)c]);i++)
+		for (i = 0; i < (*font->chars[(int) c]); i++)
 		{
-			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
-				*dst=fontPal[*src];
+			if (*src && (x > 0) && (x < scrWidth) && (y > 0) && (y < scrHeight))
+				*dst = fontPal[*src];
 			dst++;
 			src++;
 			x++;
 		}
 		y++;
-		x-=chrWidth;
-		dst+=(scrWidth-chrWidth);
+		x -= chrWidth;
+		dst += (scrWidth - chrWidth);
 	}
 }
 
-void FontPrintCharColor(int x, int y, char c,byte color,mfont_t *font)
+void FontPrintCharColor(int x, int y, char c, byte color, mfont_t *font)
 {
-	byte *dst,*src;
-	int scrWidth,scrHeight,chrWidth;
-	int i,j;
+	byte *dst, *src;
+	int scrWidth, scrHeight, chrWidth;
+	int i, j;
 
-	scrWidth=fontmgl->GetWidth();
-	scrHeight=fontmgl->GetHeight();
-	dst=fontmgl->GetScreen()+x+y*scrWidth;
+	scrWidth = fontmgl->GetWidth();
+	scrHeight = fontmgl->GetHeight();
+	dst = fontmgl->GetScreen() + x + y*scrWidth;
 
-	if(c<font->firstChar || c>=(font->firstChar+font->numChars))
+	if (c < font->firstChar || c >= (font->firstChar + font->numChars))
 		return; // unprintable
 
-	c-=(char)font->firstChar;
+	c -= (char) font->firstChar;
 
-	chrWidth=*(font->chars[(int)c]);
-	src=font->chars[(int)c]+1;
-	color*=32;
-	for(j=0;j<font->height;j++)
+	chrWidth = *(font->chars[(int) c]);
+	src = font->chars[(int) c] + 1;
+	color *= 32;
+	for (j = 0; j < font->height; j++)
 	{
-		for(i=0;i<(*font->chars[(int)c]);i++)
+		for (i = 0; i < (*font->chars[(int) c]); i++)
 		{
-			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
+			if (*src && (x > 0) && (x < scrWidth) && (y > 0) && (y < scrHeight))
 			{
-				if((*src>=64 && *src<64+32) || (*src>=128 && *src<128+32))
-					*dst=((*src)&31)+color;
+				if ((*src >= 64 && *src < 64 + 32) || (*src >= 128 && *src < 128 + 32))
+					*dst = ((*src)&31) + color;
 				else
-					*dst=*src;
+					*dst = *src;
 			}
 			dst++;
 			src++;
 			x++;
 		}
 		y++;
-		x-=chrWidth;
-		dst+=(scrWidth-chrWidth);
+		x -= chrWidth;
+		dst += (scrWidth - chrWidth);
 	}
 }
 
-
-void FontPrintCharBright(int x, int y, char c,char bright,mfont_t *font)
+void FontPrintCharBright(int x, int y, char c, char bright, mfont_t *font)
 {
-	byte *dst,*src;
-	int scrWidth,scrHeight,chrWidth;
-	int i,j;
+	byte *dst, *src;
+	int scrWidth, scrHeight, chrWidth;
+	int i, j;
 
-	scrWidth=fontmgl->GetWidth();
-	scrHeight=fontmgl->GetHeight();
-	dst=fontmgl->GetScreen()+x+y*scrWidth;
+	scrWidth = fontmgl->GetWidth();
+	scrHeight = fontmgl->GetHeight();
+	dst = fontmgl->GetScreen() + x + y*scrWidth;
 
-	if(c<font->firstChar || c>=(font->firstChar+font->numChars))
+	if (c < font->firstChar || c >= (font->firstChar + font->numChars))
 		return; // unprintable
 
-	c-=(char)font->firstChar;
+	c -= (char) font->firstChar;
 
-	chrWidth=*(font->chars[(int)c]);
-	src=font->chars[(int)c]+1;
+	chrWidth = *(font->chars[(int) c]);
+	src = font->chars[(int) c] + 1;
 
-	for(j=0;j<font->height;j++)
+	for (j = 0; j < font->height; j++)
 	{
-		for(i=0;i<(*font->chars[(int)c]);i++)
+		for (i = 0; i < (*font->chars[(int) c]); i++)
 		{
-			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
+			if (*src && (x > 0) && (x < scrWidth) && (y > 0) && (y < scrHeight))
 			{
-				*dst=*src+bright;
-				if(*dst>(*src&(~31))+31)
-					*dst=(*src&(~31))+31;
-				else if(*dst<(*src&(~31)))
-					*dst=*src&(~31);
+				*dst = *src + bright;
+				if (*dst > (*src & (~31)) + 31)
+					*dst = (*src & (~31)) + 31;
+				else if (*dst < (*src & (~31)))
+					*dst = *src & (~31);
 			}
 			dst++;
 			src++;
 			x++;
 		}
 		y++;
-		x-=chrWidth;
-		dst+=(scrWidth-chrWidth);
+		x -= chrWidth;
+		dst += (scrWidth - chrWidth);
 	}
 }
 
 void FontPrintCharSolid(int x, int y, char c, mfont_t *font, byte color)
 {
-	byte *dst,*src;
-	int scrWidth,scrHeight,chrWidth;
-	int i,j;
+	byte *dst, *src;
+	int scrWidth, scrHeight, chrWidth;
+	int i, j;
 
-	scrWidth=fontmgl->GetWidth();
-	scrHeight=fontmgl->GetHeight();
-	dst=fontmgl->GetScreen()+x+y*scrWidth;
+	scrWidth = fontmgl->GetWidth();
+	scrHeight = fontmgl->GetHeight();
+	dst = fontmgl->GetScreen() + x + y*scrWidth;
 
-	if(c<font->firstChar || c>=(font->firstChar+font->numChars))
+	if (c < font->firstChar || c >= (font->firstChar + font->numChars))
 		return; // unprintable
 
-	c-=(char)font->firstChar;
+	c -= (char) font->firstChar;
 
-	chrWidth=*(font->chars[(int)c]);
-	src=font->chars[(int)c]+1;
-	for(j=0;j<font->height;j++)
+	chrWidth = *(font->chars[(int) c]);
+	src = font->chars[(int) c] + 1;
+	for (j = 0; j < font->height; j++)
 	{
-		for(i=0;i<(*font->chars[(int)c]);i++)
+		for (i = 0; i < (*font->chars[(int) c]); i++)
 		{
-			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
-				*dst=color;
+			if (*src && (x > 0) && (x < scrWidth) && (y > 0) && (y < scrHeight))
+				*dst = color;
 			dst++;
 			src++;
 			x++;
 		}
 		y++;
-		x-=chrWidth;
-		dst+=(scrWidth-chrWidth);
+		x -= chrWidth;
+		dst += (scrWidth - chrWidth);
 	}
 }
 
 byte CharWidth(char c, mfont_t *font)
 {
-	if(c<font->firstChar || c>=(font->firstChar+font->numChars))
+	if (c < font->firstChar || c >= (font->firstChar + font->numChars))
 		return font->spaceSize; // unprintable
 
-	c-=(char)font->firstChar;
+	c -= (char) font->firstChar;
 
-	return *(font->chars[(int)c]);
+	return *(font->chars[(int) c]);
 }
 
-void FontPrintString(int x,int y,const char *s,mfont_t *font)
+void FontPrintString(int x, int y, const char *s, mfont_t *font)
 {
 	int i;
 
-	for(i=0;i<(int)strlen(s);i++)
+	for (i = 0; i < (int) strlen(s); i++)
 	{
-		FontPrintChar(x,y,s[i],font);
-		x+=CharWidth(s[i],font)+font->gapSize;
+		FontPrintChar(x, y, s[i], font);
+		x += CharWidth(s[i], font) + font->gapSize;
 	}
 }
 
-void FontPrintStringColor(int x,int y,const char *s,mfont_t *font,byte color)
+void FontPrintStringColor(int x, int y, const char *s, mfont_t *font, byte color)
 {
 	int i;
 
-	for(i=0;i<(int)strlen(s);i++)
+	for (i = 0; i < (int) strlen(s); i++)
 	{
-		FontPrintCharColor(x,y,s[i],color,font);
-		x+=CharWidth(s[i],font)+font->gapSize;
+		FontPrintCharColor(x, y, s[i], color, font);
+		x += CharWidth(s[i], font) + font->gapSize;
 	}
 }
 
-void FontPrintStringBright(int x,int y,const char *s,mfont_t *font,char bright)
+void FontPrintStringBright(int x, int y, const char *s, mfont_t *font, char bright)
 {
 	int i;
 
-	for(i=0;i<(int)strlen(s);i++)
+	for (i = 0; i < (int) strlen(s); i++)
 	{
-		FontPrintCharBright(x,y,s[i],bright,font);
-		x+=CharWidth(s[i],font)+font->gapSize;
+		FontPrintCharBright(x, y, s[i], bright, font);
+		x += CharWidth(s[i], font) + font->gapSize;
 	}
 }
 
-void FontPrintStringSolid(int x,int y,const char *s,mfont_t *font,byte color)
+void FontPrintStringSolid(int x, int y, const char *s, mfont_t *font, byte color)
 {
 	int i;
 
-	for(i=0;i<(int)strlen(s);i++)
+	for (i = 0; i < (int) strlen(s); i++)
 	{
-		FontPrintCharSolid(x,y,s[i],font,color);
-		x+=CharWidth(s[i],font)+font->gapSize;
+		FontPrintCharSolid(x, y, s[i], font, color);
+		x += CharWidth(s[i], font) + font->gapSize;
 	}
 }
 
-void FontPrintStringDropShadow(int x,int y,const char *s,mfont_t *font,byte shadowColor,byte shadowOffset)
+void FontPrintStringDropShadow(int x, int y, const char *s, mfont_t *font, byte shadowColor, byte shadowOffset)
 {
 	int i;
 
-	for(i=0;i<(int)strlen(s);i++)
+	for (i = 0; i < (int) strlen(s); i++)
 	{
-		FontPrintCharSolid(x+shadowOffset,y+shadowOffset,s[i],font,shadowColor);
-		FontPrintChar(x,y,s[i],font);
-		x+=CharWidth(s[i],font)+font->gapSize;
+		FontPrintCharSolid(x + shadowOffset, y + shadowOffset, s[i], font, shadowColor);
+		FontPrintChar(x, y, s[i], font);
+		x += CharWidth(s[i], font) + font->gapSize;
 	}
 }
 
-void FontSetColors(byte first,byte count,byte *data)
+void FontSetColors(byte first, byte count, byte *data)
 {
-	memcpy(&fontPal[first],data,count);
+	memcpy(&fontPal[first], data, count);
 }
 
-int FontStrLen(const char *s,mfont_t *font)
+int FontStrLen(const char *s, mfont_t *font)
 {
-	int i,len=0;
+	int i, len = 0;
 
-	for(i=0;i<(int)strlen(s);i++)
+	for (i = 0; i < (int) strlen(s); i++)
 	{
-		len+=CharWidth(s[i],font)+font->gapSize;
+		len += CharWidth(s[i], font) + font->gapSize;
 	}
 	return len;
 }
 
-bool FontInputText(char *prompt,char *buffer,int len,void (*renderScrn)(mfont_t *),mfont_t *font)
+bool FontInputText(char *prompt, char *buffer, int len, void (*renderScrn)(mfont_t *), mfont_t *font)
 {
-	int pos=0;
-	bool done=0;
+	int pos = 0;
+	bool done = 0;
 	char c;
 
-	while(buffer[pos] && pos<len)
+	while (buffer[pos] && pos < len)
 		pos++;
-	while(!done)
+	while (!done)
 	{
 		renderScrn(font);
-		fontmgl->FillBox(0,200,639,250,0);
-		fontmgl->Box(0,200,639,250,255);
-		FontPrintString(2,202,prompt,font);
-		buffer[pos]='_';
-		buffer[pos+1]='\0';
-		FontPrintString(2,202+font->height+2,buffer,font);
-		buffer[pos]='\0';
+		fontmgl->FillBox(0, 200, 639, 250, 0);
+		fontmgl->Box(0, 200, 639, 250, 255);
+		FontPrintString(2, 202, prompt, font);
+		buffer[pos] = '_';
+		buffer[pos + 1] = '\0';
+		FontPrintString(2, 202 + font->height + 2, buffer, font);
+		buffer[pos] = '\0';
 		fontmgl->Flip();
-		if(!fontmgl->Process())
+		if (!fontmgl->Process())
 			return FALSE;
-		if((c=fontmgl->LastKeyPressed())) // extra pair of parentheses for a warning about assignment in truth value
+		if ((c = fontmgl->LastKeyPressed())) // extra pair of parentheses for a warning about assignment in truth value
 		{
-			if(c==8) // backspace
+			if (c == 8) // backspace
 			{
-				if(pos>0)
+				if (pos > 0)
 				{
 					pos--;
-					buffer[pos]='\0';
+					buffer[pos] = '\0';
 				}
 			}
-			else if(c==27)
+			else if (c == 27)
 			{
-				done=TRUE;
-				buffer[0]='\0';
+				done = TRUE;
+				buffer[0] = '\0';
 			}
-			else if(c==13)
+			else if (c == 13)
 			{
-				done=TRUE;
-				buffer[pos]='\0';
+				done = TRUE;
+				buffer[pos] = '\0';
 			}
-			else if(pos<len)
+			else if (pos < len)
 			{
-				buffer[pos++]=c;
-				buffer[pos]='\0';
+				buffer[pos++] = c;
+				buffer[pos] = '\0';
 			}
 		}
 	}
