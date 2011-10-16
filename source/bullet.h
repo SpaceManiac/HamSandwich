@@ -61,8 +61,8 @@
 
 typedef struct bullet_t
 {
-	int x,y,z;
-	int dx,dy,dz;
+	int x, y, z;
+	int dx, dy, dz;
 	int timer;
 	word target;
 	byte anim;
@@ -75,26 +75,26 @@ typedef struct bullet_t
 void InitBullets(void);
 void ExitBullets(void);
 
-void UpdateBullets(Map *map,world_t *world);
+void UpdateBullets(Map *map, world_t *world);
 void RenderBullets(void);
-void RenderSmoke(int x,int y,int z,char bright,byte frm);
-void RenderBoom(int x,int y,int z,char bright,byte frm);
-void RenderStinky(int x,int y,int z,char bright,byte frm);
+void RenderSmoke(int x, int y, int z, char bright, byte frm);
+void RenderBoom(int x, int y, int z, char bright, byte frm);
+void RenderStinky(int x, int y, int z, char bright, byte frm);
 
-void QuadMissile(int x,int y,byte facing,byte friendly);
-void LaunchMegabeam(int x,int y,word owner);
-void FireBullet(int x,int y,byte facing,byte type,byte friendly);
-void FireBulletAfter(int x,int y,byte facing,byte type,bullet_t *thisone,byte friendly);
-void FireExactBullet(int x,int y,int z,int dx,int dy,int dz,byte anim,byte timer,byte facing,byte type,byte friendly);
-void HammerLaunch(int x,int y,byte facing,byte count,byte flags);
-byte Bulletable(Map *map,int x,int y);
-void BulletRanOut(bullet_t *me,Map *map,world_t *world);	// prototyped for interior use
+void QuadMissile(int x, int y, byte facing, byte friendly);
+void LaunchMegabeam(int x, int y, word owner);
+void FireBullet(int x, int y, byte facing, byte type, byte friendly);
+void FireBulletAfter(int x, int y, byte facing, byte type, bullet_t *thisone, byte friendly);
+void FireExactBullet(int x, int y, int z, int dx, int dy, int dz, byte anim, byte timer, byte facing, byte type, byte friendly);
+void HammerLaunch(int x, int y, byte facing, byte count, byte flags);
+byte Bulletable(Map *map, int x, int y);
+void BulletRanOut(bullet_t *me, Map *map, world_t *world); // prototyped for interior use
 void ReflectShot(void);
-void BulletSwap(int sx,int sy,int width,int height,int dx,int dy);
-void SpitAcid(int x,int y,byte facing,byte type,byte friendly);
-void FireBulletZ(int x,int y,int z,byte facing,byte type,byte friendly);
-void HappyLaunch(int x,int y,byte facing,byte count,byte flags);
-void ReflectBullets(int x,int y,byte size,byte friendly);
+void BulletSwap(int sx, int sy, int width, int height, int dx, int dy);
+void SpitAcid(int x, int y, byte facing, byte type, byte friendly);
+void FireBulletZ(int x, int y, int z, byte facing, byte type, byte friendly);
+void HappyLaunch(int x, int y, byte facing, byte count, byte flags);
+void ReflectBullets(int x, int y, byte size, byte friendly);
 
 void BulletTally(void);
 

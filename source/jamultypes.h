@@ -15,8 +15,8 @@
 #define FIXSHIFT (16)
 #define FIXAMT   (65536)
 
-typedef unsigned char	byte;
-typedef unsigned short	word;
-typedef unsigned long	dword;
+typedef unsigned char byte;
+typedef unsigned short word;
+typedef unsigned long dword;
 
 #endif

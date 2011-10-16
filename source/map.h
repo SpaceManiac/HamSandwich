@@ -82,8 +82,8 @@ typedef struct special_t
 	word trigger;
 	byte trigValue;
 	byte effect;
-	byte x,y;
-	byte effectX,effectY;
+	byte x, y;
+	byte effectX, effectY;
 	int value;
 	char msg[32];
 } special_t;
@@ -100,7 +100,7 @@ typedef struct mapTile_t
 
 typedef struct mapBadguy_t
 {
-	byte x,y;
+	byte x, y;
 	byte type;
 } mapBadguy_t;
 
@@ -108,61 +108,61 @@ struct world_t;
 
 class Map
 {
-	public:
-		Map(byte size,const char *name);
-		Map(Map *m);
-		Map(FILE *f);
-		~Map(void);
+public:
+	Map(byte size, const char *name);
+	Map(Map *m);
+	Map(FILE *f);
+	~Map(void);
 
-		byte Save(FILE *f);
-		void Init(world_t *wrld);
-		void Render(world_t *world,int camX,int camY,byte flags);
-		byte DropItem(int x,int y,byte itm);
-		void PermaTorch(int x,int y,char brt);
-		void TempTorch(int x,int y,char brt);
-		void BrightTorch(int x,int y,char brt,byte size);
-		void LightSpecial(int x,int y,char brt,byte size);
-		void Update(byte mode,world_t *world);
-		byte LOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,Map *));
-		void Swap(int sx,int sy,int blkwidth,int blkheight,int dx,int dy);
-		void Copy(int sx,int sy,int blkwidth,int blkheight,int dx,int dy);
-		void SmoothLight(int x,int y);
-		void SmoothLights(void);
+	byte Save(FILE *f);
+	void Init(world_t *wrld);
+	void Render(world_t *world, int camX, int camY, byte flags);
+	byte DropItem(int x, int y, byte itm);
+	void PermaTorch(int x, int y, char brt);
+	void TempTorch(int x, int y, char brt);
+	void BrightTorch(int x, int y, char brt, byte size);
+	void LightSpecial(int x, int y, char brt, byte size);
+	void Update(byte mode, world_t *world);
+	byte LOS(int x, int y, int radius, int value, byte(*DoIt)(int, int, int, int, int, Map *));
+	void Swap(int sx, int sy, int blkwidth, int blkheight, int dx, int dy);
+	void Copy(int sx, int sy, int blkwidth, int blkheight, int dx, int dy);
+	void SmoothLight(int x, int y);
+	void SmoothLights(void);
 
-		int width,height;
-		mapTile_t *map;
-		char name[32];
-		byte song;
-		byte flags;
-		mapBadguy_t badguy[MAX_MAPMONS];
-		special_t   special[MAX_SPECIAL];
+	int width, height;
+	mapTile_t *map;
+	char name[32];
+	byte song;
+	byte flags;
+	mapBadguy_t badguy[MAX_MAPMONS];
+	special_t special[MAX_SPECIAL];
 
-        // Gourad stuff
-        char smoothLight[9];
-        char LightOf(int x, int y);
-        bool Wall(int x, int y);
-        byte MakeSmoothShadow(int x, int y);
-        char* MakeSmoothLighting(bool beZero, int x, int y);
+	// Gourad stuff
+	char smoothLight[9];
+	char LightOf(int x, int y);
+	bool Wall(int x, int y);
+	byte MakeSmoothShadow(int x, int y);
+	char* MakeSmoothLighting(bool beZero, int x, int y);
 
-	private:
-		void LOSPoints(int x,int y,int curx,int cury,int *p1x,int *p1y,int *p2x,int *p2y);
+private:
+	void LOSPoints(int x, int y, int curx, int cury, int *p1x, int *p1y, int *p2x, int *p2y);
 };
 
-byte PlaceItemCallback(int x,int y,int cx,int cy,int value,Map *map);
-byte TorchCallback(int x,int y,int cx,int cy,int value,Map *map);
-byte TempTorchCallback(int x,int y,int cx,int cy,int value,Map *map);
-byte TempBrightCallback(int x,int y,int cx,int cy,int value,Map *map);
+byte PlaceItemCallback(int x, int y, int cx, int cy, int value, Map *map);
+byte TorchCallback(int x, int y, int cx, int cy, int value, Map *map);
+byte TempTorchCallback(int x, int y, int cx, int cy, int value, Map *map);
+byte TempBrightCallback(int x, int y, int cx, int cy, int value, Map *map);
 
 class Guy;
-void SpecialStepCheck(Map *map,int x,int y,Guy *me);
-void SpecialTakeEffect(byte num,Map *map,special_t *spcl,Guy *victim);
+void SpecialStepCheck(Map *map, int x, int y, Guy *me);
+void SpecialTakeEffect(byte num, Map *map, special_t *spcl, Guy *victim);
 
-void ZapWall(Map *map,int x,int y,byte newFloor);
-void SpecialShootCheck(Map *map,int x,int y);
+void ZapWall(Map *map, int x, int y, byte newFloor);
+void SpecialShootCheck(Map *map, int x, int y);
 void SpecialAnytimeCheck(Map *map);
-void SpecialKillCheck(Map *map,byte type);
-void RenderSpecialXes(MGLDraw *mgl,Map *map,byte world);
-int  TotalBrains(void);
+void SpecialKillCheck(Map *map, byte type);
+void RenderSpecialXes(MGLDraw *mgl, Map *map, byte world);
+int TotalBrains(void);
 
 void OpenMapFile(void);
 void CloseMapFile(void);

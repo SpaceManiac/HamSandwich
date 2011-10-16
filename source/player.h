@@ -45,14 +45,14 @@ typedef struct player_t
 {
 	// values for the overall game
 	byte musicSettings;
-	int prevScore;	// so you can lose all your points when you die
+	int prevScore; // so you can lose all your points when you die
 	int score;
 	byte levelPassed[MAX_CUSTOM][MAX_MAPS];
 	byte keychain[MAX_CUSTOM][4];
-		// total completion is how many "points" the world has in it
-	int  totalCompletion[MAX_CUSTOM];
-		// complete is how many of those points the player has, to create a percentage complete display
-	int  complete[MAX_CUSTOM];
+	// total completion is how many "points" the world has in it
+	int totalCompletion[MAX_CUSTOM];
+	// complete is how many of those points the player has, to create a percentage complete display
+	int complete[MAX_CUSTOM];
 	char customName[MAX_CUSTOM][32];
 	byte lunacyKey[MAX_CUSTOM];
 	// values reset for each world
@@ -62,20 +62,20 @@ typedef struct player_t
 	byte shield;
 	byte levelNum;
 	byte keys[4];
-	int  boredom;
+	int boredom;
 	byte hammers;
 	byte hamSpeed;
 	byte weapon;
-	int  ammo;
+	int ammo;
 	byte reload;
 	byte wpnReload;
 	byte life;
 	int brains;
-	byte pushPower;	// for pushing pushy blocks
+	byte pushPower; // for pushing pushy blocks
 	byte hammerFlags;
 	byte vehicle;
 	byte garlic;
-	byte speed;	// accelerated
+	byte speed; // accelerated
 	byte rageClock;
 	word rage;
 	byte invisibility;
@@ -84,22 +84,22 @@ typedef struct player_t
 
 extern player_t player;
 
-void InitPlayer(byte initWhat,byte world,byte level);
+void InitPlayer(byte initWhat, byte world, byte level);
 void ExitPlayer(void);
-void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world);
-void PlayerControlPowerArmor(Guy *me,mapTile_t *mapTile,world_t *world);
+void PlayerControlMe(Guy *me, mapTile_t *mapTile, world_t *world);
+void PlayerControlPowerArmor(Guy *me, mapTile_t *mapTile, world_t *world);
 byte PlayerHasHammer(void);
-byte PlayerGetItem(byte itm,int x,int y);
-void PlayerWinLevel(byte w,byte l,byte isSecret);
+byte PlayerGetItem(byte itm, int x, int y);
+void PlayerWinLevel(byte w, byte l, byte isSecret);
 void PlayerRenderInterface(MGLDraw *mgl);
-int  PlayerBrains(void);
+int PlayerBrains(void);
 void SetPlayerHP(int hp);
 byte PlayerLevelsPassed(void);
-byte PlayerPassedLevel(byte world,byte map);
+byte PlayerPassedLevel(byte world, byte map);
 byte PlayerKeyChain(byte w);
 byte PlayerKeys(byte w);
 void PlayerLoseKey(byte w);
-void PlayerSetWorldWorth(byte world,int amt);
+void PlayerSetWorldWorth(byte world, int amt);
 float PlayerGetPercent(byte world);
 float PlayerGetGamePercent(void);
 void SetCustomName(const char *name);
@@ -117,7 +117,7 @@ void PlayerSetMusicSettings(byte m);
 void SetPlayerGlow(byte v);
 byte GetPlayerGlow(void);
 byte PlayerPushMore(void);
-void PoisonVictim(Guy *me,byte amt);
+void PoisonVictim(Guy *me, byte amt);
 byte PlayerIsPoisoned(void);
 void ToggleWaterwalk(void);
 byte PlayerCanWaterwalk(void);

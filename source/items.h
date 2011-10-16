@@ -113,9 +113,9 @@
 
 void InitItems(void);
 void ExitItems(void);
-void RenderItem(int x,int y,byte type,char bright);
-void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl);
-void DrawRedX(int x,int y,MGLDraw *mgl);
+void RenderItem(int x, int y, byte type, char bright);
+void InstaRenderItem(int x, int y, byte type, char bright, MGLDraw *mgl);
+void DrawRedX(int x, int y, MGLDraw *mgl);
 void ItemLightUp(void);
 
 #endif

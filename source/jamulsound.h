@@ -22,20 +22,20 @@
 
 typedef struct sound_t
 {
-	int dsHandle;	// directsound handle
-	int soundNum;	// which game sound number
+	int dsHandle; // directsound handle
+	int soundNum; // which game sound number
 	int priority;
-	long pan,vol;
+	long pan, vol;
 	byte flags;
 } sound_t;
 
 
 
-bool JamulSoundInit(HINSTANCE hInst,const char *wndName, int numBuffers);
+bool JamulSoundInit(HINSTANCE hInst, const char *wndName, int numBuffers);
 void JamulSoundExit(void);
 
 // pass in the sound # you wish to play
-bool JamulSoundPlay(int which,long pan,long vol,byte playFlags);
+bool JamulSoundPlay(int which, long pan, long vol, byte playFlags);
 // pass in the sound # you're sick of hearing
 bool JamulSoundStop(int which);
 // if you're REALLY sick of hearing a certain sound
@@ -45,7 +45,7 @@ bool JamulSoundRewind(int which);
 // returns the number of the position in which it stored the sound (later use JamulSoundPlay(n) to play
 // sound #n.
 // -1 means it failed.
-int  JamulSoundLoad(char *fname);
+int JamulSoundLoad(char *fname);
 
 // lets you know if the given sound is currently playing
 bool JamulSoundIsPlaying(int which);
@@ -80,6 +80,6 @@ void JamulSoundUpdate(void);
 // call this to wipe the sounds from memory
 void JamulSoundPurge(void);
 // call this a lot, it plays sounds
-void GoPlaySound(int num,long pan,long vol,byte flags,int priority);
+void GoPlaySound(int num, long pan, long vol, byte flags, int priority);
 
 #endif

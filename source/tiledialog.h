@@ -7,8 +7,8 @@
 
 void InitTileDialog(void);
 void ExitTileDialog(void);
-void RenderTileDialog(int msx,int msy,MGLDraw *mgl);
+void RenderTileDialog(int msx, int msy, MGLDraw *mgl);
 byte TileDialogKey(char key);
-byte TileDialogClick(int msx,int msy);
+byte TileDialogClick(int msx, int msy);
 
 #endif

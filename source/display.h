@@ -31,31 +31,31 @@
 
 typedef struct displayObj_t
 {
-	int x,y,z,z2;
+	int x, y, z, z2;
 	sprite_t *spr;
 	byte hue;
 	char bright;
 	word flags;
-	int prev,next;
+	int prev, next;
 } displayObj_t;
 
 class DisplayList
 {
-	public:
-		DisplayList(void);
-		~DisplayList(void);
+public:
+	DisplayList(void);
+	~DisplayList(void);
 
-		bool DrawSprite(int x,int y,int z,int z2,byte hue,char bright,sprite_t *spr,word flags);
-		void ClearList(void);
-		void Render(void);
-	private:
+	bool DrawSprite(int x, int y, int z, int z2, byte hue, char bright, sprite_t *spr, word flags);
+	void ClearList(void);
+	void Render(void);
+private:
 
-		void HookIn(int me);
-		int GetOpenSlot(void);
+	void HookIn(int me);
+	int GetOpenSlot(void);
 
 
-		displayObj_t dispObj[MAX_DISPLAY_OBJS];
-		int head,nextfree;
+	displayObj_t dispObj[MAX_DISPLAY_OBJS];
+	int head, nextfree;
 };
 
 bool InitDisplay(MGLDraw *mainmgl);
@@ -63,29 +63,29 @@ void ExitDisplay(void);
 
 byte *GetDisplayScreen(void);
 
-void DrawMouseCursor(int x,int y);
+void DrawMouseCursor(int x, int y);
 
-void PutCamera(int x,int y);
-void GetCamera(int *x,int *y);
+void PutCamera(int x, int y);
+void GetCamera(int *x, int *y);
 // call this once per gameloop, with the X and Y of the object you want the camera to track
-void UpdateCamera(int x,int y,byte facing,Map *map);
-void Print(int x,int y,const char *s,char bright,byte font);
-void CenterPrint(int x,int y,const char *s,char bright,byte font);
-void RenderItAll(world_t *world,Map *map,byte flags);
+void UpdateCamera(int x, int y, byte facing, Map *map);
+void Print(int x, int y, const char *s, char bright, byte font);
+void CenterPrint(int x, int y, const char *s, char bright, byte font);
+void RenderItAll(world_t *world, Map *map, byte flags);
 int GetStrLength(const char *s);
 
-void SprDraw(int x,int y,int z,byte hue,char bright,sprite_t *spr,word flags);
-void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,sprite_t *spr,word flags);
+void SprDraw(int x, int y, int z, byte hue, char bright, sprite_t *spr, word flags);
+void SprDrawOff(int x, int y, int z, byte fromHue, byte hue, char bright, sprite_t *spr, word flags);
 
-void WallDraw(int x,int y,byte wall,byte floor,Map* map,word flags);
-void RoofDraw(int x,int y,byte roof,Map* map,word flags);
-void ParticleDraw(int x,int y,int z,byte type,byte size,word flags);
-void LightningDraw(int x,int y,int x2,int y2,byte bright,char range);
+void WallDraw(int x, int y, byte wall, byte floor, Map* map, word flags);
+void RoofDraw(int x, int y, byte roof, Map* map, word flags);
+void ParticleDraw(int x, int y, int z, byte type, byte size, word flags);
+void LightningDraw(int x, int y, int x2, int y2, byte bright, char range);
 
 void MakeItFlip(void);
-void DrawBox(int x,int y,int x2,int y2,byte c);
-void DrawFillBox(int x,int y,int x2,int y2,byte c);
-void DrawDebugBox(int x,int y,int x2,int y2);
+void DrawBox(int x, int y, int x2, int y2, byte c);
+void DrawFillBox(int x, int y, int x2, int y2, byte c);
+void DrawDebugBox(int x, int y, int x2, int y2);
 void ShakeScreen(byte howlong);
 void ShowVictoryAnim(byte world);
 void ShowImageOrFlic(char *str);

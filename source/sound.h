@@ -299,7 +299,7 @@
 
 void InitSound(void);
 void ExitSound(void);
-void MakeSound(int snd,int x,int y,int flags,int priority);
+void MakeSound(int snd, int x, int y, int flags, int priority);
 void MakeNormalSound(int snd);
 void SoundSystemExists(void);
 

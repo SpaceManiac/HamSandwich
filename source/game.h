@@ -78,11 +78,11 @@ void LunaticDraw(void);
 
 byte PlayALevel(byte map);
 
-byte LunaticWorld(byte world,const char *worldName);
-void LunaticGame(MGLDraw *mgl,byte load);
+byte LunaticWorld(byte world, const char *worldName);
+void LunaticGame(MGLDraw *mgl, byte load);
 void TrainingGame(MGLDraw *mgl);
 
-void SendMessageToGame(byte msg,int content);
+void SendMessageToGame(byte msg, int content);
 void AddGarbageTime(dword t);
 
 void SetGameIdle(byte b);

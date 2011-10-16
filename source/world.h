@@ -31,20 +31,20 @@ typedef struct terrain_t
 typedef struct world_t
 {
 	byte numMaps;
-	int  totalPoints;
-	Map	 *map[MAX_MAPS];
+	int totalPoints;
+	Map * map[MAX_MAPS];
 	terrain_t terrain[200];
 } world_t;
 
-void WorldLoadBMP(char *name,byte *dst);
+void WorldLoadBMP(char *name, byte *dst);
 
-byte NewWorld(world_t *world,MGLDraw *mgl);
-byte LoadWorld(world_t *world,const char *fname);
-byte SaveWorld(world_t *world,const char *fname);
+byte NewWorld(world_t *world, MGLDraw *mgl);
+byte LoadWorld(world_t *world, const char *fname);
+byte SaveWorld(world_t *world, const char *fname);
 void FreeWorld(world_t *world);
 
-void InitWorld(world_t *world,byte worldNum);
-void GetWorldName(char *fname,char *buf);
-int  GetWorldPoints(const char *fname);
+void InitWorld(world_t *world, byte worldNum);
+void GetWorldName(char *fname, char *buf);
+int GetWorldPoints(const char *fname);
 
 #endif
