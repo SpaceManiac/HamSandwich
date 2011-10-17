@@ -1039,7 +1039,7 @@ void UpdateBullet(bullet_t *me, Map *map, world_t *world)
 				HitBadguys(me, map, world);
 			map->BrightTorch((me->x / TILE_WIDTH) >> FIXSHIFT,
 					(me->y / TILE_HEIGHT) >> FIXSHIFT, 8, 4);
-			me->dz += MGL_random(FIXAMT / 8); //anti gravity
+			me->dz += MGL_random(FIXAMT / 8); // anti gravity
 			me->dx += MGL_random(65535) - FIXAMT / 2;
 			me->dy += MGL_random(65535) - FIXAMT / 2;
 			Dampen(&me->dx, FIXAMT / 4);
@@ -1234,7 +1234,6 @@ void UpdateBullet(bullet_t *me, Map *map, world_t *world)
 			break;
 		case BLT_REFLECT:
 			me->anim++;
-			//map->BrightTorch(me->x/(TILE_WIDTH*FIXAMT),me->y/(TILE_HEIGHT*FIXAMT),me->timer,4);
 			if (me->anim < 3)
 				HitBadguys(me, map, world);
 			break;
@@ -1654,7 +1653,6 @@ void FireMe(bullet_t *me, int x, int y, byte facing, byte type, byte friendly)
 			me->dx = Cosine(me->facing)*8;
 			me->dy = Sine(me->facing)*8;
 			me->dz = 0;
-			//MakeSound(SND_ENERGYFIRE,me->x,me->y,SND_CUTOFF,950);
 			break;
 		case BLT_MEGABEAM:
 			me->anim = 0;
@@ -1714,7 +1712,6 @@ void FireMe(bullet_t *me, int x, int y, byte facing, byte type, byte friendly)
 			me->dx = Cosine(me->facing)*8;
 			me->dy = Sine(me->facing)*8;
 			me->dz = FIXAMT * 4;
-			//MakeSound(SND_ENERGYFIRE,me->x,me->y,SND_CUTOFF,950);
 			break;
 		case BLT_BIGSNOW:
 			me->anim = 0;
@@ -1724,7 +1721,6 @@ void FireMe(bullet_t *me, int x, int y, byte facing, byte type, byte friendly)
 			me->dx = Cosine(me->facing)*8;
 			me->dy = Sine(me->facing)*8;
 			me->dz = FIXAMT * 4;
-			//MakeSound(SND_ENERGYFIRE,me->x,me->y,SND_CUTOFF,950);
 			break;
 		case BLT_ICESPIKE:
 			me->anim = 0;
@@ -1741,7 +1737,6 @@ void FireMe(bullet_t *me, int x, int y, byte facing, byte type, byte friendly)
 			me->dx = Cosine(me->facing * 32)*6;
 			me->dy = Sine(me->facing * 32)*6;
 			me->dz = FIXAMT * 8;
-			//MakeSound(SND_ENERGYFIRE,me->x,me->y,SND_CUTOFF,950);
 			break;
 		case BLT_SPINE:
 			me->anim = 0;

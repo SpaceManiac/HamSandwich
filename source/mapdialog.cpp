@@ -126,7 +126,7 @@ byte MapDialogClick(int msx, int msy)
 	// now the buttons
 	if (msx > 379 && msy > 11 && msx < 471 && msy < 11 + 15)
 	{
-		//new small
+		// new small
 		if (world->numMaps < MAX_MAPS)
 		{
 			world->numMaps++;
@@ -135,7 +135,7 @@ byte MapDialogClick(int msx, int msy)
 	}
 	if (msx > 379 && msy > 28 && msx < 471 && msy < 28 + 15)
 	{
-		//new medium
+		// new medium
 		if (world->numMaps < MAX_MAPS)
 		{
 			world->numMaps++;
@@ -144,7 +144,7 @@ byte MapDialogClick(int msx, int msy)
 	}
 	if (msx > 379 && msy > 44 && msx < 471 && msy < 44 + 15)
 	{
-		//new large
+		// new large
 		if (world->numMaps < MAX_MAPS)
 		{
 			world->numMaps++;
@@ -153,23 +153,11 @@ byte MapDialogClick(int msx, int msy)
 	}
 	if (msx > 379 && msy > 60 && msx < 471 && msy < 60 + 15)
 	{
-		//copy
+		// copy
 		if (world->numMaps < MAX_MAPS)
 		{
 			world->numMaps++;
 			world->map[world->numMaps - 1] = new Map(world->map[mapNum]);
-			/*
-			world->map[world->numMaps-1]=new Map(2,world->map[mapNum]->name);
-			for(i=0;i<world->map[mapNum]->width;i++)
-				for(j=0;j<world->map[mapNum]->height;j++)
-				{
-					world->map[world->numMaps-1]->map[i+j*128]=world->map[mapNum]->map[i+j*world->map[mapNum]->width];
-				}
-			for(i=0;i<MAX_MAPMONS;i++)
-				world->map[world->numMaps-1]->badguy[i]=world->map[mapNum]->badguy[i];
-			for(i=0;i<MAX_SPECIAL;i++)
-				world->map[world->numMaps-1]->special[i]=world->map[mapNum]->special[i];
-			 */
 		}
 	}
 	if (msx > 379 && msy > 120 && msx < 471 && msy < 120 + 15)
@@ -178,12 +166,12 @@ byte MapDialogClick(int msx, int msy)
 	}
 	if (msx > 379 && msy > 200 && msx < 471 && msy < 200 + 15)
 	{
-		//rename
+		// rename
 		strncpy(world->map[mapNum]->name, newmapname, 32);
 	}
 	if (msx > 379 && msy > 280 && msx < 471 && msy < 280 + 15)
 	{
-		//delete
+		// delete
 		if (mapNum != 0) // can't delete the original one
 		{
 			delete world->map[mapNum];

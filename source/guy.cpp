@@ -10,7 +10,7 @@ int maxGuys;
 Guy *guyHit;
 Guy *nobody;
 
-//------------------------------------------------------------------------
+// ------------------------------------------------------------------------
 // CLASS GUY
 
 Guy::Guy(void)
@@ -57,7 +57,7 @@ byte Guy::AttackCheck(byte size, int xx, int yy, Guy *him)
 	x2 = him->x >> FIXSHIFT;
 	y2 = him->y >> FIXSHIFT;
 
-	//DrawDebugBox(xx,yy,xx+size*2,yy+size*2);
+	DrawDebugBox(xx,yy,xx+size*2,yy+size*2);
 	if ((x2 + him->rectx2) >= xx && (y2 + him->recty2) >= yy && (x2 + him->rectx) <= (xx + size * 2) &&
 			(y2 + him->recty) <= (yy + size * 2))
 		return 1;
@@ -1189,7 +1189,7 @@ void Guy::GetShot(int dx, int dy, byte damage, Map *map, world_t *world)
 		SetPlayerHP(newHP);
 }
 
-//-----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
 void InitGuys(int max)
 {
@@ -1980,22 +1980,6 @@ byte RaftNearby(void)
 				goodguy->x = guys[i]->x;
 				goodguy->y = guys[i]->y + 1;
 
-				/*
-				if(abs(goodguy->dx)>abs(goodguy->dy))
-				{
-					if(goodguy->dx<0)
-						guys[i]->facing=2;
-					else
-						guys[i]->facing=0;
-				}
-				else
-				{
-					if(goodguy->dy<0)
-						guys[i]->facing=3;
-					else
-						guys[i]->facing=1;
-				}
-				 */
 				return 1;
 			}
 		}

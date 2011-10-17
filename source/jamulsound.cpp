@@ -384,10 +384,6 @@ int JamulSoundGetFromMemory(byte *buf)
 	DWORD *sizeptr;
 	dword size;
 	int bufnum;
-	/*void* write1=0;
-	unsigned long length1=0;
-	void* write2=0;
-	unsigned long length2=0;*/ // seemingly unused
 
 	if (buf == NULL)
 		return -1;

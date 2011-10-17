@@ -295,7 +295,7 @@
 #define SND_TURRETBZZT	272
 #define SND_SKELALIVE	273
 
-//--------------------------------
+// --------------------------------
 
 void InitSound(void);
 void ExitSound(void);

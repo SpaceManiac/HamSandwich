@@ -583,11 +583,7 @@ byte Map::MakeSmoothShadow(int x, int y)
 	{
 		if (Wall(x + 1, y))
 		{
-			//if (Wall(x + 1, y - 1)) {
 			return 6;
-			//} else {
-			//    return 5;
-			//}
 		}
 		else
 		{
@@ -626,7 +622,6 @@ byte Map::MakeSmoothShadow(int x, int y)
 			}
 		}
 	}
-	//return 0;
 }
 
 char* Map::MakeSmoothLighting(bool beZero, int x, int y)

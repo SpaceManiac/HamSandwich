@@ -363,7 +363,7 @@ void LightningDraw(int x, int y, int x2, int y2, byte bright, char range)
 	dispList->DrawSprite(x, y, x2, y2, bright, range, (sprite_t *) 1, DISPLAY_DRAWME | DISPLAY_LIGHTNING);
 }
 
-//---------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
 // from here on out it's class DISPLAYLIST
 
 DisplayList::DisplayList(void)

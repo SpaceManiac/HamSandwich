@@ -45,7 +45,7 @@ FILE * FLI_file;
 palette_t FLI_pal[256];
 word fliWidth, fliHeight;
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
 void PlotSolidRun(int x, int y, int len, byte *scrn, byte c)
 {
@@ -187,7 +187,6 @@ void FLI_doDelta(byte *scrn, int scrWidth, byte *p)
 			sizeCount = (char) p[pos++];
 			if (sizeCount > 0) // copy sizeCount words
 			{
-				//memcpy(&scrn[scrWidth*y+x],&p[pos],sizeCount*2);
 				PlotDataRun(x, y, sizeCount * 2, scrn, &p[pos]);
 				pos += sizeCount * 2;
 				x += sizeCount * 2;
@@ -195,14 +194,6 @@ void FLI_doDelta(byte *scrn, int scrWidth, byte *p)
 			else if (sizeCount < 0) // copy the word value -sizeCount times
 			{
 				memcpy(&v, &p[pos], 2);
-				/*
-				while(sizeCount<0)
-				{
-					sizeCount++;
-					memcpy(&scrn[scrWidth*y+x],&v,2);
-					x+=2;
-				}
-				 */
 				PlotSolidWordRun(x, y, -sizeCount, scrn, v);
 				x -= 2 * sizeCount;
 				pos += 2;
@@ -238,14 +229,12 @@ void FLI_doLC(byte *scrn, int scrWidth, byte *p)
 			x += skip;
 			if (size < 0)
 			{
-				//memset(&scrn[x+y*scrWidth],p[pos],-size);
 				PlotSolidRun(x, y, -size, scrn, p[pos]);
 				pos++;
 				x -= size;
 			}
 			if (size > 0)
 			{
-				//memcpy(&scrn[x+y*scrWidth],&p[pos],size);
 				PlotDataRun(x, y, size, scrn, &p[pos]);
 				pos += size;
 				x += size;
@@ -272,14 +261,12 @@ void FLI_doBRUN(byte *scrn, int scrWidth, byte *p)
 			size = p[pos++];
 			if (size > 0)
 			{
-				//memset(&scrn[x+y*scrWidth],p[pos],size);
 				PlotSolidRun(x, y, size, scrn, p[pos]);
 				pos++;
 				x += size;
 			}
 			if (size < 0)
 			{
-				//memcpy(&scrn[x+y*scrWidth],&p[pos],-size);
 				PlotDataRun(x, y, -size, scrn, &p[pos]);
 				pos -= size;
 				x -= size;

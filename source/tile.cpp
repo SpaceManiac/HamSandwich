@@ -322,18 +322,6 @@ void RenderFloorTileTrans(int x, int y, int t, char light)
 	}
 }
 
-/*void RenderWallTile(int x,int y,byte w,byte f,char light)
-{
-	RenderFloorTile(x,y,w+199,light);
-	RenderFloorTile(x,y-TILE_HEIGHT,f,light);
-}
-
-void RenderWallTileTrans(int x,int y,byte w,byte f,char light)
-{
-	RenderFloorTile(x,y,w+199,light);
-	RenderFloorTileTrans(x,y-TILE_HEIGHT,f,light);
-}*/
-
 void PlotStar(int x, int y, byte col, byte tx, byte ty, byte tileNum)
 {
 	byte *dst;
@@ -787,40 +775,6 @@ void RenderRoofTileFancy(int x, int y, int t, byte trans, byte wallBelow, char *
 			RenderFloorTileUnlit(x, y, t);
 		return;
 	}
-
-	/*
-	if(config.shading==0)
-	{
-		if(trans)
-			RenderFloorTileTrans(x,y,t,theLight[4]);
-		else
-			RenderFloorTile(x,y,t,theLight[4]);
-		return;
-	}
-
-	memcpy(light,theLight,9*sizeof(char));
-	j=0;
-	light[0]=(light[0]+light[4]+light[3]+light[1])/4;
-	light[2]=(light[2]+light[4]+light[1]+light[5])/4;
-	if(wallBelow)
-	{
-		light[6]=(light[6]+light[4]+light[3]+light[7])/4;
-		light[8]=(light[8]+light[4]+light[7]+light[5])/4;
-	}
-	for(i=0;i<9;i++)
-	{
-		if(light[i]==0)
-			j++;
-		if(i==1 || i==3 || i==5 || i==7)
-			light[i]=(light[4]+light[i])/2;	// average each one with this tile's central light
-	}
-	if(!wallBelow)
-	{
-		light[6]=light[3];
-		light[8]=light[5];
-		light[7]=light[4];
-	}
-	 */
 
 	if (opt.discoMode)
 	{

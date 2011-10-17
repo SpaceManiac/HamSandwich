@@ -109,11 +109,9 @@ void RenderItem(int x, int y, byte type, char bright)
 			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(32), DISPLAY_DRAWME);
 			break;
 		case ITM_HOLETREE:
-			//SprDraw(x,y,0,255,bright,itmSpr->GetSprite(26),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(26), DISPLAY_DRAWME);
 			break;
 		case ITM_STUMP:
-			//SprDraw(x,y,0,255,bright,itmSpr->GetSprite(27),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(27), DISPLAY_DRAWME);
 			break;
 		case ITM_CHAIR1:
@@ -128,7 +126,6 @@ void RenderItem(int x, int y, byte type, char bright)
 			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(30), DISPLAY_DRAWME);
 			break;
 		case ITM_BIGROCKS:
-			//SprDraw(x,y,0,255,bright,itmSpr->GetSprite(31),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(31), DISPLAY_DRAWME);
 			break;
 		case ITM_POST:

@@ -192,7 +192,7 @@ void sprite_t::Draw(int x, int y, MGLDraw *mgl)
 			else if (srcx < constrainX)
 			{
 				// skip some of the beginning
-				skip = (constrainX - srcx); //-1;
+				skip = (constrainX - srcx);
 				src += skip;
 				srcx += skip;
 				dst += skip;
@@ -302,7 +302,7 @@ void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright)
 			else if (srcx < constrainX)
 			{
 				// skip some of the beginning
-				skip = (constrainX - srcx); //-1;
+				skip = (constrainX - srcx);
 				src += skip;
 				srcx += skip;
 				dst += skip;
@@ -411,7 +411,7 @@ void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright)
 			else if (srcx < constrainX)
 			{
 				// skip some of the beginning
-				skip = (constrainX - srcx); //-1;
+				skip = (constrainX - srcx);
 				src += skip;
 				srcx += skip;
 				dst += skip;
@@ -517,7 +517,7 @@ void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toC
 			else if (srcx < constrainX)
 			{
 				// skip some of the beginning
-				skip = (constrainX - srcx); //-1;
+				skip = (constrainX - srcx);
 				src += skip;
 				srcx += skip;
 				dst += skip;
@@ -629,7 +629,7 @@ void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright)
 			else if (srcx < constrainX)
 			{
 				// skip some of the beginning
-				skip = (constrainX - srcx); //-1;
+				skip = (constrainX - srcx);
 				src += skip;
 				srcx += skip;
 				dst += skip;
@@ -735,7 +735,7 @@ void sprite_t::DrawGlow(int x, int y, MGLDraw *mgl, char bright)
 			else if (srcx < constrainX)
 			{
 				// skip some of the beginning
-				skip = (constrainX - srcx); //-1;
+				skip = (constrainX - srcx);
 				src += skip;
 				srcx += skip;
 				dst += skip;
@@ -804,8 +804,6 @@ void sprite_t::DrawShadow(int x, int y, MGLDraw *mgl)
 	byte alternate;
 	int i;
 
-	//x-=ofsx+height/2;
-	//y-=ofsy-height/2;	// start the sprite half of it's height down
 	x -= ofsx + height / 2;
 	y -= ofsy / 2;
 	if (x > constrainX2 || y > constrainY2)
@@ -848,7 +846,7 @@ void sprite_t::DrawShadow(int x, int y, MGLDraw *mgl)
 			else if (srcx < constrainX)
 			{
 				// skip some of the beginning
-				skip = (constrainX - srcx); //-1;
+				skip = (constrainX - srcx);
 				src += skip;
 				srcx += skip;
 				dst += skip;
@@ -997,10 +995,6 @@ bool sprite_set_t::Load(const char *fname)
 	}
 	free(buffer);
 	fclose(f);
-
-	//printf("strcpy(%p,%s)\n", loadName, fname);
-	//strcpy(loadName, fname); // save filename for debugging
-	//printf(" = %s\n", loadName);
 
 	return TRUE;
 }

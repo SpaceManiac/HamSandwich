@@ -1259,10 +1259,6 @@ void PlayerControlMe(Guy *me, mapTile_t *mapTile, world_t *world)
 	if (me->action == ACTION_BUSY)
 	{
 		// throw hammer if need be, use item if need be
-		//if(me->seq==ANIM_ATTACK && me->frm==6 && player.reload==0 && player.hammers>0)
-
-		//if(me->seq==ANIM_ATTACK && me->frm==7)
-		//	me->reload-=2;
 		if (me->seq == ANIM_A1 && me->frm == 2 && player.wpnReload == 0)
 		{
 			PlayerFireWeapon(me);
@@ -1323,8 +1319,6 @@ void PlayerControlMe(Guy *me, mapTile_t *mapTile, world_t *world)
 			if (player.hammers > 0)
 				PlayerThrowHammer(me);
 			player.reload += (10 - (4 - (player.hamSpeed >> 2)));
-			;
-			//return;
 		}
 		if ((c & CONTROL_B2) && player.wpnReload == 0 && player.weapon) // pushed wpn use button
 		{
@@ -1405,12 +1399,6 @@ void PlayerControlMe(Guy *me, mapTile_t *mapTile, world_t *world)
 			player.boredom = 0;
 		}
 	}
-	/* RAGE TEST
-	player.life=64;
-	player.rage=127*256;
-	me->hp=64;
-	SetPlayerHP(64);
-	 */
 }
 
 void PlayerControlPowerArmor(Guy *me, mapTile_t *mapTile, world_t *world)
@@ -1465,10 +1453,6 @@ void PlayerControlPowerArmor(Guy *me, mapTile_t *mapTile, world_t *world)
 		// switch these to robotic bouapha noises someday
 		if (me->hp > 0)
 			MakeSound(SND_ROBOBOUAPHAOUCH, me->x, me->y, SND_CUTOFF | SND_ONE, 2000);
-
-		// can't be killed in power armor
-		//else if(me->seq==ANIM_DIE)	// so it doesn't do this if you're drowning
-		//	MakeSound(SND_ROBOBOUAPHADIE,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
 	}
 
 	if (me->parent) // being grabbed by a Super Zombie or something

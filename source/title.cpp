@@ -1344,26 +1344,6 @@ byte SpecialLoadBMP(const char *name, MGLDraw *mgl, palette_t *pal)
 	fread(&bmpFHead, sizeof (BITMAPFILEHEADER), 1, f);
 	fread(&bmpIHead, sizeof (BITMAPINFOHEADER), 1, f);
 
-	/*FILE* test = fopen("pal.txt", "wt");
-	fprintf(test, "bfType = %u\n", bmpFHead.bfType);
-	fprintf(test, "bfSize = %lu\n", bmpFHead.bfSize);
-	fprintf(test, "bfReserved1 = %u\n", bmpFHead.bfReserved1);
-	fprintf(test, "bfReserved2 = %u\n", bmpFHead.bfReserved2);
-	fprintf(test, "bfOffBits = %lu\n", bmpFHead.bfOffBits);
-
-	fprintf(test, "biSize = %lu\n", bmpIHead.biSize);
-	fprintf(test, "biWidth = %li\n", bmpIHead.biWidth);
-	fprintf(test, "biHeight = %li\n", bmpIHead.biHeight);
-	fprintf(test, "biPlanes = %u\n", bmpIHead.biPlanes);
-	fprintf(test, "biBitCount = %u\n", bmpIHead.biBitCount);
-	fprintf(test, "biCompression = %lu\n", bmpIHead.biCompression);
-	fprintf(test, "biSizeImage = %lu\n", bmpIHead.biSizeImage);
-	fprintf(test, "biXPelsPerMeter = %li\n", bmpIHead.biXPelsPerMeter);
-	fprintf(test, "biYPelsPerMeter = %li\n", bmpIHead.biYPelsPerMeter);
-	fprintf(test, "biClrUsed = %lu\n", bmpIHead.biClrUsed);
-	fprintf(test, "biClrImportant = %lu\n", bmpIHead.biClrImportant);
-	fprintf(test, "\n");*/
-
 	// 8-bit BMPs only
 	if (bmpIHead.biBitCount != 8)
 		return FALSE;
@@ -1381,9 +1361,7 @@ byte SpecialLoadBMP(const char *name, MGLDraw *mgl, palette_t *pal)
 		pal[i].red = pal2[i].rgbRed;
 		pal[i].green = pal2[i].rgbGreen;
 		pal[i].blue = pal2[i].rgbBlue;
-		//fprintf(test, "%d\t%d %d %d\n", i, pal[i].red, pal[i].green, pal[i].blue);
 	}
-	//fclose(test);
 
 	for (i = 0; i < bmpIHead.biHeight; i++)
 	{

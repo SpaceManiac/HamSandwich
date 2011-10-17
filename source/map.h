@@ -19,7 +19,7 @@
 #define MAP_SHOWBADGUYS 8
 #define MAP_SHOWSPECIALS 16
 
-//special trigger flags
+// special trigger flags
 #define TRG_STEP		1
 #define TRG_ENEMYSTEP	2
 #define TRG_NEAR		4
@@ -37,7 +37,7 @@
 #define TRG_KILLONE		16384	// kill just one of the chosen monster type
 #define TRG_FLOORHERE	32768	// the floor/roof here is N
 
-//special effect choices
+// special effect choices
 #define SPC_NONE		0
 #define SPC_SUMMON		1
 #define SPC_ZAPWALL		2

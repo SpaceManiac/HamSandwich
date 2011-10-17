@@ -261,7 +261,7 @@ monsterType_t monsType[NUM_MONSTERS] ={
 			{9, 10, 11, 12, 13, 14, 15, 15, 15, 15, 15, 15, 255}, // die
 			{7, 8, 9, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 14, 15, 16, 16, 255}, // A1=leap
 			{26, 27, 28, 29, 30, 255}, // A2=attempted grab
-			{27, 31, 32, 33, 34, 35, 34, 36, 37, 36, 34, 35, 34, 36, 37, 36, 34, 35, 34, 33, 31, 27, 255} //A3= grab n' pound
+			{27, 31, 32, 33, 34, 35, 34, 36, 37, 36, 34, 35, 34, 36, 37, 36, 34, 35, 34, 33, 31, 27, 255} // A3= grab n' pound
 		}},
 	{"Happy Stick Man", 255, 255, 0,
 		16, 12, 100, 1000, "graphics\\stickman.jsp", 0, MF_ONEFACE,
@@ -289,8 +289,8 @@ monsterType_t monsType[NUM_MONSTERS] ={
 			{1, 2, 3, 2, 1, 0, 255}, // move
 			{10, 11, 12, 13, 14, 15, 16, 255}, // attack=spit snow
 			{17, 18, 19, 20, 21, 22, 255}, // die
-			{4, 5, 6, 7, 8, 9, 255}, //A1=rise out of the snow
-			{254, 255}, //A2=idle under the ground
+			{4, 5, 6, 7, 8, 9, 255}, // A1=rise out of the snow
+			{254, 255}, // A2=idle under the ground
 		}},
 	{"Snowguy", 255, 255, 0,
 		26, 36, 40, 200, "graphics\\snowguy.jsp", 0, 0,
@@ -299,7 +299,7 @@ monsterType_t monsType[NUM_MONSTERS] ={
 			{1, 2, 3, 4, 5, 6, 7, 0, 255}, // move
 			{24, 25, 26, 27, 28, 29, 255}, // attack=slash
 			{30, 31, 32, 33, 34, 35, 254, 35, 254, 35, 254, 35, 254, 254, 35, 255}, // die
-			{8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 255}, //A1=throw snowball
+			{8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 255}, // A1=throw snowball
 		}},
 	{"Pengulon", 255, 255, 0,
 		10, 8, 5, 50, "graphics\\penguin.jsp", 0, MF_FLYING,
@@ -325,7 +325,7 @@ monsterType_t monsType[NUM_MONSTERS] ={
 			{14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 255}, // attack=snowball
 			{35, 36, 37, 38, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 255}, // die
 			{28, 29, 30, 31, 32, 33, 33, 33, 34, 34, 255}, // A1=ground pound
-			{5, 6, 7, 8, 9, 10, 11, 12, 13, 255}, //A2=death yodel
+			{5, 6, 7, 8, 9, 10, 11, 12, 13, 255}, // A2=death yodel
 			{24, 25, 26, 27, 26, 25, 26, 27, 26, 25, 26, 27, 26, 25, 24, 255}, // A3=wave hello
 		}},
 	{"Bjorn", 1, 4, 2,
@@ -336,7 +336,7 @@ monsterType_t monsType[NUM_MONSTERS] ={
 			{14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 255}, // attack=snowball
 			{35, 36, 37, 38, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 255}, // die
 			{28, 29, 30, 31, 32, 33, 33, 33, 34, 34, 255}, // A1=ground pound
-			{5, 6, 7, 8, 9, 10, 11, 12, 13, 255}, //A2=death yodel
+			{5, 6, 7, 8, 9, 10, 11, 12, 13, 255}, // A2=death yodel
 			{24, 25, 26, 27, 26, 25, 26, 27, 26, 25, 26, 27, 26, 25, 24, 255}, // A3=wave hello
 		}},
 	{"Geozoid", 255, 255, 0,
@@ -908,7 +908,7 @@ monsterType_t monsType[NUM_MONSTERS] ={
 			{0, 255}, // idle
 			{0, 255}, // move
 			{0, 255}, // attack
-			{0, 0, 0, 0, 0, 255}, //die
+			{0, 0, 0, 0, 0, 255}, // die
 		}},
 	{"Generator", 1, 6, 0, // once every 5 seconds
 		30, 10, 200, 1000, "expgraphics\\genrtr.jsp", 0, MF_NOMOVE | MF_ONEFACE | MF_FACECMD | MF_ENEMYWALK,
@@ -916,7 +916,7 @@ monsterType_t monsType[NUM_MONSTERS] ={
 			{0, 255}, // idle
 			{0, 255}, // move
 			{0, 255}, // attack
-			{0, 0, 0, 0, 0, 255}, //die
+			{0, 0, 0, 0, 0, 255}, // die
 		}},
 	{"Generator", 1, 3, 0, // once every 15 seconds
 		30, 10, 400, 1000, "expgraphics\\genrtr.jsp", 0, MF_NOMOVE | MF_ONEFACE | MF_FACECMD | MF_ENEMYWALK,
@@ -924,7 +924,7 @@ monsterType_t monsType[NUM_MONSTERS] ={
 			{0, 255}, // idle
 			{0, 255}, // move
 			{0, 255}, // attack
-			{0, 0, 0, 0, 0, 255}, //die
+			{0, 0, 0, 0, 0, 255}, // die
 		}},
 	{"Generator", 1, 5, 0, // once every 30 seconds
 		30, 10, 800, 1000, "expgraphics\\genrtr.jsp", 0, MF_NOMOVE | MF_ONEFACE | MF_FACECMD | MF_ENEMYWALK,
@@ -932,7 +932,7 @@ monsterType_t monsType[NUM_MONSTERS] ={
 			{0, 255}, // idle
 			{0, 255}, // move
 			{0, 255}, // attack
-			{0, 0, 0, 0, 0, 255}, //die
+			{0, 0, 0, 0, 0, 255}, // die
 		}},
 	{"Sneaky Shark", 255, 255, 0,
 		15, 13, 50, 100, "expgraphics\\shark.jsp", 0, MF_ONEFACE | MF_AQUATIC | MF_WATERWALK,
@@ -1471,7 +1471,7 @@ void InstaRenderMonster(int x, int y, byte type, char bright, MGLDraw *mgl)
 }
 
 // AI auxiliary functions to make it simple
-//---------------------------------------------
+// ---------------------------------------------
 
 inline void FaceGoodguy(Guy *me, Guy *goodguy)
 {
@@ -1703,7 +1703,7 @@ void FlailLock(Guy *me)
 }
 
 // here be the AIs for each monster type
-//--------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------
 
 void AI_Bonehead(Guy *me, Map *map, world_t *world, Guy *goodguy)
 {
@@ -2402,7 +2402,7 @@ void AI_Pygmy(Guy *me, Map *map, world_t *world, Guy *goodguy)
 					me->action = ACTION_BUSY;
 					break;
 				case 2:
-					me->facing = (me->facing + (-1 + MGL_random(3)))&7; //change facing
+					me->facing = (me->facing + (-1 + MGL_random(3)))&7; // change facing
 					me->mind1 = 0;
 					break;
 			}
@@ -2883,7 +2883,7 @@ void AI_MattieBody(Guy *me, Map *map, world_t *world, Guy *goodguy)
 			me->dx -= FIXAMT / 16; // slow acceleration
 		if (goodguy->x > me->x)
 			me->dx += FIXAMT / 16;
-		if (goodguy->y < me->y) //CRUSH him if he gets behind you
+		if (goodguy->y < me->y) // CRUSH him if he gets behind you
 			me->dy -= FIXAMT;
 		else
 		{
@@ -3688,16 +3688,6 @@ void AI_Shroom(Guy *me, Map *map, world_t *world, Guy *goodguy)
 	if (me->reload)
 		me->reload--;
 
-	if (me->ouch == 4)
-	{
-		/*
-		if(me->hp>0)
-			MakeSound(SND_SKELOUCH,me->x,me->y,SND_CUTOFF,1200);
-		else
-			MakeSound(SND_SKELDIE,me->x,me->y,SND_CUTOFF,1200);
-		 */
-	}
-
 	if (me->action == ACTION_BUSY)
 	{
 		if (me->seq == ANIM_ATTACK && me->frm == 5 && me->reload == 0 && goodguy)
@@ -4017,16 +4007,6 @@ void AI_ThingTentacle(Guy *me, Map *map, world_t *world, Guy *goodguy)
 	{
 		me->type = MONS_NONE;
 		return;
-	}
-
-	if (me->ouch == 4)
-	{
-		/*
-		if(me->hp>0)
-			MakeSound(SND_SKELOUCH,me->x,me->y,SND_CUTOFF,1200);
-		else
-			MakeSound(SND_SKELDIE,me->x,me->y,SND_CUTOFF,1200);
-		 */
 	}
 
 	if (me->parent->type == MONS_THINGTENT)
@@ -4357,7 +4337,7 @@ void AI_SuperZombie(Guy *me, Map *map, world_t *world, Guy *goodguy)
 			}
 			else if (MGL_random(64) == 0)
 			{
-				//leap!
+				// leap!
 				me->seq = ANIM_A1;
 				me->frm = 0;
 				me->frmTimer = 0;
@@ -4388,7 +4368,7 @@ void AI_StickMan(Guy *me, Map *map, world_t *world, Guy *goodguy)
 			MakeSound(SND_HAPPYDIE, me->x, me->y, SND_CUTOFF, 1200);
 		if (me->hp > 0)
 		{
-			me->seq = ANIM_A2; //sad
+			me->seq = ANIM_A2; // sad
 			me->frm = 0;
 			me->frmTimer = 0;
 			me->frmAdvance = 32;
@@ -5548,7 +5528,7 @@ void AI_Cactus(Guy *me, Map *map, world_t *world, Guy *goodguy)
 		return;
 	}
 
-	if (me->mind == 0) //idling
+	if (me->mind == 0) // idling
 	{
 		if (me->mind1)
 			me->mind1--;

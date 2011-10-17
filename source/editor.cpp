@@ -25,8 +25,7 @@ static byte curMapNum;
 static int mouseX, mouseY;
 static int tileX, tileY;
 
-// static byte  showStats=0; // unused
-static dword gameStartTime, /*visFrameCount,*/updFrameCount; // visFrameCount is unused
+static dword gameStartTime, updFrameCount;
 static word numRunsToMakeUp;
 
 static byte plopCounter = 0;
@@ -1123,7 +1122,6 @@ void ShowSpecials(void)
 
 void EditorDraw(void)
 {
-	//editmgl->ClearScreen();
 	switch (editMode) {
 		case EDITMODE_EDIT:
 			if (editopt.displayFlags & MAP_SHOWBADGUYS)

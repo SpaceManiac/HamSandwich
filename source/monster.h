@@ -282,7 +282,7 @@ void AI_GreatPumpkin(Guy *me, Map *map, world_t *world, Guy *goodguy);
 void AI_Ultrazoid(Guy *me, Map *map, world_t *world, Guy *goodguy);
 void AI_Santa(Guy *me, Map *map, world_t *world, Guy *goodguy);
 
-//Matilda's AIs
+// Matilda's AIs
 void AI_MattieBrain(Guy *me, Map *map, world_t *world, Guy *goodguy);
 void AI_MattieSkullOrHead(Guy *me, Map *map, world_t *world, Guy *goodguy);
 void AI_MattieClaw(Guy *me, Map *map, world_t *world, Guy *goodguy);

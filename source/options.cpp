@@ -182,7 +182,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 				mgl->LastKeyPressed();
 				return 0;
 			}
-			if (c2 != 0 && c2 != 67) //67 = enter
+			if (c2 != 0 && c2 != 67) // 67 = enter
 			{
 				opt.control[controlX][controlY] = c2;
 				optMode = 1;
@@ -334,7 +334,7 @@ void RenderOptionsMenu(MGLDraw *mgl)
 	RenderControls(120, 230);
 }
 
-//----------------
+// ----------------
 
 void LoadOptions(void)
 {

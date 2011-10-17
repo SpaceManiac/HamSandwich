@@ -49,7 +49,7 @@ void CDPlayerUpdate(byte mode)
 	isPlaying = 0;
 	if (stream != NULL)
 		isPlaying = logg_update_stream(stream);
-	//printf("mode=%d, isPlaying = %d\n", (int)mode, (int)isPlaying);
+
 	bool modeChanged = currentMode != mode;
 	currentMode = mode;
 

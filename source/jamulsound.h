@@ -70,7 +70,7 @@ byte *JamulSoundLoadToMemory(char *fname);
 int JamulSoundGetFromMemory(byte *buf);
 
 
-//--------------------------------
+// --------------------------------
 // here's the fun and easy sound manager
 // it assumes there is a subdirectory "\sounds" that contains snd000.wav - sndXXX.wav,
 // for as many sounds as you'll try to play.  It will load them if they aren't in memory already.

@@ -691,7 +691,6 @@ void AI_Lefty(Guy *me, Map *map, world_t *world, Guy *goodguy)
 	// (but only if in pursuit mode, because otherwise you'd point the wrong way)
 	if ((!MGL_random(100)) && me->mind == 0)
 	{
-		//MakeSound(SND_LEFTYWAVE,me->x,me->y,SND_CUTOFF,200);
 		me->seq = ANIM_A1;
 		me->frm = 0;
 		me->frmTimer = 0;
@@ -821,7 +820,7 @@ void AI_Pygmy2(Guy *me, Map *map, world_t *world, Guy *goodguy)
 					me->action = ACTION_BUSY;
 					break;
 				case 1:
-					me->facing = (me->facing + (-1 + MGL_random(3)))&7; //change facing
+					me->facing = (me->facing + (-1 + MGL_random(3)))&7; // change facing
 					me->mind1 = 0;
 					break;
 			}
@@ -960,7 +959,7 @@ void AI_Pygmy3(Guy *me, Map *map, world_t *world, Guy *goodguy)
 					me->action = ACTION_BUSY;
 					break;
 				case 1:
-					me->facing = (me->facing + (-1 + MGL_random(3)))&7; //change facing
+					me->facing = (me->facing + (-1 + MGL_random(3)))&7; // change facing
 					me->mind1 = 0;
 					break;
 			}
@@ -2789,7 +2788,7 @@ void AI_UltraPygmy(Guy *me, Map *map, world_t *world, Guy *goodguy)
 					me->action = ACTION_BUSY;
 					break;
 				case 2:
-					me->facing = (me->facing + (-1 + MGL_random(3)))&7; //change facing
+					me->facing = (me->facing + (-1 + MGL_random(3)))&7; // change facing
 					me->mind1 = 0;
 					break;
 			}

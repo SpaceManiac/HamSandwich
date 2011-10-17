@@ -17,7 +17,7 @@
 #define DISPLAY_XBORDER 128
 #define DISPLAY_YBORDER 128
 
-//display object flags
+// display object flags
 #define DISPLAY_DRAWME		1
 #define DISPLAY_SHADOW		2
 #define DISPLAY_WALLTILE	4

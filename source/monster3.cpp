@@ -297,7 +297,7 @@ void AI_Mattie2Body(Guy *me, Map *map, world_t *world, Guy *goodguy)
 			me->dx -= FIXAMT / 16; // slow acceleration
 		if (goodguy->x > me->x)
 			me->dx += FIXAMT / 16;
-		if (goodguy->y < me->y) //CRUSH him if he gets behind you
+		if (goodguy->y < me->y) // CRUSH him if he gets behind you
 			me->dy -= FIXAMT;
 		else
 		{
@@ -597,7 +597,7 @@ void AI_PygmyQueen(Guy *me, Map *map, world_t *world, Guy *goodguy)
 					me->action = ACTION_BUSY;
 					break;
 				case 1:
-					me->facing = (me->facing + (-1 + MGL_random(3)))&7; //change facing
+					me->facing = (me->facing + (-1 + MGL_random(3)))&7; // change facing
 					me->mind1 = 0;
 					break;
 			}
@@ -1950,7 +1950,7 @@ void AI_Gnome(Guy *me, Map *map, world_t *world, Guy *goodguy)
 					me->action = ACTION_BUSY;
 					break;
 				case 2:
-					me->facing = (me->facing + (-1 + MGL_random(3)))&7; //change facing
+					me->facing = (me->facing + (-1 + MGL_random(3)))&7; // change facing
 					me->mind1 = 0;
 					break;
 			}

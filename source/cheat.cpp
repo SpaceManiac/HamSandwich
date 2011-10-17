@@ -42,7 +42,6 @@ void CheatKey(char c)
 	// and stick the new one on the end
 	lastKeys[15] = c;
 
-	//strlwr(&lastKeys[15]);
 	lastKeys[15] = tolower(lastKeys[15]);
 
 	for (i = 0; i < NUM_CHEATS; i++)

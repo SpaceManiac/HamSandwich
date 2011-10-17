@@ -164,7 +164,6 @@ byte GetJoyState(void)
 	result = joyGetPosEx(JOYSTICKID1, &joyInfo);
 	if (result != JOYERR_NOERROR)
 	{
-		//joystickOn=0;
 		return 0;
 	}
 	joyX = (int) joyInfo.dwXpos;
