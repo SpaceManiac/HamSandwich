@@ -6,6 +6,7 @@
 from glob import glob
 from sys import argv
 from os import path
+import re
 
 target = argv[1]
 cxxflags = argv[2]
@@ -45,9 +46,23 @@ for source in sourceFiles:
 	obj = object(source)
 	write(obj + ': ' + source)
 	write('\t@mkdir -p ' + path.split(obj)[0])
-	write('\t$(COMPILE.cc) -o $@ ' + source)
+	write('\t$(COMPILE.cc) -MMD -MP -MF $@.d -o $@ ' + source)
+	if path.exists(obj + '.d'):
+		write('include ' + obj + '.d')
 
-write(objectDir + '/lunatic.res: source/lunatic.rc')
+# calculate dependencies of lunatic.rc
+rc = open('source/lunatic.rc', 'r')
+resFiles = ''
+for line in rc:
+	list = re.split('\\s+', line[:-1])
+	filename = list[2]
+	if filename.startswith('"'):
+		resFiles += ' source/' + filename[1:-1]
+	else:
+		resFiles += ' source/' + filename
+rc.close()
+
+write(objectDir + '/lunatic.res: source/lunatic.rc' + resFiles)
 write('\twindres source/lunatic.rc -O coff -o ' + objectDir + '/lunatic.res')
 
 out.close()
