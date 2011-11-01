@@ -657,7 +657,7 @@ void CreateScore(dword score,Map *map)
 	if(map->flags&MAP_HUB)
 		return;
 
-	_tzset();
+	// TODO tzset();
 
 	time(&ltime);
 	today=localtime(&ltime);

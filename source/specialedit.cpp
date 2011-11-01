@@ -176,8 +176,8 @@ static char wpnName[][16]={
 	"Freeze Ray",
 	"Stopwatch"};
 
-void SetupTriggerButtons(int t,int y);
-void SetupEffectButtons(int t,int y);
+static void SetupTriggerButtons(int t,int y);
+static void SetupEffectButtons(int t,int y);
 
 static char *WeaponName(byte n)
 {

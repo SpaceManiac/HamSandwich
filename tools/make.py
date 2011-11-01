@@ -6,6 +6,7 @@
 from glob import glob
 from sys import argv
 from os import path
+import re
 
 target = argv[1]
 cxxflags = argv[2]
@@ -13,8 +14,17 @@ linkflags = argv[3]
 
 # don't compile certain files
 blacklist = [
-	'source/monster2.cpp',
-	'source/monster3.cpp'
+	'source/jamulsound.cpp',
+	'source/music.cpp',
+	'source/monsterlist.cpp',
+	'source/monsterai1.cpp',
+	'source/monsterai2.cpp',
+	'source/monsterai3.cpp',
+	'source/monsterai4.cpp',
+	'source/textitems.cpp',
+	'source/textrooms.cpp',
+	'source/options.cpp',
+	'source/spcldialog.cpp',
 ]
 
 def getFileList(dir):
@@ -23,7 +33,7 @@ def getFileList(dir):
 		if path.isdir(file):
 			result += getFileList(file)
 		else:
-			if file.find("old/") < 0 and file.endswith(".cpp") and not file in blacklist:
+			if file.endswith(".cpp") and not file in blacklist:
 				result += [file]
 	return result
 
@@ -51,10 +61,23 @@ for source in sourceFiles:
 	obj = object(source)
 	write(obj + ': ' + source)
 	write('\t@mkdir -p ' + path.split(obj)[0])
-	write('\t$(COMPILE.cc) -o $@ ' + source)
+	write('\t$(COMPILE.cc) -MMD -MP -MF $@.d -o $@ ' + source)
+	if path.exists(obj + '.d'):
+		write('include ' + obj + '.d')
 
-write(objectDir + '/lunatic.res: source/lunatic.rc')
+# calculate dependencies of lunatic.rc
+rc = open('source/lunatic.rc', 'r')
+resFiles = ''
+for line in rc:
+	list = re.split('\\s+', line.strip())
+	filename = list[2]
+	if filename.startswith('"'):
+		resFiles += ' source/' + filename[1:-1]
+	else:
+		resFiles += ' source/' + filename
+rc.close()
+
+write(objectDir + '/lunatic.res: source/lunatic.rc' + resFiles)
 write('\twindres source/lunatic.rc -O coff -o ' + objectDir + '/lunatic.res')
 
 out.close()
-

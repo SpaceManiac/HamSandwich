@@ -7,7 +7,7 @@
 #ifndef MGLDRAW_H
 #define MGLDRAW_H
 
-#include <allegro5.h>
+#include <allegro.h>
 #include <winalleg.h>
 #include <windows.h>
 #include <mmsystem.h>
@@ -27,7 +27,7 @@
 class MGLDraw
 {
 	public:
-		MGLDraw::MGLDraw(HINSTANCE hInst,char *name,int xRes,int yRes,int bpp,bool window);
+		MGLDraw(HINSTANCE hInst,char *name,int xRes,int yRes,int bpp,bool window);
 		~MGLDraw(void);
 
 		bool Process(void);	// handle windows messages and such

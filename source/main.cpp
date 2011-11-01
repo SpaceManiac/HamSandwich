@@ -11,7 +11,6 @@
 #include "jamulfont.h"
 #include "jamulsound.h"
 #include <shellapi.h>
-#include <crtdbg.h>
 
 #include "moron.h"
 #include "game.h"
@@ -49,16 +48,6 @@ void ParseCmdLine(char *cmdLine)
 
 int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR cmdLine,int nCmdShow)
 {
-#ifndef NDEBUG
-
-int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG); // Get current flag
-
-flag |= _CRTDBG_LEAK_CHECK_DF; // Turn on leak-checking bit
-
-_CrtSetDbgFlag(flag); // Set flag to the new value
-
-#endif
-
 	ParseCmdLine(cmdLine);
 
 	InitLog();

@@ -2,6 +2,7 @@
 #include "editor.h"
 #include "dialogbits.h"
 #include "viewdialog.h"
+#include <string.h>
 
 #define MAX_FILES 18
 #define FILE_ALLOC_AMT	64
@@ -56,7 +57,7 @@ void ObtainFilenames(char *fileSpec)
 			if(!strcmp(filedata.name,".") || !strcmp(filedata.name,".."))
 				continue;
 
-			if((menuItems&FM_NOWAVS) && !_stricmp(&filedata.name[strlen(filedata.name)-3],"wav"))
+			if((menuItems&FM_NOWAVS) && !strcmp(&filedata.name[strlen(filedata.name)-3],"wav"))
 				continue;	// ignore wavs
 
 			strncpy(&fnames[numFiles*FNAMELEN],filedata.name,FNAMELEN);
