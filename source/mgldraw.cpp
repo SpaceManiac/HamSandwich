@@ -86,6 +86,7 @@ MGLDraw::MGLDraw(HINSTANCE hInst,char *name,int xRes,int yRes,int bpp,bool windo
 		result=set_gfx_mode(GFX_AUTODETECT_FULLSCREEN,xRes,yRes,0,0);
 
 	set_display_switch_mode(SWITCH_AMNESIA);
+	set_window_title(name);
 
 	if(result<0)
 		FatalError("Unable to initialize video mode!");

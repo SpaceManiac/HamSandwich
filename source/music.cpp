@@ -1,11 +1,12 @@
 #include "music.h"
 #include "mgldraw.h"
-#include <fmod.h>
+#include <allegro.h>
+#include <logg.h>
 #include "progress.h"
 #include "config.h"
 #include "editor.h"
 
-FSOUND_STREAM *curStream=NULL;
+LOGG_Stream *curStream=NULL;
 char curSongName[64];
 int musVolume=255;
 byte lastSong=255;
@@ -38,8 +39,7 @@ void PickSongToPlay(void)
 		}
 		else
 		{
-			FSOUND_Stream_Play(config.numSounds,curStream);	// just go ahead and repeat this song
-			FSOUND_SetVolume(config.numSounds,musVolume);
+			//FSOUND_Stream_Play(config.numSounds,curStream);	// TODO: just go ahead and repeat this song
 			lastSong=255;
 		}
 	}
@@ -82,7 +82,7 @@ void PickSongToPlay(void)
 	}
 }
 
-signed char SongIsDone(FSOUND_STREAM *stream,void *buff,int len,int param)
+signed char SongIsDone(LOGG_Stream *stream,void *buff,int len,int param)
 {
 	if(!config.music)
 		return 0;
@@ -95,8 +95,6 @@ signed char SongIsDone(FSOUND_STREAM *stream,void *buff,int len,int param)
 
 void PlaySong(char *fname)
 {
-	char fullname[64];
-
 	if(!config.music)
 		return;
 
@@ -113,16 +111,7 @@ void PlaySong(char *fname)
 			return;
 	}
 
-	strcpy(curSongName,fname);
-	sprintf(fullname,"music\\%s",fname);
-	StopSong();
-	curStream=FSOUND_Stream_OpenFile(fullname,FSOUND_NORMAL,0);
-	if(curStream)
-	{
-		FSOUND_Stream_Play(config.numSounds,curStream);
-		FSOUND_Stream_SetEndCallback(curStream,SongIsDone,0);
-		FSOUND_SetVolume(config.numSounds,musVolume);
-	}
+	PlaySongForce(fname);
 }
 
 void PlaySongForce(char *fname)
@@ -135,12 +124,11 @@ void PlaySongForce(char *fname)
 	strcpy(curSongName,fname);
 	sprintf(fullname,"music\\%s",fname);
 	StopSong();
-	curStream=FSOUND_Stream_OpenFile(fullname,FSOUND_NORMAL,0);
+	curStream=logg_get_stream(fullname, musVolume, 0, 0);
 	if(curStream)
 	{
-		FSOUND_Stream_Play(config.numSounds,curStream);
-		FSOUND_Stream_SetEndCallback(curStream,SongIsDone,0);
-		FSOUND_SetVolume(config.numSounds,musVolume);
+		//FSOUND_Stream_Play(config.numSounds,curStream);
+		//FSOUND_Stream_SetEndCallback(curStream,SongIsDone,0);
 	}
 }
 
@@ -152,7 +140,7 @@ void StopSong(void)
 	dontcallback=1;
 	if(curStream)
 	{
-		FSOUND_Stream_Close(curStream);
+		logg_destroy_stream(curStream);
 		curStream=NULL;
 	}
 	dontcallback=0;
@@ -166,7 +154,7 @@ void SetMusicVolume(int vol)
 	musVolume=vol;
 	if(curStream)
 	{
-		FSOUND_SetVolume(config.numSounds,musVolume);
+		curStream->volume = musVolume;
 	}
 }
 

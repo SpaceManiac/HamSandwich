@@ -2,12 +2,9 @@
 # Tad Hardesty, aka SpaceManiac, 2011
 
 # Configuration
-DIRECTX=D:\\libraries\\directx-sdk
-GLOBAL_OPTIONS=
-#-lwinmm -ld3d9 -ld3dx9 -lgdi32 -ldsound
-LIBS=-lwinmm -ldsound -lalleg44
-COMPILER_OPTIONS=-std=gnu++0x -Iinclude -Wall -I${DIRECTX}/Include/ -DALLEGRO_MINGW32
-LINKER_OPTIONS=-static-libgcc -static-libstdc++ -Linclude -L${DIRECTX}/Lib/x86/ ${LIBS}
+LIBS=-lwinmm -lalleg44 -lws2_32 -llogg -lvorbisfile -lvorbis -logg -lvorbisenc
+COMPILER_OPTIONS=-std=gnu++0x -Iinclude -Wall -DALLEGRO_MINGW32
+LINKER_OPTIONS=-static-libgcc -static-libstdc++ -Linclude ${LIBS}
 
 OPTIONS_RELEASE=${COMPILER_OPTIONS} -DNDEBUG -DEXPANDO -O2 -s
 OPTIONS_DEBUG=${COMPILER_OPTIONS} -D_DEBUG -DEXPANDO -DLOG -g

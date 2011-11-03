@@ -14,8 +14,6 @@ linkflags = argv[3]
 
 # don't compile certain files
 blacklist = [
-	'source/jamulsound.cpp',
-	'source/music.cpp',
 	'source/monsterlist.cpp',
 	'source/monsterai1.cpp',
 	'source/monsterai2.cpp',
