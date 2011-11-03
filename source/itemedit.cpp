@@ -49,7 +49,7 @@
 #define ID_RARITY	607
 #define ID_PICKSPR	608
 
-static word flags[]={IF_SHADOW,IF_GLOW,IF_SOLID,IF_BULLETPROOF,IF_PICKUP,IF_LOONYCOLOR,IF_TILE};
+static word flags[]={IF_SHADOW,IF_GLOW,IF_SOLID,IF_BULLETPROOF,IF_PICKUP,IF_LOONYCOLOR,IF_TILE,IF_USERJSP};
 static dword themes[]={IT_PICKUP,IT_DECOR,IT_OBSTACLE,IT_BULLETPROOF,IT_DOOR,IT_TREE,IT_ROCK,
 				  IT_CRATE,IT_SIGN,IT_WEAPON,IT_POWERUP,IT_KEY,IT_COLLECT,IT_FOOD,IT_ENTRANCE,
 				  IT_CHAIR,IT_CUSTOM};
@@ -235,6 +235,35 @@ static void FlagClick(int id)
 	{
 		// prevent it from using an illegal sprite
 		if(!(GetItem(curItem)->flags&IF_TILE))
+		{
+			if(GetItem(curItem)->sprNum>=NumItemSprites())
+				GetItem(curItem)->sprNum=0;
+		}
+		else
+		{
+			GetItem(curItem)->flags&=(~IF_USERJSP); // can't combine tile and JSP
+		}
+	}
+	else if(id==ID_FLAGS+7)	// USERJSP flag
+	{
+		// prevent it from using an illegal sprite
+		if(GetItem(curItem)->flags&IF_USERJSP)
+		{
+			int numCust = NumCustomSprites();
+			if (numCust == 0)
+			{
+				MakeNormalSound(SND_TURRETBZZT);
+				GetItem(curItem)->flags&=(~IF_USERJSP);
+				SetButtonState(id,CHECK_OFF);
+			}
+			else
+			{
+				GetItem(curItem)->flags&=(~IF_TILE); // can't combine tile and JSP
+				if(GetItem(curItem)->sprNum>=numCust)
+					GetItem(curItem)->sprNum=0;
+			}
+		}
+		else
 		{
 			if(GetItem(curItem)->sprNum>=NumItemSprites())
 				GetItem(curItem)->sprNum=0;
@@ -568,16 +597,18 @@ static void TileClick(int id)
 
 static void SpriteClick(int id)
 {
+	int max = (GetItem(curItem)->flags & IF_USERJSP) ? NumCustomSprites() : NumItemSprites();
 	GetItem(curItem)->sprNum++;
-	if(GetItem(curItem)->sprNum>=NumItemSprites())
+	if(GetItem(curItem)->sprNum>=max)
 		GetItem(curItem)->sprNum=0;
 }
 
 static void SpriteRightClick(int id)
 {
+	int max = (GetItem(curItem)->flags & IF_USERJSP) ? NumCustomSprites() : NumItemSprites();
 	GetItem(curItem)->sprNum--;
-	if(GetItem(curItem)->sprNum>=NumItemSprites())
-		GetItem(curItem)->sprNum=NumItemSprites()-1;
+	if(GetItem(curItem)->sprNum>=max)
+		GetItem(curItem)->sprNum=max-1;
 }
 
 static void EffModClick(int id)
@@ -812,6 +843,7 @@ static void ItemSetFlags(void)
 	MakeButton(BTN_CHECK,ID_FLAGS+4,CHECK_OFF,164,118+16*4,100,15,"Can Pick Up",FlagClick);
 	MakeButton(BTN_CHECK,ID_FLAGS+5,CHECK_OFF,164,118+16*5,100,15,"Loony Color",FlagClick);
 	MakeButton(BTN_CHECK,ID_FLAGS+6,CHECK_OFF,164,118+16*6,100,15,"Use Tile Image",FlagClick);
+	MakeButton(BTN_CHECK,ID_FLAGS+7,CHECK_OFF,164,118+16*7,100,15,"Use Custom JSP",FlagClick);
 	MakeButton(BTN_STATIC,ID_NAME2,0,164,130+16*7,100,16,"Triggers",NULL);
 
 	MakeButton(BTN_CHECK,ID_TRIGGERS+0,CHECK_OFF,174,130+16*8,100,15,"Get",FlagClick);
@@ -846,7 +878,7 @@ static void ItemSetFlags(void)
 	MakeButton(BTN_STATIC,ID_NAME2,0,554,165,10,10,"With",NULL);
 	MakeButton(BTN_NORMAL,ID_TOCOL,0,590,160,16,16,"",ColorClick);
 
-	for(i=0;i<8;i++)
+	for(i=0;i<9;i++)
 		if(GetItem(curItem)->flags&flags[i])
 			SetButtonState(ID_FLAGS+i,CHECK_ON);
 	/*

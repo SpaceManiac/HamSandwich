@@ -174,6 +174,7 @@
 #define IF_PICKUP	  16	// player can pick it up for some effect
 #define IF_LOONYCOLOR 32	// using the loony color thing that loonykeys do
 #define IF_TILE		  64	// render a tile instead of a sprite
+#define IF_USERJSP   128    // use custom item jsp
 
 // themes
 #define IT_PICKUP	(1<<0)	// items you can collect
@@ -287,6 +288,7 @@ int GetTotalRarity(void);
 void SaveItems(FILE *f);
 void LoadItems(FILE *f);
 void DeleteItem(int itm);
+int NumCustomSprites(void);
 int NumItemSprites(void);
 int BrainsGiven(int type);
 int CandlesGiven(int type);
