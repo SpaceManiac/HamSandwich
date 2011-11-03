@@ -1609,6 +1609,10 @@ static void SetupEffectButtons(int t,int y)
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+2+100*t,0,520,y+17,65,14,"No Snd",NoFXClick);
 			else
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+2+100*t,0,520,y+17,65,14,"Play Snd",NoFXClick);
+			if(spcl.effect[t].flags&EF_TOGGLE)
+				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,455,y+17,60,14,"Large",ToggleClick);
+			else
+				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,455,y+17,60,14,"Normal",ToggleClick);
 			break;
 		case EFF_SOUND:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Play sound",NULL);

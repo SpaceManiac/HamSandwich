@@ -1385,7 +1385,12 @@ void SpecialEffect(special_t *me,Map *map)
 			case EFF_MESSAGE:
 				if(me->effect[i].text[0]!='/' || me->effect[i].text[1]!='/')
 				{
-					if(NoRepeatNewMessage(me->effect[i].text,120,90) && !(me->effect[i].flags&EF_NOFX))
+					if(me->effect[i].flags&EF_TOGGLE)
+					{
+						NewBigMessage(me->effect[i].text,60);
+						if (!(me->effect[i].flags&EF_NOFX)) MakeNormalSound(SND_MESSAGE);
+					}
+					else if(NoRepeatNewMessage(me->effect[i].text,120,90) && !(me->effect[i].flags&EF_NOFX))
 						MakeNormalSound(SND_MESSAGE);
 				}
 				break;
