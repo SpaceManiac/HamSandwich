@@ -38,8 +38,9 @@
 #define MAP_UNDERWATER	128
 #define MAP_LAVA		256
 #define MAP_STEALTH		512
+#define MAP_WAVY		1024
 
-#define NUM_LVL_FLAGS	10
+#define NUM_LVL_FLAGS	11
 
 // map updating modes
 #define UPDATE_GAME		0

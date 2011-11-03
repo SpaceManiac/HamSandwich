@@ -540,21 +540,21 @@ void LunaticDraw(void)
 
 	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
 	{
-		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA))
+		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA|MAP_WAVY))
 			gamemgl->TeensyWaterFlip(updFrameCount/2);
 		else
 			gamemgl->TeensyFlip();
 	}
 	else if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE)
 	{
-		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA))
+		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA|MAP_WAVY))
 			gamemgl->RasterWaterFlip(updFrameCount/2);
 		else
 			gamemgl->RasterFlip();
 	}
 	else
 	{
-		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA))
+		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA|MAP_WAVY))
 			gamemgl->WaterFlip(updFrameCount/2);
 		else
 			gamemgl->Flip();

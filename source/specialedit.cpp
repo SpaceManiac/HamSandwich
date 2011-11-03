@@ -156,6 +156,7 @@ static char lvlFlagName[][16]={
 	"Underwater",
 	"Underlava",
 	"Stealth",
+	"Wavy",
 };
 
 static char wpnName[][16]={
@@ -1090,7 +1091,7 @@ static void LevelFlagClick(int id)
 	t=effStart + (id-ID_EFF0)/100;
 
 	spcl.effect[t].value++;
-	if(spcl.effect[t].value==10)
+	if(spcl.effect[t].value==NUM_LVL_FLAGS)
 		spcl.effect[t].value=0;
 
 	SetupEffectButtons(t-effStart,(t-effStart)*38+264);
