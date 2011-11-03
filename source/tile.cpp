@@ -327,6 +327,10 @@ void RenderFloorTile(int x, int y, int t, char light)
 	int wid, hgt;
 	byte disco = PickDiscoColor();
 
+	if (t >= numTiles) {
+		return RenderEmptyTile(x, y, 0);
+	}
+
 	if (light == 0 && !(profile.progress.purchase[modeShopNum[MODE_DISCO]]&SIF_ACTIVE))
 	{
 		return RenderFloorTileUnlit(x, y, t);
@@ -407,6 +411,10 @@ void RenderFloorTileShadow(int x, int y, int t, char light)
 	int wid, hgt, darkpart;
 	byte disco = PickDiscoColor();
 
+	if (t >= numTiles) {
+		return RenderEmptyTile(x, y, 0);
+	}
+
 	if (x < 0)
 	{
 		wid = TILE_WIDTH + x;
@@ -468,6 +476,10 @@ void RenderFloorTileUnlit(int x, int y, int t)
 	byte *dst, *src;
 	int wid, hgt;
 
+	if (t >= numTiles) {
+		return RenderEmptyTile(x, y, 0);
+	}
+
 	if (x < 0)
 	{
 		wid = TILE_WIDTH + x;
@@ -520,6 +532,10 @@ void RenderFloorTileTrans(int x, int y, int t, char light)
 	byte *dst, *src;
 	int wid, hgt;
 	byte disco = PickDiscoColor();
+
+	if (t >= numTiles) {
+		return RenderEmptyTile(x, y, 0);
+	}
 
 	if (x < 0)
 	{
