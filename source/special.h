@@ -93,8 +93,8 @@
 #define EF_NOFX			8	// doesn't show visual or audio effects when done
 
 // numbers in one special
-#define NUM_TRIGGERS	5
-#define NUM_EFFECTS		5
+#define NUM_TRIGGERS	7
+#define NUM_EFFECTS		31
 
 // events that can trigger specials
 #define EVT_STEP		1	// somebody just entered a new square
