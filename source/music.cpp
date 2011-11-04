@@ -12,6 +12,11 @@ int musVolume=255;
 byte lastSong=255;
 byte dontcallback=0;
 
+void GogoPlaySong(void)
+{
+	// TODO
+}
+
 void PickSongToPlay(void)
 {
 	byte pl,sng;
@@ -39,7 +44,7 @@ void PickSongToPlay(void)
 		}
 		else
 		{
-			//FSOUND_Stream_Play(config.numSounds,curStream);	// TODO: just go ahead and repeat this song
+			GogoPlaySong();
 			lastSong=255;
 		}
 	}
@@ -127,8 +132,7 @@ void PlaySongForce(char *fname)
 	curStream=logg_get_stream(fullname, musVolume, 0, 0);
 	if(curStream)
 	{
-		//FSOUND_Stream_Play(config.numSounds,curStream);
-		//FSOUND_Stream_SetEndCallback(curStream,SongIsDone,0);
+		GogoPlaySong();
 	}
 }
 

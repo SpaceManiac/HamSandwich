@@ -79,13 +79,15 @@ MGLDraw::MGLDraw(HINSTANCE hInst,char *name,int xRes,int yRes,int bpp,bool windo
 	if(JamulSoundInit(512))
 		SoundSystemExists();
 
+	set_color_conversion(COLORCONV_NONE);
 	set_color_depth(bpp);
 	if(window)
 		result=set_gfx_mode(GFX_AUTODETECT_WINDOWED,xRes,yRes,0,0);
 	else
 		result=set_gfx_mode(GFX_AUTODETECT_FULLSCREEN,xRes,yRes,0,0);
 
-	set_display_switch_mode(SWITCH_AMNESIA);
+	set_display_switch_mode(SWITCH_BACKGROUND);
+	set_display_switch_callback(SWITCH_OUT, PauseGame);
 	set_window_title(name);
 
 	if(result<0)
@@ -99,6 +101,7 @@ MGLDraw::MGLDraw(HINSTANCE hInst,char *name,int xRes,int yRes,int bpp,bool windo
 	this->yRes=yRes;
 	this->bpp=bpp;
 	this->pitch=xRes;
+	this->buffer=create_bitmap(xRes, yRes);
 	this->scrn=new byte[xRes*yRes];
 	if(!this->scrn)
 		FatalError("Out of memory!");
@@ -131,6 +134,7 @@ MGLDraw::~MGLDraw(void)
 {
 	exitNow=1;
 	JamulSoundExit();
+	destroy_bitmap(buffer);
 	delete[] this->scrn;
 	allegro_exit();
 //	DestroyMyWindow();
@@ -179,19 +183,35 @@ HWND MGLDraw::GetHWnd(void)
 	return win_get_window();
 }
 
+int MGLDraw::FormatPixel(int x,int y)
+{
+	byte b = scrn[y*xRes+x];
+	return makecol32((*thePal)[b].r*4, (*thePal)[b].g*4, (*thePal)[b].b*4);
+}
+
+void MGLDraw::PseudoCopy(int y,int x,byte* data,int len)
+{
+	for(int i = 0; i < len; ++i, ++x)
+		putpixel(buffer, x, y, makecol32((*thePal)[data[i]].r*4, (*thePal)[data[i]].g*4, (*thePal)[data[i]].b*4));
+}
+
+void MGLDraw::FinishFlip(void)
+{
+	vsync();
+	acquire_screen();
+	blit(buffer, screen, 0, 0, 0, 0, xRes, yRes);
+	release_screen();
+}
+
 void MGLDraw::Flip(void)
 {
 	int i;
 
 	vsync();
-	acquire_screen();
 	// blit to the screen
 	for(i=0;i<yRes;i++)
-	{
-		putpixel(screen,0,i,0);
-		memcpy(screen->line[i],&scrn[i*xRes],xRes);
-	}
-	release_screen();
+		PseudoCopy(i,0,&scrn[i*xRes],xRes);
+	FinishFlip();
 }
 
 void MGLDraw::WaterFlip(int v)
@@ -202,22 +222,20 @@ void MGLDraw::WaterFlip(int v)
 				    -1,-2,-2,-2,-2,-1,-1,-1};
 	v=v%24;
 
-	acquire_screen();
 	// blit to the screen
 	for(i=0;i<yRes;i++)
 	{
-		putpixel(screen,0,i,0);
 		if(table[v]==0)
-			memcpy(screen->line[i],&scrn[i*xRes],xRes);
+			PseudoCopy(i,0,&scrn[i*xRes],xRes);
 		else if(table[v]<0)
 		{
-			memcpy(screen->line[i],&scrn[i*xRes-table[v]],xRes+table[v]);
-			memcpy(&screen->line[i][xRes+table[v]],&scrn[i*xRes],-table[v]);
+			PseudoCopy(i,0,&scrn[i*xRes-table[v]],xRes+table[v]);
+			PseudoCopy(i,xRes+table[v],&scrn[i*xRes],-table[v]);
 		}
 		else
 		{
-			memcpy(screen->line[i],&scrn[i*xRes+xRes-table[v]],table[v]);
-			memcpy(&screen->line[i][table[v]],&scrn[i*xRes],xRes-table[v]);
+			PseudoCopy(i,0,&scrn[i*xRes+xRes-table[v]],table[v]);
+			PseudoCopy(i,table[v],&scrn[i*xRes],xRes-table[v]);
 		}
 		if(i&1)
 		{
@@ -226,14 +244,13 @@ void MGLDraw::WaterFlip(int v)
 				v=0;
 		}
 	}
-	release_screen();
+	FinishFlip();
 }
 
 void MGLDraw::TeensyFlip(void)
 {
 	int i,j,x,y;
 
-	acquire_screen();
 	//clear_bitmap(screen);
 	x=640/4;
 	y=480/4;
@@ -241,10 +258,10 @@ void MGLDraw::TeensyFlip(void)
 	for(i=0;i<yRes/2;i++)
 	{
 		for(j=0;j<xRes/2;j++)
-			putpixel(screen,x+j,y,scrn[i*xRes*2+j*2]);
+			putpixel(buffer,x+j,y,FormatPixel(j*2,i*2));
 		y++;
 	}
-	release_screen();
+	FinishFlip();
 }
 
 void MGLDraw::TeensyWaterFlip(int v)
@@ -257,15 +274,14 @@ void MGLDraw::TeensyWaterFlip(int v)
 
 	x=640/4;
 	y=480/4;
-	acquire_screen();
 	// blit to the screen
 	for(i=0;i<yRes/2;i++)
 	{
-		putpixel(screen,x-1-table[v],y,0);
-		putpixel(screen,x+xRes/2-table[v],y,0);
+		putpixel(buffer,x-1-table[v],y,0);
+		putpixel(buffer,x+xRes/2-table[v],y,0);
 		for(j=0;j<xRes/2;j++)
 		{
-			putpixel(screen,x+j-table[v],y,scrn[i*xRes*2+j*2]);
+			putpixel(buffer,x+j-table[v],y,FormatPixel(j*2,i*2));
 		}
 		if(i&1)
 		{
@@ -275,64 +291,60 @@ void MGLDraw::TeensyWaterFlip(int v)
 		}
 		y++;
 	}
-	release_screen();
+	FinishFlip();
 }
 
 
 void MGLDraw::RasterFlip(void)
 {
-	int i;
+	int i,j;
 
-	acquire_screen();
 	// blit to the screen
 	for(i=0;i<yRes;i++)
 	{
 		if(!(i&1))
 		{
-			putpixel(screen,0,i,0);
-			memcpy(screen->line[i],&scrn[i*xRes],xRes);
+			PseudoCopy(i,0,&scrn[i*xRes],xRes);
 		}
 		else
 		{
-			putpixel(screen,0,i,0);
-			memset(screen->line[i],0,xRes);
+			for(j=0;j<xRes;j++)
+				putpixel(buffer,j,i,0);
 		}
 	}
-	release_screen();
+	FinishFlip();
 }
 
 void MGLDraw::RasterWaterFlip(int v)
 {
-	int i;
+	int i,j;
 	char table[24]={ 0, 1, 1, 1, 2, 2, 2, 2,
 		             2, 2, 1, 1, 0,-1,-1,-1,
 				    -1,-2,-2,-2,-2,-1,-1,-1};
 	v=v%24;
 
-	acquire_screen();
 	// blit to the screen
 	for(i=0;i<yRes;i++)
 	{
 		if(!(i&1))
 		{
-			putpixel(screen,0,i,0);
 			if(table[v]==0)
-				memcpy(screen->line[i],&scrn[i*xRes],xRes);
+				PseudoCopy(i,0,&scrn[i*xRes],xRes);
 			else if(table[v]<0)
 			{
-				memcpy(screen->line[i],&scrn[i*xRes-table[v]],xRes+table[v]);
-				memcpy(&screen->line[i][xRes+table[v]],&scrn[i*xRes],-table[v]);
+				PseudoCopy(i,0,&scrn[i*xRes-table[v]],xRes+table[v]);
+				PseudoCopy(i,xRes+table[v],&scrn[i*xRes],-table[v]);
 			}
 			else
 			{
-				memcpy(screen->line[i],&scrn[i*xRes+xRes-table[v]],table[v]);
-				memcpy(&screen->line[i][table[v]],&scrn[i*xRes],xRes-table[v]);
+				PseudoCopy(i,0,&scrn[i*xRes+xRes-table[v]],table[v]);
+				PseudoCopy(i,table[v],&scrn[i*xRes],xRes-table[v]);
 			}
 		}
 		else
 		{
-			putpixel(screen,0,i,0);
-			memset(screen->line[i],0,xRes);
+			for(j=0;j<xRes;j++)
+				putpixel(buffer,j,i,0);
 		}
 		if(i&1)
 		{
@@ -341,7 +353,7 @@ void MGLDraw::RasterWaterFlip(int v)
 				v=0;
 		}
 	}
-	release_screen();
+	FinishFlip();
 }
 
 void MGLDraw::ClearScreen(void)
@@ -422,13 +434,12 @@ RGB *MGLDraw::GetPalette(void)
 
 void MGLDraw::RealizePalette(void)
 {
-	set_palette(pal);
+	thePal = &pal;
 }
 
 void MGLDraw::WaterPalette(byte b)
 {
 	int i,j;
-	PALETTE pal2;
 
 	for(i=0;i<8;i++)
 		for(j=0;j<32;j++)
@@ -452,7 +463,7 @@ void MGLDraw::WaterPalette(byte b)
 			}
 		}
 
-	set_palette(pal2);
+	thePal = &pal2;
 }
 
 // 8-bit graphics only

@@ -59,10 +59,10 @@ void JamulSoundExit(void)
 {
 	if(soundIsOn)
 	{
-		delete[] schannel;
 		JamulSoundPurge();
 		StopSong();
 		remove_sound();
+		delete[] schannel;
 		delete[] soundList;
 	}
 }
@@ -183,6 +183,8 @@ bool JamulSoundStop(int which)
 			schannel[i].voice=-1;
 		}
 	}
+
+	soundIsOn = 0;
 
 	return TRUE;
 }

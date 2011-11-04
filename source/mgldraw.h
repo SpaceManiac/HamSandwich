@@ -37,13 +37,15 @@ class MGLDraw
 		int GetWidth(void);
 		int GetHeight(void);
 		void ClearScreen(void);
+		void Quit(void);
+
+		void FinishFlip(void);
 		void Flip(void);
 		void WaterFlip(int v);
 		void TeensyFlip(void);
 		void TeensyWaterFlip(int v);
 		void RasterFlip(void);
 		void RasterWaterFlip(int v);
-		void Quit(void);
 
 		bool LoadPalette(char *name);
 		void SetPalette(PALETTE pal2);
@@ -83,6 +85,9 @@ class MGLDraw
 		void GetMouse(int *x,int *y);
 		void SetMouse(int x,int y);
 
+		int FormatPixel(int x,int y);
+		void PseudoCopy(int x,int y,byte* data,int len);
+
 		void ResetGM(void);
 
 		int xRes,yRes,bpp,pitch;
@@ -93,8 +98,9 @@ class MGLDraw
 	protected:
 		int windowX,windowY;
 
+		BITMAP* buffer;
 		byte *scrn;
-		PALETTE pal;
+		PALETTE pal, pal2, *thePal;
 		dword elapsedTime;
 		dword now;
 		int numFrames;
