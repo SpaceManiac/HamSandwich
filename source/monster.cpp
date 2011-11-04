@@ -275,7 +275,7 @@ void MonsterDraw(int x,int y,int z,byte type,byte aiType,byte seq,byte frm,byte 
 		shld=PlayerShield();
 		if((shld<16) && (shld&2))	// it blinks when there is 1/2 second left
 			shld=0;
-		curSpr=set->GetSprite(464+(shld&7));
+		curSpr=monsType[MONS_BOUAPHA].spr->GetSprite(464+(shld&7));
 		if(curSpr==NULL)
 			return;
 		if(shld)
