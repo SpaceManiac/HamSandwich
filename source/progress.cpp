@@ -137,6 +137,12 @@ void LoadProfile(char *name)
 	fread(&profile,sizeof(profile_t),1,f);
 	LoadPlayLists(f);
 
+	// fixed changed Mac OS X scancodes
+	for (int i = 0; i < 2; ++i)
+		for (int j = 0; j < 6; ++j)
+			if (profile.control[i][j] >= KEY_EQUALS_PAD && profile.control[i][j] <= KEY_COMMAND)
+				profile.control[i][j] += KEY_LSHIFT - KEY_EQUALS_PAD;
+
 	if(profile.progress.num_worlds==0)
 		profile.progress.world=NULL;
 	else

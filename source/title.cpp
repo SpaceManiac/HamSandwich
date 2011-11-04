@@ -8,6 +8,8 @@
 #include "shop.h"
 #include "textgame.h"
 
+#define COPYRIGHT_YEARS "1998-2011"
+
 // special codes in the credits:
 // @ = use GirlsRWeird font
 // # = draw a major horizontal line
@@ -21,7 +23,7 @@ char credits[][32]={
 	"@SUPREME WITH CHEESE",
 	"",
 	"",
-	"Copyright 1998-2005,",
+	"Copyright " COPYRIGHT_YEARS ",",
 	"By Hamumu Software",
 	"#",
 	"&Original Concept",
@@ -218,8 +220,8 @@ void MainMenuDisplay(MGLDraw *mgl)
 	Print(556,2,VERSION_NO,1,1);
 	Print(555,2,VERSION_NO,0,1);
 	// Copyright:
-	Print(3,467,"Copyright 1998-2005, Hamumu Software",1,1);
-	Print(2,466,"Copyright 1998-2005, Hamumu Software",0,1);
+	Print(3,467,"Copyright " COPYRIGHT_YEARS ", Hamumu Software",1,1);
+	Print(2,466,"Copyright " COPYRIGHT_YEARS ", Hamumu Software",0,1);
 
 	for(i=0;i<8;i++)
 	{

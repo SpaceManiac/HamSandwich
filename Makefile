@@ -6,7 +6,7 @@ LIBS=-lwinmm -lalleg44 -lws2_32 -llogg -lvorbisfile -lvorbis -logg -lvorbisenc
 COMPILER_OPTIONS=-std=gnu++0x -Iinclude -Wall -DALLEGRO_MINGW32
 LINKER_OPTIONS=-static-libgcc -static-libstdc++ -Linclude ${LIBS}
 
-OPTIONS_RELEASE=${COMPILER_OPTIONS} -DNDEBUG -DEXPANDO -O2 -s
+OPTIONS_RELEASE=${COMPILER_OPTIONS} -DNDEBUG -DEXPANDO -O2 -s -mwindows
 OPTIONS_DEBUG=${COMPILER_OPTIONS} -D_DEBUG -DEXPANDO -DLOG -g
 OPTIONS_DEMO=${COMPILER_OPTIONS} -DNDEBUG -DDEMO -O2 -s
 

@@ -44,9 +44,13 @@ char allegroCodeTable[][16]={
 	// 93
 	"Pause","ABNT_C1","YEN","KANA","CONVERT","NOCONVERT","AT","CIRCUMFLEX",
 	// 101
-	"COLON2","KANJI","LeftShift","RightShift","LeftControl","RightControl","Alt",
+	"COLON2","KANJI","EQUALS_PAD","BACKQUOTE","SEMICOLON","COMMAND","Unknown1",
 	// 108
-	"ALTGR","Left Windows","Right Windows","Menu Key","Scroll Lock","Num Lock","Caps Lock"
+	"Unknown2","Unknown3","Unknown4","Unknown5","Unknown6","Unknown7","Unknown8",
+	// 115
+	"LShift","RShift","LControl","RControl","Alt","AltGR","LWin","RWin",
+	// 123
+	"Menu","ScrLock","NumLock","CapsLock"
 };
 
 byte arrowState;
