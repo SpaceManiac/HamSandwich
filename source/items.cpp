@@ -277,7 +277,7 @@ item_t baseItems[]={
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Bubbles",0,-5,92,0,0,0,
 		0,
-		IF_GLOW,
+		IF_GLOW|IF_BUBBLES,
 		IT_POWERUP|IT_DECOR,
 		ITR_PLAYERBUMP,IE_OXYGEN,1,"",0},
 	{"Scuba Tank",-2,0,89,0,0,0,
@@ -1805,7 +1805,7 @@ void UpdateItem(mapTile_t *m,int width,int offset)
 				NewMessage(items[m->item].msg,75,0);
 		}
 	}
-	if(m->item==ITM_BUBBLES && Random(7)==0)
+	if((items[m->item].flags&IF_BUBBLES) && Random(7)==0)
 	{
 		x=offset%width;
 		y=offset/width;

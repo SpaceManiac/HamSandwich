@@ -175,6 +175,7 @@
 #define IF_LOONYCOLOR 32	// using the loony color thing that loonykeys do
 #define IF_TILE		  64	// render a tile instead of a sprite
 #define IF_USERJSP   128    // use custom item jsp
+#define IF_BUBBLES   256    // spout bubbles
 
 // themes
 #define IT_PICKUP	(1<<0)	// items you can collect
