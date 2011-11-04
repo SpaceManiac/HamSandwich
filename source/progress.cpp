@@ -203,7 +203,10 @@ void ClearProgress(void)
 	{
 		profile.progress.kills[i]=0;
 
-		if((MonsterFlags(i,i)&(MF_NOHIT)) || (i==MONS_BOUAPHA))
+		if((MonsterFlags(i,i)&(MF_NOHIT)) || (i==MONS_BOUAPHA) || // prescan unhittables, Bouapha, and derivatives
+				(i==MONS_PLAYMECHA) || (i==MONS_PLAYSHROOM) ||
+				(i==MONS_LUNACHICK) || (i==MONS_PWRBOUAPHA) ||
+				(i==MONS_MINISUB))
 			profile.progress.scanned[i]=1;
 		else
 			profile.progress.scanned[i]=0;

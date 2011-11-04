@@ -626,7 +626,8 @@ char monsNotes[NUM_MONSTERS][512]={
 	"can do, and so you end up with only very basic puzzles. "
 	"Sorry about that!",
 	// powerbouapha
-	"no notes",
+	"DANGER: Do not use unless you know what you are doing! "
+	"This is the dummy monster for Bouapha in Power Armor.",
 	// Vampire
 	"These are outrageously tough enemies, and they are "
 	"supposed to be. The idea behind them was to not "
@@ -1229,7 +1230,8 @@ char monsNotes[NUM_MONSTERS][512]={
 	"should know that they can only drive on terrain marked 'minecart path'.  However, they have free reign "
 	"on it, unlike a minecart.  If they hit normal ground, Bouapha's immediately ejected.",
 	// minisub
-	"no notes",
+	"DANGER: Do not use unless you know what you are doing! "
+	"This is the dummy monster for Bouapha in the Mini-Sub.",
 	// punkin
 	"Oy oy oy!  These punks are supposed to be British soccer hooligans.  My friend Ralph used to listen to "
 	"that kind of punk music that pretty much consisted entirely of \"OY OY OY OY!\", so I thought it was "
@@ -1371,7 +1373,8 @@ char monsNotes[NUM_MONSTERS][512]={
 	"This color of car turns counterclockwise when given a choice.  Otherwise, it follows the path set before it.  Don't stand "
 	"in its way.  It hurts.",
 	// playable mechabouapha
-	"haha can't see me",
+	"DANGER: Do not use unless you know what you are doing! "
+	"This is the dummy monster for the playable Mechabouapha.",
 	// shroomlord
 	"Ripped straight from today's headlines... or possibly Kid Mystic!  This is the big brother to the Shroom, and the little "
 	"brother to Mush.  Just more fun in the wacky Shroom family.",
@@ -1414,13 +1417,15 @@ char monsNotes[NUM_MONSTERS][512]={
 	"This is the futuristic version of a Vampire Coffin!  Shoot it, or get too close, and a Xeno Hunter is hatched.  Doesn't "
 	"it look too big to fit in the egg?  They're very flexible.",
 	// playshroom
-	"no notes",
+	"DANGER: Do not use unless you know what you are doing! "
+	"This is the dummy monster for the playable Stupid Shroom.",
 	// punk bunny
 	"This monster was designed by Jack Darby.  Making it was his prize for making the funniest entry in the Fan Art contest. "
 	"It's a very cool monster, probably the most useful friendly monster of all.  Not nearly as powerful as a Wacky Wizard, but "
 	"it follows you around!  You just have to wake it up first.",
 	// lunachick
-	"no notes",
+	"DANGER: Do not use unless you know what you are doing! "
+	"This is the dummy monster for the playable Lunachick.",
 	// skeleton
 	"This was a customer suggestion.  Get it? TON?  It's heavy.  Slow.  And makes the screen shake and whatnot.  It's pretty tough "
 	"to beat, because after all, it's made of metal.  Or something.  It's heavy anyway, did I mention that?  It combines the "

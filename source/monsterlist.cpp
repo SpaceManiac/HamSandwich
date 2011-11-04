@@ -1,3 +1,4 @@
+#define MT_WEIRD MT_BITS
 monsterType_t monsType[NUM_MONSTERS]=
 	{
 		{"Null",255,255,0,NULL,
@@ -846,9 +847,9 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{1,2,3,4,5,6,0,255},	// move
 				{1,2,3,4,5,6,0,255},	// move
 			}},
-		{"Bouapha",255,255,0,NULL,	// in power armor
+		{"Power Armor",255,255,0,NULL,	// in power armor
 		 20,14,128,0,"graphics\\pwrarmor.jsp",0,0,
-		 MT_NONE,
+		 MT_WEIRD,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -2125,9 +2126,9 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,255},	// move
 				{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,255},	// move
 			}},
-		{"Bouapha",255,255,0,NULL,	// in mini-sub
+		{"Mini-Sub",255,255,0,NULL,	// in mini-sub
 		 11,1,128,0,"graphics\\minisub.jsp",0,MF_FLYING,
-		 MT_NONE,
+		 MT_WEIRD,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -2659,7 +2660,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 			}},
 		{"MechaBouapha",0,4,0,NULL,	// playable version
 		 11,24,250,1000,"graphics\\mechabouapha.jsp",0,MF_WATERWALK,
-		 MT_NONE,
+		 MT_WEIRD,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -2822,7 +2823,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 			}},
 		{"Stupid Shroom",1,4,0,NULL,
 		 11,14,40,300,"!192",0,MF_WATERWALK,
-		 MT_NONE,
+		 MT_WEIRD,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -2850,7 +2851,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 			}},
 		{"LunaChick",255,255,0,NULL,	// playable char
 		 11,27,250,1000,"graphics\\lunachick.jsp",0,MF_WATERWALK,
-		 MT_NONE,
+		 MT_WEIRD,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
