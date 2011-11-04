@@ -67,6 +67,8 @@ class Guy
 		byte fromColor,toColor;
 		char brtChange;
 		char name[32];
+
+		sprite_set_t* customSpr; // custom sprites
 };
 
 extern Guy *goodguy;

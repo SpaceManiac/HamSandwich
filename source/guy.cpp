@@ -19,10 +19,12 @@ byte *changed;
 Guy::Guy(void)
 {
 	type=MONS_NONE;
+	customSpr=NULL;
 }
 
 Guy::~Guy(void)
 {
+	if (customSpr) delete customSpr;
 }
 
 byte Guy::CoconutBonk(int xx,int yy,Guy *him)
@@ -815,7 +817,7 @@ void Guy::Render(byte light)
 	}
 	oldBrt=GetMonsterType(t)->brtChg;
 	GetMonsterType(t)->brtChg=brtChange;
-	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen);
+	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen,customSpr);
 	if(fromColor!=255)
 	{
 		GetMonsterType(t)->fromCol=oldFrom;
@@ -2686,7 +2688,26 @@ void SetMonsterName(byte fx,int x,int y,int type,char *name)
 					break;
 			}
 
-			strcpy(guys[i]->name,name);
+			// set sprite if needed
+			if (name[0] == '@') {
+				char buf[64];
+				sprintf(buf,"user\\%s", &name[1]);
+
+				if (guys[i]->customSpr) delete guys[i]->customSpr;
+
+				sprite_set_t* spr = new sprite_set_t();
+				if (spr->Load(buf))
+				{
+					guys[i]->customSpr = spr;
+				}
+				else
+				{
+					delete spr;
+					guys[i]->customSpr = NULL;
+				}
+			}
+			else
+				strcpy(guys[i]->name,name);
 		}
 	}
 }
