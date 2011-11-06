@@ -175,6 +175,7 @@ float MGLDraw::FrameRate(void)
 
 bool MGLDraw::Process(void)
 {
+	UpdateMusic();
 	return (!readyToQuit);
 }
 
@@ -201,6 +202,7 @@ void MGLDraw::FinishFlip(void)
 	acquire_screen();
 	blit(buffer, screen, 0, 0, 0, 0, xRes, yRes);
 	release_screen();
+	UpdateMusic();
 }
 
 void MGLDraw::Flip(void)

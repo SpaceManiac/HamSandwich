@@ -12,11 +12,6 @@ int musVolume=255;
 byte lastSong=255;
 byte dontcallback=0;
 
-void GogoPlaySong(void)
-{
-	// TODO
-}
-
 void PickSongToPlay(void)
 {
 	byte pl,sng;
@@ -44,7 +39,8 @@ void PickSongToPlay(void)
 		}
 		else
 		{
-			GogoPlaySong();
+			logg_restart_stream(curStream);
+			UpdateMusic();
 			lastSong=255;
 		}
 	}
@@ -87,15 +83,11 @@ void PickSongToPlay(void)
 	}
 }
 
-signed char SongIsDone(LOGG_Stream *stream,void *buff,int len,int param)
+void UpdateMusic(void)
 {
-	if(!config.music)
-		return 0;
-
-	if(!dontcallback)
-		PickSongToPlay();
-
-	return 0;	// ignores the return value
+	if (config.music && curStream && !logg_update_stream(curStream))
+		if (!dontcallback)
+			PickSongToPlay();
 }
 
 void PlaySong(char *fname)
@@ -129,11 +121,9 @@ void PlaySongForce(char *fname)
 	strcpy(curSongName,fname);
 	sprintf(fullname,"music\\%s",fname);
 	StopSong();
-	curStream=logg_get_stream(fullname, musVolume, 0, 0);
+	curStream=logg_get_stream(fullname, musVolume, 128, 0);
 	if(curStream)
-	{
-		GogoPlaySong();
-	}
+		UpdateMusic();
 }
 
 void StopSong(void)

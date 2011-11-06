@@ -383,13 +383,13 @@ byte UpdatePlayListMenu(int *lastTime,MGLDraw *mgl)
 					{
 						i=((msy-48)/LISTSPACING)+listPos;
 						if(i<profile.playList[listNum].numSongs)
-							PlaySong(&profile.playList[listNum].song[i*SONGNAME_LEN]);
+							PlaySongForce(&profile.playList[listNum].song[i*SONGNAME_LEN]);
 					}
 					if(PointInRect(msx,msy,370,48,370+232,48+360))
 					{
 						i=((msy-48)/LISTSPACING)+filePos;
 						if(i<numFiles)
-							PlaySong(&fileList[i*SONGNAME_LEN]);
+							PlaySongForce(&fileList[i*SONGNAME_LEN]);
 					}
 				}
 				if(mgl->MouseTap())
