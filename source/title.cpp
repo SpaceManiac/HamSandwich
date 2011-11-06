@@ -32,6 +32,9 @@ char credits[][32]={
 	"&Programming",
 	"Mike Hommel",
 	"%",
+	"&Modernizing",
+	"Tad \"SpaceManiac\" Hardesty",
+	"%",
 	"&Character Design",
 	"Jack Darby",
 	"Lisa Dash",
@@ -178,7 +181,7 @@ char victoryTxt[][64]={
 	};
 
 // once the credits have scrolled to END_OF_CREDITS pixels, they end
-#define END_OF_CREDITS 480*4+100
+#define END_OF_CREDITS 480*4+130
 #define END_OF_VICTORY 480*2
 
 sprite_set_t *planetSpr;
