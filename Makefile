@@ -14,7 +14,7 @@ GENERATE_COMMAND=@python tools/make.py
 MAKE_COMMAND=@make -f build/generated.make
 
 # Misc targets
-build: release debug #demo
+all: release debug #demo
 
 clean:
 	@rm -rf build/*
