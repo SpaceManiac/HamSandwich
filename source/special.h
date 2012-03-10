@@ -75,7 +75,9 @@
 #define EFF_COLOR		30	// change monster of type N at X,Y coloration
 #define EFF_MONSBRIGHT	31	// change monster of type N at X,Y to brightness M
 #define EFF_PLAYAS		32	// set the player's Play As for this level only
-#define EFF_MAX			33
+#define EFF_MONSGRAPHICS        33      // change monster of type N at X,Y to graphics M
+#define EFF_ITEMGRAPHICS        34      // set the current custom item graphics to the given jsp
+#define EFF_MAX			35
 
 // trigger flags
 #define TF_NOT		1	// NOT this one

@@ -737,7 +737,6 @@ static item_t emptyItem=
 
 sprite_set_t *itmSpr;
 sprite_set_t *customItmSpr;
-static char customSprFilename[32];
 static byte glowism;
 static byte rndItem;
 static word numItems;
@@ -753,8 +752,7 @@ void InitItems(void)
 	memcpy(items,baseItems,sizeof(item_t)*NUM_ORIGINAL_ITEMS);
 
 	itmSpr=new sprite_set_t("graphics\\items.jsp");
-	customItmSpr=NULL;
-	customSprFilename[0]='\0';
+    customItmSpr=NULL;
 	glowism=0;
 	SetupRandomItems();
 	rndItem=GetRandomItem();
@@ -762,9 +760,11 @@ void InitItems(void)
 
 void ExitItems(void)
 {
-	delete itmSpr;
-	customSprFilename[0]='\0';
-	if (customItmSpr) delete customItmSpr;
+    delete itmSpr;
+    if (customItmSpr) {
+        delete customItmSpr;
+        customItmSpr = NULL;
+    }
 	delete[] items;
 }
 
@@ -803,51 +803,48 @@ void DeleteItem(int itm)
 	numItems--;
 }
 
+void SetCustomItemSprites(char* name)
+{
+    if (customItmSpr) delete customItmSpr;
+
+    customItmSpr=new sprite_set_t();
+
+    char buf[64];
+    sprintf(buf, "user\\%s", name);
+    if (!customItmSpr->Load(buf))
+    {
+        // failed to load
+        delete customItmSpr;
+        customItmSpr = NULL;
+        return;
+    }
+    else
+    {
+        // great success!
+        return;
+    }
+}
+
+void DetectCustomItemSprites(world_t *world)
+{
+    // extract filename out of first special if possible
+    special_t* special = world->map[0]->special;
+
+    for (int i = 0; i < MAX_SPECIAL; ++i) {
+        for (int j = 0; j < NUM_EFFECTS; ++j) {
+            if (special[i].effect[j].type == EFF_ITEMGRAPHICS) {
+                SetCustomItemSprites(special[i].effect[j].text);
+                return;
+            }
+        }
+    }
+}
+
 sprite_set_t* CustomItemSprites()
 {
-	// extract filename out of first special if possible
-	world_t* world = editing ? EditorGetWorld() : &curWorld;
-	special_t* special = world->map[0]->special;
-
-	if (special != NULL && special->effect[0].type == EFF_PICTURE)
-	{
-		char* text = special->effect[0].text;
-		int l = strlen(text);
-		// check if it's a .jsp file
-		if (tolower(text[l-3]) == 'j' && tolower(text[l-2]) == 's' && tolower(text[l-1]) == 'p')
-		{
-			// we found a specified jsp file, no need to resort to nothing yet
-			if (strcmp(text, customSprFilename)) {
-				// it's different, so load it
-				strcpy(customSprFilename, text);
-				customItmSpr=new sprite_set_t();
-
-				char buf[64];
-				sprintf(buf, "user\\%s", text);
-				if (!customItmSpr->Load(buf))
-				{
-					// failed to load
-					customSprFilename[0] = '\0';
-					delete customItmSpr;
-					customItmSpr = NULL;
-					return customItmSpr;
-				}
-				else
-				{
-					// great success!
-					return customItmSpr;
-				}
-			}
-			else
-			{
-				// sprites are the same as before
-				return customItmSpr;
-			}
-		}
-	}
-	customSprFilename[0]='\0';
-	if (customItmSpr) delete customItmSpr;
-	customItmSpr = NULL;
+    if (customItmSpr == NULL) {
+        DetectCustomItemSprites(editing ? EditorGetWorld() : &curWorld);
+    }
 	return customItmSpr;
 }
 

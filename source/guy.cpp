@@ -2687,29 +2687,67 @@ void SetMonsterName(byte fx,int x,int y,int type,char *name)
 						continue;
 					break;
 			}
-
-			// set sprite if needed
-			if (name[0] == '@') {
-				char buf[64];
-				sprintf(buf,"user\\%s", &name[1]);
-
-				if (guys[i]->customSpr) delete guys[i]->customSpr;
-
-				sprite_set_t* spr = new sprite_set_t();
-				if (spr->Load(buf))
-				{
-					guys[i]->customSpr = spr;
-				}
-				else
-				{
-					delete spr;
-					guys[i]->customSpr = NULL;
-				}
-			}
-			else
-				strcpy(guys[i]->name,name);
+                        strcpy(guys[i]->name,name);
 		}
 	}
+}
+
+void SetMonsterGraphics(byte fx,int x,int y,int type,char *name)
+{
+        int i;
+
+        for(i=0;i<maxGuys;i++)
+        {
+                if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && guys[i]->hp!=0 && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+                {
+                        switch(type)
+                        {
+                                case MONS_ANYBODY:
+                                        break;
+                                case MONS_GOODGUY:
+                                        if(!guys[i]->friendly)
+                                                continue;
+                                        break;
+                                case MONS_BADGUY:
+                                        if(guys[i]->friendly)
+                                                continue;
+                                        break;
+                                case MONS_NONPLAYER:
+                                        if(guys[i]->aiType==MONS_BOUAPHA)
+                                                continue;
+                                        break;
+                                case MONS_PLAYER:
+                                        if(guys[i]->aiType!=MONS_BOUAPHA)
+                                                continue;
+                                        break;
+                                case MONS_TAGGED:
+                                        if(guys[i]!=TaggedMonster())
+                                                continue;
+                                        break;
+                                default:
+                                        if(guys[i]->type!=type)
+                                                continue;
+                                        break;
+                        }
+
+                        // set sprite
+                        char buf[64];
+                        sprintf(buf,"user\\%s", name);
+
+                        if (guys[i]->customSpr) delete guys[i]->customSpr;
+
+                        sprite_set_t* spr = new sprite_set_t();
+                        if (spr->Load(buf))
+                        {
+                                guys[i]->customSpr = spr;
+                        }
+                        else
+                        {
+                                delete spr;
+                                guys[i]->customSpr = NULL;
+                        }
+                }
+        }
 }
 
 void SetMonsterColor(byte fx,int x,int y,int type,int colCode)

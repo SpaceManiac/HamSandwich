@@ -12,6 +12,8 @@
 #include "viewdialog.h"
 #include "shop.h"
 
+#define EFFPICKER_HEIGHT 13
+
 #define SMODE_NORMAL	0
 #define SMODE_USES		1
 #define SMODE_PICKTRIG	2
@@ -143,6 +145,8 @@ static char effName[][16]={
 	"Monster Color",
 	"Monster Bright",
 	"Play As",
+        "Monster Sprites",
+        "Item Sprites"
 };
 
 static char lvlFlagName[][16]={
@@ -283,11 +287,11 @@ static void ChooseEffectClick(int id)
 	curEff=effStart + (id-ID_EFF0)/100;
 	prevType=spcl.effect[curEff].type;
 
-	selectY=(curEff*38+264)-(14*EFF_MAX)/2;
+        selectY=(curEff*38+264)-(EFFPICKER_HEIGHT*EFF_MAX)/2;
 	if(selectY<0)
 		selectY=0;
-	if(selectY+14*EFF_MAX>475)
-		selectY=475-14*EFF_MAX;
+        if(selectY+EFFPICKER_HEIGHT*EFF_MAX>475)
+                selectY=475-EFFPICKER_HEIGHT*EFF_MAX;
 }
 
 static void MonsterClick(int id)
@@ -2135,6 +2139,22 @@ static void SetupEffectButtons(int t,int y)
 			else if(effect.value==PLAY_MECHA)
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Mechabouapha",PlayAsClick);
 			break;
+                case EFF_MONSGRAPHICS:
+                        MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Change",NULL);
+                        MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,94,y+17,140,14,MonsterName(effect.value),MonsterClick);
+                        MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,238,y+17,1,1,"at",NULL);
+                        if(effect.x==255)
+                                strcpy(s,"Anywhere");
+                        else
+                                sprintf(s,"%d, %d",effect.x,effect.y);
+                        MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,258,y+17,70,14,s,XY3Click);
+                        MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,332,y+17,1,1,"to Graphics",NULL);
+                        MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,430,y+17,140,14,effect.text,PicNameClick);
+                        break;
+                case EFF_ITEMGRAPHICS:
+                        MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Use custom item sprites",NULL);
+                        MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,240,y+17,250,14,effect.text,PicNameClick);
+                        break;
 	}
 }
 
@@ -2302,7 +2322,8 @@ void SpecialEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 					{
 						if(spcl.effect[curTrig].type!=EFF_MESSAGE && spcl.effect[curTrig].type!=EFF_SONG &&
 							spcl.effect[curTrig].type!=EFF_PICTURE && spcl.effect[curTrig].type!=EFF_VAR &&
-							spcl.effect[curTrig].type!=EFF_NAME)
+                                                        spcl.effect[curTrig].type!=EFF_NAME && spcl.effect[curTrig].type!=EFF_MONSGRAPHICS &&
+                                                        spcl.effect[curTrig].type!=EFF_ITEMGRAPHICS)
 							spcl.effect[curTrig].text[0]='\0';
 					}
 				}
@@ -2313,17 +2334,17 @@ void SpecialEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 		case SMODE_PICKEFF:
 			if(mgl->MouseDown())
 			{
-				if((mouseY-selectY)/14>=EFF_MAX)
+                                if((mouseY-selectY)/EFFPICKER_HEIGHT>=EFF_MAX)
 					spcl.effect[curEff].type=TRG_NONE;
 				else
-					spcl.effect[curEff].type=(mouseY-selectY)/14;
+                                        spcl.effect[curEff].type=(mouseY-selectY)/EFFPICKER_HEIGHT;
 			}
 			else
 			{
-				if((mouseY-selectY)/14>=EFF_MAX)
+                                if((mouseY-selectY)/EFFPICKER_HEIGHT>=EFF_MAX)
 					spcl.effect[curEff].type=TRG_NONE;
 				else
-					spcl.effect[curEff].type=(mouseY-selectY)/14;
+                                        spcl.effect[curEff].type=(mouseY-selectY)/EFFPICKER_HEIGHT;
 				mode=SMODE_NORMAL;
 				if(prevType!=spcl.effect[curEff].type)
 					DefaultEffect(&spcl.effect[curEff],spcl.x,spcl.y,(byte)(spcl.trigger[curEff].type==TRG_EQUATION || spcl.trigger[curEff].type==TRG_EQUVAR));
@@ -2517,23 +2538,23 @@ void SpecialEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 			RenderTextDialog(mouseX,mouseY,mgl);
 			break;
 		case SMODE_PICKTRIG:
-			DrawFillBox(40,selectY,200,selectY+MAX_TRIGGER*14+2,0);
-			DrawBox(40,selectY,200,selectY+MAX_TRIGGER*14+2,31);
+                        DrawFillBox(40,selectY,200,selectY+MAX_TRIGGER*EFFPICKER_HEIGHT+2,0);
+                        DrawBox(40,selectY,200,selectY+MAX_TRIGGER*EFFPICKER_HEIGHT+2,31);
 			for(i=0;i<MAX_TRIGGER;i++)
 			{
 				if(spcl.trigger[curTrig].type==i)
-					DrawFillBox(41,selectY+1+i*14,199,selectY+1+i*14+13,32*1+8);
-				Print(42,selectY+2+i*14,trigName[i],0,1);
+                                        DrawFillBox(41,selectY+1+i*EFFPICKER_HEIGHT,199,selectY+1+i*EFFPICKER_HEIGHT+13,32*1+8);
+                                Print(42,selectY+2+i*EFFPICKER_HEIGHT,trigName[i],0,1);
 			}
 			break;
 		case SMODE_PICKEFF:
-			DrawFillBox(40,selectY,200,selectY+EFF_MAX*14+2,0);
-			DrawBox(40,selectY,200,selectY+EFF_MAX*14+2,31);
+                        DrawFillBox(40,selectY,200,selectY+EFF_MAX*EFFPICKER_HEIGHT+2,0);
+                        DrawBox(40,selectY,200,selectY+EFF_MAX*EFFPICKER_HEIGHT+2,31);
 			for(i=0;i<EFF_MAX;i++)
 			{
 				if(spcl.effect[curEff].type==i)
-					DrawFillBox(41,selectY+1+i*14,199,selectY+1+i*14+13,32*1+8);
-				Print(42,selectY+2+i*14,effName[i],0,1);
+                                        DrawFillBox(41,selectY+1+i*EFFPICKER_HEIGHT,199,selectY+1+i*EFFPICKER_HEIGHT+13,32*1+8);
+                                Print(42,selectY+2+i*EFFPICKER_HEIGHT,effName[i],0,1);
 			}
 			break;
 		case SMODE_HELP:

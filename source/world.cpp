@@ -27,7 +27,7 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	strcpy(world->author,"Nobody");
 
 	ExitItems();
-	InitItems();
+    InitItems();
 	if(!world->map[0])
 		return 0;
 	return 1;
@@ -78,7 +78,7 @@ byte LoadWorld(world_t *world,char *fname)
 
 	LoadItems(f);
 	LoadCustomSounds(f);
-	SetupRandomItems();
+    SetupRandomItems();
 	fclose(f);
 	return 1;
 }

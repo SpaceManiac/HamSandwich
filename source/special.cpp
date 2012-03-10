@@ -321,6 +321,7 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 			eff->x=255;
 			break;
 		case EFF_NAME:
+                case EFF_MONSGRAPHICS:
 			eff->value=MONS_ANYBODY;
 			eff->x=255;
 			eff->text[0]='\0';
@@ -1670,7 +1671,7 @@ void SpecialEffect(special_t *me,Map *map)
 				break;
 			case EFF_NAME:
 				SetMonsterName(!(me->effect[i].flags&EF_NOFX),me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].text);
-				break;
+                                break;
 			case EFF_COLOR:
 				SetMonsterColor(!(me->effect[i].flags&EF_NOFX),me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].value2);
 				break;
@@ -1680,6 +1681,12 @@ void SpecialEffect(special_t *me,Map *map)
 			case EFF_PLAYAS:
 				player.playAs=me->effect[i].value;
 				break;
+            case EFF_MONSGRAPHICS:
+                SetMonsterGraphics(!(me->effect[i].flags&EF_NOFX),me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].text);
+                break;
+            case EFF_ITEMGRAPHICS:
+                SetCustomItemSprites(me->effect[i].text);
+                break;
 		}
 	}
 	if(me->uses>0)

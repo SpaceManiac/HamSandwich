@@ -123,6 +123,7 @@ Guy *FindMonster(int x,int y,int type);
 byte BadguyRegions(int x,int y,int x2,int y2,int tx,int ty);
 void MonsterLifeAmt(byte fx,int x,int y,int type,int amt);
 void SetMonsterName(byte fx,int x,int y,int type,char *name);
+void SetMonsterGraphics(byte fx,int x,int y,int type,char *name);
 void SetMonsterColor(byte fx,int x,int y,int type,int colCode);
 void SetMonsterBright(byte fx,int x,int y,int type,int bright);
 byte CheckMonsterColor(int x,int y,int type,byte color);
