@@ -21,28 +21,19 @@ void PickSongToPlay(void)
 
 	if((profile.musicMode&MUSIC_LISTBITS)==MUSIC_OFFICIAL ||
 	   (profile.musicMode&MUSIC_PLAYMODE)==MUSIC_REPEAT)
-	{
-		if(curStream==NULL)
-		{
-			if((profile.musicMode&MUSIC_LISTBITS)==MUSIC_OFFICIAL)
-				PlaySongForce(curSongName);
-			else
-			{
-				if(profile.playList[(profile.musicMode&MUSIC_LISTBITS)-1].numSongs==0)
-				{
-					StopSong();
-					return;
-				}
-				lastSong=0;
-				PlaySongForce(&profile.playList[(profile.musicMode&MUSIC_LISTBITS)-1].song[0]);
-			}
-		}
-		else
-		{
-			logg_restart_stream(curStream);
-			UpdateMusic();
-			lastSong=255;
-		}
+    {
+        if((profile.musicMode&MUSIC_LISTBITS)==MUSIC_OFFICIAL)
+            PlaySongForce(curSongName);
+        else
+        {
+            if(profile.playList[(profile.musicMode&MUSIC_LISTBITS)-1].numSongs==0)
+            {
+                StopSong();
+                return;
+            }
+            lastSong=0;
+            PlaySongForce(&profile.playList[(profile.musicMode&MUSIC_LISTBITS)-1].song[0]);
+        }
 	}
 	else
 	{
@@ -113,10 +104,10 @@ void PlaySong(char *fname)
 
 void PlaySongForce(char *fname)
 {
-	char fullname[64];
+    char fullname[64];
 
 	if(!config.music)
-		return;
+        return;
 
 	strcpy(curSongName,fname);
 	sprintf(fullname,"music\\%s",fname);
