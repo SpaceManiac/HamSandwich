@@ -14,18 +14,20 @@ byte dontcallback=0;
 
 void PickSongToPlay(void)
 {
-	byte pl,sng;
-
 	if(!config.music)
 		return;
 
 	if((profile.musicMode&MUSIC_LISTBITS)==MUSIC_OFFICIAL ||
 	   (profile.musicMode&MUSIC_PLAYMODE)==MUSIC_REPEAT)
     {
+        // official or repeat mode: just replay this song again
+
         if((profile.musicMode&MUSIC_LISTBITS)==MUSIC_OFFICIAL)
             PlaySongForce(curSongName);
         else
         {
+            // in repeat mode we just loop the first song of the playlist
+            // it's not very useful honestly
             if(profile.playList[(profile.musicMode&MUSIC_LISTBITS)-1].numSongs==0)
             {
                 StopSong();
@@ -37,7 +39,7 @@ void PickSongToPlay(void)
 	}
 	else
 	{
-		pl=(profile.musicMode&MUSIC_LISTBITS)-1;
+        byte pl=(profile.musicMode&MUSIC_LISTBITS)-1;
 		// not playing the official songs, and not on repeat
 		if((profile.musicMode&MUSIC_PLAYMODE)==MUSIC_SEQUENTIAL)
 		{
@@ -62,7 +64,7 @@ void PickSongToPlay(void)
 			}
 			if(profile.playList[pl].numSongs>1)
 			{
-				sng=lastSong;
+                byte sng=lastSong;
 				while(sng==lastSong)
 					sng=Random(profile.playList[pl].numSongs);
 				lastSong=sng;
@@ -140,6 +142,7 @@ void SetMusicVolume(int vol)
 	if(curStream)
 	{
 		curStream->volume = musVolume;
+        voice_set_volume(curStream->audio_stream->voice, musVolume);
 	}
 }
 

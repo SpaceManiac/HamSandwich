@@ -156,7 +156,7 @@ void RenderNameEntry(MGLDraw *mgl)
 		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
 
 	RenderLine(20,"LunaticOS v3.7b",0);
-	RenderLine(40,"Copyright 2005, by Hamumu Software",1);
+    RenderLine(40,"Copyright 2012, by Hamumu Software",1);
 
 	RenderLine(100,"SPISPOPD United Plan for Really Evil Maniac Extermination",2);
 	RenderLine(120,"(Project S.U.P.R.E.M.E.) *** TOP SECRET ***",3);
