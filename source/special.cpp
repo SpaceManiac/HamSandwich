@@ -307,7 +307,7 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 			eff->x=255;
 			eff->value2=ITM_RANDOM;
 			break;
-		case EFF_TILEVAR:
+        case EFF_TILEVAR:
 			eff->value=0;
 			break;
 		case EFF_LIFEAMT:
@@ -321,7 +321,7 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 			eff->x=255;
 			break;
 		case EFF_NAME:
-                case EFF_MONSGRAPHICS:
+        case EFF_MONSGRAPHICS:
 			eff->value=MONS_ANYBODY;
 			eff->x=255;
 			eff->text[0]='\0';
@@ -339,6 +339,8 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 		case EFF_PLAYAS:
 			eff->value=MONS_BOUAPHA;
 			break;
+        case EFF_VARBAR:
+            eff->value=0;
 		default:
 			break;
 	}
@@ -1686,6 +1688,15 @@ void SpecialEffect(special_t *me,Map *map)
                 break;
             case EFF_ITEMGRAPHICS:
                 SetCustomItemSprites(me->effect[i].text);
+                break;
+            case EFF_VARBAR:
+                v=GetVar(me->effect[i].value);
+                v=(word)v;
+                if(me->effect[i].flags&EF_PERMLIGHT)
+                    player.varbarMax=v;
+                else
+                    player.varbar=v;
+                player.varbarColor=me->effect[i].value2;
                 break;
 		}
 	}

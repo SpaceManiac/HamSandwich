@@ -44,16 +44,17 @@ Guy *monster;
 
 #define INTF_POWERUP 0
 #define INTF_KEYS	1
-#define INTF_RAGE	2
-#define INTF_OXYGEN 3
-#define INTF_LIFE	4
-#define INTF_BRAINS 5
-#define INTF_WEAPON 6
-#define INTF_SCORE	7
-#define INTF_HAMMERS 8
-#define INTF_ENEMY	9
-#define INTF_COINS	10
-#define NUM_INTF	11
+#define INTF_VARBAR 2
+#define INTF_RAGE	3
+#define INTF_OXYGEN 4
+#define INTF_LIFE	5
+#define INTF_BRAINS 6
+#define INTF_WEAPON 7
+#define INTF_SCORE	8
+#define INTF_HAMMERS 9
+#define INTF_ENEMY	10
+#define INTF_COINS	11
+#define NUM_INTF	12
 
 #define IV_NONE		0
 #define IV_BIGMETER	1
@@ -89,12 +90,18 @@ intface_t defaultSetup[NUM_INTF]={
 	 0,0,
 	 0,0,
 	 0},
+    {0,-50,17,10,	// varbar
+     SPR_RAGEGAUGE,
+     IV_SMALLMETER,128,
+     18,2,
+     0,0,
+     0},
 	{0,-50,17,10,	// rage meter
 	 SPR_RAGEGAUGE,
 	 IV_SMALLMETER,128,
 	 18,2,
 	 0,100,
-	 0},
+     0},
 	{165,-50,165,-1,	// oxygen
 	 SPR_OXYGAUGE,
 	 IV_DIAL,192,
@@ -142,7 +149,7 @@ intface_t defaultSetup[NUM_INTF]={
 	 IV_NUMBER,2,
 	 -18,-14,
 	 0,0,
-	 0},
+     0},
 };
 
 static byte intfFlip;
@@ -385,6 +392,10 @@ void DrawSmallMeter(int x,int y,int value,byte red,MGLDraw *mgl)
 		c=128;
 	else if(red==2)
 		c=36;
+    else if(red==3)
+        c=228;
+    else if(red>=16)
+        c=4+(red-16)*32;
 
 	mgl->FillBox(x,y,x+value-1,y,c+7);
 	mgl->FillBox(x,y+1,x+value-1,y+1,c+12);
@@ -620,13 +631,26 @@ void UpdateInterface(Map *map)
 	if(player.keys[0]+player.keys[1]+player.keys[2]+player.keys[3])
 	{
 		intf[INTF_KEYS].tx=17;
-		intf[INTF_KEYS].ty=18;
+        intf[INTF_KEYS].ty=25; // used to be 18, upped by 7 for varbar
 	}
 	else
 	{
 		intf[INTF_KEYS].tx=17;
-		intf[INTF_KEYS].ty=-30;
+        intf[INTF_KEYS].ty=0;
 	}
+    if(player.varbarMax>0)
+    {
+        intf[INTF_VARBAR].tx=17;
+        intf[INTF_VARBAR].ty=18;
+    }
+    else
+    {
+        intf[INTF_VARBAR].tx=17;
+        intf[INTF_VARBAR].ty=7;
+
+        // move keys up
+        intf[INTF_KEYS].ty-=7;
+    }
 	if(player.rage>0 && player.ability[ABIL_RAGE])
 	{
 		intf[INTF_RAGE].tx=17;
@@ -637,9 +661,10 @@ void UpdateInterface(Map *map)
 		intf[INTF_RAGE].tx=17;
 		intf[INTF_RAGE].ty=0;
 
-		// and move keys up
-		intf[INTF_KEYS].ty-=7;
-	}
+        // and move keys up
+        intf[INTF_KEYS].ty-=7;
+        intf[INTF_VARBAR].ty-=7;
+    }
 
 	if(map->flags&MAP_UNDERWATER)
 	{
@@ -665,6 +690,8 @@ void UpdateInterface(Map *map)
 		intf[INTF_OXYGEN].tx-=17;
 		// and keys
 		intf[INTF_KEYS].tx-=17;
+        // and varbar!
+        intf[INTF_VARBAR].tx-=17;
 		// and shift powerup meter up
 		intf[INTF_POWERUP].ty-=18;
 		if(player.rage==0)
@@ -732,6 +759,12 @@ void UpdateInterface(Map *map)
 			case INTF_RAGE:
 				intf[i].vDesired=player.rage*intf[i].valueLength/(127*256);
 				break;
+            case INTF_VARBAR:
+                if (player.varbarMax>0)
+                    intf[i].vDesired=player.varbar*intf[i].valueLength/player.varbarMax;
+                else
+                    intf[i].vDesired=0;
+                break;
 			case INTF_OXYGEN:
 				intf[i].vDesired=player.oxygen*intf[i].valueLength/(127*256);
 				break;
@@ -862,6 +895,8 @@ void RenderInterface(MGLDraw *mgl)
 				{
 					if(i==INTF_RAGE && intfFlip==0)
 						DrawSmallMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,2,mgl);
+                    else if (i==INTF_VARBAR)
+                        DrawSmallMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,16+player.varbarColor,mgl);
 					else
 						DrawSmallMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,0,mgl);
 				}

@@ -71,6 +71,8 @@ typedef struct player_t
 	byte speed;	// accelerated
 	byte rageClock;
 	word rage;
+    word varbar, varbarMax;
+    byte varbarColor;
 	byte invisibility;
 	byte jetting;
 	byte lavaTimer;
