@@ -762,7 +762,10 @@ void UpdateInterface(Map *map)
 				break;
             case INTF_VARBAR:
                 if (player.varbarMax>0)
-                    intf[i].vDesired=player.varbar*intf[i].valueLength/player.varbarMax;
+                    if (player.varbar>player.varbarMax)
+                        intf[i].vDesired=intf[i].valueLength;
+                    else
+                        intf[i].vDesired=player.varbar*intf[i].valueLength/player.varbarMax;
                 else
                     intf[i].vDesired=0;
                 break;

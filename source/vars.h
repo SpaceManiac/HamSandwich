@@ -13,6 +13,7 @@ void SetVar(byte v,int value);
 int GetVar(byte v);
 int GetSpecialVar(char c);
 int GetSpecialVarT(char c);
+int GetSpecialVarB(char c);
 
 byte CompareVar(byte v,byte flags,int value);
 byte VarMath(byte finalV,char *func);

@@ -76,7 +76,18 @@ char *VariableMsg(char *txt)
 						break;
 				}
 				i+=3;
-			}
+            }
+            else if(i<(int)strlen(txt)-3 && txt[i+1]=='%' && txt[i+2]=='B')
+            {
+                sprintf(num,"%d",GetSpecialVarB(txt[i+3]));
+                for(j=0;j<(int)strlen(num);j++)
+                {
+                    out[outpos++]=num[j];
+                    if(outpos>=255)
+                        break;
+                }
+                i+=3;
+            }
 			else	// must be a normal %
 			{
 				out[outpos++]='%';

@@ -117,6 +117,25 @@ int GetSpecialVarT(char c)
 	return 0;
 }
 
+int GetSpecialVarB(char c)
+{
+    // Varbar
+    if(c>='a' && c<='z')
+        c+='A'-'a';
+
+    switch(c)
+    {
+        case 'V':
+            return player.varbar;
+            break;
+        case 'M':
+            return player.varbarMax;
+            break;
+    }
+    return 0;
+}
+
+
 byte CompareVar(byte v,byte flags,int value)
 {
 	int c;
@@ -356,6 +375,14 @@ byte VarMath(byte finalV,char *func)
 			operatorOk=1;
 			pos+=2;
 		}
+        else if((tmp[pos]=='b' || tmp[pos]=='B') && !operatorOk)
+        {
+            num=GetSpecialVarB(tmp[pos+1]);
+
+            result=DoTheMath(result,action,num);
+            operatorOk=1;
+            pos+=2;
+        }
 		else if(tmp[pos]==' ')
 			pos++;
 		else if(tmp[pos]=='\0' && operatorOk)
