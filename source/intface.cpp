@@ -18,6 +18,7 @@
 #define SPR_CANDLE		51
 #define SPR_KEYCH		52
 #define SPR_BRAIN		56
+#define SPR_VARBAR      64
 
 #define SPR_IFHAMMER	1
 #define SPR_MINIGAUGE	2
@@ -91,7 +92,7 @@ intface_t defaultSetup[NUM_INTF]={
 	 0,0,
 	 0},
     {0,-50,17,10,	// varbar
-     SPR_RAGEGAUGE,
+     SPR_VARBAR,
      IV_SMALLMETER,128,
      18,2,
      0,0,
@@ -641,7 +642,7 @@ void UpdateInterface(Map *map)
     if(player.varbarMax>0)
     {
         intf[INTF_VARBAR].tx=17;
-        intf[INTF_VARBAR].ty=18;
+        intf[INTF_VARBAR].ty=17;
     }
     else
     {
