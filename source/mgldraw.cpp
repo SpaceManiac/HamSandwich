@@ -797,12 +797,12 @@ HWND MGLGetHWnd(void)
 
 void SeedRNG(void)
 {
-  srand(timeGetTime());
+    srand(timeGetTime());
 }
 
 dword Random(dword range)
 {
-	return (rand()%range);
+    return rand() * range / RAND_MAX;
 }
 
 void FatalError(char *msg)
