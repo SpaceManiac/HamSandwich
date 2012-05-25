@@ -53,7 +53,7 @@ int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR cmdLine,int
 	InitLog();
 
 	LoadConfig();
-	mainmgl=new MGLDraw(hInstance,"Dr. Lunatic",640,480,32,windowedGame);
+    mainmgl=new MGLDraw(hInstance,"Supreme With Cheese",640,480,32,windowedGame);
 	if(!mainmgl)
 		return 0;
 
