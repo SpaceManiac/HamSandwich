@@ -341,6 +341,10 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 			break;
         case EFF_VARBAR:
             eff->value=0;
+            break;
+        case EFF_MAKEBULLET:
+            eff->value=0;
+            eff->value2=1;
 		default:
 			break;
 	}
@@ -1698,6 +1702,10 @@ void SpecialEffect(special_t *me,Map *map)
                     player.varbar=v;
                 player.varbarColor=me->effect[i].value2;
                 break;
+            case EFF_MAKEBULLET:
+                int x = me->effect[i].x*TILE_WIDTH + TILE_WIDTH/2, y = me->effect[i].y*TILE_HEIGHT + TILE_HEIGHT/2;
+                FireBullet(x<<FIXSHIFT, y<<FIXSHIFT, me->effect[i].value, me->effect[i].value2, me->effect[i].flags&EF_PERMLIGHT);
+                break;
 		}
 	}
 	if(me->uses>0)
@@ -2074,6 +2082,17 @@ void AdjustSpecialEffectCoords(special_t *me,int dx,int dy)
 				break;
 			case EFF_PLAYAS:
 				break;
+            case EFF_MONSGRAPHICS:
+                if(me->effect[i].x!=255)
+                {
+                    me->effect[i].x+=dx;
+                    me->effect[i].y+=dy;
+                }
+                break;
+            case EFF_MAKEBULLET:
+                me->effect[i].x+=dx;
+                me->effect[i].y+=dy;
+                break;
 		}
 	}
 }

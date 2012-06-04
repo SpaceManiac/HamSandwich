@@ -78,7 +78,8 @@
 #define EFF_MONSGRAPHICS        33      // change monster of type N at X,Y to graphics M
 #define EFF_ITEMGRAPHICS        34      // set the current custom item graphics to the given jsp
 #define EFF_VARBAR      35
-#define EFF_MAX			36
+#define EFF_MAKEBULLET  36
+#define EFF_MAX			37
 
 // trigger flags
 #define TF_NOT		1	// NOT this one
