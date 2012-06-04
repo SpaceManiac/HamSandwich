@@ -58,7 +58,7 @@ int GetVar(byte v)
 		return 0;
 }
 
-int GetSpecialVar(char c)
+int PlayerSpecialVars(char c)
 {
 	if(c>='a' && c<='z')
 		c+='A'-'a';
@@ -68,34 +68,26 @@ int GetSpecialVar(char c)
 	switch(c)
 	{
 		case 'X':
-			return goodguy->mapx;
-			break;
+            return goodguy->mapx;
 		case 'Y':
-			return goodguy->mapy;
-			break;
+            return goodguy->mapy;
 		case 'R':
-			return player.rage/256;
-			break;
+            return player.rage/256;
 		case 'L':
-			return goodguy->hp;
-			break;
+            return goodguy->hp;
 		case 'C':
-			return player.coins;
-			break;
+            return player.coins;
 		case 'B':
-			return player.brains;
-			break;
+            return player.brains;
 		case 'K':
-			return player.candles;
-			break;
+            return player.candles;
 		case 'P':
-			return player.worldProg->percentage;
-			break;
+            return player.worldProg->percentage;
 	}
 	return 0;
 }
 
-int GetSpecialVarT(char c)
+int TaggedSpecialVars(char c)
 {
 	if(c>='a' && c<='z')
 		c+='A'-'a';
@@ -105,21 +97,17 @@ int GetSpecialVarT(char c)
 	switch(c)
 	{
 		case 'X':
-			return TaggedMonster()->mapx;
-			break;
+            return TaggedMonster()->mapx;
 		case 'Y':
-			return TaggedMonster()->mapy;
-			break;
+            return TaggedMonster()->mapy;
 		case 'L':
-			return TaggedMonster()->hp;
-			break;
+            return TaggedMonster()->hp;
 	}
 	return 0;
 }
 
-int GetSpecialVarB(char c)
+int VarbarSpecialVars(char c)
 {
-    // Varbar
     if(c>='a' && c<='z')
         c+='A'-'a';
 
@@ -127,14 +115,77 @@ int GetSpecialVarB(char c)
     {
         case 'V':
             return player.varbar;
-            break;
         case 'M':
             return player.varbarMax;
-            break;
     }
     return 0;
 }
 
+int DateSpecialVars(char c)
+{
+    if(c>='a' && c<='z')
+        c+='A'-'a';
+
+    time_t timeobj;
+    time(&timeobj);
+    tm* clock = localtime(&timeobj);
+
+    switch(c)
+    {
+        case 'M':
+            return clock->tm_mon;
+        case 'D':
+            return clock->tm_mday;
+        case 'Y':
+            return clock->tm_year;
+        case 'W':
+            return clock->tm_wday;
+    }
+    return 0;
+}
+
+int ClockSpecialVars(char c)
+{
+    if(c>='a' && c<='z')
+        c+='A'-'a';
+
+    time_t timeobj;
+    time(&timeobj);
+    tm* clock = localtime(&timeobj);
+
+    switch(c)
+    {
+        case 'H':
+            return clock->tm_hour;
+        case 'M':
+            return clock->tm_min;
+        case 'S':
+            return clock->tm_sec;
+    }
+    return 0;
+}
+
+varFunc_t GetSpecialVarFunc(char c)
+{
+    if(c>='a' && c<='z')
+        c+='A'-'a';
+
+    switch(c)
+    {
+        case 'P':
+            return PlayerSpecialVars;
+        case 'T':
+            return TaggedSpecialVars;
+        case 'B':
+            return VarbarSpecialVars;
+        case 'D':
+            return DateSpecialVars;
+        case 'C':
+            return ClockSpecialVars;
+    }
+
+    return 0;
+}
 
 byte CompareVar(byte v,byte flags,int value)
 {
@@ -359,29 +410,13 @@ byte VarMath(byte finalV,char *func)
 			operatorOk=1;
 			pos+=2;
 		}
-		else if((tmp[pos]=='p' || tmp[pos]=='P') && !operatorOk)
+        else if(GetSpecialVarFunc(tmp[pos]) && !operatorOk)
 		{
-			num=GetSpecialVar(tmp[pos+1]);
+            num=GetSpecialVarFunc(tmp[pos])(tmp[pos+1]);
 
 			result=DoTheMath(result,action,num);
 			operatorOk=1;
 			pos+=2;
-		}
-		else if((tmp[pos]=='t' || tmp[pos]=='T') && !operatorOk)
-		{
-			num=GetSpecialVarT(tmp[pos+1]);
-
-			result=DoTheMath(result,action,num);
-			operatorOk=1;
-			pos+=2;
-		}
-        else if((tmp[pos]=='b' || tmp[pos]=='B') && !operatorOk)
-        {
-            num=GetSpecialVarB(tmp[pos+1]);
-
-            result=DoTheMath(result,action,num);
-            operatorOk=1;
-            pos+=2;
         }
 		else if(tmp[pos]==' ')
 			pos++;
