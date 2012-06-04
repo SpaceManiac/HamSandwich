@@ -2385,6 +2385,17 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 			me->dy=Sine(me->facing)*5;
 			me->dz=FIXAMT*4;
 			break;
+
+        case BLT_LILBOOM:
+        case BLT_LILBOOM2:
+            // Fix the little booms to show proper sprites when fired manually
+            me->timer=9;
+            break;
+
+        case BLT_BUBBLEPOP:
+            // Likewise with bubble pops
+            me->timer=10;
+            break;
 	}
 }
 
