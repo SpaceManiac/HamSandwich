@@ -4,3 +4,5 @@ Thumbs.db
 /build
 /nbproject
 /bin
+/.sconsign.dblite
+/Supreme.*

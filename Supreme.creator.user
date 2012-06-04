@@ -46,11 +46,9 @@
     <value key="ProjectExplorer.BuildCOnfiguration.ToolChain" type="QString">INVALID</value>
     <valuemap key="ProjectExplorer.BuildConfiguration.BuildStepList.0" type="QVariantMap">
      <valuemap key="ProjectExplorer.BuildStepList.Step.0" type="QVariantMap">
-      <valuelist key="GenericProjectManager.GenericMakeStep.BuildTargets" type="QVariantList">
-       <value type="QString">all</value>
-      </valuelist>
+      <valuelist key="GenericProjectManager.GenericMakeStep.BuildTargets" type="QVariantList"/>
       <value key="GenericProjectManager.GenericMakeStep.MakeArguments" type="QString"></value>
-      <value key="GenericProjectManager.GenericMakeStep.MakeCommand" type="QString"></value>
+      <value key="GenericProjectManager.GenericMakeStep.MakeCommand" type="QString">C:\Python26\scons</value>
       <value key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName" type="QString">Make</value>
       <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString"></value>
       <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">GenericProjectManager.GenericMakeStep</value>
@@ -110,7 +108,7 @@
  </data>
  <data>
   <variable>ProjectExplorer.Project.Updater.EnvironmentId</variable>
-  <value type="QString">{7bc99b8e-ddb4-4da2-8820-4d82279b3c1c}</value>
+  <value type="QString">{f094f1b4-5a20-4729-a714-57ecd8187a4b}</value>
  </data>
  <data>
   <variable>ProjectExplorer.Project.Updater.FileVersion</variable>
