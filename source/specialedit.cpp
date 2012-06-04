@@ -2263,8 +2263,7 @@ static void SetupEffectButtons(int t,int y)
             sprintf(s,"%d, %d",effect.x,effect.y);
             MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,268,y+17,70,14,s,XYClick);
             MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,342,y+17,1,1,"facing",NULL);
-            sprintf(s,"%d",effect.value);
-            MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,400,y+17,95,14,s,NumberClick);
+            MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,400,y+17,95,14,effect.text,MessageClick);
 
             if(effect.flags&EF_PERMLIGHT)
                 MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+6+100*t,0,520,y+17,65,14,"Good",PlayerTargetClick);

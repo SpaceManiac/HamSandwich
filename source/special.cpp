@@ -343,7 +343,7 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
             eff->value=0;
             break;
         case EFF_MAKEBULLET:
-            eff->value=0;
+            strcpy(eff->text, "0");
             eff->value2=1;
 		default:
 			break;
@@ -1704,7 +1704,9 @@ void SpecialEffect(special_t *me,Map *map)
                 break;
             case EFF_MAKEBULLET:
                 int x = me->effect[i].x*TILE_WIDTH + TILE_WIDTH/2, y = me->effect[i].y*TILE_HEIGHT + TILE_HEIGHT/2;
-                FireBullet(x<<FIXSHIFT, y<<FIXSHIFT, me->effect[i].value, me->effect[i].value2, me->effect[i].flags&EF_PERMLIGHT);
+                if(!VarMath(255,me->effect[i].text))
+                    PauseGame();	// pause if there's an error in the equation
+                FireBullet(x<<FIXSHIFT, y<<FIXSHIFT, GetVar(255), me->effect[i].value2, me->effect[i].flags&EF_PERMLIGHT);
                 break;
 		}
 	}
