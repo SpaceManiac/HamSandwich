@@ -1,3 +1,5 @@
+#ifdef MONSTER_CPP // Don't compile directly
+
 void AI_MineCart(Guy *me, Map *map, world_t *world, Guy *goodguy)
 {
 	int x, y;
@@ -242,7 +244,8 @@ void AI_Raft(Guy *me, Map *map, world_t *world, Guy *goodguy)
 sorryimusingagoto:
 			x = me->mapx;
 			y = me->mapy;
-			switch (me->facing) {
+			switch (me->facing)
+			{
 				case 0:
 					x++;
 					break;
@@ -627,7 +630,8 @@ void AI_Burner(Guy *me, Map *map, world_t *world, Guy *goodguy)
 		if (me->mind1)
 		{
 			me->mind1--;
-			switch (me->mind2) {
+			switch (me->mind2)
+			{
 				case 0:
 					if (!map->map[me->mapx + 1 + me->mapy * map->width].wall)
 						FireBullet(me->x + FIXAMT * TILE_WIDTH / 2, me->y, 0, BLT_FLAME2, me->friendly);
@@ -809,7 +813,8 @@ void AI_Pygmy2(Guy *me, Map *map, world_t *world, Guy *goodguy)
 
 		if (me->mind1 > 100 && MGL_random(200) == 0)
 		{
-			switch (MGL_random(2)) {
+			switch (MGL_random(2))
+			{
 				case 0:
 					MakeSound(SND_UNGADANCE, me->x, me->y, SND_CUTOFF, 1200);
 					me->seq = ANIM_A1; // unga dance
@@ -948,7 +953,8 @@ void AI_Pygmy3(Guy *me, Map *map, world_t *world, Guy *goodguy)
 
 		if (me->mind1 > 100 && MGL_random(200) == 0)
 		{
-			switch (MGL_random(2)) {
+			switch (MGL_random(2))
+			{
 				case 0:
 					MakeSound(SND_SHAMANDANCE, me->x, me->y, SND_CUTOFF, 1200);
 					me->seq = ANIM_A1; // unga dance
@@ -1507,7 +1513,8 @@ void AI_Countess(Guy *me, Map *map, world_t *world, Guy *goodguy)
 		else
 		{
 			x = MGL_random(4);
-			switch (x) {
+			switch (x)
+			{
 				case 0: // shoot bats
 					if (me->y > goodguy->y)
 						me->mind1 = 10; // don't fire bats if below player
@@ -2768,7 +2775,8 @@ void AI_UltraPygmy(Guy *me, Map *map, world_t *world, Guy *goodguy)
 
 		if (me->mind1 > 100 && MGL_random(200) == 0)
 		{
-			switch (MGL_random(3)) {
+			switch (MGL_random(3))
+			{
 				case 0:
 					MakeSound(SND_PYGMYSPIN, me->x, me->y, SND_CUTOFF, 1200);
 					me->seq = ANIM_A1; // spin the spear
@@ -3092,7 +3100,8 @@ void AI_LoonyGun(Guy *me, Map *map, world_t *world, Guy *goodguy)
 		me->mind = 2; // rotate counter
 	}
 
-	switch (me->mind1) {
+	switch (me->mind1)
+	{
 		case 0: // waiting to unleash a burst
 		case 2:
 		case 4:
@@ -3249,3 +3258,5 @@ void AI_LoonyShip(Guy *me, Map *map, world_t *world, Guy *goodguy)
 	}
 	me->mind1 = 0;
 }
+
+#endif // MONSTER_CPP

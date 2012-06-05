@@ -11,19 +11,13 @@ target = argv[1]
 cxxflags = argv[2]
 linkflags = argv[3]
 
-# don't compile certain files
-blacklist = [
-	'source/monster2.cpp',
-	'source/monster3.cpp'
-]
-
 def getFileList(dir):
 	result = []
 	for file in map(lambda(x): x.replace('\\', '/'), glob(dir + '/*')):
 		if path.isdir(file):
 			result += getFileList(file)
 		else:
-			if file.find("old/") < 0 and file.endswith(".cpp") and not file in blacklist:
+			if file.endswith(".cpp"):
 				result += [file]
 	return result
 

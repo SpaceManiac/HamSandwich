@@ -1,3 +1,4 @@
+#ifdef MONSTER_CPP // Don't compile directly
 
 void AI_GoodTurret(Guy *me, Map *map, world_t *world, Guy *goodguy)
 {
@@ -586,7 +587,8 @@ void AI_PygmyQueen(Guy *me, Map *map, world_t *world, Guy *goodguy)
 
 		if (me->mind1 > 100 && MGL_random(200) == 0)
 		{
-			switch (MGL_random(2)) {
+			switch (MGL_random(2))
+			{
 				case 0:
 					MakeSound(SND_SHAMANDANCE, me->x, me->y, SND_CUTOFF, 1200);
 					me->seq = ANIM_A1; // unga dance
@@ -825,7 +827,8 @@ void AI_Generator(Guy *me, Map *map, world_t *world, Guy *goodguy)
 				MakeSound(SND_GENERATE, me->x, me->y, SND_CUTOFF, 1200);
 			}
 
-			switch (me->type) {
+			switch (me->type)
+			{
 				case MONS_GENERATOR1:
 					me->mind2 = 1;
 					break;
@@ -842,7 +845,8 @@ void AI_Generator(Guy *me, Map *map, world_t *world, Guy *goodguy)
 		}
 	}
 
-	switch (me->type) {
+	switch (me->type)
+	{
 		case MONS_GENERATOR1:
 			me->facing = 9 - ((int) ((me->mind2 - 1)*30)+(int) me->mind1)*10 / 30;
 			if (me->facing > 9)
@@ -1505,7 +1509,8 @@ void AI_MossRapido(Guy *me, Map *map, world_t *world, Guy *goodguy)
 		// spawn
 		x = (me->x >> FIXSHIFT) / TILE_WIDTH;
 		y = (me->y >> FIXSHIFT) / TILE_HEIGHT;
-		switch (MGL_random(4)) {
+		switch (MGL_random(4))
+		{
 			case 0:
 				// left
 				if (x > 0 && map->map[x - 1 + y * map->width].wall == 0 &&
@@ -1646,7 +1651,8 @@ void AI_Snowball(Guy *me, Map *map, world_t *world, Guy *goodguy)
 		MakeSound(SND_ACIDSPLAT, me->x, me->y, SND_CUTOFF, 850);
 	}
 
-	switch (me->facing) {
+	switch (me->facing)
+	{
 		case 0:
 			f = ANIM_A1; // roll to the right
 			break;
@@ -1693,7 +1699,8 @@ void AI_Snowblower(Guy *me, Map *map, world_t *world, Guy *goodguy)
 		{
 			me->mind1--;
 			ang = 128 - 8 + (byte) MGL_random(17);
-			switch (me->mind2) {
+			switch (me->mind2)
+			{
 				case 0:
 					if (!map->map[me->mapx + 1 + me->mapy * map->width].wall)
 						FireBullet(me->x + FIXAMT * TILE_WIDTH / 2, me->y, 0 + ang, BLT_SNOWBALL, me->friendly);
@@ -1930,7 +1937,8 @@ void AI_Gnome(Guy *me, Map *map, world_t *world, Guy *goodguy)
 
 		if (me->mind1 > 100 && MGL_random(200) == 0)
 		{
-			switch (MGL_random(3)) {
+			switch (MGL_random(3))
+			{
 				case 0:
 					MakeSound(SND_PYGMYSPIN, me->x, me->y, SND_CUTOFF, 1200);
 					me->seq = ANIM_A1; // spin the spear
@@ -2033,7 +2041,8 @@ void AI_Nobody(Guy *me, Map *map, world_t *world, Guy *goodguy)
 		me->mind--;
 	else
 	{
-		switch (MGL_random(4)) {
+		switch (MGL_random(4))
+		{
 			case 0: // above the world
 				me->x = (MGL_random(map->width * 2) - map->width / 2) * TILE_WIDTH*FIXAMT;
 				me->y = -FIXAMT * TILE_HEIGHT * 100;
@@ -2478,3 +2487,5 @@ void AI_Creepazoid(Guy *me, Map *map, world_t *world, Guy *goodguy)
 		me->frmAdvance = 128;
 	}
 }
+
+#endif // MONSTER_CPP

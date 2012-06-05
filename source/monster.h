@@ -205,6 +205,8 @@
 #define MF_NOHIT	 16384	// bullets pass through it
 #define MF_GLOW		 32768 // draw using glow draw
 
+typedef void (*monsterAi_t)(Guy *me, Map *map, world_t *world, Guy *goodguy);
+
 typedef struct monsterType_t
 {
 	char name[32];
@@ -217,6 +219,7 @@ typedef struct monsterType_t
 	char sprName[32];
 	sprite_set_t *spr;
 	word flags;
+	monsterAi_t aiFunc;
 	byte anim[NUM_ANIMS][ANIM_LENGTH];
 } monsterType_t;
 
@@ -234,6 +237,7 @@ byte MonsterFrames(byte type);
 word MonsterHP(byte type);
 word MonsterPoints(byte type);
 char *MonsterName(byte type);
+monsterAi_t MonsterAi(byte type);
 void MonsterDraw(int x, int y, int z, byte type, byte seq, byte frm, byte facing, char bright, byte ouch, byte poison);
 void InstaRenderMonster(int x, int y, byte type, char bright, MGLDraw *mgl);
 sprite_t *GetMonsterSprite(byte type, byte seq, byte frm, byte facing);
