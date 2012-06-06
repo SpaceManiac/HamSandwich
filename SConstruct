@@ -58,7 +58,7 @@ def program(output, debug):
 	# resources
 	resFiles = getFileList('source/', '.rc')
 	for source in resFiles:
-		object = 'build/' + output + '/' + source.replace('.res', '.rc')
+		object = 'build/' + output + '/' + source.replace('.rc', '.res')
 		objects.append(env.Command(object, source, 'windres ' + source + ' -O coff -o ' + object))
 
 	# finish
