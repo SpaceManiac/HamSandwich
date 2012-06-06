@@ -1112,13 +1112,19 @@ void ShowSpecials(void)
 	if (!(editopt.displayFlags & MAP_SHOWSPECIALS))
 		return;
 
+	char s[256];
+
 	GetCamera(&sx, &sy);
 	for (i = 0; i < MAX_SPECIAL; i++)
 		if (curMap->special[i].trigger)
 		{
 			Print(curMap->special[i].x * TILE_WIDTH + 2 - sx + 320,
-					curMap->special[i].y * TILE_HEIGHT + 6 - sy + 240,
+					curMap->special[i].y * TILE_HEIGHT + 1 - sy + 240,
 					"Spcl", 0, 1);
+			sprintf(s, "%03d", i);
+			Print(curMap->special[i].x * TILE_WIDTH + 2 - sx + 320,
+					curMap->special[i].y * TILE_HEIGHT + 12 - sy + 240,
+					s, 0, 1);
 		}
 }
 
