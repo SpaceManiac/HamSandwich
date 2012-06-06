@@ -1387,7 +1387,6 @@ byte SpeedSplash(MGLDraw *mgl, const char *fname)
 		curpal[i].blue = 0;
 	}
 	mgl->SetPalette(curpal);
-	mgl->RealizePalette();
 
 	mgl->LastKeyPressed();
 	oldc = GetControls() | GetArrows();
@@ -1430,7 +1429,6 @@ byte SpeedSplash(MGLDraw *mgl, const char *fname)
 							curpal[i].blue++;
 					}
 				mgl->SetPalette(curpal);
-				mgl->RealizePalette();
 				if (clock > 16)
 				{
 					mode = 1;
@@ -1459,7 +1457,6 @@ byte SpeedSplash(MGLDraw *mgl, const char *fname)
 							clock++;
 					}
 				mgl->SetPalette(curpal);
-				mgl->RealizePalette();
 				if (clock == 256 * 3 * 16)
 					done = 1;
 				break;
@@ -1504,7 +1501,6 @@ void SplashScreen(MGLDraw *mgl, const char *fname, int delay, byte sound)
 		curpal[i].blue = 0;
 	}
 	mgl->SetPalette(curpal);
-	mgl->RealizePalette();
 
 	mgl->LastKeyPressed();
 
@@ -1535,7 +1531,6 @@ void SplashScreen(MGLDraw *mgl, const char *fname, int delay, byte sound)
 							curpal[i].blue++;
 					}
 				mgl->SetPalette(curpal);
-				mgl->RealizePalette();
 				if (clock == 32)
 				{
 					if (sound == 2)
@@ -1573,7 +1568,6 @@ void SplashScreen(MGLDraw *mgl, const char *fname, int delay, byte sound)
 							clock++;
 					}
 				mgl->SetPalette(curpal);
-				mgl->RealizePalette();
 				if (clock == 256 * 3 * 8)
 					done = 1;
 				break;

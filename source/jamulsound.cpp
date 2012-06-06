@@ -24,7 +24,7 @@ HWND dsoundHwnd;
 sound_t playBuffer[MAX_SOUNDS_AT_ONCE];
 int *soundHandle;
 
-bool JamulSoundInit(HINSTANCE hInst, const char *wndName, int numBuffers)
+bool JamulSoundInit(int numBuffers)
 {
 	int i;
 

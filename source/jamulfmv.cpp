@@ -135,7 +135,6 @@ void FLI_docolor2(byte *p, MGLDraw *mgl)
 	}
 	// apply the palette here
 	mgl->SetPalette(FLI_pal);
-	mgl->RealizePalette();
 }
 
 void FLI_docolor(byte *p, MGLDraw *mgl)

@@ -39,7 +39,7 @@ void parseCmdLine(char *cmdLine)
 int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int nCmdShow)
 {
 	parseCmdLine(cmdLine);
-	mainmgl = new MGLDraw("Dr. Lunatic", 640, 480, 8, windowedGame, hInstance);
+	mainmgl = new MGLDraw("Dr. Lunatic", 640, 480, windowedGame);
 	if (!mainmgl)
 		return 0;
 

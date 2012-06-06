@@ -1,15 +1,3 @@
-/* MGLDraw
-
-   A moderately cute little wrapper around MGL.
-
-   For quick reference, to use MGL in a program, you must:
-
-   link in gm.lib and mglfx.lib as the first two things in the list of things to link in.
-
-   Note: no longer actually MGL.
-
- */
-
 #include "mgldraw.h"
 #include "winpch.h"
 #include "game.h"	// for SetGameIdle and GetGameIdle only
@@ -78,7 +66,7 @@ void MGL_fatalError(const char* txt)
 	exit(0);
 }
 
-MGLDraw::MGLDraw(const char *name, int xRes, int yRes, int bpp, bool window, HINSTANCE hInst)
+MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool window)
 {
 	allegro_init();
 	install_keyboard();
@@ -99,7 +87,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, int bpp, bool window, HIN
 	set_display_switch_callback(SWITCH_OUT, switchOutCallback);
 
 	// this used to have to be in a very specific place but now it doesn't, hooray!
-	if (JamulSoundInit(hInst, name, 512))
+	if (JamulSoundInit(512))
 		SoundSystemExists();
 
 	readyToQuit = false;
@@ -107,7 +95,6 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, int bpp, bool window, HIN
 	// gimme windows colors
 	this->xRes = xRes;
 	this->yRes = yRes;
-	this->bpp = bpp;
 	this->pitch = xRes;
 	this->scrn = new byte[xRes * yRes];
 	buffer = create_bitmap(xRes, yRes);
@@ -120,11 +107,6 @@ MGLDraw::~MGLDraw(void)
 	JamulSoundExit();
 	destroy_bitmap(buffer);
 	delete[] scrn;
-}
-
-void MGLDraw::FatalError(char *msg)
-{
-	MGL_fatalError(msg);
 }
 
 void MGLDraw::ResetTimer(void)
@@ -256,8 +238,6 @@ bool MGLDraw::LoadPalette(char *name)
 		pal[i].alpha = 0;
 	}
 
-	RealizePalette();
-
 	fclose(f);
 	return true;
 }
@@ -265,11 +245,6 @@ bool MGLDraw::LoadPalette(char *name)
 void MGLDraw::SetPalette(palette_t *pal2)
 {
 	memcpy(pal, pal2, sizeof (palette_t)*256);
-}
-
-void MGLDraw::RealizePalette(void)
-{
-	// Nothing!
 }
 
 // 8-bit graphics only
@@ -428,8 +403,6 @@ bool MGLDraw::LoadBMP(const char *name)
 		pal[i].blue = pal2[i].rgbBlue;
 	}
 
-	this->RealizePalette();
-
 	for (i = 0; i < bmpIHead.biHeight; i++)
 	{
 		scr = scrn + (bmpIHead.biHeight - 1 - i) * pitch;
@@ -464,6 +437,5 @@ void MGLDraw::GammaCorrect(byte gamma)
 		pal[i].green = g;
 		pal[i].blue = b;
 	}
-	this->RealizePalette();
 	memcpy(pal, temp, sizeof (palette_t)*256);
 }

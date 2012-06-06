@@ -34,7 +34,7 @@ typedef struct sound_t
 
 
 
-bool JamulSoundInit(HINSTANCE hInst, const char *wndName, int numBuffers);
+bool JamulSoundInit(int numBuffers);
 void JamulSoundExit(void);
 
 // pass in the sound # you wish to play
