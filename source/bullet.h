@@ -63,7 +63,7 @@ enum {
 	HMR_WATERWALK = 4
 };
 
-typedef struct bullet_t
+struct bullet_t
 {
 	int x, y, z;
 	int dx, dy, dz;
@@ -74,7 +74,7 @@ typedef struct bullet_t
 	byte type;
 	char bright;
 	byte friendly;
-} bullet_t;
+};
 
 void InitBullets(void);
 void ExitBullets(void);

@@ -4,7 +4,7 @@
 #include "winpch.h"
 #include "display.h"
 
-typedef struct message_t
+struct message_t
 {
 	int x, y;
 	int dy;
@@ -13,7 +13,7 @@ typedef struct message_t
 	char brightDir;
 	char msg[32];
 	byte priority;
-} message_t;
+};
 
 void InitMessage(void);
 void NewMessage(const char *txt, int time, byte priority);

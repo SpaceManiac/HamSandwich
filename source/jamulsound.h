@@ -23,14 +23,14 @@ const int MAX_SOUNDS_AT_ONCE = 16;
 
 const int MAX_SNDPRIORITY = 65536;
 
-typedef struct sound_t
+struct sound_t
 {
 	int dsHandle; // directsound handle
 	int soundNum; // which game sound number
 	int priority;
 	long pan, vol;
 	byte flags;
-} sound_t;
+};
 
 
 

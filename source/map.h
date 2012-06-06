@@ -87,7 +87,7 @@ enum {
 	UPDATE_FADEIN
 };
 
-typedef struct special_t
+struct special_t
 {
 	word trigger;
 	byte trigValue;
@@ -96,9 +96,9 @@ typedef struct special_t
 	byte effectX, effectY;
 	int value;
 	char msg[32];
-} special_t;
+};
 
-typedef struct mapTile_t
+struct mapTile_t
 {
 	byte floor;
 	byte wall;
@@ -106,13 +106,13 @@ typedef struct mapTile_t
 	char light;
 	char templight;
 	byte opaque;
-} mapTile_t;
+};
 
-typedef struct mapBadguy_t
+struct mapBadguy_t
 {
 	byte x, y;
 	byte type;
-} mapBadguy_t;
+};
 
 struct world_t;
 

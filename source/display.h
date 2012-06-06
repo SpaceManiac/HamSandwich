@@ -31,7 +31,7 @@ enum {
     DISPLAY_OFFCOLOR = 512
 };
 
-typedef struct displayObj_t
+struct displayObj_t
 {
 	int x, y, z, z2;
 	sprite_t *spr;
@@ -39,7 +39,7 @@ typedef struct displayObj_t
 	char bright;
 	word flags;
 	int prev, next;
-} displayObj_t;
+};
 
 class DisplayList
 {

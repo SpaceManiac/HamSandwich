@@ -187,10 +187,10 @@ void MGLDraw::Quit(void)
 	readyToQuit = true;
 }
 
-typedef struct palfile_t
+struct palfile_t
 {
 	char r, g, b;
-} palfile_t;
+};
 
 bool MGLDraw::LoadPalette(char *name)
 {

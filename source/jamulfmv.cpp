@@ -13,7 +13,7 @@ enum {
 	FLI_MINI = 18
 };
 
-typedef struct fliheader
+struct fliheader
 {
 	long size;
 	word magic;
@@ -23,25 +23,25 @@ typedef struct fliheader
 	word speed;
 	long next, frit;
 	byte expand[104];
-} fliheader;
+};
 
-typedef struct frmheader
+struct frmheader
 {
 	long size;
 	word magic; /* always $F1FA */
 	word chunks;
 	byte expand[8];
-} frmheader;
+};
 
 // because of padding, the following 6-byte header is 8 bytes.
 // therefore use this define instead of sizeof() to read from a FLIc
 const int sizeofchunkheader = 6;
 
-typedef struct chunkheader
+struct chunkheader
 {
 	long size;
 	word kind;
-} chunkheader;
+};
 
 FILE * FLI_file;
 palette_t FLI_pal[256];

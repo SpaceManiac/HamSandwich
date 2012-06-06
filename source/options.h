@@ -16,7 +16,7 @@ enum {
 	PLAYAS_HAPPY
 };
 
-typedef struct options_t
+struct options_t
 {
 	byte control[2][6]; // key scancodes
 	byte joyCtrl[2]; // joystick 'codes' for the buttons
@@ -28,7 +28,7 @@ typedef struct options_t
 	// new options
 	byte discoMode;
 	byte smoothLight;
-} options_t;
+};
 
 extern options_t opt;
 extern byte oldPlayAs;

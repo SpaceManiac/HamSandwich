@@ -24,19 +24,19 @@ enum {
 	TF_BUNNY = 4096
 };
 
-typedef struct terrain_t
+struct terrain_t
 {
 	word flags;
 	byte next;
-} terrain_t;
+};
 
-typedef struct world_t
+struct world_t
 {
 	byte numMaps;
 	int totalPoints;
 	Map * map[MAX_MAPS];
 	terrain_t terrain[200];
-} world_t;
+};
 
 void WorldLoadBMP(char *name, byte *dst);
 

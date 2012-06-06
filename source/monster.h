@@ -209,7 +209,7 @@ enum {
 
 typedef void (*monsterAi_t)(Guy *me, Map *map, world_t *world, Guy *goodguy);
 
-typedef struct monsterType_t
+struct monsterType_t
 {
 	char name[32];
 	byte fromCol, toCol;
@@ -223,7 +223,7 @@ typedef struct monsterType_t
 	word flags;
 	monsterAi_t aiFunc;
 	byte anim[NUM_ANIMS][ANIM_LENGTH];
-} monsterType_t;
+};
 
 void InitMonsters(void);
 void ExitMonsters(void);

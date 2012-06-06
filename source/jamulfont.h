@@ -6,7 +6,7 @@
 
 const int FONT_MAX_CHARS = 128;
 
-typedef struct mfont_t
+struct mfont_t
 {
 	byte numChars; // # of characters in the font
 	byte firstChar; // the first character's ASCII value (they ascend from there)
@@ -17,7 +17,7 @@ typedef struct mfont_t
 	long dataSize; // the size in bytes of the data of the characters themselves
 	byte *data; // pointer to the character data
 	byte * chars[FONT_MAX_CHARS]; // pointers to each character's data (can't have more than FONT_MAX_CHARS)
-} mfont_t;
+};
 
 // each character in the font is stored as:
 // width    1 byte       width of the character in pixels

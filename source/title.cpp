@@ -200,7 +200,7 @@ const int END_OF_VICTORY = 480 * 2;
 const int END_OF_VICTORY = 480 * 2 - 100;
 #endif
 
-typedef struct title_t
+struct title_t
 {
 	int bouaphaX, doctorX;
 	int blueY;
@@ -211,7 +211,7 @@ typedef struct title_t
 	byte cursor;
 	byte savecursor;
 	float percent[3];
-} title_t;
+};
 
 sprite_set_t *planetSpr;
 static int numRunsToMakeUp;

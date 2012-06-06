@@ -11,10 +11,10 @@
 
 const int MAX_FEW_SOUNDS = 2;	// most copies of a SND_FEW sound that can play at once
 
-typedef struct soundbuf_t
+struct soundbuf_t
 {
 	IDirectSoundBuffer *buf;
-} soundbuf_t;
+};
 
 static IDirectSound *dsound = NULL;
 static int dsoundBufferCount = 0, nextOpenBuffer = 0;

@@ -24,7 +24,7 @@ enum {
 	MAXPLOP
 };
 
-typedef struct editopt_t
+struct editopt_t
 {
 	byte displayFlags;
 	byte plopMode;
@@ -34,7 +34,7 @@ typedef struct editopt_t
 	byte curFloor;
 	byte curItem;
 	byte curBadguy;
-} editopt_t;
+};
 
 extern byte editing;
 

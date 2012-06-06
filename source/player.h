@@ -47,7 +47,7 @@ enum {
 // the most custom worlds it will handle
 const int MAX_CUSTOM = 128;
 
-typedef struct player_t
+struct player_t
 {
 	// values for the overall game
 	byte musicSettings;
@@ -86,7 +86,7 @@ typedef struct player_t
 	word rage;
 	byte invisibility;
 	byte jetting;
-} player_t;
+};
 
 extern player_t player;
 
