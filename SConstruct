@@ -14,6 +14,9 @@ else:
 	DIRECTX = 'D:/libraries/directx-sdk'
 
 git_describe = Popen(["git", "describe"], stdout=PIPE).communicate()[0][:-1]
+vfile = open('source/version.h', 'w')
+vfile.write('#define VERSION "%s"' % git_describe)
+vfile.close()
 
 def getFileList(dir, ext='.cpp'):
 	result = []
@@ -31,7 +34,7 @@ def program(output, debug):
 	# compiler
 	env.Append(CCFLAGS = ['-Wall', '-std=c++0x'])
 	env.Append(CPPPATH = ['include', path.join(DIRECTX, 'Include')])
-	env.Append(CPPDEFINES = ['ALLEGRO_MINGW32', 'EXPANDO', 'VERSION_=' + git_describe])
+	env.Append(CPPDEFINES = ['ALLEGRO_MINGW32', 'EXPANDO'])
 	if debug:
 		env.Append(CPPDEFINES = ['_DEBUG', 'LOG'])
 		env.Append(CCFLAGS = ['-g'])

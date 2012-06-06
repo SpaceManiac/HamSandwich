@@ -5,3 +5,4 @@ Thumbs.db
 /nbproject
 /Lunatic.*
 /.sconsign.dblite
+/source/version.h
