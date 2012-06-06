@@ -55,11 +55,6 @@ public:
 	void Box(int x, int y, int x2, int y2, byte c);
 	void FillBox(int x, int y, int x2, int y2, byte c);
 
-	// functions to measure frame rate
-	void ResetTimer(void);
-	void TickTimer(void);
-	float FrameRate(void);
-
 	// mouse functions
 	byte MouseDown(void);
 	void SetMouseDown(byte w);
@@ -74,9 +69,6 @@ protected:
 	BITMAP* buffer;
 	palette_t pal[256];
 	bool readyToQuit;
-	dword elapsedTime;
-	dword now;
-	int numFrames;
 	char lastKeyPressed;
 	byte mouseDown;
 };

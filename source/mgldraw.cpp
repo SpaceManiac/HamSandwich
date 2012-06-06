@@ -109,28 +109,6 @@ MGLDraw::~MGLDraw(void)
 	delete[] scrn;
 }
 
-void MGLDraw::ResetTimer(void)
-{
-	elapsedTime = 0;
-	now = timeGetTime();
-	numFrames = 0;
-}
-
-void MGLDraw::TickTimer(void)
-{
-	dword then;
-
-	then = now;
-	now = timeGetTime();
-	elapsedTime += (now - then);
-	numFrames++;
-}
-
-float MGLDraw::FrameRate(void)
-{
-	return (float) (((float) numFrames * 1000) / (float) elapsedTime);
-}
-
 bool MGLDraw::Process(void)
 {
 	blit(buffer, screen, 0, 0, 0, 0, xRes, yRes);

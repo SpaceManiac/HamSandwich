@@ -44,6 +44,17 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 			{
 				return 1;
 			}
+			else if (c == 'u')
+			{
+				if (opt.gotAllSecrets)
+				{
+					opt.gotAllSecrets = opt.wonGame = 0;
+				}
+				else
+				{
+					opt.gotAllSecrets = opt.wonGame = 1;
+				}
+			}
 
 			if ((c2 & CONTROL_UP) && (!(oldc & CONTROL_UP)))
 			{
@@ -395,9 +406,6 @@ void OptionsMenu(MGLDraw *mgl)
 		done = UpdateOptionsMenu(mgl);
 		RenderOptionsMenu(mgl);
 		mgl->Flip();
-
-		if (mgl->LastKeyPressed() == 27)
-			done = 1;
 
 		if (!mgl->Process())
 			done = 1;
