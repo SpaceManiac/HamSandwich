@@ -5,19 +5,21 @@
 #include "jamultypes.h"
 #include "display.h"
 
-#define PART_NONE  0
-#define PART_SNOW2 1	// speedy snow particles, just like hammer particles but white
-#define PART_SNOW  2
-#define PART_DIRT  3
-#define PART_HAMMER 5
-#define PART_SLIME 6
-#define PART_SMOKE 7
-#define PART_BOOM  8
-#define PART_WATER 9
-#define PART_LIGHTNING 10
-#define PART_STINKY 11	// stinky lines for garlic
-#define PART_GLASS	12	// multicolored stained glass
-#define PART_COUNTESS 13	// glowing image of the countess for when she charges
+enum {
+	PART_NONE = 0,
+	PART_SNOW2,		// speedy snow particles, just like hammer particles but white
+	PART_SNOW,
+	PART_DIRT,
+	PART_HAMMER,
+	PART_SLIME,
+	PART_SMOKE,
+	PART_BOOM,
+	PART_WATER,
+	PART_LIGHTNING,
+	PART_STINKY,	// stinky lines for garlic
+	PART_GLASS,		// multicolored stained glass
+	PART_COUNTESS	// glowing image of the countess for when she charges
+};
 
 class Particle
 {

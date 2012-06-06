@@ -5,77 +5,87 @@
 #include "tile.h"
 #include "items.h"
 
-#define MAX_LIGHT 16
-#define MIN_LIGHT -32
+const int MAX_LIGHT = 16;
+const int MIN_LIGHT = -32;
 
 // the maximum # of monsters you can put on the map
-#define MAX_MAPMONS 128
-#define MAX_SPECIAL 32
+const int MAX_MAPMONS = 128;
+const int MAX_SPECIAL = 32;
 
 // flags for calling map render
-#define MAP_SHOWLIGHTS 1
-#define MAP_SHOWWALLS  2
-#define MAP_SHOWITEMS  4
-#define MAP_SHOWBADGUYS 8
-#define MAP_SHOWSPECIALS 16
+enum {
+	MAP_SHOWLIGHTS = 1,
+	MAP_SHOWWALLS = 2,
+	MAP_SHOWITEMS = 4,
+	MAP_SHOWBADGUYS = 8,
+	MAP_SHOWSPECIALS = 16
+};
 
 // special trigger flags
-#define TRG_STEP		1
-#define TRG_ENEMYSTEP	2
-#define TRG_NEAR		4
-#define TRG_PASSLEVELS	8
-#define TRG_KEYCHAINS	16
-#define	TRG_KILLALL		32
-#define TRG_HAVEBRAINS	64
-#define TRG_SHOOT		128
-#define TRG_REPEATABLE	256		// works more than once
-#define TRG_MESSAGE		512		// displays a message
-#define TRG_CHAIN		1024	// goes off if any special in an adjacent square goes off
-#define TRG_TIMED		2048	// occurs every N seconds
-#define TRG_RANDOM		4096	// occurs randomly, with an N% chance each second
-#define TRG_HAVELOONY	8192	// has loony key for this world
-#define TRG_KILLONE		16384	// kill just one of the chosen monster type
-#define TRG_FLOORHERE	32768	// the floor/roof here is N
+enum {
+	TRG_STEP = 1,
+	TRG_ENEMYSTEP = 2,
+	TRG_NEAR = 4,
+	TRG_PASSLEVELS = 8,
+	TRG_KEYCHAINS = 16,
+	TRG_KILLALL = 32,
+	TRG_HAVEBRAINS = 64,
+	TRG_SHOOT = 128,
+	TRG_REPEATABLE = 256,		// works more than once
+	TRG_MESSAGE = 512,		// displays a message
+	TRG_CHAIN = 1024,	// goes off if any special in an adjacent square goes off
+	TRG_TIMED = 2048,	// occurs every N seconds
+	TRG_RANDOM = 4096,	// occurs randomly, with an N% chance each second
+	TRG_HAVELOONY = 8192,	// has loony key for this world
+	TRG_KILLONE = 16384,	// kill just one of the chosen monster type
+	TRG_FLOORHERE = 32768	// the floor/roof here is N
+};
 
 // special effect choices
-#define SPC_NONE		0
-#define SPC_SUMMON		1
-#define SPC_ZAPWALL		2
-#define SPC_RAISEWALL	3
-#define SPC_TOGGLEWALL	4
-#define SPC_TELEPORT	5
-#define SPC_LIGHT		6
-#define SPC_GOTOMAP		7
-#define SPC_EXIT		8
-#define SPC_PICTURE		9
-#define SPC_PLAYSONG	10
-#define SPC_PLAYSOUND	11
-#define SPC_DROPITEM	12
-#define SPC_TEMPLIGHT	13
-#define SPC_SWAPMAP		14
-#define SPC_CHGTILE		15
-#define SPC_PLAYSOUND2	16
-#define SPC_WINANDGO	17
-#define SPC_COPYMAP		18
-#define SPC_KILLMONS	19
-#define SPC_CHGMONS		20
-#define SPC_RMVSPCL		21
-#define SPC_TOGGLEITEM	22
+enum {
+	SPC_NONE = 0,
+	SPC_SUMMON,
+	SPC_ZAPWALL,
+	SPC_RAISEWALL,
+	SPC_TOGGLEWALL,
+	SPC_TELEPORT,
+	SPC_LIGHT,
+	SPC_GOTOMAP,
+	SPC_EXIT,
+	SPC_PICTURE,
+	SPC_PLAYSONG,
+	SPC_PLAYSOUND,
+	SPC_DROPITEM,
+	SPC_TEMPLIGHT,
+	SPC_SWAPMAP,
+	SPC_CHGTILE,
+	SPC_PLAYSOUND2,
+	SPC_WINANDGO,
+	SPC_COPYMAP,
+	SPC_KILLMONS,
+	SPC_CHGMONS,
+	SPC_RMVSPCL,
+	SPC_TOGGLEITEM,
 
-#define SPC_MAXEFFECTS  23
+	SPC_MAXEFFECTS
+};
 
 // Map flags
-#define MAP_SNOWING		1
-#define MAP_MANYITEMS	2
-#define MAP_SECRET		4
-#define MAP_TORCHLIT	8
-#define MAP_STARS		16
+enum {
+	MAP_SNOWING = 1,
+	MAP_MANYITEMS = 2,
+	MAP_SECRET = 4,
+	MAP_TORCHLIT = 8,
+	MAP_STARS = 16
+};
 
 // map updating modes
-#define UPDATE_GAME		0
-#define UPDATE_EDIT		1
-#define UPDATE_FADE		2
-#define UPDATE_FADEIN	3
+enum {
+	UPDATE_GAME = 0,
+	UPDATE_EDIT,
+	UPDATE_FADE,
+	UPDATE_FADEIN
+};
 
 typedef struct special_t
 {

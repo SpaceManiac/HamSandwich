@@ -10,200 +10,202 @@
 #include "display.h"
 
 // the monster types
-#define MONS_NONE     0
-#define MONS_BOUAPHA  1
-#define MONS_BONEHEAD 2
-#define MONS_BAT	  3
-#define MONS_SPIDER	  4
-#define MONS_BIGSPDR  5
-#define MONS_ZOMBIE	  6
-#define MONS_EGGSAC	  7
-#define MONS_MAMASPDR 8
-#define MONS_PYGMY	  9
-#define MONS_SERPENT  10
-// the parts of Mattie
-#define MONS_MATHEAD  11
-#define MONS_MATSKULL 12
-#define MONS_MATBRAIN 13
-#define MONS_MATBODY  14
-#define MONS_MATCLAW1 15
-#define MONS_MATCLAW2 16
-#define MONS_MATTAIL  17
-// more normal monsters
-#define MONS_GINGER	  18
-#define MONS_PUMPKIN  19
-#define MONS_BABYTHING 20
-#define MONS_MOSS	  21
-#define MONS_MOSSGRANDE 22
-#define MONS_MAGMAZOID 23
-#define MONS_SHROOM	  24
-#define MONS_MUSH	  25
-// the parts of The Thing
-#define MONS_THING	  26
-#define MONS_THINGTENT 27
-#define MONS_THINGTENTTIP 28
-// normal monsters again
-#define MONS_SUPERZOMBIE 29
-#define MONS_STICKMAN 30
-#define MONS_BABYSEAL 31
-#define MONS_ISOZOID  32
-#define MONS_SNOWGUY  33
-#define MONS_PENGUIN  34
-#define MONS_ZOMBONI  35
-// the Yeti Bros.
-#define MONS_SVEN	  36
-#define MONS_BJORN	  37
-// normal monsters again
-#define MONS_GEOZOID  38
-#define MONS_MUMBLE	  39
-#define MONS_DJINNI	  40
-#define MONS_LAMP	  41
-#define MONS_CACTUS	  42
-#define MONS_ROLLER	  43
-#define MONS_LICH	  44
-#define MONS_DUSTDEVIL 45
-#define MONS_MECHABOUAPHA 46
-// Sphinx parts
-#define MONS_SPHXARM1 47
-#define MONS_SPHXARM2 48
-#define MONS_SPHINX   49
-// more normal monsters
-#define MONS_FREAKAZOID 50
-#define MONS_CENTIBODY 51
-#define MONS_CENTIHEAD 52
-#define MONS_WACKO	  53
-#define MONS_BOILER	  54
-#define MONS_GREATPK  55
-#define MONS_ULTRAZOID 56
-// the Asylum bosses
-#define MONS_DRL	  57
-#define MONS_SDZL	  58
+enum {
+    MONS_NONE = 0,
+    MONS_BOUAPHA = 1,
+    MONS_BONEHEAD = 2,
+    MONS_BAT = 3,
+    MONS_SPIDER = 4,
+    MONS_BIGSPDR = 5,
+    MONS_ZOMBIE = 6,
+    MONS_EGGSAC = 7,
+    MONS_MAMASPDR = 8,
+    MONS_PYGMY = 9,
+    MONS_SERPENT = 10,
+    // the parts of Mattie
+    MONS_MATHEAD = 11,
+    MONS_MATSKULL = 12,
+    MONS_MATBRAIN = 13,
+    MONS_MATBODY = 14,
+    MONS_MATCLAW1 = 15,
+    MONS_MATCLAW2 = 16,
+    MONS_MATTAIL = 17,
+    // more normal monsters
+    MONS_GINGER = 18,
+    MONS_PUMPKIN = 19,
+    MONS_BABYTHING = 20,
+    MONS_MOSS = 21,
+    MONS_MOSSGRANDE = 22,
+    MONS_MAGMAZOID = 23,
+    MONS_SHROOM = 24,
+    MONS_MUSH = 25,
+    // the parts of The Thing
+    MONS_THING = 26,
+    MONS_THINGTENT = 27,
+    MONS_THINGTENTTIP = 28,
+    // normal monsters again
+    MONS_SUPERZOMBIE = 29,
+    MONS_STICKMAN = 30,
+    MONS_BABYSEAL = 31,
+    MONS_ISOZOID = 32,
+    MONS_SNOWGUY = 33,
+    MONS_PENGUIN = 34,
+    MONS_ZOMBONI = 35,
+    // the Yeti Bros.
+    MONS_SVEN = 36,
+    MONS_BJORN = 37,
+    // normal monsters again
+    MONS_GEOZOID = 38,
+    MONS_MUMBLE = 39,
+    MONS_DJINNI = 40,
+    MONS_LAMP = 41,
+    MONS_CACTUS = 42,
+    MONS_ROLLER = 43,
+    MONS_LICH = 44,
+    MONS_DUSTDEVIL = 45,
+    MONS_MECHABOUAPHA = 46,
+    // Sphinx parts
+    MONS_SPHXARM1 = 47,
+    MONS_SPHXARM2 = 48,
+    MONS_SPHINX = 49,
+    // more normal monsters
+    MONS_FREAKAZOID = 50,
+    MONS_CENTIBODY = 51,
+    MONS_CENTIHEAD = 52,
+    MONS_WACKO = 53,
+    MONS_BOILER = 54,
+    MONS_GREATPK = 55,
+    MONS_ULTRAZOID = 56,
+    // the Asylum bosses
+    MONS_DRL = 57,
+    MONS_SDZL = 58,
 
-#define MONS_SANTA	  59
+    MONS_SANTA = 59,
 
-// expansion "monsters"
-#define MONS_MINECART 60	// mine cart Bouapha rides on
-#define MONS_RAFT	  61	// raft Bouapha rides on
-#define MONS_PWRBOUAPHA 62	// Bouapha in power armor
+    // expansion "monsters"
+    MONS_MINECART = 60,		// mine cart Bouapha rides on
+    MONS_RAFT = 61,			// raft Bouapha rides on
+    MONS_PWRBOUAPHA = 62,	// Bouapha in power armor
 
-// expansion monsters
-#define MONS_VAMPIRE  63
-#define MONS_COFFIN	  64
-#define MONS_GHOST	  65
-#define MONS_BURNER	  66
-#define MONS_LEFTY	  67
-#define MONS_PYGMY2	  68
-#define MONS_PYGMY3	  69
-#define MONS_PKSTEIN  70
-#define MONS_KNIGHT	  71
-#define MONS_TRICEROID 72
-#define MONS_COUNTESS 73
-#define MONS_ALIENEGG 74
-#define MONS_BABYALIEN 75
-#define MONS_ALIEN	  76
-#define MONS_ROBOPK	  77
-#define MONS_SHOCKTR  78
-#define MONS_ROBOT1	  79
-#define MONS_ROBOT2	  80
-#define MONS_ROBOFACTORY 81
-#define MONS_TURRET	  82
-#define MONS_BUNNY	  83
-#define MONS_KONGOR	  84
-#define MONS_SQUASH	  85
-#define MONS_MINIPYGMY 86
-#define MONS_LOONYBOT 87
-#define MONS_LOONYCORE 88
-#define MONS_LOONYGUN 89
-#define MONS_LOONYSHIP 90
+    // expansion monsters
+    MONS_VAMPIRE = 63,
+    MONS_COFFIN = 64,
+    MONS_GHOST = 65,
+    MONS_BURNER = 66,
+    MONS_LEFTY = 67,
+    MONS_PYGMY2 = 68,
+    MONS_PYGMY3 = 69,
+    MONS_PKSTEIN = 70,
+    MONS_KNIGHT = 71,
+    MONS_TRICEROID = 72,
+    MONS_COUNTESS = 73,
+    MONS_ALIENEGG = 74,
+    MONS_BABYALIEN = 75,
+    MONS_ALIEN = 76,
+    MONS_ROBOPK = 77,
+    MONS_SHOCKTR = 78,
+    MONS_ROBOT1 = 79,
+    MONS_ROBOT2 = 80,
+    MONS_ROBOFACTORY = 81,
+    MONS_TURRET = 82,
+    MONS_BUNNY = 83,
+    MONS_KONGOR = 84,
+    MONS_SQUASH = 85,
+    MONS_MINIPYGMY = 86,
+    MONS_LOONYBOT = 87,
+    MONS_LOONYCORE = 88,
+    MONS_LOONYGUN = 89,
+    MONS_LOONYSHIP = 90,
 
-// -- fun pack
-#define MONS_FRIENDLY   91
-#define MONS_GOODTURRET 92
-#define MONS_ROLLER2	93
-#define MONS_ALIENEGG2	94
+    // -- fun pack
+    MONS_FRIENDLY = 91,
+    MONS_GOODTURRET = 92,
+    MONS_ROLLER2 = 93,
+    MONS_ALIENEGG2 = 94,
 
-#define MONS_MAT2HEAD	95
-#define MONS_MAT2SKULL	96
-#define MONS_MAT2BRAIN	97
-#define MONS_MAT2BODY	98
-#define MONS_MAT2TAIL	99
+    MONS_MAT2HEAD = 95,
+    MONS_MAT2SKULL = 96,
+    MONS_MAT2BRAIN = 97,
+    MONS_MAT2BODY = 98,
+    MONS_MAT2TAIL = 99,
 
-#define MONS_SHAMAN2	100
-#define MONS_JALAPENO	101
+    MONS_SHAMAN2 = 100,
+    MONS_JALAPENO = 101,
 
-#define MONS_GENERATOR1	102
-#define MONS_GENERATOR2	103
-#define MONS_GENERATOR3	104
-#define MONS_GENERATOR4	105
+    MONS_GENERATOR1 = 102,
+    MONS_GENERATOR2 = 103,
+    MONS_GENERATOR3 = 104,
+    MONS_GENERATOR4 = 105,
 
-#define MONS_SHARK		106
-#define MONS_MADBUG		107
-#define MONS_WIZARD		108
-#define MONS_EVILCLONE	109
-#define MONS_BOB		110
-#define MONS_MULTIMOSS  111
-#define MONS_MOSS2		112
-#define MONS_SNOWBALL	113
-#define MONS_SNOWBALL2	114
-#define MONS_SNOWBLOW	115
-#define MONS_BOOMKIN	116
-#define MONS_MUMBLE2	117
-#define MONS_GOODROBOT	118
-#define MONS_GOODROBOT2 119
-#define MONS_XENOMAMA	120
-#define MONS_ROLLER3	121
-#define MONS_ROLLER4	122
-#define MONS_DARKVAMP	123
-#define MONS_GNOME		124
-#define MONS_NOBODY		125
-#define MONS_FRIENDLY2	126
-#define MONS_TROOPER2	127
-#define MONS_PUMPKIN2	128
-#define MONS_CRAZYBONE	129
-#define MONS_CREEPAZOID 130
+    MONS_SHARK = 106,
+    MONS_MADBUG = 107,
+    MONS_WIZARD = 108,
+    MONS_EVILCLONE = 109,
+    MONS_BOB = 110,
+    MONS_MULTIMOSS = 111,
+    MONS_MOSS2 = 112,
+    MONS_SNOWBALL = 113,
+    MONS_SNOWBALL2 = 114,
+    MONS_SNOWBLOW = 115,
+    MONS_BOOMKIN = 116,
+    MONS_MUMBLE2 = 117,
+    MONS_GOODROBOT = 118,
+    MONS_GOODROBOT2 = 119,
+    MONS_XENOMAMA = 120,
+    MONS_ROLLER3 = 121,
+    MONS_ROLLER4 = 122,
+    MONS_DARKVAMP = 123,
+    MONS_GNOME = 124,
+    MONS_NOBODY = 125,
+    MONS_FRIENDLY2 = 126,
+    MONS_TROOPER2 = 127,
+    MONS_PUMPKIN2 = 128,
+    MONS_CRAZYBONE = 129,
+    MONS_CREEPAZOID = 130
+};
 
 #ifdef EXPANDO
-
-#define NUM_MONSTERS  131
-
+const int NUM_MONSTERS = 161;
 #else	// lacking the expansion pack
-
-#define NUM_MONSTERS 60
-
+const int NUM_MONSTERS = 60;
 #endif
 
 // the animations
-#define ANIM_IDLE	0
-#define ANIM_MOVE	1
-#define ANIM_ATTACK 2
-#define ANIM_DIE	3
-#define ANIM_A1		4
-#define ANIM_A2		5
-#define ANIM_A3		6
-#define ANIM_A4		7
-#define ANIM_A5		8
-#define NUM_ANIMS	9
+enum {
+	ANIM_IDLE = 0,
+	ANIM_MOVE,
+	ANIM_ATTACK,
+	ANIM_DIE,
+	ANIM_A1,
+	ANIM_A2,
+	ANIM_A3,
+	ANIM_A4,
+	ANIM_A5,
+	NUM_ANIMS
+};
 
-#define ANIM_LENGTH	24
+const int ANIM_LENGTH = 24;
 
 // flags
-#define MF_FLYING	 1
-#define MF_WATERWALK 2
-#define MF_ONEFACE	 4
-#define MF_ENEMYWALK 8	// other enemies can stomp all over this one (but not Bouapha)
-#define MF_NOMOVE	 16 // doesn't move when hit
-#define MF_AQUATIC	 32	// can ONLY move on water/lava, not land
-#define MF_INVINCIBLE 64 // totally invulnerable to harm
-#define MF_SPRITEBOX 128 // use the sprite's rect for collision checks instead of standard size-box method
-#define MF_FACECMD	 256 // this monster's "facing" value should just be added to the sprite number,
-// it's calculated by his AI (only useful for MF_ONEFACE monsters)
-#define MF_NOGRAV	 512
-#define MF_FREEWALK	 1024 // Bouapha can walk right through it
-#define MF_WALLWALK	 2048 // walk through walls
-#define MF_NOSHADOW	 4096 // doesn't cast a shadow
-#define MF_GHOST	 8192 // draw using ghost draw
-#define MF_NOHIT	 16384	// bullets pass through it
-#define MF_GLOW		 32768 // draw using glow draw
+enum {
+	MF_FLYING = 1,
+	MF_WATERWALK = 2,
+	MF_ONEFACE = 4,
+	MF_ENEMYWALK = 8,	// other enemies can stomp all over this one (but not Bouapha)
+	MF_NOMOVE = 16,		// doesn't move when hit
+	MF_AQUATIC = 32,	// can ONLY move on water/lava, not land
+	MF_INVINCIBLE = 64, // totally invulnerable to harm
+	MF_SPRITEBOX = 128, // use the sprite's rect for collision checks instead of standard size-box method
+	MF_FACECMD = 256,	// this monster's "facing" value should just be added to the sprite number,
+						// it's calculated by his AI (only useful for MF_ONEFACE monsters)
+	MF_NOGRAV = 512,
+	MF_FREEWALK = 1024, // Bouapha can walk right through it
+	MF_WALLWALK = 2048, // walk through walls
+	MF_NOSHADOW = 4096, // doesn't cast a shadow
+	MF_GHOST = 8192,	// draw using ghost draw
+	MF_NOHIT = 16384,	// bullets pass through it
+	MF_GLOW = 32768		// draw using glow draw
+};
 
 typedef void (*monsterAi_t)(Guy *me, Map *map, world_t *world, Guy *goodguy);
 

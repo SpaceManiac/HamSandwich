@@ -1,7 +1,9 @@
 #include "jamulspr.h"
 
 // the sprites are 12 bytes, not including the data itself
-#define SPRITE_INFO_SIZE 16
+// note that the value here is 16 - there are four bytes of
+// garbage between each sprite header
+const int SPRITE_INFO_SIZE = 16;
 
 /*
 Jamul Sprite - JSP
@@ -15,6 +17,8 @@ count structures:
 	ofsX	1 short		x-coord of hotspot relative to left
 	ofsY	1 short		y-coord of hotspot relative to top
 	size	1 dword		how big the sprite data is in bytes
+
+count data chunks:
 	data	size bytes	transparency RLE'd sprite data
 
 	The RLE format is as follows:

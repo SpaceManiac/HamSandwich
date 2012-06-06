@@ -5,7 +5,7 @@
 #include "guy.h"
 #include "options.h"
 
-#define NUM_STARS 400
+const int NUM_STARS = 400;
 
 int totalBrains;
 static world_t *world;

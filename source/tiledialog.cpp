@@ -2,7 +2,7 @@
 #include "editor.h"
 #include <ctype.h>
 
-#define MAX_FILES 18
+const int MAX_FILES = 18;
 
 static char fnames[MAX_FILES][32];
 static char newfname[32] = "";

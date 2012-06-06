@@ -335,8 +335,8 @@ void PlotStar(int x, int y, byte col, byte tx, byte ty, byte tileNum)
 
 // -- Gourad!
 
-#define GB_WID	(TILE_WIDTH/2)
-#define GB_HEI	(TILE_HEIGHT/2)
+const int GB_WID = TILE_WIDTH / 2;
+const int GB_HEI = TILE_HEIGHT / 2;
 
 void GouraudBox(int x, int y, byte *src, char light0, char light1, char light2, char light3)
 {

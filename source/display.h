@@ -12,22 +12,24 @@
    don't have to pass the mgldraw object everywhere, and also handles the display
    list and camera, so everything is drawn in sorted order (or not drawn). */
 
-#define MAX_DISPLAY_OBJS 1024
+const int MAX_DISPLAY_OBJS = 1024;
 
-#define DISPLAY_XBORDER 128
-#define DISPLAY_YBORDER 128
+const int DISPLAY_XBORDER = 128;
+const int DISPLAY_YBORDER = 128;
 
 // display object flags
-#define DISPLAY_DRAWME		1
-#define DISPLAY_SHADOW		2
-#define DISPLAY_WALLTILE	4
-#define DISPLAY_ROOFTILE    8
-#define DISPLAY_PARTICLE	16
-#define DISPLAY_GHOST		32
-#define DISPLAY_GLOW		64
-#define DISPLAY_TRANSTILE	128
-#define DISPLAY_LIGHTNING	256
-#define DISPLAY_OFFCOLOR	512
+enum {
+    DISPLAY_DRAWME = 1,
+    DISPLAY_SHADOW = 2,
+    DISPLAY_WALLTILE = 4,
+    DISPLAY_ROOFTILE = 8,
+    DISPLAY_PARTICLE = 16,
+    DISPLAY_GHOST = 32,
+    DISPLAY_GLOW = 64,
+    DISPLAY_TRANSTILE = 128,
+    DISPLAY_LIGHTNING = 256,
+    DISPLAY_OFFCOLOR = 512
+};
 
 typedef struct displayObj_t
 {

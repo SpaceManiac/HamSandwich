@@ -12,8 +12,8 @@
 #pragma warning( disable : 4800 )
 #endif
 
-#define FIXSHIFT (16)
-#define FIXAMT   (65536)
+const int FIXSHIFT = 16;
+const int FIXAMT = 65536;
 
 typedef unsigned char byte;
 typedef unsigned short word;

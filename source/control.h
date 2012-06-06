@@ -3,19 +3,24 @@
 
 #include "jamultypes.h"
 
-#define CONTROL_UP 1
-#define CONTROL_DN 2
-#define CONTROL_LF 4
-#define CONTROL_RT 8
-#define CONTROL_B1 16
-#define CONTROL_B2 32
-#define CONTROL_B3 64
-#define CONTROL_B4 128
+// the various control flags
+enum {
+    CONTROL_UP = 1,
+    CONTROL_DN = 2,
+    CONTROL_LF = 4,
+    CONTROL_RT = 8,
+    CONTROL_B1 = 16,
+    CONTROL_B2 = 32,
+    CONTROL_B3 = 64,
+    CONTROL_B4 = 128
+};
 
 // source of control
-#define CONTROL_KB1	0
-#define CONTROL_KB2 1
-#define CONTROL_JOY 2
+enum {
+    CONTROL_KB1 = 0,
+    CONTROL_KB2,
+    CONTROL_JOY
+};
 
 void InitControls(void);
 void ApplyControlSettings(void);

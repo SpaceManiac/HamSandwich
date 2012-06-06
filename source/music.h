@@ -4,11 +4,13 @@
 #include "winpch.h"
 
 // these are CD audio modes for the CDPlayerUpdate
-#define CD_OFF		  0
-#define CD_LOOPTRACK  1	// continuously loop the current track
-#define CD_INTROLOOP  2	// plays the chosen track, then loops the next one
-#define CD_RANDOM	  3 // after current track, jump to any other at random
-#define CD_NORMAL	  4 // just keep playing the tracks in order, loops at end of CD to beginning
+enum {
+	CD_OFF = 0,
+	CD_LOOPTRACK,	// continuously loop the current track
+	CD_INTROLOOP,	// plays the chosen track, then loops the next one
+	CD_RANDOM,		// after current track, jump to any other at random
+	CD_NORMAL		// just keep playing the tracks in order, loops at end of CD to beginning
+};
 
 byte MusicInit(void);
 void MusicExit(void);

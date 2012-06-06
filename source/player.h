@@ -11,35 +11,41 @@
 #include "intface.h"
 
 // secondary weapon defines
-#define WPN_NONE     0
-#define WPN_MISSILES 1
-#define WPN_AK8087	 2
-#define WPN_BOMBS	 3
-#define WPN_FLAME	 4
-#define WPN_PWRARMOR 5
-#define WPN_BIGAXE	 6
-#define WPN_LIGHTNING 7
-#define WPN_SPEAR	 8
-#define WPN_MACHETE  9
-#define WPN_MINES	 10
-#define WPN_TURRET	 11
-#define WPN_MINDCONTROL 12
-#define WPN_REFLECTOR 13
-#define WPN_JETPACK	  14
-#define WPN_SWAPGUN	  15
+enum {
+	WPN_NONE,
+	WPN_MISSILES,
+	WPN_AK8087,
+	WPN_BOMBS,
+	WPN_FLAME,
+	WPN_PWRARMOR,
+	WPN_BIGAXE,
+	WPN_LIGHTNING,
+	WPN_SPEAR,
+	WPN_MACHETE,
+	WPN_MINES,
+	WPN_TURRET,
+	WPN_MINDCONTROL,
+	WPN_REFLECTOR,
+	WPN_JETPACK,
+	WPN_SWAPGUN
+};
 
 // initializing constants (pass to InitPlayer)
-#define INIT_GAME  2
-#define INIT_WORLD 1
-#define INIT_LEVEL 0
+enum {
+	INIT_GAME = 2,
+	INIT_WORLD = 1,
+	INIT_LEVEL = 0
+};
 
 // vehicles you could be on
-#define VE_NONE		0
-#define VE_MINECART 1
-#define VE_RAFT		2
+enum {
+	VE_NONE = 0,
+	VE_MINECART = 1,
+	VE_RAFT = 2
+};
 
 // the most custom worlds it will handle
-#define MAX_CUSTOM (128)
+const int MAX_CUSTOM = 128;
 
 typedef struct player_t
 {

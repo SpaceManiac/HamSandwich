@@ -2,7 +2,7 @@
 #include "items.h"
 #include <ctype.h> // for tolower
 
-#define NUM_CHEATS 13
+const int NUM_CHEATS = 13;
 
 char cheatCode[NUM_CHEATS][16] = {
 	"zappo", // auto-win the level

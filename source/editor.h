@@ -11,16 +11,18 @@
 #include "tiledialog.h"
 
 // the different plop modes
-#define PLOP_FLOOR  0
-#define PLOP_WALL	1
-#define PLOP_ITEM	2
-#define PLOP_BADGUY 3
-#define PLOP_LIGHT	4
-#define PLOP_DARK	5
-#define PLOP_SMOOTH 6
-#define PLOP_TORCH	7
-#define PLOP_SPECIAL 8
-#define MAXPLOP		9
+enum {
+	PLOP_FLOOR = 0,
+	PLOP_WALL,
+	PLOP_ITEM,
+	PLOP_BADGUY,
+	PLOP_LIGHT,
+	PLOP_DARK,
+	PLOP_SMOOTH,
+	PLOP_TORCH,
+	PLOP_SPECIAL,
+	MAXPLOP
+};
 
 typedef struct editopt_t
 {

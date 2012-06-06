@@ -4,9 +4,9 @@
 #include "winpch.h"
 #include "mgldraw.h"
 
-#define TILE_WIDTH  32
-#define TILE_HEIGHT 24
-#define NUMTILES	400
+const int TILE_WIDTH = 32;
+const int TILE_HEIGHT = 24;
+const int NUMTILES = 400;
 
 typedef byte tile_t[TILE_WIDTH*TILE_HEIGHT];
 

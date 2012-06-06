@@ -2,34 +2,36 @@
 #include "guy.h"
 #include "player.h"
 
-#define SPR_FLAME   0
-#define SPR_LASER   5
-#define SPR_HAMMER  21
-#define SPR_MISSILE 149
-#define SPR_SMOKE	165
-#define SPR_ACID	172
-#define SPR_BOMB	228
-#define SPR_ENERGY	236
-#define SPR_BOOM	238
-#define SPR_MEGABEAM 246
-#define SPR_SPORE	254
-#define SPR_SHROOM  258
-#define SPR_GRENADE 266
-#define SPR_YELBOOM 268
-#define SPR_SHOCKWAVE 273
-#define SPR_LILBOOM 277
-#define SPR_SNOWBALL 282
-#define SPR_BIGSNOW  283
-#define SPR_ICESPIKE 286
-#define SPR_ROCK	 290
-#define SPR_SPINE	 294
-#define SPR_BIGAXE	 310
-#define SPR_SPEAR	 318
-#define SPR_SLASH	 326
-#define SPR_MINE	 350
-#define SPR_STINKY	 355
-#define SPR_GREEN	 358
-#define SPR_ORBITER  359
+enum {
+	SPR_FLAME = 0,
+	SPR_LASER = 5,
+	SPR_HAMMER = 21,
+	SPR_MISSILE = 149,
+	SPR_SMOKE = 165,
+	SPR_ACID = 172,
+	SPR_BOMB = 228,
+	SPR_ENERGY = 236,
+	SPR_BOOM = 238,
+	SPR_MEGABEAM = 246,
+	SPR_SPORE = 254,
+	SPR_SHROOM = 258,
+	SPR_GRENADE = 266,
+	SPR_YELBOOM = 268,
+	SPR_SHOCKWAVE = 273,
+	SPR_LILBOOM = 277,
+	SPR_SNOWBALL = 282,
+	SPR_BIGSNOW = 283,
+	SPR_ICESPIKE = 286,
+	SPR_ROCK = 290,
+	SPR_SPINE = 294,
+	SPR_BIGAXE = 310,
+	SPR_SPEAR = 318,
+	SPR_SLASH = 326,
+	SPR_MINE = 350,
+	SPR_STINKY = 355,
+	SPR_GREEN = 358,
+	SPR_ORBITER = 359
+};
 
 bullet_t bullet[MAX_BULLETS];
 sprite_set_t *bulletSpr;

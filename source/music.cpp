@@ -2,9 +2,6 @@
 #include "mgldraw.h"
 #include <logg.h>
 
-#define	CDAUDIO_CDPLAYER_STRING			( "CD Player" )
-#define	CDAUDIO_CDPLAYER_LENGTH			( 10 )
-
 byte currentMode;
 LOGG_Stream* stream;
 int isPlaying;

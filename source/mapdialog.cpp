@@ -2,7 +2,7 @@
 #include "editor.h"
 #include <ctype.h>
 
-#define MAX_MAPNAMES MAX_MAPS
+const int MAX_MAPNAMES = MAX_MAPS;
 
 char mapnames[MAX_MAPNAMES][40];
 char newmapname[34] = "";

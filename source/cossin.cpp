@@ -1,7 +1,7 @@
 #include "cossin.h"
 #include <math.h>
 
-#define DEGREES  (256)
+const int DEGREES = 256;
 
 int costab[DEGREES];
 int sintab[DEGREES];

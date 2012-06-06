@@ -7,8 +7,10 @@
 #include "jamulspr.h"
 #include "display.h"
 
-#define ACTION_IDLE	0
-#define ACTION_BUSY 1
+enum {
+	ACTION_IDLE = 0,
+	ACTION_BUSY
+};
 
 class Guy
 {

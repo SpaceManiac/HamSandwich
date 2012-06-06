@@ -4,13 +4,17 @@
 #include "jamultypes.h"
 #include "mgldraw.h"
 
-#define MUSIC_OFF  0
-#define MUSIC_ON   1
-#define MUSIC_RAND 2
+enum {
+	MUSIC_OFF = 0,
+	MUSIC_ON,
+	MUSIC_RAND
+};
 
-#define PLAYAS_BOUAPHA 0
-#define PLAYAS_LUNATIC 1
-#define PLAYAS_HAPPY   2
+enum {
+	PLAYAS_BOUAPHA = 0,
+	PLAYAS_LUNATIC,
+	PLAYAS_HAPPY
+};
 
 typedef struct options_t
 {

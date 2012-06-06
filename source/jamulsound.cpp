@@ -9,7 +9,7 @@
 #undef __null
 #endif
 
-#define MAX_FEW_SOUNDS	2	// most copies of a SND_FEW sound that can play at once
+const int MAX_FEW_SOUNDS = 2;	// most copies of a SND_FEW sound that can play at once
 
 typedef struct soundbuf_t
 {

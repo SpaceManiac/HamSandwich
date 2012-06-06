@@ -1,18 +1,20 @@
 #include "intface.h"
 #include "player.h"
 
-#define SPR_LIFEMETER	0
-#define SPR_IFHAMMER	1
-#define SPR_MINIGAUGE	2
-#define SPR_NUMBERS		3
-#define SPR_WEAPONS		13
-#define SPR_KEYRING		29
-#define SPR_BRAINOMETER 40
-#define SPR_RAGE		42
-#define	SPR_RAGEGAUGE	47
+enum {
+	SPR_LIFEMETER = 0,
+	SPR_IFHAMMER = 1,
+	SPR_MINIGAUGE = 2,
+	SPR_NUMBERS = 3,
+	SPR_WEAPONS = 13,
+	SPR_KEYRING = 29,
+	SPR_BRAINOMETER = 40,
+	SPR_RAGE = 42,
+	SPR_RAGEGAUGE = 47
+};
 
-#define KEYRINGX		40
-#define KEYRINGY		38
+const int KEYRINGX = 40;
+const int KEYRINGY = 38;
 
 sprite_set_t *intfaceSpr;
 static byte curLife = 0;

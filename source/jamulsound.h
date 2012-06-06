@@ -5,20 +5,23 @@
 #include "jamultypes.h"
 
 // internal sound playing flags
-#define SOUND_LOOP	 1	// loop the sound indefinitely
-#define SOUND_CUTOFF 2	// if the copy of the sound is busy, cut it off and restart
+enum {
+	SOUND_LOOP = 1,		// loop the sound indefinitely
+	SOUND_CUTOFF = 2	// if the copy of the sound is busy, cut it off and restart
+};
 
 // external fun sound playing flags for everyone to use
-#define SND_CUTOFF		1	// cut off same sound if needed
-#define SND_MAXPRIORITY 2	// ignore priority value, this sound is a must-have
-#define SND_ONE			4	// only one copy may play at once
-#define SND_PLAYING		8	// well, it's not for everyone, but it goes here
-#define SND_FEW			16	// only allow MAX_FEW_SOUNDS copies to play at once
+enum {
+	SND_CUTOFF = 1,			// cut off same sound if needed
+	SND_MAXPRIORITY = 2,	// ignore priority value, this sound is a must-have
+	SND_ONE = 4,			// only one copy may play at once
+	SND_PLAYING = 8,		// well, it's not for everyone, but it goes here
+	SND_FEW = 16			// only allow MAX_FEW_SOUNDS copies to play at once
+};
 
-#define MAX_SOUNDS_AT_ONCE	16
+const int MAX_SOUNDS_AT_ONCE = 16;
 
-
-#define MAX_SNDPRIORITY	65536
+const int MAX_SNDPRIORITY = 65536;
 
 typedef struct sound_t
 {

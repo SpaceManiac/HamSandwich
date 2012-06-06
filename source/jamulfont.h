@@ -4,7 +4,7 @@
 #include "winpch.h"
 #include "mgldraw.h"
 
-#define FONT_MAX_CHARS 128
+const int FONT_MAX_CHARS = 128;
 
 typedef struct mfont_t
 {
@@ -24,11 +24,12 @@ typedef struct mfont_t
 // data     width*height bytes of actual data
 
 // error codes
-#define FONT_OK			  0
-#define FONT_FILENOTFOUND 1
-#define FONT_CANTALLOC    2
-#define FONT_INVALIDFILE  3
-
+enum {
+	FONT_OK = 0,
+	FONT_FILENOTFOUND,
+	FONT_CANTALLOC,
+	FONT_INVALIDFILE
+};
 
 void FontInit(MGLDraw *mgl);
 void FontExit(void);

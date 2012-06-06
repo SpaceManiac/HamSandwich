@@ -5,22 +5,24 @@
 #include "map.h"
 #include "tile.h"
 
-#define MAX_MAPS	24
+const int MAX_MAPS = 24;
 
 // terrain flags
-#define TF_SOLID	1
-#define TF_ICE		2
-#define TF_MUD		4
-#define TF_WATER	8
-#define TF_LAVA		16
-#define TF_PUSHY	32		// if this is the roof of a wall, the wall is pushable
-#define TF_PUSHON	64		// only PUSHON terrain can have things pushed over it
-#define TF_ANIM		128
-#define TF_STEP		256
-#define TF_DESTRUCT 512
-#define TF_TRANS    1024
-#define TF_MINECART 2048
-#define TF_BUNNY	4096
+enum {
+	TF_SOLID = 1,
+	TF_ICE = 2,
+	TF_MUD = 4,
+	TF_WATER = 8,
+	TF_LAVA = 16,
+	TF_PUSHY = 32,		// if this is the roof of a wall, the wall is pushable
+	TF_PUSHON = 64,		// only PUSHON terrain can have things pushed over it
+	TF_ANIM = 128,
+	TF_STEP = 256,
+	TF_DESTRUCT = 512,
+	TF_TRANS = 1024,
+	TF_MINECART = 2048,
+	TF_BUNNY = 4096
+};
 
 typedef struct terrain_t
 {

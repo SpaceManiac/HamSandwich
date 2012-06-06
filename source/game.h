@@ -19,40 +19,50 @@
 #include "pause.h"
 #include "cheat.h"
 
-#define CONTINUE 0
-#define QUITGAME 1
+enum {
+    CONTINUE = 0,
+    QUITGAME
+};
 
-#define TIME_PER_FRAME (1000/30)
+const int TIME_PER_FRAME = 1000 / 30;
 
-#define GAMEMODE_PLAY  0
-#define GAMEMODE_MENU  1
-#define GAMEMODE_PIC   2
-#define GAMEMODE_RAGE  3
+enum {
+    GAMEMODE_PLAY = 0,
+    GAMEMODE_MENU,
+    GAMEMODE_PIC,
+    GAMEMODE_RAGE
+};
 
 // these are the messages you can send to the game
-#define MSG_NONE	  0
-#define MSG_GOTOMAP	  1
-#define MSG_WINLEVEL  2
-#define MSG_RESET	  3
-#define MSG_LOADGAME  4
-#define MSG_WINGAME	  5
-#define MSG_NEWFEATURE 6
+enum {
+    MSG_NONE = 0,
+    MSG_GOTOMAP,
+    MSG_WINLEVEL,
+    MSG_RESET,
+    MSG_LOADGAME,
+    MSG_WINGAME,
+    MSG_NEWFEATURE
+};
 
 // these are the possible outcomes of a level
 // if you die, the level just starts over, so that isn't included
 // playing isn't an outcome, it's just used to keep the level going
-#define LEVEL_ABORT   0
-#define LEVEL_WIN	  1
-#define LEVEL_PLAYING 2
-#define LEVEL_RESET	  3
-#define LEVEL_LOADING 4
+enum {
+    LEVEL_ABORT = 0,
+    LEVEL_WIN,
+    LEVEL_PLAYING,
+    LEVEL_RESET,
+    LEVEL_LOADING
+};
 
 // these are world outcomes
-#define WORLD_ABORT 5
-#define WORLD_WIN	6
-#define WORLD_PLAYING 7
-#define WORLD_LOAD	8
-#define WORLD_QUITGAME 9
+enum {
+    WORLD_ABORT = 5,
+    WORLD_WIN,
+    WORLD_PLAYING,
+    WORLD_LOAD,
+    WORLD_QUITGAME
+};
 
 extern world_t curWorld;
 extern FILE *logFile;

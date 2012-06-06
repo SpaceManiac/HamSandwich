@@ -2,8 +2,10 @@
 #include "player.h"
 #include "options.h"
 
-#define SUBMODE_NONE	 0
-#define SUBMODE_SLOTPICK 1
+enum {
+	SUBMODE_NONE = 0,
+	SUBMODE_SLOTPICK
+};
 
 byte cursor = 0;
 static byte subcursor = 0;

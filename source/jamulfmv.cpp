@@ -2,14 +2,16 @@
 #include "game.h" // For HandleCDMusic()
 
 // different kinds of flic chunks
-#define FLI_COLOR		11
-#define FLI_LC			12
-#define FLI_BLACK		13
-#define FLI_BRUN		15
-#define FLI_COPY		16
-#define FLI_DELTA		7
-#define FLI_256_COLOR	4
-#define FLI_MINI		18
+enum {
+	FLI_COLOR = 11,
+	FLI_LC = 12,
+	FLI_BLACK = 13,
+	FLI_BRUN = 15,
+	FLI_COPY = 16,
+	FLI_DELTA = 7,
+	FLI_256_COLOR = 4,
+	FLI_MINI = 18
+};
 
 typedef struct fliheader
 {
@@ -33,7 +35,7 @@ typedef struct frmheader
 
 // because of padding, the following 6-byte header is 8 bytes.
 // therefore use this define instead of sizeof() to read from a FLIc
-#define sizeofchunkheader 6
+const int sizeofchunkheader = 6;
 
 typedef struct chunkheader
 {

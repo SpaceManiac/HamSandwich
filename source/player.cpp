@@ -4,9 +4,9 @@
 #include "options.h"
 #include "title.h"
 
-#define PLYR_ACCEL	(FIXAMT)
-#define PLYR_DECEL	(FIXAMT*3/4)
-#define PLYR_MAXSPD (FIXAMT*6)
+const int PLYR_ACCEL = FIXAMT;
+const int PLYR_DECEL = FIXAMT * 3 / 4;
+const int PLYR_MAXSPD = FIXAMT * 6;
 
 player_t player;
 byte playerGlow; // for torch-lit levels, and for exciting moments

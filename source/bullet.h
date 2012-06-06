@@ -10,54 +10,58 @@
 #include "sound.h"
 #include "particle.h"
 
-#define BLT_NONE    0
-#define BLT_HAMMER  1
-#define BLT_HAMMER2 2	// this is a hammer with reflection
-#define BLT_MISSILE 3
-#define BLT_FLAME   4
-#define BLT_LASER	5
-#define BLT_ACID	6
-#define BLT_BOMB	7
-#define BLT_BOOM	8
-#define BLT_ENERGY  9
-#define BLT_MEGABEAM 10		// this is a ball of energy that launches off a megabeam1
-#define BLT_MEGABEAM1 11	// this is a huge laser beam (downward)
-#define BLT_MEGABEAM2 12	// this is the laser hitting an object (just a visual effect)
-#define BLT_FLAME2	13	// just like flame, except it is anti-Bouapha
-#define BLT_SPORE	14
-#define BLT_SHROOM  15
-#define BLT_GRENADE 16	// energy grenade, an enemy weapon
-#define BLT_YELBOOM 17	// yellow explosion made by energy grenade
-#define BLT_SHOCKWAVE 18	// purple shockwave, for Super Zombie stomp
-#define BLT_LILBOOM 19	// explosion made by missile
-#define BLT_SNOWBALL 20
-#define BLT_BIGSNOW  21
-#define BLT_ICESPIKE 22	// spike juts out of the ground
-#define BLT_ROCK	 23
-#define BLT_SPINE	 24 // cactus spine
-#define BLT_EVILHAMMER 25 // a grey hammer that is anti-bouapha
-#define BLT_BIGSHELL 26	// Bouapha's power armor shoots these
-#define BLT_BIGAXE	 27	// Bouapha weapon
-#define BLT_LIGHTNING 28 // Bouapha weapon
-#define BLT_SPEAR	 29	// Bouapha's version of the pygmy spear
-#define BLT_SLASH	 30	// Bouapha's machete slash
-#define BLT_MINE	 31	// Bouapha's mines
-#define BLT_BADSPEAR 32	// pygmy-thrown spear
-#define BLT_ORBITER  33	// guy that flies around Bouapha shooting
-#define BLT_GREEN	 34	// friendly green bullets
-#define BLT_BALLLIGHTNING 35
-#define BLT_LIGHTNING2 36
-#define BLT_MINDWIPE	37
-#define BLT_REFLECT	 38
-#define BLT_SWAP	 39
-#define BLT_SHARK	 40
+enum {
+	BLT_NONE = 0,
+	BLT_HAMMER = 1,
+	BLT_HAMMER2 = 2,		// this is a hammer with reflection
+	BLT_MISSILE = 3,
+	BLT_FLAME = 4,
+	BLT_LASER = 5,
+	BLT_ACID = 6,
+	BLT_BOMB = 7,
+	BLT_BOOM = 8,
+	BLT_ENERGY = 9,
+	BLT_MEGABEAM = 10,		// this is a ball of energy that launches off a megabeam1
+	BLT_MEGABEAM1 = 11,		// this is a huge laser beam (downward)
+	BLT_MEGABEAM2 = 12,		// this is the laser hitting an object (just a visual effect)
+	BLT_FLAME2 = 13,		// just like flame, except it is anti-Bouapha
+	BLT_SPORE = 14,
+	BLT_SHROOM = 15,
+	BLT_GRENADE = 16,		// energy grenade, an enemy weapon
+	BLT_YELBOOM = 17,		// yellow explosion made by energy grenade
+	BLT_SHOCKWAVE = 18,		// purple shockwave, for Super Zombie stomp
+	BLT_LILBOOM = 19,		// explosion made by missile
+	BLT_SNOWBALL = 20,
+	BLT_BIGSNOW = 21,
+	BLT_ICESPIKE = 22,		// spike juts out of the ground
+	BLT_ROCK = 23,
+	BLT_SPINE = 24,			// cactus spine
+	BLT_EVILHAMMER = 25,	// a grey hammer that is anti-bouapha
+	BLT_BIGSHELL = 26,		// Bouapha's power armor shoots these
+	BLT_BIGAXE = 27,		// Bouapha weapon
+	BLT_LIGHTNING = 28,		// Bouapha weapon
+	BLT_SPEAR = 29,			// Bouapha's version of the pygmy spear
+	BLT_SLASH = 30,			// Bouapha's machete slash
+	BLT_MINE = 31,			// Bouapha's mines
+	BLT_BADSPEAR = 32,		// pygmy-thrown spear
+	BLT_ORBITER = 33,		// guy that flies around Bouapha shooting
+	BLT_GREEN = 34,			// friendly green bullets
+	BLT_BALLLIGHTNING = 35,
+	BLT_LIGHTNING2 = 36,
+	BLT_MINDWIPE = 37,
+	BLT_REFLECT = 38,
+	BLT_SWAP = 39,
+	BLT_SHARK = 40
+};
 
-#define MAX_BULLETS 256
+const int MAX_BULLETS = 256;
 
 // the special hammer flags for different powerups
-#define HMR_REVERSE 1
-#define HMR_REFLECT 2
-#define HMR_WATERWALK 4	// not really a hammer powerup, it's a cheat code, but this is a good spot for it
+enum {
+	HMR_REVERSE = 1,
+	HMR_REFLECT = 2,
+	HMR_WATERWALK = 4
+};
 
 typedef struct bullet_t
 {
