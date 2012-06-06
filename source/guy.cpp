@@ -57,7 +57,6 @@ byte Guy::AttackCheck(byte size, int xx, int yy, Guy *him)
 	x2 = him->x >> FIXSHIFT;
 	y2 = him->y >> FIXSHIFT;
 
-	DrawDebugBox(xx,yy,xx+size*2,yy+size*2);
 	if ((x2 + him->rectx2) >= xx && (y2 + him->recty2) >= yy && (x2 + him->rectx) <= (xx + size * 2) &&
 			(y2 + him->recty) <= (yy + size * 2))
 		return 1;
