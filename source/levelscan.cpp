@@ -310,7 +310,10 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
         case EFF_NONE:
             break;
 		case EFF_MESSAGE:
-			fprintf(scanF,"Message \"%s\"\n",me->text);
+            fprintf(scanF,"Message \"%s\"",me->text);
+            if (me->flags & EF_TOGGLE)
+                fprintf(scanF, " (big)");
+            PrintFX(me->flags);
 			break;
 		case EFF_SOUND:
 			fprintf(scanF,"Sound Effect \"%s\"\n",GetSoundInfo(me->value)->name);
@@ -544,7 +547,7 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
 				fprintf(scanF,"Mechabouapha\n");
 			break;
         case EFF_MONSGRAPHICS:
-            fprintf(scanF,"Change graphics of %s at (%03d,%03d) to %s",MonsterName(me->value),me->x,me->y,me->value2);
+            fprintf(scanF,"Change graphics of %s at (%03d,%03d) to %s",MonsterName(me->value),me->x,me->y,me->text);
             PrintFX(me->flags);
             break;
         case EFF_ITEMGRAPHICS:
@@ -556,7 +559,7 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
                 fprintf(scanF,"max");
             else
                 fprintf(scanF,"current");
-            fprintf(scanF," varbar to %d\n",VarName(me->value));
+            fprintf(scanF," varbar to %s (color %d)\n",VarName(me->value),((word)me->value2)%256);
             break;
         case EFF_MAKEBULLET:
             fprintf(scanF,"Summon bullet %s at (%03d,%03d) facing \"%s\"\n",bulletName[me->value2], me->x, me->y, me->text);

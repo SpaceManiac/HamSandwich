@@ -89,7 +89,7 @@ MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool window)
 	readyToQuit=false;
 	_globalMGLDraw=this;
 
-	// gimme windows colors
+    // gimme windows colors
 	this->xRes=xRes;
 	this->yRes=yRes;
 	this->bpp=bpp;
