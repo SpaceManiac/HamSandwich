@@ -6,12 +6,8 @@
 #include "internet.h"
 
 MGLDraw *_globalMGLDraw;
-byte needPalRealize=0;
-byte firstStartup;
-static byte exitNow=0;
-HWND myHwnd;
-HINSTANCE hInst;
 
+/*
 bool CreateMyOwnWindow(HINSTANCE hInsta,char *wndName)
 {
 	WNDCLASS wc;
@@ -61,16 +57,13 @@ void DestroyMyWindow(void)
 	DestroyWindow(myHwnd);
 	UnregisterClass("supremeWindow",hInst);
 }
+*/
 
-MGLDraw::MGLDraw(HINSTANCE hInst,char *name,int xRes,int yRes,int bpp,bool window)
+MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool window)
 {
 	RECT rect;
-	int result;
+    int result;
 
-	//if(!CreateMyOwnWindow(hInst,name))
-	//	FatalError("Couldn't create window!");
-
-	//win_set_window(myHwnd);
 	allegro_init();
 	install_keyboard();
 	install_mouse();
@@ -86,12 +79,12 @@ MGLDraw::MGLDraw(HINSTANCE hInst,char *name,int xRes,int yRes,int bpp,bool windo
 	else
 		result=set_gfx_mode(GFX_AUTODETECT_FULLSCREEN,xRes,yRes,0,0);
 
+    if(result<0)
+        FatalError("Unable to initialize video mode!");
+
 	set_display_switch_mode(SWITCH_BACKGROUND);
 	set_display_switch_callback(SWITCH_OUT, PauseGame);
-	set_window_title(name);
-
-	if(result<0)
-		FatalError("Unable to initialize video mode!");
+    set_window_title(name);
 
 	readyToQuit=false;
 	_globalMGLDraw=this;
@@ -106,8 +99,7 @@ MGLDraw::MGLDraw(HINSTANCE hInst,char *name,int xRes,int yRes,int bpp,bool windo
 	if(!this->scrn)
 		FatalError("Out of memory!");
 
-	this->windowed=window;
-	this->hInst=hInst;
+    this->windowed=window;
 
 	if(window)
 	{
@@ -132,11 +124,9 @@ MGLDraw::MGLDraw(HINSTANCE hInst,char *name,int xRes,int yRes,int bpp,bool windo
 
 MGLDraw::~MGLDraw(void)
 {
-	exitNow=1;
 	JamulSoundExit();
 	destroy_bitmap(buffer);
-	delete[] this->scrn;
-	allegro_exit();
+    delete[] scrn;
 //	DestroyMyWindow();
 }
 

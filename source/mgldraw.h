@@ -27,7 +27,7 @@
 class MGLDraw
 {
 	public:
-		MGLDraw(HINSTANCE hInst,char *name,int xRes,int yRes,int bpp,bool window);
+        MGLDraw(char *name,int xRes,int yRes,int bpp,bool window);
 		~MGLDraw(void);
 
 		bool Process(void);	// handle windows messages and such
@@ -91,8 +91,7 @@ class MGLDraw
 		void ResetGM(void);
 
 		int xRes,yRes,bpp,pitch;
-		byte windowed;
-		HINSTANCE hInst;
+        byte windowed;
 		bool readyToQuit;
 		byte tapTrack;
 	protected:
