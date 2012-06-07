@@ -276,7 +276,8 @@ void LogRequirements(world_t *w)
 			{
 				for(k=0;k<NUM_EFFECTS;k++)
 				{
-					if(w->map[i]->special[j].effect[k].type==EFF_PICTURE)
+                    byte type = w->map[i]->special[j].effect[k].type;
+                    if(type==EFF_PICTURE || type==EFF_MONSGRAPHICS || type==EFF_ITEMGRAPHICS)
 					{
 						fprintf(f,"user\\%s\n",w->map[i]->special[j].effect[k].text);
 					}

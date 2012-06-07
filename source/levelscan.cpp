@@ -42,6 +42,66 @@ static char wpnName[][16]={
 	"Freeze Ray",
 	"Stopwatch"};
 
+static char bulletName[][20]={
+    "None",
+    "Hammer",
+    "Bouncy Hammer",
+    "Missile",
+    "Flame",
+    "AK-8087 Shot",
+    "Acid",
+    "Cherry Bomb",
+    "Explosion",
+    "Red Bullet",
+    "Megabeam Source",
+    "Megabeam Part",
+    "Megabeam Endo",
+    "Evil Flame",
+    "Spore",
+    "Mushroom",
+    "Grenade",
+    "Grenade Boom",
+    "SDZ Shockwave",
+    "Missile Boom",
+    "Snowball",
+    "Big Snowball",
+    "Ice Spike",
+    "Rock",
+    "Cactus Spine",
+    "Evil Hammer",
+    "Power Shell",
+    "Big Axe",
+    "Lightning",
+    "Spear",
+    "Machete",
+    "Landmine",
+    "Evil Spear",
+    "Orbiter",
+    "Green Bullet",
+    "Ball Lightning",
+    "Visual Shock",
+    "Mind Control",
+    "Reflect Shield",
+    "Swap Gun",
+    "Water Shot",
+    "Orbit Bomber",
+    "Harpoon",
+    "Scanner",
+    "Scanner Shot",
+    "Torpedo",
+    "Dirt Spike",
+    "Paper",
+    "Scanner Lock",
+    "Bubble",
+    "Freeze Ray",
+    "Bubble Pop",
+    "Harmless Boom",
+    "Cheese Hammer",
+    "Evil Freeze",
+    "Lunachick Ray",
+    "Bouncy Lunachick"
+};
+
 void PrintFX(word flags)
 {
 	if(flags&EF_NOFX)
@@ -247,6 +307,8 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
 	fprintf(scanF,"EFF%d: ",num);
 	switch(me->type)
 	{
+        case EFF_NONE:
+            break;
 		case EFF_MESSAGE:
 			fprintf(scanF,"Message \"%s\"\n",me->text);
 			break;
@@ -481,6 +543,27 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
 			else if(me->value==PLAY_MECHA)
 				fprintf(scanF,"Mechabouapha\n");
 			break;
+        case EFF_MONSGRAPHICS:
+            fprintf(scanF,"Change graphics of %s at (%03d,%03d) to %s",MonsterName(me->value),me->x,me->y,me->value2);
+            PrintFX(me->flags);
+            break;
+        case EFF_ITEMGRAPHICS:
+            fprintf(scanF,"Set custom item graphics to %s\n",me->text);
+            break;
+        case EFF_VARBAR:
+            fprintf(scanF,"Set ");
+            if(me->flags&EF_PERMLIGHT)
+                fprintf(scanF,"max");
+            else
+                fprintf(scanF,"current");
+            fprintf(scanF," varbar to %d\n",VarName(me->value));
+            break;
+        case EFF_MAKEBULLET:
+            fprintf(scanF,"Summon bullet %s at (%03d,%03d) facing \"%s\"\n",bulletName[me->value2], me->x, me->y, me->text);
+            break;
+        default:
+            fprintf(scanF,"Unhandled effect type %d\n",me->type);
+            break;
 	}
 }
 
