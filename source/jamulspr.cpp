@@ -960,6 +960,7 @@ bool sprite_set_t::Load(char *fname)
 	{
 		fclose(f);
 		free(spr);
+		spr=NULL;
 		return FALSE;
 	}
 
@@ -969,6 +970,7 @@ bool sprite_set_t::Load(char *fname)
 		fclose(f);
 		free(spr);
 		free(buffer);
+		spr=NULL;
 		return FALSE;
 	}
 
@@ -984,6 +986,7 @@ bool sprite_set_t::Load(char *fname)
 		if(!spr[i]->LoadData(f))
 		{
 			fclose(f);
+			spr[i]=NULL;
 			return FALSE;
 		}
 	}
@@ -1040,9 +1043,13 @@ bool sprite_set_t::Save(char *fname)
 void sprite_set_t::Free(void)
 {
 	int i;
+	if (!spr) return;
+
 	for(i=0;i<count;i++)
-		delete spr[i];
+		if (spr[i])
+			delete spr[i];
 	free(spr);
+	spr=NULL;
 }
 
 sprite_t *sprite_set_t::GetSprite(int which)
