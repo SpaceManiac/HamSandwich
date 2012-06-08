@@ -792,7 +792,7 @@ void SeedRNG(void)
 
 dword Random(dword range)
 {
-    return rand() * range / RAND_MAX;
+    return rand() * range / (RAND_MAX+1);
 }
 
 void FatalError(char *msg)

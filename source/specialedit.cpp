@@ -2449,17 +2449,17 @@ void SpecialEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 		case SMODE_PICKEFF:
 			if(mgl->MouseDown())
 			{
-                if((mouseY-selectY)/EFFPICKER_HEIGHT>=EFF_MAX)
-					spcl.effect[curEff].type=TRG_NONE;
+				if((mouseY-selectY)/EFFPICKER_HEIGHT>=EFF_MAX || (mouseY-selectY)/EFFPICKER_HEIGHT<0)
+					spcl.effect[curEff].type=EFF_NONE;
 				else
-                    spcl.effect[curEff].type=(mouseY-selectY)/EFFPICKER_HEIGHT;
+					spcl.effect[curEff].type=(mouseY-selectY)/EFFPICKER_HEIGHT;
 			}
 			else
 			{
-                if((mouseY-selectY)/EFFPICKER_HEIGHT>=EFF_MAX)
-					spcl.effect[curEff].type=TRG_NONE;
+				if((mouseY-selectY)/EFFPICKER_HEIGHT>=EFF_MAX || (mouseY-selectY)/EFFPICKER_HEIGHT<0)
+					spcl.effect[curEff].type=EFF_NONE;
 				else
-                    spcl.effect[curEff].type=(mouseY-selectY)/EFFPICKER_HEIGHT;
+					spcl.effect[curEff].type=(mouseY-selectY)/EFFPICKER_HEIGHT;
 				mode=SMODE_NORMAL;
 				if(prevType!=spcl.effect[curEff].type)
 					DefaultEffect(&spcl.effect[curEff],spcl.x,spcl.y,(byte)(spcl.trigger[curEff].type==TRG_EQUATION || spcl.trigger[curEff].type==TRG_EQUVAR));
