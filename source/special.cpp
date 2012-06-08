@@ -825,6 +825,12 @@ byte CheckForItem(byte item,int count,byte flags)
 					amt++;
 			}
 			break;
+		case IE_ORBITER:
+			amt = CountBullets(BLT_ORBITER);
+			break;
+		case IE_ORBITER2:
+			amt = CountBullets(BLT_ORBITER2);
+			break;
 	}
 	if(amt==count)
 		return 1;

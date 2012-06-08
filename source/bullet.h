@@ -121,6 +121,8 @@ void FireScanShots(Guy *victim);
 void MakeRadar(int rx,int ry,byte w);
 byte GetBulletAttackType(void);
 
+int CountBullets(byte type); // For specials to check orbiters
+
 void GetBulletDeltas(int *bdx,int *bdy);
 
 #endif

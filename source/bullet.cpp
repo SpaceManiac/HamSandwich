@@ -2870,6 +2870,17 @@ void MakeRadar(int rx,int ry,byte w)
 	*/
 }
 
+int CountBullets(byte type)
+{
+	int count = 0;
+
+	for(int i=0;i<config.numBullets;i++)
+		if(bullet[i].type == type)
+			++count;
+
+	return count;
+}
+
 byte GetBulletAttackType(void)
 {
 	return attackType;
