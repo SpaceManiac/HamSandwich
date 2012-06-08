@@ -1703,7 +1703,23 @@ void SpecialEffect(special_t *me,Map *map)
                 player.varbarColor=me->effect[i].value2;
                 break;
             case EFF_MAKEBULLET:
-                int x = me->effect[i].x*TILE_WIDTH + TILE_WIDTH/2, y = me->effect[i].y*TILE_HEIGHT + TILE_HEIGHT/2;
+                int x, y;
+                if (me->effect[i].x == 255)
+                {
+                    if (tagged)
+                    {
+                        x = tagged->x >> FIXSHIFT;
+                        y = tagged->y >> FIXSHIFT;
+                    }
+                    else
+                        break;
+                }
+                else
+                {
+                    x = me->effect[i].x*TILE_WIDTH + TILE_WIDTH/2;
+                    y = me->effect[i].y*TILE_HEIGHT + TILE_HEIGHT/2;
+                }
+
                 if(!VarMath(255,me->effect[i].text))
                     PauseGame();	// pause if there's an error in the equation
                 FireBullet(x<<FIXSHIFT, y<<FIXSHIFT, GetVar(255), me->effect[i].value2, me->effect[i].flags&EF_PERMLIGHT);

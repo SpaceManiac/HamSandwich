@@ -2260,8 +2260,11 @@ static void SetupEffectButtons(int t,int y)
             MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Summon",NULL);
             MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,104,y+17,140,14,bulletName[effect.value2],BulletClick);
             MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,248,y+17,1,1,"at",NULL);
-            sprintf(s,"%d, %d",effect.x,effect.y);
-            MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,268,y+17,70,14,s,XYClick);
+            if(effect.x==255)
+                sprintf(s,"Tagged");
+            else
+                sprintf(s,"%d, %d",effect.x,effect.y);
+            MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,268,y+17,70,14,s,XY3Click);
             MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,342,y+17,1,1,"facing",NULL);
             MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,400,y+17,95,14,effect.text,MessageClick);
 
@@ -2693,14 +2696,14 @@ void SetSpecialCoords(int x,int y)
 		if(x>=0 && y>=0)
 			spcl.effect[curEff].value2=x+y*256;
 		mode=SMODE_NORMAL;
-		SetupEffectButtons(curEff,curEff*38+264);
+		SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
 	}
 	else if(mode==SMODE_PICKRECT3T)
 	{
 		if(x>=0 && y>=0)
 			spcl.trigger[curTrig].value=x+y*256;
 		mode=SMODE_NORMAL;
-		SetupTriggerButtons(curTrig,curTrig*38+30);
+		SetupTriggerButtons(curTrig-trgStart,(curTrig-trgStart)*38+30);
 	}
 	else
 	{
@@ -2713,7 +2716,7 @@ void SetSpecialCoords(int x,int y)
 
 			spcl.trigger[curTrig].x=(byte)x;
 			spcl.trigger[curTrig].y=(byte)y;
-			SetupTriggerButtons(curTrig,curTrig*38+30);
+			SetupTriggerButtons(curTrig-trgStart,(curTrig-trgStart)*38+30);
 		}
 		else
 		{
@@ -2727,7 +2730,7 @@ void SetSpecialCoords(int x,int y)
 			{
 				spcl.effect[curEff].x=(byte)x;
 				spcl.effect[curEff].y=(byte)y;
-				SetupEffectButtons(curEff,curEff*38+264);
+				SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
 			}
 		}
 	}
