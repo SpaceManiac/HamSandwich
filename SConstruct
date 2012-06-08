@@ -43,7 +43,7 @@ def program(output, debug):
 	else:
 		env.Append(CPPDEFINES = ['NDEBUG', 'EXPANDO'])
 		env.Append(CCFLAGS = ['-O2', '-s', '-mwindows'])
-		env.Append(LINKFLAGS = ['-O2', '-s'])
+		env.Append(LINKFLAGS = ['-O2', '-s', '-mwindows'])
 
 	# linker
 	env.Append(LINKFLAGS = ['-static-libgcc', '-static-libstdc++', '-std=c++0x'])
