@@ -2,6 +2,135 @@
 #include "player.h"
 #include "options.h"
 
+// ai functions for each monster type
+void AI_Bonehead(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Bat(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Spider(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_BigSpider(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Zombie(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_EggSac(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_MamaSpider(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Pygmy(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Serpent(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Ginger(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Pumpkin(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_BabyThing(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Moss(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_MossGrande(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Magmazoid(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Shroom(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Mush(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_SuperZombie(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_StickMan(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_BabySeal(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Isozoid(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Snowguy(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Penguin(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Zomboni(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Geozoid(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Mumble(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Djinni(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_MagicLamp(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Cactus(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Roller(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Lich(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_DustDevil(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_MechaBouapha(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Freakazoid(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_CentiBody(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_CentiHead(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Wacko(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Boiler(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_GreatPumpkin(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Ultrazoid(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Santa(Guy *me, Map *map, world_t *world, Guy *goodguy);
+
+// Matilda's AIs
+void AI_MattieBrain(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_MattieSkullOrHead(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_MattieClaw(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_MattieTail(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_MattieBody(Guy *me, Map *map, world_t *world, Guy *goodguy);
+// The Thing's AIs
+void AI_TheThing(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_ThingTentacle(Guy *me, Map *map, world_t *world, Guy *goodguy);
+// Sven & Bjorn's AI
+void AI_Yeti(Guy *me, Map *map, world_t *world, Guy *goodguy);
+// Sphinxter's AIs
+void AI_SphinxArm(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Sphinx(Guy *me, Map *map, world_t *world, Guy *goodguy);
+// Asylum bosses' AIs
+void AI_DrLunatic(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_SDZL(Guy *me, Map *map, world_t *world, Guy *goodguy);
+
+#ifdef EXPANDO
+
+// expansion monsters
+void AI_MineCart(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Raft(Guy *me, Map *map, world_t *world, Guy *goodguy);
+
+void AI_Vampire(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Coffin(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Ghost(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Burner(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Lefty(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Pygmy2(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Pygmy3(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Pumpkinstein(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Knight(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Triceroid(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Countess(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_AlienEgg(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_BabyAlien(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Alien(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Robopumpkin(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_ShockTrooper(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Minibot(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Meaniebot(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Robofactory(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Turret(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Bunny(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Kongor(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Squash(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_UltraPygmy(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_LoonyShip(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_LoonyGun(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_LoonyBot(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_LoonyCore(Guy *me, Map *map, world_t *world, Guy *goodguy);
+
+// fun pack monsters
+void AI_GoodTurret(Guy *me, Map *map, world_t *world, Guy *goodguy);
+
+void AI_Mattie2Brain(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Mattie2SkullOrHead(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Mattie2Tail(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Mattie2Body(Guy *me, Map *map, world_t *world, Guy *goodguy);
+
+void AI_BuddyBunny(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_PygmyQueen(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Jalapeno(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Generator(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Shark(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_MadBug(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Wizard(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_EvilClone(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Bob(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_MultiMoss(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_MossRapido(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Snowball(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Snowblower(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_XenoMama(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Gnome(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Nobody(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_BigPumpkin(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_RockTrooper(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_CrazyBone(Guy *me, Map *map, world_t *world, Guy *goodguy);
+void AI_Creepazoid(Guy *me, Map *map, world_t *world, Guy *goodguy);
+
+#endif	// expando monsters
+
+// all the monster types
+
 monsterType_t monsType[NUM_MONSTERS] ={
 	{"Null", 255, 255, 0,
 		0, 0, 0, 0, "", 0, 0, 0},
