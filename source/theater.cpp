@@ -238,11 +238,11 @@ void SeeMovie(char *fname)
 	char tmp[32];
 
 	strcpy(tmp,fname);
-	_strlwr(tmp);
+	//_strlwr(tmp);
 
 	for(i=0;i<32;i++)
 	{
-		if(!strcmp(movie[i].filename,tmp))
+		if(!stricmp(movie[i].filename,tmp))
 			profile.progress.movie[i]=1;
 	}
 }

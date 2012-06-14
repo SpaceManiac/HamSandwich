@@ -1,5 +1,4 @@
 #include "jamulsound.h"
-#include <mmsystem.h>
 #include "mgldraw.h"
 #include "sound.h"
 #include <allegro.h>

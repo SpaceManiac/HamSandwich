@@ -1,8 +1,6 @@
 #include "mgldraw.h"
 #include "game.h"
 #include "sound.h"
-#include <allegro.h>
-#include <winalleg.h>
 #include "internet.h"
 
 MGLDraw *_globalMGLDraw;
@@ -61,7 +59,6 @@ void DestroyMyWindow(void)
 
 MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool window)
 {
-	RECT rect;
     int result;
 
 	allegro_init();
@@ -100,18 +97,6 @@ MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool window)
 		FatalError("Out of memory!");
 
     this->windowed=window;
-
-	if(window)
-	{
-		GetWindowRect(win_get_window(),&rect);
-		windowX=rect.left+3;
-		windowY=rect.top+23;
-	}
-	else
-	{
-		windowX=0;
-		windowY=0;
-	}
 
 	mouseDown=0;
 	rMouseDown=0;
@@ -169,10 +154,12 @@ bool MGLDraw::Process(void)
 	return (!readyToQuit);
 }
 
+#ifdef WIN32
 HWND MGLDraw::GetHWnd(void)
 {
 	return win_get_window();
 }
+#endif
 
 int MGLDraw::FormatPixel(int x,int y)
 {
@@ -780,11 +767,6 @@ bool MGLDraw::LoadBMPNoPalette(char *name)
 byte fatalDie=0;
 char errMsg[128];
 
-HWND MGLGetHWnd(void)
-{
-	return _globalMGLDraw->GetHWnd();
-}
-
 void SeedRNG(void)
 {
     srand(timeGetTime());
@@ -805,24 +787,8 @@ void FatalError(char *msg)
 void FatalErrorQuit(void)
 {
 	if(fatalDie)
-		MessageBox(NULL,errMsg,"Fatal Error!!",MB_ICONERROR|MB_OK);
-}
-
-long FAR PASCAL MyWindowsEventHandler(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	byte b;
-
-	switch(message)
-    {
-		case WM_VSCROLL:
-		//case WM_MOUSEWHEEL:
-			// scroll wheel moved
-			b=1;
-			break;
-		default:
-			// Hand off unprocessed messages to DefWindowProc
-			return DefWindowProc(hwnd,message,wParam,lParam);
-			break;
+	{
+		set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
+		allegro_message(errMsg);
 	}
-	return DefWindowProc(hwnd,message,wParam,lParam);
 }

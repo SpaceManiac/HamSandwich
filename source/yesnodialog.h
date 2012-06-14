@@ -1,7 +1,7 @@
 #ifndef YESNODIALOG_H
 #define YESNODIALOG_H
 
-#include <io.h>
+#include <stdio.h>
 #include "display.h"
 
 #define YNM_YES		1

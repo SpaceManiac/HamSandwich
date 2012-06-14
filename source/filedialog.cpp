@@ -3,6 +3,7 @@
 #include "dialogbits.h"
 #include "viewdialog.h"
 #include <string.h>
+#include <dirent.h>
 
 #define MAX_FILES 18
 #define FILE_ALLOC_AMT	64
@@ -10,7 +11,6 @@
 static char *fnames=NULL;
 static char newfname[FNAMELEN]="";
 static int numFiles;
-static long hFile;
 static byte menuItems;
 static int numAlloc;
 static int filePos;
@@ -20,8 +20,10 @@ static byte exitCode;
 
 void ObtainFilenames(char *fileSpec)
 {
-	int i;
-	struct _finddata_t filedata;
+    int i;
+    DIR* dir;
+    struct dirent *dp;
+
 	char *tmp;
 
 	if(fnames)
@@ -38,49 +40,53 @@ void ObtainFilenames(char *fileSpec)
 
 	numFiles=0;
 
-	hFile=_findfirst(fileSpec,&filedata);
+    char* secondPart = strchr(fileSpec, '\\') + 1;
+    char* filter;
+    if (strcmp(secondPart, "*.*") == 0)
+    {
+        filter = NULL;
+    }
+    else
+    {
+        filter = secondPart + 1;
+    }
+    char dirname[64];
+    strncpy(dirname, fileSpec, secondPart-fileSpec-1);
+    dirname[secondPart-fileSpec-1] = '\0';
+    dir = opendir(dirname);
 
-	if(hFile!=-1)	// there's at least one
-	{
-		if(!strcmp(filedata.name,".") || !strcmp(filedata.name,".."))
-		{
-			numFiles=0;
-		}
-		else
-		{
-			strncpy(&fnames[0],filedata.name,FNAMELEN);
-			numFiles=1;
-		}
+    while((dp = readdir(dir)) != NULL)
+    {
+        if(!strcmp(dp->d_name,".") || !strcmp(dp->d_name,".."))
+            continue;
 
-		while(_findnext(hFile,&filedata)==0)
-		{
-			if(!strcmp(filedata.name,".") || !strcmp(filedata.name,".."))
-				continue;
+        if((menuItems&FM_NOWAVS) && !strcmp(&dp->d_name[strlen(dp->d_name)-3],"wav"))
+            continue;	// ignore wavs
 
-			if((menuItems&FM_NOWAVS) && !strcmp(&filedata.name[strlen(filedata.name)-3],"wav"))
-				continue;	// ignore wavs
+        if(filter && !strstr(dp->d_name, filter))
+            continue;
 
-			strncpy(&fnames[numFiles*FNAMELEN],filedata.name,FNAMELEN);
-			numFiles++;
+        strncpy(&fnames[numFiles*FNAMELEN],dp->d_name,FNAMELEN);
+        numFiles++;
 
-			if(numFiles==numAlloc)
-			{
-				numAlloc+=FILE_ALLOC_AMT;
-				tmp=(char *)realloc(fnames,numAlloc*FNAMELEN*sizeof(char));
-				if(tmp==NULL)
-				{
-					free(fnames);
-					_findclose(hFile);
-					FatalError("Out of memory!");
-				}
-				else
-					fnames=tmp;
-				for(i=numFiles;i<numAlloc;i++)
-					fnames[i*FNAMELEN]='\0';
-			}
-		}
-	}
-	_findclose(hFile);
+        if(numFiles==numAlloc)
+        {
+            numAlloc+=FILE_ALLOC_AMT;
+            tmp=(char *)realloc(fnames,numAlloc*FNAMELEN*sizeof(char));
+            if(tmp==NULL)
+            {
+                free(fnames);
+                closedir(dir);
+                FatalError("Out of memory!");
+                return;
+            }
+            else
+                fnames=tmp;
+            for(i=numFiles;i<numAlloc;i++)
+                fnames[i*FNAMELEN]='\0';
+        }
+    }
+    closedir(dir);
 }
 
 void InitFileDialog(char *fileSpec,byte menuItemsToShow,char *defaultName)

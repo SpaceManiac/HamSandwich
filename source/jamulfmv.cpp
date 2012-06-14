@@ -1,6 +1,6 @@
 #include "jamulfmv.h"
 #include <allegro.h>
-#include <winalleg.h>
+#include "clock.h"
 #include "display.h"
 
 static PALETTE fliTempPal;

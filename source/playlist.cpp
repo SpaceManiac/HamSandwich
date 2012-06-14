@@ -5,6 +5,7 @@
 #include "player.h"
 #include "music.h"
 #include "dialogbits.h"
+#include <dirent.h>
 
 #define PM_NORMAL		0
 #define PM_SELPLAY		1	// selecting in playlist
@@ -123,21 +124,17 @@ void InputSong(char *fname)
 
 void ScanSongs(void)
 {
-	long hFile;
-	struct _finddata_t filedata;
+	DIR* dir;
+	struct dirent *dp;
 
-	hFile=_findfirst("music\\*.ogg",&filedata);
+	dir = opendir("music");
 
-	if(hFile!=-1)	// there's at least one
+	while ((dp = readdir(dir)) != NULL)
 	{
-		InputSong(filedata.name);
-
-		while(_findnext(hFile,&filedata)==0)
-		{
-			InputSong(filedata.name);
-		}
+		InputSong(dp->d_name);
 	}
-	_findclose(hFile);
+
+	closedir(dir);
 	SortSongs();
 }
 

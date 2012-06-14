@@ -1,6 +1,6 @@
 #include "title.h"
 #include "game.h"
-#include <io.h>
+#include <stdio.h>
 #include "jamulfmv.h"
 #include "pause.h"
 #include "nameentry.h"
@@ -651,40 +651,32 @@ void VictoryText(MGLDraw *mgl)
 
 byte SpecialLoadBMP(char *name,MGLDraw *mgl,PALETTE pal)
 {
-	FILE *f;
-	BITMAPFILEHEADER bmpFHead;
-	BITMAPINFOHEADER bmpIHead;
-	RGBQUAD	pal2[256];
+    BITMAP *b;
+    RGB newpal[256];
+    int i,w;
 
-	int i;
-	byte *scr;
+    b=load_bitmap(name,newpal);
+    if(b==NULL)
+        return FALSE;
 
-	f=fopen(name,"rb");
-	if(!f)
-		return FALSE;
+    for(i=0;i<256;i++)
+    {
+        pal[i].r=newpal[i].r;
+        pal[i].g=newpal[i].g;
+        pal[i].b=newpal[i].b;
+    }
 
-	fread(&bmpFHead,sizeof(BITMAPFILEHEADER),1,f);
-	fread(&bmpIHead,sizeof(BITMAPINFOHEADER),1,f);
+    w=b->w;
+    if(w>SCRWID)
+        w=SCRWID;
 
-	// 8-bit BMPs only
-	if(bmpIHead.biBitCount!=8)
-		return FALSE;
+    for(i=0;i<b->h;i++)
+    {
+        memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],b->line[i],w);
+    }
 
-	fread(pal2,sizeof(pal2),1,f);
-	for(i=0;i<256;i++)
-	{
-		pal[i].r=pal2[i].rgbRed;
-		pal[i].g=pal2[i].rgbGreen;
-		pal[i].b=pal2[i].rgbBlue;
-	}
-
-	for(i=0;i<bmpIHead.biHeight;i++)
-	{
-		scr=(byte *)((int)mgl->GetScreen()+(bmpIHead.biHeight-1-i)*640);
-		fread(scr,bmpIHead.biWidth,1,f);
-	}
-	fclose(f);
-	return TRUE;
+    destroy_bitmap(b);
+    return TRUE;
 }
 
 byte SpeedSplash(MGLDraw *mgl,char *fname)

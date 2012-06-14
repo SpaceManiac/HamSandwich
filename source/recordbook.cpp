@@ -12,6 +12,7 @@
 #include "goal.h"
 #include "shop.h"
 #include "scanner.h"
+#include <dirent.h>
 
 #define PBTN_HEIGHT	19
 
@@ -24,45 +25,32 @@ static float shopPct,playPct,scanPct,gamePct;
 
 float CalcPlayPercent(void)
 {
-	long hFile;
-	struct _finddata_t filedata;
+	DIR* dir;
+	struct dirent *dp;
 	int worlds;
 	float score;
 	worldData_t *tmp;
 
 	worlds=0;
 
-	hFile=_findfirst("worlds\\*.dlw",&filedata);
+	dir = opendir("worlds");
 
 	score=0.0f;
-	if(hFile!=-1)	// there's at least one
+	while((dp = readdir(dir)) != NULL)
 	{
 		// rule out the backup worlds, so they don't show up
-		if((strcmp(filedata.name,"backup_load.dlw")) &&
-		   (strcmp(filedata.name,"backup_exit.dlw")) &&
-		   (strcmp(filedata.name,"backup_save.dlw")))
+		if((strcmp(dp->d_name,"backup_load.dlw")) &&
+		   (strcmp(dp->d_name,"backup_exit.dlw")) &&
+		   (strcmp(dp->d_name,"backup_save.dlw")) &&
+		   strstr(dp->d_name, ".dlw"))
 		{
-			tmp=GetWorldProgressNoCreate(filedata.name);
+			tmp=GetWorldProgressNoCreate(dp->d_name);
 			if(tmp)
 				score+=tmp->percentage;
 			worlds++;
 		}
-
-		while(_findnext(hFile,&filedata)==0)
-		{
-			// rule out the backup worlds, so they don't show up as custom worlds
-			if((strcmp(filedata.name,"backup_load.dlw")) &&
-			   (strcmp(filedata.name,"backup_exit.dlw")) &&
-			   (strcmp(filedata.name,"backup_save.dlw")))
-			{
-				tmp=GetWorldProgressNoCreate(filedata.name);
-				if(tmp)
-					score+=tmp->percentage;
-				worlds++;
-			}
-		}
 	}
-	_findclose(hFile);
+	closedir(dir);
 
 	return (score/(float)worlds);
 }

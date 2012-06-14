@@ -6,6 +6,7 @@
 #include "dialogbits.h"
 #include "shop.h"
 #include "hiscore.h"
+#include <dirent.h>
 
 #define WS_CONTINUE	0
 #define WS_EXIT		1
@@ -102,16 +103,12 @@ byte Compare(worldDesc_t *me,worldDesc_t *you,byte field,byte bkwds)
 		case 0:
 			strcpy(tmp1,me->name);
 			strcpy(tmp2,you->name);
-			_strlwr(tmp1);
-			_strlwr(tmp2);
-			f=(strcmp(tmp1,tmp2)>0);
+			f=(stricmp(tmp1,tmp2)>0);
 			break;
 		case 1:
 			strcpy(tmp1,me->author);
 			strcpy(tmp2,you->author);
-			_strlwr(tmp1);
-			_strlwr(tmp2);
-			f=(strcmp(tmp1,tmp2)>0);
+			f=(stricmp(tmp1,tmp2)>0);
 			break;
 		case 2:
 			f=(me->percentage>you->percentage);
@@ -234,8 +231,8 @@ void InputWorld(char *fname)
 
 void ScanWorlds(void)
 {
-	long hFile;
-	struct _finddata_t filedata;
+    DIR* dir;
+    struct dirent* dp;
 	int count,done;
 
 #ifdef LEVELLIST
@@ -246,60 +243,39 @@ void ScanWorlds(void)
 #endif
 	// count up how many there are to deal with
 	count=0;
-	hFile=_findfirst("worlds\\*.dlw",&filedata);
 
-	if(hFile!=-1)	// there's at least one
+    dir = opendir("worlds");
+    while ((dp = readdir(dir)) != NULL)
 	{
 		// rule out the backup worlds, so they don't show up
-		if((strcmp(filedata.name,"backup_load.dlw")) &&
-		   (strcmp(filedata.name,"backup_exit.dlw")) &&
-		   (strcmp(filedata.name,"backup_save.dlw")))
-			count++;
-
-		while(_findnext(hFile,&filedata)==0)
-		{
-			// rule out the backup worlds, so they don't show up as custom worlds
-			if((strcmp(filedata.name,"backup_load.dlw")) &&
-			   (strcmp(filedata.name,"backup_exit.dlw")) &&
-			   (strcmp(filedata.name,"backup_save.dlw")))
-			{
-				count++;
-			}
-		}
+        if((strcmp(dp->d_name,"backup_load.dlw")) &&
+           (strcmp(dp->d_name,"backup_exit.dlw")) &&
+           (strcmp(dp->d_name,"backup_save.dlw")) &&
+            strstr(dp->d_name, ".dlw"))
+            count++;
 	}
-	_findclose(hFile);
+    closedir(dir);
 
-	done=0;
-	hFile=_findfirst("worlds\\*.dlw",&filedata);
+    done=0;
 
-	if(hFile!=-1)	// there's at least one
+    dir = opendir("worlds");
+    while ((dp = readdir(dir)) != NULL)
 	{
 		// rule out the backup worlds, so they don't show up
-		if((strcmp(filedata.name,"backup_load.dlw")) &&
-		   (strcmp(filedata.name,"backup_exit.dlw")) &&
-		   (strcmp(filedata.name,"backup_save.dlw")))
+        if((strcmp(dp->d_name,"backup_load.dlw")) &&
+           (strcmp(dp->d_name,"backup_exit.dlw")) &&
+           (strcmp(dp->d_name,"backup_save.dlw")) &&
+            strstr(dp->d_name, ".dlw"))
 		{
-			InputWorld(filedata.name);
+            InputWorld(dp->d_name);
 			done++;
-		}
-
-		while(_findnext(hFile,&filedata)==0)
-		{
-			// rule out the backup worlds, so they don't show up as custom worlds
-			if((strcmp(filedata.name,"backup_load.dlw")) &&
-			   (strcmp(filedata.name,"backup_exit.dlw")) &&
-			   (strcmp(filedata.name,"backup_save.dlw")))
-			{
-				InputWorld(filedata.name);
-				done++;
 #ifndef WTG
-				GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450,32*1+16);
-				GetDisplayMGL()->Flip();
+            GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450,32*1+16);
+            GetDisplayMGL()->Flip();
 #endif
-			}
 		}
-	}
-	_findclose(hFile);
+    }
+    closedir(dir);
 #ifdef LEVELLIST
 	fclose(levelF);
 	fclose(level2F);

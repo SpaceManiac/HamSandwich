@@ -2,10 +2,15 @@
 
 from glob import glob
 from sys import argv
-from os import path
+from os import path, name
 import re
 
-LIBS = ['winmm', 'alleg44', 'ws2_32', 'logg', 'vorbisfile', 'vorbis', 'ogg', 'vorbisenc']
+windows = (name == 'nt')
+
+if windows:
+	LIBS = ['winmm', 'alleg44', 'ws2_32', 'logg', 'vorbisfile', 'vorbis', 'ogg', 'vorbisenc']
+else:
+	LIBS = ['alleg', 'logg', 'vorbisfile', 'vorbis', 'ogg', 'vorbisenc', 'rt']
 
 # don't compile certain files
 blacklist = [
@@ -36,18 +41,22 @@ def program(output, debug):
 	# compiler
 	env.Append(CCFLAGS = ['-Wall', '-Wno-write-strings', '-std=gnu++0x'])
 	env.Append(CPPPATH = ['include'])
-	env.Append(CPPDEFINES = ['ALLEGRO_MINGW32'])
+	env.Append(CPPDEFINES = ['ALLEGRO_MINGW32' if windows else 'ALLEGRO_UNIX'])
 	if debug:
 		env.Append(CPPDEFINES = ['_DEBUG', 'EXPANDO', 'LOG'])
 		env.Append(CCFLAGS = ['-g'])
 	else:
 		env.Append(CPPDEFINES = ['NDEBUG', 'EXPANDO'])
-		env.Append(CCFLAGS = ['-O2', '-s', '-mwindows'])
-		env.Append(LINKFLAGS = ['-O2', '-s', '-mwindows'])
+		env.Append(CCFLAGS = ['-O2', '-s'])
+		env.Append(LINKFLAGS = ['-O2', '-s'])
+		if windows:
+			env.Append(LINKFLAGS = ['-mwindows'])
 
 	# linker
-	env.Append(LINKFLAGS = ['-static-libgcc', '-static-libstdc++', '-std=c++0x'])
-	env.Append(LIBPATH = ['include'])
+	env.Append(LINKFLAGS = ['-static-libgcc', '-std=c++0x'])
+	if windows:
+	    env.Append(LINKFLAGS = ['-static-libstdc++'])
+	    env.Append(LIBPATH = ['include'])
 	env.Append(LIBS = LIBS)
 
 	# output files
@@ -58,13 +67,14 @@ def program(output, debug):
 		objects.append(env.Object(target=object, source=source))
 
 	# resources
-	resFiles = getFileList('source/', '.rc')
-	for source in resFiles:
-		object = 'build/' + output + '/' + source.replace('.res', '.rc')
-		objects.append(env.Command(object, source, 'windres ' + source + ' -O coff -o ' + object))
+	if windows:
+		resFiles = getFileList('source/', '.rc')
+		for source in resFiles:
+			object = 'build/' + output + '/' + source.replace('.res', '.rc')
+			objects.append(env.Command(object, source, 'windres ' + source + ' -O coff -o ' + object))
 
 	# finish
-	outputExe = 'bin/' + output + '.exe'
+	outputExe = 'bin/' + output + ('.exe' if windows else '')
 	result = [env.Program(target=outputExe, source=objects)]
 	result.append(env.Install('game/', outputExe))
 	return Alias(output, result)

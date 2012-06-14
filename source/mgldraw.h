@@ -8,9 +8,10 @@
 #define MGLDRAW_H
 
 #include <allegro.h>
+#ifdef WIN32
 #include <winalleg.h>
 #include <windows.h>
-#include <mmsystem.h>
+#endif
 #include <stdio.h>
 #include "jamultypes.h"
 #include "jamulsound.h"
@@ -30,9 +31,8 @@ class MGLDraw
         MGLDraw(char *name,int xRes,int yRes,int bpp,bool window);
 		~MGLDraw(void);
 
-		bool Process(void);	// handle windows messages and such
+        bool Process(void);	// handle windows messages and such
 
-		HWND GetHWnd(void);
 		byte *GetScreen(void); // get a pointer to the screen memory
 		int GetWidth(void);
 		int GetHeight(void);
@@ -90,12 +90,15 @@ class MGLDraw
 
 		void ResetGM(void);
 
+#ifdef WIN32
+        HWND GetHWnd(void);
+#endif
+
 		int xRes,yRes,bpp,pitch;
         byte windowed;
 		bool readyToQuit;
 		byte tapTrack;
-	protected:
-		int windowX,windowY;
+    protected:
 
 		BITMAP* buffer;
 		byte *scrn;
@@ -109,13 +112,11 @@ class MGLDraw
 };
 
 extern MGLDraw *_globalMGLDraw;
-HWND MGLGetHWnd(void);	// augh.
 
 void SeedRNG(void);
 dword Random(dword range);
 void FatalError(char *msg);
 
-long FAR PASCAL MyWindowsEventHandler(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 void FatalErrorQuit(void);
 
 #endif

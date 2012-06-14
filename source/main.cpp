@@ -10,7 +10,6 @@
 #include "mgldraw.h"
 #include "jamulfont.h"
 #include "jamulsound.h"
-#include <shellapi.h>
 
 #include "moron.h"
 #include "game.h"
@@ -30,26 +29,17 @@
 #include "netmenu.h"
 #include "internet.h"
 
-bool windowedGame=FALSE;
 MGLDraw *mainmgl;
 
-void ParseCmdLine(char *cmdLine)
+int main(int argc, char* argv[])
 {
-	char *token;
+    bool windowedGame=FALSE;
 
-	token=strtok(cmdLine," ");
-	while(token!=NULL)
-	{
-		if(!strcmp(token,"window"))
-			windowedGame=TRUE;
-		token=strtok(NULL," ");
-	}
-}
-
-int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR cmdLine,int nCmdShow)
-{
-	ParseCmdLine(cmdLine);
-
+    for (int i = 1; i < argc; ++i)
+    {
+        if (!strcmp(argv[i], "window"))
+            windowedGame=TRUE;
+    }
 	InitLog();
 
 	LoadConfig();
@@ -110,9 +100,7 @@ int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR cmdLine,int
 					delete mainmgl;
 					ExitLog();
 					FatalErrorQuit();
-#ifdef ARCADETOWN
-					ShellExecute(NULL,"open","http://hamumu.com/at_scores.php",NULL,NULL,SW_SHOWNORMAL);
-#else
+#ifdef WIN32
 					ShellExecute(NULL,"open","http://hamumu.com/scores.php",NULL,NULL,SW_SHOWNORMAL);
 #endif
 					return 0;
@@ -124,7 +112,9 @@ int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR cmdLine,int
 					ExitLog();
 					FatalErrorQuit();
 
+#ifdef WIN32
 					ShellExecute(NULL,"open","http://hamumu.com/addon.php",NULL,NULL,SW_SHOWNORMAL);
+#endif
 					return 0;
 				}
 				break;
@@ -143,3 +133,5 @@ int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR cmdLine,int
 		}
 	}
 }
+
+END_OF_MAIN()
