@@ -81,7 +81,7 @@ byte GetQuestions(void)
 	int i;
 	FILE *f;
 
-	f=fopen("gallery\\mrqs.bmp","rt");
+	f=fopen("gallery/mrqs.bmp","rt");
 	if(!f)
 		return 0;	// can't play without questions!
 
@@ -128,9 +128,9 @@ byte InitMoron(MGLDraw *mgl)
 	if(!GetQuestions())
 		return 0;
 
-	mgl->LoadBMP("graphics\\moron.bmp");
+	mgl->LoadBMP("graphics/moron.bmp");
 	backgd=(byte *)malloc(640*480);
-	plSpr=new sprite_set_t("graphics\\pause.jsp");
+	plSpr=new sprite_set_t("graphics/pause.jsp");
 
 	for(i=0;i<480;i++)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);

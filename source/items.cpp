@@ -751,7 +751,7 @@ void InitItems(void)
 	memset(items,0,256*sizeof(item_t));
 	memcpy(items,baseItems,sizeof(item_t)*NUM_ORIGINAL_ITEMS);
 
-	itmSpr=new sprite_set_t("graphics\\items.jsp");
+	itmSpr=new sprite_set_t("graphics/items.jsp");
     customItmSpr=NULL;
 	glowism=0;
 	SetupRandomItems();
@@ -810,7 +810,7 @@ void SetCustomItemSprites(char* name)
     customItmSpr=new sprite_set_t();
 
     char buf[64];
-    sprintf(buf, "user\\%s", name);
+    sprintf(buf, "user/%s", name);
     if (!customItmSpr->Load(buf))
     {
         // failed to load

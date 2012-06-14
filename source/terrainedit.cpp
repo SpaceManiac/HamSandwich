@@ -164,14 +164,14 @@ void MoveClick(int id)
 
 void LoadClick(int id)
 {
-	InitFileDialog("tilegfx\\*.bmp",FM_LOAD|FM_EXIT,bmpFilename);
+	InitFileDialog("tilegfx/*.bmp",FM_LOAD|FM_EXIT,bmpFilename);
 	mode=TMODE_LOADBMP;
 	MakeNormalSound(SND_MENUCLICK);
 }
 
 void SaveClick(int id)
 {
-	InitFileDialog("tilegfx\\*.bmp",FM_SAVE|FM_EXIT,bmpFilename);
+	InitFileDialog("tilegfx/*.bmp",FM_SAVE|FM_EXIT,bmpFilename);
 	mode=TMODE_SAVEBMP;
 	MakeNormalSound(SND_MENUCLICK);
 }
@@ -486,7 +486,7 @@ void InitBMPPick(void)
 	char tmpName[64];
 
 	strcpy(bmpFilename,GetFilename(""));
-	strcpy(tmpName,GetFilename("tilegfx\\"));
+	strcpy(tmpName,GetFilename("tilegfx/"));
 	mode=TMODE_PICKBMP;
 	bmpScr=new byte[640*480];
 	if(!bmpScr)
@@ -674,7 +674,7 @@ void TerrainEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 				if(n==FM_SAVE)
 				{
 					ExitFileDialog();
-					SaveTilesToBMP(GetFilename("tilegfx\\"));
+					SaveTilesToBMP(GetFilename("tilegfx/"));
 					mode=TMODE_NORMAL;
 				}
 				if(n==FM_EXIT)

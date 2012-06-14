@@ -122,7 +122,7 @@ void ExitEditor(void)
 	ExitFileDialog();
 	ToolExit();
 
-	EditorSaveWorld("worlds\\backup_exit.dlw");
+	EditorSaveWorld("worlds/backup_exit.dlw");
 
 	// change monsters back to normal
 	ChangeOffColor(MONS_SHARK,255,255);
@@ -191,8 +191,8 @@ void BackupWorld(char *name)
 	int bytes;
 	byte *data;
 
-	sprintf(inName,"worlds\\%s",name);
-	sprintf(outName,"worlds\\backup_save.dlw");
+	sprintf(inName,"worlds/%s",name);
+	sprintf(outName,"worlds/backup_save.dlw");
 
 	inF=fopen(inName,"rb");
 	if(!inF)
@@ -322,7 +322,7 @@ void UpdateMouse(void)
 			switch(FileDialogCommand())
 			{
 				case FM_NEW:
-					EditorSaveWorld("worlds\\backup_load.dlw");
+					EditorSaveWorld("worlds/backup_load.dlw");
 					FreeWorld(&world);
 					NewWorld(&world,editmgl);
 					EditorSelectMap(0);
@@ -331,7 +331,7 @@ void UpdateMouse(void)
 				case FM_MERGE:
 					if(GetFilename("")[0])	// don't do any of this if the filename is blank!
 					{
-						AddWorldIn(&world,GetFilename("worlds\\"));
+						AddWorldIn(&world,GetFilename("worlds/"));
 						InitEditHelp(HELP_WORLDSTITCH);
 						editMode=EDITMODE_HELP;
 					}
@@ -341,10 +341,10 @@ void UpdateMouse(void)
 				case FM_LOAD:
 					if(GetFilename("")[0])	// don't do any of this if the filename is blank!
 					{
-						EditorSaveWorld("worlds\\backup_load.dlw");
+						EditorSaveWorld("worlds/backup_load.dlw");
 						ToolSetFilename();
 						FreeWorld(&world);
-						if(!LoadWorld(&world,GetFilename("worlds\\")))
+						if(!LoadWorld(&world,GetFilename("worlds/")))
 							NewWorld(&world,editmgl);	// if you can't load it, start a new one instead
 						EditorSelectMap(0);
 						editMode=EDITMODE_EDIT;
@@ -362,7 +362,7 @@ void UpdateMouse(void)
 						ToolSetFilename();
 						GetCamera(&cx,&cy);
 						BackupWorld(GetFilename(""));
-						SaveWorld(&world,GetFilename("worlds\\"));
+						SaveWorld(&world,GetFilename("worlds/"));
 						EditorSelectMap(curMapNum);
 						PutCamera(cx*FIXAMT,cy*FIXAMT);
 					}
@@ -831,11 +831,11 @@ static void HandleKeyPresses(void)
 			case 'f':
 			case 'F':
 				editMode=EDITMODE_FILE;
-				InitFileDialog("worlds\\*.dlw",FM_NEW|FM_LOAD|FM_SAVE|FM_ASKLOAD,ToolGetFilename());
+				InitFileDialog("worlds/*.dlw",FM_NEW|FM_LOAD|FM_SAVE|FM_ASKLOAD,ToolGetFilename());
 				break;
 			case 'M':
 				editMode=EDITMODE_FILE;
-				InitFileDialog("worlds\\*.dlw",FM_LOAD|FM_ASKLOAD|FM_MERGE,ToolGetFilename());
+				InitFileDialog("worlds/*.dlw",FM_LOAD|FM_ASKLOAD|FM_MERGE,ToolGetFilename());
 				break;
 			case 'l':
 			case 'L':

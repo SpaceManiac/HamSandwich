@@ -2732,7 +2732,7 @@ void SetMonsterGraphics(byte fx,int x,int y,int type,char *name)
 
             // set sprite
             char buf[64];
-            sprintf(buf,"user\\%s", name);
+            sprintf(buf,"user/%s", name);
 
             if (guys[i]->customSpr) delete guys[i]->customSpr;
 

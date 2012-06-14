@@ -203,7 +203,7 @@ byte AddWorldIn(world_t *world1,char *fname)
 {
 	int i;
 
-	EditorSaveWorld("worlds\\backup_load.dlw");
+	EditorSaveWorld("worlds/backup_load.dlw");
 	stitchTileOffset=0;
 	stitchSoundOffset=0;
 	stitchItemOffset=0;
@@ -214,7 +214,7 @@ byte AddWorldIn(world_t *world1,char *fname)
 	if(!BeginAppendWorld(world2,fname))
 	{
 		FreeWorld(world1);
-		LoadWorld(world1,"worlds\\backup_load.dlw");
+		LoadWorld(world1,"worlds/backup_load.dlw");
 		EditorSelectMap(0);
 		free(world2);
 		return 0;
@@ -222,7 +222,7 @@ byte AddWorldIn(world_t *world1,char *fname)
 	if(world2->numMaps+world1->numMaps>MAX_MAPS)	// would be too many maps
 	{
 		FreeWorld(world1);
-		LoadWorld(world1,"worlds\\backup_load.dlw");
+		LoadWorld(world1,"worlds/backup_load.dlw");
 		EditorSelectMap(0);
 		free(world2);
 		SetStitchError("Too many levels!");

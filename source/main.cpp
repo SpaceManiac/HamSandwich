@@ -51,12 +51,12 @@ int main(int argc, char* argv[])
 
 	//CryptoTest();
 #ifdef ARCADETOWN
-	SplashScreen(mainmgl,"graphics\\at_presents.bmp",32,0);
+	SplashScreen(mainmgl,"graphics/at_presents.bmp",32,0);
 #endif
-	SplashScreen(mainmgl,"graphics\\hamumu.bmp",32,2);
+	SplashScreen(mainmgl,"graphics/hamumu.bmp",32,2);
 
-	//NewComputerSpriteFix("graphics\\items.jsp");
-	//NewComputerSpriteFix("graphics\\intface.jsp");
+	//NewComputerSpriteFix("graphics/items.jsp");
+	//NewComputerSpriteFix("graphics/intface.jsp");
 	shopping=0;
 	while(1)
 	{

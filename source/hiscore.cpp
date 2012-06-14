@@ -1134,6 +1134,6 @@ void ChangeHighScores(char *oldName,char *newName)
 		ScoreChecksumNoMap(&hiTime[i]);
 	}
 	SaveHiScores();
-	sprintf(s,"profiles\\%s.prf",oldName);
+	sprintf(s,"profiles/%s.prf",oldName);
 	unlink(s);	// delete the old profile file
 }

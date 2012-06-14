@@ -112,7 +112,7 @@ void PlaySongForce(char *fname)
         return;
 
 	strcpy(curSongName,fname);
-	sprintf(fullname,"music\\%s",fname);
+	sprintf(fullname,"music/%s",fname);
 	StopSong();
 	curStream=logg_get_stream(fullname, musVolume, 128, 0);
 	if(curStream)

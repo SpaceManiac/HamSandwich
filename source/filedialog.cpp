@@ -40,7 +40,7 @@ void ObtainFilenames(char *fileSpec)
 
 	numFiles=0;
 
-    char* secondPart = strchr(fileSpec, '\\') + 1;
+    char* secondPart = strchr(fileSpec, '/') + 1;
     char* filter;
     if (strcmp(secondPart, "*.*") == 0)
     {

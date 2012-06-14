@@ -12,7 +12,7 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 
 	ClearCustomSounds();
 	world->numMaps=1;
-	mgl->LoadBMP("tilegfx\\tiles.bmp");
+	mgl->LoadBMP("tilegfx/tiles.bmp");
 	world->numTiles=400;
 	SetNumTiles(400);
 	SetTiles(mgl->GetScreen());
@@ -279,7 +279,7 @@ void LogRequirements(world_t *w)
                     byte type = w->map[i]->special[j].effect[k].type;
                     if(type==EFF_PICTURE || type==EFF_MONSGRAPHICS || type==EFF_ITEMGRAPHICS)
 					{
-						fprintf(f,"user\\%s\n",w->map[i]->special[j].effect[k].text);
+						fprintf(f,"user/%s\n",w->map[i]->special[j].effect[k].text);
 					}
 				}
 			}

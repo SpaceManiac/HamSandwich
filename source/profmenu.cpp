@@ -181,9 +181,9 @@ void InitProfMenu(MGLDraw *mgl)
 	msBright=0;
 	msDBright=1;
 
-	mgl->LoadBMP("graphics\\profmenu.bmp");
+	mgl->LoadBMP("graphics/profmenu.bmp");
 	backgd=(byte *)malloc(640*480);
-	plSpr=new sprite_set_t("graphics\\pause.jsp");
+	plSpr=new sprite_set_t("graphics/pause.jsp");
 
 	for(i=0;i<480;i++)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
@@ -341,7 +341,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					char s[64];
 
 					mode=PROF_NORMAL;
-					sprintf(s,"profiles\\%s.prf",profile.name);
+					sprintf(s,"profiles/%s.prf",profile.name);
 					FreeProfile();
 					unlink(s);
 					if(numFiles==1)	// this was the only profile

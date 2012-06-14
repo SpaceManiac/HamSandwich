@@ -84,7 +84,7 @@ static void SongClick(int id)
 	else
 	{
 		mode=LDMODE_SONGPICK;
-		InitFileDialog("music\\*.ogg",FM_LOAD|FM_EXIT|FM_PLAYSONGS,world->map[mapNum]->song);
+		InitFileDialog("music/*.ogg",FM_LOAD|FM_EXIT|FM_PLAYSONGS,world->map[mapNum]->song);
 	}
 }
 
@@ -438,7 +438,7 @@ void InitLevelDialog(world_t *wrld,byte currentMap)
 
 	asking=0;
 
-	levelSpr=new sprite_set_t("graphics\\pause.jsp");
+	levelSpr=new sprite_set_t("graphics/pause.jsp");
 	LevelDialogButtons();
 	mapZoom=new byte[MAX_MAPSIZE*MAX_MAPSIZE];
 	RenderZoomMap();

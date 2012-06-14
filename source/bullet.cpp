@@ -53,7 +53,7 @@ void GetBulletDeltas(int *bdx,int *bdy)
 
 void InitBullets(void)
 {
-	bulletSpr=new sprite_set_t("graphics\\bullets.jsp");
+	bulletSpr=new sprite_set_t("graphics/bullets.jsp");
 
 	bullet=(bullet_t *)malloc(sizeof(bullet_t)*config.numBullets);
 	memset(bullet,0,config.numBullets*sizeof(bullet_t));

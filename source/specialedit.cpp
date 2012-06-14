@@ -1242,7 +1242,7 @@ static void PicNameClick(int id)
 	curEff=effStart + (id-ID_EFF0)/100;
 
 	mode=SMODE_PICKBMP;
-	InitFileDialog("user\\*.*",FM_LOAD|FM_EXIT|FM_NOWAVS,"");
+	InitFileDialog("user/*.*",FM_LOAD|FM_EXIT|FM_NOWAVS,"");
 }
 
 static void SongClick(int id)
@@ -1257,7 +1257,7 @@ static void SongClick(int id)
 	{
 
 		mode=SMODE_PICKSONG;
-		InitFileDialog("music\\*.ogg",FM_LOAD|FM_EXIT|FM_PLAYSONGS,spcl.effect[curEff].text);
+		InitFileDialog("music/*.ogg",FM_LOAD|FM_EXIT|FM_PLAYSONGS,spcl.effect[curEff].text);
 	}
 }
 

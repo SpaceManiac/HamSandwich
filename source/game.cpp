@@ -88,7 +88,7 @@ byte VerifyLevel(Map *map)
 
 	chk=ChecksumMap(map);
 
-	f=fopen("worlds\\levels.dat","rb");
+        f=fopen("worlds/levels.dat","rb");
 	if(!f)
 		return 0;
 
@@ -228,7 +228,7 @@ void RestoreGameplayGfx(void)
 	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
 	{
 		gamemgl->ClearScreen();
-		GetDisplayMGL()->LoadBMP("graphics\\gamepal.bmp");
+                GetDisplayMGL()->LoadBMP("graphics/gamepal.bmp");
 		gamemgl->Flip();
 	}
 	if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE)
@@ -390,7 +390,7 @@ byte LunaticRun(int *lastTime)
 				{
 					gameMode=GAMEMODE_PLAY;
 					// restore the palette
-					gamemgl->LoadBMP("graphics\\title.bmp");
+                                        gamemgl->LoadBMP("graphics/title.bmp");
 					RestoreGameplayGfx();
 				}
 			}
@@ -666,7 +666,7 @@ byte PlayWorld(MGLDraw *mgl,char *fname)
 	else
 		tutorial=0;
 
-	sprintf(fullName,"worlds\\%s",fname);
+        sprintf(fullName,"worlds/%s",fname);
 
 	InitPlayer(GetWorldProgress(fname)->levelOn,fname);
 	if(!LoadWorld(&curWorld,fullName))

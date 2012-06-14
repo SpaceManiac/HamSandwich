@@ -187,7 +187,7 @@ void InputWorld(char *fname)
 	worldData_t *w;
 
 	strcpy(list[numWorlds].fname,fname);
-	sprintf(fullname,"worlds\\%s",fname);
+	sprintf(fullname,"worlds/%s",fname);
 
 #ifdef LEVELLIST
 	int i;
@@ -237,7 +237,7 @@ void ScanWorlds(void)
 
 #ifdef LEVELLIST
 	levelF=fopen("levellist.txt","wt");
-	level2F=fopen("worlds\\levels.dat","wb");
+	level2F=fopen("worlds/levels.dat","wb");
 	authorF=fopen("authorlist.txt","wt");
 	totalLCount=0;
 #endif
@@ -388,7 +388,7 @@ void SelectLastWorld(void)
 	if(listPos>choice)
 		listPos=choice;
 
-	sprintf(s,"worlds\\%s",list[choice].fname);
+	sprintf(s,"worlds/%s",list[choice].fname);
 	LoadWorld(&tmpWorld,s);
 	level=0;
 	scoreMode=0;
@@ -401,7 +401,7 @@ void MoveToNewWorld(void)
 	char s[64];
 
 	FreeWorld(&tmpWorld);
-	sprintf(s,"worlds\\%s",list[choice].fname);
+	sprintf(s,"worlds/%s",list[choice].fname);
 	LoadWorld(&tmpWorld,s);
 	level=0;
 	noScoresAtAll=0;
@@ -412,7 +412,7 @@ void InitWorldSelect(MGLDraw *mgl)
 {
 	int i;
 
-	mgl->LoadBMP("graphics\\profmenu.bmp");
+	mgl->LoadBMP("graphics/profmenu.bmp");
 	backgd=(byte *)malloc(640*480);
 
 	for(i=0;i<480;i++)
@@ -434,7 +434,7 @@ void InitWorldSelect(MGLDraw *mgl)
 	CalcScrollBar();
 	mgl->GetMouse(&msx,&msy);
 	mode=MODE_PICKWORLD;
-	wsSpr=new sprite_set_t("graphics\\pause.jsp");
+	wsSpr=new sprite_set_t("graphics/pause.jsp");
 	msBright=0;
 	msDBright=1;
 	PlaySongForce("003WorldPicker.ogg");

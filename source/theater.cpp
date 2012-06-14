@@ -46,7 +46,7 @@ void InitTheater(MGLDraw *mgl)
 	msBright=0;
 	msDBright=1;
 
-	mgl->LoadBMP("graphics\\profmenu.bmp");
+	mgl->LoadBMP("graphics/profmenu.bmp");
 	backgd=(byte *)malloc(640*480);
 	for(i=0;i<480;i++)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
@@ -60,7 +60,7 @@ void InitTheater(MGLDraw *mgl)
 			break;
 		}
 
-	bestSpr=new sprite_set_t("graphics\\pause.jsp");
+	bestSpr=new sprite_set_t("graphics/pause.jsp");
 	GetTaps();
 	GetArrowTaps();
 	mgl->LastKeyPressed();

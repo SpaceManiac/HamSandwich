@@ -287,7 +287,7 @@ int HandleLegacyCustomSound(int value)
 	if(value<222 || value>255 && value<274)
 		return value;	// not a custom sound, a built in one
 
-	sprintf(name,"user\\snd%03d.wav",value);
+	sprintf(name,"user/snd%03d.wav",value);
 	sprintf(shrtname,"custom%03d",value);
 
 	n=GetCustomSoundByName(shrtname);

@@ -228,8 +228,8 @@ void InitPlayListMenu(MGLDraw *mgl)
 	filePos=0;
 	mode=PM_NORMAL;
 
-	mgl->LoadBMP("graphics\\profmenu.bmp");
-	plSpr=new sprite_set_t("graphics\\pause.jsp");
+	mgl->LoadBMP("graphics/profmenu.bmp");
+	plSpr=new sprite_set_t("graphics/pause.jsp");
 
 	backgd=(byte *)malloc(640*480);
 	for(i=0;i<480;i++)

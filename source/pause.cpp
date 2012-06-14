@@ -159,7 +159,7 @@ void RenderPauseMenu(void)
 	{
 		pauseX=640;
 		pauseY=480;
-		pauseSpr=new sprite_set_t("graphics\\pause.jsp");
+		pauseSpr=new sprite_set_t("graphics/pause.jsp");
 	}
 
 	pauseSpr->GetSprite(3)->Draw(pauseX,pauseY,GetDisplayMGL());
@@ -327,7 +327,7 @@ void InitPauseMenu(void)
 
 	MakeNormalSound(SND_PAUSE);
 	if(pauseSpr==NULL)
-		pauseSpr=new sprite_set_t("graphics\\pause.jsp");
+		pauseSpr=new sprite_set_t("graphics/pause.jsp");
 	pauseX=640;
 	pauseY=480;
 	menuMode=0;

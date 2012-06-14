@@ -419,7 +419,7 @@ void InitShowGoal(MGLDraw *mgl,byte num)
 	noKeyTime=60;
 
 	MakeNormalSound(SND_ALLCANDLE);
-	GetDisplayMGL()->LoadBMP("graphics\\galgoal.bmp");
+	GetDisplayMGL()->LoadBMP("graphics/galgoal.bmp");
 
 	CenterPrint(320,110,"Gallery Goal Complete!",0,0);
 	sprintf(txt,"\"%s\"",goalDesc[num*2]);

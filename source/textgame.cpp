@@ -1647,7 +1647,7 @@ void InitTextGame(MGLDraw *mgl)
 {
 	int i;
 
-	mgl->LoadBMP("graphics\\profmenu.bmp");
+	mgl->LoadBMP("graphics/profmenu.bmp");
 	backgd=(byte *)malloc(640*480);
 
 	for(i=0;i<480;i++)

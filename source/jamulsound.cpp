@@ -102,7 +102,7 @@ bool JamulSoundPlay(int which,long pan,long vol,byte playFlags,int priority)
 
 	if(soundList[which].sample==NULL)
 	{
-		sprintf(s,"sound\\snd%03d.wav",which);
+		sprintf(s,"sound/snd%03d.wav",which);
 		soundList[which].sample=load_sample(s);
 		if(soundList[which].sample==NULL)
 			return 0;

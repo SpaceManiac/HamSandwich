@@ -460,7 +460,7 @@ byte MainMenu(MGLDraw *mgl)
 			return 6;	// start shopping!
 	}
 
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	backgd=(byte *)malloc(640*480);
 	if(!backgd)
 		FatalError("Out of memory!");
@@ -471,7 +471,7 @@ byte MainMenu(MGLDraw *mgl)
 	mgl->LastKeyPressed();
 	mgl->MouseTap();
 	oldc=CONTROL_B1|CONTROL_B2;
-	planetSpr=new sprite_set_t("graphics\\pizza.jsp");
+	planetSpr=new sprite_set_t("graphics/pizza.jsp");
 
 	PlaySongForce("002title.ogg");
 
@@ -560,7 +560,7 @@ void Credits(MGLDraw *mgl)
 	dword lastTime;
 
 	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 
 	GetTaps();
 	cmd=0;
@@ -633,7 +633,7 @@ void VictoryText(MGLDraw *mgl)
 	int y=-470;
 
 	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	while(1)
 	{
 		mgl->ClearScreen();
@@ -795,16 +795,16 @@ void HelpScreens(MGLDraw *mgl)
 {
 	char name[32];
 
-	sprintf(name,"docs\\help.bmp");
+	sprintf(name,"docs/help.bmp");
 	if(!SpeedSplash(mgl,name))
 		return;
 }
 
 void DemoSplashScreens(MGLDraw *mgl)
 {
-	if(!SpeedSplash(mgl,"docs\\demosplash.bmp"))
+	if(!SpeedSplash(mgl,"docs/demosplash.bmp"))
 		return;
-	if(!SpeedSplash(mgl,"docs\\demosplash2.bmp"))
+	if(!SpeedSplash(mgl,"docs/demosplash2.bmp"))
 		return;
 }
 

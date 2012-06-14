@@ -75,7 +75,7 @@ void SaveProfile(void)
 	fprintf(f,"%s\n",profile.name);
 	fclose(f);
 
-	sprintf(prfName,"profiles\\%s.prf",profile.name);
+	sprintf(prfName,"profiles/%s.prf",profile.name);
 	// also actually save the profile!
 	f=fopen(prfName,"wb");
 	fwrite(&profile,sizeof(profile_t),1,f);
@@ -120,7 +120,7 @@ void LoadProfile(char *name)
 	int i,j;
 
 	strcpy(profile.name,name);
-	sprintf(prfName,"profiles\\%s.prf",profile.name);
+	sprintf(prfName,"profiles/%s.prf",profile.name);
 
 	// save this profile as the current one.
 	f=fopen("profile.cfg","wt");

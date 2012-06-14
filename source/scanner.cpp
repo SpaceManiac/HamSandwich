@@ -31,7 +31,7 @@ void BeginScanning(void)
 
 	if(!scanStarted)
 	{
-		GetDisplayMGL()->LoadBMPNoPalette("graphics\\profmenu.bmp");
+		GetDisplayMGL()->LoadBMPNoPalette("graphics/profmenu.bmp");
 		backgd=(byte *)malloc(640*480);
 		for(i=0;i<480;i++)
 			memcpy(&backgd[i*640],&GetDisplayMGL()->GetScreen()[i*GetDisplayMGL()->GetWidth()],640);
@@ -315,7 +315,7 @@ void InitBestiary(MGLDraw *mgl)
 	msBright=0;
 	msDBright=1;
 
-	mgl->LoadBMP("graphics\\profmenu.bmp");
+	mgl->LoadBMP("graphics/profmenu.bmp");
 	backgd=(byte *)malloc(640*480);
 	for(i=0;i<480;i++)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
@@ -361,7 +361,7 @@ void InitBestiary(MGLDraw *mgl)
 	curMons=MONS_BOUAPHA;
 	curTheme=0;
 
-	bestSpr=new sprite_set_t("graphics\\pause.jsp");
+	bestSpr=new sprite_set_t("graphics/pause.jsp");
 	GetTaps();
 	GetArrowTaps();
 	mgl->LastKeyPressed();
