@@ -227,7 +227,7 @@ static char bulletName[][20]={
     "Orbiter",
     "Green Bullet",
     "Ball Lightning",
-    "Visual Shock",
+    "Zap Wand Shock",
     "Mind Control",
     "Reflect Shield",
     "Swap Gun",
