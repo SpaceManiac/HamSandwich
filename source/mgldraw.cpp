@@ -69,7 +69,7 @@ MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool window)
 	if(JamulSoundInit(512))
 		SoundSystemExists();
 
-	set_color_conversion(COLORCONV_NONE);
+    set_color_conversion(COLORCONV_NONE);
 	set_color_depth(bpp);
 	if(window)
 		result=set_gfx_mode(GFX_AUTODETECT_WINDOWED,xRes,yRes,0,0);
@@ -712,7 +712,11 @@ bool MGLDraw::LoadBMP(char *name)
 	RGB newpal[256];
 	int i,w;
 
+    set_color_conversion(COLORCONV_REDUCE_TO_256);
+    set_color_depth(8);
 	b=load_bitmap(name,newpal);
+    set_color_conversion(COLORCONV_NONE);
+    set_color_depth(32);
 	if(b==NULL)
 		return FALSE;
 
