@@ -593,7 +593,7 @@ void HandleKeyPresses(void)
 
 void PauseGame(void)
 {
-    if (gameMode==GAMEMODE_MENU)
+    if (gameMode!=GAMEMODE_PLAY)
         return;
 	InitPauseMenu();
 	gameMode=GAMEMODE_MENU;
