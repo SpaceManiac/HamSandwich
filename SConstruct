@@ -6,12 +6,7 @@ from os import path, environ
 from subprocess import Popen, PIPE
 import re
 
-LIBS = ['winmm', 'dsound', 'alleg44', 'ws2_32', 'logg', 'vorbisfile', 'vorbis', 'ogg', 'vorbisenc']
-
-if 'DIRECTX' in environ:
-	DIRECTX = environ['DIRECTX']
-else:
-	DIRECTX = 'D:/libraries/directx-sdk'
+LIBS = ['winmm', 'alleg44', 'ws2_32', 'logg', 'vorbisfile', 'vorbis', 'ogg', 'vorbisenc']
 
 git_describe = Popen(["git", "describe"], stdout=PIPE).communicate()[0][:-1]
 vfile = open('source/version.h', 'w')
@@ -33,7 +28,7 @@ def program(output, debug):
 
 	# compiler
 	env.Append(CCFLAGS = ['-Wall', '-std=c++0x'])
-	env.Append(CPPPATH = ['include', path.join(DIRECTX, 'Include')])
+	env.Append(CPPPATH = ['include'])
 	env.Append(CPPDEFINES = ['ALLEGRO_MINGW32', 'EXPANDO'])
 	if debug:
 		env.Append(CPPDEFINES = ['_DEBUG', 'LOG'])
@@ -45,7 +40,7 @@ def program(output, debug):
 
 	# linker
 	env.Append(LINKFLAGS = ['-static-libgcc', '-static-libstdc++', '-std=c++0x'])
-	env.Append(LIBPATH = ['include', path.join(DIRECTX, 'Lib', 'x86')])
+	env.Append(LIBPATH = ['include'])
 	env.Append(LIBS = LIBS)
 
 	# output files
