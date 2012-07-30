@@ -1,14 +1,14 @@
-# HamPlatformer SCons configuration script
+# Dr. Lunatic SCons configuration script
 
 from glob import glob
 from sys import argv
 from os import path, environ
 from subprocess import Popen, PIPE
-import re
+import re, platform
 
 LIBS = ['winmm', 'alleg44', 'ws2_32', 'logg', 'vorbisfile', 'vorbis', 'ogg', 'vorbisenc']
 
-git_describe = Popen(["git", "describe"], stdout=PIPE).communicate()[0][:-1]
+git_describe = Popen(["git", "describe", "--always"], stdout=PIPE).communicate()[0][:-1]
 vfile = open('source/version.h', 'w')
 vfile.write('#define VERSION "%s"' % git_describe)
 vfile.close()
@@ -24,7 +24,11 @@ def getFileList(dir, ext='.cpp'):
 	return result
 
 def program(output, debug):
-	env = Environment()
+	# if we're on Windows, force Mingw use
+	if platform.system() == 'Windows':
+		env = Environment(ENV = environ, tools = ['mingw'])
+	else:
+		env = Environment(ENV = environ)
 
 	# compiler
 	env.Append(CCFLAGS = ['-Wall', '-std=c++0x'])
