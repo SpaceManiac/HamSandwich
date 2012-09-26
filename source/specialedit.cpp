@@ -203,7 +203,7 @@ static char bulletName[][20]={
     "Red Bullet",
     "Megabeam Source",
     "Megabeam Part",
-    "Megabeam Endo",
+    "Megabeam End",
     "Evil Flame",
     "Spore",
     "Mushroom",

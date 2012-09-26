@@ -35,13 +35,14 @@ def getFileList(dir, ext='.cpp'):
 				result.append(file)
 	return result
 
-def program(output, debug):
+def program(output, debug, **kwargs):
 	env = Environment()
 
 	# compiler
 	env.Append(CCFLAGS = ['-Wall', '-Wno-write-strings', '-std=gnu++0x'])
 	env.Append(CPPPATH = ['include'])
 	env.Append(CPPDEFINES = ['ALLEGRO_MINGW32' if windows else 'ALLEGRO_UNIX'])
+	env.Append(**kwargs)
 	if debug:
 		env.Append(CPPDEFINES = ['_DEBUG', 'EXPANDO', 'LOG'])
 		env.Append(CCFLAGS = ['-g'])
@@ -81,3 +82,4 @@ def program(output, debug):
 
 lunatic = program('lunatic', False)
 lunatic_debug = program('lunatic_debug', True)
+scanninglunatic = program('scanninglunatic', True, CPPDEFINES = ['LEVELLIST'])
