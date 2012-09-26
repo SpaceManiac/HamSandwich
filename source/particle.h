@@ -85,4 +85,6 @@ void TeamChangeRing(byte color,int x,int y,int z,byte num,byte force);
 void SmokeTile(int x,int y);
 void JackFrostWeather(int x,int y);
 
+int CountParticles();
+
 #endif

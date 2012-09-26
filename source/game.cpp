@@ -486,7 +486,7 @@ byte LunaticRun(int *lastTime)
 
 void LunaticDraw(void)
 {
-	char s[32];
+	char s[128];
 	dword d;
 
 	// add all the sprites to the list
@@ -520,14 +520,57 @@ void LunaticDraw(void)
 	}
 	if(showStats)
 	{
-		sprintf(s,"QFPS %02.2f",frmRate);
-		Print(0,180,s,6,0);
+		sprintf(s,"Debug Menu - F3 to close",((float)visFrameCount/(float)((timeGetTime()-gameStartTime)/1000)));
+		PrintGlow(5,30,s,8,2);
+
 		sprintf(s,"VFPS %02.2f",((float)visFrameCount/(float)((timeGetTime()-gameStartTime)/1000)));
-		Print(0,10,s,6,0);
+		PrintGlow(5,50,s,8,2);
 		sprintf(s,"GFPS %02.2f",((float)updFrameCount/(float)((timeGetTime()-gameStartTime)/1000)));
-		Print(0,50,s,6,0);
+		PrintGlow(120,50,s,8,2);
+
+		sprintf(s,"QFPS %02.2f",frmRate);
+		PrintGlow(5,70,s,8,2);
 		sprintf(s,"Runs %d",numRunsToMakeUp);
-		Print(0,100,s,6,0);
+		PrintGlow(120,70,s,8,2);
+
+		sprintf(s,"Mons %d",CountMonsters(MONS_ANYBODY));
+		PrintGlow(5,90,s,8,2);
+		sprintf(s,"Bul %d",config.numBullets - CountBullets(0)); // a little hackish but whatever
+		PrintGlow(120,90,s,8,2);
+
+		int n = 0;
+		for(int i=0; i<MAX_SPECIAL; i++)
+			if(curMap->special[i].x!=255)
+				++n;
+
+		sprintf(s,"Fx %d", CountParticles());
+		PrintGlow(5,110,s,8,2);
+		sprintf(s,"Spcl %03d", n);
+		PrintGlow(120,110,s,8,2);
+
+		n = 0;
+		for(int x=0; x<curMap->width; ++x)
+			for(int y=0; y<curMap->height; ++y)
+				if(curMap->GetTile(x, y)->item)
+					++n;
+
+		mapTile_t* t = curMap->GetTile(goodguy->mapx, goodguy->mapy);
+		sprintf(s,"Light %d/%d", t->templight, t->light);
+		PrintGlow(5,130,s,8,2);
+		sprintf(s,"Items %d", n);
+		PrintGlow(120,130,s,8,2);
+
+		char* end = s + sprintf(s,"Keys: ");
+		for (int i = 0; i < 256; ++i)
+			if (key[i])
+				end += sprintf(end, "%s ", AllegroCodeText(i));
+		PrintGlow(5,150,s,8,2);
+
+		end = s + sprintf(s,"Mouse: ");
+		for (int i = 0; i < 10; ++i)
+			if (mouse_b & (1<<i))
+				end += sprintf(end, "%d ", i);
+		PrintGlow(5,170,s,8,2);
 	}
 	// update statistics
 	d=timeGetTime();
@@ -573,22 +616,24 @@ void SendMessageToGame(byte msg,int content)
 void HandleKeyPresses(void)
 {
 	char k;
+	int raw;
 
 	k=gamemgl->LastKeyPressed();
+	raw = gamemgl->LastRawCode() >> 8;
+
 	if(k)
 	{
 		lastKey=k;
 		if((lastKey>='a' && lastKey<='z') || (lastKey>='A' && lastKey<='Z'))
 			CheatKey(lastKey);
 	}
-#ifdef _DEBUG
-	// can't show stats unless in debug mode
-	if(lastKey=='s')
+
+	// stats for everyone, takes more effort though
+	if(raw == KEY_F3)
 	{
 		showStats=1-showStats;
 		lastKey=0;
 	}
-#endif
 }
 
 void PauseGame(void)

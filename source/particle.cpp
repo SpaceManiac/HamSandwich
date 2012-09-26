@@ -1334,3 +1334,12 @@ void TrackParticle(byte color,int x,int y,int tx,int ty)
 		}
 	}
 }
+
+int CountParticles()
+{
+	int i, n = 0;
+	for (i = 0; i < maxParticles; ++i)
+		if (particleList[i]->Alive())
+			++n;
+	return n;
+}
