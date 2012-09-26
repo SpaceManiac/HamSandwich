@@ -290,7 +290,7 @@ void TerrainSetupButtons(void)
 	MakeButton(BTN_CHECK,8, 0,4,243+15*7 ,128,15,"Animates To Next",FlagClick);
 	MakeButton(BTN_CHECK,9, 0,4,243+15*8 ,128,15,"Animates On Step",FlagClick);
 	MakeButton(BTN_CHECK,10,0,4,243+15*9 ,128,15,"Animates When Hit",FlagClick);
-	MakeButton(BTN_CHECK,11,0,4,243+15*10,128,15,"Transparent Roof",FlagClick);
+	MakeButton(BTN_CHECK,11,0,4,243+15*10,128,15,"Transparent Roof / Shadowless Wall",FlagClick);
 	MakeButton(BTN_CHECK,12,0,4,243+15*11,128,15,"Mine Cart Path",FlagClick);
 	MakeButton(BTN_CHECK,13,0,4,243+15*12,128,15,"Bunny Path",FlagClick);
 	MakeButton(BTN_CHECK,14,0,4,243+15*13,128,15,"Ghost Proof",FlagClick);
