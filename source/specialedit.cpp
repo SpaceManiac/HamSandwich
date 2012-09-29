@@ -150,7 +150,8 @@ static char effName[][16]={
     "Monster Sprites",
     "Item Sprites",
     "Variable Bar",
-    "Summon Bullet"
+	"Summon Bullet",
+	"Change Bullet"
 };
 
 static char lvlFlagName[][16]={
@@ -191,7 +192,7 @@ static char wpnName[][16]={
 	"Stopwatch"};
 
 static char bulletName[][20]={
-    "None",
+	"Anything",
     "Hammer",
     "Bouncy Hammer",
     "Missile",
@@ -1313,19 +1314,39 @@ static void Toggle2Click(int id)
 
 static void BulletClick(int id)
 {
+	curEff=effStart+(id-ID_EFF0)/100;
+
+	if(rightClick)
+	{
+		spcl.effect[curEff].value2--;
+		if(spcl.effect[curEff].value2<=0)
+			spcl.effect[curEff].value2=MAX_BULLETS-1;
+	}
+	else
+	{
+		spcl.effect[curEff].value2++;
+		if(spcl.effect[curEff].value2>=MAX_BULLETS)
+			spcl.effect[curEff].value2=1;
+	}
+
+	SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
+}
+
+static void Bullet1Click(int id)
+{
     curEff=effStart+(id-ID_EFF0)/100;
 
     if(rightClick)
     {
-        spcl.effect[curEff].value2--;
-        if(spcl.effect[curEff].value2<=0)
-            spcl.effect[curEff].value2=MAX_BULLETS-1;
+		spcl.effect[curEff].value--;
+		if(spcl.effect[curEff].value<0)
+			spcl.effect[curEff].value=MAX_BULLETS-1;
     }
     else
     {
-        spcl.effect[curEff].value2++;
-        if(spcl.effect[curEff].value2>=MAX_BULLETS)
-            spcl.effect[curEff].value2=1;
+		spcl.effect[curEff].value++;
+		if(spcl.effect[curEff].value>=MAX_BULLETS)
+			spcl.effect[curEff].value=0;
     }
 
     SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
@@ -2268,11 +2289,34 @@ static void SetupEffectButtons(int t,int y)
             MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,342,y+17,1,1,"facing",NULL);
             MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,400,y+17,95,14,effect.text,MessageClick);
 
+			if(BulletFacingType(effect.value2))
+				sprintf(s,"Uses 0-%d",BulletFacingType(effect.value2));
+			else
+				sprintf(s,"Not used");
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+7+100*t,0,400,y,1,1,s,NULL);
+
             if(effect.flags&EF_PERMLIGHT)
                 MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+6+100*t,0,520,y+17,65,14,"Good",PlayerTargetClick);
             else
                 MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+6+100*t,0,520,y+17,65,14,"Evil",PlayerTargetClick);
             break;
+		case EFF_CHANGEBULLET:
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Change",NULL);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,104,y+17,140,14,bulletName[effect.value],Bullet1Click);
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,248,y+17,1,1,"at",NULL);
+			if(effect.x==255)
+				strcpy(s,"Anywhere");
+			else
+				sprintf(s,"%d, %d",effect.x,effect.y);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,268,y+17,70,14,s,XY3Click);
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,342,y+17,1,1,"to",NULL);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,360,y+17,140,14,bulletName[effect.value2],BulletClick);
+
+			if(effect.flags&EF_NOFX)
+				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+6+100*t,0,520,y+17,65,14,"No FX",NoFXClick);
+			else
+				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+6+100*t,0,520,y+17,65,14,"Play FX",NoFXClick);
+			break;
 	}
 }
 

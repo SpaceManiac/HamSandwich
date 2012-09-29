@@ -75,11 +75,12 @@
 #define EFF_COLOR		30	// change monster of type N at X,Y coloration
 #define EFF_MONSBRIGHT	31	// change monster of type N at X,Y to brightness M
 #define EFF_PLAYAS		32	// set the player's Play As for this level only
-#define EFF_MONSGRAPHICS        33      // change monster of type N at X,Y to graphics M
-#define EFF_ITEMGRAPHICS        34      // set the current custom item graphics to the given jsp
-#define EFF_VARBAR      35
-#define EFF_MAKEBULLET  36
-#define EFF_MAX			37
+#define EFF_MONSGRAPHICS	33	// change monster of type N at X,Y to graphics M
+#define EFF_ITEMGRAPHICS	34	// set the current custom item graphics to the given jsp
+#define EFF_VARBAR		35	// edit the varbar below the rage bar
+#define EFF_MAKEBULLET	36	// summon a bullet at a location
+#define EFF_CHANGEBULLET	37	// change bullet of type N at X,Y (or any X,Y) to type Z, N can be any or specific, Z must be specific
+#define EFF_MAX			38
 
 // trigger flags
 #define TF_NOT		1	// NOT this one

@@ -2881,6 +2881,99 @@ int CountBullets(byte type)
 	return count;
 }
 
+void ChangeBullet(byte fx,int x,int y,int type,int newtype)
+{
+	for(int i=0;i<config.numBullets;i++)
+		if(bullet[i].type != newtype && ((type != 0 && bullet[i].type == type) || (type == 0 && bullet[i].type != 0)))
+			if (x == 255 || ((bullet[i].x >> FIXSHIFT)/TILE_WIDTH == x && (bullet[i].y >> FIXSHIFT)/TILE_HEIGHT == y))
+			{
+				int dx = bullet[i].dx, dy = bullet[i].dy, f = bullet[i].facing;
+
+				if (type == BLT_LASER)
+					f /= 2;
+
+				if (BulletFacingType(newtype) == 0)
+					f = 0;
+				else if (BulletFacingType(newtype) == 7 && BulletFacingType(type) == 255)
+					f /= 32;
+				else if (BulletFacingType(newtype) == 255 && BulletFacingType(type) == 7)
+					f *= 32;
+
+				FireMe(&bullet[i],bullet[i].x,bullet[i].y,f,newtype,bullet[i].friendly);
+				bullet[i].dx = dx;
+				bullet[i].dy = dy;
+				if (fx)
+					BlowSmoke(bullet[i].x, bullet[i].y, 0, FIXAMT/8);
+			}
+
+}
+
+// TORPEDO, LASER
+static const byte bulletFacingType[] = {
+	0,  	// BLT_NONE    0
+	7,  	// BLT_HAMMER  1
+	7,  	// BLT_HAMMER2 2	// this is a hammer with reflection
+	7,  	// BLT_MISSILE 3
+	7,  	// BLT_FLAME   4
+	7,  	// BLT_LASER	5
+	255,  	// BLT_ACID	6
+	7,  	// BLT_BOMB	7
+	0,  	// BLT_BOOM	8
+	255,  	// BLT_ENERGY  9
+	0,  	// BLT_MEGABEAM 10		// this is a ball of energy that launches off a megabeam1
+	0,  	// BLT_MEGABEAM1 11	// this is a huge laser beam (downward)
+	0,  	// BLT_MEGABEAM2 12	// this is the laser hitting an object (just a visual effect)
+	7,  	// BLT_FLAME2	13	// just like flame, except it is anti-Bouapha
+	255,  	// BLT_SPORE	14
+	7,  	// BLT_SHROOM  15
+	255,  	// BLT_GRENADE 16	// energy grenade, an enemy weapon
+	0,  	// BLT_YELBOOM 17	// yellow explosion made by energy grenade
+	0,  	// BLT_SHOCKWAVE 18	// purple shockwave, for Super Zombie stomp
+	0,  	// BLT_LILBOOM 19	// explosion made by missile
+	255,  	// BLT_SNOWBALL 20
+	255,  	// BLT_BIGSNOW  21
+	7,  	// BLT_ICESPIKE 22	// spike juts out of the ground
+	7,  	// BLT_ROCK	23
+	255,  	// BLT_SPINE	24 // cactus spine
+	7,  	// BLT_EVILHAMMER 25 // a grey hammer that is anti-bouapha
+	255,  	// BLT_BIGSHELL 26	// Bouapha's power armor shoots these
+	7,  	// BLT_BIGAXE	27	// Bouapha weapon
+	0,  	// BLT_LIGHTNING 28 // Bouapha weapon
+	7,  	// BLT_SPEAR	29	// Bouapha's version of the pygmy spear
+	0,  	// BLT_SLASH	30	// Bouapha's machete slash
+	0,  	// BLT_MINE	31	// Bouapha's mines
+	7,  	// BLT_BADSPEAR 32	// pygmy-thrown spear
+	7,  	// BLT_ORBITER  33	// guy that flies around Bouapha shooting
+	255,  	// BLT_GREEN	34	// friendly green bullets
+	7,  	// BLT_BALLLIGHTNING 35
+	0,  	// BLT_LIGHTNING2 36
+	7,  	// BLT_MINDWIPE	37
+	0,  	// BLT_REFLECT	38
+	255,  	// BLT_SWAP	39
+	255,  	// BLT_SHARK	40
+	7,  	// BLT_ORBITER2 41	// orbit bomber
+	7,  	// BLT_HARPOON	42	// a spear, underwater - only difference is it sinks much more slowly
+	255,  	// BLT_SCANNER	43	// what the scanner scans with
+	255,  	// BLT_SCANSHOT 44	// the shots the scanner fires after scanning
+	7,  	// BLT_TORPEDO	45	// Bouapha's minisub shoots them
+	7,  	// BLT_DIRTSPIKE 46	// ice spike in brown
+	255,  	// BLT_PAPER	47
+	0,  	// BLT_SCANLOCK 48	// the scanner locked onto a guy
+	255,  	// BLT_BUBBLE	49
+	255,  	// BLT_FREEZE	50
+	0,  	// BLT_BUBBLEPOP 51	// a bubble that is popping, just visual effect
+	0,  	// BLT_LILBOOM2 52		// a harmless lilboom
+	7,  	// BLT_CHEESEHAMMER 53	// enhanced hammers
+	255,  	// BLT_FREEZE2	54		// a freeze bullet that drops like acid bullets and splats
+	7,  	// BLT_LUNA	55		// lunachick's bullets
+	7,  	// BLT_LUNA2	56		// lunachick's bullets with wall-bounce power
+};
+
+byte BulletFacingType(byte type)
+{
+	return bulletFacingType[type];
+}
+
 byte GetBulletAttackType(void)
 {
 	return attackType;

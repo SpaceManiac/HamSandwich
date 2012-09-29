@@ -345,6 +345,11 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
         case EFF_MAKEBULLET:
             strcpy(eff->text, "0");
             eff->value2=1;
+		case EFF_CHANGEBULLET:
+			eff->value=BLT_NONE;
+			eff->value2=BLT_HAMMER;
+			eff->x=255;
+			break;
 		default:
 			break;
 	}
@@ -1730,6 +1735,9 @@ void SpecialEffect(special_t *me,Map *map)
                     PauseGame();	// pause if there's an error in the equation
                 FireBullet(x<<FIXSHIFT, y<<FIXSHIFT, GetVar(255), me->effect[i].value2, me->effect[i].flags&EF_PERMLIGHT);
                 break;
+			case EFF_CHANGEBULLET:
+				ChangeBullet(!(me->effect[i].flags&EF_NOFX),me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].value2);
+				break;
 		}
 	}
 	if(me->uses>0)
@@ -2117,6 +2125,13 @@ void AdjustSpecialEffectCoords(special_t *me,int dx,int dy)
                 me->effect[i].x+=dx;
                 me->effect[i].y+=dy;
                 break;
+			case EFF_CHANGEBULLET:
+				if(me->effect[i].x!=255)
+				{
+					me->effect[i].x+=dx;
+					me->effect[i].y+=dy;
+				}
+				break;
 		}
 	}
 }

@@ -122,6 +122,8 @@ void MakeRadar(int rx,int ry,byte w);
 byte GetBulletAttackType(void);
 
 int CountBullets(byte type); // For specials to check orbiters
+void ChangeBullet(byte fx,int x,int y,int type,int newtype); // for specials to change bullets
+byte BulletFacingType(byte type); // To check if a type of bullet uses none, 0-7, or 0-255 facings
 
 void GetBulletDeltas(int *bdx,int *bdy);
 
