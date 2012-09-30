@@ -2917,7 +2917,7 @@ static const byte bulletFacingType[] = {
 	7,  	// BLT_FLAME   4
 	7,  	// BLT_LASER	5
 	255,  	// BLT_ACID	6
-	7,  	// BLT_BOMB	7
+	255,  	// BLT_BOMB	7
 	0,  	// BLT_BOOM	8
 	255,  	// BLT_ENERGY  9
 	0,  	// BLT_MEGABEAM 10		// this is a ball of energy that launches off a megabeam1
@@ -2949,11 +2949,11 @@ static const byte bulletFacingType[] = {
 	0,  	// BLT_LIGHTNING2 36
 	7,  	// BLT_MINDWIPE	37
 	0,  	// BLT_REFLECT	38
-	255,  	// BLT_SWAP	39
+	7,  	// BLT_SWAP	39
 	255,  	// BLT_SHARK	40
 	7,  	// BLT_ORBITER2 41	// orbit bomber
 	7,  	// BLT_HARPOON	42	// a spear, underwater - only difference is it sinks much more slowly
-	255,  	// BLT_SCANNER	43	// what the scanner scans with
+	7,  	// BLT_SCANNER	43	// what the scanner scans with
 	255,  	// BLT_SCANSHOT 44	// the shots the scanner fires after scanning
 	7,  	// BLT_TORPEDO	45	// Bouapha's minisub shoots them
 	7,  	// BLT_DIRTSPIKE 46	// ice spike in brown
