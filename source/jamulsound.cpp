@@ -1,23 +1,23 @@
 #include "jamulsound.h"
-#include <mmsystem.h>
-#include <dsound.h>
 #include "mgldraw.h"
 #include "sound.h"
-#include <fmod.h>
+#include <allegro.h>
 #include "music.h"
 #include "progress.h"
 #include "shop.h"
 #include "config.h"
+#include "mempackf.h"
 
 typedef struct soundList_t
 {
-	FSOUND_SAMPLE *sample;
+	SAMPLE *sample;
 } soundList_t;
 
 typedef struct schannel_t
 {
 	int soundNum;
 	int priority;
+	int voice;
 } schannel_t;
 
 static int sndVolume;
@@ -31,18 +31,19 @@ bool JamulSoundInit(int numBuffers)
 {
 	int i;
 
-	if(config.sound && FSOUND_Init(44100,config.numSounds+1,0))
+	if(config.sound && (reserve_voices(config.numSounds+1, 0), (install_sound(DIGI_AUTODETECT, MIDI_AUTODETECT, "allegro.cfg") == 0)))
 	{
 		soundIsOn=1;
 		bufferCount=numBuffers;
-		soundList=(soundList_t *)malloc(sizeof(soundList_t)*bufferCount);
-		schannel=(schannel_t *)malloc(sizeof(schannel_t)*config.numSounds+1);
+		soundList = new soundList_t[bufferCount];
+		schannel = new schannel_t[config.numSounds+1];
 		for(i=0;i<bufferCount;i++)
 			soundList[i].sample=NULL;
 		for(i=0;i<config.numSounds;i++)
 		{
 			schannel[i].priority=0;
 			schannel[i].soundNum=-1;
+			schannel[i].voice=-1;
 		}
 		sndVolume=0;
 		return TRUE;
@@ -57,11 +58,11 @@ void JamulSoundExit(void)
 {
 	if(soundIsOn)
 	{
-		free(schannel);
 		JamulSoundPurge();
 		StopSong();
-		FSOUND_Close();
-		free(soundList);
+		remove_sound();
+		delete[] schannel;
+		delete[] soundList;
 	}
 }
 
@@ -76,10 +77,11 @@ void JamulSoundUpdate(void)
 	{
 		if(schannel[i].soundNum>-1)
 		{
-			if(!FSOUND_IsPlaying(i))
+			if(!voice_check(schannel[i].voice))
 			{
 				schannel[i].soundNum=-1;
 				schannel[i].priority=0;
+				schannel[i].voice=-1;
 			}
 		}
 	}
@@ -100,8 +102,8 @@ bool JamulSoundPlay(int which,long pan,long vol,byte playFlags,int priority)
 
 	if(soundList[which].sample==NULL)
 	{
-		sprintf(s,"sound\\snd%03d.wav",which);
-		soundList[which].sample=FSOUND_Sample_Load(FSOUND_UNMANAGED,s,FSOUND_NORMAL,0);
+		sprintf(s,"sound/snd%03d.wav",which);
+		soundList[which].sample=load_sample(s);
 		if(soundList[which].sample==NULL)
 			return 0;
 	}
@@ -111,9 +113,10 @@ bool JamulSoundPlay(int which,long pan,long vol,byte playFlags,int priority)
 		for(i=0;i<config.numSounds;i++)
 			if(schannel[i].soundNum==which)
 			{
-				FSOUND_StopSound(i);
+				deallocate_voice(schannel[i].voice);
 				schannel[i].soundNum=-1;
 				schannel[i].priority=0;
+				schannel[i].voice=-1;
 			}
 	}
 
@@ -134,27 +137,26 @@ bool JamulSoundPlay(int which,long pan,long vol,byte playFlags,int priority)
 
 	// if you're replacing a sound, stop it first
 	if(schannel[chosen].soundNum!=-1)
-		FSOUND_StopSound(chosen);
+		deallocate_voice(schannel[chosen].voice);
 
-	i=FSOUND_PlaySound(chosen,soundList[which].sample);
+	i=play_sample(soundList[which].sample, vol, pan, 1000, 0);
 	if(i!=-1)
 	{
 		schannel[chosen].soundNum=which;
 		schannel[chosen].priority=priority;
-		FSOUND_SetVolume(chosen,vol);
-		FSOUND_SetPan(chosen,pan);
+		schannel[chosen].voice=i;
 		if(profile.progress.purchase[modeShopNum[MODE_REVERSE]]&SIF_ACTIVE)
 		{
-			FSOUND_SetPaused(chosen,TRUE);
-			FSOUND_SetCurrentPosition(chosen,FSOUND_Sample_GetLength(soundList[which].sample)-1);
-			FSOUND_SetFrequency(chosen,-FSOUND_GetFrequency(chosen));
-			FSOUND_SetPaused(chosen,FALSE);
+			voice_stop(i);
+			voice_set_position(i, soundList[which].sample->len - 1);
+			voice_set_frequency(i, -voice_get_frequency(i));
+			voice_start(i);
 		}
 		if(profile.progress.purchase[modeShopNum[MODE_MANIC]]&SIF_ACTIVE)
 		{
-			FSOUND_SetPaused(chosen,TRUE);
-			FSOUND_SetFrequency(chosen,FSOUND_GetFrequency(chosen)*2);
-			FSOUND_SetPaused(chosen,FALSE);
+			voice_stop(i);
+			voice_set_frequency(i, 2 * voice_get_frequency(i));
+			voice_start(i);
 		}
 	}
 	else
@@ -174,11 +176,14 @@ bool JamulSoundStop(int which)
 	{
 		if(schannel[i].soundNum==which)
 		{
-			FSOUND_StopSound(i);
+			deallocate_voice(schannel[i].voice);
 			schannel[i].soundNum=-1;
 			schannel[i].priority=0;
+			schannel[i].voice=-1;
 		}
 	}
+
+	soundIsOn = 0;
 
 	return TRUE;
 }
@@ -194,15 +199,16 @@ void JamulSoundPurge(void)
 	for(i=0;i<config.numSounds;i++)
 	{
 		if(schannel[i].soundNum!=-1)
-			FSOUND_StopSound(i);
+			deallocate_voice(schannel[i].voice);
 		schannel[i].soundNum=-1;
 		schannel[i].priority=0;
+		schannel[i].voice=-1;
 	}
 	for(i=0;i<bufferCount;i++)
 	{
 		if(soundList[i].sample)
 		{
-			FSOUND_Sample_Free(soundList[i].sample);
+			destroy_sample(soundList[i].sample);
 			soundList[i].sample=NULL;
 		}
 	}
@@ -223,9 +229,10 @@ void GoPlaySound(int num,long pan,long vol,byte flags,int priority)
 
 		if(soundList[num].sample==NULL)
 		{
-			soundList[num].sample=FSOUND_Sample_Load(FSOUND_UNMANAGED,
-				(char *)GetCustomSound(num-CUSTOM_SND_START),
-				FSOUND_LOADMEMORY,GetCustomLength(num-CUSTOM_SND_START));
+			MemoryPackfile mem(GetCustomSound(num-CUSTOM_SND_START), GetCustomLength(num-CUSTOM_SND_START));
+			PACKFILE* pf = mem.open();
+			soundList[num].sample = load_wav_pf(pf);
+			pack_fclose(pf);
 			if(soundList[num].sample==NULL)
 				return;
 		}
@@ -241,5 +248,4 @@ void JamulSoundVolume(int v)
 void JamulSoundMusicVolume(int v)
 {
 	SetMusicVolume(v);
-
 }

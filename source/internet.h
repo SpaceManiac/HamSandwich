@@ -2,7 +2,6 @@
 #define INTERNET_H
 
 #include "mgldraw.h"
-#include <winsock.h>
 
 #define IE_OK			0
 #define IE_NOCONNECT	1

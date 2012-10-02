@@ -75,7 +75,7 @@ void SaveProfile(void)
 	fprintf(f,"%s\n",profile.name);
 	fclose(f);
 
-	sprintf(prfName,"profiles\\%s.prf",profile.name);
+	sprintf(prfName,"profiles/%s.prf",profile.name);
 	// also actually save the profile!
 	f=fopen(prfName,"wb");
 	fwrite(&profile,sizeof(profile_t),1,f);
@@ -120,7 +120,7 @@ void LoadProfile(char *name)
 	int i,j;
 
 	strcpy(profile.name,name);
-	sprintf(prfName,"profiles\\%s.prf",profile.name);
+	sprintf(prfName,"profiles/%s.prf",profile.name);
 
 	// save this profile as the current one.
 	f=fopen("profile.cfg","wt");
@@ -136,6 +136,12 @@ void LoadProfile(char *name)
 	}
 	fread(&profile,sizeof(profile_t),1,f);
 	LoadPlayLists(f);
+
+	// fixed changed Mac OS X scancodes
+	for (int i = 0; i < 2; ++i)
+		for (int j = 0; j < 6; ++j)
+			if (profile.control[i][j] >= KEY_EQUALS_PAD && profile.control[i][j] <= KEY_COMMAND)
+				profile.control[i][j] += KEY_LSHIFT - KEY_EQUALS_PAD;
 
 	if(profile.progress.num_worlds==0)
 		profile.progress.world=NULL;

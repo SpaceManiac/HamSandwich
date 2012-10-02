@@ -55,20 +55,9 @@ char *VariableMsg(char *txt)
 				}
 				i+=3;
 			}
-			else if(i<(int)strlen(txt)-3 && txt[i+1]=='%' && txt[i+2]=='P')
+			else if(i<(int)strlen(txt)-3 && txt[i+1]=='%' && GetSpecialVarFunc(txt[i+2]))
 			{
-				sprintf(num,"%d",GetSpecialVar(txt[i+3]));
-				for(j=0;j<(int)strlen(num);j++)
-				{
-					out[outpos++]=num[j];
-					if(outpos>=255)
-						break;
-				}
-				i+=3;
-			}
-			else if(i<(int)strlen(txt)-3 && txt[i+1]=='%' && txt[i+2]=='T')
-			{
-				sprintf(num,"%d",GetSpecialVarT(txt[i+3]));
+				sprintf(num,"%d",GetSpecialVarFunc(txt[i+2])(txt[i+3]));
 				for(j=0;j<(int)strlen(num);j++)
 				{
 					out[outpos++]=num[j];

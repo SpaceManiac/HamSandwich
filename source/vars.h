@@ -11,8 +11,9 @@
 char *VarName(int v);
 void SetVar(byte v,int value);
 int GetVar(byte v);
-int GetSpecialVar(char c);
-int GetSpecialVarT(char c);
+
+typedef int (*varFunc_t)(char c);
+varFunc_t GetSpecialVarFunc(char c);
 
 byte CompareVar(byte v,byte flags,int value);
 byte VarMath(byte finalV,char *func);

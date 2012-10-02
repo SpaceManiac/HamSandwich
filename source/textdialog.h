@@ -1,7 +1,7 @@
 #ifndef TEXTDIALOG_H
 #define TEXTDIALOG_H
 
-#include <io.h>
+#include <stdio.h>
 #include "display.h"
 
 #define TM_OKAY		1

@@ -57,7 +57,7 @@ static void NewClick(int id)
 		return;
 
 	mode=SNDMODE_LOAD;
-	InitFileDialog("user\\*.wav",FM_LOAD|FM_EXIT,"");
+	InitFileDialog("user/*.wav",FM_LOAD|FM_EXIT,"");
 	MakeNormalSound(SND_MENUSELECT);
 }
 
@@ -78,7 +78,7 @@ static void ReloadClick(int id)
 	if(curSound>=CUSTOM_SND_START)
 	{
 		mode=SNDMODE_RELOAD;
-		InitFileDialog("user\\*.wav",FM_LOAD|FM_EXIT,"");
+		InitFileDialog("user/*.wav",FM_LOAD|FM_EXIT,"");
 		MakeNormalSound(SND_MENUSELECT);
 	}
 }
@@ -305,7 +305,7 @@ void SoundEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 				{
 					if(mode==SNDMODE_LOAD)
 					{
-						if(AddCustomSound(GetFilename("user\\")))
+						if(AddCustomSound(GetFilename("user/")))
 						{
 							curTheme=5;
 							curSound=GetNumCustomSounds()+CUSTOM_SND_START-1;
@@ -315,7 +315,7 @@ void SoundEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 					}
 					else if(mode==SNDMODE_RELOAD)
 					{
-						ReplaceCustomSound(curSound-CUSTOM_SND_START,GetFilename("user\\"));
+						ReplaceCustomSound(curSound-CUSTOM_SND_START,GetFilename("user/"));
 					}
 					ExitFileDialog();
 					mode=SNDMODE_NORMAL;

@@ -29,4 +29,6 @@ void PickSongToPlay(void);
 void PlayNextSong(void);
 void PlayPrevSong(void);
 
+void UpdateMusic(void);
+
 #endif

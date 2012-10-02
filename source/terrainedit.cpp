@@ -164,14 +164,14 @@ void MoveClick(int id)
 
 void LoadClick(int id)
 {
-	InitFileDialog("tilegfx\\*.bmp",FM_LOAD|FM_EXIT,bmpFilename);
+	InitFileDialog("tilegfx/*.bmp",FM_LOAD|FM_EXIT,bmpFilename);
 	mode=TMODE_LOADBMP;
 	MakeNormalSound(SND_MENUCLICK);
 }
 
 void SaveClick(int id)
 {
-	InitFileDialog("tilegfx\\*.bmp",FM_SAVE|FM_EXIT,bmpFilename);
+	InitFileDialog("tilegfx/*.bmp",FM_SAVE|FM_EXIT,bmpFilename);
 	mode=TMODE_SAVEBMP;
 	MakeNormalSound(SND_MENUCLICK);
 }
@@ -290,7 +290,7 @@ void TerrainSetupButtons(void)
 	MakeButton(BTN_CHECK,8, 0,4,243+15*7 ,128,15,"Animates To Next",FlagClick);
 	MakeButton(BTN_CHECK,9, 0,4,243+15*8 ,128,15,"Animates On Step",FlagClick);
 	MakeButton(BTN_CHECK,10,0,4,243+15*9 ,128,15,"Animates When Hit",FlagClick);
-	MakeButton(BTN_CHECK,11,0,4,243+15*10,128,15,"Transparent Roof",FlagClick);
+	MakeButton(BTN_CHECK,11,0,4,243+15*10,128,15,"Transparent Roof (Shadowless)",FlagClick);
 	MakeButton(BTN_CHECK,12,0,4,243+15*11,128,15,"Mine Cart Path",FlagClick);
 	MakeButton(BTN_CHECK,13,0,4,243+15*12,128,15,"Bunny Path",FlagClick);
 	MakeButton(BTN_CHECK,14,0,4,243+15*13,128,15,"Ghost Proof",FlagClick);
@@ -486,7 +486,7 @@ void InitBMPPick(void)
 	char tmpName[64];
 
 	strcpy(bmpFilename,GetFilename(""));
-	strcpy(tmpName,GetFilename("tilegfx\\"));
+	strcpy(tmpName,GetFilename("tilegfx/"));
 	mode=TMODE_PICKBMP;
 	bmpScr=new byte[640*480];
 	if(!bmpScr)
@@ -674,7 +674,7 @@ void TerrainEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 				if(n==FM_SAVE)
 				{
 					ExitFileDialog();
-					SaveTilesToBMP(GetFilename("tilegfx\\"));
+					SaveTilesToBMP(GetFilename("tilegfx/"));
 					mode=TMODE_NORMAL;
 				}
 				if(n==FM_EXIT)

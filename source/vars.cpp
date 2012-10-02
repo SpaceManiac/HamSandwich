@@ -2,6 +2,7 @@
 #include "special.h"
 #include "player.h"
 #include "progress.h"
+#include <math.h>
 
 #define VA_SET	0
 #define VA_ADD	1
@@ -16,6 +17,7 @@
 #define VA_RND	10
 #define VA_TILE 11
 #define VA_MOD	12
+#define VA_ATAN 13
 
 static int tmpVar;
 
@@ -58,7 +60,7 @@ int GetVar(byte v)
 		return 0;
 }
 
-int GetSpecialVar(char c)
+int PlayerSpecialVars(char c)
 {
 	if(c>='a' && c<='z')
 		c+='A'-'a';
@@ -69,33 +71,25 @@ int GetSpecialVar(char c)
 	{
 		case 'X':
 			return goodguy->mapx;
-			break;
 		case 'Y':
 			return goodguy->mapy;
-			break;
 		case 'R':
 			return player.rage/256;
-			break;
 		case 'L':
 			return goodguy->hp;
-			break;
 		case 'C':
 			return player.coins;
-			break;
 		case 'B':
 			return player.brains;
-			break;
 		case 'K':
 			return player.candles;
-			break;
 		case 'P':
 			return player.worldProg->percentage;
-			break;
 	}
 	return 0;
 }
 
-int GetSpecialVarT(char c)
+int TaggedSpecialVars(char c)
 {
 	if(c>='a' && c<='z')
 		c+='A'-'a';
@@ -106,14 +100,92 @@ int GetSpecialVarT(char c)
 	{
 		case 'X':
 			return TaggedMonster()->mapx;
-			break;
 		case 'Y':
 			return TaggedMonster()->mapy;
-			break;
 		case 'L':
 			return TaggedMonster()->hp;
-			break;
 	}
+	return 0;
+}
+
+int VarbarSpecialVars(char c)
+{
+	if(c>='a' && c<='z')
+		c+='A'-'a';
+
+	switch(c)
+	{
+		case 'V':
+			return player.varbar;
+		case 'M':
+			return player.varbarMax;
+	}
+	return 0;
+}
+
+int DateSpecialVars(char c)
+{
+	if(c>='a' && c<='z')
+		c+='A'-'a';
+
+	time_t timeobj;
+	time(&timeobj);
+	tm* clock = localtime(&timeobj);
+
+	switch(c)
+	{
+		case 'M':
+			return clock->tm_mon;
+		case 'D':
+			return clock->tm_mday;
+		case 'Y':
+			return clock->tm_year;
+		case 'W':
+			return clock->tm_wday;
+	}
+	return 0;
+}
+
+int ClockSpecialVars(char c)
+{
+	if(c>='a' && c<='z')
+		c+='A'-'a';
+
+	time_t timeobj;
+	time(&timeobj);
+	tm* clock = localtime(&timeobj);
+
+	switch(c)
+	{
+		case 'H':
+			return clock->tm_hour;
+		case 'M':
+			return clock->tm_min;
+		case 'S':
+			return clock->tm_sec;
+	}
+	return 0;
+}
+
+varFunc_t GetSpecialVarFunc(char c)
+{
+	if(c>='a' && c<='z')
+		c+='A'-'a';
+
+	switch(c)
+	{
+		case 'P':
+			return PlayerSpecialVars;
+		case 'T':
+			return TaggedSpecialVars;
+		case 'B':
+			return VarbarSpecialVars;
+		case 'D':
+			return DateSpecialVars;
+		case 'C':
+			return ClockSpecialVars;
+	}
+
 	return 0;
 }
 
@@ -196,6 +268,12 @@ int DoTheMath(int start,byte action,int num)
 		case VA_TILE:
 			if(start>=0 && start<curMap->width && num>=0 && num<curMap->height)
 				return curMap->map[start+num*curMap->width].floor;
+			else
+				return 0;
+			break;
+		case VA_ATAN:
+			if (start != 0 || num != 0)
+				return (int)(atan2(start, num) * 128 / 3.14159 + 256) % 256;
 			else
 				return 0;
 			break;
@@ -324,6 +402,18 @@ byte VarMath(byte finalV,char *func)
 			operatorOk=0;
 			pos++;
 		}
+		else if((tmp[pos]=='A' || tmp[pos]=='a') && operatorOk)
+		{
+			action=VA_ATAN;
+			operatorOk=0;
+			pos++;
+		}
+		else if ((tmp[pos]=='s' || tmp[pos] == 'S') && operatorOk)
+		{
+			// Sorry, future, but Blackduck really wanted a sqrt and unary postfix was the easiest way
+			result=(int)sqrt(result);
+			pos++;
+		}
 		else if((tmp[pos]=='g' || tmp[pos]=='G') && !operatorOk)
 		{
 			num=GetVar(tmp[pos+1]-'0');
@@ -340,17 +430,9 @@ byte VarMath(byte finalV,char *func)
 			operatorOk=1;
 			pos+=2;
 		}
-		else if((tmp[pos]=='p' || tmp[pos]=='P') && !operatorOk)
+		else if(GetSpecialVarFunc(tmp[pos]) && !operatorOk)
 		{
-			num=GetSpecialVar(tmp[pos+1]);
-
-			result=DoTheMath(result,action,num);
-			operatorOk=1;
-			pos+=2;
-		}
-		else if((tmp[pos]=='t' || tmp[pos]=='T') && !operatorOk)
-		{
-			num=GetSpecialVarT(tmp[pos+1]);
+			num=GetSpecialVarFunc(tmp[pos])(tmp[pos+1]);
 
 			result=DoTheMath(result,action,num);
 			operatorOk=1;

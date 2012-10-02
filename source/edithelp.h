@@ -1,7 +1,7 @@
 #ifndef EDITHELP_H
 #define EDITHELP_H
 
-#include <io.h>
+#include <stdio.h>
 #include "display.h"
 
 #define HELP_BASIC		0

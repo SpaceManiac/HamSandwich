@@ -1,5 +1,4 @@
 #include "clock.h"
-#include <mmsystem.h>
 
 dword timeStart=0,timeEnd=0;
 

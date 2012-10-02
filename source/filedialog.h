@@ -1,7 +1,7 @@
 #ifndef FILEDIALOG_H
 #define FILEDIALOG_H
 
-#include <io.h>
+#include <stdio.h>
 #include "display.h"
 
 #define FNAMELEN  32

@@ -94,7 +94,7 @@ void InitGallery(Map *map)
 
 	galpix=new galpic_t[100];
 	pos=0;
-	f=fopen("gallery\\galpix.dat","rt");
+	f=fopen("gallery/galpix.dat","rt");
 	if(!f)
 		return;
 
@@ -153,7 +153,7 @@ void SetupShow(void)
 	}
 	else if(showMode==0)
 	{
-		GetDisplayMGL()->LoadBMP("graphics\\title.bmp");
+		GetDisplayMGL()->LoadBMP("graphics/title.bmp");
 		DrawFillBox(0,0,639,479,32*1-4);
 
 		sprintf(s,"#%03d",bumpedPic+1);
@@ -173,7 +173,7 @@ void SetupShow(void)
 	}
 	else
 	{
-		sprintf(s,"gallery\\%s",galpix[bumpedPic].fname);
+		sprintf(s,"gallery/%s",galpix[bumpedPic].fname);
 		GetDisplayMGL()->LoadBMP(s);
 	}
 	for(i=0;i<480;i++)
@@ -199,7 +199,7 @@ void ExitShowPic(void)
 
 	if(showMode==1)
 	{
-		GetDisplayMGL()->LoadBMP("graphics\\title.bmp");
+		GetDisplayMGL()->LoadBMP("graphics/title.bmp");
 	}
 
 	delete image;
