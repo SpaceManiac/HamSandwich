@@ -1,0 +1,9 @@
+Thumbs.db
+/.dep.inc
+/game
+/build
+/nbproject
+/bin
+/.sconsign.dblite
+/SleeplessHollow.*
+~$*.*
