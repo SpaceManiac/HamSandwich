@@ -17,15 +17,15 @@ byte cheatsOn=0;
 
 byte WorthXP(byte type)
 {
-	byte not[]={MONS_BOUAPHA,MONS_KNIGHT,MONS_SPARK,MONS_REFLECTION,MONS_MADCOW2,MONS_CRAZYBONE,MONS_RAFT,MONS_GOODBONE,MONS_SCAREDYBAT,255};
+	byte noxp[]={MONS_BOUAPHA,MONS_KNIGHT,MONS_SPARK,MONS_REFLECTION,MONS_MADCOW2,MONS_CRAZYBONE,MONS_RAFT,MONS_GOODBONE,MONS_SCAREDYBAT,255};
 	int i;
 
 	i=0;
 	while(1)
 	{
-		if(not[i]==255)
+		if(noxp[i]==255)
 			return 1;
-		if(not[i]==type)
+		if(noxp[i]==type)
 			return 0;
 		i++;
 	}
@@ -33,7 +33,7 @@ byte WorthXP(byte type)
 
 byte DoesRespawn(byte type)
 {
-	byte not[]={MONS_BOUAPHA,MONS_NOBODY,MONS_TURRETU,MONS_TURRETD,MONS_TURRETL,MONS_TURRETR,MONS_LIGHTSWITCH,MONS_RAFT,MONS_PUMPKIN,MONS_LIGHTSLIDE,
+	byte noxp[]={MONS_BOUAPHA,MONS_NOBODY,MONS_TURRETU,MONS_TURRETD,MONS_TURRETL,MONS_TURRETR,MONS_LIGHTSWITCH,MONS_RAFT,MONS_PUMPKIN,MONS_LIGHTSLIDE,
 			    MONS_BIGHEAD,MONS_BIGHEAD2,MONS_BIGHEAD3,MONS_BIGBODY,MONS_SPARKY,MONS_STAREYBAT,
 				MONS_KNIGHT,MONS_MADCOW2,MONS_SPARK,MONS_DARKNESS,MONS_REFLECTION,MONS_EVILCLONE,MONS_PATCH,MONS_SCAREDYBAT,255};
 	int i;
@@ -41,9 +41,9 @@ byte DoesRespawn(byte type)
 	i=0;
 	while(1)
 	{
-		if(not[i]==255)
+		if(noxp[i]==255)
 			return 1;
-		if(not[i]==type)
+		if(noxp[i]==type)
 			return 0;
 		i++;
 	}
@@ -960,7 +960,7 @@ void Guy::Render(byte light)
 	}
 	oldBrt=GetMonsterType(t)->brtChg;
 	GetMonsterType(t)->brtChg=brtChange;
-	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen,customSpr);
+	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen,NULL/*customSpr*/); // TODO: custom monster jsps
 	if(fromColor!=255)
 	{
 		GetMonsterType(t)->fromCol=oldFrom;
@@ -3855,6 +3855,8 @@ byte BadguyRegions(int x,int y,int x2,int y2,int tx,int ty)
 	return 1;
 }
 
+static Guy* const NO_SUCH_GUY = (Guy *)(int)(65535);
+
 void SaveGuys(FILE *f)
 {
 	int i;
@@ -3870,13 +3872,13 @@ void SaveGuys(FILE *f)
 			t=guys[i]->target;
 			p=guys[i]->parent;
 			if(guys[i]->target)
-				guys[i]->target=(Guy *)(guys[i]->target->ID);
+				guys[i]->target=(Guy *)(int)(guys[i]->target->ID);
 			else
-				guys[i]->target=(Guy *)65535;
+				guys[i]->target=NO_SUCH_GUY;
 			if(guys[i]->parent)
-				guys[i]->parent=(Guy *)(guys[i]->parent->ID);
+				guys[i]->parent=(Guy *)(int)(guys[i]->parent->ID);
 			else
-				guys[i]->parent=(Guy *)65535;
+				guys[i]->parent=NO_SUCH_GUY;
 			fwrite(guys[i],sizeof(Guy),1,f);
 			guys[i]->target=t;
 			guys[i]->parent=p;
@@ -3898,14 +3900,14 @@ void LoadGuys(FILE *f)
 		if(guys[i]->type)
 		{
 			fread(guys[i],sizeof(Guy),1,f);
-			if(guys[i]->target==(Guy *)65535)
+			if(guys[i]->target==NO_SUCH_GUY)
 				guys[i]->target=NULL;
 			else
-				guys[i]->target=GetGuy((word)guys[i]->target);
-			if(guys[i]->parent==(Guy *)65535)
+				guys[i]->target=GetGuy((word)(int)guys[i]->target);
+			if(guys[i]->parent==NO_SUCH_GUY)
 				guys[i]->parent=NULL;
 			else
-				guys[i]->parent=GetGuy((word)guys[i]->parent);
+				guys[i]->parent=GetGuy((word)(int)guys[i]->parent);
 
 			if(guys[i]->type==MONS_NOBODY)
 				nobody=guys[i];

@@ -444,11 +444,11 @@ void MGLDraw::WaterPalette(byte b)
 
 				// Added in Sleepless Hollow (Dumb Side)
 				pal2[i*32+j].b+=30;
-				if(pal2[i*32+j].b63)
+				if(pal2[i*32+j].b+63)
 				{
 					pal2[i*32+j].b=63;
 				}
-				if(pal2[i*32+j].g10)
+				if(pal2[i*32+j].g+10)
 					pal2[i*32+j].g-=10;
 				else
 					pal2[i*32+j].g=0;

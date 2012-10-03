@@ -19,10 +19,13 @@ blacklist = [
 	'source/monsterai2.cpp',
 	'source/monsterai3.cpp',
 	'source/monsterai4.cpp',
+	'source/monsterhollow.cpp',
 	'source/textitems.cpp',
 	'source/textrooms.cpp',
 	'source/options.cpp',
 	'source/spcldialog.cpp',
+    'source/tally.cpp',
+    'source/worldselect.cpp',
 ]
 
 def getFileList(dir, ext='.cpp'):
@@ -44,10 +47,10 @@ def program(output, debug, **kwargs):
 	env.Append(CPPDEFINES = ['ALLEGRO_MINGW32' if windows else 'ALLEGRO_UNIX'])
 	env.Append(**kwargs)
 	if debug:
-		env.Append(CPPDEFINES = ['_DEBUG', 'EXPANDO', 'LOG'])
+		env.Append(CPPDEFINES = ['_DEBUG', 'LOG'])
 		env.Append(CCFLAGS = ['-g'])
 	else:
-		env.Append(CPPDEFINES = ['NDEBUG', 'EXPANDO'])
+		env.Append(CPPDEFINES = ['NDEBUG'])
 		env.Append(CCFLAGS = ['-O2', '-s'])
 		env.Append(LINKFLAGS = ['-O2', '-s'])
 		if windows:
@@ -80,6 +83,6 @@ def program(output, debug, **kwargs):
 	result.append(env.Install('game/', outputExe))
 	return Alias(output, result)
 
-lunatic = program('lunatic', False)
-lunatic_debug = program('lunatic_debug', True)
-scanninglunatic = program('scanninglunatic', True, CPPDEFINES = ['LEVELLIST'])
+sleepless = program('sleepless', False)
+sleepless_debug = program('sleepless_debug', True)
+#scanninghollow = program('scanninghollow', True, CPPDEFINES = ['LEVELLIST'])

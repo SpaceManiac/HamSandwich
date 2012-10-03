@@ -1,47 +1,36 @@
 #include "music.h"
 #include "mgldraw.h"
-#include <fmod.h>
+#include <allegro.h>
+#include <logg.h>
 #include "progress.h"
 #include "config.h"
 #include "editor.h"
 
-FSOUND_STREAM *curStream=NULL;
+LOGG_Stream *curStream=NULL;
 char curSongName[64];
 int musVolume=255;
 byte lastSong=255;
 byte dontcallback=0;
+long musStart=0;
 
 void PickSongToPlay(void)
 {
 	if(!config.music)
 		return;
 
-	if(curStream==NULL)
-	{
-		PlaySongForce(curSongName);
-	}
+	if(!strcmp(curSongName,"hicksong.ogg"))
+		PlaySongForce("unspeakable.ogg");
 	else
-	{
-		if(!strcmp(curSongName,"hicksong.ogg"))
-			PlaySongForce("unspeakable.ogg");
-		else
-		{
-			FSOUND_Stream_Play(config.numSounds,curStream);	// just go ahead and repeat this song
-			FSOUND_SetVolume(config.numSounds,musVolume);
-			lastSong=255;
-		}
-	}
+		PlaySongForce(curSongName);
 }
 
-signed char SongIsDone(FSOUND_STREAM *stream,void *buff,int len,int param)
+void UpdateMusic(void)
 {
-	if(!config.music)
-		return 0;
-
-	if(!dontcallback)
-		PickSongToPlay();
-
-	return 0;	// ignores the return value
+	if (config.music && curStream &&            // music is playing
+			!logg_update_stream(curStream) &&   // we're on the last buffer
+			(timeGetTime() - musStart)/1000.0f >= (float)curStream->len / (float)curStream->freq) // timewise, the whole song has played
+		if (!dontcallback)
+			PickSongToPlay();
 }
 
 void PlaySong(char *fname)
@@ -54,24 +43,13 @@ void PlaySong(char *fname)
 	if(!strcmp(curSongName,fname) && fname[0]!='\0')
 		return;	// no need!
 
-	strcpy(curSongName,fname);
-
 	if(fname[0]=='\0')
 	{
 		StopSong();
 		return;
 	}
-	sprintf(fullname,"music\\%s",fname);
-	StopSong();
-	strcpy(curSongName,fname);
 
-	curStream=FSOUND_Stream_OpenFile(fullname,FSOUND_NORMAL,0);
-	if(curStream)
-	{
-		FSOUND_Stream_Play(config.numSounds,curStream);
-		FSOUND_Stream_SetEndCallback(curStream,SongIsDone,0);
-		FSOUND_SetVolume(config.numSounds,musVolume);
-	}
+	PlaySongForce(fname);
 }
 
 void PlaySongForce(char *fname)
@@ -82,14 +60,13 @@ void PlaySongForce(char *fname)
 		return;
 
 	strcpy(curSongName,fname);
-	sprintf(fullname,"music\\%s",fname);
+	sprintf(fullname,"music/%s",fname);
 	StopSong();
-	curStream=FSOUND_Stream_OpenFile(fullname,FSOUND_NORMAL,0);
+	curStream=logg_get_stream(fullname, musVolume, 128, 0);
 	if(curStream)
 	{
-		FSOUND_Stream_Play(config.numSounds,curStream);
-		FSOUND_Stream_SetEndCallback(curStream,SongIsDone,0);
-		FSOUND_SetVolume(config.numSounds,musVolume);
+		musStart = timeGetTime();
+		UpdateMusic();
 	}
 }
 
@@ -101,11 +78,10 @@ void StopSong(void)
 	dontcallback=1;
 	if(curStream)
 	{
-		FSOUND_Stream_Close(curStream);
+		logg_destroy_stream(curStream);
 		curStream=NULL;
 	}
 	dontcallback=0;
-	curSongName[0]='\0';
 }
 
 void SetMusicVolume(int vol)
@@ -116,7 +92,8 @@ void SetMusicVolume(int vol)
 	musVolume=vol;
 	if(curStream)
 	{
-		FSOUND_SetVolume(config.numSounds,musVolume);
+		curStream->volume = musVolume;
+		voice_set_volume(curStream->audio_stream->voice, musVolume);
 	}
 }
 

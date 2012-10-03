@@ -113,6 +113,8 @@ int VarbarSpecialVars(char c)
 	if(c>='a' && c<='z')
 		c+='A'-'a';
 
+	// TODO: varbar
+	/*
 	switch(c)
 	{
 		case 'V':
@@ -120,6 +122,7 @@ int VarbarSpecialVars(char c)
 		case 'M':
 			return player.varbarMax;
 	}
+	*/
 	return 0;
 }
 

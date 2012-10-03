@@ -163,8 +163,8 @@ void MainMenuDisplay(MGLDraw *mgl)
 		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
 
 	// version #:
-	Print(560,2,VERSION_NO,1,1);
-	Print(559,2,VERSION_NO,0,1);
+	Print(550,2,VERSION_NO,1,1);
+	Print(549,2,VERSION_NO,0,1);
 	// Copyright:
 	Print(3,467,"Copyright " COPYRIGHT_YEARS ", Hamumu Software",1,1);
 	Print(2,466,"Copyright " COPYRIGHT_YEARS ", Hamumu Software",0,1);

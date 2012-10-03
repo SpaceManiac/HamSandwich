@@ -352,8 +352,6 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 			break;
 		default:
 			break;
-		default:
-			break;
 	}
 }
 
@@ -1708,13 +1706,14 @@ void SpecialEffect(special_t *me,Map *map)
 				SetCustomItemSprites(me->effect[i].text);
 				break;
 			case EFF_VARBAR:
-				v=GetVar(me->effect[i].value);
+				// TODO: varbar
+				/*v=GetVar(me->effect[i].value);
 				v=(word)v;
 				if(me->effect[i].flags&EF_PERMLIGHT)
 					player.varbarMax=v;
 				else
 					player.varbar=v;
-				player.varbarColor=me->effect[i].value2;
+				player.varbarColor=me->effect[i].value2;*/
 				break;
 			case EFF_MAKEBULLET:
 				int x, y;

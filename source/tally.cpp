@@ -1,4 +1,3 @@
-#include "tally.h"
 #include "mgldraw.h"
 #include "control.h"
 #include "display.h"
