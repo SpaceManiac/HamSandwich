@@ -7,7 +7,7 @@
 
 Particle **particleList;
 int		maxParticles;
-static snowCount=0;
+static int snowCount=0;
 
 Particle::Particle(void)
 {
@@ -1414,4 +1414,13 @@ void SuckParticle(int x,int y,int z)
 			break;
 		}
 	}
+}
+
+int CountParticles()
+{
+	int i, n = 0;
+	for (i = 0; i < maxParticles; ++i)
+		if (particleList[i]->Alive())
+			++n;
+	return n;
 }

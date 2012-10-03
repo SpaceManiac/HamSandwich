@@ -195,7 +195,7 @@ sprite_t *GetMonsterSprite(byte type,byte seq,byte frm,byte facing)
 	return monsType[type].spr->GetSprite(v);
 }
 
-void MonsterDraw(int x,int y,int z,byte type,byte aiType,byte seq,byte frm,byte facing,char bright,byte ouch,byte poison,byte frozen)
+void MonsterDraw(int x,int y,int z,byte type,byte aiType,byte seq,byte frm,byte facing,char bright,byte ouch,byte poison,byte frozen,sprite_set_t* set)
 {
 	sprite_t *curSpr;
 	int v;
@@ -214,6 +214,9 @@ void MonsterDraw(int x,int y,int z,byte type,byte aiType,byte seq,byte frm,byte 
 	// load if not loaded
 	LoadMySprite(type);
 
+	if (set == NULL)
+		set = monsType[type].spr;
+
 	v=monsType[type].anim[seq][frm];
 
 	if(v==254 || v==255)
@@ -229,14 +232,14 @@ void MonsterDraw(int x,int y,int z,byte type,byte aiType,byte seq,byte frm,byte 
 		shld=PlayerShield();
 		if((shld<16) && (shld&2))	// it blinks when there is 1/2 second left
 			shld=0;
-		curSpr=monsType[MONS_BOUAPHA].spr->GetSprite(464+(shld&7));
+		curSpr=set->GetSprite(464+(shld&7));
 		if(curSpr==NULL)
 			return;
 		if(shld)
 			SprDraw(x>>FIXSHIFT,(y>>FIXSHIFT)+1,1+(z>>FIXSHIFT),255,bright,curSpr,DISPLAY_DRAWME|DISPLAY_GLOW);
 		if(frozen)
 		{
-			curSpr=monsType[type].spr->GetSprite(v);
+			curSpr=set->GetSprite(v);
 			if(!curSpr)
 				return;
 			if(!(monsType[type].flags&MF_NOSHADOW))
@@ -249,7 +252,7 @@ void MonsterDraw(int x,int y,int z,byte type,byte aiType,byte seq,byte frm,byte 
 		}
 		else if(poison)
 		{
-			curSpr=monsType[type].spr->GetSprite(v);
+			curSpr=set->GetSprite(v);
 			if(!curSpr)
 				return;
 			if(!(monsType[type].flags&MF_NOSHADOW))
@@ -262,7 +265,7 @@ void MonsterDraw(int x,int y,int z,byte type,byte aiType,byte seq,byte frm,byte 
 		}
 		else if(player.invisibility)
 		{
-			curSpr=monsType[type].spr->GetSprite(v);
+			curSpr=set->GetSprite(v);
 			if(!curSpr)
 				return;
 			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright,curSpr,DISPLAY_DRAWME|DISPLAY_GLOW);
@@ -397,7 +400,7 @@ inline void FaceGoodguy(Guy *me,Guy *goodguy)
 	}
 }
 
-inline int RangeToTarget(Guy *me,Guy *goodguy)
+int RangeToTarget(Guy *me,Guy *goodguy)
 {
 	return abs(me->x-goodguy->x)+abs(me->y-goodguy->y);
 }

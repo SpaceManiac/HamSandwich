@@ -1,7 +1,9 @@
 #include "jamulfmv.h"
 #include <allegro.h>
-#include <winalleg.h>
+#include "clock.h"
 #include "display.h"
+
+static PALETTE fliTempPal;
 
 byte ShouldExitFlic(MGLDraw *mgl)
 {
@@ -15,26 +17,37 @@ byte ShouldExitFlic(MGLDraw *mgl)
 	return 0;
 }
 
-void FLIToScreen(void)
+void UpdateFlicPal(int min, int max)
+{
+	for (int i = min; i <= max; ++i) {
+		fliTempPal[i].r = fli_palette[i].r*4;
+		fliTempPal[i].g = fli_palette[i].g*4;
+		fliTempPal[i].b = fli_palette[i].b*4;
+	}
+}
+
+void FLIToScreen(MGLDraw *mgl)
 {
 	if(fli_pal_dirty_from<=fli_pal_dirty_to)
 	{
 		// palette has changed
-		set_palette(fli_palette);
+		UpdateFlicPal(fli_pal_dirty_from, fli_pal_dirty_to);
+		mgl->SetPalette(fliTempPal);
 	}
-
-	acquire_screen();
 
 	if(fli_bitmap->w==640 && fli_bitmap->h==480)	// fits the screen size, no need to stretch
 	{
-		blit(fli_bitmap,screen,0,0,0,0,640,480);
+		for (int i = 0; i < 480; ++i)
+			memcpy(mgl->GetScreen() + mgl->GetWidth()*i, fli_bitmap->line[i], 640);
 	}
 	else
 	{
-		stretch_blit(fli_bitmap,screen,0,0,fli_bitmap->w,fli_bitmap->h,0,0,640,480);
+		byte* s = mgl->GetScreen();
+		for (int x = 0; x < 640; ++x)
+			for (int y = 0; y < 480; ++y)
+				s[y*640+x] = getpixel(fli_bitmap, x*fli_bitmap->w/640, y*fli_bitmap->h/640);
 	}
-
-	release_screen();
+	mgl->Flip();
 
 	reset_fli_variables();
 }
@@ -46,6 +59,7 @@ void FLI_play(char *name,byte loop,word wait,MGLDraw *mgl)
 
 	start=timeGetTime();
 	ShouldExitFlic(mgl);	// check the keys, to clear previous presses
+	UpdateFlicPal(0, 255);
 
 	err=open_fli(name);
 	if(err!=FLI_OK)
@@ -59,7 +73,7 @@ void FLI_play(char *name,byte loop,word wait,MGLDraw *mgl)
 		now=timeGetTime();
 		while(fli_timer==0)
 		{
-			FLIToScreen();
+			FLIToScreen(mgl);
 			if(ShouldExitFlic(mgl) && (now-start)>1000)	// can only quit out after 1 second has passed
 				break;
 		}

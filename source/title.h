@@ -3,7 +3,7 @@
 
 #include "display.h"
 
-#define VERSION_NO	"Version 1.9"
+#define VERSION_NO	"Version 2.0a"
 
 struct title_t;
 

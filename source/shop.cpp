@@ -800,7 +800,7 @@ byte CanPlayWorld(char *fname)
 
 	for(i=0;i<NUMBUILTINWORLDS;i++)
 	{
-		if(!_stricmp(fname,worldFName[i]))
+		if(!stricmp(fname,worldFName[i]))
 		{
 			// this is one of the built in worlds
 			// so find which purchase item relates to it, and see if it's been bought
@@ -1159,7 +1159,7 @@ void OpenLocker(int x,int y)
 			case SHOP_WORLD:
 				char tmp[32],tmp2[32],tmp3[64];
 
-				sprintf(tmp3,"worlds\\%s",worldFName[shop[x].item]);
+				sprintf(tmp3,"worlds/%s",worldFName[shop[x].item]);
 				GetWorldName(tmp3,tmp,tmp2);
 
 				sprintf(&shopTxt[strlen(shopTxt)],"The secret bonus world \"%s\" by %s!  Play it from the World Select screen!",tmp,tmp2);
@@ -1337,7 +1337,7 @@ void InitShopping(int x,int y)
 		switch(shop[buying].type)
 		{
 			case SHOP_WORLD:
-				sprintf(tmp3,"worlds\\%s",worldFName[shop[buying].item]);
+				sprintf(tmp3,"worlds/%s",worldFName[shop[buying].item]);
 				GetWorldName(tmp3,tmp,tmp2);
 				sprintf(&shopTxt[strlen(shopTxt)],"Access to the world \"%s\" by %s",tmp,tmp2);
 				break;
@@ -1402,7 +1402,7 @@ void SetObtainText(void)
 			strcpy(shopTxt,"Thank you so very much for your generous donation!");
 			break;
 		case SHOP_WORLD:
-			sprintf(tmp3,"worlds\\%s",worldFName[shop[buying].item]);
+			sprintf(tmp3,"worlds/%s",worldFName[shop[buying].item]);
 			GetWorldName(tmp3,tmp,tmp2);
 			sprintf(shopTxt,"%s by %s has now been added to your available World list!",tmp,tmp2);
 			break;
@@ -1559,7 +1559,7 @@ byte UpdateShopping(MGLDraw *mgl)
 				profile.progress.purchase[modeToToggle]^=SIF_ACTIVE;
 				if(shop[modeToToggle].item==MODE_TEENY && (profile.progress.purchase[modeToToggle]&SIF_ACTIVE))
 				{
-					GetDisplayMGL()->LoadBMP("graphics\\gamepal.bmp");
+					GetDisplayMGL()->LoadBMP("graphics/gamepal.bmp");
 					GetDisplayMGL()->Flip();
 				}
 				SetupShops(curMap);

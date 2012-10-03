@@ -1208,24 +1208,26 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 				}
 				else
 				{
+					// Shadow wall macro: used to determine both a wall is there and it's not marked shadowless
+#define SHADOW_WALL(WALL) ((WALL) && !(GetTerrain(world, (WALL))->flags&TF_TRANS))
 					if(config.shading==0)
 					{
-						if(i<width-1 && map[i+1+j*width].wall)
+						if(i<width-1 && SHADOW_WALL(map[i+1+j*width].wall))
 							shdw=1;
 						else
 							shdw=0;
 					}
 					else
 					{
-						if(j<height-1 && map[i+(j+1)*width].wall)
+						if(j<height-1 && SHADOW_WALL(map[i+(j+1)*width].wall))
 						{
-							if(i<width-1 && map[i+1+j*width].wall)
+							if(i<width-1 && SHADOW_WALL(map[i+1+j*width].wall))
 							{
 								shdw=6;
 							}
 							else
 							{
-								if(i<width-1 && map[i+1+(j+1)*width].wall)
+								if(i<width-1 && SHADOW_WALL(map[i+1+(j+1)*width].wall))
 									shdw=4;
 								else
 									shdw=7;
@@ -1235,16 +1237,16 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 						{
 							if(i<width-1)
 							{
-								if(map[i+1+(j)*width].wall)
+								if(SHADOW_WALL(map[i+1+(j)*width].wall))
 								{
-									if(j<height-1 && map[i+1+(j+1)*width].wall)
+									if(j<height-1 && SHADOW_WALL(map[i+1+(j+1)*width].wall))
 										shdw=1;
 									else
 										shdw=2;
 								}
 								else
 								{
-									if(j<height-1 && map[i+1+(j+1)*width].wall)
+									if(j<height-1 && SHADOW_WALL(map[i+1+(j+1)*width].wall))
 										shdw=3;
 									else
 										shdw=0;
@@ -1452,24 +1454,25 @@ void Map::RenderEdit(world_t *world,int camX,int camY,byte flags)
 					}
 					else
 					{
+						// Macro is defined in Render above. It's kind of gross I know -SpaceManiac
 						if(config.shading==0)
 						{
-							if(i<width-1 && map[i+1+j*width].wall)
+							if(i<width-1 && SHADOW_WALL(map[i+1+j*width].wall))
 								shdw=1;
 							else
 								shdw=0;
 						}
 						else
 						{
-							if(j<height-1 && map[i+(j+1)*width].wall)
+							if(j<height-1 && SHADOW_WALL(map[i+(j+1)*width].wall))
 							{
-								if(i<width-1 && map[i+1+j*width].wall)
+								if(i<width-1 && SHADOW_WALL(map[i+1+j*width].wall))
 								{
 									shdw=6;
 								}
 								else
 								{
-									if(i<width-1 && map[i+1+(j+1)*width].wall)
+									if(i<width-1 && SHADOW_WALL(map[i+1+(j+1)*width].wall))
 										shdw=4;
 									else
 										shdw=7;
@@ -1479,16 +1482,16 @@ void Map::RenderEdit(world_t *world,int camX,int camY,byte flags)
 							{
 								if(i<width-1)
 								{
-									if(map[i+1+(j)*width].wall)
+									if(SHADOW_WALL(map[i+1+(j)*width].wall))
 									{
-										if(j<height-1 && map[i+1+(j+1)*width].wall)
+										if(j<height-1 && SHADOW_WALL(map[i+1+(j+1)*width].wall))
 											shdw=1;
 										else
 											shdw=2;
 									}
 									else
 									{
-										if(j<height-1 && map[i+1+(j+1)*width].wall)
+										if(j<height-1 && SHADOW_WALL(map[i+1+(j+1)*width].wall))
 											shdw=3;
 										else
 											shdw=0;

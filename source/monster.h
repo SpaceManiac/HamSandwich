@@ -353,7 +353,7 @@ byte MonsterFrames(byte type,byte aiType);
 word MonsterHP(byte type);
 word MonsterPoints(byte type);
 char *MonsterName(short type);
-void MonsterDraw(int x,int y,int z,byte type,byte aiType,byte seq,byte frm,byte facing,char bright,byte ouch,byte poison,byte frozen);
+void MonsterDraw(int x,int y,int z,byte type,byte aiType,byte seq,byte frm,byte facing,char bright,byte ouch,byte poison,byte frozen,sprite_set_t* set);
 void InstaRenderMonster(int x,int y,byte type,char bright,MGLDraw *mgl);
 int InstaRenderScannedMonster(int x,int y,byte type,char bright,MGLDraw *mgl);
 sprite_t *GetMonsterSprite(byte type,byte seq,byte frm,byte facing);

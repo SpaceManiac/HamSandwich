@@ -46,7 +46,7 @@ static byte mapNum,mode;
 static world_t *world;
 
 static word flagNum[]={MAP_SNOWING,MAP_RAIN,MAP_HUB,MAP_SECRET,MAP_TORCHLIT,MAP_WELLLIT,
-				MAP_STARS,MAP_UNDERWATER,MAP_LAVA,MAP_STEALTH};
+				MAP_STARS,MAP_UNDERWATER,MAP_LAVA,MAP_STEALTH,MAP_WAVY};
 static char flagName[][16]={
 	"Snowing",
 	"Raining",
@@ -58,6 +58,7 @@ static char flagName[][16]={
 	"Underwater",
 	"Underlava",
 	"Stealth",
+	"Wavy"
 };
 
 static byte *mapZoom;
@@ -83,7 +84,7 @@ static void SongClick(int id)
 	else
 	{
 		mode=LDMODE_SONGPICK;
-		InitFileDialog("music\\*.ogg",FM_LOAD|FM_EXIT|FM_PLAYSONGS,world->map[mapNum]->song);
+		InitFileDialog("music/*.ogg",FM_LOAD|FM_EXIT|FM_PLAYSONGS,world->map[mapNum]->song);
 	}
 }
 
@@ -428,7 +429,7 @@ void InitLevelDialog(world_t *wrld,byte currentMap)
 
 	asking=0;
 
-	levelSpr=new sprite_set_t("graphics\\pause.jsp");
+	levelSpr=new sprite_set_t("graphics/pause.jsp");
 	LevelDialogButtons();
 	mapZoom=new byte[MAX_MAPSIZE*MAX_MAPSIZE];
 	RenderZoomMap();

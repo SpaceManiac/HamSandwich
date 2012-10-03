@@ -95,7 +95,7 @@ intface_t intf[NUM_INTF];
 
 void InitInterface(void)
 {
-	intfaceSpr=new sprite_set_t("graphics\\intface.jsp");
+	intfaceSpr=new sprite_set_t("graphics/intface.jsp");
 	memcpy(intf,defaultSetup,sizeof(intface_t)*NUM_INTF);
 }
 

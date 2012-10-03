@@ -5,6 +5,7 @@
 #include "player.h"
 #include "music.h"
 #include "dialogbits.h"
+#include <dirent.h>
 
 #define PM_NORMAL		0
 #define PM_SELPLAY		1	// selecting in playlist
@@ -123,21 +124,17 @@ void InputSong(char *fname)
 
 void ScanSongs(void)
 {
-	long hFile;
-	struct _finddata_t filedata;
+	DIR* dir;
+	struct dirent *dp;
 
-	hFile=_findfirst("music\\*.ogg",&filedata);
+	dir = opendir("music");
 
-	if(hFile!=-1)	// there's at least one
+	while ((dp = readdir(dir)) != NULL)
 	{
-		InputSong(filedata.name);
-
-		while(_findnext(hFile,&filedata)==0)
-		{
-			InputSong(filedata.name);
-		}
+		InputSong(dp->d_name);
 	}
-	_findclose(hFile);
+
+	closedir(dir);
 	SortSongs();
 }
 
@@ -231,8 +228,8 @@ void InitPlayListMenu(MGLDraw *mgl)
 	filePos=0;
 	mode=PM_NORMAL;
 
-	mgl->LoadBMP("graphics\\profmenu.bmp");
-	plSpr=new sprite_set_t("graphics\\pause.jsp");
+	mgl->LoadBMP("graphics/profmenu.bmp");
+	plSpr=new sprite_set_t("graphics/pause.jsp");
 
 	backgd=(byte *)malloc(640*480);
 	for(i=0;i<480;i++)
@@ -383,13 +380,13 @@ byte UpdatePlayListMenu(int *lastTime,MGLDraw *mgl)
 					{
 						i=((msy-48)/LISTSPACING)+listPos;
 						if(i<profile.playList[listNum].numSongs)
-							PlaySong(&profile.playList[listNum].song[i*SONGNAME_LEN]);
+							PlaySongForce(&profile.playList[listNum].song[i*SONGNAME_LEN]);
 					}
 					if(PointInRect(msx,msy,370,48,370+232,48+360))
 					{
 						i=((msy-48)/LISTSPACING)+filePos;
 						if(i<numFiles)
-							PlaySong(&fileList[i*SONGNAME_LEN]);
+							PlaySongForce(&fileList[i*SONGNAME_LEN]);
 					}
 				}
 				if(mgl->MouseTap())

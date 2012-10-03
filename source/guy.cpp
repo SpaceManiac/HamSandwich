@@ -55,10 +55,14 @@ byte DoesRespawn(byte type)
 Guy::Guy(void)
 {
 	type=MONS_NONE;
+	// TODO: custom monster jsps
+	//customSpr=NULL;
 }
 
 Guy::~Guy(void)
 {
+	// TODO: custom monster jsps
+	//if (customSpr) delete customSpr;
 }
 
 byte Guy::CoconutBonk(int xx,int yy,Guy *him)
@@ -956,7 +960,7 @@ void Guy::Render(byte light)
 	}
 	oldBrt=GetMonsterType(t)->brtChg;
 	GetMonsterType(t)->brtChg=brtChange;
-	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen);
+	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen,customSpr);
 	if(fromColor!=255)
 	{
 		GetMonsterType(t)->fromCol=oldFrom;
@@ -2736,6 +2740,65 @@ void SetMonsterName(byte fx,int x,int y,int type,char *name)
 			}
 
 			strcpy(guys[i]->name,name);
+		}
+	}
+}
+
+void SetMonsterGraphics(byte fx,int x,int y,int type,char *name)
+{
+	int i;
+
+	for(i=0;i<maxGuys;i++)
+	{
+		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && guys[i]->hp!=0 && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+		{
+			switch(type)
+			{
+				case MONS_ANYBODY:
+					break;
+				case MONS_GOODGUY:
+					if(!guys[i]->friendly)
+						continue;
+					break;
+				case MONS_BADGUY:
+					if(guys[i]->friendly)
+						continue;
+					break;
+				case MONS_NONPLAYER:
+					if(guys[i]->aiType==MONS_BOUAPHA)
+						continue;
+					break;
+				case MONS_PLAYER:
+					if(guys[i]->aiType!=MONS_BOUAPHA)
+						continue;
+					break;
+				case MONS_TAGGED:
+					if(guys[i]!=TaggedMonster())
+						continue;
+					break;
+				default:
+					if(guys[i]->type!=type)
+						continue;
+					break;
+			}
+
+			// set sprite
+			char buf[64];
+			sprintf(buf,"user/%s", name);
+
+			// TODO: custom monster jsps
+			/*if (guys[i]->customSpr) delete guys[i]->customSpr;
+
+			sprite_set_t* spr = new sprite_set_t();
+			if (spr->Load(buf))
+			{
+				guys[i]->customSpr = spr;
+			}
+			else
+			{
+				delete spr;
+				guys[i]->customSpr = NULL;
+			}*/
 		}
 	}
 }

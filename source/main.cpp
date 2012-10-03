@@ -10,8 +10,6 @@
 #include "mgldraw.h"
 #include "jamulfont.h"
 #include "jamulsound.h"
-#include <shellapi.h>
-#include <crtdbg.h>
 
 #include "game.h"
 #include "editor.h"
@@ -29,49 +27,31 @@
 #include "nag.h"
 #endif
 
-bool windowedGame=FALSE;
 MGLDraw *mainmgl;
 
-void ParseCmdLine(char *cmdLine)
+int main()
 {
-	char *token;
+	bool windowedGame=FALSE;
 
-	token=strtok(cmdLine," ");
-	while(token!=NULL)
+	for (int i = 1; i < argc; ++i)
 	{
-		if(!strcmp(token,"window"))
+		if (!strcmp(argv[i], "window"))
 			windowedGame=TRUE;
-		token=strtok(NULL," ");
 	}
-}
-
-int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR cmdLine,int nCmdShow)
-{
-#ifndef NDEBUG
-
-int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG); // Get current flag
-
-flag |= _CRTDBG_LEAK_CHECK_DF; // Turn on leak-checking bit
-
-_CrtSetDbgFlag(flag); // Set flag to the new value
-
-#endif
-
-	ParseCmdLine(cmdLine);
 
 	InitLog();
 
 	LoadConfig();
-	mainmgl=new MGLDraw(hInstance,"Sleepless Hollow",640,480,8,windowedGame);
+	mainmgl=new MGLDraw("Sleepless Hollow",640,480,32,windowedGame);
 	if(!mainmgl)
 		return 0;
 
 	LunaticInit(mainmgl);
 
-	SplashScreen(mainmgl,"graphics\\hamumu.bmp",32,2);
+	SplashScreen(mainmgl,"graphics/hamumu.bmp",32,2);
 
-	//NewComputerSpriteFix("graphics\\items.jsp");
-	//NewComputerSpriteFix("graphics\\intface.jsp");
+	//NewComputerSpriteFix("graphics/items.jsp");
+	//NewComputerSpriteFix("graphics/intface.jsp");
 	shopping=0;
 	while(1)
 	{
@@ -120,7 +100,9 @@ _CrtSetDbgFlag(flag); // Set flag to the new value
 					delete mainmgl;
 					ExitLog();
 					FatalErrorQuit();
+#ifdef WIN32
 					ShellExecute(NULL,"open","http://hamumu.com/scores.php",NULL,NULL,SW_SHOWNORMAL);
+#endif
 					return 0;
 				}
 				else if(DoWebPage()==2)
@@ -129,8 +111,9 @@ _CrtSetDbgFlag(flag); // Set flag to the new value
 					delete mainmgl;
 					ExitLog();
 					FatalErrorQuit();
-
+#ifdef WIN32
 					ShellExecute(NULL,"open","http://hamumu.com/addon.php",NULL,NULL,SW_SHOWNORMAL);
+#endif
 					return 0;
 				}
 #else
@@ -138,17 +121,18 @@ _CrtSetDbgFlag(flag); // Set flag to the new value
 				delete mainmgl;
 				ExitLog();
 				FatalErrorQuit();
-
+#ifdef WIN32
 				ShellExecute(NULL,"open","http://hamumu.com/game.php?game=HOLLOW",NULL,NULL,SW_SHOWNORMAL);
+#endif
 				return 0;
 #endif
 				break;
 			case 5:	// editor
-#ifdef _DEBUG
 				shopping=0;
 				LunaticEditor(mainmgl);
-#endif
 				break;
 		}
 	}
 }
+
+END_OF_MAIN()

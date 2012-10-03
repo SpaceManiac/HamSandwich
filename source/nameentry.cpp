@@ -26,7 +26,7 @@ void InitNameEntry(MGLDraw *mgl)
 	error=0;
 	errorBright=-200;
 
-	mgl->LoadBMP("graphics\\pause.bmp");
+	mgl->LoadBMP("graphics/pause.bmp");
 	backgd=(byte *)malloc(640*480);
 
 	for(i=0;i<480;i++)
@@ -43,7 +43,7 @@ byte CheckForExistingName(char *name)
 	FILE *f;
 	char s[64];
 
-	sprintf(s,"profiles\\%s.prf",name);
+	sprintf(s,"profiles/%s.prf",name);
 	f=fopen(s,"rb");
 	if(f)
 	{

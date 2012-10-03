@@ -88,4 +88,6 @@ void SmokeTile(int x,int y);
 void JackFrostWeather(int x,int y);
 void SuckParticle(int x,int y,int z);
 
+int CountParticles();
+
 #endif

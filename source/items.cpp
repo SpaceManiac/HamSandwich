@@ -8,6 +8,7 @@
 #include "goal.h"
 #include "worldstitch.h"
 #include "journal.h"
+#include <ctype.h>
 
 item_t baseItems[]={
 	{"None",0,0,0,0,0,0,0,0,0,0,0,0,"",0},
@@ -276,7 +277,7 @@ item_t baseItems[]={
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Bubbles",0,-5,92,0,0,0,
 		0,
-		IF_GLOW,
+		IF_GLOW|IF_BUBBLES,
 		IT_POWERUP|IT_DECOR,
 		ITR_PLAYERBUMP,IE_OXYGEN,1,"",0},
 	{"Scuba Tank",-2,0,89,0,0,0,
@@ -735,6 +736,7 @@ static item_t emptyItem=
 		ITR_NONE,IE_NONE,0,"",0};
 
 sprite_set_t *itmSpr;
+sprite_set_t *customItmSpr;
 static byte glowism;
 static byte rndItem;
 static word numItems;
@@ -749,7 +751,8 @@ void InitItems(void)
 	memset(items,0,256*sizeof(item_t));
 	memcpy(items,baseItems,sizeof(item_t)*NUM_ORIGINAL_ITEMS);
 
-	itmSpr=new sprite_set_t("graphics\\items.jsp");
+	itmSpr=new sprite_set_t("graphics/items.jsp");
+	customItmSpr=NULL;
 	glowism=0;
 	SetupRandomItems();
 	rndItem=GetRandomItem();
@@ -758,6 +761,10 @@ void InitItems(void)
 void ExitItems(void)
 {
 	delete itmSpr;
+	if (customItmSpr) {
+		delete customItmSpr;
+		customItmSpr=NULL;
+	}
 	delete[] items;
 }
 
@@ -796,8 +803,59 @@ void DeleteItem(int itm)
 	numItems--;
 }
 
+void SetCustomItemSprites(char* name)
+{
+	if (customItmSpr) delete customItmSpr;
+
+	customItmSpr=new sprite_set_t();
+
+	char buf[64];
+	sprintf(buf, "user/%s", name);
+	if (!customItmSpr->Load(buf))
+	{
+		// failed to load
+		delete customItmSpr;
+		customItmSpr = NULL;
+		return;
+	}
+	else
+	{
+		// great success!
+		return;
+	}
+}
+
+void DetectCustomItemSprites(world_t *world)
+{
+	// extract filename out of first special if possible
+	special_t* special = world->map[0]->special;
+
+	for (int i = 0; i < MAX_SPECIAL; ++i) {
+		for (int j = 0; j < NUM_EFFECTS; ++j) {
+			if (special[i].effect[j].type == EFF_ITEMGRAPHICS) {
+				SetCustomItemSprites(special[i].effect[j].text);
+				return;
+			}
+		}
+	}
+}
+
+sprite_set_t* CustomItemSprites()
+{
+	if (customItmSpr == NULL) {
+		DetectCustomItemSprites(editing ? EditorGetWorld() : &curWorld);
+	}
+	return customItmSpr;
+}
+
+int NumCustomSprites(void)
+{
+	return CustomItemSprites() ? customItmSpr->GetCount() : 0;
+}
+
 void RenderItem(int x,int y,byte type,char bright,byte flags)
 {
+	sprite_t* sprite;
 	byte b;
 
 	if(!(flags&(MAP_SHOWPICKUPS|MAP_SHOWOTHERITEMS)))
@@ -826,44 +884,53 @@ void RenderItem(int x,int y,byte type,char bright,byte flags)
 	{
 		x-=3;
 
-		if(items[type].effect==IE_WEAPON)
+		if (items[type].flags & IF_USERJSP)
+		{
+			sprite_set_t* custom = CustomItemSprites();
+			if (custom)
+				sprite = custom->GetSprite(items[type].sprNum < custom->GetCount() ? items[type].sprNum : 0);
+			else
+				sprite = itmSpr->GetSprite(8); // red X indicating invalid custom JSP file
+		}
+		else
+			sprite = itmSpr->GetSprite(items[type].sprNum);
+
+		if(items[type].flags&IF_SHADOW && (items[type].effect!=IE_WEAPON || items[type].flags & IF_USERJSP))
+		{
+			SprDraw(x+items[type].xofs,y,-items[type].yofs+1,0,bright+items[type].bright,
+				sprite,DISPLAY_DRAWME|DISPLAY_SHADOW);
+		}
+		if(items[type].effect==IE_WEAPON && !(items[type].flags & IF_USERJSP))
 		{
 			RenderMysticalHammerItem(items[type].toColor,x*FIXAMT,y*FIXAMT);
 		}
+		else if(items[type].flags&IF_LOONYCOLOR)
+		{
+			b=abs(16-(glowism&31));
+			SprDraw(x+items[type].xofs,y,-items[type].yofs+1,glowism/32,bright+b+items[type].bright,
+				sprite,DISPLAY_DRAWME);
+		}
+		else if(items[type].flags&IF_GLOW)
+		{
+
+			SprDraw(x+items[type].xofs,y,-items[type].yofs+1,0,bright+items[type].bright,
+				sprite,DISPLAY_DRAWME|DISPLAY_GLOW);
+		}
 		else
 		{
-			if(items[type].flags&IF_SHADOW)
-			{
-				SprDraw(x+items[type].xofs,y,-items[type].yofs+1,0,bright+items[type].bright,
-					itmSpr->GetSprite(items[type].sprNum),DISPLAY_DRAWME|DISPLAY_SHADOW);
-			}
-			if(items[type].flags&IF_LOONYCOLOR)
-			{
-				b=abs(16-(glowism&31));
-				SprDraw(x+items[type].xofs,y,-items[type].yofs+1,glowism/32,bright+b+items[type].bright,
-					itmSpr->GetSprite(items[type].sprNum),DISPLAY_DRAWME);
-			}
-			else if(items[type].flags&IF_GLOW)
-			{
-
-				SprDraw(x+items[type].xofs,y,-items[type].yofs+1,0,bright+items[type].bright,
-					itmSpr->GetSprite(items[type].sprNum),DISPLAY_DRAWME|DISPLAY_GLOW);
-			}
+			if(items[type].fromColor==items[type].toColor)
+				SprDraw(x+items[type].xofs,y,-items[type].yofs+1,255,bright+items[type].bright,
+					sprite,DISPLAY_DRAWME);
 			else
-			{
-				if(items[type].fromColor==items[type].toColor)
-					SprDraw(x+items[type].xofs,y,-items[type].yofs+1,255,bright+items[type].bright,
-						itmSpr->GetSprite(items[type].sprNum),DISPLAY_DRAWME);
-				else
-					SprDrawOff(x+items[type].xofs,y,-items[type].yofs+1,items[type].fromColor,items[type].toColor,
-							   bright+items[type].bright,itmSpr->GetSprite(items[type].sprNum),DISPLAY_DRAWME|DISPLAY_OFFCOLOR);
-			}
+				SprDrawOff(x+items[type].xofs,y,-items[type].yofs+1,items[type].fromColor,items[type].toColor,
+						   bright+items[type].bright,sprite,DISPLAY_DRAWME|DISPLAY_OFFCOLOR);
 		}
 	}
 }
 
 void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 {
+	sprite_t* sprite;
 	byte b;
 
 	if(type==ITM_RANDOM)
@@ -872,6 +939,15 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 	if(type>=numItems || type==0)
 		return;
 
+	if (items[type].flags & IF_USERJSP)
+	{
+		sprite_set_t* custom = CustomItemSprites();
+		if (custom)
+			sprite = custom->GetSprite(items[type].sprNum < custom->GetCount() ? items[type].sprNum : 0);
+		else
+			sprite = itmSpr->GetSprite(8);
+	} else
+			sprite = itmSpr->GetSprite(items[type].sprNum);
 
 	if(items[type].flags&IF_TILE)
 	{
@@ -886,32 +962,28 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 		//itmSpr->GetSprite(items[type].sprNum)->DrawC(x+items[type].xofs,y+items[type].yofs,mgl);
 		if(items[type].flags&IF_SHADOW)
 		{
-			itmSpr->GetSprite(items[type].sprNum)->DrawShadow(x+items[type].xofs,
-															  y+items[type].yofs,mgl);
+			sprite->DrawShadow(x+items[type].xofs, y+items[type].yofs,mgl);
 		}
 		if(items[type].flags&IF_LOONYCOLOR)
 		{
 			b=abs(16-(glowism&31));
-			itmSpr->GetSprite(items[type].sprNum)->DrawColored(x+items[type].xofs,
-															  y+items[type].yofs,mgl,glowism/32,bright+b+items[type].bright);
+			sprite->DrawColored(x+items[type].xofs, y+items[type].yofs,mgl,glowism/32,bright+b+items[type].bright);
 		}
 		else if(items[type].flags&IF_GLOW)
 		{
-			itmSpr->GetSprite(items[type].sprNum)->DrawGlow(x+items[type].xofs,y+items[type].yofs,
-														mgl,bright+items[type].bright);
+			sprite->DrawGlow(x+items[type].xofs,y+items[type].yofs, mgl,bright+items[type].bright);
 		}
 		else
 		{
 			if(items[type].fromColor==items[type].toColor)
 			{
-				itmSpr->GetSprite(items[type].sprNum)->DrawBright(x+items[type].xofs,
-													y+items[type].yofs,mgl,bright+items[type].bright);
+				sprite->DrawBright(x+items[type].xofs, y+items[type].yofs,mgl,bright+items[type].bright);
 			}
 			else
 			{
-				itmSpr->GetSprite(items[type].sprNum)->DrawOffColor(x+items[type].xofs,y+items[type].yofs,
-											mgl,items[type].fromColor,items[type].toColor,
-											bright+items[type].bright);
+				sprite->DrawOffColor(x+items[type].xofs,y+items[type].yofs,
+									mgl,items[type].fromColor,items[type].toColor,
+									bright+items[type].bright);
 			}
 		}
 	}
@@ -1716,7 +1788,7 @@ void UpdateItem(mapTile_t *m,int width,int offset)
 				NewMessage(items[m->item].msg,75,0);
 		}
 	}
-	if(m->item==ITM_BUBBLES && Random(7)==0)
+	if((items[m->item].flags&IF_BUBBLES) && Random(7)==0)
 	{
 		x=offset%width;
 		y=offset/width;

@@ -89,7 +89,7 @@ void ControlKeyDown(char k)
 	lastScanCode=k;
 
 	// track shift keys being held
-  	if(k==KEY_LSHIFT)
+	if(k==KEY_LSHIFT)
 		shiftState|=1;
 	if(k==KEY_RSHIFT)
 		shiftState|=2;

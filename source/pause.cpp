@@ -232,7 +232,7 @@ void RenderPauseMenu(void)
 
 	if(backgd==NULL)
 	{
-		GetDisplayMGL()->LoadBMP("graphics\\pause.bmp");
+		GetDisplayMGL()->LoadBMP("graphics/pause.bmp");
 		backgd=(byte *)malloc(640*480);
 		if(!backgd)
 			FatalError("Out of memory!");
@@ -420,7 +420,7 @@ void InitPauseMenu(void)
 
 	if(backgd==NULL)
 	{
-		GetDisplayMGL()->LoadBMP("graphics\\pause.bmp");
+		GetDisplayMGL()->LoadBMP("graphics/pause.bmp");
 		backgd=(byte *)malloc(640*480);
 		if(!backgd)
 			FatalError("Out of memory!");

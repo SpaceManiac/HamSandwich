@@ -1,11 +1,13 @@
 #include "title.h"
 #include "game.h"
-#include <io.h>
+#include <stdio.h>
 #include "jamulfmv.h"
 #include "pause.h"
 #include "nameentry.h"
 #include "progress.h"
 #include "shop.h"
+
+#define COPYRIGHT_YEARS "2007-2012"
 
 // special codes in the credits:
 // @ = use GirlsRWeird font
@@ -17,12 +19,16 @@ char credits[][32]={
 	"@SLEEPLESS HOLLOW",
 	"",
 	"",
-	"Copyright 2007,",
+	"Copyright " COPYRIGHT_YEARS ",",
 	"By Hamumu Software",
 	"#",
 	"&Everything Not Mentioned Below",
 	"",
 	"Mike Hommel",
+	"%",
+	"&Modernizing",
+	"",
+	"Tad \"SpaceManiac\" Hardesty",
 	"%",
 	"&Some Tiles Borrowed From",
 	"",
@@ -118,7 +124,7 @@ char victoryTxt[][64]={
 	};
 
 // once the credits have scrolled to END_OF_CREDITS pixels, they end
-#define END_OF_CREDITS 480*2
+#define END_OF_CREDITS 480*2 + 30
 #define END_OF_VICTORY 480*2+50
 
 sprite_set_t *planetSpr;
@@ -160,8 +166,8 @@ void MainMenuDisplay(MGLDraw *mgl)
 	Print(560,2,VERSION_NO,1,1);
 	Print(559,2,VERSION_NO,0,1);
 	// Copyright:
-	Print(3,467,"Copyright 2007, Hamumu Software",1,1);
-	Print(2,466,"Copyright 2007, Hamumu Software",0,1);
+	Print(3,467,"Copyright " COPYRIGHT_YEARS ", Hamumu Software",1,1);
+	Print(2,466,"Copyright " COPYRIGHT_YEARS ", Hamumu Software",0,1);
 
 #ifdef DEMO
 	Print(350,170,"DEMO VERSION!",10,0);
@@ -272,7 +278,7 @@ byte MainMenu(MGLDraw *mgl)
 	if(FirstTime())
 		NameEntry(mgl,1);
 
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	backgd=(byte *)malloc(640*480);
 	if(!backgd)
 		FatalError("Out of memory!");
@@ -370,7 +376,7 @@ void Credits(MGLDraw *mgl)
 	dword lastTime;
 
 	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 
 	GetTaps();
 	cmd=0;
@@ -446,7 +452,7 @@ void VictoryText(MGLDraw *mgl)
 	byte *backgd;
 
 	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics\\final.bmp");
+	mgl->LoadBMP("graphics/final.bmp");
 	backgd=(byte *)malloc(640*480);
 	if(!backgd)
 		FatalError("Out of memory!");
@@ -485,39 +491,31 @@ void VictoryText(MGLDraw *mgl)
 
 byte SpecialLoadBMP(char *name,MGLDraw *mgl,PALETTE pal)
 {
-	FILE *f;
-	BITMAPFILEHEADER bmpFHead;
-	BITMAPINFOHEADER bmpIHead;
-	RGBQUAD	pal2[256];
+	BITMAP *b;
+	RGB newpal[256];
+	int i,w;
 
-	int i;
-	byte *scr;
-
-	f=fopen(name,"rb");
-	if(!f)
+	b=load_bitmap(name,newpal);
+	if(b==NULL)
 		return FALSE;
 
-	fread(&bmpFHead,sizeof(BITMAPFILEHEADER),1,f);
-	fread(&bmpIHead,sizeof(BITMAPINFOHEADER),1,f);
-
-	// 8-bit BMPs only
-	if(bmpIHead.biBitCount!=8)
-		return FALSE;
-
-	fread(pal2,sizeof(pal2),1,f);
 	for(i=0;i<256;i++)
 	{
-		pal[i].r=pal2[i].rgbRed;
-		pal[i].g=pal2[i].rgbGreen;
-		pal[i].b=pal2[i].rgbBlue;
+		pal[i].r=newpal[i].r;
+		pal[i].g=newpal[i].g;
+		pal[i].b=newpal[i].b;
 	}
 
-	for(i=0;i<bmpIHead.biHeight;i++)
+	w=b->w;
+	if(w>SCRWID)
+		w=SCRWID;
+
+	for(i=0;i<b->h;i++)
 	{
-		scr=(byte *)((int)mgl->GetScreen()+(bmpIHead.biHeight-1-i)*640);
-		fread(scr,bmpIHead.biWidth,1,f);
+		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],b->line[i],w);
 	}
-	fclose(f);
+
+	destroy_bitmap(b);
 	return TRUE;
 }
 
@@ -637,16 +635,16 @@ void HelpScreens(MGLDraw *mgl)
 {
 	char name[32];
 
-	sprintf(name,"docs\\help.bmp");
+	sprintf(name,"docs/help.bmp");
 	if(!SpeedSplash(mgl,name))
 		return;
 }
 
 void DemoSplashScreens(MGLDraw *mgl)
 {
-	if(!SpeedSplash(mgl,"docs\\demosplash.bmp"))
+	if(!SpeedSplash(mgl,"docs/demosplash.bmp"))
 		return;
-	if(!SpeedSplash(mgl,"docs\\demosplash2.bmp"))
+	if(!SpeedSplash(mgl,"docs/demosplash2.bmp"))
 		return;
 }
 

@@ -1,10 +1,10 @@
-#include "worldselect.h"
 #include "world.h"
 #include "clock.h"
 #include "game.h"
 #include "music.h"
 #include "dialogbits.h"
 #include "shop.h"
+#include <dirent.h>
 
 #define WS_CONTINUE	0
 #define WS_EXIT		1
@@ -101,16 +101,12 @@ byte Compare(worldDesc_t *me,worldDesc_t *you,byte field,byte bkwds)
 		case 0:
 			strcpy(tmp1,me->name);
 			strcpy(tmp2,you->name);
-			_strlwr(tmp1);
-			_strlwr(tmp2);
-			f=(strcmp(tmp1,tmp2)>0);
+			f=(stricmp(tmp1,tmp2)>0);
 			break;
 		case 1:
 			strcpy(tmp1,me->author);
 			strcpy(tmp2,you->author);
-			_strlwr(tmp1);
-			_strlwr(tmp2);
-			f=(strcmp(tmp1,tmp2)>0);
+			f=(stricmp(tmp1,tmp2)>0);
 			break;
 		case 2:
 			f=(me->percentage>you->percentage);
@@ -189,7 +185,7 @@ void InputWorld(char *fname)
 	worldData_t *w;
 
 	strcpy(list[numWorlds].fname,fname);
-	sprintf(fullname,"worlds\\%s",fname);
+	sprintf(fullname,"worlds/%s",fname);
 
 #ifdef LEVELLIST
 	int i;
@@ -233,69 +229,48 @@ void InputWorld(char *fname)
 
 void ScanWorlds(void)
 {
-	long hFile;
-	struct _finddata_t filedata;
+	DIR* dir;
+	struct dirent* dp;
 	int count,done;
 
 #ifdef LEVELLIST
 	levelF=fopen("levellist.txt","wt");
-	level2F=fopen("worlds\\levels.dat","wb");
+	level2F=fopen("worlds/levels.dat","wb");
 	totalLCount=0;
 #endif
 	// count up how many there are to deal with
 	count=0;
-	hFile=_findfirst("worlds\\*.dlw",&filedata);
 
-	if(hFile!=-1)	// there's at least one
+	dir = opendir("worlds");
+	while ((dp = readdir(dir)) != NULL)
 	{
 		// rule out the backup worlds, so they don't show up
-		if((strcmp(filedata.name,"backup_load.dlw")) &&
-		   (strcmp(filedata.name,"backup_exit.dlw")) &&
-		   (strcmp(filedata.name,"backup_save.dlw")))
+		if((strcmp(dp->d_name,"backup_load.dlw")) &&
+		   (strcmp(dp->d_name,"backup_exit.dlw")) &&
+		   (strcmp(dp->d_name,"backup_save.dlw")) &&
+			strstr(dp->d_name, ".dlw"))
 			count++;
-
-		while(_findnext(hFile,&filedata)==0)
-		{
-			// rule out the backup worlds, so they don't show up as custom worlds
-			if((strcmp(filedata.name,"backup_load.dlw")) &&
-			   (strcmp(filedata.name,"backup_exit.dlw")) &&
-			   (strcmp(filedata.name,"backup_save.dlw")))
-			{
-				count++;
-			}
-		}
 	}
-	_findclose(hFile);
+	closedir(dir);
 
 	done=0;
-	hFile=_findfirst("worlds\\*.dlw",&filedata);
 
-	if(hFile!=-1)	// there's at least one
+	dir = opendir("worlds");
+	while ((dp = readdir(dir)) != NULL)
 	{
 		// rule out the backup worlds, so they don't show up
-		if((strcmp(filedata.name,"backup_load.dlw")) &&
-		   (strcmp(filedata.name,"backup_exit.dlw")) &&
-		   (strcmp(filedata.name,"backup_save.dlw")))
+		if((strcmp(dp->d_name,"backup_load.dlw")) &&
+		   (strcmp(dp->d_name,"backup_exit.dlw")) &&
+		   (strcmp(dp->d_name,"backup_save.dlw")) &&
+			strstr(dp->d_name, ".dlw"))
 		{
-			InputWorld(filedata.name);
+			InputWorld(dp->d_name);
 			done++;
-		}
-
-		while(_findnext(hFile,&filedata)==0)
-		{
-			// rule out the backup worlds, so they don't show up as custom worlds
-			if((strcmp(filedata.name,"backup_load.dlw")) &&
-			   (strcmp(filedata.name,"backup_exit.dlw")) &&
-			   (strcmp(filedata.name,"backup_save.dlw")))
-			{
-				InputWorld(filedata.name);
-				done++;
-				GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450,32*1+16);
-				GetDisplayMGL()->Flip();
-			}
+			GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450,32*1+16);
+			GetDisplayMGL()->Flip();
 		}
 	}
-	_findclose(hFile);
+	closedir(dir);
 #ifdef LEVELLIST
 	fclose(levelF);
 	fclose(level2F);
@@ -407,7 +382,7 @@ void SelectLastWorld(void)
 	if(listPos>choice)
 		listPos=choice;
 
-	sprintf(s,"worlds\\%s",list[choice].fname);
+	sprintf(s,"worlds/%s",list[choice].fname);
 	LoadWorld(&tmpWorld,s);
 	level=0;
 	scoreMode=0;
@@ -420,7 +395,7 @@ void MoveToNewWorld(void)
 	char s[64];
 
 	FreeWorld(&tmpWorld);
-	sprintf(s,"worlds\\%s",list[choice].fname);
+	sprintf(s,"worlds/%s",list[choice].fname);
 	LoadWorld(&tmpWorld,s);
 	level=0;
 	noScoresAtAll=0;
@@ -431,7 +406,7 @@ void InitWorldSelect(MGLDraw *mgl)
 {
 	int i;
 
-	mgl->LoadBMP("graphics\\profmenu.bmp");
+	mgl->LoadBMP("graphics/profmenu.bmp");
 	backgd=(byte *)malloc(640*480);
 
 	for(i=0;i<480;i++)
@@ -453,7 +428,7 @@ void InitWorldSelect(MGLDraw *mgl)
 	CalcScrollBar();
 	mgl->GetMouse(&msx,&msy);
 	mode=MODE_PICKWORLD;
-	wsSpr=new sprite_set_t("graphics\\pause.jsp");
+	wsSpr=new sprite_set_t("graphics/pause.jsp");
 	msBright=0;
 	msDBright=1;
 	PlaySongForce("003WorldPicker.ogg");
@@ -792,6 +767,7 @@ void RenderWorldSelect(MGLDraw *mgl)
 				b=-10;
 			else
 				b=0;
+
 			PrintGlow(NAME_X,40+i*GAP_HEIGHT,list[i+listPos].name,b,2);
 			PrintGlow(AUTH_X,40+i*GAP_HEIGHT,list[i+listPos].author,b,2);
 			if(list[i+listPos].percentage==0.0f)

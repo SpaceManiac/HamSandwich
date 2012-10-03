@@ -87,7 +87,7 @@ void InitNetMenu(MGLDraw *mgl)
 	msDBright=1;
 	uploadList=NULL;
 
-	mgl->LoadBMP("graphics\\pause.bmp");
+	mgl->LoadBMP("graphics/pause.bmp");
 	backgd=(byte *)malloc(640*480);
 	mgl->MouseTap();
 	mgl->LastKeyPressed();

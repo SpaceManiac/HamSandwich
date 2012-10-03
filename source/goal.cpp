@@ -131,7 +131,7 @@ void GoalFire(void)
 
 // -------------------------------------------------
 static byte noKeyTime;
-static msBtn;
+static int msBtn;
 
 void InitShowGoal(MGLDraw *mgl,byte num)
 {
@@ -146,7 +146,7 @@ void InitShowGoal(MGLDraw *mgl,byte num)
 		if(profile.progress.goal[i])
 			pg++;
 	pg--;
-	sprintf(txt,"graphics\\comic%d.bmp",pg);
+	sprintf(txt,"graphics/comic%d.bmp",pg);
 	GetDisplayMGL()->LoadBMP(txt);
 
 	sprintf(txt,"\"%s\"",ConvertText(goalDesc[num*2]));

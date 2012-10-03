@@ -19,7 +19,7 @@ static char lastKey=0;
 static MGLDraw *editmgl;
 
 static world_t	world;
-static Map		*curMap;
+static Map		*editorMap;
 static byte		curMapNum;
 static int	   mouseX,mouseY;
 static int	   tileX,tileY;
@@ -52,7 +52,7 @@ byte InitEditor(void)
 	int i;
 
 	NewWorld(&world,editmgl);
-	curMap=world.map[0];
+	editorMap=world.map[0];
 	curMapNum=0;
 
 	ToolInit();
@@ -124,7 +124,7 @@ void ExitEditor(void)
 	ExitFileDialog();
 	ToolExit();
 	ExitBullets();
-	EditorSaveWorld("worlds\\backup_exit.shw");
+	EditorSaveWorld("worlds/backup_exit.shw");
 
 	// change monsters back to normal
 	ChangeOffColor(MONS_SHARK,255,255);
@@ -167,24 +167,24 @@ void Delete(int x,int y)
 {
 	int i;
 
-	if(x<0 || x>curMap->width-1 || y<0 || y>curMap->height-1)
+	if(x<0 || x>editorMap->width-1 || y<0 || y>editorMap->height-1)
 		return;
 
 	for(i=0;i<MAX_MAPMONS;i++)
-		if((curMap->badguy[i].type) && (curMap->badguy[i].x==x) && (curMap->badguy[i].y==y))
+		if((editorMap->badguy[i].type) && (editorMap->badguy[i].x==x) && (editorMap->badguy[i].y==y))
 		{
 			DeleteGuy((x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
 				   (y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
-				   curMap->badguy[i].type);
-			curMap->badguy[i].type=0;
+				   editorMap->badguy[i].type);
+			editorMap->badguy[i].type=0;
 		}
-	curMap->GetTile(x,y)->item=0;
+	editorMap->GetTile(x,y)->item=0;
 
 	for(i=0;i<MAX_SPECIAL;i++)
-		if(curMap->special[i].trigger && curMap->special[i].x==x && curMap->special[i].y==y)
+		if(editorMap->special[i].trigger && editorMap->special[i].x==x && editorMap->special[i].y==y)
 		{
-			memset(&curMap->special[i],0,sizeof(special_t));
-			curMap->special[i].x=255;
+			memset(&editorMap->special[i],0,sizeof(special_t));
+			editorMap->special[i].x=255;
 		}
 }
 
@@ -195,8 +195,8 @@ void BackupWorld(char *name)
 	int bytes;
 	byte *data;
 
-	sprintf(inName,"worlds\\%s",name);
-	sprintf(outName,"worlds\\backup_save.shw");
+	sprintf(inName,"worlds/%s",name);
+	sprintf(outName,"worlds/backup_save.shw");
 
 	inF=fopen(inName,"rb");
 	if(!inF)
@@ -266,8 +266,8 @@ void UpdateMouse(void)
 	if(mouseX==639)
 	{
 		cx+=8;
-		if(cx>curMap->width*TILE_WIDTH)
-			cx=curMap->width*TILE_WIDTH;
+		if(cx>editorMap->width*TILE_WIDTH)
+			cx=editorMap->width*TILE_WIDTH;
 		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
 	}
 	if(mouseY==0)
@@ -280,8 +280,8 @@ void UpdateMouse(void)
 	if(mouseY==479)
 	{
 		cy+=8;
-		if(cy>curMap->height*TILE_HEIGHT)
-			cy=curMap->height*TILE_HEIGHT;
+		if(cy>editorMap->height*TILE_HEIGHT)
+			cy=editorMap->height*TILE_HEIGHT;
 		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
 	}
 
@@ -326,7 +326,7 @@ void UpdateMouse(void)
 			switch(FileDialogCommand())
 			{
 				case FM_NEW:
-					EditorSaveWorld("worlds\\backup_load.shw");
+					EditorSaveWorld("worlds/backup_load.shw");
 					FreeWorld(&world);
 					NewWorld(&world,editmgl);
 					EditorSelectMap(0);
@@ -335,7 +335,7 @@ void UpdateMouse(void)
 				case FM_MERGE:
 					if(GetFilename("")[0])	// don't do any of this if the filename is blank!
 					{
-						AddWorldIn(&world,GetFilename("worlds\\"));
+						AddWorldIn(&world,GetFilename("worlds/"));
 						InitEditHelp(HELP_WORLDSTITCH);
 						editMode=EDITMODE_HELP;
 					}
@@ -345,10 +345,10 @@ void UpdateMouse(void)
 				case FM_LOAD:
 					if(GetFilename("")[0])	// don't do any of this if the filename is blank!
 					{
-						EditorSaveWorld("worlds\\backup_load.shw");
+						EditorSaveWorld("worlds/backup_load.shw");
 						ToolSetFilename();
 						FreeWorld(&world);
-						if(!LoadWorld(&world,GetFilename("worlds\\")))
+						if(!LoadWorld(&world,GetFilename("worlds/")))
 							NewWorld(&world,editmgl);	// if you can't load it, start a new one instead
 						EditorSelectMap(0);
 						editMode=EDITMODE_EDIT;
@@ -366,7 +366,7 @@ void UpdateMouse(void)
 						ToolSetFilename();
 						GetCamera(&cx,&cy);
 						BackupWorld(GetFilename(""));
-						SaveWorld(&world,GetFilename("worlds\\"));
+						SaveWorld(&world,GetFilename("worlds/"));
 						EditorSelectMap(curMapNum);
 						PutCamera(cx*FIXAMT,cy*FIXAMT);
 					}
@@ -423,10 +423,10 @@ void UpdateMouse(void)
 					cx=0;
 				if(cy<0)
 					cy=0;
-				if(cx>=curMap->width)
-					cx=curMap->width-1;
-				if(cy>=curMap->height)
-					cy=curMap->height-1;
+				if(cx>=editorMap->width)
+					cx=editorMap->width-1;
+				if(cy>=editorMap->height)
+					cy=editorMap->height-1;
 				tileX=cx;
 				tileY=cy;
 				SetSpecialCoords(tileX,tileY);
@@ -442,10 +442,10 @@ void UpdateMouse(void)
 					cx=0;
 				if(cy<0)
 					cy=0;
-				if(cx>=curMap->width)
-					cx=curMap->width-1;
-				if(cy>=curMap->height)
-					cy=curMap->height-1;
+				if(cx>=editorMap->width)
+					cx=editorMap->width-1;
+				if(cy>=editorMap->height)
+					cy=editorMap->height-1;
 				tileX=cx;
 				tileY=cy;
 				rectX1=tileX;
@@ -461,10 +461,10 @@ void UpdateMouse(void)
 				cx=0;
 			if(cy<0)
 				cy=0;
-			if(cx>=curMap->width)
-				cx=curMap->width-1;
-			if(cy>=curMap->height)
-				cy=curMap->height-1;
+			if(cx>=editorMap->width)
+				cx=editorMap->width-1;
+			if(cy>=editorMap->height)
+				cy=editorMap->height-1;
 			rectX2=cx;
 			rectY2=cy;
 
@@ -502,14 +502,14 @@ byte EditorRun(int *lastTime)
 
 		// update everything here
 		UpdateItems();
-		EditorUpdateGuys(curMap);
+		EditorUpdateGuys(editorMap);
 		if(displayFlags&MAP_TEMPTORCH)
 		{
-			curMap->Update(UPDATE_FADE,&world);
-			curMap->GlowCursor(tileX,tileY,10,40);
+			editorMap->Update(UPDATE_FADE,&world);
+			editorMap->GlowCursor(tileX,tileY,10,40);
 		}
 		else
-			curMap->Update(UPDATE_EDIT,&world);
+			editorMap->Update(UPDATE_EDIT,&world);
 
 		UpdateMouse();
 
@@ -519,7 +519,7 @@ byte EditorRun(int *lastTime)
 	}
 
 	if(curMapNum==0)
-		curMap->flags|=MAP_HUB;
+		editorMap->flags|=MAP_HUB;
 
 	return CONTINUE;
 }
@@ -535,26 +535,26 @@ void ShowSpecials(void)
 
 	GetCamera(&sx,&sy);
 	for(i=0;i<MAX_SPECIAL;i++)
-		if(curMap->special[i].x!=255)
+		if(editorMap->special[i].x!=255)
 		{
-			Print(curMap->special[i].x*TILE_WIDTH+2-sx+320-1,
-				  curMap->special[i].y*TILE_HEIGHT-sy+240-1,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320-1,
+				  editorMap->special[i].y*TILE_HEIGHT-sy+240-1,
 				  "Spcl",-32,1);
-			Print(curMap->special[i].x*TILE_WIDTH+2-sx+320+1,
-				  curMap->special[i].y*TILE_HEIGHT-sy+240+1,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320+1,
+				  editorMap->special[i].y*TILE_HEIGHT-sy+240+1,
 				  "Spcl",-32,1);
-			Print(curMap->special[i].x*TILE_WIDTH+2-sx+320,
-				  curMap->special[i].y*TILE_HEIGHT-sy+240,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320,
+				  editorMap->special[i].y*TILE_HEIGHT-sy+240,
 				  "Spcl",0,1);
 			sprintf(s,"%03d",i);
-			Print(curMap->special[i].x*TILE_WIDTH+2-sx+320-1,
-				  curMap->special[i].y*TILE_HEIGHT+12-sy+240-1,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320-1,
+				  editorMap->special[i].y*TILE_HEIGHT+12-sy+240-1,
 				  s,-32,1);
-			Print(curMap->special[i].x*TILE_WIDTH+2-sx+320+1,
-				  curMap->special[i].y*TILE_HEIGHT+12-sy+240+1,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320+1,
+				  editorMap->special[i].y*TILE_HEIGHT+12-sy+240+1,
 				  s,-32,1);
-			Print(curMap->special[i].x*TILE_WIDTH+2-sx+320,
-				  curMap->special[i].y*TILE_HEIGHT+12-sy+240,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320,
+				  editorMap->special[i].y*TILE_HEIGHT+12-sy+240,
 				  s,0,1);
 		}
 }
@@ -569,16 +569,16 @@ void ShowSpecials2(void)
 
 	GetCamera(&sx,&sy);
 	for(i=0;i<MAX_SPECIAL;i++)
-		if(curMap->special[i].x!=255)
+		if(editorMap->special[i].x!=255)
 		{
-			Print(curMap->special[i].x*TILE_WIDTH+2-sx+320-1,
-				  curMap->special[i].y*TILE_HEIGHT+6-sy+240-1,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320-1,
+				  editorMap->special[i].y*TILE_HEIGHT+6-sy+240-1,
 				  "Spcl",-32,1);
-			Print(curMap->special[i].x*TILE_WIDTH+2-sx+320+1,
-				  curMap->special[i].y*TILE_HEIGHT+6-sy+240+1,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320+1,
+				  editorMap->special[i].y*TILE_HEIGHT+6-sy+240+1,
 				  "Spcl",-32,1);
-			Print(curMap->special[i].x*TILE_WIDTH+2-sx+320,
-				  curMap->special[i].y*TILE_HEIGHT+6-sy+240,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320,
+				  editorMap->special[i].y*TILE_HEIGHT+6-sy+240,
 				  "Spcl",0,1);
 		}
 }
@@ -625,7 +625,7 @@ void EditorDraw(void)
 		case EDITMODE_EDIT:
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
-			RenderItAll(&world,curMap,displayFlags);
+			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			ToolShowTarget();
 			if(editMenu)
@@ -636,7 +636,7 @@ void EditorDraw(void)
 		case EDITMODE_PICKSPOT:
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
-			RenderItAll(&world,curMap,displayFlags);
+			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			ToolShowTarget();
 			Print(3,466,"Click on a location!",-32,1);
@@ -650,7 +650,7 @@ void EditorDraw(void)
 		case EDITMODE_PICKSPOT2:
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
-			RenderItAll(&world,curMap,displayFlags);
+			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			rectX1=tileX;
 			rectY1=tileY;
@@ -668,7 +668,7 @@ void EditorDraw(void)
 		case EDITMODE_PICKRSPOT:
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
-			RenderItAll(&world,curMap,displayFlags);
+			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			ToolShowTarget();
 			Print(3,466,"Click a corner of your rectangle!",-32,1);
@@ -682,7 +682,7 @@ void EditorDraw(void)
 		case EDITMODE_PICKRSPOT2:
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
-			RenderItAll(&world,curMap,displayFlags);
+			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			EditorShowRect();
 			Print(3,466,"Click the other corner of your rectangle!",-32,1);
@@ -696,7 +696,7 @@ void EditorDraw(void)
 		case EDITMODE_HELP:
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
-			RenderItAll(&world,curMap,displayFlags);
+			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			ToolShowTarget();
 			if(editMenu)
@@ -723,28 +723,28 @@ void EditorDraw(void)
 		case EDITMODE_FILE:
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
-			RenderItAll(&world,curMap,displayFlags);
+			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			RenderFileDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_EXIT:
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
-			RenderItAll(&world,curMap,displayFlags);
+			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			RenderYesNoDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_MAPMENU:
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
-			RenderItAll(&world,curMap,displayFlags);
+			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			RenderMapDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_LEVELMENU:
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
-			RenderItAll(&world,curMap,displayFlags);
+			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			RenderLevelDialog(mouseX,mouseY,editmgl);
 			break;
@@ -795,8 +795,8 @@ static void HandleKeyPresses(void)
 			if(GetControls()&CONTROL_B1)
 				x+=TILE_WIDTH*3;
 			x+=TILE_WIDTH;
-			if(x>curMap->width*TILE_WIDTH)
-				x=curMap->width*TILE_WIDTH;
+			if(x>editorMap->width*TILE_WIDTH)
+				x=editorMap->width*TILE_WIDTH;
 			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
 			break;
 		case KEY_DOWN:	// down arrow
@@ -805,8 +805,8 @@ static void HandleKeyPresses(void)
 			if(GetControls()&CONTROL_B1)
 				y+=TILE_HEIGHT*3;
 			y+=TILE_HEIGHT;
-			if(y>curMap->height*TILE_HEIGHT)
-				y=curMap->height*TILE_HEIGHT;
+			if(y>editorMap->height*TILE_HEIGHT)
+				y=editorMap->height*TILE_HEIGHT;
 			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
 			break;
 		case KEY_F1:	// F1
@@ -835,11 +835,11 @@ static void HandleKeyPresses(void)
 			case 'f':
 			case 'F':
 				editMode=EDITMODE_FILE;
-				InitFileDialog("worlds\\*.shw",FM_NEW|FM_LOAD|FM_SAVE|FM_ASKLOAD,ToolGetFilename());
+				InitFileDialog("worlds/*.shw",FM_NEW|FM_LOAD|FM_SAVE|FM_ASKLOAD,ToolGetFilename());
 				break;
 			case 'M':
 				editMode=EDITMODE_FILE;
-				InitFileDialog("worlds\\*.shw",FM_LOAD|FM_ASKLOAD|FM_MERGE,ToolGetFilename());
+				InitFileDialog("worlds/*.shw",FM_LOAD|FM_ASKLOAD|FM_MERGE,ToolGetFilename());
 				break;
 			case 'l':
 			case 'L':
@@ -871,8 +871,8 @@ static void HandleKeyPresses(void)
 				ViewMenuOn();
 				break;
 			case 'C':
-				for(x=0;x<curMap->width*curMap->height;x++)
-					curMap->map[x].light=curMap->GetTile(tileX,tileY)->light;
+				for(x=0;x<editorMap->width*editorMap->height;x++)
+					editorMap->map[x].light=editorMap->GetTile(tileX,tileY)->light;
 				break;
 			case 8:
 				Delete(tileX,tileY);
@@ -889,7 +889,7 @@ static void HandleKeyPresses(void)
 				editMode=EDITMODE_HELP;
 				break;
 			case 'I':
-				if(!Scan_Level(&world,curMap) || !Scan_Vars(&world))
+				if(!Scan_Level(&world,editorMap) || !Scan_Vars(&world))
 					SetStitchError("Error saving information!");
 				else
 					SetStitchError("Saved information to level_scan.txt and var_scan.txt.");
@@ -1071,13 +1071,13 @@ void EditorSaveWorld(char *fname)
 
 void EditorSelectMap(byte w)
 {
-	curMap=world.map[w];
+	editorMap=world.map[w];
 	curMapNum=w;
-	AddMapGuys(curMap);
+	AddMapGuys(editorMap);
 	if(goodguy)
 		PutCamera(goodguy->x,goodguy->y);
 	PutCamera(320<<FIXSHIFT,240<<FIXSHIFT);
-	GetSpecialsFromMap(curMap->special);
+	GetSpecialsFromMap(editorMap->special);
 }
 
 void PickedTile(int t)
@@ -1103,7 +1103,7 @@ void EditorGetTileXY(int *x,int *y)
 
 Map *EditorGetMap(void)
 {
-	return curMap;
+	return editorMap;
 }
 
 byte EditorGetMapNum(void)

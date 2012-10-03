@@ -13,6 +13,7 @@
 #include "shop.h"
 #include "goal.h"
 #include "comicbook.h"
+#include <dirent.h>
 
 #define PBTN_HEIGHT	26
 
@@ -141,26 +142,22 @@ void InputProfile(char *fname)
 
 void ScanProfiles(void)
 {
-	long hFile;
-	struct _finddata_t filedata;
+	DIR* dir;
+	struct dirent *dp;
 	int i;
 
 	for(i=0;i<MAX_PROFS;i++)
 		fileList[i*PRFNAME_LEN]='\0';
 	numFiles=0;
 
-	hFile=_findfirst("profiles\\*.prf",&filedata);
+	dir = opendir("profiles");
 
-	if(hFile!=-1)	// there's at least one
+	while ((dp = readdir(dir)) != NULL)
 	{
-		InputProfile(filedata.name);
-
-		while(_findnext(hFile,&filedata)==0)
-		{
-			InputProfile(filedata.name);
-		}
+		if (strstr(dp->d_name, ".prf") >= 0)
+			InputProfile(dp->d_name);
 	}
-	_findclose(hFile);
+	closedir(dir);
 	SortProfiles();
 
 	profChoice=0;
@@ -190,7 +187,7 @@ void InitProfMenu(MGLDraw *mgl)
 	msBright=0;
 	msDBright=1;
 
-	mgl->LoadBMP("graphics\\pause.bmp");
+	mgl->LoadBMP("graphics/pause.bmp");
 	backgd=(byte *)malloc(640*480);
 
 	for(i=0;i<480;i++)
@@ -318,7 +315,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 
 					if(mode==PROF_DELETE)
 					{
-						sprintf(s,"profiles\\%s.prf",profile.name);
+						sprintf(s,"profiles/%s.prf",profile.name);
 						FreeProfile();
 						unlink(s);
 						if(numFiles==1)	// this was the only profile
@@ -343,7 +340,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						for(i=0;i<19;i++)
 						{
 							// delete all maps
-							sprintf(s,"profiles\\%s.%03d",profile.name,i);
+							sprintf(s,"profiles/%s.%03d",profile.name,i);
 							unlink(s);
 						}
 						w=GetWorldProgress("hollow.shw");

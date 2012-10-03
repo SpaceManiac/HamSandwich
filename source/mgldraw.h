@@ -8,9 +8,10 @@
 #define MGLDRAW_H
 
 #include <allegro.h>
+#ifdef WIN32
 #include <winalleg.h>
 #include <windows.h>
-#include <mmsystem.h>
+#endif
 #include <stdio.h>
 #include "jamultypes.h"
 #include "jamulsound.h"
@@ -27,23 +28,24 @@
 class MGLDraw
 {
 	public:
-		MGLDraw::MGLDraw(HINSTANCE hInst,char *name,int xRes,int yRes,int bpp,bool window);
+		MGLDraw(char *name,int xRes,int yRes,int bpp,bool window);
 		~MGLDraw(void);
 
 		bool Process(void);	// handle windows messages and such
 
-		HWND GetHWnd(void);
 		byte *GetScreen(void); // get a pointer to the screen memory
 		int GetWidth(void);
 		int GetHeight(void);
 		void ClearScreen(void);
+		void Quit(void);
+
+		void FinishFlip(void);
 		void Flip(void);
 		void WaterFlip(int v);
 		void TeensyFlip(void);
 		void TeensyWaterFlip(int v);
 		void RasterFlip(void);
 		void RasterWaterFlip(int v);
-		void Quit(void);
 
 		bool LoadPalette(char *name);
 		void SetPalette(PALETTE pal2);
@@ -76,27 +78,32 @@ class MGLDraw
 		// mouse functions
 		byte MouseDown();
 		byte RMouseDown();
-		byte MouseDown3(void);
-
 		byte MouseTap();
 		byte RMouseTap();
+		byte MouseDown3(void);
 		void SetMouseDown(byte w);
 		void SetRMouseDown(byte w);
 		void GetMouse(int *x,int *y);
 		void SetMouse(int x,int y);
 
+		int FormatPixel(int x,int y);
+		void PseudoCopy(int x,int y,byte* data,int len);
+
 		void ResetGM(void);
+
+#ifdef WIN32
+		HWND GetHWnd(void);
+#endif
 
 		int xRes,yRes,bpp,pitch;
 		byte windowed;
-		HINSTANCE hInst;
 		bool readyToQuit;
 		byte tapTrack;
 	protected:
-		int windowX,windowY;
 
+		BITMAP* buffer;
 		byte *scrn;
-		PALETTE pal;
+		PALETTE pal, pal2, *thePal;
 		dword elapsedTime;
 		dword now;
 		int numFrames;
@@ -106,13 +113,11 @@ class MGLDraw
 };
 
 extern MGLDraw *_globalMGLDraw;
-HWND MGLGetHWnd(void);	// augh.
 
 void SeedRNG(void);
 dword Random(dword range);
 void FatalError(char *msg);
 
-long FAR PASCAL MyWindowsEventHandler(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 void FatalErrorQuit(void);
 
 #endif

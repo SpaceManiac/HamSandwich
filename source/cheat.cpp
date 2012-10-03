@@ -2,6 +2,7 @@
 #include "shop.h"
 #include "gallery.h"
 #include "editor.h"
+#include <ctype.h>
 
 char cheatName[NUM_CHEATS][16]={
 	"Win Level",
@@ -49,9 +50,7 @@ void CheatKey(char c)
 	for(i=0;i<15;i++)
 		lastKeys[i]=lastKeys[i+1];
 	// and stick the new one on the end
-	lastKeys[15]=c;
-
-	_strlwr(&lastKeys[15]);
+	lastKeys[15]=tolower(c);
 
 	for(i=0;i<NUM_TYPE_CHEATS;i++)
 	{

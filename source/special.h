@@ -76,7 +76,12 @@
 #define EFF_MONSBRIGHT	31	// change monster of type N at X,Y to brightness M
 #define EFF_PLAYAS		32	// set the player's Play As for this level only
 #define EFF_KILLRECT	33	// kill monsters of type N in (x,y,value/,value%)
-#define EFF_MAX			34
+#define EFF_MONSGRAPHICS	34	// change monster of type N at X,Y to graphics M
+#define EFF_ITEMGRAPHICS	35	// set the current custom item graphics to the given jsp
+#define EFF_VARBAR		36	// edit the varbar below the rage bar
+#define EFF_MAKEBULLET	37	// summon a bullet at a location
+#define EFF_CHANGEBULLET	38	// change bullet of type N at X,Y (or any X,Y) to type Z, N can be any or specific, Z must be specific
+#define EFF_MAX			39
 
 // trigger flags
 #define TF_NOT		1	// NOT this one
@@ -94,8 +99,8 @@
 #define EF_NOFX			8	// doesn't show visual or audio effects when done
 
 // numbers in one special
-#define NUM_TRIGGERS	5
-#define NUM_EFFECTS		5
+#define NUM_TRIGGERS	7
+#define NUM_EFFECTS		31
 
 // events that can trigger specials
 #define EVT_STEP		1	// somebody just entered a new square

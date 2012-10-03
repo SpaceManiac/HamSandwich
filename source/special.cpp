@@ -339,6 +339,19 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 		case EFF_PLAYAS:
 			eff->value=MONS_BOUAPHA;
 			break;
+		case EFF_VARBAR:
+			eff->value=0;
+			break;
+		case EFF_MAKEBULLET:
+			strcpy(eff->text, "0");
+			eff->value2=1;
+		case EFF_CHANGEBULLET:
+			eff->value=BLT_NONE;
+			eff->value2=BLT_HAMMER;
+			eff->x=255;
+			break;
+		default:
+			break;
 		default:
 			break;
 	}
@@ -828,6 +841,12 @@ byte CheckForItem(byte item,int count,byte flags)
 				if(player.worldProg->keychains&KC_KEYCH4)
 					amt++;
 			}
+			break;
+		case IE_ORBITER:
+			amt = CountBullets(BLT_ORBITER);
+			break;
+		case IE_ORBITER2:
+			amt = CountBullets(BLT_ORBITER2);
 			break;
 	}
 	if(amt==count)
@@ -1400,7 +1419,12 @@ void SpecialEffect(special_t *me,Map *map)
 					Ledger(GetDisplayMGL());
 				else if(me->effect[i].text[0]!='/' || me->effect[i].text[1]!='/')
 				{
-					if(NoRepeatNewMessage(me->effect[i].text,120,90) && !(me->effect[i].flags&EF_NOFX))
+					if(me->effect[i].flags&EF_TOGGLE)
+					{
+						NewBigMessage(me->effect[i].text,100);
+						if (!(me->effect[i].flags&EF_NOFX)) MakeNormalSound(SND_MESSAGE);
+					}
+					else if(NoRepeatNewMessage(me->effect[i].text,120,90) && !(me->effect[i].flags&EF_NOFX))
 						MakeNormalSound(SND_MESSAGE);
 				}
 				break;
@@ -1676,6 +1700,46 @@ void SpecialEffect(special_t *me,Map *map)
 				v2=me->effect[i].value/256;
 
 				KillMonsterRect(me->effect[i].x,me->effect[i].y,v,v2,me->effect[i].value2,(me->effect[i].flags&EF_NOFX));
+				break;
+			case EFF_MONSGRAPHICS:
+				SetMonsterGraphics(!(me->effect[i].flags&EF_NOFX),me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].text);
+				break;
+			case EFF_ITEMGRAPHICS:
+				SetCustomItemSprites(me->effect[i].text);
+				break;
+			case EFF_VARBAR:
+				v=GetVar(me->effect[i].value);
+				v=(word)v;
+				if(me->effect[i].flags&EF_PERMLIGHT)
+					player.varbarMax=v;
+				else
+					player.varbar=v;
+				player.varbarColor=me->effect[i].value2;
+				break;
+			case EFF_MAKEBULLET:
+				int x, y;
+				if (me->effect[i].x == 255)
+				{
+					if (tagged)
+					{
+						x = tagged->x >> FIXSHIFT;
+						y = tagged->y >> FIXSHIFT;
+					}
+					else
+						break;
+				}
+				else
+				{
+					x = me->effect[i].x*TILE_WIDTH + TILE_WIDTH/2;
+					y = me->effect[i].y*TILE_HEIGHT + TILE_HEIGHT/2;
+				}
+
+				if(!VarMath(255,me->effect[i].text))
+					PauseGame();	// pause if there's an error in the equation
+				FireBullet(x<<FIXSHIFT, y<<FIXSHIFT, GetVar(255), me->effect[i].value2, me->effect[i].flags&EF_PERMLIGHT);
+				break;
+			case EFF_CHANGEBULLET:
+				ChangeBullet(!(me->effect[i].flags&EF_NOFX),me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].value2);
 				break;
 		}
 	}
@@ -2049,6 +2113,24 @@ void AdjustSpecialEffectCoords(special_t *me,int dx,int dy)
 				}
 				break;
 			case EFF_PLAYAS:
+				break;
+			case EFF_MONSGRAPHICS:
+				if(me->effect[i].x!=255)
+				{
+					me->effect[i].x=dx;
+					me->effect[i].y=dy;
+				}
+				break;
+			case EFF_MAKEBULLET:
+				me->effect[i].x=dx;
+				me->effect[i].y=dy;
+				break;
+			case EFF_CHANGEBULLET:
+				if(me->effect[i].x!=255)
+				{
+					me->effect[i].x=dx;
+					me->effect[i].y=dy;
+				}
 				break;
 		}
 	}
