@@ -140,12 +140,12 @@ void SetMonsterFlags(byte type,word flags)
 	monsType[type].flags=flags;
 }
 
-void LoadMySprite(byte type)
+byte LoadMySpriteMaybe(byte type)
 {
 	int v;
 
 	if(type==0 || type>=NUM_MONSTERS)
-		return;
+		return -1;
 
 	if(monsType[type].spr==NULL)
 	{
@@ -162,8 +162,15 @@ void LoadMySprite(byte type)
 			monsType[type].spr=new sprite_set_t(monsType[type].sprName);
 
 		if(monsType[type].spr==NULL || monsType[type].spr->GetSprite(0)==NULL)
-			FatalError("Out of memory or sprites missing!");
+			return 0;
 	}
+	return 1;
+}
+
+void LoadMySprite(byte type)
+{
+	if (!LoadMySpriteMaybe(type))
+		FatalError("Out of memory or sprites missing!");
 }
 
 sprite_t *GetMonsterSprite(byte type,byte seq,byte frm,byte facing)
@@ -325,7 +332,11 @@ void InstaRenderMonster(int x,int y,byte type,char bright,MGLDraw *mgl)
 	int v;
 
 	// load if not loaded
-	LoadMySprite(type);
+	if (!LoadMySpriteMaybe(type))
+	{
+		CenterPrint(x,y-16,"No graphics!",0,1);
+		return;
+	}
 
 	v=monsType[type].anim[ANIM_IDLE][0];
 	if(!(monsType[type].flags&MF_ONEFACE))

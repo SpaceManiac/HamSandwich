@@ -19,7 +19,7 @@
 #define MONS_EGGSAC	  7
 #define MONS_MAMASPDR 8	// used indirectly
 #define MONS_FROG	  9	// used
-#define MONS_SERPENT  10
+#define MONS_SERPENT  10 // used
 // the parts of Mattie
 #define MONS_MATHEAD  11
 #define MONS_MATSKULL 12
@@ -284,37 +284,44 @@
 #define MF_NOHIT	 16384	// bullets pass through it
 #define MF_GLOW		 32768 // draw using glow draw
 
-// themese
+// themes
+// Good, Evil, Skeletons, Zombies
+// Bats, Spiders, Pumpkins, Zoids
+// Bosses, Minibosses, Traps, Overworld
+// Mirrors, Flames, Sparks, Darkness
+// Din, Bones, Vehicles, Bits
+// Flying, Non-Sleepless, ---, NoGFX
 #define MT_NONE		(0)
 #define MT_GOOD		(1<<0)
 #define MT_EVIL		(1<<1)
-#define MT_SPOOKY	(1<<2)
+
+#define MT_SPOOKY	(1<<2) // Skeletons/ghosts
 #define MT_ZOMBIE	(1<<3)
-#define MT_VAMPIRE	(1<<4)
+#define MT_BAT		(1<<4)
 #define MT_SPIDER	(1<<5)
-#define MT_PYGMY	(1<<6)
+#define MT_PUMPKIN	(1<<6)
 #define MT_ZOID		(1<<7)
+
 #define MT_BOSS		(1<<8)
 #define MT_MINIBOSS (1<<9)
-#define MT_WACKY	(1<<10)
-#define MT_PUMPKIN	(1<<11)
-#define MT_THINGY	(1<<12)
-#define MT_VEGGIE	(1<<13)
-#define MT_ARCTIC	(1<<14)
-#define MT_DESERT   (1<<15)
-#define MT_VEHICLE	(1<<16)
-#define MT_GENERATE	(1<<17)
-#define MT_TRAP		(1<<18)
-#define MT_ALIEN	(1<<19)
-#define MT_HIGHTECH	(1<<20)
-#define MT_ANIMAL	(1<<21)
-#define MT_HUMAN	(1<<22)
-#define MT_URBAN	(1<<23)
-#define MT_AQUATIC	(1<<24)
-#define MT_UNDERSEA (1<<25)
-#define MT_FLYING	(1<<26)
-#define MT_BITS		(1<<27)
-#define NUM_MONSTHEMES	(28)
+#define MT_TRAP		(1<<10)
+
+#define MT_NOTOMB	(1<<11) // Overworld/underhollow
+#define MT_TMIRRORS	(1<<12)
+#define MT_TFLAMES	(1<<13)
+#define MT_TSPARKS	(1<<14)
+#define MT_TDARK	(1<<15)
+#define MT_TDIN		(1<<16)
+#define MT_TBONES	(1<<17)
+
+#define MT_VEHICLE	(1<<18)
+#define MT_BITS		(1<<19)
+#define MT_FLYING	(1<<20)
+
+#define MT_SUPREME	(1<<21) // Graphics+AI but not used
+#define MT_NOGFX	(1<<23)
+
+#define NUM_MONSTHEMES	(24)
 
 typedef void (*Monster_AIFunc)(Guy *,Map *,world_t *,Guy *);
 

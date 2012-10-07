@@ -21,12 +21,6 @@ static byte curMons;
 static byte rememberMode;
 static byte helpRemember;
 
-static dword themes[]={MT_GOOD,MT_EVIL,MT_SPOOKY,MT_ZOMBIE,MT_VAMPIRE,MT_SPIDER,MT_PYGMY,
-					   MT_ZOID,MT_BOSS,MT_MINIBOSS,MT_WACKY,MT_PUMPKIN,MT_THINGY,MT_VEGGIE,
-					   MT_ARCTIC,MT_DESERT,MT_VEHICLE,MT_GENERATE,MT_TRAP,MT_ALIEN,
-					   MT_HIGHTECH,MT_ANIMAL,MT_HUMAN,MT_URBAN,MT_AQUATIC,MT_UNDERSEA,MT_FLYING,
-					   MT_BITS};
-
 static byte monsList[256];
 static word monsInList,monsStart,monsShown;
 static byte realClick;
@@ -103,7 +97,7 @@ static void MakeMonsterList(void)
 	// get all items which match this theme
 	for(i=0;i<NUM_MONSTERS;i++)
 	{
-		if(MonsterTheme(i)&themes[curTheme])
+		if(MonsterTheme(i)&(1<<curTheme))
 		{
 			monsList[pos]=i;
 			monsInList=pos+1;
@@ -161,30 +155,30 @@ static void MonsterEditSetupButtons(void)
 	MakeButton(BTN_RADIO,ID_PICKTHEME+1,0,2+158*1,2+18*0,156,16,"Badguys",PickThemeClick);
 	MakeButton(BTN_RADIO,ID_PICKTHEME+2,0,2+158*2,2+18*0,156,16,"Spooky",PickThemeClick);
 	MakeButton(BTN_RADIO,ID_PICKTHEME+3,0,2+158*3,2+18*0,156,16,"Zombies",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+4,0,2+158*0,2+18*1,156,16,"Vampires",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+4,0,2+158*0,2+18*1,156,16,"Bats",PickThemeClick);
 	MakeButton(BTN_RADIO,ID_PICKTHEME+5,0,2+158*1,2+18*1,156,16,"Spiders",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+6,0,2+158*2,2+18*1,156,16,"Pygmies",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+6,0,2+158*2,2+18*1,156,16,"Pumpkins",PickThemeClick);
 	MakeButton(BTN_RADIO,ID_PICKTHEME+7,0,2+158*3,2+18*1,156,16,"Zoids",PickThemeClick);
 	MakeButton(BTN_RADIO,ID_PICKTHEME+8,0,2+158*0,2+18*2,156,16,"Bosses",PickThemeClick);
 	MakeButton(BTN_RADIO,ID_PICKTHEME+9,0,2+158*1,2+18*2,156,16,"Mini-Bosses",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+10,0,2+158*2,2+18*2,156,16,"Wacky!?!",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+11,0,2+158*3,2+18*2,156,16,"Pumpkins",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+12,0,2+158*0,2+18*3,156,16,"Thingies",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+13,0,2+158*1,2+18*3,156,16,"Vegetation",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+14,0,2+158*2,2+18*3,156,16,"Arctic",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+15,0,2+158*3,2+18*3,156,16,"Desert",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+23,0,2+158*0,2+18*4,156,16,"Urban",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+16,0,2+158*1,2+18*4,156,16,"Vehicles",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+17,0,2+158*2,2+18*4,156,16,"Generators",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+18,0,2+158*3,2+18*4,156,16,"Traps",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+19,0,2+158*0,2+18*5,156,16,"Aliens",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+20,0,2+158*1,2+18*5,156,16,"High Tech",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+21,0,2+158*2,2+18*5,156,16,"Animals",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+22,0,2+158*3,2+18*5,156,16,"Humans",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+24,0,2+158*0,2+18*6,156,16,"Aquatic",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+25,0,2+158*1,2+18*6,156,16,"Undersea",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+26,0,2+158*2,2+18*6,156,16,"Flying",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+27,0,2+158*3,2+18*6,156,16,"Body Parts",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+10,0,2+158*2,2+18*2,156,16,"Traps",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+11,0,2+158*3,2+18*2,156,16,"Overworld",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+12,0,2+158*0,2+18*3,156,16,"Tomb of Mirrors",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+13,0,2+158*1,2+18*3,156,16,"Tomb of Flames",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+14,0,2+158*2,2+18*3,156,16,"Tomb of Sparks",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+15,0,2+158*3,2+18*3,156,16,"Tomb of Darkness",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+16,0,2+158*0,2+18*4,156,16,"Tomb of Din",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+17,0,2+158*1,2+18*4,156,16,"Tomb of Bones",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+18,0,2+158*2,2+18*4,156,16,"Vehicles",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+29,0,2+158*3,2+18*4,156,16,"Body Parts",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+20,0,2+158*0,2+18*5,156,16,"Flying",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+21,0,2+158*1,2+18*5,156,16,"Non-Hollow",PickThemeClick);
+	//MakeButton(BTN_RADIO,ID_PICKTHEME+22,0,2+158*2,2+18*5,156,16,"Bad Graphics",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+23,0,2+158*3,2+18*5,156,16,"AI Only",PickThemeClick);
+	//MakeButton(BTN_RADIO,ID_PICKTHEME+24,0,2+158*0,2+18*6,156,16,"Aquatic",PickThemeClick);
+	//MakeButton(BTN_RADIO,ID_PICKTHEME+25,0,2+158*1,2+18*6,156,16,"Undersea",PickThemeClick);
+	//MakeButton(BTN_RADIO,ID_PICKTHEME+26,0,2+158*2,2+18*6,156,16,"Flying",PickThemeClick);
+	//MakeButton(BTN_RADIO,ID_PICKTHEME+27,0,2+158*3,2+18*6,156,16,"Body Parts",PickThemeClick);
 
 	// delete, move, and exit
 	MakeButton(BTN_NORMAL,ID_EXIT,0,480,460,158,14,"Exit Monster List",ExitClick);
@@ -280,7 +274,7 @@ void MonsterEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 
 	CenterPrint(317,270,MonsterName(curMons),0,1);
 	mgl->FillBox(170,286,460,286,31);
-	if(profile.progress.scanned[curMons])
+	if(true) // profile.progress.scanned[curMons]
 	{
 		if(MonsterFlags(curMons,curMons)&MF_NOHIT)
 			Print(164,464,"Life: Unhittable",0,1);

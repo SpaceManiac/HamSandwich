@@ -172,6 +172,9 @@ void MainMenuDisplay(MGLDraw *mgl)
 #ifdef DEMO
 	Print(350,170,"DEMO VERSION!",10,0);
 #endif
+#ifdef _DEBUG
+	Print(300,170,"DEBUG VERSION!",10,0);
+#endif
 
 	for(i=0;i<4;i++)
 	{
@@ -180,9 +183,9 @@ void MainMenuDisplay(MGLDraw *mgl)
 		Print(x,y,menuTxt[i],(cursor==i)*10,0);
 	}
 	sprintf(s,"Profile: %s",profile.name);
-	Print(638-GetStrLength(s,1)-1,460-1,s,-32,1);
-	Print(638-GetStrLength(s,1)+1,460+1,s,-32,1);
-	Print(638-GetStrLength(s,1),460,s,0,1);
+	Print(638-GetStrLength(s,1)-1,467-1,s,-32,1);
+	Print(638-GetStrLength(s,1)+1,467+1,s,-32,1);
+	Print(638-GetStrLength(s,1),467,s,0,1);
 	DrawMouseCursor(msx,msy);
 }
 
@@ -319,7 +322,10 @@ byte MainMenu(MGLDraw *mgl)
 		}
 #ifdef _DEBUG
 		if(mgl->LastKeyPeek()=='e')
+		{
+			mgl->ClearKeys();
 			return 5;
+		}
 #endif
 	}
 	free(backgd);

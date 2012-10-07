@@ -67,7 +67,7 @@ byte InitEditor(void)
 	InitPlayer(0,"TEST");
 	InitBullets();
 	// modify monsters for the editor
-	strcpy(MonsterName(MONS_ROLLER2),"Roly Poly Rvs");
+	//strcpy(MonsterName(MONS_ROLLER2),"Roly Poly Rvs");
 	strcpy(MonsterName(MONS_ROLLER4),"Rumbly Tumbly Rvs");
 	strcpy(MonsterName(MONS_SNOWBALL2),"Snowball Rvs");
 	strcpy(MonsterName(MONS_PUFFYFISH2),"Puffyfish Rvs");
@@ -79,7 +79,7 @@ byte InitEditor(void)
 	strcpy(MonsterName(MONS_FOLLOWBUNNY),"Buddy Bunny:Follow");
 	strcpy(MonsterName(MONS_SNKYSHRK2),"Sneaky Shark: Chest");
 	strcpy(MonsterName(MONS_UNDERZOID),"Aquazoid Underwater");
-	strcpy(MonsterName(MONS_PATCH2),"Pumpkin Patch Fast");
+	//strcpy(MonsterName(MONS_PATCH2),"Pumpkin Patch Fast");
 	strcpy(MonsterName(MONS_UNDERMAGMA),"Magmazoid Underwater");
 	strcpy(MonsterName(MONS_PARKED2),"Parked Car2");
 	strcpy(MonsterName(MONS_TRAFFIC),"Traffic: Clockwise");
@@ -88,6 +88,10 @@ byte InitEditor(void)
 	strcpy(MonsterName(MONS_PATROLUD),"Patrol Mumble Vert.");
 	strcpy(MonsterName(MONS_DPATROLLR),"Death Patrol Horiz.");
 	strcpy(MonsterName(MONS_DPATROLUD),"Death Patrol Vert.");
+	strcpy(MonsterName(MONS_TURRETR),"Laser Right");
+	strcpy(MonsterName(MONS_TURRETD),"Laser Down");
+	strcpy(MonsterName(MONS_TURRETL),"Laser Left");
+	strcpy(MonsterName(MONS_TURRETU),"Laser Up");
 
 	for(i=MONS_SUCKER1;i<=MONS_BLOWER4;i++)
 	{
@@ -129,7 +133,7 @@ void ExitEditor(void)
 	// change monsters back to normal
 	ChangeOffColor(MONS_SHARK,255,255);
 	ChangeOffColor(MONS_SNKYSHRK2,255,255);
-	strcpy(MonsterName(MONS_ROLLER2),"Roly Poly");
+	//strcpy(MonsterName(MONS_ROLLER2),"Roly Poly");
 	strcpy(MonsterName(MONS_ROLLER4),"Rumbly Tumbly");
 	strcpy(MonsterName(MONS_SNOWBALL2),"Snowball");
 	strcpy(MonsterName(MONS_GENERATOR1),"Generator");
@@ -140,7 +144,7 @@ void ExitEditor(void)
 	strcpy(MonsterName(MONS_FOLLOWBUNNY),"Buddy Bunny");
 	strcpy(MonsterName(MONS_SNKYSHRK2),"Sneaky Shark");
 	strcpy(MonsterName(MONS_UNDERZOID),"Aquazoid");
-	strcpy(MonsterName(MONS_PATCH2),"Pumpkin Patch");
+	//strcpy(MonsterName(MONS_PATCH2),"Pumpkin Patch");
 	strcpy(MonsterName(MONS_UNDERMAGMA),"Magmazoid");
 	strcpy(MonsterName(MONS_PARKED2),"Parked Car");
 	strcpy(MonsterName(MONS_TRAFFIC),"Traffic");
@@ -149,6 +153,10 @@ void ExitEditor(void)
 	strcpy(MonsterName(MONS_PATROLUD),"Patrol Mumble");
 	strcpy(MonsterName(MONS_DPATROLLR),"Death Patrol");
 	strcpy(MonsterName(MONS_DPATROLUD),"Death Patrol");
+	strcpy(MonsterName(MONS_TURRETR),"Laser");
+	strcpy(MonsterName(MONS_TURRETD),"Laser");
+	strcpy(MonsterName(MONS_TURRETL),"Laser");
+	strcpy(MonsterName(MONS_TURRETU),"Laser");
 
 	for(i=MONS_SUCKER1;i<=MONS_BLOWER4;i++)
 	{
