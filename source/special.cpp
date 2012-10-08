@@ -1412,7 +1412,10 @@ void SpecialEffect(special_t *me,Map *map)
 		{
 			case EFF_MESSAGE:
 				if(me->effect[i].text[0]=='@')
+				{
+					// TODO: ensure not a custom world
 					CompleteGoal(atoi(&me->effect[i].text[1]));
+				}
 				else if(me->effect[i].text[0]=='~')
 					Ledger(GetDisplayMGL());
 				else if(me->effect[i].text[0]!='/' || me->effect[i].text[1]!='/')

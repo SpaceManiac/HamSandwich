@@ -34,7 +34,11 @@ char helpTxt[NUM_HELPS][612]={
 	"'Floor') to get the list of tools. Click and hold the "
 	"'Menus' button to get the list of menus. You can scroll "
 	"the screen with the arrow keys, or by moving the mouse "
-	"to the screen edge.",
+	"to the screen edge. ^ ^ "
+	"WARNING!!!  It is possible and sometimes very easy to "
+	"break Sleepless Hollow with this editor.  Make sure you "
+	"know what you're doing before you try to use it, and don't "
+	"forget to check the forums!",
 	// floor tool
 	"Click on any of the four floor tiles to select one to "
 	"be active.  Right-click on any of them to choose a new "

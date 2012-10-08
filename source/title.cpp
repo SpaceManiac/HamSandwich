@@ -279,7 +279,7 @@ byte MainMenu(MGLDraw *mgl)
 	int i;
 
 	if(FirstTime())
-		NameEntry(mgl,1);
+		NameEntry(mgl,2);
 
 	mgl->LoadBMP("graphics/title.bmp");
 	backgd=(byte *)malloc(640*480);

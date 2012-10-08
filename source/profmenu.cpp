@@ -512,7 +512,7 @@ void RenderProfMenu(MGLDraw *mgl)
 {
 	int i,x,y;
 	char s[64];
-	static char yesno[][5]={"Off","On"};
+	//static char yesno[][5]={"Off","On"};
 
 	for(i=0;i<480;i++)
 		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
@@ -527,6 +527,13 @@ void RenderProfMenu(MGLDraw *mgl)
 
 	sprintf(s,"Name: %s",profile.name);
 	PrintUnGlow(20,20,s,2);
+
+	if(strcmp(profile.lastWorld, "hollow.shw"))
+	{
+		// TODO: be fancier
+		sprintf(s,"Custom World: %s",profile.lastWorld);
+		PrintUnGlow(20,110,s,2);
+	}
 
 	sprintf(s,"%0.0f%% Complete",profile.progress.totalPercent);
 	PrintUnGlow(20,50,s,2);

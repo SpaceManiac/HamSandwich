@@ -59,11 +59,13 @@ static pauseItem_t shopPause[]={
 
 static pauseItem_t editPause[]={
 	{PE_CONTINUE,"Continue"},
+	{PE_WEAPON,"Hammer: None"},
 	{PE_RETRY,"Retry"},
-	{PE_GIVEUP,"Give Up"},
+	{PE_JOURNAL,"< Journal >"},
 	{PE_SNDVOL,""},
-	{PE_MUSIC,"Music Options"},
+	{PE_MUSVOL,""},
 	{PE_CHEAT,"Cheats!!"},
+	{PE_GIVEUP,"Reset Level"},
 	{PE_EXIT,"Editor"},
 	{PE_DONE,""}
 };
@@ -399,8 +401,8 @@ void InitPauseMenu(void)
 	{
 		if(shopping)
 			FillPauseMenu(shopPause);
-		else if(ItemPurchased(SHOP_MAJOR,MAJOR_CHEATMENU))
-			FillPauseMenu(gameCheatPause);
+		//else if(ItemPurchased(SHOP_MAJOR,MAJOR_CHEATMENU))
+		//	FillPauseMenu(gameCheatPause);
 		else
 			FillPauseMenu(gamePause);
 
