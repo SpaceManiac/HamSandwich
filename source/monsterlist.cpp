@@ -2496,8 +2496,8 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,12,13,13,255},	// attack
 				{7,8,9,10,11,12,12,13,13,255},	// attack
 			}},
-		{"Missile Turret",0,3,4,AI_Turret,
-		 10,1,80,200,"!1",0,MF_NOMOVE,
+		{"Missile Turret",0,3,4,AI_MissileTurret,
+		 10,1,80,200,"!79",0,MF_NOMOVE,
 		 MT_EVIL|MT_TRAP|MT_SUPREME,
 			{
 				{0,255},	// idle
@@ -2510,8 +2510,8 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// attack
 				{0,255},	// attack
 			}},
-		{"Death Turret",0,7,-4,AI_Turret,
-		 10,1,80,200,"!1",0,MF_NOMOVE,
+		{"Death Turret",0,7,-4,AI_MissileTurret,
+		 10,1,80,200,"!79",0,MF_NOMOVE,
 		 MT_EVIL|MT_TRAP|MT_SUPREME,
 			{
 				{0,255},	// idle

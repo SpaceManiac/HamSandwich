@@ -2441,3 +2441,67 @@ void AI_Bobber(Guy *me,Map *map,world_t *world,Guy *badguy)
 		player.wpnReload=20;
 	}
 }
+
+void AI_MissileTurret(Guy *me,Map *map,world_t *world,Guy *goodguy)
+{
+	int x,y,a;
+
+	if(me->reload)
+		me->reload--;
+
+	if(me->ouch==4)
+	{
+		if(me->hp>0)
+			MakeSound(SND_ROBOOUCH,me->x,me->y,SND_CUTOFF,1200);
+		else
+			MakeSound(SND_ROBODIE,me->x,me->y,SND_CUTOFF,1200);
+	}
+
+	if(me->action==ACTION_BUSY)
+	{
+		if(me->seq==ANIM_DIE && me->frmTimer<63)
+		{
+			x=me->x>>FIXSHIFT;
+			y=me->y>>FIXSHIFT;
+			BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,1);
+		}
+		return;	// can't do nothin' right now
+	}
+
+	if(me->mind==0)
+	{
+		if(goodguy && RangeToTarget(me,goodguy)<800*FIXAMT)
+		{
+			me->mind=1;
+			if(me->aiType!=MONS_DEATHTURRET)
+				me->reload=(byte)Random(60);
+			else
+				me->reload=5;
+		}
+	}
+	else
+	{
+		if(me->reload==0)
+		{
+			x=me->x+Cosine(me->facing*32)*12;
+			y=me->y+Sine(me->facing*32)*12;
+			switch(me->aiType)
+			{
+				case MONS_MISLTURRET:
+					FireBullet(x,y,me->facing,BLT_MISSILE,me->friendly);
+					me->reload=60;
+					break;
+				case MONS_DEATHTURRET:
+					if(RangeToTarget(me,goodguy)<400*FIXAMT)
+					{
+						MakeSound(SND_ROBOSHOOT,me->x,me->y,SND_CUTOFF,1200);
+						a=(me->facing*32-16+Random(33))&255;
+						FireExactBullet(x,y,FIXAMT*4,Cosine(a)*4,Sine(a)*4,0,0,60,a/16,BLT_MISSILE,me->friendly);
+						me->reload=5;
+					}
+					break;
+			}
+		}
+		FaceGoodguy3(me,goodguy);
+	}
+}

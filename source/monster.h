@@ -570,5 +570,6 @@ void AI_Tree(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Horseradish(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Sparky(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Bobber(Guy *me,Map *map,world_t *world,Guy *goodguy);
+void AI_MissileTurret(Guy *me,Map *map,world_t *world,Guy *goodguy);
 
 #endif
