@@ -29,7 +29,7 @@ void InitTally(MGLDraw *mgl)
 
 	curLine=0;
 
-	mgl->LoadBMP("graphics\\profmenu.bmp");
+	mgl->LoadBMP("graphics/profmenu.bmp");
 	backgd=(byte *)malloc(640*480);
 
 	for(i=0;i<480;i++)

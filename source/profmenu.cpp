@@ -13,6 +13,7 @@
 #include "shop.h"
 #include "goal.h"
 #include "comicbook.h"
+#include "customworld.h"
 #include <dirent.h>
 
 #define PBTN_HEIGHT	26
@@ -343,7 +344,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 							sprintf(s,"profiles/%s.%03d",profile.name,i);
 							unlink(s);
 						}
-						w=GetWorldProgress("hollow.shw");
+						w=GetWorldProgress(profile.lastWorld);
 						w->levelOn=0;
 						w->percentage=0;
 						profile.progress.totalTime=0;
@@ -530,8 +531,7 @@ void RenderProfMenu(MGLDraw *mgl)
 
 	if(strcmp(profile.lastWorld, "hollow.shw"))
 	{
-		// TODO: be fancier
-		sprintf(s,"Custom World: %s",profile.lastWorld);
+		sprintf(s,"World: %s",CustomWorldTitle(NULL));
 		PrintUnGlow(20,110,s,2);
 	}
 

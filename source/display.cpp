@@ -7,6 +7,7 @@
 #include "goal.h"
 #include "config.h"
 #include "message.h"
+#include "customworld.h"
 
 mfont_t  *gameFont[3]={NULL,NULL,NULL};
 MGLDraw  *mgl=NULL;
@@ -148,7 +149,10 @@ void ShowImageOrFlic(char *str,byte nosnd,byte mode)
 		EnterPictureDisplay();
 		if(!nosnd)
 			MakeNormalSound(SND_MESSAGE);
-		sprintf(nm,"graphics/%s",fname); // TODO: user/graphics distinction
+		if (IsCustomWorld())
+			sprintf(nm,"user/%s",fname);
+		else
+			sprintf(nm,"graphics/%s",fname);
 		GetDisplayMGL()->LoadBMP(nm);
 		return;
 	}
@@ -159,7 +163,10 @@ void ShowImageOrFlic(char *str,byte nosnd,byte mode)
 		EnterPictureDisplay();
 		if(!nosnd)
 			MakeNormalSound(SND_MESSAGE);
-		sprintf(nm,"graphics/%s",fname); // TODO: user/graphics distinction
+		if (IsCustomWorld())
+			sprintf(nm,"user/%s",fname);
+		else
+			sprintf(nm,"graphics/%s",fname);
 		LoadText(nm,mode);
 		return;
 	}

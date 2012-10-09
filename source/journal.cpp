@@ -2,6 +2,7 @@
 #include "monster.h"
 #include "fishing.h"
 #include "player.h"
+#include "customworld.h"
 
 char journal[NUM_PAGES][600]={
 	// 0 - blank
@@ -187,9 +188,16 @@ void ShowJournalPage(int offX,int offY,byte p)
 		x=635-GetStrLength(s,2);
 		PrintUnGlow(offX+x,offY+2,s,2);
 	}
-	PrintUnGlowRect(offX+330,offY+30,offX+635,offY+480,24,journal[p],2);
-	if(p==19)
-		InstaRenderMonster(480,offY+320,MONS_STICKTREE,-32,GetDisplayMGL());
-	if(p==20)
-		FishingPage(offX,offY);
+	if (IsCustomWorld())
+	{
+		PrintUnGlowRect(offX+330,offY+30,offX+635,offY+480,24,CustomJournalPage(p),2);
+	}
+	else
+	{
+		PrintUnGlowRect(offX+330,offY+30,offX+635,offY+480,24,journal[p],2);
+		if(p==19)
+			InstaRenderMonster(480,offY+320,MONS_STICKTREE,-32,GetDisplayMGL());
+		if(p==20)
+			FishingPage(offX,offY);
+	}
 }

@@ -34,7 +34,7 @@ byte MiniLoadBMP(byte w,byte pos)
 	byte *scrn;
 	int pitch;
 
-	sprintf(s,"graphics\\preview%d.bmp",w);
+	sprintf(s,"graphics/preview%d.bmp",w);
 	b=load_bitmap(s,newpal);
 	if(b==NULL)
 		return FALSE;
@@ -103,7 +103,7 @@ void InitNag(void)
 		MiniLoadBMP(ben[0],0);
 		MiniLoadBMP(ben[1],1);
 		MiniLoadBMP(ben[2],2);
-		GetDisplayMGL()->LoadBMP("graphics\\nag.bmp");
+		GetDisplayMGL()->LoadBMP("graphics/nag.bmp");
 		for(i=0;i<480;i++)
 			memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
 	}

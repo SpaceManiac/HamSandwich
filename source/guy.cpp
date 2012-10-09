@@ -5,6 +5,7 @@
 #include "shop.h"
 #include "goal.h"
 #include "dialogbits.h"
+#include "customworld.h"
 
 Guy **guys;
 Guy *goodguy;
@@ -896,7 +897,7 @@ void Guy::Update(Map *map,world_t *world)
 	}
 	if((oldmapx!=mapx || oldmapy!=mapy) && type!=MONS_NOBODY && hp>0)
 	{
-		if(mapx==63 && mapy==53 && type==MONS_BOUAPHA && player.levelNum==12)
+		if(mapx==63 && mapy==53 && type==MONS_BOUAPHA && player.levelNum==12 && !IsCustomWorld())
 		{
 			if(player.journal[61]==0)
 			{

@@ -17,7 +17,7 @@ void InitLedger(MGLDraw *mgl)
 	entry[0]='\0';
 	cursorBright=0;
 
-	mgl->LoadBMP("graphics\\pause.bmp");
+	mgl->LoadBMP("graphics/pause.bmp");
 	backgd=(byte *)malloc(640*480);
 
 	for(i=0;i<480;i++)

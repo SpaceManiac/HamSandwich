@@ -10,7 +10,7 @@ void ComicPage(void)
 {
 	char txt[64];
 
-	sprintf(txt,"graphics\\comic%d.bmp",pageNo);
+	sprintf(txt,"graphics/comic%d.bmp",pageNo);
 	GetDisplayMGL()->LoadBMP(txt);
 	PrintUnGlow(20,450,"Press arrows or left click to navigate, right click or ESC to exit",2);
 	GetDisplayMGL()->Flip();

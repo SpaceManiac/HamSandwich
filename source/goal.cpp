@@ -7,6 +7,7 @@
 #include "shop.h"
 #include "theater.h"
 #include "gallery.h"
+#include "customworld.h"
 
 char goalDesc[][48]={
 	// 0
@@ -96,6 +97,9 @@ void CompleteGoal(byte goal)
 {
 #ifndef DEMO
 	if(profile.progress.goal[goal])
+		return;
+
+	if(IsCustomWorld())
 		return;
 
 	profile.progress.goal[goal]=1;

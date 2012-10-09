@@ -6,6 +6,7 @@
 #include "music.h"
 #include "dialogbits.h"
 #include "progress.h"
+#include "customworld.h"
 #include <dirent.h>
 
 static byte *backgd;
@@ -59,13 +60,7 @@ void InputWorld(char* fname)
 
 	strcpy(&worldFilenames[numFiles*FILENAME_LEN],fname);
 
-	if (!strcmp(fname, "hollow.shw"))
-		strcpy(&worldTitles[numFiles*FILENAME_LEN],"Sleepless Hollow");
-	else
-	{
-		// TODO: read text file?
-		strcpy(&worldTitles[numFiles*FILENAME_LEN],fname);
-	}
+	strcpy(&worldTitles[numFiles*FILENAME_LEN],CustomWorldTitle(fname));
 	numFiles++;
 }
 

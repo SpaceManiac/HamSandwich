@@ -83,7 +83,7 @@ int main(int argc, const char* argv[])
 #ifdef DEMO
 				PlayWorld(mainmgl,"demo.shw");
 #else
-				PlayWorld(mainmgl,"hollow.shw");
+				PlayWorld(mainmgl,profile.lastWorld);
 #endif
 				break;
 			case 1:	// profile

@@ -91,6 +91,19 @@ typedef struct player_t
 	word brainTime,candleTime;
 	byte playAs;
 
+	// Uses of journal array:
+	// 0 - default journal page
+	// 1-19 - journal page of level (N-1)
+	// 20 - the fishing rod
+	// [30-39] hold how many of each fish type you have caught
+	// [40-49] show the largest size of each type
+	// 50,51,52,53 are used when fishing
+	// 54 is 1 if you have caught the unwanted goldfish
+	// 55 is your fishing skill
+	// 61 - got the yellow key in tomb of bones
+	// 62 - mr. candle from ledger
+	// 63 - won the game
+
 	byte beenThere[MAX_MAPS];
 	byte journal[64];
 	byte jpage;

@@ -675,7 +675,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					ChangeWeapon(1);
 					break;
 				case PE_WORLDSEL:
-					strcpy(profile.lastWorld,player.worldName);
+					//strcpy(profile.lastWorld,player.worldName);
 					player.worldProg->levelOn=player.levelNum;
 					SaveProfile();
 					return PAUSE_WORLDSEL;
@@ -691,7 +691,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					pauseY=480;
 					if(!shopping && !editing)
 					{
-						strcpy(profile.lastWorld,player.worldName);
+						//strcpy(profile.lastWorld,player.worldName);
 						player.worldProg->levelOn=player.levelNum;
 					}
 					SaveProfile();
@@ -700,7 +700,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 				case PE_SHOP:
 					if(!shopping)
 					{
-						strcpy(profile.lastWorld,player.worldName);
+						//strcpy(profile.lastWorld,player.worldName);
 						player.worldProg->levelOn=player.levelNum;
 					}
 					SaveProfile();

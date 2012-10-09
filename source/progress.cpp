@@ -4,6 +4,7 @@
 #include "world.h"
 #include "music.h"
 #include "shop.h"
+#include "customworld.h"
 
 static char prfName[64];
 static byte firstTime;
@@ -136,6 +137,7 @@ void LoadProfile(char *name)
 	}
 	fread(&profile,sizeof(profile_t),1,f);
 	LoadPlayLists(f);
+	InitCustomWorld();
 
 	// fixed changed Mac OS X scancodes
 	for (int i = 0; i < 2; ++i)
@@ -274,7 +276,7 @@ void DefaultProfile(char *name)
 	profile.candleRadar=0;
 	profile.moveNShoot=0;
 	profile.nameVerified=0;
-	profile.lastWorld[0]='\0';
+	strcpy(profile.lastWorld, "hollow.shw");
 	OriginalPlaylist(&profile.playList[0]);
 	EmptyPlaylist(&profile.playList[1]);
 	EmptyPlaylist(&profile.playList[2]);
@@ -505,7 +507,7 @@ void SaveState(void)
 	word w;
 
 	player.journal[50]=0;
-	sprintf(fname,"profiles\\%s.%03d",profile.name,player.levelNum);
+	sprintf(fname,"profiles/%s.%03d",profile.name,player.levelNum);
 	f=fopen(fname,"wb");
 
 	// first write out the player itself
@@ -543,7 +545,7 @@ byte LoadState(byte lvl,byte getPlayer)
 	word tagged;
 	player_t tmp;
 
-	sprintf(fname,"profiles\\%s.%03d",profile.name,lvl);
+	sprintf(fname,"profiles/%s.%03d",profile.name,lvl);
 	f=fopen(fname,"rb");
 	if(f==NULL)
 		return 0;

@@ -6,6 +6,7 @@
 #include "nameentry.h"
 #include "progress.h"
 #include "shop.h"
+#include "customworld.h"
 
 #define COPYRIGHT_YEARS "2007-2012"
 
@@ -178,6 +179,7 @@ void MainMenuDisplay(MGLDraw *mgl)
 
 	for(i=0;i<4;i++)
 	{
+		if (i == 2 && IsCustomWorld()) continue;
 		x=230+i*20;
 		y=240+i*60;
 		Print(x,y,menuTxt[i],(cursor==i)*10,0);
@@ -221,7 +223,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		// select stuff with cursor here
 		for(i=0;i<4;i++)
 		{
-			if(msx>=230 && msx<=500 && msy>=240+i*60 && msy<=240+i*60+55)
+			if(msx>=230 && msx<=500 && msy>=240+i*60 && msy<=240+i*60+55 && (i != 2 || !IsCustomWorld()))
 				cursor=i;
 		}
 	}
@@ -236,6 +238,8 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		cursor--;
 		if(cursor==255)
 			cursor=3;
+		if(cursor==2 && IsCustomWorld())
+			cursor=1;
 
 		titleRuns=0;
 		MakeNormalSound(SND_MENUCLICK);
@@ -245,6 +249,8 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		cursor++;
 		if(cursor==4)
 			cursor=0;
+		if(cursor==2 && IsCustomWorld())
+			cursor=3;
 
 		titleRuns=0;
 		MakeNormalSound(SND_MENUCLICK);
