@@ -253,6 +253,9 @@ void MonsterEdit_Key(char k)
 	}
 }
 
+// see monsnotes.cpp for this
+extern char* MonsterNotes(byte type);
+
 void MonsterEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 {
 	char s[32];
@@ -274,20 +277,18 @@ void MonsterEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 
 	CenterPrint(317,270,MonsterName(curMons),0,1);
 	mgl->FillBox(170,286,460,286,31);
-	if(true) // profile.progress.scanned[curMons]
-	{
-		if(MonsterFlags(curMons,curMons)&MF_NOHIT)
-			Print(164,464,"Life: Unhittable",0,1);
-		else if(MonsterFlags(curMons,curMons)&MF_INVINCIBLE)
-			Print(164,464,"Life: Invincible",0,1);
-		else
-		{
-			sprintf(s,"Life: %d",MonsterHP(curMons));
-			Print(164,464,s,0,1);
-		}
-	}
+
+	// if(profile.progress.scanned[curMons])
+	if(MonsterFlags(curMons,curMons)&MF_NOHIT)
+		Print(164,464,"Life: Unhittable",0,1);
+	else if(MonsterFlags(curMons,curMons)&MF_INVINCIBLE)
+		Print(164,464,"Life: Invincible",0,1);
 	else
-		PrintRect(164,290,470,479,13,"NO DATA ON MONSTER!",1);
+	{
+		sprintf(s,"Life: %d",MonsterHP(curMons));
+		Print(164,464,s,0,1);
+	}
+	PrintRect(164,290,470,479,13,MonsterNotes(curMons),1);
 
 	RenderButtons(mouseX,mouseY,mgl);
 

@@ -789,6 +789,10 @@ void TestLevel(world_t *world,byte level)
 {
 	byte result;
 
+	// TODO: try to make testing make sense
+	MakeNormalSound(SND_BOUAPHAOUCH);
+	return;
+
 	editing=2;
 
 	ExitGuys();
