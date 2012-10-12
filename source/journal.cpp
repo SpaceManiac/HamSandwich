@@ -188,7 +188,7 @@ void ShowJournalPage(int offX,int offY,byte p)
 		x=635-GetStrLength(s,2);
 		PrintUnGlow(offX+x,offY+2,s,2);
 	}
-	if (IsCustomWorld())
+	if (IsCustomWorld() && p!=20)
 	{
 		PrintUnGlowRect(offX+330,offY+30,offX+635,offY+480,24,CustomJournalPage(p),2);
 	}

@@ -6,6 +6,7 @@
 #include "shop.h"
 #include "dialogbits.h"
 #include "journal.h"
+#include "customworld.h"
 
 #define PE_CONTINUE	0	// back to gameplay
 #define PE_RETRY	1	// retry this level
@@ -118,6 +119,35 @@ static pauseItem_t musicPause[]={
 	{PE_SONG,""},
 	{PE_MUSIC,"Back To Menu"},
 	{PE_DONE,""},
+};
+
+static invItem_t inventory[]={
+	{0,ITM_PANTS,INVT_PANTS,0,10,"Pants Of Power","Throw hammers faster."},
+	{1,ITM_HAMMERUP,INVT_HAMMERS,0,10,"Hammers","Charge up the multi-shot faster."},
+	{2,153,INVT_MYSTIC,0,10,"Flamebringer","Sets monsters on fire!"},
+	{3,162,INVT_MYSTIC,1,10,"Lightreaver","Reflects shots and heals!"},
+	{4,163,INVT_MYSTIC,2,10,"Planetsmasher","Creates black holes and portals!"},
+	{5,169,INVT_MYSTIC,3,10,"Sparkthrower","Spews monster-seeking sparks!"},
+	{6,170,INVT_MYSTIC,4,10,"Earsplitter","Flattens monsters through walls!"},
+	{7,171,INVT_MYSTIC,5,10,"Bonecrusher","Summons and controls a skeleton!"},
+	{8,ITM_BRAIN,INVT_BRAINS,0,100,"Zombie Brains","Collect them for some reason."},
+	{9,ITM_CANDLE,INVT_CANDLES,0,100,"Candles","Might have a use?"},
+	{10,150,INVT_JOURNAL,0,NUM_PAGES-1,"Journal Pages","Learn more of the legend."},
+	{11,178,INVT_HFLAGS,HMR_BIONIC,0,"Bionic Arm","Hammers fly faster.",2,0},
+	{12,177,INVT_HFLAGS,HMR_BLAST,0,"Blasting Cap","10% chance of hammers exploding."},
+	{13,ITM_REVERSE,INVT_HFLAGS,HMR_REVERSE,0,"Reverse Hammer","25% chance to throw hammers backwards."},
+	{14,ITM_REFLECT,INVT_HFLAGS,HMR_REFLECT,0,"Sproingy Spring","Hammers have 25% chance to bounce."},
+	{15,176,INVT_ABILITY,ABIL_SHIELD,0,"Solid Shield","10% chance of blocking damage."},
+	{16,180,INVT_ABILITY,ABIL_TRAINING,0,"Training Guide","25% chance of earning double XP."},
+	{17,174,INVT_ABILITY,ABIL_SOLAR,0,"Solar Collector","Gain 1 Energy per second."},
+	{18,175,INVT_ABILITY,ABIL_FIRSTAID,0,"First Aid Kit","Heal 1 Life per 3 seconds."},
+	{19,173,INVT_ABILITY,ABIL_BRAIN,0,"Brain Detector","Stand still to scan the area for brains."},
+	{20,ITM_KEYR,INVT_KEYS,1,0,"Red Key","Opens red doors."},
+	{21,ITM_KEYG,INVT_KEYS,2,0,"Green Key","Opens green doors."},
+	{22,ITM_KEYB,INVT_KEYS,3,0,"Blue Key","Opens blue doors."},
+	{23,ITM_KEY,INVT_KEYS,0,3,"Yellow Key","Opens yellow doors. Breaks when used."},
+	{31,186,INVT_ABILITY,ABIL_FISH,0,"Electroreel","Electrofish with the Classic Red Hammer.",0,-8},
+	{255,0,0,0,0,"",""}
 };
 
 byte cursor=0;
@@ -272,6 +302,7 @@ void RenderPauseMenu(void)
 	}
 
 	// inventory items
+	/*
 	InvItem(ITM_PANTS,24,pauseY+INV_Y,pnts,10,0,"Pants Of Power","Throw hammers faster.");
 	InvItem(ITM_HAMMERUP,24+38,pauseY+INV_Y,player.hammers,10,-5+15*(player.weapon==0),"Hammers","Charge up the multi-shot faster.");
 
@@ -300,6 +331,57 @@ void RenderPauseMenu(void)
 	InvItem(ITM_KEYB,24+38*6,pauseY+INV_Y+50*2,(player.keys[3]>0),0,0,"Blue Key","Opens blue doors.");
 	InvItem(ITM_KEY,24+38*7,pauseY+INV_Y+50*2,player.keys[0],3,0,"Yellow Key","Opens yellow doors. Breaks when used.");
 	InvItem(186,24+38*7,pauseY+INV_Y+50*3-8,(player.ability[ABIL_FISH]>0),0,0,"Electroreel","Electrofish with the Classic Red Hammer.");
+	*/
+	invItem_t* items = IsCustomWorld() && CustomInventory() ? CustomInventory() : inventory;
+	for(i=0; items[i].position!=255 && i<64; ++i)
+	{
+		int x = 24 + 38 * (items[i].position % 8) + items[i].dx;
+		int y = pauseY + INV_Y + 50 * (items[i].position / 8) + items[i].dy;
+		int amount = 0, bright = 0, subtype = items[i].subtype;
+
+		switch(items[i].type)
+		{
+			case INVT_PANTS:
+				amount = pnts;
+				break;
+			case INVT_HAMMERS:
+				amount = player.hammers;
+				break;
+			case INVT_MYSTIC:
+				amount = player.weaponLvl[subtype];
+				bright = -5+(player.weapon==i+1)*15;
+				break;
+			case INVT_BRAINS:
+				amount = player.brains;
+				break;
+			case INVT_CANDLES:
+				amount = player.candles;
+				break;
+			case INVT_JOURNAL:
+				if (subtype == 0)
+					amount = jcount;
+				else
+					amount = player.journal[subtype];
+				break;
+			case INVT_HFLAGS:
+				amount = (player.hammerFlags & subtype) > 0;
+				break;
+			case INVT_ABILITY:
+				amount = (player.ability[subtype]) > 0;
+				break;
+			case INVT_KEYS:
+				amount = player.keys[subtype];
+				break;
+			case INVT_LVAR:
+				amount = player.var[subtype];
+				break;
+			case INVT_GVAR:
+				amount = GetWorldProgress(profile.lastWorld)->var[subtype];
+				break;
+		}
+
+		InvItem(items[i].item, x, y, amount, items[i].max, bright, items[i].name, items[i].desc);
+	}
 
 	if(player.level==20)
 		PrintPauseVal("XP",-1,-1,2,205);

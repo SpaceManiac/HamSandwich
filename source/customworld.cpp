@@ -1,8 +1,10 @@
 #include "customworld.h"
+#include "shop.h"
 
 #define ENTRY_NONE		0
 #define ENTRY_TITLE		1
 #define ENTRY_GOALS		2
+#define ENTRY_ITEMS		3
 #define ENTRY_PAGE		50
 
 #define JOURNAL_SIZE	1024
@@ -14,9 +16,54 @@ static char journalPages[20][JOURNAL_SIZE];
 static char goalNames[25][32];
 static char goalDescriptions[25][64];
 
+static invItem_t inventory[32];
+static byte inventorySize;
+
 byte IsCustomWorld(void)
 {
 	return isCustomWorld;
+}
+
+void AppendInvItem(byte pos, byte item, byte type, byte subtype, int max, char* name, char* desc)
+{
+	invItem_t* i = &inventory[inventorySize++];
+	i->position = pos;
+	i->item = item;
+	i->type = type;
+	i->subtype = subtype;
+	i->max = max;
+	strncpy(i->name, name, 31);
+	i->name[31] = '\0';
+	strncpy(i->desc, desc, 63);
+	i->desc[63] = '\0';
+}
+
+#define C(VALUE) if (!stricmp(data, #VALUE)) return VALUE;
+int ConstAtoi(const char* data)
+{
+	C(NULL);
+	C(INVT_PANTS);
+	C(INVT_HAMMERS);
+	C(INVT_MYSTIC);
+	C(INVT_BRAINS);
+	C(INVT_CANDLES);
+	C(INVT_JOURNAL);
+	C(INVT_HFLAGS);
+	C(INVT_ABILITY);
+	C(INVT_KEYS);
+	C(INVT_LVAR);
+	C(INVT_GVAR);
+	C(HMR_BIONIC);
+	C(HMR_BLAST);
+	C(HMR_REVERSE);
+	C(HMR_REFLECT);
+	C(ABIL_SHIELD);
+	C(ABIL_TRAINING);
+	C(ABIL_SOLAR);
+	C(ABIL_FIRSTAID);
+	C(ABIL_BRAIN);
+	C(ABIL_FISH)
+	return atoi(data);
 }
 
 void InitCustomWorld(void)
@@ -34,6 +81,8 @@ void InitCustomWorld(void)
 		goalNames[i][0]='\0';
 		goalDescriptions[i][0]='\0';
 	}
+	inventory[0].position=255;
+	inventorySize=0;
 
 	// Load stuff
 	char buf[256];
@@ -68,6 +117,10 @@ void InitCustomWorld(void)
 			{
 				entrymode = ENTRY_GOALS;
 			}
+			else if (!strcmp(buf,"[items]"))
+			{
+				entrymode = ENTRY_ITEMS;
+			}
 			else
 			{
 				entrymode = ENTRY_NONE;
@@ -86,8 +139,8 @@ void InitCustomWorld(void)
 			}
 			else if (entrymode==ENTRY_GOALS)
 			{
-				char* number = strtok(buf,"=");
-				char* name = strtok(NULL,"|");
+				char* number = strtok(buf,"=\n");
+				char* name = strtok(NULL,"|\n");
 				char* desc = strtok(NULL,"\n");
 
 				if (!number || !name || !desc)
@@ -99,6 +152,17 @@ void InitCustomWorld(void)
 
 				strcpy(goalNames[goal-1], name);
 				strcpy(goalDescriptions[goal-1], desc);
+			}
+			else if (entrymode==ENTRY_ITEMS)
+			{
+				char* pos = strtok(buf,"=\n");
+				char* item = strtok(NULL,"|\n");
+				char* type = strtok(NULL,"|\n");
+				char* subtype = strtok(NULL,"|\n");
+				char* max = strtok(NULL,"|\n");
+				char* name = strtok(NULL,"|\n");
+				char* desc = strtok(NULL,"\n");
+				AppendInvItem(atoi(pos),atoi(item),ConstAtoi(type),ConstAtoi(subtype),atoi(max),name,desc);
 			}
 			else if (entrymode>=ENTRY_PAGE && entrymode<ENTRY_PAGE+20)
 			{
@@ -154,4 +218,15 @@ char* CustomGoalInfo(byte goal, byte info)
 		return goalDescriptions[goal];
 	else
 		return goalNames[goal];
+}
+
+invItem_t* CustomInventory()
+{
+	if (inventorySize == 0)
+		return NULL;
+	else
+	{
+		inventory[inventorySize].position = 255;
+		return inventory;
+	}
 }
