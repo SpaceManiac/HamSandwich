@@ -2,6 +2,7 @@
 
 #define ENTRY_NONE		0
 #define ENTRY_TITLE		1
+#define ENTRY_GOALS		2
 #define ENTRY_PAGE		50
 
 #define JOURNAL_SIZE	1024
@@ -10,6 +11,8 @@ static byte isCustomWorld;
 static char worldTitle[32];
 static char worldTitleTemp[32];
 static char journalPages[20][JOURNAL_SIZE];
+static char goalNames[25][32];
+static char goalDescriptions[25][64];
 
 byte IsCustomWorld(void)
 {
@@ -26,6 +29,11 @@ void InitCustomWorld(void)
 	strcpy(worldTitle,CustomWorldFname());
 	for(int i=0; i<20; ++i)
 		journalPages[i][0]='\0';
+	for(int i=0; i<25; ++i)
+	{
+		goalNames[i][0]='\0';
+		goalDescriptions[i][0]='\0';
+	}
 
 	// Load stuff
 	char buf[256];
@@ -41,6 +49,8 @@ void InitCustomWorld(void)
 	byte entrymode = ENTRY_TITLE;
 	while (fgets(buf, 256, f) != NULL)
 	{
+		buf[strlen(buf)-1]='\0'; // ditch the LF
+
 		if (buf[0] == '[')
 		{
 			// command line
@@ -54,6 +64,14 @@ void InitCustomWorld(void)
 				if (page >= 0 && page < 20)
 					entrymode = ENTRY_PAGE + page;
 			}
+			else if (!strcmp(buf,"[goals]"))
+			{
+				entrymode = ENTRY_GOALS;
+			}
+			else
+			{
+				entrymode = ENTRY_NONE;
+			}
 		}
 		else
 		{
@@ -65,6 +83,22 @@ void InitCustomWorld(void)
 				strncpy(worldTitle,buf,31);
 				worldTitle[31] = '\0';
 				entrymode=ENTRY_NONE;
+			}
+			else if (entrymode==ENTRY_GOALS)
+			{
+				char* number = strtok(buf,"=");
+				char* name = strtok(NULL,"|");
+				char* desc = strtok(NULL,"\n");
+
+				if (!number || !name || !desc)
+					continue;
+
+				int goal = atoi(number);
+				if (!goal)
+					continue;
+
+				strcpy(goalNames[goal-1], name);
+				strcpy(goalDescriptions[goal-1], desc);
 			}
 			else if (entrymode>=ENTRY_PAGE && entrymode<ENTRY_PAGE+20)
 			{
@@ -112,4 +146,12 @@ const char* CustomWorldTitle(const char* fname)
 char* CustomJournalPage(int p)
 {
 	return journalPages[p];
+}
+
+char* CustomGoalInfo(byte goal, byte info)
+{
+	if (info == 1)
+		return goalDescriptions[goal];
+	else
+		return goalNames[goal];
 }

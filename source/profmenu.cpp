@@ -173,7 +173,7 @@ void SetupProfile(void)
 
 	strcpy(btn[0].txt,"");
 	for(i=0;i<NUM_GOALS;i++)
-		if(profile.progress.goal[i])
+		if(profile.progress.goal[i] && !IsCustomWorld())
 		{
 			strcpy(btn[0].txt,"Read Comic Book");
 		}

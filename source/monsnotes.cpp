@@ -13,6 +13,9 @@ static monsnotes_t notes[] = {
 	 "Supreme so I won't be repeating anything said in their Supreme notes. "
 	 "This is Bouapha, the hero of the Dr. Lunatic and Adventures of Bouapha "
 	 "series! His hammer mechanics are different here than in Supreme, as noted."},
+	{84,	// Bobber
+	 "This \"monster\" is Bouapha's fishing bobber. I haven't tried summoning "
+	 "it or anything yet, so get back to me on that."},
 	{255,
 	 "No notes on monster"}
 };

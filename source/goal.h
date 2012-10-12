@@ -15,6 +15,6 @@ void GoalPurchase(void);
 void GoalWinLevel(void);
 void GoalFire(void);
 
-void CompleteGoal(byte goal);
+void CompleteGoal(byte goal, byte custom=0);
 
 #endif

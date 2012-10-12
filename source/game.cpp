@@ -10,6 +10,7 @@
 #include "goal.h"
 #include "config.h"
 #include "log.h"
+#include "customworld.h"
 
 byte showStats=0,spookIt=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -753,6 +754,7 @@ byte PlayWorld(MGLDraw *mgl,char *fname)
 
 	StopSong();
 	InitWorld(&curWorld);
+	InitCustomWorld();
 
 	mapNum=player.levelNum;
 	while(1)

@@ -46,9 +46,9 @@ def calculateStats(ext):
 		for line in data:
 			if len(line.strip()) == 0:
 				t = 'blank'
-			elif len(line.replace('{', '').replace('}', '')) == 0:
+			elif len(line.replace('{', '').replace('}', '').strip()) == 0:
 				t = 'braces'
-			elif len(line[:line.find('//')].strip()) == 0:
+			elif '//' in line and len(line[:line.find('//')].strip()) == 0:
 				t = 'comment'
 			else:
 				t = 'code'
@@ -57,6 +57,11 @@ def calculateStats(ext):
 	print ext + ' files (' + str(len(files)) + '):'
 	for key in lines:
 		print '  ' + key + ': ' + str(lines[key])
+	return lines
 
-calculateStats('cpp')
-calculateStats('h')
+cpp = calculateStats('cpp')
+h = calculateStats('h')
+
+print "total:"
+for key in cpp:
+	print '  ' + key + ': ' + str(cpp[key] + h[key])

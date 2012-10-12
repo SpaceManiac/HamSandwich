@@ -289,7 +289,11 @@ void NameEntry(MGLDraw *mgl,byte makeNew)
 	byte done=0;
 	int lastTime=1;
 
+#ifdef DEMO
+	customWorldEnabled = 0;
+#else
 	customWorldEnabled = (makeNew == 1);
+#endif
 
 	InitNameEntry(mgl);
 

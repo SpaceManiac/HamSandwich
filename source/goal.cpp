@@ -80,7 +80,10 @@ void PrintGoalInfo(int x,int y,byte goal)
 
 	if(profile.progress.goal[goal])
 	{
-		strcat(s,ConvertText(goalDesc[goal*2]));
+		if (IsCustomWorld())
+			strcat(s,CustomGoalInfo(goal,0));
+		else
+			strcat(s,ConvertText(goalDesc[goal*2]));
 	}
 	else
 		strcat(s,"???????");
@@ -88,22 +91,34 @@ void PrintGoalInfo(int x,int y,byte goal)
 	PrintUnGlow(x,y,s,1);
 	if(profile.progress.goal[goal])
 	{
-		sprintf(s,"Earned for %s.",ConvertText(goalDesc[goal*2+1]));
+		if (IsCustomWorld())
+			strcpy(s,CustomGoalInfo(goal,1));
+		else
+			sprintf(s,"Earned for %s.",ConvertText(goalDesc[goal*2+1]));
 		PrintUnGlowRect(x,y+16,316,y+16+40,12,s,1);
 	}
 }
 
-void CompleteGoal(byte goal)
+void CompleteGoal(byte goal, byte custom)
 {
 #ifndef DEMO
 	if(profile.progress.goal[goal])
 		return;
 
-	if(IsCustomWorld())
+	if(IsCustomWorld() && !custom)
 		return;
 
 	profile.progress.goal[goal]=1;
-	ShowGoalEarned(goal);
+
+	if (!IsCustomWorld())
+		ShowGoalEarned(goal);
+	else
+	{
+		NewBigMessage(CustomGoalInfo(goal, 0),60);
+		SetPlayerGlow(127);
+		HealRing(7,goodguy->x,goodguy->y,FIXAMT*20,255,5);
+		MakeNormalSound(SND_ALLCANDLE);
+	}
 #endif
 }
 

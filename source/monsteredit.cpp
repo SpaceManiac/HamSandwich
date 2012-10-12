@@ -170,7 +170,7 @@ static void MonsterEditSetupButtons(void)
 	MakeButton(BTN_RADIO,ID_PICKTHEME+16,0,2+158*0,2+18*4,156,16,"Tomb of Din",PickThemeClick);
 	MakeButton(BTN_RADIO,ID_PICKTHEME+17,0,2+158*1,2+18*4,156,16,"Tomb of Bones",PickThemeClick);
 	MakeButton(BTN_RADIO,ID_PICKTHEME+18,0,2+158*2,2+18*4,156,16,"Vehicles",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+29,0,2+158*3,2+18*4,156,16,"Body Parts",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+19,0,2+158*3,2+18*4,156,16,"Body Parts",PickThemeClick);
 	MakeButton(BTN_RADIO,ID_PICKTHEME+20,0,2+158*0,2+18*5,156,16,"Flying",PickThemeClick);
 	MakeButton(BTN_RADIO,ID_PICKTHEME+21,0,2+158*1,2+18*5,156,16,"Non-Hollow",PickThemeClick);
 	//MakeButton(BTN_RADIO,ID_PICKTHEME+22,0,2+158*2,2+18*5,156,16,"Bad Graphics",PickThemeClick);
