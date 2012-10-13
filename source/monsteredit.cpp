@@ -4,6 +4,7 @@
 #include "items.h"
 #include "tool.h"
 #include "edithelp.h"
+#include "guy.h"
 
 #define MMODE_NORMAL	0	// doing nothing (just viewing monsters, click to select, select all you like)
 #define MMODE_SELECT	1	// selecting a monster (pick one and you're done)
@@ -289,6 +290,10 @@ void MonsterEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 		Print(164,464,s,0,1);
 	}
 	PrintRect(164,290,470,479,13,MonsterNotes(curMons),1);
+	if(!WorthXP(curMons))
+		Print(300,464,"No XP",0,1);
+	if(DoesRespawn(curMons))
+		Print(370,464,"Respawns",0,1);
 
 	RenderButtons(mouseX,mouseY,mgl);
 

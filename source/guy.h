@@ -149,6 +149,7 @@ void EasyStart(void);
 byte LightVictim(int x,int y,byte size,Map *map,world_t *world,byte friendly);
 void SuckInEvil(int x,int y);
 byte WorthXP(byte type);
+byte DoesRespawn(byte type);
 
 byte Walkable(Guy *me,int x,int y,Map *map,world_t *world);
 void SpreadCharge(Guy *me);
