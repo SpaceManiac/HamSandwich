@@ -30,6 +30,7 @@ char credits[][32]={
 	"&Modernizing",
 	"",
 	"Tad \"SpaceManiac\" Hardesty",
+	"Best Halloween Ever 2012!",
 	"%",
 	"&Some Tiles Borrowed From",
 	"",

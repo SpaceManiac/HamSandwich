@@ -1,5 +1,6 @@
 #include "customworld.h"
 #include "shop.h"
+#include "md5.h"
 
 #define ENTRY_NONE		0
 #define ENTRY_TITLE		1
@@ -41,7 +42,7 @@ void AppendInvItem(byte pos, byte item, byte type, byte subtype, int max, char* 
 #define C(VALUE) if (!stricmp(data, #VALUE)) return VALUE;
 int ConstAtoi(const char* data)
 {
-	C(NULL);
+	if (!stricmp(data, "NULL")) return 0;
 	C(INVT_PANTS);
 	C(INVT_HAMMERS);
 	C(INVT_MYSTIC);
@@ -89,7 +90,7 @@ void InitCustomWorld(void)
 	sprintf(buf, "worlds/%s", CustomWorldFname());
 	strcpy(buf+strlen(buf)-4, ".txt");
 
-	FILE* f = fopen(buf,"r");
+	FILE* f = fopen(buf,"rt");
 	buf[0] = '\0';
 
 	if (!f)
@@ -173,6 +174,26 @@ void InitCustomWorld(void)
 	fclose(f);
 }
 
+byte VerifyHollowShw()
+{
+	FILE* f = fopen("worlds/hollow.shw", "rb");
+	byte md5buf[17];
+
+	// 18044403873A5A3DA052C871D4F76B6D
+	// scrambled a little so it isn't so ctrl-f'able
+	byte md5ok[17] = "\x5\xf1\x31\xf0\x74\x27\x47\x2a\x8d\x3f\xb5\x5e\xc1\xe4\x58\x5a";
+
+	md5_stream(f, md5buf);
+	fclose(f);
+	md5buf[16] = '\0';
+
+	for (int i = 0; i < 16; ++i)
+		if (md5buf[i] != (md5ok[i] + 19) % 256)
+			return 0;
+
+	return 1;
+}
+
 const char* CustomWorldFname()
 {
 	return profile.lastWorld;
@@ -190,7 +211,7 @@ const char* CustomWorldTitle(const char* fname)
 		sprintf(buf, "worlds/%s", fname);
 		strcpy(buf+strlen(buf)-4, ".txt");
 
-		FILE* f = fopen(buf,"r");
+		FILE* f = fopen(buf,"rt");
 		buf[0] = '\0';
 
 		if (f && fgets(buf, 32, f) != NULL)

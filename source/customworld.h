@@ -7,6 +7,7 @@
 
 byte IsCustomWorld(void);	// 0=hollow.shw, 1=other
 void InitCustomWorld(void); // load stuff
+byte VerifyHollowShw(void); // make sure hollow.shw hasn't been tampered with
 
 const char* CustomWorldTitle(const char* fname); // NULL for current world
 const char* CustomWorldFname(void);

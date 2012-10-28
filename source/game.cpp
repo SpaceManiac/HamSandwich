@@ -755,6 +755,11 @@ byte PlayWorld(MGLDraw *mgl,char *fname)
 	StopSong();
 	InitWorld(&curWorld);
 	InitCustomWorld();
+	if (!IsCustomWorld() && !VerifyHollowShw())
+	{
+		// maybe be mean later
+		return 1;
+	}
 
 	mapNum=player.levelNum;
 	while(1)
