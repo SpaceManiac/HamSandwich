@@ -41,10 +41,39 @@ static monsnotes_t notes[] = {
 	 "a laser invariably requires clever use if mirrors and/or the Lightreaver. "
 	 "This specific one points down."},
 	{MONS_TURRETL,
-	 "I need to come up with some more fun text for these laser varieties."},
+	 "This is a left laser. Lasers are actually one of my favorite obstacles "
+	 "since they're new to Sleepless Hollow, having not previously appeared in "
+	 "any Hamumu game."},
+	{MONS_TURRETR,
+	 "Lasers are unique but their graphics aren't - they're actually composed "
+	 "several AK-8087 bullets with adjusted glowiness, since Sleepless Hollow "
+	 "doesn't make any changes to the bullet or item spritesheets."},
 	{MONS_BOBBER,
 	 "This \"monster\" is Bouapha's fishing bobber. I haven't tried summoning "
 	 "it or anything yet, so get back to me on that."},
+	{MONS_BIGBODY,
+	 "This is the underlying body of Big Heads Rod, Maude, and Todd and is "
+	 "responsible for handling the movement and facing of the boss. The Big "
+	 "Heads themselves are, like the Iron Skull, using Richie Lich graphics, "
+	 "which first appeared in Spooky Castle."},
+	{MONS_DARKNESS,
+	 "These guys are highly unique to Sleepless Hollow in their mechanics. "
+	 "Internally they're take on the size and graphics of Bouapha himself "
+	 "but render only as a black inflection on the terrain, which required "
+	 "a few changes to the lighting system to work right."},
+	{MONS_STAREYBAT,
+	 "Like the Supreme monsters, these guys push you back Blower-style. "
+	 "Unlike Supreme, they push much stronger and are indestructible without "
+	 "the right tools."},
+	{MONS_BAT,
+	 "Fairly standard bat fare, straight from Supreme. Did you know Scary Bats "
+	 "were one of the first monsters in Dr. Lunatic, with ID 3 only after "
+	 "Bouapha and Boneheads?"},
+	{MONS_SCAREDYBAT,
+	 "Since good old Buddy Bunnies didn't fit the Sleepless Theme, but Jamul "
+	 "loves his allied creature escort missions, these guys were invented. A "
+	 "bit atypically, they run away instead of towards you, useful for puzzles "
+	 "where you want to require careful positioning."},
 	{255,
 	 "No notes on monster"}
 };

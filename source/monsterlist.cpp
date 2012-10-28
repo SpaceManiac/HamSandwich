@@ -787,7 +787,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 		// EXPANSION MONSTERS
 		{"Mine Cart",255,255,0,AI_MineCart,
 		 11,8,100,500,"graphics/minecar.jsp",0,MF_NOMOVE|MF_INVINCIBLE|MF_FREEWALK|MF_NOHIT,
-		 MT_VEHICLE,
+		 MT_VEHICLE|MT_GOOD,
 			{
 				{0,255},	// idle
 				{1,2,3,4,5,6,7,0,255},	// move
