@@ -6,19 +6,35 @@
 #define ENTRY_TITLE		1
 #define ENTRY_GOALS		2
 #define ENTRY_ITEMS		3
+#define ENTRY_FISHING	4
 #define ENTRY_PAGE		50
 
 #define JOURNAL_SIZE	1024
 
+// Basics
 static byte isCustomWorld;
 static char worldTitle[32];
 static char worldTitleTemp[32];
+
+// Journal pages
 static char journalPages[20][JOURNAL_SIZE];
+
+// Goals
 static char goalNames[25][32];
 static char goalDescriptions[25][64];
 
+// Inventory
 static invItem_t inventory[32];
 static byte inventorySize;
+
+// Fishing
+static char fishNames[10][20];
+static float fishSizes[10];
+static byte fishEffects[10];
+static byte fishWhich[64];
+static byte fishDifficulty[64];
+
+// Helper stuff
 
 byte IsCustomWorld(void)
 {
@@ -67,6 +83,8 @@ int ConstAtoi(const char* data)
 	return atoi(data);
 }
 
+// The meat of the processing
+
 void InitCustomWorld(void)
 {
 	isCustomWorld = !!strcmp(profile.lastWorld, "hollow.shw");
@@ -74,7 +92,8 @@ void InitCustomWorld(void)
 		return;
 
 	// Clear stuff
-	strcpy(worldTitle,CustomWorldFname());
+	strncpy(worldTitle,CustomWorldFname(),31);
+	worldTitle[31]='\0';
 	for(int i=0; i<20; ++i)
 		journalPages[i][0]='\0';
 	for(int i=0; i<25; ++i)
@@ -84,6 +103,17 @@ void InitCustomWorld(void)
 	}
 	inventory[0].position=255;
 	inventorySize=0;
+	for (int i=0; i<10; ++i)
+	{
+		fishNames[i][0]='\0';
+		fishSizes[i] = -1;
+		fishEffects[i] = -1;
+	}
+	for (int i=0; i<64; ++i)
+	{
+		fishWhich[i] = 0;
+		fishDifficulty[i] = 0;
+	}
 
 	// Load stuff
 	char buf[256];
@@ -122,6 +152,10 @@ void InitCustomWorld(void)
 			{
 				entrymode = ENTRY_ITEMS;
 			}
+			else if (!strcmp(buf,"[fishing]"))
+			{
+				entrymode = ENTRY_FISHING;
+			}
 			else
 			{
 				entrymode = ENTRY_NONE;
@@ -140,30 +174,76 @@ void InitCustomWorld(void)
 			}
 			else if (entrymode==ENTRY_GOALS)
 			{
-				char* number = strtok(buf,"=\n");
-				char* name = strtok(NULL,"|\n");
-				char* desc = strtok(NULL,"\n");
+				char* number = strtok(buf,"=");
+				char* name = strtok(NULL,"|");
+				char* desc = strtok(NULL,"");
 
 				if (!number || !name || !desc)
 					continue;
 
 				int goal = atoi(number);
-				if (!goal)
+				if (goal < 1 || goal > 25)
 					continue;
 
-				strcpy(goalNames[goal-1], name);
-				strcpy(goalDescriptions[goal-1], desc);
+				strncpy(goalNames[goal-1], name, 31);
+				goalNames[goal-1][31]='\0';
+				strncpy(goalDescriptions[goal-1], desc, 63);
+				goalDescriptions[goal-1][63]='\0';
 			}
 			else if (entrymode==ENTRY_ITEMS)
 			{
-				char* pos = strtok(buf,"=\n");
-				char* item = strtok(NULL,"|\n");
-				char* type = strtok(NULL,"|\n");
-				char* subtype = strtok(NULL,"|\n");
-				char* max = strtok(NULL,"|\n");
-				char* name = strtok(NULL,"|\n");
-				char* desc = strtok(NULL,"\n");
+				char* pos = strtok(buf,"=");
+				char* item = strtok(NULL,"|");
+				char* type = strtok(NULL,"|");
+				char* subtype = strtok(NULL,"|");
+				char* max = strtok(NULL,"|");
+				char* name = strtok(NULL,"|");
+				char* desc = strtok(NULL,"");
+
+				if (!pos || !item || !type || !subtype || !max || !name || !desc)
+					continue;
+
 				AppendInvItem(atoi(pos),atoi(item),ConstAtoi(type),ConstAtoi(subtype),atoi(max),name,desc);
+			}
+			else if (entrymode==ENTRY_FISHING)
+			{
+				// name/effect/size, difficulty/fish
+				char* what = strtok(buf,"|");
+				char* idtext = strtok(NULL,"=");
+				char* value = strtok(NULL,"");
+
+				if (!what || !idtext || !value)
+					continue;
+
+				int id = atoi(idtext);
+				if (!stricmp(what, "name"))
+				{
+					if (id < 0 || id > 9) continue;
+					strncpy(fishNames[id], value, 19);
+					fishNames[id][19]='\0';
+				}
+				else if (!stricmp(what, "effect"))
+				{
+					if (id < 0 || id > 9) continue;
+					fishEffects[id]=atoi(value);
+				}
+				else if (!strcmp(what, "size"))
+				{
+					if (id < 0 || id > 9) continue;
+					fishSizes[id]=(float) atof(value);
+				}
+				else if (!strcmp(what,"difficulty"))
+				{
+					if (id < 0 || id > 64) continue;
+					fishDifficulty[id]=atoi(value);
+				}
+				else if (!strcmp(what,"fish"))
+				{
+					int fish = atoi(value);
+					if (id < 0 || id > 64 || fish < 0 || (fish > 9 && fish != 255))
+						continue;
+					fishWhich[id]=fish;
+				}
 			}
 			else if (entrymode>=ENTRY_PAGE && entrymode<ENTRY_PAGE+20)
 			{
@@ -173,6 +253,8 @@ void InitCustomWorld(void)
 	}
 	fclose(f);
 }
+
+// Verification
 
 byte VerifyHollowShw()
 {
@@ -193,6 +275,8 @@ byte VerifyHollowShw()
 
 	return 1;
 }
+
+// Filename and title
 
 const char* CustomWorldFname()
 {
@@ -216,17 +300,20 @@ const char* CustomWorldTitle(const char* fname)
 
 		if (f && fgets(buf, 32, f) != NULL)
 		{
-			strcpy(worldTitleTemp,buf);
+			strncpy(worldTitleTemp,buf,31);
 		}
 		else
 		{
-			strcpy(worldTitleTemp,fname);
+			strncpy(worldTitleTemp,fname,31);
 		}
+		worldTitleTemp[31]='\0';
 		if (f) fclose(f);
 
 		return worldTitleTemp;
 	}
 }
+
+// Getters
 
 char* CustomJournalPage(int p)
 {
@@ -250,4 +337,29 @@ invItem_t* CustomInventory()
 		inventory[inventorySize].position = 255;
 		return inventory;
 	}
+}
+
+char* CustomFishName(byte type)
+{
+	return fishNames[type];
+}
+
+float CustomFishSize(byte type)
+{
+	return fishSizes[type];
+}
+
+byte CustomFishEffect(byte type)
+{
+	return fishEffects[type];
+}
+
+byte CustomFishWhich(byte map)
+{
+	return fishWhich[map];
+}
+
+byte CustomFishDiff(byte map)
+{
+	return fishDifficulty[map];
 }

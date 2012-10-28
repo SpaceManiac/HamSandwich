@@ -3,8 +3,9 @@
 #include "bullet.h"
 #include "guy.h"
 #include "goal.h"
+#include "customworld.h"
 
-char fishName[10][20]={
+static char fishName[10][20]={
 		"Bonefish", // caught in graveyard, gives energy
 		"Brayka Bass", // caught in brayka, heals you some
 		"Silverfish",	// caught in mirrors, gives 10 weapon XP to all weapons
@@ -17,7 +18,7 @@ char fishName[10][20]={
 		"Mudglopper",	// caught in mud anywhere, poisons you when caught
 	};
 
-byte whichFish[]={
+static byte whichFish[]={
 	0,	// 0 - back roads
 	255, // 1 - hollow
 	0,	// 2 - sleep inn
@@ -39,7 +40,7 @@ byte whichFish[]={
 	0,	// 18 - happy glade
 };
 
-float sizeMult[10]={
+static float sizeMult[10]={
 	1.5f,	// bonefish
 	0.7f,	// bass
 	1.2f,	// silverfish
@@ -52,7 +53,7 @@ float sizeMult[10]={
 	2.0f,	// mudglopper
 };
 
-byte fishingDiff[]={
+static byte fishingDiff[]={
 	0,	// 0 - back roads
 	20, // 1 - hollow
 	0,	// 2 - sleep inn
@@ -82,10 +83,37 @@ byte fishingDiff[]={
 
 char *FishName(byte n)
 {
-	if(n>9)
-		return fishName[0];
-	else
-		return fishName[n];
+	if (IsCustomWorld() && strlen(CustomFishName(n)))
+		return CustomFishName(n);
+	return fishName[n];
+}
+
+static float SizeMult(byte n)
+{
+	if (IsCustomWorld() && CustomFishSize(n) != -1)
+		return CustomFishSize(n);
+	return sizeMult[n];
+}
+
+static byte FishEffect(byte n)
+{
+	if (IsCustomWorld() && CustomFishEffect(n) != -1)
+		return CustomFishEffect(n);
+	return n;
+}
+
+static byte WhichFish(byte map)
+{
+	if (IsCustomWorld())
+		return CustomFishWhich(map);
+	return whichFish[map];
+}
+
+static byte FishingDiff(byte map)
+{
+	if (IsCustomWorld())
+		return CustomFishDiff(map);
+	return fishingDiff[map];
 }
 
 byte ShouldBob(void)
@@ -93,10 +121,10 @@ byte ShouldBob(void)
 	int total;
 	int maxOdds;
 
-	if(player.levelNum==1 && player.journal[54]==1)
+	if(WhichFish(player.levelNum)==255 && player.journal[54]==1)
 		return 0;	// can only catch goldfish once
 
-	total=player.journal[55]-fishingDiff[player.levelNum];
+	total=player.journal[55]-FishingDiff(player.levelNum);
 	if(total<0)
 		return 0;
 
@@ -122,7 +150,7 @@ void CatchFish(int mapx,int mapy,Map *map,world_t *world)
 	else
 		CompleteGoal(23);
 
-	if(Random(20)==0 && whichFish[player.levelNum]!=255)	// 5% chance of getting an aquazoid instead
+	if(Random(20)==0 && WhichFish(player.levelNum)!=255)	// 5% chance of getting an aquazoid instead
 	{
 		NewMessage("Yikes! Aquazoid!!",90,1);
 		MakeNormalSound(SND_SERPENTSPIT);
@@ -146,7 +174,7 @@ void CatchFish(int mapx,int mapy,Map *map,world_t *world)
 	if(size==0)
 		size=1;
 
-	type=whichFish[player.levelNum];
+	type=WhichFish(player.levelNum);
 
 	if(world->terrain[map->map[mapx+mapy*map->width].floor].flags&TF_MUD)
 		type=9;	// always a mudglopper
@@ -163,7 +191,7 @@ void CatchFish(int mapx,int mapy,Map *map,world_t *world)
 	{
 		float f;
 
-		f=(float)size*sizeMult[type];
+		f=(float)size*SizeMult(type);
 
 		if(f>255)
 			f=255;
@@ -172,12 +200,12 @@ void CatchFish(int mapx,int mapy,Map *map,world_t *world)
 
 		size=(byte)f;
 
-		if(player.levelNum==9)	// tomb of darkness, 2 different possible catches
+		if(player.levelNum==9 && !IsCustomWorld())	// tomb of darkness, 2 different possible catches
 		{
 			if(mapx>=71 && mapx<=81 && mapy>=20 && mapy<=30)	// the super bonus room
 				type=3;
 		}
-		sprintf(s,"%d lb. %s!",size,fishName[type]);
+		sprintf(s,"%d lb. %s!",size,FishName(type));
 		NewMessage(s,120,1);
 		if(player.journal[30+type]<255)
 			player.journal[30+type]++;	// caught one more
@@ -186,7 +214,7 @@ void CatchFish(int mapx,int mapy,Map *map,world_t *world)
 		if(size>=150)
 			CompleteGoal(22);
 
-		switch(type)
+		switch(FishEffect(type))
 		{
 			case 0:
 				player.ammo+=20;

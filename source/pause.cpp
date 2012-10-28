@@ -346,10 +346,11 @@ void RenderPauseMenu(void)
 				break;
 			case INVT_HAMMERS:
 				amount = player.hammers;
+				bright = -5+(player.weapon==0)*15;
 				break;
 			case INVT_MYSTIC:
 				amount = player.weaponLvl[subtype];
-				bright = -5+(player.weapon==i+1)*15;
+				bright = -5+(player.weapon==subtype+1)*15;
 				break;
 			case INVT_BRAINS:
 				amount = player.brains;
@@ -803,7 +804,6 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 								FillPauseMenu(gameCheatPause);
 							else
 								FillPauseMenu(gamePause);
-
 						}
 						else
 						{

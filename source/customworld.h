@@ -15,4 +15,10 @@ char* CustomJournalPage(int p);
 char* CustomGoalInfo(byte goal, byte info); // 0=name, 1=description
 invItem_t* CustomInventory(); // NULL if none specified
 
+char* CustomFishName(byte type);
+float CustomFishSize(byte type);
+byte CustomFishEffect(byte type);
+byte CustomFishWhich(byte map);
+byte CustomFishDiff(byte map);
+
 #endif // CUSTOMWORLD_H
