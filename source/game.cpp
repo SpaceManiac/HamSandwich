@@ -838,4 +838,13 @@ void TestLevel(world_t *world,byte level)
 	InitGuys(256);
 	GetSpecialsFromMap(EditorGetMap()->special);
 	editing=1;
+
+	char s[64];
+	// blast all the editing profile data
+	for(int i=0;i<64;i++) // used to be 19, upped to 64 to tolerate custom worlds
+	{
+		// delete all maps
+		sprintf(s,"profiles/_editing_.%03d",profile.name,i);
+		unlink(s);
+	}
 }

@@ -338,7 +338,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					{
 						worldData_t *w;
 
-						for(i=0;i<19;i++)
+						for(i=0;i<64;i++) // used to be 19, upped to 64 to tolerate custom worlds
 						{
 							// delete all maps
 							sprintf(s,"profiles/%s.%03d",profile.name,i);

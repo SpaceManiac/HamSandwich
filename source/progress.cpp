@@ -5,6 +5,7 @@
 #include "music.h"
 #include "shop.h"
 #include "customworld.h"
+#include "editor.h"
 
 static char prfName[64];
 static byte firstTime;
@@ -507,7 +508,10 @@ void SaveState(void)
 	word w;
 
 	player.journal[50]=0;
-	sprintf(fname,"profiles/%s.%03d",profile.name,player.levelNum);
+	if (editing)
+		sprintf(fname,"profiles/_editing_.%03d",profile.name,player.levelNum);
+	else
+		sprintf(fname,"profiles/%s.%03d",profile.name,player.levelNum);
 	f=fopen(fname,"wb");
 
 	// first write out the player itself
@@ -545,7 +549,10 @@ byte LoadState(byte lvl,byte getPlayer)
 	word tagged;
 	player_t tmp;
 
-	sprintf(fname,"profiles/%s.%03d",profile.name,lvl);
+	if (editing)
+		sprintf(fname,"profiles/_editing_.%03d",profile.name,lvl);
+	else
+		sprintf(fname,"profiles/%s.%03d",profile.name,lvl);
 	f=fopen(fname,"rb");
 	if(f==NULL)
 		return 0;
