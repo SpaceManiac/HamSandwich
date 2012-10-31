@@ -450,6 +450,17 @@ byte LunaticRun(int *lastTime)
 			windDownReason=LEVEL_WIN;
 			msgFromOtherModules=MSG_NONE;
 			player.boredom=0;
+
+			// Throw down a dummy data file to mark the editor achieved
+			// It's cheatable but that's kind of ok
+			if (!IsCustomWorld())
+			{
+				FILE* f = fopen("profiles/editor.dat", "wt");
+				char text[256];
+				sprintf(text,"Editor unlocked by %s, what a cool guy!\n", profile.name);
+				fwrite(text, sizeof(char), strlen(text), f);
+				fclose(f);
+			}
 		}
 		else if(msgFromOtherModules==MSG_RESET)
 		{

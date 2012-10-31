@@ -145,6 +145,7 @@ char lvlName[32];
 byte starColorTable[]={214,81,63,49,33,21,32,83,93};
 
 byte demoTextCounter;
+static byte canEditor;
 
 static byte *backgd;
 static int titleRuns;
@@ -185,6 +186,8 @@ void MainMenuDisplay(MGLDraw *mgl)
 		y=240+i*60;
 		Print(x,y,menuTxt[i],(cursor==i)*10,0);
 	}
+	if (canEditor)
+		Print(430,240,"Editor",(cursor==10)*10,0);
 	sprintf(s,"Profile: %s",profile.name);
 	Print(638-GetStrLength(s,1)-1,467-1,s,-32,1);
 	Print(638-GetStrLength(s,1)+1,467+1,s,-32,1);
@@ -227,6 +230,8 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 			if(msx>=230 && msx<=500 && msy>=240+i*60 && msy<=240+i*60+55 && (i != 2 || !IsCustomWorld()))
 				cursor=i;
 		}
+		if (msx>=430 && msx<=640 && msy>=240 && msy<=295 && canEditor)
+			cursor=10;
 	}
 	oldmsx=msx;
 	oldmsy=msy;
@@ -241,6 +246,8 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 			cursor=3;
 		if(cursor==2 && IsCustomWorld())
 			cursor=1;
+		if(cursor==9) // editor
+			cursor=0;
 
 		titleRuns=0;
 		MakeNormalSound(SND_MENUCLICK);
@@ -252,6 +259,18 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 			cursor=0;
 		if(cursor==2 && IsCustomWorld())
 			cursor=3;
+		if(cursor==11) // editor
+			cursor=3;
+
+		titleRuns=0;
+		MakeNormalSound(SND_MENUCLICK);
+	}
+	if((((c&CONTROL_LF) && !(oldc&CONTROL_LF)) || ((c&CONTROL_RT) && !(oldc&CONTROL_RT))) && canEditor)
+	{
+		if(cursor==10)
+			cursor=0;
+		else
+			cursor=10;
 
 		titleRuns=0;
 		MakeNormalSound(SND_MENUCLICK);
@@ -296,6 +315,17 @@ byte MainMenu(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
 
+	canEditor=0;
+	FILE* f = fopen("profiles/editor.dat", "rt");
+	if (f)
+	{
+		canEditor=1;
+		fclose(f);
+	}
+#ifdef _DEBUG
+	canEditor=1;
+#endif
+
 	mgl->LastKeyPressed();
 	mgl->MouseTap();
 	oldc=CONTROL_B1|CONTROL_B2;
@@ -327,18 +357,13 @@ byte MainMenu(MGLDraw *mgl)
 			mgl->MouseTap();
 			oldc=CONTROL_B1|CONTROL_B2;
 		}
-#ifdef _DEBUG
-		if(mgl->LastKeyPeek()=='e')
-		{
-			mgl->ClearKeys();
-			return 5;
-		}
-#endif
 	}
 	free(backgd);
 
 	if(cursor==3)	// exit
 		return 255;
+	else if(cursor==10)  // editor
+		return 5;
 	else
 		return cursor;
 }
