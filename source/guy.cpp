@@ -897,7 +897,7 @@ void Guy::Update(Map *map,world_t *world)
 	}
 	if((oldmapx!=mapx || oldmapy!=mapy) && type!=MONS_NOBODY && hp>0)
 	{
-		if(mapx==63 && mapy==53 && type==MONS_BOUAPHA && player.levelNum==12 && !IsCustomWorld())
+		if(mapx==63 && mapy==53 && type==MONS_BOUAPHA && player.levelNum==12 && CustomOption("bonecandle", 1))
 		{
 			if(player.journal[61]==0)
 			{

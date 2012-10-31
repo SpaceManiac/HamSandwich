@@ -3469,9 +3469,6 @@ void ChangeBullet(byte fx,int x,int y,int type,int newtype)
 			{
 				int dx = bullet[i].dx, dy = bullet[i].dy, f = bullet[i].facing;
 
-				if (type == BLT_LASER)
-					f /= 2;
-
 				if (BulletFacingType(newtype) == 0)
 					f = 0;
 				else if (BulletFacingType(newtype) == 7 && BulletFacingType(type) == 255)

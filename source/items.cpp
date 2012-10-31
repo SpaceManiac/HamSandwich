@@ -8,6 +8,7 @@
 #include "goal.h"
 #include "worldstitch.h"
 #include "journal.h"
+#include "customworld.h"
 #include <ctype.h>
 
 item_t baseItems[]={
@@ -1677,7 +1678,7 @@ byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y)
 				NewMessage(items[type].msg,75,0);
 
 			ItemGetEffect(x,y);
-			if(type==150)	// the journal item number
+			if(type==CustomOption("journal", 150))	// the journal item number
 			{
 				player.journal[player.levelNum+1]=1;
 				player.jpage=player.levelNum+1;
@@ -1685,7 +1686,7 @@ byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y)
 					CompleteGoal(17);
 				PauseGame();
 			}
-			if(type==186)	// the fishing rod
+			if(type==CustomOption("electroreel", 186))	// the fishing rod
 			{
 				player.ability[ABIL_FISH]=1;
 				player.journal[20]=1;

@@ -21,4 +21,6 @@ byte CustomFishEffect(byte type);
 byte CustomFishWhich(byte map);
 byte CustomFishDiff(byte map);
 
+byte CustomOption(const char* optname, byte def);
+
 #endif // CUSTOMWORLD_H

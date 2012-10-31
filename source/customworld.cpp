@@ -7,9 +7,12 @@
 #define ENTRY_GOALS		2
 #define ENTRY_ITEMS		3
 #define ENTRY_FISHING	4
+#define ENTRY_OPTIONS	5
 #define ENTRY_PAGE		50
 
 #define JOURNAL_SIZE	1024
+#define NUM_INVENTORY	32
+#define NUM_OPTIONS		128
 
 // Basics
 static byte isCustomWorld;
@@ -24,7 +27,7 @@ static char goalNames[25][32];
 static char goalDescriptions[25][64];
 
 // Inventory
-static invItem_t inventory[32];
+static invItem_t inventory[NUM_INVENTORY];
 static byte inventorySize;
 
 // Fishing
@@ -33,6 +36,11 @@ static float fishSizes[10];
 static byte fishEffects[10];
 static byte fishWhich[64];
 static byte fishDifficulty[64];
+
+// Options
+static char optionNames[NUM_OPTIONS][32];
+static byte optionValues[NUM_OPTIONS];
+static byte numOptions;
 
 // Helper stuff
 
@@ -114,6 +122,12 @@ void InitCustomWorld(void)
 		fishWhich[i] = 0;
 		fishDifficulty[i] = 0;
 	}
+	numOptions=0;
+	for (int i=0; i<NUM_OPTIONS; ++i)
+	{
+		optionNames[i][0]='\0';
+		optionValues[i] = 0;
+	}
 
 	// Load stuff
 	char buf[256];
@@ -155,6 +169,10 @@ void InitCustomWorld(void)
 			else if (!strcmp(buf,"[fishing]"))
 			{
 				entrymode = ENTRY_FISHING;
+			}
+			else if (!strcmp(buf,"[options]"))
+			{
+				entrymode = ENTRY_OPTIONS;
 			}
 			else
 			{
@@ -202,6 +220,8 @@ void InitCustomWorld(void)
 
 				if (!pos || !item || !type || !subtype || !max || !name || !desc)
 					continue;
+				if (inventorySize >= NUM_INVENTORY)
+					continue;
 
 				AppendInvItem(atoi(pos),atoi(item),ConstAtoi(type),ConstAtoi(subtype),atoi(max),name,desc);
 			}
@@ -227,23 +247,37 @@ void InitCustomWorld(void)
 					if (id < 0 || id > 9) continue;
 					fishEffects[id]=atoi(value);
 				}
-				else if (!strcmp(what, "size"))
+				else if (!stricmp(what, "size"))
 				{
 					if (id < 0 || id > 9) continue;
 					fishSizes[id]=(float) atof(value);
 				}
-				else if (!strcmp(what,"difficulty"))
+				else if (!stricmp(what,"difficulty"))
 				{
 					if (id < 0 || id > 64) continue;
 					fishDifficulty[id]=atoi(value);
 				}
-				else if (!strcmp(what,"fish"))
+				else if (!stricmp(what,"fish"))
 				{
 					int fish = atoi(value);
 					if (id < 0 || id > 64 || fish < 0 || (fish > 9 && fish != 255))
 						continue;
 					fishWhich[id]=fish;
 				}
+			}
+			else if (entrymode==ENTRY_OPTIONS)
+			{
+				char* what = strtok(buf,"=");
+				char* value = strtok(NULL,"|");
+
+				if (!what || !value)
+					continue;
+				if (numOptions >= NUM_OPTIONS)
+					continue;
+
+				strcpy(optionNames[numOptions], what);
+				optionValues[numOptions] = atoi(value);
+				++numOptions;
 			}
 			else if (entrymode>=ENTRY_PAGE && entrymode<ENTRY_PAGE+20)
 			{
@@ -362,4 +396,17 @@ byte CustomFishWhich(byte map)
 byte CustomFishDiff(byte map)
 {
 	return fishDifficulty[map];
+}
+
+byte CustomOption(const char* optname, byte def)
+{
+	// Shortcut so callers don't have to check this themselves
+	if (!IsCustomWorld()) return def;
+
+	for (int i=0; i<NUM_OPTIONS;++i)
+	{
+		if (!stricmp(optname, optionNames[i]))
+			return optionValues[i];
+	}
+	return def;
 }
