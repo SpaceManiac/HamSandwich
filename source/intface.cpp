@@ -414,7 +414,6 @@ void RenderInterface(MGLDraw *mgl)
 	}
 
 	combo[0]=0;
-	/*
 #ifdef _DEBUG
 	for(i=0;i<8;i++)
 	{
@@ -424,7 +423,6 @@ void RenderInterface(MGLDraw *mgl)
 	sprintf(combo,"%d,%d",player.enterX,player.enterY);
 	Print(30,60,combo,0,1);
 #endif
-  */
 }
 
 void RenderCollectedStuff(int x,int y,MGLDraw *mgl)

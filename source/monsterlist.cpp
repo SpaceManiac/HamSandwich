@@ -688,7 +688,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 			}},
 		{"Spookley",255,255,0,AI_Spook,
 		 30,9,300,1,"!51",0,MF_ONEFACE|MF_FLYING|MF_GHOST|MF_FREEWALK|MF_ENEMYWALK|MF_NOSHADOW|MF_NOHIT,
-		 MT_EVIL|MT_BOSS|MT_SPOOKY,
+		 MT_EVIL|MT_BOSS|MT_SPOOKY|MT_BITS,
 			{
 				{0,255},	// idle
 				{0,255},	// move

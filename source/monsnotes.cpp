@@ -74,8 +74,88 @@ static monsnotes_t notes[] = {
 	 "loves his allied creature escort missions, these guys were invented. A "
 	 "bit atypically, they run away instead of towards you, useful for puzzles "
 	 "where you want to require careful positioning."},
+	{MONS_YERFDOG,
+	 "Yerf yerf! This guy was brought over from Supreme as part of the update "
+	 "since he's really useful for conveying information to the player."},
+	{MONS_YUGO,
+	 "Vroom vroom! This was included in Sleepless Hollow for the scene at the "
+	 "beginning of the game, but you don't usually get the opportunity to drive "
+	 "it anywhere."},
+	{MONS_GOODBONE,
+	 "A fair amount of code was changed so that checks like pushing and picking "
+	 "up items worked for monsters with the Funnybone AI type as well as the "
+	 "typical Bouapha AI type. This guy's pretty fancy in my opinion - "
+	 "basically a better version of puzzles I've seen in Supreme that involve "
+	 "multiple Bouaphas."},
+	{MONS_RAFT,
+	 "The classic raft! Used nowhere that I remember except Brayka Lake, which "
+	 "is a pun about breaking legs in case that wasn't completely obvious."},
+	{MONS_GOODTURRET,
+	 "A good turret! It's, uh, good. Turret graphics were included for lasers "
+	 "so this guy was an obvious choice to make accessible."},
+	{MONS_MISLTURRET,
+	 "Missle turret! It shoots missiles. This required some special treatment "
+	 "to include since it usually shares AI routines with the Turret and Death "
+	 "Turret (the routine checks its AI type to determine which kind of turret "
+	 "it is). So strictly speaking it's in monster waves 5."},
+	{MONS_DEATHTURRET,
+	 "Like the missile turret, but worst. In case you were wondering, the "
+	 "monster waves are: Dr. Lunatic; Expando-Pak; Fun Pack; Supreme; and "
+	 "Sleepless Hollow. The lengthiest of these is Supreme, followed closely "
+	 "by the original Dr. Lunatic."},
+	{MONS_POLTERGUY,
+	 "A throwback to Polterguy from Dr. Lunatic, Sir Spookley Hauntmore (oft "
+	 "misnamed by way of extra Ss) is the Underhollow boss that requires the "
+	 "Planetsmasher. He moves between worlds when he's damaged too much and "
+	 "you have to switch sides to keep fighting him."},
+	{MONS_POLTERGUY2,
+	 "This is the invincible form of Sir Spookley Hauntmore, for when he's "
+	 "shifted to the opposite world."},
+	{MONS_BATGUARD,
+	 "These guys are the bodyguards to Von Spatula, and are positioned in a "
+	 "loop around the Countess by a special routine. Placing them manually is "
+	 "a bad idea."},
+	{MONS_RADISH,
+	 "If it isn't the Horseradish himself! This guy's not that tough to beat "
+	 "if you can survive long enough to lead him to the head, since by then "
+	 "you've already proven yourself by beating all six of the Underhollow "
+	 "bosses."},
+	{MONS_PUMPKINFLY,
+	 "The Horseradish releases these fuys to pester you. They do burn down "
+	 "the trees in the way of where the head is kept, so at least that's "
+	 "helpful."},
+	{MONS_SKULL,
+	 "The iron skull is pretty darn iron, with a whopping 20,000 hit points. "
+	 "Reflect his megabeams (the staple attack of liches and giant spiders "
+	 "throughout the Dr. Lunatic universe) with the Lightreaver and he falls "
+	 "fast."},
+	{MONS_COUNTESS,
+	 "Von Spatula! Replacing the ordinary countess's position, she's protected "
+	 "by an entourage of Royal Batguards that absorb hits. Use the earsplitter "
+	 "to pierce her defenses."},
+	{MONS_SPEEDY,
+	 "The Sparkthrower boss! Only Sparkthrower bullets  are quick enough to "
+	 "catch the Speedy."},
+	{MONS_BLASTER,
+	 "One of the three baddies using the Lightswitch graphics from Loonyland, "
+	 "this one just shoots at you. It doesn't have much health but like many "
+	 "other monsters is prone to respawning."},
+	{MONS_LIGHTSLIDE,
+	 "The second of the Lightswitch enemies, the Charge Coil slides around at "
+	 "Bouapha's behest and is activated by a spark passing over it. Very useful "
+	 "for puzzles involving sparks."},
+	{MONS_LIGHTSWITCH,
+	 "The final of the Lightswitch enemies, the Lightswitch itself is rendered "
+	 "awake by any good bullet hitting it. If it's around a corner, "
+	 "Sparkthrower trickshots are likely to be required."},
+	{MONS_SPARKY,
+	 "A less-speedy, more candle-bearing version of Speedy Gonzales. Based on "
+	 "the wolves from Supreme and \"Sparky\" being a fairly common dog's name. "
+	 "Three of them are featured in the northwest quadrant of the Tomb of "
+	 "sparks, each holding a joyously bright candle for the player to murder "
+	 "for. They don't respawn for this reason."},
 	{255,
-	 "No notes on monster"}
+	 "No notes on monster."}
 };
 
 char* MonsterNotes(byte type)
