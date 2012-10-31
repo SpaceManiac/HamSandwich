@@ -353,6 +353,11 @@ byte FileDialogClick(int msx,int msy)
 			{
 				if(menuItems&FM_SAVE)
 				{
+					if(!stricmp(newfname, "hollow.shw"))
+					{
+						exitCode=FM_FOILEDAGAIN;
+						return FM_FOILEDAGAIN;
+					}
 					exitCode=FM_SAVE;
 					return FM_SAVE;
 				}

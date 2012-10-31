@@ -385,6 +385,11 @@ void UpdateMouse(void)
 				case FM_EXIT:
 					editMode=EDITMODE_EDIT;
 					break;
+				case FM_FOILEDAGAIN:
+					SetStitchError("Unable to save over hollow.shw.");
+					InitEditHelp(HELP_WORLDSTITCH);
+					editMode=EDITMODE_HELP;
+					break;
 			}
 			break;
 		case EDITMODE_MAPMENU:
