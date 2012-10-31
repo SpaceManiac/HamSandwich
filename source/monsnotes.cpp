@@ -120,7 +120,7 @@ static monsnotes_t notes[] = {
 	 "if you can survive long enough to lead him to the head, since by then "
 	 "you've already proven yourself by beating all six of the Underhollow "
 	 "bosses."},
-	{MONS_PUMPKINFLY,
+	{MONS_PUMPKINFLY2,
 	 "The Horseradish releases these fuys to pester you. They do burn down "
 	 "the trees in the way of where the head is kept, so at least that's "
 	 "helpful."},
@@ -163,4 +163,15 @@ char* MonsterNotes(byte type)
 	int i;
 	for (i=0; notes[i].monster != 255 && notes[i].monster != type; ++i);
 	return notes[i].notes;
+}
+
+int MonsterNotesPercent()
+{
+	int total = 0;
+	for (int i=0; i<NUM_MONSTERS; ++i)
+		if (!(GetMonsterType(i)->theme & MT_NOGFX))
+			++total;
+	int done = 0;
+	for (done=0; notes[done].monster != 255; ++done);
+	return done * 100 / total;
 }

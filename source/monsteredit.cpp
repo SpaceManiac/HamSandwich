@@ -256,6 +256,7 @@ void MonsterEdit_Key(char k)
 
 // see monsnotes.cpp for this
 extern char* MonsterNotes(byte type);
+extern int MonsterNotesPercent();
 
 void MonsterEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 {
@@ -294,6 +295,9 @@ void MonsterEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 		Print(300,464,"No XP",0,1);
 	if(DoesRespawn(curMons))
 		Print(370,464,"Respawns",0,1);
+
+	sprintf(s,"Notes: %d%%",MonsterNotesPercent());
+	Print(4+158*3,4+18*6,s,0,1);
 
 	RenderButtons(mouseX,mouseY,mgl);
 
