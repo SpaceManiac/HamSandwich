@@ -193,7 +193,8 @@ void MonsterTool::PlopOne(int x,int y)
 
 	m=EditorGetMap();
 
-	if(x>=0 && y>=0 && x<m->width && y<m->height && m->map[x+y*m->width].select && monster[active]<256)
+	// SpaceManiac: don't allow placing of MT_NOGFX monsters
+	if(x>=0 && y>=0 && x<m->width && y<m->height && m->map[x+y*m->width].select && monster[active]<256 && !(GetMonsterType(monster[active])->theme & MT_NOGFX))
 	{
 		int i;
 
