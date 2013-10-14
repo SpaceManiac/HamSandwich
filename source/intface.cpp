@@ -860,7 +860,7 @@ void RenderInterface(MGLDraw *mgl)
 	if(shopping)	// special mutant interface when shopping
 	{
 		InstaRenderItem(639-TILE_WIDTH/2,479-8,ITM_COIN,0,mgl);
-		sprintf(combo,"%d",profile.progress.totalCoins-profile.progress.coinsSpent);
+		sprintf(combo,"%lu",profile.progress.totalCoins-profile.progress.coinsSpent);
 		Print(639-TILE_WIDTH-GetStrLength(combo,2)-1,479-18,combo,-32,2);
 		Print(639-TILE_WIDTH-GetStrLength(combo,2)+1,479-18,combo,-32,2);
 		Print(639-TILE_WIDTH-GetStrLength(combo,2),479-18+1,combo,-32,2);
@@ -868,7 +868,7 @@ void RenderInterface(MGLDraw *mgl)
 		PrintGlow(639-TILE_WIDTH-GetStrLength(combo,2),479-18,combo,0,2);
 
 		InstaRenderItem(639-TILE_WIDTH/2,479-38,ITM_LOONYKEY,0,mgl);
-		sprintf(combo,"%d",profile.progress.loonyKeys-profile.progress.loonyKeysUsed);
+		sprintf(combo,"%lu",profile.progress.loonyKeys-profile.progress.loonyKeysUsed);
 		Print(639-TILE_WIDTH-GetStrLength(combo,2)-1,479-38,combo,-32,2);
 		Print(639-TILE_WIDTH-GetStrLength(combo,2)+1,479-38,combo,-32,2);
 		Print(639-TILE_WIDTH-GetStrLength(combo,2),479-38+1,combo,-32,2);

@@ -839,14 +839,14 @@ void RenderWorldSelect(MGLDraw *mgl)
 					if(i>=numScores)
 						strcpy(s,"0:00.00");
 					else
-						sprintf(s,"%d:%02d.%02d",top3[i].score/(30*60),(top3[i].score/30)%60,(top3[i].score%30)*100/30);
+						sprintf(s,"%lu:%02lu.%02lu",top3[i].score/(30*60),(top3[i].score/30)%60,(top3[i].score%30)*100/30);
 				}
 				else
 				{
 					if(i>=numScores)
 						strcpy(s,"0");
 					else
-						sprintf(s,"%d",top3[i].score);
+						sprintf(s,"%lu",top3[i].score);
 				}
 				PrintGlow(615-GetStrLength(s,2),395+i*20,s,0,2);
 			}

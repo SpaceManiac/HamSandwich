@@ -1435,30 +1435,38 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				Clamp(&me->dy,FIXAMT*12);
 
 				if(me->dx>0)
+				{
 					if(me->facing>8)
 						me->facing++;
 					else
 						me->facing--;
+				}
 				if(me->dx<0)
+				{
 					if(me->facing>8)
 						me->facing--;
 					else
 						me->facing++;
+				}
 				if(me->dy>0)
+				{
 					if(me->facing>11 || me->facing<4)
 						me->facing++;
 					else
 						me->facing--;
+				}
 				if(me->dy<0)
+				{
 					if(me->facing>11 || me->facing<4)
 						me->facing--;
 					else
 						me->facing++;
+				}
 
 				if(me->facing>200)
 					me->facing+=16;
 				if(me->facing>15)
-						me->facing-=16;
+					me->facing-=16;
 			}
 			break;
 		case BLT_TORPEDO:

@@ -185,7 +185,7 @@ void CatPair(char *buffer,char *var,dword val)
 {
 	char s[32];
 
-	sprintf(s,"&%s=%d",var,val);
+	sprintf(s,"&%s=%lu",var,val);
 	strcat(buffer,s);
 }
 
@@ -199,7 +199,7 @@ void CreateProfileString(char *buffer)
 	profile.progress.calsBurned=(profile.progress.footDistance*150/168960)+profile.progress.hammersThrown+
 		profile.progress.grassChopped;
 
-	sprintf(buffer,"/supreme_score/profile.php?nam=%s&can=%d",profile.name,profile.progress.totalCandles);
+	sprintf(buffer,"/supreme_score/profile.php?nam=%s&can=%lu",profile.name,profile.progress.totalCandles);
 	CatPair(buffer,"bra",profile.progress.totalBrains);
 	CatPair(buffer,"tim",profile.progress.totalTime);
 	CatPair(buffer,"cn1",profile.progress.totalCoins);

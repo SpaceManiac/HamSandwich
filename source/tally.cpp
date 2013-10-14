@@ -359,7 +359,7 @@ void CoinLine(byte n,int y,char *title,char *num)
 
 void MakeTime(char *s,dword clock)
 {
-	sprintf(s,"%d:%05.2f",clock/(30*60),(float)((clock%(30*60))/30.0f));
+	sprintf(s,"%lu:%05.2f",clock/(30*60),(float)((clock%(30*60))/30.0f));
 }
 
 void RenderTally(MGLDraw *mgl)
@@ -381,7 +381,7 @@ void RenderTally(MGLDraw *mgl)
 	mgl->FillBox(20,88,620,88,32*1+16);
 
 	sprintf(s,"%d",points);
-	sprintf(s2,"%d",player.levelProg->recordBaseScore);
+	sprintf(s2,"%lu",player.levelProg->recordBaseScore);
 	TallyLine(0,95,"Score",s,s,s2,(player.gotRecords&RECORD_BASE));
 
 	sprintf(s,"%d",player.bestCombo);

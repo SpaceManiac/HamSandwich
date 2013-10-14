@@ -131,7 +131,7 @@ void EncryptScore(score_t *s)
 	pos=0;
 	dst=0;
 	ptr=(byte *)s;
-	while(pos<sizeof(score_t))
+	while(pos<(int)sizeof(score_t))
 	{
 		switch(mode)
 		{
@@ -203,7 +203,7 @@ void DecryptScore(score_t *s)
 	pos=0;
 	src=0;
 	ptr=(byte *)s;
-	while(pos<sizeof(score_t))
+	while(pos<(int)sizeof(score_t))
 	{
 		switch(mode)
 		{
@@ -255,7 +255,7 @@ void CryptoTest(void)
 	fprintf(f,"Encrypted:\n%s\n\n",enc_score);
 	DecryptScore(&test);
 	fprintf(f,"Decrypted:\n");
-	fprintf(f,"name: %s\nchecksum: %d\n\n",test.name,test.scoreChecksum);
+	fprintf(f,"name: %s\nchecksum: %lu\n\n",test.name,test.scoreChecksum);
 	fprintf(f,"memcmp: %d\n",memcmp(&test,&test2,sizeof(score_t)));
 	fclose(f);
 	ExitCrypto();

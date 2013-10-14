@@ -520,7 +520,7 @@ void LunaticDraw(void)
 	}
 	if(showStats)
 	{
-		sprintf(s,"Debug Menu - F3 to close",((float)visFrameCount/(float)((timeGetTime()-gameStartTime)/1000)));
+		sprintf(s,"Debug Menu - F3 to close");
 		PrintGlow(5,30,s,8,2);
 
 		sprintf(s,"VFPS %02.2f",((float)visFrameCount/(float)((timeGetTime()-gameStartTime)/1000)));

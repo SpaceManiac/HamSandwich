@@ -7,6 +7,11 @@ import re
 
 windows = (name == 'nt')
 
+no_warnings = ['-Wno-' + s for s in [
+    'write-strings', 'char-subscripts',
+    'unused-variable', 'unused-but-set-variable'
+]]
+
 if windows:
 	LIBS = ['winmm', 'alleg44', 'ws2_32', 'logg', 'vorbisfile', 'vorbis', 'ogg', 'vorbisenc']
 else:
@@ -39,7 +44,7 @@ def program(output, debug, **kwargs):
 	env = Environment()
 
 	# compiler
-	env.Append(CCFLAGS = ['-Wall', '-Wno-write-strings', '-std=gnu++0x'])
+	env.Append(CCFLAGS = ['-Wall', '-std=gnu++0x'] + no_warnings)
 	env.Append(CPPPATH = ['include'])
 	env.Append(CPPDEFINES = ['ALLEGRO_MINGW32' if windows else 'ALLEGRO_UNIX'])
 	env.Append(**kwargs)

@@ -140,7 +140,7 @@ void RenderRaceGame(MGLDraw *mgl)
 	if(gameOver)
 	{
 		CenterPrint(320,100,"GAME OVER!",0,2);
-		sprintf(s,"Survived for %d kilometers!",racer.distDone/1000);
+		sprintf(s,"Survived for %lu kilometers!",racer.distDone/1000);
 		CenterPrint(320,150,s,0,1);
 		sprintf(s,"Total Score: %d",score);
 		CenterPrint(320,180,s,0,1);
@@ -155,7 +155,7 @@ void RenderRaceGame(MGLDraw *mgl)
 		// interface
 		sprintf(s,"Score: %08d",curScore);
 		PrintGlow(2,470,s,0,1);
-		sprintf(s,"Distance: %08d",racer.distDone);
+		sprintf(s,"Distance: %08lu",racer.distDone);
 		PrintGlow(500,470,s,0,1);
 
 		DrawBox(256,470,256+130,479,31);

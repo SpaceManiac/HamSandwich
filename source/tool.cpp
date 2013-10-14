@@ -332,6 +332,9 @@ void ToolItemWasDeleted(int i)
 }
 
 //------------------------------------
+Tool::~Tool()
+{
+}
 void Tool::Update(int msx,int msy)
 {
 }

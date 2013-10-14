@@ -400,7 +400,7 @@ void RenderMoron(MGLDraw *mgl)
 		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
 
 	InstaRenderItem(TILE_WIDTH/2,18,ITM_COIN,0,mgl);
-	sprintf(s,"%d",profile.progress.totalCoins-profile.progress.coinsSpent);
+	sprintf(s,"%lu",profile.progress.totalCoins-profile.progress.coinsSpent);
 	Print(32-1,4,s,-32,2);
 	Print(32+1,4,s,-32,2);
 	Print(32,4+1,s,-32,2);
