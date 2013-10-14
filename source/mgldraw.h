@@ -28,10 +28,10 @@
 class MGLDraw
 {
 	public:
-        MGLDraw(char *name,int xRes,int yRes,int bpp,bool window);
+		MGLDraw(char *name,int xRes,int yRes,int bpp,bool window);
 		~MGLDraw(void);
 
-        bool Process(void);	// handle windows messages and such
+		bool Process(void);	// handle windows messages and such
 
 		byte *GetScreen(void); // get a pointer to the screen memory
 		int GetWidth(void);
@@ -91,14 +91,14 @@ class MGLDraw
 		void ResetGM(void);
 
 #ifdef WIN32
-        HWND GetHWnd(void);
+		HWND GetHWnd(void);
 #endif
 
 		int xRes,yRes,bpp,pitch;
-        byte windowed;
+		byte windowed;
 		bool readyToQuit;
 		byte tapTrack;
-    protected:
+	protected:
 
 		BITMAP* buffer;
 		byte *scrn;

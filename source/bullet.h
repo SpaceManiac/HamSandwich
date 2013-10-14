@@ -9,7 +9,7 @@
 #include "sound.h"
 #include "particle.h"
 
-#define BLT_NONE    0
+#define BLT_NONE	0
 #define BLT_HAMMER  1
 #define BLT_HAMMER2 2	// this is a hammer with reflection
 #define BLT_MISSILE 3

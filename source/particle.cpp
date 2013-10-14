@@ -647,7 +647,7 @@ void RenderGlowCircleParticle(int x,int y,int radius,byte c,byte *scrn)
 // this was going to be local to renderlightningparticle, but that would've seriously
 // chomped up the stack, since that function's recursive.
 byte ctab[]={8,3,2,3,8,
-		     3,2,1,2,3,
+			 3,2,1,2,3,
 			 2,1,0,1,2,
 			 3,2,1,2,3,
 			 8,3,2,3,8};

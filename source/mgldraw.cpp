@@ -59,7 +59,7 @@ void DestroyMyWindow(void)
 
 MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool window)
 {
-    int result;
+	int result;
 
 	allegro_init();
 	install_keyboard();
@@ -69,24 +69,24 @@ MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool window)
 	if(JamulSoundInit(512))
 		SoundSystemExists();
 
-    set_color_conversion(COLORCONV_NONE);
+	set_color_conversion(COLORCONV_NONE);
 	set_color_depth(bpp);
 	if(window)
 		result=set_gfx_mode(GFX_AUTODETECT_WINDOWED,xRes,yRes,0,0);
 	else
 		result=set_gfx_mode(GFX_AUTODETECT_FULLSCREEN,xRes,yRes,0,0);
 
-    if(result<0)
-        FatalError("Unable to initialize video mode!");
+	if(result<0)
+		FatalError("Unable to initialize video mode!");
 
 	set_display_switch_mode(SWITCH_BACKGROUND);
 	set_display_switch_callback(SWITCH_OUT, PauseGame);
-    set_window_title(name);
+	set_window_title(name);
 
 	readyToQuit=false;
 	_globalMGLDraw=this;
 
-    // gimme windows colors
+	// gimme windows colors
 	this->xRes=xRes;
 	this->yRes=yRes;
 	this->bpp=bpp;
@@ -96,7 +96,7 @@ MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool window)
 	if(!this->scrn)
 		FatalError("Out of memory!");
 
-    this->windowed=window;
+	this->windowed=window;
 
 	mouseDown=0;
 	rMouseDown=0;
@@ -111,7 +111,7 @@ MGLDraw::~MGLDraw(void)
 {
 	JamulSoundExit();
 	destroy_bitmap(buffer);
-    delete[] scrn;
+	delete[] scrn;
 //	DestroyMyWindow();
 }
 
@@ -197,8 +197,8 @@ void MGLDraw::WaterFlip(int v)
 {
 	int i;
 	char table[24]={ 0, 1, 1, 1, 2, 2, 2, 2,
-		             2, 2, 1, 1, 0,-1,-1,-1,
-				    -1,-2,-2,-2,-2,-1,-1,-1};
+					 2, 2, 1, 1, 0,-1,-1,-1,
+					-1,-2,-2,-2,-2,-1,-1,-1};
 	v=v%24;
 
 	// blit to the screen
@@ -247,8 +247,8 @@ void MGLDraw::TeensyWaterFlip(int v)
 {
 	int i,j,x,y;
 	char table[24]={ 0, 1, 1, 1, 2, 2, 2, 2,
-		             2, 2, 1, 1, 0,-1,-1,-1,
-				    -1,-2,-2,-2,-2,-1,-1,-1};
+					 2, 2, 1, 1, 0,-1,-1,-1,
+					-1,-2,-2,-2,-2,-1,-1,-1};
 	v=v%24;
 
 	x=640/4;
@@ -298,8 +298,8 @@ void MGLDraw::RasterWaterFlip(int v)
 {
 	int i,j;
 	char table[24]={ 0, 1, 1, 1, 2, 2, 2, 2,
-		             2, 2, 1, 1, 0,-1,-1,-1,
-				    -1,-2,-2,-2,-2,-1,-1,-1};
+					 2, 2, 1, 1, 0,-1,-1,-1,
+					-1,-2,-2,-2,-2,-1,-1,-1};
 	v=v%24;
 
 	// blit to the screen
@@ -712,11 +712,11 @@ bool MGLDraw::LoadBMP(char *name)
 	RGB newpal[256];
 	int i,w;
 
-    set_color_conversion(COLORCONV_REDUCE_TO_256);
-    set_color_depth(8);
+	set_color_conversion(COLORCONV_REDUCE_TO_256);
+	set_color_depth(8);
 	b=load_bitmap(name,newpal);
-    set_color_conversion(COLORCONV_NONE);
-    set_color_depth(32);
+	set_color_conversion(COLORCONV_NONE);
+	set_color_depth(32);
 	if(b==NULL)
 		return FALSE;
 
@@ -773,12 +773,12 @@ char errMsg[128];
 
 void SeedRNG(void)
 {
-    srand(timeGetTime());
+	srand(timeGetTime());
 }
 
 dword Random(dword range)
 {
-    return rand() * range / (RAND_MAX+1);
+	return rand() * range / (RAND_MAX+1);
 }
 
 void FatalError(char *msg)

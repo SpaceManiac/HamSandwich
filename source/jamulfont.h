@@ -26,7 +26,7 @@ typedef struct mfont_t
 // error codes
 #define FONT_OK			  0
 #define FONT_FILENOTFOUND 1
-#define FONT_CANTALLOC    2
+#define FONT_CANTALLOC	  2
 #define FONT_INVALIDFILE  3
 
 

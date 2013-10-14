@@ -7,7 +7,7 @@ char monsNotes[NUM_MONSTERS][512]={
 	// Bouapha
 	"Bouapha was named after a guy in an English "
 	"class I took in college. "
-    "Bouapha's shirt actually depicts a pumpkin "
+	"Bouapha's shirt actually depicts a pumpkin "
 	"with the international \"NO\" sign (circle/slash) "
 	"on it, intended to indicate his distaste for "
 	"living psychotic pumpkins.  Why does Bouapha "

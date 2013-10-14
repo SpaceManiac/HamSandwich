@@ -55,9 +55,9 @@ char *VariableMsg(char *txt)
 				}
 				i+=3;
 			}
-            else if(i<(int)strlen(txt)-3 && txt[i+1]=='%' && GetSpecialVarFunc(txt[i+2]))
+			else if(i<(int)strlen(txt)-3 && txt[i+1]=='%' && GetSpecialVarFunc(txt[i+2]))
 			{
-                sprintf(num,"%d",GetSpecialVarFunc(txt[i+2])(txt[i+3]));
+				sprintf(num,"%d",GetSpecialVarFunc(txt[i+2])(txt[i+3]));
 				for(j=0;j<(int)strlen(num);j++)
 				{
 					out[outpos++]=num[j];
@@ -65,7 +65,7 @@ char *VariableMsg(char *txt)
 						break;
 				}
 				i+=3;
-            }
+			}
 			else	// must be a normal %
 			{
 				out[outpos++]='%';

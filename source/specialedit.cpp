@@ -147,9 +147,9 @@ static char effName[][16]={
 	"Monster Color",
 	"Monster Bright",
 	"Play As",
-    "Monster Sprites",
-    "Item Sprites",
-    "Variable Bar",
+	"Monster Sprites",
+	"Item Sprites",
+	"Variable Bar",
 	"Summon Bullet",
 	"Change Bullet"
 };
@@ -193,62 +193,62 @@ static char wpnName[][16]={
 
 static char bulletName[][20]={
 	"Anything",
-    "Hammer",
-    "Bouncy Hammer",
-    "Missile",
-    "Flame",
-    "AK-8087 Shot",
-    "Acid",
-    "Cherry Bomb",
-    "Explosion",
-    "Red Bullet",
-    "Megabeam Source",
-    "Megabeam Part",
-    "Megabeam End",
-    "Evil Flame",
-    "Spore",
-    "Mushroom",
-    "Grenade",
-    "Grenade Boom",
-    "SDZ Shockwave",
-    "Missile Boom",
-    "Snowball",
-    "Big Snowball",
-    "Ice Spike",
-    "Rock",
-    "Cactus Spine",
-    "Evil Hammer",
-    "Power Shell",
-    "Big Axe",
-    "Lightning",
-    "Spear",
-    "Machete",
-    "Landmine",
-    "Evil Spear",
-    "Orbiter",
-    "Green Bullet",
-    "Ball Lightning",
-    "Zap Wand Shock",
-    "Mind Control",
-    "Reflect Shield",
-    "Swap Gun",
-    "Water Shot",
-    "Orbit Bomber",
-    "Harpoon",
-    "Scanner",
-    "Scanner Shot",
-    "Torpedo",
-    "Dirt Spike",
-    "Paper",
-    "Scanner Lock",
-    "Bubble",
-    "Freeze Ray",
-    "Bubble Pop",
-    "Harmless Boom",
-    "Cheese Hammer",
-    "Evil Freeze",
-    "Lunachick Ray",
-    "Bouncy Lunachick"
+	"Hammer",
+	"Bouncy Hammer",
+	"Missile",
+	"Flame",
+	"AK-8087 Shot",
+	"Acid",
+	"Cherry Bomb",
+	"Explosion",
+	"Red Bullet",
+	"Megabeam Source",
+	"Megabeam Part",
+	"Megabeam End",
+	"Evil Flame",
+	"Spore",
+	"Mushroom",
+	"Grenade",
+	"Grenade Boom",
+	"SDZ Shockwave",
+	"Missile Boom",
+	"Snowball",
+	"Big Snowball",
+	"Ice Spike",
+	"Rock",
+	"Cactus Spine",
+	"Evil Hammer",
+	"Power Shell",
+	"Big Axe",
+	"Lightning",
+	"Spear",
+	"Machete",
+	"Landmine",
+	"Evil Spear",
+	"Orbiter",
+	"Green Bullet",
+	"Ball Lightning",
+	"Zap Wand Shock",
+	"Mind Control",
+	"Reflect Shield",
+	"Swap Gun",
+	"Water Shot",
+	"Orbit Bomber",
+	"Harpoon",
+	"Scanner",
+	"Scanner Shot",
+	"Torpedo",
+	"Dirt Spike",
+	"Paper",
+	"Scanner Lock",
+	"Bubble",
+	"Freeze Ray",
+	"Bubble Pop",
+	"Harmless Boom",
+	"Cheese Hammer",
+	"Evil Freeze",
+	"Lunachick Ray",
+	"Bouncy Lunachick"
 };
 #define MAX_BULLETS (BLT_LUNA2 + 1)
 
@@ -332,11 +332,11 @@ static void ChooseTriggerClick(int id)
 	mode=SMODE_PICKTRIG;
 	curTrig=(trgStart + id/100)-1;
 	prevType=spcl.trigger[curTrig].type;
-    selectY=(curTrig*38+30)-(TRGPICKER_HEIGHT*MAX_TRIGGER)/2;
+	selectY=(curTrig*38+30)-(TRGPICKER_HEIGHT*MAX_TRIGGER)/2;
 	if(selectY<0)
 		selectY=0;
-    if(selectY+TRGPICKER_HEIGHT*MAX_TRIGGER>475)
-        selectY=475-TRGPICKER_HEIGHT*MAX_TRIGGER;
+	if(selectY+TRGPICKER_HEIGHT*MAX_TRIGGER>475)
+		selectY=475-TRGPICKER_HEIGHT*MAX_TRIGGER;
 }
 
 static void ChooseEffectClick(int id)
@@ -353,11 +353,11 @@ static void ChooseEffectClick(int id)
 	curEff=effStart + (id-ID_EFF0)/100;
 	prevType=spcl.effect[curEff].type;
 
-        selectY=(curEff*38+264)-(EFFPICKER_HEIGHT*EFF_MAX)/2;
+	selectY=(curEff*38+264)-(EFFPICKER_HEIGHT*EFF_MAX)/2;
 	if(selectY<0)
 		selectY=0;
-        if(selectY+EFFPICKER_HEIGHT*EFF_MAX>475)
-                selectY=475-EFFPICKER_HEIGHT*EFF_MAX;
+	if(selectY+EFFPICKER_HEIGHT*EFF_MAX>475)
+		selectY=475-EFFPICKER_HEIGHT*EFF_MAX;
 }
 
 static void MonsterClick(int id)
@@ -1334,22 +1334,22 @@ static void BulletClick(int id)
 
 static void Bullet1Click(int id)
 {
-    curEff=effStart+(id-ID_EFF0)/100;
+	curEff=effStart+(id-ID_EFF0)/100;
 
-    if(rightClick)
-    {
+	if(rightClick)
+	{
 		spcl.effect[curEff].value--;
 		if(spcl.effect[curEff].value<0)
 			spcl.effect[curEff].value=MAX_BULLETS-1;
-    }
-    else
-    {
+	}
+	else
+	{
 		spcl.effect[curEff].value++;
 		if(spcl.effect[curEff].value>=MAX_BULLETS)
 			spcl.effect[curEff].value=0;
-    }
+	}
 
-    SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
+	SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
 }
 
 static void SetupTriggerButtons(int t,int y)
@@ -2245,49 +2245,49 @@ static void SetupEffectButtons(int t,int y)
 			else if(effect.value==PLAY_MECHA)
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Mechabouapha",PlayAsClick);
 			break;
-        case EFF_MONSGRAPHICS:
-            MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Change",NULL);
-            MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,94,y+17,140,14,MonsterName(effect.value),MonsterClick);
-            MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,238,y+17,1,1,"at",NULL);
-            if(effect.x==255)
-                strcpy(s,"Anywhere");
-            else
-                sprintf(s,"%d, %d",effect.x,effect.y);
-            MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,258,y+17,70,14,s,XY3Click);
-            MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,332,y+17,1,1,"to Graphics",NULL);
-            MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,430,y+17,140,14,effect.text,PicNameClick);
-            break;
-        case EFF_ITEMGRAPHICS:
-            MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Use custom item sprites",NULL);
-            MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,240,y+17,250,14,effect.text,PicNameClick);
-            break;
-        case EFF_VARBAR:
-            MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Set",NULL);
-            if(effect.flags&EF_PERMLIGHT)
-                strcpy(s,"Max");
-            else
-                strcpy(s,"Current");
-            MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+6+100*t,0,70,y+17,65,14,s,PlayerTargetClick);
+		case EFF_MONSGRAPHICS:
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Change",NULL);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,94,y+17,140,14,MonsterName(effect.value),MonsterClick);
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,238,y+17,1,1,"at",NULL);
+			if(effect.x==255)
+				strcpy(s,"Anywhere");
+			else
+				sprintf(s,"%d, %d",effect.x,effect.y);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,258,y+17,70,14,s,XY3Click);
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,332,y+17,1,1,"to Graphics",NULL);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,430,y+17,140,14,effect.text,PicNameClick);
+			break;
+		case EFF_ITEMGRAPHICS:
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Use custom item sprites",NULL);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,240,y+17,250,14,effect.text,PicNameClick);
+			break;
+		case EFF_VARBAR:
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Set",NULL);
+			if(effect.flags&EF_PERMLIGHT)
+				strcpy(s,"Max");
+			else
+				strcpy(s,"Current");
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+6+100*t,0,70,y+17,65,14,s,PlayerTargetClick);
 
-            MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,140,y+17,1,1,"Variable bar to value of",NULL);
-            MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,330,y+17,30,14,VarName(effect.value),VarClick);
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,140,y+17,1,1,"Variable bar to value of",NULL);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,330,y+17,30,14,VarName(effect.value),VarClick);
 
-            s[1] = '\0';
-            s[0] = effect.value2;
-            MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,400,y+17,1,1,"Color",NULL);
-            MakeButton(BTN_COLOR,ID_EFF0+OFS_CUSTOM+5+100*t,0,440,y+17,14,14,s,ColorClick1);
-            break;
-        case EFF_MAKEBULLET:
-            MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Summon",NULL);
-            MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,104,y+17,140,14,bulletName[effect.value2],BulletClick);
-            MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,248,y+17,1,1,"at",NULL);
-            if(effect.x==255)
-                sprintf(s,"Tagged");
-            else
-                sprintf(s,"%d, %d",effect.x,effect.y);
-            MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,268,y+17,70,14,s,XY3Click);
-            MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,342,y+17,1,1,"facing",NULL);
-            MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,400,y+17,95,14,effect.text,MessageClick);
+			s[1] = '\0';
+			s[0] = effect.value2;
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,400,y+17,1,1,"Color",NULL);
+			MakeButton(BTN_COLOR,ID_EFF0+OFS_CUSTOM+5+100*t,0,440,y+17,14,14,s,ColorClick1);
+			break;
+		case EFF_MAKEBULLET:
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Summon",NULL);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,104,y+17,140,14,bulletName[effect.value2],BulletClick);
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,248,y+17,1,1,"at",NULL);
+			if(effect.x==255)
+				sprintf(s,"Tagged");
+			else
+				sprintf(s,"%d, %d",effect.x,effect.y);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,268,y+17,70,14,s,XY3Click);
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,342,y+17,1,1,"facing",NULL);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,400,y+17,95,14,effect.text,MessageClick);
 
 			if(BulletFacingType(effect.value2))
 				sprintf(s,"Uses 0-%d",BulletFacingType(effect.value2));
@@ -2295,11 +2295,11 @@ static void SetupEffectButtons(int t,int y)
 				sprintf(s,"Not used");
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+7+100*t,0,400,y,1,1,s,NULL);
 
-            if(effect.flags&EF_PERMLIGHT)
-                MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+6+100*t,0,520,y+17,65,14,"Good",PlayerTargetClick);
-            else
-                MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+6+100*t,0,520,y+17,65,14,"Evil",PlayerTargetClick);
-            break;
+			if(effect.flags&EF_PERMLIGHT)
+				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+6+100*t,0,520,y+17,65,14,"Good",PlayerTargetClick);
+			else
+				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+6+100*t,0,520,y+17,65,14,"Evil",PlayerTargetClick);
+			break;
 		case EFF_CHANGEBULLET:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Change",NULL);
 			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,104,y+17,140,14,bulletName[effect.value],Bullet1Click);
@@ -2465,17 +2465,17 @@ void SpecialEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 		case SMODE_PICKTRIG:
 			if(mgl->MouseDown())
 			{
-                if((mouseY-selectY)/TRGPICKER_HEIGHT>=MAX_TRIGGER)
+				if((mouseY-selectY)/TRGPICKER_HEIGHT>=MAX_TRIGGER)
 					spcl.trigger[curTrig].type=TRG_NONE;
 				else
-                    spcl.trigger[curTrig].type=(mouseY-selectY)/TRGPICKER_HEIGHT;
+					spcl.trigger[curTrig].type=(mouseY-selectY)/TRGPICKER_HEIGHT;
 			}
 			else
 			{
-                if((mouseY-selectY)/TRGPICKER_HEIGHT>=MAX_TRIGGER)
+				if((mouseY-selectY)/TRGPICKER_HEIGHT>=MAX_TRIGGER)
 					spcl.trigger[curTrig].type=TRG_NONE;
 				else
-                    spcl.trigger[curTrig].type=(mouseY-selectY)/TRGPICKER_HEIGHT;
+					spcl.trigger[curTrig].type=(mouseY-selectY)/TRGPICKER_HEIGHT;
 				mode=SMODE_NORMAL;
 				if(prevType!=spcl.trigger[curTrig].type)
 				{
@@ -2483,9 +2483,9 @@ void SpecialEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 					if(spcl.trigger[curTrig].type==TRG_EQUATION || spcl.trigger[curTrig].type==TRG_EQUVAR)
 					{
 						if(spcl.effect[curTrig].type!=EFF_MESSAGE && spcl.effect[curTrig].type!=EFF_SONG &&
-							spcl.effect[curTrig].type!=EFF_PICTURE && spcl.effect[curTrig].type!=EFF_VAR &&
-                                                        spcl.effect[curTrig].type!=EFF_NAME && spcl.effect[curTrig].type!=EFF_MONSGRAPHICS &&
-                                                        spcl.effect[curTrig].type!=EFF_ITEMGRAPHICS)
+								spcl.effect[curTrig].type!=EFF_PICTURE && spcl.effect[curTrig].type!=EFF_VAR &&
+								spcl.effect[curTrig].type!=EFF_NAME && spcl.effect[curTrig].type!=EFF_MONSGRAPHICS &&
+								spcl.effect[curTrig].type!=EFF_ITEMGRAPHICS)
 							spcl.effect[curTrig].text[0]='\0';
 					}
 				}
@@ -2700,23 +2700,23 @@ void SpecialEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 			RenderTextDialog(mouseX,mouseY,mgl);
 			break;
 		case SMODE_PICKTRIG:
-                        DrawFillBox(40,selectY,200,selectY+MAX_TRIGGER*TRGPICKER_HEIGHT+2,0);
-                        DrawBox(40,selectY,200,selectY+MAX_TRIGGER*TRGPICKER_HEIGHT+2,31);
+			DrawFillBox(40,selectY,200,selectY+MAX_TRIGGER*TRGPICKER_HEIGHT+2,0);
+			DrawBox(40,selectY,200,selectY+MAX_TRIGGER*TRGPICKER_HEIGHT+2,31);
 			for(i=0;i<MAX_TRIGGER;i++)
 			{
 				if(spcl.trigger[curTrig].type==i)
-                                        DrawFillBox(41,selectY+1+i*TRGPICKER_HEIGHT,199,selectY+1+i*TRGPICKER_HEIGHT+TRGPICKER_HEIGHT,32*1+8);
-                                Print(42,selectY+2+i*TRGPICKER_HEIGHT,trigName[i],0,1);
+					DrawFillBox(41,selectY+1+i*TRGPICKER_HEIGHT,199,selectY+1+i*TRGPICKER_HEIGHT+TRGPICKER_HEIGHT,32*1+8);
+				Print(42,selectY+2+i*TRGPICKER_HEIGHT,trigName[i],0,1);
 			}
 			break;
 		case SMODE_PICKEFF:
-                        DrawFillBox(40,selectY,200,selectY+EFF_MAX*EFFPICKER_HEIGHT+2,0);
-                        DrawBox(40,selectY,200,selectY+EFF_MAX*EFFPICKER_HEIGHT+2,31);
+			DrawFillBox(40,selectY,200,selectY+EFF_MAX*EFFPICKER_HEIGHT+2,0);
+			DrawBox(40,selectY,200,selectY+EFF_MAX*EFFPICKER_HEIGHT+2,31);
 			for(i=0;i<EFF_MAX;i++)
 			{
 				if(spcl.effect[curEff].type==i)
-                                        DrawFillBox(41,selectY+1+i*EFFPICKER_HEIGHT,199,selectY+1+i*EFFPICKER_HEIGHT+EFFPICKER_HEIGHT,32*1+8);
-                                Print(42,selectY+2+i*EFFPICKER_HEIGHT,effName[i],0,1);
+					DrawFillBox(41,selectY+1+i*EFFPICKER_HEIGHT,199,selectY+1+i*EFFPICKER_HEIGHT+EFFPICKER_HEIGHT,32*1+8);
+				Print(42,selectY+2+i*EFFPICKER_HEIGHT,effName[i],0,1);
 			}
 			break;
 		case SMODE_HELP:

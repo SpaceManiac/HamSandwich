@@ -1518,22 +1518,22 @@ byte HandleInput(void)
 		HandleInput();
 	}
 	else if(!strcmp(verb,"E") || !strcmp(verb,"EAST") ||
-		    (!strcmp(verb,"GO") && noun && (!strcmp(noun,"E") || !strcmp(noun,"EAST"))))
+			(!strcmp(verb,"GO") && noun && (!strcmp(noun,"E") || !strcmp(noun,"EAST"))))
 	{
 		Move(0);
 	}
 	else if(!strcmp(verb,"S") || !strcmp(verb,"SOUTH") ||
-		    (!strcmp(verb,"GO") && noun && (!strcmp(noun,"S") || !strcmp(noun,"SOUTH"))))
+			(!strcmp(verb,"GO") && noun && (!strcmp(noun,"S") || !strcmp(noun,"SOUTH"))))
 	{
 		Move(1);
 	}
 	else if(!strcmp(verb,"W") || !strcmp(verb,"WEST") ||
-		    (!strcmp(verb,"GO") && noun && (!strcmp(noun,"W") || !strcmp(noun,"WEST"))))
+			(!strcmp(verb,"GO") && noun && (!strcmp(noun,"W") || !strcmp(noun,"WEST"))))
 	{
 		Move(2);
 	}
 	else if(!strcmp(verb,"N") || !strcmp(verb,"NORTH") ||
-		    (!strcmp(verb,"GO") && noun && (!strcmp(noun,"N") || !strcmp(noun,"NORTH"))))
+			(!strcmp(verb,"GO") && noun && (!strcmp(noun,"N") || !strcmp(noun,"NORTH"))))
 	{
 		Move(3);
 	}

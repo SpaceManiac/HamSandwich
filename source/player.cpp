@@ -88,8 +88,8 @@ void InitPlayer(byte level,char *fname)
 	player.speed=0;
 	player.rageClock=0;
 	player.rage=0;
-    player.varbar=0;
-    player.varbarMax=0;
+	player.varbar=0;
+	player.varbarMax=0;
 	player.invisibility=0;
 	player.jetting=0;
 	player.clock=0;

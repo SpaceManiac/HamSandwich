@@ -20,9 +20,9 @@ static byte exitCode;
 
 void ObtainFilenames(char *fileSpec)
 {
-    int i;
-    DIR* dir;
-    struct dirent *dp;
+	int i;
+	DIR* dir;
+	struct dirent *dp;
 
 	char *tmp;
 
@@ -40,53 +40,53 @@ void ObtainFilenames(char *fileSpec)
 
 	numFiles=0;
 
-    char* secondPart = strchr(fileSpec, '/') + 1;
-    char* filter;
-    if (strcmp(secondPart, "*.*") == 0)
-    {
-        filter = NULL;
-    }
-    else
-    {
-        filter = secondPart + 1;
-    }
-    char dirname[64];
-    strncpy(dirname, fileSpec, secondPart-fileSpec-1);
-    dirname[secondPart-fileSpec-1] = '\0';
-    dir = opendir(dirname);
+	char* secondPart = strchr(fileSpec, '/') + 1;
+	char* filter;
+	if (strcmp(secondPart, "*.*") == 0)
+	{
+		filter = NULL;
+	}
+	else
+	{
+		filter = secondPart + 1;
+	}
+	char dirname[64];
+	strncpy(dirname, fileSpec, secondPart-fileSpec-1);
+	dirname[secondPart-fileSpec-1] = '\0';
+	dir = opendir(dirname);
 
-    while((dp = readdir(dir)) != NULL)
-    {
-        if(!strcmp(dp->d_name,".") || !strcmp(dp->d_name,".."))
-            continue;
+	while((dp = readdir(dir)) != NULL)
+	{
+		if(!strcmp(dp->d_name,".") || !strcmp(dp->d_name,".."))
+			continue;
 
-        if((menuItems&FM_NOWAVS) && !strcmp(&dp->d_name[strlen(dp->d_name)-3],"wav"))
-            continue;	// ignore wavs
+		if((menuItems&FM_NOWAVS) && !strcmp(&dp->d_name[strlen(dp->d_name)-3],"wav"))
+			continue;	// ignore wavs
 
-        if(filter && !strstr(dp->d_name, filter))
-            continue;
+		if(filter && !strstr(dp->d_name, filter))
+			continue;
 
-        strncpy(&fnames[numFiles*FNAMELEN],dp->d_name,FNAMELEN);
-        numFiles++;
+		strncpy(&fnames[numFiles*FNAMELEN],dp->d_name,FNAMELEN);
+		numFiles++;
 
-        if(numFiles==numAlloc)
-        {
-            numAlloc+=FILE_ALLOC_AMT;
-            tmp=(char *)realloc(fnames,numAlloc*FNAMELEN*sizeof(char));
-            if(tmp==NULL)
-            {
-                free(fnames);
-                closedir(dir);
-                FatalError("Out of memory!");
-                return;
-            }
-            else
-                fnames=tmp;
-            for(i=numFiles;i<numAlloc;i++)
-                fnames[i*FNAMELEN]='\0';
-        }
-    }
-    closedir(dir);
+		if(numFiles==numAlloc)
+		{
+			numAlloc+=FILE_ALLOC_AMT;
+			tmp=(char *)realloc(fnames,numAlloc*FNAMELEN*sizeof(char));
+			if(tmp==NULL)
+			{
+				free(fnames);
+				closedir(dir);
+				FatalError("Out of memory!");
+				return;
+			}
+			else
+				fnames=tmp;
+			for(i=numFiles;i<numAlloc;i++)
+				fnames[i*FNAMELEN]='\0';
+		}
+	}
+	closedir(dir);
 }
 
 void InitFileDialog(char *fileSpec,byte menuItemsToShow,char *defaultName)

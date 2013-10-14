@@ -752,7 +752,7 @@ void InitItems(void)
 	memcpy(items,baseItems,sizeof(item_t)*NUM_ORIGINAL_ITEMS);
 
 	itmSpr=new sprite_set_t("graphics/items.jsp");
-    customItmSpr=NULL;
+	customItmSpr=NULL;
 	glowism=0;
 	SetupRandomItems();
 	rndItem=GetRandomItem();
@@ -760,11 +760,11 @@ void InitItems(void)
 
 void ExitItems(void)
 {
-    delete itmSpr;
-    if (customItmSpr) {
-        delete customItmSpr;
-        customItmSpr = NULL;
-    }
+	delete itmSpr;
+	if (customItmSpr) {
+		delete customItmSpr;
+		customItmSpr = NULL;
+	}
 	delete[] items;
 }
 
@@ -805,46 +805,46 @@ void DeleteItem(int itm)
 
 void SetCustomItemSprites(char* name)
 {
-    if (customItmSpr) delete customItmSpr;
+	if (customItmSpr) delete customItmSpr;
 
-    customItmSpr=new sprite_set_t();
+	customItmSpr=new sprite_set_t();
 
-    char buf[64];
-    sprintf(buf, "user/%s", name);
-    if (!customItmSpr->Load(buf))
-    {
-        // failed to load
-        delete customItmSpr;
-        customItmSpr = NULL;
-        return;
-    }
-    else
-    {
-        // great success!
-        return;
-    }
+	char buf[64];
+	sprintf(buf, "user/%s", name);
+	if (!customItmSpr->Load(buf))
+	{
+		// failed to load
+		delete customItmSpr;
+		customItmSpr = NULL;
+		return;
+	}
+	else
+	{
+		// great success!
+		return;
+	}
 }
 
 void DetectCustomItemSprites(world_t *world)
 {
-    // extract filename out of first special if possible
-    special_t* special = world->map[0]->special;
+	// extract filename out of first special if possible
+	special_t* special = world->map[0]->special;
 
-    for (int i = 0; i < MAX_SPECIAL; ++i) {
-        for (int j = 0; j < NUM_EFFECTS; ++j) {
-            if (special[i].effect[j].type == EFF_ITEMGRAPHICS) {
-                SetCustomItemSprites(special[i].effect[j].text);
-                return;
-            }
-        }
-    }
+	for (int i = 0; i < MAX_SPECIAL; ++i) {
+		for (int j = 0; j < NUM_EFFECTS; ++j) {
+			if (special[i].effect[j].type == EFF_ITEMGRAPHICS) {
+				SetCustomItemSprites(special[i].effect[j].text);
+				return;
+			}
+		}
+	}
 }
 
 sprite_set_t* CustomItemSprites()
 {
-    if (customItmSpr == NULL) {
-        DetectCustomItemSprites(editing ? EditorGetWorld() : &curWorld);
-    }
+	if (customItmSpr == NULL) {
+		DetectCustomItemSprites(editing ? EditorGetWorld() : &curWorld);
+	}
 	return customItmSpr;
 }
 
@@ -1714,7 +1714,7 @@ byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y)
 		else
 		{
 			if((!(MonsterFlags(me->type,me->aiType)&MF_FLYING) && items[type].flags&IF_SOLID) ||
-			    ((MonsterFlags(me->type,me->aiType)&MF_FLYING) && items[type].flags&IF_BULLETPROOF))
+				((MonsterFlags(me->type,me->aiType)&MF_FLYING) && items[type].flags&IF_BULLETPROOF))
 				return 0;
 			else
 				return 1;

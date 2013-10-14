@@ -20,27 +20,27 @@ void PickSongToPlay(void)
 
 	if((profile.musicMode&MUSIC_LISTBITS)==MUSIC_OFFICIAL ||
 	   (profile.musicMode&MUSIC_PLAYMODE)==MUSIC_REPEAT)
-    {
-        // official or repeat mode: just replay this song again
+	{
+		// official or repeat mode: just replay this song again
 
-        if((profile.musicMode&MUSIC_LISTBITS)==MUSIC_OFFICIAL)
-            PlaySongForce(curSongName);
-        else
-        {
-            // in repeat mode we just loop the first song of the playlist
-            // it's not very useful honestly
-            if(profile.playList[(profile.musicMode&MUSIC_LISTBITS)-1].numSongs==0)
-            {
-                StopSong();
-                return;
-            }
-            lastSong=0;
-            PlaySongForce(&profile.playList[(profile.musicMode&MUSIC_LISTBITS)-1].song[0]);
-        }
+		if((profile.musicMode&MUSIC_LISTBITS)==MUSIC_OFFICIAL)
+			PlaySongForce(curSongName);
+		else
+		{
+			// in repeat mode we just loop the first song of the playlist
+			// it's not very useful honestly
+			if(profile.playList[(profile.musicMode&MUSIC_LISTBITS)-1].numSongs==0)
+			{
+				StopSong();
+				return;
+			}
+			lastSong=0;
+			PlaySongForce(&profile.playList[(profile.musicMode&MUSIC_LISTBITS)-1].song[0]);
+		}
 	}
 	else
 	{
-        byte pl=(profile.musicMode&MUSIC_LISTBITS)-1;
+		byte pl=(profile.musicMode&MUSIC_LISTBITS)-1;
 		// not playing the official songs, and not on repeat
 		if((profile.musicMode&MUSIC_PLAYMODE)==MUSIC_SEQUENTIAL)
 		{
@@ -65,7 +65,7 @@ void PickSongToPlay(void)
 			}
 			if(profile.playList[pl].numSongs>1)
 			{
-                byte sng=lastSong;
+				byte sng=lastSong;
 				while(sng==lastSong)
 					sng=Random(profile.playList[pl].numSongs);
 				lastSong=sng;
@@ -79,11 +79,11 @@ void PickSongToPlay(void)
 
 void UpdateMusic(void)
 {
-    if (config.music && curStream &&            // music is playing
-            !logg_update_stream(curStream) &&   // we're on the last buffer
-            (timeGetTime() - musStart)/1000.0f >= (float)curStream->len / (float)curStream->freq) // timewise, the whole song has played
-        if (!dontcallback)
-            PickSongToPlay();
+	if (config.music && curStream &&			// music is playing
+			!logg_update_stream(curStream) &&   // we're on the last buffer
+			(timeGetTime() - musStart)/1000.0f >= (float)curStream->len / (float)curStream->freq) // timewise, the whole song has played
+		if (!dontcallback)
+			PickSongToPlay();
 }
 
 void PlaySong(char *fname)
@@ -97,8 +97,8 @@ void PlaySong(char *fname)
 		if(curStream==NULL)
 		{
 			// but we need to play something, since there are no songs playing at all
-            PickSongToPlay();
-            return;
+			PickSongToPlay();
+			return;
 		}
 		else
 			return;
@@ -109,20 +109,20 @@ void PlaySong(char *fname)
 
 void PlaySongForce(char *fname)
 {
-    char fullname[64];
+	char fullname[64];
 
 	if(!config.music)
-        return;
+		return;
 
 	strcpy(curSongName,fname);
 	sprintf(fullname,"music/%s",fname);
 	StopSong();
-    curStream=logg_get_stream(fullname, musVolume, 128, 0);
-    if(curStream)
-    {
-        musStart = timeGetTime();
-        UpdateMusic();
-    }
+	curStream=logg_get_stream(fullname, musVolume, 128, 0);
+	if(curStream)
+	{
+		musStart = timeGetTime();
+		UpdateMusic();
+	}
 }
 
 void StopSong(void)
@@ -148,7 +148,7 @@ void SetMusicVolume(int vol)
 	if(curStream)
 	{
 		curStream->volume = musVolume;
-        voice_set_volume(curStream->audio_stream->voice, musVolume);
+		voice_set_volume(curStream->audio_stream->voice, musVolume);
 	}
 }
 

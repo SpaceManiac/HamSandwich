@@ -1085,9 +1085,9 @@ void UpdateLava(void)
 				}
 			}
 			if((*m)==LAVA_BASE+LAVA_MAX && (nbr[1]==LAVA_BASE+LAVA_MAX || IsDirt(nbr[1]) || nbr[1]==255) &&
-										((nbr[0]==LAVA_BASE+LAVA_MAX || IsDirt(nbr[0]) || nbr[0]==255) ||
-								           (nbr[2]==LAVA_BASE+LAVA_MAX || IsDirt(nbr[2]) || nbr[2]==255)) &&
-								           (nbr[3]==0 || IsDirt(nbr[3])))
+				((nbr[0]==LAVA_BASE+LAVA_MAX || IsDirt(nbr[0]) || nbr[0]==255) ||
+				(nbr[2]==LAVA_BASE+LAVA_MAX || IsDirt(nbr[2]) || nbr[2]==255)) &&
+				(nbr[3]==0 || IsDirt(nbr[3])))
 			{
 				(*m)--;
 				CaveLavaSpew(i,line);
@@ -1220,9 +1220,9 @@ void InitArcade(MGLDraw *mgl)
 	msBright=0;
 	msDBright=1;
 
-        mgl->LoadBMP("graphics/profmenu.bmp");
+	mgl->LoadBMP("graphics/profmenu.bmp");
 	backgd=(byte *)malloc(640*480);
-        plSpr=new sprite_set_t("graphics/pause.jsp");
+	plSpr=new sprite_set_t("graphics/pause.jsp");
 
 	for(i=0;i<480;i++)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);

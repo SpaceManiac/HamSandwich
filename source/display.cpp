@@ -33,21 +33,21 @@ bool InitDisplay(MGLDraw *mainmgl)
 	if(!gameFont[0])
 		return false;
 	FontInit(mgl);
-        if(FontLoad("graphics/girlsrweird.jft",gameFont[0])!=FONT_OK)
+	if(FontLoad("graphics/girlsrweird.jft",gameFont[0])!=FONT_OK)
 		return false;
 
 	gameFont[1]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[1])
 		return false;
 
-        if(FontLoad("graphics/verdana.jft",gameFont[1])!=FONT_OK)
+	if(FontLoad("graphics/verdana.jft",gameFont[1])!=FONT_OK)
 		return false;
 
 	gameFont[2]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[2])
 		return false;
 
-        if(FontLoad("graphics/microgreen.jft",gameFont[2])!=FONT_OK)
+	if(FontLoad("graphics/microgreen.jft",gameFont[2])!=FONT_OK)
 		return false;
 
 	dispList=new DisplayList();
@@ -104,7 +104,7 @@ void LoadText(char *nm,byte mode)
 			}
 			break;
 		case TEXTFILE_YERFDOG:
-                        GetDisplayMGL()->LoadBMP("graphics/yerfmsg.bmp");
+			GetDisplayMGL()->LoadBMP("graphics/yerfmsg.bmp");
 			y=26;
 			while(fgets(line,256,f) && y<270-18)
 			{
@@ -113,7 +113,7 @@ void LoadText(char *nm,byte mode)
 			}
 			break;
 		case TEXTFILE_COMPUTER:
-                        GetDisplayMGL()->LoadBMP("graphics/profmenu.bmp");
+			GetDisplayMGL()->LoadBMP("graphics/profmenu.bmp");
 			y=10;
 			while(fgets(line,256,f) && y<480-30)
 			{
@@ -148,7 +148,7 @@ void ShowImageOrFlic(char *str,byte nosnd,byte mode)
 		EnterPictureDisplay();
 		if(!nosnd)
 			MakeNormalSound(SND_MESSAGE);
-                sprintf(nm,"user/%s",fname);
+		sprintf(nm,"user/%s",fname);
 		GetDisplayMGL()->LoadBMP(nm);
 		return;
 	}
@@ -159,7 +159,7 @@ void ShowImageOrFlic(char *str,byte nosnd,byte mode)
 		EnterPictureDisplay();
 		if(!nosnd)
 			MakeNormalSound(SND_MESSAGE);
-                sprintf(nm,"user/%s",fname);
+		sprintf(nm,"user/%s",fname);
 		LoadText(nm,mode);
 		return;
 	}
@@ -169,10 +169,10 @@ void ShowImageOrFlic(char *str,byte nosnd,byte mode)
 	else
 		speed=60;
 
-        sprintf(nm,"user/%s",fname);
+	sprintf(nm,"user/%s",fname);
 
 	FLI_play(nm,0,speed,mgl);
-        mgl->LoadBMP("graphics/title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 
 	if(!editing && (verified || shopping))
 	{

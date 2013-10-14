@@ -31,8 +31,8 @@ void FloorTool::Update(int msx,int msy)
 	{
 		for(i=0;i<4;i++)
 			if(PointInRect(msx,msy,
-				           564+(i%2)*(TILE_WIDTH+4)-2,420+(i/2)*(TILE_HEIGHT+4)-2,
-			               564+(i%2)*(TILE_WIDTH+4)+TILE_WIDTH+1,420+(i/2)*(TILE_HEIGHT+4)+TILE_HEIGHT+1))
+				564+(i%2)*(TILE_WIDTH+4)-2,420+(i/2)*(TILE_HEIGHT+4)-2,
+				564+(i%2)*(TILE_WIDTH+4)+TILE_WIDTH+1,420+(i/2)*(TILE_HEIGHT+4)+TILE_HEIGHT+1))
 			{
 				active=i;
 				if(GetDisplayMGL()->RMouseDown())
@@ -59,8 +59,8 @@ void FloorTool::Update(int msx,int msy)
 	{
 		for(i=0;i<4;i++)
 			if(PointInRect(msx,msy,
-				           564+(i%2)*(TILE_WIDTH+4)-2,420+(i/2)*(TILE_HEIGHT+4)-2,
-			               564+(i%2)*(TILE_WIDTH+4)+TILE_WIDTH+1,420+(i/2)*(TILE_HEIGHT+4)+TILE_HEIGHT+1))
+				564+(i%2)*(TILE_WIDTH+4)-2,420+(i/2)*(TILE_HEIGHT+4)-2,
+				564+(i%2)*(TILE_WIDTH+4)+TILE_WIDTH+1,420+(i/2)*(TILE_HEIGHT+4)+TILE_HEIGHT+1))
 			{
 				pickingTile=i;
 				active=i;

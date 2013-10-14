@@ -27,7 +27,7 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	strcpy(world->author,"Nobody");
 
 	ExitItems();
-    InitItems();
+	InitItems();
 	if(!world->map[0])
 		return 0;
 	return 1;
@@ -78,7 +78,7 @@ byte LoadWorld(world_t *world,char *fname)
 
 	LoadItems(f);
 	LoadCustomSounds(f);
-    SetupRandomItems();
+	SetupRandomItems();
 	fclose(f);
 	return 1;
 }
@@ -276,8 +276,8 @@ void LogRequirements(world_t *w)
 			{
 				for(k=0;k<NUM_EFFECTS;k++)
 				{
-                    byte type = w->map[i]->special[j].effect[k].type;
-                    if(type==EFF_PICTURE || type==EFF_MONSGRAPHICS || type==EFF_ITEMGRAPHICS)
+					byte type = w->map[i]->special[j].effect[k].type;
+					if(type==EFF_PICTURE || type==EFF_MONSGRAPHICS || type==EFF_ITEMGRAPHICS)
 					{
 						fprintf(f,"user/%s\n",w->map[i]->special[j].effect[k].text);
 					}

@@ -9,7 +9,7 @@
 #include "display.h"
 
 // the monster types
-#define MONS_NONE     0
+#define MONS_NONE	  0
 #define MONS_BOUAPHA  1
 #define MONS_BONEHEAD 2
 #define MONS_BAT	  3

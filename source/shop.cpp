@@ -1203,7 +1203,7 @@ void HungerSign(void)
 	if(profile.progress.purchase[buying]==7)
 	{
 		strcpy(shopTxt,"Thank you for your donations!  With your help, we've completely "
-			           "fixed world hunger!  On the minus side, this is only a video game.");
+					   "fixed world hunger!  On the minus side, this is only a video game.");
 		buying=255;
 		buyMode=1;
 	}
@@ -1447,7 +1447,7 @@ void SetObtainText(void)
 					break;
 				case ABIL_CANDLE:
 					strcpy(shopTxt,"If you fail to get a candle for 30 seconds, Candle Radar will point you to the nearest one!  You can turn this off "
-						           "in the Profile menu if your brain can't take it anymore.");
+								   "in the Profile menu if your brain can't take it anymore.");
 					profile.candleRadar=1;
 					break;
 				case ABIL_RAGE:
@@ -1457,7 +1457,7 @@ void SetObtainText(void)
 					break;
 				case ABIL_MOVESHOOT:
 					strcpy(shopTxt,"You can now throw Hammers while moving!  You move much slower while throwing Hammers, but at least it doesn't stop you "
-							       "anymore.  You can turn this off in the Profile menu if it drives you mad.");
+								   "anymore.  You can turn this off in the Profile menu if it drives you mad.");
 					profile.moveNShoot=1;
 					break;
 				case ABIL_KEYCHAIN:

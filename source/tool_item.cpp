@@ -34,8 +34,8 @@ void ItemTool::Update(int msx,int msy)
 	{
 		for(i=0;i<4;i++)
 			if(PointInRect(msx,msy,
-				           496+i*(TILE_WIDTH+4)-2,424-2,
-						   496+i*(TILE_WIDTH+4)+TILE_WIDTH+1,424+TILE_HEIGHT*2+1))
+			   496+i*(TILE_WIDTH+4)-2,424-2,
+			   496+i*(TILE_WIDTH+4)+TILE_WIDTH+1,424+TILE_HEIGHT*2+1))
 			{
 				active=i;
 				if(GetDisplayMGL()->RMouseDown())
@@ -95,7 +95,7 @@ void ItemTool::Render(int msx,int msy)
 	for(i=0;i<4;i++)
 	{
 		SetSpriteConstraints(496+i*(TILE_WIDTH+4)-1,424-1,
-			    496+i*(TILE_WIDTH+4)+TILE_WIDTH,424+TILE_HEIGHT*2);
+			496+i*(TILE_WIDTH+4)+TILE_WIDTH,424+TILE_HEIGHT*2);
 
 		if(item[i]<256)
 			InstaRenderItem(496+i*(TILE_WIDTH+4)+2+TILE_WIDTH/2,424+TILE_HEIGHT+6,(byte)item[i],0,GetDisplayMGL());
@@ -108,18 +108,18 @@ void ItemTool::Render(int msx,int msy)
 		}
 
 		DrawBox(496+i*(TILE_WIDTH+4)-2,424-2,
-			    496+i*(TILE_WIDTH+4)+TILE_WIDTH+1,424+TILE_HEIGHT*2+1,16);
+				496+i*(TILE_WIDTH+4)+TILE_WIDTH+1,424+TILE_HEIGHT*2+1,16);
 	}
 	SetSpriteConstraints(0,0,639,479);
 
 	// highlight the active one
 	i=active;
 	DrawBox(496+i*(TILE_WIDTH+4)-3,424-3,
-		    496+i*(TILE_WIDTH+4)+TILE_WIDTH+2,424+TILE_HEIGHT*2+2,16);
+			496+i*(TILE_WIDTH+4)+TILE_WIDTH+2,424+TILE_HEIGHT*2+2,16);
 	DrawBox(496+i*(TILE_WIDTH+4)-2,424-2,
-		    496+i*(TILE_WIDTH+4)+TILE_WIDTH+1,424+TILE_HEIGHT*2+1,31);
+			496+i*(TILE_WIDTH+4)+TILE_WIDTH+1,424+TILE_HEIGHT*2+1,31);
 	DrawBox(496+i*(TILE_WIDTH+4)-1,424-1,
-		    496+i*(TILE_WIDTH+4)+TILE_WIDTH,424+TILE_HEIGHT*2,16);
+			496+i*(TILE_WIDTH+4)+TILE_WIDTH,424+TILE_HEIGHT*2,16);
 
 	// plop mode
 	RenderButtonImage(msx,msy,382,462,30,15,"Plop");

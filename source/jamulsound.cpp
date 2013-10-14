@@ -136,8 +136,8 @@ bool JamulSoundPlay(int which,long pan,long vol,byte playFlags,int priority)
 		return 0;
 
 	// if you're replacing a sound, stop it first
-    if(schannel[chosen].soundNum!=-1)
-        deallocate_voice(schannel[chosen].voice);
+	if(schannel[chosen].soundNum!=-1)
+		deallocate_voice(schannel[chosen].voice);
 
 	i=play_sample(soundList[which].sample, vol, pan, 1000, 0);
 	if(i!=-1)

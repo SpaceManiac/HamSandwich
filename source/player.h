@@ -12,7 +12,7 @@
 #include "progress.h"
 
 // secondary weapon defines
-#define WPN_NONE     0
+#define WPN_NONE	 0
 #define WPN_MISSILES 1
 #define WPN_AK8087	 2
 #define WPN_BOMBS	 3
@@ -71,8 +71,8 @@ typedef struct player_t
 	byte speed;	// accelerated
 	byte rageClock;
 	word rage;
-    word varbar, varbarMax;
-    byte varbarColor;
+	word varbar, varbarMax;
+	byte varbarColor;
 	byte invisibility;
 	byte jetting;
 	byte lavaTimer;

@@ -106,12 +106,12 @@ byte Web_Init(void)
 	Log_Init();
 
 #ifdef WIN32
-    WSADATA wsaData;
+	WSADATA wsaData;
 	// initialize WinSock
-    if(WSAStartup(MAKEWORD(1,1),&wsaData)!=0)
-    {
-        return IE_NOWINSOCK;
-    }
+	if(WSAStartup(MAKEWORD(1,1),&wsaData)!=0)
+	{
+		return IE_NOWINSOCK;
+	}
 #endif
 
 	for(i=0;i<NUM_SOCKETS;i++)
@@ -129,9 +129,9 @@ byte Web_Init(void)
 inline int SocketLastError()
 {
 #ifdef WIN32
-    return WSAGetLastError();
+	return WSAGetLastError();
 #else
-    return errno;
+	return errno;
 #endif
 }
 
@@ -147,7 +147,7 @@ byte Web_Exit(void)
 		}
 
 #ifdef WIN32
-    WSACleanup();
+	WSACleanup();
 #endif
 	Log_Print("web_exit ok!");
 	Log_Exit();
@@ -245,7 +245,7 @@ byte Web_TryReadingHeader(byte n)
 
 byte Web_RequestData(MGLDraw *mgl,char *site,char *file,int *socketNumber)
 {
-    struct hostent *host;
+	struct hostent *host;
 	struct sockaddr_in addr;
 	int i,sockNum;
 
@@ -253,10 +253,10 @@ byte Web_RequestData(MGLDraw *mgl,char *site,char *file,int *socketNumber)
 	Log_Print(site);
 	Log_Print(file);
 
-    if(!(host=gethostbyname(site))) // resolve host name
-    {
+	if(!(host=gethostbyname(site))) // resolve host name
+	{
 		return IE_SITENOTFOUND;
-    }
+	}
 
 	sockNum=-1;
 	for(i=0;i<NUM_SOCKETS;i++)
@@ -299,25 +299,25 @@ byte Web_RequestData(MGLDraw *mgl,char *site,char *file,int *socketNumber)
 	if(sockNum==-1)
 		return IE_NOSOCKETSFREE;
 
-    sock[sockNum].s=socket(AF_INET,SOCK_STREAM,0);
+	sock[sockNum].s=socket(AF_INET,SOCK_STREAM,0);
 
 	sprintf(sock[sockNum].request,"GET %s HTTP/1.0\r\nHOST: %s:80\r\n\r\n",file,site);
 
-    if(sock[sockNum].s==INVALID_SOCKET)
-    {
+	if(sock[sockNum].s==INVALID_SOCKET)
+	{
 		Web_KillSocket(sockNum);
 		sock[sockNum].error=IE_BADSOCKET;
-        return IE_BADSOCKET;
-    }
+		return IE_BADSOCKET;
+	}
 
 	// set it to asynchronous - send windows messages whenever new things happen!
-    if((i=
-    #ifdef WIN32
-        WSAAsyncSelect(sock[sockNum].s,mgl->GetHWnd(),(unsigned int)INTERNET_EVENT,FD_READ|FD_WRITE|FD_CONNECT)
-    #else
-        fcntl(sock[sockNum].s, F_SETFL, O_NONBLOCK)
-    #endif
-        )!=0)
+	if((i=
+	#ifdef WIN32
+		WSAAsyncSelect(sock[sockNum].s,mgl->GetHWnd(),(unsigned int)INTERNET_EVENT,FD_READ|FD_WRITE|FD_CONNECT)
+	#else
+		fcntl(sock[sockNum].s, F_SETFL, O_NONBLOCK)
+	#endif
+		)!=0)
 	{
 		// couldn't set it to asynchronous mode
 		Web_KillSocket(sockNum);
@@ -326,23 +326,23 @@ byte Web_RequestData(MGLDraw *mgl,char *site,char *file,int *socketNumber)
 	}
 	Log_Print("async ok!");
 
-    memset(&addr,0,sizeof(addr));
-    addr.sin_family=AF_INET;
-    addr.sin_port=htons(80);
-    memcpy(&addr.sin_addr,host->h_addr,host->h_length);
+	memset(&addr,0,sizeof(addr));
+	addr.sin_family=AF_INET;
+	addr.sin_port=htons(80);
+	memcpy(&addr.sin_addr,host->h_addr,host->h_length);
 
 
-    i=connect(sock[sockNum].s,(struct sockaddr *)&addr,sizeof(addr));
+	i=connect(sock[sockNum].s,(struct sockaddr *)&addr,sizeof(addr));
 
 	if(i==-1)
-        i=SocketLastError();
+		i=SocketLastError();
 
-    if(i==0 || i==ERR_WOULDBLOCK)
-    {
+	if(i==0 || i==ERR_WOULDBLOCK)
+	{
 		// everything's fine, we're done, it's trying to connect!
 		Log_Printnum("web_requestdata ok!",i);
 		return IE_OK;
-    }
+	}
 	else
 	{
 		// could not connect!
@@ -416,12 +416,12 @@ void Web_Poll(int sockNum)
 		i=send(sock[sockNum].s,&sock[sockNum].request[sock[sockNum].reqSent],strlen(sock[sockNum].request)-sock[sockNum].reqSent,0);
 		if(i==SOCKET_ERROR)
 		{
-            i=SocketLastError();
-            if(i==ERR_NOTCONN)
+			i=SocketLastError();
+			if(i==ERR_NOTCONN)
 			{
 				return;	// not connected yet, keep trying
 			}
-            if(i==ERR_WOULDBLOCK)
+			if(i==ERR_WOULDBLOCK)
 			{
 				return;	// worked, I guess
 			}
@@ -444,8 +444,8 @@ void Web_Poll(int sockNum)
 		i=recv(sock[sockNum].s,(char *)&sock[sockNum].header[sock[sockNum].dataGot],DATA_GRAB_SIZE,0);
 		if(i==SOCKET_ERROR)
 		{
-            i=SocketLastError();
-            if(i==ERR_WOULDBLOCK)
+			i=SocketLastError();
+			if(i==ERR_WOULDBLOCK)
 			{
 				return;	// seems okay, waiting for more data
 			}
@@ -453,7 +453,7 @@ void Web_Poll(int sockNum)
 			sock[sockNum].state=SS_FAILED;
 			sock[sockNum].error=IE_RECVFAIL;
 			Log_Printnum("RECV error #",sockNum);
-            Log_Printnum("error code: ",SocketLastError());
+			Log_Printnum("error code: ",SocketLastError());
 			return;
 		}
 		Log_Printnum("Received ",i);
@@ -490,11 +490,11 @@ void Web_Poll(int sockNum)
 		i=recv(sock[sockNum].s,(char *)&sock[sockNum].buffer[sock[sockNum].realDataGot],DATA_GRAB_SIZE,0);
 		if(i==SOCKET_ERROR)
 		{
-            i=SocketLastError();
-            if(i==ERR_WOULDBLOCK)
+			i=SocketLastError();
+			if(i==ERR_WOULDBLOCK)
 				return;	// seems okay by me, it means that it is waiting for more data
 			Log_Printnum("RECV error #",sockNum);
-            Log_Printnum("error code: ",SocketLastError());
+			Log_Printnum("error code: ",SocketLastError());
 			Web_KillSocket(sockNum);
 			sock[sockNum].state=SS_FAILED;
 			sock[sockNum].error=IE_RECVFAIL;

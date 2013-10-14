@@ -231,8 +231,8 @@ void InputWorld(char *fname)
 
 void ScanWorlds(void)
 {
-    DIR* dir;
-    struct dirent* dp;
+	DIR* dir;
+	struct dirent* dp;
 	int count,done;
 
 #ifdef LEVELLIST
@@ -244,38 +244,38 @@ void ScanWorlds(void)
 	// count up how many there are to deal with
 	count=0;
 
-    dir = opendir("worlds");
-    while ((dp = readdir(dir)) != NULL)
+	dir = opendir("worlds");
+	while ((dp = readdir(dir)) != NULL)
 	{
 		// rule out the backup worlds, so they don't show up
-        if((strcmp(dp->d_name,"backup_load.dlw")) &&
-           (strcmp(dp->d_name,"backup_exit.dlw")) &&
-           (strcmp(dp->d_name,"backup_save.dlw")) &&
-            strstr(dp->d_name, ".dlw"))
-            count++;
+		if((strcmp(dp->d_name,"backup_load.dlw")) &&
+		   (strcmp(dp->d_name,"backup_exit.dlw")) &&
+		   (strcmp(dp->d_name,"backup_save.dlw")) &&
+			strstr(dp->d_name, ".dlw"))
+			count++;
 	}
-    closedir(dir);
+	closedir(dir);
 
-    done=0;
+	done=0;
 
-    dir = opendir("worlds");
-    while ((dp = readdir(dir)) != NULL)
+	dir = opendir("worlds");
+	while ((dp = readdir(dir)) != NULL)
 	{
 		// rule out the backup worlds, so they don't show up
-        if((strcmp(dp->d_name,"backup_load.dlw")) &&
-           (strcmp(dp->d_name,"backup_exit.dlw")) &&
-           (strcmp(dp->d_name,"backup_save.dlw")) &&
-            strstr(dp->d_name, ".dlw"))
+		if((strcmp(dp->d_name,"backup_load.dlw")) &&
+		   (strcmp(dp->d_name,"backup_exit.dlw")) &&
+		   (strcmp(dp->d_name,"backup_save.dlw")) &&
+			strstr(dp->d_name, ".dlw"))
 		{
-            InputWorld(dp->d_name);
+			InputWorld(dp->d_name);
 			done++;
 #ifndef WTG
-            GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450,32*1+16);
-            GetDisplayMGL()->Flip();
+			GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450,32*1+16);
+			GetDisplayMGL()->Flip();
 #endif
 		}
-    }
-    closedir(dir);
+	}
+	closedir(dir);
 #ifdef LEVELLIST
 	fclose(levelF);
 	fclose(level2F);

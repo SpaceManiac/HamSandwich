@@ -30,7 +30,7 @@
 // 100 points per level (you get the level percentage's worth of those 100)
 // 25 points per keychain (so all four equals 1 level)
 // 100 points for loonykey (get free credit for it, and instantly get it, if you enter a world
-//                          that lacks one)
+//							that lacks one)
 
 // total percentage is:
 // 1000 points per world (you get the world's percentage of that)

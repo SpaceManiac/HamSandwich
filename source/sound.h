@@ -201,7 +201,7 @@
 #define SND_MINECART	153
 
 // ------------- NOT AN EXPANSION SOUND:::  THIS IS THE HAMUMU THEME
-#define SND_HAMUMU	    154
+#define SND_HAMUMU		154
 // vampire
 #define SND_VAMPATTK	155
 #define SND_VAMPFEAR	156

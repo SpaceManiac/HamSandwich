@@ -307,7 +307,7 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 			eff->x=255;
 			eff->value2=ITM_RANDOM;
 			break;
-        case EFF_TILEVAR:
+		case EFF_TILEVAR:
 			eff->value=0;
 			break;
 		case EFF_LIFEAMT:
@@ -321,7 +321,7 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 			eff->x=255;
 			break;
 		case EFF_NAME:
-        case EFF_MONSGRAPHICS:
+		case EFF_MONSGRAPHICS:
 			eff->value=MONS_ANYBODY;
 			eff->x=255;
 			eff->text[0]='\0';
@@ -339,12 +339,12 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 		case EFF_PLAYAS:
 			eff->value=MONS_BOUAPHA;
 			break;
-        case EFF_VARBAR:
-            eff->value=0;
-            break;
-        case EFF_MAKEBULLET:
-            strcpy(eff->text, "0");
-            eff->value2=1;
+		case EFF_VARBAR:
+			eff->value=0;
+			break;
+		case EFF_MAKEBULLET:
+			strcpy(eff->text, "0");
+			eff->value2=1;
 		case EFF_CHANGEBULLET:
 			eff->value=BLT_NONE;
 			eff->value2=BLT_HAMMER;
@@ -1688,7 +1688,7 @@ void SpecialEffect(special_t *me,Map *map)
 				break;
 			case EFF_NAME:
 				SetMonsterName(!(me->effect[i].flags&EF_NOFX),me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].text);
-                                break;
+				break;
 			case EFF_COLOR:
 				SetMonsterColor(!(me->effect[i].flags&EF_NOFX),me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].value2);
 				break;
@@ -1698,43 +1698,43 @@ void SpecialEffect(special_t *me,Map *map)
 			case EFF_PLAYAS:
 				player.playAs=me->effect[i].value;
 				break;
-            case EFF_MONSGRAPHICS:
-                SetMonsterGraphics(!(me->effect[i].flags&EF_NOFX),me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].text);
-                break;
-            case EFF_ITEMGRAPHICS:
-                SetCustomItemSprites(me->effect[i].text);
-                break;
-            case EFF_VARBAR:
-                v=GetVar(me->effect[i].value);
-                v=(word)v;
-                if(me->effect[i].flags&EF_PERMLIGHT)
-                    player.varbarMax=v;
-                else
-                    player.varbar=v;
-                player.varbarColor=me->effect[i].value2;
-                break;
-            case EFF_MAKEBULLET:
-                int x, y;
-                if (me->effect[i].x == 255)
-                {
-                    if (tagged)
-                    {
-                        x = tagged->x >> FIXSHIFT;
-                        y = tagged->y >> FIXSHIFT;
-                    }
-                    else
-                        break;
-                }
-                else
-                {
-                    x = me->effect[i].x*TILE_WIDTH + TILE_WIDTH/2;
-                    y = me->effect[i].y*TILE_HEIGHT + TILE_HEIGHT/2;
-                }
+			case EFF_MONSGRAPHICS:
+				SetMonsterGraphics(!(me->effect[i].flags&EF_NOFX),me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].text);
+				break;
+			case EFF_ITEMGRAPHICS:
+				SetCustomItemSprites(me->effect[i].text);
+				break;
+			case EFF_VARBAR:
+				v=GetVar(me->effect[i].value);
+				v=(word)v;
+				if(me->effect[i].flags&EF_PERMLIGHT)
+					player.varbarMax=v;
+				else
+					player.varbar=v;
+				player.varbarColor=me->effect[i].value2;
+				break;
+			case EFF_MAKEBULLET:
+				int x, y;
+				if (me->effect[i].x == 255)
+				{
+					if (tagged)
+					{
+						x = tagged->x >> FIXSHIFT;
+						y = tagged->y >> FIXSHIFT;
+					}
+					else
+						break;
+				}
+				else
+				{
+					x = me->effect[i].x*TILE_WIDTH + TILE_WIDTH/2;
+					y = me->effect[i].y*TILE_HEIGHT + TILE_HEIGHT/2;
+				}
 
-                if(!VarMath(255,me->effect[i].text))
-                    PauseGame();	// pause if there's an error in the equation
-                FireBullet(x<<FIXSHIFT, y<<FIXSHIFT, GetVar(255), me->effect[i].value2, me->effect[i].flags&EF_PERMLIGHT);
-                break;
+				if(!VarMath(255,me->effect[i].text))
+					PauseGame();	// pause if there's an error in the equation
+				FireBullet(x<<FIXSHIFT, y<<FIXSHIFT, GetVar(255), me->effect[i].value2, me->effect[i].flags&EF_PERMLIGHT);
+				break;
 			case EFF_CHANGEBULLET:
 				ChangeBullet(!(me->effect[i].flags&EF_NOFX),me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].value2);
 				break;
@@ -2114,17 +2114,17 @@ void AdjustSpecialEffectCoords(special_t *me,int dx,int dy)
 				break;
 			case EFF_PLAYAS:
 				break;
-            case EFF_MONSGRAPHICS:
-                if(me->effect[i].x!=255)
-                {
-                    me->effect[i].x+=dx;
-                    me->effect[i].y+=dy;
-                }
-                break;
-            case EFF_MAKEBULLET:
-                me->effect[i].x+=dx;
-                me->effect[i].y+=dy;
-                break;
+			case EFF_MONSGRAPHICS:
+				if(me->effect[i].x!=255)
+				{
+					me->effect[i].x+=dx;
+					me->effect[i].y+=dy;
+				}
+				break;
+			case EFF_MAKEBULLET:
+				me->effect[i].x+=dx;
+				me->effect[i].y+=dy;
+				break;
 			case EFF_CHANGEBULLET:
 				if(me->effect[i].x!=255)
 				{

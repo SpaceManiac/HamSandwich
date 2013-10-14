@@ -33,17 +33,17 @@ MGLDraw *mainmgl;
 
 int main(int argc, char* argv[])
 {
-    bool windowedGame=FALSE;
+	bool windowedGame=FALSE;
 
-    for (int i = 1; i < argc; ++i)
-    {
-        if (!strcmp(argv[i], "window"))
-            windowedGame=TRUE;
-    }
+	for (int i = 1; i < argc; ++i)
+	{
+		if (!strcmp(argv[i], "window"))
+			windowedGame=TRUE;
+	}
 	InitLog();
 
 	LoadConfig();
-    mainmgl=new MGLDraw("Supreme With Cheese",640,480,32,windowedGame);
+	mainmgl=new MGLDraw("Supreme With Cheese",640,480,32,windowedGame);
 	if(!mainmgl)
 		return 0;
 

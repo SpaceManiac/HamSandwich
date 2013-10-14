@@ -3,7 +3,7 @@
 
 #include "jamulspr.h"
 
-#define ITM_NONE     0
+#define ITM_NONE	 0
 #define ITM_HAMMERUP 1
 #define ITM_PANTS	 2
 #define ITM_REVERSE  3
@@ -20,7 +20,7 @@
 #define ITM_KEYCH3	 14
 #define ITM_KEYCH4	 15
 #define ITM_KEY		 16
-#define ITM_KEYR     17
+#define ITM_KEYR	 17
 #define ITM_KEYG	 18
 #define ITM_KEYB	 19
 #define ITM_LOONYKEY 20
@@ -176,7 +176,7 @@
 #define IF_TILE		  64	// render a tile instead of a sprite
 #define IF_USERJSP   128	// use custom item jsp
 #define IF_BUBBLES   256	// spout bubbles
-#define IF_BIGMSG    512	// display a big message
+#define IF_BIGMSG	 512	// display a big message
 
 // themes
 #define IT_PICKUP	(1<<0)	// items you can collect
