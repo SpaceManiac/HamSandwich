@@ -15,7 +15,7 @@ enum {
 };
 
 extern Display display;
-extern Font gFont;
+extern Font gFont, gIconFont;
 
 //extern AssetContext<Bitmap> graphics;
 

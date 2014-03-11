@@ -4,7 +4,7 @@
 using namespace std;
 
 Display display;
-Font gFont;
+Font gFont, gIconFont;
 
 /*AssetContext<Bitmap> graphics([](std::string key) {
     Bitmap result(("gfx/" + key + ".png").c_str());
@@ -24,7 +24,8 @@ int main(int argc, char** argv) {
     InitAttempt(al_init_ttf_addon());
     InitAttempt(al_init_primitives_addon());
 
-    InitAttempt(gFont.load("vera.ttf", 16));
+    InitAttempt(gFont.load("vera.ttf", 14));
+    InitAttempt(gIconFont.load("fontawesome.ttf", 14));
 
     al_set_new_display_flags(ALLEGRO_WINDOWED);
     InitAttempt(display = Display(DISPLAY_WIDTH, DISPLAY_HEIGHT));
@@ -43,6 +44,7 @@ int main(int argc, char** argv) {
     // scope they'll be destroyed after Allegro shuts down, which we don't want
     display.reset();
     gFont.reset();
+    gIconFont.reset();
     //graphics.clear();
 
     return ret;

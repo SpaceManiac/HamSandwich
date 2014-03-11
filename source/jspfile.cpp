@@ -48,17 +48,17 @@ bool JspFile::load(string fname) {
             return false;
         }
 
-        cout << "frame #" << i << ": " << info.width << "x" << info.height << ", (" << info.ofsX << "," << info.ofsY << "), size = " << info.size << endl;
+        //cout << "frame #" << i << ": " << info.width << "x" << info.height << ", (" << info.ofsX << "," << info.ofsY << "), size = " << info.size << endl;
         frameInfo.push_back(info);
     }
 
-    cout << "at " << in.tellg() << endl;
+    //cout << "at " << in.tellg() << endl;
 
     // read image
     al_set_new_bitmap_flags(ALLEGRO_MEMORY_BITMAP);
     frames.clear();
     for (uint16_t i = 0; i < count; ++i) {
-        cout << "decoding frame #" << i << endl;
+        //cout << "decoding frame #" << i << endl;
 
         FrameInfo info = frameInfo[i];
         Bitmap image { info.width, info.height };
