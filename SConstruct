@@ -29,4 +29,4 @@ def program(name, debug):
 
 program('jspedit-debug', True)
 program('jspedit', False)
-qt.save('JspEdit2')
+#qt.save('JspEdit2')

@@ -15,7 +15,7 @@ Font gFont;
 //AssetContext<Bitmap> graphics(AssetContext<Bitmap>::prefixLoader("graphics/"));
 //AssetContext<Bitmap> graphics(AssetContext<Bitmap>::constructLoader);
 
-int main() {
+int main(int argc, char** argv) {
     InitAttempt(al_init());
     InitAttempt(al_install_keyboard());
     InitAttempt(al_install_mouse());
@@ -33,7 +33,11 @@ int main() {
     //display.setWindowIcon(graphics["gamepad.png"]);
     //al_hide_mouse_cursor(display.get());
 
-    int ret = 0; //ExceptionTrapVoid(editor::main);
+    if (argc > 1) {
+        editor::loadOnStartup(argv[1]);
+    }
+
+    int ret = ExceptionTrapVoid(editor::main);
 
     // we need to clean up assets here, because if they're left in the global
     // scope they'll be destroyed after Allegro shuts down, which we don't want

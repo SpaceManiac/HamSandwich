@@ -10,8 +10,8 @@ using namespace alx;
 using namespace muus;
 
 enum {
-    DISPLAY_WIDTH = 800,
-    DISPLAY_HEIGHT = 600
+    DISPLAY_WIDTH = 1024,
+    DISPLAY_HEIGHT = 768
 };
 
 extern Display display;
