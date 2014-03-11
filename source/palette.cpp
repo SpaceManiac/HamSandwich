@@ -40,7 +40,7 @@ Color palette::getColor(uint8_t index) {
 }
 
 uint8_t palette::getExact(Color color) {
-    for (uint8_t i = 0; i < 256; ++i) {
+    for (int i = 0; i < 256; ++i) {
         if (getColor(i) == color) {
             return i;
         }

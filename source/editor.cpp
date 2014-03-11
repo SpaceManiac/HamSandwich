@@ -27,6 +27,7 @@ void Editor::load(string fname) {
     cout << "Editor::load " << fname << endl;
     if (jsp.load(fname)) {
         cout << "Success" << endl;
+        jsp.save("saved.jsp");
     } else {
         cout << "Failure: " << jsp.error << endl;
     }
