@@ -77,9 +77,10 @@ struct Editor : public GameScreen {
     bool import_frame(string fname, bool batch = false);
     bool export_frame(string fname, bool batch = false);
 
-    string batch_filename(string fname, int num);
     void import_batch(string fname);
     void export_batch(string fname);
+
+    void convertAlpha();
 
     void move(int dir);
     void shift(int dir);
@@ -97,6 +98,7 @@ Editor::Editor()
 {
     file = { "", "", JspFile(), 0, false };
     crosshairs = 1;
+    dragging = false;
 
     // create empty blank frame
     {
@@ -128,10 +130,10 @@ Editor::Editor()
         { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_E },
         std::bind(dialog::save, "Export Image", "*.png;*.bmp;*.tga;*.pcx;*.*", [this](std::string str) { export_frame(str); }));
     gui.addButton(rect(x += g, y, w, h), "Import All", "Import from folder",
-        { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_E },
+        { ALLEGRO_KEYMOD_CTRL | ALLEGRO_KEYMOD_SHIFT, ALLEGRO_KEY_I },
         std::bind(dialog::open, "Select first frame (0.png)", "*.png;*.*", [this](std::string str) { import_batch(str); }));
     gui.addButton(rect(x += g, y, w, h), "Export All", "Export to folder",
-        { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_E },
+        { ALLEGRO_KEYMOD_CTRL | ALLEGRO_KEYMOD_SHIFT, ALLEGRO_KEY_E },
         std::bind(dialog::save, "Export all frames", "*.png;*.*", [this](std::string str) { export_batch(str); }));
 
     x = DISPLAY_WIDTH - g;
@@ -139,26 +141,32 @@ Editor::Editor()
         { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_H },
         [this]() { crosshairs = (crosshairs + 1) % MAX_CROSSHAIRS; });
 
-    x = 20; g = 30; y = 80;
-    gui.addIconButton(x, y, FAChar::arrow_left, "Previous frame",
-        { 0, ALLEGRO_KEY_LEFT },
-        [this]() { move(-1); });
-    gui.addIconButton(x += g, y, FAChar::backward, "Shift frame left",
-        { ALLEGRO_KEYMOD_SHIFT, ALLEGRO_KEY_LEFT },
-        [this]() { shift(-1); });
-    x += g; //gui.addIconButton(x += g, y, FAChar::minus);
-    gui.addIconButton(x += g, y, FAChar::forward, "Shift frame right",
-        { ALLEGRO_KEYMOD_SHIFT, ALLEGRO_KEY_RIGHT },
-        [this]() { shift(1); });
-    gui.addIconButton(x += g, y, FAChar::arrow_right, "Next frame",
-        { 0, ALLEGRO_KEY_RIGHT },
-        [this]() { move(1); });
-
-    x = 20; g = 30; y = 150;
+    x = 10; g = 34; y = 80;
     gui.addIconButton(x, y, FAChar::fast_backward, "First frame",
         { 0, ALLEGRO_KEY_HOME },
         [this]() { file.curSprite = 0; });
-    x += g/2;
+    gui.addIconButton(x += g, y, FAChar::arrow_left, "Previous frame",
+        { 0, ALLEGRO_KEY_LEFT },
+        [this]() { move(-1); });
+    x += g; //gui.addIconButton(x += g, y, FAChar::minus);
+    gui.addIconButton(x += g, y, FAChar::arrow_right, "Next frame",
+        { 0, ALLEGRO_KEY_RIGHT },
+        [this]() { move(1); });
+    gui.addIconButton(x += g, y, FAChar::fast_forward, "Last frame",
+        { 0, ALLEGRO_KEY_END },
+        [this]() { file.curSprite = file.jsp.frames.size() - 1; });
+
+    gui.addIconButton(146, 125, FAChar::undo, "Reset origin",
+        { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_R },
+        [this]() {
+            JspFrame& frame = file.jsp.frames[file.curSprite];
+            frame.ofsX = frame.ofsY = 0;
+        });
+
+    x = 10; g = 34; y = 150;
+    gui.addIconButton(x, y, FAChar::backward, "Shift frame left",
+        { ALLEGRO_KEYMOD_SHIFT, ALLEGRO_KEY_LEFT },
+        [this]() { shift(-1); });
     gui.addIconButton(x += g, y, FAChar::plus, "Add frame",
         { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_INSERT },
         [this]() {
@@ -167,6 +175,9 @@ Editor::Editor()
             al_clear_to_color(palette::getColor(240));
             file.jsp.frames.insert(file.jsp.frames.begin() + file.curSprite, newFrame);
         });
+    gui.addIconButton(x += g, y, FAChar::font, "Convert pink to alpha",
+        { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_A },
+        [this]() { convertAlpha(); });
     gui.addIconButton(x += g, y, FAChar::minus, "Delete frame",
         { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_DELETE },
         [this]() {
@@ -177,10 +188,9 @@ Editor::Editor()
                 file.curSprite = file.jsp.frames.size() - 1;
             }
         });
-    x += g/2;
-    gui.addIconButton(x += g, y, FAChar::fast_forward, "Last frame",
-        { 0, ALLEGRO_KEY_END },
-        [this]() { file.curSprite = file.jsp.frames.size() - 1; });
+    gui.addIconButton(x += g, y, FAChar::forward, "Shift frame right",
+        { ALLEGRO_KEYMOD_SHIFT, ALLEGRO_KEY_RIGHT },
+        [this]() { shift(1); });
 }
 
 /****************************************************************/
@@ -301,6 +311,9 @@ void Editor::export_batch(string fname) {
     if (fname.substr(fname.length() - 4) == ".png") {
         fname = fname.substr(0, fname.length() - 4);
     }
+    if (fname[fname.length() - 1] == '0') {
+        fname = fname.substr(0, fname.length() - 1);
+    }
 
     int sprite = file.curSprite;
     for (file.curSprite = 0; file.curSprite < file.jsp.frames.size(); ++file.curSprite) {
@@ -348,6 +361,26 @@ void Editor::shift(int dir) {
     }
 }
 
+void Editor::convertAlpha() {
+    Bitmap bmp = file.jsp.frames[file.curSprite].bmp;
+    bmp.lock(ALLEGRO_PIXEL_FORMAT_RGBA_8888, ALLEGRO_LOCK_READWRITE);
+    gfx::SetTarget target(bmp);
+
+    Color key = palette::getColor(208);
+
+    for (int y = 0; y < bmp.getHeight(); ++y) {
+        for (int x = 0; x < bmp.getWidth(); ++x) {
+            Color col = bmp.getPixel(x, y);
+            if (col == key) {
+                col = Color(0, 0, 0, 0);
+            }
+            al_put_pixel(x, y, col);
+        }
+    }
+
+    bmp.unlock();
+}
+
 /****************************************************************/
 /* Game loop overrides */
 
@@ -392,7 +425,7 @@ void Editor::render() {
         JspFrame current = frames[file.curSprite];
         gFont.draw(5, 35, black, file.shortname);
         gFont.drawf(5, 55, black, "Sprite count: %d", frames.size());
-        gFont.drawf(90, 80, ALLEGRO_ALIGN_CENTER, black, "%d", file.curSprite);
+        gFont.drawf(88, 80, ALLEGRO_ALIGN_CENTER, black, "%d", file.curSprite);
         gFont.drawf(5, 105, black, "Size: (%d, %d)", current.bmp.getWidth(), current.bmp.getHeight());
         gFont.drawf(5, 125, black, "Origin: (%d, %d)", current.ofsX, current.ofsY);
 

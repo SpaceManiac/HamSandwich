@@ -23,7 +23,7 @@ def program(name, debug):
     env.Append(CPPDEFINES=['__MSYS__'])
 
     env.sources('source/')
-    #env.resource('source/resources.rc')
+    env.resource('source/resources.rc')
     qt.extend(env)
     Alias(name, [env.program(), env.install('run/')])
 
