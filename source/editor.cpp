@@ -35,8 +35,8 @@ void showMessage(const char* head, const char* body) {
     al_show_native_message_box(display.get(), "JspEdit", head, body, nullptr, 0);
 }
 
-bool showOkCancel(const char* head, const char* body, bool def) {
-    int r = al_show_native_message_box(display.get(), "JspEdit", head, body, nullptr, ALLEGRO_MESSAGEBOX_OK_CANCEL);
+bool showOkCancel(const char* head, bool def) {
+    int r = al_show_native_message_box(display.get(), "JspEdit", head, nullptr, nullptr, ALLEGRO_MESSAGEBOX_OK_CANCEL | ALLEGRO_MESSAGEBOX_QUESTION);
     return r == 0 ? def : r == 1;
 }
 
@@ -48,7 +48,7 @@ bool showOkCancel(const char* head, const char* body, bool def) {
 struct FileInfo {
     string fname, shortname;
     JspFile jsp;
-    int curSprite;
+    size_t curSprite;
 };
 
 struct Editor : public GameScreen {
@@ -60,6 +60,9 @@ struct Editor : public GameScreen {
     void load(std::string fname);
     void save();
     void saveAs(std::string fname);
+
+    void move(int dir);
+    void shift(int dir);
 
     void render();
     void handleEvent(Event event);
@@ -75,14 +78,39 @@ Editor::Editor()
     int w = 100, g = 110, h = 22;
     int x = 6, y = 4;
     // top bar
-    gui.addButton(rect(x, y, w, h), "Open", std::bind(dialog::open, "Open JSP", "*.jsp", [this](std::string str) { load(str); }));
-    gui.addButton(rect(x += g, y, w, h), "Save", [this]() { save(); });
-    gui.addButton(rect(x += g, y, w, h), "Save As", std::bind(dialog::save, "Save JSP", "*.jsp", [this](std::string str) { saveAs(str); }));
-    gui.addButton(rect(x += g, y, w, h), "Import");
-    gui.addButton(rect(x += g, y, w, h), "Export");
+    gui.addButton(rect(x, y, w, h), "Open",
+        { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_O },
+        std::bind(dialog::open, "Open JSP", "*.jsp", [this](std::string str) { load(str); }));
+    gui.addButton(rect(x += g, y, w, h), "Save",
+        { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_S },
+        [this]() { save(); });
+    gui.addButton(rect(x += g, y, w, h), "Save As",
+        { ALLEGRO_KEYMOD_CTRL | ALLEGRO_KEYMOD_SHIFT, ALLEGRO_KEY_S },
+        std::bind(dialog::save, "Save JSP", "*.jsp", [this](std::string str) { saveAs(str); }));
+    gui.addButton(rect(x += g, y, w, h), "Import",
+        { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_I },
+        nullptr);
+    gui.addButton(rect(x += g, y, w, h), "Export",
+        { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_E },
+        nullptr);
 
-    gui.addIconButton(20, 200, FAChar::arrow_up);
+    x = 20; g = 30; y = 80;
+    gui.addIconButton(x, y, FAChar::arrow_left,
+        { 0, ALLEGRO_KEY_LEFT },
+        [this]() { move(-1); });
+    gui.addIconButton(x += g, y, FAChar::backward,
+        { ALLEGRO_KEYMOD_SHIFT, ALLEGRO_KEY_LEFT },
+        [this]() { shift(-1); });
+    x += g; //gui.addIconButton(x += g, y, FAChar::minus);
+    gui.addIconButton(x += g, y, FAChar::forward,
+        { ALLEGRO_KEYMOD_SHIFT, ALLEGRO_KEY_RIGHT },
+        [this]() { shift(1); });
+    gui.addIconButton(x += g, y, FAChar::arrow_right,
+        { 0, ALLEGRO_KEY_RIGHT },
+        [this]() { move(1); });
 }
+
+// File manip
 
 void Editor::load(string fname) {
     file.fname = fname;
@@ -119,6 +147,36 @@ void Editor::saveAs(string fname) {
     save();
 }
 
+// View manip
+
+void Editor::move(int dir) {
+    if (dir == -1) {
+        if (file.curSprite > 0) {
+            file.curSprite--;
+        }
+    } else if (dir == 1) {
+        if (file.curSprite < file.jsp.frames.size() - 1) {
+            file.curSprite++;
+        }
+    }
+}
+
+void Editor::shift(int dir) {
+    if (dir == -1) {
+        if (file.curSprite > 0) {
+            file.curSprite--;
+            swap(file.jsp.frames[file.curSprite], file.jsp.frames[file.curSprite + 1]);
+        }
+    } else if (dir == 1) {
+        if (file.curSprite < file.jsp.frames.size() - 1) {
+            file.curSprite++;
+            swap(file.jsp.frames[file.curSprite], file.jsp.frames[file.curSprite - 1]);
+        }
+    }
+}
+
+// Overrides
+
 void Editor::render() {
     Color lightbg(200, 200, 200), black(0, 0, 0);
 
@@ -144,10 +202,10 @@ void Editor::render() {
         JspFrame current = file.jsp.frames[file.curSprite];
         gFont.draw(5, 35, black, file.shortname);
         gFont.drawf(5, 55, black, "Sprite count: %d", file.jsp.frames.size());
-        gFont.drawf(5, 75, black, "Sprite #%d", file.curSprite);
-        gFont.drawf(5, 95, black, "Origin: (%d, %d)", current.ofsX, current.ofsY);
+        gFont.drawf(90, 80, ALLEGRO_ALIGN_CENTER, black, "%d", file.curSprite);
+        gFont.drawf(5, 115, black, "Origin: (%d, %d)", current.ofsX, current.ofsY);
 
-        gIconFont.drawf(5, 125, black, "%s %s", FA::str(FAChar::check).cstr(), FA::str(FAChar::adjust).cstr());
+        //gIconFont.drawf(5, 145, black, "%s %s", FA::str(FAChar::check).cstr(), FA::str(FAChar::adjust).cstr());
     }
 
 
@@ -183,13 +241,43 @@ void Editor::render() {
 }
 
 void Editor::handleEvent(Event event) {
-    if (event.getType() == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-        // todo: confirm
-        running = false;
-    }
-
     if (gui.handleEvent(event)) {
         return;
+    }
+
+    switch (event.getType()) {
+    case ALLEGRO_EVENT_DISPLAY_CLOSE:
+        //running = !dialog::showOkCancel("Are you sure you want to exit?", false);
+        running = false;
+        break;
+
+    case ALLEGRO_EVENT_KEY_CHAR:
+        if (file.jsp.frames.size() == 0) break;
+
+        int mods = event.getKeyboardModifiers();
+        switch (event.getKeyboardKeycode()) {
+        case ALLEGRO_KEY_LEFT:
+            if (mods & ALLEGRO_KEYMOD_CTRL) {
+                file.jsp.frames[file.curSprite].ofsX++;
+            }
+            break;
+        case ALLEGRO_KEY_RIGHT:
+            if (mods & ALLEGRO_KEYMOD_CTRL) {
+                file.jsp.frames[file.curSprite].ofsX--;
+            }
+            break;
+        case ALLEGRO_KEY_UP:
+            if (mods & ALLEGRO_KEYMOD_CTRL) {
+                file.jsp.frames[file.curSprite].ofsY++;
+            }
+            break;
+        case ALLEGRO_KEY_DOWN:
+            if (mods & ALLEGRO_KEYMOD_CTRL) {
+                file.jsp.frames[file.curSprite].ofsY--;
+            }
+            break;
+        }
+        break;
     }
 
 

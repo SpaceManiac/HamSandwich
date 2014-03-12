@@ -11,7 +11,7 @@ void Gui::render() {
         Color black(0, 0, 0);
 
         if (focused) {
-            gfx::fillRect(r.getLeft(), r.getTop(), r.getRight() - 1, r.getBottom() - 1, Color(220, 220, 220));
+            gfx::fillRect(r.getLeft(), r.getTop(), r.getRight() - 1, r.getBottom() - 1, Color(230, 230, 230));
         } else if (hovered) {
             gfx::fillRect(r.getLeft(), r.getTop(), r.getRight() - 1, r.getBottom() - 1, Color(255, 255, 255));
         }
@@ -54,6 +54,16 @@ bool Gui::handleEvent(Event evt) {
         }
         focus = nullptr;
         break;
+
+    case ALLEGRO_EVENT_KEY_CHAR:
+        for (GuiElement elem : elements) {
+            if (elem.shortcut.mods == (evt.getKeyboardModifiers() & 7) && elem.shortcut.keycode == evt.getKeyboardKeycode() && elem.func) {
+                elem.func();
+                return true;
+            }
+        }
+        return false;
+
     default:
         return false;
     }
