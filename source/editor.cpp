@@ -74,8 +74,12 @@ struct Editor : public GameScreen {
     void save();
     void saveAs(string fname);
 
-    void import_frame(string fname);
-    void export_frame(string fname);
+    bool import_frame(string fname, bool batch = false);
+    bool export_frame(string fname, bool batch = false);
+
+    string batch_filename(string fname, int num);
+    void import_batch(string fname);
+    void export_batch(string fname);
 
     void move(int dir);
     void shift(int dir);
@@ -91,6 +95,7 @@ static GuiRect rect(int x, int y, int w, int h) {
 Editor::Editor()
     : GameScreen(display)
 {
+    file = { "", "", JspFile(), 0, false };
     crosshairs = 1;
 
     int w = 100, g = 110, h = 22;
@@ -114,8 +119,15 @@ Editor::Editor()
     gui.addButton(rect(x += g, y, w, h), "Export", "Export to image",
         { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_E },
         std::bind(dialog::save, "Export Image", "*.png;*.bmp;*.tga;*.pcx;*.*", [this](std::string str) { export_frame(str); }));
-    x += g;
-    gui.addButton(rect(x += g, y, w, h), "Crosshairs", "Cycle crosshairs mode",
+    gui.addButton(rect(x += g, y, w, h), "Import All", "Import from folder",
+        { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_E },
+        std::bind(dialog::open, "Select first frame (0.png)", "*.png;*.*", [this](std::string str) { import_batch(str); }));
+    gui.addButton(rect(x += g, y, w, h), "Export All", "Export to folder",
+        { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_E },
+        std::bind(dialog::save, "Export all frames", "*.png;*.*", [this](std::string str) { export_batch(str); }));
+
+    x = DISPLAY_WIDTH - g;
+    gui.addButton(rect(x, y, w, h), "Crosshairs", "Cycle crosshairs mode",
         { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_H },
         [this]() { crosshairs = (crosshairs + 1) % MAX_CROSSHAIRS; });
 
@@ -188,29 +200,70 @@ void Editor::saveAs(string fname) {
     save();
 }
 
-void Editor::import_frame(string fname) {
-    if (file.jsp.frames.size() == 0) return;
+bool Editor::import_frame(string fname, bool batch) {
+    if (file.jsp.frames.size() == 0) return false;
     Bitmap bmp = file.jsp.frames[file.curSprite].bmp;
     if (!bmp.load(fname.c_str())) {
-        dialog::error("Failed to import");
+        if (!batch) dialog::error("Failed to import");
+        return false;
     }
-    if (palette::reduceImage(bmp)) {
+    if (palette::reduceImage(bmp) && !batch) {
         dialog::showMessage("The image's colors were adjusted", nullptr);
     }
     file.unsaved = true;
     file.jsp.frames[file.curSprite].bmp = bmp;
+    return true;
 }
 
-void Editor::export_frame(string fname) {
-    if (file.jsp.frames.size() == 0) return;
+bool Editor::export_frame(string fname, bool batch) {
+    if (file.jsp.frames.size() == 0) return false;
 
     if (fname.find('.') == string::npos) {
         fname += ".png";
     }
 
     if (!file.jsp.frames[file.curSprite].bmp.save(fname.c_str())) {
-        dialog::error("Failed to export");
+        if (!batch) dialog::error("Failed to export");
+        return false;
     }
+    return true;
+}
+
+/****************************************************************/
+/* Batch import / export */
+
+void Editor::import_batch(string fname) {
+    if (fname.substr(fname.length() - 5) == "0.png") {
+        fname = fname.substr(0, fname.length() - 5);
+    } else {
+        dialog::error("Cannot batch import", "Must select file ending in 0.png");
+    }
+
+    int sprite = file.curSprite;
+    for (file.curSprite = 0; file.curSprite < file.jsp.frames.size(); ++file.curSprite) {
+        string name = toString << fname << file.curSprite << ".png";
+        if (!import_frame(name, true)) {
+            dialog::error("Batch import failed on file:", name.c_str());
+            break;
+        }
+    }
+    file.curSprite = sprite;
+}
+
+void Editor::export_batch(string fname) {
+    if (fname.substr(fname.length() - 4) == ".png") {
+        fname = fname.substr(0, fname.length() - 4);
+    }
+
+    int sprite = file.curSprite;
+    for (file.curSprite = 0; file.curSprite < file.jsp.frames.size(); ++file.curSprite) {
+        string name = toString << fname << file.curSprite << ".png";
+        if (!export_frame(name, true)) {
+            dialog::error("Batch export failed on file:", name.c_str());
+            break;
+        }
+    }
+    file.curSprite = sprite;
 }
 
 /****************************************************************/
@@ -229,6 +282,8 @@ void Editor::move(int dir) {
 }
 
 void Editor::shift(int dir) {
+    if (file.jsp.frames.size() == 0) return;
+
     if (dir == -1) {
         if (file.curSprite > 0) {
             file.curSprite--;
@@ -332,7 +387,7 @@ void Editor::render() {
     // top bar
     gfx::fillRect(0, 0, DISPLAY_WIDTH, 30, lightbg);
     gfx::line(0, 30, DISPLAY_WIDTH, 30, black, 0);
-    gFont.draw(DISPLAY_WIDTH - 5, 5, ALLEGRO_ALIGN_RIGHT, black, "JspEdit 2 by SpaceManiac");
+    //gFont.draw(DISPLAY_WIDTH - 5, 5, ALLEGRO_ALIGN_RIGHT, black, "JspEdit 2 by SpaceManiac");
 
     // buttons
     gui.render();
