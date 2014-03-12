@@ -98,6 +98,14 @@ Editor::Editor()
     file = { "", "", JspFile(), 0, false };
     crosshairs = 1;
 
+    // create empty blank frame
+    {
+        JspFrame newFrame = { Bitmap(32, 24), 0, 0 };
+        gfx::SetTarget target(newFrame.bmp);
+        al_clear_to_color(palette::getColor(240));
+        file.jsp.frames.push_back(newFrame);
+    }
+
     int w = 100, g = 110, h = 22;
     int x = 6, y = 4;
     // top bar
@@ -145,6 +153,34 @@ Editor::Editor()
     gui.addIconButton(x += g, y, FAChar::arrow_right, "Next frame",
         { 0, ALLEGRO_KEY_RIGHT },
         [this]() { move(1); });
+
+    x = 20; g = 30; y = 150;
+    gui.addIconButton(x, y, FAChar::fast_backward, "First frame",
+        { 0, ALLEGRO_KEY_HOME },
+        [this]() { file.curSprite = 0; });
+    x += g/2;
+    gui.addIconButton(x += g, y, FAChar::plus, "Add frame",
+        { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_INSERT },
+        [this]() {
+            JspFrame newFrame = { Bitmap(32, 24), 0, 0 };
+            gfx::SetTarget target(newFrame.bmp);
+            al_clear_to_color(palette::getColor(240));
+            file.jsp.frames.insert(file.jsp.frames.begin() + file.curSprite, newFrame);
+        });
+    gui.addIconButton(x += g, y, FAChar::minus, "Delete frame",
+        { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_DELETE },
+        [this]() {
+            if (file.jsp.frames.size() <= 1) return;
+
+            file.jsp.frames.erase(file.jsp.frames.begin() + file.curSprite);
+            if (file.curSprite >= file.jsp.frames.size()) {
+                file.curSprite = file.jsp.frames.size() - 1;
+            }
+        });
+    x += g/2;
+    gui.addIconButton(x += g, y, FAChar::fast_forward, "Last frame",
+        { 0, ALLEGRO_KEY_END },
+        [this]() { file.curSprite = file.jsp.frames.size() - 1; });
 }
 
 /****************************************************************/
@@ -177,6 +213,12 @@ void Editor::load(string fname) {
 }
 
 void Editor::save() {
+    if (file.fname == "") {
+        // call save as which calls this instead
+        dialog::save("Save JSP", "*.jsp;*.*", [this](std::string str) { saveAs(str); });
+        return;
+    }
+
     cout << "Editor::save " << file.fname << endl;
 
     // show please wait dialog
@@ -195,6 +237,10 @@ void Editor::save() {
 }
 
 void Editor::saveAs(string fname) {
+    if (fname.find('.') == string::npos) {
+        fname += ".jsp";
+    }
+
     file.fname = fname;
     file.shortname = trimFilename(fname);
     save();
@@ -230,13 +276,14 @@ bool Editor::export_frame(string fname, bool batch) {
 }
 
 /****************************************************************/
-/* Batch import / export */
+/* Batch import and export */
 
 void Editor::import_batch(string fname) {
     if (fname.substr(fname.length() - 5) == "0.png") {
         fname = fname.substr(0, fname.length() - 5);
     } else {
         dialog::error("Cannot batch import", "Must select file ending in 0.png");
+        return;
     }
 
     int sprite = file.curSprite;
@@ -270,6 +317,8 @@ void Editor::export_batch(string fname) {
 /* View manipulation */
 
 void Editor::move(int dir) {
+    if (file.jsp.frames.size() == 0) return;
+
     if (dir == -1) {
         if (file.curSprite > 0) {
             file.curSprite--;

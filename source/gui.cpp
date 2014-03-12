@@ -29,7 +29,7 @@ void Gui::render() {
     if (hover && hover->tooltip) {
         gFont.draw(2, DISPLAY_HEIGHT - 20, black, hover->tooltip);
     } else {
-        gFont.draw(2, DISPLAY_HEIGHT - 20, black, "JspEdit 2 by SpaceManiac");
+        gFont.draw(2, DISPLAY_HEIGHT - 20, Color(128, 128, 128), "JspEdit 2 by SpaceManiac");
     }
 }
 
