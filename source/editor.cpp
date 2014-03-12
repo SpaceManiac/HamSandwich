@@ -57,9 +57,15 @@ struct FileInfo {
     bool unsaved;
 };
 
+const int MAX_CROSSHAIRS = 3;
+
 struct Editor : public GameScreen {
     FileInfo file;
     Gui gui;
+
+    int crosshairs;
+
+    bool dragging;
 
     Editor();
 
@@ -83,8 +89,10 @@ static GuiRect rect(int x, int y, int w, int h) {
 }
 
 Editor::Editor()
-    : GameScreen(display, 30)
+    : GameScreen(display)
 {
+    crosshairs = 1;
+
     int w = 100, g = 110, h = 22;
     int x = 6, y = 4;
     // top bar
@@ -106,6 +114,10 @@ Editor::Editor()
     gui.addButton(rect(x += g, y, w, h), "Export", "Export to image",
         { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_E },
         std::bind(dialog::save, "Export Image", "*.png;*.bmp;*.tga;*.pcx;*.*", [this](std::string str) { export_frame(str); }));
+    x += g;
+    gui.addButton(rect(x += g, y, w, h), "Crosshairs", "Cycle crosshairs mode",
+        { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_H },
+        [this]() { crosshairs = (crosshairs + 1) % MAX_CROSSHAIRS; });
 
     x = 20; g = 30; y = 80;
     gui.addIconButton(x, y, FAChar::arrow_left, "Previous frame",
@@ -136,17 +148,19 @@ string Editor::trimFilename(string fname) {
 }
 
 void Editor::load(string fname) {
-    file.fname = fname;
-    file.shortname = trimFilename(fname);
-    file.curSprite = 0;
-    file.unsaved = false;
+    FileInfo newFile;
+    newFile.fname = fname;
+    newFile.shortname = trimFilename(fname);
+    newFile.curSprite = 0;
+    newFile.unsaved = false;
 
     cout << "Editor::load " << fname << endl;
-    if (file.jsp.load(fname)) {
+    if (newFile.jsp.load(fname)) {
         cout << "Success" << endl;
+        file = newFile;
     } else {
-        cout << "Failure: " << file.jsp.error << endl;
-        dialog::error("Failed to load:", file.jsp.error.c_str());
+        cout << "Failure: " << newFile.jsp.error << endl;
+        dialog::error("Failed to load:", newFile.jsp.error.c_str());
     }
 }
 
@@ -238,26 +252,42 @@ void Editor::render() {
 
     al_clear_to_color(Color(0xffffffff));
 
+    const float CENTER_X = 180.5 + (DISPLAY_WIDTH - 180)/2, CENTER_Y = 30.5 + (DISPLAY_HEIGHT - 30)/2;
+
+    // crosshairs in behind
+    if (crosshairs == 1) {
+        gfx::line(180, CENTER_Y, DISPLAY_WIDTH, CENTER_Y, Color(0, 128, 0), 1);
+        gfx::line(CENTER_X, 30, CENTER_X, DISPLAY_HEIGHT, Color(0, 128, 0), 1);
+        gfx::rect(CENTER_X - 16, CENTER_Y - 12, CENTER_X + 15, CENTER_Y + 11, Color(0, 196, 0), 1);
+    }
+
     // draw sprite
-    const int CENTER_X = 180 + (DISPLAY_WIDTH - 180)/2, CENTER_Y = 30 + (DISPLAY_HEIGHT - 30)/2, CH_SIZE = 5;
     if (file.jsp.frames.size() > 0) {
         JspFrame current = file.jsp.frames[file.curSprite];
-        current.bmp.draw(CENTER_X - current.ofsX, CENTER_Y - current.ofsY);
+        current.bmp.draw((int) CENTER_X - current.ofsX, (int) CENTER_Y - current.ofsY);
     }
-    // crosshairs
-    gfx::line(CENTER_X - CH_SIZE, CENTER_Y, CENTER_X + CH_SIZE - 1, CENTER_Y, black, 0);
-    gfx::line(CENTER_X, CENTER_Y - CH_SIZE, CENTER_X, CENTER_Y + CH_SIZE - 1, black, 0);
+
+    // crosshairs in front
+    if (crosshairs == 2) {
+        gfx::line(180, CENTER_Y, DISPLAY_WIDTH, CENTER_Y, Color(0, 128, 0), 1);
+        gfx::line(CENTER_X, 30, CENTER_X, DISPLAY_HEIGHT, Color(0, 128, 0), 1);
+        gfx::rect(CENTER_X - 16, CENTER_Y - 12, CENTER_X + 15, CENTER_Y + 11, Color(0, 196, 0), 1);
+    }
 
     // left bar
     gfx::fillRect(0, 0, 180, DISPLAY_HEIGHT, lightbg);
     gfx::line(180, 0, 180, DISPLAY_HEIGHT, black, 0);
+    gfx::line(0, 200, 180, 200, black, 0);
+    gfx::line(0, DISPLAY_HEIGHT - 24, 180, DISPLAY_HEIGHT - 24, black, 0);
 
-    if (file.jsp.frames.size() == 0) {
+    // file stats
+    vector<JspFrame> frames = file.jsp.frames;
+    if (frames.size() == 0) {
         gFont.draw(5, 35, black, "No file open");
     } else {
-        JspFrame current = file.jsp.frames[file.curSprite];
+        JspFrame current = frames[file.curSprite];
         gFont.draw(5, 35, black, file.shortname);
-        gFont.drawf(5, 55, black, "Sprite count: %d", file.jsp.frames.size());
+        gFont.drawf(5, 55, black, "Sprite count: %d", frames.size());
         gFont.drawf(90, 80, ALLEGRO_ALIGN_CENTER, black, "%d", file.curSprite);
         gFont.drawf(5, 105, black, "Size: (%d, %d)", current.bmp.getWidth(), current.bmp.getHeight());
         gFont.drawf(5, 125, black, "Origin: (%d, %d)", current.ofsX, current.ofsY);
@@ -265,7 +295,39 @@ void Editor::render() {
         //gIconFont.drawf(5, 145, black, "%s %s", FA::str(FAChar::check).cstr(), FA::str(FAChar::adjust).cstr());
     }
 
+    // sprites
+    if (frames.size() > 0) {
+        Rect<int> prevClipping = Rect<int>::getClipping();
+        Rect<int> clipRect(0, 200, 178, DISPLAY_HEIGHT - 26);
+        clipRect.setClipping();
 
+        // setup
+        Bitmap curBmp = frames[file.curSprite].bmp;
+        int spr_ = file.curSprite, y_ = 200 + (DISPLAY_HEIGHT - 200 - 24 - curBmp.getHeight()) / 2;
+        curBmp.draw(90 - curBmp.getWidth() / 2, y_);
+
+        // frames before
+        size_t spr = spr_;
+        int y = y_;
+        while (y > 200 && spr > 0) {
+            Bitmap bmp = frames[--spr].bmp;
+            y -= bmp.getHeight();
+            bmp.draw(90 - bmp.getWidth() / 2, y);
+        }
+
+        // frames after
+        spr = spr_, y = y_;
+        while (y < DISPLAY_HEIGHT && spr < frames.size() - 1) {
+            y += frames[spr++].bmp.getHeight();
+            Bitmap bmp = frames[spr].bmp;
+            bmp.draw(90 - bmp.getWidth() / 2, y);
+        }
+
+        // red box
+        gfx::rect(90 - curBmp.getWidth() / 2, y_, 91 + curBmp.getWidth() / 2, 1 + y_ + curBmp.getHeight(), Color(255, 0, 0), 1);
+
+        prevClipping.setClipping();
+    }
 
     // top bar
     gfx::fillRect(0, 0, DISPLAY_WIDTH, 30, lightbg);
@@ -274,7 +336,6 @@ void Editor::render() {
 
     // buttons
     gui.render();
-
 
     /* int x = 200, y = 50, h = 0;
     for (size_t i = 0; i < file.jsp.frames.size(); ++i) {
@@ -302,6 +363,8 @@ void Editor::handleEvent(Event event) {
         return;
     }
 
+    GuiRect dragArea = GuiRect(181, 31, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+
     switch (event.getType()) {
     case ALLEGRO_EVENT_DISPLAY_CLOSE:
         if (file.unsaved) {
@@ -309,6 +372,25 @@ void Editor::handleEvent(Event event) {
         } else {
             running = false;
         }
+        break;
+
+    case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
+        if (dragArea.intersects(event.getMouseX(), event.getMouseY()) && event.get().mouse.button == 1) {
+            dragging = true;
+        }
+        break;
+
+    case ALLEGRO_EVENT_MOUSE_BUTTON_UP:
+        if (event.get().mouse.button == 1) {
+            dragging = false;
+        }
+        break;
+
+    case ALLEGRO_EVENT_MOUSE_AXES:
+    case ALLEGRO_EVENT_MOUSE_WARPED:
+        if (file.jsp.frames.size() == 0 || !dragging) break;
+        file.jsp.frames[file.curSprite].ofsX -= event.getMouseDX();
+        file.jsp.frames[file.curSprite].ofsY -= event.getMouseDY();
         break;
 
     case ALLEGRO_EVENT_KEY_CHAR:

@@ -28,6 +28,8 @@ void Gui::render() {
 
     if (hover && hover->tooltip) {
         gFont.draw(2, DISPLAY_HEIGHT - 20, black, hover->tooltip);
+    } else {
+        gFont.draw(2, DISPLAY_HEIGHT - 20, black, "JspEdit 2 by SpaceManiac");
     }
 }
 
@@ -41,15 +43,17 @@ GuiElement* Gui::elemAt(int x, int y) {
 }
 
 bool Gui::handleEvent(Event evt) {
+    GuiElement* prev = focus;
+
     switch (evt.getType()) {
     case ALLEGRO_EVENT_MOUSE_AXES:
     case ALLEGRO_EVENT_MOUSE_WARPED:
         hover = elemAt(evt.getMouseX(), evt.getMouseY());
-        break;
+        return false;
 
     case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
         focus = hover = elemAt(evt.getMouseX(), evt.getMouseY());
-        break;
+        return focus;
 
     case ALLEGRO_EVENT_MOUSE_BUTTON_UP:
         hover = elemAt(evt.getMouseX(), evt.getMouseY());
@@ -57,7 +61,7 @@ bool Gui::handleEvent(Event evt) {
             focus->func();
         }
         focus = nullptr;
-        break;
+        return prev;
 
     case ALLEGRO_EVENT_KEY_CHAR:
         for (GuiElement elem : elements) {
@@ -71,5 +75,4 @@ bool Gui::handleEvent(Event evt) {
     default:
         return false;
     }
-    return true;
 }

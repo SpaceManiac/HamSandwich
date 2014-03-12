@@ -36,7 +36,10 @@ bool JspFile::load(string fname) {
 
     // read count
     uint16_t count;
-    read(in, &count);
+    if (!read(in, &count)) {
+        error = "couldn't read ct";
+        return false;
+    }
     cout << "count: " << count << endl;
 
     // read header
@@ -44,7 +47,7 @@ bool JspFile::load(string fname) {
     for (uint16_t i = 0; i < count; ++i) {
         FrameInfo info;
         if (!read(in, &info)) {
-            error = "input failed";
+            error = "couldn't read frameinfo";
             return false;
         }
 
@@ -55,7 +58,6 @@ bool JspFile::load(string fname) {
     //cout << "at " << in.tellg() << endl;
 
     // read image
-    al_set_new_bitmap_flags(ALLEGRO_MEMORY_BITMAP);
     frames.clear();
     for (uint16_t i = 0; i < count; ++i) {
         //cout << "decoding frame #" << i << endl;
@@ -67,9 +69,9 @@ bool JspFile::load(string fname) {
             error = "could not create image";
             return false;
         }
-        gfx::SetTarget target { image };
 
-        //ALLEGRO_LOCKED_REGION* lock = image.lock(ALLEGRO_PIXEL_FORMAT_ARGB_8888, ALLEGRO_LOCK_WRITEONLY);
+        image.lock(ALLEGRO_PIXEL_FORMAT_ARGB_8888, ALLEGRO_LOCK_WRITEONLY);
+        gfx::SetTarget target { image };
 
         int x = 0, y = 0;
         uint32_t read = 0;
@@ -95,7 +97,13 @@ bool JspFile::load(string fname) {
                     }
                 }
             }
+
+            if (!in) {
+                error = "couldn't read images";
+                return false;
+            }
         }
+        image.unlock();
 
         frames.push_back({ image, info.ofsX, info.ofsY });
     }
@@ -132,18 +140,20 @@ bool JspFile::save(string fname) {
         // convert bitmap to palette
         uint32_t bmp_size = info.width * info.height;
         uint8_t* temp = new uint8_t[bmp_size];
-        std::cout << "  palette conversion" << endl;
+        //std::cout << "  palette conversion" << endl;
+        frame.bmp.lock(ALLEGRO_PIXEL_FORMAT_ARGB_8888, ALLEGRO_LOCK_READONLY);
         for (int y = 0; y < info.height; ++y) {
             for (int x = 0; x < info.width; ++x) {
                 temp[y * info.width + x] = palette::getExact(frame.bmp.getPixel(x, y));
             }
         }
+        frame.bmp.unlock();
 
         // worst possible scenario is 1.5 bytes per pixel (alternating transparency and solidity)
         uint8_t* data = new uint8_t[bmp_size * 2];
         uint32_t pos = 0, n = 0;  // pos tracks output, n tracks pixels
 
-        std::cout << "  run length encoding" << endl;
+        //std::cout << "  run length encoding" << endl;
         while (n < bmp_size) {
             int len = 0;
             byte c = temp[n];

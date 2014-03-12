@@ -59,7 +59,7 @@ uint8_t palette::getNearest(Color color) {
 
     uint8_t r1 = color.getRed(), g1 = color.getGreen(), b1 = color.getBlue();
 
-    if (r1 == 0 && g1 == 0 && b1 == 0) return 0;
+    //if (r1 == 0 && g1 == 0 && b1 == 0) return 0;
 
     uint8_t best = 0;
     double best_dist = 0;
@@ -87,6 +87,7 @@ uint8_t palette::getNearest(Color color) {
 
 bool palette::reduceImage(Bitmap image) {
     bool result = false;
+    image.lock(ALLEGRO_PIXEL_FORMAT_ARGB_8888, ALLEGRO_LOCK_READWRITE);
     gfx::SetTarget target(image);
     for (int y = 0; y < image.getHeight(); ++y) {
         for (int x = 0; x < image.getWidth(); ++x) {
@@ -99,6 +100,7 @@ bool palette::reduceImage(Bitmap image) {
             }
         }
     }
+    image.unlock();
     return result;
 }
 

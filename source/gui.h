@@ -28,6 +28,8 @@ class Gui {
     GuiElement *elemAt(int x, int y);
 public:
 
+    Gui() : hover(nullptr), focus(nullptr) {}
+
     void render();
     bool handleEvent(Event evt);
 
