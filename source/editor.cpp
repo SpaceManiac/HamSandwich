@@ -2,11 +2,45 @@
 #include "globals.h"
 #include "jspfile.h"
 #include "fontawesome.h"
+#include "gui.h"
 #include <iostream>
 
 using namespace std;
 
 namespace editor {
+
+/****************************************************************/
+/* File chooser utility functions */
+
+namespace dialog {
+
+typedef std::function<void(std::string)> callback;
+
+void go(callback func, const char* title, const char* patterns, int flags) {
+    NativeFileDialog dlg { title, nullptr, patterns, flags };
+    if (dlg.show(display) && dlg.getSelectedFileCount() == 1) {
+        func(al_get_native_file_dialog_path(dlg.get(), 0));
+    }
+}
+
+void open(const char* title, const char* patterns, callback func) {
+    go(func, title, patterns, ALLEGRO_FILECHOOSER_FILE_MUST_EXIST);
+}
+
+void save(const char* title, const char* patterns, callback func) {
+    go(func, title, patterns, ALLEGRO_FILECHOOSER_SAVE);
+}
+
+void showMessage(const char* head, const char* body) {
+    al_show_native_message_box(display.get(), "JspEdit", head, body, nullptr, 0);
+}
+
+bool showOkCancel(const char* head, const char* body, bool def) {
+    int r = al_show_native_message_box(display.get(), "JspEdit", head, body, nullptr, ALLEGRO_MESSAGEBOX_OK_CANCEL);
+    return r == 0 ? def : r == 1;
+}
+
+} // namespace dialog
 
 /****************************************************************/
 /* Editor class */
@@ -18,17 +52,37 @@ struct FileInfo {
 };
 
 struct Editor : public GameScreen {
-
     FileInfo file;
+    Gui gui;
 
-    Editor() : GameScreen(display) {}
+    Editor();
 
     void load(std::string fname);
-
+    void save();
+    void saveAs(std::string fname);
 
     void render();
+    void handleEvent(Event event);
 };
 
+static GuiRect rect(int x, int y, int w, int h) {
+    return GuiRect(x, y, x+w, y+h);
+}
+
+Editor::Editor()
+    : GameScreen(display, 30)
+{
+    int w = 100, g = 110, h = 22;
+    int x = 6, y = 4;
+    // top bar
+    gui.addButton(rect(x, y, w, h), "Open", std::bind(dialog::open, "Open JSP", "*.jsp", [this](std::string str) { load(str); }));
+    gui.addButton(rect(x += g, y, w, h), "Save", [this]() { save(); });
+    gui.addButton(rect(x += g, y, w, h), "Save As", std::bind(dialog::save, "Save JSP", "*.jsp", [this](std::string str) { saveAs(str); }));
+    gui.addButton(rect(x += g, y, w, h), "Import");
+    gui.addButton(rect(x += g, y, w, h), "Export");
+
+    gui.addIconButton(20, 200, FAChar::arrow_up);
+}
 
 void Editor::load(string fname) {
     file.fname = fname;
@@ -43,6 +97,28 @@ void Editor::load(string fname) {
     }
 }
 
+void Editor::save() {
+    cout << "Editor::save " << file.fname << endl;
+
+    // show please wait dialog
+    gfx::fillRect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, Color(255, 255, 255, 128));
+    gFont.draw(DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2 - 50, ALLEGRO_ALIGN_CENTER, Color(0, 0, 0), "Saving, please wait...");
+    al_flip_display();
+
+    // perform save
+    if (file.jsp.save(file.fname)) {
+        cout << "Success" << endl;
+    } else {
+        cout << "Failure: " << file.jsp.error << endl;
+    }
+}
+
+void Editor::saveAs(string fname) {
+    file.fname = fname;
+    file.shortname = fname; // todo: trim
+    save();
+}
+
 void Editor::render() {
     Color lightbg(200, 200, 200), black(0, 0, 0);
 
@@ -55,8 +131,8 @@ void Editor::render() {
         current.bmp.draw(CENTER_X - current.ofsX, CENTER_Y - current.ofsY);
     }
     // crosshairs
-    gfx::line(CENTER_X - CH_SIZE, CENTER_Y, CENTER_X + CH_SIZE - 1, CENTER_Y, black, 1);
-    gfx::line(CENTER_X, CENTER_Y - CH_SIZE, CENTER_X, CENTER_Y + CH_SIZE - 1, black, 1);
+    gfx::line(CENTER_X - CH_SIZE, CENTER_Y, CENTER_X + CH_SIZE - 1, CENTER_Y, black, 0);
+    gfx::line(CENTER_X, CENTER_Y - CH_SIZE, CENTER_X, CENTER_Y + CH_SIZE - 1, black, 0);
 
     // left bar
     gfx::fillRect(0, 0, 180, DISPLAY_HEIGHT, lightbg);
@@ -74,10 +150,15 @@ void Editor::render() {
         gIconFont.drawf(5, 125, black, "%s %s", FA::str(FAChar::check).cstr(), FA::str(FAChar::adjust).cstr());
     }
 
+
+
     // top bar
     gfx::fillRect(0, 0, DISPLAY_WIDTH, 30, lightbg);
     gfx::line(0, 30, DISPLAY_WIDTH, 30, black, 0);
     gFont.draw(DISPLAY_WIDTH - 5, 5, ALLEGRO_ALIGN_RIGHT, black, "JspEdit 2 by SpaceManiac");
+
+    // buttons
+    gui.render();
 
 
     /* int x = 200, y = 50, h = 0;
@@ -99,6 +180,19 @@ void Editor::render() {
     } */
 
     al_flip_display();
+}
+
+void Editor::handleEvent(Event event) {
+    if (event.getType() == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+        // todo: confirm
+        running = false;
+    }
+
+    if (gui.handleEvent(event)) {
+        return;
+    }
+
+
 }
 
 
