@@ -1,6 +1,7 @@
 #include "gui.h"
 
 void Gui::render() {
+    Color black(0, 0, 0);
     for (GuiElement& elem : elements) {
         GuiRect r = elem.size;
 
@@ -8,7 +9,6 @@ void Gui::render() {
         bool focused = (focus == &elem);
 
         //r.setClipping();
-        Color black(0, 0, 0);
 
         if (focused) {
             gfx::fillRect(r.getLeft(), r.getTop(), r.getRight() - 1, r.getBottom() - 1, Color(230, 230, 230));
@@ -25,6 +25,10 @@ void Gui::render() {
         //gfx::roundRect(r.getLeft(), r.getTop(), r.getRight(), r.getBottom(), 1, 1, black, 1);
     }
     //GuiRect(Point<int>(0, 0), Bitmap::getTarget().getSize()).setClipping();
+
+    if (hover && hover->tooltip) {
+        gFont.draw(2, DISPLAY_HEIGHT - 20, black, hover->tooltip);
+    }
 }
 
 GuiElement* Gui::elemAt(int x, int y) {

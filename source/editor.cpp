@@ -3,6 +3,7 @@
 #include "jspfile.h"
 #include "fontawesome.h"
 #include "gui.h"
+#include "palette.h"
 #include <iostream>
 
 using namespace std;
@@ -35,6 +36,10 @@ void showMessage(const char* head, const char* body) {
     al_show_native_message_box(display.get(), "JspEdit", head, body, nullptr, 0);
 }
 
+void error(const char* head, const char* body = nullptr) {
+    al_show_native_message_box(display.get(), "JspEdit", head, body, nullptr, ALLEGRO_MESSAGEBOX_ERROR);
+}
+
 bool showOkCancel(const char* head, bool def) {
     int r = al_show_native_message_box(display.get(), "JspEdit", head, nullptr, nullptr, ALLEGRO_MESSAGEBOX_OK_CANCEL | ALLEGRO_MESSAGEBOX_QUESTION);
     return r == 0 ? def : r == 1;
@@ -49,6 +54,7 @@ struct FileInfo {
     string fname, shortname;
     JspFile jsp;
     size_t curSprite;
+    bool unsaved;
 };
 
 struct Editor : public GameScreen {
@@ -57,9 +63,13 @@ struct Editor : public GameScreen {
 
     Editor();
 
-    void load(std::string fname);
+    string trimFilename(string fname);
+    void load(string fname);
     void save();
-    void saveAs(std::string fname);
+    void saveAs(string fname);
+
+    void import_frame(string fname);
+    void export_frame(string fname);
 
     void move(int dir);
     void shift(int dir);
@@ -78,50 +88,65 @@ Editor::Editor()
     int w = 100, g = 110, h = 22;
     int x = 6, y = 4;
     // top bar
-    gui.addButton(rect(x, y, w, h), "Open",
+    gui.addButton(rect(x, y, w, h), "Open", "Open JSP",
         { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_O },
-        std::bind(dialog::open, "Open JSP", "*.jsp", [this](std::string str) { load(str); }));
-    gui.addButton(rect(x += g, y, w, h), "Save",
+        [this]() {
+            if (file.unsaved && !dialog::showOkCancel("You have unsaved changes, do you want to open anyways?", false)) return;
+            dialog::open("Open JSP", "*.jsp;*.*", [this](std::string str) { load(str); });
+        });
+    gui.addButton(rect(x += g, y, w, h), "Save", "Save JSP",
         { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_S },
         [this]() { save(); });
-    gui.addButton(rect(x += g, y, w, h), "Save As",
+    gui.addButton(rect(x += g, y, w, h), "Save As", "Save JSP As",
         { ALLEGRO_KEYMOD_CTRL | ALLEGRO_KEYMOD_SHIFT, ALLEGRO_KEY_S },
-        std::bind(dialog::save, "Save JSP", "*.jsp", [this](std::string str) { saveAs(str); }));
-    gui.addButton(rect(x += g, y, w, h), "Import",
+        std::bind(dialog::save, "Save JSP", "*.jsp;*.*", [this](std::string str) { saveAs(str); }));
+    gui.addButton(rect(x += g, y, w, h), "Import", "Import from image",
         { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_I },
-        nullptr);
-    gui.addButton(rect(x += g, y, w, h), "Export",
+        std::bind(dialog::open, "Import Image", "*.png;*.bmp;*.tga;*.pcx;*.*", [this](std::string str) { import_frame(str); }));
+    gui.addButton(rect(x += g, y, w, h), "Export", "Export to image",
         { ALLEGRO_KEYMOD_CTRL, ALLEGRO_KEY_E },
-        nullptr);
+        std::bind(dialog::save, "Export Image", "*.png;*.bmp;*.tga;*.pcx;*.*", [this](std::string str) { export_frame(str); }));
 
     x = 20; g = 30; y = 80;
-    gui.addIconButton(x, y, FAChar::arrow_left,
+    gui.addIconButton(x, y, FAChar::arrow_left, "Previous frame",
         { 0, ALLEGRO_KEY_LEFT },
         [this]() { move(-1); });
-    gui.addIconButton(x += g, y, FAChar::backward,
+    gui.addIconButton(x += g, y, FAChar::backward, "Shift frame left",
         { ALLEGRO_KEYMOD_SHIFT, ALLEGRO_KEY_LEFT },
         [this]() { shift(-1); });
     x += g; //gui.addIconButton(x += g, y, FAChar::minus);
-    gui.addIconButton(x += g, y, FAChar::forward,
+    gui.addIconButton(x += g, y, FAChar::forward, "Shift frame right",
         { ALLEGRO_KEYMOD_SHIFT, ALLEGRO_KEY_RIGHT },
         [this]() { shift(1); });
-    gui.addIconButton(x += g, y, FAChar::arrow_right,
+    gui.addIconButton(x += g, y, FAChar::arrow_right, "Next frame",
         { 0, ALLEGRO_KEY_RIGHT },
         [this]() { move(1); });
 }
 
-// File manip
+/****************************************************************/
+/* File manipulation */
+
+string Editor::trimFilename(string fname) {
+    size_t slash = fname.find_last_of("/\\:");
+    if (slash == string::npos) {
+        return fname;
+    } else {
+        return fname.substr(slash + 1);
+    }
+}
 
 void Editor::load(string fname) {
     file.fname = fname;
-    file.shortname = fname; // todo: trim
+    file.shortname = trimFilename(fname);
     file.curSprite = 0;
+    file.unsaved = false;
 
     cout << "Editor::load " << fname << endl;
     if (file.jsp.load(fname)) {
         cout << "Success" << endl;
     } else {
         cout << "Failure: " << file.jsp.error << endl;
+        dialog::error("Failed to load:", file.jsp.error.c_str());
     }
 }
 
@@ -135,19 +160,47 @@ void Editor::save() {
 
     // perform save
     if (file.jsp.save(file.fname)) {
+        file.unsaved = false;
         cout << "Success" << endl;
     } else {
         cout << "Failure: " << file.jsp.error << endl;
+        dialog::error("Failed to save:", file.jsp.error.c_str());
     }
 }
 
 void Editor::saveAs(string fname) {
     file.fname = fname;
-    file.shortname = fname; // todo: trim
+    file.shortname = trimFilename(fname);
     save();
 }
 
-// View manip
+void Editor::import_frame(string fname) {
+    if (file.jsp.frames.size() == 0) return;
+    Bitmap bmp = file.jsp.frames[file.curSprite].bmp;
+    if (!bmp.load(fname.c_str())) {
+        dialog::error("Failed to import");
+    }
+    if (palette::reduceImage(bmp)) {
+        dialog::showMessage("The image's colors were adjusted", nullptr);
+    }
+    file.unsaved = true;
+    file.jsp.frames[file.curSprite].bmp = bmp;
+}
+
+void Editor::export_frame(string fname) {
+    if (file.jsp.frames.size() == 0) return;
+
+    if (fname.find('.') == string::npos) {
+        fname += ".png";
+    }
+
+    if (!file.jsp.frames[file.curSprite].bmp.save(fname.c_str())) {
+        dialog::error("Failed to export");
+    }
+}
+
+/****************************************************************/
+/* View manipulation */
 
 void Editor::move(int dir) {
     if (dir == -1) {
@@ -166,16 +219,19 @@ void Editor::shift(int dir) {
         if (file.curSprite > 0) {
             file.curSprite--;
             swap(file.jsp.frames[file.curSprite], file.jsp.frames[file.curSprite + 1]);
+            file.unsaved = true;
         }
     } else if (dir == 1) {
         if (file.curSprite < file.jsp.frames.size() - 1) {
             file.curSprite++;
             swap(file.jsp.frames[file.curSprite], file.jsp.frames[file.curSprite - 1]);
+            file.unsaved = true;
         }
     }
 }
 
-// Overrides
+/****************************************************************/
+/* Game loop overrides */
 
 void Editor::render() {
     Color lightbg(200, 200, 200), black(0, 0, 0);
@@ -203,7 +259,8 @@ void Editor::render() {
         gFont.draw(5, 35, black, file.shortname);
         gFont.drawf(5, 55, black, "Sprite count: %d", file.jsp.frames.size());
         gFont.drawf(90, 80, ALLEGRO_ALIGN_CENTER, black, "%d", file.curSprite);
-        gFont.drawf(5, 115, black, "Origin: (%d, %d)", current.ofsX, current.ofsY);
+        gFont.drawf(5, 105, black, "Size: (%d, %d)", current.bmp.getWidth(), current.bmp.getHeight());
+        gFont.drawf(5, 125, black, "Origin: (%d, %d)", current.ofsX, current.ofsY);
 
         //gIconFont.drawf(5, 145, black, "%s %s", FA::str(FAChar::check).cstr(), FA::str(FAChar::adjust).cstr());
     }
@@ -247,33 +304,46 @@ void Editor::handleEvent(Event event) {
 
     switch (event.getType()) {
     case ALLEGRO_EVENT_DISPLAY_CLOSE:
-        //running = !dialog::showOkCancel("Are you sure you want to exit?", false);
-        running = false;
+        if (file.unsaved) {
+            running = !dialog::showOkCancel("You have unsaved changes, do you want to quit anyways?", false);
+        } else {
+            running = false;
+        }
         break;
 
     case ALLEGRO_EVENT_KEY_CHAR:
         if (file.jsp.frames.size() == 0) break;
 
         int mods = event.getKeyboardModifiers();
+        bool ctrl = mods & ALLEGRO_KEYMOD_CTRL;
+        bool shift = mods & ALLEGRO_KEYMOD_SHIFT;
+
+        int move = 1;
+        if (shift) move = 10;
+
         switch (event.getKeyboardKeycode()) {
         case ALLEGRO_KEY_LEFT:
-            if (mods & ALLEGRO_KEYMOD_CTRL) {
-                file.jsp.frames[file.curSprite].ofsX++;
+            if (ctrl) {
+                file.jsp.frames[file.curSprite].ofsX += move;
+                file.unsaved = true;
             }
             break;
         case ALLEGRO_KEY_RIGHT:
-            if (mods & ALLEGRO_KEYMOD_CTRL) {
-                file.jsp.frames[file.curSprite].ofsX--;
+            if (ctrl) {
+                file.jsp.frames[file.curSprite].ofsX -= move;
+                file.unsaved = true;
             }
             break;
         case ALLEGRO_KEY_UP:
-            if (mods & ALLEGRO_KEYMOD_CTRL) {
-                file.jsp.frames[file.curSprite].ofsY++;
+            if (ctrl) {
+                file.jsp.frames[file.curSprite].ofsY += move;
+                file.unsaved = true;
             }
             break;
         case ALLEGRO_KEY_DOWN:
-            if (mods & ALLEGRO_KEYMOD_CTRL) {
-                file.jsp.frames[file.curSprite].ofsY--;
+            if (ctrl) {
+                file.jsp.frames[file.curSprite].ofsY -= move;
+                file.unsaved = true;
             }
             break;
         }
@@ -282,7 +352,6 @@ void Editor::handleEvent(Event event) {
 
 
 }
-
 
 /****************************************************************/
 /* Startup code */

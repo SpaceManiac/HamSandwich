@@ -36,6 +36,9 @@ static uint8_t pal[256][3] = {
 };
 
 Color palette::getColor(uint8_t index) {
+    if (index == 0) {
+        return Color(0, 0, 0, 0); // transparent
+    }
     return Color(pal[index][0], pal[index][1], pal[index][2]);
 }
 
@@ -47,5 +50,66 @@ uint8_t palette::getExact(Color color) {
             return i;
         }
     }
+    printf("Exactness test failed: %d,%d,%d,%d\n", color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
     return 0;
 }
+
+uint8_t palette::getNearest(Color color) {
+    if (color.getAlpha() < 128) return 0;
+
+    uint8_t r1 = color.getRed(), g1 = color.getGreen(), b1 = color.getBlue();
+
+    if (r1 == 0 && g1 == 0 && b1 == 0) return 0;
+
+    uint8_t best = 0;
+    double best_dist = 0;
+    for (int i = 1; i < 256; ++i) {
+        uint8_t r2 = pal[i][0], g2 = pal[i][1], b2 = pal[i][2];
+
+        double rmean = (r1 + r2) / 2.0;
+        double r = r1 - r2;
+        double g = g1 - g2;
+        int b = b1 - b2;
+        double weightR = 2 + rmean / 256.0;
+        double weightG = 4.0;
+        double weightB = 2 + (255 - rmean) / 256.0;
+        double dist = weightR * r * r + weightG * g * g + weightB * b * b;
+
+        if (dist < best_dist || best == 0) {
+            best = i;
+            best_dist = dist;
+        }
+        if (dist == 0) break;
+    }
+
+    return best;
+}
+
+bool palette::reduceImage(Bitmap image) {
+    bool result = false;
+    gfx::SetTarget target(image);
+    for (int y = 0; y < image.getHeight(); ++y) {
+        for (int x = 0; x < image.getWidth(); ++x) {
+            Color original = image.getPixel(x, y);
+            uint8_t index = getNearest(original);
+            Color actual = getColor(index);
+            if (original != actual) {
+                al_put_pixel(x, y, actual);
+                result = true;
+            }
+        }
+    }
+    return result;
+}
+
+
+
+
+
+
+
+
+
+
+
+
