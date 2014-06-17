@@ -316,10 +316,6 @@ byte LunaticRun(int *lastTime)
 			windingDown = 40;
 			windDownReason = LEVEL_WIN;
 			msgFromOtherModules = MSG_NONE;
-#ifdef DEMO
-			if (player.levelNum == 8)
-				SendMessageToGame(MSG_WINGAME, 0);
-#else
 			if (player.worldNum == 4 && player.levelNum == 6)
 			{
 
@@ -327,8 +323,6 @@ byte LunaticRun(int *lastTime)
 				SendMessageToGame(MSG_WINGAME, 0);
 			}
 			player.boredom = 0;
-#endif
-
 		}
 		else if (msgFromOtherModules == MSG_RESET)
 		{

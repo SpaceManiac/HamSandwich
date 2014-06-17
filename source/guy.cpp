@@ -1312,11 +1312,7 @@ void AddMapGuys(Map *map)
 	for (i = 0; i < MAX_MAPMONS; i++)
 		if (map->badguy[i].type)
 		{
-#ifndef DEMO
 			if (map->badguy[i].type >= NUM_MONSTERS)
-#else
-			if (map->badguy[i].type >= 20)
-#endif
 			{
 				MGL_fatalError("Illegal monster on level!");
 			}

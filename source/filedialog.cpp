@@ -12,20 +12,11 @@ long hFile;
 void InitFileDialog(void)
 {
 	int i;
-#ifndef DEMO	// this variable isn't needed by the shareware build
 	struct _finddata_t filedata;
-#endif
 	for (i = 0; i < MAX_FILES; i++)
 		fnames[i][0] = '\0';
 
 	numFiles = 0;
-
-#ifdef DEMO
-	// in the shareware version, file list is replaced by text
-	strcpy(fnames[0], "Sorry, the File Menu");
-	strcpy(fnames[1], "is not available in");
-	strcpy(fnames[2], "the demo version.");
-#else
 	hFile = _findfirst("worlds\\*.dlw", &filedata);
 
 	if (hFile != -1) // there's at least one
@@ -41,7 +32,6 @@ void InitFileDialog(void)
 				break;
 		}
 	}
-#endif
 }
 
 void ExitFileDialog(void)
@@ -158,20 +148,17 @@ byte FileDialogClick(int msx, int msy)
 		}
 
 
-#ifndef DEMO
 	// shareware version doesn't let you do this
 	if (msx > 102 && msx < 182 && msy > 358 && msy < 372) // More Files
 	{
 		FileDialogMoreFiles();
 		return 1;
 	}
-#endif
 	if (msx > 370 && msy > 92 && msx < 420 && msy < 92 + 14) // New
 	{
 		EditorNewWorld();
 		return 0;
 	}
-#ifndef DEMO
 	// no saving or loading either
 	if (msx > 370 && msy > 180 && msx < 420 && msy < 180 + 14) // Load
 	{
@@ -185,7 +172,6 @@ byte FileDialogClick(int msx, int msy)
 		EditorSaveWorld(fn);
 		return 0;
 	}
-#endif
 	if (msx > 370 && msy > 370 && msx < 420 && msy < 370 + 14) // Quit
 		return 0;
 

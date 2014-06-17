@@ -120,11 +120,7 @@ void EnemyPickerClick(void)
 
 	m = monsPage * 87 + 1;
 
-#ifdef DEMO
-	for (i = 1; i < 3; i++)
-#else
 	for (i = 1; i < NUM_MONSTERS; i++)
-#endif
 	{
 		// several monster types can't be added, since they are parts of bigger monsters
 		if (m != MONS_MATCLAW1 && m != MONS_MATCLAW2 && m != MONS_MATSKULL && m != MONS_MATBRAIN &&
@@ -964,11 +960,7 @@ void RenderEnemyPickDisplay(void)
 
 	m = monsPage * 87 + 1;
 
-#ifdef DEMO
-	for (i = 1; i < 3; i++) // limit the number of monsters selectable in shareware editor
-#else
 	for (i = 1; i < NUM_MONSTERS; i++)
-#endif
 	{
 		// several monster types can't be added, since they are parts of bigger monsters
 		if (m != MONS_MATCLAW1 && m != MONS_MATCLAW2 && m != MONS_MATSKULL && m != MONS_MATBRAIN &&

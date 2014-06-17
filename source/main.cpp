@@ -50,9 +50,6 @@ int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, 
 	{
 		switch (MainMenu(mainmgl)) {
 			case 255: // quit
-#ifdef DEMO
-				DemoSplashScreens(mainmgl);
-#endif
 				LunaticExit();
 				delete mainmgl;
 				return 0;
