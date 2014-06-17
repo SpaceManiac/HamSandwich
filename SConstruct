@@ -8,10 +8,10 @@ import re, platform
 
 LIBS = ['winmm', 'alleg44', 'ws2_32', 'logg', 'vorbisfile', 'vorbis', 'ogg', 'vorbisenc']
 
-git_describe = Popen(["git", "describe", "--always"], stdout=PIPE).communicate()[0][:-1]
-vfile = open('source/version.h', 'w')
-vfile.write('#define VERSION "%s"' % git_describe)
-vfile.close()
+#git_describe = Popen(["git", "describe", "--always"], stdout=PIPE).communicate()[0][:-1]
+#vfile = open('source/version.h', 'w')
+#vfile.write('#define VERSION "dev"' % git_describe)
+#vfile.close()
 
 def getFileList(dir, ext='.cpp'):
 	result = []
