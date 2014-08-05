@@ -46,7 +46,7 @@ static byte mapNum,mode;
 static world_t *world;
 
 static word flagNum[]={MAP_SNOWING,MAP_RAIN,MAP_HUB,MAP_SECRET,MAP_TORCHLIT,MAP_WELLLIT,
-				MAP_STARS,MAP_UNDERWATER,MAP_LAVA,MAP_STEALTH,MAP_WAVY};
+				MAP_STARS,MAP_UNDERWATER,MAP_LAVA,MAP_STEALTH,MAP_WAVY,MAP_OXYGEN};
 static char flagName[][16]={
 	"Snowing",
 	"Raining",
@@ -59,6 +59,7 @@ static char flagName[][16]={
 	"Underlava",
 	"Stealth",
 	"Wavy",
+	"Oxygen Meter",
 };
 
 static byte *mapZoom;

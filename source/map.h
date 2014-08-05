@@ -28,19 +28,20 @@
 #define MAP_SHOWITEMS (MAP_SHOWPICKUPS|MAP_SHOWOTHERITEMS)	// combine them in one
 
 // Map flags
-#define MAP_SNOWING		1
-#define MAP_RAIN		2
-#define MAP_HUB			4
-#define MAP_SECRET		8
-#define MAP_TORCHLIT	16
-#define MAP_WELLLIT		32
-#define MAP_STARS		64
-#define MAP_UNDERWATER	128
-#define MAP_LAVA		256
-#define MAP_STEALTH		512
-#define MAP_WAVY		1024
+#define MAP_SNOWING		(1<<0)
+#define MAP_RAIN		(1<<1)
+#define MAP_HUB			(1<<2)
+#define MAP_SECRET		(1<<3)
+#define MAP_TORCHLIT	(1<<4)
+#define MAP_WELLLIT		(1<<5)
+#define MAP_STARS		(1<<6)
+#define MAP_UNDERWATER	(1<<7)
+#define MAP_LAVA		(1<<8)
+#define MAP_STEALTH		(1<<9)
+#define MAP_WAVY		(1<<10)
+#define MAP_OXYGEN  (1<<11)
 
-#define NUM_LVL_FLAGS	11
+#define NUM_LVL_FLAGS	12
 
 // map updating modes
 #define UPDATE_GAME		0

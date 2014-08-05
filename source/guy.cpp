@@ -1172,7 +1172,7 @@ void UpdateGuys(Map *map,world_t *world)
 		}
 	}
 
-	if(map->flags&MAP_UNDERWATER)
+	if(map->flags&(MAP_UNDERWATER|MAP_OXYGEN))
 	{
 		if(player.oxygen)
 		{

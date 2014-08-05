@@ -667,7 +667,7 @@ void UpdateInterface(Map *map)
 		intf[INTF_VARBAR].ty-=7;
 	}
 
-	if(map->flags&MAP_UNDERWATER)
+	if(map->flags&(MAP_UNDERWATER|MAP_OXYGEN))
 	{
 		intf[INTF_OXYGEN].tx=165;
 		intf[INTF_OXYGEN].ty=-1;
