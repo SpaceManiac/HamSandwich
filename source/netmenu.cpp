@@ -57,6 +57,8 @@ static profButton_t btn[]={
 	{20,444,180,"Exit",BTN_EXIT},
 };
 
+#define SCORE_DOMAIN "hamumu.com"
+
 #ifdef ARCADETOWN
 #define NUM_NET_BTNS	4
 #else
@@ -304,7 +306,7 @@ void BeginUpload(void)
 	}
 	webInited=1;
 
-	if((err=Web_RequestData(GetDisplayMGL(),"hamumu.com",CreateUploadString(),&socketNum))!=IE_OK)
+	if((err=Web_RequestData(GetDisplayMGL(),SCORE_DOMAIN,CreateUploadString(),&socketNum))!=IE_OK)
 	{
 		NetError(err);
 		return;
@@ -315,7 +317,7 @@ void UploadMore()
 {
 	byte err;
 
-	if((err=Web_RequestData(GetDisplayMGL(),"hamumu.com",CreateUploadString(),&socketNum))!=IE_OK)
+	if((err=Web_RequestData(GetDisplayMGL(),SCORE_DOMAIN,CreateUploadString(),&socketNum))!=IE_OK)
 	{
 		NetError(err);
 		return;
@@ -336,7 +338,7 @@ void BeginNameCheck(void)
 	webInited=1;
 
 	sprintf(req,"/supreme_score/namecheck.php?name=%s",profile.name);
-	if((err=Web_RequestData(GetDisplayMGL(),"hamumu.com",req,&socketNum))!=IE_OK)
+	if((err=Web_RequestData(GetDisplayMGL(),SCORE_DOMAIN,req,&socketNum))!=IE_OK)
 	{
 		NetError(err);
 		return;
@@ -401,7 +403,7 @@ void BeginMOTDGet(void)
 	}
 	webInited=1;
 
-	if((err=Web_RequestData(GetDisplayMGL(),"hamumu.com","/supreme_score/supremenews.php",&socketNum))!=IE_OK)
+	if((err=Web_RequestData(GetDisplayMGL(),SCORE_DOMAIN,"/supreme_score/supremenews.php",&socketNum))!=IE_OK)
 	{
 		NetError(err);
 		return;
@@ -429,7 +431,7 @@ void BeginProfileUpload(void)
 
 	req=(char *)malloc(1024);
 	CreateProfileString(req);
-	if((err=Web_RequestData(GetDisplayMGL(),"hamumu.com",req,&socketNum))!=IE_OK)
+	if((err=Web_RequestData(GetDisplayMGL(),SCORE_DOMAIN,req,&socketNum))!=IE_OK)
 	{
 		NetError(err);
 		free(req);

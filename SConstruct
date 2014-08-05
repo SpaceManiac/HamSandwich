@@ -62,7 +62,7 @@ def program(name, debug, scanning=False):
     env.resource('source/lunatic.rc')
 
     qt.extend(env)
-    Alias(name, env.program())
+    Alias(name, [env.program(), env.install('game/')])
 
 # set things up
 program('lunatic', False)
