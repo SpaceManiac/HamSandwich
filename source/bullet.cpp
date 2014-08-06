@@ -2889,6 +2889,20 @@ int CountBullets(byte type)
 	return count;
 }
 
+int CountBulletsInRect(byte type,int x,int y,int x2,int y2)
+{
+	int count = 0;
+
+	for(int i=0;i<config.numBullets;i++) {
+		int tx = bullet[i].x / TILE_WIDTH / FIXAMT;
+		int ty = bullet[i].y / TILE_HEIGHT / FIXAMT;
+		if(bullet[i].type==type && tx>=x && ty>=y && tx<=x2 && ty<=y2)
+			++count;
+	}
+
+	return count;
+}
+
 void ChangeBullet(byte fx,int x,int y,int type,int newtype)
 {
 	for(int i=0;i<config.numBullets;i++)

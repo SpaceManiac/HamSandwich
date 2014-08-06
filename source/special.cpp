@@ -213,6 +213,10 @@ void DefaultTrigger(trigger_t *trig,int x,int y)
 		case TRG_EQUVAR:
 			trig->value=0;
 			break;
+		case TRG_BULLETRECT:
+			trig->value=BLT_HAMMER;
+			trig->value2=0;
+			break;
 	}
 }
 
@@ -1340,6 +1344,13 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 			else
 				answer=0;
 			break;
+		case TRG_BULLETRECT:
+			i=CountBulletsInRect(t->value,t->x,t->y,(t->value2%256),(t->value2/256));	// count how many of this type there are in the rect
+			if(i>0)
+				answer=1;
+			else
+				answer=0;
+			break;
 	}
 
 	if(t->flags&TF_NOT)
@@ -1955,6 +1966,13 @@ void AdjustSpecialCoords(special_t *me,int dx,int dy)
 				break;
 			case TRG_EQUATION:
 			case TRG_EQUVAR:
+				break;
+			case TRG_BULLETRECT:
+				me->trigger[i].x+=dx;
+				me->trigger[i].y+=dy;
+				x2=me->trigger[i].value2%256;
+				y2=me->trigger[i].value2/256;
+				me->trigger[i].value2=(x2+dx)+(y2+dy)*256;
 				break;
 		}
 	}

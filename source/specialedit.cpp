@@ -111,6 +111,7 @@ static char trigName[][16]={
 	"Monster Color",
 	"Equation",
 	"Var Equation",
+	"Bullet In Rect"
 };
 
 static char effName[][16]={
@@ -1335,22 +1336,44 @@ static void BulletClick(int id)
 
 static void Bullet1Click(int id)
 {
-	curEff=effStart+(id-ID_EFF0)/100;
-
-	if(rightClick)
+	if (id < ID_EFF0)
 	{
-		spcl.effect[curEff].value--;
-		if(spcl.effect[curEff].value<0)
-			spcl.effect[curEff].value=MAX_BULLETS-1;
+		effMode=0;
+		curTrig=trgStart + id/100-1;
+
+		if(rightClick)
+		{
+			spcl.trigger[curTrig].value--;
+			if(spcl.trigger[curTrig].value<0)
+				spcl.trigger[curTrig].value=MAX_BULLETS-1;
+		}
+		else
+		{
+			spcl.trigger[curTrig].value++;
+			if(spcl.trigger[curTrig].value>=MAX_BULLETS)
+				spcl.trigger[curTrig].value=0;
+		}
+		SetupTriggerButtons(curTrig-trgStart,(curTrig-trgStart)*38+30);
 	}
 	else
 	{
-		spcl.effect[curEff].value++;
-		if(spcl.effect[curEff].value>=MAX_BULLETS)
-			spcl.effect[curEff].value=0;
-	}
+		effMode=1;
+		curEff=effStart+(id-ID_EFF0)/100;
 
-	SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
+		if(rightClick)
+		{
+			spcl.effect[curEff].value--;
+			if(spcl.effect[curEff].value<0)
+				spcl.effect[curEff].value=MAX_BULLETS-1;
+		}
+		else
+		{
+			spcl.effect[curEff].value++;
+			if(spcl.effect[curEff].value>=MAX_BULLETS)
+				spcl.effect[curEff].value=0;
+		}
+		SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
+	}
 }
 
 static void SetupTriggerButtons(int t,int y)
@@ -1722,6 +1745,13 @@ static void SetupTriggerButtons(int t,int y)
 				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+4+100*t,0,396,y+17,80,14,"Or More",LessMoreClick);
 			else
 				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+4+100*t,0,396,y+17,80,14,"Exactly",LessMoreClick);
+			break;
+		case TRG_BULLETRECT:
+			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If any",NULL);
+			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,90,y+17,140,14,bulletName[trigger.value],Bullet1Click);
+			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+2+100*t,0,235,y+17,1,1,"are in the area: ",NULL);
+			sprintf(s,"(%d,%d)-(%d,%d)",trigger.x,trigger.y,((word)trigger.value2)%256,((word)trigger.value2)/256);
+			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+3+100*t,0,370,y+17,150,14,s,RectClick);
 			break;
 	}
 }

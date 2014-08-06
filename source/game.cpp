@@ -535,7 +535,7 @@ void LunaticDraw(void)
 
 		sprintf(s,"Mons %d",CountMonsters(MONS_ANYBODY));
 		PrintGlow(5,90,s,8,2);
-		sprintf(s,"Bul %d",config.numBullets - CountBullets(0)); // a little hackish but whatever
+		sprintf(s,"Bul %d",config.numBullets - CountBullets(BLT_NONE)); // a little hackish but whatever
 		PrintGlow(120,90,s,8,2);
 
 		int n = 0;

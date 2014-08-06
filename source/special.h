@@ -39,7 +39,8 @@
 #define TRG_MONSCOLOR	29	// true if monster of type N at X,Y has toColor M
 #define TRG_EQUATION	30	// true if N is EQUATION or less/more/exactly (equation is stored in corresponding effect slot!)
 #define TRG_EQUVAR		31	// true if var V1 is EQUATION or less/more/exactly (equation is stored in corresponding effect slot!)
-#define MAX_TRIGGER		32
+#define TRG_BULLETRECT  32  // true if there are any of bullet X in rect
+#define MAX_TRIGGER		33
 
 // effects
 #define EFF_NONE		0

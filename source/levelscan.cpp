@@ -295,6 +295,9 @@ void Scan_Trigger(world_t *world,Map *map,int num,trigger_t *me,char *effText)
 			fprintf(scanF,"If \"%s\" is var %s",effText,VarName(me->value));
 			PrintLessMore(me->flags);
 			break;
+		case TRG_BULLETRECT:
+			fprintf(scanF,"If any %s are in (%03d,%03d)-(%03d,%03d)",bulletName[me->value],me->x,me->y,((word)me->value2)%256,((word)me->value2)/256);
+			break;
 	}
 	if(me->flags&TF_AND)
 		fprintf(scanF," AND\n");
