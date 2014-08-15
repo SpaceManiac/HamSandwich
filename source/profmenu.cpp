@@ -160,7 +160,7 @@ void ScanProfiles(void)
 
 	while ((dp = readdir(dir)) != NULL)
 	{
-		if (strstr(dp->d_name, ".prf") >= 0)
+		if (strstr(dp->d_name, ".prf"))
 			InputProfile(dp->d_name);
 	}
 	closedir(dir);

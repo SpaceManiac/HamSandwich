@@ -244,7 +244,7 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 
 	if(!result)	// bumped a wall, see if that triggers a special
 	{
-		if(x!=me->lastBumpX || (y!=me->lastBumpY && me->type!=MONS_NOBODY))
+		if((x!=me->lastBumpX || y!=me->lastBumpY) && me->type!=MONS_NOBODY)
 			EventOccur(EVT_STEP,me->ID,x,y,me);
 		me->lastBumpX=x;
 		me->lastBumpY=y;
