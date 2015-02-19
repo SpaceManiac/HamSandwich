@@ -2422,7 +2422,7 @@ void AI_CrazyBone(Guy *me, Map *map, world_t *world, Guy *goodguy)
 
 void AI_Creepazoid(Guy *me, Map *map, world_t *world, Guy *goodguy)
 {
-	int x, y, i;
+	int i;
 
 	if (me->reload)
 		me->reload--;
@@ -2440,8 +2440,6 @@ void AI_Creepazoid(Guy *me, Map *map, world_t *world, Guy *goodguy)
 		if (me->seq == ANIM_ATTACK && (me->frm >= 5 && me->frm <= 8) && goodguy)
 		{
 			// spit stuff
-			x = me->x + Cosine(me->facing * 32)*8;
-			y = me->y + Sine(me->facing * 32)*8;
 			i = (me->facing * 32 + 256 - 16 + MGL_random(33))&255;
 			FireExactBullet(me->x, me->y, FIXAMT * 30, Cosine(i)*12, Sine(i)*12, 0, 0, 16, i, BLT_SPORE, me->friendly);
 			me->reload = 15;

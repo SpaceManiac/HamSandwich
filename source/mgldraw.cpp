@@ -26,17 +26,17 @@ FILE* AppdataOpen(const char* file, const char* mode)
 static char prevKey[KEY_MAX];
 static bool closeButtonPressed;
 
-void closeButtonCallback()
+static void closeButtonCallback()
 {
 	closeButtonPressed = true;
 }
 
-void switchInCallback()
+static void switchInCallback()
 {
 	SetGameIdle(0);
 }
 
-void switchOutCallback()
+static void switchOutCallback()
 {
 	SetGameIdle(1);
 }
@@ -96,22 +96,20 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool window)
 	this->xRes = xRes;
 	this->yRes = yRes;
 	this->pitch = xRes;
-	this->scrn = new byte[xRes * yRes];
-	buffer = create_bitmap(xRes, yRes);
+	scrn.reset(new byte[xRes * yRes]);
+	buffer.reset(create_bitmap(xRes, yRes));
 
 	mouseDown = 0;
 }
 
-MGLDraw::~MGLDraw(void)
+MGLDraw::~MGLDraw()
 {
 	JamulSoundExit();
-	destroy_bitmap(buffer);
-	delete[] scrn;
 }
 
-bool MGLDraw::Process(void)
+bool MGLDraw::Process()
 {
-	blit(buffer, screen, 0, 0, 0, 0, xRes, yRes);
+	blit(buffer.get(), screen, 0, 0, 0, 0, xRes, yRes);
 
 	while (keypressed())
 	{
@@ -143,12 +141,12 @@ bool MGLDraw::Process(void)
 	return (!readyToQuit);
 }
 
-HWND MGLDraw::GetHWnd(void)
+HWND MGLDraw::GetHWnd()
 {
 	return win_get_window();
 }
 
-void MGLDraw::Flip(void)
+void MGLDraw::Flip()
 {
 	if (GetGameIdle())
 		GameIdle();
@@ -157,32 +155,32 @@ void MGLDraw::Flip(void)
 	for (int i = 0; i < xRes * yRes; ++i)
 	{
 		palette_t c = pal[scrn[i]];
-		putpixel(buffer, i % xRes, i / xRes, makecol(c.red, c.green, c.blue));
+		putpixel(buffer.get(), i % xRes, i / xRes, makecol(c.red, c.green, c.blue));
 	}
 	Process();
 }
 
-void MGLDraw::ClearScreen(void)
+void MGLDraw::ClearScreen()
 {
-	memset(scrn, 0, xRes * yRes);
+	memset(scrn.get(), 0, xRes * yRes);
 }
 
-byte *MGLDraw::GetScreen(void)
+byte *MGLDraw::GetScreen()
 {
-	return scrn;
+	return scrn.get();
 }
 
-int MGLDraw::GetWidth(void)
+int MGLDraw::GetWidth()
 {
 	return pitch;
 }
 
-int MGLDraw::GetHeight(void)
+int MGLDraw::GetHeight()
 {
 	return yRes;
 }
 
-void MGLDraw::Quit(void)
+void MGLDraw::Quit()
 {
 	readyToQuit = true;
 }
@@ -192,7 +190,7 @@ struct palfile_t
 	char r, g, b;
 };
 
-bool MGLDraw::LoadPalette(char *name)
+bool MGLDraw::LoadPalette(const char *name)
 {
 	FILE *f;
 	palfile_t p[256];
@@ -220,7 +218,7 @@ bool MGLDraw::LoadPalette(char *name)
 	return true;
 }
 
-void MGLDraw::SetPalette(palette_t *pal2)
+void MGLDraw::SetPalette(const palette_t *pal2)
 {
 	memcpy(pal, pal2, sizeof (palette_t)*256);
 }
@@ -303,7 +301,7 @@ void MGLDraw::SetLastKey(char c)
 	lastKeyPressed = c;
 }
 
-char MGLDraw::LastKeyPressed(void)
+char MGLDraw::LastKeyPressed()
 {
 	char c = lastKeyPressed;
 	lastKeyPressed = 0;
@@ -315,7 +313,7 @@ void MGLDraw::SetMouseDown(byte w)
 	mouseDown = w;
 }
 
-byte MGLDraw::MouseDown(void)
+byte MGLDraw::MouseDown()
 {
 	return mouseDown;
 }
@@ -340,7 +338,7 @@ void MGLDraw::GetMouse(int *x, int *y)
 	*y = mousey;
 }
 
-char MGLDraw::LastKeyPeek(void)
+char MGLDraw::LastKeyPeek()
 {
 	return lastKeyPressed;
 }
@@ -383,7 +381,7 @@ bool MGLDraw::LoadBMP(const char *name)
 
 	for (i = 0; i < bmpIHead.biHeight; i++)
 	{
-		scr = scrn + (bmpIHead.biHeight - 1 - i) * pitch;
+		scr = &scrn[(bmpIHead.biHeight - 1 - i) * pitch];
 		fread(scr, 1, bmpIHead.biWidth, f);
 	}
 	fclose(f);

@@ -7,6 +7,7 @@
 #include "jamulsound.h"
 #include "control.h"
 #include <stdio.h>
+#include <memory>
 
 // For appdata storage of stuff
 FILE* AppdataOpen(const char* filename, const char* mode);
@@ -28,25 +29,25 @@ class MGLDraw
 {
 public:
 	MGLDraw(const char *name, int xRes, int yRes, bool window);
-	~MGLDraw(void);
+	~MGLDraw();
 
-	bool Process(void); // handle windows messages and such
+	bool Process(); // handle windows messages and such
 
-	HWND GetHWnd(void);
-	byte *GetScreen(void); // get a pointer to the screen memory
-	int GetWidth(void);
-	int GetHeight(void);
-	void ClearScreen(void);
-	void Flip(void);
-	void Quit(void);
+	HWND GetHWnd();
+	byte *GetScreen(); // get a pointer to the screen memory
+	int GetWidth();
+	int GetHeight();
+	void ClearScreen();
+	void Flip();
+	void Quit();
 
-	bool LoadPalette(char *name);
-	void SetPalette(palette_t *pal2);
+	bool LoadPalette(const char *name);
+	void SetPalette(const palette_t *pal2);
 
 	bool LoadBMP(const char *name);
 
-	char LastKeyPressed(void);
-	char LastKeyPeek(void);
+	char LastKeyPressed();
+	char LastKeyPeek();
 	void SetLastKey(char c);
 
 	void GammaCorrect(byte gamma);
@@ -56,17 +57,23 @@ public:
 	void FillBox(int x, int y, int x2, int y2, byte c);
 
 	// mouse functions
-	byte MouseDown(void);
+	byte MouseDown();
 	void SetMouseDown(byte w);
 	void SetMouse(int x, int y);
 	void TeleportMouse(int x, int y);
 	void GetMouse(int *x, int *y);
 
 protected:
+	struct bitmap_deleter {
+		void operator()(BITMAP* buffer) {
+			destroy_bitmap(buffer);
+		}
+	};
+
 	int xRes, yRes, pitch;
 	int mousex, mousey;
-	byte *scrn;
-	BITMAP* buffer;
+	std::unique_ptr<byte[]> scrn;
+	std::unique_ptr<BITMAP, bitmap_deleter> buffer;
 	palette_t pal[256];
 	bool readyToQuit;
 	char lastKeyPressed;

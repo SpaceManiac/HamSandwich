@@ -1073,11 +1073,9 @@ void RenderPickDisplay(void)
 void RenderTerrainEditor(void)
 {
 	int i, j;
-	byte selected;
 
 	editmgl->FillBox(0, 240, 639, 479, 0);
 
-	selected = 255;
 	for (i = 0; i < 20; i++)
 		for (j = 0; j < 10; j++)
 		{
@@ -1085,7 +1083,6 @@ void RenderTerrainEditor(void)
 					mouseY > j * TILE_HEIGHT - 1 && mouseY < j * TILE_HEIGHT + TILE_HEIGHT)
 			{
 				RenderFloorTile(i*TILE_WIDTH, j*TILE_HEIGHT, i + j * 20, 16);
-				selected = i + j * 20;
 			}
 			else
 				RenderFloorTileUnlit(i*TILE_WIDTH, j*TILE_HEIGHT, i + j * 20);

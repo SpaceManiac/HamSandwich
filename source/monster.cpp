@@ -5606,7 +5606,7 @@ void AI_MagicLamp(Guy *me, Map *map, world_t *world, Guy *goodguy)
 
 void AI_Cactus(Guy *me, Map *map, world_t *world, Guy *goodguy)
 {
-	int i, x, y;
+	int i;
 	byte b;
 
 	if (me->reload)
@@ -5637,8 +5637,6 @@ void AI_Cactus(Guy *me, Map *map, world_t *world, Guy *goodguy)
 
 				for (i = 0; i < 12; i++)
 				{
-					x = me->x + Cosine(b)*32;
-					y = me->y + Sine(b)*32;
 					FireBullet(me->x, me->y, b, BLT_SPINE, me->friendly);
 					b += 10;
 				}
