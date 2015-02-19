@@ -4,9 +4,9 @@
 #include "sound.h"
 #include "music.h"
 #include "ctype.h"
-#include "twister.h"
 #include "shlobj.h" // for SHGetFolderPath
 #include <stdio.h>
+#include <random>
 
 // Appdata shenanigans
 
@@ -40,23 +40,23 @@ void switchOutCallback()
 {
 	SetGameIdle(1);
 }
-MTRand mtRand;
 
 // Replacements for missing MGL functions
+std::mt19937_64 mersenne;
 
 int MGL_random(int max)
 {
-	return mtRand.randInt(max - 1);
+	return std::uniform_int_distribution<int>(0, max - 1)(mersenne);
 }
 
 void MGL_srand(int seed)
 {
-	mtRand.seed(seed);
+	mersenne.seed(seed);
 }
 
 long MGL_randoml(long max)
 {
-	return mtRand.randInt(max - 1);
+	return std::uniform_int_distribution<long>(0, max - 1)(mersenne);
 }
 
 void MGL_fatalError(const char* txt)

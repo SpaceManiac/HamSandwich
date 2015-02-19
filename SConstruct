@@ -31,7 +31,7 @@ def program(output, debug):
 		env.Append(LINKFLAGS = ['-O2', '-s'])
 
 	# linker
-	env.Append(LINKFLAGS = ['-static-libgcc', '-static-libstdc++', '-std=c++0x'])
+	env.Append(LINKFLAGS = ['-static-libgcc', '-static-libstdc++', '-std=c++11'])
 	env.Append(LIBPATH = ['include'])
 	env.Append(LIBS = LIBS)
 
