@@ -1238,8 +1238,7 @@ void SpecialTakeEffect(byte num, Map *map, special_t *spcl, Guy *victim)
 					map->special[sx].trigger = 0;
 			break;
 		case SPC_TOGGLEITEM:
-			if (spcl->effectX >= 0 && spcl->effectX < map->width && spcl->effectY >= 0 &&
-					spcl->effectY < map->height)
+			if (spcl->effectX < map->width && spcl->effectY < map->height)
 			{
 				sx = map->map[spcl->effectX + spcl->effectY * map->width].item;
 				map->map[spcl->effectX + spcl->effectY * map->width].item = spcl->value;

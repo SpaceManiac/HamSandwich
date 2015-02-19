@@ -561,7 +561,7 @@ void Guy::Update(Map *map, world_t *world)
 	if (oldmapx != mapx || oldmapy != mapy)
 		SpecialStepCheck(map, mapx, mapy, this);
 
-	if (mapx >= 0 && mapy >= 0 && mapx < map->width && mapy < map->height)
+	if (mapx < map->width && mapy < map->height)
 		bright = map->map[mapx + mapy * map->width].templight;
 	else
 		bright = -32;

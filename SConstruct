@@ -19,7 +19,7 @@ def program(output, debug):
 		env = Environment(ENV = os.environ)
 
 	# compiler
-	env.Append(CCFLAGS = ['-Wall', '-std=c++0x'])
+	env.Append(CCFLAGS = ['-Wall', '-Wextra', '-Wno-unused-parameter', '-std=c++0x'])
 	env.Append(CPPPATH = ['include'])
 	env.Append(CPPDEFINES = ['ALLEGRO_MINGW32', 'EXPANDO'])
 	if debug:

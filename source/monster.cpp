@@ -131,9 +131,9 @@ void AI_Creepazoid(Guy *me, Map *map, world_t *world, Guy *goodguy);
 
 // all the monster types
 
-monsterType_t monsType[NUM_MONSTERS] ={
+monsterType_t monsType[NUM_MONSTERS] = {
 	{"Null", 255, 255, 0,
-		0, 0, 0, 0, "", 0, 0, 0},
+		0, 0, 0, 0, "", 0, 0, 0, {{255}}},
 	{"Bouapha", 255, 255, 0,
 		11, 29, 128, 0, "graphics\\bouapha.jsp", 0, MF_WATERWALK, 0,
 		{
@@ -661,9 +661,8 @@ monsterType_t monsType[NUM_MONSTERS] ={
 			{7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 255}, // attack=smack
 			{20, 21, 22, 23, 24, 24, 24, 254, 24, 254, 24, 254, 24, 254, 24, 255}, // die
 		}},
-#ifndef EXPANDO
-};
-#else	// EXPANSION MONSTERS
+#ifdef EXPANDO
+	// EXPANSION MONSTERS
 	{"Mine Cart", 255, 255, 0,
 		11, 8, 100, 500, "expgraphics\\minecar.jsp", 0, MF_NOMOVE | MF_INVINCIBLE | MF_FREEWALK | MF_NOHIT, AI_MineCart,
 		{
@@ -1291,8 +1290,9 @@ monsterType_t monsType[NUM_MONSTERS] ={
 			{1, 2, 3, 2, 1, 0, 255}, // move
 			{4, 5, 6, 7, 8, 9, 10, 11, 12, 255}, // spit
 			{13, 14, 15, 16, 17, 18, 19, 255}, // die
-		}},};
+		}},
 #endif
+};
 
 void InitMonsters(void)
 {
