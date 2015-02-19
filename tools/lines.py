@@ -3,26 +3,18 @@
 # Counts lines of code
 # usage: 'python tools/lines.py'
 
-from glob import glob
-from sys import argv
-from os import path
-import os, re
+import os
+import re
 
 def getFileList(dir, ext):
-	result = []
-	for file in map(lambda(x): x.replace('\\', '/'), glob(dir + '/*')):
-		if path.isdir(file):
-			result += getFileList(file, ext)
-		else:
-			if file.find("old/") < 0 and file.endswith(ext):
-				result += [file]
-	return result
+	for dirpath, dirnames, filenames in os.walk(dir):
+		for name in filenames:
+			if 'old/' not in name and name.endswith(ext):
+				yield os.path.join(dirpath, name)
 
 commentRe = re.compile(r'/\*.*?\*/', re.DOTALL)
 
 def calculateStats(ext):
-	files = getFileList('source', '.' + ext)
-
 	lines = {
 		'comment': 0,
 		'blank': 0,
@@ -30,7 +22,9 @@ def calculateStats(ext):
 		'code': 0
 	}
 
-	for path in files:
+	size = 0
+	for path in getFileList('source', '.' + ext):
+		size += 1
 		f = file(path)
 		data = f.read()
 		f.close()
@@ -54,10 +48,9 @@ def calculateStats(ext):
 				t = 'code'
 			lines[t] += 1
 
-	print ext + ' files (' + str(len(files)) + '):'
+	print ext + ' files (' + str(size) + '):'
 	for key in lines:
 		print '  ' + key + ': ' + str(lines[key])
 
 calculateStats('cpp')
 calculateStats('h')
-

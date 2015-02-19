@@ -1,34 +1,22 @@
 # Dr. Lunatic SCons configuration script
 
-from glob import glob
-from sys import argv
-from os import path, environ
-from subprocess import Popen, PIPE
-import re, platform
+import os
+import platform
 
 LIBS = ['winmm', 'alleg44', 'ws2_32', 'logg', 'vorbisfile', 'vorbis', 'ogg', 'vorbisenc']
 
-#git_describe = Popen(["git", "describe", "--always"], stdout=PIPE).communicate()[0][:-1]
-#vfile = open('source/version.h', 'w')
-#vfile.write('#define VERSION "dev"' % git_describe)
-#vfile.close()
-
-def getFileList(dir, ext='.cpp'):
-	result = []
-	for file in map(lambda(x): x.replace('\\', '/'), glob(dir + '/*')):
-		if path.isdir(file):
-			result += getFileList(file, ext)
-		else:
-			if file.endswith(ext):
-				result.append(file)
-	return result
+def getFileList(dir, ext):
+	for dirpath, dirnames, filenames in os.walk(dir):
+		for name in filenames:
+			if 'old/' not in name and name.endswith(ext):
+				yield os.path.join(dirpath, name)
 
 def program(output, debug):
 	# if we're on Windows, force Mingw use
 	if platform.system() == 'Windows':
-		env = Environment(ENV = environ, tools = ['mingw'])
+		env = Environment(ENV = os.environ, tools = ['mingw'])
 	else:
-		env = Environment(ENV = environ)
+		env = Environment(ENV = os.environ)
 
 	# compiler
 	env.Append(CCFLAGS = ['-Wall', '-std=c++0x'])
@@ -49,14 +37,12 @@ def program(output, debug):
 
 	# output files
 	objects = []
-	sourceFiles = getFileList('source/')
-	for source in sourceFiles:
+	for source in getFileList('source/', '.cpp'):
 		object = 'build/' + output + '/' + source.replace('.cpp', '.o')
 		objects.append(env.Object(target=object, source=source))
 
 	# resources
-	resFiles = getFileList('source/', '.rc')
-	for source in resFiles:
+	for source in getFileList('source/', '.rc'):
 		object = 'build/' + output + '/' + source.replace('.rc', '.res')
 		objects.append(env.Command(object, source, 'windres ' + source + ' -O coff -o ' + object))
 

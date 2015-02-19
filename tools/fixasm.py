@@ -17,16 +17,16 @@ def fixLine(size, line):
 	spaces = size - len(line)
 	return '_(  ' + line + (' ' * spaces) + '  )' + comment + '\n'
 
-lines = []
 with open(filename) as f:
-	for line in f:
-		lines.append(line)
+    lines = f.readlines()
 
 size = 0
 for line in lines:
 	line = line.replace('\t', '    ').rstrip()
-	if line.find('//') >= 0: line = line[:line.find('//')].rstrip()
-	if len(line) > size: size = len(line)
+	if '//' in line:
+        line = line[:line.index('//')].rstrip()
+	if len(line) > size:
+        size = len(line)
 
 with open(filename, 'w') as f:
 	for line in lines:
