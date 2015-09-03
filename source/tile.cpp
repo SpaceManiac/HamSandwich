@@ -151,6 +151,7 @@ void SaveTilesToBMP(char *fname)
 {
 	char tmp[64];
 	int i,j;
+	BITMAP* bmp;
 
 	strcpy(tmp,fname);
 	for(i=0;i<(int)strlen(tmp);i++)
@@ -181,7 +182,9 @@ void SaveTilesToBMP(char *fname)
 		}
 
 	GetDisplayMGL()->Flip();
-	save_bmp(tmp,screen,GetDisplayMGL()->GetPalette());
+	bmp = create_bitmap(SCREEN_W, SCREEN_H);
+	blit(screen,bmp,0,0,0,0,SCREEN_W,SCREEN_H);
+	save_bmp(tmp,bmp,GetDisplayMGL()->GetPalette());
 
 	if(numTiles>400)
 	{
@@ -196,8 +199,10 @@ void SaveTilesToBMP(char *fname)
 			}
 
 		GetDisplayMGL()->Flip();
-		save_bmp(tmp,screen,GetDisplayMGL()->GetPalette());
+		blit(screen,bmp,0,0,0,0,SCREEN_W,SCREEN_H);
+		save_bmp(tmp,bmp,GetDisplayMGL()->GetPalette());
 	}
+	destroy_bitmap(bmp);
 	GetDisplayMGL()->ClearScreen();
 }
 
