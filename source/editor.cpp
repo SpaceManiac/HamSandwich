@@ -1072,7 +1072,8 @@ void EditorSelectMap(byte w)
 	AddMapGuys(editorMap);
 	if(goodguy)
 		PutCamera(goodguy->x,goodguy->y);
-	PutCamera(320<<FIXSHIFT,240<<FIXSHIFT);
+	else
+		PutCamera(320<<FIXSHIFT,240<<FIXSHIFT);
 	GetSpecialsFromMap(editorMap->special);
 }
 

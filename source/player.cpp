@@ -1983,5 +1983,6 @@ void PutPlayerAtStart(Guy *g)
 	{
 		g->x=(pStartX*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT;
 		g->y=(pStartY*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
+		PutCamera(g->x,g->y);
 	}
 }
