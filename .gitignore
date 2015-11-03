@@ -6,3 +6,5 @@ Thumbs.db
 /bin
 /.sconsign.dblite
 /Supreme.*
+/CMakeLists.txt.user*
+
