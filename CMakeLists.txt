@@ -24,7 +24,7 @@ add_definitions(-Wno-write-strings
 if(CMAKE_BUILD_TYPE MATCHES DEBUG)
     add_definitions(-D_DEBUG -DLOG -g)
 else()
-	add_definitions(-mwindows)
+	add_definitions(-mwindows -O3 -s)
 endif()
 # for scanninglunatic, add -DLEVELLIST
 

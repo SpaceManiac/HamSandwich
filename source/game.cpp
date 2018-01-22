@@ -83,6 +83,9 @@ void LunaticExit(void)
 
 byte VerifyLevel(Map *map)
 {
+#ifndef VERIFY_LEVELS
+	return 1;
+#else
 	dword chk,cmp;
 	FILE *f;
 
@@ -102,6 +105,7 @@ byte VerifyLevel(Map *map)
 	}
 	fclose(f);
 	return 0;
+#endif
 }
 
 byte InitLevel(byte map)
