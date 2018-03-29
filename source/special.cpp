@@ -86,7 +86,7 @@ int GetSpecial(byte x,byte y)
 
 special_t *GetSpecial(int i)
 {
-	return &spcl[i];
+	return (i >= 0 && i < numSpecials) ? &spcl[i] : NULL;
 }
 
 void DeleteSpecial(int i)
@@ -1591,12 +1591,14 @@ void SpecialEffect(special_t *me,Map *map)
 			case EFF_CHANGETEAM:
 				ChangeTeam(!(me->effect[i].flags&EF_NOFX),me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].value2);
 				break;
-			case EFF_DELETESPCL:
-				if(GetSpecial(GetSpecial(me->effect[i].x,me->effect[i].y)))
+			case EFF_DELETESPCL: {
+				special_t* other = GetSpecial(GetSpecial(me->effect[i].x,me->effect[i].y));
+				if(other)
 				{
-					GetSpecial(GetSpecial(me->effect[i].x,me->effect[i].y))->x=255;
+					other->x=255;
 				}
 				break;
+			}
 			case EFF_VAR:
 				if(!VarMath(me->effect[i].value,me->effect[i].text))
 					PauseGame();	// pause if there's an error in the equation
