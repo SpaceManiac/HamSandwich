@@ -83,7 +83,7 @@ void LunaticExit(void)
 
 byte VerifyLevel(Map *map)
 {
-#ifndef VERIFY_LEVELS
+#ifdef _DEBUG
 	return 1;
 #else
 	dword chk,cmp;
