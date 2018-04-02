@@ -140,7 +140,7 @@ void DefaultProfile(char *name);
 byte FirstTime(void);
 void EraseWorldProgress(char *fname);
 worldData_t *GetWorldProgress(char *fname);
-worldData_t *GetWorldProgressNoCreate(char *fname);
+worldData_t *GetWorldProgressNoCreate(const char *fname);
 levelData_t *GetLevelProgress(char *fname,byte levelNum);
 byte LevelsPassed(worldData_t *world);
 byte LevelIsPassed(worldData_t *world,byte level);

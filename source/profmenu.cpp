@@ -11,7 +11,7 @@
 #include "yesnodialog.h"
 #include "recordbook.h"
 #include "shop.h"
-#include <dirent.h>
+#include "lsdir.h"
 
 #define PBTN_HEIGHT	19
 
@@ -134,7 +134,7 @@ void SortProfiles(void)
 	}
 }
 
-void InputProfile(char *fname)
+void InputProfile(const char *fname)
 {
 	if(strlen(fname)>=PRFNAME_LEN)
 		return;	// won't add long names
@@ -148,22 +148,18 @@ void InputProfile(char *fname)
 
 void ScanProfiles(void)
 {
-	DIR* dir;
-	struct dirent *dp;
 	int i;
 
 	for(i=0;i<MAX_PROFS;i++)
 		fileList[i*PRFNAME_LEN]='\0';
 	numFiles=0;
 
-	dir = opendir("profiles");
-
-	while ((dp = readdir(dir)) != NULL)
+	lsdir ls("profiles");
+	while (const char* name = ls.next())
 	{
-		if (strstr(dp->d_name, ".prf"))
-			InputProfile(dp->d_name);
+		if (strstr(name, ".prf"))
+			InputProfile(name);
 	}
-	closedir(dir);
 	SortProfiles();
 
 	profChoice=0;

@@ -3,7 +3,7 @@
 #include "dialogbits.h"
 #include "viewdialog.h"
 #include <string.h>
-#include <dirent.h>
+#include "lsdir.h"
 
 #define MAX_FILES 18
 #define FILE_ALLOC_AMT	64
@@ -21,8 +21,6 @@ static byte exitCode;
 void ObtainFilenames(char *fileSpec)
 {
 	int i;
-	DIR* dir;
-	struct dirent *dp;
 
 	char *tmp;
 
@@ -53,20 +51,20 @@ void ObtainFilenames(char *fileSpec)
 	char dirname[64];
 	strncpy(dirname, fileSpec, secondPart-fileSpec-1);
 	dirname[secondPart-fileSpec-1] = '\0';
-	dir = opendir(dirname);
 
-	while((dp = readdir(dir)) != NULL)
+	lsdir ls(dirname);
+	while(const char* name = ls.next())
 	{
-		if(!strcmp(dp->d_name,".") || !strcmp(dp->d_name,".."))
+		if(!strcmp(name,".") || !strcmp(name,".."))
 			continue;
 
-		if((menuItems&FM_NOWAVS) && !strcmp(&dp->d_name[strlen(dp->d_name)-3],"wav"))
+		if((menuItems&FM_NOWAVS) && !strcmp(&name[strlen(name)-3],"wav"))
 			continue;	// ignore wavs
 
-		if(filter && !strstr(dp->d_name, filter))
+		if(filter && !strstr(name, filter))
 			continue;
 
-		strncpy(&fnames[numFiles*FNAMELEN],dp->d_name,FNAMELEN);
+		strncpy(&fnames[numFiles*FNAMELEN],name,FNAMELEN);
 		numFiles++;
 
 		if(numFiles==numAlloc)
@@ -76,7 +74,6 @@ void ObtainFilenames(char *fileSpec)
 			if(tmp==NULL)
 			{
 				free(fnames);
-				closedir(dir);
 				FatalError("Out of memory!");
 				return;
 			}
@@ -86,7 +83,6 @@ void ObtainFilenames(char *fileSpec)
 				fnames[i*FNAMELEN]='\0';
 		}
 	}
-	closedir(dir);
 }
 
 void InitFileDialog(char *fileSpec,byte menuItemsToShow,char *defaultName)

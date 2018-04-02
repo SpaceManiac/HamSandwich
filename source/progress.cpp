@@ -382,7 +382,7 @@ worldData_t *GetWorldProgress(char *fname)
 	return &profile.progress.world[profile.progress.num_worlds-1];
 }
 
-worldData_t *GetWorldProgressNoCreate(char *fname)
+worldData_t *GetWorldProgressNoCreate(const char *fname)
 {
 	int i;
 

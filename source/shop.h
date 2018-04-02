@@ -79,7 +79,7 @@ typedef struct shopItem_t
 
 class Map;
 
-byte CanPlayWorld(char *fname);
+byte CanPlayWorld(const char *fname);
 byte ItemPurchased(byte type,byte num);
 byte AllOfTypePurchased(byte type);
 byte AllPurchased(void);

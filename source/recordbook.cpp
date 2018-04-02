@@ -12,7 +12,7 @@
 #include "goal.h"
 #include "shop.h"
 #include "scanner.h"
-#include <dirent.h>
+#include "lsdir.h"
 
 #define PBTN_HEIGHT	19
 
@@ -25,32 +25,28 @@ static float shopPct,playPct,scanPct,gamePct;
 
 float CalcPlayPercent(void)
 {
-	DIR* dir;
-	struct dirent *dp;
 	int worlds;
 	float score;
 	worldData_t *tmp;
 
 	worlds=0;
 
-	dir = opendir("worlds");
-
 	score=0.0f;
-	while((dp = readdir(dir)) != NULL)
+	lsdir ls("worlds");
+	while(const char* name = ls.next())
 	{
 		// rule out the backup worlds, so they don't show up
-		if((strcmp(dp->d_name,"backup_load.dlw")) &&
-		   (strcmp(dp->d_name,"backup_exit.dlw")) &&
-		   (strcmp(dp->d_name,"backup_save.dlw")) &&
-		   strstr(dp->d_name, ".dlw"))
+		if((strcmp(name,"backup_load.dlw")) &&
+		   (strcmp(name,"backup_exit.dlw")) &&
+		   (strcmp(name,"backup_save.dlw")) &&
+		   strstr(name, ".dlw"))
 		{
-			tmp=GetWorldProgressNoCreate(dp->d_name);
+			tmp=GetWorldProgressNoCreate(name);
 			if(tmp)
 				score+=tmp->percentage;
 			worlds++;
 		}
 	}
-	closedir(dir);
 
 	return (score/(float)worlds);
 }

@@ -6,7 +6,7 @@
 #include "dialogbits.h"
 #include "shop.h"
 #include "hiscore.h"
-#include <dirent.h>
+#include "lsdir.h"
 
 #define WS_CONTINUE	0
 #define WS_EXIT		1
@@ -181,7 +181,7 @@ void SortWorlds(byte field,byte backwards)
 	}
 }
 
-void InputWorld(char *fname)
+void InputWorld(const char *fname)
 {
 	char fullname[64];
 	worldData_t *w;
@@ -231,8 +231,6 @@ void InputWorld(char *fname)
 
 void ScanWorlds(void)
 {
-	DIR* dir;
-	struct dirent* dp;
 	int count,done;
 
 #ifdef LEVELLIST
@@ -244,30 +242,29 @@ void ScanWorlds(void)
 	// count up how many there are to deal with
 	count=0;
 
-	dir = opendir("worlds");
-	while ((dp = readdir(dir)) != NULL)
+	lsdir ls("worlds");
+	while (const char* name = ls.next())
 	{
 		// rule out the backup worlds, so they don't show up
-		if((strcmp(dp->d_name,"backup_load.dlw")) &&
-		   (strcmp(dp->d_name,"backup_exit.dlw")) &&
-		   (strcmp(dp->d_name,"backup_save.dlw")) &&
-			strstr(dp->d_name, ".dlw"))
+		if((strcmp(name,"backup_load.dlw")) &&
+		   (strcmp(name,"backup_exit.dlw")) &&
+		   (strcmp(name,"backup_save.dlw")) &&
+			strstr(name, ".dlw"))
 			count++;
 	}
-	closedir(dir);
 
 	done=0;
 
-	dir = opendir("worlds");
-	while ((dp = readdir(dir)) != NULL)
+	lsdir ls2("worlds");
+	while (const char* name = ls2.next())
 	{
 		// rule out the backup worlds, so they don't show up
-		if((strcmp(dp->d_name,"backup_load.dlw")) &&
-		   (strcmp(dp->d_name,"backup_exit.dlw")) &&
-		   (strcmp(dp->d_name,"backup_save.dlw")) &&
-			strstr(dp->d_name, ".dlw"))
+		if((strcmp(name,"backup_load.dlw")) &&
+		   (strcmp(name,"backup_exit.dlw")) &&
+		   (strcmp(name,"backup_save.dlw")) &&
+			strstr(name, ".dlw"))
 		{
-			InputWorld(dp->d_name);
+			InputWorld(name);
 			done++;
 #ifndef WTG
 			GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450,32*1+16);
@@ -275,7 +272,6 @@ void ScanWorlds(void)
 #endif
 		}
 	}
-	closedir(dir);
 #ifdef LEVELLIST
 	fclose(levelF);
 	fclose(level2F);

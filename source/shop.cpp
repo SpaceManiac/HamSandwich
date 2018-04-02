@@ -796,7 +796,7 @@ static byte itemCoords[]={
 
 static byte modeToToggle;
 
-byte CanPlayWorld(char *fname)
+byte CanPlayWorld(const char *fname)
 {
 	int i;
 
