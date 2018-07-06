@@ -54,7 +54,7 @@ class MGLDraw
 		void RealizePalette(void);
 
 		bool LoadBMP(char *name);
-		bool LoadBMPNoPalette(char *name);
+		bool LoadBMP(char *name, PALETTE pal);
 
 		int  LastRawCode(void);
 		char LastKeyPressed(void);

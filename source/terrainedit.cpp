@@ -491,7 +491,7 @@ void InitBMPPick(void)
 	bmpScr=new byte[640*480];
 	if(!bmpScr)
 		FatalError("Out of memory!");
-	if(!GetDisplayMGL()->LoadBMPNoPalette(tmpName))
+	if(!GetDisplayMGL()->LoadBMP(tmpName, NULL))
 	{
 		mode=TMODE_NORMAL;
 		MakeNormalSound(SND_WALLDOWN);

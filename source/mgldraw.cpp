@@ -708,6 +708,11 @@ char MGLDraw::LastKeyPeek(void)
 
 bool MGLDraw::LoadBMP(char *name)
 {
+	return LoadBMP(name, pal);
+}
+
+bool MGLDraw::LoadBMP(char *name, PALETTE pal)
+{
 	BITMAP *b;
 	RGB newpal[256];
 	int i,w;
@@ -720,12 +725,13 @@ bool MGLDraw::LoadBMP(char *name)
 	if(b==NULL)
 		return FALSE;
 
-	for(i=0;i<256;i++)
-	{
-		pal[i].r=newpal[i].r;
-		pal[i].g=newpal[i].g;
-		pal[i].b=newpal[i].b;
-	}
+	if(pal)
+		for(i=0;i<256;i++)
+		{
+			pal[i].r=newpal[i].r;
+			pal[i].g=newpal[i].g;
+			pal[i].b=newpal[i].b;
+		}
 	RealizePalette();
 
 	w=b->w;
@@ -738,29 +744,6 @@ bool MGLDraw::LoadBMP(char *name)
 			memcpy(&scrn[i*pitch],b->line[i],w);
 	}
 
-	destroy_bitmap(b);
-	return TRUE;
-}
-
-bool MGLDraw::LoadBMPNoPalette(char *name)
-{
-	BITMAP *b;
-	RGB newpal[256];
-	int i,w;
-
-	b=load_bitmap(name,newpal);
-	if(b==NULL)
-		return FALSE;
-
-	w=b->w;
-	if(w>SCRWID)
-		w=SCRWID;
-
-	for(i=0;i<b->h;i++)
-	{
-		if(i<SCRHEI)
-			memcpy(&scrn[i*pitch],b->line[i],w);
-	}
 	destroy_bitmap(b);
 	return TRUE;
 }
