@@ -46,6 +46,9 @@ if [ -z $PROJECT ]; then
 	show_help; exit 1
 fi
 
+# Ensure all dependencies are installed
+./tools/build/install-deps.sh
+
 # Ensure the project's build is up to date
 make $PROJECT config=$CONFIG
 
@@ -56,6 +59,7 @@ if [ ! -d "$GAMEDIR" ]; then
 fi
 
 # Run the project
+PATH="$PWD/build/allegro/bin:$PATH"
 EXE="$PWD/build/gcc-$CONFIG/$PROJECT/$PROJECT"
 cd "$GAMEDIR"
 if [ $USE_GDB ]; then

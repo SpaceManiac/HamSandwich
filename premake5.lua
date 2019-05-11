@@ -11,8 +11,8 @@ function allegro_project(name)
 		targetdir("build/%{cfg.toolset}-%{cfg.buildcfg}/" .. name .. "/")
 		objdir("build/%{cfg.toolset}-%{cfg.buildcfg}/" .. name .. "/obj/")
 
-		includedirs { "include/" }
-		libdirs { "include/" }
+		includedirs { "build/allegro/include/" }
+		libdirs { "build/allegro/lib/" }
 		linkoptions { "-static-libgcc", "-static-libstdc++" }
 
 		files {
@@ -30,10 +30,7 @@ function allegro_project(name)
 			optimize "On"
 
 		filter "system:Windows"
-			links { "winmm", "alleg44", "ws2_32", "logg", "vorbisfile", "vorbis", "ogg", "vorbisenc" }
-
-		filter { "system:Windows", "toolset:gcc" }
-			defines { "ALLEGRO_MINGW32" }
+			links { "winmm", "allegro-4.4.2-monolith-mt", "ws2_32", "logg-1.0-mt", "vorbisfile", "vorbis", "ogg", "vorbisenc" }
 
 		filter {}
 end
