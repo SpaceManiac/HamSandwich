@@ -1,0 +1,73 @@
+#!/bin/bash
+# ./run - build then run a project in the appropriate directory
+set -euo pipefail
+
+show_help() {
+	echo "Usage: $0 <project> [--release] [--gdb] [--fullscreen]"
+	echo "Available projects:"
+	echo "    lunatic"
+	echo "    supreme"
+	echo "    sleepless"
+}
+
+# Default settings
+USE_GDB=
+PROJECT=
+CONFIG=debug
+ARGS=window
+
+# Read command-line arguments
+while [ $# -ne 0 ]; do
+	ARG="$1"; shift
+	case "$ARG" in
+		"--fullscreen")
+			ARGS=
+			;;
+		"--release")
+			CONFIG=release
+			;;
+		"--gdb")
+			USE_GDB=ON
+			;;
+		-*)
+			show_help; exit 1
+			;;
+		*)
+			if [ $PROJECT ]; then
+				# Exit if two projects were specified
+				show_help; exit 1
+			fi
+			PROJECT=$ARG
+			;;
+	esac
+done
+if [ -z $PROJECT ]; then
+	# Exit if no project was specified
+	show_help; exit 1
+fi
+
+# Ensure the project's build is up to date
+make $PROJECT config=$CONFIG
+
+# Ensure the project's assets exist
+GAMEDIR="build/game/$PROJECT"
+if [ ! -d "$GAMEDIR" ]; then
+	./tools/build/extract-assets.sh "$PROJECT"
+fi
+
+# Run the project
+EXE="$PWD/build/gcc-$CONFIG/$PROJECT/$PROJECT"
+cd "$GAMEDIR"
+if [ $USE_GDB ]; then
+	echo "==== Debugging $PROJECT ($CONFIG) ===="
+	gdb -q -ex='set confirm on' -ex=run -ex=quit --args "$EXE" $ARGS
+else
+	echo "==== Running $PROJECT ($CONFIG) ===="
+	handle_missing_dlls() {
+		if grep -q 'error while loading shared libraries' stderr.log; then
+			echo "Missing DLLs:"
+			ntldd "$EXE" | grep "not found"
+		fi
+	}
+	("$EXE" $ARGS) 2> >(tee stderr.log >&2) || handle_missing_dlls
+fi
