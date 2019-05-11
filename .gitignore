@@ -1,0 +1,7 @@
+# top-level folders
+/build
+
+# file types
+*.pyc
+~$*.*
+Thumbs.db
