@@ -104,7 +104,7 @@ static monsnotes_t notes[] = {
 	 "Sleepless Hollow. The lengthiest of these is Supreme, followed closely "
 	 "by the original Dr. Lunatic."},
 	{MONS_POLTERGUY,
-	 "A throwback to Polterguy from Dr. Lunatic, Sir Spookley Hauntmore (oft "
+	 "A throwback to Polterguy from Loonyland, Sir Spookley Hauntmore (oft "
 	 "misnamed by way of extra Ss) is the Underhollow boss that requires the "
 	 "Planetsmasher. He moves between worlds when he's damaged too much and "
 	 "you have to switch sides to keep fighting him."},
@@ -121,7 +121,7 @@ static monsnotes_t notes[] = {
 	 "you've already proven yourself by beating all six of the Underhollow "
 	 "bosses."},
 	{MONS_PUMPKINFLY2,
-	 "The Horseradish releases these fuys to pester you. They do burn down "
+	 "The Horseradish releases these guys to pester you. They do burn down "
 	 "the trees in the way of where the head is kept, so at least that's "
 	 "helpful."},
 	{MONS_SKULL,
