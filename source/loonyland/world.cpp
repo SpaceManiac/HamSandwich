@@ -1,14 +1,15 @@
 #include "world.h"
 #include "player.h"
+#include "editor.h"
 
 byte NewWorld(world_t *world,MGLDraw *mgl)
 {
 	int i;
 
 	world->numMaps=1;
-	mgl->LoadBMP("graphics\\forestTiles.bmp");
-	SetTiles(mgl->GetScreen(),0);
-	SetTiles(mgl->GetScreen(),1);
+	EditorLoadTiles("graphics/Tiles1.bmp", 0);
+	EditorLoadTiles("graphics/tiles2.bmp", 1);
+	EditorLoadTiles("graphics/Tiles3.bmp", 2);
 
 	// reset all the terrain
 	memset(world->terrain,0,sizeof(terrain_t)*NUMTILES);
