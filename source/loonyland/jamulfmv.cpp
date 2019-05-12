@@ -1,5 +1,10 @@
 #include "jamulfmv.h"
 
+void FLI_play(char *name,byte loop,word wait,MGLDraw *mgl,FlicCallBack callback)
+{
+}
+
+#if 0  // TODO
 // different kinds of flic chunks
 #define FLI_COLOR		11
 #define FLI_LC			12
@@ -412,3 +417,4 @@ word FLI_numFrames(char *name)
 	return FLI_hdr.frames;
 }
 
+#endif

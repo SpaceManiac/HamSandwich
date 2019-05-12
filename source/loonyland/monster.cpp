@@ -1147,7 +1147,7 @@ void LoadMonsterSprite(byte type)
 			{
 				monsType[t].spr=new sprite_set_t(monsType[t].sprName);
 				if(monsType[t].spr==NULL)
-					MGL_fatalError("Out of memory!");
+					FatalError("Out of memory!");
 			}
 			monsType[type].spr=monsType[t].spr;
 		}
@@ -1155,7 +1155,7 @@ void LoadMonsterSprite(byte type)
 		{
 			monsType[type].spr=new sprite_set_t(monsType[type].sprName);
 			if(monsType[type].spr==NULL)
-				MGL_fatalError("Out of memory!");
+				FatalError("Out of memory!");
 		}
 	}
 	end=timeGetTime();

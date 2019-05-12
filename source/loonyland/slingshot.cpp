@@ -196,14 +196,14 @@ void PlayerControlSlingShot(Guy *me,mapTile_t *mapTile,world_t *world)
 		}
 	}
 
-	MS_getPos(&mx,&my);
+	GetDisplayMGL()->GetMouse(&mx, &my);
 	GetCamera(&cx,&cy);
-	if(player.reload==0 && GetDisplayMGL()->MouseDown(0))
+	if(player.reload==0 && GetDisplayMGL()->MouseDown())
 	{
 		player.reload=10;
 		FireBullet((mx+cx-320)<<FIXSHIFT,(my+cy-240)<<FIXSHIFT,0,BLT_SLINGPOW);
 	}
-	if(player.wpnReload==0 && GetDisplayMGL()->MouseDown(1))
+	if(player.wpnReload==0 && GetDisplayMGL()->RMouseDown())
 	{
 
 	}

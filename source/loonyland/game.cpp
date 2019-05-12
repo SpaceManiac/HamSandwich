@@ -54,7 +54,7 @@ void LunaticInit(MGLDraw *mgl)
 	InitMonsters();
 
 	mgl->SetLastKey(0);
-	MGL_srand(timeGetTime());
+	SeedRNG();
 	InitControls();
 	InitPlayer(INIT_GAME,0,0);
 	msgFromOtherModules=0;

@@ -388,7 +388,7 @@ void InitEndGame(void)
 				strcpy(stat[4].xtra,"(failed)");
 			}
 			break;
-	case WORLD_BOSSBASH:
+		case WORLD_BOSSBASH:
 			DBG("BB-Setup");
 			numStats=3;
 			// time

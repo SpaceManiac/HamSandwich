@@ -17,20 +17,7 @@
 bool windowedGame=FALSE;
 MGLDraw *mainmgl;
 
-void parseCmdLine(char *cmdLine)
-{
-	char *token;
-
-	token=strtok(cmdLine," ");
-	while(token!=NULL)
-	{
-		if(!strcmp(token,"window"))
-			windowedGame=TRUE;
-		token=strtok(NULL," ");
-	}
-}
-
-int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR cmdLine,int nCmdShow)
+int main(int argc, char *argv[])
 {
 
 #ifndef NDEBUG
@@ -44,9 +31,16 @@ _CrtSetDbgFlag(flag); // Set flag to the new value
 #endif
 
 	DBG("a");
-	parseCmdLine(cmdLine);
+
+	bool windowedGame=FALSE;
+	for (int i = 1; i < argc; ++i)
+	{
+		if (!strcmp(argv[i], "window"))
+			windowedGame=TRUE;
+	}
+
 	DBG("b");
-	mainmgl=new MGLDraw("Loonyland",SCRWID,SCRHEI,8,windowedGame,hInstance);
+	mainmgl=new MGLDraw("Loonyland",SCRWID,SCRHEI,8,windowedGame);
 	DBG("c");
 	if(!mainmgl)
 		return 0;

@@ -1,20 +1,18 @@
 /* MGLDraw
 
-   A moderately cute little wrapper around MGL.
-
-   For quick reference, to use MGL in a program, you must:
-
-   link in gm.lib and mglfx.lib as the first two things in the list of things to link in.
-   also add in the project options thing under that: /nodefaultlib:libc.lib
-     to avoid a dumb warning.
+  hacked all to hell to be in SDL2 instead.
 
 */
 
 #ifndef MGLDRAW_H
 #define MGLDRAW_H
 
-#include "winpch.h"
-#include "gm\gm.h"
+#include <SDL2/SDL.h>
+#ifdef WIN32
+#include <windows.h>
+#endif
+#include <stdio.h>
+#include "jamultypes.h"
 #include "jamulsound.h"
 #include "control.h"
 #include "debuggo.h"
@@ -22,43 +20,72 @@
 #define SCRWID	640
 #define SCRHEI  480
 
+// -- SDL adapters
+struct RGB
+{
+	unsigned char r, g, b, a;
+};
+
+#define PAL_SIZE	256
+
+typedef RGB PALETTE[PAL_SIZE];
+
+extern int KEY_MAX;
+extern const Uint8* key;
+// -- End SDL adapters
+
+// if I'm not mistaken, this number is NOT used by windows as a window event
+#define INTERNET_EVENT	(WM_USER+1)
+
+#define MAX_RUNS	(3)
+
 class MGLDraw
 {
 	public:
-		MGLDraw(char *name,int xRes,int yRes,int bpp,bool window,HINSTANCE hInst);
+		MGLDraw(char *name,int xRes,int yRes,int bpp,bool window);
 		~MGLDraw(void);
-
-		void FatalError(char *msg);
 
 		bool Process(void);	// handle windows messages and such
 
-		HWND GetHWnd(void);
-		MGLDC *GetDC(void);
 		byte *GetScreen(void); // get a pointer to the screen memory
 		int GetWidth(void);
 		int GetHeight(void);
 		void ClearScreen(void);
-		void Flip(void);
 		void Quit(void);
 
+		void StartFlip(void);
+		void FinishFlip(void);
+		void Flip(void);
+		void WaterFlip(int v);
+		void TeensyFlip(void);
+		void TeensyWaterFlip(int v);
+		void RasterFlip(void);
+		void RasterWaterFlip(int v);
+
 		bool LoadPalette(char *name);
-		void SetPalette(palette_t *pal2);
+		void SetPalette(PALETTE pal2);
+		RGB *GetPalette(void);
+
 		void RealizePalette(void);
 		void DarkPalette(void);
 		void CyclePalette(void);
 		void GreyPalette(void);
 
 		bool LoadBMP(char *name);
+		bool LoadBMP(char *name, PALETTE pal);
 
-		char LastKeyPressed(void);
+		int LastKeyPressed(void);
 		char LastKeyPeek(void);
 		void SetLastKey(char c);
+		void ClearKeys(void);
 
-		void GammaCorrect(byte gamma);
+		void WaterPalette(byte b);
 
 		// handy little drawing routines
 		void Box(int x,int y,int x2,int y2,byte c);
 		void FillBox(int x,int y,int x2,int y2,byte c);
+		void SelectLineH(int x,int x2,int y,byte ofs);
+		void SelectLineV(int x,int y,int y2,byte ofs);
 
 		// functions to measure frame rate
 		void ResetTimer(void);
@@ -66,33 +93,54 @@ class MGLDraw
 		float FrameRate(void);
 
 		// mouse functions
-		byte MouseDown(byte w);
+		byte MouseDown();
+		byte RMouseDown();
+		byte MouseTap();
+		byte RMouseTap();
 		void SetMouseDown(byte w);
 		void SetRMouseDown(byte w);
+		void GetMouse(int *x,int *y);
+		void SetMouse(int x,int y);
 
-	protected:
+		int FormatPixel(int x,int y);
+		void PseudoCopy(int x,int y,byte* data,int len);
+
+		void ResetGM(void);
+
+#ifdef WIN32
+		HWND GetHWnd(void);
+#endif
+
 		int xRes,yRes,bpp,pitch;
-		byte *scrn;
-		GMDC *gm;
-		palette_t pal[256];
+		byte windowed;
 		bool readyToQuit;
+		byte tapTrack;
+
+		int mouse_x, mouse_y, mouse_z, mouse_b;
+	protected:
+
+		byte *scrn;
+		PALETTE pal, pal2, *thePal;
 		dword elapsedTime;
 		dword now;
 		int numFrames;
 		char lastKeyPressed;
+		int lastRawCode;
 		byte mouseDown,rMouseDown;
+
+		SDL_Window *window;
+		SDL_Renderer *renderer;
+		SDL_Texture *texture;
+
+		int *buffer;
 };
 
-// ignore these functions.  They are only outside of the protected portion of the MGLDraw
-// class because I don't know how to make a function pointer point to a member function.
-int ASMAPI MGLDraw_Suspend(MGLDC *dc,int flags);
-void MGLDraw_Activate(int active);
-void MGLDraw_SwitchModes(GM_modeInfo *mode,int windowed);
-long FAR PASCAL MGLDraw_EventHandler(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-HWND MGLGetHWnd(void);	// augh.
+extern MGLDraw *_globalMGLDraw;
 
-// put this in because the MGL random function gets stuck in streaks a LOTTTTTTTTT
 void SeedRNG(void);
 dword Random(dword range);
+void FatalError(char *msg);
+
+void FatalErrorQuit(void);
 
 #endif

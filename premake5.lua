@@ -113,3 +113,6 @@ sdl2_project "sleepless"
 		"tally.cpp",
 		"worldselect.cpp",
 	})
+
+sdl2_project "loonyland"
+	buildoptions { "-Wno-write-strings" }

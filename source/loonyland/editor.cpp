@@ -25,6 +25,9 @@ static char pwrUpTxt3[128];
 
 static MGLDraw *editmgl;
 
+// error: 'curMap' was declared 'extern' and later 'static'
+#define curMap editorMap
+
 static world_t	world;
 static Map		*curMap;
 static byte		curMapNum;
@@ -57,7 +60,7 @@ byte InitEditor(void)
 
 	mouseX=320;
 	mouseY=240;
-	MS_moveTo(320,240);
+	editmgl->SetMouse(320, 240);
 	PutCamera(0,0);
 	gameStartTime=timeGetTime();
 	InitGuys(MAX_MAPMONS);
@@ -644,8 +647,8 @@ void UpdateMouse(void)
 	int msx,msy;
 	int cx,cy;
 
-	MS_getPos(&msx,&msy);
-	MS_moveTo(320,240);
+	editmgl->GetMouse(&msx, &msy);
+	editmgl->SetMouse(320, 240);
 
 	mouseX+=(msx-320);
 	mouseY+=(msy-240);
@@ -673,7 +676,7 @@ void UpdateMouse(void)
 	else
 		tileY=tileY/TILE_HEIGHT;
 
-	if(editmgl->MouseDown(0))
+	if(editmgl->MouseDown())
 	{
 		if(!msButton)
 		{

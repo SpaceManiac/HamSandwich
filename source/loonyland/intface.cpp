@@ -496,7 +496,7 @@ void RenderInterface(MGLDraw *mgl)
 
 	if(player.worldNum==WORLD_SLINGSHOT)
 	{
-		MS_getPos(&mx,&my);
+		mgl->GetMouse(&mx, &my);
 		RenderIntfaceSprite(mx,my,9,0,mgl);
 	}
 

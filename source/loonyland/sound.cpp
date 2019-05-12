@@ -98,7 +98,7 @@ void LoopingSound(int snd)
 		return;
 
 	GoPlaySound(snd,0,0,SND_MAXPRIORITY|SND_CUTOFF|SND_ONE|SND_LOOPING,MAX_SNDPRIORITY);
-	sndNum=soundNumber;
+	sndNum=snd;
 }
 
 void KillSong(void)
