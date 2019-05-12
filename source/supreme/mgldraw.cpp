@@ -4,6 +4,7 @@
 #include "internet.h"
 
 #include <SDL2/SDL_syswm.h>
+#include <SDL2/SDL_image.h>
 
 MGLDraw *_globalMGLDraw;
 
@@ -767,7 +768,7 @@ bool MGLDraw::LoadBMP(char *name, PALETTE pal)
 {
 	int i,w;
 
-	SDL_Surface* b = SDL_LoadBMP(name);
+	SDL_Surface* b = IMG_Load(name);
 	if (!b) {
 		printf("%s: %s\n", name, SDL_GetError());
 		return FALSE;
