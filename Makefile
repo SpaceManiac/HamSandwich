@@ -1,4 +1,4 @@
-PROJECTS := lunatic supreme sleepless
+PROJECTS := lunatic supreme sleepless loonyland loonyland2 mystic
 PREMAKE5 := premake5
 
 ifneq ($(wildcard build/premake5),)

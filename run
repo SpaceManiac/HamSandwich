@@ -5,9 +5,8 @@ set -euo pipefail
 show_help() {
 	echo "Usage: $0 <project> [--release] [--gdb] [--fullscreen]"
 	echo "Available projects:"
-	echo "    lunatic"
-	echo "    supreme"
-	echo "    sleepless"
+	echo "    lunatic    supreme     sleepless"
+	echo "    loonyland  loonyland2  mystic"
 }
 
 # Default settings
