@@ -537,7 +537,7 @@ void RenderProfMenu(MGLDraw *mgl)
 
 	sprintf(s,"%0.0f%% Complete",profile.progress.totalPercent);
 	PrintUnGlow(20,50,s,2);
-	sprintf(s,"Play time: %d:%02d",profile.progress.totalTime/(30*60*60),(profile.progress.totalTime/(30*60))%60);
+	sprintf(s,"Play time: %ld:%02ld",profile.progress.totalTime/(30*60*60),(profile.progress.totalTime/(30*60))%60);
 	PrintUnGlow(20,80,s,2);
 
 	PrintUnGlow(90,140,"Goals Completed",2);
