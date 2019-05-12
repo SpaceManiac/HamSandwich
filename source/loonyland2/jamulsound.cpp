@@ -2,6 +2,7 @@
 #include "mgldraw.h"
 #include "sound.h"
 #include "options.h"
+#include "config.h"
 #include <SDL2/SDL_mixer.h>
 
 typedef struct soundList_t
@@ -29,7 +30,7 @@ bool JamulSoundInit(int numBuffers)
 {
 	int i;
 
-	if (!opt.sound)
+	if (!config.sound)
 		return false;
 	if (SDL_Init(SDL_INIT_AUDIO) != 0) {
 		printf("init audio failed: %s\n", SDL_GetError());

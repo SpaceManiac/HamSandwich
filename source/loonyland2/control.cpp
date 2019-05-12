@@ -8,11 +8,6 @@ byte arrowTap;
 byte keyState;
 byte keyTap;
 
-int joyMinX=2000000000,joyMinY=2000000000;
-int joyMaxX=0,joyMaxY=0;
-int joyCX,joyCY;
-int joyDeadX,joyDeadY;
-
 SDL_Joystick* joystick;
 byte oldJoy;
 
@@ -21,17 +16,6 @@ byte lastScanCode;
 byte kb[6][4];
 byte joyBtn[2];
 byte shiftState;
-
-void MyKeebieCallback(int scancode)
-{
-	byte s;
-
-	s=(byte)scancode;
-	if(s&128)
-		ControlKeyUp((char)(s&127));
-	else
-		ControlKeyDown((char)s);
-}
 
 void ControlKeyDown(byte k)
 {

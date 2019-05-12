@@ -356,21 +356,21 @@ void LoadOptions(void)
 		opt.sound=127;
 		opt.music=26*3;
 
-		opt.control[0][0]=84;	// up
-		opt.control[0][1]=85;	// down
-		opt.control[0][2]=82;	// left
-		opt.control[0][3]=83;	// right
-		opt.control[0][4]=105;	// hammer: CTRL
-		opt.control[0][5]=103;	// jump: shift
-		opt.control[0][6]=64;	// magic: TAB
+		opt.control[0][0]=SDL_SCANCODE_UP;	// up
+		opt.control[0][1]=SDL_SCANCODE_DOWN;	// down
+		opt.control[0][2]=SDL_SCANCODE_LEFT;	// left
+		opt.control[0][3]=SDL_SCANCODE_RIGHT;	// right
+		opt.control[0][4]=SDL_SCANCODE_LCTRL;	// hammer: CTRL
+		opt.control[0][5]=SDL_SCANCODE_LSHIFT;	// jump: shift
+		opt.control[0][6]=SDL_SCANCODE_TAB;	// magic: TAB
 		opt.control[0][7]=0;	// wpn switch: SPACE
 		opt.control[1][0]=0;	// up
 		opt.control[1][1]=0;	// down
 		opt.control[1][2]=0;	// left
 		opt.control[1][3]=0;	// right
-		opt.control[1][4]=26;	// hammer: Z
-		opt.control[1][5]=24;	// jump: X
-		opt.control[1][6]=1;	// magic: A
+		opt.control[1][4]=SDL_SCANCODE_Z;	// hammer: Z
+		opt.control[1][5]=SDL_SCANCODE_X;	// jump: X
+		opt.control[1][6]=SDL_SCANCODE_A;	// magic: A
 		opt.control[1][7]=0;	// wpn switch: S
 
 		opt.joyCtrl[0]=0;
