@@ -19,7 +19,7 @@ byte lastScanCode;
 byte kb[8][4];
 byte joyBtn[2];
 
-void ControlKeyDown(char k)
+void ControlKeyDown(byte k)
 {
 	int i,j;
 	byte bit;
@@ -52,7 +52,7 @@ void ControlKeyDown(char k)
 		arrowState|=CONTROL_B1;
 }
 
-void ControlKeyUp(char k)
+void ControlKeyUp(byte k)
 {
 	int i,j;
 	byte bit;

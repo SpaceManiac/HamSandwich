@@ -20,8 +20,8 @@
 void InitControls(void);
 void ApplyControlSettings(void);
 
-void ControlKeyUp(char k);
-void ControlKeyDown(char k);
+void ControlKeyUp(byte k);
+void ControlKeyDown(byte k);
 byte GetControls(void);
 byte GetTaps(void);
 byte GetArrows(void);
