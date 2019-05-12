@@ -20,6 +20,14 @@ fi
 
 mkdir -p "build"
 
+# Install system packages
+PACKAGES="p7zip make mingw-w64-i686-binutils mingw-w64-i686-gcc"
+if [ ! -f "build/.packages" ] || [ "$(cat build/.packages)" != "$PACKAGES" ]; then
+	echo "==== Updating MSYS2 packages ===="
+	pacman -S --needed --noconfirm --quiet $PACKAGES
+	echo "$PACKAGES" > build/.packages
+fi
+
 # Download Premake5 binary
 if [ ! -f "build/premake5" ]; then
 	echo "==== Downloading premake5 binary ===="

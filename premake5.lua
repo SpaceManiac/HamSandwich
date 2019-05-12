@@ -30,7 +30,7 @@ function allegro_project(name)
 			optimize "On"
 
 		filter "system:Windows"
-			links { "winmm", "allegro-4.4.2-monolith-mt", "ws2_32", "logg-1.0-mt", "vorbisfile", "vorbis", "ogg", "vorbisenc" }
+			links { "winmm", "allegro-4.4.2-monolith-mt", "ws2_32", "logg-1.0-mt", "vorbisfile-1.3.2-static-mt", "vorbis-1.3.2-static-mt", "ogg-1.2.1-static-mt" }
 
 		filter {}
 end
