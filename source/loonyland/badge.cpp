@@ -918,7 +918,7 @@ void BadgeMenu(MGLDraw *mgl)
 		RenderBadgeMenu(mgl);
 		mgl->Flip();
 
-		if(mgl->LastKeyPressed()==27)
+		if(mgl->LastKeyPeek()==27)
 			done=1;
 
 		if(!mgl->Process())
