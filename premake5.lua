@@ -53,9 +53,17 @@ end
 
 allegro_project "lunatic"
 	icon_file "lunatic"
+	buildoptions { "-Wall", "-Wextra", "-Wno-unused-parameter" }
 
 allegro_project "supreme"
 	icon_file "lunatic"
+	buildoptions {
+		"-Wall",
+		"-Wno-write-strings",
+		"-Wno-char-subscripts",
+		"-Wno-unused-variable",
+		"-Wno-unused-but-set-variable",
+	}
 	removefiles_in("source/supreme/", {
 		"monsterlist.cpp",
 		"monsterai1.cpp",
@@ -70,6 +78,13 @@ allegro_project "supreme"
 
 allegro_project "sleepless"
 	icon_file "lunatic"
+	buildoptions {
+		"-Wall",
+		"-Wno-write-strings",
+		"-Wno-char-subscripts",
+		"-Wno-unused-variable",
+		"-Wno-unused-but-set-variable",
+	}
 	removefiles_in("source/sleepless/", {
 		"monsterlist.cpp",
 		"monsterai1.cpp",

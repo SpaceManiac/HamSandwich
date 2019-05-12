@@ -525,7 +525,7 @@ void LunaticDraw(void)
 
 	if(showStats)
 	{
-		sprintf(s,"Debug Menu - F3 to close",((float)visFrameCount/(float)((timeGetTime()-gameStartTime)/1000)));
+		sprintf(s,"Debug Menu - F3 to close");
 		PrintGlow(5,30,s,8,2);
 
 		sprintf(s,"VFPS %02.2f",((float)visFrameCount/(float)((timeGetTime()-gameStartTime)/1000)));
@@ -855,7 +855,7 @@ void TestLevel(world_t *world,byte level)
 	for(int i=0;i<64;i++) // used to be 19, upped to 64 to tolerate custom worlds
 	{
 		// delete all maps
-		sprintf(s,"profiles/_editing_.%03d",profile.name,i);
+		sprintf(s,"profiles/_editing_.%03d",i);
 		unlink(s);
 	}
 }

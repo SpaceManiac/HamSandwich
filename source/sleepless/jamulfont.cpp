@@ -743,7 +743,7 @@ bool FontInputText(char *prompt,char *buffer,int len,void (*renderScrn)(mfont_t 
 		fontmgl->Flip();
 		if(!fontmgl->Process())
 			return FALSE;
-		if(c=fontmgl->LastKeyPressed())
+		if((c=fontmgl->LastKeyPressed()))
 		{
 			if(c==8) // backspace
 			{

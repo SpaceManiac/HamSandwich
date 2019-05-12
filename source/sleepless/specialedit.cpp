@@ -327,11 +327,11 @@ static void ChooseEffectClick(int id)
 	curEff=effStart + (id-ID_EFF0)/100;
 	prevType=spcl.effect[curEff].type;
 
-		selectY=(curEff*38+264)-(EFFPICKER_HEIGHT*EFF_MAX)/2;
+	selectY=(curEff*38+264)-(EFFPICKER_HEIGHT*EFF_MAX)/2;
 	if(selectY<0)
 		selectY=0;
-		if(selectY+EFFPICKER_HEIGHT*EFF_MAX>475)
-				selectY=475-EFFPICKER_HEIGHT*EFF_MAX;
+	if(selectY+EFFPICKER_HEIGHT*EFF_MAX>475)
+		selectY=475-EFFPICKER_HEIGHT*EFF_MAX;
 }
 
 static void MonsterClick(int id)

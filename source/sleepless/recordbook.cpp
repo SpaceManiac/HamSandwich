@@ -136,7 +136,7 @@ void RenderStat(int x,int y,char *txt,dword value)
 	char s[16];
 
 	PrintGlow(x,y,txt,0,2);
-	sprintf(s,"%d",value);
+	sprintf(s,"%ld",value);
 	PrintGlow(x+250-GetStrLength(s,2),y,s,0,2);
 }
 
@@ -145,7 +145,7 @@ void RenderStatOutOf(int x,int y,char *txt,dword value,dword outof)
 	char s[16];
 
 	PrintGlow(x,y,txt,0,2);
-	sprintf(s,"%d/%d",value,outof);
+	sprintf(s,"%ld/%ld",value,outof);
 	PrintGlow(x+250-GetStrLength(s,2),y,s,0,2);
 }
 
@@ -154,7 +154,7 @@ void RenderStatTime(int x,int y,char *txt,dword value)
 	char s[16];
 
 	PrintGlow(x,y,txt,0,2);
-	sprintf(s,"%d:%02d",(value/(30*60*60)),(value/(30*60))%60);
+	sprintf(s,"%ld:%02ld",(value/(30*60*60)),(value/(30*60))%60);
 	PrintGlow(x+250-GetStrLength(s,2),y,s,0,2);
 }
 

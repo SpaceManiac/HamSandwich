@@ -875,7 +875,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 	switch(me->type)
 	{
 		case BLT_BLACKHOLE:
-			if(b=FindVictims2(me->x>>FIXSHIFT,me->y>>FIXSHIFT,32,0,0,1,map,world,me->friendly))
+			if(FindVictims2(me->x>>FIXSHIFT,me->y>>FIXSHIFT,32,0,0,1,map,world,me->friendly))
 			{
 
 			}
@@ -1873,25 +1873,33 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				Clamp(&me->dy,FIXAMT*12);
 
 				if(me->dx>0)
+				{
 					if(me->facing>8)
 						me->facing++;
 					else
 						me->facing--;
+				}
 				if(me->dx<0)
+				{
 					if(me->facing>8)
 						me->facing--;
 					else
 						me->facing++;
+				}
 				if(me->dy>0)
+				{
 					if(me->facing>11 || me->facing<4)
 						me->facing++;
 					else
 						me->facing--;
+				}
 				if(me->dy<0)
+				{
 					if(me->facing>11 || me->facing<4)
 						me->facing--;
 					else
 						me->facing++;
+				}
 
 				if(me->facing>200)
 					me->facing+=16;

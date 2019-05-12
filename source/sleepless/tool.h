@@ -47,6 +47,7 @@
 class Tool
 {
 	public:
+		virtual ~Tool(); // warnings otherwise
 		virtual void Update(int msx,int msy);
 		virtual void Render(int msx,int msy);
 		virtual void StartPlop(void);
