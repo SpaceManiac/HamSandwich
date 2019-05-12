@@ -277,7 +277,7 @@ byte CharWidth(char c, mfont_t *font)
 	return *(font->chars[c]);
 }
 
-void FontPrintString(int x,int y,char *s,mfont_t *font)
+void FontPrintString(int x,int y,const char *s,mfont_t *font)
 {
 	int i;
 
@@ -310,7 +310,7 @@ void FontPrintStringGlow(int x,int y,char *s,mfont_t *font,char bright)
 	}
 }
 
-void FontPrintStringBright(int x,int y,char *s,mfont_t *font,char bright)
+void FontPrintStringBright(int x,int y,const char *s,mfont_t *font,char bright)
 {
 	int i;
 
@@ -321,7 +321,7 @@ void FontPrintStringBright(int x,int y,char *s,mfont_t *font,char bright)
 	}
 }
 
-void FontPrintStringSolid(int x,int y,char *s,mfont_t *font,byte color)
+void FontPrintStringSolid(int x,int y,const char *s,mfont_t *font,byte color)
 {
 	int i;
 
@@ -349,7 +349,7 @@ void FontSetColors(byte first,byte count,byte *data)
 	memcpy(&fontPal[first],data,count);
 }
 
-int FontStrLen(char *s,mfont_t *font)
+int FontStrLen(const char *s,mfont_t *font)
 {
 	int i,len=0;
 

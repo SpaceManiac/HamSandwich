@@ -2,26 +2,6 @@
 #include "mgldraw.h"
 #include "options.h"
 
-// text strings corresponding to scan codes 0-88
-char scanCodeTable[128][16]={
-	//0
-	"Null","Escape","1","2","3","4","5","6","7","8","9","0",
-	//12
-	"-","=","Backspace","Tab","Q","W","E","R","T","Y","U","I","O","P",
-	//26
-	"[","]","Enter","Control","A","S","D","F","G","H","J","K","L",";",
-	//40
-	"'","`","LeftShift","\\","Z","X","C","V","B","N","M",",",".","/",
-	//54
-	"RightShift","PrintScreen","Alt","Space","CapsLock","F1","F2","F3",
-	//62
-	"F4","F5","F6","F7","F8","F9","F10","NumLock","ScrollLock",
-	//71
-	"Home","Up","PageUp","Keypad-","Left","Keypad5","Right","Keypad+",
-	//79
-	"End","Down","PageDown","Insert","Delete","","","","F11","F12"};
-
-
 byte arrowState;
 byte keyState;
 byte keyTap;
@@ -31,7 +11,7 @@ int joyMaxX=0,joyMaxY=0;
 int joyCX,joyCY;
 int joyDeadX,joyDeadY;
 
-byte joystickOn=1;
+SDL_Joystick* joystick;
 byte oldJoy;
 
 byte lastScanCode;
@@ -60,15 +40,15 @@ void ControlKeyDown(char k)
 		}
 	}
 	// always track arrows, no matter what the keys are, for menus
-	if(k==72)
+	if(k==SDL_SCANCODE_UP)
 		arrowState|=CONTROL_UP;
-	if(k==80)
+	if(k==SDL_SCANCODE_DOWN)
 		arrowState|=CONTROL_DN;
-	if(k==75)
+	if(k==SDL_SCANCODE_LEFT)
 		arrowState|=CONTROL_LF;
-	if(k==77)
+	if(k==SDL_SCANCODE_RIGHT)
 		arrowState|=CONTROL_RT;
-	if(k==28)
+	if(k==SDL_SCANCODE_RETURN)
 		arrowState|=CONTROL_B1;
 }
 
@@ -91,15 +71,15 @@ void ControlKeyUp(char k)
 	}
 
 	// always track arrows, no matter what the keys are, for menus
-	if(k==72)
+	if(k==SDL_SCANCODE_UP)
 		arrowState&=(~CONTROL_UP);
-	if(k==80)
+	if(k==SDL_SCANCODE_DOWN)
 		arrowState&=(~CONTROL_DN);
-	if(k==75)
+	if(k==SDL_SCANCODE_LEFT)
 		arrowState&=(~CONTROL_LF);
-	if(k==77)
+	if(k==SDL_SCANCODE_RIGHT)
 		arrowState&=(~CONTROL_RT);
-	if(k==28)
+	if(k==SDL_SCANCODE_RETURN)
 		arrowState&=(~CONTROL_B1);
 }
 
@@ -114,80 +94,61 @@ void InitControls(void)
 	keyTap=0;
 	arrowState=0;
 
-	if(joystickOn)
-	{
-		result=joyGetDevCaps(JOYSTICKID1,&joyCaps,sizeof(JOYCAPS));
-		if(result!=JOYERR_NOERROR)
-		{
-			joystickOn=0;
-			return;
-		}
-		joyCX=(joyCaps.wXmax-joyCaps.wXmin)/2+joyCaps.wXmin;
-		joyCY=(joyCaps.wYmax-joyCaps.wYmin)/2+joyCaps.wYmin;
-		joyMinX=joyCaps.wXmin;
-		joyMinY=joyCaps.wYmin;
-		joyMaxX=joyCaps.wXmax;
-		joyMaxY=joyCaps.wYmax;
-		oldJoy=0;
-	}
+	if(SDL_NumJoysticks() > 0)
+		joystick = SDL_JoystickOpen(0);
+	else
+		joystick = nullptr;
 }
 
 byte GetJoyState(void)
 {
-	MMRESULT result;
-	JOYINFOEX joyInfo;
-	int joyX,joyY;
-	byte joyState;
-
-	memset(&joyInfo,0,sizeof(JOYINFOEX));
-	joyInfo.dwSize=sizeof(JOYINFOEX);
-	joyInfo.dwFlags=JOY_RETURNBUTTONS|JOY_RETURNX|JOY_RETURNY;
-	result=joyGetPosEx(JOYSTICKID1, &joyInfo);
-	if(result!=JOYERR_NOERROR)
-	{
-		//joystickOn=0;
+	if (!joystick)
 		return 0;
-	}
-	joyX=(int)joyInfo.dwXpos;
-	joyY=(int)joyInfo.dwYpos;
-	if(joyX<joyMinX)
+
+	const int DEADZONE = 8192;
+	byte joyState = 0;
+
+	if(SDL_JoystickGetAxis(joystick, 0) < -DEADZONE)
 	{
-		joyMinX=joyX;
-	}
-	if(joyX>joyMaxX)
-	{
-		joyMaxX=joyX;
-	}
-	if(joyY<joyMinY)
-	{
-		joyMinY=joyY;
-	}
-	if(joyY>joyMaxY)
-	{
-		joyMaxY=joyY;
-	}
-	joyDeadX=(joyMaxX-joyMinX)/8;
-	joyDeadY=(joyMaxY-joyMinY)/8;
-	joyState=0;
-	if(joyX-joyCX<-joyDeadX)
+		if(!(oldJoy&CONTROL_LF))
+			keyTap|=CONTROL_LF;
 		joyState|=CONTROL_LF;
-	if(joyX-joyCX>joyDeadX)
+	}
+	else if(SDL_JoystickGetAxis(joystick, 0) > DEADZONE)
+	{
+		if(!(oldJoy&CONTROL_RT))
+			keyTap|=CONTROL_RT;
 		joyState|=CONTROL_RT;
-	if(joyY-joyCY<-joyDeadY)
+	}
+	if(SDL_JoystickGetAxis(joystick, 1) < -DEADZONE)
+	{
+		if(!(oldJoy&CONTROL_UP))
+			keyTap|=CONTROL_UP;
 		joyState|=CONTROL_UP;
-	if(joyY-joyCY>joyDeadY)
+	}
+	else if(SDL_JoystickGetAxis(joystick, 1) > DEADZONE)
+	{
+		if(!(oldJoy&CONTROL_DN))
+			keyTap|=CONTROL_DN;
 		joyState|=CONTROL_DN;
-	if(joyInfo.dwButtons&(joyBtn[0]))
+	}
+	if(SDL_JoystickGetButton(joystick, 0))
 	{
 		if(!(oldJoy&CONTROL_B1))
 			keyTap|=CONTROL_B1;
 		joyState|=CONTROL_B1;
 	}
-	if(joyInfo.dwButtons&(joyBtn[1]))
+	if(SDL_JoystickGetButton(joystick, 1))
 	{
 		if(!(oldJoy&CONTROL_B2))
 			keyTap|=CONTROL_B2;
 		joyState|=CONTROL_B2;
+	}
+	if(SDL_JoystickGetButton(joystick, 2))
+	{
+		if(!(oldJoy&CONTROL_B3))
+			keyTap|=CONTROL_B3;
+		joyState|=CONTROL_B3;
 	}
 	oldJoy=joyState;
 
@@ -196,26 +157,26 @@ byte GetJoyState(void)
 
 dword GetJoyButtons(void)
 {
-	MMRESULT result;
-	JOYINFOEX joyInfo;
-
-	if(!joystickOn)
+	if (!joystick)
 		return 0;
 
-	memset(&joyInfo,0,sizeof(JOYINFOEX));
-	joyInfo.dwSize=sizeof(JOYINFOEX);
-	joyInfo.dwFlags=JOY_RETURNBUTTONS|JOY_RETURNX|JOY_RETURNY;
-	result=joyGetPosEx(JOYSTICKID1, &joyInfo);
-	if(result!=JOYERR_NOERROR)
-	{
-		return 0;
-	}
-	return joyInfo.dwButtons;
+	byte b = 0;
+
+	if(SDL_JoystickGetButton(joystick, 0))
+		b|=1;
+	if(SDL_JoystickGetButton(joystick, 1))
+		b|=2;
+	if(SDL_JoystickGetButton(joystick, 2))
+		b|=4;
+	if(SDL_JoystickGetButton(joystick, 3))
+		b|=8;
+
+	return b;
 }
 
 byte GetControls(void)
 {
-	if(joystickOn)
+	if(joystick)
 		return GetJoyState()|(keyState);
 	else
 		return keyState;
@@ -225,7 +186,7 @@ byte GetTaps(void)
 {
 	byte tapState;
 
-	if(joystickOn)
+	if(joystick)
 		GetJoyState();
 
 	tapState=keyTap;
@@ -251,7 +212,7 @@ byte LastScanCode(void)
 
 byte JoystickAvailable(void)
 {
-	return joystickOn;
+	return joystick != nullptr;
 }
 
 void SetKeys(byte keys[8])
@@ -259,9 +220,9 @@ void SetKeys(byte keys[8])
 	memcpy(kb,keys,8);
 }
 
-char *ScanCodeText(byte s)
+const char *ScanCodeText(byte s)
 {
-	return scanCodeTable[s];
+	return SDL_GetKeyName(SDL_GetKeyFromScancode((SDL_Scancode) s));
 }
 
 void ApplyControlSettings(void)

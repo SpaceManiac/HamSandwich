@@ -32,6 +32,6 @@ byte LastScanCode(void);
 byte JoystickAvailable(void);
 void SetKeys(byte keys[8]);
 
-char *ScanCodeText(byte s);
+const char *ScanCodeText(byte s);
 
 #endif

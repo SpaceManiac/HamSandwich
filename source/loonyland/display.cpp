@@ -313,7 +313,7 @@ void RightPrintGlow(int x,int y,char *s,char bright,byte font)
 	FontPrintStringGlow(x,y,s,gameFont[font],bright);
 }
 
-void CenterPrint(int x,int y,char *s,char bright,byte font)
+void CenterPrint(int x,int y,const char *s,char bright,byte font)
 {
 	if(font!=1)
 	{

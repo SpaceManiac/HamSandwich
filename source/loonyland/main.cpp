@@ -59,6 +59,7 @@ _CrtSetDbgFlag(flag); // Set flag to the new value
 		DBG("Mainmenu");
 		switch(MainMenu(mainmgl)-1)
 		{
+			default:
 			case 255:	// quit
 			case MENU_EXIT:
 				LunaticExit();
