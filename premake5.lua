@@ -20,6 +20,7 @@ function base_project(name)
 		}
 
 		filter "configurations:debug"
+			kind "ConsoleApp"
 			defines { "_DEBUG" }
 			symbols "On"
 
