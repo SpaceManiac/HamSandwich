@@ -96,8 +96,12 @@ void SortSongs(void)
 
 void InputSong(const char *fname)
 {
-	if(strlen(fname)>=SONGNAME_LEN)
+	int len = strlen(fname);
+	if(len < 4 || len >= SONGNAME_LEN)
 		return;	// won't add long names
+
+	if(strcmp(".ogg", &fname[len-4]))
+		return; // ogg files only
 
 	if(fileList==NULL)
 	{

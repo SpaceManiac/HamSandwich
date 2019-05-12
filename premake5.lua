@@ -3,7 +3,7 @@ workspace "HamSandwich"
 	configurations { "debug", "release" }
 	location "build"
 
-function allegro_project(name)
+function base_project(name)
 	project(name)
 		kind "WindowedApp"
 		language "C++"
@@ -35,6 +35,25 @@ function allegro_project(name)
 		filter {}
 end
 
+function allegro_project(name)
+	base_project(name)
+		includedirs { "build/allegro/include/" }
+		libdirs { "build/allegro/lib/" }
+
+		filter "system:Windows"
+			links { "winmm", "allegro-4.4.2-monolith-mt", "ws2_32", "logg-1.0-mt", "vorbisfile-1.3.2-static-mt", "vorbis-1.3.2-static-mt", "ogg-1.2.1-static-mt" }
+
+		filter {}
+end
+
+function sdl2_project(name)
+	base_project(name)
+		filter "system:Windows"
+			links { "mingw32", "SDL2main", "SDL2", "ws2_32", "winmm", "SDL2_mixer" }
+
+		filter {}
+end
+
 function removefiles_in(dir, files)
 	list = {}
 	for i = 1, #files do
@@ -55,7 +74,7 @@ allegro_project "lunatic"
 	icon_file "lunatic"
 	buildoptions { "-Wall", "-Wextra", "-Wno-unused-parameter" }
 
-allegro_project "supreme"
+sdl2_project "supreme"
 	icon_file "lunatic"
 	buildoptions {
 		"-Wall",

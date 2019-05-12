@@ -1,15 +1,14 @@
 /* MGLDraw
 
-  hacked all to hell to be in allegro instead.
+  hacked all to hell to be in SDL2 instead.
 
 */
 
 #ifndef MGLDRAW_H
 #define MGLDRAW_H
 
-#include <allegro.h>
+#include <SDL2/SDL.h>
 #ifdef WIN32
-#include <winalleg.h>
 #include <windows.h>
 #endif
 #include <stdio.h>
@@ -19,6 +18,20 @@
 
 #define SCRWID	640
 #define SCRHEI  480
+
+// -- SDL adapters
+struct RGB
+{
+	unsigned char r, g, b, a;
+};
+
+#define PAL_SIZE	256
+
+typedef RGB PALETTE[PAL_SIZE];
+
+extern int KEY_MAX;
+extern const Uint8* key;
+// -- End SDL adapters
 
 // if I'm not mistaken, this number is NOT used by windows as a window event
 #define INTERNET_EVENT	(WM_USER+1)
@@ -39,6 +52,7 @@ class MGLDraw
 		void ClearScreen(void);
 		void Quit(void);
 
+		void StartFlip(void);
 		void FinishFlip(void);
 		void Flip(void);
 		void WaterFlip(int v);
@@ -56,8 +70,7 @@ class MGLDraw
 		bool LoadBMP(char *name);
 		bool LoadBMP(char *name, PALETTE pal);
 
-		int  LastRawCode(void);
-		char LastKeyPressed(void);
+		int LastKeyPressed(void);
 		char LastKeyPeek(void);
 		void SetLastKey(char c);
 		void ClearKeys(void);
@@ -98,9 +111,10 @@ class MGLDraw
 		byte windowed;
 		bool readyToQuit;
 		byte tapTrack;
+
+		int mouse_x, mouse_y, mouse_z, mouse_b;
 	protected:
 
-		BITMAP* buffer;
 		byte *scrn;
 		PALETTE pal, pal2, *thePal;
 		dword elapsedTime;
@@ -109,6 +123,12 @@ class MGLDraw
 		char lastKeyPressed;
 		int lastRawCode;
 		byte mouseDown,rMouseDown;
+
+		SDL_Window *window;
+		SDL_Renderer *renderer;
+		SDL_Texture *texture;
+
+		int *buffer;
 };
 
 extern MGLDraw *_globalMGLDraw;

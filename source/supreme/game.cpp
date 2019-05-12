@@ -572,7 +572,7 @@ void LunaticDraw(void)
 
 		end = s + sprintf(s,"Mouse: ");
 		for (int i = 0; i < 10; ++i)
-			if (mouse_b & (1<<i))
+			if (gamemgl->mouse_b & (1<<i))
 				end += sprintf(end, "%d ", i);
 		PrintGlow(5,170,s,8,2);
 	}
@@ -620,10 +620,8 @@ void SendMessageToGame(byte msg,int content)
 void HandleKeyPresses(void)
 {
 	char k;
-	int raw;
 
 	k=gamemgl->LastKeyPressed();
-	raw = gamemgl->LastRawCode() >> 8;
 
 	if(k)
 	{
@@ -633,7 +631,7 @@ void HandleKeyPresses(void)
 	}
 
 	// stats for everyone, takes more effort though
-	if(raw == KEY_F3)
+	if(LastScanCode() == SDL_SCANCODE_F3)
 	{
 		showStats=1-showStats;
 		lastKey=0;

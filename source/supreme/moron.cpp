@@ -70,7 +70,7 @@ byte GetQuestion(question_t *q,FILE *f)
 			q->wrongAns[q->wrong][strlen(q->wrongAns[q->wrong])-1]='\0';
 			q->wrong++;
 		}
-		else if(buf[0]=='\n')	// dead end, bucko!
+		else if(buf[0] == '\n' || buf[0] == '\n')	// dead end, bucko!
 			return 1;
 	}
 	return 0;	// if you got here, the file ended

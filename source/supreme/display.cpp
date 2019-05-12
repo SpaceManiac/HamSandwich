@@ -641,11 +641,6 @@ void DisplayList::Render(void)
 	}
 }
 
-void MakeItFlip(void)
-{
-	mgl->Flip();
-}
-
 void DrawBox(int x,int y,int x2,int y2,byte c)
 {
 	mgl->Box(x,y,x2,y2,c);

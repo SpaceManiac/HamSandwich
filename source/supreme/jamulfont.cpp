@@ -91,7 +91,7 @@ void FontPrintChar(int x, int y, char c, mfont_t *font)
 	{
 		for(i=0;i<(*font->chars[c]);i++)
 		{
-			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
+			if(*src && (x>=0) && (x<scrWidth) && (y>=0) && (y<scrHeight))
 				*dst=fontPal[*src];
 			dst++;
 			src++;
@@ -125,7 +125,7 @@ void FontPrintCharColor(int x, int y, char c,byte color,mfont_t *font)
 	{
 		for(i=0;i<(*font->chars[c]);i++)
 		{
-			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
+			if(*src && (x>=0) && (x<scrWidth) && (y>=0) && (y<scrHeight))
 			{
 				if((*src>=64 && *src<64+32) || (*src>=128 && *src<128+32))
 					*dst=((*src)&31)+color;
@@ -165,7 +165,7 @@ void FontPrintCharBright(int x, int y, char c,char bright,mfont_t *font)
 	{
 		for(i=0;i<(*font->chars[c]);i++)
 		{
-			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
+			if(*src && (x>=0) && (x<scrWidth) && (y>=0) && (y<scrHeight))
 			{
 				*dst=*src+bright;
 				if(*dst>(*src&(~31))+31)
@@ -204,7 +204,7 @@ void FontPrintCharSolid(int x, int y, char c, mfont_t *font, byte color)
 	{
 		for(i=0;i<(*font->chars[c]);i++)
 		{
-			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
+			if(*src && (x>=0) && (x<scrWidth) && (y>=0) && (y<scrHeight))
 				*dst=color;
 			dst++;
 			src++;
@@ -238,7 +238,7 @@ void FontPrintCharGlow(int x, int y, char c, mfont_t *font,int bright)
 	{
 		for(i=0;i<(*font->chars[c]);i++)
 		{
-			if((*src>0) && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
+			if((*src>0) && (x>=0) && (x<scrWidth) && (y>=0) && (y<scrHeight))
 			{
 				v=(*src)&31;
 				v+=bright;
@@ -283,7 +283,7 @@ void FontPrintCharUnGlow(int x, int y, char c, mfont_t *font)
 	{
 		for(i=0;i<(*font->chars[c]);i++)
 		{
-			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
+			if(*src && (x>=0) && (x<scrWidth) && (y>=0) && (y<scrHeight))
 			{
 				b2=(fontPal[*src]&31);
 				if(b2>0)
@@ -326,7 +326,7 @@ void FontPrintCharUnGlowLimited(int x, int y, int maxX, char c, mfont_t *font)
 	{
 		for(i=0;i<(*font->chars[c]);i++)
 		{
-			if(*src && (x>0) && (x<maxX) && (y>0) && (y<scrHeight))
+			if(*src && (x>=0) && (x<maxX) && (y>=0) && (y<scrHeight))
 			{
 				b2=(fontPal[*src]&31);
 				if(b2>0)
@@ -372,7 +372,7 @@ void FontPrintCharGlowLimited(int x, int y, int maxX, char c, mfont_t *font,int 
 	{
 		for(i=0;i<(*font->chars[c]);i++)
 		{
-			if((*src>0) && (x>0) && (x<maxX) && (y>0) && (y<scrHeight))
+			if((*src>0) && (x>=0) && (x<maxX) && (y>=0) && (y<scrHeight))
 			{
 				v=(*src)&31;
 				v+=bright;

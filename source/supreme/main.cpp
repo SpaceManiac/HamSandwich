@@ -132,6 +132,11 @@ int main(int argc, char* argv[])
 				break;
 		}
 	}
-}
 
-END_OF_MAIN()
+	StopSong();
+	LunaticExit();
+	delete mainmgl;
+	ExitLog();
+	FatalErrorQuit();
+	JamulSoundExit();
+}

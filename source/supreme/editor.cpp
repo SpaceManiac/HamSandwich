@@ -765,8 +765,8 @@ static void HandleKeyPresses(void)
 
 	switch(s)
 	{
-		case KEY_LEFT: // left arrow
-		case KEY_4_PAD:
+		case SDL_SCANCODE_LEFT: // left arrow
+		case SDL_SCANCODE_KP_4:
 			GetCamera(&x,&y);
 			if(GetControls()&CONTROL_B1)
 				x-=TILE_WIDTH*3;
@@ -775,8 +775,8 @@ static void HandleKeyPresses(void)
 				x=0;
 			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
 			break;
-		case KEY_UP:	// up arrow
-		case KEY_8_PAD:
+		case SDL_SCANCODE_UP:	// up arrow
+		case SDL_SCANCODE_KP_8:
 			GetCamera(&x,&y);
 			if(GetControls()&CONTROL_B1)
 				y-=TILE_HEIGHT*3;
@@ -785,8 +785,8 @@ static void HandleKeyPresses(void)
 				y=0;
 			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
 			break;
-		case KEY_RIGHT:	// right arrow
-		case KEY_6_PAD:
+		case SDL_SCANCODE_RIGHT:	// right arrow
+		case SDL_SCANCODE_KP_6:
 			GetCamera(&x,&y);
 			if(GetControls()&CONTROL_B1)
 				x+=TILE_WIDTH*3;
@@ -795,8 +795,8 @@ static void HandleKeyPresses(void)
 				x=editorMap->width*TILE_WIDTH;
 			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
 			break;
-		case KEY_DOWN:	// down arrow
-		case KEY_2_PAD:
+		case SDL_SCANCODE_DOWN:	// down arrow
+		case SDL_SCANCODE_KP_2:
 			GetCamera(&x,&y);
 			if(GetControls()&CONTROL_B1)
 				y+=TILE_HEIGHT*3;
@@ -805,7 +805,7 @@ static void HandleKeyPresses(void)
 				y=editorMap->height*TILE_HEIGHT;
 			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
 			break;
-		case KEY_F1:	// F1
+		case SDL_SCANCODE_F1:	// F1
 			if(editMode==EDITMODE_EDIT)
 				ToolGetHelp();
 			if(editMode==EDITMODE_ITEM)
@@ -819,7 +819,7 @@ static void HandleKeyPresses(void)
 			if(editMode==EDITMODE_TERRAIN)
 				TerrainEdit_Help();
 			break;
-		case KEY_TAB:
+		case SDL_SCANCODE_TAB:
 			editMenu=1-editMenu;
 			break;
 	}

@@ -18,11 +18,10 @@
 #define CONTROL_JOY 2
 
 void InitControls(void);
-void MyKeebieCallback(int scancode);
 void ApplyControlSettings(void);
 
-void ControlKeyUp(char k);
-void ControlKeyDown(char k);
+void ControlKeyUp(byte k);
+void ControlKeyDown(byte k);
 byte GetControls(void);
 byte GetTaps(void);
 byte GetArrowTaps(void);
@@ -33,8 +32,7 @@ byte LastScanCode(void);
 byte JoystickAvailable(void);
 void SetKeys(byte keys[8]);
 
-char *ScanCodeText(byte s);
-char *AllegroCodeText(byte s);
+const char *AllegroCodeText(byte s);
 byte ShiftState(void);
 
 byte GetJoyButtons(void);

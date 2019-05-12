@@ -137,12 +137,6 @@ void LoadProfile(char *name)
 	fread(&profile,sizeof(profile_t),1,f);
 	LoadPlayLists(f);
 
-	// fixed changed Mac OS X scancodes
-	for (int i = 0; i < 2; ++i)
-		for (int j = 0; j < 6; ++j)
-			if (profile.control[i][j] >= KEY_EQUALS_PAD && profile.control[i][j] <= KEY_COMMAND)
-				profile.control[i][j] += KEY_LSHIFT - KEY_EQUALS_PAD;
-
 	if(profile.progress.num_worlds==0)
 		profile.progress.world=NULL;
 	else
@@ -246,18 +240,18 @@ void OriginalPlaylist(playList_t *p)
 
 void DefaultControls(void)
 {
-	profile.control[0][0]=KEY_UP;
-	profile.control[0][1]=KEY_DOWN;
-	profile.control[0][2]=KEY_LEFT;
-	profile.control[0][3]=KEY_RIGHT;
-	profile.control[0][4]=KEY_LCONTROL;
-	profile.control[0][5]=KEY_LSHIFT;
+	profile.control[0][0]=SDL_SCANCODE_UP;
+	profile.control[0][1]=SDL_SCANCODE_DOWN;
+	profile.control[0][2]=SDL_SCANCODE_LEFT;
+	profile.control[0][3]=SDL_SCANCODE_RIGHT;
+	profile.control[0][4]=SDL_SCANCODE_LCTRL;
+	profile.control[0][5]=SDL_SCANCODE_LSHIFT;
 	profile.control[1][0]=0;
 	profile.control[1][1]=0;
 	profile.control[1][2]=0;
 	profile.control[1][3]=0;
-	profile.control[1][4]=KEY_Z;
-	profile.control[1][5]=KEY_X;
+	profile.control[1][4]=SDL_SCANCODE_Z;
+	profile.control[1][5]=SDL_SCANCODE_X;
 
 	profile.joyCtrl[0]=0;
 	profile.joyCtrl[1]=1;

@@ -1,12 +1,11 @@
 #include "music.h"
 #include "mgldraw.h"
-#include <allegro.h>
-#include <logg.h>
 #include "progress.h"
 #include "config.h"
 #include "editor.h"
+#include <SDL2/SDL_mixer.h>
 
-LOGG_Stream *curStream=NULL;
+Mix_Music *curStream=NULL;
 char curSongName[64];
 int musVolume=255;
 byte lastSong=255;
@@ -78,7 +77,7 @@ void PickSongToPlay(void)
 
 void UpdateMusic(void)
 {
-	if (config.music && curStream && !logg_update_stream(curStream))
+	if (config.music && curStream && !Mix_PlayingMusic())
 		if (!dontcallback)
 			PickSongToPlay();
 }
@@ -114,9 +113,24 @@ void PlaySongForce(char *fname)
 	strcpy(curSongName,fname);
 	sprintf(fullname,"music/%s",fname);
 	StopSong();
-	curStream=logg_get_stream(fullname, musVolume, 128, 0);
-	if(curStream)
-		UpdateMusic();
+
+	SDL_RWops* rw = SDL_RWFromFile(fullname, "rb");
+	if(!rw)
+	{
+		printf("%s: %s\n", fullname, SDL_GetError());
+		return;
+	}
+
+	curStream=Mix_LoadMUS_RW(rw, 1);
+	if(!curStream)
+	{
+		printf("%s: %s\n", fullname, Mix_GetError());
+		return;
+	}
+
+	Mix_VolumeMusic(musVolume / 2);
+	Mix_PlayMusic(curStream, 1);
+	UpdateMusic();
 }
 
 void StopSong(void)
@@ -127,7 +141,8 @@ void StopSong(void)
 	dontcallback=1;
 	if(curStream)
 	{
-		logg_destroy_stream(curStream);
+		Mix_HaltMusic();
+		Mix_FreeMusic(curStream);
 		curStream=NULL;
 	}
 	dontcallback=0;
@@ -141,8 +156,7 @@ void SetMusicVolume(int vol)
 	musVolume=vol;
 	if(curStream)
 	{
-		//curStream->volume = musVolume;
-		//voice_set_volume(curStream->audio_stream->voice, musVolume);
+		Mix_VolumeMusic(musVolume / 2);
 	}
 }
 
