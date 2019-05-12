@@ -11,7 +11,6 @@ char curSongName[64];
 int musVolume=255;
 byte lastSong=255;
 byte dontcallback=0;
-long musStart=0;
 
 void PickSongToPlay(void)
 {
@@ -79,9 +78,7 @@ void PickSongToPlay(void)
 
 void UpdateMusic(void)
 {
-	if (config.music && curStream &&			// music is playing
-			!logg_update_stream(curStream) &&   // we're on the last buffer
-			(timeGetTime() - musStart)/1000.0f >= (float)curStream->len / (float)curStream->freq) // timewise, the whole song has played
+	if (config.music && curStream && !logg_update_stream(curStream))
 		if (!dontcallback)
 			PickSongToPlay();
 }
@@ -119,10 +116,7 @@ void PlaySongForce(char *fname)
 	StopSong();
 	curStream=logg_get_stream(fullname, musVolume, 128, 0);
 	if(curStream)
-	{
-		musStart = timeGetTime();
 		UpdateMusic();
-	}
 }
 
 void StopSong(void)
@@ -147,8 +141,8 @@ void SetMusicVolume(int vol)
 	musVolume=vol;
 	if(curStream)
 	{
-		curStream->volume = musVolume;
-		voice_set_volume(curStream->audio_stream->voice, musVolume);
+		//curStream->volume = musVolume;
+		//voice_set_volume(curStream->audio_stream->voice, musVolume);
 	}
 }
 
