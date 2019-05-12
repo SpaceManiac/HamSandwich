@@ -17,7 +17,7 @@ void Song(byte w)
 	if(w==lastSong)
 		return;	// no need, it's already playing our song
 
-	sprintf(s,"song%03d.wav",w-SONG_UNDERWORLD);
+	sprintf(s,"snd%03d.wav",w);
 
 	PlaySong(s);
 	lastSong=w;
@@ -37,7 +37,7 @@ void PlaySong(char *fname)
 	char fullname[64];
 
 	strcpy(curSongName,fname);
-	sprintf(fullname,"music/%s",fname);
+	sprintf(fullname,"sound/%s",fname);
 	StopSong();
 
 	SDL_RWops* rw = SDL_RWFromFile(fullname, "rb");

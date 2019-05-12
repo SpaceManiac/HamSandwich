@@ -203,8 +203,6 @@ bool JamulSoundStop(int which)
 		}
 	}
 
-	soundIsOn = 0;
-
 	return true;
 }
 
