@@ -13,7 +13,7 @@ byte oldJoy;
 
 byte lastScanCode;
 
-byte kb[6][4];
+byte kb[8][4];
 byte joyBtn[2];
 byte shiftState;
 
@@ -33,7 +33,7 @@ void ControlKeyDown(byte k)
 	for(i=0;i<4;i++)
 	{
 		bit=1;
-		for(j=0;j<6;j++)
+		for(j=0;j<8;j++)
 		{
 			if(k==kb[j][i])
 			{
@@ -86,7 +86,7 @@ void ControlKeyUp(byte k)
 	for(i=0;i<4;i++)
 	{
 		bit=1;
-		for(j=0;j<6;j++)
+		for(j=0;j<8;j++)
 		{
 			if(k==kb[j][i])
 			{
