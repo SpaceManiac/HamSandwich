@@ -18,6 +18,17 @@ elif [ "$MSYSTEM" != "MINGW32" ]; then
 	exit 1
 fi
 
+mkdir -p "build"
+
+# Download Premake5 binary
+if [ ! -f "build/premake5" ]; then
+	echo "==== Downloading premake5 binary ===="
+	wget -O "build/premake5.zip" "https://github.com/premake/premake-core/releases/download/v5.0.0-alpha14/premake-5.0.0-alpha14-windows.zip"
+	md5sum -c <<<'93865b1bd6e0719f37b3acb07d60572b *build/premake5.zip'
+	7z x -o"build/" "build/premake5.zip"
+	rm "build/premake5.zip"
+fi
+
 # Download Allegro binaries
 ALLEGRO_DIR="build/allegro"
 ALLEGRO_VERSION="allegro-4.4.2-mingw-4.5.2"
@@ -25,11 +36,11 @@ ALLEGRO_ZIPNAME="$ALLEGRO_VERSION.7z"
 ALLEGRO_MD5="503fc383bd34fca866372f9fade9713a"
 if [ ! -d "$ALLEGRO_DIR" ]; then
 	echo "==== Downloading Allegro binaries ===="
-	mkdir -p "build"
 	if [ ! -f "build/$ALLEGRO_ZIPNAME" ]; then
 		wget -O "build/$ALLEGRO_ZIPNAME" "http://cdn.allegro.cc/file/library/allegro/4.4.2/$ALLEGRO_ZIPNAME"
-		md5sum -c <<<"$ALLEGRO_MD5 *build/$ALLEGRO_ZIPNAME"
 	fi
+	md5sum -c <<<"$ALLEGRO_MD5 *build/$ALLEGRO_ZIPNAME"
 	7z x -o"build/" "build/$ALLEGRO_ZIPNAME"
 	mv "build/$ALLEGRO_VERSION" "$ALLEGRO_DIR"
+	rm "build/$ALLEGRO_ZIPNAME"
 fi
