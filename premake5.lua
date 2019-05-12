@@ -11,8 +11,6 @@ function base_project(name)
 		targetdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/")
 		objdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/obj/")
 
-		includedirs { "build/allegro/include/" }
-		libdirs { "build/allegro/lib/" }
 		linkoptions { "-static-libgcc", "-static-libstdc++" }
 
 		files {
@@ -28,9 +26,6 @@ function base_project(name)
 		filter "configurations:release"
 			defines { "NDEBUG" }
 			optimize "On"
-
-		filter "system:Windows"
-			links { "winmm", "allegro-4.4.2-monolith-mt", "ws2_32", "logg-1.0-mt", "vorbisfile-1.3.2-static-mt", "vorbis-1.3.2-static-mt", "ogg-1.2.1-static-mt" }
 
 		filter {}
 end
