@@ -1,93 +1,39 @@
 #include "mgldraw.h"
 #include "game.h"
 #include "sound.h"
-#include <allegro.h>
-#include <winalleg.h>
+#include "music.h"
+
+#include <SDL2/SDL_syswm.h>
 
 MGLDraw *_globalMGLDraw;
-byte needPalRealize=0;
-byte firstStartup;
-static byte exitNow=0;
-HWND myHwnd;
-HINSTANCE hInst;
 
-bool CreateMyOwnWindow(HINSTANCE hInsta,char *wndName)
+int KEY_MAX;
+const Uint8* key = SDL_GetKeyboardState(&KEY_MAX);
+
+MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool windowed)
 {
-	WNDCLASS wc;
-	char className[]="supremeWindow";
-
-	hInst=hInsta;
-	// first thing needed is to make a window, so directsound can have it
-	wc.style=CS_HREDRAW|CS_VREDRAW;
-	wc.lpfnWndProc=MyWindowsEventHandler;
-	wc.cbClsExtra=0;
-	wc.cbWndExtra=0;
-	wc.hInstance=hInst;
-	wc.hIcon=LoadIcon(hInst,IDI_APPLICATION);
-	wc.hCursor=LoadCursor(NULL,IDC_ARROW);
-	wc.hbrBackground=NULL;
-	wc.lpszMenuName=NULL;
-	wc.lpszClassName=className;
-	if(!RegisterClass(&wc))
-		return FALSE;
-
-	myHwnd=CreateWindowEx(
-		WS_EX_APPWINDOW,
-		className,
-		wndName,
-		WS_SYSMENU|WS_CAPTION|WS_MINIMIZEBOX,
-		0,
-		0,
-		650,
-		540,
-		NULL,
-		NULL,
-		hInst,
-		NULL);
-
-	if(!myHwnd)
-		return FALSE;
-
-	ShowWindow(myHwnd,SW_SHOWNORMAL);
-	ShowCursor(0);
-	UpdateWindow(myHwnd);
-
-	return TRUE;
-}
-
-void DestroyMyWindow(void)
-{
-	DestroyWindow(myHwnd);
-	UnregisterClass("supremeWindow",hInst);
-}
-
-MGLDraw::MGLDraw(HINSTANCE hInst,char *name,int xRes,int yRes,int bpp,bool window)
-{
-	RECT rect;
-	int result;
-
-	//if(!CreateMyOwnWindow(hInst,name))
-	//	FatalError("Couldn't create window!");
-
-	//win_set_window(myHwnd);
-	allegro_init();
-	install_keyboard();
-	install_mouse();
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 	SeedRNG();
 
 	if(JamulSoundInit(512))
 		SoundSystemExists();
 
-	set_color_depth(bpp);
-	if(window)
-		result=set_gfx_mode(GFX_AUTODETECT_WINDOWED,xRes,yRes,0,0);
-	else
-		result=set_gfx_mode(GFX_AUTODETECT_FULLSCREEN,xRes,yRes,0,0);
+	Uint32 flags = windowed ? 0 : SDL_WINDOW_FULLSCREEN;
+	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, xRes, yRes, flags);
+	if (!window) {
+		sprintf("SDL_CreateWindow: %s\n", SDL_GetError());
+		FatalError("Failed to create window");
+		return;
+	}
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+	if (!renderer) {
+		sprintf("SDL_CreateWindow: %s\n", SDL_GetError());
+		FatalError("Failed to create renderer");
+		return;
+	}
 
-	set_display_switch_mode(SWITCH_AMNESIA);
-
-	if(result<0)
-		FatalError("Unable to initialize video mode!");
+	SDL_SetWindowTitle(window, name);
+	SDL_ShowCursor(SDL_DISABLE);
 
 	readyToQuit=false;
 	_globalMGLDraw=this;
@@ -97,27 +43,19 @@ MGLDraw::MGLDraw(HINSTANCE hInst,char *name,int xRes,int yRes,int bpp,bool windo
 	this->yRes=yRes;
 	this->bpp=bpp;
 	this->pitch=xRes;
+	this->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, xRes, yRes);
 	this->scrn=new byte[xRes*yRes];
 	if(!this->scrn)
 		FatalError("Out of memory!");
 
-	this->windowed=window;
-	this->hInst=hInst;
-
-	if(window)
-	{
-		GetWindowRect(win_get_window(),&rect);
-		windowX=rect.left+3;
-		windowY=rect.top+23;
-	}
-	else
-	{
-		windowX=0;
-		windowY=0;
-	}
+	this->windowed=windowed;
 
 	mouseDown=0;
 	rMouseDown=0;
+	mouse_x = xRes/2;
+	mouse_y = yRes/2;
+	mouse_b = 0;
+	mouse_z = 0;
 
 	lastRawCode=0;
 	SetLastKey(0);
@@ -127,10 +65,8 @@ MGLDraw::MGLDraw(HINSTANCE hInst,char *name,int xRes,int yRes,int bpp,bool windo
 
 MGLDraw::~MGLDraw(void)
 {
-	exitNow=1;
 	JamulSoundExit();
-	delete[] this->scrn;
-	allegro_exit();
+	delete[] scrn;
 //	DestroyMyWindow();
 }
 
@@ -142,7 +78,7 @@ void MGLDraw::GetMouse(int *x,int *y)
 
 void MGLDraw::SetMouse(int x,int y)
 {
-	position_mouse(x,y);
+	SDL_WarpMouseInWindow(window, x, y);
 }
 
 void MGLDraw::ResetTimer(void)
@@ -169,53 +105,129 @@ float MGLDraw::FrameRate(void)
 
 bool MGLDraw::Process(void)
 {
+	UpdateMusic();
 	return (!readyToQuit);
 }
 
+#ifdef WIN32
 HWND MGLDraw::GetHWnd(void)
 {
-	return win_get_window();
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	SDL_GetWindowWMInfo(window, &info);
+	return info.info.win.window;
+}
+#endif
+
+int makecol32(int r, int g, int b)
+{
+	return (r << 24) | (g << 16) | (b << 8);
+}
+
+#define putpixel(buffer, x, y, value) (buffer)[(y)*pitch + (x)] = (value)
+
+int MGLDraw::FormatPixel(int x,int y)
+{
+	byte b = scrn[y*xRes+x];
+	return makecol32((*thePal)[b].r*4, (*thePal)[b].g*4, (*thePal)[b].b*4);
+}
+
+void MGLDraw::PseudoCopy(int y,int x,byte* data,int len)
+{
+	for(int i = 0; i < len; ++i, ++x)
+		putpixel(buffer, x, y, makecol32((*thePal)[data[i]].r*4, (*thePal)[data[i]].g*4, (*thePal)[data[i]].b*4));
+}
+
+void MGLDraw::StartFlip(void)
+{
+	void* p;
+	SDL_LockTexture(texture, NULL, &p, &pitch);
+	buffer = (int*) p;
+	pitch /= sizeof(int);
+}
+
+void MGLDraw::FinishFlip(void)
+{
+	SDL_UnlockTexture(texture);
+	SDL_RenderCopy(renderer, texture, NULL, NULL);
+	SDL_RenderPresent(renderer);
+	UpdateMusic();
+	buffer = nullptr;
+
+	SDL_Event e;
+	while(SDL_PollEvent(&e)) {
+		if (e.type == SDL_KEYDOWN) {
+			ControlKeyDown(e.key.keysym.scancode);
+			lastRawCode = e.key.keysym.scancode;
+			if (!(e.key.keysym.sym & ~0xff))
+			{
+				lastKeyPressed = e.key.keysym.sym;
+				if (e.key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT))
+				{
+					lastKeyPressed = toupper(lastKeyPressed);
+				}
+			}
+		} else if (e.type == SDL_KEYUP) {
+			ControlKeyUp(e.key.keysym.scancode);
+		} else if (e.type == SDL_MOUSEMOTION) {
+			mouse_x = e.motion.x;
+			mouse_y = e.motion.y;
+		} else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
+			int flag = 0;
+			if (e.button.button == 1)
+				flag = 1;
+			else if (e.button.button == 3)
+				flag = 2;
+			if (e.button.state == SDL_PRESSED)
+				mouse_b |= flag;
+			else
+				mouse_b &= ~flag;
+		} else if (e.type == SDL_QUIT) {
+			readyToQuit = 1;
+		} else if (e.type == SDL_WINDOWEVENT) {
+			if (e.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
+				SetGameIdle(true);
+			} else if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
+				SetGameIdle(false);
+			}
+		}
+	}
 }
 
 void MGLDraw::Flip(void)
 {
 	int i;
 
-	vsync();
-	acquire_screen();
+	StartFlip();
 	// blit to the screen
 	for(i=0;i<yRes;i++)
-	{
-		putpixel(screen,0,i,0);
-		memcpy(screen->line[i],&scrn[i*xRes],xRes);
-	}
-	release_screen();
+		PseudoCopy(i,0,&scrn[i*xRes],xRes);
+	FinishFlip();
 }
 
 void MGLDraw::WaterFlip(int v)
 {
 	int i;
 	char table[24]={ 0, 1, 1, 1, 2, 2, 2, 2,
-		             2, 2, 1, 1, 0,-1,-1,-1,
-				    -1,-2,-2,-2,-2,-1,-1,-1};
+					 2, 2, 1, 1, 0,-1,-1,-1,
+					-1,-2,-2,-2,-2,-1,-1,-1};
 	v=v%24;
 
-	acquire_screen();
+	StartFlip();
 	// blit to the screen
 	for(i=0;i<yRes;i++)
 	{
-		putpixel(screen,0,i,0);
 		if(table[v]==0)
-			memcpy(screen->line[i],&scrn[i*xRes],xRes);
+			PseudoCopy(i,0,&scrn[i*xRes],xRes);
 		else if(table[v]<0)
 		{
-			memcpy(screen->line[i],&scrn[i*xRes-table[v]],xRes+table[v]);
-			memcpy(&screen->line[i][xRes+table[v]],&scrn[i*xRes],-table[v]);
+			PseudoCopy(i,0,&scrn[i*xRes-table[v]],xRes+table[v]);
+			PseudoCopy(i,xRes+table[v],&scrn[i*xRes],-table[v]);
 		}
 		else
 		{
-			memcpy(screen->line[i],&scrn[i*xRes+xRes-table[v]],table[v]);
-			memcpy(&screen->line[i][table[v]],&scrn[i*xRes],xRes-table[v]);
+			PseudoCopy(i,0,&scrn[i*xRes+xRes-table[v]],table[v]);
+			PseudoCopy(i,table[v],&scrn[i*xRes],xRes-table[v]);
 		}
 		if(i&1)
 		{
@@ -224,46 +236,45 @@ void MGLDraw::WaterFlip(int v)
 				v=0;
 		}
 	}
-	release_screen();
+	FinishFlip();
 }
 
 void MGLDraw::TeensyFlip(void)
 {
 	int i,j,x,y;
 
-	acquire_screen();
-	//clear_bitmap(screen);
 	x=640/4;
 	y=480/4;
 	// blit to the screen
+	StartFlip();
 	for(i=0;i<yRes/2;i++)
 	{
 		for(j=0;j<xRes/2;j++)
-			putpixel(screen,x+j,y,scrn[i*xRes*2+j*2]);
+			putpixel(buffer,x+j,y,FormatPixel(j*2,i*2));
 		y++;
 	}
-	release_screen();
+	FinishFlip();
 }
 
 void MGLDraw::TeensyWaterFlip(int v)
 {
 	int i,j,x,y;
 	char table[24]={ 0, 1, 1, 1, 2, 2, 2, 2,
-		             2, 2, 1, 1, 0,-1,-1,-1,
-				    -1,-2,-2,-2,-2,-1,-1,-1};
+					 2, 2, 1, 1, 0,-1,-1,-1,
+					-1,-2,-2,-2,-2,-1,-1,-1};
 	v=v%24;
 
 	x=640/4;
 	y=480/4;
-	acquire_screen();
 	// blit to the screen
+	StartFlip();
 	for(i=0;i<yRes/2;i++)
 	{
-		putpixel(screen,x-1-table[v],y,0);
-		putpixel(screen,x+xRes/2-table[v],y,0);
+		putpixel(buffer,x-1-table[v],y,0);
+		putpixel(buffer,x+xRes/2-table[v],y,0);
 		for(j=0;j<xRes/2;j++)
 		{
-			putpixel(screen,x+j-table[v],y,scrn[i*xRes*2+j*2]);
+			putpixel(buffer,x+j-table[v],y,FormatPixel(j*2,i*2));
 		}
 		if(i&1)
 		{
@@ -273,64 +284,62 @@ void MGLDraw::TeensyWaterFlip(int v)
 		}
 		y++;
 	}
-	release_screen();
+	FinishFlip();
 }
 
 
 void MGLDraw::RasterFlip(void)
 {
-	int i;
+	int i,j;
 
-	acquire_screen();
 	// blit to the screen
+	StartFlip();
 	for(i=0;i<yRes;i++)
 	{
 		if(!(i&1))
 		{
-			putpixel(screen,0,i,0);
-			memcpy(screen->line[i],&scrn[i*xRes],xRes);
+			PseudoCopy(i,0,&scrn[i*xRes],xRes);
 		}
 		else
 		{
-			putpixel(screen,0,i,0);
-			memset(screen->line[i],0,xRes);
+			for(j=0;j<xRes;j++)
+				putpixel(buffer,j,i,0);
 		}
 	}
-	release_screen();
+	FinishFlip();
 }
 
 void MGLDraw::RasterWaterFlip(int v)
 {
-	int i;
+	int i,j;
 	char table[24]={ 0, 1, 1, 1, 2, 2, 2, 2,
-		             2, 2, 1, 1, 0,-1,-1,-1,
-				    -1,-2,-2,-2,-2,-1,-1,-1};
+					 2, 2, 1, 1, 0,-1,-1,-1,
+					-1,-2,-2,-2,-2,-1,-1,-1};
 	v=v%24;
 
-	acquire_screen();
 	// blit to the screen
+	StartFlip();
 	for(i=0;i<yRes;i++)
 	{
 		if(!(i&1))
 		{
-			putpixel(screen,0,i,0);
 			if(table[v]==0)
-				memcpy(screen->line[i],&scrn[i*xRes],xRes);
+				PseudoCopy(i,0,&scrn[i*xRes],xRes);
 			else if(table[v]<0)
 			{
-				memcpy(screen->line[i],&scrn[i*xRes-table[v]],xRes+table[v]);
-				memcpy(&screen->line[i][xRes+table[v]],&scrn[i*xRes],-table[v]);
+				PseudoCopy(i,0,&scrn[i*xRes-table[v]],xRes+table[v]);
+				PseudoCopy(i,xRes+table[v],&scrn[i*xRes],-table[v]);
 			}
 			else
 			{
-				memcpy(screen->line[i],&scrn[i*xRes+xRes-table[v]],table[v]);
-				memcpy(&screen->line[i][table[v]],&scrn[i*xRes],xRes-table[v]);
+				PseudoCopy(i,0,&scrn[i*xRes+xRes-table[v]],table[v]);
+				PseudoCopy(i,table[v],&scrn[i*xRes],xRes-table[v]);
 			}
 		}
 		else
 		{
-			putpixel(screen,0,i,0);
-			memset(screen->line[i],0,xRes);
+			for(j=0;j<xRes;j++)
+				putpixel(buffer,j,i,0);
 		}
 		if(i&1)
 		{
@@ -339,7 +348,7 @@ void MGLDraw::RasterWaterFlip(int v)
 				v=0;
 		}
 	}
-	release_screen();
+	FinishFlip();
 }
 
 void MGLDraw::ClearScreen(void)
@@ -367,10 +376,10 @@ void MGLDraw::Quit(void)
 	readyToQuit=true;
 }
 
-typedef struct palfile_t
+struct palfile_t
 {
 	char r,g,b;
-} palfile_t;
+};
 
 bool MGLDraw::LoadPalette(char *name)
 {
@@ -420,13 +429,12 @@ RGB *MGLDraw::GetPalette(void)
 
 void MGLDraw::RealizePalette(void)
 {
-	set_palette(pal);
+	thePal = &pal;
 }
 
 void MGLDraw::WaterPalette(byte b)
 {
 	int i,j;
-	PALETTE pal2;
 
 	for(i=0;i<8;i++)
 		for(j=0;j<32;j++)
@@ -450,7 +458,7 @@ void MGLDraw::WaterPalette(byte b)
 			}
 		}
 
-	set_palette(pal2);
+	thePal = &pal2;
 }
 
 // 8-bit graphics only
@@ -621,6 +629,7 @@ void MGLDraw::BrightBox(int x,int y,int x2,int y2,byte amt)
 		}
 	}
 }
+
 void MGLDraw::SelectLineH(int x,int x2,int y,byte ofs)
 {
 	int i;
@@ -706,31 +715,16 @@ void MGLDraw::SetLastKey(char c)
 	lastKeyPressed=c;
 }
 
-int MGLDraw::LastRawCode(void)
+int MGLDraw::LastKeyPressed(void)
 {
-	int r;
-
-	r=lastRawCode;
-	lastRawCode=0;
-	return r;
-}
-
-char MGLDraw::LastKeyPressed(void)
-{
-	if(keypressed())
-	{
-		lastRawCode=readkey();
-		return (lastRawCode&0xff);
-	}
-	else
-		return 0;
+	int i = lastKeyPressed;
+	lastKeyPressed = 0;
+	return i;
 }
 
 void MGLDraw::ClearKeys(void)
 {
-	while(keypressed())
-		readkey();
-	lastRawCode=0;
+	lastKeyPressed = 0;
 }
 
 void MGLDraw::SetMouseDown(byte w)
@@ -792,56 +786,41 @@ char MGLDraw::LastKeyPeek(void)
 
 bool MGLDraw::LoadBMP(char *name)
 {
-	BITMAP *b;
-	RGB newpal[256];
+	return LoadBMP(name, pal);
+}
+
+bool MGLDraw::LoadBMP(char *name, PALETTE pal)
+{
 	int i,w;
 
-	b=load_bitmap(name,newpal);
-	if(b==NULL)
+	SDL_Surface* b = SDL_LoadBMP(name);
+	if (!b) {
+		printf("%s: %s\n", name, SDL_GetError());
 		return FALSE;
-
-	for(i=0;i<256;i++)
-	{
-		pal[i].r=newpal[i].r;
-		pal[i].g=newpal[i].g;
-		pal[i].b=newpal[i].b;
 	}
+
+	if(pal && b->format->palette)
+		for(i=0; i<256 && i < b->format->palette->ncolors; i++)
+		{
+			pal[i].r = b->format->palette->colors[i].r/4;
+			pal[i].g = b->format->palette->colors[i].g/4;
+			pal[i].b = b->format->palette->colors[i].b/4;
+		}
 	RealizePalette();
 
 	w=b->w;
 	if(w>SCRWID)
 		w=SCRWID;
 
+	SDL_LockSurface(b);
 	for(i=0;i<b->h;i++)
 	{
 		if(i<SCRHEI)
-			memcpy(&scrn[i*pitch],b->line[i],w);
+			memcpy(&scrn[i*pitch], &((byte*) b->pixels)[b->pitch * i], w);
 	}
 
-	destroy_bitmap(b);
-	return TRUE;
-}
-
-bool MGLDraw::LoadBMPNoPalette(char *name)
-{
-	BITMAP *b;
-	RGB newpal[256];
-	int i,w;
-
-	b=load_bitmap(name,newpal);
-	if(b==NULL)
-		return FALSE;
-
-	w=b->w;
-	if(w>SCRWID)
-		w=SCRWID;
-
-	for(i=0;i<b->h;i++)
-	{
-		if(i<SCRHEI)
-			memcpy(&scrn[i*pitch],b->line[i],w);
-	}
-	destroy_bitmap(b);
+	SDL_UnlockSurface(b);
+	SDL_FreeSurface(b);
 	return TRUE;
 }
 
@@ -851,19 +830,14 @@ bool MGLDraw::LoadBMPNoPalette(char *name)
 byte fatalDie=0;
 char errMsg[128];
 
-HWND MGLGetHWnd(void)
-{
-	return _globalMGLDraw->GetHWnd();
-}
-
 void SeedRNG(void)
 {
-  srand(timeGetTime());
+	srand(timeGetTime());
 }
 
 dword Random(dword range)
 {
-	return (rand()%range);
+	return rand() * range / (RAND_MAX+1);
 }
 
 void FatalError(char *msg)
@@ -876,24 +850,7 @@ void FatalError(char *msg)
 void FatalErrorQuit(void)
 {
 	if(fatalDie)
-		MessageBox(NULL,errMsg,"Fatal Error!!",MB_ICONERROR|MB_OK);
-}
-
-long FAR PASCAL MyWindowsEventHandler(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	byte b;
-
-	switch(message)
-    {
-		case WM_VSCROLL:
-		//case WM_MOUSEWHEEL:
-			// scroll wheel moved
-			b=1;
-			break;
-		default:
-			// Hand off unprocessed messages to DefWindowProc
-			return DefWindowProc(hwnd,message,wParam,lParam);
-			break;
+	{
+		fprintf(stderr, "%s\n", errMsg);
 	}
-	return DefWindowProc(hwnd,message,wParam,lParam);
 }

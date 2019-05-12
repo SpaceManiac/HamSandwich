@@ -1,16 +1,37 @@
 /* MGLDraw
 
-  hacked all to hell to be in allegro instead.
+  hacked all to hell to be in SDL2 instead.
 
 */
 
 #ifndef MGLDRAW_H
 #define MGLDRAW_H
 
-#include "winpch.h"
+#include <SDL2/SDL.h>
+#ifdef WIN32
+#include <windows.h>
+#endif
+#include <stdio.h>
+#include "jamultypes.h"
+#include "jamulsound.h"
+#include "control.h"
 
 #define SCRWID	640
 #define SCRHEI  480
+
+// -- SDL adapters
+struct RGB
+{
+	unsigned char r, g, b, a;
+};
+
+#define PAL_SIZE	256
+
+typedef RGB PALETTE[PAL_SIZE];
+
+extern int KEY_MAX;
+extern const Uint8* key;
+// -- End SDL adapters
 
 // if I'm not mistaken, this number is NOT used by windows as a window event
 #define INTERNET_EVENT	(WM_USER+1)
@@ -20,23 +41,25 @@
 class MGLDraw
 {
 	public:
-		MGLDraw::MGLDraw(HINSTANCE hInst,char *name,int xRes,int yRes,int bpp,bool window);
+		MGLDraw(char *name,int xRes,int yRes,int bpp,bool window);
 		~MGLDraw(void);
 
 		bool Process(void);	// handle windows messages and such
 
-		HWND GetHWnd(void);
 		byte *GetScreen(void); // get a pointer to the screen memory
 		int GetWidth(void);
 		int GetHeight(void);
 		void ClearScreen(void);
+		void Quit(void);
+
+		void StartFlip(void);
+		void FinishFlip(void);
 		void Flip(void);
 		void WaterFlip(int v);
 		void TeensyFlip(void);
 		void TeensyWaterFlip(int v);
 		void RasterFlip(void);
 		void RasterWaterFlip(int v);
-		void Quit(void);
 
 		bool LoadPalette(char *name);
 		void SetPalette(PALETTE pal2);
@@ -45,10 +68,9 @@ class MGLDraw
 		void RealizePalette(void);
 
 		bool LoadBMP(char *name);
-		bool LoadBMPNoPalette(char *name);
+		bool LoadBMP(char *name, PALETTE pal);
 
-		int  LastRawCode(void);
-		char LastKeyPressed(void);
+		int LastKeyPressed(void);
 		char LastKeyPeek(void);
 		void SetLastKey(char c);
 		void ClearKeys(void);
@@ -78,34 +100,45 @@ class MGLDraw
 		void GetMouse(int *x,int *y);
 		void SetMouse(int x,int y);
 
+		int FormatPixel(int x,int y);
+		void PseudoCopy(int x,int y,byte* data,int len);
+
 		void ResetGM(void);
+
+#ifdef WIN32
+		HWND GetHWnd(void);
+#endif
 
 		int xRes,yRes,bpp,pitch;
 		byte windowed;
-		HINSTANCE hInst;
 		bool readyToQuit;
 		byte tapTrack;
+
+		int mouse_x, mouse_y, mouse_z, mouse_b;
 	protected:
-		int windowX,windowY;
 
 		byte *scrn;
-		PALETTE pal;
+		PALETTE pal, pal2, *thePal;
 		dword elapsedTime;
 		dword now;
 		int numFrames;
 		char lastKeyPressed;
 		int lastRawCode;
 		byte mouseDown,rMouseDown;
+
+		SDL_Window *window;
+		SDL_Renderer *renderer;
+		SDL_Texture *texture;
+
+		int *buffer;
 };
 
 extern MGLDraw *_globalMGLDraw;
-HWND MGLGetHWnd(void);	// augh.
 
 void SeedRNG(void);
 dword Random(dword range);
 void FatalError(char *msg);
 
-long FAR PASCAL MyWindowsEventHandler(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 void FatalErrorQuit(void);
 
 #endif

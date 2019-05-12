@@ -242,7 +242,6 @@ void InitMainMenu(MGLDraw *mgl)
 
 	mgl->LoadBMP(TITLEBMP);
 	mgl->LastKeyPressed();
-	clear_keybuf();
 	GetTaps();
 	oldc=255;
 	ApplyControlSettings();
@@ -726,7 +725,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 				if(subcursor==4)
 				{
 					addOnChoice--;
-					while(addOnChoice<0 || addOnChoice>=addOnCount || (addOnList[addOnChoice].filename=='\0' && addOnChoice!=0))
+					while(addOnChoice<0 || addOnChoice>=addOnCount || (addOnList[addOnChoice].filename[0]=='\0' && addOnChoice!=0))
 						addOnChoice--;
 				}
 #endif
@@ -742,7 +741,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 				if(subcursor==4)
 				{
 					addOnChoice++;
-					while(addOnChoice<0 || addOnChoice>=addOnCount || (addOnList[addOnChoice].filename=='\0' && addOnChoice!=0))
+					while(addOnChoice<0 || addOnChoice>=addOnCount || (addOnList[addOnChoice].filename[0]=='\0' && addOnChoice!=0))
 						addOnChoice++;
 				}
 #endif

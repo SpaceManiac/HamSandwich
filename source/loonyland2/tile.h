@@ -3,7 +3,6 @@
 
 #include "winpch.h"
 #include "mgldraw.h"
-#pragma pack(1)
 
 #define TILE_WIDTH  32
 #define TILE_HEIGHT 24

@@ -192,8 +192,10 @@ byte HaveGallery(void)
 	int i,c;
 
 	c=0;
+#ifdef DIRECTORS
 	for(i=0;i<GALLERY_PIX;i++)
 		if(opt.galPix[i])
 			c++;
+#endif
 	return (c>0);
 }

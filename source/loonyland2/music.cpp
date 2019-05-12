@@ -1,26 +1,14 @@
 #include "music.h"
 #include "mgldraw.h"
-#include <fmod.h>
+#include "config.h"
 #include "editor.h"
-#include "player.h"
+#include <SDL2/SDL_mixer.h>
 
-FSOUND_STREAM *curStream=NULL;
+Mix_Music *curStream=NULL;
 char curSongName[64];
 int musVolume=255;
 byte lastSong=255;
 byte dontcallback=0;
-
-signed char SongIsDone(FSOUND_STREAM *stream,void *buff,int len,int param)
-{
-#ifdef DIRECTORS
-	if(player.var[VAR_COMMENTARY])
-		return 0;
-#endif
-	if(!dontcallback)
-		PlaySong(curSongName);
-
-	return 0;	// ignores the return value
-}
 
 void Song(byte w)
 {
@@ -47,29 +35,59 @@ void Song(byte w)
 	lastSong=w;
 }
 
+void UpdateMusic(void)
+{
+	if (config.music && curStream && !Mix_PlayingMusic())
+	{
+#ifdef DIRECTORS
+		if(player.var[VAR_COMMENTARY])
+			return;
+#endif
+		if (!dontcallback)
+			PlaySong(curSongName);
+	}
+}
+
 void PlaySong(char *fname)
 {
 	char fullname[64];
 
+	if(!config.music)
+		return;
+
 	strcpy(curSongName,fname);
-	sprintf(fullname,"music\\%s",fname);
+	sprintf(fullname,"music/%s",fname);
 	StopSong();
-	curStream=FSOUND_Stream_OpenFile(fullname,FSOUND_NORMAL,0);
-	if(curStream)
+
+	SDL_RWops* rw = SDL_RWFromFile(fullname, "rb");
+	if(!rw)
 	{
-		FSOUND_Stream_Play(config.numSounds,curStream);
-		FSOUND_Stream_SetEndCallback(curStream,SongIsDone,0);
-		FSOUND_SetVolume(config.numSounds,musVolume);
+		printf("%s: %s\n", fullname, SDL_GetError());
+		return;
 	}
+
+	curStream=Mix_LoadMUS_RW(rw, 1);
+	if(!curStream)
+	{
+		printf("%s: %s\n", fullname, Mix_GetError());
+		return;
+	}
+
+	Mix_VolumeMusic(musVolume / 2);
+	Mix_PlayMusic(curStream, 1);
+	UpdateMusic();
 }
 
 void StopSong(void)
 {
+	if(!config.music)
+		return;
+
 	dontcallback=1;
-	lastSong=255;
 	if(curStream)
 	{
-		FSOUND_Stream_Close(curStream);
+		Mix_HaltMusic();
+		Mix_FreeMusic(curStream);
 		curStream=NULL;
 	}
 	dontcallback=0;
@@ -77,10 +95,13 @@ void StopSong(void)
 
 void SetMusicVolume(int vol)
 {
+	if(!config.music)
+		return;
+
 	musVolume=vol;
 	if(curStream)
 	{
-		FSOUND_SetVolume(config.numSounds,musVolume);
+		Mix_VolumeMusic(musVolume / 2);
 	}
 }
 

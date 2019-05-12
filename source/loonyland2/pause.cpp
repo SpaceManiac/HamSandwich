@@ -305,7 +305,7 @@ void RenderMadcapMenu(int x,int y)
 	}
 }
 
-void OptionButton(int x,int y,int wid,char *txt,byte spot)
+void OptionButton(int x,int y,int wid,const char *txt,byte spot)
 {
 	if(subcursor!=spot || subMode!=SUBMODE_OPTIONS)
 		PauseBox(x,y,x+wid,y+28,240);

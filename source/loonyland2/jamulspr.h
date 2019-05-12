@@ -3,7 +3,6 @@
 
 #include "winpch.h"
 #include "mgldraw.h"
-#pragma pack(1)
 
 class sprite_t
 {
@@ -53,7 +52,5 @@ class sprite_set_t
 		word count;
 		sprite_t **spr;
 };
-
-void NewComputerSpriteFix(char *fname,int x,int y);
 
 #endif

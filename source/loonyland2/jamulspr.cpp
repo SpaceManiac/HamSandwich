@@ -29,6 +29,43 @@ count structures:
 			Runs do not cross line boundaries.
 */
 
+byte SprModifyColor(byte color, byte hue)
+{
+	return (hue << 5) | (color & 31);
+}
+
+byte SprGetColor(byte color)
+{
+	return (color >> 5);
+}
+
+byte SprModifyLight(byte color, char bright)
+{
+	byte value = (color & 31) + bright;
+	if (value > 128) value = 0; // since byte is unsigned...
+	else if (value > 31) value = 31;
+	return (color & ~31) | value;
+}
+
+byte SprModifyGhost(byte src, byte dst, char bright)
+{
+	if (src >> 5 == 0)
+	{
+		return SprModifyLight(dst, src);
+	}
+	else
+	{
+		return SprModifyLight(src, bright);
+	}
+}
+
+byte SprModifyGlow(byte src, byte dst, char bright)
+{
+	return SprModifyLight(src, (dst & 31) + bright);
+}
+
+static const int constrainX = 0, constrainY = 0, constrainX2 = SCRWID - 1, constrainY2 = SCRHEI - 1;
+
 // -------------------------------------------------------------------------
 // ****************************** SPRITE_T *********************************
 // -------------------------------------------------------------------------
@@ -108,676 +145,432 @@ void sprite_t::GetCoords(int x,int y,int *rx,int *ry,int *rx2,int *ry2)
 	*ry2=*ry+height;
 }
 
-void sprite_t::Draw(int x,int y,MGLDraw *mgl)
+void sprite_t::Draw(int x, int y, MGLDraw *mgl)
 {
-	dword scrWidth=mgl->GetWidth();
-	dword dst;
-	byte *scrn=mgl->GetScreen();
-	byte *spr;
-	dword doDraw;
-	dword minX,maxX;
-	dword sprHeight,sprWidth;
+	byte *src, *dst, b, skip;
+	dword pitch;
+	int srcx, srcy;
+	byte noDraw;
 
-	x-=ofsx;
-	y-=ofsy;
-	if(x>639 || y>479)
-		return;	// whole sprite is offscreen
+	x -= ofsx;
+	y -= ofsy;
+	if (x > constrainX2 || y > constrainY2)
+		return; // whole sprite is offscreen
 
-	dst=x+y*scrWidth;
+	pitch = mgl->GetWidth();
+	src = data;
+	dst = mgl->GetScreen() + x + y*pitch;
 
-	doDraw=0;
-	if(y<0)
-		doDraw=-y;
-
-	minX=y*scrWidth+(dword)scrn;
-	maxX=minX+scrWidth;
-
-	spr=data;
-	sprHeight=height;
-	sprWidth=width;
-
-	if(y>mgl->GetHeight()-height)
-		sprHeight=mgl->GetHeight()-y;
-
-	__asm
+	srcx = x;
+	srcy = y;
+	if (srcy < constrainY)
+		noDraw = 1;
+	else
+		noDraw = 0;
+	while (srcy < height + y)
 	{
-		// esi = address of sprite data
-		// edi = screen address to draw at
-		// edx = doDraw (counts down until you can draw if sprite is partially above screen)
-		// ebx = sprite width counter
-		// ecx = placeholder for moving data
-		// eax = work register
-		pusha
-		push ds
-		pop  es
-		mov edi,scrn
-		add edi,dst
-		mov esi,spr
-		mov edx,doDraw
-		mov ebx,sprWidth
-		xor eax,eax			// zero out eax because we want it to work as a byte
-loop1:
-		cmp ebx,0			// check to see if this line is done (x has run out)
-		jz  linedone
-		mov al,ds:[esi]		// get next byte of source
-		inc esi
-		sal al,1
-		jnc	drawpixels		// if the byte is positive, draw a run of pixels
-							// otherwise we are skipping pixels
-		shr al,1
-		add edi,eax			// move destination forward by that much
-		sub ebx,eax			// and decrease width count by that much
-		jmp loop1
-drawpixels:
-		shr al,1
-		sub ebx,eax
-		cmp edx,0			// check to be sure we're not too high up
-		jnz dontplot
-		cmp edi,maxX		// check to be sure we're not off the end
-		jae dontplot
-		cmp edi,minX		// check to be sure we're not too far left either
-							// (in which case it may be partial)
-		jbe dontplotallofit
-
-		mov ecx,eax
-		add ecx,edi
-		cmp ecx,maxX		// check to see if this run will run off the end
-		jae cropit
-		mov ecx,eax
-		rep movsb			// move the data
-		jmp loop1
-cropit:
-		sub ecx,maxX
-		push ecx			// store the amount it runs over
-		sub eax,ecx			// chop off the amount it runs over by from the amount to draw
-		mov ecx,eax
-		rep movsb			// move the data
-		pop ecx
-		add esi,ecx			// move the source pointer up by the undrawn amount
-		add edi,ecx
-		jmp loop1
-dontplotallofit:
-		mov ecx,eax
-		add ecx,edi
-		cmp ecx,minX		// check to see if some of this run is onscreen
-		jbe dontplot		// nope, treat it as a complete ignore
-		sub ecx,minX
-		sub eax,ecx			// now eax contains how many to skip, and ecx contains how many to draw
-		add edi,eax
-		add esi,eax
-		rep movsb			// move the data (ecx was already set up)
-		jmp loop1
-dontplot:
-		add edi,eax
-		add esi,eax
-		jmp loop1			// just move the pointers and loop again
-linedone:
-		dec sprHeight
-		jz alldone			// All done!!!
-		mov ecx,scrWidth	// just handy for speed
-		mov ebx,sprWidth
-		sub edi,ebx			// subtract width from the destination, and...
-		add edi,ecx			// add one line's height
-		add maxX,ecx		// move the xMax and xMin down one line
-		add minX,ecx
-		cmp edx,0
-		jz	loop1
-		dec edx				// if doDraw (edx) was nonzero, count it down
-		jmp loop1
-alldone:
-		popa
+		if ((*src)&128) // transparent run
+		{
+			b = (*src)&127;
+			srcx += b;
+			dst += b;
+			src++;
+		}
+		else // solid run
+		{
+			b = *src;
+			src++;
+			if (srcx < constrainX - b || srcx > constrainX2)
+			{
+				// don't draw this line
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else if (srcx < constrainX)
+			{
+				// skip some of the beginning
+				skip = (constrainX - srcx);
+				src += skip;
+				srcx += skip;
+				dst += skip;
+				b -= skip;
+				if (srcx > constrainX2 - b)
+				{
+					skip = (b - (constrainX2 - srcx)) - 1;
+					if (!noDraw)
+						memcpy(dst, src, b - skip);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+				else
+				{
+					if (!noDraw)
+						memcpy(dst, src, b);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+			}
+			else if (srcx > constrainX2 - b)
+			{
+				// skip some of the end
+				skip = (srcx - (constrainX2 - b)) - 1;
+				if (!noDraw)
+					memcpy(dst, src, b - skip);
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else
+			{
+				// do it all!
+				if (!noDraw)
+					memcpy(dst, src, b);
+				srcx += b;
+				src += b;
+				dst += b;
+			}
+		}
+		if (srcx >= width + x)
+		{
+			srcx = x;
+			srcy++;
+			dst += pitch - width;
+			if (srcy >= constrainY)
+				noDraw = 0;
+			if (srcy > constrainY2)
+				return;
+		}
 	}
 }
 
 //   bright: how much to darken or lighten the whole thing (-16 to +16 reasonable)
-void sprite_t::DrawBright(int x,int y,MGLDraw *mgl,char bright)
+void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright)
 {
-	dword scrWidth=mgl->GetWidth();
-	dword dst;
-	byte *scrn=mgl->GetScreen();
-	byte *spr;
-	dword doDraw;
-	dword minX,maxX;
-	dword sprHeight,sprWidth;
+	byte *src, *dst, b, skip;
+	dword pitch;
+	int srcx, srcy;
+	byte noDraw;
+	int i;
 
-	if(this==NULL)
-		return;
-
-	if(bright==0)
-	{
-		// don't waste time!
-		Draw(x,y,mgl);
+	if (bright == 0)
+	{ // don't waste time!
+		Draw(x, y, mgl);
 		return;
 	}
 
-	x-=ofsx;
-	y-=ofsy;
-	if(x>639 || y>479)
-		return;	// whole sprite is offscreen
+	x -= ofsx;
+	y -= ofsy;
+	if (x > constrainX2 || y > constrainY2)
+		return; // whole sprite is offscreen
 
-	dst=x+y*scrWidth;
+	pitch = mgl->GetWidth();
+	src = data;
+	dst = mgl->GetScreen() + x + y*pitch;
 
-	doDraw=0;
-	if(y<0)
-		doDraw=-y;
-
-	minX=y*scrWidth+(dword)scrn;
-	maxX=minX+scrWidth;
-
-	spr=data;
-	sprHeight=height;
-	sprWidth=width;
-
-	if(y>mgl->GetHeight()-height)
-		sprHeight=mgl->GetHeight()-y;
-
-	__asm
+	srcx = x;
+	srcy = y;
+	if (srcy < constrainY)
+		noDraw = 1;
+	else
+		noDraw = 0;
+	while (srcy < height + y)
 	{
-		// esi = address of sprite data
-		// edi = screen address to draw at
-		// edx = doDraw (counts down until you can draw if sprite is partially above screen)
-		// ebx = sprite width counter
-		// ecx = placeholder for moving data
-		// eax = work register
-		pusha
-		push ds
-		pop  es
-		mov edi,scrn
-		add edi,dst
-		mov esi,spr
-		mov edx,doDraw
-		mov ebx,sprWidth
-		xor eax,eax			// zero out eax because we want it to work as a byte
-loop1:
-		cmp ebx,0			// check to see if this line is done (x has run out)
-		jz  linedone
-		mov al,ds:[esi]		// get next byte of source
-		inc esi
-		sal al,1
-		jnc	drawpixels		// if the byte is positive, draw a run of pixels
-							// otherwise we are skipping pixels
-		shr al,1
-		add edi,eax			// move destination forward by that much
-		sub ebx,eax			// and decrease width count by that much
-		jmp loop1
-drawpixels:
-		shr al,1
-		sub ebx,eax
-		cmp edx,0			// check to be sure we're not too high up
-		jnz dontplot
-		cmp edi,maxX		// check to be sure we're not off the end
-		jae dontplot
-		cmp edi,minX		// check to be sure we're not too far left either
-							// (in which case it may be partial)
-		jbe dontplotallofit
-
-		mov ecx,eax
-		add ecx,edi
-		cmp ecx,maxX		// check to see if this run will run off the end
-		jae cropit
-		mov ecx,eax
-		call movedata
-		jmp loop1
-cropit:
-		sub ecx,maxX
-		push ecx			// store the amount it runs over
-		sub eax,ecx			// chop off the amount it runs over by from the amount to draw
-		mov ecx,eax
-		call movedata
-		pop ecx
-		add esi,ecx			// move the source pointer up by the undrawn amount
-		add edi,ecx
-		jmp loop1
-dontplotallofit:
-		mov ecx,eax
-		add ecx,edi
-		cmp ecx,minX		// check to see if some of this run is onscreen
-		jbe	dontplot		// nope, treat it as a complete ignore
-		sub ecx,minX
-		sub eax,ecx			// now eax contains how many to skip, and ecx contains how many to draw
-		add edi,eax
-		add esi,eax
-		call movedata
-		jmp loop1
-dontplot:
-		add edi,eax
-		add esi,eax
-		jmp loop1			// just move the pointers and loop again
-
-movedata:					// here's the core of it.  when this is jumped to,
-							// ecx = count to transfer
-							// ebx = unusable (sprite width is contained there)
-							// edx = unusable (draw counter is stored there)
-							// esi,edi = src, dst ptrs
-		push ebx
-		mov  bh,bright
-		xor eax,eax
-movedataloop:
-		mov al,es:[esi]
-		cmp bh,0
-		je  okay
-		jg  brighten
-		mov bl,al
-		and bl,(~31)		// bl is al's color range
-		add al,bh
-		cmp al,bl			// does al descend below it's range?
-		jae okay1
-		mov al,bl			// yes, put it to it's min value
-		jmp okay
-okay1:
-		add bl,31			// it didn't, let's see if it wrapped instead
-		cmp al,bl
-		jbe okay
-		and bl,(~31)		// al gets darkened to 0.  This checks for wrap problems
-		mov al,bl
-		jmp okay
-brighten:
-		mov bl,al			// bl is al's color range
-		and bl,(~31)
-		add al,bh
-		cmp al,bl			// does al descend below it's range?
-		jae okay2
-		mov al,bl
-		add al,31			// make al max brightness.  This is a wrap issue
-		jmp okay
-okay2:
-		add bl,31			// now see if it went over
-		cmp al,bl
-		jbe okay
-		mov al,bl			// it did, so lock it to max
-okay:
-		mov es:[edi],al		// store the byte
-		inc esi
-		inc edi
-		dec ecx
-		jnz movedataloop	// loop around
-		xor eax,eax
-		pop ebx
-		ret
-linedone:
-		dec sprHeight
-		jz alldone			// All done!!!
-		mov ecx,scrWidth	// just handy for speed
-		mov ebx,sprWidth
-		sub edi,ebx			// subtract width from the destination, and...
-		add edi,ecx			// add one line's height
-		add maxX,ecx		// move the xMax and xMin down one line
-		add minX,ecx
-		cmp edx,0
-		jz	loop1
-		dec edx				// if doDraw (edx) was nonzero, count it down
-		jmp loop1
-alldone:
-		popa
+		if ((*src)&128) // transparent run
+		{
+			b = (*src)&127;
+			srcx += b;
+			dst += b;
+			src++;
+		}
+		else // solid run
+		{
+			b = *src;
+			src++;
+			if (srcx < constrainX - b || srcx > constrainX2)
+			{
+				// don't draw this line
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else if (srcx < constrainX)
+			{
+				// skip some of the beginning
+				skip = (constrainX - srcx);
+				src += skip;
+				srcx += skip;
+				dst += skip;
+				b -= skip;
+				if (srcx > constrainX2 - b)
+				{
+					skip = (b - (constrainX2 - srcx)) - 1;
+					if (!noDraw)
+						for (i = 0; i < b - skip; ++i)
+							dst[i] = SprModifyLight(src[i], bright);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+				else
+				{
+					if (!noDraw)
+						for (i = 0; i < b; ++i)
+							dst[i] = SprModifyLight(src[i], bright);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+			}
+			else if (srcx > constrainX2 - b)
+			{
+				// skip some of the end
+				skip = (srcx - (constrainX2 - b)) - 1;
+				if (!noDraw)
+					for (i = 0; i < b - skip; ++i)
+						dst[i] = SprModifyLight(src[i], bright);
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else
+			{
+				// do it all!
+				if (!noDraw)
+					for (i = 0; i < b; ++i)
+						dst[i] = SprModifyLight(src[i], bright);
+				srcx += b;
+				src += b;
+				dst += b;
+			}
+		}
+		if (srcx >= width + x)
+		{
+			srcx = x;
+			srcy++;
+			dst += pitch - width;
+			if (srcy >= constrainY)
+				noDraw = 0;
+			if (srcy > constrainY2)
+				return;
+		}
 	}
 }
 
 //	 color:  which hue (0-7) to use for the entire thing, ignoring its real hue
 //   bright: how much to darken or lighten the whole thing (-16 to +16 reasonable)
-void sprite_t::DrawColored(int x,int y,MGLDraw *mgl,byte color,char bright)
+void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright)
 {
-	dword scrWidth=mgl->GetWidth();
-	dword dst;
-	byte *scrn=mgl->GetScreen();
-	byte *spr;
-	dword doDraw;
-	dword minX,maxX;
-	dword sprHeight,sprWidth;
+	byte *src, *dst, b, skip;
+	dword pitch;
+	int srcx, srcy;
+	byte noDraw;
+	int i;
 
-	x-=ofsx;
-	y-=ofsy;
-	if(x>639 || y>479)
-		return;	// whole sprite is offscreen
+	x -= ofsx;
+	y -= ofsy;
+	if (x > constrainX2 || y > constrainY2)
+		return; // whole sprite is offscreen
 
-	dst=x+y*scrWidth;
+	pitch = mgl->GetWidth();
+	src = data;
+	dst = mgl->GetScreen() + x + y*pitch;
 
-	doDraw=0;
-	if(y<0)
-		doDraw=-y;
-
-	minX=y*scrWidth+(dword)scrn;
-	maxX=minX+scrWidth;
-
-	spr=data;
-	sprHeight=height;
-	sprWidth=width;
-
-	if(y>mgl->GetHeight()-height)
-		sprHeight=mgl->GetHeight()-y;
-
-	color*=32;
-
-	__asm
+	srcx = x;
+	srcy = y;
+	if (srcy < constrainY)
+		noDraw = 1;
+	else
+		noDraw = 0;
+	while (srcy < height + y)
 	{
-		// esi = address of sprite data
-		// edi = screen address to draw at
-		// edx = doDraw (counts down until you can draw if sprite is partially above screen)
-		// ebx = sprite width counter
-		// ecx = placeholder for moving data
-		// eax = work register
-		pusha
-		push ds
-		pop  es
-		mov edi,scrn
-		add edi,dst
-		mov esi,spr
-		mov edx,doDraw
-		mov ebx,sprWidth
-		xor eax,eax			// zero out eax because we want it to work as a byte
-loop1:
-		cmp ebx,0			// check to see if this line is done (x has run out)
-		jz  linedone
-		mov al,ds:[esi]		// get next byte of source
-		inc esi
-		sal al,1
-		jnc	drawpixels		// if the byte is positive, draw a run of pixels
-							// otherwise we are skipping pixels
-		shr al,1
-		add edi,eax			// move destination forward by that much
-		sub ebx,eax			// and decrease width count by that much
-		jmp loop1
-drawpixels:
-		shr al,1
-		sub ebx,eax
-		cmp edx,0			// check to be sure we're not too high up
-		jnz dontplot
-		cmp edi,maxX		// check to be sure we're not off the end
-		jae dontplot
-		cmp edi,minX		// check to be sure we're not too far left either
-							// (in which case it may be partial)
-		jbe dontplotallofit
-
-		mov ecx,eax
-		add ecx,edi
-		cmp ecx,maxX		// check to see if this run will run off the end
-		jae cropit
-		mov ecx,eax
-		call movedata
-		jmp loop1
-cropit:
-		sub ecx,maxX
-		push ecx			// store the amount it runs over
-		sub eax,ecx			// chop off the amount it runs over by from the amount to draw
-		mov ecx,eax
-		call movedata
-		pop ecx
-		add esi,ecx			// move the source pointer up by the undrawn amount
-		add edi,ecx
-		jmp loop1
-dontplotallofit:
-		mov ecx,eax
-		add ecx,edi
-		cmp ecx,minX		// check to see if some of this run is onscreen
-		jbe	dontplot		// nope, treat it as a complete ignore
-		sub ecx,minX
-		sub eax,ecx			// now eax contains how many to skip, and ecx contains how many to draw
-		add edi,eax
-		add esi,eax
-		call movedata
-		jmp loop1
-dontplot:
-		add edi,eax
-		add esi,eax
-		jmp loop1			// just move the pointers and loop again
-
-movedata:					// here's the core of it.  when this is jumped to,
-							// ecx = count to transfer
-							// ebx = unusable (sprite width is contained there)
-							// edx = unusable (draw counter is stored there)
-							// esi,edi = src, dst ptrs
-		push ebx
-		push edx
-		mov  dl,color		// hold the hue to be used
-		mov  bh,bright
-		xor eax,eax
-movedataloop:
-		mov al,es:[esi]
-		and al,31			// strip off the hue of al
-		or	al,dl			// and stick on the new hue
-
-		cmp bh,0
-		je  okay
-		jg  brighten
-		mov bl,al
-		and bl,(~31)		// bl is al's color range
-		add al,bh
-		cmp al,bl			// does al descend below it's range?
-		jae okay1
-		mov al,bl			// yes, put it to it's min value
-		jmp okay
-okay1:
-		add bl,31			// it didn't, let's see if it wrapped instead
-		cmp al,bl
-		jbe okay
-		and bl,(~31)		// al gets darkened to 0.  This checks for wrap problems
-		mov al,bl
-		jmp okay
-brighten:
-		mov bl,al			// bl is al's color range
-		and bl,(~31)
-		add al,bh
-		cmp al,bl			// does al descend below it's range?
-		jae okay2
-		add bl,31
-		mov al,bl			// make al max brightness.  This is a wrap issue
-		jmp okay
-okay2:
-		add bl,31			// now see if it went over
-		cmp al,bl
-		jbe okay
-		mov al,bl			// it did, so lock it to max
-okay:
-		mov es:[edi],al		// store the byte
-		inc esi
-		inc edi
-		dec ecx
-		jnz movedataloop	// loop around
-		xor eax,eax
-		pop edx
-		pop ebx
-		ret
-linedone:
-		dec sprHeight
-		jz alldone			// All done!!!
-		mov ecx,scrWidth	// just handy for speed
-		mov ebx,sprWidth
-		sub edi,ebx			// subtract width from the destination, and...
-		add edi,ecx			// add one line's height
-		add maxX,ecx		// move the xMax and xMin down one line
-		add minX,ecx
-		cmp edx,0
-		jz	loop1
-		dec edx				// if doDraw (edx) was nonzero, count it down
-		jmp loop1
-alldone:
-		popa
+		if ((*src)&128) // transparent run
+		{
+			b = (*src)&127;
+			srcx += b;
+			dst += b;
+			src++;
+		}
+		else // solid run
+		{
+			b = *src;
+			src++;
+			if (srcx < constrainX - b || srcx > constrainX2)
+			{
+				// don't draw this line
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else if (srcx < constrainX)
+			{
+				// skip some of the beginning
+				skip = (constrainX - srcx);
+				src += skip;
+				srcx += skip;
+				dst += skip;
+				b -= skip;
+				if (srcx > constrainX2 - b)
+				{
+					skip = (b - (constrainX2 - srcx)) - 1;
+					if (!noDraw)
+						for (i = 0; i < b - skip; ++i)
+							dst[i] = SprModifyLight(SprModifyColor(src[i], color), bright);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+				else
+				{
+					if (!noDraw)
+						for (i = 0; i < b; ++i)
+							dst[i] = SprModifyLight(SprModifyColor(src[i], color), bright);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+			}
+			else if (srcx > constrainX2 - b)
+			{
+				// skip some of the end
+				skip = (srcx - (constrainX2 - b)) - 1;
+				if (!noDraw)
+					for (i = 0; i < b - skip; ++i)
+						dst[i] = SprModifyLight(SprModifyColor(src[i], color), bright);
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else
+			{
+				// do it all!
+				if (!noDraw)
+					for (i = 0; i < b; ++i)
+						dst[i] = SprModifyLight(SprModifyColor(src[i], color), bright);
+				srcx += b;
+				src += b;
+				dst += b;
+			}
+		}
+		if (srcx >= width + x)
+		{
+			srcx = x;
+			srcy++;
+			dst += pitch - width;
+			if (srcy >= constrainY)
+				noDraw = 0;
+			if (srcy > constrainY2)
+				return;
+		}
 	}
 }
 
 //   bright: how much to darken or lighten the whole thing (-16 to +16 reasonable)
-void sprite_t::DrawOffColor(int x,int y,MGLDraw *mgl,byte fromColor,byte toColor,char bright)
+void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toColor, char bright)
 {
-	dword scrWidth=mgl->GetWidth();
-	dword dst;
-	byte *scrn=mgl->GetScreen();
-	byte *spr;
-	dword doDraw;
-	dword minX,maxX;
-	dword sprHeight,sprWidth;
+	byte *src, *dst, b, skip;
+	dword pitch;
+	int srcx, srcy;
+	byte noDraw;
+	int i;
 
-	x-=ofsx;
-	y-=ofsy;
-	if(x>639 || y>479)
-		return;	// whole sprite is offscreen
+	x -= ofsx;
+	y -= ofsy;
+	if (x > constrainX2 || y > constrainY2)
+		return; // whole sprite is offscreen
 
-	dst=x+y*scrWidth;
+	pitch = mgl->GetWidth();
+	src = data;
+	dst = mgl->GetScreen() + x + y*pitch;
 
-	doDraw=0;
-	if(y<0)
-		doDraw=-y;
-
-	minX=y*scrWidth+(dword)scrn;
-	maxX=minX+scrWidth;
-
-	spr=data;
-	sprHeight=height;
-	sprWidth=width;
-
-	if(y>mgl->GetHeight()-height)
-		sprHeight=mgl->GetHeight()-y;
-
-	toColor*=32;
-
-	__asm
+	srcx = x;
+	srcy = y;
+	if (srcy < constrainY)
+		noDraw = 1;
+	else
+		noDraw = 0;
+	while (srcy < height + y)
 	{
-		// esi = address of sprite data
-		// edi = screen address to draw at
-		// edx = doDraw (counts down until you can draw if sprite is partially above screen)
-		// ebx = sprite width counter
-		// ecx = placeholder for moving data
-		// eax = work register
-		pusha
-		push ds
-		pop  es
-		mov edi,scrn
-		add edi,dst
-		mov esi,spr
-		mov edx,doDraw
-		mov ebx,sprWidth
-		xor eax,eax			// zero out eax because we want it to work as a byte
-loop1:
-		cmp ebx,0			// check to see if this line is done (x has run out)
-		jz  linedone
-		mov al,ds:[esi]		// get next byte of source
-		inc esi
-		sal al,1
-		jnc	drawpixels		// if the byte is positive, draw a run of pixels
-							// otherwise we are skipping pixels
-		shr al,1
-		add edi,eax			// move destination forward by that much
-		sub ebx,eax			// and decrease width count by that much
-		jmp loop1
-drawpixels:
-		shr al,1
-		sub ebx,eax
-		cmp edx,0			// check to be sure we're not too high up
-		jnz dontplot
-		cmp edi,maxX		// check to be sure we're not off the end
-		jae dontplot
-		cmp edi,minX		// check to be sure we're not too far left either
-							// (in which case it may be partial)
-		jbe dontplotallofit
-
-		mov ecx,eax
-		add ecx,edi
-		cmp ecx,maxX		// check to see if this run will run off the end
-		jae cropit
-		mov ecx,eax
-		call movedata
-		jmp loop1
-cropit:
-		sub ecx,maxX
-		push ecx			// store the amount it runs over
-		sub eax,ecx			// chop off the amount it runs over by from the amount to draw
-		mov ecx,eax
-		call movedata
-		pop ecx
-		add esi,ecx			// move the source pointer up by the undrawn amount
-		add edi,ecx
-		jmp loop1
-dontplotallofit:
-		mov ecx,eax
-		add ecx,edi
-		cmp ecx,minX		// check to see if some of this run is onscreen
-		jbe	dontplot		// nope, treat it as a complete ignore
-		sub ecx,minX
-		sub eax,ecx			// now eax contains how many to skip, and ecx contains how many to draw
-		add edi,eax
-		add esi,eax
-		call movedata
-		jmp loop1
-dontplot:
-		add edi,eax
-		add esi,eax
-		jmp loop1			// just move the pointers and loop again
-
-movedata:					// here's the core of it.  when this is jumped to,
-							// ecx = count to transfer
-							// ebx = unusable (sprite width is contained there)
-							// edx = unusable (draw counter is stored there)
-							// esi,edi = src, dst ptrs
-		push ebx
-		push edx
-		mov  dl,toColor		// hold the hue to be used
-		mov  bh,bright
-		mov  dh,fromColor
-		xor  eax,eax
-movedataloop:
-		mov al,es:[esi]
-		mov	ah,al
-		shr	ah,5
-		cmp ah,dh
-		jne normalColor
-
-		and al,31			// strip off the hue of al
-		or	al,dl			// and stick on the new hue
-normalColor:
-		cmp bh,0
-		je  okay
-		jg  brighten
-		mov bl,al
-		and bl,(~31)		// bl is al's color range
-		add al,bh
-		cmp al,bl			// does al descend below it's range?
-		jae okay1
-		mov al,bl			// yes, put it to it's min value
-		jmp okay
-okay1:
-		add bl,31			// it didn't, let's see if it wrapped instead
-		cmp al,bl
-		jbe okay
-		and bl,(~31)		// al gets darkened to 0.  This checks for wrap problems
-		mov al,bl
-		jmp okay
-brighten:
-		mov bl,al			// bl is al's color range
-		and bl,(~31)
-		add al,bh
-		cmp al,bl			// does al descend below it's range?
-		jae okay2
-		add bl,31
-		mov al,bl			// make al max brightness.  This is a wrap issue
-		jmp okay
-okay2:
-		add bl,31			// now see if it went over
-		cmp al,bl
-		jbe okay
-		mov al,bl			// it did, so lock it to max
-okay:
-		mov es:[edi],al		// store the byte
-		inc esi
-		inc edi
-		dec ecx
-		jnz movedataloop	// loop around
-		xor eax,eax
-		pop edx
-		pop ebx
-		ret
-linedone:
-		dec sprHeight
-		jz alldone			// All done!!!
-		mov ecx,scrWidth	// just handy for speed
-		mov ebx,sprWidth
-		sub edi,ebx			// subtract width from the destination, and...
-		add edi,ecx			// add one line's height
-		add maxX,ecx		// move the xMax and xMin down one line
-		add minX,ecx
-		cmp edx,0
-		jz	loop1
-		dec edx				// if doDraw (edx) was nonzero, count it down
-		jmp loop1
-alldone:
-		popa
+		if ((*src)&128) // transparent run
+		{
+			b = (*src)&127;
+			srcx += b;
+			dst += b;
+			src++;
+		}
+		else // solid run
+		{
+			b = *src;
+			src++;
+			if (srcx < constrainX - b || srcx > constrainX2)
+			{
+				// don't draw this line
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else if (srcx < constrainX)
+			{
+				// skip some of the beginning
+				skip = (constrainX - srcx);
+				src += skip;
+				srcx += skip;
+				dst += skip;
+				b -= skip;
+				if (srcx > constrainX2 - b)
+				{
+					skip = (b - (constrainX2 - srcx)) - 1;
+					if (!noDraw)
+						for (i = 0; i < b - skip; ++i)
+							dst[i] = SprModifyLight(SprGetColor(src[i]) == fromColor ? SprModifyColor(src[i], toColor) : src[i], bright);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+				else
+				{
+					if (!noDraw)
+						for (i = 0; i < b; ++i)
+							dst[i] = SprModifyLight(SprGetColor(src[i]) == fromColor ? SprModifyColor(src[i], toColor) : src[i], bright);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+			}
+			else if (srcx > constrainX2 - b)
+			{
+				// skip some of the end
+				skip = (srcx - (constrainX2 - b)) - 1;
+				if (!noDraw)
+					for (i = 0; i < b - skip; ++i)
+						dst[i] = SprModifyLight(SprGetColor(src[i]) == fromColor ? SprModifyColor(src[i], toColor) : src[i], bright);
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else
+			{
+				// do it all!
+				if (!noDraw)
+					for (i = 0; i < b; ++i)
+						dst[i] = SprModifyLight(SprGetColor(src[i]) == fromColor ? SprModifyColor(src[i], toColor) : src[i], bright);
+				srcx += b;
+				src += b;
+				dst += b;
+			}
+		}
+		if (srcx >= width + x)
+		{
+			srcx = x;
+			srcy++;
+			dst += pitch - width;
+			if (srcy >= constrainY)
+				noDraw = 0;
+			if (srcy > constrainY2)
+				return;
+		}
 	}
 }
 
@@ -786,548 +579,328 @@ alldone:
 // (color 1-31).  Wherever those colors occur, they are instead used as the
 // degree to which the background should be brightened instead of drawn over.
 //   bright: how much to darken or lighten the whole thing (-16 to +16 reasonable)
-void sprite_t::DrawGhost(int x,int y,MGLDraw *mgl,char bright)
+void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright)
 {
-	dword scrWidth=mgl->GetWidth();
-	dword dst;
-	byte *scrn=mgl->GetScreen();
-	byte *spr;
-	dword doDraw;
-	dword minX,maxX;
-	dword sprHeight,sprWidth;
+	byte *src, *dst, b, skip;
+	dword pitch;
+	int srcx, srcy;
+	byte noDraw;
+	int i;
 
-	x-=ofsx;
-	y-=ofsy;
-	if(x>639 || y>479)
-		return;	// whole sprite is offscreen
+	x -= ofsx;
+	y -= ofsy;
+	if (x > constrainX2 || y > constrainY2)
+		return; // whole sprite is offscreen
 
-	dst=x+y*scrWidth;
+	pitch = mgl->GetWidth();
+	src = data;
+	dst = mgl->GetScreen() + x + y*pitch;
 
-	doDraw=0;
-	if(y<0)
-		doDraw=-y;
-
-	minX=y*scrWidth+(dword)scrn;
-	maxX=minX+scrWidth;
-
-	spr=data;
-	sprHeight=height;
-	sprWidth=width;
-
-	if(y>mgl->GetHeight()-height)
-		sprHeight=mgl->GetHeight()-y;
-
-	__asm
+	srcx = x;
+	srcy = y;
+	if (srcy < constrainY)
+		noDraw = 1;
+	else
+		noDraw = 0;
+	while (srcy < height + y)
 	{
-		// esi = address of sprite data
-		// edi = screen address to draw at
-		// edx = doDraw (counts down until you can draw if sprite is partially above screen)
-		// ebx = sprite width counter
-		// ecx = placeholder for moving data
-		// eax = work register
-		pusha
-		push ds
-		pop  es
-		mov edi,scrn
-		add edi,dst
-		mov esi,spr
-		mov edx,doDraw
-		mov ebx,sprWidth
-		xor eax,eax			// zero out eax because we want it to work as a byte
-loop1:
-		cmp ebx,0			// check to see if this line is done (x has run out)
-		jz  linedone
-		mov al,ds:[esi]		// get next byte of source
-		inc esi
-		sal al,1
-		jnc	drawpixels		// if the byte is positive, draw a run of pixels
-							// otherwise we are skipping pixels
-		shr al,1
-		add edi,eax			// move destination forward by that much
-		sub ebx,eax			// and decrease width count by that much
-		jmp loop1
-drawpixels:
-		shr al,1
-		sub ebx,eax
-		cmp edx,0			// check to be sure we're not too high up
-		jnz dontplot
-		cmp edi,maxX		// check to be sure we're not off the end
-		jae dontplot
-		cmp edi,minX		// check to be sure we're not too far left either
-							// (in which case it may be partial)
-		jbe dontplotallofit
-
-		mov ecx,eax
-		add ecx,edi
-		cmp ecx,maxX		// check to see if this run will run off the end
-		jae cropit
-		mov ecx,eax
-		call movedata
-		jmp loop1
-cropit:
-		sub ecx,maxX
-		push ecx			// store the amount it runs over
-		sub eax,ecx			// chop off the amount it runs over by from the amount to draw
-		mov ecx,eax
-		call movedata
-		pop ecx
-		add esi,ecx			// move the source pointer up by the undrawn amount
-		add edi,ecx
-		jmp loop1
-dontplotallofit:
-		mov ecx,eax
-		add ecx,edi
-		cmp ecx,minX		// check to see if some of this run is onscreen
-		jbe	dontplot		// nope, treat it as a complete ignore
-		sub ecx,minX
-		sub eax,ecx			// now eax contains how many to skip, and ecx contains how many to draw
-		add edi,eax
-		add esi,eax
-		call movedata
-		jmp loop1
-dontplot:
-		add edi,eax
-		add esi,eax
-		jmp loop1			// just move the pointers and loop again
-
-movedata:					// here's the core of it.  when this is jumped to,
-							// ecx = count to transfer
-							// ebx = unusable (sprite width is contained there)
-							// edx = unusable (draw counter is stored there)
-							// esi,edi = src, dst ptrs
-		push ebx
-		push edx
-		mov  bh,bright
-		xor eax,eax
-movedataloop:
-		mov al,es:[esi]
-		cmp al,32
-		jae	drawnormal		// go ahead and draw normally
-		mov ah,es:[edi]		// get the destination color
-		mov bl,ah
-		and bl,(~31)		// bl is the color range for ah (destination color)
-		add ah,al			// add the brightness factor to the color
-		cmp ah,bl
-		jb  minnedout
-		add bl,31			// now bl is the brightest in its range
-		cmp ah,bl
-		ja  maxxedout		// overshot the brightest
-		mov al,ah
-		jmp drawnormal
-minnedout:
-		add bl,31
-		mov al,bl
-		jmp okay
-maxxedout:
-		mov al,bl
-		jmp okay
-drawnormal:
-		cmp bh,0
-		je  okay
-		jg  brighten
-		mov bl,al
-		and bl,(~31)		// bl is al's color range
-		add al,bh
-		cmp al,bl			// does al descend below it's range?
-		jae okay1
-		mov al,bl			// yes, put it to it's min value
-		jmp okay
-okay1:
-		add bl,31			// it didn't, let's see if it wrapped instead
-		cmp al,bl
-		jbe okay
-		mov al,bl
-		and al,(~31)		// al gets darkened to 0.  This checks for wrap problems
-		jmp okay
-brighten:
-		mov bl,al			// bl is al's color range
-		and bl,(~31)
-		add al,bh
-		cmp al,bl			// does al descend below it's range?
-		jae okay2
-		add bl,31
-		mov al,bl			// make al max brightness.  This is a wrap issue
-		jmp okay
-okay2:
-		add bl,31			// now see if it went over
-		cmp al,bl
-		jbe okay
-		mov al,bl			// it did, so lock it to max
-okay:
-		mov es:[edi],al		// store the byte
-		inc esi
-		inc edi
-		dec ecx
-		jnz movedataloop	// loop around
-		xor eax,eax
-		pop edx
-		pop ebx
-		ret
-linedone:
-		dec sprHeight
-		jz alldone			// All done!!!
-		mov ecx,scrWidth	// just handy for speed
-		mov ebx,sprWidth
-		sub edi,ebx			// subtract width from the destination, and...
-		add edi,ecx			// add one line's height
-		add maxX,ecx		// move the xMax and xMin down one line
-		add minX,ecx
-		cmp edx,0
-		jz	loop1
-		dec edx				// if doDraw (edx) was nonzero, count it down
-		jmp loop1
-alldone:
-		popa
+		if ((*src)&128) // transparent run
+		{
+			b = (*src)&127;
+			srcx += b;
+			dst += b;
+			src++;
+		}
+		else // solid run
+		{
+			b = *src;
+			src++;
+			if (srcx < constrainX - b || srcx > constrainX2)
+			{
+				// don't draw this line
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else if (srcx < constrainX)
+			{
+				// skip some of the beginning
+				skip = (constrainX - srcx);
+				src += skip;
+				srcx += skip;
+				dst += skip;
+				b -= skip;
+				if (srcx > constrainX2 - b)
+				{
+					skip = (b - (constrainX2 - srcx)) - 1;
+					if (!noDraw)
+						for (i = 0; i < b - skip; ++i)
+							dst[i] = SprModifyGhost(src[i], dst[i], bright);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+				else
+				{
+					if (!noDraw)
+						for (i = 0; i < b; ++i)
+							dst[i] = SprModifyGhost(src[i], dst[i], bright);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+			}
+			else if (srcx > constrainX2 - b)
+			{
+				// skip some of the end
+				skip = (srcx - (constrainX2 - b)) - 1;
+				if (!noDraw)
+					for (i = 0; i < b - skip; ++i)
+						dst[i] = SprModifyGhost(src[i], dst[i], bright);
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else
+			{
+				// do it all!
+				if (!noDraw)
+					for (i = 0; i < b; ++i)
+						dst[i] = SprModifyGhost(src[i], dst[i], bright);
+				srcx += b;
+				src += b;
+				dst += b;
+			}
+		}
+		if (srcx >= width + x)
+		{
+			srcx = x;
+			srcy++;
+			dst += pitch - width;
+			if (srcy >= constrainY)
+				noDraw = 0;
+			if (srcy > constrainY2)
+				return;
+		}
 	}
 }
 
 void sprite_t::DrawGlow(int x,int y,MGLDraw *mgl,char bright)
 {
-	dword scrWidth=mgl->GetWidth();
-	dword dst;
-	byte *scrn=mgl->GetScreen();
-	byte *spr;
-	dword doDraw;
-	dword minX,maxX;
-	dword sprHeight,sprWidth;
+	byte *src, *dst, b, skip;
+	dword pitch;
+	int srcx, srcy;
+	byte noDraw;
+	int i;
 
-	x-=ofsx;
-	y-=ofsy;
-	if(x>639 || y>479)
-		return;	// whole sprite is offscreen
+	x -= ofsx;
+	y -= ofsy;
+	if (x > constrainX2 || y > constrainY2)
+		return; // whole sprite is offscreen
 
-	dst=x+y*scrWidth;
+	pitch = mgl->GetWidth();
+	src = data;
+	dst = mgl->GetScreen() + x + y*pitch;
 
-	doDraw=0;
-	if(y<0)
-		doDraw=-y;
-
-	minX=y*scrWidth+(dword)scrn;
-	maxX=minX+scrWidth;
-
-	spr=data;
-	sprHeight=height;
-	sprWidth=width;
-
-	if(y>mgl->GetHeight()-height)
-		sprHeight=mgl->GetHeight()-y;
-
-	__asm
+	srcx = x;
+	srcy = y;
+	if (srcy < constrainY)
+		noDraw = 1;
+	else
+		noDraw = 0;
+	while (srcy < height + y)
 	{
-		// esi = address of sprite data
-		// edi = screen address to draw at
-		// edx = doDraw (counts down until you can draw if sprite is partially above screen)
-		// ebx = sprite width counter
-		// ecx = placeholder for moving data
-		// eax = work register
-		pusha
-		push ds
-		pop  es
-		mov edi,scrn
-		add edi,dst
-		mov esi,spr
-		mov edx,doDraw
-		mov ebx,sprWidth
-		xor eax,eax			// zero out eax because we want it to work as a byte
-loop1:
-		cmp ebx,0			// check to see if this line is done (x has run out)
-		jz  linedone
-		mov al,ds:[esi]		// get next byte of source
-		inc esi
-		sal al,1
-		jnc	drawpixels		// if the byte is positive, draw a run of pixels
-							// otherwise we are skipping pixels
-		shr al,1
-		add edi,eax			// move destination forward by that much
-		sub ebx,eax			// and decrease width count by that much
-		jmp loop1
-drawpixels:
-		shr al,1
-		sub ebx,eax
-		cmp edx,0			// check to be sure we're not too high up
-		jnz dontplot
-		cmp edi,maxX		// check to be sure we're not off the end
-		jae dontplot
-		cmp edi,minX		// check to be sure we're not too far left either
-							// (in which case it may be partial)
-		jbe dontplotallofit
-
-		mov ecx,eax
-		add ecx,edi
-		cmp ecx,maxX		// check to see if this run will run off the end
-		jae cropit
-		mov ecx,eax
-		call movedata
-		jmp loop1
-cropit:
-		sub ecx,maxX
-		push ecx			// store the amount it runs over
-		sub eax,ecx			// chop off the amount it runs over by from the amount to draw
-		mov ecx,eax
-		call movedata
-		pop ecx
-		add esi,ecx			// move the source pointer up by the undrawn amount
-		add edi,ecx
-		jmp loop1
-dontplotallofit:
-		mov ecx,eax
-		add ecx,edi
-		cmp ecx,minX		// check to see if some of this run is onscreen
-		jbe	dontplot		// nope, treat it as a complete ignore
-		sub ecx,minX
-		sub eax,ecx			// now eax contains how many to skip, and ecx contains how many to draw
-		add edi,eax
-		add esi,eax
-		call movedata
-		jmp loop1
-dontplot:
-		add edi,eax
-		add esi,eax
-		jmp loop1			// just move the pointers and loop again
-
-movedata:					// here's the core of it.  when this is jumped to,
-							// ecx = count to transfer
-							// ebx = unusable (sprite width is contained there)
-							// edx = unusable (draw counter is stored there)
-							// esi,edi = src, dst ptrs
-		push ebx
-		push edx
-		xor eax,eax
-movedataloop:
-		mov  bh,bright
-		mov ah,es:[esi]
-		mov al,es:[edi]		// get the destination color
-		and al,31			// strip off the hue
-		mov bl,ah
-		and bl,31			// bl contains the brightness of the source color
-		add bh,bl
-
-		and ah,(~31)
-		or  al,ah			// now al has ah's hue but its own brightness
-
-		cmp bh,0
-		je  okay
-		jg  brighten
-		mov bl,al
-		and bl,(~31)		// bl is al's color range
-		add al,bh
-		cmp al,bl			// does al descend below it's range?
-		jae okay1
-		mov al,bl			// yes, put it to it's min value
-		jmp okay
-okay1:
-		add bl,31			// it didn't, let's see if it wrapped instead
-		cmp al,bl
-		jbe okay
-		mov al,bl
-		and al,(~31)		// al gets darkened to 0.  This checks for wrap problems
-		jmp okay
-brighten:
-		mov bl,al			// bl is al's color range
-		and bl,(~31)
-		add al,bh
-		cmp al,bl			// does al descend below it's range?
-		jae okay2
-		add bl,31
-		mov al,bl			// make al max brightness.  This is a wrap issue
-		jmp okay
-okay2:
-		add bl,31			// now see if it went over
-		cmp al,bl
-		jbe okay
-		mov al,bl			// it did, so lock it to max
-okay:
-		mov es:[edi],al		// store the byte
-		inc esi
-		inc edi
-		dec ecx
-		jnz movedataloop	// loop around
-		xor eax,eax
-		pop edx
-		pop ebx
-		ret
-linedone:
-		dec sprHeight
-		jz alldone			// All done!!!
-		mov ecx,scrWidth	// just handy for speed
-		mov ebx,sprWidth
-		sub edi,ebx			// subtract width from the destination, and...
-		add edi,ecx			// add one line's height
-		add maxX,ecx		// move the xMax and xMin down one line
-		add minX,ecx
-		cmp edx,0
-		jz	loop1
-		dec edx				// if doDraw (edx) was nonzero, count it down
-		jmp loop1
-alldone:
-		popa
+		if ((*src)&128) // transparent run
+		{
+			b = (*src)&127;
+			srcx += b;
+			dst += b;
+			src++;
+		}
+		else // solid run
+		{
+			b = *src;
+			src++;
+			if (srcx < constrainX - b || srcx > constrainX2)
+			{
+				// don't draw this line
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else if (srcx < constrainX)
+			{
+				// skip some of the beginning
+				skip = (constrainX - srcx);
+				src += skip;
+				srcx += skip;
+				dst += skip;
+				b -= skip;
+				if (srcx > constrainX2 - b)
+				{
+					skip = (b - (constrainX2 - srcx)) - 1;
+					if (!noDraw)
+						for (i = 0; i < b - skip; ++i)
+							dst[i] = SprModifyGlow(src[i], dst[i], bright);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+				else
+				{
+					if (!noDraw)
+						for (i = 0; i < b; ++i)
+							dst[i] = SprModifyGlow(src[i], dst[i], bright);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+			}
+			else if (srcx > constrainX2 - b)
+			{
+				// skip some of the end
+				skip = (srcx - (constrainX2 - b)) - 1;
+				if (!noDraw)
+					for (i = 0; i < b - skip; ++i)
+						dst[i] = SprModifyGlow(src[i], dst[i], bright);
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else
+			{
+				// do it all!
+				if (!noDraw)
+					for (i = 0; i < b; ++i)
+						dst[i] = SprModifyGlow(src[i], dst[i], bright);
+				srcx += b;
+				src += b;
+				dst += b;
+			}
+		}
+		if (srcx >= width + x)
+		{
+			srcx = x;
+			srcy++;
+			dst += pitch - width;
+			if (srcy >= constrainY)
+				noDraw = 0;
+			if (srcy > constrainY2)
+				return;
+		}
 	}
 }
 
-void sprite_t::DrawShadow(int x,int y,MGLDraw *mgl)
+void sprite_t::DrawShadow(int x, int y, MGLDraw *mgl)
 {
-	dword scrWidth=mgl->GetWidth();
-	dword dst;
-	byte *scrn=mgl->GetScreen();
-	byte *spr;
-	dword doDraw;
-	dword minX,maxX;
-	dword sprHeight,sprWidth;
+	byte *src, *dst, b, skip;
+	dword pitch;
+	int srcx, srcy, x2;
+	byte noDraw;
 	byte alternate;
+	int i;
 
-	//x-=ofsx+height/2;
-	//y-=ofsy-height/2;	// start the sprite half of it's height down
-	x-=ofsx+height/2;
-	y-=ofsy/2;
-	if(x>639 || y>479)
-		return;	// whole sprite is offscreen
+	x -= ofsx + height / 2;
+	y -= ofsy / 2;
+	if (x > constrainX2 || y > constrainY2)
+		return; // whole sprite is offscreen
 
-	dst=x+y*scrWidth;
+	pitch = mgl->GetWidth();
+	src = data;
+	dst = mgl->GetScreen() + x + y*pitch;
 
-	doDraw=0;
-	if(y<0)
-		doDraw=-y*2;
+	srcx = x;
+	srcy = y;
+	if (srcy < constrainY)
+		noDraw = 1;
+	else
+		noDraw = 0;
 
-	minX=y*scrWidth+(dword)scrn;
-	maxX=minX+scrWidth-1;
+	alternate = 1;
+	x2 = x;
 
-	spr=data;
-	sprHeight=height/2;
-	sprWidth=width;
-
-	if(y>mgl->GetHeight()-(int)sprHeight)
-		sprHeight=mgl->GetHeight()-y;
-
-	if(sprHeight==0)
-		return;
-
-	__asm
+	while (srcy < height / 2 + y)
 	{
-		// esi = address of sprite data
-		// edi = screen address to draw at
-		// edx = doDraw (counts down until you can draw if sprite is partially above screen)
-		// ebx = sprite width counter
-		// ecx = placeholder for moving data
-		// eax = work register
-		pusha
-		push ds
-		pop  es
-		mov edi,scrn
-		add edi,dst
-		mov esi,spr
-		mov edx,doDraw
-		mov ebx,sprWidth
-		mov alternate,1
-loop1:
-		xor eax,eax			// zero out eax because we want it to work as a byte
-		cmp ebx,0			// check to see if this line is done (x has run out)
-		jz  linedone
-		mov al,ds:[esi]		// get next byte of source
-		inc esi
-		sal al,1
-		jnc	drawpixels		// if the byte is positive, draw a run of pixels
-							// otherwise we are skipping pixels
-		shr al,1
-		add edi,eax			// move destination forward by that much
-		sub ebx,eax			// and decrease width count by that much
-		jmp loop1
-drawpixels:
-		shr al,1
-		sub ebx,eax
-		cmp alternate,1		// first check: since every other line is skipped, check to see if
-							// this one is skipped (alternate=1 when not skipping)
-		jne	dontplot
-		cmp edx,0			// check to be sure we're not too high up
-		jnz dontplot
-		cmp edi,maxX		// check to be sure we're not off the end
-		jae dontplot
-		cmp edi,minX		// check to be sure we're not too far left either
-							// (in which case it may be partial)
-		jbe dontplotallofit
-
-		mov ecx,eax
-		add ecx,edi
-		cmp ecx,maxX		// check to see if this run will run off the end
-		jae cropit
-		mov ecx,eax
-		call movedata
-		jmp loop1
-cropit:
-		sub ecx,maxX
-		push ecx			// store the amount it runs over
-		sub eax,ecx			// chop off the amount it runs over by from the amount to draw
-		mov ecx,eax
-		call movedata
-		pop ecx
-		add esi,ecx			// move the source pointer up by the undrawn amount
-		add edi,ecx
-		jmp loop1
-dontplotallofit:
-		mov ecx,eax
-		add ecx,edi
-		cmp ecx,minX		// check to see if some of this run is onscreen
-		jbe	dontplot		// nope, treat it as a complete ignore
-		sub ecx,minX
-		sub eax,ecx			// now eax contains how many to skip, and ecx contains how many to draw
-		add edi,eax
-		add esi,eax
-		call movedata
-		jmp loop1
-dontplot:
-		add edi,eax
-		add esi,eax
-		jmp loop1			// just move the pointers and loop again
-
-movedata:					// here's the core of it.  when this is jumped to,
-							// ecx = count to transfer
-							// ebx = unusable (sprite width is contained there)
-							// edx = unusable (draw counter is stored there)
-							// esi,edi = src, dst ptrs
-		push ebx
-movedataloop:
-		xor eax,eax
-		mov al,es:[edi]
-		mov bl,al
-		and bl,31
-		cmp bl,4
-		jb	cantdarken
-		sub al,4
-		mov es:[edi],al		// store the byte
-		inc esi
-		inc edi
-		dec ecx
-		jnz movedataloop	// loop around
-		pop ebx
-		ret
-cantdarken:
-		and al,~31
-		mov es:[edi],al		// store the byte
-		inc esi
-		inc edi
-		dec ecx
-		jnz movedataloop	// loop around
-		pop ebx
-		ret
-linedone:
-		neg alternate		// flip the draw/don't draw flag
-		mov ecx,scrWidth	// just handy for speed
-		mov ebx,sprWidth
-		sub edi,ebx			// subtract width from the destination, and...
-		cmp alternate,1
-		je  linedone2
-		dec sprHeight
-		jz  alldone			// All done!!!
-		add edi,ecx			// add one line's height
-		inc edi
-		add maxX,ecx		// move the xMax and xMin down one line
-		add minX,ecx
-linedone2:
-		cmp edx,0
-		jz	loop1
-		dec edx				// if doDraw (edx) was nonzero, count it down
-		jmp loop1
-alldone:
-		popa
+		if ((*src)&128) // transparent run
+		{
+			b = (*src)&127;
+			srcx += b;
+			dst += b;
+			src++;
+		}
+		else // solid run
+		{
+			b = *src;
+			src++;
+			if (srcx < constrainX - b || srcx > constrainX2)
+			{
+				// don't draw this line
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else if (srcx < constrainX)
+			{
+				// skip some of the beginning
+				skip = (constrainX - srcx);
+				src += skip;
+				srcx += skip;
+				dst += skip;
+				b -= skip;
+				if (srcx > constrainX2 - b)
+				{
+					skip = (b - (constrainX2 - srcx)) - 1;
+					if (!noDraw && alternate)
+						for (i = 0; i < b - skip; ++i)
+							dst[i] = SprModifyLight(dst[i], -4);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+				else
+				{
+					if (!noDraw && alternate)
+						for (i = 0; i < b; ++i)
+							dst[i] = SprModifyLight(dst[i], -4);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+			}
+			else if (srcx > constrainX2 - b)
+			{
+				// skip some of the end
+				skip = (srcx - (constrainX2 - b)) - 1;
+				if (!noDraw && alternate)
+					for (i = 0; i < b - skip; ++i)
+						dst[i] = SprModifyLight(dst[i], -4);
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else
+			{
+				// do it all!
+				if (!noDraw && alternate)
+					for (i = 0; i < b; ++i)
+						dst[i] = SprModifyLight(dst[i], -4);
+				srcx += b;
+				src += b;
+				dst += b;
+			}
+		}
+		if (srcx >= width + x2)
+		{
+			alternate = 1 - alternate;
+			x2 += alternate;
+			srcx -= width - alternate;
+			srcy += alternate;
+			dst += (alternate ? pitch : 1) - width;
+			if (srcy >= constrainY)
+				noDraw = 0;
+			if (srcy > constrainY2)
+				return;
+		}
 	}
 }
 
@@ -1478,20 +1051,4 @@ sprite_t *sprite_set_t::GetSprite(int which)
 word sprite_set_t::GetCount(void)
 {
 	return count;
-}
-
-void NewComputerSpriteFix(char *fname,int x,int y)
-{
-	int i;
-	sprite_set_t *s;
-
-	s=new sprite_set_t(fname);
-
-	for(i=159;i<s->GetCount();i++)
-	{
-		s->GetSprite(i)->ofsx+=x;
-		s->GetSprite(i)->ofsy+=y;
-	}
-	s->Save(fname);
-	delete s;
 }

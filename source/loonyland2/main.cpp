@@ -16,21 +16,7 @@
 #include "sound.h"
 #include "music.h"
 
-bool windowedGame=FALSE;
 MGLDraw *mainmgl;
-
-void parseCmdLine(char *cmdLine)
-{
-	char *token;
-
-	token=strtok(cmdLine," ");
-	while(token!=NULL)
-	{
-		if(!strcmp(token,"window"))
-			windowedGame=TRUE;
-		token=strtok(NULL," ");
-	}
-}
 
 // SPISPOPD helper for atkins!
 /*
@@ -55,7 +41,7 @@ void GetPal(void)
 }
 */
 
-int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR cmdLine,int nCmdShow)
+int main(int argc, char* argv[])
 {
 
 #ifndef NDEBUG
@@ -68,16 +54,21 @@ _CrtSetDbgFlag(flag); // Set flag to the new value
 
 #endif
 
-	parseCmdLine(cmdLine);
+	bool windowedGame=false;
+	for (int i = 1; i < argc; ++i)
+	{
+		if (!strcmp(argv[i], "window"))
+			windowedGame=true;
+	}
 	LoadConfig();
-	mainmgl=new MGLDraw(hInstance,"Loonyland 2",640,480,8,windowedGame);
+	mainmgl=new MGLDraw("Loonyland 2",640,480,8,windowedGame);
 
 	if(!mainmgl)
 		return 0;
 
 	LunaticInit(mainmgl);
 	//NewComputerSpriteFix("graphics\\villager.jsp",0,-6);
-	set_keyboard_rate(400,80);
+	//set_keyboard_rate(400,80);
 	while(1)
 	{
 		player.var[VAR_COMMENTARY]=0;
@@ -92,19 +83,19 @@ _CrtSetDbgFlag(flag); // Set flag to the new value
 				return 0;
 				break;
 			case MENU_NEWCHAR:	// new game
-				set_keyboard_rate(0,0);
+				//set_keyboard_rate(0,0);
 				LunaticGame(mainmgl,0,WORLD_NORMAL);
-				set_keyboard_rate(400,80);
+				//set_keyboard_rate(400,80);
 				break;
 			case MENU_PLAY:	// continue
-				set_keyboard_rate(0,0);
+				//set_keyboard_rate(0,0);
 				LunaticGame(mainmgl,1,WORLD_NORMAL);
-				set_keyboard_rate(400,80);
+				//set_keyboard_rate(400,80);
 				JamulSoundPurge();
 				break;
 			case MENU_EDITOR:	// editor
 				LunaticEditor(mainmgl);
-				clear_keybuf();
+				mainmgl->LastKeyPressed();
 				break;
 		}
 	}

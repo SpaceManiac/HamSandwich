@@ -4,7 +4,7 @@
 static byte mapNum;
 static world_t *world;
 special_t *spcl;
-static spclnum;
+static int spclnum;
 
 void InitSpclDialog(special_t *theSpcl,byte spnum,world_t *wrld,byte currentMap)
 {

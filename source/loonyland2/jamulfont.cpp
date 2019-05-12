@@ -404,7 +404,7 @@ void FontPrintStringGlow(int x,int y,char *s,mfont_t *font,char bright)
 	}
 }
 
-void FontPrintStringDark(int x,int y,char *s,mfont_t *font)
+void FontPrintStringDark(int x,int y,const char *s,mfont_t *font)
 {
 	int i;
 
@@ -576,7 +576,7 @@ void FontSetColors(byte first,byte count,byte *data)
 	memcpy(&fontPal[first],data,count);
 }
 
-int FontStrLen(char *s,mfont_t *font)
+int FontStrLen(const char *s,mfont_t *font)
 {
 	int i,len=0;
 

@@ -275,7 +275,7 @@ void RightPrint(int x,int y,char *s,char bright,byte font)
 	}
 }
 
-void CenterPrintDark(int x,int y,char *s,byte font)
+void CenterPrintDark(int x,int y,const char *s,byte font)
 {
 	x=x-FontStrLen(s,gameFont[font])/2;
 	FontPrintStringDark(x,y,s,gameFont[font]);

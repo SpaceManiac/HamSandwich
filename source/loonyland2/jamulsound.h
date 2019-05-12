@@ -24,10 +24,9 @@ typedef struct sound_t
 	byte flags;
 } sound_t;
 
-extern int soundNumber;
-
 bool JamulSoundInit(int numBuffers);
 void JamulSoundExit(void);
+void JamulSoundUpdate(void);
 
 // pass in the sound # you wish to play
 bool JamulSoundPlay(int which,long pan,long vol,byte playFlags,int priority,int seq);
@@ -43,7 +42,5 @@ void JamulSoundPurge(void);
 void GoPlaySound(int num,long pan,long vol,byte flags,int priority);
 
 void JamulSoundVolume(int v);
-void JamulSoundMusicVolume(int v);
-void JamulSoundUpdate(void);
 
 #endif

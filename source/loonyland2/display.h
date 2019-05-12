@@ -83,7 +83,7 @@ void PrintColor(int x,int y,char *s,byte color,char bright,byte font);
 void PrintGlow(int x,int y,char *s,char bright,byte font);
 void CenterPrintGlow(int x,int y,char *s,char bright,byte font);
 void CenterPrintColor(int x,int y,char *s,byte color,char bright,byte font);
-void CenterPrintDark(int x,int y,char *s,byte font);
+void CenterPrintDark(int x,int y,const char *s,byte font);
 void RightPrintColor(int x,int y,char *s,byte color,char bright,byte font);
 void RightPrintGlow(int x,int y,char *s,char bright,byte font);
 void RightPrintDark(int x,int y,char *s,byte font);

@@ -51,13 +51,13 @@ void FontPrintStringDropShadow(int x,int y,char *s,mfont_t *font,byte shadowColo
 void FontPrintStringColor(int x,int y,char *s,mfont_t *font,byte color,char bright);
 void FontPrintStringBright(int x,int y,char *s,mfont_t *font,char bright);
 void FontPrintStringGlow(int x,int y,char *s,mfont_t *font,char bright);
-void FontPrintStringDark(int x,int y,char *s,mfont_t *font);
+void FontPrintStringDark(int x,int y,const char *s,mfont_t *font);
 void FontPrintStringDarkAdj(int x,int y,char *s,int dark,mfont_t *font);
 
 void FontPrintRectBlack(int x,int y,int x2,int y2,char *s,int height,int bright,mfont_t *font);
 void FontPrintRectBlack2(int x,int y,int x2,int y2,char *s,int height,mfont_t *font);
 
-int FontStrLen(char *s,mfont_t *font);
+int FontStrLen(const char *s,mfont_t *font);
 void FontSetColors(byte first,byte count,byte *data);
 bool FontInputText(char *prompt,char *buffer,int len,void (*renderScrn)(mfont_t *),mfont_t *font);
 

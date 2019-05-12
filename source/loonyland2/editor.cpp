@@ -28,6 +28,9 @@ static byte warning;
 
 static MGLDraw *editmgl;
 
+// error: 'curMap' was declared 'extern' and later 'static'
+#define curMap editorMap
+
 static world_t	world;
 static Map		*curMap;
 static byte		curMapNum;

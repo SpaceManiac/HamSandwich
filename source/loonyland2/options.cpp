@@ -242,7 +242,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 	return 0;
 }
 
-static void OptionButton(int x,int y,int wid,char *txt,byte spot)
+static void OptionButton(int x,int y,int wid,const char *txt,byte spot)
 {
 	if(subcursor!=spot || subMode!=SUBMODE_OPTIONS)
 		PauseBox(x,y,x+wid,y+28,240);
