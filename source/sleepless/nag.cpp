@@ -1,3 +1,4 @@
+#ifdef DEMO
 #include "nag.h"
 #include "display.h"
 #include "game.h"
@@ -298,3 +299,4 @@ byte Nag(MGLDraw *mgl,byte full)
 
 	return buyNow;
 }
+#endif

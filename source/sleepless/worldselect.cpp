@@ -431,8 +431,8 @@ void InitWorldSelect(MGLDraw *mgl)
 	wsSpr=new sprite_set_t("graphics/pause.jsp");
 	msBright=0;
 	msDBright=1;
-	PlaySongForce("003WorldPicker.ogg");
-	mouseZ=mouse_z;
+	PlaySongForce("003worldpicker.ogg");
+	mouseZ=mgl->mouse_z;
 }
 
 void ExitWorldSelect(void)
@@ -506,8 +506,8 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			}
 		}
 
-		int mv=mouseZ-mouse_z;
-		mouseZ=mouse_z;
+		int mv=mouseZ-mgl->mouse_z;
+		mouseZ=mgl->mouse_z;
 		if(mv<0)
 		{
 			listPos+=mv;
@@ -525,7 +525,7 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			CalcScrollBar();
 		}
 
-		if((mouse_b&1) && !(mouseB&1))
+		if((mgl->mouse_b&1) && !(mouseB&1))
 		{
 			// clicking on a world
 			for(i=0;i<18;i++)
@@ -678,7 +678,7 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 	}
 	else if(mode==MODE_SCROLL)
 	{
-		if((mouse_b&1)==0)
+		if((mgl->mouse_b&1)==0)
 			mode=MODE_PICKWORLD;
 		else
 		{
@@ -688,7 +688,7 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 	}
 	else if(mode==MODE_VERIFY || mode==MODE_VERIFY2)
 	{
-		if((mouse_b&1) && !(mouseB&1))
+		if((mgl->mouse_b&1) && !(mouseB&1))
 		{
 			if(PointInRect(msx,msy,70,270,70+50,270+WBTN_HEIGHT))
 			{
@@ -718,7 +718,7 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 		return WS_EXIT;
 	}
 
-	mouseB=mouse_b;
+	mouseB=mgl->mouse_b;
 	return WS_CONTINUE;
 }
 

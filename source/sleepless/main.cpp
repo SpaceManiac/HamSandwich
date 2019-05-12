@@ -29,7 +29,7 @@
 
 MGLDraw *mainmgl;
 
-int main(int argc, const char* argv[])
+int main(int argc, char* argv[])
 {
 	bool windowedGame=FALSE;
 
@@ -133,6 +133,11 @@ int main(int argc, const char* argv[])
 				break;
 		}
 	}
-}
 
-END_OF_MAIN()
+	StopSong();
+	LunaticExit();
+	delete mainmgl;
+	ExitLog();
+	FatalErrorQuit();
+	JamulSoundExit();
+}

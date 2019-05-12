@@ -155,7 +155,7 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 	}
 
 	c=mgl->LastKeyPressed();
-	raw=mgl->LastRawCode()>>8;
+	raw = LastScanCode();
 	if(c==13)	// enter
 	{
 		MakeNormalSound(SND_MENUSELECT);
@@ -205,12 +205,12 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 
 	if (customWorldEnabled)
 	{
-		if(raw == KEY_UP)
+		if(raw == SDL_SCANCODE_UP)
 		{
 			if (--choice == 255)
 				choice = numFiles - 1;
 		}
-		else if (raw == KEY_DOWN)
+		else if (raw == SDL_SCANCODE_DOWN)
 		{
 			if (++choice == numFiles)
 				choice = 0;

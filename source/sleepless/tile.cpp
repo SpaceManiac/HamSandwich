@@ -149,6 +149,7 @@ void SaveTiles(FILE *f)
 
 void SaveTilesToBMP(char *fname)
 {
+#if 0  // TODO
 	char tmp[64];
 	int i,j;
 
@@ -199,6 +200,7 @@ void SaveTilesToBMP(char *fname)
 		save_bmp(tmp,screen,GetDisplayMGL()->GetPalette());
 	}
 	GetDisplayMGL()->ClearScreen();
+#endif
 }
 
 void LoadTile(FILE *f,byte *t)

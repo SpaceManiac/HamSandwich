@@ -527,36 +527,6 @@ void VictoryText(MGLDraw *mgl)
 	}
 }
 
-byte SpecialLoadBMP(char *name,MGLDraw *mgl,PALETTE pal)
-{
-	BITMAP *b;
-	RGB newpal[256];
-	int i,w;
-
-	b=load_bitmap(name,newpal);
-	if(b==NULL)
-		return FALSE;
-
-	for(i=0;i<256;i++)
-	{
-		pal[i].r=newpal[i].r;
-		pal[i].g=newpal[i].g;
-		pal[i].b=newpal[i].b;
-	}
-
-	w=b->w;
-	if(w>SCRWID)
-		w=SCRWID;
-
-	for(i=0;i<b->h;i++)
-	{
-		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],b->line[i],w);
-	}
-
-	destroy_bitmap(b);
-	return TRUE;
-}
-
 byte SpeedSplash(MGLDraw *mgl,char *fname)
 {
 	int i,j,clock;
@@ -577,22 +547,14 @@ byte SpeedSplash(MGLDraw *mgl,char *fname)
 	mgl->LastKeyPressed();
 	oldc=GetControls()|GetArrows();
 
-	BITMAP *b;
-	b=load_bitmap(fname,desiredpal);
-	if(b==NULL)
+	if (!mgl->LoadBMP(fname, desiredpal))
 		return FALSE;
-
-	for(i=0;i<b->h;i++)
-	{
-		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],b->line[i],b->w);
-	}
 	for(i=0;i<256;i++)
 	{
-		desiredpal[i].r*=4;
+		desiredpal[i].r*=4; // but why?
 		desiredpal[i].g*=4;
 		desiredpal[i].b*=4;
 	}
-	destroy_bitmap(b);
 
 	mode=0;
 	clock=0;
@@ -704,22 +666,14 @@ void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound)
 
 	mgl->LastKeyPressed();
 
-	BITMAP *b;
-	b=load_bitmap(fname,desiredpal);
-	if(b==NULL)
+	if (!mgl->LoadBMP(fname, desiredpal))
 		return;
-
-	for(i=0;i<b->h;i++)
-	{
-		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],b->line[i],b->w);
-	}
 	for(i=0;i<256;i++)
 	{
-		desiredpal[i].r*=4;
+		desiredpal[i].r*=4; // but why?
 		desiredpal[i].g*=4;
 		desiredpal[i].b*=4;
 	}
-	destroy_bitmap(b);
 
 	mode=0;
 	clock=0;

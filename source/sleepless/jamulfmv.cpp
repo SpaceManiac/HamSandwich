@@ -1,7 +1,10 @@
 #include "jamulfmv.h"
-#include <allegro.h>
 #include "clock.h"
 #include "display.h"
+
+void FLI_play(char *name, byte loop, word wait, MGLDraw *mgl) {}
+
+#if 0  // TODO
 
 static PALETTE fliTempPal;
 
@@ -141,3 +144,5 @@ which increments this variable every time a new frame should be displayed. Calli
 decrements it, so you can test it and know that it is time to display a new frame if it is greater than zero.
 
 */
+
+#endif

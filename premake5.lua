@@ -95,7 +95,7 @@ sdl2_project "supreme"
 		"spcldialog.cpp",
 	})
 
-allegro_project "sleepless"
+sdl2_project "sleepless"
 	icon_file "lunatic"
 	buildoptions {
 		"-Wall",

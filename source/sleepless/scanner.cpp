@@ -30,7 +30,7 @@ void BeginScanning(void)
 
 	if(!scanStarted)
 	{
-		GetDisplayMGL()->LoadBMPNoPalette("graphics/profmenu.bmp");
+		GetDisplayMGL()->LoadBMP("graphics/profmenu.bmp", NULL);
 		backgd=(byte *)malloc(640*480);
 		for(i=0;i<480;i++)
 			memcpy(&backgd[i*640],&GetDisplayMGL()->GetScreen()[i*GetDisplayMGL()->GetWidth()],640);
