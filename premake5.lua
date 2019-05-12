@@ -125,3 +125,6 @@ sdl2_project "loonyland2"
 	removefiles_in("source/loonyland2/", {
 		"monster_ai.cpp",
 	})
+
+sdl2_project "mystic"
+	buildoptions { "-Wno-write-strings" }
