@@ -3,7 +3,7 @@
 set -euo pipefail
 
 show_help() {
-	echo "Usage: $0 <project> [--release] [--gdb] [--fullscreen]"
+	echo "Usage: $0 <project> [--release] [--gdb] [--fullscreen] [--nobuild]"
 	echo "Available projects:"
 	echo "    lunatic    supreme     sleepless"
 	echo "    loonyland  loonyland2  mystic"
@@ -14,6 +14,7 @@ USE_GDB=
 PROJECT=
 CONFIG=debug
 ARGS=window
+NOBUILD=
 
 # Read command-line arguments
 while [ $# -ne 0 ]; do
@@ -27,6 +28,9 @@ while [ $# -ne 0 ]; do
 			;;
 		"--gdb")
 			USE_GDB=ON
+			;;
+		"--nobuild")
+			NOBUILD=ON
 			;;
 		-*)
 			show_help; exit 1
@@ -49,7 +53,9 @@ fi
 ./tools/build/install-deps.sh
 
 # Ensure the project's build is up to date
-make $PROJECT config=$CONFIG
+if [ -z "$NOBUILD" ]; then
+	make $PROJECT config=$CONFIG
+fi
 
 # Ensure the project's assets exist
 GAMEDIR="build/game/$PROJECT"
