@@ -8,8 +8,8 @@ function allegro_project(name)
 		kind "WindowedApp"
 		language "C++"
 		architecture "x86"
-		targetdir("build/%{cfg.toolset}-%{cfg.buildcfg}/" .. name .. "/")
-		objdir("build/%{cfg.toolset}-%{cfg.buildcfg}/" .. name .. "/obj/")
+		targetdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/")
+		objdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/obj/")
 
 		includedirs { "build/allegro/include/" }
 		libdirs { "build/allegro/lib/" }
@@ -43,9 +43,19 @@ function removefiles_in(dir, files)
 	removefiles(list)
 end
 
+function icon_file(icon)
+	-- Workaround for bug in premake5's gmake2 generator, which does
+	-- not count .res (object) files as resources, only .rc (source)
+	filter "system:Windows"
+		linkoptions { "%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/obj/" .. icon .. ".res" }
+	filter {}
+end
+
 allegro_project "lunatic"
+	icon_file "lunatic"
 
 allegro_project "supreme"
+	icon_file "lunatic"
 	removefiles_in("source/supreme/", {
 		"monsterlist.cpp",
 		"monsterai1.cpp",
@@ -59,6 +69,7 @@ allegro_project "supreme"
 	})
 
 allegro_project "sleepless"
+	icon_file "lunatic"
 	removefiles_in("source/sleepless/", {
 		"monsterlist.cpp",
 		"monsterai1.cpp",
