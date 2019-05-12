@@ -212,7 +212,13 @@ void MGLDraw::FinishFlip(void)
 			ControlKeyDown(e.key.keysym.scancode);
 			lastRawCode = e.key.keysym.scancode;
 			if (!(e.key.keysym.sym & ~0xff))
+			{
 				lastKeyPressed = e.key.keysym.sym;
+				if (e.key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT))
+				{
+					lastKeyPressed = toupper(lastKeyPressed);
+				}
+			}
 		} else if (e.type == SDL_KEYUP) {
 			ControlKeyUp(e.key.keysym.scancode);
 		} else if (e.type == SDL_MOUSEMOTION) {
