@@ -66,11 +66,5 @@ if [ $USE_GDB ]; then
 	gdb -q -ex='set confirm on' -ex=run -ex=quit --args "$EXE" $ARGS
 else
 	echo "==== Running $PROJECT ($CONFIG) ===="
-	handle_missing_dlls() {
-		if grep -q 'error while loading shared libraries' stderr.log; then
-			echo "Missing DLLs:"
-			ntldd "$EXE" | grep "not found"
-		fi
-	}
-	("$EXE" $ARGS) 2> >(tee stderr.log >&2) || handle_missing_dlls
+	"$EXE" $ARGS
 fi
