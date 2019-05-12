@@ -26,6 +26,14 @@ extract_nsis() {  # <exe> <destination>
 	7z x -o"$2" -x'!$PLUGINSDIR' -x'!*.exe' -x'!*.dll' "$1"
 }
 
+extract_inno() {
+	mkdir -p "$2"
+	7z x -o"build/innotemp" "$1"
+	./build/innoextract -d "build" "build/innotemp/setup.0"
+	cp -r build/app/* "$2"
+	rm -r "build/innotemp" "build/app"
+}
+
 mkdir -p "$INSTDIR"
 case "$PROJECT" in
 	"lunatic")
@@ -39,6 +47,11 @@ case "$PROJECT" in
 	"sleepless")
 		itch_download 'https://hamumu.itch.io/sleepless-hollow' hollow_betainstall.exe
 		extract_nsis "$INSTDIR/hollow_betainstall.exe" "$OUTDIR"
+		;;
+	"loonyland")
+		itch_download 'https://hamumu.itch.io/loonyland-halloween-hill' loonyland_install.exe
+		extract_inno "$INSTDIR/loonyland_install.exe" "$OUTDIR"
+		rm "$OUTDIR/loonyland.exe"
 		;;
 	*)
 		echo "$0: unknown project: $PROJECT"

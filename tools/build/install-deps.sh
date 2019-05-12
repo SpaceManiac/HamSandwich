@@ -37,6 +37,15 @@ if [ ! -f "build/premake5" ]; then
 	rm "build/premake5.zip"
 fi
 
+# Download Innoextract binary
+if [ ! -f "build/innoextract" ]; then
+	echo "==== Downloading Innoextract binary ===="
+	wget -O "build/innoextract.zip" "https://constexpr.org/innoextract/files/innoextract-1.7-windows.zip"
+	md5sum -c <<<'b801b0740b4ab19d69a739ab4a9180ae *build/innoextract.zip'
+	7z x -o"build/" -i'!innoextract.exe' "build/innoextract.zip"
+	rm "build/innoextract.zip"
+fi
+
 # Download Allegro binaries
 ALLEGRO_DIR="build/allegro"
 ALLEGRO_VERSION="allegro-4.4.2-mingw-4.5.2"
