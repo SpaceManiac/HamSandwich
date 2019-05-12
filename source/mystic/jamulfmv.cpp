@@ -1,5 +1,8 @@
 #include "jamulfmv.h"
 
+byte FLI_play(char *name,byte loop,word wait,MGLDraw *mgl) {}
+
+#if 0  // TODO
 // different kinds of flic chunks
 #define FLI_COLOR		11
 #define FLI_LC			12
@@ -469,3 +472,5 @@ void FLI_play_callback(char *name,byte loop,word wait,void (*callback)(int),MGLD
   } while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27));
   fclose(FLI_file);
 }
+
+#endif

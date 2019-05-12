@@ -19,12 +19,14 @@ void RenderFloorTile(int x,int y,int t,char light);
 void RenderFloorTileTrans(int x,int y,int t,char light);
 void RenderFloorTileShadow(int x,int y,int t,char light);
 void RenderFloorTileUnlit(int x,int y,int t);
-void RenderWallTile(int x,int y,byte w,byte f,char light);
-void RenderWallTileTrans(int x,int y,byte w,byte f,char light);
+void RenderWallTile(int x,int y,word w,word f,char light);
+void RenderWallTileTrans(int x,int y,word w,word f,char light);
+void PlotStar(int x,int y,byte col,byte tx,byte ty,word tileNum);
 
-void RenderFloorTileFancy(int x,int y,int t,byte shadow,char *theLight);
-void RenderWallTileFancy(int x,int y,int t,char *theLight);
+void RenderFloorTileFancy(int x,int y,int t,byte shadow,char *light);
 void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,char *theLight);
+void RenderWallTileFancy(int x,int y,int t,char *light);
+void RenderFloorTileFancyWater(int x,int y,int t,byte water,byte shadow,char *theLight);
 
 void GoldUpTile(int t,int amt);
 

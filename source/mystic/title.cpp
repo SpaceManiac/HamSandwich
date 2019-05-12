@@ -276,7 +276,7 @@ byte MainMenu(MGLDraw *mgl)
 	mgl->LoadBMP("graphics\\title.bmp");
 	backgd=(byte *)malloc(640*480);
 	if(!backgd)
-		mgl->FatalError("Out of memory!!");
+		FatalError("Out of memory!!");
 	memcpy(backgd,mgl->GetScreen(),640*480);
 
 	mgl->LastKeyPressed();
@@ -698,7 +698,7 @@ void VictoryText(MGLDraw *mgl,byte victoryType)
 	free(scr);
 }
 
-byte SpecialLoadBMP(MGLDraw *dispmgl,char *name,palette_t *pal)
+byte SpecialLoadBMP(MGLDraw *dispmgl,char *name,RGB *pal)
 {
 	FILE *f;
 	BITMAPFILEHEADER bmpFHead;
@@ -722,9 +722,9 @@ byte SpecialLoadBMP(MGLDraw *dispmgl,char *name,palette_t *pal)
 	fread(pal2,sizeof(pal2),1,f);
 	for(i=0;i<256;i++)
 	{
-		pal[i].red=pal2[i].rgbRed;
-		pal[i].green=pal2[i].rgbGreen;
-		pal[i].blue=pal2[i].rgbBlue;
+		pal[i].r=pal2[i].rgbRed;
+		pal[i].g=pal2[i].rgbGreen;
+		pal[i].b=pal2[i].rgbBlue;
 	}
 
 	for(i=0;i<bmpIHead.biHeight;i++)
@@ -739,15 +739,15 @@ byte SpecialLoadBMP(MGLDraw *dispmgl,char *name,palette_t *pal)
 void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound,byte specialdeal)
 {
 	int i,j,clock;
-	palette_t desiredpal[256],curpal[256];
+	RGB desiredpal[256],curpal[256];
 	byte mode,done;
 	dword tick;
 
 	for(i=0;i<256;i++)
 	{
-		curpal[i].red=0;
-		curpal[i].green=0;
-		curpal[i].blue=0;
+		curpal[i].r=0;
+		curpal[i].g=0;
+		curpal[i].b=0;
 	}
 	mgl->SetPalette(curpal);
 	mgl->RealizePalette();
@@ -782,12 +782,12 @@ void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound,byte specialdeal
 					for(j=0;j<8;j++)
 						for(i=0;i<256;i++)
 						{
-							if(curpal[i].red<desiredpal[i].red)
-								curpal[i].red++;
-							if(curpal[i].green<desiredpal[i].green)
-								curpal[i].green++;
-							if(curpal[i].blue<desiredpal[i].blue)
-								curpal[i].blue++;
+							if(curpal[i].r<desiredpal[i].r)
+								curpal[i].r++;
+							if(curpal[i].g<desiredpal[i].g)
+								curpal[i].g++;
+							if(curpal[i].b<desiredpal[i].b)
+								curpal[i].b++;
 						}
 					mgl->SetPalette(curpal);
 					mgl->RealizePalette();
@@ -814,16 +814,16 @@ void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound,byte specialdeal
 					for(j=0;j<8;j++)
 						for(i=0;i<256;i++)
 						{
-							if(curpal[i].red>0)
-								curpal[i].red--;
+							if(curpal[i].r>0)
+								curpal[i].r--;
 							else
 								clock++;
-							if(curpal[i].green>0)
-								curpal[i].green--;
+							if(curpal[i].g>0)
+								curpal[i].g--;
 							else
 								clock++;
-							if(curpal[i].blue>0)
-								curpal[i].blue--;
+							if(curpal[i].b>0)
+								curpal[i].b--;
 							else
 								clock++;
 						}

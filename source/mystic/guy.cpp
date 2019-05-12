@@ -2089,7 +2089,7 @@ Guy *GetGuy(word ID)
 
 static dword whackClock,whackTotalClock;
 static word whacked;
-static prizeAwarded;
+static int prizeAwarded;
 
 void WhackazoidDisplay(void)
 {

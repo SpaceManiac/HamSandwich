@@ -1,294 +1,86 @@
 #include "music.h"
 #include "mgldraw.h"
+#include "options.h"
+#include "editor.h"
+#include <SDL2/SDL_mixer.h>
 
-#define	CDAUDIO_CDPLAYER_STRING			( "CD Player" )
-#define	CDAUDIO_CDPLAYER_LENGTH			( 10 )
+Mix_Music *curStream=NULL;
+char curSongName[64];
+int musVolume=255;
+byte lastSong=255;
+byte dontcallback=0;
 
-dword CDError=0;
-dword CDDevice=0;
-byte  CDStarted=FALSE;
-word  chosenTrack;
-byte  introMode;	// for INTROLOOP mode, it needs to know if it is in the intro song or the loop song
-static byte needsUpdating;
-
-byte MusicInit(void)
+void Song(byte w)
 {
-	needsUpdating=0;
-	if(!InitCDPlayer())
-		return 0;
+	char s[32];
 
-	return 1;
+	if(w==lastSong)
+		return;	// no need, it's already playing our song
+
+	sprintf(s,"song%03d.wav",w-SONG_UNDERWORLD);
+
+	PlaySong(s);
+	lastSong=w;
 }
 
-void MusicExit(void)
+void UpdateMusic(void)
 {
-	ExitCDPlayer();
-}
-
-
-// ----------------------------------------------------------------------------------
-// CD AUDIO STUFF
-// currently the only thing music does, but maybe midis will be added later
-
-byte InitCDPlayer(void)
-{
-	MCI_OPEN_PARMS	openParms;
-	MCI_SET_PARMS	setParms;
-	static char deviceType[]="cdaudio";
-
-	ShutoffWindowsCD();
-
-	memset(&openParms,0,sizeof(MCI_OPEN_PARMS));
-	openParms.lpstrDeviceType=deviceType;
-
-	CDError=mciSendCommand(0,MCI_OPEN,MCI_OPEN_TYPE,(dword)&openParms);
-
-	if(CDError)
-		return 0;
-
-	CDDevice=openParms.wDeviceID;
-
-	memset(&setParms,0,sizeof(MCI_SET_PARMS));
-	setParms.dwTimeFormat=MCI_FORMAT_TMSF;
-
-	CDError=mciSendCommand(CDDevice,MCI_SET,MCI_SET_TIME_FORMAT,(dword)&setParms);
-
-	if(CDError)
+	if (curStream && !Mix_PlayingMusic())
 	{
-		mciSendCommand(CDDevice,MCI_CLOSE,0,0);
-		return 0;
+		if (!dontcallback)
+			PlaySong(curSongName);
 	}
-
-	CDStarted=1;
-	chosenTrack=0;
-	introMode=0;
-
-	return 1;
 }
 
-void ExitCDPlayer(void)
+void PlaySong(char *fname)
 {
-	if(!CDStarted)
+	char fullname[64];
+
+	strcpy(curSongName,fname);
+	sprintf(fullname,"music/%s",fname);
+	StopSong();
+
+	SDL_RWops* rw = SDL_RWFromFile(fullname, "rb");
+	if(!rw)
+	{
+		printf("%s: %s\n", fullname, SDL_GetError());
 		return;
-
-	CDStop();
-
-	mciSendCommand(CDDevice,MCI_CLOSE,0,0);
-	CDStarted=0;
-}
-
-byte CDLoaded(void)
-{
-	MCI_STATUS_PARMS status;
-
-	if(!CDStarted)
-		return 0;
-
-	memset(&status,0,sizeof(MCI_STATUS_PARMS));
-	status.dwItem=MCI_STATUS_MEDIA_PRESENT;
-
-	CDError=mciSendCommand(CDDevice,MCI_STATUS,MCI_STATUS_ITEM,(dword)&status);
-
-	if(CDError)
-	{
-		mciSendCommand(CDDevice,MCI_CLOSE,0,0);
-		CDStarted=0;
-		return 0;
 	}
-	return (byte)status.dwReturn;
-}
 
-dword CDCurrentTrack(void)
-{
-	MCI_STATUS_PARMS status;
-
-	if(!CDStarted)
-		return 0;
-
-	memset(&status,0,sizeof(MCI_STATUS_PARMS));
-	status.dwItem=MCI_STATUS_CURRENT_TRACK;
-
-	CDError=mciSendCommand(CDDevice,MCI_STATUS,MCI_STATUS_ITEM,(dword)&status);
-
-	if(CDError)
+	curStream=Mix_LoadMUS_RW(rw, 1);
+	if(!curStream)
 	{
-		mciSendCommand(CDDevice,MCI_CLOSE,0,0);
-		CDStarted=0;
-		return 0;
-	}
-	return status.dwReturn;
-}
-
-dword CDTrackCount(void)
-{
-	MCI_STATUS_PARMS status;
-
-	if(!CDStarted)
-		return 0;
-
-	memset(&status,0,sizeof(MCI_STATUS_PARMS));
-	status.dwItem=MCI_STATUS_NUMBER_OF_TRACKS;
-
-	CDError=mciSendCommand(CDDevice,MCI_STATUS,MCI_STATUS_ITEM,(dword)&status);
-
-	if(CDError)
-	{
-		mciSendCommand(CDDevice,MCI_CLOSE,0,0);
-		CDStarted=0;
-		return 0;
-	}
-	return status.dwReturn;
-}
-
-byte CDIsPlaying(void)
-{
-	MCI_STATUS_PARMS status;
-
-	if(!CDStarted)
-		return 0;
-
-	memset(&status,0,sizeof(MCI_STATUS_PARMS));
-	status.dwItem=MCI_STATUS_MODE;
-
-	CDError=mciSendCommand(CDDevice,MCI_STATUS,MCI_STATUS_ITEM,(dword)&status);
-
-	if(CDError)
-	{
-		mciSendCommand(CDDevice,MCI_CLOSE,0,0);
-		CDStarted=0;
-		return 0;
-	}
-	return (byte)(status.dwReturn==MCI_MODE_PLAY);
-}
-
-void CDPlay(int track)
-{
-	MCI_PLAY_PARMS play;
-	int count;
-
-	if(!CDLoaded())
+		printf("%s: %s\n", fullname, Mix_GetError());
 		return;
-
-	count=(int)CDTrackCount();
-
-	if(track>count)
-	{
-		// illegal tracks get replaced by random tracks
-		track=MGL_random((word)count)+1;
 	}
 
-	memset(&play,0,sizeof(MCI_PLAY_PARMS));
-	play.dwFrom=MCI_MAKE_TMSF(track,0,0,0);
-	play.dwTo=MCI_MAKE_TMSF(track+1,0,0,0);	// play until the next track
-	play.dwCallback=(dword)MGLGetHWnd();
-	if(track==count)	// don't go "to" if it's the last, just end at the end
-		CDError=mciSendCommand(CDDevice,MCI_PLAY,MCI_FROM|MCI_NOTIFY,(dword)&play);
-	else
-		CDError=mciSendCommand(CDDevice,MCI_PLAY,MCI_FROM|MCI_TO|MCI_NOTIFY,(dword)&play);
-
-	chosenTrack=(word)track;
-	introMode=0;
-	if(CDError)
-	{
-		mciSendCommand(CDDevice,MCI_CLOSE,0,0);
-		CDStarted=0;
-		chosenTrack=0;
-	}
+	Mix_VolumeMusic(musVolume / 2);
+	Mix_PlayMusic(curStream, 1);
+	UpdateMusic();
 }
 
-void CDStop(void)
+void StopSong2(void)
 {
-	MCI_GENERIC_PARMS stop;
-
-	if(!CDStarted)
-		return;
-
-	memset(&stop,0,sizeof(MCI_GENERIC_PARMS));
-
-	CDError=mciSendCommand(CDDevice,MCI_STOP,0,(dword)&stop);
-
-	if(CDError)
+	dontcallback=1;
+	if(curStream)
 	{
-		mciSendCommand(CDDevice,MCI_CLOSE,0,0);
-		CDStarted=0;
+		Mix_HaltMusic();
+		Mix_FreeMusic(curStream);
+		curStream=NULL;
+	}
+	dontcallback=0;
+}
+
+void SetMusicVolume(int vol)
+{
+	musVolume=vol;
+	if(curStream)
+	{
+		Mix_VolumeMusic(musVolume / 2);
 	}
 }
 
-void CDNeedsUpdating(void)
+char *CurSongTitle(void)
 {
-	needsUpdating=1;
-}
-
-void CDPlayerUpdate(byte mode)
-{
-	int track;
-	int count;
-
-	if(!needsUpdating)
-		return;
-	needsUpdating=0;
-
-	if(!CDLoaded())
-		return;
-
-	if(CDIsPlaying())
-	{
-		if(mode==CD_OFF)
-			CDStop();
-		return;	// nothing to do here
-	}
-	else switch(mode)
-	{
-		case CD_OFF:
-			// the CD isn't playing, that's what you want
-			break;
-		case CD_LOOPTRACK:
-			CDPlay(chosenTrack);	// play it again, sam
-			break;
-		case CD_INTROLOOP:
-			if(introMode==0)	// in the intro part
-				CDPlay(chosenTrack+1);
-			else
-				CDPlay(chosenTrack);	// keep looping the non-intro part
-			introMode=1;	// either way, you're on the non-intro part
-			break;
-		case CD_RANDOM:
-			count=CDTrackCount();
-			if(count)
-			{
-				track=(MGL_random((word)count))+1;
-				if(track==chosenTrack)
-					track++;	// don't repeat a song, PLEASE
-				CDPlay(track);
-			}
-			break;
-		case CD_NORMAL:
-			CDPlay(chosenTrack+1);	// next song
-			break;
-	}
-}
-
-// Windows CD shutter-downer... doesn't actually work right
-BOOL CALLBACK FindCDPlayer( HWND hwnd, LPARAM lParam )
-{
-	char	buffer[CDAUDIO_CDPLAYER_LENGTH];
-	int		result;
-
-	result = GetWindowText( hwnd, buffer, CDAUDIO_CDPLAYER_LENGTH );
-
-	if( result == 0 )
-		return TRUE;
-
-	if( strcmp( buffer, CDAUDIO_CDPLAYER_STRING ) )
-		return TRUE;
-
-	// window is CDplayer, so tell it to quit
-	PostMessage( hwnd, WM_QUIT, 1, 0 );
-
-	return FALSE;
-}
-
-void ShutoffWindowsCD(void)
-{
-	EnumWindows((WNDENUMPROC)FindCDPlayer,0);
+	return curSongName;
 }

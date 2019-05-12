@@ -15,25 +15,25 @@ void InitOptions(void)
 	{
 		opt.challenge=0;
 		// these are the arrow keys,  including the unchangable ones
-		opt.key[0][0]=opt.key[0][1]=opt.key[0][2]=72;
-		opt.key[1][0]=opt.key[1][1]=opt.key[1][2]=80;
-		opt.key[2][0]=opt.key[2][1]=opt.key[2][2]=75;
-		opt.key[3][0]=opt.key[3][1]=opt.key[3][2]=77;
+		opt.key[0][0]=opt.key[0][1]=opt.key[0][2]=SDL_SCANCODE_UP;
+		opt.key[1][0]=opt.key[1][1]=opt.key[1][2]=SDL_SCANCODE_DOWN;
+		opt.key[2][0]=opt.key[2][1]=opt.key[2][2]=SDL_SCANCODE_LEFT;
+		opt.key[3][0]=opt.key[3][1]=opt.key[3][2]=SDL_SCANCODE_RIGHT;
 		// fire key
-		opt.key[4][0]=29;	// CTRL
-		opt.key[4][1]=44;	// Z
-		opt.key[4][2]=28;	// enter
+		opt.key[4][0]=SDL_SCANCODE_LCTRL;	// CTRL
+		opt.key[4][1]=SDL_SCANCODE_Z;	// Z
+		opt.key[4][2]=SDL_SCANCODE_RETURN;	// enter
 		// spell key
-		opt.key[5][0]=42;	// leftshift
-		opt.key[5][1]=45;	// X
+		opt.key[5][0]=SDL_SCANCODE_LSHIFT;	// leftshift
+		opt.key[5][1]=SDL_SCANCODE_X;	// X
 		opt.key[5][2]=0;	// no unchangable key
 		// previous
-		opt.key[6][0]=30;	// A
-		opt.key[6][1]=59;	// F1
+		opt.key[6][0]=SDL_SCANCODE_A;	// A
+		opt.key[6][1]=SDL_SCANCODE_F1;	// F1
 		opt.key[6][2]=0;	// no unchangable key
 		// next
-		opt.key[7][0]=31;	// S
-		opt.key[7][1]=60;	// F2
+		opt.key[7][0]=SDL_SCANCODE_S;	// S
+		opt.key[7][1]=SDL_SCANCODE_F2;	// F2
 		opt.key[7][2]=0;	// no unchangable
 
 		// joystick buttons
@@ -231,7 +231,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 				oldc=255;
 				return 0;
 			}
-			btn=RawJoyButtons();
+			btn=GetJoyButtons();
 
 			j=1;
 			for(i=0;i<16;i++)

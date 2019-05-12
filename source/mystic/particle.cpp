@@ -5,7 +5,7 @@
 
 Particle **particleList;
 int		maxParticles;
-static snowCount=0;
+static int snowCount=0;
 
 Particle::Particle(void)
 {

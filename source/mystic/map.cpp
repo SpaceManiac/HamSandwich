@@ -664,9 +664,6 @@ void Map::LightSpecial(int x,int y,char brt,byte size)
 	LOS(x,y,size,brt,TorchCallback);
 }
 
-#define SCRWID (640)
-#define SCRHEI (480)
-
 void Map::Render(world_t *world,int camX,int camY,byte flags)
 {
 	int i,j,endX,endY;

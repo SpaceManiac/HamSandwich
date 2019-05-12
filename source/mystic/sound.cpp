@@ -1,6 +1,7 @@
 #include "sound.h"
 #include "display.h"
 #include "player.h"
+#include "music.h"
 
 int curSong,prvSong;
 static int songVol,soundVol;
@@ -55,7 +56,7 @@ void PlaySong(int sng)
 	curSong=sng;
 	if(PlayerGetMusicSettings()>0)
 	{
-		JamulSoundSong(sng,songVol);
+		Song(sng);
 	}
 	else
 		prvSong=curSong;
@@ -66,7 +67,7 @@ void StopSong(void)
 	if(!soundExists)
 		return;
 
-	JamulSoundStopSong();
+	StopSong2();
 	prvSong=curSong;
 	curSong=0;
 }
@@ -79,7 +80,7 @@ void ReplaySong(void)
 	if(PlayerGetMusicSettings()>0)
 	{
 		curSong=prvSong;
-		JamulSoundSong(curSong,songVol);
+		Song(curSong);
 	}
 }
 
@@ -94,16 +95,16 @@ void VolumeSong(byte hi)
 			StopSong();
 			break;
 		case 1:
-			songVol=-1400;
-			SetSongVolume(-1400);
+			songVol=85;
+			SetMusicVolume(85);
 			break;
 		case 2:
-			songVol=-700;
-			SetSongVolume(-700);
+			songVol=170;
+			SetMusicVolume(170);
 			break;
 		case 3:
-			songVol=0;
-			SetSongVolume(0);
+			songVol=255;
+			SetMusicVolume(255);
 			break;
 	}
 }
@@ -116,20 +117,20 @@ void VolumeSound(byte hi)
 	switch(hi)
 	{
 		case 0:
-			soundVol=-5000;
-			SetSoundVolume(-5000);
+			soundVol=0;
+			JamulSoundVolume(0);
 			break;
 		case 1:
-			soundVol=-1400;
-			SetSoundVolume(-1400);
+			soundVol=85;
+			JamulSoundVolume(85);
 			break;
 		case 2:
-			soundVol=-700;
-			SetSoundVolume(-700);
+			soundVol=170;
+			JamulSoundVolume(170);
 			break;
 		case 3:
-			soundVol=0;
-			SetSoundVolume(0);
+			soundVol=255;
+			JamulSoundVolume(255);
 			break;
 	}
 }

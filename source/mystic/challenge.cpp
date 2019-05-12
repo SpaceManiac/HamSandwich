@@ -1276,7 +1276,7 @@ void InitChallengeMenu(MGLDraw *mgl)
 	GetDisplayMGL()->LoadBMP("graphics\\shop.bmp");
 	backgd=(byte *)malloc(640*480);
 	if(!backgd)
-		GetDisplayMGL()->FatalError("Out of memory!!");
+		FatalError("Out of memory!!");
 	memcpy(backgd,GetDisplayMGL()->GetScreen(),640*480);
 
 	chalSpr=new sprite_set_t("graphics\\chal.jsp");

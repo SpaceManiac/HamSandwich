@@ -240,7 +240,7 @@ void PrintBrightGlow(int x,int y,char *s,char brt,byte font)
 	FontPrintStringBrightGlow(x,y,s,brt,gameFont[font]);
 }
 
-void CenterPrint(int midx,int y,char *s,char bright,byte font)
+void CenterPrint(int midx,int y,const char *s,char bright,byte font)
 {
 	int x;
 

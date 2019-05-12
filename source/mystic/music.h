@@ -1,32 +1,39 @@
 #ifndef MUSIC_H
 #define MUSIC_H
 
-#include "winpch.h"
+#include "mgldraw.h"
 
-// these are CD audio modes for the CDPlayerUpdate
-#define CD_OFF		  0
-#define CD_LOOPTRACK  1	// continuously loop the current track
-#define CD_INTROLOOP  2	// plays the chosen track, then loops the next one
-#define CD_RANDOM	  3 // after current track, jump to any other at random
-#define CD_NORMAL	  4 // just keep playing the tracks in order, loops at end of CD to beginning
+// songs
+#define SONG_UNDERWORLD	(240)
+#define SONG_WINTER		(241)
+#define SONG_CAVES		(242)
+#define SONG_BOSS		(243)
+#define SONG_TOWN		(244)
+#define SONG_FACTORY	(245)
 
-byte MusicInit(void);
-void MusicExit(void);
+// bottom 3 bits of profile.musicMode say which list to use
+#define MUSIC_OFFICIAL	0
+#define MUSIC_PLAYLIST1 1
+#define MUSIC_PLAYLIST2 2
+#define MUSIC_PLAYLIST3 3
+#define MUSIC_PLAYLIST4 4
+#define MUSIC_LISTBITS	(1+2+4)
 
-// CD audio functions
-byte InitCDPlayer(void);
-void ExitCDPlayer(void);
-byte CDLoaded(void);
-dword CDCurrentTrack(void);
-dword CDTrackCount(void);
-void CDPlay(int track);
-void CDStop(void);
-byte CDIsPlaying(void);
-void CDPlayerUpdate(byte mode);
-void CDNeedsUpdating(void);
+// the next 2 bits cover different play modes
+#define MUSIC_PLAYMODE	(8+16)
+#define MUSIC_RANDOM	(8)
+#define MUSIC_SEQUENTIAL (16)
+#define MUSIC_REPEAT	(0)
 
-// this kills the windows CD Player if it is on
-void ShutoffWindowsCD(void);
-BOOL CALLBACK FindCDPlayer( HWND hwnd, LPARAM lParam );
+void PlaySong(char *fname);
+void PlaySongForce(char *fname);
+void StopSong2(void);
+
+void SetMusicVolume(int vol);
+
+char *CurSongTitle(void);
+void Song(byte w);
+
+void UpdateMusic(void);
 
 #endif

@@ -19,18 +19,20 @@
 
 void InitControls(void);
 
-void ControlKeyUp(char k);
-void ControlKeyDown(char k);
+void ControlKeyUp(byte k);
+void ControlKeyDown(byte k);
 byte GetControls(void);
 byte GetTaps(void);
+byte GetArrowTaps(void);
 byte GetArrows(void);
 
 byte LastScanCode(void);
 
 byte JoystickAvailable(void);
 
-char *ScanCodeText(byte s);
-byte GetJoyState(void);
-dword RawJoyButtons(void);
+const char *ScanCodeText(byte s);
+byte ShiftState(void);
+
+byte GetJoyButtons(void);
 
 #endif

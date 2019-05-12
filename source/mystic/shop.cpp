@@ -267,7 +267,7 @@ void EnterShop(void)
 	GetDisplayMGL()->LoadBMP("graphics\\shop.bmp");
 	shopScr=(byte *)malloc(640*480);
 	if(!shopScr)
-		GetDisplayMGL()->FatalError("Out of memory!!");
+		FatalError("Out of memory!!");
 	memcpy(shopScr,GetDisplayMGL()->GetScreen(),640*480);
 	oldc=255;
 	GetDisplayMGL()->LastKeyPressed();

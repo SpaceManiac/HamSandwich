@@ -20,29 +20,22 @@
 #include "options.h"
 #include "nag.h"
 
-bool windowedGame=FALSE;
 MGLDraw *mainmgl;
 
-void parseCmdLine(char *cmdLine)
-{
-	char *token;
-
-	token=strtok(cmdLine," ");
-	while(token!=NULL)
-	{
-		if(!strcmp(token,"window"))
-			windowedGame=TRUE;
-		token=strtok(NULL," ");
-	}
-}
-
-int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR cmdLine,int nCmdShow)
+int main(int argc, char* argv[])
 {
 #ifdef DEMO
 	byte n;
 #endif
-	parseCmdLine(cmdLine);
-	mainmgl=new MGLDraw("Kid Mystic",640,480,8,windowedGame,hInstance);
+	bool windowedGame=false;
+	for (int i = 1; i < argc; ++i)
+	{
+		if (!strcmp(argv[i], "window"))
+			windowedGame=true;
+	}
+
+	InitOptions();
+	mainmgl=new MGLDraw("Kid Mystic",640,480,8,windowedGame);
 	if(!mainmgl)
 		return 0;
 

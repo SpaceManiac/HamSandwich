@@ -21,6 +21,7 @@ class sprite_t
 		void DrawColored(int x,int y,MGLDraw *mgl,byte color,char bright);
 		void DrawGhost(int x,int y,MGLDraw *mgl,char bright);
 		void DrawGlow(int x,int y,MGLDraw *mgl,char bright);
+		void DrawOffColor(int x,int y,MGLDraw *mgl,byte fromColor,byte toColor,char bright);
 
 		// this makes half-height tilted black shadows (they darken by 4)
 		void DrawShadow(int x,int y,MGLDraw *mgl);
@@ -51,7 +52,5 @@ class sprite_set_t
 		word count;
 		sprite_t **spr;
 };
-
-void NewComputerSpriteFix(char *fname);
 
 #endif

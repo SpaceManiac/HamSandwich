@@ -596,7 +596,7 @@ void UpdateMouse(void)
 	//mouseX+=(msx-MS_X);
 	//mouseY+=(msy-MS_Y);
 
-	MS_getPos(&mouseX,&mouseY);
+	editmgl->GetMouse(&mouseX,&mouseY);
 	//mouseX=MS_X;
 	//mouseY=MS_Y;
 

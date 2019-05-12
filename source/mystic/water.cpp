@@ -20,13 +20,13 @@ void InitWater(void)
 	scroll=0;
 	water1=(short *)malloc(WATER_WIDTH*WATER_HEIGHT*sizeof(short));
 	if(!water1)
-		GetDisplayMGL()->FatalError("out of memory!");
+		FatalError("out of memory!");
 	water2=(short *)malloc(WATER_WIDTH*WATER_HEIGHT*sizeof(short));
 	if(!water2)
-		GetDisplayMGL()->FatalError("out of memory!");
+		FatalError("out of memory!");
 	waterbkgd=(byte *)malloc(WATER_WIDTH*WATER_HEIGHT*sizeof(byte));
 	if(!waterbkgd)
-		GetDisplayMGL()->FatalError("out of memory!");
+		FatalError("out of memory!");
 
 	GetDisplayMGL()->LoadBMP("graphics\\water.bmp");
 

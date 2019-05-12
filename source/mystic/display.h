@@ -69,7 +69,7 @@ void GetCamera(int *x,int *y);
 // call this once per gameloop, with the X and Y of the object you want the camera to track
 void UpdateCamera(int x,int y,byte facing,Map *map);
 void Print(int x,int y,char *s,char bright,byte font);
-void CenterPrint(int midx,int y,char *s,char bright,byte font);
+void CenterPrint(int midx,int y,const char *s,char bright,byte font);
 void PrintGlow(int x,int y,char *s,byte font);
 void RightPrintGlow(int x,int y,char *s,byte font);
 void CenterPrintGlow(int y,char *s,byte font);

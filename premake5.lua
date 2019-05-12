@@ -128,3 +128,7 @@ sdl2_project "loonyland2"
 
 sdl2_project "mystic"
 	buildoptions { "-Wno-write-strings" }
+	removefiles_in("source/mystic/", {
+		"old_control.cpp",
+		"Copy of title.cpp",
+	})

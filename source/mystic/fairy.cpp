@@ -203,7 +203,7 @@ void EnterFairyBox(void)
 	PlaySong(SONG_SHOP);
 	shopScr=(byte *)malloc(640*480);
 	if(!shopScr)
-		GetDisplayMGL()->FatalError("Out of memory!!");
+		FatalError("Out of memory!!");
 	shopSpr->GetSprite(36)->Draw(278,200,GetDisplayMGL());
 	memcpy(shopScr,GetDisplayMGL()->GetScreen(),640*480);
 }
