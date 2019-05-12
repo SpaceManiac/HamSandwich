@@ -1292,7 +1292,7 @@ void FaceGoodguyVillager(Guy *me,Guy *goodguy)
 	}
 }
 
-inline int RangeToTarget(Guy *me,Guy *goodguy)
+int RangeToTarget(Guy *me,Guy *goodguy)
 {
 	return abs(me->x-goodguy->x)+abs(me->y-goodguy->y);
 }

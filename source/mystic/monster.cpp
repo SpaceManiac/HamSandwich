@@ -884,7 +884,7 @@ void InstaRenderMonster2(int x,int y,byte type,byte seq,byte frm,byte facing,byt
 // AI auxiliary functions to make it simple
 //---------------------------------------------
 
-inline void FaceGoodguy(Guy *me,Guy *goodguy)
+void FaceGoodguy(Guy *me,Guy *goodguy)
 {
 	if(!goodguy)
 		return;
@@ -916,7 +916,7 @@ inline void FaceGoodguy(Guy *me,Guy *goodguy)
 	}
 }
 
-inline int RangeToTarget(Guy *me,Guy *goodguy)
+int RangeToTarget(Guy *me,Guy *goodguy)
 {
 	if(!me || !goodguy)
 		return 0;
