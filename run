@@ -63,7 +63,7 @@ EXE="$PWD/build/gcc-$CONFIG/$PROJECT/$PROJECT"
 cd "$GAMEDIR"
 if [ $USE_GDB ]; then
 	echo "==== Debugging $PROJECT ($CONFIG) ===="
-	gdb -q -ex='set confirm on' -ex=run -ex=quit --args "$EXE" $ARGS
+	gdb --args "$EXE" $ARGS
 else
 	echo "==== Running $PROJECT ($CONFIG) ===="
 	"$EXE" $ARGS
