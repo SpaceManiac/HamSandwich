@@ -54,7 +54,7 @@ bool JamulSoundInit(int numBuffers)
 		schannel[i].soundNum=-1;
 		schannel[i].voice=-1;
 	}
-	sndVolume=0;
+	sndVolume=128;
 	return true;
 }
 

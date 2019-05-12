@@ -40,6 +40,7 @@ _CrtSetDbgFlag(flag); // Set flag to the new value
 	}
 
 	DBG("b");
+	LoadOptions();  // so we know we want sound before we go to init it
 	mainmgl=new MGLDraw("Loonyland",SCRWID,SCRHEI,8,windowedGame);
 	DBG("c");
 	if(!mainmgl)
