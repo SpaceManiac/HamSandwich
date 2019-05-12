@@ -49,8 +49,8 @@ case "$PROJECT" in
 		extract_nsis "$INSTDIR/hollow_betainstall.exe" "$OUTDIR"
 		;;
 	"loonyland")
-		itch_download 'https://hamumu.itch.io/loonyland-halloween-hill' loonyland_install.exe
-		extract_inno "$INSTDIR/loonyland_install.exe" "$OUTDIR"
+		itch_download 'https://hamumu.itch.io/loonyland-halloween-hill' loonyland_install.EXE
+		extract_inno "$INSTDIR/loonyland_install.EXE" "$OUTDIR"
 		rm "$OUTDIR/loonyland.exe"
 		;;
 	*)
