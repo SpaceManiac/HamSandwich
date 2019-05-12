@@ -21,7 +21,7 @@ fi
 mkdir -p "build"
 
 # Install system packages
-PACKAGES="p7zip make mingw-w64-i686-binutils mingw-w64-i686-gcc"
+PACKAGES="p7zip make mingw-w64-i686-binutils mingw-w64-i686-gcc mingw-w64-i686-SDL2 mingw-w64-i686-SDL2_mixer"
 if [ ! -f "build/.packages" ] || [ "$(cat build/.packages)" != "$PACKAGES" ]; then
 	echo "==== Updating MSYS2 packages ===="
 	pacman -S --needed --noconfirm --quiet $PACKAGES
