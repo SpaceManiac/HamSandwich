@@ -68,6 +68,7 @@ end
 
 allegro_project "lunatic"
 	icon_file "lunatic"
+	defines { "EXPANDO" }
 	buildoptions { "-Wall", "-Wextra", "-Wno-unused-parameter" }
 
 sdl2_project "supreme"
