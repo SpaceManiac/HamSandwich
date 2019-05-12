@@ -118,3 +118,10 @@ sdl2_project "sleepless"
 
 sdl2_project "loonyland"
 	buildoptions { "-Wno-write-strings" }
+
+sdl2_project "loonyland2"
+	buildoptions { "-Wno-write-strings" }
+	defines { "DIRECTORS" }
+	removefiles_in("source/loonyland2/", {
+		"monster_ai.cpp",
+	})

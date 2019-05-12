@@ -56,6 +56,10 @@ case "$PROJECT" in
 		itch_download 'https://hamumu.itch.io/loonyland-halloween-hill' loonyland_editor.exe
 		extract_nsis "$INSTDIR/loonyland_editor.exe" "$OUTDIR"
 		;;
+	"loonyland2")
+		itch_download 'https://hamumu.itch.io/loonyland-2-winter-woods' LL2CEinstall.exe
+		extract_nsis "$INSTDIR/LL2CEinstall.exe" "$OUTDIR"
+		;;
 	*)
 		echo "$0: unknown project: $PROJECT"
 		exit 1
