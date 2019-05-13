@@ -117,9 +117,11 @@ sdl2_project "sleepless"
 	})
 
 sdl2_project "loonyland"
+	icon_file "loonyland"
 	buildoptions { "-Wno-write-strings" }
 
 sdl2_project "loonyland2"
+	icon_file "loonyland2"
 	buildoptions { "-Wno-write-strings" }
 	defines { "DIRECTORS" }
 	removefiles_in("source/loonyland2/", {
@@ -127,6 +129,7 @@ sdl2_project "loonyland2"
 	})
 
 sdl2_project "mystic"
+	icon_file "mystic"
 	buildoptions { "-Wno-write-strings" }
 	removefiles_in("source/mystic/", {
 		"old_control.cpp",
