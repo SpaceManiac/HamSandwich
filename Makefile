@@ -8,9 +8,9 @@ endif
 .PHONY: all clean help $(PROJECTS)
 
 all clean help $(PROJECTS): build/Makefile
-	@$(MAKE) -s -C build $@
+	@$(MAKE) --no-print-directory -C build $@
 
-build/Makefile: premake5.lua
+build/Makefile: premake5.lua $(addprefix source/,$(PROJECTS))
 	@echo "==== Preparing build ===="
 	@rm -f build/Makefile
 	@$(PREMAKE5) gmake2
