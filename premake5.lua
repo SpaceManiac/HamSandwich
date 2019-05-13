@@ -16,7 +16,6 @@ function base_project(name)
 		files {
 			"source/" .. name .. "/**.h",
 			"source/" .. name .. "/**.cpp",
-			"source/" .. name .. "/**.rc",
 		}
 
 		filter "configurations:debug"
@@ -62,6 +61,7 @@ function icon_file(icon)
 	-- Workaround for bug in premake5's gmake2 generator, which does
 	-- not count .res (object) files as resources, only .rc (source)
 	filter "system:Windows"
+		files { "source/" .. icon .. "/**.rc" }
 		linkoptions { "%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/obj/" .. icon .. ".res" }
 	filter {}
 end
