@@ -2,11 +2,12 @@
 # extract-assets.sh - extract game/ folder from an installer file
 set -euo pipefail
 
-PROJECT=$1
-if [ -z "$PROJECT" ]; then
+if [ $# -eq 0 ]; then
 	echo "$0: must specify project"
 	exit 1
 fi
+PROJECT=$1
+PATH="$PWD/build:$PATH"
 echo "==== Extracting assets for $PROJECT ===="
 
 INSTDIR="build/installers"
@@ -29,7 +30,7 @@ extract_nsis() {  # <exe> <destination>
 extract_inno() {
 	mkdir -p "$2"
 	7z x -o"build/innotemp" "$1"
-	./build/innoextract -d "build" "build/innotemp/setup.0"
+	innoextract -d "build" "build/innotemp/setup.0"
 	cp -r build/app/* "$2"
 	rm -r "build/innotemp" "build/app"
 }
