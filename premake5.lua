@@ -136,6 +136,7 @@ sdl2_project "loonyland"
 
 sdl2_project "loonyland2"
 	icon_file "loonyland2"
+	depends "common"
 	buildoptions { "-Wno-write-strings" }
 	defines { "DIRECTORS" }
 	removefiles_in("source/loonyland2/", {
