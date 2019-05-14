@@ -30,6 +30,11 @@ function base_project(name)
 		filter {}
 end
 
+function library(name)
+	base_project(name)
+		kind "StaticLib"
+end
+
 function allegro_project(name)
 	base_project(name)
 		includedirs { "build/allegro/include/" }
@@ -66,6 +71,13 @@ function icon_file(icon)
 	filter {}
 end
 
+function depends(name)
+	includedirs { "source/" .. name }
+	links(name)
+end
+
+library "common"
+
 allegro_project "lunatic"
 	icon_file "lunatic"
 	defines { "EXPANDO" }
@@ -73,6 +85,7 @@ allegro_project "lunatic"
 
 sdl2_project "supreme"
 	icon_file "lunatic"
+	depends "common"
 	buildoptions {
 		"-Wall",
 		"-Wno-write-strings",
