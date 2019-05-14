@@ -131,6 +131,7 @@ sdl2_project "sleepless"
 
 sdl2_project "loonyland"
 	icon_file "loonyland"
+	depends "common"
 	buildoptions { "-Wno-write-strings" }
 
 sdl2_project "loonyland2"

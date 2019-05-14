@@ -1,12 +1,14 @@
 #include "filedialog.h"
 #include "editor.h"
+#include "lsdir.h"
+#include <memory>
 
 #define MAX_FILES 18
 
-char fnames[MAX_FILES][32];
-char newfname[32]="";
-byte numFiles;
-long hFile;
+static char fnames[MAX_FILES][32];
+static char newfname[32]="";
+static byte numFiles;
+static std::unique_ptr<filterdir> filter;
 
 void InitFileDialog(void)
 {
@@ -16,28 +18,19 @@ void InitFileDialog(void)
 	for(i=0;i<MAX_FILES;i++)
 		fnames[i][0]='\0';
 
-	numFiles=0;
-
-	hFile=_findfirst("*.llw",&filedata);
-
-	if(hFile!=-1)	// there's at least one
+	numFiles = 0;
+	filter = std::make_unique<filterdir>(".", ".llw", 32);
+	for (const char* name : *filter)
 	{
-		strncpy(fnames[0],filedata.name,32);
-		numFiles=1;
-
-		while(numFiles<MAX_FILES)
-		{
-			if(_findnext(hFile,&filedata)==0)
-				strncpy(fnames[numFiles++],filedata.name,32);
-			else	// no more files
-				break;
-		}
+		strncpy(fnames[numFiles++], name, 32);
+		if (numFiles >= MAX_FILES)
+			break;
 	}
 }
 
 void ExitFileDialog(void)
 {
-	_findclose(hFile);
+	filter.reset();
 }
 
 void RenderFileDialog(int msx,int msy,MGLDraw *mgl)
@@ -111,20 +104,16 @@ void FileDialogMoreFiles(void)
 		fnames[i][0]='\0';
 
 	numFiles=0;
-
-	while(numFiles<MAX_FILES)
+	for (const char* name : *filter)
 	{
-		if(_findnext(hFile,&filedata)==0)
-			strncpy(fnames[numFiles++],filedata.name,32);
-		else	// no more files
-		{
-			if(numFiles==0)	// there aren't any more to list at all!
-			{
-				ExitFileDialog();
-				InitFileDialog();	// reget the first page of them
-			}
+		strncpy(fnames[numFiles++], name, 32);
+		if (numFiles >= MAX_FILES)
 			break;
-		}
+	}
+	if(numFiles==0)	// there aren't any more to list at all!
+	{
+		ExitFileDialog();
+		InitFileDialog();	// reget the first page of them
 	}
 }
 
