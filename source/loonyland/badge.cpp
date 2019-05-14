@@ -614,9 +614,7 @@ void BadgeCheatKey(char c)
 	for(i=0;i<15;i++)
 		badgeKeys[i]=badgeKeys[i+1];
 	// and stick the new one on the end
-	badgeKeys[15]=c;
-
-	_strlwr(&badgeKeys[15]);
+	badgeKeys[15]=tolower(c);
 
 	if(!strcmp("gimme",&badgeKeys[16-strlen("gimme")]))
 	{
