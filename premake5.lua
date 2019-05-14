@@ -144,6 +144,7 @@ sdl2_project "loonyland2"
 
 sdl2_project "mystic"
 	icon_file "mystic"
+	depends "common"
 	buildoptions { "-Wno-write-strings" }
 	removefiles_in("source/mystic/", {
 		"old_control.cpp",
