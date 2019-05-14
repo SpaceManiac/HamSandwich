@@ -37,8 +37,10 @@ end
 
 function sdl2_project(name)
 	base_project(name)
+		links { "SDL2main", "SDL2", "SDL2_mixer", "SDL2_image" }
+
 		filter "system:Windows"
-			links { "mingw32", "SDL2main", "SDL2", "ws2_32", "winmm", "SDL2_mixer", "SDL2_image" }
+			links { "mingw32", "ws2_32", "winmm" }
 
 		filter {}
 end

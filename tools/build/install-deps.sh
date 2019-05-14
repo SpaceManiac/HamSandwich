@@ -68,7 +68,8 @@ deps_ubuntu() {
     packages 'sudo apt-get install' \
         p7zip innoextract \
         g++-multilib \
-        libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev
+        libsdl2-dev:i386 libsdl2-mixer-dev:i386 libsdl2-image-dev:i386 \
+        libmirclient-dev:i386 libmircommon-dev:i386 libxkbcommon-dev:i386
 
     # Download Premake5 binary
     if [ ! -f "build/premake5" ]; then
