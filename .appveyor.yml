@@ -1,0 +1,16 @@
+version: '{build}'
+
+pull_requests:
+    do_not_increment_build_number: true
+skip_branch_with_pr: true
+
+environment:
+    MSYSTEM: MINGW32
+    CHERE_INVOKING: 1
+
+install:
+    - set "PATH=C:\msys64\%MSYSTEM%\bin;C:\msys64\usr\bin;%PATH%"
+    - bash -lc './tools/build/install-deps.sh'
+
+build_script:
+    - bash -lc 'make'
