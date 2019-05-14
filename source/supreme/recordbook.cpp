@@ -32,14 +32,12 @@ float CalcPlayPercent(void)
 	worlds=0;
 
 	score=0.0f;
-	lsdir ls("worlds");
-	while(const char* name = ls.next())
+	for (const char* name : filterdir("worlds", ".dlw", 32))
 	{
 		// rule out the backup worlds, so they don't show up
 		if((strcmp(name,"backup_load.dlw")) &&
 		   (strcmp(name,"backup_exit.dlw")) &&
-		   (strcmp(name,"backup_save.dlw")) &&
-		   strstr(name, ".dlw"))
+		   (strcmp(name,"backup_save.dlw")))
 		{
 			tmp=GetWorldProgressNoCreate(name);
 			if(tmp)

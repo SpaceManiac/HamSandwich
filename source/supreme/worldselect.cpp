@@ -242,27 +242,23 @@ void ScanWorlds(void)
 	// count up how many there are to deal with
 	count=0;
 
-	lsdir ls("worlds");
-	while (const char* name = ls.next())
+	for (const char* name : filterdir("worlds", ".dlw", 32))
 	{
 		// rule out the backup worlds, so they don't show up
 		if((strcmp(name,"backup_load.dlw")) &&
 		   (strcmp(name,"backup_exit.dlw")) &&
-		   (strcmp(name,"backup_save.dlw")) &&
-			strstr(name, ".dlw"))
+		   (strcmp(name,"backup_save.dlw")))
 			count++;
 	}
 
 	done=0;
 
-	lsdir ls2("worlds");
-	while (const char* name = ls2.next())
+	for (const char* name : filterdir("worlds", ".dlw", 32))
 	{
 		// rule out the backup worlds, so they don't show up
 		if((strcmp(name,"backup_load.dlw")) &&
 		   (strcmp(name,"backup_exit.dlw")) &&
-		   (strcmp(name,"backup_save.dlw")) &&
-			strstr(name, ".dlw"))
+		   (strcmp(name,"backup_save.dlw")))
 		{
 			InputWorld(name);
 			done++;

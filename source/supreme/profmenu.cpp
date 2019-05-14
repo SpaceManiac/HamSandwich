@@ -134,18 +134,6 @@ void SortProfiles(void)
 	}
 }
 
-void InputProfile(const char *fname)
-{
-	if(strlen(fname)>=PRFNAME_LEN)
-		return;	// won't add long names
-
-	if(numFiles>=MAX_PROFS)
-		return;	// can't add more of them
-
-	strcpy(&fileList[numFiles*PRFNAME_LEN],fname);
-	numFiles++;
-}
-
 void ScanProfiles(void)
 {
 	int i;
@@ -154,11 +142,10 @@ void ScanProfiles(void)
 		fileList[i*PRFNAME_LEN]='\0';
 	numFiles=0;
 
-	lsdir ls("profiles");
-	while (const char* name = ls.next())
+	for (const char* name : filterdir("profiles", ".prf", PRFNAME_LEN))
 	{
-		if (strstr(name, ".prf"))
-			InputProfile(name);
+		strcpy(&fileList[numFiles*PRFNAME_LEN], name);
+		numFiles++;
 	}
 	SortProfiles();
 

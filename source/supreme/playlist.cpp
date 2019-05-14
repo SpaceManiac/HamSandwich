@@ -96,13 +96,6 @@ void SortSongs(void)
 
 void InputSong(const char *fname)
 {
-	int len = strlen(fname);
-	if(len < 4 || len >= SONGNAME_LEN)
-		return;	// won't add long names
-
-	if(strcmp(".ogg", &fname[len-4]))
-		return; // ogg files only
-
 	if(fileList==NULL)
 	{
 		fileList=(char *)malloc(SONGNAME_LEN*NUMFILESTOGET);
@@ -128,8 +121,7 @@ void InputSong(const char *fname)
 
 void ScanSongs(void)
 {
-	lsdir ls("music");
-	while (const char* name = ls.next())
+	for (const char* name : filterdir("music", ".ogg", SONGNAME_LEN))
 	{
 		InputSong(name);
 	}
