@@ -1273,13 +1273,13 @@ void InitChallengeMenu(MGLDraw *mgl)
 {
 	int i;
 
-	GetDisplayMGL()->LoadBMP("graphics\\shop.bmp");
+	GetDisplayMGL()->LoadBMP("graphics/shop.bmp");
 	backgd=(byte *)malloc(640*480);
 	if(!backgd)
 		FatalError("Out of memory!!");
 	memcpy(backgd,GetDisplayMGL()->GetScreen(),640*480);
 
-	chalSpr=new sprite_set_t("graphics\\chal.jsp");
+	chalSpr=new sprite_set_t("graphics/chal.jsp");
 	i=0;
 	while((chal[i].chapter!=255 || chal[i].level!=0))
 		i++;

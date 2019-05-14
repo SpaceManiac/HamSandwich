@@ -2299,7 +2299,7 @@ void EditorLoadWorld(char *fname)
 {
 	char s[256];
 
-	sprintf(s,"addons\\%s",fname);
+	sprintf(s,"addons/%s",fname);
 	FreeWorld(&world);
 	if(LoadWorld(&world,s))
 	{
@@ -2328,9 +2328,9 @@ void EditorSaveWorld(char *fname)
 {
 	char s[64];
 
-	sprintf(s,"backup\\%s_back%d%d%d%d.llw",fname,rand()%10,rand()%10,rand()%10,rand()%10);
+	sprintf(s,"backup/%s_back%d%d%d%d.llw",fname,rand()%10,rand()%10,rand()%10,rand()%10);
 	SaveWorld(&world,s);
-	sprintf(s,"addons\\%s",fname);
+	sprintf(s,"addons/%s",fname);
 	SaveWorld(&world,s);
 }
 

@@ -29,21 +29,21 @@ bool InitDisplay(MGLDraw *mainmgl)
 	if(!gameFont[0])
 		return false;
 	FontInit(mgl);
-	if(FontLoad("graphics\\listiumbig.jft",gameFont[0])!=FONT_OK)
+	if(FontLoad("graphics/listiumbig.jft",gameFont[0])!=FONT_OK)
 		return false;
 
 	gameFont[1]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[1])
 		return false;
 
-	if(FontLoad("graphics\\verdana.jft",gameFont[1])!=FONT_OK)
+	if(FontLoad("graphics/verdana.jft",gameFont[1])!=FONT_OK)
 		return false;
 
 	gameFont[2]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[2])
 		return false;
 
-	if(FontLoad("graphics\\listium.jft",gameFont[2])!=FONT_OK)
+	if(FontLoad("graphics/listium.jft",gameFont[2])!=FONT_OK)
 		return false;
 
 	dispList=new DisplayList();
@@ -83,24 +83,24 @@ void ShowVictoryAnim(byte world)
 	{
 		case 0:
 			PlaySong(SONG_CHAP12MAP);
-			FLI_play("graphics\\ch1.flc",0,60,mgl);
+			FLI_play("graphics/ch1.flc",0,60,mgl);
 			break;
 		case 1:
 			PlaySong(SONG_CHAP12MAP);
-			FLI_play("graphics\\ch2.flc",0,60,mgl);
+			FLI_play("graphics/ch2.flc",0,60,mgl);
 			break;
 		case 2:
 			PlaySong(SONG_CHAP34MAP);
-			FLI_play("graphics\\ch3.flc",0,60,mgl);
+			FLI_play("graphics/ch3.flc",0,60,mgl);
 			break;
 		case 3:
 			PlaySong(SONG_CHAP34MAP);
-			FLI_play("graphics\\ch4.flc",0,60,mgl);
+			FLI_play("graphics/ch4.flc",0,60,mgl);
 			break;
 		case 4:
 			// the final victory!
 			PlaySong(SONG_BEATNIK);
-			FLI_play("graphics\\ending.flc",0,100,mgl);
+			FLI_play("graphics/ending.flc",0,100,mgl);
 			if(player.nightmare)
 				VictoryText(mgl,1);
 			else
@@ -117,20 +117,20 @@ void ShowVictoryAnim(byte world)
 		case 10:
 			StopSong();
 			MakeNormalSound(SND_ARMAGEDDON);
-			FLI_play("graphics\\sword.flc",0,60,mgl);
+			FLI_play("graphics/sword.flc",0,60,mgl);
 			ReplaySong();
 			break;
 		case 11:
 			//PlaySong(SONG_INTRO);
 			StopSong();
 			MakeNormalSound(SONG_INTRO);
-			if(FLI_play("graphics\\intro.flc",0,60,mgl))
+			if(FLI_play("graphics/intro.flc",0,60,mgl))
 				JamulSoundStop(1);
 			break;
 	}
 	mgl->ClearScreen();
 	mgl->Flip();
-	mgl->LoadBMP("graphics\\pal.bmp");
+	mgl->LoadBMP("graphics/pal.bmp");
 
 	end=timeGetTime();
 	AddGarbageTime(end-start);

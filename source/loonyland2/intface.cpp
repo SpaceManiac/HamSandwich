@@ -36,7 +36,7 @@ int bossHP;
 
 void InitInterface(void)
 {
-	intfaceSpr=new sprite_set_t("graphics\\intface.jsp");
+	intfaceSpr=new sprite_set_t("graphics/intface.jsp");
 	Radar_Init();
 }
 

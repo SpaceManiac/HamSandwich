@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 		return 0;
 
 	LunaticInit(mainmgl);
-	SplashScreen(mainmgl,"graphics\\intro1.bmp",128,SND_INTRO1,0);
+	SplashScreen(mainmgl,"graphics/intro1.bmp",128,SND_INTRO1,0);
 #ifdef DEMO
 #elif VALUE
 #else

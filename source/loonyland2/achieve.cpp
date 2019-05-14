@@ -456,7 +456,7 @@ void InitAchieveMenu(byte *backScr)
 	subMode=SUBMODE_OPTIONS;
 	subcursor=0;
 	oldc=255;
-	achSpr=new sprite_set_t("graphics\\achspr.jsp");
+	achSpr=new sprite_set_t("graphics/achspr.jsp");
 
 	for(i=0;i<480;i++)
 	{

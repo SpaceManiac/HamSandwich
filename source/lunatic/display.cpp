@@ -29,14 +29,14 @@ bool InitDisplay(MGLDraw *mainmgl)
 	if (!gameFont[0])
 		return false;
 	FontInit(mgl);
-	if (FontLoad("graphics\\girlsrweird.jft", gameFont[0]) != FONT_OK)
+	if (FontLoad("graphics/girlsrweird.jft", gameFont[0]) != FONT_OK)
 		return false;
 
 	gameFont[1] = (mfont_t *) malloc(sizeof (mfont_t));
 	if (!gameFont[1])
 		return false;
 
-	if (FontLoad("graphics\\verdana.jft", gameFont[1]) != FONT_OK)
+	if (FontLoad("graphics/verdana.jft", gameFont[1]) != FONT_OK)
 		return false;
 
 	dispList = new DisplayList();
@@ -82,34 +82,34 @@ void ShowVictoryAnim(byte world)
 	}
 	switch (world) {
 		case 0:
-			FLI_play("graphics\\caverns.flc", 0, 80, mgl);
+			FLI_play("graphics/caverns.flc", 0, 80, mgl);
 			break;
 		case 1:
-			FLI_play("graphics\\icy.flc", 0, 60, mgl);
+			FLI_play("graphics/icy.flc", 0, 60, mgl);
 			break;
 		case 2:
-			FLI_play("graphics\\forest.flc", 0, 60, mgl);
+			FLI_play("graphics/forest.flc", 0, 60, mgl);
 			break;
 		case 3:
-			FLI_play("graphics\\desert.flc", 0, 60, mgl);
+			FLI_play("graphics/desert.flc", 0, 60, mgl);
 			break;
 		case 4:
 			// the final victory!
 			if (PlayerGetMusicSettings() == MUSIC_ON)
 				CDPlay(22); // ending music, deedeleedoo
-			FLI_play("graphics\\asylum.flc", 0, 60, mgl);
+			FLI_play("graphics/asylum.flc", 0, 60, mgl);
 			break;
 		case 10:
-			FLI_play("graphics\\transfrm.flc", 0, 60, mgl);
+			FLI_play("graphics/transfrm.flc", 0, 60, mgl);
 			break;
 		case 11:
-			FLI_play("graphics\\asylumno.flc", 0, 40, mgl);
+			FLI_play("graphics/asylumno.flc", 0, 40, mgl);
 			break;
 		case 12:
-			FLI_play("graphics\\asylumys.flc", 0, 40, mgl);
+			FLI_play("graphics/asylumys.flc", 0, 40, mgl);
 			break;
 	}
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 
 	end = timeGetTime();
 	AddGarbageTime(end - start);
@@ -163,7 +163,7 @@ void ShowImageOrFlic(char *str)
 	{
 		EnterPictureDisplay();
 		MakeNormalSound(SND_MESSAGE);
-		sprintf(nm, "graphics\\%s", fname);
+		sprintf(nm, "graphics/%s", fname);
 		GetDisplayMGL()->LoadBMP(nm);
 		return;
 	}
@@ -173,7 +173,7 @@ void ShowImageOrFlic(char *str)
 	{
 		EnterPictureDisplay();
 		MakeNormalSound(SND_MESSAGE);
-		sprintf(nm, "graphics\\%s", fname);
+		sprintf(nm, "graphics/%s", fname);
 		LoadText(nm);
 		return;
 	}
@@ -183,11 +183,11 @@ void ShowImageOrFlic(char *str)
 	else
 		speed = 60;
 
-	sprintf(nm, "graphics\\%s", fname);
+	sprintf(nm, "graphics/%s", fname);
 
 	start = timeGetTime();
 	FLI_play(nm, 0, speed, mgl);
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	end = timeGetTime();
 	AddGarbageTime(end - start);
 }

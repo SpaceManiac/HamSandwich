@@ -32,7 +32,7 @@ void InitWater(void)
 	if(!waterbkgd)
 		FatalError("out of memory!");
 
-	GetDisplayMGL()->LoadBMP("graphics\\water.bmp");
+	GetDisplayMGL()->LoadBMP("graphics/water.bmp");
 
 	width=GetDisplayMGL()->GetWidth();
 	src=GetDisplayMGL()->GetScreen();
@@ -67,7 +67,7 @@ void SetupWater(void)
 	{
 		case 0:
 		default:
-			GetDisplayMGL()->LoadBMP("graphics\\water.bmp");
+			GetDisplayMGL()->LoadBMP("graphics/water.bmp");
 			waterColor=32*3;	// blue
 			waterAdj=5;	// 5 levels brightened
 			scrollAmtX=-1;

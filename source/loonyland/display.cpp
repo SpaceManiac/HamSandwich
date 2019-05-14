@@ -30,21 +30,21 @@ bool InitDisplay(MGLDraw *mainmgl)
 	if(!gameFont[0])
 		return false;
 	FontInit(mgl);
-	if(FontLoad("graphics\\chiller2.jft",gameFont[0])!=FONT_OK)
+	if(FontLoad("graphics/chiller2.jft",gameFont[0])!=FONT_OK)
 		return false;
 
 	gameFont[1]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[1])
 		return false;
 
-	if(FontLoad("graphics\\verdana.jft",gameFont[1])!=FONT_OK)
+	if(FontLoad("graphics/verdana.jft",gameFont[1])!=FONT_OK)
 		return false;
 
 	gameFont[2]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[2])
 		return false;
 
-	if(FontLoad("graphics\\chiller.jft",gameFont[2])!=FONT_OK)
+	if(FontLoad("graphics/chiller.jft",gameFont[2])!=FONT_OK)
 		return false;
 
 	dispList=new DisplayList();
@@ -139,12 +139,12 @@ void ShowVictoryAnim(byte world)
 	switch(world)
 	{
 		case 0:
-			FLI_play("graphics\\ending.flc",0,60,mgl,MovieSounds);
+			FLI_play("graphics/ending.flc",0,60,mgl,MovieSounds);
 			break;
 	}
 	mgl->ClearScreen();
 	mgl->Flip();
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	KillSong();
 	JamulSoundPurge();
 	MakeNormalSound(SND_ENDSONG);
@@ -173,7 +173,7 @@ void ShowImageOrFlic(char *str)
 	   (fname[strlen(fname)-1]=='p' || fname[strlen(fname)-1]=='P'))
 	{
 		EnterPictureDisplay();
-		sprintf(nm,"graphics\\%s",fname);
+		sprintf(nm,"graphics/%s",fname);
 		GetDisplayMGL()->LoadBMP(nm);
 		return;
 	}
@@ -183,11 +183,11 @@ void ShowImageOrFlic(char *str)
 	else
 		speed=60;
 
-	sprintf(nm,"graphics\\%s",fname);
+	sprintf(nm,"graphics/%s",fname);
 
 	start=timeGetTime();
 	FLI_play(nm,0,speed,mgl,NULL);
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	end=timeGetTime();
 	AddGarbageTime(end-start);
 }

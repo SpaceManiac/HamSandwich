@@ -362,7 +362,7 @@ void LoadLevelDefs(char *name)
 
 	err[0]='\0';
 	ResetLevelDefs();
-	sprintf(line,"addons\\lvl_%s.txt",name);
+	sprintf(line,"addons/lvl_%s.txt",name);
 	f=fopen(line,"rt");
 	if(!f)
 		return;

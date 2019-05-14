@@ -248,7 +248,7 @@ static byte reptCounter=0;
 
 void InitShop(void)
 {
-	shopSpr=new sprite_set_t("graphics\\shop.jsp");
+	shopSpr=new sprite_set_t("graphics/shop.jsp");
 }
 
 void ExitShop(void)
@@ -264,7 +264,7 @@ sprite_t *GetShopSpr(byte spr)
 void EnterShop(void)
 {
 	PlaySong(SONG_SHOP);
-	GetDisplayMGL()->LoadBMP("graphics\\shop.bmp");
+	GetDisplayMGL()->LoadBMP("graphics/shop.bmp");
 	shopScr=(byte *)malloc(640*480);
 	if(!shopScr)
 		FatalError("Out of memory!!");

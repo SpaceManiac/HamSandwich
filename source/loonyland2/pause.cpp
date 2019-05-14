@@ -983,7 +983,7 @@ void LoadGame(void)
 	char txt[64];
 
 
-	sprintf(txt,"profiles\\char%02d.loony",gameToLoad+1);
+	sprintf(txt,"profiles/char%02d.loony",gameToLoad+1);
 	f=fopen(txt,"rb");
 	if(!f)
 	{
@@ -999,7 +999,7 @@ void LoadGame(void)
 		}
 		else
 		{
-			sprintf(txt,"addons\\%s.llw",player.addonName);
+			sprintf(txt,"addons/%s.llw",player.addonName);
 			LoadLevelDefs(player.addonName);
 			LoadWorld(&curWorld,txt);
 		}
@@ -1021,7 +1021,7 @@ void SaveGame(void)
 	FILE *f;
 	char txt[64];
 
-	sprintf(txt,"profiles\\char%02d.loony",gameToLoad+1);
+	sprintf(txt,"profiles/char%02d.loony",gameToLoad+1);
 	f=fopen(txt,"wb");
 	if(!f)
 	{

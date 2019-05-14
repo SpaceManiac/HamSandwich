@@ -58,7 +58,7 @@ char areaName[][32]={
 
 void InitInterface(void)
 {
-	intfaceSpr=new sprite_set_t("graphics\\intface.jsp");
+	intfaceSpr=new sprite_set_t("graphics/intface.jsp");
 	radar=(byte *)malloc(128*128);
 }
 

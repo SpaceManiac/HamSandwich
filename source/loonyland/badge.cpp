@@ -796,7 +796,7 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 				}
 				else
 				{
-					GetDisplayMGL()->LoadBMP("graphics\\title.bmp");
+					GetDisplayMGL()->LoadBMP("graphics/title.bmp");
 					LoopingSound(SND_HAMUMU);
 				}
 			}

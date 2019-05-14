@@ -8,9 +8,9 @@
 #define MAX_CHARS	(32)
 
 #ifdef DIRECTORS
-#define TITLEBMP	"graphics\\title_coll.bmp"
+#define TITLEBMP	"graphics/title_coll.bmp"
 #else
-#define TITLEBMP	"graphics\\title.bmp"
+#define TITLEBMP	"graphics/title.bmp"
 #endif
 #define MENU_NEWCHAR	1	// make a new character
 #define MENU_PLAY		2	// play with the selected char

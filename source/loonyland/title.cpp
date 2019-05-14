@@ -305,7 +305,7 @@ void GetSavesForMenu(void)
 
 byte LunaticTitle(MGLDraw *mgl)
 {
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	mgl->Flip();
 	while(!mgl->LastKeyPeek())
 	{
@@ -726,7 +726,7 @@ byte MainMenu(MGLDraw *mgl)
 	for(i=0;i<MENU_CHOICES;i++)
 		menu[i].bright=-32;
 
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	if(opt.cheats[CH_VINTAGE])
 		mgl->GreyPalette();
 	mgl->LastKeyPressed();
@@ -816,7 +816,7 @@ byte MainMenu(MGLDraw *mgl)
 			GetTaps();
 			oldc=255;
 			Credits(mgl,1);
-			mgl->LoadBMP("graphics\\title.bmp");
+			mgl->LoadBMP("graphics/title.bmp");
 			numRuns=0;
 		}
 		if(!loadingGame && b==MENU_LOADGAME+1)
@@ -906,7 +906,7 @@ void Credits(MGLDraw *mgl,byte init)
 	hangon=TimeLength();
 
 	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	lastTime=1;
 	if(init)
 		InitPlasma(4);
@@ -1027,7 +1027,7 @@ void CheatText(MGLDraw *mgl,byte init)
 	hangon=TimeLength();
 
 	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	lastTime=1;
 	if(init)
 		InitPlasma(4);
@@ -1140,7 +1140,7 @@ void VictoryText(MGLDraw *mgl)
 	hangon=TimeLength();
 	lastTime=1;
 	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	InitPlasma(4);
 	while(1)
 	{
@@ -1294,7 +1294,7 @@ void HelpScreens(MGLDraw *mgl)
 
 	for(i=0;i<5;i++)
 	{
-		sprintf(name,"docs\\help%d.bmp",i+1);
+		sprintf(name,"docs/help%d.bmp",i+1);
 		if(!SpeedSplash(mgl,name))
 			return;
 	}
@@ -1302,7 +1302,7 @@ void HelpScreens(MGLDraw *mgl)
 
 void DemoSplashScreens(MGLDraw *mgl)
 {
-	if(!SpeedSplash(mgl,"graphics\\advert.bmp"))
+	if(!SpeedSplash(mgl,"graphics/advert.bmp"))
 		return;
 }
 

@@ -4417,7 +4417,7 @@ void RenderChat(MGLDraw *mgl)
 {
 	if(faceSpr==NULL)
 	{
-		faceSpr=new sprite_set_t("graphics\\vgrfaces.jsp");
+		faceSpr=new sprite_set_t("graphics/vgrfaces.jsp");
 	}
 	if(curVillager>=faceSpr->GetCount())
 	{

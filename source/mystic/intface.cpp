@@ -34,7 +34,7 @@ Guy *monster;
 
 void InitInterface(void)
 {
-	intfaceSpr=new sprite_set_t("graphics\\intface.jsp");
+	intfaceSpr=new sprite_set_t("graphics/intface.jsp");
 }
 
 void ExitInterface(void)

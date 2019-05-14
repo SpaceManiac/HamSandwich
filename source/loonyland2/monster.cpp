@@ -14,7 +14,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 		{"Null",{255,255,0},	// these numbers are {color to replace, color to replace with,brightness modifier}
 		 0,0,0,0,0,0,0,0,"",0},
 		{"Loony",{255,255,0},
-		 0,11,50,28,128,0,0,0,"graphics\\loony.jsp",0,MF_WATERWALK,ML_WALLBUMP|ML_GOOD,NULL,
+		 0,11,50,28,128,0,0,0,"graphics/loony.jsp",0,MF_WATERWALK,ML_WALLBUMP|ML_GOOD,NULL,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,0,255},	// move
@@ -26,7 +26,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{9,10,11,10,9,8,8,8,8,8,8,8,7,7,255},	//A4=air attack
 			}},
 		{"Teddy",{255,255,0},
-		 15,11,50,27,20,2,7,3*FIXAMT,"graphics\\teddy.jsp",0,MF_NONE,ML_NONE,AI_Teddy,
+		 15,11,50,27,20,2,7,3*FIXAMT,"graphics/teddy.jsp",0,MF_NONE,ML_NONE,AI_Teddy,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -35,7 +35,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,14,15,16,17,18,19,20,21,255},	// A1 = bellyflop
 			}},
 		{"Villager",{255,255,0},
-		 0,11,50,28,128,0,0,0,"graphics\\villager.jsp",0,MF_ONEFACE|MF_FACECMD|MF_INVINCIBLE|MF_NOMOVE,ML_GOOD,AI_Villager,
+		 0,11,50,28,128,0,0,0,"graphics/villager.jsp",0,MF_ONEFACE|MF_FACECMD|MF_INVINCIBLE|MF_NOMOVE,ML_GOOD,AI_Villager,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -43,7 +43,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},		// die
 			}},
 		{"Axe Trap",{255,255,0},
-		 1,12,20,6,10,3,1,0,"graphics\\turret.jsp",0,MF_NOMOVE|MF_FREEWALK,ML_GOOD|ML_NOMIND|ML_ALWAYSACTIVE,AI_AxeTrap,
+		 1,12,20,6,10,3,1,0,"graphics/turret.jsp",0,MF_NOMOVE|MF_FREEWALK,ML_GOOD|ML_NOMIND|ML_ALWAYSACTIVE,AI_AxeTrap,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -51,7 +51,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,0,254,254,254,255},		// die
 			}},
 		{"Bonehead",{255,255,0},
-		 1,11,50,23,10,0,1,3*FIXAMT,"graphics\\bonehead.jsp",0,MF_FREEWALK,ML_GOOD,AI_Bonehead,
+		 1,11,50,23,10,0,1,3*FIXAMT,"graphics/bonehead.jsp",0,MF_FREEWALK,ML_GOOD,AI_Bonehead,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -60,7 +60,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{14,13,12,11,10,9,8,7,255},		// A1=undie
 			}},
 		{"Squeaker",{255,255,0},
-		 1,8,20,19,2,0,3,3*FIXAMT,"graphics\\mouse.jsp",0,MF_NONE,ML_WOODS,AI_Mouse,
+		 1,8,20,19,2,0,3,3*FIXAMT,"graphics/mouse.jsp",0,MF_NONE,ML_WOODS,AI_Mouse,
 			{
 				{0,255},	// idle
 				{1,2,3,4,5,6,7,0,255},	// move
@@ -68,7 +68,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{8,9,10,11,12,13,14,254,15,254,16,254,17,254,18,255},		// die
 			}},
 		{"Punch",{1,4,2},
-		 3,11,50,28,6,0,4,3*FIXAMT,"graphics\\puppet.jsp",0,MF_NONE,ML_WOODS,AI_Puppet,
+		 3,11,50,28,6,0,4,3*FIXAMT,"graphics/puppet.jsp",0,MF_NONE,ML_WOODS,AI_Puppet,
 			{
 				{0,255},	// idle
 				{1,2,1,0,3,4,3,0,255},	// move
@@ -78,7 +78,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,14,15,16,17,18,19,20,21,22,23,15,14,13,255},	// A2=hat trick
 			}},
 		{"Cryozoid",{255,255,0},
-		 1,11,50,19,10,0,1,0,"graphics\\cryozoid.jsp",0,MF_NOMOVE|MF_FREEWALK|MF_NOHIT,ML_ALWAYSACTIVE|ML_GOOD,AI_Cryozoid,
+		 1,11,50,19,10,0,1,0,"graphics/cryozoid.jsp",0,MF_NOMOVE|MF_FREEWALK|MF_NOHIT,ML_ALWAYSACTIVE|ML_GOOD,AI_Cryozoid,
 			{
 				{15,255},	// idle
 				{15,255},	// move
@@ -87,7 +87,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,1,2,3,4,5,6,7,8,9,255},	// A1 = get born
 			}},
 		{"Shroom",{255,255,0},
-		 1,11,30,13,1,0,1,2*FIXAMT,"graphics\\shroom.jsp",0,MF_NONE,ML_NONE,AI_Shroom,
+		 1,11,30,13,1,0,1,2*FIXAMT,"graphics/shroom.jsp",0,MF_NONE,ML_NONE,AI_Shroom,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -105,7 +105,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,14,15,16,17,18,19,20,21,22,23,15,14,13,255},	// A2=hat trick
 			}},
 		{"Tinny Tim",{4,3,0},
-		 9,11,50,32,14,1,4,2*FIXAMT,"graphics\\tinguy.jsp",0,MF_NONE,ML_TUNDRA,AI_TinGuy,
+		 9,11,50,32,14,1,4,2*FIXAMT,"graphics/tinguy.jsp",0,MF_NONE,ML_TUNDRA,AI_TinGuy,
 			{
 				{0,255},	// idle
 				{1,2,1,0,3,4,3,0,255},	// move
@@ -142,7 +142,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{8,9,8,9,8,9,8,255},	// A1=rat-a-tat
 			}},
 		{"Sock Monkey",{255,255,0},
-		 8,11,40,28,8,0,5,2*FIXAMT,"graphics\\monkey.jsp",0,MF_NONE,ML_WOODS|ML_TUNDRA,AI_SockMonkey,
+		 8,11,40,28,8,0,5,2*FIXAMT,"graphics/monkey.jsp",0,MF_NONE,ML_WOODS|ML_TUNDRA,AI_SockMonkey,
 			{
 				{0,255},	// idle
 				{1,2,1,0,3,4,3,0,255},	// move
@@ -152,7 +152,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{12,13,14,15,16,17,18,19,20,21,255},	// A2=shoot
 			}},
 		{"Klonk",{255,255,0},
-		 20,20,70,19,30,1,10,3*FIXAMT,"graphics\\klonk.jsp",0,MF_NOMOVE,ML_BOSS|ML_WALLBUMP,AI_Klonk,
+		 20,20,70,19,30,1,10,3*FIXAMT,"graphics/klonk.jsp",0,MF_NOMOVE,ML_BOSS|ML_WALLBUMP,AI_Klonk,
 			{
 				{0,255},	// idle
 				{1,2,1,0,3,4,3,0,255},	// move
@@ -160,7 +160,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,14,15,16,17,18,254,18,254,18,254,18,254,18,254,18,255},		// die
 			}},
 		{"Toasties",{255,255,0},
-		 1,5,10,6,1,0,3,6*FIXAMT,"graphics\\toasty.jsp",0,MF_NOHIT|MF_GLOW|MF_ONEFACE|MF_FLYING|MF_WALLWALK|MF_FREEWALK|MF_NOSHADOW|MF_ENEMYWALK,ML_GOOD,AI_Toasty,
+		 1,5,10,6,1,0,3,6*FIXAMT,"graphics/toasty.jsp",0,MF_NOHIT|MF_GLOW|MF_ONEFACE|MF_FLYING|MF_WALLWALK|MF_FREEWALK|MF_NOSHADOW|MF_ENEMYWALK,ML_GOOD,AI_Toasty,
 			{
 				{0,1,2,3,4,5,255},	// idle
 				{0,1,2,3,4,5,255},	// move
@@ -185,7 +185,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{8,9,9,9,9,9,8,255},	// A1=rat-a-tat
 			}},
 		{"Stone Rose",{1,0,0},
-		 20,24,70,15,30,8,12,0*FIXAMT,"graphics\\rose.jsp",0,MF_NOMOVE|MF_ONEFACE,ML_BOSS,AI_Rose,
+		 20,24,70,15,30,8,12,0*FIXAMT,"graphics/rose.jsp",0,MF_NOMOVE|MF_ONEFACE,ML_BOSS,AI_Rose,
 			{
 				{0,255},	// idle
 				{7,8,9,10,11,12,13,14,255},	// move (bury yourself)
@@ -195,7 +195,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{254,254,254,255},	// A2=sit around buried
 			}},
 		{"Ice Hound",{255,255,0},
-		 15,20,50,13,15,2,7,4*FIXAMT,"graphics\\hound.jsp",0,MF_NOMOVE,0,AI_Hound,
+		 15,20,50,13,15,2,7,4*FIXAMT,"graphics/hound.jsp",0,MF_NOMOVE,0,AI_Hound,
 			{
 				{0,255},	// idle
 				{1,2,3,4,5,0,255},	// move
@@ -244,7 +244,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,14,15,16,17,18,19,20,21,255},	// A1 = bellyflop
 			}},
 		{"Toymotron",{255,255,0},
-		 30,30,50,12,50,3,0,0*FIXAMT,"graphics\\toymaker.jsp",0,MF_NOMOVE|MF_ONEFACE,ML_NOMIND,AI_Toymaker,
+		 30,30,50,12,50,3,0,0*FIXAMT,"graphics/toymaker.jsp",0,MF_NOMOVE|MF_ONEFACE,ML_NOMIND,AI_Toymaker,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -252,7 +252,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,0,0,0,0,255},		// die
 			}},
 		{"Power Core",{255,255,0},
-		 50,40,50,12,120,4,15,0*FIXAMT,"graphics\\toypower.jsp",0,MF_NOMOVE|MF_ONEFACE,ML_BOSS|ML_ALWAYSACTIVE|ML_NOMIND,AI_Toypower,
+		 50,40,50,12,120,4,15,0*FIXAMT,"graphics/toypower.jsp",0,MF_NOMOVE|MF_ONEFACE,ML_BOSS|ML_ALWAYSACTIVE|ML_NOMIND,AI_Toypower,
 			{
 				{0,1,2,3,4,5,6,7,255},	// idle
 				{0,255},	// move
@@ -260,7 +260,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{8,9,10,11,254,11,254,11,254,11,254,11,255},		// die
 			}},
 		{"Power Crystal",{255,255,0},
-		 30,20,50,16,30,1,15,0*FIXAMT,"graphics\\toycrystal.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_FLYING,ML_BOSS|ML_ALWAYSACTIVE|ML_NOMIND,AI_Toycrystal,
+		 30,20,50,16,30,1,15,0*FIXAMT,"graphics/toycrystal.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_FLYING,ML_BOSS|ML_ALWAYSACTIVE|ML_NOMIND,AI_Toycrystal,
 			{
 				{0,1,2,3,4,5,6,7,255},	// idle
 				{0,255},	// move
@@ -278,7 +278,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{15,16,17,18,19,20,21,22,255},	// A2=shoot into sky
 			}},
 		{"Lifeberry Bush",{255,255,0},
-		 1,11,30,8,10,0,1,0*FIXAMT,"graphics\\berry.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_NOHIT,ML_GOOD|ML_ALWAYSACTIVE,AI_Lifeberry,
+		 1,11,30,8,10,0,1,0*FIXAMT,"graphics/berry.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_NOHIT,ML_GOOD|ML_ALWAYSACTIVE,AI_Lifeberry,
 			{
 				{5,255},	// idle
 				{0,1,2,3,4,255},	// move (dig up)
@@ -294,7 +294,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{8,9,10,11,12,13,14,254,15,254,16,254,17,254,18,255},		// die
 			}},
 		{"Dandy Lion",{255,255,0},
-		 18,14,40,11,30,2,10,3*FIXAMT,"graphics\\lion.jsp",0,MF_NONE,0,AI_Lion,
+		 18,14,40,11,30,2,10,3*FIXAMT,"graphics/lion.jsp",0,MF_NONE,0,AI_Lion,
 			{
 				{0,255},	// idle
 				{1,2,3,4,5,6,7,8,0,255},	// move
@@ -318,7 +318,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{9,9,10,10,254,254,254,255},		// die
 			}},
 		{"Onion Thug",{255,255,0},
-		 20,11,40,19,30,6,10,4*FIXAMT,"graphics\\thug.jsp",0,MF_NONE,ML_ALWAYSACTIVE,AI_Thug,
+		 20,11,40,19,30,6,10,4*FIXAMT,"graphics/thug.jsp",0,MF_NONE,ML_ALWAYSACTIVE,AI_Thug,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -327,7 +327,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{7,8,9,8,9,8,9,8,9,8,7,255},	// A1=wave
 			}},
 		{"Ghost",{255,255,0},
-		 1,8,20,8,30,1,1,6*FIXAMT,"graphics\\ghost.jsp",0,MF_GLOW|MF_NOHIT|MF_FREEWALK|MF_ENEMYWALK|MF_WALLWALK|MF_FLYING,ML_GOOD|ML_ALWAYSACTIVE,AI_Ghost,
+		 1,8,20,8,30,1,1,6*FIXAMT,"graphics/ghost.jsp",0,MF_GLOW|MF_NOHIT|MF_FREEWALK|MF_ENEMYWALK|MF_WALLWALK|MF_FLYING,ML_GOOD|ML_ALWAYSACTIVE,AI_Ghost,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -346,7 +346,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{15,16,17,18,19,20,21,22,255},	// A2=shoot into sky
 			}},
 		{"Junksmith",{255,255,0},
-		 30,11,50,19,60,6,20,2*FIXAMT,"graphics\\junksmith.jsp",0,MF_NONE,ML_BOSS|ML_ALWAYSACTIVE,AI_Junksmith,
+		 30,11,50,19,60,6,20,2*FIXAMT,"graphics/junksmith.jsp",0,MF_NONE,ML_BOSS|ML_ALWAYSACTIVE,AI_Junksmith,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -354,7 +354,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,15,254,15,254,15,254,15,254,15,254,15,255},		// die
 			}},
 		{"Caravan",{255,255,0},
-		 1,20,50,15,20,2,30,7*FIXAMT,"graphics\\caravan.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_ENEMYWALK|MF_FREEWALK|MF_WALLWALK,ML_ALWAYSACTIVE|ML_NOMIND,AI_Caravan,
+		 1,20,50,15,20,2,30,7*FIXAMT,"graphics/caravan.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_ENEMYWALK|MF_FREEWALK|MF_WALLWALK,ML_ALWAYSACTIVE|ML_NOMIND,AI_Caravan,
 			{
 				{0,1,2,3,4,5,6,7,255},	// idle
 				{0,1,2,3,4,5,6,7,255},	// move
@@ -370,7 +370,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,0,254,254,254,255},		// die
 			}},
 		{"Order Knight",{255,255,0},
-		 20,11,40,19,30,6,12,4*FIXAMT,"graphics\\bunnytroop.jsp",0,MF_NONE,ML_ALWAYSACTIVE,AI_BunnyTroop,
+		 20,11,40,19,30,6,12,4*FIXAMT,"graphics/bunnytroop.jsp",0,MF_NONE,ML_ALWAYSACTIVE,AI_BunnyTroop,
 			{
 				{0,255},	// idle
 				{2,3,4,3,2,1,5,6,7,6,5,1,255},	// move
@@ -378,7 +378,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{15,16,17,18,254,18,254,18,254,18,254,18,254,18,254,18,255},		// die
 			}},
 		{"Major Fishbug",{255,255,0},
-		 20,11,40,19,90,10,10,4*FIXAMT,"graphics\\bunnyguy.jsp",0,0,ML_GOOD|ML_ALWAYSACTIVE,AI_BunnyGuy,
+		 20,11,40,19,90,10,10,4*FIXAMT,"graphics/bunnyguy.jsp",0,0,ML_GOOD|ML_ALWAYSACTIVE,AI_BunnyGuy,
 			{
 				{0,255},	// idle
 				{2,3,4,3,2,1,5,6,7,6,5,1,255},	// move
@@ -386,7 +386,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{15,16,17,18,254,18,254,18,254,18,254,18,254,18,254,18,255},		// die
 			}},
 		{"Captain Capitan",{255,255,0},
-		 40,11,40,19,150,6,15,5*FIXAMT,"graphics\\bunnyboss.jsp",0,MF_NONE,ML_BOSS|ML_ALWAYSACTIVE|ML_WALLBUMP,AI_BunnyBoss,
+		 40,11,40,19,150,6,15,5*FIXAMT,"graphics/bunnyboss.jsp",0,MF_NONE,ML_BOSS|ML_ALWAYSACTIVE|ML_WALLBUMP,AI_BunnyBoss,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -396,7 +396,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{15,16,17,18,255},	// A2=slash on blocked hit
 			}},
 		{"Clockwork Robot",{255,255,0},
-		 22,16,40,21,50,5,16,4*FIXAMT,"graphics\\clockbot.jsp",0,MF_NONE,ML_ALWAYSACTIVE,AI_ClockBotEvil,
+		 22,16,40,21,50,5,16,4*FIXAMT,"graphics/clockbot.jsp",0,MF_NONE,ML_ALWAYSACTIVE,AI_ClockBotEvil,
 			{
 				{0,255},	// idle
 				{1,2,3,4,5,6,7,0,255},	// move
@@ -442,7 +442,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{12,13,14,15,16,17,18,19,20,21,255},	// A2=shoot
 			}},
 		{"Rock Crab",{255,255,0},
-		 20,11,15,20,15,8,10,5*FIXAMT,"graphics\\rockcrab.jsp",0,MF_NONE,0,AI_Crab,
+		 20,11,15,20,15,8,10,5*FIXAMT,"graphics/rockcrab.jsp",0,MF_NONE,0,AI_Crab,
 			{
 				{0,255},	// idle
 				{1,2,3,4,5,6,7,0,255},	// move
@@ -450,7 +450,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{14,15,16,17,254,18,254,19,254,18,254,17,254,18,254,19,254,18,254,17,254,18,255},		// die
 			}},
 		{"Bodzha",{255,255,0},
-		 20,14,40,26,30,3,18,4*FIXAMT,"graphics\\badger.jsp",0,MF_NONE,0,AI_Badger,
+		 20,14,40,26,30,3,18,4*FIXAMT,"graphics/badger.jsp",0,MF_NONE,0,AI_Badger,
 			{
 				{0,255},	// idle
 				{1,2,1,0,3,4,3,0,255},	// move
@@ -462,7 +462,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{254,255},	// A4=invisible, burrowing
 			}},
 		{"Ice Titan",{255,255,0},
-		 30,20,60,23,70,4,18,3*FIXAMT,"graphics\\titan.jsp",0,MF_GLOW,0,AI_Titan,
+		 30,20,60,23,70,4,18,3*FIXAMT,"graphics/titan.jsp",0,MF_GLOW,0,AI_Titan,
 			{
 				{0,255},	// idle
 				{1,2,1,0,3,4,3,0,255},	// move
@@ -471,7 +471,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{5,6,7,8,9,9,9,10,11,255},	// A1= roar
 			}},
 		{"Gourdzilla",{255,255,0},
-		 40,80,60,13,300,12,18,0*FIXAMT,"graphics\\bigplant.jsp",0,MF_NOMOVE|MF_ONEFACE,ML_BOSS|ML_ALWAYSACTIVE,AI_BigPlant,
+		 40,80,60,13,300,12,18,0*FIXAMT,"graphics/bigplant.jsp",0,MF_NOMOVE|MF_ONEFACE,ML_BOSS|ML_ALWAYSACTIVE,AI_BigPlant,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -479,7 +479,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{9,10,11,12,254,12,254,12,254,12,254,12,254,12,254,12,255},		// die
 			}},
 		{"Furnace",{255,255,0},
-		 30,60,60,12,90,4,18,3*FIXAMT,"graphics\\furnace.jsp",0,MF_NOMOVE|MF_INVINCIBLE|MF_ONEFACE,ML_GOOD|ML_ALWAYSACTIVE|ML_NOMIND,AI_Furnace,
+		 30,60,60,12,90,4,18,3*FIXAMT,"graphics/furnace.jsp",0,MF_NOMOVE|MF_INVINCIBLE|MF_ONEFACE,ML_GOOD|ML_ALWAYSACTIVE|ML_NOMIND,AI_Furnace,
 			{
 				{0,255},	// idle
 				{1,2,3,4,5,6,7,8,9,10,11,11,255},	// move
@@ -517,7 +517,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{9,9,10,10,254,254,254,255},		// die
 			}},
 		{"Stonewall",{255,255,0},
-		 33,20,60,18,50,14,20,2*FIXAMT,"graphics\\stonewall.jsp",0,MF_NOMOVE,0,AI_Stonewall,
+		 33,20,60,18,50,14,20,2*FIXAMT,"graphics/stonewall.jsp",0,MF_NOMOVE,0,AI_Stonewall,
 			{
 				{0,255},	// idle
 				{1,2,1,0,3,4,3,0,255},	// move
@@ -526,7 +526,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{10,11,12,12,12,11,10,255},	// A1=face splat
 			}},
 		{"Bokbok",{255,255,0},
-		 1,6,10,14,10,1,0,4*FIXAMT,"graphics\\bokbok.jsp",0,MF_INVINCIBLE|MF_NOHIT|MF_ENEMYWALK|MF_FREEWALK,ML_GOOD|ML_ALWAYSACTIVE,AI_Bokbok,
+		 1,6,10,14,10,1,0,4*FIXAMT,"graphics/bokbok.jsp",0,MF_INVINCIBLE|MF_NOHIT|MF_ENEMYWALK|MF_FREEWALK,ML_GOOD|ML_ALWAYSACTIVE,AI_Bokbok,
 			{
 				{0,255},	// idle
 				{8,9,10,11,12,13,0,255},	// move
@@ -542,7 +542,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,254,0,254,0,254,0,255},		// die
 			}},
 		{"Captain Capitan",{255,255,0},
-		 45,11,40,19,200,8,18,6*FIXAMT,"graphics\\bunnyboss.jsp",0,MF_NONE,ML_BOSS|ML_ALWAYSACTIVE|ML_WALLBUMP,AI_BunnyBoss2,
+		 45,11,40,19,200,8,18,6*FIXAMT,"graphics/bunnyboss.jsp",0,MF_NONE,ML_BOSS|ML_ALWAYSACTIVE|ML_WALLBUMP,AI_BunnyBoss2,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -552,7 +552,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{15,16,17,18,255},	// A2=slash on blocked hit
 			}},
 		{"Titanic Titan",{255,255,0},
-		 70,40,90,23,300,5,25,2*FIXAMT,"graphics\\titanbig.jsp",0,MF_GLOW|MF_NOMOVE,ML_BOSS,AI_TitanBig,
+		 70,40,90,23,300,5,25,2*FIXAMT,"graphics/titanbig.jsp",0,MF_GLOW|MF_NOMOVE,ML_BOSS,AI_TitanBig,
 			{
 				{0,255},	// idle
 				{1,2,1,0,3,4,3,0,255},	// move
@@ -581,7 +581,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{8,9,10,11,12,13,14,15,255},		// die
 			}},
 		{"Turret",{255,255,0},
-		 40,20,50,16,150,4,40,0*FIXAMT,"graphics\\turret_evil.jsp",0,MF_NOMOVE|MF_ONEFACE,ML_ALWAYSACTIVE|ML_NOMIND,AI_Turret,
+		 40,20,50,16,150,4,40,0*FIXAMT,"graphics/turret_evil.jsp",0,MF_NOMOVE|MF_ONEFACE,ML_ALWAYSACTIVE|ML_NOMIND,AI_Turret,
 			{
 				{0,0,0,0,1,2,3,4,5,6,7,8,8,8,8,9,10,11,12,13,14,15,255},	// idle
 				{0,255},	// move
@@ -644,7 +644,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{12,13,14,15,16,17,18,19,20,21,255},	// A2=shoot
 			}},
 		{"Mimic",{255,255,0},
-		 15,11,30,13,40,2,7,2*FIXAMT,"graphics\\mimic.jsp",0,MF_NOMOVE,ML_NOMIND,AI_Mimic,
+		 15,11,30,13,40,2,7,2*FIXAMT,"graphics/mimic.jsp",0,MF_NOMOVE,ML_NOMIND,AI_Mimic,
 			{
 				{0,255},	// idle
 				{1,2,1,0,3,4,3,0,255},	// move
@@ -663,7 +663,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{15,16,17,18,19,20,21,22,255},	// A2=shoot into sky
 			}},
 		{"Von Frostburn",{255,255,0},
-		 200,11,50,8,1000,15,35,6*FIXAMT,"graphics\\baron.jsp",0,MF_FLYING|MF_NOMOVE|MF_ONEFACE,ML_BOSS|ML_WALLBUMP,AI_Baron,
+		 200,11,50,8,1000,15,35,6*FIXAMT,"graphics/baron.jsp",0,MF_FLYING|MF_NOMOVE|MF_ONEFACE,ML_BOSS|ML_WALLBUMP,AI_Baron,
 			{
 				{0,1,2,3,4,5,6,7,255},	// idle
 				{0,1,2,3,4,5,6,7,255},	// move
@@ -671,7 +671,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},		// die
 			}},
 		{"Melton",{255,255,0},
-		 200,100,200,22,1000,8,40,0*FIXAMT,"graphics\\titanmax.jsp",0,MF_NOMOVE|MF_ONEFACE,ML_BOSS|ML_ALWAYSACTIVE,AI_UberTitan,
+		 200,100,200,22,1000,8,40,0*FIXAMT,"graphics/titanmax.jsp",0,MF_NOMOVE|MF_ONEFACE,ML_BOSS|ML_ALWAYSACTIVE,AI_UberTitan,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -710,7 +710,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{254,254,254,255},	// A2=sit around buried
 			}},
 		{"Mountain Gorka",{255,255,0},
-		 50,12,60,16,70,4,30,3*FIXAMT,"graphics\\bigbadger.jsp",0,0,ML_ALWAYSACTIVE,AI_BigBadger,
+		 50,12,60,16,70,4,30,3*FIXAMT,"graphics/bigbadger.jsp",0,0,ML_ALWAYSACTIVE,AI_BigBadger,
 			{
 				{0,255},	// idle
 				{1,2,1,0,3,4,3,0,255},	// move
@@ -719,7 +719,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,14,15,14,13,255},	// A1=toss boulder
 			}},
 		{"Happy Stick Bird",{255,255,0},
-		 200,10,30,4,1000,10,50,7*FIXAMT,"graphics\\krobb.jsp",0,MF_FLYING|MF_ONEFACE,ML_BOSS|ML_ALWAYSACTIVE,AI_Bird,
+		 200,10,30,4,1000,10,50,7*FIXAMT,"graphics/krobb.jsp",0,MF_FLYING|MF_ONEFACE,ML_BOSS|ML_ALWAYSACTIVE,AI_Bird,
 			{
 				{0,1,2,1,255},	// idle
 				{0,1,2,1,255},	// move
@@ -727,7 +727,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{3,3,3,3,3,3,254,3,254,3,254,3,254,3,254,3,254,3,254,3,255},		// die
 			}},
 		{"Killbor",{255,255,0},
-		 80,20,100,14,1000,14,40,7*FIXAMT,"graphics\\champ.jsp",0,MF_NOMOVE,ML_BOSS,AI_Killbor,
+		 80,20,100,14,1000,14,40,7*FIXAMT,"graphics/champ.jsp",0,MF_NOMOVE,ML_BOSS,AI_Killbor,
 			{
 				{0,255},	// idle
 				{1,2,1,0,3,4,3,0,255},	// move
@@ -745,7 +745,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,14,15,14,13,255},	// A1=toss boulder
 			}},
 		{"Toy Bodzha",{255,255,0},
-		 1,6,15,10,10,0,1,8*FIXAMT,"graphics\\lilbadger.jsp",0,MF_NOHIT|MF_INVINCIBLE|MF_NOMOVE|MF_FREEWALK|MF_ENEMYWALK,ML_GOOD|ML_ALWAYSACTIVE,AI_ToyBadger,
+		 1,6,15,10,10,0,1,8*FIXAMT,"graphics/lilbadger.jsp",0,MF_NOHIT|MF_INVINCIBLE|MF_NOMOVE|MF_FREEWALK|MF_ENEMYWALK,ML_GOOD|ML_ALWAYSACTIVE,AI_ToyBadger,
 			{
 				{0,255},	// idle
 				{1,2,1,0,3,4,3,0,255},	// move

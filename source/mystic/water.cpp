@@ -28,7 +28,7 @@ void InitWater(void)
 	if(!waterbkgd)
 		FatalError("out of memory!");
 
-	GetDisplayMGL()->LoadBMP("graphics\\water.bmp");
+	GetDisplayMGL()->LoadBMP("graphics/water.bmp");
 
 	width=GetDisplayMGL()->GetWidth();
 	src=GetDisplayMGL()->GetScreen();
@@ -54,9 +54,9 @@ void SetupWater(void)
 	if((player.worldNum==1 && player.levelNum==15) ||
 		(player.worldNum==2 && player.levelNum==20) ||
 		(player.worldNum==3 && player.levelNum==12))
-		GetDisplayMGL()->LoadBMP("graphics\\rapid.bmp");
+		GetDisplayMGL()->LoadBMP("graphics/rapid.bmp");
 	else
-		GetDisplayMGL()->LoadBMP("graphics\\water.bmp");
+		GetDisplayMGL()->LoadBMP("graphics/water.bmp");
 
 	width=GetDisplayMGL()->GetWidth();
 	src=GetDisplayMGL()->GetScreen();

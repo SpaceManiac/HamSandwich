@@ -77,7 +77,7 @@ byte InitEditor(void)
 
 void ExitEditor(void)
 {
-	EditorSaveWorld("worlds\\backup_exit.dlw");
+	EditorSaveWorld("worlds/backup_exit.dlw");
 
 	ShowCursor(0); // Tell winapi to reshow the cursor
 

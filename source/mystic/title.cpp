@@ -273,7 +273,7 @@ byte MainMenu(MGLDraw *mgl)
 	int lastTime=1;
 
 	creditsOrIntro=0;
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	backgd=(byte *)malloc(640*480);
 	if(!backgd)
 		FatalError("Out of memory!!");
@@ -282,7 +282,7 @@ byte MainMenu(MGLDraw *mgl)
 	mgl->LastKeyPressed();
 	mgl->ClearScreen();
 	oldc=CONTROL_B1|CONTROL_B2;
-	planetSpr=new sprite_set_t("graphics\\title.jsp");
+	planetSpr=new sprite_set_t("graphics/title.jsp");
 
 	title.bouaphaX=640;
 	title.optionsX=-300;
@@ -548,7 +548,7 @@ void Credits(MGLDraw *mgl,byte mode)
 	dword startTime,endTime;
 
 	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics\\pal.bmp");
+	mgl->LoadBMP("graphics/pal.bmp");
 	while(1)
 	{
 		startTime=timeGetTime();
@@ -643,15 +643,15 @@ void VictoryText(MGLDraw *mgl,byte victoryType)
 	switch(victoryType)
 	{
 		case 0:
-			mgl->LoadBMP("graphics\\zoobo.bmp");
+			mgl->LoadBMP("graphics/zoobo.bmp");
 			length=END_OF_VICTORY;
 			break;
 		case 1:
-			mgl->LoadBMP("graphics\\zoobo.bmp");
+			mgl->LoadBMP("graphics/zoobo.bmp");
 			length=END_OF_MADCAPWIN;
 			break;
 		case 2:
-			mgl->LoadBMP("graphics\\zoobo2.bmp");
+			mgl->LoadBMP("graphics/zoobo2.bmp");
 			length=END_OF_DEMOWIN;
 			break;
 	}

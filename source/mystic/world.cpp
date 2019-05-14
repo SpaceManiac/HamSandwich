@@ -7,9 +7,9 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 
 	world->numMaps=1;
 #ifdef SHAREWARE
-	mgl->LoadBMP("graphics\\cavernTiles.bmp");
+	mgl->LoadBMP("graphics/cavernTiles.bmp");
 #else
-	mgl->LoadBMP("graphics\\basicTiles.bmp");
+	mgl->LoadBMP("graphics/basicTiles.bmp");
 #endif
 	SetTiles(mgl->GetScreen());
 
@@ -105,7 +105,7 @@ void GetWorldName(char *fname,char *buf)
 	FILE *f;
 	char fname2[60];
 
-	sprintf(fname2,"worlds\\%s",fname);
+	sprintf(fname2,"worlds/%s",fname);
 	f=fopen(fname2,"rb");
 	if(!f)
 		return;

@@ -93,7 +93,7 @@ void InitCredits(MGLDraw *mgl,byte ending)
 	int i;
 
 	if(ending)
-		mgl->LoadBMP("graphics\\dvfgh.bmp");
+		mgl->LoadBMP("graphics/dvfgh.bmp");
 	else
 		mgl->LoadBMP(TITLEBMP);
 	mgl->LastKeyPressed();
@@ -109,7 +109,7 @@ void InitCredits(MGLDraw *mgl,byte ending)
 	for(i=0;i<NUMDUDES;i++)
 		dude[i].who=1;	// 1 and 19 are invalid
 
-	dudeSpr=new sprite_set_t("graphics\\vgrfaces.jsp");
+	dudeSpr=new sprite_set_t("graphics/vgrfaces.jsp");
 }
 
 void ExitCredits(void)

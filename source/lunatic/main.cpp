@@ -46,7 +46,7 @@ int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, 
 		return 0;
 
 	LunaticInit(mainmgl);
-	SplashScreen(mainmgl, "graphics\\hamumu.bmp", 128, 2);
+	SplashScreen(mainmgl, "graphics/hamumu.bmp", 128, 2);
 
 	while (1)
 	{

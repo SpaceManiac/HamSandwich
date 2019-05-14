@@ -54,7 +54,7 @@ _CrtSetDbgFlag(flag); // Set flag to the new value
 	SetSongRestart(0);
 	DBG("Splash");
 
-	SplashScreen(mainmgl,"graphics\\hamumu.bmp",128,2);
+	SplashScreen(mainmgl,"graphics/hamumu.bmp",128,2);
 	while(1)
 	{
 		DBG("Mainmenu");

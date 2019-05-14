@@ -1197,7 +1197,7 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 			{
 				EnterPictureDisplay();
 				MakeNormalSound(SND_MESSAGE);
-				sprintf(s,"graphics\\%s",spcl->msg);
+				sprintf(s,"graphics/%s",spcl->msg);
 				GetDisplayMGL()->LoadBMP(s);
 			}
 			break;

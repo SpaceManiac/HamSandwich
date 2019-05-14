@@ -6,7 +6,7 @@ byte NewWorld(world_t *world, MGLDraw *mgl)
 	int i;
 
 	world->numMaps = 1;
-	mgl->LoadBMP("graphics\\forestTiles.bmp");
+	mgl->LoadBMP("graphics/forestTiles.bmp");
 	SetTiles(mgl->GetScreen());
 
 	// reset all the terrain
@@ -126,7 +126,7 @@ void GetWorldName(char *fname, char *buf)
 	if (fname[0] == '\0')
 		return;
 
-	sprintf(fname2, "worlds\\%s", fname);
+	sprintf(fname2, "worlds/%s", fname);
 	f = fopen(fname2, "rb");
 	if (!f)
 		return;
@@ -151,7 +151,7 @@ int GetWorldPoints(const char *fname)
 	if (fname[0] == '\0')
 		return 100;
 
-	sprintf(fname2, "worlds\\%s", fname);
+	sprintf(fname2, "worlds/%s", fname);
 	f = fopen(fname2, "rb");
 	if (!f)
 		return 100;

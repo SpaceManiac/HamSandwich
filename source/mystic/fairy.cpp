@@ -167,7 +167,7 @@ static byte oldc=0;
 void InitFairyBox(void)
 {
 	int i;
-	shopSpr=new sprite_set_t("graphics\\shop.jsp");
+	shopSpr=new sprite_set_t("graphics/shop.jsp");
 
 	for(i=0;i<16;i++)
 	{

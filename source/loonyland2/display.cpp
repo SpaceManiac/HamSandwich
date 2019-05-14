@@ -32,14 +32,14 @@ bool InitDisplay(MGLDraw *mainmgl)
 	if(!gameFont[0])
 		return false;
 	FontInit(mgl);
-	if(FontLoad("graphics\\bronto.jft",gameFont[0])!=FONT_OK)
+	if(FontLoad("graphics/bronto.jft",gameFont[0])!=FONT_OK)
 		return false;
 
 	gameFont[1]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[1])
 		return false;
 
-	if(FontLoad("graphics\\verdana.jft",gameFont[1])!=FONT_OK)
+	if(FontLoad("graphics/verdana.jft",gameFont[1])!=FONT_OK)
 		return false;
 
 	dispList=new DisplayList();
@@ -84,7 +84,7 @@ void ShowImageOrFlic(char *str)
 	   (fname[strlen(fname)-1]=='p' || fname[strlen(fname)-1]=='P'))
 	{
 		EnterPictureDisplay();
-		sprintf(nm,"addons\\%s",fname);
+		sprintf(nm,"addons/%s",fname);
 		GetDisplayMGL()->LoadBMP(nm);
 		return;
 	}
@@ -94,7 +94,7 @@ void ShowImageOrFlic(char *str)
 	else
 		speed=60;
 
-	sprintf(nm,"graphics\\%s",fname);
+	sprintf(nm,"graphics/%s",fname);
 
 	start=timeGetTime();
 	FLI_play(nm,0,speed,mgl);

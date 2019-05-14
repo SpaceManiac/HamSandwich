@@ -123,7 +123,7 @@ byte FileDialogClick(int msx, int msy)
 	int i;
 	char fn[64];
 
-	sprintf(fn, "worlds\\%s", newfname);
+	sprintf(fn, "worlds/%s", newfname);
 	// if click on a filename, that's the current filename
 	for (i = 0; i < MAX_FILES; i++)
 		if (msx > 104 && msx < 362 && msy > 85 + i * 14 && msy < 85 + (i + 1)*14)
@@ -147,8 +147,8 @@ byte FileDialogClick(int msx, int msy)
 	// no saving or loading either
 	if (msx > 370 && msy > 180 && msx < 420 && msy < 180 + 14) // Load
 	{
-		if (strcmp("worlds\\backup_load.dlw", fn))
-			EditorSaveWorld("worlds\\backup_load.dlw");
+		if (strcmp("worlds/backup_load.dlw", fn))
+			EditorSaveWorld("worlds/backup_load.dlw");
 		EditorLoadWorld(fn);
 		return 0;
 	}

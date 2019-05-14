@@ -281,7 +281,7 @@ byte LunaticRun(int *lastTime)
 			{
 				gameMode = GAMEMODE_PLAY;
 				// restore the palette
-				gamemgl->LoadBMP("graphics\\title.bmp");
+				gamemgl->LoadBMP("graphics/title.bmp");
 			}
 		}
 		else // gamemode_rage
@@ -726,7 +726,7 @@ void LunaticGame(MGLDraw *mgl, byte load)
 				{
 					ShowVictoryAnim(12);
 					garbageTime = 0;
-					sprintf(custName, "worlds\\%s", GetCustomName());
+					sprintf(custName, "worlds/%s", GetCustomName());
 					worldResult = LunaticWorld(b, custName);
 				}
 				else
@@ -738,13 +738,13 @@ void LunaticGame(MGLDraw *mgl, byte load)
 			}
 			else
 			{
-				sprintf(custName, "worlds\\%s", GetCustomName());
+				sprintf(custName, "worlds/%s", GetCustomName());
 				worldResult = LunaticWorld(b, custName);
 			}
 		}
 		else
 		{
-			sprintf(custName, "worlds\\%s", GetCustomName());
+			sprintf(custName, "worlds/%s", GetCustomName());
 			worldResult = LunaticWorld(b, custName);
 		}
 		if (worldResult == WORLD_QUITGAME)
@@ -760,7 +760,7 @@ void TrainingGame(MGLDraw *mgl)
 {
 	InitPlayer(INIT_GAME, 0, 0);
 	SetCustomName("training.dlw");
-	if (LunaticWorld(5, "worlds\\training.dlw") == WORLD_LOAD)
+	if (LunaticWorld(5, "worlds/training.dlw") == WORLD_LOAD)
 		LunaticGame(mgl, 1);
 	mgl->LastKeyPressed(); // just to clear key buffer
 	ExitPlayer();

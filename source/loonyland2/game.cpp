@@ -723,7 +723,7 @@ byte LunaticWorld(byte world,char *worldName)
 	}
 	else
 	{
-		sprintf(wName,"addons\\%s.llw",player.addonName);
+		sprintf(wName,"addons/%s.llw",player.addonName);
 		LoadLevelDefs(player.addonName);
 	}
 
@@ -785,7 +785,7 @@ byte LunaticWorld(byte world,char *worldName)
 			}
 #endif
 			Song(SONG_WINTER);
-			FLI_play("graphics\\ending.flc",0,10,gamemgl);
+			FLI_play("graphics/ending.flc",0,10,gamemgl);
 			if(ModifierOn(MOD_IRONMAN) && player.var[VAR_MADCAP])	// just won Madcap mode!
 			{
 				IronmanScreen(gamemgl);

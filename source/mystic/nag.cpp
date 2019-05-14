@@ -92,7 +92,7 @@ byte Nag(MGLDraw *mgl)
 	mgl->LastKeyPressed();
 	mgl->ClearScreen();
 	oldc=CONTROL_B1|CONTROL_B2;
-	nagSpr=new sprite_set_t("graphics\\nag.jsp");
+	nagSpr=new sprite_set_t("graphics/nag.jsp");
 	cursor=1;
 
 	scrY=MGL_random(6);

@@ -18,7 +18,7 @@ byte bulletHittingType;
 
 void InitBullets(void)
 {
-	bulletSpr=new sprite_set_t("graphics\\bullets.jsp");
+	bulletSpr=new sprite_set_t("graphics/bullets.jsp");
 
 	memset(bullet,0,MAX_BULLETS*sizeof(bullet_t));
 }

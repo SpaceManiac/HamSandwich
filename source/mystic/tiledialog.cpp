@@ -118,7 +118,7 @@ byte TileDialogClick(int msx,int msy)
 	int i;
 	char fn[64];
 
-	sprintf(fn,"graphics\\%s",newfname);
+	sprintf(fn,"graphics/%s",newfname);
 	// if click on a filename, that's the current filename
 	for(i=0;i<MAX_FILES;i++)
 		if(msx>104 && msx<362 && msy>85+i*14 && msy<85+(i+1)*14)

@@ -1936,7 +1936,7 @@ void InitTrivia(void)
 {
 	int i;
 
-	trivSpr=new sprite_set_t("graphics\\trivia.jsp");
+	trivSpr=new sprite_set_t("graphics/trivia.jsp");
 	for(i=0;i<16;i++)
 		trivVar[i]=0;
 

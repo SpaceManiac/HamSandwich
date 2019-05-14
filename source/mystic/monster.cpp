@@ -9,7 +9,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 		{"Null",
 		 0,0,0,0,"",0},
 		{"Kid Mystic",
-		 11,25,128,0,"graphics\\sylabulus.jsp",0,MF_WATERWALK|MF_GOODGUY,
+		 11,25,128,0,"graphics/sylabulus.jsp",0,MF_WATERWALK|MF_GOODGUY,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -21,7 +21,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{24,23,22,21,20,19,18,17,16,15,255},		// A4=undie
 			}},
 		{"Bonehead",
-		 8,38,10,50,"graphics\\skeleton.jsp",0,0,
+		 8,38,10,50,"graphics/skeleton.jsp",0,0,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -31,7 +31,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{31,32,32,32,31,255}	// point at bouapha
 			}},
 		{"Scary Bat",
-		 8,27,5,25,"graphics\\bat.jsp",0,MF_FLYING,
+		 8,27,5,25,"graphics/bat.jsp",0,MF_FLYING,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -41,7 +41,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,14,15,15,16,255}	// bounce off during dive
 			}},
 		{"Eensy Weensy",
-		 4,22,1,10,"graphics\\spider.jsp",0,0,
+		 4,22,1,10,"graphics/spider.jsp",0,0,
 			{
 				{0,255},	// idle
 				{1,2,3,4,5,6,7,8,9,10,11,0,255},	// move
@@ -49,7 +49,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{15,16,17,18,19,18,19,18,19,20,20,21,21,255},	// die
 			}},
 		{"Spitter",
-		 8,21,10,50,"graphics\\bigspdr.jsp",0,0,
+		 8,21,10,50,"graphics/bigspdr.jsp",0,0,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -57,7 +57,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{14,15,16,17,18,17,18,17,18,19,19,20,20,255},	// die
 			}},
 		{"Zombie",
-		 11,32,20,150,"graphics\\zombie.jsp",0,0,
+		 11,32,20,150,"graphics/zombie.jsp",0,0,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -65,7 +65,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{20,21,22,23,24,25,26,27,28,29,30,31,255},	// die
 			}},
 		{"Egg Sac",
-		 20,19,150,100,"graphics\\eggsac.jsp",0,MF_ONEFACE|MF_ENEMYWALK|MF_NOMOVE,
+		 20,19,150,100,"graphics/eggsac.jsp",0,MF_ONEFACE|MF_ENEMYWALK|MF_NOMOVE,
 			{
 				{0,0,0,0,0,0,0,0,1,2,1,0,255},	// idle
 				{0,255},	// move
@@ -73,7 +73,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{19,20,21,22,23,24,25,255},	// die
 			}},
 		{"Mama Spider",
-		 30,30,200,300,"graphics\\mamaspdr.jsp",0,MF_NOMOVE,
+		 30,30,200,300,"graphics/mamaspdr.jsp",0,MF_NOMOVE,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -82,7 +82,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{14,15,16,17,18,255},	// bite (A1)
 			}},
 		{"Pygmy",
-		 10,50,15,100,"graphics\\pygmy.jsp",0,0,
+		 10,50,15,100,"graphics/pygmy.jsp",0,0,
 			{
 				{0,0,0,0,0,0,0,0,0,0,1,2,3,2,1,0,0,0,4,5,6,5,4,255},	// idle
 				{8,9,10,9,8,7,11,12,13,12,11,7,255},	// move
@@ -93,7 +93,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{47,48,49,48,47,0,47,48,49,48,47,255},	// (A3) angry, spotted Bouapha
 			}},
 		{"Aquazoid",
-		 15,20,15,75,"graphics\\serpent.jsp",0,MF_AQUATIC|MF_WATERWALK,
+		 15,20,15,75,"graphics/serpent.jsp",0,MF_AQUATIC|MF_WATERWALK,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,255},	// move
@@ -101,7 +101,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,14,15,16,17,18,19,255},	// die
 			}},
 		{"Friendly",	// a friendly bystander
-		 9,4,100,0,"graphics\\friendly.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_INVINCIBLE,
+		 9,4,100,0,"graphics/friendly.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_INVINCIBLE,
 			{
 				{0,255},	// idle (bald guy)
 				{1,255},	// move (blond hair)
@@ -110,7 +110,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{3,255}		// A1   (wizard)
 			}},
 		{"Pterodactyl",	// pterodactyl - kid mystic's little buddy
-		 10,11,15,5,"graphics\\ptero.jsp",0,MF_FLYING|MF_ENEMYWALK|MF_FREEWALK|MF_GOODGUY,
+		 10,11,15,5,"graphics/ptero.jsp",0,MF_FLYING|MF_ENEMYWALK|MF_FREEWALK|MF_GOODGUY,
 			{
 				{0,1,2,6,3,4,5,4,3,6,2,1,255},	// idle
 				{0,1,2,6,3,4,5,4,3,6,2,1,255},	// move
@@ -118,7 +118,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,0,0,255},	// die
 			}},
 		{"Eye Guy",	// Eye Guy
-		 14,17,20,75,"graphics\\eyeguy.jsp",0,0,
+		 14,17,20,75,"graphics/eyeguy.jsp",0,0,
 			{
 				{0,0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -126,7 +126,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,14,15,16,255},	// die
 			}},
 		{"Oculoid",
-		 26,8,40,150,"graphics\\peeper.jsp",0,MF_FLYING|MF_NOMOVE,
+		 26,8,40,150,"graphics/peeper.jsp",0,MF_FLYING|MF_NOMOVE,
 			{
 				{4,4,255},	// idle
 				{4,4,255},	// move
@@ -136,7 +136,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,0,1,1,2,2,3,3,255},	// A2 = wake up
 			}},
 		{"Tower Guardian",
-		 60,17,500,500,"graphics\\tower.jsp",0,MF_NOMOVE,
+		 60,17,500,500,"graphics/tower.jsp",0,MF_NOMOVE,
 			{
 				{0,0,0,255},	// idle
 				{1,2,1,0,3,4,3,0,255},	// move
@@ -145,7 +145,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{1,2,2,2,2,2,2,1,255},	// A1
 			}},
 		{"The Lookey-Loo",
-		 64,7,1000,2000,"graphics\\lookyloo.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_SPRITEBOX,
+		 64,7,1000,2000,"graphics/lookyloo.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_SPRITEBOX,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -153,7 +153,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{1,3,5,6,6,6,6,255},	// die
 			}},
 		{"Pinkeye",
-		 11,13,20,1,"graphics\\pinkeye.jsp",0,MF_NOMOVE,
+		 11,13,20,1,"graphics/pinkeye.jsp",0,MF_NOMOVE,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -161,7 +161,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{9,10,11,12,12,11,10,9,9,255},	// die & resurrect (freezes on frm 3 until ready)
 			}},
 		{"Mushlord",
-		 15,14,40,150,"graphics\\shrmlord.jsp",0,0,
+		 15,14,40,150,"graphics/shrmlord.jsp",0,0,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -169,7 +169,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,0,255},	// die
 			}},
 		{"Microfish",
-		 1,1,1,1,"graphics\\micro.jsp",0,MF_AQUATIC|MF_NOSHADOW|MF_WATERWALK,
+		 1,1,1,1,"graphics/micro.jsp",0,MF_AQUATIC|MF_NOSHADOW|MF_WATERWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -177,7 +177,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// die
 			}},
 		{"Grumpy Golem",
-		 32,26,100,0,"graphics\\golem.jsp",0,MF_GOODGUY|MF_NOMOVE|MF_FREEWALK,
+		 32,26,100,0,"graphics/golem.jsp",0,MF_GOODGUY|MF_NOMOVE|MF_FREEWALK,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -186,7 +186,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{22,23,24,25,255},	// form out of nothing (A1)
 			}},
 		{"Mucho Moss",
-		 15,17,10,1,"graphics\\moss.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_FREEWALK|MF_ENEMYWALK|MF_WALLWALK|MF_NOSHADOW,
+		 15,17,10,1,"graphics/moss.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_FREEWALK|MF_ENEMYWALK|MF_WALLWALK|MF_NOSHADOW,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,255},	// move=grow vertically
@@ -194,7 +194,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,15,16,255},	// die
 			}},
 		{"Moss Grande",
-		 18,17,100,250,"graphics\\mossgrnd.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_ENEMYWALK,
+		 18,17,100,250,"graphics/mossgrnd.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_ENEMYWALK,
 			{
 				{0,1,2,3,4,5,6,255},	// idle
 				{0,255},	// move=unused
@@ -202,7 +202,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{22,23,24,25,26,27,28,255},	// die
 			}},
 		{"Magmazoid",
-		 15,20,20,80,"graphics\\magmazoid.jsp",0,MF_AQUATIC|MF_WATERWALK,
+		 15,20,20,80,"graphics/magmazoid.jsp",0,MF_AQUATIC|MF_WATERWALK,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,255},	// move
@@ -210,7 +210,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,14,15,16,17,18,19,255},	// die
 			}},
 		{"Mushie",
-		 15,23,10,25,"graphics\\shroom.jsp",0,0,
+		 15,23,10,25,"graphics/shroom.jsp",0,0,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -218,7 +218,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{15,16,17,18,19,20,21,22,255},	// die
 			}},
 		{"King Mushroom",
-		 32,27,200,800,"graphics\\bgshroom.jsp",0,MF_NOMOVE,
+		 32,27,200,800,"graphics/bgshroom.jsp",0,MF_NOMOVE,
 			{
 				{0,255},	// idle
 				{1,2,2,1,0,3,4,4,3,0,255},	// move
@@ -228,7 +228,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{17,18,19,20,19,18,19,20,19,18,17,255},	// A2=angry
 			}},
 		{"The Thing",
-		 64,11,800,5000,"graphics\\thething.jsp",0,MF_NOMOVE|MF_AQUATIC|MF_WATERWALK|MF_ENEMYWALK|MF_ONEFACE,
+		 64,11,800,5000,"graphics/thething.jsp",0,MF_NOMOVE|MF_AQUATIC|MF_WATERWALK|MF_ENEMYWALK|MF_ONEFACE,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -237,7 +237,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{1,2,1,255},	// A1=blink
 			}},
 		{"Tentacle",
-		 32,1,500,100,"graphics\\thingtent.jsp",0,MF_NOMOVE|MF_FREEWALK|MF_NOGRAV|MF_ENEMYWALK,
+		 32,1,500,100,"graphics/thingtent.jsp",0,MF_NOMOVE|MF_FREEWALK|MF_NOGRAV|MF_ENEMYWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -245,7 +245,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,0,0,0,0,255},	// die
 			}},
 		{"Tentacle",	// tentacle tip
-		 32,1,500,100,"graphics\\thingtent2.jsp",0,MF_NOMOVE|MF_FREEWALK|MF_NOGRAV|MF_ENEMYWALK,
+		 32,1,500,100,"graphics/thingtent2.jsp",0,MF_NOMOVE|MF_FREEWALK|MF_NOGRAV|MF_ENEMYWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -253,7 +253,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,0,0,0,0,255},	// die
 			}},
 		{"Die Uberbat",
-		 64,7,1000,1000,"graphics\\hugebat.jsp",0,MF_NOMOVE|MF_ENEMYWALK|MF_ONEFACE,
+		 64,7,1000,1000,"graphics/hugebat.jsp",0,MF_NOMOVE|MF_ENEMYWALK|MF_ONEFACE,
 			{
 				{0,0,255},	// idle
 				{0,255},	// move
@@ -261,7 +261,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{4,4,4,5,5,5,6,6,6,6,6,6,255},	// die
 			}},
 		{"Fairy",
-		 12,6,100,0,"graphics\\fairy.jsp",0,MF_FLYING|MF_GOODGUY|MF_ENEMYWALK|MF_FREEWALK|MF_NOHIT,
+		 12,6,100,0,"graphics/fairy.jsp",0,MF_FLYING|MF_GOODGUY|MF_ENEMYWALK|MF_FREEWALK|MF_NOHIT,
 			{
 				{0,1,2,3,4,5,4,3,2,1,255},	// idle
 				{0,1,2,3,4,5,4,3,2,1,255},	// move
@@ -269,7 +269,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{3,3,3,3,3,4,5,255},	// die=unused
 			}},
 		{"Scarier Bat",
-		 26,15,200,500,"graphics\\bigbat.jsp",0,MF_FLYING|MF_NOMOVE|MF_ENEMYWALK,
+		 26,15,200,500,"graphics/bigbat.jsp",0,MF_FLYING|MF_NOMOVE|MF_ENEMYWALK,
 			{
 				{0,1,2,1,0,3,4,5,4,3,255},	// idle
 				{0,1,2,1,0,3,4,5,4,3,255},	// move
@@ -277,7 +277,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{9,10,11,12,13,14,255},	// die
 			}},
 		{"Bobby Khan",
-		 48,46,2000,5000,"graphics\\bobby.jsp",0,MF_NOMOVE|MF_ONEFACE,
+		 48,46,2000,5000,"graphics/bobby.jsp",0,MF_NOMOVE|MF_ONEFACE,
 			{
 				{0,0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -289,7 +289,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{45,45,45,17,17,255},	// A4=blocked a shot
 			}},
 		{"Fairy2",
-		 12,6,100,0,"graphics\\fairy.jsp",0,MF_FLYING|MF_GOODGUY|MF_ENEMYWALK|MF_FREEWALK|MF_WALLWALK|MF_NOHIT,
+		 12,6,100,0,"graphics/fairy.jsp",0,MF_FLYING|MF_GOODGUY|MF_ENEMYWALK|MF_FREEWALK|MF_WALLWALK|MF_NOHIT,
 			{
 				{0,1,2,3,4,5,4,3,2,1,255},	// idle
 				{0,1,2,3,4,5,4,3,2,1,255},	// move
@@ -297,7 +297,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{3,3,3,3,3,4,5,255},	// die=unused
 			}},
 		{"Crazy Bush",
-		 10,8,1,5,"graphics\\crazybush.jsp",0,0,
+		 10,8,1,5,"graphics/crazybush.jsp",0,0,
 			{
 				{0,255},	// idle
 				{1,2,1,0,3,4,3,0,255},	// move
@@ -305,7 +305,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{5,6,7,255},	// die
 			}},
 		{"Octon",
-		 19,21,20,40,"graphics\\octopus.jsp",0,MF_AQUATIC|MF_WATERWALK,
+		 19,21,20,40,"graphics/octopus.jsp",0,MF_AQUATIC|MF_WATERWALK,
 			{
 				{5,6,7,6,255},	// idle
 				{5,6,6,7,6,6,255},	// move
@@ -316,7 +316,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 
 			}},
 		{"Blockhead",
-		 12,23,5,2,"graphics\\incabot.jsp",0,MF_NOMOVE,
+		 12,23,5,2,"graphics/incabot.jsp",0,MF_NOMOVE,
 			{
 				{0,255},	// idle
 				{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,255},	// move
@@ -324,7 +324,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{16,17,18,19,20,21,22,255},	// die
 			}},
 		{"Blockhead Kiln",
-		 40,16,100,100,"graphics\\incagen.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_ENEMYWALK,
+		 40,16,100,100,"graphics/incagen.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_ENEMYWALK,
 			{
 				{0,255},	// idle
 				{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,255},	// move=summon
@@ -332,7 +332,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,0,0,255},	// die=explode
 			}},
 		{"Megablockhead H",
-		 11,16,20,75,"graphics\\incagold.jsp",0,MF_NOMOVE|MF_INVINCIBLE,
+		 11,16,20,75,"graphics/incagold.jsp",0,MF_NOMOVE|MF_INVINCIBLE,
 			{
 				{0,255},	// idle
 				{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,255},	// move
@@ -340,7 +340,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// die=doesn't!
 			}},
 		{"Megablockhead V",
-		 11,16,20,75,"graphics\\incagold.jsp",0,MF_NOMOVE|MF_INVINCIBLE,
+		 11,16,20,75,"graphics/incagold.jsp",0,MF_NOMOVE|MF_INVINCIBLE,
 			{
 				{0,255},	// idle
 				{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,255},	// move
@@ -348,7 +348,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// die=doesn't!
 			}},
 		{"Log",
-		 15,10,10,50,"graphics\\log.jsp",0,MF_WATERWALK|MF_AQUATIC|MF_FREEWALK|MF_NOHIT|MF_ONEFACE|MF_FACECMD|MF_ENEMYWALK,
+		 15,10,10,50,"graphics/log.jsp",0,MF_WATERWALK|MF_AQUATIC|MF_FREEWALK|MF_NOHIT|MF_ONEFACE|MF_FACECMD|MF_ENEMYWALK,
 			{
 				{0,1,2,3,4,5,6,7,8,9,255},	// idle
 				{0,1,2,3,4,5,6,7,8,9,255},	// move
@@ -356,7 +356,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,1,2,255},	// die
 			}},
 		{"Blocko The Great",
-		 65,20,150,500,"graphics\\incaboss.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_ENEMYWALK|MF_INVINCIBLE,
+		 65,20,150,500,"graphics/incaboss.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_ENEMYWALK|MF_INVINCIBLE,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -366,7 +366,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,13,13,14,14,14,15,15,15,15,15,15,15,15,15,15,15,15,14,13,255},	// A2=eyebeam
 			}},
 		{"Blocko Tongue",
-		 45,1,25,100,"graphics\\log.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_ENEMYWALK,
+		 45,1,25,100,"graphics/log.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_ENEMYWALK,
 			{
 				{254,255},	// idle
 				{254,255},	// move
@@ -374,7 +374,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{254,255},	// die
 			}},
 		{"Peeping Bomb",
-		 13,41,20,50,"graphics\\peepbomb.jsp",0,MF_FLYING|MF_ONEFACE|MF_FACECMD,
+		 13,41,20,50,"graphics/peepbomb.jsp",0,MF_FLYING|MF_ONEFACE|MF_FACECMD,
 			{
 				{0,0,0,0,255},	// idle
 				{0,0,0,255},	// move
@@ -382,7 +382,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{32,33,34,35,36,37,38,39,40,255},	// die=explode
 			}},
 		{"Richie Lich",
-		 50,8,1500,1000,"graphics\\lich.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_GHOST|MF_NOSHADOW|MF_FLYING,
+		 50,8,1500,1000,"graphics/lich.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_GHOST|MF_NOSHADOW|MF_FLYING,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -390,7 +390,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,5,6,7,8,255},	// die
 			}},
 		{"Trapazoid",
-		 14,10,30,70,"graphics\\trapazoid.jsp",0,MF_NOMOVE|MF_NOSHADOW,
+		 14,10,30,70,"graphics/trapazoid.jsp",0,MF_NOMOVE|MF_NOSHADOW,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -398,7 +398,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{6,5,4,3,2,1,0,255},	// die (turn into dud trapazoid)
 			}},
 		{"Trapazoid2",
-		 14,10,30,70,"graphics\\trapazoid.jsp",0,MF_NOHIT|MF_NOMOVE|MF_NOSHADOW|MF_ENEMYWALK|MF_FREEWALK,
+		 14,10,30,70,"graphics/trapazoid.jsp",0,MF_NOHIT|MF_NOMOVE|MF_NOSHADOW|MF_ENEMYWALK|MF_FREEWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -406,7 +406,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// die (turn into dud trapazoid)
 			}},
 		{"Peeping Bomb",
-		 13,41,20,50,"graphics\\peepbomb.jsp",0,MF_FLYING|MF_ONEFACE|MF_FACECMD,
+		 13,41,20,50,"graphics/peepbomb.jsp",0,MF_FLYING|MF_ONEFACE|MF_FACECMD,
 			{
 				{0,0,0,0,255},	// idle
 				{0,0,0,255},	// move
@@ -414,7 +414,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{32,33,34,35,36,37,38,39,40,255},	// die=explode
 			}},
 		{"Whackazoid",
-		 14,10,1,5,"graphics\\trapazoid.jsp",0,MF_NOMOVE|MF_NOSHADOW,
+		 14,10,1,5,"graphics/trapazoid.jsp",0,MF_NOMOVE|MF_NOSHADOW,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -422,7 +422,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{6,5,4,3,2,1,0,255},	// die (turn into dud trapazoid)
 			}},
 		{"Slimy Slug",
-		 12,19,30,50,"graphics\\slug.jsp",0,0,
+		 12,19,30,50,"graphics/slug.jsp",0,0,
 			{
 				{0,255},	// idle
 				{0,1,2,3,4,3,2,1,255},	// move
@@ -430,7 +430,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{5,6,7,8,9,10,11,12,13,14,15,16,17,18,255},	// die
 			}},
 		{"Sniper Snail",
-		 12,19,45,60,"graphics\\snail.jsp",0,0,
+		 12,19,45,60,"graphics/snail.jsp",0,0,
 			{
 				{0,255},	// idle
 				{1,2,3,4,2,1,0,255},	// move
@@ -440,7 +440,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,12,11,10,9,8,7,6,5,255},	// A2=get out of shell
 			}},
 		{"Sneaky Snail",	// in his shell
-		 12,19,45,60,"graphics\\snail.jsp",0,MF_INVINCIBLE,
+		 12,19,45,60,"graphics/snail.jsp",0,MF_INVINCIBLE,
 			{
 				{14,255},	// idle
 				{1,2,3,4,2,1,0,255},	// move
@@ -450,7 +450,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,12,11,10,9,8,7,6,5,255},	// A2=get out of shell
 			}},
 		{"Smashball",
-		 14,1,40,500,"graphics\\ball.jsp",0,MF_INVINCIBLE|MF_ENEMYWALK|MF_NOMOVE|MF_ONEFACE|MF_WATERWALK|MF_FREEWALK,
+		 14,1,40,500,"graphics/ball.jsp",0,MF_INVINCIBLE|MF_ENEMYWALK|MF_NOMOVE|MF_ONEFACE|MF_WATERWALK|MF_FREEWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -458,7 +458,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// die
 			}},
 		{"Optimum Octon",
-		 90,15,200,300,"graphics\\octoboss.jsp",0,MF_ONEFACE|MF_NOMOVE|MF_AQUATIC|MF_WATERWALK|MF_ENEMYWALK,
+		 90,15,200,300,"graphics/octoboss.jsp",0,MF_ONEFACE|MF_NOMOVE|MF_AQUATIC|MF_WATERWALK|MF_ENEMYWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -466,7 +466,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{1,2,3,4,5,6,7,8,9,255},	// die
 			}},
 		{"Octentacle",
-		 20,11,20,50,"graphics\\octotent.jsp",0,MF_NOMOVE|MF_AQUATIC|MF_WATERWALK|MF_ENEMYWALK,
+		 20,11,20,50,"graphics/octotent.jsp",0,MF_NOMOVE|MF_AQUATIC|MF_WATERWALK|MF_ENEMYWALK,
 			{
 				{1,255},	// idle
 				{0,255},	// move
@@ -474,7 +474,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{6,5,4,3,2,1,0,255},	// die
 			}},
 		{"Octentacle",	// for the right side
-		 20,11,20,50,"graphics\\octotent.jsp",0,MF_NOMOVE|MF_AQUATIC|MF_WATERWALK|MF_ENEMYWALK,
+		 20,11,20,50,"graphics/octotent.jsp",0,MF_NOMOVE|MF_AQUATIC|MF_WATERWALK|MF_ENEMYWALK,
 			{
 				{1,255},	// idle
 				{0,255},	// move
@@ -482,7 +482,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{6,5,4,3,2,1,0,255},	// die
 			}},
 		{"Rammy Gruff",
-		 20,52,100,300,"graphics\\goat.jsp",0,MF_NOMOVE|MF_INVINCIBLE,
+		 20,52,100,300,"graphics/goat.jsp",0,MF_NOMOVE|MF_INVINCIBLE,
 			{
 				{0,255},	// idle
 				{1,2,3,4,5,6,7,8,9,10,11,12,1,255},	// move=charge
@@ -525,7 +525,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,255},	// die
 			}},
 		{"Happy Stick Shroom",
-		 9,6,15,50,"graphics\\stkshr.jsp",0,MF_ONEFACE,
+		 9,6,15,50,"graphics/stkshr.jsp",0,MF_ONEFACE,
 			{
 				{0,1,255},	// idle
 				{0,1,255},	// move=walk
@@ -533,7 +533,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{3,3,4,4,5,5,255},	// die
 			}},
 		{"Happy Stick Spider",
-		 9,6,25,70,"graphics\\stkspd.jsp",0,MF_ONEFACE,
+		 9,6,25,70,"graphics/stkspd.jsp",0,MF_ONEFACE,
 			{
 				{0,1,255},	// idle
 				{0,1,255},	// move=walk
@@ -541,7 +541,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{3,4,3,4,3,4,254,3,254,4,254,3,254,254,4,254,254,3,255},	// die
 			}},
 		{"Happy Stick Corpse",
-		 11,10,40,100,"graphics\\stkskl.jsp",0,MF_ONEFACE,
+		 11,10,40,100,"graphics/stkskl.jsp",0,MF_ONEFACE,
 			{
 				{0,255},	// idle
 				{0,1,0,2,255},	// move=walk
@@ -549,7 +549,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{4,5,6,7,8,9,255},	// die
 			}},
 		{"Happy Stick Bat",
-		 11,6,20,60,"graphics\\stkbat.jsp",0,MF_ONEFACE|MF_FLYING,
+		 11,6,20,60,"graphics/stkbat.jsp",0,MF_ONEFACE|MF_FLYING,
 			{
 				{0,1,255},	// idle
 				{0,1,255},	// move=walk
@@ -557,7 +557,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{3,3,4,4,5,5,255},	// die
 			}},
 		{"Happy Stick Dancer",
-		 11,10,400,5000,"graphics\\stkskl.jsp",0,MF_ONEFACE|MF_FREEWALK|MF_ENEMYWALK|MF_NOMOVE,
+		 11,10,400,5000,"graphics/stkskl.jsp",0,MF_ONEFACE|MF_FREEWALK|MF_ENEMYWALK|MF_NOMOVE,
 			{
 				{0,255},	// idle
 				{0,1,0,2,0,1,0,2,255},	// move=walk
@@ -602,13 +602,13 @@ void SetKidSprite(byte armageddon)
 	{
 		if(monsType[MONS_BOUAPHA].spr)
 			delete monsType[MONS_BOUAPHA].spr;
-		monsType[MONS_BOUAPHA].spr=new sprite_set_t("graphics\\sylab2.jsp");
+		monsType[MONS_BOUAPHA].spr=new sprite_set_t("graphics/sylab2.jsp");
 	}
 	else
 	{
 		if(monsType[MONS_BOUAPHA].spr)
 			delete monsType[MONS_BOUAPHA].spr;
-		monsType[MONS_BOUAPHA].spr=new sprite_set_t("graphics\\sylabulus.jsp");
+		monsType[MONS_BOUAPHA].spr=new sprite_set_t("graphics/sylabulus.jsp");
 	}
 	kidSpr=armageddon;
 }

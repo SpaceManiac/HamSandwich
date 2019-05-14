@@ -38,7 +38,7 @@ void LoadGalPic(byte p,byte *backScr)
 
 	GetDisplayMGL()->ClearScreen();
 	GetDisplayMGL()->Flip();
-	sprintf(s,"graphics\\glr%02d.bmp",p);
+	sprintf(s,"graphics/glr%02d.bmp",p);
 	GetDisplayMGL()->LoadBMP(s);
 	GetDisplayMGL()->LastKeyPressed();
 	for(i=0;i<480;i++)

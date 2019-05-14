@@ -201,7 +201,7 @@ byte HandleTitleKeys(MGLDraw *mgl)
 
 byte LunaticTitle(MGLDraw *mgl)
 {
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	mgl->Flip();
 	while (!mgl->LastKeyPeek())
 	{
@@ -573,9 +573,9 @@ byte WorldPicker(MGLDraw *mgl)
 
 	mgl->ClearScreen();
 	mgl->Flip();
-	planetSpr = new sprite_set_t("graphics\\planet.jsp");
-	mgl->LoadBMP("graphics\\picker.bmp");
-	FontLoad("graphics\\gillsans4.jft", &pickerFont);
+	planetSpr = new sprite_set_t("graphics/planet.jsp");
+	mgl->LoadBMP("graphics/picker.bmp");
+	FontLoad("graphics/gillsans4.jft", &pickerFont);
 
 	pickerpos = 0;
 	pickeroffset = 0;
@@ -605,7 +605,7 @@ byte WorldPicker(MGLDraw *mgl)
 
 	mgl->ClearScreen();
 	mgl->Flip();
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	mgl->GammaCorrect(GetGamma());
 	delete planetSpr;
 	FontFree(&pickerFont);
@@ -841,11 +841,11 @@ byte MainMenu(MGLDraw *mgl)
 		CDPlay(2); // the title theme
 	CDNeedsUpdating();
 
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	mgl->LastKeyPressed();
 	mgl->ClearScreen();
 	oldc = CONTROL_B1 | CONTROL_B2;
-	planetSpr = new sprite_set_t("graphics\\titlespr.jsp");
+	planetSpr = new sprite_set_t("graphics/titlespr.jsp");
 
 	title.bouaphaX = -320;
 	title.doctorX = -320;
@@ -1143,7 +1143,7 @@ void Credits(MGLDraw *mgl)
 	static byte flip = 0;
 
 	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	while (1)
 	{
 		mgl->ClearScreen();
@@ -1207,7 +1207,7 @@ void VictoryText(MGLDraw *mgl)
 	int y = -470;
 
 	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	while (1)
 	{
 		mgl->ClearScreen();
@@ -1327,7 +1327,7 @@ void HelpScreens(MGLDraw *mgl)
 
 	for (i = 0; i < 5; i++)
 	{
-		sprintf(name, "docs\\help%d.bmp", i + 1);
+		sprintf(name, "docs/help%d.bmp", i + 1);
 		if (!SpeedSplash(mgl, name))
 			return;
 	}
@@ -1335,9 +1335,9 @@ void HelpScreens(MGLDraw *mgl)
 
 void DemoSplashScreens(MGLDraw *mgl)
 {
-	if (!SpeedSplash(mgl, "docs\\demosplash.bmp"))
+	if (!SpeedSplash(mgl, "docs/demosplash.bmp"))
 		return;
-	if (!SpeedSplash(mgl, "docs\\demosplash2.bmp"))
+	if (!SpeedSplash(mgl, "docs/demosplash2.bmp"))
 		return;
 }
 

@@ -7,7 +7,7 @@ static byte itmLight = 0;
 
 void InitItems(void)
 {
-	itmSpr = new sprite_set_t("graphics\\items.jsp");
+	itmSpr = new sprite_set_t("graphics/items.jsp");
 	glowism = 0;
 }
 

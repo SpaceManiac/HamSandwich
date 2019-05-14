@@ -100,7 +100,7 @@ void GetAddOn(char *name,int spot)
 
 	addOnList[spot].dispName[0]='\0';
 	addOnList[spot].filename[0]='\0';
-	sprintf(line,"addons\\%s",name);
+	sprintf(line,"addons/%s",name);
 	f=fopen(line,"rt");
 
 	if(!f)
@@ -133,7 +133,7 @@ void GetAddOns(void)
 
 	// count up how many there are to deal with
 	ClearAddOns();
-	hFile=_findfirst("addons\\lvl_*.txt",&filedata);
+	hFile=_findfirst("addons/lvl_*.txt",&filedata);
 
 	if(hFile!=-1)	// there's at least one
 	{
@@ -155,7 +155,7 @@ void GetAddOns(void)
 	addOnList[0].filename[0]='\0';
 
 	done=1;
-	hFile=_findfirst("addons\\lvl_*.txt",&filedata);
+	hFile=_findfirst("addons/lvl_*.txt",&filedata);
 
 	if(hFile!=-1)	// there's at least one
 	{
@@ -183,7 +183,7 @@ void GetSavesForMenu(void)
 	hole=-1;
 	for(i=0;i<MAX_CHARS;i++)
 	{
-		sprintf(txt,"profiles\\char%02d.loony",i+1);
+		sprintf(txt,"profiles/char%02d.loony",i+1);
 		f=fopen(txt,"rb");
 		if(!f && hole==-1)
 		{
@@ -520,7 +520,7 @@ void DeleteCharacter(void)
 {
 	char s[64];
 
-	sprintf(s,"profiles\\char%02d.loony",save[whoToDelete].realNum+1);
+	sprintf(s,"profiles/char%02d.loony",save[whoToDelete].realNum+1);
 	unlink(s);	// delete that file
 	GetSavesForMenu();
 	curChar=0;
