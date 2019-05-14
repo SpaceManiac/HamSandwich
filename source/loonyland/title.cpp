@@ -1189,44 +1189,6 @@ void VictoryText(MGLDraw *mgl)
 	ResetClock(hangon);
 }
 
-byte SpecialLoadBMP(char *name,MGLDraw *mgl,RGB *pal)
-{
-	FILE *f;
-	BITMAPFILEHEADER bmpFHead;
-	BITMAPINFOHEADER bmpIHead;
-	RGBQUAD	pal2[256];
-
-	int i;
-	byte *scr;
-
-	f=fopen(name,"rb");
-	if(!f)
-		return FALSE;
-
-	fread(&bmpFHead,sizeof(BITMAPFILEHEADER),1,f);
-	fread(&bmpIHead,sizeof(BITMAPINFOHEADER),1,f);
-
-	// 8-bit BMPs only
-	if(bmpIHead.biBitCount!=8)
-		return FALSE;
-
-	fread(pal2,sizeof(pal2),1,f);
-	for(i=0;i<256;i++)
-	{
-		pal[i].r=pal2[i].rgbRed;
-		pal[i].g=pal2[i].rgbGreen;
-		pal[i].b=pal2[i].rgbBlue;
-	}
-
-	for(i=0;i<bmpIHead.biHeight;i++)
-	{
-		scr=(byte *)((int)mgl->GetScreen()+(bmpIHead.biHeight-1-i)*640);
-		fread(scr,bmpIHead.biWidth,1,f);
-	}
-	fclose(f);
-	return TRUE;
-}
-
 byte SpeedSplash(MGLDraw *mgl,char *fname)
 {
 	int i,j,clock;
@@ -1247,7 +1209,8 @@ byte SpeedSplash(MGLDraw *mgl,char *fname)
 	mgl->LastKeyPressed();
 	oldc=GetControls()|GetArrows();
 
-	SpecialLoadBMP(fname,mgl,desiredpal);
+	if (!mgl->LoadBMP(fname, desiredpal))
+		return 0;
 
 	mode=0;
 	clock=0;
@@ -1361,7 +1324,8 @@ void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound)
 
 	mgl->LastKeyPressed();
 
-	SpecialLoadBMP(fname,mgl,desiredpal);
+	if (!mgl->LoadBMP(fname, desiredpal))
+		return;
 
 	StartClock();
 	mode=0;
