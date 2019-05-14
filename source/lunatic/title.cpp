@@ -4,6 +4,7 @@
 #include "jamulfmv.h"
 #include "pause.h"
 #include "options.h"
+#include "lsdir.h"
 
 #define VERSION "Version 3.0"
 #define COPYRIGHT "Copyright 1998-2011, Hamumu Software"
@@ -615,61 +616,33 @@ byte WorldPicker(MGLDraw *mgl)
 void ScanWorldNames(void)
 {
 	int i;
-	long hFile;
-	struct _finddata_t filedata;
-	int numFiles;
+	int numFiles = 0;
 
 	for (i = 5; i < MAX_CUSTOM; i++)
 		player.customName[i][0] = '\0';
 
-	hFile = _findfirst("worlds\\*.dlw", &filedata);
-
-	if (hFile != -1) // there's at least one
+	for (const char* name : filterdir("worlds", ".dlw", 32))
 	{
 		// rule out the regular game worlds, so they don't show up as custom worlds
-		if ((strcmp(filedata.name, "forest.dlw")) &&
-				(strcmp(filedata.name, "desert.dlw")) &&
-				(strcmp(filedata.name, "icymount.dlw")) &&
-				(strcmp(filedata.name, "caverns.dlw")) &&
-				(strcmp(filedata.name, "asylum.dlw")) &&
-				(strcmp(filedata.name, "backup_load.dlw")) &&
-				(strcmp(filedata.name, "backup_exit.dlw")))
+		if ((strcmp(name, "forest.dlw")) &&
+				(strcmp(name, "desert.dlw")) &&
+				(strcmp(name, "icymount.dlw")) &&
+				(strcmp(name, "caverns.dlw")) &&
+				(strcmp(name, "asylum.dlw")) &&
+				(strcmp(name, "backup_load.dlw")) &&
+				(strcmp(name, "backup_exit.dlw")))
 		{
-			strncpy(player.customName[5], filedata.name, 32);
-			numFiles = 1;
-		}
-		else
-			numFiles = 0;
-
-		while (numFiles < MAX_CUSTOM)
-		{
-			if (_findnext(hFile, &filedata) == 0)
-			{
-				// rule out the regular game worlds, so they don't show up as custom worlds
-				if ((strcmp(filedata.name, "forest.dlw")) &&
-						(strcmp(filedata.name, "desert.dlw")) &&
-						(strcmp(filedata.name, "icymount.dlw")) &&
-						(strcmp(filedata.name, "caverns.dlw")) &&
-						(strcmp(filedata.name, "asylum.dlw")) &&
-						(strcmp(filedata.name, "backup_load.dlw")) &&
-						(strcmp(filedata.name, "backup_exit.dlw")))
-				{
-					strncpy(player.customName[numFiles + 5], filedata.name, 32);
-					numFiles++;
-				}
-			}
-			else // no more files
+			strncpy(player.customName[numFiles + 5], name, 32);
+			numFiles++;
+			if (numFiles + 5 >= MAX_CUSTOM)
 				break;
 		}
 	}
-	_findclose(hFile);
 }
 
 void ReScanWorldNames(void)
 {
 	int i;
-	long hFile;
-	struct _finddata_t filedata;
 	byte okay[MAX_CUSTOM];
 
 	for (i = 5; i < MAX_CUSTOM; i++)
@@ -680,22 +653,20 @@ void ReScanWorldNames(void)
 			okay[i] = 0;
 	}
 
-	hFile = _findfirst("worlds\\*.dlw", &filedata);
-
-	while (hFile != -1) // there's at least one
+	for (const char* name : filterdir("worlds", ".dlw", 32))
 	{
 		// rule out the regular game worlds, so they don't show up as custom worlds
-		if ((strcmp(filedata.name, "forest.dlw")) &&
-				(strcmp(filedata.name, "desert.dlw")) &&
-				(strcmp(filedata.name, "icymount.dlw")) &&
-				(strcmp(filedata.name, "caverns.dlw")) &&
-				(strcmp(filedata.name, "asylum.dlw")) &&
-				(strcmp(filedata.name, "backup_load.dlw")) &&
-				(strcmp(filedata.name, "backup_exit.dlw")))
+		if ((strcmp(name, "forest.dlw")) &&
+				(strcmp(name, "desert.dlw")) &&
+				(strcmp(name, "icymount.dlw")) &&
+				(strcmp(name, "caverns.dlw")) &&
+				(strcmp(name, "asylum.dlw")) &&
+				(strcmp(name, "backup_load.dlw")) &&
+				(strcmp(name, "backup_exit.dlw")))
 		{
 			for (i = 5; i < MAX_CUSTOM; i++)
 			{
-				if (!strcmp(filedata.name, player.customName[i]))
+				if (!strcmp(name, player.customName[i]))
 				{
 					okay[i] = 1;
 					break;
@@ -708,16 +679,13 @@ void ReScanWorldNames(void)
 				{
 					if (player.customName[i][0] == '\0')
 					{
-						strncpy(player.customName[i], filedata.name, 32);
+						strncpy(player.customName[i], name, 32);
 						break;
 					}
 				}
 			}
 		}
-		if (_findnext(hFile, &filedata) != 0)
-			break;
 	}
-	_findclose(hFile);
 
 	// remove any that aren't valid
 	for (i = 5; i < MAX_CUSTOM; i++)

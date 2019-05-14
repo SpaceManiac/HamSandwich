@@ -80,6 +80,7 @@ library "common"
 
 allegro_project "lunatic"
 	icon_file "lunatic"
+	depends "common"
 	defines { "EXPANDO" }
 	buildoptions { "-Wall", "-Wextra", "-Wno-unused-parameter" }
 

@@ -1,44 +1,36 @@
 #include "tiledialog.h"
 #include "editor.h"
 #include <ctype.h>
+#include "lsdir.h"
+#include <memory>
 
 const int MAX_FILES = 18;
 
 static char fnames[MAX_FILES][32];
 static char newfname[32] = "";
 static byte numFiles;
-static long hFile;
+static std::unique_ptr<filterdir> filter;
 
 void InitTileDialog(void)
 {
 	int i;
-	struct _finddata_t filedata;
 
 	for (i = 0; i < MAX_FILES; i++)
 		fnames[i][0] = '\0';
 
 	numFiles = 0;
-
-	hFile = _findfirst("graphics\\*.bmp", &filedata);
-
-	if (hFile != -1) // there's at least one
+	filter = std::make_unique<filterdir>("graphics", ".bmp", 32);
+	for (const char* name : *filter)
 	{
-		strncpy(fnames[0], filedata.name, 32);
-		numFiles = 1;
-
-		while (numFiles < MAX_FILES)
-		{
-			if (_findnext(hFile, &filedata) == 0)
-				strncpy(fnames[numFiles++], filedata.name, 32);
-			else // no more files
-				break;
-		}
+		strncpy(fnames[numFiles++], name, 32);
+		if (numFiles >= MAX_FILES)
+			break;
 	}
 }
 
 void ExitTileDialog(void)
 {
-	_findclose(hFile);
+	filter.reset();
 }
 
 void RenderTileDialog(int msx, int msy, MGLDraw *mgl)
@@ -108,27 +100,20 @@ byte TileDialogKey(char key)
 
 void TileDialogMoreFiles(void)
 {
-	int i;
-	struct _finddata_t filedata;
-
-	for (i = 0; i < MAX_FILES; i++)
+	for (int i = 0; i < MAX_FILES; i++)
 		fnames[i][0] = '\0';
 
 	numFiles = 0;
-
-	while (numFiles < MAX_FILES)
+	for (const char* name : *filter)
 	{
-		if (_findnext(hFile, &filedata) == 0)
-			strncpy(fnames[numFiles++], filedata.name, 32);
-		else // no more files
-		{
-			if (numFiles == 0) // there aren't any more to list at all!
-			{
-				ExitTileDialog();
-				InitTileDialog(); // reget the first page of them
-			}
+		strncpy(fnames[numFiles++], name, 32);
+		if (numFiles >= MAX_FILES)
 			break;
-		}
+	}
+	if(numFiles==0)	// there aren't any more to list at all!
+	{
+		ExitTileDialog();
+		InitTileDialog();	// reget the first page of them
 	}
 }
 
