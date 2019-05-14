@@ -95,7 +95,6 @@ byte FileDialogKey(char key)
 void FileDialogMoreFiles(void)
 {
 	int i;
-	struct _finddata_t filedata;
 
 	for(i=0;i<MAX_FILES;i++)
 		fnames[i][0]='\0';

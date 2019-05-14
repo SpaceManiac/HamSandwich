@@ -13,7 +13,6 @@ static std::unique_ptr<filterdir> filter;
 void InitTileDialog(void)
 {
 	int i;
-	struct _finddata_t filedata;
 
 	for(i=0;i<MAX_FILES;i++)
 		fnames[i][0]='\0';
@@ -96,7 +95,6 @@ byte TileDialogKey(char key)
 void TileDialogMoreFiles(void)
 {
 	int i;
-	struct _finddata_t filedata;
 
 	for(i=0;i<MAX_FILES;i++)
 		fnames[i][0]='\0';
