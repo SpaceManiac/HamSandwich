@@ -3,63 +3,10 @@
 #include "progress.h"
 #include "config.h"
 
-// text strings corresponding to scan codes 0-88
-char scanCodeTable[128][16]={
-	//0
-	"Null","Escape","1","2","3","4","5","6","7","8","9","0",
-	//12
-	"-","=","Backspace","Tab","Q","W","E","R","T","Y","U","I","O","P",
-	//26
-	"[","]","Enter","Ctrl","A","S","D","F","G","H","J","K","L",";",
-	//40
-	"'","`","LeftShift","\\","Z","X","C","V","B","N","M",",",".","/",
-	//54
-	"RightShift","PrintScreen","Alt","Space","CapsLock","F1","F2","F3",
-	//62
-	"F4","F5","F6","F7","F8","F9","F10","NumLock","ScrollLock",
-	//71
-	"Home","Up","PageUp","Keypad-","Left","Keypad5","Right","Keypad+",
-	//79
-	"End","Down","PageDown","Insert","Delete","","","","F11","F12"};
-
-char allegroCodeTable[][16]={
-	// 0
-	"NULL","A","B","C","D","E","F","G","H","I","J","K",
-	// 12
-	"L","M","N","O","P","Q","R","S","T","U","V","W",
-	// 24
-	"X","Y","Z","0","1","2","3","4","5","6","7","8","9",
-	// 37
-	"Keypad 0","Keypad 1","Keypad 2","Keypad 3","Keypad 4","Keypad 5",
-	// 43
-	"Keypad 6","Keypad 7","Keypad 8","Keypad 9","F1","F2","F3","F4",
-	// 51
-	"F5","F6","F7","F8","F9","F10","F11","F12","Escape","`","-","=",
-	//63	(#71 is the mysterious "backslash2")
-	"Backspace","Tab","[","]","Enter","Colon","\"","\\","\\",",",".",
-	// 74
-	"/","Space","Insert","Delete","Home","End","PageUp","PageDown",
-	//82
-	"Left","Right","Up","Down","/","*","-","+",".","Pad Enter","PrintScreen",
-	// 93
-	"Pause","ABNT_C1","YEN","KANA","CONVERT","NOCONVERT","AT","CIRCUMFLEX",
-	// 101
-	"COLON2","KANJI","Pad =","Backquote",";","Command","?1","?2","?3","?4",
-	// 111
-	"?5","?6","?7","?8","LeftShift","RightShift","LeftCtrl","RightCtrl","Alt",
-	// 120
-	"ALTGR","Left Windows","Right Windows","Menu Key","Scroll Lock","Num Lock","Caps Lock"
-};
-
 byte arrowState;
 byte arrowTap;
 byte keyState;
 byte keyTap;
-
-int joyMinX=2000000000,joyMinY=2000000000;
-int joyMaxX=0,joyMaxY=0;
-int joyCX,joyCY;
-int joyDeadX,joyDeadY;
 
 SDL_Joystick* joystick;
 byte oldJoy;
@@ -69,17 +16,6 @@ byte lastScanCode;
 byte kb[6][4];
 byte joyBtn[2];
 byte shiftState;
-
-void MyKeebieCallback(int scancode)
-{
-	byte s;
-
-	s=(byte)scancode;
-	if(s&128)
-		ControlKeyUp((char)(s&127));
-	else
-		ControlKeyDown((char)s);
-}
 
 void ControlKeyDown(byte k)
 {

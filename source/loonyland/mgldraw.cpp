@@ -21,13 +21,13 @@ MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool windowed)
 	Uint32 flags = windowed ? 0 : SDL_WINDOW_FULLSCREEN;
 	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, xRes, yRes, flags);
 	if (!window) {
-		sprintf("SDL_CreateWindow: %s\n", SDL_GetError());
+		printf("SDL_CreateWindow: %s\n", SDL_GetError());
 		FatalError("Failed to create window");
 		return;
 	}
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
 	if (!renderer) {
-		sprintf("SDL_CreateWindow: %s\n", SDL_GetError());
+		printf("SDL_CreateWindow: %s\n", SDL_GetError());
 		FatalError("Failed to create renderer");
 		return;
 	}

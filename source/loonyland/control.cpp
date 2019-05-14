@@ -6,11 +6,6 @@ byte arrowState;
 byte keyState;
 byte keyTap;
 
-int joyMinX=2000000000,joyMinY=2000000000;
-int joyMaxX=0,joyMaxY=0;
-int joyCX,joyCY;
-int joyDeadX,joyDeadY;
-
 SDL_Joystick* joystick;
 byte oldJoy;
 
