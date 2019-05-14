@@ -15,7 +15,7 @@ lsdir::~lsdir()
 	}
 }
 
-const char* lsdir::next()
+char* lsdir::next()
 {
 	struct dirent *dp = dir ? readdir(dir) : nullptr;
 	return dp ? dp->d_name : nullptr;
@@ -43,7 +43,7 @@ lsdir::~lsdir()
 	}
 }
 
-const char* lsdir::next()
+char* lsdir::next()
 {
 	if (hFile == -1)
 	{
@@ -64,3 +64,38 @@ const char* lsdir::next()
 }
 
 #endif // _MSC_VER
+
+
+filterdir::filterdir(const char* directory, const char* extension, int maxlen)
+	: inner(directory)
+	, extension(extension)
+	, maxlen(maxlen)
+	, extlen(extension ? strlen(extension) : 0)
+{
+}
+
+filterdir::iter filterdir::begin()
+{
+	iter i = iter(*this, nullptr);
+	++i;
+	return i;
+}
+
+filterdir::iter filterdir::end()
+{
+	return iter(*this, nullptr);
+}
+
+filterdir::iter& filterdir::iter::operator++()
+{
+	while (value = parent.inner.next()) {
+		int len = strlen(value);
+		if (parent.maxlen > 0 && len >= parent.maxlen) {
+			continue;
+		}
+		if (parent.extension && (len < parent.extlen || strcasecmp(parent.extension, &value[len - parent.extlen]))) {
+			continue;
+		}
+		break;
+	}
+}

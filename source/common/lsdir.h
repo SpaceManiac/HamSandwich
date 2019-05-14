@@ -11,7 +11,7 @@ class lsdir
 public:
 	explicit lsdir(const char* directory);
 	~lsdir();
-	const char* next();
+	char* next();
 
 private:
 	lsdir(const lsdir&) = delete;
@@ -33,7 +33,7 @@ class lsdir
 public:
 	explicit lsdir(const char* directory);
 	~lsdir();
-	const char* next();
+	char* next();
 
 private:
 	lsdir(const lsdir&) = delete;
@@ -43,4 +43,31 @@ private:
 };
 
 #endif // _MSC_VER
+
+class filterdir
+{
+	lsdir inner;
+	const char* extension;
+	int maxlen;
+	int extlen;
+
+public:
+	explicit filterdir(const char* directory, const char* extension = nullptr, int maxlen = 260);
+
+	class iter {
+		filterdir& parent;
+		char* value;
+
+		friend class filterdir;
+		iter(filterdir& parent, char* value) : parent(parent), value(value) {}
+	public:
+		bool operator!=(const iter& other) { return value != other.value; }
+		char* operator*() { return value; }
+		iter& operator++();
+	};
+
+	iter begin();
+	iter end();
+};
+
 #endif // LSDIR_H
