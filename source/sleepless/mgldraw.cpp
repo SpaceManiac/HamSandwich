@@ -762,7 +762,7 @@ bool MGLDraw::LoadBMP(char *name, PALETTE pal)
 
 	SDL_UnlockSurface(b);
 	SDL_FreeSurface(b);
-	return TRUE;
+	return true;
 }
 
 //--------------------------------------------------------------------------

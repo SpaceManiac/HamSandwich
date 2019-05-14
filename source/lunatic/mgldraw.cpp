@@ -423,7 +423,7 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 	SDL_Surface* b = IMG_Load(name);
 	if (!b) {
 		printf("%s: %s\n", name, SDL_GetError());
-		return FALSE;
+		return false;
 	}
 
 	if(pal && b->format->palette)
@@ -447,7 +447,7 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 
 	SDL_UnlockSurface(b);
 	SDL_FreeSurface(b);
-	return TRUE;
+	return true;
 }
 
 void MGLDraw::GammaCorrect(byte gamma)

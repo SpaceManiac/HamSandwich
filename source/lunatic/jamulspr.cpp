@@ -106,32 +106,32 @@ sprite_t::~sprite_t(void)
 bool sprite_t::LoadData(FILE *f)
 {
 	if (size == 0)
-		return TRUE;
+		return true;
 
 	data = (byte *) malloc(size);
 	if (!data)
-		return FALSE;
+		return false;
 
 	if (fread(data, 1, size, f) != size)
 	{
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
 bool sprite_t::SaveData(FILE *f)
 {
 	if (size == 0)
-		return TRUE;
+		return true;
 
 	if (!data)
-		return TRUE;
+		return true;
 
 	if (fwrite(data, 1, size, f) != size)
 	{
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
 void sprite_t::GetHeader(byte *buffer)
@@ -949,7 +949,7 @@ bool sprite_set_t::Load(const char *fname)
 
 	f = fopen(fname, "rb");
 	if (!f)
-		return FALSE;
+		return false;
 	// read the count
 	fread(&count, 2, 1, f);
 
@@ -961,7 +961,7 @@ bool sprite_set_t::Load(const char *fname)
 	if (!spr)
 	{
 		fclose(f);
-		return FALSE;
+		return false;
 	}
 
 	// allocate a buffer to load sprites into
@@ -970,7 +970,7 @@ bool sprite_set_t::Load(const char *fname)
 	{
 		fclose(f);
 		free(spr);
-		return FALSE;
+		return false;
 	}
 
 	// read in the sprite headers
@@ -979,7 +979,7 @@ bool sprite_set_t::Load(const char *fname)
 		fclose(f);
 		free(spr);
 		free(buffer);
-		return FALSE;
+		return false;
 	}
 
 	// allocate the sprites and read in the data for them
@@ -989,18 +989,18 @@ bool sprite_set_t::Load(const char *fname)
 		if (!spr[i])
 		{
 			fclose(f);
-			return FALSE;
+			return false;
 		}
 		if (!spr[i]->LoadData(f))
 		{
 			fclose(f);
-			return FALSE;
+			return false;
 		}
 	}
 	free(buffer);
 	fclose(f);
 
-	return TRUE;
+	return true;
 }
 
 bool sprite_set_t::Save(const char *fname)
@@ -1011,7 +1011,7 @@ bool sprite_set_t::Save(const char *fname)
 
 	f = fopen(fname, "wb");
 	if (!f)
-		return FALSE;
+		return false;
 	// write the count
 	fwrite(&count, 2, 1, f);
 
@@ -1020,7 +1020,7 @@ bool sprite_set_t::Save(const char *fname)
 	if (!buffer)
 	{
 		fclose(f);
-		return FALSE;
+		return false;
 	}
 
 	for (i = 0; i < count; i++)
@@ -1031,7 +1031,7 @@ bool sprite_set_t::Save(const char *fname)
 	{
 		fclose(f);
 		free(buffer);
-		return FALSE;
+		return false;
 	}
 
 	// write the sprite data
@@ -1040,11 +1040,11 @@ bool sprite_set_t::Save(const char *fname)
 		if (!spr[i]->SaveData(f))
 		{
 			fclose(f);
-			return FALSE;
+			return false;
 		}
 	}
 	fclose(f);
-	return TRUE;
+	return true;
 
 }
 

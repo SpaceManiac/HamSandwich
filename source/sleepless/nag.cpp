@@ -38,7 +38,7 @@ byte MiniLoadBMP(byte w,byte pos)
 	sprintf(s,"graphics/preview%d.bmp",w);
 	b=load_bitmap(s,newpal);
 	if(b==NULL)
-		return FALSE;
+		return false;
 
 	y=(pos)*240;
 
@@ -49,7 +49,7 @@ byte MiniLoadBMP(byte w,byte pos)
 		memcpy(&shots[(y+i)*320],b->line[i],b->w);
 	}
 	destroy_bitmap(b);
-	return TRUE;
+	return true;
 }
 
 void ShiftPicsUp(void)

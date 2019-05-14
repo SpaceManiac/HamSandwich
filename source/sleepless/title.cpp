@@ -548,7 +548,7 @@ byte SpeedSplash(MGLDraw *mgl,char *fname)
 	oldc=GetControls()|GetArrows();
 
 	if (!mgl->LoadBMP(fname, desiredpal))
-		return FALSE;
+		return false;
 
 	mode=0;
 	clock=0;

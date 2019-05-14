@@ -21,7 +21,7 @@
 #include "title.h"
 #include "options.h"
 
-bool windowedGame = FALSE;
+bool windowedGame = false;
 MGLDraw *mainmgl;
 
 void parseCmdLine(char *cmdLine)
@@ -32,7 +32,7 @@ void parseCmdLine(char *cmdLine)
 	while (token != NULL)
 	{
 		if (!strcmp(token, "window"))
-			windowedGame = TRUE;
+			windowedGame = true;
 		token = strtok(NULL, " ");
 	}
 }

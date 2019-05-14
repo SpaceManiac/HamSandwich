@@ -318,7 +318,7 @@ bool FontInputText(char *prompt, char *buffer, int len, void (*renderScrn)(mfont
 		buffer[pos] = '\0';
 		fontmgl->Flip();
 		if (!fontmgl->Process())
-			return FALSE;
+			return false;
 		if ((c = fontmgl->LastKeyPressed())) // extra pair of parentheses for a warning about assignment in truth value
 		{
 			if (c == 8) // backspace
@@ -331,12 +331,12 @@ bool FontInputText(char *prompt, char *buffer, int len, void (*renderScrn)(mfont
 			}
 			else if (c == 27)
 			{
-				done = TRUE;
+				done = true;
 				buffer[0] = '\0';
 			}
 			else if (c == 13)
 			{
-				done = TRUE;
+				done = true;
 				buffer[pos] = '\0';
 			}
 			else if (pos < len)
@@ -346,5 +346,5 @@ bool FontInputText(char *prompt, char *buffer, int len, void (*renderScrn)(mfont
 			}
 		}
 	}
-	return TRUE;
+	return true;
 }

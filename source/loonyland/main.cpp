@@ -14,7 +14,7 @@
 #include "options.h"
 #include "badge.h"
 
-bool windowedGame=FALSE;
+bool windowedGame=false;
 MGLDraw *mainmgl;
 
 int main(int argc, char *argv[])
@@ -32,11 +32,11 @@ _CrtSetDbgFlag(flag); // Set flag to the new value
 
 	DBG("a");
 
-	bool windowedGame=FALSE;
+	bool windowedGame=false;
 	for (int i = 1; i < argc; ++i)
 	{
 		if (!strcmp(argv[i], "window"))
-			windowedGame=TRUE;
+			windowedGame=true;
 	}
 
 	DBG("b");
