@@ -146,13 +146,13 @@ int makecol32(int r, int g, int b)
 int MGLDraw::FormatPixel(int x,int y)
 {
 	byte b = scrn[y*xRes+x];
-	return makecol32(pal[b].r*4, pal[b].g*4, pal[b].b*4);
+	return makecol32(pal[b].r, pal[b].g, pal[b].b);
 }
 
 void MGLDraw::PseudoCopy(int y,int x,byte* data,int len)
 {
 	for(int i = 0; i < len; ++i, ++x)
-		putpixel(buffer, x, y, makecol32(pal[data[i]].r*4, pal[data[i]].g*4, pal[data[i]].b*4));
+		putpixel(buffer, x, y, makecol32(pal[data[i]].r, pal[data[i]].g, pal[data[i]].b));
 }
 
 void MGLDraw::StartFlip(void)
@@ -279,15 +279,15 @@ bool MGLDraw::LoadPalette(const char *name)
 	return true;
 }
 
-void MGLDraw::SetPalette(const palette_t *pal2)
+void MGLDraw::SetPalette(const RGB *pal2)
 {
 	int i;
 
 	for(i=0;i<256;i++)
 	{
-		pal[i].r=pal2[i].red/4;
-		pal[i].g=pal2[i].green/4;
-		pal[i].b=pal2[i].blue/4;
+		pal[i].r=pal2[i].r;
+		pal[i].g=pal2[i].g;
+		pal[i].b=pal2[i].b;
 	}
 }
 
@@ -429,9 +429,9 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 	if(pal && b->format->palette)
 		for(i=0; i<256 && i < b->format->palette->ncolors; i++)
 		{
-			pal[i].r = b->format->palette->colors[i].r/4;
-			pal[i].g = b->format->palette->colors[i].g/4;
-			pal[i].b = b->format->palette->colors[i].b/4;
+			pal[i].r = b->format->palette->colors[i].r;
+			pal[i].g = b->format->palette->colors[i].g;
+			pal[i].b = b->format->palette->colors[i].b;
 		}
 
 	w=b->w;
@@ -454,9 +454,9 @@ void MGLDraw::GammaCorrect(byte gamma)
 {
 	int i;
 	int r, g, b;
-	palette_t temp[256];
+	RGB temp[256];
 
-	memcpy(temp, pal, sizeof (palette_t)*256);
+	memcpy(temp, pal, sizeof (RGB)*256);
 	for (i = 0; i < 256; i++)
 	{
 		r = pal[i].r;
@@ -475,5 +475,5 @@ void MGLDraw::GammaCorrect(byte gamma)
 		pal[i].g = g;
 		pal[i].b = b;
 	}
-	memcpy(pal, temp, sizeof (palette_t)*256);
+	memcpy(pal, temp, sizeof (RGB)*256);
 }

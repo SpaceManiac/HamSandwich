@@ -11,58 +11,6 @@ MGLDraw *_globalMGLDraw;
 int KEY_MAX;
 const Uint8* key = SDL_GetKeyboardState(&KEY_MAX);
 
-/*
-bool CreateMyOwnWindow(HINSTANCE hInsta,char *wndName)
-{
-	WNDCLASS wc;
-	char className[]="supremeWindow";
-
-	hInst=hInsta;
-	// first thing needed is to make a window, so directsound can have it
-	wc.style=CS_HREDRAW|CS_VREDRAW;
-	wc.lpfnWndProc=MyWindowsEventHandler;
-	wc.cbClsExtra=0;
-	wc.cbWndExtra=0;
-	wc.hInstance=hInst;
-	wc.hIcon=LoadIcon(hInst,IDI_APPLICATION);
-	wc.hCursor=LoadCursor(NULL,IDC_ARROW);
-	wc.hbrBackground=NULL;
-	wc.lpszMenuName=NULL;
-	wc.lpszClassName=className;
-	if(!RegisterClass(&wc))
-		return FALSE;
-
-	myHwnd=CreateWindowEx(
-		WS_EX_APPWINDOW,
-		className,
-		wndName,
-		WS_SYSMENU|WS_CAPTION|WS_MINIMIZEBOX,
-		0,
-		0,
-		650,
-		540,
-		NULL,
-		NULL,
-		hInst,
-		NULL);
-
-	if(!myHwnd)
-		return FALSE;
-
-	ShowWindow(myHwnd,SW_SHOWNORMAL);
-	ShowCursor(0);
-	UpdateWindow(myHwnd);
-
-	return TRUE;
-}
-
-void DestroyMyWindow(void)
-{
-	DestroyWindow(myHwnd);
-	UnregisterClass("supremeWindow",hInst);
-}
-*/
-
 MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool windowed)
 {
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
@@ -182,13 +130,13 @@ int makecol32(int r, int g, int b)
 int MGLDraw::FormatPixel(int x,int y)
 {
 	byte b = scrn[y*xRes+x];
-	return makecol32((*thePal)[b].r*4, (*thePal)[b].g*4, (*thePal)[b].b*4);
+	return makecol32((*thePal)[b].r, (*thePal)[b].g, (*thePal)[b].b);
 }
 
 void MGLDraw::PseudoCopy(int y,int x,byte* data,int len)
 {
 	for(int i = 0; i < len; ++i, ++x)
-		putpixel(buffer, x, y, makecol32((*thePal)[data[i]].r*4, (*thePal)[data[i]].g*4, (*thePal)[data[i]].b*4));
+		putpixel(buffer, x, y, makecol32((*thePal)[data[i]].r, (*thePal)[data[i]].g, (*thePal)[data[i]].b));
 }
 
 void MGLDraw::StartFlip(void)
@@ -467,9 +415,9 @@ void MGLDraw::SetPalette(PALETTE pal2)
 
 	for(i=0;i<256;i++)
 	{
-		pal[i].r=pal2[i].r/4;
-		pal[i].g=pal2[i].g/4;
-		pal[i].b=pal2[i].b/4;
+		pal[i].r=pal2[i].r;
+		pal[i].g=pal2[i].g;
+		pal[i].b=pal2[i].b;
 	}
 }
 
@@ -777,9 +725,9 @@ bool MGLDraw::LoadBMP(char *name, PALETTE pal)
 	if(pal && b->format->palette)
 		for(i=0; i<256 && i < b->format->palette->ncolors; i++)
 		{
-			pal[i].r = b->format->palette->colors[i].r/4;
-			pal[i].g = b->format->palette->colors[i].g/4;
-			pal[i].b = b->format->palette->colors[i].b/4;
+			pal[i].r = b->format->palette->colors[i].r;
+			pal[i].g = b->format->palette->colors[i].g;
+			pal[i].b = b->format->palette->colors[i].b;
 		}
 	RealizePalette();
 

@@ -671,12 +671,6 @@ byte SpeedSplash(MGLDraw *mgl,char *fname)
 
 	if (!mgl->LoadBMP(fname, desiredpal))
 		return FALSE;
-	for(i=0;i<256;i++)
-	{
-		desiredpal[i].r*=4; // but why?
-		desiredpal[i].g*=4;
-		desiredpal[i].b*=4;
-	}
 
 	mode=0;
 	clock=0;
@@ -790,12 +784,6 @@ void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound)
 
 	if (!mgl->LoadBMP(fname, desiredpal))
 		return;
-	for(i=0;i<256;i++)
-	{
-		desiredpal[i].r*=4; // but why?
-		desiredpal[i].g*=4;
-		desiredpal[i].b*=4;
-	}
 
 	mode=0;
 	clock=0;

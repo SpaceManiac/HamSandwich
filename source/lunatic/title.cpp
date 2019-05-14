@@ -1224,71 +1224,27 @@ void VictoryText(MGLDraw *mgl)
 	}
 }
 
-byte SpecialLoadBMP(const char *name, MGLDraw *mgl, palette_t *pal)
-{
-	FILE *f;
-	BITMAPFILEHEADER bmpFHead;
-	BITMAPINFOHEADER bmpIHead;
-	RGBQUAD pal2[256];
-
-	int i;
-	byte *scr;
-
-	f = fopen(name, "rb");
-	if (!f)
-		return FALSE;
-
-	fread(&bmpFHead, sizeof (BITMAPFILEHEADER), 1, f);
-	fread(&bmpIHead, sizeof (BITMAPINFOHEADER), 1, f);
-
-	// 8-bit BMPs only
-	if (bmpIHead.biBitCount != 8)
-		return FALSE;
-
-	// Non-RLE BMPs only
-	if (bmpIHead.biCompression != 0)
-	{
-		printf("bitmap %s is compressed (%lu)\n", name, bmpIHead.biCompression);
-		return FALSE;
-	}
-
-	fread(pal2, sizeof (pal2), 1, f);
-	for (i = 0; i < 256; i++)
-	{
-		pal[i].red = pal2[i].rgbRed;
-		pal[i].green = pal2[i].rgbGreen;
-		pal[i].blue = pal2[i].rgbBlue;
-	}
-
-	for (i = 0; i < bmpIHead.biHeight; i++)
-	{
-		scr = mgl->GetScreen() + (bmpIHead.biHeight - 1 - i) * mgl->GetWidth();
-		fread(scr, 1, bmpIHead.biWidth, f);
-	}
-	fclose(f);
-	return TRUE;
-}
-
 byte SpeedSplash(MGLDraw *mgl, const char *fname)
 {
 	int i, j, clock;
-	palette_t desiredpal[256], curpal[256];
+	RGB desiredpal[256], curpal[256];
 	byte mode, done;
 	byte c, oldc;
 
 
 	for (i = 0; i < 256; i++)
 	{
-		curpal[i].red = 0;
-		curpal[i].green = 0;
-		curpal[i].blue = 0;
+		curpal[i].r = 0;
+		curpal[i].g = 0;
+		curpal[i].b = 0;
 	}
 	mgl->SetPalette(curpal);
 
 	mgl->LastKeyPressed();
 	oldc = GetControls() | GetArrows();
 
-	SpecialLoadBMP(fname, mgl, desiredpal);
+	if (!mgl->LoadBMP(fname, desiredpal))
+		return 0;
 
 	mode = 0;
 	clock = 0;
@@ -1318,12 +1274,12 @@ byte SpeedSplash(MGLDraw *mgl, const char *fname)
 				for (j = 0; j < 16; j++)
 					for (i = 0; i < 256; i++)
 					{
-						if (curpal[i].red < desiredpal[i].red)
-							curpal[i].red++;
-						if (curpal[i].green < desiredpal[i].green)
-							curpal[i].green++;
-						if (curpal[i].blue < desiredpal[i].blue)
-							curpal[i].blue++;
+						if (curpal[i].r < desiredpal[i].r)
+							curpal[i].r++;
+						if (curpal[i].g < desiredpal[i].g)
+							curpal[i].g++;
+						if (curpal[i].b < desiredpal[i].b)
+							curpal[i].b++;
 					}
 				mgl->SetPalette(curpal);
 				if (clock > 16)
@@ -1340,16 +1296,16 @@ byte SpeedSplash(MGLDraw *mgl, const char *fname)
 				for (j = 0; j < 16; j++)
 					for (i = 0; i < 256; i++)
 					{
-						if (curpal[i].red > 0)
-							curpal[i].red--;
+						if (curpal[i].r > 0)
+							curpal[i].r--;
 						else
 							clock++;
-						if (curpal[i].green > 0)
-							curpal[i].green--;
+						if (curpal[i].g > 0)
+							curpal[i].g--;
 						else
 							clock++;
-						if (curpal[i].blue > 0)
-							curpal[i].blue--;
+						if (curpal[i].b > 0)
+							curpal[i].b--;
 						else
 							clock++;
 					}
@@ -1388,20 +1344,21 @@ void DemoSplashScreens(MGLDraw *mgl)
 void SplashScreen(MGLDraw *mgl, const char *fname, int delay, byte sound)
 {
 	int i, j, clock;
-	palette_t desiredpal[256], curpal[256];
+	RGB desiredpal[256], curpal[256];
 	byte mode, done;
 
 	for (i = 0; i < 256; i++)
 	{
-		curpal[i].red = 0;
-		curpal[i].green = 0;
-		curpal[i].blue = 0;
+		curpal[i].r = 0;
+		curpal[i].g = 0;
+		curpal[i].b = 0;
 	}
 	mgl->SetPalette(curpal);
 
 	mgl->LastKeyPressed();
 
-	SpecialLoadBMP(fname, mgl, desiredpal);
+	if (!mgl->LoadBMP(fname, desiredpal))
+		return;
 
 	mode = 0;
 	clock = 0;
@@ -1420,12 +1377,12 @@ void SplashScreen(MGLDraw *mgl, const char *fname, int delay, byte sound)
 				for (j = 0; j < 8; j++)
 					for (i = 0; i < 256; i++)
 					{
-						if (curpal[i].red < desiredpal[i].red)
-							curpal[i].red++;
-						if (curpal[i].green < desiredpal[i].green)
-							curpal[i].green++;
-						if (curpal[i].blue < desiredpal[i].blue)
-							curpal[i].blue++;
+						if (curpal[i].r < desiredpal[i].r)
+							curpal[i].r++;
+						if (curpal[i].g < desiredpal[i].g)
+							curpal[i].g++;
+						if (curpal[i].b < desiredpal[i].b)
+							curpal[i].b++;
 					}
 				mgl->SetPalette(curpal);
 				if (clock == 32)
@@ -1451,16 +1408,16 @@ void SplashScreen(MGLDraw *mgl, const char *fname, int delay, byte sound)
 				for (j = 0; j < 8; j++)
 					for (i = 0; i < 256; i++)
 					{
-						if (curpal[i].red > 0)
-							curpal[i].red--;
+						if (curpal[i].r > 0)
+							curpal[i].r--;
 						else
 							clock++;
-						if (curpal[i].green > 0)
-							curpal[i].green--;
+						if (curpal[i].g > 0)
+							curpal[i].g--;
 						else
 							clock++;
-						if (curpal[i].blue > 0)
-							curpal[i].blue--;
+						if (curpal[i].b > 0)
+							curpal[i].b--;
 						else
 							clock++;
 					}

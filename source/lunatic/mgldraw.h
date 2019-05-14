@@ -14,13 +14,6 @@
 // For appdata storage of stuff
 FILE* AppdataOpen(const char* filename, const char* mode);
 
-// Replacement for missing palette_t
-
-struct palette_t
-{
-	byte alpha, red, green, blue;
-};
-
 // Replacement for missing MGL functions
 int MGL_random(int max);
 void MGL_srand(int seed);
@@ -60,7 +53,7 @@ public:
 	void Quit();
 
 	bool LoadPalette(const char *name);
-	void SetPalette(const palette_t *pal2);
+	void SetPalette(const RGB *pal2);
 
 	bool LoadBMP(const char *name);
 	bool LoadBMP(const char *name, PALETTE pal);
