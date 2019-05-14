@@ -35,17 +35,6 @@ function library(name)
 		kind "StaticLib"
 end
 
-function allegro_project(name)
-	base_project(name)
-		includedirs { "build/allegro/include/" }
-		libdirs { "build/allegro/lib/" }
-
-		filter "system:Windows"
-			links { "winmm", "allegro-4.4.2-monolith-mt", "ws2_32", "logg-1.0-mt", "vorbisfile-1.3.2-static-mt", "vorbis-1.3.2-static-mt", "ogg-1.2.1-static-mt" }
-
-		filter {}
-end
-
 function sdl2_project(name)
 	base_project(name)
 		filter "system:Windows"

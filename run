@@ -64,7 +64,6 @@ if [ ! -d "$GAMEDIR" ]; then
 fi
 
 # Run the project
-PATH="$PWD/build/allegro/bin:$PATH"
 EXE="$PWD/build/gcc-$CONFIG/$PROJECT/$PROJECT"
 cd "$GAMEDIR"
 if [ $USE_GDB ]; then

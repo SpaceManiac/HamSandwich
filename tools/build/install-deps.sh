@@ -45,19 +45,3 @@ if [ ! -f "build/innoextract" ]; then
 	7z x -o"build/" -i'!innoextract.exe' "build/innoextract.zip"
 	rm "build/innoextract.zip"
 fi
-
-# Download Allegro binaries
-ALLEGRO_DIR="build/allegro"
-ALLEGRO_VERSION="allegro-4.4.2-mingw-4.5.2"
-ALLEGRO_ZIPNAME="$ALLEGRO_VERSION.7z"
-ALLEGRO_MD5="503fc383bd34fca866372f9fade9713a"
-if [ ! -d "$ALLEGRO_DIR" ]; then
-	echo "==== Downloading Allegro binaries ===="
-	if [ ! -f "build/$ALLEGRO_ZIPNAME" ]; then
-		wget -O "build/$ALLEGRO_ZIPNAME" "http://cdn.allegro.cc/file/library/allegro/4.4.2/$ALLEGRO_ZIPNAME"
-	fi
-	md5sum -c <<<"$ALLEGRO_MD5 *build/$ALLEGRO_ZIPNAME"
-	7z x -o"build/" "build/$ALLEGRO_ZIPNAME"
-	mv "build/$ALLEGRO_VERSION" "$ALLEGRO_DIR"
-	rm "build/$ALLEGRO_ZIPNAME"
-fi
