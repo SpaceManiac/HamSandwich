@@ -80,9 +80,6 @@ void ControlKeyUp(byte k)
 
 void InitControls(void)
 {
-	MMRESULT result;
-	JOYCAPS   joyCaps;
-
 	lastScanCode=0;
 
 	keyState=0;
