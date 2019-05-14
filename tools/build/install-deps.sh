@@ -10,6 +10,8 @@ if [ "${MSYSTEM:-}" ]; then
         exit 1
     fi
     SYS=msys2
+elif command -v apt-get >/dev/null 2>&1; then
+    SYS=ubuntu
 else
 	WARNFILE="build/.install-deps-warning"
 	if [ ! -f "$WARNFILE" ]; then
@@ -59,6 +61,22 @@ deps_msys2() {
         md5sum -c <<<'b801b0740b4ab19d69a739ab4a9180ae *build/innoextract.zip'
         7z x -o"build/" -i'!innoextract.exe' "build/innoextract.zip"
         rm "build/innoextract.zip"
+    fi
+}
+
+deps_ubuntu() {
+    packages 'sudo apt-get install' \
+        p7zip innoextract \
+        g++-multilib \
+        libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev
+
+    # Download Premake5 binary
+    if [ ! -f "build/premake5" ]; then
+        echo "==== Downloading premake5 binary ===="
+        wget -O "build/premake5.tar.gz" "https://github.com/premake/premake-core/releases/download/v5.0.0-alpha14/premake-5.0.0-alpha14-linux.tar.gz"
+        md5sum -c <<<'575decd4e194280cde2d6253b8e87e43 *build/premake5.tar.gz'
+        tar -C "build/" -x -f 'build/premake5.tar.gz'
+        rm "build/premake5.tar.gz"
     fi
 }
 
