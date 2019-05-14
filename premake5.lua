@@ -37,12 +37,12 @@ end
 
 function sdl2_project(name)
 	base_project(name)
-		links { "SDL2main", "SDL2", "SDL2_mixer", "SDL2_image" }
-
 		filter "system:Windows"
 			links { "mingw32", "ws2_32", "winmm" }
 
 		filter {}
+
+		links { "SDL2main", "SDL2", "SDL2_mixer", "SDL2_image" }
 end
 
 function removefiles_in(dir, files)
