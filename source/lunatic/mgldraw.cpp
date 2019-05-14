@@ -8,6 +8,11 @@
 #include <stdio.h>
 #include <random>
 
+#include <sys/stat.h>
+
+#include <SDL2/SDL_syswm.h>
+#include <SDL2/SDL_image.h>
+
 // Appdata shenanigans
 
 FILE* AppdataOpen(const char* file, const char* mode)
@@ -20,25 +25,6 @@ FILE* AppdataOpen(const char* file, const char* mode)
 	mkdir(buffer);
 	sprintf(buffer + strlen(buffer), "\\%s", file);
 	return fopen(buffer, mode);
-}
-
-// Allegro shenanigans
-static char prevKey[KEY_MAX];
-static bool closeButtonPressed;
-
-static void closeButtonCallback()
-{
-	closeButtonPressed = true;
-}
-
-static void switchInCallback()
-{
-	SetGameIdle(0);
-}
-
-static void switchOutCallback()
-{
-	SetGameIdle(1);
 }
 
 // Replacements for missing MGL functions
@@ -59,135 +45,211 @@ long MGL_randoml(long max)
 	return std::uniform_int_distribution<long>(0, max - 1)(mersenne);
 }
 
+MGLDraw* _globalMGLDraw;
+
 void MGL_fatalError(const char* txt)
 {
-	set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-	allegro_message(txt);
-	exit(0);
+	_globalMGLDraw->Quit();
+	printf("%s\n", txt);
+	exit(1);
 }
 
-MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool window)
+MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 {
-	allegro_init();
-	install_keyboard();
-	install_mouse();
-	install_sound(DIGI_AUTODETECT, MIDI_AUTODETECT, "donotuse.cfg");
-	set_color_depth(32);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 
-	if (set_gfx_mode(window ? GFX_AUTODETECT_WINDOWED : GFX_AUTODETECT_FULLSCREEN, xRes, yRes, 0, 0) != 0)
-	{
-		char buf[256];
-		sprintf(buf, "Unable to set graphics mode: %s", allegro_error);
-		MGL_fatalError(buf);
-	}
-	set_window_title(name);
-	set_close_button_callback(&closeButtonCallback);
-	set_display_switch_mode(SWITCH_BACKGROUND);
-	set_display_switch_callback(SWITCH_IN, switchInCallback);
-	set_display_switch_callback(SWITCH_OUT, switchOutCallback);
-
-	// this used to have to be in a very specific place but now it doesn't, hooray!
-	if (JamulSoundInit(512))
+	if(JamulSoundInit(512))
 		SoundSystemExists();
 
-	readyToQuit = false;
+	Uint32 flags = windowed ? 0 : SDL_WINDOW_FULLSCREEN;
+	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, xRes, yRes, flags);
+	if (!window) {
+		printf("SDL_CreateWindow: %s\n", SDL_GetError());
+		MGL_fatalError("Failed to create window");
+		return;
+	}
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+	if (!renderer) {
+		printf("SDL_CreateWindow: %s\n", SDL_GetError());
+		MGL_fatalError("Failed to create renderer");
+		return;
+	}
+
+	SDL_SetWindowTitle(window, name);
+	SDL_ShowCursor(SDL_DISABLE);
+
+	readyToQuit=false;
+	_globalMGLDraw=this;
 
 	// gimme windows colors
-	this->xRes = xRes;
-	this->yRes = yRes;
-	this->pitch = xRes;
-	scrn.reset(new byte[xRes * yRes]);
-	buffer.reset(create_bitmap(xRes, yRes));
+	this->xRes=xRes;
+	this->yRes=yRes;
+	this->bpp=bpp;
+	this->pitch=xRes;
+	this->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, xRes, yRes);
+	this->scrn=new byte[xRes * yRes];
+	this->windowed=windowed;
 
-	mouseDown = 0;
+	mouseDown=0;
+	rMouseDown=0;
+	mouse_x = xRes/2;
+	mouse_y = yRes/2;
+	mouse_b = 0;
+	mouse_z = 0;
+
+	lastRawCode=0;
+	SetLastKey(0);
+	MGL_srand(timeGetTime());
+	tapTrack=mouse_b;
 }
 
 MGLDraw::~MGLDraw()
 {
 	JamulSoundExit();
+	delete[] scrn;
 }
 
-bool MGLDraw::Process()
+void MGLDraw::GetMouse(int *x,int *y)
 {
-	blit(buffer.get(), screen, 0, 0, 0, 0, xRes, yRes);
+	*x=mouse_x;
+	*y=mouse_y;
+}
 
-	while (keypressed())
-	{
-		int k = readkey();
-		SetLastKey((char) (k & 0xff));
-	}
+void MGLDraw::TeleportMouse(int x,int y)
+{
+	SDL_WarpMouseInWindow(window, x, y);
+}
 
-	for (int i = 0; i < KEY_MAX; ++i)
-	{
-		if (key[i] && !prevKey[i])
-		{
-			ControlKeyDown(i);
-		}
-		else if (!key[i] && prevKey[i])
-		{
-			ControlKeyUp(i);
-		}
-		prevKey[i] = key[i];
-	}
-
-	SetMouse(mouse_x, mouse_y);
-	SetMouseDown(mouse_b & 3);
-
-	if (closeButtonPressed)
-	{
-		readyToQuit = true;
-	}
-
+bool MGLDraw::Process(void)
+{
+	//UpdateMusic();
 	return (!readyToQuit);
 }
 
-HWND MGLDraw::GetHWnd()
+#ifdef WIN32
+HWND MGLDraw::GetHWnd(void)
 {
-	return win_get_window();
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	SDL_GetWindowWMInfo(window, &info);
+	return info.info.win.window;
+}
+#endif
+
+int makecol32(int r, int g, int b)
+{
+	return (r << 24) | (g << 16) | (b << 8);
 }
 
-void MGLDraw::Flip()
-{
-	if (GetGameIdle())
-		GameIdle();
+#define putpixel(buffer, x, y, value) (buffer)[(y)*pitch + (x)] = (value)
 
-	// This is nice and fast, thankfully
-	for (int i = 0; i < xRes * yRes; ++i)
-	{
-		palette_t c = pal[scrn[i]];
-		putpixel(buffer.get(), i % xRes, i / xRes, makecol(c.red, c.green, c.blue));
+int MGLDraw::FormatPixel(int x,int y)
+{
+	byte b = scrn[y*xRes+x];
+	return makecol32(pal[b].r*4, pal[b].g*4, pal[b].b*4);
+}
+
+void MGLDraw::PseudoCopy(int y,int x,byte* data,int len)
+{
+	for(int i = 0; i < len; ++i, ++x)
+		putpixel(buffer, x, y, makecol32(pal[data[i]].r*4, pal[data[i]].g*4, pal[data[i]].b*4));
+}
+
+void MGLDraw::StartFlip(void)
+{
+	void* p;
+	SDL_LockTexture(texture, NULL, &p, &pitch);
+	buffer = (int*) p;
+	pitch /= sizeof(int);
+}
+
+void MGLDraw::FinishFlip(void)
+{
+	SDL_UnlockTexture(texture);
+	SDL_RenderCopy(renderer, texture, NULL, NULL);
+	SDL_RenderPresent(renderer);
+	//UpdateMusic();
+	buffer = nullptr;
+
+	SDL_Event e;
+	while(SDL_PollEvent(&e)) {
+		if (e.type == SDL_KEYDOWN) {
+			ControlKeyDown(e.key.keysym.scancode);
+			lastRawCode = e.key.keysym.scancode;
+			if (!(e.key.keysym.sym & ~0xff))
+			{
+				lastKeyPressed = e.key.keysym.sym;
+				if (e.key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT))
+				{
+					lastKeyPressed = toupper(lastKeyPressed);
+				}
+			}
+		} else if (e.type == SDL_KEYUP) {
+			ControlKeyUp(e.key.keysym.scancode);
+		} else if (e.type == SDL_MOUSEMOTION) {
+			mouse_x = e.motion.x;
+			mouse_y = e.motion.y;
+		} else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
+			int flag = 0;
+			if (e.button.button == 1)
+				flag = 1;
+			else if (e.button.button == 3)
+				flag = 2;
+			if (e.button.state == SDL_PRESSED)
+				mouse_b |= flag;
+			else
+				mouse_b &= ~flag;
+		} else if (e.type == SDL_QUIT) {
+			readyToQuit = 1;
+		} else if (e.type == SDL_WINDOWEVENT) {
+			if (e.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
+				SetGameIdle(true);
+			} else if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
+				SetGameIdle(false);
+			}
+		}
 	}
-	Process();
 }
 
-void MGLDraw::ClearScreen()
+void MGLDraw::Flip(void)
 {
-	memset(scrn.get(), 0, xRes * yRes);
+	int i;
+
+	StartFlip();
+	// blit to the screen
+	for(i=0;i<yRes;i++)
+		PseudoCopy(i,0,&scrn[i*xRes],xRes);
+	FinishFlip();
 }
 
-byte *MGLDraw::GetScreen()
+void MGLDraw::ClearScreen(void)
 {
-	return scrn.get();
+	memset(&scrn[0],0,xRes*yRes);
 }
 
-int MGLDraw::GetWidth()
+byte *MGLDraw::GetScreen(void)
+{
+	return &scrn[0];
+}
+
+int MGLDraw::GetWidth(void)
 {
 	return pitch;
 }
 
-int MGLDraw::GetHeight()
+int MGLDraw::GetHeight(void)
 {
 	return yRes;
 }
 
-void MGLDraw::Quit()
+void MGLDraw::Quit(void)
 {
-	readyToQuit = true;
+	readyToQuit=true;
 }
 
 struct palfile_t
 {
-	char r, g, b;
+	char r,g,b;
 };
 
 bool MGLDraw::LoadPalette(const char *name)
@@ -196,22 +258,21 @@ bool MGLDraw::LoadPalette(const char *name)
 	palfile_t p[256];
 	int i;
 
-	f = fopen(name, "rb");
-	if (!f)
+	f=fopen(name,"rb");
+	if(!f)
 		return false;
 
-	if (fread(p, sizeof (palfile_t), 256, f) != 256)
+	if(fread(p,sizeof(palfile_t),256,f)!=256)
 	{
 		fclose(f);
 		return false;
 	}
 
-	for (i = 0; i < 256; i++)
+	for(i=0;i<256;i++)
 	{
-		pal[i].red = p[i].r;
-		pal[i].green = p[i].g;
-		pal[i].blue = p[i].b;
-		pal[i].alpha = 0;
+		pal[i].r=p[i].r;
+		pal[i].g=p[i].g;
+		pal[i].b=p[i].b;
 	}
 
 	fclose(f);
@@ -220,171 +281,172 @@ bool MGLDraw::LoadPalette(const char *name)
 
 void MGLDraw::SetPalette(const palette_t *pal2)
 {
-	memcpy(pal, pal2, sizeof (palette_t)*256);
+	int i;
+
+	for(i=0;i<256;i++)
+	{
+		pal[i].r=pal2[i].red/4;
+		pal[i].g=pal2[i].green/4;
+		pal[i].b=pal2[i].blue/4;
+	}
 }
 
 // 8-bit graphics only
-
-void MGLDraw::Box(int x, int y, int x2, int y2, byte c)
+void MGLDraw::Box(int x,int y,int x2,int y2,byte c)
 {
 	int i;
+	byte noleft=0,noright=0;
+	byte notop=0,nobottom=0;
 
-	if (x < 0)
-		x = 0;
-	if (x >= xRes)
-		x = xRes - 1;
-	if (y < 0)
-		y = 0;
-	if (y >= yRes)
-		y = yRes - 1;
-	if (x2 < 0)
-		return;
-	if (x2 >= xRes)
-		x2 = xRes - 1;
-	if (y2 < 0)
-		return;
-	if (y2 >= yRes)
-		y2 = yRes - 1;
-	if (x > x2)
+	if(x>x2)
 	{
-		i = x;
-		x = x2;
-		x2 = i;
+		i=x;
+		x=x2;
+		x2=i;
 	}
-	if (y > y2)
+	if(y>y2)
 	{
-		i = y;
-		y = y2;
-		y2 = i;
+		i=y;
+		y=y2;
+		y2=i;
 	}
-	memset(&scrn[x + y * pitch], c, x2 - x + 1);
-	memset(&scrn[x + y2 * pitch], c, x2 - x + 1);
-	for (i = y; i <= y2; i++)
+	if(x<0)
 	{
-		scrn[x + i * pitch] = c;
-		scrn[x2 + i * pitch] = c;
+		noleft=1;
+		x=0;
+	}
+	if(x>=xRes)
+		return;
+
+	if(y<0)
+	{
+		notop=1;
+		y=0;
+	}
+	if(y>=yRes)
+		return;
+	if(x2<0)
+		return;
+	if(x2>=xRes)
+	{
+		noright=1;
+		x2=xRes-1;
+	}
+	if(y2<0)
+		return;
+	if(y2>=yRes)
+	{
+		nobottom=1;
+		y2=yRes-1;
+	}
+
+	if(!notop)
+		memset(&scrn[x+y*pitch],c,x2-x+1);
+	if(!nobottom)
+		memset(&scrn[x+y2*pitch],c,x2-x+1);
+	for(i=y;i<=y2;i++)
+	{
+		if(!noleft)
+			scrn[x+i*pitch]=c;
+		if(!noright)
+			scrn[x2+i*pitch]=c;
 	}
 }
 
-void MGLDraw::FillBox(int x, int y, int x2, int y2, byte c)
+void MGLDraw::FillBox(int x,int y,int x2,int y2,byte c)
 {
 	int i;
 
-	if (y >= yRes)
+	if(y>=yRes)
 		return;
 
-	if (x < 0)
-		x = 0;
-	if (x >= xRes)
-		x = xRes - 1;
-	if (y < 0)
-		y = 0;
-	if (y >= yRes)
-		y = yRes - 1;
-	if (x2 < 0)
+	if(x<0)
+		x=0;
+	if(x>=xRes)
 		return;
-	if (x2 >= xRes)
-		x2 = xRes - 1;
-	if (y2 < 0)
-		return;
-	if (y2 >= yRes)
-		y2 = yRes - 1;
 
-	for (i = y; i <= y2; i++)
+	if(y<0)
+		y=0;
+	if(y>=yRes)
+		y=yRes-1;
+	if(x2<0)
+		return;
+	if(x2>=xRes)
+		x2=xRes-1;
+	if(y2<0)
+		return;
+	if(y2>=yRes)
+		y2=yRes-1;
+
+	for(i=y;i<=y2;i++)
 	{
-		memset(&scrn[x + i * pitch], c, x2 - x + 1);
+		memset(&scrn[x+i*pitch],c,x2-x+1);
 	}
 }
 
 void MGLDraw::SetLastKey(char c)
 {
-	lastKeyPressed = c;
+	lastKeyPressed=c;
 }
 
-char MGLDraw::LastKeyPressed()
+char MGLDraw::LastKeyPressed(void)
 {
-	char c = lastKeyPressed;
+	int i = lastKeyPressed;
 	lastKeyPressed = 0;
-	return c;
+	return i;
 }
 
 void MGLDraw::SetMouseDown(byte w)
 {
-	mouseDown = w;
+	mouseDown=w;
 }
 
-byte MGLDraw::MouseDown()
+byte MGLDraw::MouseDown(void)
 {
-	return mouseDown;
+	return ((mouse_b&1)!=0);
 }
 
-void MGLDraw::SetMouse(int x, int y)
-{
-	mousex = x;
-	mousey = y;
-}
-
-void MGLDraw::TeleportMouse(int x, int y)
-{
-	POINT pt = {x, y};
-	ClientToScreen(GetHWnd(), &pt);
-	SetCursorPos(pt.x, pt.y);
-	SetMouse(x, y);
-}
-
-void MGLDraw::GetMouse(int *x, int *y)
-{
-	*x = mousex;
-	*y = mousey;
-}
-
-char MGLDraw::LastKeyPeek()
+char MGLDraw::LastKeyPeek(void)
 {
 	return lastKeyPressed;
 }
 
 bool MGLDraw::LoadBMP(const char *name)
 {
-	FILE *f;
-	BITMAPFILEHEADER bmpFHead;
-	BITMAPINFOHEADER bmpIHead;
-	RGBQUAD pal2[256];
+	return LoadBMP(name, pal);
+}
 
-	int i;
-	byte *scr;
+bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
+{
+	int i,w;
 
-	f = fopen(name, "rb");
-	if (!f)
-		return FALSE;
-
-	fread(&bmpFHead, sizeof (BITMAPFILEHEADER), 1, f);
-	fread(&bmpIHead, sizeof (BITMAPINFOHEADER), 1, f);
-
-	// 8-bit BMPs only
-	if (bmpIHead.biBitCount != 8)
-		return FALSE;
-
-	// Non-RLE BMPs only
-	if (bmpIHead.biCompression != 0)
-	{
-		printf("bitmap %s is compressed (%lu)\n", name, bmpIHead.biCompression);
+	SDL_Surface* b = IMG_Load(name);
+	if (!b) {
+		printf("%s: %s\n", name, SDL_GetError());
 		return FALSE;
 	}
 
-	fread(pal2, sizeof (pal2), 1, f);
-	for (i = 0; i < 256; i++)
+	if(pal && b->format->palette)
+		for(i=0; i<256 && i < b->format->palette->ncolors; i++)
+		{
+			pal[i].r = b->format->palette->colors[i].r/4;
+			pal[i].g = b->format->palette->colors[i].g/4;
+			pal[i].b = b->format->palette->colors[i].b/4;
+		}
+
+	w=b->w;
+	if(w>xRes)
+		w=xRes;
+
+	SDL_LockSurface(b);
+	for(i=0;i<b->h;i++)
 	{
-		pal[i].red = pal2[i].rgbRed;
-		pal[i].green = pal2[i].rgbGreen;
-		pal[i].blue = pal2[i].rgbBlue;
+		if(i<yRes)
+			memcpy(&scrn[i*pitch], &((byte*) b->pixels)[b->pitch * i], w);
 	}
 
-	for (i = 0; i < bmpIHead.biHeight; i++)
-	{
-		scr = &scrn[(bmpIHead.biHeight - 1 - i) * pitch];
-		fread(scr, 1, bmpIHead.biWidth, f);
-	}
-	fclose(f);
+	SDL_UnlockSurface(b);
+	SDL_FreeSurface(b);
 	return TRUE;
 }
 
@@ -397,9 +459,9 @@ void MGLDraw::GammaCorrect(byte gamma)
 	memcpy(temp, pal, sizeof (palette_t)*256);
 	for (i = 0; i < 256; i++)
 	{
-		r = pal[i].red;
-		g = pal[i].green;
-		b = pal[i].blue;
+		r = pal[i].r;
+		g = pal[i].g;
+		b = pal[i].b;
 		r = (r * (gamma + 4)) / 4;
 		g = (g * (gamma + 4)) / 4;
 		b = (b * (gamma + 4)) / 4;
@@ -409,9 +471,9 @@ void MGLDraw::GammaCorrect(byte gamma)
 			g = 255;
 		if (b > 255)
 			b = 255;
-		pal[i].red = r;
-		pal[i].green = g;
-		pal[i].blue = b;
+		pal[i].r = r;
+		pal[i].g = g;
+		pal[i].b = b;
 	}
 	memcpy(pal, temp, sizeof (palette_t)*256);
 }

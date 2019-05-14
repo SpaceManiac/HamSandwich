@@ -1,7 +1,6 @@
 #ifndef JAMULSOUND_H
 #define JAMULSOUND_H
 
-#include "winpch.h"
 #include "jamultypes.h"
 
 // external fun sound playing flags for everyone to use

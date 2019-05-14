@@ -1,402 +1,148 @@
 #include "jamulfmv.h"
-#include "game.h" // For HandleCDMusic()
+#include "clock.h"
+#include "display.h"
 
-// different kinds of flic chunks
-enum {
-	FLI_COLOR = 11,
-	FLI_LC = 12,
-	FLI_BLACK = 13,
-	FLI_BRUN = 15,
-	FLI_COPY = 16,
-	FLI_DELTA = 7,
-	FLI_256_COLOR = 4,
-	FLI_MINI = 18
-};
+void FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl) {}
 
-struct fliheader
+#if 0  // TODO
+
+static PALETTE fliTempPal;
+
+byte ShouldExitFlic(MGLDraw *mgl)
 {
-	long size;
-	word magic;
-	word frames;
-	word width, height;
-	word flags;
-	word speed;
-	long next, frit;
-	byte expand[104];
-};
+	if(mgl->MouseTap())
+		return 1;
+	if(mgl->LastKeyPressed())
+		return 1;
+	if(GetTaps())
+		return 1;
 
-struct frmheader
+	return 0;
+}
+
+void UpdateFlicPal(int min, int max)
 {
-	long size;
-	word magic; /* always $F1FA */
-	word chunks;
-	byte expand[8];
-};
+	for (int i = min; i <= max; ++i) {
+		fliTempPal[i].r = fli_palette[i].r*4;
+		fliTempPal[i].g = fli_palette[i].g*4;
+		fliTempPal[i].b = fli_palette[i].b*4;
+	}
+}
 
-// because of padding, the following 6-byte header is 8 bytes.
-// therefore use this define instead of sizeof() to read from a FLIc
-const int sizeofchunkheader = 6;
-
-struct chunkheader
+void FLIToScreen(MGLDraw *mgl)
 {
-	long size;
-	word kind;
-};
-
-FILE * FLI_file;
-palette_t FLI_pal[256];
-word fliWidth, fliHeight;
-
-// ------------------------------------------------------------------------------
-
-void PlotSolidRun(int x, int y, int len, byte *scrn, byte c)
-{
-	int i;
-	int pos;
-
-	x *= 2;
-	y *= 2;
-	pos = x + y * 640;
-	for (i = 0; i < len; i++)
+	if(fli_pal_dirty_from<=fli_pal_dirty_to)
 	{
-		scrn[pos + 640] = c;
-		scrn[pos + 641] = c;
-		scrn[pos++] = c;
-		scrn[pos++] = c;
+		// palette has changed
+		UpdateFlicPal(fli_pal_dirty_from, fli_pal_dirty_to);
+		mgl->SetPalette(fliTempPal);
 	}
-}
 
-void PlotSolidWordRun(int x, int y, int len, byte *scrn, word c)
-{
-	int i;
-	int pos;
-	byte c2;
-
-	x *= 2;
-	y *= 2;
-	pos = x + y * 640;
-	c2 = (byte) (c >> 8);
-	for (i = 0; i < len; i++)
+	if(fli_bitmap->w==640 && fli_bitmap->h==480)	// fits the screen size, no need to stretch
 	{
-		scrn[pos + 640] = (byte) c;
-		scrn[pos + 641] = (byte) c;
-		scrn[pos++] = (byte) c;
-		scrn[pos++] = (byte) c;
-		scrn[pos + 640] = c2;
-		scrn[pos + 641] = c2;
-		scrn[pos++] = c2;
-		scrn[pos++] = c2;
+		for (int i = 0; i < 480; ++i)
+			memcpy(mgl->GetScreen() + mgl->GetWidth()*i, fli_bitmap->line[i], 640);
 	}
-}
-
-void PlotDataRun(int x, int y, int len, byte *scrn, byte *data)
-{
-	int i;
-	int pos;
-
-	x *= 2;
-	y *= 2;
-	pos = x + y * 640;
-	for (i = 0; i < len; i++)
-	{
-		scrn[pos + 640] = *data;
-		scrn[pos + 641] = *data;
-		scrn[pos++] = *data;
-		scrn[pos++] = *data;
-		data++;
-	}
-}
-
-void FLI_docolor2(byte *p, MGLDraw *mgl)
-{
-	word numpak;
-	word pos = 0;
-	byte palpos = 0;
-	byte numcol;
-
-	memcpy(&numpak, p, 2);
-	pos = 2;
-	while (numpak > 0)
-	{
-		numpak--;
-		palpos += p[pos++];
-		numcol = p[pos++];
-		do
-		{
-			memcpy(&FLI_pal[palpos], &p[pos], 4);
-			FLI_pal[palpos].blue = FLI_pal[palpos].green;
-			FLI_pal[palpos].green = FLI_pal[palpos].red;
-			FLI_pal[palpos].red = FLI_pal[palpos].alpha;
-			palpos++;
-			pos += 3;
-			--numcol;
-		}
-		while (numcol > 0);
-	}
-	// apply the palette here
-	mgl->SetPalette(FLI_pal);
-}
-
-void FLI_docolor(byte *p, MGLDraw *mgl)
-{
-	// docolor2 and docolor are supposed to be different, but they aren't
-	FLI_docolor2(p, mgl);
-}
-
-void FLI_doDelta(byte *scrn, int scrWidth, byte *p)
-{
-	short numLines, numPaks;
-	int pos, x, y;
-	char sizeCount;
-	word v;
-
-	/*
-	  Bit 15   Bit 14   Description
-		0        0      Packet count for the line, it can be zero
-		0        1      Undefined
-		1        0      Store the opcode's low byte in the last pixel of the line
-		1        1      The absolute value of the opcode is the line skip count
-	 */
-	memcpy(&numLines, p, 2);
-	pos = 2;
-	y = 0;
-	while (numLines > 0)
-	{
-		x = 0;
-		numLines--;
-		numPaks = (word) 65535;
-		while (numPaks & 0xC000) // while it doesn't have 00 as the top two bits
-		{
-			memcpy(&numPaks, &p[pos], 2);
-			pos += 2;
-			switch (numPaks & 0xC000) {
-				case 0xC000: // both bits set, this is a skip
-					y -= numPaks;
-					break;
-				case 0x4000: // bottom bit, undefined
-					numPaks = numPaks;
-					break;
-				case 0x8000: // top bit, supposedly last pixel thing
-					numPaks = numPaks;
-					break;
-			}
-		}
-
-		while (numPaks > 0)
-		{
-			x += p[pos++];
-			sizeCount = (char) p[pos++];
-			if (sizeCount > 0) // copy sizeCount words
-			{
-				PlotDataRun(x, y, sizeCount * 2, scrn, &p[pos]);
-				pos += sizeCount * 2;
-				x += sizeCount * 2;
-			}
-			else if (sizeCount < 0) // copy the word value -sizeCount times
-			{
-				memcpy(&v, &p[pos], 2);
-				PlotSolidWordRun(x, y, -sizeCount, scrn, v);
-				x -= 2 * sizeCount;
-				pos += 2;
-			}
-			numPaks--;
-		}
-		y++;
-	}
-}
-
-void FLI_doLC(byte *scrn, int scrWidth, byte *p)
-{
-	word numln;
-	word x, y;
-	byte packets, skip;
-	char size;
-	word pos = 0;
-
-	memcpy(&y, &p[pos++], 2);
-	pos++;
-	memcpy(&numln, &p[pos++], 2);
-	pos++;
-	while (numln > 0)
-	{
-		numln--;
-		packets = p[pos++];
-		x = 0;
-		while (packets > 0)
-		{
-			packets--;
-			skip = p[pos++];
-			size = p[pos++];
-			x += skip;
-			if (size < 0)
-			{
-				PlotSolidRun(x, y, -size, scrn, p[pos]);
-				pos++;
-				x -= size;
-			}
-			if (size > 0)
-			{
-				PlotDataRun(x, y, size, scrn, &p[pos]);
-				pos += size;
-				x += size;
-			}
-		}
-		y++;
-	}
-}
-
-void FLI_doBRUN(byte *scrn, int scrWidth, byte *p)
-{
-	byte numpak;
-	word x, y = 0;
-	char size;
-	word pos = 0;
-
-	do
-	{
-		x = 0;
-		numpak = p[pos++];
-		while (numpak > 0)
-		{
-			numpak--;
-			size = p[pos++];
-			if (size > 0)
-			{
-				PlotSolidRun(x, y, size, scrn, p[pos]);
-				pos++;
-				x += size;
-			}
-			if (size < 0)
-			{
-				PlotDataRun(x, y, -size, scrn, &p[pos]);
-				pos -= size;
-				x -= size;
-			}
-		}
-		++y;
-	}
-	while (y < fliHeight);
-}
-
-void FLI_nextchunk(MGLDraw *mgl, int scrWidth)
-{
-	int i;
-	chunkheader chead;
-	byte *p;
-
-	fread(&chead, 1, sizeofchunkheader, FLI_file);
-	p = (byte *) malloc(chead.size - sizeofchunkheader);
-	fread(p, 1, chead.size - sizeofchunkheader, FLI_file);
-	switch (chead.kind) {
-		case FLI_COPY: for (i = 0; i < fliHeight; i++)
-				memcpy(&mgl->GetScreen()[i * scrWidth], &p[i * fliWidth], fliWidth);
-			break;
-		case FLI_BLACK: mgl->ClearScreen();
-			break;
-		case FLI_COLOR: FLI_docolor(p, mgl);
-			break;
-		case FLI_LC: FLI_doLC(mgl->GetScreen(), scrWidth, p);
-			break;
-		case FLI_BRUN: FLI_doBRUN(mgl->GetScreen(), scrWidth, p);
-			break;
-		case FLI_MINI: break; // ignore it
-		case FLI_DELTA: FLI_doDelta(mgl->GetScreen(), scrWidth, p);
-			break;
-		case FLI_256_COLOR: FLI_docolor2(p, mgl);
-			break;
-	}
-	free(p);
-}
-
-void FLI_nextfr(MGLDraw *mgl, int scrWidth)
-{
-	frmheader fhead;
-	int i;
-
-	fread(&fhead, 1, sizeof (frmheader), FLI_file);
-
-	// check to see if this is a FLC file's special frame... if it is, skip it
-	if (fhead.magic == 0x00A1)
-	{
-		fseek(FLI_file, fhead.size, SEEK_CUR);
-		return;
-	}
-
-	for (i = 0; i < fhead.chunks; i++)
-		FLI_nextchunk(mgl, scrWidth);
-}
-
-void FLI_skipfr(void)
-{
-	frmheader fhead;
-
-	fread(&fhead, 1, sizeof (frmheader), FLI_file);
-
-	fseek(FLI_file, fhead.size - sizeof (frmheader), SEEK_CUR);
-}
-
-void FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl)
-{
-	int frmon = 0;
-	long frsize;
-	fliheader FLI_hdr;
-	int scrWidth;
-	char k;
-
-	FLI_file = fopen(name, "rb");
-	if (!FLI_file)
-		return;
-
-	fread(&FLI_hdr, 1, sizeof (fliheader), FLI_file);
-	fread(&frsize, 1, 4, FLI_file);
-	fseek(FLI_file, -4, SEEK_CUR);
-	fliWidth = FLI_hdr.width;
-	fliHeight = FLI_hdr.height;
-
-	mgl->LastKeyPressed(); // clear key buffer
-
-	// if this is a FLC, skip the first frame
-	if ((name[strlen(name) - 1] == 'c') ||
-			(name[strlen(name) - 1] == 'C'))
-	{
-		FLI_skipfr();
-		frmon++;
-		FLI_hdr.frames++; // a confusion issue
-	}
-	do
-	{
-		frmon++;
-		scrWidth = mgl->GetWidth();
-		FLI_nextfr(mgl, scrWidth);
-		HandleCDMusic();
-		mgl->Flip();
-		if (wait > 0)
-			Sleep((dword) wait);
-		if ((loop) && (frmon == FLI_hdr.frames + 1))
-		{
-			frmon = 1;
-			fseek(FLI_file, 128 + frsize, SEEK_SET);
-		}
-		if ((!loop) && (frmon == FLI_hdr.frames))
-			frmon = FLI_hdr.frames + 1;
-		k = mgl->LastKeyPressed();
-		// key #27 is escape
-	}
-	while ((frmon < FLI_hdr.frames + 1) && (mgl->Process()) && (k != 27));
-	fclose(FLI_file);
-}
-
-word FLI_numFrames(char *name)
-{
-	fliheader FLI_hdr;
-
-	FLI_file = fopen(name, "rb");
-	fread(&FLI_hdr, 1, sizeof (fliheader), FLI_file);
-	fclose(FLI_file);
-	if ((name[strlen(name) - 1] == 'c') ||
-			(name[strlen(name) - 1] == 'C'))
-		return FLI_hdr.frames;
 	else
-		return FLI_hdr.frames;
+	{
+		byte* s = mgl->GetScreen();
+		for (int x = 0; x < 640; ++x)
+			for (int y = 0; y < 480; ++y)
+				s[y*640+x] = getpixel(fli_bitmap, x*fli_bitmap->w/640, y*fli_bitmap->h/640);
+	}
+	mgl->Flip();
+
+	reset_fli_variables();
 }
 
+void FLI_play(char *name,byte loop,word wait,MGLDraw *mgl)
+{
+	int err;
+	dword start,now;
+
+	start=timeGetTime();
+	ShouldExitFlic(mgl);	// check the keys, to clear previous presses
+	UpdateFlicPal(0, 255);
+
+	err=open_fli(name);
+	if(err!=FLI_OK)
+		return;	// can't play it, load it, something
+
+	mgl->ClearScreen();
+	mgl->Flip();
+
+	while(1)
+	{
+		now=timeGetTime();
+		while(fli_timer==0)
+		{
+			FLIToScreen(mgl);
+			if(ShouldExitFlic(mgl) && (now-start)>1000)	// can only quit out after 1 second has passed
+				break;
+		}
+		err=next_fli_frame(0);
+
+		if(err==FLI_EOF)
+			break;	// done
+	}
+
+	close_fli();
+
+	mgl->ClearScreen();
+	mgl->Flip();
+	mgl->RealizePalette();
+}
+
+/*
+int open_fli(const char *filename);
+int open_memory_fli(const void *fli_data);
+Open FLI files ready for playing, reading the data from disk or memory respectively.
+Return FLI_OK on success. Information about the current FLI is held in global variables,
+so you can only have one animation open at a time.
+
+void close_fli();
+Closes an FLI file when you have finished reading from it.
+
+int next_fli_frame(int loop);
+Reads the next frame of the current animation file.
+If loop is set the player will cycle when it reaches the end of the file, otherwise it will
+ return FLI_EOF. Returns FLI_OK on success, FLI_ERROR or FLI_NOT_OPEN on error, and FLI_EOF on
+ reaching the end of the file. The frame is read into the global variables fli_bitmap and fli_palette.
+
+extern BITMAP *fli_bitmap;
+Contains the current frame of the FLI/FLC animation.
+
+extern PALETTE fli_palette;
+Contains the current FLI palette.
+
+extern int fli_bmp_dirty_from;
+extern int fli_bmp_dirty_to;
+These variables are set by next_fli_frame() to indicate which part of the
+fli_bitmap has changed since the last call to reset_fli_variables(). If fli_bmp_dirty_from
+ is greater than fli_bmp_dirty_to, the bitmap has not changed, otherwise lines fli_bmp_dirty_from
+ to fli_bmp_dirty_to (inclusive) have altered. You can use these when copying the fli_bitmap onto
+ the screen, to avoid moving data unnecessarily.
+
+extern int fli_pal_dirty_from;
+extern int fli_pal_dirty_to;
+These variables are set by next_fli_frame() to indicate which part of the fli_palette
+has changed since the last call to reset_fli_variables(). If fli_pal_dirty_from is greater than
+fli_pal_dirty_to, the palette has not changed, otherwise colors fli_pal_dirty_from to
+fli_pal_dirty_to (inclusive) have altered. You can use these when updating the hardware palette,
+to avoid unnecessary calls to set_palette().
+
+void reset_fli_variables();
+Once you have done whatever you are going to do with the fli_bitmap and fli_palette, call this function
+ to reset the fli_bmp_dirty_* and fli_pal_dirty_* variables.
+
+extern int fli_frame;
+Global variable containing the current frame number in the FLI file. This is useful for synchronising other events with the animation, for instance you could check it in a play_fli() callback function and use it to trigger a sample at a particular point.
+
+extern volatile int fli_timer;
+Global variable for timing FLI playback. When you open an FLI file, a timer interrupt is installed
+which increments this variable every time a new frame should be displayed. Calling next_fli_frame()
+decrements it, so you can test it and know that it is time to display a new frame if it is greater than zero.
+
+*/
+
+#endif

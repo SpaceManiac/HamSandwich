@@ -78,7 +78,7 @@ end
 
 library "common"
 
-allegro_project "lunatic"
+sdl2_project "lunatic"
 	icon_file "lunatic"
 	depends "common"
 	defines { "EXPANDO" }

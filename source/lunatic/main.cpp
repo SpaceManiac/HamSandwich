@@ -19,6 +19,7 @@
 #include "sound.h"
 #include "monster.h"
 #include "title.h"
+#include "options.h"
 
 bool windowedGame = FALSE;
 MGLDraw *mainmgl;
@@ -39,6 +40,7 @@ void parseCmdLine(char *cmdLine)
 int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int nCmdShow)
 {
 	parseCmdLine(cmdLine);
+	LoadOptions();
 	mainmgl = new MGLDraw("Dr. Lunatic", 640, 480, windowedGame);
 	if (!mainmgl)
 		return 0;

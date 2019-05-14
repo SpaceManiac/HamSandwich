@@ -1,9 +1,11 @@
 #ifndef MGLDRAW_H
 #define MGLDRAW_H
 
-#include "allegro.h"
-#include <winalleg.h>
-#include "winpch.h"
+#include <SDL2/SDL.h>
+#ifdef WIN32
+#include <windows.h>
+#endif
+#include "jamultypes.h"
 #include "jamulsound.h"
 #include "control.h"
 #include <stdio.h>
@@ -25,6 +27,20 @@ void MGL_srand(int seed);
 long MGL_randoml(long max);
 void MGL_fatalError(const char* txt);
 
+// -- SDL adapters
+struct RGB
+{
+	unsigned char r, g, b, a;
+};
+
+#define PAL_SIZE	256
+
+typedef RGB PALETTE[PAL_SIZE];
+
+extern int KEY_MAX;
+extern const Uint8* key;
+// -- End SDL adapters
+
 class MGLDraw
 {
 public:
@@ -38,6 +54,8 @@ public:
 	int GetWidth();
 	int GetHeight();
 	void ClearScreen();
+	void StartFlip(void);
+	void FinishFlip(void);
 	void Flip();
 	void Quit();
 
@@ -45,6 +63,7 @@ public:
 	void SetPalette(const palette_t *pal2);
 
 	bool LoadBMP(const char *name);
+	bool LoadBMP(const char *name, PALETTE pal);
 
 	char LastKeyPressed();
 	char LastKeyPeek();
@@ -63,21 +82,32 @@ public:
 	void TeleportMouse(int x, int y);
 	void GetMouse(int *x, int *y);
 
-protected:
-	struct bitmap_deleter {
-		void operator()(BITMAP* buffer) {
-			destroy_bitmap(buffer);
-		}
-	};
+	int FormatPixel(int x,int y);
+	void PseudoCopy(int x,int y,byte* data,int len);
 
-	int xRes, yRes, pitch;
-	int mousex, mousey;
-	std::unique_ptr<byte[]> scrn;
-	std::unique_ptr<BITMAP, bitmap_deleter> buffer;
-	palette_t pal[256];
+	int xRes,yRes,bpp,pitch;
+	byte windowed;
 	bool readyToQuit;
+	byte tapTrack;
+
+	int mouse_x, mouse_y, mouse_z, mouse_b;
+
+protected:
+
+	byte* scrn;
+	PALETTE pal;
+	dword elapsedTime;
+	dword now;
+	int numFrames;
 	char lastKeyPressed;
-	byte mouseDown;
+	int lastRawCode;
+	byte mouseDown,rMouseDown;
+
+	SDL_Window *window;
+	SDL_Renderer *renderer;
+	SDL_Texture *texture;
+
+	int *buffer;
 };
 
 #endif

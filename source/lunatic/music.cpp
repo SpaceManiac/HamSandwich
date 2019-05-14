@@ -1,17 +1,18 @@
 #include "music.h"
 #include "mgldraw.h"
-#include <logg.h>
+#include "options.h"
+#include <SDL2/SDL_mixer.h>
 
 byte currentMode;
-LOGG_Stream* stream;
+Mix_Music *curStream=NULL;
 int isPlaying;
 int trackNum;
 
 byte MusicInit(void)
 {
 	currentMode = CD_OFF;
-	stream = NULL;
-	return 1;
+	curStream = nullptr;
+	return true;
 }
 
 void MusicExit(void)
@@ -19,22 +20,41 @@ void MusicExit(void)
 	CDStop();
 }
 
-
-// ----------------------------------------------------------------------------------
-// LOGG AUDIO STUFF
+// SDL2_Mixer audio stuff
 
 void CDPlay(int track)
 {
-	if (trackNum == track && stream != NULL && isPlaying)
+	if (trackNum == track && curStream && isPlaying)
 	{
 		return; // Already playing that track
 	}
 
-	char buf[32];
-	sprintf(buf, "sound/mus%03d.ogg", track);
+	char fullname[32];
+	sprintf(fullname, "sound/mus%03d.ogg", track);
 	trackNum = track;
-	if (stream != NULL) logg_destroy_stream(stream);
-	stream = logg_get_stream(buf, 128, 128, 0);
+	if (curStream)
+	{
+		Mix_HaltMusic();
+		Mix_FreeMusic(curStream);
+		curStream=NULL;
+	}
+
+	SDL_RWops* rw = SDL_RWFromFile(fullname, "rb");
+	if(!rw)
+	{
+		printf("%s: %s\n", fullname, SDL_GetError());
+		return;
+	}
+
+	curStream=Mix_LoadMUS_RW(rw, 1);
+	if(!curStream)
+	{
+		printf("Mix_LoadMUS(%s): %s\n", fullname, Mix_GetError());
+		return;
+	}
+
+	Mix_VolumeMusic(128);
+	Mix_PlayMusic(curStream, 1);
 }
 
 void CDNeedsUpdating(void)
@@ -44,15 +64,16 @@ void CDNeedsUpdating(void)
 void CDPlayerUpdate(byte mode)
 {
 	isPlaying = 0;
-	if (stream != NULL)
-		isPlaying = logg_update_stream(stream);
+	if (curStream)
+		isPlaying = Mix_PlayingMusic();
 
 	bool modeChanged = currentMode != mode;
 	currentMode = mode;
 
 	if (!isPlaying || modeChanged)
 	{
-		switch (currentMode) {
+		switch (currentMode)
+		{
 			case CD_LOOPTRACK:
 				CDPlay(trackNum);
 				break;
@@ -84,11 +105,11 @@ void CDPlayerUpdate(byte mode)
 
 void CDStop(void)
 {
-	if (stream)
+	if (curStream)
 	{
-		logg_destroy_stream(stream);
-		stream = NULL;
-		trackNum = 0;
+		Mix_HaltMusic();
+		Mix_FreeMusic(curStream);
+		curStream=NULL;
 	}
 }
 
