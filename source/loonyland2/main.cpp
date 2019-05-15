@@ -2,7 +2,6 @@
 #include "mgldraw.h"
 #include "jamulfont.h"
 #include "jamulsound.h"
-#include <shellapi.h>
 #include "config.h"
 
 #include "game.h"

@@ -7,6 +7,10 @@
 #include "game.h"
 #include "config.h"
 
+#if __linux__
+#include <unistd.h>
+#endif
+
 // ---------------- Encrypting scores into strings!
 
 static char ctab[]=

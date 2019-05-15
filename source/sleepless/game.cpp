@@ -11,6 +11,9 @@
 #include "config.h"
 #include "log.h"
 #include "customworld.h"
+#if __linux__
+#include <unistd.h>
+#endif
 
 byte showStats=0,spookIt=0;
 dword gameStartTime,visFrameCount,updFrameCount;

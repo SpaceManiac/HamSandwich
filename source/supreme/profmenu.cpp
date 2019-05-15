@@ -12,6 +12,9 @@
 #include "recordbook.h"
 #include "shop.h"
 #include "lsdir.h"
+#if __linux__
+#include <unistd.h>
+#endif
 
 #define PBTN_HEIGHT	19
 
