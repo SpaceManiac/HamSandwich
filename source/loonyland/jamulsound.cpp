@@ -29,8 +29,6 @@ bool JamulSoundInit(int numBuffers)
 {
 	int i;
 
-	if (!opt.sound)
-		return false;
 	if (SDL_Init(SDL_INIT_AUDIO) != 0) {
 		printf("init audio failed: %s\n", SDL_GetError());
 		return false;
