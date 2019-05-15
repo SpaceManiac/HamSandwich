@@ -99,6 +99,7 @@ sdl2_project "supreme"
 
 sdl2_project "sleepless"
 	icon_file "lunatic"
+	depends "ham"
 	buildoptions {
 		"-Wall",
 		"-Wno-write-strings",

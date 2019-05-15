@@ -1,6 +1,19 @@
 #include "clock.h"
 
-dword timeStart=0,timeEnd=0;
+#ifdef WIN32
+#include <windows.h>
+#else  // WIN32
+#include <time.h>
+
+dword timeGetTime()
+{
+	struct timespec tm;
+	clock_gettime(CLOCK_REALTIME, &tm);
+	return tm.tv_sec*1000 + tm.tv_nsec/1000000;
+}
+#endif  // WIN32
+
+static dword timeStart=0, timeEnd=0;
 
 void StartClock(void)
 {

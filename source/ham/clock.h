@@ -1,7 +1,13 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
-#include "winpch.h"
+typedef unsigned long dword;
+
+#ifdef WIN32
+#include <windows.h>
+#else
+dword timeGetTime();
+#endif  // WIN32
 
 void StartClock(void);
 void EndClock(void);
