@@ -1,6 +1,5 @@
 #include "title.h"
 #include "game.h"
-#include <io.h>
 #include "jamulfmv.h"
 #include "pause.h"
 #include "options.h"
@@ -11,6 +10,9 @@
 #include "gallery.h"
 #include "leveldef.h"
 #include "lsdir.h"
+#if __linux__
+#include <unistd.h>
+#endif
 
 #ifdef DIRECTORS
 #define VERSION_NO	"Version 1.2CE"

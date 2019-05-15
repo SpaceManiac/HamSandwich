@@ -1359,7 +1359,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 						while(i<10000 && GetJoyButtons())
 						{
 							i++;
-							Sleep(1);
+							SDL_Delay(1);
 						}
 						MakeNormalSound(SND_MENUSELECT);
 					}
