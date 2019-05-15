@@ -1,6 +1,9 @@
 #include "jamulfmv.h"
 
-byte FLI_play(char *name,byte loop,word wait,MGLDraw *mgl) {}
+byte FLI_play(char *name,byte loop,word wait,MGLDraw *mgl)
+{
+	return 0;
+}
 
 #if 0  // TODO
 // different kinds of flic chunks

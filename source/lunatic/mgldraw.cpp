@@ -15,10 +15,14 @@
 
 // Appdata shenanigans
 
+#ifdef _MSC_VER
+#include <direct.h>
+#endif
+
 FILE* AppdataOpen(const char* file, const char* mode)
 {
 	char buffer[MAX_PATH];
-	SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, buffer);
+	SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, buffer);
 	sprintf(buffer + strlen(buffer), "\\Hamumu");
 	mkdir(buffer);
 	sprintf(buffer + strlen(buffer), "\\DrLunatic");

@@ -21,25 +21,18 @@
 #include "title.h"
 #include "options.h"
 
-bool windowedGame = false;
 MGLDraw *mainmgl;
 
-void parseCmdLine(char *cmdLine)
+int main(int argc, char* argv[])
 {
-	char *token;
+	bool windowedGame=false;
 
-	token = strtok(cmdLine, " ");
-	while (token != NULL)
+	for (int i = 1; i < argc; ++i)
 	{
-		if (!strcmp(token, "window"))
-			windowedGame = true;
-		token = strtok(NULL, " ");
+		if (!strcmp(argv[i], "window"))
+			windowedGame=true;
 	}
-}
 
-int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int nCmdShow)
-{
-	parseCmdLine(cmdLine);
 	LoadOptions();
 	mainmgl = new MGLDraw("Dr. Lunatic", 640, 480, windowedGame);
 	if (!mainmgl)
@@ -68,7 +61,7 @@ int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, 
 			case 4: // ordering
 				LunaticExit();
 				delete mainmgl;
-				ShellExecute(NULL, "open", "docs\\order.html", "", "", SW_SHOWNORMAL);
+				ShellExecuteA(NULL, "open", "docs\\order.html", "", "", SW_SHOWNORMAL);
 				return 0;
 				break;
 		}
