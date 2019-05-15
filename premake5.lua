@@ -11,8 +11,6 @@ function base_project(name)
 		targetdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/")
 		objdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/obj/")
 
-		linkoptions { "-static-libgcc", "-static-libstdc++" }
-
 		files {
 			"source/" .. name .. "/**.h",
 			"source/" .. name .. "/**.cpp",
@@ -27,6 +25,12 @@ function base_project(name)
 			defines { "NDEBUG" }
 			optimize "On"
 
+		filter "toolset:gcc"
+			linkoptions { "-static-libgcc", "-static-libstdc++" }
+
+		filter "action:vs*"
+			defines { "_CRT_SECURE_NO_WARNINGS" }
+
 		filter {}
 end
 
@@ -37,9 +41,10 @@ end
 
 function sdl2_project(name)
 	base_project(name)
+		filter { "system:Windows", "toolset:gcc" }
+			links "mingw32"
 		filter "system:Windows"
-			links { "mingw32", "ws2_32", "winmm" }
-
+			links { "ws2_32", "winmm" }
 		filter {}
 
 		links { "SDL2main", "SDL2", "SDL2_mixer", "SDL2_image" }
@@ -58,6 +63,7 @@ function icon_file(icon)
 	-- not count .res (object) files as resources, only .rc (source)
 	filter "system:Windows"
 		files { "source/" .. icon .. "/**.rc" }
+	filter { "system:Windows", "action:gmake2" }
 		linkoptions { "%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/obj/" .. icon .. ".res" }
 	filter {}
 end
