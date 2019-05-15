@@ -60,7 +60,6 @@ byte InitEditor(void)
 
 	mouseX=320;
 	mouseY=240;
-	editmgl->SetMouse(320, 240);
 	PutCamera(0,0);
 	gameStartTime=timeGetTime();
 	InitGuys(MAX_MAPMONS);
@@ -644,14 +643,9 @@ byte EditorMouseClick(void)
 
 void UpdateMouse(void)
 {
-	int msx,msy;
 	int cx,cy;
 
-	editmgl->GetMouse(&msx, &msy);
-	editmgl->SetMouse(320, 240);
-
-	mouseX+=(msx-320);
-	mouseY+=(msy-240);
+	editmgl->GetMouse(&mouseX, &mouseY);
 
 	if(mouseX<0)
 		mouseX=0;
