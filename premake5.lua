@@ -139,7 +139,3 @@ sdl2_project "mystic"
 	icon_file "mystic"
 	depends "ham"
 	buildoptions { "-Wno-write-strings" }
-	removefiles_in("source/mystic/", {
-		"old_control.cpp",
-		"Copy of title.cpp",
-	})
