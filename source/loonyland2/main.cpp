@@ -3,7 +3,6 @@
 #include "jamulfont.h"
 #include "jamulsound.h"
 #include <shellapi.h>
-#include "leakcheck.h"
 #include "config.h"
 
 #include "game.h"
@@ -43,8 +42,6 @@ void GetPal(void)
 
 int main(int argc, char* argv[])
 {
-	EnableLeakCheck();
-
 	bool windowedGame=false;
 	for (int i = 1; i < argc; ++i)
 	{

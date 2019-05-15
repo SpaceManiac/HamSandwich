@@ -3,7 +3,6 @@
 #include "jamulfont.h"
 #include "jamulsound.h"
 #include <shellapi.h>
-#include "leakcheck.h"
 
 #include "game.h"
 #include "editor.h"
@@ -19,7 +18,6 @@ MGLDraw *mainmgl;
 
 int main(int argc, char *argv[])
 {
-	EnableLeakCheck();
 	DBG("a");
 
 	bool windowedGame=false;
