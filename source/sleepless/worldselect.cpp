@@ -101,12 +101,12 @@ byte Compare(worldDesc_t *me,worldDesc_t *you,byte field,byte bkwds)
 		case 0:
 			strcpy(tmp1,me->name);
 			strcpy(tmp2,you->name);
-			f=(stricmp(tmp1,tmp2)>0);
+			f=(strcasecmp(tmp1,tmp2)>0);
 			break;
 		case 1:
 			strcpy(tmp1,me->author);
 			strcpy(tmp2,you->author);
-			f=(stricmp(tmp1,tmp2)>0);
+			f=(strcasecmp(tmp1,tmp2)>0);
 			break;
 		case 2:
 			f=(me->percentage>you->percentage);

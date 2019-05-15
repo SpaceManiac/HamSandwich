@@ -242,7 +242,7 @@ void SeeMovie(char *fname)
 
 	for(i=0;i<32;i++)
 	{
-		if(!stricmp(movie[i].filename,tmp))
+		if(!strcasecmp(movie[i].filename,tmp))
 			profile.progress.movie[i]=1;
 	}
 }

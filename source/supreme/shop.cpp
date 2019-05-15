@@ -802,7 +802,7 @@ byte CanPlayWorld(const char *fname)
 
 	for(i=0;i<NUMBUILTINWORLDS;i++)
 	{
-		if(!stricmp(fname,worldFName[i]))
+		if(!strcasecmp(fname,worldFName[i]))
 		{
 			// this is one of the built in worlds
 			// so find which purchase item relates to it, and see if it's been bought

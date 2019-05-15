@@ -63,10 +63,10 @@ void AppendInvItem(byte pos, byte item, byte type, byte subtype, int max, char* 
 	i->desc[63] = '\0';
 }
 
-#define C(VALUE) if (!stricmp(data, #VALUE)) return VALUE;
+#define C(VALUE) if (!strcasecmp(data, #VALUE)) return VALUE;
 int ConstAtoi(const char* data)
 {
-	if (!stricmp(data, "NULL")) return 0;
+	if (!strcasecmp(data, "NULL")) return 0;
 	C(INVT_PANTS);
 	C(INVT_HAMMERS);
 	C(INVT_MYSTIC);
@@ -236,28 +236,28 @@ void InitCustomWorld(void)
 					continue;
 
 				int id = atoi(idtext);
-				if (!stricmp(what, "name"))
+				if (!strcasecmp(what, "name"))
 				{
 					if (id < 0 || id > 9) continue;
 					strncpy(fishNames[id], value, 19);
 					fishNames[id][19]='\0';
 				}
-				else if (!stricmp(what, "effect"))
+				else if (!strcasecmp(what, "effect"))
 				{
 					if (id < 0 || id > 9) continue;
 					fishEffects[id]=atoi(value);
 				}
-				else if (!stricmp(what, "size"))
+				else if (!strcasecmp(what, "size"))
 				{
 					if (id < 0 || id > 9) continue;
 					fishSizes[id]=(float) atof(value);
 				}
-				else if (!stricmp(what,"difficulty"))
+				else if (!strcasecmp(what,"difficulty"))
 				{
 					if (id < 0 || id > 64) continue;
 					fishDifficulty[id]=atoi(value);
 				}
-				else if (!stricmp(what,"fish"))
+				else if (!strcasecmp(what,"fish"))
 				{
 					int fish = atoi(value);
 					if (id < 0 || id > 64 || fish < 0 || (fish > 9 && fish != 255))
@@ -405,7 +405,7 @@ byte CustomOption(const char* optname, byte def)
 
 	for (int i=0; i<NUM_OPTIONS;++i)
 	{
-		if (!stricmp(optname, optionNames[i]))
+		if (!strcasecmp(optname, optionNames[i]))
 			return optionValues[i];
 	}
 	return def;
