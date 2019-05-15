@@ -916,7 +916,7 @@ void RenderEnemyPickDisplay(void)
 	for(i=1;i<NUM_MONSTERS;i++)
 #endif
 	{
-		_snprintf(s,32,"%02d:%s",i,MonsterName(i));
+		snprintf(s,32,"%02d:%s",i,MonsterName(i));
 		if(mouseX>x-1 && mouseX<x+201 && mouseY>y-1 && mouseY<y+15)
 			editmgl->Box(x,y,x+200,y+14,31);
 		else

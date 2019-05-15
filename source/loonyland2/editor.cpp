@@ -1270,7 +1270,7 @@ void RenderItemPickDisplay(void)
 
 	for(i=1;i<MAX_ITMS;i++)
 	{
-		_snprintf(s,20,"%s",ItemName(i));
+		snprintf(s,20,"%s",ItemName(i));
 		if(mouseX>x-1 && mouseX<x+101 && mouseY>y-1 && mouseY<y+14)
 			editmgl->Box(x,y,x+100,y+13,31);
 		else
@@ -1297,7 +1297,7 @@ void RenderEnemyPickDisplay(void)
 
 	for(i=1;i<NUM_MONSTERS;i++)
 	{
-		_snprintf(s,32,"%02d:%s",i,MonsterName(i));
+		snprintf(s,32,"%02d:%s",i,MonsterName(i));
 		if(mouseX>x-1 && mouseX<x+201 && mouseY>y-1 && mouseY<y+15)
 			editmgl->Box(x,y,x+200,y+14,31);
 		else

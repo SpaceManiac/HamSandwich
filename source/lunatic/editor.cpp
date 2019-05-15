@@ -970,7 +970,7 @@ void RenderEnemyPickDisplay(void)
 				m != MONS_MAT2BODY && m != MONS_MAT2TAIL && m != MONS_NOBODY)
 
 		{
-			_snprintf(s, 32, "%02d:%s", m, MonsterName(m));
+			snprintf(s, 32, "%02d:%s", m, MonsterName(m));
 			if (mouseX > x - 1 && mouseX < x + 201 && mouseY > y - 1 && mouseY < y + 15)
 				editmgl->Box(x, y, x + 200, y + 14, 31);
 			else
