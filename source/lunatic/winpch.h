@@ -3,7 +3,7 @@
 
 // this header is just meant to be precompiled for compilation speed reasons.
 // mainly for the purposes of making it fast when windows.h is involved.
-#ifdef WIN32
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <mmsystem.h>

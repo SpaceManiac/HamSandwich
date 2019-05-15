@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <conio.h>
 #include <winsock.h>
 #else
@@ -93,7 +93,7 @@ void Log_PrintRaw(char *txt,int len)
 #endif
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 #define ERR_WOULDBLOCK WSAEWOULDBLOCK
 #define ERR_NOTCONN WSAENOTCONN
 #else
@@ -107,7 +107,7 @@ byte Web_Init(void)
 
 	Log_Init();
 
-#ifdef WIN32
+#ifdef _WIN32
 	WSADATA wsaData;
 	// initialize WinSock
 	if(WSAStartup(MAKEWORD(1,1),&wsaData)!=0)
@@ -130,7 +130,7 @@ byte Web_Init(void)
 
 inline int SocketLastError()
 {
-#ifdef WIN32
+#ifdef _WIN32
 	return WSAGetLastError();
 #else
 	return errno;
@@ -148,7 +148,7 @@ byte Web_Exit(void)
 			Web_KillSocket(i);
 		}
 
-#ifdef WIN32
+#ifdef _WIN32
 	WSACleanup();
 #endif
 	Log_Print("web_exit ok!");
@@ -314,7 +314,7 @@ byte Web_RequestData(MGLDraw *mgl,char *site,char *file,int *socketNumber)
 
 	// set it to asynchronous - send windows messages whenever new things happen!
 	if((i=
-	#ifdef WIN32
+	#ifdef _WIN32
 		WSAAsyncSelect(sock[sockNum].s,mgl->GetHWnd(),(unsigned int)INTERNET_EVENT,FD_READ|FD_WRITE|FD_CONNECT)
 	#else
 		fcntl(sock[sockNum].s, F_SETFL, O_NONBLOCK)

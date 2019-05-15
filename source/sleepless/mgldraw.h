@@ -8,7 +8,7 @@
 #define MGLDRAW_H
 
 #include <SDL2/SDL.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #endif
 #include <stdio.h>
@@ -103,7 +103,7 @@ class MGLDraw
 
 		void ResetGM(void);
 
-#ifdef WIN32
+#ifdef _WIN32
 		HWND GetHWnd(void);
 #endif
 

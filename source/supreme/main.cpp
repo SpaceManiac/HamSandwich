@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 					delete mainmgl;
 					ExitLog();
 					FatalErrorQuit();
-#ifdef WIN32
+#ifdef _WIN32
 					ShellExecute(NULL,"open","http://hamumu.com/scores.php",NULL,NULL,SW_SHOWNORMAL);
 #endif
 					return 0;
@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
 					ExitLog();
 					FatalErrorQuit();
 
-#ifdef WIN32
+#ifdef _WIN32
 					ShellExecute(NULL,"open","http://hamumu.com/addon.php",NULL,NULL,SW_SHOWNORMAL);
 #endif
 					return 0;

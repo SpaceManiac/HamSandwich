@@ -2,7 +2,7 @@
 #define MGLDRAW_H
 
 #include <SDL2/SDL.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #endif
 #include "jamultypes.h"

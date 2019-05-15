@@ -126,7 +126,7 @@ bool MGLDraw::Process(void)
 	return (!readyToQuit);
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 HWND MGLDraw::GetHWnd(void)
 {
 	SDL_SysWMinfo info;
