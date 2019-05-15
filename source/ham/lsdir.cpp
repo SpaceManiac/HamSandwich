@@ -1,4 +1,5 @@
 #include "lsdir.h"
+#include "hamtypes.h"
 #include <string.h>
 
 #ifdef __GNUC__
@@ -99,4 +100,5 @@ filterdir::iter& filterdir::iter::operator++()
 		}
 		break;
 	}
+	return *this;
 }

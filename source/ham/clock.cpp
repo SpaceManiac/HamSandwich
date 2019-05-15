@@ -1,8 +1,8 @@
 #include "clock.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
-#else  // WIN32
+#else  // _WIN32
 #include <time.h>
 
 dword timeGetTime()
@@ -11,7 +11,7 @@ dword timeGetTime()
 	clock_gettime(CLOCK_REALTIME, &tm);
 	return tm.tv_sec*1000 + tm.tv_nsec/1000000;
 }
-#endif  // WIN32
+#endif  // _WIN32
 
 static dword timeStart=0, timeEnd=0;
 
