@@ -14,7 +14,7 @@
 #include "goal.h"
 #include "comicbook.h"
 #include "customworld.h"
-#include <dirent.h>
+#include "lsdir.h"
 
 #define PBTN_HEIGHT	26
 
@@ -129,36 +129,20 @@ void SortProfiles(void)
 	}
 }
 
-void InputProfile(char *fname)
-{
-	if(strlen(fname)>=PRFNAME_LEN)
-		return;	// won't add long names
-
-	if(numFiles>=MAX_PROFS)
-		return;	// can't add more of them
-
-	strcpy(&fileList[numFiles*PRFNAME_LEN],fname);
-	numFiles++;
-}
-
 void ScanProfiles(void)
 {
-	DIR* dir;
-	struct dirent *dp;
 	int i;
 
 	for(i=0;i<MAX_PROFS;i++)
 		fileList[i*PRFNAME_LEN]='\0';
 	numFiles=0;
 
-	dir = opendir("profiles");
-
-	while ((dp = readdir(dir)) != NULL)
+	for (const char* name : filterdir("profiles", ".prf", PRFNAME_LEN))
 	{
-		if (strstr(dp->d_name, ".prf") == dp->d_name + strlen(dp->d_name) - 4)
-			InputProfile(dp->d_name);
+		strcpy(&fileList[numFiles*PRFNAME_LEN], name);
+		if (++numFiles >= MAX_PROFS)
+			break;
 	}
-	closedir(dir);
 	SortProfiles();
 
 	profChoice=0;

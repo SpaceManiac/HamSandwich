@@ -7,7 +7,7 @@
 #include "dialogbits.h"
 #include "progress.h"
 #include "customworld.h"
-#include <dirent.h>
+#include "lsdir.h"
 
 static byte *backgd;
 static int textBright;
@@ -50,7 +50,7 @@ static int numFiles;
 	}
 }*/
 
-void InputWorld(char* fname)
+void InputWorld(const char* fname)
 {
 	if(strlen(fname)>=FILENAME_LEN)
 		return;	// won't add long names
@@ -66,8 +66,6 @@ void InputWorld(char* fname)
 
 void ScanWorlds(void)
 {
-	DIR* dir;
-	struct dirent *dp;
 	int i;
 
 	for(i=0;i<MAX_WORLDS;i++)
@@ -76,17 +74,14 @@ void ScanWorlds(void)
 
 	InputWorld("hollow.shw");
 
-	dir = opendir("worlds");
-	while ((dp = readdir(dir)) != NULL)
+	for (const char* name : filterdir("worlds", ".shw", FILENAME_LEN))
 	{
-		if (!strcmp(dp->d_name + strlen(dp->d_name) - 4, ".shw") &&
-				strcmp(dp->d_name, "backup_save.shw") &&
-				strcmp(dp->d_name, "backup_load.shw") &&
-				strcmp(dp->d_name, "backup_exit.shw") &&
-				strcmp(dp->d_name, "hollow.shw"))
-				InputWorld(dp->d_name);
+		if (strcmp(name, "hollow.shw") &&
+				strcmp(name, "backup_save.shw") &&
+				strcmp(name, "backup_load.shw") &&
+				strcmp(name, "backup_exit.shw"))
+			InputWorld(name);
 	}
-	closedir(dir);
 	//SortWorlds();
 
 	if (numFiles == 1)

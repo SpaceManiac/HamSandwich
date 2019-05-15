@@ -145,7 +145,8 @@ void ScanProfiles(void)
 	for (const char* name : filterdir("profiles", ".prf", PRFNAME_LEN))
 	{
 		strcpy(&fileList[numFiles*PRFNAME_LEN], name);
-		numFiles++;
+		if (++numFiles >= MAX_PROFS)
+			break;
 	}
 	SortProfiles();
 
