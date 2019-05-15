@@ -73,18 +73,13 @@ sdl2_project "lunatic"
 	icon_file "lunatic"
 	depends "ham"
 	defines { "EXPANDO" }
-	buildoptions { "-Wall", "-Wextra", "-Wno-unused-parameter" }
+
+	filter "toolset:gcc"
+		buildoptions { "-Wall", "-Wextra", "-Wno-unused-parameter" }
 
 sdl2_project "supreme"
 	icon_file "lunatic"
 	depends "ham"
-	buildoptions {
-		"-Wall",
-		"-Wno-write-strings",
-		"-Wno-char-subscripts",
-		"-Wno-unused-variable",
-		"-Wno-unused-but-set-variable",
-	}
 	removefiles_in("source/supreme/", {
 		"monsterlist.cpp",
 		"monsterai1.cpp",
@@ -97,16 +92,18 @@ sdl2_project "supreme"
 		"spcldialog.cpp",
 	})
 
+	filter "toolset:gcc"
+		buildoptions {
+			"-Wall",
+			"-Wno-write-strings",
+			"-Wno-char-subscripts",
+			"-Wno-unused-variable",
+			"-Wno-unused-but-set-variable",
+		}
+
 sdl2_project "sleepless"
 	icon_file "lunatic"
 	depends "ham"
-	buildoptions {
-		"-Wall",
-		"-Wno-write-strings",
-		"-Wno-char-subscripts",
-		"-Wno-unused-variable",
-		"-Wno-unused-but-set-variable",
-	}
 	removefiles_in("source/sleepless/", {
 		"monsterlist.cpp",
 		"monsterai1.cpp",
@@ -122,21 +119,36 @@ sdl2_project "sleepless"
 		"worldselect.cpp",
 	})
 
+	filter "toolset:gcc"
+		buildoptions {
+			"-Wall",
+			"-Wno-write-strings",
+			"-Wno-char-subscripts",
+			"-Wno-unused-variable",
+			"-Wno-unused-but-set-variable",
+		}
+
 sdl2_project "loonyland"
 	icon_file "loonyland"
 	depends "ham"
-	buildoptions { "-Wno-write-strings" }
+
+	filter "toolset:gcc"
+		buildoptions { "-Wno-write-strings" }
 
 sdl2_project "loonyland2"
 	icon_file "loonyland2"
 	depends "ham"
-	buildoptions { "-Wno-write-strings" }
 	defines { "DIRECTORS" }
 	removefiles_in("source/loonyland2/", {
 		"monster_ai.cpp",
 	})
 
+	filter "toolset:gcc"
+		buildoptions { "-Wno-write-strings" }
+
 sdl2_project "mystic"
 	icon_file "mystic"
 	depends "ham"
-	buildoptions { "-Wno-write-strings" }
+
+	filter "toolset:gcc"
+		buildoptions { "-Wno-write-strings" }
