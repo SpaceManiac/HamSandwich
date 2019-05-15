@@ -3,7 +3,7 @@
 #include "jamulfont.h"
 #include "jamulsound.h"
 #include <shellapi.h>
-#include <crtdbg.h>
+#include "leakcheck.h"
 #include "config.h"
 
 #include "game.h"
@@ -43,16 +43,7 @@ void GetPal(void)
 
 int main(int argc, char* argv[])
 {
-
-#ifndef NDEBUG
-
-int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG); // Get current flag
-
-flag |= _CRTDBG_LEAK_CHECK_DF; // Turn on leak-checking bit
-
-_CrtSetDbgFlag(flag); // Set flag to the new value
-
-#endif
+	EnableLeakCheck();
 
 	bool windowedGame=false;
 	for (int i = 1; i < argc; ++i)

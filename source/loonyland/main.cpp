@@ -3,7 +3,7 @@
 #include "jamulfont.h"
 #include "jamulsound.h"
 #include <shellapi.h>
-#include <crtdbg.h>
+#include "leakcheck.h"
 
 #include "game.h"
 #include "editor.h"
@@ -19,17 +19,7 @@ MGLDraw *mainmgl;
 
 int main(int argc, char *argv[])
 {
-
-#ifndef NDEBUG
-
-int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG); // Get current flag
-
-flag |= _CRTDBG_LEAK_CHECK_DF; // Turn on leak-checking bit
-
-_CrtSetDbgFlag(flag); // Set flag to the new value
-
-#endif
-
+	EnableLeakCheck();
 	DBG("a");
 
 	bool windowedGame=false;
