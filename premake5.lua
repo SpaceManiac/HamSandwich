@@ -67,17 +67,17 @@ function depends(name)
 	links(name)
 end
 
-library "common"
+library "ham"
 
 sdl2_project "lunatic"
 	icon_file "lunatic"
-	depends "common"
+	depends "ham"
 	defines { "EXPANDO" }
 	buildoptions { "-Wall", "-Wextra", "-Wno-unused-parameter" }
 
 sdl2_project "supreme"
 	icon_file "lunatic"
-	depends "common"
+	depends "ham"
 	buildoptions {
 		"-Wall",
 		"-Wno-write-strings",
@@ -123,12 +123,12 @@ sdl2_project "sleepless"
 
 sdl2_project "loonyland"
 	icon_file "loonyland"
-	depends "common"
+	depends "ham"
 	buildoptions { "-Wno-write-strings" }
 
 sdl2_project "loonyland2"
 	icon_file "loonyland2"
-	depends "common"
+	depends "ham"
 	buildoptions { "-Wno-write-strings" }
 	defines { "DIRECTORS" }
 	removefiles_in("source/loonyland2/", {
@@ -137,7 +137,7 @@ sdl2_project "loonyland2"
 
 sdl2_project "mystic"
 	icon_file "mystic"
-	depends "common"
+	depends "ham"
 	buildoptions { "-Wno-write-strings" }
 	removefiles_in("source/mystic/", {
 		"old_control.cpp",
