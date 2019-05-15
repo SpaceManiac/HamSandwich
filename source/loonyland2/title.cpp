@@ -10,6 +10,7 @@
 #include "achieve.h"
 #include "gallery.h"
 #include "leveldef.h"
+#include "lsdir.h"
 
 #ifdef DIRECTORS
 #define VERSION_NO	"Version 1.2CE"
@@ -127,25 +128,17 @@ void GetAddOn(char *name,int spot)
 
 void GetAddOns(void)
 {
-	long hFile;
-	struct _finddata_t filedata;
 	int done;
 
 	// count up how many there are to deal with
 	ClearAddOns();
-	hFile=_findfirst("addons/lvl_*.txt",&filedata);
 
-	if(hFile!=-1)	// there's at least one
+	for (const char* name : filterdir("addons", ".txt"))
 	{
-		// rule out the backup worlds, so they don't show up
+		if (strncmp(name, "lvl_", 4))
+			continue;
 		addOnCount++;
-
-		while(_findnext(hFile,&filedata)==0)
-		{
-			addOnCount++;
-		}
 	}
-	_findclose(hFile);
 
 	addOnCount++;
 	addOnList=(addon_t *)malloc(sizeof(addon_t)*addOnCount);
@@ -155,20 +148,13 @@ void GetAddOns(void)
 	addOnList[0].filename[0]='\0';
 
 	done=1;
-	hFile=_findfirst("addons/lvl_*.txt",&filedata);
-
-	if(hFile!=-1)	// there's at least one
+	for (char* name : filterdir("addons", ".txt"))
 	{
-		GetAddOn(filedata.name,done);
+		if (strncmp(name, "lvl_", 4))
+			continue;
+		GetAddOn(name, done);
 		done++;
-
-		while(_findnext(hFile,&filedata)==0)
-		{
-			GetAddOn(filedata.name,done);
-			done++;
-		}
 	}
-	_findclose(hFile);
 }
 
 void GetSavesForMenu(void)
