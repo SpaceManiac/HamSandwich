@@ -1,4 +1,5 @@
 #include "lsdir.h"
+#include <string.h>
 
 #ifdef __GNUC__
 
