@@ -1,7 +1,6 @@
 #ifndef TILEDIALOG_H
 #define TILEDIALOG_H
 
-#include <io.h>
 #include "winpch.h"
 #include "display.h"
 

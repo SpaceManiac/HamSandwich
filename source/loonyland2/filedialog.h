@@ -1,7 +1,6 @@
 #ifndef FILEDIALOG_H
 #define FILEDIALOG_H
 
-#include <io.h>
 #include "winpch.h"
 #include "display.h"
 #pragma pack(1)
