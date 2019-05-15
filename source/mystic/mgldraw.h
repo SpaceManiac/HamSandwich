@@ -134,18 +134,9 @@ class MGLDraw
 		int *buffer;
 };
 
-extern MGLDraw *_globalMGLDraw;
-
-void SeedRNG(void);
-dword Random(dword range);
-void FatalError(const char *msg);
-
-void FatalErrorQuit(void);
-
 // Replacement for missing MGL functions
+void FatalError(const char *msg);
 int MGL_random(int max);
-void MGL_srand(int seed);
 long MGL_randoml(long max);
-void MGL_fatalError(const char* txt);
 
 #endif

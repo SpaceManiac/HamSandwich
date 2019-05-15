@@ -7,10 +7,12 @@
 #include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_image.h>
 
-MGLDraw *_globalMGLDraw;
+static MGLDraw *_globalMGLDraw;
 
 int KEY_MAX;
 const Uint8* key = SDL_GetKeyboardState(&KEY_MAX);
+
+void SeedRNG();
 
 MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool windowed)
 {
@@ -857,32 +859,11 @@ void MGLDraw::GammaCorrect(byte gamma)
 //--------------------------------------------------------------------------
 // these are all external stuff
 
-byte fatalDie=0;
-char errMsg[128];
-
-void SeedRNG(void)
-{
-	srand(timeGetTime());
-}
-
-dword Random(dword range)
-{
-	return rand() * range / (RAND_MAX+1);
-}
-
 void FatalError(const char *msg)
 {
 	_globalMGLDraw->Quit();
-	fatalDie=1;
-	strcpy(errMsg,msg);
-}
-
-void FatalErrorQuit(void)
-{
-	if(fatalDie)
-	{
-		fprintf(stderr, "%s\n", errMsg);
-	}
+	printf("%s\n", msg);
+	exit(1);
 }
 
 // Replacements for missing MGL functions
@@ -893,9 +874,9 @@ int MGL_random(int max)
 	return std::uniform_int_distribution<int>(0, max - 1)(mersenne);
 }
 
-void MGL_srand(int seed)
+void SeedRNG(void)
 {
-	mersenne.seed(seed);
+	mersenne.seed(timeGetTime());
 }
 
 long MGL_randoml(long max)

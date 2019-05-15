@@ -135,12 +135,8 @@ class MGLDraw
 		int *buffer;
 };
 
-extern MGLDraw *_globalMGLDraw;
-
 void SeedRNG(void);
 dword Random(dword range);
 void FatalError(char *msg);
-
-void FatalErrorQuit(void);
 
 #endif

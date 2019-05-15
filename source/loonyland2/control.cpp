@@ -69,8 +69,6 @@ void ControlKeyDown(byte k)
 		arrowState|=CONTROL_B1;
 		arrowTap|=CONTROL_B1;
 	}
-
-	//_globalMGLDraw->SetLastKey((char)scancode_to_ascii((int)k));
 }
 
 void ControlKeyUp(byte k)

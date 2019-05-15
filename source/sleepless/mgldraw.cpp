@@ -1,6 +1,7 @@
 #include "mgldraw.h"
 #include "game.h"
 #include "sound.h"
+#include <random>
 
 #include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_image.h>
@@ -795,15 +796,16 @@ bool MGLDraw::LoadBMP(char *name, PALETTE pal)
 
 byte fatalDie=0;
 char errMsg[128];
+std::mt19937_64 mersenne;
 
 void SeedRNG(void)
 {
-	srand(timeGetTime());
+	mersenne.seed(timeGetTime());
 }
 
 dword Random(dword range)
 {
-	return rand() * range / (RAND_MAX+1);
+	return std::uniform_int_distribution<dword>(0, range - 1)(mersenne);
 }
 
 void FatalError(char *msg)
