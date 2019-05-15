@@ -3,6 +3,7 @@
 #include "sound.h"
 #include "vars.h"
 #include "shop.h"
+#include "control.h"
 
 static FILE *scanF;
 

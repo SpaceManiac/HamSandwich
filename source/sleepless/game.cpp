@@ -231,7 +231,7 @@ void RestoreGameplayGfx(void)
 	{
 		if(curMap->flags&MAP_UNDERWATER)
 		{
-			gamemgl->WaterPalette(0);
+			gamemgl->DumbSidePalette(0);
 			return;
 		}
 	}

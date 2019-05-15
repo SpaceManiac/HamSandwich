@@ -1,7 +1,6 @@
 #include "mgldraw.h"
 #include "game.h"
 #include "sound.h"
-#include "internet.h"
 
 #include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_image.h>
@@ -460,6 +459,45 @@ void MGLDraw::WaterPalette(byte b)
 	thePal = &pal2;
 }
 
+void MGLDraw::DumbSidePalette(byte b)
+{
+	int i,j;
+
+	for(i=0;i<8;i++)
+		for(j=0;j<32;j++)
+		{
+			pal2[i*32+j]=pal[i*32+j];
+			if(b==0)
+			{
+				pal2[i*32+j].b+=40;
+				if(pal2[i*32+j].b>63)
+				{
+					pal2[i*32+j].b=63;
+				}
+			}
+			else
+			{
+				pal2[i*32+j].r+=30;
+				if(pal2[i*32+j].r>63)
+				{
+					pal2[i*32+j].r=63;
+				}
+
+				pal2[i*32+j].b+=30;
+				if(pal2[i*32+j].b+63)
+				{
+					pal2[i*32+j].b=63;
+				}
+				if(pal2[i*32+j].g+10)
+					pal2[i*32+j].g-=10;
+				else
+					pal2[i*32+j].g=0;
+			}
+		}
+
+	thePal = &pal2;
+}
+
 // 8-bit graphics only
 void MGLDraw::Box(int x,int y,int x2,int y2,byte c)
 {
@@ -700,6 +738,11 @@ byte MGLDraw::MouseDown(void)
 byte MGLDraw::RMouseDown(void)
 {
 	return ((mouse_b&2)!=0);
+}
+
+byte MGLDraw::MouseDown3(void)
+{
+	return ((mouse_b&4)!=0);
 }
 
 char MGLDraw::LastKeyPeek(void)

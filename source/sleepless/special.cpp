@@ -1609,7 +1609,7 @@ void SpecialEffect(special_t *me,Map *map)
 					player.oxygen=127*256;
 
 				if(map->flags&MAP_UNDERWATER)
-					GetDisplayMGL()->WaterPalette(0);
+					GetDisplayMGL()->DumbSidePalette(0);
 				else
 					GetDisplayMGL()->RealizePalette();
 				break;

@@ -13,8 +13,6 @@
 #endif
 #include <stdio.h>
 #include "jamultypes.h"
-#include "jamulsound.h"
-#include "control.h"
 
 #define SCRWID	640
 #define SCRHEI  480
@@ -76,6 +74,7 @@ class MGLDraw
 		void ClearKeys(void);
 
 		void WaterPalette(byte b);
+		void DumbSidePalette(byte b);
 
 		// handy little drawing routines
 		void Box(int x,int y,int x2,int y2,byte c);
@@ -93,7 +92,7 @@ class MGLDraw
 		byte RMouseDown();
 		byte MouseTap();
 		byte RMouseTap();
-		byte MouseDown3(void);
+		byte MouseDown3();
 		void SetMouseDown(byte w);
 		void SetRMouseDown(byte w);
 		void GetMouse(int *x,int *y);

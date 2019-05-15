@@ -1,7 +1,6 @@
 #include "mgldraw.h"
 #include "game.h"
 #include "sound.h"
-#include "internet.h"
 
 #include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_image.h>
@@ -449,15 +448,41 @@ void MGLDraw::WaterPalette(byte b)
 			}
 			else
 			{
-				// Changed in Sleepless Hollow ([)Dumb Side)
-				//pal2[i*32+j].r+=40;
+				pal2[i*32+j].r+=40;
+				if(pal2[i*32+j].r>63)
+				{
+					pal2[i*32+j].r=63;
+				}
+			}
+		}
+
+	thePal = &pal2;
+}
+
+void MGLDraw::DumbSidePalette(byte b)
+{
+	int i,j;
+
+	for(i=0;i<8;i++)
+		for(j=0;j<32;j++)
+		{
+			pal2[i*32+j]=pal[i*32+j];
+			if(b==0)
+			{
+				pal2[i*32+j].b+=40;
+				if(pal2[i*32+j].b>63)
+				{
+					pal2[i*32+j].b=63;
+				}
+			}
+			else
+			{
 				pal2[i*32+j].r+=30;
 				if(pal2[i*32+j].r>63)
 				{
 					pal2[i*32+j].r=63;
 				}
 
-				// Added in Sleepless Hollow (Dumb Side)
 				pal2[i*32+j].b+=30;
 				if(pal2[i*32+j].b+63)
 				{
@@ -717,7 +742,7 @@ byte MGLDraw::RMouseDown(void)
 
 byte MGLDraw::MouseDown3(void)
 {
-   return ((mouse_b&4)!=0);
+	return ((mouse_b&4)!=0);
 }
 
 char MGLDraw::LastKeyPeek(void)
@@ -741,7 +766,7 @@ bool MGLDraw::LoadBMP(char *name, PALETTE pal)
 	}
 
 	if(pal && b->format->palette)
-		for(i=0;i<256;i++)
+		for(i=0; i<256 && i < b->format->palette->ncolors; i++)
 		{
 			pal[i].r = b->format->palette->colors[i].r;
 			pal[i].g = b->format->palette->colors[i].g;
