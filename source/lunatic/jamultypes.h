@@ -8,7 +8,7 @@
 // a bool type, which in C++ means it actually forces it to be either 0 or 1, which
 // requires extra code.
 
-#ifndef __MINGW32__     // appears to be a Visual Studio thing
+#ifdef _MSC_VER     // appears to be a Visual Studio thing
 #pragma warning( disable : 4800 )
 #endif
 

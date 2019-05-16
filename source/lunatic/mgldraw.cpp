@@ -4,7 +4,6 @@
 #include "sound.h"
 #include "music.h"
 #include "ctype.h"
-#include "shlobj.h" // for SHGetFolderPath
 #include <stdio.h>
 #include <random>
 
@@ -14,6 +13,8 @@
 #include <SDL2/SDL_image.h>
 
 // Appdata shenanigans
+#ifdef _WIN32
+#include <shlobj.h> // for SHGetFolderPath
 
 #ifdef _MSC_VER
 #include <direct.h>
@@ -30,6 +31,15 @@ FILE* AppdataOpen(const char* file, const char* mode)
 	sprintf(buffer + strlen(buffer), "\\%s", file);
 	return fopen(buffer, mode);
 }
+
+#else
+
+FILE* AppdataOpen(const char* file, const char* mode)
+{
+    return fopen(file, mode);
+}
+
+#endif
 
 // Replacements for missing MGL functions
 std::mt19937_64 mersenne;

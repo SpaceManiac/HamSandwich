@@ -42,7 +42,9 @@ public:
 
 	bool Process(); // handle windows messages and such
 
-	HWND GetHWnd();
+#ifdef _WIN32
+    HWND GetHWnd();
+#endif
 	byte *GetScreen(); // get a pointer to the screen memory
 	int GetWidth();
 	int GetHeight();

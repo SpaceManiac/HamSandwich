@@ -68,8 +68,6 @@ byte InitEditor(void)
 	strcpy(MonsterName(MONS_SNOWBALL2), "Rvs Snowball");
 	strcpy(MonsterName(MONS_FRIENDLY2), "Determined Bunny");
 
-	ShowCursor(0); // Tell winapi to hide the cursor
-
 	ChangeOffColor(MONS_SHARK, 2, 4);
 	editing = 1;
 	return 1;
@@ -78,8 +76,6 @@ byte InitEditor(void)
 void ExitEditor(void)
 {
 	EditorSaveWorld("worlds/backup_exit.dlw");
-
-	ShowCursor(0); // Tell winapi to reshow the cursor
 
 	ChangeOffColor(MONS_SHARK, 255, 255);
 	strcpy(MonsterName(MONS_ROLLER2), "Roly Poly");

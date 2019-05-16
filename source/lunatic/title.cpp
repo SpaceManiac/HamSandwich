@@ -864,7 +864,7 @@ byte MainMenu(MGLDraw *mgl)
 		runEnd = timeGetTime();
 
 		if (runEnd - runStart < (1000 / 50))
-			Sleep((1000 / 50)-(runEnd - runStart));
+			SDL_Delay((1000 / 50)-(runEnd - runStart));
 
 		if (!mgl->Process())
 		{
@@ -1084,7 +1084,7 @@ byte GameSlotPicker(MGLDraw *mgl, title_t *title)
 		runEnd = timeGetTime();
 
 		if (runEnd - runStart < (1000 / 50))
-			Sleep((1000 / 50)-(runEnd - runStart));
+			SDL_Delay((1000 / 50)-(runEnd - runStart));
 
 		if (!mgl->Process())
 			return 0;

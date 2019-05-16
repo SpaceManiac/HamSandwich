@@ -11,7 +11,9 @@
 #include "mgldraw.h"
 #include "jamulfont.h"
 #include "jamulsound.h"
+#ifdef _WIN32
 #include <shellapi.h>
+#endif
 
 #include "game.h"
 #include "editor.h"
@@ -61,7 +63,9 @@ int main(int argc, char* argv[])
 			case 4: // ordering
 				LunaticExit();
 				delete mainmgl;
+#ifdef _WIN32
 				ShellExecuteA(NULL, "open", "docs\\order.html", "", "", SW_SHOWNORMAL);
+#endif
 				return 0;
 				break;
 		}
