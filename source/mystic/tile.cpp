@@ -363,7 +363,7 @@ inline void GouraudBoxWater(int x,int y,byte *src,char light0,char light1,char l
 				{
 					b=*src;
 
-					if(b==3*32+15)
+					if((b&(~31))==3*32)
 						b=WaterPixel(x+i,y+j);
 
 					tmp=(b&31)+(curLight/FIXAMT);
@@ -604,6 +604,11 @@ void RenderFloorTileFancy(int x,int y,int t,byte shadow,char *theLight)
 			RenderFloorTileShadow(x,y,t,theLight[4]);
 		else
 			RenderFloorTile(x,y,t,theLight[4]);
+		return;
+	}
+	if(opt.waterFX)
+	{
+		RenderFloorTileFancyWater(x,y,t,0,shadow,theLight);
 		return;
 	}
 
