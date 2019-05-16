@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL.h>
 #ifdef _WIN32
-#include <windows.h>
+#include "winpch.h"
 #endif
 #include "jamultypes.h"
 #include "jamulsound.h"

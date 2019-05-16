@@ -27,6 +27,10 @@
 #include "nag.h"
 #endif
 
+#ifdef _WIN32
+#include <shellapi.h>
+#endif
+
 MGLDraw *mainmgl;
 
 int main(int argc, char* argv[])

@@ -9,7 +9,7 @@
 
 #include <SDL2/SDL.h>
 #ifdef _WIN32
-#include <windows.h>
+#include "winpch.h"
 #endif
 #include <stdio.h>
 #include "jamultypes.h"
