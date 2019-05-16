@@ -151,7 +151,6 @@ void SaveTilesToBMP(char *fname)
 {
 	char tmp[64];
 	int i,j;
-	BITMAP* bmp;
 
 	strcpy(tmp,fname);
 	for(i=0;i<(int)strlen(tmp);i++)
