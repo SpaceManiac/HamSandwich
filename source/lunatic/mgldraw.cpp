@@ -305,6 +305,10 @@ void MGLDraw::SetPalette(const RGB *pal2)
 	}
 }
 
+void MGLDraw::RealizePalette()
+{
+}
+
 // 8-bit graphics only
 void MGLDraw::Box(int x,int y,int x2,int y2,byte c)
 {

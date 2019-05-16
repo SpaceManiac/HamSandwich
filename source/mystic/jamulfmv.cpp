@@ -1,4 +1,7 @@
 #include "jamulfmv.h"
+#include "mgldraw.h"
+#include "clock.h"
+#include <stdio.h>
 
 // different kinds of flic chunks
 #define FLI_COLOR		11
@@ -111,7 +114,6 @@ void FLI_docolor2(byte *p,MGLDraw *mgl)
 	word pos=0;
 	byte palpos=0;
 	byte numcol;
-	byte b;
 
 	memcpy(&numpak,p,2);
 	pos=2;
@@ -358,73 +360,7 @@ void FLI_skipfr(void)
 	fseek(FLI_file,fhead.size-sizeof(frmheader),SEEK_CUR);
 }
 
-byte FLI_play(char *name,byte loop,word wait,MGLDraw *mgl)
-{
-	int frmon=0;
-	long frsize;
-	fliheader FLI_hdr;
-	int scrWidth;
-	char k;
-	dword startTime,endTime;
-
-	FLI_file=fopen(name,"rb");
-	fread(&FLI_hdr,1,sizeof(fliheader),FLI_file);
-	fread(&frsize,1,4,FLI_file);
-	fseek(FLI_file,-4,SEEK_CUR);
-	fliWidth=FLI_hdr.width;
-	fliHeight=FLI_hdr.height;
-
-	mgl->LastKeyPressed();	// clear key buffer
-
-	// if this is a FLC, skip the first frame
-	if((name[strlen(name)-1]=='c')||
-			(name[strlen(name)-1]=='C'))
-	{
-		FLI_skipfr();
-		frmon++;
-		FLI_hdr.frames++;	// a confusion issue
-	}
-	do {
-		startTime=timeGetTime();
-		frmon++;
-		scrWidth=mgl->GetWidth();
-		FLI_nextfr(mgl,scrWidth);
-		mgl->Flip();
-		if((loop)&&(frmon==FLI_hdr.frames+1)) {
-			frmon=1;
-			fseek(FLI_file,128+frsize,SEEK_SET);
-		}
-		if((!loop)&&(frmon==FLI_hdr.frames))
-			frmon=FLI_hdr.frames+1;
-		k=mgl->LastKeyPressed();
-		// key #27 is escape
-
-		endTime=timeGetTime();
-		while((endTime-startTime)<wait)
-			endTime=timeGetTime();
-	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27));
-	fclose(FLI_file);
-	if(k==27)
-		return 1;
-
-	return 0;
-}
-
-word FLI_numFrames(char *name)
-{
-	fliheader FLI_hdr;
-
-	FLI_file=fopen(name,"rb");
-	fread(&FLI_hdr,1,sizeof(fliheader),FLI_file);
-	fclose(FLI_file);
-	if((name[strlen(name)-1]=='c')||
-			(name[strlen(name)-1]=='C'))
-		return FLI_hdr.frames;
-	else
-		return FLI_hdr.frames;
-}
-
-void FLI_play_callback(char *name,byte loop,word wait,void (*callback)(int),MGLDraw *mgl)
+byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack callback)
 {
 	int frmon=0;
 	long frsize;
@@ -456,7 +392,8 @@ void FLI_play_callback(char *name,byte loop,word wait,void (*callback)(int),MGLD
 		frmon++;
 		scrWidth=mgl->GetWidth();
 		FLI_nextfr(mgl,scrWidth);
-		callback(frmon);
+		if (callback && !callback(frmon))
+			break;
 		mgl->Flip();
 		if((loop)&&(frmon==FLI_hdr.frames+1))
 		{
@@ -473,4 +410,19 @@ void FLI_play_callback(char *name,byte loop,word wait,void (*callback)(int),MGLD
 			endTime=timeGetTime();
 	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27));
 	fclose(FLI_file);
+	return k != 27;
+}
+
+word FLI_numFrames(char *name)
+{
+	fliheader FLI_hdr;
+
+	FLI_file=fopen(name,"rb");
+	fread(&FLI_hdr,1,sizeof(fliheader),FLI_file);
+	fclose(FLI_file);
+	if((name[strlen(name)-1]=='c')||
+			(name[strlen(name)-1]=='C'))
+		return FLI_hdr.frames;
+	else
+		return FLI_hdr.frames;
 }

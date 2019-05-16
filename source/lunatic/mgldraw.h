@@ -56,6 +56,7 @@ public:
 
 	bool LoadPalette(const char *name);
 	void SetPalette(const RGB *pal2);
+	void RealizePalette();
 
 	bool LoadBMP(const char *name);
 	bool LoadBMP(const char *name, PALETTE pal);
