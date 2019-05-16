@@ -32,6 +32,9 @@ function base_project(name)
 			defines { "_CRT_SECURE_NO_WARNINGS" }
 			includedirs { "build/include/" }
 			libdirs { "build/lib/x86/" }
+			debugargs { "window" }
+			debugenvs { "PATH=$(ProjectDir)/lib/x86/;%PATH%" }
+			debugdir "$(ProjectDir)/game/%{prj.name}"
 
 		filter {}
 end
