@@ -791,6 +791,18 @@ bool MGLDraw::LoadBMP(char *name, PALETTE pal)
 	return true;
 }
 
+bool MGLDraw::SaveBMP(char *name)
+{
+	SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, xRes, yRes, 8, SDL_PIXELFORMAT_INDEX8);
+	SDL_LockSurface(surface);
+	memcpy(surface->pixels, scrn, xRes * yRes);
+	SDL_UnlockSurface(surface);
+	memcpy(surface->format->palette->colors, *thePal, sizeof(PALETTE));
+	SDL_SaveBMP(surface, name);
+	SDL_FreeSurface(surface);
+	return true;
+}
+
 //--------------------------------------------------------------------------
 // these are all external stuff
 

@@ -67,6 +67,7 @@ class MGLDraw
 
 		bool LoadBMP(char *name);
 		bool LoadBMP(char *name, PALETTE pal);
+		bool SaveBMP(char *name);
 
 		int LastKeyPressed(void);
 		char LastKeyPeek(void);

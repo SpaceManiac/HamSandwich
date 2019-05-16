@@ -149,7 +149,6 @@ void SaveTiles(FILE *f)
 
 void SaveTilesToBMP(char *fname)
 {
-#if 0  // TODO
 	char tmp[64];
 	int i,j;
 	BITMAP* bmp;
@@ -183,9 +182,7 @@ void SaveTilesToBMP(char *fname)
 		}
 
 	GetDisplayMGL()->Flip();
-	bmp = create_bitmap(SCREEN_W, SCREEN_H);
-	blit(screen,bmp,0,0,0,0,SCREEN_W,SCREEN_H);
-	save_bmp(tmp,bmp,GetDisplayMGL()->GetPalette());
+	GetDisplayMGL()->SaveBMP(tmp);
 
 	if(numTiles>400)
 	{
@@ -200,12 +197,9 @@ void SaveTilesToBMP(char *fname)
 			}
 
 		GetDisplayMGL()->Flip();
-		blit(screen,bmp,0,0,0,0,SCREEN_W,SCREEN_H);
-		save_bmp(tmp,bmp,GetDisplayMGL()->GetPalette());
+		GetDisplayMGL()->SaveBMP(tmp);
 	}
-	destroy_bitmap(bmp);
 	GetDisplayMGL()->ClearScreen();
-#endif
 }
 
 void LoadTile(FILE *f,byte *t)
