@@ -2,6 +2,7 @@
 #include "display.h"
 #include "player.h"
 #include "options.h"
+#include "config.h"
 
 #define WATER_WIDTH	(256)
 #define WATER_HEIGHT (256)

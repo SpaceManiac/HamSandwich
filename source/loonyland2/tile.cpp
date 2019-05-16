@@ -1,5 +1,6 @@
 #include "tile.h"
 #include "water.h"
+#include "config.h"
 
 tile_t tiles[NUMTILES];
 MGLDraw *tileMGL;

@@ -10,6 +10,7 @@
 #include "alchemy.h"
 #include "leveldef.h"
 #include "madcap.h"
+#include "config.h"
 
 #define NUM_STARS 400
 

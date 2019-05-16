@@ -9,12 +9,9 @@
 #include <mmsystem.h>
 #endif
 
-#include <stdio.h>
 #include "jamultypes.h"
-#include "jamulsound.h"
-#include "control.h"
+#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include "config.h"
-#include "debuggo.h"
 
 #endif

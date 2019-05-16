@@ -13,6 +13,7 @@
 #include "madcap.h"
 #include "achieve.h"
 #include "services.h"
+#include "config.h"
 
 Guy **guys;
 Guy *goodguy;
