@@ -1,8 +1,6 @@
 #include "clock.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#else  // _WIN32
+#ifndef _WIN32
 #include <time.h>
 
 dword timeGetTime()

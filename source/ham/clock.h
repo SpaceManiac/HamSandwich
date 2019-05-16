@@ -4,10 +4,12 @@
 #include "hamtypes.h"
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#else
+#include <mmsystem.h>
+#else  // _WIN32
 dword timeGetTime();
-#endif  // WIN32
+#endif  // _WIN32
 
 void StartClock(void);
 void EndClock(void);

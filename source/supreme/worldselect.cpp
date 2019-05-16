@@ -1,5 +1,6 @@
 #include "worldselect.h"
 #include "world.h"
+#include "winpch.h"
 #include "clock.h"
 #include "game.h"
 #include "music.h"
