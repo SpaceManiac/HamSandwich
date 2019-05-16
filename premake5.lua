@@ -30,6 +30,8 @@ function base_project(name)
 
 		filter "action:vs*"
 			defines { "_CRT_SECURE_NO_WARNINGS" }
+			includedirs { "build/include/" }
+			libdirs { "build/lib/x86/" }
 
 		filter {}
 end
@@ -69,9 +71,9 @@ function icon_file(icon)
 end
 
 function pch(name)
-	filter "action:vs*"
-		pchheader(name .. ".h")
-		pchsource("source/%{prj.name}/" .. name .. ".cpp")
+	--filter "action:vs*"
+	--	pchheader(name .. ".h")
+	--	pchsource("source/%{prj.name}/" .. name .. ".cpp")
 	filter "action:not vs*"
 		pchheader("source/%{prj.name}/" .. name .. ".h")
 	filter {}
