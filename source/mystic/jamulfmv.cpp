@@ -1,11 +1,5 @@
 #include "jamulfmv.h"
 
-byte FLI_play(char *name,byte loop,word wait,MGLDraw *mgl)
-{
-	return 0;
-}
-
-#if 0  // TODO
 // different kinds of flic chunks
 #define FLI_COLOR		11
 #define FLI_LC			12
@@ -16,38 +10,38 @@ byte FLI_play(char *name,byte loop,word wait,MGLDraw *mgl)
 #define FLI_256_COLOR	4
 #define FLI_MINI		18
 
-typedef struct fliheader
+struct fliheader
 {
-  long size;
-  word magic;
-  word frames;
-  word width,height;
-  word flags;
-  word speed;
-  long next,frit;
-  byte expand[104];
-} fliheader;
+	long size;
+	word magic;
+	word frames;
+	word width,height;
+	word flags;
+	word speed;
+	long next,frit;
+	byte expand[104];
+};
 
-typedef struct frmheader
+struct frmheader
 {
-  long size;
-  word magic;    /* always $F1FA */
-  word chunks;
-  byte expand[8];
-} frmheader;
+	long size;
+	word magic;    /* always $F1FA */
+	word chunks;
+	byte expand[8];
+};
 
 // because of padding, the following 6-byte header is 8 bytes.
 // therefore use this define instead of sizeof() to read from a FLIc
 #define sizeofchunkheader 6
 
-typedef struct chunkheader
+struct chunkheader
 {
-  long size;
-  word kind;
-} chunkheader;
+	long size;
+	word kind;
+};
 
 FILE *	FLI_file;
-palette_t FLI_pal[256];
+RGB FLI_pal[256];
 word	fliWidth,fliHeight;
 
 //------------------------------------------------------------------------------
@@ -113,31 +107,28 @@ void PlotDataRun(int x,int y,int len,byte *scrn,byte *data)
 
 void FLI_docolor2(byte *p,MGLDraw *mgl)
 {
-  word numpak;
-  word pos=0;
-  byte palpos=0;
-  byte numcol;
-  byte b;
+	word numpak;
+	word pos=0;
+	byte palpos=0;
+	byte numcol;
+	byte b;
 
-  memcpy(&numpak,p,2);
-  pos=2;
-  while(numpak>0) {
-    numpak--;
-    palpos+=p[pos++];
-    numcol=p[pos++];
-    do {
-      memcpy(&FLI_pal[palpos],&p[pos],3);
-	  b=FLI_pal[palpos].blue;
-	  FLI_pal[palpos].blue=FLI_pal[palpos].red;
-	  FLI_pal[palpos].red=b;
-	  palpos++;
-      pos+=3;
-      --numcol;
-    } while(numcol>0);
-  }
-  // apply the palette here
-  mgl->SetPalette(FLI_pal);
-  mgl->RealizePalette();
+	memcpy(&numpak,p,2);
+	pos=2;
+	while(numpak>0) {
+		numpak--;
+		palpos+=p[pos++];
+		numcol=p[pos++];
+		do {
+			memcpy(&FLI_pal[palpos],&p[pos],3);
+			palpos++;
+			pos+=3;
+			--numcol;
+		} while(numcol>0);
+	}
+	// apply the palette here
+	mgl->SetPalette(FLI_pal);
+	mgl->RealizePalette();
 }
 
 void FLI_docolor(byte *p,MGLDraw *mgl)
@@ -153,13 +144,13 @@ void FLI_doDelta(byte *scrn,int scrWidth,byte *p)
 	char sizeCount;
 	word v;
 
-/*
-  Bit 15   Bit 14   Description
-    0        0      Packet count for the line, it can be zero
-    0        1      Undefined
-    1        0      Store the opcode's low byte in the last pixel of the line
-    1        1      The absolute value of the opcode is the line skip count
-*/
+	/*
+	   Bit 15   Bit 14   Description
+	   0        0      Packet count for the line, it can be zero
+	   0        1      Undefined
+	   1        0      Store the opcode's low byte in the last pixel of the line
+	   1        1      The absolute value of the opcode is the line skip count
+	*/
 	memcpy(&numLines,p,2);
 	pos=2;
 	y=0;
@@ -220,260 +211,266 @@ void FLI_doDelta(byte *scrn,int scrWidth,byte *p)
 
 void FLI_doLC(byte *scrn,int scrWidth,byte *p)
 {
-  word numln;
-  word x,y;
-  byte packets,skip;
-  char size;
-  word pos=0;
+	word numln;
+	word x,y;
+	byte packets,skip;
+	char size;
+	word pos=0;
 
-  memcpy(&y,&p[pos++],2);
-  pos++;
-  memcpy(&numln,&p[pos++],2);
-  pos++;
-  while(numln>0) {
-    numln--;
-    packets=p[pos++];
-    x=0;
-    while(packets>0) {
-      packets--;
-      skip=p[pos++];
-      size=p[pos++];
-      x+=skip;
-      if(size<0) {
-        //memset(&scrn[x+y*scrWidth],p[pos],-size);
-		PlotSolidRun(x,y,-size,scrn,p[pos]);
-        pos++;
-        x-=size;
-      }
-      if(size>0) {
-        //memcpy(&scrn[x+y*scrWidth],&p[pos],size);
-		PlotDataRun(x,y,size,scrn,&p[pos]);
-        pos+=size;
-        x+=size;
-      }
-    }
-    y++;
-  }
+	memcpy(&y,&p[pos++],2);
+	pos++;
+	memcpy(&numln,&p[pos++],2);
+	pos++;
+	while(numln>0) {
+		numln--;
+		packets=p[pos++];
+		x=0;
+		while(packets>0) {
+			packets--;
+			skip=p[pos++];
+			size=p[pos++];
+			x+=skip;
+			if(size<0) {
+				//memset(&scrn[x+y*scrWidth],p[pos],-size);
+				PlotSolidRun(x,y,-size,scrn,p[pos]);
+				pos++;
+				x-=size;
+			}
+			if(size>0) {
+				//memcpy(&scrn[x+y*scrWidth],&p[pos],size);
+				PlotDataRun(x,y,size,scrn,&p[pos]);
+				pos+=size;
+				x+=size;
+			}
+		}
+		y++;
+	}
 }
 
 void FLI_doBRUN(byte *scrn,int scrWidth,byte *p)
 {
-  byte numpak;
-  word x,y=0;
-  char size;
-  word pos=0;
+	byte numpak;
+	word x,y=0;
+	char size;
+	word pos=0;
 
-  do {
-    x=0;
-    numpak=p[pos++];
-    while(numpak>0) {
-      numpak--;
-      size=p[pos++];
-      if(size>0) {
-        //memset(&scrn[x+y*scrWidth],p[pos],size);
-		PlotSolidRun(x,y,size,scrn,p[pos]);
-        pos++;
-        x+=size;
-      }
-      if(size<0) {
-        //memcpy(&scrn[x+y*scrWidth],&p[pos],-size);
-		PlotDataRun(x,y,-size,scrn,&p[pos]);
-        pos-=size;
-        x-=size;
-      }
-    }
-    ++y;
-  } while(y<fliHeight);
+	do {
+		x=0;
+		numpak=p[pos++];
+		while(numpak>0) {
+			numpak--;
+			size=p[pos++];
+			if(size>0) {
+				//memset(&scrn[x+y*scrWidth],p[pos],size);
+				PlotSolidRun(x,y,size,scrn,p[pos]);
+				pos++;
+				x+=size;
+			}
+			if(size<0) {
+				//memcpy(&scrn[x+y*scrWidth],&p[pos],-size);
+				PlotDataRun(x,y,-size,scrn,&p[pos]);
+				pos-=size;
+				x-=size;
+			}
+		}
+		++y;
+	} while(y<fliHeight);
 }
 
 void FLI_nextchunk(MGLDraw *mgl,int scrWidth)
 {
-  int i,j;
-  chunkheader chead;
-  byte *p,*src,*dst;
+	int i,j;
+	chunkheader chead;
+	byte *p,*src,*dst;
 
-  fread(&chead,1,sizeofchunkheader,FLI_file);
-  if(chead.kind==FLI_COPY)
-	  chead.size=fliWidth*fliHeight+sizeofchunkheader;	// a hack to make up for a bug in Animator?
-  p=(byte *)malloc(chead.size-sizeofchunkheader);
-  fread(p,1,chead.size-sizeofchunkheader,FLI_file);
-  switch(chead.kind)
-  {
-    case FLI_COPY:  dst=mgl->GetScreen();
-					src=p;
-					for(j=0;j<fliHeight;j++)
-					{
-						for(i=0;i<fliWidth;i++)
-						{
-							*dst=*src;
-							*(dst+1)=*src;
-							*(dst+scrWidth)=*src;
-							*(dst+scrWidth+1)=*src;
-							dst+=2;
-							src++;
-						}
-						dst+=scrWidth;
-					}
-                    break;
-    case FLI_BLACK: mgl->ClearScreen();
-                    break;
-    case FLI_COLOR: FLI_docolor(p,mgl);
-                    break;
-    case FLI_LC:    FLI_doLC(mgl->GetScreen(),scrWidth,p);
-                    break;
-    case FLI_BRUN:  FLI_doBRUN(mgl->GetScreen(),scrWidth,p);
-                    break;
-	case FLI_MINI:  break; // ignore it
-	case FLI_DELTA: FLI_doDelta(mgl->GetScreen(),scrWidth,p);
-					break;
-	case FLI_256_COLOR: FLI_docolor2(p,mgl);
-						break;
-  }
-  free(p);
+	fread(&chead,1,sizeofchunkheader,FLI_file);
+	if(chead.kind==FLI_COPY)
+		chead.size=fliWidth*fliHeight+sizeofchunkheader;	// a hack to make up for a bug in Animator?
+	p=(byte *)malloc(chead.size-sizeofchunkheader);
+	fread(p,1,chead.size-sizeofchunkheader,FLI_file);
+	switch(chead.kind)
+	{
+		case FLI_COPY:
+			dst=mgl->GetScreen();
+			src=p;
+			for(j=0;j<fliHeight;j++)
+			{
+				for(i=0;i<fliWidth;i++)
+				{
+					*dst=*src;
+					*(dst+1)=*src;
+					*(dst+scrWidth)=*src;
+					*(dst+scrWidth+1)=*src;
+					dst+=2;
+					src++;
+				}
+				dst+=scrWidth;
+			}
+			break;
+		case FLI_BLACK:
+			mgl->ClearScreen();
+			break;
+		case FLI_COLOR:
+			FLI_docolor(p,mgl);
+			break;
+		case FLI_LC:
+			FLI_doLC(mgl->GetScreen(),scrWidth,p);
+			break;
+		case FLI_BRUN:
+			FLI_doBRUN(mgl->GetScreen(),scrWidth,p);
+			break;
+		case FLI_MINI:
+			break; // ignore it
+		case FLI_DELTA:
+			FLI_doDelta(mgl->GetScreen(),scrWidth,p);
+			break;
+		case FLI_256_COLOR:
+			FLI_docolor2(p,mgl);
+			break;
+	}
+	free(p);
 }
 
 void FLI_nextfr(MGLDraw *mgl,int scrWidth)
 {
-  frmheader fhead;
-  int i;
+	frmheader fhead;
+	int i;
 
-  fread(&fhead,1,sizeof(frmheader),FLI_file);
+	fread(&fhead,1,sizeof(frmheader),FLI_file);
 
-  // check to see if this is a FLC file's special frame... if it is, skip it
-  if(fhead.magic==0x00A1)
-  {
-	fseek(FLI_file,fhead.size,SEEK_CUR);
-	return;
-  }
+	// check to see if this is a FLC file's special frame... if it is, skip it
+	if(fhead.magic==0x00A1)
+	{
+		fseek(FLI_file,fhead.size,SEEK_CUR);
+		return;
+	}
 
-  for(i=0;i<fhead.chunks;i++)
-	  FLI_nextchunk(mgl,scrWidth);
+	for(i=0;i<fhead.chunks;i++)
+		FLI_nextchunk(mgl,scrWidth);
 }
 
 void FLI_skipfr(void)
 {
-  frmheader fhead;
+	frmheader fhead;
 
-  fread(&fhead,1,sizeof(frmheader),FLI_file);
+	fread(&fhead,1,sizeof(frmheader),FLI_file);
 
-  fseek(FLI_file,fhead.size-sizeof(frmheader),SEEK_CUR);
+	fseek(FLI_file,fhead.size-sizeof(frmheader),SEEK_CUR);
 }
 
 byte FLI_play(char *name,byte loop,word wait,MGLDraw *mgl)
 {
-  int frmon=0;
-  long frsize;
-  fliheader FLI_hdr;
-  int scrWidth;
-  char k;
-  dword startTime,endTime;
+	int frmon=0;
+	long frsize;
+	fliheader FLI_hdr;
+	int scrWidth;
+	char k;
+	dword startTime,endTime;
 
-  FLI_file=fopen(name,"rb");
-  fread(&FLI_hdr,1,sizeof(fliheader),FLI_file);
-  fread(&frsize,1,4,FLI_file);
-  fseek(FLI_file,-4,SEEK_CUR);
-  fliWidth=FLI_hdr.width;
-  fliHeight=FLI_hdr.height;
+	FLI_file=fopen(name,"rb");
+	fread(&FLI_hdr,1,sizeof(fliheader),FLI_file);
+	fread(&frsize,1,4,FLI_file);
+	fseek(FLI_file,-4,SEEK_CUR);
+	fliWidth=FLI_hdr.width;
+	fliHeight=FLI_hdr.height;
 
-  mgl->LastKeyPressed();	// clear key buffer
+	mgl->LastKeyPressed();	// clear key buffer
 
-  // if this is a FLC, skip the first frame
-  if((name[strlen(name)-1]=='c')||
-	 (name[strlen(name)-1]=='C'))
-  {
+	// if this is a FLC, skip the first frame
+	if((name[strlen(name)-1]=='c')||
+			(name[strlen(name)-1]=='C'))
+	{
 		FLI_skipfr();
 		frmon++;
 		FLI_hdr.frames++;	// a confusion issue
-  }
-  do {
-	startTime=timeGetTime();
-    frmon++;
-	scrWidth=mgl->GetWidth();
-    FLI_nextfr(mgl,scrWidth);
-	mgl->Flip();
-    if((loop)&&(frmon==FLI_hdr.frames+1)) {
-      frmon=1;
-      fseek(FLI_file,128+frsize,SEEK_SET);
-    }
-    if((!loop)&&(frmon==FLI_hdr.frames))
-      frmon=FLI_hdr.frames+1;
-	k=mgl->LastKeyPressed();
-	// key #27 is escape
+	}
+	do {
+		startTime=timeGetTime();
+		frmon++;
+		scrWidth=mgl->GetWidth();
+		FLI_nextfr(mgl,scrWidth);
+		mgl->Flip();
+		if((loop)&&(frmon==FLI_hdr.frames+1)) {
+			frmon=1;
+			fseek(FLI_file,128+frsize,SEEK_SET);
+		}
+		if((!loop)&&(frmon==FLI_hdr.frames))
+			frmon=FLI_hdr.frames+1;
+		k=mgl->LastKeyPressed();
+		// key #27 is escape
 
-	endTime=timeGetTime();
-	while((endTime-startTime)<wait)
 		endTime=timeGetTime();
-  } while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27));
-  fclose(FLI_file);
-  if(k==27)
-	  return 1;
+		while((endTime-startTime)<wait)
+			endTime=timeGetTime();
+	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27));
+	fclose(FLI_file);
+	if(k==27)
+		return 1;
 
-  return 0;
+	return 0;
 }
 
 word FLI_numFrames(char *name)
 {
-  fliheader FLI_hdr;
+	fliheader FLI_hdr;
 
-  FLI_file=fopen(name,"rb");
-  fread(&FLI_hdr,1,sizeof(fliheader),FLI_file);
-  fclose(FLI_file);
-  if((name[strlen(name)-1]=='c')||
-	 (name[strlen(name)-1]=='C'))
-	return FLI_hdr.frames;
-  else
-	return FLI_hdr.frames;
+	FLI_file=fopen(name,"rb");
+	fread(&FLI_hdr,1,sizeof(fliheader),FLI_file);
+	fclose(FLI_file);
+	if((name[strlen(name)-1]=='c')||
+			(name[strlen(name)-1]=='C'))
+		return FLI_hdr.frames;
+	else
+		return FLI_hdr.frames;
 }
 
 void FLI_play_callback(char *name,byte loop,word wait,void (*callback)(int),MGLDraw *mgl)
 {
-  int frmon=0;
-  long frsize;
-  fliheader FLI_hdr;
-  int scrWidth;
-  char k;
-  dword startTime,endTime;
+	int frmon=0;
+	long frsize;
+	fliheader FLI_hdr;
+	int scrWidth;
+	char k;
+	dword startTime,endTime;
 
-  FLI_file=fopen(name,"rb");
-  fread(&FLI_hdr,1,sizeof(fliheader),FLI_file);
-  fread(&frsize,1,4,FLI_file);
-  fseek(FLI_file,-4,SEEK_CUR);
-  fliWidth=FLI_hdr.width;
-  fliHeight=FLI_hdr.height;
+	FLI_file=fopen(name,"rb");
+	fread(&FLI_hdr,1,sizeof(fliheader),FLI_file);
+	fread(&frsize,1,4,FLI_file);
+	fseek(FLI_file,-4,SEEK_CUR);
+	fliWidth=FLI_hdr.width;
+	fliHeight=FLI_hdr.height;
 
-  mgl->LastKeyPressed();	// clear key buffer
+	mgl->LastKeyPressed();	// clear key buffer
 
-  // if this is a FLC, skip the first frame
-  if((name[strlen(name)-1]=='c')||
-	 (name[strlen(name)-1]=='C'))
-  {
+	// if this is a FLC, skip the first frame
+	if((name[strlen(name)-1]=='c')||
+			(name[strlen(name)-1]=='C'))
+	{
 		FLI_skipfr();
 		frmon++;
 		FLI_hdr.frames++;	// a confusion issue
-  }
-  do
-  {
-	startTime=timeGetTime();
-    frmon++;
-	scrWidth=mgl->GetWidth();
-    FLI_nextfr(mgl,scrWidth);
-	callback(frmon);
-	mgl->Flip();
-    if((loop)&&(frmon==FLI_hdr.frames+1))
+	}
+	do
 	{
-      frmon=1;
-      fseek(FLI_file,128+frsize,SEEK_SET);
-    }
-    if((!loop)&&(frmon==FLI_hdr.frames))
-      frmon=FLI_hdr.frames+1;
-	k=mgl->LastKeyPressed();
-	// key #27 is escape
+		startTime=timeGetTime();
+		frmon++;
+		scrWidth=mgl->GetWidth();
+		FLI_nextfr(mgl,scrWidth);
+		callback(frmon);
+		mgl->Flip();
+		if((loop)&&(frmon==FLI_hdr.frames+1))
+		{
+			frmon=1;
+			fseek(FLI_file,128+frsize,SEEK_SET);
+		}
+		if((!loop)&&(frmon==FLI_hdr.frames))
+			frmon=FLI_hdr.frames+1;
+		k=mgl->LastKeyPressed();
+		// key #27 is escape
 
-	endTime=timeGetTime();
-	while((endTime-startTime)<wait)
 		endTime=timeGetTime();
-  } while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27));
-  fclose(FLI_file);
+		while((endTime-startTime)<wait)
+			endTime=timeGetTime();
+	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27));
+	fclose(FLI_file);
 }
-
-#endif
