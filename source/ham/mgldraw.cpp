@@ -729,7 +729,11 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 
 bool MGLDraw::SaveBMP(const char *name)
 {
+#if SDL_VERSION_ATLEAST(2, 0, 5)
 	SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, xRes, yRes, 8, SDL_PIXELFORMAT_INDEX8);
+#else
+	SDL_Surface* surface = SDL_CreateRGBSurface(0, xRes, yRes, 8, 0, 0, 0, 0);
+#endif
 	SDL_LockSurface(surface);
 	memcpy(surface->pixels, scrn, xRes * yRes);
 	SDL_UnlockSurface(surface);
