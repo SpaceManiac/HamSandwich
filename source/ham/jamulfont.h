@@ -48,6 +48,11 @@ void FontPrintStringColor(int x, int y, const char *s, mfont_t *font, byte color
 void FontPrintStringBright(int x, int y, const char *s, mfont_t *font, char bright);
 void FontPrintStringGlow(int x, int y, const char *s, mfont_t *font, char bright = 0);
 void FontPrintStringBrightGlow(int x, int y, const char *s, char brt, mfont_t *font);
+void FontPrintStringDark(int x, int y, const char *s, mfont_t *font);
+void FontPrintStringDarkAdj(int x, int y, const char *s, int dark, mfont_t *font);
+
+void FontPrintRectBlack(int x, int y, int x2, int y2, const char *s, int height, int bright, mfont_t *font);
+void FontPrintRectBlack2(int x, int y, int x2, int y2, const char *s, int height, mfont_t *font);
 
 int FontStrLen(const char *s, mfont_t *font);
 void FontSetColors(byte first, byte count, byte *data);

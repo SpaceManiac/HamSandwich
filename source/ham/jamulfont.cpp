@@ -104,6 +104,100 @@ static void FontPrintChar(int x, int y, char c, mfont_t *font)
 	}
 }
 
+static void FontPrintCharDark(int x, int y, char c, mfont_t *font)
+{
+	byte *dst,*src;
+	int scrWidth,scrHeight,chrWidth;
+	int i,j;
+	int b1,b2;
+
+	scrWidth=fontmgl->GetWidth();
+	scrHeight=fontmgl->GetHeight();
+	dst=fontmgl->GetScreen()+x+y*scrWidth;
+
+	if(c<font->firstChar || c>=(font->firstChar+font->numChars))
+		return; // unprintable
+
+	c-=(char)font->firstChar;
+
+	chrWidth=*(font->chars[c]);
+	src=font->chars[c]+1;
+	for(j=0;j<font->height;j++)
+	{
+		for(i=0;i<(*font->chars[c]);i++)
+		{
+			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
+			{
+				b2=(fontPal[*src]&31);
+				if(b2>0)
+				{
+					b1=((*dst)&31);
+					if(b1>b2)
+						b1-=b2;
+					else
+						b1=0;
+					*dst=((*dst)&(~31))+b1;
+				}
+			}
+			dst++;
+			src++;
+			x++;
+		}
+		y++;
+		x-=chrWidth;
+		dst+=(scrWidth-chrWidth);
+	}
+}
+
+static void FontPrintCharDark2(int x, int y, char c, byte howdark, mfont_t *font)
+{
+	byte *dst,*src;
+	int scrWidth,scrHeight,chrWidth;
+	int i,j;
+	int b1,b2;
+
+	scrWidth=fontmgl->GetWidth();
+	scrHeight=fontmgl->GetHeight();
+	dst=fontmgl->GetScreen()+x+y*scrWidth;
+
+	if(c<font->firstChar || c>=(font->firstChar+font->numChars))
+		return; // unprintable
+
+	c-=(char)font->firstChar;
+
+	chrWidth=*(font->chars[c]);
+	src=font->chars[c]+1;
+	for(j=0;j<font->height;j++)
+	{
+		for(i=0;i<(*font->chars[c]);i++)
+		{
+			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
+			{
+				b2=(fontPal[*src]&31);
+				if(b2>howdark)
+					b2-=howdark;
+				else
+					b2=0;
+				if(b2>0)
+				{
+					b1=((*dst)&31);
+					if(b1>b2)
+						b1-=b2;
+					else
+						b1=0;
+					*dst=((*dst)&(~31))+b1;
+				}
+			}
+			dst++;
+			src++;
+			x++;
+		}
+		y++;
+		x-=chrWidth;
+		dst+=(scrWidth-chrWidth);
+	}
+}
+
 static void FontPrintCharColor(int x, int y, char c, byte color, char bright, mfont_t *font)
 {
 	byte *dst, *src;
@@ -342,6 +436,39 @@ void FontPrintStringColor(int x, int y, const char *s, mfont_t *font, byte color
 	}
 }
 
+void FontPrintStringDark(int x,int y,const char *s,mfont_t *font)
+{
+	int i;
+
+	for(i=0;i<(int)strlen(s);i++)
+	{
+		FontPrintCharDark(x,y,s[i],font);
+		x+=CharWidth(s[i],font)+font->gapSize;
+	}
+}
+
+void FontPrintStringDarkAdj(int x,int y, const char *s,int dark,mfont_t *font)
+{
+	int i;
+	byte d;
+
+	for(i=0;i<(int)strlen(s);i++)
+	{
+		if(dark+i<0)
+			d=0;
+		else if(dark+i>32)
+			d=32;
+		else
+			d=dark+i;
+		FontPrintCharGlow(x-1,y-1,s[i],0,font);
+		FontPrintCharGlow(x+1,y-1,s[i],0,font);
+		FontPrintCharGlow(x-1,y+1,s[i],0,font);
+		FontPrintCharGlow(x+1,y+1,s[i],0,font);
+		FontPrintCharDark2(x,y,s[i],d,font);
+		x+=CharWidth(s[i],font)+font->gapSize;
+	}
+}
+
 void FontPrintStringBright(int x, int y, const char *s, mfont_t *font, char bright)
 {
 	int i;
@@ -396,6 +523,106 @@ void FontPrintStringDropShadow(int x, int y, const char *s, mfont_t *font, byte 
 		FontPrintChar(x, y, s[i], font);
 		x += CharWidth(s[i], font) + font->gapSize;
 	}
+}
+
+void FontPrintRectBlack(int x,int y,int x2,int y2, const char *s,int height,int bright,mfont_t *font)
+{
+	int tx,ty,len;
+	char *tmp;
+	char *tok;
+
+	tmp=(char *)malloc(strlen(s)+2);
+	strcpy(tmp,s);
+
+	tx=x+2;
+	ty=y+2;
+	tok=strtok(tmp," \n\t");
+	while(tok)
+	{
+		if(tok[0]=='^')
+		{	// carriage return
+			tx=x+2;
+			ty+=height;
+			if(ty>y2-height-2)
+			{
+				free(tmp);
+				return;	// no more room
+			}
+		}
+		else
+		{
+			len=FontStrLen(tok,font);
+			if(tx+len>x2-2)
+			{
+				tx=x+2;
+				ty+=height;
+				if(ty>y2-height-2)
+				{
+					FontPrintStringDarkAdj(tx,ty,"+",bright,font);
+					free(tmp);
+					return;	// no more room
+				}
+			}
+			FontPrintStringDarkAdj(tx,ty,tok,bright,font);
+			bright+=(strlen(tok)+1);
+			tx+=len;
+			tx+=font->spaceSize;
+		}
+		tok=strtok(NULL," \n\t");
+		if(bright>32)
+		{
+			free(tmp);
+			return;
+		}
+	}
+	free(tmp);
+}
+
+void FontPrintRectBlack2(int x,int y,int x2,int y2, const char *s,int height,mfont_t *font)
+{
+	int tx,ty,len;
+	char *tmp;
+	char *tok;
+
+	tmp=(char *)malloc(strlen(s)+2);
+	strcpy(tmp,s);
+
+	tx=x+2;
+	ty=y+2;
+	tok=strtok(tmp," \n\t");
+	while(tok)
+	{
+		if(tok[0]=='^')
+		{	// carriage return
+			tx=x+2;
+			ty+=height;
+			if(ty>y2-height-2)
+			{
+				free(tmp);
+				return;	// no more room
+			}
+		}
+		else
+		{
+			len=FontStrLen(tok,font);
+			if(tx+len>x2-2)
+			{
+				tx=x+2;
+				ty+=height;
+				if(ty>y2-height-2)
+				{
+					FontPrintStringDark(tx,ty,"+",font);
+					free(tmp);
+					return;	// no more room
+				}
+			}
+			FontPrintStringDark(tx,ty,tok,font);
+			tx+=len;
+			tx+=font->spaceSize;
+		}
+		tok=strtok(NULL," \n\t");
+	}
+	free(tmp);
 }
 
 void FontSetColors(byte first, byte count, byte *data)
