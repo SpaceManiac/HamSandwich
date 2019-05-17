@@ -2,6 +2,7 @@
 #include "cossin.h"
 #include "sound.h"
 #include "player.h"
+#include "debuggo.h"
 
 fwork_t *fwork;
 byte going;

@@ -51,3 +51,46 @@ void DumbSidePalette(MGLDraw *mgl)
 
 	mgl->SetSecondaryPalette(pal2);
 }
+
+void GreyPalette(MGLDraw* mgl)
+{
+	const RGB* pal = mgl->GetPalette();
+	PALETTE pal2;
+
+	for (int i = 0; i < 256; ++i)
+	{
+		pal2[i] = pal[i & 31];
+	}
+
+	mgl->SetSecondaryPalette(pal2);
+}
+
+void DarkPalette(MGLDraw* mgl)
+{
+	const RGB* pal = mgl->GetPalette();
+	PALETTE pal2;
+
+	for (int i = 0; i < 256; ++i)
+	{
+		pal2[i].r = (byte)(pal[i].r >> 1);
+		pal2[i].g = (byte)(pal[i].g >> 1);
+		pal2[i].b = (byte)(pal[i].b >> 1);
+	}
+	pal2[175] = pal[175];
+	pal2[255] = pal[255];
+
+	mgl->SetSecondaryPalette(pal2);
+}
+
+void CyclePalette(MGLDraw *mgl, int c)
+{
+	const RGB* pal = mgl->GetPalette();
+	PALETTE pal2;
+
+	for (int i = 0; i < 256; ++i)
+	{
+		pal2[i] = pal[(i + c) % 256];
+	}
+
+	mgl->SetSecondaryPalette(pal2);
+}

@@ -8,6 +8,7 @@
 #include "quest.h"
 #include "fireworks.h"
 #include "title.h"
+#include "palettes.h"
 
 static byte cursor;
 static byte oldc;
@@ -791,12 +792,13 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 			{
 				if(opt.cheats[badge[cursor].cheatNum]==1)
 				{
-					GetDisplayMGL()->GreyPalette();
+					GreyPalette(GetDisplayMGL());
 					JamulSoundPurge();
 				}
 				else
 				{
 					GetDisplayMGL()->LoadBMP("graphics/title.bmp");
+					GetDisplayMGL()->RealizePalette();
 					LoopingSound(SND_HAMUMU);
 				}
 			}

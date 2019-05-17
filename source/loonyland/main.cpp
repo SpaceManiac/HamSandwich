@@ -11,9 +11,9 @@
 #include "title.h"
 #include "options.h"
 #include "badge.h"
+#include "debuggo.h"
 
-bool windowedGame=false;
-MGLDraw *mainmgl;
+void UpdateMusic() {}
 
 int main(int argc, char *argv[])
 {
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 
 	DBG("b");
 	LoadOptions();  // so we know we want sound before we go to init it
-	mainmgl=new MGLDraw("Loonyland",SCRWID,SCRHEI,8,windowedGame);
+	MGLDraw *mainmgl=new MGLDraw("Loonyland", SCRWID, SCRHEI, windowedGame);
 	DBG("c");
 	if(!mainmgl)
 		return 0;

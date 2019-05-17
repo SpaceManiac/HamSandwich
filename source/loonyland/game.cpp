@@ -10,6 +10,8 @@
 #include "bossbash.h"
 #include "help.h"
 #include "ch_summon.h"
+#include "debuggo.h"
+#include "palettes.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -53,7 +55,7 @@ void LunaticInit(MGLDraw *mgl)
 	LoadOptions();
 	InitMonsters();
 
-	mgl->SetLastKey(0);
+	mgl->ClearKeys();
 	SeedRNG();
 	InitControls();
 	InitPlayer(INIT_GAME,0,0);
@@ -83,7 +85,7 @@ byte InitLevel(byte map)
 	JamulSoundPurge();	// each level, that should be good
 
 	if(opt.cheats[CH_VINTAGE])
-		gamemgl->GreyPalette();
+		GreyPalette(gamemgl);
 
 	if(loadGame)
 	{
@@ -178,7 +180,7 @@ void ExitLevel(void)
 	PurgeMonsterSprites();
 }
 
-void SetGameIdle(byte b)
+void SetGameIdle(bool b)
 {
 	idleGame=b;
 }
@@ -322,8 +324,7 @@ byte LunaticRun(int *lastTime)
 
 				if(flip)
 				{
-					gamemgl->CyclePalette();
-					gamemgl->RealizePalette();
+					CyclePalette(gamemgl, updFrameCount % 256);
 				}
 			}
 

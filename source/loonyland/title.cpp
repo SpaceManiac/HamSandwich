@@ -5,6 +5,7 @@
 #include "options.h"
 #include "pause.h"
 #include "plasma.h"
+#include "palettes.h"
 
 // special codes in the credits:
 // @ = use GirlsRWeird font
@@ -727,7 +728,7 @@ byte MainMenu(MGLDraw *mgl)
 
 	mgl->LoadBMP("graphics/title.bmp");
 	if(opt.cheats[CH_VINTAGE])
-		mgl->GreyPalette();
+		GreyPalette(mgl);
 	mgl->LastKeyPressed();
 	oldc=255;//CONTROL_B1|CONTROL_B2;
 

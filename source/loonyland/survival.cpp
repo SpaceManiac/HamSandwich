@@ -4,6 +4,7 @@
 #include "player.h"
 #include "items.h"
 #include "badge.h"
+#include "debuggo.h"
 
 #define  SURV_LEVELS 25
 
