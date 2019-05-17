@@ -12,6 +12,7 @@
 #include "shop.h"
 #include "goal.h"
 #include "ledger.h"
+#include "palettes.h"
 
 static special_t *spcl;
 static byte numSpecials;
@@ -1609,7 +1610,7 @@ void SpecialEffect(special_t *me,Map *map)
 					player.oxygen=127*256;
 
 				if(map->flags&MAP_UNDERWATER)
-					GetDisplayMGL()->DumbSidePalette(0);
+					DumbSidePalette(GetDisplayMGL());
 				else
 					GetDisplayMGL()->RealizePalette();
 				break;

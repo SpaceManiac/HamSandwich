@@ -1,5 +1,5 @@
 #include "palettes.h"
-#include "mgldraw.h"
+#include "ham_mgldraw.h"
 #include <algorithm>
 
 void WaterPalette(MGLDraw *mgl)

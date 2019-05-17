@@ -11,6 +11,7 @@
 #include "config.h"
 #include "log.h"
 #include "customworld.h"
+#include "palettes.h"
 #if __linux__
 #include <unistd.h>
 #endif
@@ -59,7 +60,7 @@ void LunaticInit(MGLDraw *mgl)
 	InitItems();
 	InitInterface();
 	InitProfile();
-	mgl->SetLastKey(0);
+	mgl->ClearKeys();
 	SeedRNG();
 	InitControls();
 	msgFromOtherModules=0;
@@ -202,9 +203,11 @@ void ExitLevel(void)
 	PurgeMonsterSprites();
 }
 
-void SetGameIdle(byte b)
+void SetGameIdle(bool b)
 {
 	idleGame=b;
+	if (b)
+		PauseGame();
 }
 
 byte GetGameIdle(void)
@@ -234,7 +237,7 @@ void RestoreGameplayGfx(void)
 	{
 		if(curMap->flags&MAP_UNDERWATER)
 		{
-			gamemgl->DumbSidePalette(0);
+			DumbSidePalette(gamemgl);
 			return;
 		}
 	}
@@ -568,8 +571,10 @@ void LunaticDraw(void)
 		sprintf(s,"Items %d", n);
 		PrintGlow(120,130,s,8,2);
 
+		int KEY_MAX = 0;
+		const byte* key = SDL_GetKeyboardState(&KEY_MAX);
 		char* end = s + sprintf(s,"Keys: ");
-		for (int i = 0; i < 256; ++i)
+		for (int i = 0; i < KEY_MAX; ++i)
 			if (key[i])
 				end += sprintf(end, "%s ", AllegroCodeText(i));
 		PrintGlow(5,150,s,8,2);

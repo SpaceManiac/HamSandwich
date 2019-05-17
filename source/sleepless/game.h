@@ -85,7 +85,7 @@ byte LunaticWorld(byte world,char *worldName);
 
 void SendMessageToGame(byte msg,int content);
 
-void SetGameIdle(byte b);
+void SetGameIdle(bool b);
 byte GetGameIdle(void);
 void GameIdle(void);
 

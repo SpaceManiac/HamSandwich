@@ -31,6 +31,9 @@
 #define SS_DONERECEIVING		5
 #define SS_FAILED				6
 
+// if I'm not mistaken, this number is NOT used by windows as a window event
+#define INTERNET_EVENT	(WM_USER+1)
+
 typedef struct mySock_t
 {
 	byte state;
