@@ -1,5 +1,5 @@
 #include "jamulfont.h"
-
+#include "mgldraw.h"
 
 MGLDraw *fontmgl;
 // this is a sort of palette translation table for the font
@@ -168,10 +168,13 @@ void FontPrintCharBright(int x, int y, char c, char bright, mfont_t *font)
 			if (*src && (x > 0) && (x < scrWidth) && (y > 0) && (y < scrHeight))
 			{
 				*dst = *src + bright;
-				if (*dst > (*src & (~31)) + 31)
-					*dst = (*src & (~31)) + 31;
-				else if (*dst < (*src & (~31)))
-					*dst = *src & (~31);
+				if ((*dst & (~31)) != (*src & (~31)))
+				{
+					if (bright > 0)
+						*dst = *src | 31;
+					else
+						*dst = *src & (~31);
+				}
 			}
 			dst++;
 			src++;
@@ -213,6 +216,89 @@ void FontPrintCharSolid(int x, int y, char c, mfont_t *font, byte color)
 		y++;
 		x -= chrWidth;
 		dst += (scrWidth - chrWidth);
+	}
+}
+
+void FontPrintCharGlow(int x, int y, char c, mfont_t *font)
+{
+	byte *dst,*src,b;
+	int scrWidth,scrHeight,chrWidth;
+	int i,j;
+
+	scrWidth=fontmgl->GetWidth();
+	scrHeight=fontmgl->GetHeight();
+	dst=fontmgl->GetScreen()+x+y*scrWidth;
+
+	if(c<font->firstChar || c>=(font->firstChar+font->numChars))
+		return; // unprintable
+
+	c-=(char)font->firstChar;
+
+	chrWidth=*(font->chars[c]);
+	src=font->chars[c]+1;
+	for(j=0;j<font->height;j++)
+	{
+		for(i=0;i<(*font->chars[c]);i++)
+		{
+			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight))
+			{
+				b=*dst+((*src)&31);
+				if((b&(~31))!=((*dst)&(~31)))
+					*dst=((*dst)&(~31))+31;
+				else
+					*dst=b;
+			}
+			dst++;
+			src++;
+			x++;
+		}
+		y++;
+		x-=chrWidth;
+		dst+=(scrWidth-chrWidth);
+	}
+}
+
+void FontPrintCharBrightGlow(int x, int y, char c, char brt, mfont_t *font)
+{
+	byte *dst,*src,b;
+	int scrWidth,scrHeight,chrWidth;
+	int i,j;
+
+	scrWidth=fontmgl->GetWidth();
+	scrHeight=fontmgl->GetHeight();
+	dst=fontmgl->GetScreen()+x+y*scrWidth;
+
+	if(c<font->firstChar || c>=(font->firstChar+font->numChars))
+		return; // unprintable
+
+	c-=(char)font->firstChar;
+
+	chrWidth=*(font->chars[c]);
+	src=font->chars[c]+1;
+	for(j=0;j<font->height;j++)
+	{
+		for(i=0;i<(*font->chars[c]);i++)
+		{
+			if(*src && (x>0) && (x<scrWidth) && (y>0) && (y<scrHeight) &&
+				(((*src)&31)+brt>0))
+			{
+
+				b=*dst+((*src)&31)+brt;
+				if((b&(~31))!=((*dst)&(~31)))
+					*dst=((*dst)&(~31))+31;
+				else
+				{
+					if(b>*dst)	// don't plot it if it would darken
+						*dst=b;
+				}
+			}
+			dst++;
+			src++;
+			x++;
+		}
+		y++;
+		x-=chrWidth;
+		dst+=(scrWidth-chrWidth);
 	}
 }
 
@@ -270,6 +356,28 @@ void FontPrintStringSolid(int x, int y, const char *s, mfont_t *font, byte color
 	}
 }
 
+void FontPrintStringGlow(int x, int y, const char *s, mfont_t *font)
+{
+	int i;
+
+	for(i=0;i<(int)strlen(s);i++)
+	{
+		FontPrintCharGlow(x,y,s[i],font);
+		x+=CharWidth(s[i],font)+font->gapSize;
+	}
+}
+
+void FontPrintStringBrightGlow(int x, int y, const char *s, char brt, mfont_t *font)
+{
+	int i;
+
+	for(i=0;i<(int)strlen(s);i++)
+	{
+		FontPrintCharBrightGlow(x,y,s[i],brt,font);
+		x+=CharWidth(s[i],font)+font->gapSize;
+	}
+}
+
 void FontPrintStringDropShadow(int x, int y, const char *s, mfont_t *font, byte shadowColor, byte shadowOffset)
 {
 	int i;
@@ -298,7 +406,7 @@ int FontStrLen(const char *s, mfont_t *font)
 	return len;
 }
 
-bool FontInputText(char *prompt, char *buffer, int len, void (*renderScrn)(mfont_t *), mfont_t *font)
+bool FontInputText(const char *prompt, char *buffer, int len, void (*renderScrn)(mfont_t *), mfont_t *font)
 {
 	int pos = 0;
 	bool done = 0;
