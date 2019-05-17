@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "editor.h"
 #include "terrainedit.h"
 #include "itemedit.h"

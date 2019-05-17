@@ -7,6 +7,7 @@
    Copyright 2003, Mike Hommel
 */
 
+#include "winpch.h"
 #include "mgldraw.h"
 #include "jamulfont.h"
 #include "jamulsound.h"

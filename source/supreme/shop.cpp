@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "shop.h"
 #include "cheat.h"
 #include "items.h"

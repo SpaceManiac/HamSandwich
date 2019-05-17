@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "racer.h"
 #include "display.h"
 #include "progress.h"

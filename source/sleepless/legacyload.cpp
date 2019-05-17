@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "legacyload.h"
 #include "map.h"
 #include "world.h"

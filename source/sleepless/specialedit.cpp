@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "specialedit.h"
 #include "dialogbits.h"
 #include "filedialog.h"

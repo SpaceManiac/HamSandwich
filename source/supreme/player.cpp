@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "player.h"
 #include "music.h"
 #include "rage.h"

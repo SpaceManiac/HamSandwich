@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "cheat.h"
 #include "shop.h"
 #include "gallery.h"

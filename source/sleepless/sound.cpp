@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "sound.h"
 #include "display.h"
 #include "repair.h"

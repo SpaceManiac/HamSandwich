@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "intface.h"
 #include "player.h"
 #include "shop.h"

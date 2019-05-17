@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "special.h"
 #include "monster.h"
 #include "repair.h"

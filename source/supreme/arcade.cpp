@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "arcade.h"
 #include "dialogbits.h"
 #include "spacegame.h"

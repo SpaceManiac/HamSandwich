@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "tile.h"
 #include "display.h"
 #include "progress.h"

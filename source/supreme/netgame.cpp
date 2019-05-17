@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "netgame.h"
 #include "display.h"
 #include "sound.h"

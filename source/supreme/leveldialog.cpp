@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "leveldialog.h"
 #include "editor.h"
 #include "dialogbits.h"

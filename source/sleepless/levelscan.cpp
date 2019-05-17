@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "levelscan.h"
 #include "monster.h"
 #include "sound.h"

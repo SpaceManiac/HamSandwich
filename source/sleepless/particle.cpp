@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "particle.h"
 #include "bullet.h"
 #include "monster.h"

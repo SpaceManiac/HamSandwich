@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "goal.h"
 #include "progress.h"
 #include "editor.h"

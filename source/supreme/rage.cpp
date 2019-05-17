@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "rage.h"
 #include "player.h"
 #include "bullet.h"

@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "cossin.h"
 #include <math.h>
 #include "jamultypes.h"

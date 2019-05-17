@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "spacegame.h"
 #include "goal.h"
 
