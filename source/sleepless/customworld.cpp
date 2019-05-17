@@ -1,6 +1,7 @@
 #include "customworld.h"
 #include "shop.h"
 #include "md5.h"
+#include <stdlib.h>
 
 #define ENTRY_NONE		0
 #define ENTRY_TITLE		1

@@ -2,6 +2,7 @@
 #include "display.h"
 #include "game.h"
 #include "control.h"
+#include <stdlib.h>
 
 galpic_t *galpix;
 char tmp[1024];

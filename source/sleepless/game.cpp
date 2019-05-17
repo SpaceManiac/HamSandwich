@@ -12,6 +12,7 @@
 #include "log.h"
 #include "customworld.h"
 #include "palettes.h"
+#include <stdlib.h>
 #if __linux__
 #include <unistd.h>
 #endif

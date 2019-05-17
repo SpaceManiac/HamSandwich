@@ -29,7 +29,7 @@ function base_project(name)
 			linkoptions { "-static-libgcc", "-static-libstdc++" }
 
 		filter "action:vs*"
-			defines { "_CRT_SECURE_NO_WARNINGS" }
+			defines { "_CRT_SECURE_NO_WARNINGS", "NOMINMAX" }
 			includedirs { "build/include/" }
 			libdirs { "build/lib/x86/" }
 			debugargs { "window" }

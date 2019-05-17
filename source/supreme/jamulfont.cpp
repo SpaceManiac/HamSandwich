@@ -1,4 +1,5 @@
 #include "jamulfont.h"
+#include <stdio.h>
 
 
 MGLDraw *fontmgl;

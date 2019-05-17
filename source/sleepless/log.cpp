@@ -1,4 +1,5 @@
 #include "log.h"
+#include <stdio.h>
 
 FILE *logF;
 int logLine;

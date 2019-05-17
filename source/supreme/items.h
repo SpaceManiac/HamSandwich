@@ -2,6 +2,7 @@
 #define ITEMS_H
 
 #include "jamulspr.h"
+#include <stdio.h>
 
 #define ITM_NONE	 0
 #define ITM_HAMMERUP 1

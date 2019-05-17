@@ -2,6 +2,7 @@
 #define TILE_H
 
 #include "mgldraw.h"
+#include <stdio.h>
 
 #define TILE_WIDTH  32
 #define TILE_HEIGHT 24

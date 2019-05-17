@@ -2,6 +2,7 @@
 #define SPECIAL_H
 
 #include "mgldraw.h"
+#include <stdio.h>
 
 #define MAX_SPECIAL	128
 #define MAX_EVENT   128

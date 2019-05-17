@@ -2,6 +2,7 @@
 #define JAMULSPR_H
 
 #include "mgldraw.h"
+#include <stdio.h>
 
 class sprite_t
 {

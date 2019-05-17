@@ -4,6 +4,7 @@
 #include "progress.h"
 #include <math.h>
 #include <time.h>
+#include <stdlib.h>
 
 #define VA_SET	0
 #define VA_ADD	1

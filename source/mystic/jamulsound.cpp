@@ -3,6 +3,7 @@
 #include "sound.h"
 #include "options.h"
 #include <SDL2/SDL_mixer.h>
+#include <stdio.h>
 
 typedef struct soundList_t
 {

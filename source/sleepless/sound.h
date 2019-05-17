@@ -3,6 +3,7 @@
 
 #include "jamulsound.h"
 #include "jamultypes.h"
+#include <stdio.h>
 
 #define SND_NONE		0
 #define SND_MENUCLICK	51

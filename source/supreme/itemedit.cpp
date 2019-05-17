@@ -9,6 +9,7 @@
 #include "terrainedit.h"
 #include "vars.h"
 #include "edithelp.h"
+#include <stdlib.h>
 
 #define IMODE_NORMAL	0	// doing nothing
 #define IMODE_SELECT	1	// selecting an item (for instance to define what item this one becomes)
