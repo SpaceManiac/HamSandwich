@@ -441,19 +441,11 @@ void MGLDraw::WaterPalette(byte b)
 			pal2[i*32+j]=pal[i*32+j];
 			if(b==0)
 			{
-				pal2[i*32+j].b+=40;
-				if(pal2[i*32+j].b>63)
-				{
-					pal2[i*32+j].b=63;
-				}
+				pal2[i*32+j].b = (byte) std::min((int) pal2[i*32+j].b + 4*40, 4*63);
 			}
 			else
 			{
-				pal2[i*32+j].r+=40;
-				if(pal2[i*32+j].r>63)
-				{
-					pal2[i*32+j].r=63;
-				}
+				pal2[i*32+j].r = (byte) std::min((int) pal2[i*32+j].r + 4*40, 4*63);
 			}
 		}
 
@@ -468,32 +460,12 @@ void MGLDraw::DumbSidePalette(byte b)
 		for(j=0;j<32;j++)
 		{
 			pal2[i*32+j]=pal[i*32+j];
-			if(b==0)
-			{
-				pal2[i*32+j].b+=40;
-				if(pal2[i*32+j].b>63)
-				{
-					pal2[i*32+j].b=63;
-				}
-			}
+			pal2[i*32+j].r = (byte) std::min((int) pal2[i*32+j].r + 4*30, 4*63);
+			pal2[i*32+j].b = (byte) std::min((int) pal2[i*32+j].b + 4*30, 4*63);
+			if(pal2[i*32+j].g>10*4)
+				pal2[i*32+j].g-=10*4;
 			else
-			{
-				pal2[i*32+j].r+=30;
-				if(pal2[i*32+j].r>63)
-				{
-					pal2[i*32+j].r=63;
-				}
-
-				pal2[i*32+j].b+=30;
-				if(pal2[i*32+j].b+63)
-				{
-					pal2[i*32+j].b=63;
-				}
-				if(pal2[i*32+j].g+10)
-					pal2[i*32+j].g-=10;
-				else
-					pal2[i*32+j].g=0;
-			}
+				pal2[i*32+j].g=0;
 		}
 
 	thePal = &pal2;
