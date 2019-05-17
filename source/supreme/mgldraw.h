@@ -98,7 +98,7 @@ protected:
 	void StartFlip(void);
 	void FinishFlip(void);
 
-	bool windowed, readyToQuit;
+	bool windowed, readyToQuit, idle;
 
 	int xRes, yRes, pitch;
 	byte *scrn;

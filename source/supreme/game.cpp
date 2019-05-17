@@ -194,9 +194,11 @@ void ExitLevel(void)
 		ExitGallery();
 }
 
-void SetGameIdle(byte b)
+void SetGameIdle(bool b)
 {
-	idleGame=b;
+	idleGame = b;
+	if (b)
+		PauseGame();
 }
 
 byte GetGameIdle(void)

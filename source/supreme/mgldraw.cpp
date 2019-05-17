@@ -1,15 +1,18 @@
 #include "mgldraw.h"
-#include "game.h"
-#include "sound.h"
 #include <random>
 
 #include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_image.h>
 
-MGLDraw *_globalMGLDraw;
+bool JamulSoundInit(int buffers);
+void JamulSoundExit();
+void SoundSystemExists();
+void UpdateMusic();
+void ControlKeyDown(byte scancode);
+void ControlKeyUp(byte scancode);
+void SetGameIdle(bool idle);
 
-int KEY_MAX;
-const Uint8* key = SDL_GetKeyboardState(&KEY_MAX);
+static MGLDraw *_globalMGLDraw = nullptr;
 
 MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	: mouse_x(xRes / 2)
@@ -18,6 +21,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	, mouse_b(0)
 	, windowed(windowed)
 	, readyToQuit(false)
+	, idle(false)
 	, xRes(xRes)
 	, yRes(yRes)
 	, pitch(xRes)
@@ -96,7 +100,8 @@ void MGLDraw::GetMouse(int *x,int *y)
 
 void MGLDraw::SetMouse(int x,int y)
 {
-	SDL_WarpMouseInWindow(window, x, y);
+	if (!idle)
+		SDL_WarpMouseInWindow(window, x, y);
 }
 
 bool MGLDraw::Process(void)
@@ -180,7 +185,11 @@ void MGLDraw::FinishFlip(void)
 			readyToQuit = 1;
 		} else if (e.type == SDL_WINDOWEVENT) {
 			if (e.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
-				PauseGame();
+				idle = true;
+				SetGameIdle(true);
+			} else if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
+				SetGameIdle(false);
+				idle = false;
 			}
 		}
 	}
