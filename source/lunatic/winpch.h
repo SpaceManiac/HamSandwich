@@ -10,8 +10,14 @@
 #endif
 
 #include "jamultypes.h"
+#include "mgldraw.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+const int SCRWID = 640;
+const int SCRHEI = 480;
+const int FIXSHIFT = 16;
+const int FIXAMT = 65536;
 
 #endif

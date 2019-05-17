@@ -1,6 +1,7 @@
 #include "pause.h"
 #include "player.h"
 #include "options.h"
+#include "appdata.h"
 
 enum {
 	SUBMODE_NONE = 0,

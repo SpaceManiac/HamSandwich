@@ -17,7 +17,7 @@ now SDL2.
 #include <windows.h>
 #endif  // _WIN32
 
-#include "hamtypes.h"
+#include "jamultypes.h"
 
 typedef SDL_Color RGB;
 typedef RGB PALETTE[256];

@@ -1,5 +1,5 @@
 #include "lsdir.h"
-#include "hamtypes.h"
+#include "jamultypes.h"
 #include <string.h>
 
 #ifdef __GNUC__

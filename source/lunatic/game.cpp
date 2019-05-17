@@ -4,6 +4,7 @@
 #include "rage.h"
 #include "options.h"
 #include "palettes.h"
+#include "appdata.h"
 
 byte showStats = 0;
 dword gameStartTime, visFrameCount, updFrameCount;

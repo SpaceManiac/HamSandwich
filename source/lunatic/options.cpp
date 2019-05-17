@@ -4,6 +4,7 @@
 #include "display.h"
 #include "player.h"
 #include "music.h"
+#include "appdata.h"
 
 static byte cursor;
 static byte oldc;

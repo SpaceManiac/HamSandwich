@@ -1,7 +1,7 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
-#include "hamtypes.h"
+#include "jamultypes.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN

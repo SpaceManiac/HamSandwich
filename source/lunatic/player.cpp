@@ -3,6 +3,7 @@
 #include "rage.h"
 #include "options.h"
 #include "title.h"
+#include "appdata.h"
 
 const int PLYR_ACCEL = FIXAMT;
 const int PLYR_DECEL = FIXAMT * 3 / 4;

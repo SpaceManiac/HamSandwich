@@ -1,7 +1,7 @@
 #ifndef PALETTES_H
 #define PALETTES_H
 
-#include "hamtypes.h"
+#include "jamultypes.h"
 
 class MGLDraw;
 

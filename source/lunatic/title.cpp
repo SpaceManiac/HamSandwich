@@ -5,7 +5,7 @@
 #include "options.h"
 #include "lsdir.h"
 #include "palettes.h"
-#include <random>
+#include "appdata.h"
 
 #define VERSION "Version 3.0"
 #define COPYRIGHT "Copyright 1998-2011, Hamumu Software"
