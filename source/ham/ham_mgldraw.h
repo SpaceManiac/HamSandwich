@@ -122,5 +122,7 @@ void FatalError(const char *msg);
 
 void SeedRNG(void);
 dword Random(dword range);
+int MGL_random(int range);
+long MGL_randoml(long range);
 
 #endif

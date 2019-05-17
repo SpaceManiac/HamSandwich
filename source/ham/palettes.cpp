@@ -94,3 +94,31 @@ void CyclePalette(MGLDraw *mgl, int c)
 
 	mgl->SetSecondaryPalette(pal2);
 }
+
+void GammaCorrect(MGLDraw *mgl, byte gamma)
+{
+	const RGB* pal = mgl->GetPalette();
+	PALETTE pal2;
+
+	int r, g, b;
+	for (int i = 0; i < 256; i++)
+	{
+		r = pal[i].r;
+		g = pal[i].g;
+		b = pal[i].b;
+		r = (r * (gamma + 4)) / 4;
+		g = (g * (gamma + 4)) / 4;
+		b = (b * (gamma + 4)) / 4;
+		if (r > 255)
+			r = 255;
+		if (g > 255)
+			g = 255;
+		if (b > 255)
+			b = 255;
+		pal2[i].r = r;
+		pal2[i].g = g;
+		pal2[i].b = b;
+	}
+
+	mgl->SetSecondaryPalette(pal2);
+}

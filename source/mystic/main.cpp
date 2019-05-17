@@ -20,8 +20,6 @@
 #include "options.h"
 #include "nag.h"
 
-MGLDraw *mainmgl;
-
 int main(int argc, char* argv[])
 {
 #ifdef DEMO
@@ -35,7 +33,7 @@ int main(int argc, char* argv[])
 	}
 
 	InitOptions();
-	mainmgl=new MGLDraw("Kid Mystic",640,480,8,windowedGame);
+	MGLDraw *mainmgl=new MGLDraw("Kid Mystic", SCRWID, SCRHEI, windowedGame);
 	if(!mainmgl)
 		return 0;
 

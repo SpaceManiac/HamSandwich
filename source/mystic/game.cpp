@@ -7,6 +7,7 @@
 #include "challenge.h"
 #include "options.h"
 #include "trivia.h"
+#include "palettes.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -71,7 +72,7 @@ void LunaticInit(MGLDraw *mgl)
 	InitTiles(mgl);
 	InitItems();
 	InitInterface();
-	mgl->SetLastKey(0);
+	mgl->ClearKeys();
 	InitControls();
 	InitPlayer(INIT_GAME,0,0);
 	InitShop();
@@ -213,7 +214,7 @@ void ExitLevel(void)
 	PurgeMonsterSprites();
 }
 
-void SetGameIdle(byte b)
+void SetGameIdle(bool b)
 {
 	idleGame=b;
 }
@@ -746,7 +747,7 @@ void HandleKeyPresses(void)
 		k++;
 		if(k>3)
 			k=0;
-		gamemgl->GammaCorrect(k);
+		GammaCorrect(gamemgl, k);
 		SetGamma(k);
 		lastKey=0;
 	}

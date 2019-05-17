@@ -773,3 +773,13 @@ dword Random(dword range)
 {
 	return std::uniform_int_distribution<dword>(0, range - 1)(mersenne);
 }
+
+int MGL_random(int range)
+{
+	return std::uniform_int_distribution<int>(0, range - 1)(mersenne);
+}
+
+long MGL_randoml(long range)
+{
+	return std::uniform_int_distribution<int>(0, range - 1)(mersenne);
+}
