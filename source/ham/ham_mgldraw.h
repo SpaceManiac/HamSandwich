@@ -75,6 +75,8 @@ public:
 	void FillBox(int x, int y, int x2, int y2, byte c);
 	void SelectLineH(int x, int x2, int y, byte ofs);
 	void SelectLineV(int x, int y, int y2, byte ofs);
+	void BrightBox(int x, int y, int x2, int y2, byte amt);
+	void DarkBox(int x, int y, int x2, int y2, byte amt);
 
 	// mouse functions
 	void GetMouse(int *x, int *y);

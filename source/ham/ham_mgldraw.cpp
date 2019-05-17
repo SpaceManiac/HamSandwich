@@ -547,6 +547,82 @@ void MGLDraw::SelectLineV(int x,int y,int y2,byte ofs)
 	}
 }
 
+void MGLDraw::BrightBox(int x,int y,int x2,int y2,byte amt)
+{
+	int i,j;
+	byte b;
+
+	if(y>=yRes)
+		return;
+
+	if(x<0)
+		x=0;
+	if(x>=xRes)
+		x=xRes-1;
+	if(y<0)
+		y=0;
+	if(y>=yRes)
+		y=yRes-1;
+	if(x2<0)
+		return;
+	if(x2>=xRes)
+		x2=xRes-1;
+	if(y2<0)
+		return;
+	if(y2>=yRes)
+		y2=yRes-1;
+
+	for(j=y;j<=y2;j++)
+	{
+		for(i=x;i<=x2;i++)
+		{
+			b=scrn[i+j*pitch];
+			if((b&31)>(31-amt))
+				scrn[i+j*pitch]=31;
+			else
+				scrn[i+j*pitch]=b+amt;
+		}
+	}
+}
+
+void MGLDraw::DarkBox(int x,int y,int x2,int y2,byte amt)
+{
+	int i,j;
+	byte b;
+
+	if(y>=yRes)
+		return;
+
+	if(x<0)
+		x=0;
+	if(x>=xRes)
+		x=xRes-1;
+	if(y<0)
+		y=0;
+	if(y>=yRes)
+		y=yRes-1;
+	if(x2<0)
+		return;
+	if(x2>=xRes)
+		x2=xRes-1;
+	if(y2<0)
+		return;
+	if(y2>=yRes)
+		y2=yRes-1;
+
+	for(j=y;j<=y2;j++)
+	{
+		for(i=x;i<x2;i++)
+		{
+			b=scrn[i+j*pitch];
+			if((b&31)<amt)
+				scrn[i+j*pitch]=0;
+			else
+				scrn[i+j*pitch]=b-amt;
+		}
+	}
+}
+
 char MGLDraw::LastKeyPressed(void)
 {
 	char i = lastKeyPressed;

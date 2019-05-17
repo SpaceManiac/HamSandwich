@@ -63,7 +63,7 @@ void LunaticInit(MGLDraw *mgl)
 	LoadOptions();
 	InitMonsters();
 
-	mgl->SetLastKey(0);
+	mgl->ClearKeys();
 	SeedRNG();
 	InitControls();
 	msgFromOtherModules=0;
@@ -259,7 +259,7 @@ void ExitLevel(void)
 	PurgeMonsterSprites();
 }
 
-void SetGameIdle(byte b)
+void SetGameIdle(bool b)
 {
 	idleGame=b;
 }

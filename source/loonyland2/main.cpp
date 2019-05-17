@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 			windowedGame=true;
 	}
 	LoadConfig();
-	mainmgl=new MGLDraw("Loonyland 2",640,480,8,windowedGame);
+	mainmgl=new MGLDraw("Loonyland 2", SCRWID, SCRHEI, windowedGame);
 
 	if(!mainmgl)
 		return 0;
@@ -66,7 +66,6 @@ int main(int argc, char* argv[])
 			case MENU_EXIT:
 				LunaticExit();
 				delete mainmgl;
-				FatalErrorQuit();
 				return 0;
 				break;
 			case MENU_NEWCHAR:	// new game
