@@ -1,16 +1,18 @@
 #ifndef JAMULSPR_H
 #define JAMULSPR_H
 
-#include "winpch.h"
-#include "mgldraw.h"
+#include "jamultypes.h"
+#include <stdio.h>
+
+class MGLDraw;
 
 class sprite_t
 {
 public:
-	sprite_t(void);
+	sprite_t();
 	sprite_t(byte *info);
 
-	~sprite_t(void);
+	~sprite_t();
 
 	bool LoadData(FILE *f);
 	bool SaveData(FILE *f);
@@ -22,6 +24,7 @@ public:
 	void DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toColor, char bright);
 	void DrawGhost(int x, int y, MGLDraw *mgl, char bright);
 	void DrawGlow(int x, int y, MGLDraw *mgl, char bright);
+	void DrawC(int x, int y, MGLDraw *mgl);
 
 	// this makes half-height tilted black shadows (they darken by 4)
 	void DrawShadow(int x, int y, MGLDraw *mgl);
@@ -31,6 +34,7 @@ public:
 	word height;
 	short ofsx;
 	short ofsy;
+protected:
 	dword size;
 	byte *data;
 };
@@ -38,19 +42,23 @@ public:
 class sprite_set_t
 {
 public:
-	sprite_set_t(void);
+	sprite_set_t();
 	sprite_set_t(const char *fname);
 
-	~sprite_set_t(void);
+	~sprite_set_t();
 
 	bool Save(const char *fname);
 	bool Load(const char *fname);
-	void Free(void);
 	sprite_t *GetSprite(int which);
-	word GetCount(void);
+	word GetCount();
 protected:
+	void Free();
+
 	word count;
 	sprite_t **spr;
 };
+
+void NewComputerSpriteFix(const char *fname);
+void SetSpriteConstraints(int x, int y, int x2, int y2);
 
 #endif
