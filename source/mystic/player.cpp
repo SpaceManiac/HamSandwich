@@ -1185,7 +1185,9 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	if(player.berserk)
 	{
-		TrailMe(me->x,me->y,GetMonsterFrameNum(MONS_BOUAPHA,me->seq,me->frm,me->facing));
+		byte frame = GetMonsterFrameNum(MONS_BOUAPHA,me->seq,me->frm,me->facing);
+		if (frame != 254)
+			TrailMe(me->x, me->y, frame);
 		player.berserk--;
 	}
 	if(player.stoneskin)

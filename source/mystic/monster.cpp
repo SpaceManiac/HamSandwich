@@ -742,7 +742,7 @@ byte GetMonsterFrameNum(byte type,byte seq,byte frm,byte facing)
 	v=monsType[type].anim[seq][frm];
 
 	if(v==254)
-		return NULL;	// 254 means no sprite for this frame
+		return v;	// 254 means no sprite for this frame
 
 	if(!(monsType[type].flags&MF_ONEFACE))
 		v+=facing*monsType[type].framesPerDir;
