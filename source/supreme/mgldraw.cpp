@@ -11,7 +11,19 @@ MGLDraw *_globalMGLDraw;
 int KEY_MAX;
 const Uint8* key = SDL_GetKeyboardState(&KEY_MAX);
 
-MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool windowed)
+MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
+	: mouse_x(xRes / 2)
+	, mouse_y(yRes / 2)
+	, mouse_z(0)
+	, mouse_b(0)
+	, windowed(windowed)
+	, readyToQuit(false)
+	, xRes(xRes)
+	, yRes(yRes)
+	, pitch(xRes)
+	, tapTrack(0)
+	, lastKeyPressed(0)
+	, lastRawCode(0)
 {
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 	SeedRNG();
@@ -26,49 +38,54 @@ MGLDraw::MGLDraw(char *name,int xRes,int yRes,int bpp,bool windowed)
 		FatalError("Failed to create window");
 		return;
 	}
+
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
 	if (!renderer) {
-		printf("SDL_CreateWindow: %s\n", SDL_GetError());
+		printf("SDL_CreateRenderer: %s\n", SDL_GetError());
 		FatalError("Failed to create renderer");
+		return;
+	}
+
+	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, xRes, yRes);
+	if (!texture) {
+		printf("SDL_CreateTexture: %s\n", SDL_GetError());
+		FatalError("Failed to create texture");
 		return;
 	}
 
 	SDL_SetWindowTitle(window, name);
 	SDL_ShowCursor(SDL_DISABLE);
 
-	readyToQuit=false;
-	_globalMGLDraw=this;
-
-	// gimme windows colors
-	this->xRes=xRes;
-	this->yRes=yRes;
-	this->bpp=bpp;
-	this->pitch=xRes;
-	this->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, xRes, yRes);
-	this->scrn=new byte[xRes*yRes];
-	if(!this->scrn)
-		FatalError("Out of memory!");
-
-	this->windowed=windowed;
-
-	mouseDown=0;
-	rMouseDown=0;
-	mouse_x = xRes/2;
-	mouse_y = yRes/2;
-	mouse_b = 0;
-	mouse_z = 0;
-
-	lastRawCode=0;
-	SetLastKey(0);
+	_globalMGLDraw = this;
+	scrn = new byte[xRes * yRes];
+	thePal = &pal;
 	SeedRNG();
-	tapTrack=mouse_b;
 }
 
 MGLDraw::~MGLDraw(void)
 {
 	JamulSoundExit();
 	delete[] scrn;
-//	DestroyMyWindow();
+}
+
+int MGLDraw::GetWidth()
+{
+	return pitch;
+}
+
+int MGLDraw::GetHeight()
+{
+	return yRes;
+}
+
+byte *MGLDraw::GetScreen()
+{
+	return scrn;
+}
+
+void MGLDraw::ClearScreen()
+{
+	memset(scrn, 0, xRes * yRes);
 }
 
 void MGLDraw::GetMouse(int *x,int *y)
@@ -82,50 +99,26 @@ void MGLDraw::SetMouse(int x,int y)
 	SDL_WarpMouseInWindow(window, x, y);
 }
 
-void MGLDraw::ResetTimer(void)
-{
-	elapsedTime=0;
-	now=timeGetTime();
-	numFrames=0;
-}
-
-void MGLDraw::TickTimer(void)
-{
-	dword then;
-
-	then=now;
-	now=timeGetTime();
-	elapsedTime+=(now-then);
-	numFrames++;
-}
-
-float MGLDraw::FrameRate(void)
-{
-	return (float)(((float)numFrames*1000)/(float)elapsedTime);
-}
-
 bool MGLDraw::Process(void)
 {
 	UpdateMusic();
 	return (!readyToQuit);
 }
 
-#ifdef _WIN32
-HWND MGLDraw::GetHWnd(void)
+void MGLDraw::Quit()
 {
-	SDL_SysWMinfo info;
-	SDL_VERSION(&info.version);
-	SDL_GetWindowWMInfo(window, &info);
-	return info.info.win.window;
+	readyToQuit = true;
 }
-#endif
 
-int makecol32(int r, int g, int b)
+static int makecol32(int r, int g, int b)
 {
 	return (r << 24) | (g << 16) | (b << 8);
 }
 
-#define putpixel(buffer, x, y, value) (buffer)[(y)*pitch + (x)] = (value)
+inline void MGLDraw::putpixel(int x, int y, int value)
+{
+	buffer[y * pitch + x] = value;
+}
 
 int MGLDraw::FormatPixel(int x,int y)
 {
@@ -136,7 +129,7 @@ int MGLDraw::FormatPixel(int x,int y)
 void MGLDraw::PseudoCopy(int y,int x,byte* data,int len)
 {
 	for(int i = 0; i < len; ++i, ++x)
-		putpixel(buffer, x, y, makecol32((*thePal)[data[i]].r, (*thePal)[data[i]].g, (*thePal)[data[i]].b));
+		putpixel(x, y, makecol32((*thePal)[data[i]].r, (*thePal)[data[i]].g, (*thePal)[data[i]].b));
 }
 
 void MGLDraw::StartFlip(void)
@@ -249,7 +242,7 @@ void MGLDraw::TeensyFlip(void)
 	for(i=0;i<yRes/2;i++)
 	{
 		for(j=0;j<xRes/2;j++)
-			putpixel(buffer,x+j,y,FormatPixel(j*2,i*2));
+			putpixel(x+j,y,FormatPixel(j*2,i*2));
 		y++;
 	}
 	FinishFlip();
@@ -269,11 +262,11 @@ void MGLDraw::TeensyWaterFlip(int v)
 	StartFlip();
 	for(i=0;i<yRes/2;i++)
 	{
-		putpixel(buffer,x-1-table[v],y,0);
-		putpixel(buffer,x+xRes/2-table[v],y,0);
+		putpixel(x-1-table[v],y,0);
+		putpixel(x+xRes/2-table[v],y,0);
 		for(j=0;j<xRes/2;j++)
 		{
-			putpixel(buffer,x+j-table[v],y,FormatPixel(j*2,i*2));
+			putpixel(x+j-table[v],y,FormatPixel(j*2,i*2));
 		}
 		if(i&1)
 		{
@@ -302,7 +295,7 @@ void MGLDraw::RasterFlip(void)
 		else
 		{
 			for(j=0;j<xRes;j++)
-				putpixel(buffer,j,i,0);
+				putpixel(j,i,0);
 		}
 	}
 	FinishFlip();
@@ -338,7 +331,7 @@ void MGLDraw::RasterWaterFlip(int v)
 		else
 		{
 			for(j=0;j<xRes;j++)
-				putpixel(buffer,j,i,0);
+				putpixel(j,i,0);
 		}
 		if(i&1)
 		{
@@ -350,78 +343,12 @@ void MGLDraw::RasterWaterFlip(int v)
 	FinishFlip();
 }
 
-void MGLDraw::ClearScreen(void)
+void MGLDraw::SetPalette(PALETTE newpal)
 {
-	memset(scrn,0,640*480);
+	memcpy(pal, newpal, sizeof(PALETTE));
 }
 
-byte *MGLDraw::GetScreen(void)
-{
-	return scrn;
-}
-
-int MGLDraw::GetWidth(void)
-{
-	return pitch;
-}
-
-int MGLDraw::GetHeight(void)
-{
-	return yRes;
-}
-
-void MGLDraw::Quit(void)
-{
-	readyToQuit=true;
-}
-
-struct palfile_t
-{
-	char r,g,b;
-};
-
-bool MGLDraw::LoadPalette(char *name)
-{
-	FILE *f;
-	palfile_t p[256];
-	int i;
-
-	f=fopen(name,"rb");
-	if(!f)
-		return false;
-
-	if(fread(p,sizeof(palfile_t),256,f)!=256)
-	{
-		fclose(f);
-		return false;
-	}
-
-	for(i=0;i<256;i++)
-	{
-		pal[i].r=p[i].r;
-		pal[i].g=p[i].g;
-		pal[i].b=p[i].b;
-	}
-
-	RealizePalette();
-
-	fclose(f);
-	return true;
-}
-
-void MGLDraw::SetPalette(PALETTE pal2)
-{
-	int i;
-
-	for(i=0;i<256;i++)
-	{
-		pal[i].r=pal2[i].r;
-		pal[i].g=pal2[i].g;
-		pal[i].b=pal2[i].b;
-	}
-}
-
-RGB *MGLDraw::GetPalette(void)
+const RGB *MGLDraw::GetPalette(void)
 {
 	return pal;
 }
@@ -431,43 +358,9 @@ void MGLDraw::RealizePalette(void)
 	thePal = &pal;
 }
 
-void MGLDraw::WaterPalette(byte b)
+void MGLDraw::SetSecondaryPalette(PALETTE newpal)
 {
-	int i,j;
-
-	for(i=0;i<8;i++)
-		for(j=0;j<32;j++)
-		{
-			pal2[i*32+j]=pal[i*32+j];
-			if(b==0)
-			{
-				pal2[i*32+j].b = (byte) std::min((int) pal2[i*32+j].b + 4*40, 4*63);
-			}
-			else
-			{
-				pal2[i*32+j].r = (byte) std::min((int) pal2[i*32+j].r + 4*40, 4*63);
-			}
-		}
-
-	thePal = &pal2;
-}
-
-void MGLDraw::DumbSidePalette(byte b)
-{
-	int i,j;
-
-	for(i=0;i<8;i++)
-		for(j=0;j<32;j++)
-		{
-			pal2[i*32+j]=pal[i*32+j];
-			pal2[i*32+j].r = (byte) std::min((int) pal2[i*32+j].r + 4*30, 4*63);
-			pal2[i*32+j].b = (byte) std::min((int) pal2[i*32+j].b + 4*30, 4*63);
-			if(pal2[i*32+j].g>10*4)
-				pal2[i*32+j].g-=10*4;
-			else
-				pal2[i*32+j].g=0;
-		}
-
+	memcpy(pal2, newpal, sizeof(PALETTE));
 	thePal = &pal2;
 }
 
@@ -644,16 +537,16 @@ void MGLDraw::SelectLineV(int x,int y,int y2,byte ofs)
 	}
 }
 
-void MGLDraw::SetLastKey(char c)
+char MGLDraw::LastKeyPressed(void)
 {
-	lastKeyPressed=c;
-}
-
-int MGLDraw::LastKeyPressed(void)
-{
-	int i = lastKeyPressed;
+	char i = lastKeyPressed;
 	lastKeyPressed = 0;
 	return i;
+}
+
+char MGLDraw::LastKeyPeek(void)
+{
+	return lastKeyPressed;
 }
 
 void MGLDraw::ClearKeys(void)
@@ -661,17 +554,7 @@ void MGLDraw::ClearKeys(void)
 	lastKeyPressed = 0;
 }
 
-void MGLDraw::SetMouseDown(byte w)
-{
-	mouseDown=w;
-}
-
-void MGLDraw::SetRMouseDown(byte w)
-{
-	rMouseDown=w;
-}
-
-byte MGLDraw::MouseTap(void)
+bool MGLDraw::MouseTap(void)
 {
 	byte b,mb;
 
@@ -687,7 +570,7 @@ byte MGLDraw::MouseTap(void)
 	return b;
 }
 
-byte MGLDraw::RMouseTap(void)
+bool MGLDraw::RMouseTap(void)
 {
 	byte b,mb;
 
@@ -703,24 +586,19 @@ byte MGLDraw::RMouseTap(void)
 	return b;
 }
 
-byte MGLDraw::MouseDown(void)
+bool MGLDraw::MouseDown(void)
 {
 	return ((mouse_b&1)!=0);
 }
 
-byte MGLDraw::RMouseDown(void)
+bool MGLDraw::RMouseDown(void)
 {
 	return ((mouse_b&2)!=0);
 }
 
-byte MGLDraw::MouseDown3(void)
+bool MGLDraw::MouseDown3(void)
 {
 	return ((mouse_b&4)!=0);
-}
-
-char MGLDraw::LastKeyPeek(void)
-{
-	return lastKeyPressed;
 }
 
 bool MGLDraw::LoadBMP(char *name)
@@ -775,11 +653,29 @@ bool MGLDraw::SaveBMP(char *name)
 	return true;
 }
 
-//--------------------------------------------------------------------------
-// these are all external stuff
+#ifdef _WIN32
+HWND MGLDraw::GetHWnd(void)
+{
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	SDL_GetWindowWMInfo(window, &info);
+	return info.info.win.window;
+}
+#endif
 
-byte fatalDie=0;
-char errMsg[128];
+//--------------------------------------------------------------------------
+// Fatal error
+
+void FatalError(char *msg)
+{
+	fprintf(stderr, "FATAL: %s\n", msg);
+	if (_globalMGLDraw)
+		_globalMGLDraw->Quit();
+}
+
+//--------------------------------------------------------------------------
+// Global RNG
+
 std::mt19937_64 mersenne;
 
 void SeedRNG(void)
@@ -790,19 +686,4 @@ void SeedRNG(void)
 dword Random(dword range)
 {
 	return std::uniform_int_distribution<dword>(0, range - 1)(mersenne);
-}
-
-void FatalError(char *msg)
-{
-	_globalMGLDraw->Quit();
-	fatalDie=1;
-	strcpy(errMsg,msg);
-}
-
-void FatalErrorQuit(void)
-{
-	if(fatalDie)
-	{
-		fprintf(stderr, "%s\n", errMsg);
-	}
 }

@@ -13,6 +13,7 @@
 #include "goal.h"
 #include "config.h"
 #include "log.h"
+#include "palettes.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -58,7 +59,7 @@ void LunaticInit(MGLDraw *mgl)
 	InitItems();
 	InitInterface();
 	InitProfile();
-	mgl->SetLastKey(0);
+	mgl->ClearKeys();
 	SeedRNG();
 	InitControls();
 	msgFromOtherModules=0;
@@ -224,9 +225,9 @@ void RestoreGameplayGfx(void)
 	if(curMap)
 	{
 		if(curMap->flags&MAP_UNDERWATER)
-			gamemgl->WaterPalette(0);
+			WaterPalette(gamemgl);
 		else if(curMap->flags&MAP_LAVA)
-			gamemgl->WaterPalette(1);
+			LavaPalette(gamemgl);
 	}
 
 	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
@@ -564,8 +565,10 @@ void LunaticDraw(void)
 		sprintf(s,"Items %d", n);
 		PrintGlow(120,130,s,8,2);
 
+		int KEY_MAX = 0;
+		const byte* key = SDL_GetKeyboardState(&KEY_MAX);
 		char* end = s + sprintf(s,"Keys: ");
-		for (int i = 0; i < 256; ++i)
+		for (int i = 0; i < KEY_MAX; ++i)
 			if (key[i])
 				end += sprintf(end, "%s ", AllegroCodeText(i));
 		PrintGlow(5,150,s,8,2);

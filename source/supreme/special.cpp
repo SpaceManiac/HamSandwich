@@ -11,6 +11,7 @@
 #include "world.h"
 #include "shop.h"
 #include "goal.h"
+#include "palettes.h"
 
 static special_t *spcl;
 static byte numSpecials;
@@ -1625,9 +1626,9 @@ void SpecialEffect(special_t *me,Map *map)
 					player.oxygen=127*256;
 
 				if(map->flags&MAP_UNDERWATER)
-					GetDisplayMGL()->WaterPalette(0);
+					WaterPalette(GetDisplayMGL());
 				else if(map->flags&MAP_LAVA)
-					GetDisplayMGL()->WaterPalette(1);
+					LavaPalette(GetDisplayMGL());
 				else
 					GetDisplayMGL()->RealizePalette();
 				break;

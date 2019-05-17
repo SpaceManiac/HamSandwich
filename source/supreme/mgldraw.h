@@ -17,125 +17,106 @@
 #define SCRWID	640
 #define SCRHEI  480
 
-// -- SDL adapters
-struct RGB
-{
-	unsigned char r, g, b, a;
-};
-
-#define PAL_SIZE	256
-
-typedef RGB PALETTE[PAL_SIZE];
-
-extern int KEY_MAX;
-extern const Uint8* key;
-// -- End SDL adapters
-
-// if I'm not mistaken, this number is NOT used by windows as a window event
-#define INTERNET_EVENT	(WM_USER+1)
-
-#define MAX_RUNS	(3)
+typedef SDL_Color RGB;
+typedef RGB PALETTE[256];
 
 class MGLDraw
 {
-	public:
-		MGLDraw(char *name,int xRes,int yRes,int bpp,bool window);
-		~MGLDraw(void);
+public:
+	MGLDraw(const char *name, int xRes, int yRes, bool window);
+	~MGLDraw();
 
-		bool Process(void);	// handle windows messages and such
+	int GetWidth();
+	int GetHeight();
+	// Get a pointer to the screen memory.
+	byte *GetScreen();
+	void ClearScreen();
 
-		byte *GetScreen(void); // get a pointer to the screen memory
-		int GetWidth(void);
-		int GetHeight(void);
-		void ClearScreen(void);
-		void Quit(void);
+	// Perform any necessary per-frame handling. Returns false if quit.
+	bool Process();
+	void Quit();
 
-		void StartFlip(void);
-		void FinishFlip(void);
-		void Flip(void);
-		void WaterFlip(int v);
-		void TeensyFlip(void);
-		void TeensyWaterFlip(int v);
-		void RasterFlip(void);
-		void RasterWaterFlip(int v);
+	// Display the buffer to the screen.
+	void Flip();
+	void WaterFlip(int v);
+	void TeensyFlip();
+	void TeensyWaterFlip(int v);
+	void RasterFlip();
+	void RasterWaterFlip(int v);
 
-		bool LoadPalette(char *name);
-		void SetPalette(PALETTE pal2);
-		RGB *GetPalette(void);
+	// Return a pointer to the primary palette.
+	const RGB *GetPalette();
+	// Set the primary palette.
+	void SetPalette(PALETTE newpal);
+	// Activate the primary palette.
+	void RealizePalette();
+	// Set and activate the secondary palette.
+	void SetSecondaryPalette(PALETTE newpal);
 
-		void RealizePalette(void);
+	// Load an image and store its palette to the primary palette.
+	bool LoadBMP(char *name);
+	// Load an image and store its palette to `pal`.
+	bool LoadBMP(char *name, PALETTE pal);
+	// Save an image with the current
+	bool SaveBMP(char *name);
 
-		bool LoadBMP(char *name);
-		bool LoadBMP(char *name, PALETTE pal);
-		bool SaveBMP(char *name);
+	// Get and clear the last pressed key.
+	// Based on SDL_Keycode and includes only keys representable as characters.
+	char LastKeyPressed();
+	// Get without clearing the last pressed key.
+	char LastKeyPeek();
+	// Clear any buffered keys.
+	void ClearKeys();
 
-		int LastKeyPressed(void);
-		char LastKeyPeek(void);
-		void SetLastKey(char c);
-		void ClearKeys(void);
+	// handy little drawing routines
+	void Box(int x, int y, int x2, int y2, byte c);
+	void FillBox(int x, int y, int x2, int y2, byte c);
+	void SelectLineH(int x, int x2, int y, byte ofs);
+	void SelectLineV(int x, int y, int y2, byte ofs);
 
-		void WaterPalette(byte b);
-		void DumbSidePalette(byte b);
+	// mouse functions
+	void GetMouse(int *x, int *y);
+	void SetMouse(int x, int y);
+	bool MouseDown();
+	bool RMouseDown();
+	bool MouseTap();
+	bool RMouseTap();
+	bool MouseDown3();
+	bool MouseTap3();
 
-		// handy little drawing routines
-		void Box(int x,int y,int x2,int y2,byte c);
-		void FillBox(int x,int y,int x2,int y2,byte c);
-		void SelectLineH(int x,int x2,int y,byte ofs);
-		void SelectLineV(int x,int y,int y2,byte ofs);
-
-		// functions to measure frame rate
-		void ResetTimer(void);
-		void TickTimer(void);
-		float FrameRate(void);
-
-		// mouse functions
-		byte MouseDown();
-		byte RMouseDown();
-		byte MouseTap();
-		byte RMouseTap();
-		byte MouseDown3();
-		void SetMouseDown(byte w);
-		void SetRMouseDown(byte w);
-		void GetMouse(int *x,int *y);
-		void SetMouse(int x,int y);
-
-		int FormatPixel(int x,int y);
-		void PseudoCopy(int x,int y,byte* data,int len);
-
-		void ResetGM(void);
+	int mouse_x, mouse_y, mouse_z, mouse_b;
 
 #ifdef _WIN32
-		HWND GetHWnd(void);
+	HWND GetHWnd(void);
 #endif
 
-		int xRes,yRes,bpp,pitch;
-		byte windowed;
-		bool readyToQuit;
-		byte tapTrack;
+protected:
+	void putpixel(int x, int y, int value);
+	int FormatPixel(int x, int y);
+	void PseudoCopy(int x, int y, byte* data, int len);
 
-		int mouse_x, mouse_y, mouse_z, mouse_b;
-	protected:
+	void StartFlip(void);
+	void FinishFlip(void);
 
-		byte *scrn;
-		PALETTE pal, pal2, *thePal;
-		dword elapsedTime;
-		dword now;
-		int numFrames;
-		char lastKeyPressed;
-		int lastRawCode;
-		byte mouseDown,rMouseDown;
+	bool windowed, readyToQuit;
 
-		SDL_Window *window;
-		SDL_Renderer *renderer;
-		SDL_Texture *texture;
+	int xRes, yRes, pitch;
+	byte *scrn;
+	PALETTE pal, pal2, *thePal;
 
-		int *buffer;
+	byte tapTrack;
+	char lastKeyPressed;
+	int lastRawCode;
+
+	SDL_Window *window;
+	SDL_Renderer *renderer;
+	SDL_Texture *texture;
+	int *buffer;
 };
+
+void FatalError(char *msg);
 
 void SeedRNG(void);
 dword Random(dword range);
-void FatalError(char *msg);
-
-void FatalErrorQuit(void);
 
 #endif
