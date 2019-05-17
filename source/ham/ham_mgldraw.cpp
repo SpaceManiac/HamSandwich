@@ -1,4 +1,5 @@
-#include "mgldraw.h"
+#include "ham_mgldraw.h"
+#include "clock.h"
 #include <random>
 
 #include <SDL2/SDL_syswm.h>
@@ -635,13 +636,13 @@ bool MGLDraw::LoadBMP(char *name, PALETTE pal)
 	RealizePalette();
 
 	w=b->w;
-	if(w>SCRWID)
-		w=SCRWID;
+	if(w>xRes)
+		w=xRes;
 
 	SDL_LockSurface(b);
 	for(i=0;i<b->h;i++)
 	{
-		if(i<SCRHEI)
+		if(i<yRes)
 			memcpy(&scrn[i*pitch], &((byte*) b->pixels)[b->pitch * i], w);
 	}
 
@@ -675,7 +676,7 @@ HWND MGLDraw::GetHWnd(void)
 //--------------------------------------------------------------------------
 // Fatal error
 
-void FatalError(char *msg)
+void FatalError(const char *msg)
 {
 	fprintf(stderr, "FATAL: %s\n", msg);
 	if (_globalMGLDraw)
