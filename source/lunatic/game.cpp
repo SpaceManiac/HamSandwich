@@ -3,6 +3,7 @@
 #include "jamulfmv.h"
 #include "rage.h"
 #include "options.h"
+#include "palettes.h"
 
 byte showStats = 0;
 dword gameStartTime, visFrameCount, updFrameCount;
@@ -54,8 +55,8 @@ void LunaticInit(MGLDraw *mgl)
 	InitInterface();
 	LoadOptions();
 	MusicInit();
-	mgl->SetLastKey(0);
-	MGL_srand(timeGetTime());
+	mgl->ClearKeys();
+	SeedRNG();
 	InitControls();
 	InitPlayer(INIT_GAME, 0, 0);
 	msgFromOtherModules = 0;
@@ -149,7 +150,7 @@ void ExitLevel(void)
 	PurgeMonsterSprites();
 }
 
-void SetGameIdle(byte b)
+void SetGameIdle(bool b)
 {
 	idleGame = b;
 }
@@ -561,7 +562,7 @@ void HandleKeyPresses(void)
 		k++;
 		if (k > 3)
 			k = 0;
-		gamemgl->GammaCorrect(k);
+		GammaCorrect(gamemgl, k);
 		SetGamma(k);
 		lastKey = 0;
 	}

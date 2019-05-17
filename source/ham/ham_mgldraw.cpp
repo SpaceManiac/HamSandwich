@@ -687,12 +687,12 @@ bool MGLDraw::MouseDown3(void)
 	return ((mouse_b&4)!=0);
 }
 
-bool MGLDraw::LoadBMP(char *name)
+bool MGLDraw::LoadBMP(const char *name)
 {
 	return LoadBMP(name, pal);
 }
 
-bool MGLDraw::LoadBMP(char *name, PALETTE pal)
+bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 {
 	int i,w;
 
@@ -727,7 +727,7 @@ bool MGLDraw::LoadBMP(char *name, PALETTE pal)
 	return true;
 }
 
-bool MGLDraw::SaveBMP(char *name)
+bool MGLDraw::SaveBMP(const char *name)
 {
 	SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, xRes, yRes, 8, SDL_PIXELFORMAT_INDEX8);
 	SDL_LockSurface(surface);
@@ -782,4 +782,9 @@ int MGL_random(int range)
 long MGL_randoml(long range)
 {
 	return std::uniform_int_distribution<int>(0, range - 1)(mersenne);
+}
+
+void MGL_srand(int seed)
+{
+	mersenne.seed(seed);
 }

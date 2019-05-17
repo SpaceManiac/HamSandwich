@@ -51,7 +51,7 @@ byte InitEditor(void)
 
 	mouseX = 320;
 	mouseY = 240;
-	editmgl->TeleportMouse(320, 240);
+	editmgl->SetMouse(320, 240);
 	PutCamera(0, 0);
 	gameStartTime = timeGetTime();
 	InitGuys(129);

@@ -1432,7 +1432,7 @@ void LoadMySprite(byte type)
 			monsType[type].spr = new sprite_set_t(monsType[type].sprName);
 
 		if (monsType[type].spr == NULL)
-			MGL_fatalError("Out of memory!");
+			FatalError("Out of memory!");
 	}
 	end = timeGetTime();
 	AddGarbageTime(end - start);

@@ -95,7 +95,7 @@ void TrainingGame(MGLDraw *mgl);
 void SendMessageToGame(byte msg, int content);
 void AddGarbageTime(dword t);
 
-void SetGameIdle(byte b);
+void SetGameIdle(bool b);
 byte GetGameIdle(void);
 void GameIdle(void);
 byte GetCurSong(void);

@@ -61,6 +61,10 @@ void CDNeedsUpdating(void)
 {
 }
 
+void UpdateMusic()
+{
+}
+
 void CDPlayerUpdate(byte mode)
 {
 	isPlaying = 0;

@@ -4,6 +4,8 @@
 #include "pause.h"
 #include "options.h"
 #include "lsdir.h"
+#include "palettes.h"
+#include <random>
 
 #define VERSION "Version 3.0"
 #define COPYRIGHT "Copyright 1998-2011, Hamumu Software"
@@ -605,10 +607,10 @@ byte WorldPicker(MGLDraw *mgl)
 	mgl->ClearScreen();
 	mgl->Flip();
 	mgl->LoadBMP("graphics/title.bmp");
-	mgl->GammaCorrect(GetGamma());
+	GammaCorrect(mgl, GetGamma());
 	delete planetSpr;
 	FontFree(&pickerFont);
-	MGL_srand(timeGetTime());
+	SeedRNG();
 	return exitcode;
 }
 

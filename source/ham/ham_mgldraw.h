@@ -56,11 +56,11 @@ public:
 	void SetSecondaryPalette(PALETTE newpal);
 
 	// Load an image and store its palette to the primary palette.
-	bool LoadBMP(char *name);
+	bool LoadBMP(const char *name);
 	// Load an image and store its palette to `pal`.
-	bool LoadBMP(char *name, PALETTE pal);
+	bool LoadBMP(const char *name, PALETTE pal);
 	// Save an image with the current
-	bool SaveBMP(char *name);
+	bool SaveBMP(const char *name);
 
 	// Get and clear the last pressed key.
 	// Based on SDL_Keycode and includes only keys representable as characters.
@@ -124,5 +124,6 @@ void SeedRNG(void);
 dword Random(dword range);
 int MGL_random(int range);
 long MGL_randoml(long range);
+void MGL_srand(int seed);
 
 #endif
