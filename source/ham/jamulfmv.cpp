@@ -43,30 +43,30 @@ struct chunkheader
 	word kind;
 };
 
-FILE *	FLI_file;
-RGB FLI_pal[256];
-word	fliWidth,fliHeight;
+static FILE *	FLI_file;
+static RGB FLI_pal[256];
+static word	fliWidth,fliHeight;
 
 //------------------------------------------------------------------------------
 
-void PlotSolidRun(int x,int y,int len,byte *scrn,byte c)
+static void PlotSolidRun(int x,int y,int len,byte *scrn,int scrWidth,byte c)
 {
 	int i;
 	int pos;
 
 	x*=2;
 	y*=2;
-	pos=x+y*640;
+	pos=x+y*scrWidth;
 	for(i=0;i<len;i++)
 	{
-		scrn[pos+640]=c;
-		scrn[pos+641]=c;
+		scrn[pos+scrWidth]=c;
+		scrn[pos+scrWidth+1]=c;
 		scrn[pos++]=c;
 		scrn[pos++]=c;
 	}
 }
 
-void PlotSolidWordRun(int x,int y,int len,byte *scrn,word c)
+static void PlotSolidWordRun(int x,int y,int len,byte *scrn,int scrWidth,word c)
 {
 	int i;
 	int pos;
@@ -74,33 +74,33 @@ void PlotSolidWordRun(int x,int y,int len,byte *scrn,word c)
 
 	x*=2;
 	y*=2;
-	pos=x+y*640;
+	pos=x+y*scrWidth;
 	c2=(byte)(c>>8);
 	for(i=0;i<len;i++)
 	{
-		scrn[pos+640]=(byte)c;
-		scrn[pos+641]=(byte)c;
+		scrn[pos+scrWidth]=(byte)c;
+		scrn[pos+scrWidth+1]=(byte)c;
 		scrn[pos++]=(byte)c;
 		scrn[pos++]=(byte)c;
-		scrn[pos+640]=c2;
-		scrn[pos+641]=c2;
+		scrn[pos+scrWidth]=c2;
+		scrn[pos+scrWidth+1]=c2;
 		scrn[pos++]=c2;
 		scrn[pos++]=c2;
 	}
 }
 
-void PlotDataRun(int x,int y,int len,byte *scrn,byte *data)
+static void PlotDataRun(int x,int y,int len,byte *scrn,int scrWidth,byte *data)
 {
 	int i;
 	int pos;
 
 	x*=2;
 	y*=2;
-	pos=x+y*640;
+	pos=x+y*scrWidth;
 	for(i=0;i<len;i++)
 	{
-		scrn[pos+640]=*data;
-		scrn[pos+641]=*data;
+		scrn[pos+scrWidth]=*data;
+		scrn[pos+scrWidth+1]=*data;
 		scrn[pos++]=*data;
 		scrn[pos++]=*data;
 		data++;
@@ -108,7 +108,7 @@ void PlotDataRun(int x,int y,int len,byte *scrn,byte *data)
 }
 
 
-void FLI_docolor2(byte *p,MGLDraw *mgl)
+static void FLI_docolor2(byte *p,MGLDraw *mgl)
 {
 	word numpak;
 	word pos=0;
@@ -133,13 +133,13 @@ void FLI_docolor2(byte *p,MGLDraw *mgl)
 	mgl->RealizePalette();
 }
 
-void FLI_docolor(byte *p,MGLDraw *mgl)
+static void FLI_docolor(byte *p,MGLDraw *mgl)
 {
 	// docolor2 and docolor are supposed to be different, but they aren't
 	FLI_docolor2(p,mgl);
 }
 
-void FLI_doDelta(byte *scrn,int scrWidth,byte *p)
+static void FLI_doDelta(byte *scrn,int scrWidth,byte *p)
 {
 	short numLines,numPaks;
 	int pos,x,y;
@@ -186,7 +186,7 @@ void FLI_doDelta(byte *scrn,int scrWidth,byte *p)
 			if(sizeCount>0)	// copy sizeCount words
 			{
 				//memcpy(&scrn[scrWidth*y+x],&p[pos],sizeCount*2);
-				PlotDataRun(x,y,sizeCount*2,scrn,&p[pos]);
+				PlotDataRun(x,y,sizeCount*2,scrn,scrWidth,&p[pos]);
 				pos+=sizeCount*2;
 				x+=sizeCount*2;
 			}
@@ -201,7 +201,7 @@ void FLI_doDelta(byte *scrn,int scrWidth,byte *p)
 					x+=2;
 				}
 				*/
-				PlotSolidWordRun(x,y,-sizeCount,scrn,v);
+				PlotSolidWordRun(x,y,-sizeCount,scrn,scrWidth,v);
 				x-=2*sizeCount;
 				pos+=2;
 			}
@@ -211,7 +211,7 @@ void FLI_doDelta(byte *scrn,int scrWidth,byte *p)
 	}
 }
 
-void FLI_doLC(byte *scrn,int scrWidth,byte *p)
+static void FLI_doLC(byte *scrn,int scrWidth,byte *p)
 {
 	word numln;
 	word x,y;
@@ -234,13 +234,13 @@ void FLI_doLC(byte *scrn,int scrWidth,byte *p)
 			x+=skip;
 			if(size<0) {
 				//memset(&scrn[x+y*scrWidth],p[pos],-size);
-				PlotSolidRun(x,y,-size,scrn,p[pos]);
+				PlotSolidRun(x,y,-size,scrn,scrWidth,p[pos]);
 				pos++;
 				x-=size;
 			}
 			if(size>0) {
 				//memcpy(&scrn[x+y*scrWidth],&p[pos],size);
-				PlotDataRun(x,y,size,scrn,&p[pos]);
+				PlotDataRun(x,y,size,scrn,scrWidth,&p[pos]);
 				pos+=size;
 				x+=size;
 			}
@@ -249,7 +249,7 @@ void FLI_doLC(byte *scrn,int scrWidth,byte *p)
 	}
 }
 
-void FLI_doBRUN(byte *scrn,int scrWidth,byte *p)
+static void FLI_doBRUN(byte *scrn,int scrWidth,byte *p)
 {
 	byte numpak;
 	word x,y=0;
@@ -264,13 +264,13 @@ void FLI_doBRUN(byte *scrn,int scrWidth,byte *p)
 			size=p[pos++];
 			if(size>0) {
 				//memset(&scrn[x+y*scrWidth],p[pos],size);
-				PlotSolidRun(x,y,size,scrn,p[pos]);
+				PlotSolidRun(x,y,size,scrn,scrWidth,p[pos]);
 				pos++;
 				x+=size;
 			}
 			if(size<0) {
 				//memcpy(&scrn[x+y*scrWidth],&p[pos],-size);
-				PlotDataRun(x,y,-size,scrn,&p[pos]);
+				PlotDataRun(x,y,-size,scrn,scrWidth,&p[pos]);
 				pos-=size;
 				x-=size;
 			}
@@ -279,7 +279,7 @@ void FLI_doBRUN(byte *scrn,int scrWidth,byte *p)
 	} while(y<fliHeight);
 }
 
-void FLI_nextchunk(MGLDraw *mgl,int scrWidth)
+static void FLI_nextchunk(MGLDraw *mgl,int scrWidth)
 {
 	int i,j;
 	chunkheader chead;
@@ -333,7 +333,7 @@ void FLI_nextchunk(MGLDraw *mgl,int scrWidth)
 	free(p);
 }
 
-void FLI_nextfr(MGLDraw *mgl,int scrWidth)
+static void FLI_nextfr(MGLDraw *mgl,int scrWidth)
 {
 	frmheader fhead;
 	int i;
@@ -351,7 +351,7 @@ void FLI_nextfr(MGLDraw *mgl,int scrWidth)
 		FLI_nextchunk(mgl,scrWidth);
 }
 
-void FLI_skipfr(void)
+static void FLI_skipfr(void)
 {
 	frmheader fhead;
 

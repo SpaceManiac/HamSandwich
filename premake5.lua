@@ -89,6 +89,8 @@ function depends(name)
 end
 
 library "ham"
+	filter "toolset:gcc"
+		buildoptions { "-Wall", "-Wextra", "-Wno-char-subscripts" }
 
 sdl2_project "lunatic"
 	icon_file "lunatic"

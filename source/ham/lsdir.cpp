@@ -90,7 +90,7 @@ filterdir::iter filterdir::end()
 
 filterdir::iter& filterdir::iter::operator++()
 {
-	while (value = parent.inner.next()) {
+	while ((value = parent.inner.next())) {
 		int len = strlen(value);
 		if (parent.maxlen > 0 && len >= parent.maxlen) {
 			continue;

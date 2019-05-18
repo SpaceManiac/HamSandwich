@@ -29,7 +29,7 @@ dword TimeLength(void)
 	return (timeEnd-timeStart);
 }
 
-void ResetClock(dword amt)
+void ResetClock(dword)
 {
 	timeStart=timeGetTime();
 	timeEnd=timeGetTime();
