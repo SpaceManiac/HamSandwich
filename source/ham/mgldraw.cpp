@@ -2,8 +2,10 @@
 #include "clock.h"
 #include <random>
 
-#include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_image.h>
+#ifdef _WIN32
+#include <SDL2/SDL_syswm.h>
+#endif
 
 bool JamulSoundInit(int buffers);
 void JamulSoundExit();
