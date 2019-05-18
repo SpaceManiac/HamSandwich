@@ -303,7 +303,7 @@ void PrintUnGlow(int x,int y,char *s,byte font)
 
 void PrintGlowLimited(int x,int y,int maxX,char *s,char bright,byte font)
 {
-	FontPrintStringGlowLimited(x,y,maxX,s,gameFont[font],bright);
+	FontPrintStringUnGlowLimited(x,y,maxX,s,gameFont[font]);
 }
 
 void PrintProgressiveGlow(int x,int y,char *s,int bright,byte font)

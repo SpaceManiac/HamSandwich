@@ -9,15 +9,15 @@ const int FONT_MAX_CHARS = 128;
 
 struct mfont_t
 {
-	byte numChars; // # of characters in the font
-	byte firstChar; // the first character's ASCII value (they ascend from there)
-	byte height; // height in pixels of the font
-	byte spaceSize; // # of pixels wide to make spaces
-	byte gapSize; // # of pixels between adjacent letters
-	byte gapHeight; // # of pixels to descend for a carriage return
-	long dataSize; // the size in bytes of the data of the characters themselves
-	byte *data; // pointer to the character data
-	byte * chars[FONT_MAX_CHARS]; // pointers to each character's data (can't have more than FONT_MAX_CHARS)
+	byte numChars;		// # of characters in the font
+	byte firstChar;		// the first character's ASCII value (they ascend from there)
+	byte height;		// height in pixels of the font
+	byte spaceSize;		// # of pixels wide to make spaces
+	byte gapSize;		// # of pixels between adjacent letters
+	byte gapHeight;		// # of pixels to descend for a carriage return
+	long dataSize;		// the size in bytes of the data of the characters themselves
+	byte *data;			// pointer to the character data
+	byte *chars[FONT_MAX_CHARS]; // pointers to each character's data (can't have more than FONT_MAX_CHARS)
 };
 
 // each character in the font is stored as:
@@ -43,10 +43,20 @@ int FontSave(const char *fname, mfont_t *font);
 
 void FontPrintString(int x, int y, const char *s, mfont_t *font);
 void FontPrintStringSolid(int x, int y, const char *s, mfont_t *font, byte color);
+void FontPrintStringLimit(int x, int y, int maxX, const char *s, mfont_t *font);
+void FontPrintStringSolidLimit(int x, int y, int maxX, const char *s, mfont_t *font, byte color);
 void FontPrintStringDropShadow(int x, int y, const char *s, mfont_t *font, byte shadowColor, byte shadowOffset);
 void FontPrintStringColor(int x, int y, const char *s, mfont_t *font, byte color, char bright = 0);
 void FontPrintStringBright(int x, int y, const char *s, mfont_t *font, char bright);
+void FontPrintStringBrightLimit(int x, int y, int maxX, const char *s, mfont_t *font, char bright);
+void FontPrintStringRect(int x, int y, int x2, int y2, const char *s, int height, mfont_t *font);
+void FontPrintStringGlowRect(int x, int y, int x2, int y2, const char *s, int height, char bright, mfont_t *font);
 void FontPrintStringGlow(int x, int y, const char *s, mfont_t *font, char bright = 0);
+void FontPrintStringProgressiveGlow(int x, int y, const char *s, mfont_t *font, int bright);
+void FontPrintStringGlowLimited(int x, int y, int maxX, const char *s, mfont_t *font, char bright);
+void FontPrintStringUnGlowLimited(int x, int y, int maxX, const char *s, mfont_t *font);
+void FontPrintStringUnGlow(int x, int y, const char *s, mfont_t *font);
+void FontPrintStringUnGlowRect(int x, int y, int x2, int y2, const char *s, int height, mfont_t *font);
 void FontPrintStringBrightGlow(int x, int y, const char *s, char brt, mfont_t *font);
 void FontPrintStringDark(int x, int y, const char *s, mfont_t *font);
 void FontPrintStringDarkAdj(int x, int y, const char *s, int dark, mfont_t *font);
