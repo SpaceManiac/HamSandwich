@@ -47,7 +47,7 @@ end
 
 function sdl2_project(name)
 	base_project(name)
-		filter { "system:Windows", "toolset:gcc" }
+		filter { "system:Windows", "not action:vs*" }
 			links "mingw32"
 		filter "system:Windows"
 			links { "ws2_32", "winmm" }
@@ -67,9 +67,9 @@ end
 function icon_file(icon)
 	-- Workaround for bug in premake5's gmake2 generator, which does
 	-- not count .res (object) files as resources, only .rc (source)
-	filter "system:Windows"
+	filter { "system:Windows", "toolset:not clang" }
 		files { "source/" .. icon .. "/**.rc" }
-	filter { "system:Windows", "action:gmake2" }
+	filter { "system:Windows", "action:gmake2", "toolset:not clang" }
 		linkoptions { "%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/obj/" .. icon .. ".res" }
 	filter {}
 end

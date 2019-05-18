@@ -1234,7 +1234,7 @@ void UpdateMonsterTypes(void)
 // AI auxiliary functions to make it simple
 //---------------------------------------------
 
-inline void FaceGoodguy(Guy *me,Guy *goodguy)
+void FaceGoodguy(Guy *me,Guy *goodguy)
 {
 	if(goodguy->x<me->x-FIXAMT*16)
 	{

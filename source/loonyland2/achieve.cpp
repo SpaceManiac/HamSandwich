@@ -501,9 +501,9 @@ byte UpdateAchieveMenu(MGLDraw *mgl)
 			glowDir[i]=-10+(rand()%21);
 			while(glowDir[i]==0)
 				glowDir[i]=-10+(rand()%21);
-			if(glowDir<0)
+			if(glowDir[i]<0)
 				glowPos[i]=700;
-			if(glowDir>0)
+			if(glowDir[i]>0)
 				glowPos[i]=-100;
 		}
 	}
