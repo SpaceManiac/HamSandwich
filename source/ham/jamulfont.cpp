@@ -318,7 +318,7 @@ static void FontPrintCharSolid(int x, int y, char c, mfont_t *font, byte color)
 	}
 }
 
-static void FontPrintCharGlow(int x, int y, char c, char bright, mfont_t *font)
+static void FontPrintCharGlow(int x, int y, char c, int bright, mfont_t *font)
 {
 	byte *dst,*src;
 	int scrWidth,scrHeight,chrWidth;
