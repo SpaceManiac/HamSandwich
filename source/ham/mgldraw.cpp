@@ -164,10 +164,11 @@ void MGLDraw::FinishFlip(void)
 			if (!(e.key.keysym.sym & ~0xff))
 			{
 				lastKeyPressed = e.key.keysym.sym;
-				if (e.key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT))
-				{
-					lastKeyPressed = toupper(lastKeyPressed);
-				}
+			}
+		} else if (e.type == SDL_TEXTINPUT) {
+			if (strlen(e.text.text) == 1)
+			{
+				lastKeyPressed = e.text.text[0];
 			}
 		} else if (e.type == SDL_KEYUP) {
 			ControlKeyUp(e.key.keysym.scancode);
