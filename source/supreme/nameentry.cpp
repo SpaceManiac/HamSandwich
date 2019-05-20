@@ -199,12 +199,12 @@ void NameEntry(MGLDraw *mgl,byte makeNew)
 		mgl->Flip();
 
 		if(!mgl->Process())
-			done=1;
+			done=255;
 		EndClock();
 	}
 
 	ExitNameEntry();
-	if(makeNew)
+	if(makeNew && done != 255)
 	{
 		FreeProfile();
 		LoadProfile(entry);
