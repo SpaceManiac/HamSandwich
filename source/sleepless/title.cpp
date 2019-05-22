@@ -154,7 +154,7 @@ static byte cursor;
 #ifdef DEMO
 char menuTxt[][16]={"Play","Profiles","Buy Now!","Exit"};
 #else
-char menuTxt[][16]={"Play","Profiles","Internet","Exit"};
+char menuTxt[][16]={"Play","Profiles","Editor","Exit"};
 #endif
 
 void MainMenuDisplay(MGLDraw *mgl)
@@ -181,13 +181,11 @@ void MainMenuDisplay(MGLDraw *mgl)
 
 	for(i=0;i<4;i++)
 	{
-		if (i == 2 && IsCustomWorld()) continue;
+		if (i == 2 && !canEditor) continue;
 		x=230+i*20;
 		y=240+i*60;
 		Print(x,y,menuTxt[i],(cursor==i)*10,0);
 	}
-	if (canEditor)
-		Print(430,240,"Editor",(cursor==10)*10,0);
 	sprintf(s,"Profile: %s",profile.name);
 	Print(638-GetStrLength(s,1)-1,467-1,s,-32,1);
 	Print(638-GetStrLength(s,1)+1,467+1,s,-32,1);
@@ -227,7 +225,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		// select stuff with cursor here
 		for(i=0;i<4;i++)
 		{
-			if(msx>=230 && msx<=500 && msy>=240+i*60 && msy<=240+i*60+55 && (i != 2 || !IsCustomWorld()))
+			if(msx>=230 && msx<=500 && msy>=240+i*60 && msy<=240+i*60+55 && (i != 2 || canEditor))
 				cursor=i;
 		}
 		if (msx>=430 && msx<=640 && msy>=240 && msy<=295 && canEditor)
@@ -244,10 +242,8 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		cursor--;
 		if(cursor==255)
 			cursor=3;
-		if(cursor==2 && IsCustomWorld())
+		if(cursor==2 && !canEditor)
 			cursor=1;
-		if(cursor==9) // editor
-			cursor=0;
 
 		titleRuns=0;
 		MakeNormalSound(SND_MENUCLICK);
@@ -257,20 +253,8 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		cursor++;
 		if(cursor==4)
 			cursor=0;
-		if(cursor==2 && IsCustomWorld())
+		if(cursor==2 && !canEditor)
 			cursor=3;
-		if(cursor==11) // editor
-			cursor=3;
-
-		titleRuns=0;
-		MakeNormalSound(SND_MENUCLICK);
-	}
-	if((((c&CONTROL_LF) && !(oldc&CONTROL_LF)) || ((c&CONTROL_RT) && !(oldc&CONTROL_RT))) && canEditor)
-	{
-		if(cursor==10)
-			cursor=0;
-		else
-			cursor=10;
 
 		titleRuns=0;
 		MakeNormalSound(SND_MENUCLICK);
@@ -362,7 +346,7 @@ byte MainMenu(MGLDraw *mgl)
 
 	if(cursor==3)	// exit
 		return 255;
-	else if(cursor==10)  // editor
+	else if(cursor==2)  // editor
 		return 5;
 	else
 		return cursor;
