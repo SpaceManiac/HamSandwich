@@ -327,7 +327,7 @@ byte MainMenu(MGLDraw *mgl)
 
 		if(!mgl->Process())
 		{
-			cursor=4;
+			cursor=255;
 			cmd=1;
 		}
 
