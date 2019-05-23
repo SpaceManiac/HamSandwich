@@ -2001,7 +2001,7 @@ char *QuestName(byte quest)
 
 char *QuestReport(byte quest,byte doneOk)
 {
-	static char s[32];
+	static char s[64];
 	byte i,p;
 
 	s[0]='\0';
