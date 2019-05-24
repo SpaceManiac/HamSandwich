@@ -15,6 +15,8 @@ void ControlKeyDown(byte scancode);
 void ControlKeyUp(byte scancode);
 void SetGameIdle(bool idle);
 
+static const RGB BLACK = {0, 0, 0, 0};
+
 static MGLDraw *_globalMGLDraw = nullptr;
 
 MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
@@ -28,32 +30,69 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	, xRes(xRes)
 	, yRes(yRes)
 	, pitch(xRes)
+	, scrn(nullptr)
 	, tapTrack(0)
 	, lastKeyPressed(0)
 	, lastRawCode(0)
+	, buffer(nullptr)
 {
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
-	SeedRNG();
+	_globalMGLDraw = this;
+
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK)) {
+		printf("SDL_Init: %s\n", SDL_GetError());
+		FatalError("Failed to initialize SDL");
+		return;
+	}
 
 	if(JamulSoundInit(512))
 		SoundSystemExists();
 
 	Uint32 flags = windowed ? 0 : SDL_WINDOW_FULLSCREEN;
 	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, xRes, yRes, flags);
+	printf("window format: %s\n", SDL_GetPixelFormatName(SDL_GetWindowPixelFormat(window)));
 	if (!window) {
 		printf("SDL_CreateWindow: %s\n", SDL_GetError());
 		FatalError("Failed to create window");
 		return;
 	}
 
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 	if (!renderer) {
 		printf("SDL_CreateRenderer: %s\n", SDL_GetError());
-		FatalError("Failed to create renderer");
-		return;
+		printf("Trying software renderer...\n");
+		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+		if (!renderer) {
+			printf("SDL_CreateRenderer: %s\n", SDL_GetError());
+			FatalError("Failed to create renderer");
+			return;
+		}
 	}
 
-	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, xRes, yRes);
+#ifdef _DEBUG
+	SDL_RendererInfo info;
+	SDL_GetRendererInfo(renderer, &info);
+	printf("Renderer info:\n");
+	printf("  name: %s\n", info.name);
+	printf("  flags:");
+	if (info.flags & SDL_RENDERER_SOFTWARE)
+		printf(" software");
+	if (info.flags & SDL_RENDERER_ACCELERATED)
+		printf(" accelerated");
+	if (info.flags & SDL_RENDERER_PRESENTVSYNC)
+		printf(" vsync");
+	if (info.flags & SDL_RENDERER_TARGETTEXTURE)
+		printf(" ttex");
+	if (!info.flags)
+		printf(" 0");
+	printf("\n");
+	printf("  texture: (%d, %d)\n", info.max_texture_width, info.max_texture_height);
+	printf("  formats (%d):\n", info.num_texture_formats);
+	for (Uint32 i = 0; i < info.num_texture_formats; ++i) {
+		printf("    %s\n", SDL_GetPixelFormatName(info.texture_formats[i]));
+	}
+#endif
+
+	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, xRes, yRes);
 	if (!texture) {
 		printf("SDL_CreateTexture: %s\n", SDL_GetError());
 		FatalError("Failed to create texture");
@@ -63,15 +102,16 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	SDL_SetWindowTitle(window, name);
 	SDL_ShowCursor(SDL_DISABLE);
 
-	_globalMGLDraw = this;
 	scrn = new byte[xRes * yRes];
-	thePal = &pal;
+	buffer = new RGB[xRes * yRes];
+	thePal = pal;
 	SeedRNG();
 }
 
 MGLDraw::~MGLDraw(void)
 {
 	JamulSoundExit();
+	delete[] buffer;
 	delete[] scrn;
 }
 
@@ -118,43 +158,33 @@ void MGLDraw::Quit()
 	readyToQuit = true;
 }
 
-static int makecol32(int r, int g, int b)
-{
-	return (r << 24) | (g << 16) | (b << 8);
-}
-
-inline void MGLDraw::putpixel(int x, int y, int value)
+inline void MGLDraw::putpixel(int x, int y, RGB value)
 {
 	buffer[y * pitch + x] = value;
 }
 
-int MGLDraw::FormatPixel(int x,int y)
+inline RGB MGLDraw::FormatPixel(int x,int y)
 {
-	byte b = scrn[y*xRes+x];
-	return makecol32((*thePal)[b].r, (*thePal)[b].g, (*thePal)[b].b);
+	return thePal[scrn[y * xRes + x]];
 }
 
 void MGLDraw::PseudoCopy(int y,int x,byte* data,int len)
 {
-	for(int i = 0; i < len; ++i, ++x)
-		putpixel(x, y, makecol32((*thePal)[data[i]].r, (*thePal)[data[i]].g, (*thePal)[data[i]].b));
+	RGB* target = &buffer[y * pitch + x];
+	for(int i = 0; i < len; ++i)
+		*target++ = thePal[*data++];
 }
 
-void MGLDraw::StartFlip(void)
+inline void MGLDraw::StartFlip(void)
 {
-	void* p;
-	SDL_LockTexture(texture, NULL, &p, &pitch);
-	buffer = (int*) p;
-	pitch /= sizeof(int);
 }
 
 void MGLDraw::FinishFlip(void)
 {
-	SDL_UnlockTexture(texture);
+	SDL_UpdateTexture(texture, NULL, buffer, pitch * sizeof(RGB));
 	SDL_RenderCopy(renderer, texture, NULL, NULL);
 	SDL_RenderPresent(renderer);
 	UpdateMusic();
-	buffer = nullptr;
 
 	SDL_Event e;
 	while(SDL_PollEvent(&e)) {
@@ -201,12 +231,16 @@ void MGLDraw::FinishFlip(void)
 
 void MGLDraw::Flip(void)
 {
-	int i;
-
 	StartFlip();
+
 	// blit to the screen
-	for(i=0;i<yRes;i++)
-		PseudoCopy(i,0,&scrn[i*xRes],xRes);
+	int limit = pitch * yRes;
+	byte* src = scrn;
+	RGB* target = buffer;
+
+	for(int i = 0; i < limit; ++i)
+		*target++ = thePal[*src++];
+
 	FinishFlip();
 }
 
@@ -275,8 +309,8 @@ void MGLDraw::TeensyWaterFlip(int v)
 	StartFlip();
 	for(i=0;i<yRes/2;i++)
 	{
-		putpixel(x-1-table[v],y,0);
-		putpixel(x+xRes/2-table[v],y,0);
+		putpixel(x-1-table[v],y,BLACK);
+		putpixel(x+xRes/2-table[v],y,BLACK);
 		for(j=0;j<xRes/2;j++)
 		{
 			putpixel(x+j-table[v],y,FormatPixel(j*2,i*2));
@@ -308,7 +342,7 @@ void MGLDraw::RasterFlip(void)
 		else
 		{
 			for(j=0;j<xRes;j++)
-				putpixel(j,i,0);
+				putpixel(j,i,BLACK);
 		}
 	}
 	FinishFlip();
@@ -344,7 +378,7 @@ void MGLDraw::RasterWaterFlip(int v)
 		else
 		{
 			for(j=0;j<xRes;j++)
-				putpixel(j,i,0);
+				putpixel(j,i,BLACK);
 		}
 		if(i&1)
 		{
@@ -368,13 +402,13 @@ const RGB *MGLDraw::GetPalette(void)
 
 void MGLDraw::RealizePalette(void)
 {
-	thePal = &pal;
+	thePal = pal;
 }
 
 void MGLDraw::SetSecondaryPalette(PALETTE newpal)
 {
 	memcpy(pal2, newpal, sizeof(PALETTE));
-	thePal = &pal2;
+	thePal = pal2;
 }
 
 // 8-bit graphics only
@@ -740,7 +774,7 @@ bool MGLDraw::SaveBMP(const char *name)
 	SDL_LockSurface(surface);
 	memcpy(surface->pixels, scrn, xRes * yRes);
 	SDL_UnlockSurface(surface);
-	memcpy(surface->format->palette->colors, *thePal, sizeof(PALETTE));
+	memcpy(surface->format->palette->colors, thePal, sizeof(PALETTE));
 	SDL_SaveBMP(surface, name);
 	SDL_FreeSurface(surface);
 	return true;

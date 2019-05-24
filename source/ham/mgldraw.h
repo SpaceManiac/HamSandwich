@@ -19,7 +19,9 @@ now SDL2.
 
 #include "jamultypes.h"
 
-typedef SDL_Color RGB;
+struct RGB {
+	byte b, g, r, a;
+};
 typedef RGB PALETTE[256];
 
 class MGLDraw
@@ -95,8 +97,8 @@ public:
 #endif
 
 protected:
-	void putpixel(int x, int y, int value);
-	int FormatPixel(int x, int y);
+	void putpixel(int x, int y, RGB value);
+	RGB FormatPixel(int x, int y);
 	void PseudoCopy(int x, int y, byte* data, int len);
 
 	void StartFlip(void);
@@ -106,7 +108,8 @@ protected:
 
 	int xRes, yRes, pitch;
 	byte *scrn;
-	PALETTE pal, pal2, *thePal;
+	PALETTE pal, pal2;
+	RGB *thePal;
 
 	byte tapTrack;
 	char lastKeyPressed;
@@ -115,7 +118,7 @@ protected:
 	SDL_Window *window;
 	SDL_Renderer *renderer;
 	SDL_Texture *texture;
-	int *buffer;
+	RGB *buffer;
 };
 
 void FatalError(const char *msg);
