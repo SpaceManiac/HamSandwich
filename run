@@ -3,10 +3,17 @@
 set -euo pipefail
 
 show_help() {
-	echo "Usage: $0 <project> [--release] [--gdb] [--fullscreen] [--nobuild] [--clang]"
+	echo "Usage: $0 <project> [<options>]"
 	echo "Available projects:"
-	echo "    lunatic    supreme     sleepless"
-	echo "    loonyland  loonyland2  mystic"
+	echo "    lunatic  supreme  sleepless  loonyland  loonyland2  mystic"
+	echo "Options:"
+	echo "    --fullscreen  Run the game in fullscreen (default: windowed)."
+	echo "    --release     Run the release build of the game (default: debug)."
+	echo "    --gdb         Start GDB prepared to debug the game."
+	echo "    --nobuild     Skip compiling before running."
+	echo "    --clang       Compile using the clang toolchain (default: gcc)."
+	echo "    --valgrind    Run the game under valgrind memory checker (slow)."
+	echo "    --callgrind   Run the game under callgrind profiler (slow)."
 }
 
 # Default settings
