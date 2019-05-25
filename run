@@ -10,7 +10,7 @@ show_help() {
 }
 
 # Default settings
-USE_GDB=
+TOOL=
 PROJECT=
 CONFIG=debug
 ARGS=window
@@ -28,7 +28,10 @@ while [ $# -ne 0 ]; do
 			CONFIG=release
 			;;
 		"--gdb")
-			USE_GDB=ON
+			TOOL=gdb
+			;;
+		"--callgrind")
+			TOOL=callgrind
 			;;
 		"--nobuild")
 			NOBUILD=ON
@@ -70,9 +73,12 @@ fi
 # Run the project
 EXE="$PWD/build/$TOOLSET-$CONFIG/$PROJECT/$PROJECT"
 cd "$GAMEDIR"
-if [ $USE_GDB ]; then
+if [ "$TOOL" = "gdb" ]; then
 	echo "==== Debugging $PROJECT ($CONFIG) ===="
 	gdb -q -ex 'break abort' --args "$EXE" $ARGS
+elif [ "$TOOL" = "callgrind" ]; then
+	echo "==== Callgrinding $PROJECT ($CONFIG) ===="
+	valgrind --tool=callgrind "$EXE" $ARGS
 else
 	echo "==== Running $PROJECT ($CONFIG) ===="
 	"$EXE" $ARGS
