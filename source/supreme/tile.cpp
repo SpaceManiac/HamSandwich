@@ -4,6 +4,7 @@
 #include "progress.h"
 #include "shop.h"
 #include "config.h"
+#include "ioext.h"
 
 tile_t tiles[NUMTILES];
 MGLDraw *tileMGL;
@@ -58,7 +59,7 @@ void SetTile(int t,int x,int y,byte *src)
 		memcpy(&tiles[t][i*TILE_WIDTH],&src[x+(y+i)*640],TILE_WIDTH);
 }
 
-void SaveTile(FILE *f,byte *t)
+static void SaveTile(std::ostream& f, byte *t)
 {
 	int row,i;
 	byte size,c;
@@ -94,7 +95,7 @@ void SaveTile(FILE *f,byte *t)
 	}
 
 	// now that all 24 have been checked, "compress" contains bits for whether to RLE each one
-	fwrite(compress,3,sizeof(byte),f);
+	f.write((char*) compress, 3);
 	curComp=0;
 	curBit=1;
 	// now write out the rows themselves
@@ -114,19 +115,19 @@ void SaveTile(FILE *f,byte *t)
 				else
 				{
 					// write out the current run and start a new one
-					fwrite(&size,1,sizeof(byte),f);
-					fwrite(&c,1,sizeof(byte),f);
+					f.put(size);
+					f.put(c);
 					c=t[row*TILE_WIDTH+i];
 					size=1;
 				}
 			}
 			// write out the final run
-			fwrite(&size,1,sizeof(byte),f);
-			fwrite(&c,1,sizeof(byte),f);
+			f.put(size);
+			f.put(c);
 		}
 		else	// straight format, simple
 		{
-			fwrite(&t[row*TILE_WIDTH],32,sizeof(byte),f);	// just write the 32 bytes
+			f.write((char*) &t[row*TILE_WIDTH], 32);	// just write the 32 bytes
 		}
 
 		curBit*=2;
@@ -142,10 +143,14 @@ void SaveTile(FILE *f,byte *t)
 
 void SaveTiles(FILE *f)
 {
-	int i;
+	FilePtrStream stream(f);
+	SaveTiles(stream);
+}
 
-	for(i=0;i<numTiles;i++)
-		SaveTile(f,tiles[i]);
+void SaveTiles(std::ostream& f)
+{
+	for (int i = 0; i < numTiles; ++i)
+		SaveTile(f, tiles[i]);
 }
 
 void SaveTilesToBMP(char *fname)
@@ -202,14 +207,14 @@ void SaveTilesToBMP(char *fname)
 	GetDisplayMGL()->ClearScreen();
 }
 
-void LoadTile(FILE *f,byte *t)
+static void LoadTile(std::istream &f, byte *t)
 {
 	int row,x;
 	byte size,c;
 	byte compress[3],curComp;
 	dword curBit;
 
-	fread(compress,3,sizeof(byte),f);
+	f.read((char*) compress, 3);
 
 	curComp=0;
 	curBit=1;
@@ -221,15 +226,15 @@ void LoadTile(FILE *f,byte *t)
 			x=0;
 			while(x<32)
 			{
-				fread(&size,1,sizeof(byte),f);
-				fread(&c,1,sizeof(byte),f);
+				size = f.get();
+				c = f.get();
 				memset(&t[row*TILE_WIDTH+x],c,size);
 				x+=size;
 			}
 		}
 		else	// straight format, simple
 		{
-			fread(&t[row*TILE_WIDTH],32,sizeof(byte),f);	// just write the 32 bytes
+			f.read((char*) &t[row*TILE_WIDTH], 32);	// just write the 32 bytes
 		}
 
 		curBit*=2;
@@ -243,18 +248,21 @@ void LoadTile(FILE *f,byte *t)
 
 void LoadTiles(FILE *f)
 {
-	int i;
+	FilePtrStream stream(f);
+	LoadTiles(stream);
+}
 
-	for(i=0;i<numTiles;i++)
-		LoadTile(f,tiles[i]);
+void LoadTiles(std::istream &f)
+{
+	for (int i = 0; i < numTiles; ++i)
+		LoadTile(f, tiles[i]);
 }
 
 void AppendTiles(int start,FILE *f)
 {
-	int i;
-
-	for(i=start;i<numTiles;i++)
-		LoadTile(f,tiles[i]);
+	FilePtrStream stream(f);
+	for(int i=start;i<numTiles;i++)
+		LoadTile(stream, tiles[i]);
 }
 
 void SetNumTiles(int n)

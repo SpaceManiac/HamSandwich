@@ -2,6 +2,7 @@
 #define TILE_H
 
 #include "mgldraw.h"
+#include <iostream>
 #include <stdio.h>
 
 #define TILE_WIDTH  32
@@ -17,7 +18,9 @@ word GetNumTiles(void);
 void SetTiles(byte *scrn);
 void SetTile(int t,int x,int y,byte *src);
 void LoadTiles(FILE *f);
+void LoadTiles(std::istream& f);
 void SaveTiles(FILE *f);
+void SaveTiles(std::ostream& f);
 void SaveTilesToBMP(char *fname);
 void RenderFloorTile(int x,int y,int t,char light);
 void RenderFloorTileTrans(int x,int y,int t,char light);
