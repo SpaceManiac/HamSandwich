@@ -30,6 +30,9 @@ while [ $# -ne 0 ]; do
 		"--gdb")
 			TOOL=gdb
 			;;
+		"--valgrind")
+			TOOL=valgrind
+			;;
 		"--callgrind")
 			TOOL=callgrind
 			;;
@@ -76,6 +79,9 @@ cd "$GAMEDIR"
 if [ "$TOOL" = "gdb" ]; then
 	echo "==== Debugging $PROJECT ($CONFIG) ===="
 	gdb -q -ex 'break abort' --args "$EXE" $ARGS
+elif [ "$TOOL" = "valgrind" ]; then
+	echo "==== Valgrinding $PROJECT ($CONFIG) ===="
+	valgrind "$EXE" $ARGS
 elif [ "$TOOL" = "callgrind" ]; then
 	echo "==== Callgrinding $PROJECT ($CONFIG) ===="
 	valgrind --tool=callgrind "$EXE" $ARGS
