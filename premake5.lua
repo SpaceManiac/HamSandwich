@@ -7,7 +7,7 @@ function base_project(name)
 	project(name)
 		kind "WindowedApp"
 		language "C++"
-		cppdialect "C++14"
+		cppdialect "C++17"
 		architecture "x86"
 		targetdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/")
 		objdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/obj/")
