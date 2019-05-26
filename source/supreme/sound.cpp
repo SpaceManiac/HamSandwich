@@ -527,6 +527,20 @@ byte AddCustomSound(char *fname)
 	return 1;
 }
 
+soundDesc_t *AddCustomSound(byte *data, size_t length)
+{
+	if(numCustom==MAX_CUSTOM_SOUNDS)
+		return nullptr;
+
+	customSound[numCustom] = data;
+	customLength[numCustom] = length;
+
+	strcpy(soundInfo[CUSTOM_SND_START+numCustom].name,"New Sound");
+	soundInfo[CUSTOM_SND_START+numCustom].num=CUSTOM_SND_START+numCustom;
+	soundInfo[CUSTOM_SND_START+numCustom].theme=ST_CUSTOM;
+	return &soundInfo[CUSTOM_SND_START + (numCustom++)];
+}
+
 byte ReplaceCustomSound(int n,char *fname)
 {
 	FILE *f;

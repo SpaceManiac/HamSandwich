@@ -30,6 +30,7 @@ public:
 		: ptr(array), sz(N) {}
 
 	char* prepare(size_t* sz);
+	void assign(string_view s);
 };
 
 class Section

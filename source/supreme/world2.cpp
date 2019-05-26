@@ -1,8 +1,9 @@
 #include "world.h"
 #include "title.h"
 #include "hamworld.h"
-#include "monster.h"
-#include <memory>
+#include "sound.h"
+
+#define APPNAME "Supreme with Cheese" VERSION_NO
 
 struct big_savetile
 {
@@ -64,6 +65,33 @@ static void LoadItem(hamworld::Section *f, item_t *item)
 	item->effectAmt = f->read_varint();
 	item->sound = f->read_varint();
 	f->read_string(item->msg);
+	f->read_varint();  // ignore extension flags
+}
+
+static void SaveSound(hamworld::Section *f, const soundDesc_t *desc, size_t len, const byte *data)
+{
+	f->write_string(desc->name);
+	f->write_varint(desc->theme);
+	f->write_string({ (char*) data, len });
+	f->write_varint(0);  // no extension flags
+}
+
+soundDesc_t *AddCustomSound(byte *, size_t);
+
+static void LoadSound(hamworld::Section *f)
+{
+	std::string name;
+	f->read_string(&name);
+	f->read_varint();  // ignore theme
+
+	size_t size = f->read_varint();
+	byte *data = (byte *) malloc(size);
+	f->stream.read((char*) data, size);
+
+	soundDesc_t *desc = AddCustomSound(data, size);
+	if (desc)
+		hamworld::Buffer(desc->name).assign(name);
+
 	f->read_varint();  // ignore extension flags
 }
 
@@ -348,6 +376,16 @@ byte Ham_SaveWorld(world_t* world, const char *fname)
 		SaveItem(&item_definitions, GetItem(i));
 	}
 
+	hamworld::Section sound_definitions;
+	sound_definitions.write_varint(CUSTOM_SND_START);
+	sound_definitions.write_varint(GetNumCustomSounds());
+	for (int i = 0; i < GetNumCustomSounds(); ++i)
+	{
+		sound_definitions.write_string("");  // savename not yet implemented
+		SaveSound(&sound_definitions, GetSoundInfo(CUSTOM_SND_START + i),
+			GetCustomLength(i), GetCustomSound(i));
+	}
+
 	hamworld::Section rle_tilegfx;
 	rle_tilegfx.write_varint(world->numTiles);
 	SaveTiles(rle_tilegfx.stream);
@@ -405,13 +443,16 @@ byte Ham_SaveWorld(world_t* world, const char *fname)
 	}
 
 	hamworld::Save save(fname);
-	save.header(world->author, world->map[0]->name, "Supreme with Cheese " VERSION_NO);
+	save.header(world->author, world->map[0]->name, APPNAME);
 
 	if (NumItems() > NUM_ORIGINAL_ITEMS)
 	{
 		save.section("item_definitions", item_definitions.save());
 	}
-	//save.section("customsounds", "");
+	if (GetNumCustomSounds() > 0)
+	{
+		save.section("sound_definitions", sound_definitions.save());
+	}
 
 	save.section("rle_tilegfx", rle_tilegfx.save());
 	save.section("terrain", terrain.save());
@@ -442,6 +483,7 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 
 	ExitItems();
 	InitItems();
+	ClearCustomSounds();
 
 	world->numMaps = 0;
 
@@ -465,6 +507,21 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 
 				int new_item = NewItem();
 				LoadItem(&section, GetItem(new_item));
+			}
+		}
+		else if (section_name == "sound_definitions")
+		{
+			size_t start = section.read_varint();
+			if (start != CUSTOM_SND_START)
+			{
+				printf("error: sound definition offest NYI (expected %d, got %d)\n", CUSTOM_SND_START, start);
+				return false;
+			}
+			size_t sound_count = section.read_varint();
+			for (size_t i = 0; i < sound_count; ++i)
+			{
+				section.read_string(nullptr);  // ignore savename
+				LoadSound(&section);
 			}
 		}
 		else if (section_name == "rle_tilegfx")
@@ -514,6 +571,8 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 			return 0;
 		}
 	}
+
+	SetupRandomItems();
 
 	return 1;
 }

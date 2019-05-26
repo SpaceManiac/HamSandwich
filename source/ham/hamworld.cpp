@@ -31,6 +31,13 @@ char* Buffer::prepare(size_t *len)
 	}
 }
 
+void Buffer::assign(string_view s)
+{
+	size_t len = s.length();
+	char* ptr = prepare(&len);
+	memcpy(ptr, s.data(), len);
+}
+
 static size_t size_varint(size_t id)
 {
 	size_t i = 1;
