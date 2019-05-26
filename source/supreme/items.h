@@ -168,16 +168,16 @@
 #define ITM_RANDOM	255		// the item number for random item drops
 
 // item flags
-#define IF_SHADOW	   1	// casts a shadow
-#define IF_GLOW		   2	// is glowy rather than solid
-#define IF_SOLID	   4	// can't walk through it
-#define IF_BULLETPROOF 8	// can't shoot through it
-#define IF_PICKUP	  16	// player can pick it up for some effect
-#define IF_LOONYCOLOR 32	// using the loony color thing that loonykeys do
-#define IF_TILE		  64	// render a tile instead of a sprite
-#define IF_USERJSP   128	// use custom item jsp
-#define IF_BUBBLES   256	// spout bubbles
-#define IF_BIGMSG	 512	// display a big message
+#define IF_SHADOW      (1<<0)	// casts a shadow
+#define IF_GLOW        (1<<1)	// is glowy rather than solid
+#define IF_SOLID       (1<<2)	// can't walk through it
+#define IF_BULLETPROOF (1<<3)	// can't shoot through it
+#define IF_PICKUP      (1<<4)	// player can pick it up for some effect
+#define IF_LOONYCOLOR  (1<<5)	// using the loony color thing that loonykeys do
+#define IF_TILE        (1<<6)	// render a tile instead of a sprite
+#define IF_USERJSP     (1<<7)	// use custom item jsp
+#define IF_BUBBLES     (1<<8)	// spout bubbles
+#define IF_BIGMSG      (1<<9)	// display a big message
 
 // themes
 #define IT_PICKUP	(1<<0)	// items you can collect

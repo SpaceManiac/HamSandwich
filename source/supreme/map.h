@@ -39,7 +39,7 @@
 #define MAP_LAVA		(1<<8)
 #define MAP_STEALTH		(1<<9)
 #define MAP_WAVY		(1<<10)
-#define MAP_OXYGEN  (1<<11)
+#define MAP_OXYGEN		(1<<11)
 
 #define NUM_LVL_FLAGS	12
 
