@@ -572,3 +572,19 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 
 	return 1;
 }
+
+byte Ham_GetWorldName(const char *fname, char *buffer, char *authbuffer)
+{
+	printf("Ham_GetWorldName(%s)\n", fname);
+	hamworld::Load load(fname);
+
+	std::string app;
+	if (!load.header({authbuffer, 32}, {buffer, 32}, &app))
+	{
+		printf("  error: bad header\n");
+		return 0;
+	}
+	printf("  app: %s\n", app.c_str());
+
+	return 1;
+}

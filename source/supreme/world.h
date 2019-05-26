@@ -46,7 +46,7 @@ void WorldLoadBMP(char *name,byte *dst);
 
 byte NewWorld(world_t *world,MGLDraw *mgl);
 byte LoadWorld(world_t *world,char *fname);
-byte SaveWorld(world_t *world,char *fname);
+byte SaveWorld(world_t *world,const char *fname);
 void FreeWorld(world_t *world);
 
 void InitWorld(world_t *world);

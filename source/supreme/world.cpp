@@ -33,6 +33,7 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	return 1;
 }
 
+byte Ham_GetWorldName(const char *fname, char *buffer, char *authbuffer);
 byte Ham_LoadWorld(world_t *world, const char *fname);
 byte Ham_SaveWorld(world_t *world, const char *fname);
 
@@ -169,8 +170,15 @@ byte BeginAppendWorld(world_t *world,char *fname)
 	return 1;
 }
 
-byte SaveWorld(world_t *world,char *fname)
+byte SaveWorld(world_t *world, const char *fname)
 {
+	// Save new world
+	Ham_SaveWorld(world, fname);
+	std::string name = fname;
+	name.append("_old");
+	fname = name.c_str();
+
+	// Save old world as backup
 	FILE *f;
 	int i;
 	char code[9]="SUPREME!";
@@ -218,7 +226,12 @@ byte GetWorldName(char *fname,char *buffer,char *authbuffer)
 
 	fread(code,sizeof(char),8,f);
 	code[8]='\0';
-	if(strcmp(code,"SUPREME!"))
+	if(!strcmp(code,"HAMSWCH!"))
+	{
+		fclose(f);
+		return Ham_GetWorldName(fname, buffer, authbuffer);
+	}
+	else if(strcmp(code,"SUPREME!"))
 	{
 		fclose(f);
 
