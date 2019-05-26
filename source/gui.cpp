@@ -27,13 +27,13 @@ void Gui::render() {
         SDL_RenderDrawLine(renderer, r.left, r.top, r.right, r.top);
         SDL_RenderDrawLine(renderer, r.left, r.bottom, r.right, r.bottom);
 
-        //elem.font.draw(r.getCenterX() - 1, r.getTop() + 2, ALLEGRO_ALIGN_CENTER, black, elem.text);
+        DrawText(renderer, elem.font, (r.left + r.right) / 2, r.top + 2, ALIGN_CENTER, black, elem.text.c_str());
     }
 
     if (hover && !hover->tooltip.empty()) {
-        //gFont.draw(2, DISPLAY_HEIGHT - 20, black, hover->tooltip);
+        DrawText(renderer, gFont, 2, DISPLAY_HEIGHT - 20, ALIGN_LEFT, black, hover->tooltip.c_str());
     } else {
-        //gFont.draw(2, DISPLAY_HEIGHT - 20, Color(128, 128, 128), "JspEdit 2 by SpaceManiac");
+        DrawText(renderer, gFont, 2, DISPLAY_HEIGHT - 20, ALIGN_LEFT, { 128, 128, 128, 255 }, "JspEdit 3 by SpaceManiac");
     }
 }
 

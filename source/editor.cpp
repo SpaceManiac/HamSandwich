@@ -249,7 +249,7 @@ void Editor::save() {
     // show please wait dialog
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
     SDL_RenderFillRect(renderer, NULL);
-    //gFont.draw(DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2 - 50, ALLEGRO_ALIGN_CENTER, Color(0, 0, 0), "Saving, please wait...");
+    DrawText(renderer, gFont, DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2 - 50, ALIGN_CENTER, { 0, 0, 0, 255 }, "Saving, please wait...");
     SDL_RendererFlip(renderer);
 
     // perform save
@@ -457,16 +457,22 @@ void Editor::render() {
     // file stats
     vector<JspFrame> frames = file.jsp.frames;
     if (frames.size() == 0) {
-        //gFont.draw(5, 35, black, "No file open");
+        DrawText(renderer, gFont, 5, 35, ALIGN_LEFT, black, "No file open");
     } else {
         JspFrame current = frames[file.curSprite];
-        //gFont.draw(5, 35, black, file.shortname);
-        //gFont.drawf(5, 55, black, "Sprite count: %d", frames.size());
-        //gFont.drawf(88, 80, ALLEGRO_ALIGN_CENTER, black, "%d", file.curSprite);
-        //gFont.drawf(5, 105, black, "Size: (%d, %d)", current.bmp.getWidth(), current.bmp.getHeight());
-        //gFont.drawf(5, 125, black, "Origin: (%d, %d)", current.ofsX, current.ofsY);
+        DrawText(renderer, gFont, 5, 35, ALIGN_LEFT, black, file.shortname.c_str());
 
-        //gIconFont.drawf(5, 145, black, "%s %s", FA::str(FAChar::check).cstr(), FA::str(FAChar::adjust).cstr());
+        std::ostringstream s;
+        s << "Sprite count: " << frames.size();
+        DrawText(renderer, gFont, 5, 55, ALIGN_LEFT, black, s.str().c_str());
+        s.str(""); s << file.curSprite;
+        DrawText(renderer, gFont, 88, 80, ALIGN_CENTER, black, s.str().c_str());
+        //gFont.drawf(5, 105, black, "Size: (%d, %d)", current.bmp.getWidth(), current.bmp.getHeight());
+        s.str(""); s << "Origin: (" << current.ofsX << ", " << current.ofsY << ")";
+        DrawText(renderer, gFont, 5, 125, ALIGN_LEFT, black, s.str().c_str());
+
+        s.str(""); s << FA::str(FAChar::check) << " " << FA::str(FAChar::adjust);
+        DrawText(renderer, gIconFont, 5, 145, ALIGN_LEFT, black, s.str().c_str());
     }
 
     // sprites
@@ -570,36 +576,36 @@ void Editor::handleEvent(const SDL_Event &event) {
         file.jsp.frames[file.curSprite].ofsY -= event.motion.yrel;
         break;
 
-    /*case SDL_TEXTINPUT:
+    case SDL_KEYUP:
         if (file.jsp.frames.size() == 0) break;
 
-        int mods = event.getKeyboardModifiers();
-        bool ctrl = mods & ALLEGRO_KEYMOD_CTRL;
-        bool shift = mods & ALLEGRO_KEYMOD_SHIFT;
+        int mods = SDL_GetModState();
+        bool ctrl = mods & KMOD_CTRL;
+        bool shift = mods & KMOD_SHIFT;
 
         int move = 1;
         if (shift) move = 10;
 
-        switch (event.getKeyboardKeycode()) {
-        case ALLEGRO_KEY_LEFT:
+        switch (event.key.keysym.scancode) {
+        case SDL_SCANCODE_LEFT:
             if (ctrl) {
                 file.jsp.frames[file.curSprite].ofsX += move;
                 file.unsaved = true;
             }
             break;
-        case ALLEGRO_KEY_RIGHT:
+        case SDL_SCANCODE_RIGHT:
             if (ctrl) {
                 file.jsp.frames[file.curSprite].ofsX -= move;
                 file.unsaved = true;
             }
             break;
-        case ALLEGRO_KEY_UP:
+        case SDL_SCANCODE_UP:
             if (ctrl) {
                 file.jsp.frames[file.curSprite].ofsY += move;
                 file.unsaved = true;
             }
             break;
-        case ALLEGRO_KEY_DOWN:
+        case SDL_SCANCODE_DOWN:
             if (ctrl) {
                 file.jsp.frames[file.curSprite].ofsY -= move;
                 file.unsaved = true;
@@ -607,7 +613,6 @@ void Editor::handleEvent(const SDL_Event &event) {
             break;
         }
         break;
-    */
     }
 }
 
