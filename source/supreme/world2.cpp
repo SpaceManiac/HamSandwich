@@ -3,7 +3,7 @@
 #include "hamworld.h"
 #include "sound.h"
 
-#define APPNAME "Supreme with Cheese" VERSION_NO
+#define APPNAME "Supreme with Cheese " VERSION_NO
 
 struct big_savetile
 {
