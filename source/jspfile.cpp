@@ -59,19 +59,19 @@ bool JspFile::load(string fname) {
 
     // read image
     frames.clear();
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
     for (uint16_t i = 0; i < count; ++i) {
         //cout << "decoding frame #" << i << endl;
 
         FrameInfo info = frameInfo[i];
-        Bitmap image { info.width, info.height };
+        std::shared_ptr<SDL_Texture> image(SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, info.width, info.height), SDL_DestroyTexture);
         if (!image) {
             cout << "could not create " << info.width << "x" << info.height << " image for frame #" << i << endl;
             error = "could not create image";
             return false;
         }
 
-        image.lock(ALLEGRO_PIXEL_FORMAT_ARGB_8888, ALLEGRO_LOCK_WRITEONLY);
-        gfx::SetTarget target { image };
+        SDL_SetRenderTarget(renderer, image.get());
 
         int x = 0, y = 0;
         uint32_t read = 0;
@@ -81,7 +81,8 @@ bool JspFile::load(string fname) {
             if (value >= 128) {
                 // transparency run
                 for (uint8_t j = 128; j < value; ++j) {
-                    al_put_pixel(x, y, Color { 0, 0, 0, 0 });
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+                    SDL_RenderDrawPoint(renderer, x, y);
                     if (++x >= info.width) {
                         x = 0; ++y;
                     }
@@ -91,7 +92,8 @@ bool JspFile::load(string fname) {
                 for (uint8_t j = 0; j < value; ++j) {
                     uint8_t index = in.get();
                     ++read;
-                    al_put_pixel(x, y, palette::getColor(index));
+                    SDL_Color color = palette::getColor(index);
+                    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
                     if (++x >= info.width) {
                         x = 0; ++y;
                     }
@@ -103,10 +105,11 @@ bool JspFile::load(string fname) {
                 return false;
             }
         }
-        image.unlock();
 
         frames.push_back({ image, info.ofsX, info.ofsY });
     }
+    SDL_SetRenderTarget(renderer, nullptr);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     return true;
 }
@@ -126,37 +129,41 @@ bool JspFile::save(string fname) {
 
     // perform RLE compression
     std::vector<FrameInfo> frameInfo;
-    std::vector<uint8_t*> frameData;
+    std::vector<std::vector<uint8_t>> frameData;
 
     for (uint16_t i = 0; i < count; ++i) {
         std::cout << "encoding frame #" << i << endl;
         JspFrame frame = frames[i];
-        FrameInfo info { (uint16_t) frame.bmp.getWidth(), (uint16_t) frame.bmp.getHeight(), (int16_t) frame.ofsX, (int16_t) frame.ofsY, 0, 0 };
+
+        int w, h;
+        SDL_QueryTexture(frame.bmp.get(), nullptr, nullptr, &w, &h);
+        FrameInfo info { (uint16_t) w, (uint16_t) h, frame.ofsX, frame.ofsY, 0, 0 };
         if (i == 0) {
             // extra data space on first image set to magic value
             info.extra = JSPEDIT2_MAGIC;
         }
 
         // convert bitmap to palette
-        uint32_t bmp_size = info.width * info.height;
-        uint8_t* temp = new uint8_t[bmp_size];
+        uint32_t bmp_size = w * h;
+        std::vector<uint8_t> temp(bmp_size);
         //std::cout << "  palette conversion" << endl;
-        frame.bmp.lock(ALLEGRO_PIXEL_FORMAT_ARGB_8888, ALLEGRO_LOCK_READONLY);
+        // TODO
+        /*frame.bmp.lock(ALLEGRO_PIXEL_FORMAT_ARGB_8888, ALLEGRO_LOCK_READONLY);
         for (int y = 0; y < info.height; ++y) {
             for (int x = 0; x < info.width; ++x) {
                 temp[y * info.width + x] = palette::getExact(frame.bmp.getPixel(x, y));
             }
         }
-        frame.bmp.unlock();
+        frame.bmp.unlock();*/
 
         // worst possible scenario is 1.5 bytes per pixel (alternating transparency and solidity)
-        uint8_t* data = new uint8_t[bmp_size * 2];
+        std::vector<uint8_t> data(bmp_size * 2);
         uint32_t pos = 0, n = 0;  // pos tracks output, n tracks pixels
 
         //std::cout << "  run length encoding" << endl;
         while (n < bmp_size) {
             int len = 0;
-            byte c = temp[n];
+            uint8_t c = temp[n];
 
             // a continuous run must end at any of:
             // the end of the bitmap
@@ -193,12 +200,7 @@ bool JspFile::save(string fname) {
 
     // write image
     for (uint16_t i = 0; i < count; ++i) {
-        out.write((char*) frameData[i], frameInfo[i].size);
-    }
-
-    // clean up
-    for (size_t i = 0; i < frameData.size(); ++i) {
-        delete[] frameData[i];
+        out.write((char*) &frameData[i][0], frameInfo[i].size);
     }
 
     return true;

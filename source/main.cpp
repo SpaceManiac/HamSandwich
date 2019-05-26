@@ -1,52 +1,41 @@
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+//#include <SDL2/SDL_ttf.h>
+#include <string>
+#include <unistd.h>  // for chdir
 #include "globals.h"
 #include "editor.h"
 
 using namespace std;
 
-Display display;
-Font gFont, gIconFont;
-
-/*AssetContext<Bitmap> graphics([](std::string key) {
-    Bitmap result(("gfx/" + key + ".png").c_str());
-    if (!result) result = Bitmap(8, 8);
-    return result;
-});*/
-
-//AssetContext<Bitmap> graphics(AssetContext<Bitmap>::prefixLoader("graphics/"));
-//AssetContext<Bitmap> graphics(AssetContext<Bitmap>::constructLoader);
+SDL_Window *window;
+SDL_Renderer *renderer;
+TTF_Font *gFont, *gIconFont;
 
 int main(int argc, char** argv) {
-    InitAttempt(al_init());
-    InitAttempt(al_install_keyboard());
-    InitAttempt(al_install_mouse());
-    InitAttempt(al_init_image_addon());
-    al_init_font_addon();
-    InitAttempt(al_init_ttf_addon());
-    InitAttempt(al_init_primitives_addon());
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+    IMG_Init(IMG_INIT_PNG);
+    TTF_Init();
 
-    InitAttempt(gFont.load("vera.ttf", 14));
-    InitAttempt(gIconFont.load("fontawesome.ttf", 14));
+    string exe = argv[0];
+    string dir = exe.substr(0, exe.find_last_of("\\/"));
+    chdir(dir.c_str());
 
-    al_set_new_display_flags(ALLEGRO_WINDOWED);
-    InitAttempt(display = Display(DISPLAY_WIDTH, DISPLAY_HEIGHT));
+    gFont = TTF_OpenFont("vera.ttf", 14);
+    gIconFont = TTF_OpenFont("fontawesome.ttf", 14);
 
-    display.setWindowTitle("JspEdit 2");
-    //display.setWindowIcon(graphics["gamepad.png"]);
-    //al_hide_mouse_cursor(display.get());
+    SDL_CreateWindowAndRenderer(DISPLAY_WIDTH, DISPLAY_HEIGHT, 0, &window, &renderer);
+    SDL_SetWindowTitle(window, "JspEdit 3");
 
     if (argc > 1) {
         editor::loadOnStartup(argv[1]);
     }
 
-    int ret = ExceptionTrapVoid(editor::main);
+    editor::main();
 
-    // we need to clean up assets here, because if they're left in the global
-    // scope they'll be destroyed after Allegro shuts down, which we don't want
-    display.reset();
-    gFont.reset();
-    gIconFont.reset();
-    //graphics.clear();
-
-    return ret;
+    TTF_CloseFont(gIconFont);
+    TTF_CloseFont(gFont);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    return 0;
 }
-

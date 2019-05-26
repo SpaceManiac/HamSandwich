@@ -348,7 +348,7 @@ enum class FAChar {
     apple = 0xf179,
     windows = 0xf17a,
     android = 0xf17b,
-    linux = 0xf17c,
+    linux_ = 0xf17c,
     dribbble = 0xf17d,
     skype = 0xf17e,
     foursquare = 0xf180,
@@ -381,9 +381,14 @@ inline wchar_t ch(FAChar ch) {
     return (wchar_t) ch;
 }
 
-inline String str(FAChar ch) {
-    wchar_t txt[2] = { (wchar_t) ch, 0 };
-    return String(txt);
+inline std::string str(FAChar ch) {
+    uint8_t result[4] = {
+        0xef,
+        (uint8_t)0x80 | (uint8_t)(((int)ch >> 7) & 0x7f),
+        (uint8_t)0x80 | (uint8_t)((int)ch & 0x7f),
+        0
+    };
+    return std::string((char*) result);
 }
 
 }

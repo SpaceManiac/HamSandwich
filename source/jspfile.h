@@ -3,10 +3,11 @@
 
 #include "globals.h"
 #include <vector>
+#include <memory>
 
 struct JspFrame {
-    Bitmap bmp;
-    int ofsX, ofsY;
+    std::shared_ptr<SDL_Texture> bmp;
+    int16_t ofsX, ofsY;
 };
 
 struct JspFile {

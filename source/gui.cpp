@@ -1,7 +1,8 @@
 #include "gui.h"
+#include <SDL2/SDL.h>
 
 void Gui::render() {
-    Color black(0, 0, 0);
+    SDL_Color black { 0, 0, 0, 255 };
     for (GuiElement& elem : elements) {
         GuiRect r = elem.size;
 
@@ -11,64 +12,66 @@ void Gui::render() {
         //r.setClipping();
 
         if (focused) {
-            gfx::fillRect(r.getLeft(), r.getTop(), r.getRight() - 1, r.getBottom() - 1, Color(230, 230, 230));
+            SDL_SetRenderDrawColor(renderer, 230, 230, 230, 255);
+            SDL_Rect rect = {r.left, r.top, r.right - r.left, r.bottom - r.top};
+            SDL_RenderFillRect(renderer, &rect);
         } else if (hovered) {
-            gfx::fillRect(r.getLeft(), r.getTop(), r.getRight() - 1, r.getBottom() - 1, Color(255, 255, 255));
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+            SDL_Rect rect = {r.left, r.top, r.right - r.left, r.bottom - r.top};
+            SDL_RenderFillRect(renderer, &rect);
         }
 
-        gfx::line(r.getLeft(), r.getTop(), r.getLeft(), r.getBottom() - 1, black, 1);
-        gfx::line(r.getRight(), r.getTop(), r.getRight(), r.getBottom() - 1, black, 1);
-        gfx::line(r.getLeft(), r.getTop(), r.getRight() - 1, r.getTop(), black, 1);
-        gfx::line(r.getLeft(), r.getBottom(), r.getRight() - 1, r.getBottom(), black, 1);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderDrawLine(renderer, r.left, r.top, r.left, r.bottom);
+        SDL_RenderDrawLine(renderer, r.right, r.top, r.right, r.bottom);
+        SDL_RenderDrawLine(renderer, r.left, r.top, r.right, r.top);
+        SDL_RenderDrawLine(renderer, r.left, r.bottom, r.right, r.bottom);
 
-        elem.font.draw(r.getCenterX() - 1, r.getTop() + 2, ALLEGRO_ALIGN_CENTER, black, elem.text);
-        //gfx::roundRect(r.getLeft(), r.getTop(), r.getRight(), r.getBottom(), 1, 1, black, 1);
+        //elem.font.draw(r.getCenterX() - 1, r.getTop() + 2, ALLEGRO_ALIGN_CENTER, black, elem.text);
     }
-    //GuiRect(Point<int>(0, 0), Bitmap::getTarget().getSize()).setClipping();
 
-    if (hover && hover->tooltip) {
-        gFont.draw(2, DISPLAY_HEIGHT - 20, black, hover->tooltip);
+    if (hover && !hover->tooltip.empty()) {
+        //gFont.draw(2, DISPLAY_HEIGHT - 20, black, hover->tooltip);
     } else {
-        gFont.draw(2, DISPLAY_HEIGHT - 20, Color(128, 128, 128), "JspEdit 2 by SpaceManiac");
+        //gFont.draw(2, DISPLAY_HEIGHT - 20, Color(128, 128, 128), "JspEdit 2 by SpaceManiac");
     }
 }
 
 GuiElement* Gui::elemAt(int x, int y) {
     for (GuiElement& elem : elements) {
-        if (elem.size.intersects(x, y)) {
+        if (elem.size.left <= x && x <= elem.size.right && elem.size.top <= y && y <= elem.size.bottom) {
             return &elem;
         }
     }
     return nullptr;
 }
 
-bool Gui::handleEvent(Event evt) {
+bool Gui::handleEvent(const SDL_Event &evt) {
     GuiElement* prev = focus;
 
-    switch (evt.getType()) {
-    case ALLEGRO_EVENT_MOUSE_AXES:
-    case ALLEGRO_EVENT_MOUSE_WARPED:
-        hover = elemAt(evt.getMouseX(), evt.getMouseY());
+    switch (evt.type) {
+    case SDL_MOUSEMOTION:
+        hover = elemAt(evt.motion.x, evt.motion.y);
         return false;
 
-    case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
-        focus = hover = elemAt(evt.getMouseX(), evt.getMouseY());
+    case SDL_MOUSEBUTTONDOWN:
+        focus = hover = elemAt(evt.button.x, evt.button.y);
         return focus;
 
-    case ALLEGRO_EVENT_MOUSE_BUTTON_UP:
-        hover = elemAt(evt.getMouseX(), evt.getMouseY());
+    case SDL_MOUSEBUTTONUP:
+        hover = elemAt(evt.button.x, evt.button.y);
         if (hover == focus && focus && focus->func) {
             focus->func();
         }
         focus = nullptr;
         return prev;
 
-    case ALLEGRO_EVENT_KEY_CHAR:
+    case SDL_TEXTINPUT:
         for (GuiElement elem : elements) {
-            if (elem.shortcut.mods == (evt.getKeyboardModifiers() & 7) && elem.shortcut.keycode == evt.getKeyboardKeycode() && elem.func) {
+            /*if (elem.shortcut.mods == (evt.getKeyboardModifiers() & 7) && elem.shortcut.keycode == evt.getKeyboardKeycode() && elem.func) {
                 elem.func();
                 return true;
-            }
+            }*/
         }
         return false;
 

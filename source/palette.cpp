@@ -35,29 +35,30 @@ static uint8_t pal[256][3] = {
     {142, 253, 253}, {158, 253, 253}, {173, 253, 253}, {189, 253, 253}, {205, 253, 253}, {221, 252, 252}, {236, 252, 252}, {252, 252, 252}
 };
 
-Color palette::getColor(uint8_t index) {
+SDL_Color palette::getColor(uint8_t index) {
     if (index == 0) {
-        return Color(0, 0, 0, 0); // transparent
+        return { 0, 0, 0, 0 }; // transparent
     }
-    return Color(pal[index][0], pal[index][1], pal[index][2]);
+    return { pal[index][0], pal[index][1], pal[index][2], 255 };
 }
 
-uint8_t palette::getExact(Color color) {
-    if (color.getAlpha() < 128) return 0;
+uint8_t palette::getExact(SDL_Color color) {
+    if (color.a < 128) return 0;
 
     for (int i = 1; i < 256; ++i) {
-        if (getColor(i) == color) {
+        SDL_Color c = getColor(i);
+        if (!memcmp(&c, &color, sizeof(SDL_Color))) {
             return i;
         }
     }
-    printf("Exactness test failed: %d,%d,%d,%d\n", color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+    printf("Exactness test failed: %d,%d,%d,%d\n", color.r, color.g, color.b, color.a);
     return 0;
 }
 
-uint8_t palette::getNearest(Color color) {
-    if (color.getAlpha() < 128) return 0;
+uint8_t palette::getNearest(SDL_Color color) {
+    if (color.a < 128) return 0;
 
-    uint8_t r1 = color.getRed(), g1 = color.getGreen(), b1 = color.getBlue();
+    uint8_t r1 = color.r, g1 = color.g, b1 = color.b;
 
     //if (r1 == 0 && g1 == 0 && b1 == 0) return 0;
 
@@ -85,33 +86,27 @@ uint8_t palette::getNearest(Color color) {
     return best;
 }
 
-bool palette::reduceImage(Bitmap image) {
+bool palette::reduceImage(SDL_Texture *image) {
     bool result = false;
-    image.lock(ALLEGRO_PIXEL_FORMAT_ARGB_8888, ALLEGRO_LOCK_READWRITE);
-    gfx::SetTarget target(image);
-    for (int y = 0; y < image.getHeight(); ++y) {
-        for (int x = 0; x < image.getWidth(); ++x) {
-            Color original = image.getPixel(x, y);
+
+    void *vpixels;
+    int pitch, w, h;
+    SDL_QueryTexture(image, NULL, NULL, &w, &h);
+    SDL_LockTexture(image, NULL, &vpixels, &pitch);
+    SDL_Color *pixels = (SDL_Color *)vpixels;
+
+    for (int y = 0; y < h; ++y) {
+        for (int x = 0; x < w; ++x) {
+            SDL_Color original = pixels[y * pitch + x];
             uint8_t index = getNearest(original);
-            Color actual = getColor(index);
-            if (original != actual) {
-                al_put_pixel(x, y, actual);
+            SDL_Color actual = getColor(index);
+            if (!memcmp(&original, &actual, sizeof(SDL_Color))) {
+                pixels[y * pitch + x] = actual;
                 result = true;
             }
         }
     }
-    image.unlock();
+
+    SDL_UnlockTexture(image);
     return result;
 }
-
-
-
-
-
-
-
-
-
-
-
-
