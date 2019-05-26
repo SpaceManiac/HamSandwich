@@ -22,8 +22,8 @@ public:
 		: ptr(str), sz(SIZE_MAX) {}
 	Buffer(char* ch, size_t sz)
 		: ptr(ch), sz(sz) {}
-	Buffer(nullptr_t np)
-		: ptr(np), sz(0) {}
+	Buffer(std::nullptr_t)
+		: ptr(nullptr), sz(0) {}
 
 	template<size_t N>
 	Buffer(char (&array)[N])
