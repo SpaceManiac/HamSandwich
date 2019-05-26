@@ -10,10 +10,10 @@ ItemTool::ItemTool(void)
 	active=0;
 	brush=0;
 	plopMode=PLOP_NORMAL;
-	item[0]=1;
-	item[1]=1;
-	item[2]=1;
-	item[3]=1;
+	item[0]=ITM_HAMMERUP;
+	item[1]=ITM_PANTS;
+	item[2]=ITM_BRAIN;
+	item[3]=ITM_CANDLE;
 
 	lastX=-1;
 	lastY=-1;

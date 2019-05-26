@@ -8,7 +8,8 @@ FloorTool::FloorTool(void)
 	active=0;
 	brush=0;
 	plopMode=PLOP_NORMAL;
-	memset(tile, 0, sizeof(tile));
+	for (int i = 0; i < NUM_TILES; ++i)
+		tile[i] = i % GetNumTiles();
 	lastX=-1;
 	lastY=-1;
 }
