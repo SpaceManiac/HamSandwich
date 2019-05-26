@@ -10,7 +10,7 @@ struct big_savetile
 	char light;
 };
 
-static void SaveItem(hamworld::Section *f, item_t *item)
+static void SaveItem(hamworld::Section *f, const item_t *item)
 {
 	f->write_string(item->name);
 
@@ -25,13 +25,14 @@ static void SaveItem(hamworld::Section *f, item_t *item)
 	f->stream.write((char*) colors, 8);
 
 	f->write_varint(item->rarity);
-	f->write_varint(item->flags);  // no extension flags
+	f->write_varint(item->flags);
 	f->write_varint(item->theme);
 	f->write_varint(item->trigger);
 	f->write_varint(item->effect);
 	f->write_varint(item->effectAmt);
 	f->write_varint(item->sound);
 	f->write_string(item->msg);
+	f->write_varint(0);  // no extension flags
 }
 
 static void LoadItem(hamworld::Section *f, item_t *item)
@@ -56,16 +57,17 @@ static void LoadItem(hamworld::Section *f, item_t *item)
 		}
 
 	item->rarity = f->read_varint();
-	item->flags = f->read_varint();  // ignore extension flags
+	item->flags = f->read_varint();
 	item->theme = f->read_varint();
 	item->trigger = f->read_varint();
 	item->effect = f->read_varint();
 	item->effectAmt = f->read_varint();
 	item->sound = f->read_varint();
 	f->read_string(item->msg);
+	f->read_varint();  // ignore extension flags
 }
 
-static void SaveMapMons(hamworld::Section *f, mapBadguy_t *mons)
+static void SaveMapMons(hamworld::Section *f, const mapBadguy_t *mons)
 {
 	f->write_varint(mons->x);
 	f->write_varint(mons->y);
@@ -83,7 +85,103 @@ static void LoadMapMons(hamworld::Section *f, mapBadguy_t *mons)
 	f->read_varint();  // ignore extension flags
 }
 
-static void SaveMapTile(hamworld::Section *f, big_savetile *t)
+static void SaveMapSpecial(hamworld::Section *f, const special_t *spcl)
+{
+	f->write_varint(spcl->x);
+	f->write_varint(spcl->y);
+	f->write_varint(spcl->uses);
+
+	size_t trigger_count = 0;
+	for (size_t i = 0; i < NUM_TRIGGERS; ++i)
+		if (spcl->trigger[i].type)
+			++trigger_count;
+
+	f->write_varint(trigger_count);
+	for (size_t i = 0; i < NUM_TRIGGERS; ++i)
+	{
+		const trigger_t *elem = &spcl->trigger[i];
+		if (!elem->type)
+			continue;
+		f->write_varint(elem->flags);
+		f->write_varint(elem->type);
+		f->write_varint(elem->x);
+		f->write_varint(elem->y);
+		f->write_varint(elem->value);
+		f->write_varint(elem->value2);
+
+		// Pull trigger text from effect array.
+		if (elem->type == TRG_EQUATION || elem->type == TRG_EQUVAR)
+			f->write_string(spcl->effect[i].text);
+		else
+			f->write_string("");
+	}
+
+	size_t effect_count = 0;
+	for (size_t i = 0; i < NUM_EFFECTS; ++i)
+		if (spcl->effect[i].type)
+			++effect_count;
+
+	f->write_varint(effect_count);
+	for (size_t i = 0; i < NUM_EFFECTS; ++i)
+	{
+		const effect_t *elem = &spcl->effect[i];
+		if (!elem->type)
+			continue;
+		f->write_varint(elem->flags);
+		f->write_varint(elem->type);
+		f->write_varint(elem->x);
+		f->write_varint(elem->y);
+		f->write_varint(elem->value);
+		f->write_varint(elem->value2);
+		f->write_string(elem->text);
+	}
+
+	f->write_varint(0);  // no extension flags
+}
+
+static void LoadMapSpecial(hamworld::Section *f, special_t *spcl)
+{
+	spcl->x = f->read_varint();
+	printf("x = %d\n", spcl->x);
+	spcl->y = f->read_varint();
+	spcl->uses = f->read_varint();
+
+	size_t trigger_count = f->read_varint();
+	for (size_t i = 0; i < trigger_count; ++i)
+	{
+		trigger_t *elem = &spcl->trigger[i];
+		elem->flags = f->read_varint();
+		elem->type = f->read_varint();
+		elem->x = f->read_varint();
+		elem->y = f->read_varint();
+		elem->value = f->read_varint();
+		elem->value2 = f->read_varint();
+
+		// Put trigger text into effect array.
+		if (elem->type == TRG_EQUATION || elem->type == TRG_EQUVAR)
+			f->read_string(spcl->effect[i].text);
+		else
+			f->read_string(nullptr);
+	}
+
+	size_t effect_count = f->read_varint();
+	for (size_t i = 0; i < effect_count; ++i)
+	{
+		effect_t *elem = &spcl->effect[i];
+		elem->flags = f->read_varint();
+		elem->type = f->read_varint();
+		elem->x = f->read_varint();
+		elem->y = f->read_varint();
+		elem->value = f->read_varint();
+		elem->value2 = f->read_varint();
+		f->read_string(elem->text);
+		printf("    effect = %s\n", elem->text);
+	}
+
+	f->read_varint();  // ignore extension flags
+}
+
+static void SaveMapTile(hamworld::Section *f, const big_savetile *t)
 {
 	f->write_varint(t->floor);
 	f->write_varint(t->wall);
@@ -101,7 +199,7 @@ static void LoadMapTile(hamworld::Section *f, big_savetile *t)
 	f->read_varint();  // ignore extension flags
 }
 
-static void SaveMapData(hamworld::Section *f, Map *map)
+static void SaveMapData(hamworld::Section *f, const Map *map)
 {
 	std::vector<big_savetile> mapCopy(map->width * map->height);
 	for (size_t i = 0; i < mapCopy.size(); ++i)
@@ -259,8 +357,9 @@ byte Ham_SaveWorld(world_t* world, const char *fname)
 	for (int i = 0; i < world->numTiles; ++i)
 	{
 		terrain_t t = world->terrain[i];
-		terrain.write_varint(t.flags);  // no extension flags
+		terrain.write_varint(t.flags);
 		terrain.write_varint(t.next);
+		terrain.write_varint(0);  // no extension flags
 	}
 
 	std::vector<hamworld::Section> maps;
@@ -277,7 +376,7 @@ byte Ham_SaveWorld(world_t* world, const char *fname)
 		mapsec.stream.write((const char*) &map->itemDrops, 2);
 		mapsec.write_varint(map->numBrains);
 		mapsec.write_varint(map->numCandles);
-		mapsec.write_varint(map->flags);  // no extension flags
+		mapsec.write_varint(map->flags);
 
 		// badguys
 		size_t badguy_count = 0;
@@ -286,16 +385,22 @@ byte Ham_SaveWorld(world_t* world, const char *fname)
 				++badguy_count;
 		mapsec.write_varint(badguy_count);
 		for (size_t i = 0; i < MAX_MAPMONS; ++i)
-		{
-			if (!map->badguy[i].type)
-				continue;
-			SaveMapMons(&mapsec, &map->badguy[i]);
-		}
+			if (map->badguy[i].type)
+				SaveMapMons(&mapsec, &map->badguy[i]);
 
 		// specials
+		size_t special_count = 0;
+		for (size_t i = 0; i < MAX_SPECIAL; ++i)
+			if (map->special[i].x != 255)
+				++special_count;
+		mapsec.write_varint(special_count);
+		for (size_t i = 0; i < MAX_SPECIAL; ++i)
+			if (map->special[i].x != 255)
+				SaveMapSpecial(&mapsec, &map->special[i]);
 
 		// map data
 		SaveMapData(&mapsec, map);
+		mapsec.write_varint(0);  // no extension flags
 		maps.push_back(std::move(mapsec));
 	}
 
@@ -309,7 +414,6 @@ byte Ham_SaveWorld(world_t* world, const char *fname)
 	//save.section("customsounds", "");
 
 	save.section("rle_tilegfx", rle_tilegfx.save());
-
 	save.section("terrain", terrain.save());
 
 	for (hamworld::Section& map : maps)
@@ -373,29 +477,36 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 			world->numTiles = section.read_varint();
 			for (size_t i = 0; i < world->numTiles; ++i)
 			{
-				world->terrain[i].flags = section.read_varint();  // no extension flags
+				world->terrain[i].flags = section.read_varint();
 				world->terrain[i].next = section.read_varint();
+				section.read_varint();  // ignore extension flags
 			}
 		}
 		else if (section_name == "map")
 		{
-			Map *map = world->map[world->numMaps] = new Map(0, "");
+			Map *map = world->map[world->numMaps++] = new Map(0, "");
 			section.read_varint();  // skip uid
 			map->Resize(section.read_varint(), section.read_varint());
 			section.read_string(map->name);
 			section.read_string(map->song);
-			map->flags = section.read_varint();  // ignore extension flags
 			section.stream.read((char*) &map->itemDrops, 2);
 			map->numBrains = section.read_varint();
 			map->numCandles = section.read_varint();
+			map->flags = section.read_varint();
 
 			memset(map->badguy, 0, sizeof(mapBadguy_t) * MAX_MAPMONS);
 			size_t badguy_count = section.read_varint();
 			for (size_t i = 0; i < badguy_count; ++i)
 				LoadMapMons(&section, &map->badguy[i]);
 
+			InitSpecials(map->special);
+			size_t special_count = section.read_varint();
+			for (size_t i = 0; i < special_count; ++i)
+				LoadMapSpecial(&section, &map->special[i]);
+
 			LoadMapData(&section, map);
-			world->numMaps++;
+
+			section.read_varint();  // ignore extension flags
 		}
 		else
 		{
