@@ -120,10 +120,10 @@ Editor::Editor()
     running = true;
 
     // create empty blank frame
-    {
+    /*{
         JspFrame newFrame = { nullptr, 0, 0 };
         file.jsp.frames.push_back(newFrame);
-    }
+    }*/
 
     int w = 100, g = 110, h = 22;
     int x = 6, y = 4;
@@ -187,7 +187,7 @@ Editor::Editor()
     gui.addIconButton(x += g, y, FAChar::plus, "Add frame",
         { KMOD_LCTRL, SDL_SCANCODE_INSERT },
         [this]() {
-            JspFrame newFrame = { nullptr, 0, 0 };
+            JspFrame newFrame(32, 24);
             file.jsp.frames.insert(file.jsp.frames.begin() + file.curSprite, newFrame);
         });
     gui.addIconButton(x += g, y, FAChar::font, "Convert pink to alpha",
@@ -384,11 +384,10 @@ void Editor::shift(int dir) {
 
 void Editor::convertAlpha() {
     SDL_Texture *bmp = file.jsp.frames[file.curSprite].bmp.get();
-    void *vpixels;
+    SDL_Color *pixels;
     int pitch, w, h;
     SDL_QueryTexture(bmp, NULL, NULL, &w, &h);
-    SDL_LockTexture(bmp, NULL, &vpixels, &pitch);
-    SDL_Color *pixels = (SDL_Color *)vpixels;
+    Col_LockTexture(bmp, NULL, &pixels, &pitch);
 
     SDL_Color key = palette::getColor(208);
 
@@ -431,8 +430,9 @@ void Editor::render() {
     // draw sprite
     if (file.jsp.frames.size() > 0) {
         JspFrame current = file.jsp.frames[file.curSprite];
-        // TODO: (int) CENTER_X - current.ofsX, (int) CENTER_Y - current.ofsY
-        SDL_RenderCopy(renderer, current.bmp.get(), nullptr, nullptr);
+        SDL_Rect rect = { (int) CENTER_X - current.ofsX, (int) CENTER_Y - current.ofsY, 0, 0 };
+        SDL_QueryTexture(current.bmp.get(), nullptr, nullptr, &rect.w, &rect.h);
+        SDL_RenderCopy(renderer, current.bmp.get(), nullptr, &rect);
     }
 
     // crosshairs in front
@@ -467,12 +467,15 @@ void Editor::render() {
         DrawText(renderer, gFont, 5, 55, ALIGN_LEFT, black, s.str().c_str());
         s.str(""); s << file.curSprite;
         DrawText(renderer, gFont, 88, 80, ALIGN_CENTER, black, s.str().c_str());
-        //gFont.drawf(5, 105, black, "Size: (%d, %d)", current.bmp.getWidth(), current.bmp.getHeight());
+        int w, h;
+        SDL_QueryTexture(current.bmp.get(), nullptr, nullptr, &w, &h);
+        s.str(""); s << "Size: (" << w << ", " << h << ")";
+        DrawText(renderer, gFont, 5, 105, ALIGN_LEFT, black, s.str().c_str());
         s.str(""); s << "Origin: (" << current.ofsX << ", " << current.ofsY << ")";
         DrawText(renderer, gFont, 5, 125, ALIGN_LEFT, black, s.str().c_str());
 
-        s.str(""); s << FA::str(FAChar::check) << " " << FA::str(FAChar::adjust);
-        DrawText(renderer, gIconFont, 5, 145, ALIGN_LEFT, black, s.str().c_str());
+        //s.str(""); s << FA::str(FAChar::check) << " " << FA::str(FAChar::adjust);
+        //DrawText(renderer, gIconFont, 5, 145, ALIGN_LEFT, black, s.str().c_str());
     }
 
     // sprites
@@ -516,7 +519,6 @@ void Editor::render() {
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderDrawLine(renderer, 0, 30, DISPLAY_WIDTH, 30);
-    //gFont.draw(DISPLAY_WIDTH - 5, 5, ALLEGRO_ALIGN_RIGHT, black, "JspEdit 2 by SpaceManiac");
 
     // buttons
     gui.render();

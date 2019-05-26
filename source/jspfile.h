@@ -8,6 +8,10 @@
 struct JspFrame {
     std::shared_ptr<SDL_Texture> bmp;
     int16_t ofsX, ofsY;
+
+    JspFrame() = default;
+    JspFrame(const JspFrame &other) = default;
+    JspFrame(int w, int h);
 };
 
 struct JspFile {

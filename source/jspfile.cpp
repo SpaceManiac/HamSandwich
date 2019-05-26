@@ -29,6 +29,13 @@ struct FrameInfo {
     uint32_t extra;
 };
 
+JspFrame::JspFrame(int w, int h)
+    : bmp(SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, w, h), SDL_DestroyTexture)
+    , ofsX(0)
+    , ofsY(0)
+{
+}
+
 bool JspFile::load(string fname) {
     cout << "loading " << fname << endl;
 
@@ -51,27 +58,34 @@ bool JspFile::load(string fname) {
             return false;
         }
 
-        //cout << "frame #" << i << ": " << info.width << "x" << info.height << ", (" << info.ofsX << "," << info.ofsY << "), size = " << info.size << endl;
+        cout << "frame #" << i << ": " << info.width << "x" << info.height << ", (" << info.ofsX << "," << info.ofsY << "), size = " << info.size << endl;
         frameInfo.push_back(info);
     }
 
-    //cout << "at " << in.tellg() << endl;
+    cout << "at " << in.tellg() << endl;
 
     // read image
     frames.clear();
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
     for (uint16_t i = 0; i < count; ++i) {
-        //cout << "decoding frame #" << i << endl;
+        cout << "decoding frame #" << i << endl;
 
         FrameInfo info = frameInfo[i];
-        std::shared_ptr<SDL_Texture> image(SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, info.width, info.height), SDL_DestroyTexture);
-        if (!image) {
+        JspFrame frame(info.width, info.height);
+        frame.ofsX = info.ofsX;
+        frame.ofsY = info.ofsY;
+
+        if (!frame.bmp) {
             cout << "could not create " << info.width << "x" << info.height << " image for frame #" << i << endl;
             error = "could not create image";
             return false;
         }
 
-        SDL_SetRenderTarget(renderer, image.get());
+        SDL_Color *pixels;
+        int pitch;
+        if (Col_LockTexture(frame.bmp.get(), NULL, &pixels, &pitch)) {
+            cout << "oh no: " << SDL_GetError() << endl;
+            return false;
+        }
 
         int x = 0, y = 0;
         uint32_t read = 0;
@@ -81,8 +95,7 @@ bool JspFile::load(string fname) {
             if (value >= 128) {
                 // transparency run
                 for (uint8_t j = 128; j < value; ++j) {
-                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-                    SDL_RenderDrawPoint(renderer, x, y);
+                    pixels[y * pitch + x] = { 0, 0, 0, 0 };
                     if (++x >= info.width) {
                         x = 0; ++y;
                     }
@@ -92,8 +105,7 @@ bool JspFile::load(string fname) {
                 for (uint8_t j = 0; j < value; ++j) {
                     uint8_t index = in.get();
                     ++read;
-                    SDL_Color color = palette::getColor(index);
-                    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+                    pixels[y * pitch + x] = palette::getColor(index);
                     if (++x >= info.width) {
                         x = 0; ++y;
                     }
@@ -106,10 +118,9 @@ bool JspFile::load(string fname) {
             }
         }
 
-        frames.push_back({ image, info.ofsX, info.ofsY });
+        SDL_UnlockTexture(frame.bmp.get());
+        frames.push_back(frame);
     }
-    SDL_SetRenderTarget(renderer, nullptr);
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     return true;
 }

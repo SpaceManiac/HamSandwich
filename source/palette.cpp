@@ -1,4 +1,5 @@
 #include "palette.h"
+#include "globals.h"
 
 static uint8_t pal[256][3] = {
     {0, 0, 0}, {8, 8, 8}, {16, 16, 16}, {24, 24, 24}, {33, 33, 33}, {41, 41, 41}, {49, 49, 49}, {57, 57, 57},
@@ -89,11 +90,10 @@ uint8_t palette::getNearest(SDL_Color color) {
 bool palette::reduceImage(SDL_Texture *image) {
     bool result = false;
 
-    void *vpixels;
+    SDL_Color *pixels;
     int pitch, w, h;
     SDL_QueryTexture(image, NULL, NULL, &w, &h);
-    SDL_LockTexture(image, NULL, &vpixels, &pitch);
-    SDL_Color *pixels = (SDL_Color *)vpixels;
+    Col_LockTexture(image, NULL, &pixels, &pitch);
 
     for (int y = 0; y < h; ++y) {
         for (int x = 0; x < w; ++x) {

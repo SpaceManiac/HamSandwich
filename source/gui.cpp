@@ -9,8 +9,6 @@ void Gui::render() {
         bool hovered = (hover == &elem);
         bool focused = (focus == &elem);
 
-        //r.setClipping();
-
         if (focused) {
             SDL_SetRenderDrawColor(renderer, 230, 230, 230, 255);
             SDL_Rect rect = {r.left, r.top, r.right - r.left, r.bottom - r.top};
@@ -66,12 +64,13 @@ bool Gui::handleEvent(const SDL_Event &evt) {
         focus = nullptr;
         return prev;
 
-    case SDL_TEXTINPUT:
+    case SDL_KEYUP:
         for (GuiElement elem : elements) {
-            /*if (elem.shortcut.mods == (evt.getKeyboardModifiers() & 7) && elem.shortcut.keycode == evt.getKeyboardKeycode() && elem.func) {
+            int mod = SDL_GetModState() & 0xff;
+            if (elem.shortcut.mods == mod && elem.shortcut.keycode == evt.key.keysym.scancode && elem.func) {
                 elem.func();
                 return true;
-            }*/
+            }
         }
         return false;
 

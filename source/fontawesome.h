@@ -382,13 +382,12 @@ inline wchar_t ch(FAChar ch) {
 }
 
 inline std::string str(FAChar ch) {
-    uint8_t result[4] = {
+    uint8_t result[3] = {
         0xef,
-        (uint8_t)0x80 | (uint8_t)(((int)ch >> 7) & 0x7f),
-        (uint8_t)0x80 | (uint8_t)((int)ch & 0x7f),
-        0
+        (uint8_t)0x80 | (uint8_t)(((int)ch >> 6) & 0x3f),
+        (uint8_t)0x80 | (uint8_t)((int)ch & 0x3f),
     };
-    return std::string((char*) result);
+    return std::string((char*) result, 3);
 }
 
 }

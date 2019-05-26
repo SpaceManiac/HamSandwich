@@ -59,3 +59,16 @@ void DrawText(SDL_Renderer *renderer, TTF_Font *font, int x, int y, Align align,
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(surface);
 }
+
+int Col_LockTexture(SDL_Texture *texture, SDL_Rect *rect, SDL_Color **pixels, int *pitch)
+{
+    void *vpixels;
+    int err = SDL_LockTexture(texture, NULL, &vpixels, pitch);
+    if (err)
+        return err;
+
+    *pixels = (SDL_Color *) vpixels;
+    *pitch /= sizeof(SDL_Color);
+
+    return 0;
+}
