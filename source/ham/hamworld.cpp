@@ -134,7 +134,7 @@ Save::Save(const char* fname)
 Save::~Save()
 {
 	if (!output.put(0)) {
-		printf("save error\n");
+		printf("  error finishing HamWorld save\n");
 	}
 }
 
@@ -153,7 +153,6 @@ void Save::header(string_view author, string_view name, string_view app)
 
 void Save::section(string_view name, string_view body)
 {
-	printf("write section '%s' [%d]\n", name.data(), body.length());
 	size_t size = size_varint(name.length()) + name.length() + body.length();
 	write_varint(output, size);
 	if (name != nullptr)
@@ -170,7 +169,7 @@ Load::Load(const char* fname)
 
 Load::~Load()
 {
-	printf("ended at 0x%x\n", (size_t) input.tellg());
+	printf("  load ended at 0x%x\n", (size_t) input.tellg());
 }
 
 bool Load::header(Buffer author, Buffer name, Buffer app)

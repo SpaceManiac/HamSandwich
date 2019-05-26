@@ -170,7 +170,6 @@ static void SaveMapSpecial(hamworld::Section *f, const special_t *spcl)
 static void LoadMapSpecial(hamworld::Section *f, special_t *spcl)
 {
 	spcl->x = f->read_varint();
-	printf("x = %d\n", spcl->x);
 	spcl->y = f->read_varint();
 	spcl->uses = f->read_varint();
 
@@ -203,7 +202,6 @@ static void LoadMapSpecial(hamworld::Section *f, special_t *spcl)
 		elem->value = f->read_varint();
 		elem->value2 = f->read_varint();
 		f->read_string(elem->text);
-		printf("    effect = %s\n", elem->text);
 	}
 
 	f->read_varint();  // ignore extension flags
@@ -473,11 +471,10 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 	std::string app;
 	if (!load.header(world->author, nullptr, &app))
 	{
-		printf("bad header\n");
+		printf("  error: bad header\n");
 		return 0;
 	}
-	printf("author: %s\n", world->author);
-	printf("app: %s\n", app.c_str());
+	printf("  app: %s\n", app.c_str());
 
 	memset(world->map, 0, sizeof(world->map));
 
@@ -491,13 +488,12 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 	std::string section_name;
 	while (load.section(&section_name, &section) && !section_name.empty())
 	{
-		printf("read section '%s'\n", section_name.c_str());
 		if (section_name == "item_definitions")
 		{
 			size_t start = section.read_varint();
 			if (start != NUM_ORIGINAL_ITEMS)
 			{
-				printf("error: item definition offest NYI (expected %d, got %d)\n", NUM_ORIGINAL_ITEMS, start);
+				printf("  error: item definition offest NYI (expected %d, got %d)\n", NUM_ORIGINAL_ITEMS, start);
 				return false;
 			}
 			size_t item_count = section.read_varint();
@@ -514,7 +510,7 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 			size_t start = section.read_varint();
 			if (start != CUSTOM_SND_START)
 			{
-				printf("error: sound definition offest NYI (expected %d, got %d)\n", CUSTOM_SND_START, start);
+				printf("  error: sound definition offest NYI (expected %d, got %d)\n", CUSTOM_SND_START, start);
 				return false;
 			}
 			size_t sound_count = section.read_varint();
@@ -567,7 +563,7 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 		}
 		else
 		{
-			printf("bad section: %s\n", section_name.c_str());
+			printf("  error: unknown section: %s\n", section_name.c_str());
 			return 0;
 		}
 	}
