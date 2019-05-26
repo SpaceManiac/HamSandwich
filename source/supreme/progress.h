@@ -90,8 +90,8 @@ typedef struct progress_t
 
 	int num_worlds;
 	worldData_t *world;
-	word kills[NUM_MONSTERS];	// how many times you've killed each type
-	byte scanned[NUM_MONSTERS];	// has each type been scanned?
+	word kills[NUM_PROFILE_MONSTERS];	// how many times you've killed each type
+	byte scanned[NUM_PROFILE_MONSTERS];	// has each type been scanned?
 	byte purchase[256];			// which things you have purchased
 	byte movie[20];				// which movies you've seen for theater purposes
 	byte goal[100];				// whether you've done each of the 100 goals

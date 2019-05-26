@@ -49,7 +49,7 @@ void MonsterTool::Update(int msx,int msy)
 				active=i;
 				if(GetDisplayMGL()->RMouseDown())
 				{
-					monster[i]=256;
+					monster[i]=MONS_NONE;
 				}
 				MakeNormalSound(SND_MENUCLICK);
 			}
@@ -113,7 +113,7 @@ void MonsterTool::Render(int msx,int msy)
 
 	for(i=0;i<4;i++)
 	{
-		if(monster[i]<256)
+		if(monster[i] != MONS_NONE)
 		{
 			if(active==i)
 				RenderButtonImageLit(msx,msy,496,412+i*16,140,14,MonsterName((byte)monster[i]));
@@ -193,7 +193,7 @@ void MonsterTool::PlopOne(int x,int y)
 
 	m=EditorGetMap();
 
-	if(x>=0 && y>=0 && x<m->width && y<m->height && m->map[x+y*m->width].select && monster[active]<256)
+	if(x>=0 && y>=0 && x<m->width && y<m->height && m->map[x+y*m->width].select && monster[active] != MONS_NONE)
 	{
 		int i;
 
@@ -221,7 +221,7 @@ void MonsterTool::PlopOne(int x,int y)
 			for(i=0;i<MAX_MAPMONS;i++)
 				if(m->badguy[i].type==0)
 				{
-					m->badguy[i].type=(byte)monster[active];
+					m->badguy[i].type = monster[active];
 					m->badguy[i].x=x;
 					m->badguy[i].y=y;
 					switch(itemMode)

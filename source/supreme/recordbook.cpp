@@ -67,7 +67,7 @@ void InitRecordBook(MGLDraw *mgl)
 	mgl->MouseTap();
 
 	totalKills=0;
-	for(i=2;i<NUM_MONSTERS;i++)	// skip Bouapha
+	for(i=2;i<NUM_PROFILE_MONSTERS;i++)	// skip Bouapha
 		totalKills+=profile.progress.kills[i];
 	lvlsPassed=CountLevelsPassed();
 	CalcFinishedWorlds();

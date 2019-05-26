@@ -73,7 +73,7 @@ void CheatKey(char c)
 						profile.progress.purchase[j]&=(~SIF_AVAILABLE);
 					}
 					profile.progress.purchase[ShopItemNumber(SHOP_DONATION,0)]=7;
-					for(j=0;j<NUM_MONSTERS;j++)
+					for(j=0;j<NUM_PROFILE_MONSTERS;j++)
 						profile.progress.scanned[j]=1;
 					for(j=0;j<100;j++)
 						profile.progress.goal[j]=1;

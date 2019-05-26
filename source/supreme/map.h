@@ -71,7 +71,7 @@ typedef struct saveTile_t
 typedef struct mapBadguy_t
 {
 	byte x,y;
-	byte type;
+	dword type;
 	byte item;
 } mapBadguy_t;
 

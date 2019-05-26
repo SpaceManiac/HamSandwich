@@ -617,8 +617,9 @@ void Scan_Badguy(world_t *world,Map *map,int num,mapBadguy_t *me)
 
 byte Scan_Level(world_t *world,Map *map)
 {
+	constexpr int LEN = std::max(MAX_ITEMS, NUM_MONSTERS);
 	int i;
-	word itemCount[MAX_ITEMS];
+	word itemCount[LEN];
 	int totalMons;
 
 	scanF=fopen("level_scan.txt","wt");

@@ -27,7 +27,7 @@ class MonsterTool : public Tool
 	private:
 		void PlopOne(int x,int y);
 
-		word monster[4];
+		dword monster[4];
 		byte specificItem;
 		byte itemMode;
 		byte active;	// which of the four is active

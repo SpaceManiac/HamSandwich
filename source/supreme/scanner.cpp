@@ -239,8 +239,8 @@ byte UpdateScan(MGLDraw *mgl)
 		{
 			EndScanning();
 
-			total=NUM_MONSTERS;
-			for(i=0;i<NUM_MONSTERS;i++)
+			total=NUM_PROFILE_MONSTERS;
+			for(i=0;i<NUM_PROFILE_MONSTERS;i++)
 			{
 				if(profile.progress.scanned[i] || !MonsterTheme(i))
 					total--;
@@ -329,7 +329,7 @@ void InitBestiary(MGLDraw *mgl)
 	totalTotal=0;
 
 	monsListLen=0;
-	for(i=1;i<NUM_MONSTERS;i++)
+	for(i=1;i<NUM_PROFILE_MONSTERS;i++)
 	{
 		d=1;
 
@@ -389,7 +389,7 @@ void BestiarySelectTheme(byte c)
 	for(i=0;i<c;i++)
 		d*=2;
 
-	for(i=1;i<NUM_MONSTERS;i++)
+	for(i=1;i<NUM_PROFILE_MONSTERS;i++)
 	{
 		if(MonsterTheme(i)&d)
 		{
@@ -711,7 +711,7 @@ float ScanPercent(void)
 
 	scanned=0;
 
-	for(i=0;i<NUM_MONSTERS;i++)
+	for(i=0;i<NUM_PROFILE_MONSTERS;i++)
 	{
 		if(MonsterTheme(i))	// don't count ones with no theme
 		{
@@ -722,5 +722,5 @@ float ScanPercent(void)
 			scanned++;	// ones with no theme are always scanned
 	}
 
-	return((float)scanned*100.0f/(float)NUM_MONSTERS);
+	return((float)scanned*100.0f/(float)NUM_PROFILE_MONSTERS);
 }

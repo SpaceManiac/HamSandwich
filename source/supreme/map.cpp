@@ -25,8 +25,15 @@ Map::Map(FILE *f)
 
 	fread(&count,1,sizeof(byte),f);	// num badguys
 	memset(badguy,0,sizeof(mapBadguy_t)*MAX_MAPMONS);
-	if(count>0)
-		fread(badguy,count,sizeof(mapBadguy_t),f);
+	for (byte i = 0; i < count; ++i)
+	{
+		byte temp;
+		fread(&badguy[i].x, 1, sizeof(byte), f);
+		fread(&badguy[i].y, 1, sizeof(byte), f);
+		fread(&temp, 1, sizeof(byte), f);
+		badguy[i].type = temp;
+		fread(&badguy[i].item, 1, sizeof(byte), f);
+	}
 
 	LoadSpecials(f,special);
 
@@ -257,8 +264,17 @@ byte Map::Save(FILE *f)
 		if(badguy[i].type)
 			count=i+1;
 	fwrite(&count,1,sizeof(byte),f);	// num badguys
-	if(count>0)
-		fwrite(badguy,count,sizeof(mapBadguy_t),f);
+	for (byte i = 0; i < count; ++i)
+	{
+		if (badguy[i].type & ~0xff) {
+			return 0;
+		}
+		byte temp = badguy[i].type;
+		fwrite(&badguy[i].x, 1, sizeof(byte), f);
+		fwrite(&badguy[i].y, 1, sizeof(byte), f);
+		fwrite(&temp, 1, sizeof(byte), f);
+		fwrite(&badguy[i].item, 1, sizeof(byte), f);
+	}
 	GetSpecialsFromMap(this->special);
 	SaveSpecials(f);
 

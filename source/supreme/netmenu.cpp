@@ -226,7 +226,7 @@ void CreateProfileString(char *buffer)
 	CatPair(buffer,"die",profile.progress.kills[MONS_BOUAPHA]);
 
 	cnt=0;
-	for(i=2;i<NUM_MONSTERS;i++)
+	for(i=2;i<NUM_PROFILE_MONSTERS;i++)
 		cnt+=profile.progress.kills[i];
 	CatPair(buffer,"kil",cnt);
 

@@ -257,7 +257,7 @@ void GoalKilledSomebody(Guy *g,byte type,byte frozen)
 		CompleteGoal(90);	// killed an enemy with bubbles
 
 	totalKills=0;
-	for(i=2;i<NUM_MONSTERS;i++)	// skip Bouapha
+	for(i=2;i<NUM_PROFILE_MONSTERS;i++)	// skip Bouapha
 		totalKills+=profile.progress.kills[i];
 
 
@@ -278,7 +278,7 @@ void GoalKilledSomebody(Guy *g,byte type,byte frozen)
 		CompleteGoal(12);
 
 	totalKills=0;
-	for(i=2;i<NUM_MONSTERS;i++)	// skip Bouapha
+	for(i=2;i<NUM_PROFILE_MONSTERS;i++)	// skip Bouapha
 	{
 		if(!(MonsterFlags(i,i)&(MF_INVINCIBLE|MF_NOHIT)) && !(MonsterTheme(i)&(MT_GOOD|MT_BITS)) &&
 			(MonsterTheme(i)))
