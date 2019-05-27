@@ -416,7 +416,7 @@ void Editor::render() {
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    const float CENTER_X = 180.5 + (DISPLAY_WIDTH - 180)/2, CENTER_Y = 30.5 + (DISPLAY_HEIGHT - 30)/2;
+    const int CENTER_X = 180 + (DISPLAY_WIDTH - 180)/2, CENTER_Y = 30 + (DISPLAY_HEIGHT - 30)/2;
 
     // crosshairs in behind
     if (crosshairs == 1) {
