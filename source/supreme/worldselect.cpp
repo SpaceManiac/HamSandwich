@@ -55,6 +55,11 @@ static score_t top3[3];
 static byte level,scoreMode,numScores,noScoresAtAll;
 static world_t tmpWorld;
 static int mouseZ;
+#ifdef WTG
+static byte showFilenames = 1;
+#elif defined(_DEBUG)
+static byte showFilenames = 0;
+#endif
 
 #ifdef LEVELLIST
 static FILE *levelF,*level2F,*authorF;
@@ -711,6 +716,11 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 
 	c=mgl->LastKeyPressed();
 
+#if defined(WTG) || defined(_DEBUG)
+	if (c == 'A')
+		showFilenames = !showFilenames;
+#endif
+
 	if(c==27)
 	{
 		oldc=255;
@@ -767,14 +777,19 @@ void RenderWorldSelect(MGLDraw *mgl)
 			else
 				b=0;
 
-#ifdef WTG
-			PrintGlow(NAME_X,40+i*GAP_HEIGHT,list[i+listPos].name,b,1);
-			PrintGlow(AUTH_X-70,40+i*GAP_HEIGHT,list[i+listPos].fname,b,1);
-			PrintGlow(AUTH_X+100,40+i*GAP_HEIGHT,list[i+listPos].author,b,1);
-#else
-			PrintGlow(NAME_X,40+i*GAP_HEIGHT,list[i+listPos].name,b,2);
-			PrintGlow(AUTH_X,40+i*GAP_HEIGHT,list[i+listPos].author,b,2);
+#if defined(WTG) || defined(_DEBUG)
+			if (showFilenames)
+			{
+				PrintGlow(NAME_X,40+i*GAP_HEIGHT,list[i+listPos].name,b,1);
+				PrintGlow(AUTH_X-70,40+i*GAP_HEIGHT,list[i+listPos].fname,b,1);
+				PrintGlow(AUTH_X+100,40+i*GAP_HEIGHT,list[i+listPos].author,b,1);
+			}
+			else
 #endif
+			{
+				PrintGlow(NAME_X,40+i*GAP_HEIGHT,list[i+listPos].name,b,2);
+				PrintGlow(AUTH_X,40+i*GAP_HEIGHT,list[i+listPos].author,b,2);
+			}
 			if(list[i+listPos].percentage==0.0f)
 				strcpy(s,"0%");
 			else if(list[i+listPos].percentage==100.0f)
