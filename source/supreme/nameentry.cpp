@@ -110,6 +110,10 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 			errorBright=-200;
 		}
 	}
+	else if(c == SDLK_ESCAPE)
+	{
+		return 255;  // cancel
+	}
 	else if((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9'))
 	{
 		if(strlen(entry)<15)

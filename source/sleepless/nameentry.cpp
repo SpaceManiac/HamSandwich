@@ -170,6 +170,10 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 			errorBright=-200;
 		}
 	}
+	else if(c == SDLK_ESCAPE)
+	{
+		return 255;  // cancel
+	}
 	else if((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9'))
 	{
 		if(strlen(entry)<15)
@@ -302,12 +306,12 @@ void NameEntry(MGLDraw *mgl,byte makeNew)
 		mgl->Flip();
 
 		if(!mgl->Process())
-			done=1;
+			done=255;
 		EndClock();
 	}
 
 	ExitNameEntry();
-	if(makeNew)
+	if(makeNew && done != 255)
 	{
 		FreeProfile();
 		LoadProfile(entry);
