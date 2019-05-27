@@ -1,5 +1,6 @@
 .sconsign.dblite
-JspEdit2.*
 bin/
 build/
 run/
+dist/
+.vscode/
