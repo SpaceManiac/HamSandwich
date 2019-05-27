@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <SDL2/SDL_image.h>
+#include <nfd.h>
 
 using namespace std;
 
@@ -19,19 +20,20 @@ namespace dialog {
 
 typedef std::function<void(std::string)> callback;
 
-void go(callback func, const char* title, const char* patterns, int flags) {
-    /*NativeFileDialog dlg { title, nullptr, patterns, flags };
-    if (dlg.show(display) && dlg.getSelectedFileCount() == 1) {
-        func(al_get_native_file_dialog_path(dlg.get(), 0));
-    }*/
-}
-
 void open(const char* title, const char* patterns, callback func) {
-    go(func, title, patterns, 0/*ALLEGRO_FILECHOOSER_FILE_MUST_EXIST*/);
+    char *chosen;
+    nfdresult_t result = NFD_OpenDialog(patterns, nullptr, &chosen);
+    if (result == NFD_OKAY) {
+        func(chosen);
+    }
 }
 
 void save(const char* title, const char* patterns, callback func) {
-    go(func, title, patterns, 0/*ALLEGRO_FILECHOOSER_SAVE*/);
+    char *chosen;
+    nfdresult_t result = NFD_SaveDialog(patterns, nullptr, &chosen);
+    if (result == NFD_OKAY) {
+        func(chosen);
+    }
 }
 
 void showMessage(const char* head, const char* body) {
@@ -129,29 +131,29 @@ Editor::Editor()
     int x = 6, y = 4;
     // top bar
     gui.addButton(rect(x, y, w, h), "Open", "Open JSP",
-        { KMOD_LCTRL, SDL_SCANCODE_0 },
+        { KMOD_LCTRL, SDL_SCANCODE_O },
         [this]() {
             if (file.unsaved && !dialog::showOkCancel("You have unsaved changes, do you want to open anyways?", false)) return;
-            dialog::open("Open JSP", "*.jsp;*.*", [this](std::string str) { load(str); });
+            dialog::open("Open JSP", "jsp", [this](std::string str) { load(str); });
         });
     gui.addButton(rect(x += g, y, w, h), "Save", "Save JSP",
         { KMOD_LCTRL, SDL_SCANCODE_S },
         [this]() { save(); });
     gui.addButton(rect(x += g, y, w, h), "Save As", "Save JSP As",
         { KMOD_LCTRL | KMOD_LSHIFT, SDL_SCANCODE_S },
-        std::bind(dialog::save, "Save JSP", "*.jsp;*.*", [this](std::string str) { saveAs(str); }));
+        std::bind(dialog::save, "Save JSP", "jsp", [this](std::string str) { saveAs(str); }));
     gui.addButton(rect(x += g, y, w, h), "Import", "Import from image",
         { KMOD_LCTRL, SDL_SCANCODE_I },
-        std::bind(dialog::open, "Import Image", "*.png;*.bmp;*.tga;*.pcx;*.*", [this](std::string str) { import_frame(str); }));
+        std::bind(dialog::open, "Import Image", "png;bmp;tga;pcx", [this](std::string str) { import_frame(str); }));
     gui.addButton(rect(x += g, y, w, h), "Export", "Export to image",
         { KMOD_LCTRL, SDL_SCANCODE_E },
-        std::bind(dialog::save, "Export Image", "*.png;*.bmp;*.tga;*.pcx;*.*", [this](std::string str) { export_frame(str); }));
+        std::bind(dialog::save, "Export Image", "png;bmp;tga;pcx", [this](std::string str) { export_frame(str); }));
     gui.addButton(rect(x += g, y, w, h), "Import All", "Import from folder",
         { KMOD_LCTRL | KMOD_LSHIFT, SDL_SCANCODE_I },
-        std::bind(dialog::open, "Select first frame (0.png)", "*.png;*.*", [this](std::string str) { import_batch(str); }));
+        std::bind(dialog::open, "Select first frame (0.png)", "png", [this](std::string str) { import_batch(str); }));
     gui.addButton(rect(x += g, y, w, h), "Export All", "Export to folder",
         { KMOD_LCTRL | KMOD_LSHIFT, SDL_SCANCODE_E },
-        std::bind(dialog::save, "Export all frames", "*.png;*.*", [this](std::string str) { export_batch(str); }));
+        std::bind(dialog::save, "Export all frames", "png", [this](std::string str) { export_batch(str); }));
 
     x = DISPLAY_WIDTH - g;
     gui.addButton(rect(x, y, w, h), "Crosshairs", "Cycle crosshairs mode",
@@ -240,7 +242,7 @@ void Editor::load(string fname) {
 void Editor::save() {
     if (file.fname == "") {
         // call save as which calls this instead
-        dialog::save("Save JSP", "*.jsp;*.*", [this](std::string str) { saveAs(str); });
+        dialog::save("Save JSP", "jsp", [this](std::string str) { saveAs(str); });
         return;
     }
 
@@ -505,7 +507,7 @@ void Editor::render() {
 
         // frames after
         spr = spr_, y = y_;
-        while (y < DISPLAY_HEIGHT && spr < frames.size() - 1) {
+        while (y < DISPLAY_HEIGHT && spr < frames.size()) {
             SDL_Texture *bmp = frames[spr++].bmp.get();
             SDL_QueryTexture(bmp, nullptr, nullptr, &rect.w, &rect.h);
             rect.x = 90 - rect.w / 2;
@@ -516,7 +518,7 @@ void Editor::render() {
 
         // red box
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        rect = { 90 - w / 2, y_, 1 + w, h };
+        rect = { 90 - w / 2 - 1, y_ - 1, 2 + w, 2 + h };
         SDL_RenderDrawRect(renderer, &rect);
     }
     SDL_RenderSetClipRect(renderer, nullptr);
