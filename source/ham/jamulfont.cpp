@@ -285,7 +285,7 @@ static void FontPrintCharBright(int x, int y, char c, char bright, mfont_t *font
 	}
 }
 
-static void FontPrintCharSolid(int x, int y, char c, mfont_t *font, byte color)
+static void FontPrintCharSolid(int x, int y, byte c, mfont_t *font, byte color)
 {
 	byte *dst, *src;
 	int scrWidth, scrHeight, chrWidth;
@@ -298,7 +298,7 @@ static void FontPrintCharSolid(int x, int y, char c, mfont_t *font, byte color)
 	if (c < font->firstChar || c >= (font->firstChar + font->numChars))
 		return; // unprintable
 
-	c -= (char) font->firstChar;
+	c -= font->firstChar;
 
 	chrWidth = *(font->chars[(int) c]);
 	src = font->chars[(int) c] + 1;
@@ -1069,4 +1069,28 @@ void FontPrintStringUnGlowLimited(int x,int y,int maxX,const char*s,mfont_t *fon
 		FontPrintCharUnGlowLimited(x,y,maxX,s[i],font);
 		x+=CharWidth(s[i],font)+font->gapSize;
 	}
+}
+
+byte RightBraceHack(mfont_t *font)
+{
+	static byte RIGHT_BRACE[] = {
+		5,
+		31, 31, 0, 0, 0,
+		0, 0, 31, 0, 0,
+		0, 0, 31, 0, 0,
+		0, 0, 31, 0, 0,
+		0, 0, 31, 0, 0,
+		0, 0, 0, 31, 31,
+		0, 0, 31, 0, 0,
+		0, 0, 31, 0, 0,
+		0, 0, 31, 0, 0,
+		0, 0, 31, 0, 0,
+		0, 0, 31, 0, 0,
+		31, 31, 0, 0, 0,
+		0, 0, 0, 0, 0};
+
+	byte result = font->firstChar + font->numChars;
+	font->chars[font->numChars++] = font->chars['}' - font->firstChar];
+	font->chars['}' - font->firstChar] = RIGHT_BRACE;
+	return result;
 }

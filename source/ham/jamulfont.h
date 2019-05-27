@@ -68,4 +68,6 @@ int FontStrLen(const char *s, mfont_t *font);
 void FontSetColors(byte first, byte count, byte *data);
 bool FontInputText(const char *prompt, char *buffer, int len, void (*renderScrn)(mfont_t *), mfont_t *font);
 
+byte RightBraceHack(mfont_t *font);
+
 #endif

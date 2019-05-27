@@ -21,6 +21,8 @@ byte shakeTimer=0;
 DisplayList *dispList;
 static byte gammaCorrection=0;
 
+static char cursor[] = "}";
+
 MGLDraw *GetDisplayMGL(void)
 {
 	return mgl;
@@ -44,6 +46,7 @@ bool InitDisplay(MGLDraw *mainmgl)
 
 	if(FontLoad("graphics/verdana.jft",gameFont[1])!=FONT_OK)
 		return false;
+	cursor[0] = RightBraceHack(gameFont[1]);
 
 	gameFont[2]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[2])
@@ -367,11 +370,11 @@ int GetStrLength(char *s,byte font)
 
 void DrawMouseCursor(int x,int y)
 {
-	FontPrintStringSolid(x-1,y,"}",gameFont[1],0);
-	FontPrintStringSolid(x+1,y,"}",gameFont[1],0);
-	FontPrintStringSolid(x,y-1,"}",gameFont[1],0);
-	FontPrintStringSolid(x,y+1,"}",gameFont[1],0);
-	FontPrintStringSolid(x,y,"}",gameFont[1],31);
+	FontPrintStringSolid(x-1,y,cursor,gameFont[1],0);
+	FontPrintStringSolid(x+1,y,cursor,gameFont[1],0);
+	FontPrintStringSolid(x,y-1,cursor,gameFont[1],0);
+	FontPrintStringSolid(x,y+1,cursor,gameFont[1],0);
+	FontPrintStringSolid(x,y,cursor,gameFont[1],31);
 }
 
 void ShakeScreen(byte howlong)
