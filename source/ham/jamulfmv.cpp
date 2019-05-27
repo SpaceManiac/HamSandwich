@@ -122,9 +122,10 @@ static void FLI_docolor2(byte *p,MGLDraw *mgl)
 		palpos+=p[pos++];
 		numcol=p[pos++];
 		do {
-			memcpy(&FLI_pal[palpos],&p[pos],3);
+			FLI_pal[palpos].r = p[pos++];
+			FLI_pal[palpos].g = p[pos++];
+			FLI_pal[palpos].b = p[pos++];
 			palpos++;
-			pos+=3;
 			--numcol;
 		} while(numcol>0);
 	}
