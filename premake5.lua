@@ -56,10 +56,10 @@ function sdl2_project(name)
 		links { "SDL2main", "SDL2", "SDL2_mixer", "SDL2_image" }
 end
 
-function removefiles_in(dir, files)
+function excludefiles(files)
 	list = {}
 	for i = 1, #files do
-		list[i] = dir .. files[i]
+		list[i] = "source/%{prj.name}/" .. files[i]
 	end
 	removefiles(list)
 end
@@ -106,7 +106,7 @@ sdl2_project "supreme"
 	depends "ham"
 	pch "winpch"
 
-	removefiles_in("source/supreme/", {
+	excludefiles {
 		"monsterlist.cpp",
 		"monsterai1.cpp",
 		"monsterai2.cpp",
@@ -114,7 +114,7 @@ sdl2_project "supreme"
 		"monsterai4.cpp",
 		"textitems.cpp",
 		"textrooms.cpp",
-	})
+	}
 
 	filter "toolset:gcc"
 		buildoptions {
@@ -130,14 +130,14 @@ sdl2_project "sleepless"
 	depends "ham"
 	pch "winpch"
 
-	removefiles_in("source/sleepless/", {
+	excludefiles {
 		"monsterlist.cpp",
 		"monsterai1.cpp",
 		"monsterai2.cpp",
 		"monsterai3.cpp",
 		"monsterai4.cpp",
 		"monsterhollow.cpp",
-	})
+	}
 
 	filter "toolset:gcc"
 		buildoptions {
@@ -161,9 +161,9 @@ sdl2_project "loonyland2"
 	depends "ham"
 	pch "winpch"
 	defines { "DIRECTORS" }
-	removefiles_in("source/loonyland2/", {
+	excludefiles {
 		"monster_ai.cpp",
-	})
+	}
 
 	filter "toolset:gcc"
 		buildoptions { "-Wno-write-strings" }
