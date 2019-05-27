@@ -114,8 +114,6 @@ sdl2_project "supreme"
 		"monsterai4.cpp",
 		"textitems.cpp",
 		"textrooms.cpp",
-		"options.cpp",
-		"spcldialog.cpp",
 	})
 
 	filter "toolset:gcc"
@@ -139,12 +137,6 @@ sdl2_project "sleepless"
 		"monsterai3.cpp",
 		"monsterai4.cpp",
 		"monsterhollow.cpp",
-		"textitems.cpp",
-		"textrooms.cpp",
-		"options.cpp",
-		"spcldialog.cpp",
-		"tally.cpp",
-		"worldselect.cpp",
 	})
 
 	filter "toolset:gcc"
