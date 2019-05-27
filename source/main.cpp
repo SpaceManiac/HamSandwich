@@ -21,9 +21,9 @@ int main(int argc, char** argv) {
     string dir = exe.substr(0, exe.find_last_of("\\/"));
     chdir(dir.c_str());*/
 
-    gFont = TTF_OpenFont("vera.ttf", 13);
+    gFont = TTF_OpenFont("vera.ttf", 14);
     if (!gFont) printf("vera.ttf: %s\n", TTF_GetError());
-    gIconFont = TTF_OpenFont("fontawesome.ttf", 13);
+    gIconFont = TTF_OpenFont("fontawesome.ttf", 14);
     if (!gIconFont) printf("fontawesome.ttf: %s\n", TTF_GetError());
 
     SDL_CreateWindowAndRenderer(DISPLAY_WIDTH, DISPLAY_HEIGHT, 0, &window, &renderer);

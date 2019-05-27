@@ -414,6 +414,7 @@ void Editor::render() {
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     const float CENTER_X = 180.5 + (DISPLAY_WIDTH - 180)/2, CENTER_Y = 30.5 + (DISPLAY_HEIGHT - 30)/2;
 
@@ -479,37 +480,45 @@ void Editor::render() {
     }
 
     // sprites
-    /*if (frames.size() > 0) {
-        Rect<int> prevClipping = Rect<int>::getClipping();
-        Rect<int> clipRect(0, 200, 178, DISPLAY_HEIGHT - 26);
-        SDL_Rect clip {0, 200, 178, DISPLAY_HEIGHT - 26 - 200};
+    if (frames.size() > 0) {
+        SDL_Rect clip {0, 201, 180, DISPLAY_HEIGHT - 26 - 199};
         SDL_RenderSetClipRect(renderer, &clip);
 
         // setup
-        Bitmap curBmp = frames[file.curSprite].bmp;
-        int spr_ = file.curSprite, y_ = 200 + (DISPLAY_HEIGHT - 200 - 24 - curBmp.getHeight()) / 2;
-        curBmp.draw(90 - curBmp.getWidth() / 2, y_);
+        SDL_Texture *curBmp = frames[file.curSprite].bmp.get();
+        int w, h;
+        SDL_QueryTexture(curBmp, nullptr, nullptr, &w, &h);
+        int spr_ = file.curSprite, y_ = 200 + (DISPLAY_HEIGHT - 200 - 24 - h) / 2;
+        SDL_Rect rect = { 90 - w / 2, y_, w, h };
+        SDL_RenderCopy(renderer, curBmp, nullptr, &rect);
 
         // frames before
         size_t spr = spr_;
         int y = y_;
         while (y > 200 && spr > 0) {
-            Bitmap bmp = frames[--spr].bmp;
-            y -= bmp.getHeight();
-            bmp.draw(90 - bmp.getWidth() / 2, y);
+            SDL_Texture *bmp = frames[--spr].bmp.get();
+            SDL_QueryTexture(bmp, nullptr, nullptr, &rect.w, &rect.h);
+            rect.x = 90 - rect.w / 2;
+            rect.y = y -= rect.h;
+            SDL_RenderCopy(renderer, bmp, nullptr, &rect);
         }
 
         // frames after
         spr = spr_, y = y_;
         while (y < DISPLAY_HEIGHT && spr < frames.size() - 1) {
-            y += frames[spr++].bmp.getHeight();
-            Bitmap bmp = frames[spr].bmp;
-            bmp.draw(90 - bmp.getWidth() / 2, y);
+            SDL_Texture *bmp = frames[spr++].bmp.get();
+            SDL_QueryTexture(bmp, nullptr, nullptr, &rect.w, &rect.h);
+            rect.x = 90 - rect.w / 2;
+            rect.y = y;
+            SDL_RenderCopy(renderer, bmp, nullptr, &rect);
+            y += rect.h;
         }
 
         // red box
-        gfx::rect(90 - curBmp.getWidth() / 2, y_, 91 + curBmp.getWidth() / 2, 1 + y_ + curBmp.getHeight(), Color(255, 0, 0), 1);
-    }*/
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        rect = { 90 - w / 2, y_, 1 + w, h };
+        SDL_RenderDrawRect(renderer, &rect);
+    }
     SDL_RenderSetClipRect(renderer, nullptr);
 
     // top bar
@@ -578,7 +587,7 @@ void Editor::handleEvent(const SDL_Event &event) {
         file.jsp.frames[file.curSprite].ofsY -= event.motion.yrel;
         break;
 
-    case SDL_KEYUP:
+    case SDL_KEYDOWN:
         if (file.jsp.frames.size() == 0) break;
 
         int mods = SDL_GetModState();

@@ -34,6 +34,7 @@ JspFrame::JspFrame(int w, int h)
     , ofsX(0)
     , ofsY(0)
 {
+    SDL_SetTextureBlendMode(bmp.get(), SDL_BLENDMODE_BLEND);
 }
 
 bool JspFile::load(string fname) {
@@ -44,10 +45,10 @@ bool JspFile::load(string fname) {
     // read count
     uint16_t count;
     if (!read(in, &count)) {
-        error = "couldn't read ct";
+        error = "couldn't read file header";
         return false;
     }
-    cout << "count: " << count << endl;
+    //cout << "count: " << count << endl;
 
     // read header
     std::vector<FrameInfo> frameInfo;
@@ -58,16 +59,16 @@ bool JspFile::load(string fname) {
             return false;
         }
 
-        cout << "frame #" << i << ": " << info.width << "x" << info.height << ", (" << info.ofsX << "," << info.ofsY << "), size = " << info.size << endl;
+        //cout << "frame #" << i << ": " << info.width << "x" << info.height << ", (" << info.ofsX << "," << info.ofsY << "), size = " << info.size << endl;
         frameInfo.push_back(info);
     }
 
-    cout << "at " << in.tellg() << endl;
+    //cout << "at " << in.tellg() << endl;
 
     // read image
     frames.clear();
     for (uint16_t i = 0; i < count; ++i) {
-        cout << "decoding frame #" << i << endl;
+        //cout << "decoding frame #" << i << endl;
 
         FrameInfo info = frameInfo[i];
         JspFrame frame(info.width, info.height);

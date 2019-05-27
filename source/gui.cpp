@@ -64,7 +64,7 @@ bool Gui::handleEvent(const SDL_Event &evt) {
         focus = nullptr;
         return prev;
 
-    case SDL_KEYUP:
+    case SDL_KEYDOWN:
         for (GuiElement elem : elements) {
             int mod = SDL_GetModState() & 0xff;
             if (elem.shortcut.mods == mod && elem.shortcut.keycode == evt.key.keysym.scancode && elem.func) {
