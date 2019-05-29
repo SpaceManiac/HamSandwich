@@ -30,16 +30,16 @@ struct FrameInfo {
 };
 
 JspFrame::JspFrame(int w, int h)
-    : bmp(SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, w, h), SDL_DestroyTexture)
+    : texture(SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, w, h), SDL_DestroyTexture)
     , surface(SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, SDL_PIXELFORMAT_ABGR8888), SDL_FreeSurface)
     , ofsX(0)
     , ofsY(0)
 {
-    SDL_SetTextureBlendMode(bmp.get(), SDL_BLENDMODE_BLEND);
+    SDL_SetTextureBlendMode(texture.get(), SDL_BLENDMODE_BLEND);
 }
 
 void JspFrame::upload() {
-    SDL_UpdateTexture(bmp.get(), NULL, surface->pixels, surface->pitch);
+    SDL_UpdateTexture(texture.get(), NULL, surface->pixels, surface->pitch);
 }
 
 bool JspFile::load(string fname) {
@@ -80,7 +80,7 @@ bool JspFile::load(string fname) {
         frame.ofsX = info.ofsX;
         frame.ofsY = info.ofsY;
 
-        if (!frame.bmp) {
+        if (!frame.texture || !frame.surface) {
             cout << "could not create " << info.width << "x" << info.height << " image for frame #" << i << endl;
             error = "could not create image";
             return false;

@@ -299,7 +299,7 @@ bool Editor::import_frame(string fname, bool batch) {
     SDL_UpdateTexture(texture.get(), nullptr, surface->pixels, surface->pitch);
 
     file.unsaved = true;
-    file.jsp.frames[file.curSprite].bmp = texture;
+    file.jsp.frames[file.curSprite].texture = texture;
     file.jsp.frames[file.curSprite].surface = surface;
     return true;
 }
@@ -453,7 +453,7 @@ void Editor::render() {
             current.surface->w,
             current.surface->h,
         };
-        SDL_RenderCopy(renderer, current.bmp.get(), nullptr, &rect);
+        SDL_RenderCopy(renderer, current.texture.get(), nullptr, &rect);
     }
 
     // crosshairs in front
@@ -503,7 +503,7 @@ void Editor::render() {
         SDL_RenderSetClipRect(renderer, &clip);
 
         // setup
-        SDL_Texture *curBmp = frames[file.curSprite].bmp.get();
+        SDL_Texture *curBmp = frames[file.curSprite].texture.get();
         SDL_Surface *surface = frames[file.curSprite].surface.get();
         int w = surface->w, h = surface->h;
         int spr_ = file.curSprite, y_ = 200 + (DISPLAY_HEIGHT - 200 - 24 - h) / 2;
@@ -515,7 +515,7 @@ void Editor::render() {
         int y = y_;
         while (y > 200 && spr > 0) {
             --spr;
-            SDL_Texture *bmp = frames[spr].bmp.get();
+            SDL_Texture *bmp = frames[spr].texture.get();
             rect.w = frames[spr].surface->w;
             rect.h = frames[spr].surface->h;
             rect.x = 90 - rect.w / 2;
@@ -526,7 +526,7 @@ void Editor::render() {
         // frames after
         spr = spr_, y = y_;
         while (y < DISPLAY_HEIGHT && spr < frames.size()) {
-            SDL_Texture *bmp = frames[spr].bmp.get();
+            SDL_Texture *bmp = frames[spr].texture.get();
             rect.w = frames[spr].surface->w;
             rect.h = frames[spr].surface->h;
             rect.x = 90 - rect.w / 2;
@@ -566,7 +566,7 @@ void Editor::render() {
             break;
         }
         rect = {x, y, frame.surface->w, frame.surface->h};
-        SDL_RenderCopy(renderer, frame.bmp.get(), nullptr, &rect);
+        SDL_RenderCopy(renderer, frame.texture.get(), nullptr, &rect);
         x += frame.surface->w;
         if (frame.surface->h > h) {
             h = frame.surface->h;

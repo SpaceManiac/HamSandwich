@@ -6,7 +6,7 @@
 #include <memory>
 
 struct JspFrame {
-    std::shared_ptr<SDL_Texture> bmp;
+    std::shared_ptr<SDL_Texture> texture;
     std::shared_ptr<SDL_Surface> surface;
     int16_t ofsX, ofsY;
 
