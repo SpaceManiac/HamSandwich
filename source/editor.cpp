@@ -251,10 +251,10 @@ void Editor::save() {
     cout << "Editor::save " << file.fname << endl;
 
     // show please wait dialog
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 196);
     SDL_RenderFillRect(renderer, NULL);
     DrawText(renderer, gFont, DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2 - 50, ALIGN_CENTER, { 0, 0, 0, 255 }, "Saving, please wait...");
-    SDL_RendererFlip(renderer);
+    SDL_RenderPresent(renderer);
 
     // perform save
     if (file.jsp.save(file.fname)) {
@@ -324,7 +324,7 @@ bool Editor::export_frame(string fname, bool batch) {
 
 void Editor::import_batch(string fname) {
     if (fname.substr(fname.length() - 5) == "0.png") {
-        fname = fname.substr(0, fname.length() - 5);
+        fname.resize(fname.length() - 5);
     } else {
         dialog::error("Cannot batch import", "Must select file ending in 0.png");
         return;
@@ -345,10 +345,10 @@ void Editor::import_batch(string fname) {
 
 void Editor::export_batch(string fname) {
     if (fname.substr(fname.length() - 4) == ".png") {
-        fname = fname.substr(0, fname.length() - 4);
+        fname.resize(fname.length() - 4);
     }
-    if (fname[fname.length() - 1] == '0') {
-        fname = fname.substr(0, fname.length() - 1);
+    if (fname.back() == '0') {
+        fname.resize(fname.length() - 1);
     }
 
     int sprite = file.curSprite;
