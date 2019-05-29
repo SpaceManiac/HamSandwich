@@ -1450,7 +1450,7 @@ char monsNotes[NUM_MONSTERS][512]={
 	"ice shots hard to avoid, and greatly improves his odds of getting a swipe at you on his highly predictable journey.",
 };
 
-char *MonsterNotes(byte type)
+char *MonsterNotes(dword type)
 {
 	return monsNotes[type];
 }

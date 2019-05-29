@@ -56,12 +56,12 @@ void ExitMonsters(void)
 	}
 }
 
-monsterType_t *GetMonsterType(byte type)
+monsterType_t *GetMonsterType(dword type)
 {
 	return &monsType[type];
 }
 
-void ChangeOffColor(byte type,byte from,byte to)
+void ChangeOffColor(dword type,byte from,byte to)
 {
 	monsType[type].fromCol=from;
 	monsType[type].toCol=to;
@@ -83,17 +83,17 @@ void PurgeMonsterSprites(void)
 	}
 }
 
-byte MonsterSize(byte type)
+byte MonsterSize(dword type)
 {
 	return monsType[type].size;
 }
 
-byte *MonsterAnim(byte type,byte anim)
+byte *MonsterAnim(dword type,byte anim)
 {
 	return monsType[type].anim[anim];
 }
 
-word MonsterFlags(byte type,byte aiType)
+word MonsterFlags(dword type,byte aiType)
 {
 	if(aiType==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
 		return monsType[MONS_PWRBOUAPHA].flags;
@@ -102,7 +102,7 @@ word MonsterFlags(byte type,byte aiType)
 	return monsType[type].flags;
 }
 
-byte MonsterFrames(byte type,byte aiType)
+byte MonsterFrames(dword type,byte aiType)
 {
 	if(aiType==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
 		return monsType[MONS_PWRBOUAPHA].framesPerDir;
@@ -111,12 +111,12 @@ byte MonsterFrames(byte type,byte aiType)
 	return monsType[type].framesPerDir;
 }
 
-word MonsterPoints(byte type)
+word MonsterPoints(dword type)
 {
 	return monsType[type].points;
 }
 
-word MonsterHP(byte type)
+word MonsterHP(dword type)
 {
 	return monsType[type].hp;
 }
@@ -143,12 +143,12 @@ char *MonsterName(short type)
 	return tmp;
 }
 
-void SetMonsterFlags(byte type,word flags)
+void SetMonsterFlags(dword type,word flags)
 {
 	monsType[type].flags=flags;
 }
 
-void LoadMySprite(byte type)
+void LoadMySprite(dword type)
 {
 	int v;
 
@@ -174,7 +174,7 @@ void LoadMySprite(byte type)
 	}
 }
 
-sprite_t *GetMonsterSprite(byte type,byte seq,byte frm,byte facing)
+sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 {
 	int v;
 
@@ -224,7 +224,7 @@ sprite_t *GetMonsterSprite(byte type,byte seq,byte frm,byte facing)
 	return monsType[type].spr->GetSprite(v);
 }
 
-void MonsterDraw(int x,int y,int z,byte type,byte aiType,byte seq,byte frm,byte facing,char bright,byte ouch,byte poison,byte frozen,sprite_set_t* set)
+void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byte facing,char bright,byte ouch,byte poison,byte frozen,sprite_set_t* set)
 {
 	sprite_t *curSpr;
 	int v;
@@ -363,7 +363,7 @@ void MonsterDraw(int x,int y,int z,byte type,byte aiType,byte seq,byte frm,byte 
 	}
 }
 
-void InstaRenderMonster(int x,int y,byte type,char bright,MGLDraw *mgl)
+void InstaRenderMonster(int x,int y,dword type,char bright,MGLDraw *mgl)
 {
 	sprite_t *curSpr;
 	int v;
@@ -386,7 +386,7 @@ void InstaRenderMonster(int x,int y,byte type,char bright,MGLDraw *mgl)
 				bright+monsType[type].brtChg);
 }
 
-int InstaRenderScannedMonster(int x,int y,byte type,char bright,MGLDraw *mgl)
+int InstaRenderScannedMonster(int x,int y,dword type,char bright,MGLDraw *mgl)
 {
 	sprite_t *curSpr;
 	int v;
@@ -407,7 +407,7 @@ int InstaRenderScannedMonster(int x,int y,byte type,char bright,MGLDraw *mgl)
 	return curSpr->height;
 }
 
-dword MonsterTheme(byte type)
+dword MonsterTheme(dword type)
 {
 	return monsType[type].theme;
 }

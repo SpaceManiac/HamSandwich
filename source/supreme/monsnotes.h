@@ -3,6 +3,6 @@
 
 #include "mgldraw.h"
 
-char *MonsterNotes(byte type);
+char *MonsterNotes(dword type);
 
 #endif

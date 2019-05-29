@@ -341,23 +341,23 @@ void ExitMonsters(void);
 
 void PurgeMonsterSprites(void);
 
-monsterType_t *GetMonsterType(byte type);
+monsterType_t *GetMonsterType(dword type);
 
-void ChangeOffColor(byte type,byte from,byte to);
-byte MonsterSize(byte type);
-byte *MonsterAnim(byte type,byte anim);
-word MonsterFlags(byte type,byte aiType);
-dword MonsterTheme(byte type);
-void SetMonsterFlags(byte type,word flags);
-byte MonsterFrames(byte type);
-byte MonsterFrames(byte type,byte aiType);
-word MonsterHP(byte type);
-word MonsterPoints(byte type);
+void ChangeOffColor(dword type,byte from,byte to);
+byte MonsterSize(dword type);
+byte *MonsterAnim(dword type,byte anim);
+word MonsterFlags(dword type,byte aiType);
+dword MonsterTheme(dword type);
+void SetMonsterFlags(dword type,word flags);
+byte MonsterFrames(dword type);
+byte MonsterFrames(dword type,byte aiType);
+word MonsterHP(dword type);
+word MonsterPoints(dword type);
 char *MonsterName(short type);
-void MonsterDraw(int x,int y,int z,byte type,byte aiType,byte seq,byte frm,byte facing,char bright,byte ouch,byte poison,byte frozen,sprite_set_t* set);
-void InstaRenderMonster(int x,int y,byte type,char bright,MGLDraw *mgl);
-int InstaRenderScannedMonster(int x,int y,byte type,char bright,MGLDraw *mgl);
-sprite_t *GetMonsterSprite(byte type,byte seq,byte frm,byte facing);
+void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byte facing,char bright,byte ouch,byte poison,byte frozen,sprite_set_t* set);
+void InstaRenderMonster(int x,int y,dword type,char bright,MGLDraw *mgl);
+int InstaRenderScannedMonster(int x,int y,dword type,char bright,MGLDraw *mgl);
+sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing);
 int RangeToTarget(Guy *me,Guy *goodguy);
 
 // ai functions for each monster type

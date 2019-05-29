@@ -18,7 +18,7 @@
 
 static byte mode,curTheme;
 static world_t *world;
-static byte curMons;
+static dword curMons;
 static byte rememberMode;
 static byte helpRemember;
 
@@ -28,7 +28,7 @@ static dword themes[]={MT_GOOD,MT_EVIL,MT_SPOOKY,MT_ZOMBIE,MT_VAMPIRE,MT_SPIDER,
 					   MT_HIGHTECH,MT_ANIMAL,MT_HUMAN,MT_URBAN,MT_AQUATIC,MT_UNDERSEA,MT_FLYING,
 					   MT_BITS};
 
-static byte monsList[256];
+static dword monsList[256];
 static word monsInList,monsStart,monsShown;
 static byte realClick;
 
@@ -93,7 +93,6 @@ static void MoreMonstersClick(int id)
 static void MakeMonsterList(void)
 {
 	int i,pos;
-	byte b,swapped;
 
 	ClearButtons(ID_PICKMONS,ID_PICKMONS+50);
 	ClearButtons(ID_MOREMONS,ID_MOREMONS);
@@ -113,7 +112,7 @@ static void MakeMonsterList(void)
 	}
 
 	// now sort them alphabetically, simple bubble sort
-	swapped=1;
+	byte swapped=1;
 	while(swapped)
 	{
 		swapped=0;
@@ -121,7 +120,7 @@ static void MakeMonsterList(void)
 		{
 			if(strcmp(MonsterName(monsList[i]),MonsterName(monsList[i+1]))>0)
 			{
-				b=monsList[i+1];
+				dword b=monsList[i+1];
 				monsList[i+1]=monsList[i];
 				monsList[i]=b;
 				swapped=1;
