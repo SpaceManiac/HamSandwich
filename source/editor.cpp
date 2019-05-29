@@ -297,6 +297,7 @@ bool Editor::import_frame(string fname, bool batch) {
         SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, surface->w, surface->h),
         SDL_DestroyTexture);
     SDL_UpdateTexture(texture.get(), nullptr, surface->pixels, surface->pitch);
+    SDL_SetTextureBlendMode(texture.get(), SDL_BLENDMODE_BLEND);
 
     file.unsaved = true;
     file.jsp.frames[file.curSprite].texture = texture;
