@@ -116,9 +116,9 @@ void MonsterTool::Render(int msx,int msy)
 		if(monster[i] != MONS_NONE)
 		{
 			if(active==i)
-				RenderButtonImageLit(msx,msy,496,412+i*16,140,14,MonsterName((byte)monster[i]));
+				RenderButtonImageLit(msx,msy,496,412+i*16,140,14,MonsterName(monster[i]));
 			else
-				RenderButtonImage(msx,msy,496,412+i*16,140,14,MonsterName((byte)monster[i]));
+				RenderButtonImage(msx,msy,496,412+i*16,140,14,MonsterName(monster[i]));
 		}
 		else
 		{

@@ -57,13 +57,13 @@ class Guy
 		Guy *target;
 		Guy *parent;
 		int hp,maxHP;
-		byte type;
+		int type;
 		int rectx,recty,rectx2,recty2;	// for collision checks
 		word ID;	// just a copy of the guy's number
 		byte item;	// what item you're carrying
 		byte frozen;
 
-		byte aiType;
+		int aiType;
 		byte fromColor,toColor;
 		char brtChange;
 		char name[32];
@@ -79,9 +79,9 @@ void UpdateGuys(Map *map,world_t *world);
 void EditorUpdateGuys(Map *map);
 void RenderGuys(byte light);
 Guy *AddGuy(int x,int y,int z,int type,byte friendly);
-Guy *AddBaby(int x,int y,int z,byte type,Guy *me);
+Guy *AddBaby(int x,int y,int z,int type,Guy *me);
 Guy *GetGuy(word w);
-void DeleteGuy(int x,int y,byte type);
+void DeleteGuy(int x,int y,int type);
 void AddMapGuys(Map *map);
 byte FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world,byte friendly);
 byte FindVictims(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world,byte friendly);
@@ -91,7 +91,7 @@ word LockOnEvil2(int x,int y);
 word LockOnGood(int x,int y);
 word LockOnGood2(int x,int y);
 byte GetGuyPos(word guy,int *x,int *y);
-byte MonsterExists(byte type);
+byte MonsterExists(int type);
 void HealGoodguy(byte amt);
 byte MossCheck(int x,int y);
 void KillKids(Guy *g);
@@ -109,7 +109,7 @@ byte CheckMonsterLife(int x,int y,int type,int life,byte flags);
 byte SwapMe(int x,int y,byte size,Map *map);
 int CountMonsters(int type);
 int CountMonstersInRect(int type,int x,int y,int x2,int y2);
-Guy *GetGuyOfType(byte type);
+Guy *GetGuyOfType(int type);
 void RemoveGuy(Guy *g);
 void Telefrag(Guy *g);
 byte FreezeGuy(Guy *me);
@@ -127,7 +127,7 @@ void SetMonsterGraphics(byte fx,int x,int y,int type,char *name);
 void SetMonsterColor(byte fx,int x,int y,int type,int colCode);
 void SetMonsterBright(byte fx,int x,int y,int type,int bright);
 byte CheckMonsterColor(int x,int y,int type,byte color);
-Guy *GetGuyOfAIType(byte type);
+Guy *GetGuyOfAIType(int type);
 
 void FindMonsterBrain(int myx,int myy);
 void FindMonsterCandle(int myx,int myy);

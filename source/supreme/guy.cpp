@@ -1322,7 +1322,7 @@ void SetupTargets(void)
 	}
 }
 
-Guy *AddBaby(int x,int y,int z,byte type,Guy *me)
+Guy *AddBaby(int x,int y,int z,int type,Guy *me)
 {
 	Guy *g;
 
@@ -1743,7 +1743,7 @@ void DeleteGuy2(Guy *g)
 		}
 }
 
-void DeleteGuy(int x,int y,byte type)
+void DeleteGuy(int x,int y,int type)
 {
 	int i,j;
 
@@ -2053,7 +2053,7 @@ byte GetGuyPos(word guy,int *x,int *y)
 	return 1;
 }
 
-Guy *GetGuyOfType(byte type)
+Guy *GetGuyOfType(int type)
 {
 	int i;
 
@@ -2064,7 +2064,7 @@ Guy *GetGuyOfType(byte type)
 	return NULL;
 }
 
-Guy *GetGuyOfAIType(byte type)
+Guy *GetGuyOfAIType(int type)
 {
 	int i;
 
@@ -2075,7 +2075,7 @@ Guy *GetGuyOfAIType(byte type)
 	return NULL;
 }
 
-byte MonsterExists(byte type)
+byte MonsterExists(int type)
 {
 	int i;
 

@@ -32,7 +32,7 @@ static dword monsList[256];
 static word monsInList,monsStart,monsShown;
 static byte realClick;
 
-static byte saveCurMons=1,saveCurTheme=0;
+static dword saveCurMons=1,saveCurTheme=0;
 
 static void SetupMonsterDisplay(void);
 static void MakeMonsterList(void);
