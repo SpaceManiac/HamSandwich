@@ -1189,6 +1189,42 @@ static void HandleKeyPresses(void)
 	if (k)
 		lastKey = k;
 
+	switch(LastScanCode())
+	{
+		case SDL_SCANCODE_LEFT:
+		case SDL_SCANCODE_KP_4:
+			GetCamera(&x,&y);
+			x-=TILE_WIDTH;
+			if(x<0)
+				x=0;
+			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
+			break;
+		case SDL_SCANCODE_UP:
+		case SDL_SCANCODE_KP_8:
+			GetCamera(&x,&y);
+			y-=TILE_HEIGHT;
+			if(y<0)
+				y=0;
+			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
+			break;
+		case SDL_SCANCODE_RIGHT:
+		case SDL_SCANCODE_KP_6:
+			GetCamera(&x,&y);
+			x+=TILE_WIDTH;
+			if(x>curMap->width*TILE_WIDTH)
+				x=curMap->width*TILE_WIDTH;
+			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
+			break;
+		case SDL_SCANCODE_DOWN:
+		case SDL_SCANCODE_KP_2:
+			GetCamera(&x,&y);
+			y+=TILE_HEIGHT;
+			if(y>curMap->height*TILE_HEIGHT)
+				y=curMap->height*TILE_HEIGHT;
+			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
+			break;
+	}
+
 	if (editMode == EDITMODE_EDIT)
 	{
 		switch (k) {
@@ -1267,34 +1303,6 @@ static void HandleKeyPresses(void)
 				break;
 			case 8:
 				Delete(tileX, tileY);
-				break;
-			case '4': case 37: // left
-				GetCamera(&x, &y);
-				x -= TILE_WIDTH;
-				if (x < 0)
-					x = 0;
-				PutCamera(x << FIXSHIFT, y << FIXSHIFT);
-				break;
-			case '8': case 38: // up
-				GetCamera(&x, &y);
-				y -= TILE_HEIGHT;
-				if (y < 0)
-					y = 0;
-				PutCamera(x << FIXSHIFT, y << FIXSHIFT);
-				break;
-			case '6': case 39: // right
-				GetCamera(&x, &y);
-				x += TILE_WIDTH;
-				if (x > curMap->width * TILE_WIDTH)
-					x = curMap->width * TILE_WIDTH;
-				PutCamera(x << FIXSHIFT, y << FIXSHIFT);
-				break;
-			case '2': case 40: // down
-				GetCamera(&x, &y);
-				y += TILE_HEIGHT;
-				if (y > curMap->height * TILE_HEIGHT)
-					y = curMap->height * TILE_HEIGHT;
-				PutCamera(x << FIXSHIFT, y << FIXSHIFT);
 				break;
 			case 'I':
 				for (x = 0; x < curMap->width; x++)
