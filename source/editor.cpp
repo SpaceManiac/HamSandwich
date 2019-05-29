@@ -447,8 +447,12 @@ void Editor::render() {
     // draw sprite
     if (file.jsp.frames.size() > 0) {
         JspFrame current = file.jsp.frames[file.curSprite];
-        SDL_Rect rect = { (int) CENTER_X - current.ofsX, (int) CENTER_Y - current.ofsY, 0, 0 };
-        SDL_QueryTexture(current.bmp.get(), nullptr, nullptr, &rect.w, &rect.h);
+        SDL_Rect rect = {
+            CENTER_X - current.ofsX,
+            CENTER_Y - current.ofsY,
+            current.surface->w,
+            current.surface->h,
+        };
         SDL_RenderCopy(renderer, current.bmp.get(), nullptr, &rect);
     }
 
@@ -484,9 +488,7 @@ void Editor::render() {
         DrawText(renderer, gFont, 5, 55, ALIGN_LEFT, black, s.str().c_str());
         s.str(""); s << file.curSprite;
         DrawText(renderer, gFont, 88, 80, ALIGN_CENTER, black, s.str().c_str());
-        int w, h;
-        SDL_QueryTexture(current.bmp.get(), nullptr, nullptr, &w, &h);
-        s.str(""); s << "Size: (" << w << ", " << h << ")";
+        s.str(""); s << "Size: (" << current.surface->w << ", " << current.surface->h << ")";
         DrawText(renderer, gFont, 5, 105, ALIGN_LEFT, black, s.str().c_str());
         s.str(""); s << "Origin: (" << current.ofsX << ", " << current.ofsY << ")";
         DrawText(renderer, gFont, 5, 125, ALIGN_LEFT, black, s.str().c_str());
@@ -502,8 +504,8 @@ void Editor::render() {
 
         // setup
         SDL_Texture *curBmp = frames[file.curSprite].bmp.get();
-        int w, h;
-        SDL_QueryTexture(curBmp, nullptr, nullptr, &w, &h);
+        SDL_Surface *surface = frames[file.curSprite].surface.get();
+        int w = surface->w, h = surface->h;
         int spr_ = file.curSprite, y_ = 200 + (DISPLAY_HEIGHT - 200 - 24 - h) / 2;
         SDL_Rect rect = { 90 - w / 2, y_, w, h };
         SDL_RenderCopy(renderer, curBmp, nullptr, &rect);
@@ -512,8 +514,10 @@ void Editor::render() {
         size_t spr = spr_;
         int y = y_;
         while (y > 200 && spr > 0) {
-            SDL_Texture *bmp = frames[--spr].bmp.get();
-            SDL_QueryTexture(bmp, nullptr, nullptr, &rect.w, &rect.h);
+            --spr;
+            SDL_Texture *bmp = frames[spr].bmp.get();
+            rect.w = frames[spr].surface->w;
+            rect.h = frames[spr].surface->h;
             rect.x = 90 - rect.w / 2;
             rect.y = y -= rect.h;
             SDL_RenderCopy(renderer, bmp, nullptr, &rect);
@@ -522,12 +526,14 @@ void Editor::render() {
         // frames after
         spr = spr_, y = y_;
         while (y < DISPLAY_HEIGHT && spr < frames.size()) {
-            SDL_Texture *bmp = frames[spr++].bmp.get();
-            SDL_QueryTexture(bmp, nullptr, nullptr, &rect.w, &rect.h);
+            SDL_Texture *bmp = frames[spr].bmp.get();
+            rect.w = frames[spr].surface->w;
+            rect.h = frames[spr].surface->h;
             rect.x = 90 - rect.w / 2;
             rect.y = y;
             SDL_RenderCopy(renderer, bmp, nullptr, &rect);
             y += rect.h;
+            ++spr;
         }
 
         // red box
@@ -551,7 +557,7 @@ void Editor::render() {
     /* int x = 200, y = 50, h = 0;
     for (size_t i = 0; i < file.jsp.frames.size(); ++i) {
         JspFrame frame = file.jsp.frames[i];
-        if (x + frame.bmp.getWidth() > DISPLAY_WIDTH) {
+        if (x + frame.surface->w > DISPLAY_WIDTH) {
             y += h;
             x = 200;
             h = 0;
@@ -559,10 +565,11 @@ void Editor::render() {
         if (y >= DISPLAY_HEIGHT) {
             break;
         }
-        frame.bmp.draw(x, y);
-        x += frame.bmp.getWidth();
-        if (frame.bmp.getHeight() > h) {
-            h = frame.bmp.getHeight();
+        rect = {x, y, frame.surface->w, frame.surface->h};
+        SDL_RenderCopy(renderer, frame.bmp.get(), nullptr, &rect);
+        x += frame.surface->w;
+        if (frame.surface->h > h) {
+            h = frame.surface->h;
         }
     } */
 

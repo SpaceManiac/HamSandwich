@@ -150,8 +150,7 @@ bool JspFile::save(string fname) {
         std::cout << "encoding frame #" << i << endl;
         JspFrame frame = frames[i];
 
-        int w, h;
-        SDL_QueryTexture(frame.bmp.get(), nullptr, nullptr, &w, &h);
+        int w = frame.surface->w, h = frame.surface->h;
         FrameInfo info { (uint16_t) w, (uint16_t) h, frame.ofsX, frame.ofsY, 0, 0 };
         if (i == 0) {
             // extra data space on first image set to magic value
