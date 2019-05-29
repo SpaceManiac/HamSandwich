@@ -38,12 +38,15 @@ void save(const char* title, const char* patterns, callback func) {
     free(chosen);
 }
 
-void showMessage(const char* head, const char* body) {
-    SDL_ShowSimpleMessageBox(0, head, body, window);
+void showMessage(const char* body) {
+    SDL_ShowSimpleMessageBox(0, "JspEdit", body, window);
 }
 
 void error(const char* head, const char* body = nullptr) {
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, head, body, window);
+    std::string buffer(head);
+    buffer.append("\n\n");
+    buffer.append(body);
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "JspEdit", buffer.c_str(), window);
 }
 
 bool showOkCancel(const char* head, bool def) {
@@ -281,7 +284,7 @@ bool Editor::import_frame(string fname, bool batch) {
 
     std::shared_ptr<SDL_Surface> surface(IMG_Load(fname.c_str()), SDL_FreeSurface);
     if (!surface) {
-        if (!batch) dialog::error("Failed to import");
+        if (!batch) dialog::error("Failed to import", IMG_GetError());
         return false;
     }
 
@@ -290,7 +293,7 @@ bool Editor::import_frame(string fname, bool batch) {
     }
 
     if (palette::reduceImage(surface.get()) && !batch) {
-        dialog::showMessage("The image's colors were adjusted", nullptr);
+        dialog::showMessage("The image's colors were adjusted");
     }
 
     std::shared_ptr<SDL_Texture> texture(
@@ -313,7 +316,7 @@ bool Editor::export_frame(string fname, bool batch) {
     }
 
     if (IMG_SavePNG(file.jsp.frames[file.curSprite].surface.get(), fname.c_str())) {
-        if (!batch) dialog::error("Failed to export");
+        if (!batch) dialog::error("Failed to export", IMG_GetError());
         return false;
     }
     return true;
