@@ -284,6 +284,11 @@ bool Editor::import_frame(string fname, bool batch) {
         if (!batch) dialog::error("Failed to import");
         return false;
     }
+
+    if (surface->format->format != SDL_PIXELFORMAT_ABGR8888) {
+        surface = {SDL_ConvertSurfaceFormat(surface.get(), SDL_PIXELFORMAT_ABGR8888, 0), SDL_FreeSurface};
+    }
+
     if (palette::reduceImage(surface.get()) && !batch) {
         dialog::showMessage("The image's colors were adjusted", nullptr);
     }
@@ -292,8 +297,10 @@ bool Editor::import_frame(string fname, bool batch) {
         SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, surface->w, surface->h),
         SDL_DestroyTexture);
     SDL_UpdateTexture(texture.get(), nullptr, surface->pixels, surface->pitch);
+
     file.unsaved = true;
     file.jsp.frames[file.curSprite].bmp = texture;
+    file.jsp.frames[file.curSprite].surface = surface;
     return true;
 }
 
@@ -304,25 +311,7 @@ bool Editor::export_frame(string fname, bool batch) {
         fname += ".png";
     }
 
-    int width, height, pitch;
-    Uint32 format;
-    void *pixels;
-
-    SDL_Texture *texture = file.jsp.frames[file.curSprite].bmp.get();
-    SDL_QueryTexture(texture, &format, nullptr, &width, &height);
-    std::shared_ptr<SDL_Surface> surface(SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, format), SDL_FreeSurface);
-
-    SDL_LockTexture(texture, nullptr, &pixels, &pitch);
-    SDL_LockSurface(surface.get());
-
-    char *dest = (char*) surface->pixels, *source = (char*) pixels;
-    for (int y = 0; y < height; ++y)
-        memcpy(&dest[y * surface->pitch], &source[y * pitch], width * surface->format->BytesPerPixel);
-
-    SDL_UnlockSurface(surface.get());
-    SDL_UnlockTexture(texture);
-
-    if (IMG_SavePNG(surface.get(), fname.c_str())) {
+    if (IMG_SavePNG(file.jsp.frames[file.curSprite].surface.get(), fname.c_str())) {
         if (!batch) dialog::error("Failed to export");
         return false;
     }
@@ -410,16 +399,16 @@ void Editor::shift(int dir) {
 }
 
 void Editor::convertAlpha() {
-    SDL_Texture *bmp = file.jsp.frames[file.curSprite].bmp.get();
-    SDL_Color *pixels;
-    int pitch, w, h;
-    SDL_QueryTexture(bmp, NULL, NULL, &w, &h);
-    Col_LockTexture(bmp, NULL, &pixels, &pitch);
+    JspFrame &frame = file.jsp.frames[file.curSprite];
+    SDL_Surface *surface = frame.surface.get();
 
+    SDL_Color *pixels = (SDL_Color*) surface->pixels;
+    int pitch = surface->pitch / sizeof(SDL_Color);
+    SDL_LockSurface(surface);
     SDL_Color key = palette::getColor(208);
 
-    for (int y = 0; y < h; ++y) {
-        for (int x = 0; x < w; ++x) {
+    for (int y = 0; y < surface->h; ++y) {
+        for (int x = 0; x < surface->h; ++x) {
             SDL_Color col = pixels[y * pitch + x];
             if (!memcmp(&col, &key, sizeof(SDL_Color))) {
                 col = { 0, 0, 0, 0 };
@@ -427,8 +416,8 @@ void Editor::convertAlpha() {
             pixels[y * pitch + x] = col;
         }
     }
-
-    SDL_UnlockTexture(bmp);
+    SDL_UnlockSurface(surface);
+    frame.upload();
 }
 
 /****************************************************************/

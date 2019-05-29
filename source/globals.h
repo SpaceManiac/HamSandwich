@@ -21,6 +21,4 @@ enum Align {
 };
 void DrawText(SDL_Renderer *renderer, TTF_Font *font, int x, int y, Align align, SDL_Color color, const char* text);
 
-int Col_LockTexture(SDL_Texture *texture, SDL_Rect *rect, SDL_Color **pixels, int *pitch);
-
 #endif // GLOBALS_H

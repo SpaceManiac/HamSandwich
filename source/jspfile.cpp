@@ -31,10 +31,15 @@ struct FrameInfo {
 
 JspFrame::JspFrame(int w, int h)
     : bmp(SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, w, h), SDL_DestroyTexture)
+    , surface(SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, SDL_PIXELFORMAT_ABGR8888), SDL_FreeSurface)
     , ofsX(0)
     , ofsY(0)
 {
     SDL_SetTextureBlendMode(bmp.get(), SDL_BLENDMODE_BLEND);
+}
+
+void JspFrame::upload() {
+    SDL_UpdateTexture(bmp.get(), NULL, surface->pixels, surface->pitch);
 }
 
 bool JspFile::load(string fname) {
@@ -81,12 +86,9 @@ bool JspFile::load(string fname) {
             return false;
         }
 
-        SDL_Color *pixels;
-        int pitch;
-        if (Col_LockTexture(frame.bmp.get(), NULL, &pixels, &pitch)) {
-            cout << "oh no: " << SDL_GetError() << endl;
-            return false;
-        }
+        SDL_LockSurface(frame.surface.get());
+        SDL_Color *pixels = (SDL_Color*) frame.surface->pixels;
+        int pitch = frame.surface->pitch / sizeof(SDL_Color);
 
         int x = 0, y = 0;
         uint32_t read = 0;
@@ -119,7 +121,8 @@ bool JspFile::load(string fname) {
             }
         }
 
-        SDL_UnlockTexture(frame.bmp.get());
+        SDL_UnlockSurface(frame.surface.get());
+        frame.upload();
         frames.push_back(frame);
     }
 
@@ -160,15 +163,15 @@ bool JspFile::save(string fname) {
         std::vector<uint8_t> temp(bmp_size);
         //std::cout << "  palette conversion" << endl;
 
-        SDL_Color *pixels;
-        int pitch;
-        Col_LockTexture(frame.bmp.get(), nullptr, &pixels, &pitch);
+        SDL_LockSurface(frame.surface.get());
+        SDL_Color *pixels = (SDL_Color*) frame.surface->pixels;
+        int pitch = frame.surface->pitch / sizeof(SDL_Color);
         for (int y = 0; y < info.height; ++y) {
             for (int x = 0; x < info.width; ++x) {
                 temp[y * info.width + x] = palette::getExact(pixels[y * pitch + x]);
             }
         }
-        SDL_UnlockTexture(frame.bmp.get());
+        SDL_UnlockSurface(frame.surface.get());
 
         // worst possible scenario is 1.5 bytes per pixel (alternating transparency and solidity)
         std::vector<uint8_t> data(bmp_size * 2);
