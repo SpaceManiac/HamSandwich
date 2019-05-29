@@ -87,26 +87,25 @@ uint8_t palette::getNearest(SDL_Color color) {
     return best;
 }
 
-bool palette::reduceImage(SDL_Texture *image) {
+bool palette::reduceImage(SDL_Surface *image) {
     bool result = false;
 
-    SDL_Color *pixels;
-    int pitch, w, h;
-    SDL_QueryTexture(image, NULL, NULL, &w, &h);
-    Col_LockTexture(image, NULL, &pixels, &pitch);
+    SDL_LockSurface(image);
+    SDL_Color *pixels = (SDL_Color *) image->pixels;
+    int pitch = image->pitch / sizeof(SDL_Color);
 
-    for (int y = 0; y < h; ++y) {
-        for (int x = 0; x < w; ++x) {
+    for (int y = 0; y < image->h; ++y) {
+        for (int x = 0; x < image->w; ++x) {
             SDL_Color original = pixels[y * pitch + x];
             uint8_t index = getNearest(original);
             SDL_Color actual = getColor(index);
-            if (!memcmp(&original, &actual, sizeof(SDL_Color))) {
+            if (memcmp(&original, &actual, sizeof(SDL_Color))) {
                 pixels[y * pitch + x] = actual;
                 result = true;
             }
         }
     }
 
-    SDL_UnlockTexture(image);
+    SDL_UnlockSurface(image);
     return result;
 }

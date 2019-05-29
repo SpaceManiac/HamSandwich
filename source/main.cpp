@@ -64,8 +64,10 @@ int Col_LockTexture(SDL_Texture *texture, SDL_Rect *rect, SDL_Color **pixels, in
 {
     void *vpixels;
     int err = SDL_LockTexture(texture, NULL, &vpixels, pitch);
-    if (err)
+    if (err) {
+        printf("Col_LockTexture failure: %s\n", SDL_GetError());
         return err;
+    }
 
     *pixels = (SDL_Color *) vpixels;
     *pitch /= sizeof(SDL_Color);

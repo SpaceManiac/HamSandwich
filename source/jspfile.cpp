@@ -159,14 +159,16 @@ bool JspFile::save(string fname) {
         uint32_t bmp_size = w * h;
         std::vector<uint8_t> temp(bmp_size);
         //std::cout << "  palette conversion" << endl;
-        // TODO
-        /*frame.bmp.lock(ALLEGRO_PIXEL_FORMAT_ARGB_8888, ALLEGRO_LOCK_READONLY);
+
+        SDL_Color *pixels;
+        int pitch;
+        Col_LockTexture(frame.bmp.get(), nullptr, &pixels, &pitch);
         for (int y = 0; y < info.height; ++y) {
             for (int x = 0; x < info.width; ++x) {
-                temp[y * info.width + x] = palette::getExact(frame.bmp.getPixel(x, y));
+                temp[y * info.width + x] = palette::getExact(pixels[y * pitch + x]);
             }
         }
-        frame.bmp.unlock();*/
+        SDL_UnlockTexture(frame.bmp.get());
 
         // worst possible scenario is 1.5 bytes per pixel (alternating transparency and solidity)
         std::vector<uint8_t> data(bmp_size * 2);

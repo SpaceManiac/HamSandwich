@@ -21,19 +21,21 @@ namespace dialog {
 typedef std::function<void(std::string)> callback;
 
 void open(const char* title, const char* patterns, callback func) {
-    char *chosen;
+    char *chosen = nullptr;
     nfdresult_t result = NFD_OpenDialog(patterns, nullptr, &chosen);
     if (result == NFD_OKAY) {
         func(chosen);
     }
+    free(chosen);
 }
 
 void save(const char* title, const char* patterns, callback func) {
-    char *chosen;
+    char *chosen = nullptr;
     nfdresult_t result = NFD_SaveDialog(patterns, nullptr, &chosen);
     if (result == NFD_OKAY) {
         func(chosen);
     }
+    free(chosen);
 }
 
 void showMessage(const char* head, const char* body) {
@@ -276,16 +278,22 @@ void Editor::saveAs(string fname) {
 
 bool Editor::import_frame(string fname, bool batch) {
     if (file.jsp.frames.size() == 0) return false;
-    std::shared_ptr<SDL_Texture> bmp(IMG_LoadTexture(renderer, fname.c_str()), SDL_DestroyTexture);
-    if (!bmp) {
+
+    std::shared_ptr<SDL_Surface> surface(IMG_Load(fname.c_str()), SDL_FreeSurface);
+    if (!surface) {
         if (!batch) dialog::error("Failed to import");
         return false;
     }
-    if (palette::reduceImage(bmp.get()) && !batch) {
+    if (palette::reduceImage(surface.get()) && !batch) {
         dialog::showMessage("The image's colors were adjusted", nullptr);
     }
+
+    std::shared_ptr<SDL_Texture> texture(
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, surface->w, surface->h),
+        SDL_DestroyTexture);
+    SDL_UpdateTexture(texture.get(), nullptr, surface->pixels, surface->pitch);
     file.unsaved = true;
-    file.jsp.frames[file.curSprite].bmp = bmp;
+    file.jsp.frames[file.curSprite].bmp = texture;
     return true;
 }
 
@@ -296,8 +304,25 @@ bool Editor::export_frame(string fname, bool batch) {
         fname += ".png";
     }
 
-    // TODO
-    if (!false/*file.jsp.frames[file.curSprite].bmp.save(fname.c_str())*/) {
+    int width, height, pitch;
+    Uint32 format;
+    void *pixels;
+
+    SDL_Texture *texture = file.jsp.frames[file.curSprite].bmp.get();
+    SDL_QueryTexture(texture, &format, nullptr, &width, &height);
+    std::shared_ptr<SDL_Surface> surface(SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, format), SDL_FreeSurface);
+
+    SDL_LockTexture(texture, nullptr, &pixels, &pitch);
+    SDL_LockSurface(surface.get());
+
+    char *dest = (char*) surface->pixels, *source = (char*) pixels;
+    for (int y = 0; y < height; ++y)
+        memcpy(&dest[y * surface->pitch], &source[y * pitch], width * surface->format->BytesPerPixel);
+
+    SDL_UnlockSurface(surface.get());
+    SDL_UnlockTexture(texture);
+
+    if (IMG_SavePNG(surface.get(), fname.c_str())) {
         if (!batch) dialog::error("Failed to export");
         return false;
     }
