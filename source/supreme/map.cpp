@@ -266,10 +266,11 @@ byte Map::Save(FILE *f)
 	fwrite(&count,1,sizeof(byte),f);	// num badguys
 	for (byte i = 0; i < count; ++i)
 	{
-		if (badguy[i].type & ~0xff) {
-			return 0;
-		}
 		byte temp = badguy[i].type;
+		if (badguy[i].type > 0xff) {
+			printf("WARNING: in legacy save, can't save monster '%s' with ID %lu > 255\n", MonsterName(badguy[i].type), badguy[i].type);
+			temp = 0;
+		}
 		fwrite(&badguy[i].x, 1, sizeof(byte), f);
 		fwrite(&badguy[i].y, 1, sizeof(byte), f);
 		fwrite(&temp, 1, sizeof(byte), f);
