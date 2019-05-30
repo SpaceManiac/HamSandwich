@@ -113,6 +113,7 @@ struct Editor {
     void move(int dir);
     void shift(int dir);
 
+    void working(const string& text);
     void render();
     void handleEvent(const SDL_Event &event);
 };
@@ -255,12 +256,7 @@ void Editor::save() {
     }
 
     cout << "Editor::save " << file.fname << endl;
-
-    // show please wait dialog
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 196);
-    SDL_RenderFillRect(renderer, NULL);
-    DrawText(renderer, gFont, DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2 - 50, ALIGN_CENTER, { 0, 0, 0, 255 }, "Saving, please wait...");
-    SDL_RenderPresent(renderer);
+    working("Saving, please wait...");
 
     // perform save
     if (file.jsp.save(file.fname)) {
@@ -285,6 +281,8 @@ void Editor::saveAs(string fname) {
 bool Editor::import_frame(string fname, bool batch) {
     if (file.jsp.frames.size() == 0) return false;
 
+    working("Importing...");
+
     std::shared_ptr<SDL_Surface> surface(IMG_Load(fname.c_str()), SDL_FreeSurface);
     if (!surface) {
         if (!batch) dialog::error("Failed to import", IMG_GetError());
@@ -295,10 +293,12 @@ bool Editor::import_frame(string fname, bool batch) {
         surface = {SDL_ConvertSurfaceFormat(surface.get(), SDL_PIXELFORMAT_ABGR8888, 0), SDL_FreeSurface};
     }
 
+    working("Adjusting palette...");
     if (palette::reduceImage(surface.get()) && !batch) {
         dialog::showMessage("The image's colors were adjusted");
     }
 
+    working("Uploading texture...");
     std::shared_ptr<SDL_Texture> texture(
         SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, surface->w, surface->h),
         SDL_DestroyTexture);
@@ -431,6 +431,14 @@ void Editor::convertAlpha() {
 
 /****************************************************************/
 /* Game loop overrides */
+
+void Editor::working(const std::string& text) {
+    render();
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 196);
+    SDL_RenderFillRect(renderer, NULL);
+    DrawText(renderer, gFont, DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2 - 50, ALIGN_CENTER, { 0, 0, 0, 255 }, text.c_str());
+    SDL_RenderPresent(renderer);
+}
 
 void Editor::render() {
     SDL_Color lightbg = {200, 200, 200, 255};
@@ -581,8 +589,6 @@ void Editor::render() {
             h = frame.surface->h;
         }
     } */
-
-    SDL_RenderPresent(renderer);
 }
 
 void Editor::handleEvent(const SDL_Event &event) {
@@ -693,6 +699,7 @@ void main() {
     }
     while (ed.running) {
         ed.render();
+        SDL_RenderPresent(renderer);
         SDL_Event e;
         while (SDL_PollEvent(&e))
             ed.handleEvent(e);
