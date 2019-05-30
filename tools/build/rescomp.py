@@ -36,5 +36,6 @@ buf = data.getbuffer()
 data_array = ','.join(str(x) for x in buf)
 
 with open(out_fname, "w") as f:
+	print(f"#include <stddef.h>", file=f)
 	print(f"size_t WINDOW_ICON_SZ = {len(buf)};", file=f)
 	print(f"unsigned char WINDOW_ICON[] = {{{data_array}}};", file=f)
