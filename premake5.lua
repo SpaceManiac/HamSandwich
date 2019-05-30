@@ -68,9 +68,22 @@ function icon_file(icon)
 	-- Workaround for bug in premake5's gmake2 generator, which does
 	-- not count .res (object) files as resources, only .rc (source)
 	filter { "system:Windows", "toolset:not clang" }
-		files { "source/" .. icon .. "/**.rc" }
+		files { "source/{%prj.name}/" .. icon .. ".rc" }
+
 	filter { "system:Windows", "action:gmake2", "toolset:not clang" }
-		linkoptions { "%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/obj/" .. icon .. ".res" }
+		linkoptions { "%{cfg.objdir}/" .. icon .. ".res" }
+
+	-- Support for embedding the icon in the file on non-Windows systems
+	filter { "system:not Windows", "toolset:not clang" }
+		files { "source/%{prj.name}/" .. icon .. ".rc" }
+		files { "%{cfg.objdir}/" .. icon .. ".rc.o" }
+
+	filter { "system:not Windows", "toolset:not clang", "files:**.rc" }
+		buildmessage "%{file.name}"
+		buildcommands { 'python3 ../tools/build/rescomp.py "%{file.path}" "%{cfg.objdir}/%{file.basename}.rc.cpp"' }
+		buildoutputs { "%{cfg.objdir}/" .. icon .. ".rc.cpp" }
+		buildinputs { "tools/build/rescomp.py" }
+
 	filter {}
 end
 

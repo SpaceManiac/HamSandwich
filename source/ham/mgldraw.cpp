@@ -71,6 +71,21 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 		}
 	}
 
+#ifndef _WIN32
+	// Icon embedding for non-Windows platforms.
+	// tools/build/rescomp.py produces a .cpp file containing these symbols.
+	extern size_t __attribute__((weak)) WINDOW_ICON_SZ;
+	extern unsigned char __attribute__((weak)) WINDOW_ICON[];
+	if (&WINDOW_ICON && &WINDOW_ICON_SZ) {
+		SDL_Surface *surface = IMG_Load_RW(
+			SDL_RWFromConstMem(WINDOW_ICON, WINDOW_ICON_SZ),
+			1
+		);
+		SDL_SetWindowIcon(window, surface);
+		SDL_FreeSurface(surface);
+	}
+#endif
+
 #ifdef _DEBUG
 	SDL_RendererInfo info;
 	SDL_GetRendererInfo(renderer, &info);
