@@ -82,7 +82,8 @@ deps_ubuntu() {
 		p7zip innoextract \
 		g++-multilib \
 		libsdl2-dev:i386 libsdl2-mixer-dev:i386 libsdl2-image-dev:i386 \
-		libmirclient-dev:i386 libmircommon-dev:i386 libxkbcommon-dev:i386
+		libmirclient-dev:i386 libmircommon-dev:i386 libxkbcommon-dev:i386 \
+		python3-pip
 
 	premake5_linux
 }
@@ -91,7 +92,8 @@ deps_arch() {
 	packages 'sudo pacman -S --needed --quiet' \
 		p7zip wget innoextract \
 		make gcc lib32-gcc-libs \
-		lib32-sdl2 lib32-sdl2_image lib32-sdl2_mixer
+		lib32-sdl2 lib32-sdl2_image lib32-sdl2_mixer \
+		python-pip
 
 	premake5_linux
 }
