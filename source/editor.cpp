@@ -185,6 +185,7 @@ Editor::Editor()
     gui.addIconButton(146, 125, FAChar::undo, "Reset origin",
         { KMOD_LCTRL, SDL_SCANCODE_R },
         [this]() {
+            if (file.jsp.frames.empty()) return;
             JspFrame& frame = file.jsp.frames[file.curSprite];
             frame.ofsX = frame.ofsY = 0;
         });
@@ -373,7 +374,7 @@ void Editor::export_batch(string fname) {
 /* View manipulation */
 
 void Editor::move(int dir) {
-    if (file.jsp.frames.size() == 0) return;
+    if (file.jsp.frames.empty()) return;
 
     if (dir == -1) {
         if (file.curSprite > 0) {
@@ -387,7 +388,7 @@ void Editor::move(int dir) {
 }
 
 void Editor::shift(int dir) {
-    if (file.jsp.frames.size() == 0) return;
+    if (file.jsp.frames.empty()) return;
 
     if (dir == -1) {
         if (file.curSprite > 0) {
@@ -405,6 +406,8 @@ void Editor::shift(int dir) {
 }
 
 void Editor::convertAlpha() {
+    if (file.jsp.frames.empty()) return;
+
     JspFrame &frame = file.jsp.frames[file.curSprite];
     SDL_Surface *surface = frame.surface.get();
 
