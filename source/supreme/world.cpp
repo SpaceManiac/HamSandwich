@@ -18,7 +18,7 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	SetTiles(mgl->GetScreen());
 
 	// reset all the terrain
-	memset(world->terrain,0,sizeof(terrain_t)*200);
+	memset(world->terrain,0,sizeof(terrain_t)*NUMTILES);
 
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
