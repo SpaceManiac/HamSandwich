@@ -21,6 +21,7 @@ namespace dialog {
 typedef std::function<void(std::string)> callback;
 
 void open(const char* title, const char* patterns, callback func) {
+    (void) title;
     char *chosen = nullptr;
     nfdresult_t result = NFD_OpenDialog(patterns, nullptr, &chosen);
     if (result == NFD_OKAY) {
@@ -30,6 +31,7 @@ void open(const char* title, const char* patterns, callback func) {
 }
 
 void save(const char* title, const char* patterns, callback func) {
+    (void) title;
     char *chosen = nullptr;
     nfdresult_t result = NFD_SaveDialog(patterns, nullptr, &chosen);
     if (result == NFD_OKAY) {
@@ -648,6 +650,8 @@ void Editor::handleEvent(const SDL_Event &event) {
                 file.jsp.frames[file.curSprite].ofsY -= move;
                 file.unsaved = true;
             }
+            break;
+        default:
             break;
         }
         break;
