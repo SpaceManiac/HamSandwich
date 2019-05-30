@@ -13,6 +13,9 @@ SDL_Window *window;
 SDL_Renderer *renderer;
 TTF_Font *gFont, *gIconFont;
 
+int DISPLAY_WIDTH = 1024;
+int DISPLAY_HEIGHT = 768;
+
 int main(int argc, char** argv) {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
     IMG_Init(IMG_INIT_PNG);
@@ -27,7 +30,8 @@ int main(int argc, char** argv) {
     gIconFont = TTF_OpenFontRW(EmbeddedRW(fontawesome), true, 14);
     if (!gIconFont) printf("fontawesome.ttf: %s\n", TTF_GetError());
 
-    SDL_CreateWindowAndRenderer(DISPLAY_WIDTH, DISPLAY_HEIGHT, 0, &window, &renderer);
+    SDL_CreateWindowAndRenderer(DISPLAY_WIDTH, DISPLAY_HEIGHT, SDL_WINDOW_RESIZABLE, &window, &renderer);
+    SDL_GetWindowSize(window, &DISPLAY_WIDTH, &DISPLAY_HEIGHT);
     SDL_SetWindowTitle(window, "JspEdit 3");
 
     SDL_Surface *surface = IMG_Load_RW(EmbeddedRW(allegro_icon), true);

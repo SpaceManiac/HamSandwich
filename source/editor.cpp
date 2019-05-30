@@ -601,6 +601,13 @@ void Editor::handleEvent(const SDL_Event &event) {
         }
         break;
 
+    case SDL_WINDOWEVENT:
+        if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+            DISPLAY_WIDTH = event.window.data1;
+            DISPLAY_HEIGHT = event.window.data2;
+        }
+        break;
+
     case SDL_MOUSEBUTTONDOWN:
         if ((dragArea.left <= event.button.x && event.button.x <= dragArea.right && dragArea.top <= event.button.y && event.button.y <= dragArea.bottom) && event.button.button == 1) {
             dragging = true;

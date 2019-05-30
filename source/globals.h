@@ -5,10 +5,8 @@
 #include <SDL2/SDL_ttf.h>
 #include <string>
 
-enum {
-    DISPLAY_WIDTH = 1024,
-    DISPLAY_HEIGHT = 768
-};
+extern int DISPLAY_WIDTH;
+extern int DISPLAY_HEIGHT;
 
 extern SDL_Window *window;
 extern SDL_Renderer *renderer;
