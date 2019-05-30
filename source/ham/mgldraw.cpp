@@ -146,8 +146,13 @@ void MGLDraw::GetMouse(int *x,int *y)
 
 void MGLDraw::SetMouse(int x,int y)
 {
-	if (!idle)
-		SDL_WarpMouseInWindow(window, x, y);
+	if (idle)
+		return;
+
+	int scale = std::max(1, std::min(winWidth / xRes, winHeight / yRes));
+	x = (winWidth - xRes * scale) / 2 + x * scale;
+	y = (winHeight - yRes * scale) / 2 + y * scale;
+	SDL_WarpMouseInWindow(window, x, y);
 }
 
 bool MGLDraw::Process(void)
@@ -225,8 +230,8 @@ void MGLDraw::FinishFlip(void)
 		} else if (e.type == SDL_KEYUP) {
 			ControlKeyUp(e.key.keysym.scancode);
 		} else if (e.type == SDL_MOUSEMOTION) {
-			mouse_x = e.motion.x;
-			mouse_y = e.motion.y;
+			mouse_x = (e.motion.x - dest.x) / scale;
+			mouse_y = (e.motion.y - dest.y) / scale;
 		} else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
 			int flag = 0;
 			if (e.button.button == 1)
