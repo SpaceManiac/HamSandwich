@@ -6,6 +6,9 @@
 #include "shop.h"
 #include "control.h"
 
+// Standard header includes
+#include<algorithm>
+
 static FILE *scanF;
 
 static char lvlFlagName[][16]={

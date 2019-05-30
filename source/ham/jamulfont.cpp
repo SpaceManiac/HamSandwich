@@ -1,6 +1,9 @@
 #include "jamulfont.h"
 #include "mgldraw.h"
 
+// Standard header includes
+#include <stdio.h>
+
 MGLDraw *fontmgl;
 // this is a sort of palette translation table for the font
 byte fontPal[256];
