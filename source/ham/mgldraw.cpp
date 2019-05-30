@@ -30,6 +30,8 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	, xRes(xRes)
 	, yRes(yRes)
 	, pitch(xRes)
+	, winWidth(xRes)
+	, winHeight(yRes)
 	, scrn(nullptr)
 	, tapTrack(0)
 	, lastKeyPressed(0)
@@ -47,14 +49,15 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	if(JamulSoundInit(512))
 		SoundSystemExists();
 
-	Uint32 flags = windowed ? 0 : SDL_WINDOW_FULLSCREEN;
+	Uint32 flags = windowed ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP;
 	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, xRes, yRes, flags);
-	printf("window format: %s\n", SDL_GetPixelFormatName(SDL_GetWindowPixelFormat(window)));
 	if (!window) {
 		printf("SDL_CreateWindow: %s\n", SDL_GetError());
 		FatalError("Failed to create window");
 		return;
 	}
+	printf("window format: %s\n", SDL_GetPixelFormatName(SDL_GetWindowPixelFormat(window)));
+	SDL_GetWindowSize(window, &winWidth, &winHeight);
 
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 	if (!renderer) {
@@ -182,7 +185,16 @@ inline void MGLDraw::StartFlip(void)
 void MGLDraw::FinishFlip(void)
 {
 	SDL_UpdateTexture(texture, NULL, buffer, pitch * sizeof(RGB));
-	SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+	SDL_RenderClear(renderer);
+	int scale = std::max(1, std::min(winWidth / xRes, winHeight / yRes));
+	SDL_Rect dest = {
+		(winWidth - xRes * scale) / 2,
+		(winHeight - yRes * scale) / 2,
+		xRes * scale,
+		yRes * scale,
+	};
+	SDL_RenderCopy(renderer, texture, NULL, &dest);
 	SDL_RenderPresent(renderer);
 	UpdateMusic();
 
@@ -194,6 +206,16 @@ void MGLDraw::FinishFlip(void)
 			if (!(e.key.keysym.sym & ~0xff))
 			{
 				lastKeyPressed = e.key.keysym.sym;
+			}
+
+			if (e.key.keysym.scancode == SDL_SCANCODE_F11)
+			{
+				windowed = !windowed;
+				if (windowed) {
+					SDL_SetWindowFullscreen(window, 0);
+				} else {
+					SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+				}
 			}
 		} else if (e.type == SDL_TEXTINPUT) {
 			if (strlen(e.text.text) == 1)
@@ -224,6 +246,9 @@ void MGLDraw::FinishFlip(void)
 			} else if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
 				SetGameIdle(false);
 				idle = false;
+			} else if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
+				winWidth = e.window.data1;
+				winHeight = e.window.data2;
 			}
 		}
 	}

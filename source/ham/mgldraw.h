@@ -106,7 +106,7 @@ protected:
 
 	bool windowed, readyToQuit, idle;
 
-	int xRes, yRes, pitch;
+	int xRes, yRes, pitch, winWidth, winHeight;
 	byte *scrn;
 	PALETTE pal, pal2;
 	RGB *thePal;
