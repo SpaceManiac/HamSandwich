@@ -1,37 +1,26 @@
 #!/usr/bin/env python3
-# rescomp.py - provide icon embedding on non-Windows platforms
+# rescomp.py - provide resource embedding on non-Windows platforms
 
-# Dependencies
 import sys
 import os
 from io import BytesIO
 
-try:
-	from PIL import Image
-except ImportError:
-	import subprocess
-	subprocess.call([sys.executable, "-m", "pip", "install", "Pillow"])
-	from PIL import Image
+exe, in_fname, cpp_fname, h_fname = sys.argv
 
-# Actual script
-exe, in_fname, out_fname = sys.argv
+src = open(in_fname, "r")
+cpp = open(cpp_fname, "w")
+h = open(h_fname, "w")
 
-icon_fname = None
-with open(in_fname, "r") as f:
-	for line in f:
-		name, kind, fname = line.split()
-		if kind.upper() == "ICON":
-			dir, _ = os.path.split(in_fname)
-			icon_fname = os.path.join(dir, fname.strip('"'))
-			break
+print(f"#include <stddef.h>", file=h)
+print(f"#define EmbeddedRW(NAME) SDL_RWFromMem(RES_##NAME, RES_##NAME##_SZ)", file=h)
+print(f"#include <stddef.h>", file=cpp)
 
-im = Image.open(icon_fname)
-data = BytesIO()
-im.save(data, 'PNG')
-buf = data.getbuffer()
-data_array = ','.join(str(x) for x in buf)
-
-with open(out_fname, "w") as f:
-	print(f"#include <stddef.h>", file=f)
-	print(f"size_t WINDOW_ICON_SZ = {len(buf)};", file=f)
-	print(f"unsigned char WINDOW_ICON[] = {{{data_array}}};", file=f)
+for line in src:
+	name, kind, fname = line.split()
+	dir, _ = os.path.split(in_fname)
+	with open(os.path.join(dir, fname.strip('"')), 'rb') as f:
+		data = f.read()
+	print(f"extern size_t RES_{name}_SZ;", file=h)
+	print(f"extern unsigned char RES_{name}[];", file=h)
+	print(f"size_t RES_{name}_SZ = {len(data)};", file=cpp)
+	print(f"unsigned char RES_{name}[] = {{{','.join(str(x) for x in data)}}};", file=cpp)

@@ -5,6 +5,7 @@
 #include <unistd.h>  // for chdir
 #include "globals.h"
 #include "editor.h"
+#include "resources.rc.h"
 
 using namespace std;
 
@@ -21,13 +22,17 @@ int main(int argc, char** argv) {
     string dir = exe.substr(0, exe.find_last_of("\\/"));
     chdir(dir.c_str());*/
 
-    gFont = TTF_OpenFont("vera.ttf", 14);
+    gFont = TTF_OpenFontRW(EmbeddedRW(vera), true, 14);
     if (!gFont) printf("vera.ttf: %s\n", TTF_GetError());
-    gIconFont = TTF_OpenFont("fontawesome.ttf", 14);
+    gIconFont = TTF_OpenFontRW(EmbeddedRW(fontawesome), true, 14);
     if (!gIconFont) printf("fontawesome.ttf: %s\n", TTF_GetError());
 
     SDL_CreateWindowAndRenderer(DISPLAY_WIDTH, DISPLAY_HEIGHT, 0, &window, &renderer);
     SDL_SetWindowTitle(window, "JspEdit 3");
+
+    SDL_Surface *surface = IMG_Load_RW(EmbeddedRW(allegro_icon), true);
+    SDL_SetWindowIcon(window, surface);
+    SDL_FreeSurface(surface);
 
     if (argc > 1) {
         editor::loadOnStartup(argv[1]);

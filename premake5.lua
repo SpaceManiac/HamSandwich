@@ -13,6 +13,7 @@ project "jspedit"
 
     targetdir("build/%{cfg.toolset}-%{cfg.buildcfg}-%{cfg.architecture}/")
     objdir("build/%{cfg.toolset}-%{cfg.buildcfg}-%{cfg.architecture}/obj/")
+    includedirs { "%{cfg.objdir}" }
 
     filter "configurations:debug"
         kind "ConsoleApp"
@@ -25,6 +26,8 @@ project "jspedit"
 
     filter "toolset:gcc"
         buildoptions { "-Wall", "-Wextra", "-Werror" }
+
+    filter { "toolset:gcc", "system:Windows" }
         linkoptions { "-static-libgcc", "-static-libstdc++" }
 
     -- SDL2 linking
@@ -50,8 +53,8 @@ project "jspedit"
 
 	filter { "system:not Windows", "toolset:not clang", "files:**.rc" }
 		buildmessage "%{file.name}"
-		buildcommands { 'python3 ../rescomp.py "%{file.path}" "%{cfg.objdir}/%{file.basename}.rc.cpp"' }
-		buildoutputs { "%{cfg.objdir}/resources.rc.cpp" }
-		buildinputs { "rescomp.py" }
+		buildcommands { 'python3 ../rescomp.py "%{file.path}" "%{cfg.objdir}/%{file.basename}.rc.cpp" "%{cfg.objdir}/%{file.basename}.rc.h"' }
+		buildoutputs { "%{cfg.objdir}/%{file.basename}.rc.cpp", "%{cfg.objdir}/%{file.basename}.rc.h" }
+        buildinputs { "rescomp.py" }
 
 	filter {}
