@@ -619,6 +619,14 @@ void Editor::handleEvent(const SDL_Event &event) {
         file.jsp.frames[file.curSprite].ofsY -= event.motion.yrel;
         break;
 
+    case SDL_MOUSEWHEEL:
+        if (event.wheel.y > 0) {
+            move(-1);
+        } else if (event.wheel.y < 0) {
+            move(1);
+        }
+        break;
+
     case SDL_KEYDOWN:
         if (file.jsp.frames.size() == 0) break;
 
