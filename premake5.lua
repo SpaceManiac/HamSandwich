@@ -68,7 +68,7 @@ function icon_file(icon)
 	-- Workaround for bug in premake5's gmake2 generator, which does
 	-- not count .res (object) files as resources, only .rc (source)
 	filter { "system:Windows", "toolset:not clang" }
-		files { "source/{%prj.name}/" .. icon .. ".rc" }
+		files { "source/%{prj.name}/" .. icon .. ".rc" }
 
 	filter { "system:Windows", "action:gmake2", "toolset:not clang" }
 		linkoptions { "%{cfg.objdir}/" .. icon .. ".res" }
