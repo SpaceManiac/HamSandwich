@@ -26,7 +26,7 @@ function base_project(name)
 			defines { "NDEBUG" }
 			optimize "On"
 
-		filter "toolset:gcc"
+		filter { "toolset:gcc", "system:Windows" }
 			linkoptions { "-static-libgcc", "-static-libstdc++" }
 
 		filter "action:vs*"
