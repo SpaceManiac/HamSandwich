@@ -138,52 +138,52 @@ Editor::Editor()
     int w = 100, g = 110, h = 22;
     int x = 6, y = 4;
     // top bar
-    gui.addButton(rect(x, y, w, h), "Open", "Open JSP",
+    gui.addButton(rect(x, y, w, h), "Open", "Open JSP (Ctrl+O)",
         { KMOD_LCTRL, SDL_SCANCODE_O },
         [this]() {
             if (file.unsaved && !dialog::showOkCancel("You have unsaved changes, do you want to open anyways?", false)) return;
             dialog::open("Open JSP", "jsp", [this](std::string str) { load(str); });
         });
-    gui.addButton(rect(x += g, y, w, h), "Save", "Save JSP",
+    gui.addButton(rect(x += g, y, w, h), "Save", "Save JSP (Ctrl+S)",
         { KMOD_LCTRL, SDL_SCANCODE_S },
         [this]() { save(); });
-    gui.addButton(rect(x += g, y, w, h), "Save As", "Save JSP As",
+    gui.addButton(rect(x += g, y, w, h), "Save As", "Save JSP As (Ctrl+Shift+S)",
         { KMOD_LCTRL | KMOD_LSHIFT, SDL_SCANCODE_S },
         std::bind(dialog::save, "Save JSP", "jsp", [this](std::string str) { saveAs(str); }));
-    gui.addButton(rect(x += g, y, w, h), "Import", "Import from image",
+    gui.addButton(rect(x += g, y, w, h), "Import", "Import from image (Ctrl+I)",
         { KMOD_LCTRL, SDL_SCANCODE_I },
         std::bind(dialog::open, "Import Image", "png;bmp;tga;pcx", [this](std::string str) { import_frame(str); }));
-    gui.addButton(rect(x += g, y, w, h), "Export", "Export to image",
+    gui.addButton(rect(x += g, y, w, h), "Export", "Export to image (Ctrl+E)",
         { KMOD_LCTRL, SDL_SCANCODE_E },
         std::bind(dialog::save, "Export Image", "png;bmp;tga;pcx", [this](std::string str) { export_frame(str); }));
-    gui.addButton(rect(x += g, y, w, h), "Import All", "Import from folder",
+    gui.addButton(rect(x += g, y, w, h), "Import All", "Import from folder (Ctrl+Shift+I)",
         { KMOD_LCTRL | KMOD_LSHIFT, SDL_SCANCODE_I },
         std::bind(dialog::open, "Select first frame (0.png)", "png", [this](std::string str) { import_batch(str); }));
-    gui.addButton(rect(x += g, y, w, h), "Export All", "Export to folder",
+    gui.addButton(rect(x += g, y, w, h), "Export All", "Export to folder (Ctrl+Shift+E)",
         { KMOD_LCTRL | KMOD_LSHIFT, SDL_SCANCODE_E },
         std::bind(dialog::save, "Export all frames", "png", [this](std::string str) { export_batch(str); }));
 
     //x = DISPLAY_WIDTH - g;
-    gui.addButton(rect(x += g, y, w, h), "Crosshairs", "Cycle crosshairs mode",
+    gui.addButton(rect(x += g, y, w, h), "Crosshairs", "Cycle crosshairs mode (Ctrl+H)",
         { KMOD_LCTRL, SDL_SCANCODE_H },
         [this]() { crosshairs = (crosshairs + 1) % MAX_CROSSHAIRS; });
 
     x = 10; g = 34; y = 80;
-    gui.addIconButton(x, y, FAChar::fast_backward, "First frame",
+    gui.addIconButton(x, y, FAChar::fast_backward, "First frame (Home)",
         { 0, SDL_SCANCODE_HOME },
         [this]() { file.curSprite = 0; });
-    gui.addIconButton(x += g, y, FAChar::arrow_left, "Previous frame",
+    gui.addIconButton(x += g, y, FAChar::arrow_left, "Previous frame (Left)",
         { 0, SDL_SCANCODE_LEFT },
         [this]() { move(-1); });
     x += g; //gui.addIconButton(x += g, y, FAChar::minus);
-    gui.addIconButton(x += g, y, FAChar::arrow_right, "Next frame",
+    gui.addIconButton(x += g, y, FAChar::arrow_right, "Next frame (Right)",
         { 0, SDL_SCANCODE_RIGHT },
         [this]() { move(1); });
-    gui.addIconButton(x += g, y, FAChar::fast_forward, "Last frame",
+    gui.addIconButton(x += g, y, FAChar::fast_forward, "Last frame (End)",
         { 0, SDL_SCANCODE_END },
         [this]() { file.curSprite = file.jsp.frames.size() - 1; });
 
-    gui.addIconButton(146, 125, FAChar::undo, "Reset origin",
+    gui.addIconButton(146, 125, FAChar::undo, "Reset origin (Ctrl+R)",
         { KMOD_LCTRL, SDL_SCANCODE_R },
         [this]() {
             if (file.jsp.frames.empty()) return;
@@ -192,19 +192,19 @@ Editor::Editor()
         });
 
     x = 10; g = 34; y = 150;
-    gui.addIconButton(x, y, FAChar::backward, "Shift frame left",
+    gui.addIconButton(x, y, FAChar::backward, "Shift frame left (Shift+Left)",
         { KMOD_LSHIFT, SDL_SCANCODE_LEFT },
         [this]() { shift(-1); });
-    gui.addIconButton(x += g, y, FAChar::plus, "Add frame",
+    gui.addIconButton(x += g, y, FAChar::plus, "Add frame (Ctrl+Insert)",
         { KMOD_LCTRL, SDL_SCANCODE_INSERT },
         [this]() {
             JspFrame newFrame(32, 24);
             file.jsp.frames.insert(file.jsp.frames.begin() + file.curSprite, newFrame);
         });
-    gui.addIconButton(x += g, y, FAChar::font, "Convert pink to alpha",
+    gui.addIconButton(x += g, y, FAChar::font, "Convert pink to alpha (Ctrl+A)",
         { KMOD_LCTRL, SDL_SCANCODE_A },
         [this]() { convertAlpha(); });
-    gui.addIconButton(x += g, y, FAChar::minus, "Delete frame",
+    gui.addIconButton(x += g, y, FAChar::minus, "Delete frame (Ctrl+Delete)",
         { KMOD_LCTRL, SDL_SCANCODE_DELETE },
         [this]() {
             if (file.jsp.frames.empty()) return;
@@ -217,7 +217,7 @@ Editor::Editor()
                 file.curSprite = file.jsp.frames.size() - 1;
             }
         });
-    gui.addIconButton(x += g, y, FAChar::forward, "Shift frame right",
+    gui.addIconButton(x += g, y, FAChar::forward, "Shift frame right (Shift+Right)",
         { KMOD_LSHIFT, SDL_SCANCODE_RIGHT },
         [this]() { shift(1); });
 }
