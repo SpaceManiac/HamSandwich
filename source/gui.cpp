@@ -47,10 +47,6 @@ bool Gui::element(GuiRect r, TTF_Font *font, const std::string &text, const std:
     bool focused = hovered && justClicked;
 
     if (focused) {
-        printf("focused on %s\n", text.c_str());
-    }
-
-    if (focused) {
         SDL_SetRenderDrawColor(renderer, 230, 230, 230, 255);
         SDL_Rect rect = {r.left, r.top, r.right - r.left, r.bottom - r.top};
         SDL_RenderFillRect(renderer, &rect);
@@ -72,7 +68,7 @@ bool Gui::element(GuiRect r, TTF_Font *font, const std::string &text, const std:
         tooltip = desc;
     }
 
-    return (hovered && justClicked) || (justTyped == shortcut);
+    return (hovered && justClicked) || (shortcut != (KbdShortcut){ 0, 0 } && justTyped == shortcut);
 }
 
 void Gui::render() {

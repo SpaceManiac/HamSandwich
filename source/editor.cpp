@@ -576,6 +576,9 @@ void Editor::render() {
             load(str);
         }
     }
+    if (gui.button(rect(x += g, y, w, h), "New JSP", "New JSP", {})) {
+        files.push_back(FileInfo());
+    }
     if (FileInfo* file = getCurFile()) {
         if (gui.button(rect(x += g, y, w, h), "Close", "Close file (Ctrl+W)", { KMOD_LCTRL, SDL_SCANCODE_W })) {
             if (!file->unsaved || dialog::showOkCancel("Really close without saving?", false)) {

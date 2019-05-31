@@ -16,6 +16,7 @@ struct KbdShortcut {
     bool operator==(const KbdShortcut& other) {
         return mods == other.mods && keycode == other.keycode;
     };
+    bool operator!=(const KbdShortcut& other) { return !(*this == other); }
 };
 
 class Gui {
