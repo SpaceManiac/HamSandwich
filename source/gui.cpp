@@ -18,7 +18,9 @@ bool Gui::handleEvent(const SDL_Event &evt) {
     case SDL_MOUSEBUTTONDOWN:
         mx = evt.button.x;
         my = evt.button.y;
-        justClicked = true;
+        if (evt.button.button == 1) {
+            justClicked = true;
+        }
         return false;
 
     case SDL_MOUSEBUTTONUP:
@@ -42,7 +44,11 @@ bool Gui::element(GuiRect r, TTF_Font *font, const std::string &text, const std:
     SDL_Color black { 0, 0, 0, 255 };
 
     bool hovered = r.left <= mx && mx <= r.right && r.top <= my && my <= r.bottom;
-    bool focused = false;
+    bool focused = hovered && justClicked;
+
+    if (focused) {
+        printf("focused on %s\n", text.c_str());
+    }
 
     if (focused) {
         SDL_SetRenderDrawColor(renderer, 230, 230, 230, 255);

@@ -78,6 +78,8 @@ struct FileInfo {
     JspFile jsp;
     size_t curSprite;
     bool unsaved;
+
+    JspFrame* getCurFrame();
 };
 
 const int MAX_CROSSHAIRS = 3;
@@ -114,6 +116,8 @@ struct Editor {
     void working(const string& text);
     void render();
     void handleEvent(const SDL_Event &event);
+
+    FileInfo* getCurFile();
 };
 
 static GuiRect rect(int x, int y, int w, int h) {
@@ -133,6 +137,22 @@ Editor::Editor()
         JspFrame newFrame = { nullptr, 0, 0 };
         file.jsp.frames.push_back(newFrame);
     }*/
+}
+
+JspFrame* FileInfo::getCurFrame() {
+    if (jsp.frames.empty()) {
+        return nullptr;
+    } else {
+        return &jsp.frames[curSprite];
+    }
+}
+
+FileInfo* Editor::getCurFile() {
+    if (files.empty()) {
+        return nullptr;
+    } else {
+        return &files[curFile];
+    }
 }
 
 /****************************************************************/
@@ -397,11 +417,10 @@ void Editor::render() {
     const int CENTER_X = 180 + (DISPLAY_WIDTH - 180)/2, CENTER_Y = 30 + (DISPLAY_HEIGHT - 30)/2;
 
     if (browsing) {
-        if (!files.empty()) {
-            FileInfo& file = files[curFile];
+        if (FileInfo* file = getCurFile()) {
             int x = 200, y = 50, h = 0;
-            for (size_t i = 0; i < file.jsp.frames.size(); ++i) {
-                JspFrame frame = file.jsp.frames[i];
+            for (size_t i = 0; i < file->jsp.frames.size(); ++i) {
+                const JspFrame& frame = file->jsp.frames[i];
                 if (x + frame.surface->w > DISPLAY_WIDTH) {
                     y += h;
                     x = 200;
@@ -413,7 +432,7 @@ void Editor::render() {
                 region = {x, y, frame.surface->w, frame.surface->h};
                 SDL_RenderCopy(renderer, frame.texture.get(), nullptr, &region);
 
-                if (i == file.curSprite) {
+                if (i == file->curSprite) {
                     // red box
                     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
                     region.x -= 1; region.y -= 1; region.w += 2; region.h += 2;
@@ -438,17 +457,15 @@ void Editor::render() {
         }
 
         // draw sprite
-        if (!files.empty()) {
-            FileInfo& file = files[curFile];
-            if (file.jsp.frames.size() > 0) {
-                JspFrame current = file.jsp.frames[file.curSprite];
+        if (FileInfo* file = getCurFile()) {
+            if (JspFrame* current = file->getCurFrame()) {
                 region = {
-                    CENTER_X - current.ofsX,
-                    CENTER_Y - current.ofsY,
-                    current.surface->w,
-                    current.surface->h,
+                    CENTER_X - current->ofsX,
+                    CENTER_Y - current->ofsY,
+                    current->surface->w,
+                    current->surface->h,
                 };
-                SDL_RenderCopy(renderer, current.texture.get(), nullptr, &region);
+                SDL_RenderCopy(renderer, current->texture.get(), nullptr, &region);
             }
         }
 
@@ -473,30 +490,26 @@ void Editor::render() {
     SDL_RenderDrawLine(renderer, 0, DISPLAY_HEIGHT - 24, 180, DISPLAY_HEIGHT - 24);
 
     // file stats
-    if (!files.empty()) {
-        FileInfo& file = files[curFile];
-
-        std::string name = file.shortname;
+    if (FileInfo* file = getCurFile()) {
+        std::string name = file->shortname;
         if (name.empty()) {
             name = "untitled";
         }
-        if (file.unsaved) {
+        if (file->unsaved) {
             name += " *";
         }
         DrawText(renderer, gFont, 5, 35, ALIGN_LEFT, black, name.c_str());
 
-        const vector<JspFrame> &frames = file.jsp.frames;
+        const vector<JspFrame> &frames = file->jsp.frames;
         std::ostringstream s;
         s << "Sprite count: " << frames.size();
         DrawText(renderer, gFont, 5, 55, ALIGN_LEFT, black, s.str().c_str());
-        if (!frames.empty()) {
-            JspFrame current = frames[file.curSprite];
-
-            s.str(""); s << file.curSprite;
+        if (JspFrame* current = file->getCurFrame()) {
+            s.str(""); s << file->curSprite;
             DrawText(renderer, gFont, 88, 80, ALIGN_CENTER, black, s.str().c_str());
-            s.str(""); s << "Size: (" << current.surface->w << ", " << current.surface->h << ")";
+            s.str(""); s << "Size: (" << current->surface->w << ", " << current->surface->h << ")";
             DrawText(renderer, gFont, 5, 105, ALIGN_LEFT, black, s.str().c_str());
-            s.str(""); s << "Origin: (" << current.ofsX << ", " << current.ofsY << ")";
+            s.str(""); s << "Origin: (" << current->ofsX << ", " << current->ofsY << ")";
             DrawText(renderer, gFont, 5, 125, ALIGN_LEFT, black, s.str().c_str());
         }
 
@@ -506,10 +519,10 @@ void Editor::render() {
             SDL_RenderSetClipRect(renderer, &clip);
 
             // setup
-            SDL_Texture *curBmp = frames[file.curSprite].texture.get();
-            SDL_Surface *surface = frames[file.curSprite].surface.get();
+            SDL_Texture *curBmp = frames[file->curSprite].texture.get();
+            SDL_Surface *surface = frames[file->curSprite].surface.get();
             int w = surface->w, h = surface->h;
-            int spr_ = file.curSprite, y_ = 200 + (DISPLAY_HEIGHT - 200 - 24 - h) / 2;
+            int spr_ = file->curSprite, y_ = 200 + (DISPLAY_HEIGHT - 200 - 24 - h) / 2;
             SDL_Rect rect = { 90 - w / 2, y_, w, h };
             SDL_RenderCopy(renderer, curBmp, nullptr, &rect);
 
@@ -563,10 +576,9 @@ void Editor::render() {
             load(str);
         }
     }
-    if (!files.empty()) {
+    if (FileInfo* file = getCurFile()) {
         if (gui.button(rect(x += g, y, w, h), "Close", "Close file (Ctrl+W)", { KMOD_LCTRL, SDL_SCANCODE_W })) {
-            FileInfo& file = files[curFile];
-            if (!file.unsaved || dialog::showOkCancel("Really close without saving?", false)) {
+            if (!file->unsaved || dialog::showOkCancel("Really close without saving?", false)) {
                 files.erase(files.begin() + curFile);
                 if (files.empty()) {
                     curFile = 0;
@@ -583,7 +595,7 @@ void Editor::render() {
                 saveAs(str);
             }
         }
-        if (!files[curFile].jsp.frames.empty()) {
+        if (file->getCurFrame()) {
             if (gui.button(rect(x += g, y, w, h), "Import", "Import from image (Ctrl+I)", { KMOD_LCTRL, SDL_SCANCODE_I })) {
                 if (dialog::open("Import Image", "png;bmp;tga;pcx", &str)) {
                     import_frame(str);
@@ -616,60 +628,56 @@ void Editor::render() {
     }
 
     x = 10; g = 34; y = 80;
-    if (!files.empty()) {
-        if (gui.iconButton(x, y, FAChar::fast_backward, "First frame (Home)", { 0, SDL_SCANCODE_HOME })) {
-            files[curFile].curSprite = 0;
-        }
-        if (gui.iconButton(x += g, y, FAChar::arrow_left, "Previous frame (Left)", { 0, SDL_SCANCODE_LEFT })) {
-            move(-1);
-        }
-        x += g;
-        if (gui.iconButton(x += g, y, FAChar::arrow_right, "Next frame (Right)", { 0, SDL_SCANCODE_RIGHT })) {
-            move(1);
-        }
-        if (gui.iconButton(x += g, y, FAChar::fast_forward, "Last frame (End)", { 0, SDL_SCANCODE_END })) {
-            FileInfo& file = files[curFile];
-            file.curSprite = file.jsp.frames.size() - 1;
-        }
+    if (FileInfo* file = getCurFile()) {
+        JspFrame* frame = file->getCurFrame();
+        if (frame) {
+            if (gui.iconButton(x, y, FAChar::fast_backward, "First frame (Home)", { 0, SDL_SCANCODE_HOME })) {
+                file->curSprite = 0;
+            }
+            if (gui.iconButton(x += g, y, FAChar::arrow_left, "Previous frame (Left)", { 0, SDL_SCANCODE_LEFT })) {
+                move(-1);
+            }
+            x += g;
+            if (gui.iconButton(x += g, y, FAChar::arrow_right, "Next frame (Right)", { 0, SDL_SCANCODE_RIGHT })) {
+                move(1);
+            }
+            if (gui.iconButton(x += g, y, FAChar::fast_forward, "Last frame (End)", { 0, SDL_SCANCODE_END })) {
+                file->curSprite = file->jsp.frames.size() - 1;
+            }
 
-        if (gui.iconButton(146, 125, FAChar::undo, "Reset origin (Ctrl+R)", { KMOD_LCTRL, SDL_SCANCODE_R })) {
-            FileInfo& file = files[curFile];
-            if (!file.jsp.frames.empty()) {
-                JspFrame& frame = file.jsp.frames[file.curSprite];
-                frame.ofsX = frame.ofsY = 0;
+            if (gui.iconButton(146, 125, FAChar::undo, "Reset origin (Ctrl+R)", { KMOD_LCTRL, SDL_SCANCODE_R })) {
+                frame->ofsX = frame->ofsY = 0;
             }
         }
 
         x = 10; g = 34; y = 150;
-        if (gui.iconButton(x, y, FAChar::backward, "Shift frame left (Shift+Left)", { KMOD_LSHIFT, SDL_SCANCODE_LEFT })) {
-            shift(-1);
-        }
-        if (gui.iconButton(x += g, y, FAChar::plus, "Add frame (Ctrl+Insert)", { KMOD_LCTRL, SDL_SCANCODE_INSERT })) {
-            FileInfo& file = files[curFile];
-            JspFrame newFrame(32, 24);
-            file.jsp.frames.insert(file.jsp.frames.begin() + file.curSprite, newFrame);
-        }
-        if (gui.iconButton(x += g, y, FAChar::font, "Convert pink to alpha (Ctrl+A)", { KMOD_LCTRL, SDL_SCANCODE_A })) {
-            convertAlpha();
-        }
-        if (gui.iconButton(x += g, y, FAChar::minus, "Delete frame (Ctrl+Delete)", { KMOD_LCTRL, SDL_SCANCODE_DELETE })) {
-            FileInfo& file = files[curFile];
-            if (!file.jsp.frames.empty()) {
-                file.jsp.frames.erase(file.jsp.frames.begin() + file.curSprite);
-
-                if (file.jsp.frames.empty()) {
-                    file.curSprite = 0;
-                } else if (file.curSprite >= file.jsp.frames.size()) {
-                    file.curSprite = file.jsp.frames.size() - 1;
-                }
+        if (frame) {
+            if (gui.iconButton(x, y, FAChar::backward, "Shift frame left (Shift+Left)", { KMOD_LSHIFT, SDL_SCANCODE_LEFT })) {
+                shift(-1);
             }
         }
-        if (gui.iconButton(x += g, y, FAChar::forward, "Shift frame right (Shift+Right)", { KMOD_LSHIFT, SDL_SCANCODE_RIGHT })) {
-            shift(1);
+        if (gui.iconButton(x += g, y, FAChar::plus, "Add frame (Ctrl+Insert)", { KMOD_LCTRL, SDL_SCANCODE_INSERT })) {
+            JspFrame newFrame(32, 24);
+            file->jsp.frames.insert(file->jsp.frames.begin() + file->curSprite, newFrame);
+        }
+        if (frame) {
+            if (gui.iconButton(x += g, y, FAChar::font, "Convert pink to alpha (Ctrl+A)", { KMOD_LCTRL, SDL_SCANCODE_A })) {
+                convertAlpha();
+            }
+            if (gui.iconButton(x += g, y, FAChar::minus, "Delete frame (Ctrl+Delete)", { KMOD_LCTRL, SDL_SCANCODE_DELETE })) {
+                file->jsp.frames.erase(file->jsp.frames.begin() + file->curSprite);
+
+                if (file->jsp.frames.empty()) {
+                    file->curSprite = 0;
+                } else if (file->curSprite >= file->jsp.frames.size()) {
+                    file->curSprite = file->jsp.frames.size() - 1;
+                }
+            }
+            if (gui.iconButton(x += g, y, FAChar::forward, "Shift frame right (Shift+Right)", { KMOD_LSHIFT, SDL_SCANCODE_RIGHT })) {
+                shift(1);
+            }
         }
     }
-
-    gui.render();
 }
 
 void Editor::handleEvent(const SDL_Event &event) {
@@ -792,6 +800,7 @@ void main() {
     }
     while (ed.running) {
         ed.render();
+        ed.gui.render();
         SDL_RenderPresent(renderer);
         SDL_Event e;
         while (SDL_PollEvent(&e))
