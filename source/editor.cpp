@@ -207,10 +207,13 @@ Editor::Editor()
     gui.addIconButton(x += g, y, FAChar::minus, "Delete frame",
         { KMOD_LCTRL, SDL_SCANCODE_DELETE },
         [this]() {
-            if (file.jsp.frames.size() <= 1) return;
+            if (file.jsp.frames.empty()) return;
 
             file.jsp.frames.erase(file.jsp.frames.begin() + file.curSprite);
-            if (file.curSprite >= file.jsp.frames.size()) {
+
+            if (file.jsp.frames.empty()) {
+                file.curSprite = 0;
+            } else if (file.curSprite >= file.jsp.frames.size()) {
                 file.curSprite = file.jsp.frames.size() - 1;
             }
         });
