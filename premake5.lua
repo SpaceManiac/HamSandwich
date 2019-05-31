@@ -25,7 +25,10 @@ project "jspedit"
         optimize "On"
 
     filter "toolset:gcc"
-        buildoptions { "-Wall", "-Wextra", "-Werror" }
+        buildoptions { "-Wall", "-Wextra" }
+
+    filter { "toolset:gcc", "configurations:release" }
+        buildoptions { "-Werror" }
 
     filter { "toolset:gcc", "system:Windows" }
         linkoptions { "-static-libgcc", "-static-libstdc++" }
