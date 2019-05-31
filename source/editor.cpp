@@ -624,6 +624,13 @@ void Editor::handleEvent(const SDL_Event &event) {
         }
         break;
 
+    case SDL_DROPFILE:
+        if (file.unsaved && !dialog::showOkCancel("You have unsaved changes, do you want to open anyways?", false))
+            return;
+        load(event.drop.file);
+        SDL_free(event.drop.file);
+        break;
+
     case SDL_WINDOWEVENT:
         if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
             DISPLAY_WIDTH = event.window.data1;
