@@ -94,6 +94,7 @@ struct Editor {
 
     bool dragging;
     bool running;
+    bool browsing;
 
     Editor();
 
@@ -128,6 +129,7 @@ Editor::Editor()
     crosshairs = 1;
     dragging = false;
     running = true;
+    browsing = false;
 
     // create empty blank frame
     /*{
@@ -167,6 +169,9 @@ Editor::Editor()
     gui.addButton(rect(x += g, y, w, h), "Crosshairs", "Cycle crosshairs mode (Ctrl+H)",
         { KMOD_LCTRL, SDL_SCANCODE_H },
         [this]() { crosshairs = (crosshairs + 1) % MAX_CROSSHAIRS; });
+    gui.addButton(rect(x += g, y, w, h), "Browse", "Show all frames at once (Ctrl+B)",
+        { KMOD_LCTRL, SDL_SCANCODE_B },
+        [this]() { browsing = !browsing; });
 
     x = 10; g = 34; y = 80;
     gui.addIconButton(x, y, FAChar::fast_backward, "First frame (Home)",
@@ -453,36 +458,65 @@ void Editor::render() {
 
     const int CENTER_X = 180 + (DISPLAY_WIDTH - 180)/2, CENTER_Y = 30 + (DISPLAY_HEIGHT - 30)/2;
 
-    // crosshairs in behind
-    if (crosshairs == 1) {
-        SDL_SetRenderDrawColor(renderer, 0, 128, 0, 255);
-        SDL_RenderDrawLine(renderer, 180, CENTER_Y, DISPLAY_WIDTH, CENTER_Y);
-        SDL_RenderDrawLine(renderer, CENTER_X, 30, CENTER_X, DISPLAY_HEIGHT);
-        SDL_SetRenderDrawColor(renderer, 0, 196, 0, 255);
-        rect = {CENTER_X - 16, CENTER_Y - 12, 32, 24};
-        SDL_RenderDrawRect(renderer, &rect);
-    }
+    if (browsing) {
+        int x = 200, y = 50, h = 0;
+        for (size_t i = 0; i < file.jsp.frames.size(); ++i) {
+            JspFrame frame = file.jsp.frames[i];
+            if (x + frame.surface->w > DISPLAY_WIDTH) {
+                y += h;
+                x = 200;
+                h = 0;
+            }
+            if (y >= DISPLAY_HEIGHT) {
+                break;
+            }
+            rect = {x, y, frame.surface->w, frame.surface->h};
+            SDL_RenderCopy(renderer, frame.texture.get(), nullptr, &rect);
 
-    // draw sprite
-    if (file.jsp.frames.size() > 0) {
-        JspFrame current = file.jsp.frames[file.curSprite];
-        SDL_Rect rect = {
-            CENTER_X - current.ofsX,
-            CENTER_Y - current.ofsY,
-            current.surface->w,
-            current.surface->h,
-        };
-        SDL_RenderCopy(renderer, current.texture.get(), nullptr, &rect);
-    }
+            if (i == file.curSprite) {
+                // red box
+                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+                rect.x -= 1; rect.y -= 1; rect.w += 2; rect.h += 2;
+                SDL_RenderDrawRect(renderer, &rect);
+            }
 
-    // crosshairs in front
-    if (crosshairs == 2) {
-        SDL_SetRenderDrawColor(renderer, 0, 128, 0, 255);
-        SDL_RenderDrawLine(renderer, 180, CENTER_Y, DISPLAY_WIDTH, CENTER_Y);
-        SDL_RenderDrawLine(renderer, CENTER_X, 30, CENTER_X, DISPLAY_HEIGHT);
-        SDL_SetRenderDrawColor(renderer, 0, 196, 0, 255);
-        rect = {CENTER_X - 16, CENTER_Y - 12, 32, 24};
-        SDL_RenderDrawRect(renderer, &rect);
+            x += frame.surface->w;
+            if (frame.surface->h > h) {
+                h = frame.surface->h;
+            }
+        }
+    } else {
+        // crosshairs in behind
+        if (crosshairs == 1) {
+            SDL_SetRenderDrawColor(renderer, 0, 128, 0, 255);
+            SDL_RenderDrawLine(renderer, 180, CENTER_Y, DISPLAY_WIDTH, CENTER_Y);
+            SDL_RenderDrawLine(renderer, CENTER_X, 30, CENTER_X, DISPLAY_HEIGHT);
+            SDL_SetRenderDrawColor(renderer, 0, 196, 0, 255);
+            rect = {CENTER_X - 16, CENTER_Y - 12, 32, 24};
+            SDL_RenderDrawRect(renderer, &rect);
+        }
+
+        // draw sprite
+        if (file.jsp.frames.size() > 0) {
+            JspFrame current = file.jsp.frames[file.curSprite];
+            SDL_Rect rect = {
+                CENTER_X - current.ofsX,
+                CENTER_Y - current.ofsY,
+                current.surface->w,
+                current.surface->h,
+            };
+            SDL_RenderCopy(renderer, current.texture.get(), nullptr, &rect);
+        }
+
+        // crosshairs in front
+        if (crosshairs == 2) {
+            SDL_SetRenderDrawColor(renderer, 0, 128, 0, 255);
+            SDL_RenderDrawLine(renderer, 180, CENTER_Y, DISPLAY_WIDTH, CENTER_Y);
+            SDL_RenderDrawLine(renderer, CENTER_X, 30, CENTER_X, DISPLAY_HEIGHT);
+            SDL_SetRenderDrawColor(renderer, 0, 196, 0, 255);
+            rect = {CENTER_X - 16, CENTER_Y - 12, 32, 24};
+            SDL_RenderDrawRect(renderer, &rect);
+        }
     }
 
     // left bar
@@ -572,25 +606,6 @@ void Editor::render() {
 
     // buttons
     gui.render();
-
-    /* int x = 200, y = 50, h = 0;
-    for (size_t i = 0; i < file.jsp.frames.size(); ++i) {
-        JspFrame frame = file.jsp.frames[i];
-        if (x + frame.surface->w > DISPLAY_WIDTH) {
-            y += h;
-            x = 200;
-            h = 0;
-        }
-        if (y >= DISPLAY_HEIGHT) {
-            break;
-        }
-        rect = {x, y, frame.surface->w, frame.surface->h};
-        SDL_RenderCopy(renderer, frame.texture.get(), nullptr, &rect);
-        x += frame.surface->w;
-        if (frame.surface->h > h) {
-            h = frame.surface->h;
-        }
-    } */
 }
 
 void Editor::handleEvent(const SDL_Event &event) {
@@ -617,7 +632,7 @@ void Editor::handleEvent(const SDL_Event &event) {
         break;
 
     case SDL_MOUSEBUTTONDOWN:
-        if ((dragArea.left <= event.button.x && event.button.x <= dragArea.right && dragArea.top <= event.button.y && event.button.y <= dragArea.bottom) && event.button.button == 1) {
+        if (!browsing && (dragArea.left <= event.button.x && event.button.x <= dragArea.right && dragArea.top <= event.button.y && event.button.y <= dragArea.bottom) && event.button.button == 1) {
             dragging = true;
         }
         break;
