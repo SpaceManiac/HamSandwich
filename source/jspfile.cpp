@@ -147,7 +147,7 @@ bool JspFile::save(string fname) {
     std::vector<std::vector<uint8_t>> frameData;
 
     for (uint16_t i = 0; i < count; ++i) {
-        std::cout << "encoding frame #" << i << endl;
+        //std::cout << "encoding frame #" << i << endl;
         JspFrame frame = frames[i];
 
         int w = frame.surface->w, h = frame.surface->h;

@@ -239,6 +239,7 @@ void Editor::load(string fname) {
     newFile.unsaved = false;
 
     cout << "Editor::load " << fname << endl;
+    working("Loading, please wait...");
     if (newFile.jsp.load(fname)) {
         cout << "Success" << endl;
         file = newFile;
@@ -293,12 +294,10 @@ bool Editor::import_frame(string fname, bool batch) {
         surface = {SDL_ConvertSurfaceFormat(surface.get(), SDL_PIXELFORMAT_ABGR8888, 0), SDL_FreeSurface};
     }
 
-    working("Adjusting palette...");
     if (palette::reduceImage(surface.get()) && !batch) {
         dialog::showMessage("The image's colors were adjusted");
     }
 
-    working("Uploading texture...");
     std::shared_ptr<SDL_Texture> texture(
         SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, surface->w, surface->h),
         SDL_DestroyTexture);
@@ -493,16 +492,19 @@ void Editor::render() {
     SDL_RenderDrawLine(renderer, 0, DISPLAY_HEIGHT - 24, 180, DISPLAY_HEIGHT - 24);
 
     // file stats
-    vector<JspFrame> frames = file.jsp.frames;
-    if (frames.size() == 0) {
-        DrawText(renderer, gFont, 5, 35, ALIGN_LEFT, black, "No file open");
+    if (file.shortname.empty()) {
+        DrawText(renderer, gFont, 5, 35, ALIGN_LEFT, black, "No filename");
     } else {
-        JspFrame current = frames[file.curSprite];
         DrawText(renderer, gFont, 5, 35, ALIGN_LEFT, black, file.shortname.c_str());
+    }
 
-        std::ostringstream s;
-        s << "Sprite count: " << frames.size();
-        DrawText(renderer, gFont, 5, 55, ALIGN_LEFT, black, s.str().c_str());
+    const vector<JspFrame> &frames = file.jsp.frames;
+    std::ostringstream s;
+    s << "Sprite count: " << frames.size();
+    DrawText(renderer, gFont, 5, 55, ALIGN_LEFT, black, s.str().c_str());
+    if (!frames.empty()) {
+        JspFrame current = frames[file.curSprite];
+
         s.str(""); s << file.curSprite;
         DrawText(renderer, gFont, 88, 80, ALIGN_CENTER, black, s.str().c_str());
         s.str(""); s << "Size: (" << current.surface->w << ", " << current.surface->h << ")";
