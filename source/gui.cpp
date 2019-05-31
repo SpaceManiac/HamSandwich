@@ -2,53 +2,32 @@
 #include <SDL2/SDL.h>
 
 Gui::Gui()
-    : hover(nullptr)
-    , focus(nullptr)
-    , mx(0)
+    : mx(0)
     , my(0)
     , justClicked(false)
 {
 }
 
-GuiElement* Gui::elemAt(int x, int y) {
-    for (GuiElement& elem : elements) {
-        if (elem.size.left <= x && x <= elem.size.right && elem.size.top <= y && y <= elem.size.bottom) {
-            return &elem;
-        }
-    }
-    return nullptr;
-}
-
 bool Gui::handleEvent(const SDL_Event &evt) {
-    GuiElement* prev = focus;
-
     switch (evt.type) {
     case SDL_MOUSEMOTION:
         mx = evt.motion.x;
         my = evt.motion.y;
-        hover = elemAt(evt.motion.x, evt.motion.y);
         return false;
 
     case SDL_MOUSEBUTTONDOWN:
-        focus = hover = elemAt(evt.button.x, evt.button.y);
-        return focus;
+        mx = evt.button.x;
+        my = evt.button.y;
+        justClicked = true;
+        return false;
 
     case SDL_MOUSEBUTTONUP:
-        hover = elemAt(evt.button.x, evt.button.y);
-        if (hover == focus && focus && focus->func) {
-            focus->func();
-        }
-        focus = nullptr;
-        return prev;
+        mx = evt.button.x;
+        my = evt.button.y;
+        return false;
 
     case SDL_KEYDOWN:
-        for (GuiElement elem : elements) {
-            int mod = SDL_GetModState() & 0xff;
-            if (elem.shortcut.mods == mod && elem.shortcut.keycode == evt.key.keysym.scancode && elem.func) {
-                elem.func();
-                return true;
-            }
-        }
+        justTyped = { SDL_GetModState() & 0xff, evt.key.keysym.scancode };
         return false;
 
     default:
@@ -87,7 +66,7 @@ bool Gui::element(GuiRect r, TTF_Font *font, const std::string &text, const std:
         tooltip = desc;
     }
 
-    return false;
+    return (hovered && justClicked) || (justTyped == shortcut);
 }
 
 void Gui::render() {
@@ -110,6 +89,9 @@ void Gui::render() {
 
         tooltip.clear();
     }
+
+    justClicked = false;
+    justTyped = { 0, 0 };
 }
 
 bool Gui::button(GuiRect rect, const std::string &text, const std::string &desc, KbdShortcut shortcut) {

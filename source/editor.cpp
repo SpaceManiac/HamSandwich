@@ -18,26 +18,22 @@ namespace editor {
 
 namespace dialog {
 
-typedef std::function<void(std::string)> callback;
-
-void open(const char* title, const char* patterns, callback func) {
+bool open(const char* title, const char* patterns, std::string *buf) {
     (void) title;
     char *chosen = nullptr;
     nfdresult_t result = NFD_OpenDialog(patterns, nullptr, &chosen);
-    if (result == NFD_OKAY) {
-        func(chosen);
-    }
+    *buf = chosen;
     free(chosen);
+    return result == NFD_OKAY;
 }
 
-void save(const char* title, const char* patterns, callback func) {
+bool save(const char* title, const char* patterns, std::string *buf) {
     (void) title;
     char *chosen = nullptr;
     nfdresult_t result = NFD_SaveDialog(patterns, nullptr, &chosen);
-    if (result == NFD_OKAY) {
-        func(chosen);
-    }
+    *buf = chosen;
     free(chosen);
+    return result == NFD_OKAY;
 }
 
 void showMessage(const char* body) {
@@ -175,7 +171,10 @@ void Editor::save() {
     FileInfo& file = files[curFile];
     if (file.fname == "") {
         // call save as which calls this instead
-        dialog::save("Save JSP", "jsp", [this](std::string str) { saveAs(str); });
+        std::string str;
+        if (dialog::save("Save JSP", "jsp", &str)) {
+            saveAs(str);
+        }
         return;
     }
 
@@ -558,50 +557,55 @@ void Editor::render() {
     SDL_RenderDrawLine(renderer, 0, 30, DISPLAY_WIDTH, 30);
 
     // buttons
+    std::string str;
     int x = 6, y = 4, w = 80, g = 90, h = 22;
     if (gui.button(rect(x, y, w, h), "Open", "Open JSP (Ctrl+O)", { KMOD_LCTRL, SDL_SCANCODE_O })) {
-        dialog::open("Open JSP", "jsp", [this](std::string str) { load(str); });
-    }
-    if (gui.button(rect(x += g, y, w, h), "Close", "Close file (Ctrl+W)", { KMOD_LCTRL, SDL_SCANCODE_W })) {
-        if (files.empty()) {
-            running = false;
-            return;
-        }
-        FileInfo& file = files[curFile];
-
-        if (file.unsaved && !dialog::showOkCancel("Really close without saving?", false)) return;
-
-        files.erase(files.begin() + curFile);
-        if (files.empty()) {
-            curFile = 0;
-        } else if (curFile >= files.size()) {
-            curFile = files.size() - 1;
+        if (dialog::open("Open JSP", "jsp", &str)) {
+            load(str);
         }
     }
-    if (gui.button(rect(x += g, y, w, h), "Save", "Save JSP (Ctrl+S)", { KMOD_LCTRL, SDL_SCANCODE_S })) {
-        save();
-    }
-    if (gui.button(rect(x += g, y, w, h), "Save As", "Save JSP As (Ctrl+Shift+S)", { KMOD_LCTRL | KMOD_LSHIFT, SDL_SCANCODE_S })) {
-        if (files.empty()) return;
-        dialog::save("Save JSP", "jsp", [this](std::string str) { saveAs(str); });
-    }
-    if (gui.button(rect(x += g, y, w, h), "Import", "Import from image (Ctrl+I)", { KMOD_LCTRL, SDL_SCANCODE_I })) {
-        if (files.empty()) return;
-        if (files[curFile].jsp.frames.size() == 0) return;
-        dialog::open("Import Image", "png;bmp;tga;pcx", [this](std::string str) { import_frame(str); });
-    }
-    if (gui.button(rect(x += g, y, w, h), "Export", "Export to image (Ctrl+E)", { KMOD_LCTRL, SDL_SCANCODE_E })) {
-        if (files.empty()) return;
-        if (files[curFile].jsp.frames.size() == 0) return;
-        dialog::save("Export Image", "png;bmp;tga;pcx", [this](std::string str) { export_frame(str); });
-    }
-    if (gui.button(rect(x += g, y, w, h), "Import All", "Import from folder (Ctrl+Shift+I)", { KMOD_LCTRL | KMOD_LSHIFT, SDL_SCANCODE_I })) {
-        if (files.empty()) return;
-        dialog::open("Select first frame (0.png)", "png", [this](std::string str) { import_batch(str); });
-    }
-    if (gui.button(rect(x += g, y, w, h), "Export All", "Export to folder (Ctrl+Shift+E)", { KMOD_LCTRL | KMOD_LSHIFT, SDL_SCANCODE_E })) {
-        if (files.empty()) return;
-        dialog::save("Export all frames", "png", [this](std::string str) { export_batch(str); });
+    if (!files.empty()) {
+        if (gui.button(rect(x += g, y, w, h), "Close", "Close file (Ctrl+W)", { KMOD_LCTRL, SDL_SCANCODE_W })) {
+            FileInfo& file = files[curFile];
+            if (!file.unsaved || dialog::showOkCancel("Really close without saving?", false)) {
+                files.erase(files.begin() + curFile);
+                if (files.empty()) {
+                    curFile = 0;
+                } else if (curFile >= files.size()) {
+                    curFile = files.size() - 1;
+                }
+            }
+        }
+        if (gui.button(rect(x += g, y, w, h), "Save", "Save JSP (Ctrl+S)", { KMOD_LCTRL, SDL_SCANCODE_S })) {
+            save();
+        }
+        if (gui.button(rect(x += g, y, w, h), "Save As", "Save JSP As (Ctrl+Shift+S)", { KMOD_LCTRL | KMOD_LSHIFT, SDL_SCANCODE_S })) {
+            if (dialog::save("Save JSP", "jsp", &str)) {
+                saveAs(str);
+            }
+        }
+        if (!files[curFile].jsp.frames.empty()) {
+            if (gui.button(rect(x += g, y, w, h), "Import", "Import from image (Ctrl+I)", { KMOD_LCTRL, SDL_SCANCODE_I })) {
+                if (dialog::open("Import Image", "png;bmp;tga;pcx", &str)) {
+                    import_frame(str);
+                }
+            }
+            if (gui.button(rect(x += g, y, w, h), "Export", "Export to image (Ctrl+E)", { KMOD_LCTRL, SDL_SCANCODE_E })) {
+                if (dialog::save("Export Image", "png;bmp;tga;pcx", &str)) {
+                    export_frame(str);
+                }
+            }
+            if (gui.button(rect(x += g, y, w, h), "Import All", "Import from folder (Ctrl+Shift+I)", { KMOD_LCTRL | KMOD_LSHIFT, SDL_SCANCODE_I })) {
+                if (dialog::open("Select first frame (0.png)", "png", &str)) {
+                    import_batch(str);
+                }
+            }
+            if (gui.button(rect(x += g, y, w, h), "Export All", "Export to folder (Ctrl+Shift+E)", { KMOD_LCTRL | KMOD_LSHIFT, SDL_SCANCODE_E })) {
+                if (dialog::save("Export all frames", "png", &str)) {
+                    export_batch(str);
+                }
+            }
+        }
     }
 
     //x = DISPLAY_WIDTH - g;
@@ -613,59 +617,57 @@ void Editor::render() {
     }
 
     x = 10; g = 34; y = 80;
-    if (gui.iconButton(x, y, FAChar::fast_backward, "First frame (Home)", { 0, SDL_SCANCODE_HOME })) {
-        if (files.empty()) return;
-        files[curFile].curSprite = 0;
-    }
-    if (gui.iconButton(x += g, y, FAChar::arrow_left, "Previous frame (Left)", { 0, SDL_SCANCODE_LEFT })) {
-        move(-1);
-    }
-    x += g;
-    if (gui.iconButton(x += g, y, FAChar::arrow_right, "Next frame (Right)", { 0, SDL_SCANCODE_RIGHT })) {
-        move(1);
-    }
-    if (gui.iconButton(x += g, y, FAChar::fast_forward, "Last frame (End)", { 0, SDL_SCANCODE_END })) {
-        if (files.empty()) return;
-        FileInfo& file = files[curFile];
-        file.curSprite = file.jsp.frames.size() - 1;
-    }
-
-    if (gui.iconButton(146, 125, FAChar::undo, "Reset origin (Ctrl+R)", { KMOD_LCTRL, SDL_SCANCODE_R })) {
-        if (files.empty()) return;
-        FileInfo& file = files[curFile];
-        if (file.jsp.frames.empty()) return;
-        JspFrame& frame = file.jsp.frames[file.curSprite];
-        frame.ofsX = frame.ofsY = 0;
-    }
-
-    x = 10; g = 34; y = 150;
-    if (gui.iconButton(x, y, FAChar::backward, "Shift frame left (Shift+Left)", { KMOD_LSHIFT, SDL_SCANCODE_LEFT })) {
-        shift(-1);
-    }
-    if (gui.iconButton(x += g, y, FAChar::plus, "Add frame (Ctrl+Insert)", { KMOD_LCTRL, SDL_SCANCODE_INSERT })) {
-        if (files.empty()) return;
-        FileInfo& file = files[curFile];
-        JspFrame newFrame(32, 24);
-        file.jsp.frames.insert(file.jsp.frames.begin() + file.curSprite, newFrame);
-    }
-    if (gui.iconButton(x += g, y, FAChar::font, "Convert pink to alpha (Ctrl+A)", { KMOD_LCTRL, SDL_SCANCODE_A })) {
-        convertAlpha();
-    }
-    if (gui.iconButton(x += g, y, FAChar::minus, "Delete frame (Ctrl+Delete)", { KMOD_LCTRL, SDL_SCANCODE_DELETE })) {
-        if (files.empty()) return;
-        FileInfo& file = files[curFile];
-        if (file.jsp.frames.empty()) return;
-
-        file.jsp.frames.erase(file.jsp.frames.begin() + file.curSprite);
-
-        if (file.jsp.frames.empty()) {
-            file.curSprite = 0;
-        } else if (file.curSprite >= file.jsp.frames.size()) {
+    if (!files.empty()) {
+        if (gui.iconButton(x, y, FAChar::fast_backward, "First frame (Home)", { 0, SDL_SCANCODE_HOME })) {
+            files[curFile].curSprite = 0;
+        }
+        if (gui.iconButton(x += g, y, FAChar::arrow_left, "Previous frame (Left)", { 0, SDL_SCANCODE_LEFT })) {
+            move(-1);
+        }
+        x += g;
+        if (gui.iconButton(x += g, y, FAChar::arrow_right, "Next frame (Right)", { 0, SDL_SCANCODE_RIGHT })) {
+            move(1);
+        }
+        if (gui.iconButton(x += g, y, FAChar::fast_forward, "Last frame (End)", { 0, SDL_SCANCODE_END })) {
+            FileInfo& file = files[curFile];
             file.curSprite = file.jsp.frames.size() - 1;
         }
-    }
-    if (gui.iconButton(x += g, y, FAChar::forward, "Shift frame right (Shift+Right)", { KMOD_LSHIFT, SDL_SCANCODE_RIGHT })) {
-        shift(1);
+
+        if (gui.iconButton(146, 125, FAChar::undo, "Reset origin (Ctrl+R)", { KMOD_LCTRL, SDL_SCANCODE_R })) {
+            FileInfo& file = files[curFile];
+            if (!file.jsp.frames.empty()) {
+                JspFrame& frame = file.jsp.frames[file.curSprite];
+                frame.ofsX = frame.ofsY = 0;
+            }
+        }
+
+        x = 10; g = 34; y = 150;
+        if (gui.iconButton(x, y, FAChar::backward, "Shift frame left (Shift+Left)", { KMOD_LSHIFT, SDL_SCANCODE_LEFT })) {
+            shift(-1);
+        }
+        if (gui.iconButton(x += g, y, FAChar::plus, "Add frame (Ctrl+Insert)", { KMOD_LCTRL, SDL_SCANCODE_INSERT })) {
+            FileInfo& file = files[curFile];
+            JspFrame newFrame(32, 24);
+            file.jsp.frames.insert(file.jsp.frames.begin() + file.curSprite, newFrame);
+        }
+        if (gui.iconButton(x += g, y, FAChar::font, "Convert pink to alpha (Ctrl+A)", { KMOD_LCTRL, SDL_SCANCODE_A })) {
+            convertAlpha();
+        }
+        if (gui.iconButton(x += g, y, FAChar::minus, "Delete frame (Ctrl+Delete)", { KMOD_LCTRL, SDL_SCANCODE_DELETE })) {
+            FileInfo& file = files[curFile];
+            if (!file.jsp.frames.empty()) {
+                file.jsp.frames.erase(file.jsp.frames.begin() + file.curSprite);
+
+                if (file.jsp.frames.empty()) {
+                    file.curSprite = 0;
+                } else if (file.curSprite >= file.jsp.frames.size()) {
+                    file.curSprite = file.jsp.frames.size() - 1;
+                }
+            }
+        }
+        if (gui.iconButton(x += g, y, FAChar::forward, "Shift frame right (Shift+Right)", { KMOD_LSHIFT, SDL_SCANCODE_RIGHT })) {
+            shift(1);
+        }
     }
 
     gui.render();
