@@ -163,8 +163,8 @@ Editor::Editor()
         { KMOD_LCTRL | KMOD_LSHIFT, SDL_SCANCODE_E },
         std::bind(dialog::save, "Export all frames", "png", [this](std::string str) { export_batch(str); }));
 
-    x = DISPLAY_WIDTH - g;
-    gui.addButton(rect(x, y, w, h), "Crosshairs", "Cycle crosshairs mode",
+    //x = DISPLAY_WIDTH - g;
+    gui.addButton(rect(x += g, y, w, h), "Crosshairs", "Cycle crosshairs mode",
         { KMOD_LCTRL, SDL_SCANCODE_H },
         [this]() { crosshairs = (crosshairs + 1) % MAX_CROSSHAIRS; });
 

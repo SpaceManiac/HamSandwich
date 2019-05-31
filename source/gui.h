@@ -27,6 +27,7 @@ struct GuiElement {
 class Gui {
     std::vector<GuiElement> elements;
     GuiElement *hover, *focus;
+    int mx, my;
 
     GuiElement *elemAt(int x, int y);
 public:
