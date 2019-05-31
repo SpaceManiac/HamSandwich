@@ -135,7 +135,7 @@ Editor::Editor()
         file.jsp.frames.push_back(newFrame);
     }*/
 
-    int w = 100, g = 110, h = 22;
+    int w = 80, g = 90, h = 22;
     int x = 6, y = 4;
     // top bar
     gui.addButton(rect(x, y, w, h), "Open", "Open JSP (Ctrl+O)",
@@ -175,7 +175,7 @@ Editor::Editor()
     gui.addIconButton(x += g, y, FAChar::arrow_left, "Previous frame (Left)",
         { 0, SDL_SCANCODE_LEFT },
         [this]() { move(-1); });
-    x += g; //gui.addIconButton(x += g, y, FAChar::minus);
+    x += g;
     gui.addIconButton(x += g, y, FAChar::arrow_right, "Next frame (Right)",
         { 0, SDL_SCANCODE_RIGHT },
         [this]() { move(1); });
@@ -514,9 +514,6 @@ void Editor::render() {
         DrawText(renderer, gFont, 5, 105, ALIGN_LEFT, black, s.str().c_str());
         s.str(""); s << "Origin: (" << current.ofsX << ", " << current.ofsY << ")";
         DrawText(renderer, gFont, 5, 125, ALIGN_LEFT, black, s.str().c_str());
-
-        //s.str(""); s << FA::str(FAChar::check) << " " << FA::str(FAChar::adjust);
-        //DrawText(renderer, gIconFont, 5, 145, ALIGN_LEFT, black, s.str().c_str());
     }
 
     // sprites
