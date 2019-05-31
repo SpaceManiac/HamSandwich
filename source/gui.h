@@ -28,11 +28,12 @@ class Gui {
     std::vector<GuiElement> elements;
     GuiElement *hover, *focus;
     int mx, my;
+    bool justClicked;
+    std::string tooltip;
 
     GuiElement *elemAt(int x, int y);
 public:
-
-    Gui() : hover(nullptr), focus(nullptr) {}
+    Gui();
 
     void render();
     bool handleEvent(const SDL_Event &evt);
@@ -51,6 +52,9 @@ public:
         add({ rect, gIconFont, FA::str(ch), desc, shortcut, func});
     }
 
+    bool element(GuiRect rect, TTF_Font *font, const std::string &text, const std::string &desc, KbdShortcut shortcut);
+    bool button(GuiRect rect, const std::string &text, const std::string &desc, KbdShortcut shortcut);
+    bool iconButton(int x, int y, FAChar ch, const std::string &desc, KbdShortcut shortcut);
 };
 
 #endif // GUI_H
