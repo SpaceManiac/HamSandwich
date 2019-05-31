@@ -43,7 +43,7 @@ void JspFrame::upload() {
 }
 
 bool JspFile::load(string fname) {
-    cout << "loading " << fname << endl;
+    cout << "JspFile::load " << fname << endl;
 
     ifstream in { fname, ios::in | ios::binary };
 
@@ -130,7 +130,7 @@ bool JspFile::load(string fname) {
 }
 
 bool JspFile::save(string fname) {
-    cout << "saving " << fname << endl;
+    cout << "JspFile::save " << fname << endl;
 
     ofstream out { fname, ios::out | ios::binary };
     if (!out) {

@@ -87,7 +87,8 @@ struct FileInfo {
 const int MAX_CROSSHAIRS = 3;
 
 struct Editor {
-    FileInfo file;
+    std::vector<FileInfo> files;
+    size_t curFile;
     Gui gui;
 
     int crosshairs;
@@ -125,7 +126,7 @@ static GuiRect rect(int x, int y, int w, int h) {
 
 Editor::Editor()
 {
-    file = { "", "", JspFile(), 0, false };
+    curFile = 0;
     crosshairs = 1;
     dragging = false;
     running = true;
@@ -143,8 +144,25 @@ Editor::Editor()
     gui.addButton(rect(x, y, w, h), "Open", "Open JSP (Ctrl+O)",
         { KMOD_LCTRL, SDL_SCANCODE_O },
         [this]() {
-            if (file.unsaved && !dialog::showOkCancel("You have unsaved changes, do you want to open anyways?", false)) return;
             dialog::open("Open JSP", "jsp", [this](std::string str) { load(str); });
+        });
+    gui.addButton(rect(x += g, y, w, h), "Close", "Close file (Ctrl+W)",
+        { KMOD_LCTRL, SDL_SCANCODE_W },
+        [this]() {
+            if (files.empty()) {
+                running = false;
+                return;
+            }
+            FileInfo& file = files[curFile];
+
+            if (file.unsaved && !dialog::showOkCancel("Really close without saving?", false)) return;
+
+            files.erase(files.begin() + curFile);
+            if (files.empty()) {
+                curFile = 0;
+            } else if (curFile >= files.size()) {
+                curFile = files.size() - 1;
+            }
         });
     gui.addButton(rect(x += g, y, w, h), "Save", "Save JSP (Ctrl+S)",
         { KMOD_LCTRL, SDL_SCANCODE_S },
@@ -176,7 +194,10 @@ Editor::Editor()
     x = 10; g = 34; y = 80;
     gui.addIconButton(x, y, FAChar::fast_backward, "First frame (Home)",
         { 0, SDL_SCANCODE_HOME },
-        [this]() { file.curSprite = 0; });
+        [this]() {
+            if (files.empty()) return;
+            files[curFile].curSprite = 0;
+        });
     gui.addIconButton(x += g, y, FAChar::arrow_left, "Previous frame (Left)",
         { 0, SDL_SCANCODE_LEFT },
         [this]() { move(-1); });
@@ -186,11 +207,17 @@ Editor::Editor()
         [this]() { move(1); });
     gui.addIconButton(x += g, y, FAChar::fast_forward, "Last frame (End)",
         { 0, SDL_SCANCODE_END },
-        [this]() { file.curSprite = file.jsp.frames.size() - 1; });
+        [this]() {
+            if (files.empty()) return;
+            FileInfo& file = files[curFile];
+            file.curSprite = file.jsp.frames.size() - 1;
+        });
 
     gui.addIconButton(146, 125, FAChar::undo, "Reset origin (Ctrl+R)",
         { KMOD_LCTRL, SDL_SCANCODE_R },
         [this]() {
+            if (files.empty()) return;
+            FileInfo& file = files[curFile];
             if (file.jsp.frames.empty()) return;
             JspFrame& frame = file.jsp.frames[file.curSprite];
             frame.ofsX = frame.ofsY = 0;
@@ -203,6 +230,8 @@ Editor::Editor()
     gui.addIconButton(x += g, y, FAChar::plus, "Add frame (Ctrl+Insert)",
         { KMOD_LCTRL, SDL_SCANCODE_INSERT },
         [this]() {
+            if (files.empty()) return;
+            FileInfo& file = files[curFile];
             JspFrame newFrame(32, 24);
             file.jsp.frames.insert(file.jsp.frames.begin() + file.curSprite, newFrame);
         });
@@ -212,6 +241,8 @@ Editor::Editor()
     gui.addIconButton(x += g, y, FAChar::minus, "Delete frame (Ctrl+Delete)",
         { KMOD_LCTRL, SDL_SCANCODE_DELETE },
         [this]() {
+            if (files.empty()) return;
+            FileInfo& file = files[curFile];
             if (file.jsp.frames.empty()) return;
 
             file.jsp.frames.erase(file.jsp.frames.begin() + file.curSprite);
@@ -250,7 +281,8 @@ void Editor::load(string fname) {
     working("Loading, please wait...");
     if (newFile.jsp.load(fname)) {
         cout << "Success" << endl;
-        file = newFile;
+        curFile = files.size();
+        files.push_back(newFile);
     } else {
         cout << "Failure: " << newFile.jsp.error << endl;
         dialog::error("Failed to load:", newFile.jsp.error.c_str());
@@ -258,6 +290,8 @@ void Editor::load(string fname) {
 }
 
 void Editor::save() {
+    if (files.empty()) return;
+    FileInfo& file = files[curFile];
     if (file.fname == "") {
         // call save as which calls this instead
         dialog::save("Save JSP", "jsp", [this](std::string str) { saveAs(str); });
@@ -278,6 +312,9 @@ void Editor::save() {
 }
 
 void Editor::saveAs(string fname) {
+    if (files.empty()) return;
+    FileInfo& file = files[curFile];
+
     if (fname.find('.') == string::npos) {
         fname += ".jsp";
     }
@@ -288,6 +325,9 @@ void Editor::saveAs(string fname) {
 }
 
 bool Editor::import_frame(string fname, bool batch) {
+    if (files.empty()) return false;
+    FileInfo& file = files[curFile];
+
     if (file.jsp.frames.size() == 0) return false;
 
     working("Importing...");
@@ -319,6 +359,9 @@ bool Editor::import_frame(string fname, bool batch) {
 }
 
 bool Editor::export_frame(string fname, bool batch) {
+    if (files.empty()) return false;
+    FileInfo& file = files[curFile];
+
     if (file.jsp.frames.size() == 0) return false;
 
     if (fname.find('.') == string::npos) {
@@ -336,6 +379,9 @@ bool Editor::export_frame(string fname, bool batch) {
 /* Batch import and export */
 
 void Editor::import_batch(string fname) {
+    if (files.empty()) return;
+    FileInfo& file = files[curFile];
+
     if (fname.substr(fname.length() - 5) == "0.png") {
         fname.resize(fname.length() - 5);
     } else {
@@ -357,6 +403,9 @@ void Editor::import_batch(string fname) {
 }
 
 void Editor::export_batch(string fname) {
+    if (files.empty()) return;
+    FileInfo& file = files[curFile];
+
     if (fname.substr(fname.length() - 4) == ".png") {
         fname.resize(fname.length() - 4);
     }
@@ -381,6 +430,9 @@ void Editor::export_batch(string fname) {
 /* View manipulation */
 
 void Editor::move(int dir) {
+    if (files.empty()) return;
+    FileInfo& file = files[curFile];
+
     if (file.jsp.frames.empty()) return;
 
     if (dir == -1) {
@@ -395,6 +447,9 @@ void Editor::move(int dir) {
 }
 
 void Editor::shift(int dir) {
+    if (files.empty()) return;
+    FileInfo& file = files[curFile];
+
     if (file.jsp.frames.empty()) return;
 
     if (dir == -1) {
@@ -413,6 +468,9 @@ void Editor::shift(int dir) {
 }
 
 void Editor::convertAlpha() {
+    if (files.empty()) return;
+    FileInfo& file = files[curFile];
+
     if (file.jsp.frames.empty()) return;
 
     JspFrame &frame = file.jsp.frames[file.curSprite];
@@ -427,6 +485,7 @@ void Editor::convertAlpha() {
         for (int x = 0; x < surface->h; ++x) {
             SDL_Color col = pixels[y * pitch + x];
             if (!memcmp(&col, &key, sizeof(SDL_Color))) {
+                file.unsaved = true;
                 col = { 0, 0, 0, 0 };
             }
             pixels[y * pitch + x] = col;
@@ -459,30 +518,33 @@ void Editor::render() {
     const int CENTER_X = 180 + (DISPLAY_WIDTH - 180)/2, CENTER_Y = 30 + (DISPLAY_HEIGHT - 30)/2;
 
     if (browsing) {
-        int x = 200, y = 50, h = 0;
-        for (size_t i = 0; i < file.jsp.frames.size(); ++i) {
-            JspFrame frame = file.jsp.frames[i];
-            if (x + frame.surface->w > DISPLAY_WIDTH) {
-                y += h;
-                x = 200;
-                h = 0;
-            }
-            if (y >= DISPLAY_HEIGHT) {
-                break;
-            }
-            rect = {x, y, frame.surface->w, frame.surface->h};
-            SDL_RenderCopy(renderer, frame.texture.get(), nullptr, &rect);
+        if (!files.empty()) {
+            FileInfo& file = files[curFile];
+            int x = 200, y = 50, h = 0;
+            for (size_t i = 0; i < file.jsp.frames.size(); ++i) {
+                JspFrame frame = file.jsp.frames[i];
+                if (x + frame.surface->w > DISPLAY_WIDTH) {
+                    y += h;
+                    x = 200;
+                    h = 0;
+                }
+                if (y >= DISPLAY_HEIGHT) {
+                    break;
+                }
+                rect = {x, y, frame.surface->w, frame.surface->h};
+                SDL_RenderCopy(renderer, frame.texture.get(), nullptr, &rect);
 
-            if (i == file.curSprite) {
-                // red box
-                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-                rect.x -= 1; rect.y -= 1; rect.w += 2; rect.h += 2;
-                SDL_RenderDrawRect(renderer, &rect);
-            }
+                if (i == file.curSprite) {
+                    // red box
+                    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+                    rect.x -= 1; rect.y -= 1; rect.w += 2; rect.h += 2;
+                    SDL_RenderDrawRect(renderer, &rect);
+                }
 
-            x += frame.surface->w;
-            if (frame.surface->h > h) {
-                h = frame.surface->h;
+                x += frame.surface->w;
+                if (frame.surface->h > h) {
+                    h = frame.surface->h;
+                }
             }
         }
     } else {
@@ -497,15 +559,18 @@ void Editor::render() {
         }
 
         // draw sprite
-        if (file.jsp.frames.size() > 0) {
-            JspFrame current = file.jsp.frames[file.curSprite];
-            SDL_Rect rect = {
-                CENTER_X - current.ofsX,
-                CENTER_Y - current.ofsY,
-                current.surface->w,
-                current.surface->h,
-            };
-            SDL_RenderCopy(renderer, current.texture.get(), nullptr, &rect);
+        if (!files.empty()) {
+            FileInfo& file = files[curFile];
+            if (file.jsp.frames.size() > 0) {
+                JspFrame current = file.jsp.frames[file.curSprite];
+                SDL_Rect rect = {
+                    CENTER_X - current.ofsX,
+                    CENTER_Y - current.ofsY,
+                    current.surface->w,
+                    current.surface->h,
+                };
+                SDL_RenderCopy(renderer, current.texture.get(), nullptr, &rect);
+            }
         }
 
         // crosshairs in front
@@ -529,72 +594,79 @@ void Editor::render() {
     SDL_RenderDrawLine(renderer, 0, DISPLAY_HEIGHT - 24, 180, DISPLAY_HEIGHT - 24);
 
     // file stats
-    if (file.shortname.empty()) {
-        DrawText(renderer, gFont, 5, 35, ALIGN_LEFT, black, "No filename");
-    } else {
-        DrawText(renderer, gFont, 5, 35, ALIGN_LEFT, black, file.shortname.c_str());
-    }
+    if (!files.empty()) {
+        FileInfo& file = files[curFile];
 
-    const vector<JspFrame> &frames = file.jsp.frames;
-    std::ostringstream s;
-    s << "Sprite count: " << frames.size();
-    DrawText(renderer, gFont, 5, 55, ALIGN_LEFT, black, s.str().c_str());
-    if (!frames.empty()) {
-        JspFrame current = frames[file.curSprite];
+        std::string name = file.shortname;
+        if (name.empty()) {
+            name = "untitled";
+        }
+        if (file.unsaved) {
+            name += " *";
+        }
+        DrawText(renderer, gFont, 5, 35, ALIGN_LEFT, black, name.c_str());
 
-        s.str(""); s << file.curSprite;
-        DrawText(renderer, gFont, 88, 80, ALIGN_CENTER, black, s.str().c_str());
-        s.str(""); s << "Size: (" << current.surface->w << ", " << current.surface->h << ")";
-        DrawText(renderer, gFont, 5, 105, ALIGN_LEFT, black, s.str().c_str());
-        s.str(""); s << "Origin: (" << current.ofsX << ", " << current.ofsY << ")";
-        DrawText(renderer, gFont, 5, 125, ALIGN_LEFT, black, s.str().c_str());
-    }
+        const vector<JspFrame> &frames = file.jsp.frames;
+        std::ostringstream s;
+        s << "Sprite count: " << frames.size();
+        DrawText(renderer, gFont, 5, 55, ALIGN_LEFT, black, s.str().c_str());
+        if (!frames.empty()) {
+            JspFrame current = frames[file.curSprite];
 
-    // sprites
-    if (frames.size() > 0) {
-        SDL_Rect clip {0, 201, 180, DISPLAY_HEIGHT - 26 - 199};
-        SDL_RenderSetClipRect(renderer, &clip);
-
-        // setup
-        SDL_Texture *curBmp = frames[file.curSprite].texture.get();
-        SDL_Surface *surface = frames[file.curSprite].surface.get();
-        int w = surface->w, h = surface->h;
-        int spr_ = file.curSprite, y_ = 200 + (DISPLAY_HEIGHT - 200 - 24 - h) / 2;
-        SDL_Rect rect = { 90 - w / 2, y_, w, h };
-        SDL_RenderCopy(renderer, curBmp, nullptr, &rect);
-
-        // frames before
-        size_t spr = spr_;
-        int y = y_;
-        while (y > 200 && spr > 0) {
-            --spr;
-            SDL_Texture *bmp = frames[spr].texture.get();
-            rect.w = frames[spr].surface->w;
-            rect.h = frames[spr].surface->h;
-            rect.x = 90 - rect.w / 2;
-            rect.y = y -= rect.h;
-            SDL_RenderCopy(renderer, bmp, nullptr, &rect);
+            s.str(""); s << file.curSprite;
+            DrawText(renderer, gFont, 88, 80, ALIGN_CENTER, black, s.str().c_str());
+            s.str(""); s << "Size: (" << current.surface->w << ", " << current.surface->h << ")";
+            DrawText(renderer, gFont, 5, 105, ALIGN_LEFT, black, s.str().c_str());
+            s.str(""); s << "Origin: (" << current.ofsX << ", " << current.ofsY << ")";
+            DrawText(renderer, gFont, 5, 125, ALIGN_LEFT, black, s.str().c_str());
         }
 
-        // frames after
-        spr = spr_, y = y_;
-        while (y < DISPLAY_HEIGHT && spr < frames.size()) {
-            SDL_Texture *bmp = frames[spr].texture.get();
-            rect.w = frames[spr].surface->w;
-            rect.h = frames[spr].surface->h;
-            rect.x = 90 - rect.w / 2;
-            rect.y = y;
-            SDL_RenderCopy(renderer, bmp, nullptr, &rect);
-            y += rect.h;
-            ++spr;
-        }
+        // sprites
+        if (frames.size() > 0) {
+            SDL_Rect clip {0, 201, 180, DISPLAY_HEIGHT - 26 - 199};
+            SDL_RenderSetClipRect(renderer, &clip);
 
-        // red box
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        rect = { 90 - w / 2 - 1, y_ - 1, 2 + w, 2 + h };
-        SDL_RenderDrawRect(renderer, &rect);
+            // setup
+            SDL_Texture *curBmp = frames[file.curSprite].texture.get();
+            SDL_Surface *surface = frames[file.curSprite].surface.get();
+            int w = surface->w, h = surface->h;
+            int spr_ = file.curSprite, y_ = 200 + (DISPLAY_HEIGHT - 200 - 24 - h) / 2;
+            SDL_Rect rect = { 90 - w / 2, y_, w, h };
+            SDL_RenderCopy(renderer, curBmp, nullptr, &rect);
+
+            // frames before
+            size_t spr = spr_;
+            int y = y_;
+            while (y > 200 && spr > 0) {
+                --spr;
+                SDL_Texture *bmp = frames[spr].texture.get();
+                rect.w = frames[spr].surface->w;
+                rect.h = frames[spr].surface->h;
+                rect.x = 90 - rect.w / 2;
+                rect.y = y -= rect.h;
+                SDL_RenderCopy(renderer, bmp, nullptr, &rect);
+            }
+
+            // frames after
+            spr = spr_, y = y_;
+            while (y < DISPLAY_HEIGHT && spr < frames.size()) {
+                SDL_Texture *bmp = frames[spr].texture.get();
+                rect.w = frames[spr].surface->w;
+                rect.h = frames[spr].surface->h;
+                rect.x = 90 - rect.w / 2;
+                rect.y = y;
+                SDL_RenderCopy(renderer, bmp, nullptr, &rect);
+                y += rect.h;
+                ++spr;
+            }
+
+            // red box
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+            rect = { 90 - w / 2 - 1, y_ - 1, 2 + w, 2 + h };
+            SDL_RenderDrawRect(renderer, &rect);
+        }
+        SDL_RenderSetClipRect(renderer, nullptr);
     }
-    SDL_RenderSetClipRect(renderer, nullptr);
 
     // top bar
     SDL_SetRenderDrawColor(renderer, lightbg.r, lightbg.g, lightbg.b, lightbg.a);
@@ -617,7 +689,8 @@ void Editor::handleEvent(const SDL_Event &event) {
 
     switch (event.type) {
     case SDL_QUIT:
-        if (file.unsaved) {
+        // TODO: check all files, not just current
+        if (!files.empty() && files[curFile].unsaved) {
             running = !dialog::showOkCancel("You have unsaved changes, do you want to quit anyways?", false);
         } else {
             running = false;
@@ -625,8 +698,6 @@ void Editor::handleEvent(const SDL_Event &event) {
         break;
 
     case SDL_DROPFILE:
-        if (file.unsaved && !dialog::showOkCancel("You have unsaved changes, do you want to open anyways?", false))
-            return;
         load(event.drop.file);
         SDL_free(event.drop.file);
         break;
@@ -650,11 +721,14 @@ void Editor::handleEvent(const SDL_Event &event) {
         }
         break;
 
-    case SDL_MOUSEMOTION:
-        if (file.jsp.frames.size() == 0 || !dragging) break;
+    case SDL_MOUSEMOTION: {
+        if (files.empty()) break;
+        FileInfo& file = files[curFile];
+        if (file.jsp.frames.empty() || !dragging) break;
         file.jsp.frames[file.curSprite].ofsX -= event.motion.xrel;
         file.jsp.frames[file.curSprite].ofsY -= event.motion.yrel;
         break;
+    }
 
     case SDL_MOUSEWHEEL:
         if (event.wheel.y > 0) {
@@ -664,7 +738,9 @@ void Editor::handleEvent(const SDL_Event &event) {
         }
         break;
 
-    case SDL_KEYDOWN:
+    case SDL_KEYDOWN: {
+        if (files.empty()) break;
+        FileInfo& file = files[curFile];
         if (file.jsp.frames.size() == 0) break;
 
         int mods = SDL_GetModState();
@@ -703,6 +779,7 @@ void Editor::handleEvent(const SDL_Event &event) {
             break;
         }
         break;
+    }
     }
 }
 
