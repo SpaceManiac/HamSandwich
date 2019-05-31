@@ -379,7 +379,6 @@ void Editor::convertAlpha() {
 /* Game loop overrides */
 
 void Editor::working(const std::string& text) {
-    render();
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 196);
     SDL_RenderFillRect(renderer, NULL);
     DrawText(renderer, gFont, DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2 - 50, ALIGN_CENTER, { 0, 0, 0, 255 }, text.c_str());
