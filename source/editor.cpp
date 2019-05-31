@@ -169,19 +169,36 @@ Editor::Editor()
         [this]() { save(); });
     gui.addButton(rect(x += g, y, w, h), "Save As", "Save JSP As (Ctrl+Shift+S)",
         { KMOD_LCTRL | KMOD_LSHIFT, SDL_SCANCODE_S },
-        std::bind(dialog::save, "Save JSP", "jsp", [this](std::string str) { saveAs(str); }));
+        [this]() {
+            if (files.empty()) return;
+            dialog::save("Save JSP", "jsp", [this](std::string str) { saveAs(str); });
+        });
     gui.addButton(rect(x += g, y, w, h), "Import", "Import from image (Ctrl+I)",
         { KMOD_LCTRL, SDL_SCANCODE_I },
-        std::bind(dialog::open, "Import Image", "png;bmp;tga;pcx", [this](std::string str) { import_frame(str); }));
+        [this]() {
+            if (files.empty()) return;
+            if (files[curFile].jsp.frames.size() == 0) return;
+            dialog::open("Import Image", "png;bmp;tga;pcx", [this](std::string str) { import_frame(str); });
+        });
     gui.addButton(rect(x += g, y, w, h), "Export", "Export to image (Ctrl+E)",
         { KMOD_LCTRL, SDL_SCANCODE_E },
-        std::bind(dialog::save, "Export Image", "png;bmp;tga;pcx", [this](std::string str) { export_frame(str); }));
+        [this]() {
+            if (files.empty()) return;
+            if (files[curFile].jsp.frames.size() == 0) return;
+            dialog::save("Export Image", "png;bmp;tga;pcx", [this](std::string str) { export_frame(str); });
+        });
     gui.addButton(rect(x += g, y, w, h), "Import All", "Import from folder (Ctrl+Shift+I)",
         { KMOD_LCTRL | KMOD_LSHIFT, SDL_SCANCODE_I },
-        std::bind(dialog::open, "Select first frame (0.png)", "png", [this](std::string str) { import_batch(str); }));
+        [this]() {
+            if (files.empty()) return;
+            dialog::open("Select first frame (0.png)", "png", [this](std::string str) { import_batch(str); });
+        });
     gui.addButton(rect(x += g, y, w, h), "Export All", "Export to folder (Ctrl+Shift+E)",
         { KMOD_LCTRL | KMOD_LSHIFT, SDL_SCANCODE_E },
-        std::bind(dialog::save, "Export all frames", "png", [this](std::string str) { export_batch(str); }));
+        [this]() {
+            if (files.empty()) return;
+            dialog::save("Export all frames", "png", [this](std::string str) { export_batch(str); });
+        });
 
     //x = DISPLAY_WIDTH - g;
     gui.addButton(rect(x += g, y, w, h), "Crosshairs", "Cycle crosshairs mode (Ctrl+H)",
