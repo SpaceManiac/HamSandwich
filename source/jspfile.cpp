@@ -36,6 +36,7 @@ JspFrame::JspFrame(int w, int h)
     , ofsY(0)
 {
     SDL_SetTextureBlendMode(texture.get(), SDL_BLENDMODE_BLEND);
+    upload();
 }
 
 void JspFrame::upload() {
