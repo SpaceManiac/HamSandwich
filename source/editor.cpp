@@ -120,8 +120,8 @@ struct Editor {
     FileInfo* getCurFile();
 };
 
-static GuiRect rect(int x, int y, int w, int h) {
-    return { x, y, x+w, y+h };
+static SDL_Rect rect(int x, int y, int w, int h) {
+    return { x, y, w, h };
 }
 
 Editor::Editor()
@@ -688,7 +688,7 @@ void Editor::handleEvent(const SDL_Event &event) {
         return;
     }
 
-    GuiRect dragArea = { 181, 31, DISPLAY_WIDTH, DISPLAY_HEIGHT };
+    SDL_Rect dragArea = { 181, 31, DISPLAY_WIDTH, DISPLAY_HEIGHT };
 
     switch (event.type) {
     case SDL_QUIT:
@@ -713,7 +713,7 @@ void Editor::handleEvent(const SDL_Event &event) {
         break;
 
     case SDL_MOUSEBUTTONDOWN:
-        if (!browsing && (dragArea.left <= event.button.x && event.button.x <= dragArea.right && dragArea.top <= event.button.y && event.button.y <= dragArea.bottom) && event.button.button == 1) {
+        if (!browsing && event.button.button == 1 && rect_contains(dragArea, event.button.x, event.button.y)) {
             dragging = true;
         }
         break;

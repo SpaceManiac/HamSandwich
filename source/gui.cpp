@@ -37,32 +37,30 @@ bool Gui::handleEvent(const SDL_Event &evt) {
     }
 }
 
-bool Gui::element(GuiRect r, TTF_Font *font, const std::string &text, const std::string &desc, KbdShortcut shortcut) {
+bool Gui::element(SDL_Rect r, TTF_Font *font, const std::string &text, const std::string &desc, KbdShortcut shortcut) {
     if (!font)
         font = gFont;
 
     SDL_Color black { 0, 0, 0, 255 };
 
-    bool hovered = r.left <= mx && mx <= r.right && r.top <= my && my <= r.bottom;
+    bool hovered = rect_contains(r, mx, my);
     bool focused = hovered && justClicked;
 
     if (focused) {
         SDL_SetRenderDrawColor(renderer, 230, 230, 230, 255);
-        SDL_Rect rect = {r.left, r.top, r.right - r.left, r.bottom - r.top};
-        SDL_RenderFillRect(renderer, &rect);
+        SDL_RenderFillRect(renderer, &r);
     } else if (hovered) {
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_Rect rect = {r.left, r.top, r.right - r.left, r.bottom - r.top};
-        SDL_RenderFillRect(renderer, &rect);
+        SDL_RenderFillRect(renderer, &r);
     }
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderDrawLine(renderer, r.left - 1, r.top, r.left - 1, r.bottom - 1);
-    SDL_RenderDrawLine(renderer, r.right, r.top, r.right, r.bottom - 1);
-    SDL_RenderDrawLine(renderer, r.left, r.top - 1, r.right - 1, r.top - 1);
-    SDL_RenderDrawLine(renderer, r.left, r.bottom, r.right - 1, r.bottom);
+    SDL_RenderDrawLine(renderer, r.x - 1, r.y, r.x - 1, r.y + r.h - 1);
+    SDL_RenderDrawLine(renderer, r.x + r.w, r.y, r.x + r.w, r.y + r.h - 1);
+    SDL_RenderDrawLine(renderer, r.x, r.y - 1, r.x + r.w - 1, r.y - 1);
+    SDL_RenderDrawLine(renderer, r.x, r.y + r.h, r.x + r.w - 1, r.y + r.h);
 
-    DrawText(renderer, font, (r.left + r.right) / 2, r.top + 2, ALIGN_CENTER, black, text.c_str());
+    DrawText(renderer, font, r.x + r.w / 2, r.y + 2, ALIGN_CENTER, black, text.c_str());
 
     if (hovered && !desc.empty()) {
         tooltip = desc;
@@ -96,10 +94,10 @@ void Gui::render() {
     justTyped = { 0, 0 };
 }
 
-bool Gui::button(GuiRect rect, const std::string &text, const std::string &desc, KbdShortcut shortcut) {
+bool Gui::button(SDL_Rect rect, const std::string &text, const std::string &desc, KbdShortcut shortcut) {
     return element(rect, gFont, text, desc, shortcut);
 }
 
 bool Gui::iconButton(int x, int y, FAChar ch, const std::string &desc, KbdShortcut shortcut) {
-    return element({ x, y, x + 20, y + 20 }, gIconFont, FA::str(ch), desc, shortcut);
+    return element({ x, y, 20, 20 }, gIconFont, FA::str(ch), desc, shortcut);
 }

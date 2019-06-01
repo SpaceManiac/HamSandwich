@@ -6,9 +6,9 @@
 #include <functional>
 #include <vector>
 
-struct GuiRect {
-    int left, top, right, bottom;
-};
+inline bool rect_contains(SDL_Rect r, int x, int y) {
+    return r.x <= x && x < r.x + r.w && r.y <= y && y < r.y + r.h;
+}
 
 struct KbdShortcut {
     int mods, keycode;
@@ -31,8 +31,8 @@ public:
     void render();
     bool handleEvent(const SDL_Event &evt);
 
-    bool element(GuiRect rect, TTF_Font *font, const std::string &text, const std::string &desc, KbdShortcut shortcut);
-    bool button(GuiRect rect, const std::string &text, const std::string &desc, KbdShortcut shortcut);
+    bool element(SDL_Rect rect, TTF_Font *font, const std::string &text, const std::string &desc, KbdShortcut shortcut);
+    bool button(SDL_Rect rect, const std::string &text, const std::string &desc, KbdShortcut shortcut);
     bool iconButton(int x, int y, FAChar ch, const std::string &desc, KbdShortcut shortcut);
 };
 
