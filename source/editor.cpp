@@ -416,6 +416,8 @@ void Editor::working(const std::string& text) {
 }
 
 void Editor::render() {
+    int x, y, g, w, h;
+
     SDL_Color lightbg = {200, 200, 200, 255};
     SDL_Color black = {0, 0, 0, 255};
     SDL_Rect region;
@@ -424,8 +426,8 @@ void Editor::render() {
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
+    // Current sprite / browsing view
     const int CENTER_X = 180 + (DISPLAY_WIDTH - 180)/2, CENTER_Y = 60 + (DISPLAY_HEIGHT - 60)/2;
-
     if (browsing) {
         if (FileInfo* file = getCurFile()) {
             int x = 200, y = 80, h = 0;
@@ -501,19 +503,73 @@ void Editor::render() {
 
     // file stats
     if (FileInfo* file = getCurFile()) {
+        JspFrame* frame = file->getCurFrame();
+
         DrawText(renderer, gFont, 5, 65, ALIGN_LEFT, black, file->calcShortname().c_str());
 
-        const vector<JspFrame> &frames = file->jsp.frames;
+        vector<JspFrame> &frames = file->jsp.frames;
         std::ostringstream s;
         s << "Sprite count: " << frames.size();
         DrawText(renderer, gFont, 5, 85, ALIGN_LEFT, black, s.str().c_str());
-        if (JspFrame* current = file->getCurFrame()) {
+        if (frame) {
             s.str(""); s << file->curSprite;
             DrawText(renderer, gFont, 88, 110, ALIGN_CENTER, black, s.str().c_str());
-            s.str(""); s << "Size: (" << current->surface->w << ", " << current->surface->h << ")";
+            s.str(""); s << "Size: (" << frame->surface->w << ", " << frame->surface->h << ")";
             DrawText(renderer, gFont, 5, 135, ALIGN_LEFT, black, s.str().c_str());
-            s.str(""); s << "Origin: (" << current->ofsX << ", " << current->ofsY << ")";
+            s.str(""); s << "Origin: (" << frame->ofsX << ", " << frame->ofsY << ")";
             DrawText(renderer, gFont, 5, 155, ALIGN_LEFT, black, s.str().c_str());
+        }
+
+        x = 10; g = 34; y = 110;
+        if (frame) {
+            if (gui.iconButton(x, y, FAChar::fast_backward, "First frame (Home)", { 0, SDL_SCANCODE_HOME })) {
+                file->curSprite = 0;
+            }
+            if (gui.iconButton(x += g, y, FAChar::arrow_left, "Previous frame (Left)", { 0, SDL_SCANCODE_LEFT })) {
+                move(-1);
+            }
+            x += g;
+            if (gui.iconButton(x += g, y, FAChar::arrow_right, "Next frame (Right)", { 0, SDL_SCANCODE_RIGHT })) {
+                move(1);
+            }
+            if (gui.iconButton(x += g, y, FAChar::fast_forward, "Last frame (End)", { 0, SDL_SCANCODE_END })) {
+                file->curSprite = frames.size() - 1;
+            }
+
+            if ((frame->ofsX || frame->ofsY) && gui.iconButton(146, 155, FAChar::undo, "Reset origin (Ctrl+R)", { KMOD_CTRL, SDL_SCANCODE_R })) {
+                frame->ofsX = frame->ofsY = 0;
+                file->unsaved = true;
+            }
+        }
+
+        x = 10; g = 34; y = 180;
+        if (frame) {
+            if (gui.iconButton(x, y, FAChar::backward, "Shift frame left (Shift+Left)", { KMOD_SHIFT, SDL_SCANCODE_LEFT })) {
+                shift(-1);
+            }
+        }
+        if (gui.iconButton(x += g, y, FAChar::plus, "Add frame (Ctrl+Insert)", { KMOD_CTRL, SDL_SCANCODE_INSERT })) {
+            JspFrame newFrame(32, 24);
+            frames.insert(frames.begin() + file->curSprite, newFrame);
+            file->unsaved = true;
+        }
+        if (frame) {
+            if (gui.iconButton(x += g, y, FAChar::font, "Convert pink to alpha (Ctrl+A)", { KMOD_CTRL, SDL_SCANCODE_A })) {
+                convertAlpha();
+            }
+            if (gui.iconButton(x += g, y, FAChar::minus, "Delete frame (Ctrl+Delete)", { KMOD_CTRL, SDL_SCANCODE_DELETE })) {
+                frames.erase(frames.begin() + file->curSprite);
+                file->unsaved = true;
+
+                if (frames.empty()) {
+                    file->curSprite = 0;
+                } else if (file->curSprite >= frames.size()) {
+                    file->curSprite = frames.size() - 1;
+                }
+            }
+            if (gui.iconButton(x += g, y, FAChar::forward, "Shift frame right (Shift+Right)", { KMOD_SHIFT, SDL_SCANCODE_RIGHT })) {
+                shift(1);
+            }
         }
 
         // sprites
@@ -574,7 +630,7 @@ void Editor::render() {
 
     // buttons
     std::string str;
-    int x = 6, y = 4, w = 80, g = 90, h = 22;
+    x = 6; y = 4; w = 80; g = 90; h = 22;
     if (gui.button(rect(x, y, w, h), "Open", "Open JSP (Ctrl+O)", { KMOD_CTRL, SDL_SCANCODE_O })) {
         if (dialog::open("Open JSP", "jsp", &str)) {
             load(str);
@@ -645,61 +701,6 @@ void Editor::render() {
             curFile = i;
         }
         x += g;
-    }
-
-    x = 10; g = 34; y = 110;
-    if (FileInfo* file = getCurFile()) {
-        JspFrame* frame = file->getCurFrame();
-        if (frame) {
-            if (gui.iconButton(x, y, FAChar::fast_backward, "First frame (Home)", { 0, SDL_SCANCODE_HOME })) {
-                file->curSprite = 0;
-            }
-            if (gui.iconButton(x += g, y, FAChar::arrow_left, "Previous frame (Left)", { 0, SDL_SCANCODE_LEFT })) {
-                move(-1);
-            }
-            x += g;
-            if (gui.iconButton(x += g, y, FAChar::arrow_right, "Next frame (Right)", { 0, SDL_SCANCODE_RIGHT })) {
-                move(1);
-            }
-            if (gui.iconButton(x += g, y, FAChar::fast_forward, "Last frame (End)", { 0, SDL_SCANCODE_END })) {
-                file->curSprite = file->jsp.frames.size() - 1;
-            }
-
-            if ((frame->ofsX || frame->ofsY) && gui.iconButton(146, 155, FAChar::undo, "Reset origin (Ctrl+R)", { KMOD_CTRL, SDL_SCANCODE_R })) {
-                frame->ofsX = frame->ofsY = 0;
-                file->unsaved = true;
-            }
-        }
-
-        x = 10; g = 34; y = 180;
-        if (frame) {
-            if (gui.iconButton(x, y, FAChar::backward, "Shift frame left (Shift+Left)", { KMOD_SHIFT, SDL_SCANCODE_LEFT })) {
-                shift(-1);
-            }
-        }
-        if (gui.iconButton(x += g, y, FAChar::plus, "Add frame (Ctrl+Insert)", { KMOD_CTRL, SDL_SCANCODE_INSERT })) {
-            JspFrame newFrame(32, 24);
-            file->jsp.frames.insert(file->jsp.frames.begin() + file->curSprite, newFrame);
-            file->unsaved = true;
-        }
-        if (frame) {
-            if (gui.iconButton(x += g, y, FAChar::font, "Convert pink to alpha (Ctrl+A)", { KMOD_CTRL, SDL_SCANCODE_A })) {
-                convertAlpha();
-            }
-            if (gui.iconButton(x += g, y, FAChar::minus, "Delete frame (Ctrl+Delete)", { KMOD_CTRL, SDL_SCANCODE_DELETE })) {
-                file->jsp.frames.erase(file->jsp.frames.begin() + file->curSprite);
-                file->unsaved = true;
-
-                if (file->jsp.frames.empty()) {
-                    file->curSprite = 0;
-                } else if (file->curSprite >= file->jsp.frames.size()) {
-                    file->curSprite = file->jsp.frames.size() - 1;
-                }
-            }
-            if (gui.iconButton(x += g, y, FAChar::forward, "Shift frame right (Shift+Right)", { KMOD_SHIFT, SDL_SCANCODE_RIGHT })) {
-                shift(1);
-            }
-        }
     }
 }
 
