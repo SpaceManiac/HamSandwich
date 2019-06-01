@@ -37,6 +37,8 @@ public:
     bool button(SDL_Rect rect, const std::string &text, const std::string &desc = "", KbdShortcut shortcut = {});
     bool iconButton(int x, int y, FAChar ch, const std::string &desc = "", KbdShortcut shortcut = {});
 
+    bool hotkey(KbdShortcut shortcut);
+
     Gui& highlight() { isHighlight = true; return *this; }
 };
 

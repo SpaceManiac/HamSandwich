@@ -28,9 +28,19 @@ bool Gui::handleEvent(const SDL_Event &evt) {
         my = evt.button.y;
         return false;
 
-    case SDL_KEYDOWN:
-        justTyped = { SDL_GetModState() & 0xff, evt.key.keysym.scancode };
+    case SDL_KEYDOWN: {
+        int mod = SDL_GetModState(), mod2 = 0;
+        // Expand L/R hotkeys to match
+        if (mod & KMOD_SHIFT)
+            mod2 |= KMOD_SHIFT;
+        if (mod & KMOD_CTRL)
+            mod2 |= KMOD_CTRL;
+        if (mod & KMOD_ALT)
+            mod2 |= KMOD_ALT;
+
+        justTyped = { mod2, evt.key.keysym.scancode };
         return false;
+    }
 
     default:
         return false;
@@ -67,7 +77,7 @@ bool Gui::element(SDL_Rect r, TTF_Font *font, const std::string &text, const std
         tooltip = desc;
     }
 
-    return (hovered && justClicked) || (shortcut != (KbdShortcut){ 0, 0 } && justTyped == shortcut);
+    return (hovered && justClicked) || hotkey(shortcut);
 }
 
 void Gui::render() {
@@ -101,4 +111,8 @@ bool Gui::button(SDL_Rect rect, const std::string &text, const std::string &desc
 
 bool Gui::iconButton(int x, int y, FAChar ch, const std::string &desc, KbdShortcut shortcut) {
     return element({ x, y, 20, 20 }, gIconFont, FA::str(ch), desc, shortcut);
+}
+
+bool Gui::hotkey(KbdShortcut shortcut) {
+    return (shortcut != (KbdShortcut){ 0, 0 } && justTyped == shortcut);
 }
