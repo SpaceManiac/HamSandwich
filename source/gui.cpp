@@ -49,9 +49,10 @@ bool Gui::element(SDL_Rect r, TTF_Font *font, const std::string &text, const std
     if (focused) {
         SDL_SetRenderDrawColor(renderer, 230, 230, 230, 255);
         SDL_RenderFillRect(renderer, &r);
-    } else if (hovered) {
+    } else if (hovered || isHighlight) {
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderFillRect(renderer, &r);
+        isHighlight = false;
     }
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);

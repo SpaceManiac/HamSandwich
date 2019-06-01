@@ -25,6 +25,8 @@ class Gui {
     KbdShortcut justTyped;
     std::string tooltip;
 
+    bool isHighlight;
+
 public:
     Gui();
 
@@ -32,8 +34,10 @@ public:
     bool handleEvent(const SDL_Event &evt);
 
     bool element(SDL_Rect rect, TTF_Font *font, const std::string &text, const std::string &desc, KbdShortcut shortcut);
-    bool button(SDL_Rect rect, const std::string &text, const std::string &desc, KbdShortcut shortcut);
-    bool iconButton(int x, int y, FAChar ch, const std::string &desc, KbdShortcut shortcut);
+    bool button(SDL_Rect rect, const std::string &text, const std::string &desc = "", KbdShortcut shortcut = {});
+    bool iconButton(int x, int y, FAChar ch, const std::string &desc = "", KbdShortcut shortcut = {});
+
+    Gui& highlight() { isHighlight = true; return *this; }
 };
 
 #endif // GUI_H

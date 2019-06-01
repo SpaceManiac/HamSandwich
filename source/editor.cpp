@@ -79,6 +79,7 @@ struct FileInfo {
     size_t curSprite;
     bool unsaved;
 
+    std::string calcShortname();
     JspFrame* getCurFrame();
 };
 
@@ -145,6 +146,15 @@ JspFrame* FileInfo::getCurFrame() {
     } else {
         return &jsp.frames[curSprite];
     }
+}
+
+std::string FileInfo::calcShortname() {
+    std::string result = shortname;
+    if (result.empty())
+        result = "untitled";
+    if (unsaved)
+        result += "*";
+    return result;
 }
 
 FileInfo* Editor::getCurFile() {
@@ -414,11 +424,11 @@ void Editor::render() {
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    const int CENTER_X = 180 + (DISPLAY_WIDTH - 180)/2, CENTER_Y = 30 + (DISPLAY_HEIGHT - 30)/2;
+    const int CENTER_X = 180 + (DISPLAY_WIDTH - 180)/2, CENTER_Y = 60 + (DISPLAY_HEIGHT - 60)/2;
 
     if (browsing) {
         if (FileInfo* file = getCurFile()) {
-            int x = 200, y = 50, h = 0;
+            int x = 200, y = 80, h = 0;
             for (size_t i = 0; i < file->jsp.frames.size(); ++i) {
                 const JspFrame& frame = file->jsp.frames[i];
                 if (x + frame.surface->w > DISPLAY_WIDTH) {
@@ -486,36 +496,29 @@ void Editor::render() {
     SDL_RenderFillRect(renderer, &region);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderDrawLine(renderer, 180, 0, 180, DISPLAY_HEIGHT);
-    SDL_RenderDrawLine(renderer, 0, 200, 180, 200);
+    SDL_RenderDrawLine(renderer, 0, 210, 180, 210);
     SDL_RenderDrawLine(renderer, 0, DISPLAY_HEIGHT - 24, 180, DISPLAY_HEIGHT - 24);
 
     // file stats
     if (FileInfo* file = getCurFile()) {
-        std::string name = file->shortname;
-        if (name.empty()) {
-            name = "untitled";
-        }
-        if (file->unsaved) {
-            name += " *";
-        }
-        DrawText(renderer, gFont, 5, 35, ALIGN_LEFT, black, name.c_str());
+        DrawText(renderer, gFont, 5, 65, ALIGN_LEFT, black, file->calcShortname().c_str());
 
         const vector<JspFrame> &frames = file->jsp.frames;
         std::ostringstream s;
         s << "Sprite count: " << frames.size();
-        DrawText(renderer, gFont, 5, 55, ALIGN_LEFT, black, s.str().c_str());
+        DrawText(renderer, gFont, 5, 85, ALIGN_LEFT, black, s.str().c_str());
         if (JspFrame* current = file->getCurFrame()) {
             s.str(""); s << file->curSprite;
-            DrawText(renderer, gFont, 88, 80, ALIGN_CENTER, black, s.str().c_str());
+            DrawText(renderer, gFont, 88, 110, ALIGN_CENTER, black, s.str().c_str());
             s.str(""); s << "Size: (" << current->surface->w << ", " << current->surface->h << ")";
-            DrawText(renderer, gFont, 5, 105, ALIGN_LEFT, black, s.str().c_str());
+            DrawText(renderer, gFont, 5, 135, ALIGN_LEFT, black, s.str().c_str());
             s.str(""); s << "Origin: (" << current->ofsX << ", " << current->ofsY << ")";
-            DrawText(renderer, gFont, 5, 125, ALIGN_LEFT, black, s.str().c_str());
+            DrawText(renderer, gFont, 5, 155, ALIGN_LEFT, black, s.str().c_str());
         }
 
         // sprites
         if (frames.size() > 0) {
-            SDL_Rect clip {0, 201, 180, DISPLAY_HEIGHT - 26 - 199};
+            SDL_Rect clip {0, 211, 180, DISPLAY_HEIGHT - 26 - 209};
             SDL_RenderSetClipRect(renderer, &clip);
 
             // setup
@@ -562,11 +565,12 @@ void Editor::render() {
 
     // top bar
     SDL_SetRenderDrawColor(renderer, lightbg.r, lightbg.g, lightbg.b, lightbg.a);
-    region = { 0, 0, DISPLAY_WIDTH, 30 };
+    region = { 0, 0, DISPLAY_WIDTH, 60 };
     SDL_RenderFillRect(renderer, &region);
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderDrawLine(renderer, 0, 30, DISPLAY_WIDTH, 30);
+    SDL_RenderDrawLine(renderer, 0, 60, DISPLAY_WIDTH, 60);
 
     // buttons
     std::string str;
@@ -626,11 +630,24 @@ void Editor::render() {
     if (gui.button(rect(x += g, y, w, h), "Crosshairs", "Cycle crosshairs mode (Ctrl+H)", { KMOD_LCTRL, SDL_SCANCODE_H })) {
         crosshairs = (crosshairs + 1) % MAX_CROSSHAIRS;
     }
+    if (browsing) gui.highlight();
     if (gui.button(rect(x += g, y, w, h), "Browse", "Show all frames at once (Ctrl+B)", { KMOD_LCTRL, SDL_SCANCODE_B })) {
         browsing = !browsing;
     }
 
-    x = 10; g = 34; y = 80;
+    // tab bar
+    x = 6; y = 34;
+    for (size_t i = 0; i < files.size(); ++i) {
+        FileInfo& file = files[i];
+
+        if (i == curFile) gui.highlight();
+        if (gui.button(rect(x, y, w, h), file.calcShortname())) {
+            curFile = i;
+        }
+        x += g;
+    }
+
+    x = 10; g = 34; y = 110;
     if (FileInfo* file = getCurFile()) {
         JspFrame* frame = file->getCurFrame();
         if (frame) {
@@ -648,12 +665,12 @@ void Editor::render() {
                 file->curSprite = file->jsp.frames.size() - 1;
             }
 
-            if (gui.iconButton(146, 125, FAChar::undo, "Reset origin (Ctrl+R)", { KMOD_LCTRL, SDL_SCANCODE_R })) {
+            if (gui.iconButton(146, 155, FAChar::undo, "Reset origin (Ctrl+R)", { KMOD_LCTRL, SDL_SCANCODE_R })) {
                 frame->ofsX = frame->ofsY = 0;
             }
         }
 
-        x = 10; g = 34; y = 150;
+        x = 10; g = 34; y = 180;
         if (frame) {
             if (gui.iconButton(x, y, FAChar::backward, "Shift frame left (Shift+Left)", { KMOD_LSHIFT, SDL_SCANCODE_LEFT })) {
                 shift(-1);
@@ -662,6 +679,7 @@ void Editor::render() {
         if (gui.iconButton(x += g, y, FAChar::plus, "Add frame (Ctrl+Insert)", { KMOD_LCTRL, SDL_SCANCODE_INSERT })) {
             JspFrame newFrame(32, 24);
             file->jsp.frames.insert(file->jsp.frames.begin() + file->curSprite, newFrame);
+            file->unsaved = true;
         }
         if (frame) {
             if (gui.iconButton(x += g, y, FAChar::font, "Convert pink to alpha (Ctrl+A)", { KMOD_LCTRL, SDL_SCANCODE_A })) {
@@ -669,6 +687,7 @@ void Editor::render() {
             }
             if (gui.iconButton(x += g, y, FAChar::minus, "Delete frame (Ctrl+Delete)", { KMOD_LCTRL, SDL_SCANCODE_DELETE })) {
                 file->jsp.frames.erase(file->jsp.frames.begin() + file->curSprite);
+                file->unsaved = true;
 
                 if (file->jsp.frames.empty()) {
                     file->curSprite = 0;
@@ -730,6 +749,7 @@ void Editor::handleEvent(const SDL_Event &event) {
         if (file.jsp.frames.empty() || !dragging) break;
         file.jsp.frames[file.curSprite].ofsX -= event.motion.xrel;
         file.jsp.frames[file.curSprite].ofsY -= event.motion.yrel;
+        file.unsaved = true;
         break;
     }
 
