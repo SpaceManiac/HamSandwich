@@ -539,7 +539,9 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 		{
 			Map *map = world->map[world->numMaps++] = new Map(0, "");
 			section.read_varint();  // skip uid
-			map->Resize(section.read_varint(), section.read_varint());
+			size_t w = section.read_varint();
+			size_t h = section.read_varint();
+			map->Resize(w, h);
 			section.read_string(map->name);
 			section.read_string(map->song);
 			section.stream.read((char*) &map->itemDrops, 2);
