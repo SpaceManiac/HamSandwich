@@ -85,7 +85,13 @@ EXE="$PWD/build/$TOOLSET-$CONFIG/$PROJECT/$PROJECT"
 cd "$GAMEDIR"
 if [ "$TOOL" = "gdb" ]; then
 	echo "==== Debugging $PROJECT ($CONFIG) ===="
-	gdb -q -ex 'break abort' --args "$EXE" $ARGS
+	# Catches "the runtime was asked to terminate in an usual way".
+	# If libc++ is dynamically linked, the breakpoint should be pending.
+	gdb -q \
+		-ex 'set breakpoint pending on' \
+		-ex 'break abort' \
+		-ex 'set breakpoint pending auto' \
+		--args "$EXE" $ARGS
 elif [ "$TOOL" = "valgrind" ]; then
 	echo "==== Valgrinding $PROJECT ($CONFIG) ===="
 	valgrind "$EXE" $ARGS
