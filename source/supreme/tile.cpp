@@ -35,9 +35,9 @@ void SetTiles(byte *scrn)
 	for(i=0;i<400;i++)
 	{
 		for(j=0;j<TILE_HEIGHT;j++)
-			memcpy(&tiles[i][j*TILE_WIDTH],&scrn[x+(y+j)*640],TILE_WIDTH);
+			memcpy(&tiles[i][j*TILE_WIDTH],&scrn[x+(y+j)*SCRWID],TILE_WIDTH);
 		x+=TILE_WIDTH;
-		if(x>639)
+		if(x>=SCRHEI)
 		{
 			x=0;
 			y+=TILE_HEIGHT;
@@ -56,7 +56,7 @@ void SetTile(int t,int x,int y,byte *src)
 	int i;
 
 	for(i=0;i<TILE_HEIGHT;i++)
-		memcpy(&tiles[t][i*TILE_WIDTH],&src[x+(y+i)*640],TILE_WIDTH);
+		memcpy(&tiles[t][i*TILE_WIDTH],&src[x+(y+i)*SCRWID],TILE_WIDTH);
 }
 
 static void SaveTile(std::ostream& f, byte *t)
@@ -300,7 +300,7 @@ void PlotStar(int x,int y,byte col,byte tx,byte ty,word tileNum)
 
 	if(tiles[tileNum][tx+ty*TILE_WIDTH]==0)
 	{
-		dst=tileMGL->GetScreen()+x+y*640;
+		dst=tileMGL->GetScreen()+x+y*SCRWID;
 		*dst=col;
 	}
 }
@@ -351,34 +351,34 @@ void RenderFloorTile(int x, int y, int t, char light)
 		if (wid < 1)
 			return;
 
-		dst = tileMGL->GetScreen() + y * 640;
+		dst = tileMGL->GetScreen() + y * SCRWID;
 		src = tiles[t] - x;
 	}
-	else if (x > 640 - TILE_WIDTH)
+	else if (x > SCRWID - TILE_WIDTH)
 	{
-		wid = TILE_WIDTH - (x - (640 - TILE_WIDTH));
+		wid = TILE_WIDTH - (x - (SCRWID - TILE_WIDTH));
 		if (wid < 1)
 			return;
-		dst = tileMGL->GetScreen() + x + y * 640;
+		dst = tileMGL->GetScreen() + x + y * SCRWID;
 		src = tiles[t];
 	}
 	else
 	{
 		wid = TILE_WIDTH;
-		dst = tileMGL->GetScreen() + x + y * 640;
+		dst = tileMGL->GetScreen() + x + y * SCRWID;
 		src = tiles[t];
 	}
 
 	if (y < 0)
 	{
-		dst -= y * 640;
+		dst -= y * SCRWID;
 		src -= y*TILE_WIDTH;
 
 		hgt = TILE_HEIGHT + y;
 	}
-	else if (y > 480 - TILE_HEIGHT)
+	else if (y > SCRHEI - TILE_HEIGHT)
 	{
-		hgt = TILE_HEIGHT - (y - (480 - TILE_HEIGHT));
+		hgt = TILE_HEIGHT - (y - (SCRHEI - TILE_HEIGHT));
 	}
 	else
 	{
@@ -395,7 +395,7 @@ void RenderFloorTile(int x, int y, int t, char light)
 		{
 			hgt--;
 			memset(dst, 0, wid);
-			dst += 640;
+			dst += SCRWID;
 		}
 		return;
 	}
@@ -408,7 +408,7 @@ void RenderFloorTile(int x, int y, int t, char light)
 			{
 				dst[i] = SprModifyLight(ModifyDiscoColor(src[i], disco), light);
 			}
-			dst += 640;
+			dst += SCRWID;
 			src += 32;
 		}
 	}
@@ -431,36 +431,36 @@ void RenderFloorTileShadow(int x, int y, int t, char light)
 			return;
 
 		darkpart = 8;
-		dst = tileMGL->GetScreen() + y * 640;
+		dst = tileMGL->GetScreen() + y * SCRWID;
 		src = tiles[t] - x;
 	}
-	else if (x > 640 - TILE_WIDTH)
+	else if (x > SCRWID - TILE_WIDTH)
 	{
-		wid = TILE_WIDTH - (x - (640 - TILE_WIDTH));
+		wid = TILE_WIDTH - (x - (SCRWID - TILE_WIDTH));
 		if (wid < 1)
 			return;
-		darkpart = 8 - (x - (640 - TILE_WIDTH));
-		dst = tileMGL->GetScreen() + x + y * 640;
+		darkpart = 8 - (x - (SCRWID - TILE_WIDTH));
+		dst = tileMGL->GetScreen() + x + y * SCRWID;
 		src = tiles[t];
 	}
 	else
 	{
 		wid = TILE_WIDTH;
-		dst = tileMGL->GetScreen() + x + y * 640;
+		dst = tileMGL->GetScreen() + x + y * SCRWID;
 		src = tiles[t];
 		darkpart = 8; // shadows are 8 pixels wide I guess
 	}
 
 	if (y < 0)
 	{
-		dst -= y * 640;
+		dst -= y * SCRWID;
 		src -= y*TILE_WIDTH;
 
 		hgt = TILE_HEIGHT + y;
 	}
-	else if (y > 480 - TILE_HEIGHT)
+	else if (y > SCRHEI - TILE_HEIGHT)
 	{
-		hgt = TILE_HEIGHT - (y - (480 - TILE_HEIGHT));
+		hgt = TILE_HEIGHT - (y - (SCRHEI - TILE_HEIGHT));
 	}
 	else
 		hgt = TILE_HEIGHT;
@@ -475,7 +475,7 @@ void RenderFloorTileShadow(int x, int y, int t, char light)
 		{
 			dst[i] = SprModifyLight(ModifyDiscoColor(src[i], disco), light - 4 * (i > wid - darkpart));
 		}
-		dst += 640;
+		dst += SCRWID;
 		src += 32;
 	}
 }
@@ -495,34 +495,34 @@ void RenderFloorTileUnlit(int x, int y, int t)
 		if (wid < 1)
 			return;
 
-		dst = tileMGL->GetScreen() + y * 640;
+		dst = tileMGL->GetScreen() + y * SCRWID;
 		src = tiles[t] - x;
 	}
-	else if (x > 640 - TILE_WIDTH)
+	else if (x > SCRWID - TILE_WIDTH)
 	{
-		wid = TILE_WIDTH - (x - (640 - TILE_WIDTH));
+		wid = TILE_WIDTH - (x - (SCRWID - TILE_WIDTH));
 		if (wid < 1)
 			return;
-		dst = tileMGL->GetScreen() + x + y * 640;
+		dst = tileMGL->GetScreen() + x + y * SCRWID;
 		src = tiles[t];
 	}
 	else
 	{
 		wid = TILE_WIDTH;
-		dst = tileMGL->GetScreen() + x + y * 640;
+		dst = tileMGL->GetScreen() + x + y * SCRWID;
 		src = tiles[t];
 	}
 
 	if (y < 0)
 	{
-		dst -= y * 640;
+		dst -= y * SCRWID;
 		src -= y*TILE_WIDTH;
 
 		hgt = TILE_HEIGHT + y;
 	}
-	else if (y > 480 - TILE_HEIGHT)
+	else if (y > SCRHEI - TILE_HEIGHT)
 	{
-		hgt = TILE_HEIGHT - (y - (480 - TILE_HEIGHT));
+		hgt = TILE_HEIGHT - (y - (SCRHEI - TILE_HEIGHT));
 	}
 	else
 		hgt = TILE_HEIGHT;
@@ -531,7 +531,7 @@ void RenderFloorTileUnlit(int x, int y, int t)
 	{
 		hgt--;
 		memcpy(dst, src, wid);
-		dst += 640;
+		dst += SCRWID;
 		src += 32;
 	}
 }
@@ -552,34 +552,34 @@ void RenderFloorTileTrans(int x, int y, int t, char light)
 		if (wid < 1)
 			return;
 
-		dst = tileMGL->GetScreen() + y * 640;
+		dst = tileMGL->GetScreen() + y * SCRWID;
 		src = tiles[t] - x;
 	}
-	else if (x > 640 - TILE_WIDTH)
+	else if (x > SCRWID - TILE_WIDTH)
 	{
-		wid = TILE_WIDTH - (x - (640 - TILE_WIDTH));
+		wid = TILE_WIDTH - (x - (SCRWID - TILE_WIDTH));
 		if (wid < 1)
 			return;
-		dst = tileMGL->GetScreen() + x + y * 640;
+		dst = tileMGL->GetScreen() + x + y * SCRWID;
 		src = tiles[t];
 	}
 	else
 	{
 		wid = TILE_WIDTH;
-		dst = tileMGL->GetScreen() + x + y * 640;
+		dst = tileMGL->GetScreen() + x + y * SCRWID;
 		src = tiles[t];
 	}
 
 	if (y < 0)
 	{
-		dst -= y * 640;
+		dst -= y * SCRWID;
 		src -= y*TILE_WIDTH;
 
 		hgt = TILE_HEIGHT + y;
 	}
-	else if (y > 480 - TILE_HEIGHT)
+	else if (y > SCRHEI - TILE_HEIGHT)
 	{
-		hgt = TILE_HEIGHT - (y - (480 - TILE_HEIGHT));
+		hgt = TILE_HEIGHT - (y - (SCRHEI - TILE_HEIGHT));
 	}
 	else
 		hgt = TILE_HEIGHT;
@@ -594,7 +594,7 @@ void RenderFloorTileTrans(int x, int y, int t, char light)
 		{
 			if (src[i]) dst[i] = SprModifyLight(ModifyDiscoColor(src[i], disco), light);
 		}
-		dst += 640;
+		dst += SCRWID;
 		src += 32;
 	}
 }
@@ -608,7 +608,7 @@ inline void GouraudBox(int x,int y,byte *src,char light0,char light1,char light2
 	byte *dst;
 	int curLight,dlx,dly1,dly2,firstLight,lastLight;
 
-	dst=tileMGL->GetScreen()+x+y*640;
+	dst=tileMGL->GetScreen()+x+y*SCRWID;
 
 	curLight=light0*FIXAMT;
 
@@ -621,13 +621,13 @@ inline void GouraudBox(int x,int y,byte *src,char light0,char light1,char light2
 	{
 		dlx=(lastLight-firstLight)/GB_WID;
 		curLight=firstLight;
-		if(y+j>479)
+		if(y+j>=SCRHEI)
 			return;	// all done!
 		if(y+j>=0)
 		{
 			for(i=0;i<GB_WID;i++)
 			{
-				if(x+i>=0 && x+i<640)
+				if(x+i>=0 && x+i<SCRWID)
 				{
 					tmp=((*src)&31)+(curLight/FIXAMT);
 					if(tmp<0)
@@ -647,7 +647,7 @@ inline void GouraudBox(int x,int y,byte *src,char light0,char light1,char light2
 			dst+=GB_WID;
 			src+=GB_WID;
 		}
-		dst+=(640-GB_WID);
+		dst+=(SCRWID-GB_WID);
 		src+=GB_WID;
 
 		firstLight+=dly1;
@@ -661,7 +661,7 @@ inline void GouraudBoxTrans(int x,int y,byte *src,char light0,char light1,char l
 	byte *dst;
 	int curLight,dlx,dly1,dly2,firstLight,lastLight;
 
-	dst=tileMGL->GetScreen()+x+y*640;
+	dst=tileMGL->GetScreen()+x+y*SCRWID;
 
 	curLight=light0*FIXAMT;
 
@@ -674,13 +674,13 @@ inline void GouraudBoxTrans(int x,int y,byte *src,char light0,char light1,char l
 	{
 		dlx=(lastLight-firstLight)/GB_WID;
 		curLight=firstLight;
-		if(y+j>479)
+		if(y+j>=SCRHEI)
 			return;	// all done!
 		if(y+j>=0)
 		{
 			for(i=0;i<GB_WID;i++)
 			{
-				if(x+i>=0 && x+i<640)
+				if(x+i>=0 && x+i<SCRWID)
 				{
 					if((*src)!=0)
 					{
@@ -703,7 +703,7 @@ inline void GouraudBoxTrans(int x,int y,byte *src,char light0,char light1,char l
 			dst+=GB_WID;
 			src+=GB_WID;
 		}
-		dst+=(640-GB_WID);
+		dst+=(SCRWID-GB_WID);
 		src+=GB_WID;
 
 		firstLight+=dly1;
@@ -718,7 +718,7 @@ inline void GouraudBoxDiscoTrans(int x,int y,byte *src,char light0,char light1,c
 	int curLight,dlx,dly1,dly2,firstLight,lastLight;
 	byte color;
 
-	dst=tileMGL->GetScreen()+x+y*640;
+	dst=tileMGL->GetScreen()+x+y*SCRWID;
 
 	curLight=light0*FIXAMT;
 
@@ -733,13 +733,13 @@ inline void GouraudBoxDiscoTrans(int x,int y,byte *src,char light0,char light1,c
 	{
 		dlx=(lastLight-firstLight)/GB_WID;
 		curLight=firstLight;
-		if(y+j>479)
+		if(y+j>=SCRHEI)
 			return;	// all done!
 		if(y+j>=0)
 		{
 			for(i=0;i<GB_WID;i++)
 			{
-				if(x+i>=0 && x+i<640)
+				if(x+i>=0 && x+i<SCRWID)
 				{
 					if((*src)!=0)
 					{
@@ -762,7 +762,7 @@ inline void GouraudBoxDiscoTrans(int x,int y,byte *src,char light0,char light1,c
 			dst+=GB_WID;
 			src+=GB_WID;
 		}
-		dst+=(640-GB_WID);
+		dst+=(SCRWID-GB_WID);
 		src+=GB_WID;
 
 		firstLight+=dly1;
@@ -777,7 +777,7 @@ inline void GouraudBoxDisco(int x,int y,byte *src,char light0,char light1,char l
 	int curLight,dlx,dly1,dly2,firstLight,lastLight;
 	byte color;
 
-	dst=tileMGL->GetScreen()+x+y*640;
+	dst=tileMGL->GetScreen()+x+y*SCRWID;
 
 	curLight=light0*FIXAMT;
 
@@ -792,13 +792,13 @@ inline void GouraudBoxDisco(int x,int y,byte *src,char light0,char light1,char l
 	{
 		dlx=(lastLight-firstLight)/GB_WID;
 		curLight=firstLight;
-		if(y+j>479)
+		if(y+j>=SCRHEI)
 			return;	// all done!
 		if(y+j>=0)
 		{
 			for(i=0;i<GB_WID;i++)
 			{
-				if(x+i>=0 && x+i<640)
+				if(x+i>=0 && x+i<SCRWID)
 				{
 					tmp=((*src)&31)+(curLight/FIXAMT);
 					if(tmp<0)
@@ -818,7 +818,7 @@ inline void GouraudBoxDisco(int x,int y,byte *src,char light0,char light1,char l
 			dst+=GB_WID;
 			src+=GB_WID;
 		}
-		dst+=(640-GB_WID);
+		dst+=(SCRWID-GB_WID);
 		src+=GB_WID;
 
 		firstLight+=dly1;
@@ -837,7 +837,7 @@ void RenderFloorTileFancy(int x,int y,int t,byte shadow,char *theLight)
 	int i,j;
 	char light[9];
 
-	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>639 || y>479)
+	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>=SCRWID || y>=SCRHEI)
 		return;	// no need to render
 
 
@@ -940,7 +940,7 @@ void RenderWallTileFancy(int x,int y,int t,char *theLight)
 	int i,j;
 	char light[9];
 
-	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>639 || y>479)
+	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>=SCRWID || y>=SCRHEI)
 		return;	// no need to render
 
 	if(config.shading==0)
@@ -1003,7 +1003,7 @@ void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,char *theLi
 	int i,j;
 	char light[9];
 
-	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>639 || y>479)
+	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>=SCRWID || y>=SCRHEI)
 		return;	// no need to render
 
 

@@ -422,13 +422,13 @@ void RenderParticle(int x,int y,byte *scrn,byte color,byte size)
 {
 	byte c1,c2;
 
-	if(x<0 || x>639 || y<0 || y>479)
+	if(x<0 || x>=SCRWID || y<0 || y>=SCRHEI)
 		return;
 
 	switch(size)
 	{
 		case 2:	// big particle
-			if(x<2 || x>637 || y<2 || y>477)
+			if(x<2 || x>=SCRWID-2 || y<2 || y>=SCRHEI-2)
 				return;
 
 			if((color&31)>1)
@@ -440,42 +440,42 @@ void RenderParticle(int x,int y,byte *scrn,byte color,byte size)
 			else
 				c2=c1;
 
-			scrn+=(x+(y-2)*640);
+			scrn+=(x+(y-2)*SCRWID);
 			*scrn=c2;
-			scrn+=639;
+			scrn+=SCRWID-1;
 			*scrn++=c1;
 			*scrn++=color;
 			*scrn=c1;
-			scrn+=637;
+			scrn+=SCRWID-3;
 			*scrn++=c2;
 			*scrn++=c1;
 			*scrn++=color;
 			*scrn++=c1;
 			*scrn=c2;
-			scrn+=637;
+			scrn+=SCRWID-3;
 			*scrn++=c1;
 			*scrn++=color;
 			*scrn=c1;
-			*(scrn+639)=c2;
+			*(scrn+SCRWID-1)=c2;
 			break;
 		case 1:	// normal particle
-			if(x<1 || x>638 || y<1 || y>478)
+			if(x<1 || x>SCRWID-2 || y<1 || y>SCRHEI-2)
 				return;
 			if(color&31)
 				c1=color-1;	// only do this if subtracting 1 keeps it in the same color group
 			else
 				c1=color;
-			scrn+=(x+(y-1)*640);
+			scrn+=(x+(y-1)*SCRWID);
 			*scrn=c1;
-			scrn+=639;
+			scrn+=SCRWID-1;
 			*scrn++=c1;
 			*scrn++=color;
 			*scrn=c1;
-			scrn+=639;
+			scrn+=SCRWID-1;
 			*scrn=c1;
 			break;
 		case 0:	// tiny particle (1 pixel)
-			scrn[x+y*640]=color;
+			scrn[x+y*SCRWID]=color;
 			break;
 	}
 }
@@ -484,18 +484,18 @@ void HLine(int x,int x2,int y,byte c,byte *scrn)
 {
 	if(x<0)
 		x=0;
-	if(x2>639)
-		x2=639;
+	if(x2>=SCRWID)
+		x2=SCRWID-1;
 	if(x2<0)
 		return;
-	if(x>639)
+	if(x>=SCRWID)
 		return;
 	if(y<0)
 		return;
-	if(y>479)
+	if(y>=SCRHEI)
 		return;
 
-	scrn+=(x+y*640);
+	scrn+=(x+y*SCRWID);
 	memset(scrn,c,x2-x+1);
 }
 
@@ -507,20 +507,20 @@ void HLine2(int x,int x2,int y,byte c,byte *scrn)
 
 	if(x<0)
 		x=0;
-	if(x2>639)
-		x2=639;
+	if(x2>=SCRWID)
+		x2=SCRWID-1;
 	if(x2<0)
 		return;
-	if(x>639)
+	if(x>=SCRWID)
 		return;
 	if(y<0)
 		return;
-	if(y>479)
+	if(y>=SCRHEI)
 		return;
 
 	c1=(c&31);
 	c2=(c&(~31));
-	scrn+=(x+y*640);
+	scrn+=(x+y*SCRWID);
 	for(i=x;i<=x2;i++)
 	{
 		b=*scrn;
@@ -545,15 +545,15 @@ void HLine3(int x,int x2,int y,byte c,byte less,byte *scrn)
 
 	if(x<0)
 		x=0;
-	if(x2>639)
-		x2=639;
+	if(x2>=SCRWID)
+		x2=SCRWID-1;
 	if(x2<0)
 		return;
-	if(x>639)
+	if(x>=SCRWID)
 		return;
 	if(y<0)
 		return;
-	if(y>479)
+	if(y>=SCRHEI)
 		return;
 
 	if((c&31)<less)
@@ -569,7 +569,7 @@ void HLine3(int x,int x2,int y,byte c,byte less,byte *scrn)
 	dCol=(centerCol/((x2-x)/2));
 
 	colRange=(c&(~31));
-	scrn+=(x+y*640);
+	scrn+=(x+y*SCRWID);
 	for(i=x;i<=x2;i++)
 	{
 
@@ -662,9 +662,9 @@ void RenderLightningParticle(int x1,int y1,int x2,int y2,int range,byte bright,b
 	// base case: draw the (x1,y1) pixel
 	if((x1-x2<2 && x1-x2>-2) && (y1-y2<2 && y1-y2>-2))
 	{
-		if(x1>=0 && x1<635 && y1>=0 && y1<475)
+		if(x1>=0 && x1<SCRWID-5 && y1>=0 && y1<SCRHEI-5)
 		{
-			scrn+=(x1+y1*640);
+			scrn+=(x1+y1*SCRWID);
 			ctptr=&ctab[0];
 			for(midy=y1;midy<y1+5;midy++)
 			{
@@ -679,7 +679,7 @@ void RenderLightningParticle(int x1,int y1,int x2,int y2,int range,byte bright,b
 					ctptr++;
 					scrn++;
 				}
-				scrn+=640-5;
+				scrn+=SCRWID-5;
 			}
 		}
 	}
@@ -1161,8 +1161,8 @@ void MakeItSnow(Map *map)
 		if(!particleList[i]->Alive())
 		{
 
-			particleList[i]->x=(Random(640)+cx)<<FIXSHIFT;
-			particleList[i]->y=(Random(480)+cy)<<FIXSHIFT;
+			particleList[i]->x=(Random(SCRWID)+cx)<<FIXSHIFT;
+			particleList[i]->y=(Random(SCRHEI)+cy)<<FIXSHIFT;
 			particleList[i]->z=(300+Random(300))<<FIXSHIFT;
 			particleList[i]->dx=0;
 			particleList[i]->dy=0;
@@ -1193,8 +1193,8 @@ void MakeItRain(Map *map)
 		if(!particleList[i]->Alive())
 		{
 
-			particleList[i]->x=(Random(640)+cx)<<FIXSHIFT;
-			particleList[i]->y=(Random(480)+cy)<<FIXSHIFT;
+			particleList[i]->x=(Random(SCRWID)+cx)<<FIXSHIFT;
+			particleList[i]->y=(Random(SCRHEI)+cy)<<FIXSHIFT;
 			particleList[i]->z=(300+Random(300))<<FIXSHIFT;
 			particleList[i]->dx=0;
 			particleList[i]->dy=0;
