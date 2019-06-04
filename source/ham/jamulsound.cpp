@@ -167,7 +167,7 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 	if(schannel[chosen].soundNum!=-1)
 		Mix_HaltChannel(schannel[chosen].voice);
 
-	i=Mix_PlayChannel(-1, soundList[which].sample, 0);
+	i=Mix_PlayChannel(-1, soundList[which].sample, (playFlags & SND_LOOPING) ? -1 : 0);
 	if(i!=-1)
 	{
 		Mix_Volume(i, vol / 2);
