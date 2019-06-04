@@ -1,6 +1,7 @@
 #include "sound.h"
 #include "display.h"
 #include "options.h"
+#include "music.h"
 
 byte soundAvailable = 0;
 
@@ -48,5 +49,25 @@ void MakeNormalSound(int snd)
 	if (!opt.sound)
 		return;
 
-	GoPlaySound(snd, 128, 255, SND_MAXPRIORITY | SND_CUTOFF | SND_ONE, MAX_SNDPRIORITY);
+	GoPlaySound(snd, 0, 255, SND_MAXPRIORITY | SND_CUTOFF | SND_ONE, MAX_SNDPRIORITY);
+}
+
+bool ConfigSoundEnabled()
+{
+	return 1;
+}
+
+int ConfigNumSounds()
+{
+	return 32;
+}
+
+void KillSong()
+{
+	CDStop();
+}
+
+SDL_RWops* SoundLoadOverride(int which)
+{
+	return nullptr;
 }

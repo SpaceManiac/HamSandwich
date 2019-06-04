@@ -3,6 +3,7 @@
 #include "display.h"
 #include "repair.h"
 #include "progress.h"
+#include "music.h"
 
 soundDesc_t soundInfo[MAX_SOUNDS]={
 	{SND_NONE,"No Sound At All!!",ST_EFFECT},
@@ -652,4 +653,21 @@ void MakeSpaceSound(int snd,int priority)
 		return;
 
 	GoPlaySound(snd,0,0,SND_CUTOFF,priority);
+}
+
+SDL_RWops* SoundLoadOverride(int num)
+{
+	if (num < CUSTOM_SND_START || num > CUSTOM_SND_START+GetNumCustomSounds())
+		return nullptr;
+
+	byte* buf = GetCustomSound(num - CUSTOM_SND_START);
+	if (!buf)
+		return nullptr;
+
+	return SDL_RWFromConstMem(buf, GetCustomLength(num - CUSTOM_SND_START));
+}
+
+void KillSong()
+{
+	StopSong();
 }

@@ -107,3 +107,18 @@ void KillSong(void)
 		JamulSoundStop(sndNum);
 	sndNum=-1;
 }
+
+bool ConfigSoundEnabled()
+{
+	return 1;
+}
+
+int ConfigNumSounds()
+{
+	return 32;
+}
+
+SDL_RWops* SoundLoadOverride(int which)
+{
+	return nullptr;
+}

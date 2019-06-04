@@ -18,9 +18,6 @@ enum {
 
 const int MAX_SNDPRIORITY = 65536;
 
-// games should define this if they want to force flags to be on at all times
-extern word GlobalSoundFlags();
-
 bool JamulSoundInit(int numBuffers);
 void JamulSoundExit(void);
 

@@ -144,3 +144,23 @@ void SoundSystemExists(void)
 {
 	soundExists=1;
 }
+
+bool ConfigSoundEnabled()
+{
+	return 1;
+}
+
+int ConfigNumSounds()
+{
+	return 32;
+}
+
+void KillSong()
+{
+	StopSong();
+}
+
+SDL_RWops* SoundLoadOverride(int which)
+{
+	return nullptr;
+}

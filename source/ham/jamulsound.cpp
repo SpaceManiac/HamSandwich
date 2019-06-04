@@ -1,10 +1,14 @@
 #include "jamulsound.h"
-#include "mgldraw.h"
-#include "sound.h"
-#include "options.h"
-#include "config.h"
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include <stdio.h>
+
+// Game-provided
+extern bool ConfigSoundEnabled();
+extern int ConfigNumSounds();
+extern SDL_RWops* SoundLoadOverride(int num);
+extern void KillSong();
+
 
 typedef struct soundList_t
 {
@@ -20,7 +24,7 @@ typedef struct schannel_t
 
 static int sndVolume;
 
-const int NUM_SOUNDS = 32;
+static int NUM_SOUNDS = 0;
 
 static byte soundIsOn=0;
 static int bufferCount;
@@ -31,8 +35,10 @@ bool JamulSoundInit(int numBuffers)
 {
 	int i;
 
-	if (!config.sound)
+	if (!ConfigSoundEnabled()) {
+		printf("sound disabled\n");
 		return false;
+	}
 	if (SDL_Init(SDL_INIT_AUDIO) != 0) {
 		printf("init audio failed: %s\n", SDL_GetError());
 		return false;
@@ -42,6 +48,8 @@ bool JamulSoundInit(int numBuffers)
 		printf("Mix_OpenAudio: %s\n", Mix_GetError());
 		return false;
 	}
+	NUM_SOUNDS = ConfigNumSounds();
+	printf("num sounds = %d, num buffers = %d\n", NUM_SOUNDS, numBuffers);
 	Mix_AllocateChannels(NUM_SOUNDS + 1);
 
 	soundIsOn=1;
@@ -109,13 +117,23 @@ bool JamulSoundPlay(int which,long pan,long vol,byte playFlags,int priority)
 
 	if(soundList[which].sample==NULL)
 	{
-		sprintf(s,"sound/snd%03d.wav",which);
-		SDL_RWops* rw = SDL_RWFromFile(s, "rb");
-		if(!rw)
-			return 0;
+		// See if sound loading is overridden for this sound...
+		SDL_RWops* rw = SoundLoadOverride(which);
+		if (!rw)
+		{
+			// If not, try to load it from a file instead
+			sprintf(s,"sound/snd%03d.wav",which);
+			rw = SDL_RWFromFile(s, "rb");
+			if(!rw)
+				return 0;
+		}
+
+		// Now try to load it
 		soundList[which].sample = Mix_LoadWAV_RW(rw, 1);
-		if(soundList[which].sample==NULL)
+		if(soundList[which].sample==NULL) {
+			printf("Error: %s\n", Mix_GetError());
 			return 0;
+		}
 	}
 
 	if(playFlags&SND_ONE)
@@ -167,14 +185,14 @@ bool JamulSoundPlay(int which,long pan,long vol,byte playFlags,int priority)
 			voice_set_frequency(i, freq);
 			voice_start(i);
 		}
-		if(profile.progress.purchase[modeShopNum[MODE_REVERSE]]&SIF_ACTIVE)
+		if(playFlags&SND_BACKWARDS)
 		{
 			voice_stop(i);
 			voice_set_position(i, soundList[which].sample->len - 1);
 			voice_set_frequency(i, -voice_get_frequency(i));
 			voice_start(i);
 		}
-		if(profile.progress.purchase[modeShopNum[MODE_MANIC]]&SIF_ACTIVE)
+		if(playFlags&SND_DOUBLESPEED)
 		{
 			voice_stop(i);
 			voice_set_frequency(i, 2 * voice_get_frequency(i));
@@ -205,8 +223,6 @@ bool JamulSoundStop(int which)
 			schannel[i].voice=-1;
 		}
 	}
-
-	soundIsOn = 0;
 
 	return true;
 }
