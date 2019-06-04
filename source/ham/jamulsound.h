@@ -9,10 +9,17 @@ enum {
 	SND_MAXPRIORITY = 2,	// ignore priority value, this sound is a must-have
 	SND_ONE = 4,			// only one copy may play at once
 	SND_PLAYING = 8,		// well, it's not for everyone, but it goes here
-	SND_FEW = 16			// only allow MAX_FEW_SOUNDS copies to play at once
+	SND_LOOPING = 16,
+	SND_SUSTAIN = 32,		// only used by instruments
+	SND_RANDOM = 64, 		// randomize pitch up or down 10%
+	SND_BACKWARDS = 128,
+	SND_DOUBLESPEED = 256,
 };
 
 const int MAX_SNDPRIORITY = 65536;
+
+// games should define this if they want to force flags to be on at all times
+extern word GlobalSoundFlags();
 
 bool JamulSoundInit(int numBuffers);
 void JamulSoundExit(void);
@@ -31,4 +38,9 @@ void JamulSoundPurge(void);
 // call this a lot, it plays sounds
 void GoPlaySound(int num, long pan, long vol, byte flags, int priority);
 
-#endif
+// pass in the sound # you're sick of hearing
+bool JamulSoundStop(int which);
+
+void JamulSoundVolume(int v);
+
+#endif  // JAMULSOUND_H

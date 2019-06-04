@@ -64,7 +64,7 @@ void LunaticInit(MGLDraw *mgl)
 	InitControls();
 	msgFromOtherModules=0;
 	JamulSoundVolume(profile.sound);
-	JamulSoundMusicVolume(profile.music);
+	SetMusicVolume(profile.music);
 	InitHiScores();
 }
 

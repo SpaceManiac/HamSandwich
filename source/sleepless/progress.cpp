@@ -281,7 +281,7 @@ void DefaultProfile(char *name)
 	ApplyControlSettings();
 	SaveProfile();
 	JamulSoundVolume(profile.sound);
-	JamulSoundMusicVolume(profile.music);
+	SetMusicVolume(profile.music);
 }
 
 void DefaultLevelProgress(levelData_t *me,byte levelNum)
