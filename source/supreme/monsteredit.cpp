@@ -6,6 +6,9 @@
 #include "tool.h"
 #include "edithelp.h"
 
+// standard header includes
+#include <vector>
+
 #define MMODE_NORMAL	0	// doing nothing (just viewing monsters, click to select, select all you like)
 #define MMODE_SELECT	1	// selecting a monster (pick one and you're done)
 #define MMODE_HELP		2
@@ -28,7 +31,7 @@ static dword themes[]={MT_GOOD,MT_EVIL,MT_SPOOKY,MT_ZOMBIE,MT_VAMPIRE,MT_SPIDER,
 					   MT_HIGHTECH,MT_ANIMAL,MT_HUMAN,MT_URBAN,MT_AQUATIC,MT_UNDERSEA,MT_FLYING,
 					   MT_BITS};
 
-static dword monsList[256];
+static std::vector<dword> monsList;
 static word monsInList,monsStart,monsShown;
 static byte realClick;
 
@@ -100,12 +103,14 @@ static void MakeMonsterList(void)
 	monsStart=0;
 	pos=0;
 	monsInList=0;
+	monsList.clear();
+
 	// get all items which match this theme
 	for(i=0;i<NUM_MONSTERS;i++)
 	{
 		if(MonsterTheme(i)&themes[curTheme])
 		{
-			monsList[pos]=i;
+			monsList.push_back(i);
 			monsInList=pos+1;
 			pos++;
 		}
