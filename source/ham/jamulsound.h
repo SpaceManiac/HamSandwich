@@ -33,7 +33,7 @@ void JamulSoundUpdate(void);
 void JamulSoundPurge(void);
 
 // call this a lot, it plays sounds
-void GoPlaySound(int num, long pan, long vol, byte flags, int priority);
+void GoPlaySound(int num, long pan, long vol, int flags, int priority);
 
 // pass in the sound # you're sick of hearing
 bool JamulSoundStop(int which);

@@ -102,7 +102,7 @@ void JamulSoundUpdate(void)
 	}
 }
 
-bool JamulSoundPlay(int which,long pan,long vol,byte playFlags,int priority)
+bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 {
 	char s[32];
 	int i,chosen,lowpriority;
@@ -253,7 +253,7 @@ void JamulSoundPurge(void)
 	}
 }
 
-void GoPlaySound(int num,long pan,long vol,byte flags,int priority)
+void GoPlaySound(int num,long pan,long vol,int flags,int priority)
 {
 	if(!soundIsOn)
 		return;
