@@ -68,19 +68,19 @@ void PutCamera(int x,int y);
 void GetCamera(int *x,int *y);
 // call this once per gameloop, with the X and Y of the object you want the camera to track
 void UpdateCamera(int x,int y,byte facing,Map *map);
-void Print(int x,int y,char *s,char bright,byte font);
+void Print(int x,int y,const char *s,char bright,byte font);
 void CenterPrint(int midx,int y,const char *s,char bright,byte font);
-void PrintGlow(int x,int y,char *s,byte font);
-void RightPrintGlow(int x,int y,char *s,byte font);
-void CenterPrintGlow(int y,char *s,byte font);
-void PrintBright(int x,int y,char *s,char bright,byte font);
-void PrintBrightGlow(int x,int y,char *s,char brt,byte font);
+void PrintGlow(int x,int y,const char *s,byte font);
+void RightPrintGlow(int x,int y,const char *s,byte font);
+void CenterPrintGlow(int y,const char *s,byte font);
+void PrintBright(int x,int y,const char *s,char bright,byte font);
+void PrintBrightGlow(int x,int y,const char *s,char brt,byte font);
 void RenderItAll(world_t *world,Map *map,byte flags);
-int GetStrLength(char *s,byte fnt);
+int GetStrLength(const char *s,byte fnt);
 
 void SprDraw(int x,int y,int z,byte hue,char bright,sprite_t *spr,byte flags);
-void WallDraw(int x,int y,word wall,word floor,char *light,byte flags);
-void RoofDraw(int x,int y,word roof,char *light,byte flags);
+void WallDraw(int x,int y,word wall,word floor,const char *light,byte flags);
+void RoofDraw(int x,int y,word roof,const char *light,byte flags);
 
 void ParticleDraw(int x,int y,int z,byte type,byte size,byte flags);
 

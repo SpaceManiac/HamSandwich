@@ -697,7 +697,7 @@ void VictoryText(MGLDraw *mgl,byte victoryType)
 	free(scr);
 }
 
-void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound,byte specialdeal)
+void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound,byte specialdeal)
 {
 	int i,j,clock;
 	RGB desiredpal[256],curpal[256];

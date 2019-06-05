@@ -26,7 +26,7 @@ Map::Map(FILE *f)
 	fread(map,width*height,sizeof(mapTile_t),f);
 }
 
-Map::Map(byte size,char *name)
+Map::Map(byte size,const char *name)
 {
 	int i;
 

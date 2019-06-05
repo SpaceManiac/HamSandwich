@@ -835,7 +835,7 @@ void ShowTarget(void)
 	editmgl->Box(x1,y1,x2,y2,col);
 }
 
-void RenderCheckbox(int x,int y,int v,char *txt)
+void RenderCheckbox(int x,int y,int v,const char *txt)
 {
 	if(v)
 		editmgl->FillBox(x,y,x+11,y+11,16);

@@ -185,6 +185,3 @@ sdl2_project "mystic"
 	icon_file "mystic"
 	depends "ham"
 	pch "winpch"
-
-	filter "toolset:gcc"
-		buildoptions { "-Wno-write-strings" }

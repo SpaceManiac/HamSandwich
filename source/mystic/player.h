@@ -132,7 +132,7 @@ void PlayerLoseKey(byte w);
 void PlayerSetWorldWorth(byte world,int amt);
 float PlayerGetPercent(byte world);
 float PlayerGetGamePercent(void);
-void SetCustomName(char *name);
+void SetCustomName(const char *name);
 char *GetCustomName(void);
 byte PlayerHasLunacyKey(byte w);
 void PlayerHeal(byte amt);

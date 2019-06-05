@@ -10,7 +10,7 @@ struct title_t;
 
 byte MainMenu(MGLDraw *mgl);
 void Credits(MGLDraw *mgl,byte mode);
-void SplashScreen(MGLDraw *dispmgl,char *fname,int delay,byte sound,byte specialdeal);
+void SplashScreen(MGLDraw *dispmgl,const char *fname,int delay,byte sound,byte specialdeal);
 
 byte GameSlotPicker(MGLDraw *mgl,title_t *title);
 void VictoryText(MGLDraw *mgl,byte victoryType);

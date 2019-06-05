@@ -16,7 +16,7 @@ void ExitSpclDialog(void)
 {
 }
 
-static void RenderCheckbox(int x,int y,int v,char *txt)
+static void RenderCheckbox(int x,int y,int v,const char *txt)
 {
 	if(v)
 		DrawFillBox(x,y,x+11,y+11,16);
@@ -25,7 +25,7 @@ static void RenderCheckbox(int x,int y,int v,char *txt)
 	Print(x+13,y,txt,0,1);
 }
 
-void RenderValueAdjuster(char *name,int value,int x,int y)
+void RenderValueAdjuster(const char *name,int value,int x,int y)
 {
 	char s[8];
 

@@ -147,7 +147,7 @@ void InitMessage(void)
 	message.msg[0]='\0';
 }
 
-void NewBigMessage(char *txt,int time)
+void NewBigMessage(const char *txt,int time)
 {
 	strncpy(bigMessage.msg,txt,32);
 	bigMessage.x=320-GetStrLength(bigMessage.msg,0)/2;
@@ -158,7 +158,7 @@ void NewBigMessage(char *txt,int time)
 	bigMessage.brightDir=2;
 }
 
-void NewMessage(char *txt,int time)
+void NewMessage(const char *txt,int time)
 {
 	strncpy(message.msg,txt,32);
 	message.x=320-GetStrLength(message.msg,2)/2;
@@ -169,7 +169,7 @@ void NewMessage(char *txt,int time)
 	message.brightDir=2;
 }
 
-void NoRepeatNewMessage(char *txt,int time)
+void NoRepeatNewMessage(const char *txt,int time)
 {
 	if(!strncmp(message.msg,txt,32))
 		return;	// don't reset if showing the same message
