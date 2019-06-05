@@ -35,8 +35,8 @@
 #define MAX_MODS	(24)
 
 byte ModifierOn(byte mod);
-char *ModifierDesc(byte m);
-char *ModifierName(byte m);
+const char *ModifierDesc(byte m);
+const char *ModifierName(byte m);
 void AdjustModifier(byte *me,byte w,char dir,byte *list);
 
 void InitAchieve(byte ach,byte mod1,byte mod2);

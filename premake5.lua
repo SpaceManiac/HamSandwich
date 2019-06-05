@@ -178,9 +178,6 @@ sdl2_project "loonyland2"
 		"monster_ai.cpp",
 	}
 
-	filter "toolset:gcc"
-		buildoptions { "-Wno-write-strings" }
-
 sdl2_project "mystic"
 	icon_file "mystic"
 	depends "ham"

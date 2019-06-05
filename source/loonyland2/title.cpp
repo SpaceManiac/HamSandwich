@@ -381,7 +381,7 @@ void EraseCharDisplay(MGLDraw *mgl)
 	CenterPrintDark(x+465,y+204,"No",0);
 }
 
-void NewCharButton(int x,int y,byte on,char *s,MGLDraw *mgl)
+void NewCharButton(int x,int y,byte on,const char *s,MGLDraw *mgl)
 {
 	if(on)
 		PauseBox(x,y,x+100,y+35,32*5+16);

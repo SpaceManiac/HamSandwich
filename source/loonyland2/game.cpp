@@ -711,7 +711,7 @@ byte PlayALevel(byte map)
 	return exitcode;
 }
 
-byte LunaticWorld(byte world,char *worldName)
+byte LunaticWorld(byte world,const char *worldName)
 {
 	byte result;
 	char wName[64];

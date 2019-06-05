@@ -195,7 +195,7 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 	scry=(rscry>>FIXSHIFT);
 }
 
-void Print(int x,int y,char *s,char bright,byte font)
+void Print(int x,int y,const char *s,char bright,byte font)
 {
 	if(font!=1)
 		FontPrintStringBright(x,y,s,gameFont[font],bright);
@@ -208,39 +208,39 @@ void Print(int x,int y,char *s,char bright,byte font)
 	}
 }
 
-void PrintDark(int x,int y,char *s,byte font)
+void PrintDark(int x,int y,const char *s,byte font)
 {
 	FontPrintStringDark(x,y,s,gameFont[font]);
 }
 
-void PrintDarkAdj(int x,int y,char *s,char bright,byte font)
+void PrintDarkAdj(int x,int y,const char *s,char bright,byte font)
 {
 	FontPrintStringDarkAdj(x,y,s,bright,gameFont[font]);
 }
 
-void PrintColor(int x,int y,char *s,byte color,char bright,byte font)
+void PrintColor(int x,int y,const char *s,byte color,char bright,byte font)
 {
 	FontPrintStringColor(x,y,s,gameFont[font],color,bright);
 }
 
-void PrintGlow(int x,int y,char *s,char bright,byte font)
+void PrintGlow(int x,int y,const char *s,char bright,byte font)
 {
 	FontPrintStringGlow(x,y,s,gameFont[font],bright);
 }
 
-void CenterPrintGlow(int x,int y,char *s,char bright,byte font)
+void CenterPrintGlow(int x,int y,const char *s,char bright,byte font)
 {
 	x=x-FontStrLen(s,gameFont[font])/2;
 	FontPrintStringGlow(x,y,s,gameFont[font],bright);
 }
 
-void RightPrintGlow(int x,int y,char *s,char bright,byte font)
+void RightPrintGlow(int x,int y,const char *s,char bright,byte font)
 {
 	x=x-FontStrLen(s,gameFont[font]);
 	FontPrintStringGlow(x,y,s,gameFont[font],bright);
 }
 
-void CenterPrint(int x,int y,char *s,char bright,byte font)
+void CenterPrint(int x,int y,const char *s,char bright,byte font)
 {
 	if(font!=1)
 	{
@@ -259,7 +259,7 @@ void CenterPrint(int x,int y,char *s,char bright,byte font)
 	}
 }
 
-void RightPrint(int x,int y,char *s,char bright,byte font)
+void RightPrint(int x,int y,const char *s,char bright,byte font)
 {
 	if(font!=1)
 	{
@@ -284,35 +284,35 @@ void CenterPrintDark(int x,int y,const char *s,byte font)
 	FontPrintStringDark(x,y,s,gameFont[font]);
 }
 
-void RightPrintDark(int x,int y,char *s,byte font)
+void RightPrintDark(int x,int y,const char *s,byte font)
 {
 	x=x-FontStrLen(s,gameFont[font]);
 	FontPrintStringDark(x,y,s,gameFont[font]);
 }
 
-void RightPrintColor(int x,int y,char *s,byte color,char bright,byte font)
+void RightPrintColor(int x,int y,const char *s,byte color,char bright,byte font)
 {
 	x=x-FontStrLen(s,gameFont[font]);
 	FontPrintStringColor(x,y,s,gameFont[font],color,bright);
 }
 
-void CenterPrintColor(int x,int y,char *s,byte color,char bright,byte font)
+void CenterPrintColor(int x,int y,const char *s,byte color,char bright,byte font)
 {
 	x=x-FontStrLen(s,gameFont[font])/2;
 	FontPrintStringColor(x,y,s,gameFont[font],color,bright);
 }
 
-void PrintRectBlack(int x,int y,int x2,int y2,char *s,byte height,int bright,byte font)
+void PrintRectBlack(int x,int y,int x2,int y2,const char *s,byte height,int bright,byte font)
 {
 	FontPrintRectBlack(x,y,x2,y2,s,height,bright,gameFont[font]);
 }
 
-void PrintRectBlack2(int x,int y,int x2,int y2,char *s,byte height,byte font)
+void PrintRectBlack2(int x,int y,int x2,int y2,const char *s,byte height,byte font)
 {
 	FontPrintRectBlack2(x,y,x2,y2,s,height,gameFont[font]);
 }
 
-int GetStrLength(char *s,byte f)
+int GetStrLength(const char *s,byte f)
 {
 	return FontStrLen(s,gameFont[f]);
 }
@@ -373,13 +373,13 @@ void OffSprDraw(int x,int y,int z,byte hue,byte hue2,char bright,sprite_t *spr,w
 	dispList->DrawSprite(x,y,z,hue2,hue,bright,spr,flags);
 }
 
-void WallDraw(int x,int y,word wall,word floor,char *light,word flags)
+void WallDraw(int x,int y,word wall,word floor,const char *light,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,0,wall,floor,0,(sprite_t *)light,flags);
 }
 
-void RoofDraw(int x,int y,word roof,char *light,word flags)
+void RoofDraw(int x,int y,word roof,const char *light,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,TILE_HEIGHT,0,roof,0,(sprite_t *)light,flags);

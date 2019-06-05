@@ -39,7 +39,7 @@ Map::Map(FILE *f)
 	fread(map,width*height,sizeof(mapTile_t),f);
 }
 
-Map::Map(int wid,int hei,char *name)
+Map::Map(int wid,int hei,const char *name)
 {
 	width=wid;
 	height=hei;

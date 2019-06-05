@@ -14,7 +14,7 @@ void InitMessage(void)
 	bigMessage.timer=0;
 }
 
-void NewBigMessage(char *txt,int time,byte type)
+void NewBigMessage(const char *txt,int time,byte type)
 {
 	if(messageDisable)
 		return;
@@ -29,7 +29,7 @@ void NewBigMessage(char *txt,int time,byte type)
 	bigType=type;
 }
 
-void NewMessage(char *txt,int time)
+void NewMessage(const char *txt,int time)
 {
 	if(messageDisable)
 		return;
@@ -38,7 +38,7 @@ void NewMessage(char *txt,int time)
 	LogMessage(txt);
 }
 
-void NoRepeatNewMessage(char *txt,int time)
+void NoRepeatNewMessage(const char *txt,int time)
 {
 	if(messageDisable)
 		return;
@@ -153,7 +153,7 @@ void RenderMessagesPause(int x,int y)
 	}
 }
 
-void LogMessage(char *s)
+void LogMessage(const char *s)
 {
 	int i;
 

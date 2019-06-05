@@ -1213,7 +1213,7 @@ void ShowTarget(void)
 	editmgl->Box(x1,y1,x2,y2,col);
 }
 
-void RenderCheckbox(int x,int y,int v,char *txt)
+void RenderCheckbox(int x,int y,int v,const char *txt)
 {
 	if(v)
 		editmgl->FillBox(x,y,x+11,y+11,16);
@@ -2289,7 +2289,7 @@ void EditorNewWorld(void)
 	AddMapGuys(curMap);
 }
 
-void EditorLoadWorld(char *fname)
+void EditorLoadWorld(const char *fname)
 {
 	char s[256];
 
@@ -2312,13 +2312,13 @@ void EditorLoadWorld(char *fname)
 	}
 }
 
-void EditorLoadTiles(char *fname,byte wall)
+void EditorLoadTiles(const char *fname,byte wall)
 {
 	editmgl->LoadBMP(fname);
 	SetTiles(editmgl->GetScreen(),wall);
 }
 
-void EditorSaveWorld(char *fname)
+void EditorSaveWorld(const char *fname)
 {
 	char s[64];
 

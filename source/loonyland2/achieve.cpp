@@ -167,7 +167,7 @@ byte ModifierOn(byte mod)
 	return (byte)(player.var[VAR_MODIFIER+0]==mod || player.var[VAR_MODIFIER+1]==mod || player.var[VAR_MODIFIER+2]==mod);
 }
 
-char *ModifierName(byte m)
+const char *ModifierName(byte m)
 {
 	if(m<MAX_MODS)
 		return mod[m].name;
@@ -175,7 +175,7 @@ char *ModifierName(byte m)
 		return "-";
 }
 
-char *ModifierDesc(byte m)
+const char *ModifierDesc(byte m)
 {
 	if(m<MAX_MODS)
 		return mod[m].desc;

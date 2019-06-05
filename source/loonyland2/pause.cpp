@@ -849,7 +849,7 @@ void RenderYesNo(int x,int y)
 	CenterPrintDark(x+455,y+204,"No",0);
 }
 
-void PlayerStat(char *txt,int val,int y)
+void PlayerStat(const char *txt,int val,int y)
 {
 	char s[32];
 	int x1,x2,wid,i;
@@ -864,7 +864,7 @@ void PlayerStat(char *txt,int val,int y)
 		PrintGlow(i,y,".",0,1);
 }
 
-void PlayerSlashStat(char *txt,int val,int val2,int y)
+void PlayerSlashStat(const char *txt,int val,int val2,int y)
 {
 	char s[32];
 	int x1,x2,wid,i;

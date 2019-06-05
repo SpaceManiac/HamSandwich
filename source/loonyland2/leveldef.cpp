@@ -187,7 +187,7 @@ void ResetLevelDefs(void)
 	memcpy(levelDef,baseLevelDef,sizeof(levelDef_t)*NUM_LEVELS);
 }
 
-void LDError(char *txt,int lv)
+void LDError(const char *txt,int lv)
 {
 	sprintf(err,"lvl_*.txt line %d: %s",lv+3,txt);
 }

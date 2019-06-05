@@ -41,7 +41,7 @@ byte spellPic[5][4]={
 pick_t picks[MAX_PICKS];
 byte potionChoice=255;
 
-void CenterPrintOutline(int x,int y,char *s)
+void CenterPrintOutline(int x,int y,const char *s)
 {
 	CenterPrintDark(x-1,y-1,s,0);
 	CenterPrintDark(x+1,y+1,s,0);

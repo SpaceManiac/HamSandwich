@@ -16,12 +16,12 @@ typedef struct message_t
 } message_t;
 
 void InitMessage(void);
-void NewMessage(char *txt,int time);
-void NewBigMessage(char *txt,int time,byte type);
+void NewMessage(const char *txt,int time);
+void NewBigMessage(const char *txt,int time,byte type);
 void UpdateMessage(void);
 void RenderMessage(void);
-void NoRepeatNewMessage(char *txt,int time);
-void LogMessage(char *s);
+void NoRepeatNewMessage(const char *txt,int time);
+void LogMessage(const char *s);
 void RenderMessagesPause(int x,int y);
 void MessageDisable(byte b);
 
