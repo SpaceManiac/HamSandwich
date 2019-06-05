@@ -74,11 +74,11 @@ function icon_file(icon)
 		linkoptions { "%{cfg.objdir}/" .. icon .. ".res" }
 
 	-- Support for embedding the icon in the file on non-Windows systems
-	filter { "system:not Windows", "toolset:not clang" }
+	filter { "system:not Windows" }
 		files { "source/%{prj.name}/" .. icon .. ".rc" }
 		files { "%{cfg.objdir}/" .. icon .. ".rc.o" }
 
-	filter { "system:not Windows", "toolset:not clang", "files:**.rc" }
+	filter { "system:not Windows", "files:**.rc" }
 		buildmessage "%{file.name}"
 		buildcommands { 'python3 ../tools/build/rescomp.py "%{file.path}" "%{cfg.objdir}/%{file.basename}.rc.cpp"' }
 		buildoutputs { "%{cfg.objdir}/" .. icon .. ".rc.cpp" }
