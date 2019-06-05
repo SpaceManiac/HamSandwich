@@ -17,13 +17,13 @@
 #define MUSIC_SEQUENTIAL (16)
 #define MUSIC_REPEAT	(0)
 
-void PlaySong(char *fname);
-void PlaySongForce(char *fname);
+void PlaySong(const char *fname);
+void PlaySongForce(const char *fname);
 void StopSong(void);
 
 void SetMusicVolume(int vol);
 
-char *CurSongTitle(void);
+const char *CurSongTitle(void);
 
 void PickSongToPlay(void);
 void PlayNextSong(void);

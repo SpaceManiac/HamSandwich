@@ -31,7 +31,7 @@ void ClearButtons(int minID,int maxID)
 }
 
 
-byte MakeButton(byte type,int id,byte on,int x,int y,int width,int height,char *txt,buttonFunc func)
+byte MakeButton(byte type,int id,byte on,int x,int y,int width,int height,const char *txt,buttonFunc func)
 {
 	int i;
 
@@ -131,7 +131,7 @@ void CheckButtons(int mouseX,int mouseY)
 	}
 }
 
-void RenderCheckbox(byte light,int x,int y,int v,char *txt,MGLDraw *editmgl)
+void RenderCheckbox(byte light,int x,int y,int v,const char *txt,MGLDraw *editmgl)
 {
 	editmgl->Box(x,y,x+11,y+11,31);
 
@@ -213,7 +213,7 @@ void RenderButton(int mouseX,int mouseY,int id,MGLDraw *mgl)
 	}
 }
 
-void RenderButtonImage(int mouseX,int mouseY,int x,int y,int width,int height,char *txt)
+void RenderButtonImage(int mouseX,int mouseY,int x,int y,int width,int height,const char *txt)
 {
 	if(PointInRect(mouseX,mouseY,x,y,x+width,y+height))
 		DrawFillBox(x,y,x+width,y+height,8+32*1);
@@ -221,7 +221,7 @@ void RenderButtonImage(int mouseX,int mouseY,int x,int y,int width,int height,ch
 	PrintLimited(x+2,y+2,x+width-1,txt,0,1);
 }
 
-void RenderButtonImageLit(int mouseX,int mouseY,int x,int y,int width,int height,char *txt)
+void RenderButtonImageLit(int mouseX,int mouseY,int x,int y,int width,int height,const char *txt)
 {
 	if(PointInRect(mouseX,mouseY,x,y,x+width,y+height))
 		DrawFillBox(x,y,x+width,y+height,31);

@@ -162,7 +162,7 @@ byte UpdateLedger(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-static void RenderLine(int y,char *txt,int num)
+static void RenderLine(int y,const char *txt,int num)
 {
 	PrintUnGlow(20,y,txt,2);
 }

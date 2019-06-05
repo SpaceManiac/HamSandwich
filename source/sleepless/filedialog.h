@@ -17,13 +17,13 @@
 
 #define FM_FOILEDAGAIN 255 // can't save over hollow.shw you dingus
 
-void InitFileDialog(char *fileSpec,byte menuItemsToShow,char *defaultName);
+void InitFileDialog(const char *fileSpec,byte menuItemsToShow,const char *defaultName);
 void ExitFileDialog(void);
 void RenderFileDialog(int msx,int msy,MGLDraw *mgl);
 byte FileDialogKey(char key);
 byte FileDialogClick(int msx,int msy);
 
-char *GetFilename(char *header);
+const char *GetFilename(const char *header);
 byte FileDialogCommand(void);
 void AddDLWToFilename(void);
 

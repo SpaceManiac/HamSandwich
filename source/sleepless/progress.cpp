@@ -116,7 +116,7 @@ void LoadPlayLists(FILE *f)
 	}
 }
 
-void LoadProfile(char *name)
+void LoadProfile(const char *name)
 {
 	FILE *f;
 	int i,j;
@@ -257,7 +257,7 @@ void DefaultControls(void)
 	profile.joyCtrl[1]=1;
 }
 
-void DefaultProfile(char *name)
+void DefaultProfile(const char *name)
 {
 	strcpy(profile.name,name);
 
@@ -294,7 +294,7 @@ void DefaultLevelProgress(levelData_t *me,byte levelNum)
 	me->recordDestroy=0;
 }
 
-levelData_t *GetLevelProgress(char *fname,byte levelNum)
+levelData_t *GetLevelProgress(const char *fname,byte levelNum)
 {
 	worldData_t *w;
 	int i;
@@ -324,7 +324,7 @@ levelData_t *GetLevelProgress(char *fname,byte levelNum)
 	return &w->level[w->levels-1];
 }
 
-void DefaultWorldProgress(worldData_t *me,char *fname)
+void DefaultWorldProgress(worldData_t *me,const char *fname)
 {
 	int i;
 
@@ -347,7 +347,7 @@ void ClearTestProgress(void)
 	DefaultWorldProgress(GetWorldProgress("TEST"),"TEST");
 }
 
-worldData_t *GetWorldProgress(char *fname)
+worldData_t *GetWorldProgress(const char *fname)
 {
 	int i;
 

@@ -6,6 +6,6 @@
 void InitLog(void);
 void ExitLog(void);
 
-void PrintToLog(char *s,int n);
+void PrintToLog(const char *s,int n);
 
 #endif

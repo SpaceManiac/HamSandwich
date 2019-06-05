@@ -1798,7 +1798,7 @@ void UpdateItem(mapTile_t *m,int width,int offset)
 	}
 }
 
-int FindItemByName(char *name)
+int FindItemByName(const char *name)
 {
 	int i;
 

@@ -756,7 +756,7 @@ byte PlayALevel(byte map)
 	return exitcode;
 }
 
-byte PlayWorld(MGLDraw *mgl,char *fname)
+byte PlayWorld(MGLDraw *mgl,const char *fname)
 {
 	char fullName[64];
 	byte result;

@@ -6,7 +6,7 @@
 static char text[128],choice[2][32];
 static byte exitCode;
 
-void InitYesNoDialog(char *text2,char *choice1,char *choice2)
+void InitYesNoDialog(const char *text2,const char *choice1,const char *choice2)
 {
 	exitCode=0;
 

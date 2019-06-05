@@ -63,8 +63,8 @@ typedef struct old_world_t
 
 struct world_t;
 
-byte Legacy_LoadWorld(world_t *world,char *fname);
-byte Legacy_GetWorldName(char *fname,char *buf);
-char *GetOriginalSongName(byte song);
+byte Legacy_LoadWorld(world_t *world,const char *fname);
+byte Legacy_GetWorldName(const char *fname,char *buf);
+const char *GetOriginalSongName(byte song);
 
 #endif

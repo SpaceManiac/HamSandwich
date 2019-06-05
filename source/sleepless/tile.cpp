@@ -148,7 +148,7 @@ void SaveTiles(FILE *f)
 		SaveTile(f,tiles[i]);
 }
 
-void SaveTilesToBMP(char *fname)
+void SaveTilesToBMP(const char *fname)
 {
 	char tmp[64];
 	int i,j;
@@ -818,7 +818,7 @@ inline void GouraudBoxDisco(int x,int y,byte *src,char light0,char light1,char l
 	}
 }
 
-void RenderFloorTileFancy(int x,int y,int t,byte shadow,char *theLight)
+void RenderFloorTileFancy(int x,int y,int t,byte shadow,const char *theLight)
 {
 	// 9 light values are passed in:
 	//
@@ -921,7 +921,7 @@ void RenderFloorTileFancy(int x,int y,int t,byte shadow,char *theLight)
 	}
 }
 
-void RenderWallTileFancy(int x,int y,int t,char *theLight)
+void RenderWallTileFancy(int x,int y,int t,const char *theLight)
 {
 	// 9 light values are passed in:
 	//
@@ -984,7 +984,7 @@ void RenderWallTileFancy(int x,int y,int t,char *theLight)
 	}
 }
 
-void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,char *theLight)
+void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,const char *theLight)
 {
 	// 9 light values are passed in:
 	//

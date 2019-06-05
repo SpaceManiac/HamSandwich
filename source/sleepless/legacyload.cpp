@@ -34,7 +34,7 @@ static char songTab[23][32]={
 	};
 
 
-char *GetOriginalSongName(byte song)
+const char *GetOriginalSongName(byte song)
 {
 	return songTab[song];
 }
@@ -80,7 +80,7 @@ void LoadOldMap(old_map_t *map,FILE *f)
 	fread(map->map,map->width*map->height,sizeof(old_mapTile_t),f);
 }
 
-byte Legacy_LoadWorld(world_t *world,char *fname)
+byte Legacy_LoadWorld(world_t *world,const char *fname)
 {
 	FILE *f;
 	int i;
@@ -585,7 +585,7 @@ Map::Map(old_map_t *old)
 	}
 }
 
-byte Legacy_GetWorldName(char *fname,char *buf)
+byte Legacy_GetWorldName(const char *fname,char *buf)
 {
 	FILE *f;
 

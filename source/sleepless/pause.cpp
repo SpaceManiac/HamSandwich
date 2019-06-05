@@ -183,7 +183,7 @@ void RenderUnpaused(void)
 		RenderPauseMenu();
 }
 
-void PrintPauseVal(char *txt,int v,int max,int x,int y)
+void PrintPauseVal(const char *txt,int v,int max,int x,int y)
 {
 	char s[32];
 	int len;

@@ -255,7 +255,7 @@ void MonsterEdit_Key(char k)
 }
 
 // see monsnotes.cpp for this
-extern char* MonsterNotes(byte type);
+extern const char* MonsterNotes(byte type);
 extern int MonsterNotesPercent();
 
 void MonsterEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)

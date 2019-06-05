@@ -154,7 +154,6 @@ sdl2_project "sleepless"
 	filter "toolset:gcc"
 		buildoptions {
 			"-Wall",
-			"-Wno-write-strings",
 			"-Wno-char-subscripts",
 			"-Wno-unused-variable",
 			"-Wno-unused-but-set-variable",

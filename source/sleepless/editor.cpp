@@ -197,7 +197,7 @@ void Delete(int x,int y)
 		}
 }
 
-void BackupWorld(char *name)
+void BackupWorld(const char *name)
 {
 	char inName[128],outName[128];
 	FILE *inF,*outF;
@@ -1078,7 +1078,7 @@ byte LunaticEditor(MGLDraw *mgl)
 	return exitcode;
 }
 
-void EditorSaveWorld(char *fname)
+void EditorSaveWorld(const char *fname)
 {
 	SaveWorld(&world,fname);
 }

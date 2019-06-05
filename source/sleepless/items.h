@@ -302,7 +302,7 @@ int NumCustomSprites(void);
 int NumItemSprites(void);
 int BrainsGiven(int type);
 int CandlesGiven(int type);
-int FindItemByName(char *name);
+int FindItemByName(const char *name);
 
 byte AppendItems(FILE *f);
 

@@ -109,7 +109,7 @@ byte UpdateRecordBook(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-void RenderBookButton(int x,int y,int wid,char *txt,MGLDraw *mgl)
+void RenderBookButton(int x,int y,int wid,const char *txt,MGLDraw *mgl)
 {
 	if(PointInRect(msx,msy,x,y,x+wid,y+PBTN_HEIGHT))
 	{
@@ -122,7 +122,7 @@ void RenderBookButton(int x,int y,int wid,char *txt,MGLDraw *mgl)
 	PrintGlow(x+2,y+3,txt,0,2);
 }
 
-void RenderStatPercent(int x,int y,char *txt,float value)
+void RenderStatPercent(int x,int y,const char *txt,float value)
 {
 	char s[16];
 
@@ -131,7 +131,7 @@ void RenderStatPercent(int x,int y,char *txt,float value)
 	PrintGlow(x+110-GetStrLength(s,2),y,s,0,2);
 }
 
-void RenderStat(int x,int y,char *txt,dword value)
+void RenderStat(int x,int y,const char *txt,dword value)
 {
 	char s[16];
 
@@ -140,7 +140,7 @@ void RenderStat(int x,int y,char *txt,dword value)
 	PrintGlow(x+250-GetStrLength(s,2),y,s,0,2);
 }
 
-void RenderStatOutOf(int x,int y,char *txt,dword value,dword outof)
+void RenderStatOutOf(int x,int y,const char *txt,dword value,dword outof)
 {
 	char s[16];
 
@@ -149,7 +149,7 @@ void RenderStatOutOf(int x,int y,char *txt,dword value,dword outof)
 	PrintGlow(x+250-GetStrLength(s,2),y,s,0,2);
 }
 
-void RenderStatTime(int x,int y,char *txt,dword value)
+void RenderStatTime(int x,int y,const char *txt,dword value)
 {
 	char s[16];
 
@@ -158,7 +158,7 @@ void RenderStatTime(int x,int y,char *txt,dword value)
 	PrintGlow(x+250-GetStrLength(s,2),y,s,0,2);
 }
 
-void RenderStatMiles(int x,int y,char *txt,dword value)
+void RenderStatMiles(int x,int y,const char *txt,dword value)
 {
 	char s[16];
 

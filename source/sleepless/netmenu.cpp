@@ -548,7 +548,7 @@ byte UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-void RenderNetButton(int x,int y,int wid,char *txt,MGLDraw *mgl)
+void RenderNetButton(int x,int y,int wid,const char *txt,MGLDraw *mgl)
 {
 	PrintUnGlow(x+2,y+2-5,txt,2);
 
@@ -573,7 +573,7 @@ void RenderProfileUp(MGLDraw *mgl)
 	RenderNetButton(110,370,130,"Cancel",mgl);
 }
 
-void PrintThing(int x,int y,char *txt,byte pass,byte flash)
+void PrintThing(int x,int y,const char *txt,byte pass,byte flash)
 {
 	int i;
 	int len=GetStrLength("*",1),pos;

@@ -4,6 +4,6 @@
 #include "mgldraw.h"
 
 void NameEntry(MGLDraw *mgl,byte makeNew);
-char *GetEnteredName(void);
+const char *GetEnteredName(void);
 
 #endif

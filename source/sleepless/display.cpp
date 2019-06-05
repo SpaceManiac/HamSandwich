@@ -81,7 +81,7 @@ void ExitDisplay(void)
 	delete dispList;
 }
 
-void LoadText(char *nm,byte mode)
+void LoadText(const char *nm,byte mode)
 {
 	FILE *f;
 	char line[256];
@@ -281,7 +281,7 @@ void UpdateCamera(int x,int y,int dx,int dy,Map *map)
 	scry=(rscry>>FIXSHIFT);
 }
 
-void Print(int x,int y,char *s,char bright,byte font)
+void Print(int x,int y,const char *s,char bright,byte font)
 {
 	if(font==0)
 		FontPrintStringBright(x,y,s,gameFont[0],bright);
@@ -294,47 +294,47 @@ void Print(int x,int y,char *s,char bright,byte font)
 	}
 }
 
-void PrintGlow(int x,int y,char *s,char bright,byte font)
+void PrintGlow(int x,int y,const char *s,char bright,byte font)
 {
 	FontPrintStringGlow(x,y,s,gameFont[font],bright);
 }
 
-void PrintUnGlow(int x,int y,char *s,byte font)
+void PrintUnGlow(int x,int y,const char *s,byte font)
 {
 	FontPrintStringUnGlow(x,y,s,gameFont[font]);
 }
 
-void PrintGlowLimited(int x,int y,int maxX,char *s,char bright,byte font)
+void PrintGlowLimited(int x,int y,int maxX,const char *s,char bright,byte font)
 {
 	FontPrintStringUnGlowLimited(x,y,maxX,s,gameFont[font]);
 }
 
-void PrintProgressiveGlow(int x,int y,char *s,int bright,byte font)
+void PrintProgressiveGlow(int x,int y,const char *s,int bright,byte font)
 {
 	FontPrintStringProgressiveGlow(x,y,s,gameFont[font],bright);
 }
 
-void PrintRect(int x,int y,int x2,int y2,int height,char *s,byte font)
+void PrintRect(int x,int y,int x2,int y2,int height,const char *s,byte font)
 {
 	FontPrintStringRect(x,y,x2,y2,s,height,gameFont[font]);
 }
 
-void PrintGlowRect(int x,int y,int x2,int y2,int height,char *s,byte font)
+void PrintGlowRect(int x,int y,int x2,int y2,int height,const char *s,byte font)
 {
 	FontPrintStringGlowRect(x,y,x2,y2,s,height,0,gameFont[font]);
 }
 
-void PrintGlowRectBright(int x,int y,int x2,int y2,int height,char *s,char bright,byte font)
+void PrintGlowRectBright(int x,int y,int x2,int y2,int height,const char *s,char bright,byte font)
 {
 	FontPrintStringGlowRect(x,y,x2,y2,s,height,bright,gameFont[font]);
 }
 
-void PrintUnGlowRect(int x,int y,int x2,int y2,int height,char *s,byte font)
+void PrintUnGlowRect(int x,int y,int x2,int y2,int height,const char *s,byte font)
 {
 	FontPrintStringUnGlowRect(x,y,x2,y2,s,height,gameFont[font]);
 }
 
-void PrintLimited(int x,int y,int maxX,char *s,char bright,byte font)
+void PrintLimited(int x,int y,int maxX,const char *s,char bright,byte font)
 {
 	if(bright==0)
 			FontPrintStringLimit(x,y,maxX,s,gameFont[font]);
@@ -343,7 +343,7 @@ void PrintLimited(int x,int y,int maxX,char *s,char bright,byte font)
 }
 
 
-void CenterPrint(int x,int y,char *s,char bright,byte font)
+void CenterPrint(int x,int y,const char *s,char bright,byte font)
 {
 	if(font==0)
 	{
@@ -362,7 +362,7 @@ void CenterPrint(int x,int y,char *s,char bright,byte font)
 	}
 }
 
-int GetStrLength(char *s,byte font)
+int GetStrLength(const char *s,byte font)
 {
 	return FontStrLen(s,gameFont[font]);
 }
@@ -426,13 +426,13 @@ void SprDrawTile(int x,int y,word tile,char light,word flags)
 	dispList->DrawSprite(x,y,0,0,tile,light,(sprite_t *)1,flags|DISPLAY_TILESPRITE);
 }
 
-void WallDraw(int x,int y,word wall,word floor,char *light,word flags)
+void WallDraw(int x,int y,word wall,word floor,const char *light,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,0,wall,floor,0,(sprite_t *)light,flags);
 }
 
-void RoofDraw(int x,int y,word roof,char *light,word flags)
+void RoofDraw(int x,int y,word roof,const char *light,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,TILE_HEIGHT,0,roof,0,(sprite_t *)light,flags);

@@ -6,7 +6,7 @@
 message_t bigMessage;
 message_t message;
 
-char *VariableMsg(char *txt)
+const char *VariableMsg(const char *txt)
 {
 	static char out[256];
 	int i,outpos,j;
@@ -83,7 +83,7 @@ void InitMessage(void)
 	message.msg[0]='\0';
 }
 
-void NewBigMessage(char *txt,int time)
+void NewBigMessage(const char *txt,int time)
 {
 	strncpy(bigMessage.msg,VariableMsg(txt),32);
 	bigMessage.x=320-GetStrLength(bigMessage.msg,0)/2;
@@ -94,7 +94,7 @@ void NewBigMessage(char *txt,int time)
 	bigMessage.brightDir=2;
 }
 
-void NewMessage(char *txt,int time,byte priority)
+void NewMessage(const char *txt,int time,byte priority)
 {
 	if(message.priority==1 && priority==0)
 		return;	// can't override it
@@ -108,7 +108,7 @@ void NewMessage(char *txt,int time,byte priority)
 	message.priority=priority;
 }
 
-byte NoRepeatNewMessage(char *txt,int time,byte priority)
+byte NoRepeatNewMessage(const char *txt,int time,byte priority)
 {
 	if(message.timer>priority && !strncmp(message.msg,txt,32))
 		return 0;	// don't reset if showing the same message

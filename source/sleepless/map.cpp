@@ -40,7 +40,7 @@ Map::Map(FILE *f)
 	LoadMapData(f);
 }
 
-Map::Map(byte size,char *name)
+Map::Map(byte size,const char *name)
 {
 	int i;
 

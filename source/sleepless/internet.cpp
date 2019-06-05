@@ -71,21 +71,21 @@ void Log_Exit(void)
 #endif
 }
 
-void Log_Print(char *txt)
+void Log_Print(const char *txt)
 {
 #ifdef LOG
 	fprintf(logF,"%s\n",txt);
 #endif
 }
 
-void Log_Printnum(char *txt,int num)
+void Log_Printnum(const char *txt,int num)
 {
 #ifdef LOG
 	fprintf(logF,"%s %d\n",txt,num);
 #endif
 }
 
-void Log_PrintRaw(char *txt,int len)
+void Log_PrintRaw(const char *txt,int len)
 {
 #ifdef LOG
 	char outtxt[1024];
@@ -248,7 +248,7 @@ byte Web_TryReadingHeader(byte n)
 	return IE_OK;	// header's not done downloading yet
 }
 
-byte Web_RequestData(MGLDraw *mgl,char *site,char *file,int *socketNumber)
+byte Web_RequestData(MGLDraw *mgl,const char *site,const char *file,int *socketNumber)
 {
 	struct hostent *host;
 	struct sockaddr_in addr;

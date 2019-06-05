@@ -42,22 +42,22 @@ typedef struct world_t
 
 extern byte keyChainInLevel[MAX_MAPS];
 
-void WorldLoadBMP(char *name,byte *dst);
+void WorldLoadBMP(const char *name,byte *dst);
 
 byte NewWorld(world_t *world,MGLDraw *mgl);
-byte LoadWorld(world_t *world,char *fname);
-byte SaveWorld(world_t *world,char *fname);
+byte LoadWorld(world_t *world,const char *fname);
+byte SaveWorld(world_t *world,const char *fname);
 void FreeWorld(world_t *world);
 
 void InitWorld(world_t *world);
-byte GetWorldName(char *fname,char *buffer,char *authbuffer);
+byte GetWorldName(const char *fname,char *buffer,char *authbuffer);
 
 void RepairTileToTile(world_t *w);
 
 void LocateKeychains(world_t *w);
 void LogRequirements(world_t *w);
 
-byte BeginAppendWorld(world_t *world,char *fname);
+byte BeginAppendWorld(world_t *world,const char *fname);
 terrain_t *GetTerrain(world_t *w,word tile);
 
 #endif

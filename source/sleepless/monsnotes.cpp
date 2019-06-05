@@ -3,7 +3,7 @@
 
 typedef struct monsnotes_t {
 	byte monster;
-	char* notes;
+	const char* notes;
 } monsnotes_t;
 
 static monsnotes_t notes[] = {
@@ -158,7 +158,7 @@ static monsnotes_t notes[] = {
 	 "No notes on monster."}
 };
 
-char* MonsterNotes(byte type)
+const char* MonsterNotes(byte type)
 {
 	int i;
 	for (i=0; notes[i].monster != 255 && notes[i].monster != type; ++i);

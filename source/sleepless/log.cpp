@@ -20,7 +20,7 @@ void ExitLog(void)
 #endif
 }
 
-void PrintToLog(char *s,int n)
+void PrintToLog(const char *s,int n)
 {
 #ifdef LOG
 	fprintf(logF,"%05d: %s : %d\n",logLine++,s,n);

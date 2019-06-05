@@ -38,7 +38,7 @@ typedef struct button_t
 
 void ClearButtons(void);
 void ClearButtons(int minID,int maxID);
-byte MakeButton(byte type,int id,byte on,int x,int y,int width,int height,char *txt,buttonFunc func);
+byte MakeButton(byte type,int id,byte on,int x,int y,int width,int height,const char *txt,buttonFunc func);
 void SetButtonState(int id,byte on);
 byte GetButtonState(int id);
 void CheckButtons(int mouseX,int mouseY);
@@ -49,9 +49,9 @@ void RenderButton(int mouseX,int mouseY,int id,MGLDraw *mgl);
 void RadioOn(int id,int minID,int maxID);
 
 byte PointInRect(int x,int y,int rx1,int ry1,int rx2,int ry2);
-void RenderButtonImage(int mouseX,int mouseY,int x,int y,int width,int height, char *txt);
-void RenderButtonImageLit(int mouseX,int mouseY,int x,int y,int width,int height,char *txt);
+void RenderButtonImage(int mouseX,int mouseY,int x,int y,int width,int height, const char *txt);
+void RenderButtonImageLit(int mouseX,int mouseY,int x,int y,int width,int height,const char *txt);
 void RenderSliderImage(int mouseX,int mouseY,int x,int y,byte setting);
-void RenderCheckbox(byte light,int x,int y,int v,char *txt,MGLDraw *editmgl);
+void RenderCheckbox(byte light,int x,int y,int v,const char *txt,MGLDraw *editmgl);
 
 #endif
