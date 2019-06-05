@@ -267,7 +267,7 @@ void MGLDraw::FinishFlip(void)
 			} else if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
 				SetGameIdle(false);
 				idle = false;
-			} else if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
+			} else if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
 				winWidth = e.window.data1;
 				winHeight = e.window.data2;
 			}
