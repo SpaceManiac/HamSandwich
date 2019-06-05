@@ -49,7 +49,7 @@ private:
 
 	pos_type seekoff(off_type off, std::ios_base::seekdir dir, std::ios_base::openmode) override
 	{
-		int seek;
+		int seek = SEEK_SET;
 		switch (dir)
 		{
 			case std::ios_base::beg: seek = SEEK_SET; break;
