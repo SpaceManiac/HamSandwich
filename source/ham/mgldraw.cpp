@@ -1,5 +1,6 @@
 #include "mgldraw.h"
 #include "clock.h"
+#include "jamulsound.h"
 #include <random>
 
 #include <SDL2/SDL_image.h>
@@ -7,8 +8,6 @@
 #include <SDL2/SDL_syswm.h>
 #endif
 
-bool JamulSoundInit(int buffers);
-void JamulSoundExit();
 void SoundSystemExists();
 void UpdateMusic();
 void ControlKeyDown(byte scancode);
