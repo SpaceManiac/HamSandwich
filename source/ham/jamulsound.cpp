@@ -141,6 +141,7 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 		for(i=0;i<NUM_SOUNDS;i++)
 			if(schannel[i].soundNum==which)
 			{
+				// TODO: only cut this sound off if it is not playing or SND_CUTOFF is set
 				Mix_HaltChannel(schannel[i].voice);
 				schannel[i].soundNum=-1;
 				schannel[i].priority=0;
@@ -148,12 +149,15 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 			}
 	}
 
+	if(playFlags & SND_MAXPRIORITY)
+		priority = MAX_SNDPRIORITY;
+
 	chosen=-1;
 	lowpriority=priority;
 	// see if there are any spots of lower priority,
 	for(i=0;i<NUM_SOUNDS;i++)
 	{
-		if(schannel[i].priority<=lowpriority)
+		if(schannel[i].priority<=lowpriority || ((playFlags & SND_CUTOFF) && schannel[i].soundNum == which))
 		{
 			chosen=i;
 			lowpriority=schannel[i].priority;
