@@ -7,6 +7,6 @@
 #define DBG(x) ;
 #endif
 
-void WriteDebug(char *s);
+void WriteDebug(const char *s);
 
 #endif

@@ -43,10 +43,10 @@ extern byte editing;
 byte LunaticEditor(MGLDraw *mgl);
 
 void EditorNewWorld(void);
-void EditorLoadWorld(char *fname);
-void EditorSaveWorld(char *fname);
+void EditorLoadWorld(const char *fname);
+void EditorSaveWorld(const char *fname);
 void EditorSelectMap(byte w);
-void EditorLoadTiles(char *fname,byte wall);
+void EditorLoadTiles(const char *fname,byte wall);
 
 void ScanForPowerups(void);
 void ScanForBad(void);

@@ -1,7 +1,7 @@
 #include "debuggo.h"
 #include <stdio.h>
 
-void WriteDebug(char *s)
+void WriteDebug(const char *s)
 {
 	FILE *f;
 

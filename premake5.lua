@@ -166,9 +166,6 @@ sdl2_project "loonyland"
 	depends "ham"
 	pch "winpch"
 
-	filter "toolset:gcc"
-		buildoptions { "-Wno-write-strings" }
-
 sdl2_project "loonyland2"
 	icon_file "loonyland2"
 	depends "ham"

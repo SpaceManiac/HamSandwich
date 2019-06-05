@@ -26,7 +26,7 @@ byte LunaticTitle(MGLDraw *mgl);
 byte MainMenu(MGLDraw *mgl);
 void Credits(MGLDraw *mgl,byte init);
 void CheatText(MGLDraw *mgl,byte init);
-void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound);
+void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound);
 void VictoryText(MGLDraw *mgl);
 void HelpScreens(MGLDraw *mgl);
 void DemoSplashScreens(MGLDraw *mgl);

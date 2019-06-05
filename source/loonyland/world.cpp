@@ -24,7 +24,7 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	return 1;
 }
 
-byte LoadWorld(world_t *world,char *fname)
+byte LoadWorld(world_t *world,const char *fname)
 {
 	FILE *f;
 	int i;
@@ -54,7 +54,7 @@ byte LoadWorld(world_t *world,char *fname)
 	return 1;
 }
 
-byte SaveWorld(world_t *world,char *fname)
+byte SaveWorld(world_t *world,const char *fname)
 {
 	FILE *f;
 	int i;
@@ -95,7 +95,7 @@ void InitWorld(world_t *world,byte worldNum)
 {
 }
 
-void GetWorldName(char *fname,char *buf)
+void GetWorldName(const char *fname,char *buf)
 {
 	FILE *f;
 	char fname2[60];
@@ -119,7 +119,7 @@ void GetWorldName(char *fname,char *buf)
 	fclose(f);
 }
 
-int GetWorldPoints(char *fname)
+int GetWorldPoints(const char *fname)
 {
 	FILE *f;
 	char fname2[60];
