@@ -731,7 +731,7 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 	return WS_CONTINUE;
 }
 
-void RenderWorldSelectButton(int x,int y,int wid,char *txt,MGLDraw *mgl)
+void RenderWorldSelectButton(int x,int y,int wid,const char *txt,MGLDraw *mgl)
 {
 	if(PointInRect(msx,msy,x,y,x+wid,y+WBTN_HEIGHT))
 	{
@@ -930,7 +930,7 @@ byte WorldSelectMenu(MGLDraw *mgl)
 	return 1;
 }
 
-char *WorldFName(void)
+const char *WorldFName(void)
 {
 	return curName;
 }

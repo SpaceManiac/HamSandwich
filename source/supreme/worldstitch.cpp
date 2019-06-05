@@ -5,12 +5,12 @@ world_t *world2;
 int stitchTileOffset,stitchSoundOffset,stitchItemOffset;
 char stitchError[64];
 
-void SetStitchError(char *txt)
+void SetStitchError(const char *txt)
 {
 	strcpy(stitchError,txt);
 }
 
-char *GetStitchError(void)
+const char *GetStitchError(void)
 {
 	return stitchError;
 }
@@ -199,7 +199,7 @@ void UpdateSpecials(world_t *world,int levelOffset)
 	}
 }
 
-byte AddWorldIn(world_t *world1,char *fname)
+byte AddWorldIn(world_t *world1,const char *fname)
 {
 	int i;
 

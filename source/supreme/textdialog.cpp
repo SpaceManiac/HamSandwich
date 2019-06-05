@@ -7,7 +7,7 @@ static char text[128];
 static byte exitCode;
 static byte maxLength;
 
-void InitTextDialog(char *title2,char *contents,byte maxLen)
+void InitTextDialog(const char *title2,const char *contents,byte maxLen)
 {
 	exitCode=0;
 
@@ -46,7 +46,7 @@ void RenderTextDialog(int msx,int msy,MGLDraw *mgl)
 	RenderButtonImage(msx,msy,320+140,270,60,15,"Cancel");
 }
 
-static void RenderGrnButtonImage(int mouseX,int mouseY,int x,int y,int width,int height,char *txt)
+static void RenderGrnButtonImage(int mouseX,int mouseY,int x,int y,int width,int height,const char *txt)
 {
 	if(PointInRect(mouseX,mouseY,x,y,x+width,y+height))
 		DrawFillBox(x,y,x+width,y+height,8+32*1);
@@ -133,7 +133,7 @@ byte TextDialogClick(int msx,int msy)
 	return 0;
 }
 
-char *GetText(void)
+const char *GetText(void)
 {
 	return text;
 }

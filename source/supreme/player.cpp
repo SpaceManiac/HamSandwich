@@ -45,7 +45,7 @@ byte ControlCheck(byte c)
 	return 0;
 }
 
-void InitPlayer(byte level,char *fname)
+void InitPlayer(byte level,const char *fname)
 {
 	int i;
 

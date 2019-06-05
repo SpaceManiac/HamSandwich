@@ -39,7 +39,7 @@ void ExitNameEntry(void)
 	free(backgd);
 }
 
-byte CheckForExistingName(char *name)
+byte CheckForExistingName(const char *name)
 {
 	FILE *f;
 	char s[64];
@@ -145,7 +145,7 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-void RenderLine(int y,char *txt,int num)
+void RenderLine(int y,const char *txt,int num)
 {
 	if(curLine==num)
 		PrintProgressiveGlow(20,y,txt,textBright,2);
@@ -216,7 +216,7 @@ void NameEntry(MGLDraw *mgl,byte makeNew)
 	}
 }
 
-char *GetEnteredName(void)
+const char *GetEnteredName(void)
 {
 	return entry;
 }

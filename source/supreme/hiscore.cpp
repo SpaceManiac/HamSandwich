@@ -509,7 +509,7 @@ void ExitHiScores(void)
 		free(hiTime);
 }
 
-void SaveHiScoreFile(score_t *list,word num,char *fname)
+void SaveHiScoreFile(score_t *list,word num,const char *fname)
 {
 	FILE *f;
 	word i;
@@ -1120,7 +1120,7 @@ void UnUpload(byte time,char *encrypted)
 	}
 }
 
-void ChangeHighScores(char *oldName,char *newName)
+void ChangeHighScores(const char *oldName,const char *newName)
 {
 	int i;
 	char s[48];

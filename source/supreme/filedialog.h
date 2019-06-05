@@ -15,13 +15,13 @@
 #define FM_NOWAVS	64	// disregard wav files
 #define FM_MERGE	128
 
-void InitFileDialog(char *fileSpec,byte menuItemsToShow,char *defaultName);
+void InitFileDialog(const char *fileSpec,byte menuItemsToShow,const char *defaultName);
 void ExitFileDialog(void);
 void RenderFileDialog(int msx,int msy,MGLDraw *mgl);
 byte FileDialogKey(char key);
 byte FileDialogClick(int msx,int msy);
 
-char *GetFilename(char *header);
+const char *GetFilename(const char *header);
 byte FileDialogCommand(void);
 void AddDLWToFilename(void);
 

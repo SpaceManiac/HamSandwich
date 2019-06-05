@@ -1335,7 +1335,7 @@ byte UpdateArcade(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-void RenderArcButton(int x,int y,int wid,char *txt,MGLDraw *mgl,byte on)
+void RenderArcButton(int x,int y,int wid,const char *txt,MGLDraw *mgl,byte on)
 {
 	if(on || PointInRect(msx,msy,x,y,x+wid,y+19))
 	{

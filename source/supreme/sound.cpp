@@ -504,7 +504,7 @@ long GetCustomLength(int n)
 	return customLength[n];
 }
 
-byte AddCustomSound(char *fname)
+byte AddCustomSound(const char *fname)
 {
 	FILE *f;
 
@@ -553,7 +553,7 @@ soundDesc_t *AddCustomSound(byte *data, size_t length)
 	return &soundInfo[CUSTOM_SND_START + (numCustom++)];
 }
 
-byte ReplaceCustomSound(int n,char *fname)
+byte ReplaceCustomSound(int n,const char *fname)
 {
 	FILE *f;
 
@@ -657,7 +657,7 @@ int AppendCustomSounds(FILE *f)
 	return (start);
 }
 
-int GetCustomSoundByName(char *name)
+int GetCustomSoundByName(const char *name)
 {
 	int i;
 

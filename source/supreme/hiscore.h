@@ -65,6 +65,6 @@ char *GetScoresToUpload(int *num,int *scoreSize);
 char *GetTimesToUpload(int *num,int *scoreSize);
 int CountScoresToUpload(void);
 void UnUpload(byte time,char *encrypted);
-void ChangeHighScores(char *oldName,char *newName);
+void ChangeHighScores(const char *oldName,const char *newName);
 
 #endif

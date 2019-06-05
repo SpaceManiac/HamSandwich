@@ -132,16 +132,16 @@ extern byte modeShopNum[10];
 
 void InitProfile(void);
 void SaveProfile(void);
-void LoadProfile(char *name);
+void LoadProfile(const char *name);
 void FreeProfile(void);
 void DefaultControls(void);
-void DefaultProfile(char *name);
+void DefaultProfile(const char *name);
 
 byte FirstTime(void);
-void EraseWorldProgress(char *fname);
-worldData_t *GetWorldProgress(char *fname);
+void EraseWorldProgress(const char *fname);
+worldData_t *GetWorldProgress(const char *fname);
 worldData_t *GetWorldProgressNoCreate(const char *fname);
-levelData_t *GetLevelProgress(char *fname,byte levelNum);
+levelData_t *GetLevelProgress(const char *fname,byte levelNum);
 byte LevelsPassed(worldData_t *world);
 byte LevelIsPassed(worldData_t *world,byte level);
 void ClearTestProgress(void);

@@ -100,7 +100,7 @@ static char charName[][16]={"Bouapha","Happy Stick Man","Dr. Lunatic","Shtupid S
 
 static byte recordBook,candleRadar,brainRadar,moveNShoot;
 
-static char *ShortName(char *name)
+static char *ShortName(const char *name)
 {
 	static char result[128];
 
@@ -463,7 +463,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-void RenderProfButton(int x,int y,int wid,char *txt,MGLDraw *mgl)
+void RenderProfButton(int x,int y,int wid,const char *txt,MGLDraw *mgl)
 {
 	if((mode==PROF_NORMAL || mode==PROF_KEYCONFIG) && PointInRect(msx,msy,x,y,x+wid,y+PBTN_HEIGHT))
 	{

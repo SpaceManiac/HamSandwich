@@ -302,7 +302,7 @@ byte UpdateTally(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-static void TallyLine(byte n,int y,char *category,char *value,char *points,char *record,byte gotRec)
+static void TallyLine(byte n,int y,const char *category,const char *value,const char *points,const char *record,byte gotRec)
 {
 	char bright;
 
@@ -324,7 +324,7 @@ static void TallyLine(byte n,int y,char *category,char *value,char *points,char 
 	PrintGlow(POINTS_X-GetStrLength(points,2),y,points,bright,2);
 }
 
-static void Tally2Line(byte n,int y,char *category,char *value,char *mult)
+static void Tally2Line(byte n,int y,const char *category,const char *value,const char *mult)
 {
 	char bright;
 
@@ -340,7 +340,7 @@ static void Tally2Line(byte n,int y,char *category,char *value,char *mult)
 	PrintGlow(POINTS_X-GetStrLength(mult,2),y,mult,bright,2);
 }
 
-void CoinLine(byte n,int y,char *title,char *num)
+void CoinLine(byte n,int y,const char *title,const char *num)
 {
 	char bright;
 
@@ -446,7 +446,7 @@ void RenderTally(MGLDraw *mgl)
 
 //----------------
 
-void Tally(MGLDraw *mgl,char *lvlName,byte countIt)
+void Tally(MGLDraw *mgl,const char *lvlName,byte countIt)
 {
 	byte done=0;
 	int lastTime=1;

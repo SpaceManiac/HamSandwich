@@ -82,7 +82,7 @@ void UpdateMusic(void)
 			PickSongToPlay();
 }
 
-void PlaySong(char *fname)
+void PlaySong(const char *fname)
 {
 	if(!config.music)
 		return;
@@ -103,7 +103,7 @@ void PlaySong(char *fname)
 	PlaySongForce(fname);
 }
 
-void PlaySongForce(char *fname)
+void PlaySongForce(const char *fname)
 {
 	char fullname[64];
 
@@ -160,7 +160,7 @@ void SetMusicVolume(int vol)
 	}
 }
 
-char *CurSongTitle(void)
+const char *CurSongTitle(void)
 {
 	return curSongName;
 }

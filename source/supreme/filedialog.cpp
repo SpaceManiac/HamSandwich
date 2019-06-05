@@ -18,7 +18,7 @@ static byte asking,yesNo;
 static char question[64];
 static byte exitCode;
 
-void ObtainFilenames(char *fileSpec)
+void ObtainFilenames(const char *fileSpec)
 {
 	int i;
 
@@ -38,8 +38,8 @@ void ObtainFilenames(char *fileSpec)
 
 	numFiles=0;
 
-	char* secondPart = strchr(fileSpec, '/') + 1;
-	char* filter;
+	const char* secondPart = strchr(fileSpec, '/') + 1;
+	const char* filter;
 	if (strcmp(secondPart, "*.*") == 0)
 	{
 		filter = NULL;
@@ -85,7 +85,7 @@ void ObtainFilenames(char *fileSpec)
 	}
 }
 
-void InitFileDialog(char *fileSpec,byte menuItemsToShow,char *defaultName)
+void InitFileDialog(const char *fileSpec,byte menuItemsToShow,const char *defaultName)
 {
 	menuItems=menuItemsToShow;
 	asking=0;
@@ -180,7 +180,7 @@ void FileDialogYes(void)
 	asking=0;
 }
 
-void FindFilename(char *str)
+void FindFilename(const char *str)
 {
 	int i,j;
 	int match,matchAmt;
@@ -364,7 +364,7 @@ byte FileDialogClick(int msx,int msy)
 	return 0;
 }
 
-char *GetFilename(char *header)
+const char *GetFilename(const char *header)
 {
 	static char result[64];
 

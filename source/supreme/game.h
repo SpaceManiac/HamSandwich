@@ -82,7 +82,7 @@ void LunaticDraw(void);
 byte PlayALevel(byte map);
 void TestLevel(world_t *world,byte level);
 
-byte LunaticWorld(byte world,char *worldName);
+byte LunaticWorld(byte world,const char *worldName);
 
 void SendMessageToGame(byte msg,int content);
 
@@ -90,7 +90,7 @@ void SetGameIdle(bool b);
 byte GetGameIdle(void);
 void GameIdle(void);
 
-byte PlayWorld(MGLDraw *mgl,char *fname);
+byte PlayWorld(MGLDraw *mgl,const char *fname);
 void PauseGame(void);
 
 void RestoreGameplayGfx(void);

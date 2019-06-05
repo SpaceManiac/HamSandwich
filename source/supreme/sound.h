@@ -422,16 +422,16 @@ int GetNumSounds(void);
 byte *GetCustomSound(int n);
 long GetCustomLength(int n);
 void ClearCustomSounds(void);
-byte AddCustomSound(char *fname);
+byte AddCustomSound(const char *fname);
 int GetNumCustomSounds(void);
 void DeleteCustomSound(int n);
-byte ReplaceCustomSound(int n,char *fname);
+byte ReplaceCustomSound(int n,const char *fname);
 void LoadCustomSounds(FILE *f);
 void SaveCustomSounds(FILE *f);
 
 void MakeCustomSound(int snd,int x,int y,int flags,int priority);
 void MakeNormalCustomSound(int snd);
-int GetCustomSoundByName(char *name);
+int GetCustomSoundByName(const char *name);
 void MakeSpaceSound(int snd,int priority);
 
 int AppendCustomSounds(FILE *f);

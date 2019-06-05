@@ -138,7 +138,7 @@ static byte inv[INV_SIZE];
 static byte *backgd;
 char textbuf[MAX_LINES][MAX_LINELEN];
 
-void TypeLine(char *line)
+void TypeLine(const char *line)
 {
 	int i;
 

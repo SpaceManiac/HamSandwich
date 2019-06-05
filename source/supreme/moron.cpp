@@ -382,7 +382,7 @@ byte UpdateMoron(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-void PrintRectMoron(int x,int y,int x2,int y2,char *s)
+void PrintRectMoron(int x,int y,int x2,int y2,const char *s)
 {
 	PrintUnGlowRect(x-1,y,x2-1,y2,16,s,2);
 	PrintUnGlowRect(x+1,y,x2+1,y2,16,s,2);

@@ -6,7 +6,7 @@
 static char text[128],choice[2][32];
 static byte exitCode;
 
-void InitYesNoDialog(char *text2,char *choice1,char *choice2)
+void InitYesNoDialog(const char *text2,const char *choice1,const char *choice2)
 {
 	exitCode=0;
 
@@ -31,7 +31,7 @@ void RenderYesNoDialog(int msx,int msy,MGLDraw *mgl)
 	RenderButtonImage(msx,msy,320+100,270,60,15,choice[1]);
 }
 
-static void RenderGrnButtonImage(int mouseX,int mouseY,int x,int y,int width,int height,char *txt)
+static void RenderGrnButtonImage(int mouseX,int mouseY,int x,int y,int width,int height,const char *txt)
 {
 	if(PointInRect(mouseX,mouseY,x,y,x+width,y+height))
 		DrawFillBox(x,y,x+width,y+height,8+32*1);

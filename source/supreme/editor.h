@@ -34,7 +34,7 @@ extern byte editing;
 
 byte LunaticEditor(MGLDraw *mgl);
 
-void EditorSaveWorld(char *fname);
+void EditorSaveWorld(const char *fname);
 void EditorSelectMap(byte w);
 world_t *EditorGetWorld(void);
 int EditorGetLastPick(void);

@@ -104,7 +104,7 @@ typedef struct player_t
 
 extern player_t player;
 
-void InitPlayer(byte level,char *fname);
+void InitPlayer(byte level,const char *fname);
 void ExitPlayer(void);
 void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world);
 void PlayerControlPowerArmor(Guy *me,mapTile_t *mapTile,world_t *world);

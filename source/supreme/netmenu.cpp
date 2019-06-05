@@ -183,7 +183,7 @@ char *CreateUploadString(void)
 	return upString;
 }
 
-void CatPair(char *buffer,char *var,dword val)
+void CatPair(char *buffer,const char *var,dword val)
 {
 	char s[32];
 
@@ -818,7 +818,7 @@ byte UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-void RenderNetButton(int x,int y,int wid,char *txt,MGLDraw *mgl)
+void RenderNetButton(int x,int y,int wid,const char *txt,MGLDraw *mgl)
 {
 	if(PointInRect(msx,msy,x,y,x+wid,y+PBTN_HEIGHT))
 	{
@@ -831,7 +831,7 @@ void RenderNetButton(int x,int y,int wid,char *txt,MGLDraw *mgl)
 	PrintGlow(x+2,y+3,txt,0,2);
 }
 
-void PrintUploadStat(char *name,int val,int x,int y)
+void PrintUploadStat(const char *name,int val,int x,int y)
 {
 	char s[16];
 

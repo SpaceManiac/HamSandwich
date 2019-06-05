@@ -15,11 +15,11 @@ typedef struct message_t
 } message_t;
 
 void InitMessage(void);
-void NewMessage(char *txt,int time,byte priority);
-void NewBigMessage(char *txt,int time);
+void NewMessage(const char *txt,int time,byte priority);
+void NewBigMessage(const char *txt,int time);
 void UpdateMessage(void);
 void RenderMessage(void);
-byte NoRepeatNewMessage(char *txt,int time,byte priority);
-char *VariableMsg(char *txt);
+byte NoRepeatNewMessage(const char *txt,int time,byte priority);
+const char *VariableMsg(const char *txt);
 
 #endif

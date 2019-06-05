@@ -6,8 +6,8 @@
 
 extern int stitchTileOffset,stitchSoundOffset,stitchItemOffset;
 
-void SetStitchError(char *txt);
-char *GetStitchError(void);
-byte AddWorldIn(world_t *world1,char *fname);
+void SetStitchError(const char *txt);
+const char *GetStitchError(void);
+byte AddWorldIn(world_t *world1,const char *fname);
 
 #endif

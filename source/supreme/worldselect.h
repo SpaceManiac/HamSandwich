@@ -4,6 +4,6 @@
 #include "mgldraw.h"
 
 byte WorldSelectMenu(MGLDraw *mgl);
-char *WorldFName(void);
+const char *WorldFName(void);
 
 #endif

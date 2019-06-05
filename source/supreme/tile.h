@@ -21,7 +21,7 @@ void LoadTiles(FILE *f);
 void LoadTiles(std::istream& f);
 void SaveTiles(FILE *f);
 void SaveTiles(std::ostream& f);
-void SaveTilesToBMP(char *fname);
+void SaveTilesToBMP(const char *fname);
 void RenderFloorTile(int x,int y,int t,char light);
 void RenderFloorTileTrans(int x,int y,int t,char light);
 void RenderFloorTileShadow(int x,int y,int t,char light);
@@ -44,8 +44,8 @@ void RenderFloorTileShadowDisco(int x,int y,int t,char light);
 void RenderFloorTileDisco(int x,int y,int t,char light);
 
 // super shading!
-void RenderFloorTileFancy(int x,int y,int t,byte shadow,char *light);
-void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,char *theLight);
-void RenderWallTileFancy(int x,int y,int t,char *light);
+void RenderFloorTileFancy(int x,int y,int t,byte shadow,const char *light);
+void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,const char *theLight);
+void RenderWallTileFancy(int x,int y,int t,const char *light);
 
 #endif

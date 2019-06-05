@@ -29,7 +29,7 @@ byte Web_Init(void);
 byte Web_Exit(void);
 // returns error codes, fills in socketNumber which you need in order to track the
 // download and get your data later
-byte Web_RequestData(MGLDraw *mgl,char *site,char *file,int *socketNumber);
+byte Web_RequestData(MGLDraw *mgl,const char *site,const char *file,int *socketNumber);
 byte Web_DownloadPercent(int sockNum);
 char *Web_ErrorString(void);
 char *Web_ErrorStringShort(void);

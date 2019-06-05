@@ -158,7 +158,7 @@ void ExitSpaceGame(void)
 {
 }
 
-void SpaceMessage(char *s)
+void SpaceMessage(const char *s)
 {
 	strcpy(msg,s);
 	msgTimer=120;

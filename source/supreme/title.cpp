@@ -650,7 +650,7 @@ void VictoryText(MGLDraw *mgl)
 	}
 }
 
-byte SpeedSplash(MGLDraw *mgl,char *fname)
+byte SpeedSplash(MGLDraw *mgl,const char *fname)
 {
 	int i,j,clock;
 	PALETTE desiredpal,curpal;
@@ -765,7 +765,7 @@ void DemoSplashScreens(MGLDraw *mgl)
 		return;
 }
 
-void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound)
+void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
 {
 	int i,j,clock;
 	PALETTE desiredpal,curpal;

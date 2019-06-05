@@ -1065,7 +1065,7 @@ void DefaultShopAvailability(void)
 	}
 }
 
-char *GetAbilityShortDesc(byte w)
+const char *GetAbilityShortDesc(byte w)
 {
 	switch(w)
 	{
@@ -1546,7 +1546,8 @@ void BuyItem(void)
 				strcpy(shopTxt,"With your incredible contributions, we've actually managed to wipe out world hunger!  "
 					"Thanks, dude!  Let's celebrate with a packet of our new product, Soylent Orange!");
 				MakeNormalSound(SND_VICTORY);
-				ShowImageOrFlic("statue.flc",1,0);
+				char statue[] = "statue.flc";
+				ShowImageOrFlic(statue,1,0);
 			}
 		}
 		else
@@ -1627,7 +1628,7 @@ byte UpdateShopping(MGLDraw *mgl)
 	return 1;
 }
 
-void RenderShopButton(byte on,int x,int y,int wid,char *txt,MGLDraw *mgl)
+void RenderShopButton(byte on,int x,int y,int wid,const char *txt,MGLDraw *mgl)
 {
 	if(on)
 	{
