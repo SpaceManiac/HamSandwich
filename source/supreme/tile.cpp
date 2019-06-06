@@ -37,7 +37,7 @@ void SetTiles(byte *scrn)
 		for(j=0;j<TILE_HEIGHT;j++)
 			memcpy(&tiles[i][j*TILE_WIDTH],&scrn[x+(y+j)*SCRWID],TILE_WIDTH);
 		x+=TILE_WIDTH;
-		if(x>=SCRHEI)
+		if(x>=SCRWID)
 		{
 			x=0;
 			y+=TILE_HEIGHT;
