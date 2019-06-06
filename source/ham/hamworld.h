@@ -33,6 +33,12 @@ public:
 	void assign(string_view s);
 };
 
+size_t size_varint(size_t id);
+void write_varint(std::ostream& o, size_t id);
+void write_string(std::ostream& o, string_view s);
+bool read_varint(std::istream& i, size_t* id);
+bool read_string(std::istream& i, Buffer buffer);
+
 class Section
 {
 public:

@@ -38,7 +38,7 @@ void Buffer::assign(string_view s)
 	memcpy(ptr, s.data(), len);
 }
 
-static size_t size_varint(size_t id)
+size_t size_varint(size_t id)
 {
 	size_t i = 1;
 	while (id > 127)
@@ -49,7 +49,7 @@ static size_t size_varint(size_t id)
 	return i;
 }
 
-static void write_varint(std::ostream& o, size_t id)
+void write_varint(std::ostream& o, size_t id)
 {
 	while (id > 127)
 	{
@@ -59,14 +59,14 @@ static void write_varint(std::ostream& o, size_t id)
 	o.put(id);
 }
 
-static void write_string(std::ostream& o, string_view s)
+void write_string(std::ostream& o, string_view s)
 {
 	write_varint(o, s.size());
 	o.write(s.data(), s.size());
 	//o.put(0);
 }
 
-static bool read_varint(std::istream& i, size_t* id)
+bool read_varint(std::istream& i, size_t* id)
 {
 	int shift = 0;
 	char ch;
@@ -82,7 +82,7 @@ static bool read_varint(std::istream& i, size_t* id)
 	return true;
 }
 
-static bool read_string(std::istream& i, Buffer buffer)
+bool read_string(std::istream& i, Buffer buffer)
 {
 	size_t len;
 	if (!read_varint(i, &len))
