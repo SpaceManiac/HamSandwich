@@ -2820,7 +2820,7 @@ void SaveGuys(FILE *f)
 			tgt=guys[i]->target;
 			if(guys[i]->target)
 			{
-				guys[i]->target=(Guy *)(tgt->ID);	// convert the pointer into a numerical reference
+				guys[i]->target=(Guy *)(size_t)(tgt->ID);	// convert the pointer into a numerical reference
 			}
 			else
 				guys[i]->target=(Guy *)(65535);
@@ -2828,7 +2828,7 @@ void SaveGuys(FILE *f)
 			parent=guys[i]->parent;
 			if(guys[i]->parent)
 			{
-				guys[i]->parent=(Guy *)(parent->ID);	// convert the pointer into a numerical reference
+				guys[i]->parent=(Guy *)(size_t)(parent->ID);	// convert the pointer into a numerical reference
 			}
 			else
 				guys[i]->parent=(Guy *)(65535);
