@@ -14,6 +14,7 @@ show_help() {
 	echo "    --clang       Compile using the clang toolchain (default: gcc)."
 	echo "    --valgrind    Run the game under valgrind memory checker (slow)."
 	echo "    --callgrind   Run the game under callgrind profiler (slow)."
+	echo "    --two         Run two copies of the game at once."
 }
 
 # Default settings
@@ -23,6 +24,7 @@ CONFIG=debug
 ARGS=window
 NOBUILD=
 TOOLSET=gcc
+TWO=
 
 # Read command-line arguments
 while [ $# -ne 0 ]; do
@@ -48,6 +50,9 @@ while [ $# -ne 0 ]; do
 			;;
 		"--clang")
 			TOOLSET=clang
+			;;
+		"--two")
+			TWO=ON
 			;;
 		-*)
 			show_help; exit 1
@@ -100,5 +105,9 @@ elif [ "$TOOL" = "callgrind" ]; then
 	valgrind --tool=callgrind "$EXE" $ARGS
 else
 	echo "==== Running $PROJECT ($CONFIG) ===="
+	if [ "$TWO" ]; then
+		"$EXE" $ARGS &
+	fi
 	"$EXE" $ARGS
+	wait
 fi
