@@ -148,17 +148,14 @@ void Save::header(string_view author, string_view name, string_view app)
 	header.write_string(name);
 	header.write_string(app);
 	header.write_varint(0);  // empty metadata table
-	section(nullptr, header.save());
+	section(string_view(), header.save());
 }
 
 void Save::section(string_view name, string_view body)
 {
 	size_t size = size_varint(name.length()) + name.length() + body.length();
 	write_varint(output, size);
-	if (name != nullptr)
-		write_string(output, name);
-	else
-		output.put(0);
+	write_string(output, name);
 	output.write(body.data(), body.size());
 }
 
