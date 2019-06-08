@@ -3,9 +3,16 @@
 #include "jamulsound.h"
 #include <random>
 
-#include <SDL2/SDL_image.h>
-#ifdef _WIN32
-#include <SDL2/SDL_syswm.h>
+#ifdef SDL_UNPREFIXED
+	#include <SDL_image.h>
+	#ifdef _WIN32
+		#include <SDL_syswm.h>
+	#endif  // _WIN32
+#else  // SDL_UNPREFIXED
+	#include <SDL2/SDL_image.h>
+	#ifdef _WIN32
+		#include <SDL2/SDL_syswm.h>
+	#endif  // _WIN32
 #endif
 
 void SoundSystemExists();

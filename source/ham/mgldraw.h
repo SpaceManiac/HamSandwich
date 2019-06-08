@@ -10,7 +10,11 @@ now SDL2.
 #ifndef HAM_MGLDRAW_H
 #define HAM_MGLDRAW_H
 
-#include <SDL2/SDL.h>
+#ifdef SDL_UNPREFIXED
+	#include <SDL.h>
+#else  // SDL_UNPREFIXED
+	#include <SDL2/SDL.h>
+#endif  // SDL_UNPREFIXED
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN

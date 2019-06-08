@@ -1,7 +1,12 @@
 #include "music.h"
 #include "mgldraw.h"
 #include "options.h"
-#include <SDL2/SDL_mixer.h>
+
+#ifdef SDL_UNPREFIXED
+	#include <SDL_mixer.h>
+#else  // SDL_UNPREFIXED
+	#include <SDL2/SDL_mixer.h>
+#endif  // SDL_UNPREFIXED
 
 byte currentMode;
 Mix_Music *curStream=NULL;

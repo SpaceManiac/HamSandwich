@@ -1,7 +1,13 @@
 #include "jamulsound.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
 #include <stdio.h>
+
+#ifdef SDL_UNPREFIXED
+	#include <SDL.h>
+	#include <SDL_mixer.h>
+#else  // SDL_UNPREFIXED
+	#include <SDL2/SDL.h>
+	#include <SDL2/SDL_mixer.h>
+#endif  // SDL_UNPREFIXED
 
 // Game-provided
 extern bool ConfigSoundEnabled();
