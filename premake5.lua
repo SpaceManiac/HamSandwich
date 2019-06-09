@@ -1,7 +1,13 @@
 -- premake5.lua
+dofile "tools/build/android_studio.lua"
+
 workspace "HamSandwich"
-	configurations { "debug", "release" }
 	location "build"
+	configurations { "debug", "release" }
+
+	filter { "action:android-studio" }
+		location "build/android"
+		android_root_package "com.platymuus.hamsandwich"
 
 function base_project(name)
 	project(name)
