@@ -2,16 +2,15 @@
 
 #ifdef SDL_UNPREFIXED
 	#include <SDL_platform.h>
+	#include <SDL_rwops.h>
 #else  // SDL_UNPREFIXED
 	#include <SDL2/SDL_platform.h>
+	#include <SDL2/SDL_rwops.h>
 #endif  // SDL_UNPREFIXED
 
-// TODO: allow overriding this
-#define APPDATA_NAME "DrLunatic"
-
-#define ASSETOPEN_MODE "rb"
-
-#ifdef _WIN32
+// TODO: re-enable this when "DrLunatic" is overrideable,
+// and there's some means of porting existing installs.
+#if 0  // #ifdef _WIN32
 // Windows ----------------------------------------------------------
 
 #include <io.h>
@@ -20,23 +19,24 @@
 #include <direct.h>
 #endif
 
-FILE* AppdataOpen(const char* file, const char* mode)
-{
+FILE* AppdataOpen(const char* file, const char* mode) {
 	char buffer[MAX_PATH];
 	SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, buffer);
 	strcat(buffer, "\\Hamumu");
 	mkdir(buffer);
-	strcat(buffer, "\\");
-	strcat(buffer, APPDATA_NAME);
+	strcat(buffer, "\\DrLunatic");
 	mkdir(buffer);
 	strcat(buffer, "\\");
 	strcat(buffer, file);
-	return fopen(buffer, mode);
+	return fopen(file, mode);
 }
 
-FILE* AssetOpen(const char* file)
-{
-	return fopen(file, ASSETOPEN_MODE);
+FILE* AssetOpen(const char* file, const char* mode) {
+	return fopen(file, mode);
+}
+
+SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
+	return SDL_RWFromFile(file, mode);
 }
 
 #elif defined(__ANDROID__) && __ANDROID__
@@ -46,6 +46,7 @@ FILE* AssetOpen(const char* file)
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <string.h>
+#include <unistd.h>
 
 #define MKDIR_MODE 0777
 
@@ -75,71 +76,91 @@ static int mkdir_parents(const char *path, mode_t mode) {
 	return status;
 }
 
-FILE* AppdataOpen(const char* file, const char* mode)
-{
+static bool is_write_mode(const char* mode) {
+	return mode[0] == 'w' || mode[0] == 'a' || (mode[0] == 'r' && mode[1] == '+');
+}
+
+FILE* AppdataOpen(const char* file, const char* mode) {
 	char buffer[1024];
 
 	// Only use external storage if it is both readable and writeable
 	int need_flags = SDL_ANDROID_EXTERNAL_STORAGE_READ | SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
-	if ((SDL_AndroidGetExternalStorageState() & need_flags) == need_flags)
-	{
+	if ((SDL_AndroidGetExternalStorageState() & need_flags) == need_flags) {
 		strcpy(buffer, SDL_AndroidGetExternalStoragePath());
-	}
-	else
-	{
+	} else {
 		strcpy(buffer, SDL_AndroidGetInternalStoragePath());
 	}
 
-	mkdir(buffer, MKDIR_MODE);
+	strcat(buffer, "/");
 	strcat(buffer, file);
-    return fopen(buffer, mode);
+	if (is_write_mode(mode)) {
+		mkdir_parents(buffer, MKDIR_MODE);
+	}
+	return fopen(buffer, mode);
 }
 
-FILE* AssetOpen(const char* file)
-{
+FILE* AssetOpen(const char* file, const char* mode) {
+	if (is_write_mode(mode)) {
+		return AppdataOpen(file, mode);
+	}
+
 	// Check internal storage to see if we've already extracted the file.
 	char fname_buf[1024];
 	sprintf(fname_buf, "%s/%s", SDL_AndroidGetInternalStoragePath(), file);
+	unlink(fname_buf);
 
-	FILE* fp = fopen(fname_buf, ASSETOPEN_MODE);
-	if (!fp) {
-		// Not in internal storage, so ask SDL to pull it from the asset system.
-		SDL_RWops *rw = SDL_RWFromFile(file, ASSETOPEN_MODE);
-		if (!rw) {
-			return nullptr;
-		}
-
-		mkdir_parents(fname_buf, MKDIR_MODE);
-		fp = fopen(fname_buf, "wb");
-		if (!fp) {
-			return nullptr;
-		}
-
-		// Copy everything.
-		char buffer[4096];
-		int read;
-		while ((read = SDL_RWread(rw, buffer, 1, sizeof(buffer))) > 0) {
-			fwrite(buffer, 1, read, fp);
-		}
-
-		// Return a FILE* pointing to the extracted asset.
-		fclose(fp);
-		fp = fopen(fname_buf, ASSETOPEN_MODE);
+	// Not in internal storage, so ask SDL to pull it from the asset system.
+	SDL_RWops *rw = SDL_RWFromFile(file, mode);
+	if (!rw) {
+		return nullptr;
 	}
-	return fp;
+
+	mkdir_parents(fname_buf, MKDIR_MODE);
+	FILE* fp = fopen(fname_buf, "wb");
+	if (!fp) {
+		return nullptr;
+	}
+
+	// Copy everything.
+	char buffer[4096];
+	int read;
+	while ((read = SDL_RWread(rw, buffer, 1, sizeof(buffer))) > 0) {
+		fwrite(buffer, 1, read, fp);
+	}
+
+	// Return a FILE* pointing to the extracted asset.
+	fclose(fp);
+	return fopen(fname_buf, mode);
+}
+
+SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
+	if (is_write_mode(mode)) {
+		FILE *fp = AppdataOpen(file, mode);
+		if (fp) {
+            return SDL_RWFromFP(fp, SDL_TRUE);
+		} else {
+			return nullptr;
+		}
+	} else {
+		// Will try to read from Android internal storage, or else
+		// pull from the asset system.
+		return SDL_RWFromFile(file, mode);
+	}
 }
 
 #else
 // Default ----------------------------------------------------------
 
-FILE* AppdataOpen(const char* file, const char* mode)
-{
-    return fopen(file, mode);
+FILE* AppdataOpen(const char* file, const char* mode) {
+	return fopen(file, mode);
 }
 
-FILE* AssetOpen(const char* file)
-{
-	return fopen(file, ASSETOPEN_MODE);
+FILE* AssetOpen(const char* file, const char* mode) {
+	return fopen(file, mode);
+}
+
+SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
+	return SDL_RWFromFile(file, mode);
 }
 
 #endif
