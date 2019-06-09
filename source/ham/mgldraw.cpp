@@ -265,9 +265,15 @@ static void TranslateKey(SDL_Keysym* sym)
 
 void MGLDraw::FinishFlip(void)
 {
-	SDL_UpdateTexture(texture, NULL, buffer, pitch * sizeof(RGB));
-
-	SDL_RenderClear(renderer);
+#if defined(__ANDROID__) && __ANDROID__
+	float scale = std::max(1.0f, std::min((float)winWidth / xRes, (float)winHeight / yRes));
+	SDL_Rect dest = {
+		(int)((winWidth - xRes * scale) / 2),
+		(int)((winHeight - yRes * scale) / 2),
+		(int)(xRes * scale),
+		(int)(yRes * scale),
+	};
+#else
 	int scale = std::max(1, std::min(winWidth / xRes, winHeight / yRes));
 	SDL_Rect dest = {
 		(winWidth - xRes * scale) / 2,
@@ -275,6 +281,10 @@ void MGLDraw::FinishFlip(void)
 		xRes * scale,
 		yRes * scale,
 	};
+#endif
+
+	SDL_UpdateTexture(texture, NULL, buffer, pitch * sizeof(RGB));
+	SDL_RenderClear(renderer);
 	SDL_RenderCopy(renderer, texture, NULL, &dest);
 	SDL_RenderPresent(renderer);
 	UpdateMusic();
