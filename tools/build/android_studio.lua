@@ -61,10 +61,31 @@ p.api.register {
 	kind = "string"
 }
 
+p.api.register {
+	name = "android_abis",
+	scope = "workspace",
+	kind = "list:string",
+	allowed = {
+		"armeabi",
+		"armeabi-v7a",
+		"arm64-v8a",
+		"x86",
+		"x86_64"
+	}
+}
+
 function m.is_application(prj)
 	-- Only premake apps become Android apps, everything else is an NDK
 	-- module only.
 	return prj.kind == "ConsoleApp" or prj.kind == "WindowedApp"
+end
+
+function m.getcfg(prj, cfgname)
+	for cfg in p.project.eachconfig(prj) do
+		if cfg.name == cfgname then
+			return cfg
+		end
+	end
 end
 
 -- WORKSPACE FILES --------------------------------------------------
@@ -141,7 +162,12 @@ function m.application_mk(wks)
 
 	p.w("APP_PLATFORM = android-%d", minSdkVersion)
 	p.w("APP_STL := c++_shared")  -- or c++_static
-	p.w("APP_ABI := armeabi-v7a x86") -- or armeabi arm64-v8a x86_64
+
+	local abis = ""
+	for _, abi in ipairs(wks.android_abis) do
+		abis = abis .. " " .. abi
+	end
+	p.w("APP_ABI :=%s", abis)
 end
 
 function m.config_mk(wks)
@@ -212,6 +238,9 @@ function m.manifest_xml(prj)
 end
 
 function m.android_mk(prj)
+	-- TODO: handle multiple configurations
+	local cfg = m.getcfg(prj, 'debug')
+
 	if m.is_application(prj) then
 		-- SDL2 includes, TODO base on prj dependencies
 		p.w('include ../_config.mk')
@@ -242,21 +271,37 @@ function m.android_mk(prj)
 		end
 	end
 
-	-- TODO: base this on .h files in the project
+	-- TODO: replace this with obeying cfg.includes below
 	if not m.is_application(prj) then
 		p.w('LOCAL_EXPORT_C_INCLUDES := ../../../source/%s', prj.name)
 	end
 
-	-- TODO: base this on buildoptions, cppdialect
-	p.w('LOCAL_CFLAGS := -DSDL_UNPREFIXED -fsigned-char -std=c++17')
-	p.w('LOCAL_CPP_FEATURES += exceptions')
+	local cflags = ""
+	for _, flag in ipairs(cfg.buildoptions) do
+		cflags = cflags .. " " .. flag
+	end
+	for _, def in ipairs(cfg.defines) do
+		cflags = cflags .. " -D" .. def
+	end
+	if cfg.cppdialect then
+		cflags = cflags .. " -std=" .. cfg.cppdialect:lower()
+	end
+	print(prj.name, cflags)
+
+	p.w('LOCAL_CFLAGS :=%s', cflags)
 
 	if m.is_application(prj) then
 		p.w('LOCAL_LDLIBS := -llog')
 	end
 
-	-- TODO:
-	p.w('LOCAL_SRC_FILES := $(wildcard ../../source/%s/*.cpp)', prj.name)
+	local files = ""
+	for _, file in ipairs(cfg.files) do
+		local ext = path.getextension(file)
+		if ext == ".c" or ext == ".cpp" then
+			files = files .. " " .. file
+		end
+	end
+	p.w('LOCAL_SRC_FILES :=%s', files)
 
 	if m.is_application(prj) then
 		p.w('include $(BUILD_SHARED_LIBRARY)')

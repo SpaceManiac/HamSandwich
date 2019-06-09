@@ -8,6 +8,7 @@ workspace "HamSandwich"
 	filter { "action:android-studio" }
 		location "build/android"
 		android_root_package "com.platymuus.hamsandwich"
+		android_abis { "armeabi-v7a" }
 
 function base_project(name)
 	project(name)
@@ -54,6 +55,10 @@ function base_project(name)
 			debugargs { "window" }
 			debugenvs { "PATH=$(ProjectDir)/lib/x86/;%PATH%" }
 			debugdir "$(ProjectDir)/game/%{prj.name}"
+
+		filter "action:android-studio"
+			defines { "SDL_UNPREFIXED" }
+			buildoptions { "-fsigned-char", "-fexceptions" }
 
 		filter {}
 end
