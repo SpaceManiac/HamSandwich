@@ -137,6 +137,9 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 
 MGLDraw::~MGLDraw(void)
 {
+	SDL_DestroyTexture(texture);
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
 	JamulSoundExit();
 	delete[] buffer;
 	delete[] scrn;
