@@ -81,11 +81,11 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 #ifndef _WIN32
 	// Icon embedding for non-Windows platforms.
 	// `tools/build/rescomp.py` produces a .cpp file containing these symbols.
-	// If a project does not have an icon, add `__attribute__((weak))` before
-	// the variable names and uncomment the below condition.
-	extern size_t WINDOW_ICON_SZ;
-	extern unsigned char WINDOW_ICON[];
-	/*if (&WINDOW_ICON && &WINDOW_ICON_SZ)*/ {
+	// Marked `__attribute__((weak))` for platforms or projects which do not
+	// use this icon embedding method.
+	extern __attribute__((weak)) size_t WINDOW_ICON_SZ;
+	extern __attribute__((weak)) unsigned char WINDOW_ICON[];
+	if (&WINDOW_ICON && &WINDOW_ICON_SZ) {
 		SDL_Surface *surface = IMG_Load_RW(
 			SDL_RWFromConstMem(WINDOW_ICON, WINDOW_ICON_SZ),
 			1
