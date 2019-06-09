@@ -254,6 +254,15 @@ void MGLDraw::ResizeBuffer(int w, int h)
 	buffer = new RGB[xRes * yRes];
 }
 
+static void TranslateKey(SDL_Keysym* sym)
+{
+	if (sym->scancode == SDL_SCANCODE_AC_BACK)
+	{
+		sym->scancode = SDL_SCANCODE_ESCAPE;
+		sym->sym = SDLK_ESCAPE;
+	}
+}
+
 void MGLDraw::FinishFlip(void)
 {
 	SDL_UpdateTexture(texture, NULL, buffer, pitch * sizeof(RGB));
@@ -273,6 +282,7 @@ void MGLDraw::FinishFlip(void)
 	SDL_Event e;
 	while(SDL_PollEvent(&e)) {
 		if (e.type == SDL_KEYDOWN) {
+			TranslateKey(&e.key.keysym);
 			ControlKeyDown(e.key.keysym.scancode);
 			lastRawCode = e.key.keysym.scancode;
 			if (!(e.key.keysym.sym & ~0xff))
@@ -297,6 +307,7 @@ void MGLDraw::FinishFlip(void)
 				lastKeyPressed = e.text.text[0];
 			}
 		} else if (e.type == SDL_KEYUP) {
+			TranslateKey(&e.key.keysym);
 			ControlKeyUp(e.key.keysym.scancode);
 		} else if (e.type == SDL_MOUSEMOTION) {
 			mouse_x = (e.motion.x - dest.x) / scale;
