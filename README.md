@@ -4,6 +4,17 @@
 
 ## Building
 
+The recommended way to compile the games is [MinGW on Windows](#windows-mingw).
+The following platforms also have various levels of support:
+
+Platform | Toolchain | Status | Notes
+-|-|-|-|-
+Windows | MinGW | Primary | CI: [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
+Windows | MSVC | Secondary | CI: [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
+Linux | GCC | Secondary | CI: [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
+Windows | Clang | Tertiary | No app icons
+Linux | Clang | Tertiary
+
 ### Windows (MinGW)
 
 First-time setup:
@@ -28,14 +39,29 @@ Compiling and running:
     3. The first time you try to run a game, you will be prompted to download
         its installer from <https://hamumu.itch.io/>;
         follow the instructions shown.
+2. Run `git pull` to fetch changes which have been published here.
 
 ### Windows (MSVC)
 
 1. Download dependencies:
-    1. Latest Windows zip from <https://github.com/premake/premake-core/releases>.
-    2. SDL2-devel-2.0.9-VC.zip from <https://www.libsdl.org/download-2.0.php>.
-    3. SDL2_mixer-devel-2.0.4-VC.zip from <https://www.libsdl.org/projects/SDL_mixer/>.
-    4. SDL2_image-devel-2.0.4-VC.zip from <https://www.libsdl.org/projects/SDL_image/>.
-2. Run `premake5 vs2017` (or appropriate VS version) to generate solution.
-3. Point MSVC at downloaded SDL2.
-4. Use MSVC to compile solution.
+    1. Run `powershell tools/build/msvc-install-deps.ps1`.
+    2. Or, download and extract them manually:
+        1. `build/premake5.exe`: premake-5.0.0-alpha14-windows.zip
+           from <https://github.com/premake/premake-core/releases/tag/v5.0.0-alpha14>.
+        2. `build/SDL2-msvc/`: SDL2-devel-2.0.9-VC.zip from <https://www.libsdl.org/download-2.0.php>.
+        3. `build/SDL2_mixer-msvc/`: SDL2_mixer-devel-2.0.4-VC.zip from <https://www.libsdl.org/projects/SDL_mixer/>.
+        4. `build/SDL2_image-msvc/`: SDL2_image-devel-2.0.4-VC.zip from <https://www.libsdl.org/projects/SDL_image/>.
+2. Run `build/premake5.exe vs2017` (or appropriate VS version) to generate solution.
+3. Open and compile `build/HamSandwich.sln` in Visual Studio.
+    1. For command-line builds, run `msbuild build/HamSandwich.sln /p:Configuration=debug /p:Platform=Win32`.
+4. Use installers from <https://hamumu.itch.io/> to extract game assets to `build/game/<gamename>`.
+5. Debug from within Visual Studio to launch a game.
+
+### Linux
+
+1. Install dependencies (handled automatically on Ubuntu, Arch):
+    1. premake-5.0.0-alpha14-linux.tar.gz from <https://github.com/premake/premake-core/releases/tag/v5.0.0-alpha14>.
+    2. 32-bit G++ (or Clang) toolchain.
+    3. 32-bit SDL2, SDL2_mixer, and SDL2_image development packages.
+    4. 7-Zip and Innoextract to extract game assets.
+2. Use `make` and `./run` as described above to build and run the games.
