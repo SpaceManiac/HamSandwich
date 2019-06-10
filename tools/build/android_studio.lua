@@ -30,8 +30,11 @@ newaction {
 
 			-- TODO: this is probably the wrong time to do this?
 			if prj.android_icon then
-				outpath = prj.workspace.location .. "/" .. prj.name .. "/res/mipmap-mdpi/icon.png"
-				os.execute('convert "' .. prj.android_icon .. '" "' .. outpath .. '"')
+				os.execute('python3'
+					.. ' tools/build/android_icons.py'
+					.. ' "' .. prj.android_icon .. '"'
+					.. ' "' .. prj.workspace.location .. '/' .. prj.name .. '/res"'
+					.. ' "icon"')
 			end
 		else
 			p.generate(prj, "lib" .. prj.name .. ".mk", m.android_mk)
