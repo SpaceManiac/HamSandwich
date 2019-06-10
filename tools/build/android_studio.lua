@@ -74,6 +74,12 @@ p.api.register {
 	}
 }
 
+p.api.register {
+	name = "android_appname",
+	scope = "project",
+	kind = "string"
+}
+
 function m.is_application(prj)
 	-- Only premake apps become Android apps, everything else is an NDK
 	-- module only.
@@ -194,7 +200,7 @@ function m.manifest_xml(prj)
 	local rootPackage = prj.workspace.android_root_package
 	local sdkVersion = prj.workspace.android_sdk or m.DEFAULT_SDK
 	local minSdkVersion = prj.workspace.android_min_sdk or m.DEFAULT_MIN_SDK
-	local title = prj.name
+	local title = prj.android_appname or prj.name
 
 	p.w('<?xml version="1.0" encoding="utf-8"?>')
 	p.push('<manifest xmlns:android="http://schemas.android.com/apk/res/android"')
@@ -286,7 +292,6 @@ function m.android_mk(prj)
 	if cfg.cppdialect then
 		cflags = cflags .. " -std=" .. cfg.cppdialect:lower()
 	end
-	print(prj.name, cflags)
 
 	p.w('LOCAL_CFLAGS :=%s', cflags)
 

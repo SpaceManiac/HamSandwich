@@ -129,6 +129,7 @@ library "ham"
 		buildoptions { "-Wall", "-Wextra", "-Wno-char-subscripts" }
 
 sdl2_project "lunatic"
+	android_appname "Dr. Lunatic"
 	icon_file "lunatic"
 	depends "ham"
 	pch "winpch"
@@ -138,6 +139,7 @@ sdl2_project "lunatic"
 		buildoptions { "-Wall", "-Wextra", "-Wno-unused-parameter" }
 
 sdl2_project "supreme"
+	android_appname "Supreme With Cheese"
 	icon_file "lunatic"
 	depends "ham"
 	pch "winpch"
@@ -161,6 +163,7 @@ sdl2_project "supreme"
 		}
 
 sdl2_project "sleepless"
+	android_appname "Sleepless Hollow"
 	icon_file "lunatic"
 	depends "ham"
 	pch "winpch"
@@ -183,11 +186,13 @@ sdl2_project "sleepless"
 		}
 
 sdl2_project "loonyland"
+	android_appname "Loonyland: Halloween Hill"
 	icon_file "loonyland"
 	depends "ham"
 	pch "winpch"
 
 sdl2_project "loonyland2"
+	android_appname "Loonyland 2: Winter Woods"
 	icon_file "loonyland2"
 	depends "ham"
 	pch "winpch"
@@ -197,6 +202,7 @@ sdl2_project "loonyland2"
 	}
 
 sdl2_project "mystic"
+	android_appname "Kid Mystic"
 	icon_file "mystic"
 	depends "ham"
 	pch "winpch"
