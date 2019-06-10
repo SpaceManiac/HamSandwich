@@ -6,6 +6,7 @@
 #include <conio.h>
 #include <winsock.h>
 #else
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/fcntl.h>
 #include <netdb.h>
