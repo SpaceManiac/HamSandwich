@@ -42,8 +42,8 @@ newaction {
 }
 
 p.api.register {
-	name = "android_root_package",
-	scope = "workspace",
+	name = "android_package",
+	scope = "project",
 	kind = "string"
 }
 
@@ -105,7 +105,6 @@ function m.settings_gradle(wks)
 end
 
 function m.build_gradle(wks)
-	local rootPackage = wks.android_root_package
 	local sdkVersion = wks.android_sdk or m.DEFAULT_SDK
 	local minSdkVersion = wks.android_min_sdk or m.DEFAULT_MIN_SDK
 
@@ -154,7 +153,7 @@ function m.build_gradle(wks)
 			p.push("project(':%s') {", prj.name)
 			p.push("android {")
 			p.push("defaultConfig {")
-			p.w("applicationId '%s.%s'", rootPackage, prj.name)
+			p.w("applicationId '%s'", prj.android_package)
 			p.pop("}")  -- defaultConfig
 			p.w("sourceSets.main.assets.srcDir '../../game/%s'", prj.name)
 			p.pop("}")  -- android
@@ -197,14 +196,13 @@ function m.prj_application_mk(prj)
 end
 
 function m.manifest_xml(prj)
-	local rootPackage = prj.workspace.android_root_package
 	local sdkVersion = prj.workspace.android_sdk or m.DEFAULT_SDK
 	local minSdkVersion = prj.workspace.android_min_sdk or m.DEFAULT_MIN_SDK
 	local title = prj.android_appname or prj.name
 
 	p.w('<?xml version="1.0" encoding="utf-8"?>')
 	p.push('<manifest xmlns:android="http://schemas.android.com/apk/res/android"')
-	p.w('package="%s.%s"', rootPackage, prj.name)
+	p.w('package="%s"', prj.android_package)
 	p.w('android:versionCode="1"')
 	p.w('android:versionName="1.0"')
 	p.w('android:installLocation="auto"')
@@ -316,9 +314,7 @@ function m.android_mk(prj)
 end
 
 function m.activity_java(prj)
-	local rootPackage = prj.workspace.android_root_package
-
-	p.w('package %s.%s;', rootPackage, prj.name)
+	p.w('package %s;', prj.android_package)
 	p.w('import org.libsdl.app.SDLActivity;')
 	p.push('public class %sActivity extends SDLActivity {', prj.name)
 

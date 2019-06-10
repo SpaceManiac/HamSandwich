@@ -7,7 +7,6 @@ workspace "HamSandwich"
 
 	filter { "action:android-studio" }
 		location "build/android"
-		android_root_package "com.platymuus.hamsandwich"
 		android_abis { "armeabi-v7a" }
 
 function base_project(name)
@@ -18,6 +17,7 @@ function base_project(name)
 		architecture "x86"
 		targetdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/")
 		objdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/obj/")
+		android_package("com.platymuus.hamsandwich." .. name)
 
 		files {
 			"source/" .. name .. "/**.h",
