@@ -5,9 +5,7 @@
 #include "vars.h"
 #include "shop.h"
 #include "control.h"
-
-// Standard header includes
-#include<algorithm>
+#include <algorithm>
 
 static FILE *scanF;
 

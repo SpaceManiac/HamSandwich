@@ -5,8 +5,6 @@
 #include "monsnotes.h"
 #include "tool.h"
 #include "edithelp.h"
-
-// standard header includes
 #include <vector>
 
 #define MMODE_NORMAL	0	// doing nothing (just viewing monsters, click to select, select all you like)

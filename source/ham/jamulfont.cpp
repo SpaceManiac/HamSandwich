@@ -1,7 +1,5 @@
 #include "jamulfont.h"
 #include "mgldraw.h"
-
-// Standard header includes
 #include <stdio.h>
 
 MGLDraw *fontmgl;

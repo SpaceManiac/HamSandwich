@@ -2,6 +2,7 @@
 #include "clock.h"
 #include "jamulsound.h"
 #include <random>
+#include <algorithm>
 
 #ifdef SDL_UNPREFIXED
 	#include <SDL_image.h>
