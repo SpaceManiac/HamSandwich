@@ -21,4 +21,5 @@ build/Makefile: premake5.lua $(DOTCC) $(addprefix source/,$(PROJECTS))
 	@$(PREMAKE5) gmake2 --cc=$(toolset)
 
 build/.toolset:
+	@mkdir -p build
 	@echo $(toolset) >$@
