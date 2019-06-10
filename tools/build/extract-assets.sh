@@ -20,13 +20,13 @@ itch_download() {  # <url> <filename> <hash>
 		echo "Press Enter when finished, or Ctrl-C to cancel."
 		read
 	done
-	md5sum -c <<<"$3 *$INSTDIR/$2"
+	sha256sum -c <<<"$3 *$INSTDIR/$2"
 	while [ $? -ne 0 ]; do
 		echo "That looks like the wrong file, please download '$2' again:"
 		echo "    $1"
 		echo "Press Enter when finished, or Ctrl-C to cancel."
 		read
-		md5sum -c <<<"$3 *$INSTDIR/$2"
+		sha256sum -c <<<"$3 *$INSTDIR/$2"
 	done
 }
 
@@ -46,31 +46,31 @@ extract_inno() {
 mkdir -p "$INSTDIR"
 case "$PROJECT" in
 	"lunatic")
-		itch_download 'https://hamumu.itch.io/dr-lunatic' lunatic_install.exe 0206bf9b7474243ebf0c03b5aefabab0
+		itch_download 'https://hamumu.itch.io/dr-lunatic' lunatic_install.exe b8013176ea8050db20a2b170a5273d5287ccde4b4923affb7c610bda89326c84
 		extract_nsis "$INSTDIR/lunatic_install.exe" "$OUTDIR"
 		;;
 	"supreme")
-		itch_download 'https://hamumu.itch.io/dr-lunatic-supreme-with-cheese' supreme8_install.exe 1d3b28e9303af9387869b7c79661aca5
+		itch_download 'https://hamumu.itch.io/dr-lunatic-supreme-with-cheese' supreme8_install.exe 1c105ad826be1e0697b5de8483c71ff943d04bce91fe3547b6f355e9bc1c42d4
 		extract_nsis "$INSTDIR/supreme8_install.exe" "$OUTDIR"
 		;;
 	"sleepless")
-		itch_download 'https://hamumu.itch.io/sleepless-hollow' hollow_betainstall.exe be32780401a0d9c4565c1d779c56d143
+		itch_download 'https://hamumu.itch.io/sleepless-hollow' hollow_betainstall.exe 41660802318356fba53a21b4d368e191b3197030fb9e8eb833788f45c01c6f99
 		extract_nsis "$INSTDIR/hollow_betainstall.exe" "$OUTDIR"
 		;;
 	"loonyland")
-		itch_download 'https://hamumu.itch.io/loonyland-halloween-hill' loonyland_install.EXE 1be5fb03d3f6bc86aa1a4a5dea4f80f8
+		itch_download 'https://hamumu.itch.io/loonyland-halloween-hill' loonyland_install.EXE cf3cdc555297e41f6c2da61d89815dbbc740d6fc677c83ec6c6e1acfa117de34
 		extract_inno "$INSTDIR/loonyland_install.EXE" "$OUTDIR"
 		rm "$OUTDIR/loonyland.exe"
 
-		itch_download 'https://hamumu.itch.io/loonyland-halloween-hill' loonyland_editor.exe 39a7f048724cf941b6a7bf1848bf68fb
+		itch_download 'https://hamumu.itch.io/loonyland-halloween-hill' loonyland_editor.exe 865550d077e984ca28324aaf4291211aa4009cdad9f2b74144179c6342f2be39
 		extract_nsis "$INSTDIR/loonyland_editor.exe" "$OUTDIR"
 		;;
 	"loonyland2")
-		itch_download 'https://hamumu.itch.io/loonyland-2-winter-woods' LL2CEinstall.exe a5bd3dde483787c7a637130306d99639
+		itch_download 'https://hamumu.itch.io/loonyland-2-winter-woods' LL2CEinstall.exe 0806e1615eb94332bf805128d2d3857af420e93ee6f48692eebf17c05e9b14e2
 		extract_nsis "$INSTDIR/LL2CEinstall.exe" "$OUTDIR"
 		;;
 	"mystic")
-		itch_download 'https://hamumu.itch.io/kid-mystic' mystic_install.exe 35cbe3271843aadb860e068cd3f1f9ca
+		itch_download 'https://hamumu.itch.io/kid-mystic' mystic_install.exe c2d618176d23b974c01c00690b6afb0aaebd4c863dfff0bf8b1f66db1bdc2f65
 		extract_inno "$INSTDIR/mystic_install.exe" "$OUTDIR"
 		;;
 	*)

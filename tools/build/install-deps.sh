@@ -44,8 +44,8 @@ premake5_linux() {
 	# Download Premake5 binary
 	if [ ! -f "build/premake5" ]; then
 		echo "==== Downloading premake5 binary ===="
-		wget -O "build/premake5.tar.gz" "https://github.com/premake/premake-core/releases/download/v5.0.0-alpha14/premake-5.0.0-alpha14-linux.tar.gz"
-		md5sum -c <<<'575decd4e194280cde2d6253b8e87e43 *build/premake5.tar.gz'
+		wget -q -O "build/premake5.tar.gz" "https://github.com/premake/premake-core/releases/download/v5.0.0-alpha14/premake-5.0.0-alpha14-linux.tar.gz"
+		sha256sum -c <<<'5f3fe8731b52270a5222e698ee1144e2474cf17c02fcadc8727796b918b9d2de *build/premake5.tar.gz'
 		tar -C "build/" -x -f 'build/premake5.tar.gz'
 		rm "build/premake5.tar.gz"
 	fi
@@ -61,8 +61,8 @@ deps_msys2() {
 	# Download Premake5 binary
 	if [ ! -f "build/premake5" ]; then
 		echo "==== Downloading premake5 binary ===="
-		wget -O "build/premake5.zip" "https://github.com/premake/premake-core/releases/download/v5.0.0-alpha14/premake-5.0.0-alpha14-windows.zip"
-		md5sum -c <<<'93865b1bd6e0719f37b3acb07d60572b *build/premake5.zip'
+		wget -q -O "build/premake5.zip" "https://github.com/premake/premake-core/releases/download/v5.0.0-alpha14/premake-5.0.0-alpha14-windows.zip"
+		sha256sum -c <<<'070419eedbb4c8737664d05f0e3701055741014c1135a9214c35d6feb03724a7 *build/premake5.zip'
 		7z x -o"build/" "build/premake5.zip"
 		rm "build/premake5.zip"
 	fi
@@ -70,8 +70,8 @@ deps_msys2() {
 	# Download Innoextract binary
 	if [ ! -f "build/innoextract" ]; then
 		echo "==== Downloading Innoextract binary ===="
-		wget -O "build/innoextract.zip" "https://constexpr.org/innoextract/files/innoextract-1.7-windows.zip"
-		md5sum -c <<<'b801b0740b4ab19d69a739ab4a9180ae *build/innoextract.zip'
+		wget -q -O "build/innoextract.zip" "https://constexpr.org/innoextract/files/innoextract-1.7-windows.zip"
+		sha256sum -c <<<'9a0ede947448132c9a8fa390ae92da8fb25a5dffc666306f777e611b60b82fbd *build/innoextract.zip'
 		7z x -o"build/" -i'!innoextract.exe' "build/innoextract.zip"
 		rm "build/innoextract.zip"
 	fi

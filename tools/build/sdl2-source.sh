@@ -5,7 +5,7 @@ set -euo pipefail
 sdl2_lib() {  # <target> <zipfolder> <url> <sha256>
 	if [ ! -d "build/$1" ]; then
 		echo "==== Downloading $1 sources ===="
-		wget -O "build/$1.zip" "$3"
+		wget -q -O "build/$1.zip" "$3"
 		sha256sum -c <<<"$4 *build/$1.zip"
 		7z x -o"build/" "build/$1.zip"
 		mv "build/$2" "build/$1"
