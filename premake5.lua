@@ -17,7 +17,7 @@ function base_project(name)
 		architecture "x86"
 		targetdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/")
 		objdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/obj/")
-		android_package("com.platymuus.hamsandwich." .. name)
+		android_package "com.platymuus.hamsandwich.%{prj.name}"
 
 		files {
 			"source/" .. name .. "/**.h",

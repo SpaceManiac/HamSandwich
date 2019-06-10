@@ -44,7 +44,8 @@ newaction {
 p.api.register {
 	name = "android_package",
 	scope = "project",
-	kind = "string"
+	kind = "string",
+	tokens = true
 }
 
 m.DEFAULT_SDK = 19
