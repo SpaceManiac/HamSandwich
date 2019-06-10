@@ -27,6 +27,12 @@ newaction {
 			p.generate(prj, prj.name .. "/Application.mk", m.prj_application_mk)
 			p.generate(prj, prj.name .. "/Android.mk", m.android_mk)
 			p.generate(prj, prj.name .. "/java/" .. prj.name .. "Activity.java", m.activity_java)
+
+			-- TODO: this is probably the wrong time to do this?
+			if prj.android_icon then
+				outpath = prj.workspace.location .. "/" .. prj.name .. "/res/mipmap-mdpi/icon.png"
+				os.execute('convert "' .. prj.android_icon .. '" "' .. outpath .. '"')
+			end
 		else
 			p.generate(prj, "lib" .. prj.name .. ".mk", m.android_mk)
 		end
@@ -79,6 +85,13 @@ p.api.register {
 	name = "android_appname",
 	scope = "project",
 	kind = "string"
+}
+
+p.api.register {
+	name = "android_icon",
+	scope = "project",
+	kind = "string",
+	tokens = true
 }
 
 function m.is_application(prj)
@@ -218,7 +231,9 @@ function m.manifest_xml(prj)
 	-- other examples: VIBRATE, RECORD_AUDIO
 
 	p.push('<application android:label="%s"', title)
-	-- TODO: android:icon="@mipmap/loonyland"
+	if prj.android_icon then
+		p.w('android:icon="@mipmap/icon"')
+	end
 	p.w('android:allowBackup="true"')
 	p.w('android:theme="@android:style/Theme.NoTitleBar.Fullscreen"')
 	p.w('android:hardwareAccelerated="true"')

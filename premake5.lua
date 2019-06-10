@@ -107,6 +107,10 @@ function icon_file(icon)
 		buildoutputs { "%{cfg.objdir}/" .. icon .. ".rc.cpp" }
 		buildinputs { "tools/build/rescomp.py" }
 
+	-- Convert the icon to a resource
+	filter { "action:android-studio" }
+		android_icon("source/%{prj.name}/" .. icon .. ".ico")
+
 	filter {}
 end
 
