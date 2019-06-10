@@ -30,9 +30,21 @@ function base_project(name)
 			linkoptions { "-static-libgcc", "-static-libstdc++" }
 
 		filter "action:vs*"
-			defines { "_CRT_SECURE_NO_WARNINGS", "NOMINMAX" }
-			includedirs { "build/include/" }
-			libdirs { "build/lib/x86/" }
+			-- At least some versions of VS2017 don't recognize "C++17".
+			cppdialect "C++latest"
+			defines { "_CRT_SECURE_NO_WARNINGS", "NOMINMAX", "SDL_UNPREFIXED" }
+			-- The MSVC dependency script puts the SDL2 binaries here.
+			includedirs {
+				"build/SDL2-msvc/include",
+				"build/SDL2_mixer-msvc/include",
+				"build/SDL2_image-msvc/include",
+			}
+			libdirs {
+				"build/SDL2-msvc/lib/x86",
+				"build/SDL2_mixer-msvc/lib/x86",
+				"build/SDL2_image-msvc/lib/x86",
+			}
+			-- These emulate the `./run` script when running within VS.
 			debugargs { "window" }
 			debugenvs { "PATH=$(ProjectDir)/lib/x86/;%PATH%" }
 			debugdir "$(ProjectDir)/game/%{prj.name}"
