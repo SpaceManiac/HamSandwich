@@ -14,6 +14,7 @@ Windows | MSVC | Secondary | CI: [Appveyor](https://ci.appveyor.com/project/Spac
 Linux | GCC | Secondary | CI: [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
 Windows | Clang | Tertiary | No app icons
 Linux | Clang | Tertiary
+Android | NDK | Tertiary | Incomplete/buggy
 
 ### Windows (MinGW)
 
@@ -65,3 +66,12 @@ Compiling and running:
     3. 32-bit SDL2, SDL2_mixer, and SDL2_image development packages.
     4. 7-Zip and Innoextract to extract game assets.
 2. Use `make` and `./run` as described above to build and run the games.
+
+### Android
+
+1. Install Gradle and the Android SDK and NDK and set `ANDROID_HOME`.
+2. Run `./tools/build/sdl2-source.sh`.
+3. Run `premake5 android-studio`.
+4. Change directory to `build/android`.
+5. Run `gradle packageDebug` to compile APKs.
+6. Run `gradle installDebug` to install to a connected Android device.
