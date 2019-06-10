@@ -78,12 +78,11 @@ deps_msys2() {
 }
 
 deps_ubuntu() {
-	packages 'sudo apt-get install' \
+	packages 'sudo apt-get install --yes' \
 		p7zip innoextract \
 		g++-multilib \
 		libsdl2-dev:i386 libsdl2-mixer-dev:i386 libsdl2-image-dev:i386 \
-		libmirclient-dev:i386 libmircommon-dev:i386 libxkbcommon-dev:i386 \
-		python3-pip
+		python3-pip python3-pil
 
 	premake5_linux
 }

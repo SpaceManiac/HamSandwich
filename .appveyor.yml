@@ -13,6 +13,7 @@ environment:
     matrix:
     -   MSYSTEM: MINGW32
     -   MSVC: 1
+    -   APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
 
 for:
 # Windows/MSYS2 build script
@@ -36,3 +37,13 @@ for:
         - build\premake5.exe vs2017
     build_script:
         - msbuild build/HamSandwich.sln /p:Configuration=debug /p:Platform=Win32 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+
+# Linux build script
+-   matrix:
+        only:
+            - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+    install:
+        - sh: sudo apt-get update
+        - sh: ./tools/build/install-deps.sh
+    build_script:
+        - sh: make
