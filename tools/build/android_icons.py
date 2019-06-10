@@ -3,6 +3,7 @@
 
 import sys
 import os
+from io import BytesIO
 from PIL.IcoImagePlugin import IcoFile
 
 _, infile, outpath, outfname = sys.argv
@@ -37,4 +38,19 @@ if not size_mappings:
 for name, sz in size_mappings.items():
 	folder = os.path.join(outpath, f'mipmap-{name}')
 	os.makedirs(folder, exist_ok=True)
-	ico.getimage(sz).save(os.path.join(folder, f'{outfname}.png'))
+	path = os.path.join(folder, f'{outfname}.png')
+
+	# Don't show message or save if the file is already what we would save
+	try:
+		with open(path, 'rb') as f:
+			previous = f.read()
+	except:
+		pass
+	else:
+		by = BytesIO()
+		ico.getimage(sz).save(by, 'png')
+		if by.getvalue() == previous:
+			continue
+
+	print(f'Generated {os.path.relpath(path)}...')
+	ico.getimage(sz).save(path)
