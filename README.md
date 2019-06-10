@@ -8,7 +8,7 @@ The recommended way to compile the games is [MinGW on Windows](#windows-mingw).
 The following platforms also have various levels of support:
 
 Platform | Toolchain | Status | Notes
--|-|-|-|-
+-|-|-|-
 Windows | MinGW | Primary | CI: [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
 Windows | MSVC | Secondary | CI: [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
 Linux | GCC | Secondary | CI: [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
