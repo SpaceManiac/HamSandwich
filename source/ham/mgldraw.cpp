@@ -853,6 +853,7 @@ HWND MGLDraw::GetHWnd(void)
 void FatalError(const char *msg)
 {
 	fprintf(stderr, "FATAL: %s\n", msg);
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", msg, nullptr);
 	if (_globalMGLDraw)
 		_globalMGLDraw->Quit();
 }
