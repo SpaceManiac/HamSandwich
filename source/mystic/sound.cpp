@@ -55,7 +55,6 @@ void ReplaySong()
 
 void PlaySong(int sng)
 {
-	printf("PlaySong(%d) SE=%d, MS=%d, cur=%d\n", sng, soundExists, PlayerGetMusicSettings(), curSong);
 	if(!soundExists)
 		return;
 

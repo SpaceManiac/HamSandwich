@@ -14,7 +14,6 @@ void UpdateMusic()
 {
 	if (ConfigMusicEnabled() && curStream && !Mix_PlayingMusic())
 	{
-		printf("UpdateMusic() noticed music is done\n");
 		Mix_PlayMusic(curStream, 1);
 		ChooseNextSong();
 	}
@@ -50,7 +49,6 @@ void PlaySongFile(const char* fullname)
 		return;
 	}
 
-	printf("OK: %s\n", fullname);
 	Mix_VolumeMusic(musVolume / 2);
 	Mix_PlayMusic(curStream, 1);
 	UpdateMusic();
