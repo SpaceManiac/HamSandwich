@@ -3,7 +3,6 @@
 #include "options.h"
 
 byte soundAvailable=0;
-int sndNum;
 
 void SoundSystemExists(void)
 {
@@ -13,7 +12,6 @@ void SoundSystemExists(void)
 void InitSound(void)
 {
 	JamulSoundPurge();
-	sndNum=-1;
 }
 
 void ExitSound(void)
@@ -72,24 +70,6 @@ void MakeSpaceSound(int snd,int priority)
 		return;
 
 	GoPlaySound(snd,0,0,SND_CUTOFF,priority);
-}
-
-void LoopingSound(int snd)
-{
-	if(!soundAvailable)
-		return;
-
-	if(!opt.sound)
-		return;
-
-	GoPlaySound(snd,0,0,SND_MAXPRIORITY|SND_CUTOFF|SND_ONE|SND_LOOPING,MAX_SNDPRIORITY);
-}
-
-void KillSong(void)
-{
-	if(sndNum!=-1)
-		JamulSoundStop(sndNum);
-	sndNum=-1;
 }
 
 SDL_RWops* SoundLoadOverride(int which)
