@@ -1,6 +1,7 @@
 #include "jamulfmv.h"
 #include "mgldraw.h"
 #include "clock.h"
+#include "appdata.h"
 #include <stdio.h>
 
 // different kinds of flic chunks
@@ -370,7 +371,7 @@ byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack
 	char k;
 	dword startTime,endTime;
 
-	FLI_file=fopen(name,"rb");
+	FLI_file=AssetOpen(name,"rb");
 	if (!FLI_file)
 	{
 		perror(name);
@@ -423,7 +424,7 @@ word FLI_numFrames(char *name)
 {
 	fliheader FLI_hdr;
 
-	FLI_file=fopen(name,"rb");
+	FLI_file=AssetOpen(name,"rb");
 	fread(&FLI_hdr,1,sizeof(fliheader),FLI_file);
 	fclose(FLI_file);
 	if((name[strlen(name)-1]=='c')||

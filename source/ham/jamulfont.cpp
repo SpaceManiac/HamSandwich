@@ -1,5 +1,6 @@
 #include "jamulfont.h"
 #include "mgldraw.h"
+#include "appdata.h"
 #include <stdio.h>
 
 MGLDraw *fontmgl;
@@ -31,7 +32,7 @@ int FontLoad(const char *fname, mfont_t *font)
 	FILE *f;
 	int i;
 
-	f = fopen(fname, "rb");
+	f = AssetOpen(fname, "rb");
 	if (!f)
 		return FONT_FILENOTFOUND;
 
@@ -57,7 +58,7 @@ int FontSave(char *fname, mfont_t *font)
 {
 	FILE *f;
 
-	f = fopen(fname, "wb");
+	f = AssetOpen(fname, "wb");
 	if (!f)
 		return FONT_FILENOTFOUND;
 

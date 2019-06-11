@@ -1,5 +1,6 @@
 #include "jamulspr.h"
 #include "mgldraw.h"
+#include "appdata.h"
 
 // the sprites are 12 bytes, not including the data itself
 #define SPRITE_INFO_SIZE 16
@@ -941,7 +942,7 @@ bool sprite_set_t::Load(const char *fname)
 	if(spr)
 		Free();
 
-	f=fopen(fname,"rb");
+	f=AssetOpen(fname,"rb");
 	if(!f)
 		return false;
 	// read the count
@@ -1001,7 +1002,7 @@ bool sprite_set_t::Save(const char *fname)
 	int i;
 	byte *buffer;
 
-	f=fopen(fname,"wb");
+	f=AssetOpen(fname,"wb");
 	if(!f)
 		return false;
 	// write the count
