@@ -1,6 +1,7 @@
 #include "mgldraw.h"
 #include "clock.h"
 #include "jamulsound.h"
+#include "hammusic.h"
 #include <random>
 #include <algorithm>
 
@@ -17,7 +18,6 @@
 #endif
 
 void SoundSystemExists();
-void UpdateMusic();
 void ControlKeyDown(byte scancode);
 void ControlKeyUp(byte scancode);
 void SetGameIdle(bool idle);

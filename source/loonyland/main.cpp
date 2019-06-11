@@ -13,8 +13,6 @@
 #include "badge.h"
 #include "debuggo.h"
 
-void UpdateMusic() {}
-
 int main(int argc, char *argv[])
 {
 	DBG("a");

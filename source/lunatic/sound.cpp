@@ -62,11 +62,6 @@ int ConfigNumSounds()
 	return 32;
 }
 
-void KillSong()
-{
-	CDStop();
-}
-
 SDL_RWops* SoundLoadOverride(int which)
 {
 	return nullptr;

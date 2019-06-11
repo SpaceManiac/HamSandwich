@@ -122,3 +122,12 @@ SDL_RWops* SoundLoadOverride(int which)
 {
 	return nullptr;
 }
+
+bool ConfigMusicEnabled()
+{
+	return false;  // We just use the sound system for music.
+}
+
+void ChooseNextSong()
+{
+}

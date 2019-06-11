@@ -691,8 +691,3 @@ SDL_RWops* SoundLoadOverride(int num)
 
 	return SDL_RWFromConstMem(buf, GetCustomLength(num - CUSTOM_SND_START));
 }
-
-void KillSong()
-{
-	StopSong();
-}
