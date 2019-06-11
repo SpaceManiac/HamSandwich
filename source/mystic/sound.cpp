@@ -1,19 +1,15 @@
 #include "sound.h"
 #include "display.h"
 #include "player.h"
-#include "music.h"
+#include "hammusic.h"
 
-int curSong,prvSong;
-static int songVol,soundVol;
-int soundExists=0;
+static int curSong;
+static int soundExists=0;
 
 void InitSound(void)
 {
 	JamulSoundPurge();
 	curSong=0;
-	prvSong=0;
-	songVol=-700;
-	soundVol=0;
 }
 
 void ExitSound(void)
@@ -47,41 +43,27 @@ void MakeNormalSound(int snd)
 	GoPlaySound(snd,0,0,SND_MAXPRIORITY|SND_CUTOFF|SND_ONE,MAX_SNDPRIORITY);
 }
 
+void ReplaySong()
+{
+	if (!PlayerGetMusicSettings())
+		return;
+
+	char s[64];
+	sprintf(s, "sound/snd%03d.wav", curSong);
+	PlaySongFile(s);
+}
+
 void PlaySong(int sng)
 {
+	printf("PlaySong(%d) SE=%d, MS=%d, cur=%d\n", sng, soundExists, PlayerGetMusicSettings(), curSong);
 	if(!soundExists)
 		return;
 
-	prvSong=curSong;
-	curSong=sng;
-	if(PlayerGetMusicSettings()>0)
-	{
-		Song(sng);
-	}
-	else
-		prvSong=curSong;
-}
+	if(sng == curSong)
+		return;	// no need, it's already playing our song
 
-void StopSong(void)
-{
-	if(!soundExists)
-		return;
-
-	StopSong2();
-	prvSong=curSong;
-	curSong=0;
-}
-
-void ReplaySong(void)
-{
-	if(!soundExists)
-		return;
-
-	if(PlayerGetMusicSettings()>0)
-	{
-		curSong=prvSong;
-		Song(curSong);
-	}
+	curSong = sng;
+	ReplaySong();
 }
 
 void VolumeSong(byte hi)
@@ -95,15 +77,12 @@ void VolumeSong(byte hi)
 			StopSong();
 			break;
 		case 1:
-			songVol=85;
 			SetMusicVolume(85);
 			break;
 		case 2:
-			songVol=170;
 			SetMusicVolume(170);
 			break;
 		case 3:
-			songVol=255;
 			SetMusicVolume(255);
 			break;
 	}
@@ -117,22 +96,28 @@ void VolumeSound(byte hi)
 	switch(hi)
 	{
 		case 0:
-			soundVol=0;
 			JamulSoundVolume(0);
 			break;
 		case 1:
-			soundVol=85;
 			JamulSoundVolume(85);
 			break;
 		case 2:
-			soundVol=170;
 			JamulSoundVolume(170);
 			break;
 		case 3:
-			soundVol=255;
 			JamulSoundVolume(255);
 			break;
 	}
+}
+
+void ChooseNextSong()
+{
+	// always just keep looping
+}
+
+bool ConfigMusicEnabled()
+{
+	return true;
 }
 
 int CurrentSong(void)

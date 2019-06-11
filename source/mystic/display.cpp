@@ -129,6 +129,8 @@ void ShowVictoryAnim(byte world)
 			MakeNormalSound(SONG_INTRO);
 			FLI_play("graphics/Intro.flc",0,60,mgl);
 			JamulSoundStop(SONG_INTRO);
+			if (CurrentSong())
+				ReplaySong();
 			break;
 	}
 	mgl->ClearScreen();
