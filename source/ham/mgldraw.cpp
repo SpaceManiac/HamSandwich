@@ -53,6 +53,12 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 		return;
 	}
 
+#ifdef __ANDROID__
+	// On Android, tabbing out of the application may generate an SDL_Quit,
+	// which is received once the application is re-entered.
+	SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
+#endif
+
 	if(JamulSoundInit(512))
 		SoundSystemExists();
 
