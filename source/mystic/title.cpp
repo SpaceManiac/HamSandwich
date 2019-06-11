@@ -4,6 +4,7 @@
 #include "pause.h"
 #include "challenge.h"
 #include "options.h"
+#include "appdata.h"
 
 // special codes in the credits:
 // @ = use GirlsRWeird font
@@ -442,7 +443,7 @@ void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 	player_t p;
 	int i;
 
-	f=fopen("mystic.sav","rb");
+	f=AppdataOpen("mystic.sav","rb");
 	if(!f)
 	{
 		for(i=0;i<5;i++)

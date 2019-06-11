@@ -4,6 +4,7 @@
 #include "challenge.h"
 #include "options.h"
 #include "water.h"
+#include "appdata.h"
 
 #define PLYR_ACCEL	(FIXAMT)
 #define PLYR_DECEL	(FIXAMT*3/4)
@@ -149,7 +150,7 @@ void PlayerLoadGame(byte which)
 {
 	FILE *f;
 
-	f=fopen("mystic.sav","rb");
+	f=AppdataOpen("mystic.sav","rb");
 	if(!f)
 	{
 		InitPlayer(INIT_GAME,0,0);
@@ -173,7 +174,7 @@ void PlayerSaveGame(byte which)
 	int i;
 
 	player.prevMoney=player.money;
-	f=fopen("mystic.sav","rb");
+	f=AppdataOpen("mystic.sav","rb");
 	if(!f)
 	{
 		memset(p,0,sizeof(player_t)*5);	// make an empty player
@@ -185,15 +186,15 @@ void PlayerSaveGame(byte which)
 			p[3].totalCompletion[i]=100;
 			p[4].totalCompletion[i]=100;
 		}
-		f=fopen("mystic.sav","wb");
+		f=AppdataOpen("mystic.sav","wb");
 		fwrite(p,sizeof(player_t),5,f);
 		fclose(f);
-		f=fopen("mystic.sav","rb");
+		f=AppdataOpen("mystic.sav","rb");
 	}
 	fread(p,sizeof(player_t),5,f);
 	fclose(f);
 	memcpy(&p[which],&player,sizeof(player_t));
-	f=fopen("mystic.sav","wb");
+	f=AppdataOpen("mystic.sav","wb");
 	fwrite(p,sizeof(player_t),5,f);
 	fclose(f);
 }

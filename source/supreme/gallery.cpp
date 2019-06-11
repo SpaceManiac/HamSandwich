@@ -2,6 +2,7 @@
 #include "display.h"
 #include "game.h"
 #include "control.h"
+#include "appdata.h"
 #include <stdlib.h>
 
 galpic_t *galpix;
@@ -95,7 +96,7 @@ void InitGallery(Map *map)
 
 	galpix=new galpic_t[100];
 	pos=0;
-	f=fopen("gallery/galpix.dat","rt");
+	f=AssetOpen("gallery/galpix.dat","rt");
 	if(!f)
 		return;
 

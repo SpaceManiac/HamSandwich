@@ -14,6 +14,7 @@
 #include "config.h"
 #include "log.h"
 #include "palettes.h"
+#include "appdata.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -92,7 +93,7 @@ byte VerifyLevel(Map *map)
 
 	chk=ChecksumMap(map);
 
-	f=fopen("worlds/levels.dat","rb");
+	f=AssetOpen("worlds/levels.dat","rb");
 	if(!f)
 		return 0;
 

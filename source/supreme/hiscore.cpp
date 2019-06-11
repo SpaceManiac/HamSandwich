@@ -6,6 +6,7 @@
 #include "editor.h"
 #include "game.h"
 #include "config.h"
+#include "appdata.h"
 
 #if __linux__
 #include <unistd.h>
@@ -103,7 +104,7 @@ void SetupCrypto(int key1,int key2,int key3)
 	/*
 	FILE *f;
 
-	f=fopen("cryptotable.txt","wt");
+	f=AppdataOpen("cryptotable.txt","wt");
 	fprintf(f,"<?php\ncryptoTable=array(\n");
 	for(i=0;i<scoreLen;i++)
 	{
@@ -254,7 +255,7 @@ void CryptoTest(void)
 	memcpy(&test2,&test,sizeof(score_t));
 
 	SetupCrypto(3574,858734,298437);
-	f=fopen("test.txt","wt");
+	f=AppdataOpen("test.txt","wt");
 	EncryptScore(&test);
 	fprintf(f,"Encrypted:\n%s\n\n",enc_score);
 	DecryptScore(&test);
@@ -519,14 +520,14 @@ void SaveHiScoreFile(score_t *list,word num,const char *fname)
 
 	if(num==0)
 	{
-		f=fopen(fname,"wb");
+		f=AppdataOpen(fname,"wb");
 		if(!f)
 			return;
 		fwrite(&num,sizeof(word),1,f);
 		fclose(f);
 		return;
 	}
-	f=fopen(fname,"wb");
+	f=AppdataOpen(fname,"wb");
 	if(!f)
 		return;
 	fwrite(&num,sizeof(word),1,f);	// write out the number of scores
@@ -555,7 +556,7 @@ void LoadHiScoresFile(void)
 	if(!config.hiscores)
 		return;
 
-	f=fopen("hiscore.dat","rb");
+	f=AppdataOpen("hiscore.dat","rb");
 	if(!f)
 	{
 		numScores=0;
@@ -591,7 +592,7 @@ void LoadHiTimesFile(void)
 	if(!config.hiscores)
 		return;
 
-	f=fopen("hitime.dat","rb");
+	f=AppdataOpen("hitime.dat","rb");
 	if(!f)
 	{
 		numTimes=0;

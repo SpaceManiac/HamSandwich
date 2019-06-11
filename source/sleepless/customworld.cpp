@@ -1,6 +1,7 @@
 #include "customworld.h"
 #include "shop.h"
 #include "md5.h"
+#include "appdata.h"
 #include <stdlib.h>
 
 #define ENTRY_NONE		0
@@ -135,7 +136,7 @@ void InitCustomWorld(void)
 	sprintf(buf, "worlds/%s", CustomWorldFname());
 	strcpy(buf+strlen(buf)-4, ".txt");
 
-	FILE* f = fopen(buf,"rt");
+	FILE* f = AssetOpen(buf,"rt");
 	buf[0] = '\0';
 
 	if (!f)
@@ -293,7 +294,7 @@ void InitCustomWorld(void)
 
 byte VerifyHollowShw()
 {
-	FILE* f = fopen("worlds/hollow.shw", "rb");
+	FILE* f = AssetOpen("worlds/hollow.shw", "rb");
 	byte md5buf[17];
 
 	// 18044403873A5A3DA052C871D4F76B6D
@@ -330,7 +331,7 @@ const char* CustomWorldTitle(const char* fname)
 		sprintf(buf, "worlds/%s", fname);
 		strcpy(buf+strlen(buf)-4, ".txt");
 
-		FILE* f = fopen(buf,"rt");
+		FILE* f = AssetOpen(buf,"rt");
 		buf[0] = '\0';
 
 		if (f && fgets(buf, 32, f) != NULL)

@@ -6,6 +6,7 @@
 #include "shop.h"
 #include "customworld.h"
 #include "editor.h"
+#include "appdata.h"
 
 static char prfName[64];
 static byte firstTime;
@@ -26,7 +27,7 @@ void InitProfile(void)
 	int i;
 
 	firstTime=0;
-	f=fopen("profile.cfg","rt");
+	f=AppdataOpen("profile.cfg","rt");
 	if(!f)
 	{
 		firstTime=1;	// ask the player to enter their name
@@ -80,13 +81,13 @@ void SaveProfile(void)
 	FILE *f;
 	int i,j;
 
-	f=fopen("profile.cfg","wt");
+	f=AppdataOpen("profile.cfg","wt");
 	fprintf(f,"%s\n",profile.name);
 	fclose(f);
 
 	sprintf(prfName,"profiles/%s.prf",profile.name);
 	// also actually save the profile!
-	f=fopen(prfName,"wb");
+	f=AppdataOpen(prfName,"wb");
 	fwrite(&profile,sizeof(profile_t),1,f);
 
 	SavePlayLists(f);
@@ -132,12 +133,12 @@ void LoadProfile(const char *name)
 	sprintf(prfName,"profiles/%s.prf",profile.name);
 
 	// save this profile as the current one.
-	f=fopen("profile.cfg","wt");
+	f=AppdataOpen("profile.cfg","wt");
 	fprintf(f,"%s\n",profile.name);
 	fclose(f);
 
 	// now load it
-	f=fopen(prfName,"rb");
+	f=AppdataOpen(prfName,"rb");
 	if(!f)	// file doesn't exist
 	{
 		DefaultProfile(name);
@@ -513,7 +514,7 @@ void SaveState(void)
 		sprintf(fname,"profiles/_editing_.%03d",player.levelNum);
 	else
 		sprintf(fname,"profiles/%s.%03d",profile.name,player.levelNum);
-	f=fopen(fname,"wb");
+	f=AppdataOpen(fname,"wb");
 
 	// first write out the player itself
 	fwrite(&player,sizeof(player_t),1,f);
@@ -554,7 +555,7 @@ byte LoadState(byte lvl,byte getPlayer)
 		sprintf(fname,"profiles/_editing_.%03d",lvl);
 	else
 		sprintf(fname,"profiles/%s.%03d",profile.name,lvl);
-	f=fopen(fname,"rb");
+	f=AppdataOpen(fname,"rb");
 	if(f==NULL)
 		return 0;
 

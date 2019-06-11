@@ -3,6 +3,7 @@
 #include "control.h"
 #include "clock.h"
 #include "sound.h"
+#include "appdata.h"
 
 option_t opt;
 
@@ -22,7 +23,7 @@ void InitOptions(void)
 {
 	FILE *f;
 
-	f=fopen("options.cfg","rb");
+	f=AppdataOpen("options.cfg","rb");
 	if(!f)
 	{
 		opt.challenge=0;
@@ -70,7 +71,7 @@ void InitOptions(void)
 void ExitOptions(void)
 {
 	FILE *f;
-	f=fopen("options.cfg","wb");
+	f=AppdataOpen("options.cfg","wb");
 	fwrite(&opt,sizeof(option_t),1,f);
 	fclose(f);
 }

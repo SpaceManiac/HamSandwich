@@ -61,7 +61,7 @@ static FILE *logF;
 void Log_Init(void)
 {
 #ifdef LOG
-	logF=fopen("netlog.txt","wt");
+	logF=AppdataOpen("netlog.txt","wt");
 #endif
 }
 

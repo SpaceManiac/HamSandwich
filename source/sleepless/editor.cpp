@@ -12,6 +12,7 @@
 #include "viewdialog.h"
 #include "worldstitch.h"
 #include "levelscan.h"
+#include "appdata.h"
 
 #define PLOPRATE	5
 
@@ -207,10 +208,10 @@ void BackupWorld(const char *name)
 	sprintf(inName,"worlds/%s",name);
 	sprintf(outName,"worlds/backup_save.shw");
 
-	inF=fopen(inName,"rb");
+	inF=AssetOpen(inName,"rb");
 	if(!inF)
 		return;	// the source didn't exist, so nothing to back up
-	outF=fopen(outName,"wb");
+	outF=AssetOpen(outName,"wb");
 	if(!outF)
 	{
 		fclose(inF);

@@ -1,4 +1,5 @@
 #include "config.h"
+#include "appdata.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -22,7 +23,7 @@ void LoadConfig(void)
 	config.camera=1;
 	config.shading=1;
 
-	f=fopen("config.txt","rt");
+	f=AppdataOpen("config.txt","rt");
 	if(!f)
 	{
 		return;

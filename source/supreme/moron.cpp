@@ -10,6 +10,7 @@
 #include "nameentry.h"
 #include "yesnodialog.h"
 #include "goal.h"
+#include "appdata.h"
 #include <assert.h>
 
 void PickQuestion(void);
@@ -81,7 +82,7 @@ byte GetQuestions(void)
 	int i;
 	FILE *f;
 
-	f=fopen("gallery/mrqs.bmp","rt");
+	f=AssetOpen("gallery/mrqs.bmp","rt");
 	if(!f)
 		return 0;	// can't play without questions!
 

@@ -12,6 +12,7 @@
 #include "log.h"
 #include "customworld.h"
 #include "palettes.h"
+#include "appdata.h"
 #include <stdlib.h>
 #if __linux__
 #include <unistd.h>
@@ -462,7 +463,7 @@ byte LunaticRun(int *lastTime)
 			// It's cheatable but that's kind of ok
 			if (!IsCustomWorld())
 			{
-				FILE* f = fopen("profiles/editor.dat", "wt");
+				FILE* f = AppdataOpen("profiles/editor.dat", "wt");
 				char text[256];
 				sprintf(text,"Editor unlocked by %s, what a cool guy!\n", profile.name);
 				fwrite(text, sizeof(char), strlen(text), f);

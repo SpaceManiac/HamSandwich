@@ -4,6 +4,7 @@
 #include "world.h"
 #include "music.h"
 #include "shop.h"
+#include "appdata.h"
 
 static char prfName[64];
 static byte firstTime;
@@ -24,7 +25,7 @@ void InitProfile(void)
 	int i;
 
 	firstTime=0;
-	f=fopen("profile.cfg","rt");
+	f=AppdataOpen("profile.cfg","rt");
 	if(!f)
 	{
 		firstTime=1;	// ask the player to enter their name
@@ -78,13 +79,13 @@ void SaveProfile(void)
 	FILE *f;
 	int i,j;
 
-	f=fopen("profile.cfg","wt");
+	f=AppdataOpen("profile.cfg","wt");
 	fprintf(f,"%s\n",profile.name);
 	fclose(f);
 
 	sprintf(prfName,"profiles/%s.prf",profile.name);
 	// also actually save the profile!
-	f=fopen(prfName,"wb");
+	f=AppdataOpen(prfName,"wb");
 	fwrite(&profile,sizeof(profile_t),1,f);
 
 	SavePlayLists(f);
@@ -130,12 +131,12 @@ void LoadProfile(const char *name)
 	sprintf(prfName,"profiles/%s.prf",profile.name);
 
 	// save this profile as the current one.
-	f=fopen("profile.cfg","wt");
+	f=AppdataOpen("profile.cfg","wt");
 	fprintf(f,"%s\n",profile.name);
 	fclose(f);
 
 	// now load it
-	f=fopen(prfName,"rb");
+	f=AppdataOpen(prfName,"rb");
 	if(!f)	// file doesn't exist
 	{
 		DefaultProfile(name);

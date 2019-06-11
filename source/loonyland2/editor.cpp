@@ -2,6 +2,7 @@
 #include "map.h"
 #include "water.h"
 #include "music.h"
+#include "appdata.h"
 
 #define PLOPRATE	5
 
@@ -1836,7 +1837,7 @@ void ScanChests(void)
 	int i,j;
 	FILE *f;
 
-	f=fopen("blah.txt","wt");
+	f=AppdataOpen("blah.txt","wt");
 
 	for(i=0;i<99;i++)
 		pres[i]=0;

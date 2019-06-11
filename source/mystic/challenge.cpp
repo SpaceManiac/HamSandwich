@@ -5,6 +5,7 @@
 #include "fairy.h"
 #include "shop.h"
 #include "guy.h"
+#include "appdata.h"
 
 #define ASK_RESETCHAR	1
 #define ASK_RESETSTAR	2
@@ -1242,7 +1243,7 @@ void LoadChallenge(void)
 {
 	FILE *f;
 
-	f=fopen("challenge.sav","rb");
+	f=AppdataOpen("challenge.sav","rb");
 	if(!f)
 	{
 		ResetChallengeStats();
@@ -1260,7 +1261,7 @@ void SaveChallenge(void)
 {
 	FILE *f;
 
-	f=fopen("challenge.sav","wb");
+	f=AppdataOpen("challenge.sav","wb");
 	if(f)
 	{
 		memcpy(&chalData.player,&player,sizeof(player_t));

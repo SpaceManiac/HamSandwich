@@ -12,6 +12,7 @@
 #include "music.h"
 #include "achieve.h"
 #include "leveldef.h"
+#include "appdata.h"
 
 char pauseOption[PAUSE_CHOICES][32]={
 	"Resume",
@@ -984,7 +985,7 @@ void LoadGame(void)
 
 
 	sprintf(txt,"profiles/char%02d.loony",gameToLoad+1);
-	f=fopen(txt,"rb");
+	f=AppdataOpen(txt,"rb");
 	if(!f)
 	{
 		InitPlayer(INIT_GAME,0,0);
@@ -1022,7 +1023,7 @@ void SaveGame(void)
 	char txt[64];
 
 	sprintf(txt,"profiles/char%02d.loony",gameToLoad+1);
-	f=fopen(txt,"wb");
+	f=AppdataOpen(txt,"wb");
 	if(!f)
 	{
 		return;

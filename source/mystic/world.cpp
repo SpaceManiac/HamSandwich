@@ -1,5 +1,6 @@
 #include "world.h"
 #include "player.h"
+#include "appdata.h"
 
 byte NewWorld(world_t *world,MGLDraw *mgl)
 {
@@ -31,7 +32,7 @@ byte LoadWorld(world_t *world,char *fname)
 	FILE *f;
 	int i;
 
-	f=fopen(fname,"rb");
+	f=AssetOpen(fname,"rb");
 	if(!f)
 		return 0;
 
@@ -60,7 +61,7 @@ byte SaveWorld(world_t *world,char *fname)
 	FILE *f;
 	int i;
 
-	f=fopen(fname,"wb");
+	f=AssetOpen(fname,"wb");
 	if(!f)
 		return 0;
 
@@ -106,7 +107,7 @@ void GetWorldName(char *fname,char *buf)
 	char fname2[60];
 
 	sprintf(fname2,"worlds/%s",fname);
-	f=fopen(fname2,"rb");
+	f=AssetOpen(fname2,"rb");
 	if(!f)
 		return;
 

@@ -8,6 +8,7 @@
 #include "progress.h"
 #include "customworld.h"
 #include "lsdir.h"
+#include "appdata.h"
 
 static byte *backgd;
 static int textBright;
@@ -123,7 +124,7 @@ byte CheckForExistingName(const char *name)
 	char s[64];
 
 	sprintf(s,"profiles/%s.prf",name);
-	f=fopen(s,"rb");
+	f=AppdataOpen(s,"rb");
 	if(f)
 	{
 		fclose(f);

@@ -8,6 +8,7 @@
 #include "goal.h"
 #include "config.h"
 #include "message.h"
+#include "appdata.h"
 
 mfont_t  *gameFont[3]={NULL,NULL,NULL};
 MGLDraw  *mgl=NULL;
@@ -87,7 +88,7 @@ void LoadText(const char *nm,byte mode)
 	char line[256];
 	int y;
 
-	f=fopen(nm,"rt");
+	f=AssetOpen(nm,"rt");
 	if(!f)
 		return;
 

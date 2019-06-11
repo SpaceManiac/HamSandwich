@@ -5,6 +5,7 @@
 #include "progress.h"
 #include "music.h"
 #include "shop.h"
+#include "appdata.h"
 
 soundDesc_t soundInfo[MAX_SOUNDS]={
 	{SND_NONE,"No Sound At All!!",ST_EFFECT},
@@ -511,7 +512,7 @@ byte AddCustomSound(const char *fname)
 	if(numCustom==MAX_CUSTOM_SOUNDS)
 		return 0;
 
-	f=fopen(fname,"rb");
+	f=AssetOpen(fname,"rb");
 	if(!f)
 		return 0;
 	fseek(f,0,SEEK_END);
@@ -546,7 +547,7 @@ byte ReplaceCustomSound(int n,const char *fname)
 	if(customSound[n])
 		free(customSound[n]);
 
-	f=fopen(fname,"rb");
+	f=AssetOpen(fname,"rb");
 	if(!f)
 		return 0;
 	fseek(f,0,SEEK_END);

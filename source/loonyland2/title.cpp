@@ -10,6 +10,7 @@
 #include "gallery.h"
 #include "leveldef.h"
 #include "lsdir.h"
+#include "appdata.h"
 #if __linux__
 #include <unistd.h>
 #endif
@@ -104,7 +105,7 @@ void GetAddOn(char *name,int spot)
 	addOnList[spot].dispName[0]='\0';
 	addOnList[spot].filename[0]='\0';
 	sprintf(line,"addons/%s",name);
-	f=fopen(line,"rt");
+	f=AssetOpen(line,"rt");
 
 	if(!f)
 	{
@@ -172,7 +173,7 @@ void GetSavesForMenu(void)
 	for(i=0;i<MAX_CHARS;i++)
 	{
 		sprintf(txt,"profiles/char%02d.loony",i+1);
-		f=fopen(txt,"rb");
+		f=AppdataOpen(txt,"rb");
 		if(!f && hole==-1)
 		{
 			hole=i;

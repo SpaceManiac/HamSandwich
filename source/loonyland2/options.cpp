@@ -6,6 +6,7 @@
 #include "title.h"
 #include "pause.h"
 #include "music.h"
+#include "appdata.h"
 
 static byte subcursor=0;
 static char lastKey=0;
@@ -364,7 +365,7 @@ void LoadOptions(void)
 	FILE *f;
 	int i;
 
-	f=fopen("loony.cfg","rb");
+	f=AppdataOpen("loony.cfg","rb");
 	if(!f)
 	{
 		opt.sound=127;
@@ -425,7 +426,7 @@ void SaveOptions(void)
 {
 	FILE *f;
 
-	f=fopen("loony.cfg","wb");
+	f=AppdataOpen("loony.cfg","wb");
 	fwrite(&opt,sizeof(options_t),1,f);
 	fclose(f);
 }

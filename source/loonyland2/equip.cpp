@@ -8,6 +8,7 @@
 #include "achieve.h"
 #include "gallery.h"
 #include "options.h"
+#include "appdata.h"
 
 char magicNames[MAX_EQMAGIC][16]={
 	"Normal",
@@ -1662,7 +1663,7 @@ void EquipTest(void)
 	for(i=0;i<10;i++)
 		potResults[i]=0;
 
-	f=fopen("text.txt","wt");
+	f=AppdataOpen("text.txt","wt");
 	for(i=0;i<1000;i++)
 	{
  		EquipCreateItem((i%60)+1,&type,&val1,&val2);

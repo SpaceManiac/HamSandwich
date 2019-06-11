@@ -5,6 +5,7 @@
 #include "player.h"
 #include "title.h"
 #include "plasma.h"
+#include "appdata.h"
 
 static byte cursor;
 static byte oldc;
@@ -414,7 +415,7 @@ void LoadOptions(void)
 	FILE *f;
 	int i;
 
-	f=fopen("loony.cfg","rb");
+	f=AppdataOpen("loony.cfg","rb");
 	if(!f)
 	{
 		opt.sound=1;
@@ -461,7 +462,7 @@ void SaveOptions(void)
 {
 	FILE *f;
 
-	f=fopen("loony.cfg","wb");
+	f=AppdataOpen("loony.cfg","wb");
 	fwrite(&opt,sizeof(options_t),1,f);
 	fclose(f);
 }

@@ -3,6 +3,7 @@
 #include "jamulfmv.h"
 #include "game.h"
 #include "options.h"
+#include "appdata.h"
 
 mfont_t *gameFont[2] = {NULL, NULL};
 MGLDraw *mgl = NULL;
@@ -124,7 +125,7 @@ void LoadText(char *nm)
 	char line[256];
 	int y;
 
-	f = fopen(nm, "rt");
+	f = AssetOpen(nm, "rt");
 	if (!f)
 		return;
 

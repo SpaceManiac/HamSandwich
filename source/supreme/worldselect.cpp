@@ -241,9 +241,9 @@ void ScanWorlds(void)
 	int count,done;
 
 #ifdef LEVELLIST
-	levelF=fopen("levellist.txt","wt");
-	level2F=fopen("worlds/levels.dat","wb");
-	authorF=fopen("authorlist.txt","wt");
+	levelF=AppdataOpen("levellist.txt","wt");
+	level2F=AssetOpen("worlds/levels.dat","wb");
+	authorF=AppdataOpen("authorlist.txt","wt");
 	totalLCount=0;
 #endif
 	// count up how many there are to deal with

@@ -5,6 +5,7 @@
 #include "vars.h"
 #include "shop.h"
 #include "control.h"
+#include "appdata.h"
 
 static FILE *scanF;
 
@@ -620,7 +621,7 @@ byte Scan_Level(world_t *world,Map *map)
 	char s[64];
 
 	sprintf(s,"level%s.txt",map->name);
-	scanF=fopen(s,"wt");
+	scanF=AppdataOpen(s,"wt");
 	if(!scanF)
 		return 0;
 
@@ -712,7 +713,7 @@ byte Scan_Vars(world_t *world)
 {
 	int i,j,k;
 
-	scanF=fopen("var_scan.txt","wt");
+	scanF=AppdataOpen("var_scan.txt","wt");
 	if(!scanF)
 		return 0;
 

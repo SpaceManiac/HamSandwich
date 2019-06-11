@@ -6,6 +6,7 @@
 #include "pause.h"
 #include "plasma.h"
 #include "palettes.h"
+#include "appdata.h"
 
 // special codes in the credits:
 // @ = use GirlsRWeird font
@@ -280,7 +281,7 @@ void GetSavesForMenu(void)
 	for(i=0;i<5;i++)
 	{
 		sprintf(txt,"save%d.sav",i+1);
-		f=fopen(txt,"rb");
+		f=AppdataOpen(txt,"rb");
 		if(!f)
 		{
 			pct=0.0;

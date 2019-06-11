@@ -5,6 +5,7 @@
 #include "vars.h"
 #include "shop.h"
 #include "control.h"
+#include "appdata.h"
 #include <algorithm>
 
 static FILE *scanF;
@@ -623,7 +624,7 @@ byte Scan_Level(world_t *world,Map *map)
 	word itemCount[LEN];
 	int totalMons;
 
-	scanF=fopen("level_scan.txt","wt");
+	scanF=AppdataOpen("level_scan.txt","wt");
 	if(!scanF)
 		return 0;
 
@@ -715,7 +716,7 @@ byte Scan_Vars(world_t *world)
 {
 	int i,j,k;
 
-	scanF=fopen("var_scan.txt","wt");
+	scanF=AppdataOpen("var_scan.txt","wt");
 	if(!scanF)
 		return 0;
 

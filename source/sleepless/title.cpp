@@ -7,6 +7,7 @@
 #include "progress.h"
 #include "shop.h"
 #include "customworld.h"
+#include "appdata.h"
 
 #define COPYRIGHT_YEARS "2007-2012"
 
@@ -300,7 +301,7 @@ byte MainMenu(MGLDraw *mgl)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
 
 	canEditor=0;
-	FILE* f = fopen("profiles/editor.dat", "rt");
+	FILE* f = AppdataOpen("profiles/editor.dat", "rt");
 	if (f)
 	{
 		canEditor=1;
