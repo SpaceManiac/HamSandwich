@@ -4,6 +4,8 @@
 #include "jamultypes.h"
 #include <stdio.h>
 
+typedef struct SDL_RWops SDL_RWops;
+
 class MGLDraw;
 
 class sprite_t
@@ -14,7 +16,7 @@ public:
 
 	~sprite_t();
 
-	bool LoadData(FILE *f);
+	bool LoadData(SDL_RWops *f);
 	bool SaveData(FILE *f);
 	void GetHeader(byte *buffer);
 	void Draw(int x, int y, MGLDraw *mgl);
