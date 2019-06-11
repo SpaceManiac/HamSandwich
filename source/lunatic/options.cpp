@@ -35,7 +35,6 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 	dword btn, j;
 	int i;
 
-	HandleCDMusic();
 	switch (optMode) {
 		case 0: // just going through options
 			c = mgl->LastKeyPressed();
@@ -80,7 +79,6 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 						if (opt.music > MUSIC_RAND)
 							opt.music = MUSIC_OFF;
 						PlayerSetMusicSettings(opt.music);
-						CDNeedsUpdating();
 						CDStop();
 						if (opt.music == MUSIC_ON)
 						{
@@ -88,6 +86,10 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 							if (i == 3)
 								i = 2;
 							CDPlay(i);
+						}
+						else
+						{
+							ChooseNextSong();
 						}
 						break;
 					case 2:

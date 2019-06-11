@@ -186,11 +186,12 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					subMode = SUBMODE_SLOTPICK;
 					break;
 				case 3: // music
-					CDNeedsUpdating();
 					CDStop();
 					PlayerSetMusicSettings((PlayerGetMusicSettings() + 1) % 3);
 					if (PlayerGetMusicSettings() == MUSIC_ON)
 						CDPlay(GetCurSong());
+					else
+						ChooseNextSong();
 					opt.music = PlayerGetMusicSettings();
 					break;
 				case 4: // give up

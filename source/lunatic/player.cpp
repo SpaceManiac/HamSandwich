@@ -72,8 +72,6 @@ void InitPlayer(byte initWhat, byte world, byte level)
 	player.jetting = 0;
 
 	player.musicSettings = opt.music;
-	if (!CDLoaded())
-		player.musicSettings = MUSIC_OFF;
 }
 
 void ExitPlayer(void)
@@ -744,10 +742,7 @@ byte PlayerGetMusicSettings(void)
 
 void PlayerSetMusicSettings(byte m)
 {
-	if (CDLoaded())
-		player.musicSettings = m;
-	else
-		player.musicSettings = MUSIC_OFF;
+	player.musicSettings = m;
 }
 
 void PlayerThrowHammer(Guy *me)

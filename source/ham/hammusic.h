@@ -3,8 +3,6 @@
 
 #include "jamultypes.h"
 
-bool MusicInit();
-void MusicExit();
 void UpdateMusic();
 
 void SetMusicVolume(int vol);

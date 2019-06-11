@@ -9,8 +9,6 @@
 byte showStats = 0;
 dword gameStartTime, visFrameCount, updFrameCount;
 dword tickerTime;
-dword CDMessingTime; // how long the CD messing with took, take it out of the time budget, because
-// it can bog the game, but it should just freeze the action
 dword garbageTime = 0;
 
 int visFrms;
@@ -55,7 +53,6 @@ void LunaticInit(MGLDraw *mgl)
 	InitItems();
 	InitInterface();
 	LoadOptions();
-	MusicInit();
 	mgl->ClearKeys();
 	SeedRNG();
 	InitControls();
@@ -65,7 +62,7 @@ void LunaticInit(MGLDraw *mgl)
 
 void LunaticExit(void)
 {
-	MusicExit();
+	CDStop();
 	ExitItems();
 	ExitSound();
 	ExitDisplay();
@@ -170,7 +167,6 @@ void GameIdle(void)
 	start = timeGetTime();
 	while (idleGame)
 	{
-		HandleCDMusic();
 		if (!gamemgl->Process())
 			break;
 	}
@@ -361,31 +357,10 @@ byte LunaticRun(int *lastTime)
 		numRunsToMakeUp++;
 		updFrameCount++;
 	}
-	HandleCDMusic();
 	garbageTime = 0;
 	JamulSoundUpdate();
 
 	return LEVEL_PLAYING;
-}
-
-void HandleCDMusic(void)
-{
-	dword CDtime;
-
-	CDtime = timeGetTime();
-	switch (PlayerGetMusicSettings()) {
-		case MUSIC_OFF:
-			CDPlayerUpdate(CD_OFF);
-			break;
-		case MUSIC_ON:
-			CDPlayerUpdate(CD_LOOPTRACK);
-			break;
-		case MUSIC_RAND:
-			CDPlayerUpdate(CD_RANDOM);
-			break;
-	}
-	CDMessingTime = timeGetTime() - CDtime; // that's how long CD messing took
-	CDMessingTime += garbageTime; // time wasted with such things as playing animations
 }
 
 void LunaticDraw(void)
@@ -434,7 +409,6 @@ void LunaticDraw(void)
 	}
 
 	gamemgl->Flip();
-	CDMessingTime += garbageTime;
 	garbageTime = 0;
 
 	visFrameCount++;
@@ -477,7 +451,6 @@ byte WorldPauseRun(int *lastTime)
 		numRunsToMakeUp++;
 		updFrameCount++;
 	}
-	HandleCDMusic();
 	garbageTime = 0;
 	JamulSoundUpdate();
 
@@ -501,7 +474,6 @@ void WorldPauseDraw(void)
 	}
 
 	gamemgl->Flip();
-	CDMessingTime += garbageTime;
 	garbageTime = 0;
 
 	visFrameCount++;
@@ -583,7 +555,6 @@ byte PlayALevel(byte map)
 
 	exitcode = LEVEL_PLAYING;
 	gameMode = GAMEMODE_PLAY;
-	CDMessingTime = 0;
 	garbageTime = 0;
 
 	UpdateGuys(curMap, &curWorld); // this will force the camera into the right position
@@ -591,7 +562,9 @@ byte PlayALevel(byte map)
 	// ever notice
 	while (exitcode == LEVEL_PLAYING)
 	{
-		lastTime += TimeLength() - CDMessingTime;
+		lastTime += TimeLength() - garbageTime;
+		garbageTime = 0;
+
 		StartClock();
 		if (gameMode == GAMEMODE_PLAY)
 			HandleKeyPresses();

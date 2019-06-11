@@ -587,8 +587,6 @@ byte WorldPicker(MGLDraw *mgl)
 	numRunsToMakeUp = 0;
 	while (exitcode == 254)
 	{
-		HandleCDMusic();
-
 		lastTime += TimeLength();
 		StartClock();
 		exitcode = PickerRun(&lastTime, mgl);
@@ -825,8 +823,6 @@ byte MainMenuUpdate(MGLDraw *mgl, title_t *title)
 		return 2;
 	}
 
-	HandleCDMusic();
-
 	return 0;
 }
 
@@ -840,7 +836,6 @@ byte MainMenu(MGLDraw *mgl)
 
 	if (opt.music == MUSIC_ON)
 		CDPlay(2); // the title theme
-	CDNeedsUpdating();
 
 	mgl->LoadBMP("graphics/title.bmp");
 	mgl->LastKeyPressed();
@@ -1037,8 +1032,6 @@ byte GameSlotPickerUpdate(MGLDraw *mgl, title_t *title)
 		return 2;
 	}
 
-	HandleCDMusic();
-
 	return 0;
 }
 
@@ -1150,8 +1143,6 @@ void Credits(MGLDraw *mgl)
 		mgl->ClearScreen();
 		CreditsRender(y);
 
-		HandleCDMusic();
-
 		// only scroll every other frame
 		flip = 1 - flip;
 		if (flip)
@@ -1213,7 +1204,6 @@ void VictoryText(MGLDraw *mgl)
 	{
 		mgl->ClearScreen();
 		VictoryTextRender(y);
-		HandleCDMusic();
 		y += 1;
 		mgl->Flip();
 		if (!mgl->Process())
@@ -1261,8 +1251,6 @@ byte SpeedSplash(MGLDraw *mgl, const char *fname)
 			return 0;
 		else if (c)
 			mode = 2;
-
-		HandleCDMusic();
 
 		c = GetControls() | GetArrows();
 		if ((c & (CONTROL_B1 | CONTROL_B2)) && (!(oldc & (CONTROL_B1 | CONTROL_B2))))

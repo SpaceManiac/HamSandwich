@@ -102,6 +102,5 @@ byte GetCurSong(void);
 
 byte WorldPauseRun(int *lastTime);
 void WorldPauseDraw(void);
-void HandleCDMusic(void);
 
 #endif
