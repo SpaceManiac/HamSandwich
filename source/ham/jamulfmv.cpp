@@ -371,6 +371,11 @@ byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack
 	dword startTime,endTime;
 
 	FLI_file=fopen(name,"rb");
+	if (!FLI_file)
+	{
+		perror(name);
+		return 0;
+	}
 	fread(&FLI_hdr,1,sizeof(fliheader),FLI_file);
 	fread(&frsize,1,4,FLI_file);
 	fseek(FLI_file,-4,SEEK_CUR);
