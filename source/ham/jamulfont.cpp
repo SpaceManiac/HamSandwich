@@ -29,26 +29,29 @@ void FontFree(mfont_t *font)
 
 int FontLoad(const char *fname, mfont_t *font)
 {
-	FILE *f;
-	int i;
-
-	f = AssetOpen(fname, "rb");
+	SDL_RWops* f = AssetOpen_SDL(fname, "rb");
 	if (!f)
 		return FONT_FILENOTFOUND;
 
-	if (fread(font, sizeof (mfont_t), 1, f) != 1)
+	if (SDL_RWread(f, font, sizeof(mfont_t), 1) != 1) {
+		SDL_RWclose(f);
 		return FONT_INVALIDFILE;
+	}
 
 	font->data = (byte *) malloc(font->dataSize);
-	if (!font->data)
+	if (!font->data) {
+		SDL_RWclose(f);
 		return FONT_CANTALLOC;
+	}
 
-	if (fread(font->data, font->dataSize, 1, f) != 1)
+	if (SDL_RWread(f, font->data, font->dataSize, 1) != 1) {
+		SDL_RWclose(f);
 		return FONT_INVALIDFILE;
+	}
 
-	fclose(f);
+	SDL_RWclose(f);
 	font->chars[0] = font->data;
-	for (i = 1; i < font->numChars; i++)
+	for (int i = 1; i < font->numChars; i++)
 		font->chars[i] = font->chars[i - 1] + 1 + ((*font->chars[i - 1]) * font->height);
 
 	return FONT_OK;
