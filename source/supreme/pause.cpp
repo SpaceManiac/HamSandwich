@@ -5,6 +5,7 @@
 #include "intface.h"
 #include "shop.h"
 #include "dialogbits.h"
+#include "music.h"
 
 #define PE_CONTINUE	0	// back to gameplay
 #define PE_RETRY	1	// retry this level
@@ -531,7 +532,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 				PlaySong(curMap->song);
 				break;
 			case PE_SONG:
-				PickSongToPlay();
+				ChooseNextSong();
 				break;
 			case PE_MUSIC:
 				cursor=0;

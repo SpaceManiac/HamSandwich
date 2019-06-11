@@ -2,6 +2,7 @@
 #define MUSIC_H
 
 #include "mgldraw.h"
+#include "hammusic.h"
 
 // bottom 3 bits of profile.musicMode say which list to use
 #define MUSIC_OFFICIAL	0

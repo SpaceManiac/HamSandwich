@@ -1,4 +1,5 @@
 #include "jamulsound.h"
+#include "hammusic.h"
 #include <stdio.h>
 
 #ifdef SDL_UNPREFIXED
@@ -13,7 +14,6 @@
 extern bool ConfigSoundEnabled();
 extern int ConfigNumSounds();
 extern SDL_RWops* SoundLoadOverride(int num);
-extern void KillSong();
 
 
 typedef struct soundList_t
@@ -80,7 +80,7 @@ void JamulSoundExit(void)
 	{
 		soundIsOn = false;
 		JamulSoundPurge();
-		KillSong();
+		StopSong();
 		Mix_CloseAudio();
 		delete[] schannel;
 		delete[] soundList;

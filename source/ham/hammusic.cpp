@@ -40,6 +40,7 @@ void PlaySongFile(const char* fullname)
 	if (!rw)
 	{
 		printf("Open(%s): %s\n", fullname, SDL_GetError());
+		ChooseNextSong();  // On playlists, one error shouldn't stop everything.
 		return;
 	}
 
@@ -47,6 +48,7 @@ void PlaySongFile(const char* fullname)
 	if (!curStream)
 	{
 		printf("LoadMUS(%s): %s\n", fullname, Mix_GetError());
+		ChooseNextSong();  // On playlists, one error shouldn't stop everything.
 		return;
 	}
 
@@ -64,4 +66,9 @@ void StopSong()
 		Mix_FreeMusic(curStream);
 		curStream = nullptr;
 	}
+}
+
+bool IsSongPlaying()
+{
+	return curStream && Mix_PlayingMusic();
 }

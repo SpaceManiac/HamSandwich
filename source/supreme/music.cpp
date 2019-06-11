@@ -3,20 +3,12 @@
 #include "progress.h"
 #include "config.h"
 #include "editor.h"
+#include "hammusic.h"
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL_mixer.h>
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL_mixer.h>
-#endif  // SDL_UNPREFIXED
-
-Mix_Music *curStream=NULL;
 char curSongName[64];
-int musVolume=255;
 byte lastSong=255;
-byte dontcallback=0;
 
-void PickSongToPlay(void)
+void ChooseNextSong(void)
 {
 	if(!config.music)
 		return;
@@ -80,13 +72,6 @@ void PickSongToPlay(void)
 	}
 }
 
-void UpdateMusic(void)
-{
-	if (config.music && curStream && !Mix_PlayingMusic())
-		if (!dontcallback)
-			PickSongToPlay();
-}
-
 void PlaySong(const char *fname)
 {
 	if(!config.music)
@@ -95,14 +80,12 @@ void PlaySong(const char *fname)
 	if((profile.musicMode&MUSIC_LISTBITS)!=MUSIC_OFFICIAL && !editing)
 	{
 		// if not playing the official music, we ignore the song asked for
-		if(curStream==NULL)
+		if(!IsSongPlaying())
 		{
 			// but we need to play something, since there are no songs playing at all
-			PickSongToPlay();
-			return;
+			ChooseNextSong();
 		}
-		else
-			return;
+		return;
 	}
 
 	PlaySongForce(fname);
@@ -117,57 +100,17 @@ void PlaySongForce(const char *fname)
 
 	strcpy(curSongName,fname);
 	sprintf(fullname,"music/%s",fname);
-	StopSong();
-
-	SDL_RWops* rw = SDL_RWFromFile(fullname, "rb");
-	if(!rw)
-	{
-		printf("%s: %s\n", fullname, SDL_GetError());
-		return;
-	}
-
-	curStream=Mix_LoadMUS_RW(rw, 1);
-	if(!curStream)
-	{
-		printf("%s: %s\n", fullname, Mix_GetError());
-		return;
-	}
-
-	Mix_VolumeMusic(musVolume / 2);
-	Mix_PlayMusic(curStream, 1);
-	UpdateMusic();
-}
-
-void StopSong(void)
-{
-	if(!config.music)
-		return;
-
-	dontcallback=1;
-	if(curStream)
-	{
-		Mix_HaltMusic();
-		Mix_FreeMusic(curStream);
-		curStream=NULL;
-	}
-	dontcallback=0;
-}
-
-void SetMusicVolume(int vol)
-{
-	if(!config.music)
-		return;
-
-	musVolume=vol;
-	if(curStream)
-	{
-		Mix_VolumeMusic(musVolume / 2);
-	}
+	PlaySongFile(fullname);
 }
 
 const char *CurSongTitle(void)
 {
 	return curSongName;
+}
+
+bool ConfigMusicEnabled()
+{
+	return config.music;
 }
 
 void PlayNextSong(void)
