@@ -32,8 +32,8 @@ const char *ScanCodeText(byte s);
 
 // Options menu support.
 dword GetJoyButtons();
-void SetKeyboardBindings(int keyboard, const byte keys[8]);
-void SetJoystickBindings(const byte buttons[4]);
+void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys);
+void SetJoystickBindings(int nbuttons, const byte* buttons);
 
 // TODO: eliminate this, it's only used in text menus where capital letters
 // are already being generated.

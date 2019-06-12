@@ -29,6 +29,13 @@ void ExitOptionsMenu(void)
 	ExitPlasma();
 }
 
+void ApplyControlSettings(void)
+{
+	SetKeyboardBindings(0, 6, opt.control[0]);
+	SetKeyboardBindings(1, 6, opt.control[1]);
+	SetJoystickBindings(2, opt.joyCtrl);
+}
+
 byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 {
 	char c;

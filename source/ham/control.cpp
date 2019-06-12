@@ -90,14 +90,15 @@ dword GetJoyButtons() {
 	return held;
 }
 
-void SetKeyboardBindings(int keyboard, const byte keys[8]) {
-	for (int i = 0; i < NUM_CONTROLS; ++i) {
+void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys) {
+	nkeys = std::min(nkeys, NUM_CONTROLS);
+	for (int i = 0; i < nkeys; ++i) {
 		kb[i][keyboard] = keys[i];
 	}
 }
 
-void SetJoystickBindings(const byte buttons[4]) {
-	memcpy(joyBtn, buttons, NUM_JOYBTNS);
+void SetJoystickBindings(int nbuttons, const byte* buttons) {
+	memcpy(joyBtn, buttons, std::min(nbuttons, NUM_JOYBTNS));
 }
 
 byte ShiftState() {
@@ -112,10 +113,10 @@ void ControlKeyDown(byte k)
 
 	lastScanCode=k;
 
-	for(i=0;i<4;i++)
+	for(i=0;i<NUM_KEYBOARDS;i++)
 	{
 		bit=1;
-		for(j=0;j<8;j++)
+		for(j=0;j<NUM_CONTROLS;j++)
 		{
 			if(k==kb[j][i])
 			{
@@ -144,6 +145,10 @@ void ControlKeyDown(byte k)
 			arrowState |= CONTROL_RT;
 			arrowTap |= CONTROL_RT;
 			break;
+		case SDL_SCANCODE_RETURN:
+			arrowState |= CONTROL_B1;
+			arrowTap |= CONTROL_B1;
+			break;
 		// track shift keys being held
 		case SDL_SCANCODE_LSHIFT:
 			shiftState |= 1;
@@ -159,10 +164,10 @@ void ControlKeyUp(byte k)
 	int i,j;
 	byte bit;
 
-	for(i=0;i<4;i++)
+	for(i=0;i<NUM_KEYBOARDS;i++)
 	{
 		bit=1;
-		for(j=0;j<8;j++)
+		for(j=0;j<NUM_CONTROLS;j++)
 		{
 			if(k==kb[j][i])
 			{
@@ -185,6 +190,9 @@ void ControlKeyUp(byte k)
 			break;
 		case SDL_SCANCODE_RIGHT:
 			arrowState &= ~CONTROL_RT;
+			break;
+		case SDL_SCANCODE_RETURN:
+			arrowState &= ~CONTROL_B1;
 			break;
 		// track shift keys being held
 		case SDL_SCANCODE_LSHIFT:
