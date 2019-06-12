@@ -1,6 +1,7 @@
 #include "control.h"
 #include "mgldraw.h"
 #include <vector>
+#include <algorithm>
 
 static byte lastScanCode;
 
