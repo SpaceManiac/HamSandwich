@@ -1,6 +1,7 @@
 #include "softjoystick.h"
 #include "control.h"
 #include <algorithm>
+#include <math.h>
 
 #ifdef SDL_UNPREFIXED
 	#include <SDL_image.h>
@@ -47,14 +48,6 @@ SoftJoystick::SoftJoystick(MGLDraw* mgl) {
 }
 
 SoftJoystick::~SoftJoystick() {
-	SDL_DestroyTexture(stick.tex);
-	SDL_DestroyTexture(trough.tex);
-	SDL_DestroyTexture(esc.tex);
-	SDL_DestroyTexture(keyboard.tex);
-	SDL_DestroyTexture(button[0].tex);
-	SDL_DestroyTexture(button[1].tex);
-	SDL_DestroyTexture(button[2].tex);
-	SDL_DestroyTexture(button[3].tex);
 }
 
 void SoftJoystick::update(MGLDraw* mgl, float scale) {
@@ -98,46 +91,65 @@ void SoftJoystick::handle_event(MGLDraw *mgl, const SDL_Event& e) {
 			int bit = CONTROL_B1;
 			for (int i = 0; i < numButtons; ++i) {
 				if (rect_contains(button[i].rect, x, y)) {
+					printf("FingerDown(%d) = %d\n", e.tfinger.fingerId, bit);
+					fingerHeld[e.tfinger.fingerId] |= bit;
 					state |= bit;
 					taps |= bit;
 				}
 				bit *= 2;
 			}
-			break;
-		}
-
-		case SDL_FINGERUP: {
-			int x = (int)(e.tfinger.x * mgl->winWidth);
-			int y = (int)(e.tfinger.y * mgl->winHeight);
-
-			int bit = CONTROL_B1;
-			for (int i = 0; i < numButtons; ++i) {
-				if (rect_contains(button[i].rect, x, y)) {
-					state &= ~bit;
-				}
-				bit *= 2;
-			}
-			break;
+			// FALLTHROUGH
 		}
 
 		case SDL_FINGERMOTION: {
 			int x = (int)(e.tfinger.x * mgl->winWidth);
 			int y = (int)(e.tfinger.y * mgl->winHeight);
 
-			byte last = state & (CONTROL_UP | CONTROL_DN | CONTROL_LF | CONTROL_RT);
-			state &= ~last;
-
 			if (rect_contains(trough.rect, x, y)) {
-				const int DEADZONE = 4096;
+				const int DEADZONE = 2048;
+
+				byte curState = 0;
 
 				int ax = (x - trough.rect.x - trough.rect.w / 2) * 32767 / trough.rect.w;
 				int ay = (y - trough.rect.y - trough.rect.h / 2) * 32767 / trough.rect.h;
-				if (ay < -DEADZONE) state |= CONTROL_UP;
-				else if (ay > DEADZONE) state |= CONTROL_DN;
-				if (ax < -DEADZONE) state |= CONTROL_LF;
-				else if (ax > DEADZONE) state |= CONTROL_RT;
+				if (ax * ax + ay * ay >= DEADZONE * DEADZONE) {
+					double angle = atan2(ay, ax) * 180.0 / M_PI;
+					if (angle < 22.5 + -4*45) {
+						curState = CONTROL_LF;
+					} else if (angle < 22.5 + -3*45) {
+						curState = CONTROL_LF | CONTROL_UP;
+					} else if (angle < 22.5 + -2*45) {
+						curState = CONTROL_UP;
+					} else if (angle < 22.5 + -1*45) {
+						curState = CONTROL_UP | CONTROL_RT;
+					} else if (angle < 22.5 + 0*45) {
+						curState = CONTROL_RT;
+					} else if (angle < 22.5 + 1*45) {
+						curState = CONTROL_RT | CONTROL_DN;
+					} else if (angle < 22.5 + 2*45) {
+						curState = CONTROL_DN;
+					} else if (angle < 22.5 + 3*45) {
+						curState = CONTROL_DN | CONTROL_LF;
+					} else if (angle < 22.5 + 4*45) {
+						curState = CONTROL_LF;
+					}
+				}
+
+				byte last = fingerHeld[e.tfinger.fingerId];
+				fingerHeld[e.tfinger.fingerId] = curState;
+				state = (state & ~last) | curState;
+				taps |= (curState & ~last);
 			}
-			taps |= (state & ~last);
+			break;
+		}
+
+		case SDL_FINGERUP: {
+			auto iter = fingerHeld.find(e.tfinger.fingerId);
+			if (iter != fingerHeld.end()) {
+				printf("FingerUp(%d) = %d\n", e.tfinger.fingerId, iter->second);
+				state &= ~iter->second;
+				fingerHeld.erase(iter);
+			}
 			break;
 		}
 	}

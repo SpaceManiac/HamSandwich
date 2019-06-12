@@ -3,6 +3,7 @@
 
 #include "jamultypes.h"
 #include "mgldraw.h"
+#include <map>
 
 void SoftJoystickNumButtons(byte n);
 byte SoftJoystickState();
@@ -20,6 +21,8 @@ class SoftJoystick {
 	Element esc;
 	Element keyboard;
 	Element button[4];
+
+	std::map<SDL_FingerID, byte> fingerHeld;
 
 public:
 	SoftJoystick(MGLDraw* mgl);
