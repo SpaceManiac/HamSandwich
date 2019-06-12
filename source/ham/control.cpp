@@ -1,5 +1,6 @@
 #include "control.h"
 #include "mgldraw.h"
+#include <vector>
 
 static byte lastScanCode;
 
@@ -11,7 +12,7 @@ static byte arrowState, arrowTap;
 static byte shiftState;
 
 // joysticks
-static SDL_Joystick* joystick;
+static std::vector<SDL_Joystick*> joysticks;
 static byte oldJoy;
 
 // mappings
@@ -34,10 +35,13 @@ void InitControls(void)
 	shiftState=0;
 	oldJoy=0;
 
-	if(SDL_NumJoysticks() > 0)
-		joystick = SDL_JoystickOpen(0);
-	else
-		joystick = nullptr;
+	for (int i = 0; i < SDL_NumJoysticks(); ++i) {
+		SDL_Joystick* joystick = SDL_JoystickOpen(i);
+		if (joystick)
+			joysticks.push_back(joystick);
+		else
+			printf("JoystickOpen(%d, %s): %s\n", i, SDL_JoystickNameForIndex(i), SDL_GetError());
+	}
 }
 
 byte GetControls() {
@@ -73,18 +77,17 @@ const char *ScanCodeText(byte s) {
 
 // Options menu support.
 dword GetJoyButtons() {
-	if (!joystick)
-		return 0;
-
 	dword held = 0;
 
-	int n = SDL_JoystickNumButtons(joystick);
-	int j = 1;
-	for (int i = 0; i < n && i < 32; ++i) {
-		if (SDL_JoystickGetButton(joystick, i)) {
-			held |= j;
+	for (SDL_Joystick* joystick : joysticks) {
+		int n = SDL_JoystickNumButtons(joystick);
+		int j = 1;
+		for (int i = 0; i < n && i < 32; ++i) {
+			if (SDL_JoystickGetButton(joystick, i)) {
+				held |= j;
+			}
+			j *= 2;
 		}
-		j *= 2;
 	}
 
 	return held;
@@ -206,60 +209,81 @@ void ControlKeyUp(byte k)
 
 static byte GetJoyState(void)
 {
-	if (!joystick)
-		return 0;
-
 	const int DEADZONE = 8192;
 	byte joyState = 0;
 
-	if(SDL_JoystickGetAxis(joystick, 0) < -DEADZONE)
+	for (auto iter = joysticks.begin(); iter != joysticks.end(); ++iter)
 	{
-		if(!(oldJoy&CONTROL_LF))
-			keyTap|=CONTROL_LF;
-		joyState|=CONTROL_LF;
+		SDL_Joystick* joystick = *iter;
+		if (!SDL_JoystickGetAttached(joystick))
+		{
+			// Drop disconnected joysticks.
+			printf("Joystick removed: %s\n", SDL_JoystickName(joystick));
+			iter = joysticks.erase(iter);
+			if (iter == joysticks.end())
+				break;
+			continue;
+		}
+
+		if(SDL_JoystickGetAxis(joystick, 0) < -DEADZONE)
+		{
+			if(!(oldJoy&CONTROL_LF))
+				keyTap|=CONTROL_LF;
+			joyState|=CONTROL_LF;
+		}
+		else if(SDL_JoystickGetAxis(joystick, 0) > DEADZONE)
+		{
+			if(!(oldJoy&CONTROL_RT))
+				keyTap|=CONTROL_RT;
+			joyState|=CONTROL_RT;
+		}
+		if(SDL_JoystickGetAxis(joystick, 1) < -DEADZONE)
+		{
+			if(!(oldJoy&CONTROL_UP))
+				keyTap|=CONTROL_UP;
+			joyState|=CONTROL_UP;
+		}
+		else if(SDL_JoystickGetAxis(joystick, 1) > DEADZONE)
+		{
+			if(!(oldJoy&CONTROL_DN))
+				keyTap|=CONTROL_DN;
+			joyState|=CONTROL_DN;
+		}
+		if(SDL_JoystickGetButton(joystick, joyBtn[0]))
+		{
+			if(!(oldJoy&CONTROL_B1))
+				keyTap|=CONTROL_B1;
+			joyState|=CONTROL_B1;
+		}
+		if(SDL_JoystickGetButton(joystick, joyBtn[1]))
+		{
+			if(!(oldJoy&CONTROL_B2))
+				keyTap|=CONTROL_B2;
+			joyState|=CONTROL_B2;
+		}
+		if(SDL_JoystickGetButton(joystick, joyBtn[2]))
+		{
+			if(!(oldJoy&CONTROL_B3))
+				keyTap|=CONTROL_B3;
+			joyState|=CONTROL_B3;
+		}
+		if(SDL_JoystickGetButton(joystick, joyBtn[3]))
+		{
+			if(!(oldJoy&CONTROL_B4))
+				keyTap|=CONTROL_B4;
+			joyState|=CONTROL_B4;
+		}
 	}
-	else if(SDL_JoystickGetAxis(joystick, 0) > DEADZONE)
-	{
-		if(!(oldJoy&CONTROL_RT))
-			keyTap|=CONTROL_RT;
-		joyState|=CONTROL_RT;
+
+	// Add newly connected joysticks.
+	for (int i = joysticks.size(); i < SDL_NumJoysticks(); ++i) {
+		SDL_Joystick* joystick = SDL_JoystickOpen(i);
+		if (joystick) {
+			printf("Joystick added: %s\n", SDL_JoystickName(joystick));
+			joysticks.push_back(joystick);
+		}
 	}
-	if(SDL_JoystickGetAxis(joystick, 1) < -DEADZONE)
-	{
-		if(!(oldJoy&CONTROL_UP))
-			keyTap|=CONTROL_UP;
-		joyState|=CONTROL_UP;
-	}
-	else if(SDL_JoystickGetAxis(joystick, 1) > DEADZONE)
-	{
-		if(!(oldJoy&CONTROL_DN))
-			keyTap|=CONTROL_DN;
-		joyState|=CONTROL_DN;
-	}
-	if(SDL_JoystickGetButton(joystick, joyBtn[0]))
-	{
-		if(!(oldJoy&CONTROL_B1))
-			keyTap|=CONTROL_B1;
-		joyState|=CONTROL_B1;
-	}
-	if(SDL_JoystickGetButton(joystick, joyBtn[1]))
-	{
-		if(!(oldJoy&CONTROL_B2))
-			keyTap|=CONTROL_B2;
-		joyState|=CONTROL_B2;
-	}
-	if(SDL_JoystickGetButton(joystick, joyBtn[2]))
-	{
-		if(!(oldJoy&CONTROL_B3))
-			keyTap|=CONTROL_B3;
-		joyState|=CONTROL_B3;
-	}
-	if (SDL_JoystickGetButton(joystick, joyBtn[3]))
-	{
-		if(!(oldJoy&CONTROL_B4))
-			keyTap|=CONTROL_B4;
-		joyState|=CONTROL_B4;
-	}
+
 	oldJoy=joyState;
 
 	return joyState;
