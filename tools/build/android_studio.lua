@@ -97,6 +97,13 @@ p.api.register {
 	tokens = true
 }
 
+p.api.register {
+	name = "android_assetdirs",
+	scope = "project",
+	kind = "list:string",
+	tokens = true
+}
+
 function m.is_application(prj)
 	-- Only premake apps become Android apps, everything else is an NDK
 	-- module only.
@@ -172,7 +179,9 @@ function m.build_gradle(wks)
 			p.push("defaultConfig {")
 			p.w("applicationId '%s'", prj.android_package)
 			p.pop("}")  -- defaultConfig
-			p.w("sourceSets.main.assets.srcDir '../../game/%s'", prj.name)
+			for _, dir in ipairs(prj.android_assetdirs) do
+				p.w("sourceSets.main.assets.srcDir '../../../%s'", dir)
+			end
 			p.pop("}")  -- android
 			p.pop("}")  -- project(':%s')
 		end

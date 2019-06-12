@@ -19,6 +19,11 @@ function base_project(name)
 		objdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/obj/")
 		android_package "com.platymuus.hamsandwich.%{prj.name}"
 
+		android_assetdirs {
+			"build/game/%{prj.name}/",
+			"assets/android/",
+		}
+
 		files {
 			"source/" .. name .. "/**.h",
 			"source/" .. name .. "/**.cpp",
