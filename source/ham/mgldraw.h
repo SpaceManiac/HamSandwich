@@ -28,6 +28,8 @@ struct RGB {
 };
 typedef RGB PALETTE[256];
 
+class SoftJoystick;
+
 class MGLDraw
 {
 public:
@@ -126,6 +128,9 @@ protected:
 	SDL_Renderer *renderer;
 	SDL_Texture *texture;
 	RGB *buffer;
+
+	friend class SoftJoystick;
+	SoftJoystick *softJoystick;
 };
 
 void FatalError(const char *msg);

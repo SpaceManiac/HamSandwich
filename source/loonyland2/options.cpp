@@ -350,14 +350,14 @@ void ApplyControlSettings(void)
 {
 	SetKeyboardBindings(0, 8, opt.control[0]);
 	SetKeyboardBindings(1, 8, opt.control[1]);
-	SetJoystickBindings(4, opt.joyCtrl);
+	SetJoystickBindings(3, opt.joyCtrl);
 }
 
 void ApplyControlSettingsMem(byte *data)
 {
 	SetKeyboardBindings(0, 8, &data[0*8]);
 	SetKeyboardBindings(1, 8, &data[1*8]);
-	SetJoystickBindings(4, &data[2*8]);
+	SetJoystickBindings(3, &data[2*8]);
 }
 
 void LoadOptions(void)

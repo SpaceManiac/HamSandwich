@@ -1,6 +1,7 @@
 #include "control.h"
 #include "mgldraw.h"
 #include "log.h"
+#include "softjoystick.h"
 #include <vector>
 #include <algorithm>
 
@@ -44,14 +45,14 @@ void InitControls(void)
 }
 
 byte GetControls() {
-	return keyState | GetJoyState();
+	return keyState | GetJoyState() | SoftJoystickState();
 }
 
 byte GetTaps() {
 	GetJoyState();  // Updates keyTap.
 	byte result = keyTap;
 	keyTap = 0;
-	return result;
+	return result | SoftJoystickTaps();
 }
 
 byte GetArrows() {
@@ -100,6 +101,7 @@ void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys) {
 }
 
 void SetJoystickBindings(int nbuttons, const byte* buttons) {
+	SoftJoystickNumButtons(nbuttons);
 	memcpy(joyBtn, buttons, std::min(nbuttons, NUM_JOYBTNS));
 }
 

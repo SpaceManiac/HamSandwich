@@ -3,6 +3,7 @@
 #include "jamulsound.h"
 #include "hammusic.h"
 #include "log.h"
+#include "softjoystick.h"
 #include <random>
 #include <algorithm>
 
@@ -22,10 +23,13 @@
 	#include <emscripten.h>
 #endif  // _EMSCRIPTEN__
 
+// provided by games
 void SoundSystemExists();
+void SetGameIdle(bool idle);
+
+// in control.cpp
 void ControlKeyDown(byte scancode);
 void ControlKeyUp(byte scancode);
-void SetGameIdle(bool idle);
 
 static const RGB BLACK = {0, 0, 0, 0};
 
@@ -154,6 +158,12 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	buffer = new RGB[xRes * yRes];
 	thePal = pal;
 	SeedRNG();
+
+#ifdef __ANDROID__
+	softJoystick = new SoftJoystick(this);
+#else
+	softJoystick = nullptr;
+#endif
 }
 
 MGLDraw::~MGLDraw(void)
@@ -164,6 +174,7 @@ MGLDraw::~MGLDraw(void)
 	JamulSoundExit();
 	delete[] buffer;
 	delete[] scrn;
+	delete softJoystick;
 }
 
 int MGLDraw::GetWidth()
@@ -286,6 +297,10 @@ void MGLDraw::FinishFlip(void)
 	SDL_UpdateTexture(texture, NULL, buffer, pitch * sizeof(RGB));
 	SDL_RenderClear(renderer);
 	SDL_RenderCopy(renderer, texture, NULL, &dest);
+	if (softJoystick) {
+		softJoystick->update(this, scale);
+		softJoystick->render(renderer);
+	}
 	SDL_RenderPresent(renderer);
 	UpdateMusic();
 
@@ -347,6 +362,9 @@ void MGLDraw::FinishFlip(void)
 				winWidth = e.window.data1;
 				winHeight = e.window.data2;
 			}
+		}
+		if (softJoystick) {
+			softJoystick->handle_event(this, e);
 		}
 	}
 }
