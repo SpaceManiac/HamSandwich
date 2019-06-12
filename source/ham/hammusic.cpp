@@ -1,5 +1,6 @@
 #include "hammusic.h"
 #include "mgldraw.h"
+#include <stdio.h>
 
 #ifdef SDL_UNPREFIXED
 	#include <SDL_mixer.h>
