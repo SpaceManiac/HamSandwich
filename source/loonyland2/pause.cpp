@@ -426,7 +426,7 @@ void RenderOptionsMenu(int x,int y)
 		for(j=0;j<7;j++)
 		{
 			if(i<2)
-				OptionButton(x+78+i*116,y+j*31,112,AllegroCodeText(player.var[VAR_CONTROLS+i*8+j]),3+i+j*3);
+				OptionButton(x+78+i*116,y+j*31,112,ScanCodeText(player.var[VAR_CONTROLS+i*8+j]),3+i+j*3);
 			else if(j>3)
 			{
 				sprintf(s,"Btn %d",player.var[VAR_CONTROLS+16+j-4]);

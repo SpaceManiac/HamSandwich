@@ -12,6 +12,13 @@ static byte firstTime;
 profile_t profile;
 byte modeShopNum[10];
 
+void ApplyControlSettings()
+{
+	SetKeyboardBindings(0, 6, profile.control[0]);
+	SetKeyboardBindings(1, 6, profile.control[1]);
+	SetJoystickBindings(2, profile.joyCtrl);
+}
+
 void InitProfile(void)
 {
 	FILE *f;

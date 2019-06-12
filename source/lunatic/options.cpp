@@ -28,6 +28,13 @@ void ExitOptionsMenu(void)
 	SaveOptions();
 }
 
+void ApplyControlSettings()
+{
+	SetKeyboardBindings(0, 6, opt.control[0]);
+	SetKeyboardBindings(1, 6, opt.control[1]);
+	SetJoystickBindings(2, opt.joyCtrl);
+}
+
 byte UpdateOptionsMenu(MGLDraw *mgl)
 {
 	char c;

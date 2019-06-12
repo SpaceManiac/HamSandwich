@@ -187,7 +187,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 		byte r;
 
 		r=LastScanCode();
-		if(r==59)
+		if(r==SDL_SCANCODE_ESCAPE)
 		{
 			subMode=SUBMODE_OPTIONS;	// escape
 			MakeNormalSound(SND_MENUCANCEL);
@@ -323,7 +323,7 @@ void RenderOptionsMenu(int x,int y,byte *backScr)
 		for(j=0;j<7;j++)
 		{
 			if(i<2)
-				OptionButton(x+78+i*116,y+j*31,112,AllegroCodeText(opt.control[i][j]),3+i+j*3);
+				OptionButton(x+78+i*116,y+j*31,112,ScanCodeText(opt.control[i][j]),3+i+j*3);
 			else if(j>3)
 			{
 				sprintf(s,"Btn %d",opt.joyCtrl[j-4]);
@@ -344,6 +344,20 @@ void RenderOptionsMenu(int x,int y,byte *backScr)
 }
 
 //----------------
+
+void ApplyControlSettings(void)
+{
+	SetKeyboardBindings(0, 8, opt.control[0]);
+	SetKeyboardBindings(1, 8, opt.control[1]);
+	SetJoystickBindings(4, opt.joyCtrl);
+}
+
+void ApplyControlSettingsMem(byte *data)
+{
+	SetKeyboardBindings(0, 8, &data[0*8]);
+	SetKeyboardBindings(1, 8, &data[1*8]);
+	SetJoystickBindings(4, &data[2*8]);
+}
 
 void LoadOptions(void)
 {

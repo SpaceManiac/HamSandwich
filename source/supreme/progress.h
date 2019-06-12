@@ -151,4 +151,6 @@ void StoreWorldResults(worldData_t *me,world_t *world);
 dword CountLevelsPassed(void);
 void CalcFinishedWorlds(void);
 
+void ApplyControlSettings();
+
 #endif

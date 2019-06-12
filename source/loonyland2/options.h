@@ -26,4 +26,7 @@ void SaveOptions(void);
 
 void OptionsMenu(MGLDraw *mgl,byte *backScr);
 
+void ApplyControlSettings(void);
+void ApplyControlSettingsMem(byte *data);
+
 #endif

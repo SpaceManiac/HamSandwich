@@ -153,5 +153,6 @@ void CalcFinishedWorlds(void);
 void SaveState(void);
 byte LoadState(byte lvl,byte getPlayer);
 
+void ApplyControlSettings();
 
 #endif

@@ -6,6 +6,18 @@
 
 option_t opt;
 
+void ApplyControlSettings()
+{
+	for (int kbd = 0; kbd < 3; ++kbd) {
+		byte keys[8];
+		for (int k = 0; k < 8; ++k)
+			keys[k] = opt.key[k][kbd];
+		SetKeyboardBindings(kbd, 8, keys);
+	}
+
+	SetJoystickBindings(4, opt.joyCtrl);
+}
+
 void InitOptions(void)
 {
 	FILE *f;
@@ -52,6 +64,7 @@ void InitOptions(void)
 		fread(&opt,sizeof(option_t),1,f);
 		fclose(f);
 	}
+	ApplyControlSettings();
 }
 
 void ExitOptions(void)
@@ -158,7 +171,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 			{
 				optMode=0;
 				controlX=10;
-				//ApplyControlSettings();
+				ApplyControlSettings();
 				return 0;
 			}
 			if(c==13)

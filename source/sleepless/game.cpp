@@ -577,7 +577,7 @@ void LunaticDraw(void)
 		char* end = s + sprintf(s,"Keys: ");
 		for (int i = 0; i < KEY_MAX; ++i)
 			if (key[i])
-				end += sprintf(end, "%s ", AllegroCodeText(i));
+				end += sprintf(end, "%s ", ScanCodeText(i));
 		PrintGlow(5,150,s,8,2);
 
 		end = s + sprintf(s,"Mouse: ");

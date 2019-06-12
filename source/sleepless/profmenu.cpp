@@ -197,7 +197,7 @@ void InitKeyConfig(void)
 	{
 		for(i=0;i<6;i++)
 		{
-			strcpy(kcBtn[i+j*6].txt,AllegroCodeText(profile.control[j][i]));
+			strcpy(kcBtn[i+j*6].txt,ScanCodeText(profile.control[j][i]));
 		}
 	}
 	ApplyControlSettings();
