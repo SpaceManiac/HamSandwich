@@ -1,5 +1,6 @@
 #include "control.h"
 #include "mgldraw.h"
+#include "log.h"
 #include <vector>
 #include <algorithm>
 
@@ -41,7 +42,7 @@ void InitControls(void)
 		if (joystick)
 			joysticks.push_back(joystick);
 		else
-			printf("JoystickOpen(%d, %s): %s\n", i, SDL_JoystickNameForIndex(i), SDL_GetError());
+			LogError("JoystickOpen(%d, %s): %s", i, SDL_JoystickNameForIndex(i), SDL_GetError());
 	}
 }
 
@@ -219,7 +220,7 @@ static byte GetJoyState(void)
 		if (!SDL_JoystickGetAttached(joystick))
 		{
 			// Drop disconnected joysticks.
-			printf("Joystick removed: %s\n", SDL_JoystickName(joystick));
+			LogDebug("Joystick removed: %s", SDL_JoystickName(joystick));
 			iter = joysticks.erase(iter);
 			if (iter == joysticks.end())
 				break;
@@ -284,7 +285,7 @@ static byte GetJoyState(void)
 	for (int i = joysticks.size(); i < SDL_NumJoysticks(); ++i) {
 		SDL_Joystick* joystick = SDL_JoystickOpen(i);
 		if (joystick) {
-			printf("Joystick added: %s\n", SDL_JoystickName(joystick));
+			LogDebug("Joystick added: %s", SDL_JoystickName(joystick));
 			joysticks.push_back(joystick);
 		}
 	}

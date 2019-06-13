@@ -1,5 +1,6 @@
 #include "jamulsound.h"
 #include "hammusic.h"
+#include "log.h"
 #include <stdio.h>
 
 #ifdef SDL_UNPREFIXED
@@ -42,20 +43,19 @@ bool JamulSoundInit(int numBuffers)
 	int i;
 
 	if (!ConfigSoundEnabled()) {
-		printf("sound disabled\n");
+		LogDebug("sound disabled in config");
 		return false;
 	}
 	if (SDL_Init(SDL_INIT_AUDIO) != 0) {
-		printf("init audio failed: %s\n", SDL_GetError());
+		LogError("SDL_Init(AUDIO): %s", SDL_GetError());
 		return false;
 	}
-	Mix_Init(MIX_INIT_OGG);
+	Mix_Init(MIX_INIT_OGG);  // not logged, because it lies
 	if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 1024) != 0) {
-		printf("Mix_OpenAudio: %s\n", Mix_GetError());
+		LogError("Mix_OpenAudio: %s", Mix_GetError());
 		return false;
 	}
 	NUM_SOUNDS = ConfigNumSounds();
-	printf("num sounds = %d, num buffers = %d\n", NUM_SOUNDS, numBuffers);
 	Mix_AllocateChannels(NUM_SOUNDS + 1);
 
 	soundIsOn=1;
@@ -130,14 +130,16 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 			// If not, try to load it from a file instead
 			sprintf(s,"sound/snd%03d.wav",which);
 			rw = SDL_RWFromFile(s, "rb");
-			if(!rw)
+			if(!rw) {
+				LogError("Open(%s): %s", s, SDL_GetError());
 				return 0;
+			}
 		}
 
 		// Now try to load it
 		soundList[which].sample = Mix_LoadWAV_RW(rw, 1);
 		if(soundList[which].sample==NULL) {
-			printf("Error: %s\n", Mix_GetError());
+			LogError("LoadWAV(%d): %s", which, Mix_GetError());
 			return 0;
 		}
 	}

@@ -10,7 +10,7 @@
 #include "bossbash.h"
 #include "help.h"
 #include "ch_summon.h"
-#include "debuggo.h"
+#include "log.h"
 #include "palettes.h"
 
 byte showStats=0;

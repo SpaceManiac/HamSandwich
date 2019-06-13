@@ -11,7 +11,7 @@
 #include "title.h"
 #include "options.h"
 #include "badge.h"
-#include "debuggo.h"
+#include "log.h"
 
 int main(int argc, char *argv[])
 {

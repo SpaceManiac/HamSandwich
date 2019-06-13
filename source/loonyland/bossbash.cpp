@@ -2,7 +2,7 @@
 #include "options.h"
 #include "badge.h"
 #include "plasma.h"
-#include "debuggo.h"
+#include "log.h"
 
 static byte oldc;
 static byte cursor;

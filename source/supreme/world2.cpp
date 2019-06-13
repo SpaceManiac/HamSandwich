@@ -2,6 +2,7 @@
 #include "title.h"
 #include "hamworld.h"
 #include "sound.h"
+#include "log.h"
 
 #define APPNAME "Supreme with Cheese " VERSION_NO
 
@@ -362,8 +363,6 @@ static void LoadMapData(hamworld::Section *f, Map *map)
 
 byte Ham_SaveWorld(world_t* world, const char *fname)
 {
-	printf("Ham_SaveWorld(%s)\n", fname);
-
 	// Prepare custom item table
 	hamworld::Section item_definitions;
 	item_definitions.write_varint(NUM_ORIGINAL_ITEMS);
@@ -465,16 +464,14 @@ byte Ham_SaveWorld(world_t* world, const char *fname)
 
 byte Ham_LoadWorld(world_t* world, const char *fname)
 {
-	printf("Ham_LoadWorld(%s)\n", fname);
 	hamworld::Load load(fname);
 
 	std::string app;
 	if (!load.header(world->author, nullptr, &app))
 	{
-		printf("  error: bad header\n");
+		LogError("Ham_LoadWorld(%s): bad header", fname);
 		return 0;
 	}
-	printf("  app: %s\n", app.c_str());
 
 	memset(world->map, 0, sizeof(world->map));
 
@@ -493,7 +490,7 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 			size_t start = section.read_varint();
 			if (start != NUM_ORIGINAL_ITEMS)
 			{
-				printf("  error: item definition offest NYI (expected %d, got %d)\n", NUM_ORIGINAL_ITEMS, start);
+				LogError("Ham_LoadWorld(%s): item definition offest NYI (expected %d, got %d)", fname, NUM_ORIGINAL_ITEMS, start);
 				return false;
 			}
 			size_t item_count = section.read_varint();
@@ -510,7 +507,7 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 			size_t start = section.read_varint();
 			if (start != CUSTOM_SND_START)
 			{
-				printf("  error: sound definition offest NYI (expected %d, got %d)\n", CUSTOM_SND_START, start);
+				LogError("Ham_LoadWorld(%s): sound definition offest NYI (expected %d, got %d)", fname, CUSTOM_SND_START, start);
 				return false;
 			}
 			size_t sound_count = section.read_varint();
@@ -565,7 +562,7 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 		}
 		else
 		{
-			printf("  error: unknown section: %s\n", section_name.c_str());
+			LogError("Ham_LoadWorld(%s): unknown section: %s", fname, section_name.c_str());
 			return 0;
 		}
 	}
@@ -577,16 +574,13 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 
 byte Ham_GetWorldName(const char *fname, char *buffer, char *authbuffer)
 {
-	printf("Ham_GetWorldName(%s)\n", fname);
 	hamworld::Load load(fname);
 
 	std::string app;
 	if (!load.header({authbuffer, 32}, {buffer, 32}, &app))
 	{
-		printf("  error: bad header\n");
 		return 0;
 	}
-	printf("  app: %s\n", app.c_str());
 
 	return 1;
 }

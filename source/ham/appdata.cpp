@@ -1,4 +1,5 @@
 #include "appdata.h"
+#include "log.h"
 
 #ifdef SDL_UNPREFIXED
 	#include <SDL_platform.h>
@@ -73,6 +74,9 @@ static int mkdir_parents(const char *path, mode_t mode) {
 	}
 
 	free(copypath);
+
+	if (status != 0)
+		LogError("mkdirs(%s): %s", path, strerror(errno));
 	return status;
 }
 
@@ -96,10 +100,15 @@ FILE* AppdataOpen(const char* file, const char* mode) {
 	if (is_write_mode(mode)) {
 		mkdir_parents(buffer, MKDIR_MODE);
 	}
-	return fopen(buffer, mode);
+	FILE* fp = fopen(buffer, mode);
+	if (!fp) {
+		LogDebug("AppdataOpen(%s, %s): %s", file, mode, strerror(errno));
+	}
+	return fp;
 }
 
 FILE* AssetOpen(const char* file, const char* mode) {
+	LogDebug("AssetOpen(%s, %s)", file, mode);
 	if (is_write_mode(mode)) {
 		return AppdataOpen(file, mode);
 	}
@@ -112,12 +121,14 @@ FILE* AssetOpen(const char* file, const char* mode) {
 	// Not in internal storage, so ask SDL to pull it from the asset system.
 	SDL_RWops *rw = SDL_RWFromFile(file, mode);
 	if (!rw) {
+		LogError("AssetOpen(%s) bad SDL: %s", file, SDL_GetError());
 		return nullptr;
 	}
 
 	mkdir_parents(fname_buf, MKDIR_MODE);
 	FILE* fp = fopen(fname_buf, "wb");
 	if (!fp) {
+		LogError("AssetOpen(%s) bad save: %s", file, strerror(errno));
 		return nullptr;
 	}
 
@@ -130,11 +141,16 @@ FILE* AssetOpen(const char* file, const char* mode) {
 
 	// Return a FILE* pointing to the extracted asset.
 	fclose(fp);
-	return fopen(fname_buf, mode);
+	fp = fopen(fname_buf, mode);
+	if (!fp) {
+		LogError("AssetOpen(%s) bad readback: %s", file, strerror(errno));
+	}
+	return fp;
 }
 
 SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
 	if (is_write_mode(mode)) {
+		LogDebug("AssetOpen_SDL(%s, %s) -> AppdataOpen", file, mode);
 		FILE *fp = AppdataOpen(file, mode);
 		if (fp) {
             return SDL_RWFromFP(fp, SDL_TRUE);

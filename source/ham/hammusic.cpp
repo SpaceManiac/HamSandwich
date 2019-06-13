@@ -1,5 +1,6 @@
 #include "hammusic.h"
 #include "mgldraw.h"
+#include "log.h"
 #include <stdio.h>
 
 #ifdef SDL_UNPREFIXED
@@ -39,14 +40,14 @@ void PlaySongFile(const char* fullname)
 	SDL_RWops* rw = SDL_RWFromFile(fullname, "rb");
 	if (!rw)
 	{
-		printf("Open(%s): %s\n", fullname, SDL_GetError());
+		LogError("Open(%s): %s", fullname, SDL_GetError());
 		return;
 	}
 
 	curStream = Mix_LoadMUS_RW(rw, 1);
 	if (!curStream)
 	{
-		printf("LoadMUS(%s): %s\n", fullname, Mix_GetError());
+		LogError("LoadMUS(%s): %s", fullname, Mix_GetError());
 		return;
 	}
 

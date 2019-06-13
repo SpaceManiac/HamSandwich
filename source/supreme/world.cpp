@@ -3,6 +3,7 @@
 #include "repair.h"
 #include "items.h"
 #include "worldstitch.h"
+#include "log.h"
 
 byte keyChainInLevel[MAX_MAPS];
 
@@ -49,7 +50,6 @@ byte LoadWorld(world_t *world,const char *fname)
 
 	fread(code,sizeof(char),8,f);
 	code[8]='\0';
-	printf("LoadWorld(%s): %s\n", fname, code);
 
 	if(!strcmp(code, "HAMSWCH!"))
 	{

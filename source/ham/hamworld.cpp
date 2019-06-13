@@ -1,4 +1,5 @@
 #include "hamworld.h"
+#include "log.h"
 #include <string.h>
 
 namespace hamworld {
@@ -133,9 +134,7 @@ Save::Save(const char* fname)
 
 Save::~Save()
 {
-	if (!output.put(0)) {
-		printf("  error finishing HamWorld save\n");
-	}
+	output.put(0);
 }
 
 void Save::header(string_view author, string_view name, string_view app)
@@ -166,7 +165,6 @@ Load::Load(const char* fname)
 
 Load::~Load()
 {
-	printf("  load ended at 0x%x\n", (size_t) input.tellg());
 }
 
 bool Load::header(Buffer author, Buffer name, Buffer app)

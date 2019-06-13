@@ -3,6 +3,7 @@
 #include "intface.h"
 #include "options.h"
 #include "editor.h"
+#include "log.h"
 
 Guy **guys;
 Guy *goodguy;
@@ -646,7 +647,7 @@ void Guy::MonsterControl(Map *map, world_t *world)
 
 	monsterAi_t ai = MonsterAi(type);
 	if (ai == NULL) {
-		printf("null AI on %s\n", MonsterName(type));
+		LogDebug("null AI on %s", MonsterName(type));
 		return;
 	}
 

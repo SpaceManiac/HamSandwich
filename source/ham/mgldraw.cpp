@@ -2,6 +2,7 @@
 #include "clock.h"
 #include "jamulsound.h"
 #include "hammusic.h"
+#include "log.h"
 #include <random>
 #include <algorithm>
 
@@ -48,7 +49,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	_globalMGLDraw = this;
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK)) {
-		printf("SDL_Init: %s\n", SDL_GetError());
+		LogError("SDL_Init(VIDEO|JOYSTICK): %s", SDL_GetError());
 		FatalError("Failed to initialize SDL");
 		return;
 	}
@@ -65,20 +66,20 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	Uint32 flags = windowed ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP;
 	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, xRes, yRes, flags);
 	if (!window) {
-		printf("SDL_CreateWindow: %s\n", SDL_GetError());
+		LogError("SDL_CreateWindow: %s", SDL_GetError());
 		FatalError("Failed to create window");
 		return;
 	}
-	printf("window format: %s\n", SDL_GetPixelFormatName(SDL_GetWindowPixelFormat(window)));
+	LogDebug("window format: %s", SDL_GetPixelFormatName(SDL_GetWindowPixelFormat(window)));
 	SDL_GetWindowSize(window, &winWidth, &winHeight);
 
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 	if (!renderer) {
-		printf("SDL_CreateRenderer: %s\n", SDL_GetError());
-		printf("Trying software renderer...\n");
+		LogError("SDL_CreateRenderer: %s", SDL_GetError());
+		LogDebug("Trying software renderer...");
 		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
 		if (!renderer) {
-			printf("SDL_CreateRenderer: %s\n", SDL_GetError());
+			LogError("SDL_CreateRenderer: %s", SDL_GetError());
 			FatalError("Failed to create renderer");
 			return;
 		}
@@ -104,30 +105,30 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 #ifdef _DEBUG
 	SDL_RendererInfo info;
 	SDL_GetRendererInfo(renderer, &info);
-	printf("Renderer info:\n");
-	printf("  name: %s\n", info.name);
-	printf("  flags:");
+	LogDebug("renderer: %s", info.name);
+
+	char flagbuf[64] = "  flags:";
 	if (info.flags & SDL_RENDERER_SOFTWARE)
-		printf(" software");
+		strcat(flagbuf, " software");
 	if (info.flags & SDL_RENDERER_ACCELERATED)
-		printf(" accelerated");
+		strcat(flagbuf, " accelerated");
 	if (info.flags & SDL_RENDERER_PRESENTVSYNC)
-		printf(" vsync");
+		strcat(flagbuf, " vsync");
 	if (info.flags & SDL_RENDERER_TARGETTEXTURE)
-		printf(" ttex");
+		strcat(flagbuf, " ttex");
 	if (!info.flags)
-		printf(" 0");
-	printf("\n");
-	printf("  texture: (%d, %d)\n", info.max_texture_width, info.max_texture_height);
-	printf("  formats (%d):\n", info.num_texture_formats);
+		strcat(flagbuf, " 0");
+	LogDebug("%s", flagbuf);
+	LogDebug("  texture: (%d, %d)", info.max_texture_width, info.max_texture_height);
+	LogDebug("  formats (%d):", info.num_texture_formats);
 	for (Uint32 i = 0; i < info.num_texture_formats; ++i) {
-		printf("    %s\n", SDL_GetPixelFormatName(info.texture_formats[i]));
+		LogDebug("    %s", SDL_GetPixelFormatName(info.texture_formats[i]));
 	}
 #endif
 
 	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, xRes, yRes);
 	if (!texture) {
-		printf("SDL_CreateTexture: %s\n", SDL_GetError());
+		LogError("SDL_CreateTexture: %s", SDL_GetError());
 		FatalError("Failed to create texture");
 		return;
 	}
@@ -798,7 +799,7 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 
 	SDL_Surface* b = IMG_Load(name);
 	if (!b) {
-		printf("%s: %s\n", name, SDL_GetError());
+		LogError("%s: %s", name, SDL_GetError());
 		return false;
 	}
 

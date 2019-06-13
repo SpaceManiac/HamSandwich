@@ -44,8 +44,6 @@ int main(int argc, char* argv[])
 			windowedGame=true;
 	}
 
-	InitLog();
-
 	LoadConfig();
 	mainmgl=new MGLDraw("Sleepless Hollow", SCRWID, SCRHEI, windowedGame);
 	if(!mainmgl)
@@ -77,7 +75,6 @@ int main(int argc, char* argv[])
 				{
 					LunaticExit();
 					delete mainmgl;
-					ExitLog();
 				}
 				return 0;
 				break;
@@ -101,7 +98,6 @@ int main(int argc, char* argv[])
 				{
 					LunaticExit();
 					delete mainmgl;
-					ExitLog();
 #ifdef _WIN32
 					ShellExecuteA(NULL,"open","http://hamumu.com/scores.php",NULL,NULL,SW_SHOWNORMAL);
 #endif
@@ -111,7 +107,6 @@ int main(int argc, char* argv[])
 				{
 					LunaticExit();
 					delete mainmgl;
-					ExitLog();
 #ifdef _WIN32
 					ShellExecuteA(NULL,"open","http://hamumu.com/addon.php",NULL,NULL,SW_SHOWNORMAL);
 #endif
@@ -137,6 +132,5 @@ int main(int argc, char* argv[])
 	StopSong();
 	LunaticExit();
 	delete mainmgl;
-	ExitLog();
 	JamulSoundExit();
 }

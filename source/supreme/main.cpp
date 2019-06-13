@@ -45,7 +45,6 @@ int main(int argc, char* argv[])
 		if (!strcmp(argv[i], "window"))
 			windowedGame=true;
 	}
-	InitLog();
 
 	LoadConfig();
 	mainmgl=new MGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame);
@@ -70,7 +69,6 @@ int main(int argc, char* argv[])
 			case 255:	// quit
 				LunaticExit();
 				delete mainmgl;
-				ExitLog();
 				return 0;
 				break;
 			case 0:	// new game
@@ -102,7 +100,6 @@ int main(int argc, char* argv[])
 				{
 					LunaticExit();
 					delete mainmgl;
-					ExitLog();
 #ifdef _WIN32
 					ShellExecuteA(NULL,"open","http://hamumu.com/scores.php",NULL,NULL,SW_SHOWNORMAL);
 #endif
@@ -112,7 +109,6 @@ int main(int argc, char* argv[])
 				{
 					LunaticExit();
 					delete mainmgl;
-					ExitLog();
 
 #ifdef _WIN32
 					ShellExecuteA(NULL,"open","http://hamumu.com/addon.php",NULL,NULL,SW_SHOWNORMAL);
@@ -138,6 +134,5 @@ int main(int argc, char* argv[])
 	StopSong();
 	LunaticExit();
 	delete mainmgl;
-	ExitLog();
 	JamulSoundExit();
 }

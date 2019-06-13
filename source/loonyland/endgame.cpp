@@ -5,7 +5,7 @@
 #include "badge.h"
 #include "bossbash.h"
 #include "highscore.h"
-#include "debuggo.h"
+#include "log.h"
 
 char rankText[][32]={
 	"Scalliwag",

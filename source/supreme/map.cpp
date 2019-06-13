@@ -5,6 +5,7 @@
 #include "game.h"
 #include "guy.h"
 #include "config.h"
+#include "log.h"
 
 #define NUM_STARS 400
 
@@ -268,7 +269,7 @@ byte Map::Save(FILE *f)
 	{
 		byte temp = badguy[i].type;
 		if (badguy[i].type > 0xff) {
-			printf("WARNING: in legacy save, can't save monster '%s' with ID %lu > 255\n", MonsterName(badguy[i].type), badguy[i].type);
+			LogError("WARNING: in legacy save, can't save monster '%s' with ID %lu > 255", MonsterName(badguy[i].type), badguy[i].type);
 			temp = 0;
 		}
 		fwrite(&badguy[i].x, 1, sizeof(byte), f);
