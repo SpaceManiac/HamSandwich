@@ -44,7 +44,7 @@ struct chunkheader
 	word kind;
 };
 
-static FILE *	FLI_file;
+static SDL_RWops* FLI_file;
 static RGB FLI_pal[256];
 static word	fliWidth,fliHeight;
 
@@ -287,11 +287,11 @@ static void FLI_nextchunk(MGLDraw *mgl,int scrWidth)
 	chunkheader chead;
 	byte *p,*src,*dst;
 
-	fread(&chead,1,sizeofchunkheader,FLI_file);
+	SDL_RWread(FLI_file, &chead,1,sizeofchunkheader);
 	if(chead.kind==FLI_COPY)
 		chead.size=fliWidth*fliHeight+sizeofchunkheader;	// a hack to make up for a bug in Animator?
 	p=(byte *)malloc(chead.size-sizeofchunkheader);
-	fread(p,1,chead.size-sizeofchunkheader,FLI_file);
+	SDL_RWread(FLI_file, p,1,chead.size-sizeofchunkheader);
 	switch(chead.kind)
 	{
 		case FLI_COPY:
@@ -340,12 +340,12 @@ static void FLI_nextfr(MGLDraw *mgl,int scrWidth)
 	frmheader fhead;
 	int i;
 
-	fread(&fhead,1,sizeof(frmheader),FLI_file);
+	SDL_RWread(FLI_file,&fhead,1,sizeof(frmheader));
 
 	// check to see if this is a FLC file's special frame... if it is, skip it
 	if(fhead.magic==0x00A1)
 	{
-		fseek(FLI_file,fhead.size,SEEK_CUR);
+		SDL_RWseek(FLI_file,fhead.size,RW_SEEK_CUR);
 		return;
 	}
 
@@ -357,9 +357,9 @@ static void FLI_skipfr(void)
 {
 	frmheader fhead;
 
-	fread(&fhead,1,sizeof(frmheader),FLI_file);
+	SDL_RWread(FLI_file,&fhead,1,sizeof(frmheader));
 
-	fseek(FLI_file,fhead.size-sizeof(frmheader),SEEK_CUR);
+	SDL_RWseek(FLI_file,fhead.size-sizeof(frmheader),RW_SEEK_CUR);
 }
 
 byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack callback)
@@ -371,15 +371,15 @@ byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack
 	char k;
 	dword startTime,endTime;
 
-	FLI_file=AssetOpen(name,"rb");
+	FLI_file=AssetOpen_SDL(name,"rb");
 	if (!FLI_file)
 	{
 		perror(name);
 		return 0;
 	}
-	fread(&FLI_hdr,1,sizeof(fliheader),FLI_file);
-	fread(&frsize,1,4,FLI_file);
-	fseek(FLI_file,-4,SEEK_CUR);
+	SDL_RWread(FLI_file, &FLI_hdr,1,sizeof(fliheader));
+	SDL_RWread(FLI_file, &frsize,1,4);
+	SDL_RWseek(FLI_file, -4, RW_SEEK_CUR);
 	fliWidth=FLI_hdr.width;
 	fliHeight=FLI_hdr.height;
 
@@ -405,7 +405,7 @@ byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack
 		if((loop)&&(frmon==FLI_hdr.frames+1))
 		{
 			frmon=1;
-			fseek(FLI_file,128+frsize,SEEK_SET);
+			SDL_RWseek(FLI_file, 128 + frsize, RW_SEEK_SET);
 		}
 		if((!loop)&&(frmon==FLI_hdr.frames))
 			frmon=FLI_hdr.frames+1;
@@ -416,7 +416,7 @@ byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack
 		while((endTime-startTime)<wait)
 			endTime=timeGetTime();
 	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27));
-	fclose(FLI_file);
+	SDL_RWclose(FLI_file);
 	return k != 27;
 }
 
@@ -424,9 +424,9 @@ word FLI_numFrames(char *name)
 {
 	fliheader FLI_hdr;
 
-	FLI_file=AssetOpen(name,"rb");
-	fread(&FLI_hdr,1,sizeof(fliheader),FLI_file);
-	fclose(FLI_file);
+	SDL_RWops *f=AssetOpen_SDL(name,"rb");
+	SDL_RWread(f, &FLI_hdr,1,sizeof(fliheader));
+	SDL_RWclose(f);
 	if((name[strlen(name)-1]=='c')||
 			(name[strlen(name)-1]=='C'))
 		return FLI_hdr.frames;
