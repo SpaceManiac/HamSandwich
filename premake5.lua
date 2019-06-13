@@ -1,5 +1,6 @@
 -- premake5.lua
 dofile "tools/build/android_studio.lua"
+dofile "tools/build/emscripten.lua"
 
 workspace "HamSandwich"
 	location "build"
@@ -75,6 +76,8 @@ end
 
 function sdl2_project(name)
 	base_project(name)
+		filter "toolset:emcc"
+			targetextension ".js"
 		filter { "system:Windows", "not action:vs*" }
 			links "mingw32"
 		filter "system:Windows"
@@ -136,6 +139,9 @@ end
 library "ham"
 	filter "toolset:gcc"
 		buildoptions { "-Wall", "-Wextra" }
+
+	filter "toolset:emcc"
+		links { "SDL2", "SDL2_mixer", "SDL2_image" }
 
 sdl2_project "lunatic"
 	android_appname "Dr. Lunatic"
