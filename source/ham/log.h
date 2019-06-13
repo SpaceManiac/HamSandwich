@@ -5,7 +5,7 @@
 #ifdef __GNUC__
 #define PRINTF_FUNC( fmtargnumber ) __attribute__ (( format( __printf__, fmtargnumber, fmtargnumber+1 )))
 #else  // __GNUC__
-#define PRINTF_FUNC
+#define PRINTF_FUNC( fmtargnumber )
 #endif  // __GNUC__
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1600)
