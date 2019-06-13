@@ -226,25 +226,29 @@ static byte GetJoyState(void)
 			continue;
 		}
 
-		if(SDL_JoystickGetAxis(joystick, 0) < -DEADZONE)
+		byte hat = SDL_HAT_CENTERED;
+		if (SDL_JoystickNumHats(joystick) > 0)
+			hat = SDL_JoystickGetHat(joystick, 0);
+
+		if(SDL_JoystickGetAxis(joystick, 0) < -DEADZONE || (hat & SDL_HAT_LEFT))
 		{
 			if(!(oldJoy&CONTROL_LF))
 				keyTap|=CONTROL_LF;
 			joyState|=CONTROL_LF;
 		}
-		else if(SDL_JoystickGetAxis(joystick, 0) > DEADZONE)
+		else if(SDL_JoystickGetAxis(joystick, 0) > DEADZONE || (hat & SDL_HAT_RIGHT))
 		{
 			if(!(oldJoy&CONTROL_RT))
 				keyTap|=CONTROL_RT;
 			joyState|=CONTROL_RT;
 		}
-		if(SDL_JoystickGetAxis(joystick, 1) < -DEADZONE)
+		if(SDL_JoystickGetAxis(joystick, 1) < -DEADZONE || (hat & SDL_HAT_UP))
 		{
 			if(!(oldJoy&CONTROL_UP))
 				keyTap|=CONTROL_UP;
 			joyState|=CONTROL_UP;
 		}
-		else if(SDL_JoystickGetAxis(joystick, 1) > DEADZONE)
+		else if(SDL_JoystickGetAxis(joystick, 1) > DEADZONE || (hat & SDL_HAT_DOWN))
 		{
 			if(!(oldJoy&CONTROL_DN))
 				keyTap|=CONTROL_DN;
