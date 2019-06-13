@@ -35,18 +35,18 @@ void LogError(const char* fmt, ...) {
 		}
 	}
 
-	va_list args;
+	va_list args, dup;
 	va_start(args, fmt);
+	va_copy(dup, args);
+	vfprintf(errorLog, fmt, dup);
+	fprintf(errorLog, "\n");
+	va_end(dup);
+
 #ifdef __ANDROID__
 	__android_log_vprint(ANDROID_LOG_ERROR, "HamSandwich", fmt, args);
 #else
-	va_list dup;
-	va_copy(dup, args);
-	vfprintf(errorLog, fmt, args);
-	fprintf(errorLog, "\n");
-	vprintf(fmt, dup);
+	vprintf(fmt, args);
 	printf("\n");
-	va_end(dup);
 #endif
 	va_end(args);
 }
