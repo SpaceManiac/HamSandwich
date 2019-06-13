@@ -10,7 +10,7 @@
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1600)
 #include <sal.h>
-#define SDL_PRINTF_FORMAT_STRING _Printf_format_string_
+#define PRINTF_FMT _Printf_format_string_
 #else  // _MSC_VER
 #define PRINTF_FMT
 #endif  // _MSC_VER
