@@ -43,7 +43,7 @@ for:
         only:
             - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
     install:
-        - sh: sudo apt-get update
+        - sh: env DEBIAN_FRONTEND=noninteractive sudo apt-get update
         - sh: ./tools/build/install-deps.sh
     build_script:
         - sh: make
