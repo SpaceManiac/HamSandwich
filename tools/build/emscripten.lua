@@ -33,9 +33,9 @@ emcc = table.merge(clang, {
 	-- emcc-specific flags to activate those ports.
 	ports = {
 		SDL2main = {},  -- No flags, but don't link it.
-		SDL2 = { "-s", "USE_SDL=2" },
-		SDL2_mixer = { "-s", "USE_SDL_MIXER=2" },
-		SDL2_image = { "-s", "USE_SDL_IMAGE=2" },
+		SDL2 = { "-s USE_SDL=2" },
+		SDL2_mixer = { "-s USE_SDL_MIXER=2" },
+		SDL2_image = { "-s USE_SDL_IMAGE=2" },
 	},
 
 	getports = function(cfg)
@@ -61,7 +61,12 @@ emcc = table.merge(clang, {
 	end,
 
 	getldflags = function(cfg)
-		return table.join(clang.getldflags(cfg), emcc.getports(cfg))
+		-- Emscripten requires -g to also be passed to the link command.
+		local ldflags = table.join(clang.getldflags(cfg), emcc.getports(cfg))
+		if cfg.symbols == "On" then
+			table.insert(ldflags, "-g")
+		end
+		return ldflags
 	end,
 
 	-- Those "links" entries which are replaced by ports should not be
