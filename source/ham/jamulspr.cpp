@@ -1,6 +1,7 @@
 #include "jamulspr.h"
 #include "mgldraw.h"
 #include "appdata.h"
+#include "log.h"
 
 // the sprites are 12 bytes, not including the data itself
 #define SPRITE_INFO_SIZE 16
@@ -942,8 +943,10 @@ bool sprite_set_t::Load(const char *fname)
 		Free();
 
 	SDL_RWops *f=AssetOpen_SDL(fname,"rb");
-	if(!f)
+	if(!f) {
+		LogError("%s: %s", fname, SDL_GetError());
 		return false;
+	}
 	// read the count
 	SDL_RWread(f, &count, 2, 1);
 
