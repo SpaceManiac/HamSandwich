@@ -82,8 +82,6 @@ end
 
 function sdl2_project(name)
 	base_project(name)
-		filter "toolset:emcc"
-			targetextension ".js"
 		filter { "system:Windows", "not action:vs*" }
 			links "mingw32"
 		filter "system:Windows"

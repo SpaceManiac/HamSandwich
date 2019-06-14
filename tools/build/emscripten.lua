@@ -5,6 +5,14 @@ local p = premake
 local clang = p.tools.clang
 local emcc
 
+-- Global filters.
+filter { "toolset:emcc", "kind:WindowedApp or ConsoleApp" }
+	-- Without an extension, emcc produces only bytecode. We want the WASM and
+	-- JavaScript output. If this is ".html", emcc will also produce a generic
+	-- template HTML page, but we want to use our own HTML page instead.
+	targetextension ".js"
+filter {}
+
 -- Add emcc to the list of allowed tools.
 table.insert(p.option.get("cc").allowed, { "emcc", "Emscripten (emcc/em++)" })
 
