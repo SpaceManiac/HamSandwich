@@ -51,6 +51,9 @@ while [ $# -ne 0 ]; do
 		"--clang")
 			TOOLSET=clang
 			;;
+		"--web")
+			TOOLSET=emcc
+			;;
 		"--two")
 			TWO=ON
 			;;
@@ -103,6 +106,9 @@ elif [ "$TOOL" = "valgrind" ]; then
 elif [ "$TOOL" = "callgrind" ]; then
 	echo "==== Callgrinding $PROJECT ($CONFIG) ===="
 	valgrind --tool=callgrind "$EXE" $ARGS
+elif [ "$TOOLSET" = "emcc" ]; then
+	echo "==== Hosting $PROJECT ($CONFIG) ===="
+	emrun "$EXE.html"
 else
 	echo "==== Running $PROJECT ($CONFIG) ===="
 	if [ "$TWO" ]; then

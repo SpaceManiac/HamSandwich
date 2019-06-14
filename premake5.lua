@@ -66,6 +66,12 @@ function base_project(name)
 			defines { "SDL_UNPREFIXED" }
 			buildoptions { "-fsigned-char", "-fexceptions" }
 
+		filter { "toolset:emcc", "configurations:debug" }
+			linkoptions { "--emrun" }
+
+		filter { "toolset:emcc" }
+			linkoptions { "-s ALLOW_MEMORY_GROWTH=1" }
+
 		filter {}
 end
 
