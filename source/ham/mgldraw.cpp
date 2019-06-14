@@ -18,6 +18,10 @@
 	#endif  // _WIN32
 #endif
 
+#ifdef __EMSCRIPTEN__
+	#include <emscripten.h>
+#endif  // _EMSCRIPTEN__
+
 void SoundSystemExists();
 void ControlKeyDown(byte scancode);
 void ControlKeyUp(byte scancode);
@@ -63,7 +67,11 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	if(JamulSoundInit(512))
 		SoundSystemExists();
 
+#ifdef __EMSCRIPTEN__
+	Uint32 flags = 0;
+#else  // __EMSCRIPTEN__
 	Uint32 flags = windowed ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP;
+#endif  // __EMSCRIPTEN__
 	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, xRes, yRes, flags);
 	if (!window) {
 		LogError("SDL_CreateWindow: %s", SDL_GetError());
