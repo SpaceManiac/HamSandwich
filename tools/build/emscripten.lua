@@ -83,3 +83,41 @@ emcc = table.merge(clang, {
 })
 
 p.tools.emcc = emcc
+
+emscripten = {}
+
+-- Helper function for creating a packfile target.
+-- This is probably the wrong way to do this.
+function emscripten.assetdir(dir)
+	local data = "%{cfg.targetdir}/%{prj.name}.data"
+	local datajs = "%{cfg.objdir}/%{prj.name}.data.js"
+
+	local build_command = ""
+	local lddeps = ""
+	local inputs = {}
+
+	build_command = "python3"
+		.. " $(EMSDK)/fastcomp/emscripten/tools/file_packager.py"
+		.. " " .. data
+		.. " --js-output=" .. datajs
+		.. " --no-heap-copy"
+		.. " --from-emcc"  -- Hack to disable "Remember to..." output
+		--.. " --use-preload-plugins"
+		.. " --preload"  -- List of paths follows
+		.. " '../" .. dir .. "@'"
+
+	makesettings("LDDEPS += ../" .. dir)
+
+	filter "toolset:emcc"
+		prelinkmessage "Packing assets..."
+		prelinkcommands {
+			"$(SILENT) " .. build_command
+		}
+
+		linkoptions {
+			"--pre-js " .. datajs,
+			"-s FORCE_FILESYSTEM=1",
+		}
+
+	filter {}
+end
