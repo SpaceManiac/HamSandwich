@@ -24,6 +24,8 @@ class SoftJoystick {
 
 	std::map<SDL_FingerID, byte> fingerHeld;
 
+	void recalculate_state();
+
 public:
 	SoftJoystick(MGLDraw* mgl);
 	~SoftJoystick();

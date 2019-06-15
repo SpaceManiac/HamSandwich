@@ -134,7 +134,7 @@ void SoftJoystick::handle_event(MGLDraw *mgl, const SDL_Event& e) {
 
 			byte last = fingerHeld[e.tfinger.fingerId];
 			fingerHeld[e.tfinger.fingerId] = curState;
-			state = (state & ~last) | curState;
+			recalculate_state();
 			taps |= (curState & ~last);
 		}
 	}
@@ -142,8 +142,15 @@ void SoftJoystick::handle_event(MGLDraw *mgl, const SDL_Event& e) {
 	if (e.type == SDL_FINGERUP) {
 		auto iter = fingerHeld.find(e.tfinger.fingerId);
 		if (iter != fingerHeld.end()) {
-			state &= ~iter->second;
 			fingerHeld.erase(iter);
+			recalculate_state();
 		}
+	}
+}
+
+void SoftJoystick::recalculate_state() {
+	state = 0;
+	for (const auto& pair : fingerHeld) {
+		state |= pair.second;
 	}
 }
