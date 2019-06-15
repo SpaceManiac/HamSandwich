@@ -78,7 +78,7 @@ deps_msys2() {
 }
 
 deps_ubuntu() {
-	packages 'sudo apt-get install --yes' \
+	packages 'sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes' \
 		p7zip innoextract \
 		g++-multilib \
 		libsdl2-dev:i386 libsdl2-mixer-dev:i386 libsdl2-image-dev:i386 \
