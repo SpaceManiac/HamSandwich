@@ -53,17 +53,17 @@ SoftJoystick::~SoftJoystick() {
 void SoftJoystick::update(MGLDraw* mgl, float scale) {
 	int spare = (int)(mgl->winWidth - mgl->xRes * scale) / 2;
 	int right = mgl->winWidth - spare;
-	trough.rect = { 0, mgl->winHeight - 3 * spare, 3 * spare, 3 * spare };
-	stick.rect = { 0, mgl->winHeight - 3 * spare, 3 * spare, 3 * spare };
+	trough.rect = { 0, 0, 3 * spare, 3 * spare };
+	stick.rect = { 0, 0, 3 * spare, 3 * spare };
 	if (state & CONTROL_UP) stick.rect.y -= spare;
 	if (state & CONTROL_DN) stick.rect.y += spare;
 	if (state & CONTROL_LF) stick.rect.x -= spare;
 	if (state & CONTROL_RT) stick.rect.x += spare;
 
-	esc.rect = { right, 0, spare, spare };
-	keyboard.rect = { right, spare, spare, spare };
+	esc.rect = { right, mgl->winHeight - spare, spare, spare };
+	keyboard.rect = { right, mgl->winHeight - 2 * spare, spare, spare };
 	for (int i = 0; i < numButtons; ++i) {
-		button[i].rect = { right, mgl->winHeight - (i + 1) * spare, spare, spare };
+		button[i].rect = { right, i * spare, spare, spare };
 	}
 }
 
