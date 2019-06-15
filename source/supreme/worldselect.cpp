@@ -259,6 +259,7 @@ void ScanWorlds(void)
 
 	done=0;
 
+	dword start = timeGetTime();
 	for (const char* name : filterdir("worlds", ".dlw", 32))
 	{
 		// rule out the backup worlds, so they don't show up
@@ -268,10 +269,14 @@ void ScanWorlds(void)
 		{
 			InputWorld(name);
 			done++;
-#ifndef WTG
-			GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450,32*1+16);
-			GetDisplayMGL()->Flip();
-#endif
+
+			dword now = timeGetTime();
+			if (now - start > 50)  // 50 ms = 20 fps
+			{
+				start = now;
+				GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450,32*1+16);
+				GetDisplayMGL()->Flip();
+			}
 		}
 	}
 #ifdef LEVELLIST
