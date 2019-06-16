@@ -515,6 +515,15 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			}
 		}
 
+		byte scan = LastScanCode();
+		if (scan == SDL_SCANCODE_PAGEUP) {
+			listPos = std::max(listPos - WORLDS_PER_SCREEN, 0);
+			CalcScrollBar();
+		} else if (scan == SDL_SCANCODE_PAGEDOWN) {
+			listPos = std::min(listPos + WORLDS_PER_SCREEN, numWorlds - WORLDS_PER_SCREEN);
+			CalcScrollBar();
+		}
+
 		int mv=mouseZ-mgl->mouse_z;
 		mouseZ=mgl->mouse_z;
 		if(mv<0)
