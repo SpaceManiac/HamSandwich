@@ -20,6 +20,7 @@ void ExitFileDialog(void);
 void RenderFileDialog(int msx,int msy,MGLDraw *mgl);
 byte FileDialogKey(char key);
 byte FileDialogClick(int msx,int msy);
+void FileDialogScroll(int msz);
 
 const char *GetFilename(const char *header);
 byte FileDialogCommand(void);

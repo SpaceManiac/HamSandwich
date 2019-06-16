@@ -22,7 +22,7 @@ static MGLDraw *editmgl;
 static world_t	world;
 static Map		*editorMap;
 static byte		curMapNum;
-static int	   mouseX,mouseY;
+static int	   mouseX,mouseY,mouseZ;
 static int	   tileX,tileY;
 static int	rectX1,rectX2,rectY1,rectY2;
 static int  pickerWid,pickerHei;
@@ -60,6 +60,7 @@ byte InitEditor(void)
 
 	mouseX=320;
 	mouseY=240;
+	mouseZ = editmgl->mouse_z;
 	PutCamera(0,0);
 	gameStartTime=timeGetTime();
 	InitGuys(256);
@@ -253,6 +254,9 @@ void UpdateMouse(void)
 	else
 		tileY=tileY/TILE_HEIGHT;
 
+	int scroll = editmgl->mouse_z - mouseZ;
+	mouseZ = editmgl->mouse_z;
+
 	if(mouseX==0)
 	{
 		cx-=8;
@@ -320,6 +324,8 @@ void UpdateMouse(void)
 		case EDITMODE_FILE:
 			if(editmgl->MouseTap())
 				FileDialogClick(mouseX,mouseY);
+			if(scroll)
+				FileDialogScroll(scroll);
 			switch(FileDialogCommand())
 			{
 				case FM_NEW:
