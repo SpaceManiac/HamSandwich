@@ -4,6 +4,7 @@
 #include "viewdialog.h"
 #include "lsdir.h"
 #include <string.h>
+#include <algorithm>
 
 #define MAX_FILES 18
 #define FILE_ALLOC_AMT	64
@@ -110,6 +111,18 @@ void ExitFileDialog(void)
 	if(menuItems&FM_PLAYSONGS)
 		ReturnToSong();
 	fnames=NULL;
+}
+
+void FileDialogScroll(int msz)
+{
+	if (msz > 0)
+	{
+		filePos = std::max(filePos - msz, 0);
+	}
+	else if (msz < 0)
+	{
+		filePos = std::min(filePos - msz, numFiles - 1);
+	}
 }
 
 void RenderFileDialog(int msx,int msy,MGLDraw *mgl)
