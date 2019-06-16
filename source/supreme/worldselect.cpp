@@ -8,6 +8,7 @@
 #include "shop.h"
 #include "hiscore.h"
 #include "lsdir.h"
+#include <algorithm>
 
 #define WS_CONTINUE	0
 #define WS_EXIT		1
