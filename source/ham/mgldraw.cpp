@@ -276,6 +276,8 @@ void MGLDraw::FinishFlip(void)
 				mouse_b |= flag;
 			else
 				mouse_b &= ~flag;
+		} else if (e.type == SDL_MOUSEWHEEL) {
+			mouse_z += e.wheel.y;
 		} else if (e.type == SDL_QUIT) {
 			readyToQuit = 1;
 		} else if (e.type == SDL_WINDOWEVENT) {
