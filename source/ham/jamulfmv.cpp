@@ -376,6 +376,9 @@ byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack
 	fliWidth = FLI_hdr.width;
 	fliHeight = FLI_hdr.height;
 
+	int oldWidth = mgl->GetWidth(), oldHeight = mgl->GetHeight();
+	mgl->ResizeBuffer(fliWidth, fliHeight);
+
 	// At this offset in the header is the offset of the first "real" frame.
 	// In older FLCs (everything except LL2's ending.flc), there is a dummy
 	// frame between the header and this location that must be skipped.
@@ -423,6 +426,9 @@ byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack
 			endTime=timeGetTime();
 		}
 	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27));
+
 	SDL_RWclose(FLI_file);
+	mgl->ResizeBuffer(oldWidth, oldHeight);
+
 	return k != 27;
 }

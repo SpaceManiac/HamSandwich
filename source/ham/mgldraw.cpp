@@ -221,6 +221,25 @@ inline void MGLDraw::StartFlip(void)
 {
 }
 
+void MGLDraw::ResizeBuffer(int w, int h)
+{
+	SDL_DestroyTexture(texture);
+	delete[] buffer;
+	delete[] scrn;
+
+	xRes = pitch = w;
+	yRes = h;
+
+	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, xRes, yRes);
+	if (!texture) {
+		LogError("SDL_CreateTexture: %s", SDL_GetError());
+		FatalError("Failed to create texture");
+		return;
+	}
+	scrn = new byte[xRes * yRes];
+	buffer = new RGB[xRes * yRes];
+}
+
 void MGLDraw::FinishFlip(void)
 {
 	SDL_UpdateTexture(texture, NULL, buffer, pitch * sizeof(RGB));
