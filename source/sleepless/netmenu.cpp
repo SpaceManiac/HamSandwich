@@ -398,11 +398,6 @@ byte UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 				if(strlen(entry)<62)
 				{
 					entry[strlen(entry)+1]='\0';
-					if(ShiftState())
-					{
-						if(k>='a' && k<='z')
-							k+='A'-'a';
-					}
 					entry[strlen(entry)]=k;
 					MakeNormalSound(SND_MENUCLICK);
 				}

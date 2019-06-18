@@ -35,8 +35,4 @@ dword GetJoyButtons();
 void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys);
 void SetJoystickBindings(int nbuttons, const byte* buttons);
 
-// TODO: eliminate this, it's only used in text menus where capital letters
-// are already being generated.
-byte ShiftState();
-
 #endif  // HAMCONTROL_H

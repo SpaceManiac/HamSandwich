@@ -10,8 +10,6 @@ static byte lastScanCode;
 static byte keyState, keyTap;
 // fixed arrow keys and return controls
 static byte arrowState, arrowTap;
-// 1=lshift, 2=rshift
-static byte shiftState;
 
 // joysticks
 static std::vector<SDL_Joystick*> joysticks;
@@ -34,7 +32,6 @@ void InitControls(void)
 	keyTap=0;
 	arrowState=0;
 	arrowTap=0;
-	shiftState=0;
 	oldJoy=0;
 
 	for (int i = 0; i < SDL_NumJoysticks(); ++i) {
@@ -106,10 +103,6 @@ void SetJoystickBindings(int nbuttons, const byte* buttons) {
 	memcpy(joyBtn, buttons, std::min(nbuttons, NUM_JOYBTNS));
 }
 
-byte ShiftState() {
-	return shiftState;
-}
-
 // Called upon SDL events
 void ControlKeyDown(byte k)
 {
@@ -154,13 +147,6 @@ void ControlKeyDown(byte k)
 			arrowState |= CONTROL_B1;
 			arrowTap |= CONTROL_B1;
 			break;
-		// track shift keys being held
-		case SDL_SCANCODE_LSHIFT:
-			shiftState |= 1;
-			break;
-		case SDL_SCANCODE_RSHIFT:
-			shiftState |= 2;
-			break;
 	}
 }
 
@@ -198,13 +184,6 @@ void ControlKeyUp(byte k)
 			break;
 		case SDL_SCANCODE_RETURN:
 			arrowState &= ~CONTROL_B1;
-			break;
-		// track shift keys being held
-		case SDL_SCANCODE_LSHIFT:
-			shiftState &= ~1;
-			break;
-		case SDL_SCANCODE_RSHIFT:
-			shiftState &= ~2;
 			break;
 	}
 }

@@ -141,11 +141,6 @@ byte UpdateLedger(int *lastTime,MGLDraw *mgl)
 		if(strlen(entry)<31)
 		{
 			entry[strlen(entry)+1]='\0';
-			if(ShiftState())
-			{
-				if(c>='a' && c<='z')
-					c+='A'-'a';
-			}
 			entry[strlen(entry)]=c;
 			MakeNormalSound(SND_MENUCLICK);
 		}
