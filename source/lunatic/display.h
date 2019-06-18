@@ -84,7 +84,6 @@ void RoofDraw(int x, int y, byte roof, Map* map, word flags);
 void ParticleDraw(int x, int y, int z, byte type, byte size, word flags);
 void LightningDraw(int x, int y, int x2, int y2, byte bright, char range);
 
-void MakeItFlip(void);
 void DrawBox(int x, int y, int x2, int y2, byte c);
 void DrawFillBox(int x, int y, int x2, int y2, byte c);
 void DrawDebugBox(int x, int y, int x2, int y2);
