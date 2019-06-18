@@ -418,7 +418,10 @@ byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack
 
 		endTime=timeGetTime();
 		while((endTime-startTime)<wait)
+		{
+			SDL_Delay((startTime + wait - endTime) / 2);
 			endTime=timeGetTime();
+		}
 	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27));
 	SDL_RWclose(FLI_file);
 	return k != 27;
