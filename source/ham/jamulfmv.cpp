@@ -17,13 +17,13 @@
 struct fliheader
 {
 	long size;
-	word magic;
+	word magic;  // FLC=0xAF12 (FLI=0xAF11, but no games use this)
 	word frames;
 	word width,height;
-	word flags;
-	word speed;
-	long next,frit;
-	byte expand[104];
+	word depth;  // ignored, they're all 8-bit
+	word flags;  // ignored, always 3, whatever that means
+	word speed;  // milliseconds per frame
+	long next,frit;  // meaning unknown
 };
 
 struct frmheader
@@ -337,35 +337,28 @@ static void FLI_nextchunk(MGLDraw *mgl,int scrWidth)
 
 static void FLI_nextfr(MGLDraw *mgl,int scrWidth)
 {
-	frmheader fhead;
-	int i;
+	long start = SDL_RWtell(FLI_file);
 
+	frmheader fhead;
 	SDL_RWread(FLI_file,&fhead,1,sizeof(frmheader));
 
 	// check to see if this is a FLC file's special frame... if it is, skip it
-	if(fhead.magic==0x00A1)
+	if (fhead.magic == 0xF1FA)
 	{
-		SDL_RWseek(FLI_file,fhead.size,RW_SEEK_CUR);
-		return;
+		for(int i=0; i < fhead.chunks; i++)
+			FLI_nextchunk(mgl, scrWidth);
 	}
+	// Other possible value of "magic" is 0x00A1, indicating the FLC file's
+	// special frame, but we already skip over that with the seek in FLI_play.
 
-	for(i=0;i<fhead.chunks;i++)
-		FLI_nextchunk(mgl,scrWidth);
-}
-
-static void FLI_skipfr(void)
-{
-	frmheader fhead;
-
-	SDL_RWread(FLI_file,&fhead,1,sizeof(frmheader));
-
-	SDL_RWseek(FLI_file,fhead.size-sizeof(frmheader),RW_SEEK_CUR);
+	// Some movies (TWOLCREDITS.flc) have padding at the end of the frame,
+	// after its chunks, so it needs to be skipped.
+	SDL_RWseek(FLI_file, start + fhead.size, RW_SEEK_SET);
 }
 
 byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack callback)
 {
 	int frmon=0;
-	long frsize;
 	fliheader FLI_hdr;
 	int scrWidth;
 	char k;
@@ -374,25 +367,36 @@ byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack
 	FLI_file=AssetOpen_SDL(name,"rb");
 	if (!FLI_file)
 	{
-		perror(name);
+		printf("%s: %s\n", name, SDL_GetError());
 		return 0;
 	}
-	SDL_RWread(FLI_file, &FLI_hdr,1,sizeof(fliheader));
-	SDL_RWread(FLI_file, &frsize,1,4);
-	SDL_RWseek(FLI_file, -4, RW_SEEK_CUR);
-	fliWidth=FLI_hdr.width;
-	fliHeight=FLI_hdr.height;
+
+	// Read the main part of the header.
+	SDL_RWread(FLI_file, &FLI_hdr, 1, sizeof(fliheader));
+	fliWidth = FLI_hdr.width;
+	fliHeight = FLI_hdr.height;
+
+	// At this offset in the header is the offset of the first "real" frame.
+	// In older FLCs (everything except LL2's ending.flc), there is a dummy
+	// frame between the header and this location that must be skipped.
+	long ofs1;
+	SDL_RWseek(FLI_file, 80, RW_SEEK_SET);
+	SDL_RWread(FLI_file, &ofs1, 4, 1);
+	// There is also the offset of the second frame following this, but all
+	// released movies have it at its expected location.
+
+	// Seek to the end of the header, 128 bytes including padding.
+	SDL_RWseek(FLI_file, 128, RW_SEEK_SET);
+
+	// "wait" can be overridden, but defaults to the value from the file.
+	if (!wait)
+		wait = FLI_hdr.speed;
 
 	mgl->LastKeyPressed();	// clear key buffer
 
 	// if this is a FLC, skip the first frame
-	if((name[strlen(name)-1]=='c')||
-			(name[strlen(name)-1]=='C'))
-	{
-		FLI_skipfr();
-		frmon++;
-		FLI_hdr.frames++;	// a confusion issue
-	}
+	SDL_RWseek(FLI_file, ofs1, RW_SEEK_SET);
+
 	do
 	{
 		startTime=timeGetTime();
@@ -405,7 +409,7 @@ byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack
 		if((loop)&&(frmon==FLI_hdr.frames+1))
 		{
 			frmon=1;
-			SDL_RWseek(FLI_file, 128 + frsize, RW_SEEK_SET);
+			SDL_RWseek(FLI_file, ofs1, RW_SEEK_SET);
 		}
 		if((!loop)&&(frmon==FLI_hdr.frames))
 			frmon=FLI_hdr.frames+1;
@@ -418,18 +422,4 @@ byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack
 	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27));
 	SDL_RWclose(FLI_file);
 	return k != 27;
-}
-
-word FLI_numFrames(char *name)
-{
-	fliheader FLI_hdr;
-
-	SDL_RWops *f=AssetOpen_SDL(name,"rb");
-	SDL_RWread(f, &FLI_hdr,1,sizeof(fliheader));
-	SDL_RWclose(f);
-	if((name[strlen(name)-1]=='c')||
-			(name[strlen(name)-1]=='C'))
-		return FLI_hdr.frames;
-	else
-		return FLI_hdr.frames;
 }
