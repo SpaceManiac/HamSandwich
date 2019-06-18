@@ -135,7 +135,7 @@ end
 
 library "ham"
 	filter "toolset:gcc"
-		buildoptions { "-Wall", "-Wextra", "-Wno-char-subscripts" }
+		buildoptions { "-Wall", "-Wextra" }
 
 sdl2_project "lunatic"
 	android_appname "Dr. Lunatic"
