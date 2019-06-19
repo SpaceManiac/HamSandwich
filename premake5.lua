@@ -66,6 +66,10 @@ function base_project(name)
 		filter { "toolset:emcc" }
 			linkoptions { "-s ALLOW_MEMORY_GROWTH=1", "--use-preload-cache" }
 
+			-- coroutine support
+			defines { "USE_COROUTINES" }
+			buildoptions { "-fcoroutines-ts" }
+
 		filter {}
 end
 
