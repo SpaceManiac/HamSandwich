@@ -25,6 +25,8 @@ const char* AppdataFolderName()
 	return "KidMystic";
 }
 
+TASK(void) main_task(MGLDraw *mainmgl);
+
 int main(int argc, char* argv[])
 {
 #ifdef DEMO
@@ -50,13 +52,14 @@ int main(int argc, char* argv[])
 TASK(void) main_task(MGLDraw *mainmgl)
 {
 	AWAIT SplashScreen(mainmgl,"graphics/intro1.bmp",128,SND_INTRO1,0);
-	CO_RETURN;
 
 #ifdef DEMO
 #elif VALUE
 #else
-	ShowVictoryAnim(11);
+	AWAIT ShowVictoryAnim(11);
 #endif
+
+	CO_RETURN;
 	//NewComputerSpriteFix("graphics\\items.jsp");
 	while(1)
 	{
@@ -75,7 +78,7 @@ TASK(void) main_task(MGLDraw *mainmgl)
 				if(n==0)	// chose to buy
 					ShellExecute(NULL,"open","http://hamumu.com/store.php?game=MYSTIC&src=demoexit","","",SW_SHOWNORMAL);
 #endif
-				return 0;
+				CO_RETURN;
 				break;
 			case 0:	// new game
 #ifdef DEMO
@@ -90,7 +93,7 @@ TASK(void) main_task(MGLDraw *mainmgl)
 						LunaticExit();
 						delete mainmgl;
 						ShellExecute(NULL,"open","http://hamumu.com/store.php?game=MYSTIC&src=demowin","","",SW_SHOWNORMAL);
-						return 0;
+						CO_RETURN;
 					}
 				}
 #else
@@ -110,7 +113,7 @@ TASK(void) main_task(MGLDraw *mainmgl)
 						LunaticExit();
 						delete mainmgl;
 						ShellExecute(NULL,"open","http://hamumu.com/store.php?game=MYSTIC&src=demowin","","",SW_SHOWNORMAL);
-						return 0;
+						CO_RETURN;
 					}
 				}
 #else

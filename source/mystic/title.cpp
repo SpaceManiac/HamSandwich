@@ -539,7 +539,7 @@ void CreditsRender(int y,byte mode)
 	}
 }
 
-void Credits(MGLDraw *mgl,byte mode)
+TASK(void) Credits(MGLDraw *mgl,byte mode)
 {
 	int y=-470;
 	static byte flip=0;
@@ -561,13 +561,13 @@ void Credits(MGLDraw *mgl,byte mode)
 		if(y==END_OF_CREDITS-320 && mode==1)
 			scroll=0;
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
-			return;
+			CO_RETURN;
 		if(mgl->LastKeyPressed())
-			return;
+			CO_RETURN;
 		if(y==END_OF_CREDITS-320 && mode==0)
-			return;
+			CO_RETURN;
 
 		JamulSoundUpdate();
 
@@ -627,7 +627,7 @@ void VictoryTextRender(int y,byte type)
 	}
 }
 
-void VictoryText(MGLDraw *mgl,byte victoryType)
+TASK(void) VictoryText(MGLDraw *mgl,byte victoryType)
 {
 	int y=-470;
 	int darkY,i,j,k;
@@ -638,7 +638,7 @@ void VictoryText(MGLDraw *mgl,byte victoryType)
 
 	scr=(byte *)malloc(640*480);
 	if(!scr)
-		return;
+		CO_RETURN;
 
 	switch(victoryType)
 	{
@@ -666,7 +666,7 @@ void VictoryText(MGLDraw *mgl,byte victoryType)
 		VictoryTextRender(y,victoryType);
 		if((flip=1-flip) || victoryType==1 || victoryType==2)
 			y++;
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 			break;
 		if(mgl->LastKeyPressed()==27)

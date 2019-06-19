@@ -75,66 +75,66 @@ void ExitDisplay(void)
 	delete dispList;
 }
 
-void ShowVictoryAnim(byte world)
+TASK(void) ShowVictoryAnim(byte world)
 {
 	dword start,end;
 
 	start=timeGetTime();
 	mgl->ClearScreen();
-	mgl->Flip();
+	AWAIT mgl->Flip();
 	switch(world)
 	{
 		case 0:
 			PlaySong(SONG_CHAP12MAP);
-			FLI_play("graphics/CH1.FLC",0,60,mgl);
+			AWAIT FLI_play("graphics/CH1.FLC",0,60,mgl);
 			break;
 		case 1:
 			PlaySong(SONG_CHAP12MAP);
-			FLI_play("graphics/CH2.FLC",0,60,mgl);
+			AWAIT FLI_play("graphics/CH2.FLC",0,60,mgl);
 			break;
 		case 2:
 			PlaySong(SONG_CHAP34MAP);
-			FLI_play("graphics/CH3.FLC",0,60,mgl);
+			AWAIT FLI_play("graphics/CH3.FLC",0,60,mgl);
 			break;
 		case 3:
 			PlaySong(SONG_CHAP34MAP);
-			FLI_play("graphics/CH4.FLC",0,60,mgl);
+			AWAIT FLI_play("graphics/CH4.FLC",0,60,mgl);
 			break;
 		case 4:
 			// the final victory!
 			PlaySong(SONG_BEATNIK);
-			FLI_play("graphics/ENDING.FLC",0,100,mgl);
+			AWAIT FLI_play("graphics/ENDING.FLC",0,100,mgl);
 			if(player.nightmare)
-				VictoryText(mgl,1);
+				AWAIT VictoryText(mgl,1);
 			else
 			{
-				VictoryText(mgl,0);
-				Credits(mgl,1);
+				AWAIT VictoryText(mgl,0);
+				AWAIT Credits(mgl,1);
 			}
 			break;
 		case 5:
 			// winning the demo
 			PlaySong(SONG_SHOP);
-			VictoryText(mgl,2);
+			AWAIT VictoryText(mgl,2);
 			break;
 		case 10:
 			StopSong();
 			MakeNormalSound(SND_ARMAGEDDON);
-			FLI_play("graphics/SWORD.FLC",0,60,mgl);
+			AWAIT FLI_play("graphics/SWORD.FLC",0,60,mgl);
 			ReplaySong();
 			break;
 		case 11:
 			//PlaySong(SONG_INTRO);
 			StopSong();
 			MakeNormalSound(SONG_INTRO);
-			FLI_play("graphics/Intro.flc",0,60,mgl);
+			AWAIT FLI_play("graphics/Intro.flc",0,60,mgl);
 			JamulSoundStop(SONG_INTRO);
 			if (CurrentSong())
 				ReplaySong();
 			break;
 	}
 	mgl->ClearScreen();
-	mgl->Flip();
+	AWAIT mgl->Flip();
 	mgl->LoadBMP("graphics/pal.bmp");
 
 	end=timeGetTime();

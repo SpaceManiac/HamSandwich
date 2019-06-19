@@ -107,7 +107,7 @@ void em_main_loop() {
 
 void launch(std::function<task<void>()> entry_point) {
 	entry_point();
-	emscripten_set_main_loop(em_main_loop, 10, 1);
+	emscripten_set_main_loop(em_main_loop, 0, 1);
 }
 
 #else  // __EMSCRIPTEN__
