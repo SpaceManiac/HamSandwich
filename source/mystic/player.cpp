@@ -395,7 +395,7 @@ byte KeyChainAllCheck(void)
 		player.staff=4;	// max out the staff, so you can't buy new staves
 		player.spell[9]=1;
 		NewBigMessage("The sword is complete!",30);
-		ShowVictoryAnim(10);
+		SendMessageToGame(MSG_SHOWANIM, 10);
 		SetKidSprite(1);
 		return 1;
 	}
@@ -846,7 +846,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 			if(player.worldNum<4)
 			{
 				player.lunacyKey[player.worldNum]=1;
-				ShowVictoryAnim(player.worldNum);
+				//ShowVictoryAnim(player.worldNum);
 			}
 			SendMessageToGame(MSG_WINLEVEL,1);	// win upon getting the key
 			return 0;

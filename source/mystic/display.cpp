@@ -533,7 +533,7 @@ void DrawDebugBox(int x,int y,int x2,int y2)
 	x2-=scrx-320;
 	y2-=scry-240;
 	mgl->Box(x,y,x2,y2,255);
-	mgl->Flip();
+	//mgl->Flip();
 }
 
 void DrawFillBox(int x,int y,int x2,int y2,byte c)

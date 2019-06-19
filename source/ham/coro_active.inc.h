@@ -149,6 +149,6 @@ struct std::experimental::coroutine_traits<coro::task<Result>, Arg...> {
 	typedef coro::promise<Result> promise_type;
 };
 
-#define TASK(TY) ::coro::task<TY>
+#define TASK(TY) __attribute__((warn_unused_result)) ::coro::task<TY>
 #define AWAIT co_await
 #define CO_RETURN co_return

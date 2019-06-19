@@ -16,6 +16,6 @@ extern option_t opt;
 
 void InitOptions(void);
 void ExitOptions(void);
-void OptionsMenu(MGLDraw *mgl);
+TASK(void) OptionsMenu(MGLDraw *mgl);
 
 #endif

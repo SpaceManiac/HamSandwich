@@ -2886,7 +2886,6 @@ void AI_TheThing(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			me->y+=((1-MGL_random(3))<<FIXSHIFT);
 			if(me->frm==14 && me->frmTimer<32)
 			{
-				ShowVictoryAnim(0);	// you killed the final boss
 				SendMessageToGame(MSG_WINGAME,0);
 			}
 		}

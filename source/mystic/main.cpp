@@ -59,18 +59,17 @@ TASK(void) main_task(MGLDraw *mainmgl)
 	AWAIT ShowVictoryAnim(11);
 #endif
 
-	CO_RETURN;
 	//NewComputerSpriteFix("graphics\\items.jsp");
 	while(1)
 	{
-		switch(MainMenu(mainmgl))
+		switch(AWAIT MainMenu(mainmgl))
 		{
 			case 255:	// quit
 #ifdef DEMO
 				n=Nag(mainmgl);
 #endif
 				mainmgl->ClearScreen();
-				mainmgl->Flip();
+				AWAIT mainmgl->Flip();
 				mainmgl->ClearScreen();
 				LunaticExit();
 				delete mainmgl;
@@ -97,7 +96,7 @@ TASK(void) main_task(MGLDraw *mainmgl)
 					}
 				}
 #else
-				LunaticGame(mainmgl,0);
+				AWAIT LunaticGame(mainmgl,0);
 #endif
 				break;
 			case 1:	// continue
@@ -117,20 +116,20 @@ TASK(void) main_task(MGLDraw *mainmgl)
 					}
 				}
 #else
-				LunaticGame(mainmgl,1);
+				AWAIT LunaticGame(mainmgl,1);
 #endif
 				break;
 			case 2:	// challenge
 #ifndef DEMO
-				ChallengeMenu(mainmgl);
+				AWAIT ChallengeMenu(mainmgl);
 #endif
 				break;
 			case 3:	// options
-				OptionsMenu(mainmgl);
+				AWAIT OptionsMenu(mainmgl);
 				break;
 			case 5:	// editor
 #ifndef DEMO
-				LunaticEditor(mainmgl);
+				AWAIT LunaticEditor(mainmgl);
 #endif
 				break;
 		}

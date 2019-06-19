@@ -68,7 +68,7 @@ function base_project(name)
 
 			-- coroutine support
 			defines { "USE_COROUTINES" }
-			buildoptions { "-fcoroutines-ts" }
+			buildoptions { "-fcoroutines-ts", "-Werror=unused-result" }
 
 		filter {}
 end
