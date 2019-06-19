@@ -5,6 +5,10 @@
 #include <queue>
 #include <set>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif  // __EMSCRIPTEN__
+
 namespace coro {
 
 struct executor {
@@ -44,16 +48,23 @@ struct executor {
                     }
                     wake_on_done.erase(it);
                 }
-            }
+            } else {
+				// if it isn't put to sleep, it's still awake
+				bool asleep = false;
+				for (const auto& pair : wake_on_done) {
+					if (pair.second.find(current) != pair.second.end()) {
+						asleep = true;
+						break;
+					}
+				}
+				if (!asleep) {
+					printf("    yielded without going to sleep\n");
+					awake.push(current);
+				}
+			}
         }
 
         return !awake_next_frame.empty();
-    }
-
-    void simulate_main_loop() {
-        printf("simulate_main_loop(): enter\n");
-        while (frame()) {}
-        printf("simulate_main_loop(): exit\n");
     }
 
     bool schedule(coroutine_handle<> awaiter, coroutine_handle<> awaitee) {
@@ -81,13 +92,32 @@ struct flip_awaiter {
 };
 
 task<void> next_frame() {
+	printf("next_frame\n");
     co_await flip_awaiter{};
+}
+
+#ifdef __EMSCRIPTEN__
+
+void em_main_loop() {
+	if (!g_executor.frame()) {
+		printf("calling emscripten_cancel_main_loop\n");
+		emscripten_cancel_main_loop();
+	}
 }
 
 void launch(std::function<task<void>()> entry_point) {
     entry_point();
-    g_executor.simulate_main_loop();
+	emscripten_set_main_loop(em_main_loop, 10, 1);
 }
+
+#else  // __EMSCRIPTEN__
+
+void launch(std::function<task<void>()> entry_point) {
+    entry_point();
+	while (g_executor.frame()) {}
+}
+
+#endif  // __EMSCRIPTEN__
 
 bool __schedule(coroutine_handle<> awaiter, coroutine_handle<> awaitee) {
     g_executor.schedule(awaiter, awaitee);

@@ -107,7 +107,7 @@ public:
         return {};
     }
 
-    suspend_never final_suspend() {
+    suspend_always final_suspend() {
         printf("  promise_base::final_suspend()\n");
         return {};
     }
