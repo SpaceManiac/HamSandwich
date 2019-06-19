@@ -22,6 +22,7 @@ now SDL2.
 #endif  // _WIN32
 
 #include "jamultypes.h"
+#include "coro.h"
 
 struct RGB {
 	byte b, g, r, a;
@@ -48,7 +49,7 @@ public:
 	void Quit();
 
 	// Display the buffer to the screen.
-	void Flip();
+	TASK(void) Flip();
 	void WaterFlip(int v);
 	void TeensyFlip();
 	void TeensyWaterFlip(int v);

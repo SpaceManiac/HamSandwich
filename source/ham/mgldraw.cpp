@@ -330,7 +330,7 @@ void MGLDraw::FinishFlip(void)
 	}
 }
 
-void MGLDraw::Flip(void)
+TASK(void) MGLDraw::Flip(void)
 {
 	StartFlip();
 
@@ -343,6 +343,7 @@ void MGLDraw::Flip(void)
 		*target++ = thePal[*src++];
 
 	FinishFlip();
+	AWAIT coro::next_frame();
 }
 
 void MGLDraw::WaterFlip(int v)
