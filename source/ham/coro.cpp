@@ -19,13 +19,13 @@ struct executor {
 	std::map<coroutine_handle<>, std::set<coroutine_handle<>>> wake_on_done;
 
 	bool frame() {
-		printf(" frame: %lu\n", awake_next_frame.size());
+		//printf(" frame: %lu\n", awake_next_frame.size());
 
 		std::queue<coroutine_handle<>> awake;
 
 		// dump awake_next_frame into awake
 		while (!awake_next_frame.empty()) {
-			printf("  timer %p\n", awake_next_frame.front().address());
+			//printf("  timer %p\n", awake_next_frame.front().address());
 			awake.push(awake_next_frame.front());
 			awake_next_frame.pop();
 		}
@@ -33,17 +33,17 @@ struct executor {
 		// while anything is awake, attempt to resume it
 		while (!awake.empty()) {
 			coroutine_handle<> current = awake.front();
-			printf("  resume %p\n", current.address());
+			//printf("  resume %p\n", current.address());
 			awake.pop();
 
 			current.resume();
 			// if resuming it finished it, awake its dependents
 			if (current.done()) {
-				printf("  done\n");
+				//printf("  done\n");
 				auto it = wake_on_done.find(current);
 				if (it != wake_on_done.end()) {
 					for (coroutine_handle<> h : it->second) {
-						printf("    wakes %p\n", h.address());
+						//printf("    wakes %p\n", h.address());
 						awake.push(h);
 					}
 					wake_on_done.erase(it);
@@ -58,7 +58,7 @@ struct executor {
 					}
 				}
 				if (!asleep) {
-					printf("    yielded without going to sleep\n");
+					printf("a task yielded without going to sleep\n");
 					awake.push(current);
 				}
 			}
@@ -68,7 +68,7 @@ struct executor {
 	}
 
 	bool schedule(coroutine_handle<> awaiter, coroutine_handle<> awaitee) {
-		printf("schedule(): %p awaits on %p\n", awaiter.address(), awaitee.address());
+		//printf("schedule(): %p awaits on %p\n", awaiter.address(), awaitee.address());
 		wake_on_done[awaitee].insert(awaiter);
 		return true;  // return control to resume()r
 	}
@@ -77,22 +77,22 @@ struct executor {
 
 struct flip_awaiter {
 	bool await_ready() {
-		printf("  flip_awaiter::await_ready\n");
+		//printf("  flip_awaiter::await_ready\n");
 		return false;
 	}
 
 	void await_suspend(coroutine_handle<> h) {
-		printf("  flip_awaiter::await_suspend(%p)\n", h.address());
+		//printf("  flip_awaiter::await_suspend(%p)\n", h.address());
 		g_executor.awake_next_frame.push(h);
 	}
 
 	void await_resume() {
-		printf("  flip_awaiter::await_resume\n");
+		//printf("  flip_awaiter::await_resume\n");
 	}
 };
 
 task<void> next_frame() {
-	printf("next_frame\n");
+	//printf("next_frame\n");
 	co_await flip_awaiter{};
 }
 
