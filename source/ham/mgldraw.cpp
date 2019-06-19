@@ -52,6 +52,12 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 {
 	_globalMGLDraw = this;
 
+#ifdef __EMSCRIPTEN__
+	// These don't actually do anything under Emscripten, and they log a debug
+	// message "Calling stub instead of sigaction()", so turn them off.
+	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
+#endif
+
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK)) {
 		LogError("SDL_Init(VIDEO|JOYSTICK): %s", SDL_GetError());
 		FatalError("Failed to initialize SDL");
