@@ -43,7 +43,15 @@ int main(int argc, char* argv[])
 		return 0;
 
 	LunaticInit(mainmgl);
-	SplashScreen(mainmgl,"graphics/intro1.bmp",128,SND_INTRO1,0);
+	coro::launch(std::bind(main_task, mainmgl));
+	return 0;
+}
+
+TASK(void) main_task(MGLDraw *mainmgl)
+{
+	AWAIT SplashScreen(mainmgl,"graphics/intro1.bmp",128,SND_INTRO1,0);
+	CO_RETURN;
+
 #ifdef DEMO
 #elif VALUE
 #else

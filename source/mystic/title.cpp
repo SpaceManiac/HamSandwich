@@ -698,7 +698,7 @@ void VictoryText(MGLDraw *mgl,byte victoryType)
 	free(scr);
 }
 
-void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound,byte specialdeal)
+TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound,byte specialdeal)
 {
 	int i,j,clock;
 	RGB desiredpal[256],curpal[256];
@@ -717,7 +717,7 @@ void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound,byte speci
 	mgl->LastKeyPressed();
 
 	if (!mgl->LoadBMP(fname, desiredpal))
-		return;
+		CO_RETURN;
 
 	StartClock();
 	mode=0;
@@ -727,9 +727,9 @@ void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound,byte speci
 	while(!done)
 	{
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
-			return;
+			CO_RETURN;
 		if(mgl->LastKeyPressed())
 			mode=2;
 		EndClock();
@@ -799,5 +799,5 @@ void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound,byte speci
 		}
 	}
 	mgl->ClearScreen();
-	mgl->Flip();
+	AWAIT mgl->Flip();
 }
