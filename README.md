@@ -14,7 +14,8 @@ Windows | MSVC | Secondary | CI: [Appveyor](https://ci.appveyor.com/project/Spac
 Linux | GCC | Secondary | CI: [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
 Windows | Clang | Tertiary | No app icons
 Linux | Clang | Tertiary
-Android | NDK | Tertiary | Incomplete/buggy
+[Android](#Android) | NDK | Tertiary | Incomplete/buggy
+[Browser](#Emscripten) | Emscripten | Tertiary | Incomplete
 
 ### Windows (MinGW)
 
@@ -75,3 +76,26 @@ Compiling and running:
 4. Change directory to `build/android`.
 5. Run `gradle packageDebug` to compile APKs.
 6. Run `gradle installDebug` to install to a connected Android device.
+
+### Emscripten
+
+1. Install the [Emscripten SDK][emsdk] and activate the upstream-LLVM backend:
+    1. `cd` to a convenient directory.
+    2. `git clone https://github.com/emscripten-core/emsdk.git`.
+    3. `cd emsdk`.
+    4. `./emsdk install latest-upstream`.
+    5. `./emsdk activate latest-upstream`.
+    6. `source ./emsdk_env.sh`
+    7. Return to the HamSandwich directory.
+2. Run `./run <gamename> --web` to run the build and open the result in your
+   browser.
+
+Publishing:
+
+1. Consider tidying the `build/game/<gamename>` folder so that your saves are
+   not included in the download.
+2. Run `make toolset=emcc config=release <gamename>` to prepare a release build.
+3. Upload the `.data`, `.html`, `.js,` and `.wasm` files from
+   `build/emcc-release/<gamename>`.
+
+[emsdk]: https://emscripten.org/docs/getting_started/downloads.html
