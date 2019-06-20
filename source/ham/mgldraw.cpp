@@ -56,7 +56,11 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	// These don't actually do anything under Emscripten, and they log a debug
 	// message "Calling stub instead of sigaction()", so turn them off.
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
-#endif
+
+	// Emscripten builds don't meaningfully receive argv, so they should not
+	// start fullscreen by default.
+	this->windowed = windowed = true;
+#endif  // __EMSCRIPTEN__
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK)) {
 		LogError("SDL_Init(VIDEO|JOYSTICK): %s", SDL_GetError());
@@ -73,11 +77,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	if(JamulSoundInit(512))
 		SoundSystemExists();
 
-#ifdef __EMSCRIPTEN__
-	Uint32 flags = 0;
-#else  // __EMSCRIPTEN__
 	Uint32 flags = windowed ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP;
-#endif  // __EMSCRIPTEN__
 	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, xRes, yRes, flags);
 	if (!window) {
 		LogError("SDL_CreateWindow: %s", SDL_GetError());
@@ -280,6 +280,7 @@ void MGLDraw::FinishFlip(void)
 				lastKeyPressed = e.key.keysym.sym;
 			}
 
+#ifndef __EMSCRIPTEN__
 			if (e.key.keysym.scancode == SDL_SCANCODE_F11)
 			{
 				windowed = !windowed;
@@ -289,6 +290,7 @@ void MGLDraw::FinishFlip(void)
 					SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 				}
 			}
+#endif  // __EMSCRIPTEN__
 		} else if (e.type == SDL_TEXTINPUT) {
 			if (strlen(e.text.text) == 1)
 			{

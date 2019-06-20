@@ -106,7 +106,7 @@
 				var hasContext = true;
 
 				document.getElementById('fullscreen').addEventListener('click', function() {
-					Module.requestFullscreen();
+					Module.canvas.requestFullscreen();
 				});
 
 				// Only show the canvas if it is actually used.
@@ -185,7 +185,7 @@
 					preInit: [
 						function() {
 							Module.requestFullscreen = function() {
-								Browser.requestFullscreen(false, true);
+								Module.canvas.requestFullscreen();
 							}
 						},
 						function() {
