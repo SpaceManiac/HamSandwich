@@ -146,12 +146,12 @@ byte HelpUpdate(MGLDraw *mgl)
 	return 0;
 }
 
-void Help(MGLDraw *mgl)
+TASK(void) Help(MGLDraw *mgl)
 {
 	byte done;
 
 	if(!opt.helpOn)
-		return;
+		CO_RETURN;
 
 	oldc=255;
 
@@ -164,10 +164,10 @@ void Help(MGLDraw *mgl)
 	{
 		done=HelpUpdate(mgl);
 		HelpDisplay(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
-			return;
+			CO_RETURN;
 		}
 	}
 }

@@ -135,7 +135,7 @@ void RenderNameEntry(MGLDraw *mgl)
 	}
 }
 
-void NameEntry(MGLDraw *mgl)
+TASK(void) NameEntry(MGLDraw *mgl)
 {
 	byte b;
 	dword now,then,hangon;
@@ -153,10 +153,10 @@ void NameEntry(MGLDraw *mgl)
 		StartClock();
 		b=UpdateNameEntry(&lastTime);
 		RenderNameEntry(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
-			return;
+			CO_RETURN;
 		}
 		EndClock();
 	}
@@ -407,7 +407,7 @@ void RenderHighScore(MGLDraw *mgl)
 	}
 }
 
-void HighScore(MGLDraw *mgl)
+TASK(void) HighScore(MGLDraw *mgl)
 {
 	byte b;
 	dword now,then,hangon;
@@ -425,10 +425,10 @@ void HighScore(MGLDraw *mgl)
 		StartClock();
 		b=UpdateHighScore(&lastTime);
 		RenderHighScore(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
-			return;
+			CO_RETURN;
 		}
 		EndClock();
 	}
@@ -449,7 +449,7 @@ void ResetHighScores(void)
 			opt.score[i][j].mode=255;
 }
 
-void CheckForHighScore(highScore_t myScore)
+TASK(void) CheckForHighScore(highScore_t myScore)
 {
 	int i,j;
 
@@ -467,8 +467,8 @@ void CheckForHighScore(highScore_t myScore)
 				opt.score[myScore.mode][i]=myScore;
 				position=i;
 				me=&opt.score[myScore.mode][i];
-				NameEntry(GetDisplayMGL());
-				return;
+				AWAIT NameEntry(GetDisplayMGL());
+				CO_RETURN;
 			}
 		}
 	}
@@ -481,8 +481,8 @@ void CheckForHighScore(highScore_t myScore)
 			opt.score[myScore.mode][i]=myScore;
 			position=i;
 			me=&opt.score[myScore.mode][i];
-			NameEntry(GetDisplayMGL());
-			return;
+			AWAIT NameEntry(GetDisplayMGL());
+			CO_RETURN;
 		}
 	}
 }
