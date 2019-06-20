@@ -61,15 +61,8 @@
 				display: block;
 				border: 0px none;
 				background-color: black;
-			}
-			#output {
-				width: 100%;
-				display: block;
-				background-color: black;
-				color: white;
-				font-family: 'Lucida Console', Monaco, monospace;
-				outline: none;
-				border: none;
+				min-width: 640px;
+				min-height: 480px;
 			}
 		</style>
 	</head>
@@ -81,13 +74,9 @@
 			<div style="flex-grow: 1"></div>
 			<input type="button" value="Fullscreen" id="fullscreen">
 		</div>
-		<div id="canvas-container" hidden>
+		<div id="canvas-container">
 			<hr>
-			<canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-		</div>
-		<div id="output-container" hidden>
-			<hr>
-			<textarea id="output" rows="30" readonly></textarea>
+			<canvas id="canvas" width="640" height="480" oncontextmenu="event.preventDefault()"></canvas>
 		</div>
 
 		<script type="text/javascript">
@@ -95,12 +84,7 @@
 				var status = document.getElementById('status');
 				var progress = document.getElementById('progress');
 				var spinner = document.getElementById('spinner');
-				var canvasContainer = document.getElementById('canvas-container');
 				var canvas = document.getElementById('canvas');
-
-				var outputContainer = document.getElementById('output-container');
-				var output = document.getElementById('output');
-				if (output) output.value = ""; // clear anything cached
 
 				var totalDependencies = 0, unsatisfied = 0;
 				var hasContext = true;
@@ -109,14 +93,6 @@
 					Module.canvas.requestFullscreen();
 				});
 
-				// Only show the canvas if it is actually used.
-				var getContext = canvas.getContext;
-				canvas.getContext = function() {
-					canvasContainer.hidden = false;
-					output.rows = 10;
-					canvas.getContext = getContext;
-					return canvas.getContext.apply(canvas, arguments);
-				};
 				// As a default initial behavior, pop up an alert when webgl context is lost. To make your
 				// application robust, you may want to override this behavior before shipping!
 				// See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
@@ -136,21 +112,14 @@
 					print: function(text) {
 						if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(" ");
 						console.log(text);
-						outputContainer.hidden = false;
-						output.value += text + "\n";
-						output.scrollTop = output.scrollHeight; // focus on bottom
 					},
 					printErr: function(text) {
 						if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(" ");
 						console.warn(text);
-						outputContainer.hidden = false;
-						output.value += text + "\n";
-						output.scrollTop = output.scrollHeight; // focus on bottom
 					},
 					setStatus: function(text) {
 						spinner.hidden = !text;
 						status.innerText = text;
-						if (text) console.log("Status:", text);
 					},
 					monitorRunDependencies: function(left) {
 						totalDependencies += Math.max(0, left - unsatisfied);
