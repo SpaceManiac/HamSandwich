@@ -90,12 +90,14 @@
 			<div id="spinner"><div class="loading-pulse"></div></div>
 			<div id="status"><noscript>JavaScript required.</noscript></div>
 			<div style="flex-grow: 1"></div>
-			<input type="button" value="Fullscreen" id="fullscreen">
+			<input type="button" value="Export Save" id="export"/>
+			<input type="button" value="Fullscreen" id="fullscreen"/>
 		</div>
 		<div id="canvas-container">
 			<canvas id="canvas" width="640" height="480" oncontextmenu="event.preventDefault()"></canvas>
 		</div>
 
+		<script type="text/javascript" src="jszip.min.js"></script>
 		<script type="text/javascript">
 			var Module = (function() {
 				var status = document.getElementById('status');
@@ -108,6 +110,44 @@
 
 				document.getElementById('fullscreen').addEventListener('click', function() {
 					Module.canvas.requestFullscreen();
+				});
+
+				document.getElementById('export').addEventListener('click', function() {
+					function saveAs(file, filename) {
+						if (window.navigator.msSaveOrOpenBlob) { // IE10+
+							window.navigator.msSaveOrOpenBlob(file, filename);
+						} else { // Others
+							var a = document.createElement("a"),
+									url = URL.createObjectURL(file);
+							a.href = url;
+							a.download = filename;
+							document.body.appendChild(a);
+							a.click();
+							setTimeout(function() {
+								document.body.removeChild(a);
+								window.URL.revokeObjectURL(url);
+							}, 0);
+						}
+					}
+
+					function collect(zip, fsPath) {
+						var list = FS.readdir(fsPath);
+						for (var item of list) {
+							if (item == "." || item == "..") continue;
+							var fullItem = fsPath + "/" + item;
+							if (FS.isDir(FS.stat(fullItem).mode)) {
+								collect(zip.folder(item), fullItem);
+							} else {
+								zip.file(item, FS.readFile(fullItem));
+							}
+						}
+					}
+
+					var zip = new JSZip();
+					collect(zip, '/appdata');
+					zip.generateAsync({ type: "blob" }).then(function(content) {
+						saveAs(content, "save.zip");
+					});
 				});
 
 				// As a default initial behavior, pop up an alert when webgl context is lost. To make your
