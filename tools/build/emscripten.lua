@@ -125,3 +125,15 @@ function emscripten.assetdir(dir)
 
 	filter {}
 end
+
+function emscripten.html(fname)
+	filter { "toolset:emcc", "files:**.html" }
+		buildmessage "Creating %{prj.name}.html"
+		buildoutputs "%{cfg.targetdir}/%{prj.name}.html"
+		buildcommands "sed 's/__JS_FILENAME__/%{prj.name}.js/g' <%{file.relpath} >%{cfg.targetdir}/%{prj.name}.html"
+
+	filter "toolset:emcc"
+		files(fname)
+
+	filter {}
+end
