@@ -22,7 +22,7 @@ emcc = table.merge(clang, {
 	tools = {
 		cc = "emcc",
 		cxx = "em++",
-		ar = "ar",
+		ar = "emar",
 	},
 
 	gettoolname = function(cfg, tool)
@@ -74,11 +74,7 @@ emcc = table.merge(clang, {
 	getlinks = function(cfg)
 		local flags = {}
 		for _, flag in ipairs(clang.getlinks(cfg)) do
-			-- Emscripten's upstream-LLVM target doesn't seem to link .a files
-			-- properly, so instead link all the .o files individually.
-			if flag:sub(-2) == ".a" then
-				table.insert(flags, "$(wildcard " .. flag:gsub("/[^/]*$", "") .. "/obj/*.o)")
-			elseif flag:sub(1, 2) ~= "-l" or not emcc.ports[flag:sub(3)] then
+			if flag:sub(1, 2) ~= "-l" or not emcc.ports[flag:sub(3)] then
 				table.insert(flags, flag)
 			end
 		end
