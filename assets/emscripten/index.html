@@ -9,6 +9,24 @@
 				display: none !important;
 			}
 
+			body {
+				background-color: #f5f5f5;
+				overflow-y: scroll;
+				margin: 8px;
+			}
+			@media (max-width: 599px) {
+				body {
+					margin: 0;
+				}
+			}
+			body > div {
+				max-width: 1024px;
+				margin: 8px auto;
+				background-color: white;
+				padding: 10px;
+				text-align: center;
+			}
+
 			#header {
 				display: flex;
 				flex-wrap: wrap;
@@ -68,14 +86,13 @@
 	</head>
 	<body>
 		<div id="header">
-			<div id="powered">Powered by <a href="http://emscripten.org">Emscripten</a></div>
+			<div id="title"></div>
 			<div id="spinner"><div class="loading-pulse"></div></div>
 			<div id="status"><noscript>JavaScript required.</noscript></div>
 			<div style="flex-grow: 1"></div>
 			<input type="button" value="Fullscreen" id="fullscreen">
 		</div>
 		<div id="canvas-container">
-			<hr>
 			<canvas id="canvas" width="640" height="480" oncontextmenu="event.preventDefault()"></canvas>
 		</div>
 
@@ -107,7 +124,7 @@
 
 					setWindowTitle: function(text) {
 						document.title = text;
-						document.getElementById('powered').innerText = text;
+						document.getElementById('title').innerText = text;
 					},
 					print: function(text) {
 						if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(" ");
