@@ -108,7 +108,7 @@ void DrawBox(int x,int y,int x2,int y2,byte c);
 void DrawFillBox(int x,int y,int x2,int y2,byte c);
 void DrawDebugBox(int x,int y,int x2,int y2);
 void ShakeScreen(byte howlong);
-void ShowImageOrFlic(char *str);
+TASK(void) ShowImageOrFlic(char *str);
 void FilmWiggle(byte howlong);
 
 MGLDraw *GetDisplayMGL(void);

@@ -21,7 +21,7 @@ void ExitGallery(void)
 	int i;
 
 	GetDisplayMGL()->ClearScreen();
-	GetDisplayMGL()->Flip();
+	//GetDisplayMGL()->Flip();
 	GetDisplayMGL()->LoadBMP(TITLEBMP);
 	GetDisplayMGL()->LastKeyPressed();
 	for(i=0;i<480;i++)
@@ -37,7 +37,7 @@ void LoadGalPic(byte p,byte *backScr)
 	char s[64];
 
 	GetDisplayMGL()->ClearScreen();
-	GetDisplayMGL()->Flip();
+	//GetDisplayMGL()->Flip();
 	sprintf(s,"graphics/glr%02d.bmp",p);
 	GetDisplayMGL()->LoadBMP(s);
 	GetDisplayMGL()->LastKeyPressed();
@@ -154,7 +154,7 @@ void RenderGallery(byte *backScr)
 		memcpy(GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,&backScr[i*640],640);
 }
 
-void Gallery(MGLDraw *mgl)
+TASK(void) Gallery(MGLDraw *mgl)
 {
 #ifdef DIRECTORS
 	byte done=0;
@@ -176,7 +176,7 @@ void Gallery(MGLDraw *mgl)
 			lastTime-=TIME_PER_FRAME;
 		}
 		RenderGallery(backScr);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(!mgl->Process())

@@ -277,7 +277,7 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 				for(i=0;i<GALLERY_PIX;i++)
 					if(opt.galPix[i])
 					{
-						Gallery(GetDisplayMGL());
+						coro::launch(std::bind(Gallery, GetDisplayMGL()));
 						player.chatClock=30;
 						result=0;
 						break;

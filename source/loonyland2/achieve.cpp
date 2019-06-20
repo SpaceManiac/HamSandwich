@@ -658,7 +658,7 @@ void RenderAchieveMenu(byte *backScr)
 	PrintGlow(5,464,"Left, Right, Up and Down move around the chart.  Fire, Jump, or ESC will exit.",0,1);
 }
 
-void AchieveMenu(MGLDraw *mgl,byte *backScr)
+TASK(void) AchieveMenu(MGLDraw *mgl,byte *backScr)
 {
 	byte done=0;
 	int lastTime;
@@ -679,7 +679,7 @@ void AchieveMenu(MGLDraw *mgl,byte *backScr)
 			lastTime-=TIME_PER_FRAME;
 		}
 		RenderAchieveMenu(backScr);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(!mgl->Process())

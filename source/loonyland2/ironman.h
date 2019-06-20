@@ -5,6 +5,6 @@
 #include "mgldraw.h"
 #pragma pack(1)
 
-void IronmanScreen(MGLDraw *mgl);
+TASK(void) IronmanScreen(MGLDraw *mgl);
 
 #endif

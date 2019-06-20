@@ -39,7 +39,7 @@
 
 extern byte gameToLoad;
 
-byte MainMenu(MGLDraw *mgl);
+TASK(byte) MainMenu(MGLDraw *mgl);
 char *GetSavedName(void);
 byte GetSavedMod(byte n);
 void DeleteCharacter(void);

@@ -42,7 +42,7 @@ const char* AppdataFolderName()
 	return "Loonyland2";
 }
 
-int main(int argc, char* argv[])
+TASK(int) main(int argc, char* argv[])
 {
 	bool windowedGame=false;
 	for (int i = 1; i < argc; ++i)
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
 	MGLDraw *mainmgl=new MGLDraw("Loonyland 2", SCRWID, SCRHEI, windowedGame);
 
 	if(!mainmgl)
-		return 0;
+		CO_RETURN 0;
 
 	LunaticInit(mainmgl);
 	//NewComputerSpriteFix("graphics\\villager.jsp",0,-6);
@@ -63,27 +63,27 @@ int main(int argc, char* argv[])
 	{
 		player.var[VAR_COMMENTARY]=0;
 		Song(SONG_FACTORY);
-		switch(MainMenu(mainmgl))
+		switch(AWAIT MainMenu(mainmgl))
 		{
 			case 255:	// quit
 			case MENU_EXIT:
 				LunaticExit();
 				delete mainmgl;
-				return 0;
+				CO_RETURN 0;
 				break;
 			case MENU_NEWCHAR:	// new game
 				//set_keyboard_rate(0,0);
-				LunaticGame(mainmgl,0,WORLD_NORMAL);
+				AWAIT LunaticGame(mainmgl,0,WORLD_NORMAL);
 				//set_keyboard_rate(400,80);
 				break;
 			case MENU_PLAY:	// continue
 				//set_keyboard_rate(0,0);
-				LunaticGame(mainmgl,1,WORLD_NORMAL);
+				AWAIT LunaticGame(mainmgl,1,WORLD_NORMAL);
 				//set_keyboard_rate(400,80);
 				JamulSoundPurge();
 				break;
 			case MENU_EDITOR:	// editor
-				LunaticEditor(mainmgl);
+				AWAIT LunaticEditor(mainmgl);
 				mainmgl->LastKeyPressed();
 				break;
 		}

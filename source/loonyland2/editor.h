@@ -41,7 +41,7 @@ typedef struct editopt_t
 
 extern byte editing;
 
-byte LunaticEditor(MGLDraw *mgl);
+TASK(byte) LunaticEditor(MGLDraw *mgl);
 
 void EditorNewWorld(void);
 void EditorLoadWorld(const char *fname);
