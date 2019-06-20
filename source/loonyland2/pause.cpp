@@ -1039,6 +1039,7 @@ void SaveGame(void)
 		SaveBullets(f);
 		curMap->SaveProgress(f);
 		fclose(f);
+		AppdataSync();
 	}
 }
 

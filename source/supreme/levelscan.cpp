@@ -684,6 +684,7 @@ byte Scan_Level(world_t *world,Map *map)
 	}
 
 	fclose(scanF);
+	AppdataSync();
 	return 1;
 }
 
@@ -980,5 +981,6 @@ byte Scan_Vars(world_t *world)
 	}
 
 	fclose(scanF);
+	AppdataSync();
 	return 1;
 }

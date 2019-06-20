@@ -468,6 +468,7 @@ byte LunaticRun(int *lastTime)
 				sprintf(text,"Editor unlocked by %s, what a cool guy!\n", profile.name);
 				fwrite(text, sizeof(char), strlen(text), f);
 				fclose(f);
+				AppdataSync();
 			}
 		}
 		else if(msgFromOtherModules==MSG_RESET)

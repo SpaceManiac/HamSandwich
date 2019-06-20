@@ -102,6 +102,7 @@ void SaveProfile(void)
 		}
 	}
 	fclose(f);
+	AppdataSync();
 	firstTime=0;
 }
 
@@ -134,6 +135,7 @@ void LoadProfile(const char *name)
 	f=AppdataOpen("profile.cfg","wt");
 	fprintf(f,"%s\n",profile.name);
 	fclose(f);
+	AppdataSync();
 
 	// now load it
 	f=AppdataOpen(prfName,"rb");

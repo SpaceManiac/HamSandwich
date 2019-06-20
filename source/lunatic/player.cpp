@@ -122,6 +122,7 @@ void PlayerSaveGame(byte which)
 	f = AppdataOpen("loony.sav", "wb");
 	fwrite(p, sizeof (player_t), 3, f);
 	fclose(f);
+	AppdataSync();
 }
 
 void PlayerSetWorldWorth(byte world, int amt)

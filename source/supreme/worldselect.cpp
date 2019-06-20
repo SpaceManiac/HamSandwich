@@ -284,6 +284,7 @@ void ScanWorlds(void)
 	fclose(levelF);
 	fclose(level2F);
 	fclose(authorF);
+	AppdataSync();
 #endif
 }
 

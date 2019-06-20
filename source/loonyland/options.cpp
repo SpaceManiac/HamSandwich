@@ -465,6 +465,7 @@ void SaveOptions(void)
 	f=AppdataOpen("loony.cfg","wb");
 	fwrite(&opt,sizeof(options_t),1,f);
 	fclose(f);
+	AppdataSync();
 }
 
 void OptionsMenu(MGLDraw *mgl)

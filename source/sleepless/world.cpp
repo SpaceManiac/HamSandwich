@@ -195,6 +195,7 @@ byte SaveWorld(world_t *world,const char *fname)
 	SaveCustomSounds(f);
 
 	fclose(f);
+	AppdataSync();
 
 	return 1;
 }
@@ -288,6 +289,7 @@ void LogRequirements(world_t *w)
 		}
 	}
 	fclose(f);
+	AppdataSync();
 }
 
 terrain_t *GetTerrain(world_t *w,word tile)

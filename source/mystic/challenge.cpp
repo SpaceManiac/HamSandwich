@@ -1267,6 +1267,7 @@ void SaveChallenge(void)
 		memcpy(&chalData.player,&player,sizeof(player_t));
 		fwrite(&chalData,1,sizeof(chalData_t),f);
 		fclose(f);
+		AppdataSync();
 	}
 }
 

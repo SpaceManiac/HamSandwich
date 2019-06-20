@@ -72,6 +72,7 @@ int FontSave(char *fname, mfont_t *font)
 		return FONT_INVALIDFILE;
 
 	fclose(f);
+	AppdataSync();
 	return FONT_OK;
 }
 

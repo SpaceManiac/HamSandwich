@@ -71,6 +71,7 @@ void LunaticExit(void)
 	ExitPlayer();
 	ExitInterface();
 	fclose(logFile);
+	AppdataSync();
 }
 
 byte GetCurSong(void)

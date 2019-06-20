@@ -74,6 +74,7 @@ void ExitOptions(void)
 	f=AppdataOpen("options.cfg","wb");
 	fwrite(&opt,sizeof(option_t),1,f);
 	fclose(f);
+	AppdataSync();
 }
 
 

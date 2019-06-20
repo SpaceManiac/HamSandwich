@@ -486,6 +486,7 @@ void SaveGame(int i)
 		SaveGuys(f);
 		curMap->SaveProgress(f);
 		fclose(f);
+		AppdataSync();
 		NewBigMessage("Game Saved",30);
 		MakeNormalSound(SND_SAVEGAME);
 	}

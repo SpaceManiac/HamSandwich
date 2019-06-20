@@ -49,4 +49,7 @@ void LogError(const char* fmt, ...) {
 	printf("\n");
 #endif
 	va_end(args);
+
+	fflush(errorLog);
+	AppdataSync();
 }

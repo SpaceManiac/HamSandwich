@@ -1697,6 +1697,7 @@ void EquipTest(void)
 	}
 
 	fclose(f);
+	AppdataSync();
 }
 
 byte EquipSkillBoost(byte skill)

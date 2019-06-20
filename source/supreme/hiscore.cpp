@@ -525,6 +525,7 @@ void SaveHiScoreFile(score_t *list,word num,const char *fname)
 			return;
 		fwrite(&num,sizeof(word),1,f);
 		fclose(f);
+		AppdataSync();
 		return;
 	}
 	f=AppdataOpen(fname,"wb");
@@ -540,6 +541,7 @@ void SaveHiScoreFile(score_t *list,word num,const char *fname)
 	}
 	ExitCrypto();
 	fclose(f);
+	AppdataSync();
 }
 
 void SaveHiScores(void)

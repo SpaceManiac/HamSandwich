@@ -92,6 +92,7 @@ byte SaveWorld(world_t *world, const char *fname)
 		world->map[i]->Save(f);
 
 	fclose(f);
+	AppdataSync();
 	return 1;
 }
 

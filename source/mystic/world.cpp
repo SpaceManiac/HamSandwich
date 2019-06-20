@@ -75,6 +75,7 @@ byte SaveWorld(world_t *world,char *fname)
 		world->map[i]->Save(f);
 
 	fclose(f);
+	AppdataSync();
 	return 1;
 }
 

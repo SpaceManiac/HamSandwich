@@ -1870,6 +1870,7 @@ void ScanChests(void)
 			fprintf(f,"Chest #%d missing!\n",i);
 	}
 	fclose(f);
+	AppdataSync();
 }
 
 static void HandleKeyPresses(void)

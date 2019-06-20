@@ -197,6 +197,7 @@ void PlayerSaveGame(byte which)
 	f=AppdataOpen("mystic.sav","wb");
 	fwrite(p,sizeof(player_t),5,f);
 	fclose(f);
+	AppdataSync();
 }
 
 void SetPlayerSpeed(void)

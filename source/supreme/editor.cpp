@@ -224,6 +224,7 @@ void BackupWorld(const char *name)
 	free(data);
 	fclose(inF);
 	fclose(outF);
+	AppdataSync();
 }
 
 void UpdateMouse(void)

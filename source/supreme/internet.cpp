@@ -69,6 +69,7 @@ void Log_Exit(void)
 {
 #ifdef LOG
 	fclose(logF);
+	AppdataSync();
 #endif
 }
 

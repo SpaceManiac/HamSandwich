@@ -1039,6 +1039,7 @@ bool sprite_set_t::Save(const char *fname)
 		}
 	}
 	fclose(f);
+	AppdataSync();
 	return true;
 
 }
