@@ -135,6 +135,13 @@
 						console.warn(text);
 					},
 					setStatus: function(text) {
+						var matches = /^Downloading data\.\.\. \((\d+)\/(\d+)\)$/.exec(text);
+						if (matches) {
+							var loaded = parseInt(matches[1]), total = parseInt(matches[2]);
+							var pct = Math.round(loaded * 1000 / total) / 10;
+							text = "Downloading data (" + pct + "%)";
+						}
+
 						spinner.hidden = !text;
 						status.innerText = text;
 					},

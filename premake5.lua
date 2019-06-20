@@ -64,7 +64,7 @@ function base_project(name)
 			linkoptions { "--emrun" }
 
 		filter { "toolset:emcc" }
-			linkoptions { "-s ALLOW_MEMORY_GROWTH=1" }
+			linkoptions { "-s ALLOW_MEMORY_GROWTH=1", "--use-preload-cache" }
 
 		filter {}
 end
