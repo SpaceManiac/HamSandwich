@@ -77,15 +77,15 @@ fi
 # Ensure all dependencies are installed
 ./tools/build/install-deps.sh
 
-# Ensure the project's build is up to date
-if [ -z "$NOBUILD" ]; then
-	make $PROJECT config=$CONFIG toolset=$TOOLSET
-fi
-
 # Ensure the project's assets exist
 GAMEDIR="build/game/$PROJECT"
 if [ ! -d "$GAMEDIR" ]; then
 	./tools/build/extract-assets.sh "$PROJECT"
+fi
+
+# Ensure the project's build is up to date
+if [ -z "$NOBUILD" ]; then
+	make $PROJECT config=$CONFIG toolset=$TOOLSET
 fi
 
 # Run the project
