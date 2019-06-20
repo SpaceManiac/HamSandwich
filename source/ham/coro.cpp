@@ -4,6 +4,7 @@
 #include <map>
 #include <queue>
 #include <set>
+#include <stack>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -12,8 +13,11 @@
 namespace coro {
 
 struct executor {
-	// queue of tasks which should wake on the next frame
-	std::queue<coroutine_handle<>> awake_next_frame;
+	// the task which should wake on the next frame
+	std::stack<coroutine_handle<>> awake_next_frame;
+
+	// stack of tasks which are waiting to be launched
+	std::stack<std::function<task<void>()>> launching;
 
 	// map from awaitee to everything it should wake when done
 	std::map<coroutine_handle<>, std::set<coroutine_handle<>>> wake_on_done;
@@ -23,10 +27,14 @@ struct executor {
 
 		std::queue<coroutine_handle<>> awake;
 
+		while (!launching.empty()) {
+			launching.top()();
+			launching.pop();
+		}
+
 		// dump awake_next_frame into awake
-		while (!awake_next_frame.empty()) {
-			//printf("  timer %p\n", awake_next_frame.front().address());
-			awake.push(awake_next_frame.front());
+		if (!awake_next_frame.empty()) {
+			awake.push(awake_next_frame.top());
 			awake_next_frame.pop();
 		}
 
@@ -96,6 +104,10 @@ task<void> next_frame() {
 	co_await flip_awaiter{};
 }
 
+void launch(std::function<task<void>()> entry_point) {
+	g_executor.launching.push(entry_point);
+}
+
 #ifdef __EMSCRIPTEN__
 
 void em_main_loop() {
@@ -105,16 +117,16 @@ void em_main_loop() {
 	}
 }
 
-void launch(std::function<task<void>()> entry_point) {
-	entry_point();
+int main() {
 	emscripten_set_main_loop(em_main_loop, 0, 1);
+	return 0;
 }
 
 #else  // __EMSCRIPTEN__
 
-void launch(std::function<task<void>()> entry_point) {
-	entry_point();
+int main() {
 	while (g_executor.frame()) {}
+	return 0;
 }
 
 #endif  // __EMSCRIPTEN__

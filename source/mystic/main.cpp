@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 
 	LunaticInit(mainmgl);
 	coro::launch(std::bind(main_task, mainmgl));
-	return 0;
+	return coro::main();
 }
 
 TASK(void) main_task(MGLDraw *mainmgl)

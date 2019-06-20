@@ -139,8 +139,9 @@ struct promise<void> : public promise_base<void> {
 	}
 };
 
-void launch(std::function<task<void>()> entry_point);
 task<void> next_frame();
+void launch(std::function<task<void>()> entry_point);
+int main();
 
 }  // namespace coro
 
