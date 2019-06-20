@@ -18,12 +18,6 @@ function base_project(name)
 		architecture "x86"
 		targetdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/")
 		objdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/obj/")
-		android_package "com.platymuus.hamsandwich.%{prj.name}"
-
-		android_assetdirs {
-			"build/game/%{prj.name}/",
-			"assets/android/",
-		}
 
 		files {
 			"source/" .. name .. "/**.h",
@@ -82,6 +76,18 @@ end
 
 function sdl2_project(name)
 	base_project(name)
+		-- Android application metadata.
+		android_package "com.platymuus.hamsandwich.%{prj.name}"
+		android_assetdirs {
+			"build/game/%{prj.name}/",
+			"assets/android/",
+		}
+
+		-- Emscripten metadata.
+		emscripten.html "assets/emscripten/index.html"
+		emscripten.assetdir "build/game/%{prj.name}"
+
+		-- Link SDL2 in the correct sequence.
 		filter { "system:Windows", "not action:vs*" }
 			links "mingw32"
 		filter "system:Windows"
