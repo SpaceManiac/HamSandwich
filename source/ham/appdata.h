@@ -11,6 +11,8 @@ typedef struct SDL_RWops SDL_RWops;
 
 // Use for saves, options, config, etc.
 FILE* AppdataOpen(const char* file, const char* mode);
+// On platforms that need it, ensure appdata is really saved.
+void AppdataSync();
 
 // Use for graphics, worlds, etc. Writes may go to a different location than reads.
 FILE* AssetOpen(const char* file, const char* mode);

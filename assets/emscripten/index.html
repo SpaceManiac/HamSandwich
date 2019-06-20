@@ -158,24 +158,26 @@
 						Module.setStatus("Preparing... (" + (totalDependencies - left) + "/" + totalDependencies + ")");
 					},
 
-					fsBusy: 1,
-					fsInit: function() {
-						FS.mkdir('/profiles');
-						FS.mount(IDBFS, {}, '/profiles');
-						FS.syncfs(true, Module.fsCallback);
-					},
-					fsSave: function(recheck) {
+					fsBusy: 1,  // waiting for preInit to run
+					fsSave: function() {
 						if (Module.fsBusy) {
 							Module.fsBusy = 2;
 						} else {
-							FS.syncfs(false, Module.fsCallback);
+							Module.__fsSave();
 						}
+					},
+					__fsSave: function() {
+						Module.setStatus("Saving...");
+						Module.fsBusy = 1;
+						FS.syncfs(false, Module.fsCallback);
 					},
 					fsCallback: function(err) {
 						if(err) Module.printErr('FS sync error:', err);
 						else Module.print('FS sync success');
 						if (Module.fsBusy == 2) {
-							FS.syncfs(false, Module.fsCallback);
+							Module.__fsSave();
+						} else {
+							Module.setStatus("");
 						}
 						Module.fsBusy = 0;
 					},
@@ -185,10 +187,16 @@
 							Module.requestFullscreen = function() {
 								Browser.requestFullscreen(false, true);
 							}
+						},
+						function() {
+							FS.mkdir('/appdata');
+							FS.mount(IDBFS, {}, '/appdata');
+							FS.syncfs(true, Module.fsCallback);
 						}
 					]
 				};
 			})();
+
 			Module.setStatus("Downloading...");
 			window.onerror = function(event) {
 				// TODO: do not warn on ok events like simulating an infinite loop or exitStatus

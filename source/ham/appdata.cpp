@@ -1,5 +1,6 @@
 #include "appdata.h"
 #include "log.h"
+#include <string>
 
 #ifdef SDL_UNPREFIXED
 	#include <SDL_platform.h>
@@ -9,45 +10,12 @@
 	#include <SDL2/SDL_rwops.h>
 #endif  // SDL_UNPREFIXED
 
-// TODO: re-enable this when "DrLunatic" is overrideable,
-// and there's some means of porting existing installs.
-#if 0  // #ifdef _WIN32
-// Windows ----------------------------------------------------------
-
-#include <io.h>
-#include <shlobj.h> // for SHGetFolderPath
-#ifdef _MSC_VER
-#include <direct.h>
-#endif
-
-FILE* AppdataOpen(const char* file, const char* mode) {
-	char buffer[MAX_PATH];
-	SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, buffer);
-	strcat(buffer, "\\Hamumu");
-	mkdir(buffer);
-	strcat(buffer, "\\DrLunatic");
-	mkdir(buffer);
-	strcat(buffer, "\\");
-	strcat(buffer, file);
-	return fopen(file, mode);
-}
-
-FILE* AssetOpen(const char* file, const char* mode) {
-	return fopen(file, mode);
-}
-
-SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
-	return SDL_RWFromFile(file, mode);
-}
-
-#elif defined(__ANDROID__) && __ANDROID__
-// Android ----------------------------------------------------------
-
-#include <SDL_system.h>
+// Common code
+#if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
 #define MKDIR_MODE 0777
 
@@ -83,6 +51,92 @@ static int mkdir_parents(const char *path, mode_t mode) {
 static bool is_write_mode(const char* mode) {
 	return mode[0] == 'w' || mode[0] == 'a' || (mode[0] == 'r' && mode[1] == '+');
 }
+#endif
+
+// TODO: re-enable this when "DrLunatic" is overrideable,
+// and there's some means of porting existing installs.
+#if 0  // #ifdef _WIN32
+// Windows ----------------------------------------------------------
+
+#include <io.h>
+#include <shlobj.h> // for SHGetFolderPath
+#ifdef _MSC_VER
+#include <direct.h>
+#endif
+
+FILE* AppdataOpen(const char* file, const char* mode) {
+	char buffer[MAX_PATH];
+	SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, buffer);
+	strcat(buffer, "\\Hamumu");
+	mkdir(buffer);
+	strcat(buffer, "\\DrLunatic");
+	mkdir(buffer);
+	strcat(buffer, "\\");
+	strcat(buffer, file);
+	return fopen(file, mode);
+}
+
+FILE* AssetOpen(const char* file, const char* mode) {
+	return fopen(file, mode);
+}
+
+SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
+	return SDL_RWFromFile(file, mode);
+}
+
+#elif defined(__EMSCRIPTEN__)
+// Emscripten -------------------------------------------------------
+
+#include <emscripten.h>
+
+FILE* AppdataOpen(const char* file, const char* mode) {
+	std::string buffer = "/appdata/";
+	buffer.append(file);
+
+	if (is_write_mode(mode)) {
+		mkdir_parents(buffer.c_str(), MKDIR_MODE);
+	}
+	FILE* fp = fopen(buffer.c_str(), mode);
+	if (!fp) {
+		LogDebug("AppdataOpen(%s, %s): %s", file, mode, strerror(errno));
+	}
+	return fp;
+}
+
+FILE* AssetOpen(const char* file, const char* mode) {
+	if (is_write_mode(mode)) {
+		return AppdataOpen(file, mode);
+	}
+	return fopen(file, mode);
+}
+
+SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
+	if (is_write_mode(mode)) {
+		LogDebug("AssetOpen_SDL(%s, %s) -> AppdataOpen", file, mode);
+		FILE *fp = AppdataOpen(file, mode);
+		if (fp) {
+            return SDL_RWFromFP(fp, SDL_TRUE);
+		} else {
+			return nullptr;
+		}
+	} else {
+		// Will try to read from Android internal storage, or else
+		// pull from the asset system.
+		return SDL_RWFromFile(file, mode);
+	}
+}
+
+void AppdataSync() {
+	EM_ASM(
+		Module.fsSave();
+	);
+}
+
+#elif defined(__ANDROID__) && __ANDROID__
+// Android ----------------------------------------------------------
+
+#include <SDL_system.h>
+#include <string.h>
 
 FILE* AppdataOpen(const char* file, const char* mode) {
 	char buffer[1024];
@@ -164,6 +218,9 @@ SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
 	}
 }
 
+void AppdataSync() {
+}
+
 #else
 // Default ----------------------------------------------------------
 
@@ -177,6 +234,9 @@ FILE* AssetOpen(const char* file, const char* mode) {
 
 SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
 	return SDL_RWFromFile(file, mode);
+}
+
+void AppdataSync() {
 }
 
 #endif
