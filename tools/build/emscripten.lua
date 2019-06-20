@@ -110,9 +110,8 @@ function emscripten.assetdir(dir)
 		.. " --preload"  -- List of paths follows
 		.. " '../" .. dir .. "@'"
 
-	makesettings("LDDEPS += ../" .. dir)
-
 	filter "toolset:emcc"
+		makesettings("LDDEPS += ../" .. dir)
 		prelinkmessage "Packing assets..."
 		prelinkcommands {
 			"$(SILENT) " .. build_command
