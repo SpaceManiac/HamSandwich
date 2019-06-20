@@ -56,7 +56,9 @@ struct executor {
 					}
 					wake_on_done.erase(it);
 				}
-			} else {
+			}
+#ifdef _DEBUG
+			else {
 				// if it isn't put to sleep, it's still awake
 				bool asleep = false;
 				for (const auto& pair : wake_on_done) {
@@ -70,6 +72,7 @@ struct executor {
 					awake.push(current);
 				}
 			}
+#endif
 		}
 
 		return !awake_next_frame.empty();
