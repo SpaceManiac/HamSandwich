@@ -84,7 +84,7 @@ function sdl2_project(name)
 		}
 
 		-- Emscripten metadata.
-		emscripten.html "assets/emscripten/index.html"
+		emscripten.html "assets/emscripten/*"
 		emscripten.assetdir "build/game/%{prj.name}"
 
 		-- Link SDL2 in the correct sequence.

@@ -114,7 +114,7 @@ function emscripten.assetdir(dir)
 
 	filter "toolset:emcc"
 		makesettings("LDDEPS += ../" .. dir)
-		prelinkmessage "Packing assets..."
+		prelinkmessage "%{prj.name}.data"
 		prelinkcommands {
 			"$(SILENT) " .. build_command
 		}
@@ -128,10 +128,10 @@ function emscripten.assetdir(dir)
 end
 
 function emscripten.html(fname)
-	filter { "toolset:emcc", "files:**.html" }
-		buildmessage "Creating %{prj.name}.html"
-		buildoutputs "%{cfg.targetdir}/%{prj.name}.html"
-		buildcommands "sed 's/__JS_FILENAME__/%{prj.name}.js/g' <%{file.relpath} >%{cfg.targetdir}/%{prj.name}.html"
+	filter { "toolset:emcc", "files:" .. fname }
+		buildmessage "%{file.name}"
+		buildoutputs "%{cfg.targetdir}/%{file.name}"
+		buildcommands "sed 's/__JS_FILENAME__/%{prj.name}.js/g' <%{file.relpath} >%{cfg.targetdir}/%{file.name}"
 
 	filter "toolset:emcc"
 		files(fname)
