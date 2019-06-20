@@ -11,6 +11,12 @@ filter { "toolset:emcc", "kind:WindowedApp or ConsoleApp" }
 	-- JavaScript output. If this is ".html", emcc will also produce a generic
 	-- template HTML page, but we want to use our own HTML page instead.
 	targetextension ".js"
+filter { "toolset:emcc", "kind:StaticLib" }
+	-- emar seems to like to add duplicate copies into the .a file, so delete
+	-- it beforehand.
+	prelinkcommands {
+		"$(SILENT) rm -f %{cfg.buildtarget.relpath}"
+	}
 filter {}
 
 -- Add emcc to the list of allowed tools.
