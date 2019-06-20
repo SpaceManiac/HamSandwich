@@ -18,9 +18,7 @@ const char* AppdataFolderName()
 	return "Loonyland";
 }
 
-TASK(void) main_task(MGLDraw *mainmgl);
-
-int main(int argc, char *argv[])
+TASK(int) main(int argc, char *argv[])
 {
 	DBG("a");
 
@@ -35,7 +33,7 @@ int main(int argc, char *argv[])
 	MGLDraw *mainmgl=new MGLDraw("Loonyland", SCRWID, SCRHEI, windowedGame);
 	DBG("c");
 	if(!mainmgl)
-		return 0;
+		CO_RETURN 0;
 	DBG("d");
 	DBG("Init!");
 	LunaticInit(mainmgl);
@@ -44,13 +42,8 @@ int main(int argc, char *argv[])
 	LoopingSound(SND_HAMUMU);
 	SetSongRestart(0);
 	DBG("Splash");
-
-	coro::launch(std::bind(main_task, mainmgl));
-	return coro::main();
-}
-
-TASK(void) main_task(MGLDraw *mainmgl) {
 	AWAIT SplashScreen(mainmgl,"graphics/hamumu.bmp",128,2);
+
 	while(1)
 	{
 		DBG("Mainmenu");
@@ -61,7 +54,7 @@ TASK(void) main_task(MGLDraw *mainmgl) {
 			case MENU_EXIT:
 				LunaticExit();
 				delete mainmgl;
-				CO_RETURN;
+				CO_RETURN 0;
 				break;
 			case MENU_ADVENTURE:	// new game
 				AWAIT LunaticGame(mainmgl,0,WORLD_NORMAL);

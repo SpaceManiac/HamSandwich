@@ -25,9 +25,7 @@ const char* AppdataFolderName()
 	return "KidMystic";
 }
 
-TASK(void) main_task(MGLDraw *mainmgl);
-
-int main(int argc, char* argv[])
+TASK(int) main(int argc, char* argv[])
 {
 #ifdef DEMO
 	byte n;
@@ -42,15 +40,9 @@ int main(int argc, char* argv[])
 	InitOptions();
 	MGLDraw *mainmgl=new MGLDraw("Kid Mystic", SCRWID, SCRHEI, windowedGame);
 	if(!mainmgl)
-		return 0;
+		CO_RETURN 0;
 
 	LunaticInit(mainmgl);
-	coro::launch(std::bind(main_task, mainmgl));
-	return coro::main();
-}
-
-TASK(void) main_task(MGLDraw *mainmgl)
-{
 	AWAIT SplashScreen(mainmgl,"graphics/intro1.bmp",128,SND_INTRO1,0);
 
 #ifdef DEMO
@@ -77,7 +69,7 @@ TASK(void) main_task(MGLDraw *mainmgl)
 				if(n==0)	// chose to buy
 					ShellExecute(NULL,"open","http://hamumu.com/store.php?game=MYSTIC&src=demoexit","","",SW_SHOWNORMAL);
 #endif
-				CO_RETURN;
+				CO_RETURN 0;
 				break;
 			case 0:	// new game
 #ifdef DEMO
@@ -92,7 +84,7 @@ TASK(void) main_task(MGLDraw *mainmgl)
 						LunaticExit();
 						delete mainmgl;
 						ShellExecute(NULL,"open","http://hamumu.com/store.php?game=MYSTIC&src=demowin","","",SW_SHOWNORMAL);
-						CO_RETURN;
+						CO_RETURN 0;
 					}
 				}
 #else
@@ -112,7 +104,7 @@ TASK(void) main_task(MGLDraw *mainmgl)
 						LunaticExit();
 						delete mainmgl;
 						ShellExecute(NULL,"open","http://hamumu.com/store.php?game=MYSTIC&src=demowin","","",SW_SHOWNORMAL);
-						CO_RETURN;
+						CO_RETURN 0;
 					}
 				}
 #else

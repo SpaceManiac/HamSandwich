@@ -6,6 +6,8 @@
 #include <set>
 #include <stack>
 
+#undef main
+
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif  // __EMSCRIPTEN__
@@ -112,34 +114,41 @@ void launch(std::function<task<void>()> entry_point) {
 	g_executor.launching.push(entry_point);
 }
 
-#ifdef __EMSCRIPTEN__
-
-void em_main_loop() {
-	if (!g_executor.frame()) {
-		printf("calling emscripten_cancel_main_loop\n");
-		emscripten_cancel_main_loop();
-	}
-}
-
-int main() {
-	emscripten_set_main_loop(em_main_loop, 0, 1);
-	return 0;
-}
-
-#else  // __EMSCRIPTEN__
-
-int main() {
-	while (g_executor.frame()) {}
-	return 0;
-}
-
-#endif  // __EMSCRIPTEN__
-
 bool __schedule(coroutine_handle<> awaiter, coroutine_handle<> awaitee) {
 	g_executor.schedule(awaiter, awaitee);
 	return true;
 }
 
 }  // namespace coro
+
+#ifdef __EMSCRIPTEN__
+
+static void em_main_loop() {
+	if (!coro::g_executor.frame()) {
+		printf("calling emscripten_cancel_main_loop\n");
+		emscripten_cancel_main_loop();
+	}
+}
+
+int main(int argc, char** argv) {
+	coro::launch([=]() -> coro::task<void> {
+		AWAIT coro::main(argc, argv);
+	});
+	emscripten_set_main_loop(em_main_loop, 0, 1);
+	return 0;
+}
+
+#else  // __EMSCRIPTEN__
+
+int main(int argc, char** argv) {
+	int coro_retval = 0;
+	coro::launch([&]() -> coro::task<void> {
+		coro_retval = AWAIT coro::coro_main(argc, argv);
+	});
+	while (coro::g_executor.frame()) {}
+	return coro_retval;
+}
+
+#endif  // __EMSCRIPTEN__
 
 #endif // USE_COROUTINES
