@@ -56,6 +56,7 @@ struct executor {
 					}
 					wake_on_done.erase(it);
 				}
+				current.destroy();  // it's done, so destroy it
 			}
 #ifdef _DEBUG
 			else {
