@@ -64,7 +64,7 @@ void ExitDisplay(void)
 	delete dispList;
 }
 
-void ShowVictoryAnim(byte world)
+TASK(void) ShowVictoryAnim(byte world)
 {
 	dword start, end;
 
@@ -86,31 +86,31 @@ void ShowVictoryAnim(byte world)
 	}
 	switch (world) {
 		case 0:
-			FLI_play("graphics/caverns.flc", 0, 80, mgl);
+			AWAIT FLI_play("graphics/caverns.flc", 0, 80, mgl);
 			break;
 		case 1:
-			FLI_play("graphics/icy.flc", 0, 60, mgl);
+			AWAIT FLI_play("graphics/icy.flc", 0, 60, mgl);
 			break;
 		case 2:
-			FLI_play("graphics/forest.flc", 0, 60, mgl);
+			AWAIT FLI_play("graphics/forest.flc", 0, 60, mgl);
 			break;
 		case 3:
-			FLI_play("graphics/desert.flc", 0, 60, mgl);
+			AWAIT FLI_play("graphics/desert.flc", 0, 60, mgl);
 			break;
 		case 4:
 			// the final victory!
 			if (PlayerGetMusicSettings() == MUSIC_ON)
 				CDPlay(22); // ending music, deedeleedoo
-			FLI_play("graphics/asylum.flc", 0, 60, mgl);
+			AWAIT FLI_play("graphics/asylum.flc", 0, 60, mgl);
 			break;
 		case 10:
-			FLI_play("graphics/transfrm.flc", 0, 60, mgl);
+			AWAIT FLI_play("graphics/transfrm.flc", 0, 60, mgl);
 			break;
 		case 11:
-			FLI_play("graphics/asylumno.flc", 0, 40, mgl);
+			AWAIT FLI_play("graphics/asylumno.flc", 0, 40, mgl);
 			break;
 		case 12:
-			FLI_play("graphics/asylumys.flc", 0, 40, mgl);
+			AWAIT FLI_play("graphics/asylumys.flc", 0, 40, mgl);
 			break;
 	}
 	mgl->LoadBMP("graphics/title.bmp");
@@ -145,7 +145,7 @@ void LoadText(char *nm)
 	fclose(f);
 }
 
-void ShowImageOrFlic(char *str)
+TASK(void) ShowImageOrFlic(char *str)
 {
 	dword start, end;
 	int speed;
@@ -156,7 +156,7 @@ void ShowImageOrFlic(char *str)
 
 	fname = strtok(str, ",\n");
 	if (!fname)
-		return;
+		CO_RETURN;
 
 	other = strtok(NULL, ",\n");
 
@@ -169,7 +169,7 @@ void ShowImageOrFlic(char *str)
 		MakeNormalSound(SND_MESSAGE);
 		sprintf(nm, "graphics/%s", fname);
 		GetDisplayMGL()->LoadBMP(nm);
-		return;
+		CO_RETURN;
 	}
 	if ((fname[strlen(fname) - 3] == 't' || fname[strlen(fname) - 3] == 'T') &&
 			(fname[strlen(fname) - 2] == 'x' || fname[strlen(fname) - 2] == 'X') &&
@@ -179,7 +179,7 @@ void ShowImageOrFlic(char *str)
 		MakeNormalSound(SND_MESSAGE);
 		sprintf(nm, "graphics/%s", fname);
 		LoadText(nm);
-		return;
+		CO_RETURN;
 	}
 
 	if (other)
@@ -190,7 +190,7 @@ void ShowImageOrFlic(char *str)
 	sprintf(nm, "graphics/%s", fname);
 
 	start = timeGetTime();
-	FLI_play(nm, 0, speed, mgl);
+	AWAIT FLI_play(nm, 0, speed, mgl);
 	mgl->LoadBMP("graphics/title.bmp");
 	end = timeGetTime();
 	AddGarbageTime(end - start);
@@ -566,7 +566,7 @@ void DrawDebugBox(int x, int y, int x2, int y2)
 	x2 -= scrx - 320;
 	y2 -= scry - 240;
 	mgl->Box(x, y, x2, y2, 255);
-	mgl->Flip();
+	//mgl->Flip();
 }
 
 void DrawFillBox(int x, int y, int x2, int y2, byte c)

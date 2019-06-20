@@ -406,7 +406,7 @@ void SaveOptions(void)
 	AppdataSync();
 }
 
-void OptionsMenu(MGLDraw *mgl)
+TASK(void) OptionsMenu(MGLDraw *mgl)
 {
 	byte done = 0;
 
@@ -416,7 +416,7 @@ void OptionsMenu(MGLDraw *mgl)
 	{
 		done = UpdateOptionsMenu(mgl);
 		RenderOptionsMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if (!mgl->Process())
 			done = 1;

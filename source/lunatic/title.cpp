@@ -200,17 +200,17 @@ byte HandleTitleKeys(MGLDraw *mgl)
 		return 0; // play the game
 }
 
-byte LunaticTitle(MGLDraw *mgl)
+TASK(byte) LunaticTitle(MGLDraw *mgl)
 {
 	mgl->LoadBMP("graphics/title.bmp");
-	mgl->Flip();
+	AWAIT mgl->Flip();
 	while (!mgl->LastKeyPeek())
 	{
 		if (!mgl->Process())
-			return 2;
-		mgl->Flip();
+			CO_RETURN 2;
+		AWAIT mgl->Flip();
 	}
-	return HandleTitleKeys(mgl);
+	CO_RETURN HandleTitleKeys(mgl);
 }
 
 byte HandleWorldPickerKeys(MGLDraw *mgl)
@@ -553,10 +553,9 @@ void PickerDraw(MGLDraw *mgl)
 	else
 		sprintf(txt, "Total: %03.1f%%", f);
 	FontPrintString(446, 2, txt, &pickerFont);
-	mgl->Flip();
 }
 
-byte WorldPicker(MGLDraw *mgl)
+TASK(byte) WorldPicker(MGLDraw *mgl)
 {
 	byte exitcode = 254;
 	int lastTime = 1;
@@ -573,7 +572,7 @@ byte WorldPicker(MGLDraw *mgl)
 		CDPlay(3); // world picker theme
 
 	mgl->ClearScreen();
-	mgl->Flip();
+	AWAIT mgl->Flip();
 	planetSpr = new sprite_set_t("graphics/planet.jsp");
 	mgl->LoadBMP("graphics/picker.bmp");
 	FontLoad("graphics/gillsans4.jft", &pickerFont);
@@ -591,7 +590,10 @@ byte WorldPicker(MGLDraw *mgl)
 		StartClock();
 		exitcode = PickerRun(&lastTime, mgl);
 		if (numRunsToMakeUp > 0)
+		{
 			PickerDraw(mgl);
+			AWAIT mgl->Flip();
+		}
 
 		if (!mgl->Process())
 		{
@@ -603,13 +605,13 @@ byte WorldPicker(MGLDraw *mgl)
 		player.worldNum = curCustom;
 
 	mgl->ClearScreen();
-	mgl->Flip();
+	AWAIT mgl->Flip();
 	mgl->LoadBMP("graphics/title.bmp");
 	GammaCorrect(mgl, GetGamma());
 	delete planetSpr;
 	FontFree(&pickerFont);
 	SeedRNG();
-	return exitcode;
+	CO_RETURN exitcode;
 }
 
 void ScanWorldNames(void)
@@ -826,7 +828,7 @@ byte MainMenuUpdate(MGLDraw *mgl, title_t *title)
 	return 0;
 }
 
-byte MainMenu(MGLDraw *mgl)
+TASK(byte) MainMenu(MGLDraw *mgl)
 {
 	dword startTime, now;
 	dword runStart, runEnd;
@@ -857,7 +859,7 @@ byte MainMenu(MGLDraw *mgl)
 		runStart = timeGetTime();
 		b = MainMenuUpdate(mgl, &title);
 		MainMenuDisplay(mgl, title);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		runEnd = timeGetTime();
 
 		if (runEnd - runStart < (1000 / 50))
@@ -867,11 +869,11 @@ byte MainMenu(MGLDraw *mgl)
 		{
 			CDStop();
 			delete planetSpr;
-			return 255;
+			CO_RETURN 255;
 		}
 		if (b == 1 && title.cursor == 1) // selected Load Game
 		{
-			if (!GameSlotPicker(mgl, &title)) // pressed ESC on the slot picker
+			if (!AWAIT GameSlotPicker(mgl, &title)) // pressed ESC on the slot picker
 			{
 				b = 0;
 			}
@@ -879,18 +881,18 @@ byte MainMenu(MGLDraw *mgl)
 		}
 		if (b == 1 && title.cursor == 2) // options
 		{
-			OptionsMenu(mgl);
+			AWAIT OptionsMenu(mgl);
 			startTime = timeGetTime();
 		}
 		if (b == 1 && title.cursor == 5) // help
 		{
-			HelpScreens(mgl);
+			AWAIT HelpScreens(mgl);
 			startTime = timeGetTime();
 		}
 		now = timeGetTime();
 		if (now - startTime > 1000 * 20)
 		{
-			Credits(mgl);
+			AWAIT Credits(mgl);
 			startTime = timeGetTime();
 		}
 	}
@@ -898,12 +900,12 @@ byte MainMenu(MGLDraw *mgl)
 	if (b == 1) // something was selected
 	{
 		if (title.cursor == 6) // exit
-			return 255;
+			CO_RETURN 255;
 		else
-			return title.cursor;
+			CO_RETURN title.cursor;
 	}
 	else
-		return 255; // ESC was pressed
+		CO_RETURN 255; // ESC was pressed
 }
 
 void GameSlotPickerDisplay(MGLDraw *mgl, title_t title)
@@ -1061,7 +1063,7 @@ void InitGameSlotPicker(MGLDraw *mgl, title_t *title)
 	oldc = CONTROL_B1 | CONTROL_B2;
 }
 
-byte GameSlotPicker(MGLDraw *mgl, title_t *title)
+TASK(byte) GameSlotPicker(MGLDraw *mgl, title_t *title)
 {
 	byte b = 0;
 	dword runEnd, runStart;
@@ -1075,14 +1077,14 @@ byte GameSlotPicker(MGLDraw *mgl, title_t *title)
 
 		b = GameSlotPickerUpdate(mgl, title);
 		GameSlotPickerDisplay(mgl, *title);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		runEnd = timeGetTime();
 
 		if (runEnd - runStart < (1000 / 50))
 			SDL_Delay((1000 / 50)-(runEnd - runStart));
 
 		if (!mgl->Process())
-			return 0;
+			CO_RETURN 0;
 	}
 	if (b == 1) // something was selected
 	{
@@ -1090,10 +1092,10 @@ byte GameSlotPicker(MGLDraw *mgl, title_t *title)
 		PlayerLoadGame(title->savecursor);
 		// make it remember which was picked so the pause menu will start on the same
 		SetSubCursor(title->savecursor);
-		return 1;
+		CO_RETURN 1;
 	}
 	else
-		return 0;
+		CO_RETURN 0;
 }
 
 void CreditsRender(int y)
@@ -1131,7 +1133,7 @@ void CreditsRender(int y)
 	}
 }
 
-void Credits(MGLDraw *mgl)
+TASK(void) Credits(MGLDraw *mgl)
 {
 	int y = -470;
 	static byte flip = 0;
@@ -1148,13 +1150,13 @@ void Credits(MGLDraw *mgl)
 		if (flip)
 			y += 1;
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if (!mgl->Process())
-			return;
+			CO_RETURN;
 		if (mgl->LastKeyPressed())
-			return;
+			CO_RETURN;
 		if (y == END_OF_CREDITS)
-			return;
+			CO_RETURN;
 	}
 }
 
@@ -1194,7 +1196,7 @@ void VictoryTextRender(int y)
 	}
 }
 
-void VictoryText(MGLDraw *mgl)
+TASK(void) VictoryText(MGLDraw *mgl)
 {
 	int y = -470;
 
@@ -1205,17 +1207,17 @@ void VictoryText(MGLDraw *mgl)
 		mgl->ClearScreen();
 		VictoryTextRender(y);
 		y += 1;
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if (!mgl->Process())
-			return;
+			CO_RETURN;
 		if (mgl->LastKeyPressed() == 27)
-			return;
+			CO_RETURN;
 		if (y == END_OF_VICTORY)
-			return;
+			CO_RETURN;
 	}
 }
 
-byte SpeedSplash(MGLDraw *mgl, const char *fname)
+TASK(byte) SpeedSplash(MGLDraw *mgl, const char *fname)
 {
 	int i, j, clock;
 	RGB desiredpal[256], curpal[256];
@@ -1235,20 +1237,20 @@ byte SpeedSplash(MGLDraw *mgl, const char *fname)
 	oldc = GetControls() | GetArrows();
 
 	if (!mgl->LoadBMP(fname, desiredpal))
-		return 0;
+		CO_RETURN 0;
 
 	mode = 0;
 	clock = 0;
 	done = 0;
 	while (!done)
 	{
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if (!mgl->Process())
-			return 0;
+			CO_RETURN 0;
 		c = mgl->LastKeyPressed();
 
 		if (c == 27)
-			return 0;
+			CO_RETURN 0;
 		else if (c)
 			mode = 2;
 
@@ -1305,11 +1307,11 @@ byte SpeedSplash(MGLDraw *mgl, const char *fname)
 		}
 	}
 	mgl->ClearScreen();
-	mgl->Flip();
-	return 1;
+	AWAIT mgl->Flip();
+	CO_RETURN 1;
 }
 
-void HelpScreens(MGLDraw *mgl)
+TASK(void) HelpScreens(MGLDraw *mgl)
 {
 	int i;
 	char name[32];
@@ -1317,20 +1319,20 @@ void HelpScreens(MGLDraw *mgl)
 	for (i = 0; i < 5; i++)
 	{
 		sprintf(name, "docs/help%d.bmp", i + 1);
-		if (!SpeedSplash(mgl, name))
-			return;
+		if (!AWAIT SpeedSplash(mgl, name))
+			CO_RETURN;
 	}
 }
 
-void DemoSplashScreens(MGLDraw *mgl)
+TASK(void) DemoSplashScreens(MGLDraw *mgl)
 {
-	if (!SpeedSplash(mgl, "docs/demosplash.bmp"))
-		return;
-	if (!SpeedSplash(mgl, "docs/demosplash2.bmp"))
-		return;
+	if (!AWAIT SpeedSplash(mgl, "docs/demosplash.bmp"))
+		CO_RETURN;
+	if (!AWAIT SpeedSplash(mgl, "docs/demosplash2.bmp"))
+		CO_RETURN;
 }
 
-void SplashScreen(MGLDraw *mgl, const char *fname, int delay, byte sound)
+TASK(void) SplashScreen(MGLDraw *mgl, const char *fname, int delay, byte sound)
 {
 	int i, j, clock;
 	RGB desiredpal[256], curpal[256];
@@ -1347,16 +1349,16 @@ void SplashScreen(MGLDraw *mgl, const char *fname, int delay, byte sound)
 	mgl->LastKeyPressed();
 
 	if (!mgl->LoadBMP(fname, desiredpal))
-		return;
+		CO_RETURN;
 
 	mode = 0;
 	clock = 0;
 	done = 0;
 	while (!done)
 	{
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if (!mgl->Process())
-			return;
+			CO_RETURN;
 		if (mgl->LastKeyPressed())
 			mode = 2;
 
@@ -1417,5 +1419,5 @@ void SplashScreen(MGLDraw *mgl, const char *fname, int delay, byte sound)
 		}
 	}
 	mgl->ClearScreen();
-	mgl->Flip();
+	AWAIT mgl->Flip();
 }
