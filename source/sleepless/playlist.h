@@ -3,6 +3,6 @@
 
 #include "mgldraw.h"
 
-void PlayListMenu(MGLDraw *mgl);
+TASK(void) PlayListMenu(MGLDraw *mgl);
 
 #endif

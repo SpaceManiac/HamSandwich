@@ -1202,7 +1202,7 @@ void HungerSign(void)
 	GetArrowTaps();
 }
 
-void InitShopping(int x,int y)
+TASK(void) InitShopping(int x,int y)
 {
 	int i;
 	char tmp[32],tmp2[32],tmp3[64];
@@ -1223,9 +1223,9 @@ void InitShopping(int x,int y)
 		goodguy->y=(goodguy->mapy*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
 		goodguy->dx=0;
 		goodguy->dy=0;
-		Bestiary(GetDisplayMGL());
+		AWAIT Bestiary(GetDisplayMGL());
 		RestoreGameplayGfx();
-		return;
+		CO_RETURN;
 	}
 	if(x==135 && y==33)
 	{
@@ -1233,9 +1233,9 @@ void InitShopping(int x,int y)
 		goodguy->y=(goodguy->mapy*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
 		goodguy->dx=0;
 		goodguy->dy=0;
-		Theater(GetDisplayMGL());
+		AWAIT Theater(GetDisplayMGL());
 		RestoreGameplayGfx();
-		return;
+		CO_RETURN;
 	}
 	if(y==33 && (x==57 || x==59 || x==61))
 	{
@@ -1244,7 +1244,7 @@ void InitShopping(int x,int y)
 		goodguy->dx=0;
 		goodguy->dy=0;
 		RestoreGameplayGfx();
-		return;
+		CO_RETURN;
 	}
 	if(x>=62 && x<=65 && y>=41 && y<=44)
 	{
@@ -1253,7 +1253,7 @@ void InitShopping(int x,int y)
 		goodguy->dx=0;
 		goodguy->dy=0;
 		RestoreGameplayGfx();
-		return;
+		CO_RETURN;
 	}
 	if(x==39 && y==60)
 	{
@@ -1263,7 +1263,7 @@ void InitShopping(int x,int y)
 		goodguy->dy=0;
 		player.var[7]=1;	// to clear the mumbles and change the sign
 		RestoreGameplayGfx();
-		return;
+		CO_RETURN;
 	}
 	if(x>=124 && y>=9 && x<=154 && y<=30)
 	{
@@ -1273,7 +1273,7 @@ void InitShopping(int x,int y)
 		goodguy->dy=0;
 		OpenLocker(x,y);
 		RestoreGameplayGfx();
-		return;
+		CO_RETURN;
 	}
 	if(x==87 && y==54)
 	{
@@ -1282,7 +1282,7 @@ void InitShopping(int x,int y)
 		goodguy->dx=0;
 		goodguy->dy=0;
 		HungerSign();
-		return;
+		CO_RETURN;
 	}
 
 	if(GalleryBump(x,y))
@@ -1291,9 +1291,9 @@ void InitShopping(int x,int y)
 		goodguy->y=(goodguy->mapy*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
 		goodguy->dx=0;
 		goodguy->dy=0;
-		ShowGalleryPic();
+		AWAIT ShowGalleryPic();
 		RestoreGameplayGfx();
-		return;
+		CO_RETURN;
 	}
 	shopSize=0;
 	buying=255;
@@ -1468,7 +1468,7 @@ void SetObtainText(void)
 	}
 }
 
-void BuyItem(void)
+TASK(void) BuyItem(void)
 {
 	int i;
 	word cost;
@@ -1492,7 +1492,7 @@ void BuyItem(void)
 					"Thanks, dude!  Let's celebrate with a packet of our new product, Soylent Orange!");
 				MakeNormalSound(SND_VICTORY);
 				char statue[] = "statue.flc";
-				ShowImageOrFlic(statue,1,0);
+				AWAIT ShowImageOrFlic(statue,1,0);
 			}
 		}
 		else
@@ -1520,7 +1520,7 @@ void BuyItem(void)
 	GoalPurchase();
 }
 
-byte UpdateShopping(MGLDraw *mgl)
+TASK(byte) UpdateShopping(MGLDraw *mgl)
 {
 	byte c;
 
@@ -1533,7 +1533,7 @@ byte UpdateShopping(MGLDraw *mgl)
 		shopSize+=8;
 
 	if(mgl->LastKeyPressed()==27)
-		return 0;	// ESC to cancel shopping
+		CO_RETURN 0;	// ESC to cancel shopping
 
 	c=GetTaps()|GetArrowTaps();
 
@@ -1547,9 +1547,9 @@ byte UpdateShopping(MGLDraw *mgl)
 		if(c&CONTROL_B1)
 		{
 			if(cursor==1)
-				BuyItem();
+				AWAIT BuyItem();
 			else
-				return 0;
+				CO_RETURN 0;
 		}
 	}
 	else
@@ -1562,15 +1562,15 @@ byte UpdateShopping(MGLDraw *mgl)
 				if(shop[modeToToggle].item==MODE_TEENY && (profile.progress.purchase[modeToToggle]&SIF_ACTIVE))
 				{
 					GetDisplayMGL()->LoadBMP("graphics/gamepal.bmp");
-					GetDisplayMGL()->Flip();
+					AWAIT GetDisplayMGL()->Flip();
 				}
 				SetupShops(curMap);
 			}
-			return 0;
+			CO_RETURN 0;
 		}
 	}
 
-	return 1;
+	CO_RETURN 1;
 }
 
 void RenderShopButton(byte on,int x,int y,int wid,const char *txt,MGLDraw *mgl)

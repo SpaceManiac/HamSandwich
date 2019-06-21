@@ -3,7 +3,7 @@
 
 #include "mgldraw.h"
 
-void Theater(MGLDraw *mgl);
+TASK(void) Theater(MGLDraw *mgl);
 
 void SeeMovie(char *fname);
 byte AllMoviesSeen(void);

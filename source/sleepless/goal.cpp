@@ -112,7 +112,7 @@ void CompleteGoal(byte goal, byte custom)
 	profile.progress.goal[goal]=1;
 
 	if (!IsCustomWorld())
-		ShowGoalEarned(goal);
+		coro::launch(std::bind(ShowGoalEarned, goal));
 	else
 	{
 		NewBigMessage(CustomGoalInfo(goal, 0),60);
@@ -184,7 +184,7 @@ void InitShowGoal(MGLDraw *mgl,byte num)
 void ExitShowGoal(void)
 {
 	GetDisplayMGL()->ClearScreen();
-	GetDisplayMGL()->Flip();
+	//GetDisplayMGL()->Flip();  // TODO: is this needed?
 
 	RestoreGameplayGfx();
 }
@@ -228,7 +228,7 @@ void RenderShowGoal(MGLDraw *mgl)
 {
 }
 
-void ShowGoalEarned(byte num)
+TASK(void) ShowGoalEarned(byte num)
 {
 	byte done=0;
 	int lastTime=1;
@@ -242,7 +242,7 @@ void ShowGoalEarned(byte num)
 		done=UpdateShowGoal(&lastTime,GetDisplayMGL());
 		RenderShowGoal(GetDisplayMGL());
 
-		GetDisplayMGL()->Flip();
+		AWAIT GetDisplayMGL()->Flip();
 
 		if(!GetDisplayMGL()->Process())
 			done=1;

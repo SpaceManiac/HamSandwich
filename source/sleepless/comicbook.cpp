@@ -13,7 +13,6 @@ void ComicPage(void)
 	sprintf(txt,"graphics/comic%d.bmp",pageNo);
 	GetDisplayMGL()->LoadBMP(txt);
 	PrintUnGlow(20,450,"Press arrows or left click to navigate, right click or ESC to exit",2);
-	GetDisplayMGL()->Flip();
 	GetTaps();
 	GetArrowTaps();
 	GetDisplayMGL()->MouseTap();
@@ -31,7 +30,7 @@ void PageChg(char dir)
 	ComicPage();
 }
 
-void ComicBook(void)
+TASK(void) ComicBook(void)
 {
 	int i;
 	char k;
@@ -45,9 +44,9 @@ void ComicBook(void)
 	pageNo=0;
 	ComicPage();
 
-	while(1)
+	while(GetDisplayMGL()->Process())
 	{
-		GetDisplayMGL()->Process();
+		AWAIT GetDisplayMGL()->Flip();
 		k=GetDisplayMGL()->LastKeyPressed();
 		c=GetTaps()|GetArrowTaps();
 		if(k==27)
@@ -64,5 +63,5 @@ void ComicBook(void)
 			PageChg(-1);
 	}
 	GetDisplayMGL()->ClearScreen();
-	GetDisplayMGL()->Flip();
+	AWAIT GetDisplayMGL()->Flip();
 }

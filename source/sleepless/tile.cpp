@@ -181,7 +181,7 @@ void SaveTilesToBMP(const char *fname)
 			RenderFloorTileUnlit(i*TILE_WIDTH,j*TILE_HEIGHT,i+j*20);
 		}
 
-	GetDisplayMGL()->Flip();
+	//GetDisplayMGL()->Flip();
 	GetDisplayMGL()->SaveBMP(tmp);
 
 	if(numTiles>400)
@@ -196,7 +196,7 @@ void SaveTilesToBMP(const char *fname)
 				RenderFloorTileUnlit(i*TILE_WIDTH,j*TILE_HEIGHT,i+j*20+400);
 			}
 
-		GetDisplayMGL()->Flip();
+		//GetDisplayMGL()->Flip();
 		GetDisplayMGL()->SaveBMP(tmp);
 	}
 	GetDisplayMGL()->ClearScreen();

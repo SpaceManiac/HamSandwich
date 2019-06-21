@@ -1416,7 +1416,7 @@ void SpecialEffect(special_t *me,Map *map)
 				if(me->effect[i].text[0]=='@')
 					CompleteGoal(atoi(&me->effect[i].text[1]), 1);
 				else if(me->effect[i].text[0]=='~')
-					Ledger(GetDisplayMGL());
+					coro::launch(std::bind(Ledger, GetDisplayMGL()));
 				else if(me->effect[i].text[0]!='/' || me->effect[i].text[1]!='/')
 				{
 					if(me->effect[i].flags&EF_TOGGLE)
@@ -1544,7 +1544,7 @@ void SpecialEffect(special_t *me,Map *map)
 
 				break;
 			case EFF_PICTURE:
-				ShowImageOrFlic(me->effect[i].text,(me->effect[i].flags&EF_NOFX),me->effect[i].value);
+				coro::launch(std::bind(ShowImageOrFlic,me->effect[i].text,(me->effect[i].flags&EF_NOFX),me->effect[i].value));
 				break;
 			case EFF_ITEM:
 				if(me->effect[i].flags&EF_CONTIGUOUS)

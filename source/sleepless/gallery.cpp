@@ -144,7 +144,7 @@ void SetupShow(void)
 	char s[128];
 
 	GetDisplayMGL()->ClearScreen();
-	GetDisplayMGL()->Flip();
+	//GetDisplayMGL()->Flip();  // TODO: is this needed?
 
 	if(profile.progress.goal[bumpedPic]==0)
 	{
@@ -197,7 +197,7 @@ void InitShowPic(MGLDraw *mgl)
 void ExitShowPic(void)
 {
 	GetDisplayMGL()->ClearScreen();
-	GetDisplayMGL()->Flip();
+	//GetDisplayMGL()->Flip();  // TODO: is this needed?
 
 	if(showMode==1)
 	{
@@ -248,7 +248,7 @@ void RenderShowPic(MGLDraw *mgl)
 		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&image[i*640],640);
 }
 
-void ShowGalleryPic(void)
+TASK(void) ShowGalleryPic(void)
 {
 	byte done=0;
 	int lastTime=1;
@@ -262,7 +262,7 @@ void ShowGalleryPic(void)
 		done=UpdateShowPic(&lastTime,GetDisplayMGL());
 		RenderShowPic(GetDisplayMGL());
 
-		GetDisplayMGL()->Flip();
+		AWAIT GetDisplayMGL()->Flip();
 
 		if(!GetDisplayMGL()->Process())
 			done=1;

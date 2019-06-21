@@ -3,7 +3,7 @@
 
 #include "mgldraw.h"
 
-void NetMenu(MGLDraw *mgl);
+TASK(void) NetMenu(MGLDraw *mgl);
 byte DoWebPage(void);
 
 #endif

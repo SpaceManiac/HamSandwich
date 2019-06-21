@@ -37,7 +37,7 @@ const char* AppdataFolderName()
 	return "SleeplessHollow";
 }
 
-int main(int argc, char* argv[])
+TASK(int) main(int argc, char* argv[])
 {
 	bool windowedGame=false;
 
@@ -50,23 +50,23 @@ int main(int argc, char* argv[])
 	LoadConfig();
 	MGLDraw *mainmgl=new MGLDraw("Sleepless Hollow", SCRWID, SCRHEI, windowedGame);
 	if(!mainmgl)
-		return 0;
+		CO_RETURN 0;
 
 	LunaticInit(mainmgl);
 
-	SplashScreen(mainmgl,"graphics/hamumu.bmp",32,2);
+	AWAIT SplashScreen(mainmgl,"graphics/hamumu.bmp",32,2);
 
 	//NewComputerSpriteFix("graphics/items.jsp");
 	//NewComputerSpriteFix("graphics/intface.jsp");
 	shopping=0;
 	while(1)
 	{
-		switch(MainMenu(mainmgl))
+		switch(AWAIT MainMenu(mainmgl))
 		{
 			case 3:
 			case 255:	// quit
 #ifdef DEMO
-				if(Nag(mainmgl,1))
+				if(AWAIT Nag(mainmgl,1))
 				{
 					LunaticExit();
 					delete mainmgl;
@@ -79,23 +79,23 @@ int main(int argc, char* argv[])
 					LunaticExit();
 					delete mainmgl;
 				}
-				return 0;
+				CO_RETURN 0;
 				break;
 			case 0:	// play
 				shopping=0;
 #ifdef DEMO
-				PlayWorld(mainmgl,"demo.shw");
+				AWAIT PlayWorld(mainmgl,"demo.shw");
 #else
-				PlayWorld(mainmgl,profile.lastWorld);
+				AWAIT PlayWorld(mainmgl,profile.lastWorld);
 #endif
 				break;
 			case 1:	// profile
-				ProfMenu(mainmgl);
+				AWAIT ProfMenu(mainmgl);
 				break;
 			case 2:	// internet
 #ifndef DEMO
 				shopping=0;
-				NetMenu(mainmgl);
+				AWAIT NetMenu(mainmgl);
 
 				if(DoWebPage()==1)
 				{
@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
 #ifdef _WIN32
 					ShellExecuteA(NULL,"open","http://hamumu.com/scores.php",NULL,NULL,SW_SHOWNORMAL);
 #endif
-					return 0;
+					CO_RETURN 0;
 				}
 				else if(DoWebPage()==2)
 				{
@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
 #ifdef _WIN32
 					ShellExecuteA(NULL,"open","http://hamumu.com/addon.php",NULL,NULL,SW_SHOWNORMAL);
 #endif
-					return 0;
+					CO_RETURN 0;
 				}
 #else
 				LunaticExit();
@@ -122,12 +122,12 @@ int main(int argc, char* argv[])
 #ifdef _WIN32
 				ShellExecute(NULL,"open","http://hamumu.com/game.php?game=HOLLOW",NULL,NULL,SW_SHOWNORMAL);
 #endif
-				return 0;
+				CO_RETURN 0;
 #endif
 				break;
 			case 5:	// editor
 				shopping=0;
-				LunaticEditor(mainmgl);
+				AWAIT LunaticEditor(mainmgl);
 				break;
 		}
 	}
