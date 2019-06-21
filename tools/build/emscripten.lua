@@ -38,19 +38,22 @@ emcc = table.merge(clang, {
 	-- Ports table: transparently transform certain "links" names into the
 	-- emcc-specific flags to activate those ports.
 	ports = {
-		SDL2main = {},  -- No flags, but don't link it.
-		SDL2 = { "-s USE_SDL=2" },
-		SDL2_mixer = { "-s USE_SDL_MIXER=2" },
-		SDL2_image = { "-s USE_SDL_IMAGE=2" },
+		SDL2main = { },  -- No flags, but don't link it.
+		SDL2 = { compile = {"-s USE_SDL=2"}, link = {"-s USE_SDL=2"} },
+		SDL2_mixer = { compile = {"-s USE_SDL_MIXER=2"} },
+		SDL2_image = { compile = {"-s USE_SDL_IMAGE=2"}, link = {"-s USE_SDL_IMAGE=2"} },
 	},
 
-	getports = function(cfg)
+	getports = function(cfg, subtab)
 		local ports = {}
 
 		for _, lib in ipairs(cfg.links) do
 			local flags = emcc.ports[lib]
 			if flags then
-				table.move(flags, 1, #flags, 1 + #ports, ports)
+				flags = flags[subtab]
+				if flags then
+					table.move(flags, 1, #flags, 1 + #ports, ports)
+				end
 			end
 		end
 
@@ -59,16 +62,16 @@ emcc = table.merge(clang, {
 
 	-- CFLAGS, CXXFLAGS, and LDFLAGS should all have the ports flags.
 	getcflags = function(cfg)
-		return table.join(clang.getcflags(cfg), emcc.getports(cfg))
+		return table.join(clang.getcflags(cfg), emcc.getports(cfg, "compile"))
 	end,
 
 	getcxxflags = function(cfg)
-		return table.join(clang.getcxxflags(cfg), emcc.getports(cfg))
+		return table.join(clang.getcxxflags(cfg), emcc.getports(cfg, "compile"))
 	end,
 
 	getldflags = function(cfg)
 		-- Emscripten requires -g to also be passed to the link command.
-		local ldflags = table.join(clang.getldflags(cfg), emcc.getports(cfg))
+		local ldflags = table.join(clang.getldflags(cfg), emcc.getports(cfg, "link"))
 		if cfg.symbols == "On" then
 			table.insert(ldflags, "-g")
 		end
