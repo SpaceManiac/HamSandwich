@@ -13,6 +13,11 @@
 #include "badge.h"
 #include "log.h"
 
+const char* AppdataFolderName()
+{
+	return "Loonyland";
+}
+
 int main(int argc, char *argv[])
 {
 	DBG("a");

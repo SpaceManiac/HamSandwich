@@ -91,6 +91,8 @@ SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
 
 FILE* AppdataOpen(const char* file, const char* mode) {
 	std::string buffer = "/appdata/";
+	buffer.append(AppdataFolderName());
+	buffer.append("/");
 	buffer.append(file);
 
 	if (is_write_mode(mode)) {

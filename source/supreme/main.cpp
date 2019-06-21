@@ -34,7 +34,10 @@
 #include <shellapi.h>
 #endif
 
-MGLDraw *mainmgl;
+const char* AppdataFolderName()
+{
+	return "SupremeWithCheese";
+}
 
 int main(int argc, char* argv[])
 {
@@ -47,7 +50,7 @@ int main(int argc, char* argv[])
 	}
 
 	LoadConfig();
-	mainmgl=new MGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame);
+	MGLDraw *mainmgl=new MGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame);
 	if(!mainmgl)
 		return 0;
 

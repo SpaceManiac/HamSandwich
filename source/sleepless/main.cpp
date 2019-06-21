@@ -32,7 +32,10 @@
 #include <shellapi.h>
 #endif
 
-MGLDraw *mainmgl;
+const char* AppdataFolderName()
+{
+	return "SleeplessHollow";
+}
 
 int main(int argc, char* argv[])
 {
@@ -45,7 +48,7 @@ int main(int argc, char* argv[])
 	}
 
 	LoadConfig();
-	mainmgl=new MGLDraw("Sleepless Hollow", SCRWID, SCRHEI, windowedGame);
+	MGLDraw *mainmgl=new MGLDraw("Sleepless Hollow", SCRWID, SCRHEI, windowedGame);
 	if(!mainmgl)
 		return 0;
 

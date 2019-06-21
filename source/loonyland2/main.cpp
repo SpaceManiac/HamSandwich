@@ -14,8 +14,6 @@
 #include "sound.h"
 #include "music.h"
 
-MGLDraw *mainmgl;
-
 // SPISPOPD helper for atkins!
 /*
 void GetPal(void)
@@ -39,6 +37,11 @@ void GetPal(void)
 }
 */
 
+const char* AppdataFolderName()
+{
+	return "Loonyland2";
+}
+
 int main(int argc, char* argv[])
 {
 	bool windowedGame=false;
@@ -48,7 +51,7 @@ int main(int argc, char* argv[])
 			windowedGame=true;
 	}
 	LoadConfig();
-	mainmgl=new MGLDraw("Loonyland 2", SCRWID, SCRHEI, windowedGame);
+	MGLDraw *mainmgl=new MGLDraw("Loonyland 2", SCRWID, SCRHEI, windowedGame);
 
 	if(!mainmgl)
 		return 0;

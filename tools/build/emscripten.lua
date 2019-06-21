@@ -134,7 +134,7 @@ function emscripten.html(fname)
 	filter { "toolset:emcc", "files:" .. fname }
 		buildmessage "%{file.name}"
 		buildoutputs "%{cfg.targetdir}/%{file.name}"
-		buildcommands "sed 's/__JS_FILENAME__/%{prj.name}.js/g' <%{file.relpath} >%{cfg.targetdir}/%{file.name}"
+		buildcommands "sed 's/__PROJECT_NAME__/%{prj.name}/g' <%{file.relpath} >%{cfg.targetdir}/%{file.name}"
 
 	filter "toolset:emcc"
 		files(fname)

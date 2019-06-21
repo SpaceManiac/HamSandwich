@@ -24,6 +24,11 @@
 #include <shellapi.h>
 #endif
 
+const char* AppdataFolderName()
+{
+	return "DrLunatic";
+}
+
 int main(int argc, char* argv[])
 {
 	bool windowedGame=false;

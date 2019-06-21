@@ -18,4 +18,7 @@ void AppdataSync();
 FILE* AssetOpen(const char* file, const char* mode);
 SDL_RWops* AssetOpen_SDL(const char* file, const char* mode);
 
+// Games should provide this; it will be used to name appdata folders.
+extern const char* AppdataFolderName();
+
 #endif  // APPDATA_H
