@@ -227,7 +227,7 @@ void BackupWorld(const char *name)
 	AppdataSync();
 }
 
-void UpdateMouse(void)
+TASK(void) UpdateMouse(void)
 {
 	int cx,cy;
 
@@ -307,7 +307,7 @@ void UpdateMouse(void)
 			break;
 		case EDITMODE_EDIT:
 			if(!viewMenu || !editMenu || (ToolDoing()!=TD_USING) || (viewMenu && ViewDialogClick(mouseX,mouseY)))
-				ToolUpdate(mouseX,mouseY,editMenu,editmgl);
+				AWAIT ToolUpdate(mouseX,mouseY,editMenu,editmgl);
 			break;
 		case EDITMODE_EXIT:
 			if(editmgl->MouseTap())
@@ -496,7 +496,7 @@ void UpdateMouse(void)
 	}
 }
 
-byte EditorRun(int *lastTime)
+TASK(byte) EditorRun(int *lastTime)
 {
 	numRunsToMakeUp=0;
 	if(*lastTime>TIME_PER_FRAME*5)
@@ -505,7 +505,7 @@ byte EditorRun(int *lastTime)
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		if(!editmgl->Process())
-			return QUITGAME;
+			CO_RETURN QUITGAME;
 
 		// update everything here
 		UpdateItems();
@@ -518,7 +518,7 @@ byte EditorRun(int *lastTime)
 		else
 			editorMap->Update(UPDATE_EDIT,&world);
 
-		UpdateMouse();
+		AWAIT UpdateMouse();
 
 		*lastTime-=TIME_PER_FRAME;
 		numRunsToMakeUp++;
@@ -528,7 +528,7 @@ byte EditorRun(int *lastTime)
 	if(curMapNum==0)
 		editorMap->flags|=MAP_HUB;
 
-	return CONTINUE;
+	CO_RETURN CONTINUE;
 }
 
 void ShowSpecials(void)
@@ -759,11 +759,9 @@ void EditorDraw(void)
 
 	// draw the mouse cursor
 	DrawMouseCursor(mouseX,mouseY);
-
-	editmgl->Flip();
 }
 
-static void HandleKeyPresses(void)
+static TASK(void) HandleKeyPresses(void)
 {
 	char k;
 	byte s;
@@ -862,7 +860,7 @@ static void HandleKeyPresses(void)
 			case 'T':
 				int cx,cy;
 				GetCamera(&cx,&cy);
-				TestLevel(EditorGetWorld(),EditorGetMapNum());
+				AWAIT TestLevel(EditorGetWorld(),EditorGetMapNum());
 				StopSong();
 				SetPlayerStart(-1,-1);
 				ExitPlayer();
@@ -1041,7 +1039,7 @@ void SetEditMode(byte m)
 		InitViewDialog();
 }
 
-byte LunaticEditor(MGLDraw *mgl)
+TASK(byte) LunaticEditor(MGLDraw *mgl)
 {
 	int lastTime=1;
 	byte exitcode=0;
@@ -1049,16 +1047,17 @@ byte LunaticEditor(MGLDraw *mgl)
 	editmgl=mgl;
 
 	if(!InitEditor())
-		return QUITGAME;
+		CO_RETURN QUITGAME;
 
 	exitcode=CONTINUE;
 	while(exitcode==CONTINUE)
 	{
 		lastTime+=TimeLength();
 		StartClock();
-		HandleKeyPresses();
-		exitcode=EditorRun(&lastTime);
+		AWAIT HandleKeyPresses();
+		exitcode=AWAIT EditorRun(&lastTime);
 		EditorDraw();
+		AWAIT editmgl->Flip();
 
 		if(editMode==EDITMODE_EXITYES)
 			exitcode=QUITGAME;
@@ -1068,7 +1067,7 @@ byte LunaticEditor(MGLDraw *mgl)
 	}
 
 	ExitEditor();
-	return exitcode;
+	CO_RETURN exitcode;
 }
 
 void EditorSaveWorld(const char *fname)

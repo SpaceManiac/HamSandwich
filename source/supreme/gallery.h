@@ -17,7 +17,7 @@ void InitGallery(Map *map);
 void ExitGallery(void);
 
 byte GalleryBump(int x,int y);
-void ShowGalleryPic(void);
+TASK(void) ShowGalleryPic(void);
 void SetupGalPix(Map *map);
 
 #endif

@@ -446,7 +446,7 @@ void RenderTally(MGLDraw *mgl)
 
 //----------------
 
-void Tally(MGLDraw *mgl,const char *lvlName,byte countIt)
+TASK(void) Tally(MGLDraw *mgl,const char *lvlName,byte countIt)
 {
 	byte done=0;
 	int lastTime=1;
@@ -462,7 +462,7 @@ void Tally(MGLDraw *mgl,const char *lvlName,byte countIt)
 
 		done=UpdateTally(&lastTime,mgl);
 		RenderTally(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;

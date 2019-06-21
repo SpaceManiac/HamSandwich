@@ -1681,7 +1681,7 @@ byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y)
 
 	if(shopping && type>=NUM_ORIGINAL_ITEMS && me->aiType==MONS_BOUAPHA)
 	{
-		InitShopping(x,y);	// bumped a shoppable item in the mall
+		coro::launch(std::bind(InitShopping, x, y));	// bumped a shoppable item in the mall
 		return 0;
 	}
 

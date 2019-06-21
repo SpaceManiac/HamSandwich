@@ -455,13 +455,13 @@ void RenderMoron(MGLDraw *mgl)
 
 //----------------
 
-void Moron(MGLDraw *mgl)
+TASK(void) Moron(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime=1;
 
 	if(!InitMoron(mgl))
-		return;
+		CO_RETURN;
 
 	while(!done)
 	{
@@ -470,7 +470,7 @@ void Moron(MGLDraw *mgl)
 		done=UpdateMoron(&lastTime,mgl);
 		RenderMoron(mgl);
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;
