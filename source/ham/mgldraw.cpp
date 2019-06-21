@@ -254,7 +254,7 @@ void MGLDraw::ResizeBuffer(int w, int h)
 	buffer = new RGB[xRes * yRes];
 }
 
-void MGLDraw::FinishFlip(void)
+TASK(void) MGLDraw::FinishFlip(void)
 {
 	SDL_UpdateTexture(texture, NULL, buffer, pitch * sizeof(RGB));
 
@@ -328,6 +328,8 @@ void MGLDraw::FinishFlip(void)
 			}
 		}
 	}
+
+	AWAIT coro::next_frame();
 }
 
 TASK(void) MGLDraw::Flip(void)
@@ -342,11 +344,10 @@ TASK(void) MGLDraw::Flip(void)
 	for(int i = 0; i < limit; ++i)
 		*target++ = thePal[*src++];
 
-	FinishFlip();
-	AWAIT coro::next_frame();
+	AWAIT FinishFlip();
 }
 
-void MGLDraw::WaterFlip(int v)
+TASK(void) MGLDraw::WaterFlip(int v)
 {
 	int i;
 	char table[24]={ 0, 1, 1, 1, 2, 2, 2, 2,
@@ -377,10 +378,10 @@ void MGLDraw::WaterFlip(int v)
 				v=0;
 		}
 	}
-	FinishFlip();
+	AWAIT FinishFlip();
 }
 
-void MGLDraw::TeensyFlip(void)
+TASK(void) MGLDraw::TeensyFlip(void)
 {
 	int i,j,x,y;
 
@@ -394,10 +395,10 @@ void MGLDraw::TeensyFlip(void)
 			putpixel(x+j,y,FormatPixel(j*2,i*2));
 		y++;
 	}
-	FinishFlip();
+	AWAIT FinishFlip();
 }
 
-void MGLDraw::TeensyWaterFlip(int v)
+TASK(void) MGLDraw::TeensyWaterFlip(int v)
 {
 	int i,j,x,y;
 	char table[24]={ 0, 1, 1, 1, 2, 2, 2, 2,
@@ -425,11 +426,10 @@ void MGLDraw::TeensyWaterFlip(int v)
 		}
 		y++;
 	}
-	FinishFlip();
+	AWAIT FinishFlip();
 }
 
-
-void MGLDraw::RasterFlip(void)
+TASK(void) MGLDraw::RasterFlip(void)
 {
 	int i,j;
 
@@ -447,10 +447,10 @@ void MGLDraw::RasterFlip(void)
 				putpixel(j,i,BLACK);
 		}
 	}
-	FinishFlip();
+	AWAIT FinishFlip();
 }
 
-void MGLDraw::RasterWaterFlip(int v)
+TASK(void) MGLDraw::RasterWaterFlip(int v)
 {
 	int i,j;
 	char table[24]={ 0, 1, 1, 1, 2, 2, 2, 2,
@@ -489,7 +489,7 @@ void MGLDraw::RasterWaterFlip(int v)
 				v=0;
 		}
 	}
-	FinishFlip();
+	AWAIT FinishFlip();
 }
 
 void MGLDraw::SetPalette(PALETTE newpal)

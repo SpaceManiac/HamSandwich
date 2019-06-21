@@ -50,11 +50,11 @@ public:
 
 	// Display the buffer to the screen.
 	TASK(void) Flip();
-	void WaterFlip(int v);
-	void TeensyFlip();
-	void TeensyWaterFlip(int v);
-	void RasterFlip();
-	void RasterWaterFlip(int v);
+	TASK(void) WaterFlip(int v);
+	TASK(void) TeensyFlip();
+	TASK(void) TeensyWaterFlip(int v);
+	TASK(void) RasterFlip();
+	TASK(void) RasterWaterFlip(int v);
 
 	// Return a pointer to the primary palette.
 	const RGB *GetPalette();
@@ -110,7 +110,7 @@ protected:
 	void PseudoCopy(int x, int y, byte* data, int len);
 
 	void StartFlip(void);
-	void FinishFlip(void);
+	TASK(void) FinishFlip(void);
 
 	bool windowed, readyToQuit, idle;
 
