@@ -22,7 +22,7 @@
 
 const char* AppdataFolderName()
 {
-	return "KidMystic";
+	return PROJECT_NAME;
 }
 
 TASK(int) main(int argc, char* argv[])

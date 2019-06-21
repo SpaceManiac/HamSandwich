@@ -144,7 +144,7 @@
 					}
 
 					var zip = new JSZip();
-					collect(zip, '/appdata');
+					collect(zip, '/appdata/__PROJECT_NAME__');
 					zip.generateAsync({ type: "blob" }).then(function(content) {
 						saveAs(content, "HamSandwich Saves.zip");
 					});

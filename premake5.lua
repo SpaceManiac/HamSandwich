@@ -19,6 +19,8 @@ function base_project(name)
 		targetdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/")
 		objdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/obj/")
 
+		defines { 'PROJECT_NAME="%{prj.name}"' }
+
 		files {
 			"source/" .. name .. "/**.h",
 			"source/" .. name .. "/**.cpp",

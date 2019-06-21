@@ -36,7 +36,7 @@
 
 const char* AppdataFolderName()
 {
-	return "SupremeWithCheese";
+	return PROJECT_NAME;
 }
 
 TASK(int) main(int argc, char* argv[])
