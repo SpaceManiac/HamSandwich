@@ -53,8 +53,7 @@ static bool is_write_mode(const char* mode) {
 }
 #endif
 
-// TODO: re-enable this when "DrLunatic" is overrideable,
-// and there's some means of porting existing installs.
+// TODO: re-enable this when there's some means of porting existing installs.
 #if 0  // #ifdef _WIN32
 // Windows ----------------------------------------------------------
 
@@ -65,14 +64,17 @@ static bool is_write_mode(const char* mode) {
 #endif
 
 FILE* AppdataOpen(const char* file, const char* mode) {
-	char buffer[MAX_PATH];
-	SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, buffer);
-	strcat(buffer, "\\Hamumu");
-	mkdir(buffer);
-	strcat(buffer, "\\DrLunatic");
-	mkdir(buffer);
-	strcat(buffer, "\\");
-	strcat(buffer, file);
+	char get_folder_path[MAX_PATH];
+	SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, get_folder_path);
+
+	std::string buffer = get_folder_path;
+	buffer.append("\\Hamumu\\");
+	buffer.append(AppdataFolderName());
+	buffer.append("\\");
+	buffer.append(file);
+	if (is_write_mode(mode)) {
+		mkdir_parents(file, MKDIR_MODE);  // TODO: mode is meaningless on win32
+	}
 	return fopen(file, mode);
 }
 
@@ -141,22 +143,22 @@ void AppdataSync() {
 #include <string.h>
 
 FILE* AppdataOpen(const char* file, const char* mode) {
-	char buffer[1024];
+	std::string buffer;
 
 	// Only use external storage if it is both readable and writeable
 	int need_flags = SDL_ANDROID_EXTERNAL_STORAGE_READ | SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
 	if ((SDL_AndroidGetExternalStorageState() & need_flags) == need_flags) {
-		strcpy(buffer, SDL_AndroidGetExternalStoragePath());
+		buffer = SDL_AndroidGetExternalStoragePath();
 	} else {
-		strcpy(buffer, SDL_AndroidGetInternalStoragePath());
+		buffer = SDL_AndroidGetInternalStoragePath();
 	}
 
-	strcat(buffer, "/");
-	strcat(buffer, file);
+	buffer.append("/");
+	buffer.append(file);
 	if (is_write_mode(mode)) {
-		mkdir_parents(buffer, MKDIR_MODE);
+		mkdir_parents(buffer.c_str(), MKDIR_MODE);
 	}
-	FILE* fp = fopen(buffer, mode);
+	FILE* fp = fopen(buffer.c_str(), mode);
 	if (!fp) {
 		LogDebug("AppdataOpen(%s, %s): %s", file, mode, strerror(errno));
 	}
