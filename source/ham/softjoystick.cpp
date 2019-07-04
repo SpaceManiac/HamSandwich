@@ -9,6 +9,10 @@
 	#include <SDL2/SDL_image.h>
 #endif
 
+#ifndef M_PI
+	#define M_PI 3.1415926535897
+#endif
+
 static byte numButtons = 2;
 static byte state = 0;
 static byte taps = 0;
