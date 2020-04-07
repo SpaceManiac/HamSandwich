@@ -65,6 +65,19 @@ void GreyPalette(MGLDraw* mgl)
 	mgl->SetSecondaryPalette(pal2);
 }
 
+void RedPalette(MGLDraw* mgl)
+{
+	const RGB* pal = mgl->GetPalette();
+	PALETTE pal2;
+
+	for (int i = 0; i < 256; ++i)
+	{
+		pal2[i] = pal[(i & 31)/2+32*7+4];
+	}
+
+	mgl->SetSecondaryPalette(pal2);
+}
+
 void DarkPalette(MGLDraw* mgl)
 {
 	const RGB* pal = mgl->GetPalette();

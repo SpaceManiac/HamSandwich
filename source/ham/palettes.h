@@ -9,6 +9,7 @@ void WaterPalette(MGLDraw *mgl);
 void LavaPalette(MGLDraw *mgl);
 void DumbSidePalette(MGLDraw *mgl);
 void GreyPalette(MGLDraw *mgl);
+void RedPalette(MGLDraw *mgl);
 void DarkPalette(MGLDraw *mgl);
 void CyclePalette(MGLDraw *mgl, int c);
 
