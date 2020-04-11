@@ -144,7 +144,23 @@ void LoadProfile(const char *name)
 		DefaultProfile(name);
 		return;
 	}
-	fread(&profile,sizeof(profile_t),1,f);
+	// begin fread(&profile, sizeof(profile_t), 1, f) emulation
+	fread(&profile, 68, 1, f);
+	for(i = 0; i < NUM_PLAYLISTS; ++i)
+	{
+		fseek(f, 8, SEEK_CUR);
+	}
+	fread(&profile.difficulty, 8, 1, f);
+	// begin progress_t part
+	{
+		fread(&profile.progress, 112, 1, f);
+		fseek(f, 4, SEEK_CUR);  // skip worldData_t *world
+		fread(&profile.progress.kills, 2152 - 112 - 4, 1, f);
+	}
+	// end progress_t part
+	fread(&profile.motd, sizeof(profile.motd), 1, f);
+	SDL_assert(ftell(f) == 3284);
+	// end fread emulation
 	LoadPlayLists(f);
 
 	if(profile.progress.num_worlds==0)
@@ -154,7 +170,8 @@ void LoadProfile(const char *name)
 		profile.progress.world=(worldData_t *)malloc(sizeof(worldData_t)*profile.progress.num_worlds);
 		for(i=0;i<profile.progress.num_worlds;i++)
 		{
-			fread(&profile.progress.world[i],sizeof(worldData_t),1,f);
+			fread(&profile.progress.world[i],76,1,f);
+			fseek(f, 4, SEEK_CUR);
 			profile.progress.world[i].level=(levelData_t *)malloc(sizeof(levelData_t)*profile.progress.world[i].levels);
 			for(j=0;j<profile.progress.world[i].levels;j++)
 			{
