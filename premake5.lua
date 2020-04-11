@@ -4,7 +4,7 @@ dofile "tools/build/emscripten.lua"
 
 workspace "HamSandwich"
 	location "build"
-	configurations { "debug", "release" }
+	configurations { "debug", "release", "debug64", "release64" }
 
 	filter { "action:android-studio" }
 		location "build/android"
@@ -24,12 +24,15 @@ function base_project(name)
 			"source/" .. name .. "/**.cpp",
 		}
 
-		filter "configurations:debug"
+		filter "configurations:*64"
+			architecture "x86_64"
+
+		filter "configurations:debug*"
 			kind "ConsoleApp"
 			defines { "_DEBUG" }
 			symbols "On"
 
-		filter "configurations:release"
+		filter "configurations:release*"
 			defines { "NDEBUG" }
 			optimize "On"
 
@@ -60,7 +63,7 @@ function base_project(name)
 			defines { "SDL_UNPREFIXED" }
 			buildoptions { "-fsigned-char", "-fexceptions" }
 
-		filter { "toolset:emcc", "configurations:debug" }
+		filter { "toolset:emcc", "configurations:debug*" }
 			linkoptions { "--emrun" }
 
 		filter { "toolset:emcc" }

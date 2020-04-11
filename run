@@ -36,6 +36,9 @@ while [ $# -ne 0 ]; do
 		"--release")
 			CONFIG=release
 			;;
+		"--64")
+			CONFIG=${CONFIG}64
+			;;
 		"--gdb")
 			TOOL=gdb
 			;;
