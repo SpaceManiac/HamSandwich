@@ -15,16 +15,25 @@ show_help() {
 	echo "    --valgrind    Run the game under valgrind memory checker (slow)."
 	echo "    --callgrind   Run the game under callgrind profiler (slow)."
 	echo "    --two         Run two copies of the game at once."
+	echo "    --32, --64    Explicitly specify an architecture."
 }
 
 # Default settings
 TOOL=
 PROJECT=
 CONFIG=debug
+BITS=
 ARGS=window
 NOBUILD=
 TOOLSET=gcc
 TWO=
+
+# Default bitness
+if [ "${MSYSTEM:-}" = "MINGW64" ]; then
+	BITS=64
+elif [[ "$(uname -v)" = *Ubuntu* ]] && [ "$(uname -m)" = "x86_64" ]; then
+	BITS=64
+fi
 
 # Read command-line arguments
 while [ $# -ne 0 ]; do
@@ -36,8 +45,11 @@ while [ $# -ne 0 ]; do
 		"--release")
 			CONFIG=release
 			;;
+		"--32")
+			BITS=
+			;;
 		"--64")
-			CONFIG=${CONFIG}64
+			BITS=64
 			;;
 		"--gdb")
 			TOOL=gdb
@@ -76,6 +88,7 @@ if [ -z $PROJECT ]; then
 	# Exit if no project was specified
 	show_help; exit 1
 fi
+CONFIG=$CONFIG$BITS
 
 # Ensure all dependencies are installed
 ./tools/build/install-deps.sh

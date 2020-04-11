@@ -6,12 +6,15 @@ mkdir -p "build"
 
 # Check for supported system
 if [ "${MSYSTEM:-}" ]; then
-	if [ "$MSYSTEM" != "MINGW32" ]; then
-		echo "The project can only be built in 32-bit mode."
-		echo "Return to the Start Menu and open 'MSYS2 MinGW 32-bit'."
+	if [ "$MSYSTEM" = "MINGW32" ]; then
+		SYS=mingw32
+	elif [ "$MSYSTEM" = "MINGW64" ]; then
+		SYS=mingw64
+	else
+		echo "The project cannot be built in Cygwin mode. Return to the Start Menu"
+		echo "and open 'MSYS2 MinGW 32-bit' or 'MSYS2 MinGW 64-bit'."
 		exit 1
 	fi
-	SYS=msys2
 elif command -v apt-get >/dev/null 2>&1; then
 	SYS=ubuntu
 elif command -v pacman >/dev/null 2>&1; then
@@ -32,11 +35,12 @@ packages() {
 	local CMD="$1"
 	shift
 	local PACKAGES="$@"
-	if [ ! -f "build/.packages" ] || [ "$(cat build/.packages)" != "$PACKAGES" ]; then
+	local FNAME="build/.packages-$SYS"
+	if [ ! -f "$FNAME" ] || [ "$(cat $FNAME)" != "$PACKAGES" ]; then
 		echo "==== Updating system packages ===="
 		echo $CMD $PACKAGES
 		$CMD $PACKAGES
-		echo "$PACKAGES" > build/.packages
+		echo "$PACKAGES" >"$FNAME"
 	fi
 }
 
@@ -80,8 +84,8 @@ deps_msys2() {
 deps_ubuntu() {
 	packages 'sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes' \
 		p7zip innoextract \
-		g++-multilib \
-		libsdl2-dev:i386 libsdl2-mixer-dev:i386 libsdl2-image-dev:i386 \
+		make g++ \
+		libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev \
 		python3-pip python3-pil
 
 	premake5_linux
