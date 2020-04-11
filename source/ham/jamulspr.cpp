@@ -152,7 +152,7 @@ void sprite_t::GetCoords(int x,int y,int *rx,int *ry,int *rx2,int *ry2)
 void sprite_t::Draw(int x, int y, MGLDraw *mgl)
 {
 	byte *src, *dst, b, skip;
-	dword pitch;
+	int pitch;
 	int srcx, srcy;
 	byte noDraw;
 
@@ -241,7 +241,8 @@ void sprite_t::Draw(int x, int y, MGLDraw *mgl)
 		{
 			srcx = x;
 			srcy++;
-			dst += pitch - width;
+			dst += pitch;
+			dst -= width;
 			if (srcy >= constrainY)
 				noDraw = 0;
 			if (srcy > constrainY2)
@@ -255,7 +256,7 @@ void sprite_t::Draw(int x, int y, MGLDraw *mgl)
 void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright)
 {
 	byte *src, *dst, b, skip;
-	dword pitch;
+	int pitch;
 	int srcx, srcy;
 	byte noDraw;
 	int i;
@@ -355,7 +356,8 @@ void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright)
 		{
 			srcx = x;
 			srcy++;
-			dst += pitch - width;
+			dst += pitch;
+			dst -= width;
 			if (srcy >= constrainY)
 				noDraw = 0;
 			if (srcy > constrainY2)
@@ -370,7 +372,7 @@ void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright)
 void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright)
 {
 	byte *src, *dst, b, skip;
-	dword pitch;
+	int pitch;
 	int srcx, srcy;
 	byte noDraw;
 	int i;
@@ -464,7 +466,8 @@ void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright)
 		{
 			srcx = x;
 			srcy++;
-			dst += pitch - width;
+			dst += pitch;
+			dst -= width;
 			if (srcy >= constrainY)
 				noDraw = 0;
 			if (srcy > constrainY2)
@@ -476,7 +479,7 @@ void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright)
 void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toColor, char bright)
 {
 	byte *src, *dst, b, skip;
-	dword pitch;
+	int pitch;
 	int srcx, srcy;
 	byte noDraw;
 	int i;
@@ -570,7 +573,8 @@ void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toC
 		{
 			srcx = x;
 			srcy++;
-			dst += pitch - width;
+			dst += pitch;
+			dst -= width;
 			if (srcy >= constrainY)
 				noDraw = 0;
 			if (srcy > constrainY2)
@@ -588,7 +592,7 @@ void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toC
 void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright)
 {
 	byte *src, *dst, b, skip;
-	dword pitch;
+	int pitch;
 	int srcx, srcy;
 	byte noDraw;
 	int i;
@@ -682,7 +686,8 @@ void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright)
 		{
 			srcx = x;
 			srcy++;
-			dst += pitch - width;
+			dst += pitch;
+			dst -= width;
 			if (srcy >= constrainY)
 				noDraw = 0;
 			if (srcy > constrainY2)
@@ -694,7 +699,7 @@ void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright)
 void sprite_t::DrawGlow(int x, int y, MGLDraw *mgl, char bright)
 {
 	byte *src, *dst, b, skip;
-	dword pitch;
+	int pitch;
 	int srcx, srcy;
 	byte noDraw;
 	int i;
@@ -788,7 +793,8 @@ void sprite_t::DrawGlow(int x, int y, MGLDraw *mgl, char bright)
 		{
 			srcx = x;
 			srcy++;
-			dst += pitch - width;
+			dst += pitch;
+			dst -= width;
 			if (srcy >= constrainY)
 				noDraw = 0;
 			if (srcy > constrainY2)
@@ -800,7 +806,7 @@ void sprite_t::DrawGlow(int x, int y, MGLDraw *mgl, char bright)
 void sprite_t::DrawShadow(int x, int y, MGLDraw *mgl)
 {
 	byte *src, *dst, b, skip;
-	dword pitch;
+	int pitch;
 	int srcx, srcy, x2;
 	byte noDraw;
 	byte alternate;
@@ -901,7 +907,8 @@ void sprite_t::DrawShadow(int x, int y, MGLDraw *mgl)
 			x2 += alternate;
 			srcx -= width - alternate;
 			srcy += alternate;
-			dst += (alternate ? pitch : 1) - width;
+			dst += (alternate ? pitch : 1);
+			dst -= width;
 			if (srcy >= constrainY)
 				noDraw = 0;
 			if (srcy > constrainY2)
@@ -1079,7 +1086,7 @@ void SetSpriteConstraints(int x,int y,int x2,int y2)
 void sprite_t::DrawC(int x,int y,MGLDraw *mgl)
 {
 	byte *src,*dst,b,skip;
-	dword pitch;
+	int pitch;
 	int srcx,srcy;
 	byte noDraw;
 
