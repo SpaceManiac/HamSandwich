@@ -16,19 +16,19 @@
 
 struct fliheader
 {
-	long size;
+	int32_t size;
 	word magic;  // FLC=0xAF12 (FLI=0xAF11, but no games use this)
 	word frames;
 	word width,height;
 	word depth;  // ignored, they're all 8-bit
 	word flags;  // ignored, always 3, whatever that means
 	word speed;  // milliseconds per frame
-	long next,frit;  // meaning unknown
+	int32_t next,frit;  // meaning unknown
 };
 
 struct frmheader
 {
-	long size;
+	int32_t size;
 	word magic;    /* always $F1FA */
 	word chunks;
 	byte expand[8];
@@ -40,7 +40,7 @@ struct frmheader
 
 struct chunkheader
 {
-	long size;
+	int32_t size;
 	word kind;
 };
 
