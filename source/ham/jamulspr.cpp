@@ -92,6 +92,7 @@ sprite_t::sprite_t(byte *info)
 	memcpy(&ofsx,&info[4],2);
 	memcpy(&ofsy,&info[6],2);
 	memcpy(&size,&info[8],4);
+	data = nullptr;
 }
 
 sprite_t::~sprite_t(void)

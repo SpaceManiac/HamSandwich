@@ -34,8 +34,8 @@ public:
 
 	word width;
 	word height;
-	short ofsx;
-	short ofsy;
+	int16_t ofsx;
+	int16_t ofsy;
 protected:
 	dword size;
 	byte *data;
