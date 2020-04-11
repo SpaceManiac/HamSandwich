@@ -241,7 +241,8 @@
 #define MONS_MINIWACKO	209
 #define MONS_JACKFROST	210
 
-#define NUM_MONSTERS  211
+#define NUM_MONSTERS  211    // Can grow as needed
+#define NUM_PROFILE_MONSTERS 211    // Do not change without redoing the profile format
 
 // fake monster codes
 #define MONS_GOODGUY	(-1)	// any goodguy
