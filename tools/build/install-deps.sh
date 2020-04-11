@@ -55,13 +55,7 @@ premake5_linux() {
 	fi
 }
 
-deps_msys2() {
-	# Install system packages
-	packages 'pacman -S --needed --noconfirm --quiet' \
-		p7zip make \
-		mingw-w64-i686-binutils mingw-w64-i686-gcc \
-		mingw-w64-i686-SDL2 mingw-w64-i686-SDL2_mixer mingw-w64-i686-SDL2_image
-
+deps_mingw_generic() {
 	# Download Premake5 binary
 	if [ ! -f "build/premake5" ]; then
 		echo "==== Downloading premake5 binary ===="
@@ -79,6 +73,26 @@ deps_msys2() {
 		7z x -o"build/" -i'!innoextract.exe' "build/innoextract.zip"
 		rm "build/innoextract.zip"
 	fi
+}
+
+deps_mingw32() {
+	# Install system packages
+	packages 'pacman -S --needed --noconfirm --quiet' \
+		p7zip make \
+		mingw-w64-i686-binutils mingw-w64-i686-gcc \
+		mingw-w64-i686-SDL2 mingw-w64-i686-SDL2_mixer mingw-w64-i686-SDL2_image
+
+	deps_mingw_generic
+}
+
+deps_mingw64() {
+	# Install system packages
+	packages 'pacman -S --needed --noconfirm --quiet' \
+		p7zip make \
+		mingw-w64-x86_64-binutils mingw-w64-x86_64-gcc \
+		mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-SDL2_image
+
+	deps_mingw_generic
 }
 
 deps_ubuntu() {
