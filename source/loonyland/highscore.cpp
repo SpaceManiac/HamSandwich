@@ -333,14 +333,14 @@ void RenderHighScore(MGLDraw *mgl)
 	int i;
 	char s[32];
 	int wid;
-	int pos;
+	byte* pos;
 	byte colors[]={0,1,2,3,4,6,5,7,8};
 
 	wid=mgl->GetWidth();
-	pos=(int)mgl->GetScreen()+20*wid;
+	pos=mgl->GetScreen()+20*wid;
 	for(i=20;i<480-20;i++)
 	{
-		memset((byte *)pos,colors[curMode]*32+2,640);
+		memset(pos,colors[curMode]*32+2,640);
 		pos+=wid;
 	}
 

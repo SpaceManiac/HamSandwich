@@ -899,7 +899,7 @@ void Credits(MGLDraw *mgl,byte init)
 	int y=-470;
 	int lastTime;
 	int wid;
-	int pos;
+	byte* pos;
 	int i;
 	dword hangon;
 
@@ -926,7 +926,7 @@ void Credits(MGLDraw *mgl,byte init)
 		StartClock();
 
 		wid=mgl->GetWidth();
-		pos=(int)mgl->GetScreen()+0*wid;
+		pos=mgl->GetScreen()+0*wid;
 		for(i=0;i<480;i++)
 		{
 			memset((byte *)pos,4*32+2,640);
@@ -1020,7 +1020,7 @@ void CheatText(MGLDraw *mgl,byte init)
 	int y=-470;
 	int lastTime;
 	int wid;
-	int pos;
+	byte* pos;
 	int i;
 	dword hangon;
 
@@ -1038,10 +1038,10 @@ void CheatText(MGLDraw *mgl,byte init)
 		StartClock();
 
 		wid=mgl->GetWidth();
-		pos=(int)mgl->GetScreen()+0*wid;
+		pos=mgl->GetScreen()+0*wid;
 		for(i=0;i<480;i++)
 		{
-			memset((byte *)pos,4*32+2,640);
+			memset(pos,4*32+2,640);
 			pos+=wid;
 		}
 
@@ -1133,7 +1133,7 @@ void VictoryText(MGLDraw *mgl)
 	int y=-470;
 	int lastTime;
 	int wid;
-	int pos;
+	byte* pos;
 	int i;
 	dword hangon;
 
@@ -1149,10 +1149,10 @@ void VictoryText(MGLDraw *mgl)
 		StartClock();
 
 		wid=mgl->GetWidth();
-		pos=(int)mgl->GetScreen()+0*wid;
+		pos=mgl->GetScreen()+0*wid;
 		for(i=0;i<480;i++)
 		{
-			memset((byte *)pos,4*32+2,640);
+			memset(pos,4*32+2,640);
 			pos+=wid;
 		}
 

@@ -357,14 +357,14 @@ void RenderOptionsMenu(MGLDraw *mgl)
 	char diffy[5][18]={"Beginner","Normal","Challenge","Mad","Loony"};
 
 	int wid;
-	int pos;
+	byte* pos;
 	int i;
 
 	wid=mgl->GetWidth();
-	pos=(int)mgl->GetScreen()+40*wid;
+	pos=mgl->GetScreen()+40*wid;
 	for(i=40;i<480-40;i++)
 	{
-		memset((byte *)pos,7*32+2,640);
+		memset(pos,7*32+2,640);
 		pos+=wid;
 	}
 
