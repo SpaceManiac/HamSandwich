@@ -70,12 +70,15 @@ Compiling and running:
 
 ### Android
 
-1. Install Gradle and the Android SDK and NDK and set `ANDROID_HOME`.
-2. Run `./tools/build/sdl2-source.sh`.
-3. Run `premake5 android-studio`.
-4. Change directory to `build/android`.
-5. Run `gradle packageDebug` to compile APKs.
-6. Run `gradle installDebug` to install to a connected Android device.
+1. If on Windows, install and use MSYS2 according to the instructions above.
+2. Install Gradle and the Android SDK and set `ANDROID_HOME`.
+    1. Example shell command: `export ANDROID_HOME='C:\Wherever you installed the Android SDK\'`
+3. Run `./tools/build/sdl2-source.sh`.
+4. Run `./tools/build/extract_assets.sh <gamename>` to download assets.
+5. Run `premake5 android-studio`.
+6. Change directory to `build/android`.
+7. Run `gradle packageDebug` to compile APKs.
+8. Run `gradle installDebug` to install to a connected Android device.
 
 ### Emscripten
 
