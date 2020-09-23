@@ -14,7 +14,9 @@
 #define SHOP_ICE		8
 #define SHOP_KIDS		9
 #define SHOP_DESERT		10
-#define SHOP_HUNGER		11
+#define SHOP_GADGET		11
+#define SHOP_RANDOM		12
+#define SHOP_HUNGER		13
 
 // purchase types
 #define SHOP_WORLD		0
@@ -29,12 +31,14 @@
 #define SHOP_DISCOUNT	9	// discount card for a store
 #define SHOP_DONATION	10	// the donation at the hunger sign
 
-// abilities
+// abilities & menu modes
 #define ABIL_BRAIN		1	// brain radar
 #define ABIL_CANDLE		2	// candle radar
 #define ABIL_RAGE		3	// rage
 #define ABIL_MOVESHOOT	4	// move n' shoot
 #define ABIL_KEYCHAIN	5	// keychain helper
+#define ABIL_HYPER		6	// hyper mode
+#define ABIL_SUPREME	7	// supreme mode
 
 // major items
 #define MAJOR_THEATER	1
@@ -46,6 +50,13 @@
 #define MAJOR_QUIZ		7
 #define MAJOR_ARCADE	8
 #define MAJOR_BESTIARY	9
+// new major items
+#define MAJOR_LOCKERS	10
+#define MAJOR_GALLERY2	11
+#define MAJOR_CARDBOOK	12
+#define MAJOR_GREEDY	13
+#define MAJOR_EDPACK1	14
+#define MAJOR_ARCADE3	15
 
 // playables
 #define PLAY_BOUAPHA	0
@@ -54,6 +65,10 @@
 #define PLAY_SHROOM		3
 #define PLAY_LUNACHIK	4
 #define PLAY_MECHA		5
+#define PLAY_WOLF		6
+#define PLAY_WIZ		7
+#define PLAY_MYSTIC		8
+#define PLAY_LOONY		9
 
 // shop item flags (used in the player progress file)
 #define SIF_AVAILABLE	1
@@ -68,6 +83,7 @@
 #define MODE_SPLATTER	4
 #define MODE_MANIC		5
 #define MODE_TEENY		6
+#define MODE_VIRTUAL	7
 
 typedef struct shopItem_t
 {
@@ -94,5 +110,6 @@ byte UpdateShopping(MGLDraw *mgl);
 void RenderShopping(MGLDraw *mgl);
 
 float ShopPercent(void);
+void RandomizeLockers(void);
 
 #endif

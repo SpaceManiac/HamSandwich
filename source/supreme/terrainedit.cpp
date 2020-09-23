@@ -51,10 +51,10 @@ void TerrainSetupButtons(void);
 
 void FlagClick(int id)
 {
-	word flags[]={TF_SOLID,TF_ICE,TF_MUD,TF_WATER,TF_LAVA,TF_PUSHY,TF_PUSHON,TF_ANIM,TF_STEP,
-				  TF_DESTRUCT,TF_TRANS,TF_MINECART,TF_BUNNY,TF_NOGHOST,TF_NOENEMY,TF_RUBBER};
+	dword flags[]={TF_SOLID,TF_ICE,TF_MUD,TF_WATER,TF_LAVA,TF_PUSHY,TF_PUSHON,TF_ANIM,TF_STEP,
+				  TF_DESTRUCT,TF_TRANS,TF_MINECART,TF_BUNNY,TF_NOGHOST,TF_NOENEMY,TF_RUBBER,TF_NOPLAYER,TF_SPACE,TF_QUICKS,TF_PROPULSE};
 	int i;
-	byte b;
+	dword b;
 
 	b=GetButtonState(id);
 
@@ -290,12 +290,16 @@ void TerrainSetupButtons(void)
 	MakeButton(BTN_CHECK,8, 0,4,243+15*7 ,128,15,"Animates To Next",FlagClick);
 	MakeButton(BTN_CHECK,9, 0,4,243+15*8 ,128,15,"Animates On Step",FlagClick);
 	MakeButton(BTN_CHECK,10,0,4,243+15*9 ,128,15,"Animates When Hit",FlagClick);
-	MakeButton(BTN_CHECK,11,0,4,243+15*10,128,15,"Transparent Roof (Shadowless)",FlagClick);
-	MakeButton(BTN_CHECK,12,0,4,243+15*11,128,15,"Mine Cart Path",FlagClick);
+	MakeButton(BTN_CHECK,11,0,4,243+15*10,128,15,"Trans./Shadowless",FlagClick);
+	MakeButton(BTN_CHECK,12,0,4,243+15*11,128,15,"Drive Path",FlagClick);
 	MakeButton(BTN_CHECK,13,0,4,243+15*12,128,15,"Bunny Path",FlagClick);
 	MakeButton(BTN_CHECK,14,0,4,243+15*13,128,15,"Ghost Proof",FlagClick);
 	MakeButton(BTN_CHECK,15,0,4,243+15*14,128,15,"Enemy Proof",FlagClick);
 	MakeButton(BTN_CHECK,16,0,4,243+15*15,128,15,"Bouncy",FlagClick);
+	MakeButton(BTN_CHECK,17,0,204,243+15*5,128,15,"Player Proof",FlagClick);
+	MakeButton(BTN_CHECK,18,0,204,243+15*6,128,15,"Zero Grav",FlagClick);
+	MakeButton(BTN_CHECK,19,0,204,243+15*7,128,15,"Quicksand",FlagClick);
+	MakeButton(BTN_CHECK,20,0,204,243+15*8,128,15,"Propulsive",FlagClick);
 
 	// next tile button
 	MakeButton(BTN_NORMAL,20,0,200,245,TILE_WIDTH+3,TILE_HEIGHT+3,"",NextTileClick);
@@ -341,17 +345,17 @@ void SetNextTile(word n)
 void TerrainSetFlags(void)
 {
 	int i,j;
-	word flags[]={TF_SOLID,TF_ICE,TF_MUD,TF_WATER,TF_LAVA,TF_PUSHY,TF_PUSHON,TF_ANIM,TF_STEP,
-				  TF_DESTRUCT,TF_TRANS,TF_MINECART,TF_BUNNY,TF_NOGHOST,TF_NOENEMY,TF_RUBBER};
+	dword flags[]={TF_SOLID,TF_ICE,TF_MUD,TF_WATER,TF_LAVA,TF_PUSHY,TF_PUSHON,TF_ANIM,TF_STEP,
+				  TF_DESTRUCT,TF_TRANS,TF_MINECART,TF_BUNNY,TF_NOGHOST,TF_NOENEMY,TF_RUBBER,TF_NOPLAYER,TF_SPACE,TF_QUICKS,TF_PROPULSE};
 
-	byte flagCount[16];	// count how many tiles have each flag set
+	dword flagCount[20];	// count how many tiles have each flag set
 
-	for(i=0;i<16;i++)
+	for(i=0;i<20;i++)
 		flagCount[i]=0;
 
 	for(i=selMin;i<=selMax;i++)
 	{
-		for(j=0;j<16;j++)
+		for(j=0;j<20;j++)
 		{
 			if(world->terrain[i].flags&flags[j])
 			{
@@ -362,7 +366,7 @@ void TerrainSetFlags(void)
 
 	i=(selMax-selMin)+1;
 
-	for(j=0;j<16;j++)
+	for(j=0;j<20;j++)
 	{
 		if(flagCount[j]==0)
 			SetButtonState(j+1,CHECK_OFF);

@@ -1005,9 +1005,9 @@ void SpaceGoodguyHit(void)
 		if(lives==0)
 		{
 			if(score>=5000)
-				CompleteGoal(7);
-			if(score>=10000)
-				CompleteGoal(8);
+				CompleteGoal(6);
+			if(score>=15000)
+				CompleteGoal(19);
 			gameOver=1;
 			gameOverClock=30;
 			GetDisplayMGL()->LastKeyPressed();

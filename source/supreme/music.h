@@ -31,5 +31,6 @@ void PlayNextSong(void);
 void PlayPrevSong(void);
 
 void UpdateMusic(void);
+bool CompareSongs(const char *fname); // if the same song is playing as the song they wish to load in...
 
 #endif

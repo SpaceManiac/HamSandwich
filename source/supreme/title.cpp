@@ -9,7 +9,7 @@
 #include "shop.h"
 #include "textgame.h"
 
-#define COPYRIGHT_YEARS "1998-2012"
+#define COPYRIGHT_YEARS "1998-2020"
 
 // special codes in the credits:
 // @ = use GirlsRWeird font
@@ -17,7 +17,7 @@
 // % = draw a minor horizontal line
 // $ = last line of the whole deal
 char credits[][32]={
-	"SPISPOPD II",
+	"SPISPOPD II:",
 	"@DR. LUNATIC",
 	"",
 	"",
@@ -36,6 +36,10 @@ char credits[][32]={
 	"&Modernizing",
 	"Tad \"SpaceManiac\" Hardesty",
 	"%",
+	"&New Stuff!",
+	"SpaceManiac",
+	"Thomas \"RetroAestheticz\" R.",
+	"%",
 	"&Character Design",
 	"Jack Darby",
 	"Lisa Dash",
@@ -53,6 +57,7 @@ char credits[][32]={
 	"Mark Stevens",
 	"World Tester Guy!?",
 	"Randy Zook",
+	"RetroAestheticz",
 	"%",
 	"&In-Game Graphics",
 	"Mike Hommel",
@@ -68,6 +73,9 @@ char credits[][32]={
 	"Mike Kasprzak",
 	"TD Miller",
 	"SpiderPumpkin",
+	"PurpleKoopa",
+	"Androgeos Exuent",
+	"RetroAestheticz",
 	"%",
 	"&Sound Effects",
 	"Brent Christian",
@@ -77,6 +85,7 @@ char credits[][32]={
 	"&Music",
 	"Brent Christian",
 	"Mike Hommel",
+	"RetroAestheticz",
 	"%",
 	"&Producer/Designer/Director",
 	"Mike Hommel",
@@ -106,6 +115,7 @@ char credits[][32]={
 	"Barry Pennington",
 	"Trevor Strohman",
 	"Peter Young",
+	"The Hamumu Discord!",
 	"%",
 	"&Ideas & Hamumu Theme",
 	"Mattie Goodman",
@@ -208,7 +218,7 @@ static int titleRuns;
 static int msx,msy,oldmsx,oldmsy;
 static byte cursor;
 static byte sliceOut[8];
-char menuTxt[][16]={"Play","Profile","Tutorial","Instructions","Exit","Internet","Shop","Editor"};
+char menuTxt[][16]={"Play","Profile","Tutorial","Instructions","Exit","Sekrit!","Shop","Editor"};
 int igfX,igfY,igfDX,igfDY;
 
 void MainMenuDisplay(MGLDraw *mgl)
@@ -474,7 +484,7 @@ byte MainMenu(MGLDraw *mgl)
 	oldc=CONTROL_B1|CONTROL_B2;
 	planetSpr=new sprite_set_t("graphics/pizza.jsp");
 
-	PlaySongForce("002title.ogg");
+	PlaySongForce("SWC_01_title.ogg");
 
 	igfX=Random(500)+100;
 	igfY=Random(300)+100;

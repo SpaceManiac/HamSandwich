@@ -58,7 +58,7 @@ static int mouseZ;
 #ifdef WTG
 static byte showFilenames = 1;
 #elif defined(_DEBUG)
-static byte showFilenames = 0;
+static byte showFilenames = 1;
 #endif
 
 #ifdef LEVELLIST
@@ -84,9 +84,9 @@ byte Compare(worldDesc_t *me,worldDesc_t *you,byte field,byte bkwds)
 		return 0;	// no flipping between ones of different dim status
 	if(!bkwds)
 	{
-		if(!strcmp(me->fname,"tutorial.dlw"))	// the tutorial comes before all else
+		if(!strcmp(me->fname,"tutorial.hsw"))	// the tutorial comes before all else
 			return 0;
-		if(!strcmp(you->fname,"tutorial.dlw"))
+		if(!strcmp(you->fname,"tutorial.hsw"))
 		{
 			FlipEm(me,you);
 			return 1;
@@ -94,9 +94,9 @@ byte Compare(worldDesc_t *me,worldDesc_t *you,byte field,byte bkwds)
 	}
 	else
 	{
-		if(!strcmp(you->fname,"tutorial.dlw"))	// the tutorial comes before all else (vice versa when backwards, so still on top)
+		if(!strcmp(you->fname,"tutorial.hsw"))	// the tutorial comes before all else (vice versa when backwards, so still on top)
 			return 0;
-		if(!strcmp(me->fname,"tutorial.dlw"))
+		if(!strcmp(me->fname,"tutorial.hsw"))
 		{
 			FlipEm(me,you);
 			return 1;
@@ -241,31 +241,31 @@ void ScanWorlds(void)
 
 #ifdef LEVELLIST
 	levelF=fopen("levellist.txt","wt");
-	level2F=fopen("worlds/levels.dat","wb");
+	level2F=fopen("worlds/levels.dat","wt");
 	authorF=fopen("authorlist.txt","wt");
 	totalLCount=0;
 #endif
 	// count up how many there are to deal with
 	count=0;
 
-	for (const char* name : filterdir("worlds", ".dlw", 32))
+	for (const char* name : filterdir("worlds", ".hsw", 32))
 	{
 		// rule out the backup worlds, so they don't show up
-		if((strcmp(name,"backup_load.dlw")) &&
-		   (strcmp(name,"backup_exit.dlw")) &&
-		   (strcmp(name,"backup_save.dlw")))
+		if((strcmp(name,"backup_load.hsw")) &&
+		   (strcmp(name,"backup_exit.hsw")) &&
+		   (strcmp(name,"backup_save.hsw")))
 			count++;
 	}
 
 	done=0;
 
 	dword start = timeGetTime();
-	for (const char* name : filterdir("worlds", ".dlw", 32))
+	for (const char* name : filterdir("worlds", ".hsw", 32))
 	{
 		// rule out the backup worlds, so they don't show up
-		if((strcmp(name,"backup_load.dlw")) &&
-		   (strcmp(name,"backup_exit.dlw")) &&
-		   (strcmp(name,"backup_save.dlw")))
+		if((strcmp(name,"backup_load.hsw")) &&
+		   (strcmp(name,"backup_exit.hsw")) &&
+		   (strcmp(name,"backup_save.hsw")))
 		{
 			InputWorld(name);
 			done++;
@@ -414,6 +414,21 @@ void MoveToNewWorld(void)
 void InitWorldSelect(MGLDraw *mgl)
 {
 	int i;
+	char s[512];
+	char dyk[][512]={"Due to the graphics engine's color liminations, the color orange does not appear in-game.",
+	"Bouapha is from the town of of Merced, CA.",
+	"The four keychains are references to enemies/items/etc. from the original SPISPOPD.",
+	"Currently here are a total of [insert # of monsters] monsters in this version of Supreme With Cheese.",
+	"5",
+	"6",
+	"7",
+	"8",
+	"9",
+	"10",
+	"11",
+	"12",
+	"13",
+	"14",};
 
 	mgl->LoadBMP("graphics/profmenu.bmp");
 	backgd=(byte *)malloc(640*480);
@@ -422,6 +437,9 @@ void InitWorldSelect(MGLDraw *mgl)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
 
 	PrintGlow(20,20,"Loading...",0,2);
+	PrintGlow(20,360,"Did You Know?",0,2);
+	sprintf(s,dyk[Random(14)]);
+	PrintGlow(20,380,s,0,1);
 	mgl->Flip();
 
 	sortType=0;
@@ -440,7 +458,7 @@ void InitWorldSelect(MGLDraw *mgl)
 	wsSpr=new sprite_set_t("graphics/pause.jsp");
 	msBright=0;
 	msDBright=1;
-	PlaySongForce("003worldpicker.ogg");
+	PlaySongForce("SWC_02_worldpicker.ogg");
 	mouseZ=mgl->mouse_z;
 }
 

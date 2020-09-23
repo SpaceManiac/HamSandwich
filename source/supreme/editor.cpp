@@ -88,8 +88,18 @@ byte InitEditor(void)
 	strcpy(MonsterName(MONS_PATROLUD),"Patrol Mumble Vert.");
 	strcpy(MonsterName(MONS_DPATROLLR),"Death Patrol Horiz.");
 	strcpy(MonsterName(MONS_DPATROLUD),"Death Patrol Vert.");
+	strcpy(MonsterName(MONS_TURRETR),"Laser:Right");
+	strcpy(MonsterName(MONS_TURRETD),"Laser:Down");
+	strcpy(MonsterName(MONS_TURRETL),"Laser:Left");
+	strcpy(MonsterName(MONS_TURRETU),"Laser:Up");
+	strcpy(MonsterName(MONS_PEEPBOMB),"Peeping Bomb:Clockwise");
+	strcpy(MonsterName(MONS_PEEPBOMB2),"Peeping Bomb:CounterClockwise");
 
 	for(i=MONS_SUCKER1;i<=MONS_BLOWER4;i++)
+	{
+		MonsterAnim(i,0)[0]=0;
+	}
+	for(i=MONS_PUSHERH;i<=MONS_PUSHERV;i++)
 	{
 		MonsterAnim(i,0)[0]=0;
 	}
@@ -123,7 +133,7 @@ void ExitEditor(void)
 	ExitFileDialog();
 	ToolExit();
 
-	EditorSaveWorld("worlds/backup_exit.dlw");
+	EditorSaveWorld("worlds/backup_exit.hsw");
 
 	// change monsters back to normal
 	ChangeOffColor(MONS_SHARK,255,255);
@@ -148,11 +158,22 @@ void ExitEditor(void)
 	strcpy(MonsterName(MONS_PATROLUD),"Patrol Mumble");
 	strcpy(MonsterName(MONS_DPATROLLR),"Death Patrol");
 	strcpy(MonsterName(MONS_DPATROLUD),"Death Patrol");
+	strcpy(MonsterName(MONS_TURRETR),"Laser");
+	strcpy(MonsterName(MONS_TURRETD),"Laser");
+	strcpy(MonsterName(MONS_TURRETL),"Laser");
+	strcpy(MonsterName(MONS_TURRETU),"Laser");
+	strcpy(MonsterName(MONS_PEEPBOMB),"Peeping Bomb");
+	strcpy(MonsterName(MONS_PEEPBOMB2),"Peeping Bomb");
 
 	for(i=MONS_SUCKER1;i<=MONS_BLOWER4;i++)
 	{
 		MonsterAnim(i,0)[0]=254;
 	}
+	for(i=MONS_PUSHERH;i<=MONS_PUSHERV;i++)
+	{
+		MonsterAnim(i,0)[0]=254;
+	}
+	
 	StopSong();
 	ExitGuys();
 	FreeWorld(&world);
@@ -193,7 +214,7 @@ void BackupWorld(const char *name)
 	byte *data;
 
 	sprintf(inName,"worlds/%s",name);
-	sprintf(outName,"worlds/backup_save.dlw");
+	sprintf(outName,"worlds/backup_save.hsw");
 
 	inF=fopen(inName,"rb");
 	if(!inF)
@@ -323,7 +344,7 @@ void UpdateMouse(void)
 			switch(FileDialogCommand())
 			{
 				case FM_NEW:
-					EditorSaveWorld("worlds/backup_load.dlw");
+					EditorSaveWorld("worlds/backup_load.hsw");
 					FreeWorld(&world);
 					NewWorld(&world,editmgl);
 					EditorSelectMap(0);
@@ -342,7 +363,7 @@ void UpdateMouse(void)
 				case FM_LOAD:
 					if(GetFilename("")[0])	// don't do any of this if the filename is blank!
 					{
-						EditorSaveWorld("worlds/backup_load.dlw");
+						EditorSaveWorld("worlds/backup_load.hsw");
 						ToolSetFilename();
 						FreeWorld(&world);
 						if(!LoadWorld(&world,GetFilename("worlds/")))
@@ -356,7 +377,7 @@ void UpdateMouse(void)
 				case FM_SAVE:
 					if(GetFilename("")[0])	// don't do any of this if the filename is blank!
 					{
-						if(strcmp(&GetFilename("")[strlen(GetFilename(""))-4],".dlw"))
+						if(strcmp(&GetFilename("")[strlen(GetFilename(""))-4],".hsw"))
 						{
 							AddDLWToFilename();
 						}
@@ -832,11 +853,11 @@ static void HandleKeyPresses(void)
 			case 'f':
 			case 'F':
 				editMode=EDITMODE_FILE;
-				InitFileDialog("worlds/*.dlw",FM_NEW|FM_LOAD|FM_SAVE|FM_ASKLOAD,ToolGetFilename());
+				InitFileDialog("worlds/*.hsw",FM_NEW|FM_LOAD|FM_SAVE|FM_ASKLOAD,ToolGetFilename());
 				break;
 			case 'M':
 				editMode=EDITMODE_FILE;
-				InitFileDialog("worlds/*.dlw",FM_LOAD|FM_ASKLOAD|FM_MERGE,ToolGetFilename());
+				InitFileDialog("worlds/*.hsw",FM_LOAD|FM_ASKLOAD|FM_MERGE,ToolGetFilename());
 				break;
 			case 'l':
 			case 'L':

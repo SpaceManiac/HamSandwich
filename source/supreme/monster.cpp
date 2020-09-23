@@ -5,15 +5,10 @@
 #include "shop.h"
 #include "editor.h"
 #include "goal.h"
-
-/*
- -MT_GOOD	 -MT_EVIL		 -MT_SPOOKY		-MT_ZOMBIE	 -MT_VAMPIRE	-MT_SPIDER -MT_PYGMY
- -MT_BOSS	 -MT_MINIBOSS	 -MT_WACKY		-MT_PUMPKIN	 -MT_THINGY		-MT_VEGGIE -MT_ARCTIC
- -MT_ZOID	 -MT_DESERT		 -MT_CRAZIES	-MT_VEHICLE	 -MT_GENERATE	-MT_TRAP   -MT_ALIEN
- -MT_ANIMAL	 -MT_HUMAN		 -MT_URBAN		-MT_AQUATIC	 -MT_UNDERSEA
- -MT_FLYING  -MT_HIGHTECH	 -MT_BITS
-*/
+#include "water.h"
+#include "guy.h"
 #include "monsterlist.cpp"
+#include "cards.cpp"
 
 void InitMonsters(void)
 {
@@ -23,10 +18,10 @@ void InitMonsters(void)
 	for(i=0;i<NUM_MONSTERS;i++)
 	{
 		monsType[i].spr=NULL;
-		for(j=0;j<NUM_ANIMS;j++)
+		for(j=0;j<10;j++)
 		{
 			done=0;
-			for(k=0;k<ANIM_LENGTH;k++)
+			for(k=0;k<64;k++)
 			{
 				if(monsType[i].anim[j][k]==255)
 				{
@@ -35,7 +30,7 @@ void InitMonsters(void)
 				if(done)
 					monsType[i].anim[j][k]=255;	// fill the unused space in animations with 255's
 			}
-			monsType[i].anim[j][ANIM_LENGTH-1]=255;	// and set the last one to 255 just in case
+			monsType[i].anim[j][64-1]=255;	// and set the last one to 255 just in case
 		}
 	}
 	// just keep bouapha perma-loaded
@@ -137,6 +132,8 @@ char *MonsterName(short type)
 		strcpy(tmp,"Player");
 	else if(type==MONS_TAGGED)
 		strcpy(tmp,"Tagged");
+	else if(type==MONS_BOSS)
+		strcpy(tmp,"Boss");
 	else
 		return monsType[type].name;
 
@@ -196,6 +193,14 @@ sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 				type=MONS_PLAYSHROOM;
 			else if(player.playAs==PLAY_LUNACHIK)
 				type=MONS_LUNACHICK;
+			else if(player.playAs==PLAY_WOLF)
+				type=MONS_PLAYWOLF;
+			else if(player.playAs==PLAY_WIZ)
+				type=MONS_PLAYWIZARD;
+			else if(player.playAs==PLAY_MYSTIC)
+				type=MONS_MYSTIC;
+			else if(player.playAs==PLAY_LOONY)
+				type=MONS_YOUNGLOONY;
 		}
 	}
 
@@ -220,15 +225,15 @@ sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 
 	if(monsType[type].flags&MF_FACECMD)
 		v+=facing;
-
+	
 	return monsType[type].spr->GetSprite(v);
 }
 
-void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byte facing,char bright,byte ouch,byte poison,byte frozen,sprite_set_t* set)
+void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byte facing,char bright,byte ouch,byte poison,byte frozen,byte weak,byte strong,byte ignited,byte confuse,byte special,sprite_set_t* set)
 {
 	sprite_t *curSpr;
 	int v;
-	byte shld,isBouapha;
+	byte shld,shld2,isBouapha;
 
 	if(aiType==MONS_BOUAPHA)
 	{
@@ -248,6 +253,14 @@ void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byt
 				type=MONS_PLAYSHROOM;
 			else if(player.playAs==PLAY_LUNACHIK)
 				type=MONS_LUNACHICK;
+			else if(player.playAs==PLAY_WOLF)
+				type=MONS_PLAYWOLF;
+			else if(player.playAs==PLAY_WIZ)
+				type=MONS_PLAYWIZARD;
+			else if(player.playAs==PLAY_MYSTIC)
+				type=MONS_MYSTIC;
+			else if(player.playAs==PLAY_LOONY)
+				type=MONS_YOUNGLOONY;
 		}
 
 		isBouapha=1;
@@ -274,12 +287,22 @@ void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byt
 		if(type==MONS_BOUAPHA && PlayerHasHammer())
 			v+=8*monsType[type].framesPerDir;
 		shld=PlayerShield();
+		shld2=PlayerShieldWater();
+		
+		if(shld2)
+			curSpr=monsType[MONS_BOUAPHA].spr->GetSprite(472+(shld&7));
+		else
+			curSpr=monsType[MONS_BOUAPHA].spr->GetSprite(464+(shld&7));
+		
+		if((shld2<16) && (shld2&2))	// it blinks when there is 1/2 second left
+			shld2=0;
+			
 		if((shld<16) && (shld&2))	// it blinks when there is 1/2 second left
 			shld=0;
-		curSpr=monsType[MONS_BOUAPHA].spr->GetSprite(464+(shld&7));
+		
 		if(curSpr==NULL)
 			return;
-		if(shld)
+		if(shld2||shld||(shld2&&shld))
 			SprDraw(x>>FIXSHIFT,(y>>FIXSHIFT)+1,1+(z>>FIXSHIFT),255,bright,curSpr,DISPLAY_DRAWME|DISPLAY_GLOW);
 		if(frozen)
 		{
@@ -292,6 +315,58 @@ void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byt
 				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,7,bright+4,curSpr,DISPLAY_DRAWME);	// aqua
 			else
 				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,6,bright+8,curSpr,DISPLAY_DRAWME); // purple
+			return;
+		}
+		else if(confuse)
+		{
+			curSpr=set->GetSprite(v);
+			if(!curSpr)
+				return;
+			if(!(monsType[type].flags&MF_NOSHADOW))
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,0,255,0,curSpr,DISPLAY_DRAWME|DISPLAY_SHADOW);
+			if(ouch==0)
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,6,bright+8,curSpr,DISPLAY_DRAWME);	// purple
+			else
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,4,bright+16,curSpr,DISPLAY_DRAWME); // red
+			return;
+		}
+		else if(strong)
+		{
+			curSpr=set->GetSprite(v);
+			if(!curSpr)
+				return;
+			if(!(monsType[type].flags&MF_NOSHADOW))
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,0,255,0,curSpr,DISPLAY_DRAWME|DISPLAY_SHADOW);
+			if(ouch==0)
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,0,bright-4,curSpr,DISPLAY_DRAWME);	// dark grey
+			else
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,floor(Random(7)),bright+4,curSpr,DISPLAY_DRAWME); // rainbow
+			return;
+		}
+		else if(weak)
+		{
+			curSpr=set->GetSprite(v);
+			if(!curSpr)
+				return;
+			if(!(monsType[type].flags&MF_NOSHADOW))
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,0,255,0,curSpr,DISPLAY_DRAWME|DISPLAY_SHADOW);
+			if(ouch==0)
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,4,bright-4,curSpr,DISPLAY_DRAWME);	// dark red
+			else
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,2,bright-4,curSpr,DISPLAY_DRAWME); // brown
+			return;
+		}
+		else if(ignited)
+		{
+			curSpr=set->GetSprite(v);
+			if(!curSpr)
+				return;
+			if(!(monsType[type].flags&MF_NOSHADOW))
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,0,255,0,curSpr,DISPLAY_DRAWME|DISPLAY_SHADOW);
+			if(ouch==0)
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,4,bright+12,curSpr,DISPLAY_DRAWME);	// light red
+			else
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,4,bright+4,curSpr,DISPLAY_DRAWME); // red
 			return;
 		}
 		else if(poison)
@@ -334,12 +409,29 @@ void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byt
 	{
 		if(frozen)
 			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,7,bright+4,curSpr,DISPLAY_DRAWME);
+		else if(ignited)
+			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,4,bright+12,curSpr,DISPLAY_DRAWME);
+		else if(strong)
+			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,0,bright-4,curSpr,DISPLAY_DRAWME);
+		else if(weak)
+			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,2,bright-4,curSpr,DISPLAY_DRAWME);
 		else if(poison)
 			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,1,bright,curSpr,DISPLAY_DRAWME);
+		else if(confuse)
+			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,6,bright+8,curSpr,DISPLAY_DRAWME);
 		else if(!(monsType[type].flags&(MF_GHOST|MF_GLOW)))
 		{
-			if(monsType[type].fromCol==255)
+			if(type==MONS_IMITATER||special==1)
+			{
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,7,bright+8,curSpr,DISPLAY_DRAWME);
+			}
+			else if(monsType[type].fromCol==255)
 				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright+monsType[type].brtChg,curSpr,DISPLAY_DRAWME);
+			else if(special==2)
+			{
+				SprDrawOff(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,monsType[type].fromCol,(player.clock/30)&7,
+					bright+monsType[type].brtChg,curSpr,DISPLAY_DRAWME);
+			}
 			else
 			{
 				SprDrawOff(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,monsType[type].fromCol,monsType[type].toCol,
@@ -353,10 +445,18 @@ void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byt
 	}
 	else
 	{
-		if(poison)
+		if(ignited)
+			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,4,bright+4,curSpr,DISPLAY_DRAWME);
+		else if (strong)
+			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,0,bright+12,curSpr,DISPLAY_DRAWME);
+		else if (weak)
+			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,2,bright-4,curSpr,DISPLAY_DRAWME);
+		else if(poison)
 			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,5,bright,curSpr,DISPLAY_DRAWME);
 		else if(frozen)
 			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,6,bright+8,curSpr,DISPLAY_DRAWME);
+		else if(confuse)
+			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,4,bright+16,curSpr,DISPLAY_DRAWME);
 		else
 			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,4,bright,curSpr,DISPLAY_DRAWME);
 
@@ -386,6 +486,69 @@ void InstaRenderMonster(int x,int y,dword type,char bright,MGLDraw *mgl)
 				bright+monsType[type].brtChg);
 }
 
+int InstaRenderMonsterAnimated(int x,int y,dword type,char bright,MGLDraw *mgl)
+{
+	sprite_t *curSpr;
+	int v;
+	byte f;
+	int time;
+	
+	if(!f)
+		f=1;
+	else
+		f++;
+	if (monsType[type].anim[ANIM_ATTACK][f]==255)
+		f=0;
+
+	// load if not loaded
+	LoadMySprite(type);
+
+	v=monsType[type].anim[ANIM_ATTACK][f];
+	if(!(monsType[type].flags&MF_ONEFACE))
+		v+=2*monsType[type].framesPerDir;
+
+	curSpr=monsType[type].spr->GetSprite(v);
+	if(!curSpr)
+		return 10;
+
+	if(monsType[type].fromCol==255)
+		curSpr->DrawBright(x,y,mgl,bright+monsType[type].brtChg);
+	else
+		curSpr->DrawOffColor(x,y,mgl,monsType[type].fromCol,monsType[type].toCol,
+				bright+monsType[type].brtChg);
+				
+	return curSpr->height;
+}
+
+void InstaRenderMonsterAnimated2(int x,int y,dword type,char bright,int tm,MGLDraw *mgl)
+{
+	sprite_t *curSpr;
+	int v;
+	LoadMySprite(type);
+	
+	if(monsType[type].anim[ANIM_MOVE][1]!=255)
+	{
+		if (monsType[type].anim[ANIM_MOVE][tm+1]==255)
+			time=0;
+		v=monsType[type].anim[ANIM_MOVE][tm];
+	}
+	else
+		v=monsType[type].anim[ANIM_IDLE][0];
+
+	// load if not loaded
+	if(!(monsType[type].flags&MF_ONEFACE))
+		v+=2*monsType[type].framesPerDir;
+
+	curSpr=monsType[type].spr->GetSprite(v);
+
+	if(monsType[type].fromCol==255)
+		curSpr->DrawBright(x,y,mgl,bright+monsType[type].brtChg);
+	else
+		curSpr->DrawOffColor(x,y,mgl,monsType[type].fromCol,monsType[type].toCol,
+				bright+monsType[type].brtChg);
+	time3 = v;
+}
+
 int InstaRenderScannedMonster(int x,int y,dword type,char bright,MGLDraw *mgl)
 {
 	sprite_t *curSpr;
@@ -410,6 +573,16 @@ int InstaRenderScannedMonster(int x,int y,dword type,char bright,MGLDraw *mgl)
 dword MonsterTheme(dword type)
 {
 	return monsType[type].theme;
+}
+
+dword MonsterGroup(dword type)
+{
+	return monsType[type].group;
+}
+
+dword MonsterColor(dword type)
+{
+	return monsType[type].color;
 }
 
 // AI auxiliary functions to make it simple
@@ -585,7 +758,7 @@ void FlailLock(Guy *me)
 	if(!me->parent || me->parent->type==MONS_NONE)
 		return;	// no good
 
-	if(me->parent->aiType!=MONS_THINGTENT)
+	if(me->parent->aiType!=MONS_THINGTENT&&me->parent->aiType!=MONS_THING2TENT)
 	{
 		switch(me->mind)	// which quadrant of the tentacles is he?
 		{
@@ -637,10 +810,112 @@ void FlailLock(Guy *me)
 	}
 }
 
+#define NUM_DESTS 5
+
+void SelectDestination(Guy *me,Guy *goodguy,Map *map,byte repeat)
+{
+	int i,x,y;
+	byte bestx[NUM_DESTS],besty[NUM_DESTS];
+
+	for(i=0;i<NUM_DESTS;i++)
+		bestx[i]=255;
+
+	for(x=0;x<map->width;x++)
+		for(y=0;y<map->height;y++)
+		{
+			if(x!=me->mind2 || y!=me->mind3 || repeat==1)
+			{
+				// there is a tag here... which is NOT my previous target
+				if(map->CheckLOS(me->mapx,me->mapy,7,x,y))
+				{
+					// and it's in line of sight
+					for(i=0;i<NUM_DESTS;i++)
+					{
+						if(bestx[i]==255)
+						{
+							bestx[i]=x;
+							besty[i]=y;
+							i=NUM_DESTS+2;
+						}
+					}
+					if(i!=NUM_DESTS+3)
+					{
+						// all 3 tags are presently occupied, so let's see
+						// if this is closer than one of them
+						for(i=0;i<NUM_DESTS;i++)
+						{
+							if(abs(bestx[i]-me->mapx)+abs(besty[i]-me->mapy)>
+								abs(x-me->mapx)+abs(y-me->mapy))
+							{
+								bestx[i]=x;
+								besty[i]=y;
+								i=NUM_DESTS+2;
+							}
+						}
+					}
+					// now if the tag is one of the closest 3 visible ones, then
+					// it is in the best list
+				}
+			}
+		}
+	// now we have a list of up to 3 tags within sight
+	// which one is closest or farthest from Loony?
+	if(me->type==MONS_LARRY)
+	{
+		// want to kill - go TOWARDS loony
+		x=255;
+		for(i=0;i<NUM_DESTS;i++)
+		{
+			if(x==255 ||
+				(bestx[i]!=255 && abs(bestx[i]-goodguy->mapx)+abs(besty[i]-goodguy->mapy)<
+						abs(bestx[x]-goodguy->mapx)+abs(besty[x]-goodguy->mapy)))
+				x=i;
+		}
+		if(x==255)
+		{
+			// no visible valid tags, so head straight for Loony!
+			me->mind2=goodguy->mapx;
+			me->mind3=goodguy->mapy;
+		}
+		else
+		{
+			me->mind2=bestx[x];
+			me->mind3=besty[x];
+		}
+	}
+	else
+	{
+		// want to run - go AWAY from loony
+		x=255;
+		for(i=0;i<NUM_DESTS;i++)
+		{
+			if(x==255 ||
+				(bestx[i]!=255 && abs(bestx[i]-goodguy->mapx)+abs(besty[i]-goodguy->mapy)>
+						abs(bestx[x]-goodguy->mapx)+abs(besty[x]-goodguy->mapy)))
+				x=i;
+		}
+		if(x==255)
+		{
+			// no visible valid tags, so flee randomly
+			me->mind2=(byte)Random(map->width);
+			me->mind3=(byte)Random(map->height);
+		}
+		else
+		{
+			me->mind2=bestx[x];
+			me->mind3=besty[x];
+		}
+	}
+}
+
 // here be the AIs for each monster type
 //--------------------------------------------------------------------------------------
 
-#include "monsterai1.cpp"
-#include "monsterai2.cpp"
-#include "monsterai3.cpp"
-#include "monsterai4.cpp"
+#include "monsterai1.cpp" //original
+#include "monsterai2.cpp" //expando
+#include "monsterai3.cpp" //fun
+#include "monsterai4.cpp" //supreme
+#include "monsterai5.cpp" //kid mystic
+#include "monsterai6.cpp" //sleepless hollow
+#include "monsterai7.cpp" //loonyland
+#include "monsterai8.cpp" //v8 (NEW!!)

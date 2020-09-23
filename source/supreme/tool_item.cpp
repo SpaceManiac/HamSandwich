@@ -89,8 +89,9 @@ void ItemTool::Render(int msx,int msy)
 	int i;
 	int minusBrush,plusBrush;
 
-	char plopText[][12]={"Normal","Random","Cycle","BigRandom","BigCycle"};
-
+	char plopText[][12]={"Normal","Random","Cycle","BigRandom","BigCycle","FillTouch","FillAll","CycleAll"};
+	if (plopMode==PLOP_CUST1)
+	plopMode=0;
 
 	for(i=0;i<4;i++)
 	{

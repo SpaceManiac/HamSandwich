@@ -8,116 +8,141 @@
 #include "theater.h"
 #include "gallery.h"
 
-char goalDesc[][48]={
-	"Good Score","earning 5,000 points",
-	"Crazy Score","earning 20,000 points",
-	"Abject Failure","getting ZERO points",
-	"Perfection","getting a Perfect Bonus",
-	"Annihilation","getting 100% Destruction",
-	"Utter Perfection","Perfect & 100% Destruction",
-	"Quickie","finishing in under 15 seconds",
-	"Zaptastic","earning 5,000 points in Zappo Raiders",
-	"ULTRA ZAP!","earning 10,000 points in Zappo Raiders",
-	"Goal In The Net","earning 100 points in the Net Game",
+char goalDesc[][256]={
+	//0
+	"Good Score","finishing a level with at least 5,000 points",
+	"Epic Score","finishing a level with at least 20,000 points",
+	"Abject Failure","finishing a level with 0 points - you're not too good at this!",
+	"Perfectionist","finishing a level without taking any damage",
+	"Destructionist","finishing a level with 100% destruction... there can only be one!",
+	"Quick Draw","finishing a level in 15 seconds or less",
+	"Zaptastic","getting a score of 5,000 on Zappo Raiders",
+	"Diggin' It","getting a score of 500,000 on Dig Man IV",
+	"Carpel Tunnel","getting a score of 75,000 on Cave Zoomer",
+	"Utter Perfection","finishing a level without taking damage, achieving 100% Destruction, and scoring at least 7,000 points - the power of three.",
 	//10
-	"Combo Plate","getting a 20 Combo",
-	"Super Combo Platter","getting a 100 Combo",
-	"Family-Size Combo","getting a 500 Combo",
-	"Variety Pack","beating one of everything",
-	"Lunatic Addict","reaching 1 hour of playtime",
-	"Obsessive-Compulsive","reaching 10 hours of playtime",
-	"Long Walk","walking a mile in Bouapha's shoes",
-	"Worn Out Moccassins","traveling over 100 miles on foot",
-	"Over The Bounding Main","rafting over one mile",
-	"Road Trip","driving and carting over five miles",
+	"Combo Plate","getting a 20x combo",
+	"Super Combo Platter","getting a 100x combo",
+	"Addicted?","playing for more than four hours... having fun?",
+	"Overpass","finishing 25 levels",
+	"Secret Service","finishing a secret level",
+	"Heads & Tails","collecting at least 20 coins in a level",
+	"One Hundred Club","100%ing your first world... conglaturation!",
+	"Walk A Mile","walking one mile in-game... now go walk a mile in real life!",
+	"Knock Knock Joke","opening 100 doors",
+	"Gamer Gamer","getting a score of 15,000 on Zappo Raiders",
 	//20
-	"Worlds Apart","buying all Worlds",
-	"Frozen With Fury","buying all Frozen Yogurts",
-	"Smart Shopper","buying all Major Awards",
-	"Massive Cheater","buying all Cheats",
-	"Two Thumbs Up","seeing all Movies",
-	"Privacy Violation","opening every locker",
-	"Shop Til You Drop","emptying out the entire mall",
-	"Dig Man Fever","getting 500,000 points on Dig Man IV",
-	"Cave Crasher","getting 75,000 points on Cave Zoomer",
-	"Locker Knocker","opening a certain locker",
+	"Chain Letter","obtaining all four keychains in a single world",
+	"Einstein","collecting 500 brains overall",
+	"Jack Be Nimble","collecting 500 candles overall",
+	"Nickelback","finishing a level with exactly five coins in tow... get it?",
+	"Deep Blue Shield","falling in water while using an Energy Barrier",
+	"Passing Grade","finishing 100 levels overall",
+	"Fortune 500","100%ing five worlds",
+	"Drivin' My Life Away","driving & carting over five in-game miles - more eco-friendly than the real deal.",
+	"Take the Plunge","rafting one in-game mile (I'm still waiting on that yacht!)",
+	"Family Meal","somehow getting a 250x combo - nice one!!",
 	//30
-	"Spider Squish","beating Matilda",
-	"Supreme Spider Squish","beating Matilda-X",
-	"Thingamajig","beating The Thing",
-	"Himalayan Hijinks","beating Sven & Bjorn",
-	"Desert Duel","beating Sphinxter",
-	"Monkeyshines","beating Kongor",
-	"Treehouse Of Terror","beating The Countess",
-	"Mad Scientist","beating Dr. Lunatic",
-	"Crab Legs For All!","beating Crabby Patty",
-	"Crossing The Streams","beating Dozer",
+	"Buddy System","finishing ten levels using unlockable characters",
+	"Blue In The Face","holding your breath for an hour (in-game, NOT in real life)",
+	"Fahrenheit 128","defeating a fiery monster with the Toaster",
+	"Freeze Frame","defeating an icy monster while it's frozen",
+	"Pick Your Poison","defeating a poisonous monster with the Spore Cannon",
+	"Stubble Burning","burning 200 bales of hay (or other flammable materials)",
+	"Lawnmower","chopping 200 grasses with the Machete",
+	"Bullet Time","defeating a monster while time is stopped",
+	"Huge Moron","winning 'Who Doesn't Want to be a Moron?'",
+	"Penny Pincher","holding 25,000 coins on hand... go donate to world hunger or something!",
 	//40
-	"Robot Rampage","beating the Loonybot 5000",
-	"French Toast","beating King Cone",
-	"Unhappy Stick","beating Happy Stick Man 10 times",
-	"Self-Destruction","beating 10 Evil Clones",
-	"Sucks, Don't It?","beating the Dust Devil",
-	"D.U.I.","Running over 100 monsters",
-	"Monster Slayer","beating 1,000 monsters",
-	"Mega Monster Slayer","beating 10,000 monsters",
-	"Ultra Monster Slayer","beating 50,000 monsters",
-	"Ultimate Supreme Slayer","beating 100,000 monsters (wow!)",
+	"Spider Squish","defeating Matilda in the Spooky Forest",
+	"Thingamajig","defeating The Thing in the Cavernous Caves",
+	"Himalayan Hijinks","defeating all three Yeti Brothers - Sven, Bjorn & Olaf - at the Icy Mountains",
+	"Riddle Me This","defeating the Sphinxter in the Dusty Desert",
+	"Monkeyshines","defeating KONGOR!! on Pygmy Island",
+	"Treehouse of Terror","defeating both Countess & Lady von Spatula in the Haunted Mansion",
+	"Crossing the Streams","completing the Forest Shrine and defeating Dozer the Dozerian",
+	"Chick Magnet","defeating LunaChick and her robot form, LunaChick Prime",
+	"Tropic of Cancer","defeating both Crabby Patty & Scary Scarab",
+	"Mad Scientist","defeating Dr. Lunatic at Space Station Loony & the Crazy Asylum of Madness",
 	//50
-	"Buddy System","beating a level with an alternate character",
-	"Shroom Of Doom","beating a level as Shtupid Shroom",
-	"Bullet Time","beating a monster while time is stopped",
-	"Molten Irony","beating a fiery monster with the Toaster",
-	"Bitterly Cold Irony","beating an icy monster while it's frozen",
-	"Vampire Slayer","beating 200 of all Vampire types combined",
-	"Mmm, Garlic Stake","spearing a Vampire while Garlic'd",
-	"Deep Blue Shield","falling in water with an Energy Barrier on",
-	"Huge Moron","winning \"Who Doesn't Want To Be A Moron?\"",
-	"Lock Around The Clock","opening a certain locker",
+	"Optimum Prime","defeating Optimum Octon",
+	"Gruff & Tumble","defeating the Brothers Gruff - Rammy, Hoppy & Gruffy",
+	"Frankenfurters","defeating Frankenjulie and her miniature version",
+	"Bite the Bullet","defeating both Harry & Larry",
+	"Ghosts of a Chance","defeating Polterguy & Ghastly Stench",
+	"Respect Your Elders","defeating the Vampire Elders - Stoney, Gusty, Toasty, Drippy & Summony",
+	"Stick it To Em'","defeat all the Happy Stick Variations (barring final bosses)",
+	"Do Evil Unto Evil","defeating the terrible Evilizer... as Dr. Lunatic",
+	"Wrath of Khan","defeating Bobby Khan... as Kid Mystic",
+	"Marshmallow Head","defeating a boss on Jamulio Mode... now THAT's dumb!",
 	//60
-	"Blue In The Face","holding your breath for an hour",
-	"Passing On The Right","passing 25 levels",
-	"Passing Grade","passing 100 levels",
-	"Hail Mary Pass!","passing 1,000 levels",
-	"One Hundred Club","getting 100% on a world",
-	"100 Club Treasurer","getting 100% on 10 worlds",
-	"100 Club President","getting 100% on 50 worlds",
-	"Supreme Completion!","getting 100% on all worlds",
-	"Door Prize","opening a certain locker",
-	"Other Door Prize","opening a different locker",
+	"Variety Pack","defeating one of each monster",
+	"Self-Destruct Sequence","defeating 50 Evil Clones",
+	"Hit & Run","running over 100 monsters with a Yu-Go or Mine Cart",
+	"Slayer","defeating 2,000 monsters",
+	"Anger Management","raging 50 times",
+	"Garlic at Stake","skewering a vampire while doused in garlic",
+	"What Goes Around...","defeating a monster with their own bullet",
+	"Battin' A Thousand","100%ing ten worlds... now you're going places!",
+	"Worn Out Moccasins","waking thirty in-game miles",
+	"Conspiracy Wizard","typing the secret code at the Shopping Mall",
 	//70
-	"Secret Service","entering a secret level",
-	"Zorkin' Around","completing the Super Secret Surprise",
-	"Lotta Loonykeys","getting 10 Keys Of Lunacy",
-	"Key To Success","collecting 100 keys of any color",
-	"Knock Knock","opening 100 doors",
-	"Caught 'Em All!","getting all 4 keychains",
-	"The Man With 500 Brains","collecting 500 brains",
-	"BRRAAAIINNSS!","collecting 5,000 brains",
-	"Candelabra","collecting 500 candles",
-	"CAAANNNDDLLES!","collecting 5,000 candles",
+	"Underground Slayer","defeating a whopping 20,000 monsters",
+	"Obsessive","playing for 20+ hours - you are now a true fan",
+	"I Dream of Cheese","eating 7% of your body weight",
+	"Stop! Hammer Time","throwing 5,000 hammers",
+	"Trigger Finger","firing special weapons 5,000 times",
+	"DOOM Shroom","finishing ten levels as... Shtupid Shroom?!",
+	"Brainiac Maniac","collecting 5,000 brains overall - you're the Zom-Boss now",
+	"Candleabra","collecting 5,000 candles overall",
+	"Hail Mary Pass","finishing 500 levels",
+	"Supreme Meal","consuming over 50,000 calories in food",
 	//80
-	"Heads & Tails","collecting 20 coins in a level",
-	"Bouapha Rockefeller","earning 10,000 coins total",
-	"King Midas","earning 100,000 coins total",
-	"Penny Pincher","holding 25,000 coins in hand",
-	"Pig Out","eating 50,000 calories",
-	"Scan-O-Rama","scanning every monster",
-	"Petting Zoo Peril","surviving the Petting Zoo",
-	"Cruisin'","masterful driving skills at the Mall",
-	"World Peace","solving world hunger",
-	"Lawnmower","chopping 100 grasses",
+	"Petting Zoo Peril","somehow surviving the Petting Zoo at SPISMall",
+	"Cruisin'","radical driving skills at SPISMall!",
+	"Midas Touch","obtaining 50,000 coins overall",
+	"Nam Sdrawkcab","completing five levels in Backwards Mode",
+	"Absolute Boredom","standing still for a minute straight",
+	"Thrash Rock","decimating a strong, sturdy Roly Poly (enjoy the free card!)",
+	"Completionist","100%ing 40 worlds - yowza!!",
+	"Half Past Hammer Time","throwing 25,000 hammers",
+	"Cry Some More","firing special weapons 25,000 times",
+	"Peace On Earth","solving world peace (now if only we can too!)",
 	//90
-	"Burst Their Bubble","beating something with bubbles",
-	"Hammer Time","throwing 5,000 hammers",
-	"Half Past Hammer Time","throwing 50,000 hammers",
-	"Raging Rage","raging 50 times",
-	"Ragingly Raging Rage","raging 500 times",
-	"Thrash Rock","smashing a Roly Poly to bits",
-	"Trigger Happy","firing 5,000 special weapons",
-	"Trigger Ecstatic","firing 50,000 special weapons",
-	"Keep Trying","dying 100 times",
-	"GOOOOAAALLLL!!","getting the other 99 goals",
+	"When Worlds Collide","buying all the awesome world at SPISMall!",
+	"Neapolitan","buying all the ice cream flavors at SPISMall",
+	"Smart Shopper","buying all the presents at SPISMall",
+	"Cheaters Never Die","buying all the cheats at SPISMall",
+	"Fresh Tomatoes","unlocking and watching all the movies at SPISMall",
+	"Privacy Violation","opening all the lockers at SPISMall - kinda creepy",
+	"Mode & Median","unlocking all the special 'modes' at SPISMall",
+	"Scan-O-Rama","filling out the Supreme Monster Database - thanks for your service!",
+	"Shop Til' You Drop","completely buying out the SPISMall - you're our favorite customer!!",
+	"Zorkin' Around","completing Bouapha's Text Adventure",
+	//100
+	"Keep Tryin'","dying 100 times",
+	"It's Not Unusual","acquiring a purple/red monster card",
+	"IDSPISPOPD","defeating 10,000 pumpkins of any varieties!",
+	"Ultra Monster Slayer","defeating 100,000 monsters - WOAH!!!",
+	"Bullet Sponge","taking 500,000 damage overall",
+	"Rip & Tear","dealing 500,000 damage overall",
+	"Purist","resisting the urge to cheat and stockpiling 1,000 cheat points",
+	"Caught Em' All!","completing your deck of Monster Cards",
+	"Millionaire","holding 1,000,000 coins in hand",
+	"Offshore Account","earning 10,000,000 points overall",
+	//110
+	"The River Styx","defeating the true final boss",
+	"R-R-R-REMIX!!","defeating the six main remix bosses",
+	"Featuring Ludicrous","finishing a level on Ludicrious mode with at least 5,000 points",
+	"Fast & Furious","finishing a level on Ludicrious mode with at least 7,000 points",
+	"The Gang's All Here!","finishing a level with all the bells and whistles activated",
+	"Rage Against the Lunatic","raging 500 times",
+	"Dark, Darker Yet Darker","[REDACTED]",
+	"Cornering the Market","obtaining 250 of any monster card Tier 2 or up",
+	"Luck of the Draw","getting lucky while playing Dr. Lunatic: Operation SCARE!",
+	"Supreme Overlord","being a true, blue Dr. Lunatic fan. Thank you so much!!",
+	//120
+	
 };
 
 void PrintGoalInfo(int x,int y,byte goal)
@@ -144,17 +169,6 @@ void PrintGoalInfo(int x,int y,byte goal)
 void CompleteGoal(byte goal)
 {
 	int i,t;
-
-	if(goal!=99)
-	{
-		t=0;
-		for(i=0;i<100;i++)
-			if(profile.progress.goal[i])
-				t++;
-		if(t>=99)
-			CompleteGoal(99);
-	}
-
 	if(profile.progress.goal[goal])
 		return;
 
@@ -163,6 +177,17 @@ void CompleteGoal(byte goal)
 
 	if(tutorial)
 		return;
+	
+	if(goal!=119)
+	{
+		t=0;
+		for(i=0;i<119;i++)
+			if(profile.progress.goal[i])
+				t++;
+		if(t>=119)
+			CompleteGoal(119);
+	}
+
 
 	profile.progress.goal[goal]=1;
 	ShowGoalEarned(goal);
@@ -179,106 +204,183 @@ void GoalKilledSomebody(Guy *g,byte type,byte frozen)
 	if(type==MONS_BOUAPHA)
 	{
 		if(profile.progress.kills[MONS_BOUAPHA]>=100)
-			CompleteGoal(98);
+			CompleteGoal(100);
 	}
-	else if(type==MONS_MATBRAIN)
-		CompleteGoal(30);
-	else if(type==MONS_MAT2BRAIN)
-		CompleteGoal(31);
+	else if(type==MONS_MATBRAIN || MONS_MAT2BRAIN)
+		CompleteGoal(40);
 	else if(type==MONS_THING)
-		CompleteGoal(32);
-	else if(type==MONS_SVEN || type==MONS_BJORN)
+		CompleteGoal(41);
+	else if(type==MONS_SVEN || type==MONS_BJORN || type==MONS_OLAF)
 	{
-		if((type==MONS_BJORN && profile.progress.kills[MONS_SVEN]>0) ||
-		   (type==MONS_SVEN && profile.progress.kills[MONS_BJORN]>0))
-			CompleteGoal(33);
+		if(profile.progress.kills[MONS_SVEN]>0 &&
+		profile.progress.kills[MONS_BJORN]>0 && 
+		profile.progress.kills[MONS_OLAF]>0)
+			CompleteGoal(42);
 	}
 	else if(type==MONS_SPHINX)
-		CompleteGoal(34);
+		CompleteGoal(43);
 	else if(type==MONS_KONGOR)
-		CompleteGoal(35);
+		CompleteGoal(44);
 	else if(type==MONS_COUNTESS)
-		CompleteGoal(36);
-	else if(type==MONS_DRL)
-		CompleteGoal(37);
-	else if(type==MONS_PATTY)
-		CompleteGoal(38);
+		CompleteGoal(45);
 	else if(type==MONS_DOZER)
-		CompleteGoal(39);
-	else if(type==MONS_LOONYCORE)
-		CompleteGoal(40);
-	else if(type==MONS_KINGCONE)
-		CompleteGoal(41);
-	else if(type==MONS_STICKMAN)
+		CompleteGoal(46);
+	else if(type==MONS_LUNABOSS || type==MONS_LUNAMECHA)
 	{
-		if(profile.progress.kills[MONS_STICKMAN]>=10)
-			CompleteGoal(42);
+		if(profile.progress.kills[MONS_LUNABOSS]>0 &&
+		profile.progress.kills[MONS_LUNAMECHA]>0)
+			CompleteGoal(47);
+	}
+	else if(type==MONS_PATTY || type==MONS_SCARAB)
+	{
+		if(profile.progress.kills[MONS_PATTY]>0 &&
+		profile.progress.kills[MONS_SCARAB]>0)
+			CompleteGoal(48);
+	}
+	else if(type==MONS_LOONYCORE || type==MONS_DRL || type==MONS_SDZL)
+	{
+		if(profile.progress.kills[MONS_LOONYCORE]>0 &&
+		profile.progress.kills[MONS_DRL]>0 && 
+		profile.progress.kills[MONS_SDZL]>0)
+			CompleteGoal(49);
+	}
+	else if(type==MONS_STICKMAN || type==MONS_STICKTREE || type==MONS_STICKWITCH || type==MONS_STKSHROOM ||
+	type==MONS_STKSPIDER || type==MONS_STKCORPSE || type==MONS_STKBAT || type==MONS_DANCER ||
+	type==MONS_STKFISH || type==MONS_STKSNOW)
+	{
+		if(profile.progress.kills[MONS_STICKMAN]>0 &&
+		profile.progress.kills[MONS_STICKTREE]>0 && 
+		profile.progress.kills[MONS_STICKWITCH]>0 &&
+		profile.progress.kills[MONS_STKSHROOM]>0 && 
+		profile.progress.kills[MONS_STKSPIDER]>0 && 
+		profile.progress.kills[MONS_STKCORPSE]>0 && 
+		profile.progress.kills[MONS_STKBAT]>0 && 
+		profile.progress.kills[MONS_DANCER]>0 &&
+		profile.progress.kills[MONS_STKFISH]>0 && 
+		profile.progress.kills[MONS_STKSNOW]>0)
+		CompleteGoal(55);
 	}
 	else if(type==MONS_EVILCLONE)
 	{
-		if(profile.progress.kills[MONS_EVILCLONE]>=10)
-			CompleteGoal(43);
+		if(profile.progress.kills[MONS_EVILCLONE]>=50)
+			CompleteGoal(61);
 	}
-	else if(type==MONS_DUSTDEVIL)
-		CompleteGoal(44);
-
-	if(profile.progress.runOver>=100)
-		CompleteGoal(45);
-
-	if(player.timeStop)
-		CompleteGoal(52);
-
-	if(type==MONS_MAGMAZOID || type==MONS_BOILER || type==MONS_BOOMKIN || type==MONS_JALAPENO || type==MONS_UNDERMAGMA ||
-		type==MONS_SCARAB || type==MONS_HOTSHROOM)
+	else if(type==MONS_OCTOBOSS)
+		CompleteGoal(50);
+	else if(type==MONS_GOAT1 || type==MONS_GOAT2 || type==MONS_GOAT3)
 	{
-		if(GetBulletAttackType()==BLT_FLAME || GetBulletAttackType()==BLT_FLAME2)
-			CompleteGoal(53);	// burned a fire monster to death
+		if(profile.progress.kills[MONS_GOAT1]>0 &&
+		profile.progress.kills[MONS_GOAT2]>0 && 
+		profile.progress.kills[MONS_GOAT3]>0)
+			CompleteGoal(51);
 	}
-
-	if(type==MONS_ROLLER || type==MONS_ROLLER2)
-		CompleteGoal(95);
-	if(type==MONS_FROSTBITER || type==MONS_SNOWGUY || type==MONS_JACKFROST)
+	else if(type==MONS_FRANK || type==MONS_MINIFRANK)
 	{
-		if(frozen)
+		if(profile.progress.kills[MONS_FRANK]>0 &&
+		profile.progress.kills[MONS_MINIFRANK]>0)
+			CompleteGoal(52);
+	}
+	else if(type==MONS_LARRY || type==MONS_HARRY)
+	{
+		if(profile.progress.kills[MONS_LARRY]>0 &&
+		profile.progress.kills[MONS_HARRY]>0)
+			CompleteGoal(53);
+	}
+	else if(type==MONS_BIGGHOST || type==MONS_GHASTLY)
+	{
+		if(profile.progress.kills[MONS_BIGGHOST]>0 &&
+		profile.progress.kills[MONS_GHASTLY]>0)
 			CompleteGoal(54);
 	}
+	else if(type==MONS_ELDER || MONS_ELDER2 || MONS_ELDER3 || MONS_ELDER4 || MONS_ELDER5)
+	{
+		if(profile.progress.kills[MONS_ELDER]>0 &&
+		profile.progress.kills[MONS_ELDER2]>0 && 
+		profile.progress.kills[MONS_ELDER3]>0 &&
+		profile.progress.kills[MONS_ELDER4]>0 && 
+		profile.progress.kills[MONS_ELDER5]>0)
+		CompleteGoal(56);
+	}
+	else if(type==MONS_EVILIZER && (profile.playAs==PLAY_LUNATIC || profile.playAs==PLAY_LOONY))
+		CompleteGoal(57);
+	else if(type==MONS_BOBBY && profile.playAs==PLAY_MYSTIC)
+		CompleteGoal(58);
+	else if(((MonsterTheme(i)&(MT_BOSS)&&type!=MONS_MATHEAD&&type!=MONS_MAT2BRAIN)||(type==MONS_MATBRAIN||type==MONS_MAT2BRAIN) && profile.difficulty>=4))
+		CompleteGoal(59);
 
-	if(type==MONS_VAMPIRE || type==MONS_COUNTESS || type==MONS_DARKVAMP || type==MONS_SPIKEY)
+	if(profile.progress.runOver>=100)
+		CompleteGoal(62);
+
+	if(player.timeStop)
+		CompleteGoal(37);
+
+	//fahrenheit 128
+	if(type==MONS_MAGMAZOID || type==MONS_BOILER || type==MONS_BOOMKIN || type==MONS_JALAPENO || type==MONS_UNDERMAGMA ||
+		type==MONS_SCARAB || type==MONS_HOTSHROOM || type==MONS_INCABOSS || type==MONS_FIREBUG || type==MONS_FIREBAT ||
+		type==MONS_MADCOW2 || type==MONS_PUMPKINFLY || type==MONS_PUMPKINFLY2 || type==MONS_NUMBSKULL || type==MONS_BOMBIE ||
+		type==MONS_ELDER4 || type==MONS_SKULLY || type==MONS_FROGURT || type==MONS_HOTDOG || type==MONS_BOMBIELORD ||
+		type==MONS_PYGMYFIRE || type==MONS_CENTIBBODY || type==MONS_CENTIBHEAD || type==MONS_HOTFOOT)
+	{
+		if(GetBulletAttackType()==BLT_FLAME || GetBulletAttackType()==BLT_FLAME2 || GetBulletAttackType()==BLT_FLAME3 ||
+		GetBulletAttackType()==BLT_FLAME4 || GetBulletAttackType()==BLT_FLAME5 || GetBulletAttackType()==BLT_SITFLAME ||
+		GetBulletAttackType()==BLT_BADSITFLAME || GetBulletAttackType()==BLT_FLAMEWALL)
+			CompleteGoal(32);	// burned a fire monster to death
+	}
+
+	if((type==MONS_ROLLER || type==MONS_ROLLER2)&&GetBulletAttackType()!=BLT_NONE)
+		CompleteGoal(85);
+	
+	//freeze frame
+	if(type==MONS_FROSTBITER || type==MONS_SNOWGUY || type==MONS_JACKFROST || type==MONS_GLASSJAW || type==MONS_ARCTICWOLF || 
+		type==MONS_KELVOZOID || type==MONS_STKSNOW)
+	{
+		if(frozen)
+			CompleteGoal(33);
+	}
+	
+	//pick your poison
+	if(type==MONS_SHROOM || type==MONS_MUSH || type==MONS_LICH || type==MONS_PYGMY3|| type==MONS_DARKVAMP ||
+		type==MONS_CREEPAZOID || type==MONS_SHROOMLORD || type==MONS_STKSHROOM || type==MONS_GANGRENE ||
+		type==MONS_MUTANT || type==MONS_FROG3 || type==MONS_SWAMPSTUMP || type==MONS_GASBAT)
+	{
+		if(GetBulletAttackType()==BLT_FLAME || GetBulletAttackType()==BLT_SPORE)
+			CompleteGoal(34);	// burned a fire monster to death
+	}
+	
+	//vampire
+	if(type==MONS_VAMPIRE || type==MONS_COUNTESS || type==MONS_DARKVAMP || type==MONS_SPIKEY ||
+	type==MONS_DRACULITE || type==MONS_VAMPLORD || type==MONS_ELDER || type==MONS_ELDER2 ||
+	type==MONS_ELDER3 || type==MONS_ELDER4 || type==MONS_ELDER5 || type==MONS_NIGHTVAMP || 
+	type==MONS_VAMPJR || type==MONS_ESHKAH || type==MONS_BONKULA || type==MONS_MECHABONK)
 	{
 		if(player.garlic && GetBulletAttackType()==BLT_SPEAR)
 			CompleteGoal(56);
-		totalKills=profile.progress.kills[MONS_VAMPIRE]+profile.progress.kills[MONS_DARKVAMP]+
-				profile.progress.kills[MONS_COUNTESS]+profile.progress.kills[MONS_SPIKEY];
-		if(totalKills>=200)
-			CompleteGoal(55);
 	}
 
 	if(GetBulletAttackType()==BLT_BUBBLE && g->friendly==0)
 		CompleteGoal(90);	// killed an enemy with bubbles
 
 	totalKills=0;
-	for(i=2;i<NUM_PROFILE_MONSTERS;i++)	// skip Bouapha
+	for(i=2;i<NUM_MONSTERS;i++)	// skip Bouapha
 		totalKills+=profile.progress.kills[i];
 
 
-	if(totalKills>1000)
-		CompleteGoal(46);
-	if(totalKills>10000)
-		CompleteGoal(47);
-	if(totalKills>50000)
-		CompleteGoal(48);
+	if(totalKills>2000)
+		CompleteGoal(63);
+	if(totalKills>20000)
+		CompleteGoal(70);
 	if(totalKills>100000)
-		CompleteGoal(49);
+		CompleteGoal(103);
 
 	if(player.combo>=20)
 		CompleteGoal(10);
 	if(player.combo>=100)
 		CompleteGoal(11);
-	if(player.combo>=500)
-		CompleteGoal(12);
+	if(player.combo>=250)
+		CompleteGoal(29);
 
 	totalKills=0;
-	for(i=2;i<NUM_PROFILE_MONSTERS;i++)	// skip Bouapha
+	for(i=2;i<NUM_MONSTERS;i++)	// skip Bouapha
 	{
 		if(!(MonsterFlags(i,i)&(MF_INVINCIBLE|MF_NOHIT)) && !(MonsterTheme(i)&(MT_GOOD|MT_BITS)) &&
 			(MonsterTheme(i)))
@@ -292,7 +394,7 @@ void GoalKilledSomebody(Guy *g,byte type,byte frozen)
 		}
 	}
 	if(!totalKills)	// every one of them has been beaten!
-		CompleteGoal(13);
+		CompleteGoal(60);
 }
 
 void GoalTallyPage(int score,byte perfect,byte destruct,int time)
@@ -311,56 +413,56 @@ void GoalTallyPage(int score,byte perfect,byte destruct,int time)
 	if(destruct)
 		CompleteGoal(4);
 	if(perfect && destruct)
-		CompleteGoal(5);
-	if(time<15*30)
+		CompleteGoal(9);
+	if(time<16*30)
 		CompleteGoal(6);
 	if(profile.playAs!=PLAY_BOUAPHA)
-		CompleteGoal(50);
+		CompleteGoal(30);
 	if(profile.playAs==PLAY_SHROOM)
-		CompleteGoal(51);
+		CompleteGoal(75);
 
-	if(profile.progress.totalCoins>=10000)
-		CompleteGoal(81);
-	if(profile.progress.totalCoins>=100000)
+	if(profile.progress.totalCoins>=50000)
 		CompleteGoal(82);
+	if(profile.progress.totalCoins-profile.progress.coinsSpent>=1000000)
+		CompleteGoal(109);
 	if(profile.progress.totalCoins-profile.progress.coinsSpent>=25000)
-		CompleteGoal(83);
+		CompleteGoal(39);
 }
 
 void GoalTimeDist(void)
 {
-	if(profile.progress.totalTime>=30*60*60)
-		CompleteGoal(14);
-	if(profile.progress.totalTime>=30*60*60*10)
-		CompleteGoal(15);
+	if(profile.progress.totalTime>=30*60*60*4)
+		CompleteGoal(12);
+	if(profile.progress.totalTime>=30*60*60*20)
+		CompleteGoal(71);
 	if(profile.progress.footDistance>=168960)
-		CompleteGoal(16);
-	if(profile.progress.footDistance>=168960*100)
 		CompleteGoal(17);
+	if(profile.progress.footDistance>=168960*30)
+		CompleteGoal(68);
 	if(profile.progress.raftDistance>=168960)
-		CompleteGoal(18);
+		CompleteGoal(28);
 	if(profile.progress.driveDistance+profile.progress.cartDistance>=168960*5)
-		CompleteGoal(19);
+		CompleteGoal(27);
 	if(profile.progress.underwaterTime>=30*60*60)
-		CompleteGoal(60);
+		CompleteGoal(31);
 }
 
 void GoalPurchase(void)
 {
 	if(AllOfTypePurchased(SHOP_WORLD))
-		CompleteGoal(20);
+		CompleteGoal(90);
 	if(AllOfTypePurchased(SHOP_ABILITY))
-		CompleteGoal(21);
+		CompleteGoal(91);
 	if(AllOfTypePurchased(SHOP_MAJOR))
-		CompleteGoal(22);
+		CompleteGoal(92);
 	if(AllOfTypePurchased(SHOP_CHEAT))
-		CompleteGoal(23);
+		CompleteGoal(93);
 	if(AllMoviesSeen())
-		CompleteGoal(24);
+		CompleteGoal(94);
 	if(AllLockersOpen())
-		CompleteGoal(25);
+		CompleteGoal(95);
 	if(AllPurchased())
-		CompleteGoal(26);
+		CompleteGoal(98);
 
 	if(profile.progress.totalCoins>=10000)
 		CompleteGoal(81);
@@ -368,6 +470,8 @@ void GoalPurchase(void)
 		CompleteGoal(82);
 	if(profile.progress.totalCoins-profile.progress.coinsSpent>=25000)
 		CompleteGoal(83);
+	if(profile.progress.totalCoins-profile.progress.coinsSpent>=1000000)
+		CompleteGoal(110);
 }
 
 void GoalWinLevel(void)
@@ -376,37 +480,40 @@ void GoalWinLevel(void)
 
 	d=CountLevelsPassed();
 	CalcFinishedWorlds();
+	
+	if (Random(1000)==1)
+		CompleteGoal(118);
 
 	if(d>=25)
-		CompleteGoal(61);
+		CompleteGoal(13);
 	if(d>=100)
-		CompleteGoal(62);
-	if(d>=1000)
-		CompleteGoal(63);
+		CompleteGoal(25);
+	if(d>=500)
+		CompleteGoal(78);
 	if(profile.progress.finishedWorlds>0)
-		CompleteGoal(64);
+		CompleteGoal(16);
+	if(profile.progress.finishedWorlds>=5)
+		CompleteGoal(26);
 	if(profile.progress.finishedWorlds>=10)
-		CompleteGoal(65);
-	if(profile.progress.finishedWorlds>=50)
-		CompleteGoal(66);
-	if(profile.progress.finishedWorlds>=profile.progress.totalWorlds-1)
 		CompleteGoal(67);
+	if(profile.progress.finishedWorlds>=40)
+		CompleteGoal(86);
 }
 
 void GoalFire(void)
 {
 	if(profile.progress.hammersThrown>=5000)
-		CompleteGoal(91);
-	if(profile.progress.hammersThrown>=50000)
-		CompleteGoal(92);
+		CompleteGoal(73);
+	if(profile.progress.hammersThrown>=25000)
+		CompleteGoal(87);
 	if(profile.progress.rages>=50)
-		CompleteGoal(93);
+		CompleteGoal(64);
 	if(profile.progress.rages>=500)
-		CompleteGoal(94);
+		CompleteGoal(115);
 	if(profile.progress.shotsFired>=5000)
-		CompleteGoal(96);
-	if(profile.progress.shotsFired>=50000)
-		CompleteGoal(97);
+		CompleteGoal(74);
+	if(profile.progress.shotsFired>=25000)
+		CompleteGoal(88);
 }
 
 // -------------------------------------------------

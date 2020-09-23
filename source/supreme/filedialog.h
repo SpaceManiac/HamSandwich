@@ -14,8 +14,9 @@
 #define FM_PLAYSONGS 32
 #define FM_NOWAVS	64	// disregard wav files
 #define FM_MERGE	128
+#define FM_PICSONLY	256
 
-void InitFileDialog(const char *fileSpec,byte menuItemsToShow,const char *defaultName);
+void InitFileDialog(const char *fileSpec,dword menuItemsToShow,const char *defaultName);
 void ExitFileDialog(void);
 void RenderFileDialog(int msx,int msy,MGLDraw *mgl);
 byte FileDialogKey(char key);

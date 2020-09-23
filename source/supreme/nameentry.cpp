@@ -6,6 +6,7 @@
 #include "music.h"
 #include "dialogbits.h"
 #include "progress.h"
+#include "appdata.h"
 
 static byte *backgd;
 static int textBright;
@@ -45,7 +46,7 @@ byte CheckForExistingName(const char *name)
 	char s[64];
 
 	sprintf(s,"profiles/%s.prf",name);
-	f=fopen(s,"rb");
+	f=AppdataOpen(s,"rb");
 	if(f)
 	{
 		fclose(f);
@@ -119,11 +120,6 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 		if(strlen(entry)<15)
 		{
 			entry[strlen(entry)+1]='\0';
-			if(ShiftState())
-			{
-				if(c>='a' && c<='z')
-					c+='A'-'a';
-			}
 			entry[strlen(entry)]=c;
 			MakeNormalSound(SND_MENUCLICK);
 		}

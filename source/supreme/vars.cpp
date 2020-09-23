@@ -85,8 +85,44 @@ int PlayerSpecialVars(char c)
 			return player.brains;
 		case 'K':
 			return player.candles;
+		case 'T': //timer (in seconds)
+			return player.timer;
+		case 'O': //oxygen level
+			return player.oxygen;
+		case 'Z': //combo!
+			return player.combo;
 		case 'P':
 			return player.worldProg->percentage;
+	}
+	return 0;
+}
+
+byte CheckKeychains()
+{
+	int amt;
+	amt = 0;
+	if (player.worldProg->keychains&KC_KEYCH1)
+		amt++;
+	if (player.worldProg->keychains&KC_KEYCH2)
+		amt++;
+	if (player.worldProg->keychains&KC_KEYCH3)
+		amt++;
+	if (player.worldProg->keychains&KC_KEYCH4)
+		amt++;
+	return amt;
+}
+
+int WorldSpecialVars(char c)
+{
+	if(c>='a' && c<='z')
+		c+='A'-'a';
+	
+	switch(c)
+	{
+		case 'L'://maps passed
+			return LevelsPassed(player.worldProg);
+		case 'K'://keychains
+			return CheckKeychains();
 	}
 	return 0;
 }
@@ -106,6 +142,29 @@ int TaggedSpecialVars(char c)
 			return TaggedMonster()->mapy;
 		case 'L':
 			return TaggedMonster()->hp;
+		case 'A':
+			return TaggedMonster()->age;
+	}
+	return 0;
+}
+
+int BossSpecialVars(char c)
+{
+	if(c>='a' && c<='z')
+		c+='A'-'a';
+	if(!TaggedMonster())
+		return 0;
+
+	switch(c)
+	{
+		case 'X':
+			return TaggedMonster()->mapx;
+		case 'Y':
+			return TaggedMonster()->mapy;
+		case 'L':
+			return TaggedMonster()->hp;
+		case 'A':
+			return TaggedMonster()->age;
 	}
 	return 0;
 }
@@ -178,14 +237,18 @@ varFunc_t GetSpecialVarFunc(char c)
 	{
 		case 'P':
 			return PlayerSpecialVars;
+		case 'W':
+			return WorldSpecialVars;
 		case 'T':
 			return TaggedSpecialVars;
-		case 'B':
+		case 'R':
 			return VarbarSpecialVars;
 		case 'D':
 			return DateSpecialVars;
 		case 'C':
 			return ClockSpecialVars;
+		case 'B':
+			return BossSpecialVars;
 	}
 
 	return 0;

@@ -6,6 +6,7 @@
 WallTool::WallTool(void)
 {
 	active=0;
+	target=0;
 	brush=0;
 	plopMode=PLOP_NORMAL;
 	tile[0][0]=200;
@@ -114,7 +115,7 @@ void WallTool::Render(int msx,int msy)
 	int i;
 	int minusBrush,plusBrush;
 
-	char plopText[][12]={"Normal","Random","Cycle","BigRandom","BigCycle"};
+	char plopText[][12]={"Normal","Random","Cycle","BigRandom","BigCycle","FillTouch","FillAll","CycleAll"};
 
 	for(i=0;i<4;i++)
 	{
@@ -182,6 +183,10 @@ void WallTool::PlopOne(int x,int y)
 
 	m=EditorGetMap();
 
+	if(plopMode==PLOP_CUST1 && m->map[x+y*m->width].floor != tile[active][1])
+	{
+		PlopFill(x,y,tile[active][1],tile[active][0]);
+	}
 	if(x>=0 && y>=0 && x<m->width && y<m->height && m->map[x+y*m->width].select && tile[active][0]<800 && tile[active][1]<800)
 	{
 		m->map[x+y*m->width].floor=tile[active][1];
@@ -203,6 +208,38 @@ void WallTool::PlopOne(int x,int y)
 		if(active>3)
 			active=0;
 	}
+}
+
+void WallTool::PlopFill(int x,int y,int floor,int wall)
+{
+	Map *m;
+	int preFloor,preWall;
+	m=EditorGetMap();
+
+	if(x<0 || y<0 || x>=m->width || y>=m->height || tile[active][1]>=800)
+		return;
+
+	preFloor=m->map[x+y*m->width].floor;
+	preWall=m->map[x+y*m->width].wall;
+
+	if(preFloor==floor && preWall==wall)
+		return;
+
+	m->map[x+y*m->width].floor=floor;
+	m->map[x+y*m->width].wall=wall;
+
+	if(x>0 && m->map[x-1+y*m->width].wall==preWall &&
+		m->map[x-1+y*m->width].floor==preFloor)
+		PlopFill(x-1,y,floor,wall);
+	if(x<m->width-1 && m->map[x+1+y*m->width].wall==preWall &&
+		m->map[x+1+y*m->width].floor==preFloor)
+		PlopFill(x+1,y,floor,wall);
+	if(y>0 && m->map[x+(y-1)*m->width].wall==preWall &&
+		m->map[x+(y-1)*m->width].floor==preFloor)
+		PlopFill(x,y-1,floor,wall);
+	if(y<m->height-1 && m->map[x+(y+1)*m->width].wall==preWall &&
+		m->map[x+(y+1)*m->width].floor==preFloor)
+		PlopFill(x,y+1,floor,wall);
 }
 
 void WallTool::Plop(void)

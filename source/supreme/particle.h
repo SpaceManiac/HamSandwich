@@ -25,6 +25,16 @@
 #define PART_LUNA	18
 #define PART_RADAR	19	// used for the radars
 #define PART_FX		20	// accelerates upward, shrinks as it dies, for effects
+//cool
+#define PART_RLHAMMER 21	// used by hammer, not always red (not working atm)
+#define PART_SUCK	22	// particles that get sucked in by black hole
+#define PART_YELLOW 23
+#define PART_SHORTYELLOW 24
+#define PART_FLOATER 25	// colored particles that float up in a ring
+#define PART_LAVA 26
+//from loonyland!
+#define PART_FIRE	27	// an expanding ring for bonkula
+#define PART_COLDFIRE 28	// same as fire, but white
 
 class Particle
 {
@@ -68,22 +78,27 @@ void ExplodeParticles2(byte type,int x,int y,int z,byte num,byte force);
 void ExplodeParticlesColor(byte color,int x,int y,int z,byte num,byte force);
 void MakeItSnow(Map *map);
 void MakeItRain(Map *map);
+void SlimeTime(Map *map);
 void SpecialSnow(int x,int y);
 void LightningBolt(int x,int y,int x2,int y2);
 void StinkySteam(int x,int y,int z,int dz);
 void GlassShatter(int x,int y,int x2,int y2,int z,byte amt);
-void CountessGlow(int x,int y);
+void MonsterGlow(int x,int y,dword m); //edited
 void MindControlSparks(int x,int y,int z,int dz);
 void BlowBubble(int x,int y,int z,int dz);
 void WeathermanWeather(int x,int y);
 void ColorRing(byte color,int x,int y,int z,byte num,byte force);
 void ColorDrop(byte color,int x,int y,int z);
+void ColorDropSize(byte color,int x,int y,int z, int s);
 void TrackParticle(byte color,int x,int y,int tx,int ty);
 void HealRing(byte color,int x,int y,int z,byte num,byte force);
 void TeamChangeRing(byte color,int x,int y,int z,byte num,byte force);
 
 void SmokeTile(int x,int y);
 void JackFrostWeather(int x,int y);
+void SuckParticle(int x,int y,int z);
+void MakeRingParticle(int x,int y, int z,byte size,byte cnt);
+void MakeColdRingParticle(int x,int y, int z,byte size);
 
 int CountParticles();
 

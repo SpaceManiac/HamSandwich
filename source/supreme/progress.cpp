@@ -5,6 +5,10 @@
 #include "music.h"
 #include "shop.h"
 
+#include <iostream>
+#include <string>
+#include <cmath>
+
 static char prfName[64];
 static byte firstTime;
 profile_t profile;
@@ -12,6 +16,7 @@ byte modeShopNum[10];
 
 void ApplyControlSettings()
 {
+	SetKeyboardBindings(0, 6, profile.control[0]);
 	SetKeyboardBindings(0, 6, profile.control[0]);
 	SetKeyboardBindings(1, 6, profile.control[1]);
 	SetJoystickBindings(2, profile.joyCtrl);
@@ -37,7 +42,7 @@ void InitProfile(void)
 	LoadProfile(name);
 	ApplyControlSettings();
 
-	for(i=0;i<7;i++)
+	for(i=0;i<8;i++)
 		modeShopNum[i]=ShopItemNumber(SHOP_MODE,i);
 }
 
@@ -198,11 +203,22 @@ void ClearProgress(void)
 	profile.progress.calories=profile.progress.calsBurned=0;
 	profile.progress.bestCombo=0;
 	profile.progress.cheats=0;
+	//new stuff
+	profile.progress.cards=0;
+	profile.progress.ignited=0;
+	profile.progress.frozen=0;
+	profile.progress.poisoned=0;
+	profile.progress.strength=0;
+	profile.progress.weaken=0;
+	profile.progress.confuse=0;
+	profile.progress.totalCheatPoints=0;
+	profile.progress.cheatPointsSpent=0;
 
 	profile.progress.wpnLock=0;
-	for(i=0;i<NUM_PROFILE_MONSTERS;i++)
+	for(i=0;i<NUM_MONSTERS;i++)
 	{
 		profile.progress.kills[i]=0;
+		profile.progress.carded[i]=0;
 
 		if((MonsterFlags(i,i)&(MF_NOHIT)) || (i==MONS_BOUAPHA) || // prescan unhittables, Bouapha, and derivatives
 				(i==MONS_PLAYMECHA) || (i==MONS_PLAYSHROOM) ||
@@ -266,9 +282,11 @@ void DefaultControls(void)
 
 void DefaultProfile(const char *name)
 {
+	int i;
+	dword j = 0;
 	strcpy(profile.name,name);
-
-	profile.sound=255;
+	
+	profile.sound=128;
 	profile.music=128;
 	profile.musicMode=MUSIC_OFFICIAL|MUSIC_REPEAT;
 	profile.difficulty=0;
@@ -483,7 +501,7 @@ void CalcFinishedWorlds(void)
 	for(i=0;i<profile.progress.num_worlds;i++)
 	{
 		if(strcmp(profile.progress.world[i].filename,"TEST") &&
-			strcmp(profile.progress.world[i].filename,"tutorial.dlw"))
+			strcmp(profile.progress.world[i].filename,"tutorial.hsw"))
 		{
 			if(profile.progress.world[i].percentage==100.0f)
 				result++;

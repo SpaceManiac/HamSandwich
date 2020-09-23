@@ -23,7 +23,7 @@ void AI_Lazybones(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			y=me->y+Sine(me->mind1)*16;
 			if(me->frm==2)
 				MakeSound(SND_SKELSHOOT,me->x,me->y,SND_CUTOFF,950);
-			FireBullet(x,y,me->mind1,BLT_ENERGY,me->friendly);
+			FireBullet(me,x,y,me->mind1,BLT_ENERGY,me->friendly);
 			me->mind1+=8;
 			me->facing=(me->mind1/32);
 			if(me->frm==17)
@@ -161,7 +161,7 @@ void AI_Madman(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x+Cosine(me->facing*32)*16;
 			y=me->y+Sine(me->facing*32)*16;
 			if(me->AttackCheck(32,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
-				goodguy->GetShot(Cosine(me->facing*32)*4,Sine(me->facing*32)*4,8,map,world);
+				goodguy->GetShot(me,goodguy,Cosine(me->facing*32)*4,Sine(me->facing*32)*4,8,map,world);
 			me->reload=10;
 		}
 
@@ -220,7 +220,7 @@ void AI_PygmyAcct(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			ang=(me->facing*32-40+(20*(me->frm-2)))&255;
 			x=me->x+Cosine(ang)*16;
 			y=me->y+Sine(ang)*16;
-			FireBullet(x,y,ang,BLT_PAPER,me->friendly);
+			FireBullet(me,x,y,ang,BLT_PAPER,me->friendly);
 			me->reload=2;
 		}
 		return;	// can't do nothin' right now
@@ -339,7 +339,7 @@ void AI_Crazypants(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			if(!me->friendly)
 				player.enemiesSlain--;
-			me->hp=monsType[me->type].hp;
+			me->hp=monsType[me->aiType].hp;
 			me->mind++;
 			me->seq=ANIM_A2;
 			me->frm=0;
@@ -382,7 +382,7 @@ void AI_Crazypants(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				y=me->y+Sine(me->facing*32)*16;
 				if(me->AttackCheck(40,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
 				{
-					goodguy->GetShot(Cosine(me->facing*32)*6,Sine(me->facing*32)*6,8,map,world);
+					goodguy->GetShot(me,goodguy,Cosine(me->facing*32)*6,Sine(me->facing*32)*6,8,map,world);
 					me->reload=6;
 				}
 			}
@@ -407,7 +407,7 @@ void AI_Crazypants(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				y=me->y+Sine(me->facing*32)*16;
 				if(me->AttackCheck(40,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
 				{
-					goodguy->GetShot(Cosine(me->facing*32)*6,Sine(me->facing*32)*6,12,map,world);
+					goodguy->GetShot(me,goodguy,Cosine(me->facing*32)*6,Sine(me->facing*32)*6,12,map,world);
 					me->reload=6;
 				}
 			}
@@ -463,7 +463,7 @@ void AI_Crazypants(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		}
 		if(me->mind1>0 && RangeToTarget(me,goodguy)>(64*FIXAMT))
 		{
-			me->mind2=1;	// bumped a wall, so randomly maneuver
+			me->mind2=1;	// bumped a wall, so Randomy maneuver
 			me->facing=(byte)Random(8);
 			me->mind3=10;
 		}
@@ -531,7 +531,10 @@ void AI_EliteSeal(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			f=me->facing*32;
 			x=me->x+Cosine(f)*16;
 			y=me->y+Sine(f)*16;
-			FireBullet(x,y,me->facing,BLT_MISSILE,me->friendly);
+			if(me->aiType==MONS_ATOMICSEAL)
+			FireBullet(me,x,y,me->facing,BLT_ROCKET,me->friendly);
+			else
+			FireBullet(me,x,y,me->facing,BLT_MISSILE,me->friendly);
 			MakeSound(SND_MISSILELAUNCH,x,y,SND_CUTOFF,1050);
 			me->reload=10;
 		}
@@ -633,14 +636,14 @@ void AI_Cone(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			y=me->y+Sine(me->facing*32)*16;
 			if(me->AttackCheck(35,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
 			{
-				goodguy->GetShot(Cosine(me->facing*32)*2,Sine(me->facing*32)*2,3,map,world);
+				goodguy->GetShot(me,goodguy,Cosine(me->facing*32)*2,Sine(me->facing*32)*2,3,map,world);
 				me->reload=6;
 			}
 		}
 		if(me->seq==ANIM_A1 && me->frm==6 && me->reload==0)
 		{
 			f=me->facing*32;
-			FireExactBullet(me->x,me->y,FIXAMT*10,Cosine(f)*10,Sine(f)*10,0,0,20,f,BLT_BIGSHELL,me->friendly);
+			FireExactBullet(me,me->x,me->y,FIXAMT*10,Cosine(f)*10,Sine(f)*10,0,0,20,f,BLT_BIGSHELL,me->friendly);
 			MakeSound(SND_MUSHMISSILE,x,y,SND_CUTOFF,1050);
 			me->reload=4;
 		}
@@ -731,9 +734,9 @@ void AI_PygmyDiver(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x+Cosine(ang)*16;
 			y=me->y+Sine(ang)*16;
 
-			FireExactBullet(x,y,FIXAMT*10,Cosine(me->facing*32)*12,Sine(me->facing*32)*12,FIXAMT,0,90,me->facing,BLT_HARPOON,me->friendly);
-			FireExactBullet(x,y,FIXAMT*10,Cosine((me->facing*32+16)&255)*12,Sine((me->facing*32+16)&255)*12,FIXAMT,0,90,me->facing,BLT_HARPOON,me->friendly);
-			FireExactBullet(x,y,FIXAMT*10,Cosine((me->facing*32+256-16)&255)*12,Sine((me->facing*32+256-16)&255)*12,FIXAMT,0,90,me->facing,BLT_HARPOON,me->friendly);
+			FireExactBullet(me,x,y,FIXAMT*10,Cosine(me->facing*32)*12,Sine(me->facing*32)*12,FIXAMT,0,90,me->facing,BLT_HARPOON,me->friendly);
+			FireExactBullet(me,x,y,FIXAMT*10,Cosine((me->facing*32+16)&255)*12,Sine((me->facing*32+16)&255)*12,FIXAMT,0,90,me->facing,BLT_HARPOON,me->friendly);
+			FireExactBullet(me,x,y,FIXAMT*10,Cosine((me->facing*32+256-16)&255)*12,Sine((me->facing*32+256-16)&255)*12,FIXAMT,0,90,me->facing,BLT_HARPOON,me->friendly);
 
 			me->reload=2;
 		}
@@ -857,7 +860,7 @@ void AI_Puffyfish(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				if(me->mind==4)
 				{
 					me->hp=1;
-					me->GetShot(0,0,1,map,world);
+					me->GetShot(me,me,0,0,1,map,world);
 				}
 			}
 		}
@@ -875,7 +878,7 @@ void AI_Puffyfish(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			for(x=0;x<16;x++)
 			{
 				ang=Random(256);
-				FireBullet(me->x,me->y,ang,BLT_SPINE,me->friendly);
+				FireBullet(me,me->x,me->y,ang,BLT_SPINE,me->friendly);
 			}
 		}
 		return;	// can't do nothin' right now
@@ -924,7 +927,7 @@ void AI_Puffyfish(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			if(me->mind==4)
 			{
 				me->hp=1;
-				me->GetShot(0,0,1,map,world);
+				me->GetShot(me,me,0,0,1,map,world);
 				return;
 			}
 		}
@@ -978,8 +981,8 @@ void AI_Yeti2(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			y=me->y+Sine(me->facing*32)*72;
 			x+=Cosine(((me->facing+2)*32)&255)*32;
 			y+=Sine(((me->facing+2)*32)&255)*32;
-			g=AddBaby(x,y,FIXAMT*10,MONS_SNOWBALL+Random(2),me);	// randomly pick which type of snowball, normal or reverse
-			if(g && !g->CanWalk(g->x,g->y,map,world))
+			g=AddBaby(x,y,FIXAMT*10,MONS_SNOWBALL+Random(2),me);	// Randomy pick which type of snowball, normal or reverse
+			if(g && !g->CanWalk(g,g->x,g->y,map,world))
 				RemoveGuy(g);
 			else if(g)
 			{
@@ -994,9 +997,9 @@ void AI_Yeti2(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x+((320-Random(641))<<FIXSHIFT);
 			y=me->y+((240-Random(481))<<FIXSHIFT);
 			if(Random(3)==0)
-				FireExactBullet(x,y,400*FIXAMT,0,0,0,0,100,me->facing*32,BLT_BIGSNOW,me->friendly);
+				FireExactBullet(me,x,y,400*FIXAMT,0,0,0,0,100,me->facing*32,BLT_BIGSNOW,me->friendly);
 			else
-				FireExactBullet(x,y,400*FIXAMT,0,0,0,0,100,me->facing*32,BLT_SNOWBALL,me->friendly);
+				FireExactBullet(me,x,y,400*FIXAMT,0,0,0,0,100,me->facing*32,BLT_SNOWBALL,me->friendly);
 		}
 		return;	// can't do nothin' right now
 	}
@@ -1076,6 +1079,7 @@ void AI_Yeti2(Guy *me,Map *map,world_t *world,Guy *goodguy)
 void AI_Spikey(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
+	Guy *g;
 
 	if(me->reload)
 		me->reload--;
@@ -1090,12 +1094,36 @@ void AI_Spikey(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->action==ACTION_BUSY)
 	{
-		if(me->seq==ANIM_ATTACK && me->frm>=2 && me->frm<=6)
+		if(me->seq==ANIM_ATTACK && me->frm>=2 && (me->frm<=6) && me->aiType!=MONS_VAMPLORD)
 		{
 			x=me->x+Cosine(me->facing*32)*16;
 			y=me->y+Sine(me->facing*32)*16;
-			FireBullet(x,y,(me->facing*32-24+Random(49))&255,BLT_SPINE,me->friendly);
+			if(me->aiType==MONS_DRACULITE)
+			{FireExactBullet(me,me->x,me->y,me->z+24,Cosine(me->facing*32)*12,Sine(me->facing*32)*12,0,0,16,me->facing*32+Random(8)-4,BLT_SPORE,me->friendly);}
+			else
+			FireBullet(me,x,y,(me->facing*32-24+Random(49))&255,BLT_SPINE,me->friendly);
 			me->reload=5;
+		}
+		if(me->aiType==MONS_VAMPLORD && me->seq==ANIM_ATTACK && me->frm==5 && me->reload==0 && RangeToTarget(me,goodguy)<160*FIXAMT)
+		{
+			me->reload=2;
+			x=me->x+Cosine(me->facing*32)*32;
+			y=me->y+Sine(me->facing*32)*32;
+			g=AddBaby(x,y,FIXAMT*20,MONS_BAT,me);
+			if(g && (!g->CanWalk(g,g->x,g->y,map,world)))
+				RemoveGuy(g);
+			else if(g)
+			{
+				MakeSound(SND_BATDIVE,g->x,g->y,SND_CUTOFF,1200);
+				g->facing= me->facing;
+				g->seq=ANIM_A1;	// diving attack move
+				g->frm=0;
+				g->frmTimer=0;
+				g->frmAdvance=128;
+				g->action=ACTION_BUSY;
+				g->dx=Cosine(g->facing*32)*12-FIXAMT*2+Random(FIXAMT*4);
+				g->dy=Sine(g->facing*32)*12;
+			}
 		}
 		return;	// can't do nothin' right now
 	}
@@ -1111,7 +1139,7 @@ void AI_Spikey(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 		if(goodguy)
 		{
-			if(RangeToTarget(me,goodguy)<(512*FIXAMT) && Random(8)==0)
+			if((RangeToTarget(me,goodguy)<(512*FIXAMT) && Random(8)==0 && me->aiType!=MONS_VAMPLORD)||(RangeToTarget(me,goodguy)<(512*FIXAMT) && Random(64)==0 && me->aiType==MONS_VAMPLORD))
 			{
 				// get him!
 				MakeSound(SND_VAMPATTK,me->x,me->y,SND_CUTOFF,1200);
@@ -1138,7 +1166,7 @@ void AI_Spikey(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			}
 			if(me->mind1>0 && RangeToTarget(me,goodguy)>(64*FIXAMT))
 			{
-				me->mind=1;	// bumped a wall, so randomly maneuver
+				me->mind=1;	// bumped a wall, so Randomy maneuver
 				me->facing=(byte)Random(8);
 				me->mind2=10;
 			}
@@ -1213,13 +1241,23 @@ void AI_Bombot(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		if(me->seq==ANIM_ATTACK && me->frm==3 && me->reload==0)
 		{
 			MakeSound(SND_ROBOSHOOT,me->x,me->y,SND_CUTOFF,1200);
-			x=me->x+Cosine(((me->facing+2)&7)*32)*24;
-			y=me->y+Sine(((me->facing+2)&7)*32)*20;
-			FireBullet(x,y,me->facing*32-16+Random(33),BLT_BOMB,me->friendly);
-			x=me->x+Cosine(((me->facing-2)&7)*32)*24;
-			y=me->y+Sine(((me->facing-2)&7)*32)*20;
-			FireBullet(x,y,me->facing*32-16+Random(33),BLT_BOMB,me->friendly);
-			me->reload=2;
+			if (me->aiType==MONS_ATOMBOT)
+			{
+				x=me->x+Cosine(me->facing*32)*20;
+				y=me->y+Sine(me->facing*32)*20;
+				FireBullet(me,x,y,me->facing*32-16+Random(33),BLT_BOMB_HOMING,me->friendly);
+				me->reload=2;
+			}
+			else
+			{
+				x=me->x+Cosine(((me->facing+2)&7)*32)*24;
+				y=me->y+Sine(((me->facing+2)&7)*32)*20;
+				FireBullet(me,x,y,me->facing*32-16+Random(33),BLT_BOMB,me->friendly);
+				x=me->x+Cosine(((me->facing-2)&7)*32)*24;
+				y=me->y+Sine(((me->facing-2)&7)*32)*20;
+				FireBullet(me,x,y,me->facing*32-16+Random(33),BLT_BOMB,me->friendly);
+				me->reload=2;
+			}
 		}
 		if(me->seq==ANIM_DIE && me->frm>3 && me->frmTimer<63)
 		{
@@ -1469,7 +1507,7 @@ void AI_Autozoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			y=me->y+Sine(me->facing*32)*16;
 			if(me->AttackCheck(35,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
 			{
-				goodguy->GetShot(Cosine(me->facing*32)*8,Sine(me->facing*32)*8,10,map,world);
+				goodguy->GetShot(me,goodguy,Cosine(me->facing*32)*8,Sine(me->facing*32)*8,10,map,world);
 				me->dx=-me->dx;
 				me->dy=-me->dy;
 				me->mind1=0;
@@ -1487,7 +1525,7 @@ void AI_Autozoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			if(me->mind1&2)
 				me->dy=-me->dy/2;
 			me->mind1=0;
-			me->GetShot(0,0,x,map,world);
+			me->GetShot(me,me,0,0,x,map,world);
 			MakeSound(SND_BOMBBOOM,me->x,me->y,SND_CUTOFF,200);
 			me->facing=Random(8);
 		}
@@ -1615,7 +1653,7 @@ void AI_Jellofish(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->reload=8;
 		MakeSound(SND_LIGHTNING,me->x,me->y,SND_CUTOFF,1200);
 		LightningBolt(me->x,me->y-FIXAMT*30,goodguy->x,goodguy->y-FIXAMT*30);
-		goodguy->GetShot(0,0,2,map,world);
+		goodguy->GetShot(me,goodguy,0,0,2,map,world);
 		return;
 	}
 
@@ -1647,7 +1685,7 @@ void AI_KingCone(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			MakeSound(SND_MUSHMISSILE,me->x,me->y,SND_CUTOFF,1500);
 			spd=Random(8)+1;
 			for(i=0;i<8;i++)
-				FireExactBullet(me->x,me->y,FIXAMT*128,Cosine(i*32)*spd,Sine(i*32)*spd,FIXAMT*4,0,120,0,BLT_GRENADE,me->friendly);
+				FireExactBullet(me,me->x,me->y,FIXAMT*128,Cosine(i*32)*spd,Sine(i*32)*spd,FIXAMT*4,0,120,0,BLT_GRENADE,me->friendly);
 		}
 		if(me->seq==ANIM_MOVE && me->frm==6 && me->reload==0)
 		{
@@ -1662,7 +1700,7 @@ void AI_KingCone(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				if(x<me->x-FIXAMT*64 || x>me->x+FIXAMT*64 || y<me->y-FIXAMT*64 || y>me->y+FIXAMT*64)
 				{
 					g=AddBaby(x,y,FIXAMT*10,MONS_CONE,me);
-					if(g && !g->CanWalk(g->x,g->y,map,world))
+					if(g && !g->CanWalk(g,g->x,g->y,map,world))
 						g->type=MONS_NONE;
 				}
 			}
@@ -1757,7 +1795,7 @@ void AI_Mailboxer(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x+Cosine(me->facing*32)*20;
 			y=me->y+Sine(me->facing*32)*20;
 			if(me->AttackCheck(24,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
-				goodguy->GetShot(Cosine(me->facing*32)*4,Sine(me->facing*32)*4,4,map,world);
+				goodguy->GetShot(me,goodguy,Cosine(me->facing*32)*4,Sine(me->facing*32)*4,4,map,world);
 			me->reload=5;
 			x=Random(5);
 			if(x==0)	// do another quick jab
@@ -1781,7 +1819,7 @@ void AI_Mailboxer(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x+Cosine(me->facing*32)*20;
 			y=me->y+Sine(me->facing*32)*20;
 			if(me->AttackCheck(24,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
-				goodguy->GetShot(Cosine(me->facing*32)*8,Sine(me->facing*32)*8,12,map,world);
+				goodguy->GetShot(me,goodguy,Cosine(me->facing*32)*8,Sine(me->facing*32)*8,12,map,world);
 			me->reload=5;
 			me->mind1=1;
 		}
@@ -1885,7 +1923,7 @@ void AI_Piranha(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				if(me->AttackCheck(10,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
 				{
 					MakeSound(SND_SPD1GNAW,me->x,me->y,SND_CUTOFF,1000);
-					goodguy->GetShot(Cosine(me->facing*32)*2,Sine(me->facing*32)*2,2,map,world);
+					goodguy->GetShot(me,goodguy,Cosine(me->facing*32)*2,Sine(me->facing*32)*2,2,map,world);
 					me->frm=4;	// bounce back
 					me->frmTimer=0;
 				}
@@ -1980,7 +2018,7 @@ void AI_Yugo(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		if(me->mind>1)
 		{
 			player.vehicle=0;
-			me->type=MONS_NONE;
+			me->aiType=MONS_NONE;
 			x=me->x/FIXAMT;
 			y=me->y/FIXAMT;
 			BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,1);
@@ -2077,7 +2115,7 @@ void AI_Yugo(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 	else	// being driven
 	{
-		if(!editing && !player.cheated && verified)
+		if(!editing && !player.cheated)
 			profile.progress.driveDistance+=abs(me->dx/FIXAMT)+abs(me->dy/FIXAMT);
 
 		noiseLoop++;
@@ -2118,7 +2156,7 @@ void AI_Yugo(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		if(me->mind1&1)	// bounced a horizontal wall
 		{
 			me->dx=-me->dx/2;
-			goodguy->GetShot(0,0,x,map,world);	// bounce, ouch!  More damage at higher speed
+			goodguy->GetShot(me,goodguy,0,0,x,map,world);	// bounce, ouch!  More damage at higher speed
 			me->ouch=4;	// light the car up red, since you can't see bouapha
 			y=1;
 		}
@@ -2126,7 +2164,7 @@ void AI_Yugo(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			me->dy=-me->dy/2;
 			if(!y)	// don't get hurt twice for one bounce
-				goodguy->GetShot(0,0,x,map,world);	// bounce, ouch!  More damage at higher speed
+				goodguy->GetShot(me,goodguy,0,0,x,map,world);	// bounce, ouch!  More damage at higher speed
 			me->ouch=4;	// light the car up red, since you can't see bouapha
 		}
 		me->mind1=0;
@@ -2134,7 +2172,7 @@ void AI_Yugo(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		if(goodguy->hp==0)
 		{
 			player.vehicle=0;
-			me->type=MONS_NONE;
+			me->aiType=MONS_NONE;
 			x=me->x/FIXAMT;
 			y=me->y/FIXAMT;
 			BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,1);
@@ -2208,7 +2246,7 @@ void AI_Yugo(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			goodguy->dy=0;
 			goodguy->z=0;
 			goodguy->dz=0;
-			me->type=MONS_NONE;
+			me->aiType=MONS_NONE;
 			x=me->x/FIXAMT;
 			y=me->y/FIXAMT;
 			BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,1);
@@ -2225,10 +2263,12 @@ void AI_Yugo(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			goodguy->action=ACTION_BUSY;
 			if(player.playAs==PLAY_LUNACHIK)
 				MakeSound(SND_LUNADROWN,x,y,SND_CUTOFF|SND_ONE,65536);
+			else if(player.playAs==PLAY_MYSTIC)
+				MakeSound(SND_DROWNKM,x,y,SND_CUTOFF|SND_ONE,65536);
 			else
 				MakeSound(SND_DROWN,x,y,SND_CUTOFF|SND_ONE,65536);
 			if(player.shield)
-				CompleteGoal(57);	// fell in water while shielded
+				CompleteGoal(24);	// fell in water while shielded
 			return;
 		}
 
@@ -2273,7 +2313,7 @@ void AI_Punkin(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->seq==ANIM_MOVE && me->reload==0)	// hits on this frame
 	{
-		FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,24,Cosine(me->facing*32)*7,Sine(me->facing*32)*7,8,map,world,me->friendly);
+		FindVictim(me,me->x>>FIXSHIFT,me->y>>FIXSHIFT,24,Cosine(me->facing*32)*7,Sine(me->facing*32)*7,8,map,world,me->friendly);
 		me->reload=4;
 	}
 
@@ -2346,7 +2386,7 @@ void AI_SeaCuke(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			x=me->x+Cosine(me->facing*32)*16;
 			y=me->y+Sine(me->facing*32)*16;
-			FireBullet(x,y,me->facing,BLT_DIRTSPIKE,me->friendly);
+			FireBullet(me,x,y,me->facing,BLT_DIRTSPIKE,me->friendly);
 			me->reload=1;
 		}
 		if(me->seq==ANIM_A1 && me->frm>2 && me->reload==0)
@@ -2356,7 +2396,7 @@ void AI_SeaCuke(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x+Cosine(me->facing*32)*16;
 			y=me->y+Sine(me->facing*32)*16;
 			if(me->AttackCheck(16,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
-				goodguy->GetShot(Cosine(me->facing*32)*8,Sine(me->facing*32)*8,8,map,world);
+				goodguy->GetShot(me,goodguy,Cosine(me->facing*32)*8,Sine(me->facing*32)*8,8,map,world);
 			me->reload=3;
 		}
 		return;	// can't do nothin' right now
@@ -2490,12 +2530,12 @@ void AI_Sneaky2(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		if(me->seq==ANIM_ATTACK && me->frm>=8 && me->frm<16)
 		{
 			me->frmAdvance=128;
-			FireBulletZ(me->x,me->y,FIXAMT*12,((7-(me->frm-8))*32-16+(byte)Random(33))&255,BLT_SHARK,me->friendly);
-			FireBulletZ(me->x,me->y,FIXAMT*12,((7-(me->frm-8))*32-16+(byte)Random(33))&255,BLT_SHARK,me->friendly);
+			FireBulletZ(me,me->x,me->y,FIXAMT*12,((7-(me->frm-8))*32-16+(byte)Random(33))&255,BLT_SHARK,me->friendly);
+			FireBulletZ(me,me->x,me->y,FIXAMT*12,((7-(me->frm-8))*32-16+(byte)Random(33))&255,BLT_SHARK,me->friendly);
 		}
 		else if(me->seq==ANIM_DIE)
 		{
-			FireBulletZ(me->x,me->y,FIXAMT*12,Random(256),BLT_SHARK,me->friendly);
+			FireBulletZ(me,me->x,me->y,FIXAMT*12,Random(256),BLT_SHARK,me->friendly);
 			x=me->x>>FIXSHIFT;
 			y=me->y>>FIXSHIFT;
 			BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,1);
@@ -2549,9 +2589,9 @@ void AI_Underzoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			// spit stuff
 			x=me->x+Cosine(me->facing*32)*50;
 			y=me->y+Sine(me->facing*32)*50;
-			FireBullet(x,y,me->facing*32,BLT_ENERGY,me->friendly);
-			FireBullet(x,y,(me->facing*32+4)&255,BLT_ENERGY,me->friendly);
-			FireBullet(x,y,(me->facing*32-4)&255,BLT_ENERGY,me->friendly);
+			FireBullet(me,x,y,me->facing*32,BLT_ENERGY,me->friendly);
+			FireBullet(me,x,y,(me->facing*32+4)&255,BLT_ENERGY,me->friendly);
+			FireBullet(me,x,y,(me->facing*32-4)&255,BLT_ENERGY,me->friendly);
 			me->reload=15;
 			me->mind=0;
 		}
@@ -2644,7 +2684,7 @@ void AI_Starfish(Guy *me,Map *map,world_t *world,Guy *goodguy)
 					a=(me->mind3+(i*256)/5)&255;
 					x=me->x+Cosine(a)*16;
 					y=me->y+Sine(a)*16;
-					FireBullet(x,y,a,BLT_ENERGY,me->friendly);
+					FireBullet(me,x,y,a,BLT_ENERGY,me->friendly);
 				}
 				MakeSound(SND_BULLETFIRE,me->x,me->y,SND_CUTOFF,1200);
 			}
@@ -2761,7 +2801,7 @@ void AI_WetSeal(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			f=f-8+Random(17);
 			x=me->x+Cosine(f)*16;
 			y=me->y+Sine(f)*16;
-			FireBullet(x,y,f,BLT_ENERGY,me->friendly);
+			FireBullet(me,x,y,f,BLT_ENERGY,me->friendly);
 			MakeSound(SND_BULLETFIRE,x,y,SND_CUTOFF,1050);
 			me->reload=20;
 		}
@@ -2860,7 +2900,7 @@ void AI_WetWilly(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x+Cosine(me->facing*32)*16;
 			y=me->y+Sine(me->facing*32)*16;
 			for(i=0;i<3;i++)
-				FireBulletZ(x,y,FIXAMT*12,me->facing*32-16+(byte)Random(33),BLT_SHARK,me->friendly);
+				FireBulletZ(me,x,y,FIXAMT*12,me->facing*32-16+(byte)Random(33),BLT_SHARK,me->friendly);
 
 			me->reload=10;
 		}
@@ -2868,7 +2908,7 @@ void AI_WetWilly(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		if(me->seq==ANIM_DIE && me->frm==8)
 		{
 			for(x=0;x<16;x++)
-				FireBullet(me->x,me->y,(byte)Random(256),BLT_SHARK,me->friendly);
+				FireBullet(me,me->x,me->y,(byte)Random(256),BLT_SHARK,me->friendly);
 			ExplodeParticles2(PART_WATER,me->x,me->y,FIXAMT*20,10,10);
 		}
 		return;	// can't do nothin' right now
@@ -2884,7 +2924,7 @@ void AI_WetWilly(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			else
 				MakeSound(SND_WILLYIDLE2,me->x,me->y,SND_CUTOFF,10);
 		}
-		FireExactBullet(me->x,me->y,FIXAMT*14,Cosine(x)*2,Sine(x)*2,Random(4*FIXAMT),0,30,((x+16)&255)/32,BLT_SHARK,me->friendly);
+		FireExactBullet(me,me->x,me->y,FIXAMT*14,Cosine(x)*2,Sine(x)*2,Random(4*FIXAMT),0,30,((x+16)&255)/32,BLT_SHARK,me->friendly);
 	}
 
 	if(RangeToTarget(me,goodguy)<(128*FIXAMT) && Random(16)==0)
@@ -2975,7 +3015,7 @@ void AI_CrabPuff(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->seq==ANIM_MOVE && me->reload==0)
 	{
-		if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,24,Cosine(me->facing*32)*4,Sine(me->facing*32)*4,2,map,world,me->friendly))
+		if(FindVictim(me,me->x>>FIXSHIFT,me->y>>FIXSHIFT,24,Cosine(me->facing*32)*4,Sine(me->facing*32)*4,2,map,world,me->friendly))
 		{
 			me->reload=4;
 		}
@@ -3005,8 +3045,8 @@ void AI_CrabPuff(Guy *me,Map *map,world_t *world,Guy *goodguy)
 void AI_Patch(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	Guy *g;
-	byte summonTab[]={MONS_PUMPKIN,MONS_PUMPKIN,MONS_BOOMKIN,MONS_SQUASH};
-	byte timerTab[]={30*5,30,30*5,30*3};
+	byte summonTab[]={MONS_PUMPKIN,MONS_PUMPKIN,MONS_BOOMKIN,MONS_SQUASH,MONS_FROG2,MONS_BEETLE};
+	byte timerTab[]={30*5,30,30*5,30*3,30*3,30*2};
 
 	if(me->reload)
 		me->reload--;
@@ -3026,14 +3066,17 @@ void AI_Patch(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		}
 		if(me->seq==ANIM_A1 && me->frm==7 && me->reload==0)
 		{
+			if(me->aiType<=MONS_PATCH4)
 			g=AddBaby(me->x,me->y+FIXAMT*2,0,summonTab[me->aiType-MONS_PATCH],me);
+			else
+			g=AddBaby(me->x,me->y+FIXAMT*2,0,summonTab[me->aiType-MONS_PATCH5+4],me);
 			if(g)
 			{
 				g->mind=1;
 				g->mind1=30;
 				g->facing=Random(8);
 			}
-			if(g && (!g->CanWalk(g->x,g->y,map,world)))
+			if(g && (!g->CanWalk(g,g->x,g->y,map,world)))
 				RemoveGuy(g);
 			me->reload=timerTab[me->aiType-MONS_PATCH];
 		}
@@ -3077,7 +3120,7 @@ void AI_Patty(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			{
 					g=AddBaby(me->x+((-64+Random(129))<<FIXSHIFT),
 							me->y+((-64+Random(129))<<FIXSHIFT),0,MONS_CRABPUFF,me);
-				if(g && !g->CanWalk(g->x,g->y,map,world))
+				if(g && !g->CanWalk(g,g->x,g->y,map,world))
 					RemoveGuy(g);
 			}
 		}
@@ -3091,7 +3134,7 @@ void AI_Patty(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				y=me->y+Sine(me->facing*32)*50-FIXAMT*4+(Random(9)<<FIXSHIFT);
 				f=me->facing*32-16+Random(33);
 
-				FireBullet(x,y,f,BLT_BUBBLE,me->friendly);
+				FireBullet(me,x,y,f,BLT_BUBBLE,me->friendly);
 			}
 			me->reload=0;
 		}
@@ -3103,7 +3146,7 @@ void AI_Patty(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			y=y+Sine((me->facing*32+64)&255)*32-FIXAMT*16+Random(FIXAMT*33);
 
 			g=AddBaby(x,y,0,MONS_CRABPUFF,me);
-			if(g && !g->CanWalk(x,y,map,world))
+			if(g && !g->CanWalk(g,x,y,map,world))
 				RemoveGuy(g);
 
 			x=me->x+Cosine(me->facing*32)*48;
@@ -3112,7 +3155,7 @@ void AI_Patty(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			y=y+Sine((me->facing*32+128+64)&255)*32-FIXAMT*16+Random(FIXAMT*33);
 
 			g=AddBaby(x,y,0,MONS_CRABPUFF,me);
-			if(g && !g->CanWalk(x,y,map,world))
+			if(g && !g->CanWalk(g,x,y,map,world))
 				RemoveGuy(g);
 		}
 		return;	// can't do nothin' right now
@@ -3293,7 +3336,7 @@ void AI_Dozer(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			if(me->frm>=3 && me->frm<=14)
 			{
 				me->mind2+=4;
-				FireBullet(me->x-FIXAMT*200+Cosine(me->mind2)*48,me->y+FIXAMT*160+Sine(me->mind2)*48,me->mind2,BLT_ENERGY,me->friendly);
+				FireBullet(me,me->x-FIXAMT*200+Cosine(me->mind2)*48,me->y+FIXAMT*160+Sine(me->mind2)*48,me->mind2,BLT_ENERGY,me->friendly);
 			}
 		}
 		if(me->seq==ANIM_A1)
@@ -3301,7 +3344,7 @@ void AI_Dozer(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			if(me->frm>=3 && me->frm<=14)
 			{
 				me->mind2-=4;
-				FireBullet(me->x+FIXAMT*200+Cosine(me->mind2)*48,me->y+FIXAMT*160+Sine(me->mind2)*48,me->mind2,BLT_ENERGY,me->friendly);
+				FireBullet(me,me->x+FIXAMT*200+Cosine(me->mind2)*48,me->y+FIXAMT*160+Sine(me->mind2)*48,me->mind2,BLT_ENERGY,me->friendly);
 			}
 		}
 		if(me->seq==ANIM_DIE)
@@ -3348,7 +3391,7 @@ void AI_Dozer(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 
 	if(goodguy->x>me->x-FIXAMT*200 && goodguy->x<me->x+FIXAMT*200 && goodguy->y>me->y-FIXAMT*160 && goodguy->y<me->y+FIXAMT*160)
-		goodguy->GetShot(0,0,1,map,world);
+		goodguy->GetShot(me,goodguy,0,0,1,map,world);
 
 	if(me->mind3)
 	{
@@ -3360,13 +3403,13 @@ void AI_Dozer(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		if(me->mind3<30 && (me->mind3&3)==0)
 		{
 			MakeSound(SND_MUSHMISSILE,me->x,me->y,SND_CUTOFF,1200);
-			FireExactBullet(me->x-FIXAMT*80,me->y-FIXAMT*90,FIXAMT*70,Cosine(0+me->mind3*3)*8,Sine(0+me->mind3*3)*8,FIXAMT*19,0,180,0,BLT_GRENADE,me->friendly);
+			FireExactBullet(me,me->x-FIXAMT*80,me->y-FIXAMT*90,FIXAMT*70,Cosine(0+me->mind3*3)*8,Sine(0+me->mind3*3)*8,FIXAMT*19,0,180,0,BLT_GRENADE,me->friendly);
 		}
 	}
 	else
 		me->mind3=30*5;
 
-	if(me->hp<=700 && me->mind<2)	// lose arms at 400hp
+	if(me->hp<=me->maxHP*0.7 && me->mind<2)	// lose arms at 400hp
 	{
 		me->seq=ANIM_A2;
 		me->frm=0;
@@ -3375,7 +3418,7 @@ void AI_Dozer(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->action=ACTION_BUSY;
 		return;
 	}
-	if(me->hp<=400 && me->mind<3)	// lose grill at 200hp
+	if(me->hp<=me->maxHP*0.4 && me->mind<3)	// lose grill at 200hp
 	{
 		me->seq=ANIM_A3;
 		me->frm=0;
@@ -3428,7 +3471,7 @@ void AI_Dozer(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				{
 					x=((me->facing-19)*32-20+Random(41))&255;
 					MakeSound(SND_ARMORSHOOT,me->x,me->y,SND_CUTOFF,1200);
-					FireExactBullet(me->x+Cosine((me->facing-19)*32)*64,
+					FireExactBullet(me,me->x+Cosine((me->facing-19)*32)*64,
 									me->y-FIXAMT*64+Sine((me->facing-19)*32)*48,
 									FIXAMT*70,Cosine(x)*6,Sine(x)*6,-FIXAMT/2,0,90,x,BLT_BIGSHELL,me->friendly);
 				}
@@ -3447,22 +3490,22 @@ void AI_Dozer(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				{
 					x=((me->facing-24)*32-20+Random(41))&255;
 					MakeSound(SND_ARMORSHOOT,me->x,me->y,SND_CUTOFF,1200);
-					FireExactBullet(me->x+Cosine((me->facing-24)*32)*64,
+					FireExactBullet(me,me->x+Cosine((me->facing-24)*32)*64,
 									me->y-FIXAMT*64+Sine((me->facing-24)*32)*48,
 									FIXAMT*70,Cosine(x)*6,Sine(x)*6,-FIXAMT/2,0,90,x,BLT_BIGSHELL,me->friendly);
 				}
 				if(me->mind1==5)
-					LaunchMegabeam(me->x,me->y+FIXAMT*140,me->ID);
+					LaunchMegabeam(me,me->x,me->y+FIXAMT*140,me->ID);
 				if(((me->mind1>=110 && me->mind1<117) ||
 					(me->mind1>=60 && me->mind1<67)) && (me->mind1&3)==0)
 				{
 					MakeSound(SND_ARMORSHOOT,me->x,me->y,SND_CUTOFF,1200);
 					for(x=0;x<5;x++)
 					{
-						FireExactBullet(me->x-FIXAMT*90,
+						FireExactBullet(me,me->x-FIXAMT*90,
 										me->y+FIXAMT*140,
 										FIXAMT*20,Cosine(64+40-20*x)*6,Sine(64+40-20*x)*6,-FIXAMT/2,0,90,0,BLT_BIGSHELL,me->friendly);
-						FireExactBullet(me->x+FIXAMT*90,
+						FireExactBullet(me,me->x+FIXAMT*90,
 										me->y+FIXAMT*140,
 										FIXAMT*20,Cosine(64+40-20*x)*6,Sine(64+40-20*x)*6,-FIXAMT/2,0,90,0,BLT_BIGSHELL,me->friendly);
 					}
@@ -3503,7 +3546,7 @@ void AI_MutantZombie(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		if(me->seq==ANIM_ATTACK && me->frm<7)
 		{
 			for(x=0;x<5;x++)
-				FireBullet(me->x-FIXAMT*20+Random(FIXAMT*40),me->y-FIXAMT*20+Random(FIXAMT*40),Random(256),BLT_SPORE,me->friendly);
+				FireBullet(me,me->x-FIXAMT*20+Random(FIXAMT*40),me->y-FIXAMT*20+Random(FIXAMT*40),Random(256),BLT_SPORE,me->friendly);
 		}
 		if(me->seq==ANIM_ATTACK && me->frm==5)
 		{
@@ -3518,8 +3561,8 @@ void AI_MutantZombie(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			{
 				for(x=0;x<256;x+=8)
 				{
-					FireExactBullet(me->x,me->y,FIXAMT*10,Cosine(x)*12,Sine(x)*12,0,0,16,x,BLT_SPORE,me->friendly);
-					FireExactBullet(me->x,me->y,FIXAMT*10,Cosine(x)*6,Sine(x)*6,0,0,16,x,BLT_SPORE,me->friendly);
+					FireExactBullet(me,me->x,me->y,FIXAMT*10,Cosine(x)*12,Sine(x)*12,0,0,16,x,BLT_SPORE,me->friendly);
+					FireExactBullet(me,me->x,me->y,FIXAMT*10,Cosine(x)*6,Sine(x)*6,0,0,16,x,BLT_SPORE,me->friendly);
 				}
 			}
 		}
@@ -3529,7 +3572,7 @@ void AI_MutantZombie(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			y=me->y+Sine(me->facing*32)*16;
 			if(me->AttackCheck(8,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
 			{
-				goodguy->GetShot(Cosine(me->facing*32)*4,Sine(me->facing*32)*4,1,map,world);
+				goodguy->GetShot(me,goodguy,Cosine(me->facing*32)*4,Sine(me->facing*32)*4,1,map,world);
 				me->reload=2;
 			}
 		}
@@ -3537,7 +3580,7 @@ void AI_MutantZombie(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 
 	if(Random(10)==0)
-		FireBullet(me->x-FIXAMT*20+Random(FIXAMT*40),me->y-FIXAMT*20+Random(FIXAMT*40),Random(256),BLT_SPORE,me->friendly);
+		FireBullet(me,me->x-FIXAMT*20+Random(FIXAMT*40),me->y-FIXAMT*20+Random(FIXAMT*40),Random(256),BLT_SPORE,me->friendly);
 
 	if(me->mind==0)		// when mind=0, singlemindedly lumber towards Bouapha
 	{
@@ -3637,12 +3680,15 @@ void AI_Whatsit(Guy *me,Map *map,world_t *world,Guy *goodguy)
 					me->seq=ANIM_MOVE;
 					me->frm=0;
 					me->frmTimer=0;
+					if(me->aiType==MONS_DUMBLE)
+					me->frmAdvance=192;
+					else
 					me->frmAdvance=128;
 					me->mind1=200;
 					me->mind=1;	// pop out in hunt mode
 				}
-				if(!me->CanWalk(me->x,me->y,map,world))
-					me->type=MONS_NONE;	// vanish if this spot is occupied
+				if(!me->CanWalk(me,me->x,me->y,map,world))
+					me->aiType=MONS_NONE;	// vanish if this spot is occupied
 				break;
 		}
 		return;
@@ -3654,7 +3700,15 @@ void AI_Whatsit(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			x=me->x+Cosine(me->facing*32)*16;
 			y=me->y+Sine(me->facing*32)*16;
-			FireExactBullet(x,y,FIXAMT*12,Cosine(me->facing*32)*8,Sine(me->facing*32)*8,-FIXAMT/4,0,60,me->facing*32,BLT_BIGSHELL,me->friendly);
+			if(me->aiType==MONS_DUMBLE)
+			{
+				FireExactBullet(me,x,y,FIXAMT*12,Cosine(me->facing*32+256-24)*8,Sine(me->facing*32+256-24)*8,-FIXAMT/4,0,60,me->facing*32,BLT_ENERGY,me->friendly);
+				FireExactBullet(me,x,y,FIXAMT*12,Cosine(me->facing*32+256-12)*8,Sine(me->facing*32+256-12)*8,-FIXAMT/4,0,60,me->facing*32,BLT_ENERGY,me->friendly);
+				FireExactBullet(me,x,y,FIXAMT*12,Cosine(me->facing*32+12)*8,Sine(me->facing*32+12)*8,-FIXAMT/4,0,60,me->facing*32,BLT_ENERGY,me->friendly);
+				FireExactBullet(me,x,y,FIXAMT*12,Cosine(me->facing*32+24)*8,Sine(me->facing*32+24)*8,-FIXAMT/4,0,60,me->facing*32,BLT_ENERGY,me->friendly);
+			}
+			else
+			FireExactBullet(me,x,y,FIXAMT*12,Cosine(me->facing*32)*8,Sine(me->facing*32)*8,-FIXAMT/4,0,60,me->facing*32,BLT_BIGSHELL,me->friendly);
 			me->reload=5;
 		}
 		return;	// can't do nothin' right now
@@ -3771,13 +3825,20 @@ void AI_Whatsit(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			me->mind1=20;
 			me->mind=2;	// wander
 		}
-		me->dx=Cosine(me->facing*32)*1;
-		me->dy=Sine(me->facing*32)*1;
+		if (me->aiType==MONS_DUMBLE)
+		{me->dx=Cosine(me->facing*32)*2;
+		me->dy=Sine(me->facing*32)*2;}
+		else
+		{me->dx=Cosine(me->facing*32)*1;
+		me->dy=Sine(me->facing*32)*1;}
 		if(me->seq!=ANIM_MOVE)
 		{
 			me->seq=ANIM_MOVE;
 			me->frm=0;
 			me->frmTimer=0;
+			if (me->aiType==MONS_DUMBLE)
+			me->frmAdvance=144;
+			else
 			me->frmAdvance=96;
 		}
 	}
@@ -3802,8 +3863,12 @@ void AI_Whatsit(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			}
 		}
 
-		me->dx=Cosine(me->facing*32)*1;
-		me->dy=Sine(me->facing*32)*1;
+		if (me->aiType==MONS_DUMBLE)
+		{me->dx=Cosine(me->facing*32)*2;
+		me->dy=Sine(me->facing*32)*2;}
+		else
+		{me->dx=Cosine(me->facing*32)*1;
+		me->dy=Sine(me->facing*32)*1;}
 		if(me->seq!=ANIM_MOVE)
 		{
 			me->seq=ANIM_MOVE;
@@ -3817,6 +3882,9 @@ void AI_Whatsit(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	{
 		me->frm=0;
 		me->frmTimer=0;
+		if (me->aiType==MONS_DUMBLE)
+		me->frmAdvance=144;
+		else
 		me->frmAdvance=96;
 	}
 }
@@ -3840,7 +3908,7 @@ void AI_ShockGhost(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	{
 		if(RangeToTarget(me,goodguy)<180*FIXAMT && me->hp>0)
 		{
-			goodguy->GetShot(0,0,1,map,world);
+			goodguy->GetShot(me,goodguy,0,0,1,map,world);
 			LightningBolt(
 					me->x-FIXAMT*32+Random(FIXAMT*64),
 					me->y-FIXAMT*82+Random(FIXAMT*64),
@@ -3930,7 +3998,7 @@ void AI_Mechazoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			// spit stuff
 			x=me->x+Cosine(me->facing*32)*50;
 			y=me->y+Sine(me->facing*32)*50;
-			FireBullet(x,y,(me->facing*32-12+Random(25))&255,BLT_ENERGY,me->friendly);
+			FireBullet(me,x,y,(me->facing*32-12+Random(25))&255,BLT_ENERGY,me->friendly);
 			me->reload=15;
 			me->mind=0;
 		}
@@ -4124,7 +4192,7 @@ void AI_Beetle(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->seq==ANIM_MOVE && me->reload==0)
 	{
-		if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,24,Cosine(me->facing*32)*4,Sine(me->facing*32)*4,2,map,world,me->friendly))
+		if(FindVictim(me,me->x>>FIXSHIFT,me->y>>FIXSHIFT,24,Cosine(me->facing*32)*4,Sine(me->facing*32)*4,2,map,world,me->friendly))
 		{
 			me->reload=4;
 		}
@@ -4176,7 +4244,7 @@ void AI_Scarab(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			{
 					g=AddBaby(me->x+((-64+Random(129))<<FIXSHIFT),
 							me->y+((-64+Random(129))<<FIXSHIFT),0,MONS_BEETLE,me);
-				if(g && !g->CanWalk(g->x,g->y,map,world))
+				if(g && !g->CanWalk(g,g->x,g->y,map,world))
 					RemoveGuy(g);
 			}
 		}
@@ -4190,7 +4258,7 @@ void AI_Scarab(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				{
 					x=me->x+Cosine(me->facing*32)*50-FIXAMT*16+(Random(33)<<FIXSHIFT);
 					y=me->y+Sine(me->facing*32)*50-FIXAMT*16+(Random(33)<<FIXSHIFT);
-					FireBullet(x,y,me->facing,BLT_FLAME,me->friendly);
+					FireBullet(me,x,y,me->facing,BLT_FLAME,me->friendly);
 				}
 			}
 			me->reload=0;
@@ -4203,7 +4271,7 @@ void AI_Scarab(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			y=y+Sine((me->facing*32+64)&255)*32-FIXAMT*16+Random(FIXAMT*33);
 
 			g=AddBaby(x,y,0,MONS_BEETLE,me);
-			if(g && !g->CanWalk(x,y,map,world))
+			if(g && !g->CanWalk(g,x,y,map,world))
 				RemoveGuy(g);
 
 			x=me->x+Cosine(me->facing*32)*48;
@@ -4212,7 +4280,7 @@ void AI_Scarab(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			y=y+Sine((me->facing*32+128+64)&255)*32-FIXAMT*16+Random(FIXAMT*33);
 
 			g=AddBaby(x,y,0,MONS_BEETLE,me);
-			if(g && !g->CanWalk(x,y,map,world))
+			if(g && !g->CanWalk(g,x,y,map,world))
 				RemoveGuy(g);
 		}
 		return;	// can't do nothin' right now
@@ -4310,7 +4378,7 @@ void AI_Frostbiter(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			MakeSound(SND_SPD2SPIT,me->x,me->y,SND_CUTOFF,1200);
 			x=me->x+Cosine(me->facing*32)*8;
 			y=me->y+Sine(me->facing*32)*8;
-			FireBullet(x,y,me->facing*32,BLT_FREEZE,me->friendly);
+			FireBullet(me,x,y,me->facing*32,BLT_FREEZE,me->friendly);
 			me->reload=40;
 		}
 		return;	// can't do nothin' right now
@@ -4375,7 +4443,7 @@ void AI_UnderMagmazoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			// spit stuff
 			x=me->x+Cosine(me->facing*32)*50;
 			y=me->y+Sine(me->facing*32)*50;
-			FireBullet(x,y,me->facing,BLT_FLAME2,me->friendly);
+			FireBullet(me,x,y,me->facing,BLT_FLAME2,me->friendly);
 			me->reload=2;
 			me->mind=0;
 		}
@@ -4441,7 +4509,7 @@ void AI_ParkedCar(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	{
 		if(me->seq==ANIM_DIE && me->reload==0)
 		{
-			FireBullet(me->x,me->y,0,BLT_BOOM,me->friendly);
+			FireBullet(me,me->x,me->y,0,BLT_BOOM,me->friendly);
 			me->reload=5;
 		}
 		return;	// can't do nothin' right now
@@ -4459,7 +4527,7 @@ void AI_Traffic(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	{
 		if(me->seq==ANIM_DIE && me->reload==0)
 		{
-			FireBullet(me->x,me->y,0,BLT_BOOM,me->friendly);
+			FireBullet(me,me->x,me->y,0,BLT_BOOM,me->friendly);
 			me->reload=10;
 		}
 		return;	// can't do nothin' right now
@@ -4468,9 +4536,9 @@ void AI_Traffic(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->mind==0)
 	{
 		me->friendly=1-me->friendly;
-		FindVictims((me->x+me->dx)>>FIXSHIFT,(me->y+me->dy)>>FIXSHIFT,16,-FIXAMT*10+Random(FIXAMT*21),-FIXAMT*10+Random(FIXAMT*21),20,map,world,me->friendly);
+		FindVictims(me,(me->x+me->dx)>>FIXSHIFT,(me->y+me->dy)>>FIXSHIFT,16,-FIXAMT*10+Random(FIXAMT*21),-FIXAMT*10+Random(FIXAMT*21),20,map,world,me->friendly);
 		me->friendly=1-me->friendly;
-		FindVictims((me->x+me->dx)>>FIXSHIFT,(me->y+me->dy)>>FIXSHIFT,16,-FIXAMT*10+Random(FIXAMT*21),-FIXAMT*10+Random(FIXAMT*21),20,map,world,me->friendly);
+		FindVictims(me,(me->x+me->dx)>>FIXSHIFT,(me->y+me->dy)>>FIXSHIFT,16,-FIXAMT*10+Random(FIXAMT*21),-FIXAMT*10+Random(FIXAMT*21),20,map,world,me->friendly);
 	}
 
 	me->facing=me->mind2/32;	// mind2 holds the 'true' visual facing 0-255
@@ -4661,23 +4729,39 @@ void AI_ShroomLord(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			{
 				x=me->x+Cosine(i)*32;
 				y=me->y+Sine(i)*24;
-				FireExactBullet(x,y,FIXAMT*20,Cosine(i)*8,Sine(i)*8,0,0,16,i,BLT_SPORE,me->friendly);
+				if(me->aiType==MONS_HEALER)
+					FireExactBullet(me,x,y,FIXAMT*20,Cosine(i)*8,Sine(i)*8,0,0,16,i,BLT_SPOREGOOD,me->friendly);
+				else
+					FireExactBullet(me,x,y,FIXAMT*20,Cosine(i)*8,Sine(i)*8,0,0,16,i,BLT_SPORE,me->friendly);
 				i=(i+me->frm*2)&255;
 			}
 			me->reload=1;
 		}
 		if(me->seq==ANIM_DIE && me->frm==1 && me->frmTimer<64)
 		{
-			g=AddBaby(me->x+(32<<FIXSHIFT),me->y,0,MONS_SHROOM,me);
-			if(g && (!g->CanWalk(g->x,g->y,map,world)))
-				RemoveGuy(g);
-			g=AddBaby(me->x-(32<<FIXSHIFT),me->y,0,MONS_SHROOM,me);
-			if(g && (!g->CanWalk(g->x,g->y,map,world)))
-				RemoveGuy(g);
-			for(i=0;i<30;i++)
-				BlowSmoke(me->x-32*FIXAMT+Random(64*FIXAMT),
-					  	 me->y-32*FIXAMT+Random(64*FIXAMT),
-								Random(64)<<FIXSHIFT,Random(FIXAMT*4));
+			if(me->aiType==MONS_SHROOMLORD)
+			{
+				g=AddBaby(me->x+(32<<FIXSHIFT),me->y,0,MONS_SHROOM,me);
+				if(g && (!g->CanWalk(g,g->x,g->y,map,world)))
+					RemoveGuy(g);
+				g=AddBaby(me->x-(32<<FIXSHIFT),me->y,0,MONS_SHROOM,me);
+				if(g && (!g->CanWalk(g,g->x,g->y,map,world)))
+					RemoveGuy(g);
+				for(i=0;i<30;i++)
+					BlowSmoke(me->x-32*FIXAMT+Random(64*FIXAMT),
+							 me->y-32*FIXAMT+Random(64*FIXAMT),
+									Random(64)<<FIXSHIFT,Random(FIXAMT*4));
+			}
+			else if(me->aiType==MONS_HEALER)
+			{
+
+				for(i=0;i<30;i++)
+					BlowSmoke(me->x-32*FIXAMT+Random(64*FIXAMT),
+							 me->y-32*FIXAMT+Random(64*FIXAMT),
+									Random(64)<<FIXSHIFT,Random(FIXAMT*4));
+				for(i=0;i<16;i++)
+					FireExactBullet(me,me->x,me->y,FIXAMT*20,Cosine(i*16)*12,Sine(i*16)*12,0,0,16,i*16,BLT_SPOREGOOD,me->friendly);
+			}
 		}
 		return;	// can't do nothin' right now
 	}
@@ -4782,7 +4866,7 @@ void AI_BigBat(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				g=AddBaby(me->x,me->y,me->z,MONS_BAT,me);
 				if(g)
 				{
-					if(!g->CanWalk(g->x,g->y,map,world))
+					if(!g->CanWalk(g,g->x,g->y,map,world))
 						g->type=MONS_NONE;
 					g->z=me->z;
 					g->facing=me->facing;
@@ -4964,7 +5048,8 @@ void AI_HugeBat(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 void AI_Werewolf(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
-	int x,y;
+	int x,y,i;
+	Guy *g;
 
 	if(me->reload)
 		me->reload--;
@@ -4993,7 +5078,7 @@ void AI_Werewolf(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			Dampen(&me->dy,FIXAMT);
 			if(me->reload==0 && me->AttackCheck(40,me->x>>FIXSHIFT,me->y>>FIXSHIFT,goodguy))
 			{
-				goodguy->GetShot(Cosine(me->facing*32)*8,Sine(me->facing*32)*8,8,map,world);
+				goodguy->GetShot(me,goodguy,Cosine(me->facing*32)*8,Sine(me->facing*32)*8,8,map,world);
 				me->reload=10;
 			}
 			if(me->frm==10)
@@ -5008,7 +5093,7 @@ void AI_Werewolf(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			y=me->y+Sine(me->facing*32)*32;
 			if(me->AttackCheck(16,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
 			{
-				goodguy->GetShot(Cosine(me->facing*32)*4,Sine(me->facing*32)*4,2,map,world);
+				goodguy->GetShot(me,goodguy,Cosine(me->facing*32)*4,Sine(me->facing*32)*4,2,map,world);
 			}
 		}
 		if(me->seq==ANIM_A2)
@@ -5035,8 +5120,41 @@ void AI_Werewolf(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		if(me->seq==ANIM_A3 && me->frm==6 && me->reload==0)
 		{
 			// howl effect
-			me->reload=10;
-			me->mind3=30*5;
+			if(me->aiType==MONS_WOLF2)
+			{
+				me->reload=10;
+				me->mind3=30*5;
+			}
+			else if(me->aiType==MONS_DIREWOLF)
+			{
+				for(i=0;i<4;i++)
+				{
+					x=me->x+Cosine(i*64)*64;
+					y=me->y+Sine(i*64)*64;
+					g=AddBaby(x,y,0,MONS_WOLF,me);
+					MakeSound(SND_WOLFPOUNCE,me->x,me->y,SND_CUTOFF,1200);
+					if(g && (!g->CanWalk(g,g->x,g->y,map,world)))
+						RemoveGuy(g);
+					else if(g)
+					{
+						g->seq=ANIM_A3;	// arising from the ground
+						g->frm=0;
+						g->frmTimer=0;
+						g->frmAdvance=128;
+						g->action=ACTION_BUSY;
+					}
+				}
+			}
+			else if(me->aiType==MONS_ANUBIS)
+			{
+				RaiseMummies(me);
+			}
+		}
+		if(me->seq==ANIM_A4 && me->frm>6 && me->reload==0)
+		{
+			// howl effect
+			me->reload=2;
+			FireBullet(me,me->x,me->y,me->facing*32-8+Random(16),BLT_FREEZE2,me->friendly);
 		}
 		if(me->seq==ANIM_DIE)
 			me->frmAdvance=190;
@@ -5057,7 +5175,20 @@ void AI_Werewolf(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->dy=0;
 		return;
 	}
-
+	if(me->aiType==MONS_ARCTICWOLF && RangeToTarget(me,goodguy)<(128*FIXAMT) && Random(24)==0)
+	{
+		// get him!
+		MakeSound(SND_WOLFPOUNCE,me->x,me->y,SND_CUTOFF,1200);
+		me->seq=ANIM_A4;
+		me->frm=0;
+		me->frmTimer=0;
+		me->frmAdvance=160;
+		me->action=ACTION_BUSY;
+		me->reload=0;
+		me->dx=0;
+		me->dy=0;
+		return;
+	}
 	if(me->aiType==MONS_WOLF2 && RangeToTarget(me,goodguy)<(256*FIXAMT) && Random(32)==0)
 	{
 		// charge!!!
@@ -5073,7 +5204,22 @@ void AI_Werewolf(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		FaceGoodguy(me,goodguy);
 		return;
 	}
-	if(me->aiType==MONS_WOLF2 && me->mind3==0 && me->mind2==0 && Random(128)==0)
+	if(me->aiType==MONS_ARCTICWOLF && RangeToTarget(me,goodguy)<(256*FIXAMT) && Random(32)==0)
+	{
+		// charge!!!
+		MakeSound(SND_WOLFCHARGE,me->x,me->y,SND_CUTOFF,1200);
+		me->seq=ANIM_A4;
+		me->frm=0;
+		me->frmTimer=0;
+		me->frmAdvance=64;
+		me->action=ACTION_BUSY;
+		me->dx=0;
+		me->dy=0;
+		me->reload=0;
+		FaceGoodguy(me,goodguy);
+		return;
+	}
+	if(((me->aiType==MONS_WOLF2||me->aiType==MONS_DIREWOLF)||(me->aiType==MONS_ANUBIS && DyingSkellies(me))) && me->mind3==0 && me->mind2==0 && Random(128)==0)
 	{
 		// howl
 		MakeSound(SND_WOLFHOWL,me->x,me->y,SND_CUTOFF,1200);
@@ -5087,6 +5233,7 @@ void AI_Werewolf(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->reload=0;
 		return;
 	}
+	
 	if(me->seq==ANIM_MOVE)
 		me->frmAdvance=256;
 
@@ -5121,7 +5268,7 @@ void AI_Werewolf(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			me->mind1=(byte)Random(30)+1;
 		}
 
-		x=4+2*(me->aiType==MONS_WOLF);
+		x=4+2*(me->aiType==MONS_WOLF)-1*(me->aiType==MONS_ARCTICWOLF)-1*(me->aiType==MONS_DIREWOLF);
 		me->dx=Cosine(me->facing*32)*x;
 		me->dy=Sine(me->facing*32)*x;
 		if(me->seq!=ANIM_MOVE)
@@ -5218,7 +5365,7 @@ void AI_Patrol(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			y=me->y+Sine(me->facing*32)*20;
 			if(me->AttackCheck(24,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
 			{
-				goodguy->GetShot(Cosine(me->facing*32)*10,Sine(me->facing*32)*10,12,map,world);
+				goodguy->GetShot(me,goodguy,Cosine(me->facing*32)*10,Sine(me->facing*32)*10,12,map,world);
 			}
 			me->reload=5;
 		}
@@ -5227,7 +5374,7 @@ void AI_Patrol(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x+Cosine(me->facing*32)*20;
 			y=me->y+Sine(me->facing*32)*20;
 			a=me->facing*32-16+Random(32);
-			FireExactBullet(x,y,FIXAMT*20,Cosine(a)*6,Sine(a)*6,FIXAMT*5,0,60,0,BLT_BOMB,me->friendly);
+			FireExactBullet(me,x,y,FIXAMT*20,Cosine(a)*6,Sine(a)*6,FIXAMT*5,0,60,0,BLT_BOMB,me->friendly);
 			me->reload=2;
 		}
 		return;	// can't do nothin' right now
@@ -5366,7 +5513,7 @@ void AI_Weatherman(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(RangeToTarget(me,goodguy)<100*FIXAMT && Random(2)==0 && me->hp>0)
 	{
-		goodguy->GetShot(0,0,2,map,world);
+		goodguy->GetShot(me,goodguy,0,0,2,map,world);
 		LightningBolt(
 				me->x-FIXAMT*32+Random(FIXAMT*64),
 				me->y-FIXAMT*82+Random(FIXAMT*64),
@@ -5385,9 +5532,9 @@ void AI_Weatherman(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			y=me->y+Sine(me->facing*32)*8;
 			// throw ice and rain
 			MakeSound(SND_CRAZYSTAB,me->x,me->y,SND_CUTOFF,1200);
-			FireBulletZ(x,y,FIXAMT*12,(me->facing*32-16+(byte)Random(33))&255,BLT_SHARK,me->friendly);
+			FireBulletZ(me,x,y,FIXAMT*12,(me->facing*32-16+(byte)Random(33))&255,BLT_SHARK,me->friendly);
 			if(Random(2)==0)
-				FireBulletZ(x,y,FIXAMT*12,(me->facing*32-16+(byte)Random(33))&255,BLT_FREEZE2,me->friendly);
+				FireBulletZ(me,x,y,FIXAMT*12,(me->facing*32-16+(byte)Random(33))&255,BLT_FREEZE2,me->friendly);
 		}
 		if(me->seq==ANIM_A1 && goodguy->aiType==MONS_BOUAPHA)	// unga bunga!
 		{
@@ -5539,13 +5686,13 @@ void AI_HunterEgg(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			// then die
 			MakeSound(SND_EGGDIE,me->x,me->y,SND_CUTOFF,1200);
 			me->hp=1;
-			me->GetShot(0,0,1,map,world);
+			me->GetShot(me,me,0,0,1,map,world);
 			me->reload=10;
 		}
 
 		if(me->seq==ANIM_DIE)
 		{
-			FireBullet(me->x,me->y,(byte)Random(256),BLT_ACID,me->friendly);
+			FireBullet(me,me->x,me->y,(byte)Random(256),BLT_ACID,me->friendly);
 			ExplodeParticles2(PART_SLIME,me->x,me->y,FIXAMT*20,4,10);
 		}
 		return;	// can't do nothin' right now
@@ -5587,7 +5734,7 @@ void AI_PunkBunny(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x+Cosine(me->facing*32)*20;
 			y=me->y+Sine(me->facing*32)*20;
 
-			FireBullet(x,y,(me->facing*32-8+Random(17))&255,BLT_ENERGY,me->friendly);
+			FireBullet(me,x,y,(me->facing*32-8+Random(17))&255,BLT_ENERGY,me->friendly);
 			MakeSound(SND_BULLETFIRE,x,y,SND_CUTOFF,100);
 			me->reload=3;
 		}
@@ -5596,7 +5743,7 @@ void AI_PunkBunny(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x+Cosine(me->facing*32)*10;
 			y=me->y+Sine(me->facing*32)*10;
 
-			FireBullet(x,y,me->facing*32,BLT_BOMB,me->friendly);
+			FireBullet(me,x,y,me->facing*32,BLT_BOMB,me->friendly);
 			me->reload=3;
 		}
 		if(me->seq==ANIM_DIE)
@@ -5768,12 +5915,12 @@ void AI_Skeleton(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			ShakeScreen(120);
 			MakeSound(SND_BOMBBOOM,me->x,me->y,SND_CUTOFF,1200);
-			FireBullet(me->x,me->y-FIXAMT,0,BLT_SHOCKWAVE,me->friendly);
+			FireBullet(me,me->x,me->y-FIXAMT,0,BLT_SHOCKWAVE,me->friendly);
 			for(i=0;i<10;i++)
 			{
 				x=me->x+((256-Random(513))<<FIXSHIFT);
 				y=me->y+((256-Random(513))<<FIXSHIFT);
-				FireExactBullet(x,y,FIXAMT*80+(Random(40)<<FIXSHIFT),
+				FireExactBullet(me,x,y,FIXAMT*80+(Random(40)<<FIXSHIFT),
 								0,0,0,0,30,2,BLT_ROCK,me->friendly);
 			}
 			me->reload=5;
@@ -5783,7 +5930,7 @@ void AI_Skeleton(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		return;	// can't do nothin' right now
 	}
 
-	// randomly decide to point at Bouapha to unnerve him
+	// Randomy decide to point at Bouapha to unnerve him
 	// (but only if in pursuit mode, because otherwise you'd point the wrong way)
 	if((!Random(100)) && me->mind==0)
 	{
@@ -5874,6 +6021,7 @@ void AI_Microzoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		if(me->hp==0)
 			MakeSound(SND_MINIZOIDDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
+	
 
 	if(me->action==ACTION_BUSY)
 	{
@@ -5882,12 +6030,15 @@ void AI_Microzoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			// spit stuff
 			x=me->x+Cosine(me->facing*32)*8;
 			y=me->y+Sine(me->facing*32)*8;
-			FireBullet(x,y,me->facing*32,BLT_ENERGY,me->friendly);
+			FireBullet(me,x,y,me->facing*32,BLT_ENERGY,me->friendly);
 			me->reload=15;
 			me->mind=0;
 		}
 		return;	// can't do nothin' right now
 	}
+	
+	if(goodguy && RangeToTarget(me,goodguy)<500*FIXAMT)
+		WaterRipple((me->x+me->dx*2)/FIXAMT,(me->y+me->dy*2)/FIXAMT,4*Random(32));
 
 	if(goodguy)
 	{
@@ -5946,12 +6097,28 @@ void AI_HotShroom(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->action==ACTION_BUSY)
 	{
-		if(me->seq==ANIM_ATTACK && (me->frm==5 || me->frm==6) && me->reload==0 && goodguy)
+		if (me->aiType==MONS_DEATHCAP)
 		{
-			for(i=0;i<8;i++)
-				FireBullet(me->x,me->y,i,BLT_FLAME,me->friendly);
+			if(me->seq==ANIM_ATTACK && (me->frm==5 ) && me->reload==0 && goodguy)
+			{
+				for(i=0;i<4;i++)
+				{
+					FireBullet(me,me->x,me->y,i,BLT_FLAME,me->friendly);
+				}
+				me->mind4++;
 
-			me->reload=2;
+			}
+		}
+		else
+		{
+			if(me->seq==ANIM_ATTACK && (me->frm==5 || me->frm==6) && me->reload==0 && goodguy)
+			{
+				for(i=0;i<8;i++)
+				{
+					FireBullet(me,me->x,me->y,i,BLT_FLAME,me->friendly);
+				}
+				me->reload=2;
+			}
 		}
 		return;	// can't do nothin' right now
 	}
@@ -6043,7 +6210,7 @@ void AI_MiniWacko(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x+Cosine(me->facing*32)*8;
 			y=me->y+Sine(me->facing*32)*8;
 			if(me->AttackCheck(16,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
-				goodguy->GetShot(Cosine(me->facing*32)*4,Sine(me->facing*32)*4,4,map,world);
+				goodguy->GetShot(me,goodguy,Cosine(me->facing*32)*4,Sine(me->facing*32)*4,4,map,world);
 			me->reload=10;
 		}
 
@@ -6152,7 +6319,7 @@ void AI_JackFrost(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x+=256;
 		if(x>255)
 			x-=256;
-		FireBullet(me->x,me->y,x,BLT_FREEZE2,me->friendly);
+		FireBullet(me,me->x,me->y,x,BLT_FREEZE2,me->friendly);
 	}
 	else
 		me->mind2--;
@@ -6164,7 +6331,7 @@ void AI_JackFrost(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			if(me->AttackCheck(100,me->x>>FIXSHIFT,me->y>>FIXSHIFT,goodguy))
 			{
 				FaceGoodguy(me,goodguy);
-				goodguy->GetShot(Cosine(me->facing*32)*12,
+				goodguy->GetShot(me,goodguy,Cosine(me->facing*32)*12,
 								Sine(me->facing*32)*12,20,map,world);
 			}
 		}
@@ -6200,4 +6367,3 @@ void AI_JackFrost(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->frmTimer=0;
 	}
 }
-

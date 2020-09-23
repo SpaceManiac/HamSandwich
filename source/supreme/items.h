@@ -144,23 +144,24 @@
 #define ITM_STOPWATCH	131
 #define ITM_STRTLIGHT	132
 #define ITM_SUPREME		133
+// NEW items
+#define ITM_KEYW		134
+#define ITM_KEYBL		135
+#define ITM_DOORW	 	136
+#define ITM_DOORBL	 	137
+#define ITM_HAY			138
+#define ITM_BARREL4		139
 // unused items
-#define ITM_UNUSED2		134
-#define ITM_UNUSED3		135
-#define ITM_UNUSED4		136
-#define ITM_UNUSED5		137
-#define ITM_UNUSED6		138
-#define ITM_UNUSED7		139
-#define ITM_UNUSED8		140
-#define ITM_UNUSED9		141
-#define ITM_UNUSED10	142
-#define ITM_UNUSED11	143
-#define ITM_UNUSED12	144
-#define ITM_UNUSED13	145
-#define ITM_UNUSED14	146
-#define ITM_UNUSED15	147
-#define ITM_UNUSED16	148
-#define ITM_UNUSED17	149
+#define ITM_BOOMERANG	140
+#define ITM_CACTUS		141
+#define ITM_ROCKET		142
+#define ITM_WATERGUN	143
+#define ITM_MEGAPHONE	144
+#define ITM_PUMPKING	145
+#define ITM_DOUBLEGUN	146
+#define ITM_WHOOPIE		147
+#define ITM_BLACKHOLE	148
+#define ITM_MEDICKIT	149
 
 #define NUM_ORIGINAL_ITEMS	150
 #define MAX_ITEMS	255
@@ -199,15 +200,18 @@
 #define IT_CUSTOM	(1<<16)	// the custom theme, "My Theme"
 
 // triggers
-#define ITR_NONE	0	// can't be triggered
-#define ITR_GET		1	// triggered on pickup
-#define ITR_SHOOT	2	// triggers when shot (must be shootable)
+#define ITR_NONE	0		// can't be triggered
+#define ITR_GET		1		// triggered on pickup
+#define ITR_SHOOT	2		// triggers when shot (must be shootable)
 #define ITR_PLAYERBUMP	4	// triggers when stepped on/bumped into by player
-#define ITR_ENEMYBUMP 8	// triggers when bumped by an enemy
+#define ITR_ENEMYBUMP 8		// triggers when bumped by an enemy
 #define ITR_FRIENDBUMP 16	// step/bump by friendly monster
-#define ITR_CHOP	32	// triggers when hit by machete or other chopper
-#define ITR_MINECART 64	// triggers when crashed into by a minecart
-#define ITR_ALWAYS	128	// triggers repeatedly, as fast as tiles animate
+#define ITR_CHOP	32		// triggers when hit by machete or other chopper
+#define ITR_MINECART 64		// triggers when crashed into by a minecart
+#define ITR_ALWAYS	128		// triggers repeatedly, as fast as tiles animate
+#define ITR_BOMBED 256		// triggers when explodinated
+#define ITR_BURNT 512		// triggers when burnt by fire!
+#define ITR_FROZEN 1024		// triggers when burnt by fire!
 
 // effects
 // what occurs when you pick up the item if it's a pickup,
@@ -242,8 +246,12 @@
 #define IE_INCVAR	26	// increment variable N
 #define IE_DECVAR	27	// decrement variable N
 #define IE_MOVE		28	// move up/down/left/right (only if it could move there as a pushable item)
+#define IE_WKEY		29	// white key
+#define IE_BLKEY		30	// black key
+#define IE_ORBITER3 31	// summon N weather orbiters, -N will remove them
+#define IE_ORBITER4 32	// summon N poison orbiters, -N will remove them
 
-#define IE_MAX		29	// max # of effects
+#define IE_MAX		33	// max # of effects
 
 // power ups
 #define PU_REVERSE	1	// reverse hammer
@@ -256,7 +264,13 @@
 #define PU_AMMO2	8	// reload current weapon
 #define PU_CHEESE	9	// supreme cheese
 #define PU_POISON	10	// poison
-#define MAX_POWERUP 11
+#define PU_FROZEN	11	// frozen
+#define PU_IGNITED	12	// ignited
+#define PU_WEAKNESS	13	// weakness
+#define PU_STRENGTH	14	// strength
+#define PU_WATERWALK 15	// water walk
+#define PU_CONFUSION 16	// confusion
+#define MAX_POWERUP 17
 
 typedef struct item_t
 {
@@ -269,7 +283,7 @@ typedef struct item_t
 	word flags;		// what special flags it has
 	dword theme;		// flags for which themes it goes in
 	word trigger;	// what triggers it
-	byte effect;	// what it does when triggered
+	word effect;	// what it does when triggered
 	int effectAmt;	// a modifier for the effect
 	char msg[64];	// message when effect occurs
 	word sound;		// sound when effect occurs

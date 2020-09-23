@@ -34,9 +34,12 @@
 #define PLOP_CYCLE		2
 #define PLOP_RANDOM2	3
 #define PLOP_CYCLE2		4
-#define PLOP_MODES		5
+#define PLOP_CUST1		5
+#define PLOP_CUST2		6
+#define PLOP_CUST3		7
+#define PLOP_MODES		8
 
-// Tool Doings (what is the tool doing right now)
+// Tool Doings (what is the tool doing right now?)
 #define TD_PICKTOOL		0	// selecting from the pop up menu of tools
 #define TD_PLOPPING		1	// cursor is held, plopping down tool
 #define TD_USING		2	// nothing special going on

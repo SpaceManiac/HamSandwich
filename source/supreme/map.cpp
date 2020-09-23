@@ -394,7 +394,7 @@ void Map::Update(byte mode,world_t *world)
 		else if(mode==UPDATE_GAME)
 		{
 			// make the lights approach what they are supposed to be
-			if(player.hammerFlags&HMR_LIGHT)
+			if(player.cheatrFlags&HMR_LIGHT)
 			{
 				if(map[i].templight>0)
 					map[i].templight--;
@@ -424,7 +424,7 @@ void Map::Update(byte mode,world_t *world)
 		if(mode!=UPDATE_EDIT) // edit mode doesn't animate since it would screw it up
 		{
 			// check for animation
-			if(timeToAnim==2)
+			if(timeToAnim==2 && !player.timeStop)
 			{
 				if(GetTerrain(world,map[i].floor)->flags&TF_ANIM)
 					map[i].floor=GetTerrain(world,map[i].floor)->next;
@@ -1236,12 +1236,18 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 						// point in rendering this floor (unless it is transparent
 						if((!map[i+(j+1)*width].wall) ||
 							(GetTerrain(world,map[i+(j+1)*width].floor)->flags&TF_TRANS))
-							RenderFloorTileFancy(scrX,scrY,m->floor,shdw,lites);
+							{
+								RenderFloorTileFancy(scrX,scrY,m->floor,shdw,lites);
+								if((curMap->flags&MAP_DYWTR  || curMap->flags&MAP_DYLVA) && (GetTerrain(world,map[i+j*width].floor)->flags&TF_TRANS))
+									RenderFloorTileFancyWater(scrX,scrY,m->floor,0,shdw,lites);
+							}
 					}
 					else
 					{
 						// if there's a wall to the right, draw a shadow on this tile
 						RenderFloorTileFancy(scrX,scrY,m->floor,shdw,lites);
+						if((curMap->flags&MAP_DYWTR  || curMap->flags&MAP_DYLVA) && (GetTerrain(world,map[i+j*width].floor)->flags&TF_TRANS))
+							RenderFloorTileFancyWater(scrX,scrY,m->floor,0,shdw,lites);
 					}
 				}
 			}
@@ -1993,4 +1999,15 @@ mapTile_t *Map::GetTile(int x,int y)
 		return &fake;
 	else
 		return &map[x+y*width];
+}
+
+//Look!
+byte MapCheckCallback(int x,int y,int cx,int cy,int value,Map *map)
+{
+	return (x!=(value%1024) || y!=(value/1024));
+}
+
+byte Map::CheckLOS(int x,int y,int radius,int x2,int y2)
+{
+	return LOS(x,y,radius,x2+y2*1024,MapCheckCallback);
 }

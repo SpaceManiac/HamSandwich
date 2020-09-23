@@ -6,6 +6,7 @@
 FloorTool::FloorTool(void)
 {
 	active=0;
+	tilesCleared=0;
 	brush=0;
 	plopMode=PLOP_NORMAL;
 	for (int i = 0; i < NUM_TILES; ++i)
@@ -81,7 +82,7 @@ void FloorTool::Render(int msx,int msy)
 	int i;
 	int minusBrush,plusBrush;
 
-	char plopText[][12]={"Normal","Random","Cycle","BigRandom","BigCycle"};
+	char plopText[][12]={"Normal","Random","Cycle","BigRandom","BigCycle","FillTouch","FillAll","CycleAll"};
 
 	for(i=0;i<NUM_TILES;i++)
 	{
@@ -165,6 +166,42 @@ void FloorTool::PlopOne(int x,int y)
 	}
 }
 
+void FloorTool::PlopFill(int x,int y,int floor,int wall)
+{
+	Map *m;
+	int preFloor,preWall;
+	m=EditorGetMap();
+	
+	if(x<0 || y<0 || x>=m->width || y>=m->height || tile[active]>=800 || tilesCleared>=10000)
+	{
+		MakeNormalSound(SND_BOMBBOOM);
+		return;
+	}
+
+	tilesCleared++;
+	preFloor=m->map[x+y*m->width].floor;
+	preWall=m->map[x+y*m->width].wall;
+
+	if(preFloor==floor && preWall==wall)
+		return;
+
+	m->map[x+y*m->width].floor=floor;
+	m->map[x+y*m->width].wall=wall;
+
+	if(x>0 && m->map[x-1+y*m->width].wall==preWall &&
+		m->map[x-1+y*m->width].floor==preFloor)
+		PlopFill(x-1,y,floor,wall);
+	if(x<m->width-1 && m->map[x+1+y*m->width].wall==preWall &&
+		m->map[x+1+y*m->width].floor==preFloor)
+		PlopFill(x+1,y,floor,wall);
+	if(y>0 && m->map[x+(y-1)*m->width].wall==preWall &&
+		m->map[x+(y-1)*m->width].floor==preFloor)
+		PlopFill(x,y-1,floor,wall);
+	if(y<m->height-1 && m->map[x+(y+1)*m->width].wall==preWall &&
+		m->map[x+(y+1)*m->width].floor==preFloor)
+		PlopFill(x,y+1,floor,wall);
+}
+
 void FloorTool::Plop(void)
 {
 	Map *m;
@@ -173,14 +210,22 @@ void FloorTool::Plop(void)
 
 	EditorGetTileXY(&x,&y);
 	m=EditorGetMap();
+	tilesCleared = 0;
 
 	if(x!=lastX || y!=lastY)
 	{
+		if(plopMode==PLOP_CUST1)
+		{
+			PlopFill(x,y,tile[active],0);
+		}
+		else
+		{
 		minusBrush=brush/2;
 		plusBrush=(brush+1)/2;
 		for(j=y-minusBrush;j<=y+plusBrush;j++)
 			for(i=x-minusBrush;i<=x+plusBrush;i++)
 				PlopOne(i,j);
+		}
 
 		MakeNormalSound(SND_MENUCLICK);
 		lastX=x;
@@ -194,6 +239,14 @@ void FloorTool::Plop(void)
 			active++;
 			if(active>=NUM_TILES)
 				active=0;
+		}
+		if(plopMode==PLOP_CUST3)
+		{
+			active=0;
+			if(tile[active]<799)
+				tile[active]++;
+			else
+				tile[active]=0;
 		}
 	}
 }

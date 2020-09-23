@@ -56,31 +56,91 @@
 #define BLT_SCANSHOT 44	// the shots the scanner fires after scanning
 #define BLT_TORPEDO	 45	// Bouapha's minisub shoots them
 #define BLT_DIRTSPIKE 46	// ice spike in brown
-#define BLT_PAPER	47
-#define BLT_SCANLOCK 48	// the scanner locked onto a guy
-#define BLT_BUBBLE	49
-#define BLT_FREEZE	50
-#define BLT_BUBBLEPOP 51	// a bubble that is popping, just visual effect
-#define BLT_LILBOOM2 52		// a harmless lilboom
-#define BLT_CHEESEHAMMER 53	// enhanced hammers
-#define BLT_FREEZE2	54		// a freeze bullet that drops like acid bullets and splats
-#define BLT_LUNA	55		// lunachick's bullets
-#define BLT_LUNA2	56		// lunachick's bullets with wall-bounce power
+#define BLT_PAPER			47
+#define BLT_SCANLOCK 		48	// the scanner locked onto a guy
+#define BLT_BUBBLE			49
+#define BLT_FREEZE			50
+#define BLT_BUBBLEPOP 		51	// a bubble that is popping, just visual effect
+#define BLT_LILBOOM2 		52		// a harmless lilboom
+#define BLT_CHEESEHAMMER 	53	// enhanced hammers
+#define BLT_FREEZE2			54		// a freeze bullet that drops like acid bullets and splats
+#define BLT_LUNA			55		// lunachick's bullets
+#define BLT_LUNA2			56		// lunachick's bullets with wall-bounce power
+//NEW BULLETS
+#define BLT_FLAME3			57	// floaty flame, drifts up
+#define BLT_SITFLAME 		58 	//these flames sit!
+#define BLT_BADSITFLAME		59	//^^
+#define BLT_LASER2 			60 	// the cool lasers - very deadly
+#define BLT_BADGREEN 		61	// bad green bullets
+#define BLT_ORBITER3 		62	// weather orbiter
+#define BLT_SHARKGOOD		63
+#define BLT_ORBITER4 		64	// not a player weapon, just swamp gas
+#define BLT_WIND	  		65	// wind elder's missiles
+#define BLT_EVILFACE  		66	// evil faces rising from the evilizer
+#define BLT_LUNAX1			67 	// evil lunachick boolet (cheese orb)
+#define BLT_LUNAX2			68 	// evil lunachick boolet (purple mine)
+#define BLT_YELWAVE  		69	// wavey thing
+#define BLT_BEAM 			70	// clone of icebeam, but deadly to player
+#define BLT_BEAM2 			71	// the dud version for when it hits walls
+#define BLT_SLIME	 		72	// slug slime
+#define BLT_REDNADE 		73	// red energy grenade, an enemy weapon
+#define BLT_REDBOOM 		74	// red explosion made by red energy grenade
+#define BLT_BIGYELLOW 		75	// big yellow bullet (same as grenade, but not lobbed or explosive)
+#define BLT_MEGABOOM 		76	// big yellow bullet (same as grenade, but not lobbed or explosive)
+#define BLT_ENERGY_BOUNCE	77		// bouncy energy boolets!!
+#define BLT_ROCKET			78		// rocket launcher	
+#define BLT_SKULL			79		// armageddon sword skulls...
+#define BLT_WAND			80		// kid mystic's wand
+#define BLT_BOOMERANG		81		// boomerang
+#define BLT_FART			82		// pfffrrft
+#define BLT_PUMPKIN			83		// cucurbinator bullets
+#define BLT_FLAME4			84		// small tiny flame
+#define BLT_FLAME5			85		// flame that can be fired in any 256 directions
+#define BLT_WAND2			86		// bouncy kid mystic wand
+#define BLT_HOLESHOT 		87		// black hole shot flying
+#define BLT_BLACKHOLE 		88		// black hole existing
+#define BLT_EGG				89		// egg projectile that can be fired in any 256 directions - spawns egg
+#define BLT_PIE				90		// chef liem's famous pumpkin pies
+//cool stuff
+#define BLT_ENERGY_WAVE  	91		//these move back and forth, like a wave!
+#define BLT_ENERGY_CIRCLS1  92		//these rotate clockwise
+#define BLT_ENERGY_CIRCLS2  93		//these rotate counter-clockwise
+#define BLT_ENERGY_CIRCLF1  94		//these rotate clockwise, but are FAST!
+#define BLT_ENERGY_CIRCLF2  95		//these rotate counter-clockwise, but are also FAST
+#define BLT_BOMB_HOMING		96		//homing red bomb
+// back to other stuff
+#define BLT_FLAMEWALL		97 	// flame wall
+#define BLT_CLAWS			98 	// claws
+#define BLT_ICESHARD		99 	// ice shard
+#define BLT_HOTPANTS		100		// hotpants
+#define BLT_WITCH			101		// witch wand
+#define BLT_PNKWAVE			102 	// confusion bullets
+#define BLT_SPOREGOOD		103 	// healer mushroom spores
+#define BLT_ROCKBIG			104 	// gorka rocks
+#define BLT_SHOCKWAVE2 		105		// red shockwave, for megaphone
+#define BLT_BIGSNOW2  		106 	// hans solo's special attack
+#define BLT_BIGLUNA			107 	// evil lunachick boolet (purple mine)
+#define BLT_AXE				108 	// axe
+#define MAX_BULTYPES	 	109
 
 // the special hammer flags for different powerups
 #define HMR_REVERSE 1
 #define HMR_REFLECT 2
-#define HMR_WATERWALK 4	// not really a hammer powerup, it's a cheat code, but this is a good spot for it
-#define HMR_SHIELD	8	// also cheat code
-#define HMR_SPEED	16	// another cheat
-#define HMR_OXYGEN	32	// another cheat
-#define HMR_NOSKID	64	// another cheat
-#define HMR_LIGHT	128	// another cheat
+
+// the cheat flags
+#define HMR_WATERWALK 	1	// not really a hammer powerup, it's a cheat code, but this is a good spot for it
+#define HMR_SHIELD		2	// also cheat code
+#define HMR_SPEED		4	// another cheat
+#define HMR_OXYGEN		8	// another cheat
+#define HMR_NOSKID		16	// another cheat
+#define HMR_LIGHT		32	// another cheat
+#define HMR_STRENGTH 	64	// another cheat
 
 typedef struct bullet_t
 {
 	int x,y,z;
 	int dx,dy,dz;
+	int ax,ay;
 	int timer;
 	word target;
 	byte anim;
@@ -88,6 +148,9 @@ typedef struct bullet_t
 	byte type;
 	char bright;
 	byte friendly;
+	byte extra;
+	Guy *shoot;
+	byte reverse;
 } bullet_t;
 
 void InitBullets(void);
@@ -101,25 +164,29 @@ void RenderBubble(int x,int y,int z,char bright,byte frm);
 void RenderMindControl(int x,int y,int z,char bright,byte frm);
 void RenderStinky(int x,int y,int z,char bright,byte frm);
 
-void QuadMissile(int x,int y,byte facing,byte friendly);
-void LaunchMegabeam(int x,int y,word owner);
-void FireBullet(int x,int y,byte facing,byte type,byte friendly);
-void FireBulletAfter(int x,int y,byte facing,byte type,bullet_t *thisone,byte friendly);
-void FireExactBullet(int x,int y,int z,int dx,int dy,int dz,byte anim,byte timer,byte facing,byte type,byte friendly);
-void HammerLaunch(int x,int y,byte facing,byte count,byte flags);
+void QuadMissile(Guy *me,int x,int y,byte facing,byte friendly);
+void LaunchMegabeam(Guy *me,int x,int y,word owner);
+void FireBullet(Guy *me,int x,int y,byte facing,byte type,byte friendly);
+void FireBulletAfter(Guy *me,int x,int y,byte facing,byte type,bullet_t *thisone,byte friendly);
+void FireExactBullet(Guy *me,int x,int y,int z,int dx,int dy,int dz,byte anim,byte timer,byte facing,byte type,byte friendly);
+void HammerLaunch(Guy *me,int x,int y,byte facing,byte count,byte flags);
 byte Bulletable(Map *map,int x,int y);
 void BulletRanOut(bullet_t *me,Map *map,world_t *world);	// prototyped for interior use
 void ReflectShot(void);
 void BulletSwap(int sx,int sy,int width,int height,int dx,int dy);
-void SpitAcid(int x,int y,byte facing,byte type,byte friendly);
-void FireBulletZ(int x,int y,int z,byte facing,byte type,byte friendly);
-void HappyLaunch(int x,int y,byte facing,byte count,byte flags);
-void ShroomSpew(int x,int y,byte facing,byte count,byte flags);
-void ReflectBullets(int x,int y,byte size,byte friendly);
+void SpitAcid(Guy *me,int x,int y,byte facing,byte type,byte friendly);
+void FireBulletZ(Guy *me,int x,int y,int z,byte facing,byte type,byte friendly);
+void HappyLaunch(Guy *me,int x,int y,byte facing,byte count,byte flags);
+void ShroomSpew(Guy *me,int x,int y,byte facing,byte count,byte flags);
+void ReflectBullets(Guy *me,int x,int y,byte size,byte friendly);
 void RemoveOrbiters(int n,byte f,byte t);
-void FireScanShots(Guy *victim);
+void FireScanShots(Guy *me, Guy *victim);
 void MakeRadar(int rx,int ry,byte w);
 byte GetBulletAttackType(void);
+//new
+void BurnHay(Guy *me,int x,int y);
+void WolfSpew(Guy *me,int x,int y,byte facing,byte count,byte flags);
+void SkullLaunch(Guy *me,int x,int y,byte facing,byte count,byte flags);
 
 int CountBullets(byte type); // For specials to check orbiters
 int CountBulletsInRect(byte type,int x,int y,int x2,int y2); // for specials to check for bullets

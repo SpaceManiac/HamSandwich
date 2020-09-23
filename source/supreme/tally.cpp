@@ -69,11 +69,17 @@ void InitTally(MGLDraw *mgl)
 		perfectBonus=1.0f;
 
 	if(profile.difficulty==0)
-		diffBonus=0.75f;
+		diffBonus=0.60f;
 	else if(profile.difficulty==1)
-		diffBonus=1.0f;
+		diffBonus=0.80f;
+	else if(profile.difficulty==2)
+		diffBonus=1.00f;
+	else if(profile.difficulty==3)
+		diffBonus=1.20f;
 	else
-		diffBonus=1.25f;
+		diffBonus=1.40f;
+	if (profile.hyperMode)
+		diffBonus+=diffBonus;
 
 	mgl->LastKeyPressed();
 
@@ -114,7 +120,7 @@ void InitTally(MGLDraw *mgl)
 
 void ExitTally(void)
 {
-	if(!editing && verified)
+	if(!editing)
 		profile.progress.totalCoins=totalCoins+profile.progress.coinsSpent;
 	free(backgd);
 	if(!player.cheated)
@@ -403,11 +409,15 @@ void RenderTally(MGLDraw *mgl)
 	if(player.cheated)
 		Tally2Line(3,210,"Difficulty","CHEATER!",s);
 	else if(profile.difficulty==0)
-		Tally2Line(3,210,"Difficulty","Normal",s);
+		Tally2Line(3,210,"Difficulty","Wimpy",s);
 	else if(profile.difficulty==1)
+		Tally2Line(3,210,"Difficulty","Normal",s);
+	else if(profile.difficulty==2)
 		Tally2Line(3,210,"Difficulty","Hard",s);
-	else
+	else if(profile.difficulty==3)
 		Tally2Line(3,210,"Difficulty","Lunatic",s);
+	else
+		Tally2Line(3,210,"Difficulty","Jamulio",s);
 
 	sprintf(s,"%0.1f%%",destructPct);
 	sprintf(s2,"x%1.1f",destructBonus);

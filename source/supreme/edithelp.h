@@ -22,7 +22,8 @@
 #define HELP_TERRAINEDIT 15
 #define HELP_TERRAINPICK 16
 #define HELP_WORLDSTITCH	17
-#define NUM_HELPS		18
+#define HELP_WORLDLOAD	18
+#define NUM_HELPS		19
 
 void InitEditHelp(byte mode);
 void ExitEditHelp(void);

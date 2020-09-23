@@ -4,6 +4,7 @@
 #include "monster.h"
 #include "progress.h"
 #include "shop.h"
+#include "player.h"
 
 Particle **particleList;
 int		maxParticles;
@@ -147,9 +148,18 @@ void Particle::Update(Map *map)
 {
 	byte mapx,mapy;
 	byte v;
+	int cx,cy;
 
 	if(life>0)
 	{
+		GetCamera(&cx,&cy);
+		cx*=FIXAMT;
+		cy*=FIXAMT;
+		if(x<cx-400*FIXAMT || x>cx+400*FIXAMT || y<cy-300*FIXAMT || y>cy+300*FIXAMT)
+		{
+			life=0;
+			return;
+		}
 		if(type!=PART_LIGHTNING)
 		{
 			dz-=FIXAMT;
@@ -166,6 +176,39 @@ void Particle::Update(Map *map)
 		life--;
 		switch(type)
 		{
+			case PART_SUCK:
+				if(x<tx)
+				{
+					dx+=FIXAMT/2;
+					dy-=FIXAMT/4;
+				}
+				else
+				{
+					dx-=FIXAMT/2;
+					dy+=FIXAMT/4;
+				}
+				if(y<ty)
+				{
+					dy+=FIXAMT/2;
+					dx+=FIXAMT/4;
+				}
+				else
+				{
+					dy-=FIXAMT/2;
+					dx-=FIXAMT/4;
+				}
+				if(abs(x-tx)+abs(y-ty)<FIXAMT*4)
+					life=0;
+				Dampen(&dx,FIXAMT/16);
+				Dampen(&dy,FIXAMT/16);
+				Clamp(&dx,FIXAMT*3);
+				Clamp(&dy,FIXAMT*3);
+				dz+=FIXAMT;	// no gravity
+				if(size>1 && (life&2))
+					size-=1;
+				if(color<31)
+					color++;
+				break;
 			case PART_RADAR:
 				dz+=FIXAMT; // no gravity
 				size=life/3;
@@ -225,6 +268,13 @@ void Particle::Update(Map *map)
 				else
 					size=life/8;
 				break;
+			case PART_RLHAMMER:
+				color=4*32+24;
+				if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+					size=life/4;
+				else
+					size=life/8;
+				break;
 			case PART_COLOR:
 				if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
 					size=life/4;
@@ -242,6 +292,41 @@ void Particle::Update(Map *map)
 					size=0;
 				else
 					size=1;
+				break;
+			case PART_YELLOW:
+				v=life;
+				if(v>31-4)
+					v=31-4;
+				color=160+v;
+				if(life>20)
+					size=2;
+				else if(life<10)
+					size=0;
+				else
+					size=1;
+				break;
+			case PART_SHORTYELLOW:
+				v=life*4;
+				if(v>31)
+					v=31;
+				color=160+v;
+				if(life>5)
+					size=2;
+				else if(life<2)
+					size=0;
+				else
+					size=1;
+				break;
+			case PART_FLOATER:
+				x-=dx;
+				y-=dy;	// it doesn't move that way
+				dz+=FIXAMT+MGL_random(FIXAMT/4);	// no gravity and going up
+				x-=Cosine(size)*dx;
+				y-=Sine(size)*dx;
+				size+=MGL_random(12);
+				x+=Cosine(size)*dx;
+				y+=Sine(size)*dx;
+				dx+=dy;
 				break;
 			case PART_DIRT:
 				v=life;
@@ -277,7 +362,23 @@ void Particle::Update(Map *map)
 					v=31;
 				if(v<8)
 					v=8;
-				color=96+v;
+				color=(32*3)+v;
+				if(life>20)
+					size=2;
+				else if(life<10)
+					size=0;
+				else
+					size=1;
+				if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+					size=life/4;
+				break;
+			case PART_LAVA:
+				v=life;
+				if(v>31)
+					v=31;
+				if(v<8)
+					v=8;
+				color=(32*(4+Random(1)))+v;
 				if(life>20)
 					size=2;
 				else if(life<10)
@@ -362,6 +463,38 @@ void Particle::Update(Map *map)
 			case PART_LIGHTNING:
 				// get dimmer with each frame
 				color/=2;
+				break;
+			case PART_FIRE:
+				dz+=FIXAMT+Random(FIXAMT/4);
+				Dampen(&dx,FIXAMT/8);
+				Dampen(&dy,FIXAMT/8);
+				dx=dx-FIXAMT/8+Random(FIXAMT/4);
+				dy=dy-FIXAMT/8+Random(FIXAMT/4);
+				if(size>0)
+					size--;
+				else
+					life=0;
+				if(life>40)
+					color=191;
+				else if(life>20)
+					color=160+(life-20);
+				else
+					color=128+life;
+				break;
+			case PART_COLDFIRE:
+				dz+=FIXAMT+Random(FIXAMT/4);
+				Dampen(&dx,FIXAMT/8);
+				Dampen(&dy,FIXAMT/8);
+				dx=dx-FIXAMT/8+Random(FIXAMT/4);
+				dy=dy-FIXAMT/8+Random(FIXAMT/4);
+				if(size>0)
+					size--;
+				else
+					life=0;
+				if(color>0)
+					color--;
+				else
+					life=0;
 				break;
 		}
 
@@ -648,7 +781,7 @@ void RenderGlowCircleParticle(int x,int y,int radius,byte c,byte *scrn)
 // this was going to be local to renderlightningparticle, but that would've seriously
 // chomped up the stack, since that function's recursive.
 byte ctab[]={8,3,2,3,8,
-			 3,2,1,2,3,
+		     3,2,1,2,3,
 			 2,1,0,1,2,
 			 3,2,1,2,3,
 			 8,3,2,3,8};
@@ -739,6 +872,12 @@ void RenderParticles(void)
 						particleList[i]->z>>FIXSHIFT,
 						255,particleList[i]->life*4-8,
 						GetMonsterSprite(MONS_COUNTESS,ANIM_IDLE,0,0),DISPLAY_DRAWME|DISPLAY_GLOW);
+			else if(particleList[i]->type==PART_FIRE || particleList[i]->type==PART_COLDFIRE)
+			{
+				ParticleDraw(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
+							 particleList[i]->z>>FIXSHIFT,particleList[i]->color,particleList[i]->size/4,
+							 DISPLAY_DRAWME|DISPLAY_CIRCLEPART|DISPLAY_GLOW);
+			}
 			else
 				ParticleDraw(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
 							 particleList[i]->z>>FIXSHIFT,particleList[i]->color,particleList[i]->size,
@@ -853,7 +992,7 @@ void StinkySteam(int x,int y,int z,int dz)
 	}
 }
 
-void CountessGlow(int x,int y)
+void MonsterGlow(int x,int y, dword m)
 {
 	int i;
 	for(i=0;i<maxParticles;i++)
@@ -869,11 +1008,12 @@ void CountessGlow(int x,int y)
 			particleList[i]->life=4;
 			particleList[i]->size=0;
 			particleList[i]->color=64;
-			particleList[i]->type=PART_COUNTESS;
+			particleList[i]->type=m;
 			break;
 		}
 	}
 }
+
 
 void BlowUpGuy(int x,int y,int x2,int y2,int z,byte amt)
 {
@@ -1061,7 +1201,7 @@ void HealRing(byte color,int x,int y,int z,byte num,byte force)
 		force*=2;
 	}
 
-	a=0;
+	a=Random(256);
 	aPlus=256/num;
 
 	for(i=0;i<maxParticles;i++)
@@ -1069,16 +1209,18 @@ void HealRing(byte color,int x,int y,int z,byte num,byte force)
 		if(!particleList[i]->Alive())
 		{
 			particleList[i]->GoExact(PART_FX,x,y,z,a,force);
-			particleList[i]->x+=particleList[i]->dx*20;
-			particleList[i]->y+=particleList[i]->dy*20;
-			particleList[i]->dx+=-(force/4)+Random(force/2+1);
-			particleList[i]->dy+=-(force/4)+Random(force/2+1);
+			particleList[i]->x+=particleList[i]->dx*10;
+			particleList[i]->y+=particleList[i]->dy*10;
+			particleList[i]->dx/=2;//+=-(force/4)+Random(force/2+1);
+			particleList[i]->dy/=2;//+=-(force/4)+Random(force/2+1);
 			particleList[i]->dz=FIXAMT*5-Random(FIXAMT*3);
 			particleList[i]->color=color*32+16;
 			particleList[i]->tx=x;
 			particleList[i]->life=50;
 			particleList[i]->ty=y;
 			a+=aPlus;
+			if(a>255)
+				a-=256;
 			if(!--num)
 				break;
 		}
@@ -1132,6 +1274,29 @@ void ColorDrop(byte color,int x,int y,int z)
 			particleList[i]->type=PART_LUNA;
 			particleList[i]->color=color*32+16;
 			particleList[i]->size=50;
+			particleList[i]->life=15;
+			particleList[i]->dx=-64+Random(129);
+			particleList[i]->dy=-64+Random(129);
+			particleList[i]->dz=-64+Random(129);
+			particleList[i]->x=x;
+			particleList[i]->y=y;
+			particleList[i]->z=z;
+			break;
+		}
+	}
+}
+
+void ColorDropSize(byte color,int x,int y,int z,int s)
+{
+	int i;
+
+	for(i=0;i<maxParticles;i++)
+	{
+		if(!particleList[i]->Alive())
+		{
+			particleList[i]->type=PART_LUNA;
+			particleList[i]->color=color*32+16;
+			particleList[i]->size=s;
 			particleList[i]->life=15;
 			particleList[i]->dx=-64+Random(129);
 			particleList[i]->dy=-64+Random(129);
@@ -1283,6 +1448,38 @@ void WeathermanWeather(int x,int y)
 	}
 }
 
+void SlimeTime(Map *map)
+{
+	int i;
+	int cx,cy;
+
+	// only 25% of particles may be rain
+	if(Random(100)>30 || snowCount>maxParticles/8)
+		return;
+
+	GetCamera(&cx,&cy);
+	cx-=320;
+	cy-=240;
+	for(i=0;i<maxParticles;i++)
+	{
+		if(!particleList[i]->Alive())
+		{
+
+			particleList[i]->x=(Random(640)+cx)<<FIXSHIFT;
+			particleList[i]->y=(Random(480)+cy)<<FIXSHIFT;
+			particleList[i]->z=(300+Random(300))<<FIXSHIFT;
+			particleList[i]->dx=0;
+			particleList[i]->dy=0;
+			particleList[i]->dz=-FIXAMT*2;
+			particleList[i]->size=1;
+			particleList[i]->life=50+Random(50);
+			particleList[i]->type=PART_SLIME;
+			particleList[i]->color=1*32+16;
+			break;
+		}
+	}
+}
+
 void JackFrostWeather(int x,int y)
 {
 	int i;
@@ -1332,6 +1529,89 @@ void TrackParticle(byte color,int x,int y,int tx,int ty)
 			particleList[i]->type=PART_RADAR;
 			particleList[i]->color=color*32+16;
 			break;
+		}
+	}
+}
+
+void SuckParticle(int x,int y,int z)
+{
+	int i;
+	byte ang;
+
+	for(i=0;i<maxParticles;i++)
+	{
+		if(!particleList[i]->Alive())
+		{
+			ang=Random(256);
+			particleList[i]->x=x+Cosine(ang)*64;
+			particleList[i]->y=y+Sine(ang)*64;
+			particleList[i]->tx=x;
+			particleList[i]->ty=y;
+			particleList[i]->z=z;
+			particleList[i]->dx=(Cosine(ang)*48)/-10;
+			particleList[i]->dy=(Sine(ang)*48)/-10;
+			particleList[i]->dx=0;
+			particleList[i]->dy=0;
+			particleList[i]->dz=0;
+			particleList[i]->size=8;
+			particleList[i]->life=20;
+			particleList[i]->type=PART_SUCK;
+			particleList[i]->color=16;
+			break;
+		}
+	}
+}
+
+void MakeRingParticle(int x,int y, int z,byte size,byte cnt)
+{
+	int i;
+	byte ang;
+
+	for(i=0;i<maxParticles;i++)
+	{
+		if(!particleList[i]->Alive())
+		{
+			ang=(byte)Random(256);
+			particleList[i]->x=x+Cosine(ang)*size;
+			particleList[i]->y=y+Sine(ang)*size;
+			particleList[i]->z=z;
+			particleList[i]->dx=0;
+			particleList[i]->dy=0;
+			particleList[i]->dz=Random(FIXAMT*2);
+			particleList[i]->color=191;
+			particleList[i]->life=10+(byte)Random(30);
+			particleList[i]->size=8*4+(byte)Random(4*4);
+			particleList[i]->type=PART_FIRE;
+			cnt--;
+			if(!cnt)
+				break;
+		}
+	}
+}
+
+void MakeColdRingParticle(int x,int y, int z,byte size)
+{
+	int i;
+	byte ang;
+
+	ang=0;
+	for(i=0;i<maxParticles;i++)
+	{
+		if(!particleList[i]->Alive())
+		{
+			particleList[i]->x=x+Cosine(ang)*size;
+			particleList[i]->y=y+Sine(ang)*size;
+			particleList[i]->z=z;
+			particleList[i]->dx=0;
+			particleList[i]->dy=0;
+			particleList[i]->dz=Random(FIXAMT*2);
+			particleList[i]->color=31;
+			particleList[i]->life=10+Random(30);
+			particleList[i]->size=8*4+(byte)Random(4*4);
+			particleList[i]->type=PART_COLDFIRE;
+			ang++;
+			if(!ang)
+				break;
 		}
 	}
 }

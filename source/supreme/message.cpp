@@ -88,7 +88,7 @@ void NewBigMessage(const char *txt,int time)
 	strncpy(bigMessage.msg,VariableMsg(txt),32);
 	bigMessage.x=320-GetStrLength(bigMessage.msg,0)/2;
 	bigMessage.y=-100;
-	bigMessage.dy=0;
+	bigMessage.dy=2;
 	bigMessage.timer=time;
 	bigMessage.bright=-32;
 	bigMessage.brightDir=2;
@@ -133,9 +133,9 @@ void UpdateBigMessage(void)
 		if(bigMessage.y>200)
 		{
 			bigMessage.y=200;
-			bigMessage.dy=-bigMessage.dy/2;
+			bigMessage.dy=-bigMessage.dy/4; //bookmark
 			if(bigMessage.dy>-2)
-				bigMessage.dy=0;
+				bigMessage.dy=4;
 		}
 		if(bigMessage.bright>=32)
 			bigMessage.brightDir=-1;

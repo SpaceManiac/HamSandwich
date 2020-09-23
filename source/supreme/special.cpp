@@ -13,6 +13,7 @@
 #include "shop.h"
 #include "goal.h"
 #include "palettes.h"
+#include "water.h"
 
 static special_t *spcl;
 static byte numSpecials;
@@ -219,6 +220,24 @@ void DefaultTrigger(trigger_t *trig,int x,int y)
 			trig->value=BLT_HAMMER;
 			trig->value2=0;
 			break;
+		case TRG_CONDITION:
+			trig->value=0;
+			break;
+		case TRG_SHOTBULLET:
+			trig->value=BLT_HAMMER;
+			break;
+		case TRG_TIMER:
+			trig->value=0;
+			break;
+		case TRG_HURT:
+			trig->value=MONS_BOUAPHA;
+			trig->x=255;
+			break;
+		case TRG_MONSAGE:
+			trig->value=MONS_BOUAPHA;
+			trig->value2=0;
+			trig->x=255;
+			break;
 	}
 }
 
@@ -240,6 +259,7 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 			break;
 		case EFF_WINLEVEL:
 		case EFF_GOTOMAP:
+		case EFF_GOTOMAP2:
 			eff->value=0;
 			eff->x=255;
 			break;
@@ -305,6 +325,7 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 			eff->value=0;
 			break;
 		case EFF_TAGMONS:
+		case EFF_TAGBOSS:
 			eff->value=MONS_ANYBODY;
 			eff->x=255;
 			break;
@@ -354,6 +375,24 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 		case EFF_CHANGEBULLET:
 			eff->value=BLT_NONE;
 			eff->value2=BLT_HAMMER;
+			eff->x=255;
+			break;
+		case EFF_CHANGETIMER:
+			eff->value=0;
+			break;
+		case EFF_CAMINST:
+			eff->value=MONS_ANYBODY;
+			eff->x=255;
+			break;
+		case EFF_DYNAMICCOL:
+			eff->value2=0;
+			break;
+		case EFF_DYNAMICSCRN:
+			strcpy(eff->text,"");
+			break;
+		case EFF_CHARTRANS:
+			eff->value=MONS_ANYBODY;
+			eff->value2=0;
 			eff->x=255;
 			break;
 		default:
@@ -572,7 +611,7 @@ void RepairSpecialToLevel(special_t *list)
 			for(t=0;t<NUM_EFFECTS;t++)
 			{
 				if(list[i].effect[t].type==EFF_WINLEVEL ||
-					list[i].effect[t].type==EFF_GOTOMAP)
+					list[i].effect[t].type==EFF_GOTOMAP || list[i].effect[t].type==EFF_GOTOMAP2)
 				{
 					list[i].effect[t].value=GetSwap(list[i].effect[t].value);
 				}
@@ -623,11 +662,15 @@ void RepairSpecialToTile(special_t *list)
 //------------------------------------  GAMEPLAY!
 sEvent_t events[MAX_EVENT];
 int nextEvent;
-static Guy *victim,*tagged;
+static Guy *victim,*tagged, *boss;
 
 Guy *TaggedMonster(void)
 {
 	return tagged;
+}
+Guy *BossMonster(void)
+{
+	return boss;
 }
 
 byte TeleportGuy(Guy *victim,int x,int y,Map *map,byte noFX)
@@ -656,7 +699,7 @@ byte TeleportGuy(Guy *victim,int x,int y,Map *map,byte noFX)
 	{
 		PutCamera(victim->x,victim->y);
 		UpdateCamera(victim->x>>FIXSHIFT,victim->y>>FIXSHIFT,victim->dx,victim->dy,map);
-		SetTportClock(15);
+		SetTportClock(10);
 		if(shopping)
 			SetTportClock(2);
 	}
@@ -709,6 +752,18 @@ void EventOccur(byte type,int value,int x,int y,Guy *victim)
 	nextEvent++;
 }
 
+byte CheckTimer(int seconds,byte flags)
+{
+	if(player.timer==seconds)
+		return 1;
+	else if((flags&TF_LESS) && player.timer<seconds)
+		return 1;
+	else if((flags&TF_MORE) && player.timer>seconds)
+		return 1;
+	else
+		return 0;
+}
+
 byte CheckForItem(byte item,int count,byte flags)
 {
 	int amt;
@@ -734,7 +789,7 @@ byte CheckForItem(byte item,int count,byte flags)
 			amt=player.hammers;
 			break;
 		case IE_PANTS:	// pants
-			amt=(16-player.hamSpeed)/4;
+			amt=(20-player.hamSpeed)/4;
 			break;
 		case IE_KEY:	// yellow keys
 			amt=player.keys[0];
@@ -747,6 +802,12 @@ byte CheckForItem(byte item,int count,byte flags)
 			break;
 		case IE_BKEY:	// blue keys
 			amt=player.keys[3];
+			break;
+		case IE_WKEY:	// white keys
+			amt=player.keys[4];
+			break;
+		case IE_BLKEY:	// black keys
+			amt=player.keys[5];
 			break;
 		case IE_LOONYKEY:
 			if(count<2 && (flags&(TF_LESS|TF_MORE))==0)
@@ -911,6 +972,13 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 								answer=1;
 							}
 							break;
+						case MONS_BOSS:
+							if(GetGuy(events[i].value)==boss)
+							{
+								victim=GetGuy(events[i].value);
+								answer=1;
+							}
+							break;
 						default:
 							if(events[i].guyType==t->value)
 							{
@@ -1047,6 +1115,13 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 							break;
 						case MONS_TAGGED:
 							if(GetGuy(events[i].value)==tagged)
+							{
+								victim=GetGuy(events[i].value);
+								answer=1;
+							}
+							break;
+						case MONS_BOSS:
+							if(GetGuy(events[i].value)==boss)
 							{
 								victim=GetGuy(events[i].value);
 								answer=1;
@@ -1204,6 +1279,13 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 								answer=1;
 							}
 							break;
+						case MONS_BOSS:
+							if(GetGuy(events[i].value)==tagged)
+							{
+								victim=GetGuy(events[i].value);
+								answer=1;
+							}
+							break;
 						default:
 							if(events[i].guyType==t->value)
 							{
@@ -1261,6 +1343,7 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 				answer=1;
 			else
 				answer=0;
+			
 			break;
 		case TRG_ITEMRECT:
 			i=map->ItemCountInRect(t->value,t->x,t->y,(t->value2%256),(t->value2/256));	// count how many of this item there are in the rect
@@ -1353,6 +1436,94 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 			else
 				answer=0;
 			break;
+		case TRG_TIMER:
+			answer=CheckTimer(t->value,t->flags);
+			break;
+		case TRG_HURT:
+			answer=CheckMonsterOuch(t->x,t->y,t->value,t->flags);
+			break;
+		case TRG_XTRAMODE:
+			if(profile.hyperMode and t->value==0)
+				answer=1;
+			else if(profile.supremeMode and t->value==1)
+				answer=1;
+			else
+				answer=0;
+			break;
+		case TRG_RAGED:
+			if (GetGameMode()==GAMEMODE_RAGE)
+				answer=1;
+			else
+				answer=0;
+			break;
+		case TRG_MONSAGE:
+			int maxGuys;
+			answer=CheckMonsterAge(t->x,t->y,t->value,t->value2,t->flags);
+			break;
+		case TRG_STANDTILE:
+			for(i=0;i<nextEvent;i++)
+			{
+				if(events[i].type==EVT_STAND && map->GetTile(events[i].x,events[i].y)->floor==t->value2)
+				{
+					switch(t->value)
+					{
+						case MONS_ANYBODY:
+							answer=1;
+							victim=GetGuy(events[i].value);
+							break;
+						case MONS_GOODGUY:
+							if(events[i].guyFriendly==1)
+							{
+								victim=GetGuy(events[i].value);
+								answer=1;
+							}
+							break;
+						case MONS_BADGUY:
+							if(events[i].guyFriendly==0)
+							{
+								victim=GetGuy(events[i].value);
+								answer=1;
+							}
+							break;
+						case MONS_NONPLAYER:
+							if(events[i].guyType!=MONS_BOUAPHA)
+							{
+								victim=GetGuy(events[i].value);
+								answer=1;
+							}
+							break;
+						case MONS_PLAYER:
+							if(GetGuy(events[i].value)!=NULL && GetGuy(events[i].value)->aiType==MONS_BOUAPHA)
+							{
+								victim=GetGuy(events[i].value);
+								answer=1;
+							}
+							break;
+						case MONS_TAGGED:
+							if(GetGuy(events[i].value)==tagged)
+							{
+								victim=GetGuy(events[i].value);
+								answer=1;
+							}
+							break;
+						case MONS_BOSS:
+							if(GetGuy(events[i].value)==tagged)
+							{
+								victim=GetGuy(events[i].value);
+								answer=1;
+							}
+							break;
+						default:
+							if(events[i].guyType==t->value)
+							{
+								victim=GetGuy(events[i].value);
+								answer=1;
+							}
+							break;
+					}
+				}
+			}
+			break;
 	}
 
 	if(t->flags&TF_NOT)
@@ -1404,8 +1575,10 @@ byte IsTriggered(byte chain,special_t *me,Map *map)
 		return 0;
 }
 
+
 void SpecialEffect(special_t *me,Map *map)
 {
+	static world_t *world;
 	int i,v,v2;
 	byte fx;
 
@@ -1445,6 +1618,9 @@ void SpecialEffect(special_t *me,Map *map)
 					else
 					{
 						SendMessageToGame(MSG_WINLEVEL,me->effect[i].value);
+						if(player.playAs==PLAY_LOONY||player.playAs==PLAY_LUNACHIK)
+						MakeNormalSound(SND_WINKM);
+						else
 						MakeNormalSound(SND_WINLEVEL);
 					}
 					if(me->effect[i].x==255)
@@ -1456,12 +1632,22 @@ void SpecialEffect(special_t *me,Map *map)
 					return;	// to avoid doing anything more or using up any uses
 				break;
 			case EFF_GOTOMAP:
-				MakeNormalSound(SND_GOTOMAP);
 				if(me->effect[i].x==255)
 					SetPlayerStart(-1,-1);
 				else
 					SetPlayerStart(me->effect[i].x,me->effect[i].y);
+				if (curWorld.map[me->effect[i].value]->flags&MAP_SECRET)
+					MakeNormalSound(SND_SEKRIT);
+				else
+					MakeNormalSound(SND_GOTOMAP);
 				SendMessageToGame(MSG_GOTOMAP,me->effect[i].value);
+				break;
+			case EFF_GOTOMAP2:
+				if(me->effect[i].x==255)
+					SetPlayerStart(-1,-1);
+				else
+					SetPlayerStart(me->effect[i].x,me->effect[i].y);
+				SendMessageToGame(MSG_GOTOMAP2,me->effect[i].value);
 				break;
 			case EFF_TELEPORT:
 				if(me->effect[i].flags&EF_PLAYER)
@@ -1626,12 +1812,15 @@ void SpecialEffect(special_t *me,Map *map)
 				if((w2&MAP_UNDERWATER) && !(map->flags&MAP_UNDERWATER))
 					player.oxygen=127*256;
 
-				if(map->flags&MAP_UNDERWATER)
+				if(map->flags&MAP_WAVY)
+					DumbSidePalette(GetDisplayMGL());
+				else if(map->flags&MAP_UNDERWATER)
 					WaterPalette(GetDisplayMGL());
 				else if(map->flags&MAP_LAVA)
 					LavaPalette(GetDisplayMGL());
 				else
 					GetDisplayMGL()->RealizePalette();
+				RestoreGameplayGfx();
 				break;
 			case EFF_OLDTOGGLE:
 				v=map->GetTile(me->effect[i].x,me->effect[i].y)->floor;
@@ -1679,6 +1868,16 @@ void SpecialEffect(special_t *me,Map *map)
 				break;
 			case EFF_TAGMONS:
 				tagged=FindMonster(me->effect[i].x,me->effect[i].y,me->effect[i].value);
+				break;
+			case EFF_TAGBOSS:
+				boss=FindMonster(me->effect[i].x,me->effect[i].y,me->effect[i].value); //bring up the boss hp bar!
+				if (boss)
+				{
+					player.boss = boss;
+					player.maxBossHP = boss->maxHP;
+					player.curBossHP = boss->hp;
+					SetBossBar(boss->name);
+				}
 				break;
 			case EFF_MONSITEM:
 				ChangeMonsItem(!(me->effect[i].flags&EF_NOFX),me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].value2);
@@ -1748,10 +1947,52 @@ void SpecialEffect(special_t *me,Map *map)
 
 				if(!VarMath(255,me->effect[i].text))
 					PauseGame();	// pause if there's an error in the equation
-				FireBullet(x<<FIXSHIFT, y<<FIXSHIFT, GetVar(255), me->effect[i].value2, me->effect[i].flags&EF_PERMLIGHT);
+				FireBullet(0,x<<FIXSHIFT, y<<FIXSHIFT, GetVar(255), me->effect[i].value2, me->effect[i].flags&EF_PERMLIGHT);
 				break;
 			case EFF_CHANGEBULLET:
 				ChangeBullet(!(me->effect[i].flags&EF_NOFX),me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].value2);
+				break;
+			case EFF_CHANGETIMER:
+				player.timer += me->effect[i].value;
+				break;
+			case EFF_CAMPOINT:
+				x = me->effect[i].x*TILE_WIDTH + TILE_WIDTH/2;
+				y = me->effect[i].y*TILE_HEIGHT + TILE_HEIGHT/2;
+				player.camera = false;
+				PutCamera(x<<FIXSHIFT, y<<FIXSHIFT);
+				UpdateCamera(x<<FIXSHIFT, y<<FIXSHIFT,0,0,map);
+				SetTportClock(5);
+				break;
+			case EFF_CAMINST:
+				player.focus=FindMonster(me->effect[i].x,me->effect[i].y,me->effect[i].value);
+				if (me->effect[i].value != 0 && player.focus != NULL)
+				{
+					player.camera = false;
+					UpdateCamera(player.focus->x>>FIXSHIFT,player.focus->y>>FIXSHIFT,player.focus->dx,player.focus->dy,map);
+					SetTportClock(5);
+				}
+				else
+				{
+					player.camera = true;
+					player.focus = NULL;
+				}
+				//PutCamera(player.focus->x,player.focus->y);
+				break;
+			case EFF_DYNAMICCOL:
+				if(!(me->effect[i].flags&EF_NOFX))
+					player.c1_dym = me->effect[i].value2;
+				else
+					player.c2_dym = me->effect[i].value2;
+			case EFF_DYNAMICSCRN:
+				if(me->effect[i].text[0]!='\0')
+					ChangeWater(me->effect[i].text);
+				//NoRepeatNewMessage(me->effect[i].text,120,90);
+				break;
+			case EFF_CHARTRANS:
+				ChangeMonster(!(me->effect[i].flags&EF_NOFX),255,255,MONS_PLAYER,me->effect[i].value);
+				ChangeMonsterAI(!(me->effect[i].flags&EF_NOFX),255,255,MONS_PLAYER,0);
+				MonsterMaxLife(!(me->effect[i].flags&EF_NOFX),255,255,MONS_PLAYER,me->effect[i].value2);
+				MonsterLife(!(me->effect[i].flags&EF_NOFX),255,255,MONS_PLAYER,me->effect[i].value2);
 				break;
 		}
 	}
@@ -1769,6 +2010,8 @@ void CheckSpecials(Map *map)
 
 	if(tagged && tagged->hp==0)
 		tagged=NULL;
+	if(boss && boss->hp==0)
+		boss=NULL;
 	// first do the non-chaining specials
 	for(i=0;i<numSpecials;i++)
 	{
@@ -1803,6 +2046,7 @@ void InitSpecialsForPlay(void)
 	ClearEvents();
 	victim=NULL;
 	tagged=NULL;
+	boss=NULL;
 }
 
 void RenderSpecialXes(Map *map)
@@ -1999,6 +2243,7 @@ void AdjustSpecialEffectCoords(special_t *me,int dx,int dy)
 			case EFF_WINLEVEL:
 				break;
 			case EFF_GOTOMAP:
+			case EFF_GOTOMAP2:
 				break;
 			case EFF_TELEPORT:
 				me->effect[i].x+=dx;
@@ -2153,6 +2398,8 @@ void AdjustSpecialEffectCoords(special_t *me,int dx,int dy)
 					me->effect[i].x+=dx;
 					me->effect[i].y+=dy;
 				}
+				break;
+			case EFF_CHANGETIMER:
 				break;
 		}
 	}

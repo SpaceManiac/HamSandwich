@@ -192,10 +192,6 @@ byte Update_Netgame(byte btn,word mouse_x,word mouse_y)
 		if(score>record)
 		{
 			record=score;
-			if(score>=100)
-			{
-				CompleteGoal(9);
-			}
 		}
 		score=0;
 	}

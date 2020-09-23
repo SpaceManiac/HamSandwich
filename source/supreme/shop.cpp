@@ -9,9 +9,61 @@
 #include "moron.h"
 #include "gallery.h"
 #include "goal.h"
+#include "progress.h"
+#include <iostream>
 
-#define NUMSHOPITEMS		(158)
-#define NUMBUILTINWORLDS	(79)
+#define NUMSHOPITEMS		(202)
+#define NUMBUILTINWORLDS	(95)
+
+char to_lowercase(char c)
+{
+	if (c >= 'A' && c <= 'Z')
+		return c + 32;
+
+	return c;
+}
+
+int lockers[60]={};
+void RandomizeLockers(void)
+{
+	int i,j;
+	char m[sizeof(profile.name)];
+	std::string str = profile.name;
+
+	for (char &c: str) {
+		c = to_lowercase(c);
+	}	
+	
+	if(str == "bouapha")
+	{
+		for(i=0;i<60;i++)
+		lockers[i] = i;
+		return;
+	}	
+	
+	int lockerCombo[60] = {};
+	for (i = 0; i < (int)(sizeof(m)); i++)
+		m[i] = profile.name[i];
+	for (i = 0; i < 60; i++)
+		lockerCombo[i] = i;
+	for (i = 0; i < (int)(sizeof(m)); i++)
+	{
+		j += (m[i]-32)*pow(2,i);
+	}
+	srand(j);
+	
+	for(i=0;i<60;i++)
+	{
+		int k = -1, r;
+		while(k == -1)
+		{
+			r = rand()%60;
+			k = lockerCombo[r];
+		}
+    lockerCombo[r] = -1;
+    lockers[i] = k;
+	}
+}
 
 word moneyAmts[11]={25,75,1500,5000,2222,250,17,300,2,716,42};
 
@@ -92,38 +144,42 @@ shopItem_t shop[NUMSHOPITEMS]={
 	 CHEAT_BRAINS},	// get all brains cheat
 
 	 // sputnik's
+	{SHOP_GADGET,
+	 1000,
+	 SHOP_ABILITY,
+	 ABIL_HYPER},	// hyper mode ability
 	{SHOP_SPACE,
 	 600,
 	 SHOP_WORLD,
-	 18},	// star ramble
+	 17},	// space station
 	{SHOP_SPACE,
 	 100,
 	 SHOP_WORLD,
-	 19},	// ez-8675
+	 18},	// space battle
 	{SHOP_SPACE,
 	 400,
 	 SHOP_WORLD,
-	 20},	// spaced out
+	 29},	// ez-8675
 	{SHOP_SPACE,
 	 500,
 	 SHOP_WORLD,
-	 21},	// intergalactic lunacy
+	 20},	// spaced out
 	{SHOP_SPACE,
 	 300,
 	 SHOP_WORLD,
-	 22},	// spaced station
+	 21},	// spaced station
 	{SHOP_SPACE,
 	 200,
 	 SHOP_WORLD,
-	 23},	// space station loony
+	 22},	// star ramble
 	{SHOP_SPACE,
 	 250,
 	 SHOP_WORLD,
-	 24},	// space battle
+	 23},	// intergalactic lunacy
 	{SHOP_SPACE,
 	 500,
 	 SHOP_CHEAT,
-	 CHEAT_SHIELD},	// energy barrier cheat
+	 CHEAT_BLACKHOLE},	// energy barrier cheat
 	{SHOP_SPACE,
 	 2500,
 	 SHOP_ABILITY,
@@ -141,32 +197,35 @@ shopItem_t shop[NUMSHOPITEMS]={
 	{SHOP_WATER,
 	 300,
 	 SHOP_WORLD,
-	 25},	// island adventure
+	 24},	// citanul
 	{SHOP_WATER,
 	 100,
 	 SHOP_WORLD,
-	 26},	// pygmy island
+	 25},	// island adventure
 	{SHOP_WATER,
 	 400,
 	 SHOP_WORLD,
-	 27},	// waterworld
+	 26},	//seahunt
 	{SHOP_WATER,
 	 500,
 	 SHOP_WORLD,
-	 28},	// citanul island
+	 27},	// underwater antics
 	{SHOP_WATER,
 	 300,
 	 SHOP_WORLD,
-	 72},	// sea quest
+	 28},	// water world
 	{SHOP_WATER,
 	 100,
 	 SHOP_WORLD,
-	 74},	// sea hunt
+	 39},	// sea quest
 	{SHOP_WATER,
 	 400,
 	 SHOP_WORLD,
-	 77},	// underwater antics
-
+	 30},	// prehistoric peril
+	{SHOP_WATER,
+	 400,
+	 SHOP_WORLD,
+	 31},	// pygmy island
 	{SHOP_WATER,
 	 500,
 	 SHOP_CHEAT,
@@ -179,24 +238,27 @@ shopItem_t shop[NUMSHOPITEMS]={
 	 1000,
 	 SHOP_MAJOR,
 	 MAJOR_GALLERY},	// picture gallery
-
 	 // caves
 	{SHOP_CAVE,
 	 400,
 	 SHOP_WORLD,
-	 29},	// cavern havoc
+	 32},	// tunnel vision
 	{SHOP_CAVE,
 	 300,
 	 SHOP_WORLD,
-	 30},	// rocky cliffs
+	 33},	// rocky cliffs
 	{SHOP_CAVE,
 	 250,
 	 SHOP_WORLD,
-	 67},	// tunnel vision
+	 34},	// rocky cliffs
+	{SHOP_CAVE,
+	 250,
+	 SHOP_WORLD,
+	 35},	// creepy castle
 	{SHOP_CAVE,
 	 400,
 	 SHOP_WORLD,
-	 71},	// middle earth
+	 36},	// middle earth
 	{SHOP_CAVE,
 	 500,
 	 SHOP_CHEAT,
@@ -204,8 +266,12 @@ shopItem_t shop[NUMSHOPITEMS]={
 	{SHOP_CAVE,
 	 500,
 	 SHOP_CHEAT,
-	 CHEAT_SCANNER},	// scanner cheat
+	 CHEAT_SCANNER},	// scanner cheat (now at rocketshack)
 	{SHOP_CAVE,
+	 800,
+	 SHOP_CHEAT,
+	 CHEAT_STRENGTH},	// steelskin
+	{SHOP_GADGET,
 	 500,
 	 SHOP_MAJOR,
 	 MAJOR_CHEATMENU},	// cheat menu
@@ -220,29 +286,41 @@ shopItem_t shop[NUMSHOPITEMS]={
 	{SHOP_CAVE,
 	 1000,
 	 SHOP_PLAYABLE,
-	 PLAY_LUNACHIK},	// luna chick mystery character
+	 PLAY_WOLF},	// wolfman mystery character
 
 	 // forest
 	{SHOP_FOREST,
 	 200,
 	 SHOP_WORLD,
-	 31},	// spooky woods
+	 37},	// spooky woods
 	{SHOP_FOREST,
 	 300,
 	 SHOP_WORLD,
-	 32},	// creepy meadows
+	 38},	// wacky woods
 	{SHOP_FOREST,
 	 100,
 	 SHOP_WORLD,
-	 33},	// wacky woods
+	 39},	// creepy meadows
 	{SHOP_FOREST,
 	 400,
 	 SHOP_WORLD,
-	 34},	// dead or alive
+	 40},	// loonies goonies baboonies
 	{SHOP_FOREST,
 	 500,
 	 SHOP_WORLD,
-	 35},	// loonies, goonies, baboonies
+	 41},	// wasted wetlands
+	{SHOP_FOREST,
+	 500,
+	 SHOP_WORLD,
+	 42},	// goofy grove
+	{SHOP_FOREST,
+	 500,
+	 SHOP_WORLD,
+	 43},	// goofy grove 2
+	{SHOP_FOREST,
+	 500,
+	 SHOP_WORLD,
+	 44},	// tulipton
 	{SHOP_FOREST,
 	 500,
 	 SHOP_CHEAT,
@@ -256,35 +334,43 @@ shopItem_t shop[NUMSHOPITEMS]={
 	{SHOP_WEIRD,
 	 300,
 	 SHOP_WORLD,
-	 36},	// new world disorder
+	 45},	// bunny world
 	{SHOP_WEIRD,
 	 200,
 	 SHOP_WORLD,
-	 37},	// dimension x
+	 46},	// loony labs
 	{SHOP_WEIRD,
 	 300,
 	 SHOP_WORLD,
-	 38},	// nuclear zone
+	 47},	// dimension x
 	{SHOP_WEIRD,
 	 500,
 	 SHOP_WORLD,
-	 39},	// loony stew
+	 48},	// double trouble
 	{SHOP_WEIRD,
 	 500,
 	 SHOP_WORLD,
-	 40},	// split level lunacy
+	 49},	// new world disorder
 	{SHOP_WEIRD,
 	 400,
 	 SHOP_WORLD,
-	 41},	// double trouble
+	 50},	// split level lunacy
+	{SHOP_WEIRD,
+	 400,
+	 SHOP_WORLD,
+	 51},	// nuclear zone
+	{SHOP_WEIRD,
+	 400,
+	 SHOP_WORLD,
+	 52},	// bouapha in wonderland
 	{SHOP_WEIRD,
 	 500,
 	 SHOP_CHEAT,
-	 CHEAT_BOOM},	// kablooie cheat
+	 CHEAT_CONFUSE},	// confusion cheat
 	{SHOP_WEIRD,
 	 1000,
 	 SHOP_PLAYABLE,
-	 PLAY_SHROOM},	// play as Stupid Shroom
+	 PLAY_WIZ},	// play as wild wizard
 	{SHOP_WEIRD,
 	 500,
 	 SHOP_CHEAT,
@@ -294,27 +380,35 @@ shopItem_t shop[NUMSHOPITEMS]={
 	{SHOP_ADVENTURE,
 	 400,
 	 SHOP_WORLD,
-	 42},	// bouapha's quest
+	 53},	// field trip
 	{SHOP_ADVENTURE,
 	 300,
 	 SHOP_WORLD,
-	 43},	// bouapha's excellent expedition
+	 54},	// field trip 2
 	{SHOP_ADVENTURE,
-	 500,
+	 1000,
 	 SHOP_WORLD,
-	 44},	// jungle quest
+	 55},	// world of lunacy
 	{SHOP_ADVENTURE,
 	 200,
 	 SHOP_WORLD,
-	 45},	// halloween hill
+	 56},	// drl halloween hill
 	{SHOP_ADVENTURE,
 	 100,
 	 SHOP_WORLD,
-	 46},	// field trip
+	 57},	// excellent expedition
 	{SHOP_ADVENTURE,
 	 250,
 	 SHOP_WORLD,
-	 47},	// the castle
+	 58},	// bouapha's quest
+	{SHOP_ADVENTURE,
+	 100,
+	 SHOP_WORLD,
+	 59},	// sleepier hollow
+	{SHOP_ADVENTURE,
+	 250,
+	 SHOP_WORLD,
+	 60},	// jungle quest
 	{SHOP_ADVENTURE,
 	 500,
 	 SHOP_CHEAT,
@@ -336,86 +430,81 @@ shopItem_t shop[NUMSHOPITEMS]={
 	{SHOP_ICE,
 	 200,
 	 SHOP_WORLD,
-	 49},	// winter wacky 1 LK
+	 61},	// winter wacky 1 LK
 	{SHOP_ICE,
 	 200,
 	 SHOP_WORLD,
-	 50},	// winter wacky 1 RK
+	 62},	// winter wacky 1 RK
 	{SHOP_ICE,
 	 200,
 	 SHOP_WORLD,
-	 51},	// winter wacky 1 BP
+	 63},	// winter wacky 1 BP
 	{SHOP_ICE,
 	 400,
 	 SHOP_WORLD,
-	 52},	// winter wacky 2 BP
+	 64},	// winter wacky 2 BP
 	{SHOP_ICE,
 	 400,
 	 SHOP_WORLD,
-	 53},	// winter wacky 2 LK
+	 65},	// winter wacky 2 LK
 	{SHOP_ICE,
 	 400,
 	 SHOP_WORLD,
-	 54},	// winter wacky 2 TDM
+	 66},	// winter wacky 2 TDM
 	{SHOP_ICE,
 	 300,
 	 SHOP_WORLD,
-	 55},	// seasons beatings
+	 67},	// seasons beatings
 	{SHOP_ICE,
 	 250,
 	 SHOP_WORLD,
-	 56},	// icy adventures
+	 68},	// icy adventures
 	{SHOP_ICE,
 	 500,
 	 SHOP_CHEAT,
 	 CHEAT_FREEZE},	// freeze enemies cheat
 	{SHOP_ICE,
+	 500,
+	 SHOP_MAJOR,
+	 MAJOR_GALLERY2},	// premium gallery
+	{SHOP_ICE,
 	 1000,
 	 SHOP_MAJOR,
-	 MAJOR_QUIZ},	// quiz game
+	 MAJOR_EDPACK1},	// loonyland 2 editor pack
 
 	 // kids we be
 	{SHOP_KIDS,
 	 150,
 	 SHOP_WORLD,
-	 57},	// small world
+	 69},	// happy ice cream land
 	{SHOP_KIDS,
 	 150,
 	 SHOP_WORLD,
-	 58},	// blast off
+	 70},	// itsy bitsy world
 	{SHOP_KIDS,
 	 150,
 	 SHOP_WORLD,
-	 59},	// loonies all around
+	 71},	// small world
 	{SHOP_KIDS,
 	 150,
 	 SHOP_WORLD,
-	 60},	// cool but hard
+	 72},	// stockboy
 	{SHOP_KIDS,
 	 150,
 	 SHOP_WORLD,
-	 61},	// cookies
+	 73},	// amazin spispopd
 	{SHOP_KIDS,
-	 150,
+	 250,
 	 SHOP_WORLD,
-	 48},	// haunted castle
+	 74},	// luigi's
 	{SHOP_KIDS,
-	 150,
+	 250,
 	 SHOP_WORLD,
-	 68},	// spooky castle 3
+	 75},	// toybox
 	{SHOP_KIDS,
-	 150,
+	 400,
 	 SHOP_WORLD,
-	 75},	// horror lord
-	{SHOP_KIDS,
-	 150,
-	 SHOP_WORLD,
-	 76},	// space mainia
-	{SHOP_KIDS,
-	 150,
-	 SHOP_WORLD,
-	 78},	// channel: champions
-
+	 76},	// angelo's party pizza edition
 	{SHOP_KIDS,
 	 500,
 	 SHOP_CHEAT,
@@ -432,25 +521,36 @@ shopItem_t shop[NUMSHOPITEMS]={
 	 2000,
 	 SHOP_ABILITY,
 	 ABIL_KEYCHAIN},	// keychain help ability
+	{SHOP_KIDS,
+	 1000,
+	 SHOP_MAJOR,
+	 MAJOR_QUIZ},	// quiz game - originally from ice store
 
 	 // desert
 	{SHOP_DESERT,
 	 200,
 	 SHOP_WORLD,
-	 62},	// just deserts
+	 77},	// desert rats
 	{SHOP_DESERT,
 	 300,
 	 SHOP_WORLD,
-	 63},	// desert rats
+	 78},	// desert arena
 	{SHOP_DESERT,
 	 100,
 	 SHOP_WORLD,
-	 64},	// desert arena
+	 79},	// desert toils
 	{SHOP_DESERT,
 	 400,
 	 SHOP_WORLD,
-	 69},	// desert toils
-
+	 80},	// deserted desert dessert
+	{SHOP_DESERT,
+	 400,
+	 SHOP_WORLD,
+	 81},	// just deserts
+	{SHOP_DESERT,
+	 400,
+	 SHOP_WORLD,
+	 82},	// desert arena 2
 	{SHOP_DESERT,
 	 500,
 	 SHOP_CHEAT,
@@ -467,6 +567,95 @@ shopItem_t shop[NUMSHOPITEMS]={
 	 1000,
 	 SHOP_ABILITY,
 	 ABIL_MOVESHOOT},	// move and shoot ability
+	{SHOP_DESERT,
+	 1000,
+	 SHOP_PLAYABLE,
+	 PLAY_LUNACHIK},	// play as LunaChick
+	 
+	 //rocketshack
+	{SHOP_GADGET,
+	 500,
+	 SHOP_CHEAT,
+	 CHEAT_PRESTO},	// no skid boots cheat
+	{SHOP_GADGET,
+	 500,
+	 SHOP_CHEAT,
+	 CHEAT_SHIELD},	// shield cheat
+	{SHOP_GADGET,
+	 500,
+	 SHOP_CHEAT,
+	 CHEAT_SCANNER},	// scanner cheat
+	{SHOP_GADGET,
+	 400,
+	 SHOP_WORLD,
+	 83,},	// cyberia
+	{SHOP_GADGET,
+	 400,
+	 SHOP_WORLD,
+	 84},	// hamumu: the world
+	{SHOP_GADGET,
+	 400,
+	 SHOP_WORLD,
+	 85},	// lunatic research facility
+	{SHOP_GADGET,
+	 400,
+	 SHOP_WORLD,
+	 86},	// deja vu
+	{SHOP_GADGET,
+	 1000,
+	 SHOP_MAJOR,
+	 MAJOR_CARDBOOK},	// card book
+	{SHOP_GADGET,
+	 200,
+	 SHOP_MAJOR,
+	 MAJOR_ARCADE3},	// arcade game 3
+	{SHOP_GADGET,
+	 1000,
+	 SHOP_ABILITY,
+	 ABIL_SUPREME},	// move and shoot ability
+	 
+	 //whatsaburger
+	{SHOP_RANDOM,
+	 300,
+	 SHOP_WORLD,
+	 87},	// potluck
+	{SHOP_RANDOM,
+	 200,
+	 SHOP_WORLD,
+	 88},	// bouapha's world
+	{SHOP_RANDOM,
+	 200,
+	 SHOP_WORLD,
+	 89},	// oregon trail
+	{SHOP_RANDOM,
+	 300,
+	 SHOP_WORLD,
+	 90},	// urban world (NEW!)
+	{SHOP_RANDOM,
+	 400,
+	 SHOP_WORLD,
+	 91},	// loony stew
+	{SHOP_RANDOM,
+	 400,
+	 SHOP_WORLD,
+	 92},	// old factory
+	{SHOP_RANDOM,
+	 500,
+	 SHOP_WORLD,
+	 93},	// obscurity clearance
+	{SHOP_RANDOM,
+	 500,
+	 SHOP_WORLD,
+	 94},	// spamumu
+	{SHOP_RANDOM,
+	 1000,
+	 SHOP_MAJOR,
+	 MAJOR_LOCKERS},	// card book
+	{SHOP_RANDOM,
+	 1000,
+	 SHOP_MAJOR,
+	 MAJOR_GREEDY},	// greedy mode
+	
 
 	 // lockers
 	{SHOP_LOCKERS,
@@ -524,8 +713,8 @@ shopItem_t shop[NUMSHOPITEMS]={
 	 70},			// #13 - world: Bouapha: HUD Inspector
 	{SHOP_LOCKERS,
 	 0,
-	 SHOP_EMPTY,
-	 0},			// #14 - empty
+	 SHOP_MODE,
+	 MODE_VIRTUAL}, // #14 - virtual mode
 	{SHOP_LOCKERS,
 	 0,
 	 SHOP_MONEY,
@@ -561,8 +750,8 @@ shopItem_t shop[NUMSHOPITEMS]={
 	 66},			// #22 - world: Blockbusters
 	{SHOP_LOCKERS,
 	 0,
-	 SHOP_EMPTY,
-	 0},			// #23 - empty
+	 SHOP_PLAYABLE,
+	 PLAY_MYSTIC}, // #23 - kid mystic
 	{SHOP_LOCKERS,
 	 0,
 	 SHOP_DISCOUNT,
@@ -635,11 +824,11 @@ shopItem_t shop[NUMSHOPITEMS]={
 	{SHOP_LOCKERS,
 	 0,
 	 SHOP_MODE,
-	 MODE_MANIC},		// #41 - manic mode
+	 MODE_MANIC},	// #41 - manic mode
 	{SHOP_LOCKERS,
 	 0,
-	 SHOP_EMPTY,
-	 0},			// #42 - empty
+	 SHOP_ABILITY,
+	 ABIL_HYPER}, 	// #42 - hyper mode
 	{SHOP_LOCKERS,
 	 0,
 	 SHOP_MONEY,
@@ -647,7 +836,7 @@ shopItem_t shop[NUMSHOPITEMS]={
 	{SHOP_LOCKERS,
 	 0,
 	 SHOP_PLAYABLE,
-	 PLAY_LUNATIC},			// #44 - Dr. Lunatic
+	 PLAY_LUNATIC},	// #44 - Dr. Lunatic
 	{SHOP_LOCKERS,
 	 0,
 	 SHOP_DISCOUNT,
@@ -672,6 +861,46 @@ shopItem_t shop[NUMSHOPITEMS]={
 	 0,
 	 SHOP_MODE,
 	 MODE_TEENY},		// #50 - teeny mode
+	{SHOP_LOCKERS,
+	 0,
+	 SHOP_EMPTY,
+	 0},			// #51 - empty
+	{SHOP_LOCKERS,
+	 0,
+	 SHOP_EMPTY,
+	 0},			// #52 - empty
+	{SHOP_LOCKERS,
+	 0,
+	 SHOP_EMPTY,
+	 0},			// #53 - empty
+	{SHOP_LOCKERS,
+	 0,
+	 SHOP_EMPTY,
+	 0},			// #54 - empty
+	{SHOP_LOCKERS,
+	 0,
+	 SHOP_EMPTY,
+	 0},			// #55 - empty
+	{SHOP_LOCKERS,
+	 0,
+	 SHOP_EMPTY,
+	 0},			// #56 - empty
+	{SHOP_LOCKERS,
+	 0,
+	 SHOP_EMPTY,
+	 0},			// #57 - empty
+	{SHOP_LOCKERS,
+	 0,
+	 SHOP_EMPTY,
+	 0},			// #58 - empty
+	{SHOP_LOCKERS,
+	 0,
+	 SHOP_EMPTY,
+	 0},			// #59 - empty
+	{SHOP_LOCKERS,
+	 0,
+	 SHOP_EMPTY,
+	 0},			// #60 - empty
 
 	 // the hunger sign
 	{SHOP_HUNGER,
@@ -681,89 +910,113 @@ shopItem_t shop[NUMSHOPITEMS]={
 };
 
 char worldFName[NUMBUILTINWORLDS][32]={
-	"mansion.dlw",			// 0
-	"hauntedh.dlw",
-	"loonyhalloween.dlw",
-
-	"halloweenBP.dlw",
-	"halloweenMS.dlw",
-	"halloweenPOP.dlw",
-	"halloweenMH.dlw",
-
-	"halloween2TDM.dlw",
-	"halloween2BP.dlw",
-	"halloween2LK.dlw",
-	"halloween2RZ.dlw",		// 10
-	"halloween2POP.dlw",
-	"halloween2MH.dlw",
-
-	"halloween3BP.dlw",
-	"halloween3LK.dlw",
-	"halloween3POP.dlw",
-	"halloween3TDM.dlw",
-
-	"treasurehunting.dlw",
-	"starramble.dlw",
-	"ez8675.dlw",
-	"spacedout.dlw",		// 20
-	"interluna.dlw",
-	"spaced.dlw",
-	"space.dlw",
-	"spacebattle.dlw",
-	"islandadventure.dlw",
-	"pygmy.dlw",
-	"waterworld.dlw",
-	"citanul.dlw",
-	"cavernhavoc.dlw",
-	"cliffs.dlw",			// 30
-	"woods.dlw",
-	"creepymeadows.dlw",
-	"wackywoods.dlw",
-	"dead.dlw",
-	"Looniesgooniesbaboonies.dlw",
-	"disorder.dlw",
-	"dimensionx.dlw",
-	"nuclear.dlw",
-	"loonystew.dlw",
-	"splitlevellunacy.dlw",		// 40
-	"doubletrouble.dlw",
-	"bouaphaq.dlw",
-	"excellent.dlw",
-	"junglequest.dlw",
-	"halloweenhill.dlw",
-	"fieldtrip.dlw",
-	"thecastle.dlw",
-	"hauntedcastle.dlw",
-	"winterwackinessLK.dlw",
-	"winterwackinessRK.dlw",	// 50
-	"winterwackinessBP.dlw",
-	"winterwackiness2BP.dlw",
-	"winterwackiness2LK.dlw",
-	"winterwackiness2TDM.dlw",
-	"seasonsbeatings.dlw",
-	"icyadv.dlw",
-	"smallworld.dlw",
-	"blastoff.dlw",
-	"loonies.dlw",
-	"coolbuthard.dlw",		// 60
-	"cookies.dlw",
-	"justdeserts.dlw",
-	"desertrats.dlw",
-	"desertarena.dlw",
-	"tvlunacy.dlw",
-	"blockbuster.dlw",
-	"tunnelvision.dlw",
-	"castlerevisited.dlw",
-	"deserttoils.dlw",
-	"HUD.dlw",				// 70
-	"middleearth.dlw",
-	"seaquest.dlw",
-	"sprungfield.dlw",
-	"underwater.dlw",
-	"horrorlord.dlw",
-	"spmainia.dlw",
-	"underwaterantics.dlw",
-	"champ.dlw",
+	//bones bats & beyond (17)
+	"mansion.hsw",
+	"hauntedh.hsw",
+	"loonyhalloween.hsw",
+	"halloweenBP.hsw",
+	"halloweenMS.hsw",
+	"halloweenPOP.hsw",
+	"halloweenMH.hsw",
+	"halloween2TDM.hsw",
+	"halloween2BP.hsw",
+	"halloween2LK.hsw",
+	"halloween2RZ.hsw",
+	"halloween2POP.hsw",
+	"halloween2MH.hsw",
+	"halloween3BP.hsw",
+	"halloween3LK.hsw",
+	"halloween3POP.hsw",
+	"halloween3TDM.hsw",
+	//sputnik's (7)
+	"space.hsw",
+	"spacebattle.hsw",
+	"ez8675.hsw",
+	"spacedout.hsw",
+	"spaced.hsw",
+	"starramble.hsw",
+	"interluna.hsw",
+	//pier 2 (8)
+	"citanul.hsw",
+	"islandadventure.hsw",
+	"seahunt.hsw",
+	"underwaterantics.hsw",
+	"waterworld.hsw",
+	"seaquest.hsw",
+	"preperilcc.hsw",
+	"pygmy.hsw",
+	//cave & peril (5) - 32
+	"tunnelvision.hsw",
+	"cavernhavoc.hsw",
+	"rockycliffs.hsw",
+	"creepycastle.hsw",
+	"middleearth.hsw",
+	//jc piney (8) - 37
+	"Woods.hsw",
+	"wackywoods.hsw",
+	"CreepyMeadows.hsw",
+	"Looniesgooniesbaboonies.hsw",
+	"wastedwls.hsw",
+	"goofyg.hsw",
+	"goofygrove2.hsw",
+	"plains.hsw",
+	//oddness depot (8) - 45
+	"bunnyWorld.hsw",
+	"loonylabs.hsw",
+	"dimensionx.hsw",
+	"doubletrouble.hsw",
+	"disorder.hsw",
+	"splitlevellunacy.hsw",
+	"Nuclear.hsw",
+	"wonderland.hsw",
+	//gac (8) - 53
+	"fieldtrip.hsw",
+	"fieldtrip2.hsw",
+	"final.hsw",
+	"halloweenhill.hsw",
+	"excellent.hsw",
+	"BouaphaQ.hsw",
+	"sleepier.hsw",
+	"junglequest.hsw",
+	//yeti bauer (8) - 61
+	"winterwackinessbp.hsw",
+	"WinterWackinessLK.hsw",
+	"WinterWackinessRK.hsw",
+	"winterwackiness2bp.hsw",
+	"winterwackiness2lk.hsw",
+	"WinterWackiness2TDM.hsw",
+	"seasonsbeatings.hsw",
+	"icyadv.hsw",
+	//kids we be (8) - 69
+	"HPPYICL.hsw",
+	"ItsyBitsyW.hsw",
+	"smallworld.hsw",
+	"stockboy.hsw",
+	"Amazin' Spispopd.hsw",
+	"Luigis.hsw",
+	"toys.hsw",
+	"AngelosPizzaPartyEdition.hsw",
+	//cleopatra's secret (6) - 77
+	"desertrats.hsw",
+	"desertarena.hsw",
+	"deserttoils.hsw",
+	"deserted.hsw",
+	"justdeserts.hsw",
+	"desertarena2.hsw",
+	//rocketshack (4) - 83 
+	"cyberia.hsw",
+	"BouaphasNotSoTextAdventure.hsw",
+	"Hamumu.hsw",
+	"precur_FAC.hsw",
+	//whatsaburger (8) - 87
+	"potluck.hsw",
+	"bouworld.hsw",
+	"oregon.hsw",
+	"urbania.hsw",
+	"loonystew.hsw",
+	"factory.hsw",
+	"ObsurityClearance.hsw",
+	"Spamumu.hsw"
 };
 
 static char shopName[][32]={
@@ -776,23 +1029,27 @@ static char shopName[][32]={
 	"G.A.C.",
 	"Yeti Bauer",
 	"Kids 'We' Be",
-	"Cleopatra's Secret"
+	"Cleopatra's Secret",
+	"RocketShack",
+	"Whatsaburger"
 };
 
-static byte shopContents[11][4];
+static byte shopContents[13][4];
 
 static byte itemCoords[]={
 		0,0,0,0,		// lockers (not handled here)
 		78,130,82,133,	// bonesbats&beyond
 		150,131,154,135, // sputnik's
 		125,131,131,134, // pier 2
-		173,62,177,66,	// cave&peril
-		172,14,175,16,	// JCPiney
-		174,107,179,110, // oddness depot
+		183,62,187,66,	// cave&peril
+		182,14,185,16,	// JCPiney
+		202,131,207,134, // oddness depot
 		173,130,177,134, // GAC
 		103,131,106,134, // yeti bauer
-		173,84,179,89,	// kids we be
-		171,37,176,40,	// cleopatra
+		183,84,189,89,	// kids we be
+		191,37,196,40,	// cleopatra
+		208,61,212,65,	// rocketshack
+		209,92,213,96,	// whatsaburger
 	};
 
 static byte modeToToggle;
@@ -950,7 +1207,7 @@ void SetupShops(Map *map)
 	itmnum[SHOP_GOAL]=FindItemByName("shoppic");
 	itmnum[SHOP_PLAYABLE]=FindItemByName("shopplay");
 
-	for(i=1;i<11;i++)	// go through each shop, not counting the lockers
+	for(i=1;i<13;i++)	// go through each shop, not counting the lockers
 	{
 		count=ItemsInShop(i);
 		if(count>3)
@@ -986,14 +1243,16 @@ void SetupShops(Map *map)
 	lockStart=ShopItemNumber(SHOP_DISCOUNT,0);	// this is what's in locker #0, so this is where the locker list starts
 	x=124;
 	y=9;
-	for(i=0;i<50;i++)
+	for(i=0;i<60;i++)
 	{
-		if(profile.progress.purchase[i+lockStart]&SIF_BOUGHT)
+		int j = lockers[i];
+		//std::cout << "Locker #" << i << " w/ ID " << j << "\n"; 
+		if(profile.progress.purchase[j+lockStart]&SIF_BOUGHT)
 		{
 			// you own this one
-			if(shop[i+lockStart].type==SHOP_MODE)
+			if(shop[j+lockStart].type==SHOP_MODE)
 			{
-				if(profile.progress.purchase[i+lockStart]&SIF_ACTIVE)
+				if(profile.progress.purchase[j+lockStart]&SIF_ACTIVE)
 				{
 					map->map[x+y*map->width].floor=369;
 					map->map[x+y*map->width].wall=371;
@@ -1011,7 +1270,7 @@ void SetupShops(Map *map)
 			}
 		}
 		x+=3;
-		if((i%10)==9)
+		if((i%12)==11)
 		{
 			x=124;
 			y+=4;
@@ -1041,6 +1300,10 @@ void SetupShops(Map *map)
 	if(ItemPurchased(SHOP_MAJOR,MAJOR_QUIZ))
 	{
 		map->ContiguousItemChange(55,40,ITM_NONE,0);
+	}
+	if(ItemPurchased(SHOP_MAJOR,MAJOR_GALLERY2))
+	{
+		map->ContiguousItemChange(148,63,ITM_NONE,0);
 	}
 
 	if(profile.progress.goal[86])
@@ -1092,7 +1355,8 @@ static byte cursor;
 
 void OpenLocker(int x,int y)
 {
-	char modeName[][16]={"Disco","TV","Ludicrous","Subliminal","Splatter","Manic","Handheld"};
+	int lock,xx;
+	char modeName[][16]={"Disco","TV","Ludicrous","Subliminal","Splatter","Manic","Handheld","Virtual"};
 	char modeDesc[][64]={
 		"Enjoy the hideous discoloration of disco lighting!",
 		"Like playing on your old Atari!",
@@ -1100,7 +1364,8 @@ void OpenLocker(int x,int y)
 		"!!yebo dna raeH",
 		"Make things much messier in combat!",
 		"No time for a long game of Dr. L?  Then speed things up!",
-		"No, you can't take it with you!"
+		"No, you can't take it with you!",
+		"Don't stare for too long!"
 	};
 
 	x-=124;
@@ -1108,10 +1373,10 @@ void OpenLocker(int x,int y)
 	x/=3;
 	y/=4;
 
-	x=x+y*10;	// x=locker #
-
-	x+=ShopItemNumber(SHOP_DISCOUNT,0);
-
+	xx = x+y*12;	// x=locker ##
+	lock = xx;
+	xx = lockers[xx] + ShopItemNumber(SHOP_DISCOUNT,0);
+	
 	if(!(profile.progress.purchase[x]&SIF_BOUGHT))
 	{
 		if(profile.progress.loonyKeys-profile.progress.loonyKeysUsed<=0)
@@ -1122,49 +1387,51 @@ void OpenLocker(int x,int y)
 		profile.progress.loonyKeysUsed++;
 	}
 
-	if(shop[x].type==SHOP_MODE)
+	if(shop[xx].type==SHOP_MODE)
 	{
-		if(profile.progress.purchase[x]&SIF_BOUGHT)
+		if(profile.progress.purchase[xx]&SIF_BOUGHT)
 		{
-			if(profile.progress.purchase[x]&SIF_ACTIVE)
-				sprintf(shopTxt,"You close the locker, deactivating %s Mode.",modeName[shop[x].item]);
+			if(profile.progress.purchase[xx]&SIF_ACTIVE)
+				sprintf(shopTxt,"You close Locker #%i, deactivating %s Mode.",lock+1,modeName[shop[xx].item]);
 			else
-				sprintf(shopTxt,"You open the locker, activating %s Mode. (%s)",modeName[shop[x].item],modeDesc[shop[x].item]);
+				sprintf(shopTxt,"You open Locker #%i, activating %s Mode. (%s)",lock+1,modeName[shop[xx].item],modeDesc[shop[xx].item]);
+			RestoreGameplayGfx();
 		}
 		else
 		{
-			sprintf(shopTxt,"You open the locker to reveal..... %s Mode! %s Bump the locker again to deactivate it.",modeName[shop[x].item],modeDesc[shop[x].item]);
+			sprintf(shopTxt,"You open Locker #%i to reveal..... %s Mode! %s Bump the locker again to deactivate it.",lock+1,modeName[shop[xx].item],modeDesc[shop[xx].item]);
 			MakeNormalSound(SND_LOCKER);
+			RestoreGameplayGfx();
 		}
-		modeToToggle=x;
+		modeToToggle=xx;
 	}
 	else
 	{
-		if(profile.progress.purchase[x]&SIF_BOUGHT)
-			strcpy(shopTxt,"You've already opened this locker, and found: ");
+		if(profile.progress.purchase[xx]&SIF_BOUGHT)
+			sprintf(shopTxt,"You've already opened Locker #%i, and found: ",lock+1);
 		else
 		{
-			strcpy(shopTxt,"You open the locker to reveal..... ");
+			sprintf(shopTxt,"You open Locker #%i to reveal..... ",lock+1);
 			MakeNormalSound(SND_LOCKER);
 		}
 
-		switch(shop[x].type)
+		switch(shop[xx].type)
 		{
 			case SHOP_DISCOUNT:
 				strcat(shopTxt,"A Discount Card for 10% off of all purchases at ");
-				strcat(shopTxt,shopName[shop[x].item]);
+				strcat(shopTxt,shopName[shop[xx].item]);
 				strcat(shopTxt,"!  Go shop 'til you drop!");
 				break;
 			case SHOP_EMPTY:
 				strcat(shopTxt,"Nothing!! ABSOLUTELY NOTHING!!!");
 				break;
 			case SHOP_MONEY:
-				sprintf(&shopTxt[strlen(shopTxt)],"%d coins!  Don't spend 'em all in one place!",moneyAmts[shop[x].item]);
-				if(!(profile.progress.purchase[x]&SIF_BOUGHT))
-					profile.progress.totalCoins+=moneyAmts[shop[x].item];
+				sprintf(&shopTxt[strlen(shopTxt)],"%d coins!  Don't spend 'em all in one place!",moneyAmts[shop[xx].item]);
+				if(!(profile.progress.purchase[xx]&SIF_BOUGHT))
+					profile.progress.totalCoins+=moneyAmts[shop[xx].item];
 				break;
 			case SHOP_PLAYABLE:
-				if(shop[x].item==PLAY_HAPPY)
+				if(shop[xx].item==PLAY_HAPPY)
 					strcat(shopTxt,"The playable character Happy Stick Man!  You can choose to play as him on the Profile menu.");
 				else
 					strcat(shopTxt,"The playable character Dr. Lunatic!  You can choose to play as him on the Profile menu.");
@@ -1175,14 +1442,14 @@ void OpenLocker(int x,int y)
 			case SHOP_WORLD:
 				char tmp[32],tmp2[32],tmp3[64];
 
-				sprintf(tmp3,"worlds/%s",worldFName[shop[x].item]);
+				sprintf(tmp3,"worlds/%s",worldFName[shop[xx].item]);
 				GetWorldName(tmp3,tmp,tmp2);
 
 				sprintf(&shopTxt[strlen(shopTxt)],"The secret bonus world \"%s\" by %s!  Play it from the World Select screen!",tmp,tmp2);
 				break;
 		}
 	}
-	profile.progress.purchase[x]|=SIF_BOUGHT;
+	profile.progress.purchase[xx]|=SIF_BOUGHT;
 	SetupShops(curMap);
 	SendMessageToGame(MSG_SHOPNOW,0);
 	shopSize=0;
@@ -1191,8 +1458,8 @@ void OpenLocker(int x,int y)
 	buyMode=1;
 	GetTaps();
 	GetArrowTaps();
-	if(shop[x].type==SHOP_GOAL)
-		CompleteGoal(shop[x].item);
+	if(shop[xx].type==SHOP_GOAL)
+		CompleteGoal(shop[xx].item);
 	GoalPurchase();
 }
 
@@ -1293,7 +1560,7 @@ void InitShopping(int x,int y)
 		RestoreGameplayGfx();
 		return;
 	}
-	if(x>=124 && y>=9 && x<=154 && y<=30)
+	if(x>=124 && y>=9 && x<=157 && y<=30)
 	{
 		goodguy->x=(goodguy->mapx*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT;
 		goodguy->y=(goodguy->mapy*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
@@ -1328,7 +1595,7 @@ void InitShopping(int x,int y)
 	cursor=0;
 	buyMode=0;
 
-	for(i=1;i<11;i++)
+	for(i=1;i<13;i++)
 	{
 		if(itemCoords[i*4]==x)
 		{
@@ -1408,6 +1675,24 @@ void InitShopping(int x,int y)
 						break;
 					case MAJOR_BESTIARY:
 						strcpy(&shopTxt[strlen(shopTxt)],"A Zoo Pass");
+						break;
+					case MAJOR_LOCKERS:
+						strcpy(&shopTxt[strlen(shopTxt)],"Premium Locker Storage");
+						break;
+					case MAJOR_GALLERY2:
+						strcpy(&shopTxt[strlen(shopTxt)],"An Art Gallery Premium Pass");
+						break;
+					case MAJOR_CARDBOOK:
+						strcpy(&shopTxt[strlen(shopTxt)],"The HamSandwich Card Collector");
+						break;
+					case MAJOR_GREEDY:
+						strcpy(&shopTxt[strlen(shopTxt)],"Arcade Mode");
+						break;
+					case MAJOR_EDPACK1:
+						strcpy(&shopTxt[strlen(shopTxt)],"Loonyland 2 Content Pack of Capitalism");
+						break;
+					case MAJOR_ARCADE3:
+						strcpy(&shopTxt[strlen(shopTxt)],"The Arcade Game \"Cave Zoomer\"");
 						break;
 				}
 				break;
@@ -1517,6 +1802,19 @@ void SetObtainText(void)
 				case MAJOR_BESTIARY:
 					strcpy(shopTxt,"Please enjoy our conveniently located Mall Zoo, in the northwest corner of our mall!");
 					break;
+				case MAJOR_LOCKERS:
+					strcpy(shopTxt,"You can now access Lockers #37-#60. They look the same as our regular lockers, but contain cooler items!");
+					break;
+				case MAJOR_GALLERY2:
+					strcpy(shopTxt,"Your art pass has been upgraded - now you can see the new art!");
+					break;
+				case MAJOR_CARDBOOK:
+					strcpy(shopTxt,"Love collecting Monster Cards? Check your progress here! It provides fun flavor data of each monster as well."
+								   " You'll find it on the game's main menu.");
+					break;
+				case MAJOR_GREEDY:
+					strcpy(shopTxt,"In this game mode, luck and money are everything. You'll find it on the game's main menu.");
+					break;
 			}
 			break;
 	}
@@ -1527,7 +1825,7 @@ void BuyItem(void)
 	int i;
 	word cost;
 
-	if(shop[buying].shop<11 && shop[buying].shop>0 && ItemPurchased(SHOP_DISCOUNT,shop[buying].shop-1))
+	if(shop[buying].shop<13 && shop[buying].shop>0 && ItemPurchased(SHOP_DISCOUNT,shop[buying].shop-1))
 		cost=shop[buying].cost*9/10;
 	else
 		cost=shop[buying].cost;

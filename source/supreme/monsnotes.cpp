@@ -1,7 +1,7 @@
 #include "monsnotes.h"
 #include "monster.h"
 
-char monsNotes[NUM_MONSTERS][512]={
+char monsNotes[NUM_MONSTERS][1024]={
 	// NULL
 	"No notes!",
 	// Bouapha
@@ -1346,7 +1346,8 @@ char monsNotes[NUM_MONSTERS][512]={
 	"The most cold hearted of the spiders.  Also the only enemy (as of this writing!) that can freeze Bouapha.  Luckily for "
 	"you, Bouapha, unlike monsters, is immune to being frozen further if he's already frozen, so you will eventually unfreeze! "
 	"Still, it would be very unpleasant to have to travel through a room full of these suckers.  Also, being hit by anything "
-	"else cuts your remaining freeze time in half.",
+	"else cuts your remaining freeze time in half. "
+	"(Note: The only enemy that can freeze you but cannot attack you!)",
 	// missile turret
 	"Like a regular turret, only it shoots the same homing missiles Bouapha can.  Pretty dangerous, actually!",
 	// death turret
@@ -1447,7 +1448,159 @@ char monsNotes[NUM_MONSTERS][512]={
 	// jack frost
 	"He's nipping at your nose!  He does that by firing freeze bolts at random.  For a mini-boss, this guy is pretty harmless. "
 	"But if you want to make him tough, put him in fairly tight quarters with Bouapha and some other enemies!  That makes his "
-	"ice shots hard to avoid, and greatly improves his odds of getting a swipe at you on his highly predictable journey.",
+	"ice shots hard to avoid, and greatly improves his odds of getting a swipe at you on his highly predictable journey. "
+	"Fun Fact: Jack Frost was the last monster added to Supreme With Cheese's original 2003 release.",
+	// NEW ADDS!
+	// playable kid mystic
+	"DANGER: Do not use unless you know what you are doing! "
+	"This is the dummy monster for the playable Kid Mystic.",
+	//eye guy
+	"He's got a lot of eyes, that's for certain. A little-known fact about these guys is that they can also ",
+	"be found in Eddie Galaxy, as can a few other enemies. However, his original debut was in Kid Mystic. In SWC 8.1, "
+	"the yellow wave Eye Guys shoot has a chance at dealing the 'weakness' status effect (which makes you take extra damage!) "
+	"I think it's a good way at introducing a new concept while spicing up an old enemy."
+	//oculoid
+	"When I tested out the Oculoid enemy, I found that they stick to eachother after a while. Hopefully they "
+	"don't do that for you, because that's really annoying. I don't understand how these guys can float in mid air, but "
+	"then again this game has very little logic to it. The eye-based enemies have these really abstract yet cool designs.",
+	//the rook
+	"One of my favorite enemies. The idea of a giant tower with dopey cartoonish eyes is definitely amusing. I'd "
+	"argue it's better than the Super Zombie since it has more versatility and doesn't unconditionally drop brains on death. "
+	"That grenade lobbing attack can also be pretty scary too. They're called 'The Rook' since 'Tower Guardian' just seemed "
+	"a little lacking in pizazz.",
+	//the lookey-loo
+	"Before SWC 8.0, you could recreate The Lookey-Loo to some degree by replacing Matilda's Skull with the correct .jsp; "
+	"however, it just wasn't the same. It's nice to actually have this boss in Supreme without any gimmicks or smoke and mirrors. "
+	"As I know how non-threatening The Lookey-Loo's attack pool is, I've made it so they start spewing bullets after losing health. "
+	"That should make them harder, right?",
+	//pinkeye
+	"These guys are the only vulnerable monster that can never truly die; if you kill them, they'll just come back seconds "
+	"later. You can only kill them via special triggers. They're meant to accompany the Lookey-Loo as a way to give it extra firepower. "
+	"It definitely works, I'd say!",
+	//microfish
+	"The smallest enemy. It's near impossible to hit a Microfish, let alone notice it - it's just two pixels! "
+	"Make sure the player can actually see them, otherwise don't give them items necessary for completing the level.",
+	//grumpy golem
+	"Unlike in Kid Mystic, Grumpy Golems don't take damage on their own, making them more formidable to enemies and and useful "
+	"to the player. Their ground pound attack is pretty strong; it can deal a lot of damage to a lot of enemies, thus it's important not to "
+	"overuse them. ",
+	//bobby khan
+	"The final boss for Kid Mystic has arrived! He's like the Super Duper Zombie, but with a more dangerous "
+	"range of attacks. That sword of his covers a lot of distance. Don't let him use his shield either, or he'll turn "
+	"your projectiles into dangerous floating grenade shots! As long as you keep your distance and use the same strats "
+	"for the SDZ, however, he's not impossible.",
+	//crazy bush
+	"This was the first enemy I tried implementing into Dr. Lunatic. It's a fun, simple enemy that stands out "
+	"well! I love how it just runs towards you, and how it can be led to pushing buttons and what-not. Definitely useful "
+	"for puzzles or a simple chase.",
+	//octon
+	"Dr. Lunatic got Aquazoids, and Kid Mystic got them alongside Octons. They're a bit snazzier than zoids, "
+	"having more sound effects, more opportunities to fire bullets, and the ability to regain health while underwater. "
+	"Their only downside is the lack of variance, seeing that there's only one Octon and many types of zoids.",
+	//blockhead
+	"Not much to say on these guys. They're blockheads because they're shaped like blocks... funny, right? "
+	"I'd say the Blockhead is a more low-tech and rustic MiniBot, though they merely try to overwhelm you in small numbers. "
+	"Their alternative name (according to the files!) is 'Incabot', as in the 'Incan Empire'. Pretty neat!",
+	//blockhead kiln
+	"(bby) How's a blockhead made? Not with a factory, but with a kiln! As kilns are used to fire pottery, the "
+	"name of this 'monster' implies that yes, Blockheads are made of clay. Though considering the appearance of the Blockhead, "
+	"this revelation isn't too shocking. Also, they make this really cool clanging noise.",
+	//megablockhead h
+	"Before Patrol Mumbles, there were Megablockheads. Unlike their successors, Megablockheads cannot die normally and "
+	"fire a VERY deadly laser. Luckily, their field of view allows you a split second to turn the other way before their "
+	"death ray obliterates you. They can also see through walls, because they're just that strong. Blocko knows how to make "
+	"some really strong soldiers, after all.",
+	//megablockhead v
+	"These Megablockheads go up and down instead of left and right. Oh, and did you know these are named 'Incagold' "
+	"in the files? It's possible they could be made out of some sort of gold, though canon Kid Mystic lore is unfortunately "
+	"scarce.",
+	//log
+	"This was the hardest of the Kid Mystic 'monsters' to port, as I had to make it so the game defines it as a "
+	"vehicle akin to the raft. Speaking of the raft, this is a raft that continuously goes downwards. They don't crash manually, "
+	"allowing level creators to dictate where they self-destruct. However, they are coded to drop you off once there's a "
+	"non-aquatic tile in front of it; after this, they become unridable until there's available space to ride.",
+	//blocko
+	"I almost didn't code Blocko in because he kept crashing my game while playtesting - luckily, this was resolved "
+	"within the same day. He's a rather simple boss, moving back and forth while repeating the same three attacks. Not so "
+	"great if that's all he can muster, honestly.",
+	//blocko the tongue
+	"This is Blocko the Great's tongue. Do NOT use it as a standalone monster, "
+	"or else it WILL crash the game upon starting the level. I don't know why you'd "
+	"even want to use it when the Loonybot 5000 core is much better.",
+	//peeping bomb 1
+	"Hands down my favorite Kid Mystic enemy. They're so aesthetically and mechanically weird! It slowly spins around, chasing "
+	"the player if it gets in its line of view - the stealthiest enemy possible in a time before the stealth level feature existed. Even "
+	"now, however, they have purpose; they really get you to time your movement in a way Patrol Mumbles don't. ",
+	//peeping bomb 2
+	"This is a Peeping Bomb that rotates in the opposite direction, more or less. Use them in tandem with "
+	"their clockwise counterparts to maximize difficulty!",
+	//trapazoid
+	"Despite the name may lead you to believe, there's nothing four-sided about them. They're just a cool, "
+	"sneaky version of everyone's favorite serpent.",
+	//trapazoid strong
+	"Originally, this was going to be an invulnerable form of the Trapezoid before I realized that I only needed "
+	"one monster slot. Thus, I thought it'd be nice to have a stronger version of the Trapazoid - for the more daring "
+	"level builders. ",
+	//whackazoid
+	"They're Trapazoids solely meant for whacking... 'tis quite a terrible existence they lead. In Kid Mystic, "
+	"Whackazoids only appear in one secret-ish level, if I recall correctly. They have limited use as an enemy, but they're "
+	"great for Whack-a-Mole type puzzles!",
+	//slimy slug
+	"Watch where you step! Slimy Slugs leave slime wherever they go. Cyan is an unusual color choice for a slug, "
+	"though it's effective from a game design perspective; you'll never have difficulty telling it (or its slime) apart "
+	"from the cavern floors.",
+	//sniper snail
+	"Easy to defeat as long as you don't get too close. They're invincible when hidden by their shell, therefore "
+	"they can only be attacked from afar. ",
+	//smashball
+	"Smashballs are pretty fun to use! It's basically Pong, but with a ball that explodes if it touches water or "
+	"lava. In Kid Mystic, they outright killed you when this happened; now, you can recreate the effect with special effects "
+	"if you so desire. Just remember that you can only bounce these Smashballs upwards.",
+	//optimum octon
+	"'Optimum' means best, and boy does he live up to his name. Place him in a watery arena where the player can't "
+	"escape those eight tentacles and he's a force to be reckoned with, as far as first-world bosses go. Attack the tentacles "
+	"one at a time before taking on the Optimum Octon, else you'll likely be overwhelmed.",
+	//octentacle left
+	"DANGER: Do not use unless you know what you are doing! "
+	"This is the left tentacle used by the Optimum Octon.",
+	//octentacle right
+	"DANGER: Do not use unless you know what you are doing! "
+	"This is the right tentacle used by the Optimum Octon.",
+	//rammy gruff
+	"Rammy Gruff, as his name suggests, likes to ram into the player. Invincible except for a period of time "
+	"after hitting you, another monster, or an obstacle. Originally, Rammy (and Surefoot, aka Hoppy) filled up two monster "
+	"slots each due to the more limited capabilities of the Kid Mystic engine in comparison to the SWC engine. I was able "
+	"to adjust the code so that they now only take up one monster slot.",
+	//hoppy gruff
+	"Originally called Surefoot Gruff! He likes to hop into the air (where he is invincible) and land with a "
+	"shockwave. Easier to avoid than the other brothers, yet can be pretty if you don't keep an eye on him. Altogether, "
+	"the Three Gruffs have 1000 HP - the same as Sven & Bjorn's combined.",
+	//gruffy gruff
+	"Originally called Disgruntled Gruff, but renamed because I like the name 'Gruffy' better! That's also what "
+	"he's called in the files. Being the hardest of the Gruffs, Gruffy deals the most damage with his moving projectiles. "
+	"However, he's always vulnerable, thus it isn't too hard to take him out first. Hoppy and Rammy are a lot easier without "
+	"all those nasty yellow blobs floating around!",
+	//happy stick shroom
+	"The Happy Stick enemies in Kid Mystic only showed up after finding all the collectibles in a chapter. Like the "
+	"majority of the Happy Stick family, they love to spam bullets! The Happy Stick Shroom's spores cover a lot of ground, "
+	"so keep that in mind when using one in place of a regular Shroom.",
+	//happy stick spider
+	"The second of the Happy Stick monsters found in Kid Mystic. I'd say these are the deadliest due to the"
+	"barrage of acid it spits.",
+	//happy stick corpse
+	"The third of the Happy Stick monsters found in Kid Mystic. These guys are the coolest looking of the four, "
+	"in my opinion.",
+	//happy stick bat
+	"The fourth and final of the Happy Stick monsters found in Kid Mystic.",
+	//happy stick dancer
+	"Fun fact! Happy Stick Dancers appeared in Kid Mystic right after completing Madcap Mode, a mode where "
+	"enemies are significantly harder to defeat - think of the old Lunatic Mode, but on five cups of coffee! Definitely a great "
+	"reward, as their moves were really cool. I spiced up their dancing by adding in some hops.",
+	
+	//sleepless hollow monsters
+	//creepy crawly
+	"Basically a stronger version of the Spitter. Really helps add variety where needed! They shoot three acid "
+	"shots instead of one and crawl a little faster. It's a small alteration that goes a long way.",
 };
 
 char *MonsterNotes(dword type)

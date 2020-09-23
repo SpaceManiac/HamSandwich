@@ -1,4 +1,3 @@
-#include "winpch.h"
 #include "leveldialog.h"
 #include "editor.h"
 #include "dialogbits.h"
@@ -14,6 +13,7 @@
 #define LDMODE_CANDLES	5	// typing in candles
 #define LDMODE_SONGPICK 6	// file dialog to pick a song
 #define LDMODE_ITEMDROP	7	// entering itemdrop %
+#define LDMODE_TIMER	8	// typing in seconds
 
 #define ASK_WIDTH		1	// asking if you should really change width
 #define ASK_HEIGHT		2	// asking about height
@@ -29,15 +29,18 @@
 #define ID_EXIT			9
 #define ID_SONG			10
 #define ID_ITEMDROP		11
+#define ID_TIMER		12
 #define ID_SLIDE		20
 #define ID_FLAG			40
 #define ID_PREV			80
 #define ID_NEXT			81
 
-#define DLG_X		(100)
-#define DLG_Y		(60)
-#define DLG_X2		(639-100)
-#define DLG_Y2		(380)
+#define DLG_X		(16)
+#define DLG_Y		(16)
+#define DLG_X2		(640-16)
+#define DLG_Y2		(480-16)
+#define MAP_X		(DLG_X2-311)
+#define MAP_Y		(DLG_Y2-311)
 
 static byte asking,yesNo;
 static char question[64];
@@ -47,8 +50,8 @@ static byte mapNum,mode;
 static world_t *world;
 
 static word flagNum[]={MAP_SNOWING,MAP_RAIN,MAP_HUB,MAP_SECRET,MAP_TORCHLIT,MAP_WELLLIT,
-				MAP_STARS,MAP_UNDERWATER,MAP_LAVA,MAP_STEALTH,MAP_WAVY,MAP_OXYGEN};
-static char flagName[][16]={
+				MAP_STARS,MAP_UNDERWATER,MAP_LAVA,MAP_STEALTH,MAP_WAVY,MAP_OXYGEN,MAP_TIMER,MAP_DYWTR,MAP_DYLVA,MAP_SHOWV0};
+static char flagName[][32]={
 	"Snowing",
 	"Raining",
 	"Hub Level",
@@ -59,8 +62,12 @@ static char flagName[][16]={
 	"Underwater",
 	"Underlava",
 	"Stealth",
-	"Wavy",
+	"Dumb Side",
 	"Oxygen Meter",
+	"Timed Level",
+	"Dynamic Water",
+	"Dynamic Lava",
+	"Var 0 Bar",
 };
 
 static byte *mapZoom;
@@ -122,13 +129,13 @@ static void NextClick(int id)
 static void WidthClick(int id)
 {
 	mode=LDMODE_WIDTH;
-	InitTextDialog("Enter level width (20-200):","",3);
+	InitTextDialog("Enter level width (4-254):","",3);
 }
 
 static void HeightClick(int id)
 {
 	mode=LDMODE_HEIGHT;
-	InitTextDialog("Enter level height (20-200)","",3);
+	InitTextDialog("Enter level height (4-254)","",3);
 }
 
 static void BrainsClick(int id)
@@ -141,6 +148,12 @@ static void CandlesClick(int id)
 {
 	mode=LDMODE_CANDLES;
 	InitTextDialog("Enter # of Candles needed for bonus:","",5);
+}
+
+static void TimerClick(int id)
+{
+	mode=LDMODE_TIMER;
+	InitTextDialog("Enter # of seconds on timer:","",3);
 }
 
 static void ItemDropClick(int id)
@@ -166,9 +179,9 @@ static void AutoBrainsClick(int id)
 	}
 	for(i=0;i<MAX_MAPMONS;i++)
 	{
-		if(m->badguy[i].type==MONS_ZOMBIE || m->badguy[i].type==MONS_ZOMBONI || m->badguy[i].type==MONS_MUTANT)
+		if(m->badguy[i].type==MONS_ZOMBIE || m->badguy[i].type==MONS_ZOMBONI || m->badguy[i].type==MONS_MUTANT || m->badguy[i].type==MONS_BOMBIE || m->badguy[i].type==MONS_ZOMBIELORD || m->badguy[i].type==MONS_BOMBIELORD || m->badguy[i].type==MONS_FROZOMBIE|| m->badguy[i].type==MONS_FLYINGZOMBIE)
 			m->numBrains++;
-		if(m->badguy[i].type==MONS_SUPERZOMBIE)
+		if(m->badguy[i].type==MONS_SUPERZOMBIE || m->badguy[i].type==MONS_SUMUZOMBIE || m->badguy[i].type==MONS_SUPRBOMBIE)
 			m->numBrains+=2;
 		if(m->badguy[i].type && BrainsGiven(m->badguy[i].item)>0)
 			m->numBrains+=BrainsGiven(m->badguy[i].item);
@@ -353,26 +366,29 @@ void LevelDialogButtons(void)
 	MakeButton(BTN_NORMAL,ID_PREV,0,DLG_X2-104,DLG_Y+2,50,15,"Prev",PrevClick);
 	MakeButton(BTN_NORMAL,ID_NEXT,0,DLG_X2-52,DLG_Y+2,50,15,"Next",NextClick);
 
-	MakeButton(BTN_NORMAL,ID_WIDTH,0,DLG_X2-211,DLG_Y2-240,50,15,"Width",WidthClick);
+	MakeButton(BTN_NORMAL,ID_WIDTH,0,DLG_X2-310,DLG_Y2-342,50,15,"Width",WidthClick);
 	sprintf(s,"%d",world->map[mapNum]->width);
-	MakeButton(BTN_STATIC,ID_STATIC,0,DLG_X2-211+54,DLG_Y2-240,50,15,s,NULL);
+	MakeButton(BTN_STATIC,ID_STATIC,0,DLG_X2-310+54,DLG_Y2-342,50,15,s,NULL);
 
-	MakeButton(BTN_NORMAL,ID_WIDTH,0,DLG_X2-211+108,DLG_Y2-240,50,15,"Height",HeightClick);
+	MakeButton(BTN_NORMAL,ID_WIDTH,0,DLG_X2-310+108,DLG_Y2-342,50,15,"Height",HeightClick);
 	sprintf(s,"%d",world->map[mapNum]->height);
-	MakeButton(BTN_STATIC,ID_STATIC,0,DLG_X2-211+162,DLG_Y2-240,50,15,s,NULL);
+	MakeButton(BTN_STATIC,ID_STATIC,0,DLG_X2-310+162,DLG_Y2-342,50,15,s,NULL);
 
-	MakeButton(BTN_NORMAL,ID_ITEMDROP,0,DLG_X+2,DLG_Y+262,75,15,"Item Drops",ItemDropClick);
+	MakeButton(BTN_NORMAL,ID_ITEMDROP,0,DLG_X+2,DLG_Y+262+72,75,15,"Item Drops",ItemDropClick);
 	sprintf(s,"%0.2f%%",(float)world->map[mapNum]->itemDrops/(float)FIXAMT);
-	MakeButton(BTN_STATIC,ID_STATIC,0,DLG_X+81,DLG_Y+262,40,15,s,NULL);
+	MakeButton(BTN_STATIC,ID_STATIC,0,DLG_X+81,DLG_Y+262+72,40,15,s,NULL);
 
-	MakeButton(BTN_NORMAL,ID_BRAINS,0,DLG_X+2,DLG_Y+280,55,15,"Brains",BrainsClick);
+	MakeButton(BTN_NORMAL,ID_BRAINS,0,DLG_X+2,DLG_Y+280+72,55,15,"Brains",BrainsClick);
 	sprintf(s,"%d",world->map[mapNum]->numBrains);
-	MakeButton(BTN_STATIC,ID_STATIC,0,DLG_X+59,DLG_Y+280,40,15,s,NULL);
-	MakeButton(BTN_NORMAL,ID_AUTOBRAIN,0,DLG_X+110,DLG_Y+280,40,15,"Auto",AutoBrainsClick);
-	MakeButton(BTN_NORMAL,ID_BRAINS,0,DLG_X+2,DLG_Y+298,55,15,"Candles",CandlesClick);
+	MakeButton(BTN_STATIC,ID_STATIC,0,DLG_X+59,DLG_Y+280+72,40,15,s,NULL);
+	MakeButton(BTN_NORMAL,ID_AUTOBRAIN,0,DLG_X+110,DLG_Y+280+72,40,15,"Auto",AutoBrainsClick);
+	MakeButton(BTN_NORMAL,ID_CANDLES,0,DLG_X+2,DLG_Y+298+72,55,15,"Candles",CandlesClick);
 	sprintf(s,"%d",world->map[mapNum]->numCandles);
-	MakeButton(BTN_STATIC,ID_STATIC,0,DLG_X+59,DLG_Y+298,40,15,s,NULL);
-	MakeButton(BTN_NORMAL,ID_AUTOCANDLE,0,DLG_X+110,DLG_Y+298,40,15,"Auto",AutoCandlesClick);
+	MakeButton(BTN_STATIC,ID_STATIC,0,DLG_X+59,DLG_Y+298+72,40,15,s,NULL);
+	MakeButton(BTN_NORMAL,ID_AUTOCANDLE,0,DLG_X+110,DLG_Y+298+72,40,15,"Auto",AutoCandlesClick);
+	//MakeButton(BTN_NORMAL,ID_BRAINS,0,DLG_X+2,DLG_Y+316+72,55,15,"Timer",TimerClick);
+	//sprintf(s,"%d",world->map[mapNum]->numSeconds);
+	//MakeButton(BTN_STATIC,ID_STATIC,0,DLG_X+59,DLG_Y+316+72,40,15,s,NULL);
 }
 
 byte ZoomTileColor(int x,int y)
@@ -383,7 +399,17 @@ byte ZoomTileColor(int x,int y)
 	m=&world->map[mapNum]->map[x+y*world->map[mapNum]->width];
 
 	for(i=0;i<MAX_MAPMONS;i++)
-		if(world->map[mapNum]->badguy[i].type &&
+		if (world->map[mapNum]->badguy[i].type &&
+			world->map[mapNum]->badguy[i].x==x &&
+			world->map[mapNum]->badguy[i].y==y && 
+			(world->map[mapNum]->badguy[i].type==MONS_BOUAPHA||world->map[mapNum]->badguy[i].type==MONS_BUNNY||world->map[mapNum]->badguy[i].type==MONS_FOLLOWBUNNY||world->map[mapNum]->badguy[i].type==MONS_FRIENDLY2||world->map[mapNum]->badguy[i].type==MONS_GOODROBOT||
+			world->map[mapNum]->badguy[i].type==MONS_GOODBONE||world->map[mapNum]->badguy[i].type==MONS_GOODROBOT2||world->map[mapNum]->badguy[i].type==MONS_WIZARD||world->map[mapNum]->badguy[i].type==MONS_PUNKBUNNY||world->map[mapNum]->badguy[i].type==MONS_MINECART||
+			world->map[mapNum]->badguy[i].type==MONS_RAFT||world->map[mapNum]->badguy[i].type==MONS_LOG||world->map[mapNum]->badguy[i].type==MONS_YERFDOG||
+			world->map[mapNum]->badguy[i].type==MONS_GOLEM))
+		{
+			return (1*32)+16;	// bright green=goodguy
+		}
+		else if(world->map[mapNum]->badguy[i].type &&
 			world->map[mapNum]->badguy[i].x==x &&
 			world->map[mapNum]->badguy[i].y==y)
 		{
@@ -402,19 +428,27 @@ byte ZoomTileColor(int x,int y)
 	else
 	{
 		if(world->terrain[m->floor].flags&TF_SOLID)
-			return (20);	// grey=solid floor tile
+			return (8);	// grey=solid floor tile
 		if(world->terrain[m->floor].flags&TF_WATER)
 			return (32*3)+8;	// blue=water
 		if(world->terrain[m->floor].flags&TF_LAVA)
 			return (32*4)+8;	// dark red=lava
 		if(world->terrain[m->floor].flags&TF_ICE)
-			return 8;	// really dark grey=ice
+			return (32*7)+10;	// aqua=ice
+		if(world->terrain[m->floor].flags&TF_RUBBER)
+			return (32*7)+10;	// pink = bouncy
 		if(world->terrain[m->floor].flags&TF_MINECART)
-			return (32*1)+5;	// darker green=mine path
+			return (32*2)+5;	// dark brown=mine path
 		if(world->terrain[m->floor].flags&TF_BUNNY)
-			return (32*1)+12;	// brighter green=bunny path
+			return (32*6)+10;	// light brown=bunny path
+		if(world->terrain[m->floor].flags&TF_SPACE)
+			return (32*0)+24;	// light grey=space
+		if(world->terrain[m->floor].flags&TF_PROPULSE)
+			return (32*3)+16;	// light blue=propulsion
+		if(world->terrain[m->floor].flags&TF_QUICKS)
+			return (32*5)+16;	// dark yellow=quicksand
 
-		return (32*1)+8;	// dark green=floor
+		return (32*1)+6;	// green=floor
 	}
 }
 
@@ -458,34 +492,19 @@ void RenderLevelDialog(int msx,int msy,MGLDraw *mgl)
 	int i;
 
 	// box for the whole dialog
-	mgl->FillBox(DLG_X,DLG_Y,DLG_X2,DLG_Y2,8);
+	mgl->FillBox(DLG_X,DLG_Y,DLG_X2,DLG_Y2,69);
 	mgl->Box(DLG_X,DLG_Y,DLG_X2,DLG_Y2,31);
-
-	if(PointInRect(msx,msy,DLG_X2-211,DLG_Y2-220,DLG_X2-10,DLG_Y2-211))
-		levelSpr->GetSprite(4)->DrawBright(DLG_X2-219,DLG_Y2-220,mgl,8);
-	else
-		levelSpr->GetSprite(4)->Draw(DLG_X2-219,DLG_Y2-220,mgl);
-
-	if(PointInRect(msx,msy,DLG_X2-9,DLG_Y2-210,DLG_X2-2,DLG_Y2-9))
-		levelSpr->GetSprite(5)->DrawBright(DLG_X2-219,DLG_Y2-220,mgl,8);
-	else
-		levelSpr->GetSprite(5)->Draw(DLG_X2-219,DLG_Y2-220,mgl);
-
-	if(PointInRect(msx,msy,DLG_X2-211,DLG_Y2-9,DLG_X2-10,DLG_Y2-2))
-		levelSpr->GetSprite(6)->DrawBright(DLG_X2-219,DLG_Y2-220,mgl,8);
-	else
-		levelSpr->GetSprite(6)->Draw(DLG_X2-219,DLG_Y2-220,mgl);
-
-	if(PointInRect(msx,msy,DLG_X2-220,DLG_Y2-210,DLG_X2-212,DLG_Y2-9))
-		levelSpr->GetSprite(7)->DrawBright(DLG_X2-219,DLG_Y2-220,mgl,8);
-	else
-		levelSpr->GetSprite(7)->Draw(DLG_X2-219,DLG_Y2-220,mgl);
 
 	for(i=0;i<MAX_MAPSIZE;i++)
 	{
-		memcpy((byte *)(mgl->GetScreen()+mgl->GetWidth()*(DLG_Y2+i-210)+DLG_X2-211),
+		memcpy((byte *)(mgl->GetScreen()+mgl->GetWidth()*(DLG_Y2+i-310)+DLG_X2-310),
 			&mapZoom[i*MAX_MAPSIZE],MAX_MAPSIZE);
 	}
+	//310,310
+	levelSpr->GetSprite(4)->Draw(MAP_X,MAP_Y-8,mgl);
+	levelSpr->GetSprite(5)->Draw(MAP_X-8+257+8,MAP_Y,mgl);
+	levelSpr->GetSprite(6)->Draw(MAP_X,MAP_Y+257,mgl);
+	levelSpr->GetSprite(7)->Draw(MAP_X-8,MAP_Y,mgl);
 	switch(mode)
 	{
 		case LDMODE_SONGPICK:
@@ -496,7 +515,7 @@ void RenderLevelDialog(int msx,int msy,MGLDraw *mgl)
 			RenderButtons(msx,msy,mgl);
 			if(asking)
 			{
-				mgl->FillBox(320-140,240-10,320+140,240+60,8);
+				mgl->FillBox(320-140,240-10,320+140,240+60,69);
 				mgl->Box(320-140,240-10,320+140,240+60,31);
 				CenterPrint(320,244,question,0,1);
 				RenderButtonImage(msx,msy,320-50-15,240+40,30,15,"Yes");
@@ -508,6 +527,7 @@ void RenderLevelDialog(int msx,int msy,MGLDraw *mgl)
 		case LDMODE_HEIGHT:
 		case LDMODE_BRAINS:
 		case LDMODE_CANDLES:
+		case LDMODE_TIMER:
 		case LDMODE_ITEMDROP:
 			RenderButtons(-1,-1,mgl);
 			RenderTextDialog(msx,msy,mgl);
@@ -594,6 +614,7 @@ byte LevelDialogKey(char key)
 		case LDMODE_HEIGHT:
 		case LDMODE_BRAINS:
 		case LDMODE_CANDLES:
+		case LDMODE_TIMER:
 		case LDMODE_ITEMDROP:
 			TextDialogKey(key);
 			if(TextDialogCommand()==TM_OKAY)
@@ -611,8 +632,8 @@ byte LevelDialogKey(char key)
 					//resize map
 					desiredWidth=(byte)atoi(GetText());
 					desiredHeight=world->map[mapNum]->height;
-					if(desiredWidth<20)
-						desiredWidth=20;
+					if(desiredWidth<4)
+						desiredWidth=4;
 					if(desiredWidth>MAX_MAPSIZE)
 						desiredWidth=MAX_MAPSIZE;
 					asking=ASK_WIDTH;
@@ -625,8 +646,8 @@ byte LevelDialogKey(char key)
 					//resize map
 					desiredWidth=world->map[mapNum]->width;
 					desiredHeight=(byte)atoi(GetText());
-					if(desiredHeight<20)
-						desiredHeight=20;
+					if(desiredHeight<4)
+						desiredHeight=4;
 					if(desiredHeight>MAX_MAPSIZE)
 						desiredHeight=MAX_MAPSIZE;
 					asking=ASK_HEIGHT;
@@ -707,33 +728,37 @@ byte LevelDialogClick(int msx,int msy)
 				rClick=0;
 				CheckButtons(msx,msy);
 
-				if(PointInRect(msx,msy,DLG_X2-211,DLG_Y2-220,DLG_X2-10,DLG_Y2-211))
+				if(PointInRect(msx,msy,MAP_X,MAP_Y-8,MAP_X+257,MAP_Y))
 				{
 					// slide up
 					SlideClick(ID_SLIDE+0);
+					MakeNormalSound(SND_MENUCLICK);
 				}
-				else if(PointInRect(msx,msy,DLG_X2-9,DLG_Y2-210,DLG_X2-2,DLG_Y2-9))
+				else if(PointInRect(msx,msy,MAP_X+257,MAP_Y,MAP_X+257+8,MAP_Y+257))
 				{
 					// slide right
 					SlideClick(ID_SLIDE+1);
+					MakeNormalSound(SND_MENUCLICK);
 				}
-				else if(PointInRect(msx,msy,DLG_X2-211,DLG_Y2-9,DLG_X2-10,DLG_Y2-2))
+				else if(PointInRect(msx,msy,MAP_X,MAP_Y+257,MAP_X+257,MAP_Y+257+8))
 				{
 					// slide down
 					SlideClick(ID_SLIDE+2);
+					MakeNormalSound(SND_MENUCLICK);
 				}
-				else if(PointInRect(msx,msy,DLG_X2-220,DLG_Y2-210,DLG_X2-212,DLG_Y2-9))
+				else if(PointInRect(msx,msy,MAP_X-8,MAP_Y,MAP_X,MAP_Y+257))
 				{
 					// slide left
 					SlideClick(ID_SLIDE+3);
+					MakeNormalSound(SND_MENUCLICK);
 				}
-				else if(PointInRect(msx,msy,DLG_X2-211,DLG_Y2-210,DLG_X2-211+200,DLG_Y2-210+200))
+				else if(PointInRect(msx,msy,MAP_X,MAP_Y,MAP_X+255,MAP_Y+255))
 				{
 					// jump on the map
 					int x,y;
 
-					x=(msx-(DLG_X2-211))*TILE_WIDTH;
-					y=(msy-(DLG_Y2-210))*TILE_HEIGHT;
+					x=(msx-(MAP_X))*TILE_WIDTH;
+					y=(msy-(MAP_Y))*TILE_HEIGHT;
 					if(x<0)
 						x=0;
 					if(y<0)
@@ -743,6 +768,7 @@ byte LevelDialogClick(int msx,int msy)
 					if(y>EditorGetMap()->height*TILE_HEIGHT)
 						y=EditorGetMap()->height*TILE_HEIGHT;
 					PutCamera(x*FIXAMT,y*FIXAMT);
+					MakeNormalSound(SND_TELEPORT);
 				}
 			}
 			break;
@@ -767,6 +793,7 @@ byte LevelDialogClick(int msx,int msy)
 		case LDMODE_HEIGHT:
 		case LDMODE_BRAINS:
 		case LDMODE_CANDLES:
+		case LDMODE_TIMER:
 		case LDMODE_ITEMDROP:
 			TextDialogClick(msx,msy);
 			if(TextDialogCommand()==TM_OKAY)
@@ -778,8 +805,8 @@ byte LevelDialogClick(int msx,int msy)
 					//resize map
 					desiredWidth=(byte)atoi(GetText());
 					desiredHeight=world->map[mapNum]->height;
-					if(desiredWidth<20)
-						desiredWidth=20;
+					if(desiredWidth<4)
+						desiredWidth=4;
 					if(desiredWidth>MAX_MAPSIZE)
 						desiredWidth=MAX_MAPSIZE;
 					asking=ASK_WIDTH;
@@ -792,8 +819,8 @@ byte LevelDialogClick(int msx,int msy)
 					//resize map
 					desiredWidth=world->map[mapNum]->width;
 					desiredHeight=(byte)atoi(GetText());
-					if(desiredHeight<20)
-						desiredHeight=20;
+					if(desiredHeight<4)
+						desiredHeight=4;
 					if(desiredHeight>MAX_MAPSIZE)
 						desiredHeight=MAX_MAPSIZE;
 					asking=ASK_HEIGHT;

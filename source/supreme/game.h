@@ -29,6 +29,7 @@
 #define GAMEMODE_RAGE  3
 #define GAMEMODE_SCAN  4
 #define GAMEMODE_SHOP  5
+#define GAMEMODE_CARD  6
 
 // these are the messages you can send to the game
 #define MSG_NONE	  0
@@ -40,6 +41,8 @@
 #define MSG_NEWFEATURE 6
 #define MSG_SCANMONSTER 7
 #define MSG_SHOPNOW		8
+#define MSG_MONSTERCARD	9
+#define MSG_GOTOMAP2	10
 
 // these are the possible outcomes of a level
 // if you die, the level just starts over, so that isn't included

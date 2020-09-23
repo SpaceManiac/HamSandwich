@@ -5,6 +5,7 @@
 #include "jamultypes.h"
 #include <stdio.h>
 
+//s
 #define SND_NONE		0
 #define SND_MENUCLICK	51
 #define SND_MENUSELECT  1
@@ -49,8 +50,8 @@
 // scary bat
 #define SND_BATEYES		38
 #define SND_BATDIVE		39
-#define SND_BATOUCH		40
-#define SND_BATDIE		41
+#define SND_BATOUCH		41
+#define SND_BATDIE		40
 // eensy weensy spider
 #define SND_SPD1OUCH	42
 #define SND_SPD1DIE		43
@@ -63,7 +64,6 @@
 #define SND_ZOMBIEOUCH	48
 #define SND_ZOMBIEDIE	49
 #define SND_ZOMBIELEAP	50
-	// this is where menu click snuck in
 // egg sac
 #define SND_EGGSACDIE	52
 #define SND_EGGSACBIRTH	53
@@ -85,7 +85,6 @@
 #define SND_SERPENTSPIT	66
 // Matilda!!!!!
 #define SND_MATTIEOUCH  67
-#define SND_MATTIETRUEDIE 68
 #define SND_MATTIEDIE	69	// this is when her head or skull dies
 #define SND_MATTIECLAW	70
 #define SND_MATTIESHOOT 71
@@ -389,12 +388,171 @@
 #define SND_JACKATTACK	329
 #define SND_JACKDIE		330
 
-#define NUM_ORIG_SOUNDS	331
+//kid mystic sounds
+#define SND_KOOLKATKM	331 	//kid mystic kool kat bad
+#define SND_DROWNKM		332		//kid mystic drown
+#define SND_WINKM		333		//kid mystic win level
+#define SND_KMOUCH		334		//kid mystic ouch
+#define SND_KMDIE		335		//kid mystic die
+//peeper... oh man
+#define SND_PEEPDIE		336		//peeper
+#define SND_PEEPOUCH	337
+#define SND_PEEPSHOOT	338
+//eyeguy
+#define SND_EYEGUYOUCH  339		//eye guy
+#define SND_EYEGUYDIE	340
+//tower
+#define SND_TOWEROUCH	341
+#define SND_TOWERDIE	342
+//lookey loo & xeno empress
+#define SND_LOOKEYOUCH  343		//also used by xeno empress
+#define SND_LOOKEYDIE	344
+//grumpy golem
+#define SND_GOLEMPOUND	345		//grumpy golem
+#define SND_GOLEMOUCH	346
+#define SND_GOLEMDIE	347
+//bobby khan
+#define SND_BOBBYOUCH	348
+#define SND_BOBBYDIE	349
+#define SND_BOBBYSLASH	350		//also used by sdzl's charge
+#define SND_BOBBYSTOMP	351		//also used by sdzl's throwup
+#define SND_BOBBYSPIN	149 	//basically the same sound as sdz's spit attack
+#define SND_BOBBYBLOCK	352
+//back to eye guy
+#define SND_EYEGUYSHT	353
+//octon
+#define SND_OCTONSHOOT	354
+#define SND_OCTONSPLASH	355
+#define SND_OCTONOUCH	356
+#define SND_OCTONDIE	357
+//bush
+#define SND_BUSHDIE		358
+#define SND_BUSHOUCH	359
+//the incas
+#define SND_INCABEAM	360
+#define SND_INCAGEN		361
+#define SND_INCAHIT		362
+#define SND_INCADIE		363
+#define SND_INCATONGUE	364
+//snail
+#define SND_SNAILHIT	365
+#define SND_SNAILDIE	366
+//goat
+#define SND_GOATSHOOT	367
+#define SND_GOATHIT		368
+#define SND_GOATDIE		369
+#define SND_GOATRUN		370
+#define SND_GOATDIZZY	371
+//peeping bomb
+#define SND_PEEPALARM	372
 
-#define MAX_SOUNDS		512		// absolute maximum
+//ah, time for loonyland sounds
+#define SND_SKELGAS		373		// gangrene gas attack
+#define SND_SKELSUMMON  374		// numbskull summoning
+// player
+#define SND_LOONYOUCH	375
+#define SND_LOONYDIE	376
+#define SND_LOONYBORED	377
+// Villager
+#define SND_VILLAGERSCRATCH	378
+#define SND_VILLAGERYAWN	379	// female
+#define SND_VILLDIE1	380	// male villager die
+#define SND_VILLDIE2	381	// female villager die
+// Swampdog
+#define SND_SWAMPOUCH	382
+#define SND_SWAMPDIE	383
+#define SND_SWAMPALERT	384
+#define SND_SWAMPJAB	385
+#define SND_SWAMPCHARGE	386
+#define SND_SWAMPSHOOT	387
+// Ghostly
+#define SND_GHOSTSPIN	388
+#define SND_GHOSTPUNCH	389
+// Happy Stick Witch
+#define SND_STICKTAUNT	390
+#define SND_STICKOUCH	391
+#define SND_STICKDIE	392
+// Frankenjulie
+#define SND_FRANKOUCH	393
+#define SND_FRANKDIE	394
+#define SND_FRANKHEAD	395
+#define SND_FRANKARMS	396
+#define SND_FRANKMISSILE 397
+// Polterguy/Spookley
+#define SND_POLTEROUCH	398
+#define SND_POLTERDIE	399
+#define SND_POLTERSNEEZE 400
+#define SND_POLTERGET	401	// activating a chair/barrel/etc
+//PUMPKIN!
+#define SND_PUMPKINOUCH	402
+// Mummy
+#define SND_MUMMYSHOOT	403
+#define SND_MUMMYSUMMON 404
+// Evil tree
+#define SND_TREEOUCH	405
+#define SND_TREEDIE		406
+#define SND_TREEFROG	407
+// Elder vampires
+#define SND_ELDEROUCH	408
+#define SND_ELDERDIE	409
+#define SND_ELDERSHOOT	410
+#define SND_ELDERCHARGE 411
+#define SND_ELDERSUMMON 412
+// Bonkula
+#define SND_BONKOUCH	413
+#define SND_BONKDIE		414
+#define SND_BONKSWING	415
+#define SND_BONKHIT		416
+// Evilizer (and water)
+#define SND_EVILIZER	417	// the evilizer running
+#define SND_WATERSPURT	418
+#define SND_WATERSPLASH	419
+// Larry
+#define SND_LARRYOUCH	420
+#define SND_LARRYDARTS	421
+#define SND_LARRYPOUNCE	422
+#define SND_LARRYHOWL	423
+// Forg
+#define SND_FROGOUCH	424
+#define SND_FROGDIE		425
+#define SND_FROGLICK	426
+// Cow
+#define SND_COWMOO		427
+#define SND_COWOUCH		428
+#define SND_COWDIE		429
+// other
+#define SND_FRANKOUCH2 	68
+#define SND_CHEER 		430
+#define SND_DEATHRAY 	431
+#define SND_INFERNAL 	432
+#define SND_SEKRIT 		433
+#define SND_BEAM2 		434
+// hologram dr. lunatic
+#define SND_HOLOLAUGH 	435
+#define SND_HOLOSHOOT 	436
+#define SND_HOLODIE 	437
+#define SND_HOLOOUCH 	438
+#define SND_LOONYBRAINS	439
+// new sphinxter noises
+#define SND_SPHINXOUCH	440
+#define SND_SPHINXDIE	441
+// yerfdog boss!
+#define SND_YERFOUCH	442
+#define SND_YERFLEAVE	443
+//classic
+#define SND_PUMPKDIE	444
+#define SND_PUMPKOUCH	445
+// zombie
+#define SND_SZOMBIEOUCH	446
+#define SND_SZOMBIEDIE	447
+#define SND_SZOMBIELEAP	512
+
+#define NUM_ORIG_SOUNDS	448
+#define MAX_SOUNDS		512		// absolute maximum? @448, add sounds after 512 (513+)
 #define MAX_CUSTOM_SOUNDS 64
-
 #define CUSTOM_SND_START (MAX_SOUNDS-MAX_CUSTOM_SOUNDS)
+
+
 
 //--------------------------------
 

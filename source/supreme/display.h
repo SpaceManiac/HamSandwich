@@ -29,6 +29,7 @@
 #define DISPLAY_LIGHTNING	256
 #define DISPLAY_OFFCOLOR	512
 #define DISPLAY_TILESPRITE	1024
+#define DISPLAY_CIRCLEPART	2048 // circle particle
 
 
 // text file display modes

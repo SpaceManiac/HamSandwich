@@ -69,6 +69,7 @@ typedef struct progress_t
 	// total values for stats
 	dword totalCandles;
 	dword totalBrains;
+	dword totalCheatPoints,cheatPointsSpent;
 	dword totalTime;
 	dword totalCoins,coinsSpent;
 	dword totalWorlds;
@@ -82,21 +83,23 @@ typedef struct progress_t
 	dword runOver;
 	word finishedWorlds;	// worlds you've 100%ed
 	dword footDistance,raftDistance,cartDistance,driveDistance;
-	dword underwaterTime;
-	dword grassChopped;
+	dword underwaterTime,ignited,frozen,poisoned,weaken,strength,confuse;
+	dword grassChopped,hayBurned;
 	dword keysFound,doorsOpened;
 	dword calories,calsBurned;
 	word  bestCombo;
 
 	int num_worlds;
 	worldData_t *world;
-	word kills[NUM_PROFILE_MONSTERS];	// how many times you've killed each type
-	byte scanned[NUM_PROFILE_MONSTERS];	// has each type been scanned?
+	word kills[NUM_MONSTERS];	// how many times you've killed each type
+	word carded[NUM_MONSTERS];	// how many cards of each type you've obtained
+	byte scanned[NUM_MONSTERS];	// has each type been scanned?
 	byte purchase[256];			// which things you have purchased
 	byte movie[20];				// which movies you've seen for theater purposes
-	byte goal[100];				// whether you've done each of the 100 goals
+	byte goal[120];				// whether you've done each of the 100 goals
 
 	dword cheats;				// how often you've cheated
+	dword cards;				// number of cards
 	byte wpnLock;				// weapon lock
 	byte expansion[EXPANSION_SIZE];		// unused space for possible future expansion
 } progress_t;
@@ -121,7 +124,7 @@ typedef struct profile_t
 	playList_t playList[NUM_PLAYLISTS];	// song playlists
 	byte difficulty;
 	byte playAs;
-	byte moveNShoot,candleRadar,brainRadar;
+	byte moveNShoot,candleRadar,brainRadar,hyperMode,supremeMode;
 	byte nameVerified;
 	progress_t progress;
 	char motd[1024];	// message of the day

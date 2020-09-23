@@ -30,8 +30,10 @@
 #define BTN_EXIT		6
 #define BTN_KEYCONFIG	7
 #define BTN_DIFFICULTY	8
-#define BTN_CHARACTER	9
-#define BTN_RECORDS		10
+#define BTN_HYPERMODE	9
+#define BTN_SUPREME		10
+#define BTN_CHARACTER	11
+#define BTN_RECORDS		12
 
 #define MAX_PROFS	20
 #define PRFNAME_LEN	32
@@ -55,14 +57,16 @@ static profButton_t btn[]={
 	{20,90,122,"Character",BTN_CHARACTER},
 	{20,120,122,"Brain Radar",BTN_BRAINRADAR},
 	{20,150,122,"Candle Radar",BTN_CANDLERADAR},
-	{20,180,122,"Move N' Shoot",BTN_MOVENSHOOT},
-	{20,210,122,"Record Book",BTN_RECORDS},
-	{20,374,200,"Configure Keys",BTN_KEYCONFIG},
-	{20,396,200,"Edit Song Playlists",BTN_PLAYLIST},
-	{20,418,200,"Delete This Profile",BTN_DEL_PROF},
-	{20,440,200,"Save & Exit",BTN_EXIT},
+	{20,180,122,"Hyper Mode",BTN_HYPERMODE},
+	{20,210,122,"Supreme Mode",BTN_SUPREME},
+	{20,240,122,"Move N' Shoot",BTN_MOVENSHOOT},
+	{20,270,200,"Record Book",BTN_RECORDS},
+	{20,300,200,"Configure Keys",BTN_KEYCONFIG},
+	{20,330,200,"Edit Song Playlists",BTN_PLAYLIST},
+	{20,360,200,"Delete This Profile",BTN_DEL_PROF},
+	{20,390,200,"Save & Exit",BTN_EXIT},
 };
-#define NUM_PROF_BTNS	10
+#define NUM_PROF_BTNS	12
 
 static profButton_t kcBtn[]={
 	{90,90,102,"",BTN_K1+0},
@@ -95,10 +99,10 @@ static char fileList[PRFNAME_LEN*MAX_PROFS];
 static int numFiles;
 static byte profChoice;
 
-static char diffName[][16]={"Normal","Hard","Lunatic"};
-static char charName[][16]={"Bouapha","Happy Stick Man","Dr. Lunatic","Shtupid Shroom","LunaChick","MechaBouapha"};
+static char diffName[][16]={"Wimpy","Normal","Hard","Lunatic","Jamulio"};
+static char charName[][16]={"Bouapha","Happy Stick Man","Dr. Lunatic","Shtupid Shroom","LunaChick","MechaBouapha","Wolfman","Wild Wizard","Kid Mystic","Young Loony"};
 
-static byte recordBook,candleRadar,brainRadar,moveNShoot;
+static byte recordBook,candleRadar,brainRadar,moveNShoot,hyperMode,supremeMode;
 
 static char *ShortName(const char *name)
 {
@@ -180,6 +184,8 @@ void InitProfMenu(MGLDraw *mgl)
 	candleRadar=ItemPurchased(SHOP_ABILITY,ABIL_CANDLE);
 	brainRadar=ItemPurchased(SHOP_ABILITY,ABIL_BRAIN);
 	moveNShoot=ItemPurchased(SHOP_ABILITY,ABIL_MOVESHOOT);
+	hyperMode=ItemPurchased(SHOP_ABILITY,ABIL_HYPER);
+	supremeMode=ItemPurchased(SHOP_ABILITY,ABIL_SUPREME);
 }
 
 void ExitProfMenu(void)
@@ -253,18 +259,26 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 								if(ItemPurchased(SHOP_ABILITY,ABIL_MOVESHOOT))
 									profile.moveNShoot=1-profile.moveNShoot;
 								break;
+							case BTN_HYPERMODE:
+								if(ItemPurchased(SHOP_ABILITY,ABIL_HYPER))
+									profile.hyperMode=1-profile.hyperMode;
+								break;
+							case BTN_SUPREME:
+								if(ItemPurchased(SHOP_ABILITY,ABIL_SUPREME))
+									profile.supremeMode=1-profile.supremeMode;
+								break;
 							case BTN_RECORDS:
 								if(recordBook)
 									RecordBook(mgl);
 								break;
 							case BTN_DIFFICULTY:
 								profile.difficulty++;
-								if(profile.difficulty>2)
+								if(profile.difficulty>4)
 									profile.difficulty=0;
 								break;
 							case BTN_CHARACTER:
 								profile.playAs++;
-								if(profile.playAs>5)
+								if(profile.playAs>PLAY_LOONY)
 									profile.playAs=0;
 								while(profile.playAs!=PLAY_BOUAPHA && !ItemPurchased(SHOP_PLAYABLE,profile.playAs))
 								{
@@ -520,9 +534,20 @@ void RenderProfMenu(MGLDraw *mgl)
 			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,"?????",mgl);
 		else if(btn[i].id==BTN_MOVENSHOOT && !moveNShoot)
 			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,"?????",mgl);
+		else if(btn[i].id==BTN_HYPERMODE && !hyperMode)
+			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,"?????",mgl);
+		else if(btn[i].id==BTN_SUPREME && !supremeMode)
+			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,"?????",mgl);
 		else
 			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,btn[i].txt,mgl);
 	}
+	
+	/*
+	for(i=0;i<8;i++)
+	{
+		if(profile.progress.purchase[modeShopNum[i]]&SIF_ACTIVE)
+		PrintGlow(160,64+32*i,"ACTIVATED",0,1);
+	}*/
 
 	PrintGlow(472,20,"Available Profiles",0,2);
 	RenderProfList(470,38,mgl);
@@ -533,11 +558,15 @@ void RenderProfMenu(MGLDraw *mgl)
 	PrintGlow(146,62,diffName[profile.difficulty],0,2);
 	PrintGlow(146,92,charName[profile.playAs],0,2);
 	if(brainRadar)
-		PrintGlow(146,122,yesno[profile.brainRadar],0,2);
+		PrintGlow(166,122,yesno[profile.brainRadar],0,2);
 	if(candleRadar)
-		PrintGlow(146,152,yesno[profile.candleRadar],0,2);
+		PrintGlow(166,152,yesno[profile.candleRadar],0,2);
+	if(hyperMode)
+		PrintGlow(166,182,yesno[profile.hyperMode],0,2);
+	if(supremeMode)
+		PrintGlow(166,212,yesno[profile.supremeMode],0,2);
 	if(moveNShoot)
-		PrintGlow(146,182,yesno[profile.moveNShoot],0,2);
+		PrintGlow(166,242,yesno[profile.moveNShoot],0,2);
 
 	if(mode==PROF_DELETE)
 	{
@@ -611,7 +640,7 @@ void ProfMenu(MGLDraw *mgl)
 	int lastTime=1;
 
 	InitProfMenu(mgl);
-	PlaySongForce("003worldpicker.ogg");
+	PlaySongForce("SWC_02_worldpicker.ogg");
 
 	while(!done)
 	{

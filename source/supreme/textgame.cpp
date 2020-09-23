@@ -908,7 +908,7 @@ byte TextDropItem(char *name)
 							TypeLine("on it!  He falls to the ground and is knocked unconscious.  YOU WIN!!");
 							AddScore(10);
 							lunaticCaught=1;
-							CompleteGoal(71);
+							CompleteGoal(99);
 							SaveProfile();
 							return 1;
 						}

@@ -13,7 +13,10 @@
 #include "goal.h"
 #include "config.h"
 #include "log.h"
+#include "water.h"
 #include "palettes.h"
+#include "appdata.h"
+#include "tile.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -23,6 +26,7 @@ float frmRate;
 word numRunsToMakeUp;
 
 char lastKey=0;
+byte waterFlip=0;
 static char lastLevelName[32];
 byte shopping,tutorial,verified;
 byte doShop;
@@ -92,7 +96,7 @@ byte VerifyLevel(Map *map)
 
 	chk=ChecksumMap(map);
 
-	f=fopen("worlds/levels.dat","rb");
+	f=AssetOpen("worlds/levels.dat","rb");
 	if(!f)
 		return 0;
 
@@ -139,7 +143,8 @@ byte InitLevel(byte map)
 	InitBullets();
 	InitPlayer(map,player.worldName);
 	InitMessage();
-	NewBigMessage(curMap->name,100);
+	if(curMap->name[0]!='`')
+		NewBigMessage(curMap->name,100);
 	InitParticles(config.numParticles);
 	lastKey=0;
 	curMap->Init(&curWorld);
@@ -151,6 +156,7 @@ byte InitLevel(byte map)
 
 	GetSpecialsFromMap(curMap->special);
 	InitSpecialsForPlay();
+	
 	PlaySong(curMap->song);
 
 	ScoreEvent(SE_INIT,curMap->width*curMap->height);
@@ -159,17 +165,19 @@ byte InitLevel(byte map)
 
 	if(shopping)
 	{
+		RandomizeLockers();
 		SetupShops(curMap);
 		InitGallery(curMap);
 	}
 
 	LocateKeychains(&curWorld);
-	RestoreGameplayGfx();
 	if(curMap->numCandles==0)
 		player.levelProg->flags|=LF_CANDLES;
 
 	if(curMap->flags&MAP_SECRET)
 		CompleteGoal(70);
+	SetupWater();
+	RestoreGameplayGfx();
 	return 1;
 }
 
@@ -224,21 +232,28 @@ void GameIdle(void)
 
 void RestoreGameplayGfx(void)
 {
-	if(curMap)
+	
+	if(profile.progress.purchase[modeShopNum[MODE_VIRTUAL]]&SIF_ACTIVE && !shopping)
 	{
-		if(curMap->flags&MAP_UNDERWATER)
-			WaterPalette(gamemgl);
+		RedPalette(gamemgl);
+	}
+	else if(curMap)
+	{
+		if(curMap->flags&MAP_WAVY)
+			DumbSidePalette(gamemgl);
 		else if(curMap->flags&MAP_LAVA)
 			LavaPalette(gamemgl);
+		else if(curMap->flags&MAP_UNDERWATER)
+			WaterPalette(gamemgl);
 	}
 
-	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
+	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE && !shopping)
 	{
 		gamemgl->ClearScreen();
 		GetDisplayMGL()->LoadBMP("graphics/gamepal.bmp");
 		gamemgl->Flip();
 	}
-	if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE)
+	if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE && !shopping)
 		gamemgl->ClearScreen();
 }
 
@@ -267,8 +282,8 @@ byte LunaticRun(int *lastTime)
 	byte frmsToRun;
 
 	numRunsToMakeUp=0;
-	if(*lastTime>TIME_PER_FRAME*5)
-		*lastTime=TIME_PER_FRAME*5;
+	if(*lastTime>TIME_PER_FRAME*2)
+		*lastTime=TIME_PER_FRAME*2;
 
 	frmsToRun=(*lastTime/TIME_PER_FRAME);
 
@@ -287,7 +302,7 @@ byte LunaticRun(int *lastTime)
 
 		if(gameMode==GAMEMODE_PLAY)
 		{
-			if(!editing && !player.cheated && verified)
+			if(!editing && !player.cheated)
 			{
 				profile.progress.totalTime++;
 				if((curMap->flags&(MAP_UNDERWATER|MAP_LAVA)) && player.weapon!=WPN_MINISUB)
@@ -308,10 +323,10 @@ byte LunaticRun(int *lastTime)
 				else
 				{
 					curMap->Update(UPDATE_GAME,&curWorld);
+					CheckSpecials(curMap);
 					UpdateGuys(curMap,&curWorld);
 					UpdateItems();
 					UpdateBullets(curMap,&curWorld);
-					CheckSpecials(curMap);
 				}
 			}
 			else
@@ -322,6 +337,10 @@ byte LunaticRun(int *lastTime)
 			UpdateParticles(curMap);
 			UpdateMessage();
 
+			waterFlip=1-waterFlip;
+			if(waterFlip)
+				UpdateWater();
+			
 			if(curMap->flags&MAP_SNOWING)
 				MakeItSnow(curMap);
 			if(curMap->flags&MAP_RAIN)
@@ -343,11 +362,14 @@ byte LunaticRun(int *lastTime)
 		}
 		else if(gameMode==GAMEMODE_MENU)
 		{
+			//if (!Mix_PausedMusic())
+			//	Mix_PauseMusic();
 			switch(UpdatePauseMenu(gamemgl))
 			{
 				case PAUSE_PAUSED:
 					break;
 				case PAUSE_CONTINUE:
+					//Mix_ResumeMusic();
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
 					break;
@@ -410,6 +432,14 @@ byte LunaticRun(int *lastTime)
 				RestoreGameplayGfx();
 			}
 		}
+		else if(gameMode==GAMEMODE_CARD)
+		{
+			if(!UpdateCard(gamemgl))
+			{
+				gameMode=GAMEMODE_PLAY;
+				RestoreGameplayGfx();
+			}
+		}
 		else if(gameMode==GAMEMODE_SHOP)
 		{
 			if(!UpdateShopping(gamemgl))
@@ -442,6 +472,14 @@ byte LunaticRun(int *lastTime)
 			windDownReason=LEVEL_ABORT;
 			msgFromOtherModules=MSG_NONE;
 		}
+		else if(msgFromOtherModules==MSG_GOTOMAP2)
+		{
+			GoalTimeDist();
+			mapToGoTo=msgContent;
+			windingDown=30;
+			windDownReason=LEVEL_ABORT;
+			msgFromOtherModules=MSG_NONE;
+		}
 		else if(msgFromOtherModules==MSG_WINLEVEL)
 		{
 			PrintToLog("Level Win!",0);
@@ -465,6 +503,11 @@ byte LunaticRun(int *lastTime)
 		{
 			msgFromOtherModules=MSG_NONE;
 			gameMode=GAMEMODE_SCAN;
+		}
+		else if(msgFromOtherModules==MSG_MONSTERCARD)
+		{
+			msgFromOtherModules=MSG_NONE;
+			gameMode=GAMEMODE_CARD;
 		}
 		else if(msgFromOtherModules==MSG_SHOPNOW)
 		{
@@ -491,13 +534,14 @@ byte LunaticRun(int *lastTime)
 	return LEVEL_PLAYING;
 }
 
+byte choseColor;
 void LunaticDraw(void)
 {
 	char s[128];
 	dword d;
 
 	// add all the sprites to the list
-	if(gameMode!=GAMEMODE_PIC && gameMode!=GAMEMODE_SCAN)
+	if(gameMode!=GAMEMODE_PIC && gameMode!=GAMEMODE_SCAN && gameMode!=GAMEMODE_CARD)
 	{
 		RenderGuys(1);
 		RenderBullets();
@@ -525,6 +569,10 @@ void LunaticDraw(void)
 	{
 		RenderScan(gamemgl);
 	}
+	else if(gameMode==GAMEMODE_CARD)
+	{
+		RenderCard(gamemgl);
+	}
 	if(showStats)
 	{
 		sprintf(s,"Debug Menu - F3 to close");
@@ -540,10 +588,13 @@ void LunaticDraw(void)
 		sprintf(s,"Runs %d",numRunsToMakeUp);
 		PrintGlow(120,70,s,8,2);
 
-		sprintf(s,"Mons %d",CountMonsters(MONS_ANYBODY));
+		sprintf(s,"Mons %d (%d)",CountMonsters(MONS_ANYBODY),CountMonsters(MONS_NOBODY));
 		PrintGlow(5,90,s,8,2);
 		sprintf(s,"Bul %d",config.numBullets - CountBullets(BLT_NONE)); // a little hackish but whatever
 		PrintGlow(120,90,s,8,2);
+		
+		sprintf(s,"X: %i, Y: %i",goodguy->mapx,goodguy->mapy); // a little hackish but whatever
+		PrintGlow(120,150,s,8,2);
 
 		int n = 0;
 		for(int i=0; i<MAX_SPECIAL; i++)
@@ -589,15 +640,27 @@ void LunaticDraw(void)
 		visFrms=0;
 		tickerTime=d;
 	}
-
-	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
+	if(profile.progress.purchase[modeShopNum[MODE_DISCO]]&SIF_ACTIVE)
+	{
+		if (player.clock%10==0)
+		{
+			if(!choseColor)
+			{
+				PickDiscoColor();
+				choseColor = true;
+			}
+		}
+		else if (choseColor)
+			choseColor=false;
+	}
+	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE && !shopping)
 	{
 		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA|MAP_WAVY))
 			gamemgl->TeensyWaterFlip(updFrameCount/2);
 		else
 			gamemgl->TeensyFlip();
 	}
-	else if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE)
+	else if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE && !shopping)
 	{
 		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA|MAP_WAVY))
 			gamemgl->RasterWaterFlip(updFrameCount/2);
@@ -606,7 +669,7 @@ void LunaticDraw(void)
 	}
 	else
 	{
-		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA|MAP_WAVY))
+		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA|MAP_WAVY) && !shopping)
 			gamemgl->WaterFlip(updFrameCount/2);
 		else
 			gamemgl->Flip();
@@ -713,7 +776,7 @@ byte PlayWorld(MGLDraw *mgl,const char *fname)
 	char fullName[64];
 	byte result;
 
-	if(!strcmp(fname,"tutorial.dlw"))
+	if(!strcmp(fname,"tutorial.hsw"))
 		tutorial=1;
 	else
 		tutorial=0;

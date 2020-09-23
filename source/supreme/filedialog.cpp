@@ -11,7 +11,7 @@
 static char *fnames=NULL;
 static char newfname[FNAMELEN]="";
 static int numFiles;
-static byte menuItems;
+static dword menuItems;
 static int numAlloc;
 static int filePos;
 static byte asking,yesNo;
@@ -61,6 +61,9 @@ void ObtainFilenames(const char *fileSpec)
 		if((menuItems&FM_NOWAVS) && !strcmp(&name[strlen(name)-3],"wav"))
 			continue;	// ignore wavs
 
+		if((menuItems&FM_PICSONLY) && strcmp(&name[strlen(name)-3],"bmp"))
+			continue;	// bmps only!
+
 		if(filter && !strstr(name, filter))
 			continue;
 
@@ -85,13 +88,15 @@ void ObtainFilenames(const char *fileSpec)
 	}
 }
 
-void InitFileDialog(const char *fileSpec,byte menuItemsToShow,const char *defaultName)
+void InitFileDialog(const char *fileSpec,dword menuItemsToShow,const char *defaultName)
 {
 	menuItems=menuItemsToShow;
 	asking=0;
 	exitCode=0;
 	filePos=0;
 
+	//if(menuItems&FM_PICSONLY)
+	
 	ObtainFilenames(fileSpec);
 	strcpy(newfname,defaultName);
 }
@@ -377,7 +382,7 @@ void AddDLWToFilename(void)
 {
 	char result[64];
 
-	sprintf(result,"%s.dlw",newfname);
+	sprintf(result,"%s.hsw",newfname);
 	strcpy(newfname,result);
 }
 

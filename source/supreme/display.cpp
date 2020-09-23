@@ -8,8 +8,10 @@
 #include "goal.h"
 #include "config.h"
 #include "message.h"
+#include "appdata.h"
+#include "shop.h"
 
-mfont_t  *gameFont[3]={NULL,NULL,NULL};
+mfont_t  *gameFont[5]={NULL,NULL,NULL,NULL,NULL};
 MGLDraw  *mgl=NULL;
 
 int scrx=320,scry=240,scrdx=0,scrdy=0;
@@ -32,6 +34,7 @@ bool InitDisplay(MGLDraw *mainmgl)
 	mgl=mainmgl;
 	if(!mgl)
 		return false;
+	
 	gameFont[0]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[0])
 		return false;
@@ -42,7 +45,6 @@ bool InitDisplay(MGLDraw *mainmgl)
 	gameFont[1]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[1])
 		return false;
-
 	if(FontLoad("graphics/verdana.jft",gameFont[1])!=FONT_OK)
 		return false;
 
@@ -51,8 +53,19 @@ bool InitDisplay(MGLDraw *mainmgl)
 	gameFont[2]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[2])
 		return false;
-
 	if(FontLoad("graphics/microgreen.jft",gameFont[2])!=FONT_OK)
+		return false;
+
+	gameFont[3]=(mfont_t *)malloc(sizeof(mfont_t));
+	if(!gameFont[3])
+		return false;
+	if(FontLoad("graphics/listium.jft",gameFont[3])!=FONT_OK)
+		return false;
+
+	gameFont[4]=(mfont_t *)malloc(sizeof(mfont_t));
+	if(!gameFont[4])
+		return false;
+	if(FontLoad("graphics/listiumbig.jft",gameFont[4])!=FONT_OK)
 		return false;
 
 	dispList=new DisplayList();
@@ -77,6 +90,16 @@ void ExitDisplay(void)
 		FontFree(gameFont[2]);
 		free(gameFont[2]);
 	}
+	if(gameFont[3])
+	{
+		FontFree(gameFont[3]);
+		free(gameFont[3]);
+	}
+	if(gameFont[4])
+	{
+		FontFree(gameFont[4]);
+		free(gameFont[4]);
+	}
 
 	delete dispList;
 }
@@ -87,7 +110,7 @@ void LoadText(const char *nm,byte mode)
 	char line[256];
 	int y;
 
-	f=fopen(nm,"rt");
+	f=AssetOpen(nm,"rt");
 	if(!f)
 		return;
 
@@ -184,6 +207,7 @@ void ShowImageOrFlic(char *str,byte nosnd,byte mode)
 		SeeMovie(fname);
 		GoalPurchase();
 	}
+	RestoreGameplayGfx();
 }
 
 byte *GetDisplayScreen(void)
@@ -226,13 +250,18 @@ void UpdateCamera(int x,int y,int dx,int dy,Map *map)
 	{
 		if(player.vehicle==VE_YUGO || player.vehicle==VE_MINECART)
 		{
-			desiredX=((x<<FIXSHIFT)+dx*20)>>FIXSHIFT;
-			desiredY=((y<<FIXSHIFT)+dy*20)>>FIXSHIFT;
+			desiredX=((x<<FIXSHIFT)+dx*28)>>FIXSHIFT;
+			desiredY=((y<<FIXSHIFT)+dy*48)>>FIXSHIFT;
+		}
+		else if (profile.progress.purchase[modeShopNum[MODE_REVERSE]]&SIF_ACTIVE)
+		{
+			desiredX=((x<<FIXSHIFT)-dx*24)>>FIXSHIFT;
+			desiredY=((y<<FIXSHIFT)-dy*24)>>FIXSHIFT;
 		}
 		else
 		{
-			desiredX=((x<<FIXSHIFT)+dx*20)>>FIXSHIFT;
-			desiredY=((y<<FIXSHIFT)+dy*20)>>FIXSHIFT;
+			desiredX=((x<<FIXSHIFT)+dx*24)>>FIXSHIFT;
+			desiredY=((y<<FIXSHIFT)+dy*24)>>FIXSHIFT;
 		}
 	}
 	else
@@ -616,6 +645,15 @@ void DisplayList::Render(void)
 				{
 					dispObj[i].spr->DrawGhost(dispObj[i].x-scrx,dispObj[i].y-scry-dispObj[i].z,mgl,
 							dispObj[i].bright);
+				}
+				else if(dispObj[i].flags&DISPLAY_CIRCLEPART)
+				{
+					if(dispObj[i].flags&DISPLAY_GLOW)
+						RenderGlowCircleParticle(dispObj[i].x-scrx,dispObj[i].y-scry-dispObj[i].z,dispObj[i].bright,
+										(byte)dispObj[i].hue,mgl->GetScreen());
+					else
+						RenderCircleParticle(dispObj[i].x-scrx,dispObj[i].y-scry-dispObj[i].z,dispObj[i].bright,
+										(byte)dispObj[i].hue,mgl->GetScreen());
 				}
 				else if(dispObj[i].flags&DISPLAY_GLOW)
 				{

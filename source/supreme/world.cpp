@@ -6,6 +6,7 @@
 #include "log.h"
 
 byte keyChainInLevel[MAX_MAPS];
+static swc_world_t *swcWorld;
 
 byte NewWorld(world_t *world,MGLDraw *mgl)
 {
@@ -51,17 +52,19 @@ byte LoadWorld(world_t *world,const char *fname)
 	fread(code,sizeof(char),8,f);
 	code[8]='\0';
 
-	if(!strcmp(code, "HAMSWCH!"))
+	if(!strcmp(code,"HAMSWCH!"))
 	{
 		fclose(f);
 		return Ham_LoadWorld(world, fname);
 	}
-	if(strcmp(code,"SUPREME!"))
+	else if(strcmp(code,"SUPREME!"))
 	{
 		fclose(f);
 		ClearCustomSounds();
 		return Legacy_LoadWorld(world,fname);
 	}
+	
+	swcWorld=new swc_world_t;
 
 	fread(&world->author,sizeof(char),32,f);
 	fread(&code,sizeof(char),32,f);	// name of the world, not needed here
@@ -72,7 +75,14 @@ byte LoadWorld(world_t *world,const char *fname)
 
 	LoadTiles(f);
 
-	fread(world->terrain,world->numTiles,sizeof(terrain_t),f);
+	//LogError("SWC sizeof - %i , HAM sizeof - %i", sizeof(swc_terrain_t), sizeof(terrain_t));
+	fread(swcWorld->terrain,world->numTiles,sizeof(swc_terrain_t),f);
+	
+	for(i=0;i<world->numTiles;i++)
+	{
+		world->terrain[i].flags=(dword)swcWorld->terrain[i].flags;
+		world->terrain[i].next=swcWorld->terrain[i].next;
+	}
 
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
@@ -87,6 +97,7 @@ byte LoadWorld(world_t *world,const char *fname)
 		}
 	}
 
+	delete swcWorld;
 	LoadItems(f);
 	LoadCustomSounds(f);
 	SetupRandomItems();
@@ -134,7 +145,10 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 
 	AppendTiles(stitchTileOffset,f);
 
-	fread(world->terrain,world->numTiles,sizeof(terrain_t),f);
+	if(strcmp(code,"SUPREME!"))
+		fread(world->terrain,world->numTiles,sizeof(terrain_t),f);
+	else
+		fread(swcWorld->terrain,swcWorld->numTiles,sizeof(swc_terrain_t),f);
 
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
@@ -175,7 +189,9 @@ byte SaveWorld(world_t *world, const char *fname)
 	// Save new world
 	Ham_SaveWorld(world, fname);
 	std::string name = fname;
-	name.append("_old");
+	
+	name.erase(name.end()-3,name.end());
+	name.append("dlw");
 	fname = name.c_str();
 
 	// Save old world as backup

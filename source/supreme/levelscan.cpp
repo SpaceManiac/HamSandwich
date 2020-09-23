@@ -20,9 +20,13 @@ static char lvlFlagName[][16]={
 	"Underwater",
 	"Underlava",
 	"Stealth",
+	"Dumb Side",
+	"Oxygen Meter",
+	"Dynamic Water",
+	"Dynamic Lava",
 };
 
-static char wpnName[][16]={
+static char wpnName[][32]={
 	"None",
 	"Missiles",
 	"AK-8087",
@@ -42,10 +46,27 @@ static char wpnName[][16]={
 	"Torch",
 	"Scanner",
 	"Mini-Sub",
-	"Freeze Ray",
-	"Stopwatch"};
+	"Freeze Ray"
+	"Stopwatch",
+	"Boomerang",
+	"Potted Cactus",
+	"Bionic Arm",
+	"Water Gun",
+	"Megaphone",
+	"Cucurbinator",
+	"Death Ray",
+	"Whoopie Cushion",
+	"Abyssinator",
+	"Medic Kit",
+	"Magic Wand",
+	"Burninator",
+	"B's Fav. Gun",
+	"AK-Blaster",
+	"Snow Blower",
+	"Confuse Ray",
+	"Grenadier"};
 
-static char bulletName[][20]={
+static char bulletName[][32]={
 	"None",
 	"Hammer",
 	"Bouncy Hammer",
@@ -102,7 +123,58 @@ static char bulletName[][20]={
 	"Cheese Hammer",
 	"Evil Freeze",
 	"Lunachick Ray",
-	"Bouncy Lunachick"
+	"Bouncy Lunachick",
+	"Floaty Flame",
+	"Sitting Flame",
+	"Evil Sitting Flame",
+	"Deadly Laser",
+	"Evil Green Bullet",
+	"Weather Orbiter",
+	"Good Water Shot",
+	"Orbit Poison",
+	"Wind Missile",
+	"Evil Face",
+	"Homing LunaBullet",
+	"Rainbow LunaBullet",
+	"Eye Guy Wave",
+	"Laser Beam",
+	"Laser Beam End",
+	"Slug Slime",
+	"Red Grenade",
+	"Red Grenade Boom",
+	"Big Yellow Bullet",
+	"Mega Explosion",
+	"Bouncy Energy Bullet",
+	"Rocket",
+	"Skull",
+	"Mystic Wand",
+	"Boomerang",
+	"Fart Cloud",
+	"PUMPKIN!",
+	"Hotfoot Flame",
+	"All-Directional Flame",
+	"Bouncy Mystic Wand",
+	"Black Hole Shot",
+	"Black Hole",
+	"Alien Egg",
+	"Flying Pie",
+	"Red Bullet (ZigZag)",
+	"Red Bullet (CW)",
+	"Red Bullet (CCW)",
+	"Red Bullet (CW2)",
+	"Red Bullet (CCW2)",
+	"Homing Cherry Bomb",
+	"Flame Wall",
+	"Claw Shot",
+	"Ice Shard",
+	"Hot Pants",
+	"Witch Wand",
+	"Confusion Shot",
+	"Health Spore",
+	"BIG Rock",
+	"Red Shockwave",
+	"Freeze Snowball",
+	"Evil LunaChick",
 };
 
 void PrintFX(word flags)
@@ -234,11 +306,15 @@ void Scan_Trigger(world_t *world,Map *map,int num,trigger_t *me,char *effText)
 		case TRG_DIFFICULTY:
 			fprintf(scanF,"If difficulty is ");
 			if(me->value==0)
-				fprintf(scanF,"Normal");
+				fprintf(scanF,"Wimpy");
 			else if(me->value==1)
+				fprintf(scanF,"Normal");
+			else if(me->value==2)
 				fprintf(scanF,"Hard");
-			else
+			else if(me->value==3)
 				fprintf(scanF,"Lunatic");
+			else
+				fprintf(scanF,"Jamulio");
 			PrintLessMore(me->flags);
 			break;
 		case TRG_KEYPRESS:
@@ -286,6 +362,14 @@ void Scan_Trigger(world_t *world,Map *map,int num,trigger_t *me,char *effText)
 				fprintf(scanF,"Lunachick");
 			else if(me->value==PLAY_MECHA)
 				fprintf(scanF,"Mechabouapha");
+			else if(me->value==PLAY_WOLF)
+				fprintf(scanF,"Wolfman");
+			else if(me->value==PLAY_WIZ)
+				fprintf(scanF,"Wild Wizard");
+			else if(me->value==PLAY_MYSTIC)
+				fprintf(scanF,"Kid Mystic");
+			else if(me->value==PLAY_LOONY)
+				fprintf(scanF,"Young Loony");
 			break;
 		case TRG_MONSCOLOR:
 			fprintf(scanF,"If %s at (%03d,%03d) is painted %d",MonsterName(me->value),me->x,me->y,me->value2);
@@ -331,6 +415,7 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
 			fprintf(scanF,"Win level and go to \"%s\" at (%03d,%03d)\n",world->map[me->value]->name,me->x,me->y);
 			break;
 		case EFF_GOTOMAP:
+		case EFF_GOTOMAP2:
 			fprintf(scanF,"Go to level \"%s\" at (%03d,%03d)\n",world->map[me->value]->name,me->x,me->y);
 			break;
 		case EFF_TELEPORT:
@@ -499,6 +584,9 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
 		case EFF_TAGMONS:
 			fprintf(scanF,"Tag %s at (%03d,%03d)\n",MonsterName(me->value),me->x,me->y);
 			break;
+		case EFF_TAGBOSS:
+			fprintf(scanF,"Mark as boss: %s at (%03d,%03d)\n",MonsterName(me->value),me->x,me->y);
+			break;
 		case EFF_MONSITEM:
 			fprintf(scanF,"Give %s at (%03d,%03d) the item ",MonsterName(me->value),me->x,me->y);
 			if(me->value2==ITM_RANDOM)
@@ -551,6 +639,14 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
 				fprintf(scanF,"Lunachick\n");
 			else if(me->value==PLAY_MECHA)
 				fprintf(scanF,"Mechabouapha\n");
+			else if(me->value==PLAY_WOLF)
+				fprintf(scanF,"Wolfman\n");
+			else if(me->value==PLAY_WIZ)
+				fprintf(scanF,"Wild Wizard\n");
+			else if(me->value==PLAY_MYSTIC)
+				fprintf(scanF,"Kid Mystic\n");
+			else if(me->value==PLAY_LOONY)
+				fprintf(scanF,"Young Loony\n");
 			break;
 		case EFF_MONSGRAPHICS:
 			fprintf(scanF,"Change graphics of %s at (%03d,%03d) to %s",MonsterName(me->value),me->x,me->y,me->text);

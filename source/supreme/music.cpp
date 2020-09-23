@@ -4,6 +4,7 @@
 #include "config.h"
 #include "editor.h"
 #include "hammusic.h"
+#include <iostream> // Used for output
 
 char curSongName[64];
 byte lastSong=255;
@@ -88,7 +89,8 @@ void PlaySong(const char *fname)
 		return;
 	}
 
-	PlaySongForce(fname);
+	if (!CompareSongs(fname))
+		PlaySongForce(fname);
 }
 
 void PlaySongForce(const char *fname)
@@ -111,6 +113,21 @@ const char *CurSongTitle(void)
 bool ConfigMusicEnabled()
 {
 	return config.music;
+}
+
+bool CompareSongs(const char *fname)
+{
+	int i = 0;
+	int o = 1;
+	while(i < 64 && o)
+	{
+		if (fname[i] != curSongName[i])
+			o = 0;
+		else if ( fname[i+1] == '.')
+			i = 65;
+		i++;
+	}
+	return o;
 }
 
 void PlayNextSong(void)

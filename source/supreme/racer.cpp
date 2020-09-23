@@ -87,7 +87,7 @@ byte RaceDie(void)
 		GetTaps();
 
 		if(score>=75000)
-			CompleteGoal(28);
+			CompleteGoal(8);
 
 		coinsEarned=score/1000;
 		profile.progress.totalCoins+=coinsEarned;

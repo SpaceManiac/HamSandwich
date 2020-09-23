@@ -147,7 +147,7 @@ void ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl)
 					switch((msy-(400-16*NUM_MENUS))/16)
 					{
 						case MENU_FILE:
-							InitFileDialog("worlds/*.dlw",FM_SAVE|FM_LOAD|FM_NEW|FM_EXIT|FM_ASKLOAD,worldFilename);
+							InitFileDialog("worlds/*.hsw",FM_SAVE|FM_LOAD|FM_NEW|FM_EXIT|FM_ASKLOAD,worldFilename);
 							SetEditMode(EDITMODE_FILE);
 							break;
 						case MENU_WORLD:

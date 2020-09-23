@@ -6,14 +6,14 @@
 #include "special.h"
 #include "legacyload.h"
 
-#define MAX_LIGHT 16
+#define MAX_LIGHT 31
 #define MIN_LIGHT -32
 
 // the maximum # of monsters you can put on the map
 #define MAX_MAPMONS 128
 
 // maximum width or height
-#define MAX_MAPSIZE	200
+#define MAX_MAPSIZE	254
 
 // flags for calling map render
 #define MAP_SHOWLIGHTS 1
@@ -40,8 +40,12 @@
 #define MAP_STEALTH		(1<<9)
 #define MAP_WAVY		(1<<10)
 #define MAP_OXYGEN		(1<<11)
+#define MAP_TIMER		(1<<12)
+#define MAP_DYWTR		(1<<13)
+#define MAP_DYLVA		(1<<14)
+#define MAP_SHOWV0		(1<<15)
 
-#define NUM_LVL_FLAGS	12
+#define NUM_LVL_FLAGS	16
 
 // map updating modes
 #define UPDATE_GAME		0
@@ -107,6 +111,8 @@ class Map
 		byte LOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,Map *));
 		byte TightLOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,Map *));
 		byte TightestLOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,Map *));
+		//loonyland stuff!
+		byte CheckLOS(int x,int y,int radius,int x2,int y2);
 
 		int  ItemCount(byte itm);
 		int  ItemCountInRect(byte itm,int x,int y,int x2,int y2);
@@ -155,6 +161,7 @@ byte TempTorchCallback(int x,int y,int cx,int cy,int value,Map *map);
 byte GlowCursorCallback(int x,int y,int cx,int cy,int value,Map *map);
 byte TempBrightCallback(int x,int y,int cx,int cy,int value,Map *map);
 byte FindGuyCallback(int x,int y,int cx,int cy,int value,Map *map);
+byte MapCheckCallback(int x,int y,int cx,int cy,int value,Map *map);
 
 class Guy;
 void SpecialStepCheck(Map *map,int x,int y,Guy *me);

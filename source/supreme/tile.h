@@ -45,7 +45,10 @@ void RenderFloorTileDisco(int x,int y,int t,char light);
 
 // super shading!
 void RenderFloorTileFancy(int x,int y,int t,byte shadow,const char *light);
+void RenderFloorTileFancyWater(int x,int y,int t,byte water, byte shadow,const char *light);
 void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,const char *theLight);
 void RenderWallTileFancy(int x,int y,int t,const char *light);
+
+void PickDiscoColor(void);
 
 #endif

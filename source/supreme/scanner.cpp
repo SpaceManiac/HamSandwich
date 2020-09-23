@@ -3,17 +3,19 @@
 #include "monsnotes.h"
 #include "dialogbits.h"
 #include "goal.h"
+#include "cards.h"
 
-byte scanQueue[MAX_SCAN];
-byte scanQPos,firstScan;
+dword scanQueue[MAX_SCAN];
+dword scanQPos,firstScan;
 byte noKeyTime;
 byte scanStarted;
 byte *backgd;
-char groupTxt[128],nameTxt[64];
-char themeNames[][16]={"Goodguy","Badguy","Spooky","Zombie","Vampire","Spider","Pygmy",
-					   "Zoid","Boss","Mini-Boss","Wacky","Pumpkin","Thingy","Veggy","Arctic","Desert",
-					   "Vehicle","Generator","Trap","Alien","High-Tech","Animal","Human",
-					   "Urban","Aquatic","Undersea","Flying","Body Parts"};
+char groupTxt[128],nameTxt[64],cardTxt[64],rarityTxt[64],originTxt[64];
+char themeNames[][16]={"Goodguy","Badguy","Forest","Desert","Icy","Caves","Space",
+					   "Mansion","Island","Urban","Aquatic","Asylum","Traps/Puzzles","Humanoid","Animals",
+					   "Veggies","Pumpkins","Zombies","Skeletons","Vampires","Zoids",
+					   "Aliens/Thingies","Generators","Vehicles","Flying","Aquatic", "Spiders",
+					   "Bits","Bosses","Minibosses","Wacky!"};
 static int monsY=0;
 
 void InitScan(void)
@@ -60,6 +62,66 @@ void BeginScanning(void)
 	}
 }
 
+void BeginCarding(void)
+{
+	int i;
+	dword d;
+	byte firstTheme;
+	dword ch;
+	const char *orgn;
+	
+	ch = scanQueue[firstScan];
+
+	if(!scanStarted)
+	{
+		GetDisplayMGL()->LoadBMP("graphics/galaxy.bmp", NULL);
+		backgd=(byte *)malloc(640*480);
+		for(i=0;i<480;i++)
+			memcpy(&backgd[i*640],&GetDisplayMGL()->GetScreen()[i*GetDisplayMGL()->GetWidth()],640);
+
+		scanStarted=1;
+	}
+	
+	if(ch<60)
+		orgn="Dr. Lunatic";
+	else if(ch<91)
+		orgn="Expando Pack";
+	else if(ch<131)
+		orgn="Fun Pack";
+	else if(ch<211)
+		orgn="Supreme with Cheese";
+	else if(ch<248)
+		orgn="Kid Mystic";
+	else if(ch<289 && ch!=249)
+		orgn="Sleepless Hollow";
+	else if(ch<341)
+		orgn="Loonyland: Halloween Hill";
+	else if(ch>412 && ch<488)
+		orgn="Loonyland II: Winter Woods";
+	else
+		orgn="Operation S.C.A.R.E.";
+	
+	sprintf(nameTxt,"%s",MonsterName(ch));
+	sprintf(rarityTxt,"No.%i  /  Rarity %i",GetMonsterCard(ch),GetMonsterCardRarity(ch)+1);
+	sprintf(originTxt,"From %s",orgn);
+	sprintf(cardTxt,"Cards: %i",profile.progress.carded[ch]);
+
+	strcpy(groupTxt,"Class: ");
+	d=1;
+	firstTheme=1;
+	for(i=0;i<28;i++)
+	{
+		if(MonsterTheme(scanQueue[firstScan])&d)
+		{
+			if(!firstTheme)
+				strcat(groupTxt,"/");
+			strcat(groupTxt,themeNames[i]);
+			firstTheme=0;
+		}
+		d*=2;
+	}
+}
+
 void EndScanning(void)
 {
 	if(scanStarted)
@@ -69,9 +131,9 @@ void EndScanning(void)
 	}
 }
 
-void ScanGuy(Guy *g)
+void ScanGuy(Guy *me, Guy *g)
 {
-	byte type;
+	dword type;
 	Guy *g2;
 
 	g2=g;
@@ -170,6 +232,12 @@ void ScanGuy(Guy *g)
 				profile.progress.scanned[MONS_CENTIBODY]=1;
 				profile.progress.scanned[MONS_CENTIHEAD]=1;
 				break;
+				break;
+			case MONS_CENTIBBODY:
+			case MONS_CENTIBHEAD:
+				profile.progress.scanned[MONS_CENTIBBODY]=1;
+				profile.progress.scanned[MONS_CENTIBHEAD]=1;
+				break;
 			case MONS_SPHINX:
 			case MONS_SPHXARM1:
 			case MONS_SPHXARM2:
@@ -198,6 +266,17 @@ void ScanGuy(Guy *g)
 				profile.progress.scanned[MONS_PUFFYFISH]=1;
 				profile.progress.scanned[MONS_PUFFYFISH2]=1;
 				break;
+			case MONS_MINIMATTIE:
+			case MONS_MINIMATBODY:
+			case MONS_MINIMATCLAW1:
+			case MONS_MINIMATCLAW2:
+			case MONS_MINIMATTAIL:
+				profile.progress.scanned[MONS_MINIMATTIE]=1;
+				profile.progress.scanned[MONS_MINIMATBODY]=1;
+				profile.progress.scanned[MONS_MINIMATCLAW1]=1;
+				profile.progress.scanned[MONS_MINIMATCLAW2]=1;
+				profile.progress.scanned[MONS_MINIMATTAIL]=1;
+				break;
 		}
 		scanQueue[scanQPos]=type;
 		scanQPos++;
@@ -209,7 +288,7 @@ void ScanGuy(Guy *g)
 
 	// now fire at the victim, if it's evil
 	if(g->friendly!=goodguy->friendly)
-		FireScanShots(g);
+		FireScanShots(me, g);
 }
 
 byte UpdateScan(MGLDraw *mgl)
@@ -239,8 +318,8 @@ byte UpdateScan(MGLDraw *mgl)
 		{
 			EndScanning();
 
-			total=NUM_PROFILE_MONSTERS;
-			for(i=0;i<NUM_PROFILE_MONSTERS;i++)
+			total=NUM_MONSTERS;
+			for(i=0;i<NUM_MONSTERS;i++)
 			{
 				if(profile.progress.scanned[i] || !MonsterTheme(i))
 					total--;
@@ -252,6 +331,51 @@ byte UpdateScan(MGLDraw *mgl)
 		}
 		noKeyTime=30;
 		BeginScanning();
+	}
+
+	return 1;
+}
+
+byte UpdateCard(MGLDraw *mgl)
+{
+	int i,total;
+
+	if(!scanStarted)
+		BeginCarding();
+
+	monsY-=4;
+
+	if(noKeyTime)
+	{
+		noKeyTime--;
+		GetTaps();
+		mgl->LastKeyPressed();
+		mgl->MouseTap();
+		return 1;	// can't quit scanning in the first second
+	}
+
+	if((GetTaps()&(CONTROL_B1|CONTROL_B2)) || (mgl->LastKeyPressed()) || (mgl->MouseTap()))
+	{
+		firstScan++;
+		if(firstScan==MAX_SCAN)
+			firstScan=0;
+		if(firstScan==scanQPos)
+		{
+			EndScanning();
+
+			total=NUM_MONSTERS;
+			for(i=0;i<NUM_MONSTERS;i++)
+			{
+				if(profile.progress.scanned[i] || !MonsterTheme(i))
+					total--;
+			}
+			if(!total)
+				CompleteGoal(85);
+
+			return 0;	// done scanning!
+		}
+		noKeyTime=30;
+		BeginCarding();
 	}
 
 	return 1;
@@ -297,12 +421,55 @@ void RenderScan(MGLDraw *mgl)
 	PrintGlowRect(20,120,400,460,20,MonsterNotes(scanQueue[firstScan]),2);
 }
 
+void RenderCard(MGLDraw *mgl)
+{
+	int i,add,b;
+	
+	if(scanStarted)
+	{
+		for(i=0;i<480;i++)
+			memcpy(&GetDisplayMGL()->GetScreen()[i*GetDisplayMGL()->GetWidth()],&backgd[i*640],640);
+	}
+
+	SetSpriteConstraints(10,10,639,479);
+
+	add=InstaRenderMonsterAnimated(510,-500,scanQueue[firstScan],0,mgl)+15;
+
+	if(monsY<-add)
+	{
+		while(monsY<480+add)
+			monsY+=add;
+	}
+
+	i=monsY;
+	while(i>-add)
+		i-=add;
+	while(1)
+	{
+		b=abs(i-240)/20;
+		if(b>32)
+			b=32;
+		InstaRenderMonsterAnimated(510,i,scanQueue[firstScan],(char)-b,mgl);
+		i+=add;
+		if(i>480+add)
+			break;
+	}
+	SetSpriteConstraints(0,0,639,479);
+
+	PrintRect(20,420,620,460,20,groupTxt,3);
+	Print(20,80,nameTxt,0,4);
+	Print(20,116,rarityTxt,0,3);
+	Print(20,138,originTxt,0,3);
+	Print(20,160,cardTxt,0,3);
+	//PrintRect(20,120,400,460,20,MonsterNotes(scanQueue[firstScan]),3);
+}
+
 //-----------------------------------------------
 
-static byte cursor;
+static dword cursor;
 static byte numScanned[NUM_MONSTHEMES],totalToScan[NUM_MONSTHEMES];
 static int totalTotal,totalScanned;
-static byte monsList[180],monsListLen,monsListPos,curMons,curTheme;
+static dword monsList[180],monsListLen,monsListPos,curMons,curTheme;
 static sprite_set_t *bestSpr;
 static int msx,msy,oldmsx,oldmsy;
 static int msBright,msDBright;
@@ -329,7 +496,7 @@ void InitBestiary(MGLDraw *mgl)
 	totalTotal=0;
 
 	monsListLen=0;
-	for(i=1;i<NUM_PROFILE_MONSTERS;i++)
+	for(i=1;i<NUM_MONSTERS;i++)
 	{
 		d=1;
 
@@ -377,7 +544,7 @@ void ExitBestiary(void)
 	PurgeMonsterSprites();
 }
 
-void BestiarySelectTheme(byte c)
+void BestiarySelectTheme(dword c)
 {
 	dword d;
 	int i,flip;
@@ -389,7 +556,7 @@ void BestiarySelectTheme(byte c)
 	for(i=0;i<c;i++)
 		d*=2;
 
-	for(i=1;i<NUM_PROFILE_MONSTERS;i++)
+	for(i=1;i<NUM_MONSTERS;i++)
 	{
 		if(MonsterTheme(i)&d)
 		{
@@ -421,7 +588,7 @@ void BestiarySelectTheme(byte c)
 	MakeNormalSound(SND_MENUSELECT);
 }
 
-void BestiarySelectMonster(byte c)
+void BestiarySelectMonster(dword c)
 {
 	if((c==11 && monsListPos+c+1<monsListLen) || (monsList[c+monsListPos]==255))
 	{
@@ -448,7 +615,7 @@ void BestiarySelectMonster(byte c)
 
 byte UpdateBestiary(int *lastTime,MGLDraw *mgl)
 {
-	byte c;
+	dword c;
 
 	if(*lastTime>TIME_PER_FRAME*5)
 		*lastTime=TIME_PER_FRAME*5;
@@ -582,13 +749,10 @@ void RenderBestiary(MGLDraw *mgl)
 			y+=24;
 		}
 	}
-	mgl->FillBox(14,185,640-14,185,32*1+16);
-	strcpy(txt,"Supreme Monster Database");
-	PrintGlow(14,187,txt,0,2);
-	mgl->FillBox(14,205,640-14,205,32*1+16);
+	mgl->FillBox(14,203,640-14,203,32*1+16);
 
-	sprintf(txt,"Total scanned: %d%%",totalScanned*100/totalTotal);
-	PrintGlow(628-GetStrLength(txt,2),187,txt,0,2);
+	sprintf(txt,"%d%% Scanned",totalScanned*100/totalTotal);
+	PrintGlow(600-GetStrLength(txt,2),184,txt,0,2);
 	x=21;
 	y=207;
 
@@ -711,7 +875,7 @@ float ScanPercent(void)
 
 	scanned=0;
 
-	for(i=0;i<NUM_PROFILE_MONSTERS;i++)
+	for(i=0;i<NUM_MONSTERS;i++)
 	{
 		if(MonsterTheme(i))	// don't count ones with no theme
 		{
@@ -722,5 +886,60 @@ float ScanPercent(void)
 			scanned++;	// ones with no theme are always scanned
 	}
 
-	return((float)scanned*100.0f/(float)NUM_PROFILE_MONSTERS);
+	return((float)scanned*100.0f/(float)NUM_MONSTERS);
+}
+
+//This is for cards
+void GetGuyCard(Guy *g)
+{
+	dword type1;
+	Guy *g2;
+	int chance;
+	int rand;
+	rand = Random(1000);
+
+	g2=g;
+	if(g2->aiType!=MONS_DJINNI)
+	{
+		while(g2->parent)
+			g2=g2->parent;
+	}
+
+	type1=g2->type;
+	
+	chance = GetMonsterCardChance(g->type);
+	if(chance>=rand && !editing)
+	{
+		MakeNormalSound(SND_ALLCANDLE);
+		// show the scanner info for this monster
+		SendMessageToGame(MSG_MONSTERCARD,0);
+		profile.progress.carded[g2->type]+=1;
+		scanQueue[scanQPos]=type1;
+		scanQPos++;
+		if(scanQPos==MAX_SCAN)
+			scanQPos=0;
+		noKeyTime=30;
+		GetTaps();
+	}
+}
+
+float CardPercent(void)
+{
+	int i;
+	int scanned;
+
+	scanned=0;
+
+	for(i=0;i<NUM_MONSTERS;i++)
+	{
+		if(MonsterTheme(i))	// don't count ones with no theme
+		{
+			if(profile.progress.carded[i]>0)
+				scanned++;
+		}
+		else
+			scanned++;	// ones with no theme are always scanned
+	}
+
+	return((float)scanned*100.0f/(float)NUM_MONSTERS);
 }

@@ -31,7 +31,7 @@ static byte helpRemember;
 
 static dword themes[]={ST_INTFACE,ST_PLAYER,ST_MONSTER,ST_EFFECT,ST_VOCAL,ST_CUSTOM};
 
-static word sndList[512];
+static word sndList[600];
 static word sndsInList,sndStart,sndsShown;
 
 static void MakeSoundList(void);

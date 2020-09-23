@@ -28,6 +28,7 @@
 #include "config.h"
 #include "log.h"
 #include "netmenu.h"
+#include "cards.h"
 #include "internet.h"
 
 #ifdef _WIN32
@@ -81,7 +82,7 @@ int main(int argc, char* argv[])
 				break;
 			case 2:	// tutorial
 				shopping=0;
-				if(PlayWorld(mainmgl,"tutorial.dlw"))
+				if(PlayWorld(mainmgl,"tutorial.hsw"))
 					WorldSelectMenu(mainmgl);
 				break;
 			case 3:	// instructions
@@ -90,31 +91,11 @@ int main(int argc, char* argv[])
 			case 6:	// shopping
 				shopping=1;
 				ResetMoron();
-				PlayWorld(mainmgl,"spismall.zlw");
+				PlayWorld(mainmgl,"spismall.hsw");
 				break;
-			case 5:	// internet
+			case 5:	// cards
 				shopping=0;
-				NetMenu(mainmgl);
-
-				if(DoWebPage()==1)
-				{
-					LunaticExit();
-					delete mainmgl;
-#ifdef _WIN32
-					ShellExecuteA(NULL,"open","http://hamumu.com/scores.php",NULL,NULL,SW_SHOWNORMAL);
-#endif
-					return 0;
-				}
-				else if(DoWebPage()==2)
-				{
-					LunaticExit();
-					delete mainmgl;
-
-#ifdef _WIN32
-					ShellExecuteA(NULL,"open","http://hamumu.com/addon.php",NULL,NULL,SW_SHOWNORMAL);
-#endif
-					return 0;
-				}
+				CardMenu(mainmgl);
 				break;
 			case 7:	// editor
 				shopping=0;
