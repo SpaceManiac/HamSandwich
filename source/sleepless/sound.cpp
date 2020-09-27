@@ -344,7 +344,7 @@ soundDesc_t soundInfo[MAX_SOUNDS]={
 byte soundAvailable=0;
 static int numSounds,numCustom;
 static byte *customSound[MAX_CUSTOM_SOUNDS];
-static long customLength[MAX_CUSTOM_SOUNDS];
+static int32_t customLength[MAX_CUSTOM_SOUNDS];
 
 void SoundSystemExists(void)
 {
@@ -600,7 +600,7 @@ void SaveCustomSounds(FILE *f)
 	for(i=0;i<numCustom;i++)
 	{
 		fwrite(&soundInfo[CUSTOM_SND_START+i],1,sizeof(soundDesc_t),f);	// write out the descriptor
-		fwrite(&customLength[i],sizeof(long),1,f);	// write out the data length
+		fwrite(&customLength[i],sizeof(int32_t),1,f);	// write out the data length
 		fwrite(customSound[i],sizeof(byte),customLength[i],f);	// write out the data
 	}
 }
@@ -615,7 +615,7 @@ void LoadCustomSounds(FILE *f)
 	for(i=0;i<numCustom;i++)
 	{
 		fread(&soundInfo[CUSTOM_SND_START+i],1,sizeof(soundDesc_t),f);
-		fread(&customLength[i],sizeof(long),1,f);
+		fread(&customLength[i],sizeof(int32_t),1,f);
 		customSound[i]=(byte *)malloc(customLength[i]);
 		fread(customSound[i],sizeof(byte),customLength[i],f);
 	}
@@ -636,7 +636,7 @@ int AppendCustomSounds(FILE *f)
 	{
 		fread(&soundInfo[CUSTOM_SND_START+i],1,sizeof(soundDesc_t),f);
 		soundInfo[CUSTOM_SND_START+i].num=CUSTOM_SND_START+i;
-		fread(&customLength[i],sizeof(long),1,f);
+		fread(&customLength[i],sizeof(int32_t),1,f);
 		customSound[i]=(byte *)malloc(customLength[i]);
 		fread(customSound[i],sizeof(byte),customLength[i],f);
 	}
