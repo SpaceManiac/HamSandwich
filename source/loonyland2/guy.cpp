@@ -2817,25 +2817,15 @@ void SaveGuys(FILE *f)
 	{
 		if(guys[i]->type!=MONS_NONE)
 		{
-			tgt=guys[i]->target;
-			if(guys[i]->target)
-			{
-				guys[i]->target=(Guy *)(size_t)(tgt->ID);	// convert the pointer into a numerical reference
-			}
-			else
-				guys[i]->target=(Guy *)(65535);
+			dword target = guys[i]->target ? guys[i]->target->ID : 65535;
+			dword parent = guys[i]->parent ? guys[i]->parent->ID : 65535;
 
-			parent=guys[i]->parent;
-			if(guys[i]->parent)
-			{
-				guys[i]->parent=(Guy *)(size_t)(parent->ID);	// convert the pointer into a numerical reference
-			}
-			else
-				guys[i]->parent=(Guy *)(65535);
-
-			fwrite(guys[i],sizeof(Guy),1,f);
-			guys[i]->target=tgt;
-			guys[i]->parent=parent;
+			// sizes should total to 124
+			fwrite(guys[i],offsetof(Guy, target),1,f);
+			fwrite(&target,4,1,f);
+			fwrite(&parent,4,1,f);
+			fwrite(&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1,f);
+			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 124);
 		}
 	}
 }
@@ -2852,16 +2842,23 @@ void LoadGuys(FILE *f)
 
 	for(i=0;i<num;i++)
 	{
-		fread(&g,sizeof(Guy),1,f);
+		dword target, parent;
+		// sizes should total to 124
+		fread(&g,offsetof(Guy, target),1,f);
+		fread(&target,4,1,f);
+		fread(&parent,4,1,f);
+		fread(&g.hp,sizeof(Guy) - offsetof(Guy, hp),1,f);
+		static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 124);
+
 		(*guys[g.ID])=g;
-		if(guys[g.ID]->target==(Guy *)(65535))
+		if(target==65535)
 			guys[g.ID]->target=NULL;
 		else
-			guys[g.ID]->target=guys[(int)(guys[g.ID]->target)];
-		if(guys[g.ID]->parent==(Guy *)(65535))
+			guys[g.ID]->target=guys[target];
+		if(parent==65535)
 			guys[g.ID]->parent=NULL;
 		else
-			guys[g.ID]->parent=guys[(int)(guys[g.ID]->parent)];
+			guys[g.ID]->parent=guys[parent];
 	}
 	player.fireFlags&=(~FF_HELPERHERE);
 }
