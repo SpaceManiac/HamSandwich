@@ -85,6 +85,30 @@ void ObtainFilenames(const char *fileSpec)
 	}
 }
 
+static void SortFilenames(void)
+{
+	byte flip;
+	int i;
+	char tmp[FNAMELEN];
+
+	flip=1;
+
+	while(flip)
+	{
+		flip=0;
+		for(i=0;i<numFiles-1;i++)
+		{
+			if(strcasecmp(&fnames[i*FNAMELEN],&fnames[(i+1)*FNAMELEN])>0)
+			{
+				strcpy(tmp,&fnames[i*FNAMELEN]);
+				strcpy(&fnames[i*FNAMELEN],&fnames[(i+1)*FNAMELEN]);
+				strcpy(&fnames[(i+1)*FNAMELEN],tmp);
+				flip=1;
+			}
+		}
+	}
+}
+
 void InitFileDialog(const char *fileSpec,byte menuItemsToShow,const char *defaultName)
 {
 	menuItems=menuItemsToShow;
@@ -93,6 +117,7 @@ void InitFileDialog(const char *fileSpec,byte menuItemsToShow,const char *defaul
 	filePos=0;
 
 	ObtainFilenames(fileSpec);
+	SortFilenames();
 	strcpy(newfname,defaultName);
 }
 
