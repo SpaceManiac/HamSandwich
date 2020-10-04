@@ -18,15 +18,13 @@ itch_download() {  # <url> <filename> <hash>
 		echo "Please download '$2' from the following page, and save it inside '$INSTDIR/':"
 		echo "    $1"
 		echo "Press Enter when finished, or Ctrl-C to cancel."
-		read
+		read -r
 	done
-	sha256sum -c <<<"$3 *$INSTDIR/$2"
-	while [ $? -ne 0 ]; do
+	while ! sha256sum -c <<<"$3 *$INSTDIR/$2"; do
 		echo "That looks like the wrong file, please download '$2' again:"
 		echo "    $1"
 		echo "Press Enter when finished, or Ctrl-C to cancel."
-		read
-		sha256sum -c <<<"$3 *$INSTDIR/$2"
+		read -r
 	done
 }
 

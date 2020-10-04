@@ -24,7 +24,7 @@ else
 	if [ ! -f "$WARNFILE" ]; then
 		echo "Automatic dependency installation is not available for your platform."
 		echo "Press Enter to continue anyways, or Ctrl-C to cancel."
-		read
+		read -r
 		touch "$WARNFILE"
 	fi
 	exit
@@ -34,13 +34,12 @@ fi
 packages() {
 	local CMD="$1"
 	shift
-	local PACKAGES="$@"
 	local FNAME="build/.packages-$SYS"
-	if [ ! -f "$FNAME" ] || [ "$(cat $FNAME)" != "$PACKAGES" ]; then
+	if [ ! -f "$FNAME" ] || [ "$(cat $FNAME)" != "$*" ]; then
 		echo "==== Updating system packages ===="
-		echo $CMD $PACKAGES
-		$CMD $PACKAGES
-		echo "$PACKAGES" >"$FNAME"
+		echo $CMD "$@"
+		$CMD "$@"
+		echo "$*" >"$FNAME"
 	fi
 }
 
