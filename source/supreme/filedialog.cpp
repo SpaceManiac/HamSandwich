@@ -19,7 +19,7 @@ static byte asking,yesNo;
 static char question[64];
 static byte exitCode;
 
-void ObtainFilenames(const char *fileSpec)
+static void ObtainFilenames(const char *dir, const char *ext)
 {
 	int i;
 
@@ -39,31 +39,13 @@ void ObtainFilenames(const char *fileSpec)
 
 	numFiles=0;
 
-	const char* secondPart = strchr(fileSpec, '/') + 1;
-	const char* filter;
-	if (strcmp(secondPart, "*.*") == 0)
-	{
-		filter = NULL;
-	}
-	else
-	{
-		filter = secondPart + 1;
-	}
-	char dirname[64];
-	strncpy(dirname, fileSpec, secondPart-fileSpec-1);
-	dirname[secondPart-fileSpec-1] = '\0';
-
-	lsdir ls(dirname);
-	while(const char* name = ls.next())
+	for (const char* name : filterdir(dir, ext, FNAMELEN))
 	{
 		if(!strcmp(name,".") || !strcmp(name,".."))
 			continue;
 
 		if((menuItems&FM_NOWAVS) && !strcmp(&name[strlen(name)-3],"wav"))
 			continue;	// ignore wavs
-
-		if(filter && !strstr(name, filter))
-			continue;
 
 		strncpy(&fnames[numFiles*FNAMELEN],name,FNAMELEN);
 		numFiles++;
@@ -110,14 +92,14 @@ static void SortFilenames(void)
 	}
 }
 
-void InitFileDialog(const char *fileSpec,byte menuItemsToShow,const char *defaultName)
+void InitFileDialog(const char *dir, const char *ext, byte menuItemsToShow,const char *defaultName)
 {
 	menuItems=menuItemsToShow;
 	asking=0;
 	exitCode=0;
 	filePos=0;
 
-	ObtainFilenames(fileSpec);
+	ObtainFilenames(dir, ext);
 	SortFilenames();
 	strcpy(newfname,defaultName);
 }

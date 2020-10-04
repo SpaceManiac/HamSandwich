@@ -15,7 +15,7 @@
 #define FM_NOWAVS	64	// disregard wav files
 #define FM_MERGE	128
 
-void InitFileDialog(const char *fileSpec,byte menuItemsToShow,const char *defaultName);
+void InitFileDialog(const char *dir, const char *ext, byte menuItemsToShow,const char *defaultName);
 void ExitFileDialog(void);
 void RenderFileDialog(int msx,int msy,MGLDraw *mgl);
 byte FileDialogKey(char key);
