@@ -46,4 +46,4 @@ for:
         - sh: sudo DEBIAN_FRONTEND=noninteractive apt-get update
         - sh: ./tools/build/install-deps.sh
     build_script:
-        - sh: make
+        - sh: make config=debug64
