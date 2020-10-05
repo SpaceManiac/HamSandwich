@@ -551,7 +551,10 @@ void SaveState(void)
 	f=AppdataOpen(fname,"wb");
 
 	// first write out the player itself
-	fwrite(&player,sizeof(player_t),1,f);
+	fwrite(&player, offsetof(player_t, worldProg), 1, f);
+	fwrite("\0\0\0\0\0\0\0\0", 8, 1, f);
+	fwrite(&player.shield, sizeof(player_t) - offsetof(player_t, shield), 1, f);
+
 	// next the ID of whoever is tagged
 	if(TaggedMonster()==NULL)
 		w=65535;
@@ -583,7 +586,6 @@ byte LoadState(byte lvl,byte getPlayer)
 	FILE *f;
 	char fname[64];
 	word tagged;
-	player_t tmp;
 
 	if (editing)
 		sprintf(fname,"profiles/_editing_.%03d",lvl);
@@ -594,14 +596,17 @@ byte LoadState(byte lvl,byte getPlayer)
 		return 0;
 
 	// first read the player itself, undoing the damage to worldProg and levelProg
-	memcpy(&tmp,&player,sizeof(player_t));
-	fread(&player,sizeof(player_t),1,f);
-	player.worldProg=tmp.worldProg;
-	player.levelProg=tmp.levelProg;
-	if(!getPlayer || getPlayer==2)
+	if (getPlayer == 1)
 	{
-		player=tmp;
+		fread(&player, offsetof(player_t, worldProg), 1, f);
+		fseek(f, 8, SEEK_CUR);
+		fread(&player.shield, sizeof(player_t) - offsetof(player_t, shield), 1, f);
 	}
+	else // !getPlayer || getPlayer==2
+	{
+		fseek(f, 368, SEEK_CUR);
+	}
+	static_assert(sizeof(player_t) - offsetof(player_t, shield) + offsetof(player_t, worldProg) + 8 == 368);
 
 	// next the ID of whoever is tagged
 	fread(&tagged,sizeof(word),1,f);
