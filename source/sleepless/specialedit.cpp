@@ -2693,6 +2693,40 @@ void SpecialEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 	sprintf(s,"%d-%d/%d",effStart+1,effStart+5,NUM_EFFECTS);
 	Print(95,462,s,0,1);
 
+	// highlight Up/Down buttons if there is anything there
+	for (i=0; i < trgStart; ++i)
+	{
+		if(spcl.trigger[i].type != TRG_NONE)
+		{
+			DrawFillBox(5,224,5+40,224+14,32*1+4);
+			break;
+		}
+	}
+	for(i=trgStart + 5; i < NUM_TRIGGERS; ++i)
+	{
+		if(spcl.trigger[i].type != TRG_NONE)
+		{
+			DrawFillBox(50,224,50+40,224+14,32*1+4);
+			break;
+		}
+	}
+	for (i=0; i < effStart; ++i)
+	{
+		if(spcl.effect[i].type != EFF_NONE)
+		{
+			DrawFillBox(5,460,5+40,460+14,32*1+4);
+			break;
+		}
+	}
+	for(i=effStart + 5; i < NUM_EFFECTS; ++i)
+	{
+		if(spcl.effect[i].type != EFF_NONE)
+		{
+			DrawFillBox(50,460,50+40,460+14,32*1+4);
+			break;
+		}
+	}
+
 	if(mode==SMODE_NORMAL)
 		RenderButtons(mouseX,mouseY,mgl);
 	else
