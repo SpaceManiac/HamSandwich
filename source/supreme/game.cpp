@@ -237,7 +237,7 @@ void RestoreGameplayGfx(void)
 	{
 		gamemgl->ClearScreen();
 		GetDisplayMGL()->LoadBMP("graphics/gamepal.bmp");
-		gamemgl->Flip();
+		//gamemgl->Flip();  // TODO: is this needed?
 	}
 	if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE)
 		gamemgl->ClearScreen();
@@ -263,7 +263,7 @@ void EnterRage(void)
 	SetRageFace();
 }
 
-byte LunaticRun(int *lastTime)
+TASK(byte) LunaticRun(int *lastTime)
 {
 	byte frmsToRun;
 
@@ -283,7 +283,7 @@ byte LunaticRun(int *lastTime)
 		if(!gamemgl->Process())
 		{
 			mapToGoTo=255;
-			return LEVEL_ABORT;
+			CO_RETURN LEVEL_ABORT;
 		}
 
 		if(gameMode==GAMEMODE_PLAY)
@@ -338,7 +338,7 @@ byte LunaticRun(int *lastTime)
 				if(!windingDown)
 				{
 					PrintToLog("Wound Down",0);
-					return windDownReason;
+					CO_RETURN windDownReason;
 				}
 			}
 		}
@@ -360,31 +360,31 @@ byte LunaticRun(int *lastTime)
 						mapToGoTo=255;
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
-					return LEVEL_ABORT;
+					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_WORLDSEL:
 					mapToGoTo=255;
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
-					return WORLD_ABORT;	// dump out altogether
+					CO_RETURN WORLD_ABORT;	// dump out altogether
 					break;
 				case PAUSE_RETRY:
 					mapToGoTo=player.levelNum;	// repeat this level
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
-					return LEVEL_ABORT;
+					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_EXIT:
 					mapToGoTo=255;
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
-					return WORLD_QUITGAME;
+					CO_RETURN WORLD_QUITGAME;
 					break;
 				case PAUSE_SHOP:
 					mapToGoTo=255;
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
-					return WORLD_SHOP;
+					CO_RETURN WORLD_SHOP;
 					break;
 			}
 		}
@@ -413,7 +413,7 @@ byte LunaticRun(int *lastTime)
 		}
 		else if(gameMode==GAMEMODE_SHOP)
 		{
-			if(!UpdateShopping(gamemgl))
+			if(!AWAIT UpdateShopping(gamemgl))
 			{
 				gameMode=GAMEMODE_PLAY;
 				RestoreGameplayGfx();
@@ -480,8 +480,8 @@ byte LunaticRun(int *lastTime)
 			windingDown=1;
 			windDownReason=LEVEL_WIN;
 			msgFromOtherModules=MSG_NONE;
-			VictoryText(gamemgl);
-			Credits(gamemgl);
+			AWAIT VictoryText(gamemgl);
+			AWAIT Credits(gamemgl);
 			player.boredom=0;
 		}
 		//*lastTime-=TIME_PER_FRAME;
@@ -489,10 +489,10 @@ byte LunaticRun(int *lastTime)
 		updFrameCount++;
 	}
 
-	return LEVEL_PLAYING;
+	CO_RETURN LEVEL_PLAYING;
 }
 
-void LunaticDraw(void)
+TASK(void) LunaticDraw(void)
 {
 	char s[128];
 	dword d;
@@ -594,23 +594,23 @@ void LunaticDraw(void)
 	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
 	{
 		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA|MAP_WAVY))
-			gamemgl->TeensyWaterFlip(updFrameCount/2);
+			AWAIT gamemgl->TeensyWaterFlip(updFrameCount/2);
 		else
-			gamemgl->TeensyFlip();
+			AWAIT gamemgl->TeensyFlip();
 	}
 	else if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE)
 	{
 		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA|MAP_WAVY))
-			gamemgl->RasterWaterFlip(updFrameCount/2);
+			AWAIT gamemgl->RasterWaterFlip(updFrameCount/2);
 		else
-			gamemgl->RasterFlip();
+			AWAIT gamemgl->RasterFlip();
 	}
 	else
 	{
 		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA|MAP_WAVY))
-			gamemgl->WaterFlip(updFrameCount/2);
+			AWAIT gamemgl->WaterFlip(updFrameCount/2);
 		else
-			gamemgl->Flip();
+			AWAIT gamemgl->Flip();
 	}
 
 	visFrameCount++;
@@ -652,7 +652,7 @@ void PauseGame(void)
 	gameMode=GAMEMODE_MENU;
 }
 
-byte PlayALevel(byte map)
+TASK(byte) PlayALevel(byte map)
 {
 	int lastTime=1;
 	byte exitcode=0;
@@ -661,7 +661,7 @@ byte PlayALevel(byte map)
 	if(!InitLevel(map))
 	{
 		mapToGoTo=255;
-		return LEVEL_ABORT;
+		CO_RETURN LEVEL_ABORT;
 	}
 
 	exitcode=LEVEL_PLAYING;
@@ -676,9 +676,9 @@ byte PlayALevel(byte map)
 		StartClock();
 		if(gameMode==GAMEMODE_PLAY)
 			HandleKeyPresses();
-		exitcode=LunaticRun(&lastTime);
+		exitcode=AWAIT LunaticRun(&lastTime);
 		if(exitcode==LEVEL_PLAYING)
-			LunaticDraw();
+			AWAIT LunaticDraw();
 
 		if(gameMode==GAMEMODE_PLAY && wasPaused)
 		{
@@ -703,13 +703,13 @@ byte PlayALevel(byte map)
 	{
 		PlayerWinLevel(0);
 		PrintToLog("Tally",0);
-		Tally(gamemgl,lastLevelName,0);
+		AWAIT Tally(gamemgl,lastLevelName,0);
 	}
 	ExitLevel();
-	return exitcode;
+	CO_RETURN exitcode;
 }
 
-byte PlayWorld(MGLDraw *mgl,const char *fname)
+TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 {
 	char fullName[64];
 	byte result;
@@ -723,7 +723,7 @@ byte PlayWorld(MGLDraw *mgl,const char *fname)
 
 	InitPlayer(GetWorldProgress(fname)->levelOn,fname);
 	if(!LoadWorld(&curWorld,fullName))
-		return 1;
+		CO_RETURN 1;
 
 	StopSong();
 	InitWorld(&curWorld);
@@ -732,7 +732,7 @@ byte PlayWorld(MGLDraw *mgl,const char *fname)
 	SetPlayerStart(-1,-1);
 	while(1)
 	{
-		result=PlayALevel(mapNum);
+		result=AWAIT PlayALevel(mapNum);
 
 		if(result==LEVEL_ABORT)
 		{
@@ -756,12 +756,12 @@ byte PlayWorld(MGLDraw *mgl,const char *fname)
 	if(result==WORLD_SHOP)
 		doShop=1;
 	if(result==WORLD_QUITGAME || result==WORLD_SHOP)
-		return 0;
+		CO_RETURN 0;
 	else
-		return 1;
+		CO_RETURN 1;
 }
 
-void TestLevel(world_t *world,byte level)
+TASK(void) TestLevel(world_t *world,byte level)
 {
 	byte result;
 
@@ -780,7 +780,7 @@ void TestLevel(world_t *world,byte level)
 	SetPlayerStart(-1,-1);
 	while(1)
 	{
-		result=PlayALevel(mapNum);
+		result=AWAIT PlayALevel(mapNum);
 		if(result==LEVEL_ABORT)
 		{
 			if(mapToGoTo<255)

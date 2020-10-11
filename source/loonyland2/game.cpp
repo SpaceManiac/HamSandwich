@@ -628,8 +628,6 @@ void LunaticDraw(void)
 		tickerTime=d;
 	}
 
-	gamemgl->Flip();
-
 	visFrameCount++;
 	visFrms++;
 }
@@ -664,7 +662,7 @@ void HandleKeyPresses(void)
 //#endif
 }
 
-byte PlayALevel(byte map)
+TASK(byte) PlayALevel(byte map)
 {
 	int lastTime=1;
 	byte exitcode=0;
@@ -677,7 +675,7 @@ byte PlayALevel(byte map)
 	if(!InitLevel(map))
 	{
 		mapToGoTo=255;
-		return LEVEL_ABORT;
+		CO_RETURN LEVEL_ABORT;
 	}
 
 	PrepGuys(curMap);
@@ -690,6 +688,7 @@ byte PlayALevel(byte map)
 		StartClock();
 		exitcode=LunaticRun(&lastTime);
 		LunaticDraw();
+		AWAIT gamemgl->Flip();
 
 		if(lastKey==27 && gameMode==GAMEMODE_PLAY && !windingDown && !windingUp)
 		{
@@ -708,10 +707,10 @@ byte PlayALevel(byte map)
 			HandleKeyPresses();
 	}
 	ExitLevel();
-	return exitcode;
+	CO_RETURN exitcode;
 }
 
-byte LunaticWorld(byte world,const char *worldName)
+TASK(byte) LunaticWorld(byte world,const char *worldName)
 {
 	byte result;
 	char wName[64];
@@ -730,7 +729,7 @@ byte LunaticWorld(byte world,const char *worldName)
 	if(!loadGame)
 	{
 		if(!LoadWorld(&curWorld,wName))
-			return WORLD_ABORT;
+			CO_RETURN WORLD_ABORT;
 	}
 
  	worldNum=world;
@@ -738,7 +737,7 @@ byte LunaticWorld(byte world,const char *worldName)
 	mapNum=player.levelNum;
 	while(1)
 	{
-		result=PlayALevel(mapNum);
+		result=AWAIT PlayALevel(mapNum);
 		if(result==LEVEL_ABORT)
 		{
 			if(mapToGoTo<255)
@@ -751,8 +750,8 @@ byte LunaticWorld(byte world,const char *worldName)
 			// return to last town
 			if(ModifierOn(MOD_IRONMAN))
 			{
-				IronmanScreen(gamemgl);
-				Credits(gamemgl,0);
+				AWAIT IronmanScreen(gamemgl);
+				AWAIT Credits(gamemgl,0);
 				break;
 			}
 			else
@@ -765,12 +764,12 @@ byte LunaticWorld(byte world,const char *worldName)
 		else if(result==LEVEL_LOADING)
 		{
 			FreeWorld(&curWorld);
-			return WORLD_LOAD;
+			CO_RETURN WORLD_LOAD;
 		}
 		else if(result==WORLD_QUITGAME)
 		{
 			FreeWorld(&curWorld);
-			return WORLD_QUITGAME;
+			CO_RETURN WORLD_QUITGAME;
 		}
 		else if(result==LEVEL_WIN)
 		{
@@ -785,16 +784,16 @@ byte LunaticWorld(byte world,const char *worldName)
 			}
 #endif
 			Song(SONG_WINTER);
-			FLI_play("graphics/ending.flc",0,10,gamemgl);
+			AWAIT FLI_play("graphics/ending.flc",0,10,gamemgl);
 			if(ModifierOn(MOD_IRONMAN) && player.var[VAR_MADCAP])	// just won Madcap mode!
 			{
-				IronmanScreen(gamemgl);
-				Credits(gamemgl,1);
+				AWAIT IronmanScreen(gamemgl);
+				AWAIT Credits(gamemgl,1);
 				break;
 			}
 			else
 			{
-				Credits(gamemgl,1);
+				AWAIT Credits(gamemgl,1);
 				JamulSoundPurge();
 				MadcapPlayer();
 				mapNum=5;
@@ -802,10 +801,10 @@ byte LunaticWorld(byte world,const char *worldName)
 		}
 	}
 	FreeWorld(&curWorld);
-	return WORLD_ABORT;
+	CO_RETURN WORLD_ABORT;
 }
 
-void LunaticGame(MGLDraw *mgl,byte load,byte mode)
+TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 {
 	byte worldResult;
 
@@ -814,7 +813,7 @@ void LunaticGame(MGLDraw *mgl,byte load,byte mode)
 	while(1)
 	{
 		loadGame=load;
-		worldResult=LunaticWorld(0,"winter.llw");
+		worldResult=AWAIT LunaticWorld(0,"winter.llw");
 		if(worldResult==WORLD_QUITGAME)
 		{
 			mgl->LastKeyPressed();	// just to clear key buffer

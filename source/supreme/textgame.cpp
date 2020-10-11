@@ -1979,7 +1979,7 @@ void RenderTextGame(MGLDraw *mgl)
 		inputTxt[strlen(inputTxt)-1]='\0';
 }
 
-void TextGame(MGLDraw *mgl)
+TASK(void) TextGame(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -1992,7 +1992,7 @@ void TextGame(MGLDraw *mgl)
 		StartClock();
 		done=UpdateTextGame(&lastTime,mgl);
 		RenderTextGame(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;

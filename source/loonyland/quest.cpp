@@ -2024,7 +2024,7 @@ void DoChatAction(byte a)
 			break;
 		case 34:
 			// play the space game!!!!
-			SpaceGame(GetDisplayMGL());
+			coro::launch(std::bind(SpaceGame, GetDisplayMGL()));
 			break;
 		case 35:
 			// buy the hot pants

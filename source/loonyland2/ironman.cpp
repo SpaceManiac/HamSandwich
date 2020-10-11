@@ -260,7 +260,7 @@ void RenderIronman(void)
 	}
 }
 
-void IronmanScreen(MGLDraw *mgl)
+TASK(void) IronmanScreen(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -281,7 +281,7 @@ void IronmanScreen(MGLDraw *mgl)
 			lastTime-=TIME_PER_FRAME;
 		}
 		RenderIronman();
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(!mgl->Process())

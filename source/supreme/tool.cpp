@@ -70,7 +70,7 @@ byte ToolDoing(void)
 	return doing;
 }
 
-void ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl)
+TASK(void) ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl)
 {
 	switch(doing)
 	{
@@ -157,7 +157,7 @@ void ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl)
 						case MENU_TEST:
 							int cx,cy;
 							GetCamera(&cx,&cy);
-							TestLevel(EditorGetWorld(),EditorGetMapNum());
+							AWAIT TestLevel(EditorGetWorld(),EditorGetMapNum());
 							StopSong();
 							SetPlayerStart(-1,-1);
 							AddMapGuys(EditorGetMap());

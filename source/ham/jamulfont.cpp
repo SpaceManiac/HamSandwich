@@ -775,7 +775,7 @@ int FontStrLen(const char *s, mfont_t *font)
 	return width;
 }
 
-bool FontInputText(const char *prompt, char *buffer, int len, void (*renderScrn)(mfont_t *), mfont_t *font)
+TASK(bool) FontInputText(const char *prompt, char *buffer, int len, void (*renderScrn)(mfont_t *), mfont_t *font)
 {
 	int pos = 0;
 	bool done = 0;
@@ -793,9 +793,9 @@ bool FontInputText(const char *prompt, char *buffer, int len, void (*renderScrn)
 		buffer[pos + 1] = '\0';
 		FontPrintString(2, 202 + font->height + 2, buffer, font);
 		buffer[pos] = '\0';
-		fontmgl->Flip();
+		AWAIT fontmgl->Flip();
 		if (!fontmgl->Process())
-			return false;
+			CO_RETURN false;
 		if ((c = fontmgl->LastKeyPressed())) // extra pair of parentheses for a warning about assignment in truth value
 		{
 			if (c == 8) // backspace
@@ -823,7 +823,7 @@ bool FontInputText(const char *prompt, char *buffer, int len, void (*renderScrn)
 			}
 		}
 	}
-	return true;
+	CO_RETURN true;
 }
 
 void FontPrintStringLimit(int x,int y,int maxX,const char*s,mfont_t *font)

@@ -3,6 +3,6 @@
 
 #include "mgldraw.h"
 
-void ComicBook(void);
+TASK(void) ComicBook(void);
 
 #endif

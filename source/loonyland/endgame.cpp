@@ -776,7 +776,7 @@ byte UpdateEndGame(int *lastTime,MGLDraw *mgl)
 	return 1;
 }
 
-void EndGameTally(MGLDraw *mgl)
+TASK(void) EndGameTally(MGLDraw *mgl)
 {
 	byte b;
 	int lastTime=1;
@@ -797,10 +797,10 @@ void EndGameTally(MGLDraw *mgl)
 		StartClock();
 		b=UpdateEndGame(&lastTime,mgl);
 		RenderEndGame(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
-			return;
+			CO_RETURN;
 		}
 		EndClock();
 	}
@@ -811,7 +811,7 @@ void EndGameTally(MGLDraw *mgl)
 	ResetClock(hangon);
 	//AddGarbageTime(then-now);
 	MakeHighScore(&hs,totalScore);
-	CheckForHighScore(hs);
+	AWAIT CheckForHighScore(hs);
 	if(totalScore>=10000000)
 		EarnBadge(BADGE_SCORE);
 	BadgeCheck(BE_ENDGAME,0,curMap);

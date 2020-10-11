@@ -3,6 +3,6 @@
 
 #include "mgldraw.h"
 
-void Ledger(MGLDraw *mgl);
+TASK(void) Ledger(MGLDraw *mgl);
 
 #endif

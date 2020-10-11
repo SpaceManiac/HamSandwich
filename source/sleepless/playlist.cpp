@@ -798,7 +798,7 @@ void RenderPlayListMenu(MGLDraw *mgl)
 
 //----------------
 
-void PlayListMenu(MGLDraw *mgl)
+TASK(void) PlayListMenu(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime=1;
@@ -811,7 +811,7 @@ void PlayListMenu(MGLDraw *mgl)
 		StartClock();
 		done=UpdatePlayListMenu(&lastTime,mgl);
 		RenderPlayListMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(mgl->LastKeyPressed()==27)
 			done=1;

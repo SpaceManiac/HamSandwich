@@ -19,6 +19,8 @@ function base_project(name)
 		targetdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/")
 		objdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/obj/")
 
+		defines { 'PROJECT_NAME="%{prj.name}"' }
+
 		files {
 			"source/" .. name .. "/**.h",
 			"source/" .. name .. "/**.cpp",
@@ -69,6 +71,10 @@ function base_project(name)
 		filter { "toolset:emcc" }
 			linkoptions { "-s ALLOW_MEMORY_GROWTH=1", "--use-preload-cache" }
 
+			-- coroutine support
+			defines { "USE_COROUTINES" }
+			buildoptions { "-fcoroutines-ts", "-Werror=unused-result" }
+
 		filter {}
 end
 
@@ -88,7 +94,7 @@ function sdl2_project(name)
 
 		-- Emscripten metadata.
 		emscripten.html "assets/emscripten/*"
-		emscripten.assetdir "build/game/%{prj.name}"
+		emscripten.assetdir "build/emcc-assets/%{prj.name}"
 
 		-- Link SDL2 in the correct sequence.
 		filter { "system:Windows", "not action:vs*" }

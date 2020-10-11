@@ -268,7 +268,7 @@ static void FLI_nextfr(MGLDraw *mgl,int scrWidth)
 	SDL_RWseek(FLI_file, start + fhead.size, RW_SEEK_SET);
 }
 
-byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack callback)
+TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack callback)
 {
 	int frmon=0;
 	fliheader FLI_hdr;
@@ -280,7 +280,7 @@ byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack
 	if (!FLI_file)
 	{
 		printf("%s: %s\n", name, SDL_GetError());
-		return 0;
+		CO_RETURN 0;
 	}
 
 	// Read the main part of the header.
@@ -320,7 +320,7 @@ byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack
 		FLI_nextfr(mgl,scrWidth);
 		if (callback && !callback(frmon))
 			break;
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if((loop)&&(frmon==FLI_hdr.frames+1))
 		{
 			frmon=1;
@@ -342,5 +342,5 @@ byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack
 	SDL_RWclose(FLI_file);
 	mgl->ResizeBuffer(oldWidth, oldHeight);
 
-	return k != 27;
+	CO_RETURN k != 27;
 }

@@ -73,12 +73,12 @@ typedef struct attempt_t
 	byte quit;
 } attempt_t;
 
-byte ChallengeMenu(MGLDraw *mgl);
+TASK(byte) ChallengeMenu(MGLDraw *mgl);
 byte Challenging(void);
 void ChallengeEvent(byte type,int n);
 byte ChallengeUpdate(void);
 void ChallengeRender(MGLDraw *mgl);
-void ChallengeTally(MGLDraw *mgl);
+TASK(void) ChallengeTally(MGLDraw *mgl);
 byte CurrentLetter(void);
 byte DoTrivia(void);
 

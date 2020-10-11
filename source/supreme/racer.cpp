@@ -364,7 +364,7 @@ static byte UpdateGameOver(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-void RaceGame(MGLDraw *mgl)
+TASK(void) RaceGame(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -380,7 +380,7 @@ void RaceGame(MGLDraw *mgl)
 		else
 			done=UpdateGameOver(&lastTime,mgl);
 		RenderRaceGame(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;

@@ -242,7 +242,7 @@ byte CreditsUpdate(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-byte Credits(MGLDraw *mgl,byte ending)
+TASK(byte) Credits(MGLDraw *mgl,byte ending)
 {
 	byte b=0;
 	int lastTime=1;
@@ -257,15 +257,15 @@ byte Credits(MGLDraw *mgl,byte ending)
 		b=CreditsUpdate(&lastTime,mgl);
 		CreditsDisplay(mgl);
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			ExitCredits();
-			return 255;
+			CO_RETURN 255;
 		}
 		EndClock();
 	}
 
 	ExitCredits();
-	return b;
+	CO_RETURN b;
 }

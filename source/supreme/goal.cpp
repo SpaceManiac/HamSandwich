@@ -165,7 +165,7 @@ void CompleteGoal(byte goal)
 		return;
 
 	profile.progress.goal[goal]=1;
-	ShowGoalEarned(goal);
+	coro::launch(std::bind(ShowGoalEarned, goal));
 
 	if(shopping)
 		SetupGalPix(curMap);
@@ -435,7 +435,7 @@ void InitShowGoal(MGLDraw *mgl,byte num)
 void ExitShowGoal(void)
 {
 	GetDisplayMGL()->ClearScreen();
-	GetDisplayMGL()->Flip();
+	//GetDisplayMGL()->Flip();  // TODO: is this needed?
 
 	RestoreGameplayGfx();
 }
@@ -481,7 +481,7 @@ void RenderShowGoal(MGLDraw *mgl)
 	//	memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&image[i*640],640);
 }
 
-void ShowGoalEarned(byte num)
+TASK(void) ShowGoalEarned(byte num)
 {
 	byte done=0;
 	int lastTime=1;
@@ -495,7 +495,7 @@ void ShowGoalEarned(byte num)
 		done=UpdateShowGoal(&lastTime,GetDisplayMGL());
 		RenderShowGoal(GetDisplayMGL());
 
-		GetDisplayMGL()->Flip();
+		AWAIT GetDisplayMGL()->Flip();
 
 		if(!GetDisplayMGL()->Process())
 			done=1;

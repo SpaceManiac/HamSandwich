@@ -905,7 +905,7 @@ void RenderBadgeMenu(MGLDraw *mgl)
 	}
 }
 
-void BadgeMenu(MGLDraw *mgl)
+TASK(void) BadgeMenu(MGLDraw *mgl)
 {
 	byte done=0;
 
@@ -916,7 +916,7 @@ void BadgeMenu(MGLDraw *mgl)
 	{
 		done=UpdateBadgeMenu(mgl);
 		RenderBadgeMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(mgl->LastKeyPeek()==27)
 			done=1;
@@ -929,7 +929,7 @@ void BadgeMenu(MGLDraw *mgl)
 	ExitBadgeMenu();
 }
 
-void EarnBadge(byte b)
+static TASK(void) EarnBadgeTask(byte b)
 {
 	int i,c;
 
@@ -941,47 +941,52 @@ void EarnBadge(byte b)
 	if(c>=25 && opt.expando[0]==0)
 	{
 		opt.expando[0]=1;
-		ShowGameMode(4,25);
+		AWAIT ShowGameMode(4,25);
 		SaveOptions();
 	}
 
 	if(opt.meritBadge[b])
-		return;
+		CO_RETURN;
 
 	opt.modes[4]=1;	// this just indicates that badge listings should be available
 
 	MakeNormalSound(SND_BADGEGET);
 	opt.meritBadge[b]=1;
-	ShowBadge(b);
+	AWAIT ShowBadge(b);
 
 	if(c>=5 && opt.modes[0]==0)
 	{
 		opt.modes[0]=1;
-		ShowGameMode(0,5);
+		AWAIT ShowGameMode(0,5);
 	}
 	if(c>=10 && opt.modes[1]==0)
 	{
 		opt.modes[1]=1;
-		ShowGameMode(1,10);
+		AWAIT ShowGameMode(1,10);
 	}
 	if(c>=15 && opt.modes[2]==0)
 	{
 		opt.modes[2]=1;
-		ShowGameMode(2,15);
+		AWAIT ShowGameMode(2,15);
 	}
 	if(c>=20 && opt.modes[3]==0)
 	{
 		opt.modes[3]=1;
-		ShowGameMode(3,20);
+		AWAIT ShowGameMode(3,20);
 	}
 
 	SaveOptions();
 	if(c==40)
 	{
 		LoopingSound(SND_ENDSONG);
-		CheatText(GetDisplayMGL(),1);
+		AWAIT CheatText(GetDisplayMGL(),1);
 		KillSong();
 	}
+}
+
+void EarnBadge(byte b)
+{
+	coro::launch(std::bind(EarnBadgeTask, b));
 }
 
 void RenderGameMode(MGLDraw *mgl,byte progress,byte mode,byte numBadges)
@@ -1043,7 +1048,7 @@ byte UpdateGameMode(MGLDraw *mgl,int *lastTime)
 	return 0;
 }
 
-void ShowGameMode(byte mode,byte numBadges)
+TASK(void) ShowGameMode(byte mode,byte numBadges)
 {
 	byte done=0;
 	MGLDraw *mgl=GetDisplayMGL();
@@ -1065,7 +1070,7 @@ void ShowGameMode(byte mode,byte numBadges)
 		StartClock();
 		done=UpdateGameMode(mgl,&lastTime);
 		RenderGameMode(mgl,progress,mode,numBadges);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 			done=1;
 
@@ -1076,7 +1081,7 @@ void ShowGameMode(byte mode,byte numBadges)
 	ResetClock(hangon);
 }
 
-void ShowBadge(byte b)
+TASK(void) ShowBadge(byte b)
 {
 	byte done=0;
 	dword wait;
@@ -1092,7 +1097,7 @@ void ShowBadge(byte b)
 	while(!done)
 	{
 		RenderBadgeMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		// can't do anything for 3 seconds
 		if(timeGetTime()-wait>1000*3)

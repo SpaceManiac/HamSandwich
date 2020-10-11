@@ -9,7 +9,7 @@
 
 extern byte picToDrop;
 
-void Gallery(MGLDraw *mgl);
+TASK(void) Gallery(MGLDraw *mgl);
 byte HaveGallery(void);
 
 #endif

@@ -187,7 +187,7 @@ void RenderLedger(MGLDraw *mgl)
 
 //----------------
 
-void Ledger(MGLDraw *mgl)
+TASK(void) Ledger(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime=1;
@@ -201,7 +201,7 @@ void Ledger(MGLDraw *mgl)
 
 		done=UpdateLedger(&lastTime,mgl);
 		RenderLedger(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;

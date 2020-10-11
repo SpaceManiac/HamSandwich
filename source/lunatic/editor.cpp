@@ -1175,8 +1175,6 @@ void EditorDraw(void)
 
 	// draw the mouse cursor
 	DrawMouseCursor(mouseX, mouseY);
-
-	editmgl->Flip();
 }
 
 static void HandleKeyPresses(void)
@@ -1490,7 +1488,7 @@ static void HandleKeyPresses(void)
 	}
 }
 
-byte LunaticEditor(MGLDraw *mgl)
+TASK(byte) LunaticEditor(MGLDraw *mgl)
 {
 	int lastTime = 1;
 	byte exitcode = 0;
@@ -1500,7 +1498,7 @@ byte LunaticEditor(MGLDraw *mgl)
 	CDStop();
 
 	if (!InitEditor())
-		return QUITGAME;
+		CO_RETURN QUITGAME;
 
 	exitcode = CONTINUE;
 	while (exitcode == CONTINUE)
@@ -1510,6 +1508,7 @@ byte LunaticEditor(MGLDraw *mgl)
 		HandleKeyPresses();
 		exitcode = EditorRun(&lastTime);
 		EditorDraw();
+		AWAIT editmgl->Flip();
 
 		if (lastKey == 27)
 			exitcode = QUITGAME;
@@ -1520,7 +1519,7 @@ byte LunaticEditor(MGLDraw *mgl)
 	}
 
 	ExitEditor();
-	return exitcode;
+	CO_RETURN exitcode;
 }
 
 void EditorNewWorld(void)

@@ -63,7 +63,7 @@ class Tool
 void ToolInit(void);
 void ToolExit(void);
 
-void ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl);
+TASK(void) ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl);
 void ToolRender(int msx,int msy,MGLDraw *mgl);
 void ToolPickInk(void);
 void ToolShowTarget(void);

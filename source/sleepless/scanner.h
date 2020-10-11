@@ -11,7 +11,7 @@ void ScanGuy(Guy *g);
 byte UpdateScan(MGLDraw *mgl);
 void RenderScan(MGLDraw *mgl);
 
-void Bestiary(MGLDraw *mgl);
+TASK(void) Bestiary(MGLDraw *mgl);
 
 float ScanPercent(void);
 

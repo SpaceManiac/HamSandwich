@@ -7067,7 +7067,7 @@ void AI_SDZL(Guy *me, Map *map, world_t *world, Guy *goodguy)
 		{
 			if (GetPlayerWorld() == 4) // this is the real asylum, not some knock-off
 			{
-				ShowVictoryAnim(4); // you killed him.
+				coro::launch(std::bind(ShowVictoryAnim, 4)); // you killed him.
 				SendMessageToGame(MSG_WINGAME, 0);
 			}
 		}

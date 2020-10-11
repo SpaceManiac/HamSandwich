@@ -132,7 +132,7 @@ void LoadText(const char *nm,byte mode)
 	fclose(f);
 }
 
-void ShowImageOrFlic(char *str,byte nosnd,byte mode)
+TASK(void) ShowImageOrFlic(char *str,byte nosnd,byte mode)
 {
 	int speed;
 
@@ -142,7 +142,7 @@ void ShowImageOrFlic(char *str,byte nosnd,byte mode)
 
 	fname=strtok(str,",\n");
 	if(!fname)
-		return;
+		CO_RETURN;
 
 	other=strtok(NULL,",\n");
 
@@ -159,7 +159,7 @@ void ShowImageOrFlic(char *str,byte nosnd,byte mode)
 		else
 			sprintf(nm,"graphics/%s",fname);
 		GetDisplayMGL()->LoadBMP(nm);
-		return;
+		CO_RETURN;
 	}
 	if((fname[strlen(fname)-3]=='t' || fname[strlen(fname)-3]=='T') &&
 	   (fname[strlen(fname)-2]=='x' || fname[strlen(fname)-2]=='X') &&
@@ -173,7 +173,7 @@ void ShowImageOrFlic(char *str,byte nosnd,byte mode)
 		else
 			sprintf(nm,"graphics/%s",fname);
 		LoadText(nm,mode);
-		return;
+		CO_RETURN;
 	}
 
 	if(other)
@@ -183,7 +183,7 @@ void ShowImageOrFlic(char *str,byte nosnd,byte mode)
 
 	sprintf(nm,"user/%s",fname);
 
-	FLI_play(nm,0,speed,mgl);
+	AWAIT FLI_play(nm,0,speed,mgl);
 	mgl->LoadBMP("graphics/title.bmp");
 
 	if(!editing && (verified || shopping))
@@ -665,7 +665,7 @@ void DrawDebugBox(int x,int y,int x2,int y2)
 	x2-=scrx-320;
 	y2-=scry-240;
 	mgl->Box(x,y,x2,y2,255);
-	mgl->Flip();
+	//mgl->Flip();
 }
 
 void DrawFillBox(int x,int y,int x2,int y2,byte c)

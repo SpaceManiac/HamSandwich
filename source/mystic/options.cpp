@@ -372,7 +372,7 @@ void RenderOptionsMenu(MGLDraw *mgl)
 	RenderControls(120,170,mgl);
 }
 
-void OptionsMenu(MGLDraw *mgl)
+TASK(void) OptionsMenu(MGLDraw *mgl)
 {
 	byte b=0;
 	int lastTime=1;
@@ -391,11 +391,11 @@ void OptionsMenu(MGLDraw *mgl)
 		StartClock();
 		b=UpdateOptionsMenu(mgl);
 		RenderOptionsMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			ExitOptionsMenu();
-			return;
+			CO_RETURN;
 		}
 
 		EndClock();

@@ -32,7 +32,7 @@
 
 extern byte editing;
 
-byte LunaticEditor(MGLDraw *mgl);
+TASK(byte) LunaticEditor(MGLDraw *mgl);
 
 void EditorSaveWorld(const char *fname);
 void EditorSelectMap(byte w);

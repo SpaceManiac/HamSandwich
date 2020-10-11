@@ -76,7 +76,7 @@ extern options_t opt;
 void LoadOptions(void);
 void SaveOptions(void);
 
-void OptionsMenu(MGLDraw *mgl);
+TASK(void) OptionsMenu(MGLDraw *mgl);
 void KilledBoss(byte boss);
 
 #endif

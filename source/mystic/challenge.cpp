@@ -1330,7 +1330,7 @@ void InitAttempt(void)
 	attempt.quit=0;
 }
 
-byte ChallengeMenu(MGLDraw *mgl)
+TASK(byte) ChallengeMenu(MGLDraw *mgl)
 {
 	byte b=0;
 	int lastTime=1;
@@ -1345,9 +1345,9 @@ byte ChallengeMenu(MGLDraw *mgl)
 		StartClock();
 		b=ChallengeMenuUpdate(mgl,&lastTime);
 		ChallengeMenuRender(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
-			return 0;
+			CO_RETURN 0;
 		EndClock();
 		if(b==1)
 		{
@@ -1360,9 +1360,9 @@ byte ChallengeMenu(MGLDraw *mgl)
 			{
 				InitAttempt();
 				if(chal[chalCursor].chapter<4)
-					ChallengePlay(chal[chalCursor].chapter,chal[chalCursor].level);
+					AWAIT ChallengePlay(chal[chalCursor].chapter,chal[chalCursor].level);
 				else
-					ChallengePlay(chal[chalCursor].chapter-4,chal[chalCursor].level);
+					AWAIT ChallengePlay(chal[chalCursor].chapter-4,chal[chalCursor].level);
 				if(CurrentSong()!=SONG_SHOP)
 					PlaySong(SONG_SHOP);
 
@@ -1378,7 +1378,7 @@ byte ChallengeMenu(MGLDraw *mgl)
 		}
 	}
 	ExitChallengeMenu();
-	return 0;
+	CO_RETURN 0;
 }
 
 byte Challenging(void)
@@ -1732,13 +1732,13 @@ void InitChallengeTally(MGLDraw *mgl)
 		chalData.topCombo[chalCursor]=attempt.bestCombo;
 }
 
-void ChallengeTally(MGLDraw *mgl)
+TASK(void) ChallengeTally(MGLDraw *mgl)
 {
 	byte b=0;
 	int lastTime=1;
 
 	if(attempt.quit)
-		return;
+		CO_RETURN;
 
 	InitChallengeTally(mgl);
 	while(b==0)
@@ -1747,9 +1747,9 @@ void ChallengeTally(MGLDraw *mgl)
 		StartClock();
 		b=ChallengeTallyUpdate(mgl,&lastTime);
 		ChallengeTallyRender(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
-			return;
+			CO_RETURN;
 		EndClock();
 	}
 }

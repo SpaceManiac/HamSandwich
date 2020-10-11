@@ -3,7 +3,7 @@
 
 #include "mgldraw.h"
 
-void RecordBook(MGLDraw *mgl);
+TASK(void) RecordBook(MGLDraw *mgl);
 
 float CalcPlayPercent(void);
 

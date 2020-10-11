@@ -15,10 +15,10 @@
 
 const char* AppdataFolderName()
 {
-	return "Loonyland";
+	return PROJECT_NAME;
 }
 
-int main(int argc, char *argv[])
+TASK(int) main(int argc, char *argv[])
 {
 	DBG("a");
 
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 	MGLDraw *mainmgl=new MGLDraw("Loonyland", SCRWID, SCRHEI, windowedGame);
 	DBG("c");
 	if(!mainmgl)
-		return 0;
+		CO_RETURN 0;
 	DBG("d");
 	DBG("Init!");
 	LunaticInit(mainmgl);
@@ -42,61 +42,61 @@ int main(int argc, char *argv[])
 	LoopingSound(SND_HAMUMU);
 	SetSongRestart(0);
 	DBG("Splash");
+	AWAIT SplashScreen(mainmgl,"graphics/hamumu.bmp",128,2);
 
-	SplashScreen(mainmgl,"graphics/hamumu.bmp",128,2);
 	while(1)
 	{
 		DBG("Mainmenu");
-		switch(MainMenu(mainmgl)-1)
+		switch((AWAIT MainMenu(mainmgl)) - 1)
 		{
 			default:
 			case 255:	// quit
 			case MENU_EXIT:
 				LunaticExit();
 				delete mainmgl;
-				return 0;
+				CO_RETURN 0;
 				break;
 			case MENU_ADVENTURE:	// new game
-				LunaticGame(mainmgl,0,WORLD_NORMAL);
+				AWAIT LunaticGame(mainmgl,0,WORLD_NORMAL);
 				SetSongRestart(1);
 				break;
 			case MENU_REMIX:	// new game
-				LunaticGame(mainmgl,0,WORLD_REMIX);
+				AWAIT LunaticGame(mainmgl,0,WORLD_REMIX);
 				SetSongRestart(1);
 				break;
 			case MENU_LOADGAME:	// continue
-				LunaticGame(mainmgl,WhichGameToLoad()+1,WORLD_NORMAL);
+				AWAIT LunaticGame(mainmgl,WhichGameToLoad()+1,WORLD_NORMAL);
 				SetSongRestart(1);
 				break;
 			case MENU_EDITOR:	// editor
-				LunaticEditor(mainmgl);
+				AWAIT LunaticEditor(mainmgl);
 				SetSongRestart(1);
 				break;
 			case MENU_SURVIVAL:	// survival
-				LunaticGame(mainmgl,0,WORLD_SURVIVAL);
+				AWAIT LunaticGame(mainmgl,0,WORLD_SURVIVAL);
 				SetSongRestart(1);
 				break;
 			case MENU_LOONYBALL:	// Loonyball
-				LunaticGame(mainmgl,0,WORLD_LOONYBALL);
+				AWAIT LunaticGame(mainmgl,0,WORLD_LOONYBALL);
 				SetSongRestart(1);
 				break;
 			case MENU_BOWLING:
-				LunaticGame(mainmgl,0,WORLD_BOWLING);
+				AWAIT LunaticGame(mainmgl,0,WORLD_BOWLING);
 				SetSongRestart(1);
 				break;
 			case MENU_BOSSATTACK:	// boss bash
-				LunaticGame(mainmgl,0,WORLD_BOSSBASH);
+				AWAIT LunaticGame(mainmgl,0,WORLD_BOSSBASH);
 				break;
 			case MENU_HISCORE:
-				HighScore(mainmgl);
+				AWAIT HighScore(mainmgl);
 				SetSongRestart(0);
 				break;
 			case MENU_OPTIONS:	// options
-				OptionsMenu(mainmgl);
+				AWAIT OptionsMenu(mainmgl);
 				SetSongRestart(0);
 				break;
 			case MENU_BADGES:	// badge menu
-				BadgeMenu(mainmgl);
+				AWAIT BadgeMenu(mainmgl);
 				SetSongRestart(0);
 				break;
 

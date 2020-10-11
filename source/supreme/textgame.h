@@ -4,6 +4,6 @@
 #include "mgldraw.h"
 #include "game.h"
 
-void TextGame(MGLDraw *mgl);
+TASK(void) TextGame(MGLDraw *mgl);
 
 #endif

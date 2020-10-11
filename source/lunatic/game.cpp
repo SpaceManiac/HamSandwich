@@ -199,7 +199,7 @@ void AddGarbageTime(dword t)
 	garbageTime += t;
 }
 
-byte LunaticRun(int *lastTime)
+TASK(byte) LunaticRun(int *lastTime)
 {
 	numRunsToMakeUp = 0;
 	if (*lastTime > TIME_PER_FRAME * 30)
@@ -210,7 +210,7 @@ byte LunaticRun(int *lastTime)
 		if (!gamemgl->Process())
 		{
 			mapToGoTo = 255;
-			return LEVEL_ABORT;
+			CO_RETURN LEVEL_ABORT;
 		}
 
 		if (gameMode == GAMEMODE_PLAY)
@@ -247,7 +247,7 @@ byte LunaticRun(int *lastTime)
 			{
 				windingDown--;
 				if (!windingDown)
-					return windDownReason;
+					CO_RETURN windDownReason;
 			}
 		}
 		else if (gameMode == GAMEMODE_MENU)
@@ -265,12 +265,12 @@ byte LunaticRun(int *lastTime)
 					else
 						mapToGoTo = 255;
 					lastKey = 0;
-					return LEVEL_ABORT;
+					CO_RETURN LEVEL_ABORT;
 					break;
 				case 3:
 					mapToGoTo = 255;
 					lastKey = 0;
-					return WORLD_QUITGAME; // dump out altogether
+					CO_RETURN WORLD_QUITGAME; // dump out altogether
 					break;
 			}
 		}
@@ -318,7 +318,7 @@ byte LunaticRun(int *lastTime)
 			if (player.worldNum == 4 && player.levelNum == 6)
 			{
 
-				ShowVictoryAnim(4); // you killed him.
+				AWAIT ShowVictoryAnim(4); // you killed him.
 				SendMessageToGame(MSG_WINGAME, 0);
 			}
 			player.boredom = 0;
@@ -349,8 +349,8 @@ byte LunaticRun(int *lastTime)
 			windDownReason = LEVEL_WIN;
 			msgFromOtherModules = MSG_NONE;
 			CDtime = timeGetTime();
-			VictoryText(gamemgl);
-			Credits(gamemgl);
+			AWAIT VictoryText(gamemgl);
+			AWAIT Credits(gamemgl);
 			garbageTime += timeGetTime() - CDtime;
 			player.boredom = 0;
 		}
@@ -361,7 +361,7 @@ byte LunaticRun(int *lastTime)
 	garbageTime = 0;
 	JamulSoundUpdate();
 
-	return LEVEL_PLAYING;
+	CO_RETURN LEVEL_PLAYING;
 }
 
 void LunaticDraw(void)
@@ -409,7 +409,6 @@ void LunaticDraw(void)
 		tickerTime = d;
 	}
 
-	gamemgl->Flip();
 	garbageTime = 0;
 
 	visFrameCount++;
@@ -474,14 +473,13 @@ void WorldPauseDraw(void)
 		tickerTime = d;
 	}
 
-	gamemgl->Flip();
 	garbageTime = 0;
 
 	visFrameCount++;
 	visFrms++;
 }
 
-byte WorldPickerPause(void)
+TASK(byte) WorldPickerPause(void)
 {
 	int lastTime = 1;
 	byte exitcode = LEVEL_PLAYING;
@@ -494,6 +492,7 @@ byte WorldPickerPause(void)
 		StartClock();
 		exitcode = WorldPauseRun(&lastTime);
 		WorldPauseDraw();
+		AWAIT gamemgl->Flip();
 
 		if (!gamemgl->Process())
 		{
@@ -502,7 +501,7 @@ byte WorldPickerPause(void)
 		}
 		EndClock();
 	}
-	return exitcode;
+	CO_RETURN exitcode;
 }
 
 void SendMessageToGame(byte msg, int content)
@@ -543,7 +542,7 @@ void HandleKeyPresses(void)
 
 }
 
-byte PlayALevel(byte map)
+TASK(byte) PlayALevel(byte map)
 {
 	int lastTime = 1;
 	byte exitcode = 0;
@@ -551,7 +550,7 @@ byte PlayALevel(byte map)
 	if (!InitLevel(map))
 	{
 		mapToGoTo = 255;
-		return LEVEL_ABORT;
+		CO_RETURN LEVEL_ABORT;
 	}
 
 	exitcode = LEVEL_PLAYING;
@@ -569,8 +568,9 @@ byte PlayALevel(byte map)
 		StartClock();
 		if (gameMode == GAMEMODE_PLAY)
 			HandleKeyPresses();
-		exitcode = LunaticRun(&lastTime);
+		exitcode = AWAIT LunaticRun(&lastTime);
 		LunaticDraw();
+		AWAIT gamemgl->Flip();
 
 		if (lastKey == 27 && gameMode == GAMEMODE_PLAY)
 		{
@@ -587,16 +587,16 @@ byte PlayALevel(byte map)
 	}
 
 	ExitLevel();
-	return exitcode;
+	CO_RETURN exitcode;
 }
 
-byte LunaticWorld(byte world, const char *worldName)
+TASK(byte) LunaticWorld(byte world, const char *worldName)
 {
 	byte result;
 
 	InitPlayer(INIT_WORLD, world, 0);
 	if (!LoadWorld(&curWorld, worldName))
-		return WORLD_ABORT;
+		CO_RETURN WORLD_ABORT;
 
 	worldNum = world;
 	InitWorld(&curWorld, worldNum);
@@ -604,7 +604,7 @@ byte LunaticWorld(byte world, const char *worldName)
 	mapNum = 0;
 	while (1)
 	{
-		result = PlayALevel(mapNum);
+		result = AWAIT PlayALevel(mapNum);
 		if (result == LEVEL_ABORT)
 		{
 			PlayerResetScore();
@@ -627,20 +627,20 @@ byte LunaticWorld(byte world, const char *worldName)
 		{
 			FreeWorld(&curWorld);
 			PlayerResetScore();
-			return WORLD_LOAD;
+			CO_RETURN WORLD_LOAD;
 		}
 		else if (result == WORLD_QUITGAME)
 		{
 			FreeWorld(&curWorld);
 			PlayerResetScore();
-			return WORLD_QUITGAME;
+			CO_RETURN WORLD_QUITGAME;
 		}
 	}
 	FreeWorld(&curWorld);
-	return WORLD_ABORT;
+	CO_RETURN WORLD_ABORT;
 }
 
-void LunaticGame(MGLDraw *mgl, byte load)
+TASK(void) LunaticGame(MGLDraw *mgl, byte load)
 {
 	char custName[64];
 	byte b, worldResult;
@@ -665,10 +665,10 @@ void LunaticGame(MGLDraw *mgl, byte load)
 			while (1)
 			{
 				msgFromOtherModules = 0;
-				b = WorldPicker(mgl);
+				b = AWAIT WorldPicker(mgl);
 				if (b == 253)
 				{
-					b = WorldPickerPause();
+					b = AWAIT WorldPickerPause();
 					if (b == WORLD_QUITGAME)
 					{
 						b = 255;
@@ -700,14 +700,14 @@ void LunaticGame(MGLDraw *mgl, byte load)
 				if (PlayerHasLunacyKey(0) && PlayerHasLunacyKey(1) &&
 						PlayerHasLunacyKey(2) && PlayerHasLunacyKey(3))
 				{
-					ShowVictoryAnim(12);
+					AWAIT ShowVictoryAnim(12);
 					garbageTime = 0;
 					sprintf(custName, "worlds/%s", GetCustomName());
-					worldResult = LunaticWorld(b, custName);
+					worldResult = AWAIT LunaticWorld(b, custName);
 				}
 				else
 				{
-					ShowVictoryAnim(11);
+					AWAIT ShowVictoryAnim(11);
 					garbageTime = 0;
 					worldResult = 0; // not allowed to enter
 				}
@@ -715,13 +715,13 @@ void LunaticGame(MGLDraw *mgl, byte load)
 			else
 			{
 				sprintf(custName, "worlds/%s", GetCustomName());
-				worldResult = LunaticWorld(b, custName);
+				worldResult = AWAIT LunaticWorld(b, custName);
 			}
 		}
 		else
 		{
 			sprintf(custName, "worlds/%s", GetCustomName());
-			worldResult = LunaticWorld(b, custName);
+			worldResult = AWAIT LunaticWorld(b, custName);
 		}
 		if (worldResult == WORLD_QUITGAME)
 		{
@@ -732,12 +732,12 @@ void LunaticGame(MGLDraw *mgl, byte load)
 	ExitPlayer();
 }
 
-void TrainingGame(MGLDraw *mgl)
+TASK(void) TrainingGame(MGLDraw *mgl)
 {
 	InitPlayer(INIT_GAME, 0, 0);
 	SetCustomName("training.dlw");
-	if (LunaticWorld(5, "worlds/training.dlw") == WORLD_LOAD)
-		LunaticGame(mgl, 1);
+	if (AWAIT LunaticWorld(5, "worlds/training.dlw") == WORLD_LOAD)
+		AWAIT LunaticGame(mgl, 1);
 	mgl->LastKeyPressed(); // just to clear key buffer
 	ExitPlayer();
 }

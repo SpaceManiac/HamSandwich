@@ -236,7 +236,7 @@ void InputWorld(const char *fname)
 	profile.progress.totalWorlds=numWorlds;
 }
 
-void ScanWorlds(void)
+TASK(void) ScanWorlds(void)
 {
 	int count,done;
 
@@ -276,7 +276,7 @@ void ScanWorlds(void)
 			{
 				start = now;
 				GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450,32*1+16);
-				GetDisplayMGL()->Flip();
+				AWAIT GetDisplayMGL()->Flip();
 			}
 		}
 	}
@@ -413,7 +413,7 @@ void MoveToNewWorld(void)
 	FetchScores(0);
 }
 
-void InitWorldSelect(MGLDraw *mgl)
+TASK(void) InitWorldSelect(MGLDraw *mgl)
 {
 	int i;
 
@@ -424,7 +424,7 @@ void InitWorldSelect(MGLDraw *mgl)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
 
 	PrintGlow(20,20,"Loading...",0,2);
-	mgl->Flip();
+	AWAIT mgl->Flip();
 
 	sortType=0;
 	sortDir=0;
@@ -433,7 +433,7 @@ void InitWorldSelect(MGLDraw *mgl)
 	numWorlds=0;
 
 	list=(worldDesc_t *)malloc(sizeof(worldDesc_t)*16);
-	ScanWorlds();
+	AWAIT ScanWorlds();
 	SortWorlds(sortType,sortDir);
 	SelectLastWorld();
 	CalcScrollBar();
@@ -454,7 +454,7 @@ void ExitWorldSelect(void)
 	delete wsSpr;
 }
 
-byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
+TASK(byte) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 {
 	static byte oldc=255;
 	char c;
@@ -513,7 +513,7 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			else
 			{
 				oldc=255;
-				return WS_PLAY;
+				CO_RETURN WS_PLAY;
 			}
 		}
 
@@ -566,7 +566,7 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 							else
 							{
 								oldc=255;
-								return WS_PLAY;
+								CO_RETURN WS_PLAY;
 							}
 						}
 					}
@@ -643,7 +643,7 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				else
 				{
 					oldc=255;
-					return WS_PLAY;
+					CO_RETURN WS_PLAY;
 				}
 			}
 			// reset world
@@ -670,7 +670,7 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			else if(PointInRect(msx,msy,20,443,20+150,443+WBTN_HEIGHT))
 			{
 				oldc=255;
-				return WS_EXIT;
+				CO_RETURN WS_EXIT;
 			}
 
 			// hi score buttons
@@ -718,7 +718,7 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				else
 					EraseHighScores(&tmpWorld);
 				ExitWorldSelect();
-				InitWorldSelect(mgl);
+				AWAIT InitWorldSelect(mgl);
 			}
 			else if(PointInRect(msx,msy,600-30-50,270,600-30-50+50,270+WBTN_HEIGHT))
 			{
@@ -740,11 +740,11 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 	if(c==27)
 	{
 		oldc=255;
-		return WS_EXIT;
+		CO_RETURN WS_EXIT;
 	}
 
 	mouseB=mgl->mouse_b;
-	return WS_CONTINUE;
+	CO_RETURN WS_CONTINUE;
 }
 
 void RenderWorldSelectButton(int x,int y,int wid,const char *txt,MGLDraw *mgl)
@@ -906,24 +906,24 @@ void RenderWorldSelect(MGLDraw *mgl)
 	SetSpriteConstraints(0,0,639,479);
 }
 
-byte WorldSelectMenu(MGLDraw *mgl)
+TASK(byte) WorldSelectMenu(MGLDraw *mgl)
 {
 	byte done=WS_CONTINUE;
 	int lastTime=1;
 	char fname[32];
 
-	InitWorldSelect(mgl);
+	AWAIT InitWorldSelect(mgl);
 
 	if(numWorlds==0)
-		return 1;	// just skip it if there are no worlds!
+		CO_RETURN 1;	// just skip it if there are no worlds!
 
 	while(done==WS_CONTINUE)
 	{
 		lastTime+=TimeLength();
 		StartClock();
-		done=UpdateWorldSelect(&lastTime,mgl);
+		done=AWAIT UpdateWorldSelect(&lastTime,mgl);
 		RenderWorldSelect(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=WS_EXIT;
@@ -932,18 +932,18 @@ byte WorldSelectMenu(MGLDraw *mgl)
 		{
 			strcpy(fname,list[choice].fname);
 			ExitWorldSelect();
-			if(PlayWorld(mgl,fname)==0)
+			if(AWAIT PlayWorld(mgl,fname)==0)
 			{
-				return 1;
+				CO_RETURN 1;
 			}
-			InitWorldSelect(mgl);
+			AWAIT InitWorldSelect(mgl);
 			done=WS_CONTINUE;
 		}
 		EndClock();
 	}
 
 	ExitWorldSelect();
-	return 1;
+	CO_RETURN 1;
 }
 
 const char *WorldFName(void)

@@ -1180,7 +1180,7 @@ static byte UpdateGameOver(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-void CaveGame(MGLDraw *mgl)
+TASK(void) CaveGame(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -1196,7 +1196,7 @@ void CaveGame(MGLDraw *mgl)
 		else
 			done=UpdateGameOver(&lastTime,mgl);
 		RenderCaveGame(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;
@@ -1469,7 +1469,7 @@ void RenderArcade(MGLDraw *mgl)
 	SetSpriteConstraints(0,0,639,479);
 }
 
-void Arcade(MGLDraw *mgl, byte gm)
+TASK(void) Arcade(MGLDraw *mgl, byte gm)
 {
 	byte done=0;
 	int lastTime=1;
@@ -1485,7 +1485,7 @@ void Arcade(MGLDraw *mgl, byte gm)
 		done=UpdateArcade(&lastTime,mgl);
 		RenderArcade(mgl);
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;
@@ -1496,13 +1496,13 @@ void Arcade(MGLDraw *mgl, byte gm)
 			switch(game)
 			{
 				case 0:
-					SpaceGame(mgl);
+					AWAIT SpaceGame(mgl);
 					break;
 				case 1:
-					CaveGame(mgl);
+					AWAIT CaveGame(mgl);
 					break;
 				case 2:
-					RaceGame(mgl);
+					AWAIT RaceGame(mgl);
 					break;
 			}
 			done=0;

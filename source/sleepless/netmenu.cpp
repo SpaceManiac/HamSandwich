@@ -290,7 +290,7 @@ void EndProfileUp(void)
 	webInited=0;
 }
 
-byte UpdateNetMenu(int *lastTime,MGLDraw *mgl)
+TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 {
 	int i;
 	byte b,mb;
@@ -367,7 +367,7 @@ byte UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 								BeginProfileUpload();
 								break;
 							case BTN_EXIT:
-								return 1;
+								CO_RETURN 1;
 								break;
 						}
 					}
@@ -411,7 +411,7 @@ byte UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 				}
 			}
 			if(k==27)
-				return 1;	// exit
+				CO_RETURN 1;	// exit
 			break;
 		case NET_UPLOADYES:
 		case NET_CANCELUP:
@@ -436,7 +436,7 @@ byte UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 				}
 				if(mode==NET_BADNAME)
 				{
-					NameEntry(mgl,0);
+					AWAIT NameEntry(mgl,0);
 					strcpy(profile.name,GetEnteredName());
 					SaveProfile();
 					BeginNameCheck();
@@ -540,7 +540,7 @@ byte UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 			break;
 	}
 
-	return 0;
+	CO_RETURN 0;
 }
 
 void RenderNetButton(int x,int y,int wid,const char *txt,MGLDraw *mgl)
@@ -646,7 +646,7 @@ void RenderNetMenu(MGLDraw *mgl)
 
 //----------------
 
-void NetMenu(MGLDraw *mgl)
+TASK(void) NetMenu(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime=1;
@@ -657,10 +657,10 @@ void NetMenu(MGLDraw *mgl)
 	{
 		lastTime+=TimeLength();
 		StartClock();
-		done=UpdateNetMenu(&lastTime,mgl);
+		done=AWAIT UpdateNetMenu(&lastTime,mgl);
 		RenderNetMenu(mgl);
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;

@@ -468,7 +468,7 @@ void SaveOptions(void)
 	AppdataSync();
 }
 
-void OptionsMenu(MGLDraw *mgl)
+TASK(void) OptionsMenu(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -482,7 +482,7 @@ void OptionsMenu(MGLDraw *mgl)
 		StartClock();
 		done=UpdateOptionsMenu(&lastTime,mgl);
 		RenderOptionsMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(!mgl->Process())

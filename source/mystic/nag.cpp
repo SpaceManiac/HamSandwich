@@ -83,7 +83,7 @@ byte NagUpdate(MGLDraw *mgl,int *lastTime)
 	return 0;
 }
 
-byte Nag(MGLDraw *mgl)
+TASK(byte) Nag(MGLDraw *mgl)
 {
 	byte b=0;
 	int lastTime=1;
@@ -104,14 +104,14 @@ byte Nag(MGLDraw *mgl)
 		StartClock();
 		b=NagUpdate(mgl,&lastTime);
 		NagDisplay(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			delete nagSpr;
-			return 255;
+			CO_RETURN 255;
 		}
 		EndClock();
 	}
 	delete nagSpr;
-	return cursor;
+	CO_RETURN cursor;
 }

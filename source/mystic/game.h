@@ -38,6 +38,7 @@
 #define MSG_LOADGAME  4
 #define MSG_WINGAME	  5
 #define MSG_BATTLE	  6
+#define MSG_SHOWANIM  7
 
 // these are the possible outcomes of a level
 // if you die, the level just starts over, so that isn't included
@@ -74,13 +75,13 @@ void EnterStatusScreen(void);
 void EnterPictureDisplay(void);
 void EnterSpeechMode(void);
 
-byte LunaticRun(int *lastTime);
-void LunaticDraw(void);
+TASK(byte) LunaticRun(int *lastTime);
+TASK(void) LunaticDraw(void);
 
-byte PlayALevel(byte map);
+TASK(byte) PlayALevel(byte map);
 
-byte LunaticWorld(byte world);
-byte LunaticGame(MGLDraw *mgl,byte load);
+TASK(byte) LunaticWorld(byte world);
+TASK(byte) LunaticGame(MGLDraw *mgl,byte load);
 void TrainingGame(MGLDraw *mgl);
 
 void SendMessageToGame(byte msg,int content);
@@ -92,7 +93,7 @@ void GameIdle(void);
 byte BattleMode(void);
 byte WonTheBattle(void);
 Map *CurrentMap(void);
-byte ChallengePlay(byte world,byte lvl);
+TASK(byte) ChallengePlay(byte world,byte lvl);
 byte GetGameMode(void);
 
 #endif

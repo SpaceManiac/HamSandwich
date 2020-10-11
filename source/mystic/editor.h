@@ -34,7 +34,7 @@ typedef struct editopt_t
 	byte curBadguy;
 } editopt_t;
 
-byte LunaticEditor(MGLDraw *mgl);
+TASK(byte) LunaticEditor(MGLDraw *mgl);
 
 void EditorNewWorld(void);
 void EditorLoadWorld(char *fname);

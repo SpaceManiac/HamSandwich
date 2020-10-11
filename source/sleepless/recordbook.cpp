@@ -258,7 +258,7 @@ void RenderRecordBook(MGLDraw *mgl)
 
 //----------------
 
-void RecordBook(MGLDraw *mgl)
+TASK(void) RecordBook(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime=1;
@@ -272,7 +272,7 @@ void RecordBook(MGLDraw *mgl)
 		done=UpdateRecordBook(&lastTime,mgl);
 		RenderRecordBook(mgl);
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;

@@ -93,7 +93,7 @@ byte AllMoviesSeen(void)
 	return 1;
 }
 
-byte UpdateTheater(int *lastTime,MGLDraw *mgl)
+TASK(byte) UpdateTheater(int *lastTime,MGLDraw *mgl)
 {
 	byte c;
 
@@ -114,7 +114,7 @@ byte UpdateTheater(int *lastTime,MGLDraw *mgl)
 
 	mgl->GetMouse(&msx,&msy);
 	if(mgl->LastKeyPressed()==27)
-		return 1;
+		CO_RETURN 1;
 
 	c=GetTaps()|GetArrowTaps();
 
@@ -134,18 +134,18 @@ byte UpdateTheater(int *lastTime,MGLDraw *mgl)
 	if(mgl->MouseTap() || (c&CONTROL_B1))
 	{
 		if(cursor==numMovies)
-			return 1;
+			CO_RETURN 1;
 		else if(profile.progress.movie[cursor])
 		{
 			MakeNormalSound(movie[cursor].sound);
-			ShowImageOrFlic(movie[cursor].filename,1,0);
+			AWAIT ShowImageOrFlic(movie[cursor].filename,1,0);
 			JamulSoundPurge();
 		}
 		else
 			MakeNormalSound(SND_TURRETBZZT);
 	}
 
-	return 0;
+	CO_RETURN 0;
 }
 
 void RenderTheater(MGLDraw *mgl)
@@ -208,7 +208,7 @@ void RenderTheater(MGLDraw *mgl)
 	oldmsy=msy;
 }
 
-void Theater(MGLDraw *mgl)
+TASK(void) Theater(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime=1;
@@ -220,9 +220,9 @@ void Theater(MGLDraw *mgl)
 		lastTime+=TimeLength();
 		StartClock();
 
-		done=UpdateTheater(&lastTime,mgl);
+		done=AWAIT UpdateTheater(&lastTime,mgl);
 		RenderTheater(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;

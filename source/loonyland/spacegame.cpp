@@ -1501,7 +1501,7 @@ byte UpdateGameOver(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-void SpaceGame(MGLDraw *mgl)
+TASK(void) SpaceGame(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -1517,7 +1517,7 @@ void SpaceGame(MGLDraw *mgl)
 		else
 			done=UpdateGameOver(&lastTime,mgl);
 		RenderSpaceGame(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;

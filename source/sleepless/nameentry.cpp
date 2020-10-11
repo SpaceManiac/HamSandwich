@@ -279,7 +279,7 @@ void RenderNameEntry(MGLDraw *mgl)
 
 //----------------
 
-void NameEntry(MGLDraw *mgl,byte makeNew)
+TASK(void) NameEntry(MGLDraw *mgl,byte makeNew)
 {
 	byte done=0;
 	int lastTime=1;
@@ -299,7 +299,7 @@ void NameEntry(MGLDraw *mgl,byte makeNew)
 
 		done=UpdateNameEntry(&lastTime,mgl);
 		RenderNameEntry(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=255;

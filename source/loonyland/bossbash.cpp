@@ -272,7 +272,7 @@ void RenderBossMenu(MGLDraw *mgl)
 	}
 }
 
-byte BossMenu(MGLDraw *mgl)
+TASK(byte) BossMenu(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -287,7 +287,7 @@ byte BossMenu(MGLDraw *mgl)
 		StartClock();
 		done=UpdateBossMenu(&lastTime,mgl);
 		RenderBossMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(mgl->LastKeyPressed()==27)
 		{
@@ -304,9 +304,9 @@ byte BossMenu(MGLDraw *mgl)
 	ExitBossMenu();
 
 	if(victim==255)
-		return 0;
+		CO_RETURN 0;
 
-	return victim;
+	CO_RETURN victim;
 }
 
 byte BashPower(void)

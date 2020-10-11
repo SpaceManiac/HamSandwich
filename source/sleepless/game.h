@@ -75,13 +75,13 @@ byte GameStartup(void);
 
 void EnterPictureDisplay(void);
 
-byte LunaticRun(int *lastTime);
-void LunaticDraw(void);
+TASK(byte) LunaticRun(int *lastTime);
+TASK(void) LunaticDraw(void);
 
-byte PlayALevel(byte map);
-void TestLevel(world_t *world,byte level);
+TASK(byte) PlayALevel(byte map);
+TASK(void) TestLevel(world_t *world,byte level);
 
-byte LunaticWorld(byte world,const char *worldName);
+TASK(byte) LunaticWorld(byte world,const char *worldName);
 
 void SendMessageToGame(byte msg,int content);
 
@@ -89,7 +89,7 @@ void SetGameIdle(bool b);
 byte GetGameIdle(void);
 void GameIdle(void);
 
-byte PlayWorld(MGLDraw *mgl,const char *fname);
+TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname);
 void PauseGame(void);
 
 void RestoreGameplayGfx(void);

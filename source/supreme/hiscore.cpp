@@ -8,7 +8,7 @@
 #include "config.h"
 #include "appdata.h"
 
-#if __linux__
+#if __linux__ || __EMSCRIPTEN__
 #include <unistd.h>
 #endif
 

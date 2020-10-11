@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include "jamultypes.h"
+#include "coro.h"
 
 class MGLDraw;
 
@@ -67,7 +68,7 @@ void FontPrintRectBlack2(int x, int y, int x2, int y2, const char *s, int height
 
 int FontStrLen(const char *s, mfont_t *font);
 void FontSetColors(byte first, byte count, byte *data);
-bool FontInputText(const char *prompt, char *buffer, int len, void (*renderScrn)(mfont_t *), mfont_t *font);
+TASK(bool) FontInputText(const char *prompt, char *buffer, int len, void (*renderScrn)(mfont_t *), mfont_t *font);
 
 byte RightBraceHack(mfont_t *font);
 

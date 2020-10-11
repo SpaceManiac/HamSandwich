@@ -68,6 +68,7 @@ while [ $# -ne 0 ]; do
 			;;
 		"--web")
 			TOOLSET=emcc
+			BITS=
 			;;
 		"--two")
 			TWO=ON
@@ -95,8 +96,13 @@ CONFIG=$CONFIG$BITS
 
 # Ensure the project's assets exist
 GAMEDIR="build/game/$PROJECT"
+if [ "$TOOLSET" = "emcc" ]; then
+	# Extract Emscripten assets to their own directory, to avoid local debug
+	# profiles from ending up in the build.
+	GAMEDIR="build/emcc-assets/$PROJECT"
+fi
 if [ ! -d "$GAMEDIR" ]; then
-	./tools/build/extract-assets.sh "$PROJECT"
+	./tools/build/extract-assets.sh "$PROJECT" "$GAMEDIR"
 fi
 
 # Ensure the project's build is up to date
