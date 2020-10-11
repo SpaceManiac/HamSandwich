@@ -53,6 +53,7 @@ while [ $# -ne 0 ]; do
 			;;
 		"--web")
 			TOOLSET=emcc
+			BITS=
 			;;
 		"--two")
 			TWO=ON
