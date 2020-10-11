@@ -913,7 +913,10 @@ bool MGLDraw::SaveBMP(const char *name)
 	SDL_LockSurface(surface);
 	memcpy(surface->pixels, scrn, xRes * yRes);
 	SDL_UnlockSurface(surface);
-	memcpy(surface->format->palette->colors, thePal, sizeof(PALETTE));
+	for (int i = 0; i < 256; ++i)
+	{
+		surface->format->palette->colors[i] = { thePal[i].r, thePal[i].g, thePal[i].b, thePal[i].a };
+	}
 	SDL_SaveBMP(surface, name);
 	SDL_FreeSurface(surface);
 	return true;
