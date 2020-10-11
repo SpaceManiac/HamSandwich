@@ -91,7 +91,7 @@ function sdl2_project(name)
 
 		-- Emscripten metadata.
 		emscripten.html "assets/emscripten/*"
-		emscripten.assetdir "build/game/%{prj.name}"
+		emscripten.assetdir "build/emcc-assets/%{prj.name}"
 
 		-- Link SDL2 in the correct sequence.
 		filter { "system:Windows", "not action:vs*" }

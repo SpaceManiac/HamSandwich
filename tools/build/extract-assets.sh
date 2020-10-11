@@ -11,7 +11,7 @@ PATH="$PWD/build:$PATH"
 echo "==== Extracting assets for $PROJECT ===="
 
 INSTDIR="build/installers"
-OUTDIR="build/game/$PROJECT"
+OUTDIR="${2:-build/game/$PROJECT}"
 
 itch_download() {  # <url> <filename> <hash>
 	while [ ! -f "$INSTDIR/$2" ]; do
