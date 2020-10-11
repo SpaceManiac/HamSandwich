@@ -54,6 +54,7 @@ case "$PROJECT" in
 	"sleepless")
 		itch_download 'https://hamumu.itch.io/sleepless-hollow' hollow_betainstall.exe 41660802318356fba53a21b4d368e191b3197030fb9e8eb833788f45c01c6f99
 		extract_nsis "$INSTDIR/hollow_betainstall.exe" "$OUTDIR"
+		7z x -o"$OUTDIR" "$OUTDIR/worlds/sleepiest_world.zip"
 		;;
 	"loonyland")
 		itch_download 'https://hamumu.itch.io/loonyland-halloween-hill' loonyland_install.EXE cf3cdc555297e41f6c2da61d89815dbbc740d6fc677c83ec6c6e1acfa117de34
