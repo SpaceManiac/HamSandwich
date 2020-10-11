@@ -2390,7 +2390,7 @@ void SpecialEdit_Exit(void)
 	memcpy(GetSpecial(specialNum),&spcl,sizeof(special_t));
 }
 
-void SpecialEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
+void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
 {
 	switch(mode)
 	{
@@ -2404,6 +2404,32 @@ void SpecialEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 			{
 				rightClick=1;
 				CheckButtons(mouseX,mouseY);
+			}
+			if (scroll)
+			{
+				if (mouseY < 240)
+				{
+					if (scroll > 0)
+					{
+						if (trgStart > 0) --trgStart;
+					}
+					else if (scroll < 0)
+					{
+						if (trgStart < NUM_TRIGGERS - 5) ++trgStart;
+					}
+				}
+				else
+				{
+					if (scroll > 0)
+					{
+						if (effStart > 0) --effStart;
+					}
+					else if (scroll < 0)
+					{
+						if (effStart < NUM_EFFECTS - 5) ++effStart;
+					}
+				}
+				SpecialEditSetupButtons();
 			}
 			break;
 		case SMODE_PICKBMP:

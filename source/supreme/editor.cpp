@@ -294,7 +294,7 @@ void UpdateMouse(void)
 			TerrainEdit_Update(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_SPECIAL:
-			SpecialEdit_Update(mouseX,mouseY,editmgl);
+			SpecialEdit_Update(mouseX,mouseY,scroll,editmgl);
 			break;
 		case EDITMODE_ITEM:
 			ItemEdit_Update(mouseX,mouseY,editmgl);
