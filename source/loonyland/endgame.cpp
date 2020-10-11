@@ -47,6 +47,8 @@ typedef struct stat_t
 	byte visible;
 } stat_t;
 
+// `stat` is a thing that might already exist depending on header coincidences
+#define stat loonystat
 stat_t stat[16];
 byte numStats;
 byte curStat;
