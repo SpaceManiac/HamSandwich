@@ -95,10 +95,8 @@ Compiling and running:
 
 Publishing:
 
-1. Consider tidying the `build/game/<gamename>` folder so that your saves are
-   not included in the download.
-2. Run `make toolset=emcc config=release <gamename>` to prepare a release build.
-3. Upload the `.data`, `.html`, `.js,` and `.wasm` files from
+1. Run `make toolset=emcc config=release <gamename>` to prepare a release build.
+2. Upload the `.data`, `.html`, `.js,` and `.wasm` files from
    `build/emcc-release/<gamename>`.
 
 [emsdk]: https://emscripten.org/docs/getting_started/downloads.html
