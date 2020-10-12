@@ -135,8 +135,8 @@ static void SaveMapSpecial(hamworld::Section *f, const special_t *spcl)
 		f->write_varint(elem->type);
 		f->write_varint(elem->x);
 		f->write_varint(elem->y);
-		f->write_varint(elem->value);
-		f->write_varint(elem->value2);
+		f->write_varint((uint32_t) elem->value);
+		f->write_varint((uint32_t) elem->value2);
 
 		// Pull trigger text from effect array.
 		if (elem->type == TRG_EQUATION || elem->type == TRG_EQUVAR)
@@ -160,8 +160,8 @@ static void SaveMapSpecial(hamworld::Section *f, const special_t *spcl)
 		f->write_varint(elem->type);
 		f->write_varint(elem->x);
 		f->write_varint(elem->y);
-		f->write_varint(elem->value);
-		f->write_varint(elem->value2);
+		f->write_varint((uint32_t) elem->value);
+		f->write_varint((uint32_t) elem->value2);
 		f->write_string(elem->text);
 	}
 
@@ -182,8 +182,8 @@ static void LoadMapSpecial(hamworld::Section *f, special_t *spcl)
 		elem->type = f->read_varint();
 		elem->x = f->read_varint();
 		elem->y = f->read_varint();
-		elem->value = f->read_varint();
-		elem->value2 = f->read_varint();
+		elem->value = (uint32_t) f->read_varint();
+		elem->value2 = (uint32_t) f->read_varint();
 
 		// Put trigger text into effect array.
 		if (elem->type == TRG_EQUATION || elem->type == TRG_EQUVAR)
@@ -200,8 +200,8 @@ static void LoadMapSpecial(hamworld::Section *f, special_t *spcl)
 		elem->type = f->read_varint();
 		elem->x = f->read_varint();
 		elem->y = f->read_varint();
-		elem->value = f->read_varint();
-		elem->value2 = f->read_varint();
+		elem->value = (uint32_t) f->read_varint();
+		elem->value2 = (uint32_t) f->read_varint();
 		f->read_string(elem->text);
 	}
 
