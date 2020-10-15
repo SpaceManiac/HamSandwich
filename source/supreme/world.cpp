@@ -171,15 +171,85 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 	return 1;
 }
 
+#define YES_IF(X) if(X) return true;
+// Checks for if a world *must* be saved as a HamSandwich format world.
+// The intent is to prefer the Supreme format when possible, and use the
+// newer HamSandwich format only for worlds which absolutely require it.
+// It might take a little work, but worlds which do not exceed the limits of
+// the relevant integer types should still "fit" in the Supreme format.
+
+static bool MustBeHamSandwichMap(const Map *map)
+{
+	YES_IF(map->width > UINT8_MAX);
+	YES_IF(map->height > UINT8_MAX);
+	YES_IF(strlen(map->name) > 31);
+	YES_IF(strlen(map->song) > 31);
+
+	int count = 0;
+	for (int i = 0; i < MAX_MAPMONS; ++i)
+	{
+		if (map->badguy[i].type)
+		{
+			++count;
+			YES_IF(count > UINT8_MAX);
+			YES_IF(map->badguy[i].x > UINT8_MAX);
+			YES_IF(map->badguy[i].y > UINT8_MAX);
+			YES_IF(map->badguy[i].type > UINT8_MAX);
+			YES_IF(map->badguy[i].item > UINT8_MAX);
+		}
+	}
+
+	// TODO: specials
+
+	YES_IF(map->flags > UINT16_MAX);
+	YES_IF(map->numBrains > UINT16_MAX);
+	YES_IF(map->numCandles > UINT16_MAX);
+	YES_IF(map->itemDrops > UINT16_MAX);
+
+	// TODO: map data
+
+	return false;
+}
+
+bool MustBeHamSandwichWorld(const world_t *world)
+{
+	// If any "legacy" limits are exceeded.
+	YES_IF(strlen(world->author) > 31);
+	YES_IF(world->numMaps > UINT8_MAX);
+	YES_IF(world->numTiles > UINT16_MAX);
+
+	// If you change sizeof(terrain_t), you can tweak the SaveWorld and
+	// LoadWorld functions to save/load the old size and tweak this line
+	// to check if `flags > UINT16_MAX` or `next > UINT16_MAX`.
+	YES_IF(sizeof(terrain_t) != 4);
+
+	for(int i = 0; i < world->numMaps; ++i)
+	{
+		YES_IF(MustBeHamSandwichMap(world->map[i]));
+	}
+
+	// TODO: Items
+	// TODO: Sounds
+
+	return false;
+}
+#undef YES_IF
+
 byte SaveWorld(world_t *world, const char *fname)
 {
-	// Save new world
-	Ham_SaveWorld(world, fname);
-	std::string name = fname;
-	name.append("_old");
-	fname = name.c_str();
+	std::string namebuf;
+	if (MustBeHamSandwichWorld(world))
+	{
+		// Save HamSandwich world.
+		printf("Saving HamSandwich world: %s\n", fname);
+		Ham_SaveWorld(world, fname);
+		// Save old world as backup.
+		namebuf = fname;
+		namebuf.append("_old");
+		fname = namebuf.c_str();
+	}
+	printf("Saving Supreme world: %s\n", fname);
 
-	// Save old world as backup
 	FILE *f;
 	int i;
 	char code[9]="SUPREME!";
