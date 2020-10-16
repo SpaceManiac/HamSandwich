@@ -18,6 +18,7 @@ static int filePos;
 static byte asking,yesNo;
 static char question[64];
 static byte exitCode;
+static bool hamSandwich;
 
 static void ObtainFilenames(const char *dir, const char *ext)
 {
@@ -102,6 +103,11 @@ void InitFileDialog(const char *dir, const char *ext, byte menuItemsToShow,const
 	ObtainFilenames(dir, ext);
 	SortFilenames();
 	strcpy(newfname,defaultName);
+
+	if (menuItems & FM_SAVE)
+	{
+		hamSandwich = MustBeHamSandwichWorld(EditorGetWorld());
+	}
 }
 
 void ExitFileDialog(void)
@@ -177,6 +183,12 @@ void RenderFileDialog(int msx,int msy,MGLDraw *mgl)
 			mgl->FillBox(370,270,420,270+14,8+32*1);
 		mgl->Box(370,270,420,270+14,31);
 		Print(372,272,"Save",0,1);
+
+		if (hamSandwich)
+		{
+			Print(366,286,"HamSwch",0,1);
+			Print(366,298,"format",0,1);
+		}
 	}
 
 	if(msx>=370 && msx<=420 && msy>=370 && msy<=370+14)
