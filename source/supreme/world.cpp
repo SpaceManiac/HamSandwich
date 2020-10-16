@@ -171,17 +171,21 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 	return 1;
 }
 
-#define YES_IF(X) if(X) return true;
+#define YES_IF(X) if(X) { return true; }
 // Checks for if a world *must* be saved as a HamSandwich format world.
 // The intent is to prefer the Supreme format when possible, and use the
 // newer HamSandwich format only for worlds which absolutely require it.
 // It might take a little work, but worlds which do not exceed the limits of
 // the relevant integer types should still "fit" in the Supreme format.
 
+// There are some lines checking sizeof() for simplicity. If you change them,
+// you can tweak the SaveWorld and LoadWorld functions to save/load the old
+// size and tweak those checks.
+
 static bool MustBeHamSandwichMap(const Map *map)
 {
-	YES_IF(map->width > UINT8_MAX);
-	YES_IF(map->height > UINT8_MAX);
+	YES_IF(map->width > 250);  // x=255 is special, so we need HSW in that case
+	YES_IF(map->height > 250);
 	YES_IF(strlen(map->name) > 31);
 	YES_IF(strlen(map->song) > 31);
 
@@ -199,14 +203,48 @@ static bool MustBeHamSandwichMap(const Map *map)
 		}
 	}
 
-	// TODO: specials
+	for (int i = 0; i < MAX_SPECIAL; ++i)
+	{
+		const auto& spcl = map->special[i];
+		if (spcl.x != 255)
+		{
+			YES_IF(i > UINT8_MAX);
+			YES_IF(spcl.x > UINT8_MAX);
+			YES_IF(spcl.y > UINT8_MAX);
+			YES_IF(spcl.uses > UINT8_MAX);
+
+			for (int j = 0; j < NUM_TRIGGERS; ++j)
+			{
+				if (spcl.trigger[j].type)
+				{
+					YES_IF(j > 7);
+				}
+			}
+			for (int j = 0; j < NUM_EFFECTS; ++j)
+			{
+				if (spcl.effect[j].type)
+				{
+					YES_IF(j > 31);
+				}
+			}
+
+			YES_IF(sizeof(trigger_t) != 12);
+			YES_IF(sizeof(effect_t) != 44);
+		}
+	}
 
 	YES_IF(map->flags > UINT16_MAX);
 	YES_IF(map->numBrains > UINT16_MAX);
 	YES_IF(map->numCandles > UINT16_MAX);
 	YES_IF(map->itemDrops > UINT16_MAX);
 
-	// TODO: map data
+	for (int i = 0, max = map->width * map->height; i < max; ++i)
+	{
+		YES_IF(map->map[i].floor > UINT16_MAX);
+		YES_IF(map->map[i].wall > UINT16_MAX);
+		YES_IF(map->map[i].item > UINT8_MAX);
+		YES_IF(map->map[i].light < INT8_MIN || map->map[i].light > INT8_MAX);
+	}
 
 	return false;
 }
@@ -218,9 +256,6 @@ bool MustBeHamSandwichWorld(const world_t *world)
 	YES_IF(world->numMaps > UINT8_MAX);
 	YES_IF(world->numTiles > UINT16_MAX);
 
-	// If you change sizeof(terrain_t), you can tweak the SaveWorld and
-	// LoadWorld functions to save/load the old size and tweak this line
-	// to check if `flags > UINT16_MAX` or `next > UINT16_MAX`.
 	YES_IF(sizeof(terrain_t) != 4);
 
 	for(int i = 0; i < world->numMaps; ++i)
@@ -228,8 +263,10 @@ bool MustBeHamSandwichWorld(const world_t *world)
 		YES_IF(MustBeHamSandwichMap(world->map[i]));
 	}
 
-	// TODO: Items
-	// TODO: Sounds
+	// simply crossing our fingers that there are <65535 custom items...
+	YES_IF(sizeof(item_t) != 124);
+
+	YES_IF(sizeof(soundDesc_t) != 36);
 
 	return false;
 }
