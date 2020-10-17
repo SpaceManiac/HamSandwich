@@ -9,7 +9,6 @@
 	#include <SDL2/SDL_mixer.h>
 #endif  // SDL_UNPREFIXED
 
-
 static int SampleSize(uint16_t format)
 {
 	return SDL_AUDIO_BITSIZE(format) / 8;

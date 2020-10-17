@@ -63,6 +63,14 @@ bool JamulSoundInit(int numBuffers)
 		LogError("Mix_OpenAudio: %s", Mix_GetError());
 		return false;
 	}
+
+#ifndef __EMSCRIPTEN__
+	int frequency, channels;
+	uint16_t format;
+	Mix_QuerySpec(&frequency, &format, &channels);
+	printf("audio format: freq=%d, channels=%d, format=0x%x\n", frequency, channels, format);
+#endif
+
 	NUM_SOUNDS = ConfigNumSounds();
 	Mix_AllocateChannels(NUM_SOUNDS + 1);
 
@@ -188,6 +196,7 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 		Mix_HaltChannel(schannel[chosen].voice);
 
 	Mix_Chunk* playing = soundList[which].sample.get();
+#ifndef __EMSCRIPTEN__
 	if (playFlags & SND_RANDOM)
 	{
 		schannel[chosen].sample.reset(FxRandomPitch(playing));
@@ -203,6 +212,7 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 		schannel[chosen].sample.reset(FxDoubleSpeed(playing));
 		playing = schannel[chosen].sample.get();
 	}
+#endif
 
 	i=Mix_PlayChannel(-1, playing, (playFlags & SND_LOOPING) ? -1 : 0);
 	if(i!=-1)
