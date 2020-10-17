@@ -2,6 +2,7 @@
 #include "hammusic.h"
 #include "log.h"
 #include <stdio.h>
+#include <memory>
 
 #ifdef SDL_UNPREFIXED
 	#include <SDL.h>
@@ -16,10 +17,15 @@ extern bool ConfigSoundEnabled();
 extern int ConfigNumSounds();
 extern SDL_RWops* SoundLoadOverride(int num);
 
+struct ChunkDeleter {
+	inline void operator()(Mix_Chunk* ptr) { return Mix_FreeChunk(ptr); }
+};
+
+typedef std::unique_ptr<Mix_Chunk, ChunkDeleter> OwnedChunk;
 
 typedef struct soundList_t
 {
-	Mix_Chunk *sample;
+	OwnedChunk sample;
 } soundList_t;
 
 typedef struct schannel_t
@@ -137,7 +143,7 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 		}
 
 		// Now try to load it
-		soundList[which].sample = Mix_LoadWAV_RW(rw, 1);
+		soundList[which].sample.reset(Mix_LoadWAV_RW(rw, 1));
 		if(soundList[which].sample==NULL) {
 			LogError("LoadWAV(%d): %s", which, Mix_GetError());
 			return 0;
@@ -179,7 +185,7 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 	if(schannel[chosen].soundNum!=-1)
 		Mix_HaltChannel(schannel[chosen].voice);
 
-	i=Mix_PlayChannel(-1, soundList[which].sample, (playFlags & SND_LOOPING) ? -1 : 0);
+	i=Mix_PlayChannel(-1, soundList[which].sample.get(), (playFlags & SND_LOOPING) ? -1 : 0);
 	if(i!=-1)
 	{
 		Mix_Volume(i, vol / 2);
@@ -259,8 +265,7 @@ void JamulSoundPurge(void)
 	{
 		if(soundList[i].sample)
 		{
-			Mix_FreeChunk(soundList[i].sample);
-			soundList[i].sample=NULL;
+			soundList[i].sample.reset();
 		}
 	}
 }
