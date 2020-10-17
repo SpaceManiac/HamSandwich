@@ -1,6 +1,7 @@
 #include "jamulsound.h"
 #include "hammusic.h"
 #include "log.h"
+#include "audiofx.h"
 #include <stdio.h>
 #include <memory>
 
@@ -33,6 +34,7 @@ typedef struct schannel_t
 	int soundNum;
 	int priority;
 	int voice;
+	OwnedChunk sample;
 } schannel_t;
 
 static int sndVolume;
@@ -185,7 +187,24 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 	if(schannel[chosen].soundNum!=-1)
 		Mix_HaltChannel(schannel[chosen].voice);
 
-	i=Mix_PlayChannel(-1, soundList[which].sample.get(), (playFlags & SND_LOOPING) ? -1 : 0);
+	Mix_Chunk* playing = soundList[which].sample.get();
+	if (playFlags & SND_RANDOM)
+	{
+		schannel[chosen].sample.reset(FxRandomPitch(playing));
+		playing = schannel[chosen].sample.get();
+	}
+	if (playFlags & SND_BACKWARDS)
+	{
+		schannel[chosen].sample.reset(FxBackwards(playing));
+		playing = schannel[chosen].sample.get();
+	}
+	if (playFlags & SND_DOUBLESPEED)
+	{
+		schannel[chosen].sample.reset(FxDoubleSpeed(playing));
+		playing = schannel[chosen].sample.get();
+	}
+
+	i=Mix_PlayChannel(-1, playing, (playFlags & SND_LOOPING) ? -1 : 0);
 	if(i!=-1)
 	{
 		Mix_Volume(i, vol / 2);
@@ -194,29 +213,6 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 		schannel[chosen].soundNum=which;
 		schannel[chosen].priority=priority;
 		schannel[chosen].voice=i;
-#if 0  // TODO
-		if(playFlags&SND_RANDOM)
-		{
-			voice_stop(i);
-			int freq=voice_get_frequency(i);
-			freq=freq-(freq/5)+(rand()%((freq/5)*2+1));
-			voice_set_frequency(i, freq);
-			voice_start(i);
-		}
-		if(playFlags&SND_BACKWARDS)
-		{
-			voice_stop(i);
-			voice_set_position(i, soundList[which].sample->len - 1);
-			voice_set_frequency(i, -voice_get_frequency(i));
-			voice_start(i);
-		}
-		if(playFlags&SND_DOUBLESPEED)
-		{
-			voice_stop(i);
-			voice_set_frequency(i, 2 * voice_get_frequency(i));
-			voice_start(i);
-		}
-#endif
 	}
 	else
 		return false;
@@ -260,6 +256,7 @@ void JamulSoundPurge(void)
 		schannel[i].soundNum=-1;
 		schannel[i].priority=0;
 		schannel[i].voice=-1;
+		schannel[i].sample.reset();
 	}
 	for(i=0;i<bufferCount;i++)
 	{
