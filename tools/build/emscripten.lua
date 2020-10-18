@@ -41,7 +41,7 @@ emcc = table.merge(clang, {
 		SDL2main = { },  -- No flags, but don't link it.
 		SDL2 = { compile = {"-s USE_SDL=2"}, link = {"-s USE_SDL=2"} },
 		SDL2_mixer = { compile = {"-s USE_SDL_MIXER=2"} },
-		SDL2_image = { compile = {"-s USE_SDL_IMAGE=2"}, link = {"-s USE_SDL_IMAGE=2"} },
+		SDL2_image = { compile = {"-s USE_SDL_IMAGE=2"}, link = {"-s USE_SDL_IMAGE=2", "-s SDL2_IMAGE_FORMATS=['bmp']"} },
 	},
 
 	getports = function(cfg, subtab)
