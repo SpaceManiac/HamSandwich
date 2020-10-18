@@ -2,6 +2,7 @@
 #include "hammusic.h"
 #include "log.h"
 #include "audiofx.h"
+#include "appdata.h"
 #include <stdio.h>
 #include <memory>
 
@@ -145,9 +146,8 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 		{
 			// If not, try to load it from a file instead
 			sprintf(s,"sound/snd%03d.wav",which);
-			rw = SDL_RWFromFile(s, "rb");
+			rw = AssetOpen_SDL(s, "rb");
 			if(!rw) {
-				LogError("Open(%s): %s", s, SDL_GetError());
 				return 0;
 			}
 		}

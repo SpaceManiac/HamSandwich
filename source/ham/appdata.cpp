@@ -279,14 +279,22 @@ SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
 
 	// Will try to read from Android internal storage, or else
 	// pull from the asset system.
-	return SDL_RWFromFile(file, mode);
+	SDL_RWops* rw = SDL_RWFromFile(file, mode);
+	if (!rw) {
+		LogError("AssetOpen_SDL(%s, %s): %s", file, mode, SDL_GetError());
+	}
+	return rw;
 }
 
 #else
 // Default ----------------------------------------------------------
 
 static FILE* open_file(const char* file, const char* mode) {
-	return fopen(file, mode);
+	FILE* fp = fopen(file, mode);
+	if (!fp) {
+		LogError("open_file(%s, %s): %s", file, mode, strerror(errno));
+	}
+	return fp;
 }
 
 #endif

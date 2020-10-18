@@ -1,6 +1,7 @@
 #include "hammusic.h"
 #include "mgldraw.h"
 #include "log.h"
+#include "appdata.h"
 #include <stdio.h>
 
 #ifdef SDL_UNPREFIXED
@@ -37,10 +38,9 @@ void PlaySongFile(const char* fullname)
 
 	StopSong();
 
-	SDL_RWops* rw = SDL_RWFromFile(fullname, "rb");
+	SDL_RWops* rw = AssetOpen_SDL(fullname, "rb");
 	if (!rw)
 	{
-		LogError("Open(%s): %s", fullname, SDL_GetError());
 		return;
 	}
 
