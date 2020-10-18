@@ -1,6 +1,7 @@
 #include "audiofx.h"
 #include "jamultypes.h"
 #include <stdlib.h>
+#include <memory.h>
 
 #ifdef SDL_UNPREFIXED
 	#include <SDL.h>
