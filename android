@@ -1,0 +1,7 @@
+#!/bin/bash
+# ./android - prepare an Android build then invoke gradle
+set -euo pipefail
+./tools/build/sdl2-source.sh
+make --quiet build/android/build.gradle
+cd build/android
+gradle "$@"

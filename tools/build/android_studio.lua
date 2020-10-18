@@ -313,7 +313,7 @@ function m.android_mk(prj)
 		cflags = cflags .. " " .. flag
 	end
 	for _, def in ipairs(cfg.defines) do
-		cflags = cflags .. " -D" .. def
+		cflags = cflags .. " -D" .. def:gsub('["\\ ]', '\\%0')
 	end
 	if cfg.cppdialect then
 		cflags = cflags .. " -std=" .. cfg.cppdialect:lower()

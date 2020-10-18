@@ -12,7 +12,7 @@ endif
 
 # Recreate build/Makefile if $toolset changes.
 ifneq "$(toolset)" "$(shell cat build/.toolset 2>/dev/null)"
-MAKEFILE_DEPS += build/.toolset
+TOOLSET_DEPS += build/.toolset
 endif
 
 # Recreate build/Makefile if any of the premake Lua changes.
@@ -23,9 +23,9 @@ MAKEFILE_DEPS += premake5.lua $(wildcard tools/build/*.lua)
 all clean help $(PROJECTS): build/Makefile
 	@$(MAKE) --no-print-directory -C build $@
 
-build/Makefile: $(MAKEFILE_DEPS) $(addprefix source/,$(PROJECTS))
+build/Makefile: $(MAKEFILE_DEPS) $(TOOLSET_DEPS) $(addprefix source/,$(PROJECTS))
 	@echo "==== Preparing $(toolset) build ===="
-	@rm -f build/Makefile
+	@rm -f $@
 	@$(PREMAKE5) gmake2 --cc=$(toolset)
 
 build/.toolset:
@@ -34,3 +34,9 @@ build/.toolset:
 
 build/premake5:
 	@./tools/build/install-deps.sh
+
+# Helper to prepare Android build
+build/android/build.gradle: $(MAKEFILE_DEPS)
+	@echo "==== Preparing Android build ===="
+	@rm -f $@
+	@$(PREMAKE5) android-studio

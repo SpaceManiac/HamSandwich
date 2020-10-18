@@ -36,7 +36,7 @@ First-time setup:
 Compiling and running:
 
 1. Run `./run` to see a list of games in the project, and use `./run <project>` to compile and play.
-    1. For example, to run Supreme with Cheese, write `./run supreme`.
+    1. For example, to run Supreme With Cheese, write `./run supreme`.
     2. To compile without running, write `make` or `make <projectname>`.
     3. The first time you try to run a game, you will be prompted to download
         its installer from <https://hamumu.itch.io/>;
@@ -73,12 +73,11 @@ Compiling and running:
 1. If on Windows, install and use MSYS2 according to the instructions above.
 2. Install Gradle and the Android SDK and set `ANDROID_HOME`.
     1. Example shell command: `export ANDROID_HOME='C:\Wherever you installed the Android SDK\'`
-3. Run `./tools/build/sdl2-source.sh`.
-4. Run `./tools/build/extract_assets.sh <gamename>` to download assets.
-5. Run `premake5 android-studio`.
-6. Change directory to `build/android`.
-7. Run `gradle packageDebug` to compile APKs.
-8. Run `gradle installDebug` to install to a connected Android device.
+3. Run `./android <project>:packageDebug` to compile APKs.
+    1. For example, to build Supreme With Cheese, write `./android supreme:packageDebug`
+    2. To build all games, run `./android packageDebug`
+4. Run `./android <project>:installDebug` to install to a connected Android device.
+5. To view logs, run `$ANDROID_HOME/platform-tools/adb logcat -s 'HamSandwich'`
 
 ### Emscripten
 
