@@ -13,6 +13,7 @@
 	#include <android/log.h>
 #endif
 
+static bool errorLogAttempted = false;
 static FILE* errorLog = nullptr;
 
 void LogDebug(const char* fmt, ...) {
@@ -28,19 +29,21 @@ void LogDebug(const char* fmt, ...) {
 }
 
 void LogError(const char* fmt, ...) {
-	if (!errorLog) {
+	if (!errorLogAttempted) {
+		errorLogAttempted = true;
 		errorLog = AppdataOpen("error.log", "wt");
-		if (!errorLog) {
-			return;
-		}
 	}
 
-	va_list args, dup;
+	va_list args;
 	va_start(args, fmt);
-	va_copy(dup, args);
-	vfprintf(errorLog, fmt, dup);
-	fprintf(errorLog, "\n");
-	va_end(dup);
+
+	if (errorLog) {
+		va_list dup;
+		va_copy(dup, args);
+		vfprintf(errorLog, fmt, dup);
+		fprintf(errorLog, "\n");
+		va_end(dup);
+	}
 
 #ifdef __ANDROID__
 	__android_log_vprint(ANDROID_LOG_ERROR, "HamSandwich", fmt, args);
@@ -50,6 +53,8 @@ void LogError(const char* fmt, ...) {
 #endif
 	va_end(args);
 
-	fflush(errorLog);
-	AppdataSync();
+	if (errorLog) {
+		fflush(errorLog);
+		AppdataSync();
+	}
 }

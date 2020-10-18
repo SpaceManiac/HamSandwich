@@ -41,7 +41,7 @@ emcc = table.merge(clang, {
 		SDL2main = { },  -- No flags, but don't link it.
 		SDL2 = { compile = {"-s USE_SDL=2"}, link = {"-s USE_SDL=2"} },
 		SDL2_mixer = { compile = {"-s USE_SDL_MIXER=2"} },
-		SDL2_image = { compile = {"-s USE_SDL_IMAGE=2"}, link = {"-s USE_SDL_IMAGE=2", "-s SDL2_IMAGE_FORMATS=['bmp']"} },
+		SDL2_image = { compile = {"-s USE_SDL_IMAGE=2", "-s SDL2_IMAGE_FORMATS=['bmp']"}, link = {"-s USE_SDL_IMAGE=2", "-s SDL2_IMAGE_FORMATS=['bmp']"} },
 	},
 
 	getports = function(cfg, subtab)
@@ -87,6 +87,7 @@ emcc = table.merge(clang, {
 				table.insert(flags, flag)
 			end
 		end
+		table.insert(flags, "-lidbfs.js")
 		return flags
 	end,
 })
@@ -106,10 +107,9 @@ function emscripten.assetdir(dir)
 	local inputs = {}
 
 	build_command = "python3"
-		.. " $(EMSDK)/fastcomp/emscripten/tools/file_packager.py"
+		.. " $(EMSDK)/upstream/emscripten/tools/file_packager.py"
 		.. " " .. data
 		.. " --js-output=" .. datajs
-		.. " --no-heap-copy"
 		.. " --from-emcc"  -- Hack to disable "Remember to..." output
 		--.. " --use-preload-plugins"
 		.. " --preload"  -- List of paths follows

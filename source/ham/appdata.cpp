@@ -41,10 +41,10 @@ static int mkdir_parents(const char *path, mode_t mode) {
 		start = next + 1;
 	}
 
-	free(copypath);
-
 	if (status != 0)
-		LogError("mkdirs(%s): %s", path, strerror(errno));
+		LogError("mkdirs(%s): %s", copypath, strerror(errno));
+
+	free(copypath);
 	return status;
 }
 

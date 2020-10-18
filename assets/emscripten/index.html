@@ -162,17 +162,15 @@
 				return {
 					canvas: canvas,
 
-					setWindowTitle: function(text) {
-						document.title = text;
-						document.getElementById('title').innerText = text;
-					},
 					print: function(text) {
 						if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(" ");
 						console.log(text);
 					},
 					printErr: function(text) {
 						if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(" ");
-						console.warn(text);
+						if (!text.startsWith('Preparing... (')) {
+							console.warn(text);
+						}
 					},
 					setStatus: function(text) {
 						var matches = /^Downloading data\.\.\. \((\d+)\/(\d+)\)$/.exec(text);
@@ -238,6 +236,12 @@
 				Module.setStatus = Module.printErr;
 			};
 		</script>
-		<script type="text/javascript" src="__PROJECT_NAME__.js" async></script>
+		<script type="text/javascript" src="__PROJECT_NAME__.js"></script>
+		<script>
+			setWindowTitle = function (text) {
+				document.title = text;
+				document.getElementById('title').innerText = text;
+			}
+		</script>
 	</body>
 </html>

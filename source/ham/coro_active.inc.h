@@ -104,7 +104,7 @@ public:
 		return {};
 	}
 
-	suspend_always final_suspend() {
+	suspend_always final_suspend() noexcept {
 		//printf("  promise_base::final_suspend()\n");
 		return {};
 	}

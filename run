@@ -130,7 +130,7 @@ elif [ "$TOOL" = "callgrind" ]; then
 	valgrind --tool=callgrind "$EXE" $ARGS
 elif [ "$TOOLSET" = "emcc" ]; then
 	echo "==== Hosting $PROJECT ($CONFIG) ===="
-	emrun "$EXE/../index.html"
+	emrun --serve_after_close "$EXE/../index.html"
 else
 	echo "==== Running $PROJECT ($CONFIG) ===="
 	if [ "$TWO" ]; then
