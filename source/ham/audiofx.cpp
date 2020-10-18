@@ -14,14 +14,24 @@ static int SampleSize(uint16_t format)
 	return SDL_AUDIO_BITSIZE(format) / 8;
 }
 
-static Mix_Chunk* FxClone(Mix_Chunk* sample)
-{
-	return Mix_QuickLoad_RAW(sample->abuf, sample->alen);
-}
-
 Mix_Chunk* FxRandomPitch(Mix_Chunk* sample)
 {
-	return FxClone(sample);
+	int freq, channels;
+	uint16_t format;
+	Mix_QuerySpec(&freq, &format, &channels);
+
+	int new_freq = freq - (freq / 5) + (rand() % ((freq / 5) * 2 + 1));
+
+	SDL_AudioCVT cvt;
+	SDL_BuildAudioCVT(&cvt, format, channels, freq, format, channels, new_freq);
+	cvt.len = sample->alen;
+	cvt.buf = (byte*) SDL_malloc(cvt.len * cvt.len_mult);
+	memcpy(cvt.buf, sample->abuf, sample->alen);
+	SDL_ConvertAudio(&cvt);
+
+	Mix_Chunk* output = Mix_QuickLoad_RAW(cvt.buf, cvt.len_cvt);
+	output->allocated = true;
+	return output;
 }
 
 Mix_Chunk* FxBackwards(Mix_Chunk* sample)
