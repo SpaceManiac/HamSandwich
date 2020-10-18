@@ -85,7 +85,7 @@ while [ $# -ne 0 ]; do
 			;;
 	esac
 done
-if [ -z $PROJECT ]; then
+if [ -z "$PROJECT" ]; then
 	# Exit if no project was specified
 	show_help; exit 1
 fi
@@ -107,7 +107,7 @@ fi
 
 # Ensure the project's build is up to date
 if [ -z "$NOBUILD" ]; then
-	make $PROJECT config=$CONFIG toolset=$TOOLSET
+	make "$PROJECT" config="$CONFIG" toolset="$TOOLSET"
 fi
 
 # Run the project
@@ -130,7 +130,8 @@ elif [ "$TOOL" = "callgrind" ]; then
 	valgrind --tool=callgrind "$EXE" $ARGS
 elif [ "$TOOLSET" = "emcc" ]; then
 	echo "==== Hosting $PROJECT ($CONFIG) ===="
-	emrun --serve_after_close "$EXE/../index.html"
+	trap 'kill $(cat .emrun.pid)' EXIT
+	{ emrun --serve_after_close "$EXE/../index.html" & echo $! >.emrun.pid; } | sed -e '/emscripten_cancel_main_loop/q'
 else
 	echo "==== Running $PROJECT ($CONFIG) ===="
 	if [ "$TWO" ]; then
