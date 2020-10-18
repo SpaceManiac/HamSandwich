@@ -10,6 +10,46 @@
 	#include <SDL2/SDL_rwops.h>
 #endif  // SDL_UNPREFIXED
 
+/*
+The interface in appdata.h currently distinguishes between AppdataOpen
+and AssetOpen, but the implementation treats them the same, instead switching
+based on whether the mode is read-only.
+
+We always first try to use the read-write ("appdata") directory. If the mode
+is read-only, we then try to use the read-only ("asset") directories in
+sequence.
+
+Emscripten
+	RW: /appdata/$GAME
+	Ro: /
+		Provided by build process + JS environment
+Android
+	if external storage is writeable:
+		RW: $EXTERNAL
+		Ro: $INTERNAL
+	else:
+		RW: $INTERNAL
+	Ro: SDL_RWFromFile, which reads from .apk
+		Tempfiles in $INTERNAL/.bundle_tmp when needed
+		Provided by build process
+Default
+	RW: $PWD
+
+Psuedocode for SDL_RWFromFile(file, mode):
+    if android:
+        if file is absolute:
+            return fopen(file, mode) if successful
+        else:
+            return fopen($INTERNAL/file, mode) if successful
+        return bundled asset from .apk
+    else if windows:
+        return windows_file_open(file, mode)
+    else:
+        if apple and mode is readonly:
+            return fopen($APP_BUNDLE/file, mode) if successful
+        return fopen(file, mode)
+*/
+
 // Common code
 #if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
 #include <sys/stat.h>
@@ -91,45 +131,32 @@ SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
 
 #include <emscripten.h>
 
-FILE* AppdataOpen(const char* file, const char* mode) {
+static FILE* open_file(const char* file, const char* mode) {
+	bool write_mode = is_write_mode(mode);
+
+	// RW: /appdata/$GAME
 	std::string buffer = "/appdata/";
 	buffer.append(AppdataFolderName());
 	buffer.append("/");
 	buffer.append(file);
-
-	if (is_write_mode(mode)) {
+	if (write_mode) {
 		mkdir_parents(buffer.c_str(), MKDIR_MODE);
 	}
 	FILE* fp = fopen(buffer.c_str(), mode);
-	if (!fp) {
-		LogDebug("AppdataOpen(%s, %s): %s", file, mode, strerror(errno));
+	if (fp) {
+		return fp;
 	}
-	return fp;
-}
 
-FILE* AssetOpen(const char* file, const char* mode) {
-	if (is_write_mode(mode)) {
-		return AppdataOpen(file, mode);
+	if (write_mode) {
+		LogError("fopen(%s, %s): %s", buffer.c_str(), mode, strerror(errno));
+		return nullptr;
 	}
+
+	// Ro: /
 	return fopen(file, mode);
 }
 
-SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
-	if (is_write_mode(mode)) {
-		LogDebug("AssetOpen_SDL(%s, %s) -> AppdataOpen", file, mode);
-		FILE *fp = AppdataOpen(file, mode);
-		if (fp) {
-            return SDL_RWFromFP(fp, SDL_TRUE);
-		} else {
-			return nullptr;
-		}
-	} else {
-		// Will try to read from Android internal storage, or else
-		// pull from the asset system.
-		return SDL_RWFromFile(file, mode);
-	}
-}
-
+#define HAS_APPDATA_SYNC
 void AppdataSync() {
 	EM_ASM(
 		Module.fsSave();
@@ -142,51 +169,69 @@ void AppdataSync() {
 #include <SDL_system.h>
 #include <string.h>
 
-FILE* AppdataOpen(const char* file, const char* mode) {
+static FILE* open_storage(const char* file, const char* mode, bool write_mode) {
 	std::string buffer;
 
 	// Only use external storage if it is both readable and writeable
 	int need_flags = SDL_ANDROID_EXTERNAL_STORAGE_READ | SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
 	if ((SDL_AndroidGetExternalStorageState() & need_flags) == need_flags) {
+		// RW: $EXTERNAL
 		buffer = SDL_AndroidGetExternalStoragePath();
-	} else {
-		buffer = SDL_AndroidGetInternalStoragePath();
-	}
+		buffer.append("/");
+		buffer.append(file);
+		if (write_mode) {
+			mkdir_parents(buffer.c_str(), MKDIR_MODE);
+		}
+		FILE* fp = fopen(buffer.c_str(), mode);
+		if (fp) {
+			return fp;
+		}
 
+		if (write_mode) {
+			LogError("open_storage external fopen(%s, %s): %s", buffer.c_str(), mode, strerror(errno));
+			return nullptr;
+		}
+		// Ro: $INTERNAL
+	} // else RW: $INTERNAL
+
+	buffer = SDL_AndroidGetInternalStoragePath();
 	buffer.append("/");
 	buffer.append(file);
-	if (is_write_mode(mode)) {
-		mkdir_parents(buffer.c_str(), MKDIR_MODE);
-	}
 	FILE* fp = fopen(buffer.c_str(), mode);
-	if (!fp) {
-		LogDebug("AppdataOpen(%s, %s): %s", file, mode, strerror(errno));
+	if (fp) {
+		return fp;
 	}
-	return fp;
+
+	if (write_mode) {
+		LogError("open_storage internal fopen(%s, %s): %s", buffer.c_str(), mode, strerror(errno));
+	}
+	return nullptr;
 }
 
-FILE* AssetOpen(const char* file, const char* mode) {
-	LogDebug("AssetOpen(%s, %s)", file, mode);
-	if (is_write_mode(mode)) {
-		return AppdataOpen(file, mode);
-	}
+// requires !is_write_mode(mode)
+static FILE* open_bundle(const char* file, const char* mode) {
+	// Ro: apk bundle
+	LogDebug("open_bundle(%s, %s)", file, mode);
 
 	// Check internal storage to see if we've already extracted the file.
-	char fname_buf[1024];
-	sprintf(fname_buf, "%s/%s", SDL_AndroidGetInternalStoragePath(), file);
-	unlink(fname_buf);
+	std::string fname_buf = SDL_AndroidGetInternalStoragePath();
+	// Use a directory which definitely doesn't overlap with appdata.
+	fname_buf.append("/.bundle_tmp/");
+	fname_buf.append(file);
+	// If we have, delete it and extract it again, in case it's changed.
+	unlink(fname_buf.c_str());
 
 	// Not in internal storage, so ask SDL to pull it from the asset system.
 	SDL_RWops *rw = SDL_RWFromFile(file, mode);
 	if (!rw) {
-		LogError("AssetOpen(%s) bad SDL: %s", file, SDL_GetError());
+		LogError("open_bundle(%s) bad SDL: %s", file, SDL_GetError());
 		return nullptr;
 	}
 
-	mkdir_parents(fname_buf, MKDIR_MODE);
-	FILE* fp = fopen(fname_buf, "wb");
+	mkdir_parents(fname_buf.c_str(), MKDIR_MODE);
+	FILE* fp = fopen(fname_buf.c_str(), "wb");
 	if (!fp) {
-		LogError("AssetOpen(%s) bad save: %s", file, strerror(errno));
+		LogError("open_bundle(%s) bad save: %s", file, strerror(errno));
 		return nullptr;
 	}
 
@@ -199,48 +244,69 @@ FILE* AssetOpen(const char* file, const char* mode) {
 
 	// Return a FILE* pointing to the extracted asset.
 	fclose(fp);
-	fp = fopen(fname_buf, mode);
+	fp = fopen(fname_buf.c_str(), mode);
 	if (!fp) {
-		LogError("AssetOpen(%s) bad readback: %s", file, strerror(errno));
+		LogError("open_bundle(%s) bad readback: %s", file, strerror(errno));
 	}
 	return fp;
 }
 
-SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
-	if (is_write_mode(mode)) {
-		LogDebug("AssetOpen_SDL(%s, %s) -> AppdataOpen", file, mode);
-		FILE *fp = AppdataOpen(file, mode);
-		if (fp) {
-            return SDL_RWFromFP(fp, SDL_TRUE);
-		} else {
-			return nullptr;
-		}
-	} else {
-		// Will try to read from Android internal storage, or else
-		// pull from the asset system.
-		return SDL_RWFromFile(file, mode);
+static FILE* open_file(const char* file, const char* mode) {
+	bool write_mode = is_write_mode(mode);
+
+	FILE* fp = open_storage(file, mode, write_mode);
+	if (fp || write_mode) {
+		// open_storage already printed the error
+		return fp;
 	}
+
+	// Ro: .apk bundle via
+	return open_bundle(file, mode);
 }
 
-void AppdataSync() {
+#define HAS_ASSETOPEN_SDL
+SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
+	bool write_mode = is_write_mode(mode);
+
+	FILE* fp = open_storage(file, mode, write_mode);
+	if (fp) {
+		return SDL_RWFromFP(fp, SDL_TRUE);
+	}
+	if (write_mode) {
+		// open_storage already printed the error
+		return nullptr;
+	}
+
+	// Will try to read from Android internal storage, or else
+	// pull from the asset system.
+	return SDL_RWFromFile(file, mode);
 }
 
 #else
 // Default ----------------------------------------------------------
 
-FILE* AppdataOpen(const char* file, const char* mode) {
+static FILE* open_file(const char* file, const char* mode) {
 	return fopen(file, mode);
+}
+
+#endif
+// Common -----------------------------------------------------------
+
+FILE* AppdataOpen(const char* file, const char* mode) {
+	return open_file(file, mode);
 }
 
 FILE* AssetOpen(const char* file, const char* mode) {
-	return fopen(file, mode);
+	return open_file(file, mode);
 }
 
+#ifndef HAS_ASSETOPEN_SDL
 SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
-	return SDL_RWFromFile(file, mode);
+	FILE* fp = open_file(file, mode);
+	return fp ? SDL_RWFromFP(fp, SDL_TRUE) : nullptr;
 }
+#endif
 
-void AppdataSync() {
-}
-
+#ifndef HAS_APPDATA_SYNC
+void AppdataSync() {}
 #endif
