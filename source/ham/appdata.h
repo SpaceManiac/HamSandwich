@@ -2,6 +2,8 @@
 #define APPDATA_H
 
 #include <stdio.h>
+#include <vector>
+#include <string>
 
 typedef struct SDL_RWops SDL_RWops;
 
@@ -20,5 +22,7 @@ SDL_RWops* AssetOpen_SDL(const char* file, const char* mode);
 
 // Games should provide this; it will be used to name appdata folders.
 extern const char* AppdataFolderName();
+
+std::vector<std::string> ListDirectory(const char* directory, const char* extension = nullptr, size_t maxlen = 0);
 
 #endif  // APPDATA_H

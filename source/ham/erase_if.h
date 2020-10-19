@@ -1,0 +1,23 @@
+#ifndef ERASE_IF_H
+#define ERASE_IF_H
+
+#include <vector>
+#include <algorithm>
+
+#if __cplusplus > 201703L
+
+using std::erase_if;
+
+#else  // __cplusplus
+
+// https://en.cppreference.com/w/cpp/container/vector/erase2
+template<class T, class Alloc, class Pred>
+constexpr typename std::vector<T,Alloc>::size_type erase_if(std::vector<T,Alloc>& c, Pred pred) {
+	auto it = std::remove_if(c.begin(), c.end(), pred);
+	auto r = std::distance(it, c.end());
+	c.erase(it, c.end());
+	return r;
+}
+
+#endif  // __cplusplus
+#endif  // ERASE_IF_H

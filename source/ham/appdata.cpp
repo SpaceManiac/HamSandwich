@@ -1,8 +1,10 @@
 #include "appdata.h"
 #include "log.h"
+#include "erase_if.h"
 #include <string>
 #include <vector>
 #include <memory>
+#include <algorithm>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -107,6 +109,7 @@ public:
 
 	virtual FILE* open_stdio(const char* file, const char* mode, bool write) = 0;
 	virtual SDL_RWops* open_sdl(const char* file, const char* mode, bool write) = 0;
+	virtual bool list_dir(const char* directory, std::vector<std::string>& output) = 0;
 };
 
 typedef std::vector<std::unique_ptr<Vfs>> VfsStack;
@@ -119,6 +122,7 @@ public:
 	StdioVfs(std::string prefix) : prefix(prefix) {}
 	FILE* open_stdio(const char* file, const char* mode, bool write);
 	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
+	bool list_dir(const char* directory, std::vector<std::string>& output);
 };
 
 FILE* StdioVfs::open_stdio(const char* file, const char* mode, bool write) {
@@ -139,6 +143,51 @@ SDL_RWops* StdioVfs::open_sdl(const char* file, const char* mode, bool write) {
 	FILE* fp = open_stdio(file, mode, write);
 	return fp ? SDL_RWFromFP(fp, SDL_TRUE) : nullptr;
 }
+
+#ifdef __GNUC__
+#include <dirent.h>
+
+bool StdioVfs::list_dir(const char* directory, std::vector<std::string>& output) {
+	std::string buffer = prefix;
+	buffer.append("/");
+	buffer.append(directory);
+	DIR* dir = opendir(buffer.c_str());
+	if (!dir) {
+		return false;
+	}
+
+	while (struct dirent *dp = readdir(dir)) {
+		output.push_back(dp->d_name);
+	}
+
+	closedir(dir);
+	return true;
+}
+
+#elif defined(_MSC_VER)
+#include <io.h>
+
+bool StdioVfs::list_dir(const char* directory, std::vector<std::string>& output) {
+	std::string buffer = prefix;
+	buffer.append("/");
+	buffer.append(directory);
+	buffer.append("/*");
+
+	struct _finddata_t filedata;
+	long hFile = _findfirst(buf, &filedata);
+	if (hFile == -1) {
+		return false;
+	}
+
+	do {
+		output.push_back(finddata.name);
+	} while (_findnext(hFile, &filedata) == 0);
+
+	_findclose(hFile);
+	return true;
+}
+
+#endif  // __GNUC__ and _MSC_VER
 
 // ----------------------------------------------------------------------------
 #if 0  // #ifdef _WIN32
@@ -198,6 +247,7 @@ class AndroidBundleVfs : public Vfs {
 public:
 	FILE* open_stdio(const char* file, const char* mode, bool write);
 	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
+	bool list_dir(const char* directory, std::vector<std::string>& output);
 };
 
 FILE* AndroidBundleVfs::open_stdio(const char* file, const char* mode, bool write) {
@@ -258,6 +308,11 @@ SDL_RWops* AndroidBundleVfs::open_sdl(const char* file, const char* mode, bool w
 		LogError("SDL_RWFromFile(%s, %s): %s", file, mode, SDL_GetError());
 	}
 	return rw;
+}
+
+bool AndroidBundleVfs::list_dir(const char* directory, std::vector<std::string>& output) {
+	// TODO
+	return false;
 }
 
 VfsStack init_vfs_stack() {
@@ -332,6 +387,33 @@ SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
 
 	LogError("AssetOpen_SDL(%s, %s): not found in any vfs", file, mode);
 	return nullptr;
+}
+
+std::vector<std::string> ListDirectory(const char* directory, const char* extension, size_t maxlen) {
+	if (vfs_stack.empty()) {
+		vfs_stack = init_vfs_stack();
+	}
+
+	std::vector<std::string> output;
+	for (auto& vfs : vfs_stack) {
+		vfs->list_dir(directory, output);
+	}
+
+	if (extension || maxlen > 0) {
+		size_t extlen = extension ? strlen(extension) : 0;
+		erase_if(output, [=](const std::string& value) {
+			size_t len = value.size();
+			if (maxlen > 0 && len >= maxlen) {
+				return true;
+			}
+			if (extlen > 0 && (len < extlen || strcasecmp(extension, &value.c_str()[len - extlen]))) {
+				return true;
+			}
+			return false;
+		});
+	}
+
+	return output;
 }
 
 #ifndef HAS_APPDATA_SYNC
