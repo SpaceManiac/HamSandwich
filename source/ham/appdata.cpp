@@ -61,15 +61,19 @@ Psuedocode for SDL_RWFromFile(file, mode):
 
 // ----------------------------------------------------------------------------
 // Stdio helpers
-#define MKDIR_MODE 0777
+#ifdef _WIN32
+#define platform_mkdir(path) _mkdir(path)
+#else
+#define platform_mkdir(path) mkdir(path, 0777)
+#endif
 
-static int mkdir_one(const char *path, mode_t mode) {
-	if (mkdir(path, mode) != 0 && errno != EEXIST)
+static int mkdir_one(const char *path) {
+	if (platform_mkdir(path) != 0 && errno != EEXIST)
 		return -1;
 	return 0;
 }
 
-static int mkdir_parents(const char *path, mode_t mode) {
+static int mkdir_parents(const char *path) {
 	char *copypath = strdup(path);
 	char *start = copypath;
 	char *next;
@@ -79,7 +83,7 @@ static int mkdir_parents(const char *path, mode_t mode) {
 		if (next != start) {
 			// skip the root directory and double-slashes
 			*next = '\0';
-			status = mkdir_one(copypath, mode);
+			status = mkdir_one(copypath);
 			*next = '/';
 		}
 		start = next + 1;
@@ -130,7 +134,7 @@ FILE* StdioVfs::open_stdio(const char* file, const char* mode, bool write) {
 	buffer.append("/");
 	buffer.append(file);
 	if (write) {
-		mkdir_parents(buffer.c_str(), MKDIR_MODE);
+		mkdir_parents(buffer.c_str());
 	}
 	FILE* fp = fopen(buffer.c_str(), mode);
 	if (!fp && write) {
@@ -274,7 +278,7 @@ FILE* AndroidBundleVfs::open_stdio(const char* file, const char* mode, bool writ
 		return nullptr;
 	}
 
-	mkdir_parents(fname_buf.c_str(), MKDIR_MODE);
+	mkdir_parents(fname_buf.c_str());
 	FILE* fp = fopen(fname_buf.c_str(), "wb");
 	if (!fp) {
 		LogError("open_bundle(%s) bad save: %s", file, strerror(errno));
