@@ -9,7 +9,6 @@
 #include "achieve.h"
 #include "gallery.h"
 #include "leveldef.h"
-#include "lsdir.h"
 #include "appdata.h"
 #if __linux__ || __EMSCRIPTEN__
 #include <unistd.h>
@@ -136,8 +135,10 @@ void GetAddOns(void)
 	// count up how many there are to deal with
 	ClearAddOns();
 
-	for (const char* name : filterdir("addons", ".txt"))
+	auto filenames = ListDirectory("addons", ".txt");
+	for (const auto& str : filenames)
 	{
+		const char* name = str.c_str();
 		if (strncmp(name, "lvl_", 4))
 			continue;
 		addOnCount++;
@@ -151,8 +152,9 @@ void GetAddOns(void)
 	addOnList[0].filename[0]='\0';
 
 	done=1;
-	for (char* name : filterdir("addons", ".txt"))
+	for (auto& str : filenames)
 	{
+		char* name = str.data();  // Since C++11, data() is null-terminated.
 		if (strncmp(name, "lvl_", 4))
 			continue;
 		GetAddOn(name, done);

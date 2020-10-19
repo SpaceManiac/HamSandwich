@@ -3,7 +3,6 @@
 #include "jamulfmv.h"
 #include "pause.h"
 #include "options.h"
-#include "lsdir.h"
 #include "palettes.h"
 #include "appdata.h"
 
@@ -622,8 +621,10 @@ void ScanWorldNames(void)
 	for (i = 5; i < MAX_CUSTOM; i++)
 		player.customName[i][0] = '\0';
 
-	for (const char* name : filterdir("worlds", ".dlw", 32))
+	auto filenames = ListDirectory("worlds", ".dlw", 32);
+	for (const auto& str : filenames)
 	{
+		const char* name = str.c_str();
 		// rule out the regular game worlds, so they don't show up as custom worlds
 		if ((strcmp(name, "forest.dlw")) &&
 				(strcmp(name, "desert.dlw")) &&
@@ -654,8 +655,10 @@ void ReScanWorldNames(void)
 			okay[i] = 0;
 	}
 
-	for (const char* name : filterdir("worlds", ".dlw", 32))
+	auto filenames = ListDirectory("worlds", ".dlw", 32);
+	for (const auto& str : filenames)
 	{
+		const char* name = str.c_str();
 		// rule out the regular game worlds, so they don't show up as custom worlds
 		if ((strcmp(name, "forest.dlw")) &&
 				(strcmp(name, "desert.dlw")) &&
