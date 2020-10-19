@@ -290,13 +290,13 @@ TASK(void) ScanWorlds(void)
 
 void CalcScrollBar(void)
 {
-	scrollHeight=SCROLLBAR_HEIGHT*WORLDS_PER_SCREEN/numWorlds;
+	scrollHeight=SCROLLBAR_HEIGHT*WORLDS_PER_SCREEN/(numWorlds ? numWorlds : 1);
 	if(scrollHeight<10)
 		scrollHeight=10;
 	if(scrollHeight>=SCROLLBAR_HEIGHT)
 		scrollHeight=SCROLLBAR_HEIGHT-1;
 
-	scrollY=SCROLLBAR_HEIGHT*listPos/numWorlds;
+	scrollY=SCROLLBAR_HEIGHT*listPos/(numWorlds ? numWorlds : 1);
 	if(scrollY+scrollHeight>SCROLLBAR_HEIGHT)
 		scrollY=SCROLLBAR_HEIGHT-scrollHeight;
 }
@@ -393,12 +393,14 @@ void SelectLastWorld(void)
 	if(listPos>choice)
 		listPos=choice;
 
-	sprintf(s,"worlds/%s",list[choice].fname);
-	LoadWorld(&tmpWorld,s);
-	level=0;
-	scoreMode=0;
-	noScoresAtAll=0;
-	FetchScores(0);
+	if (choice < numWorlds) {
+		sprintf(s,"worlds/%s",list[choice].fname);
+		LoadWorld(&tmpWorld,s);
+		level=0;
+		scoreMode=0;
+		noScoresAtAll=0;
+		FetchScores(0);
+	}
 }
 
 void MoveToNewWorld(void)
