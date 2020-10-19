@@ -8,7 +8,6 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <errno.h>
 
 #ifdef SDL_UNPREFIXED
@@ -248,6 +247,7 @@ void AppdataSync() {
 
 #include <SDL_system.h>
 #include <string.h>
+#include <unistd.h>
 
 class AndroidBundleVfs : public Vfs {
 public:
