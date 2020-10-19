@@ -62,6 +62,8 @@ Psuedocode for SDL_RWFromFile(file, mode):
 // ----------------------------------------------------------------------------
 // Stdio helpers
 #ifdef _WIN32
+#include <direct.h>
+
 #define platform_mkdir(path) _mkdir(path)
 #else
 #define platform_mkdir(path) mkdir(path, 0777)
