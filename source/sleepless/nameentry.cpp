@@ -7,7 +7,6 @@
 #include "dialogbits.h"
 #include "progress.h"
 #include "customworld.h"
-#include "lsdir.h"
 #include "appdata.h"
 
 static byte *backgd;
@@ -75,8 +74,10 @@ void ScanWorlds(void)
 
 	InputWorld("hollow.shw");
 
-	for (const char* name : filterdir("worlds", ".shw", FILENAME_LEN))
+	auto files = ListDirectory("worlds", ".shw", FILENAME_LEN);
+	for (const auto& str : files)
 	{
+		const char* name = str.c_str();
 		if (strcmp(name, "hollow.shw") &&
 				strcmp(name, "backup_save.shw") &&
 				strcmp(name, "backup_load.shw") &&
