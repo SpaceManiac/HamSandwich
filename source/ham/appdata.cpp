@@ -310,10 +310,7 @@ SDL_RWops* AndroidBundleVfs::open_sdl(const char* file, const char* mode, bool w
 	return rw;
 }
 
-bool AndroidBundleVfs::list_dir(const char* directory, std::vector<std::string>& output) {
-	// TODO
-	return false;
-}
+#include "appdata_jni.inc"
 
 VfsStack init_vfs_stack() {
 	VfsStack result;
