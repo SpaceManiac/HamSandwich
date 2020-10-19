@@ -77,7 +77,7 @@ Compiling and running:
     1. For example, to build Supreme With Cheese, write `./android supreme:packageDebug`
     2. To build all games, run `./android packageDebug`
 4. Run `./android <project>:installDebug` to install to a connected Android device.
-5. To view logs, run `$ANDROID_HOME/platform-tools/adb logcat -s 'HamSandwich'`
+5. To view logs, run `./android --logcat`
 
 ### Emscripten
 

@@ -1,7 +1,12 @@
 #!/bin/bash
 # ./android - prepare an Android build then invoke gradle
 set -euo pipefail
-./tools/build/sdl2-source.sh
-make --quiet build/android/build.gradle
-cd build/android
-gradle "$@"
+
+if [ "$1" = "--logcat" ]; then
+	$ANDROID_HOME/platform-tools/adb logcat -s 'HamSandwich'
+else
+	./tools/build/sdl2-source.sh
+	make --quiet build/android/build.gradle
+	cd build/android
+	gradle "$@"
+fi
