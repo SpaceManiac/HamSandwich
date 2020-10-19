@@ -81,12 +81,14 @@ Compiling and running:
 
 ### Emscripten
 
-1. Install the [Emscripten SDK][emsdk] and activate the upstream-LLVM backend:
+1. If on Windows, install and use MSYS2 according to the instructions above.
+2. The Emscripten SDK will be installed automatically, or you can do so
+   manually:
     1. `cd` to a convenient directory.
-    2. `git clone https://github.com/emscripten-core/emsdk.git`.
-    3. `cd emsdk`.
-    4. `./emsdk install latest-upstream`.
-    5. `./emsdk activate latest-upstream`.
+    2. `git clone https://github.com/emscripten-core/emsdk.git`
+    3. `cd emsdk`
+    4. `./emsdk install latest-upstream`
+    5. `./emsdk activate latest-upstream`
     6. `source ./emsdk_env.sh`
     7. Return to the HamSandwich directory.
 2. Run `./run <gamename> --web` to run the build and open the result in your

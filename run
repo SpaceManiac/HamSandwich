@@ -97,6 +97,11 @@ CONFIG=$CONFIG$BITS
 # Ensure the project's assets exist
 GAMEDIR="build/game/$PROJECT"
 if [ "$TOOLSET" = "emcc" ]; then
+	# If there's no Emscripten SDK active, then activate a private one.
+	if ! command -v em++ >/dev/null 2>&1; then
+		source ./tools/build/install-emsdk.sh
+	fi
+
 	# Extract Emscripten assets to their own directory, to avoid local debug
 	# profiles from ending up in the build.
 	GAMEDIR="build/emcc-assets/$PROJECT"
