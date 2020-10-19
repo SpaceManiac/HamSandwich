@@ -1,6 +1,13 @@
 #include "appdata.h"
 #include "log.h"
 #include <string>
+#include <vector>
+#include <memory>
+
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <errno.h>
 
 #ifdef SDL_UNPREFIXED
 	#include <SDL_platform.h>
@@ -50,13 +57,8 @@ Psuedocode for SDL_RWFromFile(file, mode):
         return fopen(file, mode)
 */
 
-// Common code
-#if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <errno.h>
-
+// ----------------------------------------------------------------------------
+// Stdio helpers
 #define MKDIR_MODE 0777
 
 static int mkdir_one(const char *path, mode_t mode) {
@@ -91,11 +93,56 @@ static int mkdir_parents(const char *path, mode_t mode) {
 static bool is_write_mode(const char* mode) {
 	return mode[0] == 'w' || mode[0] == 'a' || (mode[0] == 'r' && mode[1] == '+');
 }
-#endif
 
-// TODO: re-enable this when there's some means of porting existing installs.
+// ----------------------------------------------------------------------------
+// VFS interface
+class Vfs {
+	Vfs(const Vfs&) = delete;
+	Vfs(Vfs&&) = default;
+	Vfs& operator=(const Vfs&) = delete;
+	Vfs& operator=(Vfs&&) = default;
+public:
+	Vfs() {}
+	virtual ~Vfs() {}
+
+	virtual FILE* open_stdio(const char* file, const char* mode, bool write) = 0;
+	virtual SDL_RWops* open_sdl(const char* file, const char* mode, bool write) = 0;
+};
+
+typedef std::vector<std::unique_ptr<Vfs>> VfsStack;
+
+// ----------------------------------------------------------------------------
+// Stdio VFS implementation
+class StdioVfs : public Vfs {
+	std::string prefix;
+public:
+	StdioVfs(std::string prefix) : prefix(prefix) {}
+	FILE* open_stdio(const char* file, const char* mode, bool write);
+	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
+};
+
+FILE* StdioVfs::open_stdio(const char* file, const char* mode, bool write) {
+	std::string buffer = prefix;
+	buffer.append("/");
+	buffer.append(file);
+	if (write) {
+		mkdir_parents(buffer.c_str(), MKDIR_MODE);
+	}
+	FILE* fp = fopen(buffer.c_str(), mode);
+	if (!fp && write) {
+		LogError("fopen(%s, %s): %s", buffer.c_str(), mode, strerror(errno));
+	}
+	return fp;
+}
+
+SDL_RWops* StdioVfs::open_sdl(const char* file, const char* mode, bool write) {
+	FILE* fp = open_stdio(file, mode, write);
+	return fp ? SDL_RWFromFP(fp, SDL_TRUE) : nullptr;
+}
+
+// ----------------------------------------------------------------------------
 #if 0  // #ifdef _WIN32
-// Windows ----------------------------------------------------------
+// Windows %APPDATA% configuration (not currently in use)
 
 #include <io.h>
 #include <shlobj.h> // for SHGetFolderPath
@@ -103,57 +150,34 @@ static bool is_write_mode(const char* mode) {
 #include <direct.h>
 #endif
 
-FILE* AppdataOpen(const char* file, const char* mode) {
+VfsStack init_vfs_stack() {
 	char get_folder_path[MAX_PATH];
 	SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, get_folder_path);
 
 	std::string buffer = get_folder_path;
 	buffer.append("\\Hamumu\\");
 	buffer.append(AppdataFolderName());
-	buffer.append("\\");
-	buffer.append(file);
-	if (is_write_mode(mode)) {
-		mkdir_parents(file, MKDIR_MODE);  // TODO: mode is meaningless on win32
-	}
-	return fopen(file, mode);
+
+	VfsStack result;
+	result.push_back(std::make_unique<StdioVfs>(buffer));
+	result.push_back(std::make_unique<StdioVfs>("."));
+	return result;
 }
 
-FILE* AssetOpen(const char* file, const char* mode) {
-	return fopen(file, mode);
-}
-
-SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
-	return SDL_RWFromFile(file, mode);
-}
-
+// ----------------------------------------------------------------------------
 #elif defined(__EMSCRIPTEN__)
-// Emscripten -------------------------------------------------------
+// Emscripten configuration
 
 #include <emscripten.h>
 
-static FILE* open_file(const char* file, const char* mode) {
-	bool write_mode = is_write_mode(mode);
-
-	// RW: /appdata/$GAME
+VfsStack init_vfs_stack() {
 	std::string buffer = "/appdata/";
 	buffer.append(AppdataFolderName());
-	buffer.append("/");
-	buffer.append(file);
-	if (write_mode) {
-		mkdir_parents(buffer.c_str(), MKDIR_MODE);
-	}
-	FILE* fp = fopen(buffer.c_str(), mode);
-	if (fp) {
-		return fp;
-	}
 
-	if (write_mode) {
-		LogError("fopen(%s, %s): %s", buffer.c_str(), mode, strerror(errno));
-		return nullptr;
-	}
-
-	// Ro: /
-	return fopen(file, mode);
+	VfsStack result;
+	result.push_back(std::make_unique<StdioVfs>(buffer));
+	result.push_back(std::make_unique<StdioVfs>(""));
+	return result;
 }
 
 #define HAS_APPDATA_SYNC
@@ -163,53 +187,25 @@ void AppdataSync() {
 	);
 }
 
+// ----------------------------------------------------------------------------
 #elif defined(__ANDROID__) && __ANDROID__
-// Android ----------------------------------------------------------
+// Android VFS implementation and Android configuration
 
 #include <SDL_system.h>
 #include <string.h>
 
-static FILE* open_storage(const char* file, const char* mode, bool write_mode) {
-	std::string buffer;
+class AndroidBundleVfs : public Vfs {
+public:
+	FILE* open_stdio(const char* file, const char* mode, bool write);
+	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
+};
 
-	// Only use external storage if it is both readable and writeable
-	int need_flags = SDL_ANDROID_EXTERNAL_STORAGE_READ | SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
-	if ((SDL_AndroidGetExternalStorageState() & need_flags) == need_flags) {
-		// RW: $EXTERNAL
-		buffer = SDL_AndroidGetExternalStoragePath();
-		buffer.append("/");
-		buffer.append(file);
-		if (write_mode) {
-			mkdir_parents(buffer.c_str(), MKDIR_MODE);
-		}
-		FILE* fp = fopen(buffer.c_str(), mode);
-		if (fp) {
-			return fp;
-		}
-
-		if (write_mode) {
-			LogError("open_storage external fopen(%s, %s): %s", buffer.c_str(), mode, strerror(errno));
-			return nullptr;
-		}
-		// Ro: $INTERNAL
-	} // else RW: $INTERNAL
-
-	buffer = SDL_AndroidGetInternalStoragePath();
-	buffer.append("/");
-	buffer.append(file);
-	FILE* fp = fopen(buffer.c_str(), mode);
-	if (fp) {
-		return fp;
+FILE* AndroidBundleVfs::open_stdio(const char* file, const char* mode, bool write) {
+	if (write) {
+		LogError("open_bundle(%s, %s) does not support write modes", file, mode);
+		return nullptr;
 	}
 
-	if (write_mode) {
-		LogError("open_storage internal fopen(%s, %s): %s", buffer.c_str(), mode, strerror(errno));
-	}
-	return nullptr;
-}
-
-// requires !is_write_mode(mode)
-static FILE* open_bundle(const char* file, const char* mode) {
 	// Ro: apk bundle
 	LogDebug("open_bundle(%s, %s)", file, mode);
 
@@ -251,69 +247,92 @@ static FILE* open_bundle(const char* file, const char* mode) {
 	return fp;
 }
 
-static FILE* open_file(const char* file, const char* mode) {
-	bool write_mode = is_write_mode(mode);
-
-	FILE* fp = open_storage(file, mode, write_mode);
-	if (fp || write_mode) {
-		// open_storage already printed the error
-		return fp;
-	}
-
-	// Ro: .apk bundle via
-	return open_bundle(file, mode);
-}
-
-#define HAS_ASSETOPEN_SDL
-SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
-	bool write_mode = is_write_mode(mode);
-
-	FILE* fp = open_storage(file, mode, write_mode);
-	if (fp) {
-		return SDL_RWFromFP(fp, SDL_TRUE);
-	}
-	if (write_mode) {
-		// open_storage already printed the error
+SDL_RWops* AndroidBundleVfs::open_sdl(const char* file, const char* mode, bool write) {
+	if (write) {
+		LogError("open_bundle(%s, %s) does not support write modes", file, mode);
 		return nullptr;
 	}
 
-	// Will try to read from Android internal storage, or else
-	// pull from the asset system.
 	SDL_RWops* rw = SDL_RWFromFile(file, mode);
-	if (!rw) {
-		LogError("AssetOpen_SDL(%s, %s): %s", file, mode, SDL_GetError());
+	if (!rw && write) {
+		LogError("SDL_RWFromFile(%s, %s): %s", file, mode, SDL_GetError());
 	}
 	return rw;
 }
 
-#else
-// Default ----------------------------------------------------------
-
-static FILE* open_file(const char* file, const char* mode) {
-	FILE* fp = fopen(file, mode);
-	if (!fp) {
-		LogError("open_file(%s, %s): %s", file, mode, strerror(errno));
+VfsStack init_vfs_stack() {
+	VfsStack result;
+	int need_flags = SDL_ANDROID_EXTERNAL_STORAGE_READ | SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
+	if ((SDL_AndroidGetExternalStorageState() & need_flags) == need_flags) {
+		result.push_back(std::make_unique<StdioVfs>(SDL_AndroidGetExternalStoragePath()));
 	}
-	return fp;
+	result.push_back(std::make_unique<StdioVfs>(SDL_AndroidGetInternalStoragePath()));
+	result.push_back(std::make_unique<AndroidBundleVfs>());
+	return result;
 }
 
+// ----------------------------------------------------------------------------
+#else
+// Naive stdio configuration
+
+VfsStack init_vfs_stack() {
+	VfsStack result;
+	result.push_back(std::make_unique<StdioVfs>("."));
+	return result;
+}
+
+// ----------------------------------------------------------------------------
 #endif
-// Common -----------------------------------------------------------
+// Common implementation and interface
+
+// Android does not play nice with static initializers.
+static VfsStack vfs_stack;
 
 FILE* AppdataOpen(const char* file, const char* mode) {
-	return open_file(file, mode);
+	return AssetOpen(file, mode);
 }
 
 FILE* AssetOpen(const char* file, const char* mode) {
-	return open_file(file, mode);
+	if (vfs_stack.empty()) {
+		vfs_stack = init_vfs_stack();
+	}
+
+	bool write = is_write_mode(mode);
+	if (write) {
+		return vfs_stack.front()->open_stdio(file, mode, write);
+	}
+
+	for (auto& vfs : vfs_stack) {
+		FILE* fp = vfs->open_stdio(file, mode, write);
+		if (fp) {
+			return fp;
+		}
+	}
+
+	LogError("AssetOpen(%s, %s): not found in any vfs", file, mode);
+	return nullptr;
 }
 
-#ifndef HAS_ASSETOPEN_SDL
 SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
-	FILE* fp = open_file(file, mode);
-	return fp ? SDL_RWFromFP(fp, SDL_TRUE) : nullptr;
+	if (vfs_stack.empty()) {
+		vfs_stack = init_vfs_stack();
+	}
+
+	bool write = is_write_mode(mode);
+	if (write) {
+		return vfs_stack.front()->open_sdl(file, mode, write);
+	}
+
+	for (auto& vfs : vfs_stack) {
+		SDL_RWops* rw = vfs->open_sdl(file, mode, write);
+		if (rw) {
+			return rw;
+		}
+	}
+
+	LogError("AssetOpen_SDL(%s, %s): not found in any vfs", file, mode);
+	return nullptr;
 }
-#endif
 
 #ifndef HAS_APPDATA_SYNC
 void AppdataSync() {}
