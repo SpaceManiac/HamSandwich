@@ -4,6 +4,7 @@
 #include "hammusic.h"
 #include "log.h"
 #include "softjoystick.h"
+#include "appdata.h"
 #include <random>
 #include <algorithm>
 
@@ -864,13 +865,22 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 {
 	int i,w;
 
+	SDL_RWops* rw = AssetOpen_SDL(name, "rb");
+	if (!rw) {
+		// Asset stack printed error already
+		return false;
+	}
+
 #ifdef __EMSCRIPTEN__
 	// Under Emscripten, IMG_Load can't load some files which SDL_LoadBMP can.
-	SDL_Surface* b = SDL_LoadBMP(name);
+	SDL_Surface* b = SDL_LoadBMP_RW(rw, SDL_FALSE);
 	if (!b)
-		b = IMG_Load(name);
+	{
+		b = IMG_Load_RW(rw, SDL_FALSE);
+	}
+	SDL_RWclose(rw);
 #else  // __EMSCRIPTEN__
-	SDL_Surface* b = IMG_Load(name);
+	SDL_Surface* b = IMG_Load_RW(rw, SDL_TRUE);
 #endif  // __EMSCRIPTEN__
 
 	if (!b) {
