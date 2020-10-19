@@ -12,7 +12,7 @@
 #include "goal.h"
 #include "shop.h"
 #include "scanner.h"
-#include "lsdir.h"
+#include "appdata.h"
 
 #define PBTN_HEIGHT	19
 
@@ -32,8 +32,10 @@ float CalcPlayPercent(void)
 	worlds=0;
 
 	score=0.0f;
-	for (const char* name : filterdir("worlds", ".dlw", 32))
+	auto files = ListDirectory("worlds", ".dlw", 32);
+	for (const auto& str : files)
 	{
+		const char* name = str.c_str();
 		// rule out the backup worlds, so they don't show up
 		if((strcmp(name,"backup_load.dlw")) &&
 		   (strcmp(name,"backup_exit.dlw")) &&

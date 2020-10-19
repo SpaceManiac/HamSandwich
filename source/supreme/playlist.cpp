@@ -5,7 +5,7 @@
 #include "player.h"
 #include "music.h"
 #include "dialogbits.h"
-#include "lsdir.h"
+#include "appdata.h"
 
 #define PM_NORMAL		0
 #define PM_SELPLAY		1	// selecting in playlist
@@ -121,9 +121,10 @@ void InputSong(const char *fname)
 
 void ScanSongs(void)
 {
-	for (const char* name : filterdir("music", ".ogg", SONGNAME_LEN))
+	auto files = ListDirectory("music", ".ogg", SONGNAME_LEN);
+	for (const auto& str : files)
 	{
-		InputSong(name);
+		InputSong(str.c_str());
 	}
 	SortSongs();
 }

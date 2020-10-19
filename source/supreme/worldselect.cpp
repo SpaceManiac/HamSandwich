@@ -7,7 +7,8 @@
 #include "dialogbits.h"
 #include "shop.h"
 #include "hiscore.h"
-#include "lsdir.h"
+#include "appdata.h"
+#include "erase_if.h"
 #include <algorithm>
 
 #define WS_CONTINUE	0
@@ -238,46 +239,35 @@ void InputWorld(const char *fname)
 
 TASK(void) ScanWorlds(void)
 {
-	int count,done;
-
 #ifdef LEVELLIST
 	levelF=AppdataOpen("levellist.txt","wt");
 	level2F=AssetOpen("worlds/levels.dat","wb");
 	authorF=AppdataOpen("authorlist.txt","wt");
 	totalLCount=0;
 #endif
-	// count up how many there are to deal with
-	count=0;
 
-	for (const char* name : filterdir("worlds", ".dlw", 32))
-	{
-		// rule out the backup worlds, so they don't show up
-		if((strcmp(name,"backup_load.dlw")) &&
-		   (strcmp(name,"backup_exit.dlw")) &&
-		   (strcmp(name,"backup_save.dlw")))
-			count++;
-	}
+	std::vector<std::string> files = ListDirectory("worlds", ".dlw", 32);
+	erase_if(files, [](const std::string& name) {
+		return name == "backup_load.dlw"
+			|| name == "backup_exit.dlw"
+			|| name == "backup_save.dlw";
+	});
 
-	done=0;
+	int count = files.size();
+	int done = 0;
 
 	dword start = timeGetTime();
-	for (const char* name : filterdir("worlds", ".dlw", 32))
+	for (const std::string& name : files)
 	{
-		// rule out the backup worlds, so they don't show up
-		if((strcmp(name,"backup_load.dlw")) &&
-		   (strcmp(name,"backup_exit.dlw")) &&
-		   (strcmp(name,"backup_save.dlw")))
-		{
-			InputWorld(name);
-			done++;
+		InputWorld(name.c_str());
+		done++;
 
-			dword now = timeGetTime();
-			if (now - start > 50)  // 50 ms = 20 fps
-			{
-				start = now;
-				GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450,32*1+16);
-				AWAIT GetDisplayMGL()->Flip();
-			}
+		dword now = timeGetTime();
+		if (now - start > 50)  // 50 ms = 20 fps
+		{
+			start = now;
+			GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450,32*1+16);
+			AWAIT GetDisplayMGL()->Flip();
 		}
 	}
 #ifdef LEVELLIST

@@ -11,7 +11,7 @@
 #include "yesnodialog.h"
 #include "recordbook.h"
 #include "shop.h"
-#include "lsdir.h"
+#include "appdata.h"
 #if __linux__ || __EMSCRIPTEN__
 #include <unistd.h>
 #endif
@@ -145,8 +145,10 @@ void ScanProfiles(void)
 		fileList[i*PRFNAME_LEN]='\0';
 	numFiles=0;
 
-	for (const char* name : filterdir("profiles", ".prf", PRFNAME_LEN))
+	auto files = ListDirectory("profiles", ".prf", PRFNAME_LEN);
+	for (const auto& str : files)
 	{
+		const char* name = str.c_str();
 		strcpy(&fileList[numFiles*PRFNAME_LEN], name);
 		if (++numFiles >= MAX_PROFS)
 			break;

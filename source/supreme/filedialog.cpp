@@ -2,7 +2,7 @@
 #include "editor.h"
 #include "dialogbits.h"
 #include "viewdialog.h"
-#include "lsdir.h"
+#include "appdata.h"
 #include <string.h>
 #include <algorithm>
 
@@ -40,8 +40,10 @@ static void ObtainFilenames(const char *dir, const char *ext)
 
 	numFiles=0;
 
-	for (const char* name : filterdir(dir, ext, FNAMELEN))
+	auto files = ListDirectory(dir, ext, FNAMELEN);
+	for (const auto& str : files)
 	{
+		const char* name = str.c_str();
 		if(!strcmp(name,".") || !strcmp(name,".."))
 			continue;
 
