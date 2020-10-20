@@ -1,7 +1,7 @@
 #include "filedialog.h"
 #include "editor.h"
 #include <ctype.h>
-#include "lsdir.h"
+#include "appdata.h"
 #include <memory>
 
 const int MAX_FILES = 18;
@@ -9,7 +9,9 @@ const int MAX_FILES = 18;
 static char fnames[MAX_FILES][32];
 static char newfname[32]="";
 static byte numFiles;
-static std::unique_ptr<filterdir> filter;
+
+static std::vector<std::string> files_all;
+static std::vector<std::string>::iterator files_current;
 
 void InitFileDialog(void)
 {
@@ -17,9 +19,10 @@ void InitFileDialog(void)
 		fnames[i][0] = '\0';
 
 	numFiles = 0;
-	filter = std::make_unique<filterdir>("worlds", ".dlw", 32);
-	for (const char* name : *filter)
+	files_all = ListDirectory("worlds", ".dlw", 32);
+	for (files_current = files_all.begin(); files_current != files_all.end(); ++files_current)
 	{
+		const char* name = files_current->c_str();
 		strncpy(fnames[numFiles++], name, 32);
 		if (numFiles >= MAX_FILES)
 			break;
@@ -28,7 +31,7 @@ void InitFileDialog(void)
 
 void ExitFileDialog(void)
 {
-	filter.reset();
+	files_all.clear();
 }
 
 void RenderFileDialog(int msx, int msy, MGLDraw *mgl)
@@ -105,8 +108,9 @@ void FileDialogMoreFiles(void)
 		fnames[i][0] = '\0';
 
 	numFiles = 0;
-	for (const char* name : *filter)
+	for (; files_current != files_all.end(); ++files_current)
 	{
+		const char* name = files_current->c_str();
 		strncpy(fnames[numFiles++], name, 32);
 		if (numFiles >= MAX_FILES)
 			break;
