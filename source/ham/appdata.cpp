@@ -138,6 +138,29 @@ FILE* StdioVfs::open_stdio(const char* file, const char* mode, bool write) {
 		mkdir_parents(buffer.c_str());
 	}
 	FILE* fp = fopen(buffer.c_str(), mode);
+
+#ifndef _WIN32
+	// On non-Windows, try to case-correct file lookups
+	if (!fp) {
+		size_t i = buffer.rfind("/");
+		buffer[i] = '\0';
+
+		std::vector<std::string> temp;
+		list_dir(buffer.c_str(), temp);
+
+		for (const auto& name : temp)
+		{
+			if (!strcasecmp(&buffer[i + 1], name.c_str()))
+			{
+				buffer[i] = '/';
+				memcpy(&buffer[i + 1], name.data(), name.length());
+				fp = fopen(buffer.c_str(), mode);
+				break;
+			}
+		}
+	}
+#endif
+
 	if (!fp && write) {
 		LogError("fopen(%s, %s): %s", buffer.c_str(), mode, strerror(errno));
 	}
