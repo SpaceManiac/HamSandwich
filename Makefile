@@ -36,7 +36,7 @@ build/premake5:
 	@./tools/build/install-deps.sh
 
 # Helper to prepare Android build
-build/android/build.gradle: $(MAKEFILE_DEPS)
+build/android/build.gradle: $(MAKEFILE_DEPS) $(addprefix source/,$(PROJECTS))
 	@echo "==== Preparing Android build ===="
 	@rm -f $@
 	@$(PREMAKE5) android-studio
