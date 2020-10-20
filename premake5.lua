@@ -88,13 +88,13 @@ function sdl2_project(name)
 		-- Android application metadata.
 		android_package "com.platymuus.hamsandwich.%{prj.name}"
 		android_assetdirs {
-			"build/game/%{prj.name}/",
+			"build/assets/%{prj.name}/",
 			"assets/android/",
 		}
 
 		-- Emscripten metadata.
 		emscripten.html "assets/emscripten/*"
-		emscripten.assetdir "build/emcc-assets/%{prj.name}"
+		emscripten.assetdir "build/assets/%{prj.name}"
 
 		-- Link SDL2 in the correct sequence.
 		filter { "system:Windows", "not action:vs*" }

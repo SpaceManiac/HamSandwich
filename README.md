@@ -73,10 +73,9 @@ Compiling and running:
 1. If on Windows, install and use MSYS2 according to the instructions above.
 2. Install Gradle and the Android SDK and set `ANDROID_HOME`.
     1. Example shell command: `export ANDROID_HOME='C:\Wherever you installed the Android SDK\'`
-3. Run `./android <project>:packageDebug` to compile APKs.
-    1. For example, to build Supreme With Cheese, write `./android supreme:packageDebug`
-    2. To build all games, run `./android packageDebug`
-4. Run `./android <project>:installDebug` to install to a connected Android device.
+3. Run `./android <project>` to compile APKs.
+    1. For example, to build Supreme With Cheese, write `./android supreme`
+4. Run `./android --install <project>` to install to a connected Android device.
 5. To view logs, run `./android --logcat`
 
 ### Emscripten

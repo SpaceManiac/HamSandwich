@@ -2,11 +2,59 @@
 # ./android - prepare an Android build then invoke gradle
 set -euo pipefail
 
-if [ "$1" = "--logcat" ]; then
-	$ANDROID_HOME/platform-tools/adb logcat -s 'HamSandwich'
-else
+usage() {
+	echo "Usage: $0 [<subcommand...>]"
+	echo "    <project>            Build a debug .apk of a project."
+	echo "    --install <project>  Install the .apk to a connected device."
+	echo "    --logcat             Show HamSandwich logs from a device."
+	echo "    --gradle [<...>]     Run a Gradle task directly."
+	exit 1
+}
+
+premake_and_gradle() {
 	./tools/build/sdl2-source.sh
 	make --quiet build/android/build.gradle
 	cd build/android
 	gradle "$@"
+}
+
+# Default settings
+PROJECT=
+TASK=packageDebug
+
+# Read command-line arguments
+while [ $# -ne 0 ]; do
+	ARG="$1"; shift
+	case "$ARG" in
+		"--logcat")
+			$ANDROID_HOME/platform-tools/adb logcat -s 'HamSandwich'
+			;;
+		"--gradle")
+			premake_and_gradle "$@"
+			exit
+			;;
+		"--install")
+			TASK=installDebug
+			;;
+		-*)
+			usage
+			;;
+		*)
+			if [ "$PROJECT" ]; then
+				# Exit if two projects were specified
+				usage
+			fi
+			PROJECT=$ARG
+			;;
+	esac
+done
+if [ -z "$PROJECT" ]; then
+	# Exit if no project was specified
+	show_help; exit 1
 fi
+
+GAMEDIR="build/assets/$PROJECT"
+if [ ! -d "$GAMEDIR" ]; then
+	./tools/build/extract-assets.sh "$PROJECT" "$GAMEDIR"
+fi
+premake_and_gradle "$PROJECT:$TASK"
