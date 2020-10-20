@@ -1,6 +1,7 @@
 #include "appdata.h"
 #include "log.h"
 #include "erase_if.h"
+#include "jamultypes.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -201,15 +202,15 @@ bool StdioVfs::list_dir(const char* directory, std::vector<std::string>& output)
 	buffer.append(directory);
 	buffer.append("/*");
 
-	struct _finddata_t filedata;
-	long hFile = _findfirst(buf, &filedata);
+	struct _finddata_t finddata;
+	long hFile = _findfirst(buffer.c_str(), &finddata);
 	if (hFile == -1) {
 		return false;
 	}
 
 	do {
 		output.push_back(finddata.name);
-	} while (_findnext(hFile, &filedata) == 0);
+	} while (_findnext(hFile, &finddata) == 0);
 
 	_findclose(hFile);
 	return true;
