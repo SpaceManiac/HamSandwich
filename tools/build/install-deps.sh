@@ -37,7 +37,7 @@ packages() {
 	local FNAME="build/.packages-$SYS"
 	if [ ! -f "$FNAME" ] || [ "$(cat $FNAME)" != "$*" ]; then
 		echo "==== Updating system packages ===="
-		echo $CMD "$@"
+		echo "$CMD" "$@"
 		$CMD "$@"
 		echo "$*" >"$FNAME"
 	fi

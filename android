@@ -8,6 +8,7 @@ usage() {
 	echo "    --install <project>  Install the .apk to a connected device."
 	echo "    --logcat             Show HamSandwich logs from a device."
 	echo "    --gradle [<...>]     Run a Gradle task directly."
+	echo "Project can be \`--all\`."
 	exit 1
 }
 
@@ -19,7 +20,6 @@ premake_and_gradle() {
 }
 
 # Default settings
-PROJECT=
 TASK=packageDebug
 
 # Read command-line arguments
@@ -27,7 +27,7 @@ while [ $# -ne 0 ]; do
 	ARG="$1"; shift
 	case "$ARG" in
 		"--logcat")
-			$ANDROID_HOME/platform-tools/adb logcat -s 'HamSandwich'
+			"$ANDROID_HOME"/platform-tools/adb logcat -s 'HamSandwich'
 			;;
 		"--gradle")
 			premake_and_gradle "$@"
@@ -35,6 +35,10 @@ while [ $# -ne 0 ]; do
 			;;
 		"--install")
 			TASK=installDebug
+			;;
+		"--all")
+			premake_and_gradle "$TASK"
+			exit
 			;;
 		-*)
 			usage
@@ -44,17 +48,13 @@ while [ $# -ne 0 ]; do
 				# Exit if two projects were specified
 				usage
 			fi
-			PROJECT=$ARG
+			GAMEDIR="build/assets/$ARG"
+			if [ ! -d "$GAMEDIR" ]; then
+				./tools/build/extract-assets.sh "$ARG" "$GAMEDIR"
+			fi
+			premake_and_gradle "$ARG:$TASK"
 			;;
 	esac
 done
-if [ -z "$PROJECT" ]; then
-	# Exit if no project was specified
-	show_help; exit 1
-fi
 
-GAMEDIR="build/assets/$PROJECT"
-if [ ! -d "$GAMEDIR" ]; then
-	./tools/build/extract-assets.sh "$PROJECT" "$GAMEDIR"
-fi
-premake_and_gradle "$PROJECT:$TASK"
+usage

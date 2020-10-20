@@ -14,7 +14,7 @@ if [ ! -d build/emsdk ]; then
 fi
 pushd build/emsdk >/dev/null
 
-if [ "$(git log -n1 --pretty=%H)" != "$(git log -n1 --pretty=%H $TAG)" -o -n "$FIRST_TIME" ]; then
+if [ -n "$FIRST_TIME" ] || [ "$(git log -n1 --pretty=%H)" != "$(git log -n1 --pretty=%H $TAG)" ]; then
 	echo "==== Installing emsdk $TAG ===="
 	git fetch -q
 	git checkout -q $TAG
