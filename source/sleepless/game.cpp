@@ -865,6 +865,6 @@ TASK(void) TestLevel(world_t *world,byte level)
 	{
 		// delete all maps
 		sprintf(s,"profiles/_editing_.%03d",i);
-		unlink(s);
+		AppdataDelete(s);
 	}
 }

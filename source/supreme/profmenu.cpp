@@ -335,7 +335,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					mode=PROF_NORMAL;
 					sprintf(s,"profiles/%s.prf",profile.name);
 					FreeProfile();
-					unlink(s);
+					AppdataDelete(s);
 					if(numFiles==1)	// this was the only profile
 					{
 						return 3;	// so force them to create a new profile

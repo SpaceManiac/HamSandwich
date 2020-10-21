@@ -25,4 +25,6 @@ extern const char* AppdataFolderName();
 
 std::vector<std::string> ListDirectory(const char* directory, const char* extension = nullptr, size_t maxlen = 0);
 
+void AppdataDelete(const char* file);
+
 #endif  // APPDATA_H

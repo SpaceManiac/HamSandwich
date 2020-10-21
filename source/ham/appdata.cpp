@@ -11,6 +11,10 @@
 #include <sys/types.h>
 #include <errno.h>
 
+#ifndef _MSC_VER
+#include <unistd.h>
+#endif
+
 #ifdef SDL_UNPREFIXED
 	#include <SDL_platform.h>
 	#include <SDL_rwops.h>
@@ -116,6 +120,7 @@ public:
 	virtual FILE* open_stdio(const char* file, const char* mode, bool write) = 0;
 	virtual SDL_RWops* open_sdl(const char* file, const char* mode, bool write) = 0;
 	virtual bool list_dir(const char* directory, std::vector<std::string>& output) = 0;
+	virtual bool delete_file(const char* file) = 0;
 };
 
 typedef std::vector<std::unique_ptr<Vfs>> VfsStack;
@@ -129,6 +134,7 @@ public:
 	FILE* open_stdio(const char* file, const char* mode, bool write);
 	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
 	bool list_dir(const char* directory, std::vector<std::string>& output);
+	bool delete_file(const char* file);
 };
 
 FILE* StdioVfs::open_stdio(const char* file, const char* mode, bool write) {
@@ -218,6 +224,27 @@ bool StdioVfs::list_dir(const char* directory, std::vector<std::string>& output)
 
 #endif  // __GNUC__ and _MSC_VER
 
+bool StdioVfs::delete_file(const char* file) {
+	std::string buffer = prefix;
+	buffer.append("/");
+	buffer.append(file);
+
+	int status =
+#ifdef _MSC_VER
+		_unlink
+#else
+		unlink
+#endif
+		(buffer.c_str());
+
+	if (status == 0) {
+		return true;
+	} else {
+		LogError("unlink(%s): %s", buffer.c_str(), strerror(errno));
+		return false;
+	}
+}
+
 // ----------------------------------------------------------------------------
 #if 0  // #ifdef _WIN32
 // Windows %APPDATA% configuration (not currently in use)
@@ -271,13 +298,13 @@ void AppdataSync() {
 
 #include <SDL_system.h>
 #include <string.h>
-#include <unistd.h>
 
 class AndroidBundleVfs : public Vfs {
 public:
 	FILE* open_stdio(const char* file, const char* mode, bool write);
 	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
 	bool list_dir(const char* directory, std::vector<std::string>& output);
+	bool delete_file(const char* file) { return false; }
 };
 
 FILE* AndroidBundleVfs::open_stdio(const char* file, const char* mode, bool write) {
@@ -441,6 +468,14 @@ std::vector<std::string> ListDirectory(const char* directory, const char* extens
 	}
 
 	return output;
+}
+
+void AppdataDelete(const char* file) {
+	if (vfs_stack.empty()) {
+		vfs_stack = init_vfs_stack();
+	}
+
+	vfs_stack.front()->delete_file(file);
 }
 
 #ifndef HAS_APPDATA_SYNC

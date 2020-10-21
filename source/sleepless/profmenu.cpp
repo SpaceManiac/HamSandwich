@@ -310,7 +310,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					{
 						sprintf(s,"profiles/%s.prf",profile.name);
 						FreeProfile();
-						unlink(s);
+						AppdataDelete(s);
 						if(numFiles==1)	// this was the only profile
 						{
 							mode=PROF_NORMAL;
@@ -334,7 +334,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						{
 							// delete all maps
 							sprintf(s,"profiles/%s.%03d",profile.name,i);
-							unlink(s);
+							AppdataDelete(s);
 						}
 						w=GetWorldProgress(profile.lastWorld);
 						w->levelOn=0;

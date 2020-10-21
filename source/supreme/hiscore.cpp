@@ -1142,5 +1142,5 @@ void ChangeHighScores(const char *oldName,const char *newName)
 	}
 	SaveHiScores();
 	sprintf(s,"profiles/%s.prf",oldName);
-	unlink(s);	// delete the old profile file
+	AppdataDelete(s);	// delete the old profile file
 }

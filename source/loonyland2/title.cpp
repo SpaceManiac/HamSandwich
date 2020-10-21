@@ -512,7 +512,7 @@ void DeleteCharacter(void)
 	char s[64];
 
 	sprintf(s,"profiles/char%02d.loony",save[whoToDelete].realNum+1);
-	unlink(s);	// delete that file
+	AppdataDelete(s);	// delete that file
 	GetSavesForMenu();
 	curChar=0;
 }
