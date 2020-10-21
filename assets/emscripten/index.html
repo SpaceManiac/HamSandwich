@@ -20,11 +20,10 @@
 				}
 			}
 			body > div {
-				max-width: 1024px;
+				max-width: 640px;
 				margin: 8px auto;
 				background-color: white;
 				padding: 10px;
-				text-align: center;
 			}
 
 			#header {
@@ -74,6 +73,9 @@
 				}
 			}
 
+			#canvas-container {
+				text-align: center;
+			}
 			#canvas {
 				margin: auto;
 				display: block;
@@ -86,7 +88,7 @@
 	</head>
 	<body>
 		<div id="header">
-			<div id="title"></div>
+			<div id="title" hidden></div>
 			<div id="spinner"><div class="loading-pulse"></div></div>
 			<div id="status"><noscript>JavaScript required.</noscript></div>
 			<div style="flex-grow: 1"></div>
@@ -218,6 +220,11 @@
 							Module.requestFullscreen = function() {
 								Module.canvas.requestFullscreen();
 							}
+							setWindowTitle = function (text) {
+								document.title = text;
+								document.getElementById('title').hidden = !text;
+								document.getElementById('title').innerText = text;
+							}
 						},
 						function() {
 							FS.mkdir('/appdata');
@@ -237,11 +244,5 @@
 			};
 		</script>
 		<script type="text/javascript" src="__PROJECT_NAME__.js"></script>
-		<script>
-			setWindowTitle = function (text) {
-				document.title = text;
-				document.getElementById('title').innerText = text;
-			}
-		</script>
 	</body>
 </html>

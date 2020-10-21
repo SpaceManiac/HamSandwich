@@ -317,7 +317,7 @@ TASK(void) MGLDraw::FinishFlip(void)
 				}
 #else  // __EMSCRIPTEN__
 				EM_ASM(
-					Module.canvas.requestFullscreen();
+					Module.requestFullscreen();
 				);
 #endif  // __EMSCRIPTEN__
 			}
