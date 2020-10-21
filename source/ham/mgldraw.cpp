@@ -306,17 +306,21 @@ TASK(void) MGLDraw::FinishFlip(void)
 				lastKeyPressed = e.key.keysym.sym;
 			}
 
-#ifndef __EMSCRIPTEN__
 			if (e.key.keysym.scancode == SDL_SCANCODE_F11)
 			{
+#ifndef __EMSCRIPTEN__
 				windowed = !windowed;
 				if (windowed) {
 					SDL_SetWindowFullscreen(window, 0);
 				} else {
 					SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 				}
-			}
+#else  // __EMSCRIPTEN__
+				EM_ASM(
+					Module.canvas.requestFullscreen();
+				);
 #endif  // __EMSCRIPTEN__
+			}
 		} else if (e.type == SDL_TEXTINPUT) {
 			if (strlen(e.text.text) == 1)
 			{
