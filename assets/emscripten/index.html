@@ -101,6 +101,59 @@
 
 		<script type="text/javascript" src="jszip.min.js"></script>
 		<script type="text/javascript">
+			var HamSandwich = (function () {
+				// ------------------------------------------------------------
+				// File system syncing
+				var FS_IDLE = 0, FS_WORKING = 1, FS_PENDING = 2;
+				var fsStatus = FS_WORKING;  // waiting for preInit to run
+
+				function fsCallback(err) {
+					if (err) {
+						Module.printErr('FS sync error:', err);
+					}
+					if (fsStatus == FS_PENDING) {
+						fsSyncInner();
+					} else {
+						fsStatus = FS_IDLE;
+						Module.setStatus("");
+					}
+				}
+
+				function fsSyncInner() {
+					fsStatus = FS_WORKING;
+					Module.setStatus("Saving...");
+					FS.syncfs(false, fsCallback);
+				}
+
+				function fsSync() {
+					if (fsStatus) {
+						fsStatus = FS_PENDING;
+					} else {
+						fsSyncInner();
+					}
+				}
+
+				function fsInit() {
+					FS.mkdir('/appdata');
+					FS.mount(IDBFS, {}, '/appdata');
+					FS.syncfs(true, fsCallback);
+				}
+
+				// ------------------------------------------------------------
+				// Module overrides
+				function setWindowTitle(text) {
+					document.title = text;
+					document.getElementById('title').hidden = !text;
+					document.getElementById('title').innerText = text;
+				}
+
+				return {
+					fsSync,
+					fsInit,
+					setWindowTitle,
+				};
+			})();
+
 			var Module = (function() {
 				var status = document.getElementById('status');
 				var progress = document.getElementById('progress');
@@ -161,6 +214,7 @@
 					e.preventDefault();
 				});
 
+				// Only items which Emscripten actually interfaces with should be set here.
 				return {
 					canvas: canvas,
 
@@ -191,46 +245,14 @@
 						Module.setStatus("Preparing... (" + (totalDependencies - left) + "/" + totalDependencies + ")");
 					},
 
-					fsBusy: 1,  // waiting for preInit to run
-					fsSave: function() {
-						if (Module.fsBusy) {
-							Module.fsBusy = 2;
-						} else {
-							Module.__fsSave();
-						}
-					},
-					__fsSave: function() {
-						Module.setStatus("Saving...");
-						Module.fsBusy = 1;
-						FS.syncfs(false, Module.fsCallback);
-					},
-					fsCallback: function(err) {
-						if(err) Module.printErr('FS sync error:', err);
-						else Module.print('FS sync success');
-						if (Module.fsBusy == 2) {
-							Module.__fsSave();
-						} else {
-							Module.setStatus("");
-						}
-						Module.fsBusy = 0;
-					},
-
 					preInit: [
 						function() {
 							Module.requestFullscreen = function() {
 								Module.canvas.requestFullscreen();
 							}
-							setWindowTitle = function (text) {
-								document.title = text;
-								document.getElementById('title').hidden = !text;
-								document.getElementById('title').innerText = text;
-							}
+							setWindowTitle = HamSandwich.setWindowTitle;
 						},
-						function() {
-							FS.mkdir('/appdata');
-							FS.mount(IDBFS, {}, '/appdata');
-							FS.syncfs(true, Module.fsCallback);
-						}
+						HamSandwich.fsInit,
 					]
 				};
 			})();

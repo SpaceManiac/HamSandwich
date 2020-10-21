@@ -261,7 +261,7 @@ VfsStack init_vfs_stack() {
 #define HAS_APPDATA_SYNC
 void AppdataSync() {
 	EM_ASM(
-		Module.fsSave();
+		HamSandwich.fsSync();
 	);
 }
 
