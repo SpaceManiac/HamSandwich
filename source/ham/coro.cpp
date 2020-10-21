@@ -125,8 +125,8 @@ bool __schedule(coroutine_handle<> awaiter, coroutine_handle<> awaitee) {
 
 static void em_main_loop() {
 	if (!coro::g_executor.frame()) {
-		printf("calling emscripten_cancel_main_loop\n");
 		emscripten_cancel_main_loop();
+		emscripten_force_exit(0);
 	}
 }
 

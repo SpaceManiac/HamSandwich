@@ -69,7 +69,11 @@ function base_project(name)
 			linkoptions { "--emrun" }
 
 		filter { "toolset:emcc" }
-			linkoptions { "-s ALLOW_MEMORY_GROWTH=1", "--use-preload-cache" }
+			linkoptions {
+				"-s ALLOW_MEMORY_GROWTH=1",
+				"--use-preload-cache",
+				"-s ENVIRONMENT=web",
+			}
 
 			-- coroutine support
 			defines { "USE_COROUTINES" }

@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title>Emscripten Application</title>
+		<title>HamSandwich</title>
 		<style>
 			*[hidden] {
 				display: none !important;
@@ -198,10 +198,12 @@
 						}
 					}
 
+					Module.setStatus("Zipping...");
 					var zip = new JSZip();
 					collect(zip, '/appdata/__PROJECT_NAME__');
 					zip.generateAsync({ type: "blob" }).then(function(content) {
 						saveAs(content, "HamSandwich Saves.zip");
+						Module.setStatus("");
 					});
 				});
 

@@ -135,8 +135,7 @@ elif [ "$TOOL" = "callgrind" ]; then
 	valgrind --tool=callgrind "$EXE" $ARGS
 elif [ "$TOOLSET" = "emcc" ]; then
 	echo "==== Hosting $PROJECT ($CONFIG) ===="
-	trap 'kill $(cat .emrun.pid)' EXIT
-	{ emrun --serve_after_close "$EXE/../index.html" & echo $! >.emrun.pid; } | sed -e '/emscripten_cancel_main_loop/q'
+	emrun --serve_after_close "$EXE/../index.html"
 else
 	echo "==== Running $PROJECT ($CONFIG) ===="
 	if [ "$TWO" ]; then
