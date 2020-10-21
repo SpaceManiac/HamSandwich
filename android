@@ -21,6 +21,7 @@ premake_and_gradle() {
 
 # Default settings
 TASK=packageDebug
+GRADLE_CMDLINE=()
 
 # Read command-line arguments
 while [ $# -ne 0 ]; do
@@ -28,6 +29,7 @@ while [ $# -ne 0 ]; do
 	case "$ARG" in
 		"--logcat")
 			"$ANDROID_HOME"/platform-tools/adb logcat -s 'HamSandwich'
+			exit
 			;;
 		"--gradle")
 			premake_and_gradle "$@"
@@ -36,25 +38,21 @@ while [ $# -ne 0 ]; do
 		"--install")
 			TASK=installDebug
 			;;
-		"--all")
-			premake_and_gradle "$TASK"
-			exit
-			;;
 		-*)
 			usage
 			;;
 		*)
-			if [ "$PROJECT" ]; then
-				# Exit if two projects were specified
-				usage
-			fi
 			GAMEDIR="build/assets/$ARG"
 			if [ ! -d "$GAMEDIR" ]; then
 				./tools/build/extract-assets.sh "$ARG" "$GAMEDIR"
 			fi
-			premake_and_gradle "$ARG:$TASK"
+			GRADLE_CMDLINE+=("$ARG:$TASK")
 			;;
 	esac
 done
 
-usage
+if [ "${#GRADLE_CMDLINE[@]}" -eq 0 ]; then
+	# Exit if no projects were specified
+	usage
+fi
+premake_and_gradle "${GRADLE_CMDLINE[@]}"

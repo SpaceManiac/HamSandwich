@@ -75,7 +75,6 @@ Compiling and running:
     1. Example shell command: `export ANDROID_HOME='C:\Wherever you installed the Android SDK\'`
 3. Run `./android <project>` to compile APKs.
     1. For example, to build Supreme With Cheese, write `./android supreme`
-    2. To build all games, run `./android --all`
 4. Run `./android --install <project>` to install to a connected Android device.
 5. To view logs, run `./android --logcat`
 
