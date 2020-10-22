@@ -9,12 +9,17 @@
 	<body>
 		<div id="header" class="flex-row">
 			<div id="title" hidden></div>
-			<div id="spinner"><div class="loading-pulse"></div></div>
+			<div id="spinner" class="spinner"><div class="loading-pulse"></div></div>
 			<div id="status"><noscript>JavaScript required.</noscript></div>
 			<div style="flex-grow: 1"></div>
 			<input type="button" value="Export Save" id="export"/>
 			<input type="button" value="Fullscreen" id="fullscreen"/>
 		</div>
+		<details id="installer-upload">
+			<summary>Import assets</summary>
+			<p>To run the game, you must provide your own copy of the installer, either retail or downloaded from itch.io.</p>
+			<table></table>
+		</details>
 		<div id="canvas-container">
 			<canvas id="canvas" width="640" height="480" oncontextmenu="event.preventDefault()"></canvas>
 		</div>

@@ -32,7 +32,7 @@ body > * {
 
 /* ------------------------------------------------------------------------- */
 /* Global styles */
-*[hidden] {
+[hidden] {
 	display: none !important;
 }
 
@@ -51,8 +51,20 @@ summary {
 }
 
 /* ------------------------------------------------------------------------- */
+/* Installer upload */
+
+#installer-upload table {
+	width: 100%;
+	border-spacing: 0;
+}
+
+#installer-upload table td {
+	padding: 0;
+}
+
+/* ------------------------------------------------------------------------- */
 /* Spinner animation */
-#spinner {
+.spinner {
 	display: inline-block;
 	position: relative;
 	width: 30px;

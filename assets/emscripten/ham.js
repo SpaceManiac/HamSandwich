@@ -1,5 +1,12 @@
 // ----------------------------------------------------------------------------
 // General functionality
+window.onerror = function(event) {
+	var status = document.getElementById('status');
+	if (status) {
+		status.innerText = "Error! See browser console.";
+	}
+};
+
 var HamSandwich = (function () {
 	var metadata = JSON.parse(document.getElementById('ham-meta').textContent);
 
@@ -34,10 +41,17 @@ var HamSandwich = (function () {
 		}
 	}
 
+	function fsInitCallback(err) {
+		fsCallback(err);
+		InstallerUpload.init();
+	}
+
 	function fsInit() {
 		FS.mkdir('/appdata');
 		FS.mount(IDBFS, {}, '/appdata');
-		FS.syncfs(true, fsCallback);
+		FS.mkdir('/installers');
+		FS.mount(IDBFS, {}, '/installers');
+		FS.syncfs(true, fsInitCallback);
 	}
 
 	// ------------------------------------------------------------
@@ -54,6 +68,102 @@ var HamSandwich = (function () {
 		fsInit,
 		setWindowTitle,
 	};
+})();
+
+// ----------------------------------------------------------------------------
+// Installer upload
+var InstallerUpload = (function () {
+	var details = document.getElementById('installer-upload');
+	var table = details.querySelector('table');
+	var meta = HamSandwich.metadata.installers;
+
+	function setSpinner(td) {
+		var outer = document.createElement('div');
+		outer.className = 'spinner';
+		var inner = document.createElement('div');
+		inner.className = 'loading-pulse';
+		outer.appendChild(inner);
+		td.innerText = '';
+		td.appendChild(outer);
+	}
+
+	var status = {};
+	for (let fname in meta) {
+		var statusTd = document.createElement('td');
+		setSpinner(statusTd);
+
+		var fnameTd = document.createElement('td');
+		var a = document.createElement('a');
+		a.href = meta[fname].link;
+		a.innerText = fname;
+		a.target = '_blank';
+		fnameTd.appendChild(a);
+
+		var fileTd = document.createElement('td');
+		var fileInput = document.createElement('input');
+		fileInput.type = 'file';
+		fileInput.addEventListener('change', function() {
+			setSpinner(statusTd);
+			fileInput.files[0].arrayBuffer().then(buf => {
+				FS.writeFile('/installers/' + fname, new Uint8Array(buf));
+				checkFsFile(fname, true);
+			});
+		});
+		fileTd.appendChild(fileInput);
+
+		var tr = document.createElement('tr');
+		tr.appendChild(statusTd);
+		tr.appendChild(fnameTd);
+		tr.appendChild(fileTd);
+		table.appendChild(tr);
+
+		status[fname] = {
+			statusTd,
+			fileInput,
+			accepted: false,
+		};
+	}
+
+	function checkFsFile(fname, sync) {
+		var buffer;
+		try {
+			buffer = FS.readFile('/installers/' + fname);
+		} catch (e) {
+			status[fname].statusTd.innerText = '\u2014';
+			details.open = true;
+			return;
+		}
+
+		// Warning: `crypto.subtle` is only available on HTTPS sites.
+		crypto.subtle.digest('SHA-256', buffer).then(hashBuffer => {
+			var hexdigest = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+			if (hexdigest === meta[fname].sha256sum) {
+				status[fname].accepted = true;
+				status[fname].statusTd.innerText = 'Ok';
+				status[fname].fileInput.disabled = true;
+				status[fname].fileInput.hidden = true;
+				if (sync) {
+					HamSandwich.fsSync();
+				}
+			} else {
+				status[fname].statusTd.innerText = 'Bad';
+				details.open = true;
+			}
+		});
+	}
+
+	function init() {
+		if (!crypto.subtle) {
+
+		}
+		for (var fname in meta) {
+			checkFsFile(fname, false);
+		}
+	}
+
+	return {
+		init,
+	}
 })();
 
 // ----------------------------------------------------------------------------
