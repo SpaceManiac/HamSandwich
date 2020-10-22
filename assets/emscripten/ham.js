@@ -1,6 +1,8 @@
 // ----------------------------------------------------------------------------
 // General functionality
 var HamSandwich = (function () {
+	var metadata = JSON.parse(document.getElementById('ham-meta').textContent);
+
 	// ------------------------------------------------------------
 	// File system syncing
 	var FS_IDLE = 0, FS_WORKING = 1, FS_PENDING = 2;
@@ -47,6 +49,7 @@ var HamSandwich = (function () {
 	}
 
 	return {
+		metadata,
 		fsSync,
 		fsInit,
 		setWindowTitle,
@@ -63,11 +66,11 @@ var Module = (function() {
 	var totalDependencies = 0, unsatisfied = 0;
 	var hasContext = true;
 
-	document.getElementById('fullscreen').addEventListener('click', function() {
+	document.getElementById('fullscreen')?.addEventListener('click', function() {
 		Module.canvas.requestFullscreen();
 	});
 
-	document.getElementById('export').addEventListener('click', function() {
+	document.getElementById('export')?.addEventListener('click', function() {
 		function saveAs(file, filename) {
 			if (window.navigator.msSaveOrOpenBlob) { // IE10+
 				window.navigator.msSaveOrOpenBlob(file, filename);
@@ -100,7 +103,7 @@ var Module = (function() {
 
 		Module.setStatus("Zipping...");
 		var zip = new JSZip();
-		collect(zip, '/appdata/' + PROJECT_NAME);
+		collect(zip, '/appdata/' + HamSandwich.metadata.projectName);
 		zip.generateAsync({ type: "blob" }).then(function(content) {
 			saveAs(content, "HamSandwich Saves.zip");
 			Module.setStatus("");
@@ -165,3 +168,9 @@ window.onerror = function(event) {
 	spinner.hidden = true;
 	Module.setStatus = Module.printErr;
 };
+
+(function () {
+	var tag = document.createElement('script');
+	tag.src = HamSandwich.metadata.projectName + '.js';
+	document.body.appendChild(tag);
+})();

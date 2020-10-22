@@ -130,14 +130,35 @@ function emscripten.assetdir(dir)
 	filter {}
 end
 
+function emscripten._encode_metadata(prj)
+	local meta = {
+		projectName = prj.name,
+		installers = prj.installers,
+	}
+	local str, err = json.encode(meta)
+	if err then
+		print(err)
+		return "{}"
+	else
+		return str:gsub('[\'"/]', '\\%1')
+	end
+end
+
 function emscripten.html(fname)
 	filter { "toolset:emcc", "files:" .. fname }
 		buildmessage "%{file.name}"
 		buildoutputs "%{cfg.targetdir}/%{file.name}"
-		buildcommands "sed 's/__PROJECT_NAME__/%{prj.name}/g' <%{file.relpath} >%{cfg.targetdir}/%{file.name}"
+		buildcommands "sed 's/__HAMSANDWICH_METADATA__/%{emscripten._encode_metadata(prj)}/g' <%{file.relpath} >%{cfg.targetdir}/%{file.name}"
 
 	filter "toolset:emcc"
 		files(fname)
 
 	filter {}
 end
+
+p.api.register {
+	name = "installers",
+	scope = "project",
+	kind = "table",
+	tokens = true
+}
