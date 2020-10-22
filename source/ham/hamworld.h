@@ -2,6 +2,7 @@
 #define HAMWORLD_H
 
 #include "jamultypes.h"
+#include "ioext.h"
 #include <stddef.h>
 #include <string_view>
 #include <fstream>
@@ -55,7 +56,7 @@ public:
 
 class Save final
 {
-	std::ofstream output;
+	FilePtrStream output;
 public:
 	Save(const char* fname);
 	~Save();
@@ -66,7 +67,7 @@ public:
 
 class Load final
 {
-	std::ifstream input;
+	FilePtrStream input;
 public:
 	Load(const char* fname);
 	~Load();

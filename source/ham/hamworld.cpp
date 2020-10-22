@@ -1,5 +1,6 @@
 #include "hamworld.h"
 #include "log.h"
+#include "appdata.h"
 #include <string.h>
 
 namespace hamworld {
@@ -128,7 +129,7 @@ std::string Section::save()
 }
 
 Save::Save(const char* fname)
-	: output(fname, std::ios_base::out | std::ios_base::binary)
+	: output(AssetOpen(fname, "wb"))
 {
 }
 
@@ -159,7 +160,7 @@ void Save::section(string_view name, string_view body)
 }
 
 Load::Load(const char* fname)
-	: input(fname, std::ios_base::in | std::ios_base::binary)
+	: input(AssetOpen(fname, "rb"))
 {
 }
 
