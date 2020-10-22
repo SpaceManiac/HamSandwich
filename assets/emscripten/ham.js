@@ -43,7 +43,7 @@ var HamSandwich = (function () {
 
 	function fsInitCallback(err) {
 		fsCallback(err);
-		InstallerUpload.init();
+		InstallerUpload.onFsInit();
 	}
 
 	function fsInit() {
@@ -145,6 +145,7 @@ var InstallerUpload = (function () {
 				if (sync) {
 					HamSandwich.fsSync();
 				}
+				Module.removeRunDependency('installer ' + fname);
 			} else {
 				status[fname].statusTd.innerText = 'Bad';
 				details.open = true;
@@ -152,17 +153,21 @@ var InstallerUpload = (function () {
 		});
 	}
 
-	function init() {
-		if (!crypto.subtle) {
-
+	function preInit() {
+		for (var fname in meta) {
+			Module.addRunDependency('installer ' + fname);
 		}
+	}
+
+	function onFsInit() {
 		for (var fname in meta) {
 			checkFsFile(fname, false);
 		}
 	}
 
 	return {
-		init,
+		preInit,
+		onFsInit,
 	}
 })();
 
@@ -267,8 +272,13 @@ var Module = (function() {
 				}
 				setWindowTitle = HamSandwich.setWindowTitle;
 			},
+			InstallerUpload.preInit,
 			HamSandwich.fsInit,
-		]
+		],
+
+		postRun: function() {
+			document.getElementById('installer-upload').open = false;
+		},
 	};
 })();
 
