@@ -80,8 +80,8 @@ static int mkdir_one(const char *path) {
 }
 
 static int mkdir_parents(const char *path) {
-	char *copypath = strdup(path);
-	char *start = copypath;
+	std::string copypath = path;
+	char *start = copypath.data();
 	char *next;
 
 	int status = 0;
@@ -89,16 +89,15 @@ static int mkdir_parents(const char *path) {
 		if (next != start) {
 			// skip the root directory and double-slashes
 			*next = '\0';
-			status = mkdir_one(copypath);
+			status = mkdir_one(copypath.c_str());
 			*next = '/';
 		}
 		start = next + 1;
 	}
 
 	if (status != 0)
-		LogError("mkdirs(%s): %s", copypath, strerror(errno));
+		LogError("mkdirs(%s): %s", copypath.c_str(), strerror(errno));
 
-	free(copypath);
 	return status;
 }
 
