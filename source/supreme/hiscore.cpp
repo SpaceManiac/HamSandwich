@@ -260,7 +260,7 @@ void CryptoTest(void)
 	fprintf(f,"Encrypted:\n%s\n\n",enc_score);
 	DecryptScore(&test);
 	fprintf(f,"Decrypted:\n");
-	fprintf(f,"name: %s\nchecksum: %lu\n\n",test.name,test.scoreChecksum);
+	fprintf(f,"name: %s\nchecksum: %u\n\n",test.name,test.scoreChecksum);
 	fprintf(f,"memcmp: %d\n",memcmp(&test,&test2,sizeof(score_t)));
 	fclose(f);
 	ExitCrypto();

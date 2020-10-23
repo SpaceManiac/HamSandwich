@@ -269,7 +269,7 @@ byte Map::Save(FILE *f)
 	{
 		byte temp = badguy[i].type;
 		if (badguy[i].type > 0xff) {
-			LogError("WARNING: in legacy save, can't save monster '%s' with ID %lu > 255", MonsterName(badguy[i].type), badguy[i].type);
+			LogError("WARNING: in legacy save, can't save monster '%s' with ID %u > 255", MonsterName(badguy[i].type), badguy[i].type);
 			temp = 0;
 		}
 		fwrite(&badguy[i].x, 1, sizeof(byte), f);

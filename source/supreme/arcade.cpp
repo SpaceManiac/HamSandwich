@@ -398,7 +398,7 @@ void RenderCaveGame(MGLDraw *mgl)
 		sprintf(s,"Level: %d",gameLevel-3);
 		PrintGlow(300,2,s,0,1);
 
-		sprintf(s,"Time: %lu:%02lu",(timer/(30*60)),(timer/30)%60);
+		sprintf(s,"Time: %u:%02u",(timer/(30*60)),(timer/30)%60);
 		PrintGlow(400,2,s,0,1);
 
 		sprintf(s,"Lives: %d",lives);
@@ -1450,7 +1450,7 @@ void RenderArcade(MGLDraw *mgl)
 	}
 	RenderArcButton(440,440,180,"Quit",mgl,(cursor==2));
 
-	sprintf(s,"Coins: %lu",profile.progress.totalCoins-profile.progress.coinsSpent);
+	sprintf(s,"Coins: %u",profile.progress.totalCoins-profile.progress.coinsSpent);
 	PrintGlow(620-GetStrLength(s,2),415,s,0,2);
 
 	// mouse cursor

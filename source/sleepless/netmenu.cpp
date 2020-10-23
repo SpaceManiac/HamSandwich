@@ -161,7 +161,7 @@ void CatPair(char *buffer,char *var,dword val)
 {
 	char s[32];
 
-	sprintf(s,"&%s=%ld",var,val);
+	sprintf(s,"&%s=%u",var,val);
 	strcat(buffer,s);
 }
 
