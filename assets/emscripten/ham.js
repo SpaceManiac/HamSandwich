@@ -88,7 +88,10 @@ var InstallerUpload = (function () {
 	}
 
 	var status = {};
+	details.hidden = true;
 	for (let fname in meta) {
+		details.hidden = false;
+
 		var statusTd = document.createElement('td');
 		setSpinner(statusTd);
 
