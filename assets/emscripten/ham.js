@@ -92,7 +92,7 @@ var InstallerUpload = (function () {
 	for (let fname in meta) {
 		details.hidden = false;
 
-		var statusTd = document.createElement('td');
+		let statusTd = document.createElement('td');
 		setSpinner(statusTd);
 
 		var fnameTd = document.createElement('td');
@@ -103,9 +103,9 @@ var InstallerUpload = (function () {
 		fnameTd.appendChild(a);
 
 		var fileTd = document.createElement('td');
-		var fileInput = document.createElement('input');
+		let fileInput = document.createElement('input');
 		fileInput.type = 'file';
-		fileInput.addEventListener('change', function() {
+		fileInput.addEventListener('change', () => {
 			setSpinner(statusTd);
 			fileInput.files[0].arrayBuffer().then(buf => {
 				FS.writeFile('/installers/' + fname, new Uint8Array(buf));
