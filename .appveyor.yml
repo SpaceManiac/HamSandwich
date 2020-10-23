@@ -25,9 +25,6 @@ for:
     install:
         - set "PATH=C:\msys64\%MSYSTEM%\bin;C:\msys64\usr\bin;%PATH%"
         - set "CHERE_INVOKING=1"
-        - bash -lc 'pacman -Syu --noconfirm'
-        - taskkill /f /fi "MODULES eq msys-2.0.dll"
-        - bash -lc 'pacman -Syu --noconfirm'
         - bash -lc './tools/build/install-deps.sh'
     build_script:
         - bash -lc 'make'
