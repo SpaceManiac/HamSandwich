@@ -4074,9 +4074,11 @@ void GetSpook(void)
 	{
 		if(guys[i]->type==MONS_POLTERGUY || guys[i]->type==MONS_POLTERGUY2)
 		{
+			// make a copy of the spook
 			if(holdSpook==NULL)
-				holdSpook=new Guy();
-			memcpy(holdSpook,guys[i],sizeof(Guy));	// make a copy of the spook
+				holdSpook = new Guy(*guys[i]);
+			else
+				*holdSpook = *guys[i];
 			return;
 		}
 	}
@@ -4096,7 +4098,7 @@ void PutSpook(void)
 	{
 		g=AddGuy(0,0,0,MONS_POLTERGUY,0);
 		ID=g->ID;
-		memcpy(g,holdSpook,sizeof(Guy));
+		*g = std::move(*holdSpook);
 		g->ID=ID;
 		g->target=goodguy;
 		g->parent=NULL;
