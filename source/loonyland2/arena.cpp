@@ -1731,7 +1731,7 @@ void PrintArenaInfo(int y)
 				if(arenaMatch[player.arenaLvl].waveCnt>1)
 					sprintf(s,"Wave %d/%d   %d:%02d",wv,arenaMatch[player.arenaLvl].waveCnt,w/60,w%60);
 				else
-					sprintf(s,"%d:%02d",wv,arenaMatch[player.arenaLvl].waveCnt,w/60,w%60);
+					sprintf(s,"%d:%02d",w/60,w%60);
 			}
 			else
 			{
