@@ -1,0 +1,10 @@
+/*
+Presumed NSIS configuration.
+*/
+
+#define NSIS_MAX_STRLEN 1024
+#define NSIS_CONFIG_VISIBLE_SUPPORT
+#define NSIS_SUPPORT_BGBG
+#define NSIS_SUPPORT_RENAME
+#define NSIS_SUPPORT_FNUTIL
+#define NSIS_SUPPORT_FILE
