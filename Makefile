@@ -1,4 +1,5 @@
-PROJECTS := lunatic supreme sleepless loonyland loonyland2 mystic ham
+PROJECTS := lunatic supreme sleepless loonyland loonyland2 mystic
+PROJECTS += ham libextract
 PREMAKE5 := premake5
 toolset ?= gcc
 

@@ -24,6 +24,7 @@ function base_project(name)
 		files {
 			"source/" .. name .. "/**.h",
 			"source/" .. name .. "/**.cpp",
+			"source/" .. name .. "/**.c",
 		}
 
 		filter "configurations:*64"
@@ -165,6 +166,9 @@ library "ham"
 
 	filter "toolset:emcc"
 		links { "SDL2", "SDL2_mixer", "SDL2_image" }
+
+base_project "libextract"
+	kind "ConsoleApp"
 
 sdl2_project "lunatic"
 	android_appname "Dr. Lunatic"
