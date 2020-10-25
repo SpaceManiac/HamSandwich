@@ -3,6 +3,7 @@
 #include "erase_if.h"
 #include "jamultypes.h"
 #include "nsis.h"
+#include "vec_rw.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -290,33 +291,6 @@ FILE* fp_from_bundle(const char* file, const char* mode, SDL_RWops* rw, const ch
 }
 
 // ----------------------------------------------------------------------------
-// Vector of bytes SDL_RWops implementation
-
-struct Vec_RWops {
-	SDL_RWops base;
-	std::vector<uint8_t> vec;
-};
-
-static int delete_vec_close(SDL_RWops* rw) {
-	if (rw) {
-		Vec_RWops* rw2 = (Vec_RWops*) rw;
-		rw2->~Vec_RWops();
-		SDL_FreeRW(rw);
-	}
-	return 0;
-}
-
-SDL_RWops* create_vec_rwops(std::vector<uint8_t> buffer) {
-	SDL_RWops* rw_base = SDL_RWFromConstMem(buffer.data(), buffer.size());
-	Vec_RWops* rw = (Vec_RWops*) SDL_malloc(sizeof(Vec_RWops));
-	memcpy(rw, rw_base, sizeof(SDL_RWops));
-	SDL_FreeRW(rw_base);
-	new(&rw->vec) std::vector<uint8_t>(std::move(buffer));
-	rw->base.close = delete_vec_close;
-	return &rw->base;
-}
-
-// ----------------------------------------------------------------------------
 // NSIS VFS implementation
 
 class NsisVfs : public Vfs {
@@ -364,7 +338,6 @@ SDL_RWops* NsisVfs::open_sdl(const char* file, const char* mode, bool write) {
 		return nullptr;
 	}
 
-	// Use a modified RWFromConstMem so the JS audio code knows how to slurp it
 	return create_vec_rwops(std::move(buffer));
 }
 
