@@ -6,8 +6,16 @@
 
 namespace nsis {
 
-static_assert(LITTLE_ENDIAN);
 static_assert(sizeof(int) == 4);
+
+#ifndef __GNUC__
+#define strcasecmp _stricmp
+#endif // __GNUC__
+
+bool CaseInsensitive::operator() (const std::string& lhs, const std::string& rhs) const
+{
+	return strcasecmp(lhs.c_str(), rhs.c_str()) < 0;
+}
 
 // ----------------------------------------------------------------------------
 // Constants
@@ -170,15 +178,6 @@ const char* navigate(uint8_t* path, Directory** working_directory, Directory* in
 	}
 
 	return (const char*) last_component;
-}
-
-#ifndef __GNUC__
-#define strcasecmp _stricmp
-#endif // __GNUC__
-
-bool CaseInsensitive::operator() (const std::string& lhs, const std::string& rhs) const
-{
-	return strcasecmp(lhs.c_str(), rhs.c_str()) < 0;
 }
 
 }  // namespace nsis

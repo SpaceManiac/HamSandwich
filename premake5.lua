@@ -160,20 +160,27 @@ function depends(name)
 	links(name)
 end
 
+library "libextract"
+	filter "toolset:gcc"
+		buildoptions { "-Wall", "-Wextra" }
+
 library "ham"
+	depends "libextract"
+	local function links_ham()
+		links "ham"
+		links "libextract"
+	end
+
 	filter "toolset:gcc"
 		buildoptions { "-Wall", "-Wextra" }
 
 	filter "toolset:emcc"
 		links { "SDL2", "SDL2_mixer", "SDL2_image" }
 
-base_project "libextract"
-	kind "ConsoleApp"
-
 sdl2_project "lunatic"
 	android_appname "Dr. Lunatic"
 	icon_file "lunatic"
-	depends "ham"
+	links_ham()
 	pch "winpch"
 	defines { "EXPANDO" }
 
@@ -191,7 +198,7 @@ sdl2_project "lunatic"
 sdl2_project "supreme"
 	android_appname "Supreme With Cheese"
 	icon_file "lunatic"
-	depends "ham"
+	links_ham()
 	pch "winpch"
 
 	excludefiles {
@@ -222,7 +229,7 @@ sdl2_project "supreme"
 sdl2_project "sleepless"
 	android_appname "Sleepless Hollow"
 	icon_file "lunatic"
-	depends "ham"
+	links_ham()
 	pch "winpch"
 
 	excludefiles {
@@ -252,7 +259,7 @@ sdl2_project "sleepless"
 sdl2_project "loonyland"
 	android_appname "Loonyland: Halloween Hill"
 	icon_file "loonyland"
-	depends "ham"
+	links_ham()
 	pch "winpch"
 
 	installers {
@@ -271,7 +278,7 @@ sdl2_project "loonyland"
 sdl2_project "loonyland2"
 	android_appname "Loonyland 2: Winter Woods"
 	icon_file "loonyland2"
-	depends "ham"
+	links_ham()
 	pch "winpch"
 	defines { "DIRECTORS" }
 	excludefiles {
@@ -289,7 +296,7 @@ sdl2_project "loonyland2"
 sdl2_project "mystic"
 	android_appname "Kid Mystic"
 	icon_file "mystic"
-	depends "ham"
+	links_ham()
 	pch "winpch"
 
 	installers {

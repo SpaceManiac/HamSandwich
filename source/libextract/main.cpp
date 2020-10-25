@@ -1,12 +1,13 @@
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include "nsis.h"
 
 const char* spam = "                ";
 
 void show(int depth, const nsis::Directory& directory) {
 	for (const auto& entry : directory.files) {
-		printf("%s%s --> %zu\n", &spam[16 - depth], entry.first.c_str(), entry.second);
+		printf("%s%s\n", &spam[16 - depth], entry.first.c_str());
 	}
 	for (const auto& entry : directory.directories) {
 		printf("%s%s:\n", &spam[16 - depth], entry.first.c_str());
@@ -14,8 +15,8 @@ void show(int depth, const nsis::Directory& directory) {
 	}
 }
 
-int main(int argc, const char* argv[]) {
-
+int main(int _argc, const char* argv[])
+{
 	FILE* fp = fopen(argv[1], "rb");
 	if (!fp)
 	{

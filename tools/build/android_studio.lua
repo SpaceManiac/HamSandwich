@@ -293,14 +293,12 @@ function m.android_mk(prj)
 	-- TODO base SDL part on prj dependencies
 	p.w('LOCAL_SHARED_LIBRARIES := SDL2 SDL2_mixer SDL2_image')
 
-	if m.is_application(prj) then
-		local statics = ''
-		for _, dep_prj in pairs(p.project.getdependencies(prj)) do
-			statics = statics .. ' ' .. dep_prj.name
-		end
-		if statics then
-			p.w('LOCAL_STATIC_LIBRARIES :=%s', statics)
-		end
+	local statics = ''
+	for _, dep_prj in pairs(p.project.getdependencies(prj)) do
+		statics = statics .. ' ' .. dep_prj.name
+	end
+	if statics then
+		p.w('LOCAL_STATIC_LIBRARIES :=%s', statics)
 	end
 
 	-- TODO: replace this with obeying cfg.includes below
@@ -309,6 +307,7 @@ function m.android_mk(prj)
 	end
 
 	local cflags = ""
+	local cxxflags = ""
 	for _, flag in ipairs(cfg.buildoptions) do
 		cflags = cflags .. " " .. flag
 	end
@@ -316,10 +315,11 @@ function m.android_mk(prj)
 		cflags = cflags .. " -D" .. def:gsub('["\\ ]', '\\%0')
 	end
 	if cfg.cppdialect then
-		cflags = cflags .. " -std=" .. cfg.cppdialect:lower()
+		cxxflags = cxxflags .. " -std=" .. cfg.cppdialect:lower()
 	end
 
 	p.w('LOCAL_CFLAGS :=%s', cflags)
+	p.w('LOCAL_CXXFLAGS :=%s', cxxflags)
 
 	if m.is_application(prj) then
 		p.w('LOCAL_LDLIBS := -llog')
