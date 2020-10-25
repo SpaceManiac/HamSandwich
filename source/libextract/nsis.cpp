@@ -134,7 +134,7 @@ const char* navigate(uint8_t* path, Directory** working_directory, Directory* in
 		int var = ((path[2] & 0x7f) << 7) | (path[1] & 0x7f);
 		// 21 is $INSTDIR and 29 is a user variable which appears
 		// to usually match it.
-		if (var == 21 || var == 29)
+		if (var == 21 || var == 29 || var == 31)
 		{
 			*working_directory = install_dir;
 		}
