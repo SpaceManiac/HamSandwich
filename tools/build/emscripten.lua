@@ -5,6 +5,21 @@ local p = premake
 local clang = p.tools.clang
 local emcc
 
+-- New configurators.
+p.api.register {
+	name = "installers",
+	scope = "project",
+	kind = "table",
+	tokens = true
+}
+
+p.api.register {
+	name = "assetdirs",
+	scope = "project",
+	kind = "list:string",
+	tokens = true
+}
+
 -- Global filters.
 filter { "toolset:emcc", "kind:WindowedApp or ConsoleApp" }
 	-- Without an extension, emcc produces only bytecode. We want the WASM and
@@ -96,44 +111,61 @@ p.tools.emcc = emcc
 
 emscripten = {}
 
--- Helper function for creating a packfile target.
--- This is probably the wrong way to do this.
-function emscripten.assetdir(dir)
+-- Asset packfile target
+function emscripten._file_packager_makesettings(prj)
+	local res = "LDDEPS +="
+	for _, dir in ipairs(prj.assetdirs) do
+		res = res .. ' ../' .. dir
+	end
+	return res
+end
+
+function emscripten._file_packager_prelinkmessage(prj)
+	if #prj.assetdirs > 0 then
+		return "%{prj.name}.data"
+	end
+end
+
+function emscripten._file_packager_prelinkcommands(prj)
+	if #prj.assetdirs == 0 then
+		return ""
+	end
 	local data = "%{cfg.targetdir}/%{prj.name}.data"
 	local datajs = "%{cfg.objdir}/%{prj.name}.data.js"
 
-	local build_command = ""
-	local lddeps = ""
-	local inputs = {}
-
-	build_command = "python3"
+	local build_command = "python3"
 		.. " $(EMSDK)/upstream/emscripten/tools/file_packager.py"
 		.. " " .. data
 		.. " --js-output=" .. datajs
 		.. " --from-emcc"  -- Hack to disable "Remember to..." output
 		--.. " --use-preload-plugins"
 		.. " --preload"  -- List of paths follows
-		.. " '../" .. dir .. "@'"
-
-	filter "toolset:emcc"
-		makesettings("LDDEPS += ../" .. dir)
-		prelinkmessage "%{prj.name}.data"
-		prelinkcommands {
-			"$(SILENT) " .. build_command
-		}
-
-		linkoptions {
-			"--pre-js " .. datajs,
-			"-s FORCE_FILESYSTEM=1",
-		}
-
-	filter {}
+	for _, dir in ipairs(prj.assetdirs) do
+		build_command = build_command .. " '../" .. dir .. "@'"
+	end
+	return build_command
 end
 
+function emscripten._file_packager_linkoptions(prj)
+	if #prj.assetdirs > 0 then
+		local datajs = "%{cfg.objdir}/%{prj.name}.data.js"
+		return "--pre-js " .. datajs .. " -s FORCE_FILESYSTEM=1"
+	end
+end
+
+filter "toolset:emcc"
+	makesettings("%{emscripten._file_packager_makesettings(prj)}")
+	prelinkmessage("%{emscripten._file_packager_prelinkmessage(prj)}")
+	prelinkcommands { "%{emscripten._file_packager_prelinkcommands(prj)}" }
+	linkoptions { "%{emscripten._file_packager_linkoptions(prj)}" }
+filter {}
+
+-- HTML assets
 function emscripten._encode_metadata(prj)
 	local meta = {
 		projectName = prj.name,
 		installers = prj.installers,
+		hasAssets = #prj.assetdirs > 0,
 	}
 	local str, err = json.encode(meta)
 	if err then
@@ -155,10 +187,3 @@ function emscripten.html(fname)
 
 	filter {}
 end
-
-p.api.register {
-	name = "installers",
-	scope = "project",
-	kind = "table",
-	tokens = true
-}
