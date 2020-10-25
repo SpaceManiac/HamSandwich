@@ -7,7 +7,7 @@ const char* spam = "                ";
 
 void show(int depth, const nsis::Directory& directory) {
 	for (const auto& entry : directory.files) {
-		printf("%s%s\n", &spam[16 - depth], entry.first.c_str());
+		printf("%s%s --> %zu\n", &spam[16 - depth], entry.first.c_str(), *(size_t*)&entry.second);
 	}
 	for (const auto& entry : directory.directories) {
 		printf("%s%s:\n", &spam[16 - depth], entry.first.c_str());
@@ -25,7 +25,7 @@ int main(int _argc, const char* argv[])
 	}
 	nsis::Archive arc { fp };
 
-	if (arc.populate_file_list()) {
+	if (arc.is_ok()) {
 		show(0, arc.root());
 	} else {
 		printf("nsis extract failure\n");

@@ -3,6 +3,13 @@
 #include "nsis_exehead/fileform.h"
 #include "lzma_helpers.h"
 #include "nsis.h"
+#include "vec_rw.h"
+
+#ifdef SDL_UNPREFIXED
+	#include <SDL_rwops.h>
+#else  // SDL_UNPREFIXED
+	#include <SDL2/SDL_rwops.h>
+#endif  // SDL_UNPREFIXED
 
 namespace nsis {
 
@@ -23,8 +30,8 @@ bool CaseInsensitive::operator() (const std::string& lhs, const std::string& rhs
 const size_t SEARCH_START = 0x8000;
 const size_t SEARCH_INCREMENT = 0x200;
 
-const size_t FIRSTHEADER_SIZE = 28;
-const size_t MAGIC_OFFSET = 4;
+const size_t FIRSTHEADER_SIZE = sizeof(firstheader);
+const size_t MAGIC_OFFSET = offsetof(firstheader, siginfo);
 const size_t MAGIC_SIZE = 16;
 const uint8_t NULLSOFT_MAGIC[MAGIC_SIZE + 1] = "\xEF\xBE\xAD\xDENullsoftInst";
 static_assert(MAGIC_OFFSET + MAGIC_SIZE <= FIRSTHEADER_SIZE);
@@ -34,47 +41,83 @@ const uint32_t SIZE_COMPRESSED = 0x80000000;
 // ----------------------------------------------------------------------------
 // Decoding the file list
 
-Archive::Archive(FILE* fptr)
-	: fptr(fptr)
-{
-}
+const char* navigate(uint8_t* path, Directory** working_directory, Directory* install_dir);
 
 Archive::~Archive()
 {
-	fclose(fptr);
+	if (archive_rw)
+	{
+		SDL_RWclose(archive_rw);
+	}
 }
 
-const char* navigate(uint8_t* path, Directory** working_directory, Directory* install_dir);
-
-bool Archive::populate_file_list()
+Archive::Archive(FILE* fptr)
+	: archive_rw(nullptr)
 {
 	// Find the "first header" in the file.
 	if (fseek(fptr, 0, SEEK_END))
-		return false;
+		return;
 	size_t file_size = ftell(fptr);
 
-	uint8_t firstheader_buf[FIRSTHEADER_SIZE];
-	firstheader_start = 0;
+	firstheader fh;
+	size_t firstheader_start = 0;
 	for (size_t search = SEARCH_START; search < file_size - FIRSTHEADER_SIZE; search += SEARCH_INCREMENT)
 	{
 		if (fseek(fptr, search, SEEK_SET))
-			return false;
-		if (!fread(firstheader_buf, FIRSTHEADER_SIZE, 1, fptr))
-			return false;
-		if (!memcmp(&firstheader_buf[MAGIC_OFFSET], NULLSOFT_MAGIC, MAGIC_SIZE))
+			return;
+		if (!fread(&fh, FIRSTHEADER_SIZE, 1, fptr))
+			return;
+		if (!memcmp(&fh.siginfo, NULLSOFT_MAGIC, MAGIC_SIZE))
 		{
 			firstheader_start = search;
 			break;
 		}
 	}
 	if (firstheader_start == 0)
-		return false;
+		return;
+
+	uint32_t header_size;
+	if (!fread(&header_size, 4, 1, fptr))
+		return;
+
+	if (header_size == 0x8000005D)
+	{
+		// This is the first 4 bytes of an LZMA stream instead of a size, which
+		// means that the installer was compiled with `SetCompressor /SOLID`.
+		if (fseek(fptr, -4, SEEK_CUR))
+			return;
+
+		std::vector<uint8_t> buffer(fh.length_of_all_following_data - FIRSTHEADER_SIZE);
+		if (!fread(buffer.data(), buffer.size(), 1, fptr))
+			return;
+
+		std::vector<uint8_t> datablock;
+		if (!lzma_helpers::decompress_all(datablock, buffer.data(), buffer.size(), 5))
+			return;
+
+		archive_rw = create_vec_rwops(std::move(datablock));
+		if (!SDL_RWread(archive_rw, &header_size, 4, 1))
+		{
+			SDL_RWclose(archive_rw);
+			archive_rw = nullptr;
+			return;
+		}
+	}
+	else
+	{
+		archive_rw = SDL_RWFromFP(fptr, SDL_TRUE);
+		fptr = nullptr;
+	}
 
 	// Decompress the "header block".
 	std::vector<uint8_t> header;
-	if (!extract(SIZE_MAX, header))
-		return false;
-	datablock_start = ftell(fptr);
+	if (!extract_internal(header_size & SIZE_COMPRESSED, header_size & ~SIZE_COMPRESSED, header))
+	{
+		SDL_RWclose(archive_rw);
+		archive_rw = nullptr;
+		return;
+	}
+	datablock_start = SDL_RWtell(archive_rw);
 
 	// Decode the block information.
 	block_header blocks[BLOCKS_NUM];
@@ -124,7 +167,6 @@ bool Archive::populate_file_list()
 	}
 
 	// Hooray!
-	return true;
 }
 
 const char* navigate(uint8_t* path, Directory** working_directory, Directory* install_dir)
@@ -167,39 +209,40 @@ const char* navigate(uint8_t* path, Directory** working_directory, Directory* in
 
 bool Archive::extract(File file, std::vector<uint8_t>& result)
 {
-	if (file.offset != SIZE_MAX && fseek(fptr, datablock_start + file.offset, SEEK_SET))
+	if (SDL_RWseek(archive_rw, datablock_start + file.offset, SEEK_SET) < 0)
 	{
 		fprintf(stderr, "nsis::Archive::extract: fseek error\n");
 		return false;
 	}
 
 	uint32_t size;
-	if (!fread(&size, 4, 1, fptr))
+	if (!SDL_RWread(archive_rw, &size, 4, 1))
 	{
 		fprintf(stderr, "nsis::Archive::extract: fread size error\n");
 		return false;
 	}
+	return extract_internal(size & SIZE_COMPRESSED, size & ~SIZE_COMPRESSED, result);
+}
 
-	std::vector<uint8_t> compressed;
-	compressed.resize(size & ~SIZE_COMPRESSED);
-	if (!fread(compressed.data(), compressed.size(), 1, fptr))
+bool Archive::extract_internal(bool is_compressed, uint32_t size, std::vector<uint8_t>& result)
+{
+	std::vector<uint8_t> compressed(size);
+	size_t got = SDL_RWread(archive_rw, compressed.data(), 1, compressed.size());
+	if (got < compressed.size())
 	{
-		fprintf(stderr, "nsis::Archive::extract: fread compressed error\n");
+		fprintf(stderr, "nsis::Archive::extract: expected %zu, got %zu\n", compressed.size(), got);
 		return false;
 	}
 
-	if (size & SIZE_COMPRESSED)
+	if (is_compressed)
 	{
-		if (!lzma_helpers::decompress_all(result, compressed.data(), compressed.size(), 5))
-		{
-			return false;
-		}
+		return lzma_helpers::decompress_all(result, compressed.data(), compressed.size(), 5);
 	}
 	else
 	{
 		result = std::move(compressed);
+		return true;
 	}
-	return true;
 }
 
 }  // namespace nsis

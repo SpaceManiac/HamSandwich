@@ -296,7 +296,7 @@ FILE* fp_from_bundle(const char* file, const char* mode, SDL_RWops* rw, const ch
 class NsisVfs : public Vfs {
 	nsis::Archive archive;
 public:
-	NsisVfs(FILE* fp) : archive(fp) { archive.populate_file_list(); }
+	NsisVfs(FILE* fp) : archive(fp) {}
 	FILE* open_stdio(const char* file, const char* mode, bool write);
 	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
 	bool list_dir(const char* directory, std::vector<std::string>& output);

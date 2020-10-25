@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
+struct SDL_RWops;
+
 namespace nsis {
 
 struct CaseInsensitive {
@@ -25,11 +27,12 @@ struct Directory {
 };
 
 class Archive {
-	FILE* fptr;
-	size_t firstheader_start;
+	SDL_RWops* archive_rw;
 	size_t datablock_start;
 
 	Directory install_dir;
+
+	bool extract_internal(bool compressed, uint32_t size, std::vector<uint8_t>& result);
 
 	Archive(const Archive&) = delete;
 	Archive& operator=(const Archive&) = delete;
@@ -40,7 +43,7 @@ public:
 	Archive& operator=(Archive&&) = default;
 	~Archive();
 
-	bool populate_file_list();
+	bool is_ok() { return archive_rw != nullptr; }
 	const Directory& root() const { return install_dir; }
 	bool extract(File file, std::vector<uint8_t>& result);
 };

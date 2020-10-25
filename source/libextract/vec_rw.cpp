@@ -1,5 +1,11 @@
 #include "vec_rw.h"
 
+#ifdef SDL_UNPREFIXED
+	#include <SDL_rwops.h>
+#else  // SDL_UNPREFIXED
+	#include <SDL2/SDL_rwops.h>
+#endif  // SDL_UNPREFIXED
+
 struct Vec_RWops {
 	SDL_RWops base;
 	std::vector<uint8_t> vec;
@@ -14,7 +20,7 @@ static int delete_vec_close(SDL_RWops* rw) {
 	return 0;
 }
 
-SDL_RWops* create_vec_rwops(std::vector<uint8_t> buffer) {
+SDL_RWops* create_vec_rwops(std::vector<uint8_t>&& buffer) {
 	// Use a modified RWFromConstMem so the JS audio code knows how to slurp it
 	SDL_RWops* rw_base = SDL_RWFromConstMem(buffer.data(), buffer.size());
 	Vec_RWops* rw = (Vec_RWops*) SDL_malloc(sizeof(Vec_RWops));
