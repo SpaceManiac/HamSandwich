@@ -292,97 +292,33 @@ FILE* fp_from_bundle(const char* file, const char* mode, SDL_RWops* rw, const ch
 // ----------------------------------------------------------------------------
 // Vector of bytes SDL_RWops implementation
 
-struct rwvec_data {
-	std::unique_ptr<std::vector<uint8_t>> buf;
-	size_t here;
+struct Vec_RWops {
+	SDL_RWops base;
+	std::vector<uint8_t> vec;
 };
 
-static int64_t vec_size(SDL_RWops* rw) {
-	rwvec_data* data = (rwvec_data*) &rw->hidden.unknown.data1;
-	return data->buf->size();
-}
-
-static int64_t vec_seek(SDL_RWops* rw, int64_t offset, int whence) {
-	rwvec_data* data = (rwvec_data*) &rw->hidden.unknown.data1;
-	int64_t newpos;
-
-	switch (whence) {
-	case RW_SEEK_SET:
-		newpos = offset;
-		break;
-	case RW_SEEK_CUR:
-		newpos = data->here + offset;
-		break;
-	case RW_SEEK_END:
-		newpos = data->buf->size() + offset;
-		break;
-	default:
-		return SDL_SetError("Unknown value for 'whence'");
-	}
-	if (newpos < 0) {
-		newpos = 0;
-	}
-	if (newpos > (int64_t) data->buf->size()) {
-		newpos = data->buf->size();
-	}
-	data->here = newpos;
-	return newpos;
-}
-
-static size_t vec_read(SDL_RWops* rw, void *ptr, size_t size, size_t maxnum) {
-	rwvec_data* data = (rwvec_data*) &rw->hidden.unknown.data1;
-
-	size_t total_bytes = (maxnum * size);
-	if ((maxnum <= 0) || (size <= 0) || ((total_bytes / maxnum) != (size_t) size)) {
-		return 0;
-	}
-
-	size_t mem_available = data->buf->size() - data->here;
-	if (total_bytes > mem_available) {
-		total_bytes = mem_available;
-	}
-
-	SDL_memcpy(ptr, &data->buf->data()[data->here], total_bytes);
-	data->here += total_bytes;
-
-	return (total_bytes / size);
-}
-
-static size_t vec_writeconst(SDL_RWops* rw, const void *ptr, size_t size, size_t num) {
-	(void) rw; (void) ptr; (void) size; (void) num;
-	SDL_SetError("Can't write to read-only memory");
-	return 0;
-}
-
-static int vec_close(SDL_RWops* rw) {
+static int delete_vec_close(SDL_RWops* rw) {
 	if (rw) {
-		rwvec_data* data = (rwvec_data*) &rw->hidden.unknown.data1;
-		data->buf.reset();
+		Vec_RWops* rw2 = (Vec_RWops*) rw;
+		rw2->~Vec_RWops();
 		SDL_FreeRW(rw);
 	}
 	return 0;
 }
 
-static SDL_RWops* RWFromVec(std::unique_ptr<std::vector<uint8_t>> buffer) {
-	SDL_RWops* rw = SDL_AllocRW();
-	if (!rw) {
-		return nullptr;
-	}
-
-	rw->size = vec_size;
-	rw->seek = vec_seek;
-	rw->read = vec_read;
-	rw->write = vec_writeconst;
-	rw->close = vec_close;
-
-	rwvec_data* data = (rwvec_data*) &rw->hidden.unknown.data1;
-	new(data) rwvec_data { std::move(buffer), 0 };
-
-	return rw;
+SDL_RWops* create_vec_rwops(std::vector<uint8_t> buffer) {
+	SDL_RWops* rw_base = SDL_RWFromConstMem(buffer.data(), buffer.size());
+	Vec_RWops* rw = (Vec_RWops*) SDL_malloc(sizeof(Vec_RWops));
+	memcpy(rw, rw_base, sizeof(SDL_RWops));
+	SDL_FreeRW(rw_base);
+	new(&rw->vec) std::vector<uint8_t>(std::move(buffer));
+	rw->base.close = delete_vec_close;
+	return &rw->base;
 }
 
 // ----------------------------------------------------------------------------
 // NSIS VFS implementation
+
 class NsisVfs : public Vfs {
 	nsis::Archive archive;
 public:
@@ -422,12 +358,14 @@ SDL_RWops* NsisVfs::open_sdl(const char* file, const char* mode, bool write) {
 		return nullptr;
 	}
 
-	std::unique_ptr<std::vector<uint8_t>> buffer = std::make_unique<std::vector<uint8_t>>();
-	if (!archive.extract(iter->second, *buffer)) {
+	std::vector<uint8_t> buffer;
+	if (!archive.extract(iter->second, buffer)) {
 		LogError("NsisVfs(%s, %s): extract error", file, mode);
 		return nullptr;
 	}
-	return RWFromVec(std::move(buffer));
+
+	// Use a modified RWFromConstMem so the JS audio code knows how to slurp it
+	return create_vec_rwops(std::move(buffer));
 }
 
 bool NsisVfs::list_dir(const char* directory, std::vector<std::string>& output) {
