@@ -272,7 +272,16 @@ static void TranslateKey(SDL_Keysym* sym)
 	{
 		sym->scancode = SDL_SCANCODE_ESCAPE;
 		sym->sym = SDLK_ESCAPE;
+		return;
 	}
+#ifdef __EMSCRIPTEN__
+	if (sym->scancode == SDL_SCANCODE_GRAVE)
+	{
+		sym->scancode = SDL_SCANCODE_ESCAPE;
+		sym->sym = SDLK_ESCAPE;
+		return;
+	}
+#endif  // __EMSCRIPTEN__
 }
 
 TASK(void) MGLDraw::FinishFlip(void)
