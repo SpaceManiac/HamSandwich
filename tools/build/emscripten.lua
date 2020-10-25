@@ -113,51 +113,37 @@ emscripten = {}
 
 -- Asset packfile target
 function emscripten._file_packager_makesettings(prj)
-	local res = "LDDEPS +="
-	for _, dir in ipairs(prj.assetdirs) do
-		res = res .. ' ../' .. dir
-	end
-	return res
-end
-
-function emscripten._file_packager_prelinkmessage(prj)
 	if #prj.assetdirs > 0 then
-		return "%{prj.name}.data"
-	end
-end
+		local data = "%{cfg.targetdir}/%{prj.name}.data"
+		local data_js = "%{cfg.objdir}/%{prj.name}.data.js"
+		local data_d = data_js .. ".d"
 
-function emscripten._file_packager_prelinkcommands(prj)
-	if #prj.assetdirs == 0 then
-		return ""
-	end
-	local data = "%{cfg.targetdir}/%{prj.name}.data"
-	local datajs = "%{cfg.objdir}/%{prj.name}.data.js"
+		local build_command = "python3"
+			.. " ../tools/build/file_packager_deps.py"
+			.. " " .. data
+			.. " --js-output=" .. data_js
+			.. " --from-emcc"  -- Hack to disable "Remember to..." output
+			--.. " --use-preload-plugins"
+			.. " --preload"  -- List of paths follows
+		for _, dir in ipairs(prj.assetdirs) do
+			build_command = build_command .. " '../" .. dir .. "@'"
+		end
 
-	local build_command = "python3"
-		.. " $(EMSDK)/upstream/emscripten/tools/file_packager.py"
-		.. " " .. data
-		.. " --js-output=" .. datajs
-		.. " --from-emcc"  -- Hack to disable "Remember to..." output
-		--.. " --use-preload-plugins"
-		.. " --preload"  -- List of paths follows
-	for _, dir in ipairs(prj.assetdirs) do
-		build_command = build_command .. " '../" .. dir .. "@'"
-	end
-	return build_command
-end
-
-function emscripten._file_packager_linkoptions(prj)
-	if #prj.assetdirs > 0 then
-		local datajs = "%{cfg.objdir}/%{prj.name}.data.js"
-		return "--pre-js " .. datajs .. " -s FORCE_FILESYSTEM=1"
+		local output = "# Begin emcc file_packager handling\n"
+		output = output .. "all:  # cheap hack\n"
+		output = output .. "LDDEPS += " .. data .. "\n"
+		output = output .. "ALL_LDFLAGS += --pre-js " .. data_js .. " -s FORCE_FILESYSTEM=1\n"
+		output = output .. data .. ":\n"
+		output = output .. "\t@echo %{prj.name}.data\n"
+		output = output .. "\t$(SILENT) " .. build_command .. "\n"
+		output = output .. "-include " .. data_d .. "\n"
+		output = output .. "# End emcc file_packager handling\n"
+		return output
 	end
 end
 
 filter "toolset:emcc"
-	makesettings("%{emscripten._file_packager_makesettings(prj)}")
-	prelinkmessage("%{emscripten._file_packager_prelinkmessage(prj)}")
-	prelinkcommands { "%{emscripten._file_packager_prelinkcommands(prj)}" }
-	linkoptions { "%{emscripten._file_packager_linkoptions(prj)}" }
+	makesettings "%{emscripten._file_packager_makesettings(prj)}"
 filter {}
 
 -- HTML assets
