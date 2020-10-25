@@ -71,28 +71,10 @@ bool Archive::populate_file_list()
 		return false;
 
 	// Decompress the "header block".
-	uint32_t header_block_size;
-	if (!fread(&header_block_size, 4, 1, fptr))
-		return false;
-
 	std::vector<uint8_t> header;
-	{
-		std::vector<uint8_t> compressed_header;
-		compressed_header.resize(header_block_size & ~SIZE_COMPRESSED);
-		if (!fread(compressed_header.data(), compressed_header.size(), 1, fptr))
-			return false;
-		datablock_start = ftell(fptr);
-
-		if (header_block_size & SIZE_COMPRESSED)
-		{
-			if (!lzma_helpers::decompress_all(header, compressed_header.data(), compressed_header.size(), 5))
-				return false;
-		}
-		else
-		{
-			header = std::move(compressed_header);
-		}
-	}
+	if (!extract(SIZE_MAX, header))
+		return false;
+	datablock_start = ftell(fptr);
 
 	// Decode the block information.
 	block_header blocks[BLOCKS_NUM];
@@ -133,7 +115,7 @@ bool Archive::populate_file_list()
 
 				if (const char* last_component = navigate(path, &working_directory, &install_dir))
 				{
-					working_directory->files[last_component] = data_idx;
+					working_directory->files.insert(std::make_pair<std::string, File>(last_component, data_idx));
 				}
 
 				break;
@@ -178,6 +160,35 @@ const char* navigate(uint8_t* path, Directory** working_directory, Directory* in
 	}
 
 	return (const char*) last_component;
+}
+
+// ----------------------------------------------------------------------------
+// Extracting individual files
+
+bool Archive::extract(File file, std::vector<uint8_t>& result)
+{
+	if (file.offset != SIZE_MAX && !fseek(fptr, datablock_start + file.offset, SEEK_SET))
+		return false;
+
+	uint32_t size;
+	if (!fread(&size, 4, 1, fptr))
+		return false;
+
+	std::vector<uint8_t> compressed;
+	compressed.resize(size & ~SIZE_COMPRESSED);
+	if (!fread(compressed.data(), compressed.size(), 1, fptr))
+		return false;
+
+	if (size & SIZE_COMPRESSED)
+	{
+		if (!lzma_helpers::decompress_all(result, compressed.data(), compressed.size(), 5))
+			return false;
+	}
+	else
+	{
+		result = std::move(compressed);
+	}
+	return true;
 }
 
 }  // namespace nsis
