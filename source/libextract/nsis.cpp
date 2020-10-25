@@ -167,22 +167,33 @@ const char* navigate(uint8_t* path, Directory** working_directory, Directory* in
 
 bool Archive::extract(File file, std::vector<uint8_t>& result)
 {
-	if (file.offset != SIZE_MAX && !fseek(fptr, datablock_start + file.offset, SEEK_SET))
+	if (file.offset != SIZE_MAX && fseek(fptr, datablock_start + file.offset, SEEK_SET))
+	{
+		fprintf(stderr, "nsis::Archive::extract: fseek error\n");
 		return false;
+	}
 
 	uint32_t size;
 	if (!fread(&size, 4, 1, fptr))
+	{
+		fprintf(stderr, "nsis::Archive::extract: fread size error\n");
 		return false;
+	}
 
 	std::vector<uint8_t> compressed;
 	compressed.resize(size & ~SIZE_COMPRESSED);
 	if (!fread(compressed.data(), compressed.size(), 1, fptr))
+	{
+		fprintf(stderr, "nsis::Archive::extract: fread compressed error\n");
 		return false;
+	}
 
 	if (size & SIZE_COMPRESSED)
 	{
 		if (!lzma_helpers::decompress_all(result, compressed.data(), compressed.size(), 5))
+		{
 			return false;
+		}
 	}
 	else
 	{

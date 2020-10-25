@@ -31,8 +31,13 @@ class Archive {
 
 	Directory install_dir;
 
+	Archive(const Archive&) = delete;
+	Archive& operator=(const Archive&) = delete;
+
 public:
 	explicit Archive(FILE* fptr);
+	Archive(Archive&&) = default;
+	Archive& operator=(Archive&&) = default;
 	~Archive();
 
 	bool populate_file_list();

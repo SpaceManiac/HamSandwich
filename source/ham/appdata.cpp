@@ -2,6 +2,7 @@
 #include "log.h"
 #include "erase_if.h"
 #include "jamultypes.h"
+#include "nsis.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -49,18 +50,18 @@ Default
 	RW: $PWD
 
 Psuedocode for SDL_RWFromFile(file, mode):
-    if android:
-        if file is absolute:
-            return fopen(file, mode) if successful
-        else:
-            return fopen($INTERNAL/file, mode) if successful
-        return bundled asset from .apk
-    else if windows:
-        return windows_file_open(file, mode)
-    else:
-        if apple and mode is readonly:
-            return fopen($APP_BUNDLE/file, mode) if successful
-        return fopen(file, mode)
+	if android:
+		if file is absolute:
+			return fopen(file, mode) if successful
+		else:
+			return fopen($INTERNAL/file, mode) if successful
+		return bundled asset from .apk
+	else if windows:
+		return windows_file_open(file, mode)
+	else:
+		if apple and mode is readonly:
+			return fopen($APP_BUNDLE/file, mode) if successful
+		return fopen(file, mode)
 */
 
 // ----------------------------------------------------------------------------
@@ -289,6 +290,175 @@ FILE* fp_from_bundle(const char* file, const char* mode, SDL_RWops* rw, const ch
 }
 
 // ----------------------------------------------------------------------------
+// Vector of bytes SDL_RWops implementation
+
+struct rwvec_data {
+	std::unique_ptr<std::vector<uint8_t>> buf;
+	size_t here;
+};
+
+static int64_t vec_size(SDL_RWops* rw) {
+	rwvec_data* data = (rwvec_data*) &rw->hidden.unknown.data1;
+	return data->buf->size();
+}
+
+static int64_t vec_seek(SDL_RWops* rw, int64_t offset, int whence) {
+	rwvec_data* data = (rwvec_data*) &rw->hidden.unknown.data1;
+	int64_t newpos;
+
+	switch (whence) {
+	case RW_SEEK_SET:
+		newpos = offset;
+		break;
+	case RW_SEEK_CUR:
+		newpos = data->here + offset;
+		break;
+	case RW_SEEK_END:
+		newpos = data->buf->size() + offset;
+		break;
+	default:
+		return SDL_SetError("Unknown value for 'whence'");
+	}
+	if (newpos < 0) {
+		newpos = 0;
+	}
+	if (newpos > (int64_t) data->buf->size()) {
+		newpos = data->buf->size();
+	}
+	data->here = newpos;
+	return newpos;
+}
+
+static size_t vec_read(SDL_RWops* rw, void *ptr, size_t size, size_t maxnum) {
+	rwvec_data* data = (rwvec_data*) &rw->hidden.unknown.data1;
+
+	size_t total_bytes = (maxnum * size);
+	if ((maxnum <= 0) || (size <= 0) || ((total_bytes / maxnum) != (size_t) size)) {
+		return 0;
+	}
+
+	size_t mem_available = data->buf->size() - data->here;
+	if (total_bytes > mem_available) {
+		total_bytes = mem_available;
+	}
+
+	SDL_memcpy(ptr, &data->buf->data()[data->here], total_bytes);
+	data->here += total_bytes;
+
+	return (total_bytes / size);
+}
+
+static size_t vec_writeconst(SDL_RWops* rw, const void *ptr, size_t size, size_t num) {
+	(void) rw; (void) ptr; (void) size; (void) num;
+	SDL_SetError("Can't write to read-only memory");
+	return 0;
+}
+
+static int vec_close(SDL_RWops* rw) {
+	if (rw) {
+		rwvec_data* data = (rwvec_data*) &rw->hidden.unknown.data1;
+		data->buf.reset();
+		SDL_FreeRW(rw);
+	}
+	return 0;
+}
+
+static SDL_RWops* RWFromVec(std::unique_ptr<std::vector<uint8_t>> buffer) {
+	SDL_RWops* rw = SDL_AllocRW();
+	if (!rw) {
+		return nullptr;
+	}
+
+	rw->size = vec_size;
+	rw->seek = vec_seek;
+	rw->read = vec_read;
+	rw->write = vec_writeconst;
+	rw->close = vec_close;
+
+	rwvec_data* data = (rwvec_data*) &rw->hidden.unknown.data1;
+	new(data) rwvec_data { std::move(buffer), 0 };
+
+	return rw;
+}
+
+// ----------------------------------------------------------------------------
+// NSIS VFS implementation
+class NsisVfs : public Vfs {
+	nsis::Archive archive;
+public:
+	NsisVfs(FILE* fp) : archive(fp) { archive.populate_file_list(); }
+	FILE* open_stdio(const char* file, const char* mode, bool write);
+	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
+	bool list_dir(const char* directory, std::vector<std::string>& output);
+};
+
+FILE* NsisVfs::open_stdio(const char* file, const char* mode, bool write) {
+	SDL_RWops* rw = open_sdl(file, mode, write);
+	return rw ? fp_from_bundle(file, mode, rw, ".nsis_tmp", true) : nullptr;
+}
+
+SDL_RWops* NsisVfs::open_sdl(const char* file, const char* mode, bool write) {
+	if (write) {
+		LogError("NsisVfs(%s, %s): does not support write modes", file, mode);
+		return nullptr;
+	}
+
+	const nsis::Directory* working_directory = &archive.root();
+	const char* last_component = file;
+	for (const char* current = file; *current; ++current) {
+		if (*current == '\\' || *current == '/') {
+			auto iter = working_directory->directories.find({ last_component, (size_t)(current - last_component) });
+			if (iter == working_directory->directories.end()) {
+				return nullptr;
+			}
+
+			working_directory = &iter->second;
+			last_component = current + 1;
+		}
+	}
+
+	auto iter = working_directory->files.find(last_component);
+	if (iter == working_directory->files.end()) {
+		return nullptr;
+	}
+
+	std::unique_ptr<std::vector<uint8_t>> buffer = std::make_unique<std::vector<uint8_t>>();
+	if (!archive.extract(iter->second, *buffer)) {
+		LogError("NsisVfs(%s, %s): extract error", file, mode);
+		return nullptr;
+	}
+	return RWFromVec(std::move(buffer));
+}
+
+bool NsisVfs::list_dir(const char* directory, std::vector<std::string>& output) {
+	const nsis::Directory* working_directory = &archive.root();
+	const char* last_component = directory;
+	for (const char* current = directory; ; ++current) {
+		if (*current == '\\' || *current == '/' || *current == '\0') {
+			auto iter = working_directory->directories.find({ last_component, (size_t)(current - last_component) });
+			if (iter == working_directory->directories.end()) {
+				return false;
+			}
+
+			working_directory = &iter->second;
+			last_component = current + 1;
+		}
+		if (*current == '\0') {
+			break;
+		}
+	}
+
+	for (const auto& pair : working_directory->files) {
+		output.push_back(pair.first);
+	}
+	for (const auto& pair : working_directory->directories) {
+		output.push_back(pair.first);
+	}
+
+	return true;
+}
+
+// ----------------------------------------------------------------------------
 #if 0  // #ifdef _WIN32
 // Windows %APPDATA% configuration (not currently in use)
 
@@ -363,7 +533,7 @@ FILE* AndroidBundleVfs::open_stdio(const char* file, const char* mode, bool writ
 
 SDL_RWops* AndroidBundleVfs::open_sdl(const char* file, const char* mode, bool write) {
 	if (write) {
-		LogError("open_bundle(%s, %s) does not support write modes", file, mode);
+		LogError("AndroidBundleVfs(%s, %s): does not support write modes", file, mode);
 		return nullptr;
 	}
 
