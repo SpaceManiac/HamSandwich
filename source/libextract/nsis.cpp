@@ -1,4 +1,5 @@
 #include <string.h>
+#include <vector>
 #include "nsis_exehead/fileform.h"
 #include "lzma_helpers.h"
 #include "nsis.h"
@@ -34,6 +35,8 @@ Archive::~Archive()
 {
 	fclose(fptr);
 }
+
+const char* navigate(uint8_t* path, Directory** working_directory, Directory* install_dir);
 
 bool Archive::populate_file_list()
 {
@@ -74,7 +77,8 @@ bool Archive::populate_file_list()
 
 		if (header_block_size & SIZE_COMPRESSED)
 		{
-			lzma_helpers::decompress_all(header, compressed_header.data(), compressed_header.size(), 5);
+			if (!lzma_helpers::decompress_all(header, compressed_header.data(), compressed_header.size(), 5))
+				return false;
 		}
 		else
 		{
@@ -91,29 +95,39 @@ bool Archive::populate_file_list()
 	datablock_start += blocks[NB_DATA].offset;
 
 	// Decode the instructions.
+	Directory* working_directory = &install_dir;
 	for (size_t offset = code_offset; offset < string_table_offset - sizeof(entry); offset += 4)
 	{
 		entry current = *(entry*)&header[offset];
 		switch (current.which)
 		{
-			case EW_CREATEDIR: {
-				size_t path_str_idx = current.offsets[0];
+			case EW_CREATEDIR:
+			{
+				offset += 4 * 2;
+				uint8_t* path = &header[string_table_offset + current.offsets[0]];
 				bool chdir = current.offsets[1];
 
-				//std::string path = &header[string_table_offset + path_str_idx];
-				printf("directory: %s\n", &header[string_table_offset + path_str_idx]);
+				if (!chdir)
+					break;
 
-				offset += 4 * 2;
+				if (const char* last_component = navigate(path, &working_directory, &install_dir))
+				{
+					working_directory = &working_directory->directories[last_component];
+				}
+
 				break;
 			}
-			case EW_EXTRACTFILE: {
-				size_t path_str_idx = current.offsets[1];
+			case EW_EXTRACTFILE:
+			{
+				offset += 4 * 6;
+				uint8_t* path = &header[string_table_offset + current.offsets[1]];
 				size_t data_idx = current.offsets[2];
 
-				//std::string path = ;
-				printf("file: %s\n", &header[string_table_offset + path_str_idx]);
+				if (const char* last_component = navigate(path, &working_directory, &install_dir))
+				{
+					working_directory->files[last_component] = data_idx;
+				}
 
-				offset += 4 * 6;
 				break;
 			}
 		}
@@ -121,6 +135,50 @@ bool Archive::populate_file_list()
 
 	// Hooray!
 	return true;
+}
+
+const char* navigate(uint8_t* path, Directory** working_directory, Directory* install_dir)
+{
+	if (path[0] == NS_VAR_CODE)
+	{
+		int var = ((path[2] & 0x7f) << 7) | (path[1] & 0x7f);
+		// 21 is $INSTDIR and 29 is a user variable which appears
+		// to usually match it.
+		if (var == 21 || var == 29)
+		{
+			*working_directory = install_dir;
+		}
+		else
+			return nullptr;
+		path += 3;
+
+		if (path[0] == '\\' || path[0] == '/')
+			++path;
+	}
+
+	if (!path[0])
+		return nullptr;
+
+	uint8_t* last_component = path;
+	for (uint8_t* current = path; *current; ++current)
+	{
+		if (*current == '\\' || *current == '/') {
+			*current = 0;
+			*working_directory = &(*working_directory)->directories[(const char*) last_component];
+			last_component = current + 1;
+		}
+	}
+
+	return (const char*) last_component;
+}
+
+#ifndef __GNUC__
+#define strcasecmp _stricmp
+#endif // __GNUC__
+
+bool CaseInsensitive::operator() (const std::string& lhs, const std::string& rhs) const
+{
+	return strcasecmp(lhs.c_str(), rhs.c_str()) < 0;
 }
 
 }  // namespace nsis
