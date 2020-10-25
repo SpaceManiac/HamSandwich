@@ -119,8 +119,13 @@ public:
 	virtual FILE* open_stdio(const char* file, const char* mode, bool write) = 0;
 	virtual SDL_RWops* open_sdl(const char* file, const char* mode, bool write) = 0;
 	virtual bool list_dir(const char* directory, std::vector<std::string>& output) = 0;
-	virtual bool delete_file(const char* file) = 0;
+	virtual bool delete_file(const char* file);
 };
+
+bool Vfs::delete_file(const char* file) {
+	(void) file;
+	return false;
+}
 
 typedef std::vector<std::unique_ptr<Vfs>> VfsStack;
 
@@ -245,6 +250,45 @@ bool StdioVfs::delete_file(const char* file) {
 }
 
 // ----------------------------------------------------------------------------
+// "Extract to temporary directory" helper
+FILE* fp_from_bundle(const char* file, const char* mode, SDL_RWops* rw, const char* tempdir, bool reuse_safe) {
+	// Check internal storage to see if we've already extracted the file.
+	std::string fname_buf = tempdir;
+	fname_buf.append("/");
+	fname_buf.append(file);
+	if (reuse_safe) {
+		FILE* fp = fopen(fname_buf.c_str(), mode);
+		if (fp) {
+			return fp;
+		}
+	}
+	// If we have, delete it and extract it again, in case it's changed.
+	unlink(fname_buf.c_str());
+
+	mkdir_parents(fname_buf.c_str());
+	FILE* fp = fopen(fname_buf.c_str(), "wb");
+	if (!fp) {
+		LogError("fp_from_bundle(%s) bad save: %s", file, strerror(errno));
+		return nullptr;
+	}
+
+	// Copy everything.
+	char buffer[4096];
+	int read;
+	while ((read = SDL_RWread(rw, buffer, 1, sizeof(buffer))) > 0) {
+		fwrite(buffer, 1, read, fp);
+	}
+
+	// Return a FILE* pointing to the extracted asset.
+	fclose(fp);
+	fp = fopen(fname_buf.c_str(), mode);
+	if (!fp) {
+		LogError("fp_from_bundle(%s) bad readback: %s", file, strerror(errno));
+	}
+	return fp;
+}
+
+// ----------------------------------------------------------------------------
 #if 0  // #ifdef _WIN32
 // Windows %APPDATA% configuration (not currently in use)
 
@@ -303,54 +347,18 @@ public:
 	FILE* open_stdio(const char* file, const char* mode, bool write);
 	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
 	bool list_dir(const char* directory, std::vector<std::string>& output);
-	bool delete_file(const char* file) { return false; }
 };
 
 FILE* AndroidBundleVfs::open_stdio(const char* file, const char* mode, bool write) {
-	if (write) {
-		LogError("open_bundle(%s, %s) does not support write modes", file, mode);
-		return nullptr;
-	}
-
-	// Ro: apk bundle
-	LogDebug("open_bundle(%s, %s)", file, mode);
-
-	// Check internal storage to see if we've already extracted the file.
-	std::string fname_buf = SDL_AndroidGetInternalStoragePath();
-	// Use a directory which definitely doesn't overlap with appdata.
-	fname_buf.append("/.bundle_tmp/");
-	fname_buf.append(file);
-	// If we have, delete it and extract it again, in case it's changed.
-	unlink(fname_buf.c_str());
-
-	// Not in internal storage, so ask SDL to pull it from the asset system.
-	SDL_RWops *rw = SDL_RWFromFile(file, mode);
+	SDL_RWops* rw = open_sdl(file, mode, write);
 	if (!rw) {
-		LogError("open_bundle(%s) bad SDL: %s", file, SDL_GetError());
 		return nullptr;
 	}
 
-	mkdir_parents(fname_buf.c_str());
-	FILE* fp = fopen(fname_buf.c_str(), "wb");
-	if (!fp) {
-		LogError("open_bundle(%s) bad save: %s", file, strerror(errno));
-		return nullptr;
-	}
-
-	// Copy everything.
-	char buffer[4096];
-	int read;
-	while ((read = SDL_RWread(rw, buffer, 1, sizeof(buffer))) > 0) {
-		fwrite(buffer, 1, read, fp);
-	}
-
-	// Return a FILE* pointing to the extracted asset.
-	fclose(fp);
-	fp = fopen(fname_buf.c_str(), mode);
-	if (!fp) {
-		LogError("open_bundle(%s) bad readback: %s", file, strerror(errno));
-	}
-	return fp;
+	// Use a directory which definitely doesn't overlap with appdata.
+	std::string tempdir = SDL_AndroidGetInternalStoragePath();
+	tempdir.append("/.bundle_tmp");
+	return fp_from_bundle(file, mode, rw, tempdir.c_str(), false);
 }
 
 SDL_RWops* AndroidBundleVfs::open_sdl(const char* file, const char* mode, bool write) {
