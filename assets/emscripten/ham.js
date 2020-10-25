@@ -52,6 +52,14 @@ var HamSandwich = (function () {
 		FS.mkdir('/installers');
 		FS.mount(IDBFS, {}, '/installers');
 		FS.syncfs(true, fsInitCallback);
+
+		Module.ENV['HSW_APPDATA'] = '/@stdio@/appdata/' + HamSandwich.metadata.projectName;
+	}
+
+	var assetCounter = 0;
+	function pushAssets(mountpoint) {
+		mountpoint = mountpoint || '/';
+		Module.ENV['HSW_ASSETS_' + (assetCounter++)] = Array.prototype.join.call(arguments, '@');
 	}
 
 	// ------------------------------------------------------------
@@ -67,6 +75,7 @@ var HamSandwich = (function () {
 		fsSync,
 		fsInit,
 		setWindowTitle,
+		pushAssets,
 	};
 })();
 
@@ -158,6 +167,7 @@ var InstallerUpload = (function () {
 
 	function preInit() {
 		for (var fname in meta) {
+			HamSandwich.pushAssets(null, meta[fname].kind, '/installers/' + fname);
 			Module.addRunDependency('installer ' + fname);
 		}
 	}

@@ -406,7 +406,7 @@ bool NsisVfs::list_dir(const char* directory, std::vector<std::string>& output) 
 #include <direct.h>
 #endif
 
-VfsStack init_vfs_stack() {
+static VfsStack default_vfs_stack() {
 	char get_folder_path[MAX_PATH];
 	SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, get_folder_path);
 
@@ -426,7 +426,7 @@ VfsStack init_vfs_stack() {
 
 #include <emscripten.h>
 
-VfsStack init_vfs_stack() {
+static VfsStack default_vfs_stack() {
 	std::string buffer = "/appdata/";
 	buffer.append(AppdataFolderName());
 
@@ -484,7 +484,7 @@ SDL_RWops* AndroidBundleVfs::open_sdl(const char* file, const char* mode, bool w
 
 #include "appdata_jni.inc"
 
-VfsStack init_vfs_stack() {
+static VfsStack default_vfs_stack() {
 	VfsStack result;
 	int need_flags = SDL_ANDROID_EXTERNAL_STORAGE_READ | SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
 	if ((SDL_AndroidGetExternalStorageState() & need_flags) == need_flags) {
@@ -499,7 +499,7 @@ VfsStack init_vfs_stack() {
 #else
 // Naive stdio configuration
 
-VfsStack init_vfs_stack() {
+static VfsStack default_vfs_stack() {
 	VfsStack result;
 	result.push_back(std::make_unique<StdioVfs>("."));
 	return result;
@@ -508,6 +508,52 @@ VfsStack init_vfs_stack() {
 // ----------------------------------------------------------------------------
 #endif
 // Common implementation and interface
+
+static std::unique_ptr<Vfs> init_vfs_spec(const char* what, const char* spec) {
+	std::string spec2 = spec;
+	char* save = nullptr;
+	char* mountpoint = strtok_r(spec2.data(), "@", &save);
+	char* kind = strtok_r(nullptr, "@", &save);
+	char* param = strtok_r(nullptr, "@", &save);
+
+	if (!strcmp(kind, "stdio")) {
+		return std::make_unique<StdioVfs>(param);
+	} else if (!strcmp(kind, "nsis")) {
+		FILE* fp = fopen(param, "rb");
+		if (!fp) {
+			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
+			return nullptr;
+		}
+		return std::make_unique<NsisVfs>(fp);
+	} else {
+		LogError("%s: unknown kind '%s' in VFS spec '%s'", what, kind, spec);
+		return nullptr;
+	}
+}
+
+static VfsStack init_vfs_stack() {
+	if (const char *appdata_spec = getenv("HSW_APPDATA")) {
+		VfsStack result;
+		if (auto vfs = init_vfs_spec("HSW_APPDATA", appdata_spec)) {
+			result.push_back(std::move(vfs));
+		}
+
+		char buffer[32];
+		for (int i = 0; i < 1024; ++i) {
+			sprintf(buffer, "HSW_ASSETS_%d", i);
+			if (const char* asset_spec = getenv(buffer)) {
+				if (auto vfs = init_vfs_spec(buffer, asset_spec)) {
+					result.push_back(std::move(vfs));
+				}
+			} else {
+				break;
+			}
+		}
+		return result;
+	} else {
+		return default_vfs_stack();
+	}
+}
 
 // Android does not play nice with static initializers.
 static VfsStack vfs_stack;

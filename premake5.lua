@@ -74,6 +74,8 @@ function base_project(name)
 				"-s ALLOW_MEMORY_GROWTH=1",
 				"--use-preload-cache",
 				"-s ENVIRONMENT=web",
+				"-s FORCE_FILESYSTEM=1",
+				"-s EXTRA_EXPORTED_RUNTIME_METHODS=['ENV']"
 			}
 
 			-- coroutine support
@@ -99,7 +101,7 @@ function sdl2_project(name)
 
 		-- Emscripten metadata.
 		emscripten.html "assets/emscripten/*"
-		emscripten.assetdir "build/assets/%{prj.name}"
+		--emscripten.assetdir "build/assets/%{prj.name}"
 
 		-- Link SDL2 in the correct sequence.
 		filter { "system:Windows", "not action:vs*" }
@@ -167,7 +169,7 @@ library "libextract"
 library "ham"
 	depends "libextract"
 	local function links_ham()
-		links "ham"
+		depends "ham"
 		links "libextract"
 	end
 
