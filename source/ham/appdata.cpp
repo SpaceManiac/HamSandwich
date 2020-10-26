@@ -3,7 +3,6 @@
 #include "erase_if.h"
 #include "jamultypes.h"
 #include "nsis.h"
-#include "vec_rw.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -332,13 +331,7 @@ SDL_RWops* NsisVfs::open_sdl(const char* file, const char* mode, bool write) {
 		return nullptr;
 	}
 
-	std::vector<uint8_t> buffer;
-	if (!archive.extract(iter->second, buffer)) {
-		LogError("NsisVfs(%s, %s): extract error", file, mode);
-		return nullptr;
-	}
-
-	return create_vec_rwops(std::move(buffer));
+	return archive.open_file(iter->second);
 }
 
 bool NsisVfs::list_dir(const char* directory, std::vector<std::string>& output) {
@@ -485,7 +478,7 @@ static VfsStack default_vfs_stack() {
 static std::unique_ptr<Vfs> init_vfs_spec(const char* what, const char* spec) {
 	std::string spec2 = spec;
 	char* save = nullptr;
-	char* mountpoint = strtok_r(spec2.data(), "@", &save);
+	/*char* mountpoint =*/ strtok_r(spec2.data(), "@", &save);
 	char* kind = strtok_r(nullptr, "@", &save);
 	char* param = strtok_r(nullptr, "@", &save);
 

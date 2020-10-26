@@ -15,8 +15,10 @@ void show(int depth, const nsis::Directory& directory) {
 	}
 }
 
-int main(int _argc, const char* argv[])
+int main(int argc, const char* argv[])
 {
+	(void) argc;
+
 	FILE* fp = fopen(argv[1], "rb");
 	if (!fp)
 	{

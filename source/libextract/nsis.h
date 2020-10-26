@@ -45,7 +45,7 @@ public:
 
 	bool is_ok() { return archive_rw != nullptr; }
 	const Directory& root() const { return install_dir; }
-	bool extract(File file, std::vector<uint8_t>& result);
+	SDL_RWops* open_file(File file);
 };
 
 }  // namespace nsis

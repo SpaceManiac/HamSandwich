@@ -207,21 +207,31 @@ const char* navigate(uint8_t* path, Directory** working_directory, Directory* in
 // ----------------------------------------------------------------------------
 // Extracting individual files
 
-bool Archive::extract(File file, std::vector<uint8_t>& result)
+SDL_RWops* Archive::open_file(File file)
 {
 	if (SDL_RWseek(archive_rw, datablock_start + file.offset, SEEK_SET) < 0)
 	{
 		fprintf(stderr, "nsis::Archive::extract: fseek error\n");
-		return false;
+		return nullptr;
 	}
 
 	uint32_t size;
 	if (!SDL_RWread(archive_rw, &size, 4, 1))
 	{
 		fprintf(stderr, "nsis::Archive::extract: fread size error\n");
-		return false;
+		return nullptr;
 	}
-	return extract_internal(size & SIZE_COMPRESSED, size & ~SIZE_COMPRESSED, result);
+
+	// Optimization to avoid extra copies of already-decompressed data.
+	if ((archive_rw->type == SDL_RWOPS_MEMORY || archive_rw->type == SDL_RWOPS_MEMORY_RO) && !(size & SIZE_COMPRESSED))
+	{
+		return SDL_RWFromConstMem(archive_rw->hidden.mem.here, size);
+	}
+
+	std::vector<uint8_t> result;
+	if (!extract_internal(size & SIZE_COMPRESSED, size & ~SIZE_COMPRESSED, result))
+		return nullptr;
+	return create_vec_rwops(std::move(result));
 }
 
 bool Archive::extract_internal(bool is_compressed, uint32_t size, std::vector<uint8_t>& result)
