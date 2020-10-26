@@ -29,9 +29,10 @@ build/Makefile: $(MAKEFILE_DEPS) $(TOOLSET_DEPS)
 	@echo "==== Preparing $(toolset) build ===="
 	@rm -f $@
 	@$(PREMAKE5) gmake2 --cc=$(toolset)
+	@$(PREMAKE5) gmake2_deps --cc=$(toolset) >/dev/null
 
 # Recreate build/Makefile if any source directory mtimes change.
-build/Makefile.d: $(MAKEFILE_DEPS) $(TOOLSET_DEPS)
+build/Makefile.d: $(MAKEFILE_DEPS)
 	@$(PREMAKE5) gmake2_deps --cc=$(toolset) >/dev/null
 -include build/Makefile.d
 
