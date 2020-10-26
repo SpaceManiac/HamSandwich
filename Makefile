@@ -4,9 +4,10 @@ PREMAKE5 := premake5
 toolset ?= gcc
 
 # Use build/premake5 if it exists, OR if there is no premake5 on PATH
-ifneq ($(wildcard build/premake5),)
+ifeq ($(wildcard build/premake5),build/premake5)
 PREMAKE5 := build/premake5
-else ifeq (,$(shell which premake5))
+MAKEFILE_DEPS += $(PREMAKE5)
+else ifeq ($(shell which premake5),)
 PREMAKE5 := build/premake5
 MAKEFILE_DEPS += $(PREMAKE5)
 endif
@@ -24,10 +25,15 @@ MAKEFILE_DEPS += premake5.lua $(wildcard tools/build/*.lua)
 all clean help $(PROJECTS): build/Makefile
 	@$(MAKE) --no-print-directory -C build $@
 
-build/Makefile: $(MAKEFILE_DEPS) $(TOOLSET_DEPS) $(addprefix source/,$(PROJECTS))
+build/Makefile: $(MAKEFILE_DEPS) $(TOOLSET_DEPS)
 	@echo "==== Preparing $(toolset) build ===="
 	@rm -f $@
 	@$(PREMAKE5) gmake2 --cc=$(toolset)
+
+# Recreate build/Makefile if any source directory mtimes change.
+build/Makefile.d: $(MAKEFILE_DEPS) $(TOOLSET_DEPS)
+	@$(PREMAKE5) gmake2_deps --cc=$(toolset) >/dev/null
+-include build/Makefile.d
 
 build/.toolset:
 	@mkdir -p build

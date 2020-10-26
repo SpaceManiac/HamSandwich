@@ -1,4 +1,5 @@
 -- premake5.lua
+dofile "tools/build/gmake2_deps.lua"
 dofile "tools/build/android_studio.lua"
 dofile "tools/build/emscripten.lua"
 
@@ -132,7 +133,7 @@ function icon_file(icon)
 	-- Support for embedding the icon in the file on non-Windows systems
 	filter { "system:not Windows" }
 		files { "source/%{prj.name}/" .. icon .. ".rc" }
-		files { "%{cfg.objdir}/" .. icon .. ".rc.o" }
+		makesettings("OBJECTS += $(OBJDIR)/" .. icon .. ".rc.o")
 
 	filter { "system:not Windows", "files:**.rc" }
 		buildmessage "%{file.name}"
