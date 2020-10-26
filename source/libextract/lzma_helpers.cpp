@@ -16,6 +16,7 @@ void lz_free(ISzAllocPtr p, void *address) {
 }
 
 const ISzAlloc alloc = { lz_alloc, lz_free };
+const ISzAllocPtr allocator = &alloc;
 
 const size_t BUFSIZE_IN = 16 * 1024;
 const size_t BUFSIZE_OUT = 2 * BUFSIZE_IN;
