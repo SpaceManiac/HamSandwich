@@ -477,10 +477,11 @@ static VfsStack default_vfs_stack() {
 
 static std::unique_ptr<Vfs> init_vfs_spec(const char* what, const char* spec) {
 	std::string spec2 = spec;
-	char* save = nullptr;
-	/*char* mountpoint =*/ strtok_r(spec2.data(), "@", &save);
-	char* kind = strtok_r(nullptr, "@", &save);
-	char* param = strtok_r(nullptr, "@", &save);
+	char* mountpoint = spec2.data();
+	char* kind = mountpoint + strcspn(mountpoint, "@") + 1;
+	kind[-1] = 0;
+	char* param = kind + strcspn(kind, "@") + 1;
+	param[-1] = 0;
 
 	if (!strcmp(kind, "stdio")) {
 		return std::make_unique<StdioVfs>(param);
