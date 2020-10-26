@@ -166,6 +166,9 @@ library "libextract"
 	filter "toolset:gcc"
 		buildoptions { "-Wall", "-Wextra" }
 
+	filter "toolset:emcc"
+		links { "SDL2", "SDL2_mixer", "SDL2_image" }
+
 library "ham"
 	depends "libextract"
 	local function links_ham()
