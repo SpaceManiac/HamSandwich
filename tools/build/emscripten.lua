@@ -158,18 +158,31 @@ function emscripten._encode_metadata(prj)
 		print(err)
 		return "{}"
 	else
-		return str:gsub('[\'"/]', '\\%1')
+		return str
+	end
+end
+
+function emscripten._web_asset_makesettings(prj)
+	if prj.kind == "ConsoleApp" or prj.kind == "WindowedApp" then
+		p.generate(prj, prj.name .. ".meta.json", function(prj)
+			p.w(emscripten._encode_metadata(prj))
+		end)
 	end
 end
 
 function emscripten.html(fname)
 	filter { "toolset:emcc", "files:" .. fname }
 		buildmessage "%{file.name}"
+		buildinputs "%{wks.location}/%{prj.name}.meta.json"
 		buildoutputs "%{cfg.targetdir}/%{file.name}"
-		buildcommands "sed 's/__HAMSANDWICH_METADATA__/%{emscripten._encode_metadata(prj)}/g' <%{file.relpath} >%{cfg.targetdir}/%{file.name}"
+		buildcommands 'python3 ../tools/build/embed-metadata.py __HAMSANDWICH_METADATA__ "%{wks.location}/%{prj.name}.meta.json" <"$<" >"$@"'
 
 	filter "toolset:emcc"
 		files(fname)
 
 	filter {}
 end
+
+filter "toolset:emcc"
+	makesettings "%{emscripten._web_asset_makesettings(prj)}"
+filter {}
