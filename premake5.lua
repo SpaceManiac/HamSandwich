@@ -101,7 +101,7 @@ function sdl2_project(name)
 		}
 
 		-- Emscripten metadata.
-		emscripten.html "assets/emscripten/*"
+		webfiles "assets/emscripten/*"
 
 		-- Link SDL2 in the correct sequence.
 		filter { "system:Windows", "not action:vs*" }
@@ -122,6 +122,8 @@ function excludefiles(files)
 end
 
 function icon_file(icon)
+	webfiles { ["favicon.ico"] = "source/%{prj.name}/" .. icon .. ".ico" }
+
 	-- Workaround for bug in premake5's gmake2 generator, which does
 	-- not count .res (object) files as resources, only .rc (source)
 	filter { "system:Windows", "toolset:not clang" }

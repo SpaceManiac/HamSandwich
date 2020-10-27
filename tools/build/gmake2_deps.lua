@@ -16,20 +16,19 @@ newaction {
 }
 
 function m.workspace_d(wks)
+	local seen = {}
 	for prj in p.workspace.eachproject(wks) do
-		local first = true
-		local seen = {}
 		for cfg in p.project.eachconfig(prj) do
 			for _, file in ipairs(cfg.files) do
-				local dir = path.getdirectory(file)
-				if not seen[dir] then
-					seen[dir] = true
-					p.w("%s/Makefile: %s", path.getrelative(os.getcwd(), prj.location), dir)
-				end
+				seen[path.getdirectory(path.getabsolute(file))] = true
+			end
+			for _, file in pairs(emscripten.decode_webfiles(cfg.webfiles)) do
+				seen[path.getdirectory(path.getabsolute(file))] = true
 			end
 		end
-		if not first then
-			p.w("endif")
-		end
+	end
+	local rel = path.getrelative(os.getcwd(), wks.location)
+	for dir, _ in pairs(seen) do
+		p.w("%s/Makefile: %s", rel, dir)
 	end
 end

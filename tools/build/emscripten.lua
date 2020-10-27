@@ -20,6 +20,13 @@ p.api.register {
 	tokens = true
 }
 
+p.api.register {
+	name = "webfiles",
+	scope = "project",
+	kind = "list:table",
+	tokens = true
+}
+
 -- Global filters.
 filter { "toolset:emcc", "kind:WindowedApp or ConsoleApp" }
 	-- Without an extension, emcc produces only bytecode. We want the WASM and
@@ -162,25 +169,47 @@ function emscripten._encode_metadata(prj)
 	end
 end
 
+function emscripten.decode_webfiles(webfiles)
+	local files = {}
+	for _, pattern in ipairs(webfiles) do
+		if type(pattern) == "table" then
+			for outname, inname in pairs(pattern) do
+				files[outname] = inname
+			end
+		else
+			for _, name in ipairs(os.matchfiles(pattern)) do
+				files[path.getname(name)] = name
+			end
+		end
+	end
+	return files
+end
+
 function emscripten._web_asset_makesettings(prj)
 	if prj.kind == "ConsoleApp" or prj.kind == "WindowedApp" then
 		p.generate(prj, prj.name .. ".meta.json", function(prj)
 			p.w(emscripten._encode_metadata(prj))
 		end)
+
+		local files = emscripten.decode_webfiles(prj.webfiles)
+		local output = "# Begin emcc web asset handling\n"
+		for outname, inname in pairs(files) do
+			inname = "../" .. inname
+
+			output = output .. "all: %{cfg.targetdir}/" .. outname .. "\n"
+			if outname == "index.html" then
+				output = output .. "%{cfg.targetdir}/" .. outname .. ': ' .. inname .. ' %{wks.location}/%{prj.name}.meta.json ../tools/build/embed-metadata.py\n'
+				output = output .. "\t@echo " .. outname .. "\n"
+				output = output .. '\t$(SILENT) python3 ../tools/build/embed-metadata.py __HAMSANDWICH_METADATA__ %{wks.location}/%{prj.name}.meta.json <"$<" >"$@"\n'
+			else
+				output = output .. "%{cfg.targetdir}/" .. outname .. ': ' .. inname .. '\n'
+				output = output .. "\t@echo " .. outname .. "\n"
+				output = output .. '\t$(SILENT) cp "$<" "$@"\n'
+			end
+		end
+		output = output .. "# End emcc web asset handling\n"
+		return output
 	end
-end
-
-function emscripten.html(fname)
-	filter { "toolset:emcc", "files:" .. fname }
-		buildmessage "%{file.name}"
-		buildinputs "%{wks.location}/%{prj.name}.meta.json"
-		buildoutputs "%{cfg.targetdir}/%{file.name}"
-		buildcommands 'python3 ../tools/build/embed-metadata.py __HAMSANDWICH_METADATA__ "%{wks.location}/%{prj.name}.meta.json" <"$<" >"$@"'
-
-	filter "toolset:emcc"
-		files(fname)
-
-	filter {}
 end
 
 filter "toolset:emcc"
