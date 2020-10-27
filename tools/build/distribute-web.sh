@@ -33,9 +33,15 @@ if [ $# -eq 1 ]; then
 	cp "${FILES[@]}" "$WEBROOT"
 else
 	# Many projects: put everything in subfolders
+	(
+		printf '['
+		printf '"%s",' "$@" | sed 's/,$//'
+		printf ']'
+	) >build/webroot.meta.json
+	./tools/build/embed-metadata.py __HOMEPAGE_METADATA__ build/webroot.meta.json <assets/homepage/index.html >"$WEBROOT"/index.html
+	cp source/supreme/lunatic.ico "$WEBROOT"/favicon.ico
 	for PROJECT in "$@"; do
 		FILES=($(find "$TARGETDIR/$PROJECT" -maxdepth 1 -type f))
-		echo "${FILES[@]}"
 		if [ ${#FILES[@]} -ne 0 ]; then
 			mkdir -p "$WEBROOT/$PROJECT"
 			cp "${FILES[@]}" "$WEBROOT/$PROJECT"
