@@ -6,7 +6,7 @@ shopt -s nullglob
 toolset=emcc
 config=release
 
-OBJDIR="build/$toolset-$config"
+TARGETDIR="build/$toolset-$config"
 WEBROOT="build/webroot"
 
 # If there's no Emscripten SDK active, then activate a private one.
@@ -23,20 +23,22 @@ make config="$config" toolset="$toolset" -j8 "$@"
 
 # If no project was specified, detect them
 if [ $# -eq 0 ]; then
-	DIRS=("$OBJDIR"/*)
+	DIRS=("$TARGETDIR"/*)
 	set "${DIRS[@]##*/}"
 fi
 
 if [ $# -eq 1 ]; then
 	# One project: put everything in the root
-	cp "$OBJDIR/$1"/*.{js,wasm,css,html} "$WEBROOT"
+	FILES=($(find "$TARGETDIR/$PROJECT" -maxdepth 1 -type f))
+	cp "${FILES[@]}" "$WEBROOT"
 else
 	# Many projects: put everything in subfolders
 	for PROJECT in "$@"; do
-		FILES=("$OBJDIR/$PROJECT"/*.{js,wasm,css,html})
+		FILES=($(find "$TARGETDIR/$PROJECT" -maxdepth 1 -type f))
+		echo "${FILES[@]}"
 		if [ ${#FILES[@]} -ne 0 ]; then
-			mkdir -p "build/webroot/$PROJECT"
-			cp "${FILES[@]}" "build/webroot/$PROJECT"
+			mkdir -p "$WEBROOT/$PROJECT"
+			cp "${FILES[@]}" "$WEBROOT/$PROJECT"
 		fi
 	done
 fi
