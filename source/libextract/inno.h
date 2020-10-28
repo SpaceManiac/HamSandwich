@@ -12,6 +12,13 @@ struct SDL_RWops;
 namespace inno {
 
 class Archive {
+	class DataEntry {
+		uint32_t chunk_offset;
+		uint64_t file_size;
+		uint64_t chunk_size;
+	};
+	std::vector<DataEntry> data_entries;
+
 	Archive(const Archive&) = delete;
 	Archive& operator=(const Archive&) = delete;
 

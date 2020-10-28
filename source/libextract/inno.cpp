@@ -53,11 +53,82 @@ SRes FilePtrStream_Seek(const ISeekInStream *p, Int64 *pos, ESzSeek origin)
 }
 
 // ----------------------------------------------------------------------------
+// Inno setup data types
+
+SDL_RWops* zlib_crc_block_reader(uint8_t** input_buffer)
+{
+	uint32_t header_crc32, compressed_size, uncompressed_size;
+	memcpy(&header_crc32, *input_buffer, 4); *input_buffer += 4;
+	memcpy(&compressed_size, *input_buffer, 4); *input_buffer += 4;
+	memcpy(&uncompressed_size, *input_buffer, 4); *input_buffer += 4;
+
+	std::vector<uint8_t> uncompressed(uncompressed_size);
+	z_stream zip {};
+	zip.next_out = uncompressed.data();
+	zip.avail_out = uncompressed.size();
+
+	bool first = true;
+	while (compressed_size > 0)
+	{
+		uint32_t block_crc32;
+		memcpy(&block_crc32, *input_buffer, 4); *input_buffer += 4;
+
+		uint32_t to_read = std::min(compressed_size, 4096u);
+		zip.next_in = *input_buffer;
+		zip.avail_in = to_read;
+
+		if (first)
+		{
+			if (inflateInit(&zip) != Z_OK)
+			{
+				fprintf(stderr, "zlib_crc_block_reader: bad inflateInit\n");
+				return nullptr;
+			}
+			first = false;
+		}
+		int r = inflate(&zip, Z_NO_FLUSH);
+		if (r != Z_OK && r != Z_STREAM_END)
+		{
+			fprintf(stderr, "zlib_crc_block_reader: bad inflate: %d\n", r);
+			return nullptr;
+		}
+
+		compressed_size -= to_read;
+		*input_buffer += to_read;
+	}
+	if (inflate(&zip, Z_FINISH) != Z_STREAM_END)
+	{
+		fprintf(stderr, "zlib_crc_block_reader: bad flush\n");
+		return nullptr;
+	}
+	if (inflateEnd(&zip) != Z_OK)
+	{
+		fprintf(stderr, "zlib_crc_block_reader: bad inflateEnd\n");
+		return nullptr;
+	}
+
+	return create_vec_rwops(std::move(uncompressed));
+}
+
+void binary_string(SDL_RWops* rw, std::string* dest = nullptr)
+{
+	uint32_t size;
+	SDL_RWread(rw, &size, 4, 1);
+	if (dest)
+	{
+		dest->resize(size);
+		SDL_RWread(rw, dest->data(), size, 1);
+	}
+	else
+	{
+		SDL_RWseek(rw, size, RW_SEEK_CUR);
+	}
+}
+
+// ----------------------------------------------------------------------------
 // Decoding the file list
 
 static bool crc_table_generated = false;
-
-static SDL_RWops* zlib_crc_block_reader(uint8_t** input_buffer);
 
 Archive::~Archive()
 {
@@ -173,66 +244,134 @@ Archive::Archive(FILE* fptr)
 	position += 64;
 
 	SDL_RWops* headers = zlib_crc_block_reader(&position);
+	binary_string(headers);  // app_name
+	binary_string(headers);  // app_versioned_name
+	binary_string(headers);  // app_id
+	binary_string(headers);  // app_copyright
+	binary_string(headers);  // app_publisher
+	binary_string(headers);  // app_publisher_url
+	binary_string(headers);  // app_support_url
+	binary_string(headers);  // app_updates_url
+	binary_string(headers);  // app_version
+	binary_string(headers);  // default_dir_name
+	binary_string(headers);  // default_group_name
+	binary_string(headers);  // base_filename
+	binary_string(headers);  // license_text
+	binary_string(headers);  // info_before
+	binary_string(headers);  // info_after
+	binary_string(headers);  // uninstall_files_dir
+	binary_string(headers);  // uninstall_name
+	binary_string(headers);  // uninstall_icon
+	binary_string(headers);  // app_mutex
+	binary_string(headers);  // default_user_name
+	binary_string(headers);  // default_user_organisation
+	binary_string(headers);  // default_serial
+	binary_string(headers);  // compiled_code
+	SDL_RWseek(headers, 32, RW_SEEK_CUR);  // lead_bytes
+
+	uint32_t language_count, task_count, file_count, data_entry_count;
+	SDL_RWread(headers, &language_count, 4, 1);
+	SDL_RWseek(headers, 4 * 2, RW_SEEK_CUR);  // type_count, component_count
+	SDL_RWread(headers, &task_count, 4, 1);
+	SDL_RWseek(headers, 4 * 1, RW_SEEK_CUR);  // task_count
+	SDL_RWread(headers, &file_count, 4, 1);
+	SDL_RWread(headers, &data_entry_count, 4, 1);
+	SDL_RWseek(headers, 91, RW_SEEK_CUR);
+
+	// skip languages
+	for (uint32_t i = 0; i < language_count; ++i)
+	{
+		binary_string(headers);  // name
+		binary_string(headers);  // language_name
+		binary_string(headers);  // dialog_font
+		binary_string(headers);  // title_font
+		binary_string(headers);  // welcome_font
+		binary_string(headers);  // copyright_font
+		binary_string(headers);  // data
+		binary_string(headers);  // license_text
+		binary_string(headers);  // info_before
+		binary_string(headers);  // info_after
+		SDL_RWseek(headers, 4 * 6, RW_SEEK_CUR);
+	}
+	// assume 0 messages, permissions, types, components
+	// skip tasks
+	for (uint32_t i = 0; i < task_count; ++i)
+	{
+		binary_string(headers);  // name
+		binary_string(headers);  // description
+		binary_string(headers);  // group_description
+		binary_string(headers);  // components
+		binary_string(headers);  // languages
+		binary_string(headers);  // check
+		SDL_RWseek(headers, 4 + 1 + (2 * 4 + 2) + 1, RW_SEEK_CUR);
+	}
+	// assume 0 directories
+	SDL_RWseek(headers, 79, RW_SEEK_CUR);
+
+	// read file entries
+	for (uint32_t i = 0; i < file_count; ++i)
+	{
+		std::string source, destination;
+		binary_string(headers, &source);
+		binary_string(headers, &destination);
+		binary_string(headers);  // install_font_name
+		binary_string(headers);  // condition.components
+		binary_string(headers);  // condition.tasks
+		binary_string(headers);  // condition.languages
+		binary_string(headers);  // condition.check
+		SDL_RWseek(headers, 2 * (2 * 4 + 2), RW_SEEK_CUR);  // windows_version_range
+		uint32_t location;
+		SDL_RWread(headers, &location, 4, 1);
+		SDL_RWseek(headers, 17, RW_SEEK_CUR);
+	}
+	SDL_RWclose(headers);
+
+	// Parse the second zlib'd block containing the data entries.
+	SDL_RWops* datas = zlib_crc_block_reader(&position);
+	if (position != end)
+	{
+		fprintf(stderr, "inno::Archive: extra data at end of setup.0\n");
+		SDL_RWclose(datas);
+		return;
+	}
+
+	for (uint32_t i = 0; i < data_entry_count; ++i)
+	{
+		DataEntry entry;
+		SDL_RWseek(datas, 4 * 2, RW_SEEK_CUR);  // first_slice, last_slice
+		SDL_RWread(headers, &entry.chunk_offset, 4, 1);
+		SDL_RWseek(datas, 8, RW_SEEK_CUR);  // file_offset
+		SDL_RWread(headers, &entry.file_size, 8, 1);
+		SDL_RWread(headers, &entry.chunk_size, 8, 1);
+		SDL_RWseek(datas, 4 + 8 + 8 + 1, RW_SEEK_CUR);
+		data_entries.push_back(entry);
+	}
+	SDL_RWclose(datas);
 
 	printf("cool\n");
 }
 
-// ----------------------------------------------------------------------------
-// Zlib helpers
+/*
+Some of the above is derived in part from Innoextract, under the zlib/libpng
+license. <https://github.com/dscharrer/innoextract>
 
-SDL_RWops* zlib_crc_block_reader(uint8_t** input_buffer)
-{
-	uint32_t header_crc32, compressed_size, uncompressed_size;
-	memcpy(&header_crc32, *input_buffer, 4); *input_buffer += 4;
-	memcpy(&compressed_size, *input_buffer, 4); *input_buffer += 4;
-	memcpy(&uncompressed_size, *input_buffer, 4); *input_buffer += 4;
+Copyright (C) 2011-2020 Daniel Scharrer <daniel@constexpr.org>
 
-	std::vector<uint8_t> uncompressed(uncompressed_size);
-	z_stream zip {};
-	zip.next_out = uncompressed.data();
-	zip.avail_out = uncompressed.size();
+This software is provided 'as-is', without any express or implied
+warranty.  In no event will the author(s) be held liable for any damages
+arising from the use of this software.
 
-	bool first = true;
-	while (compressed_size > 0)
-	{
-		uint32_t block_crc32;
-		memcpy(&block_crc32, *input_buffer, 4); *input_buffer += 4;
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it
+freely, subject to the following restrictions:
 
-		uint32_t to_read = std::min(compressed_size, 4096u);
-		zip.next_in = *input_buffer;
-		zip.avail_in = to_read;
-
-		if (first)
-		{
-			if (inflateInit(&zip) != Z_OK)
-			{
-				fprintf(stderr, "zlib_crc_block_reader: bad inflateInit\n");
-				return nullptr;
-			}
-			first = false;
-		}
-		int r = inflate(&zip, Z_NO_FLUSH);
-		if (r != Z_OK && r != Z_STREAM_END)
-		{
-			fprintf(stderr, "zlib_crc_block_reader: bad inflate: %d\n", r);
-			return nullptr;
-		}
-
-		compressed_size -= to_read;
-		*input_buffer += to_read;
-	}
-	if (inflate(&zip, Z_FINISH) != Z_STREAM_END)
-	{
-		fprintf(stderr, "zlib_crc_block_reader: bad flush\n");
-		return nullptr;
-	}
-	if (inflateEnd(&zip) != Z_OK)
-	{
-		fprintf(stderr, "zlib_crc_block_reader: bad inflateEnd\n");
-		return nullptr;
-	}
-
-	return create_vec_rwops(std::move(uncompressed));
-}
+1. The origin of this software must not be misrepresented; you must not
+   claim that you wrote the original software. If you use this software
+   in a product, an acknowledgment in the product documentation would be
+   appreciated but is not required.
+2. Altered source versions must be plainly marked as such, and must not be
+   misrepresented as being the original software.
+3. This notice may not be removed or altered from any source distribution.
+*/
 
 }  // namespace inno
