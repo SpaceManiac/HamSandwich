@@ -9,33 +9,45 @@
 typedef struct ISzAlloc ISzAlloc;
 typedef const ISzAlloc* ISzAllocPtr;
 
-namespace nsis {
-	class Archive;
-}
-namespace inno {
-	class Archive;
-}
-
 namespace sauce {
 
 extern const ISzAllocPtr allocator;
 
 bool decompress_lzma(std::vector<uint8_t>& dest, uint8_t* src, size_t srclen, size_t propsize);
 
-struct CaseInsensitive {
-	bool operator() (const std::string& lhs, const std::string& rhs) const;
-};
+class Archive
+{
+	Archive(const Archive&) = delete;
+	Archive& operator=(const Archive&) = delete;
+	Archive(Archive&&) = delete;
+	Archive& operator=(Archive&&) = delete;
 
-class File {
-	size_t offset;
-	File(size_t offset) : offset(offset) {}
-	friend class nsis::Archive;
-	friend class inno::Archive;
-};
+protected:
+	Archive() {}
 
-struct Directory {
-	std::map<std::string, File, CaseInsensitive> files;
-	std::map<std::string, Directory, CaseInsensitive> directories;
+	struct CaseInsensitive {
+		bool operator() (const std::string& lhs, const std::string& rhs) const;
+	};
+
+	struct Directory {
+		std::map<std::string, size_t, CaseInsensitive> files;
+		std::map<std::string, Directory, CaseInsensitive> directories;
+	};
+
+	Directory root;
+
+	static const char* navigate(const char* path, Directory*& current);
+	static const char* navigate(const char* path, const Directory*& current);
+
+	void insert_file(const char* path, size_t handle);
+	Directory* insert_directory(const char* path);
+
+	size_t get_file(const char* path) const;
+	const Directory* get_directory(const char* path) const;
+
+public:
+	bool list_dir(const char* path, std::vector<std::string>& output) const;
+	//SDL_RWops* open_file(const char* path);
 };
 
 }  // namespace sauce

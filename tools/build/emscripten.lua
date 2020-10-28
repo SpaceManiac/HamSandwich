@@ -64,6 +64,7 @@ emcc = table.merge(clang, {
 		SDL2 = { compile = {"-s USE_SDL=2"}, link = {"-s USE_SDL=2"} },
 		SDL2_mixer = { compile = {"-s USE_SDL_MIXER=2"} },
 		SDL2_image = { compile = {"-s USE_SDL_IMAGE=2", "-s SDL2_IMAGE_FORMATS=['bmp']"}, link = {"-s USE_SDL_IMAGE=2", "-s SDL2_IMAGE_FORMATS=['bmp']"} },
+		z = { compile = {"-s USE_ZLIB=1"}, link = {"-s USE_ZLIB=1"} }
 	},
 
 	getports = function(cfg, subtab)

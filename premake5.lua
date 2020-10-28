@@ -169,7 +169,7 @@ library "libextract"
 		buildoptions { "-Wall", "-Wextra" }
 
 	filter "toolset:emcc"
-		links { "SDL2", "SDL2_mixer", "SDL2_image" }
+		links { "SDL2", "z" }
 
 library "ham"
 	depends "libextract"

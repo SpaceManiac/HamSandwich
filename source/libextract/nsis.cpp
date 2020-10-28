@@ -32,8 +32,6 @@ const uint32_t SIZE_COMPRESSED = 0x80000000;
 // ----------------------------------------------------------------------------
 // Decoding the file list
 
-const char* navigate(uint8_t* path, sauce::Directory** working_directory, sauce::Directory* install_dir);
-
 Archive::~Archive()
 {
 	if (archive_rw)
@@ -119,7 +117,7 @@ Archive::Archive(FILE* fptr)
 	datablock_start += blocks[NB_DATA].offset;
 
 	// Decode the instructions.
-	sauce::Directory* working_directory = &install_dir;
+	Directory* working_directory = &root;
 	for (size_t offset = code_offset; offset < string_table_offset - sizeof(entry); offset += 4)
 	{
 		entry current = *(entry*)&header[offset];
@@ -128,13 +126,13 @@ Archive::Archive(FILE* fptr)
 			case EW_CREATEDIR:
 			{
 				offset += 4 * 2;
-				uint8_t* path = &header[string_table_offset + current.offsets[0]];
+				const char* path = (const char*) &header[string_table_offset + current.offsets[0]];
 				bool chdir = current.offsets[1];
 
 				if (!chdir)
 					break;
 
-				if (const char* last_component = navigate(path, &working_directory, &install_dir))
+				if (const char* last_component = navigate_nsis(path, working_directory))
 				{
 					working_directory = &working_directory->directories[last_component];
 				}
@@ -144,12 +142,12 @@ Archive::Archive(FILE* fptr)
 			case EW_EXTRACTFILE:
 			{
 				offset += 4 * 6;
-				uint8_t* path = &header[string_table_offset + current.offsets[1]];
+				const char* path = (const char*) &header[string_table_offset + current.offsets[1]];
 				size_t data_idx = current.offsets[2];
 
-				if (const char* last_component = navigate(path, &working_directory, &install_dir))
+				if (const char* last_component = navigate_nsis(path, working_directory))
 				{
-					working_directory->files.insert(std::make_pair<std::string, sauce::File>(last_component, data_idx));
+					working_directory->files.insert(std::make_pair(std::string(last_component), data_idx));
 				}
 
 				break;
@@ -160,16 +158,16 @@ Archive::Archive(FILE* fptr)
 	// Hooray!
 }
 
-const char* navigate(uint8_t* path, sauce::Directory** working_directory, sauce::Directory* install_dir)
+const char* Archive::navigate_nsis(const char* path, Directory*& current)
 {
-	if (path[0] == NS_VAR_CODE)
+	if ((uint8_t) path[0] == NS_VAR_CODE)
 	{
 		int var = ((path[2] & 0x7f) << 7) | (path[1] & 0x7f);
 		// 21 is $INSTDIR and 29 is a user variable which appears
 		// to usually match it.
 		if (var == 21 || var == 29 || var == 31)
 		{
-			*working_directory = install_dir;
+			current = &root;
 		}
 		else
 			return nullptr;
@@ -182,25 +180,19 @@ const char* navigate(uint8_t* path, sauce::Directory** working_directory, sauce:
 	if (!path[0])
 		return nullptr;
 
-	uint8_t* last_component = path;
-	for (uint8_t* current = path; *current; ++current)
-	{
-		if (*current == '\\' || *current == '/') {
-			*current = 0;
-			*working_directory = &(*working_directory)->directories[(const char*) last_component];
-			last_component = current + 1;
-		}
-	}
-
-	return (const char*) last_component;
+	return navigate(path, current);
 }
 
 // ----------------------------------------------------------------------------
 // Extracting individual files
 
-SDL_RWops* Archive::open_file(sauce::File file)
+SDL_RWops* Archive::open_file(const char* path)
 {
-	if (SDL_RWseek(archive_rw, datablock_start + file.offset, SEEK_SET) < 0)
+	size_t offset = get_file(path);
+	if (offset == SIZE_MAX)
+		return nullptr;
+
+	if (SDL_RWseek(archive_rw, datablock_start + offset, SEEK_SET) < 0)
 	{
 		fprintf(stderr, "nsis::Archive::extract: fseek error\n");
 		return nullptr;

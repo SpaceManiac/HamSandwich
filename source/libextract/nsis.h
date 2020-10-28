@@ -12,26 +12,20 @@ struct SDL_RWops;
 
 namespace nsis {
 
-class Archive {
+class Archive : public sauce::Archive
+{
 	SDL_RWops* archive_rw;
 	size_t datablock_start;
 
-	sauce::Directory install_dir;
-
+	const char* navigate_nsis(const char* path, Directory*& current);
 	bool extract_internal(bool compressed, uint32_t size, std::vector<uint8_t>& result);
-
-	Archive(const Archive&) = delete;
-	Archive& operator=(const Archive&) = delete;
 
 public:
 	explicit Archive(FILE* fptr);
-	Archive(Archive&&) = default;
-	Archive& operator=(Archive&&) = default;
 	~Archive();
 
 	bool is_ok() { return archive_rw != nullptr; }
-	const sauce::Directory& root() const { return install_dir; }
-	SDL_RWops* open_file(sauce::File file);
+	SDL_RWops* open_file(const char* path);
 };
 
 }  // namespace nsis

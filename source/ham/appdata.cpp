@@ -312,54 +312,11 @@ SDL_RWops* NsisVfs::open_sdl(const char* file, const char* mode, bool write) {
 		return nullptr;
 	}
 
-	const nsis::Directory* working_directory = &archive.root();
-	const char* last_component = file;
-	for (const char* current = file; *current; ++current) {
-		if (*current == '\\' || *current == '/') {
-			auto iter = working_directory->directories.find({ last_component, (size_t)(current - last_component) });
-			if (iter == working_directory->directories.end()) {
-				return nullptr;
-			}
-
-			working_directory = &iter->second;
-			last_component = current + 1;
-		}
-	}
-
-	auto iter = working_directory->files.find(last_component);
-	if (iter == working_directory->files.end()) {
-		return nullptr;
-	}
-
-	return archive.open_file(iter->second);
+	return archive.open_file(file);
 }
 
 bool NsisVfs::list_dir(const char* directory, std::vector<std::string>& output) {
-	const nsis::Directory* working_directory = &archive.root();
-	const char* last_component = directory;
-	for (const char* current = directory; ; ++current) {
-		if (*current == '\\' || *current == '/' || *current == '\0') {
-			auto iter = working_directory->directories.find({ last_component, (size_t)(current - last_component) });
-			if (iter == working_directory->directories.end()) {
-				return false;
-			}
-
-			working_directory = &iter->second;
-			last_component = current + 1;
-		}
-		if (*current == '\0') {
-			break;
-		}
-	}
-
-	for (const auto& pair : working_directory->files) {
-		output.push_back(pair.first);
-	}
-	for (const auto& pair : working_directory->directories) {
-		output.push_back(pair.first);
-	}
-
-	return true;
+	return archive.list_dir(directory, output);
 }
 
 // ----------------------------------------------------------------------------
