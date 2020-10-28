@@ -26,6 +26,8 @@ const size_t SETUP_1_BIN_SZ = 12;
 const char16_t SETUP_1_BIN[SETUP_1_BIN_SZ] = u"setup-1.bin";
 
 const char INNO_VERSION[] = "Inno Setup Setup Data (4.0.5)";
+const size_t APP_PREFIX_SZ = 6;
+const char APP_PREFIX[APP_PREFIX_SZ + 1] = "{app}\\";
 
 // ----------------------------------------------------------------------------
 // 7z-compatible stream from FILE*
@@ -323,6 +325,15 @@ Archive::Archive(FILE* fptr)
 		uint32_t location;
 		SDL_RWread(headers, &location, 4, 1);
 		SDL_RWseek(headers, 17, RW_SEEK_CUR);
+
+		if (source.empty() && !memcmp(destination.data(), APP_PREFIX, APP_PREFIX_SZ))
+		{
+			Directory* current = &root;
+			if (const char* last_component = navigate(destination.c_str() + APP_PREFIX_SZ, current))
+			{
+				current->files.insert(make_pair(std::string(last_component), location));
+			}
+		}
 	}
 	SDL_RWclose(headers);
 
@@ -349,6 +360,17 @@ Archive::Archive(FILE* fptr)
 	SDL_RWclose(datas);
 
 	printf("cool\n");
+}
+
+SDL_RWops* Archive::open_file(const char* path)
+{
+	size_t data_entry_idx = get_file(path);
+	if (data_entry_idx == SIZE_MAX)
+		return nullptr;
+
+	// TODO
+	printf("%s: found\n", path);
+	return nullptr;
 }
 
 /*

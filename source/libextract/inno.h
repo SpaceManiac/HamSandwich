@@ -6,27 +6,29 @@
 #include <map>
 #include <stdio.h>
 #include <stdint.h>
+#include "common.h"
 
 struct SDL_RWops;
 
 namespace inno {
 
-class Archive {
-	struct DataEntry {
+class Archive : public sauce::Archive
+{
+	struct DataEntry
+	{
 		uint32_t chunk_offset;
 		uint64_t file_size;
 		uint64_t chunk_size;
 	};
 	std::vector<DataEntry> data_entries;
-
-	Archive(const Archive&) = delete;
-	Archive& operator=(const Archive&) = delete;
+	std::vector<uint8_t> setup_1_bin;
 
 public:
 	explicit Archive(FILE* fptr);
-	Archive(Archive&&) = default;
-	Archive& operator=(Archive&&) = default;
 	~Archive();
+
+	bool is_ok() { return setup_1_bin.size(); }
+	SDL_RWops* open_file(const char* path);
 };
 
 }  // namespace inno

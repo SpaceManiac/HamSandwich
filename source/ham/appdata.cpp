@@ -3,6 +3,7 @@
 #include "erase_if.h"
 #include "jamultypes.h"
 #include "nsis.h"
+#include "inno.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -320,6 +321,36 @@ bool NsisVfs::list_dir(const char* directory, std::vector<std::string>& output) 
 }
 
 // ----------------------------------------------------------------------------
+// Inno VFS implementation
+
+class InnoVfs : public Vfs {
+	inno::Archive archive;
+public:
+	InnoVfs(FILE* fp) : archive(fp) {}
+	FILE* open_stdio(const char* file, const char* mode, bool write);
+	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
+	bool list_dir(const char* directory, std::vector<std::string>& output);
+};
+
+FILE* InnoVfs::open_stdio(const char* file, const char* mode, bool write) {
+	SDL_RWops* rw = open_sdl(file, mode, write);
+	return rw ? fp_from_bundle(file, mode, rw, ".inno_tmp", true) : nullptr;
+}
+
+SDL_RWops* InnoVfs::open_sdl(const char* file, const char* mode, bool write) {
+	if (write) {
+		LogError("InnoVfs(%s, %s): does not support write modes", file, mode);
+		return nullptr;
+	}
+
+	return archive.open_file(file);
+}
+
+bool InnoVfs::list_dir(const char* directory, std::vector<std::string>& output) {
+	return archive.list_dir(directory, output);
+}
+
+// ----------------------------------------------------------------------------
 #if 0  // #ifdef _WIN32
 // Windows %APPDATA% configuration (not currently in use)
 
@@ -449,6 +480,13 @@ static std::unique_ptr<Vfs> init_vfs_spec(const char* what, const char* spec) {
 			return nullptr;
 		}
 		return std::make_unique<NsisVfs>(fp);
+	} else if (!strcmp(kind, "inno")) {
+		FILE* fp = fopen(param, "rb");
+		if (!fp) {
+			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
+			return nullptr;
+		}
+		return std::make_unique<InnoVfs>(fp);
 	} else {
 		LogError("%s: unknown kind '%s' in VFS spec '%s'", what, kind, spec);
 		return nullptr;

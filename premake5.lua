@@ -11,7 +11,9 @@ workspace "HamSandwich"
 		location "build/android"
 		android_abis { "armeabi-v7a" }
 
+local _current_project
 function base_project(name)
+	_current_project = name
 	project(name)
 		kind "WindowedApp"
 		language "C++"
@@ -159,35 +161,50 @@ function pch(name)
 	filter {}
 end
 
-function depends(name)
-	includedirs { "source/" .. name }
-	links(name)
+local _recursive_links = {}
+local _original_links = links
+function links(name)
+	if type(name) == 'table' then
+		for _, v in ipairs(name) do
+			links(v)
+		end
+		return
+	end
+
+	local our_links = _recursive_links[_current_project]
+	if our_links == nil then
+		our_links = {}
+		_recursive_links[_current_project] = our_links
+	end
+	table.insert(our_links, name)
+
+	_original_links(name)
+	local their_links = _recursive_links[name]
+	if their_links ~= nil then
+		includedirs { "source/" .. name }
+		for _, v in ipairs(their_links) do
+			_original_links(v)
+			table.insert(our_links, v)
+		end
+	end
 end
 
 library "libextract"
+	links { "SDL2", "z" }
+
 	filter "toolset:gcc"
 		buildoptions { "-Wall", "-Wextra" }
-
-	filter "toolset:emcc"
-		links { "SDL2", "z" }
 
 library "ham"
-	depends "libextract"
-	local function links_ham()
-		depends "ham"
-		links "libextract"
-	end
+	links { "libextract", "SDL2", "SDL2_mixer", "SDL2_image" }
 
 	filter "toolset:gcc"
 		buildoptions { "-Wall", "-Wextra" }
-
-	filter "toolset:emcc"
-		links { "SDL2", "SDL2_mixer", "SDL2_image" }
 
 sdl2_project "lunatic"
 	android_appname "Dr. Lunatic"
 	icon_file "lunatic"
-	links_ham()
+	links "ham"
 	pch "winpch"
 	defines { "EXPANDO" }
 
@@ -205,7 +222,7 @@ sdl2_project "lunatic"
 sdl2_project "supreme"
 	android_appname "Supreme With Cheese"
 	icon_file "lunatic"
-	links_ham()
+	links "ham"
 	pch "winpch"
 
 	excludefiles {
@@ -236,7 +253,7 @@ sdl2_project "supreme"
 sdl2_project "sleepless"
 	android_appname "Sleepless Hollow"
 	icon_file "lunatic"
-	links_ham()
+	links "ham"
 	pch "winpch"
 
 	excludefiles {
@@ -266,7 +283,7 @@ sdl2_project "sleepless"
 sdl2_project "loonyland"
 	android_appname "Loonyland: Halloween Hill"
 	icon_file "loonyland"
-	links_ham()
+	links "ham"
 	pch "winpch"
 
 	installers {
@@ -285,7 +302,7 @@ sdl2_project "loonyland"
 sdl2_project "loonyland2"
 	android_appname "Loonyland 2: Winter Woods"
 	icon_file "loonyland2"
-	links_ham()
+	links "ham"
 	pch "winpch"
 	defines { "DIRECTORS" }
 	excludefiles {
@@ -303,7 +320,7 @@ sdl2_project "loonyland2"
 sdl2_project "mystic"
 	android_appname "Kid Mystic"
 	icon_file "mystic"
-	links_ham()
+	links "ham"
 	pch "winpch"
 
 	installers {
