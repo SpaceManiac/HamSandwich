@@ -346,20 +346,41 @@ Archive::Archive(FILE* fptr)
 		return;
 	}
 
+	data_entries.resize(data_entry_count);
 	for (uint32_t i = 0; i < data_entry_count; ++i)
 	{
-		DataEntry entry;
 		SDL_RWseek(datas, 4 * 2, RW_SEEK_CUR);  // first_slice, last_slice
-		SDL_RWread(headers, &entry.chunk_offset, 4, 1);
+		SDL_RWread(headers, &data_entries[i].chunk_offset, 4, 1);
 		SDL_RWseek(datas, 8, RW_SEEK_CUR);  // file_offset
-		SDL_RWread(headers, &entry.file_size, 8, 1);
-		SDL_RWread(headers, &entry.chunk_size, 8, 1);
+		SDL_RWread(headers, &data_entries[i].file_size, 8, 1);
+		SDL_RWread(headers, &data_entries[i].chunk_size, 8, 1);
 		SDL_RWseek(datas, 4 + 8 + 8 + 1, RW_SEEK_CUR);
-		data_entries.push_back(entry);
 	}
 	SDL_RWclose(datas);
 
-	printf("cool\n");
+	// Extract setup-1.bin into memory.
+	res = SzArEx_Extract(
+		&zip,
+		stream,
+		fileIndex_setup_1_bin,
+		&blockIndex,
+		&outBuffer,
+		&outBufferSize,
+		&offset,
+		&outSizeProcessed,
+		sauce::allocator,
+		sauce::allocator);
+	if (res != SZ_OK)
+	{
+		fprintf(stderr, "inno::Archive: SzArEx_Extract setup-1.bin failed: %d\n", res);
+		return;
+	}
+
+	setup_1_bin.assign(outBuffer + offset, outBuffer + offset + outSizeProcessed);
+
+	// Clean up.
+	sauce::allocator->Free(sauce::allocator, outBuffer);
+	SzArEx_Free(&zip, sauce::allocator);
 }
 
 SDL_RWops* Archive::open_file(const char* path)
@@ -368,9 +389,40 @@ SDL_RWops* Archive::open_file(const char* path)
 	if (data_entry_idx == SIZE_MAX)
 		return nullptr;
 
-	// TODO
-	printf("%s: found\n", path);
-	return nullptr;
+	DataEntry entry = data_entries.at(data_entry_idx);
+
+	if (entry.chunk_size + 11 == entry.file_size)
+	{
+		// Skip decompression if contents are nothing but
+		// [magic number:4][zlib header][file]
+		return SDL_RWFromConstMem(&setup_1_bin[entry.chunk_offset + 11], entry.file_size);
+	}
+
+	std::vector<uint8_t> uncompressed(entry.file_size);
+	z_stream zip {};
+	zip.next_out = uncompressed.data();
+	zip.avail_out = uncompressed.size();
+	// Skip 4 bytes of "zlb\x1a" magic number
+	zip.next_in = &setup_1_bin[entry.chunk_offset + 4];
+	zip.avail_in = entry.chunk_size - 4;
+
+	if (inflateInit(&zip) != Z_OK)
+	{
+		fprintf(stderr, "inno::Archive::open_file: bad inflateInit\n");
+		return nullptr;
+	}
+	if (int r = inflate(&zip, Z_NO_FLUSH); r != Z_OK && r != Z_STREAM_END)
+	{
+		fprintf(stderr, "inno::Archive::open_file: bad inflate: %d\n", r);
+		return nullptr;
+	}
+	if (inflateEnd(&zip) != Z_OK)
+	{
+		fprintf(stderr, "inno::Archive::open_file: bad inflateEnd\n");
+		return nullptr;
+	}
+
+	return create_vec_rwops(std::move(uncompressed));
 }
 
 /*

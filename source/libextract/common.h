@@ -39,9 +39,6 @@ protected:
 	static const char* navigate(const char* path, Directory*& current);
 	static const char* navigate(const char* path, const Directory*& current);
 
-	void insert_file(const char* path, size_t handle);
-	Directory* insert_directory(const char* path);
-
 	size_t get_file(const char* path) const;
 	const Directory* get_directory(const char* path) const;
 
