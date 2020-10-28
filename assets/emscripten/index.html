@@ -17,7 +17,15 @@
 			<input type="button" value="Fullscreen" id="fullscreen"/>
 		</div>
 		<div id="canvas-container">
-			<canvas id="canvas" width="640" height="480" oncontextmenu="event.preventDefault()"></canvas>
+			<div id="canvas-stacker">
+				<div class="canvas-notice">
+					<img src="splash.jpg" onerror="this.remove()" />
+				</div>
+				<!-- <div class="canvas-notice">
+					<div id="runstatus-notice"></div>
+				</div> -->
+				<canvas id="canvas" width="640" height="480" oncontextmenu="event.preventDefault()"></canvas>
+			</div>
 		</div>
 		<details id="installer-upload">
 			<summary>Import assets</summary>
