@@ -13,6 +13,7 @@ var HamSandwich = (function () {
 	// ------------------------------------------------------------
 	// File system syncing
 	var FS_IDLE = 0, FS_WORKING = 1, FS_PENDING = 2;
+	var appdataMount, installerMount, needInstallerSync;
 	var fsStatus = FS_WORKING;  // waiting for preInit to run
 
 	function fsCallback(err) {
@@ -30,10 +31,16 @@ var HamSandwich = (function () {
 	function fsSyncInner() {
 		fsStatus = FS_WORKING;
 		Module.setStatus("Saving...");
-		FS.syncfs(false, fsCallback);
+		if (needInstallerSync) {
+			needInstallerSync = false;
+			FS.syncfs(false, fsCallback);
+		} else {
+			appdataMount.type.syncfs(appdataMount, false, fsCallback);
+		}
 	}
 
-	function fsSync() {
+	function fsSync(options) {
+		needInstallerSync = needInstallerSync || options?.installers;
 		if (fsStatus) {
 			fsStatus = FS_PENDING;
 		} else {
@@ -48,9 +55,9 @@ var HamSandwich = (function () {
 
 	function fsInit() {
 		FS.mkdir('/appdata');
-		FS.mount(IDBFS, {}, '/appdata');
+		appdataMount = FS.mount(IDBFS, {}, '/appdata').mount;
 		FS.mkdir('/installers');
-		FS.mount(IDBFS, {}, '/installers');
+		installerMount = FS.mount(IDBFS, {}, '/installers').mount;
 		FS.syncfs(true, fsInitCallback);
 
 		Module.ENV['HSW_APPDATA'] = '/@stdio@/appdata/' + HamSandwich.metadata.projectName;
@@ -162,7 +169,7 @@ var InstallerUpload = (function () {
 				status[fname].fileInput.disabled = true;
 				status[fname].fileInput.hidden = true;
 				if (sync) {
-					HamSandwich.fsSync();
+					HamSandwich.fsSync({ installers: true });
 				}
 				Module.removeRunDependency('installer ' + fname);
 			} else {
