@@ -53,6 +53,7 @@ TASK(int) main(int argc, char *argv[])
 			case 255:	// quit
 			case MENU_EXIT:
 				LunaticExit();
+				KillSong();
 				delete mainmgl;
 				CO_RETURN 0;
 				break;
