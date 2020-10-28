@@ -78,7 +78,7 @@ deps_mingw32() {
 	# Install system packages
 	packages 'pacman -S --needed --noconfirm --quiet' \
 		p7zip make \
-		mingw-w64-i686-binutils mingw-w64-i686-gcc \
+		mingw-w64-i686-binutils mingw-w64-i686-gcc mingw-w64-i686-zlib \
 		mingw-w64-i686-SDL2 mingw-w64-i686-SDL2_mixer mingw-w64-i686-SDL2_image
 
 	deps_mingw_generic
@@ -88,7 +88,7 @@ deps_mingw64() {
 	# Install system packages
 	packages 'pacman -S --needed --noconfirm --quiet' \
 		p7zip make \
-		mingw-w64-x86_64-binutils mingw-w64-x86_64-gcc \
+		mingw-w64-x86_64-binutils mingw-w64-x86_64-gcc mingw-w64-x86_64-zlib \
 		mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-SDL2_image
 
 	deps_mingw_generic
@@ -97,7 +97,7 @@ deps_mingw64() {
 deps_ubuntu() {
 	packages 'sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes' \
 		p7zip innoextract \
-		make g++ \
+		make g++ zlib1g-dev \
 		libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev \
 		python3-pip python3-pil
 
@@ -107,7 +107,7 @@ deps_ubuntu() {
 deps_arch() {
 	packages 'sudo pacman -S --needed --quiet' \
 		p7zip wget innoextract \
-		make gcc lib32-gcc-libs \
+		make gcc lib32-gcc-libs lib32-zlib \
 		lib32-sdl2 lib32-sdl2_image lib32-sdl2_mixer \
 		python-pip
 
