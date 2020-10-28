@@ -1,9 +1,25 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "lzma1900/LzmaDec.h"
-#include "lzma_helpers.h"
+#include "common.h"
 
-namespace lzma_helpers {
+namespace sauce {
+
+// ----------------------------------------------------------------------------
+// Archive directory listing
+
+#ifndef __GNUC__
+#define strcasecmp _stricmp
+#endif // __GNUC__
+
+bool CaseInsensitive::operator() (const std::string& lhs, const std::string& rhs) const
+{
+	return strcasecmp(lhs.c_str(), rhs.c_str()) < 0;
+}
+
+// ----------------------------------------------------------------------------
+// LZMA decompression utils
 
 void* lz_alloc(ISzAllocPtr p, size_t sz) {
 	(void) p;
@@ -21,7 +37,7 @@ const ISzAllocPtr allocator = &alloc;
 const size_t BUFSIZE_IN = 16 * 1024;
 const size_t BUFSIZE_OUT = 2 * BUFSIZE_IN;
 
-bool decompress_all(std::vector<uint8_t>& dest, uint8_t* src, size_t srclen, size_t propsize) {
+bool decompress_lzma(std::vector<uint8_t>& dest, uint8_t* src, size_t srclen, size_t propsize) {
 	CLzmaDec decoder;
 	LzmaDec_Construct(&decoder);
 	if (LzmaDec_AllocateProbs(&decoder, src, propsize, &alloc) != SZ_OK) {
@@ -57,4 +73,4 @@ bool decompress_all(std::vector<uint8_t>& dest, uint8_t* src, size_t srclen, siz
 	return res == SZ_OK;
 }
 
-}  // namespace lzma_helpers
+}  // namespace sauce

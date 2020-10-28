@@ -1,7 +1,7 @@
 #include <string.h>
 #include <vector>
 #include <zlib.h>
-#include "lzma_helpers.h"
+#include "common.h"
 #include "vec_rw.h"
 #include "lzma1900/7z.h"
 #include "lzma1900/7zCrc.h"
@@ -179,7 +179,7 @@ Archive::Archive(FILE* fptr)
 
 	CSzArEx zip;
 	SzArEx_Init(&zip);
-	SRes res = SzArEx_Open(&zip, stream, lzma_helpers::allocator, lzma_helpers::allocator);
+	SRes res = SzArEx_Open(&zip, stream, sauce::allocator, sauce::allocator);
 	if (res != SZ_OK)
 	{
 		fprintf(stderr, "inno::Archive: SzArEx_Open failed: %d\n", res);
@@ -226,8 +226,8 @@ Archive::Archive(FILE* fptr)
 		&outBufferSize,
 		&offset,
 		&outSizeProcessed,
-		lzma_helpers::allocator,
-		lzma_helpers::allocator);
+		sauce::allocator,
+		sauce::allocator);
 	if (res != SZ_OK)
 	{
 		fprintf(stderr, "inno::Archive: SzArEx_Extract setup.0 failed: %d\n", res);

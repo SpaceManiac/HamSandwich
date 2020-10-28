@@ -12,7 +12,7 @@ struct SDL_RWops;
 namespace inno {
 
 class Archive {
-	class DataEntry {
+	struct DataEntry {
 		uint32_t chunk_offset;
 		uint64_t file_size;
 		uint64_t chunk_size;

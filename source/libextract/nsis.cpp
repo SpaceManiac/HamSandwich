@@ -1,7 +1,7 @@
 #include <string.h>
 #include <vector>
 #include "nsis_exehead/fileform.h"
-#include "lzma_helpers.h"
+#include "common.h"
 #include "nsis.h"
 #include "vec_rw.h"
 
@@ -14,15 +14,6 @@
 namespace nsis {
 
 static_assert(sizeof(int) == 4);
-
-#ifndef __GNUC__
-#define strcasecmp _stricmp
-#endif // __GNUC__
-
-bool CaseInsensitive::operator() (const std::string& lhs, const std::string& rhs) const
-{
-	return strcasecmp(lhs.c_str(), rhs.c_str()) < 0;
-}
 
 // ----------------------------------------------------------------------------
 // Constants
@@ -41,7 +32,7 @@ const uint32_t SIZE_COMPRESSED = 0x80000000;
 // ----------------------------------------------------------------------------
 // Decoding the file list
 
-const char* navigate(uint8_t* path, Directory** working_directory, Directory* install_dir);
+const char* navigate(uint8_t* path, sauce::Directory** working_directory, sauce::Directory* install_dir);
 
 Archive::~Archive()
 {
@@ -92,7 +83,7 @@ Archive::Archive(FILE* fptr)
 			return;
 
 		std::vector<uint8_t> datablock;
-		if (!lzma_helpers::decompress_all(datablock, buffer.data(), buffer.size(), 5))
+		if (!sauce::decompress_lzma(datablock, buffer.data(), buffer.size(), 5))
 			return;
 
 		archive_rw = create_vec_rwops(std::move(datablock));
@@ -128,7 +119,7 @@ Archive::Archive(FILE* fptr)
 	datablock_start += blocks[NB_DATA].offset;
 
 	// Decode the instructions.
-	Directory* working_directory = &install_dir;
+	sauce::Directory* working_directory = &install_dir;
 	for (size_t offset = code_offset; offset < string_table_offset - sizeof(entry); offset += 4)
 	{
 		entry current = *(entry*)&header[offset];
@@ -158,7 +149,7 @@ Archive::Archive(FILE* fptr)
 
 				if (const char* last_component = navigate(path, &working_directory, &install_dir))
 				{
-					working_directory->files.insert(std::make_pair<std::string, File>(last_component, data_idx));
+					working_directory->files.insert(std::make_pair<std::string, sauce::File>(last_component, data_idx));
 				}
 
 				break;
@@ -169,7 +160,7 @@ Archive::Archive(FILE* fptr)
 	// Hooray!
 }
 
-const char* navigate(uint8_t* path, Directory** working_directory, Directory* install_dir)
+const char* navigate(uint8_t* path, sauce::Directory** working_directory, sauce::Directory* install_dir)
 {
 	if (path[0] == NS_VAR_CODE)
 	{
@@ -207,7 +198,7 @@ const char* navigate(uint8_t* path, Directory** working_directory, Directory* in
 // ----------------------------------------------------------------------------
 // Extracting individual files
 
-SDL_RWops* Archive::open_file(File file)
+SDL_RWops* Archive::open_file(sauce::File file)
 {
 	if (SDL_RWseek(archive_rw, datablock_start + file.offset, SEEK_SET) < 0)
 	{
@@ -246,7 +237,7 @@ bool Archive::extract_internal(bool is_compressed, uint32_t size, std::vector<ui
 
 	if (is_compressed)
 	{
-		return lzma_helpers::decompress_all(result, compressed.data(), compressed.size(), 5);
+		return sauce::decompress_lzma(result, compressed.data(), compressed.size(), 5);
 	}
 	else
 	{

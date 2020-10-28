@@ -6,31 +6,17 @@
 #include <map>
 #include <stdio.h>
 #include <stdint.h>
+#include "common.h"
 
 struct SDL_RWops;
 
 namespace nsis {
 
-struct CaseInsensitive {
-	bool operator() (const std::string& lhs, const std::string& rhs) const;
-};
-
-class File {
-	size_t offset;
-	File(size_t offset) : offset(offset) {}
-	friend class Archive;
-};
-
-struct Directory {
-	std::map<std::string, File, CaseInsensitive> files;
-	std::map<std::string, Directory, CaseInsensitive> directories;
-};
-
 class Archive {
 	SDL_RWops* archive_rw;
 	size_t datablock_start;
 
-	Directory install_dir;
+	sauce::Directory install_dir;
 
 	bool extract_internal(bool compressed, uint32_t size, std::vector<uint8_t>& result);
 
@@ -44,8 +30,8 @@ public:
 	~Archive();
 
 	bool is_ok() { return archive_rw != nullptr; }
-	const Directory& root() const { return install_dir; }
-	SDL_RWops* open_file(File file);
+	const sauce::Directory& root() const { return install_dir; }
+	SDL_RWops* open_file(sauce::File file);
 };
 
 }  // namespace nsis

@@ -2,7 +2,9 @@
 #include <string.h>
 #include <errno.h>
 #include "nsis.h"
+#include "inno.h"
 
+/*
 const char* spam = "                ";
 
 void show(int depth, const nsis::Directory& directory) {
@@ -14,6 +16,7 @@ void show(int depth, const nsis::Directory& directory) {
 		show(depth + 4, entry.second);
 	}
 }
+*/
 
 int main(int argc, const char* argv[])
 {
@@ -25,11 +28,12 @@ int main(int argc, const char* argv[])
 		printf("fopen(%s): %s\n", argv[1], strerror(errno));
 		exit(1);
 	}
-	nsis::Archive arc { fp };
+	inno::Archive arc { fp };
+	/*nsis::Archive arc { fp };
 
 	if (arc.is_ok()) {
 		show(0, arc.root());
 	} else {
 		printf("nsis extract failure\n");
-	}
+	}*/
 }
