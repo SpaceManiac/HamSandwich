@@ -350,10 +350,10 @@ Archive::Archive(FILE* fptr)
 	for (uint32_t i = 0; i < data_entry_count; ++i)
 	{
 		SDL_RWseek(datas, 4 * 2, RW_SEEK_CUR);  // first_slice, last_slice
-		SDL_RWread(headers, &data_entries[i].chunk_offset, 4, 1);
+		SDL_RWread(datas, &data_entries[i].chunk_offset, 4, 1);
 		SDL_RWseek(datas, 8, RW_SEEK_CUR);  // file_offset
-		SDL_RWread(headers, &data_entries[i].file_size, 8, 1);
-		SDL_RWread(headers, &data_entries[i].chunk_size, 8, 1);
+		SDL_RWread(datas, &data_entries[i].file_size, 8, 1);
+		SDL_RWread(datas, &data_entries[i].chunk_size, 8, 1);
 		SDL_RWseek(datas, 4 + 8 + 8 + 1, RW_SEEK_CUR);
 	}
 	SDL_RWclose(datas);
