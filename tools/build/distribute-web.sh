@@ -27,6 +27,7 @@ if [ $# -eq 0 ]; then
 	set "${DIRS[@]##*/}"
 fi
 
+echo "==== Preparing webroot ===="
 if [ $# -eq 1 ]; then
 	# One project: put everything in the root
 	FILES=($(find "$TARGETDIR/$PROJECT" -maxdepth 1 -type f))

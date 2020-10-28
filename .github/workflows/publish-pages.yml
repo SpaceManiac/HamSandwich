@@ -17,7 +17,7 @@ jobs:
       # To publish everything:
       #   ./tools/build/distribute-web.sh
       - run: |
-          ./tools/build/distribute-web.sh lunatic supreme sleepless loonyland2
+          ./tools/build/distribute-web.sh mystic loonyland supreme loonyland2 sleepless
 
       - uses: peaceiris/actions-gh-pages@v3
         with:
