@@ -70,8 +70,16 @@ body > * {
 	display: none !important;
 }
 
-summary {
+details > summary {
 	user-select: none;
+}
+
+details[open] > summary {
+	margin-bottom: 10px;
+}
+
+p {
+	margin: 10px 0;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -87,13 +95,17 @@ summary {
 /* ------------------------------------------------------------------------- */
 /* Installer upload */
 
-#installer-upload table {
+table.flat-table {
 	width: 100%;
 	border-spacing: 0;
 }
 
-#installer-upload table td {
+table.flat-table td {
 	padding: 0;
+}
+
+table.flat-table td:not(:last-child) {
+	padding-right: 10px;
 }
 
 /* ------------------------------------------------------------------------- */

@@ -84,12 +84,22 @@ var HamSandwich = (function () {
 		canvas.style.pointerEvents = 'auto';
 	}
 
+	function setRunStatus(text) {
+		var notice = document.getElementById('runstatus-notice');
+		if (notice) {
+			notice.hidden = !text;
+			notice.innerText = text;
+			return notice;
+		}
+	}
+
 	return {
 		metadata,
 		fsSync,
 		fsInit,
 		setWindowTitle,
 		pushAssets,
+		setRunStatus,
 	};
 })();
 
@@ -302,9 +312,8 @@ var Module = (function() {
 					canvas.style.opacity = '0';
 					canvas.style.pointerEvents = 'none';
 
-					var notice = document.getElementById('runstatus-notice');
+					var notice = HamSandwich.setRunStatus('Refresh or click here to play again.');
 					if (notice) {
-						notice.innerText = 'Refresh the page to play again';
 						notice.style.cursor = 'pointer';
 						notice.addEventListener('click', () => {
 							window.location.reload();
