@@ -75,14 +75,12 @@ var HamSandwich = (function () {
 	// ------------------------------------------------------------
 	// Module overrides
 	function setWindowTitle(text) {
-		var title = document.getElementById('title'),
-			canvas = document.getElementById('canvas');
+		document.title = text;
+		var title = document.getElementById('title');
 		title.hidden = !text;
 		title.innerText = text;
-		document.title = text;
-		canvas.style.opacity = '1';
-		canvas.style.pointerEvents = 'auto';
 	}
+	setWindowTitle(metadata.title);
 
 	function setRunStatus(text) {
 		var notice = document.getElementById('runstatus-notice');
@@ -306,8 +304,12 @@ var Module = (function() {
 			function() {
 				Module.requestFullscreen = function() {
 					Module.canvas.requestFullscreen();
-				}
-				setWindowTitle = HamSandwich.setWindowTitle;
+				};
+				setWindowTitle = function(title) {
+					HamSandwich.setWindowTitle(title);
+					canvas.style.opacity = '1';
+					canvas.style.pointerEvents = 'auto';
+				};
 				quit_ = function() {
 					canvas.style.opacity = '0';
 					canvas.style.pointerEvents = 'none';
@@ -319,7 +321,7 @@ var Module = (function() {
 							window.location.reload();
 						});
 					}
-				}
+				};
 			},
 			InstallerUpload.preInit,
 			HamSandwich.fsInit,

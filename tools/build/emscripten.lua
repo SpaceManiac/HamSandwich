@@ -27,6 +27,13 @@ p.api.register {
 	tokens = true
 }
 
+p.api.register {
+	name = "web_title",
+	scope = "project",
+	kind = "string",
+	tokens = true
+}
+
 -- Global filters.
 filter { "toolset:emcc", "kind:WindowedApp or ConsoleApp" }
 	-- Without an extension, emcc produces only bytecode. We want the WASM and
@@ -157,6 +164,7 @@ filter {}
 -- HTML assets
 function emscripten._encode_metadata(prj)
 	local meta = {
+		title = prj.web_title or prj.android_appname,
 		projectName = prj.name,
 		installers = prj.installers,
 		hasAssets = #prj.assetdirs > 0,
