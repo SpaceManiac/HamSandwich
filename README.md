@@ -10,12 +10,12 @@ The following platforms also have various levels of support:
 Platform | Toolchain | Status | Notes
 -|-|-|-
 Windows | MinGW | Primary | CI: [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
+Linux | GCC | Primary | CI: [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
+[Browser](#Emscripten) | Emscripten | Secondary | [Play now](https://spacemaniac.github.io/HamSandwich/)
 Windows | MSVC | Secondary | CI: [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
-Linux | GCC | Secondary | CI: [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
 Windows | Clang | Tertiary | No app icons
 Linux | Clang | Tertiary
-[Android](#Android) | NDK | Tertiary | Incomplete/buggy
-[Browser](#Emscripten) | Emscripten | Tertiary | Incomplete
+[Android](#Android) | NDK | Tertiary | Incomplete
 
 ### Windows (MinGW)
 
@@ -37,7 +37,7 @@ Compiling and running:
 
 1. Run `./run` to see a list of games in the project, and use `./run <project>` to compile and play.
     1. For example, to run Supreme With Cheese, write `./run supreme`.
-    2. To compile without running, write `make` or `make <projectname>`.
+    2. To compile without running, write `make` or `make <project>`.
     3. The first time you try to run a game, you will be prompted to download
         its installer from <https://hamumu.itch.io/>;
         follow the instructions shown.
@@ -56,7 +56,7 @@ Compiling and running:
 2. Run `build/premake5.exe vs2017` (or appropriate VS version) to generate solution.
 3. Open and compile `build/HamSandwich.sln` in Visual Studio.
     1. For command-line builds, run `msbuild build/HamSandwich.sln /p:Configuration=debug /p:Platform=Win32`.
-4. Use installers from <https://hamumu.itch.io/> to extract game assets to `build/game/<gamename>`.
+4. Use installers from <https://hamumu.itch.io/> to extract game assets to `build/game/<project>`.
 5. Debug from within Visual Studio to launch a game.
 
 ### Linux
@@ -68,6 +68,47 @@ Compiling and running:
     4. 7-Zip and Innoextract to extract game assets.
 2. Use `make` and `./run` as described above to build and run the games.
 
+### Emscripten
+
+1. If on Windows, install and use MSYS2 according to the instructions above.
+2. The [Emscripten SDK] will be installed automatically, or you can do so
+   manually:
+    1. `cd` to a convenient directory.
+    2. `git clone https://github.com/emscripten-core/emsdk.git`
+    3. `cd emsdk`
+    4. `./emsdk install latest-upstream`
+    5. `./emsdk activate latest-upstream`
+    6. `source ./emsdk_env.sh`
+    7. Return to the HamSandwich directory.
+2. Run `./run <project> --web` to run the build and open the result in your
+   browser.
+
+Bundling assets:
+
+1. Commit your assets to a subfolder in the repository of your choosing.
+2. In the appropriate project's section in `premake5.lua`, add a line pointing
+   to your assets: `assetdirs "your_asset_folder"`
+
+Publishing on GitHub Pages:
+
+1. Edit `.github/workflows/publish-pages.yml` file and change the
+   `distribute-web.sh` line to include only the project or projects you wish to
+   publish.
+2. Push your changes to GitHub and wait for the build to be prepared.
+3. In your GitHub repository's Settings > Options tab, GitHub Pages section,
+   change the "Source" from "None" to "gh-pages" and click "Save".
+4. Your site will be published at `https://yourusername.github.io/HamSandwich`
+5. Future pushes will automatically update your site.
+
+Publishing manually:
+
+1. Run `tools/build/distribute-web.sh <project>`.
+   1. You can supply multiple projects to build them together, or leave off
+   1. You can leave off the project identifier
+2. Upload the contents of `build/webroot/`.
+
+[Emscripten SDK]: https://emscripten.org/docs/getting_started/downloads.html
+
 ### Android
 
 1. If on Windows, install and use MSYS2 according to the instructions above.
@@ -77,26 +118,3 @@ Compiling and running:
     1. For example, to build Supreme With Cheese, write `./android supreme`
 4. Run `./android --install <project>` to install to a connected Android device.
 5. To view logs, run `./android --logcat`
-
-### Emscripten
-
-1. If on Windows, install and use MSYS2 according to the instructions above.
-2. The Emscripten SDK will be installed automatically, or you can do so
-   manually:
-    1. `cd` to a convenient directory.
-    2. `git clone https://github.com/emscripten-core/emsdk.git`
-    3. `cd emsdk`
-    4. `./emsdk install latest-upstream`
-    5. `./emsdk activate latest-upstream`
-    6. `source ./emsdk_env.sh`
-    7. Return to the HamSandwich directory.
-2. Run `./run <gamename> --web` to run the build and open the result in your
-   browser.
-
-Publishing:
-
-1. Run `make toolset=emcc config=release <gamename>` to prepare a release build.
-2. Upload the `.data`, `.html`, `.js,` and `.wasm` files from
-   `build/emcc-release/<gamename>`.
-
-[emsdk]: https://emscripten.org/docs/getting_started/downloads.html
