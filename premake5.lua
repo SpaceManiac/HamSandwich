@@ -243,6 +243,8 @@ sdl2_project "supreme"
 		}
 	}
 
+	webfiles { ["splash.jpg"] = "assets/splashes/supreme.jpg" }
+
 	filter "toolset:gcc"
 		buildoptions {
 			"-Wall",
@@ -273,6 +275,8 @@ sdl2_project "sleepless"
 		}
 	}
 
+	webfiles { ["splash.jpg"] = "assets/splashes/sleepless.jpg" }
+
 	filter "toolset:gcc"
 		buildoptions {
 			"-Wall",
@@ -299,6 +303,8 @@ sdl2_project "loonyland"
 		}
 	}
 
+	webfiles { ["splash.jpg"] = "assets/splashes/loonyland.jpg" }
+
 sdl2_project "loonyland2"
 	android_appname "Loonyland 2: Winter Woods"
 	icon_file "loonyland2"
@@ -316,6 +322,8 @@ sdl2_project "loonyland2"
 			link = "https://hamumu.itch.io/loonyland-2-winter-woods",
 		}
 	}
+
+	webfiles { ["splash.jpg"] = "assets/splashes/loonyland2.jpg" }
 
 sdl2_project "mystic"
 	android_appname "Kid Mystic"
