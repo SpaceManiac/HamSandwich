@@ -165,6 +165,7 @@ var InstallerUpload = (function () {
 		} catch (e) {
 			status[fname].statusTd.innerText = '\u2014';
 			details.open = true;
+			HamSandwich.setRunStatus('Provide the installer below to play.');
 			return;
 		}
 
@@ -183,6 +184,7 @@ var InstallerUpload = (function () {
 			} else {
 				status[fname].statusTd.innerText = 'Bad';
 				details.open = true;
+				HamSandwich.setRunStatus('Provide the installer below to play.');
 			}
 		});
 	}
