@@ -114,10 +114,10 @@ static void FLI_doDelta(byte *scrn,int scrWidth,byte *p)
 					y-=numPaks;
 					break;
 				case 0x4000:	// bottom bit, undefined
-					numPaks=numPaks;
+					//numPaks=numPaks;
 					break;
 				case 0x8000:	// top bit, supposedly last pixel thing
-					numPaks=numPaks;
+					//numPaks=numPaks;
 					break;
 			}
 		}

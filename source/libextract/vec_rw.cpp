@@ -24,7 +24,7 @@ SDL_RWops* create_vec_rwops(std::vector<uint8_t>&& buffer) {
 	// Use a modified RWFromConstMem so the JS audio code knows how to slurp it
 	SDL_RWops* rw_base = SDL_RWFromConstMem(buffer.data(), buffer.size());
 	Vec_RWops* rw = (Vec_RWops*) SDL_malloc(sizeof(Vec_RWops));
-	memcpy(rw, rw_base, sizeof(SDL_RWops));
+	rw->base = *rw_base;
 	SDL_FreeRW(rw_base);
 	new(&rw->vec) std::vector<uint8_t>(std::move(buffer));
 	rw->base.close = delete_vec_close;

@@ -192,13 +192,13 @@ end
 library "libextract"
 	links { "SDL2", "z" }
 
-	filter "toolset:gcc"
+	filter "toolset:not msc"
 		buildoptions { "-Wall", "-Wextra" }
 
 library "ham"
 	links { "libextract", "SDL2", "SDL2_mixer", "SDL2_image" }
 
-	filter "toolset:gcc"
+	filter "toolset:not msc"
 		buildoptions { "-Wall", "-Wextra" }
 
 sdl2_project "lunatic"
@@ -216,7 +216,7 @@ sdl2_project "lunatic"
 		}
 	}
 
-	filter "toolset:gcc"
+	filter "toolset:not msc"
 		buildoptions { "-Wall", "-Wextra", "-Wno-unused-parameter" }
 
 sdl2_project "supreme"

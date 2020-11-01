@@ -180,7 +180,7 @@ void Delete(int x,int y)
 	editorMap->GetTile(x,y)->item=0;
 
 	for(i=0;i<MAX_SPECIAL;i++)
-		if(editorMap->special[i].trigger && editorMap->special[i].x==x && editorMap->special[i].y==y)
+		if(editorMap->special[i].x==x && editorMap->special[i].y==y)
 		{
 			memset(&editorMap->special[i],0,sizeof(special_t));
 			editorMap->special[i].x=255;
