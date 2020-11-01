@@ -345,7 +345,10 @@ dword ChecksumMap(Map *map)
 	{
 		if(map->badguy[i].type)
 		{
-			AddToSum(map->badguy[i].type);
+			if (map->badguy[i].type > UINT8_MAX)
+				AddToSum(map->badguy[i].type);
+			else
+				AddToSum((byte) map->badguy[i].type);
 			AddToSum(map->badguy[i].x);
 			AddToSum(map->badguy[i].y);
 			AddToSum(map->badguy[i].item);
