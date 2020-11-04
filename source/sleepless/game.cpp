@@ -532,25 +532,25 @@ TASK(void) LunaticDraw(void)
 		// nothing to do
 	}
 
-	if(showStats)
+	if(showStats && gameMode == GAMEMODE_PLAY)
 	{
-		sprintf(s,"Debug Menu - F3 to close");
-		PrintGlow(5,30,s,8,2);
+		sprintf(s,"F3 to close");
+		PrintGlow(80,36,s,8,1);
 
 		sprintf(s,"VFPS %02.2f",((float)visFrameCount/(float)((timeGetTime()-gameStartTime)/1000)));
-		PrintGlow(5,50,s,8,2);
+		PrintGlow(14,49,s,8,1);
 		sprintf(s,"GFPS %02.2f",((float)updFrameCount/(float)((timeGetTime()-gameStartTime)/1000)));
-		PrintGlow(120,50,s,8,2);
+		PrintGlow(120,49,s,8,1);
 
 		sprintf(s,"QFPS %02.2f",frmRate);
-		PrintGlow(5,70,s,8,2);
+		PrintGlow(14,62,s,8,1);
 		sprintf(s,"Runs %d",numRunsToMakeUp);
-		PrintGlow(120,70,s,8,2);
+		PrintGlow(120,62,s,8,1);
 
 		sprintf(s,"Mons %d",CountMonsters(MONS_ANYBODY));
-		PrintGlow(5,90,s,8,2);
+		PrintGlow(14,75,s,8,1);
 		sprintf(s,"Bul %d",config.numBullets - CountBullets(0)); // a little hackish but whatever
-		PrintGlow(120,90,s,8,2);
+		PrintGlow(120,75,s,8,1);
 
 		int n = 0;
 		for(int i=0; i<MAX_SPECIAL; i++)
@@ -558,9 +558,9 @@ TASK(void) LunaticDraw(void)
 				++n;
 
 		sprintf(s,"Fx %d", CountParticles());
-		PrintGlow(5,110,s,8,2);
+		PrintGlow(14,88,s,8,1);
 		sprintf(s,"Spcl %03d", n);
-		PrintGlow(120,110,s,8,2);
+		PrintGlow(120,88,s,8,1);
 
 		n = 0;
 		for(int x=0; x<curMap->width; ++x)
@@ -570,9 +570,9 @@ TASK(void) LunaticDraw(void)
 
 		mapTile_t* t = curMap->GetTile(goodguy->mapx, goodguy->mapy);
 		sprintf(s,"Light %d/%d", t->templight, t->light);
-		PrintGlow(5,130,s,8,2);
+		PrintGlow(14,101,s,8,1);
 		sprintf(s,"Items %d", n);
-		PrintGlow(120,130,s,8,2);
+		PrintGlow(120,101,s,8,1);
 
 		int KEY_MAX = 0;
 		const byte* key = SDL_GetKeyboardState(&KEY_MAX);
@@ -580,13 +580,13 @@ TASK(void) LunaticDraw(void)
 		for (int i = 0; i < KEY_MAX; ++i)
 			if (key[i])
 				end += sprintf(end, "%s ", ScanCodeText(i));
-		PrintGlow(5,150,s,8,2);
+		PrintGlow(14,114,s,8,1);
 
 		end = s + sprintf(s,"Mouse: ");
 		for (int i = 0; i < 10; ++i)
 			if (gamemgl->mouse_b & (1<<i))
 				end += sprintf(end, "%d ", i);
-		PrintGlow(5,170,s,8,2);
+		PrintGlow(14,127,s,8,1);
 	}
 	// update statistics
 	d=timeGetTime();
