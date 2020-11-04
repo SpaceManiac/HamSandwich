@@ -642,6 +642,17 @@ static void XY2Click(int id)
 	}
 }
 
+static void LevelGotoClick(int id)
+{
+	MakeNormalSound(SND_MENUCLICK);
+
+	curEff=effStart + (id-ID_EFF0)/100;
+	EditorSelectMap(spcl.effect[curEff].value);
+	if (spcl.effect[curEff].x != 255)
+		PutCamera((spcl.effect[curEff].x * TILE_WIDTH + TILE_WIDTH/2)<<FIXSHIFT,(spcl.effect[curEff].y * TILE_HEIGHT + TILE_HEIGHT/2)<<FIXSHIFT);
+	SetEditMode(EDITMODE_EDIT);
+}
+
 static void XY3Click(int id)
 {
 	MakeNormalSound(SND_MENUCLICK);
@@ -1746,6 +1757,7 @@ static void SetupEffectButtons(int t,int y)
 			else
 				sprintf(s,"%d, %d",effect.x,effect.y);
 			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,422,y+17,70,14,s,XY2Click);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+4+100*t,0,520,y+17,65,14,"Jump to",LevelGotoClick);
 			break;
 		case EFF_GOTOMAP:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Go to",NULL);
@@ -1757,6 +1769,7 @@ static void SetupEffectButtons(int t,int y)
 			else
 				sprintf(s,"%d, %d",effect.x,effect.y);
 			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,322,y+17,70,14,s,XY2Click);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+4+100*t,0,520,y+17,65,14,"Jump to",LevelGotoClick);
 			break;
 		case EFF_TELEPORT:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Teleport",NULL);
