@@ -28,6 +28,8 @@ static char lastLevelName[32];
 byte shopping,tutorial,verified;
 byte doShop;
 
+dword debugVerified;
+
 MGLDraw *gamemgl;
 Map *curMap;
 byte gameMode=GAMEMODE_PLAY;
@@ -85,29 +87,29 @@ void LunaticExit(void)
 
 byte VerifyLevel(Map *map)
 {
-#ifdef _DEBUG
-	return 1;
-#else
 	dword chk,cmp;
 	FILE *f;
 
 	chk=ChecksumMap(map);
 
+	debugVerified = 0;
 	f=AssetOpen("worlds/levels.dat","rb");
 	if(!f)
 		return 0;
 
+	dword index = 0;
 	while(fread(&cmp,sizeof(dword),1,f))
 	{
+		++index;
 		if(cmp==chk)
 		{
 			fclose(f);
+			debugVerified = index;
 			return 1;
 		}
 	}
 	fclose(f);
 	return 0;
-#endif
 }
 
 byte InitLevel(byte map)
@@ -123,6 +125,9 @@ byte InitLevel(byte map)
 	curMap=new Map(curWorld.map[map]);
 
 	verified=VerifyLevel(curMap);
+#ifdef _DEBUG
+	verified=true;
+#endif
 
 	PrintToLog(curMap->name,0);
 
@@ -517,6 +522,66 @@ TASK(void) LunaticDraw(void)
 		{
 			RenderShopping(gamemgl);
 		}
+
+		if(showStats)
+		{
+			sprintf(s,"Debug stats - F3 to close");
+			PrintGlow(5,30,s,8,2);
+
+			sprintf(s,"VFPS %02.2f",((float)visFrameCount/(float)((timeGetTime()-gameStartTime)/1000)));
+			PrintGlow(5,50,s,8,2);
+			sprintf(s,"GFPS %02.2f",((float)updFrameCount/(float)((timeGetTime()-gameStartTime)/1000)));
+			PrintGlow(120,50,s,8,2);
+
+			sprintf(s,"QFPS %02.2f",frmRate);
+			PrintGlow(5,70,s,8,2);
+			sprintf(s,"Runs %d",numRunsToMakeUp);
+			PrintGlow(120,70,s,8,2);
+
+			sprintf(s,"Mons %d",CountMonsters(MONS_ANYBODY));
+			PrintGlow(5,90,s,8,2);
+			sprintf(s,"Bul %d",config.numBullets - CountBullets(BLT_NONE)); // a little hackish but whatever
+			PrintGlow(120,90,s,8,2);
+
+			int n = 0;
+			for(int i=0; i<MAX_SPECIAL; i++)
+				if(curMap->special[i].x!=255)
+					++n;
+
+			sprintf(s,"Fx %d", CountParticles());
+			PrintGlow(5,110,s,8,2);
+			sprintf(s,"Spcl %03d", n);
+			PrintGlow(120,110,s,8,2);
+
+			n = 0;
+			for(int x=0; x<curMap->width; ++x)
+				for(int y=0; y<curMap->height; ++y)
+					if(curMap->GetTile(x, y)->item)
+						++n;
+
+			mapTile_t* t = curMap->GetTile(goodguy->mapx, goodguy->mapy);
+			sprintf(s,"Light %d/%d", t->templight, t->light);
+			PrintGlow(5,130,s,8,2);
+			sprintf(s,"Items %d", n);
+			PrintGlow(120,130,s,8,2);
+
+			sprintf(s,"Verified %u",debugVerified);
+			PrintGlow(5,150,s,8,2);
+
+			int KEY_MAX = 0;
+			const byte* key = SDL_GetKeyboardState(&KEY_MAX);
+			char* end = s + sprintf(s,"Keys: ");
+			for (int i = 0; i < KEY_MAX; ++i)
+				if (key[i])
+					end += sprintf(end, "%s ", ScanCodeText(i));
+			PrintGlow(5,170,s,8,2);
+
+			end = s + sprintf(s,"Mouse: ");
+			for (int i = 0; i < 10; ++i)
+				if (gamemgl->mouse_b & (1<<i))
+					end += sprintf(end, "%d ", i);
+			PrintGlow(5,190,s,8,2);
+		}
 	}
 	else if(gameMode==GAMEMODE_PIC)
 	{
@@ -525,62 +590,6 @@ TASK(void) LunaticDraw(void)
 	else if(gameMode==GAMEMODE_SCAN)
 	{
 		RenderScan(gamemgl);
-	}
-	if(showStats)
-	{
-		sprintf(s,"Debug Menu - F3 to close");
-		PrintGlow(5,30,s,8,2);
-
-		sprintf(s,"VFPS %02.2f",((float)visFrameCount/(float)((timeGetTime()-gameStartTime)/1000)));
-		PrintGlow(5,50,s,8,2);
-		sprintf(s,"GFPS %02.2f",((float)updFrameCount/(float)((timeGetTime()-gameStartTime)/1000)));
-		PrintGlow(120,50,s,8,2);
-
-		sprintf(s,"QFPS %02.2f",frmRate);
-		PrintGlow(5,70,s,8,2);
-		sprintf(s,"Runs %d",numRunsToMakeUp);
-		PrintGlow(120,70,s,8,2);
-
-		sprintf(s,"Mons %d",CountMonsters(MONS_ANYBODY));
-		PrintGlow(5,90,s,8,2);
-		sprintf(s,"Bul %d",config.numBullets - CountBullets(BLT_NONE)); // a little hackish but whatever
-		PrintGlow(120,90,s,8,2);
-
-		int n = 0;
-		for(int i=0; i<MAX_SPECIAL; i++)
-			if(curMap->special[i].x!=255)
-				++n;
-
-		sprintf(s,"Fx %d", CountParticles());
-		PrintGlow(5,110,s,8,2);
-		sprintf(s,"Spcl %03d", n);
-		PrintGlow(120,110,s,8,2);
-
-		n = 0;
-		for(int x=0; x<curMap->width; ++x)
-			for(int y=0; y<curMap->height; ++y)
-				if(curMap->GetTile(x, y)->item)
-					++n;
-
-		mapTile_t* t = curMap->GetTile(goodguy->mapx, goodguy->mapy);
-		sprintf(s,"Light %d/%d", t->templight, t->light);
-		PrintGlow(5,130,s,8,2);
-		sprintf(s,"Items %d", n);
-		PrintGlow(120,130,s,8,2);
-
-		int KEY_MAX = 0;
-		const byte* key = SDL_GetKeyboardState(&KEY_MAX);
-		char* end = s + sprintf(s,"Keys: ");
-		for (int i = 0; i < KEY_MAX; ++i)
-			if (key[i])
-				end += sprintf(end, "%s ", ScanCodeText(i));
-		PrintGlow(5,150,s,8,2);
-
-		end = s + sprintf(s,"Mouse: ");
-		for (int i = 0; i < 10; ++i)
-			if (gamemgl->mouse_b & (1<<i))
-				end += sprintf(end, "%d ", i);
-		PrintGlow(5,170,s,8,2);
 	}
 	// update statistics
 	d=timeGetTime();
