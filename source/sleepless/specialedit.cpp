@@ -644,13 +644,12 @@ static void XY2Click(int id)
 
 static void LevelGotoClick(int id)
 {
-	MakeNormalSound(SND_MENUCLICK);
+	ExitClick(id);
 
 	curEff=effStart + (id-ID_EFF0)/100;
 	EditorSelectMap(spcl.effect[curEff].value);
 	if (spcl.effect[curEff].x != 255)
 		PutCamera((spcl.effect[curEff].x * TILE_WIDTH + TILE_WIDTH/2)<<FIXSHIFT,(spcl.effect[curEff].y * TILE_HEIGHT + TILE_HEIGHT/2)<<FIXSHIFT);
-	SetEditMode(EDITMODE_EDIT);
 }
 
 static void XY3Click(int id)
