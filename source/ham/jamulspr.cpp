@@ -952,7 +952,7 @@ bool sprite_set_t::Load(const char *fname)
 
 	SDL_RWops *f=AssetOpen_SDL(fname,"rb");
 	if(!f) {
-		LogError("%s: %s", fname, SDL_GetError());
+		// Asset stack printed error already
 		return false;
 	}
 	// read the count

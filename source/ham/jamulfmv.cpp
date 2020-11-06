@@ -279,7 +279,7 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 	FLI_file=AssetOpen_SDL(name,"rb");
 	if (!FLI_file)
 	{
-		printf("%s: %s\n", name, SDL_GetError());
+		// Asset stack printed error already
 		CO_RETURN 0;
 	}
 
