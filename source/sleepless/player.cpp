@@ -1369,7 +1369,7 @@ void PutPlayerAtStart(Guy *g)
 		g->x=(player.enterX*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT;
 		g->y=(player.enterY*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
 	}
-	else
+	else if (!editing)
 	{
 		int i;
 
