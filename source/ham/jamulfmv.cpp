@@ -25,6 +25,7 @@ struct fliheader
 	word speed;  // milliseconds per frame
 	int32_t next,frit;  // meaning unknown
 };
+static_assert(sizeof(fliheader) == 28);
 
 struct frmheader
 {
@@ -33,6 +34,7 @@ struct frmheader
 	word chunks;
 	byte expand[8];
 };
+static_assert(sizeof(frmheader) == 16);
 
 // because of padding, the following 6-byte header is 8 bytes.
 // therefore use this define instead of sizeof() to read from a FLIc
@@ -299,7 +301,7 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 	// At this offset in the header is the offset of the first "real" frame.
 	// In older FLCs (everything except LL2's ending.flc), there is a dummy
 	// frame between the header and this location that must be skipped.
-	long ofs1;
+	int32_t ofs1;
 	SDL_RWseek(FLI_file, 80, RW_SEEK_SET);
 	SDL_RWread(FLI_file, &ofs1, 4, 1);
 	// There is also the offset of the second frame following this, but all
