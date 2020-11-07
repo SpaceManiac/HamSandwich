@@ -10,7 +10,7 @@ void Song(byte w)
 {
 	char s[32];
 
-	if(w==lastSong)
+	if(w==lastSong && IsSongPlaying())
 		return;	// no need, it's already playing our song
 
 #ifdef DIRECTORS
