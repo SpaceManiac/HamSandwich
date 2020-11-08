@@ -78,6 +78,9 @@ const Archive::Directory* Archive::get_directory(const char* path) const
 	if (!current || !last_component)
 		return nullptr;
 
+	if (!strcmp(last_component, "."))
+		return current;
+
 	auto iter = current->directories.find(last_component);
 	if (iter == current->directories.end())
 		return nullptr;
