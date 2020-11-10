@@ -19,8 +19,12 @@ function base_project(name)
 		language "C++"
 		cppdialect "C++17"
 		architecture "x86"
-		targetdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/")
-		objdir("build/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/obj/")
+		targetdir "%{wks.location}/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/"
+		objdir "%{cfg.targetdir}/obj/"
+
+		-- These emulate the `./run` script when running within VS.
+		debugdir "%{wks.location}/game/%{prj.name}"
+		debugargs { "window" }
 
 		defines { 'PROJECT_NAME="%{prj.name}"' }
 
@@ -45,7 +49,7 @@ function base_project(name)
 		filter { "toolset:gcc", "system:Windows" }
 			linkoptions { "-static-libgcc", "-static-libstdc++" }
 
-		filter "action:vs*"
+		filter "action:vs20*"
 			-- At least some versions of VS2017 don't recognize "C++17".
 			cppdialect "C++latest"
 			defines { "_CRT_SECURE_NO_WARNINGS", "NOMINMAX", "SDL_UNPREFIXED" }
@@ -60,10 +64,7 @@ function base_project(name)
 				"build/SDL2_mixer-msvc/lib/x86",
 				"build/SDL2_image-msvc/lib/x86",
 			}
-			-- These emulate the `./run` script when running within VS.
-			debugargs { "window" }
 			debugenvs { "PATH=$(ProjectDir)/lib/x86/;%PATH%" }
-			debugdir "$(ProjectDir)/game/%{prj.name}"
 
 		filter "action:android-studio"
 			defines { "SDL_UNPREFIXED" }
