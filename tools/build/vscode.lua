@@ -21,7 +21,7 @@ newoption {
 	trigger = "config",
 	value = "CONFIG",
 	description = "Default configuration for Visual Studio Code",
-	default = "debug64",
+	default = (_OPTIONS.os or _TARGET_OS) == "linux" and "debug64" or "debug",
 }
 
 function m.is_application(prj)
