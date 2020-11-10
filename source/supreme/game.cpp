@@ -194,6 +194,7 @@ void ExitLevel(void)
 	player.hammers=0;
 
 	delete curMap;
+	curMap = nullptr;
 	PurgeMonsterSprites();
 	gamemgl->RealizePalette();
 	if(shopping)
@@ -655,7 +656,7 @@ void HandleKeyPresses(void)
 
 void PauseGame(void)
 {
-	if (gameMode!=GAMEMODE_PLAY)
+	if (gameMode!=GAMEMODE_PLAY || curMap == nullptr)
 		return;
 	InitPauseMenu();
 	gameMode=GAMEMODE_MENU;

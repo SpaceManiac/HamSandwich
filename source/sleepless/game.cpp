@@ -202,6 +202,7 @@ void ExitLevel(void)
 	player.vehicle=0;
 
 	delete curMap;
+	curMap = nullptr;
 	PurgeMonsterSprites();
 }
 
