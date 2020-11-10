@@ -102,11 +102,10 @@ if [ "$TOOLSET" = "emcc" ]; then
 		source ./tools/build/install-emsdk.sh
 	fi
 
-	# Extract Emscripten assets to their own directory, to avoid local debug
-	# profiles from ending up in the build.
-	GAMEDIR="build/assets/$PROJECT"
-fi
-if [ ! -d "$GAMEDIR" ]; then
+	# Emscripten doesn't require extracting assets ahead of time, because
+	# the installers are provided to the game at runtime.
+	GAMEDIR="$PWD/build/$TOOLSET-$CONFIG/$PROJECT"
+elif [ ! -d "$GAMEDIR" ]; then
 	./tools/build/extract-assets.sh "$PROJECT" "$GAMEDIR"
 fi
 
@@ -135,7 +134,7 @@ elif [ "$TOOL" = "callgrind" ]; then
 	valgrind --tool=callgrind "$EXE" $ARGS
 elif [ "$TOOLSET" = "emcc" ]; then
 	echo "==== Hosting $PROJECT ($CONFIG) ===="
-	emrun --serve_after_close "$EXE/../index.html"
+	emrun --serve_after_close "index.html"
 else
 	echo "==== Running $PROJECT ($CONFIG) ===="
 	if [ "$TWO" ]; then
