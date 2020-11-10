@@ -30,9 +30,9 @@ function base_project(name)
 		defines { 'PROJECT_NAME="%{prj.name}"' }
 
 		files {
-			"source/" .. name .. "/**.h",
-			"source/" .. name .. "/**.cpp",
-			"source/" .. name .. "/**.c",
+			"source/%{prj.name}/**.h",
+			"source/%{prj.name}/**.cpp",
+			"source/%{prj.name}/**.c",
 		}
 
 		filter "configurations:*64"
