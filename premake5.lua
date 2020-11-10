@@ -2,6 +2,7 @@
 dofile "tools/build/gmake2_deps.lua"
 dofile "tools/build/android_studio.lua"
 dofile "tools/build/emscripten.lua"
+dofile "tools/build/vscode.lua"
 
 workspace "HamSandwich"
 	location "build"
