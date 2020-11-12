@@ -199,7 +199,7 @@ static char bulletName[][20]={
 	"Cactus Spine",
 	"Evil Hammer",
 	"Power Shell",
-	"Big Axe",
+	"Earsplitter Boom",
 	"Lightning",
 	"Spear",
 	"Machete",
@@ -236,7 +236,7 @@ static char bulletName[][20]={
 	"Flamebringer Shot",
 	"Black Hole Shot",
 	"Black Hole",
-	"Marsh Marrow Shot",
+	"Evil Green Bullet",
 	"Evil Sitting Flame",
 };
 #define MAX_BULLETS (BLT_BADSITFLAME + 1)

@@ -6,6 +6,7 @@
 #include "shop.h"
 #include "control.h"
 #include "appdata.h"
+#include "player.h"
 
 static FILE *scanF;
 
@@ -22,43 +23,20 @@ static char lvlFlagName[][16]={
 	"Stealth",
 };
 
-static char wpnName[][16]={
-	"None",
-	"Missiles",
-	"AK-8087",
-	"Bombs",
-	"Toaster",
-	"Power Armor",
-	"Big Axe",
-	"Zap Wand",
-	"Spears",
-	"Machete",
-	"Mines",
-	"Turrets",
-	"Mind Control",
-	"Reflect",
-	"Jetpack",
-	"Swapgun",
-	"Torch",
-	"Scanner",
-	"Mini-Sub",
-	"Freeze Ray",
-	"Stopwatch"};
-
 static char bulletName[][20]={
-	"None",
+	"Anything",
 	"Hammer",
 	"Bouncy Hammer",
 	"Missile",
 	"Flame",
-	"AK-8087 Shot",
+	"Laser",
 	"Acid",
 	"Cherry Bomb",
 	"Explosion",
 	"Red Bullet",
 	"Megabeam Source",
 	"Megabeam Part",
-	"Megabeam Endo",
+	"Megabeam End",
 	"Evil Flame",
 	"Spore",
 	"Mushroom",
@@ -73,7 +51,7 @@ static char bulletName[][20]={
 	"Cactus Spine",
 	"Evil Hammer",
 	"Power Shell",
-	"Big Axe",
+	"Earsplitter Boom",
 	"Lightning",
 	"Spear",
 	"Machete",
@@ -102,7 +80,16 @@ static char bulletName[][20]={
 	"Cheese Hammer",
 	"Evil Freeze",
 	"Lunachick Ray",
-	"Bouncy Lunachick"
+	"Bouncy Lunachick",
+	"Life Blip",
+	"Energy Blip",
+	"Sitting Flame",
+	"Floaty Flame",
+	"Flamebringer Shot",
+	"Black Hole Shot",
+	"Black Hole",
+	"Evil Green Bullet",
+	"Evil Sitting Flame",
 };
 
 void PrintFX(word flags)
@@ -483,7 +470,7 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
 			PrintFX(me->flags);
 			break;
 		case EFF_WEAPON:
-			fprintf(scanF,"Force player's weapon to %s and ",wpnName[me->value]);
+			fprintf(scanF,"Force player's weapon to %s and ",WeaponName(me->value));
 			if(me->value2==0)
 				fprintf(scanF,"don't");
 			else
