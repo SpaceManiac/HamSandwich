@@ -269,16 +269,29 @@ function m.manifest_xml(prj)
 	p.pop('</manifest>')
 end
 
+local system_shared_libraries = {
+	SDL2 = "../../SDL2/Android.mk",
+	SDL2_mixer = "../../SDL2_mixer/Android.mk",
+	SDL2_image = "../../SDL2_image/Android.mk",
+}
+local system_static_libraries = {
+	z = true
+}
+
 function m.android_mk(prj)
 	-- TODO: handle multiple configurations
 	local cfg = m.getcfg(prj, 'debug')
 
 	if m.is_application(prj) then
-		-- SDL2 includes, TODO base on prj dependencies
 		p.w('include ../_config.mk')
-		p.w('include ../../SDL2/Android.mk')
-		p.w('include ../../SDL2_mixer/Android.mk')
-		p.w('include ../../SDL2_image/Android.mk')
+
+		-- system or pseudo-system libraries
+		for _, link in ipairs(prj.links) do
+			local mk = system_shared_libraries[link]
+			if mk then
+				p.w('include %s', mk)
+			end
+		end
 
 		-- local project includes
 		for _, dep_prj in pairs(p.project.getdependencies(prj)) do
@@ -290,20 +303,30 @@ function m.android_mk(prj)
 	p.w('include $(CLEAR_VARS)')
 	p.w('LOCAL_MODULE := %s', prj.name)
 
-	-- TODO base SDL part on prj dependencies
-	p.w('LOCAL_SHARED_LIBRARIES := SDL2 SDL2_mixer SDL2_image')
-
-	local statics = ''
-	for _, dep_prj in pairs(p.project.getdependencies(prj)) do
-		statics = statics .. ' ' .. dep_prj.name
+	-- Turn "links" list into Makefile .so deps, Makefile .a deps, and -l flags
+	local shareds = ""
+	local statics = ""
+	local ldlibs = ""
+	for _, link in ipairs(prj.links) do
+		local dep_prj = prj.workspace.projects[link]
+		if dep_prj then
+			if dep_prj.kind == "StaticLib" then
+				statics = statics .. " " .. link
+			elseif dep_prj.kind == "SharedLib" then
+				shareds = shareds .. " " .. link
+			end
+		elseif system_shared_libraries[link] then
+			shareds = shareds .. " " .. link
+		elseif system_static_libraries[link] then
+			ldlibs = ldlibs .. " -l" .. link
+		end
 	end
-	if statics then
-		p.w('LOCAL_STATIC_LIBRARIES :=%s', statics)
-	end
-
-	-- TODO: replace this with obeying cfg.includes below
-	if not m.is_application(prj) then
-		p.w('LOCAL_EXPORT_C_INCLUDES := ../../../source/%s', prj.name)
+	p.w('LOCAL_SHARED_LIBRARIES :=%s', shareds)
+	p.w('LOCAL_STATIC_LIBRARIES :=%s', statics)
+	if m.is_application(prj) then
+		-- Only valid for applications
+		ldlibs = ldlibs .. " -llog"
+		p.w('LOCAL_LDLIBS :=%s', ldlibs)
 	end
 
 	local cflags = ""
@@ -314,16 +337,15 @@ function m.android_mk(prj)
 	for _, def in ipairs(cfg.defines) do
 		cflags = cflags .. " -D" .. def:gsub('["\\ ]', '\\%0')
 	end
+	for _, dir in ipairs(cfg.includedirs) do
+		cflags = cflags .. " -I" .. dir
+	end
 	if cfg.cppdialect then
 		cxxflags = cxxflags .. " -std=" .. cfg.cppdialect:lower()
 	end
 
 	p.w('LOCAL_CFLAGS :=%s', cflags)
 	p.w('LOCAL_CXXFLAGS :=%s', cxxflags)
-
-	if m.is_application(prj) then
-		p.w('LOCAL_LDLIBS := -llog')
-	end
 
 	local files = ""
 	for _, file in ipairs(cfg.files) do
@@ -350,10 +372,14 @@ function m.activity_java(prj)
 	p.push('protected String[] getLibraries() {')
 	p.push('return new String[] {')
 
-	-- TODO: base this on prj links
-	p.w('"SDL2",')
-	p.w('"SDL2_image",')
-	p.w('"SDL2_mixer",')
+	-- List shared library deps here
+	for _, link in ipairs(prj.links) do
+		local dep_prj = prj.workspace.projects[link]
+		if (dep_prj and dep_prj.kind == "SharedLib") or system_shared_libraries[link] then
+			p.w('"%s",', link)
+		end
+	end
+
 	p.w('"%s"', prj.name)
 
 	p.pop('};')  -- String[]
