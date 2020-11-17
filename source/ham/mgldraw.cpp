@@ -36,6 +36,8 @@ static const RGB BLACK = {0, 0, 0, 0};
 
 static MGLDraw *_globalMGLDraw = nullptr;
 
+static bool pixelMode = false;
+
 MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	: mouse_x(xRes / 2)
 	, mouse_y(yRes / 2)
@@ -145,6 +147,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	}
 #endif
 
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, pixelMode ? "0" : "1");
 	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, xRes, yRes);
 	if (!texture) {
 		LogError("SDL_CreateTexture: %s", SDL_GetError());
@@ -329,6 +332,16 @@ TASK(void) MGLDraw::FinishFlip(void)
 					Module.requestFullscreen();
 				);
 #endif  // __EMSCRIPTEN__
+			}
+			else if (e.key.keysym.scancode == SDL_SCANCODE_F10)
+			{
+				pixelMode = !pixelMode;
+				SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, pixelMode ? "0" : "1");
+				SDL_Texture* newTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, xRes, yRes);
+				if (newTexture)
+				{
+					texture = newTexture;
+				}
 			}
 		} else if (e.type == SDL_TEXTINPUT) {
 			if (strlen(e.text.text) == 1)
