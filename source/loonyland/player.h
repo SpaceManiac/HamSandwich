@@ -80,6 +80,7 @@
 #define VAR_LANTERN		218 // 218 = Have the lantern
 #define VAR_TREEREWARD	219 // 219 = Rewarded for tree trimming
 #define VAR_LARRYREWARD	219 // 219 = Rewarded for bringing Larry Home
+#define VAR_SILVERSLING	220 // 220 = Have Silver Bullets
 
 	// temp variables
 #define VAR_TEMP		240	// 240-255 = temporary variables - cleared when leaving a level
