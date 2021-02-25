@@ -230,11 +230,12 @@ typedef struct menu_t
 menu_t menu[MENU_CHOICES]={
 	{"New Game",1,-32},
 	{"Load Game",1,-32},
-	{"Bowling",0,-32},
-	{"Survival",0,-32},
-	{"Boss Bash",0,-32},
-	{"Loony Ball",0,-32},
-	{"Remix",0,-32},
+	{"Randomizer",1,-32},
+	//{"Bowling",0,-32},
+	//{"Survival",0,-32},
+	//{"Boss Bash",0,-32},
+	//{"Loony Ball",0,-32},
+	//{"Remix",0,-32},
 	{"Badges",0,-32},
 	{"Hi Scores",1,-32},
 	{"Options",1,-32},
@@ -740,18 +741,8 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],mgl->GetScreen()+mgl->GetWidth()*i,640);
 
-	if(opt.modes[4])
-		menu[MENU_BADGES].known=1;
-	if(opt.modes[3])
-		menu[MENU_BOWLING].known=1;
-	if(opt.modes[2])
-		menu[MENU_LOONYBALL].known=1;
-	if(opt.modes[1])
-		menu[MENU_BOSSATTACK].known=1;
-	if(opt.modes[0])
-		menu[MENU_SURVIVAL].known=1;
-	if(opt.expando[0])
-		menu[MENU_REMIX].known=1;
+	menu[MENU_BADGES].known=1;
+	menu[MENU_RANDOMIZER].known=1;
 
 	cursor=0;
 	loadingGame=0;

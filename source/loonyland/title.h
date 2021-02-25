@@ -6,19 +6,21 @@
 
 #define MENU_ADVENTURE	0
 #define MENU_LOADGAME	1
-#define MENU_BOWLING	2
-#define MENU_SURVIVAL	3
-#define MENU_BOSSATTACK 4
-#define MENU_LOONYBALL	5
-#define MENU_REMIX		6
-#define MENU_BADGES		7
-#define MENU_HISCORE	8
-#define MENU_OPTIONS	9
-#define MENU_EDITOR		10
-#define MENU_EXIT		11
-#define MENU_NOTHING2	12
+#define MENU_RANDOMIZER	2
+#define MENU_BADGES		3
+#define MENU_HISCORE	4
+#define MENU_OPTIONS	5
+#define MENU_EDITOR		6
+#define MENU_EXIT		7
+#define MENU_NOTHING2	8
 
-#define MENU_CHOICES	13
+#define MENU_CHOICES	9
+
+#define MENU_BOWLING	8
+#define MENU_SURVIVAL	9
+#define MENU_BOSSATTACK 10
+#define MENU_LOONYBALL	11
+#define MENU_REMIX		12
 
 //#define MENU_EDITOR	   254	// special since you can't normally do it
 

@@ -76,6 +76,11 @@
 #define VAR_DEALERTALK	215	// 215 = have talked to arms dealer
 #define VAR_HIPUZZLE	216	// 216 = the HI puzzle is solved in Remix mode
 
+#define VAR_WITCHREWARD	217 // 217 = Witch has given you mushroom prize
+#define VAR_LANTERN		218 // 218 = Have the lantern
+#define VAR_TREEREWARD	219 // 219 = Rewarded for tree trimming
+#define VAR_LARRYREWARD	219 // 219 = Rewarded for bringing Larry Home
+
 	// temp variables
 #define VAR_TEMP		240	// 240-255 = temporary variables - cleared when leaving a level
 

@@ -7,3 +7,12 @@
 *.pyc
 ~$*.*
 Thumbs.db
+source/loonyland/.vs/VSWorkspaceState.json
+source/loonyland/.vs/slnx.sqlite
+source/loonyland/.vs/ProjectSettings.json
+source/loonyland/.vs/loonyland/v16/ipch/AutoPCH/b62c8d812a9b2c8/HIGHSCORE.ipch
+source/loonyland/.vs/loonyland/v16/ipch/AutoPCH/acae2b1f96442475/GUY.ipch
+source/loonyland/.vs/loonyland/v16/ipch/AutoPCH/6a147620a2c98961/EDITOR.ipch
+source/loonyland/.vs/loonyland/v16/ipch/AutoPCH/566a946175d1282d/PLAYER.ipch
+source/loonyland/.vs/loonyland/v16/Browse.VC.db
+source/loonyland/.vs/loonyland/v16/.suo

@@ -566,7 +566,7 @@ void Guy::Update(Map *map,world_t *world)
 				map->BrightTorch(mapx,mapy,b,b/4);
 			else
 			{
-				if((player.var[VAR_QUESTDONE+QUEST_RESCUE]==0) || (player.levelNum==42 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)))
+				if((player.var[VAR_LANTERN]==0) || (player.levelNum==42 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)))
 					map->TempTorch(mapx,mapy,b);
 				else
 					map->WeakTorch(mapx,mapy);	// with the lantern, you have way more light

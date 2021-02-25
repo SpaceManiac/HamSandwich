@@ -162,7 +162,7 @@
 #define ITM_BADGE		127	// the badge you can find in the game
 #define ITM_CAT			128	// fake item, just used to be rendered in Kick The Cat
 
-#define MAX_ITMS		129
+#define MAX_ITMS		137
 
 // item flags
 #define IF_GET			1	// can be picked up by player

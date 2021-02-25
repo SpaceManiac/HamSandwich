@@ -1327,7 +1327,7 @@ void BeginChatting(byte tag)
 			if(player.var[VAR_QUESTDONE+QUEST_TREES])
 			{
 				// if the quest is completed
-				if(player.var[VAR_HEART+15])	// he has already given you the heart
+				if(player.var[VAR_TREEREWARD])	// he has already given you the heart
 				{
 					if(player.var[VAR_QUESTDONE+QUEST_HILL])
 						curChat=168;
@@ -1444,7 +1444,7 @@ void BeginChatting(byte tag)
 					{
 						if(player.var[VAR_QUESTDONE+QUEST_DAISY]==1)
 						{
-							if(player.var[VAR_HEART+16]==0)
+							if(player.var[VAR_WITCHREWARD==0])
 								curChat=191;
 							else if(player.var[VAR_GAVEDAISY]==0)
 								curChat=60;
@@ -1598,7 +1598,7 @@ void BeginChatting(byte tag)
 		case 17:	// Larry's wife
 			if(player.var[VAR_QUESTDONE+QUEST_WOLF])
 			{
-				if(player.var[VAR_KEY+2])
+				if(player.var[VAR_LARRYREWARD])
 				{
 					if(player.var[VAR_QUESTDONE+QUEST_HILL])
 						curChat=171;
@@ -1872,6 +1872,7 @@ void DoChatAction(byte a)
 		case 2:
 			// give the super heart
 			player.var[VAR_HEART+15]=1;
+			PlayerSetVar(VAR_TREEREWARD, 1);
 			PlayerGetItem(ITM_SUPERHEART,0,0);
 			break;
 		case 3:
@@ -1912,6 +1913,7 @@ void DoChatAction(byte a)
 			// assign daisy quest and give a super heart
 			PlayerSetVar(VAR_QUESTASSIGN+QUEST_DAISY,1);
 			player.var[VAR_HEART+16]=1;
+			PlayerSetVar(VAR_WITCHREWARD, 1);
 			PlayerGetItem(ITM_SUPERHEART,0,0);
 			break;
 		case 12:
@@ -1978,6 +1980,7 @@ void DoChatAction(byte a)
 			PlayerSetVar(VAR_QUESTDONE+QUEST_DARK,1);
 			PlayerSetVar(VAR_QUESTDONE+QUEST_RESCUE,1);
 			PlayerSetVar(VAR_TORCH,1);
+			PlayerSetVar(VAR_LANTERN, 1);
 			PlayerSetVar(240,2);	// use temp var, so you can re-rescue her
 			GirlChasePlayer(0);
 			break;
@@ -1993,6 +1996,7 @@ void DoChatAction(byte a)
 			// give pumpkin key
 			PlayerGetItem(ITM_KEY4,0,0);
 			PlayerSetVar(VAR_KEY+2,1);
+			PlayerSetVar(VAR_LARRYREWARD,1);
 			break;
 		case 28:
 			// assign doll quest

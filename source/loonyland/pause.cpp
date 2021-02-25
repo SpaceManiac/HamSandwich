@@ -134,7 +134,7 @@ void RenderInvItem(byte which,int x,int y,MGLDraw *mgl)
 				RenderIntfaceSprite(x,y,3,0,mgl);
 			break;
 		case 3:	// slot #3, stick
-			if(player.var[VAR_QUESTDONE+QUEST_RESCUE])
+			if(player.var[VAR_LANTERN])
 			{
 				RenderIntfaceSprite(x-5,y,12,0,mgl);
 			}
@@ -152,7 +152,7 @@ void RenderInvItem(byte which,int x,int y,MGLDraw *mgl)
 				Print(x+11,y+1,m,-31,0);
 				Print(x+10,y,m,0,0);
 			}
-			if(player.var[VAR_HEART+16])
+			if(player.var[VAR_WITCHREWARD])
 				RenderIntfaceSprite(x,y,3,0,mgl);
 			break;
 		case 5: // slot #5, doom daisy
