@@ -120,7 +120,7 @@ void RenderInvItem(byte which,int x,int y,MGLDraw *mgl)
 	switch(which)
 	{
 		case 0: // slot #0, slingshot
-			if(player.var[VAR_QUESTDONE+QUEST_SILVER]==0)
+			if(player.var[VAR_SILVERSLING]==0)
 				RenderIntfaceSprite(x,y,9,0,mgl);
 			else
 				RenderIntfaceSprite(x,y,10,0,mgl);

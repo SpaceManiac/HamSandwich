@@ -1094,7 +1094,7 @@ word MonsterFlags(byte type)
 {
 	if(player.worldNum==WORLD_SLINGSHOT && type==player.monsType)
 		return monsType[type].flags|MF_NOMOVE;
-	else if(type>=MONS_WOLFMAN && type<=MONS_WOLFMAN3 && !player.var[VAR_QUESTDONE+QUEST_SILVER])
+	else if(type>=MONS_WOLFMAN && type<=MONS_WOLFMAN3 && !player.var[VAR_SILVERSLING])
 		return monsType[type].flags|MF_INVINCIBLE;
 	else
 		return monsType[type].flags;
