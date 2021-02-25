@@ -436,7 +436,7 @@ void LoadOptions(void)
 		opt.joyCtrl[0]=0;
 		opt.joyCtrl[1]=1;
 
-		opt.difficulty=0;		// default to Beginner
+		opt.difficulty=2;		// default to Challenge
 		opt.helpOn=1;
 
 		for(i=0;i<40;i++)
