@@ -1871,9 +1871,15 @@ void DoChatAction(byte a)
 			break;
 		case 2:
 			// give the super heart
-			player.var[VAR_HEART+15]=1;
 			PlayerSetVar(VAR_TREEREWARD, 1);
-			PlayerGetItem(ITM_SUPERHEART,0,0);
+			if (player.worldNum == WORLD_RANDOMIZER){
+
+			}
+			else
+			{
+				player.var[VAR_HEART+15]=1;
+				PlayerGetItem(ITM_SUPERHEART,0,0);
+			}
 			break;
 		case 3:
 			// assign Save Halloween Hill
@@ -1886,7 +1892,13 @@ void DoChatAction(byte a)
 		case 5:
 			// complete the boots quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_BOOTS,1);
-			PlayerSetVar(VAR_BOOTS,1);
+			if (player.worldNum == WORLD_RANDOMIZER){
+
+			}
+			else
+			{
+				PlayerSetVar(VAR_BOOTS,1);
+			}
 			break;
 		case 6:
 			// assign the boots quest
@@ -1903,7 +1915,13 @@ void DoChatAction(byte a)
 		case 9:
 			// complete kitty cat
 			PlayerSetVar(VAR_QUESTDONE+QUEST_CAT,1);
-			PlayerSetVar(VAR_STICK,1);
+			if (player.worldNum == WORLD_RANDOMIZER){
+
+			}
+			else
+			{
+				PlayerSetVar(VAR_STICK,1);
+			}
 			break;
 		case 10:
 			// assign shroom
@@ -1912,9 +1930,15 @@ void DoChatAction(byte a)
 		case 11:
 			// assign daisy quest and give a super heart
 			PlayerSetVar(VAR_QUESTASSIGN+QUEST_DAISY,1);
-			player.var[VAR_HEART+16]=1;
 			PlayerSetVar(VAR_WITCHREWARD, 1);
-			PlayerGetItem(ITM_SUPERHEART,0,0);
+			if (player.worldNum == WORLD_RANDOMIZER){
+
+			}
+			else
+			{
+				player.var[VAR_HEART+16]=1;
+				PlayerGetItem(ITM_SUPERHEART,0,0);
+			}
 			break;
 		case 12:
 			// get turned into a frog
@@ -1935,7 +1959,13 @@ void DoChatAction(byte a)
 			break;
 		case 16:
 			// give fertilizer
-			PlayerSetVar(VAR_FERTILIZER,1);
+			if (player.worldNum == WORLD_RANDOMIZER){
+
+			}
+			else
+			{
+				PlayerSetVar(VAR_FERTILIZER,1);
+			}
 			break;
 		case 17:
 			// assign zombie quest
@@ -1944,12 +1974,18 @@ void DoChatAction(byte a)
 		case 18:
 			// reward zombie quest
 			PlayerSetVar(VAR_ZOMBIEREWARD,1);
-			player.money+=100;
-			player.gemsGotten+=100;
-			BadgeCheck(BE_GEMSUP,0,curMap);
-			if(player.money>player.maxMoney)
+			if (player.worldNum == WORLD_RANDOMIZER){
+
+			}
+			else
 			{
-				player.money=player.maxMoney;
+				player.money+=100;
+				player.gemsGotten+=100;
+				BadgeCheck(BE_GEMSUP,0,curMap);
+				if(player.money>player.maxMoney)
+				{
+					player.money=player.maxMoney;
+				}
 			}
 			break;
 		case 19:
@@ -1959,7 +1995,13 @@ void DoChatAction(byte a)
 		case 20:
 			// complete ghost quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_GHOST,1);
-			PlayerSetVar(VAR_POTION,1);
+			if (player.worldNum == WORLD_RANDOMIZER){
+
+			}
+			else
+			{
+				PlayerSetVar(VAR_POTION,1);
+			}
 			break;
 		case 21:
 			// assign silver quest
@@ -1968,6 +2010,13 @@ void DoChatAction(byte a)
 		case 22:
 			// complete silver quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_SILVER,1);
+			if (player.worldNum == WORLD_RANDOMIZER){
+
+			}
+			else
+			{
+				PlayerSetVar(VAR_SILVERSLING, 1);
+			}
 			break;
 		case 23:
 			// assign rescue quest and make girl obnoxious
@@ -1979,8 +2028,14 @@ void DoChatAction(byte a)
 			// complete rescue quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_DARK,1);
 			PlayerSetVar(VAR_QUESTDONE+QUEST_RESCUE,1);
-			PlayerSetVar(VAR_TORCH,1);
-			PlayerSetVar(VAR_LANTERN, 1);
+			if (player.worldNum == WORLD_RANDOMIZER){
+
+			}
+			else
+			{
+				PlayerSetVar(VAR_TORCH,1);
+				PlayerSetVar(VAR_LANTERN, 1);
+			}
 			PlayerSetVar(240,2);	// use temp var, so you can re-rescue her
 			GirlChasePlayer(0);
 			break;
@@ -1994,8 +2049,15 @@ void DoChatAction(byte a)
 			break;
 		case 27:
 			// give pumpkin key
-			PlayerGetItem(ITM_KEY4,0,0);
-			PlayerSetVar(VAR_KEY+2,1);
+			PlayerSetVar(VAR_LARRYREWARD,1);
+			if (player.worldNum == WORLD_RANDOMIZER){
+
+			}
+			else
+			{
+				PlayerGetItem(ITM_KEY4,0,0);
+				PlayerSetVar(VAR_KEY+2,1);
+			}
 			PlayerSetVar(VAR_LARRYREWARD,1);
 			break;
 		case 28:
@@ -2005,8 +2067,14 @@ void DoChatAction(byte a)
 		case 29:
 			// finish doll quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_DOLLS,1);
-			PlayerSetVar(VAR_REFLECT,1);
-			player.fireFlags|=FF_REFLECT;
+			if (player.worldNum == WORLD_RANDOMIZER){
+
+			}
+			else
+			{
+				PlayerSetVar(VAR_REFLECT,1);
+				player.fireFlags|=FF_REFLECT;
+			}
 			break;
 		case 30:
 			// get the helper bat
