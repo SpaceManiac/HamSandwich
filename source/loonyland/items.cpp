@@ -145,14 +145,14 @@ item_t itemInfo[MAX_ITMS]={
 	{0,0,264,264,IF_GET|IF_SHADOW},	// cat
 
 	//ADDED FOR RANDOMIZER
-	{2, 128, 0, 7, IF_GET | IF_SHADOW },	//zombie gem
+	{2, 128, 0, 7, IF_GET | IF_SHADOW},// | IF_GLOW},	//zombie gem
 	{2, 0, 8, 8, IF_GET | IF_SHADOW},	//mud boots
 	{2, 0, 9, 9, IF_GET | IF_SHADOW},	//fertiziler
-	{2, 0, 10, 10, IF_GET | IF_SHADOW},	//ghostpotion
-	{2, 0, 11, 11, IF_GET | IF_SHADOW},	//lantern
-	{2, 0, 12, 12, IF_GET | IF_SHADOW},	//reflect gem
+	{2, 0, 10, 10, IF_GET | IF_SHADOW | IF_GLOW},	//ghostpotion
+	{2, 0, 11, 11, IF_GET | IF_SHADOW | IF_GLOW},	//lantern 
+	{2, 0, 12, 12, IF_GET | IF_SHADOW | IF_GLOW},	//reflect gem
 	{2, 0, 13, 13, IF_GET | IF_SHADOW},	//silversling
-	{2, 0, 14, 14, IF_GET | IF_SHADOW},	//stick
+	{2, 0, 14, 14, IF_GET | IF_SHADOW}	//stick 
 };
 
 sprite_set_t *itmSpr[3];
