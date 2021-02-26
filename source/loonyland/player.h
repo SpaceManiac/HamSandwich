@@ -32,6 +32,9 @@
 #define VAR_MYSORB		100 // 100-103 = have mystery orb
 #define VAR_WEAPON		104	// 104-110 = have access to weapon
 #define VAR_KEY			111	// 111-113 = have the three special keys
+#define VAR_SKULLKEY	111	// 111 = have the skull key
+#define VAR_BATKEY		112	// 112 = have the bat key
+#define VAR_PUMPKINKEY	113	// 113 = have the pumpkin key
 #define VAR_BOOTS		114	// 114 = have the rubber booties
 #define VAR_STICK		115	// 115 = have the stick
 #define VAR_TORCH		116	// 116 = the stick is lit
