@@ -7,11 +7,14 @@
 #include "plasma.h"
 #include "appdata.h"
 #include <filesystem>
-#include <bits/stdc++.h>
+//#include <bits/stdc++.h>
 #include "map.h"
 #include <set>
 #include <vector>
 #include "quest.h"
+#include <iostream>
+#include <random>
+#include <fstream>
 
 static byte cursor;
 static byte oldc;
