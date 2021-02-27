@@ -1980,12 +1980,12 @@ void DoChatAction(byte a)
 			break;
 		case 18:
 			// reward zombie quest
-			PlayerSetVar(VAR_ZOMBIEREWARD,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
 				GiveRandoItem(10);
 			}
 			else
 			{
+				PlayerSetVar(VAR_ZOMBIEREWARD,1);
 				player.money+=100;
 				player.gemsGotten+=100;
 				BadgeCheck(BE_GEMSUP,0,curMap);

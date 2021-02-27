@@ -1128,6 +1128,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 				MakeNormalSound(SND_POWERUP);
 				break;
 			case ITM_GHOSTPOTION:
+			case ITM_POTION:
 				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
 				NewBigMessage("GHOST SLAYING POTION!",90);
 				MakeNormalSound(SND_POWERUP);
