@@ -9,7 +9,7 @@
 
 
 TASK(void) RandomizerMenu(MGLDraw *mgl);
-TASK(void) AssumedFill();
+void AssumedFill();
 
 
 struct rItem
