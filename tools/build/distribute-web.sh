@@ -30,7 +30,7 @@ fi
 echo "==== Preparing webroot ===="
 if [ $# -eq 1 ]; then
 	# One project: put everything in the root
-	FILES=($(find "$TARGETDIR/$PROJECT" -maxdepth 1 -type f))
+	FILES=($(find "$TARGETDIR/$1" -maxdepth 1 -type f))
 	cp "${FILES[@]}" "$WEBROOT"
 else
 	# Many projects: put everything in subfolders
