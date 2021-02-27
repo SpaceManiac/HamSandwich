@@ -714,6 +714,7 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 				if(!loadGame)
 					AWAIT Help(gamemgl);
 				//todo load quest rewards from file
+				LoadRandoItems();
 				worldResult=AWAIT LunaticWorld(0,"rando.llw");
 				break;
 			case WORLD_SURVIVAL:

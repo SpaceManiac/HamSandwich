@@ -445,6 +445,7 @@ void LoadGame(int i)
 		{
 			FreeWorld(&curWorld);
 			LoadWorld(&curWorld,"rando.llw");
+			LoadRandoItems();
 			//todo load quest rewards from file
 
 			InitWorld(&curWorld,WORLD_RANDOMIZER);

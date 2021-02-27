@@ -6,6 +6,10 @@
 #include "spacegame.h"
 #include "options.h"
 #include "randomizer.h"
+#include "ioext.h"
+#include "appdata.h"
+#include <vector>
+#include <sstream> 
 
 rItem randoReward[11];
 
@@ -2195,3 +2199,25 @@ void GiveRandoItem(int index)
 }
 //--------------------------------------------
 // END CHATTING
+
+void LoadRandoItems(){
+	std::FILE* f = AppdataOpen("quest.txt", "r");
+	FilePtrStream stream(f);
+	std::string line;
+	std::string value;
+	while (getline(stream, line)){
+
+		std::stringstream ss(line);
+
+		getline(ss, value, '\t');
+		int questID = stoi(value);
+		getline(ss, value, '\t');
+		int varID = stoi(value);
+		getline(ss, value, '\t');
+		int itemID = stoi(value);
+
+		randoReward[questID].itemId = itemID;
+		randoReward[questID].playerVarId = varID;
+	}
+
+}

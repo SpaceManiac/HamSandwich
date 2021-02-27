@@ -44,5 +44,6 @@ void BeginChatting(byte tag);
 void UpdateChat(void);
 void RenderChat(MGLDraw *mgl);
 void GiveRandoItem(int index);
+void LoadRandoItems();
 
 #endif

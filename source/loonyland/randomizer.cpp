@@ -15,6 +15,7 @@
 #include <iostream>
 #include <random>
 #include <fstream>
+#include "ioext.h"
 
 static byte cursor;
 static byte oldc;
@@ -22,6 +23,9 @@ static dword oldBtn;
 static byte optMode;
 static std::string seed;
 std::set<int> ownedItems;
+
+unsigned seed2 = time(0);
+auto rng = std::default_random_engine(seed2);
 
 #define MAX_SEED_LENGTH 32
 #define R_NUM_LOCATIONS 105
@@ -310,11 +314,10 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 					optMode = 1;
 					break;
 				case 3: //generate
-					if (CheckBeatable()){
-						MakeNormalSound(SND_POWERUP);
-					}else{
+					while(!CheckBeatable()){
 						MakeNormalSound(SND_MENUCANCEL);
 					}
+					MakeNormalSound(SND_POWERUP);
 					break;
 
 				case 4: //exit
@@ -542,8 +545,8 @@ bool CheckBeatable()
 {
 	int runs = 0;
 	int evilizers = 0;
-	unsigned seed = time(0);
-	auto rng = std::default_random_engine(seed);
+	//unsigned seed = time(0);
+	//auto rng = std::default_random_engine(seed);
 	//for(int count = 0; count < 1000; count++)
 	//{
 	std::set<int> collectedItems;
@@ -562,7 +565,7 @@ bool CheckBeatable()
 	std::ofstream spoilerFile;
   	spoilerFile.open ("spoiler.txt");
 	//fprintf(fp, "START OF WORLD\n");
-	//todo super simple quick logic, make sure bonkula isn't holing a vamp statue
+	//super simple quick logic, make sure bonkula isn't holing a vamp statue
 	bool shortcircuit = false;
 	for (int i = 0; i < remaining.size(); i++)
 	{
@@ -683,16 +686,19 @@ void PlaceItems(std::vector<location> loclist)
 	//fix trigger for cat tree
 	world.map[0]->special[97].trigger = TRG_GETITEM;
 	//for each, go into the world
-	std::ofstream questFile;
-  	questFile.open ("quest.txt");
+	//std::ofstream questFile;
+	
+  	//questFile.open ("quest.txt");
+	std::FILE* f = AppdataOpen("quest.txt", "w");
+	FilePtrStream stream(f);
 	
 
 	for (location loc : loclist)
 	{
 		if (loc.isQuest){
 			//quest list of map id points to loc.item now
-			randoReward[loc.mapId] = loc.item;
-			questFile << loc.mapId << "\t" << loc.item.playerVarId << "\t" << loc.item.itemId  << "\n";
+			//randoReward[loc.mapId] = loc.item;
+			stream << loc.mapId << "\t" << loc.item.playerVarId << "\t" << loc.item.itemId  << "\n";
 
 		}
 		else
@@ -709,7 +715,7 @@ void PlaceItems(std::vector<location> loclist)
 		}
 	}
 
-	questFile.close();
+	fclose(f);
 
 
 	SaveWorld(&world, "rando.llw");
