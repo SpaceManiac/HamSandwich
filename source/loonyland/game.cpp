@@ -403,7 +403,7 @@ byte LunaticRun(int *lastTime)
 		else if(msgFromOtherModules==MSG_RESET)
 		{
 			if(player.worldNum==WORLD_SURVIVAL || player.worldNum==WORLD_SLINGSHOT ||
-				((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX) && (player.cheatsOn&PC_HARDCORE)) ||
+				((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX|| player.worldNum==WORLD_RANDOMIZER) && (player.cheatsOn&PC_HARDCORE)) ||
 				player.worldNum==WORLD_LOONYBALL || player.worldNum==WORLD_BOSSBASH)
 				NewBigMessage("You were defeated!",30);
 			else if(player.worldNum!=WORLD_BOWLING)
@@ -647,7 +647,7 @@ TASK(byte) LunaticWorld(byte world,const char *worldName)
 		}
 		else if(result==LEVEL_WIN)
 		{
-			if((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX))
+			if((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
 			{
 				// won the game!  Go back to Luniton.
 				AWAIT ShowVictoryAnim(0);
@@ -713,7 +713,6 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 			case WORLD_RANDOMIZER:
 				if(!loadGame)
 					AWAIT Help(gamemgl);
-				//todo load quest rewards from file
 				LoadRandoItems();
 				worldResult=AWAIT LunaticWorld(0,"rando.llw");
 				break;
