@@ -5,7 +5,7 @@
 #include "badge.h"
 #include "spacegame.h"
 #include "options.h"
-#include "randomizer.h"
+//#include "randomizer.h"
 #include "ioext.h"
 #include "appdata.h"
 #include <vector>

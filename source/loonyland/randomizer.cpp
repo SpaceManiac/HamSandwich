@@ -337,7 +337,7 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 			}
 			if (c == SDLK_j)
 			{
-				AssumedFill();
+				//AssumedFill();
 			}
 			break;
 		case 1: // Typing in something
@@ -470,7 +470,7 @@ RandomizerMenu(MGLDraw *mgl)
 }
 
 
-void AssumedFill()
+/*void AssumedFill()
 {
 
 	ownedItems = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
@@ -538,7 +538,7 @@ void AssumedFill()
 			}
 			specialNum++;
 		}
-	}*/
+	}
 
 	//world.map[i]->special[y]
 
@@ -553,7 +553,7 @@ void AssumedFill()
 	//go until out of items
 
 	//verify beatable
-}
+}*/
 
 std::vector<location> RandomFill()
 {
@@ -603,7 +603,7 @@ std::vector<location> RandomFill()
 		remaining[i].item = itemList[i];
 		spoilerFile << remaining[i].mapId << "\t\t" << remaining[i].mapName << "\t\t" << remaining[i].description << "\t\t" << itemList[i].playerVarId << "\t\t" << itemList[i].itemName << "\n";
 	}
-	fclose(f);
+	//fclose(f);
 	return remaining;
 }
 
@@ -709,7 +709,7 @@ void PlaceItems(const std::vector<location>& loclist)
 		}
 	}
 
-	fclose(f);
+	//fclose(f);
 
 
 	SaveWorld(&world, "rando.llw");
