@@ -255,7 +255,8 @@ void ExitRandomizerMenu(void)
 	ExitPlasma();
 }
 
-byte UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
+TASK(byte)
+UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 {
 	char c;
 	byte c2;
@@ -274,7 +275,7 @@ byte UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 
 			if (c == 27)
 			{
-				return 1;
+				CO_RETURN 1;
 			}
 
 			if ((c2 & CONTROL_UP) && (!(oldc & CONTROL_UP)))
@@ -318,7 +319,7 @@ byte UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 
 				case 4: //exit
 					MakeNormalSound(SND_MENUSELECT);
-					return 1;
+					CO_RETURN 1;
 					break;
 				}
 			}
@@ -336,7 +337,7 @@ byte UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 				oldc = 255;
 				mgl->LastKeyPressed();
 				MakeNormalSound(SND_MENUCANCEL);
-				return 0;
+				CO_RETURN 0;
 			}
 			else if (c == SDLK_BACKSPACE && seed.length() > 0)
 			{
@@ -369,7 +370,7 @@ byte UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 		*lastTime -= TIME_PER_FRAME;
 	}
 
-	return 0;
+	CO_RETURN 0;
 }
 
 void RenderRandomizerMenu(MGLDraw *mgl)
@@ -690,7 +691,7 @@ void PlaceItems(std::vector<location> loclist)
 	{
 		if (loc.isQuest){
 			//quest list of map id points to loc.item now
-			//randoReward[loc.mapId] = loc.item;
+			randoReward[loc.mapId] = loc.item;
 			questFile << loc.mapId << "\t" << loc.item.playerVarId << "\t" << loc.item.itemId  << "\n";
 
 		}
@@ -702,7 +703,7 @@ void PlaceItems(std::vector<location> loclist)
 
 			tempMap->special[loc.s2].trigValue = loc.item.playerVarId;
 
-			std::cout << tempMap->width;
+			
 			//curmap->map[4+7*curmap->width].item=loc.item.itemId;
 			tempMap->map[loc.xcoord+loc.ycoord*tempMap->width].item=loc.item.itemId;
 		}

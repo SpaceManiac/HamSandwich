@@ -7,6 +7,8 @@
 #include "options.h"
 #include "randomizer.h"
 
+rItem randoReward[11];
+
 char questName[NUM_QUESTS][64]={
 	"Save Halloween Hill",
 	"Tree Trimming",
@@ -1874,7 +1876,7 @@ void DoChatAction(byte a)
 			// give the super heart
 			PlayerSetVar(VAR_TREEREWARD, 1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-				GiveRandoItem(0);
+				GiveRandoItem(8);
 			}
 			else
 			{
@@ -1894,7 +1896,7 @@ void DoChatAction(byte a)
 			// complete the boots quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_BOOTS,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-				GiveRandoItem(1);
+				GiveRandoItem(5);
 			}
 			else
 			{
@@ -1933,7 +1935,7 @@ void DoChatAction(byte a)
 			PlayerSetVar(VAR_QUESTASSIGN+QUEST_DAISY,1);
 			PlayerSetVar(VAR_WITCHREWARD, 1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-				GiveRandoItem(3);
+				GiveRandoItem(9);
 			}
 			else
 			{
@@ -1976,7 +1978,7 @@ void DoChatAction(byte a)
 			// reward zombie quest
 			PlayerSetVar(VAR_ZOMBIEREWARD,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-				GiveRandoItem(5);
+				GiveRandoItem(10);
 			}
 			else
 			{
@@ -1997,7 +1999,7 @@ void DoChatAction(byte a)
 			// complete ghost quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_GHOST,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-				GiveRandoItem(6);
+				GiveRandoItem(0);
 			}
 			else
 			{
@@ -2012,7 +2014,7 @@ void DoChatAction(byte a)
 			// complete silver quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_SILVER,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-				GiveRandoItem(7);
+				GiveRandoItem(3);
 			}
 			else
 			{
@@ -2030,7 +2032,7 @@ void DoChatAction(byte a)
 			PlayerSetVar(VAR_QUESTDONE+QUEST_DARK,1);
 			PlayerSetVar(VAR_QUESTDONE+QUEST_RESCUE,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-				GiveRandoItem(8);
+				GiveRandoItem(7);
 			}
 			else
 			{
@@ -2052,7 +2054,7 @@ void DoChatAction(byte a)
 			// give pumpkin key
 			PlayerSetVar(VAR_LARRYREWARD,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-				GiveRandoItem(9);
+				GiveRandoItem(1);
 			}
 			else
 			{
@@ -2069,7 +2071,7 @@ void DoChatAction(byte a)
 			// finish doll quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_DOLLS,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-				GiveRandoItem(10);
+				GiveRandoItem(6);
 			}
 			else
 			{
