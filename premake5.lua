@@ -307,6 +307,7 @@ sdl2_project "loonyland"
 	}
 
 	webfiles { ["splash.jpg"] = "assets/splashes/loonyland.jpg" }
+	assetdirs { "assets/rando/" }
 
 sdl2_project "loonyland2"
 	android_appname "Loonyland 2: Winter Woods"
