@@ -108,9 +108,9 @@ function sdl2_project(name)
 		webfiles "assets/emscripten/*"
 
 		-- Link SDL2 in the correct sequence.
-		filter { "system:Windows", "not action:vs*" }
+		filter { "system:Windows", "not action:vs*", "toolset:not emcc" }
 			links "mingw32"
-		filter "system:Windows"
+		filter { "system:Windows", "toolset:not emcc" }
 			links { "ws2_32", "winmm" }
 		filter {}
 
@@ -130,18 +130,18 @@ function icon_file(icon)
 
 	-- Workaround for bug in premake5's gmake2 generator, which does
 	-- not count .res (object) files as resources, only .rc (source)
-	filter { "system:Windows", "toolset:not clang" }
+	filter { "system:Windows", "toolset:not clang", "toolset:not emcc" }
 		files { "source/%{prj.name}/" .. icon .. ".rc" }
 
-	filter { "system:Windows", "action:gmake2", "toolset:not clang" }
+	filter { "system:Windows", "action:gmake2", "toolset:not clang", "toolset:not emcc" }
 		linkoptions { "%{cfg.objdir}/" .. icon .. ".res" }
 
 	-- Support for embedding the icon in the file on non-Windows systems
-	filter { "system:not Windows" }
+	filter { "system:not Windows or toolset:emcc" }
 		files { "source/%{prj.name}/" .. icon .. ".rc" }
 		makesettings("OBJECTS += $(OBJDIR)/" .. icon .. ".rc.o")
 
-	filter { "system:not Windows", "files:**.rc" }
+	filter { "system:not Windows or toolset:emcc", "files:**.rc" }
 		buildmessage "%{file.name}"
 		buildcommands { 'python3 ../tools/build/rescomp.py "%{file.path}" "%{cfg.objdir}/%{file.basename}.rc.cpp"' }
 		buildoutputs { "%{cfg.objdir}/" .. icon .. ".rc.cpp" }
