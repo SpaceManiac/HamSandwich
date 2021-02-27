@@ -16,6 +16,8 @@
 #include <random>
 #include <fstream>
 #include "ioext.h"
+#include <charconv>
+#include <string>
 
 static byte cursor;
 static byte oldc;
@@ -23,227 +25,227 @@ static dword oldBtn;
 static byte optMode;
 static std::string seed;
 std::set<int> ownedItems;
+static int genTries = 0;
 
-unsigned seed2 = time(0);
-auto rng = std::default_random_engine(seed2);
+auto rng = std::default_random_engine(std::random_device{}());
 
 #define MAX_SEED_LENGTH 32
 #define R_NUM_LOCATIONS 105
 
 location basic_locations[R_NUM_LOCATIONS] = {
-	{false, 0, 194, 5, 24, 25, "Swamp Mud Path", [](std::set<int> inv) { return inv.count(VAR_BOOTS); }},
-	{false, 0, 187, 112, 11, 12, "Bog Beast Home", [](std::set<int> inv) { return true; }},
-	{false, 0, 2, 46, 69, 70, "Rocky Cliffs below Upper Caverns", [](std::set<int> inv) { return HaveAnyBigGem(inv); }},
-	{false, 0, 131, 26, 10, 9, "Sapling Shrine", [](std::set<int> inv) { return inv.count(VAR_BOOTS); }},
-	{false, 0, 83, 145, 33, 34, "Terror Glade", [](std::set<int> inv) { return true; }},
-	{false, 0, 1, 73, 47, 48, "Rocky Cliffs Vine", [](std::set<int> inv) { return inv.count(VAR_FERTILIZER); }},
-	{false, 0, 30, 39, 73, 74, "Rocky Cliffs Grand Pharoh", [](std::set<int> inv) { return HaveAnyBigGem(inv); }},
-	{false, 0, 69, 59, 66, 67, "Rocky Cliffs Rock Corner", [](std::set<int> inv) { return HaveAnyBigGem(inv) && inv.count(VAR_WEAPON); }},
-	{false, 0, 115, 70, 18, 19, "Mushroom outside town", [](std::set<int> inv) { return true; }},
-	{false, 0, 159, 85, 20, 21, "mushroom east", [](std::set<int> inv) { return true; }},
-	{false, 0, 117, 33, 22, 23, "Top left mushroom spot", [](std::set<int> inv) { return true; }},
-	{false, 0, 168, 98, 28, 29, "mushroom south east", [](std::set<int> inv) { return true; }},
-	{false, 0, 197, 161, 56, 57, "East Woods", [](std::set<int> inv) { return true; }},
-	{false, 0, 16, 61, 49, 50, "Rocky Cliffs Ledge", [](std::set<int> inv) { return HaveAnyBigGem(inv); }},
-	{false, 0, 28, 10, 63, 65, "Rocky Cliffs Peak", [](std::set<int> inv) { return HaveAnyBigGem(inv); }},
-	{false, 0, 134, 182, 97, 98, "Cat Tree", [](std::set<int> inv) { return true; }},
-	{false, 2, 27, 16, 1, 2, "Backroom", [](std::set<int> inv) { return true; }},
-	{false, 2, 22, 7, 3, 4, "Bedroom", [](std::set<int> inv) { return true; }},
-	{false, 3, 10, 8, 1, 3, "Barrel Maze", [](std::set<int> inv) { return true; }},
-	{false, 4, 19, 5, 1, 2, "Top Door", [](std::set<int> inv) { return inv.count(VAR_SKULLKEY); }},
-	{false, 4, 39, 38, 3, 4, "Post Room", [](std::set<int> inv) { return true; }},
-	{false, 4, 33, 06, 9, 10, "Window Drip", [](std::set<int> inv) { return true; }},
-	{false, 4, 3, 33, 7, 8, "Green room", [](std::set<int> inv) { return true; }},
-	{false, 4, 25, 48, 5, 11, "Arena", [](std::set<int> inv) { return true; }},
-	{false, 4, 2, 58, 17, 18, "Kill Wall", [](std::set<int> inv) { return true; }},
-	{false, 5, 53, 41, 0, 1, "Swampdog Door", [](std::set<int> inv) { return inv.count(VAR_PUMPKINKEY); }},
-	{false, 5, 57, 37, 13, 14, "Scribble Wall", [](std::set<int> inv) { return true; }},
-	{false, 5, 26, 25, 4, 5, "Tiny Passage", [](std::set<int> inv) { return true; }},
-	{false, 5, 50, 26, 7, 8, "fire frogs", [](std::set<int> inv) { return true; }},
-	{false, 5, 17, 64, 9, 10, "Torch Island", [](std::set<int> inv) { return inv.count(VAR_BOOTS); }},
-	{false, 5, 44, 49, 11, 12, "Small Room", [](std::set<int> inv) { return true; }},
-	{false, 6, 32, 45, 2, 3, "Scratch Wall", [](std::set<int> inv) { return inv.count(VAR_BOOTS); }},
-	{false, 6, 44, 37, 15, 17, "Bat Mound", [](std::set<int> inv) { return inv.count(VAR_BOOTS) && inv.count(VAR_BATKEY); }},
-	{false, 6, 3, 7, 23, 24, "Stair room", [](std::set<int> inv) { return inv.count(VAR_BOOTS); }},
-	{false, 6, 43, 58, 18, 19, "Rock Prison", [](std::set<int> inv) { return inv.count(VAR_BOOTS) && inv.count(VAR_WEAPON); }},
-	{false, 7, 11, 16, 1, 2, "Tiny Cabin", [](std::set<int> inv) { return inv.count(VAR_SKULLKEY); }},
-	{false, 8, 19, 15, 3, 4, "Bedside ", [](std::set<int> inv) { return true; }},
-	{false, 10, 2, 44, 2, 3, "Pumpkin Door", [](std::set<int> inv) { return HaveLightSource(inv) && inv.count(VAR_PUMPKINKEY); }},
-	{false, 10, 5, 36, 4, 5, "Maze", [](std::set<int> inv) { return HaveLightSource(inv); }},
-	{false, 11, 51, 82, 11, 12, "Big Closed Room", [](std::set<int> inv) { return HaveLightSource(inv) && inv.count(VAR_BOOTS); }},
-	{false, 12, 49, 73, 15, 16, "Spike Vine", [](std::set<int> inv) { return HaveLightSource(inv) && inv.count(VAR_FERTILIZER); }},
-	{false, 12, 7, 97, 0, 1, "Boulders", [](std::set<int> inv) { return HaveLightSource(inv); }},
-	{false, 13, 13, 6, 1, 2, "Barrel Mess", [](std::set<int> inv) { return true; }},
-	{false, 14, 40, 13, 6, 7, "Lightning Rod Secret", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAllOrbs(inv); }},
-	{false, 14, 73, 20, 8, 9, "Bat Door", [](std::set<int> inv) { return HaveLightSource(inv) && inv.count(VAR_BATKEY); }},
-	{false, 15, 58, 77, 12, 13, "SE corner", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAllOrbs(inv); }},
-	{false, 15, 51, 71, 10, 11, "Rhombus", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAllOrbs(inv); }},
-	{false, 16, 15, 6, 3, 4, "Boss Reward", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAllOrbs(inv); }},
-	{false, 17, 59, 29, 3, 4, "Barracks", [](std::set<int> inv) { return inv.count(VAR_POTION) && inv.count(VAR_BATKEY); }},
-	{false, 18, 8, 5, 6, 7, "Top Left", [](std::set<int> inv) { return inv.count(VAR_POTION); }},
-	{false, 20, 13, 37, 1, 2, "Boss Reward", [](std::set<int> inv) { return inv.count(VAR_POTION); }},
-	{false, 21, 20, 13, 1, 2, "DoorDoorDoorDoorDoorDoor", [](std::set<int> inv) { return inv.count(VAR_POTION) && HaveLightSource(inv) && inv.count(VAR_BATKEY) &&
-																						 inv.count(VAR_SKULLKEY) && inv.count(VAR_PUMPKINKEY); }},
-	{false, 22, 39, 2, 1, 2, "Shaft", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
-	{false, 23, 12, 3, 2, 3, "Bombulus", [](std::set<int> inv) { return HaveAnyBigGem(inv); }},
-	{false, 24, 50, 44, 2, 3, "Lockpick", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
-	{false, 25, 61, 2, 5, 6, "Happy Stick Hidden", [](std::set<int> inv) { return inv.count(VAR_TALISMAN); }},
-	{false, 25, 35, 34, 0, 1, "Happy Stick Reward", [](std::set<int> inv) { return inv.count(VAR_TALISMAN); }},
-	{false, 26, 2, 5, 1, 2, "Wolf Top Left", [](std::set<int> inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING); }},
-	{false, 26, 6, 14, 6, 7, "Pumpkin Door", [](std::set<int> inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING) && inv.count(VAR_PUMPKINKEY); }},
-	{false, 26, 40, 88, 3, 4, "Grow Room", [](std::set<int> inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING); }},
-	{false, 28, 88, 38, 3, 4, "The three hombres", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
-	{false, 29, 35, 39, 1, 2, "Left Vine", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_FERTILIZER); }},
-	{false, 29, 103, 22, 3, 4, "Right Vine", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_FERTILIZER); }},
-	{false, 30, 117, 76, 3, 4, "Pharoh bat Room", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_BATKEY); }},
-	{false, 30, 135, 6, 10, 11, "2 blue Pharos", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
-	{false, 30, 84, 75, 5, 6, "GARGOYLE ROOM", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
-	{false, 31, 63, 12, 11, 12, "Vampire Guard", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
-	{false, 31, 27, 21, 13, 14, "maze top left", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
-	{false, 31, 105, 16, 15, 16, "Top Right Gauntlet", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
-	{false, 31, 9, 92, 22, 23, "Bat Closet", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
-	{false, 32, 22, 37, 6, 7, "Candle Room", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY); }},
-	{false, 32, 89, 22, 8, 9, "Top Right Top", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY); }},
-	{false, 32, 89, 89, 2, 3, "Bottom Right Middle", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY); }},
-	{false, 32, 52, 106, 4, 5, "Bat room", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY); }},
-	{false, 33, 18, 6, 1, 2, "Gold Skull", [](std::set<int> inv) { return true; }},
-	{false, 34, 63, 64, 13, 14, "Middle", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY); }},
-	{false, 34, 94, 33, 17, 18, "Behind the Pews", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY); }},
-	{false, 34, 101, 110, 5, 6, "AMBUSH!", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY); }},
-	{false, 34, 103, 19, 10, 9, "Halloween", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY); }},
-	{false, 34, 18, 11, 23, 24, "So many bats", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY); }},
-	{false, 35, 94, 117, 8, 9, "Right Path", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY) && inv.count(VAR_PUMPKINKEY); }},
-	{false, 35, 34, 117, 6, 7, "Left Path", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY) && inv.count(VAR_PUMPKINKEY); }},
-	{false, 35, 104, 68, 3, 4, "Ballroom Right", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY) && inv.count(VAR_PUMPKINKEY); }},
-	{false, 35, 111, 102, 10, 11, "Right Secret Wall", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY) && inv.count(VAR_PUMPKINKEY); }},
-	{false, 35, 23, 68, 1, 2, "Ballroom Left", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY) && inv.count(VAR_PUMPKINKEY); }},
-	{false, 37, 13, 18, 3, 4, "Boss", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && HaveAllBats(inv) && HaveAnySpecialWeapon(inv); }},
-	{false, 38, 13, 18, 3, 4, "Boss", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && HaveAllBats(inv); }},
-	{false, 39, 13, 18, 3, 4, "Boss", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && HaveAllBats(inv); }},
-	{false, 40, 13, 18, 3, 4, "Boss", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && HaveAllBats(inv); }},
-	{false, 42, 16, 28, 3, 4, "Bonkula", [](std::set<int> inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY) && inv.count(VAR_PUMPKINKEY) && HaveAllVamps(inv); }},
-	{false, 43, 5, 22, 1, 2, "Bat Door", [](std::set<int> inv) { return inv.count(VAR_BATKEY); }},
-	{false, 43, 18, 22, 4, 5, "Pebbles", [](std::set<int> inv) { return true; }},
-	{false, 45, 55, 49, 0, 1, "Entrance", [](std::set<int> inv) { return inv.count(VAR_BOOTS); }},
-	{false, 45, 55, 36, 5, 6, "End", [](std::set<int> inv) { return HaveLightSource(inv) && inv.count(VAR_FERTILIZER); }},
-	{true, 0, 0, 0, 0, 0, "Ghostbusting", [](std::set<int> inv) { return HaveAnyBigGem(inv) && inv.count(VAR_DAISY); }},
-	{true, 1, 0, 0, 0, 0, "Hairy Larry", [](std::set<int> inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING); }},
-	{true, 2, 0, 0, 0, 0, "Scaredy Cat", [](std::set<int> inv) { return inv.count(VAR_CAT); }},
-	{true, 3, 0, 0, 0, 0, "Silver Bullet", [](std::set<int> inv) { return inv.count(VAR_SILVER) && CanCleanseCrypts(inv); }},
-	{true, 4, 0, 0, 0, 0, "Smashing Pumpkins", [](std::set<int> inv) { return CanCleanseCrypts(inv); }},
-	{true, 5, 0, 0, 0, 0, "Sticky Shoes", [](std::set<int> inv) { return true; }},
-	{true, 6, 0, 0, 0, 0, "The Collection", [](std::set<int> inv) { return inv.count(VAR_SILVERSLING) && inv.count(VAR_POTION) && HaveAnyBigGem(inv) && HaveLightSource(inv); }},
-	{true, 7, 0, 0, 0, 0, "The Rescue", [](std::set<int> inv) { return HaveLightSource(inv); }},
-	{true, 8, 0, 0, 0, 0, "Tree Trimming", [](std::set<int> inv) { return true; }},
-	{true, 9, 0, 0, 0, 0, "Witch Mushrooms", [](std::set<int> inv) { return HaveAllMushrooms(inv); }},
-	{true, 10, 0, 0, 0, 0, "Zombie Stomp", [](std::set<int> inv) { return CanCleanseCrypts(inv); }}};
+	{false, "Halloween Hill", 0, 194, 5, 24, 25, "Swamp Mud Path", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
+	{false, "Halloween Hill",  0, 187, 112, 11, 12, "Bog Beast Home", [](const std::set<int>& inv) { return true; }},
+	{false, "Halloween Hill",  0, 2, 46, 69, 70, "Rocky Cliffs below Upper Caverns", [](const std::set<int>& inv) { return HaveAnyBigGem(inv); }},
+	{false, "Halloween Hill",  0, 131, 26, 10, 9, "Sapling Shrine", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
+	{false, "Halloween Hill",  0, 83, 145, 33, 34, "Terror Glade", [](const std::set<int>& inv) { return true; }},
+	{false, "Halloween Hill",  0, 1, 73, 47, 48, "Rocky Cliffs Vine", [](const std::set<int>& inv) { return inv.count(VAR_FERTILIZER); }},
+	{false, "Halloween Hill",  0, 30, 39, 73, 74, "Rocky Cliffs Grand Pharoh", [](const std::set<int>& inv) { return HaveAnyBigGem(inv); }},
+	{false, "Halloween Hill",  0, 69, 59, 66, 67, "Rocky Cliffs Rock Corner", [](const std::set<int>& inv) { return HaveAnyBigGem(inv) && inv.count(VAR_WEAPON); }},
+	{false, "Halloween Hill",  0, 115, 70, 18, 19, "Mushroom outside town", [](const std::set<int>& inv) { return true; }},
+	{false, "Halloween Hill",  0, 159, 85, 20, 21, "mushroom east", [](const std::set<int>& inv) { return true; }},
+	{false, "Halloween Hill", 0, 117, 33, 22, 23, "Top left mushroom spot", [](const std::set<int>& inv) { return true; }},
+	{false, "Halloween Hill", 0, 168, 98, 28, 29, "mushroom south east", [](const std::set<int>& inv) { return true; }},
+	{false, "Halloween Hill", 0, 197, 161, 56, 57, "East Woods", [](const std::set<int>& inv) { return true; }},
+	{false, "Halloween Hill", 0, 16, 61, 49, 50, "Rocky Cliffs Ledge", [](const std::set<int>& inv) { return HaveAnyBigGem(inv); }},
+	{false, "Halloween Hill", 0, 28, 10, 63, 65, "Rocky Cliffs Peak", [](const std::set<int>& inv) { return HaveAnyBigGem(inv); }},
+	{false, "Halloween Hill", 0, 134, 182, 97, 98, "Cat Tree", [](const std::set<int>& inv) { return true; }},
+	{false, "The Witch's Cabin", 2, 27, 16, 1, 2, "Backroom", [](const std::set<int>& inv) { return true; }},
+	{false, "The Witch's Cabin", 2, 22, 7, 3, 4, "Bedroom", [](const std::set<int>& inv) { return HaveLightSource(inv); }},
+	{false, "Bonita's Cabin", 3, 10, 8, 1, 3, "Barrel Maze", [](const std::set<int>& inv) { return true; }},
+	{false, "The Bog Pit", 4, 19, 5, 1, 2, "Top Door", [](const std::set<int>& inv) { return inv.count(VAR_SKULLKEY); }},
+	{false, "The Bog Pit", 4, 39, 38, 3, 4, "Post Room", [](const std::set<int>& inv) { return true; }},
+	{false, "The Bog Pit", 4, 33, 06, 9, 10, "Window Drip", [](const std::set<int>& inv) { return true; }},
+	{false, "The Bog Pit", 4, 3, 33, 7, 8, "Green room", [](const std::set<int>& inv) { return true; }},
+	{false, "The Bog Pit", 4, 25, 48, 5, 11, "Arena", [](const std::set<int>& inv) { return true; }},
+	{false, "The Bog Pit", 4, 2, 58, 17, 18, "Kill Wall", [](const std::set<int>& inv) { return true; }},
+	{false, "Underground Tunnel", 5, 53, 41, 0, 1, "Swampdog Door", [](const std::set<int>& inv) { return inv.count(VAR_PUMPKINKEY); }},
+	{false, "Underground Tunnel", 5, 57, 37, 13, 14, "Scribble Wall", [](const std::set<int>& inv) { return true; }},
+	{false, "Underground Tunnel", 5, 26, 25, 4, 5, "Tiny Passage", [](const std::set<int>& inv) { return true; }},
+	{false, "Underground Tunnel", 5, 50, 26, 7, 8, "fire frogs", [](const std::set<int>& inv) { return true; }},
+	{false, "Underground Tunnel", 5, 17, 64, 9, 10, "Torch Island", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
+	{false, "Underground Tunnel", 5, 44, 49, 11, 12, "Small Room", [](const std::set<int>& inv) { return true; }},
+	{false, "Swamp Gas Cavern", 6, 32, 45, 2, 3, "Scratch Wall", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
+	{false, "Swamp Gas Cavern", 6, 44, 37, 15, 17, "Bat Mound", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS) && inv.count(VAR_BATKEY); }},
+	{false, "Swamp Gas Cavern", 6, 3, 7, 23, 24, "Stair room", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
+	{false, "Swamp Gas Cavern", 6, 43, 58, 18, 19, "Rock Prison", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS) && inv.count(VAR_WEAPON); }},
+	{false, "A Tiny Cabin", 7, 11, 16, 1, 2, "Tiny Cabin", [](const std::set<int>& inv) { return inv.count(VAR_SKULLKEY); }},
+	{false, "A Cabin", 8, 19, 15, 3, 4, "Bedside ", [](const std::set<int>& inv) { return true; }},
+	{false, "Dusty Crypt", 10, 2, 44, 2, 3, "Pumpkin Door", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_PUMPKINKEY); }},
+	{false, "Dusty Crypt", 10, 5, 36, 4, 5, "Maze", [](const std::set<int>& inv) { return HaveLightSource(inv); }},
+	{false, "Musty Crypt", 11, 51, 82, 11, 12, "Big Closed Room", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_BOOTS); }},
+	{false, "Rusty Crypt", 12, 49, 73, 15, 16, "Spike Vine", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_FERTILIZER); }},
+	{false, "Rusty Crypt", 12, 7, 97, 0, 1, "Boulders", [](const std::set<int>& inv) { return HaveLightSource(inv); }},
+	{false, "A Messy Cabin", 13, 13, 6, 1, 2, "Barrel Mess", [](const std::set<int>& inv) { return true; }},
+	{false, "Under the Lake", 14, 40, 13, 6, 7, "Lightning Rod Secret", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAllOrbs(inv); }},
+	{false, "Under the Lake", 14, 73, 20, 8, 9, "Bat Door", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_BATKEY); }},
+	{false, "Deeper Under the Lake", 15, 58, 77, 12, 13, "SE corner", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAllOrbs(inv); }},
+	{false, "Deeper Under the Lake", 15, 51, 71, 10, 11, "Rhombus", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAllOrbs(inv); }},
+	{false, "Frankenjulie's Laboratory", 16, 15, 6, 3, 4, "Boss Reward", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAllOrbs(inv); }},
+	{false, "Haunted Tower", 17, 59, 29, 3, 4, "Barracks", [](const std::set<int>& inv) { return inv.count(VAR_POTION) && inv.count(VAR_BATKEY); }},
+	{false, "Haunted Tower, Floor 2", 18, 8, 5, 6, 7, "Top Left", [](const std::set<int>& inv) { return inv.count(VAR_POTION); }},
+	{false, "Haunted Tower Roof", 20, 13, 37, 1, 2, "Boss Reward", [](const std::set<int>& inv) { return inv.count(VAR_POTION); }},
+	{false, "Haunted Basement", 21, 20, 13, 1, 2, "DoorDoorDoorDoorDoorDoor", [](const std::set<int>& inv) { return inv.count(VAR_POTION) && HaveLightSource(inv) && inv.count(VAR_BATKEY) && inv.count(VAR_SKULLKEY) && inv.count(VAR_PUMPKINKEY); }},
+	{false, "Abandoned Mines", 22, 39, 2, 1, 2, "Shaft", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
+	{false, "The Shrine of Bombulus", 23, 12, 3, 2, 3, "Bombulus", [](const std::set<int>& inv) { return HaveAnyBigGem(inv); }},
+	{false, "A Gloomy Cavern", 24, 50, 44, 2, 3, "Lockpick", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
+	{false, "Happy Stick Woods", 25, 61, 2, 5, 6, "Happy Stick Hidden", [](const std::set<int>& inv) { return inv.count(VAR_TALISMAN); }},
+	{false, "Happy Stick Woods", 25, 35, 34, 0, 1, "Happy Stick Reward", [](const std::set<int>& inv) { return inv.count(VAR_TALISMAN); }},
+	{false, "The Wolf Den", 26, 2, 5, 1, 2, "Wolf Top Left", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING); }},
+	{false, "The Wolf Den", 26, 6, 14, 6, 7, "Pumpkin Door", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING) && inv.count(VAR_PUMPKINKEY); }},
+	{false, "The Wolf Den", 26, 40, 88, 3, 4, "Grow Room", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING); }},
+	{false, "Upper Creepy Cavern", 28, 88, 38, 3, 4, "The three hombres", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
+	{false, "Under the Ravine", 29, 35, 39, 1, 2, "Left Vine", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_FERTILIZER); }},
+	{false, "Under the Ravine", 29, 103, 22, 3, 4, "Right Vine", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_FERTILIZER); }},
+	{false, "Creepy Caverns", 30, 117, 76, 3, 4, "Pharoh bat Room", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_BATKEY); }},
+	{false, "Creepy Caverns", 30, 135, 6, 10, 11, "2 blue Pharos", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
+	{false, "Creepy Caverns", 30, 84, 75, 5, 6, "GARGOYLE ROOM", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
+	{false, "Castle Vampy", 31, 63, 12, 11, 12, "Vampire Guard", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
+	{false, "Castle Vampy", 31, 27, 21, 13, 14, "maze top left", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
+	{false, "Castle Vampy", 31, 105, 16, 15, 16, "Top Right Gauntlet", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
+	{false, "Castle Vampy", 31, 9, 92, 22, 23, "Bat Closet", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
+	{false, "Castle Vampy II", 32, 22, 37, 6, 7, "Candle Room", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY); }},
+	{false, "Castle Vampy II", 32, 89, 22, 8, 9, "Top Right Top", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY); }},
+	{false, "Castle Vampy II", 32, 89, 89, 2, 3, "Bottom Right Middle", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY); }},
+	{false, "Castle Vampy II", 32, 52, 106, 4, 5, "Bat room", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY); }},
+	{false, "Cabin in the woods", 33, 18, 6, 1, 2, "Gold Skull", [](const std::set<int>& inv) { return true; }},
+	{false, "Castle Vampy III", 34, 63, 64, 13, 14, "Middle", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY); }},
+	{false, "Castle Vampy III", 34, 94, 33, 17, 18, "Behind the Pews", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY); }},
+	{false, "Castle Vampy III", 34, 101, 110, 5, 6, "AMBUSH!", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY); }},
+	{false, "Castle Vampy III", 34, 103, 19, 10, 9, "Halloween", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY); }},
+	{false, "Castle Vampy III", 34, 18, 11, 23, 24, "So many bats", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY); }},
+	{false, "Castle Vampy IV", 35, 94, 117, 8, 9, "Right Path", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY) && inv.count(VAR_PUMPKINKEY); }},
+	{false, "Castle Vampy IV", 35, 34, 117, 6, 7, "Left Path", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY) && inv.count(VAR_PUMPKINKEY); }},
+	{false, "Castle Vampy IV", 35, 104, 68, 3, 4, "Ballroom Right", [](const std::set<int>& inv) { return inv.count(VAR_SILVERSLING) && HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY) && inv.count(VAR_PUMPKINKEY); }},
+	{false, "Castle Vampy IV", 35, 111, 102, 10, 11, "Right Secret Wall", [](const std::set<int>& inv) { return inv.count(VAR_SILVERSLING) && HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY) && inv.count(VAR_PUMPKINKEY); }},
+	{false, "Castle Vampy IV", 35, 23, 68, 1, 2, "Ballroom Left", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY) && inv.count(VAR_PUMPKINKEY); }},
+	{false, "Castle Vampy Roof", 37, 13, 18, 3, 4, "Boss", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && HaveAllBats(inv) && HaveAnySpecialWeapon(inv); }},
+	{false, "Castle Vampy Roof", 38, 13, 18, 3, 4, "Boss", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && HaveAllBats(inv); }},
+	{false, "Castle Vampy Roof", 39, 13, 18, 3, 4, "Boss", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && HaveAllBats(inv); }},
+	{false, "Castle Vampy Roof", 40, 13, 18, 3, 4, "Boss", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && HaveAllBats(inv); }},
+	{false, "Heart of Terror", 42, 16, 28, 3, 4, "Bonkula", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY) && inv.count(VAR_PUMPKINKEY) && HaveAllVamps(inv); }},
+	{false, "A Hidey Hole", 43, 5, 22, 1, 2, "Bat Door", [](const std::set<int>& inv) { return inv.count(VAR_BATKEY); }},
+	{false, "A Hidey Hole", 43, 18, 22, 4, 5, "Pebbles", [](const std::set<int>& inv) { return true; }},
+	{false, "Swampdog Lair", 45, 55, 49, 0, 1, "Entrance", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
+	{false, "Swampdog Lair", 45, 55, 36, 5, 6, "End", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_FERTILIZER); }},
+	{true, "Ghostbusting", 0, 0, 0, 0, 0, "Ghostbusting", [](const std::set<int>& inv) { return HaveAnyBigGem(inv) && inv.count(VAR_DAISY) && HaveAllMushrooms(inv); }},
+	{true, "Hairy Larry", 1, 0, 0, 0, 0, "Hairy Larry", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING); }},
+	{true, "Scaredy Cat", 2, 0, 0, 0, 0, "Scaredy Cat", [](const std::set<int>& inv) { return inv.count(VAR_CAT); }},
+	{true, "Silver Bullet", 3, 0, 0, 0, 0, "Silver Bullet", [](const std::set<int>& inv) { return inv.count(VAR_SILVER) && CanCleanseCrypts(inv); }},
+	{true, "Smashing Pumpkins", 4, 0, 0, 0, 0, "Smashing Pumpkins", [](const std::set<int>& inv) { return CanCleanseCrypts(inv); }},
+	{true, "Sticky Shoes", 5, 0, 0, 0, 0, "Sticky Shoes", [](const std::set<int>& inv) { return true; }},
+	{true, "The Collection", 6, 0, 0, 0, 0, "The Collection", [](const std::set<int>& inv) { return inv.count(VAR_SILVERSLING) && inv.count(VAR_POTION) && HaveAnyBigGem(inv) && HaveLightSource(inv); }},
+	{true, "The Rescue", 7, 0, 0, 0, 0, "The Rescue", [](const std::set<int>& inv) { return HaveLightSource(inv); }},
+	{true, "Tree Trimming", 8, 0, 0, 0, 0, "Tree Trimming", [](const std::set<int>& inv) { return true; }},
+	{true, "Witch Mushrooms", 9, 0, 0, 0, 0, "Witch Mushrooms", [](const std::set<int>& inv) { return HaveAllMushrooms(inv); }},
+	{true, "Zombie Stomp", 10, 0, 0, 0, 0, "Zombie Stomp", [](const std::set<int>& inv) { return CanCleanseCrypts(inv); }}};
+
 
 rItem itemList[R_NUM_LOCATIONS] = {
-	{3, VAR_HEART + 0, "Heart"},
-	{3, VAR_HEART + 1, "Heart"},
-	{3, VAR_HEART + 2, "Heart"},
-	{3, VAR_HEART + 3, "Heart"},
-	{3, VAR_HEART + 4, "Heart"},
-	{3, VAR_HEART + 5, "Heart"},
-	{3, VAR_HEART + 6, "Heart"},
-	{3, VAR_HEART + 7, "Heart"},
-	{3, VAR_HEART + 8, "Heart"},
-	{3, VAR_HEART + 9, "Heart"},
-	{3, VAR_HEART + 10, "Heart"},
-	{3, VAR_HEART + 11, "Heart"},
-	{3, VAR_HEART + 12, "Heart"},
-	{3, VAR_HEART + 13, "Heart"},
-	{3, VAR_HEART + 14, "Heart"},
-	{3, VAR_HEART + 15, "Heart"},
-	{3, VAR_HEART + 16, "Heart"},
-	{3, VAR_HEART + 17, "Heart"},
-	{3, VAR_HEART + 18, "Heart"},
-	{3, VAR_HEART + 19, "Heart"},
-	{7, VAR_LIGHTNING + 0, "Lightning"},
-	{7, VAR_LIGHTNING + 1, "Lightning"},
-	{7, VAR_LIGHTNING + 2, "Lightning"},
-	{7, VAR_LIGHTNING + 3, "Lightning"},
-	{7, VAR_LIGHTNING + 4, "Lightning"},
-	{7, VAR_LIGHTNING + 5, "Lightning"},
-	{7, VAR_LIGHTNING + 6, "Lightning"},
-	{7, VAR_LIGHTNING + 7, "Lightning"},
-	{7, VAR_LIGHTNING + 8, "Lightning"},
-	{7, VAR_LIGHTNING + 9, "Lightning"},
-	{8, VAR_ARROW + 0, "Arrow"},
-	{8, VAR_ARROW + 1, "Arrow"},
-	{8, VAR_ARROW + 2, "Arrow"},
-	{8, VAR_ARROW + 3, "Arrow"},
-	{8, VAR_ARROW + 4, "Arrow"},
-	{8, VAR_ARROW + 5, "Arrow"},
-	{8, VAR_ARROW + 6, "Arrow"},
-	{8, VAR_ARROW + 7, "Arrow "},
-	{8, VAR_ARROW + 8, "Arrow"},
-	{8, VAR_ARROW + 9, "Arrow"},
-	{9, VAR_PANTS + 0, "Pants"},
-	{9, VAR_PANTS + 1, "Pants"},
-	{9, VAR_PANTS + 2, "Pants"},
-	{9, VAR_PANTS + 3, "Pants"},
-	{9, VAR_PANTS + 4, "Pants"},
-	{9, VAR_PANTS + 5, "Pants"},
-	{9, VAR_PANTS + 6, "Pants"},
-	{9, VAR_PANTS + 7, "Pants"},
-	{9, VAR_PANTS + 8, "Pants"},
-	{9, VAR_PANTS + 9, "Pants"},
-	{81, VAR_MUSHROOM + 0, "Mushroom"},
-	{81, VAR_MUSHROOM + 1, "Mushroom"},
-	{81, VAR_MUSHROOM + 2, "Mushroom"},
-	{81, VAR_MUSHROOM + 3, "Mushroom"},
-	{81, VAR_MUSHROOM + 4, "Mushroom"},
-	{81, VAR_MUSHROOM + 5, "Mushroom"},
-	{81, VAR_MUSHROOM + 6, "Mushroom"},
-	{81, VAR_MUSHROOM + 7, "Mushroom"},
-	{81, VAR_MUSHROOM + 8, "Mushroom"},
-	{81, VAR_MUSHROOM + 9, "Mushroom"},
-	{44, VAR_MYSORB + 0, "Orb"},
-	{44, VAR_MYSORB + 1, "Orb"},
-	{44, VAR_MYSORB + 2, "Orb"},
-	{44, VAR_MYSORB + 3, "Orb"},
-	{14, VAR_WEAPON + 0, "Bombs"},
-	{15, VAR_WEAPON + 1, "Shock Wand"},
-	{16, VAR_WEAPON + 2, "Ice spear"},
-	{17, VAR_WEAPON + 3, "Cactus"},
-	{18, VAR_WEAPON + 4, "Boomerang"},
-	{19, VAR_WEAPON + 5, "Whoopee"},
-	{20, VAR_WEAPON + 6, "Hot Pants"},
-	{11, VAR_SKULLKEY, "Skull Key"},
-	{12, VAR_BATKEY, "Bat Key"},
-	{13, VAR_PUMPKINKEY, "Pumpkin Key"},
-	{130, VAR_BOOTS, "Boots"},
-	{136, VAR_STICK, "Stick"},
-	{131, VAR_FERTILIZER, "Fertilizer"},
-	{83, VAR_SILVER, "Silver"},
-	{82, VAR_DAISY, "Doom Daisy"},
-	{132, VAR_POTION, "Ghost Potion"},
-	{113, VAR_VAMPBUST + 0, "Vamp Statue"},
-	{113, VAR_VAMPBUST + 1, "Vamp Statue"},
-	{113, VAR_VAMPBUST + 2, "Vamp statue"},
-	{113, VAR_VAMPBUST + 3, "Vamp Statue"},
-	{113, VAR_VAMPBUST + 4, "Vamp Statue"},
-	{113, VAR_VAMPBUST + 5, "Vamp Statue"},
-	{113, VAR_VAMPBUST + 6, "Vamp Statue"},
-	{113, VAR_VAMPBUST + 7, "Vamp Statue"},
-	{128, VAR_VAMPBUST + 8, "Cat"},
-	{6, VAR_GEM + 0, "Big Gem"},
-	{6, VAR_GEM + 1, "Big Gem"},
-	{6, VAR_GEM + 2, "Big Gem"},
-	{6, VAR_GEM + 3, "Big Gem"},
-	{6, VAR_GEM + 4, "Big Gem"},
-	{6, VAR_GEM + 5, "Big Gem"},
-	{129, VAR_ZOMBIEREWARD, "Zombie Reward"},
-	{111, VAR_TRIPLEFIRE, "3 way"},
-	{110, VAR_TALISMAN, "Happy Stick"},
-	{116, VAR_BATSTATUE + 0, "Bat Statue"},
-	{116, VAR_BATSTATUE + 1, "Bat Statue"},
-	{116, VAR_BATSTATUE + 2, "Bat Statue"},
-	{116, VAR_BATSTATUE + 3, "Bat Statue"},
-	{134, VAR_REFLECT, "Reflect"},
-	{133, VAR_LANTERN, "Lantern"},
-	{135, VAR_SILVERSLING, "Silver Sling"},
+	{ITM_SUPERHEART, VAR_HEART + 0, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 1, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 2, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 3, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 4, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 5, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 6, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 7, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 8, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 9, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 10, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 11, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 12, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 13, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 14, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 15, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 16, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 17, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 18, "Heart"},
+	{ITM_SUPERHEART, VAR_HEART + 19, "Heart"},
+	{ITM_FIREPOWERUP, VAR_LIGHTNING + 0, "Lightning"},
+	{ITM_FIREPOWERUP, VAR_LIGHTNING + 1, "Lightning"},
+	{ITM_FIREPOWERUP, VAR_LIGHTNING + 2, "Lightning"},
+	{ITM_FIREPOWERUP, VAR_LIGHTNING + 3, "Lightning"},
+	{ITM_FIREPOWERUP, VAR_LIGHTNING + 4, "Lightning"},
+	{ITM_FIREPOWERUP, VAR_LIGHTNING + 5, "Lightning"},
+	{ITM_FIREPOWERUP, VAR_LIGHTNING + 6, "Lightning"},
+	{ITM_FIREPOWERUP, VAR_LIGHTNING + 7, "Lightning"},
+	{ITM_FIREPOWERUP, VAR_LIGHTNING + 8, "Lightning"},
+	{ITM_FIREPOWERUP, VAR_LIGHTNING + 9, "Lightning"},
+	{ITM_RANGEUP, VAR_ARROW + 0, "Arrow"},
+	{ITM_RANGEUP, VAR_ARROW + 1, "Arrow"},
+	{ITM_RANGEUP, VAR_ARROW + 2, "Arrow"},
+	{ITM_RANGEUP, VAR_ARROW + 3, "Arrow"},
+	{ITM_RANGEUP, VAR_ARROW + 4, "Arrow"},
+	{ITM_RANGEUP, VAR_ARROW + 5, "Arrow"},
+	{ITM_RANGEUP, VAR_ARROW + 6, "Arrow"},
+	{ITM_RANGEUP, VAR_ARROW + 7, "Arrow"},
+	{ITM_RANGEUP, VAR_ARROW + 8, "Arrow"},
+	{ITM_RANGEUP, VAR_ARROW + 9, "Arrow"},
+	{ITM_FIRERATEUP, VAR_PANTS + 0, "Pants"},
+	{ITM_FIRERATEUP, VAR_PANTS + 1, "Pants"},
+	{ITM_FIRERATEUP, VAR_PANTS + 2, "Pants"},
+	{ITM_FIRERATEUP, VAR_PANTS + 3, "Pants"},
+	{ITM_FIRERATEUP, VAR_PANTS + 4, "Pants"},
+	{ITM_FIRERATEUP, VAR_PANTS + 5, "Pants"},
+	{ITM_FIRERATEUP, VAR_PANTS + 6, "Pants"},
+	{ITM_FIRERATEUP, VAR_PANTS + 7, "Pants"},
+	{ITM_FIRERATEUP, VAR_PANTS + 8, "Pants"},
+	{ITM_FIRERATEUP, VAR_PANTS + 9, "Pants"},
+	{ITM_SHROOM, VAR_MUSHROOM + 0, "Mushroom"},
+	{ITM_SHROOM, VAR_MUSHROOM + 1, "Mushroom"},
+	{ITM_SHROOM, VAR_MUSHROOM + 2, "Mushroom"},
+	{ITM_SHROOM, VAR_MUSHROOM + 3, "Mushroom"},
+	{ITM_SHROOM, VAR_MUSHROOM + 4, "Mushroom"},
+	{ITM_SHROOM, VAR_MUSHROOM + 5, "Mushroom"},
+	{ITM_SHROOM, VAR_MUSHROOM + 6, "Mushroom"},
+	{ITM_SHROOM, VAR_MUSHROOM + 7, "Mushroom"},
+	{ITM_SHROOM, VAR_MUSHROOM + 8, "Mushroom"},
+	{ITM_SHROOM, VAR_MUSHROOM + 9, "Mushroom"},
+	{ITM_MYSORB, VAR_MYSORB + 0, "Orb"},
+	{ITM_MYSORB, VAR_MYSORB + 1, "Orb"},
+	{ITM_MYSORB, VAR_MYSORB + 2, "Orb"},
+	{ITM_MYSORB, VAR_MYSORB + 3, "Orb"},
+	{ITM_WBOMB, VAR_WEAPON + 0, "Bombs"},
+	{ITM_WLIGHTNING, VAR_WEAPON + 1, "Shock Wand"},
+	{ITM_WICE, VAR_WEAPON + 2, "Ice spear"},
+	{ITM_WCACTUS, VAR_WEAPON + 3, "Cactus"},
+	{ITM_WBOOMERANG, VAR_WEAPON + 4, "Boomerang"},
+	{ITM_WWHOOPEE, VAR_WEAPON + 5, "Whoopee"},
+	{ITM_WHOTPANTS, VAR_WEAPON + 6, "Hot Pants"},
+	{ITM_KEY2, VAR_SKULLKEY, "Skull Key"},
+	{ITM_KEY3, VAR_BATKEY, "Bat Key"},
+	{ITM_KEY4, VAR_PUMPKINKEY, "Pumpkin Key"},
+	{ITM_BOOTS, VAR_BOOTS, "Boots"},
+	{ITM_STICK, VAR_STICK, "Stick"},
+	{ITM_FERTILIZER, VAR_FERTILIZER, "Fertilizer"},
+	{ITM_SILVER, VAR_SILVER, "Silver"},
+	{ITM_DAISY, VAR_DAISY, "Doom Daisy"},
+	{ITM_POTION, VAR_POTION, "Ghost Potion"},
+	{ITM_BUST, VAR_VAMPBUST + 0, "Vamp Statue"},
+	{ITM_BUST, VAR_VAMPBUST + 1, "Vamp Statue"},
+	{ITM_BUST, VAR_VAMPBUST + 2, "Vamp statue"},
+	{ITM_BUST, VAR_VAMPBUST + 3, "Vamp Statue"},
+	{ITM_BUST, VAR_VAMPBUST + 4, "Vamp Statue"},
+	{ITM_BUST, VAR_VAMPBUST + 5, "Vamp Statue"},
+	{ITM_BUST, VAR_VAMPBUST + 6, "Vamp Statue"},
+	{ITM_BUST, VAR_VAMPBUST + 7, "Vamp Statue"},
+	{ITM_CAT, VAR_CAT, "Cat"},
+	{ITM_SUPERGEM, VAR_GEM + 0, "Big Gem"},
+	{ITM_SUPERGEM, VAR_GEM + 1, "Big Gem"},
+	{ITM_SUPERGEM, VAR_GEM + 2, "Big Gem"},
+	{ITM_SUPERGEM, VAR_GEM + 3, "Big Gem"},
+	{ITM_SUPERGEM, VAR_GEM + 4, "Big Gem"},
+	{ITM_SUPERGEM, VAR_GEM + 5, "Big Gem"},
+	{ITM_ZOMBGEM, VAR_ZOMBIEREWARD, "Zombie Reward"},
+	{ITM_TRIPLEFIRE, VAR_TRIPLEFIRE, "3 way"},
+	{ITM_TALISMAN, VAR_TALISMAN, "Happy Stick"},
+	{ITM_BAT, VAR_BATSTATUE + 0, "Bat Statue"},
+	{ITM_BAT, VAR_BATSTATUE + 1, "Bat Statue"},
+	{ITM_BAT, VAR_BATSTATUE + 2, "Bat Statue"},
+	{ITM_BAT, VAR_BATSTATUE + 3, "Bat Statue"},
+	{ITM_LANTERN, VAR_LANTERN, "Lantern"},
+	{ITM_REFLECTGEM, VAR_REFLECT, "Reflect"},
+	{ITM_SILVERSLING, VAR_SILVERSLING, "Silver Sling"},
 };
 
 void InitRandomizerMenu(void)
@@ -266,6 +268,7 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 	byte c2;
 	dword btn, j;
 	int i;
+	
 
 	if (*lastTime > TIME_PER_FRAME * 30)
 		*lastTime = TIME_PER_FRAME * 30;
@@ -314,7 +317,13 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 					optMode = 1;
 					break;
 				case 3: //generate
-					while(!CheckBeatable()){
+					genTries=0;
+					if (!seed.empty()){
+						std::seed_seq seed2(seed.begin(), seed.end());
+						rng = std::default_random_engine(seed2);
+					}
+					while(!CheckBeatable(RandomFill())){
+						genTries++;
 						MakeNormalSound(SND_MENUCANCEL);
 					}
 					MakeNormalSound(SND_POWERUP);
@@ -382,6 +391,9 @@ void RenderRandomizerMenu(MGLDraw *mgl)
 	int wid;
 	byte *pos;
 	int i;
+	std::string strTries = std::to_string(genTries);
+	
+	
 
 	wid = mgl->GetWidth();
 	pos = mgl->GetScreen() + 40 * wid;
@@ -418,9 +430,11 @@ void RenderRandomizerMenu(MGLDraw *mgl)
 	}
 
 	PrintColor(240, 120, "Generate", 7, -10, 0);
+	PrintColor(350, 120, strTries.c_str(), 7, -10, 0);
 	if (cursor == 3)
 	{
 		PrintColor(239, 119, "Generate", 0, 0, 0);
+		PrintColor(349, 119, strTries.c_str(), 7, -10, 0);
 	}
 
 	PrintColor(240, 140, "Exit To Main Menu", 7, -10, 0);
@@ -541,19 +555,30 @@ void AssumedFill()
 	//verify beatable
 }
 
-bool CheckBeatable()
+std::vector<location> RandomFill()
 {
-	int runs = 0;
-	int evilizers = 0;
-	//unsigned seed = time(0);
-	//auto rng = std::default_random_engine(seed);
-	//for(int count = 0; count < 1000; count++)
-	//{
-	std::set<int> collectedItems;
-	std::set<int> tempItems;
-	std::vector<location> remaining;
-	std::vector<location> visited;
 
+	/*if (std::filesystem::exists("rando.llw"))
+	{
+		std::filesystem::remove("rando.llw");
+	}
+	std::filesystem::copy("loony.llw", "rando.llw");*/
+
+	std::FILE* baseWorld = AppdataOpen("loony.llw", "rb");
+	std::FILE* newWorld = AppdataOpen("rando.llw", "wb");
+	
+	char buf[4096];
+	while (int n = fread(buf, 1, 4096, baseWorld))
+	{
+    	fwrite(buf, 1, 4096, newWorld);
+	}
+
+	fclose(baseWorld);
+	fclose(newWorld);
+
+	//asset fopen steam from one to the other
+
+	std::vector<location> remaining;
 	for (location l : basic_locations)
 	{
 		remaining.push_back(l);
@@ -561,33 +586,31 @@ bool CheckBeatable()
 
 	std::shuffle(remaining.begin(), remaining.end(), rng);
 
-	//FILE *fp = fopen("spoiler.txt", "w+");
-	std::ofstream spoilerFile;
-  	spoilerFile.open ("spoiler.txt");
-	//fprintf(fp, "START OF WORLD\n");
-	//super simple quick logic, make sure bonkula isn't holing a vamp statue
+	std::FILE* f = AppdataOpen("spoiler.txt", "w");
+	FilePtrStream spoilerFile(f);
+
 	bool shortcircuit = false;
 	for (int i = 0; i < remaining.size(); i++)
 	{
+		//make sure bonkula isn't holing a vamp statue or key
 		if (remaining[i].description.compare("Bonkula") == 0 &&
 			((itemList[i].playerVarId >= VAR_VAMPBUST && itemList[i].playerVarId <= VAR_VAMPBUST + 7) ||
 			 itemList[i].playerVarId == VAR_SKULLKEY || itemList[i].playerVarId == VAR_BATKEY || itemList[i].playerVarId == VAR_PUMPKINKEY))
 		{
-			//std::cout << "short circuit" << remaining[i].description;
-			shortcircuit = true;
-			break;
+			//spoilerFile.close();
+			//return;
 		}
 		remaining[i].item = itemList[i];
-		spoilerFile << remaining[i].mapId << "\t\t" << remaining[i].description << "\t\t" << itemList[i].playerVarId << "\t\t" << itemList[i].itemName << "\n";
+		spoilerFile << remaining[i].mapId << "\t\t" << remaining[i].mapName << "\t\t" << remaining[i].description << "\t\t" << itemList[i].playerVarId << "\t\t" << itemList[i].itemName << "\n";
 	}
-	spoilerFile.close();
-	//if (shortcircuit)
-	//{
-	//	continue;
-	//}
-	//fprintf(fp, "END OF WORLD\n\n\n");
-	//fclose(fp);
+	fclose(f);
+	return remaining;
+}
 
+bool CheckBeatable(std::vector<location> remaining){
+	std::set<int> collectedItems;
+	std::set<int> tempItems;
+	std::vector<location> visited;
 	bool gotEvilizer = false;
 	int foundItems = 0;
 	/*for (int i = 0; i < VAR_SILVERSLING + 1; i++){
@@ -633,42 +656,15 @@ bool CheckBeatable()
 	//printf("Evilizer: %d\n", gotEvilizer);
 	if (gotEvilizer)
 	{
-		evilizers++;
-		std::cout << "GO TIME BAYBEEEEEEEEEEEEEEEEEEEEEEE\n";
 		visited.insert( visited.end(), remaining.begin(), remaining.end());
 		PlaceItems(visited);
 	}else{
 		remove("spoiler.txt");
 	}
-	runs++;
-
-	//printf("End inv: ");
-	//for(int i : collectedItems){
-	//	printf("%d, ", i);
-	//}
-	//printf("\n");
-
-	//printf("Remaining locations: ");
-
-	/*if (remaining.size() < 10)
-	{
-	for(location l : remaining){
-		std::cout << l.description << " " << l.item.playerVarId << " " << l.item.itemName << "\n";
-	}
-	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n";
-	}*/
-	//printf("\n");
-	/*if (count % 100 == 0)
-	{
-		std::cout << "count : " << count << "skipped" << count - runs << "evilizers: " << evilizers << "\n";
-	}
-
-	}
-	std::cout << "runs : " << runs << "evilizers: " << evilizers << "\n";*/
 	return gotEvilizer;
 }
 
-void PlaceItems(std::vector<location> loclist)
+void PlaceItems(const std::vector<location>& loclist)
 {
 
 	world_t world;
@@ -685,8 +681,8 @@ void PlaceItems(std::vector<location> loclist)
 
 	//fix trigger for cat tree
 	world.map[0]->special[97].trigger = TRG_GETITEM;
+	world.map[0]->special[98].value = 0;
 	//for each, go into the world
-	//std::ofstream questFile;
 	
   	//questFile.open ("quest.txt");
 	std::FILE* f = AppdataOpen("quest.txt", "w");
@@ -707,9 +703,7 @@ void PlaceItems(std::vector<location> loclist)
 			tempMap->special[loc.s1].value = loc.item.playerVarId;
 			tempMap->special[loc.s1].effectTag = 1;
 
-			tempMap->special[loc.s2].trigValue = loc.item.playerVarId;
-
-			
+			tempMap->special[loc.s2].trigValue = loc.item.playerVarId;			
 			//curmap->map[4+7*curmap->width].item=loc.item.itemId;
 			tempMap->map[loc.xcoord+loc.ycoord*tempMap->width].item=loc.item.itemId;
 		}
@@ -725,47 +719,47 @@ void PlaceItems(std::vector<location> loclist)
 	//if physical, place item and update specials
 }
 
-bool HaveLightSource(std::set<int> inv)
+bool HaveLightSource(const std::set<int>& inv)
 {
 	return (inv.count(VAR_LANTERN) || inv.count(VAR_STICK) && inv.count(VAR_BOOTS) || inv.count(VAR_TORCH));
 }
 
-bool HaveAnyBigGem(std::set<int> inv)
+bool HaveAnyBigGem(const std::set<int>& inv)
 {
 	return (inv.count(VAR_GEM) || inv.count(VAR_GEM + 1) || inv.count(VAR_GEM + 2) ||
 			inv.count(VAR_GEM + 3) || inv.count(VAR_GEM + 4) || inv.count(VAR_GEM + 5));
 }
 
-bool HaveAllOrbs(std::set<int> inv)
+bool HaveAllOrbs(const std::set<int>& inv)
 {
 	return (inv.count(VAR_MYSORB) && inv.count(VAR_MYSORB + 1) && inv.count(VAR_MYSORB + 2) && inv.count(VAR_MYSORB + 3));
 }
 
-bool HaveAllBats(std::set<int> inv)
+bool HaveAllBats(const std::set<int>& inv)
 {
 	return (inv.count(VAR_BATSTATUE) && inv.count(VAR_BATSTATUE + 1) && inv.count(VAR_BATSTATUE + 2) && inv.count(VAR_BATSTATUE + 3));
 }
 
-bool HaveAllVamps(std::set<int> inv)
+bool HaveAllVamps(const std::set<int>& inv)
 {
 	return (inv.count(VAR_VAMPBUST) && inv.count(VAR_VAMPBUST + 1) && inv.count(VAR_VAMPBUST + 2) && inv.count(VAR_VAMPBUST + 3) &&
 			inv.count(VAR_VAMPBUST + 4) && inv.count(VAR_VAMPBUST + 5) && inv.count(VAR_VAMPBUST + 6) && inv.count(VAR_VAMPBUST + 7));
 }
 
-bool HaveAnySpecialWeapon(std::set<int> inv)
+bool HaveAnySpecialWeapon(const std::set<int>& inv)
 {
 	return (inv.count(VAR_WEAPON) || inv.count(VAR_WEAPON + 1) || inv.count(VAR_WEAPON + 2) || inv.count(VAR_WEAPON + 4) ||
 			inv.count(VAR_WEAPON + 5) || inv.count(VAR_WEAPON + 6));
 }
 
-bool HaveAllMushrooms(std::set<int> inv)
+bool HaveAllMushrooms(const std::set<int>& inv)
 {
 	return (inv.count(VAR_MUSHROOM) && inv.count(VAR_MUSHROOM + 1) && inv.count(VAR_MUSHROOM + 2) && inv.count(VAR_MUSHROOM + 3) &&
 			inv.count(VAR_MUSHROOM + 4) && inv.count(VAR_MUSHROOM + 5) && inv.count(VAR_MUSHROOM + 6) && inv.count(VAR_MUSHROOM + 7) &&
 			inv.count(VAR_MUSHROOM + 8) && inv.count(VAR_MUSHROOM + 9));
 }
 
-bool CanCleanseCrypts(std::set<int> inv)
+bool CanCleanseCrypts(const std::set<int>& inv)
 {
 	return (HaveLightSource(inv) && inv.count(VAR_BOOTS));
 }

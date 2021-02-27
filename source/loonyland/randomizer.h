@@ -26,6 +26,7 @@ struct location
 	/* data */
 	//int randId;
 	bool isQuest;
+	std::string mapName;
 	int mapId, xcoord, ycoord;
 	int s1, s2;
 	std::string description;
@@ -34,24 +35,28 @@ struct location
 	//item newItem;
 };
 
-void PlaceItems(std::vector<location> locs);
 
-bool HaveLightSource(std::set<int> inv);
 
-bool HaveAnyBigGem(std::set<int> inv);
+void PlaceItems(const std::vector<location>& locs);
 
-bool HaveAllOrbs(std::set<int> inv);
+bool HaveLightSource(const std::set<int>& inv);
 
-bool HaveAllBats(std::set<int> inv);
+bool HaveAnyBigGem(const std::set<int>& inv);
 
-bool HaveAllVamps(std::set<int> inv);
+bool HaveAllOrbs(const std::set<int>& inv);
 
-bool HaveAnySpecialWeapon(std::set<int> inv);
+bool HaveAllBats(const std::set<int>& inv);
 
-bool HaveAllMushrooms(std::set<int> inv);
+bool HaveAllVamps(const std::set<int>& inv);
 
-bool CanCleanseCrypts(std::set<int> inv);
+bool HaveAnySpecialWeapon(const std::set<int>& inv);
 
-bool CheckBeatable();
+bool HaveAllMushrooms(const std::set<int>& inv);
+
+bool CanCleanseCrypts(const std::set<int>& inv);
+
+std::vector<location> RandomFill();
+
+bool CheckBeatable( std::vector<location> remaining);
 
 #endif
