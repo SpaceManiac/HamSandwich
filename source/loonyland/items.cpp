@@ -162,7 +162,7 @@ void InitItems(void)
 {
 	itmSpr[0]=new sprite_set_t("graphics/pickups.jsp");
 	itmSpr[1]=new sprite_set_t("graphics/items.jsp");
-	itmSpr[2] = new sprite_set_t("graphics/randomizer.jsp");
+	itmSpr[2] = new sprite_set_t("randomizer.jsp");
 	itemAnim=0;
 }
 
