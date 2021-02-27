@@ -559,7 +559,7 @@ void Guy::Update(Map *map,world_t *world)
 	if(type==player.monsType)	// special case, Loony is the player, follow him
 	{
 		UpdateCamera(x>>FIXSHIFT,y>>FIXSHIFT,facing*32,map);
-		if((map->flags&MAP_TORCHLIT) && (player.var[VAR_TORCH]==1) && (!WindingDown()))
+		if((map->flags&MAP_TORCHLIT) && (player.var[VAR_TORCH]==1 || player.var[VAR_LANTERN]==1) && (!WindingDown()))
 		{
 			b=GetPlayerGlow();
 			if(b>32)
@@ -1856,7 +1856,7 @@ void AddMapGuys(Map *map)
 		{
 			tag=map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag;
 			ok=1;
-			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)
+			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum == WORLD_RANDOMIZER)
 			{
 				if((map->badguy[i].type==MONS_EVILTREE || map->badguy[i].type==MONS_EVILTREE3) && player.var[VAR_QUESTDONE+QUEST_TREES] &&
 					player.levelNum==0)
