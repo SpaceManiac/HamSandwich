@@ -319,7 +319,7 @@ void RenderPauseMenu(MGLDraw *mgl)
 		else
 			strcat(s,"Off");
 
-		if(opt.cheats[CH_SAVEANY] && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX))
+		if(opt.cheats[CH_SAVEANY] && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
 		{
 			PrintColor(10,295,"Cancel",4-4*(cursor==0),-8+8*(cursor==0),2);
 			PrintColor(10,330,s,4-4*(cursor==1),-8+8*(cursor==1),2);
@@ -338,7 +338,7 @@ void RenderPauseMenu(MGLDraw *mgl)
 			PrintColor(10,435,"Quit",4-4*(cursor==4),-8+8*(cursor==4),2);
 		}
 
-		if((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX))
+		if((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
 		{
 			RenderPowerUps(5-offX,-5);
 			RenderQuests(0+offX,-offX-5);
@@ -440,6 +440,14 @@ void LoadGame(int i)
 			LoadWorld(&curWorld,"loony.llw");
 
 			InitWorld(&curWorld,WORLD_NORMAL);
+		}
+		else if(player.worldNum==WORLD_RANDOMIZER)
+		{
+			FreeWorld(&curWorld);
+			LoadWorld(&curWorld,"rando.llw");
+			//todo load quest rewards from file
+
+			InitWorld(&curWorld,WORLD_RANDOMIZER);
 		}
 		LoadGuys(f);
 		if(!curMap)
@@ -561,7 +569,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			cursor--;
 			if(cursor==255)
 				cursor=4;
-			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX)) && cursor==3)
+			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX&& player.worldNum!=WORLD_RANDOMIZER)) && cursor==3)
 				cursor=2;
 
 		}
@@ -570,7 +578,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			cursor++;
 			if(cursor==5)
 				cursor=0;
-			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX)) && cursor==3)
+			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX && player.worldNum!=WORLD_RANDOMIZER)) && cursor==3)
 				cursor=4;
 		}
 		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||

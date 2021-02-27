@@ -3,6 +3,8 @@
 
 #include "jamultypes.h"
 #include "mgldraw.h"
+#include "randomizer.h"
+
 
 #define QUEST_HILL	0	// save halloween hill (win the game)
 #define QUEST_TREES	1	// kill terror trees
@@ -29,6 +31,8 @@
 
 char *QuestName(byte quest);
 
+static rItem randoReward[11];
+
 typedef struct Convo
 {
 	public:
@@ -39,6 +43,6 @@ typedef struct Convo
 void BeginChatting(byte tag);
 void UpdateChat(void);
 void RenderChat(MGLDraw *mgl);
-
+void GiveRandoItem(int index);
 
 #endif

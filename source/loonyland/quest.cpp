@@ -5,6 +5,7 @@
 #include "badge.h"
 #include "spacegame.h"
 #include "options.h"
+#include "randomizer.h"
 
 char questName[NUM_QUESTS][64]={
 	"Save Halloween Hill",
@@ -1305,7 +1306,7 @@ void BeginChatting(byte tag)
 	if(player.chatClock)
 		return;
 
-	if(player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX)
+	if(player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX && player.worldNum!=WORLD_RANDOMIZER)
 		return;
 
 	player.chatClock=30;
@@ -1873,7 +1874,7 @@ void DoChatAction(byte a)
 			// give the super heart
 			PlayerSetVar(VAR_TREEREWARD, 1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-
+				GiveRandoItem(0);
 			}
 			else
 			{
@@ -1893,7 +1894,7 @@ void DoChatAction(byte a)
 			// complete the boots quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_BOOTS,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-
+				GiveRandoItem(1);
 			}
 			else
 			{
@@ -1916,7 +1917,7 @@ void DoChatAction(byte a)
 			// complete kitty cat
 			PlayerSetVar(VAR_QUESTDONE+QUEST_CAT,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-
+				GiveRandoItem(2);
 			}
 			else
 			{
@@ -1932,7 +1933,7 @@ void DoChatAction(byte a)
 			PlayerSetVar(VAR_QUESTASSIGN+QUEST_DAISY,1);
 			PlayerSetVar(VAR_WITCHREWARD, 1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-
+				GiveRandoItem(3);
 			}
 			else
 			{
@@ -1960,7 +1961,7 @@ void DoChatAction(byte a)
 		case 16:
 			// give fertilizer
 			if (player.worldNum == WORLD_RANDOMIZER){
-
+				GiveRandoItem(4);
 			}
 			else
 			{
@@ -1975,7 +1976,7 @@ void DoChatAction(byte a)
 			// reward zombie quest
 			PlayerSetVar(VAR_ZOMBIEREWARD,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-
+				GiveRandoItem(5);
 			}
 			else
 			{
@@ -1996,7 +1997,7 @@ void DoChatAction(byte a)
 			// complete ghost quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_GHOST,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-
+				GiveRandoItem(6);
 			}
 			else
 			{
@@ -2011,7 +2012,7 @@ void DoChatAction(byte a)
 			// complete silver quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_SILVER,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-
+				GiveRandoItem(7);
 			}
 			else
 			{
@@ -2029,7 +2030,7 @@ void DoChatAction(byte a)
 			PlayerSetVar(VAR_QUESTDONE+QUEST_DARK,1);
 			PlayerSetVar(VAR_QUESTDONE+QUEST_RESCUE,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-
+				GiveRandoItem(8);
 			}
 			else
 			{
@@ -2051,7 +2052,7 @@ void DoChatAction(byte a)
 			// give pumpkin key
 			PlayerSetVar(VAR_LARRYREWARD,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-
+				GiveRandoItem(9);
 			}
 			else
 			{
@@ -2068,7 +2069,7 @@ void DoChatAction(byte a)
 			// finish doll quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_DOLLS,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
-
+				GiveRandoItem(10);
 			}
 			else
 			{
@@ -2183,6 +2184,12 @@ void RenderChat(MGLDraw *mgl)
 			Print(70,37+i*22,s,0,0);
 		}
 	}
+}
+
+void GiveRandoItem(int index)
+{
+	PlayerSetVar(randoReward[index].playerVarId, 1);
+	PlayerGetItem(randoReward[index].itemId, 0, 0);
 }
 //--------------------------------------------
 // END CHATTING

@@ -1747,7 +1747,7 @@ void SpecialTakeEffect(byte num,Map *map,special_t *spcl,Guy *victim)
 	switch(spcl->effect)
 	{
 		case SPC_GOTOMAP:
-			if(spcl->value==41 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX) &&
+			if(spcl->value==41 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER) &&
 				player.var[VAR_QUESTDONE+QUEST_HILL]==1)
 				spcl->value=44;	// go to empty rooftop instead
 			SendMessageToGame(MSG_GOTOMAP,spcl->value);

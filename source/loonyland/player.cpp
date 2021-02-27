@@ -1040,6 +1040,20 @@ byte PlayerGetItem(byte itm,int x,int y)
 				BadgeCheck(BE_GEMSUP,0,curMap);
 				MakeNormalSound(SND_BIGGEMGET);
 				break;
+			case ITM_ZOMBGEM:
+				if(player.money<player.maxMoney)
+				{
+					player.money+=100;
+					if(player.money>player.maxMoney)
+					{
+						player.money=player.maxMoney;
+					}
+				}
+				player.gemsGotten+=100;
+				BadgeCheck(BE_GEMSUP,0,curMap);
+				NewBigMessage("100 Gems!",90);
+				MakeNormalSound(SND_BIGGEMGET);
+				break;
 			case ITM_SUPERGEM:
 				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
 				if(player.maxMoney<MAX_MONEY)
@@ -1098,6 +1112,47 @@ byte PlayerGetItem(byte itm,int x,int y)
 			case ITM_TALISMAN:
 				PlayerSetVar(VAR_QUESTASSIGN+QUEST_WITCH,1);
 				break;
+			case ITM_CAT:
+				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
+				NewBigMessage("CAT OBTAIN!",90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_BOOTS:
+				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
+				NewBigMessage("MUD BOOTS!",90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_FERTILIZER:
+				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
+				NewBigMessage("FERTILIZER!",90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_GHOSTPOTION:
+				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
+				NewBigMessage("GHOST SLAYING POTION!",90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_LANTERN:
+				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
+				NewBigMessage("LANTERN!",90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_REFLECTGEM:
+				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
+				NewBigMessage("REFLECT GEM!",90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_SILVERSLING:
+				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
+				NewBigMessage("SILVER BULLETS!",90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_STICK:
+				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
+				NewBigMessage("woo a stick",90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+
 		}
 		if(itm>=ITM_WBOMB && itm<=ITM_WHOTPANTS)
 		{
@@ -1557,7 +1612,7 @@ void SetAreaName(world_t *world)
 	byte c;
 
 	// decide which location the player is for naming purposes
-	if(player.levelNum==0 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX))
+	if(player.levelNum==0 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
 	{
 		c=255;
 		// decide based on region in the map

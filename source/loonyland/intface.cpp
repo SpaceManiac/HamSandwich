@@ -469,7 +469,7 @@ void RenderInterface(MGLDraw *mgl)
 	}
 
 	// display area name
-	if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)
+	if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX|| player.worldNum==WORLD_RANDOMIZER)
 	{
 		if(opt.cheats[CH_CRYSTAL])
 		{

@@ -710,6 +710,12 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 					AWAIT Help(gamemgl);
 				worldResult=AWAIT LunaticWorld(WORLD_REMIX,"remix.llw");
 				break;
+			case WORLD_RANDOMIZER:
+				if(!loadGame)
+					AWAIT Help(gamemgl);
+				//todo load quest rewards from file
+				worldResult=AWAIT LunaticWorld(0,"rando.llw");
+				break;
 			case WORLD_SURVIVAL:
 				AWAIT Help(gamemgl);
 				worldResult=AWAIT LunaticWorld(0,"survive.llw");

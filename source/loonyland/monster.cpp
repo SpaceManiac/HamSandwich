@@ -2508,7 +2508,7 @@ void AI_EvilTree(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		}
 		if(me->seq==ANIM_DIE && me->frm==0 && me->frmTimer<64)
 		{
-			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)
+			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX|| player.worldNum==WORLD_RANDOMIZER)
 				map->map[me->mapx+me->mapy*map->width].item=ITM_TREE2;
 		}
 		return;	// can't do nothin' right now
@@ -5052,7 +5052,7 @@ void AI_Larry(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		}
 		if(me->seq==ANIM_DIE)
 		{
-			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)
+			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX|| player.worldNum==WORLD_RANDOMIZER)
 			{
 				g=AddGuy(me->x,me->y,me->z,MONS_VILLAGER2);
 				BadgeCheck(BE_KILL,me->type,map);
@@ -5241,7 +5241,7 @@ void AI_HumanLarry(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		}
 		if(me->seq==ANIM_DIE)
 		{
-			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)
+			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX|| player.worldNum==WORLD_RANDOMIZER)
 			{
 				g=AddGuy(me->x,me->y,me->z,MONS_VILLAGER3);
 				BadgeCheck(BE_KILL,me->type,map);

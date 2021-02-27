@@ -104,6 +104,19 @@ help_t help[]={
 	 "",
 	 "",
 	},
+	{"Randomizer Mode",
+	 "oh hey good luck!",
+	 "",
+	 "",
+	 "",
+	 "",
+	 "",
+	 "",
+	 "",
+	 "",
+	 "",
+	},
+
 };
 
 static byte oldc;

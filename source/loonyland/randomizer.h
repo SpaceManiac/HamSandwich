@@ -5,12 +5,14 @@
 #include "mgldraw.h"
 #include "highscore.h"
 #include <string>
+#include <set>
+
 
 TASK(void) RandomizerMenu(MGLDraw *mgl);
 TASK(void) AssumedFill();
 
 
-struct item
+struct rItem
 {
 	/* data */
 	//int randId;
@@ -27,23 +29,29 @@ struct location
 	int mapId, xcoord, ycoord;
 	int s1, s2;
 	std::string description;
-	std::function<bool()> requirements;
+	std::function<bool(std::set<int> inv)> requirements;
+	rItem item;
+	//item newItem;
 };
 
-bool HaveLightSource();
+void PlaceItems(std::vector<location> locs);
 
-bool HaveAnyBigGem();
+bool HaveLightSource(std::set<int> inv);
 
-bool HaveAllOrbs();
+bool HaveAnyBigGem(std::set<int> inv);
 
-bool HaveAllBats();
+bool HaveAllOrbs(std::set<int> inv);
 
-bool HaveAllVamps();
+bool HaveAllBats(std::set<int> inv);
 
-bool HaveAnySpecialWeapon();
+bool HaveAllVamps(std::set<int> inv);
 
-bool HaveAllMushrooms();
+bool HaveAnySpecialWeapon(std::set<int> inv);
 
-bool CanCleanseCrypts();
+bool HaveAllMushrooms(std::set<int> inv);
+
+bool CanCleanseCrypts(std::set<int> inv);
+
+bool CheckBeatable();
 
 #endif
