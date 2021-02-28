@@ -28,7 +28,6 @@ MGLDraw *gamemgl;
 Map		*curMap;
 byte gameMode=GAMEMODE_PLAY;
 byte	mapToGoTo;
-byte	worldNum;
 byte    mapNum;
 byte	curMapFlags;
 world_t curWorld;
@@ -362,7 +361,7 @@ byte LunaticRun(int *lastTime)
 					return WORLD_QUITGAME;	// dump out altogether
 					break;
 			}
-			worldNum=player.worldNum;
+			
 		}
 		else if(gameMode==GAMEMODE_PIC)	// gamemode_pic
 		{
@@ -576,8 +575,8 @@ TASK(byte) LunaticWorld(byte world,const char *worldName)
 	if(!LoadWorld(&curWorld,worldName))
 		CO_RETURN WORLD_ABORT;
 
-	worldNum=world;
-	InitWorld(&curWorld,worldNum);
+	player.worldNum=world;
+	InitWorld(&curWorld,player.worldNum);
 	if(player.worldNum==WORLD_SURVIVAL)
 		InitSurvival();
 
@@ -714,7 +713,7 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 				if(!loadGame)
 					AWAIT Help(gamemgl);
 				LoadRandoItems();
-				worldResult=AWAIT LunaticWorld(0,"rando.llw");
+				worldResult=AWAIT LunaticWorld(WORLD_RANDOMIZER,"rando.llw");
 				break;
 			case WORLD_SURVIVAL:
 				AWAIT Help(gamemgl);
