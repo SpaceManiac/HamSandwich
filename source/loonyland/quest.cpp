@@ -2202,6 +2202,10 @@ void GiveRandoItem(int index)
 
 void LoadRandoItems(){
 	std::FILE* f = AppdataOpen("quest.txt", "r");
+	if (f == NULL)
+	{
+		return;
+	}
 	FilePtrStream stream(f);
 	std::string line;
 	std::string value;
