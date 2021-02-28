@@ -29,7 +29,7 @@ with zipfile.ZipFile(outfile, 'w', zipfile.ZIP_DEFLATED) as outzip:
 		with outzip.open(os.path.basename(exe), 'w') as z:
 			z.write(f.read())
 
-	ntldd = subprocess.run(["ntldd", exe], stdout=subprocess.PIPE)
+	ntldd = subprocess.run(["ntldd", "-R", exe], stdout=subprocess.PIPE)
 	for line in ntldd.stdout.decode('utf-8').split('\n'):
 		line = line.strip()
 		if not line:
