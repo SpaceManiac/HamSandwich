@@ -222,7 +222,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				break;
 			case 2: // entering a specific key
 				c2=LastScanCode();
-				if(c2==1)	// ESC key
+				if(c2==SDL_SCANCODE_ESCAPE)	// ESC key
 				{
 					optMode=1;
 					c2=255;
