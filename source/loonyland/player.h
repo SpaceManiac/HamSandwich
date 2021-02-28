@@ -82,8 +82,9 @@
 #define VAR_WITCHREWARD	217 // 217 = Witch has given you mushroom prize
 #define VAR_LANTERN		218 // 218 = Have the lantern
 #define VAR_TREEREWARD	219 // 219 = Rewarded for tree trimming
-#define VAR_LARRYREWARD	219 // 219 = Rewarded for bringing Larry Home
 #define VAR_SILVERSLING	220 // 220 = Have Silver Bullets
+#define VAR_LARRYREWARD	221 // 221 = Rewarded for bringing Larry Home
+#define VAR_CROPSREWARD	222 // 222 = Rewarded for crop smash
 
 	// temp variables
 #define VAR_TEMP		240	// 240-255 = temporary variables - cleared when leaving a level

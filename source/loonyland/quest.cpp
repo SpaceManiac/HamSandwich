@@ -1499,7 +1499,7 @@ void BeginChatting(byte tag)
 
 			break;
 		case 10: // the farmer
-			if(player.var[VAR_FERTILIZER])
+			if(player.var[VAR_CROPSREWARD])
 			{
 				if(player.var[VAR_QUESTDONE+QUEST_HILL])
 					curChat=184;
@@ -2065,7 +2065,6 @@ void DoChatAction(byte a)
 				PlayerGetItem(ITM_KEY4,0,0);
 				PlayerSetVar(VAR_KEY+2,1);
 			}
-			PlayerSetVar(VAR_LARRYREWARD,1);
 			break;
 		case 28:
 			// assign doll quest

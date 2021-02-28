@@ -68,7 +68,7 @@ typedef struct options_t
 	byte expando[9];	// room for expansion
 
 	// best scores
-	highScore_t score[8][15];	// high scores in different modes
+	highScore_t score[9][15];	// high scores in different modes
 } options_t;
 
 extern options_t opt;

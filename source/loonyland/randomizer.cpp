@@ -27,7 +27,8 @@ static std::string seed;
 std::set<int> ownedItems;
 static int genTries = 0;
 
-auto rng = std::default_random_engine(std::random_device{}());
+//auto rng = std::default_random_engine(std::random_device{}());
+auto rng = std::minstd_rand0(std::random_device{}());
 
 #define MAX_SEED_LENGTH 32
 #define R_NUM_LOCATIONS 105
@@ -96,9 +97,9 @@ location basic_locations[R_NUM_LOCATIONS] = {
 	{false, "Upper Creepy Cavern", 28, 88, 38, 3, 4, "The three hombres", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
 	{false, "Under the Ravine", 29, 35, 39, 1, 2, "Left Vine", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_FERTILIZER); }},
 	{false, "Under the Ravine", 29, 103, 22, 3, 4, "Right Vine", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_FERTILIZER); }},
-	{false, "Creepy Caverns", 30, 117, 76, 3, 4, "Pharoh bat Room", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_BATKEY); }},
-	{false, "Creepy Caverns", 30, 135, 6, 10, 11, "2 blue Pharos", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
-	{false, "Creepy Caverns", 30, 84, 75, 5, 6, "GARGOYLE ROOM", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
+	{false, "Creepy Caverns", 30, 117, 76, 3, 4, "M Pharoh bat Room", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_BATKEY); }},
+	{false, "Creepy Caverns", 30, 135, 6, 10, 11, "E 2 blue Pharos", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
+	{false, "Creepy Caverns", 30, 84, 75, 5, 6, "M GARGOYLE ROOM", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
 	{false, "Castle Vampy", 31, 63, 12, 11, 12, "Vampire Guard", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
 	{false, "Castle Vampy", 31, 27, 21, 13, 14, "maze top left", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
 	{false, "Castle Vampy", 31, 105, 16, 15, 16, "Top Right Gauntlet", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv); }},
@@ -320,7 +321,9 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 					genTries=0;
 					if (!seed.empty()){
 						std::seed_seq seed2(seed.begin(), seed.end());
-						rng = std::default_random_engine(seed2);
+						//rng = std::default_random_engine(seed2);
+						rng = std::minstd_rand0(seed2);
+						
 					}
 					while(!CheckBeatable(RandomFill())){
 						genTries++;
