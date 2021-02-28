@@ -304,7 +304,7 @@ byte Guy::CanWalk(int xx,int yy,Map *map,world_t *world)
 	if(result)	// no wall collision, look for guy collision
 		for(i=0;i<maxGuys;i++)
 			if((guys[i]) && (guys[i]!=this) && (guys[i]->type) && (guys[i]->hp>0) &&
-				(player.levelNum!=0 || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX) || guys[i]->active))
+				(player.levelNum!=0 || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX && player.worldNum!=WORLD_RANDOMIZER) || guys[i]->active))
 			{
 				if(CoconutBonk(xx,yy,guys[i]))
 				{
@@ -566,7 +566,7 @@ void Guy::Update(Map *map,world_t *world)
 				map->BrightTorch(mapx,mapy,b,b/4);
 			else
 			{
-				if((player.var[VAR_LANTERN]==0) || (player.levelNum==42 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)))
+				if((player.var[VAR_LANTERN]==0) || (player.levelNum==42 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX|| player.worldNum==WORLD_RANDOMIZER)))
 					map->TempTorch(mapx,mapy,b);
 				else
 					map->WeakTorch(mapx,mapy);	// with the lantern, you have way more light
@@ -1160,8 +1160,9 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 		{
 			if(type!=player.monsType)
 			{
-				if(Random(70)==0 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX))
+				if(Random(70)==0 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
 				{
+					//todo hooks for randomizer maybe
 					if(type>=MONS_BAT && type<=MONS_BAT3 && player.var[VAR_DOLL]==0)
 					{
 						FireBullet(x,y,ITM_BATDOLL,BLT_ITEM);
@@ -1789,7 +1790,7 @@ void RespawnGuy(Map *map)
 	byte ok,t,tag;
 	Guy *g;
 
-	if(player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX)
+	if(player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX && player.worldNum!=WORLD_RANDOMIZER)
 	{
 		return;
 	}

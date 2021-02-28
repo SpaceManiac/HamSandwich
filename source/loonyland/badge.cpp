@@ -1118,6 +1118,9 @@ void BadgeCheck(byte event,int value,Map *map)
 {
 	dword now,then;
 	int i,have;
+	if(player.worldNum == WORLD_RANDOMIZER){
+		return;
+	}
 
 	now=timeGetTime();
 	if(event==BE_KILL)

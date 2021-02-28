@@ -168,6 +168,7 @@ void InitEndGame(void)
 	{
 		case WORLD_NORMAL:
 		case WORLD_REMIX:
+		case WORLD_RANDOMIZER:
 			numStats=10;
 			// percent done
 			strcpy(stat[0].name,"Complete");
@@ -489,6 +490,7 @@ void ShowScoreStats(int x,int y,highScore_t *me,MGLDraw *mgl)
 	{
 		case WORLD_NORMAL:
 		case WORLD_REMIX:
+		case WORLD_RANDOMIZER:
 			PrintGlow(x,y,"Percent Done",0,0);
 			sprintf(s,"%2.1f%%",(float)me->spclValue/FIXAMT);
 			RightPrintGlow(x+250,y,s,0,0);

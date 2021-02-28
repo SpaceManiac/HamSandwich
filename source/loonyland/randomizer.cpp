@@ -693,7 +693,6 @@ void PlaceItems(const std::vector<location>& loclist)
 	{
 		if (loc.isQuest){
 			//quest list of map id points to loc.item now
-			//randoReward[loc.mapId] = loc.item;
 			stream << loc.mapId << "\t" << loc.item.playerVarId << "\t" << loc.item.itemId  << "\n";
 
 		}
@@ -704,7 +703,6 @@ void PlaceItems(const std::vector<location>& loclist)
 			tempMap->special[loc.s1].effectTag = 1;
 
 			tempMap->special[loc.s2].trigValue = loc.item.playerVarId;			
-			//curmap->map[4+7*curmap->width].item=loc.item.itemId;
 			tempMap->map[loc.xcoord+loc.ycoord*tempMap->width].item=loc.item.itemId;
 		}
 	}
