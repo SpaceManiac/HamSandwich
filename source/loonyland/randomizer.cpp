@@ -306,7 +306,7 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 				case 0: //play
 					MakeNormalSound(SND_MENUSELECT);
 					AWAIT LunaticGame(mgl,0,WORLD_RANDOMIZER);
-					SetSongRestart(1);
+					CO_RETURN 1;
 					break;
 				case 1: //randomize
 					MakeNormalSound(SND_MENUSELECT);
@@ -342,7 +342,7 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 			break;
 		case 1: // Typing in something
 			c = mgl->LastKeyPressed();
-			if (c == SDLK_ESCAPE) // ESC key
+			if (c == SDLK_ESCAPE || c == SDLK_RETURN) // ESC key
 			{
 				optMode = 0;
 				c2 = 255;

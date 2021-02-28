@@ -365,7 +365,7 @@ void Map::Update(byte mode,world_t *world)
 					WeakTorch(x,y);
 				SpecialItemGetCheck(this,x,y);
 			}
-			if(map[i].item==ITM_TREE5)
+			if(map[i].item==ITM_TREE5 || map[i].item==ITM_CAT)
 			{
 				if(map[i].itemInfo>0)
 					map[i].itemInfo--;

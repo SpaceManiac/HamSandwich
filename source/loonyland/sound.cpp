@@ -40,9 +40,23 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 	x>>=FIXSHIFT;
 	y>>=FIXSHIFT;
 	pan=(x-cx)*2;
+	pan *= PAN_MULTIPLIER;
+	if (pan<-127){
+		pan = -127;
+	}
+	if (pan>127){
+		pan = 127;
+	}
+
 	vol=-((x-cx)*(x-cx)+(y-cy)*(y-cy))/128;
-	if(vol<-5000)
+	vol += 5000;
+	vol /= 39.0625;
+	if(vol<0)
 		return;	// too quiet to play
+	if(vol>128)
+		vol = 128;
+	vol += 5000;
+	vol /= 39.0625;
 	GoPlaySound(snd,pan * PAN_MULTIPLIER,vol,(byte)flags,priority);
 }
 

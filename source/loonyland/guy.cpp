@@ -890,6 +890,21 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 	if(type==player.monsType && (PlayerShield() || player.invinc || opt.cheats[CH_SUPERSURV]))
 		return; // invincible when shielded
 
+	/*if(player.monsType=MONS_LOONYTOAD){
+		// toad knocksback
+		
+		dx=((dx>0)-(dx<0))*FIXAMT*2 * player.fireRange;
+		dy=((dy>0)-(dy<0))*FIXAMT*2 * player.fireRange;
+		x+=dx;
+		if(dx!=0)
+			if(!CanWalk(x,y,map,world))
+				x-=dx;
+		y+=dy;
+		if(dy!=0)
+			if(!CanWalk(x,y,map,world))
+				y-=dy;
+	}*/
+
 	if((MonsterFlags(type)&MF_INVINCIBLE) && !opt.cheats[CH_DEATH])
 	{
 		if(type>=MONS_WOLFMAN && type<=MONS_WOLFMAN3 && player.var[VAR_KNOWWOLVES]==0)
