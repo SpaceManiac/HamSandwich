@@ -346,6 +346,12 @@ TASK(void) MGLDraw::FinishFlip(void)
 		} else if (e.type == SDL_TEXTINPUT) {
 			if (strlen(e.text.text) == 1)
 			{
+#ifdef __EMSCRIPTEN__
+				if (e.text.text[0] == '`')
+				{
+					continue;
+				}
+#endif
 				lastKeyPressed = e.text.text[0];
 			}
 		} else if (e.type == SDL_KEYUP) {
