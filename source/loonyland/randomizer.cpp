@@ -18,6 +18,7 @@
 #include "ioext.h"
 #include <charconv>
 #include <string>
+#include "uniform_int_dist.h"
 
 static byte cursor;
 static byte oldc;
@@ -248,6 +249,21 @@ rItem itemList[R_NUM_LOCATIONS] = {
 	{ITM_REFLECTGEM, VAR_REFLECT, "Reflect"},
 	{ITM_SILVERSLING, VAR_SILVERSLING, "Silver Sling"},
 };
+
+template<class RandomIt, class URBG>
+void shuffleList(RandomIt first, RandomIt last, URBG&& g)
+{
+    typedef typename std::iterator_traits<RandomIt>::difference_type diff_t;
+    typedef sure::uniform_int_distribution<diff_t> distr_t;
+    typedef typename distr_t::param_type param_t;
+ 
+    distr_t D;
+    diff_t n = last - first;
+    for (diff_t i = n-1; i > 0; --i) {
+        using std::swap;
+        swap(first[i], first[D(g, param_t(0, i))]);
+    }
+}
 
 void InitRandomizerMenu(void)
 {
@@ -502,7 +518,7 @@ RandomizerMenu(MGLDraw *mgl)
 
 	SaveWorld(&world, "rando.llw");
 
-	/*for (int i = 0; i < 94; i++)
+	for (int i = 0; i < 94; i++)
 	{
 		int s1 = doublecheck[i][0];
 		int s2 = doublecheck[i][1];
@@ -587,7 +603,7 @@ std::vector<location> RandomFill()
 		remaining.push_back(l);
 	}
 
-	std::shuffle(remaining.begin(), remaining.end(), rng);
+	shuffleList(remaining.begin(), remaining.end(), rng);
 
 	std::FILE* f = AppdataOpen("spoiler.txt", "w");
 	FilePtrStream spoilerFile(f);
