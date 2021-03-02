@@ -605,7 +605,10 @@ std::vector<location> RandomFill()
 
 	shuffleList(remaining.begin(), remaining.end(), rng);
 
-	std::FILE* f = AppdataOpen("spoiler.txt", "w");
+	char buff[64];
+	sprintf(buff, "%s spoiler.txt", seed.c_str());
+
+	std::FILE* f = AppdataOpen(buff, "w");
 	FilePtrStream spoilerFile(f);
 
 	bool shortcircuit = false;
@@ -678,7 +681,10 @@ bool CheckBeatable(std::vector<location> remaining){
 		visited.insert( visited.end(), remaining.begin(), remaining.end());
 		PlaceItems(visited);
 	}else{
-		remove("spoiler.txt");
+		
+		char buff[64];
+		sprintf(buff, "%s spoiler.txt", seed.c_str());
+		remove(buff);
 	}
 	return gotEvilizer;
 }

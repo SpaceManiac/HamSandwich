@@ -23,7 +23,7 @@ byte tportclock;
 void InitPlayer(byte initWhat,byte world,byte level)
 {
 	int i;
-	byte startLife[]={15,10,5,3,1};
+	byte startLife[]={15,10,5,3,1,5};
 
 	if(initWhat==INIT_GAME)	// initialize everything, this is to start a whole new game
 	{
@@ -101,9 +101,13 @@ void InitPlayer(byte initWhat,byte world,byte level)
 				player.var[VAR_PANTS+i]=1;
 		}
 
-		player.difficulty=opt.difficulty;
+		//if(player.worldNum==WORLD_RANDOMIZER){
+		//	player.difficulty = DIFF_RANDO;
+		//}else{
+			player.difficulty=opt.difficulty;
+		//}
 
-		player.hearts=startLife[opt.difficulty];
+		player.hearts=startLife[player.difficulty];
 		player.startHearts=player.hearts;
 		player.maxHearts=player.hearts;
 		player.maxMaxHearts=player.hearts+20;
@@ -674,6 +678,7 @@ void PlayerSetVar(int v,int val)
 		{
 			MakeNormalSound(SND_POWERUP);
 			NewBigMessage("Got Reflect Gem!",90);
+			player.fireFlags|=FF_REFLECT;
 		}
 	}
 	if(v>=VAR_ZOMBIE && v<=VAR_ZOMBIE+2)

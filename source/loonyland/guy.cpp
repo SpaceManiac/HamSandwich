@@ -1022,11 +1022,11 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 		{
 			damage*=2;
 		}
-		else if(player.difficulty==DIFF_NORMAL)
+		else if(player.difficulty==DIFF_NORMAL || player.difficulty==DIFF_RANDO)
 		{
 			damage=damage*3/2;
 		}
-		else if(player.difficulty>=DIFF_MAD)
+		else if(player.difficulty==DIFF_MAD || player.difficulty==DIFF_LOONY)
 		{
 			if(damage>1)
 				damage/=4;
@@ -1221,6 +1221,8 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 					v=(byte)(combo/4+1);
 				else if(player.difficulty==DIFF_LOONY)
 					v=(byte)(combo/4);
+				else if(player.difficulty==DIFF_RANDO)
+					v=(byte)(combo/2+1);
 
 				for(combo=0;combo<v;combo++)
 				{
@@ -1326,7 +1328,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 	}
 	else if(type==player.monsType)
 	{
-		byte invinc[]={30*3,30*2,30,15,0};
+		byte invinc[]={30*3,30*2,30,15,0,30};
 		SetPlayerHP(hp);
 		player.invinc=invinc[player.difficulty];
 

@@ -11,6 +11,8 @@
 #define DIFF_MAD		3
 #define DIFF_LOONY		4
 
+#define DIFF_RANDO		5
+
 // special cheats
 #define CH_LIGHT	0		// always see everything
 #define CH_DISCO	1		// disco mode

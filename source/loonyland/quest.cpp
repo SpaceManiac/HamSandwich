@@ -1451,7 +1451,7 @@ void BeginChatting(byte tag)
 					{
 						if(player.var[VAR_QUESTDONE+QUEST_DAISY]==1)
 						{
-							if(player.var[VAR_WITCHREWARD==0])
+							if(player.var[VAR_WITCHREWARD]==0)
 								curChat=191;
 							else if(player.var[VAR_GAVEDAISY]==0)
 								curChat=60;
@@ -1966,6 +1966,7 @@ void DoChatAction(byte a)
 			break;
 		case 16:
 			// give fertilizer
+			PlayerSetVar(VAR_CROPSREWARD, 1);
 			if (player.worldNum == WORLD_RANDOMIZER){
 				GiveRandoItem(4);
 			}
@@ -1979,13 +1980,13 @@ void DoChatAction(byte a)
 			PlayerSetVar(VAR_QUESTASSIGN+QUEST_ZOMBIES,1);
 			break;
 		case 18:
+			PlayerSetVar(VAR_ZOMBIEREWARD,1);
 			// reward zombie quest
 			if (player.worldNum == WORLD_RANDOMIZER){
 				GiveRandoItem(10);
 			}
 			else
 			{
-				PlayerSetVar(VAR_ZOMBIEREWARD,1);
 				player.money+=100;
 				player.gemsGotten+=100;
 				BadgeCheck(BE_GEMSUP,0,curMap);
