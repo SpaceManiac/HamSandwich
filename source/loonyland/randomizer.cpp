@@ -27,6 +27,7 @@ static byte optMode;
 static std::string seed;
 std::set<int> ownedItems;
 static int genTries = 0;
+bool allItems = false;
 
 //auto rng = std::default_random_engine(std::random_device{}());
 auto rng = std::minstd_rand0(std::random_device{}());
@@ -305,14 +306,14 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 			if ((c2 & CONTROL_UP) && (!(oldc & CONTROL_UP)))
 			{
 				cursor--;
-				if (cursor > 4)
-					cursor = 4;
+				if (cursor > 5)
+					cursor = 5;
 				MakeNormalSound(SND_MENUCLICK);
 			}
 			if ((c2 & CONTROL_DN) && (!(oldc & CONTROL_DN)))
 			{
 				cursor++;
-				if (cursor > 4)
+				if (cursor > 5)
 					cursor = 0;
 				MakeNormalSound(SND_MENUCLICK);
 			}
@@ -352,12 +353,30 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 					MakeNormalSound(SND_MENUSELECT);
 					CO_RETURN 1;
 					break;
+
+				case 5: //logic toggle
+					MakeNormalSound(SND_MENUSELECT);
+					allItems = !allItems;
+				break;
 				}
 			}
-			if (c == SDLK_j)
+			/*if (c == SDLK_j)
 			{
-				//AssumedFill();
-			}
+				genTries=0;
+					if (!seed.empty()){
+						allItems = true;
+						std::seed_seq seed2(seed.begin(), seed.end());
+						//rng = std::default_random_engine(seed2);
+						rng = std::minstd_rand0(seed2);
+						
+					}
+					while(!CheckBeatable(RandomFill())){
+						genTries++;
+						MakeNormalSound(SND_MENUCANCEL);
+					}
+					MakeNormalSound(SND_POWERUP);
+					break;
+			}*/
 			break;
 		case 1: // Typing in something
 			c = mgl->LastKeyPressed();
@@ -459,6 +478,22 @@ void RenderRandomizerMenu(MGLDraw *mgl)
 	PrintColor(240, 140, "Exit To Main Menu", 7, -10, 0);
 	if (cursor == 4)
 		PrintColor(239, 139, "Exit To Main Menu", 0, 0, 0);
+
+	PrintColor(240, 180, "Game Completion: ", 7, -10, 0);
+	if(allItems){
+		PrintColor(400, 180, "100%", 7, -10, 0);
+	}else{
+		PrintColor(400, 180, "beatable", 7, -10, 0);
+	}
+	if (cursor == 5)
+	{
+		PrintColor(239, 179, "Game Completion: ", 0, 0, 0);
+		if(allItems){
+			PrintColor(399, 179, "100%", 0, 0, 0);
+		}else{
+			PrintColor(399, 179, "beatable", 0, 0, 0);
+		}
+	}
 }
 
 //----------------
@@ -605,8 +640,12 @@ std::vector<location> RandomFill()
 
 	shuffleList(remaining.begin(), remaining.end(), rng);
 
-	char buff[64];
-	sprintf(buff, "%s spoiler.txt", seed.c_str());
+	char buff[128] = "";
+	if(allItems){
+		sprintf(buff, "ALLITEMS %s spoiler.txt", seed.c_str());
+	}else{
+		sprintf(buff, "%s spoiler.txt", seed.c_str());
+	}
 
 	std::FILE* f = AppdataOpen(buff, "w");
 	FilePtrStream spoilerFile(f);
@@ -676,17 +715,23 @@ bool CheckBeatable(std::vector<location> remaining){
 	}*/
 
 	//printf("Evilizer: %d\n", gotEvilizer);
-	if (gotEvilizer)
+	if ((gotEvilizer && !allItems) || (allItems && remaining.empty()))
 	{
 		visited.insert( visited.end(), remaining.begin(), remaining.end());
 		PlaceItems(visited);
+		return true;
 	}else{
 		
 		char buff[64];
-		sprintf(buff, "%s spoiler.txt", seed.c_str());
+		if(allItems){
+			sprintf(buff, "ALLITEMS %s spoiler.txt", seed.c_str());
+		}else{
+			sprintf(buff, "%s spoiler.txt", seed.c_str());
+		}
 		remove(buff);
+		return false;
 	}
-	return gotEvilizer;
+	
 }
 
 void PlaceItems(const std::vector<location>& loclist)
