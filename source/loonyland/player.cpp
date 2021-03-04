@@ -713,6 +713,13 @@ void PlayerSetVar(int v,int val)
 		MakeNormalSound(SND_KEYGET);
 		NewBigMessage("Got a bar of silver!",90);
 	}
+
+	if(v==VAR_SILVERSLING && oldval==0)
+	{
+		//PlayerSetVar(VAR_QUESTASSIGN+QUEST_SILVER,1);
+		PlayerSetVar(VAR_QUESTDONE+QUEST_SILVER,1);
+	}
+
 	BadgeCheck(BE_VARSET,0,curMap);
 }
 
@@ -1146,11 +1153,6 @@ byte PlayerGetItem(byte itm,int x,int y)
 			case ITM_REFLECTGEM:
 				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
 				NewBigMessage("REFLECT GEM!",90);
-				MakeNormalSound(SND_POWERUP);
-				break;
-			case ITM_SILVERSLING:
-				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
-				NewBigMessage("SILVER BULLETS!",90);
 				MakeNormalSound(SND_POWERUP);
 				break;
 			case ITM_STICK:
