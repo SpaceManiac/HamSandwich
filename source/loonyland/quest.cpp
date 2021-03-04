@@ -738,7 +738,7 @@ Convo talk[]={
 	 "see if I can find the way home THIS time...",
 	 "",
 	 "",
-	 24,0},
+	 0,0},
 	 // 117
 	{"Heidy-ho there! My name is Bonkula, and I'm the king",
 	 "of the vampires! I may not be the biggest vampire,",

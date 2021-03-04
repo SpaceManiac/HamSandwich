@@ -45,9 +45,9 @@ location basic_locations[R_NUM_LOCATIONS] = {
 	{false, "Halloween Hill",  0, 30, 39, 73, 74, "Rocky Cliffs Grand Pharoh", [](const std::set<int>& inv) { return HaveAnyBigGem(inv); }},
 	{false, "Halloween Hill",  0, 69, 59, 66, 67, "Rocky Cliffs Rock Corner", [](const std::set<int>& inv) { return HaveAnyBigGem(inv) && inv.count(VAR_WEAPON); }},
 	{false, "Halloween Hill",  0, 115, 70, 18, 19, "Mushroom outside town", [](const std::set<int>& inv) { return true; }},
-	{false, "Halloween Hill",  0, 159, 85, 20, 21, "mushroom east", [](const std::set<int>& inv) { return true; }},
+	{false, "Halloween Hill",  0, 159, 85, 20, 21, "North of UG Passage", [](const std::set<int>& inv) { return true; }},
 	{false, "Halloween Hill", 0, 117, 33, 22, 23, "Top left mushroom spot", [](const std::set<int>& inv) { return true; }},
-	{false, "Halloween Hill", 0, 168, 98, 28, 29, "mushroom south east", [](const std::set<int>& inv) { return true; }},
+	{false, "Halloween Hill", 0, 168, 98, 28, 29, "NE of UG Passage", [](const std::set<int>& inv) { return true; }},
 	{false, "Halloween Hill", 0, 197, 161, 56, 57, "East Woods", [](const std::set<int>& inv) { return true; }},
 	{false, "Halloween Hill", 0, 16, 61, 49, 50, "Rocky Cliffs Ledge", [](const std::set<int>& inv) { return HaveAnyBigGem(inv); }},
 	{false, "Halloween Hill", 0, 28, 10, 63, 65, "Rocky Cliffs Peak", [](const std::set<int>& inv) { return HaveAnyBigGem(inv); }},
@@ -121,10 +121,10 @@ location basic_locations[R_NUM_LOCATIONS] = {
 	{false, "Castle Vampy IV", 35, 104, 68, 3, 4, "Ballroom Right", [](const std::set<int>& inv) { return inv.count(VAR_POTION) && inv.count(VAR_SILVERSLING) && HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY) && inv.count(VAR_PUMPKINKEY); }},
 	{false, "Castle Vampy IV", 35, 111, 102, 10, 11, "Right Secret Wall", [](const std::set<int>& inv) { return inv.count(VAR_SILVERSLING) && HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY) && inv.count(VAR_PUMPKINKEY); }},
 	{false, "Castle Vampy IV", 35, 23, 68, 1, 2, "Ballroom Left", [](const std::set<int>& inv) { return inv.count(VAR_POTION) && HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY) && inv.count(VAR_PUMPKINKEY); }},
-	{false, "Castle Vampy Roof", 37, 13, 18, 3, 4, "Boss", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && HaveAllBats(inv) && HaveAnySpecialWeapon(inv); }},
-	{false, "Castle Vampy Roof", 38, 13, 18, 3, 4, "Boss", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && HaveAllBats(inv); }},
-	{false, "Castle Vampy Roof", 39, 13, 18, 3, 4, "Boss", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && HaveAllBats(inv); }},
-	{false, "Castle Vampy Roof", 40, 13, 18, 3, 4, "Boss", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && HaveAllBats(inv); }},
+	{false, "Castle Vampy Roof", 37, 13, 18, 3, 4, "Gutsy the Elder", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && HaveAllBats(inv) && HaveAnySpecialWeapon(inv); }},
+	{false, "Castle Vampy Roof", 38, 13, 18, 3, 4, "Stoney the Elder", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && HaveAllBats(inv); }},
+	{false, "Castle Vampy Roof", 39, 13, 18, 3, 4, "Drippy the Elder", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && HaveAllBats(inv); }},
+	{false, "Castle Vampy Roof", 40, 13, 18, 3, 4, "Toasty the Elder", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && HaveAllBats(inv); }},
 	{false, "Heart of Terror", 42, 16, 28, 3, 4, "Bonkula", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAnyBigGem(inv) && inv.count(VAR_SKULLKEY) && inv.count(VAR_BATKEY) && inv.count(VAR_PUMPKINKEY) && HaveAllVamps(inv); }},
 	{false, "A Hidey Hole", 43, 5, 22, 1, 2, "Bat Door", [](const std::set<int>& inv) { return inv.count(VAR_BATKEY); }},
 	{false, "A Hidey Hole", 43, 18, 22, 4, 5, "Pebbles", [](const std::set<int>& inv) { return true; }},
@@ -648,23 +648,25 @@ std::vector<location> RandomFill()
 	}
 
 	std::FILE* f = AppdataOpen(buff, "w");
-	FilePtrStream spoilerFile(f);
-
-	bool shortcircuit = false;
-	for (int i = 0; i < remaining.size(); i++)
 	{
-		//make sure bonkula isn't holing a vamp statue or key
-		/*if (remaining[i].description.compare("Bonkula") == 0 &&
-			((itemList[i].playerVarId >= VAR_VAMPBUST && itemList[i].playerVarId <= VAR_VAMPBUST + 7) ||
-			 itemList[i].playerVarId == VAR_SKULLKEY || itemList[i].playerVarId == VAR_BATKEY || itemList[i].playerVarId == VAR_PUMPKINKEY))
+		FilePtrStream spoilerFile(f);
+
+		bool shortcircuit = false;
+		for (int i = 0; i < remaining.size(); i++)
 		{
-			//spoilerFile.close();
-			//return;
-		}*/
-		remaining[i].item = itemList[i];
-		spoilerFile << remaining[i].mapId << "\t\t" << remaining[i].mapName << "\t\t" << remaining[i].description << "\t\t" << itemList[i].playerVarId << "\t\t" << itemList[i].itemName << "\n";
+			//make sure bonkula isn't holing a vamp statue or key
+			/*if (remaining[i].description.compare("Bonkula") == 0 &&
+				((itemList[i].playerVarId >= VAR_VAMPBUST && itemList[i].playerVarId <= VAR_VAMPBUST + 7) ||
+				itemList[i].playerVarId == VAR_SKULLKEY || itemList[i].playerVarId == VAR_BATKEY || itemList[i].playerVarId == VAR_PUMPKINKEY))
+			{
+				//spoilerFile.close();
+				//return;
+			}*/
+			remaining[i].item = itemList[i];
+			spoilerFile << remaining[i].mapId << "\t\t" << remaining[i].mapName << "\t\t" << remaining[i].description << "\t\t" << itemList[i].playerVarId << "\t\t" << itemList[i].itemName << "\n";
+		}
 	}
-	//fclose(f);
+	fclose(f);
 	return remaining;
 }
 
