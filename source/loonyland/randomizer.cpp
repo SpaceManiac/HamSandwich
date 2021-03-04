@@ -222,7 +222,7 @@ rItem itemList[R_NUM_LOCATIONS] = {
 	{ITM_FERTILIZER, VAR_FERTILIZER, "Fertilizer"},
 	{ITM_SILVER, VAR_SILVER, "Silver"},
 	{ITM_DAISY, VAR_DAISY, "Doom Daisy"},
-	{ITM_POTION, VAR_POTION, "Ghost Potion"},
+	{ITM_GHOSTPOTION, VAR_POTION, "Ghost Potion"},
 	{ITM_BUST, VAR_VAMPBUST + 0, "Vamp Statue"},
 	{ITM_BUST, VAR_VAMPBUST + 1, "Vamp Statue"},
 	{ITM_BUST, VAR_VAMPBUST + 2, "Vamp statue"},

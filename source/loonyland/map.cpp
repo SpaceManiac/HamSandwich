@@ -1294,7 +1294,8 @@ byte Map::FindPowerUps(int x,int y)
 			(map[i].item>=ITM_KEY2 && map[i].item<=ITM_WHOTPANTS) ||
 			map[i].item==ITM_MYSORB || map[i].item==ITM_SHROOM || map[i].item==ITM_DAISY ||
 			map[i].item==ITM_SILVER || map[i].item==ITM_TALISMAN || map[i].item==ITM_TRIPLEFIRE ||
-			map[i].item==ITM_BUST || map[i].item==ITM_BAT || map[i].item==ITM_SUPERHEART)
+			map[i].item==ITM_BUST || map[i].item==ITM_BAT || map[i].item==ITM_SUPERHEART ||
+			(map[i].item>=ITM_CAT && map[i].item<=ITM_STICK) )
 		{
 			r=(abs(xx-x)+abs(yy-y));
 			if(r>31)
