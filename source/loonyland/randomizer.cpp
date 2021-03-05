@@ -80,7 +80,7 @@ location basic_locations[R_NUM_LOCATIONS] = {
 	{false, "Rusty Crypt", 12, 7, 97, 0, 1, "Boulders", [](const std::set<int>& inv) { return HaveLightSource(inv); }},
 	{false, "A Messy Cabin", 13, 13, 6, 1, 2, "Barrel Mess", [](const std::set<int>& inv) { return true; }},
 	{false, "Under the Lake", 14, 40, 13, 6, 7, "Lightning Rod Secret", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAllOrbs(inv); }},
-	{false, "Under the Lake", 14, 73, 20, 8, 9, "Bat Door", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_BATKEY); }},
+	{false, "Under the Lake", 14, 73, 20, 8, 9, "Bat Door", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_BATKEY) && HaveAllOrbs(inv); }},
 	{false, "Deeper Under the Lake", 15, 58, 77, 12, 13, "SE corner", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAllOrbs(inv); }},
 	{false, "Deeper Under the Lake", 15, 51, 71, 10, 11, "Rhombus", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAllOrbs(inv); }},
 	{false, "Frankenjulie's Laboratory", 16, 15, 6, 3, 4, "Boss Reward", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAllOrbs(inv); }},
