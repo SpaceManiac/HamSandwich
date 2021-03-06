@@ -239,7 +239,7 @@ rItem itemList[R_NUM_LOCATIONS] = {
 	{ITM_SUPERGEM, VAR_GEM + 3, "Big Gem"},
 	{ITM_SUPERGEM, VAR_GEM + 4, "Big Gem"},
 	{ITM_SUPERGEM, VAR_GEM + 5, "Big Gem"},
-	{ITM_ZOMBGEM, VAR_ZOMBIEREWARD, "Zombie Reward"},
+	{ITM_ZOMBGEM, VAR_ZOMBIEGEM, "Zombie Reward"},
 	{ITM_TRIPLEFIRE, VAR_TRIPLEFIRE, "3 way"},
 	{ITM_TALISMAN, VAR_TALISMAN, "Happy Stick"},
 	{ITM_BAT, VAR_BATSTATUE + 0, "Bat Statue"},

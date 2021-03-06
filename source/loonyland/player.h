@@ -85,6 +85,7 @@
 #define VAR_SILVERSLING	220 // 220 = Have Silver Bullets
 #define VAR_LARRYREWARD	221 // 221 = Rewarded for bringing Larry Home
 #define VAR_CROPSREWARD	222 // 222 = Rewarded for crop smash
+#define VAR_ZOMBIEGEM	223 // 223 = red 100 gem
 
 	// temp variables
 #define VAR_TEMP		240	// 240-255 = temporary variables - cleared when leaving a level
