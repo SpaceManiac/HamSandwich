@@ -342,10 +342,10 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 						rng = std::minstd_rand0(seed2);
 						
 					
-					while(!CheckBeatable(RandomFill())){
-						genTries++;
-						MakeNormalSound(SND_MENUCANCEL);
-					}
+						while(!CheckBeatable(RandomFill())){
+							genTries++;
+							MakeNormalSound(SND_MENUCANCEL);
+						}
 					MakeNormalSound(SND_POWERUP);
 					}else{
 						MakeNormalSound(SND_MENUCANCEL);
