@@ -390,7 +390,7 @@ void DiffChooseDisplay(MGLDraw *mgl)
 {
 	int i;
 
-	char diffName[5][16]={"Beginner","Normal","Challenge","Mad","Loony"};
+	char diffName[6][16]={"Beginner","Normal","Challenge","Mad","Loony", "Rando Special"};
 
 	char diffDesc[][128]={
 		// beginner
@@ -412,7 +412,11 @@ void DiffChooseDisplay(MGLDraw *mgl)
 		// Loony
 		"For masochists.  Enemies do double damage, you do 1/4 damage, you begin with ONE",
 		"Heart, poison is twice as deadly, enemies move faster, and enemies only drop items",
-		"when Combo'd!"
+		"when Combo'd!",
+		// Loony
+		"Intended difficulty for the randomizer. It's mostly challenge mode, but enemies",
+		"take damage like normal mode so they aren't super bulky, and item drops are",
+		"slightly better than challenge and slightly worse than normal"
 	};
 
 	for(i=0;i<480;i++)
@@ -430,7 +434,7 @@ void DiffChooseDisplay(MGLDraw *mgl)
 	CenterPrintGlow(440,330,diffName[opt.difficulty],0,2);
 	CenterPrintGlow(440-4+Random(9),330-4+Random(9),diffName[opt.difficulty],-20,2);
 
-	if(opt.difficulty<4)
+	if(opt.difficulty<5)
 		PrintGlow(560,330,">>>",0,2);
 
 	PrintGlow(5,450,"The chosen difficulty applies to all game modes.  You can change it at any time",0,1);
@@ -683,7 +687,7 @@ byte ChooseDiffUpdate(int *lastTime,MGLDraw *mgl)
 		}
 		if((c&CONTROL_RT) && !(oldc&CONTROL_RT))
 		{
-			if(opt.difficulty<4)
+			if(opt.difficulty<5)
 				opt.difficulty++;
 			MakeNormalSound(SND_MENUCLICK);
 		}
