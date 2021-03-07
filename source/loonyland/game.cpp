@@ -631,7 +631,7 @@ TASK(byte) LunaticWorld(byte world,const char *worldName)
 			else
 			{
 				mapNum=0;
-				InitPlayer(INIT_GAME,0,0);
+				InitPlayer(INIT_GAME,player.worldNum,0);
 			}
 		}
 		else if(result==LEVEL_LOADING)
