@@ -578,7 +578,7 @@ std::vector<std::string> ListDirectory(const char* directory, const char* extens
 
 	if (extension || maxlen > 0) {
 		size_t extlen = extension ? strlen(extension) : 0;
-		erase_if(output, [=](const std::string& value) {
+		std::erase_if(output, [=](const std::string& value) {
 			size_t len = value.size();
 			if (maxlen > 0 && len >= maxlen) {
 				return true;
