@@ -193,7 +193,7 @@ function links(name)
 end
 
 library "libextract"
-	links { "SDL2", "zlib" }
+	links { "SDL2", "z" }
 
 	filter "action:not vs20*"
 		buildoptions { "-Wall", "-Wextra" }
