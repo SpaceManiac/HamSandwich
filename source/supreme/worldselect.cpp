@@ -247,7 +247,7 @@ TASK(void) ScanWorlds(void)
 #endif
 
 	std::vector<std::string> files = ListDirectory("worlds", ".dlw", 32);
-	std::erase_if(files, [](const std::string& name) {
+	erase_if(files, [](const std::string& name) {
 		return name == "backup_load.dlw"
 			|| name == "backup_exit.dlw"
 			|| name == "backup_save.dlw";

@@ -51,8 +51,7 @@ function base_project(name)
 			linkoptions { "-static-libgcc", "-static-libstdc++" }
 
 		filter "action:vs20*"
-			-- At least some versions of VS2017 don't recognize "C++17".
-			cppdialect "C++latest"
+			cppdialect "C++17"
 			defines { "_CRT_SECURE_NO_WARNINGS", "NOMINMAX", "SDL_UNPREFIXED" }
 			-- The MSVC dependency script puts the SDL2 binaries here.
 			includedirs {
