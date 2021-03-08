@@ -316,7 +316,12 @@ sdl2_project "loonyland2"
 	icon_file "loonyland2"
 	links "ham"
 	pch "winpch"
-	defines { "DIRECTORS" }
+	filter "action:not vs20*"
+		defines { "DIRECTORS" }
+	filter "action:vs20*"
+		defines { "DIRECTORS", "WINDOWS_IGNORE_PACKING_MISMATCH" }
+	filter {}
+
 	excludefiles {
 		"monster_ai.cpp",
 	}
