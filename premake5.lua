@@ -59,11 +59,13 @@ function base_project(name)
 				"build/SDL2-msvc/include",
 				"build/SDL2_mixer-msvc/include",
 				"build/SDL2_image-msvc/include",
+				"build/zlib-1.2.11",
 			}
 			libdirs {
 				"build/SDL2-msvc/lib/x86",
 				"build/SDL2_mixer-msvc/lib/x86",
 				"build/SDL2_image-msvc/lib/x86",
+				"build/zlib",
 			}
 			debugenvs { "PATH=$(ProjectDir)/lib/x86/;%PATH%" }
 
@@ -192,7 +194,7 @@ function links(name)
 end
 
 library "libextract"
-	links { "SDL2", "z" }
+	links { "SDL2", "zlib" }
 
 	filter "toolset:not msc"
 		buildoptions { "-Wall", "-Wextra" }
