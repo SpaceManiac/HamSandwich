@@ -6,7 +6,8 @@ dofile "tools/build/vscode.lua"
 
 workspace "HamSandwich"
 	location "build"
-	configurations { "debug", "release", "debug64", "release64" }
+	configurations { "debug", "release" }
+	platforms { "x86", "x86_64" }
 
 	filter { "action:android-studio" }
 		location "build/android"
@@ -20,7 +21,7 @@ function base_project(name)
 		language "C++"
 		cppdialect "C++17"
 		architecture "x86"
-		targetdir "%{wks.location}/%{cfg.toolset}-%{cfg.buildcfg}/%{prj.name}/"
+		targetdir "%{wks.location}/%{cfg.toolset}-%{cfg.buildcfg}-%{cfg.platform}/%{prj.name}/"
 		objdir "%{cfg.targetdir}/obj/"
 
 		-- These emulate the `./run` script when running within VS.
@@ -35,15 +36,15 @@ function base_project(name)
 			"source/%{prj.name}/**.c",
 		}
 
-		filter "configurations:*64"
+		filter "platforms:x86_64"
 			architecture "x86_64"
 
-		filter "configurations:debug*"
+		filter "configurations:debug"
 			kind "ConsoleApp"
 			defines { "_DEBUG" }
 			symbols "On"
 
-		filter "configurations:release*"
+		filter "configurations:release"
 			defines { "NDEBUG" }
 			optimize "On"
 
@@ -72,7 +73,7 @@ function base_project(name)
 			defines { "SDL_UNPREFIXED" }
 			buildoptions { "-fsigned-char", "-fexceptions" }
 
-		filter { "toolset:emcc", "configurations:debug*" }
+		filter { "toolset:emcc", "configurations:debug" }
 			linkoptions { "--emrun" }
 
 		filter { "toolset:emcc" }

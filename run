@@ -22,7 +22,7 @@ show_help() {
 TOOL=
 PROJECT=
 CONFIG=debug
-BITS=
+PLATFORM=x86
 ARGS=window
 NOBUILD=
 TOOLSET=gcc
@@ -30,9 +30,9 @@ TWO=
 
 # Default bitness
 if [ "${MSYSTEM:-}" = "MINGW64" ]; then
-	BITS=64
+	PLATFORM=x86_64
 elif [[ "$(uname -v)" = *Ubuntu* ]] && [ "$(uname -m)" = "x86_64" ]; then
-	BITS=64
+	PLATFORM=x86_64
 fi
 
 # Read command-line arguments
@@ -46,10 +46,10 @@ while [ $# -ne 0 ]; do
 			CONFIG=release
 			;;
 		"--32")
-			BITS=
+			PLATFORM=x86
 			;;
 		"--64")
-			BITS=64
+			PLATFORM=x86_64
 			;;
 		"--gdb")
 			TOOL=gdb
@@ -68,7 +68,7 @@ while [ $# -ne 0 ]; do
 			;;
 		"--web")
 			TOOLSET=emcc
-			BITS=
+			PLATFORM=x86
 			;;
 		"--two")
 			TWO=ON
@@ -89,7 +89,8 @@ if [ -z "$PROJECT" ]; then
 	# Exit if no project was specified
 	show_help; exit 1
 fi
-CONFIG=$CONFIG$BITS
+MAKE_CONFIG="${CONFIG}_${PLATFORM}"
+CONFIG="${CONFIG}-${PLATFORM}"
 
 # Ensure all dependencies are installed
 ./tools/build/install-deps.sh
@@ -111,7 +112,7 @@ fi
 
 # Ensure the project's build is up to date
 if [ -z "$NOBUILD" ]; then
-	make "$PROJECT" config="$CONFIG" toolset="$TOOLSET"
+	make "$PROJECT" config="$MAKE_CONFIG" toolset="$TOOLSET"
 fi
 
 # Run the project
