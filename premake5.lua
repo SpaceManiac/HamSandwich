@@ -342,3 +342,5 @@ sdl2_project "mystic"
 			link = "https://hamumu.itch.io/kid-mystic",
 		}
 	}
+
+	webfiles { ["splash.jpg"] = "assets/splashes/mystic.jpg" }
