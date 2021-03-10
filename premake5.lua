@@ -9,8 +9,21 @@ sdl2_platforms = {
 	x86_64 = "x64",
 }
 
+local is_msvc = _ACTION and _ACTION:sub(1, 4) == "vs20"
+
+local toolset
+if _OPTIONS.cc then
+	toolset = _OPTIONS.cc
+elseif is_msvc then
+	toolset = "msc"
+elseif (_OPTIONS.os or _TARGET_OS) == premake.MACOSX then
+	toolset = "clang"
+else
+	toolset = "gcc"
+end
+
 workspace "HamSandwich"
-	location "build"
+	location("build/" .. toolset)
 	configurations { "debug", "release" }
 	platforms { "x86", "x86_64" }
 
@@ -26,11 +39,11 @@ function base_project(name)
 		language "C++"
 		cppdialect "C++17"
 		architecture "x86"
-		targetdir "%{wks.location}/%{cfg.toolset}-%{cfg.buildcfg}-%{cfg.platform}/%{prj.name}/"
+		targetdir "%{wks.location}/%{cfg.buildcfg}-%{cfg.platform}/%{prj.name}/"
 		objdir "%{cfg.targetdir}/obj/"
 
 		-- These emulate the `./run` script when running within VS.
-		debugdir "%{wks.location}/game/%{prj.name}"
+		debugdir "%{wks.location}/../game/%{prj.name}"
 		debugargs { "window" }
 
 		defines { 'PROJECT_NAME="%{prj.name}"' }
@@ -155,7 +168,7 @@ function icon_file(icon)
 
 	filter { "system:not Windows or toolset:emcc", "files:**.rc" }
 		buildmessage "%{file.name}"
-		buildcommands { 'python3 ../tools/build/rescomp.py "%{file.path}" "%{cfg.objdir}/%{file.basename}.rc.cpp"' }
+		buildcommands { 'python3 ../../tools/build/rescomp.py "%{file.path}" "%{cfg.objdir}/%{file.basename}.rc.cpp"' }
 		buildoutputs { "%{cfg.objdir}/" .. icon .. ".rc.cpp" }
 		buildinputs { "tools/build/rescomp.py" }
 
@@ -203,15 +216,14 @@ function links(name)
 	end
 end
 
-if _ACTION and _ACTION:sub(1, 4) == "vs20" then
+if is_msvc then
 	local function nmake_command(args)
-		return 'cmd /C "cd %{cfg.targetdir} & nmake TOP=../../zlib-1.2.11 -f ../../zlib-1.2.11/win32/Makefile.msc ' .. args .. '"'
+		return 'cmd /C "cd %{cfg.targetdir} & nmake TOP=../../../zlib-1.2.11 -f ../../../zlib-1.2.11/win32/Makefile.msc ' .. args .. '"'
 	end
 
 	project "z"
-		location "build"
 		kind "Makefile"
-		targetdir "%{wks.location}/%{cfg.toolset}-%{cfg.buildcfg}-%{cfg.platform}/%{prj.name}/"
+		targetdir "%{wks.location}/%{cfg.buildcfg}-%{cfg.platform}/%{prj.name}/"
 		objdir "%{cfg.targetdir}/"
 		targetname "zlib.lib"
 

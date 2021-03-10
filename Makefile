@@ -12,33 +12,24 @@ PREMAKE5 := build/premake5
 MAKEFILE_DEPS += $(PREMAKE5)
 endif
 
-# Recreate build/Makefile if $toolset changes.
-ifneq "$(toolset)" "$(shell cat build/.toolset 2>/dev/null)"
-TOOLSET_DEPS += build/.toolset
-endif
-
 # Recreate build/Makefile if any of the premake Lua changes.
 MAKEFILE_DEPS += premake5.lua $(wildcard tools/build/*.lua)
 
-.PHONY: all clean help build/.toolset $(PROJECTS)
+.PHONY: all clean help $(PROJECTS)
 
-all clean help $(PROJECTS): build/Makefile
-	@$(MAKE) --no-print-directory -C build $@
+all clean help $(PROJECTS): build/$(toolset)/Makefile
+	@$(MAKE) --no-print-directory -C build/$(toolset) $@
 
-build/Makefile: $(MAKEFILE_DEPS) $(TOOLSET_DEPS)
+build/$(toolset)/Makefile: $(MAKEFILE_DEPS) $(TOOLSET_DEPS)
 	@echo "==== Preparing $(toolset) build ===="
 	@rm -f $@
 	@$(PREMAKE5) gmake2 --cc=$(toolset)
 	@output="$$($(PREMAKE5) gmake2_deps --cc=$(toolset))" || printf "%s\n" "$$output"
 
 # Recreate build/Makefile if any source directory mtimes change.
-build/Makefile.d: $(MAKEFILE_DEPS)
+build/$(toolset)/Makefile.d: $(MAKEFILE_DEPS)
 	@$(PREMAKE5) gmake2_deps --cc=$(toolset) >/dev/null
--include build/Makefile.d
-
-build/.toolset:
-	@mkdir -p build
-	@echo $(toolset) >$@
+-include build/$(toolset)/Makefile.d
 
 build/premake5:
 	@./tools/build/install-deps.sh

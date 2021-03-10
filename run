@@ -105,7 +105,7 @@ if [ "$TOOLSET" = "emcc" ]; then
 
 	# Emscripten doesn't require extracting assets ahead of time, because
 	# the installers are provided to the game at runtime.
-	GAMEDIR="$PWD/build/$TOOLSET-$CONFIG/$PROJECT"
+	GAMEDIR="$PWD/build/$TOOLSET/$CONFIG/$PROJECT"
 elif [ ! -d "$GAMEDIR" ]; then
 	./tools/build/extract-assets.sh "$PROJECT" "$GAMEDIR"
 fi
@@ -116,7 +116,7 @@ if [ -z "$NOBUILD" ]; then
 fi
 
 # Run the project
-EXE="$PWD/build/$TOOLSET-$CONFIG/$PROJECT/$PROJECT"
+EXE="$PWD/build/$TOOLSET/$CONFIG/$PROJECT/$PROJECT"
 cd "$GAMEDIR"
 if [ "$TOOL" = "gdb" ]; then
 	echo "==== Debugging $PROJECT ($CONFIG) ===="

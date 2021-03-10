@@ -21,7 +21,7 @@ newoption {
 	trigger = "config",
 	value = "CONFIG",
 	description = "Default configuration for Visual Studio Code",
-	default = (_OPTIONS.os or _TARGET_OS) == "linux" and "debug64" or "debug",
+	default = (_OPTIONS.os or _TARGET_OS) == "linux" and "debug|x86_64" or "debug|x86",
 }
 
 function m.is_application(prj)
@@ -81,7 +81,7 @@ function m.tasks_json(wks)
 			}
 		}
 	],
-	]], _OPTIONS.config)
+	]], _OPTIONS.config:gsub("|", "_"))
 
 	p.push '"tasks": ['
 	for prj in p.workspace.eachproject(wks) do
