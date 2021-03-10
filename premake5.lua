@@ -203,7 +203,7 @@ function links(name)
 	end
 end
 
-if _ACTION:sub(1, 4) == "vs20" then
+if _ACTION and _ACTION:sub(1, 4) == "vs20" then
 	local function nmake_command(args)
 		return 'cmd /C "cd %{cfg.targetdir} & nmake TOP=../../zlib-1.2.11 -f ../../zlib-1.2.11/win32/Makefile.msc ' .. args .. '"'
 	end
