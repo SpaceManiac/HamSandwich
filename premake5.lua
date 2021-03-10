@@ -51,19 +51,20 @@ function base_project(name)
 			linkoptions { "-static-libgcc", "-static-libstdc++" }
 
 		filter "action:vs20*"
-			-- At least some versions of VS2017 don't recognize "C++17".
-			cppdialect "C++latest"
+			cppdialect "C++17"
 			defines { "_CRT_SECURE_NO_WARNINGS", "NOMINMAX", "SDL_UNPREFIXED" }
 			-- The MSVC dependency script puts the SDL2 binaries here.
 			includedirs {
 				"build/SDL2-msvc/include",
 				"build/SDL2_mixer-msvc/include",
 				"build/SDL2_image-msvc/include",
+				"build/zlib-1.2.11",
 			}
 			libdirs {
 				"build/SDL2-msvc/lib/x86",
 				"build/SDL2_mixer-msvc/lib/x86",
 				"build/SDL2_image-msvc/lib/x86",
+				"build/zlib",
 			}
 			debugenvs { "PATH=$(ProjectDir)/lib/x86/;%PATH%" }
 
@@ -194,13 +195,13 @@ end
 library "libextract"
 	links { "SDL2", "z" }
 
-	filter "toolset:not msc"
+	filter "action:not vs20*"
 		buildoptions { "-Wall", "-Wextra" }
 
 library "ham"
 	links { "libextract", "SDL2", "SDL2_mixer", "SDL2_image" }
 
-	filter "toolset:not msc"
+	filter "action:not vs20*"
 		buildoptions { "-Wall", "-Wextra" }
 
 sdl2_project "lunatic"
@@ -218,7 +219,7 @@ sdl2_project "lunatic"
 		}
 	}
 
-	filter "toolset:not msc"
+	filter "action:not vs20*"
 		buildoptions { "-Wall", "-Wextra", "-Wno-unused-parameter" }
 
 sdl2_project "supreme"
@@ -314,7 +315,12 @@ sdl2_project "loonyland2"
 	icon_file "loonyland2"
 	links "ham"
 	pch "winpch"
-	defines { "DIRECTORS" }
+	filter "action:not vs20*"
+		defines { "DIRECTORS" }
+	filter "action:vs20*"
+		defines { "DIRECTORS", "WINDOWS_IGNORE_PACKING_MISMATCH" }
+	filter {}
+
 	excludefiles {
 		"monster_ai.cpp",
 	}

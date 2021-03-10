@@ -71,3 +71,14 @@ if (-not (Test-Path "build/SDL2_image-msvc")) {
 	mv build/SDL2_image-2.0.4 build/SDL2_image-msvc -ErrorAction Stop
 	rm build/SDL2_image.zip -ErrorAction Stop
 }
+
+if (-not (Test-Path "build/zlib-1.2.11")) {
+	echo "==== Downloading zlib source ===="
+	Invoke-WebRequest `
+		-Uri "https://zlib.net/zlib1211.zip" `
+		-OutFile "build/zlib1211.zip" `
+		-ErrorAction Stop
+	CheckHash -File "build/zlib1211.zip" -Sha "d7510a8ee1918b7d0cad197a089c0a2cd4d6df05fee22389f67f115e738b178d"
+	[System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD/build/zlib1211.zip", "$PWD/build")
+	rm build/zlib1211.zip -ErrorAction Stop
+}
