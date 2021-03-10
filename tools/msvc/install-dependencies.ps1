@@ -1,6 +1,6 @@
 # install-msvc-deps.ps1
 
-mkdir build -ErrorAction SilentlyContinue > $null
+New-Item build -ItemType Directory -ErrorAction SilentlyContinue > $null
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 Add-Type -AssemblyName System.IO.Compression.FileSystem
