@@ -12,16 +12,16 @@ function CheckHash {
 	$got = $sha256.ComputeHash([System.IO.File]::ReadAllBytes("$PWD/$FILE"))
 	$got = [System.BitConverter]::ToString($got).Replace('-', '').ToLower()
 	if ($got -ne $Sha) {
-		echo "${File}: FAILED"
+		Write-Output "${File}: FAILED"
 		exit 1
 	} else {
-		echo "${File}: OK"
+		Write-Output "${File}: OK"
 	}
 }
 
 # Fetch premake5 binary
 if (-not (Test-Path "build/premake5.exe")) {
-	echo "==== Downloading premake5 binary ===="
+	Write-Output "==== Downloading premake5 binary ===="
 	Invoke-WebRequest `
 		-Uri "https://github.com/premake/premake-core/releases/download/v5.0.0-alpha14/premake-5.0.0-alpha14-windows.zip" `
 		-OutFile "build/premake5.zip" `
@@ -34,7 +34,7 @@ if (-not (Test-Path "build/premake5.exe")) {
 
 # Official SDL2, SDL2_mixer, SDL2_image MSVC binaries
 if (-not (Test-Path "build/SDL2-msvc")) {
-	echo "==== Downloading SDL2 MSVC binaries ===="
+	Write-Output "==== Downloading SDL2 MSVC binaries ===="
 	Invoke-WebRequest `
 		-Uri "https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip" `
 		-OutFile "build/SDL2.zip" `
@@ -47,7 +47,7 @@ if (-not (Test-Path "build/SDL2-msvc")) {
 }
 
 if (-not (Test-Path "build/SDL2_mixer-msvc")) {
-	echo "==== Downloading SDL2_mixer MSVC binaries ===="
+	Write-Output "==== Downloading SDL2_mixer MSVC binaries ===="
 	Invoke-WebRequest `
 		-Uri "https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.0.4-VC.zip" `
 		-OutFile "build/SDL2_mixer.zip" `
@@ -60,7 +60,7 @@ if (-not (Test-Path "build/SDL2_mixer-msvc")) {
 }
 
 if (-not (Test-Path "build/SDL2_image-msvc")) {
-	echo "==== Downloading SDL2_image MSVC binaries ===="
+	Write-Output "==== Downloading SDL2_image MSVC binaries ===="
 	Invoke-WebRequest `
 		-Uri "https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.4-VC.zip" `
 		-OutFile "build/SDL2_image.zip" `
@@ -73,7 +73,7 @@ if (-not (Test-Path "build/SDL2_image-msvc")) {
 }
 
 if (-not (Test-Path "build/zlib-1.2.11")) {
-	echo "==== Downloading zlib source ===="
+	Write-Output "==== Downloading zlib source ===="
 	Invoke-WebRequest `
 		-Uri "https://zlib.net/zlib1211.zip" `
 		-OutFile "build/zlib1211.zip" `
