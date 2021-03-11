@@ -23,10 +23,10 @@ function CheckHash {
 if (-not (Test-Path "build/premake5.exe")) {
 	Write-Output "==== Downloading premake5 binary ===="
 	Invoke-WebRequest `
-		-Uri "https://github.com/premake/premake-core/releases/download/v5.0.0-alpha14/premake-5.0.0-alpha14-windows.zip" `
+		-Uri "https://github.com/premake/premake-core/releases/download/v5.0.0-alpha15/premake-5.0.0-alpha15-windows.zip" `
 		-OutFile "build/premake5.zip" `
 		-ErrorAction Stop
-	CheckHash -File "build/premake5.zip" -Sha "070419eedbb4c8737664d05f0e3701055741014c1135a9214c35d6feb03724a7"
+	CheckHash -File "build/premake5.zip" -Sha "a8b9fc87ec06b8fa52587f62be2574bf151c5facadbad99db31b7d4ce6ef1eab"
 
 	[System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD/build/premake5.zip", "$PWD/build")
 	rm build/premake5.zip -ErrorAction Stop

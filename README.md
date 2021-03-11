@@ -48,8 +48,8 @@ Compiling and running:
 1. Download dependencies:
     1. Run `powershell tools/build/msvc-install-deps.ps1`.
     2. Or, download and extract them manually:
-        1. `build/premake5.exe`: premake-5.0.0-alpha14-windows.zip
-           from <https://github.com/premake/premake-core/releases/tag/v5.0.0-alpha14>.
+        1. `build/premake5.exe`: premake-5.0.0-alpha15-windows.zip
+           from <https://github.com/premake/premake-core/releases/tag/v5.0.0-alpha15>.
         2. `build/SDL2-msvc/`: SDL2-devel-2.0.9-VC.zip from <https://www.libsdl.org/download-2.0.php>.
         3. `build/SDL2_mixer-msvc/`: SDL2_mixer-devel-2.0.4-VC.zip from <https://www.libsdl.org/projects/SDL_mixer/>.
         4. `build/SDL2_image-msvc/`: SDL2_image-devel-2.0.4-VC.zip from <https://www.libsdl.org/projects/SDL_image/>.
@@ -62,7 +62,7 @@ Compiling and running:
 ### Linux
 
 1. Install dependencies (handled automatically on Ubuntu, Arch):
-    1. premake-5.0.0-alpha14-linux.tar.gz from <https://github.com/premake/premake-core/releases/tag/v5.0.0-alpha14>.
+    1. premake-5.0.0-alpha15-linux.tar.gz from <https://github.com/premake/premake-core/releases/tag/v5.0.0-alpha15>.
     2. 32-bit G++ (or Clang) toolchain.
     3. 32-bit SDL2, SDL2_mixer, and SDL2_image development packages.
     4. 7-Zip and Innoextract to extract game assets.
