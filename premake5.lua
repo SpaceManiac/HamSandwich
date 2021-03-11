@@ -4,6 +4,7 @@ dofile "tools/build/android_studio.lua"
 dofile "tools/build/emscripten.lua"
 dofile "tools/build/vscode.lua"
 dofile "tools/build/run-config.lua"
+dofile "tools/build/recursive-links.lua"
 
 sdl2_platforms = {
 	x86 = "x86",
@@ -31,9 +32,7 @@ workspace "HamSandwich"
 		location "build/android"
 		android_abis { "armeabi-v7a" }
 
-local _current_project
 function base_project(name)
-	_current_project = name
 	project(name)
 		kind "WindowedApp"
 		language "C++"
@@ -189,34 +188,6 @@ function pch(name)
 	filter "action:not vs*"
 		pchheader("source/%{prj.name}/" .. name .. ".h")
 	filter {}
-end
-
-local _recursive_links = {}
-local _original_links = links
-function links(name)
-	if type(name) == 'table' then
-		for _, v in ipairs(name) do
-			links(v)
-		end
-		return
-	end
-
-	local our_links = _recursive_links[_current_project]
-	if our_links == nil then
-		our_links = {}
-		_recursive_links[_current_project] = our_links
-	end
-	table.insert(our_links, name)
-
-	_original_links(name)
-	local their_links = _recursive_links[name]
-	if their_links ~= nil then
-		includedirs { "source/" .. name }
-		for _, v in ipairs(their_links) do
-			_original_links(v)
-			table.insert(our_links, v)
-		end
-	end
 end
 
 if is_msvc then
