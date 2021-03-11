@@ -33,27 +33,17 @@ workspace "HamSandwich"
 		android_abis { "armeabi-v7a" }
 
 function base_project()
-	kind "WindowedApp"
 	language "C++"
 	cppdialect "C++17"
 	architecture "x86"
 	targetdir "%{wks.location}/%{cfg.buildcfg}-%{cfg.platform}/%{prj.name}/"
 	objdir "%{cfg.targetdir}/obj/"
 
-	-- These emulate the `./run` script when running within VS.
-	debugdir "%{wks.location}/../game/%{prj.name}"
-	debugargs { "window" }
-
-	defines { 'PROJECT_NAME="%{prj.name}"' }
-
 	files {
 		"source/%{prj.name}/**.h",
 		"source/%{prj.name}/**.cpp",
 		"source/%{prj.name}/**.c",
 	}
-
-	filter "toolset:emcc"
-		debugdir "%{cfg.targetdir}"
 
 	filter "platforms:x86_64"
 		architecture "x86_64"
@@ -85,20 +75,10 @@ function base_project()
 			"build/SDL2_mixer-msvc/lib/%{sdl2_platforms[cfg.platform]}",
 			"build/SDL2_image-msvc/lib/%{sdl2_platforms[cfg.platform]}",
 		}
-		debugenvs {
-			"PATH=" ..
-				"$(ProjectDir)/../SDL2-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
-				"$(ProjectDir)/../SDL2_mixer-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
-				"$(ProjectDir)/../SDL2_image-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
-				"%PATH%",
-		}
 
 	filter "action:android-studio"
 		defines { "SDL_UNPREFIXED" }
 		buildoptions { "-fsigned-char", "-fexceptions" }
-
-	filter { "toolset:emcc", "configurations:debug" }
-		linkoptions { "--emrun" }
 
 	filter { "toolset:emcc" }
 		linkoptions {
@@ -119,6 +99,29 @@ end
 function sdl2_project()
 	base_project()
 
+	defines { 'PROJECT_NAME="%{prj.name}"' }
+
+	kind "WindowedApp"
+	filter "configurations:debug"
+		kind "ConsoleApp"
+	filter {}
+
+	-- These emulate the `./run` script when running within VS.
+	debugdir "%{wks.location}/../game/%{prj.name}"
+	debugargs { "window" }
+
+	filter "toolset:emcc"
+		debugdir "%{cfg.targetdir}"
+	filter "action:vs20*"
+		debugenvs {
+			"PATH=" ..
+				"$(ProjectDir)/../SDL2-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
+				"$(ProjectDir)/../SDL2_mixer-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
+				"$(ProjectDir)/../SDL2_image-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
+				"%PATH%",
+		}
+	filter {}
+
 	-- Android application metadata.
 	android_package "com.platymuus.hamsandwich.%{prj.name}"
 	android_assetdirs {
@@ -128,6 +131,9 @@ function sdl2_project()
 
 	-- Emscripten metadata.
 	webfiles "assets/emscripten/*"
+	filter { "toolset:emcc", "configurations:debug" }
+		linkoptions { "--emrun" }
+	filter {}
 
 	-- Link SDL2 in the correct sequence.
 	filter { "system:Windows", "not action:vs*", "toolset:not emcc" }
