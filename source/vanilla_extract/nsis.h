@@ -1,5 +1,5 @@
-#ifndef LIBEXTRACT_NSIS_H
-#define LIBEXTRACT_NSIS_H
+#ifndef VANILLA_EXTRACT_NSIS_H
+#define VANILLA_EXTRACT_NSIS_H
 
 #include <vector>
 #include <string>
@@ -30,4 +30,4 @@ public:
 
 }  // namespace nsis
 
-#endif  // LIBEXTRACT_NSIS_H
+#endif  // VANILLA_EXTRACT_NSIS_H

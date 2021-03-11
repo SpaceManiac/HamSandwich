@@ -1,5 +1,5 @@
-#ifndef LIBEXTRACT_COMMON_H
-#define LIBEXTRACT_COMMON_H
+#ifndef VANILLA_EXTRACT_COMMON_H
+#define VANILLA_EXTRACT_COMMON_H
 
 #include <vector>
 #include <string>
@@ -49,4 +49,4 @@ public:
 
 }  // namespace sauce
 
-#endif  // LIBEXTRACT_COMMON_H
+#endif  // VANILLA_EXTRACT_COMMON_H

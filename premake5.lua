@@ -237,14 +237,14 @@ if is_msvc then
 		cleancommands { nmake_command "clean" }
 end
 
-library "libextract"
+library "vanilla_extract"
 	links { "SDL2", "z" }
 
 	filter "action:not vs20*"
 		buildoptions { "-Wall", "-Wextra" }
 
 library "ham"
-	links { "libextract", "SDL2", "SDL2_mixer", "SDL2_image" }
+	links { "vanilla_extract", "SDL2", "SDL2_mixer", "SDL2_image" }
 
 	filter "action:not vs20*"
 		buildoptions { "-Wall", "-Wextra" }

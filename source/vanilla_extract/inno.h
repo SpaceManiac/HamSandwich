@@ -1,5 +1,5 @@
-#ifndef LIBEXTRACT_INNO_H
-#define LIBEXTRACT_INNO_H
+#ifndef VANILLA_EXTRACT_INNO_H
+#define VANILLA_EXTRACT_INNO_H
 
 #include <vector>
 #include <string>
@@ -33,4 +33,4 @@ public:
 
 }  // namespace inno
 
-#endif  // LIBEXTRACT_INNO_H
+#endif  // VANILLA_EXTRACT_INNO_H
