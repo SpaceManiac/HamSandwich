@@ -207,7 +207,7 @@ function emscripten._web_asset_makesettings(prj)
 
 			output = output .. "all: %{cfg.targetdir}/" .. outname .. "\n"
 			if outname == "index.html" then
-				output = output .. "%{cfg.targetdir}/" .. outname .. ': ' .. inname .. ' %{wks.location}/%{prj.name}.meta.json ../tools/build/embed-metadata.py\n'
+				output = output .. "%{cfg.targetdir}/" .. outname .. ': ' .. inname .. ' %{wks.location}/%{prj.name}.meta.json ../../tools/build/embed-metadata.py\n'
 				output = output .. "\t@echo " .. outname .. "\n"
 				output = output .. '\t$(SILENT) python3 ../../tools/build/embed-metadata.py __HAMSANDWICH_METADATA__ %{wks.location}/%{prj.name}.meta.json <"$<" >"$@"\n'
 			else
