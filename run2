@@ -51,6 +51,10 @@ while test $# -ne 0; do
 		toolset=* | config=* | mode=* | platform=* | nobuild=* | tool=*)
 			eval "$ARG"
 			;;
+		# show help on demand
+		--help)
+			show_help; exit
+			;;
 		# show help for unsupported settings or flags
 		*=* | -*)
 			show_help; exit 1
