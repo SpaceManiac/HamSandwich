@@ -15,12 +15,12 @@ endif
 # Recreate build/Makefile if any of the premake Lua changes.
 MAKEFILE_DEPS += premake5.lua $(wildcard tools/build/*.lua)
 
-.PHONY: all clean help $(PROJECTS)
+.PHONY: all clean help _run_config $(PROJECTS)
 
 all clean help $(PROJECTS): build/$(toolset)/Makefile
 	@$(MAKE) --no-print-directory -C build/$(toolset) $@
 
-build/$(toolset)/Makefile: $(MAKEFILE_DEPS) $(TOOLSET_DEPS)
+build/$(toolset)/Makefile: $(MAKEFILE_DEPS)
 	@echo "==== Preparing $(toolset) build ===="
 	@rm -f $@
 	@$(PREMAKE5) gmake2 --cc=$(toolset)
@@ -30,6 +30,12 @@ build/$(toolset)/Makefile: $(MAKEFILE_DEPS) $(TOOLSET_DEPS)
 build/$(toolset)/Makefile.d: $(MAKEFILE_DEPS)
 	@$(PREMAKE5) gmake2_deps --cc=$(toolset) >/dev/null
 -include build/$(toolset)/Makefile.d
+
+_run_config: build/$(toolset)/run-config.sh
+	@true
+build/$(toolset)/run-config.sh: $(MAKEFILE_DEPS)
+	@#echo "==== Loading $(toolset) configuration ===="
+	@$(PREMAKE5) run-config --cc=$(toolset) >/dev/null
 
 build/premake5:
 	@./tools/build/install-deps.sh

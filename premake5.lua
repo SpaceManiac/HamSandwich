@@ -3,6 +3,7 @@ dofile "tools/build/gmake2_deps.lua"
 dofile "tools/build/android_studio.lua"
 dofile "tools/build/emscripten.lua"
 dofile "tools/build/vscode.lua"
+dofile "tools/build/run-config.lua"
 
 sdl2_platforms = {
 	x86 = "x86",
@@ -52,6 +53,9 @@ function base_project(name)
 			"source/%{prj.name}/**.cpp",
 			"source/%{prj.name}/**.c",
 		}
+
+		filter "toolset:emcc"
+			debugdir "%{cfg.targetdir}"
 
 		filter "platforms:x86_64"
 			architecture "x86_64"
