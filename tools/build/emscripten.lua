@@ -77,6 +77,15 @@ emcc = table.merge(clang, {
 	getports = function(cfg, subtab)
 		local ports = {}
 
+		for _, lib in ipairs(cfg.dependson) do
+			local flags = emcc.ports[lib]
+			if flags then
+				flags = flags[subtab]
+				if flags then
+					table.move(flags, 1, #flags, 1 + #ports, ports)
+				end
+			end
+		end
 		for _, lib in ipairs(cfg.links) do
 			local flags = emcc.ports[lib]
 			if flags then
