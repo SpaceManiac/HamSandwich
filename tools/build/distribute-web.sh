@@ -4,9 +4,10 @@ set -euo pipefail
 shopt -s nullglob
 
 toolset=emcc
-config=release
+mode=release
+platform=x86
 
-TARGETDIR="build/$toolset-$config"
+TARGETDIR="build/$toolset/$mode-$platform"
 WEBROOT="build/webroot"
 
 # If there's no Emscripten SDK active, then activate a private one.
@@ -19,7 +20,7 @@ if [ -d "$WEBROOT" ]; then
 	rm -r "$WEBROOT"
 fi
 mkdir -p "$WEBROOT"
-make config="$config" toolset="$toolset" -j8 "$@"
+make config="${mode}_$platform" toolset="$toolset" -j8 "$@"
 
 # If no project was specified, detect them
 if [ $# -eq 0 ]; then
@@ -27,7 +28,7 @@ if [ $# -eq 0 ]; then
 	set "${DIRS[@]##*/}"
 fi
 
-echo "==== Preparing webroot ===="
+echo "==== Preparing webroot ($WEBROOT) ===="
 if [ $# -eq 1 ]; then
 	# One project: put everything in the root
 	FILES=($(find "$TARGETDIR/$1" -maxdepth 1 -type f))
