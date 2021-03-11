@@ -2,7 +2,7 @@
 #include <string.h>
 #include <vector>
 #include <zlib.h>
-#include "common.h"
+#include "base_archive.h"
 #include "vec_rw.h"
 #include "lzma1900/7z.h"
 #include "lzma1900/7zCrc.h"
@@ -14,7 +14,7 @@
 	#include <SDL2/SDL_rwops.h>
 #endif  // SDL_UNPREFIXED
 
-namespace inno {
+namespace vanilla::inno {
 
 // ----------------------------------------------------------------------------
 // Constants
@@ -182,7 +182,7 @@ Archive::Archive(FILE* fptr)
 
 	CSzArEx zip;
 	SzArEx_Init(&zip);
-	SRes res = SzArEx_Open(&zip, stream, sauce::allocator, sauce::allocator);
+	SRes res = SzArEx_Open(&zip, stream, vanilla::allocator, vanilla::allocator);
 	if (res != SZ_OK)
 	{
 		fprintf(stderr, "inno::Archive: SzArEx_Open failed: %d\n", res);
@@ -229,8 +229,8 @@ Archive::Archive(FILE* fptr)
 		&outBufferSize,
 		&offset,
 		&outSizeProcessed,
-		sauce::allocator,
-		sauce::allocator);
+		vanilla::allocator,
+		vanilla::allocator);
 	if (res != SZ_OK)
 	{
 		fprintf(stderr, "inno::Archive: SzArEx_Extract setup.0 failed: %d\n", res);
@@ -369,8 +369,8 @@ Archive::Archive(FILE* fptr)
 		&outBufferSize,
 		&offset,
 		&outSizeProcessed,
-		sauce::allocator,
-		sauce::allocator);
+		vanilla::allocator,
+		vanilla::allocator);
 	if (res != SZ_OK)
 	{
 		fprintf(stderr, "inno::Archive: SzArEx_Extract setup-1.bin failed: %d\n", res);
@@ -380,8 +380,8 @@ Archive::Archive(FILE* fptr)
 	setup_1_bin.assign(outBuffer + offset, outBuffer + offset + outSizeProcessed);
 
 	// Clean up.
-	sauce::allocator->Free(sauce::allocator, outBuffer);
-	SzArEx_Free(&zip, sauce::allocator);
+	vanilla::allocator->Free(vanilla::allocator, outBuffer);
+	SzArEx_Free(&zip, vanilla::allocator);
 }
 
 SDL_RWops* Archive::open_file(const char* path)
@@ -449,4 +449,4 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-}  // namespace inno
+}  // namespace vanilla::inno

@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 #include "lzma1900/LzmaDec.h"
-#include "common.h"
+#include "base_archive.h"
 
-namespace sauce {
+namespace vanilla {
 
 // ----------------------------------------------------------------------------
 // Archive directory listing
@@ -158,4 +158,4 @@ bool decompress_lzma(std::vector<uint8_t>& dest, uint8_t* src, size_t srclen, si
 	return res == SZ_OK;
 }
 
-}  // namespace sauce
+}  // namespace vanilla

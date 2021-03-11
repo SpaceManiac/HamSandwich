@@ -1,5 +1,5 @@
-#ifndef VANILLA_EXTRACT_COMMON_H
-#define VANILLA_EXTRACT_COMMON_H
+#ifndef VANILLA_EXTRACT_BASE_ARCHIVE_H
+#define VANILLA_EXTRACT_BASE_ARCHIVE_H
 
 #include <vector>
 #include <string>
@@ -9,7 +9,7 @@
 typedef struct ISzAlloc ISzAlloc;
 typedef const ISzAlloc* ISzAllocPtr;
 
-namespace sauce {
+namespace vanilla {
 
 extern const ISzAllocPtr allocator;
 
@@ -47,6 +47,6 @@ public:
 	//SDL_RWops* open_file(const char* path);
 };
 
-}  // namespace sauce
+}  // namespace vanilla
 
-#endif  // VANILLA_EXTRACT_COMMON_H
+#endif  // VANILLA_EXTRACT_BASE_ARCHIVE_H

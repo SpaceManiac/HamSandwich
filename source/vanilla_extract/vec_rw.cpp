@@ -6,6 +6,8 @@
 	#include <SDL2/SDL_rwops.h>
 #endif  // SDL_UNPREFIXED
 
+namespace vanilla {
+
 struct Vec_RWops {
 	SDL_RWops base;
 	std::vector<uint8_t> vec;
@@ -30,3 +32,5 @@ SDL_RWops* create_vec_rwops(std::vector<uint8_t>&& buffer) {
 	rw->base.close = delete_vec_close;
 	return &rw->base;
 }
+
+}  // namespace vanilla

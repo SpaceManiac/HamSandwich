@@ -6,13 +6,14 @@
 #include <map>
 #include <stdio.h>
 #include <stdint.h>
-#include "common.h"
+#include "base_archive.h"
 
 struct SDL_RWops;
 
+namespace vanilla {
 namespace inno {
 
-class Archive : public sauce::Archive
+class Archive : public vanilla::Archive
 {
 	struct DataEntry
 	{
@@ -32,5 +33,6 @@ public:
 };
 
 }  // namespace inno
+}  // namespace vanilla
 
 #endif  // VANILLA_EXTRACT_INNO_H

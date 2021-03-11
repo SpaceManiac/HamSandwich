@@ -311,7 +311,7 @@ FILE* fp_from_bundle(const char* file, const char* mode, SDL_RWops* rw, const ch
 // NSIS VFS implementation
 
 class NsisVfs : public Vfs {
-	nsis::Archive archive;
+	vanilla::nsis::Archive archive;
 public:
 	NsisVfs(FILE* fp) : archive(fp) {}
 	FILE* open_stdio(const char* file, const char* mode, bool write);
@@ -341,7 +341,7 @@ bool NsisVfs::list_dir(const char* directory, std::vector<std::string>& output) 
 // Inno VFS implementation
 
 class InnoVfs : public Vfs {
-	inno::Archive archive;
+	vanilla::inno::Archive archive;
 public:
 	InnoVfs(FILE* fp) : archive(fp) {}
 	FILE* open_stdio(const char* file, const char* mode, bool write);

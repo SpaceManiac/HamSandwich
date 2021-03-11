@@ -1,7 +1,7 @@
 #include <string.h>
 #include <vector>
 #include "nsis_exehead/fileform.h"
-#include "common.h"
+#include "base_archive.h"
 #include "nsis.h"
 #include "vec_rw.h"
 
@@ -11,7 +11,7 @@
 	#include <SDL2/SDL_rwops.h>
 #endif  // SDL_UNPREFIXED
 
-namespace nsis {
+namespace vanilla::nsis {
 
 static_assert(sizeof(int) == 4);
 
@@ -81,7 +81,7 @@ Archive::Archive(FILE* fptr)
 			return;
 
 		std::vector<uint8_t> datablock;
-		if (!sauce::decompress_lzma(datablock, buffer.data(), buffer.size(), 5))
+		if (!vanilla::decompress_lzma(datablock, buffer.data(), buffer.size(), 5))
 			return;
 
 		archive_rw = create_vec_rwops(std::move(datablock));
@@ -229,7 +229,7 @@ bool Archive::extract_internal(bool is_compressed, uint32_t size, std::vector<ui
 
 	if (is_compressed)
 	{
-		return sauce::decompress_lzma(result, compressed.data(), compressed.size(), 5);
+		return vanilla::decompress_lzma(result, compressed.data(), compressed.size(), 5);
 	}
 	else
 	{
@@ -238,4 +238,4 @@ bool Archive::extract_internal(bool is_compressed, uint32_t size, std::vector<ui
 	}
 }
 
-}  // namespace nsis
+}  // namespace vanilla::nsis
