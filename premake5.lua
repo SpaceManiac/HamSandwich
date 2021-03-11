@@ -202,7 +202,7 @@ if is_msvc then
 		objdir "%{cfg.targetdir}/"
 		targetname "zlib.lib"
 
-		_recursive_links["z"] = { "%{wks.location}/%{cfg.buildcfg}-%{cfg.platform}/z/zlib.lib" }
+		dependson { "%{wks.location}/%{cfg.buildcfg}-%{cfg.platform}/z/zlib.lib" }
 
 		buildcommands { nmake_command "%{cfg.targetname}" }
 		rebuildcommands { nmake_command "/A %{cfg.targetname}" }
@@ -212,7 +212,7 @@ end
 project "vanilla_extract"
 	base_project()
 	kind "StaticLib"
-	links { "SDL2", "z" }
+	dependson { "SDL2", "z" }
 
 	filter "action:not vs20*"
 		buildoptions { "-Wall", "-Wextra" }
@@ -220,7 +220,7 @@ project "vanilla_extract"
 project "ham"
 	base_project()
 	kind "StaticLib"
-	links { "vanilla_extract", "SDL2", "SDL2_mixer", "SDL2_image" }
+	dependson { "vanilla_extract", "SDL2", "SDL2_mixer", "SDL2_image" }
 
 	filter "action:not vs20*"
 		buildoptions { "-Wall", "-Wextra" }
