@@ -34,11 +34,11 @@ for:
         only:
             - MSVC: 1
     install:
-        - powershell ./tools/build/msvc-install-deps.ps1
+        - powershell ./tools/msvc/install-dependencies.ps1
     before_build:
-        - build\premake5.exe vs2017
+        - build\premake5.exe vs2019
     build_script:
-        - msbuild build/HamSandwich.sln /p:Configuration=debug /p:Platform=Win32 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+        - msbuild build/msc-v142/HamSandwich.sln /p:Configuration=debug /p:Platform=Win32 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 # Linux build script
 -   matrix:
@@ -48,9 +48,4 @@ for:
         - sh: sudo DEBIAN_FRONTEND=noninteractive apt-get update
         - sh: ./tools/build/install-deps.sh
     build_script:
-        - sh: make config=debug64
-
-# Allow MSVC builds to fail without turning the build red for now
-matrix:
-    allow_failures:
-    -   MSVC: 1
+        - sh: make config=debug_x86_64
