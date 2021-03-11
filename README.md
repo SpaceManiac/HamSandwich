@@ -45,19 +45,13 @@ Compiling and running:
 
 ### Windows (MSVC)
 
-1. Download dependencies:
-    1. Run `powershell tools/build/msvc-install-deps.ps1`.
-    2. Or, download and extract them manually:
-        1. `build/premake5.exe`: premake-5.0.0-alpha15-windows.zip
-           from <https://github.com/premake/premake-core/releases/tag/v5.0.0-alpha15>.
-        2. `build/SDL2-msvc/`: SDL2-devel-2.0.9-VC.zip from <https://www.libsdl.org/download-2.0.php>.
-        3. `build/SDL2_mixer-msvc/`: SDL2_mixer-devel-2.0.4-VC.zip from <https://www.libsdl.org/projects/SDL_mixer/>.
-        4. `build/SDL2_image-msvc/`: SDL2_image-devel-2.0.4-VC.zip from <https://www.libsdl.org/projects/SDL_image/>.
-2. Run `build/premake5.exe vs2017` (or appropriate VS version) to generate solution.
-3. Open and compile `build/HamSandwich.sln` in Visual Studio.
+1. Double-click `tools/msvc/Generate VS2019 Solution.bat`, **or**:
+    1. Download dependencies by running `powershell tools/msvc/install-dependencies.ps1`.
+    2. Run `build/premake5.exe vs2019` (or appropriate VS version) to generate the solution files.
+2. Open and compile `build/msc-v142/HamSandwich.sln` in Visual Studio.
     1. For command-line builds, run `msbuild build/HamSandwich.sln /p:Configuration=debug /p:Platform=Win32`.
-4. Use installers from <https://hamumu.itch.io/> to extract game assets to `build/game/<project>`.
-5. Debug from within Visual Studio to launch a game.
+3. Use installers from <https://hamumu.itch.io/> to extract game assets to `build/game/<project>`.
+4. Debug from within Visual Studio to launch a game.
 
 ### Linux
 
