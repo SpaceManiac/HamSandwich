@@ -181,8 +181,25 @@ FILE* StdioVfs::open_stdio(const char* file, const char* mode, bool write) {
 }
 
 SDL_RWops* StdioVfs::open_sdl(const char* file, const char* mode, bool write) {
+#if defined(_WIN32) && !defined(__GNUC__)
+	// The public MSVC binaries of SDL2 are compiled without support for SDL_RWFromFP.
+	std::string buffer = prefix;
+	buffer.append("/");
+	buffer.append(file);
+	if (write) {
+		mkdir_parents(buffer.c_str());
+	}
+
+	SDL_RWops* rw = SDL_RWFromFile(buffer.c_str(), mode);
+	if (!rw && write) {
+		LogError("SDL_RWFromFile(%s, %s): %s", buffer.c_str(), mode, SDL_GetError());
+	}
+	return rw;
+#else
+	// Delegate to open_stdio above.
 	FILE* fp = open_stdio(file, mode, write);
 	return fp ? SDL_RWFromFP(fp, SDL_TRUE) : nullptr;
+#endif
 }
 
 #ifdef __GNUC__
