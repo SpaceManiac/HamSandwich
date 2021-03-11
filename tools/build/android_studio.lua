@@ -280,7 +280,7 @@ local system_static_libraries = {
 
 function m.android_mk(prj)
 	-- TODO: handle multiple configurations
-	local cfg = m.getcfg(prj, 'debug')
+	local cfg = m.getcfg(prj, 'debug|x86')
 
 	if m.is_application(prj) then
 		p.w('include ../_config.mk')
