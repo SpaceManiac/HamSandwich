@@ -14,12 +14,11 @@ local is_msvc = _ACTION and _ACTION:sub(1, 4) == "vs20"
 local toolset
 if _OPTIONS.cc then
 	toolset = _OPTIONS.cc
-elseif is_msvc then
-	toolset = "msc"
-elseif (_OPTIONS.os or _TARGET_OS) == premake.MACOSX then
+elseif not is_mscv and (_OPTIONS.os or _TARGET_OS) == premake.MACOSX then
 	toolset = "clang"
 else
-	toolset = "gcc"
+	local current = premake.action.current()
+	toolset = current and current.toolset or "gcc"
 end
 
 workspace "HamSandwich"
@@ -86,9 +85,9 @@ function base_project(name)
 			}
 			debugenvs {
 				"PATH=" ..
-					"$(ProjectDir)/SDL2-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
-					"$(ProjectDir)/SDL2_mixer-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
-					"$(ProjectDir)/SDL2_image-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
+					"$(ProjectDir)/../SDL2-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
+					"$(ProjectDir)/../SDL2_mixer-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
+					"$(ProjectDir)/../SDL2_image-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
 					"%PATH%",
 			}
 
@@ -227,7 +226,7 @@ if is_msvc then
 		objdir "%{cfg.targetdir}/"
 		targetname "zlib.lib"
 
-		_recursive_links["z"] = { "zlib.lib" }
+		_recursive_links["z"] = { "%{wks.location}/%{cfg.buildcfg}-%{cfg.platform}/z/zlib.lib" }
 
 		buildcommands { nmake_command "%{cfg.targetname}" }
 		rebuildcommands { nmake_command "/A %{cfg.targetname}" }
