@@ -33,22 +33,22 @@ const char APP_PREFIX[APP_PREFIX_SZ + 1] = "{app}\\";
 // ----------------------------------------------------------------------------
 // 7z-compatible stream from FILE*
 
-struct FilePtrStream
+struct SeekInStream_FILE
 {
 	ISeekInStream base;
 	FILE *fptr;
 };
 
-SRes FilePtrStream_Read(const ISeekInStream *p, void *buf, size_t *size)
+SRes SeekInStream_FILE_Read(const ISeekInStream *p, void *buf, size_t *size)
 {
-	const FilePtrStream *self = (const FilePtrStream *) p;
+	const SeekInStream_FILE *self = (const SeekInStream_FILE *) p;
 	*size = fread(buf, 1, *size, self->fptr);
 	return SZ_OK;
 }
 
-SRes FilePtrStream_Seek(const ISeekInStream *p, Int64 *pos, ESzSeek origin)
+SRes SeekInStream_FILE_Seek(const ISeekInStream *p, Int64 *pos, ESzSeek origin)
 {
-	const FilePtrStream *self = (const FilePtrStream *) p;
+	const SeekInStream_FILE *self = (const SeekInStream_FILE *) p;
 	if (fseek(self->fptr, *pos, origin))
 		return SZ_ERROR_READ;
 	*pos = ftell(self->fptr);
@@ -155,11 +155,11 @@ Archive::Archive(FILE* fptr)
 	}
 
 	// Prepare 7z input stream
-	FilePtrStream seekStream =
+	SeekInStream_FILE seekStream =
 	{
 		{
-			FilePtrStream_Read,
-			FilePtrStream_Seek,
+			SeekInStream_FILE_Read,
+			SeekInStream_FILE_Seek,
 		},
 		fptr
 	};
