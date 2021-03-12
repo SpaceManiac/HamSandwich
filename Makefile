@@ -7,6 +7,16 @@ toolset ?= gcc
 all:  # Default target
 
 # -----------------------------------------------------------------------------
+# Default to x86_64 on MINGW64 and on 64-bit Linuxes
+
+ifeq ($(MSYSTEM),MINGW64)
+config ?= debug_x86_64
+else ifeq ($(shell uname -m),x86_64)
+config ?= debug_x86_64
+endif
+export config  # Make sure that recursive calls see this value.
+
+# -----------------------------------------------------------------------------
 # Ensure access to a premake5 binary, since we need it for much of the below.
 PREMAKE5 := premake5
 
