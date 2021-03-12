@@ -39,7 +39,7 @@ void GetPal(void)
 
 const char* AppdataFolderName()
 {
-	return PROJECT_NAME;
+	return "loonyland2";
 }
 
 TASK(int) main(int argc, char* argv[])

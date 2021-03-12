@@ -99,8 +99,6 @@ end
 function sdl2_project()
 	base_project()
 
-	defines { 'PROJECT_NAME="%{prj.name}"' }
-
 	kind "WindowedApp"
 	filter "configurations:debug"
 		kind "ConsoleApp"

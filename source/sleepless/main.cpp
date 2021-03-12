@@ -34,7 +34,7 @@
 
 const char* AppdataFolderName()
 {
-	return PROJECT_NAME;
+	return "sleepless";
 }
 
 TASK(int) main(int argc, char* argv[])

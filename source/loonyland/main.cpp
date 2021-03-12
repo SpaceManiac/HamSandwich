@@ -15,7 +15,7 @@
 
 const char* AppdataFolderName()
 {
-	return PROJECT_NAME;
+	return "loonyland";
 }
 
 TASK(int) main(int argc, char *argv[])
