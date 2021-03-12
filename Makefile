@@ -49,8 +49,7 @@ all clean help $(PROJECTS): $(CHILD_MAKEFILE)
 # -----------------------------------------------------------------------------
 # ./run helper
 build/$(toolset)/run-config.sh: $(MAKEFILE_DEPS)
-	@echo "==== Loading $(toolset) configuration ===="
-	@$(PREMAKE5) run-config --cc=$(toolset) >/dev/null
+	@output="$$($(PREMAKE5) run-config --cc=$(toolset))" || (printf "==== Importing $(toolset) configuration ====\n%s\n" "$$output"; exit 1)
 
 # -----------------------------------------------------------------------------
 # ./android helper
