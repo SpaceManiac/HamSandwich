@@ -20,7 +20,7 @@ function m.make_relative_path(wks, str)
 		"$PWD",
 		path.getrelative(
 			os.getcwd(),
-			path.join(wks.original_location, (str:gsub("^%$%(ProjectDir%)/", "")))
+			str
 		)
 	)
 end

@@ -43,7 +43,7 @@ function m.make_relative_path(wks, str)
 		"${workspaceFolder}",
 		path.getrelative(
 			os.getcwd(),
-			path.join(wks.original_location, (str:gsub("^%$%(ProjectDir%)/", "")))
+			path.join(wks.original_location, str)
 		)
 	)
 end

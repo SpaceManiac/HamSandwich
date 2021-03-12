@@ -115,9 +115,9 @@ function sdl2_project()
 	filter "action:vs20*"
 		debugenvs {
 			"PATH=" ..
-				"$(ProjectDir)/../SDL2-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
-				"$(ProjectDir)/../SDL2_mixer-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
-				"$(ProjectDir)/../SDL2_image-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
+				"%{prj.location}/../SDL2-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
+				"%{prj.location}/../SDL2_mixer-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
+				"%{prj.location}/../SDL2_image-msvc/lib/%{sdl2_platforms[cfg.platform]}/;" ..
 				"%PATH%",
 		}
 	filter {}
