@@ -20,7 +20,9 @@ if [ -d "$WEBROOT" ]; then
 	rm -r "$WEBROOT"
 fi
 mkdir -p "$WEBROOT"
-make config="${mode}_$platform" toolset="$toolset" -j8 "$@"
+nproc="$(nproc)"
+make config="${mode}_$platform" toolset="$toolset" -j"$nproc" "ham"  # Mitigate concurrency risks.
+make config="${mode}_$platform" toolset="$toolset" -j"$nproc" "$@"
 
 # If no project was specified, detect them
 if [ $# -eq 0 ]; then
