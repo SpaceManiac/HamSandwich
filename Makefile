@@ -11,6 +11,8 @@ all:  # Default target
 
 ifeq ($(MSYSTEM),MINGW64)
 config ?= debug_x86_64
+else ifeq ($(MSYSTEM),MINGW32)
+config ?= debug_x86
 else ifeq ($(shell uname -m),x86_64)
 config ?= debug_x86_64
 endif
