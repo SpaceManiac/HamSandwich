@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 # Lunatic lines.py
 # Tad Hardesty, aka SpaceManiac, 2011
 # Counts lines of code

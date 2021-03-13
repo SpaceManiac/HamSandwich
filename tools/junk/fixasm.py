@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 # Lunatic fixasm.py
 # Tad Hardesty, aka SpaceManiac, 2011
 # Surrounds assembly in the given file with _( and ), taking comments into account
