@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - run: |
+          apt-get update
 
       # Modify the list below to change what projects are published.
       # To publish only loonyland2:
