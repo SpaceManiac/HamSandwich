@@ -55,6 +55,40 @@ while test $# -ne 0; do
 		--help)
 			show_help; exit
 			;;
+		# transitional adapters from ./run
+		"--fullscreen")
+			# TODO
+			;;
+		"--release")
+			mode=release
+			;;
+		"--32")
+			platform=x86
+			;;
+		"--64")
+			platform=x86_64
+			;;
+		"--gdb")
+			tool=gdb
+			;;
+		"--valgrind")
+			tool=valgrind
+			;;
+		"--callgrind")
+			tool=callgrind
+			;;
+		"--nobuild")
+			nobuild=1
+			;;
+		"--clang")
+			toolset=clang
+			;;
+		"--web")
+			toolset=emcc
+			;;
+		"--two")
+			tool=two
+			;;
 		# show help for unsupported settings or flags
 		*=* | -*)
 			show_help; exit 1
@@ -72,7 +106,7 @@ if test -z "$project"; then
 fi
 
 # Force some configurations if Emscripten is active.
-if test -z "${tool}" && test "$toolset" = "emcc"; then
+if test "$toolset" = "emcc"; then
 	tool=emrun
 	platform=x86
 
@@ -88,7 +122,7 @@ if test "$toolset" != "emcc" && test ! -d "build/game/$project"; then
 fi
 
 # Build $config from $mode and $platform if needed.
-if [ -z "${config}" ]; then
+if test -z "${config}"; then
 	config="${mode}_${platform}"
 fi
 
