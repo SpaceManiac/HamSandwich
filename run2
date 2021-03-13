@@ -10,6 +10,7 @@ mode=debug
 platform=x86
 nobuild=
 tool=
+override_args=
 
 # MINGW64 and 64-bit Ubuntu prefer x86_64 automatically.
 if test "${MSYSTEM:-}" = "MINGW64"; then
@@ -21,7 +22,7 @@ fi
 # Helpers
 show_help() {
 	load_run_config
-	echo "Usage: $0 [<setting=value>] <project>"
+	echo "Usage: $0 [<setting=value>] <project> [-- <arguments>]"
 	echo "Available projects:"
 	echo "    ${exeprojects[*]}"
 	echo "Settings:"
@@ -55,9 +56,14 @@ while test $# -ne 0; do
 		--help)
 			show_help; exit
 			;;
+		--)
+			# -- indicates the start of overriden arguments
+			override_args=1
+			break
+			;;
 		# transitional adapters from ./run
 		"--fullscreen")
-			# TODO
+			override_args=1
 			;;
 		"--release")
 			mode=release
@@ -142,6 +148,9 @@ debug_configure
 cd "$debugdir"
 if test ${#debugenvs[@]} -ne 0; then
 	export "${debugenvs[@]}"
+fi
+if test "$override_args"; then
+	debugargs=("$@")
 fi
 case "$tool" in
 	gdb)
