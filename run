@@ -128,8 +128,8 @@ if test "$toolset" != "emcc" && test ! -d "build/game/$project"; then
 fi
 
 # Build $config from $mode and $platform if needed.
-if test -z "${config}"; then
-	config="${mode}_${platform}"
+if test -z "$config"; then
+	config="${mode}_$platform"
 fi
 
 # Ensure all build-time dependencies are installed.

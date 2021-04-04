@@ -35,7 +35,7 @@ packages() {
 	local CMD="$1"
 	shift
 	local FNAME="build/.packages-$SYS"
-	if [ ! -f "$FNAME" ] || [ "$(cat $FNAME)" != "$*" ]; then
+	if [ ! -f "$FNAME" ] || [ "$(cat "$FNAME")" != "$*" ]; then
 		echo "==== Updating system packages ===="
 		echo "$CMD" "$@"
 		$CMD "$@"
@@ -115,4 +115,4 @@ deps_arch() {
 }
 
 # Install dependencies for the correct system
-deps_$SYS
+deps_"$SYS"

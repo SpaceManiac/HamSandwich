@@ -14,10 +14,10 @@ if [ ! -d build/emsdk ]; then
 fi
 pushd build/emsdk >/dev/null
 
-if [ -n "$FIRST_TIME" ] || [ "$(git log -n1 --pretty=%H)" != "$(git log -n1 --pretty=%H $TAG)" ]; then
+if [ -n "$FIRST_TIME" ] || [ "$(git log -n1 --pretty=%H)" != "$(git log -n1 --pretty=%H "$TAG")" ]; then
 	echo "==== Installing emsdk $TAG ===="
 	git fetch -q
-	git checkout -q $TAG
+	git checkout -q "$TAG"
 	./emsdk install latest-upstream
 	./emsdk activate latest-upstream >/dev/null
 fi
