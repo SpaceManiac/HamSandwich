@@ -67,7 +67,6 @@ function base_project()
 			"build/SDL2-msvc/include",
 			"build/SDL2_mixer-msvc/include",
 			"build/SDL2_image-msvc/include",
-			"build/zlib-1.2.11",
 		}
 		libdirs {
 			"build/SDL2-msvc/lib/%{sdl2_platforms[cfg.platform]}",
@@ -196,13 +195,13 @@ end
 
 if is_msvc then
 	local function nmake_command(args)
-		return 'cmd /C "mkdir %{cfg.targetdir} & cd %{cfg.targetdir} & nmake TOP=../../../zlib-1.2.11 -f ../../../zlib-1.2.11/win32/Makefile.msc ' .. args .. '"'
+		return 'cmd /C "mkdir %{cfg.targetdir} & cd %{cfg.targetdir} & nmake TOP=../../../../external/zlib -f ../../../../external/zlib/win32/Makefile.msc ' .. args .. '"'
 	end
 
 	project "z"
 		kind "Makefile"
 		targetdir "%{wks.location}/%{cfg.buildcfg}-%{cfg.platform}/%{prj.name}/"
-		objdir "%{cfg.targetdir}/"
+		objdir "%{cfg.targetdir}"  -- zlib's Makefile.msc assumes this matches targetdir
 		targetname "zlib.lib"
 
 		buildcommands { nmake_command "%{cfg.targetname}" }
@@ -210,6 +209,9 @@ if is_msvc then
 		cleancommands { nmake_command "clean" }
 
 	uses_z = function(recursive)
+		if not recursive then
+			includedirs "external/zlib"
+		end
 		filter { "kind:not StaticLib" }
 			links { "%{wks.location}/%{cfg.buildcfg}-%{cfg.platform}/z/zlib.lib" }
 		filter {}
