@@ -187,6 +187,24 @@ function pch(name)
 	filter {}
 end
 
+local function uses_sdl2(recursive)
+	filter { "kind:not StaticLib or action:android-studio" }
+		links { "SDL2" }
+	filter {}
+end
+
+local function uses_sdl2_image(recursive)
+	filter { "kind:not StaticLib or action:android-studio" }
+		links { "SDL2_image" }
+	filter {}
+end
+
+local function uses_sdl2_mixer(recursive)
+	filter { "kind:not StaticLib or action:android-studio" }
+		links { "SDL2_mixer" }
+	filter {}
+end
+
 local function uses_z(recursive)
 	filter { "kind:not StaticLib" }
 		links { "z" }
@@ -222,6 +240,7 @@ project "vanilla_extract"
 	base_project()
 	kind "StaticLib"
 	uses_z()
+	uses_sdl2()
 
 	filter "action:not vs20*"
 		buildoptions { "-Wall", "-Wextra" }
@@ -234,12 +253,16 @@ local function uses_vanilla_extract(recursive)
 		links { "vanilla_extract" }
 	filter {}
 	uses_z(true)
+	uses_sdl2(true)
 end
 
 project "ham"
 	base_project()
 	kind "StaticLib"
 	uses_vanilla_extract()
+	uses_sdl2()
+	uses_sdl2_image()
+	uses_sdl2_mixer()
 
 	filter "action:not vs20*"
 		buildoptions { "-Wall", "-Wextra" }
@@ -249,9 +272,12 @@ local function uses_ham(recursive)
 		includedirs "source/ham"
 	end
 	filter { "kind:not StaticLib" }
-		links { "ham", "SDL2", "SDL2_mixer", "SDL2_image" }
+		links { "ham" }
 	filter {}
 	uses_vanilla_extract(true)
+	uses_sdl2(true)
+	uses_sdl2_image(true)
+	uses_sdl2_mixer(true)
 end
 
 project "lunatic"
