@@ -13,7 +13,6 @@ usage() {
 }
 
 premake_and_gradle() {
-	./tools/build/sdl2-source.sh
 	make --quiet build/android/build.gradle
 	cd build/android
 	gradle "$@"

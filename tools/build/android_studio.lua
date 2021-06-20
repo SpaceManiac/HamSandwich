@@ -164,7 +164,7 @@ function m.build_gradle(wks)
 	--p.x("lintOptions.abortOnError false")
 	p.push("sourceSets.main {")
 	p.w("manifest.srcFile 'AndroidManifest.xml'")
-	p.w("java.srcDir '../../SDL2/android-project/app/src/main/java'")
+	p.w("java.srcDir '../../../external/SDL2/android-project/app/src/main/java'")
 	p.w("java.srcDir 'java'")
 	p.w("res.srcDir 'res'")
 	p.pop("}")  -- sourceSets.main
@@ -270,9 +270,9 @@ function m.manifest_xml(prj)
 end
 
 local system_shared_libraries = {
-	SDL2 = "../../SDL2/Android.mk",
-	SDL2_mixer = "../../SDL2_mixer/Android.mk",
-	SDL2_image = "../../SDL2_image/Android.mk",
+	SDL2 = "../../../external/SDL2/Android.mk",
+	SDL2_mixer = "../../../external/SDL2_mixer/Android.mk",
+	SDL2_image = "../../../external/SDL2_image/Android.mk",
 }
 local system_static_libraries = {
 	z = true
