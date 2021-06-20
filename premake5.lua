@@ -4,7 +4,6 @@ dofile "tools/build/android_studio.lua"
 dofile "tools/build/emscripten.lua"
 dofile "tools/build/vscode.lua"
 dofile "tools/build/run-config.lua"
-dofile "tools/build/recursive-links.lua"
 
 sdl2_platforms = {
 	x86 = "x86",
@@ -189,6 +188,12 @@ function pch(name)
 	filter {}
 end
 
+local function uses_z(recursive)
+	filter { "kind:not StaticLib" }
+		links { "z" }
+	filter {}
+end
+
 if is_msvc then
 	local function nmake_command(args)
 		return 'cmd /C "mkdir %{cfg.targetdir} & cd %{cfg.targetdir} & nmake TOP=../../../zlib-1.2.11 -f ../../../zlib-1.2.11/win32/Makefile.msc ' .. args .. '"'
@@ -200,34 +205,58 @@ if is_msvc then
 		objdir "%{cfg.targetdir}/"
 		targetname "zlib.lib"
 
-		dependson { "%{wks.location}/%{cfg.buildcfg}-%{cfg.platform}/z/zlib.lib" }
-
 		buildcommands { nmake_command "%{cfg.targetname}" }
 		rebuildcommands { nmake_command "/A %{cfg.targetname}" }
 		cleancommands { nmake_command "clean" }
+
+	uses_z = function(recursive)
+		filter { "kind:not StaticLib" }
+			links { "%{wks.location}/%{cfg.buildcfg}-%{cfg.platform}/z/zlib.lib" }
+		filter {}
+	end
 end
 
 project "vanilla_extract"
 	base_project()
 	kind "StaticLib"
-	dependson { "SDL2", "z" }
+	uses_z()
 
 	filter "action:not vs20*"
 		buildoptions { "-Wall", "-Wextra" }
+
+local function uses_vanilla_extract(recursive)
+	if not recursive then
+		includedirs "source/vanilla_extract"
+	end
+	filter { "kind:not StaticLib" }
+		links { "vanilla_extract" }
+	filter {}
+	uses_z(true)
+end
 
 project "ham"
 	base_project()
 	kind "StaticLib"
-	dependson { "vanilla_extract", "SDL2", "SDL2_mixer", "SDL2_image" }
+	uses_vanilla_extract()
 
 	filter "action:not vs20*"
 		buildoptions { "-Wall", "-Wextra" }
+
+local function uses_ham(recursive)
+	if not recursive then
+		includedirs "source/ham"
+	end
+	filter { "kind:not StaticLib" }
+		links { "ham", "SDL2", "SDL2_mixer", "SDL2_image" }
+	filter {}
+	uses_vanilla_extract(true)
+end
 
 project "lunatic"
 	sdl2_project()
 	android_appname "Dr. Lunatic"
 	icon_file "lunatic"
-	links "ham"
+	uses_ham()
 	pch "winpch"
 	defines { "EXPANDO" }
 
@@ -246,7 +275,7 @@ project "supreme"
 	sdl2_project()
 	android_appname "Supreme With Cheese"
 	icon_file "lunatic"
-	links "ham"
+	uses_ham()
 	pch "winpch"
 
 	excludefiles {
@@ -280,7 +309,7 @@ project "sleepless"
 	sdl2_project()
 	android_appname "Sleepless Hollow"
 	icon_file "lunatic"
-	links "ham"
+	uses_ham()
 	pch "winpch"
 
 	excludefiles {
@@ -314,7 +343,7 @@ project "loonyland"
 	android_appname "Loonyland: Halloween Hill"
 	web_title "Loonyland"
 	icon_file "loonyland"
-	links "ham"
+	uses_ham()
 	pch "winpch"
 
 	installers {
@@ -337,7 +366,7 @@ project "loonyland2"
 	android_appname "Loonyland 2: Winter Woods"
 	web_title "Loonyland 2"
 	icon_file "loonyland2"
-	links "ham"
+	uses_ham()
 	pch "winpch"
 	filter "action:not vs20*"
 		defines { "DIRECTORS" }
@@ -363,7 +392,7 @@ project "mystic"
 	sdl2_project()
 	android_appname "Kid Mystic"
 	icon_file "mystic"
-	links "ham"
+	uses_ham()
 	pch "winpch"
 
 	installers {
