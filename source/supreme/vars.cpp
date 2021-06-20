@@ -287,7 +287,7 @@ byte VarMath(byte finalV,char *func)
 {
 	char tmp[32],c;
 	byte pos,i,j,action,operatorOk;
-	int num,result;
+	int num,result=0;
 
 	strcpy(tmp,func);	// make a copy
 
