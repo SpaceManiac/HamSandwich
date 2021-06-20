@@ -61,7 +61,7 @@ function base_project()
 
 	filter "action:vs20*"
 		cppdialect "C++17"
-		defines { "_CRT_SECURE_NO_WARNINGS", "NOMINMAX", "SDL_UNPREFIXED" }
+		defines { "_CRT_SECURE_NO_WARNINGS", "NOMINMAX" }
 		-- The MSVC dependency script puts the SDL2 binaries here.
 		includedirs {
 			"build/SDL2-msvc/include",
@@ -75,7 +75,6 @@ function base_project()
 		}
 
 	filter "action:android-studio"
-		defines { "SDL_UNPREFIXED" }
 		buildoptions { "-fsigned-char", "-fexceptions" }
 
 	filter { "toolset:emcc" }
@@ -187,20 +186,32 @@ function pch(name)
 	filter {}
 end
 
+local function sdl2_config_cflags()
+	result, status = os.outputof("sdl2-config --cflags")
+	assert(status == 0, "error running `sdl2-config --cflags`:\n" .. result)
+	sdl2_config_cflags = function ()
+		return result
+	end
+	return result
+end
+
 local function uses_sdl2(recursive)
-	filter { "kind:not StaticLib or action:android-studio" }
+	filter { "action:gmake2", "toolset:not emcc" }
+		buildoptions { sdl2_config_cflags() }
+	filter {}
+	filter { "kind:not StaticLib or action:android-studio or toolset:emcc" }
 		links { "SDL2" }
 	filter {}
 end
 
 local function uses_sdl2_image(recursive)
-	filter { "kind:not StaticLib or action:android-studio" }
+	filter { "kind:not StaticLib or action:android-studio or toolset:emcc" }
 		links { "SDL2_image" }
 	filter {}
 end
 
 local function uses_sdl2_mixer(recursive)
-	filter { "kind:not StaticLib or action:android-studio" }
+	filter { "kind:not StaticLib or action:android-studio or toolset:emcc" }
 		links { "SDL2_mixer" }
 	filter {}
 end

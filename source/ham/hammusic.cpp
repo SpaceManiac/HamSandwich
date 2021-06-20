@@ -4,11 +4,7 @@
 #include "appdata.h"
 #include <stdio.h>
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL_mixer.h>
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL_mixer.h>
-#endif  // SDL_UNPREFIXED
+#include <SDL_mixer.h>
 
 static Mix_Music* curStream = nullptr;
 static int musVolume = 255;

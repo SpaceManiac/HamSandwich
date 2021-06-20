@@ -1,10 +1,6 @@
 #include "vec_rw.h"
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL_rwops.h>
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL_rwops.h>
-#endif  // SDL_UNPREFIXED
+#include <SDL_rwops.h>
 
 namespace vanilla {
 

@@ -3,11 +3,7 @@
 #include <algorithm>
 #include <math.h>
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL_image.h>
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL_image.h>
-#endif
+#include <SDL_image.h>
 
 #ifndef M_PI
 	#define M_PI 3.1415926535897

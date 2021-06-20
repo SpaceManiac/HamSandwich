@@ -6,13 +6,8 @@
 #include <stdio.h>
 #include <memory>
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL.h>
-	#include <SDL_mixer.h>
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL.h>
-	#include <SDL2/SDL_mixer.h>
-#endif  // SDL_UNPREFIXED
+#include <SDL.h>
+#include <SDL_mixer.h>
 
 // Game-provided
 extern bool ConfigSoundEnabled();

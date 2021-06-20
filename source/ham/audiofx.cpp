@@ -3,13 +3,8 @@
 #include <stdlib.h>
 #include <memory.h>
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL.h>
-	#include <SDL_mixer.h>
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL.h>
-	#include <SDL2/SDL_mixer.h>
-#endif  // SDL_UNPREFIXED
+#include <SDL.h>
+#include <SDL_mixer.h>
 
 static int SampleSize(uint16_t format)
 {

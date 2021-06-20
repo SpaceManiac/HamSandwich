@@ -1,10 +1,6 @@
 #include <jni.h>
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL_assert.h>
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL_assert.h>
-#endif  // SDL_UNPREFIXED
+#include <SDL_assert.h>
 
 // ----------------------------------------------------------------------------
 // Cargo-cult copy-paste from SDL_android.c

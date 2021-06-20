@@ -8,11 +8,7 @@
 #include "lzma1900/7zCrc.h"
 #include "inno.h"
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL_rwops.h>
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL_rwops.h>
-#endif  // SDL_UNPREFIXED
+#include <SDL_rwops.h>
 
 namespace vanilla::inno {
 

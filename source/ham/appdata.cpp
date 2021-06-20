@@ -17,13 +17,8 @@
 #include <unistd.h>
 #endif
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL_platform.h>
-	#include <SDL_rwops.h>
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL_platform.h>
-	#include <SDL2/SDL_rwops.h>
-#endif  // SDL_UNPREFIXED
+#include <SDL_platform.h>
+#include <SDL_rwops.h>
 
 /*
 The interface in appdata.h currently distinguishes between AppdataOpen

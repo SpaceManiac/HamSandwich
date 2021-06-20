@@ -3,11 +3,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL_platform.h>
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL_platform.h>
-#endif  // SDL_UNPREFIXED
+#include <SDL_platform.h>
 
 #ifdef __ANDROID__
 	#include <android/log.h>
