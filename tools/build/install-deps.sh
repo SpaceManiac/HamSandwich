@@ -19,6 +19,8 @@ elif command -v apt-get >/dev/null 2>&1; then
 	SYS=ubuntu
 elif command -v pacman >/dev/null 2>&1; then
 	SYS=arch
+elif command -v apk >/dev/null 2>&1; then
+	SYS=alpine
 else
 	WARNFILE="build/.install-deps-warning"
 	if [ ! -f "$WARNFILE" ]; then
@@ -114,6 +116,17 @@ deps_arch() {
 		python-pip
 
 	premake5_linux
+}
+
+deps_alpine() {
+	# Note: non-autoinstalled dependency on `bash` and `sudo` packages.
+	packages 'sudo apk add' \
+		p7zip innoextract \
+		make g++ zlib-dev \
+		sdl2-dev sdl2_mixer-dev sdl2_image-dev \
+		python3 py3-pip jpeg-dev python3-dev
+
+	# TODO: premake5's linux binaries are not compatible.
 }
 
 # Install dependencies for the correct system
