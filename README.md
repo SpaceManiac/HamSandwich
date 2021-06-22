@@ -56,7 +56,7 @@ Compiling and running:
 ### Linux
 
 1. Install dependencies (handled automatically on Ubuntu, Arch):
-    1. premake-5.0.0-alpha15-linux.tar.gz from <https://github.com/premake/premake-core/releases/tag/v5.0.0-alpha15>.
+    1. premake-5.0.0-alpha16-linux.tar.gz from <https://github.com/premake/premake-core/releases/tag/v5.0.0-alpha16>.
     2. 32-bit G++ (or Clang) toolchain.
     3. 32-bit SDL2, SDL2_mixer, and SDL2_image development packages.
     4. 7-Zip and Innoextract to extract game assets.
