@@ -124,22 +124,22 @@ if test "$toolset" = "emcc"; then
 	fi
 fi
 
-# Extract the project's installer assets if needed.
-if test "$toolset" != "emcc" && test ! -d "build/game/$project"; then
-	./tools/build/extract-assets.sh "$project" "build/game/$project"
-fi
+# Ensure all build-time dependencies are installed.
+./tools/build/install-deps.sh
 
 # Build $config from $mode and $platform if needed.
 if test -z "$config"; then
 	config="${mode}_$platform"
 fi
 
-# Ensure all build-time dependencies are installed.
-./tools/build/install-deps.sh
-
 # Build the project.
 if test -z "$nobuild"; then
 	make -j"$(nproc)" config="$config" toolset="$toolset" "$project"
+fi
+
+# Extract the project's installer assets if needed.
+if test "$toolset" != "emcc" && test ! -d "build/game/$project"; then
+	./tools/build/extract-assets.sh "$project" "build/game/$project"
 fi
 
 # Now that the settings are known, load the debug config.
