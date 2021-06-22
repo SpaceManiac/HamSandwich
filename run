@@ -13,9 +13,11 @@ tool=
 override_args=
 
 # MINGW64 and 64-bit Ubuntu prefer x86_64 automatically.
-if test "${MSYSTEM:-}" = "MINGW64"; then
+if test "${MSYSTEM:-}" = "MINGW32"; then
+	platform=x86
+elif test "${MSYSTEM:-}" = "MINGW64"; then
 	platform=x86_64
-elif [[ "$(uname -v)" = *Ubuntu* ]] && test "$(uname -m)" = "x86_64"; then
+elif test "$(uname -m)" = "x86_64"; then
 	platform=x86_64
 fi
 

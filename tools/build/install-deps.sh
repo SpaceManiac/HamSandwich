@@ -107,8 +107,8 @@ deps_ubuntu() {
 deps_arch() {
 	packages 'sudo pacman -S --needed --quiet' \
 		p7zip wget innoextract \
-		make gcc lib32-gcc-libs lib32-zlib \
-		lib32-sdl2 lib32-sdl2_image lib32-sdl2_mixer \
+		make gcc gcc-libs zlib \
+		sdl2 sdl2_image sdl2_mixer \
 		python-pip
 
 	premake5_linux
