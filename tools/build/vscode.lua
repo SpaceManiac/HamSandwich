@@ -119,8 +119,8 @@ function m.launch_json(wks)
 			end
 
 			p.push '{'
-			p.w([["name": "%s",
-			"preLaunchTask": "make %s",
+			p.w([["name": %s,
+			"preLaunchTask": %s,
 			"type": "cppdbg",
 			"request": "launch",
 			"setupCommands": [
@@ -132,7 +132,14 @@ function m.launch_json(wks)
 			"program": %s,
 			"args": %s,
 			"cwd": %s,
-			"environment": %s,]], prj.name, prj.name, json.encode(program), json.encode(args), json.encode(cwd), json.encode(environment))
+			"environment": %s,]],
+				json.encode(prj.name),
+				json.encode("make " .. prj.name),
+				json.encode(program),
+				json.encode(args),
+				json.encode(cwd),
+				json.encode(environment)
+			)
 			p.pop '},'
 		end
 	end
