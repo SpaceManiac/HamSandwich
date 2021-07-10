@@ -54,10 +54,12 @@ bool JamulSoundInit(int numBuffers)
 		LogError("SDL_Init(AUDIO): %s", SDL_GetError());
 		return false;
 	}
-	Mix_Init(MIX_INIT_OGG);  // not logged, because it lies
 	if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 1024) != 0) {
 		LogError("Mix_OpenAudio: %s", Mix_GetError());
 		return false;
+	}
+	if (Mix_Init(MIX_INIT_OGG) != MIX_INIT_OGG) {
+		LogError("Mix_Init: %s", Mix_GetError());
 	}
 
 #ifndef __EMSCRIPTEN__
