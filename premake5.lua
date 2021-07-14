@@ -224,7 +224,7 @@ end
 
 if is_msvc then
 	local function nmake_command(args)
-		return 'cmd /C "mkdir %{cfg.targetdir} & cd %{cfg.targetdir} & nmake TOP=../../../../external/zlib -f ../../../../external/zlib/win32/Makefile.msc ' .. args .. '"'
+		return 'cmd /C "cd %{cfg.targetdir} & nmake TOP=../../../../external/zlib -f ../../../../external/zlib/win32/Makefile.msc ' .. args .. '"'
 	end
 
 	project "z"
@@ -242,6 +242,7 @@ if is_msvc then
 			includedirs "external/zlib"
 		end
 		filter { "kind:not StaticLib" }
+			dependson { "z" }
 			links { "%{wks.location}/%{cfg.buildcfg}-%{cfg.platform}/z/zlib.lib" }
 		filter {}
 	end
