@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en-us">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>HamSandwich</title>
+		<link rel="icon" type="image/png" href="favicon.ico"/>
+		<style>
+			body {
+				background-color: #f5f5f5;
+				overflow-y: scroll;
+				margin: 8px;
+			}
+			@media (max-width: 599px) {
+				body {
+					margin: 0;
+				}
+			}
+			body > div {
+				max-width: 640px;
+				margin: 8px auto;
+				background-color: white;
+				padding: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="flex-row">
+			<span><a href="https://github.com/SpaceManiac/HamSandwich">HamSandwich</a></span>
+		</div>
+		<div>
+			<table id="main">
+			</table>
+			<noscript>JavaScript required.</noscript>
+		</div>
+		<script type="text/json" id="home-meta">["mystic","loonyland","supreme","loonyland2","sleepless"]</script>
+		<script>
+			var metadata = JSON.parse(document.getElementById('home-meta').textContent);
+			var main = document.getElementById('main');
+			for (let key of metadata) {
+				var tr = document.createElement('tr');
+				var td1 = document.createElement('td');
+				var a1 = document.createElement('a');
+				a1.href = key + '/';
+				var img = document.createElement('img');
+				img.src = key + '/favicon.ico';
+				img.height = 32;
+				var td2 = document.createElement('td');
+				var a2 = document.createElement('a');
+				a2.href = key + '/';
+
+				a1.append(img);
+				td1.append(a1);
+				a2.append(key);
+				td2.append(a2);
+				tr.append(td1, td2);
+				main.append(tr);
+			}
+		</script>
+	</body>
+</html>
