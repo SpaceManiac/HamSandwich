@@ -217,7 +217,7 @@ local function uses_sdl2_mixer(recursive)
 end
 
 local function uses_z(recursive)
-	filter { "kind:not StaticLib" }
+	filter { "kind:not StaticLib or action:android-studio or toolset:emcc" }
 		links { "z" }
 	filter {}
 end
