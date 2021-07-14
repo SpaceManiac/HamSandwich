@@ -187,7 +187,11 @@ function pch(name)
 end
 
 function sdl2_config_cflags()
-	result, status = os.outputof("sdl2-config --cflags")
+	local shell = ""
+	if _TARGET_OS == "windows" then  -- should really be host OS
+		shell = "sh "
+	end
+	result, status = os.outputof(shell .. "sdl2-config --cflags")
 	assert(status == 0, "error running `sdl2-config --cflags`:\n" .. (result or "nil"))
 	sdl2_config_cflags = function ()
 		return result
