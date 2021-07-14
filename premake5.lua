@@ -186,9 +186,9 @@ function pch(name)
 	filter {}
 end
 
-local function sdl2_config_cflags()
+function sdl2_config_cflags()
 	result, status = os.outputof("sdl2-config --cflags")
-	assert(status == 0, "error running `sdl2-config --cflags`:\n" .. result)
+	assert(status == 0, "error running `sdl2-config --cflags`:\n" .. (result or "nil"))
 	sdl2_config_cflags = function ()
 		return result
 	end
@@ -196,9 +196,9 @@ local function sdl2_config_cflags()
 end
 
 local function uses_sdl2(recursive)
-	filter { "action:gmake2", "toolset:not emcc" }
+	if _ACTION == "gmake2" and _OPTIONS.cc ~= "emcc" then
 		buildoptions { sdl2_config_cflags() }
-	filter {}
+	end
 	filter { "kind:not StaticLib or action:android-studio or toolset:emcc" }
 		links { "SDL2" }
 	filter {}
