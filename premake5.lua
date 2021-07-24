@@ -408,10 +408,6 @@ project "loonyland2"
 		defines { "DIRECTORS", "WINDOWS_IGNORE_PACKING_MISMATCH" }
 	filter {}
 
-	excludefiles {
-		"monster_ai.cpp",
-	}
-
 	installers {
 		["LL2CEinstall.exe"] = {
 			kind = "nsis",
