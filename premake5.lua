@@ -346,15 +346,6 @@ project "sleepless"
 	uses_ham()
 	pch "winpch"
 
-	excludefiles {
-		"monsterlist.cpp",
-		"monsterai1.cpp",
-		"monsterai2.cpp",
-		"monsterai3.cpp",
-		"monsterai4.cpp",
-		"monsterhollow.cpp",
-	}
-
 	installers {
 		["hollow_betainstall.exe"] = {
 			kind = "nsis",
