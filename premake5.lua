@@ -322,16 +322,6 @@ project "supreme"
 	uses_ham()
 	pch "winpch"
 
-	excludefiles {
-		"monsterlist.cpp",
-		"monsterai1.cpp",
-		"monsterai2.cpp",
-		"monsterai3.cpp",
-		"monsterai4.cpp",
-		"textitems.cpp",
-		"textrooms.cpp",
-	}
-
 	installers {
 		["supreme8_install.exe"] = {
 			kind = "nsis",

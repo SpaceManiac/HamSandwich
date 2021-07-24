@@ -1,3 +1,5 @@
+#include "monster.h"
+
 #define MT_WEIRD MT_BITS
 monsterType_t monsType[NUM_MONSTERS]=
 	{
