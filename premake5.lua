@@ -140,14 +140,6 @@ function sdl2_project()
 	links { "SDL2main", "SDL2", "SDL2_mixer", "SDL2_image" }
 end
 
-function excludefiles(files)
-	list = {}
-	for i = 1, #files do
-		list[i] = "source/%{prj.name}/" .. files[i]
-	end
-	removefiles(list)
-end
-
 function icon_file(icon)
 	webfiles { ["favicon.ico"] = "source/%{prj.name}/" .. icon .. ".ico" }
 
