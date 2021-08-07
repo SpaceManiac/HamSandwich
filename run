@@ -2,6 +2,9 @@
 # ./run - build then run a project in the appropriate directory
 set -euo pipefail
 
+# Ensure all build-time dependencies are installed.
+./tools/build/install-deps.sh
+
 # Default settings
 project=
 toolset=gcc
@@ -123,9 +126,6 @@ if test "$toolset" = "emcc"; then
 		source ./tools/build/install-emsdk.sh
 	fi
 fi
-
-# Ensure all build-time dependencies are installed.
-./tools/build/install-deps.sh
 
 # Build $config from $mode and $platform if needed.
 if test -z "$config"; then
