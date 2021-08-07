@@ -78,6 +78,7 @@ deps_mingw32() {
 	# Install system packages
 	packages 'pacman -S --needed --noconfirm --quiet' \
 		p7zip make \
+		mingw-w64-i686-python \
 		mingw-w64-i686-binutils mingw-w64-i686-gcc mingw-w64-i686-zlib \
 		mingw-w64-i686-SDL2 mingw-w64-i686-SDL2_mixer mingw-w64-i686-SDL2_image
 
@@ -88,6 +89,7 @@ deps_mingw64() {
 	# Install system packages
 	packages 'pacman -S --needed --noconfirm --quiet' \
 		p7zip make \
+		mingw-w64-x86_64-python \
 		mingw-w64-x86_64-binutils mingw-w64-x86_64-gcc mingw-w64-x86_64-zlib \
 		mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-SDL2_image
 

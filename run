@@ -137,9 +137,9 @@ if test -z "$nobuild"; then
 	make -j"$(nproc)" config="$config" toolset="$toolset" "$project"
 fi
 
-# Extract the project's installer assets if needed.
-if test "$toolset" != "emcc" && test ! -d "build/game/$project"; then
-	./tools/build/extract-assets.sh "$project" "build/game/$project"
+# Migrate fully-extracted appdata to new appdata-only location as a fallback
+if test -d "build/game/$project"; then
+	./tools/build/migrate-appdata.sh "$project" "build/game/$project" "appdata/$project"
 fi
 
 # Now that the settings are known, load the debug config.
