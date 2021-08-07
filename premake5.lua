@@ -102,9 +102,9 @@ function sdl2_project()
 	filter {}
 
 	-- These emulate the `./run` script when running within VS.
-	debugdir "appdata"
+	debugdir "appdata/%{prj.name}"
 	debugargs { "window" }
-	debugenvs { "HSW_APPDATA=@stdio@%{prj.name}" }
+	debugenvs { "HSW_APPDATA=@stdio@" }
 
 	filter "toolset:emcc"
 		debugdir "%{cfg.targetdir}"
@@ -145,7 +145,7 @@ premake.override(_ENV, "installers", function(base, tab)
 	base(tab)
 	local i = 0
 	for k, v in pairs(tab) do
-		debugenvs { "HSW_ASSETS_" .. i .. "=" .. (v.mountpoint or "") .. "@" .. v.kind .. "@../build/installers/" .. k }
+		debugenvs { "HSW_ASSETS_" .. i .. "=" .. (v.mountpoint or "") .. "@" .. v.kind .. "@../../build/installers/" .. k }
 		i = i + 1
 	end
 end)
