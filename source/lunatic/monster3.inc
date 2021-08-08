@@ -1,5 +1,3 @@
-#ifdef MONSTER_CPP // Don't compile directly
-
 void AI_GoodTurret(Guy *me, Map *map, world_t *world, Guy *goodguy)
 {
 	if (me->reload)
@@ -2485,5 +2483,3 @@ void AI_Creepazoid(Guy *me, Map *map, world_t *world, Guy *goodguy)
 		me->frmAdvance = 128;
 	}
 }
-
-#endif // MONSTER_CPP

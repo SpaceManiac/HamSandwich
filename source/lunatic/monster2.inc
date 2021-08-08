@@ -1,5 +1,3 @@
-#ifdef MONSTER_CPP // Don't compile directly
-
 void AI_MineCart(Guy *me, Map *map, world_t *world, Guy *goodguy)
 {
 	int x, y;
@@ -3258,5 +3256,3 @@ void AI_LoonyShip(Guy *me, Map *map, world_t *world, Guy *goodguy)
 	}
 	me->mind1 = 0;
 }
-
-#endif // MONSTER_CPP
