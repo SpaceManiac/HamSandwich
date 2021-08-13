@@ -2,6 +2,18 @@
 
 ![Screenshots of game title screens](docs/titlescreens.png)
 
+**HamSandwich** is a collection of working source code for several of
+[Hamumu Software](http://hamumu.com/)'s titles. Running HamSandwich requires
+assets from official versions of the games, available for free from
+<https://hamumu.itch.io/>.
+
+The original code releases on which this project is based are available on [hamumu.com](http://hamumu.com/sourcecode/).
+
+## Save Compatibility
+
+Saves and profiles from the retail versions of the games are fully compatible
+with HamSandwich saves, except that controls will need to be reconfigured.
+
 ## Building
 
 The recommended way to compile the games is [MinGW on Windows](#windows-mingw).
@@ -77,7 +89,7 @@ Compiling and running:
 2. Run `./run <project> --web` to run the build and open the result in your
    browser.
 
-Bundling assets:
+Bundling assets (worlds, music, graphics, etc.):
 
 1. Commit your assets to a subfolder in the repository of your choosing.
 2. In the appropriate project's section in `premake5.lua`, add a line pointing
