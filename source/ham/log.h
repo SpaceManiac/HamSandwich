@@ -3,7 +3,7 @@
 
 // Conditionals for warnings/analysis based on SDL_stdinc.h
 #ifdef __GNUC__
-#define PRINTF_FUNC( fmtargnumber ) __attribute__ (( format( __printf__, fmtargnumber, fmtargnumber+1 )))
+#define PRINTF_FUNC( fmtargnumber ) __attribute__ (( format( gnu_printf, fmtargnumber, fmtargnumber+1 )))
 #else  // __GNUC__
 #define PRINTF_FUNC( fmtargnumber )
 #endif  // __GNUC__
