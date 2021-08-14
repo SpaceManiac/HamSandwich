@@ -104,7 +104,7 @@ function sdl2_project()
 	-- These emulate the `./run` script when running within VS.
 	debugdir "appdata/%{prj.name}"
 	debugargs { "window" }
-	debugenvs { "HSW_APPDATA=@stdio@" }
+	debugenvs { "HSW_APPDATA=@stdio@." }
 
 	filter "toolset:emcc"
 		debugdir "%{cfg.targetdir}"

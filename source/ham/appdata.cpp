@@ -140,9 +140,7 @@ public:
 
 FILE* StdioVfs::open_stdio(const char* file, const char* mode, bool write) {
 	std::string buffer = prefix;
-	if (!buffer.empty()) {
-		buffer.append("/");
-	}
+	buffer.append("/");
 	buffer.append(file);
 	if (write) {
 		mkdir_parents(buffer.c_str());
