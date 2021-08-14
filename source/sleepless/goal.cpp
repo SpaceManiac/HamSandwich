@@ -151,7 +151,6 @@ void GoalFire(void)
 
 // -------------------------------------------------
 static byte noKeyTime;
-static int msBtn;
 
 void InitShowGoal(MGLDraw *mgl,byte num)
 {

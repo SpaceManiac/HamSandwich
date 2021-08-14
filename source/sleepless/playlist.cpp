@@ -68,7 +68,7 @@ static char *fileList=NULL;
 static byte mode;
 
 static int selectMin[2],selectMax[2],scrollOfsY;
-static int scrollY[2],scrollHeight[2],scrollOffset[2];
+static int scrollY[2],scrollHeight[2];
 
 void SortSongs(void)
 {

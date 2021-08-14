@@ -128,13 +128,10 @@ void RenderRacer(MGLDraw *mgl)
 
 void RenderRaceGame(MGLDraw *mgl)
 {
-	byte *scrn;
-	int pitch,spd;
+	int spd;
 	char s[32];
 
 	mgl->ClearScreen();
-	pitch=mgl->GetWidth();
-	scrn=mgl->GetScreen();
 
 	RenderRoad(mgl);
 

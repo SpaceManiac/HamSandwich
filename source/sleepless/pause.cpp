@@ -112,15 +112,6 @@ static pauseItem_t cheatPause2[]={
 	{PE_DONE,""},
 };
 
-static pauseItem_t musicPause[]={
-	{PE_MUSVOL,""},
-	{PE_MUSICTYPE,""},
-	{PE_MUSICMODE,""},
-	{PE_SONG,""},
-	{PE_MUSIC,"Back To Menu"},
-	{PE_DONE,""},
-};
-
 static invItem_t inventory[]={
 	{0,ITM_PANTS,INVT_PANTS,0,10,"Pants Of Power","Throw hammers faster."},
 	{1,ITM_HAMMERUP,INVT_HAMMERS,0,10,"Hammers","Charge up the multi-shot faster."},

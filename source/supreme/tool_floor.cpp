@@ -167,12 +167,10 @@ void FloorTool::PlopOne(int x,int y)
 
 void FloorTool::Plop(void)
 {
-	Map *m;
 	int x,y;
 	int i,j,minusBrush,plusBrush;
 
 	EditorGetTileXY(&x,&y);
-	m=EditorGetMap();
 
 	if(x!=lastX || y!=lastY)
 	{

@@ -50,7 +50,7 @@ typedef struct caveGuy_t
 static byte oldc;
 static byte *map;
 static dword timer;
-static int score,curScore,lives,firePower,antTimer,life,pressure,coinsEarned;
+static int score,curScore,lives,firePower,antTimer,life,coinsEarned;
 static byte gameOver,gameOverClock,gameLevel,fireAng;
 static int totalTime,diamondsGot;
 static caveGuy_t *guy;

@@ -337,7 +337,6 @@ project "supreme"
 	filter "toolset:gcc"
 		buildoptions {
 			"-Wall",
-			"-Wno-unused-variable",
 			"-Wno-unused-but-set-variable",
 		}
 
@@ -361,7 +360,6 @@ project "sleepless"
 	filter "toolset:gcc"
 		buildoptions {
 			"-Wall",
-			"-Wno-unused-variable",
 			"-Wno-unused-but-set-variable",
 		}
 

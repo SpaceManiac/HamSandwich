@@ -28,19 +28,12 @@ static int	   tileX,tileY;
 static int	rectX1,rectX2,rectY1,rectY2;
 static int  pickerWid,pickerHei;
 
-static byte  showStats=0;
-static dword gameStartTime,visFrameCount,updFrameCount;
+static dword gameStartTime,updFrameCount;
 static word  numRunsToMakeUp;
-
-static byte plopCounter=0;
-static byte msButton=0;
-static byte monsPage=0;
 
 static byte viewMenu,editMenu;
 
 static byte musicPlaying;
-
-static char worldFilename[FNAMELEN]="";
 
 static byte displayFlags;
 byte editing=0;

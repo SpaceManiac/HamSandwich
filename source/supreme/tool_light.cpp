@@ -218,12 +218,10 @@ void LightTool::PlopOne(int centerx,int centery,int x,int y)
 
 void LightTool::Plop(void)
 {
-	Map *m;
 	int x,y;
 	int minusBrush,plusBrush;
 
 	EditorGetTileXY(&x,&y);
-	m=EditorGetMap();
 
 	if(x!=lastX || y!=lastY)
 	{

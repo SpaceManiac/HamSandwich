@@ -131,7 +131,6 @@ char victoryTxt[][64]={
 #define END_OF_VICTORY 480*2+50
 
 sprite_set_t *planetSpr;
-static int numRunsToMakeUp;
 byte pickerpos;
 char pickeroffset;
 byte offsetdir;
@@ -140,7 +139,6 @@ byte curCustom;
 static byte oldc=0;
 mfont_t pickerFont;
 
-static byte keyAnim=0;
 char lvlName[32];
 
 byte starColorTable[]={214,81,63,49,33,21,32,83,93};

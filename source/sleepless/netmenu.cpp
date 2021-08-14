@@ -64,7 +64,6 @@ static int msx,msy;
 static byte *backgd;
 static char msBright,msDBright;
 
-static byte netChoice,times,nameCheckFor;
 static char errTxt[128],dumbName[64],dumbPass[64];
 static int socketNum;
 

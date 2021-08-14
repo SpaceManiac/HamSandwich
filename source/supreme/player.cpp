@@ -679,7 +679,6 @@ void DoPlayerFacing(byte c,Guy *me)
 void PlayerFireWeapon(Guy *me)
 {
 	byte c;
-	static byte flameFlip=0;
 
 	if(player.life==0)
 		return;	// no shooting when you're dead
@@ -730,7 +729,6 @@ void PlayerFireWeapon(Guy *me)
 			else
 			{
 				player.wpnReload=5;
-				flameFlip=0;
 			}
 			DoPlayerFacing(c,me);
 			break;

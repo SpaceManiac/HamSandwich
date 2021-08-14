@@ -72,7 +72,7 @@ static byte *backgd;
 static sprite_set_t *plSpr;
 static char msBright,msDBright;
 
-static byte netChoice,times,nameCheckFor;
+static byte times,nameCheckFor;
 static char errTxt[128];
 static int socketNum;
 static int scoresToUpload,scoresUploaded,scoreLen,numSent,totalUploaded,totalToGo;

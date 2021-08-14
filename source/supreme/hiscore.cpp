@@ -497,7 +497,6 @@ static byte saved[4];		// an indicator of whether each of those 4 came from the 
 
 static score_t *hiScore=NULL,*hiTime=NULL;
 static word numScores=0,numTimes=0;
-static dword topScore,topTime;
 
 void InitHiScores(void)
 {
