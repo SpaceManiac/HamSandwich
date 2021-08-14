@@ -144,7 +144,7 @@ char lvlName[32];
 byte starColorTable[]={214,81,63,49,33,21,32,83,93};
 
 byte demoTextCounter;
-static byte canEditor;
+static byte canEditor=1;
 
 static byte *backgd;
 static int titleRuns;
@@ -297,17 +297,6 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 
 	for(i=0;i<480;i++)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
-
-	canEditor=0;
-	FILE* f = AppdataOpen("profiles/editor.dat", "rt");
-	if (f)
-	{
-		canEditor=1;
-		fclose(f);
-	}
-#ifdef _DEBUG
-	canEditor=1;
-#endif
 
 	mgl->LastKeyPressed();
 	mgl->MouseTap();
