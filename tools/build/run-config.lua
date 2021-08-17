@@ -67,6 +67,13 @@ function m.workspace_run_config(wks)
 				end
 				p.w('debugenvs=(%s)', debugenvs)
 
+				-- specific to HamSandwich
+				p.push('iterate_installers() {')
+				for k, v in pairs(cfg.installers) do
+					p.w('filename=%s kind=%s link=%s sha256sum=%s $1', json.encode(k), json.encode(v.kind), json.encode(v.link), json.encode(v.sha256sum))
+				end
+				p.pop('}')
+
 				p.pop(';;')
 			end
 		end

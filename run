@@ -44,7 +44,7 @@ show_help() {
 
 load_run_config() {
 	make --quiet toolset="$toolset" "build/$toolset/run-config.sh"
-	source "build/$toolset/run-config.sh"
+	source "build/$toolset/run-config.sh"; declare exeprojects
 	# Only load the config once, even if we need it multiple times.
 	load_run_config() { :; }
 }
@@ -144,7 +144,37 @@ fi
 
 # Now that the settings are known, load the debug config.
 load_run_config
-debug_configure
+debug_configure; declare debugdir debugcommand debugargs debugenvs
+
+# Prompt to download installers if not already present.
+if test "$toolset" != "emcc"; then
+	handler() {
+		declare filename link sha256sum  # inputs
+		INSTDIR="build/installers"
+
+		show_header() {
+			echo "==== Installer required ===="
+			mkdir -p "$INSTDIR"
+			show_header() { :; }
+		}
+
+		while test ! -f "$INSTDIR/$filename"; do
+			show_header
+			echo "Please download '$filename' from the following page, and save it inside '$INSTDIR/':"
+			echo "    $link"
+			echo "Press Enter when finished, or Ctrl-C to cancel."
+			read -r
+		done
+		while ! sha256sum -c <<<"$sha256sum *$INSTDIR/$filename"; do
+			show_header
+			echo "That looks like the wrong file, please download '$filename' again:"
+			echo "    $link"
+			echo "Press Enter when finished, or Ctrl-C to cancel."
+			read -r
+		done
+	}
+	iterate_installers handler
+fi
 
 # Run the game executable or tool.
 mkdir -p "$debugdir"
