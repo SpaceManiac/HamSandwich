@@ -147,6 +147,7 @@ load_run_config
 debug_configure
 
 # Run the game executable or tool.
+mkdir -p "$debugdir"
 cd "$debugdir"
 if test ${#debugenvs[@]} -ne 0; then
 	export "${debugenvs[@]}"
