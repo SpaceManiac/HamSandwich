@@ -60,7 +60,7 @@ var HamSandwich = (function () {
 		installerMount = FS.mount(IDBFS, {}, '/installers').mount;
 		FS.syncfs(true, fsInitCallback);
 
-		Module.ENV['HSW_APPDATA'] = '/@stdio@/appdata/' + HamSandwich.metadata.projectName;
+		Module.ENV['HSW_APPDATA'] = '/@stdio@/appdata/' + HamSandwich.metadata.appdataName;
 		if (HamSandwich.metadata.hasAssets) {
 			pushAssets(null, 'stdio', '.');
 		}
@@ -255,7 +255,7 @@ var Module = (function() {
 
 		Module.setStatus("Zipping...");
 		var zip = new JSZip();
-		collect(zip, '/appdata/' + HamSandwich.metadata.projectName);
+		collect(zip, '/appdata/' + HamSandwich.metadata.appdataName);
 		zip.generateAsync({ type: "blob" }).then(function(content) {
 			saveAs(content, "HamSandwich Saves.zip");
 			Module.setStatus("");

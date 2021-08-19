@@ -150,14 +150,14 @@ function emscripten._file_packager_makesettings(prj)
 		local data_d = data_js .. ".d"
 
 		local build_command = "python3"
-			.. " ../tools/build/file_packager_deps.py"
+			.. " ../../tools/build/file_packager_deps.py"
 			.. " " .. data
 			.. " --js-output=" .. data_js
 			.. " --from-emcc"  -- Hack to disable "Remember to..." output
 			--.. " --use-preload-plugins"
 			.. " --preload"  -- List of paths follows
 		for _, dir in ipairs(prj.assetdirs) do
-			build_command = build_command .. " '../" .. dir .. "@'"
+			build_command = build_command .. " '../../" .. dir .. "@'"
 		end
 
 		local output = "# Begin emcc file_packager handling\n"
@@ -181,6 +181,7 @@ filter {}
 function emscripten._encode_metadata(prj)
 	local meta = {
 		title = prj.web_title or prj.android_appname,
+		appdataName = prj.appdata_name or prj.name,
 		projectName = prj.name,
 		installers = prj.installers,
 		hasAssets = #prj.assetdirs > 0,
