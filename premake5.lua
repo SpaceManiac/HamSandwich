@@ -141,15 +141,6 @@ function sdl2_project()
 	links { "SDL2main", "SDL2", "SDL2_mixer", "SDL2_image" }
 end
 
-premake.override(_ENV, "installers", function(base, tab)
-	base(tab)
-	local i = 0
-	for k, v in pairs(tab) do
-		debugenvs { "HSW_ASSETS_" .. i .. "=" .. (v.mountpoint or "") .. "@" .. v.kind .. "@../../build/installers/" .. k }
-		i = i + 1
-	end
-end)
-
 function icon_file(icon)
 	webfiles { ["favicon.ico"] = "source/%{prj.name}/" .. icon .. ".ico" }
 
