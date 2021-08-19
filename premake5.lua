@@ -102,7 +102,7 @@ function sdl2_project()
 	filter {}
 
 	-- These emulate the `./run` script when running within VS.
-	debugdir "appdata/%{prj.name}"
+	debugdir "appdata/%{prj.appdata_name or prj.name}"
 	debugargs { "window" }
 	debugenvs { "HSW_APPDATA=@stdio@." }
 

@@ -34,6 +34,13 @@ p.api.register {
 	tokens = true
 }
 
+p.api.register {
+	name = "appdata_name",
+	scope = "project",
+	kind = "string",
+	tokens = true
+}
+
 -- Global filters.
 filter { "toolset:emcc", "kind:WindowedApp or ConsoleApp" }
 	-- Without an extension, emcc produces only bytecode. We want the WASM and
