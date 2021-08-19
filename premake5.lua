@@ -1,4 +1,5 @@
 -- premake5.lua
+dofile "tools/build/appdata.lua"
 dofile "tools/build/gmake2_deps.lua"
 dofile "tools/build/android_studio.lua"
 dofile "tools/build/emscripten.lua"
