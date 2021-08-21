@@ -9,6 +9,10 @@ assets from official versions of the games, available for free from
 
 The original code releases on which this project is based are available on [hamumu.com](http://hamumu.com/sourcecode/).
 
+* [Save Compatibility](#save-compatibility)
+* [Building](#building)
+* [Modding](#modding)
+
 ## Save Compatibility
 
 Saves and profiles from the retail versions of the games are fully compatible
@@ -109,8 +113,8 @@ Publishing on GitHub Pages:
 Publishing manually:
 
 1. Run `tools/build/distribute-web.sh <project>`.
-   1. You can supply multiple projects to build them together, or leave off
-   1. You can leave off the project identifier
+   1. You can supply multiple projects to build them together.
+   2. You can leave off the project identifier to build every project.
 2. Upload the contents of `build/webroot/`.
 
 [Emscripten SDK]: https://emscripten.org/docs/getting_started/downloads.html
@@ -124,3 +128,46 @@ Publishing manually:
     1. For example, to build Supreme With Cheese, write `./android supreme`
 4. Run `./android --install <project>` to install to a connected Android device.
 5. To view logs, run `./android --logcat`
+
+## Modding
+
+The simplest way to publish your mod is using the GitHub Pages method described
+above. To bundle custom worlds, graphics, or music with your mod, add an
+`assetdirs` call to `premake5.lua` which points to an asset folder of your
+choosing. You should author any graphics in this folder directly, and copy the
+world files out of `appdata/` into it. You should commit this folder to Git.
+For example:
+
+```lua
+project "mystic"
+    -- ...
+    appdata_name "SpaceManiac-mystic-remix"
+    assetdirs "assets/mystic-remix"
+```
+
+The `appdata_name` directive should be used if your mod's saves/profiles are
+not meant to be compatible with the base game's. Most remix worlds fall into
+this category. You should include your name at the beginning.
+
+
+To import another game's content, copy the other game's `installer` block into
+that of the game you wish to import them into, for example:
+```lua
+project "supreme"
+    -- ...
+    installers {
+        ["supreme8_install.exe"] = {
+            -- ...
+        }
+        ["mystic_install.exe"] = {
+            -- ...
+        }
+    }
+```
+
+When the game searches for a world or asset file, it scans first the appdata
+folder, then the `assetdirs` folders in order, then the `installers` in order.
+That means that overrides should go at the beginning of the list and fallbacks
+should go at the end.
+
+Check out existing mods on the [list of published mods](https://github.com/SpaceManiac/HamSandwich/wiki).
