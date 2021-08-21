@@ -125,7 +125,23 @@ bool Vfs::delete_file(const char* file) {
 	return false;
 }
 
-typedef std::vector<std::unique_ptr<Vfs>> VfsStack;
+struct VfsStack {
+	std::vector<std::unique_ptr<Vfs>> stack;
+public:
+	VfsStack() {}
+
+	void push_back(std::unique_ptr<Vfs>&& entry) { stack.push_back(std::move(entry)); }
+
+	// Returns true if this VfsStack is empty and therefore not useable.
+	bool empty() const { return stack.empty(); }
+
+	// Get the Vfs that should be used for writing.
+	Vfs* appdata() { return stack.front().get(); }
+
+	// Iterate over the Vfses to use for reading, in priority order.
+	auto begin() { return stack.begin(); }
+	auto end() { return stack.end(); }
+};
 
 // ----------------------------------------------------------------------------
 // Stdio VFS implementation
@@ -544,7 +560,7 @@ FILE* AssetOpen(const char* file, const char* mode) {
 
 	bool write = is_write_mode(mode);
 	if (write) {
-		return vfs_stack.front()->open_stdio(file, mode, write);
+		return vfs_stack.appdata()->open_stdio(file, mode, write);
 	}
 
 	for (auto& vfs : vfs_stack) {
@@ -565,7 +581,7 @@ SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
 
 	bool write = is_write_mode(mode);
 	if (write) {
-		return vfs_stack.front()->open_sdl(file, mode, write);
+		return vfs_stack.appdata()->open_sdl(file, mode, write);
 	}
 
 	for (auto& vfs : vfs_stack) {
@@ -611,7 +627,7 @@ void AppdataDelete(const char* file) {
 		vfs_stack = init_vfs_stack();
 	}
 
-	vfs_stack.front()->delete_file(file);
+	vfs_stack.appdata()->delete_file(file);
 }
 
 #ifndef HAS_APPDATA_SYNC
