@@ -88,17 +88,17 @@ const Archive::Directory* Archive::get_directory(const char* path) const
 	return &iter->second;
 }
 
-bool Archive::list_dir(const char* path, std::vector<std::string>& output) const
+bool Archive::list_dir(const char* path, std::set<std::string>& output) const
 {
 	const Directory* current = get_directory(path);
 	if (!current)
 		return false;
 
 	for (const auto& pair : current->files)
-		output.push_back(pair.first);
+		output.insert(pair.first);
 
 	for (const auto& pair : current->directories)
-		output.push_back(pair.first);
+		output.insert(pair.first);
 
 	return true;
 }

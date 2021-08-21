@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <set>
 #include <stdint.h>
 
 typedef struct ISzAlloc ISzAlloc;
@@ -43,7 +44,7 @@ protected:
 	const Directory* get_directory(const char* path) const;
 
 public:
-	bool list_dir(const char* path, std::vector<std::string>& output) const;
+	bool list_dir(const char* path, std::set<std::string>& output) const;
 	//SDL_RWops* open_file(const char* path);
 };
 

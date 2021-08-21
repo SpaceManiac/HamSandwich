@@ -8,6 +8,7 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
+#include <set>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -115,7 +116,7 @@ public:
 
 	virtual FILE* open_stdio(const char* file, const char* mode, bool write) = 0;
 	virtual SDL_RWops* open_sdl(const char* file, const char* mode, bool write) = 0;
-	virtual bool list_dir(const char* directory, std::vector<std::string>& output) = 0;
+	virtual bool list_dir(const char* directory, std::set<std::string>& output) = 0;
 	virtual bool delete_file(const char* file);
 };
 
@@ -134,7 +135,7 @@ public:
 	StdioVfs(std::string prefix) : prefix(prefix) {}
 	FILE* open_stdio(const char* file, const char* mode, bool write);
 	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
-	bool list_dir(const char* directory, std::vector<std::string>& output);
+	bool list_dir(const char* directory, std::set<std::string>& output);
 	bool delete_file(const char* file);
 };
 
@@ -153,7 +154,7 @@ FILE* StdioVfs::open_stdio(const char* file, const char* mode, bool write) {
 		size_t i = buffer.rfind("/");
 		buffer[i] = '\0';
 
-		std::vector<std::string> temp;
+		std::set<std::string> temp;
 		list_dir(buffer.c_str(), temp);
 
 		for (const auto& name : temp)
@@ -200,7 +201,7 @@ SDL_RWops* StdioVfs::open_sdl(const char* file, const char* mode, bool write) {
 #ifdef __GNUC__
 #include <dirent.h>
 
-bool StdioVfs::list_dir(const char* directory, std::vector<std::string>& output) {
+bool StdioVfs::list_dir(const char* directory, std::set<std::string>& output) {
 	std::string buffer = prefix;
 	buffer.append("/");
 	buffer.append(directory);
@@ -210,7 +211,7 @@ bool StdioVfs::list_dir(const char* directory, std::vector<std::string>& output)
 	}
 
 	while (struct dirent *dp = readdir(dir)) {
-		output.push_back(dp->d_name);
+		output.insert(dp->d_name);
 	}
 
 	closedir(dir);
@@ -220,7 +221,7 @@ bool StdioVfs::list_dir(const char* directory, std::vector<std::string>& output)
 #elif defined(_MSC_VER)
 #include <io.h>
 
-bool StdioVfs::list_dir(const char* directory, std::vector<std::string>& output) {
+bool StdioVfs::list_dir(const char* directory, std::set<std::string>& output) {
 	std::string buffer = prefix;
 	buffer.append("/");
 	buffer.append(directory);
@@ -233,7 +234,7 @@ bool StdioVfs::list_dir(const char* directory, std::vector<std::string>& output)
 	}
 
 	do {
-		output.push_back(finddata.name);
+		output.insert(finddata.name);
 	} while (_findnext(hFile, &finddata) == 0);
 
 	_findclose(hFile);
@@ -311,7 +312,7 @@ public:
 	NsisVfs(FILE* fp) : archive(fp) {}
 	FILE* open_stdio(const char* file, const char* mode, bool write);
 	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
-	bool list_dir(const char* directory, std::vector<std::string>& output);
+	bool list_dir(const char* directory, std::set<std::string>& output);
 };
 
 FILE* NsisVfs::open_stdio(const char* file, const char* mode, bool write) {
@@ -328,7 +329,7 @@ SDL_RWops* NsisVfs::open_sdl(const char* file, const char* mode, bool write) {
 	return archive.open_file(file);
 }
 
-bool NsisVfs::list_dir(const char* directory, std::vector<std::string>& output) {
+bool NsisVfs::list_dir(const char* directory, std::set<std::string>& output) {
 	return archive.list_dir(directory, output);
 }
 
@@ -341,7 +342,7 @@ public:
 	InnoVfs(FILE* fp) : archive(fp) {}
 	FILE* open_stdio(const char* file, const char* mode, bool write);
 	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
-	bool list_dir(const char* directory, std::vector<std::string>& output);
+	bool list_dir(const char* directory, std::set<std::string>& output);
 };
 
 FILE* InnoVfs::open_stdio(const char* file, const char* mode, bool write) {
@@ -358,7 +359,7 @@ SDL_RWops* InnoVfs::open_sdl(const char* file, const char* mode, bool write) {
 	return archive.open_file(file);
 }
 
-bool InnoVfs::list_dir(const char* directory, std::vector<std::string>& output) {
+bool InnoVfs::list_dir(const char* directory, std::set<std::string>& output) {
 	return archive.list_dir(directory, output);
 }
 
@@ -583,7 +584,7 @@ std::vector<std::string> ListDirectory(const char* directory, const char* extens
 		vfs_stack = init_vfs_stack();
 	}
 
-	std::vector<std::string> output;
+	std::set<std::string> output;
 	for (auto& vfs : vfs_stack) {
 		vfs->list_dir(directory, output);
 	}
@@ -602,7 +603,7 @@ std::vector<std::string> ListDirectory(const char* directory, const char* extens
 		});
 	}
 
-	return output;
+	return { output.begin(), output.end() };;
 }
 
 void AppdataDelete(const char* file) {
