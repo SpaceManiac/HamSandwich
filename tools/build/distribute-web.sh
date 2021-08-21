@@ -16,22 +16,30 @@ if ! command -v em++ >/dev/null 2>&1; then
 fi
 
 # Build specified project, or all
-if [ -d "$WEBROOT" ]; then
+if test -d "$WEBROOT"; then
 	rm -r "$WEBROOT"
 fi
 mkdir -p "$WEBROOT"
 nproc="$(nproc)"
-make config="${mode}_$platform" toolset="$toolset" -j"$nproc" "ham"  # Mitigate concurrency risks.
-make config="${mode}_$platform" toolset="$toolset" -j"$nproc" "$@"
+if test $# -eq 0; then
+	# `make all` works fine.
+	make config="${mode}_$platform" toolset="$toolset" -j"$nproc"
+else
+	# `make mystic loonyland` has concurrency issues due to how premake works,
+	# so build each project serially.
+	for project in "$@"; do
+		make config="${mode}_$platform" toolset="$toolset" -j"$nproc" "$project"
+	done
+fi
 
 # If no project was specified, detect them
-if [ $# -eq 0 ]; then
+if test $# -eq 0; then
 	DIRS=("$TARGETDIR"/*)
 	set "${DIRS[@]##*/}"
 fi
 
 echo "==== Preparing webroot ($WEBROOT) ===="
-if [ $# -eq 1 ]; then
+if test $# -eq 1; then
 	# One project: put everything in the root
 	FILES=($(find "$TARGETDIR/$1" -maxdepth 1 -type f))
 	cp "${FILES[@]}" "$WEBROOT"
@@ -45,8 +53,8 @@ else
 	./tools/build/embed-metadata.py __HOMEPAGE_METADATA__ build/webroot.meta.json <assets/homepage/index.html >"$WEBROOT"/index.html
 	cp source/supreme/lunatic.ico "$WEBROOT"/favicon.ico
 	for PROJECT in "$@"; do
-		FILES=($(find "$TARGETDIR/$PROJECT" -maxdepth 1 -type f))
-		if [ ${#FILES[@]} -ne 0 ]; then
+		FILES=($(find "$TARGETDIR/$PROJECT" -maxdepth 1 -type f -not -name '*.a'))
+		if test ${#FILES[@]} -ne 0; then
 			mkdir -p "$WEBROOT/$PROJECT"
 			cp "${FILES[@]}" "$WEBROOT/$PROJECT"
 		fi
