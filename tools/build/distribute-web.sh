@@ -41,7 +41,7 @@ fi
 echo "==== Preparing webroot ($WEBROOT) ===="
 if test $# -eq 1; then
 	# One project: put everything in the root
-	FILES=($(find "$TARGETDIR/$1" -maxdepth 1 -type f))
+	mapfile -t FILES < <(find "$TARGETDIR/$1" -maxdepth 1 -type f)
 	cp "${FILES[@]}" "$WEBROOT"
 else
 	# Many projects: put everything in subfolders
@@ -53,7 +53,7 @@ else
 	./tools/build/embed-metadata.py __HOMEPAGE_METADATA__ build/webroot.meta.json <assets/homepage/index.html >"$WEBROOT"/index.html
 	cp source/supreme/lunatic.ico "$WEBROOT"/favicon.ico
 	for PROJECT in "$@"; do
-		FILES=($(find "$TARGETDIR/$PROJECT" -maxdepth 1 -type f -not -name '*.a'))
+		mapfile -t FILES < <(find "$TARGETDIR/$PROJECT" -maxdepth 1 -type f -not -name '*.a')
 		if test ${#FILES[@]} -ne 0; then
 			mkdir -p "$WEBROOT/$PROJECT"
 			cp "${FILES[@]}" "$WEBROOT/$PROJECT"
