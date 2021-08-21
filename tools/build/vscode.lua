@@ -60,7 +60,7 @@ function m.tasks_json(wks)
 	"problemMatcher": [
 		{
 			"owner": "cpp",
-			"fileLocation": ["relative", "${workspaceFolder}/build"],
+			"fileLocation": ["autoDetect", "${workspaceFolder}/build/gcc"],
 			"pattern": {
 				"regexp": "^(.*):(\\d+):(\\d+):\\s+(?:fatal )?(warning|error):\\s+(.*)$",
 				"file": 1,
