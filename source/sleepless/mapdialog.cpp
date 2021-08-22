@@ -409,3 +409,24 @@ byte MapDialogClick(int msx,int msy)
 
 	return 1;
 }
+
+void MapDialogScroll(int msz)
+{
+	if (msz > 0)
+	{
+		mapPos = std::max(mapPos - msz, 0);
+	}
+	else if (msz < 0)
+	{
+		mapPos = std::min(mapPos - msz, world->numMaps - 1);
+	}
+
+	int i=0;
+	while(i<MAX_MAPSHOW)
+	{
+		sprintf(mapnames[i],"%02d: %s",i+mapPos,world->map[i+mapPos]->name);
+		i++;
+		if(i+mapPos>=world->numMaps)
+			break;
+	}
+}

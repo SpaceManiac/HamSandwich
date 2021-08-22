@@ -402,6 +402,8 @@ TASK(void) UpdateMouse(void)
 					editMode=EDITMODE_EDIT;
 				}
 			}
+			if (scroll)
+				MapDialogScroll(scroll);
 			break;
 		case EDITMODE_LEVELMENU:
 			if(editmgl->MouseTap())
