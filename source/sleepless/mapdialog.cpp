@@ -3,6 +3,7 @@
 #include "dialogbits.h"
 #include "textdialog.h"
 #include "repair.h"
+#include <algorithm>
 
 #define WD_NORMAL	0
 #define WD_NAME		1
