@@ -65,8 +65,8 @@ Compiling and running:
     1. Download dependencies by running `powershell tools/msvc/install-dependencies.ps1`.
     2. Run `build/premake5.exe vs2019` (or appropriate VS version) to generate the solution files.
 2. Open and compile `build/msc-v142/HamSandwich.sln` in Visual Studio.
-    1. For command-line builds, run `msbuild build/HamSandwich.sln /p:Configuration=debug /p:Platform=Win32`.
-3. Use installers from <https://hamumu.itch.io/> to extract game assets to `build/game/<project>`.
+    1. For command-line builds, run `msbuild build/msc-v142/HamSandwich.sln /p:Configuration=debug /p:Platform=Win32`.
+3. Download installers from <https://hamumu.itch.io/> and save them inside `build/installers/` without extracting them.
 4. Debug from within Visual Studio to launch a game.
 
 ### Linux
@@ -131,12 +131,16 @@ Publishing manually:
 
 ## Modding
 
+To get started with custom worlds, graphics, music, and so on, place your
+custom files inside the `appdata/<project>/` folder alongside your profiles.
+When the game loads assets it checks that folder before the installer. Any
+worlds you save in the editor will show up in this folder.
+
 The simplest way to publish your mod is using the GitHub Pages method described
-above. To bundle custom worlds, graphics, or music with your mod, add an
-`assetdirs` call to `premake5.lua` which points to an asset folder of your
-choosing. You should author any graphics in this folder directly, and copy the
-world files out of `appdata/` into it. You should commit this folder to Git.
-For example:
+above. To bundle custom assets with your mod, add an `assetdirs` call to
+`premake5.lua` which points to an asset folder of your choosing. You should
+move your custom assets out of `appdata/` into this folder and commit them to
+Git. For example:
 
 ```lua
 project "mystic"
