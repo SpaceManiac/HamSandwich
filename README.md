@@ -9,9 +9,16 @@ assets from official versions of the games, available for free from
 
 The original code releases on which this project is based are available on [hamumu.com](http://hamumu.com/sourcecode/).
 
+Contents:
+
 * [Save Compatibility](#save-compatibility)
 * [Building](#building)
 * [Modding](#modding)
+
+See also:
+
+* [Changelog](docs/Changelog.md)
+* [List of published mods](https://github.com/SpaceManiac/HamSandwich/wiki)
 
 ## Save Compatibility
 
