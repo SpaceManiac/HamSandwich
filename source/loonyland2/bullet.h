@@ -91,7 +91,7 @@ typedef struct bulletDef_t
 	byte spawnMethod;	// how to spawn, above
 	byte spawnCount;	// number of them to spawn
 	byte spawnRate;		// delay before spawning again (0=just do it once)
-	byte spawnDmg;		// damage of spawned projectiles
+	short spawnDmg;		// damage of spawned projectiles
 	// particles
 	byte partDelay;
 	byte partType;
