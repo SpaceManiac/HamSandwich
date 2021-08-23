@@ -521,8 +521,8 @@ void CastSpell(Guy *me)
 	switch(sp)
 	{
 		case SKILL_RESTORE:
-			HealGoodguy((byte)(SpecificSkillVal(0,SKILL_RESTORE)*SpellDamageBoost(SC_ICE)/100.0f));
-			player.invinc=(byte)SpecificSkillVal(1,SKILL_RESTORE);
+			HealGoodguy((word)(SpecificSkillVal(0,SKILL_RESTORE)*SpellDamageBoost(SC_ICE)/100.0f));
+			player.invinc=(word)SpecificSkillVal(1,SKILL_RESTORE);
 			me->poison=0;
 			me->frozen=0;
 			MakeColdRingParticle(me->x,me->y,0,64);
