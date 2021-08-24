@@ -20,6 +20,7 @@
 
 #include <SDL_platform.h>
 #include <SDL_rwops.h>
+#include <SDL_messagebox.h>
 
 /*
 The interface in appdata.h currently distinguishes between AppdataOpen
@@ -141,7 +142,26 @@ public:
 	// Iterate over the Vfses to use for reading, in priority order.
 	auto begin() { return stack.begin(); }
 	auto end() { return stack.end(); }
+
+	// Forward to children
+	SDL_RWops* open_sdl(const char* file, const char* mode);
 };
+
+SDL_RWops* VfsStack::open_sdl(const char* file, const char* mode) {
+	bool write = is_write_mode(mode);
+	if (write) {
+		return appdata()->open_sdl(file, mode, write);
+	}
+
+	for (auto& vfs : *this) {
+		SDL_RWops* rw = vfs->open_sdl(file, mode, write);
+		if (rw) {
+			return rw;
+		}
+	}
+
+	return nullptr;
+}
 
 // ----------------------------------------------------------------------------
 // Stdio VFS implementation
@@ -523,8 +543,8 @@ static std::unique_ptr<Vfs> init_vfs_spec(const char* what, const char* spec) {
 }
 
 static VfsStack init_vfs_stack() {
+	VfsStack result;
 	if (const char *appdata_spec = getenv("HSW_APPDATA")) {
-		VfsStack result;
 		if (auto vfs = init_vfs_spec("HSW_APPDATA", appdata_spec)) {
 			result.push_back(std::move(vfs));
 		}
@@ -540,10 +560,22 @@ static VfsStack init_vfs_stack() {
 				break;
 			}
 		}
-		return result;
 	} else {
-		return default_vfs_stack();
+		result = default_vfs_stack();
 	}
+
+	// Every game has this asset, so use it to sanity check.
+	SDL_RWops* check = result.open_sdl("graphics/verdana.jft", "rb");
+	if (!check) {
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+			"Missing Assets - HamSandwich",
+			"The game's assets appear to be missing.\nCheck that it is installed and configured correctly.",
+			nullptr);
+		exit(1);
+	}
+	SDL_RWclose(check);
+
+	return result;
 }
 
 // Android does not play nice with static initializers.
@@ -579,20 +611,11 @@ SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
 		vfs_stack = init_vfs_stack();
 	}
 
-	bool write = is_write_mode(mode);
-	if (write) {
-		return vfs_stack.appdata()->open_sdl(file, mode, write);
+	SDL_RWops* rw = vfs_stack.open_sdl(file, mode);
+	if (!rw) {
+		LogError("AssetOpen_SDL(%s, %s): not found in any vfs", file, mode);
 	}
-
-	for (auto& vfs : vfs_stack) {
-		SDL_RWops* rw = vfs->open_sdl(file, mode, write);
-		if (rw) {
-			return rw;
-		}
-	}
-
-	LogError("AssetOpen_SDL(%s, %s): not found in any vfs", file, mode);
-	return nullptr;
+	return rw;
 }
 
 std::vector<std::string> ListDirectory(const char* directory, const char* extension, size_t maxlen) {
