@@ -1,4 +1,6 @@
 # build-binary-package.ps1
+$ErrorActionPreference = "Stop"
+Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 $projects = "mystic", "supreme", "sleepless", "loonyland", "loonyland2"
 
@@ -75,7 +77,6 @@ foreach ($link in $installers_by_link.Keys) {
 
 # Zip it up
 Write-Output "==== Zipping ===="
-Add-Type -AssemblyName System.IO.Compression.FileSystem
 $zip = "$PWD/build/HamSandwich-win32.zip"
 Remove-Item $zip -ErrorAction SilentlyContinue
 [System.IO.Compression.ZipFile]::CreateFromDirectory($pkgroot, $zip)

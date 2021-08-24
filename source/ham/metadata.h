@@ -4,7 +4,7 @@
 struct HamSandwichMetadata
 {
 	const char* appdata_folder_name;
-	const char* default_asset_specs[];
+	const char* const* default_asset_specs;
 };
 
 // The implementation for this function is included in the build automatically;
