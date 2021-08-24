@@ -76,7 +76,16 @@ local function metadata_cpp(cfg)
 	p.w('#include "metadata.h"')
 	p.w()
 	p.push('static const HamSandwichMetadata metadata = {')
+
 	p.w('.appdata_folder_name = %s,', json.encode(cfg.appdata_name or cfg.project.name))
+
+	p.push('.default_asset_specs = {')
+	for k, v in pairs(cfg.installers) do
+		p.w('%s,', json.encode((v.mountpoint or "") .. "@" .. v.kind .. "@installers/" .. k))
+	end
+	p.w("nullptr,")
+	p.pop('},')
+
 	p.pop('};')
 	p.w()
 	p.w('const HamSandwichMetadata* GetHamSandwichMetadata()')

@@ -400,6 +400,36 @@ bool InnoVfs::list_dir(const char* directory, std::set<std::string>& output) {
 	return archive.list_dir(directory, output);
 }
 
+static std::unique_ptr<Vfs> init_vfs_spec(const char* what, const char* spec) {
+	std::string spec2 = spec;
+	char* mountpoint = spec2.data();
+	char* kind = mountpoint + strcspn(mountpoint, "@") + 1;
+	kind[-1] = 0;
+	char* param = kind + strcspn(kind, "@") + 1;
+	param[-1] = 0;
+
+	if (!strcmp(kind, "stdio")) {
+		return std::make_unique<StdioVfs>(param);
+	} else if (!strcmp(kind, "nsis")) {
+		FILE* fp = fopen(param, "rb");
+		if (!fp) {
+			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
+			return nullptr;
+		}
+		return std::make_unique<NsisVfs>(fp);
+	} else if (!strcmp(kind, "inno")) {
+		FILE* fp = fopen(param, "rb");
+		if (!fp) {
+			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
+			return nullptr;
+		}
+		return std::make_unique<InnoVfs>(fp);
+	} else {
+		LogError("%s: unknown kind '%s' in VFS spec '%s'", what, kind, spec);
+		return nullptr;
+	}
+}
+
 // ----------------------------------------------------------------------------
 #if 0  // #ifdef _WIN32
 // Windows %APPDATA% configuration (not currently in use)
@@ -503,45 +533,45 @@ static VfsStack default_vfs_stack() {
 #else
 // Naive stdio configuration
 
+static bool detect_installers(VfsStack* result, const HamSandwichMetadata* meta) {
+	// `appdata/$NAME/`
+	std::string appdata = "appdata/";
+	appdata.append(meta->appdata_folder_name);
+	result->push_back(std::make_unique<StdioVfs>(appdata));
+
+	// Assets from specs
+	for (int i = 0; meta->default_asset_specs[i]; ++i) {
+		if (auto vfs = init_vfs_spec("built-in", meta->default_asset_specs[i])) {
+			result->push_back(std::move(vfs));
+		} else {
+			return false;
+		}
+	}
+	return true;
+}
+
 static VfsStack default_vfs_stack() {
+	const HamSandwichMetadata* meta = GetHamSandwichMetadata();
 	VfsStack result;
 	result.push_back(std::make_unique<StdioVfs>("."));
+
+	if (detect_installers(&result, meta)) {
+		// If we found all the installers we were looking for, use 'em,
+		// and also use `appdata/$NAME`
+		std::string appdata = "appdata/";
+		appdata.append(meta->appdata_folder_name);
+		appdata.append("/");
+		printf("all installers found; chdir(%s)\n", appdata.c_str());
+		mkdir_parents(appdata.c_str());
+		chdir(appdata.c_str());
+	}
+
 	return result;
 }
 
 // ----------------------------------------------------------------------------
 #endif
 // Common implementation and interface
-
-static std::unique_ptr<Vfs> init_vfs_spec(const char* what, const char* spec) {
-	std::string spec2 = spec;
-	char* mountpoint = spec2.data();
-	char* kind = mountpoint + strcspn(mountpoint, "@") + 1;
-	kind[-1] = 0;
-	char* param = kind + strcspn(kind, "@") + 1;
-	param[-1] = 0;
-
-	if (!strcmp(kind, "stdio")) {
-		return std::make_unique<StdioVfs>(param);
-	} else if (!strcmp(kind, "nsis")) {
-		FILE* fp = fopen(param, "rb");
-		if (!fp) {
-			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
-			return nullptr;
-		}
-		return std::make_unique<NsisVfs>(fp);
-	} else if (!strcmp(kind, "inno")) {
-		FILE* fp = fopen(param, "rb");
-		if (!fp) {
-			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
-			return nullptr;
-		}
-		return std::make_unique<InnoVfs>(fp);
-	} else {
-		LogError("%s: unknown kind '%s' in VFS spec '%s'", what, kind, spec);
-		return nullptr;
-	}
-}
 
 static VfsStack init_vfs_stack() {
 	VfsStack result;
