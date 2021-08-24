@@ -5,6 +5,7 @@
 #include "log.h"
 #include "softjoystick.h"
 #include "appdata.h"
+#include <time.h>
 #include <random>
 #include <algorithm>
 
@@ -335,6 +336,16 @@ TASK(void) MGLDraw::FinishFlip(void)
 				{
 					texture = newTexture;
 				}
+			}
+			else if (e.key.keysym.scancode == SDL_SCANCODE_F12)
+			{
+				time_t timeobj;
+				time(&timeobj);
+				tm* clock = localtime(&timeobj);
+
+				char fname[128];
+				sprintf(fname, "Screenshot %04d-%02d-%02d %02d:%02d:%02d.bmp", 1900 + clock->tm_year, 1 + clock->tm_mon, clock->tm_mday, clock->tm_hour, clock->tm_min, clock->tm_sec);
+				SaveBMP(fname);
 			}
 		} else if (e.type == SDL_TEXTINPUT) {
 			if (strlen(e.text.text) == 1)
