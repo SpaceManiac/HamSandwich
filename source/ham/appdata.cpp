@@ -598,10 +598,41 @@ static VfsStack init_vfs_stack() {
 	// Every game has this asset, so use it to sanity check.
 	SDL_RWops* check = result.open_sdl("graphics/verdana.jft", "rb");
 	if (!check) {
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-			"Missing Assets - HamSandwich",
-			"The game's assets appear to be missing.\nCheck that it is installed and configured correctly.",
-			nullptr);
+		struct stat sb;
+		// Tweak wording/ordering based on whether "installers" exists.
+		if (stat("installers", &sb) == 0) {
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+				"Missing Assets - HamSandwich",
+				"The game's assets appear to be missing.\n"
+				"\n"
+				"Download the appropriate installer and save it in\n"
+				"the \"installers\" folder.\n"
+#if defined(_WIN32) && !defined(_DEBUG)
+				// Only talk about "nearby .dll files" on Windows release builds.
+				"\n"
+				"Alternatively, copy this .exe and nearby .dll files\n"
+				"into an existing installation of the game."
+#endif
+				, nullptr);
+		} else {
+			// The .exe has been
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+				"Missing Assets - HamSandwich",
+				"The game's assets appear to be missing.\n"
+				"\n"
+#if defined(_WIN32) && !defined(_DEBUG)
+				// Only talk about "nearby .dll files" on Windows release builds.
+				"Copy this .exe and nearby .dll files\n"
+				"into an existing installation of the game.\n"
+				"\n"
+				"Alternatively, create "
+#else
+				"Create "
+#endif
+				"an \"installers\" folder and\n"
+				"download the appropriate installers there.",
+				nullptr);
+		}
 		exit(1);
 	}
 	SDL_RWclose(check);
