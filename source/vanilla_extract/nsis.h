@@ -22,7 +22,7 @@ class Archive : public vanilla::Archive
 	bool extract_internal(bool compressed, uint32_t size, std::vector<uint8_t>& result);
 
 public:
-	explicit Archive(FILE* fptr);
+	explicit Archive(SDL_RWops* fptr);
 	~Archive();
 
 	bool is_ok() { return archive_rw != nullptr; }

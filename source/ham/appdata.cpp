@@ -346,7 +346,7 @@ FILE* fp_from_bundle(const char* file, const char* mode, SDL_RWops* rw, const ch
 class NsisVfs : public Vfs {
 	vanilla::nsis::Archive archive;
 public:
-	NsisVfs(FILE* fp) : archive(fp) {}
+	NsisVfs(SDL_RWops* fp) : archive(fp) {}
 	FILE* open_stdio(const char* file, const char* mode, bool write);
 	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
 	bool list_dir(const char* directory, std::set<std::string>& output);
@@ -411,7 +411,7 @@ static std::unique_ptr<Vfs> init_vfs_spec(const char* what, const char* spec) {
 	if (!strcmp(kind, "stdio")) {
 		return std::make_unique<StdioVfs>(param);
 	} else if (!strcmp(kind, "nsis")) {
-		FILE* fp = fopen(param, "rb");
+		SDL_RWops* fp = SDL_RWFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
 			return nullptr;

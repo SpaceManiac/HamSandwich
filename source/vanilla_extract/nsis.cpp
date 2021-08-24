@@ -36,21 +36,21 @@ Archive::~Archive()
 	}
 }
 
-Archive::Archive(FILE* fptr)
+Archive::Archive(SDL_RWops* fptr)
 	: archive_rw(nullptr)
 {
 	// Find the "first header" in the file.
-	if (fseek(fptr, 0, SEEK_END))
+	Sint64 file_size = SDL_RWseek(fptr, 0, SEEK_END);
+	if (file_size < 0)
 		return;
-	size_t file_size = ftell(fptr);
 
 	firstheader fh;
 	size_t firstheader_start = 0;
 	for (size_t search = SEARCH_START; search < file_size - FIRSTHEADER_SIZE; search += SEARCH_INCREMENT)
 	{
-		if (fseek(fptr, search, SEEK_SET))
+		if (SDL_RWseek(fptr, search, SEEK_SET) < 0)
 			return;
-		if (!fread(&fh, FIRSTHEADER_SIZE, 1, fptr))
+		if (!SDL_RWread(fptr, &fh, FIRSTHEADER_SIZE, 1))
 			return;
 		if (!memcmp(&fh.siginfo, NULLSOFT_MAGIC, MAGIC_SIZE))
 		{
@@ -62,18 +62,18 @@ Archive::Archive(FILE* fptr)
 		return;
 
 	uint32_t header_size;
-	if (!fread(&header_size, 4, 1, fptr))
+	if (!SDL_RWread(fptr, &header_size, 4, 1))
 		return;
 
 	if (header_size == 0x8000005D)
 	{
 		// This is the first 4 bytes of an LZMA stream instead of a size, which
 		// means that the installer was compiled with `SetCompressor /SOLID`.
-		if (fseek(fptr, -4, SEEK_CUR))
+		if (SDL_RWseek(fptr, -4, SEEK_CUR) < 0)
 			return;
 
 		std::vector<uint8_t> buffer(fh.length_of_all_following_data - FIRSTHEADER_SIZE);
-		if (!fread(buffer.data(), buffer.size(), 1, fptr))
+		if (!SDL_RWread(fptr, buffer.data(), buffer.size(), 1))
 			return;
 
 		std::vector<uint8_t> datablock;
@@ -90,7 +90,7 @@ Archive::Archive(FILE* fptr)
 	}
 	else
 	{
-		archive_rw = SDL_RWFromFP(fptr, SDL_TRUE);
+		archive_rw = fptr;
 		fptr = nullptr;
 	}
 
