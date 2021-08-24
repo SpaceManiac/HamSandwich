@@ -207,7 +207,14 @@ See "Also applicable to Sleepless Hollow" above.
 
 ### HamSandwich (2019–present)
 
+* Fix high Stone Spike damage numbers wrapping to low again
+* Fix player-aligned melee monsters (especially Bruisers) hitting themselves
+* Fix high-level Restoration invincibility time and healing wrapping to low again
 * Allow using the arrow keys to scroll around in the editor
 * Show special ID numbers in the editor
+
+### Unknown pre-HamSandwich
+
+* Fix high-level Training's bonus XP overflowing and becoming useless
 
 ### v1.2CE (2007) - [Download](https://hamumu.itch.io/loonyland-2-winter-woods)
