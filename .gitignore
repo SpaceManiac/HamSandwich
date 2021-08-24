@@ -1,7 +1,8 @@
 # top-level folders
-/build
 /.vscode
 /appdata
+/build
+/installers
 
 # file types
 *.pyc

@@ -48,7 +48,7 @@ local function expand_to_debugenvs(project, block)
 
 	if block.installers then
 		for k, v in pairs(block.installers) do
-			push_asset_spec(v.mountpoint or "", v.kind, "../../build/installers/" .. k)
+			push_asset_spec(v.mountpoint or "", v.kind, "../../installers/" .. k)
 		end
 	end
 end

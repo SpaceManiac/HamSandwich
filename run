@@ -137,6 +137,11 @@ if test -z "$nobuild"; then
 	make -j"$(nproc)" config="$config" toolset="$toolset" "$project"
 fi
 
+# Migrate `build/installers/` to `installers/`.
+if ! test -e "installers" && test -d "build/installers"; then
+	mv build/installers installers
+fi
+
 # Migrate fully-extracted appdata to new appdata-only location as a fallback
 if test -d "build/game/$project"; then
 	./tools/build/migrate-appdata.sh "$project" "build/game/$project" "appdata/$project"
@@ -150,7 +155,7 @@ debug_configure; declare debugdir debugcommand debugargs debugenvs
 if test "$toolset" != "emcc"; then
 	handler() {
 		declare filename link sha256sum  # inputs
-		INSTDIR="build/installers"
+		INSTDIR="installers"
 
 		show_header() {
 			echo "==== Installer required ===="

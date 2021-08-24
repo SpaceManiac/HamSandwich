@@ -73,7 +73,7 @@ Compiling and running:
     2. Run `build/premake5.exe vs2019` (or appropriate VS version) to generate the solution files.
 2. Open and compile `build/msc-v142/HamSandwich.sln` in Visual Studio.
     1. For command-line builds, run `msbuild build/msc-v142/HamSandwich.sln /p:Configuration=debug /p:Platform=Win32`.
-3. Download installers from <https://hamumu.itch.io/> and save them inside `build/installers/` without extracting them.
+3. Download installers from <https://hamumu.itch.io/> and save them inside `installers/` without extracting them.
 4. Debug from within Visual Studio to launch a game.
 
 ### Linux
