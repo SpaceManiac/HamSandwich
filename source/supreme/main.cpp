@@ -34,11 +34,6 @@
 #include <shellapi.h>
 #endif
 
-const char* AppdataFolderName()
-{
-	return "supreme";
-}
-
 TASK(int) main(int argc, char* argv[])
 {
 	bool windowedGame=false;

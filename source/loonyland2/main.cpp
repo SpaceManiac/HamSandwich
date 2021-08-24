@@ -37,11 +37,6 @@ void GetPal(void)
 }
 */
 
-const char* AppdataFolderName()
-{
-	return "loonyland2";
-}
-
 TASK(int) main(int argc, char* argv[])
 {
 	bool windowedGame=false;

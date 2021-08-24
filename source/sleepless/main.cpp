@@ -32,11 +32,6 @@
 #include <shellapi.h>
 #endif
 
-const char* AppdataFolderName()
-{
-	return "sleepless";
-}
-
 TASK(int) main(int argc, char* argv[])
 {
 	bool windowedGame=false;

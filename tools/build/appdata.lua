@@ -66,3 +66,41 @@ p.override(p.project, "bake", function(base, self)
 
 	return base(self)
 end)
+
+-- Make the metadata available to the C++ code.
+local function is_application(prj)
+	return prj.kind == "ConsoleApp" or prj.kind == "WindowedApp"
+end
+
+local function metadata_cpp(cfg)
+	p.w('#include "metadata.h"')
+	p.w()
+	p.push('static const HamSandwichMetadata metadata = {')
+	p.w('.appdata_folder_name = %s,', json.encode(cfg.appdata_name or cfg.project.name))
+	p.pop('};')
+	p.w()
+	p.w('const HamSandwichMetadata* GetHamSandwichMetadata()')
+	p.push('{')
+	p.w('return &metadata;')
+	p.pop('}');
+end
+
+p.override(p.oven, "bakeFiles", function(base, prj)
+	local actually_need_it = (
+		_ACTION == "gmake2" or
+		_ACTION == "android-studio" or
+		_ACTION:sub(1, 4) == "vs20"
+	)
+
+	if is_application(prj) then
+		for cfg in p.project.eachconfig(prj) do
+			local fname = cfg.objdir .. "/hamsandwich_metadata.cpp"
+			table.insert(cfg.files, fname)
+			if actually_need_it then
+				p.generate(cfg, fname, metadata_cpp)
+			end
+		end
+	end
+
+	return base(prj)
+end)

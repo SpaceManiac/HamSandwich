@@ -20,11 +20,6 @@
 #include "options.h"
 #include "nag.h"
 
-const char* AppdataFolderName()
-{
-	return "mystic";
-}
-
 TASK(int) main(int argc, char* argv[])
 {
 #ifdef DEMO

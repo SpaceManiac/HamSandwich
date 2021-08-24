@@ -20,9 +20,6 @@ void AppdataSync();
 FILE* AssetOpen(const char* file, const char* mode);
 SDL_RWops* AssetOpen_SDL(const char* file, const char* mode);
 
-// Games should provide this; it will be used to name appdata folders.
-extern const char* AppdataFolderName();
-
 std::vector<std::string> ListDirectory(const char* directory, const char* extension = nullptr, size_t maxlen = 0);
 
 void AppdataDelete(const char* file);

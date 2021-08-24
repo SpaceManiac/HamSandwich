@@ -4,6 +4,7 @@
 #include "jamultypes.h"
 #include "nsis.h"
 #include "inno.h"
+#include "metadata.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -415,7 +416,7 @@ static VfsStack default_vfs_stack() {
 
 	std::string buffer = get_folder_path;
 	buffer.append("\\Hamumu\\");
-	buffer.append(AppdataFolderName());
+	buffer.append(GetHamSandwichMetadata()->appdata_folder_name);
 
 	VfsStack result;
 	result.push_back(std::make_unique<StdioVfs>(buffer));
@@ -431,7 +432,7 @@ static VfsStack default_vfs_stack() {
 
 static VfsStack default_vfs_stack() {
 	std::string buffer = "/appdata/";
-	buffer.append(AppdataFolderName());
+	buffer.append(GetHamSandwichMetadata()->appdata_folder_name);
 
 	VfsStack result;
 	result.push_back(std::make_unique<StdioVfs>(buffer));
