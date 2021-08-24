@@ -20,10 +20,16 @@ function m.workspace_d(wks)
 	for prj in p.workspace.eachproject(wks) do
 		for cfg in p.project.eachconfig(prj) do
 			for _, file in ipairs(cfg.files) do
-				seen[path.getdirectory(path.getabsolute(file))] = true
+				local dir = path.getdirectory(path.getabsolute(file))
+				if dir ~= cfg.objdir then
+					seen[dir] = true
+				end
 			end
 			for _, file in pairs(emscripten.decode_webfiles(cfg.webfiles)) do
-				seen[path.getdirectory(path.getabsolute(file))] = true
+				local dir = path.getdirectory(path.getabsolute(file))
+				if dir ~= cfg.objdir then
+					seen[dir] = true
+				end
 			end
 		end
 	end
