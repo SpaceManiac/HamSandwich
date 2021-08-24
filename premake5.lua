@@ -5,6 +5,7 @@ dofile "tools/build/android_studio.lua"
 dofile "tools/build/emscripten.lua"
 dofile "tools/build/vscode.lua"
 dofile "tools/build/run-config.lua"
+dofile "tools/msvc/binary-package-info.lua"
 
 sdl2_platforms = {
 	x86 = "x86",
@@ -31,6 +32,9 @@ workspace "HamSandwich"
 	filter { "action:android-studio" }
 		location "build/android"
 		android_abis { "armeabi-v7a" }
+
+	filter { "action:binary-package-info" }
+		location "build"
 
 function base_project()
 	language "C++"

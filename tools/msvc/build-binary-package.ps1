@@ -27,10 +27,11 @@ New-Item build -ItemType Directory -ErrorAction SilentlyContinue > $null
 Remove-Item -Recurse $pkgroot -ErrorAction SilentlyContinue
 New-Item $pkgroot -ItemType Directory > $null
 
-# Copy everything in
+# Include the project EXEs
 foreach ($project in $projects) {
 	Copy-Item ./build/msc-v142/release-x86/$project/$project.exe build/pkgroot/
 }
+# Include SDL2 DLLs
 Copy-Item -Destination $pkgroot -Path (
 	"./build/SDL2-msvc/lib/x86/SDL2.dll",
 	"./build/SDL2_image-msvc/lib/x86/SDL2_image.dll",
@@ -39,6 +40,38 @@ Copy-Item -Destination $pkgroot -Path (
 	"./build/SDL2_mixer-msvc/lib/x86/libvorbis-0.dll",
 	"./build/SDL2_mixer-msvc/lib/x86/libvorbisfile-3.dll"
 )
+
+# Import $ExeProjects structure from premake5.lua
+./build/premake5.exe binary-package-info
+. ./build/binary-package-info.ps1
+
+# Collate installers and build installers/README.txt
+$installers_by_link = @{}
+foreach ($project in $projects) {
+	$info = $ExeProjects["$project|release_x86"]
+	foreach ($installer in $info["installers"]) {
+		$link = $installer["link"]
+		if (!$installers_by_link[$link]) {
+			$installers_by_link[$link] = @()
+		}
+		$installers_by_link[$link] += $installer["filename"]
+	}
+}
+
+New-Item $pkgroot/installers -ItemType Directory > $null
+$readme = "$pkgroot/installers/README.txt"
+@"
+From each link below, download the named installers and save them here:
+
+"@ | Out-File -Encoding utf8 $readme
+
+foreach ($link in $installers_by_link.Keys) {
+	Write-Output "$link" | Out-File -Encoding utf8 -Append $readme
+	foreach ($filename in $installers_by_link[$link]) {
+		Write-Output "    $filename" | Out-File -Encoding utf8 -Append $readme
+	}
+	Write-Output "" | Out-File -Encoding utf8 -Append $readme
+}
 
 # Zip it up
 Write-Output "==== Zipping ===="
