@@ -89,7 +89,7 @@ local function metadata_cpp(cfg)
 	p.w('%s,', json.encode(cfg.appdata_name or cfg.project.name))
 
 	-- default_asset_specs
-	p.push('default_asset_specs,')
+	p.w('default_asset_specs,')
 
 	p.pop('};')
 	p.w()
@@ -108,7 +108,8 @@ p.override(p.oven, "bakeFiles", function(base, prj)
 
 	if is_application(prj) then
 		for cfg in p.project.eachconfig(prj) do
-			local fname = cfg.objdir .. "/hamsandwich_metadata.cpp"
+			-- Stick in the workspace root to avoid spamming folders in Visual Studio
+			local fname = prj.workspace.location .. "/metadata_" .. prj.name .. "_" .. cfg.name:gsub("|", "_") .. ".cpp"
 			table.insert(cfg.files, fname)
 			if actually_need_it then
 				p.generate(cfg, fname, metadata_cpp)
