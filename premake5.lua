@@ -244,7 +244,9 @@ if is_msvc then
 			includedirs "external/zlib"
 		end
 		filter { "kind:not StaticLib" }
-			dependson { "z" }
+			-- Declare a link-time dependency on z.vcxproj...
+			links { "z" }
+			-- ...and also manually add the library to the link line.
 			links { "%{wks.location}/%{cfg.buildcfg}-%{cfg.platform}/z/zlib.lib" }
 		filter {}
 	end
