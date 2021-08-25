@@ -32,8 +32,14 @@ cmd.exe /c 'call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\
 # Install dependencies, generate the solution, and build it
 Write-Output "==== Compiling ===="
 ./build/premake5.exe vs2019
+
+$logger_arg = @()
+if (Test-Path "C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll") {
+	# Use the Appveyor logger if available.
+	$logger_arg = @('/logger:C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll')
+}
 foreach ($project in $projects) {
-	msbuild ./build/msc-v142/$project.vcxproj /p:Configuration=$configuration /p:Platform=$vs_platform
+	msbuild ./build/msc-v142/$project.vcxproj /p:Configuration=$configuration /p:Platform=$vs_platform $logger_arg
 }
 
 # Create build/pkgroot

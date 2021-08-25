@@ -14,6 +14,7 @@ environment:
     -   MSVC: 1
     -   MSYSTEM: MINGW32
     -   APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+    -   MSVC_RELEASE: 1
 
 for:
 # Windows/MSYS2 build script
@@ -40,6 +41,19 @@ for:
     build_script:
         - msbuild build/msc-v142/HamSandwich.sln /p:Configuration=debug /p:Platform=Win32 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
+# Windows/MSVC/release build script
+-   matrix:
+        only:
+            - MSVC_RELEASE: 1
+    branches:
+        only:
+            - master
+    build_script:
+        - powershell ./tools/msvc/build-binary-package.ps1
+    artifacts:
+        - path: ./build/HamSandwich-windows.zip
+          name: HamSandwich.zip
+
 # Linux build script
 -   matrix:
         only:
@@ -49,3 +63,10 @@ for:
         - sh: ./tools/build/install-deps.sh
     build_script:
         - sh: make config=debug_x86_64
+
+deploy:
+# Windows/MSVC/Release deploy script
+    -   provider: Environment
+        name: HamSandwich release
+        on:
+            MSVC_RELEASE: 1
