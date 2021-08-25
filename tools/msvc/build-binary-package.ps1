@@ -1,8 +1,25 @@
 # build-binary-package.ps1
+# Arguments / configuration
+param([string] $configuration = "release")
+
+$projects = $args
+
+$platform = "x86"
+$vs_platform = "Win32"
+$sdl_platform = "x86"
+
+# Script
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
-$projects = "mystic", "supreme", "sleepless", "loonyland", "loonyland2"
+# Install dependencies (premake, SDL) and load the $ExeProjects metadata
+powershell -NoLogo -ExecutionPolicy Bypass -File  ./tools/msvc/install-dependencies.ps1
+./build/premake5.exe binary-package-info
+. ./build/binary-package-info.ps1
+
+if ($projects.Length -eq 0) {
+	$projects = "mystic", "supreme", "sleepless", "loonyland", "loonyland2"
+}
 
 # Invoke vcvars32.bat to get msbuild access
 cmd.exe /c 'call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat" >NUL && set' `
@@ -13,11 +30,10 @@ cmd.exe /c 'call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\
 }
 
 # Install dependencies, generate the solution, and build it
-powershell -NoLogo -ExecutionPolicy Bypass -File  ./tools/msvc/install-dependencies.ps1
 Write-Output "==== Compiling ===="
 ./build/premake5.exe vs2019
 foreach ($project in $projects) {
-	msbuild ./build/msc-v142/$project.vcxproj /p:Configuration=release /p:Platform=Win32
+	msbuild ./build/msc-v142/$project.vcxproj /p:Configuration=$configuration /p:Platform=$vs_platform
 }
 
 # Create build/pkgroot
@@ -29,26 +45,22 @@ New-Item $pkgroot -ItemType Directory > $null
 
 # Include the project EXEs
 foreach ($project in $projects) {
-	Copy-Item ./build/msc-v142/release-x86/$project/$project.exe build/pkgroot/
+	Copy-Item ./build/msc-v142/$configuration-$platform/$project/$project.exe $pkgroot
 }
 # Include SDL2 DLLs
 Copy-Item -Destination $pkgroot -Path (
-	"./build/SDL2-msvc/lib/x86/SDL2.dll",
-	"./build/SDL2_image-msvc/lib/x86/SDL2_image.dll",
-	"./build/SDL2_mixer-msvc/lib/x86/SDL2_mixer.dll",
-	"./build/SDL2_mixer-msvc/lib/x86/libogg-0.dll",
-	"./build/SDL2_mixer-msvc/lib/x86/libvorbis-0.dll",
-	"./build/SDL2_mixer-msvc/lib/x86/libvorbisfile-3.dll"
+	"./build/SDL2-msvc/lib/$sdl_platform/SDL2.dll",
+	"./build/SDL2_image-msvc/lib/$sdl_platform/SDL2_image.dll",
+	"./build/SDL2_mixer-msvc/lib/$sdl_platform/SDL2_mixer.dll",
+	"./build/SDL2_mixer-msvc/lib/$sdl_platform/libogg-0.dll",
+	"./build/SDL2_mixer-msvc/lib/$sdl_platform/libvorbis-0.dll",
+	"./build/SDL2_mixer-msvc/lib/$sdl_platform/libvorbisfile-3.dll"
 )
-
-# Import $ExeProjects structure from premake5.lua
-./build/premake5.exe binary-package-info
-. ./build/binary-package-info.ps1
 
 # Collate installers and build installers/README.txt
 $installers_by_link = @{}
 foreach ($project in $projects) {
-	$info = $ExeProjects["$project|release_x86"]
+	$info = $ExeProjects["$project|${configuration}_$platform"]
 	foreach ($installer in $info["installers"]) {
 		$link = $installer["link"]
 		if (!$installers_by_link[$link]) {
@@ -84,6 +96,7 @@ foreach ($link in $installers_by_link.Keys) {
 
 # Zip it up
 Write-Output "==== Zipping ===="
-$zip = "$PWD/build/HamSandwich-win32.zip"
-Remove-Item $zip -ErrorAction SilentlyContinue
-[System.IO.Compression.ZipFile]::CreateFromDirectory($pkgroot, $zip)
+$zip = "$PWD/build/HamSandwich-windows.zip"
+Push-Location $pkgroot
+7z a $zip .
+Pop-Location
