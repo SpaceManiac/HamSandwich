@@ -15,16 +15,6 @@ newaction {
 	end,
 }
 
-function m.make_relative_path(wks, str)
-	return path.join(
-		"$PWD",
-		path.getrelative(
-			os.getcwd(),
-			str
-		)
-	)
-end
-
 function m.is_application(prj)
 	return prj.kind == "ConsoleApp" or prj.kind == "WindowedApp"
 end
@@ -43,10 +33,18 @@ function m.workspace_binary_package_info(wks)
 				p.push('%s"%s|%s" = @{', comma, prj.name, cfg.name:gsub("|", "_"))
 				comma = "; "
 
-				p.push('"installers" = (')
+				p.push('"installers" = @(')
 				local comma2 = ""
 				for k, v in pairs(cfg.installers) do
-					p.w('%s@{"filename" = %s; "link" = %s} `', comma2, json.encode(k), json.encode(v.link))
+					p.w('%s@{"filename" = %s; "link" = %s}', comma2, json.encode(k), json.encode(v.link))
+					comma2 = ", "
+				end
+				p.pop(')')
+				p.w('; "appdata_folder_name" = %s', json.encode(cfg.appdata_name or cfg.name))
+				p.push('; "assetdirs" = @(')
+				comma2 = ""
+				for _, v in ipairs(cfg.assetdirs) do
+					p.w('%s%s', comma2, json.encode(v))
 					comma2 = ", "
 				end
 				p.pop(')')

@@ -73,10 +73,15 @@ local function is_application(prj)
 end
 
 local function metadata_cpp(cfg)
+	local appdata_folder_name = cfg.appdata_name or cfg.project.name
+
 	p.w('#include "metadata.h"')
 	p.w()
 
 	p.push('static const char* default_asset_specs[] = {')
+	if cfg.assetdirs then
+		p.w('%s,', json.encode("@stdio@../../assets/" .. appdata_folder_name))
+	end
 	for k, v in pairs(cfg.installers) do
 		p.w('%s,', json.encode((v.mountpoint or "") .. "@" .. v.kind .. "@installers/" .. k))
 	end
@@ -84,15 +89,13 @@ local function metadata_cpp(cfg)
 	p.pop('};')
 
 	p.push('static const HamSandwichMetadata metadata = {')
-
 	-- appdata_folder_name
-	p.w('%s,', json.encode(cfg.appdata_name or cfg.project.name))
-
+	p.w('%s,', json.encode(appdata_folder_name))
 	-- default_asset_specs
 	p.w('default_asset_specs,')
-
 	p.pop('};')
 	p.w()
+
 	p.w('const HamSandwichMetadata* GetHamSandwichMetadata()')
 	p.push('{')
 	p.w('return &metadata;')

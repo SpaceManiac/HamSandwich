@@ -5,10 +5,8 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $projects = "mystic", "supreme", "sleepless", "loonyland", "loonyland2"
 
 # Invoke vcvars32.bat to get msbuild access
-cmd.exe /c "
-	call `"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat`" >NUL
-	&& set
-" | ForEach-Object {
+cmd.exe /c 'call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat" >NUL && set' `
+| ForEach-Object {
 	if ($_ -match "^(.*?)=(.*)$") {
 		Set-Content "env:\$($matches[1])" $matches[2]
 	}
@@ -16,7 +14,7 @@ cmd.exe /c "
 
 # Install dependencies, generate the solution, and build it
 powershell -NoLogo -ExecutionPolicy Bypass -File  ./tools/msvc/install-dependencies.ps1
-Write-Output "==== Generating solution ===="
+Write-Output "==== Compiling ===="
 ./build/premake5.exe vs2019
 foreach ($project in $projects) {
 	msbuild ./build/msc-v142/$project.vcxproj /p:Configuration=release /p:Platform=Win32
@@ -57,6 +55,15 @@ foreach ($project in $projects) {
 			$installers_by_link[$link] = @()
 		}
 		$installers_by_link[$link] += $installer["filename"]
+	}
+
+	# Copy while we're here
+	$asset_destination = "$pkgroot/assets/$($info["appdata_folder_name"])"
+	[array]::Reverse($info["assetdirs"])  # Earlier in the list overwrites later
+	foreach ($assetdir in $info["assetdirs"]) {
+        Write-Output "==== Copying assets from $assetdir ===="
+		New-Item $asset_destination -ItemType Directory > $null
+		Copy-Item -Recurse $assetdir/* $asset_destination
 	}
 }
 
