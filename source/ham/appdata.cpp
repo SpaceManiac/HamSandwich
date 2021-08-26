@@ -488,7 +488,7 @@ class AndroidBundleVfs : public Vfs {
 public:
 	FILE* open_stdio(const char* file, const char* mode, bool write);
 	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
-	bool list_dir(const char* directory, std::vector<std::string>& output);
+	bool list_dir(const char* directory, std::set<std::string>& output);
 };
 
 FILE* AndroidBundleVfs::open_stdio(const char* file, const char* mode, bool write) {

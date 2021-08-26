@@ -101,7 +101,7 @@ static SDL_bool Android_JNI_ExceptionOccurred(JNIEnv *mEnv, SDL_bool silent)
 // ----------------------------------------------------------------------------
 // Implementation which calls AssetManager.list() to do some real work
 
-bool AndroidBundleVfs::list_dir(const char* directory, std::vector<std::string>& output) {
+bool AndroidBundleVfs::list_dir(const char* directory, std::set<std::string>& output) {
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
 
     bool result = true;
@@ -145,7 +145,7 @@ bool AndroidBundleVfs::list_dir(const char* directory, std::vector<std::string>&
 	for (i = 0; i < len; ++i) {
 		str = (jstring) mEnv->GetObjectArrayElement(fileList, i);
 		buffer = mEnv->GetStringUTFChars(str, nullptr);
-		output.push_back(buffer);
+		output.insert(buffer);
 		mEnv->ReleaseStringUTFChars(str, buffer);
 	}
 

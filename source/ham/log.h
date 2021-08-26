@@ -3,7 +3,7 @@
 
 // Conditionals for warnings/analysis based on SDL_stdinc.h
 #ifdef __GNUC__
-#	ifdef __EMSCRIPTEN__
+#	if defined(__EMSCRIPTEN__) || (defined(__ANDROID__) && __ANDROID__)
 #		define PRINTF_FUNC( fmtargnumber ) __attribute__ (( format( printf, fmtargnumber, fmtargnumber+1 )))
 #	else
 #		define PRINTF_FUNC( fmtargnumber ) __attribute__ (( format( gnu_printf, fmtargnumber, fmtargnumber+1 )))
