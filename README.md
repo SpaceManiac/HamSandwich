@@ -7,38 +7,31 @@
 assets from official versions of the games, available for free from
 <https://hamumu.itch.io/>.
 
-The original code releases on which this project is based are available on [hamumu.com](http://hamumu.com/sourcecode/).
+Saves and profiles from the retail versions of the games are fully compatible
+with HamSandwich saves, except that controls will need to be reconfigured.
 
-Contents:
-
-* [Save Compatibility](#save-compatibility)
-* [Building](#building)
-* [Modding](#modding)
+The original code releases on which this project is based are available on
+[hamumu.com](http://hamumu.com/sourcecode/).
 
 See also:
 
 * [Changelog](docs/Changelog.md)
 * [List of published mods](https://github.com/SpaceManiac/HamSandwich/wiki)
 
-## Save Compatibility
-
-Saves and profiles from the retail versions of the games are fully compatible
-with HamSandwich saves, except that controls will need to be reconfigured.
-
 ## Building
 
 The recommended way to compile the games is [MinGW on Windows](#windows-mingw).
-The following platforms also have various levels of support:
+You can also build for one of the platforms listed below. Prefer to use Git to
+download the source code rather than downloading a ZIP archive as doing so
+makes it much easier to stay up-to-date and to publish your mods.
 
-Platform | Toolchain | Status | Notes
+Platform | Toolchain | Testing | Latest build
 -|-|-|-
-Windows | MinGW | Primary | CI: [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
-Linux | GCC | Primary | CI: [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
-[Browser](#Emscripten) | Emscripten | Secondary | [Play now](https://spacemaniac.github.io/HamSandwich/)
-Windows | MSVC | Secondary | CI: [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
-Windows | Clang | Tertiary | No app icons
-Linux | Clang | Tertiary
-[Android](#Android) | NDK | Tertiary | Incomplete
+Windows | [MinGW](#windows-mingw) | [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
+Windows | [MSVC](#windows-msvc) | [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich) | [📥 Download](https://wombat.platymuus.com/hamsandwich/release/HamSandwich.zip)
+[Linux](#linux) | GCC | [Appveyor](https://ci.appveyor.com/project/SpaceManiac/hamsandwich)
+[Browser](#emscripten) | Emscripten | [GitHub Actions](https://github.com/SpaceManiac/HamSandwich/actions/workflows/publish-pages.yml) | [🌐 Play in browser](https://spacemaniac.github.io/HamSandwich/)
+[Android](#android) | NDK
 
 ### Windows (MinGW)
 
@@ -73,6 +66,11 @@ Compiling and running:
     1. For command-line builds, run `msbuild build/msc-v142/HamSandwich.sln /p:Configuration=debug /p:Platform=Win32`.
 3. Download installers from <https://hamumu.itch.io/> and save them inside `installers/` without extracting them.
 4. Debug from within Visual Studio to launch a game.
+
+Distributing:
+
+1. Double-click `tools/msvc/Create Release Zip.bat`.
+2. Upload `build/HamSandwich-windows.zip`.
 
 ### Linux
 
