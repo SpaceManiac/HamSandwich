@@ -47,8 +47,8 @@ local function expand_to_debugenvs(project, block)
 	end
 
 	if block.installers then
-		for k, v in pairs(block.installers) do
-			push_asset_spec(v.mountpoint or "", v.kind, "../../installers/" .. k)
+		for _, inst in ipairs(block.installers) do
+			push_asset_spec(inst.mountpoint or "", inst.kind, "../../installers/" .. inst.filename)
 		end
 	end
 end
@@ -82,8 +82,8 @@ local function metadata_cpp(cfg)
 	if cfg.assetdirs then
 		p.w('%s,', json.encode("@stdio@../../assets/" .. appdata_folder_name))
 	end
-	for k, v in pairs(cfg.installers) do
-		p.w('%s,', json.encode((v.mountpoint or "") .. "@" .. v.kind .. "@installers/" .. k))
+	for _, inst in ipairs(cfg.installers) do
+		p.w('%s,', json.encode((inst.mountpoint or "") .. "@" .. inst.kind .. "@installers/" .. inst.filename))
 	end
 	p.w("nullptr,")
 	p.pop('};')

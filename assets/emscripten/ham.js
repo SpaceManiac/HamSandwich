@@ -120,7 +120,7 @@ var InstallerUpload = (function () {
 
 	var status = {};
 	details.hidden = true;
-	for (let fname in meta) {
+	for (let installer of meta) {
 		details.hidden = false;
 
 		let statusTd = document.createElement('td');
@@ -128,8 +128,8 @@ var InstallerUpload = (function () {
 
 		var fnameTd = document.createElement('td');
 		var a = document.createElement('a');
-		a.href = meta[fname].link;
-		a.innerText = fname;
+		a.href = installer.link;
+		a.innerText = installer.filename;
 		a.target = '_blank';
 		fnameTd.appendChild(a);
 
@@ -139,8 +139,8 @@ var InstallerUpload = (function () {
 		fileInput.addEventListener('change', () => {
 			setSpinner(statusTd);
 			fileInput.files[0].arrayBuffer().then(buf => {
-				FS.writeFile('/installers/' + fname, new Uint8Array(buf));
-				checkFsFile(fname, true);
+				FS.writeFile('/installers/' + installer.filename, new Uint8Array(buf));
+				checkFsFile(installer.filename, true);
 			});
 		});
 		fileTd.appendChild(fileInput);
@@ -151,10 +151,11 @@ var InstallerUpload = (function () {
 		tr.appendChild(fileTd);
 		table.appendChild(tr);
 
-		status[fname] = {
+		status[installer.filename] = {
 			statusTd,
 			fileInput,
 			accepted: false,
+			sha256sum: installer.sha256sum,
 		};
 	}
 
@@ -172,7 +173,7 @@ var InstallerUpload = (function () {
 		// Warning: `crypto.subtle` is only available on HTTPS sites.
 		crypto.subtle.digest('SHA-256', buffer).then(hashBuffer => {
 			var hexdigest = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-			if (hexdigest === meta[fname].sha256sum) {
+			if (hexdigest === status[fname].sha256sum) {
 				status[fname].accepted = true;
 				status[fname].statusTd.innerText = 'Ok';
 				status[fname].fileInput.disabled = true;
@@ -190,15 +191,15 @@ var InstallerUpload = (function () {
 	}
 
 	function preInit() {
-		for (var fname in meta) {
-			HamSandwich.pushAssets(meta[fname].mountpoint, meta[fname].kind, '/installers/' + fname);
-			Module.addRunDependency('installer ' + fname);
+		for (var installer of meta) {
+			HamSandwich.pushAssets(installer.mountpoint, installer.kind, '/installers/' + installer.filename);
+			Module.addRunDependency('installer ' + installer.filename);
 		}
 	}
 
 	function onFsInit() {
-		for (var fname in meta) {
-			checkFsFile(fname, false);
+		for (var installer of meta) {
+			checkFsFile(installer.filename, false);
 		}
 	}
 
