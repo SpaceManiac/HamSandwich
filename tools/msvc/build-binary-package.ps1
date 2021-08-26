@@ -10,10 +10,12 @@ $sdl_platform = "x86"
 
 # Script
 $ErrorActionPreference = "Stop"
+Add-Type -AssemblyName System.Text.Encoding
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 # Install dependencies (premake, SDL) and load the $ExeProjects metadata
 powershell -NoLogo -ExecutionPolicy Bypass -File  ./tools/msvc/install-dependencies.ps1
+Write-Output "==== Collecting metadata ===="
 ./build/premake5.exe binary-package-info
 . ./build/binary-package-info.ps1
 
@@ -75,7 +77,7 @@ foreach ($project in $projects) {
 		$installers_by_link[$link] += $installer["filename"]
 	}
 
-	# Copy while we're here
+	# Copy assets while we're here
 	$asset_destination = "$pkgroot/assets/$($info["appdata_folder_name"])"
 	[array]::Reverse($info["assetdirs"])  # Earlier in the list overwrites later
 	foreach ($assetdir in $info["assetdirs"]) {
@@ -103,6 +105,22 @@ foreach ($link in $installers_by_link.Keys) {
 # Zip it up
 Write-Output "==== Zipping ===="
 $zip = "$PWD/build/HamSandwich-windows.zip"
-Push-Location $pkgroot
-7z a $zip .
-Pop-Location
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+# Replace backslashes in paths with forward slashes to fix nonstandardness.
+# Based on https://gist.github.com/lantrix/738ebfa616d5222a8b1db947793bc3fc
+class NoBackslashesEncoder : System.Text.UTF8Encoding {
+    NoBackslashesEncoder() : base($true) {}
+
+    [byte[]] GetBytes([string] $s) {
+        $s = $s.Replace("\", "/");
+        return ([System.Text.UTF8Encoding]$this).GetBytes($s);
+    }
+}
+
+Remove-Item $zip -ErrorAction SilentlyContinue
+[System.IO.Compression.ZipFile]::CreateFromDirectory($pkgroot, $zip, [System.IO.Compression.CompressionLevel]::Optimal, $false, [NoBackslashesEncoder]::new())
+
+Write-Output "==== Success ===="
+Write-Output "The release .zip has been saved to:"
+Write-Output "    $zip"

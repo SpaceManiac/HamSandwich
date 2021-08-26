@@ -68,9 +68,7 @@ Compiling and running:
 
 ### Windows (MSVC)
 
-1. Double-click `tools/msvc/Generate VS2019 Solution.bat`, **or**:
-    1. Download dependencies by running `powershell tools/msvc/install-dependencies.ps1`.
-    2. Run `build/premake5.exe vs2019` (or appropriate VS version) to generate the solution files.
+1. Double-click `tools/msvc/Generate VS2019 Solution.bat`.
 2. Open and compile `build/msc-v142/HamSandwich.sln` in Visual Studio.
     1. For command-line builds, run `msbuild build/msc-v142/HamSandwich.sln /p:Configuration=debug /p:Platform=Win32`.
 3. Download installers from <https://hamumu.itch.io/> and save them inside `installers/` without extracting them.
