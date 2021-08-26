@@ -31,7 +31,7 @@ newaction {
 			-- TODO: this is probably the wrong time to do this?
 			if prj.android_icon then
 				os.execute('python3'
-					.. ' tools/build/android_icons.py'
+					.. ' tools/android/android_icons.py'
 					.. ' "' .. prj.android_icon .. '"'
 					.. ' "' .. prj.workspace.location .. '/' .. prj.name .. '/res"'
 					.. ' "icon"')
