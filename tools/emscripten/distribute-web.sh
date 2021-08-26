@@ -34,8 +34,9 @@ fi
 
 # If no project was specified, detect them
 if test $# -eq 0; then
-	DIRS=("$TARGETDIR"/*)
-	set "${DIRS[@]##*/}"
+	set "$TARGETDIR"/../*.meta.json
+	set "${@##*/}"
+	set "${@%.meta.json}"
 fi
 
 echo "==== Preparing webroot ($WEBROOT) ===="
@@ -46,9 +47,18 @@ if test $# -eq 1; then
 else
 	# Many projects: put everything in subfolders
 	(
-		printf '['
+		printf '{'
+		printf '"project_list":['
 		printf '"%s",' "$@" | sed 's/,$//'
-		printf ']'
+		printf '],'
+		printf '"project_metadata":{'
+		comma=
+		for project in "$@"; do
+			printf '%s"%s":' "$comma" "$project"
+			cat "build/emcc/$project.meta.json"
+			comma=,
+		done
+		printf '}}'
 	) >build/webroot.meta.json
 	./tools/emscripten/embed-metadata.py __HOMEPAGE_METADATA__ build/webroot.meta.json <assets/homepage/index.html >"$WEBROOT"/index.html
 	cp source/supreme/lunatic.ico "$WEBROOT"/favicon.ico

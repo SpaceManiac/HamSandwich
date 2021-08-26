@@ -37,7 +37,7 @@
 		<script>
 			var metadata = JSON.parse(document.getElementById('home-meta').textContent);
 			var main = document.getElementById('main');
-			for (let key of metadata) {
+			for (let key of metadata.project_list) {
 				var tr = document.createElement('tr');
 				var td1 = document.createElement('td');
 				var a1 = document.createElement('a');
@@ -51,7 +51,7 @@
 
 				a1.append(img);
 				td1.append(a1);
-				a2.append(key);
+				a2.append(metadata.project_metadata[key].title);
 				td2.append(a2);
 				tr.append(td1, td2);
 				main.append(tr);
