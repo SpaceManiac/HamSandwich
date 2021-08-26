@@ -12,7 +12,7 @@ WEBROOT="build/webroot"
 
 # If there's no Emscripten SDK active, then activate a private one.
 if ! command -v em++ >/dev/null 2>&1; then
-	source ./tools/build/install-emsdk.sh
+	source ./tools/emscripten/install-emsdk.sh
 fi
 
 # Build specified project, or all
@@ -50,7 +50,7 @@ else
 		printf '"%s",' "$@" | sed 's/,$//'
 		printf ']'
 	) >build/webroot.meta.json
-	./tools/build/embed-metadata.py __HOMEPAGE_METADATA__ build/webroot.meta.json <assets/homepage/index.html >"$WEBROOT"/index.html
+	./tools/emscripten/embed-metadata.py __HOMEPAGE_METADATA__ build/webroot.meta.json <assets/homepage/index.html >"$WEBROOT"/index.html
 	cp source/supreme/lunatic.ico "$WEBROOT"/favicon.ico
 	for PROJECT in "$@"; do
 		mapfile -t FILES < <(find "$TARGETDIR/$PROJECT" -maxdepth 1 -type f -not -name '*.a')

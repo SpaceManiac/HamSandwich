@@ -2,7 +2,7 @@
 dofile "tools/build/appdata.lua"
 dofile "tools/build/gmake2_deps.lua"
 dofile "tools/build/android_studio.lua"
-dofile "tools/build/emscripten.lua"
+dofile "tools/emscripten/emcc.lua"
 dofile "tools/build/vscode.lua"
 dofile "tools/build/run-config.lua"
 dofile "tools/msvc/binary-package-info.lua"

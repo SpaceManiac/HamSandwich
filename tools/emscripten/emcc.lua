@@ -1,5 +1,5 @@
--- emscripten.lua
--- Emscripten/EMCC toolset adapter for Premake
+-- emcc.lua
+-- EMCC/Emscripten toolset adapter for Premake
 
 local p = premake
 local clang = p.tools.clang
@@ -129,7 +129,7 @@ function emscripten._file_packager_makesettings(prj)
 		local data_d = data_js .. ".d"
 
 		local build_command = "python3"
-			.. " ../../tools/build/file_packager_deps.py"
+			.. " ../../tools/emscripten/file_packager_deps.py"
 			.. " " .. data
 			.. " --js-output=" .. data_js
 			.. " --from-emcc"  -- Hack to disable "Remember to..." output
@@ -203,9 +203,9 @@ function emscripten._web_asset_makesettings(prj)
 
 			output = output .. "all: %{cfg.targetdir}/" .. outname .. "\n"
 			if outname == "index.html" then
-				output = output .. "%{cfg.targetdir}/" .. outname .. ': ' .. inname .. ' %{wks.location}/%{prj.name}.meta.json ../../tools/build/embed-metadata.py\n'
+				output = output .. "%{cfg.targetdir}/" .. outname .. ': ' .. inname .. ' %{wks.location}/%{prj.name}.meta.json ../../tools/emscripten/embed-metadata.py\n'
 				output = output .. "\t@echo " .. outname .. "\n"
-				output = output .. '\t$(SILENT) python3 ../../tools/build/embed-metadata.py __HAMSANDWICH_METADATA__ %{wks.location}/%{prj.name}.meta.json <"$<" >"$@"\n'
+				output = output .. '\t$(SILENT) python3 ../../tools/emscripten/embed-metadata.py __HAMSANDWICH_METADATA__ %{wks.location}/%{prj.name}.meta.json <"$<" >"$@"\n'
 			else
 				output = output .. "%{cfg.targetdir}/" .. outname .. ': ' .. inname .. '\n'
 				output = output .. "\t@echo " .. outname .. "\n"

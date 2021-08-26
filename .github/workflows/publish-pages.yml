@@ -15,11 +15,11 @@ jobs:
 
       # Modify the list below to change what projects are published.
       # To publish only loonyland2:
-      #   ./tools/build/distribute-web.sh loonyland2
+      #   ./tools/emscripten/distribute-web.sh loonyland2
       # To publish everything:
-      #   ./tools/build/distribute-web.sh
+      #   ./tools/emscripten/distribute-web.sh
       - run: |
-          ./tools/build/distribute-web.sh mystic loonyland supreme loonyland2 sleepless
+          ./tools/emscripten/distribute-web.sh mystic loonyland supreme loonyland2 sleepless
 
       - uses: peaceiris/actions-gh-pages@v3
         with:

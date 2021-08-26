@@ -123,7 +123,7 @@ if test "$toolset" = "emcc"; then
 
 	# If there's no Emscripten SDK active, then activate a private one.
 	if ! command -v em++ >/dev/null 2>&1; then
-		source ./tools/build/install-emsdk.sh
+		source ./tools/emscripten/install-emsdk.sh
 	fi
 fi
 

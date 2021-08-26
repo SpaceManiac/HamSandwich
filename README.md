@@ -115,7 +115,7 @@ Publishing on GitHub Pages:
 
 Publishing manually:
 
-1. Run `tools/build/distribute-web.sh <project>`.
+1. Run `tools/emscripten/distribute-web.sh <project>`.
    1. You can supply multiple projects to build them together.
    2. You can leave off the project identifier to build every project.
 2. Upload the contents of `build/webroot/`.
