@@ -79,7 +79,7 @@ local function metadata_cpp(cfg)
 	p.w()
 
 	p.push('static const char* default_asset_specs[] = {')
-	if cfg.assetdirs then
+	if cfg.assetdirs and #cfg.assetdirs > 0 then
 		p.w('%s,', json.encode("@stdio@../../assets/" .. appdata_folder_name))
 	end
 	for _, inst in ipairs(cfg.installers) do
