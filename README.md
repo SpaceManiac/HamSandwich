@@ -107,8 +107,8 @@ Publishing on GitHub Pages:
 1. Edit `.github/workflows/publish-pages.yml` file and change the
    `distribute-web.sh` line to include only the project or projects you wish to
    publish.
-2. Push your changes to GitHub and wait for the build to be prepared.
-3. In your GitHub repository's Settings > Options tab, GitHub Pages section,
+2. Push your changes to GitHub and wait for the build to complete.
+3. In your GitHub repository's Settings > Pages tab,
    change the "Source" from "None" to "gh-pages" and click "Save".
 4. Your site will be published at `https://yourusername.github.io/HamSandwich`
 5. Future pushes will automatically update your site.
