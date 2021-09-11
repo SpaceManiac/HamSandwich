@@ -13,6 +13,7 @@ based on HamSandwich.
     * Fix graphical glitches by implementing 8-bit to 32-bit conversion in software
     * Control settings are not compatible with official releases due to this change
     * Variously replaces SciTech MGL, Allegro, DirectSound, and FMOD
+* Add global <kbd>F12</kbd> hotkey to take a `.bmp` screenshot in the native resolution of the game
 * Add global <kbd>F11</kbd> hotkey to toggle fullscreen mode, and make window resizeable
 * Add global <kbd>F10</kbd> hotkey to toggle scaling mode between nearest-neighbor and linear filtering
 * Allow games to optionally load resources directly from the official installer rather than extracting it first
