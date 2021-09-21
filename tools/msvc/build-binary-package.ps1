@@ -62,7 +62,8 @@ Copy-Item -Destination $pkgroot -Path (
 	"./build/SDL2_mixer-msvc/lib/$sdl_platform/SDL2_mixer.dll",
 	"./build/SDL2_mixer-msvc/lib/$sdl_platform/libogg-0.dll",
 	"./build/SDL2_mixer-msvc/lib/$sdl_platform/libvorbis-0.dll",
-	"./build/SDL2_mixer-msvc/lib/$sdl_platform/libvorbisfile-3.dll"
+	"./build/SDL2_mixer-msvc/lib/$sdl_platform/libvorbisfile-3.dll",
+	"./build/SDL2_mixer-msvc/lib/$sdl_platform/LICENSE.ogg-vorbis.txt"
 )
 
 # Collate installers and build installers/README.txt
