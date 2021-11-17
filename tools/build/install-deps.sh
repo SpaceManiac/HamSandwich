@@ -49,8 +49,8 @@ premake5_linux() {
 	# Download Premake5 binary
 	if [ ! -f "build/premake5" ]; then
 		echo "==== Downloading premake5 binary ===="
-		wget -q -O "build/premake5.tar.gz" "https://github.com/premake/premake-core/releases/download/v5.0.0-alpha16/premake-5.0.0-alpha16-linux.tar.gz"
-		sha256sum -c <<<'23d0a37d4ae91a0b609f16bfaf4de01adb583d51b7953befa5d67f0eac6bd084 *build/premake5.tar.gz'
+		wget -q -O "build/premake5.tar.gz" "https://github.com/premake/premake-core/releases/download/v5.0.0-beta1/premake-5.0.0-beta1-linux.tar.gz"
+		sha256sum -c <<<'074fc07be17888ef41ca07eea1c527c390a04ea4550bf7962eeb0bea0cc9d2f5 *build/premake5.tar.gz'
 		tar -C "build/" -x -f 'build/premake5.tar.gz'
 		rm "build/premake5.tar.gz"
 	fi
@@ -60,8 +60,8 @@ deps_mingw_generic() {
 	# Download Premake5 binary
 	if [ ! -f "build/premake5" ]; then
 		echo "==== Downloading premake5 binary ===="
-		wget -q -O "build/premake5.zip" "https://github.com/premake/premake-core/releases/download/v5.0.0-alpha16/premake-5.0.0-alpha16-windows.zip"
-		sha256sum -c <<<'ad6284a34abbb65d9ac27aa3da2b35477aae7736393153c4605d11cb2f9f3ee2 *build/premake5.zip'
+		wget -q -O "build/premake5.zip" "https://github.com/premake/premake-core/releases/download/v5.0.0-beta1/premake-5.0.0-beta1-windows.zip"
+		sha256sum -c <<<'d8f958162b202fe88a2fa1897d3c5342dd137f19d1265de8802880126a808a65 *build/premake5.zip'
 		7z x -o"build/" "build/premake5.zip"
 		rm "build/premake5.zip"
 	fi
