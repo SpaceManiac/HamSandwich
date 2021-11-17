@@ -1003,7 +1003,8 @@ void Map::Copy(int sx,int sy,int blkwidth,int blkheight,int dx,int dy)
 	// copy source to dest
 	for(i=0;i<blkheight;i++)
 	{
-		memcpy(&map[(i+dy)*width+dx],&map[(i+sy)*width+sx],sizeof(mapTile_t)*blkwidth);
+		// Has to be memmove instead of memcpy because the source and destination might overlap.
+		memmove(&map[(i+dy)*width+dx],&map[(i+sy)*width+sx],sizeof(mapTile_t)*blkwidth);
 	}
 
 	// move all specials that are in the target zone
