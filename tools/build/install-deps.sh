@@ -21,6 +21,8 @@ elif command -v pacman >/dev/null 2>&1; then
 	SYS=arch
 elif command -v apk >/dev/null 2>&1; then
 	SYS=alpine
+elif command -v port >/dev/null 2>&1; then
+	SYS=macports
 else
 	WARNFILE="build/.install-deps-warning"
 	if [ ! -f "$WARNFILE" ]; then
@@ -127,6 +129,14 @@ deps_alpine() {
 		python3 py3-pip jpeg-dev python3-dev
 
 	# TODO: premake5's linux binaries are not compatible.
+}
+
+deps_macports() {
+	# Requires /opt/local/libexec/gnubin on PATH
+	packages 'sudo port install' \
+		coreutils premake5 \
+		libsdl2 libsdl2_image libsdl2_mixer \
+		py-Pillow
 }
 
 # Install dependencies for the correct system
