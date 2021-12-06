@@ -1,0 +1,17 @@
+#include "metadata.h"
+
+static const char* default_asset_specs[] = {
+	"@inno@installers/loonyland_install.EXE",
+	"@nsis@installers/loonyland_editor.exe",
+	nullptr
+};
+
+static const HamSandwichMetadata metadata = {
+	"loonyland",
+	default_asset_specs,
+};
+
+const HamSandwichMetadata* GetHamSandwichMetadata()
+{
+	return &metadata;
+}
