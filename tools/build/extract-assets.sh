@@ -27,6 +27,7 @@ itch_download() {  # <url> <upload_id> <filename> <hash>
 
 extract_nsis() {  # <exe> <destination>
 	mkdir -p "$2"
+	# shellcheck disable=2016
 	7z x -o"$2" -x'!$PLUGINSDIR' -x'!*.exe' -x'!*.dll' "$1"
 }
 
