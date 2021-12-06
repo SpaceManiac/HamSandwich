@@ -70,7 +70,7 @@ function m.workspace_run_config(wks)
 				-- specific to HamSandwich
 				p.push('iterate_installers() {')
 				for _, inst in ipairs(cfg.installers) do
-					p.w('filename=%s kind=%s link=%s sha256sum=%s $1', json.encode(inst.filename), json.encode(inst.kind), json.encode(inst.link), json.encode(inst.sha256sum))
+					p.w('filename=%s kind=%s link=%s sha256sum=%s file_id=%s $1', json.encode(inst.filename), json.encode(inst.kind), json.encode(inst.link), json.encode(inst.sha256sum), json.encode(inst.file_id))
 				end
 				p.pop('}')
 

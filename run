@@ -153,22 +153,19 @@ debug_configure; declare debugdir debugcommand debugargs debugenvs
 
 # Prompt to download installers if not already present.
 if test "$toolset" != "emcc"; then
-	handler() {
-		declare filename link sha256sum  # inputs
-		INSTDIR="installers"
+	show_header() {
+		echo "==== Downloading installers ===="
+		mkdir -p "$INSTDIR"
+		show_header() { :; }
+	}
 
-		show_header() {
-			echo "==== Installer required ===="
-			mkdir -p "$INSTDIR"
-			show_header() { :; }
-		}
+	handler() {
+		declare filename link sha256sum file_id  # inputs
+		INSTDIR="installers"
 
 		while test ! -f "$INSTDIR/$filename"; do
 			show_header
-			echo "Please download '$filename' from the following page, and save it inside '$INSTDIR/':"
-			echo "    $link"
-			echo "Press Enter when finished, or Ctrl-C to cancel."
-			read -r
+			curl -o "$INSTDIR/$filename" "$(curl -s -X POST "$link/file/$file_id" | jq -r .url)"
 		done
 		while ! sha256sum -c <<<"$sha256sum *$INSTDIR/$filename"; do
 			show_header

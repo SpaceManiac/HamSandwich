@@ -310,6 +310,7 @@ project "lunatic"
 			kind = "nsis",
 			sha256sum = "b8013176ea8050db20a2b170a5273d5287ccde4b4923affb7c610bda89326c84",
 			link = "https://hamumu.itch.io/dr-lunatic",
+			file_id = 710473,
 		}
 	}
 
@@ -329,6 +330,7 @@ project "supreme"
 			kind = "nsis",
 			sha256sum = "1c105ad826be1e0697b5de8483c71ff943d04bce91fe3547b6f355e9bc1c42d4",
 			link = "https://hamumu.itch.io/dr-lunatic-supreme-with-cheese",
+			file_id = 700882,
 		}
 	}
 
@@ -353,6 +355,7 @@ project "sleepless"
 			kind = "nsis",
 			sha256sum = "41660802318356fba53a21b4d368e191b3197030fb9e8eb833788f45c01c6f99",
 			link = "https://hamumu.itch.io/sleepless-hollow",
+			file_id = 708909,
 		}
 	}
 
@@ -378,12 +381,14 @@ project "loonyland"
 			kind = "inno",
 			sha256sum = "cf3cdc555297e41f6c2da61d89815dbbc740d6fc677c83ec6c6e1acfa117de34",
 			link = "https://hamumu.itch.io/loonyland-halloween-hill",
+			file_id = 702760,
 		},
 		{
 			filename = "loonyland_editor.exe",
 			kind = "nsis",
 			sha256sum = "865550d077e984ca28324aaf4291211aa4009cdad9f2b74144179c6342f2be39",
 			link = "https://hamumu.itch.io/loonyland-halloween-hill",
+			file_id = 782965,
 		}
 	}
 
@@ -408,6 +413,7 @@ project "loonyland2"
 			kind = "nsis",
 			sha256sum = "0806e1615eb94332bf805128d2d3857af420e93ee6f48692eebf17c05e9b14e2",
 			link = "https://hamumu.itch.io/loonyland-2-winter-woods",
+			file_id = 705653,
 		}
 	}
 
@@ -426,6 +432,7 @@ project "mystic"
 			kind = "inno",
 			sha256sum = "c2d618176d23b974c01c00690b6afb0aaebd4c863dfff0bf8b1f66db1bdc2f65",
 			link = "https://hamumu.itch.io/kid-mystic",
+			file_id = 704052,
 		}
 	}
 
