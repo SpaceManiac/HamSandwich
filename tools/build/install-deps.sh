@@ -23,6 +23,8 @@ elif command -v apk >/dev/null 2>&1; then
 	SYS=alpine
 elif command -v port >/dev/null 2>&1; then
 	SYS=macports
+elif command -v brew >/dev/null 2>&1; then
+	SYS=homebrew
 else
 	WARNFILE="build/.install-deps-warning"
 	if [ ! -f "$WARNFILE" ]; then
@@ -53,6 +55,17 @@ premake5_linux() {
 		echo "==== Downloading premake5 binary ===="
 		wget -q -O "build/premake5.tar.gz" "https://github.com/premake/premake-core/releases/download/v5.0.0-beta1/premake-5.0.0-beta1-linux.tar.gz"
 		sha256sum -c <<<'074fc07be17888ef41ca07eea1c527c390a04ea4550bf7962eeb0bea0cc9d2f5 *build/premake5.tar.gz'
+		tar -C "build/" -x -f 'build/premake5.tar.gz'
+		rm "build/premake5.tar.gz"
+	fi
+}
+
+premake5_macos() {
+	# Download Premake5 binary
+	if test ! -f "build/premake5"; then
+		echo "==== Downloading premake5 binary ===="
+		wget -q -O "build/premake5.tar.gz" "https://github.com/premake/premake-core/releases/download/v5.0.0-beta1/premake-5.0.0-beta1-macosx.tar.gz"
+		sha256sum -c <<<'fa71a4f2efc0baa36cd362512a55c0fad980d2044cbce72e57f63d43908f2852 *build/premake5.tar.gz'
 		tar -C "build/" -x -f 'build/premake5.tar.gz'
 		rm "build/premake5.tar.gz"
 	fi
@@ -137,6 +150,15 @@ deps_macports() {
 		coreutils premake5 \
 		libsdl2 libsdl2_image libsdl2_mixer \
 		py-Pillow
+}
+
+deps_homebrew() {
+	packages 'brew install' \
+		coreutils wget \
+		sdl2 sdl2_image sdl2_mixer \
+		pillow
+
+	premake5_macos
 }
 
 # Install dependencies for the correct system
