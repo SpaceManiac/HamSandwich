@@ -15,6 +15,7 @@ environment:
     #-   MSYSTEM: MINGW32
     -   MSVC_RELEASE: 1
     -   APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+    -   APPVEYOR_BUILD_WORKER_IMAGE: macOS
 
 for:
 # Windows/MSYS2 build script
@@ -72,3 +73,12 @@ for:
             cp tools/itch/linux.itch.toml build/pkgroot/.itch.toml
     deploy_script:
         - sh: test "$APPVEYOR_REPO_BRANCH" = "master" && test -z "$APPVEYOR_PULL_REQUEST_NUMBER" && build/butler push --if-changed build/pkgroot spacemaniac/hamsandwich:linux --userversion="$(git rev-parse --short=10 HEAD)"
+
+# MacOS build script
+-   matrix:
+        only:
+            - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+    install:
+        - sh: ./tools/build/install-deps.sh
+    build_script:
+        - sh: make toolset=clang config=release_x86_64
