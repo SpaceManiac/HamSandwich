@@ -11,9 +11,9 @@ image: Visual Studio 2019
 # Build matrix
 environment:
     matrix:
-    -   MSVC: 1
-    -   MSYSTEM: MINGW32
-    -   APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+    #-   MSVC: 1
+    #-   MSYSTEM: MINGW32
+    #-   APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
     -   MSVC_RELEASE: 1
 
 for:
@@ -48,11 +48,13 @@ for:
     branches:
         only:
             - master
+            - test-itch
+    install:
+        - powershell ./tools/msvc/install-butler.ps1
     build_script:
         - powershell ./tools/msvc/build-binary-package.ps1
-    artifacts:
-        - path: ./build/HamSandwich-windows.zip
-          name: HamSandwich.zip
+    deploy_script:
+        - ps: 'build/butler.exe push --if-changed build/pkgroot spacemaniac/hamsandwich:windows ("--userversion=" + (git rev-parse --short=10 HEAD))'
 
 # Linux build script
 -   matrix:
@@ -63,10 +65,3 @@ for:
         - sh: ./tools/build/install-deps.sh
     build_script:
         - sh: make config=debug_x86_64
-
-deploy:
-# Windows/MSVC/Release deploy script
-    -   provider: Environment
-        name: HamSandwich release
-        on:
-            MSVC_RELEASE: 1
