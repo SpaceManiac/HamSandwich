@@ -1,0 +1,19 @@
+[[actions]]
+name = "Dr. Lunatic Supreme With Cheese"
+path = "supreme.app"
+
+[[actions]]
+name = "Kid Mystic"
+path = "mystic.app"
+
+[[actions]]
+name = "Loonyland: Halloween Hill"
+path = "loonyland.app"
+
+[[actions]]
+name = "Loonyland 2: Winter Woods"
+path = "loonyland2.app"
+
+[[actions]]
+name = "Sleepless Hollow"
+path = "sleepless.app"
