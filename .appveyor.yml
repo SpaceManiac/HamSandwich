@@ -80,5 +80,13 @@ for:
             - APPVEYOR_BUILD_WORKER_IMAGE: macOS
     install:
         - sh: ./tools/build/install-deps.sh
+        - sh: ./tools/itch/install-butler-macos.sh
     build_script:
         - sh: make toolset=clang config=release_x86_64
+    before_deploy:
+        - sh: |
+            mkdir -p build/pkgroot
+            cp build/clang/release-x86_64/{supreme/supreme,mystic/mystic,loonyland/loonyland,loonyland2/loonyland2,sleepless/sleepless} build/pkgroot/
+            cp tools/itch/macos.itch.toml build/pkgroot/.itch.toml
+    deploy_script:
+        - sh: test "$APPVEYOR_REPO_BRANCH" = "master" && test -z "$APPVEYOR_PULL_REQUEST_NUMBER" && build/butler push --if-changed build/pkgroot spacemaniac/hamsandwich:macos --userversion="$(git rev-parse --short=10 HEAD)"
