@@ -65,6 +65,8 @@ Copy-Item -Destination $pkgroot -Path (
 	"./build/SDL2_mixer-msvc/lib/$sdl_platform/libvorbisfile-3.dll",
 	"./build/SDL2_mixer-msvc/lib/$sdl_platform/LICENSE.ogg-vorbis.txt"
 )
+# Include .itch.toml
+Copy-Item -Destination $pkgroot/.itch.toml -Path ./tools/itch/windows.itch.toml
 
 # Collate installers and build installers/README.txt
 $installers_by_link = @{}

@@ -13,8 +13,8 @@ environment:
     matrix:
     #-   MSVC: 1
     #-   MSYSTEM: MINGW32
-    #-   APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
     -   MSVC_RELEASE: 1
+    -   APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
 
 for:
 # Windows/MSYS2 build script
@@ -45,16 +45,15 @@ for:
 -   matrix:
         only:
             - MSVC_RELEASE: 1
-    branches:
-        only:
-            - master
-            - test-itch
     install:
         - powershell ./tools/msvc/install-butler.ps1
     build_script:
         - powershell ./tools/msvc/build-binary-package.ps1
     deploy_script:
-        - ps: 'build/butler.exe push --if-changed build/pkgroot spacemaniac/hamsandwich:windows ("--userversion=" + (git rev-parse --short=10 HEAD))'
+        - ps: |
+            if ($Env:APPVEYOR_REPO_BRANCH -eq "master" -and !$Env:APPVEYOR_PULL_REQUEST_NUMBER) {
+                build/butler.exe push --if-changed build/pkgroot spacemaniac/hamsandwich:windows ("--userversion=" + (git rev-parse --short=10 HEAD))
+            }
 
 # Linux build script
 -   matrix:
@@ -63,5 +62,13 @@ for:
     install:
         - sh: sudo DEBIAN_FRONTEND=noninteractive apt-get update
         - sh: ./tools/build/install-deps.sh
+        - sh: ./tools/itch/install-butler-linux.sh
     build_script:
-        - sh: make config=debug_x86_64
+        - sh: make config=release_x86_64
+    before_deploy:
+        - sh: |
+            mkdir -p build/pkgroot
+            cp build/gcc/release-x86_64/{supreme/supreme,mystic/mystic,loonyland/loonyland,loonyland2/loonyland2,sleepless/sleepless} build/pkgroot/
+            cp tools/itch/linux.itch.toml build/pkgroot/.itch.toml
+    deploy_script:
+        - sh: test "$APPVEYOR_REPO_BRANCH" = "master" && test -z "$APPVEYOR_PULL_REQUEST_NUMBER" && build/butler push --if-changed build/pkgroot spacemaniac/hamsandwich:linux --userversion="$(git rev-parse --short=10 HEAD)"
