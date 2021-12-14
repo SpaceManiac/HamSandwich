@@ -24,6 +24,8 @@ TASK(int) main(int argc, char *argv[])
 			windowedGame=true;
 	}
 
+	LoadOptions();
+
 	DBG("b");
 	MGLDraw *mainmgl=new MGLDraw("Loonyland", SCRWID, SCRHEI, windowedGame);
 	DBG("c");
