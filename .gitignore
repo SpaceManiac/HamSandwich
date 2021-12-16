@@ -1,5 +1,6 @@
 # top-level folders
 /.vscode
+/.vs
 /appdata
 /build
 /installers
