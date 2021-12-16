@@ -1,0 +1,11 @@
+{
+	"installers": [
+		{
+			"filename": "hollow_betainstall.exe",
+			"kind": "nsis",
+			"sha256sum": "41660802318356fba53a21b4d368e191b3197030fb9e8eb833788f45c01c6f99",
+			"link": "https://hamumu.itch.io/sleepless-hollow",
+			"file_id": 708909
+		}
+	]
+}

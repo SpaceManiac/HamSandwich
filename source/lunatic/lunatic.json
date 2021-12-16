@@ -1,0 +1,11 @@
+{
+	"installers": [
+		{
+			"filename": "lunatic_install.exe",
+			"kind": "nsis",
+			"sha256sum": "b8013176ea8050db20a2b170a5273d5287ccde4b4923affb7c610bda89326c84",
+			"link": "https://hamumu.itch.io/dr-lunatic",
+			"file_id": 710473
+		}
+	]
+}

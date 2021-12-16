@@ -1,0 +1,116 @@
+#!/bin/bash
+set -euo pipefail
+
+# Default settings.
+project=
+#toolset=gcc
+preset=x86_64-linux-debug
+nobuild=
+tool=
+override_args=
+
+# Read command-line arguments.
+while test $# -ne 0; do
+	ARG="$1"; shift
+	case "$ARG" in
+		# settings
+		toolset=* | config=* | mode=* | platform=* | nobuild=* | tool=*)
+			eval "$ARG"
+			;;
+		# show help on demand
+		--help)
+			show_help; exit
+			;;
+		--)
+			# -- indicates the start of overriden arguments
+			override_args=1
+			break
+			;;
+		# transitional adapters from ./run
+		"--fullscreen")
+			override_args=1
+			;;
+		"--gdb")
+			tool=gdb
+			;;
+		"--valgrind")
+			tool=valgrind
+			;;
+		"--callgrind")
+			tool=callgrind
+			;;
+		"--nobuild")
+			nobuild=1
+			;;
+		"--two")
+			tool=two
+			;;
+		# show help for unsupported settings or flags
+		*=* | -*)
+			show_help; exit 1
+			;;
+		# a setting without a variable name is $project
+		*)
+			project="$ARG"
+			;;
+	esac
+done
+
+# Build and install
+if test -z "$nobuild"; then
+	make -f Makefile.2 preset="$preset" "$project"
+	#cmake --install "_build/$preset" --prefix "_build/install"
+fi
+
+# Default debug configuration
+debugdir="$PWD"
+debugcommand="$PWD/build/cmake-$preset/source/$project/$project"
+debugargs=("window")
+debugenvs=()
+
+# Run the game executable or tool.
+mkdir -p "$debugdir"
+cd "$debugdir"
+if test ${#debugenvs[@]} -ne 0; then
+	export "${debugenvs[@]}"
+fi
+if test "$override_args"; then
+	debugargs=("$@")
+fi
+case "$tool" in
+	gdb)
+		echo "==== Debugging $project ($preset) ===="
+		# Catches "the runtime was asked to terminate in an usual way".
+		# If libc++ is dynamically linked, the breakpoint should be pending.
+		gdb -q \
+			-ex 'set breakpoint pending on' \
+			-ex 'break abort' \
+			-ex 'set breakpoint pending auto' \
+			--args "$debugcommand" "${debugargs[@]}"
+		;;
+	valgrind)
+		echo "==== Valgrinding $project ($preset) ===="
+		valgrind "$debugcommand" "${debugargs[@]}"
+		;;
+	callgrind)
+		echo "==== Callgrinding $project ($preset) ===="
+		valgrind --tool=callgrind "$debugcommand" "${debugargs[@]}"
+		;;
+	emrun)
+		echo "==== Hosting $project ($preset) ===="
+		emrun --serve_after_close "index.html"
+		;;
+	two)
+		echo "==== Running $project ($preset) ===="
+		"$debugcommand" "${debugargs[@]}" &
+		"$debugcommand" "${debugargs[@]}"
+		;;
+	"")
+		echo "==== Running $project ($preset) ===="
+		"$debugcommand" "${debugargs[@]}"
+		;;
+	*)
+		echo "$0: unknown tool: $tool"
+		exit 1
+		;;
+esac

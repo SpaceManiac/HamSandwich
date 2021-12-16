@@ -1,10 +1,10 @@
-file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}")
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 add_library(ham ${SOURCES})
 target_link_libraries(ham vanilla_extract SDL2 SDL2_image SDL2_mixer)
 target_include_directories(ham INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
-function(HamSandwich_metadata TARGET_NAME SOURCES_VAR JSON_BLOB)
+function(HamSandwich_metadata TARGET_NAME SOURCES_VAR JSON_FILENAME)
+	file(READ "${JSON_FILENAME}" JSON_BLOB)
 	set(metadata_cpp "")
 	string(APPEND metadata_cpp [[
 #include "metadata.h"

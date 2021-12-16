@@ -1,0 +1,11 @@
+{
+	"installers": [
+		{
+			"filename": "supreme8_install.exe",
+			"kind": "nsis",
+			"sha256sum": "1c105ad826be1e0697b5de8483c71ff943d04bce91fe3547b6f355e9bc1c42d4",
+			"link": "https://hamumu.itch.io/dr-lunatic-supreme-with-cheese",
+			"file_id": 700882
+		}
+	]
+}

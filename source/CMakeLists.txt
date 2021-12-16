@@ -1,4 +1,8 @@
 add_subdirectory("vanilla_extract")
 add_subdirectory("ham")
+add_subdirectory("lunatic")
+add_subdirectory("supreme")
+add_subdirectory("sleepless")
 add_subdirectory("loonyland")
 add_subdirectory("loonyland2")
+add_subdirectory("mystic")
