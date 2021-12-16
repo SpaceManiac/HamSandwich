@@ -20,6 +20,10 @@
 #include <sys/wait.h>
 #endif
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include <SDL_platform.h>
 #include <SDL_rwops.h>
 #include <SDL_messagebox.h>
@@ -648,7 +652,23 @@ static bool check_assets(VfsStack& vfs) {
 }
 
 static VfsStack init_vfs_stack() {
-#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__) && !defined(_WIN32)
+#if defined(_WIN32)
+	if (GetFileAttributesA("installers/download-helper.ps1") != INVALID_FILE_ATTRIBUTES) {
+		std::string cmdline = "powershell -ExecutionPolicy Bypass installers/download-helper.ps1 ";
+		cmdline.append(GetHamSandwichMetadata()->appdata_folder_name);
+
+		STARTUPINFOA startupInfo = {};
+		PROCESS_INFORMATION processInfo = {};
+		startupInfo.cb = sizeof(startupInfo);
+		startupInfo.dwFlags |= STARTF_USESHOWWINDOW;
+		startupInfo.wShowWindow = SW_HIDE;
+		if (CreateProcessA("C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe", cmdline.data(), nullptr, nullptr, false, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &processInfo)) {
+			WaitForSingleObject(processInfo.hProcess, INFINITE);
+			CloseHandle(processInfo.hProcess);
+			CloseHandle(processInfo.hThread);
+		}
+	}
+#elif !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 	struct stat sb;
 	if (stat("installers/.download-helper", &sb) == 0) {
 		int child_pid = fork();
@@ -657,8 +677,9 @@ static VfsStack init_vfs_stack() {
 			std::string second = GetHamSandwichMetadata()->appdata_folder_name;
 			char* const argv[] = { first, second.data(), nullptr };
 			exit(execvp(argv[0], argv));
+		} else if (child_pid > 0) {
+			waitpid(child_pid, nullptr, 0);
 		}
-		waitpid(child_pid, nullptr, 0);
 	}
 #endif
 

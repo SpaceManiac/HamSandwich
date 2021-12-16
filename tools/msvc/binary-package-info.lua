@@ -36,7 +36,7 @@ function m.workspace_binary_package_info(wks)
 				p.push('"installers" = @(')
 				local comma2 = ""
 				for _, inst in ipairs(cfg.installers) do
-					p.w('%s@{"filename" = %s; "link" = %s}', comma2, json.encode(inst.filename), json.encode(inst.link))
+					p.w('%s@{"filename" = %s; "link" = %s; "file_id" = %s; "sha256sum" = %s}', comma2, json.encode(inst.filename), json.encode(inst.link), json.encode(inst.file_id), json.encode(inst.sha256sum))
 					comma2 = ", "
 				end
 				p.pop(')')
