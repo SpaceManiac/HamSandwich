@@ -17,6 +17,7 @@
 
 #ifndef _MSC_VER
 #include <unistd.h>
+#include <sys/wait.h>
 #endif
 
 #include <SDL_platform.h>
@@ -573,7 +574,45 @@ static VfsStack default_vfs_stack() {
 #endif
 // Common implementation and interface
 
-static VfsStack init_vfs_stack() {
+static void missing_assets_message() {
+	struct stat sb;
+	// Tweak wording/ordering based on whether "installers" exists.
+	if (stat("installers", &sb) == 0) {
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+			"Missing Assets - HamSandwich",
+			"The game's assets appear to be missing.\n"
+			"\n"
+			"Download the appropriate installer and save it in\n"
+			"the \"installers\" folder.\n"
+#if defined(_WIN32) && !defined(_DEBUG)
+			// Only talk about "nearby .dll files" on Windows release builds.
+			"\n"
+			"Alternatively, copy this .exe and nearby .dll files\n"
+			"into an existing installation of the game."
+#endif
+			, nullptr);
+	} else {
+		// The .exe has been divorced from the install package.
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+			"Missing Assets - HamSandwich",
+			"The game's assets appear to be missing.\n"
+			"\n"
+#if defined(_WIN32) && !defined(_DEBUG)
+			// Only talk about "nearby .dll files" on Windows release builds.
+			"Copy this .exe and nearby .dll files\n"
+			"into an existing installation of the game.\n"
+			"\n"
+			"Alternatively, create "
+#else
+			"Create "
+#endif
+			"an \"installers\" folder and\n"
+			"download the appropriate installers there.",
+			nullptr);
+	}
+}
+
+static VfsStack vfs_stack_from_env() {
 	VfsStack result;
 	if (const char *appdata_spec = getenv("HSW_APPDATA")) {
 		if (auto vfs = init_vfs_spec("HSW_APPDATA", appdata_spec)) {
@@ -594,48 +633,41 @@ static VfsStack init_vfs_stack() {
 	} else {
 		result = default_vfs_stack();
 	}
+	return result;
+}
 
+static bool check_assets(VfsStack& vfs) {
 	// Every game has this asset, so use it to sanity check.
-	SDL_RWops* check = result.open_sdl("graphics/verdana.jft", "rb");
-	if (!check) {
-		struct stat sb;
-		// Tweak wording/ordering based on whether "installers" exists.
-		if (stat("installers", &sb) == 0) {
-			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-				"Missing Assets - HamSandwich",
-				"The game's assets appear to be missing.\n"
-				"\n"
-				"Download the appropriate installer and save it in\n"
-				"the \"installers\" folder.\n"
-#if defined(_WIN32) && !defined(_DEBUG)
-				// Only talk about "nearby .dll files" on Windows release builds.
-				"\n"
-				"Alternatively, copy this .exe and nearby .dll files\n"
-				"into an existing installation of the game."
-#endif
-				, nullptr);
-		} else {
-			// The .exe has been
-			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-				"Missing Assets - HamSandwich",
-				"The game's assets appear to be missing.\n"
-				"\n"
-#if defined(_WIN32) && !defined(_DEBUG)
-				// Only talk about "nearby .dll files" on Windows release builds.
-				"Copy this .exe and nearby .dll files\n"
-				"into an existing installation of the game.\n"
-				"\n"
-				"Alternatively, create "
-#else
-				"Create "
-#endif
-				"an \"installers\" folder and\n"
-				"download the appropriate installers there.",
-				nullptr);
+	SDL_RWops* check = vfs.open_sdl("graphics/verdana.jft", "rb");
+	if (check) {
+		SDL_RWclose(check);
+		return true;
+	}
+
+	return false;
+}
+
+static VfsStack init_vfs_stack() {
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__) && !defined(_WIN32)
+	struct stat sb;
+	if (stat("installers/.download-helper", &sb) == 0) {
+		int child_pid = fork();
+		if (child_pid == 0) {
+			char first[] = "installers/.download-helper";
+			std::string second = GetHamSandwichMetadata()->appdata_folder_name;
+			char* const argv[] = { first, second.data(), nullptr };
+			exit(execvp(argv[0], argv));
 		}
+		waitpid(child_pid, nullptr, 0);
+	}
+#endif
+
+	VfsStack result = vfs_stack_from_env();
+
+	if (!check_assets(result)) {
+		missing_assets_message();
 		exit(1);
 	}
-	SDL_RWclose(check);
 
 	return result;
 }

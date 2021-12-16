@@ -68,9 +68,13 @@ for:
         - sh: make config=release_x86_64
     before_deploy:
         - sh: |
-            mkdir -p build/pkgroot
+            mkdir -p build/pkgroot/installers
             cp build/gcc/release-x86_64/{supreme/supreme,mystic/mystic,loonyland/loonyland,loonyland2/loonyland2,sleepless/sleepless} build/pkgroot/
             cp tools/itch/linux.itch.toml build/pkgroot/.itch.toml
+            build/premake5 run-config
+            cat tools/itch/download-helper.head.sh build/gcc/run-config.sh tools/itch/download-helper.tail.sh >build/pkgroot/installers/.download-helper
+            chmod +x build/pkgroot/installers/.download-helper
+            cp tools/itch/distraction.sh build/pkgroot/installers/.distraction
     deploy_script:
         - sh: test "$APPVEYOR_REPO_BRANCH" = "master" && test -z "$APPVEYOR_PULL_REQUEST_NUMBER" && build/butler push --if-changed build/pkgroot spacemaniac/hamsandwich:linux --userversion="$(git rev-parse --short=10 HEAD)"
 
@@ -85,8 +89,12 @@ for:
         - sh: make toolset=clang config=release_x86_64
     before_deploy:
         - sh: |
-            mkdir -p build/pkgroot
+            mkdir -p build/pkgroot/installers
             cp build/clang/release-x86_64/{supreme/supreme,mystic/mystic,loonyland/loonyland,loonyland2/loonyland2,sleepless/sleepless}.app build/pkgroot/
             cp tools/itch/macos.itch.toml build/pkgroot/.itch.toml
+            build/premake5 --cc=clang run-config
+            cat tools/itch/download-helper.head.sh build/clang/run-config.sh tools/itch/download-helper.tail.sh >build/pkgroot/installers/.download-helper
+            chmod +x build/pkgroot/installers/.download-helper
+            cp tools/itch/distraction.sh build/pkgroot/installers/.distraction
     deploy_script:
         - sh: test "$APPVEYOR_REPO_BRANCH" = "master" && test -z "$APPVEYOR_PULL_REQUEST_NUMBER" && build/butler push --if-changed build/pkgroot spacemaniac/hamsandwich:macos --userversion="$(git rev-parse --short=10 HEAD)"
