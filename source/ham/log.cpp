@@ -25,7 +25,7 @@ void LogDebug(const char* fmt, ...) {
 }
 
 void LogError(const char* fmt, ...) {
-	if (!errorLogAttempted) {
+	if (!errorLogAttempted && AppdataIsInit()) {
 		errorLogAttempted = true;
 		errorLog = AppdataOpen("error.log", "wt");
 	}

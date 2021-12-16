@@ -12,6 +12,7 @@
 #include "options.h"
 #include "badge.h"
 #include "log.h"
+#include "appdata.h"
 
 TASK(int) main(int argc, char *argv[])
 {
@@ -24,7 +25,7 @@ TASK(int) main(int argc, char *argv[])
 			windowedGame=true;
 	}
 
-	LoadOptions();
+	AppdataInit();
 
 	DBG("b");
 	MGLDraw *mainmgl=new MGLDraw("Loonyland", SCRWID, SCRHEI, windowedGame);

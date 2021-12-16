@@ -651,7 +651,7 @@ static bool check_assets(VfsStack& vfs) {
 	return false;
 }
 
-static VfsStack init_vfs_stack() {
+static bool run_download_helper() {
 #if defined(_WIN32)
 	if (GetFileAttributesA("installers/download-helper.ps1") != INVALID_FILE_ATTRIBUTES) {
 		std::string cmdline = "powershell -ExecutionPolicy Bypass installers/download-helper.ps1 ";
@@ -666,6 +666,7 @@ static VfsStack init_vfs_stack() {
 			WaitForSingleObject(processInfo.hProcess, INFINITE);
 			CloseHandle(processInfo.hProcess);
 			CloseHandle(processInfo.hThread);
+			return true;
 		}
 	}
 #elif !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
@@ -678,33 +679,51 @@ static VfsStack init_vfs_stack() {
 			char* const argv[] = { first, second.data(), nullptr };
 			exit(execvp(argv[0], argv));
 		} else if (child_pid > 0) {
-			waitpid(child_pid, nullptr, 0);
+			int wstatus;
+			if (waitpid(child_pid, &wstatus, 0) >= 0) {
+				if (WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0) {
+					return true;
+				}
+			}
 		}
 	}
 #endif
+	return false;
+}
 
+static VfsStack init_vfs_stack() {
 	VfsStack result = vfs_stack_from_env();
-
-	if (!check_assets(result)) {
-		missing_assets_message();
-		exit(1);
+	if (check_assets(result)) {
+		return result;
 	}
 
-	return result;
+	if (run_download_helper()) {
+		result = vfs_stack_from_env();
+		if (check_assets(result)) {
+			return result;
+		}
+	}
+
+	missing_assets_message();
+	exit(1);
 }
 
 // Android does not play nice with static initializers.
 static VfsStack vfs_stack;
+
+void AppdataInit() {
+	vfs_stack = init_vfs_stack();
+}
+
+bool AppdataIsInit() {
+	return !vfs_stack.empty();
+}
 
 FILE* AppdataOpen(const char* file, const char* mode) {
 	return AssetOpen(file, mode);
 }
 
 FILE* AssetOpen(const char* file, const char* mode) {
-	if (vfs_stack.empty()) {
-		vfs_stack = init_vfs_stack();
-	}
-
 	bool write = is_write_mode(mode);
 	if (write) {
 		return vfs_stack.appdata()->open_stdio(file, mode, write);
@@ -722,10 +741,6 @@ FILE* AssetOpen(const char* file, const char* mode) {
 }
 
 SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
-	if (vfs_stack.empty()) {
-		vfs_stack = init_vfs_stack();
-	}
-
 	SDL_RWops* rw = vfs_stack.open_sdl(file, mode);
 	if (!rw) {
 		LogError("AssetOpen_SDL(%s, %s): not found in any vfs", file, mode);
@@ -734,10 +749,6 @@ SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
 }
 
 std::vector<std::string> ListDirectory(const char* directory, const char* extension, size_t maxlen) {
-	if (vfs_stack.empty()) {
-		vfs_stack = init_vfs_stack();
-	}
-
 	std::set<std::string> output;
 	for (auto& vfs : vfs_stack) {
 		vfs->list_dir(directory, output);
@@ -761,10 +772,6 @@ std::vector<std::string> ListDirectory(const char* directory, const char* extens
 }
 
 void AppdataDelete(const char* file) {
-	if (vfs_stack.empty()) {
-		vfs_stack = init_vfs_stack();
-	}
-
 	vfs_stack.appdata()->delete_file(file);
 }
 

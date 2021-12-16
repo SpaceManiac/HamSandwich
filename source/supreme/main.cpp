@@ -29,6 +29,7 @@
 #include "log.h"
 #include "netmenu.h"
 #include "internet.h"
+#include "appdata.h"
 
 #ifdef _WIN32
 #include <shellapi.h>
@@ -44,6 +45,7 @@ TASK(int) main(int argc, char* argv[])
 			windowedGame=true;
 	}
 
+	AppdataInit();
 	LoadConfig();
 	MGLDraw *mainmgl=new MGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame);
 	if(!mainmgl)

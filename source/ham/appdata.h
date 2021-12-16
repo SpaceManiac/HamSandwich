@@ -11,6 +11,9 @@ typedef struct SDL_RWops SDL_RWops;
 // situations, Appdata and Asset folders may overlap, so names should not be
 // reused. See appdata.cpp for implementation details for each platform.
 
+void AppdataInit();
+bool AppdataIsInit();
+
 // Use for saves, options, config, etc.
 FILE* AppdataOpen(const char* file, const char* mode);
 // On platforms that need it, ensure appdata is really saved.

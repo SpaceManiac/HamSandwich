@@ -19,6 +19,7 @@
 #include "challenge.h"
 #include "options.h"
 #include "nag.h"
+#include "appdata.h"
 
 TASK(int) main(int argc, char* argv[])
 {
@@ -32,6 +33,7 @@ TASK(int) main(int argc, char* argv[])
 			windowedGame=true;
 	}
 
+	AppdataInit();
 	InitOptions();
 	MGLDraw *mainmgl=new MGLDraw("Kid Mystic", SCRWID, SCRHEI, windowedGame);
 	if(!mainmgl)

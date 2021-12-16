@@ -19,6 +19,7 @@
 #include "monster.h"
 #include "title.h"
 #include "options.h"
+#include "appdata.h"
 
 #ifdef _WIN32
 #include <shellapi.h>
@@ -34,6 +35,7 @@ TASK(int) main(int argc, char* argv[])
 			windowedGame=true;
 	}
 
+	AppdataInit();
 	LoadOptions();
 	MGLDraw *mainmgl = new MGLDraw("Dr. Lunatic", 640, 480, windowedGame);
 	if (!mainmgl)
