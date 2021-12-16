@@ -3,7 +3,14 @@ add_library(SDL2 INTERFACE)
 add_library(SDL2_image INTERFACE)
 add_library(SDL2_mixer INTERFACE)
 
-if(ANDROID)
+if(EMSCRIPTEN)
+	target_compile_options(SDL2 INTERFACE -sUSE_SDL=2)
+	target_compile_options(SDL2_image INTERFACE -sUSE_SDL_IMAGE=2)
+	target_compile_options(SDL2_mixer INTERFACE -sUSE_SDL_MIXER=2 -sSDL2_IMAGE_FORMATS=['bmp'])
+	target_link_options(SDL2 INTERFACE -sUSE_SDL=2)
+	target_link_options(SDL2_image INTERFACE -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS=['bmp'])
+	target_link_options(SDL2_mixer INTERFACE -sUSE_SDL_MIXER=2)
+elseif(ANDROID)
 	if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 		set(ANDROID_BUILD_TYPE "debug")
 	else()
@@ -28,11 +35,11 @@ elseif(MSVC)
 	include(FetchContent)
 	FetchContent_Declare(SDL2
 		URL https://www.libsdl.org/release/SDL2-devel-2.0.8-VC.zip
-		URL_HASH SHA256=f83651227229e059a570aac26be24f5070352c0d23aaf3d2cfbd3eb2c9599334
+		URL_HASH SHA256=68505e1f7c16d8538e116405411205355a029dcf2df738dbbc768b2fe95d20fd
 	)
 	FetchContent_Declare(SDL2_image
 		URL https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.4-VC.zip
-		URL_HASH SHA256=a180f9b75c4d3fbafe02af42c42463cc7bc488e763cfd1ec2ffb75678b4387ac
+		URL_HASH SHA256=4e15fad9de43d738b476e422eef1910432443cead60d2084b3ef01d3f4a76087
 	)
 	FetchContent_Declare(SDL2_mixer
 		URL https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.0.4-VC.zip

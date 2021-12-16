@@ -1,10 +1,27 @@
 #!/bin/bash
 set -euo pipefail
 
+# Help
+show_help() {
+	echo "Usage: $0 [<setting=value>] <project> [-- <arguments>]"
+	echo "Settings:"
+	echo "    os=             One of:  windows  linux  macos  emscripten"
+	echo "    mode=           One of:  debug  release"
+	echo "    platform=       One of:  x86  x86_64"
+	echo "    preset=         Set os, mode, and platform together, ex: windows-i686-release"
+	echo "    nobuild=1       Skip compiling before running."
+	echo "    tool=gdb        Start GDB prepared to debug the game."
+	echo "    tool=valgrind   Run the game under valgrind memory checker (slow)."
+	echo "    tool=callgrind  Run the game under callgrind profiler (slow)."
+	echo "    tool=two        Run two instances of the game at once."
+}
+
 # Default settings.
 project=
-#toolset=gcc
-preset=x86_64-linux-debug
+os=
+platform=
+mode=debug
+preset=
 nobuild=
 tool=
 override_args=
@@ -14,7 +31,7 @@ while test $# -ne 0; do
 	ARG="$1"; shift
 	case "$ARG" in
 		# settings
-		toolset=* | config=* | mode=* | platform=* | nobuild=* | tool=*)
+		project=* | os=* | mode=* | platform=* | preset=* | nobuild=* | tool=*)
 			eval "$ARG"
 			;;
 		# show help on demand
@@ -30,6 +47,9 @@ while test $# -ne 0; do
 		"--fullscreen")
 			override_args=1
 			;;
+		"--release")
+			mode=release
+			;;
 		"--gdb")
 			tool=gdb
 			;;
@@ -41,6 +61,9 @@ while test $# -ne 0; do
 			;;
 		"--nobuild")
 			nobuild=1
+			;;
+		"--web")
+			platform=web
 			;;
 		"--two")
 			tool=two
@@ -56,10 +79,59 @@ while test $# -ne 0; do
 	esac
 done
 
+# Abort if no project was specified.
+if test -z "$project"; then
+	show_help; exit 1
+fi
+
+# Fallback settings.
+if test -z "$preset"; then
+	if test -z "$os"; then
+		# Detect OS and architecture.
+		case "$(uname -sm)" in
+			MINGW32*)
+				os=windows
+				platform=i686
+				;;
+			MINGW64*)
+				os=windows
+				platform=x86_64
+				;;
+			"Linux x86_64")
+				os=linux
+				platform=x86_64
+				;;
+			"Darwin x86_64")
+				os=macos
+				platform=x86_64
+				;;
+			*)
+				echo "Unknown \`uname -sm\`: $(uname -sm)"
+				exit 1
+		esac
+	elif test -z "$platform"; then
+		# Use default architecture for chosen OS.
+		case "$os" in
+			windows|emscripten)
+				platform=i686
+				;;
+			linux|macos)
+				platform=x86_64
+				;;
+		esac
+	fi
+	preset="$os-$platform-$mode"
+fi
+
+if test -z "$tool" && test "$os" = "emscripten"; then
+	tool=emrun
+	source ./tools/emscripten/install-emsdk.sh
+fi
+
 # Build and install
 if test -z "$nobuild"; then
-	make -f Makefile.2 preset="$preset" "$project"
-	#cmake --install "_build/$preset" --prefix "_build/install"
+	make -f Makefile2.mk preset="$preset" "$project"
+	#cmake --install "build/cmake-$preset" --prefix "build/install"
 fi
 
 # Default debug configuration

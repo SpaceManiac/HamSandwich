@@ -5,4 +5,6 @@ HamSandwich_metadata(supreme SOURCES supreme.json)
 add_executable(supreme ${SOURCES})
 target_link_libraries(supreme ham)
 
-target_compile_options(supreme PRIVATE -Wall -Wno-unused-but-set-variable)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	target_compile_options(supreme PRIVATE -Wall -Wno-unused-but-set-variable)
+endif()

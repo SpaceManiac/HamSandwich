@@ -98,7 +98,6 @@ function base_project()
 	filter "system:Linux"
 		-- Ridiculous, but somehow still necessary to let executables be double-clickable in file managers.
 		-- https://stackoverflow.com/questions/45329372/ubuntu-recognizes-executable-as-shared-library-and-wont-run-it-by-clicking
-		buildoptions { "-no-pie" }
 		linkoptions { "-no-pie" }
 
 	filter {}

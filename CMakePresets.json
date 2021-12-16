@@ -1,5 +1,5 @@
 {
-	"version": 2,
+	"version": 3,
 	"cmakeMinimumRequired": {
 		"major": 3,
 		"minor": 19
@@ -28,23 +28,58 @@
 			}
 		},
 		{
-			"name": "i686-windows-debug",
+			"name": "windows-i686-debug",
 			"inherits": "i686-base"
 		},
 		{
-			"name": "x86_64-linux-debug",
-			"inherits": "base"
-		},
-		{
-			"name": "i686-windows-release",
+			"name": "windows-i686-release",
 			"inherits": "i686-base",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
 			}
 		},
 		{
-			"name": "x86_64-linux-release",
+			"name": "windows-x86_64-debug",
+			"inherits": "base"
+		},
+		{
+			"name": "windows-x86_64-release",
 			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			}
+		},
+		{
+			"name": "linux-x86_64-debug",
+			"inherits": "base"
+		},
+		{
+			"name": "linux-x86_64-release",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			}
+		},
+		{
+			"name": "macos-x86_64-debug",
+			"inherits": "base"
+		},
+		{
+			"name": "macos-x86_64-release",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			}
+		},
+		{
+			"name": "emscripten-i686-debug",
+			"inherits": "i686-base",
+			"toolchainFile": "build/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+		},
+		{
+			"name": "emscripten-i686-release",
+			"inherits": "i686-base",
+			"toolchainFile": "build/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
 			}

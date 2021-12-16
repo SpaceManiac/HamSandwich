@@ -1,0 +1,11 @@
+# zlib target
+if(EMSCRIPTEN)
+	add_library(z INTERFACE)
+	target_compile_options(z INTERFACE -sUSE_ZLIB=1)
+	target_link_options(z INTERFACE -sUSE_ZLIB=1)
+elseif(MSVC)
+	add_library(z INTERFACE)
+	add_subdirectory("zlib")
+	target_link_libraries(z INTERFACE zlibstatic)
+	target_include_directories(z INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/zlib" "${CMAKE_CURRENT_BINARY_DIR}/zlib")
+endif()

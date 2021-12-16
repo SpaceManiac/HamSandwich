@@ -5,4 +5,6 @@ HamSandwich_metadata(sleepless SOURCES sleepless.json)
 add_executable(sleepless ${SOURCES})
 target_link_libraries(sleepless ham)
 
-target_compile_options(sleepless PRIVATE -Wall -Wno-unused-but-set-variable)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	target_compile_options(sleepless PRIVATE -Wall -Wno-unused-but-set-variable)
+endif()
