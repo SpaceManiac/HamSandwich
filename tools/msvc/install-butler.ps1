@@ -2,6 +2,20 @@
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
+$sha256 = New-Object System.Security.Cryptography.SHA256CryptoServiceProvider
+
+function CheckHash {
+	param([string] $File, [string] $Sha)
+	$got = $sha256.ComputeHash([System.IO.File]::ReadAllBytes("$PWD/$FILE"))
+	$got = [System.BitConverter]::ToString($got).Replace('-', '').ToLower()
+	if ($got -ne $Sha) {
+		Write-Output "${File}: FAILED"
+		exit 1
+	} else {
+		Write-Output "${File}: OK"
+	}
+}
+
 # Fetch Butler binary
 if (-not (Test-Path "build/butler.exe")) {
 	New-Item build -ItemType Directory -ErrorAction SilentlyContinue > $null
