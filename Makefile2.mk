@@ -9,13 +9,16 @@ preset := linux-x86_64-debug
 else ifeq ($(shell uname -sm),Darwin x86_64)
 preset := macos-x86_64-debug
 else
-preset := "$(shell uname -sm)"  # Generate usable, though not great, error message.
+$(error Unknown system '$(shell uname -sm)'; set preset= manually.)
 endif
 endif
 
 # Emscripten has a *directory* named "cmake" as a child of a directory in PATH,
 # and GNU make attempts to execute this directory, which is ridiculous.
-CMAKE := $(shell which cmake)
+CMAKE ?= $(shell which cmake)
+ifeq ($(CMAKE),)
+$(error 'cmake' is missing from PATH; install it or set CMAKE= manually.)
+endif
 
 BUILD_ROOT = build
 BUILD_DIR = $(BUILD_ROOT)/cmake-$(preset)
