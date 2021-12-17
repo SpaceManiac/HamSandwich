@@ -10,7 +10,7 @@ try:
 	from PIL import Image
 except ImportError:
 	import subprocess
-	subprocess.call([sys.executable, "-m", "pip", "install", "Pillow"])
+	subprocess.call([sys.executable, "-m", "pip", "install", "--user", "Pillow"])
 	from PIL import Image
 
 # Actual script

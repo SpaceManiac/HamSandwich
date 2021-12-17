@@ -3,6 +3,25 @@ add_library(ham ${SOURCES})
 target_link_libraries(ham vanilla_extract SDL2 SDL2_image SDL2_mixer)
 target_include_directories(ham INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
+function(HamSandwich_icon SOURCES_VAR RC_FILENAME)
+	set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/${RC_FILENAME}")
+	if(WIN32)
+		list(APPEND "${SOURCES_VAR}" "${INPUT}")
+		set("${SOURCES_VAR}" "${${SOURCES_VAR}}" PARENT_SCOPE)
+	else()
+		set(RESCOMP "${CMAKE_SOURCE_DIR}/tools/build/rescomp.py")
+		set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${RC_FILENAME}.cpp")
+		add_custom_command(
+			OUTPUT "${OUTPUT}"
+			COMMAND python3 "${RESCOMP}" "${INPUT}" "${OUTPUT}"
+			MAIN_DEPENDENCY "${INPUT}"
+			DEPENDS "${RESCOMP}"
+		)
+		list(APPEND "${SOURCES_VAR}" "${OUTPUT}")
+		set("${SOURCES_VAR}" "${${SOURCES_VAR}}" PARENT_SCOPE)
+	endif()
+endfunction()
+
 function(HamSandwich_metadata TARGET_NAME SOURCES_VAR JSON_FILENAME)
 	file(READ "${JSON_FILENAME}" JSON_BLOB)
 	set(metadata_cpp "")

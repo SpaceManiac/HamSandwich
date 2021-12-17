@@ -1,5 +1,6 @@
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
+HamSandwich_icon(SOURCES loonyland2.rc)
 HamSandwich_metadata(loonyland2 SOURCES loonyland2.json)
 
 add_executable(loonyland2 ${SOURCES})

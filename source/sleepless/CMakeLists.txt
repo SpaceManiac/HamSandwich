@@ -1,5 +1,6 @@
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
+HamSandwich_icon(SOURCES lunatic.rc)
 HamSandwich_metadata(sleepless SOURCES sleepless.json)
 
 add_executable(sleepless ${SOURCES})
