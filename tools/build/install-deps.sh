@@ -94,7 +94,7 @@ deps_mingw_generic() {
 deps_mingw32() {
 	# Install system packages
 	packages 'pacman -S --needed --noconfirm --quiet' \
-		p7zip make \
+		p7zip make mingw-w64-i686-jq \
 		mingw-w64-i686-python \
 		mingw-w64-i686-binutils mingw-w64-i686-gcc mingw-w64-i686-zlib \
 		mingw-w64-i686-SDL2 mingw-w64-i686-SDL2_mixer mingw-w64-i686-SDL2_image
@@ -105,7 +105,7 @@ deps_mingw32() {
 deps_mingw64() {
 	# Install system packages
 	packages 'pacman -S --needed --noconfirm --quiet' \
-		p7zip make \
+		p7zip make mingw-w64-x86_64-jq \
 		mingw-w64-x86_64-python \
 		mingw-w64-x86_64-binutils mingw-w64-x86_64-gcc mingw-w64-x86_64-zlib \
 		mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-SDL2_image
@@ -115,7 +115,7 @@ deps_mingw64() {
 
 deps_ubuntu() {
 	packages 'sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes' \
-		p7zip innoextract \
+		p7zip innoextract jq \
 		make g++ zlib1g-dev \
 		libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev \
 		python3-pip python3-pil
@@ -125,7 +125,7 @@ deps_ubuntu() {
 
 deps_arch() {
 	packages 'sudo pacman -S --needed --quiet' \
-		p7zip wget innoextract \
+		p7zip wget innoextract jq \
 		make gcc gcc-libs zlib \
 		sdl2 sdl2_image sdl2_mixer \
 		python-pip
@@ -136,7 +136,7 @@ deps_arch() {
 deps_alpine() {
 	# Note: non-autoinstalled dependency on `bash` and `sudo` packages.
 	packages 'sudo apk add' \
-		p7zip innoextract \
+		p7zip innoextract jq \
 		make g++ zlib-dev \
 		sdl2-dev sdl2_mixer-dev sdl2_image-dev \
 		python3 py3-pip jpeg-dev python3-dev
@@ -147,14 +147,14 @@ deps_alpine() {
 deps_macports() {
 	# Requires /opt/local/libexec/gnubin on PATH
 	packages 'sudo port install' \
-		coreutils premake5 \
+		coreutils premake5 jq \
 		libsdl2 libsdl2_image libsdl2_mixer \
 		py-Pillow
 }
 
 deps_homebrew() {
 	packages 'brew install' \
-		coreutils wget \
+		coreutils wget jq \
 		sdl2 sdl2_image sdl2_mixer \
 		pillow
 
