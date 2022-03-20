@@ -13,7 +13,7 @@ usage() {
 }
 
 premake_and_gradle() {
-	make --quiet build/android/build.gradle
+	make -f Makefile.old --quiet build/android/build.gradle
 	cd build/android
 	gradle "$@"
 }

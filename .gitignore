@@ -1,4 +1,9 @@
-# top-level folders
+# file types
+*.pyc
+~$*.*
+Thumbs.db
+
+# top-level folders and files
 /.vscode
 /.vs
 /appdata
@@ -6,7 +11,11 @@
 /installers
 /CMakeUserPresets.json
 
-# file types
-*.pyc
-~$*.*
-Thumbs.db
+# Android
+/.idea
+/.gradle
+/local.properties
+# Android Studio likes the Gradle wrapper, but I don't
+/gradlew
+/gradlew.bat
+/gradle
