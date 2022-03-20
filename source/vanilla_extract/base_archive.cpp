@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "lzma1900/LzmaDec.h"
+#include <LzmaDec.h>
 #include "base_archive.h"
 
 namespace vanilla {

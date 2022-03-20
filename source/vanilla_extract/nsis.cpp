@@ -1,6 +1,6 @@
 #include <string.h>
 #include <vector>
-#include "nsis_exehead/fileform.h"
+#include <fileform.h>
 #include "base_archive.h"
 #include "nsis.h"
 #include "vec_rw.h"

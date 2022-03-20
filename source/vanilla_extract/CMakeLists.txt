@@ -1,5 +1,5 @@
 file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/*.c")
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}")
 add_library(vanilla_extract ${SOURCES})
-target_link_libraries(vanilla_extract z SDL2)
+target_link_libraries(vanilla_extract lzma1900 nsis_exehead SDL2)
 target_include_directories(vanilla_extract INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")

@@ -4,8 +4,8 @@
 #include <zlib.h>
 #include "base_archive.h"
 #include "vec_rw.h"
-#include "lzma1900/7z.h"
-#include "lzma1900/7zCrc.h"
+#include <7z.h>
+#include <7zCrc.h>
 #include "inno.h"
 
 #include <SDL_rwops.h>
