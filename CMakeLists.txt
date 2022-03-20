@@ -1,3 +1,5 @@
+# HamSandwich root CMake project file.
+# Minimum version is based on what is available in VS 2019.
 cmake_minimum_required(VERSION 3.19.0)
 project("HamSandwich")
 
@@ -12,3 +14,5 @@ set(CMAKE_INSTALL_DATADIR ".")
 
 add_subdirectory("external")
 add_subdirectory("source")
+
+install(TARGETS supreme sleepless loonyland loonyland2 mystic COMPONENT Executables)

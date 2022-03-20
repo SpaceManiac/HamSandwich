@@ -6,4 +6,6 @@ HamSandwich_metadata(lunatic SOURCES lunatic.json)
 add_executable(lunatic ${SOURCES})
 target_link_libraries(lunatic ham)
 
-target_compile_options(lunatic PRIVATE -Wall -Wextra -Wno-unused-parameter)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	target_compile_options(lunatic PRIVATE -Wall -Wextra -Wno-unused-parameter)
+endif()
