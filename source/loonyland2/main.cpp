@@ -13,6 +13,7 @@
 #include "options.h"
 #include "sound.h"
 #include "music.h"
+#include "appdata.h"
 
 // SPISPOPD helper for atkins!
 /*
@@ -45,6 +46,8 @@ TASK(int) main(int argc, char* argv[])
 		if (!strcmp(argv[i], "window"))
 			windowedGame=true;
 	}
+
+	AppdataInit();
 	LoadConfig();
 	MGLDraw *mainmgl=new MGLDraw("Loonyland 2", SCRWID, SCRHEI, windowedGame);
 

@@ -24,6 +24,7 @@
 #include "log.h"
 #include "netmenu.h"
 #include "internet.h"
+#include "appdata.h"
 #ifdef DEMO
 #include "nag.h"
 #endif
@@ -42,6 +43,7 @@ TASK(int) main(int argc, char* argv[])
 			windowedGame=true;
 	}
 
+	AppdataInit();
 	LoadConfig();
 	MGLDraw *mainmgl=new MGLDraw("Sleepless Hollow", SCRWID, SCRHEI, windowedGame);
 	if(!mainmgl)
