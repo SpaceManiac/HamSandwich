@@ -63,7 +63,7 @@ while test $# -ne 0; do
 			nobuild=1
 			;;
 		"--web")
-			platform=web
+			os=emscripten
 			;;
 		"--two")
 			tool=two
@@ -170,7 +170,7 @@ case "$tool" in
 		;;
 	emrun)
 		echo "==== Hosting $project ($preset) ===="
-		emrun --serve_after_close "index.html"
+		emrun --serve_after_close "build/cmake-$preset/source/$project/index.html"
 		;;
 	two)
 		echo "==== Running $project ($preset) ===="

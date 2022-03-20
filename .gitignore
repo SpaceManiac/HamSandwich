@@ -4,6 +4,7 @@
 /appdata
 /build
 /installers
+/CMakeUserPresets.json
 
 # file types
 *.pyc
