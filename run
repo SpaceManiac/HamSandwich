@@ -130,7 +130,7 @@ fi
 
 # Build and install
 if test -z "$nobuild"; then
-	make -f Makefile2.mk preset="$preset" "$project"
+	make preset="$preset" "$project"
 	#cmake --install "build/cmake-$preset" --prefix "build/install"
 fi
 
