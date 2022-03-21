@@ -6,3 +6,4 @@ external/SDL2 | https://github.com/libsdl-org/SDL_image | release-2.0.8
 external/SDL2_image | https://github.com/libsdl-org/SDL_image | release-2.0.4
 external/SDL2_mixer | https://github.com/libsdl-org/SDL_mixer | release-2.0.4
 external/imgui | https://github.com/ocornut/imgui | v1.87
+external/curl | https://github.com/curl/curl | curl-7_82_0

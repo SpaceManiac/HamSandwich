@@ -12,7 +12,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/build/install")
 set(CMAKE_INSTALL_BINDIR ".")
 set(CMAKE_INSTALL_DATADIR ".")
 
-add_subdirectory("external")
+add_subdirectory("external" EXCLUDE_FROM_ALL)
 add_subdirectory("source")
 
 install(TARGETS supreme sleepless loonyland loonyland2 mystic launcher COMPONENT Executables)

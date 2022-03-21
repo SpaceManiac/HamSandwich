@@ -4,3 +4,6 @@ include("imgui.cmake")
 add_subdirectory("lzma1900")
 add_subdirectory("nsis_exehead")
 add_subdirectory("nlohmann_json")
+
+set(HTTP_ONLY TRUE)
+add_subdirectory("curl")
