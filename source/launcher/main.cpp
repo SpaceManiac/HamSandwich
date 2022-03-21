@@ -7,16 +7,49 @@
 // **Prefer using the code in the example_sdl_opengl3/ folder**
 // See imgui_impl_sdl.cpp for details.
 
-#include "imgui.h"
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_opengl2.h"
 #include <stdio.h>
+#include <unistd.h>
+#include <vector>
+#include <string>
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <imgui.h>
+#include <imgui_impl_sdl.h>
+#include <imgui_impl_opengl2.h>
 
-// Main code
-int main(int, char**)
+struct Asset
 {
+	std::string filename;
+	std::string sha256sum;
+	std::string link;
+	long file_id;
+	std::string description;
+	bool required;
+	bool enabled;
+};
+
+struct Game
+{
+	std::string id;
+	std::string title;
+	std::vector<Asset> assets;
+
+	void play_clicked()
+	{
+		std::string cmdline = "./";
+		cmdline.append(id);
+		// TODO: use exec or CreateProcess instead
+		system(cmdline.c_str());
+	}
+};
+
+// ----------------------------------------------------------------------------
+// Main code
+int main(int argc, char** argv)
+{
+	const char* bin_dir = get_current_dir_name();  // never free()d because we always need it
+	printf("bin_dir: %s\n", bin_dir);
+
 	// Setup SDL
 	// (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a minority of Windows systems,
 	// depending on whether SDL_INIT_GAMECONTROLLER is enabled or disabled.. updating to latest version of SDL is recommended!)
@@ -32,8 +65,8 @@ int main(int, char**)
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-	SDL_Window* window = SDL_CreateWindow("Dear ImGui SDL2+OpenGL example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
+	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
+	SDL_Window* window = SDL_CreateWindow("HamSandwich Launcher", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1024, 480, window_flags);
 	SDL_GLContext gl_context = SDL_GL_CreateContext(window);
 	SDL_GL_MakeCurrent(window, gl_context);
 	SDL_GL_SetSwapInterval(1); // Enable vsync
@@ -42,8 +75,8 @@ int main(int, char**)
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
@@ -73,6 +106,34 @@ int main(int, char**)
 	bool show_another_window = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+	std::vector<Game> games;
+	games.push_back(Game { .id = "supreme", .title = "Dr. Lunatic Supreme With Cheese" });
+	games.back().assets.push_back(Asset {
+		.filename = "supreme8_install.exe",
+		//.kind = "nsis"
+		.sha256sum = "1c105ad826be1e0697b5de8483c71ff943d04bce91fe3547b6f355e9bc1c42d4",
+		.link = "https://hamumu.itch.io/dr-lunatic-supreme-with-cheese",
+		.file_id = 700882,
+		.description = "Base assets: Dr. Lunatic Supreme With Cheese",
+		.required = true,
+	});
+	games.back().assets.push_back(Asset {
+		.filename = "all_supreme_worlds.zip",
+		//.kind = "nsis"
+		.sha256sum = "",
+		.link = "https://hamumu.itch.io/dr-lunatic-supreme-with-cheese",
+		.file_id = 824077,
+		.description = "Add-ons: All Supreme Worlds",
+		.required = false,
+	});
+	games.push_back(Game { .id = "loonyland", .title = "Loonyland: Halloween Hill" });
+	games.push_back(Game { .id = "loonyland2", .title = "Loonyland 2: Winter Woods" });
+	games.push_back(Game { .id = "mystic", .title = "Kid Mystic" });
+	games.push_back(Game { .id = "sleepless", .title = "Sleepless Hollow" });
+	Game* current_game = &games[0];
+
+	bool fullscreen = true;
+
 	// Main loop
 	bool done = false;
 	while (!done)
@@ -92,45 +153,74 @@ int main(int, char**)
 				done = true;
 		}
 
+		int windowWidth, windowHeight;
+		float leftPaneWidth = 300;
+		SDL_GetWindowSize(window, &windowWidth, &windowHeight);
+
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL2_NewFrame();
 		ImGui_ImplSDL2_NewFrame();
 		ImGui::NewFrame();
 
-		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-		if (show_demo_window)
-			ImGui::ShowDemoWindow(&show_demo_window);
-
-		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+		ImGui::SetNextWindowPos({ 0, 0 });
+		ImGui::SetNextWindowSize({ leftPaneWidth, (float)windowHeight });
+		if (ImGui::Begin("Games", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
 		{
-			static float f = 0.0f;
-			static int counter = 0;
-
-			ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-			ImGui::Checkbox("Another Window", &show_another_window);
-
-			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-				counter++;
-			ImGui::SameLine();
-			ImGui::Text("counter = %d", counter);
-
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			ImGui::End();
+			for (auto& game : games)
+			{
+				ImGui::PushID(game.id.c_str());
+				if (ImGui::Selectable("", current_game == &game, ImGuiSelectableFlags_AllowDoubleClick))
+				{
+					current_game = &game;
+					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+						game.play_clicked();
+				}
+				ImGui::SameLine(0);
+				//ImGui::Text("Icon");
+				//ImGui::SameLine(64);
+				ImGui::Text("%s", game.title.c_str());
+				ImGui::PopID();
+			}
 		}
+		ImGui::End();
 
-		// 3. Show another simple window.
-		if (show_another_window)
+		if (current_game)
 		{
-			ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-			ImGui::Text("Hello from another window!");
-			if (ImGui::Button("Close Me"))
-				show_another_window = false;
+			static bool checked = false;
+			ImGui::SetNextWindowPos({ leftPaneWidth, 0 });
+			ImGui::SetNextWindowSize({ (float)windowWidth - leftPaneWidth, (float)windowHeight });
+			ImGui::Begin(current_game->title.c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoFocusOnAppearing);
+
+			if (ImGui::Button("Play", { 196, 0 }))
+			{
+				current_game->play_clicked();
+			}
+			ImGui::SameLine(212);
+			ImGui::Checkbox("Fullscreen", &fullscreen);
+			ImGui::Separator();
+
+			ImGui::Text("Manage assets:");
+
+			for (auto& asset : current_game->assets)
+			{
+				ImGui::PushID(asset.filename.c_str());
+				if (asset.required)
+				{
+					bool dummy = true;
+					ImGui::BeginDisabled();
+					ImGui::Checkbox(asset.description.c_str(), &dummy);
+					ImGui::EndDisabled();
+				}
+				else
+				{
+					ImGui::Checkbox(asset.description.c_str(), &asset.enabled);
+				}
+
+				ImGui::SameLine(ImGui::GetWindowWidth() - 128);
+				ImGui::Button("Download", { 128, 0 });
+				ImGui::PopID();
+			}
+
 			ImGui::End();
 		}
 

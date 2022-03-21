@@ -15,4 +15,6 @@ set(CMAKE_INSTALL_DATADIR ".")
 add_subdirectory("external")
 add_subdirectory("source")
 
-install(TARGETS supreme sleepless loonyland loonyland2 mystic COMPONENT Executables)
+install(TARGETS supreme sleepless loonyland loonyland2 mystic launcher COMPONENT Executables)
+
+set_property(TARGET launcher PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
