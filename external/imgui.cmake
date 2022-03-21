@@ -1,6 +1,6 @@
 set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/imgui")
-add_library(imgui
-"${IMGUI_DIR}/imgui.cpp"
+add_library(imgui STATIC
+	"${IMGUI_DIR}/imgui.cpp"
 	"${IMGUI_DIR}/imgui_demo.cpp"
 	"${IMGUI_DIR}/imgui_draw.cpp"
 	"${IMGUI_DIR}/imgui_tables.cpp"

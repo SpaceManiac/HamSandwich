@@ -131,11 +131,11 @@ fi
 # Build and install
 if test -z "$nobuild"; then
 	make preset="$preset" "$project"
-	#cmake --install "build/cmake-$preset" --prefix "build/install"
+	cmake --install "build/cmake-$preset" --prefix "build/install"
 fi
 
 # Default debug configuration
-debugdir="$PWD"
+debugdir="$PWD/build/install"
 debugcommand="$PWD/build/cmake-$preset/source/$project/$project"
 debugargs=("window")
 debugenvs=()

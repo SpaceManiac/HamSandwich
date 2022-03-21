@@ -9,12 +9,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INSTALL_MESSAGE LAZY)
 set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/build/install")
-set(CMAKE_INSTALL_BINDIR ".")
 set(CMAKE_INSTALL_DATADIR ".")
+set(CMAKE_INSTALL_BINDIR ".")
+set(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_BINDIR}")
 
 add_subdirectory("external" EXCLUDE_FROM_ALL)
 add_subdirectory("source")
 
-install(TARGETS supreme sleepless loonyland loonyland2 mystic launcher COMPONENT Executables)
+install(TARGETS libcurl supreme sleepless loonyland loonyland2 mystic launcher COMPONENT Executables)
 
 set_property(TARGET launcher PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
