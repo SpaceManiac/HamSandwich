@@ -17,6 +17,14 @@
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_opengl2.h>
 
+#ifdef _MSC_VER
+#include <filesystem>
+namespace filesystem = std::filesystem;
+#else
+#include <experimental/filesystem>
+namespace filesystem = std::experimental::filesystem::v1;
+#endif
+
 struct Asset
 {
 	std::string filename;
@@ -34,12 +42,19 @@ struct Game
 	std::string title;
 	std::vector<Asset> assets;
 
-	void play_clicked()
+	bool is_ready_to_play() const
 	{
-		std::string cmdline = "./";
-		cmdline.append(id);
-		// TODO: use exec or CreateProcess instead
-		system(cmdline.c_str());
+		for (const auto& asset : assets)
+		{
+			if (asset.required || asset.enabled)
+			{
+				std::string full_path = "installers/";
+				full_path.append(asset.filename);
+				if (!filesystem::exists(full_path))
+					return false;
+			}
+		}
+		return true;
 	}
 };
 
@@ -126,13 +141,14 @@ int main(int argc, char** argv)
 		.description = "Add-ons: All Supreme Worlds",
 		.required = false,
 	});
+	games.push_back(Game { .id = "mystic", .title = "Kid Mystic" });
 	games.push_back(Game { .id = "loonyland", .title = "Loonyland: Halloween Hill" });
 	games.push_back(Game { .id = "loonyland2", .title = "Loonyland 2: Winter Woods" });
-	games.push_back(Game { .id = "mystic", .title = "Kid Mystic" });
 	games.push_back(Game { .id = "sleepless", .title = "Sleepless Hollow" });
 	Game* current_game = &games[0];
 
 	bool fullscreen = true;
+	bool wants_to_play = false;
 
 	// Main loop
 	bool done = false;
@@ -171,9 +187,10 @@ int main(int argc, char** argv)
 				ImGui::PushID(game.id.c_str());
 				if (ImGui::Selectable("", current_game == &game, ImGuiSelectableFlags_AllowDoubleClick))
 				{
+					wants_to_play = false;
 					current_game = &game;
 					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-						game.play_clicked();
+						wants_to_play = true;
 				}
 				ImGui::SameLine(0);
 				//ImGui::Text("Icon");
@@ -191,15 +208,17 @@ int main(int argc, char** argv)
 			ImGui::SetNextWindowSize({ (float)windowWidth - leftPaneWidth, (float)windowHeight });
 			ImGui::Begin(current_game->title.c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoFocusOnAppearing);
 
-			if (ImGui::Button("Play", { 196, 0 }))
-			{
-				current_game->play_clicked();
-			}
+			const char* message = wants_to_play ? "Downloading..."
+				: current_game->is_ready_to_play() ? "Play"
+				: "Download & Play";
+			if (ImGui::Button(message, { 196, 0 }))
+				wants_to_play = !wants_to_play;
 			ImGui::SameLine(212);
 			ImGui::Checkbox("Fullscreen", &fullscreen);
-			ImGui::Separator();
 
-			ImGui::Text("Manage assets:");
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Text("Official assets and add-ons:");
 
 			for (auto& asset : current_game->assets)
 			{
@@ -217,9 +236,43 @@ int main(int argc, char** argv)
 				}
 
 				ImGui::SameLine(ImGui::GetWindowWidth() - 128);
-				ImGui::Button("Download", { 128, 0 });
+
+				std::string fullPath = "installers/";
+				fullPath.append(asset.filename);
+				if (filesystem::exists(fullPath))
+				{
+					if (asset.required)
+					{
+						ImGui::BeginDisabled();
+						ImGui::Button("Ready", { 128, 0 });
+						ImGui::EndDisabled();
+					}
+					else
+					{
+						if (ImGui::Button("Delete", { 128, 0 }))
+						{
+							asset.enabled = false;
+							filesystem::remove(fullPath);
+						}
+					}
+				}
+				else
+				{
+					ImGui::Button("Download", { 128, 0 });
+				}
 				ImGui::PopID();
 			}
+
+			/*
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Text("Local add-ons:");
+			ImGui::SameLine(ImGui::GetWindowWidth() - 256);
+			if (ImGui::Button("Open folder", { 256, 0 }))
+				;
+
+			ImGui::Text("None");
+			*/
 
 			ImGui::End();
 		}
@@ -232,6 +285,9 @@ int main(int argc, char** argv)
 		//glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound
 		ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(window);
+
+		if (wants_to_play && current_game && current_game->is_ready_to_play())
+			break;
 	}
 
 	// Cleanup
@@ -242,6 +298,16 @@ int main(int argc, char** argv)
 	SDL_GL_DeleteContext(gl_context);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
+
+	if (wants_to_play && current_game && current_game->is_ready_to_play())
+	{
+		std::string cmdline = "./";
+		cmdline.append(current_game->id);
+		if (!fullscreen)
+			cmdline.append(" window");
+		// TODO: use exec or CreateProcess instead
+		system(cmdline.c_str());
+	}
 
 	return 0;
 }
