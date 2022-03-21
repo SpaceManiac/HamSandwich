@@ -13,7 +13,7 @@ set(CMAKE_INSTALL_DATADIR ".")
 set(CMAKE_INSTALL_BINDIR ".")
 set(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_BINDIR}")
 
-add_subdirectory("external" EXCLUDE_FROM_ALL)
+add_subdirectory("external")
 add_subdirectory("source")
 
 install(TARGETS libcurl supreme sleepless loonyland loonyland2 mystic launcher COMPONENT Executables)
