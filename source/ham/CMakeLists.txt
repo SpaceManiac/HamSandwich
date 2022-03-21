@@ -23,6 +23,7 @@ function(HamSandwich_icon SOURCES_VAR RC_FILENAME)
 endfunction()
 
 function(HamSandwich_metadata TARGET_NAME SOURCES_VAR JSON_FILENAME)
+	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${JSON_FILENAME}")
 	file(READ "${JSON_FILENAME}" JSON_BLOB)
 	set(metadata_cpp "")
 	string(APPEND metadata_cpp [[
