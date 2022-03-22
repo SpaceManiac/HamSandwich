@@ -32,7 +32,7 @@ byte LoadWorld(world_t *world,char *fname)
 	FILE *f;
 	int i;
 
-	f=AssetOpen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 		return 0;
 
@@ -61,7 +61,7 @@ byte SaveWorld(world_t *world,char *fname)
 	FILE *f;
 	int i;
 
-	f=AssetOpen(fname,"wb");
+	f=AssetOpen_Write(fname);
 	if(!f)
 		return 0;
 
@@ -108,7 +108,7 @@ void GetWorldName(char *fname,char *buf)
 	char fname2[60];
 
 	sprintf(fname2,"worlds/%s",fname);
-	f=AssetOpen(fname2,"rb");
+	f=AssetOpen(fname2);
 	if(!f)
 		return;
 

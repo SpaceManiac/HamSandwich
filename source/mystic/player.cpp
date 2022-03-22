@@ -150,7 +150,7 @@ void PlayerLoadGame(byte which)
 {
 	FILE *f;
 
-	f=AppdataOpen("mystic.sav","rb");
+	f=AppdataOpen("mystic.sav");
 	if(!f)
 	{
 		InitPlayer(INIT_GAME,0,0);
@@ -174,7 +174,7 @@ void PlayerSaveGame(byte which)
 	int i;
 
 	player.prevMoney=player.money;
-	f=AppdataOpen("mystic.sav","rb");
+	f=AppdataOpen("mystic.sav");
 	if(!f)
 	{
 		memset(p,0,sizeof(player_t)*5);	// make an empty player
@@ -186,15 +186,15 @@ void PlayerSaveGame(byte which)
 			p[3].totalCompletion[i]=100;
 			p[4].totalCompletion[i]=100;
 		}
-		f=AppdataOpen("mystic.sav","wb");
+		f=AppdataOpen_Write("mystic.sav");
 		fwrite(p,sizeof(player_t),5,f);
 		fclose(f);
-		f=AppdataOpen("mystic.sav","rb");
+		f=AppdataOpen("mystic.sav");
 	}
 	fread(p,sizeof(player_t),5,f);
 	fclose(f);
 	memcpy(&p[which],&player,sizeof(player_t));
-	f=AppdataOpen("mystic.sav","wb");
+	f=AppdataOpen_Write("mystic.sav");
 	fwrite(p,sizeof(player_t),5,f);
 	fclose(f);
 	AppdataSync();

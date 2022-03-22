@@ -255,7 +255,7 @@ void CryptoTest(void)
 	memcpy(&test2,&test,sizeof(score_t));
 
 	SetupCrypto(3574,858734,298437);
-	f=AppdataOpen("test.txt","wt");
+	f=AppdataOpen_Write("test.txt");
 	EncryptScore(&test);
 	fprintf(f,"Encrypted:\n%s\n\n",enc_score);
 	DecryptScore(&test);
@@ -522,7 +522,7 @@ void SaveHiScoreFile(score_t *list,word num,const char *fname)
 
 	if(num==0)
 	{
-		f=AppdataOpen(fname,"wb");
+		f=AppdataOpen_Write(fname);
 		if(!f)
 			return;
 		fwrite(&num,sizeof(word),1,f);
@@ -530,7 +530,7 @@ void SaveHiScoreFile(score_t *list,word num,const char *fname)
 		AppdataSync();
 		return;
 	}
-	f=AppdataOpen(fname,"wb");
+	f=AppdataOpen_Write(fname);
 	if(!f)
 		return;
 	fwrite(&num,sizeof(word),1,f);	// write out the number of scores
@@ -560,7 +560,7 @@ void LoadHiScoresFile(void)
 	if(!config.hiscores)
 		return;
 
-	f=AppdataOpen("hiscore.dat","rb");
+	f=AppdataOpen("hiscore.dat");
 	if(!f)
 	{
 		numScores=0;
@@ -596,7 +596,7 @@ void LoadHiTimesFile(void)
 	if(!config.hiscores)
 		return;
 
-	f=AppdataOpen("hitime.dat","rb");
+	f=AppdataOpen("hitime.dat");
 	if(!f)
 	{
 		numTimes=0;

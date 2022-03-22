@@ -88,7 +88,7 @@ void LoadText(const char *nm,byte mode)
 	char line[256];
 	int y;
 
-	f=AssetOpen(nm,"rt");
+	f=AssetOpen(nm);
 	if(!f)
 		return;
 

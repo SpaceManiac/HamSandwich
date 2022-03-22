@@ -365,7 +365,7 @@ void LoadOptions(void)
 	FILE *f;
 	int i;
 
-	f=AppdataOpen("loony.cfg","rb");
+	f=AppdataOpen("loony.cfg");
 	if(!f)
 	{
 		opt.sound=127;
@@ -426,7 +426,7 @@ void SaveOptions(void)
 {
 	FILE *f;
 
-	f=AppdataOpen("loony.cfg","wb");
+	f=AppdataOpen_Write("loony.cfg");
 	fwrite(&opt,sizeof(options_t),1,f);
 	fclose(f);
 	AppdataSync();

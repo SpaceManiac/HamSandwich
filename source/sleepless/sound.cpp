@@ -512,7 +512,7 @@ byte AddCustomSound(const char *fname)
 	if(numCustom==MAX_CUSTOM_SOUNDS)
 		return 0;
 
-	f=AssetOpen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 		return 0;
 	fseek(f,0,SEEK_END);
@@ -547,7 +547,7 @@ byte ReplaceCustomSound(int n,const char *fname)
 	if(customSound[n])
 		free(customSound[n]);
 
-	f=AssetOpen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 		return 0;
 	fseek(f,0,SEEK_END);

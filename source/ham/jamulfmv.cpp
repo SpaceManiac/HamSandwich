@@ -278,7 +278,7 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 	char k;
 	dword startTime,endTime;
 
-	FLI_file=AssetOpen_SDL(name,"rb");
+	FLI_file=AssetOpen_SDL(name);
 	if (!FLI_file)
 	{
 		// Asset stack printed error already

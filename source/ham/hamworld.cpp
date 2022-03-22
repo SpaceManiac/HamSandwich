@@ -129,7 +129,7 @@ std::string Section::save()
 }
 
 Save::Save(const char* fname)
-	: output(AssetOpen(fname, "wb"))
+	: output(AssetOpen_Write(fname))
 {
 }
 
@@ -160,7 +160,7 @@ void Save::section(string_view name, string_view body)
 }
 
 Load::Load(const char* fname)
-	: input(AssetOpen(fname, "rb"))
+	: input(AssetOpen(fname))
 {
 }
 

@@ -96,7 +96,7 @@ void InitGallery(Map *map)
 
 	galpix=new galpic_t[100];
 	pos=0;
-	f=AssetOpen("gallery/galpix.dat","rt");
+	f=AssetOpen("gallery/galpix.dat");
 	if(!f)
 		return;
 

@@ -361,7 +361,7 @@ void LoadOptions(void)
 {
 	FILE *f;
 
-	f = AppdataOpen("lunatic.cfg", "rb");
+	f = AppdataOpen("lunatic.cfg");
 	if (!f)
 	{
 		opt.sound = 1;
@@ -400,7 +400,7 @@ void SaveOptions(void)
 {
 	FILE *f;
 
-	f = AppdataOpen("lunatic.cfg", "wb");
+	f = AppdataOpen_Write("lunatic.cfg");
 	fwrite(&opt, sizeof (options_t), 1, f);
 	fclose(f);
 	AppdataSync();

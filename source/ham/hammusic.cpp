@@ -34,7 +34,7 @@ void PlaySongFile(const char* fullname)
 
 	StopSong();
 
-	SDL_RWops* rw = AssetOpen_SDL(fullname, "rb");
+	SDL_RWops* rw = AssetOpen_SDL(fullname);
 	if (!rw)
 	{
 		return;

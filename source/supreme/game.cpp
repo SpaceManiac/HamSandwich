@@ -93,7 +93,7 @@ byte VerifyLevel(Map *map)
 	chk=ChecksumMap(map);
 
 	debugVerified = 0;
-	f=AssetOpen("worlds/levels.dat","rb");
+	f=AssetOpen("worlds/levels.dat");
 	if(!f)
 		return 0;
 

@@ -1243,7 +1243,7 @@ void LoadChallenge(void)
 {
 	FILE *f;
 
-	f=AppdataOpen("challenge.sav","rb");
+	f=AppdataOpen("challenge.sav");
 	if(!f)
 	{
 		ResetChallengeStats();
@@ -1261,7 +1261,7 @@ void SaveChallenge(void)
 {
 	FILE *f;
 
-	f=AppdataOpen("challenge.sav","wb");
+	f=AppdataOpen_Write("challenge.sav");
 	if(f)
 	{
 		memcpy(&chalData.player,&player,sizeof(player_t));

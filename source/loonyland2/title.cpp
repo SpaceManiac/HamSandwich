@@ -104,7 +104,7 @@ void GetAddOn(char *name,int spot)
 	addOnList[spot].dispName[0]='\0';
 	addOnList[spot].filename[0]='\0';
 	sprintf(line,"addons/%s",name);
-	f=AssetOpen(line,"rt");
+	f=AssetOpen(line);
 
 	if(!f)
 	{
@@ -175,7 +175,7 @@ void GetSavesForMenu(void)
 	for(i=0;i<MAX_CHARS;i++)
 	{
 		sprintf(txt,"profiles/char%02d.loony",i+1);
-		f=AppdataOpen(txt,"rb");
+		f=AppdataOpen(txt);
 		if(!f && hole==-1)
 		{
 			hole=i;

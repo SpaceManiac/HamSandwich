@@ -53,7 +53,7 @@ Android
 Default
 	RW: $PWD
 
-Psuedocode for SDL_RWFromFile(file, mode):
+Pseudocode for SDL_RWFromFile(file, mode):
 	if android:
 		if file is absolute:
 			return fopen(file, mode) if successful
@@ -112,6 +112,8 @@ static bool is_write_mode(const char* mode) {
 
 // ----------------------------------------------------------------------------
 // VFS interface
+
+// A single VFS provider, read-only by default.
 class Vfs {
 	Vfs(const Vfs&) = delete;
 	Vfs(Vfs&&) = default;
@@ -121,67 +123,63 @@ public:
 	Vfs() {}
 	virtual ~Vfs() {}
 
-	virtual FILE* open_stdio(const char* file, const char* mode, bool write) = 0;
-	virtual SDL_RWops* open_sdl(const char* file, const char* mode, bool write) = 0;
+	virtual FILE* open_stdio(const char* filename) = 0;
+	virtual SDL_RWops* open_sdl(const char* filename) = 0;
 	virtual bool list_dir(const char* directory, std::set<std::string>& output) = 0;
-	virtual bool delete_file(const char* file);
 };
 
-bool Vfs::delete_file(const char* file) {
-	(void) file;
-	return false;
-}
+// A single writeable VFS provider.
+class WriteVfs : public Vfs {
+public:
+	WriteVfs() {}
+	virtual ~WriteVfs() {}
 
+	virtual FILE* open_write_stdio(const char* filename) = 0;
+	virtual bool delete_file(const char* filename) = 0;
+};
+
+// A pair of Vfs and mountpoint.
+struct Mount {
+	std::unique_ptr<Vfs> vfs;
+	std::string mountpoint;
+
+	const char* matches(const char* filename) const;
+};
+
+// A full filesystem, including a list of mounts and the write (appdata) mount.
 struct VfsStack {
-	std::vector<std::unique_ptr<Vfs>> stack;
+	std::vector<Mount> mounts;
+	std::unique_ptr<WriteVfs> write_mount;
 public:
 	VfsStack() {}
 
-	void push_back(std::unique_ptr<Vfs>&& entry) { stack.push_back(std::move(entry)); }
+	void push_back(std::unique_ptr<Vfs>&& entry, std::string mountpoint = "");
 
 	// Returns true if this VfsStack is empty and therefore not useable.
-	bool empty() const { return stack.empty(); }
+	bool empty() const { return mounts.empty() && !write_mount; }
 
 	// Get the Vfs that should be used for writing.
-	Vfs* appdata() { return stack.front().get(); }
-
-	// Iterate over the Vfses to use for reading, in priority order.
-	auto begin() { return stack.begin(); }
-	auto end() { return stack.end(); }
+	WriteVfs* appdata() { return write_mount.get(); }
 
 	// Forward to children
-	SDL_RWops* open_sdl(const char* file, const char* mode);
+	SDL_RWops* open_sdl(const char* filename);
 };
-
-SDL_RWops* VfsStack::open_sdl(const char* file, const char* mode) {
-	bool write = is_write_mode(mode);
-	if (write) {
-		return appdata()->open_sdl(file, mode, write);
-	}
-
-	for (auto& vfs : *this) {
-		SDL_RWops* rw = vfs->open_sdl(file, mode, write);
-		if (rw) {
-			return rw;
-		}
-	}
-
-	return nullptr;
-}
 
 // ----------------------------------------------------------------------------
 // Stdio VFS implementation
-class StdioVfs : public Vfs {
+class StdioVfs : public WriteVfs {
 	std::string prefix;
+	FILE* open_stdio_internal(const char* filename, const char* mode, bool write);
 public:
 	StdioVfs(std::string prefix) : prefix(prefix) {}
-	FILE* open_stdio(const char* file, const char* mode, bool write);
-	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
+	FILE* open_stdio(const char* filename);
+	SDL_RWops* open_sdl(const char* filename);
+	FILE* open_write_stdio(const char* filename);
 	bool list_dir(const char* directory, std::set<std::string>& output);
-	bool delete_file(const char* file);
+	bool delete_file(const char* filename);
 };
 
-FILE* StdioVfs::open_stdio(const char* file, const char* mode, bool write) {
+FILE* StdioVfs::open_stdio_internal(const char* file, const char* mode, bool write) {
 	std::string buffer = prefix;
 	buffer.append("/");
 	buffer.append(file);
@@ -218,24 +216,24 @@ FILE* StdioVfs::open_stdio(const char* file, const char* mode, bool write) {
 	return fp;
 }
 
-SDL_RWops* StdioVfs::open_sdl(const char* file, const char* mode, bool write) {
+FILE* StdioVfs::open_write_stdio(const char* file) {
+	return open_stdio_internal(file, "wb", true);
+}
+
+FILE* StdioVfs::open_stdio(const char* file) {
+	return open_stdio_internal(file, "rb", false);
+}
+
+SDL_RWops* StdioVfs::open_sdl(const char* filename) {
 #if defined(_WIN32) && !defined(__GNUC__)
 	// The public MSVC binaries of SDL2 are compiled without support for SDL_RWFromFP.
 	std::string buffer = prefix;
 	buffer.append("/");
-	buffer.append(file);
-	if (write) {
-		mkdir_parents(buffer.c_str());
-	}
-
-	SDL_RWops* rw = SDL_RWFromFile(buffer.c_str(), mode);
-	if (!rw && write) {
-		LogError("SDL_RWFromFile(%s, %s): %s", buffer.c_str(), mode, SDL_GetError());
-	}
-	return rw;
+	buffer.append(filename);
+	return SDL_RWFromFile(buffer.c_str(), "rb");
 #else
 	// Delegate to open_stdio above.
-	FILE* fp = open_stdio(file, mode, write);
+	FILE* fp = open_stdio(filename);
 	return fp ? SDL_RWFromFP(fp, SDL_TRUE) : nullptr;
 #endif
 }
@@ -352,23 +350,18 @@ class NsisVfs : public Vfs {
 	vanilla::nsis::Archive archive;
 public:
 	NsisVfs(SDL_RWops* fp) : archive(fp) {}
-	FILE* open_stdio(const char* file, const char* mode, bool write);
-	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
+	FILE* open_stdio(const char* filename);
+	SDL_RWops* open_sdl(const char* filename);
 	bool list_dir(const char* directory, std::set<std::string>& output);
 };
 
-FILE* NsisVfs::open_stdio(const char* file, const char* mode, bool write) {
-	SDL_RWops* rw = open_sdl(file, mode, write);
-	return rw ? fp_from_bundle(file, mode, rw, ".nsis_tmp", true) : nullptr;
+FILE* NsisVfs::open_stdio(const char* filename) {
+	SDL_RWops* rw = open_sdl(filename);
+	return rw ? fp_from_bundle(filename, "rb", rw, ".nsis_tmp", true) : nullptr;
 }
 
-SDL_RWops* NsisVfs::open_sdl(const char* file, const char* mode, bool write) {
-	if (write) {
-		LogError("NsisVfs(%s, %s): does not support write modes", file, mode);
-		return nullptr;
-	}
-
-	return archive.open_file(file);
+SDL_RWops* NsisVfs::open_sdl(const char* filename) {
+	return archive.open_file(filename);
 }
 
 bool NsisVfs::list_dir(const char* directory, std::set<std::string>& output) {
@@ -382,23 +375,18 @@ class InnoVfs : public Vfs {
 	vanilla::inno::Archive archive;
 public:
 	InnoVfs(FILE* fp) : archive(fp) {}
-	FILE* open_stdio(const char* file, const char* mode, bool write);
-	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
+	FILE* open_stdio(const char* filename);
+	SDL_RWops* open_sdl(const char* filename);
 	bool list_dir(const char* directory, std::set<std::string>& output);
 };
 
-FILE* InnoVfs::open_stdio(const char* file, const char* mode, bool write) {
-	SDL_RWops* rw = open_sdl(file, mode, write);
-	return rw ? fp_from_bundle(file, mode, rw, ".inno_tmp", true) : nullptr;
+FILE* InnoVfs::open_stdio(const char* filename) {
+	SDL_RWops* rw = open_sdl(filename);
+	return rw ? fp_from_bundle(filename, "rb", rw, ".inno_tmp", true) : nullptr;
 }
 
-SDL_RWops* InnoVfs::open_sdl(const char* file, const char* mode, bool write) {
-	if (write) {
-		LogError("InnoVfs(%s, %s): does not support write modes", file, mode);
-		return nullptr;
-	}
-
-	return archive.open_file(file);
+SDL_RWops* InnoVfs::open_sdl(const char* filename) {
+	return archive.open_file(filename);
 }
 
 bool InnoVfs::list_dir(const char* directory, std::set<std::string>& output) {
@@ -454,7 +442,7 @@ static VfsStack default_vfs_stack() {
 	buffer.append(GetHamSandwichMetadata()->appdata_folder_name);
 
 	VfsStack result;
-	result.push_back(std::make_unique<StdioVfs>(buffer));
+	result.write_mount = std::make_unique<StdioVfs>(buffer);
 	result.push_back(std::make_unique<StdioVfs>("."));
 	return result;
 }
@@ -470,7 +458,7 @@ static VfsStack default_vfs_stack() {
 	buffer.append(GetHamSandwichMetadata()->appdata_folder_name);
 
 	VfsStack result;
-	result.push_back(std::make_unique<StdioVfs>(buffer));
+	result.write_mount = std::make_unique<StdioVfs>(buffer);
 	result.push_back(std::make_unique<StdioVfs>(""));
 	return result;
 }
@@ -491,13 +479,13 @@ void AppdataSync() {
 
 class AndroidBundleVfs : public Vfs {
 public:
-	FILE* open_stdio(const char* file, const char* mode, bool write);
-	SDL_RWops* open_sdl(const char* file, const char* mode, bool write);
+	FILE* open_stdio(const char* filename);
+	SDL_RWops* open_sdl(const char* filename);
 	bool list_dir(const char* directory, std::set<std::string>& output);
 };
 
-FILE* AndroidBundleVfs::open_stdio(const char* file, const char* mode, bool write) {
-	SDL_RWops* rw = open_sdl(file, mode, write);
+FILE* AndroidBundleVfs::open_stdio(const char* filename) {
+	SDL_RWops* rw = open_sdl(filename);
 	if (!rw) {
 		return nullptr;
 	}
@@ -505,20 +493,11 @@ FILE* AndroidBundleVfs::open_stdio(const char* file, const char* mode, bool writ
 	// Use a directory which definitely doesn't overlap with appdata.
 	std::string tempdir = SDL_AndroidGetInternalStoragePath();
 	tempdir.append("/.bundle_tmp");
-	return fp_from_bundle(file, mode, rw, tempdir.c_str(), false);
+	return fp_from_bundle(file, "rb", rw, tempdir.c_str(), false);
 }
 
-SDL_RWops* AndroidBundleVfs::open_sdl(const char* file, const char* mode, bool write) {
-	if (write) {
-		LogError("AndroidBundleVfs(%s, %s): does not support write modes", file, mode);
-		return nullptr;
-	}
-
-	SDL_RWops* rw = SDL_RWFromFile(file, mode);
-	if (!rw && write) {
-		LogError("SDL_RWFromFile(%s, %s): %s", file, mode, SDL_GetError());
-	}
-	return rw;
+SDL_RWops* AndroidBundleVfs::open_sdl(const char* filename) {
+	return SDL_RWFromFile(file, mode);
 }
 
 #include "appdata_jni.inc"
@@ -527,9 +506,11 @@ static VfsStack default_vfs_stack() {
 	VfsStack result;
 	int need_flags = SDL_ANDROID_EXTERNAL_STORAGE_READ | SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
 	if ((SDL_AndroidGetExternalStorageState() & need_flags) == need_flags) {
-		result.push_back(std::make_unique<StdioVfs>(SDL_AndroidGetExternalStoragePath()));
+		result.write_mount = std::make_unique<StdioVfs>(SDL_AndroidGetExternalStoragePath());
+		result.push_back(std::make_unique<StdioVfs>(SDL_AndroidGetInternalStoragePath()));
+	} else {
+		result.write_mount = std::make_unique<StdioVfs>(SDL_AndroidGetInternalStoragePath());
 	}
-	result.push_back(std::make_unique<StdioVfs>(SDL_AndroidGetInternalStoragePath()));
 	result.push_back(std::make_unique<AndroidBundleVfs>());
 	return result;
 }
@@ -542,7 +523,7 @@ static bool detect_installers(VfsStack* result, const HamSandwichMetadata* meta)
 	// `appdata/$NAME/`
 	std::string appdata = "appdata/";
 	appdata.append(meta->appdata_folder_name);
-	result->push_back(std::make_unique<StdioVfs>(appdata));
+	result->write_mount = std::make_unique<StdioVfs>(appdata);
 
 	// Assets from specs
 	for (int i = 0; meta->default_asset_specs[i]; ++i) {
@@ -558,7 +539,6 @@ static bool detect_installers(VfsStack* result, const HamSandwichMetadata* meta)
 static VfsStack default_vfs_stack() {
 	const HamSandwichMetadata* meta = GetHamSandwichMetadata();
 	VfsStack result;
-	result.push_back(std::make_unique<StdioVfs>("."));
 
 	if (detect_installers(&result, meta)) {
 		// If we found all the installers we were looking for, use 'em,
@@ -569,6 +549,7 @@ static VfsStack default_vfs_stack() {
 		printf("all installers found; chdir(%s)\n", appdata.c_str());
 		mkdir_parents(appdata.c_str());
 		chdir(appdata.c_str());
+		result.write_mount = std::make_unique<StdioVfs>(".");
 	}
 
 	return result;
@@ -576,7 +557,53 @@ static VfsStack default_vfs_stack() {
 
 // ----------------------------------------------------------------------------
 #endif
-// Common implementation and interface
+// ----------------------------------------------------------------------------
+// VfsStack implementation
+
+const char* Mount::matches(const char* filename) const {
+	if (mountpoint.empty()) {
+		return filename;  // Blank mountpoint, always match.
+	}
+
+	if (strncasecmp(filename, mountpoint.c_str(), mountpoint.size()) == 0) {
+		if (filename[mountpoint.size()] == '/') {
+			return &filename[mountpoint.size() + 1];
+		} else if (filename[mountpoint.size()] == '0') {
+			return "";
+		}
+	} else {
+		return nullptr;  // No match.
+	}
+}
+
+void VfsStack::push_back(std::unique_ptr<Vfs>&& entry, std::string mountpoint) {
+	// Strip trailing '/' from mountpoint.
+	if (!mountpoint.empty() && mountpoint.back() == '/') {
+		mountpoint.erase(mountpoint.size() - 1);
+	}
+	mounts.push_back(Mount { std::move(entry), mountpoint });
+}
+
+SDL_RWops* VfsStack::open_sdl(const char* filename) {
+	if (write_mount) {
+		if (SDL_RWops* rw = write_mount->open_sdl(filename)) {
+			return rw;
+		}
+	}
+
+	for (auto& mount : mounts) {
+		if (const char* subfilename = mount.matches(filename)) {
+			if (SDL_RWops* rw = mount.vfs->open_sdl(subfilename)) {
+				return rw;
+			}
+		}
+	}
+
+	LogError("AssetOpen_SDL(%s): not found in any vfs", filename);
+	return nullptr;
+}
+
+// Common implementation
 
 static void missing_assets_message() {
 	struct stat sb;
@@ -619,9 +646,7 @@ static void missing_assets_message() {
 static VfsStack vfs_stack_from_env() {
 	VfsStack result;
 	if (const char *appdata_spec = getenv("HSW_APPDATA")) {
-		if (auto vfs = init_vfs_spec("HSW_APPDATA", appdata_spec)) {
-			result.push_back(std::move(vfs));
-		}
+		result.write_mount = std::make_unique<StdioVfs>(appdata_spec);
 
 		char buffer[32];
 		for (int i = 0; i < 1024; ++i) {
@@ -642,7 +667,7 @@ static VfsStack vfs_stack_from_env() {
 
 static bool check_assets(VfsStack& vfs) {
 	// Every game has this asset, so use it to sanity check.
-	SDL_RWops* check = vfs.open_sdl("graphics/verdana.jft", "rb");
+	SDL_RWops* check = vfs.open_sdl("graphics/verdana.jft");
 	if (check) {
 		SDL_RWclose(check);
 		return true;
@@ -711,6 +736,9 @@ static VfsStack init_vfs_stack() {
 // Android does not play nice with static initializers.
 static VfsStack vfs_stack;
 
+// ----------------------------------------------------------------------------
+// Public interface
+
 void AppdataInit() {
 	vfs_stack = init_vfs_stack();
 }
@@ -719,39 +747,72 @@ bool AppdataIsInit() {
 	return !vfs_stack.empty();
 }
 
-FILE* AppdataOpen(const char* file, const char* mode) {
-	return AssetOpen(file, mode);
-}
-
-FILE* AssetOpen(const char* file, const char* mode) {
-	bool write = is_write_mode(mode);
-	if (write) {
-		return vfs_stack.appdata()->open_stdio(file, mode, write);
-	}
-
-	for (auto& vfs : vfs_stack) {
-		FILE* fp = vfs->open_stdio(file, mode, write);
-		if (fp) {
+FILE* AssetOpen(const char* filename) {
+	if (vfs_stack.write_mount) {
+		if (FILE* fp = vfs_stack.write_mount->open_stdio(filename)) {
 			return fp;
 		}
 	}
 
-	LogError("AssetOpen(%s, %s): not found in any vfs", file, mode);
+	for (auto& mount : vfs_stack.mounts) {
+		if (const char* subfilename = mount.matches(filename)) {
+			if (FILE* fp = mount.vfs->open_stdio(subfilename)) {
+				return fp;
+			}
+		}
+	}
+
+	LogError("AssetOpen(%s): not found in any vfs", filename);
 	return nullptr;
 }
 
-SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
-	SDL_RWops* rw = vfs_stack.open_sdl(file, mode);
-	if (!rw) {
-		LogError("AssetOpen_SDL(%s, %s): not found in any vfs", file, mode);
-	}
-	return rw;
+SDL_RWops* AssetOpen_SDL(const char* filename) {
+	return vfs_stack.open_sdl(filename);
 }
+
+FILE* AppdataOpen_Write(const char* filename) {
+	if (vfs_stack.write_mount) {
+		return vfs_stack.write_mount->open_write_stdio(filename);
+	} else {
+		LogError("AppdataOpen_Write(%s): no write vfs mounted", filename);
+		return nullptr;
+	}
+}
+
+void AppdataDelete(const char* filename) {
+	if (vfs_stack.write_mount) {
+		vfs_stack.write_mount->delete_file(filename);
+	} else {
+		LogError("AppdataDelete(%s): no write vfs mounted", filename);
+	}
+}
+
+#ifndef HAS_APPDATA_SYNC
+void AppdataSync() {}
+#endif
 
 std::vector<std::string> ListDirectory(const char* directory, const char* extension, size_t maxlen) {
 	std::set<std::string> output;
-	for (auto& vfs : vfs_stack) {
-		vfs->list_dir(directory, output);
+
+	if (vfs_stack.write_mount) {
+		vfs_stack.write_mount->list_dir(directory, output);
+	}
+
+	for (auto& mount : vfs_stack.mounts) {
+		if (mount.mountpoint.empty()) {
+			mount.vfs->list_dir(directory, output);
+		} else if (const char* subdirectory = mount.matches(directory)) {
+			std::string mountpoint_slash = mount.mountpoint;
+			mountpoint_slash.push_back('/');
+
+			std::set<std::string> intermediate;
+			mount.vfs->list_dir(subdirectory, intermediate);
+
+			for (auto each : intermediate) {
+				each.insert(0, mountpoint_slash);
+				output.insert(each);
+			}
+		}
 	}
 
 	if (extension || maxlen > 0) {
@@ -771,10 +832,11 @@ std::vector<std::string> ListDirectory(const char* directory, const char* extens
 	return { output.begin(), output.end() };;
 }
 
-void AppdataDelete(const char* file) {
-	vfs_stack.appdata()->delete_file(file);
+// Aliases.
+FILE* AppdataOpen(const char* filename) {
+	return AssetOpen(filename);
 }
 
-#ifndef HAS_APPDATA_SYNC
-void AppdataSync() {}
-#endif
+FILE* AssetOpen_Write(const char* filename) {
+	return AppdataOpen_Write(filename);
+}

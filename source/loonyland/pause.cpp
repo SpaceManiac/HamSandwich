@@ -394,7 +394,7 @@ void GetSaves(void)
 	for(i=0;i<5;i++)
 	{
 		sprintf(txt,"save%d.sav",i+1);
-		f=AppdataOpen(txt,"rb");
+		f=AppdataOpen(txt);
 		if(!f)
 		{
 			percent[i]=0;
@@ -419,7 +419,7 @@ void LoadGame(int i)
 	char txt[12];
 
 	sprintf(txt,"save%d.sav",i+1);
-	f=AppdataOpen(txt,"rb");
+	f=AppdataOpen(txt);
 	if(!f)
 	{
 		InitPlayer(INIT_GAME,0,0);
@@ -468,7 +468,7 @@ void SaveGame(int i)
 	char txt[12];
 
 	sprintf(txt,"save%d.sav",i+1);
-	f=AppdataOpen(txt,"wb");
+	f=AppdataOpen_Write(txt);
 	if(!f)
 	{
 		return;

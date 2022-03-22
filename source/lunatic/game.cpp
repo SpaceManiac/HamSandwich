@@ -44,7 +44,7 @@ void LunaticInit(MGLDraw *mgl)
 {
 	gamemgl = mgl;
 
-	logFile = AppdataOpen("loonylog.txt", "wt");
+	logFile = AppdataOpen_Write("loonylog.txt");
 	InitCosSin();
 	InitDisplay(gamemgl);
 	InitSound();

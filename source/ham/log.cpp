@@ -27,7 +27,7 @@ void LogDebug(const char* fmt, ...) {
 void LogError(const char* fmt, ...) {
 	if (!errorLogAttempted && AppdataIsInit()) {
 		errorLogAttempted = true;
-		errorLog = AppdataOpen("error.log", "wt");
+		errorLog = AppdataOpen_Write("error.log");
 	}
 
 	va_list args;

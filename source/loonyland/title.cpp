@@ -281,7 +281,7 @@ void GetSavesForMenu(void)
 	for(i=0;i<5;i++)
 	{
 		sprintf(txt,"save%d.sav",i+1);
-		f=AppdataOpen(txt,"rb");
+		f=AppdataOpen(txt);
 		if(!f)
 		{
 			pct=0.0;

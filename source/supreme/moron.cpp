@@ -82,7 +82,7 @@ byte GetQuestions(void)
 	int i;
 	FILE *f;
 
-	f=AssetOpen("gallery/mrqs.bmp","rt");
+	f=AssetOpen("gallery/mrqs.bmp");
 	if(!f)
 		return 0;	// can't play without questions!
 

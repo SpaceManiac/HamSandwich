@@ -45,7 +45,7 @@ byte LoadWorld(world_t *world,const char *fname)
 	int i;
 	char code[32];
 
-	f=AssetOpen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 		return 0;
 
@@ -101,7 +101,7 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 	int i;
 	char code[32];
 
-	f=AssetOpen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 	{
 		SetStitchError("File Not Found");
@@ -297,7 +297,7 @@ byte SaveWorld(world_t *world, const char *fname)
 		if(world->map[i] && (!(world->map[i]->flags&MAP_HUB)))
 			world->totalPoints+=100;	// each level is worth 100 points except hubs which is worth nothing
 
-	f=AssetOpen(fname,"wb");
+	f=AssetOpen_Write(fname);
 	if(!f)
 		return 0;
 
@@ -329,7 +329,7 @@ byte GetWorldName(const char *fname,char *buffer,char *authbuffer)
 	FILE *f;
 	char code[9];
 
-	f=AssetOpen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 		return 0;
 
@@ -397,7 +397,7 @@ void LogRequirements(world_t *w)
 	int i,j,k;
 	FILE *f;
 
-	f=AppdataOpen("req_files.txt","wt");
+	f=AppdataOpen_Write("req_files.txt");
 	fprintf(f,"World: %s\n",w->map[0]->name);
 
 	for(i=0;i<w->numMaps;i++)

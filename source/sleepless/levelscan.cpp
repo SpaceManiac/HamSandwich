@@ -608,7 +608,7 @@ byte Scan_Level(world_t *world,Map *map)
 	char s[64];
 
 	sprintf(s,"level%s.txt",map->name);
-	scanF=AppdataOpen(s,"wt");
+	scanF=AppdataOpen_Write(s);
 	if(!scanF)
 		return 0;
 
@@ -701,7 +701,7 @@ byte Scan_Vars(world_t *world)
 {
 	int i,j,k;
 
-	scanF=AppdataOpen("var_scan.txt","wt");
+	scanF=AppdataOpen_Write("var_scan.txt");
 	if(!scanF)
 		return 0;
 

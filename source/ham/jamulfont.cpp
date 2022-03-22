@@ -34,7 +34,7 @@ int FontLoad(const char *fname, mfont_t *font)
 	// How much of that size we can actually stuff into the mfont_t struct.
 	const int MFONT_SIZE_READ = 12;
 
-	SDL_RWops* f = AssetOpen_SDL(fname, "rb");
+	SDL_RWops* f = AssetOpen_SDL(fname);
 	if (!f)
 		return FONT_FILENOTFOUND;
 
@@ -67,7 +67,7 @@ int FontSave(char *fname, mfont_t *font)
 {
 	FILE *f;
 
-	f = AssetOpen(fname, "wb");
+	f = AssetOpen_Write(fname);
 	if (!f)
 		return FONT_FILENOTFOUND;
 

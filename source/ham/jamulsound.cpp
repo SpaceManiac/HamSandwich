@@ -143,7 +143,7 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 		{
 			// If not, try to load it from a file instead
 			sprintf(s,"sound/snd%03d.wav",which);
-			rw = AssetOpen_SDL(s, "rb");
+			rw = AssetOpen_SDL(s);
 			if(!rw) {
 				return 0;
 			}

@@ -950,7 +950,7 @@ bool sprite_set_t::Load(const char *fname)
 	if(spr)
 		Free();
 
-	SDL_RWops *f=AssetOpen_SDL(fname,"rb");
+	SDL_RWops *f=AssetOpen_SDL(fname);
 	if(!f) {
 		// Asset stack printed error already
 		return false;
@@ -1012,7 +1012,7 @@ bool sprite_set_t::Save(const char *fname)
 	int i;
 	byte *buffer;
 
-	f=AssetOpen(fname,"wb");
+	f=AssetOpen_Write(fname);
 	if(!f)
 		return false;
 	// write the count

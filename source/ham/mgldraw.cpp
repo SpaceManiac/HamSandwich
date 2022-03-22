@@ -901,7 +901,7 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 {
 	int i,w;
 
-	SDL_RWops* rw = AssetOpen_SDL(name, "rb");
+	SDL_RWops* rw = AssetOpen_SDL(name);
 	if (!rw) {
 		// Asset stack printed error already
 		return false;
