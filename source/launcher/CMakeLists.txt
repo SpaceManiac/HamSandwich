@@ -4,7 +4,7 @@ get_property(all_metadata GLOBAL PROPERTY HamSandwich_all_metadata)
 file(GENERATE OUTPUT launcher.json CONTENT "${all_metadata}")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/launcher.json" TYPE BIN COMPONENT Executables)
 
-add_executable(launcher ${SOURCES} launcher_metadata.json)
+add_executable(launcher ${SOURCES})
 target_link_libraries(launcher SDL2 imgui libcurl nlohmann_json)
 
 if(NOT MSVC)

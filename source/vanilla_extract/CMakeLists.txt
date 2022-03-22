@@ -2,3 +2,4 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" 
 add_library(vanilla_extract STATIC ${SOURCES})
 target_link_libraries(vanilla_extract lzma1900 nsis_exehead SDL2)
 target_include_directories(vanilla_extract INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
+target_compile_options(vanilla_extract PRIVATE -fPIC)

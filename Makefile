@@ -22,18 +22,18 @@ endif
 
 BUILD_ROOT = build
 BUILD_DIR = $(BUILD_ROOT)/cmake-$(preset)
-CMAKECACHE = $(BUILD_DIR)/CMakeCache.txt
+BUILD_NINJA = $(BUILD_DIR)/build.ninja
 CMAKE_ARGS = --preset $(preset) -B $(BUILD_DIR)
 
 ifeq ($(MAKECMDGOALS),)
 # If no targets were specified, synthesize a default target.
 .PHONY: _default
-_default: $(CMAKECACHE)
+_default: $(BUILD_NINJA)
 	@$(CMAKE) --build $(BUILD_DIR)
 else
 # If targets were specified, pass them through to `cmake --build`.
 .PHONY: $(MAKECMDGOALS)
-$(word 1,$(MAKECMDGOALS)):: $(CMAKECACHE)
+$(word 1,$(MAKECMDGOALS)):: $(BUILD_NINJA)
 	@$(CMAKE) --build $(BUILD_DIR) -t $(MAKECMDGOALS)
 $(MAKECMDGOALS)::
 	@#
@@ -42,5 +42,5 @@ endif
 
 # If the CMake cache doesn't already exist, configure it for the first time.
 # If it does already exist, `cmake --build` will reconfigure if needed.
-$(CMAKECACHE):
+$(BUILD_NINJA):
 	@$(CMAKE) --preset $(preset) -B $(BUILD_DIR)

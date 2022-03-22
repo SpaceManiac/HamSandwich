@@ -24,10 +24,6 @@ elseif(ANDROID)
 		-fsigned-char
 		-fexceptions
 	)
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-	add_link_options(
-		-no-pie
-	)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -37,6 +33,13 @@ endif()
 # Libraries
 add_subdirectory("vanilla_extract")
 add_subdirectory("ham")
+
+# For games only, use -no-pie so that the executables are double-clickable in Thunar.
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	add_link_options(
+		-no-pie
+	)
+endif()
 
 # Games
 add_subdirectory("lunatic" EXCLUDE_FROM_ALL)
