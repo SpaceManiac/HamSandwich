@@ -76,3 +76,14 @@ const HamSandwichMetadata* GetHamSandwichMetadata()
 	list(APPEND "${SOURCES_VAR}" "${CMAKE_CURRENT_BINARY_DIR}/metadata.cpp")
 	set("${SOURCES_VAR}" "${${SOURCES_VAR}}" PARENT_SCOPE)
 endfunction()
+
+function(HamSandwich_install TARGET_NAME)
+	if(EMSCRIPTEN)
+		install(FILES
+			"${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.js"
+			"${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.wasm"
+			DESTINATION "${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}")
+	else()
+		install(TARGETS "${TARGET_NAME}" COMPONENT Executables)
+	endif()
+endfunction()

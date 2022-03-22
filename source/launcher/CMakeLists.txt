@@ -14,3 +14,5 @@ endif()
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_compile_options(launcher PRIVATE -Wall -Wextra -Wno-missing-field-initializers)
 endif()
+
+install(TARGETS libcurl launcher COMPONENT Executables)

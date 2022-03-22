@@ -5,3 +5,5 @@ HamSandwich_metadata(mystic SOURCES mystic.json)
 
 add_executable(mystic ${SOURCES})
 target_link_libraries(mystic ham)
+
+HamSandwich_install(mystic)

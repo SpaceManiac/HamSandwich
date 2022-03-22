@@ -5,3 +5,5 @@ HamSandwich_metadata(loonyland SOURCES loonyland.json)
 
 add_executable(loonyland ${SOURCES})
 target_link_libraries(loonyland ham)
+
+HamSandwich_install(loonyland)

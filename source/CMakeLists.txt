@@ -34,12 +34,19 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	link_libraries(ws2_32 winmm)
 endif()
 
+# Libraries
 add_subdirectory("vanilla_extract")
 add_subdirectory("ham")
-add_subdirectory("lunatic")
+
+# Games
+add_subdirectory("lunatic" EXCLUDE_FROM_ALL)
 add_subdirectory("supreme")
 add_subdirectory("sleepless")
 add_subdirectory("loonyland")
 add_subdirectory("loonyland2")
 add_subdirectory("mystic")
-add_subdirectory("launcher")
+
+# Launcher
+if(NOT EMSCRIPTEN AND NOT ANDROID)
+	add_subdirectory("launcher")
+endif()

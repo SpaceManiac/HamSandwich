@@ -9,3 +9,5 @@ target_link_libraries(sleepless ham)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_compile_options(sleepless PRIVATE -Wall -Wno-unused-but-set-variable)
 endif()
+
+HamSandwich_install(sleepless)

@@ -128,20 +128,22 @@ if test -z "$tool" && test "$os" = "emscripten"; then
 	source ./tools/emscripten/install-emsdk.sh
 fi
 
-# Build and install
-if test -z "$nobuild"; then
-	make preset="$preset" "$project"
-	cmake --install "build/cmake-$preset" --prefix "build/install"
-	if test "$project" != "launcher"; then
-		"$PWD/build/cmake-$preset/source/launcher/launcher" --mini-cli "$project"
-	fi
-fi
-
 # Default debug configuration
 debugdir="$PWD/build/install"
 debugcommand="$PWD/build/cmake-$preset/source/$project/$project"
 debugargs=("window")
 debugenvs=()
+
+# Build and install
+if test -z "$nobuild"; then
+	make preset="$preset" install
+	if test "$project" != "launcher" && test "$os" != "emscripten"; then
+		"$PWD/build/cmake-$preset/source/launcher/launcher" --mini-cli "$project"
+	fi
+	if test "$os" = "emscripten"; then
+		debugdir="$PWD/build/webroot"
+	fi
+fi
 
 # Run the game executable or tool.
 mkdir -p "$debugdir"
@@ -173,7 +175,7 @@ case "$tool" in
 		;;
 	emrun)
 		echo "==== Hosting $project ($preset) ===="
-		emrun --serve_after_close "build/cmake-$preset/source/$project/index.html"
+		emrun --serve_after_close "$debugdir/$project/index.html"
 		;;
 	two)
 		echo "==== Running $project ($preset) ===="

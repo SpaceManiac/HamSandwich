@@ -9,3 +9,5 @@ target_link_libraries(supreme ham)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_compile_options(supreme PRIVATE -Wall -Wno-unused-but-set-variable)
 endif()
+
+HamSandwich_install(supreme)

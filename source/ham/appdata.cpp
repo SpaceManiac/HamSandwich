@@ -571,9 +571,9 @@ const char* Mount::matches(const char* filename) const {
 		} else if (filename[mountpoint.size()] == '0') {
 			return "";
 		}
-	} else {
-		return nullptr;  // No match.
 	}
+
+	return nullptr;  // No match.
 }
 
 void VfsStack::push_back(std::unique_ptr<Vfs>&& entry, std::string mountpoint) {

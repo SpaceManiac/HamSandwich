@@ -13,9 +13,9 @@ set(CMAKE_INSTALL_DATADIR ".")
 set(CMAKE_INSTALL_BINDIR ".")
 set(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_BINDIR}")
 
+if(EMSCRIPTEN)
+	set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/build/webroot")
+endif()
+
 add_subdirectory("external")
 add_subdirectory("source")
-
-install(TARGETS libcurl supreme sleepless loonyland loonyland2 mystic launcher COMPONENT Executables)
-
-set_property(TARGET launcher PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
