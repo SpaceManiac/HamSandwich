@@ -1,6 +1,10 @@
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-add_executable(launcher ${SOURCES})
+get_property(all_metadata GLOBAL PROPERTY HamSandwich_all_metadata)
+file(GENERATE OUTPUT launcher.json CONTENT "${all_metadata}")
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/launcher.json" TYPE BIN COMPONENT Executables)
+
+add_executable(launcher ${SOURCES} launcher_metadata.json)
 target_link_libraries(launcher SDL2 imgui libcurl nlohmann_json)
 
 if(NOT MSVC)
@@ -8,5 +12,5 @@ if(NOT MSVC)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	target_compile_options(launcher PRIVATE -Wall -Wextra)
+	target_compile_options(launcher PRIVATE -Wall -Wextra -Wno-missing-field-initializers)
 endif()

@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <vector>
 #include <string>
+#include <fstream>
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <imgui.h>
@@ -210,29 +211,30 @@ struct Launcher
 	{
 		downloads.reset(curl_multi_init());
 
-		games.push_back(Game { .id = "supreme", .title = "Dr. Lunatic Supreme With Cheese" });
-		games.back().assets.push_back(Asset {
-			.filename = "supreme8_install.exe",
-			//.kind = "nsis"
-			.sha256sum = "1c105ad826be1e0697b5de8483c71ff943d04bce91fe3547b6f355e9bc1c42d4",
-			.link = "https://hamumu.itch.io/dr-lunatic-supreme-with-cheese",
-			.file_id = 700882,
-			.description = "Base assets: Dr. Lunatic Supreme With Cheese",
-			.required = true,
-		});
-		games.back().assets.push_back(Asset {
-			.filename = "all_supreme_worlds.zip",
-			//.kind = "nsis"
-			.sha256sum = "",
-			.link = "https://hamumu.itch.io/dr-lunatic-supreme-with-cheese",
-			.file_id = 824077,
-			.description = "Add-ons: All Supreme Worlds",
-			.required = false,
-		});
-		games.push_back(Game { .id = "mystic", .title = "Kid Mystic" });
-		games.push_back(Game { .id = "loonyland", .title = "Loonyland: Halloween Hill" });
-		games.push_back(Game { .id = "loonyland2", .title = "Loonyland 2: Winter Woods" });
-		games.push_back(Game { .id = "sleepless", .title = "Sleepless Hollow" });
+		std::ifstream infile { "launcher.json" };
+		nlohmann::json metadata;
+		infile >> metadata;
+		for (const auto& [key, value] : metadata.items())
+		{
+			games.push_back(Game
+			{
+				.id = key,
+				.title = value["title"],
+			});
+			for (const auto& installer : value["installers"])
+			{
+				games.back().assets.push_back(Asset
+				{
+					.filename = installer["filename"],
+					//.kind = installer["kind"],
+					.sha256sum = installer["sha256sum"],
+					.link = installer["link"],
+					.file_id = installer["file_id"],
+					.description = installer["description"],
+					.required = !installer.contains("optional") || !installer["optional"],
+				});
+			}
+		}
 
 		if (!games.empty())
 			current_game = &games[0];

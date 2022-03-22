@@ -17,7 +17,7 @@ show_help() {
 }
 
 # Default settings.
-project=
+project=launcher
 os=
 platform=
 mode=debug
@@ -132,6 +132,9 @@ fi
 if test -z "$nobuild"; then
 	make preset="$preset" "$project"
 	cmake --install "build/cmake-$preset" --prefix "build/install"
+	if test "$project" != "launcher"; then
+		"$PWD/build/cmake-$preset/source/launcher/launcher" --mini-cli "$project"
+	fi
 fi
 
 # Default debug configuration

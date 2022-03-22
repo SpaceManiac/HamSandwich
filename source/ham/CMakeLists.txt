@@ -25,6 +25,14 @@ endfunction()
 function(HamSandwich_metadata TARGET_NAME SOURCES_VAR JSON_FILENAME)
 	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${JSON_FILENAME}")
 	file(READ "${JSON_FILENAME}" JSON_BLOB)
+
+	get_property(all_metadata GLOBAL PROPERTY HamSandwich_all_metadata)
+	if("${all_metadata}" STREQUAL "")
+		set(all_metadata "{}")
+	endif()
+	string(JSON all_metadata SET "${all_metadata}" "${TARGET_NAME}" "${JSON_BLOB}")
+	set_property(GLOBAL PROPERTY HamSandwich_all_metadata "${all_metadata}")
+
 	set(metadata_cpp "")
 	string(APPEND metadata_cpp [[
 #include "metadata.h"
