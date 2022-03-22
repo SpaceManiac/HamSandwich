@@ -35,6 +35,11 @@ static const char* default_asset_specs[] = {
 	string(JSON len LENGTH "${JSON_BLOB}" installers)
 	math(EXPR len "${len} - 1")
 	foreach(i RANGE "${len}")
+		string(JSON optional ERROR_VARIABLE optional_err GET "${JSON_BLOB}" installers ${i} optional)
+		if("${optional_err}" STREQUAL "NOTFOUND" AND "${optional}" STREQUAL "ON")  # "error not found" means "ok"
+			continue()
+		endif()
+
 		string(JSON mountpoint ERROR_VARIABLE mountpoint_err GET "${JSON_BLOB}" installers ${i} mountpoint)
 		if(NOT "${mountpoint_err}" EQUAL NOTFOUND)
 			set(mountpoint "")

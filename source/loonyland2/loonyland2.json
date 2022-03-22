@@ -1,11 +1,13 @@
 {
+	"title": "Loonyland 2: Winter Woods",
 	"installers": [
 		{
 			"filename": "LL2CEinstall.exe",
 			"kind": "nsis",
 			"sha256sum": "0806e1615eb94332bf805128d2d3857af420e93ee6f48692eebf17c05e9b14e2",
 			"link": "https://hamumu.itch.io/loonyland-2-winter-woods",
-			"file_id": 705653
+			"file_id": 705653,
+			"description": "Base assets for Loonyland 2: Winter Woods"
 		}
 	]
 }

@@ -1,11 +1,13 @@
 {
+	"title": "Kid Mystic",
 	"installers": [
 		{
 			"filename": "mystic_install.exe",
 			"kind": "inno",
 			"sha256sum": "c2d618176d23b974c01c00690b6afb0aaebd4c863dfff0bf8b1f66db1bdc2f65",
 			"link": "https://hamumu.itch.io/kid-mystic",
-			"file_id": 704052
+			"file_id": 704052,
+			"description": "Base assets for Kid Mystic"
 		}
 	]
 }
