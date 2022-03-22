@@ -84,7 +84,7 @@ struct Asset
 		curl_multi_add_handle(downloads, metadata_download);
 	}
 
-	void transfer_completed(CURLM* downloads, CURL* transfer)
+	int transfer_completed(CURLM* downloads, CURL* transfer)
 	{
 		if (transfer == metadata_download)
 		{
@@ -111,6 +111,7 @@ struct Asset
 			curl_easy_setopt(content_download, CURLOPT_XFERINFODATA, this);
 
 			curl_multi_add_handle(downloads, content_download);
+			return 1;
 		}
 		else if (transfer == content_download)
 		{
@@ -124,8 +125,10 @@ struct Asset
 			part_path.append(".part");
 
 			filesystem::rename(part_path, full_path);  // TODO: error handling
+			printf("Finished: %s\n", filename.c_str());
 
 			curl_easy_cleanup(transfer);
+			return 0;
 		}
 	}
 };
@@ -144,8 +147,13 @@ struct Game
 			{
 				std::string full_path = "installers/";
 				full_path.append(asset.filename);
-				if (!filesystem::exists(full_path))
+				if (filesystem::exists(full_path))
 				{
+					printf("OK: %s\n", asset.filename.c_str());
+				}
+				else
+				{
+					printf("Downloading: %s\n", asset.filename.c_str());
 					asset.start_download(downloads);
 				}
 			}
@@ -168,12 +176,156 @@ struct Game
 	}
 };
 
+namespace owned
+{
+	template<typename T, typename Deleter>
+	struct convertible_unique_ptr : public std::unique_ptr<T, Deleter>
+	{
+		operator T*() { return this->get(); }
+	};
+
+	struct deleter_CURLM
+	{
+		void operator()(CURLM* ptr) { curl_multi_cleanup(ptr); }
+	};
+
+	typedef convertible_unique_ptr<::CURLM, deleter_CURLM> CURLM;
+}
+
+struct Launcher
+{
+	std::vector<Game> games;
+	Game* current_game = nullptr;
+	bool wants_to_play = false;
+	bool wants_fullscreen = true;
+
+	owned::CURLM downloads;
+
+	Launcher()
+	{
+		downloads.reset(curl_multi_init());
+
+		games.push_back(Game { .id = "supreme", .title = "Dr. Lunatic Supreme With Cheese" });
+		games.back().assets.push_back(Asset {
+			.filename = "supreme8_install.exe",
+			//.kind = "nsis"
+			.sha256sum = "1c105ad826be1e0697b5de8483c71ff943d04bce91fe3547b6f355e9bc1c42d4",
+			.link = "https://hamumu.itch.io/dr-lunatic-supreme-with-cheese",
+			.file_id = 700882,
+			.description = "Base assets: Dr. Lunatic Supreme With Cheese",
+			.required = true,
+		});
+		games.back().assets.push_back(Asset {
+			.filename = "all_supreme_worlds.zip",
+			//.kind = "nsis"
+			.sha256sum = "",
+			.link = "https://hamumu.itch.io/dr-lunatic-supreme-with-cheese",
+			.file_id = 824077,
+			.description = "Add-ons: All Supreme Worlds",
+			.required = false,
+		});
+		games.push_back(Game { .id = "mystic", .title = "Kid Mystic" });
+		games.push_back(Game { .id = "loonyland", .title = "Loonyland: Halloween Hill" });
+		games.push_back(Game { .id = "loonyland2", .title = "Loonyland 2: Winter Woods" });
+		games.push_back(Game { .id = "sleepless", .title = "Sleepless Hollow" });
+
+		if (!games.empty())
+			current_game = &games[0];
+	}
+
+	// Returns number of ongoing transfers.
+	int update_transfers()
+	{
+		int running_downloads;
+		CURLMcode mc = curl_multi_perform(downloads, &running_downloads);
+		if (mc == CURLM_OK)
+		{
+			int queued;
+			while (CURLMsg* msg = curl_multi_info_read(downloads, &queued))
+			{
+				if (msg->msg == CURLMSG_DONE)
+				{
+					curl_multi_remove_handle(downloads, msg->easy_handle);
+					for (auto& game : games)
+					{
+						for (auto& asset : game.assets)
+						{
+							running_downloads += asset.transfer_completed(downloads, msg->easy_handle);
+						}
+					}
+				}
+			}
+		}
+		return running_downloads;
+	}
+};
+
 // ----------------------------------------------------------------------------
 // Main code
+enum class Action
+{
+	Gui,
+	MiniCli,
+};
+
 int main(int argc, char** argv)
 {
 	const char* bin_dir = get_current_dir_name();  // never free()d because we always need it
 	printf("bin_dir: %s\n", bin_dir);
+
+	// Set up curl
+	curl_global_init(CURL_GLOBAL_NOTHING);
+	Action action = Action::Gui;
+	Launcher launcher;
+
+	for (int i = 1; i < argc; ++i)
+	{
+		std::string_view arg = argv[i];
+		if (arg == "window")
+		{
+			launcher.wants_fullscreen = false;
+		}
+		else if (arg == "--mini-cli")
+		{
+			action = Action::MiniCli;
+		}
+		else if (arg == "--all")
+		{
+			for (auto& game : launcher.games)
+			{
+				for (auto& asset : game.assets)
+				{
+					asset.enabled = true;
+				}
+			}
+		}
+		else
+		{
+			launcher.current_game = nullptr;
+			for (auto& game : launcher.games)
+			{
+				if (arg == game.id)
+				{
+					launcher.current_game = &game;
+				}
+			}
+		}
+	}
+
+	if (action == Action::MiniCli)
+	{
+		if (!launcher.current_game)
+		{
+			fprintf(stderr, "Unknown game\n");
+			return 1;
+		}
+
+		launcher.current_game->start_missing_downloads(launcher.downloads);
+
+		while (launcher.update_transfers());
+
+		return 0;
+	}
 
 	// Setup SDL
 	// (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a minority of Windows systems,
@@ -211,10 +363,6 @@ int main(int argc, char** argv)
 	ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
 	ImGui_ImplOpenGL2_Init();
 
-	// Set up curl
-	curl_global_init(0);
-	CURLM* downloads = curl_multi_init();
-
 	// Load Fonts
 	// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
 	// - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
@@ -231,63 +379,13 @@ int main(int argc, char** argv)
 	//IM_ASSERT(font != NULL);
 
 	// Our state
-	bool show_demo_window = true;
-	bool show_another_window = false;
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-	std::vector<Game> games;
-	games.push_back(Game { .id = "supreme", .title = "Dr. Lunatic Supreme With Cheese" });
-	games.back().assets.push_back(Asset {
-		.filename = "supreme8_install.exe",
-		//.kind = "nsis"
-		.sha256sum = "1c105ad826be1e0697b5de8483c71ff943d04bce91fe3547b6f355e9bc1c42d4",
-		.link = "https://hamumu.itch.io/dr-lunatic-supreme-with-cheese",
-		.file_id = 700882,
-		.description = "Base assets: Dr. Lunatic Supreme With Cheese",
-		.required = true,
-	});
-	games.back().assets.push_back(Asset {
-		.filename = "all_supreme_worlds.zip",
-		//.kind = "nsis"
-		.sha256sum = "",
-		.link = "https://hamumu.itch.io/dr-lunatic-supreme-with-cheese",
-		.file_id = 824077,
-		.description = "Add-ons: All Supreme Worlds",
-		.required = false,
-	});
-	games.push_back(Game { .id = "mystic", .title = "Kid Mystic" });
-	games.push_back(Game { .id = "loonyland", .title = "Loonyland: Halloween Hill" });
-	games.push_back(Game { .id = "loonyland2", .title = "Loonyland 2: Winter Woods" });
-	games.push_back(Game { .id = "sleepless", .title = "Sleepless Hollow" });
-	Game* current_game = &games[0];
-
-	bool fullscreen = true;
-	bool wants_to_play = false;
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 0.00f);
 
 	// Main loop
 	bool done = false;
 	while (!done)
 	{
-		int running_downloads, wait_result;
-		CURLMcode mc = curl_multi_perform(downloads, &running_downloads);
-		if (mc == CURLM_OK)
-		{
-			int queued;
-			while (CURLMsg* msg = curl_multi_info_read(downloads, &queued))
-			{
-				if (msg->msg == CURLMSG_DONE)
-				{
-					curl_multi_remove_handle(downloads, msg->easy_handle);
-					for (auto& game : games)
-					{
-						for (auto& asset : game.assets)
-						{
-							asset.transfer_completed(downloads, msg->easy_handle);
-						}
-					}
-				}
-			}
-		}
+		int running_downloads = launcher.update_transfers();
 		SDL_GL_SetSwapInterval(running_downloads ? 0 : 1); // Enable vsync iff nothing is downloading.
 
 		// Poll and handle events (inputs, window resize, etc.)
@@ -318,17 +416,17 @@ int main(int argc, char** argv)
 		ImGui::SetNextWindowSize({ leftPaneWidth, (float)windowHeight });
 		if (ImGui::Begin("Games", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
 		{
-			for (auto& game : games)
+			for (auto& game : launcher.games)
 			{
 				ImGui::PushID(game.id.c_str());
-				if (ImGui::Selectable("", current_game == &game, ImGuiSelectableFlags_AllowDoubleClick))
+				if (ImGui::Selectable("", launcher.current_game == &game, ImGuiSelectableFlags_AllowDoubleClick))
 				{
-					wants_to_play = false;
-					current_game = &game;
+					launcher.wants_to_play = false;
+					launcher.current_game = &game;
 					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 					{
-						wants_to_play = true;
-						game.start_missing_downloads(downloads);
+						launcher.wants_to_play = true;
+						game.start_missing_downloads(launcher.downloads);
 					}
 				}
 				ImGui::SameLine(0);
@@ -345,36 +443,36 @@ int main(int argc, char** argv)
 		}
 		ImGui::End();
 
-		if (current_game)
+		if (launcher.current_game)
 		{
 			static bool checked = false;
 			ImGui::SetNextWindowPos({ leftPaneWidth, 0 });
 			ImGui::SetNextWindowSize({ (float)windowWidth - leftPaneWidth, (float)windowHeight });
 
-			std::string window_title = current_game->title;
+			std::string window_title = launcher.current_game->title;
 			window_title.append("###current_game");
 			ImGui::Begin(window_title.c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoFocusOnAppearing);
 
-			const char* message = wants_to_play ? "Downloading...###game_play"
-				: current_game->is_ready_to_play() ? "Play###game_play"
+			const char* message = launcher.wants_to_play ? "Downloading...###game_play"
+				: launcher.current_game->is_ready_to_play() ? "Play###game_play"
 				: "Download & Play###game_play";
 			if (ImGui::Button(message, { 196, 0 }))
 			{
-				wants_to_play = !wants_to_play;
-				if (wants_to_play)
-					current_game->start_missing_downloads(downloads);
+				launcher.wants_to_play = !launcher.wants_to_play;
+				if (launcher.wants_to_play)
+					launcher.current_game->start_missing_downloads(launcher.downloads);
 			}
 			ImGui::SameLine(212);
-			ImGui::Checkbox("Fullscreen", &fullscreen);
+			ImGui::Checkbox("Fullscreen", &launcher.wants_fullscreen);
 
 			ImGui::Spacing();
 			ImGui::Separator();
 			ImGui::Text("Official assets and add-ons:");
 
-			for (auto& asset : current_game->assets)
+			for (auto& asset : launcher.current_game->assets)
 			{
 				ImGui::PushID(asset.filename.c_str());
-				if (asset.required || wants_to_play)
+				if (asset.required || launcher.wants_to_play)
 				{
 					bool dummy = asset.required || asset.enabled;
 					ImGui::BeginDisabled();
@@ -426,13 +524,13 @@ int main(int argc, char** argv)
 						{
 							if (asset.metadata_download)
 							{
-								curl_multi_remove_handle(downloads, asset.metadata_download);
+								curl_multi_remove_handle(launcher.downloads, asset.metadata_download);
 								curl_easy_cleanup(asset.metadata_download);
 								asset.metadata_download = nullptr;
 							}
 							if (asset.content_download)
 							{
-								curl_multi_remove_handle(downloads, asset.content_download);
+								curl_multi_remove_handle(launcher.downloads, asset.content_download);
 								curl_easy_cleanup(asset.content_download);
 								asset.content_download = nullptr;
 							}
@@ -441,7 +539,7 @@ int main(int argc, char** argv)
 					else
 					{
 						if (ImGui::Button("Download###asset_download", { 128, 0 }))
-							asset.start_download(downloads);
+							asset.start_download(launcher.downloads);
 					}
 				}
 				ImGui::PopID();
@@ -470,12 +568,33 @@ int main(int argc, char** argv)
 		ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(window);
 
-		if (wants_to_play && current_game && current_game->is_ready_to_play())
-			break;
+		if (launcher.wants_to_play && launcher.current_game && launcher.current_game->is_ready_to_play())
+		{
+			launcher.wants_to_play = false;
+
+			// Hide the window.
+			SDL_HideWindow(window);
+
+			std::string cmdline = "./";
+			cmdline.append(launcher.current_game->id);
+			if (!launcher.wants_fullscreen)
+				cmdline.append(" window");
+			// TODO: use exec or CreateProcess instead
+			if (system(cmdline.c_str()))
+			{
+				// Child process failed, so bring the launcher back.
+				SDL_ShowWindow(window);
+			}
+			else
+			{
+				// Success, so clean up and exit in the background.
+				break;
+			}
+		}
 	}
 
 	// Cleanup
-	curl_multi_cleanup(downloads);
+	launcher.downloads.reset();
 	curl_global_cleanup();
 
 	ImGui_ImplOpenGL2_Shutdown();
@@ -485,16 +604,6 @@ int main(int argc, char** argv)
 	SDL_GL_DeleteContext(gl_context);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
-
-	if (wants_to_play && current_game && current_game->is_ready_to_play())
-	{
-		std::string cmdline = "./";
-		cmdline.append(current_game->id);
-		if (!fullscreen)
-			cmdline.append(" window");
-		// TODO: use exec or CreateProcess instead
-		system(cmdline.c_str());
-	}
 
 	return 0;
 }
