@@ -130,6 +130,8 @@ struct Asset
 			curl_easy_cleanup(transfer);
 			return 0;
 		}
+
+		return 0;
 	}
 };
 
@@ -139,8 +141,9 @@ struct Game
 	std::string title;
 	std::vector<Asset> assets;
 
-	void start_missing_downloads(CURLM* downloads)
+	bool start_missing_downloads(CURLM* downloads)
 	{
+		bool any_missing = false;
 		for (auto& asset : assets)
 		{
 			if (asset.required || asset.enabled)
@@ -155,9 +158,11 @@ struct Game
 				{
 					printf("Downloading: %s\n", asset.filename.c_str());
 					asset.start_download(downloads);
+					any_missing = true;
 				}
 			}
 		}
+		return any_missing;
 	}
 
 	bool is_ready_to_play() const
@@ -266,6 +271,7 @@ enum class Action
 {
 	Gui,
 	MiniCli,
+	MiniGui,
 };
 
 int main(int argc, char** argv)
@@ -288,6 +294,10 @@ int main(int argc, char** argv)
 		else if (arg == "--mini-cli")
 		{
 			action = Action::MiniCli;
+		}
+		else if (arg == "--mini-gui")
+		{
+			action = Action::MiniGui;
 		}
 		else if (arg == "--all")
 		{
@@ -312,7 +322,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	if (action == Action::MiniCli)
+	if (action == Action::MiniCli || action == Action::MiniGui)
 	{
 		if (!launcher.current_game)
 		{
@@ -320,11 +330,16 @@ int main(int argc, char** argv)
 			return 1;
 		}
 
-		launcher.current_game->start_missing_downloads(launcher.downloads);
+		if (!launcher.current_game->start_missing_downloads(launcher.downloads))
+		{
+			return 0;
+		}
 
-		while (launcher.update_transfers());
-
-		return 0;
+		if (action == Action::MiniCli)
+		{
+			while (launcher.update_transfers());
+			return 0;
+		}
 	}
 
 	// Setup SDL
@@ -414,6 +429,8 @@ int main(int argc, char** argv)
 
 		ImGui::SetNextWindowPos({ 0, 0 });
 		ImGui::SetNextWindowSize({ leftPaneWidth, (float)windowHeight });
+		if (action == Action::MiniGui)
+			ImGui::BeginDisabled();
 		if (ImGui::Begin("Games", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
 		{
 			for (auto& game : launcher.games)
@@ -445,7 +462,6 @@ int main(int argc, char** argv)
 
 		if (launcher.current_game)
 		{
-			static bool checked = false;
 			ImGui::SetNextWindowPos({ leftPaneWidth, 0 });
 			ImGui::SetNextWindowSize({ (float)windowWidth - leftPaneWidth, (float)windowHeight });
 
@@ -559,6 +575,8 @@ int main(int argc, char** argv)
 			ImGui::End();
 		}
 
+		if (action == Action::MiniGui)
+			ImGui::EndDisabled();
 		// Rendering
 		ImGui::Render();
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
@@ -568,27 +586,34 @@ int main(int argc, char** argv)
 		ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(window);
 
-		if (launcher.wants_to_play && launcher.current_game && launcher.current_game->is_ready_to_play())
+		if (launcher.current_game && launcher.current_game->is_ready_to_play())
 		{
-			launcher.wants_to_play = false;
-
-			// Hide the window.
-			SDL_HideWindow(window);
-
-			std::string cmdline = "./";
-			cmdline.append(launcher.current_game->id);
-			if (!launcher.wants_fullscreen)
-				cmdline.append(" window");
-			// TODO: use exec or CreateProcess instead
-			if (system(cmdline.c_str()))
+			if (action == Action::MiniGui)
 			{
-				// Child process failed, so bring the launcher back.
-				SDL_ShowWindow(window);
-			}
-			else
-			{
-				// Success, so clean up and exit in the background.
 				break;
+			}
+			else if (launcher.wants_to_play)
+			{
+				launcher.wants_to_play = false;
+
+				// Hide the window.
+				SDL_HideWindow(window);
+
+				std::string cmdline = "./";
+				cmdline.append(launcher.current_game->id);
+				if (!launcher.wants_fullscreen)
+					cmdline.append(" window");
+				// TODO: use exec or CreateProcess instead
+				if (system(cmdline.c_str()))
+				{
+					// Child process failed, so bring the launcher back.
+					SDL_ShowWindow(window);
+				}
+				else
+				{
+					// Success, so clean up and exit in the background.
+					break;
+				}
 			}
 		}
 	}

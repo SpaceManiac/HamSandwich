@@ -678,8 +678,8 @@ static bool check_assets(VfsStack& vfs) {
 
 static bool run_download_helper() {
 #if defined(_WIN32)
-	if (GetFileAttributesA("installers/download-helper.ps1") != INVALID_FILE_ATTRIBUTES) {
-		std::string cmdline = "powershell -ExecutionPolicy Bypass installers/download-helper.ps1 ";
+	if (GetFileAttributesA("launcher.exe") != INVALID_FILE_ATTRIBUTES) {
+		std::string cmdline = "launcher.exe --mini-gui ";
 		cmdline.append(GetHamSandwichMetadata()->appdata_folder_name);
 
 		STARTUPINFOA startupInfo = {};
@@ -687,7 +687,7 @@ static bool run_download_helper() {
 		startupInfo.cb = sizeof(startupInfo);
 		startupInfo.dwFlags |= STARTF_USESHOWWINDOW;
 		startupInfo.wShowWindow = SW_HIDE;
-		if (CreateProcessA("C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe", cmdline.data(), nullptr, nullptr, false, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &processInfo)) {
+		if (CreateProcessA("launcher.exe", cmdline.data(), nullptr, nullptr, false, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &processInfo)) {
 			WaitForSingleObject(processInfo.hProcess, INFINITE);
 			CloseHandle(processInfo.hProcess);
 			CloseHandle(processInfo.hThread);
@@ -696,12 +696,13 @@ static bool run_download_helper() {
 	}
 #elif !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 	struct stat sb;
-	if (stat("installers/.download-helper", &sb) == 0) {
+	if (stat("launcher", &sb) == 0) {
 		int child_pid = fork();
 		if (child_pid == 0) {
-			char first[] = "installers/.download-helper";
-			std::string second = GetHamSandwichMetadata()->appdata_folder_name;
-			char* const argv[] = { first, second.data(), nullptr };
+			char first[] = "./launcher";
+			char second[] = "--mini-gui";
+			std::string third = GetHamSandwichMetadata()->appdata_folder_name;
+			char* const argv[] = { first, second, third.data(), nullptr };
 			exit(execvp(argv[0], argv));
 		} else if (child_pid > 0) {
 			int wstatus;
