@@ -1,0 +1,21 @@
+apply plugin: 'com.android.library'
+
+android {
+	compileSdkVersion 30
+
+	defaultConfig {
+		minSdk 16
+		targetSdkVersion 30
+		ndk.abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+	}
+
+	externalNativeBuild.ndkBuild {
+		path 'Android.mk'
+		buildStagingDirectory "${buildDir}.staging"
+	}
+
+	sourceSets.main {
+		manifest.srcFile 'AndroidManifest.xml'
+		java.srcDir '../../external/SDL2/android-project/app/src/main/java'
+	}
+}

@@ -605,11 +605,11 @@ FILE* AndroidBundleVfs::open_stdio(const char* filename) {
 	// Use a directory which definitely doesn't overlap with appdata.
 	std::string tempdir = SDL_AndroidGetInternalStoragePath();
 	tempdir.append("/.bundle_tmp");
-	return fp_from_bundle(file, "rb", rw, tempdir.c_str(), false);
+	return fp_from_bundle(filename, "rb", rw, tempdir.c_str(), false);
 }
 
 SDL_RWops* AndroidBundleVfs::open_sdl(const char* filename) {
-	return SDL_RWFromFile(file, mode);
+	return SDL_RWFromFile(filename, "rb");
 }
 
 #include "appdata_jni.inc"

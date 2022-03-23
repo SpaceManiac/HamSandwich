@@ -1,0 +1,69 @@
+buildscript {
+	repositories {
+		mavenCentral()
+		google()
+	}
+
+	dependencies {
+		classpath 'com.android.tools.build:gradle:7.0.3'
+	}
+}
+
+repositories {
+	mavenCentral()
+	google()
+}
+
+subprojects {
+	repositories {
+		mavenCentral()
+		google()
+	}
+
+	buildDir = "../../build/android/${project.name}"
+}
+
+buildDir = "../build/android/${project.name}"
+
+apply plugin: 'com.android.application'
+
+dependencies {
+	implementation project(':android-project:SDL2')
+}
+
+android {
+	var assetDirectory = "${buildDir}/cmake-assets"
+	var stagingDirectory = "${buildDir}.staging"
+
+	compileSdkVersion 30
+
+	defaultConfig {
+		minSdk 16
+		targetSdkVersion 30
+		applicationId 'com.platymuus.hamsandwich'
+		externalNativeBuild.cmake.arguments "-DCMAKE_INSTALL_PREFIX=${assetDirectory}", "-DANDROID_STL=c++_shared"
+		ndk.abiFilters 'x86_64' // 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+	}
+
+	externalNativeBuild.cmake {
+		version '3.21.2'
+		path '../CMakeLists.txt'
+		buildStagingDirectory stagingDirectory
+	}
+
+	sourceSets.main {
+		manifest.srcFile 'AndroidManifest.xml'
+		assets.srcDir assetDirectory
+		java.srcDir 'java'
+		res.srcDir 'res'
+	}
+}
+
+// Building this project depends on building SDL2 first.
+tasks.configureEach { task ->
+	if (task.name == 'buildCMakeDebug') {
+		task.dependsOn ':android-project:SDL2:externalNativeBuildDebug'
+	} else if (task.name == 'buildCMakeRelWithDebInfo') {
+		task.dependsOn ':android-project:SDL2:externalNativeBuildRelease'
+	}
+}
