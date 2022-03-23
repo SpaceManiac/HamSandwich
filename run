@@ -6,9 +6,9 @@ show_help() {
 	echo "Usage: $0 [<setting=value>] <project> [-- <arguments>]"
 	echo "Settings:"
 	echo "    os=             One of:  windows  linux  macos  emscripten"
+	echo "    arch=           One of:  x86  x86_64"
 	echo "    mode=           One of:  debug  release"
-	echo "    platform=       One of:  x86  x86_64"
-	echo "    preset=         Set os, mode, and platform together, ex: windows-i686-release"
+	echo "    preset=         Set os, arch, and mode together, ex: windows-i686-release"
 	echo "    nobuild=1       Skip compiling before running."
 	echo "    tool=gdb        Start GDB prepared to debug the game."
 	echo "    tool=valgrind   Run the game under valgrind memory checker (slow)."
@@ -19,7 +19,7 @@ show_help() {
 # Default settings.
 project=launcher
 os=
-platform=
+arch=
 mode=debug
 preset=
 nobuild=
@@ -31,7 +31,7 @@ while test $# -ne 0; do
 	ARG="$1"; shift
 	case "$ARG" in
 		# settings
-		project=* | os=* | mode=* | platform=* | preset=* | nobuild=* | tool=*)
+		project=* | os=* | arch=* | mode=* | preset=* | nobuild=* | tool=*)
 			eval "$ARG"
 			;;
 		# show help on demand
@@ -84,43 +84,43 @@ if test -z "$project"; then
 	show_help; exit 1
 fi
 
-# Fallback settings.
+# Fallback settings. Keep this in sync with `Makefile`!
 if test -z "$preset"; then
 	if test -z "$os"; then
 		# Detect OS and architecture.
 		case "$(uname -sm)" in
 			MINGW32*)
 				os=windows
-				platform=i686
+				arch=${arch:-i686}
 				;;
 			MINGW64*)
 				os=windows
-				platform=x86_64
+				arch=${arch:-x86_64}
 				;;
 			"Linux x86_64")
 				os=linux
-				platform=x86_64
+				arch=${arch:-x86_64}
 				;;
 			"Darwin x86_64")
 				os=macos
-				platform=x86_64
+				arch=${arch:-x86_64}
 				;;
 			*)
 				echo "Unknown \`uname -sm\`: $(uname -sm)"
 				exit 1
 		esac
-	elif test -z "$platform"; then
+	elif test -z "$arch"; then
 		# Use default architecture for chosen OS.
 		case "$os" in
 			windows|emscripten)
-				platform=i686
+				arch=i686
 				;;
 			linux|macos)
-				platform=x86_64
+				arch=x86_64
 				;;
 		esac
 	fi
-	preset="$os-$platform-$mode"
+	preset="$os-$arch-$mode"
 fi
 
 if test -z "$tool" && test "$os" = "emscripten"; then

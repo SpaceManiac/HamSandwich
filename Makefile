@@ -1,17 +1,36 @@
 # Convenient root makefile. Invokes `cmake` and then `cmake --build` as needed.
+
+# Fallback settings. Keep this in sync with `./run`!
 ifndef preset
+mode ?= debug
+ifndef os
+# Detect OS and architecture.
 ifeq ($(MSYSTEM),MINGW32)
-preset := windows-i686-debug
+os := windows
+arch := i686
 else ifeq ($(MSYSTEM),MINGW64)
-preset := windows-x86_64-debug
+os := windows
+arch := x86_64
 else ifeq ($(shell uname -sm),Linux x86_64)
-preset := linux-x86_64-debug
+os := linux
+arch := x86_64
 else ifeq ($(shell uname -sm),Darwin x86_64)
-preset := macos-x86_64-debug
+os := macos
+arch := x86_64
 else
 $(error Unknown system '$(shell uname -sm)'; set preset= manually.)
-endif
-endif
+endif  # uname -sm
+else ifndef arch
+ifneq (,$(filter $(os),windows emscripten))
+arch := i686
+else ifneq (,$(filter $(os),linux macos))
+arch := x86_64
+else
+$(error Unknown os '$(os)'; set arch= manually.)
+endif  # filter on os
+endif  # os, arch
+preset := $(os)-$(arch)-$(mode)
+endif  # preset
 
 # Emscripten has a *directory* named "cmake" as a child of a directory in PATH,
 # and GNU make attempts to execute this directory, which is ridiculous.
