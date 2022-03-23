@@ -59,7 +59,7 @@ static world_t tmpWorld;
 static int mouseZ;
 #ifdef WTG
 static byte showFilenames = 1;
-#elif defined(_DEBUG)
+#elif !defined(NDEBUG)
 static byte showFilenames = 0;
 #endif
 
@@ -724,7 +724,7 @@ TASK(byte) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 
 	c=mgl->LastKeyPressed();
 
-#if defined(WTG) || defined(_DEBUG)
+#if defined(WTG) || !defined(NDEBUG)
 	if (c == 'A')
 		showFilenames = !showFilenames;
 #endif
@@ -785,7 +785,7 @@ void RenderWorldSelect(MGLDraw *mgl)
 			else
 				b=0;
 
-#if defined(WTG) || defined(_DEBUG)
+#if defined(WTG) || !defined(NDEBUG)
 			if (showFilenames)
 			{
 				PrintGlow(NAME_X,40+i*GAP_HEIGHT,list[i+listPos].name,b,1);

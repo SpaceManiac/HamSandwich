@@ -60,7 +60,7 @@ struct executor {
 				}
 				current.destroy();  // it's done, so destroy it
 			}
-#ifdef _DEBUG
+#ifndef NDEBUG
 			else {
 				// if it isn't put to sleep, it's still awake
 				bool asleep = false;

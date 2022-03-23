@@ -414,7 +414,7 @@ void RenderInterface(MGLDraw *mgl)
 	}
 
 	combo[0]=0;
-#ifdef _DEBUG
+#ifndef NDEBUG
 	for(i=0;i<8;i++)
 	{
 		sprintf(combo,"V%d:%d",i,player.var[i]);

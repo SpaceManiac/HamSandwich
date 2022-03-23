@@ -138,7 +138,7 @@ byte InitLevel(byte map)
 		if(player.beenThere[map])	// you have been here - the fact that it's not saved means you are cheating!
 		{
 			NewMessage("YOU CHEAT!",50,1);
-#ifndef _DEBUG
+#ifdef NDEBUG
 			player.brains=0;
 			player.candles=0;
 			if(player.hammers>1)

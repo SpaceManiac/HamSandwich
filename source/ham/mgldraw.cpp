@@ -117,7 +117,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	}
 #endif
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	SDL_RendererInfo info;
 	SDL_GetRendererInfo(renderer, &info);
 	LogDebug("renderer: %s", info.name);

@@ -250,7 +250,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			startTime=timeGetTime();	// reset the clock if any key is pressed
 			return 3;
 		}
-//#ifdef _DEBUG
+//#ifndef NDEBUG
 		if(c=='e')
 		{
 			title->cursor=5;

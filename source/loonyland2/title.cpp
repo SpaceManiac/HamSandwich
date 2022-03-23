@@ -635,7 +635,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 			}
 			if(k==27)
 				CO_RETURN MENU_EXIT;
-#ifdef _DEBUG
+#ifndef NDEBUG
 			if(k=='e' || k=='E')
 				CO_RETURN MENU_EDITOR;
 #endif

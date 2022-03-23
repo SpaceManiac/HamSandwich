@@ -125,7 +125,7 @@ byte InitLevel(byte map)
 	curMap=new Map(curWorld.map[map]);
 
 	verified=VerifyLevel(curMap);
-#ifdef _DEBUG
+#ifndef NDEBUG
 	verified=true;
 #endif
 

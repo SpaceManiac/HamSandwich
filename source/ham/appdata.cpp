@@ -626,7 +626,7 @@ static void missing_assets_message() {
 			"\n"
 			"Download the appropriate installer and save it in\n"
 			"the \"installers\" folder.\n"
-#if defined(_WIN32) && !defined(_DEBUG)
+#if defined(_WIN32) && defined(NDEBUG)
 			// Only talk about "nearby .dll files" on Windows release builds.
 			"\n"
 			"Alternatively, copy this .exe and nearby .dll files\n"
@@ -639,7 +639,7 @@ static void missing_assets_message() {
 			"Missing Assets - HamSandwich",
 			"The game's assets appear to be missing.\n"
 			"\n"
-#if defined(_WIN32) && !defined(_DEBUG)
+#if defined(_WIN32) && defined(NDEBUG)
 			// Only talk about "nearby .dll files" on Windows release builds.
 			"Copy this .exe and nearby .dll files\n"
 			"into an existing installation of the game.\n"

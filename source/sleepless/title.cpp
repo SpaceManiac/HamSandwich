@@ -174,7 +174,7 @@ void MainMenuDisplay(MGLDraw *mgl)
 #ifdef DEMO
 	Print(350,170,"DEMO VERSION!",10,0);
 #endif
-#ifdef _DEBUG
+#ifndef NDEBUG
 	Print(300,170,"DEBUG VERSION!",10,0);
 #endif
 

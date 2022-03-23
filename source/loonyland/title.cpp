@@ -579,7 +579,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		c=mgl->LastKeyPressed();
 		if(c==27)
 			return MENU_EXIT+1;
-#ifdef _DEBUG
+#ifndef NDEBUG
 		if(c=='e')
 			return MENU_EDITOR+1;
 #endif
