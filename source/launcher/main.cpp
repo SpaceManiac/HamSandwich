@@ -240,6 +240,10 @@ struct Launcher
 			});
 			for (const auto& installer : value["installers"])
 			{
+				std::string enabled_file = "installers/";
+				enabled_file.append(installer["filename"]);
+				enabled_file.append(".enabled");
+
 				games.back().assets.push_back(Asset
 				{
 					installer.contains("mountpoint") ? installer["mountpoint"] : "",
@@ -250,6 +254,7 @@ struct Launcher
 					installer["file_id"],
 					installer["description"],
 					!installer.contains("optional") || !installer["optional"],
+					filesystem::exists(enabled_file),
 				});
 			}
 		}
@@ -524,7 +529,20 @@ int main(int argc, char** argv)
 				}
 				else
 				{
-					ImGui::Checkbox(asset.description.c_str(), &asset.enabled);
+					if (ImGui::Checkbox(asset.description.c_str(), &asset.enabled))
+					{
+						std::string enabled_file = "installers/";
+						enabled_file.append(asset.filename);
+						enabled_file.append(".enabled");
+						if (asset.enabled)
+						{
+							std::ofstream dummy { enabled_file };
+						}
+						else
+						{
+							filesystem::remove(enabled_file);
+						}
+					}
 				}
 
 				ImGui::SameLine(ImGui::GetWindowWidth() - 128);
@@ -544,6 +562,8 @@ int main(int argc, char** argv)
 						if (ImGui::Button("Delete###asset_download", { 128, 0 }))
 						{
 							asset.enabled = false;
+							filesystem::remove(fullPath);
+							fullPath.append(".enabled");
 							filesystem::remove(fullPath);
 						}
 					}
