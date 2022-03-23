@@ -34,15 +34,15 @@
 
 typedef struct worldDesc_t
 {
-	char fname[32];
-	char name[32];
-	char author[32];
+	char fname[64];
+	char name[64];
+	char author[64];
 	float percentage;
 	byte complete;
 	byte dimmed;
 } worldDesc_t;
 
-static char curName[32];
+static char curName[64];
 static byte mode;
 static worldDesc_t *list;
 static int numWorlds,worldDescSize,listPos,choice;
@@ -80,7 +80,7 @@ void FlipEm(worldDesc_t *me,worldDesc_t *you)
 byte Compare(worldDesc_t *me,worldDesc_t *you,byte field,byte bkwds)
 {
 	byte f;
-	char tmp1[32],tmp2[32];
+	char tmp1[64] = {}, tmp2[64] = {};
 
 	if(me->dimmed!=you->dimmed)
 		return 0;	// no flipping between ones of different dim status
@@ -109,13 +109,13 @@ byte Compare(worldDesc_t *me,worldDesc_t *you,byte field,byte bkwds)
 	switch(field)
 	{
 		case 0:
-			strcpy(tmp1,me->name);
-			strcpy(tmp2,you->name);
+			strncpy(tmp1,me->name,63);
+			strncpy(tmp2,you->name,63);
 			f=(strcasecmp(tmp1,tmp2)>0);
 			break;
 		case 1:
-			strcpy(tmp1,me->author);
-			strcpy(tmp2,you->author);
+			strncpy(tmp1,me->author,63);
+			strncpy(tmp2,you->author,63);
 			f=(strcasecmp(tmp1,tmp2)>0);
 			break;
 		case 2:
@@ -370,7 +370,7 @@ void FetchScores(byte backwards)
 void SelectLastWorld(void)
 {
 	int i;
-	char s[64];
+	char s[128];
 
 	choice=0;
 
@@ -395,7 +395,7 @@ void SelectLastWorld(void)
 
 void MoveToNewWorld(void)
 {
-	char s[64];
+	char s[128];
 
 	FreeWorld(&tmpWorld);
 	sprintf(s,"worlds/%s",list[choice].fname);
