@@ -393,33 +393,33 @@ bool InnoVfs::list_dir(const char* directory, std::set<std::string>& output) {
 	return archive.list_dir(directory, output);
 }
 
-static std::unique_ptr<Vfs> init_vfs_spec(const char* what, const char* spec) {
+static Mount init_vfs_spec(const char* what, const char* spec) {
 	std::string spec2 = spec;
 	char* mountpoint = spec2.data();
-	char* kind = mountpoint + strcspn(mountpoint, "@") + 1;
-	kind[-1] = 0;
-	char* param = kind + strcspn(kind, "@") + 1;
-	param[-1] = 0;
+	char* kind = mountpoint + strcspn(mountpoint, "@");
+	*kind++ = 0;
+	char* param = kind + strcspn(kind, "@");
+	*param++ = 0;
 
 	if (!strcmp(kind, "stdio")) {
-		return std::make_unique<StdioVfs>(param);
+		return { std::make_unique<StdioVfs>(param), mountpoint };
 	} else if (!strcmp(kind, "nsis")) {
 		SDL_RWops* fp = SDL_RWFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
-			return nullptr;
+			return { nullptr };
 		}
-		return std::make_unique<NsisVfs>(fp);
+		return { std::make_unique<NsisVfs>(fp), mountpoint };
 	} else if (!strcmp(kind, "inno")) {
 		FILE* fp = fopen(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
-			return nullptr;
+			return { nullptr };
 		}
-		return std::make_unique<InnoVfs>(fp);
+		return { std::make_unique<InnoVfs>(fp), mountpoint };
 	} else {
 		LogError("%s: unknown kind '%s' in VFS spec '%s'", what, kind, spec);
-		return nullptr;
+		return { nullptr };
 	}
 }
 
@@ -527,8 +527,9 @@ static bool detect_installers(VfsStack* result, const HamSandwichMetadata* meta)
 
 	// Assets from specs
 	for (int i = 0; meta->default_asset_specs[i]; ++i) {
-		if (auto vfs = init_vfs_spec("built-in", meta->default_asset_specs[i])) {
-			result->push_back(std::move(vfs));
+		auto mount = init_vfs_spec("built-in", meta->default_asset_specs[i]);
+		if (mount.vfs) {
+			result->mounts.push_back(std::move(mount));
 		} else {
 			return false;
 		}
@@ -656,8 +657,9 @@ static VfsStack vfs_stack_from_env() {
 		for (int i = 0; i < 1024; ++i) {
 			sprintf(buffer, "HSW_ASSETS_%d", i);
 			if (const char* asset_spec = getenv(buffer)) {
-				if (auto vfs = init_vfs_spec(buffer, asset_spec)) {
-					result.push_back(std::move(vfs));
+				auto mount = init_vfs_spec(buffer, asset_spec);
+				if (mount.vfs) {
+					result.mounts.push_back(std::move(mount));
 				}
 			} else {
 				break;
