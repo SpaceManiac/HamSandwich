@@ -1,14 +1,9 @@
-// Dear ImGui: standalone example application for SDL2 + OpenGL
-// (SDL is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan/Metal graphics context creation, etc.)
-// If you are new to Dear ImGui, read documentation from the docs/ folder + read the top of imgui.cpp.
-// Read online: https://github.com/ocornut/imgui/tree/master/docs
-
-// **DO NOT USE THIS CODE IF YOUR CODE/ENGINE IS USING MODERN OPENGL (SHADERS, VBO, VAO, etc.)**
-// **Prefer using the code in the example_sdl_opengl3/ folder**
-// See imgui_impl_sdl.cpp for details.
+// HamSandwich launcher, responsible for:
+// - Allowing the player to select which game to play and add-ons to enable
+// - Downloading assets from https://hamumu.itch.io
+// Based on imgui's example_sdl_opengl2.
 
 #include <stdio.h>
-#include <unistd.h>
 #include <vector>
 #include <string>
 #include <fstream>
@@ -32,6 +27,8 @@ namespace filesystem = std::experimental::filesystem::v1;
 #include <direct.h>
 #define platform_mkdir(path) _mkdir(path)
 #else
+#include <unistd.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
 #define platform_mkdir(path) mkdir(path, 0777)
 #endif
@@ -599,24 +596,51 @@ int main(int argc, char** argv)
 			{
 				launcher.wants_to_play = false;
 
-				// Hide the window.
-				SDL_HideWindow(window);
-
-				std::string cmdline = "./";
-				cmdline.append(launcher.current_game->id);
+#if defined(_WIN32)
+				std::string cmdline = launcher.current_game->id;
 				if (!launcher.wants_fullscreen)
 					cmdline.append(" window");
-				// TODO: use exec or CreateProcess instead
-				if (system(cmdline.c_str()))
+
+				STARTUPINFOA startupInfo = {};
+				PROCESS_INFORMATION processInfo = {};
+				startupInfo.cb = sizeof(startupInfo);
+				startupInfo.dwFlags |= STARTF_USESHOWWINDOW;
+				startupInfo.wShowWindow = SW_HIDE;
+				if (CreateProcessA(launcher.current_game->id.c_str(), cmdline.data(), nullptr, nullptr, false, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &processInfo))
 				{
-					// Child process failed, so bring the launcher back.
-					SDL_ShowWindow(window);
+					SDL_HideWindow(window);  // Hide window now that we know the child process was created.
+					WaitForSingleObject(processInfo.hProcess, INFINITE);
+					DWORD exitCode;
+					if (!GetExitCodeProcess(processInfo.hProcess, &exitCode))
+						exitCode = -1;
+					CloseHandle(processInfo.hProcess);
+					CloseHandle(processInfo.hThread);
+					if (exitCode == 0)
+						break;  // Success, so clean up and exit in the background.
 				}
-				else
+#elif !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+				int child_pid = fork();
+				if (child_pid == 0)
 				{
-					// Success, so clean up and exit in the background.
-					break;
+					std::string program = "./";
+					program.append(launcher.current_game->id);
+					char window[] = "window";
+					char* argv[3] = { program.data(), nullptr, nullptr };
+					if (!launcher.wants_fullscreen)
+						argv[1] = window;
+					exit(execvp(argv[0], argv));
 				}
+				else if (child_pid > 0)
+				{
+					SDL_HideWindow(window);  // Hide window. Unfortunately happens even if execvp fails.
+					int wstatus;
+					if (waitpid(child_pid, &wstatus, 0) >= 0 && WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0)
+						break;  // Success, so clean up and exit in the background.
+				}
+#endif
+
+				// Child process failed, so bring the launcher back.
+				SDL_ShowWindow(window);
 			}
 		}
 	}
