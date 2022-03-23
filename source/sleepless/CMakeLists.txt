@@ -3,7 +3,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 HamSandwich_icon(SOURCES lunatic.rc)
 HamSandwich_metadata(sleepless SOURCES sleepless.json)
 
-add_executable(sleepless ${SOURCES})
+HamSandwich_add_executable(sleepless ${SOURCES})
 target_link_libraries(sleepless ham)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

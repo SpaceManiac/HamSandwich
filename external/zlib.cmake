@@ -17,3 +17,6 @@ target_include_directories(minizip PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/zlib/cont
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_compile_options(minizip PRIVATE -fPIC)
 endif()
+if(ANDROID)
+	target_compile_definitions(minizip PRIVATE IOAPI_NO_64)
+endif()
