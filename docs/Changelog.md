@@ -169,7 +169,7 @@ See "Also applicable to Sleepless Hollow" above.
 
 * Show special ID numbers in the editor
 
-### v3.0 (2011-10-11) - [Blog](http://hamumu.com/blog.php?entry=1318300063) - [Source code blog](entry=1318711596) - [Download](https://hamumu.itch.io/dr-lunatic)
+### v3.0 (2011-10-11) - [Blog](http://hamumu.com/blog.php?entry=1318300063) - [Source code blog](http://hamumu.com/blog.php?entry=1318711596) - [Download](https://hamumu.itch.io/dr-lunatic)
 
 * Fix graphical glitches by implementing 8-bit to 32-bit conversion in software
 * Add Smooth Lighting option, backported from Supreme With Cheese
