@@ -8,7 +8,12 @@ add_library(imgui STATIC
 	"${IMGUI_DIR}/backends/imgui_impl_sdl.cpp"
 	"${IMGUI_DIR}/backends/imgui_impl_opengl2.cpp"
 )
-target_link_libraries(imgui PUBLIC SDL2 GL)
+target_link_libraries(imgui PUBLIC SDL2)
+if(WIN32)
+	target_link_libraries(imgui PUBLIC opengl32)
+else()
+	target_link_libraries(imgui PUBLIC GL)
+endif()
 target_include_directories(imgui PUBLIC "${IMGUI_DIR}" "${IMGUI_DIR}/backends")
 
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/imgui/LICENSE.txt" TYPE BIN COMPONENT Executables RENAME "LICENSE.imgui.txt")

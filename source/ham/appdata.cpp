@@ -560,6 +560,10 @@ static VfsStack default_vfs_stack() {
 // ----------------------------------------------------------------------------
 // VfsStack implementation
 
+#ifdef _WIN32
+#define strncasecmp _strnicmp
+#endif
+
 const char* Mount::matches(const char* filename) const {
 	if (mountpoint.empty()) {
 		return filename;  // Blank mountpoint, always match.

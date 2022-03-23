@@ -215,20 +215,20 @@ struct Launcher
 		{
 			games.push_back(Game
 			{
-				.id = key,
-				.title = value["title"],
+				key,
+				value["title"],
 			});
 			for (const auto& installer : value["installers"])
 			{
 				games.back().assets.push_back(Asset
 				{
-					.filename = installer["filename"],
+					installer["filename"],
 					//.kind = installer["kind"],
-					.sha256sum = installer["sha256sum"],
-					.link = installer["link"],
-					.file_id = installer["file_id"],
-					.description = installer["description"],
-					.required = !installer.contains("optional") || !installer["optional"],
+					installer["sha256sum"],
+					installer["link"],
+					installer["file_id"],
+					installer["description"],
+					!installer.contains("optional") || !installer["optional"],
 				});
 			}
 		}
@@ -275,8 +275,8 @@ enum class Action
 
 int main(int argc, char** argv)
 {
-	const char* bin_dir = get_current_dir_name();  // never free()d because we always need it
-	printf("bin_dir: %s\n", bin_dir);
+	//const char* bin_dir = get_current_dir_name();  // never free()d because we always need it
+	//printf("bin_dir: %s\n", bin_dir);
 
 	// Set up curl
 	curl_global_init(CURL_GLOBAL_NOTHING);

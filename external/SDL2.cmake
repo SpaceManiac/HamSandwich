@@ -33,9 +33,11 @@ elseif(MSVC)
 	endif()
 
 	include(FetchContent)
+	# SDL 2.0.8 is the real pinned version, but SDL 2.0.9 fixes a Windows-only bug:
+	# https://github.com/libsdl-org/SDL/commit/c04dca0dad2696d7dcd51427c8183b19ebff8a60
 	FetchContent_Declare(SDL2
-		URL https://www.libsdl.org/release/SDL2-devel-2.0.8-VC.zip
-		URL_HASH SHA256=68505e1f7c16d8538e116405411205355a029dcf2df738dbbc768b2fe95d20fd
+		URL https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
+		URL_HASH SHA256=ea266ef613f88433f493498f9e72e6bed5d03e4f3fde5b571a557a754ade9065
 	)
 	FetchContent_Declare(SDL2_image
 		URL https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.4-VC.zip
