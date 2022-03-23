@@ -151,6 +151,8 @@ struct Game
 {
 	std::string id;
 	std::string title;
+	bool excluded;
+
 	std::vector<Asset> assets;
 
 	bool start_missing_downloads(CURLM* downloads)
@@ -231,6 +233,7 @@ struct Launcher
 			{
 				key,
 				value["title"],
+				value.contains("excluded") && value["excluded"],
 			});
 			for (const auto& installer : value["installers"])
 			{
@@ -449,6 +452,9 @@ int main(int argc, char** argv)
 		{
 			for (auto& game : launcher.games)
 			{
+				if (game.excluded)
+					continue;
+
 				ImGui::PushID(game.id.c_str());
 				if (ImGui::Selectable("", launcher.current_game == &game, ImGuiSelectableFlags_AllowDoubleClick))
 				{

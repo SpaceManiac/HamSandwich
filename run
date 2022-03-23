@@ -138,7 +138,8 @@ debugenvs=()
 if test -z "$nobuild"; then
 	make preset="$preset" install
 	if test "$project" != "launcher" && test "$os" != "emscripten"; then
-		"$PWD/build/cmake-$preset/source/launcher/launcher" --mini-cli "$project"
+		launcher=$PWD/build/cmake-$preset/source/launcher/launcher
+		(cd "$debugdir" && "$launcher" --mini-cli "$project")
 	fi
 	if test "$os" = "emscripten"; then
 		debugdir="$PWD/build/webroot"
