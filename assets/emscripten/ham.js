@@ -127,6 +127,9 @@ var InstallerUpload = (function () {
 		setSpinner(statusTd);
 
 		var fnameTd = document.createElement('td');
+		if (installer.optional)
+			fnameTd.append('Optional: ');
+
 		var a = document.createElement('a');
 		a.href = installer.link;
 		a.innerText = installer.filename;
@@ -140,7 +143,7 @@ var InstallerUpload = (function () {
 			setSpinner(statusTd);
 			fileInput.files[0].arrayBuffer().then(buf => {
 				FS.writeFile('/installers/' + installer.filename, new Uint8Array(buf));
-				checkFsFile(installer.filename, true);
+				checkFsFile(installer.filename, true, installer.optional);
 			});
 		});
 		fileTd.appendChild(fileInput);
@@ -159,7 +162,7 @@ var InstallerUpload = (function () {
 		};
 	}
 
-	function checkFsFile(fname, sync) {
+	function checkFsFile(fname, sync, optional) {
 		var buffer;
 		try {
 			buffer = FS.readFile('/installers/' + fname);
@@ -181,7 +184,8 @@ var InstallerUpload = (function () {
 				if (sync) {
 					HamSandwich.fsSync({ installers: true });
 				}
-				Module.removeRunDependency('installer ' + fname);
+				if (!optional)
+					Module.removeRunDependency('installer ' + fname);
 			} else {
 				status[fname].statusTd.innerText = 'Bad';
 				details.open = true;
@@ -200,7 +204,7 @@ var InstallerUpload = (function () {
 
 	function onFsInit() {
 		for (var installer of meta) {
-			checkFsFile(installer.filename, false);
+			checkFsFile(installer.filename, false, installer.optional);
 		}
 	}
 

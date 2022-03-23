@@ -177,10 +177,10 @@ case "$tool" in
 	emrun)
 		echo "==== Hosting $project ($preset) ===="
 		if test "$project" = "launcher"; then
-			emrun --serve_after_close "$debugdir/index.html"
+			emrun --serve_after_close --serve_after_exit "$debugdir/index.html"
 		else
 			# TODO: Serve out of CMake dir, so non-installed projects work
-			emrun --serve_after_close "$debugdir/$project/index.html"
+			emrun "$debugdir/$project/index.html"
 		fi
 		;;
 	two)
