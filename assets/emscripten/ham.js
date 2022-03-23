@@ -60,7 +60,7 @@ var HamSandwich = (function () {
 		installerMount = FS.mount(IDBFS, {}, '/installers').mount;
 		FS.syncfs(true, fsInitCallback);
 
-		Module.ENV['HSW_APPDATA'] = '/@stdio@/appdata/' + HamSandwich.metadata.appdataName;
+		Module.ENV['HSW_APPDATA'] = 'appdata/' + HamSandwich.metadata.appdataName;
 		if (HamSandwich.metadata.hasAssets) {
 			pushAssets(null, 'stdio', '.');
 		}
@@ -68,7 +68,7 @@ var HamSandwich = (function () {
 
 	var assetCounter = 0;
 	function pushAssets(mountpoint) {
-		mountpoint = mountpoint || '/';
+		mountpoint = mountpoint || '';
 		Module.ENV['HSW_ASSETS_' + (assetCounter++)] = Array.prototype.join.call(arguments, '@');
 	}
 

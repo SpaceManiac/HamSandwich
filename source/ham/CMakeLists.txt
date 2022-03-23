@@ -1,5 +1,5 @@
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-if(WIN32)
+if(WIN32 OR EMSCRIPTEN)
 	# TODO: Deal with Ham importing various functions from each game.
 	set(HAM_LIBRARY_TYPE STATIC)
 else()
@@ -35,6 +35,10 @@ endfunction()
 function(HamSandwich_metadata TARGET_NAME SOURCES_VAR JSON_FILENAME)
 	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${JSON_FILENAME}")
 	file(READ "${JSON_FILENAME}" JSON_BLOB)
+
+	string(JSON JSON_BLOB SET "${JSON_BLOB}" "projectName" "\"${TARGET_NAME}\"")
+	string(JSON JSON_BLOB SET "${JSON_BLOB}" "appdataName" "\"${TARGET_NAME}\"")
+	string(JSON JSON_BLOB SET "${JSON_BLOB}" "hasAssets" false)
 
 	get_property(all_metadata GLOBAL PROPERTY HamSandwich_all_metadata)
 	if("${all_metadata}" STREQUAL "")
@@ -89,6 +93,12 @@ const HamSandwichMetadata* GetHamSandwichMetadata()
 	file(GENERATE OUTPUT metadata.cpp CONTENT "${metadata_cpp}")
 	list(APPEND "${SOURCES_VAR}" "${CMAKE_CURRENT_BINARY_DIR}/metadata.cpp")
 	set("${SOURCES_VAR}" "${${SOURCES_VAR}}" PARENT_SCOPE)
+
+	if(EMSCRIPTEN)
+		file(READ "${CMAKE_SOURCE_DIR}/assets/emscripten/index.html" INDEX_HTML)
+		string(REPLACE "__HAMSANDWICH_METADATA__" "${JSON_BLOB}" INDEX_HTML "${INDEX_HTML}")
+		file(GENERATE OUTPUT index.html CONTENT "${INDEX_HTML}")
+	endif()
 endfunction()
 
 function(HamSandwich_install TARGET_NAME)
@@ -97,7 +107,20 @@ function(HamSandwich_install TARGET_NAME)
 	endif()
 
 	if(EMSCRIPTEN)
+		target_link_libraries("${TARGET_NAME}" idbfs.js)
+		if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+			target_link_options("${TARGET_NAME}" PRIVATE --emrun)
+		endif()
+
 		install(FILES
+			"${CMAKE_SOURCE_DIR}/assets/splashes/${TARGET_NAME}.jpg"
+			RENAME "splash.jpg"
+			DESTINATION "${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}")
+		install(FILES
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.css"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.js"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/jszip.min.js"
+			"${CMAKE_CURRENT_BINARY_DIR}/index.html"
 			"${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.js"
 			"${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.wasm"
 			DESTINATION "${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}")

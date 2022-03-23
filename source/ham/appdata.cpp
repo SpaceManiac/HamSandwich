@@ -143,6 +143,16 @@ struct Mount {
 	std::unique_ptr<Vfs> vfs;
 	std::string mountpoint;
 
+	Mount(std::unique_ptr<Vfs>&& vfs, const std::string& mountpoint = "")
+		: vfs(std::move(vfs))
+		, mountpoint(mountpoint)
+	{
+		// Strip trailing '/' from mountpoint.
+		if (!this->mountpoint.empty() && this->mountpoint.back() == '/') {
+			this->mountpoint.erase(this->mountpoint.size() - 1);
+		}
+	}
+
 	const char* matches(const char* filename) const;
 };
 
@@ -582,10 +592,6 @@ const char* Mount::matches(const char* filename) const {
 }
 
 void VfsStack::push_back(std::unique_ptr<Vfs>&& entry, std::string mountpoint) {
-	// Strip trailing '/' from mountpoint.
-	if (!mountpoint.empty() && mountpoint.back() == '/') {
-		mountpoint.erase(mountpoint.size() - 1);
-	}
 	mounts.push_back(Mount { std::move(entry), mountpoint });
 }
 
