@@ -193,7 +193,8 @@ var InstallerUpload = (function () {
 	function preInit() {
 		for (var installer of meta) {
 			HamSandwich.pushAssets(installer.mountpoint, installer.kind, '/installers/' + installer.filename);
-			Module.addRunDependency('installer ' + installer.filename);
+			if (!installer.optional)
+				Module.addRunDependency('installer ' + installer.filename);
 		}
 	}
 

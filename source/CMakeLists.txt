@@ -44,14 +44,16 @@ endif()
 # Games
 # Use EXCLUDE_FROM_ALL to exclude a game from the launcher and distribution.
 # Comment out an entry to exclude it from the build entirely.
+# The order here is the order that games will appear in the launcher.
 add_subdirectory("lunatic" EXCLUDE_FROM_ALL)
 add_subdirectory("supreme")
-add_subdirectory("sleepless")
+add_subdirectory("mystic")
 add_subdirectory("loonyland")
 add_subdirectory("loonyland2")
-add_subdirectory("mystic")
+add_subdirectory("sleepless")
 
 # Launcher
 if(NOT EMSCRIPTEN AND NOT ANDROID)
 	add_subdirectory("launcher")
 endif()
+HamSandwich_finish()

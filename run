@@ -176,7 +176,12 @@ case "$tool" in
 		;;
 	emrun)
 		echo "==== Hosting $project ($preset) ===="
-		emrun --serve_after_close "$debugdir/$project/index.html"
+		if test "$project" = "launcher"; then
+			emrun --serve_after_close "$debugdir/index.html"
+		else
+			# TODO: Serve out of CMake dir, so non-installed projects work
+			emrun --serve_after_close "$debugdir/$project/index.html"
+		fi
 		;;
 	two)
 		echo "==== Running $project ($preset) ===="

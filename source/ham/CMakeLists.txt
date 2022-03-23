@@ -26,6 +26,7 @@ function(HamSandwich_icon SOURCES_VAR RC_FILENAME)
 			COMMAND python3 "${RESCOMP}" "${INPUT}" "${OUTPUT}"
 			MAIN_DEPENDENCY "${INPUT}"
 			DEPENDS "${RESCOMP}"
+			VERBATIM
 		)
 		list(APPEND "${SOURCES_VAR}" "${OUTPUT}")
 		set("${SOURCES_VAR}" "${${SOURCES_VAR}}" PARENT_SCOPE)
@@ -40,17 +41,25 @@ function(HamSandwich_metadata TARGET_NAME SOURCES_VAR JSON_FILENAME)
 	string(JSON JSON_BLOB SET "${JSON_BLOB}" "appdataName" "\"${TARGET_NAME}\"")
 	string(JSON JSON_BLOB SET "${JSON_BLOB}" "hasAssets" false)
 
-	get_property(all_metadata GLOBAL PROPERTY HamSandwich_all_metadata)
-	if("${all_metadata}" STREQUAL "")
-		set(all_metadata "{}")
-	endif()
+	# If the current directory is marked EXCLUDE_FROM_ALL, say so in the metadata.
 	get_property(is_excluded DIRECTORY PROPERTY EXCLUDE_FROM_ALL)
 	if("${is_excluded}")
 		string(JSON JSON_BLOB SET "${JSON_BLOB}" "excluded" true)
 	endif()
-	string(JSON all_metadata SET "${all_metadata}" "${TARGET_NAME}" "${JSON_BLOB}")
-	set_property(GLOBAL PROPERTY HamSandwich_all_metadata "${all_metadata}")
 
+	# Include this project in the launcher metadata.
+	get_property(launcher_metadata GLOBAL PROPERTY HamSandwich_launcher_metadata)
+	if("${launcher_metadata}" STREQUAL "")
+		set(launcher_metadata [[ { "project_list": [], "project_metadata": {} } ]])
+	endif()
+	if(NOT "${is_excluded}")
+		string(JSON num_projects LENGTH "${launcher_metadata}" project_list)
+		string(JSON launcher_metadata SET "${launcher_metadata}" project_list ${num_projects} "\"${TARGET_NAME}\"")
+	endif()
+	string(JSON launcher_metadata SET "${launcher_metadata}" project_metadata "${TARGET_NAME}" "${JSON_BLOB}")
+	set_property(GLOBAL PROPERTY HamSandwich_launcher_metadata "${launcher_metadata}")
+
+	# Generate metadata.cpp
 	set(metadata_cpp "")
 	string(APPEND metadata_cpp [[
 #include "metadata.h"
@@ -112,19 +121,41 @@ function(HamSandwich_install TARGET_NAME)
 			target_link_options("${TARGET_NAME}" PRIVATE --emrun)
 		endif()
 
-		install(FILES
-			"${CMAKE_SOURCE_DIR}/assets/splashes/${TARGET_NAME}.jpg"
+		install(
+			FILES "${CMAKE_SOURCE_DIR}/assets/splashes/${TARGET_NAME}.jpg"
 			RENAME "splash.jpg"
-			DESTINATION "${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}")
-		install(FILES
+			DESTINATION "${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}"
+		)
+		install(
+			FILES
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.css"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.js"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/jszip.min.js"
 			"${CMAKE_CURRENT_BINARY_DIR}/index.html"
 			"${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.js"
 			"${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.wasm"
-			DESTINATION "${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}")
+			DESTINATION "${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}"
+		)
 	else()
 		install(TARGETS "${TARGET_NAME}" COMPONENT Executables)
+	endif()
+endfunction()
+
+function(HamSandwich_finish)
+	if(EMSCRIPTEN)
+		get_property(launcher_metadata GLOBAL PROPERTY HamSandwich_launcher_metadata)
+		file(READ "${CMAKE_SOURCE_DIR}/assets/homepage/index.html" index_html)
+		string(REPLACE "__HOMEPAGE_METADATA__" "${launcher_metadata}" index_html "${index_html}")
+		file(GENERATE OUTPUT index.html CONTENT "${index_html}")
+
+		install(FILES
+			"${CMAKE_CURRENT_BINARY_DIR}/index.html"
+			DESTINATION "${CMAKE_INSTALL_PREFIX}"
+		)
+		install(
+			FILES "${CMAKE_CURRENT_SOURCE_DIR}/supreme/lunatic.ico"
+			RENAME "favicon.ico"
+			DESTINATION "${CMAKE_INSTALL_PREFIX}"
+		)
 	endif()
 endfunction()

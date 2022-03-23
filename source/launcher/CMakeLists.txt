@@ -1,7 +1,7 @@
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-get_property(all_metadata GLOBAL PROPERTY HamSandwich_all_metadata)
-file(GENERATE OUTPUT launcher.json CONTENT "${all_metadata}")
+get_property(launcher_metadata GLOBAL PROPERTY HamSandwich_launcher_metadata)
+file(GENERATE OUTPUT launcher.json CONTENT "${launcher_metadata}")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/launcher.json" TYPE BIN COMPONENT Executables)
 
 add_executable(launcher ${SOURCES})

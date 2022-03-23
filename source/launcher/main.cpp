@@ -225,13 +225,14 @@ struct Launcher
 		downloads.reset(curl_multi_init());
 
 		std::ifstream infile { "launcher.json" };
-		nlohmann::json metadata;
-		infile >> metadata;
-		for (const auto& [key, value] : metadata.items())
+		nlohmann::json launcher_metadata;
+		infile >> launcher_metadata;
+		for (std::string id : launcher_metadata["project_list"])
 		{
+			auto value = launcher_metadata["project_metadata"][id];
 			games.push_back(Game
 			{
-				key,
+				id,
 				value["title"],
 				value.contains("excluded") && value["excluded"],
 			});
