@@ -266,12 +266,15 @@ struct Launcher
 			{
 				if (msg->msg == CURLMSG_DONE)
 				{
-					curl_multi_remove_handle(downloads, msg->easy_handle);
+					CURL* transfer = msg->easy_handle;
+					CURLcode result = msg->data.result;
+					curl_multi_remove_handle(downloads, transfer);
+
 					for (auto& game : games)
 					{
 						for (auto& asset : game.assets)
 						{
-							running_downloads += asset.transfer_completed(downloads, msg->easy_handle, msg->data.result);
+							running_downloads += asset.transfer_completed(downloads, transfer, result);
 						}
 					}
 				}
