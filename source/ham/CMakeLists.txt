@@ -31,6 +31,13 @@ function(HamSandwich_icon SOURCES_VAR RC_FILENAME)
 		list(APPEND "${SOURCES_VAR}" "${OUTPUT}")
 		set("${SOURCES_VAR}" "${${SOURCES_VAR}}" PARENT_SCOPE)
 	endif()
+
+	if(EMSCRIPTEN)
+		string(REPLACE ".rc" "" rc_basename "${RC_FILENAME}")
+		set(input "${CMAKE_CURRENT_SOURCE_DIR}/${rc_basename}.ico")
+		set(output "${CMAKE_CURRENT_BINARY_DIR}/favicon.ico")
+		configure_file("${input}" "${output}" COPYONLY)
+	endif()
 endfunction()
 
 function(HamSandwich_metadata TARGET_NAME SOURCES_VAR JSON_FILENAME)
@@ -132,6 +139,7 @@ function(HamSandwich_install TARGET_NAME)
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.js"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/jszip.min.js"
 			"${CMAKE_CURRENT_BINARY_DIR}/index.html"
+			"${CMAKE_CURRENT_BINARY_DIR}/favicon.ico"
 			"${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.js"
 			"${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.wasm"
 			DESTINATION "${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}"
