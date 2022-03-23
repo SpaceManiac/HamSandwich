@@ -15,7 +15,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_compile_options(launcher PRIVATE -Wall -Wextra -Wno-missing-field-initializers)
 endif()
 
-if(WIN32)
+if(WIN32 AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 	set_target_properties(launcher PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()
 

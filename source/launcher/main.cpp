@@ -35,6 +35,8 @@ namespace filesystem = std::experimental::filesystem::v1;
 
 struct Asset
 {
+	std::string mountpoint;
+	std::string kind;
 	std::string filename;
 	std::string sha256sum;
 	std::string link;
@@ -240,8 +242,9 @@ struct Launcher
 			{
 				games.back().assets.push_back(Asset
 				{
+					installer.contains("mountpoint") ? installer["mountpoint"] : "",
+					installer["kind"],
 					installer["filename"],
-					//.kind = installer["kind"],
 					installer["sha256sum"],
 					installer["link"],
 					installer["file_id"],
@@ -627,12 +630,33 @@ int main(int argc, char** argv)
 				if (!launcher.wants_fullscreen)
 					cmdline.append(" window");
 
+				std::ostringstream environment;
+				const char* originalEnv = GetEnvironmentStringsA();
+				while (*originalEnv)
+				{
+					environment << originalEnv << '\0';
+					originalEnv += strlen(originalEnv) + 1;
+				}
+
+				environment << "HSW_APPDATA=appdata/" << launcher.current_game->id << '\0';
+
+				int i = 0;
+				for (const auto& asset : launcher.current_game->assets)
+				{
+					if (asset.required || asset.enabled)
+					{
+						environment << "HSW_ASSETS_" << i << "=" << asset.mountpoint << "@" << asset.kind << "@installers/" << asset.filename << '\0';
+						++i;
+					}
+				}
+				environment << '\0';
+
 				STARTUPINFOA startupInfo = {};
 				PROCESS_INFORMATION processInfo = {};
 				startupInfo.cb = sizeof(startupInfo);
 				startupInfo.dwFlags |= STARTF_USESHOWWINDOW;
 				startupInfo.wShowWindow = SW_HIDE;
-				if (CreateProcessA(executable.c_str(), cmdline.data(), nullptr, nullptr, false, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &processInfo))
+				if (CreateProcessA(executable.c_str(), cmdline.data(), nullptr, nullptr, false, CREATE_NO_WINDOW, environment.str().data(), nullptr, &startupInfo, &processInfo))
 				{
 					SDL_HideWindow(window);  // Hide window now that we know the child process was created.
 					WaitForSingleObject(processInfo.hProcess, INFINITE);
@@ -652,13 +676,44 @@ int main(int argc, char** argv)
 				int child_pid = fork();
 				if (child_pid == 0)
 				{
-					std::string program = "./";
-					program.append(launcher.current_game->id);
+					std::string program = launcher.current_game->id;
 					char window[] = "window";
 					char* argv[3] = { program.data(), nullptr, nullptr };
 					if (!launcher.wants_fullscreen)
 						argv[1] = window;
-					exit(execvp(argv[0], argv));
+
+					std::vector<std::string> envs;
+					std::vector<char*> raw_envs;
+
+					char** originalEnv = environ;
+					while (*originalEnv)
+					{
+						raw_envs.push_back(*originalEnv);
+						++originalEnv;
+					}
+
+					std::ostringstream environment;
+					environment << "HSW_APPDATA=appdata/" << launcher.current_game->id;
+					envs.push_back(environment.str());
+					raw_envs.push_back(envs.back().data());
+
+					int i = 0;
+					for (const auto& asset : launcher.current_game->assets)
+					{
+						if (asset.required || asset.enabled)
+						{
+							environment.str("");
+							environment << "HSW_ASSETS_" << i << "=" << asset.mountpoint << "@" << asset.kind << "@installers/" << asset.filename;
+							envs.push_back(environment.str());
+							raw_envs.push_back(envs.back().data());
+							++i;
+						}
+					}
+					raw_envs.push_back(nullptr);
+
+					execve(argv[0], argv, raw_envs.data());
+					perror("execve");
+					exit(1);
 				}
 				else if (child_pid > 0)
 				{
