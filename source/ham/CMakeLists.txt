@@ -9,7 +9,9 @@ add_library(ham ${HAM_LIBRARY_TYPE} ${SOURCES})
 target_link_libraries(ham vanilla_extract SDL2 SDL2_image SDL2_mixer)
 target_include_directories(ham INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
-install(TARGETS ham COMPONENT Executables)
+if("${HAM_LIBRARY_TYPE}" STREQUAL "SHARED")
+	install(TARGETS ham COMPONENT Executables)
+endif()
 
 function(HamSandwich_icon SOURCES_VAR RC_FILENAME)
 	set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/${RC_FILENAME}")
@@ -86,6 +88,10 @@ const HamSandwichMetadata* GetHamSandwichMetadata()
 endfunction()
 
 function(HamSandwich_install TARGET_NAME)
+	if(WIN32 AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+		set_target_properties("${TARGET_NAME}" PROPERTIES WIN32_EXECUTABLE TRUE)
+	endif()
+
 	if(EMSCRIPTEN)
 		install(FILES
 			"${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.js"

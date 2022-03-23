@@ -79,14 +79,21 @@ struct Asset
 		curl_easy_setopt(metadata_download, CURLOPT_POSTFIELDSIZE, 0);
 		curl_easy_setopt(metadata_download, CURLOPT_WRITEFUNCTION, Asset::metadata_write_callback);
 		curl_easy_setopt(metadata_download, CURLOPT_WRITEDATA, this);
+		curl_easy_setopt(metadata_download, CURLOPT_FAILONERROR, true);
 		curl_multi_add_handle(downloads, metadata_download);
 	}
 
-	int transfer_completed(CURLM* downloads, CURL* transfer)
+	int transfer_completed(CURLM* downloads, CURL* transfer, CURLcode result)
 	{
 		if (transfer == metadata_download)
 		{
 			metadata_download = nullptr;
+
+			if (result != CURLE_OK)
+			{
+				fprintf(stderr, "Metadata download failed: %d\n", result);
+				return 0;
+			}
 
 			auto message = nlohmann::json::parse(metadata_progress);
 			std::string url = message["url"];
@@ -107,6 +114,7 @@ struct Asset
 			curl_easy_setopt(content_download, CURLOPT_NOPROGRESS, 0);
 			curl_easy_setopt(content_download, CURLOPT_XFERINFOFUNCTION, Asset::content_progress_callback);
 			curl_easy_setopt(content_download, CURLOPT_XFERINFODATA, this);
+			curl_easy_setopt(content_download, CURLOPT_FAILONERROR, true);
 
 			curl_multi_add_handle(downloads, content_download);
 			return 1;
@@ -116,6 +124,12 @@ struct Asset
 			fclose(content_progress);
 			content_progress = nullptr;
 			content_download = nullptr;
+
+			if (result != CURLE_OK)
+			{
+				fprintf(stderr, "Content download failed: %d\n", result);
+				return 0;
+			}
 
 			std::string full_path = "installers/";
 			full_path.append(filename);
@@ -254,7 +268,7 @@ struct Launcher
 					{
 						for (auto& asset : game.assets)
 						{
-							running_downloads += asset.transfer_completed(downloads, msg->easy_handle);
+							running_downloads += asset.transfer_completed(downloads, msg->easy_handle, msg->data.result);
 						}
 					}
 				}
@@ -279,7 +293,7 @@ int main(int argc, char** argv)
 	//printf("bin_dir: %s\n", bin_dir);
 
 	// Set up curl
-	curl_global_init(CURL_GLOBAL_NOTHING);
+	curl_global_init(CURL_GLOBAL_DEFAULT);
 	Action action = Action::Gui;
 	Launcher launcher;
 
@@ -598,6 +612,8 @@ int main(int argc, char** argv)
 
 #if defined(_WIN32)
 				std::string cmdline = launcher.current_game->id;
+				cmdline.append(".exe");
+				std::string executable = cmdline;
 				if (!launcher.wants_fullscreen)
 					cmdline.append(" window");
 
@@ -606,7 +622,7 @@ int main(int argc, char** argv)
 				startupInfo.cb = sizeof(startupInfo);
 				startupInfo.dwFlags |= STARTF_USESHOWWINDOW;
 				startupInfo.wShowWindow = SW_HIDE;
-				if (CreateProcessA(launcher.current_game->id.c_str(), cmdline.data(), nullptr, nullptr, false, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &processInfo))
+				if (CreateProcessA(executable.c_str(), cmdline.data(), nullptr, nullptr, false, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &processInfo))
 				{
 					SDL_HideWindow(window);  // Hide window now that we know the child process was created.
 					WaitForSingleObject(processInfo.hProcess, INFINITE);
@@ -617,6 +633,10 @@ int main(int argc, char** argv)
 					CloseHandle(processInfo.hThread);
 					if (exitCode == 0)
 						break;  // Success, so clean up and exit in the background.
+				}
+				else
+				{
+					fprintf(stderr, "CreateProcess failed: %d\n", GetLastError());
 				}
 #elif !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 				int child_pid = fork();
@@ -636,6 +656,10 @@ int main(int argc, char** argv)
 					int wstatus;
 					if (waitpid(child_pid, &wstatus, 0) >= 0 && WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0)
 						break;  // Success, so clean up and exit in the background.
+				}
+				else
+				{
+					perror("fork");
 				}
 #endif
 
