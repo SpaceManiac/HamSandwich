@@ -11,6 +11,7 @@
 #include "mgldraw.h"
 #include "jamulfont.h"
 #include "jamulsound.h"
+#include "extern.h"
 
 #include "game.h"
 #include "editor.h"
@@ -27,6 +28,8 @@
 
 TASK(int) main(int argc, char* argv[])
 {
+	HAM_EXTERN_FULFILL
+
 	bool windowedGame=false;
 
 	for (int i = 1; i < argc; ++i)

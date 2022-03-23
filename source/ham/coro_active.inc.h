@@ -141,9 +141,11 @@ struct promise<void> : public promise_base<void> {
 
 task<void> next_frame();
 void launch(std::function<task<void>()> entry_point);
-task<int> main(int argc, char** argv);
 
 }  // namespace coro
+
+// Outside of namespace so HAM_EXTERN_FULFILL declarations are global.
+coro::task<int> coro__main(int argc, char** argv);
 
 template<typename Result, typename ...Arg>
 struct std::experimental::coroutine_traits<coro::task<Result>, Arg...> {
@@ -154,4 +156,4 @@ struct std::experimental::coroutine_traits<coro::task<Result>, Arg...> {
 #define AWAIT co_await
 #define CO_RETURN co_return
 
-#define main coro::main
+#define main coro__main

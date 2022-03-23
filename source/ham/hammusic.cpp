@@ -2,6 +2,7 @@
 #include "mgldraw.h"
 #include "log.h"
 #include "appdata.h"
+#include "extern.h"
 #include <stdio.h>
 
 #include <SDL_mixer.h>
@@ -11,10 +12,11 @@ static int musVolume = 255;
 
 void UpdateMusic()
 {
-	if (ConfigMusicEnabled() && curStream && !Mix_PlayingMusic())
+	if (g_HamExtern.ConfigMusicEnabled && g_HamExtern.ConfigMusicEnabled() && curStream && !Mix_PlayingMusic())
 	{
 		Mix_PlayMusic(curStream, 1);
-		ChooseNextSong();
+		if (g_HamExtern.ChooseNextSong)
+			g_HamExtern.ChooseNextSong();
 	}
 }
 
@@ -29,7 +31,7 @@ void SetMusicVolume(int vol)
 
 void PlaySongFile(const char* fullname)
 {
-	if (!ConfigMusicEnabled())
+	if (!g_HamExtern.ConfigMusicEnabled || !g_HamExtern.ConfigMusicEnabled())
 		return;
 
 	StopSong();

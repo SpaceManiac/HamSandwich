@@ -5,6 +5,7 @@
 #include "log.h"
 #include "softjoystick.h"
 #include "appdata.h"
+#include "extern.h"
 #include <time.h>
 #include <random>
 #include <algorithm>
@@ -17,10 +18,6 @@
 #ifdef __EMSCRIPTEN__
 	#include <emscripten.h>
 #endif  // _EMSCRIPTEN__
-
-// provided by games
-void SoundSystemExists();
-void SetGameIdle(bool idle);
 
 // in control.cpp
 void ControlKeyDown(byte scancode);
@@ -75,8 +72,8 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
 #endif
 
-	if(JamulSoundInit(512))
-		SoundSystemExists();
+	if(JamulSoundInit(512) && g_HamExtern.SoundSystemExists)
+		g_HamExtern.SoundSystemExists();
 
 	Uint32 flags = windowed ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP;
 	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, xRes, yRes, flags);
@@ -381,9 +378,11 @@ TASK(void) MGLDraw::FinishFlip(void)
 		} else if (e.type == SDL_WINDOWEVENT) {
 			if (e.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
 				idle = true;
-				SetGameIdle(true);
+				if (g_HamExtern.SetGameIdle)
+					g_HamExtern.SetGameIdle(true);
 			} else if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
-				SetGameIdle(false);
+				if (g_HamExtern.SetGameIdle)
+					g_HamExtern.SetGameIdle(false);
 				idle = false;
 			} else if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
 				winWidth = e.window.data1;

@@ -3,6 +3,7 @@
 #include "jamulfont.h"
 #include "jamulsound.h"
 #include "config.h"
+#include "extern.h"
 
 #include "game.h"
 #include "editor.h"
@@ -40,6 +41,8 @@ void GetPal(void)
 
 TASK(int) main(int argc, char* argv[])
 {
+	HAM_EXTERN_FULFILL
+
 	bool windowedGame=false;
 	for (int i = 1; i < argc; ++i)
 	{

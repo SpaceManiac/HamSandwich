@@ -3,16 +3,12 @@
 #include "log.h"
 #include "audiofx.h"
 #include "appdata.h"
+#include "extern.h"
 #include <stdio.h>
 #include <memory>
 
 #include <SDL.h>
 #include <SDL_mixer.h>
-
-// Game-provided
-extern bool ConfigSoundEnabled();
-extern int ConfigNumSounds();
-extern SDL_RWops* SoundLoadOverride(int num);
 
 struct ChunkDeleter {
 	inline void operator()(Mix_Chunk* ptr) { return Mix_FreeChunk(ptr); }
@@ -46,7 +42,7 @@ bool JamulSoundInit(int numBuffers)
 {
 	int i;
 
-	if (!ConfigSoundEnabled()) {
+	if (!g_HamExtern.ConfigSoundEnabled || !g_HamExtern.ConfigSoundEnabled()) {
 		LogDebug("sound disabled in config");
 		return false;
 	}
@@ -69,7 +65,7 @@ bool JamulSoundInit(int numBuffers)
 	printf("audio format: freq=%d, channels=%d, format=0x%x\n", frequency, channels, format);
 #endif
 
-	NUM_SOUNDS = ConfigNumSounds();
+	NUM_SOUNDS = g_HamExtern.ConfigNumSounds ? g_HamExtern.ConfigNumSounds() : 0;
 	Mix_AllocateChannels(NUM_SOUNDS + 1);
 
 	soundIsOn=1;
@@ -138,7 +134,7 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 	if(soundList[which].sample==NULL)
 	{
 		// See if sound loading is overridden for this sound...
-		SDL_RWops* rw = SoundLoadOverride(which);
+		SDL_RWops* rw = g_HamExtern.SoundLoadOverride ? g_HamExtern.SoundLoadOverride(which) : nullptr;
 		if (!rw)
 		{
 			// If not, try to load it from a file instead
