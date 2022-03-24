@@ -1,0 +1,63 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+
+env:
+  ITCH_GAME: ${{ secrets.ITCH_GAME }}
+  BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+
+jobs:
+  windows:
+    name: Windows
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v2
+      - shell: cmd
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
+          cmake --preset windows-i686-release
+          cmake --build build/cmake-windows-i686-release16.0 --target install
+      - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
+        run: tools/bootstrap/butler push --if-changed build/install "${ENV:ITCH_GAME}:windows" ("--userversion=" + (git rev-parse --short=10 HEAD))
+  linux:
+    name: Linux
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: tools/build/install-deps.sh
+      - run: make install mode=release
+      - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
+        run: tools/bootstrap/butler push --if-changed build/install "$ITCH_GAME:linux" --userversion="$(git rev-parse --short=10 HEAD)"
+  mac:
+    name: MacOS
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v2
+      - run: make install mode=release
+      - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
+        run: tools/bootstrap/butler push --if-changed build/install "$ITCH_GAME:macos" --userversion="$(git rev-parse --short=10 HEAD)"
+  android:
+    name: Android
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: sudo apt install openjdk-11-jdk ninja-build
+      - run: env JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 ./gradlew packageRelease
+      - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
+        run: |
+          cp build/android/android-project/outputs/apk/release/android-project-release-unsigned.apk hamsandwich-android.apk
+          tools/bootstrap/butler push --if-changed hamsandwich-android.apk "$ITCH_GAME:android" --userversion="$(git rev-parse --short=10 HEAD)"
+  web:
+    name: Web
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: make install mode=release os=emscripten
+      - if: github.event_name == 'push' && github.ref_name == 'master'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/webroot
+          force_orphan: true
