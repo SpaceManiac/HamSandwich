@@ -51,23 +51,31 @@
 		},
 		{
 			"name": "linux-x86_64-debug",
-			"inherits": "base"
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja"
+			}
 		},
 		{
 			"name": "linux-x86_64-release",
 			"inherits": "base",
 			"cacheVariables": {
+				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja",
 				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
 			}
 		},
 		{
 			"name": "macos-x86_64-debug",
-			"inherits": "base"
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja"
+			}
 		},
 		{
 			"name": "macos-x86_64-release",
 			"inherits": "base",
 			"cacheVariables": {
+				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja",
 				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
 			}
 		},
