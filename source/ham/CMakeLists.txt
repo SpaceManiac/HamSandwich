@@ -24,6 +24,20 @@ function(HamSandwich_add_executable TARGET_NAME)
 	endif()
 endfunction()
 
+function(HamSandwich_embed_file sources_var filename symbol_name)
+	set(embed_py "${CMAKE_SOURCE_DIR}/tools/build/embed.py")
+	set(cpp "${CMAKE_CURRENT_BINARY_DIR}/${symbol_name}.cpp")
+	add_custom_command(
+		OUTPUT "${cpp}" "${h}"
+		COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${embed_py}" "${filename}" "${cpp}" "${symbol_name}"
+		MAIN_DEPENDENCY "${filename}"
+		DEPENDS "${embed_py}"
+		VERBATIM
+	)
+	list(APPEND "${sources_var}" "${cpp}")
+	set("${sources_var}" "${${sources_var}}" PARENT_SCOPE)
+endfunction()
+
 function(HamSandwich_icon sources_var ico_filename)
 	set(ico "${CMAKE_CURRENT_SOURCE_DIR}/${ico_filename}")
 	if(WIN32)
@@ -32,9 +46,7 @@ function(HamSandwich_icon sources_var ico_filename)
 		set("${sources_var}" "${${sources_var}}" PARENT_SCOPE)
 	else()
 		set(ico2png_py "${CMAKE_SOURCE_DIR}/tools/build/ico2png.py")
-		set(embed_py "${CMAKE_SOURCE_DIR}/tools/build/embed.py")
 		set(ico_png "${CMAKE_CURRENT_BINARY_DIR}/${ico_filename}.png")
-		set(ico_cpp "${CMAKE_CURRENT_BINARY_DIR}/${ico_filename}.png.cpp")
 		add_custom_command(
 			OUTPUT "${ico_png}"
 			COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${ico2png_py}" "${ico}" "${ico_png}"
@@ -42,14 +54,7 @@ function(HamSandwich_icon sources_var ico_filename)
 			DEPENDS "${ico2png_py}"
 			VERBATIM
 		)
-		add_custom_command(
-			OUTPUT "${ico_cpp}"
-			COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${embed_py}" "${ico_png}" "${ico_cpp}" "embed_game_icon"
-			MAIN_DEPENDENCY "${ico_png}"
-			DEPENDS "${embed_py}"
-			VERBATIM
-		)
-		list(APPEND "${sources_var}" "${ico_cpp}")
+		HamSandwich_embed_file("${sources_var}" "${ico_png}" embed_game_icon)
 		set("${sources_var}" "${${sources_var}}" PARENT_SCOPE)
 	endif()
 

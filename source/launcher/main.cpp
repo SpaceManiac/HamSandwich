@@ -15,6 +15,9 @@
 #include <json.hpp>
 #include <curl/curl.h>
 
+extern const size_t embed_launcher_json_size;
+extern const unsigned char embed_launcher_json[];
+
 #if defined(_MSC_VER) || defined(__clang__)
 #include <filesystem>
 namespace filesystem = std::filesystem;
@@ -231,9 +234,7 @@ struct Launcher
 	{
 		downloads.reset(curl_multi_init());
 
-		std::ifstream infile { "launcher.json" };
-		nlohmann::json launcher_metadata;
-		infile >> launcher_metadata;
+		nlohmann::json launcher_metadata = nlohmann::json::parse(embed_launcher_json, embed_launcher_json + embed_launcher_json_size);
 		for (std::string id : launcher_metadata["project_list"])
 		{
 			auto value = launcher_metadata["project_metadata"][id];

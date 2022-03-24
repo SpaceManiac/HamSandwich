@@ -2,7 +2,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 get_property(launcher_metadata GLOBAL PROPERTY HamSandwich_launcher_metadata)
 file(GENERATE OUTPUT launcher.json CONTENT "${launcher_metadata}")
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/launcher.json" TYPE BIN COMPONENT Executables)
+HamSandwich_embed_file(SOURCES launcher.json embed_launcher_json)
 
 add_executable(launcher ${SOURCES})
 target_link_libraries(launcher SDL2 imgui libcurl nlohmann_json)
