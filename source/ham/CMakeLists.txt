@@ -24,30 +24,42 @@ function(HamSandwich_add_executable TARGET_NAME)
 	endif()
 endfunction()
 
-function(HamSandwich_icon SOURCES_VAR RC_FILENAME)
-	set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/${RC_FILENAME}")
+function(HamSandwich_icon sources_var ico_filename)
+	set(ico "${CMAKE_CURRENT_SOURCE_DIR}/${ico_filename}")
 	if(WIN32)
-		list(APPEND "${SOURCES_VAR}" "${INPUT}")
-		set("${SOURCES_VAR}" "${${SOURCES_VAR}}" PARENT_SCOPE)
+		file(GENERATE OUTPUT icon.rc CONTENT "allegro_icon ICON \"${ico}\"")
+		list(APPEND "${sources_var}" "${CMAKE_CURRENT_BINARY_DIR}/icon.rc")
+		set("${sources_var}" "${${sources_var}}" PARENT_SCOPE)
 	else()
-		set(RESCOMP "${CMAKE_SOURCE_DIR}/tools/build/rescomp.py")
-		set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${RC_FILENAME}.cpp")
+		set(ico2png_py "${CMAKE_SOURCE_DIR}/tools/build/ico2png.py")
+		set(embed_py "${CMAKE_SOURCE_DIR}/tools/build/embed.py")
+		set(ico_png "${CMAKE_CURRENT_BINARY_DIR}/${ico_filename}.png")
+		set(ico_cpp "${CMAKE_CURRENT_BINARY_DIR}/${ico_filename}.png.cpp")
 		add_custom_command(
-			OUTPUT "${OUTPUT}"
-			COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${RESCOMP}" "${INPUT}" "${OUTPUT}"
-			MAIN_DEPENDENCY "${INPUT}"
-			DEPENDS "${RESCOMP}"
+			OUTPUT "${ico_png}"
+			COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${ico2png_py}" "${ico}" "${ico_png}"
+			MAIN_DEPENDENCY "${ico}"
+			DEPENDS "${ico2png_py}"
 			VERBATIM
 		)
-		list(APPEND "${SOURCES_VAR}" "${OUTPUT}")
-		set("${SOURCES_VAR}" "${${SOURCES_VAR}}" PARENT_SCOPE)
+		add_custom_command(
+			OUTPUT "${ico_cpp}"
+			COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${embed_py}" "${ico_png}" "${ico_cpp}" "embed_game_icon"
+			MAIN_DEPENDENCY "${ico_png}"
+			DEPENDS "${embed_py}"
+			VERBATIM
+		)
+		list(APPEND "${sources_var}" "${ico_cpp}")
+		set("${sources_var}" "${${sources_var}}" PARENT_SCOPE)
 	endif()
 
 	if(EMSCRIPTEN)
-		string(REPLACE ".rc" "" rc_basename "${RC_FILENAME}")
-		set(input "${CMAKE_CURRENT_SOURCE_DIR}/${rc_basename}.ico")
-		set(output "${CMAKE_CURRENT_BINARY_DIR}/favicon.ico")
-		configure_file("${input}" "${output}" COPYONLY)
+		add_custom_command(
+			OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/favicon.ico"
+			COMMAND cmake -E copy "${ico}" "${CMAKE_CURRENT_BINARY_DIR}/favicon.ico"
+			MAIN_DEPENDENCY "${ico}"
+			VERBATIM
+		)
 	endif()
 endfunction()
 

@@ -102,11 +102,11 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	// `tools/build/rescomp.py` produces a .cpp file containing these symbols.
 	// Marked `__attribute__((weak))` for platforms or projects which do not
 	// use this icon embedding method.
-	extern __attribute__((weak)) size_t WINDOW_ICON_SZ;
-	extern __attribute__((weak)) unsigned char WINDOW_ICON[];
-	if (&WINDOW_ICON && &WINDOW_ICON_SZ) {
+	extern __attribute__((weak)) const size_t embed_game_icon_size;
+	extern __attribute__((weak)) const unsigned char embed_game_icon[];
+	if (&embed_game_icon && &embed_game_icon_size) {
 		SDL_Surface *surface = IMG_Load_RW(
-			SDL_RWFromConstMem(WINDOW_ICON, WINDOW_ICON_SZ),
+			SDL_RWFromConstMem(embed_game_icon, embed_game_icon_size),
 			1
 		);
 		SDL_SetWindowIcon(window, surface);
