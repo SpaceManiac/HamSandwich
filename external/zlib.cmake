@@ -1,4 +1,6 @@
 # zlib target
+set(zlib "${CMAKE_CURRENT_SOURCE_DIR}/zlib")
+
 if(EMSCRIPTEN)
 	add_library(z INTERFACE)
 	target_compile_options(z INTERFACE -sUSE_ZLIB=1)
@@ -7,13 +9,14 @@ elseif(MSVC)
 	add_library(z INTERFACE)
 	add_subdirectory("zlib" EXCLUDE_FROM_ALL)
 	target_link_libraries(z INTERFACE zlibstatic)
-	target_include_directories(z INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/zlib" "${CMAKE_CURRENT_BINARY_DIR}/zlib")
+	target_include_directories(z INTERFACE "${zlib}" "${CMAKE_CURRENT_BINARY_DIR}/zlib")
 endif()
 
 add_library(minizip STATIC
-	"${CMAKE_CURRENT_SOURCE_DIR}/zlib/contrib/minizip/unzip.c"
-	"${CMAKE_CURRENT_SOURCE_DIR}/zlib/contrib/minizip/ioapi.c")
-target_include_directories(minizip PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/zlib/contrib/minizip")
+	"${zlib}/contrib/minizip/unzip.c"
+	"${zlib}/contrib/minizip/ioapi.c")
+target_include_directories(minizip PUBLIC "${zlib}/contrib/minizip")
+target_link_libraries(minizip PUBLIC z)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_compile_options(minizip PRIVATE -fPIC)
 endif()
