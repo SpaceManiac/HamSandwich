@@ -1,17 +1,13 @@
-#!/usr/bin/env python3
+#!/bin/sh
+"exec" """$(dirname "$0")/../bootstrap/python""" "$0" "$@"
+# -----------------------------------------------------------------------------
 # rescomp.py - provide icon embedding on non-Windows platforms
 
 # Dependencies
 import sys
 import os
 from io import BytesIO
-
-try:
-	from PIL import Image
-except ImportError:
-	import subprocess
-	subprocess.call([sys.executable, "-m", "pip", "install", "--user", "Pillow"])
-	from PIL import Image
+from PIL import Image
 
 # Actual script
 exe, in_fname, out_fname = sys.argv

@@ -34,7 +34,7 @@ function(HamSandwich_icon SOURCES_VAR RC_FILENAME)
 		set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${RC_FILENAME}.cpp")
 		add_custom_command(
 			OUTPUT "${OUTPUT}"
-			COMMAND python3 "${RESCOMP}" "${INPUT}" "${OUTPUT}"
+			COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${RESCOMP}" "${INPUT}" "${OUTPUT}"
 			MAIN_DEPENDENCY "${INPUT}"
 			DEPENDS "${RESCOMP}"
 			VERBATIM
