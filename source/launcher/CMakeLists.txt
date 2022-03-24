@@ -19,4 +19,7 @@ if(WIN32 AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 	set_target_properties(launcher PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()
 
-install(TARGETS libcurl launcher COMPONENT Executables)
+install(TARGETS launcher COMPONENT Executables)
+if(NOT APPLE)
+	install(TARGETS libcurl COMPONENT Executables)
+endif()

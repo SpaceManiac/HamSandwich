@@ -74,20 +74,48 @@ elseif(MSVC)
 		"${sdl2_mixer_LIBS}/libvorbisfile-3.dll"
 		TYPE BIN COMPONENT Executables)
 elseif(APPLE)
-	# Use pkg-config to get paths from Homebrew.
-	find_package(PkgConfig REQUIRED)
-	find_package(SDL2 REQUIRED)
-	pkg_check_modules(SDL2_image REQUIRED SDL2_image)
-	pkg_check_modules(SDL2_mixer REQUIRED SDL2_mixer)
-	target_include_directories(SDL2 INTERFACE ${SDL2_INCLUDE_DIRS})
-	target_include_directories(SDL2_image INTERFACE ${SDL2_image_INCLUDE_DIRS})
-	target_include_directories(SDL2_mixer INTERFACE ${SDL2_mixer_INCLUDE_DIRS})
-	target_link_libraries(SDL2 INTERFACE ${SDL2_LIBRARIES})
-	target_link_libraries(SDL2_image INTERFACE ${SDL2_image_LIBRARIES})
-	target_link_libraries(SDL2_mixer INTERFACE ${SDL2_mixer_LIBRARIES})
-	target_compile_options(SDL2 INTERFACE ${SDL2_CFLAGS_OTHER})
-	target_compile_options(SDL2_image INTERFACE ${SDL2_image_CFLAGS_OTHER})
-	target_compile_options(SDL2_mixer INTERFACE ${SDL2_mixer_CFLAGS_OTHER})
+	# Like Windows, use the official SDL2 prebuild binaries.
+	include(FetchContent)
+	# SDL 2.0.8 is the real pinned version, but SDL 2.0.9 fixes a Windows-only bug:
+	# https://github.com/libsdl-org/SDL/commit/c04dca0dad2696d7dcd51427c8183b19ebff8a60
+	FetchContent_Declare(SDL2
+		URL https://www.libsdl.org/release/SDL2-2.0.8.dmg
+		URL_HASH SHA256=74dd2cb6b18e35e8181523590115f10f1da774939c21ce27768a2a80ba57ad5f
+		DOWNLOAD_NO_EXTRACT TRUE
+		PATCH_COMMAND hdiutil mount <DOWNLOADED_FILE> -mountpoint dmg_mount
+		COMMAND cp -r dmg_mount dmg_content
+		COMMAND hdiutil unmount dmg_mount
+	)
+	FetchContent_Declare(SDL2_image
+		URL https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.4.dmg
+		URL_HASH SHA256=7efbf1733ba02d5ce278ae27b0e35baeb6d0eaf0e5f56f187e608681aec98b39
+		DOWNLOAD_NO_EXTRACT TRUE
+		PATCH_COMMAND hdiutil mount <DOWNLOADED_FILE> -mountpoint dmg_mount
+		COMMAND cp -r dmg_mount dmg_content
+		COMMAND hdiutil unmount dmg_mount
+	)
+	FetchContent_Declare(SDL2_mixer
+		URL https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.4.dmg
+		URL_HASH SHA256=ed9c904121ae763cf7d3c7bf08b95cd0e23d370f112c787a17e871bd2c764fe3
+		DOWNLOAD_NO_EXTRACT TRUE
+		PATCH_COMMAND hdiutil mount <DOWNLOADED_FILE> -mountpoint dmg_mount
+		COMMAND cp -r dmg_mount dmg_content
+		COMMAND hdiutil unmount dmg_mount
+	)
+	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer)
+
+	target_include_directories(SDL2 INTERFACE "${sdl2_SOURCE_DIR}/dmg_content/SDL2.framework/Headers")
+	target_link_libraries(SDL2 INTERFACE "${sdl2_SOURCE_DIR}/dmg_content/SDL2.framework/SDL2")
+	install(DIRECTORY "${sdl2_SOURCE_DIR}/dmg_content/SDL2.framework" TYPE BIN COMPONENT Executables)
+
+	target_include_directories(SDL2_image INTERFACE "${sdl2_image_SOURCE_DIR}/dmg_content/SDL2_image.framework/Headers")
+	target_link_libraries(SDL2_image INTERFACE "${sdl2_image_SOURCE_DIR}/dmg_content/SDL2_image.framework/SDL2_image")
+	install(DIRECTORY "${sdl2_image_SOURCE_DIR}/dmg_content/SDL2_image.framework" TYPE BIN COMPONENT Executables)
+
+	target_include_directories(SDL2_mixer INTERFACE "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework/Headers")
+	target_link_libraries(SDL2_mixer INTERFACE "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework/SDL2_mixer")
+	install(DIRECTORY "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework" TYPE BIN COMPONENT Executables)
+	install(FILES "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework/Frameworks/Ogg.framework/Resources/LICENSE.ogg-vorbis.txt" TYPE BIN COMPONENT Executables)
 else()
 	# Use system libraries.
 	find_package(SDL2 REQUIRED)

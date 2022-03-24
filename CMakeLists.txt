@@ -17,5 +17,9 @@ if(EMSCRIPTEN)
 	set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/build/webroot")
 endif()
 
+if(APPLE)
+	set(CMAKE_INSTALL_RPATH "@executable_path")
+endif()
+
 add_subdirectory("external")
 add_subdirectory("source")
