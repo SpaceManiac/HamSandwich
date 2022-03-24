@@ -9,14 +9,12 @@
 #include <fstream>
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <SDL_image.h>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_opengl2.h>
 #include <json.hpp>
 #include <curl/curl.h>
-
-extern const size_t embed_launcher_json_size;
-extern const unsigned char embed_launcher_json[];
 
 #if defined(_MSC_VER) || defined(__clang__)
 #include <filesystem>
@@ -41,6 +39,25 @@ namespace filesystem = std::experimental::filesystem::v1;
 #define environ *_NSGetEnviron()
 #endif
 
+// Embedded metadata json and embedded icons for each game.
+extern const unsigned char embed_launcher_json[];
+extern const size_t embed_launcher_json_size;
+
+struct Icon
+{
+	const char* name;
+	const unsigned char* data;
+	const size_t size;
+};
+const extern Icon embed_icons[];
+
+struct LoadedIcon
+{
+	GLuint texture = 0;
+	int width = 0, height = 0;
+};
+
+// Asset and installer handling
 struct Asset
 {
 	std::string mountpoint;
@@ -164,6 +181,8 @@ struct Game
 	bool excluded;
 
 	std::vector<Asset> assets;
+	const Icon* icon = nullptr;
+	LoadedIcon loaded_icon;
 
 	bool start_missing_downloads(CURLM* downloads)
 	{
@@ -234,6 +253,14 @@ struct Launcher
 	{
 		downloads.reset(curl_multi_init());
 
+		std::map<std::string, const Icon*> icons_by_id;
+		const Icon* current = embed_icons;
+		while (current->name)
+		{
+			icons_by_id[current->name] = current;
+			++current;
+		}
+
 		nlohmann::json launcher_metadata = nlohmann::json::parse(embed_launcher_json, embed_launcher_json + embed_launcher_json_size);
 		for (std::string id : launcher_metadata["project_list"])
 		{
@@ -244,6 +271,7 @@ struct Launcher
 				value["title"],
 				value.contains("excluded") && value["excluded"],
 			});
+			games.back().icon = icons_by_id[id];
 			for (const auto& installer : value["installers"])
 			{
 				std::string enabled_file = "installers/";
@@ -428,6 +456,36 @@ int main(int argc, char** argv)
 	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
 	//IM_ASSERT(font != NULL);
 
+	// Load icon textures
+	// https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples#example-for-opengl-users
+	for (auto& game : launcher.games)
+	{
+		if (game.icon)
+		{
+			SDL_Surface* img = IMG_Load_RW(SDL_RWFromConstMem(game.icon->data, game.icon->size), true);
+			if (img)
+			{
+				game.loaded_icon.width = img->w;
+				game.loaded_icon.height = img->h;
+				glGenTextures(1, &game.loaded_icon.texture);
+				glBindTexture(GL_TEXTURE_2D, game.loaded_icon.texture);
+
+				// Setup filtering parameters for display
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
+
+				// Upload pixels into texture
+#if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
+				glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+#endif
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->w, img->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixels);
+				SDL_FreeSurface(img);
+			}
+		}
+	}
+
 	// Our state
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 0.00f);
 
@@ -473,8 +531,10 @@ int main(int argc, char** argv)
 				if (game.excluded)
 					continue;
 
+				const int vertical_padding = 1;
+
 				ImGui::PushID(game.id.c_str());
-				if (ImGui::Selectable("", launcher.current_game == &game, ImGuiSelectableFlags_AllowDoubleClick))
+				if (ImGui::Selectable("", launcher.current_game == &game, ImGuiSelectableFlags_AllowDoubleClick, { 0, 32 + 2 * vertical_padding }))
 				{
 					launcher.wants_to_play = false;
 					launcher.current_game = &game;
@@ -484,17 +544,25 @@ int main(int argc, char** argv)
 						game.start_missing_downloads(launcher.downloads);
 					}
 				}
-				ImGui::SameLine(0);
-				//ImGui::Text("Icon");
-				//ImGui::SameLine(64);
+				if (game.loaded_icon.texture)
+				{
+					ImGui::SameLine(8);
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() + vertical_padding);
+					ImGui::Image((void*)(intptr_t)game.loaded_icon.texture, { 32, 32 });
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - vertical_padding);
+				}
+				ImGui::SameLine(48);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (8 + vertical_padding));
 				ImGui::Text("%s", game.title.c_str());
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (8 + vertical_padding));
 				ImGui::PopID();
 			}
 
+#ifndef NDEBUG
 			ImGui::Spacing();
 			ImGui::Separator();
-
 			ImGui::Text("Transfers: %d", running_downloads);
+#endif
 		}
 		ImGui::End();
 

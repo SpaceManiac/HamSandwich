@@ -28,7 +28,7 @@ function(HamSandwich_embed_file sources_var filename symbol_name)
 	set(embed_py "${CMAKE_SOURCE_DIR}/tools/build/embed.py")
 	set(cpp "${CMAKE_CURRENT_BINARY_DIR}/${symbol_name}.cpp")
 	add_custom_command(
-		OUTPUT "${cpp}" "${h}"
+		OUTPUT "${cpp}"
 		COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${embed_py}" "${filename}" "${cpp}" "${symbol_name}"
 		MAIN_DEPENDENCY "${filename}"
 		DEPENDS "${embed_py}"
@@ -38,33 +38,50 @@ function(HamSandwich_embed_file sources_var filename symbol_name)
 	set("${sources_var}" "${${sources_var}}" PARENT_SCOPE)
 endfunction()
 
-function(HamSandwich_icon sources_var ico_filename)
+function(HamSandwich_icon target_name sources_var ico_filename)
 	set(ico "${CMAKE_CURRENT_SOURCE_DIR}/${ico_filename}")
+	# Convert the icon to .png for embedding.
+	set(ico2png_py "${CMAKE_SOURCE_DIR}/tools/build/ico2png.py")
+	set(png "${CMAKE_CURRENT_BINARY_DIR}/${ico_filename}.png")
+	add_custom_command(
+		OUTPUT "${png}"
+		COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${ico2png_py}" "${ico}" "${png}"
+		MAIN_DEPENDENCY "${ico}"
+		DEPENDS "${ico2png_py}"
+		VERBATIM
+	)
+
 	if(WIN32)
+		# On Windows, generate a simple .rc file that includes the icon.
 		file(GENERATE OUTPUT icon.rc CONTENT "allegro_icon ICON \"${ico}\"")
 		list(APPEND "${sources_var}" "${CMAKE_CURRENT_BINARY_DIR}/icon.rc")
 		set("${sources_var}" "${${sources_var}}" PARENT_SCOPE)
 	else()
-		set(ico2png_py "${CMAKE_SOURCE_DIR}/tools/build/ico2png.py")
-		set(ico_png "${CMAKE_CURRENT_BINARY_DIR}/${ico_filename}.png")
-		add_custom_command(
-			OUTPUT "${ico_png}"
-			COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${ico2png_py}" "${ico}" "${ico_png}"
-			MAIN_DEPENDENCY "${ico}"
-			DEPENDS "${ico2png_py}"
-			VERBATIM
-		)
-		HamSandwich_embed_file("${sources_var}" "${ico_png}" embed_game_icon)
+		# On other platforms, embed the .png version as a document.
+		HamSandwich_embed_file("${sources_var}" "${png}" embed_game_icon)
 		set("${sources_var}" "${${sources_var}}" PARENT_SCOPE)
 	endif()
 
 	if(EMSCRIPTEN)
+		# On web, include the icon as a favicon.
 		add_custom_command(
 			OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/favicon.ico"
 			COMMAND cmake -E copy "${ico}" "${CMAKE_CURRENT_BINARY_DIR}/favicon.ico"
 			MAIN_DEPENDENCY "${ico}"
 			VERBATIM
 		)
+	endif()
+
+	# Include the .png icon in the launcher metadata.
+	get_property(is_excluded DIRECTORY PROPERTY EXCLUDE_FROM_ALL)
+	if(NOT "${is_excluded}")
+		get_property(launcher_icons GLOBAL PROPERTY HamSandwich_launcher_icons)
+		list(APPEND launcher_icons "${target_name}")
+		set_property(GLOBAL PROPERTY HamSandwich_launcher_icons "${launcher_icons}")
+		# The reason this has to be its own target created at this precise moment is:
+		# > If any dependency is an OUTPUT of another custom command in the same directory (CMakeLists.txt file), CMake automatically brings the other custom command into the target in which this command is built.
+		HamSandwich_embed_file(my_sources "${png}" "embed_icon_${target_name}")
+		add_library("${target_name}_icon" ${my_sources})
 	endif()
 endfunction()
 
