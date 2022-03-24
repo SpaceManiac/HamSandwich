@@ -1,0 +1,20 @@
+#!/bin/sh
+set -eu
+
+Bootstrap=$(dirname "$0")
+. "$Bootstrap/_common.sh"
+
+# Prepare download info database
+download_info() {  # <versionvar> <os> <url> [sha256]
+	old_sha=${4:-}
+	printf "%s %s %s: " "$1" "$(eval "echo \$$1")" "$2"
+	new_sha=$(wget "$3" -O - -q | sha256sum - | cut -d' ' -f1)
+	if test "$old_sha" = "$new_sha"; then
+		printf "ok\n"
+	else
+		printf "checksum updated\n"
+		sed -r -e "s/(download_info $1 $2 \".*\") ?$old_sha\$/\\1 $new_sha/" --in-place "$DependenciesSh"
+	fi
+}
+# shellcheck source=../../dependencies.sh
+. "$DependenciesSh"

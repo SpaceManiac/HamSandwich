@@ -1,0 +1,33 @@
+#!/bin/sh
+set -eu
+
+Bootstrap=$(dirname "$0")
+. "$Bootstrap/_common.sh"
+
+case "$OS" in
+	Linux)
+		CMakeFolder="cmake-$CMAKE_VERSION-linux-x86_64"
+		CMakeExe="$Cache/$CMakeFolder/bin/cmake$ExeExt"
+		Extract=temp_untar
+		;;
+	Windows)
+		CMakeFolder="cmake-$CMAKE_VERSION-windows-x86_64"
+		CMakeExe="$Cache/$CMakeFolder/bin/cmake$ExeExt"
+		Extract=temp_unzip
+		;;
+	Darwin)
+		CMakeFolder="cmake-$CMAKE_VERSION-macos10.10-universal"
+		CMakeExe="$Cache/$CMakeFolder/CMake.app/Contents/bin/cmake$ExeExt"
+		Extract=temp_untar
+		;;
+	*)
+		echo "not supported by cmake: $OS" >&2
+		exit 1
+		;;
+esac
+
+if ! test -f "$CMakeExe"; then
+	mv "$($Extract "$(temp_download_and_verify CMAKE_VERSION "$OS")")/$CMakeFolder" "$Cache/$CMakeFolder"
+fi
+
+exec "$CMakeExe" "$@"
