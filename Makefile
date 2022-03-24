@@ -32,12 +32,15 @@ endif  # os, arch
 preset := $(os)-$(arch)-$(mode)
 endif  # preset
 
-CMAKE ?= tools/bootstrap/cmake
+# Activate Emscripten SDK if needed.
+ifeq ($(os),emscripten)
+$(shell tools/emscripten/install-emsdk.sh >&2)
+endif
 
-BUILD_ROOT = build
-BUILD_DIR = $(BUILD_ROOT)/cmake-$(preset)
+# Variables
+CMAKE ?= tools/bootstrap/cmake
+BUILD_DIR = build/cmake-$(preset)
 BUILD_NINJA = $(BUILD_DIR)/build.ninja
-CMAKE_ARGS = --preset $(preset) -B $(BUILD_DIR)
 
 ifeq ($(MAKECMDGOALS),)
 # If no targets were specified, synthesize a default target.

@@ -82,13 +82,17 @@
 		{
 			"name": "emscripten-i686-debug",
 			"inherits": "i686-base",
-			"toolchainFile": "build/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+			"toolchainFile": "build/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+			"cacheVariables": {
+				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja"
+			}
 		},
 		{
 			"name": "emscripten-i686-release",
 			"inherits": "i686-base",
 			"toolchainFile": "build/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
 			"cacheVariables": {
+				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja",
 				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
 			}
 		}
