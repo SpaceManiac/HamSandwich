@@ -7,8 +7,4 @@ struct HamSandwichMetadata
 	const char* const* default_asset_specs;
 };
 
-// The implementation for this function is included in the build automatically;
-// see `tools/build/appdata.lua`.
-extern const HamSandwichMetadata* GetHamSandwichMetadata();
-
 #endif  // METADATA_H

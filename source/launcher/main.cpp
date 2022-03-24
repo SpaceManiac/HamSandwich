@@ -15,7 +15,12 @@
 #include <json.hpp>
 #include <curl/curl.h>
 
-#ifdef _MSC_VER
+extern "C"
+{
+	char** environ;
+}
+
+#if defined(_MSC_VER) || defined(__clang__)
 #include <filesystem>
 namespace filesystem = std::filesystem;
 #else

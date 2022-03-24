@@ -5,6 +5,7 @@
 #include "nsis.h"
 #include "inno.h"
 #include "metadata.h"
+#include "extern.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -650,7 +651,7 @@ static bool detect_installers(VfsStack* result, const HamSandwichMetadata* meta)
 }
 
 static VfsStack default_vfs_stack() {
-	const HamSandwichMetadata* meta = GetHamSandwichMetadata();
+	const HamSandwichMetadata* meta = g_HamExtern.GetHamSandwichMetadata();
 	VfsStack result;
 
 	if (detect_installers(&result, meta)) {
@@ -815,7 +816,7 @@ static bool run_download_helper() {
 		if (child_pid == 0) {
 			char first[] = "./launcher";
 			char second[] = "--mini-gui";
-			std::string third = GetHamSandwichMetadata()->appdata_folder_name;
+			std::string third = g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name;
 			char* const argv[] = { first, second, third.data(), nullptr };
 			exit(execvp(argv[0], argv));
 		} else if (child_pid > 0) {

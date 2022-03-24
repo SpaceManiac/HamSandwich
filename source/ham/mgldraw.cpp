@@ -97,7 +97,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 		}
 	}
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__clang__)
 	// Icon embedding for non-Windows platforms.
 	// `tools/build/rescomp.py` produces a .cpp file containing these symbols.
 	// Marked `__attribute__((weak))` for platforms or projects which do not
