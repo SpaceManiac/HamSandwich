@@ -8,12 +8,13 @@ Bootstrap=$(dirname "$0")
 download_info() {  # <versionvar> <os> <url> [sha256]
 	old_sha=${4:-}
 	printf "%s %s %s: " "$1" "$(eval "echo \$$1")" "$2"
-	new_sha=$(wget "$3" -O - -q | sha256sum - | cut -d' ' -f1)
+	new_sha=$(download_file_quiet "$3" - | sha256sum - | cut -d' ' -f1)
 	if test "$old_sha" = "$new_sha"; then
 		printf "ok\n"
 	else
 		printf "checksum updated\n"
-		sed -r -e "s/(download_info $1 $2 \".*\") ?$old_sha\$/\\1 $new_sha/" --in-place "$DependenciesSh"
+		sed -E -e "s/(download_info $1 $2 \".*\") ?$old_sha\$/\\1 $new_sha/" -i.tmp "$DependenciesSh"
+		rm "$DependenciesSh.tmp"
 	fi
 }
 # shellcheck source=../../dependencies.sh

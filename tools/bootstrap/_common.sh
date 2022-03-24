@@ -10,6 +10,15 @@ fi
 # Ensure that the cache exists
 mkdir -p "${Cache:?}"
 
+download_file() {  # <url> <outfile>
+	echo "Downloading: $1" >&2
+	wget "$1" -O "$2" -q
+}
+
+download_file_quiet() {  # <url> <outfile>
+	wget "$1" -O "$2" -q
+}
+
 case "$(uname)" in
 	Linux)
 		OS=Linux
@@ -19,12 +28,19 @@ case "$(uname)" in
 		OS=Darwin
 		ExeExt=
 
-		# TODO: replace these temporary compatibility shim with something better.
-		wget() {
-			curl -L "$1" -o "$3"
+		# MacOS provides curl, but not wget.
+		download_file() {  # <url> <outfile>
+			echo "Downloading: $1" >&2
+			curl "$1" -o "$2" -#
 		}
+
+		download_file_quiet() {  # <url> <outfile>
+			curl "$1" -o "$2" -s
+		}
+
+		# An equivalent to sha256sum is available under a different name.
 		sha256sum() {
-			cat >/dev/null
+			shasum -a 256 "$@"
 		}
 		;;
 	MINGW* | MSYS* | CYGWIN* | Windows_NT)
@@ -65,7 +81,7 @@ download_info() {  # <versionvar> <os> <url> [sha256]
 	VarName="$1_$(eval "echo \$$1" | sed 's/[.-]/_/g')_$2"
 	eval "Url_$VarName=$3"
 	eval "Sha_$VarName=${4:-}"
-	unset Version VarName
+	unset VarName
 }
 
 get_download_info() {  # <versionvar> <os> <what>
@@ -74,7 +90,7 @@ get_download_info() {  # <versionvar> <os> <what>
 
 temp_download_and_verify() {  # <versionvar> <os>
 	temp_download_and_verify_File="$(temp_file)"
-	wget "$(get_download_info "$1" "$2" Url)" -O "$temp_download_and_verify_File"
+	download_file "$(get_download_info "$1" "$2" Url)" "$temp_download_and_verify_File"
 	echo "$(get_download_info "$1" "$2" Sha) *$temp_download_and_verify_File" | sha256sum -c >&2
 	echo "$temp_download_and_verify_File"
 	unset temp_download_and_verify_File
