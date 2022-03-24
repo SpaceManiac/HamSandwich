@@ -32,12 +32,7 @@ endif  # os, arch
 preset := $(os)-$(arch)-$(mode)
 endif  # preset
 
-# Emscripten has a *directory* named "cmake" as a child of a directory in PATH,
-# and GNU make attempts to execute this directory, which is ridiculous.
-CMAKE ?= $(shell which cmake)
-ifeq ($(CMAKE),)
-$(error 'cmake' is missing from PATH; install it or set CMAKE= manually.)
-endif
+CMAKE ?= tools/bootstrap/cmake
 
 BUILD_ROOT = build
 BUILD_DIR = $(BUILD_ROOT)/cmake-$(preset)

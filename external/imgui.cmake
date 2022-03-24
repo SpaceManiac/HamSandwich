@@ -11,6 +11,8 @@ add_library(imgui STATIC
 target_link_libraries(imgui PUBLIC SDL2)
 if(WIN32)
 	target_link_libraries(imgui PUBLIC opengl32)
+elseif(APPLE)
+	target_link_options(imgui PUBLIC -framework OpenGL)
 else()
 	target_link_libraries(imgui PUBLIC GL)
 endif()

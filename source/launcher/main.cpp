@@ -15,11 +15,6 @@
 #include <json.hpp>
 #include <curl/curl.h>
 
-extern "C"
-{
-	char** environ;
-}
-
 #if defined(_MSC_VER) || defined(__clang__)
 #include <filesystem>
 namespace filesystem = std::filesystem;
@@ -36,6 +31,11 @@ namespace filesystem = std::experimental::filesystem::v1;
 #include <sys/wait.h>
 #include <sys/stat.h>
 #define platform_mkdir(path) mkdir(path, 0777)
+#endif
+
+#ifdef __MACOSX__
+#include <crt_externs.h>
+#define environ *_NSGetEnviron()
 #endif
 
 struct Asset
@@ -711,7 +711,7 @@ int main(int argc, char** argv)
 					std::vector<char*> raw_envs;
 
 					char** originalEnv = environ;
-					while (*originalEnv)
+					while (originalEnv && *originalEnv)
 					{
 						raw_envs.push_back(*originalEnv);
 						++originalEnv;
@@ -743,9 +743,12 @@ int main(int argc, char** argv)
 				else if (child_pid > 0)
 				{
 					SDL_HideWindow(window);  // Hide window. Unfortunately happens even if execvp fails.
+					SDL_MinimizeWindow(window);  // Minimize on MacOS for now, though it's a little wonky.
+
 					int wstatus;
 					if (waitpid(child_pid, &wstatus, 0) >= 0 && WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0)
 						break;  // Success, so clean up and exit in the background.
+					fprintf(stderr, "child exited with code: %d\n", wstatus);
 				}
 				else
 				{
@@ -754,6 +757,7 @@ int main(int argc, char** argv)
 #endif
 
 				// Child process failed, so bring the launcher back.
+				SDL_RestoreWindow(window);
 				SDL_ShowWindow(window);
 			}
 		}

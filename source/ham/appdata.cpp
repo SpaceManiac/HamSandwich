@@ -552,7 +552,7 @@ static VfsStack default_vfs_stack() {
 
 	std::string buffer = get_folder_path;
 	buffer.append("\\Hamumu\\");
-	buffer.append(GetHamSandwichMetadata()->appdata_folder_name);
+	buffer.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
 
 	VfsStack result;
 	result.write_mount = std::make_unique<StdioVfs>(buffer);
@@ -568,7 +568,7 @@ static VfsStack default_vfs_stack() {
 
 static VfsStack default_vfs_stack() {
 	std::string buffer = "/appdata/";
-	buffer.append(GetHamSandwichMetadata()->appdata_folder_name);
+	buffer.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
 
 	VfsStack result;
 	result.write_mount = std::make_unique<StdioVfs>(buffer);
@@ -795,7 +795,7 @@ static bool run_download_helper() {
 #if defined(_WIN32)
 	if (GetFileAttributesA("launcher.exe") != INVALID_FILE_ATTRIBUTES) {
 		std::string cmdline = "launcher.exe --mini-gui ";
-		cmdline.append(GetHamSandwichMetadata()->appdata_folder_name);
+		cmdline.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
 
 		STARTUPINFOA startupInfo = {};
 		PROCESS_INFORMATION processInfo = {};
