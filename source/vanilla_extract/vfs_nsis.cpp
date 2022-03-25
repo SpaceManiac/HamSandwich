@@ -1,6 +1,4 @@
-#include "vfs_nsis.h"
-#include "vfs.h"
-#include "vfs_stdio.h"
+#include "vanilla_extract.h"
 #include "nsis.h"
 
 // ----------------------------------------------------------------------------

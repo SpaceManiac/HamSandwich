@@ -1,4 +1,4 @@
-#include "vfs.h"
+#include "vanilla_extract.h"
 #include <SDL.h>
 
 using namespace vanilla;
