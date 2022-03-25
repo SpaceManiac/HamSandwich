@@ -14,35 +14,29 @@ repositories {
 	google()
 }
 
-subprojects {
-	repositories {
-		mavenCentral()
-		google()
-	}
-
-	buildDir = "../../build/android/${project.name}"
-}
-
 buildDir = "../build/android/${project.name}"
 
 apply plugin: 'com.android.application'
 
 dependencies {
 	implementation project(':android-project:SDL2')
+	implementation 'androidx.appcompat:appcompat:1.3.0'
+	implementation 'com.google.android.material:material:1.4.0'
+	implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
 }
 
 android {
 	var assetDirectory = "${buildDir}/cmake-assets"
 	var stagingDirectory = "${buildDir}.staging"
 
-	compileSdkVersion 30
+	compileSdkVersion 31
 
 	defaultConfig {
 		minSdk 16
-		targetSdkVersion 30
+		targetSdkVersion 31
 		applicationId 'com.platymuus.hamsandwich'
 		externalNativeBuild.cmake.arguments "-DCMAKE_INSTALL_PREFIX=${assetDirectory}", "-DANDROID_STL=c++_shared"
-		ndk.abiFilters 'x86_64' // 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+		ndk.abiFilters 'armeabi-v7a' //, 'arm64-v8a', 'x86', 'x86_64'
 	}
 
 	externalNativeBuild.cmake {
@@ -52,10 +46,7 @@ android {
 	}
 
 	sourceSets.main {
-		manifest.srcFile 'AndroidManifest.xml'
 		assets.srcDir assetDirectory
-		java.srcDir 'java'
-		res.srcDir 'res'
 	}
 }
 

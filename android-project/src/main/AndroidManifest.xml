@@ -1,27 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="com.platymuus.hamsandwich"
-	android:versionCode="1"
-	android:versionName="1.0"
 	android:installLocation="auto"
-	>
+	android:versionCode="1"
+	android:versionName="1.0">
+
 	<uses-permission android:name="android.permisison.WRITE_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.INTERNET" />
-	<application android:label="HamSandwich"
+
+	<application
 		android:allowBackup="true"
-		android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
 		android:hardwareAccelerated="true"
-		>
-		<meta-data android:name="SDL_ENV.SDL_ACCELEROMETER_AS_JOYSTICK" android:value="0"/>
-		<activity android:name="HamSandwichActivity"
-			android:label="HamSandwich"
-			android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-			android:exported="true"
-			>
+		android:label="HamSandwich"
+		android:theme="@style/Theme.HamSandwich">
+		<activity
+			android:name=".LauncherActivity"
+			android:exported="true">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
+
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
+
+		<meta-data
+			android:name="SDL_ENV.SDL_ACCELEROMETER_AS_JOYSTICK"
+			android:value="0" />
+
+		<activity
+			android:name=".HamSandwichActivity"
+			android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
+			android:exported="true" />
 	</application>
 </manifest>
