@@ -75,9 +75,8 @@ elseif(ANDROID)
 	# distinction between ABIs and debug/release, but the assets are the same so it's fine.
 	set(hamsandwich_assets "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/../../../../hamsandwich-assets")
 
-	file(GENERATE OUTPUT "${hamsandwich_assets}/test.txt" CONTENT "Hello from CMake")
-	message("put it at: ${hamsandwich_assets}/test.txt")
-	#set_target_properties(ham PROPERTIES ANDROID_ASSETS_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}/android-assets")
+	get_property(launcher_metadata GLOBAL PROPERTY HamSandwich_launcher_metadata)
+	file(GENERATE OUTPUT "${hamsandwich_assets}/launcher.json" CONTENT "${launcher_metadata}")
 else()
 	# Launcher for desktop platforms
 	add_subdirectory("launcher")

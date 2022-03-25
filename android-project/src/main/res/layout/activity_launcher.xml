@@ -20,4 +20,16 @@
 		app:layout_constraintHorizontal_bias="0.0"
 		app:layout_constraintStart_toStartOf="parent"
 		app:layout_constraintTop_toTopOf="parent" />
+
+	<TextView
+		android:id="@+id/textView"
+		android:layout_width="392dp"
+		android:layout_height="570dp"
+		android:layout_marginStart="18dp"
+		android:layout_marginLeft="18dp"
+		android:layout_marginTop="73dp"
+		android:text="TextView"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
