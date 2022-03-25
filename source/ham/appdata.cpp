@@ -25,11 +25,12 @@
 #include <windows.h>
 #endif
 
-#include <SDL_platform.h>
 #include <SDL_rwops.h>
 #include <SDL_messagebox.h>
-#include <unzip.h>
-#include <vec_rw.h>
+
+#include <vanilla_extract.h>
+
+using namespace vanilla;
 
 /*
 The interface in appdata.h currently distinguishes between AppdataOpen
@@ -71,439 +72,6 @@ Pseudocode for SDL_RWFromFile(file, mode):
 		return fopen(file, mode)
 */
 
-// ----------------------------------------------------------------------------
-// Stdio helpers
-#ifdef _WIN32
-#include <direct.h>
-
-#define platform_mkdir(path) _mkdir(path)
-#else
-#define platform_mkdir(path) mkdir(path, 0777)
-#endif
-
-static int mkdir_one(const char *path) {
-	if (platform_mkdir(path) != 0 && errno != EEXIST)
-		return -1;
-	return 0;
-}
-
-static int mkdir_parents(const char *path) {
-	std::string copypath = path;
-	char *start = copypath.data();
-	char *next;
-
-	int status = 0;
-	while (status == 0 && (next = strchr(start, '/'))) {
-		if (next != start) {
-			// skip the root directory and double-slashes
-			*next = '\0';
-			status = mkdir_one(copypath.c_str());
-			*next = '/';
-		}
-		start = next + 1;
-	}
-
-	if (status != 0)
-		LogError("mkdirs(%s): %s", copypath.c_str(), strerror(errno));
-
-	return status;
-}
-
-static bool is_write_mode(const char* mode) {
-	return mode[0] == 'w' || mode[0] == 'a' || (mode[0] == 'r' && mode[1] == '+');
-}
-
-// ----------------------------------------------------------------------------
-// VFS interface
-
-// A single VFS provider, read-only by default.
-class Vfs {
-	Vfs(const Vfs&) = delete;
-	Vfs(Vfs&&) = default;
-	Vfs& operator=(const Vfs&) = delete;
-	Vfs& operator=(Vfs&&) = default;
-public:
-	Vfs() {}
-	virtual ~Vfs() {}
-
-	virtual FILE* open_stdio(const char* filename) = 0;
-	virtual SDL_RWops* open_sdl(const char* filename) = 0;
-	virtual bool list_dir(const char* directory, std::set<std::string>& output) = 0;
-};
-
-// A single writeable VFS provider.
-class WriteVfs : public Vfs {
-public:
-	WriteVfs() {}
-	virtual ~WriteVfs() {}
-
-	virtual FILE* open_write_stdio(const char* filename) = 0;
-	virtual bool delete_file(const char* filename) = 0;
-};
-
-// A pair of Vfs and mountpoint.
-struct Mount {
-	std::unique_ptr<Vfs> vfs;
-	std::string mountpoint;
-
-	Mount(std::unique_ptr<Vfs>&& vfs, const std::string& mountpoint = "")
-		: vfs(std::move(vfs))
-		, mountpoint(mountpoint)
-	{
-		// Strip trailing '/' from mountpoint.
-		if (!this->mountpoint.empty() && this->mountpoint.back() == '/') {
-			this->mountpoint.erase(this->mountpoint.size() - 1);
-		}
-	}
-
-	const char* matches(const char* filename) const;
-};
-
-// A full filesystem, including a list of mounts and the write (appdata) mount.
-struct VfsStack {
-	std::vector<Mount> mounts;
-	std::unique_ptr<WriteVfs> write_mount;
-public:
-	VfsStack() {}
-
-	void push_back(std::unique_ptr<Vfs>&& entry, std::string mountpoint = "");
-
-	// Returns true if this VfsStack is empty and therefore not useable.
-	bool empty() const { return mounts.empty() && !write_mount; }
-
-	// Get the Vfs that should be used for writing.
-	WriteVfs* appdata() { return write_mount.get(); }
-
-	// Forward to children
-	SDL_RWops* open_sdl(const char* filename);
-};
-
-// ----------------------------------------------------------------------------
-// Stdio VFS implementation
-class StdioVfs : public WriteVfs {
-	std::string prefix;
-	FILE* open_stdio_internal(const char* filename, const char* mode, bool write);
-public:
-	StdioVfs(std::string prefix) : prefix(prefix) {}
-	FILE* open_stdio(const char* filename);
-	SDL_RWops* open_sdl(const char* filename);
-	FILE* open_write_stdio(const char* filename);
-	bool list_dir(const char* directory, std::set<std::string>& output);
-	bool delete_file(const char* filename);
-};
-
-FILE* StdioVfs::open_stdio_internal(const char* file, const char* mode, bool write) {
-	std::string buffer = prefix;
-	buffer.append("/");
-	buffer.append(file);
-	if (write) {
-		mkdir_parents(buffer.c_str());
-	}
-	FILE* fp = fopen(buffer.c_str(), mode);
-
-#ifndef _WIN32
-	// On non-Windows, try to case-correct file lookups
-	if (!fp) {
-		size_t i = buffer.rfind("/");
-		buffer[i] = '\0';
-
-		std::set<std::string> temp;
-		list_dir(buffer.c_str(), temp);
-
-		for (const auto& name : temp)
-		{
-			if (!strcasecmp(&buffer[i + 1], name.c_str()))
-			{
-				buffer[i] = '/';
-				memcpy(&buffer[i + 1], name.data(), name.length());
-				fp = fopen(buffer.c_str(), mode);
-				break;
-			}
-		}
-	}
-#endif
-
-	if (!fp && write) {
-		LogError("fopen(%s, %s): %s", buffer.c_str(), mode, strerror(errno));
-	}
-	return fp;
-}
-
-FILE* StdioVfs::open_write_stdio(const char* file) {
-	return open_stdio_internal(file, "wb", true);
-}
-
-FILE* StdioVfs::open_stdio(const char* file) {
-	return open_stdio_internal(file, "rb", false);
-}
-
-SDL_RWops* StdioVfs::open_sdl(const char* filename) {
-#if defined(_WIN32) && !defined(__GNUC__)
-	// The public MSVC binaries of SDL2 are compiled without support for SDL_RWFromFP.
-	std::string buffer = prefix;
-	buffer.append("/");
-	buffer.append(filename);
-	return SDL_RWFromFile(buffer.c_str(), "rb");
-#else
-	// Delegate to open_stdio above.
-	FILE* fp = open_stdio(filename);
-	return fp ? SDL_RWFromFP(fp, SDL_TRUE) : nullptr;
-#endif
-}
-
-#ifdef __GNUC__
-#include <dirent.h>
-
-bool StdioVfs::list_dir(const char* directory, std::set<std::string>& output) {
-	std::string buffer = prefix;
-	buffer.append("/");
-	buffer.append(directory);
-	DIR* dir = opendir(buffer.c_str());
-	if (!dir) {
-		return false;
-	}
-
-	while (struct dirent *dp = readdir(dir)) {
-		output.insert(dp->d_name);
-	}
-
-	closedir(dir);
-	return true;
-}
-
-#elif defined(_MSC_VER)
-#include <io.h>
-
-bool StdioVfs::list_dir(const char* directory, std::set<std::string>& output) {
-	std::string buffer = prefix;
-	buffer.append("/");
-	buffer.append(directory);
-	buffer.append("/*");
-
-	struct _finddata_t finddata;
-	long hFile = _findfirst(buffer.c_str(), &finddata);
-	if (hFile == -1) {
-		return false;
-	}
-
-	do {
-		output.insert(finddata.name);
-	} while (_findnext(hFile, &finddata) == 0);
-
-	_findclose(hFile);
-	return true;
-}
-
-#endif  // __GNUC__ and _MSC_VER
-
-bool StdioVfs::delete_file(const char* file) {
-	std::string buffer = prefix;
-	buffer.append("/");
-	buffer.append(file);
-
-	int status =
-#ifdef _MSC_VER
-		_unlink
-#else
-		unlink
-#endif
-		(buffer.c_str());
-
-	if (status == 0) {
-		return true;
-	} else {
-		LogError("unlink(%s): %s", buffer.c_str(), strerror(errno));
-		return false;
-	}
-}
-
-// ----------------------------------------------------------------------------
-// "Extract to temporary directory" helper
-FILE* fp_from_bundle(const char* file, const char* mode, SDL_RWops* rw, const char* tempdir, bool reuse_safe) {
-	// Check internal storage to see if we've already extracted the file.
-	std::string fname_buf = tempdir;
-	fname_buf.append("/");
-	fname_buf.append(file);
-	if (reuse_safe) {
-		FILE* fp = fopen(fname_buf.c_str(), mode);
-		if (fp) {
-			return fp;
-		}
-	}
-	// If we have, delete it and extract it again, in case it's changed.
-	unlink(fname_buf.c_str());
-
-	mkdir_parents(fname_buf.c_str());
-	FILE* fp = fopen(fname_buf.c_str(), "wb");
-	if (!fp) {
-		LogError("fp_from_bundle(%s) bad save: %s", file, strerror(errno));
-		return nullptr;
-	}
-
-	// Copy everything.
-	char buffer[4096];
-	int read;
-	while ((read = SDL_RWread(rw, buffer, 1, sizeof(buffer))) > 0) {
-		fwrite(buffer, 1, read, fp);
-	}
-
-	// Return a FILE* pointing to the extracted asset.
-	fclose(fp);
-	fp = fopen(fname_buf.c_str(), mode);
-	if (!fp) {
-		LogError("fp_from_bundle(%s) bad readback: %s", file, strerror(errno));
-	}
-	return fp;
-}
-
-// ----------------------------------------------------------------------------
-// Zip VFS implementation
-
-class ZipVfs : public Vfs
-{
-	unzFile zip;
-	ZipVfs(const ZipVfs& other) = delete;
-	ZipVfs(ZipVfs&& other) = delete;
-	ZipVfs& operator=(const ZipVfs& other) = delete;
-	ZipVfs& operator=(ZipVfs&& other) = delete;
-public:
-	ZipVfs(const char* fname) : zip(unzOpen(fname)) {}
-	~ZipVfs();
-
-	FILE* open_stdio(const char* filename);
-	SDL_RWops* open_sdl(const char* filename);
-	bool list_dir(const char* directory, std::set<std::string>& output);
-};
-
-ZipVfs::~ZipVfs()
-{
-	unzClose(zip);
-}
-
-FILE* ZipVfs::open_stdio(const char* filename)
-{
-	SDL_RWops* rw = open_sdl(filename);
-	return rw ? fp_from_bundle(filename, "rb", rw, ".zip_tmp", true) : nullptr;
-}
-
-SDL_RWops* ZipVfs::open_sdl(const char* filename)
-{
-	if (unzLocateFile(zip, filename, 0) != UNZ_OK)
-		return nullptr;
-	unz_file_info64 file_info;
-	if (unzGetCurrentFileInfo64(zip, &file_info, nullptr, 0, nullptr, 0, nullptr, 0) != UNZ_OK)
-	{
-		LogError("ZipVfs::open_sdl(%s): bad unzGetCurrentFileInfo64", filename);
-		return nullptr;
-	}
-	if (unzOpenCurrentFile(zip) != UNZ_OK)
-	{
-		LogError("ZipVfs::open_sdl(%s): bad unzOpenCurrentFile", filename);
-		return nullptr;
-	}
-	std::vector<uint8_t> buffer(file_info.uncompressed_size);
-	if (unzReadCurrentFile(zip, buffer.data(), file_info.uncompressed_size) < 0)
-	{
-		LogError("ZipVfs::open_sdl(%s): bad unzReadCurrentFile", filename);
-		return nullptr;
-	}
-	unzCloseCurrentFile(zip);
-	return vanilla::create_vec_rwops(std::move(buffer));
-}
-
-bool ZipVfs::list_dir(const char* directory_raw, std::set<std::string>& output)
-{
-	std::string_view directory = directory_raw;
-
-	unz_global_info64 gi;
-	if (unzGetGlobalInfo64(zip, &gi) != UNZ_OK)
-	{
-		LogError("ZipVfs::list_dir(): bad unzGetGlobalInfo64");
-		return false;
-	}
-	if (unzGoToFirstFile(zip) != UNZ_OK)
-	{
-		LogError("ZipVfs::list_dir(): bad unzGoToFirstFile");
-		return false;
-	}
-	for (size_t i = 0; i < gi.number_entry; ++i)
-	{
-		unz_file_info64 file_info;
-		char filename_buf[1024];
-		if (unzGetCurrentFileInfo64(zip, &file_info, filename_buf, sizeof(filename_buf), nullptr, 0, nullptr, 0) != UNZ_OK)
-		{
-			LogError("ZipVfs::list_dir(): bad unzGetCurrentFileInfo64");
-			return false;
-		}
-
-		std::string_view filename(filename_buf, file_info.size_filename);
-		if (filename.substr(0, directory.size()) == directory && filename[directory.size()] == '/')
-		{
-			output.insert(std::string(filename.substr(directory.size() + 1)));
-		}
-
-		if (i + 1 < gi.number_entry)
-		{
-			if (unzGoToNextFile(zip) != UNZ_OK)
-			{
-				LogError("ZipVfs::list_dir(): bad unzGoToNextFile");
-				return false;
-			}
-		}
-	}
-	return true;
-}
-
-// ----------------------------------------------------------------------------
-// NSIS VFS implementation
-
-class NsisVfs : public Vfs {
-	vanilla::nsis::Archive archive;
-public:
-	NsisVfs(SDL_RWops* fp) : archive(fp) {}
-	FILE* open_stdio(const char* filename);
-	SDL_RWops* open_sdl(const char* filename);
-	bool list_dir(const char* directory, std::set<std::string>& output);
-};
-
-FILE* NsisVfs::open_stdio(const char* filename) {
-	SDL_RWops* rw = open_sdl(filename);
-	return rw ? fp_from_bundle(filename, "rb", rw, ".nsis_tmp", true) : nullptr;
-}
-
-SDL_RWops* NsisVfs::open_sdl(const char* filename) {
-	return archive.open_file(filename);
-}
-
-bool NsisVfs::list_dir(const char* directory, std::set<std::string>& output) {
-	return archive.list_dir(directory, output);
-}
-
-// ----------------------------------------------------------------------------
-// Inno VFS implementation
-
-class InnoVfs : public Vfs {
-	vanilla::inno::Archive archive;
-public:
-	InnoVfs(FILE* fp) : archive(fp) {}
-	FILE* open_stdio(const char* filename);
-	SDL_RWops* open_sdl(const char* filename);
-	bool list_dir(const char* directory, std::set<std::string>& output);
-};
-
-FILE* InnoVfs::open_stdio(const char* filename) {
-	SDL_RWops* rw = open_sdl(filename);
-	return rw ? fp_from_bundle(filename, "rb", rw, ".inno_tmp", true) : nullptr;
-}
-
-SDL_RWops* InnoVfs::open_sdl(const char* filename) {
-	return archive.open_file(filename);
-}
-
-bool InnoVfs::list_dir(const char* directory, std::set<std::string>& output) {
-	return archive.list_dir(directory, output);
-}
-
 static Mount init_vfs_spec(const char* what, const char* spec) {
 	std::string spec2 = spec;
 	char* mountpoint = spec2.data();
@@ -513,23 +81,23 @@ static Mount init_vfs_spec(const char* what, const char* spec) {
 	*param++ = 0;
 
 	if (!strcmp(kind, "stdio")) {
-		return { std::make_unique<StdioVfs>(param), mountpoint };
+		return { open_stdio(param), mountpoint };
 	} else if (!strcmp(kind, "zip")) {
-		return { std::make_unique<ZipVfs>(param), mountpoint };
+		return { open_zip(param), mountpoint };
 	} else if (!strcmp(kind, "nsis")) {
 		SDL_RWops* fp = SDL_RWFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
 			return { nullptr };
 		}
-		return { std::make_unique<NsisVfs>(fp), mountpoint };
+		return { open_nsis(fp), mountpoint };
 	} else if (!strcmp(kind, "inno")) {
 		FILE* fp = fopen(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
 			return { nullptr };
 		}
-		return { std::make_unique<InnoVfs>(fp), mountpoint };
+		return { open_inno(fp), mountpoint };
 	} else {
 		LogError("%s: unknown kind '%s' in VFS spec '%s'", what, kind, spec);
 		return { nullptr };
@@ -571,8 +139,8 @@ static VfsStack default_vfs_stack() {
 	buffer.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
 
 	VfsStack result;
-	result.write_mount = std::make_unique<StdioVfs>(buffer);
-	result.push_back(std::make_unique<StdioVfs>(""));
+	result.write_mount = vanilla::open_stdio(buffer.c_str());
+	result.push_back(vanilla::open_stdio(""));
 	return result;
 }
 
@@ -585,46 +153,20 @@ void AppdataSync() {
 
 // ----------------------------------------------------------------------------
 #elif defined(__ANDROID__) && __ANDROID__
-// Android VFS implementation and Android configuration
+// Android configuration
 
 #include <SDL_system.h>
-#include <string.h>
-
-class AndroidBundleVfs : public Vfs {
-public:
-	FILE* open_stdio(const char* filename);
-	SDL_RWops* open_sdl(const char* filename);
-	bool list_dir(const char* directory, std::set<std::string>& output);
-};
-
-FILE* AndroidBundleVfs::open_stdio(const char* filename) {
-	SDL_RWops* rw = open_sdl(filename);
-	if (!rw) {
-		return nullptr;
-	}
-
-	// Use a directory which definitely doesn't overlap with appdata.
-	std::string tempdir = SDL_AndroidGetInternalStoragePath();
-	tempdir.append("/.bundle_tmp");
-	return fp_from_bundle(filename, "rb", rw, tempdir.c_str(), false);
-}
-
-SDL_RWops* AndroidBundleVfs::open_sdl(const char* filename) {
-	return SDL_RWFromFile(filename, "rb");
-}
-
-#include "appdata_jni.inc"
 
 static VfsStack default_vfs_stack() {
 	VfsStack result;
 	int need_flags = SDL_ANDROID_EXTERNAL_STORAGE_READ | SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
 	if ((SDL_AndroidGetExternalStorageState() & need_flags) == need_flags) {
-		result.write_mount = std::make_unique<StdioVfs>(SDL_AndroidGetExternalStoragePath());
-		result.push_back(std::make_unique<StdioVfs>(SDL_AndroidGetInternalStoragePath()));
+		result.write_mount = vanilla::open_stdio(SDL_AndroidGetExternalStoragePath());
+		result.push_back(vanilla::open_stdio(SDL_AndroidGetInternalStoragePath()));
 	} else {
-		result.write_mount = std::make_unique<StdioVfs>(SDL_AndroidGetInternalStoragePath());
+		result.write_mount = vanilla::open_stdio(SDL_AndroidGetInternalStoragePath());
 	}
-	result.push_back(std::make_unique<AndroidBundleVfs>());
+	result.push_back(open_android());
 	return result;
 }
 
@@ -636,7 +178,7 @@ static bool detect_installers(VfsStack* result, const HamSandwichMetadata* meta)
 	// `appdata/$NAME/`
 	std::string appdata = "appdata/";
 	appdata.append(meta->appdata_folder_name);
-	result->write_mount = std::make_unique<StdioVfs>(appdata);
+	result->write_mount = vanilla::open_stdio(appdata.c_str());
 
 	// Assets from specs
 	for (int i = 0; meta->default_asset_specs[i]; ++i) {
@@ -661,9 +203,9 @@ static VfsStack default_vfs_stack() {
 		appdata.append(meta->appdata_folder_name);
 		appdata.append("/");
 		printf("all installers found; chdir(%s)\n", appdata.c_str());
-		mkdir_parents(appdata.c_str());
+		vanilla::mkdir_parents(appdata.c_str());
 		chdir(appdata.c_str());
-		result.write_mount = std::make_unique<StdioVfs>(".");
+		result.write_mount = vanilla::open_stdio(".");
 	}
 
 	return result;
@@ -671,51 +213,7 @@ static VfsStack default_vfs_stack() {
 
 // ----------------------------------------------------------------------------
 #endif
-// ----------------------------------------------------------------------------
-// VfsStack implementation
 
-#ifdef _WIN32
-#define strncasecmp _strnicmp
-#endif
-
-const char* Mount::matches(const char* filename) const {
-	if (mountpoint.empty()) {
-		return filename;  // Blank mountpoint, always match.
-	}
-
-	if (strncasecmp(filename, mountpoint.c_str(), mountpoint.size()) == 0) {
-		if (filename[mountpoint.size()] == '/') {
-			return &filename[mountpoint.size() + 1];
-		} else if (filename[mountpoint.size()] == '0') {
-			return "";
-		}
-	}
-
-	return nullptr;  // No match.
-}
-
-void VfsStack::push_back(std::unique_ptr<Vfs>&& entry, std::string mountpoint) {
-	mounts.push_back(Mount { std::move(entry), mountpoint });
-}
-
-SDL_RWops* VfsStack::open_sdl(const char* filename) {
-	if (write_mount) {
-		if (SDL_RWops* rw = write_mount->open_sdl(filename)) {
-			return rw;
-		}
-	}
-
-	for (auto& mount : mounts) {
-		if (const char* subfilename = mount.matches(filename)) {
-			if (SDL_RWops* rw = mount.vfs->open_sdl(subfilename)) {
-				return rw;
-			}
-		}
-	}
-
-	LogError("AssetOpen_SDL(%s): not found in any vfs", filename);
-	return nullptr;
-}
 
 // Common implementation
 
@@ -760,7 +258,7 @@ static void missing_assets_message() {
 static VfsStack vfs_stack_from_env() {
 	VfsStack result;
 	if (const char *appdata_spec = getenv("HSW_APPDATA")) {
-		result.write_mount = std::make_unique<StdioVfs>(appdata_spec);
+		result.write_mount = vanilla::open_stdio(appdata_spec);
 
 		char buffer[32];
 		for (int i = 0; i < 1024; ++i) {

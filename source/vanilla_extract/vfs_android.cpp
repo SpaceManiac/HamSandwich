@@ -1,6 +1,43 @@
+#if defined(__ANDROID__) && __ANDROID__
+#include "vfs_android.h"
+#include "vfs.h"
+#include "vfs_stdio.h"
+#include <string.h>
 #include <jni.h>
-
+#include <SDL_system.h>
 #include <SDL_assert.h>
+#include <SDL_log.h>
+
+// Android VFS implementation
+class AndroidBundleVfs : public vanilla::Vfs
+{
+public:
+	FILE* open_stdio(const char* filename);
+	SDL_RWops* open_sdl(const char* filename);
+	bool list_dir(const char* directory, std::set<std::string>& output);
+};
+
+std::unique_ptr<vanilla::Vfs> vanilla::open_android()
+{
+	return std::make_unique<AndroidBundleVfs>();
+}
+
+FILE* AndroidBundleVfs::open_stdio(const char* filename)
+{
+	SDL_RWops* rw = open_sdl(filename);
+	if (!rw)
+		return nullptr;
+
+	// Use a directory which definitely doesn't overlap with appdata.
+	std::string tempdir = SDL_AndroidGetInternalStoragePath();
+	tempdir.append("/.bundle_tmp");
+	return vanilla::fp_from_bundle(filename, "rb", rw, tempdir.c_str(), false);
+}
+
+SDL_RWops* AndroidBundleVfs::open_sdl(const char* filename)
+{
+	return SDL_RWFromFile(filename, "rb");
+}
 
 // ----------------------------------------------------------------------------
 // Cargo-cult copy-paste from SDL_android.c
@@ -26,7 +63,8 @@ static struct LocalReferenceHolder LocalReferenceHolder_Setup(const char *func)
 static SDL_bool LocalReferenceHolder_Init(struct LocalReferenceHolder *refholder, JNIEnv *env)
 {
     const int capacity = 16;
-    if (env->PushLocalFrame(capacity) < 0) {
+    if (env->PushLocalFrame(capacity) < 0)
+	{
         SDL_SetError("Failed to allocate enough JVM local references");
         return SDL_FALSE;
     }
@@ -40,7 +78,8 @@ static void LocalReferenceHolder_Cleanup(struct LocalReferenceHolder *refholder)
 #ifdef DEBUG_JNI
     SDL_Log("Leaving function %s", refholder->m_func);
 #endif
-    if (refholder->m_env) {
+    if (refholder->m_env)
+	{
         JNIEnv* env = refholder->m_env;
         env->PopLocalFrame(NULL);
         --s_active;
@@ -101,7 +140,8 @@ static SDL_bool Android_JNI_ExceptionOccurred(JNIEnv *mEnv, SDL_bool silent)
 // ----------------------------------------------------------------------------
 // Implementation which calls AssetManager.list() to do some real work
 
-bool AndroidBundleVfs::list_dir(const char* directory, std::set<std::string>& output) {
+bool AndroidBundleVfs::list_dir(const char* directory, std::set<std::string>& output)
+{
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
 
     bool result = true;
@@ -117,7 +157,8 @@ bool AndroidBundleVfs::list_dir(const char* directory, std::set<std::string>& ou
 	const char* buffer;
 
     JNIEnv *mEnv = (JNIEnv*) SDL_AndroidGetJNIEnv();
-    if (!LocalReferenceHolder_Init(&refs, mEnv)) {
+    if (!LocalReferenceHolder_Init(&refs, mEnv))
+	{
         goto failure;
     }
 
@@ -137,24 +178,29 @@ bool AndroidBundleVfs::list_dir(const char* directory, std::set<std::string>& ou
 	/* fileList = assetManager.list(path); */
     mid = mEnv->GetMethodID(mEnv->GetObjectClass(assetManager), "list", "(Ljava/lang/String;)[Ljava/lang/String;");
 	fileList = (jobjectArray) mEnv->CallObjectMethod(assetManager, mid, fileNameJString);
-    if (Android_JNI_ExceptionOccurred(mEnv, SDL_FALSE)) {
+    if (Android_JNI_ExceptionOccurred(mEnv, SDL_FALSE))
+	{
         goto failure;
     }
 
 	len = mEnv->GetArrayLength(fileList);
-	for (i = 0; i < len; ++i) {
+	for (i = 0; i < len; ++i)
+	{
 		str = (jstring) mEnv->GetObjectArrayElement(fileList, i);
 		buffer = mEnv->GetStringUTFChars(str, nullptr);
 		output.insert(buffer);
 		mEnv->ReleaseStringUTFChars(str, buffer);
 	}
 
-    if (0) {
+    if (0)
+	{
 failure:
         result = false;
-		LogDebug("AndroidBundleVfs::list_dir(%s): %s", directory, SDL_GetError());
+		SDL_LogDebug(SDL_LOG_CATEGORY_CUSTOM, "AndroidBundleVfs::list_dir(%s): %s", directory, SDL_GetError());
     }
 
     LocalReferenceHolder_Cleanup(&refs);
     return result;
 }
+
+#endif  // __ANDROID__

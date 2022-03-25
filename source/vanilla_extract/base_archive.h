@@ -26,11 +26,13 @@ class Archive
 protected:
 	Archive() {}
 
-	struct CaseInsensitive {
+	struct CaseInsensitive
+	{
 		bool operator() (const std::string& lhs, const std::string& rhs) const;
 	};
 
-	struct Directory {
+	struct Directory
+	{
 		std::map<std::string, size_t, CaseInsensitive> files;
 		std::map<std::string, Directory, CaseInsensitive> directories;
 	};
