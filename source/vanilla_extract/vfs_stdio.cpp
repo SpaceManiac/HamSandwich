@@ -1,6 +1,7 @@
 #include "vanilla_extract.h"
 #include <SDL_rwops.h>
 #include <SDL_log.h>
+#include <errno.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -137,7 +138,8 @@ bool StdioVfs::list_dir(const char* directory, std::set<std::string>& output)
 
 #endif  // __GNUC__ and _MSC_VER
 
-bool StdioVfs::delete_file(const char* file) {
+bool StdioVfs::delete_file(const char* file)
+{
 	std::string buffer = prefix;
 	buffer.append("/");
 	buffer.append(file);

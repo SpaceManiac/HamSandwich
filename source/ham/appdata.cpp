@@ -2,8 +2,6 @@
 #include "log.h"
 #include "erase_if.h"
 #include "jamultypes.h"
-#include "nsis.h"
-#include "inno.h"
 #include "metadata.h"
 #include "extern.h"
 #include <string>
@@ -30,7 +28,10 @@
 
 #include <vanilla_extract.h>
 
-using namespace vanilla;
+using vanilla::Vfs;
+using vanilla::WriteVfs;
+using vanilla::Mount;
+using vanilla::VfsStack;
 
 /*
 The interface in appdata.h currently distinguishes between AppdataOpen
@@ -81,23 +82,23 @@ static Mount init_vfs_spec(const char* what, const char* spec) {
 	*param++ = 0;
 
 	if (!strcmp(kind, "stdio")) {
-		return { open_stdio(param), mountpoint };
+		return { vanilla::open_stdio(param), mountpoint };
 	} else if (!strcmp(kind, "zip")) {
-		return { open_zip(param), mountpoint };
+		return { vanilla::open_zip(param), mountpoint };
 	} else if (!strcmp(kind, "nsis")) {
 		SDL_RWops* fp = SDL_RWFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
 			return { nullptr };
 		}
-		return { open_nsis(fp), mountpoint };
+		return { vanilla::open_nsis(fp), mountpoint };
 	} else if (!strcmp(kind, "inno")) {
 		FILE* fp = fopen(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
 			return { nullptr };
 		}
-		return { open_inno(fp), mountpoint };
+		return { vanilla::open_inno(fp), mountpoint };
 	} else {
 		LogError("%s: unknown kind '%s' in VFS spec '%s'", what, kind, spec);
 		return { nullptr };
@@ -166,7 +167,7 @@ static VfsStack default_vfs_stack() {
 	} else {
 		result.write_mount = vanilla::open_stdio(SDL_AndroidGetInternalStoragePath());
 	}
-	result.push_back(open_android());
+	result.push_back(vanilla::open_android());
 	return result;
 }
 
