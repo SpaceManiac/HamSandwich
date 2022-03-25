@@ -22,7 +22,7 @@ public class Asset {
 	public final File file;
 
 	public CheckBox checkbox;
-	public Button button;
+	private Button button;
 
 	private boolean downloading = false;
 	private boolean wantsCancel = false;
@@ -41,6 +41,10 @@ public class Asset {
 		file = new File(installersDir, filename);
 	}
 
+	public boolean isDownloading() {
+		return downloading;
+	}
+
 	public void setButton(Button button) {
 		this.button = button;
 		if (file.exists()) {
@@ -48,6 +52,10 @@ public class Asset {
 		} else {
 			button.setText("Download");
 		}
+	}
+
+	public Button getButton() {
+		return button;
 	}
 
 	public void buttonClicked(UiThreadHandle uiThread) {
@@ -126,6 +134,7 @@ public class Asset {
 				// Commit the rename only at the very end.
 				assert partFile.renameTo(file);
 				uiThread.runOnUiThread(() -> button.setText("Delete"));
+				uiThread.runOnUiThread(uiThread::someDownloadFinished);
 			} catch (Exception e) {
 				uiThread.runOnUiThread(() -> button.setText("Errored"));
 				e.printStackTrace();

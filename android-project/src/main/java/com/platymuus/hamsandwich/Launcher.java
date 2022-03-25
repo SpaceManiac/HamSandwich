@@ -15,6 +15,7 @@ import java.util.ArrayList;
 public class Launcher {
 
 	public final ArrayList<Game> games = new ArrayList<>();
+	public Game currentGame;
 	public boolean wantsToPlay = false;
 
 	public final File installersDir;

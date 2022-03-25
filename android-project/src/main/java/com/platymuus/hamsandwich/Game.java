@@ -1,6 +1,7 @@
 package com.platymuus.hamsandwich;
 
 import android.view.View;
+import android.widget.Button;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,7 +17,8 @@ public class Game {
 
 	public final ArrayList<Asset> assets = new ArrayList<>();
 
-	public View page;
+	private View page;
+	private Button playButton;
 
 	public Game(File installersDir, String id, JSONObject project) throws JSONException {
 		this.id = id;
@@ -28,6 +30,20 @@ public class Game {
 			assets.add(new Asset(installersDir, installers.getJSONObject(j)));
 		}
 	}
+
+	public void setPage(View page) {
+		this.page = page;
+		playButton = page.findViewById(R.id.play_button);
+	}
+
+	public void calculateReadyToPlay(boolean wantsToPlay) {
+		playButton.setText(wantsToPlay ? "Downloading..." : isReadyToPlay() ? "Play" : "Download & Play");
+	}
+
+	public View getPage() {
+		return page;
+	}
+
 	// TODO: icon
 
 	public boolean startMissingDownloads(UiThreadHandle uiThreadHandle) {

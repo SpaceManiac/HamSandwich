@@ -6,6 +6,10 @@
 #include <SDL_rwops.h>
 #include <SDL_log.h>
 
+#if defined(__ANDROID__) && __ANDROID__
+#include <SDL_system.h>
+#endif
+
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
@@ -57,7 +61,11 @@ int vanilla::mkdir_parents(const char *path)
 FILE* vanilla::fp_from_bundle(const char* file, const char* mode, SDL_RWops* rw, const char* tempdir, bool reuse_safe)
 {
 	// Check internal storage to see if we've already extracted the file.
-	std::string fname_buf = tempdir;
+	std::string fname_buf;
+#if defined(__ANDROID__) && __ANDROID__
+	fname_buf.append(SDL_AndroidGetInternalStoragePath());
+#endif
+	fname_buf.append(tempdir);
 	fname_buf.append("/");
 	fname_buf.append(file);
 	if (reuse_safe)

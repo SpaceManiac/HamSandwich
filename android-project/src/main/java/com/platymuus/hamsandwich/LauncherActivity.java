@@ -58,10 +58,10 @@ public class LauncherActivity extends AppCompatActivity implements UiThreadHandl
 				gameListPage.addView(fragment);
 
 				// Give the game its own page.
-				game.page = getLayoutInflater().inflate(R.layout.fragment_game_page, pageCollection, false);
-				game.page.setVisibility(View.GONE);
-				game.page.findViewById(R.id.play_button).setOnClickListener(view -> playGame(thisGame));
-				ViewGroup assetContainer = game.page.findViewById(R.id.asset_container);
+				game.setPage(getLayoutInflater().inflate(R.layout.fragment_game_page, pageCollection, false));
+				game.getPage().setVisibility(View.GONE);
+				game.getPage().findViewById(R.id.play_button).setOnClickListener(view -> playGameClicked(thisGame));
+				ViewGroup assetContainer = game.getPage().findViewById(R.id.asset_container);
 				for (Asset asset : game.assets) {
 					View assetFragment = getLayoutInflater().inflate(R.layout.fragment_asset, assetContainer, false);
 					asset.checkbox = assetFragment.findViewById(R.id.asset_checkbox);
@@ -69,12 +69,15 @@ public class LauncherActivity extends AppCompatActivity implements UiThreadHandl
 					if (asset.required) {
 						asset.checkbox.setChecked(true);
 						asset.checkbox.setEnabled(false);
+					} else {
+						asset.checkbox.setOnCheckedChangeListener((view, state) -> thisGame.calculateReadyToPlay(launcher.wantsToPlay));
 					}
 					asset.setButton(assetFragment.findViewById(R.id.asset_button));
-					asset.button.setOnClickListener(view -> asset.buttonClicked(this));
+					asset.getButton().setOnClickListener(view -> asset.buttonClicked(this));
 					assetContainer.addView(assetFragment);
 				}
-				pageCollection.addView(game.page);
+				game.calculateReadyToPlay(false);
+				pageCollection.addView(game.getPage());
 			}
 
 			if (launcher.games.size() == 1) {
@@ -82,16 +85,16 @@ public class LauncherActivity extends AppCompatActivity implements UiThreadHandl
 				Game game = launcher.games.get(0);
 				selectGame(game);
 
-				// If every asset is both required and already downloaded, just launch it.
+				// If there are no optional assets, don't wait for user input.
 				boolean allGood = true;
 				for (Asset asset : game.assets) {
-					if (!asset.required /* || !asset.isReady() */) {
+					if (!asset.required) {
 						allGood = false;
 						break;
 					}
 				}
 				if (allGood) {
-					playGame(game);
+					playGameClicked(game);
 				}
 			} else {
 				// Multiple games, so show the picker on launch.
@@ -123,6 +126,14 @@ public class LauncherActivity extends AppCompatActivity implements UiThreadHandl
 		}
 	}
 
+	@Override
+	protected void onResume() {
+		super.onResume();
+		launcher.wantsToPlay = false;
+		if (launcher.currentGame != null)
+			launcher.currentGame.calculateReadyToPlay(false);
+	}
+
 	private void showPage(View page) {
 		ViewGroup collection = findViewById(R.id.page_collection);
 		for (int i = 0; i < collection.getChildCount(); ++i) {
@@ -138,12 +149,25 @@ public class LauncherActivity extends AppCompatActivity implements UiThreadHandl
 	}
 
 	private void selectGame(@NonNull Game game) {
+		launcher.currentGame = game;
 		actionBar.setDisplayHomeAsUpEnabled(launcher.games.size() != 1);
 		actionBar.setTitle(game.title);
-		showPage(game.page);
+		showPage(game.getPage());
 	}
 
-	private void playGame(@NonNull Game game) {
+	private void playGameClicked(@NonNull Game game) {
+		if (launcher.wantsToPlay) {
+			launcher.wantsToPlay = false;
+		} else if (game.startMissingDownloads(this)) {
+			launcher.wantsToPlay = true;
+		} else {
+			playGameActually(game);
+		}
+		game.calculateReadyToPlay(launcher.wantsToPlay);
+	}
+
+	private void playGameActually(@NonNull Game game) {
+		launcher.wantsToPlay = false;
 		Intent intent = new Intent(getApplicationContext(), HamSandwichActivity.class);
 		intent.putExtra("game", game.id);
 
@@ -165,5 +189,14 @@ public class LauncherActivity extends AppCompatActivity implements UiThreadHandl
 		intent.putExtra("ENV.HSW_ASSETS_" + i, "");
 
 		startActivity(intent);
+	}
+
+	public void someDownloadFinished() {
+		if (launcher.currentGame == null)
+			return;
+
+		launcher.currentGame.calculateReadyToPlay(launcher.wantsToPlay);
+		if (launcher.currentGame.isReadyToPlay() && launcher.wantsToPlay)
+			playGameActually(launcher.currentGame);
 	}
 }
