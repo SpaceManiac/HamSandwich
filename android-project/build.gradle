@@ -44,6 +44,7 @@ android {
 	}
 
 	sourceSets.main {
+		assets.srcDir "../assets/android"
 		// Our CMake build puts assets to embed in the .apk here at build time.
 		assets.srcDir "${buildDir}/intermediates/cxx/hamsandwich-assets"
 	}

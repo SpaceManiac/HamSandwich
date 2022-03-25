@@ -32,7 +32,8 @@ static inline bool rect_contains(const SDL_Rect &r, int x, int y) {
 }
 
 void Element::draw(SDL_Renderer* renderer) {
-	SDL_RenderCopy(renderer, tex, NULL, &rect);
+	if (tex)
+		SDL_RenderCopy(renderer, tex, NULL, &rect);
 }
 
 SoftJoystick::SoftJoystick(MGLDraw* mgl) {
