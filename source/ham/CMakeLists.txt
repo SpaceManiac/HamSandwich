@@ -189,22 +189,3 @@ function(HamSandwich_install TARGET_NAME)
 		install(TARGETS "${TARGET_NAME}" COMPONENT Executables)
 	endif()
 endfunction()
-
-function(HamSandwich_finish)
-	if(EMSCRIPTEN)
-		get_property(launcher_metadata GLOBAL PROPERTY HamSandwich_launcher_metadata)
-		file(READ "${CMAKE_SOURCE_DIR}/assets/homepage/index.html" index_html)
-		string(REPLACE "__HOMEPAGE_METADATA__" "${launcher_metadata}" index_html "${index_html}")
-		file(GENERATE OUTPUT index.html CONTENT "${index_html}")
-
-		install(FILES
-			"${CMAKE_CURRENT_BINARY_DIR}/index.html"
-			DESTINATION "${CMAKE_INSTALL_PREFIX}"
-		)
-		install(
-			FILES "${CMAKE_CURRENT_SOURCE_DIR}/supreme/lunatic.ico"
-			RENAME "favicon.ico"
-			DESTINATION "${CMAKE_INSTALL_PREFIX}"
-		)
-	endif()
-endfunction()

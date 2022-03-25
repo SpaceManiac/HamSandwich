@@ -53,7 +53,32 @@ add_subdirectory("loonyland2")
 add_subdirectory("sleepless")
 
 # Launcher
-if(NOT EMSCRIPTEN AND NOT ANDROID)
+if(EMSCRIPTEN)
+	# Assets for web distribution
+	get_property(launcher_metadata GLOBAL PROPERTY HamSandwich_launcher_metadata)
+	file(READ "${CMAKE_SOURCE_DIR}/assets/homepage/index.html" index_html)
+	string(REPLACE "__HOMEPAGE_METADATA__" "${launcher_metadata}" index_html "${index_html}")
+	file(GENERATE OUTPUT index.html CONTENT "${index_html}")
+
+	install(FILES
+		"${CMAKE_CURRENT_BINARY_DIR}/index.html"
+		DESTINATION "${CMAKE_INSTALL_PREFIX}"
+	)
+	install(
+		FILES "${CMAKE_CURRENT_SOURCE_DIR}/supreme/lunatic.ico"
+		RENAME "favicon.ico"
+		DESTINATION "${CMAKE_INSTALL_PREFIX}"
+	)
+elseif(ANDROID)
+	# Assets for Android build
+	# This folder corresponds to the one set in `android-project/build.gradle`. It erases the
+	# distinction between ABIs and debug/release, but the assets are the same so it's fine.
+	set(hamsandwich_assets "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/../../../../hamsandwich-assets")
+
+	file(GENERATE OUTPUT "${hamsandwich_assets}/test.txt" CONTENT "Hello from CMake")
+	message("put it at: ${hamsandwich_assets}/test.txt")
+	#set_target_properties(ham PROPERTIES ANDROID_ASSETS_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}/android-assets")
+else()
+	# Launcher for desktop platforms
 	add_subdirectory("launcher")
 endif()
-HamSandwich_finish()

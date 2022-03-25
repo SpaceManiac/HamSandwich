@@ -26,27 +26,25 @@ dependencies {
 }
 
 android {
-	var assetDirectory = "${buildDir}/cmake-assets"
-	var stagingDirectory = "${buildDir}.staging"
-
 	compileSdkVersion 31
 
 	defaultConfig {
 		minSdk 16
 		targetSdkVersion 31
 		applicationId 'com.platymuus.hamsandwich'
-		externalNativeBuild.cmake.arguments "-DCMAKE_INSTALL_PREFIX=${assetDirectory}", "-DANDROID_STL=c++_shared"
+		externalNativeBuild.cmake.arguments "-DANDROID_STL=c++_shared"
 		ndk.abiFilters 'armeabi-v7a' //, 'arm64-v8a', 'x86', 'x86_64'
 	}
 
 	externalNativeBuild.cmake {
 		version '3.21.2'
 		path '../CMakeLists.txt'
-		buildStagingDirectory stagingDirectory
+		buildStagingDirectory "${buildDir}.staging"
 	}
 
 	sourceSets.main {
-		assets.srcDir assetDirectory
+		// Our CMake build puts assets to embed in the .apk here at build time.
+		assets.srcDir "${buildDir}/intermediates/cxx/hamsandwich-assets"
 	}
 }
 
