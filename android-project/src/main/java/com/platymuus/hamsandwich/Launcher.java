@@ -13,23 +13,6 @@ import java.util.ArrayList;
 
 public class Launcher {
 
-	public static class Asset {
-		public String mountpoint, kind, filename, sha256sum, link;
-		public long file_id;
-		public String description;
-		public boolean required;
-		// TODO: enabled setting, download progress
-	}
-
-	public static class Game {
-		public String id;
-		public String title;
-		public boolean excluded;
-
-		public final ArrayList<Asset> assets = new ArrayList<>();
-		// TODO: icon
-	}
-
 	public final ArrayList<Game> games = new ArrayList<>();
 	public Game currentGame = null;
 	public boolean wants_to_play = false;
