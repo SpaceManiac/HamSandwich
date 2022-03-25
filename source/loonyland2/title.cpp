@@ -782,7 +782,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 				MakeNormalSound(SND_MENUCLICK);
 				subcursor=1;
 			}
-			if((k>='a' && k<='z') || (k>='A' && k<='Z') || (k>='0' && k<='9') && subcursor==0)
+			if(((k>='a' && k<='z') || (k>='A' && k<='Z') || (k>='0' && k<='9')) && subcursor==0)
 			{
 				if(strlen(save[curChar].name)<10)
 				{
