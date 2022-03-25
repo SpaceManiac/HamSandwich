@@ -117,7 +117,7 @@ void InitCustomWorld(void)
 	{
 		fishNames[i][0]='\0';
 		fishSizes[i] = -1;
-		fishEffects[i] = -1;
+		fishEffects[i] = UINT8_MAX;
 	}
 	for (int i=0; i<64; ++i)
 	{

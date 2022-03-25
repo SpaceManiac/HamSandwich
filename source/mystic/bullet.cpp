@@ -690,7 +690,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_SPORE:
-			if(i=FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,4,me->dx/2,me->dy/2,1,map,world))
+			if((i=FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,4,me->dx/2,me->dy/2,1,map,world)))
 			{
 				if(i==2)	// only poison if the player himself is hit
 					PoisonPlayer(30);
@@ -1092,30 +1092,38 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				Clamp(&me->dy,i<<FIXSHIFT);
 
 				if(me->dx>0)
+				{
 					if(me->facing>8)
 						me->facing++;
 					else
 						me->facing--;
+				}
 				if(me->dx<0)
+				{
 					if(me->facing>8)
 						me->facing--;
 					else
 						me->facing++;
+				}
 				if(me->dy>0)
+				{
 					if(me->facing>11 || me->facing<4)
 						me->facing++;
 					else
 						me->facing--;
+				}
 				if(me->dy<0)
+				{
 					if(me->facing>11 || me->facing<4)
 						me->facing--;
 					else
 						me->facing++;
+				}
 
 				if(me->facing>200)
 					me->facing+=16;
 				if(me->facing>15)
-						me->facing-=16;
+					me->facing-=16;
 			}
 			break;
 	}
