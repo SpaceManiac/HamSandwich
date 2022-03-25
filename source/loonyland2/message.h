@@ -3,8 +3,8 @@
 
 #include "winpch.h"
 #include "display.h"
-#pragma pack(1)
 
+#pragma pack(push, 1)
 typedef struct message_t
 {
 	int x,y;
@@ -14,6 +14,7 @@ typedef struct message_t
 	char brightDir;
 	char msg[64];
 } message_t;
+#pragma pack(pop)
 
 void InitMessage(void);
 void NewMessage(const char *txt,int time);

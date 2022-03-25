@@ -2,7 +2,6 @@
 #define COSSIN_H
 
 #include "winpch.h"
-#pragma pack(1)
 
 void InitCosSin(void);
 int Cosine(int angle);

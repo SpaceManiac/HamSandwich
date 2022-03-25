@@ -2,7 +2,6 @@
 #define PLASMA_H
 
 #include "game.h"
-#pragma pack(1)
 
 #define PLASMA_WIDTH 320
 #define PLASMA_HEIGHT 30

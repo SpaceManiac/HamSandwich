@@ -3,7 +3,6 @@
 
 #include "jamulsound.h"
 #include "jamultypes.h"
-#pragma pack(1)
 
 // interface sounds
 #define SND_MENUCLICK	(0)

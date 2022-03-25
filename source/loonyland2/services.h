@@ -2,7 +2,6 @@
 #define SERVICES_H
 
 #include "mgldraw.h"
-#pragma pack(1)
 
 #define SERVICES		(50)
 #define SVC_SHARPEN		(50)
