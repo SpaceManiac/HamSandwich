@@ -7,18 +7,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.json.JSONException;
+import com.google.android.gms.security.ProviderInstaller;
 
-import java.io.IOException;
-
-public class LauncherActivity extends AppCompatActivity {
+public class LauncherActivity extends AppCompatActivity implements UiThreadHandle {
 
 	private ActionBar actionBar;
 	private Launcher launcher;
@@ -27,6 +23,14 @@ public class LauncherActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_launcher);
+
+		// TODO: run this in a background thread or something
+		try {
+			ProviderInstaller.installIfNeeded(getApplicationContext());
+		} catch (Exception e) {
+			// TODO: do the good exception handling like https://developer.android.com/training/articles/security-gms-provider.html#example_sync
+			e.printStackTrace();
+		}
 
 		actionBar = getSupportActionBar();
 		assert actionBar != null;
@@ -60,6 +64,8 @@ public class LauncherActivity extends AppCompatActivity {
 						asset.checkbox.setChecked(true);
 						asset.checkbox.setEnabled(false);
 					}
+					asset.button = assetFragment.findViewById(R.id.asset_button);
+					asset.button.setOnClickListener(view -> asset.startDownload(this));
 					assetContainer.addView(assetFragment);
 				}
 				pageCollection.addView(game.page);
@@ -90,9 +96,7 @@ public class LauncherActivity extends AppCompatActivity {
 			new AlertDialog.Builder(this)
 				.setTitle("HamSandwich launcher error")
 				.setMessage(e.toString())
-				.setPositiveButton("Quit", (dialog, i) -> {
-					finish();
-				})
+				.setPositiveButton("Quit", (dialog, i) -> finish())
 				.show();
 		}
 	}
