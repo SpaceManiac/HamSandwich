@@ -1,9 +1,12 @@
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+# Launcher executable.
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+add_executable(launcher ${sources})
+target_link_libraries(launcher SDL2 SDL2_image imgui libcurl nlohmann_json)
 
 # Embed the metadata json.
 get_property(launcher_metadata GLOBAL PROPERTY HamSandwich_launcher_metadata)
 file(GENERATE OUTPUT launcher.json CONTENT "${launcher_metadata}")
-HamSandwich_embed_file(SOURCES launcher.json embed_launcher_json)
+HamSandwich_embed_file(launcher launcher.json embed_launcher_json)
 
 # Embed each game's icon in the launcher.
 get_property(launcher_icons GLOBAL PROPERTY HamSandwich_launcher_icons)
@@ -19,6 +22,7 @@ foreach(game ${launcher_icons})
 		{ \"${game}\", embed_icon_${game}, embed_icon_${game}_size },
 	")
 endforeach()
+target_link_libraries(launcher ${icon_libs})
 
 file(GENERATE OUTPUT embed_game_icons.cpp CONTENT "
 	#include <stdlib.h>
@@ -35,12 +39,7 @@ file(GENERATE OUTPUT embed_game_icons.cpp CONTENT "
 		{ nullptr }
 	};
 ")
-list(APPEND SOURCES embed_game_icons.cpp)
-
-# Build the executable proper.
-add_executable(launcher ${SOURCES})
-target_link_libraries(launcher SDL2 SDL2_image imgui libcurl nlohmann_json)
-target_link_libraries(launcher ${icon_libs})
+target_sources(launcher PRIVATE embed_game_icons.cpp)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_link_libraries(launcher stdc++fs)

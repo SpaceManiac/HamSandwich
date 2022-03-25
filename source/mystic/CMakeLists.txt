@@ -1,9 +1,7 @@
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-
-HamSandwich_icon(mystic SOURCES mystic.ico)
-HamSandwich_metadata(mystic SOURCES mystic.json)
-
-HamSandwich_add_executable(mystic ${SOURCES})
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+HamSandwich_add_executable(mystic ${sources})
 target_link_libraries(mystic ham)
 
+HamSandwich_icon(mystic mystic.ico)
+HamSandwich_metadata(mystic mystic.json)
 HamSandwich_install(mystic)

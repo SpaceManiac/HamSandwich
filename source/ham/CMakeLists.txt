@@ -1,11 +1,11 @@
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 if(WIN32 OR EMSCRIPTEN)
 	# TODO: Deal with Ham importing various functions from each game.
 	set(HAM_LIBRARY_TYPE STATIC)
 else()
 	set(HAM_LIBRARY_TYPE SHARED)
 endif()
-add_library(ham ${HAM_LIBRARY_TYPE} ${SOURCES})
+add_library(ham ${HAM_LIBRARY_TYPE} ${sources})
 target_link_libraries(ham minizip vanilla_extract SDL2 SDL2_image SDL2_mixer)
 if(ANDROID)
 	target_link_libraries(ham log)
@@ -24,7 +24,7 @@ function(HamSandwich_add_executable TARGET_NAME)
 	endif()
 endfunction()
 
-function(HamSandwich_embed_file sources_var filename symbol_name)
+function(HamSandwich_embed_file target_name filename symbol_name)
 	set(embed_py "${CMAKE_SOURCE_DIR}/tools/build/embed.py")
 	set(cpp "${CMAKE_CURRENT_BINARY_DIR}/${symbol_name}.cpp")
 	add_custom_command(
@@ -34,11 +34,10 @@ function(HamSandwich_embed_file sources_var filename symbol_name)
 		DEPENDS "${embed_py}"
 		VERBATIM
 	)
-	list(APPEND "${sources_var}" "${cpp}")
-	set("${sources_var}" "${${sources_var}}" PARENT_SCOPE)
+	target_sources("${target_name}" PRIVATE "${cpp}")
 endfunction()
 
-function(HamSandwich_icon target_name sources_var ico_filename)
+function(HamSandwich_icon target_name ico_filename)
 	set(ico "${CMAKE_CURRENT_SOURCE_DIR}/${ico_filename}")
 	# Convert the icon to .png for embedding.
 	set(ico2png_py "${CMAKE_SOURCE_DIR}/tools/build/ico2png.py")
@@ -54,12 +53,10 @@ function(HamSandwich_icon target_name sources_var ico_filename)
 	if(WIN32)
 		# On Windows, generate a simple .rc file that includes the icon.
 		file(GENERATE OUTPUT icon.rc CONTENT "allegro_icon ICON \"${ico}\"")
-		list(APPEND "${sources_var}" "${CMAKE_CURRENT_BINARY_DIR}/icon.rc")
-		set("${sources_var}" "${${sources_var}}" PARENT_SCOPE)
+		target_sources("${target_name}" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/icon.rc")
 	else()
 		# On other platforms, embed the .png version as a document.
-		HamSandwich_embed_file("${sources_var}" "${png}" embed_game_icon)
-		set("${sources_var}" "${${sources_var}}" PARENT_SCOPE)
+		HamSandwich_embed_file("${target_name}" "${png}" embed_game_icon)
 	endif()
 
 	if(EMSCRIPTEN)
@@ -80,12 +77,12 @@ function(HamSandwich_icon target_name sources_var ico_filename)
 		set_property(GLOBAL PROPERTY HamSandwich_launcher_icons "${launcher_icons}")
 		# The reason this has to be its own target created at this precise moment is:
 		# > If any dependency is an OUTPUT of another custom command in the same directory (CMakeLists.txt file), CMake automatically brings the other custom command into the target in which this command is built.
-		HamSandwich_embed_file(my_sources "${png}" "embed_icon_${target_name}")
-		add_library("${target_name}_icon" ${my_sources})
+		add_library("${target_name}_icon" STATIC)
+		HamSandwich_embed_file("${target_name}_icon" "${png}" "embed_icon_${target_name}")
 	endif()
 endfunction()
 
-function(HamSandwich_metadata TARGET_NAME SOURCES_VAR JSON_FILENAME)
+function(HamSandwich_metadata TARGET_NAME JSON_FILENAME)
 	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${JSON_FILENAME}")
 	file(READ "${JSON_FILENAME}" JSON_BLOB)
 
@@ -152,8 +149,7 @@ const HamSandwichMetadata* GetHamSandwichMetadata()
 ]])
 
 	file(GENERATE OUTPUT metadata.cpp CONTENT "${metadata_cpp}")
-	list(APPEND "${SOURCES_VAR}" "${CMAKE_CURRENT_BINARY_DIR}/metadata.cpp")
-	set("${SOURCES_VAR}" "${${SOURCES_VAR}}" PARENT_SCOPE)
+	target_sources("${TARGET_NAME}" PRIVATE metadata.cpp)
 
 	if(EMSCRIPTEN)
 		file(READ "${CMAKE_SOURCE_DIR}/assets/emscripten/index.html" INDEX_HTML)
