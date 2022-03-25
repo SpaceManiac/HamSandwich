@@ -1720,7 +1720,7 @@ void ScanForBad(void)
 					sprintf(pwrUpTxt,"map %d",i);
 				}
 			}
-			if((world.map[i]->special[x].effect==SPC_SETVAR))
+			if(world.map[i]->special[x].effect==SPC_SETVAR)
 			{
 				if(world.map[i]->special[x].value<240 && world.map[i]->special[x].effectTag!=1)
 				{
