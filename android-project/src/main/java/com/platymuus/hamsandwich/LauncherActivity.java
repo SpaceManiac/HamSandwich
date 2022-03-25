@@ -3,6 +3,7 @@ package com.platymuus.hamsandwich;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,11 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.security.ProviderInstaller;
+
+import org.libsdl.app.SDL;
+import org.libsdl.app.SDLActivity;
+
+import java.io.File;
 
 public class LauncherActivity extends AppCompatActivity implements UiThreadHandle {
 
@@ -36,7 +42,7 @@ public class LauncherActivity extends AppCompatActivity implements UiThreadHandl
 		assert actionBar != null;
 
 		try {
-			launcher = new Launcher(getApplicationContext().getAssets());
+			launcher = new Launcher(getApplicationContext().getFilesDir(), getApplicationContext().getAssets());
 
 			// Populate game picker
 			ViewGroup pageCollection = findViewById(R.id.page_collection);
@@ -64,8 +70,8 @@ public class LauncherActivity extends AppCompatActivity implements UiThreadHandl
 						asset.checkbox.setChecked(true);
 						asset.checkbox.setEnabled(false);
 					}
-					asset.button = assetFragment.findViewById(R.id.asset_button);
-					asset.button.setOnClickListener(view -> asset.startDownload(this));
+					asset.setButton(assetFragment.findViewById(R.id.asset_button));
+					asset.button.setOnClickListener(view -> asset.buttonClicked(this));
 					assetContainer.addView(assetFragment);
 				}
 				pageCollection.addView(game.page);
@@ -140,6 +146,24 @@ public class LauncherActivity extends AppCompatActivity implements UiThreadHandl
 	private void playGame(@NonNull Game game) {
 		Intent intent = new Intent(getApplicationContext(), HamSandwichActivity.class);
 		intent.putExtra("game", game.id);
+
+		int i = 0;
+		String internal = new File(getApplicationContext().getFilesDir(), "appdata/" + game.id).getAbsolutePath();
+		if ("mounted".equals(Environment.getExternalStorageState())) {
+			intent.putExtra("ENV.HSW_APPDATA", new File(getApplicationContext().getExternalFilesDir(null), "appdata/" + game.id).getAbsolutePath());
+			intent.putExtra("ENV.HSW_ASSETS_" + (i++), "@stdio@" + internal);
+		} else {
+			intent.putExtra("ENV.HSW_APPDATA", internal);
+		}
+		for (Asset asset : game.assets) {
+			if (asset.required || asset.checkbox.isChecked()) {
+				intent.putExtra("ENV.HSW_ASSETS_" + (i++), asset.mountpoint + "@" + asset.kind + "@" + asset.file.getAbsolutePath());
+			}
+		}
+		// Sentinel to end iteration in case we go from more assets to fewer.
+		// Not 100% sure this is needed? But just in case.
+		intent.putExtra("ENV.HSW_ASSETS_" + i, "");
+
 		startActivity(intent);
 	}
 }

@@ -3,6 +3,7 @@ package com.platymuus.hamsandwich;
 import android.widget.Button;
 import android.widget.CheckBox;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -13,15 +14,54 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class Asset {
-	public String mountpoint, kind, filename, sha256sum, link;
-	public long file_id;
-	public String description;
-	public boolean required;
+	public final String mountpoint, kind, filename, sha256sum, link;
+	public final long file_id;
+	public final String description;
+	public final boolean required;
+
+	public final File file;
 
 	public CheckBox checkbox;
 	public Button button;
 
 	private boolean downloading = false;
+	private boolean wantsCancel = false;
+
+	public Asset(File installersDir, JSONObject installer) throws JSONException {
+		mountpoint = installer.has("mountpoint") ? installer.getString("mountpoint") : "";
+		kind = installer.getString("kind");
+		filename = installer.getString("filename");
+		sha256sum = installer.getString("sha256sum");
+		link = installer.getString("link");
+		file_id = installer.getLong("file_id");
+		description = installer.getString("description");
+		required = !installer.has("optional") || !installer.getBoolean("optional");
+		// TODO: enabled setting
+
+		file = new File(installersDir, filename);
+	}
+
+	public void setButton(Button button) {
+		this.button = button;
+		if (file.exists()) {
+			button.setText("Delete");
+		} else {
+			button.setText("Download");
+		}
+	}
+
+	public void buttonClicked(UiThreadHandle uiThread) {
+		// Maybe racy but whatever for now
+		if (downloading) {
+			wantsCancel = true;
+		} else if (file.exists()) {
+			if (file.delete()) {
+				button.setText("Download");
+			}
+		} else {
+			startDownload(uiThread);
+		}
+	}
 
 	public void startDownload(UiThreadHandle uiThread) {
 		if (downloading)
@@ -45,6 +85,8 @@ public class Asset {
 					ByteArrayOutputStream result = new ByteArrayOutputStream();
 					for (int read; (read = inputStream.read(buffer)) != -1; ) {
 						result.write(buffer, 0, read);
+						if (wantsCancel)
+							return;
 					}
 					connection.disconnect();
 					connection = null;
@@ -52,30 +94,38 @@ public class Asset {
 					metadata = new JSONObject(result.toString("UTF-8"));
 				}
 
+				if (wantsCancel)
+					return;
+
 				// Download content
 				URL contentUrl = new URL(metadata.getString("url"));
 				connection = (HttpURLConnection) contentUrl.openConnection();
-				int contentLength = connection.getContentLength();
+				long contentLength;
+				if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+					contentLength = connection.getContentLengthLong();
+				} else {
+					contentLength = connection.getContentLength();
+				}
 				InputStream inputStream = connection.getInputStream();
 
-				int amountRead = 0;
-				File installers = new File(uiThread.getApplicationContext().getFilesDir(), "installers");
-				//noinspection ResultOfMethodCallIgnored
-				installers.mkdirs();
-				File partFile = new File(installers, filename + ".part");
+				long amountRead = 0;
+				File partFile = new File(file.getParentFile(), filename + ".part");
 				try (FileOutputStream file = new FileOutputStream(partFile)) {
 					for (int read; (read = inputStream.read(buffer)) != -1; ) {
 						file.write(buffer, 0, read);
 						amountRead += read;
-						int percent = amountRead * 100 / contentLength;
+						long percent = amountRead * 100 / contentLength;
 						uiThread.runOnUiThread(() -> button.setText(percent + "%"));
+						if (wantsCancel)
+							return;
 					}
 				}
 				connection.disconnect();
 				connection = null;
 
 				// Commit the rename only at the very end.
-				assert partFile.renameTo(new File(installers, filename));
+				assert partFile.renameTo(file);
+				uiThread.runOnUiThread(() -> button.setText("Delete"));
 			} catch (Exception e) {
 				uiThread.runOnUiThread(() -> button.setText("Errored"));
 				e.printStackTrace();

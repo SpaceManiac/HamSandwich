@@ -17,6 +17,14 @@ public class HamSandwichActivity extends SDLActivity {
 		}
 
 		super.onCreate(savedInstanceState);
+
+		if (!mBrokenLibraries) {
+			for (String key : getIntent().getExtras().keySet()) {
+				if (key.startsWith("ENV.")) {
+					SDLActivity.nativeSetenv(key.substring("ENV.".length()), getIntent().getExtras().getString(key));
+				}
+			}
+		}
 	}
 
 	@Override

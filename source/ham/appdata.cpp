@@ -258,13 +258,13 @@ static void missing_assets_message() {
 
 static VfsStack vfs_stack_from_env() {
 	VfsStack result;
-	if (const char *appdata_spec = getenv("HSW_APPDATA")) {
+	if (const char *appdata_spec = SDL_getenv("HSW_APPDATA"); appdata_spec && *appdata_spec) {
 		result.write_mount = vanilla::open_stdio(appdata_spec);
 
 		char buffer[32];
 		for (int i = 0; i < 1024; ++i) {
 			sprintf(buffer, "HSW_ASSETS_%d", i);
-			if (const char* asset_spec = getenv(buffer)) {
+			if (const char* asset_spec = SDL_getenv(buffer); asset_spec && *asset_spec) {
 				auto mount = init_vfs_spec(buffer, asset_spec);
 				if (mount.vfs) {
 					result.mounts.push_back(std::move(mount));
