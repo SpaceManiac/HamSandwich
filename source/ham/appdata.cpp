@@ -297,13 +297,15 @@ static bool check_assets(VfsStack& vfs) {
 
 static char bin_dir_buf[1024] = {};
 
-static bool escape_bin_directory() {
+static void escape_bin_directory() {
+#ifndef __ANDROID__
 	getcwd(bin_dir_buf, sizeof(bin_dir_buf));
 	std::string_view bin_dir = bin_dir_buf;
 	std::string_view build_install = "/build/install";
 	if (bin_dir.size() >= build_install.size() && bin_dir.compare(bin_dir.size() - build_install.size(), std::string_view::npos, build_install) == 0) {
 		chdir("../..");
 	}
+#endif
 }
 
 static bool run_download_helper() {

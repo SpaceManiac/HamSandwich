@@ -326,32 +326,32 @@ byte SaveWorld(world_t *world, const char *fname)
 
 byte GetWorldName(const char *fname,char *buffer,char *authbuffer)
 {
-	FILE *f;
+	SDL_RWops *f;
 	char code[9];
 
-	f=AssetOpen(fname);
+	f=AssetOpen_SDL(fname);
 	if(!f)
 		return 0;
 
-	fread(code,sizeof(char),8,f);
+	SDL_RWread(f,code,sizeof(char),8);
 	code[8]='\0';
 	if(!strcmp(code,"HAMSWCH!"))
 	{
-		fclose(f);
+		SDL_RWclose(f);
 		return Ham_GetWorldName(fname, buffer, authbuffer);
 	}
 	else if(strcmp(code,"SUPREME!"))
 	{
-		fclose(f);
+		SDL_RWclose(f);
 
 		strcpy(authbuffer,"Unknown Author");
 		return Legacy_GetWorldName(fname,buffer);
 	}
 
-	fread(authbuffer,sizeof(char),32,f);
-	fread(buffer,sizeof(char),32,f);
+	SDL_RWread(f,authbuffer,sizeof(char),32);
+	SDL_RWread(f,buffer,sizeof(char),32);
 
-	fclose(f);
+	SDL_RWclose(f);
 	return 1;
 }
 

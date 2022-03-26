@@ -4,8 +4,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <SDL.h>
+#include <SDL_platform.h>
 
-#if defined(__ANDROID__) && __ANDROID__
+#ifdef __ANDROID__
 #include <SDL_system.h>
 #endif
 
@@ -54,6 +55,25 @@ int vanilla::mkdir_parents(const char *path)
 
 	return status;
 }
+
+// ----------------------------------------------------------------------------
+// tmpfile replacement for Android
+#ifdef __ANDROID__
+
+static FILE* android_tmpfile()
+{
+	std::string buf = SDL_AndroidGetInternalStoragePath();
+	buf.append("/tmp.XXXXXX");
+	int fd = mkstemp(buf.data());
+	if (fd < 0)
+		return nullptr;
+	FILE* fp = fdopen(fd, "w+b");
+	unlink(buf.c_str());
+	return fp;
+}
+#define tmpfile android_tmpfile
+
+#endif
 
 // ----------------------------------------------------------------------------
 // "Extract to temporary directory" helper
