@@ -125,7 +125,6 @@ struct Asset
 			auto message = nlohmann::json::parse(metadata_progress);
 			std::string url = message["url"];
 
-			platform_mkdir("installers");
 			std::string full_path = "installers/";
 			full_path.append(filename);
 			full_path.append(".part");
@@ -347,6 +346,8 @@ int main(int argc, char** argv)
 		chdir("../..");
 	}
 
+	platform_mkdir("installers");
+
 	// Set up curl
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 	Action action = Action::Gui;
@@ -409,6 +410,9 @@ int main(int argc, char** argv)
 			return 0;
 		}
 	}
+
+	const char* const fullscreen_file = "installers/.fullscreen";
+	launcher.wants_fullscreen = filesystem::exists(fullscreen_file);
 
 	// Setup SDL
 	// (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a minority of Windows systems,
@@ -591,7 +595,17 @@ int main(int argc, char** argv)
 					launcher.current_game->start_missing_downloads(launcher.downloads);
 			}
 			ImGui::SameLine(212);
-			ImGui::Checkbox("Fullscreen", &launcher.wants_fullscreen);
+			if (ImGui::Checkbox("Fullscreen", &launcher.wants_fullscreen))
+			{
+				if (launcher.wants_fullscreen)
+				{
+					std::ofstream dummy { fullscreen_file };
+				}
+				else
+				{
+					filesystem::remove(fullscreen_file);
+				}
+			}
 
 			ImGui::Spacing();
 			ImGui::Separator();
