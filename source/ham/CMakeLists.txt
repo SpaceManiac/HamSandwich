@@ -63,15 +63,7 @@ function(HamSandwich_icon target_name ico_filename)
 		HamSandwich_embed_file("${target_name}" "${png}" embed_game_icon)
 	endif()
 
-	if(EMSCRIPTEN)
-		# On web, include the icon as a favicon.
-		add_custom_command(
-			OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/favicon.ico"
-			COMMAND cmake -E copy "${ico}" "${CMAKE_CURRENT_BINARY_DIR}/favicon.ico"
-			MAIN_DEPENDENCY "${ico}"
-			VERBATIM
-		)
-	endif()
+	set_target_properties("${target_name}" PROPERTIES HamSandwich_ico "${ico}")
 
 	# Include the .png icon in the launcher metadata.
 	get_property(is_excluded DIRECTORY PROPERTY EXCLUDE_FROM_ALL)
@@ -92,7 +84,6 @@ function(HamSandwich_metadata TARGET_NAME JSON_FILENAME)
 
 	string(JSON JSON_BLOB SET "${JSON_BLOB}" "projectName" "\"${TARGET_NAME}\"")
 	string(JSON JSON_BLOB SET "${JSON_BLOB}" "appdataName" "\"${TARGET_NAME}\"")
-	string(JSON JSON_BLOB SET "${JSON_BLOB}" "hasAssets" false)
 
 	# If the current directory is marked EXCLUDE_FROM_ALL, say so in the metadata.
 	get_property(is_excluded DIRECTORY PROPERTY EXCLUDE_FROM_ALL)
@@ -201,21 +192,27 @@ function(HamSandwich_install TARGET_NAME)
 			RENAME "splash.jpg"
 			DESTINATION "${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}"
 		)
+		get_target_property(ico "${TARGET_NAME}" HamSandwich_ico)
 		install(
 			FILES
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.css"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.js"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/jszip.min.js"
 			"${CMAKE_CURRENT_BINARY_DIR}/index.html"
-			"${CMAKE_CURRENT_BINARY_DIR}/favicon.ico"
 			"${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.js"
 			"${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.wasm"
+			DESTINATION "${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}"
+		)
+		install(
+			FILES "${ico}"
+			RENAME "favicon.ico"
 			DESTINATION "${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}"
 		)
 
 		# Use a GLOB to reconfigure if a new asset directory is created.
 		file(GLOB fake_sources LIST_DIRECTORIES true CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/assets/*")
-		if(EXISTS "${CMAKE_SOURCE_DIR}/assets/${TARGET_NAME}")
+		file(GLOB_RECURSE any_files "${CMAKE_SOURCE_DIR}/assets/${TARGET_NAME}/*")
+		if("${any_files}")
 			set(data "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.data")
 			set(data_js "${data}.js")
 			set(data_d "${data_js}.d")
