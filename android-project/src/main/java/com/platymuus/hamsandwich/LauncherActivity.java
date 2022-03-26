@@ -19,6 +19,7 @@ import org.libsdl.app.SDL;
 import org.libsdl.app.SDLActivity;
 
 import java.io.File;
+import java.io.IOException;
 
 public class LauncherActivity extends AppCompatActivity implements UiThreadHandle {
 
@@ -70,7 +71,11 @@ public class LauncherActivity extends AppCompatActivity implements UiThreadHandl
 						asset.checkbox.setChecked(true);
 						asset.checkbox.setEnabled(false);
 					} else {
-						asset.checkbox.setOnCheckedChangeListener((view, state) -> thisGame.calculateReadyToPlay(launcher.wantsToPlay));
+						asset.checkbox.setChecked(asset.getEnabledFile().exists());
+						asset.checkbox.setOnCheckedChangeListener((view, state) -> {
+							asset.setEnabledFileTo(state);
+							thisGame.calculateReadyToPlay(launcher.wantsToPlay);
+						});
 					}
 					asset.setButton(assetFragment.findViewById(R.id.asset_button));
 					asset.getButton().setOnClickListener(view -> asset.buttonClicked(this));

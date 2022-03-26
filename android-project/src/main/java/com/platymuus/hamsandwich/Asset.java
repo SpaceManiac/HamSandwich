@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -36,9 +37,16 @@ public class Asset {
 		file_id = installer.getLong("file_id");
 		description = installer.getString("description");
 		required = !installer.has("optional") || !installer.getBoolean("optional");
-		// TODO: enabled setting
 
 		file = new File(installersDir, filename);
+	}
+
+	private File getPartFile() {
+		return new File(file.getPath() + ".part");
+	}
+
+	public File getEnabledFile() {
+		return new File(file.getPath() + ".enabled");
 	}
 
 	public boolean isDownloading() {
@@ -117,7 +125,7 @@ public class Asset {
 				InputStream inputStream = connection.getInputStream();
 
 				long amountRead = 0;
-				File partFile = new File(file.getParentFile(), filename + ".part");
+				File partFile = getPartFile();
 				try (FileOutputStream file = new FileOutputStream(partFile)) {
 					for (int read; (read = inputStream.read(buffer)) != -1; ) {
 						file.write(buffer, 0, read);
@@ -145,5 +153,18 @@ public class Asset {
 				downloading = false;
 			}
 		}).start();
+	}
+
+	@SuppressWarnings("ResultOfMethodCallIgnored")
+	public void setEnabledFileTo(boolean state) {
+		try {
+			if (state) {
+				getEnabledFile().createNewFile();
+			} else {
+				getEnabledFile().delete();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
