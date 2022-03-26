@@ -260,12 +260,14 @@ static void missing_assets_message() {
 static VfsStack vfs_stack_from_env() {
 	VfsStack result;
 	if (const char *appdata_spec = SDL_getenv("HSW_APPDATA"); appdata_spec && *appdata_spec) {
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "HSW_APPDATA=%s", appdata_spec);
 		result.set_appdata(vanilla::open_stdio(appdata_spec));
 
 		char buffer[32];
 		for (int i = 0; i < 1024; ++i) {
 			sprintf(buffer, "HSW_ASSETS_%d", i);
 			if (const char* asset_spec = SDL_getenv(buffer); asset_spec && *asset_spec) {
+				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s=%s", buffer, asset_spec);
 				auto mount = init_vfs_spec(buffer, asset_spec);
 				if (mount.vfs) {
 					result.push_back(std::move(mount));
@@ -374,6 +376,7 @@ static VfsStack vfs_stack;
 // Public interface
 
 void AppdataInit() {
+	LogInit();
 	escape_bin_directory();
 	vfs_stack = init_vfs_stack();
 }

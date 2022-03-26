@@ -10,8 +10,8 @@
 	#include <android/log.h>
 #endif
 
-static SDL_LogOutputFunction original;
-static void* originalUserdata;
+static SDL_LogOutputFunction original = nullptr;
+static void* originalUserdata = nullptr;
 static bool errorLogAttempted = false;
 static FILE* errorLog = nullptr;
 
@@ -26,19 +26,21 @@ void HamLogOutput(void *userdata, int category, SDL_LogPriority priority, const 
 	}
 }
 
-static void LogInit()
+void LogInit()
 {
+	if (!original)
+	{
+#ifndef NDEBUG
+		SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_DEBUG);
+#endif
+		SDL_LogGetOutputFunction(&original, &originalUserdata);
+		SDL_LogSetOutputFunction(HamLogOutput, nullptr);
+	}
+
 	if (!errorLogAttempted && AppdataIsInit())
 	{
 		errorLogAttempted = true;
 		errorLog = AppdataOpen_Write("error.log");
-
-#ifndef NDEBUG
-		SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_DEBUG);
-#endif
-
-		SDL_LogGetOutputFunction(&original, &originalUserdata);
-		SDL_LogSetOutputFunction(HamLogOutput, nullptr);
 	}
 }
 

@@ -4,6 +4,7 @@
 #include <SDL_stdinc.h>
 
 // Debug and error logging functions
+void LogInit();
 void LogDebug(SDL_PRINTF_FORMAT_STRING const char* fmt, ...) SDL_PRINTF_VARARG_FUNC(1);
 void LogError(SDL_PRINTF_FORMAT_STRING const char* fmt, ...) SDL_PRINTF_VARARG_FUNC(1);
 
