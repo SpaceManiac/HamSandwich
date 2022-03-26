@@ -10,7 +10,6 @@
 class AndroidBundleVfs : public vanilla::Vfs
 {
 public:
-	FILE* open_stdio(const char* filename);
 	SDL_RWops* open_sdl(const char* filename);
 	bool list_dir(const char* directory, std::set<std::string>& output);
 };
@@ -18,18 +17,6 @@ public:
 std::unique_ptr<vanilla::Vfs> vanilla::open_android()
 {
 	return std::make_unique<AndroidBundleVfs>();
-}
-
-FILE* AndroidBundleVfs::open_stdio(const char* filename)
-{
-	SDL_RWops* rw = open_sdl(filename);
-	if (!rw)
-		return nullptr;
-
-	// Use a directory which definitely doesn't overlap with appdata.
-	std::string tempdir = SDL_AndroidGetInternalStoragePath();
-	tempdir.append("/.bundle_tmp");
-	return vanilla::fp_from_bundle(filename, "rb", rw, tempdir.c_str(), false);
 }
 
 SDL_RWops* AndroidBundleVfs::open_sdl(const char* filename)

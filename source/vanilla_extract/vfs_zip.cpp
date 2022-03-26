@@ -19,7 +19,6 @@ public:
 	ZipVfs(const char* fname) : zip(unzOpen(fname)) {}
 	~ZipVfs();
 
-	FILE* open_stdio(const char* filename);
 	SDL_RWops* open_sdl(const char* filename);
 	bool list_dir(const char* directory, std::set<std::string>& output);
 };
@@ -32,12 +31,6 @@ std::unique_ptr<Vfs> vanilla::open_zip(const char* filename)
 ZipVfs::~ZipVfs()
 {
 	unzClose(zip);
-}
-
-FILE* ZipVfs::open_stdio(const char* filename)
-{
-	SDL_RWops* rw = open_sdl(filename);
-	return rw ? fp_from_bundle(filename, "rb", rw, ".zip_tmp", true) : nullptr;
 }
 
 SDL_RWops* ZipVfs::open_sdl(const char* filename)

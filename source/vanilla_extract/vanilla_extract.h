@@ -17,7 +17,7 @@ namespace vanilla
 
 	// Helpers
 	int mkdir_parents(const char* path);
-	FILE* fp_from_bundle(const char* file, const char* mode, SDL_RWops* rw, const char* tempdir, bool reuse_safe);
+	FILE* fp_from_bundle(const char* filename, SDL_RWops* rw);
 
 	// Available providers
 	std::unique_ptr<WriteVfs> open_stdio(const char* prefix);
@@ -39,7 +39,7 @@ namespace vanilla
 		Vfs() {}
 		virtual ~Vfs() {}
 
-		virtual FILE* open_stdio(const char* filename) = 0;
+		virtual FILE* open_stdio(const char* filename) { return fp_from_bundle(filename, open_sdl(filename)); }
 		virtual SDL_RWops* open_sdl(const char* filename) = 0;
 		virtual bool list_dir(const char* directory, std::set<std::string>& output) = 0;
 	};

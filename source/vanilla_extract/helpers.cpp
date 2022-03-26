@@ -1,10 +1,9 @@
 #include "vanilla_extract.h"
-#include <SDL.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <SDL_rwops.h>
-#include <SDL_log.h>
+#include <SDL.h>
 
 #if defined(__ANDROID__) && __ANDROID__
 #include <SDL_system.h>
@@ -58,49 +57,33 @@ int vanilla::mkdir_parents(const char *path)
 
 // ----------------------------------------------------------------------------
 // "Extract to temporary directory" helper
-FILE* vanilla::fp_from_bundle(const char* file, const char* mode, SDL_RWops* rw, const char* tempdir, bool reuse_safe)
+FILE* vanilla::fp_from_bundle(const char* filename, SDL_RWops* rw)
 {
-	// Check internal storage to see if we've already extracted the file.
-	std::string fname_buf;
-#if defined(__ANDROID__) && __ANDROID__
-	fname_buf.append(SDL_AndroidGetInternalStoragePath());
-#endif
-	fname_buf.append(tempdir);
-	fname_buf.append("/");
-	fname_buf.append(file);
-	if (reuse_safe)
-	{
-		FILE* fp = fopen(fname_buf.c_str(), mode);
-		if (fp)
-		{
-			return fp;
-		}
-	}
-	// If we have, delete it and extract it again, in case it's changed.
-	unlink(fname_buf.c_str());
+	if (!rw)
+		return nullptr;
 
-	mkdir_parents(fname_buf.c_str());
-	FILE* fp = fopen(fname_buf.c_str(), "wb");
+	FILE* fp = tmpfile();
 	if (!fp)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "fp_from_bundle(%s) bad save: %s", file, strerror(errno));
+		SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "fp_from_bundle(%s) bad tmpfile: %s", filename, strerror(errno));
 		return nullptr;
 	}
 
-	// Copy everything.
-	char buffer[4096];
+	// Copy everything from the SDL_RWops to the FILE.
+	char buffer[16 * 1024];
 	int read;
 	while ((read = SDL_RWread(rw, buffer, 1, sizeof(buffer))) > 0)
 	{
 		fwrite(buffer, 1, read, fp);
 	}
 
-	// Return a FILE* pointing to the extracted asset.
-	fclose(fp);
-	fp = fopen(fname_buf.c_str(), mode);
-	if (!fp)
+	if (read < 0)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "fp_from_bundle(%s) bad readback: %s", file, strerror(errno));
+		SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "fp_from_bundle(%s) bad SDL_RWread: %s", filename, SDL_GetError());
+		return nullptr;
 	}
+
+	// Reset the stream and return it
+	fseek(fp, 0, SEEK_SET);
 	return fp;
 }
