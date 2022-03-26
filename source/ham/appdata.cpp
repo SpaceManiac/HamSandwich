@@ -23,8 +23,7 @@
 #include <windows.h>
 #endif
 
-#include <SDL_rwops.h>
-#include <SDL_messagebox.h>
+#include <SDL.h>
 
 #include <vanilla_extract.h>
 
@@ -198,22 +197,25 @@ static bool detect_installers(VfsStack* result, const HamSandwichMetadata* meta)
 static VfsStack default_vfs_stack() {
 	const HamSandwichMetadata* meta = g_HamExtern.GetHamSandwichMetadata();
 	VfsStack result;
+
+	// Mount `assets/$NAME` in case it exists.
+	std::string assets = "assets/";
+	assets.append(meta->appdata_folder_name);
+	result.push_back(vanilla::open_stdio(assets.c_str()));
+
+	// Detect installers.
 	detect_installers(&result, meta);
 
-	// chdir `appdata/$NAME` and use it as our appdata folder.
+	// Use `appdata/$NAME` as our appdata folder.
 	std::string appdata = "appdata/";
 	appdata.append(meta->appdata_folder_name);
-	appdata.append("/");
-	vanilla::mkdir_parents(appdata.c_str());
-	chdir(appdata.c_str());
-	result.set_appdata(vanilla::open_stdio("."));
+	result.set_appdata(vanilla::open_stdio(appdata.c_str()));
 
 	return result;
 }
 
 // ----------------------------------------------------------------------------
 #endif
-
 
 // Common implementation
 

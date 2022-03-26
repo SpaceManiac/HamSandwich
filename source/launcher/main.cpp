@@ -743,12 +743,13 @@ int main(int argc, char** argv)
 				environment << "HSW_APPDATA=appdata/" << launcher.current_game->id << '\0';
 
 				int i = 0;
+				environment << "HSW_ASSETS_" << i++ << "=@stdio@assets/" << launcher.current_game->id << '\0';
+
 				for (const auto& asset : launcher.current_game->assets)
 				{
 					if (asset.required || asset.enabled)
 					{
-						environment << "HSW_ASSETS_" << i << "=" << asset.mountpoint << "@" << asset.kind << "@installers/" << asset.filename << '\0';
-						++i;
+						environment << "HSW_ASSETS_" << i++ << "=" << asset.mountpoint << "@" << asset.kind << "@installers/" << asset.filename << '\0';
 					}
 				}
 				environment << '\0';
@@ -802,15 +803,19 @@ int main(int argc, char** argv)
 					raw_envs.push_back(envs.back().data());
 
 					int i = 0;
+					environment.str("");
+					environment << "HSW_ASSETS_" << i++ << "=@stdio@assets/" << launcher.current_game->id;
+					envs.push_back(environment.str());
+					raw_envs.push_back(envs.back().data());
+
 					for (const auto& asset : launcher.current_game->assets)
 					{
 						if (asset.required || asset.enabled)
 						{
 							environment.str("");
-							environment << "HSW_ASSETS_" << i << "=" << asset.mountpoint << "@" << asset.kind << "@installers/" << asset.filename;
+							environment << "HSW_ASSETS_" << i++ << "=" << asset.mountpoint << "@" << asset.kind << "@installers/" << asset.filename;
 							envs.push_back(environment.str());
 							raw_envs.push_back(envs.back().data());
-							++i;
 						}
 					}
 					raw_envs.push_back(nullptr);

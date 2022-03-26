@@ -187,5 +187,12 @@ function(HamSandwich_install TARGET_NAME)
 		)
 	else()
 		install(TARGETS "${TARGET_NAME}" COMPONENT Executables)
+		install(
+			DIRECTORY
+			"${CMAKE_SOURCE_DIR}/assets/${TARGET_NAME}"
+			OPTIONAL
+			DESTINATION "${CMAKE_INSTALL_PREFIX}/assets"
+			COMPONENT Assets
+		)
 	endif()
 endfunction()

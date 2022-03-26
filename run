@@ -136,7 +136,8 @@ debugenvs=()
 
 # Build and install
 if test -z "$nobuild"; then
-	make preset="$preset" install
+	make preset="$preset"
+	tools/bootstrap/cmake --install "build/cmake-$preset" --component Executables
 	if test "$project" != "launcher" && test "$os" != "emscripten"; then
 		launcher=$PWD/build/cmake-$preset/source/launcher/launcher
 		(cd "$debugdir" && "$launcher" --mini-cli "$project")
