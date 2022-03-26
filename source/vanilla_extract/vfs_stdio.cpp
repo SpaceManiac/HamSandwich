@@ -63,7 +63,7 @@ FILE* StdioVfs::open_stdio_internal(const char* file, const char* mode, bool wri
 
 	if (!fp && write)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "fopen(%s, %s): %s", buffer.c_str(), mode, strerror(errno));
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fopen(%s, %s): %s", buffer.c_str(), mode, strerror(errno));
 	}
 	return fp;
 }
@@ -158,7 +158,7 @@ bool StdioVfs::delete_file(const char* file)
 	}
 	else
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "unlink(%s): %s", buffer.c_str(), strerror(errno));
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unlink(%s): %s", buffer.c_str(), strerror(errno));
 		return false;
 	}
 }

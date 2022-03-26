@@ -56,6 +56,6 @@ SDL_RWops* VfsStack::open_sdl(const char* filename)
 		}
 	}
 
-	SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "AssetOpen_SDL(%s): not found in any vfs", filename);
+	SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "AssetOpen_SDL(%s): not found in any vfs", filename);
 	return nullptr;
 }

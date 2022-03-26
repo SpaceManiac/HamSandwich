@@ -50,7 +50,7 @@ int vanilla::mkdir_parents(const char *path)
 	}
 
 	if (status != 0)
-		SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "mkdir_parents(%s): %s", copypath.c_str(), strerror(errno));
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "mkdir_parents(%s): %s", copypath.c_str(), strerror(errno));
 
 	return status;
 }
@@ -65,7 +65,7 @@ FILE* vanilla::fp_from_bundle(const char* filename, SDL_RWops* rw)
 	FILE* fp = tmpfile();
 	if (!fp)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "fp_from_bundle(%s) bad tmpfile: %s", filename, strerror(errno));
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fp_from_bundle(%s) bad tmpfile: %s", filename, strerror(errno));
 		return nullptr;
 	}
 
@@ -79,7 +79,7 @@ FILE* vanilla::fp_from_bundle(const char* filename, SDL_RWops* rw)
 
 	if (read < 0)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "fp_from_bundle(%s) bad SDL_RWread: %s", filename, SDL_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fp_from_bundle(%s) bad SDL_RWread: %s", filename, SDL_GetError());
 		return nullptr;
 	}
 

@@ -40,18 +40,18 @@ SDL_RWops* ZipVfs::open_sdl(const char* filename)
 	unz_file_info64 file_info;
 	if (unzGetCurrentFileInfo64(zip, &file_info, nullptr, 0, nullptr, 0, nullptr, 0) != UNZ_OK)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "ZipVfs::open_sdl(%s): bad unzGetCurrentFileInfo64", filename);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::open_sdl(%s): bad unzGetCurrentFileInfo64", filename);
 		return nullptr;
 	}
 	if (unzOpenCurrentFile(zip) != UNZ_OK)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "ZipVfs::open_sdl(%s): bad unzOpenCurrentFile", filename);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::open_sdl(%s): bad unzOpenCurrentFile", filename);
 		return nullptr;
 	}
 	std::vector<uint8_t> buffer(file_info.uncompressed_size);
 	if (unzReadCurrentFile(zip, buffer.data(), file_info.uncompressed_size) < 0)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "ZipVfs::open_sdl(%s): bad unzReadCurrentFile", filename);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::open_sdl(%s): bad unzReadCurrentFile", filename);
 		return nullptr;
 	}
 	unzCloseCurrentFile(zip);
@@ -65,12 +65,12 @@ bool ZipVfs::list_dir(const char* directory_raw, std::set<std::string>& output)
 	unz_global_info64 gi;
 	if (unzGetGlobalInfo64(zip, &gi) != UNZ_OK)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "ZipVfs::list_dir(): bad unzGetGlobalInfo64");
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::list_dir(): bad unzGetGlobalInfo64");
 		return false;
 	}
 	if (unzGoToFirstFile(zip) != UNZ_OK)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "ZipVfs::list_dir(): bad unzGoToFirstFile");
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::list_dir(): bad unzGoToFirstFile");
 		return false;
 	}
 	for (size_t i = 0; i < gi.number_entry; ++i)
@@ -79,7 +79,7 @@ bool ZipVfs::list_dir(const char* directory_raw, std::set<std::string>& output)
 		char filename_buf[1024];
 		if (unzGetCurrentFileInfo64(zip, &file_info, filename_buf, sizeof(filename_buf), nullptr, 0, nullptr, 0) != UNZ_OK)
 		{
-			SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "ZipVfs::list_dir(): bad unzGetCurrentFileInfo64");
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::list_dir(): bad unzGetCurrentFileInfo64");
 			return false;
 		}
 
@@ -93,7 +93,7 @@ bool ZipVfs::list_dir(const char* directory_raw, std::set<std::string>& output)
 		{
 			if (unzGoToNextFile(zip) != UNZ_OK)
 			{
-				SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "ZipVfs::list_dir(): bad unzGoToNextFile");
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::list_dir(): bad unzGoToNextFile");
 				return false;
 			}
 		}

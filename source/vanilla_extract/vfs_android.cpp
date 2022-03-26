@@ -181,7 +181,7 @@ bool AndroidBundleVfs::list_dir(const char* directory, std::set<std::string>& ou
 	{
 failure:
         result = false;
-		SDL_LogDebug(SDL_LOG_CATEGORY_CUSTOM, "AndroidBundleVfs::list_dir(%s): %s", directory, SDL_GetError());
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "AndroidBundleVfs::list_dir(%s): %s", directory, SDL_GetError());
     }
 
     LocalReferenceHolder_Cleanup(&refs);
