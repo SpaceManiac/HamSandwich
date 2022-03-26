@@ -1,7 +1,5 @@
 apply plugin: 'com.android.library'
 
-buildDir = "../../build/android/${project.name}"
-
 android {
 	compileSdkVersion 31
 

@@ -1,3 +1,4 @@
+// Basic Gradle setup.
 buildscript {
 	repositories {
 		mavenCentral()
@@ -5,17 +6,23 @@ buildscript {
 	}
 
 	dependencies {
-		classpath 'com.android.tools.build:gradle:7.0.3'
+		classpath 'com.android.tools.build:gradle:7.0.4'
 	}
 }
 
-repositories {
-	mavenCentral()
-	google()
+allprojects {
+	repositories {
+		mavenCentral()
+		google()
+	}
 }
 
 buildDir = "../build/android/${project.name}"
+subprojects {
+	buildDir = "../../build/android/${project.name}"
+}
 
+// The HamSandwich Android app itself.
 apply plugin: 'com.android.application'
 
 dependencies {
@@ -29,10 +36,11 @@ android {
 	compileSdkVersion 31
 
 	defaultConfig {
+		// Modify this line to distinguish your app from the upstream.
+		// Example: 'io.github.YourUsername.hamsandwich'
 		applicationId 'com.platymuus.hamsandwich'
 		minSdk 16
 		targetSdkVersion 31
-		ndk.abiFilters 'armeabi-v7a' //, 'arm64-v8a', 'x86', 'x86_64'
 		externalNativeBuild.cmake.arguments "-DANDROID_STL=c++_shared"
 	}
 
