@@ -31,7 +31,11 @@ function(HamSandwich_embed_file target_name filename symbol_name)
 		OUTPUT "${cpp}"
 		COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${embed_py}" "${filename}" "${cpp}" "${symbol_name}"
 		MAIN_DEPENDENCY "${filename}"
-		DEPENDS "${embed_py}"
+		DEPENDS
+			"${CMAKE_SOURCE_DIR}/dependencies.sh"
+			"${CMAKE_SOURCE_DIR}/tools/bootstrap/_common.sh"
+			"${CMAKE_SOURCE_DIR}/tools/bootstrap/python"
+			"${embed_py}"
 		VERBATIM
 	)
 	target_sources("${target_name}" PRIVATE "${cpp}")
@@ -185,6 +189,42 @@ function(HamSandwich_install TARGET_NAME)
 			"${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.wasm"
 			DESTINATION "${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}"
 		)
+
+		# Use a GLOB to reconfigure if a new asset directory is created.
+		file(GLOB fake_sources LIST_DIRECTORIES true CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/assets/*")
+		if(EXISTS "${CMAKE_SOURCE_DIR}/assets/${TARGET_NAME}")
+			set(data "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.data")
+			set(data_js "${data}.js")
+			set(data_d "${data_js}.d")
+			add_custom_command(
+				OUTPUT "${data}" "${data_js}"
+				COMMAND
+					"${CMAKE_COMMAND}" -E env
+					"EMSCRIPTEN_ROOT_PATH=${EMSCRIPTEN_ROOT_PATH}"
+					"${CMAKE_SOURCE_DIR}/tools/bootstrap/python"
+					"${CMAKE_SOURCE_DIR}/tools/emscripten/file_packager_deps.py"
+					"${data}"
+					"--js-output=${data_js}"
+					"--from-emcc"
+					"--preload"
+					"${CMAKE_SOURCE_DIR}/assets/${TARGET_NAME}@"
+				DEPENDS
+					"${CMAKE_SOURCE_DIR}/dependencies.sh"
+					"${CMAKE_SOURCE_DIR}/tools/bootstrap/_common.sh"
+					"${CMAKE_SOURCE_DIR}/tools/bootstrap/python"
+					"${CMAKE_SOURCE_DIR}/tools/emscripten/file_packager_deps.py"
+				DEPFILE "${data_d}"
+				VERBATIM
+			)
+			target_link_options("${TARGET_NAME}" PRIVATE --pre-js "${data_js}" -s FORCE_FILESYSTEM=1)
+			target_sources("${TARGET_NAME}" PRIVATE "${data}")
+
+			install(
+				FILES "${data}"
+				DESTINATION "${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}"
+				COMPONENT Assets
+			)
+		endif()
 	else()
 		install(TARGETS "${TARGET_NAME}" COMPONENT Executables)
 		install(

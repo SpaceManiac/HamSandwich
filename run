@@ -136,8 +136,7 @@ debugenvs=()
 
 # Build and install
 if test -z "$nobuild"; then
-	make preset="$preset"
-	tools/bootstrap/cmake --install "build/cmake-$preset" --component Executables
+	make preset="$preset" install
 	if test "$project" != "launcher" && test "$os" != "emscripten"; then
 		launcher=$PWD/build/cmake-$preset/source/launcher/launcher
 		(cd "$debugdir" && "$launcher" --mini-cli "$project")
@@ -181,7 +180,7 @@ case "$tool" in
 			emrun --serve_after_close --serve_after_exit "$debugdir/index.html"
 		else
 			# TODO: Serve out of CMake dir, so non-installed projects work
-			emrun "$debugdir/$project/index.html"
+			emrun --serve_after_close "$debugdir/$project/index.html"
 		fi
 		;;
 	two)

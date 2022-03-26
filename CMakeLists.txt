@@ -3,6 +3,8 @@
 cmake_minimum_required(VERSION 3.19.0)
 project("HamSandwich")
 
+cmake_policy(SET CMP0116 NEW)  # https://cmake.org/cmake/help/latest/policy/CMP0116.html
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 

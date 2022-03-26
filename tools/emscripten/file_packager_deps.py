@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
-# file_packager_deps.py - calls EMSDK file_packager.py, and creates .d makefile
+# file_packager_deps.py - calls EMSDK file_packager.py, and creates .d depfile
 
 # Import the original file_packager
 import sys, os
-sys.path.insert(1, f"{os.environ['EMSDK']}/upstream/emscripten")
+sys.path.insert(1, os.environ['EMSCRIPTEN_ROOT_PATH'])
 from tools import file_packager
 
 # Find the --js-output arg
 js_output = None
 packfile = sys.argv[1]
 for arg in sys.argv[2:]:
-	if arg.startswith('--js-output'):
-		js_output = arg.split('=', 1)[1] if '=' in arg else None
+	if arg.startswith('--js-output') and '=' in arg:
+		_, js_output = arg.split('=', 1)
 if not js_output:
 	print('need --js-output')
 	exit(1)
 
 # Override the add() function so we know what dirs were walked
 walked = [
-	os.path.relpath(__file__),
-	os.path.relpath(file_packager.__file__),
+	__file__,
+	file_packager.__file__,
 ]
 def add(mode, rootpathsrc, rootpathdst):
 	"""Expand directories into individual files
@@ -35,7 +35,7 @@ def add(mode, rootpathsrc, rootpathdst):
 			if not file_packager.should_ignore(fullname):
 				walked.append(fullname)
 				new_dirnames.append(name)
-			elif DEBUG:
+			elif file_packager.DEBUG:
 				print('Skipping directory "%s" from inclusion in the emscripten virtual file system.' % fullname, file=sys.stderr)
 		for name in filenames:
 			fullname = os.path.join(dirpath, name)
@@ -50,7 +50,7 @@ def add(mode, rootpathsrc, rootpathdst):
 					'mode': mode,
 					'explicit_dst_path': True
 				})
-			elif DEBUG:
+			elif file_packager.DEBUG:
 				print('Skipping file "%s" from inclusion in the emscripten virtual file system.' % fullname, file=sys.stderr)
 		del dirnames[:]
 		dirnames.extend(new_dirnames)
@@ -59,6 +59,6 @@ file_packager.add = add
 # List walked files and directories in output
 ret = file_packager.main()
 with open(f'{js_output}.d', 'w', encoding='utf-8') as f:
-	for srcpath in walked:
-		print(packfile, ':', srcpath, file=f)
+	joined = " \\\n ".join(walked)
+	f.write(f'{packfile}: \\\n {joined}\n')
 exit(ret)

@@ -61,9 +61,7 @@ var HamSandwich = (function () {
 		FS.syncfs(true, fsInitCallback);
 
 		Module.ENV['HSW_APPDATA'] = 'appdata/' + HamSandwich.metadata.appdataName;
-		if (HamSandwich.metadata.hasAssets) {
-			pushAssets(null, 'stdio', '.');
-		}
+		pushAssets(null, 'stdio', '.');
 	}
 
 	var assetCounter = 0;
