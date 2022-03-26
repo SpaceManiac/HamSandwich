@@ -3,11 +3,11 @@ apply plugin: 'com.android.library'
 buildDir = "../../build/android/${project.name}"
 
 android {
-	compileSdkVersion 30
+	compileSdkVersion 31
 
 	defaultConfig {
 		minSdk 16
-		targetSdkVersion 30
+		targetSdkVersion 31
 		ndk.abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
 	}
 
