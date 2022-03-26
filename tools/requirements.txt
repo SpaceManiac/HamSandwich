@@ -1,1 +1,3 @@
-Pillow==7.2.0
+# Pillow version should support both 3.6 (Ubuntu 18.04) and 3.9 (MacOS 10.15), according to:
+# https://pillow.readthedocs.io/en/latest/installation.html#python-support
+Pillow==8.4.0

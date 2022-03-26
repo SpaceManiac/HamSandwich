@@ -18,8 +18,6 @@ Bootstrap=$(dirname "$0")
 
 # Convenience variables
 Sdk="$(dirname "$Bootstrap")"
-PythonDir="$Cache/python-$PYTHON_VERSION"
-PythonExe="$PythonDir/python.exe"
 
 if test "$OS" != "Windows"; then
 	# Try to find a Python executable.
@@ -47,8 +45,11 @@ if test "$OS" != "Windows"; then
 	# Create a venv and activate it
 	PythonDir="$Cache/python-venv-$PYTHON_VERSION"
 	if ! test -d "$PythonDir"; then
-		echo "Creating virtualenv..." >&2
-		"$PythonExe" -m venv "$PythonDir"
+		TmpPythonDir=$(temp_directory)
+		"$PythonExe" -m venv "$TmpPythonDir"
+		if mkdir "$PythonDir" 2>/dev/null; then
+			mv "$TmpPythonDir"/* "$PythonDir"
+		fi
 	fi
 	if test -f "$PythonDir/bin/python"; then
 		PythonExe="$PythonDir/bin/python"
@@ -100,12 +101,18 @@ EOF
 
 # Use pip to install our requirements
 Requirements="requirements.txt"
+PythonLock="$PythonDir/pip.lock"
+while ! mkdir "$PythonLock" 2>/dev/null; do
+	sleep 1
+done
 if ! test -f "$PythonDir/$Requirements" || test "$(sha256sum < "$Sdk/$Requirements")" != "$(sha256sum < "$PythonDir/$Requirements")"; then
 	"$PythonExe" -m pip install -U wheel >&2
-	"$PythonExe" -m pip install -U pip -r "$Sdk/$Requirements" >&2
+	"$PythonExe" -m pip install -U pip >&2
+	"$PythonExe" -m pip install -r "$Sdk/$Requirements" >&2
 	cp "$Sdk/$Requirements" "$PythonDir/$Requirements"
 	echo "---" >&2
 fi
+rmdir "$PythonLock"
 
 # Invoke python with all command-line arguments
 export PYTHONPATH="$Sdk$PathSep${PYTHONPATH:-}"
