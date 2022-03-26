@@ -184,6 +184,7 @@ public class LauncherActivity extends AppCompatActivity implements UiThreadHandl
 		} else {
 			intent.putExtra("ENV.HSW_APPDATA", internal);
 		}
+		intent.putExtra("ENV.HSW_ASSETS_" + (i++), "@android@assets/" + game.id);
 		for (Asset asset : game.assets) {
 			if (asset.required || asset.checkbox.isChecked()) {
 				intent.putExtra("ENV.HSW_ASSETS_" + (i++), asset.mountpoint + "@" + asset.kind + "@" + asset.file.getAbsolutePath());

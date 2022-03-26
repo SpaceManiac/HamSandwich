@@ -9,19 +9,31 @@
 // Android VFS implementation
 class AndroidBundleVfs : public vanilla::Vfs
 {
+	std::string prefix;
 public:
+	AndroidBundleVfs(const char* prefix) : prefix(prefix) {}
 	SDL_RWops* open_sdl(const char* filename);
 	bool list_dir(const char* directory, std::set<std::string>& output);
 };
 
-std::unique_ptr<vanilla::Vfs> vanilla::open_android()
+std::unique_ptr<vanilla::Vfs> vanilla::open_android(const char* prefix)
 {
-	return std::make_unique<AndroidBundleVfs>();
+	return std::make_unique<AndroidBundleVfs>(prefix ? prefix : "");
 }
 
 SDL_RWops* AndroidBundleVfs::open_sdl(const char* filename)
 {
-	return SDL_RWFromFile(filename, "rb");
+	if (prefix.empty())
+	{
+		return SDL_RWFromFile(filename, "rb");
+	}
+	else
+	{
+		std::string full = prefix;
+		full.append("/");
+		full.append(filename);
+		return SDL_RWFromFile(full.c_str(), "rb");
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -147,7 +159,17 @@ bool AndroidBundleVfs::list_dir(const char* directory, std::set<std::string>& ou
         goto failure;
     }
 
-    fileNameJString = mEnv->NewStringUTF(directory);
+	if (prefix.empty())
+	{
+		fileNameJString = mEnv->NewStringUTF(directory);
+	}
+	else
+	{
+		std::string full = prefix;
+		full.append("/");
+		full.append(directory);
+		fileNameJString = mEnv->NewStringUTF(full.c_str());
+	}
 
 	activity = (jobject) SDL_AndroidGetActivity();
 	mActivityClass = mEnv->GetObjectClass(activity);

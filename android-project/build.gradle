@@ -29,11 +29,11 @@ android {
 	compileSdkVersion 31
 
 	defaultConfig {
+		applicationId 'com.platymuus.hamsandwich'
 		minSdk 16
 		targetSdkVersion 31
-		applicationId 'com.platymuus.hamsandwich'
-		externalNativeBuild.cmake.arguments "-DANDROID_STL=c++_shared"
 		ndk.abiFilters 'armeabi-v7a' //, 'arm64-v8a', 'x86', 'x86_64'
+		externalNativeBuild.cmake.arguments "-DANDROID_STL=c++_shared"
 	}
 
 	externalNativeBuild.cmake {

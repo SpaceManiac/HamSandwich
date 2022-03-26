@@ -25,7 +25,7 @@ namespace vanilla
 	std::unique_ptr<Vfs> open_inno(FILE* fp);
 	std::unique_ptr<Vfs> open_zip(const char* filename);
 #if defined(__ANDROID__) && __ANDROID__
-	std::unique_ptr<Vfs> open_android();
+	std::unique_ptr<Vfs> open_android(const char* prefix = nullptr);
 #endif
 
 	// A single VFS provider, read-only by default.

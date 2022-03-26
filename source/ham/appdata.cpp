@@ -98,7 +98,13 @@ static Mount init_vfs_spec(const char* what, const char* spec) {
 			return { nullptr };
 		}
 		return { vanilla::open_inno(fp), mountpoint };
-	} else {
+	}
+#ifdef __ANDROID__
+	else if (!strcmp(kind, "android")) {
+		return { vanilla::open_android(param), mountpoint };
+	}
+#endif
+	else {
 		LogError("%s: unknown kind '%s' in VFS spec '%s'", what, kind, spec);
 		return { nullptr };
 	}

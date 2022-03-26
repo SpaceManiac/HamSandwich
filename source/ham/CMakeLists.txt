@@ -167,7 +167,30 @@ function(HamSandwich_install TARGET_NAME)
 		set_target_properties("${TARGET_NAME}" PROPERTIES WIN32_EXECUTABLE TRUE)
 	endif()
 
-	if(EMSCRIPTEN)
+	if(ANDROID)
+		set(hamsandwich_assets "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/../../../../hamsandwich-assets")
+		# Use a GLOB to reconfigure if a new asset directory is created.
+		file(GLOB fake_sources LIST_DIRECTORIES true CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/assets/*")
+		if(EXISTS "${CMAKE_SOURCE_DIR}/assets/${TARGET_NAME}")
+			add_custom_command(
+				TARGET "${TARGET_NAME}" POST_BUILD
+				COMMAND
+					# Clear out old assets.
+					"${CMAKE_COMMAND}" -E rm -rf "${hamsandwich_assets}/assets/${TARGET_NAME}"
+				COMMAND
+					# Copy assets into a place where Android will see them.
+					"${CMAKE_COMMAND}" -E copy_directory
+					"${CMAKE_SOURCE_DIR}/assets/${TARGET_NAME}"
+					"${hamsandwich_assets}/assets/${TARGET_NAME}"
+			)
+		else()
+			add_custom_command(
+				TARGET "${TARGET_NAME}" POST_BUILD
+				# Clear out old assets.
+				COMMAND "${CMAKE_COMMAND}" -E rm -rf "${hamsandwich_assets}/assets/${TARGET_NAME}"
+			)
+		endif()
+	elseif(EMSCRIPTEN)
 		target_link_libraries("${TARGET_NAME}" idbfs.js)
 		if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 			target_link_options("${TARGET_NAME}" PRIVATE --emrun)
