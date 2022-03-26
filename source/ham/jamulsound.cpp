@@ -91,9 +91,9 @@ void JamulSoundExit(void)
 		soundIsOn = false;
 		JamulSoundPurge();
 		StopSong();
-		Mix_CloseAudio();
 		delete[] schannel;
 		delete[] soundList;
+		Mix_CloseAudio();
 	}
 }
 
