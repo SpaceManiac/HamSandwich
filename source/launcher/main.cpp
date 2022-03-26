@@ -338,8 +338,14 @@ enum class Action
 
 int main(int argc, char** argv)
 {
-	//const char* bin_dir = get_current_dir_name();  // never free()d because we always need it
-	//printf("bin_dir: %s\n", bin_dir);
+	char bin_dir_buf[1024];
+	getcwd(bin_dir_buf, sizeof(bin_dir_buf));
+	std::string_view bin_dir = bin_dir_buf;
+	std::string_view build_install = "/build/install";
+	if (bin_dir.size() >= build_install.size() && bin_dir.compare(bin_dir.size() - build_install.size(), std::string_view::npos, build_install) == 0)
+	{
+		chdir("../..");
+	}
 
 	// Set up curl
 	curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -718,7 +724,9 @@ int main(int argc, char** argv)
 				launcher.wants_to_play = false;
 
 #if defined(_WIN32)
-				std::string cmdline = launcher.current_game->id;
+				std::string cmdline { bin_dir };
+				cmdline.append("/");
+				cmdline.append(launcher.current_game->id);
 				cmdline.append(".exe");
 				std::string executable = cmdline;
 				if (!launcher.wants_fullscreen)
@@ -770,7 +778,9 @@ int main(int argc, char** argv)
 				int child_pid = fork();
 				if (child_pid == 0)
 				{
-					std::string program = launcher.current_game->id;
+					std::string program { bin_dir };
+					program.append("/");
+					program.append(launcher.current_game->id);
 					char window[] = "window";
 					char* argv[3] = { program.data(), nullptr, nullptr };
 					if (!launcher.wants_fullscreen)

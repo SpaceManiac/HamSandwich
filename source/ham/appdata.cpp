@@ -182,32 +182,31 @@ static bool detect_installers(VfsStack* result, const HamSandwichMetadata* meta)
 	result->set_appdata(vanilla::open_stdio(appdata.c_str()));
 
 	// Assets from specs
+	bool ok = true;
 	for (int i = 0; meta->default_asset_specs[i]; ++i) {
 		auto mount = init_vfs_spec("built-in", meta->default_asset_specs[i]);
 		if (mount.vfs) {
 			result->push_back(std::move(mount));
 		} else {
-			return false;
+			LogError("detect_installers: failed to mount builtin[%d]=%s", i, meta->default_asset_specs[i]);
+			ok = false;
 		}
 	}
-	return true;
+	return ok;
 }
 
 static VfsStack default_vfs_stack() {
 	const HamSandwichMetadata* meta = g_HamExtern.GetHamSandwichMetadata();
 	VfsStack result;
+	detect_installers(&result, meta);
 
-	if (detect_installers(&result, meta)) {
-		// If we found all the installers we were looking for, use 'em,
-		// and also use `appdata/$NAME`
-		std::string appdata = "appdata/";
-		appdata.append(meta->appdata_folder_name);
-		appdata.append("/");
-		printf("all installers found; chdir(%s)\n", appdata.c_str());
-		vanilla::mkdir_parents(appdata.c_str());
-		chdir(appdata.c_str());
-		result.set_appdata(vanilla::open_stdio("."));
-	}
+	// chdir `appdata/$NAME` and use it as our appdata folder.
+	std::string appdata = "appdata/";
+	appdata.append(meta->appdata_folder_name);
+	appdata.append("/");
+	vanilla::mkdir_parents(appdata.c_str());
+	chdir(appdata.c_str());
+	result.set_appdata(vanilla::open_stdio("."));
 
 	return result;
 }
@@ -268,6 +267,8 @@ static VfsStack vfs_stack_from_env() {
 				auto mount = init_vfs_spec(buffer, asset_spec);
 				if (mount.vfs) {
 					result.push_back(std::move(mount));
+				} else {
+					LogError("vfs_stack_from_env: failed to mount %s=%s", buffer, asset_spec);
 				}
 			} else {
 				break;
@@ -290,10 +291,24 @@ static bool check_assets(VfsStack& vfs) {
 	return false;
 }
 
+static char bin_dir_buf[1024] = {};
+
+static bool escape_bin_directory() {
+	getcwd(bin_dir_buf, sizeof(bin_dir_buf));
+	std::string_view bin_dir = bin_dir_buf;
+	std::string_view build_install = "/build/install";
+	if (bin_dir.size() >= build_install.size() && bin_dir.compare(bin_dir.size() - build_install.size(), std::string_view::npos, build_install) == 0) {
+		chdir("../..");
+	}
+}
+
 static bool run_download_helper() {
 #if defined(_WIN32)
 	if (GetFileAttributesA("launcher.exe") != INVALID_FILE_ATTRIBUTES) {
-		std::string cmdline = "launcher.exe --mini-gui ";
+		std::string cmdline = bin_dir_buf;
+		cmdline.append("/launcher.exe");
+		std::string executable = cmdline;
+		cmdline.append("--mini-gui ");
 		cmdline.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
 
 		STARTUPINFOA startupInfo = {};
@@ -301,7 +316,7 @@ static bool run_download_helper() {
 		startupInfo.cb = sizeof(startupInfo);
 		startupInfo.dwFlags |= STARTF_USESHOWWINDOW;
 		startupInfo.wShowWindow = SW_HIDE;
-		if (CreateProcessA("launcher.exe", cmdline.data(), nullptr, nullptr, false, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &processInfo)) {
+		if (CreateProcessA(executable.data(), cmdline.data(), nullptr, nullptr, false, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &processInfo)) {
 			WaitForSingleObject(processInfo.hProcess, INFINITE);
 			CloseHandle(processInfo.hProcess);
 			CloseHandle(processInfo.hThread);
@@ -310,14 +325,16 @@ static bool run_download_helper() {
 	}
 #elif !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 	struct stat sb;
-	if (stat("launcher", &sb) == 0) {
+	std::string executable = bin_dir_buf;
+	executable.append("/launcher");
+
+	if (stat(executable.c_str(), &sb) == 0) {
 		int child_pid = fork();
 		if (child_pid == 0) {
-			char first[] = "./launcher";
 			char second[] = "--mini-gui";
 			std::string third = g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name;
-			char* const argv[] = { first, second, third.data(), nullptr };
-			exit(execvp(argv[0], argv));
+			char* const argv[] = { executable.data(), second, third.data(), nullptr };
+			exit(execv(argv[0], argv));
 		} else if (child_pid > 0) {
 			int wstatus;
 			if (waitpid(child_pid, &wstatus, 0) >= 0) {
@@ -355,6 +372,7 @@ static VfsStack vfs_stack;
 // Public interface
 
 void AppdataInit() {
+	escape_bin_directory();
 	vfs_stack = init_vfs_stack();
 }
 
