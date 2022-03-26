@@ -124,7 +124,7 @@ static VfsStack default_vfs_stack() {
 	buffer.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
 
 	VfsStack result;
-	result.write_mount = std::make_unique<StdioVfs>(buffer);
+	result.set_appdata(std::make_unique<StdioVfs>(buffer));
 	result.push_back(std::make_unique<StdioVfs>("."));
 	return result;
 }
@@ -140,7 +140,7 @@ static VfsStack default_vfs_stack() {
 	buffer.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
 
 	VfsStack result;
-	result.write_mount = vanilla::open_stdio(buffer.c_str());
+	result.set_appdata(vanilla::open_stdio(buffer.c_str()));
 	result.push_back(vanilla::open_stdio(""));
 	return result;
 }
@@ -162,10 +162,10 @@ static VfsStack default_vfs_stack() {
 	VfsStack result;
 	int need_flags = SDL_ANDROID_EXTERNAL_STORAGE_READ | SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
 	if ((SDL_AndroidGetExternalStorageState() & need_flags) == need_flags) {
-		result.write_mount = vanilla::open_stdio(SDL_AndroidGetExternalStoragePath());
+		result.set_appdata(vanilla::open_stdio(SDL_AndroidGetExternalStoragePath()));
 		result.push_back(vanilla::open_stdio(SDL_AndroidGetInternalStoragePath()));
 	} else {
-		result.write_mount = vanilla::open_stdio(SDL_AndroidGetInternalStoragePath());
+		result.set_appdata(vanilla::open_stdio(SDL_AndroidGetInternalStoragePath()));
 	}
 	result.push_back(vanilla::open_android());
 	return result;
@@ -179,13 +179,13 @@ static bool detect_installers(VfsStack* result, const HamSandwichMetadata* meta)
 	// `appdata/$NAME/`
 	std::string appdata = "appdata/";
 	appdata.append(meta->appdata_folder_name);
-	result->write_mount = vanilla::open_stdio(appdata.c_str());
+	result->set_appdata(vanilla::open_stdio(appdata.c_str()));
 
 	// Assets from specs
 	for (int i = 0; meta->default_asset_specs[i]; ++i) {
 		auto mount = init_vfs_spec("built-in", meta->default_asset_specs[i]);
 		if (mount.vfs) {
-			result->mounts.push_back(std::move(mount));
+			result->push_back(std::move(mount));
 		} else {
 			return false;
 		}
@@ -206,7 +206,7 @@ static VfsStack default_vfs_stack() {
 		printf("all installers found; chdir(%s)\n", appdata.c_str());
 		vanilla::mkdir_parents(appdata.c_str());
 		chdir(appdata.c_str());
-		result.write_mount = vanilla::open_stdio(".");
+		result.set_appdata(vanilla::open_stdio("."));
 	}
 
 	return result;
@@ -259,7 +259,7 @@ static void missing_assets_message() {
 static VfsStack vfs_stack_from_env() {
 	VfsStack result;
 	if (const char *appdata_spec = SDL_getenv("HSW_APPDATA"); appdata_spec && *appdata_spec) {
-		result.write_mount = vanilla::open_stdio(appdata_spec);
+		result.set_appdata(vanilla::open_stdio(appdata_spec));
 
 		char buffer[32];
 		for (int i = 0; i < 1024; ++i) {
@@ -267,7 +267,7 @@ static VfsStack vfs_stack_from_env() {
 			if (const char* asset_spec = SDL_getenv(buffer); asset_spec && *asset_spec) {
 				auto mount = init_vfs_spec(buffer, asset_spec);
 				if (mount.vfs) {
-					result.mounts.push_back(std::move(mount));
+					result.push_back(std::move(mount));
 				}
 			} else {
 				break;
@@ -363,22 +363,7 @@ bool AppdataIsInit() {
 }
 
 FILE* AssetOpen(const char* filename) {
-	if (vfs_stack.write_mount) {
-		if (FILE* fp = vfs_stack.write_mount->open_stdio(filename)) {
-			return fp;
-		}
-	}
-
-	for (auto& mount : vfs_stack.mounts) {
-		if (const char* subfilename = mount.matches(filename)) {
-			if (FILE* fp = mount.vfs->open_stdio(subfilename)) {
-				return fp;
-			}
-		}
-	}
-
-	LogError("AssetOpen(%s): not found in any vfs", filename);
-	return nullptr;
+	return vfs_stack.open_stdio(filename);
 }
 
 SDL_RWops* AssetOpen_SDL(const char* filename) {
@@ -386,20 +371,11 @@ SDL_RWops* AssetOpen_SDL(const char* filename) {
 }
 
 FILE* AppdataOpen_Write(const char* filename) {
-	if (vfs_stack.write_mount) {
-		return vfs_stack.write_mount->open_write_stdio(filename);
-	} else {
-		LogError("AppdataOpen_Write(%s): no write vfs mounted", filename);
-		return nullptr;
-	}
+	return vfs_stack.open_write_stdio(filename);
 }
 
 void AppdataDelete(const char* filename) {
-	if (vfs_stack.write_mount) {
-		vfs_stack.write_mount->delete_file(filename);
-	} else {
-		LogError("AppdataDelete(%s): no write vfs mounted", filename);
-	}
+	vfs_stack.delete_file(filename);
 }
 
 #ifndef HAS_APPDATA_SYNC
@@ -408,27 +384,7 @@ void AppdataSync() {}
 
 std::vector<std::string> ListDirectory(const char* directory, const char* extension, size_t maxlen) {
 	std::set<std::string> output;
-
-	if (vfs_stack.write_mount) {
-		vfs_stack.write_mount->list_dir(directory, output);
-	}
-
-	for (auto& mount : vfs_stack.mounts) {
-		if (mount.mountpoint.empty()) {
-			mount.vfs->list_dir(directory, output);
-		} else if (const char* subdirectory = mount.matches(directory)) {
-			std::string mountpoint_slash = mount.mountpoint;
-			mountpoint_slash.push_back('/');
-
-			std::set<std::string> intermediate;
-			mount.vfs->list_dir(subdirectory, intermediate);
-
-			for (auto each : intermediate) {
-				each.insert(0, mountpoint_slash);
-				output.insert(each);
-			}
-		}
-	}
+	vfs_stack.list_dir(directory, output);
 
 	if (extension || maxlen > 0) {
 		size_t extlen = extension ? strlen(extension) : 0;
@@ -444,7 +400,7 @@ std::vector<std::string> ListDirectory(const char* directory, const char* extens
 		});
 	}
 
-	return { output.begin(), output.end() };;
+	return { output.begin(), output.end() };
 }
 
 // Aliases.

@@ -39,8 +39,11 @@ namespace vanilla
 		Vfs() {}
 		virtual ~Vfs() {}
 
-		virtual FILE* open_stdio(const char* filename) { return fp_from_bundle(filename, open_sdl(filename)); }
 		virtual SDL_RWops* open_sdl(const char* filename) = 0;
+		virtual FILE* open_stdio(const char* filename)
+		{
+			return fp_from_bundle(filename, open_sdl(filename));
+		}
 		virtual bool list_dir(const char* directory, std::set<std::string>& output) = 0;
 	};
 
@@ -76,23 +79,37 @@ namespace vanilla
 	};
 
 	// A full filesystem, including a list of mounts and the write (appdata) mount.
-	struct VfsStack
+	class VfsStack
 	{
 		std::vector<Mount> mounts;
 		std::unique_ptr<WriteVfs> write_mount;
 	public:
 		VfsStack() {}
 
-		void push_back(std::unique_ptr<Vfs>&& entry, std::string mountpoint = "");
+		void push_back(Mount mount)
+		{
+			mounts.push_back(std::move(mount));
+		}
+		void push_back(std::unique_ptr<Vfs>&& entry, std::string mountpoint = "")
+		{
+			mounts.push_back(Mount { std::move(entry), mountpoint });
+		}
 
 		// Returns true if this VfsStack is empty and therefore not useable.
-		bool empty() const { return mounts.empty() && !write_mount; }
+		bool empty() const
+		{
+			return mounts.empty() && !write_mount;
+		}
 
-		// Get the Vfs that should be used for writing.
-		WriteVfs* appdata() { return write_mount.get(); }
+		// Set the Vfs that should be used for writing.
+		std::unique_ptr<WriteVfs> set_appdata(std::unique_ptr<WriteVfs> new_value);
 
 		// Forward to children
 		SDL_RWops* open_sdl(const char* filename);
+		FILE* open_stdio(const char* filename);
+		void list_dir(const char* directory, std::set<std::string>& output);
+		FILE* open_write_stdio(const char* filename);
+		bool delete_file(const char* filename);
 	};
 }
 
