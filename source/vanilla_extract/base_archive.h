@@ -16,9 +16,7 @@ namespace vanilla
 		Archive(Archive&&) = delete;
 		Archive& operator=(Archive&&) = delete;
 
-	protected:
-		Archive() {}
-
+	public:
 		struct CaseInsensitive
 		{
 			bool operator() (const std::string& lhs, const std::string& rhs) const;
@@ -32,15 +30,15 @@ namespace vanilla
 
 		Directory root;
 
+		Archive() {}
+
 		static const char* navigate(const char* path, Directory*& current);
 		static const char* navigate(const char* path, const Directory*& current);
 
 		size_t get_file(const char* path) const;
 		const Directory* get_directory(const char* path) const;
 
-	public:
 		bool list_dir(const char* path, std::set<std::string>& output) const;
-		//SDL_RWops* open_file(const char* path);
 	};
 }  // namespace vanilla
 

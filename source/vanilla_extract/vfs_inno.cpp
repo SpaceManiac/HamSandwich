@@ -1,10 +1,18 @@
 #include "vanilla_extract.h"
+#include <string.h>
+#include <vector>
+#include <zlib.h>
+#include <7z.h>
+#include <7zCrc.h>
+#include <SDL_rwops.h>
 #include "base_archive.h"
+#include "lzma_helpers.h"
+#include "vec_rw.h"
 
-namespace vanilla {
-namespace inno {
+// ----------------------------------------------------------------------------
+// Inno VFS implementation
 
-class Archive : public vanilla::Archive
+class InnoVfs : public vanilla::Vfs
 {
 	struct DataEntry
 	{
@@ -12,28 +20,19 @@ class Archive : public vanilla::Archive
 		uint64_t file_size;
 		uint64_t chunk_size;
 	};
+
+	vanilla::Archive archive;
 	std::vector<DataEntry> data_entries;
 	std::vector<uint8_t> setup_1_bin;
 
 public:
-	explicit Archive(FILE* fptr);
-	~Archive();
+	explicit InnoVfs(FILE* fp);
 
-	bool is_ok() { return setup_1_bin.size(); }
-	SDL_RWops* open_file(const char* path);
-};
+	bool is_ok()
+	{
+		return setup_1_bin.size();
+	}
 
-}  // namespace inno
-}  // namespace vanilla
-
-// ----------------------------------------------------------------------------
-// Inno VFS implementation
-
-class InnoVfs : public vanilla::Vfs
-{
-	vanilla::inno::Archive archive;
-public:
-	InnoVfs(FILE* fp) : archive(fp) {}
 	SDL_RWops* open_sdl(const char* filename);
 	bool list_dir(const char* directory, std::set<std::string>& output);
 };
@@ -43,31 +42,10 @@ std::unique_ptr<vanilla::Vfs> vanilla::open_inno(FILE* fp)
 	return std::make_unique<InnoVfs>(fp);
 }
 
-SDL_RWops* InnoVfs::open_sdl(const char* filename)
-{
-	return archive.open_file(filename);
-}
-
 bool InnoVfs::list_dir(const char* directory, std::set<std::string>& output)
 {
 	return archive.list_dir(directory, output);
 }
-
-// ----------------------------------------------------------------------------
-
-#include <algorithm>
-#include <string.h>
-#include <vector>
-#include <zlib.h>
-#include "base_archive.h"
-#include "lzma_helpers.h"
-#include "vec_rw.h"
-#include <7z.h>
-#include <7zCrc.h>
-
-#include <SDL_rwops.h>
-
-namespace vanilla::inno {
 
 // ----------------------------------------------------------------------------
 // Constants
@@ -92,14 +70,14 @@ struct SeekInStream_FILE
 	FILE *fptr;
 };
 
-SRes SeekInStream_FILE_Read(const ISeekInStream *p, void *buf, size_t *size)
+static SRes SeekInStream_FILE_Read(const ISeekInStream *p, void *buf, size_t *size)
 {
 	const SeekInStream_FILE *self = (const SeekInStream_FILE *) p;
 	*size = fread(buf, 1, *size, self->fptr);
 	return SZ_OK;
 }
 
-SRes SeekInStream_FILE_Seek(const ISeekInStream *p, Int64 *pos, ESzSeek origin)
+static SRes SeekInStream_FILE_Seek(const ISeekInStream *p, Int64 *pos, ESzSeek origin)
 {
 	const SeekInStream_FILE *self = (const SeekInStream_FILE *) p;
 	if (fseek(self->fptr, *pos, origin))
@@ -111,7 +89,7 @@ SRes SeekInStream_FILE_Seek(const ISeekInStream *p, Int64 *pos, ESzSeek origin)
 // ----------------------------------------------------------------------------
 // Inno setup data types
 
-SDL_RWops* zlib_crc_block_reader(uint8_t** input_buffer)
+static SDL_RWops* zlib_crc_block_reader(uint8_t** input_buffer)
 {
 	uint32_t header_crc32, compressed_size, uncompressed_size;
 	memcpy(&header_crc32, *input_buffer, 4); *input_buffer += 4;
@@ -163,10 +141,10 @@ SDL_RWops* zlib_crc_block_reader(uint8_t** input_buffer)
 		return nullptr;
 	}
 
-	return create_vec_rwops(std::move(uncompressed));
+	return vanilla::create_vec_rwops(std::move(uncompressed));
 }
 
-void binary_string(SDL_RWops* rw, std::string* dest = nullptr)
+static void binary_string(SDL_RWops* rw, std::string* dest = nullptr)
 {
 	uint32_t size;
 	SDL_RWread(rw, &size, 4, 1);
@@ -186,11 +164,7 @@ void binary_string(SDL_RWops* rw, std::string* dest = nullptr)
 
 static bool crc_table_generated = false;
 
-Archive::~Archive()
-{
-}
-
-Archive::Archive(FILE* fptr)
+InnoVfs::InnoVfs(FILE* fptr)
 {
 	if (fseek(fptr, OFFSET_OF_7Z_IN_EXE, SEEK_CUR))
 		return;
@@ -382,8 +356,8 @@ Archive::Archive(FILE* fptr)
 
 		if (source.empty() && !memcmp(destination.data(), APP_PREFIX, APP_PREFIX_SZ))
 		{
-			Directory* current = &root;
-			if (const char* last_component = navigate(destination.c_str() + APP_PREFIX_SZ, current))
+			vanilla::Archive::Directory* current = &archive.root;
+			if (const char* last_component = vanilla::Archive::navigate(destination.c_str() + APP_PREFIX_SZ, current))
 			{
 				current->files.insert(make_pair(std::string(last_component), location));
 			}
@@ -437,9 +411,9 @@ Archive::Archive(FILE* fptr)
 	SzArEx_Free(&zip, vanilla::LZMA_ALLOCATOR);
 }
 
-SDL_RWops* Archive::open_file(const char* path)
+SDL_RWops* InnoVfs::open_sdl(const char* path)
 {
-	size_t data_entry_idx = get_file(path);
+	size_t data_entry_idx = archive.get_file(path);
 	if (data_entry_idx == SIZE_MAX)
 		return nullptr;
 
@@ -476,7 +450,7 @@ SDL_RWops* Archive::open_file(const char* path)
 		return nullptr;
 	}
 
-	return create_vec_rwops(std::move(uncompressed));
+	return vanilla::create_vec_rwops(std::move(uncompressed));
 }
 
 /*
@@ -501,5 +475,3 @@ freely, subject to the following restrictions:
    misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
-
-}

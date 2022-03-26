@@ -1,36 +1,33 @@
 #include "vanilla_extract.h"
+#include <string.h>
+#include <vector>
+#include <SDL_rwops.h>
+#include <fileform.h>
 #include "base_archive.h"
-
-namespace vanilla {
-namespace nsis {
-
-class Archive : public vanilla::Archive
-{
-	SDL_RWops* archive_rw;
-	size_t datablock_start;
-
-	const char* navigate_nsis(const char* path, Directory*& current);
-	bool extract_internal(bool compressed, uint32_t size, std::vector<uint8_t>& result);
-
-public:
-	explicit Archive(SDL_RWops* fptr);
-	~Archive();
-
-	bool is_ok() { return archive_rw != nullptr; }
-	SDL_RWops* open_file(const char* path);
-};
-
-}  // namespace nsis
-}  // namespace vanilla
+#include "vec_rw.h"
+#include "lzma_helpers.h"
 
 // ----------------------------------------------------------------------------
 // NSIS VFS implementation
 
 class NsisVfs : public vanilla::Vfs
 {
-	vanilla::nsis::Archive archive;
+	vanilla::Archive archive;
+	SDL_RWops* archive_rw;
+	size_t datablock_start;
+
+	const char* navigate_nsis(const char* path, vanilla::Archive::Directory*& current);
+	bool extract_internal(bool compressed, uint32_t size, std::vector<uint8_t>& result);
+
 public:
-	NsisVfs(SDL_RWops* fp) : archive(fp) {}
+	explicit NsisVfs(SDL_RWops* fp);
+	~NsisVfs();
+
+	bool is_ok()
+	{
+		return archive_rw != nullptr;
+	}
+
 	SDL_RWops* open_sdl(const char* filename);
 	bool list_dir(const char* directory, std::set<std::string>& output);
 };
@@ -40,33 +37,15 @@ std::unique_ptr<vanilla::Vfs> vanilla::open_nsis(SDL_RWops* rw)
 	return std::make_unique<NsisVfs>(rw);
 }
 
-SDL_RWops* NsisVfs::open_sdl(const char* filename)
-{
-	return archive.open_file(filename);
-}
-
 bool NsisVfs::list_dir(const char* directory, std::set<std::string>& output)
 {
 	return archive.list_dir(directory, output);
 }
 
 // ----------------------------------------------------------------------------
-
-#include <string.h>
-#include <vector>
-#include <fileform.h>
-#include "base_archive.h"
-#include "vec_rw.h"
-#include "lzma_helpers.h"
-
-#include <SDL_rwops.h>
-
-namespace vanilla::nsis {
+// Constants
 
 static_assert(sizeof(int) == 4);
-
-// ----------------------------------------------------------------------------
-// Constants
 
 const size_t SEARCH_START = 0x8000;
 const size_t SEARCH_INCREMENT = 0x200;
@@ -82,7 +61,7 @@ const uint32_t SIZE_COMPRESSED = 0x80000000;
 // ----------------------------------------------------------------------------
 // Decoding the file list
 
-Archive::~Archive()
+NsisVfs::~NsisVfs()
 {
 	if (archive_rw)
 	{
@@ -90,7 +69,7 @@ Archive::~Archive()
 	}
 }
 
-Archive::Archive(SDL_RWops* fptr)
+NsisVfs::NsisVfs(SDL_RWops* fptr)
 	: archive_rw(nullptr)
 {
 	// Find the "first header" in the file.
@@ -134,7 +113,7 @@ Archive::Archive(SDL_RWops* fptr)
 		if (!vanilla::lzma_decompress(datablock, buffer.data(), buffer.size(), 5))
 			return;
 
-		archive_rw = create_vec_rwops(std::move(datablock));
+		archive_rw = vanilla::create_vec_rwops(std::move(datablock));
 		if (!SDL_RWread(archive_rw, &header_size, 4, 1))
 		{
 			SDL_RWclose(archive_rw);
@@ -167,7 +146,7 @@ Archive::Archive(SDL_RWops* fptr)
 	datablock_start += blocks[NB_DATA].offset;
 
 	// Decode the instructions.
-	Directory* working_directory = &root;
+	vanilla::Archive::Directory* working_directory = &archive.root;
 	for (size_t offset = code_offset; offset < string_table_offset - sizeof(entry); offset += 4)
 	{
 		entry current = *(entry*)&header[offset];
@@ -208,7 +187,7 @@ Archive::Archive(SDL_RWops* fptr)
 	// Hooray!
 }
 
-const char* Archive::navigate_nsis(const char* path, Directory*& current)
+const char* NsisVfs::navigate_nsis(const char* path, vanilla::Archive::Directory*& current)
 {
 	if ((uint8_t) path[0] == NS_VAR_CODE)
 	{
@@ -217,7 +196,7 @@ const char* Archive::navigate_nsis(const char* path, Directory*& current)
 		// to usually match it.
 		if (var == 21 || var == 29 || var == 31)
 		{
-			current = &root;
+			current = &archive.root;
 		}
 		else
 			return nullptr;
@@ -230,15 +209,15 @@ const char* Archive::navigate_nsis(const char* path, Directory*& current)
 	if (!path[0])
 		return nullptr;
 
-	return navigate(path, current);
+	return vanilla::Archive::navigate(path, current);
 }
 
 // ----------------------------------------------------------------------------
 // Extracting individual files
 
-SDL_RWops* Archive::open_file(const char* path)
+SDL_RWops* NsisVfs::open_sdl(const char* path)
 {
-	size_t offset = get_file(path);
+	size_t offset = archive.get_file(path);
 	if (offset == SIZE_MAX)
 		return nullptr;
 
@@ -264,10 +243,10 @@ SDL_RWops* Archive::open_file(const char* path)
 	std::vector<uint8_t> result;
 	if (!extract_internal(size & SIZE_COMPRESSED, size & ~SIZE_COMPRESSED, result))
 		return nullptr;
-	return create_vec_rwops(std::move(result));
+	return vanilla::create_vec_rwops(std::move(result));
 }
 
-bool Archive::extract_internal(bool is_compressed, uint32_t size, std::vector<uint8_t>& result)
+bool NsisVfs::extract_internal(bool is_compressed, uint32_t size, std::vector<uint8_t>& result)
 {
 	std::vector<uint8_t> compressed(size);
 	size_t got = SDL_RWread(archive_rw, compressed.data(), 1, compressed.size());
@@ -287,5 +266,3 @@ bool Archive::extract_internal(bool is_compressed, uint32_t size, std::vector<ui
 		return true;
 	}
 }
-
-}  // namespace vanilla::nsis
