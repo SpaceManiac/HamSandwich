@@ -302,14 +302,16 @@ static bool check_assets(VfsStack& vfs) {
 	return false;
 }
 
+bool ends_with(std::string_view lhs, std::string_view rhs) {
+	return lhs.size() >= rhs.size() && lhs.compare(lhs.size() - rhs.size(), std::string_view::npos, rhs) == 0;
+}
+
 static char bin_dir_buf[1024] = {};
 
 static void escape_bin_directory() {
 #ifndef __ANDROID__
 	getcwd(bin_dir_buf, sizeof(bin_dir_buf));
-	std::string_view bin_dir = bin_dir_buf;
-	std::string_view build_install = "/build/install";
-	if (bin_dir.size() >= build_install.size() && bin_dir.compare(bin_dir.size() - build_install.size(), std::string_view::npos, build_install) == 0) {
+	if (ends_with(bin_dir_buf, "/build/install") || ends_with(bin_dir_buf, "\\build\\install")) {
 		chdir("../..");
 	}
 #endif
