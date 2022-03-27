@@ -15,7 +15,3 @@ Thumbs.db
 /.idea
 /.gradle
 /local.properties
-# Android Studio likes the Gradle wrapper, but I don't
-/gradlew
-/gradlew.bat
-/gradle
