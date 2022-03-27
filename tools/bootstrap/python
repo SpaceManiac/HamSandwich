@@ -49,16 +49,13 @@ if test "$OS" != "Windows"; then
 		"$PythonExe" -m venv "$TmpPythonDir"
 		if mkdir "$PythonDir" 2>/dev/null; then
 			mv "$TmpPythonDir"/* "$PythonDir"
+		else
+			while ! test -f "$PythonDir/bin/python"; do
+				sleep 1
+			done
 		fi
 	fi
-	if test -f "$PythonDir/bin/python"; then
-		PythonExe="$PythonDir/bin/python"
-	elif test -f "$PythonDir/scripts/python3.exe"; then
-		PythonExe="$PythonDir/scripts/python3.exe";
-	else
-		echo "bootstrap/python failed to find the python executable inside its virtualenv" >&2
-		exit 1
-	fi
+	PythonExe="$PythonDir/bin/python"
 else
 	# Windows bootstrap.
 
