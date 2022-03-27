@@ -30,4 +30,9 @@ if ! test -f "$CMakeExe"; then
 	mv "$($Extract "$(temp_download_and_verify CMAKE_VERSION "$OS")")/$CMakeFolder" "$Cache/$CMakeFolder"
 fi
 
+if test "$@" = "--bootstrap-print-directory"; then
+	echo "$Cache/$CMakeFolder"
+	exit
+fi
+
 exec "$CMakeExe" "$@"

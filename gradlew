@@ -1,5 +1,7 @@
 #!/bin/sh
 
+"$(dirname "$0")/tools/bootstrap/android-sdk"  # HamSandwich customization
+
 #
 # Copyright © 2015-2021 the original authors.
 #
