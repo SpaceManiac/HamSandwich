@@ -5,14 +5,14 @@ set -euo pipefail
 mkdir -p "build"
 
 # Check for supported system
-if [ "${MSYSTEM:-}" ]; then
-	if [ "$MSYSTEM" = "MINGW32" ]; then
+if test "${MSYSTEM:-}"; then
+	if test "$MSYSTEM" = "MINGW32"; then
 		SYS=mingw32
-	elif [ "$MSYSTEM" = "MINGW64" ]; then
+	elif test "$MSYSTEM" = "MINGW64"; then
 		SYS=mingw64
 	else
-		echo "The project cannot be built in Cygwin mode. Return to the Start Menu"
-		echo "and open 'MSYS2 MinGW 32-bit' or 'MSYS2 MinGW 64-bit'."
+		echo "The project cannot be built in '$MSYSTEM' mode. Return to the Start Menu" >&2
+		echo "and open 'MSYS2 MinGW x86' or 'MSYS2 MinGW x64'." >&2
 		exit 1
 	fi
 elif command -v apt-get >/dev/null 2>&1; then

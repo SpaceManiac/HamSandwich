@@ -16,12 +16,13 @@
 
 #ifndef _MSC_VER
 #include <unistd.h>
-#include <sys/wait.h>
 #endif
 
 #ifdef _WIN32
 #include <windows.h>
 #include <direct.h>
+#else
+#include <sys/wait.h>
 #endif
 
 #include <SDL.h>

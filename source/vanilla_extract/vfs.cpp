@@ -1,4 +1,5 @@
 #include "vanilla_extract.h"
+#include <string.h>
 #include <SDL.h>
 
 using namespace vanilla;

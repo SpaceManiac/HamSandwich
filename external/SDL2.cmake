@@ -24,7 +24,7 @@ elseif(ANDROID)
 	target_link_libraries(SDL2 INTERFACE "${ANDROID_OBJDIR}/libSDL2.so")
 	target_link_libraries(SDL2_image INTERFACE "${ANDROID_OBJDIR}/libSDL2_image.so")
 	target_link_libraries(SDL2_mixer INTERFACE "${ANDROID_OBJDIR}/libSDL2_mixer.so")
-elseif(MSVC)
+elseif(WIN32)
 	# On MSVC, use the official prebuilt binaries.
 	if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 		set(SDL_PLATFORM "x86")
@@ -51,7 +51,7 @@ elseif(MSVC)
 
 	target_include_directories(SDL2 INTERFACE "${sdl2_SOURCE_DIR}/include")
 	set(sdl2_LIBS "${sdl2_SOURCE_DIR}/lib/${SDL_PLATFORM}")
-	target_link_libraries(SDL2 INTERFACE "${sdl2_LIBS}/SDL2.lib" "${sdl2_LIBS}/SDL2main.lib")
+	target_link_libraries(SDL2 INTERFACE "${sdl2_LIBS}/SDL2main.lib" "${sdl2_LIBS}/SDL2.lib")
 	install(FILES "${sdl2_LIBS}/SDL2.dll" TYPE BIN COMPONENT Executables)
 
 	target_include_directories(SDL2_image INTERFACE "${sdl2_image_SOURCE_DIR}/include")

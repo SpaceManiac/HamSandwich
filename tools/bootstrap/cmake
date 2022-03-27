@@ -1,6 +1,11 @@
 #!/bin/sh
 set -eu
 
+if test "${MSYSTEM:-}"; then
+	# On MSYS2, use the provided CMake in order to get the provided toolchain.
+	exec cmake "$@"
+fi
+
 Bootstrap=$(dirname "$0")
 . "$Bootstrap/_common.sh"
 

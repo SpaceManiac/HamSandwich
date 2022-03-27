@@ -11,6 +11,8 @@ arch := i686
 else ifeq ($(MSYSTEM),MINGW64)
 os := windows
 arch := x86_64
+else ifneq ($(MSYSTEM),)
+$(error Bad MSYSTEM '$(MSYSTEM)'; use MinGW x86 or MinGW x64)
 else ifeq ($(shell uname -sm),Linux x86_64)
 os := linux
 arch := x86_64
