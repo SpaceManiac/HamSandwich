@@ -45,15 +45,12 @@ if test "$OS" != "Windows"; then
 	# Create a venv and activate it
 	PythonDir="$Cache/python-venv-$PYTHON_VERSION"
 	if ! test -d "$PythonDir"; then
-		TmpPythonDir=$(temp_directory)
-		"$PythonExe" -m venv "$TmpPythonDir"
-		if mkdir "$PythonDir" 2>/dev/null; then
-			mv "$TmpPythonDir"/* "$PythonDir"
-		else
-			while ! test -f "$PythonDir/bin/python"; do
-				sleep 1
-			done
-		fi
+		python_venv() {
+			TmpPythonDir=$(temp_directory)
+			"$PythonExe" -m venv "$TmpPythonDir"
+			mv "$TmpPythonDir" "$PythonDir"
+		}
+		one_at_a_time python_venv
 	fi
 	PythonExe="$PythonDir/bin/python"
 else
@@ -69,19 +66,19 @@ else
 	PythonExe="$PythonDir/python.exe"
 
 	# Download and unzip a portable version of Python
-	if ! test -f "$PythonExe"; then
-		TmpPythonDir=$(temp_unzip "$(temp_download_and_verify PYTHON_VERSION Windows)")
-		# Copy a ._pth file without "import site" commented, so pip will work.
-		cp "$Bootstrap/python36._pth" -t "$TmpPythonDir"
-		# Commit the extracted Python directory.
-		mv "$TmpPythonDir" "$PythonDir"
-	fi
-
-	# Install pip
-	if ! test -f "$PythonDir/Scripts/pip.exe"; then
-		GetPip=$(temp_file)
-		download_file "https://bootstrap.pypa.io/pip/3.6/get-pip.py" "$GetPip"
-		"$PythonExe" "$GetPip" --no-warn-script-location
+	if ! test -d "$PythonDir"; then
+		python_unzip() {
+			TmpPythonDir=$(temp_unzip "$(temp_download_and_verify PYTHON_VERSION Windows)")
+			# Copy a ._pth file without "import site" commented, so pip will work.
+			cp "$Bootstrap/python36._pth" -t "$TmpPythonDir"
+			# Install pip.
+			GetPip=$(temp_file)
+			download_file "https://bootstrap.pypa.io/pip/3.6/get-pip.py" "$GetPip"
+			"$TmpPythonDir/python.exe" "$GetPip" --no-warn-script-location
+			# Commit the extracted Python directory.
+			mv "$TmpPythonDir" "$PythonDir"
+		}
+		one_at_a_time python_unzip
 	fi
 fi
 
@@ -98,18 +95,16 @@ EOF
 
 # Use pip to install our requirements
 Requirements="requirements.txt"
-PythonLock="$PythonDir/pip.lock"
-while ! mkdir "$PythonLock" 2>/dev/null; do
-	sleep 1
-done
 if ! test -f "$PythonDir/$Requirements" || test "$(sha256sum < "$Sdk/$Requirements")" != "$(sha256sum < "$PythonDir/$Requirements")"; then
-	"$PythonExe" -m pip install -U wheel >&2
-	"$PythonExe" -m pip install -U pip >&2
-	"$PythonExe" -m pip install -r "$Sdk/$Requirements" >&2
-	cp "$Sdk/$Requirements" "$PythonDir/$Requirements"
-	echo "---" >&2
+	python_pip() {
+		"$PythonExe" -m pip install -U wheel >&2
+		"$PythonExe" -m pip install -U pip >&2
+		"$PythonExe" -m pip install -r "$Sdk/$Requirements" >&2
+		cp "$Sdk/$Requirements" "$PythonDir/$Requirements"
+		echo "---" >&2
+	}
+	one_at_a_time python_pip
 fi
-rmdir "$PythonLock"
 
 # Invoke python with all command-line arguments
 export PYTHONPATH="$Sdk$PathSep${PYTHONPATH:-}"

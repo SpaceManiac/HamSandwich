@@ -57,8 +57,9 @@ esac
 
 # Provide temporary file creation and cleanup
 TempDir=$(mktemp -d "$Cache/tmp.XXXXXXXX")
+LockedOn=
 temp_cleanup() {
-	rm -rf "$TempDir"
+	rm -rf "$TempDir" "$LockedOn"
 }
 trap temp_cleanup EXIT
 
@@ -113,6 +114,52 @@ temp_unzip() {  # <zip>
 	unzip "$1" -d "$dir" >&2
 	echo "$dir"
 	unset dir
+}
+
+# Attempt to acquire a lock while doing a task. If another process holds the
+# lock, wait for it to finish and then proceed *without* doing the task.
+one_at_a_time() {  # <callback>
+	# Can we acquire the lock?
+	my_pid=$$
+	if ( set -o noclobber; echo "$my_pid" > "$Cache/lock.$1"; ) 2>/dev/null; then
+		# We got the lock, so do the thing.
+		LockedOn="$Cache/lock.$1"
+		#echo "$$: locked $1"
+		"$1"
+		rm "$Cache/lock.$1"
+		LockedOn=
+		#echo "$$: released $1"
+	else
+		# We didn't get the lock, but we also want to wait until the process that did finishes.
+		# Also we need to clear it if that process crashed.
+		#echo "$$: waiting on $1"
+
+		while true; do
+			# If the file went away, we're good.
+			locked_pid=$(cat "$Cache/lock.$1" 2>/dev/null) || break
+			#echo "$$ waits on $locked_pid"
+			# If the lock file now contains OUR pid, do the thing and return.
+			if test "$locked_pid" = "$$"; then
+				# We got the lock, so do the thing.
+				LockedOn="$Cache/lock.$1"
+				#echo "$$: B-locked $1"
+				"$1"
+				rm "$Cache/lock.$1"
+				LockedOn=
+				#echo "$$: B-released $1"
+			fi
+			# If that pid no longer exists, attempt to take the lock for ourselves.
+			if ! kill -0 "$locked_pid" 2>/dev/null; then
+				new_locked_pid=$(temp_file)
+				echo "$$" >"$new_locked_pid"
+				#echo "$$: trying to conquer"
+				mv "$new_locked_pid" "$Cache/lock.$1"
+			fi
+			# Wait a bit.
+			sleep 1
+		done
+		#echo "$$: wait finished on $1"
+	fi
 }
 
 # Load dependencies.sh
