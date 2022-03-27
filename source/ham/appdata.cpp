@@ -321,14 +321,12 @@ static bool run_download_helper() {
 		std::string cmdline = bin_dir_buf;
 		cmdline.append("/launcher.exe");
 		std::string executable = cmdline;
-		cmdline.append("--mini-gui ");
+		cmdline.append(" --mini-gui ");
 		cmdline.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
 
 		STARTUPINFOA startupInfo = {};
 		PROCESS_INFORMATION processInfo = {};
 		startupInfo.cb = sizeof(startupInfo);
-		startupInfo.dwFlags |= STARTF_USESHOWWINDOW;
-		startupInfo.wShowWindow = SW_HIDE;
 		if (CreateProcessA(executable.data(), cmdline.data(), nullptr, nullptr, false, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &processInfo)) {
 			WaitForSingleObject(processInfo.hProcess, INFINITE);
 			CloseHandle(processInfo.hProcess);

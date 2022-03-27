@@ -771,8 +771,6 @@ int main(int argc, char** argv)
 				STARTUPINFOA startupInfo = {};
 				PROCESS_INFORMATION processInfo = {};
 				startupInfo.cb = sizeof(startupInfo);
-				startupInfo.dwFlags |= STARTF_USESHOWWINDOW;
-				startupInfo.wShowWindow = SW_HIDE;
 				if (CreateProcessA(executable.c_str(), cmdline.data(), nullptr, nullptr, false, CREATE_NO_WINDOW, environment.str().data(), nullptr, &startupInfo, &processInfo))
 				{
 					SDL_HideWindow(window);  // Hide window now that we know the child process was created.
