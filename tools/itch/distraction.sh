@@ -1,4 +1,4 @@
-#!/bin/bash
-# This file exists to paper over a weird behavior in itchio/dash
-# which causes it to identify .download-helper as a runnable candidate,
-# but only if it's alone.
+#!/bin/sh
+# The Itch launcher has a bug where if installers/ contains exactly one file
+# that looks runnable, it shows up as an alternative. We work around this by
+# placing two dummy shell scripts to trick it into ignoring both.
