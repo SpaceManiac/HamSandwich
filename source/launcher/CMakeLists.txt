@@ -52,5 +52,5 @@ endif()
 
 install(TARGETS launcher COMPONENT Executables)
 if(NOT APPLE)
-	install(TARGETS libcurl COMPONENT Executables)
+	install(TARGETS libcurl ARCHIVE EXCLUDE_FROM_ALL COMPONENT Executables)
 endif()

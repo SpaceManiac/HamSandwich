@@ -11,6 +11,4 @@ if(ANDROID)
 endif()
 target_include_directories(ham INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
-if("${HAM_LIBRARY_TYPE}" STREQUAL "SHARED")
-	install(TARGETS ham COMPONENT Executables)
-endif()
+install(TARGETS ham ARCHIVE EXCLUDE_FROM_ALL COMPONENT Executables)
