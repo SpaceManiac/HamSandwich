@@ -47,11 +47,17 @@ $BusyboxExe = "$Cache/$BusyboxVersion.exe"
 # Download Busybox, validate it, and commit it if validation succeeded
 if (!(Test-Path $BusyboxExe -PathType Leaf)) {
 	$host.ui.RawUI.WindowTitle = "downloading :: $BusyboxVersion"
-	$TempExe = New-TemporaryFile
+	$TempExe = "$BusyboxExe.tmp.$PID"
 	New-Item "$Cache" -ItemType Directory -ErrorAction silentlyContinue | Out-Null
 	Invoke-WebRequest "$BusyboxUrl" -OutFile "$TempExe" -ErrorAction Stop
 	CheckHash -File "$TempExe" -Sha "$ExpectedSha256"
-	Rename-Item -Force "$TempExe" "$BusyboxExe"
+	try {
+		Move-Item "$TempExe" "$BusyboxExe" -ErrorAction stop
+	} catch {
+		# A racing peer already got it. We can't overwrite it if it's in use so
+		# just give up.
+		Remove-Item "$TempExe"
+	}
 }
 
 # Invoke with all command-line arguments
