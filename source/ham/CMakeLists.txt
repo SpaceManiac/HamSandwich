@@ -1,6 +1,5 @@
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-if(WIN32 OR EMSCRIPTEN)
-	# TODO: Deal with Ham importing various functions from each game.
+if(EMSCRIPTEN)
 	set(HAM_LIBRARY_TYPE STATIC)
 else()
 	set(HAM_LIBRARY_TYPE SHARED)
