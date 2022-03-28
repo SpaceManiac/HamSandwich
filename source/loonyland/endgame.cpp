@@ -56,7 +56,7 @@ int totalScore;
 
 void Commaize(char *s,int n)
 {
-	char s2[8];
+	char s2[16];
 	byte zero;
 
 	s[0]='\0';

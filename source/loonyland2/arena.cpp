@@ -1675,7 +1675,7 @@ void UpdateArena(void)
 
 void PrintArenaInfo(int y)
 {
-	char s[16];
+	char s[32];
 	word w,wv;
 
 	CenterPrintDark(319,-29-1+y,arenaMatch[player.arenaLvl].name,0);

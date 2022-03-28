@@ -52,7 +52,8 @@ void InitPlayer(byte initWhat,byte world,byte level)
 				player.levelPassed[i][j]=0;
 			player.totalCompletion[i]=100;
 			player.complete[i]=0;
-			player.lunacyKey[i]=0;
+			if(i<4)
+				player.lunacyKey[i]=0;
 		}
 		player.levelsPassed=0;
 		for(i=0;i<10;i++)
