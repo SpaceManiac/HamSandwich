@@ -130,7 +130,10 @@ fi
 
 # Default debug configuration
 debugdir="$PWD/build/install"
-debugcommand="$PWD/build/cmake-$preset/source/$project/$project"
+debugcommand="$debugdir/$project"
+if test "$os" = "windows"; then
+	debugcommand="$debugcommand.exe"
+fi
 debugargs=("window")
 debugenvs=()
 

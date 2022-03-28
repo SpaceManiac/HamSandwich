@@ -789,7 +789,7 @@ int main(int argc, char** argv)
 				}
 				else
 				{
-					fprintf(stderr, "CreateProcess failed: %u\n", GetLastError());
+					fprintf(stderr, "CreateProcess failed: %lu\n", GetLastError());
 				}
 #elif !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 				int child_pid = fork();
