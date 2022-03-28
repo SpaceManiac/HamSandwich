@@ -178,6 +178,7 @@ struct Game
 	std::string id;
 	std::string title;
 	bool excluded;
+	std::string appdata_folder_name;
 
 	std::vector<Asset> assets;
 	const Icon* icon = nullptr;
@@ -269,6 +270,7 @@ struct Launcher
 				id,
 				value["title"],
 				value.contains("excluded") && value["excluded"],
+				value.contains("appdataName") ? static_cast<std::string>(value["appdataName"]) : id,
 			});
 			games.back().icon = icons_by_id[id];
 			for (const auto& installer : value["installers"])
@@ -758,7 +760,7 @@ int main(int argc, char** argv)
 					originalEnv += strlen(originalEnv) + 1;
 				}
 
-				environment << "HSW_APPDATA=appdata/" << launcher.current_game->id << '\0';
+				environment << "HSW_APPDATA=appdata/" << launcher.current_game->appdata_folder_name << '\0';
 
 				int i = 0;
 				environment << "HSW_ASSETS_" << i++ << "=@stdio@assets/" << launcher.current_game->id << '\0';
@@ -814,7 +816,7 @@ int main(int argc, char** argv)
 					}
 
 					std::ostringstream environment;
-					environment << "HSW_APPDATA=appdata/" << launcher.current_game->id;
+					environment << "HSW_APPDATA=appdata/" << launcher.current_game->appdata_folder_name;
 					envs.push_back(environment.str());
 					raw_envs.push_back(envs.back().data());
 

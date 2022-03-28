@@ -31,6 +31,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 endif()
 
 # Libraries
+include("ham_executable.cmake")
 add_subdirectory("vanilla_extract")
 add_subdirectory("ham")
 
