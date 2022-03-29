@@ -1,5 +1,7 @@
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-if(EMSCRIPTEN)
+if(WIN32 OR EMSCRIPTEN)
+	# TODO: Must explicitly declare exported symbols on Windows before it can
+	# be a shared library.
 	set(HAM_LIBRARY_TYPE STATIC)
 else()
 	set(HAM_LIBRARY_TYPE SHARED)
