@@ -15,6 +15,7 @@
 #include <imgui_impl_opengl2.h>
 #include <json.hpp>
 #include <curl/curl.h>
+#include "jamulfont.h"
 
 #if defined(_MSC_VER) || defined(__clang__)
 #include <filesystem>
@@ -38,6 +39,52 @@ namespace filesystem = std::experimental::filesystem::v1;
 #include <crt_externs.h>
 #define environ *_NSGetEnviron()
 #endif
+
+// Embed Hamumu editor font for extra flavor.
+extern const unsigned char embed_verdana[];
+extern const size_t embed_verdana_size;
+
+void Verdana(ImGuiIO* io)
+{
+	mfont_t jamfont;
+	if (FontLoad(SDL_RWFromConstMem(embed_verdana, embed_verdana_size), &jamfont) != FONT_OK)
+		return;
+
+	ImFontConfig config;
+	config.SizePixels = jamfont.height;
+	ImFont* font = io->Fonts->AddFontDefault(&config);
+	int rect_ids[FONT_MAX_CHARS];
+	for (int i = 0; i < jamfont.numChars; ++i)
+	{
+		rect_ids[i] = io->Fonts->AddCustomRectFontGlyph(font, jamfont.firstChar + i, *jamfont.chars[i], jamfont.height + 1, *jamfont.chars[i] + jamfont.gapSize);
+	}
+	io->Fonts->Build();
+
+	uint8_t* tex_pixels = nullptr;
+	int tex_width, tex_height;
+	io->Fonts->GetTexDataAsRGBA32(&tex_pixels, &tex_width, &tex_height);
+
+	for (int c = 0; c < jamfont.numChars; ++c)
+	{
+		if (const ImFontAtlasCustomRect* rect = io->Fonts->GetCustomRectByIndex(rect_ids[c]))
+		{
+			auto chrWidth = *(jamfont.chars[c]);
+			auto src = jamfont.chars[c] + 1;
+			for (int y = 0; y < jamfont.height; y++)
+			{
+				ImU32* dst = (ImU32*)tex_pixels + (rect->Y + y + 1) * tex_width + (rect->X);
+
+				for (int x = 0; x < chrWidth; x++)
+				{
+					if (*src)
+						*dst = IM_COL32(255, 255, 255, 255);
+					dst++;
+					src++;
+				}
+			}
+		}
+	}
+}
 
 // Embedded metadata json and embedded icons for each game.
 extern const unsigned char embed_launcher_json[];
@@ -471,6 +518,7 @@ int main(int argc, char** argv)
 	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
 	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
 	//IM_ASSERT(font != NULL);
+	Verdana(&io);
 
 	// Load icon textures
 	// https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples#example-for-opengl-users

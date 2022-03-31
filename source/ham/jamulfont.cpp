@@ -29,14 +29,18 @@ void FontFree(mfont_t *font)
 
 int FontLoad(const char *fname, mfont_t *font)
 {
+	SDL_RWops* f = AssetOpen_SDL(fname);
+	if (!f)
+		return FONT_FILENOTFOUND;
+	return FontLoad(f, font);
+}
+
+int FontLoad(SDL_RWops* f, mfont_t* font)
+{
 	// Size of the header in .jft files, fixed by the format.
 	const int MFONT_SIZE_TOTAL = 528;
 	// How much of that size we can actually stuff into the mfont_t struct.
 	const int MFONT_SIZE_READ = 12;
-
-	SDL_RWops* f = AssetOpen_SDL(fname);
-	if (!f)
-		return FONT_FILENOTFOUND;
 
 	if (SDL_RWread(f, font, MFONT_SIZE_READ, 1) != 1) {
 		SDL_RWclose(f);

@@ -3,6 +3,9 @@ file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 add_executable(launcher ${sources})
 target_link_libraries(launcher SDL2 SDL2_image imgui libcurl nlohmann_json)
 
+# Embed the font.
+HamSandwich_embed_file(launcher "${CMAKE_SOURCE_DIR}/assets/launcher/verdana.jft" embed_verdana)
+
 # Embed the metadata json.
 get_property(launcher_metadata GLOBAL PROPERTY HamSandwich_launcher_metadata)
 file(GENERATE OUTPUT launcher.json CONTENT "${launcher_metadata}")
@@ -42,7 +45,7 @@ file(GENERATE OUTPUT embed_game_icons.cpp CONTENT "
 target_sources(launcher PRIVATE embed_game_icons.cpp)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	target_link_libraries(launcher stdc++fs)
+	target_link_libraries(launcher ham stdc++fs)
 	target_compile_options(launcher PRIVATE -Wall -Wextra -Wno-missing-field-initializers)
 endif()
 

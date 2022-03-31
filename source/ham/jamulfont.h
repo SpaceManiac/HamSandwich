@@ -39,8 +39,9 @@ void FontExit(void);
 
 void FontFree(mfont_t *font);
 
-
+struct SDL_RWops;
 int FontLoad(const char *fname, mfont_t *font);
+int FontLoad(SDL_RWops* rw, mfont_t *font);
 int FontSave(const char *fname, mfont_t *font);
 
 void FontPrintString(int x, int y, const char *s, mfont_t *font);
