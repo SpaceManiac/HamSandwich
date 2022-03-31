@@ -320,10 +320,10 @@ static void escape_bin_directory() {
 
 static bool run_download_helper() {
 #if defined(_WIN32)
-	if (GetFileAttributesA("launcher.exe") != INVALID_FILE_ATTRIBUTES) {
-		std::string cmdline = bin_dir_buf;
-		cmdline.append("/launcher.exe");
-		std::string executable = cmdline;
+	std::string executable = bin_dir_buf;
+	executable.append("/launcher.exe");
+	if (GetFileAttributesA(executable.c_str()) != INVALID_FILE_ATTRIBUTES) {
+		std::string cmdline = executable;
 		cmdline.append(" --mini-gui ");
 		cmdline.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
 
