@@ -16,3 +16,8 @@ printf 'sdk.dir=%s\ncmake.dir=%s\n' \
 	"$AndroidSdk" \
 	"$(realpath "$(tools/bootstrap/cmake --bootstrap-print-directory)")" \
 	>"$Bootstrap/../../local.properties"
+
+if test "$#" -gt 0; then
+    PATH="$AndroidSdk/platform-tools:$PATH"
+    "$@"
+fi
