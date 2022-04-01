@@ -26,7 +26,6 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - run: tools/build/install-deps.sh
       - run: make install mode=release
       - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
         run: tools/bootstrap/butler push --if-changed build/install "$ITCH_GAME:linux" --userversion="$(git rev-parse --short=10 HEAD)"
@@ -43,7 +42,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - run: sudo apt install openjdk-11-jdk ninja-build
+      - run: sudo apt-get update && sudo apt-get install openjdk-11-jdk ninja-build
       - run: env JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 ./gradlew packageRelease
       - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
         run: |
