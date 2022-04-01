@@ -35,6 +35,7 @@ preset := $(os)-$(arch)-$(mode)
 endif  # preset
 
 # Activate Emscripten SDK if needed.
+$(shell tools/build/install-deps.sh >&2)
 ifeq ($(os),emscripten)
 $(shell tools/emscripten/install-emsdk.sh >&2)
 endif

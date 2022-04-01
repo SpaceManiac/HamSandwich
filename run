@@ -123,6 +123,7 @@ if test -z "$preset"; then
 	preset="$os-$arch-$mode"
 fi
 
+tools/build/install-deps.sh
 if test -z "$tool" && test "$os" = "emscripten"; then
 	tool=emrun
 	source ./tools/emscripten/install-emsdk.sh
