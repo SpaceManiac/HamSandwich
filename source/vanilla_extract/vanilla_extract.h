@@ -22,7 +22,7 @@ namespace vanilla
 	// Available providers
 	std::unique_ptr<WriteVfs> open_stdio(const char* prefix);
 	std::unique_ptr<Vfs> open_nsis(SDL_RWops* rw);
-	std::unique_ptr<Vfs> open_inno(FILE* fp);
+	std::unique_ptr<Vfs> open_inno(SDL_RWops* rw);
 	std::unique_ptr<Vfs> open_zip(const char* filename);
 #if defined(__ANDROID__) && __ANDROID__
 	std::unique_ptr<Vfs> open_android(const char* prefix = nullptr);

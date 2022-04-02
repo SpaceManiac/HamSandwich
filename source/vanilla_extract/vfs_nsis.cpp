@@ -73,7 +73,7 @@ NsisVfs::NsisVfs(SDL_RWops* fptr)
 	: archive_rw(nullptr)
 {
 	// Find the "first header" in the file.
-	Sint64 file_size = SDL_RWseek(fptr, 0, SEEK_END);
+	Sint64 file_size = SDL_RWseek(fptr, 0, RW_SEEK_END);
 	if (file_size < 0)
 		return;
 
@@ -81,7 +81,7 @@ NsisVfs::NsisVfs(SDL_RWops* fptr)
 	size_t firstheader_start = 0;
 	for (size_t search = SEARCH_START; search < file_size - FIRSTHEADER_SIZE; search += SEARCH_INCREMENT)
 	{
-		if (SDL_RWseek(fptr, search, SEEK_SET) < 0)
+		if (SDL_RWseek(fptr, search, RW_SEEK_SET) < 0)
 			return;
 		if (!SDL_RWread(fptr, &fh, FIRSTHEADER_SIZE, 1))
 			return;
@@ -102,7 +102,7 @@ NsisVfs::NsisVfs(SDL_RWops* fptr)
 	{
 		// This is the first 4 bytes of an LZMA stream instead of a size, which
 		// means that the installer was compiled with `SetCompressor /SOLID`.
-		if (SDL_RWseek(fptr, -4, SEEK_CUR) < 0)
+		if (SDL_RWseek(fptr, -4, RW_SEEK_CUR) < 0)
 			return;
 
 		std::vector<uint8_t> buffer(fh.length_of_all_following_data - FIRSTHEADER_SIZE);
@@ -221,7 +221,7 @@ SDL_RWops* NsisVfs::open_sdl(const char* path)
 	if (offset == SIZE_MAX)
 		return nullptr;
 
-	if (SDL_RWseek(archive_rw, datablock_start + offset, SEEK_SET) < 0)
+	if (SDL_RWseek(archive_rw, datablock_start + offset, RW_SEEK_SET) < 0)
 	{
 		fprintf(stderr, "nsis::Archive::extract: fseek error\n");
 		return nullptr;

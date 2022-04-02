@@ -26,7 +26,7 @@ class InnoVfs : public vanilla::Vfs
 	std::vector<uint8_t> setup_1_bin;
 
 public:
-	explicit InnoVfs(FILE* fp);
+	explicit InnoVfs(SDL_RWops* rw);
 
 	bool is_ok()
 	{
@@ -37,9 +37,9 @@ public:
 	bool list_dir(const char* directory, std::set<std::string>& output);
 };
 
-std::unique_ptr<vanilla::Vfs> vanilla::open_inno(FILE* fp)
+std::unique_ptr<vanilla::Vfs> vanilla::open_inno(SDL_RWops* rw)
 {
-	return std::make_unique<InnoVfs>(fp);
+	return std::make_unique<InnoVfs>(rw);
 }
 
 bool InnoVfs::list_dir(const char* directory, std::set<std::string>& output)
@@ -62,27 +62,31 @@ const size_t APP_PREFIX_SZ = 6;
 const char APP_PREFIX[APP_PREFIX_SZ + 1] = "{app}\\";
 
 // ----------------------------------------------------------------------------
-// 7z-compatible stream from FILE*
+// 7z-compatible stream from SDL_RWops*
 
-struct SeekInStream_FILE
+struct SeekInStream_RW
 {
 	ISeekInStream base;
-	FILE *fptr;
+	SDL_RWops *rw;
 };
 
-static SRes SeekInStream_FILE_Read(const ISeekInStream *p, void *buf, size_t *size)
+static SRes SeekInStream_RW_Read(const ISeekInStream *p, void *buf, size_t *size)
 {
-	const SeekInStream_FILE *self = (const SeekInStream_FILE *) p;
-	*size = fread(buf, 1, *size, self->fptr);
+	const SeekInStream_RW *self = (const SeekInStream_RW *) p;
+	*size = SDL_RWread(self->rw, buf, 1, *size);
 	return SZ_OK;
 }
 
-static SRes SeekInStream_FILE_Seek(const ISeekInStream *p, Int64 *pos, ESzSeek origin)
+static_assert(SZ_SEEK_SET == RW_SEEK_SET);
+static_assert(SZ_SEEK_CUR == RW_SEEK_CUR);
+static_assert(SZ_SEEK_END == RW_SEEK_END);
+static SRes SeekInStream_RW_Seek(const ISeekInStream *p, Int64 *pos, ESzSeek origin)
 {
-	const SeekInStream_FILE *self = (const SeekInStream_FILE *) p;
-	if (fseek(self->fptr, *pos, origin))
+	const SeekInStream_RW *self = (const SeekInStream_RW *) p;
+	int ret = SDL_RWseek(self->rw, *pos, origin);
+	if (ret < 0)
 		return SZ_ERROR_READ;
-	*pos = ftell(self->fptr);
+	*pos = ret;
 	return SZ_OK;
 }
 
@@ -164,15 +168,15 @@ static void binary_string(SDL_RWops* rw, std::string* dest = nullptr)
 
 static bool crc_table_generated = false;
 
-InnoVfs::InnoVfs(FILE* fptr)
+InnoVfs::InnoVfs(SDL_RWops* rw)
 {
-	if (fseek(fptr, OFFSET_OF_7Z_IN_EXE, SEEK_CUR))
+	if (SDL_RWseek(rw, OFFSET_OF_7Z_IN_EXE, RW_SEEK_CUR) < 0)
 		return;
 
 	uint8_t signature[k7zSignatureSize];
-	if (!fread(signature, k7zSignatureSize, 1, fptr))
+	if (!SDL_RWread(rw, signature, k7zSignatureSize, 1))
 		return;
-	if (fseek(fptr, -k7zSignatureSize, SEEK_CUR))
+	if (SDL_RWseek(rw, -k7zSignatureSize, RW_SEEK_CUR) < 0)
 		return;
 
 	if (memcmp(signature, k7zSignature, k7zSignatureSize))
@@ -182,13 +186,13 @@ InnoVfs::InnoVfs(FILE* fptr)
 	}
 
 	// Prepare 7z input stream
-	SeekInStream_FILE seekStream =
+	SeekInStream_RW seekStream =
 	{
 		{
-			SeekInStream_FILE_Read,
-			SeekInStream_FILE_Seek,
+			SeekInStream_RW_Read,
+			SeekInStream_RW_Seek,
 		},
-		fptr
+		rw
 	};
 
 	uint8_t stream2buf[16 * 1024];

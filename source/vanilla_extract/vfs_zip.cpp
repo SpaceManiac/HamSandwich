@@ -28,16 +28,12 @@ static ZPOS64_T zsdl_tell64(void* userdata, void* stream)
 	return SDL_RWtell((SDL_RWops*) stream);
 }
 
+static_assert(ZLIB_FILEFUNC_SEEK_SET == RW_SEEK_SET);
+static_assert(ZLIB_FILEFUNC_SEEK_CUR == RW_SEEK_CUR);
+static_assert(ZLIB_FILEFUNC_SEEK_END == RW_SEEK_END);
 static long zsdl_seek64(void* userdata, void* stream, ZPOS64_T offset, int origin)
 {
-	int sdl_whence = RW_SEEK_SET;
-	switch (origin)
-	{
-		case ZLIB_FILEFUNC_SEEK_SET: sdl_whence = RW_SEEK_SET; break;
-		case ZLIB_FILEFUNC_SEEK_CUR: sdl_whence = RW_SEEK_CUR; break;
-		case ZLIB_FILEFUNC_SEEK_END: sdl_whence = RW_SEEK_END; break;
-	}
-	SDL_RWseek((SDL_RWops*) stream, offset, sdl_whence);
+	SDL_RWseek((SDL_RWops*) stream, offset, origin);
 	return 0;
 }
 

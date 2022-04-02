@@ -94,7 +94,7 @@ static Mount init_vfs_spec(const char* what, const char* spec) {
 		}
 		return { vanilla::open_nsis(fp), mountpoint };
 	} else if (!strcmp(kind, "inno")) {
-		FILE* fp = fopen(param, "rb");
+		SDL_RWops* fp = SDL_RWFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
 			return { nullptr };
