@@ -209,11 +209,13 @@ function(HamSandwich_add_executable target_name)
 			"${CMAKE_CURRENT_BINARY_DIR}/${target_name}.js"
 			"${CMAKE_CURRENT_BINARY_DIR}/${target_name}.wasm"
 			DESTINATION "${CMAKE_INSTALL_PREFIX}/${target_name}"
+			COMPONENT "${target_name}/web"
 		)
 		install(
 			FILES "${ico}"
 			RENAME "favicon.ico"
 			DESTINATION "${CMAKE_INSTALL_PREFIX}/${target_name}"
+			COMPONENT "${target_name}/web"
 		)
 
 		# Use a GLOB to reconfigure if a new asset directory is created.
@@ -249,18 +251,18 @@ function(HamSandwich_add_executable target_name)
 			install(
 				FILES "${data}"
 				DESTINATION "${CMAKE_INSTALL_PREFIX}/${target_name}"
-				COMPONENT Assets
+				COMPONENT "${target_name}/web"
 			)
 		endif()
 	else()
 		# Copy assets on install.
-		install(TARGETS "${target_name}" COMPONENT Executables)
+		install(TARGETS "${target_name}" COMPONENT "${target_name}/executables")
 		install(
 			DIRECTORY
 			"${CMAKE_SOURCE_DIR}/assets/${target_name}"
 			OPTIONAL
 			DESTINATION "${CMAKE_INSTALL_PREFIX}/assets"
-			COMPONENT Assets
+			COMPONENT "${target_name}/assets"
 		)
 	endif()
 endfunction()

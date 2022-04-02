@@ -131,7 +131,8 @@ fi
 
 # Default debug configuration
 debugdir="$PWD/build/install"
-debugcommand="$debugdir/$project"
+cmakedir="$PWD/build/cmake-$preset"
+debugcommand="$cmakedir/source/$project/$project"
 if test "$os" = "windows"; then
 	debugcommand="$debugcommand.exe"
 fi
@@ -140,13 +141,33 @@ debugenvs=()
 
 # Build and install
 if test -z "$nobuild"; then
-	make preset="$preset" install
-	if test "$project" != "launcher" && test "$os" != "emscripten"; then
-		launcher=$PWD/build/cmake-$preset/source/launcher/launcher
-		(cd "$debugdir" && "$launcher" --mini-cli "$project")
-	fi
 	if test "$os" = "emscripten"; then
+		# Web.
 		debugdir="$PWD/build/webroot"
+		if test "$project" != "launcher"; then
+			# Single project: build and install just that project.
+			make preset="$preset" "$project"
+			cmake --install "$cmakedir" --component "$project"/web --config Debug
+		else
+			# Otherwise, build and install everything.
+			make preset="$preset" install
+		fi
+	else
+		# Desktop.
+		if test "$project" != "launcher"; then
+			# Single project: build the launcher and that project.
+			make preset="$preset" "$project" launcher
+			# Install the launcher so that it can be used to download assets.
+			cmake --install "$cmakedir" --component Unspecified --config Debug
+			cmake --install "$cmakedir" --component generic/executables --config Debug
+			cmake --install "$cmakedir" --component launcher/executables --config Debug
+			# But we don't need to install the game's executable because we're
+			# going to run it right out its build directory.
+		else
+			# Launcher: build everything that isn't excluded, because that's
+			# what will be presented in the launcher UI.
+			make preset="$preset" install
+		fi
 	fi
 fi
 

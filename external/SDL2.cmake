@@ -52,7 +52,7 @@ elseif(WIN32)
 	target_include_directories(SDL2 INTERFACE "${sdl2_SOURCE_DIR}/include")
 	set(sdl2_LIBS "${sdl2_SOURCE_DIR}/lib/${SDL_PLATFORM}")
 	target_link_libraries(SDL2 INTERFACE "${sdl2_LIBS}/SDL2main.lib" "${sdl2_LIBS}/SDL2.lib")
-	install(FILES "${sdl2_LIBS}/SDL2.dll" TYPE BIN COMPONENT Executables)
+	install(FILES "${sdl2_LIBS}/SDL2.dll" TYPE BIN COMPONENT generic/executables)
 
 	target_include_directories(SDL2_image INTERFACE "${sdl2_image_SOURCE_DIR}/include")
 	set(sdl2_image_LIBS "${sdl2_image_SOURCE_DIR}/lib/${SDL_PLATFORM}")
@@ -61,7 +61,7 @@ elseif(WIN32)
 		"${sdl2_image_LIBS}/SDL2_image.dll"
 		"${sdl2_image_LIBS}/libpng16-16.dll"
 		"${sdl2_image_LIBS}/zlib1.dll"
-		TYPE BIN COMPONENT Executables)
+		TYPE BIN COMPONENT generic/executables)
 
 	target_include_directories(SDL2_mixer INTERFACE "${sdl2_mixer_SOURCE_DIR}/include")
 	set(sdl2_mixer_LIBS "${sdl2_mixer_SOURCE_DIR}/lib/${SDL_PLATFORM}")
@@ -72,7 +72,7 @@ elseif(WIN32)
 		"${sdl2_mixer_LIBS}/libogg-0.dll"
 		"${sdl2_mixer_LIBS}/libvorbis-0.dll"
 		"${sdl2_mixer_LIBS}/libvorbisfile-3.dll"
-		TYPE BIN COMPONENT Executables)
+		TYPE BIN COMPONENT generic/executables)
 elseif(APPLE)
 	# Like Windows, use the official SDL2 prebuild binaries.
 	include(FetchContent)
@@ -107,16 +107,16 @@ elseif(APPLE)
 	target_include_directories(SDL2 INTERFACE "${sdl2_SOURCE_DIR}/dmg_content/SDL2.framework/Headers")
 	target_compile_options(SDL2 INTERFACE -F "${sdl2_SOURCE_DIR}/dmg_content")  # so SDL_mixer finds <SDL2/SDL.h>
 	target_link_libraries(SDL2 INTERFACE "${sdl2_SOURCE_DIR}/dmg_content/SDL2.framework/SDL2")
-	install(DIRECTORY "${sdl2_SOURCE_DIR}/dmg_content/SDL2.framework" TYPE BIN COMPONENT Executables)
+	install(DIRECTORY "${sdl2_SOURCE_DIR}/dmg_content/SDL2.framework" TYPE BIN COMPONENT generic/executables)
 
 	target_include_directories(SDL2_image INTERFACE "${sdl2_image_SOURCE_DIR}/dmg_content/SDL2_image.framework/Headers")
 	target_link_libraries(SDL2_image INTERFACE "${sdl2_image_SOURCE_DIR}/dmg_content/SDL2_image.framework/SDL2_image")
-	install(DIRECTORY "${sdl2_image_SOURCE_DIR}/dmg_content/SDL2_image.framework" TYPE BIN COMPONENT Executables)
+	install(DIRECTORY "${sdl2_image_SOURCE_DIR}/dmg_content/SDL2_image.framework" TYPE BIN COMPONENT generic/executables)
 
 	target_include_directories(SDL2_mixer INTERFACE "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework/Headers")
 	target_link_libraries(SDL2_mixer INTERFACE "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework/SDL2_mixer")
-	install(DIRECTORY "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework" TYPE BIN COMPONENT Executables)
-	install(FILES "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework/Frameworks/Ogg.framework/Resources/LICENSE.ogg-vorbis.txt" TYPE BIN COMPONENT Executables)
+	install(DIRECTORY "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework" TYPE BIN COMPONENT generic/executables)
+	install(FILES "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework/Frameworks/Ogg.framework/Resources/LICENSE.ogg-vorbis.txt" TYPE BIN COMPONENT generic/executables)
 else()
 	# Use system libraries.
 	find_package(SDL2 REQUIRED)

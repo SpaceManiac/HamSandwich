@@ -186,6 +186,6 @@ comments there.
 
 ### Manual publishing
 
-Delete the `build/install/` folder, build again, then zip and upload that
-folder to publish a copy for your platform. Emscripten builds go to
+Delete the `build/install/` folder, run `make install`, then zip and upload that
+folder's contents to publish a copy for your platform. Emscripten builds go to
 `build/webroot/`.

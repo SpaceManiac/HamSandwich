@@ -13,4 +13,4 @@ if(ANDROID)
 endif()
 target_include_directories(ham INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
-install(TARGETS ham ARCHIVE EXCLUDE_FROM_ALL COMPONENT Executables)
+install(TARGETS ham LIBRARY RUNTIME COMPONENT generic/executables)

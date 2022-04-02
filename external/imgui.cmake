@@ -18,4 +18,4 @@ else()
 endif()
 target_include_directories(imgui PUBLIC "${IMGUI_DIR}" "${IMGUI_DIR}/backends")
 
-install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/imgui/LICENSE.txt" TYPE BIN COMPONENT Executables RENAME "LICENSE.imgui.txt")
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/imgui/LICENSE.txt" TYPE BIN COMPONENT generic/executables RENAME "LICENSE.imgui.txt")
