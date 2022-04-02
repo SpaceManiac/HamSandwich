@@ -38,14 +38,14 @@ fi
 
 # Helper functions
 packages() {
-	local CMD="$1"
+	local cmd="$1"
 	shift
-	local FNAME="build/.packages-$SYS"
-	if ! test -f "$FNAME" || test "$(cat "$FNAME")" != "$*"; then
+	local fname="build/.packages-$SYS"
+	if test "$force" || ! test -f "$fname" || test "$(cat "$fname")" != "$*"; then
 		echo "==== Updating system packages ===="
-		echo "$CMD" "$@"
-		$CMD "$@"
-		echo "$*" >"$FNAME"
+		echo "$cmd" "$@"
+		$cmd "$@"
+		echo "$*" >"$fname"
 	fi
 }
 
@@ -97,4 +97,14 @@ deps_homebrew() {
 }
 
 # Install dependencies for the correct system
+force=
+while test $# -gt 0; do
+	arg=$1; shift
+	case "$arg" in
+		--force)
+			force=1
+			;;
+	esac
+done
+
 deps_"$SYS"
