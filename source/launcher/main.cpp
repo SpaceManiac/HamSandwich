@@ -232,6 +232,33 @@ struct Game
 	const Icon* icon = nullptr;
 	LoadedIcon loaded_icon;
 
+	Game(std::string_view id, nlohmann::json manifest)
+		: id(id)
+		, title(manifest["title"])
+		, excluded(manifest.contains("excluded") && manifest["excluded"])
+		, appdata_folder_name(manifest.contains("appdataName") ? static_cast<std::string>(manifest["appdataName"]) : id)
+	{
+		for (const auto& installer : manifest["installers"])
+		{
+			std::string enabled_file = "installers/";
+			enabled_file.append(installer["filename"]);
+			enabled_file.append(".enabled");
+
+			assets.push_back(Asset
+			{
+				installer.contains("mountpoint") ? installer["mountpoint"] : "",
+				installer["kind"],
+				installer["filename"],
+				installer["sha256sum"],
+				installer["link"],
+				installer["file_id"],
+				installer["description"],
+				!installer.contains("optional") || !installer["optional"],
+				filesystem::exists(enabled_file),
+			});
+		}
+	}
+
 	bool start_missing_downloads(CURLM* downloads)
 	{
 		bool any_missing = false;
@@ -309,41 +336,26 @@ struct Launcher
 			++current;
 		}
 
+		// Load non-excluded games in order.
 		nlohmann::json launcher_metadata = nlohmann::json::parse(embed_launcher_json, embed_launcher_json + embed_launcher_json_size);
 		for (std::string id : launcher_metadata["project_list"])
 		{
 			auto value = launcher_metadata["project_metadata"][id];
-			games.push_back(Game
-			{
-				id,
-				value["title"],
-				value.contains("excluded") && value["excluded"],
-				value.contains("appdataName") ? static_cast<std::string>(value["appdataName"]) : id,
-			});
+			launcher_metadata["project_metadata"].erase(id);
+			games.emplace_back(id, value);
 			games.back().icon = icons_by_id[id];
-			for (const auto& installer : value["installers"])
-			{
-				std::string enabled_file = "installers/";
-				enabled_file.append(installer["filename"]);
-				enabled_file.append(".enabled");
-
-				games.back().assets.push_back(Asset
-				{
-					installer.contains("mountpoint") ? installer["mountpoint"] : "",
-					installer["kind"],
-					installer["filename"],
-					installer["sha256sum"],
-					installer["link"],
-					installer["file_id"],
-					installer["description"],
-					!installer.contains("optional") || !installer["optional"],
-					filesystem::exists(enabled_file),
-				});
-			}
 		}
 
 		if (!games.empty())
 			current_game = &games[0];
+
+		// Load excluded games. The launcher knows how to download their assets,
+		// but not everything else.
+		for (const auto& game : launcher_metadata["project_metadata"].items())
+		{
+			games.emplace_back(game.key(), game.value());
+			games.back().icon = icons_by_id[game.key()];
+		}
 	}
 
 	// Returns number of ongoing transfers.
@@ -395,6 +407,7 @@ int main(int argc, char** argv)
 	Action action = Action::Gui;
 	Launcher launcher;
 
+	const char* wanted_game = nullptr;
 	for (int i = 1; i < argc; ++i)
 	{
 		std::string_view arg = argv[i];
@@ -422,6 +435,7 @@ int main(int argc, char** argv)
 		}
 		else
 		{
+			wanted_game = argv[i];
 			launcher.current_game = nullptr;
 			for (auto& game : launcher.games)
 			{
@@ -437,7 +451,11 @@ int main(int argc, char** argv)
 	{
 		if (!launcher.current_game)
 		{
-			fprintf(stderr, "Unknown game\n");
+			fprintf(stderr, "launcher: unknown game \"%s\", try one of:\n", wanted_game);
+			for (auto& game : launcher.games)
+			{
+				fprintf(stderr, "    %s\n", game.id.c_str());
+			}
 			return 1;
 		}
 
