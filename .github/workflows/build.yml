@@ -10,7 +10,7 @@ env:
 
 jobs:
   windows:
-    name: Windows
+    name: Windows (MSVC)
     runs-on: windows-2019
     steps:
       - uses: actions/checkout@v2
@@ -21,6 +21,19 @@ jobs:
           cmake --build build/cmake-windows-i686-release16.0 --target install
       - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
         run: tools/bootstrap/butler push --if-changed build/install "${ENV:ITCH_GAME}:windows" ("--userversion=" + (git rev-parse --short=10 HEAD))
+  mingw32:
+    name: Windows (MINGW32)
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v2
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW32
+          # For users, `./run` will install `make` automatically, but we need
+          # to install `make` manually here.
+          install: make
+      - shell: msys2 {0}
+        run: make install mode=release
   linux:
     name: Linux
     runs-on: ubuntu-18.04
