@@ -303,19 +303,22 @@ static bool check_assets(VfsStack& vfs) {
 	return false;
 }
 
-bool ends_with(std::string_view lhs, std::string_view rhs) {
+static bool ends_with(std::string_view lhs, std::string_view rhs) {
 	return lhs.size() >= rhs.size() && lhs.compare(lhs.size() - rhs.size(), std::string_view::npos, rhs) == 0;
 }
 
-static char bin_dir_buf[1024] = {};
+static char bin_dir_buf[1024] = {0};
 
-static void escape_bin_directory() {
+const char* EscapeBinDirectory() {
 #ifndef __ANDROID__
-	getcwd(bin_dir_buf, sizeof(bin_dir_buf));
-	if (ends_with(bin_dir_buf, "/build/install") || ends_with(bin_dir_buf, "\\build\\install")) {
-		chdir("../..");
+	if (!bin_dir_buf[0]) {
+		getcwd(bin_dir_buf, sizeof(bin_dir_buf));
+		if (ends_with(bin_dir_buf, "/build/install") || ends_with(bin_dir_buf, "\\build\\install")) {
+			chdir("../..");
+		}
 	}
 #endif
+	return bin_dir_buf;
 }
 
 static bool run_download_helper() {
@@ -387,7 +390,7 @@ static VfsStack vfs_stack;
 
 void AppdataInit() {
 	LogInit();
-	escape_bin_directory();
+	EscapeBinDirectory();
 	vfs_stack = init_vfs_stack();
 }
 

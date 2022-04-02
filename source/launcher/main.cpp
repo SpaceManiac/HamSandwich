@@ -16,6 +16,7 @@
 #include <json.hpp>
 #include <curl/curl.h>
 #include "jamulfont.h"
+#include "appdata.h"
 
 #if defined(_MSC_VER) || defined(__clang__)
 #include <filesystem>
@@ -384,21 +385,9 @@ enum class Action
 	MiniGui,
 };
 
-bool ends_with(std::string_view lhs, std::string_view rhs)
-{
-	return lhs.size() >= rhs.size() && lhs.compare(lhs.size() - rhs.size(), std::string_view::npos, rhs) == 0;
-}
-
 int main(int argc, char** argv)
 {
-	char bin_dir_buf[1024];
-	getcwd(bin_dir_buf, sizeof(bin_dir_buf));
-	std::string_view bin_dir = bin_dir_buf;
-	if (ends_with(bin_dir_buf, "/build/install") || ends_with(bin_dir_buf, "\\build\\install"))
-	{
-		chdir("../..");
-	}
-
+	const char* bin_dir = EscapeBinDirectory();
 	platform_mkdir("installers");
 
 	// Set up curl
