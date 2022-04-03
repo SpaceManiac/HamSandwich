@@ -59,18 +59,19 @@ Compiling and running:
 
 ### Windows (Visual Studio 2019 or newer)
 
-1. Download the code:
+1. When installing Visual Studio, choose the "Desktop development with C++" workload.
+2. Download the code:
     1. On the Get Started screen, choose "Clone a repository".
     2. For "Repository location", enter `https://github.com/SpaceManiac/HamSandwich`.
     3. Click Clone.
-2. *OR,* use Git to clone the code anywhere you like and "Open Folder".
-3. After the project loads for the first time, select the game you want to run:
+3. *OR,* use Git to clone the code anywhere you like and "Open Folder".
+4. After the project loads for the first time, select the game you want to run:
     1. Click the down arrow next to "Select Startup Item".
     2. Uncheck "Select All".
     3. Check "launcher.exe (Install)", "loonyland.exe (Install)", "loonyland2.exe (Install)", "lunatic.exe (Install)", "mystic.exe (Install)", "sleepless.exe (Install)" and "supreme.exe (Install)" and click OK.
     4. Click the down arrow again and pick the game you want to run.
-4. Click the button to compile and run the game.
-5. To run in windowed mode, go to "Debug" > "Debug and Launch Settings for (game)" and add `, "args": ["window"]`.
+5. Click the button to compile and run the game.
+6. To run in windowed mode, go to "Debug" > "Debug and Launch Settings for (game)" and add `, "args": ["window"]`.
 
 ### Linux
 
@@ -87,18 +88,6 @@ Compiling and running:
 3. Enter the repository with `cd HamSandwich`.
 2. Use `make` and `./run` as described above to build and run the game.
 
-### Emscripten
-
-1. If on Windows, install and use MSYS2 according to the instructions above.
-2. Use `make os=emscripten` (and optionally a project name) to build the game.
-3. Use `./run os=emscripten` (and optionally a project name) to build and run the games.
-   browser.
-
-See [Modding](#modding) below for information on how to bundle worlds and other
-assets, and [Publish to Web](#publish-to-web) for how to publish to GitHub Pages.
-
-[Emscripten SDK]: https://emscripten.org/docs/getting_started/downloads.html
-
 ### Android
 
 1. Use [Android Studio] to open the HamSandwich folder as a project.
@@ -110,6 +99,17 @@ assets, and [Publish to Web](#publish-to-web) for how to publish to GitHub Pages
 
 [Android Studio]: https://developer.android.com/studio/
 
+### Emscripten
+
+1. If on Windows, install and use MSYS2 according to the instructions above.
+2. Use `./run os=emscripten` (and optionally a project name) to build and run the games.
+3. Use `make os=emscripten` (and optionally a project name) to only build the games.
+
+See [Modding](#modding) below for information on how to bundle worlds and other
+assets, and [Publish to Web](#publish-to-web) for how to publish to GitHub Pages.
+
+[Emscripten SDK]: https://emscripten.org/docs/getting_started/downloads.html
+
 ## Modding
 
 To get started with custom worlds, graphics, music, and so on, place your
@@ -118,7 +118,8 @@ When the game loads assets it checks that folder before the installer. Any
 worlds you save in the editor will show up in this folder.
 
 To include a finished world or custom assets in your mod, move them to
-`assets/<project>/`, creating the folder if necessary, and commit them.
+`assets/<project>/`, creating the folder if necessary, and use Git to commit
+them.
 
 If your mod's saves are not compatible with the base game, such as in the case
 of a typical remix world, edit `source/<project>/CMakeLists.txt` and add a line
@@ -150,6 +151,10 @@ for example:
 }
 ```
 
+You can add a line like `"mountpoint": "mystic"` to an installer to access its
+files by a path like `mystic/graphics/items.jsp` instead of it overriding the
+original files.
+
 When the game searches for a world or asset file, it scans first the appdata
 folder, then the `assets/<project>/` folder, then the `installers` in order.
 That means that overrides should go at the beginning of the list and fallbacks
@@ -160,18 +165,13 @@ Check out existing mods on the [list of published mods](https://github.com/Space
 ## Publishing
 
 Before publishing for the first time, fork this repository on GitHub and commit
-and push your changes to your fork.
+and push your changes to your fork. If you plan to publish for Android, open
+`android-project/build.gradle` and change the `applicationId` to something
+different according to the comments in that file.
 
 To limit publishing to only the games you care about, open
 `source/CMakeLists.txt` and edit the `# Games` section according to the
 comments there.
-
-### Publish to Web
-
-1. In your GitHub repository's Settings > Pages tab,
-   change the "Source" from "None" to "gh-pages" and click "Save".
-2. Your site will be published at `https://yourusername.github.io/HamSandwich`
-3. Future pushes will automatically update your site.
 
 ### Publish to itch.io
 
@@ -179,13 +179,20 @@ comments there.
 2. In Settings > [API keys], click "Generate new API key" then view and copy it.
 3. In your GitHub repository's Settings > Secrets > Actions tab, add two secrets:
     1. Name: "ITCH_GAME", value: `your-itch-username/your-game-name`.
-    2. Name: "BUTLER_API_KEY", value: the token from step 2.
+    2. Name: "BUTLER_API_KEY", value: the API key from step 2.
 3. Future pushes will automatically publish builds to itch.io.
 
 [API keys]: https://itch.io/user/settings/api-keys
 
+### Publish to GitHub Pages
+
+1. In your GitHub repository's Settings > Pages tab,
+   change the "Source" from "None" to "gh-pages" and click "Save".
+2. Your site will be published at `https://YourGithubUsername.github.io/HamSandwich`
+3. Future pushes will automatically update your site.
+
 ### Manual publishing
 
 Delete the `build/install/` folder, run `make install`, then zip and upload that
-folder's contents to publish a copy for your platform. Emscripten builds go to
-`build/webroot/`.
+folder's contents to publish a copy for your platform. For Emscripten builds,
+use the `build/webroot/` folder instead.
