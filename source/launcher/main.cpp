@@ -17,6 +17,7 @@
 #include <curl/curl.h>
 #include "jamulfont.h"
 #include "appdata.h"
+#include "sha256.h"
 
 #if defined(_MSC_VER) || defined(__clang__)
 #include <filesystem>
@@ -122,6 +123,7 @@ struct Asset
 	std::string metadata_progress;
 	CURL* content_download = nullptr;
 	FILE* content_progress = nullptr;
+	my_sha256_ctx content_hash;
 	curl_off_t content_total_size;
 	curl_off_t content_finished_size;
 
@@ -130,6 +132,13 @@ struct Asset
 		size_t total = size * nmemb;
 		self->metadata_progress.append((char*)data, total);
 		return total;
+	}
+
+	static size_t content_write_callback(void* data, size_t size, size_t nmemb, Asset* self)
+	{
+		size_t res = fwrite(data, size, nmemb, self->content_progress);
+		my_sha256_update(&self->content_hash, static_cast<const uint8_t*>(data), size * nmemb);
+		return res;
 	}
 
 	static int content_progress_callback(Asset* self, curl_off_t total_down, curl_off_t finished_down, curl_off_t, curl_off_t)
@@ -177,14 +186,15 @@ struct Asset
 			full_path.append(filename);
 			full_path.append(".part");
 			content_progress = fopen(full_path.c_str(), "wb");  // TODO: error handling
+			my_sha256_init(&content_hash);
 
 			curl_easy_reset(transfer);
 			content_download = transfer;
 			curl_easy_setopt(content_download, CURLOPT_URL, url.c_str());
 			//curl_easy_setopt(content_download, CURLOPT_BUFFERSIZE, 102400L);
 			//curl_easy_setopt(content_download, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
-			//curl_easy_setopt(content_download, CURLOPT_WRITEFUNCTION, fwrite);
-			curl_easy_setopt(content_download, CURLOPT_WRITEDATA, content_progress);
+			curl_easy_setopt(content_download, CURLOPT_WRITEFUNCTION, Asset::content_write_callback);
+			curl_easy_setopt(content_download, CURLOPT_WRITEDATA, this);
 			curl_easy_setopt(content_download, CURLOPT_NOPROGRESS, 0);
 			curl_easy_setopt(content_download, CURLOPT_XFERINFOFUNCTION, Asset::content_progress_callback);
 			curl_easy_setopt(content_download, CURLOPT_XFERINFODATA, this);
@@ -203,6 +213,29 @@ struct Asset
 			{
 				fprintf(stderr, "Content download failed: %d\n", result);
 				return 0;
+			}
+
+			if (sha256sum.size() == 64)
+			{
+				uint8_t bindigest[32];
+				if (my_sha256_final(bindigest, &content_hash))
+				{
+					fprintf(stderr, "sha256 finalization failed\n");
+					return 0;
+				}
+
+				std::string hexdigest;
+				for (int i = 0; i < 32; ++i)
+				{
+					hexdigest.push_back("0123456789abcdef"[bindigest[i] >> 4]);
+					hexdigest.push_back("0123456789abcdef"[bindigest[i] & 0xf]);
+				}
+
+				if (hexdigest != sha256sum)
+				{
+					fprintf(stderr, "sha256 mismatch\nexpected: %s\n     got: %s\n", sha256sum.c_str(), hexdigest.c_str());
+					return 0;
+				}
 			}
 
 			std::string full_path = "installers/";
