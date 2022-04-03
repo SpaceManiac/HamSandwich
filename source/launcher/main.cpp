@@ -127,6 +127,27 @@ struct Asset
 	curl_off_t content_total_size;
 	curl_off_t content_finished_size;
 
+	explicit Asset(nlohmann::json installer)
+		: mountpoint(installer.contains("mountpoint") ? installer["mountpoint"] : "")
+		, kind(installer["kind"])
+		, filename(installer["filename"])
+		, sha256sum(installer["sha256sum"])
+		, link(installer["link"])
+		, file_id(installer["file_id"])
+		, description(installer["description"])
+		, required(!installer.contains("optional") || !installer["optional"])
+		, enabled(is_enabled(filename))
+	{
+	}
+
+	static bool is_enabled(std::string_view filename)
+	{
+		std::string enabled_file = "installers/";
+		enabled_file.append(filename);
+		enabled_file.append(".enabled");
+		return filesystem::exists(enabled_file);
+	}
+
 	static size_t metadata_write_callback(void* data, size_t size, size_t nmemb, Asset* self)
 	{
 		size_t total = size * nmemb;
@@ -273,22 +294,7 @@ struct Game
 	{
 		for (const auto& installer : manifest["installers"])
 		{
-			std::string enabled_file = "installers/";
-			enabled_file.append(installer["filename"]);
-			enabled_file.append(".enabled");
-
-			assets.push_back(Asset
-			{
-				installer.contains("mountpoint") ? installer["mountpoint"] : "",
-				installer["kind"],
-				installer["filename"],
-				installer["sha256sum"],
-				installer["link"],
-				installer["file_id"],
-				installer["description"],
-				!installer.contains("optional") || !installer["optional"],
-				filesystem::exists(enabled_file),
-			});
+			assets.emplace_back(installer);
 		}
 	}
 
