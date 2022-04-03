@@ -129,7 +129,7 @@ void RenderRacer(MGLDraw *mgl)
 void RenderRaceGame(MGLDraw *mgl)
 {
 	int spd;
-	char s[32];
+	char s[64];
 
 	mgl->ClearScreen();
 
