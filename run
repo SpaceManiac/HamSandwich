@@ -6,7 +6,7 @@ show_help() {
 	echo "Usage: $0 [<setting=value>] <project> [-- <arguments>]"
 	echo "Settings:"
 	echo "    os=             One of:  windows  linux  macos  emscripten"
-	echo "    arch=           One of:  x86  x86_64"
+	echo "    arch=           One of:  i686  x86_64"
 	echo "    mode=           One of:  debug  release"
 	echo "    preset=         Set os, arch, and mode together, ex: windows-i686-release"
 	echo "    nobuild=1       Skip compiling before running."
@@ -28,11 +28,11 @@ override_args=
 
 # Read command-line arguments.
 while test $# -ne 0; do
-	ARG="$1"; shift
-	case "$ARG" in
+	arg="$1"; shift
+	case "$arg" in
 		# settings
 		project=* | os=* | arch=* | mode=* | preset=* | nobuild=* | tool=*)
-			eval "$ARG"
+			declare "$arg"
 			;;
 		# show help on demand
 		--help)
@@ -74,7 +74,7 @@ while test $# -ne 0; do
 			;;
 		# a setting without a variable name is $project
 		*)
-			project="$ARG"
+			project="$arg"
 			;;
 	esac
 done
