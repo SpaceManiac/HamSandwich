@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <stdint.h>
+#include <stddef.h>
 
 struct ISzAlloc;
 typedef const ISzAlloc* ISzAllocPtr;
