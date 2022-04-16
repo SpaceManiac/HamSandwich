@@ -422,6 +422,12 @@ static void import_addons(VfsStack* target)
 		SDL_Log("mounting %s/%s", path.c_str(), fname.c_str());
 		target->push_back(vanilla::open_zip(addons->open_sdl(fname.c_str())));
 	}
+
+	// Hacky to put this here, but too lazy to expose a proper API for this.
+	if (std::string_view("sleepless") == g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name)
+	{
+		target->push_back(vanilla::open_zip(target->open_sdl("worlds/sleepiest_world.zip")));
+	}
 }
 
 // Android does not play nice with static initializers.
