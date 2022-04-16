@@ -387,6 +387,43 @@ static VfsStack init_vfs_stack() {
 	exit(1);
 }
 
+static void filter_files(std::set<std::string>* files, const char* extension = nullptr, size_t maxlen = 0)
+{
+	if (extension || maxlen > 0)
+	{
+		size_t extlen = extension ? strlen(extension) : 0;
+		erase_if(*files, [=](const std::string& value)
+		{
+			size_t len = value.size();
+			if (maxlen > 0 && len >= maxlen)
+			{
+				return true;
+			}
+			if (extlen > 0 && (len < extlen || strcasecmp(extension, &value.c_str()[len - extlen])))
+			{
+				return true;
+			}
+			return false;
+		});
+	}
+}
+
+static void import_addons(VfsStack* target)
+{
+	std::string path = "addons";
+	path.append("/");
+	path.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
+	auto addons = vanilla::open_stdio(path.c_str());
+	std::set<std::string> file_list;
+	addons->list_dir(".", file_list);
+	filter_files(&file_list, ".zip");
+	for (const auto& fname : file_list)
+	{
+		SDL_Log("mounting %s/%s", path.c_str(), fname.c_str());
+		target->push_back(vanilla::open_zip(addons->open_sdl(fname.c_str())));
+	}
+}
+
 // Android does not play nice with static initializers.
 static VfsStack vfs_stack;
 
@@ -397,6 +434,7 @@ void AppdataInit() {
 	LogInit();
 	EscapeBinDirectory();
 	vfs_stack = init_vfs_stack();
+	import_addons(&vfs_stack);
 }
 
 bool AppdataIsInit() {
@@ -426,21 +464,7 @@ void AppdataSync() {}
 std::vector<std::string> ListDirectory(const char* directory, const char* extension, size_t maxlen) {
 	std::set<std::string> output;
 	vfs_stack.list_dir(directory, output);
-
-	if (extension || maxlen > 0) {
-		size_t extlen = extension ? strlen(extension) : 0;
-		erase_if(output, [=](const std::string& value) {
-			size_t len = value.size();
-			if (maxlen > 0 && len >= maxlen) {
-				return true;
-			}
-			if (extlen > 0 && (len < extlen || strcasecmp(extension, &value.c_str()[len - extlen]))) {
-				return true;
-			}
-			return false;
-		});
-	}
-
+	filter_files(&output, extension, maxlen);
 	return { output.begin(), output.end() };
 }
 

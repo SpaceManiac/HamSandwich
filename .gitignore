@@ -6,6 +6,7 @@ Thumbs.db
 # top-level folders and files
 /.vscode
 /.vs
+/addons
 /appdata
 /build
 /installers
