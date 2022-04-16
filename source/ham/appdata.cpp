@@ -85,7 +85,12 @@ static Mount init_vfs_spec(const char* what, const char* spec) {
 	if (!strcmp(kind, "stdio")) {
 		return { vanilla::open_stdio(param), mountpoint };
 	} else if (!strcmp(kind, "zip")) {
-		return { vanilla::open_zip(param), mountpoint };
+		SDL_RWops* fp = SDL_RWFromFile(param, "rb");
+		if (!fp) {
+			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
+			return { nullptr };
+		}
+		return { vanilla::open_zip(fp), mountpoint };
 	} else if (!strcmp(kind, "nsis")) {
 		SDL_RWops* fp = SDL_RWFromFile(param, "rb");
 		if (!fp) {

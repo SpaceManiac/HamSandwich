@@ -10,7 +10,7 @@ using namespace vanilla;
 
 static void* zsdl_open64(void* userdata, const void* filename, int mode)
 {
-	return SDL_RWFromFile((const char*) filename, "rb");
+	return userdata;
 }
 
 static uLong zsdl_read(void* userdata, void* stream, void* buf, uLong size)
@@ -47,18 +47,6 @@ static int zsdl_testerror(void* userdata, void* stream)
 	return 0;
 }
 
-static zlib_filefunc64_def SDL_ZLIB_IO =
-{
-	zsdl_open64,
-	zsdl_read,
-	zsdl_write,
-	zsdl_tell64,
-	zsdl_seek64,
-	zsdl_close,
-	zsdl_testerror,
-	nullptr,
-};
-
 // ----------------------------------------------------------------------------
 // Zip VFS implementation
 
@@ -70,16 +58,30 @@ class ZipVfs : public Vfs
 	ZipVfs& operator=(const ZipVfs& other) = delete;
 	ZipVfs& operator=(ZipVfs&& other) = delete;
 public:
-	ZipVfs(const char* fname) : zip(unzOpen2_64(fname, &SDL_ZLIB_IO)) {}
+	ZipVfs(SDL_RWops* rw)
+	{
+		zlib_filefunc64_def sdl_zlib_io =
+		{
+			zsdl_open64,
+			zsdl_read,
+			zsdl_write,
+			zsdl_tell64,
+			zsdl_seek64,
+			zsdl_close,
+			zsdl_testerror,
+			rw,
+		};
+		zip = unzOpen2_64(nullptr, &sdl_zlib_io);
+	}
 	~ZipVfs();
 
 	SDL_RWops* open_sdl(const char* filename);
 	bool list_dir(const char* directory, std::set<std::string>& output);
 };
 
-std::unique_ptr<Vfs> vanilla::open_zip(const char* filename)
+std::unique_ptr<Vfs> vanilla::open_zip(SDL_RWops* rw)
 {
-	return std::make_unique<ZipVfs>(filename);
+	return std::make_unique<ZipVfs>(rw);
 }
 
 ZipVfs::~ZipVfs()
