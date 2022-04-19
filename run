@@ -214,8 +214,12 @@ case "$tool" in
 		"$debugcommand" "${debugargs[@]}"
 		;;
 	"")
-		echo "==== Running $project ($preset) ===="
-		"$debugcommand" "${debugargs[@]}"
+		if test -f "$debugcommand"; then
+			echo "==== Running $project ($preset) ===="
+			"$debugcommand" "${debugargs[@]}"
+		else
+			echo "$project: not a runnable target."
+		fi
 		;;
 	*)
 		echo "$0: unknown tool: $tool"
