@@ -85,7 +85,7 @@ void InitMessage(void)
 
 void NewBigMessage(const char *txt,int time)
 {
-	strncpy(bigMessage.msg,VariableMsg(txt),32);
+	SDL_strlcpy(bigMessage.msg, VariableMsg(txt), sizeof(bigMessage.msg));
 	bigMessage.x=320-GetStrLength(bigMessage.msg,0)/2;
 	bigMessage.y=-100;
 	bigMessage.dy=0;
@@ -98,7 +98,7 @@ void NewMessage(const char *txt,int time,byte priority)
 {
 	if(message.priority==1 && priority==0)
 		return;	// can't override it
-	strncpy(message.msg,VariableMsg(txt),32);
+	SDL_strlcpy(message.msg, VariableMsg(txt), sizeof(message.msg));
 	message.x=2;
 	message.y=484;
 	message.dy=-13;

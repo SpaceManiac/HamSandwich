@@ -4,7 +4,7 @@
 // Conditionals for warnings/analysis based on SDL_stdinc.h
 // The difference is we use `gnu_printf` instead of just `printf`.
 #ifdef __GNUC__
-#	if defined(__EMSCRIPTEN__) || (defined(__ANDROID__) && __ANDROID__) || defined(__MACOSX__)
+#	if defined(__EMSCRIPTEN__) || (defined(__ANDROID__) && __ANDROID__) || defined(__APPLE__)
 #		define PRINTF_FUNC( fmtargnumber ) __attribute__ (( format( printf, fmtargnumber, fmtargnumber+1 )))
 #	else
 #		define PRINTF_FUNC( fmtargnumber ) __attribute__ (( format( gnu_printf, fmtargnumber, fmtargnumber+1 )))

@@ -109,13 +109,13 @@ byte Compare(worldDesc_t *me,worldDesc_t *you,byte field,byte bkwds)
 	switch(field)
 	{
 		case 0:
-			strncpy(tmp1,me->name,63);
-			strncpy(tmp2,you->name,63);
+			SDL_strlcpy(tmp1,me->name,64);
+			SDL_strlcpy(tmp2,you->name,64);
 			f=(strcasecmp(tmp1,tmp2)>0);
 			break;
 		case 1:
-			strncpy(tmp1,me->author,63);
-			strncpy(tmp2,you->author,63);
+			SDL_strlcpy(tmp1,me->author,64);
+			SDL_strlcpy(tmp2,you->author,64);
 			f=(strcasecmp(tmp1,tmp2)>0);
 			break;
 		case 2:

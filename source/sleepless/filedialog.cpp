@@ -85,9 +85,9 @@ static void SortFilenames(void)
 		{
 			if(strcasecmp(&fnames[i*FNAMELEN],&fnames[(i+1)*FNAMELEN])>0)
 			{
-				strcpy(tmp,&fnames[i*FNAMELEN]);
-				strcpy(&fnames[i*FNAMELEN],&fnames[(i+1)*FNAMELEN]);
-				strcpy(&fnames[(i+1)*FNAMELEN],tmp);
+				SDL_strlcpy(tmp, &fnames[i*FNAMELEN], FNAMELEN);
+				SDL_strlcpy(&fnames[i*FNAMELEN], &fnames[(i+1)*FNAMELEN], FNAMELEN);
+				SDL_strlcpy(&fnames[(i+1)*FNAMELEN], tmp, FNAMELEN);
 				flip=1;
 			}
 		}

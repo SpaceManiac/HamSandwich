@@ -953,7 +953,8 @@ void Guy::Render(byte light)
 
 	t=type;
 
-	if(fromColor!=255)
+	const bool recolor = fromColor!=255;
+	if(recolor)
 	{
 		oldFrom=GetMonsterType(t)->fromCol;
 		oldTo=GetMonsterType(t)->toCol;
@@ -963,7 +964,7 @@ void Guy::Render(byte light)
 	oldBrt=GetMonsterType(t)->brtChg;
 	GetMonsterType(t)->brtChg=brtChange;
 	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen,NULL/*customSpr*/); // TODO: custom monster jsps
-	if(fromColor!=255)
+	if(recolor)
 	{
 		GetMonsterType(t)->fromCol=oldFrom;
 		GetMonsterType(t)->toCol=oldTo;
@@ -1118,6 +1119,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 			player.ammo=0;
 		else
 			player.ammo-=damage;
+		realDam = 0;
 	}
 	else
 	{

@@ -809,7 +809,8 @@ void Guy::Render(byte light)
 	else
 		t=type;
 
-	if(fromColor!=255)
+	const bool recolor = fromColor!=255;
+	if(recolor)
 	{
 		oldFrom=GetMonsterType(t)->fromCol;
 		oldTo=GetMonsterType(t)->toCol;
@@ -819,7 +820,7 @@ void Guy::Render(byte light)
 	oldBrt=GetMonsterType(t)->brtChg;
 	GetMonsterType(t)->brtChg=brtChange;
 	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen,customSpr);
-	if(fromColor!=255)
+	if(recolor)
 	{
 		GetMonsterType(t)->fromCol=oldFrom;
 		GetMonsterType(t)->toCol=oldTo;
