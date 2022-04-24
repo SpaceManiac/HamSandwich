@@ -158,7 +158,7 @@ static void FLI_doLC(byte *scrn,int scrWidth,byte *p)
 	word x,y;
 	byte packets,skip;
 	char size;
-	word pos=0;
+	size_t pos=0;
 
 	memcpy(&y,&p[pos++],2);
 	pos++;
