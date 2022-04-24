@@ -140,7 +140,7 @@ for example:
 {
     "installers": [
         {
-			"filename": "supreme8_install.exe",
+            "filename": "supreme8_install.exe",
             /* ... */
         },
         {
