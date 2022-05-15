@@ -1,15 +1,16 @@
 function(HamSandwich_embed_file target_name filename symbol_name)
-	set(embed_py "${CMAKE_SOURCE_DIR}/tools/build/embed.py")
+	set(embed_cmake "${CMAKE_SOURCE_DIR}/tools/build/embed.cmake")
 	set(cpp "${CMAKE_CURRENT_BINARY_DIR}/${symbol_name}.cpp")
 	add_custom_command(
 		OUTPUT "${cpp}"
-		COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${embed_py}" "${filename}" "${cpp}" "${symbol_name}"
+		COMMAND "${CMAKE_COMMAND}"
+			"-Dbin_fname=${filename}"
+			"-Dcpp_fname=${cpp}"
+			"-Dsymbol_name=${symbol_name}"
+			"-P" "${embed_cmake}"
 		MAIN_DEPENDENCY "${filename}"
 		DEPENDS
-			"${CMAKE_SOURCE_DIR}/dependencies.sh"
-			"${CMAKE_SOURCE_DIR}/tools/bootstrap/_common.sh"
-			"${CMAKE_SOURCE_DIR}/tools/bootstrap/python"
-			"${embed_py}"
+			"${embed_cmake}"
 		VERBATIM
 	)
 	target_sources("${target_name}" PRIVATE "${cpp}")
