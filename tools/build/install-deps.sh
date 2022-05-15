@@ -62,8 +62,7 @@ deps_mingw64() {
 }
 
 deps_ubuntu() {
-	sudo DEBIAN_FRONTEND=noninteractive apt-get update
-	packages 'sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes' \
+	packages 'sudo DEBIAN_FRONTEND=noninteractive apt-get update; sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes' \
 		make g++ \
 		zlib1g-dev libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev \
 		python3-pip
