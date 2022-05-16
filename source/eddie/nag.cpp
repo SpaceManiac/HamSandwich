@@ -114,7 +114,7 @@ byte Nag(MGLDraw *mgl)
 	titmsy=430;
 	keys=0xFF;
 
-	mgl->LoadBMP("graphics\\nagscreen.bmp");
+	mgl->LoadBMP("graphics/nagscreen.bmp");
 	nagScr=(byte *)malloc(640*480);
 	for(i=0;i<480;i++)
 		memcpy(&nagScr[i*640],mgl->GetScreen()+mgl->GetWidth()*i,640);

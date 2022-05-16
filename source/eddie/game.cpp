@@ -160,9 +160,9 @@ byte CentipedeGame(void)
 	InitStatus();
 	continuing=0;
 
-	//SplashScreen("graphics\\intro.bmp",3*30+64,108,0);
+	//SplashScreen("graphics/intro.bmp",3*30+64,108,0);
 
-	GetPaletteFromBMP("graphics\\status.bmp");
+	GetPaletteFromBMP("graphics/status.bmp");
 
 	while(!quit)
 	{
@@ -197,8 +197,8 @@ byte CentipedeGame(void)
 #endif
 	StopSong();
 
-	//SplashScreen("graphics\\trail1.bmp",5*30+64,109,0);
-	//SplashScreen("graphics\\trail2.bmp",3*30,110,1);
+	//SplashScreen("graphics/trail1.bmp",5*30+64,109,0);
+	//SplashScreen("graphics/trail2.bmp",3*30,110,1);
 	return ret;
 }
 

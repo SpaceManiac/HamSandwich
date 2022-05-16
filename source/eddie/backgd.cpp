@@ -1,5 +1,6 @@
 #include "backgd.h"
 #include "mgldraw.h"
+#include "appdata.h"
 
 byte *backgd;
 byte *statusBar;
@@ -32,7 +33,7 @@ void SetBackScroll(byte on)
 
 void LoadBackgd(const char *name)
 {
-	SDL_Surface* bmp = SDL_LoadBMP(name);
+	SDL_Surface* bmp = SDL_LoadBMP_RW(AssetOpen_SDL(name), 1);
 	memcpy(backgd, bmp->pixels, bmp->h * 480);
 	SDL_FreeSurface(bmp);
 	backgdY=0;
@@ -40,7 +41,7 @@ void LoadBackgd(const char *name)
 
 void LoadStatus(void)
 {
-	SDL_Surface* bmp = SDL_LoadBMP("graphics/status.bmp");
+	SDL_Surface* bmp = SDL_LoadBMP_RW(AssetOpen_SDL("graphics/status.bmp"), 1);
 	memcpy(statusBar, bmp->pixels, bmp->h * 160);
 	SDL_FreeSurface(bmp);
 }

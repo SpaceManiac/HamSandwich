@@ -229,7 +229,7 @@ byte TitleMenu(void)
 	endclock=0;
 	lastTime=TIME_PER_FRAME;
 
-	LoadBackgd("graphics\\space.bmp");
+	LoadBackgd("graphics/space.bmp");
 	SetBackScroll(1);
 
 	mainmgl->LastKeyPressed();
@@ -540,9 +540,9 @@ void Victory(void)
 		starcolor[i]=4+GetRand(28);
 	}
 #ifndef DEMO
-	LoadBackgd("graphics\\final2.bmp");
+	LoadBackgd("graphics/final2.bmp");
 #else
-	LoadBackgd("graphics\\astro1.bmp");
+	LoadBackgd("graphics/astro1.bmp");
 #endif
 	SetBackScroll(0);
 

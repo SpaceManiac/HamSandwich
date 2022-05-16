@@ -126,7 +126,7 @@ void Credits(void)
 	lastTime=TIME_PER_FRAME;
 	credY=-480;
 
-	//LoadBackgd("graphics\\space.bmp");
+	//LoadBackgd("graphics/space.bmp");
 	//SetBackScroll(1);
 
 	mainmgl->LastKeyPressed();

@@ -118,7 +118,7 @@ void InitIntro(void)
 	switch(wrld)
 	{
 		case 0:	//rigel
-			LoadBackgd("graphics\\rigel.bmp");
+			LoadBackgd("graphics/rigel.bmp");
 
 			strcpy(txt[0],"Rigel IV");
 			strcpy(txt[1],"Daytime Surface Temperature: -73*F");
@@ -134,7 +134,7 @@ void InitIntro(void)
 			strcpy(txt[11],"our only hope, Mr. Galaxy!");
 			break;
 		case 1: // Agua
-			LoadBackgd("graphics\\agua.bmp");
+			LoadBackgd("graphics/agua.bmp");
 
 			strcpy(txt[0],"Aguaworld");
 			strcpy(txt[1],"Daytime Surface Temperature: 82*F");
@@ -150,7 +150,7 @@ void InitIntro(void)
 			strcpy(txt[11],"for us.");
 			break;
 		case 2: // Prometheus
-			LoadBackgd("graphics\\prom.bmp");
+			LoadBackgd("graphics/prom.bmp");
 
 			strcpy(txt[0],"Prometheus IX");
 			strcpy(txt[1],"Daytime Surface Temperature: 56*F");
@@ -166,7 +166,7 @@ void InitIntro(void)
 			strcpy(txt[11],"  Please help!");
 			break;
 		case 3: // Tartarus
-			LoadBackgd("graphics\\tart.bmp");
+			LoadBackgd("graphics/tart.bmp");
 
 			strcpy(txt[0],"Tartarus II");
 			strcpy(txt[1],"Daytime Surface Temperature: 732*F");
@@ -182,7 +182,7 @@ void InitIntro(void)
 			strcpy(txt[11],"  Sure would be nice if you did.");
 			break;
 		case 4: // Asteroids
-			LoadBackgd("graphics\\astro.bmp");
+			LoadBackgd("graphics/astro.bmp");
 
 			strcpy(txt[0],"Asteroid Belt");
 			strcpy(txt[1],"Mass Density: 758");
@@ -198,7 +198,7 @@ void InitIntro(void)
 			strcpy(txt[11],"  They don't take kindly to strangers.");
 			break;
 		case 5: // Varakkis
-			LoadBackgd("graphics\\varak.bmp");
+			LoadBackgd("graphics/varak.bmp");
 
 			strcpy(txt[0],"Varakkis");
 			strcpy(txt[1],"Daytime Surface Temperature: 132*F");
@@ -214,7 +214,7 @@ void InitIntro(void)
 			strcpy(txt[11],"  ");
 			break;
 		case 6: // Jurassika
-			LoadBackgd("graphics\\juras.bmp");
+			LoadBackgd("graphics/juras.bmp");
 
 			strcpy(txt[0],"Jurassika");
 			strcpy(txt[1],"Daytime Surface Temperature: 96*F");
@@ -230,7 +230,7 @@ void InitIntro(void)
 			strcpy(txt[11],"  You better investigate.");
 			break;
 		case 7: // Globulos
-			LoadBackgd("graphics\\glob.bmp");
+			LoadBackgd("graphics/glob.bmp");
 
 			strcpy(txt[0],"Globulos");
 			strcpy(txt[1],"Daytime Surface Temperature: 42*F");
@@ -246,7 +246,7 @@ void InitIntro(void)
 			strcpy(txt[11],"attacks around the galaxy...");
 			break;
 		case 8: // Final
-			LoadBackgd("graphics\\final.bmp");
+			LoadBackgd("graphics/final.bmp");
 
 			strcpy(txt[0],"Xykulix");
 			strcpy(txt[1],"Daytime Surface Temperature: 12*F");

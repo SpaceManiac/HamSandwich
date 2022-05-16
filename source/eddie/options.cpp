@@ -7,6 +7,7 @@
 #include "game.h"
 #include "random.h"
 #include "sound.h"
+#include "appdata.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -21,7 +22,7 @@ void InitOptions(void)
 	FILE *f;
 
 	// load the hi score file if you can
-	f=fopen("options.cfg","rb");
+	f=AppdataOpen("options.cfg");
 	if(f)
 	{
 		fread(&options,1,sizeof(options_t),f);
@@ -55,7 +56,7 @@ void ExitOptions(void)
 {
 	FILE *f;
 
-	f=fopen("options.cfg","wb");
+	f=AppdataOpen_Write("options.cfg");
 	if(f)
 	{
 		fwrite(&options,1,sizeof(options_t),f);
@@ -289,7 +290,7 @@ void OptionsScreen(void)
 	endclock=0;
 	lastTime=TIME_PER_FRAME;
 
-	LoadBackgd("graphics\\options.bmp");
+	LoadBackgd("graphics/options.bmp");
 	SetBackScroll(0);
 	optmsx=SCR_WIDTH/2;
 	optmsy=SCR_HEIGHT/2;

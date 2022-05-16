@@ -12,12 +12,22 @@
 #include "jamulsound.h"
 #include "game.h"
 #include "extern.h"
+#include "appdata.h"
 
 MGLDraw *mainmgl;
 
+void ChooseNextSong() {}
+bool ConfigMusicEnabled() { return true; }
+bool ConfigSoundEnabled() { return true; }
+int ConfigNumSounds() { return 16; }
+SDL_RWops* SoundLoadOverride(int) { return nullptr; }
+void SoundSystemExists() {}
+void SetGameIdle(bool) {}
+
 TASK(int) main(int argc, char* argv[])
 {
-	//HAM_EXTERN_FULFILL
+	HAM_EXTERN_FULFILL
+	AppdataInit();
 
 	bool windowedGame=false;
 
