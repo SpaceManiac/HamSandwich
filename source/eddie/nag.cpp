@@ -24,7 +24,7 @@ byte NagUpdate(int *lastTime)
 		JamulSoundUpdate();
 		oldKeys=keys;
 		keys=GetControls();
-		
+
 		if(keys&CONTROL_UP)
 			msy=-10;
 		if(keys&CONTROL_DN)
@@ -46,7 +46,7 @@ byte NagUpdate(int *lastTime)
 		if(titmsy<400)
 			titmsy=400;
 
-		if(MouseClick() || ((keys&CONTROL_B1)&&(!(oldKeys&CONTROL_B1))))
+		if(mainmgl->MouseTap() || ((keys&CONTROL_B1)&&(!(oldKeys&CONTROL_B1))))
 		{
 			if(titmsx<320)
 			{
@@ -64,7 +64,7 @@ byte NagUpdate(int *lastTime)
 		(*lastTime)-=TIME_PER_FRAME;
 		runCount++;
 	}
-	if(LastKeyPressed()==27)
+	if(mainmgl->LastKeyPressed()==27)
 	{
 		menuCursor=0;
 		MakeSound(SND_CONTNO,1200);
@@ -79,7 +79,7 @@ void NagRender(MGLDraw *mgl)
 	int i;
 
 	for(i=0;i<480;i++)
-		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&nagScr[i*640],640);	
+		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&nagScr[i*640],640);
 
 	if(titmsx<320)
 	{
@@ -91,7 +91,7 @@ void NagRender(MGLDraw *mgl)
 		Print(40,415,"Buy Now",2);
 		PrintBright(500-1+GetRand(3),415-1+GetRand(3),"Later",10,2);
 	}
-	
+
 	ShowSprite(SPR_ROCKET,0,titmsx,titmsy);
 
 	FlipScreen();
@@ -108,7 +108,7 @@ byte Nag(MGLDraw *mgl)
 	endclock=0;
 	lastTime=TIME_PER_FRAME;
 
-	LastKeyPressed();
+	mainmgl->LastKeyPressed();
 	runCount=0;
 	titmsx=310;
 	titmsy=430;
@@ -128,7 +128,7 @@ byte Nag(MGLDraw *mgl)
 			quit=1;
 
 		NagRender(mgl);
-		
+
 		endclock=GetTime();
 	}
 	free(nagScr);

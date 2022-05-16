@@ -80,7 +80,7 @@ byte TitleRun(int *lastTime)
 			eddieDy-=GetRand(FIXAMT/2);
 		Clamp(&eddieDx,FIXAMT*6);
 		Clamp(&eddieDy,FIXAMT*6);
-		
+
 		eddieX+=eddieDx;
 		eddieY+=eddieDy;
 
@@ -99,7 +99,7 @@ byte TitleRun(int *lastTime)
 		oldCur=menuCursor;
 		oldKeys=keys;
 		keys=GetControls();
-		
+
 		if((keys&CONTROL_UP) && (!(oldKeys&CONTROL_UP)))
 		{
 			if(titmsy<50)
@@ -125,11 +125,11 @@ byte TitleRun(int *lastTime)
 			menuCursor=1;
 		else
 			menuCursor=2;
-		
+
 		if(oldCur!=menuCursor)	// you moved onto a different one, make a noise
 			MakeSound(SND_TYPING,1000);
 
-		if(MouseClick() || ((keys&CONTROL_B1)&&(!(oldKeys&CONTROL_B1))))
+		if(mainmgl->MouseTap() || ((keys&CONTROL_B1)&&(!(oldKeys&CONTROL_B1))))
 		{
 			MakeSound(SND_MENUSELECT,1100);
 			return 0;
@@ -137,7 +137,7 @@ byte TitleRun(int *lastTime)
 		(*lastTime)-=TIME_PER_FRAME;
 		runCount++;
 	}
-	if(LastKeyPressed()==27)
+	if(mainmgl->LastKeyPressed()==27)
 	{
 		menuCursor=2;
 		return 0;
@@ -151,7 +151,7 @@ void TitleRender(void)
 
 	DrawBackgd();
 
-	
+
 	// render the title
 	ShowSprite(SPR_TITLE,(titleAnim/8)&1,40,titleY);
 #ifdef JUNIOR
@@ -169,12 +169,12 @@ void TitleRender(void)
 	ShowSprite(SPR_TITLE,3,320,menuY);
 	ShowSprite(SPR_TITLE,4+menuCursor,320,menuY);
 	ShowSprite(SPR_STATUS,20,320+titmsx,menuY+40+titmsy);
-	
+
 	// render eddie behind everything
 	ShowSprite(SPR_TITLE,(eddieAnim/4)+8,eddieX>>FIXSHIFT,eddieY>>FIXSHIFT);
-	
+
 	// render the copyright
-	//ShowSprite(SPR_TITLE,7,6,472);	
+	//ShowSprite(SPR_TITLE,7,6,472);
 	Print(2,465,"Copyright 2004, Hamumu Software",0);
 
 	RenderHiScoreDisplay();
@@ -232,8 +232,8 @@ byte TitleMenu(void)
 	LoadBackgd("graphics\\space.bmp");
 	SetBackScroll(1);
 
-	LastKeyPressed();
-	
+	mainmgl->LastKeyPressed();
+
 	while(!quit)
 	{
 		lastTime+=endclock-clock;
@@ -243,7 +243,7 @@ byte TitleMenu(void)
 			quit=1;
 
 		TitleRender();
-		
+
 		endclock=GetTime();
 		if(runCount>=30*27)	// approximately the length of the title song
 		{
@@ -267,7 +267,7 @@ byte ContinueRun(int *lastTime)
 		JamulSoundUpdate();
 		oldKeys=keys;
 		keys=GetControls();
-		
+
 		if(keys&CONTROL_UP)
 			msy=-10;
 		if(keys&CONTROL_DN)
@@ -289,7 +289,7 @@ byte ContinueRun(int *lastTime)
 		if(titmsy<400)
 			titmsy=400;
 
-		if(MouseClick() || ((keys&CONTROL_B1)&&(!(oldKeys&CONTROL_B1))))
+		if(mainmgl->MouseTap() || ((keys&CONTROL_B1)&&(!(oldKeys&CONTROL_B1))))
 		{
 			if(titmsx<240)
 			{
@@ -309,7 +309,7 @@ byte ContinueRun(int *lastTime)
 		if((runCount%30)==0)
 			MakeSound(SND_MENUSELECT,1200);	// tick the clock
 	}
-	if(LastKeyPressed()==27)
+	if(mainmgl->LastKeyPressed()==27)
 	{
 		menuCursor=0;
 		MakeSound(SND_CONTNO,1200);
@@ -348,7 +348,7 @@ byte Continue(void)
 	endclock=0;
 	lastTime=TIME_PER_FRAME;
 
-	LastKeyPressed();
+	mainmgl->LastKeyPressed();
 	runCount=0;
 	titmsx=240;
 	titmsy=430;
@@ -364,7 +364,7 @@ byte Continue(void)
 			quit=1;
 
 		ContinueRender();
-		
+
 		endclock=GetTime();
 		if(runCount>=30*10-1)	// 10 second countdown
 		{
@@ -401,7 +401,7 @@ byte VictoryUpdate(int *lastTime)
 					runCount=0;
 				}
 			}
-			
+
 		}
 		else if(victoryMode==1)
 		{
@@ -431,12 +431,12 @@ byte VictoryUpdate(int *lastTime)
 		{
 			if(theEndBright>-32)
 				theEndBright--;
-					
+
 			for(i=0;i<64;i++)
 			{
 				if(starcolor[i]>0 && GetRand(4)==0)
 					starcolor[i]--;
-				
+
 				if(starx[i]<240)
 					starx[i]-=(((240-starx[i])/128)+1);
 				else
@@ -555,7 +555,7 @@ void Victory(void)
 	eddieY=108+480*2;
 	extermBright=-32;
 	theEndBright=-32;
-	LastKeyPressed();
+	mainmgl->LastKeyPressed();
 	PlaySong(100);
 	victoryMode=0;
 	runCount=0;

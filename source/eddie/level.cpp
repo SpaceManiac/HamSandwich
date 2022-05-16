@@ -157,7 +157,7 @@ worldDef_t world[NUM_WORLDS]={
 byte curLvl,curWorld;
 int lIndex,wIndex;
 
-static int clock[4];	// four clocks for timing level events
+static int evtClock[4];	// four clocks for timing level events
 static byte value[2];	// two values for level flags and such
 byte levelMode;			// how is this level won?
 int levelClock;
@@ -362,7 +362,7 @@ void SetupLevel(byte lvl)
 	// player is the same every level
 	AddGuy(GUY_PLAYER,MAP_WIDTH/2,MAP_HEIGHT-2,0);
 	ClearParticles();
-	
+
 	if(lDef->cent1size)
 	{
 		i=lDef->cent1speed;
@@ -401,7 +401,7 @@ void SetupLevel(byte lvl)
 			}
 	}
 	for(i=0;i<4;i++)
-		clock[i]=lDef->clock[i];
+		evtClock[i]=lDef->clock[i];
 	value[0]=lDef->value[0];
 	value[1]=lDef->value[1];
 
@@ -484,10 +484,10 @@ void UpdateLevelEarth(void)
 		case 1:
 		case 2:
 		case 3:
-			if(clock[0])
+			if(evtClock[0])
 			{
-				clock[0]--;
-				if(clock[0]==0)
+				evtClock[0]--;
+				if(evtClock[0]==0)
 				{
 					if(GetRand(2))
 						AddGuy(GUY_SPIDER,-1,MAP_HEIGHT-2-GetRand(3),FIXAMT*4);
@@ -506,19 +506,19 @@ void UpdateLevelRigel(void)
 		case 1:
 		case 2:
 		case 3:
-			if(clock[1])	// snowman timer
+			if(evtClock[1])	// snowman timer
 			{
-				clock[1]--;
-				if(!clock[1])
+				evtClock[1]--;
+				if(!evtClock[1])
 				{
 					AddGuy(GUY_SNOWMAN,GetRand(MAP_WIDTH),-1,FIXAMT*6+(FIXAMT*4*(curLvl==6)));
 				}
 			}
 		case 0:	// level 6 lacks snowmen
-			if(clock[0])	// spider timer
+			if(evtClock[0])	// spider timer
 			{
-				clock[0]--;
-				if(clock[0]==0)
+				evtClock[0]--;
+				if(evtClock[0]==0)
 				{
 					if(GetRand(2))
 						AddGuy(GUY_ICESPIDER,-1,MAP_HEIGHT-2-GetRand(3),FIXAMT*4);
@@ -536,10 +536,10 @@ void UpdateLevelAgua(void)
 	{
 		case 2:
 		case 3:
-			if(clock[3])	// strider #2 timer!!
+			if(evtClock[3])	// strider #2 timer!!
 			{
-				clock[3]--;
-				if(clock[3]==0)
+				evtClock[3]--;
+				if(evtClock[3]==0)
 				{
 					if(GetRand(2))
 						AddGuy(GUY_STRIDER,-1,MAP_HEIGHT-2-GetRand(3),FIXAMT*6);
@@ -548,28 +548,28 @@ void UpdateLevelAgua(void)
 				}
 			}
 		case 1:
-			if(clock[2])	// fly timer
+			if(evtClock[2])	// fly timer
 			{
-				clock[2]--;
-				if(clock[2]==0)
+				evtClock[2]--;
+				if(evtClock[2]==0)
 				{
 					AddGuy(GUY_FLY,GetRand(MAP_WIDTH),-1,0);
-					clock[2]=120+GetRand(240);
+					evtClock[2]=120+GetRand(240);
 				}
 			}
 		case 0:
-			if(clock[1])	// frog timer
+			if(evtClock[1])	// frog timer
 			{
-				clock[1]--;
-				if(clock[1]==0)
+				evtClock[1]--;
+				if(evtClock[1]==0)
 				{
 					AddGuy(GUY_FROG,GetRand(MAP_WIDTH),-GetRand(4),FIXAMT*6);
 				}
 			}
-			if(clock[0])	// strider timer
+			if(evtClock[0])	// strider timer
 			{
-				clock[0]--;
-				if(clock[0]==0)
+				evtClock[0]--;
+				if(evtClock[0]==0)
 				{
 					if(GetRand(2))
 						AddGuy(GUY_STRIDER,-1,MAP_HEIGHT-2-GetRand(3),FIXAMT*6);
@@ -588,19 +588,19 @@ void UpdateLevelPrometheus(void)
 		case 1:
 		case 2:
 		case 3:
-			if(clock[1])	// repairbot timer
+			if(evtClock[1])	// repairbot timer
 			{
-				clock[1]--;
-				if(clock[1]==0)
+				evtClock[1]--;
+				if(evtClock[1]==0)
 				{
 					AddGuy(GUY_REPAIR,GetRand(MAP_WIDTH),-1,FIXAMT*6);
 				}
 			}
 		case 0:
-			if(clock[0])	// spiderbot timer
+			if(evtClock[0])	// spiderbot timer
 			{
-				clock[0]--;
-				if(clock[0]==0)
+				evtClock[0]--;
+				if(evtClock[0]==0)
 				{
 					if(GetRand(2))
 						AddGuy(GUY_SPIDERBOT,-1,MAP_HEIGHT-2-GetRand(3),FIXAMT*4);
@@ -619,19 +619,19 @@ void UpdateLevelTartarus(void)
 		case 1:
 		case 2:
 		case 3:
-			if(clock[1])	// sparky timer
+			if(evtClock[1])	// sparky timer
 			{
-				clock[1]--;
-				if(clock[1]==0)
+				evtClock[1]--;
+				if(evtClock[1]==0)
 				{
 					AddGuy(GUY_SPARKY,-2,GetRand(MAP_HEIGHT-MAP_HEIGHT/4),FIXAMT*4);
 				}
 			}
 		case 0:
-			if(clock[0])	// ant timer
+			if(evtClock[0])	// ant timer
 			{
-				clock[0]--;
-				if(clock[0]==0)
+				evtClock[0]--;
+				if(evtClock[0]==0)
 				{
 					if(GetRand(2))
 						AddGuy(GUY_FIREANT,-1,MAP_HEIGHT-2-GetRand(3),FIXAMT*4);
@@ -651,38 +651,38 @@ void UpdateLevelJurassic(void)
 		case 2:
 		case 3:
 			// stuff level 1 doesn't have
-			if(clock[2])
+			if(evtClock[2])
 			{
-				clock[2]--;
-				if(clock[2]==0)
+				evtClock[2]--;
+				if(evtClock[2]==0)
 				{
 					AddGuy(GUY_PTERODACTYL,GetRand(MAP_WIDTH),-3,0);
-					clock[2]=120-(lIndex*30)+GetRand(60);
+					evtClock[2]=120-(lIndex*30)+GetRand(60);
 				}
 			}
 		case 0:
-			if(clock[0])	// triceratops timer
+			if(evtClock[0])	// triceratops timer
 			{
-				clock[0]--;
-				if(clock[0]==0)
+				evtClock[0]--;
+				if(evtClock[0]==0)
 				{
 					if(GetRand(2))
 						AddGuy(GUY_TRICERATOPS,-3,MAP_HEIGHT-1-GetRand(2),FIXAMT*(3+GetRand(4)));
 					else
 						AddGuy(GUY_TRICERATOPS,MAP_WIDTH+2,MAP_HEIGHT-1-GetRand(2),-FIXAMT*(3+GetRand(4)));
-					clock[0]=120-(lIndex*10)+GetRand(60);
+					evtClock[0]=120-(lIndex*10)+GetRand(60);
 				}
 			}
-			if(clock[1])	// triceratops timer
+			if(evtClock[1])	// triceratops timer
 			{
-				clock[1]--;
-				if(clock[1]==0)
+				evtClock[1]--;
+				if(evtClock[1]==0)
 				{
 					if(GetRand(2))
 						AddGuy(GUY_TRICERATOPS,-3,MAP_HEIGHT-3-GetRand(3),FIXAMT*(3+GetRand(4)));
 					else
 						AddGuy(GUY_TRICERATOPS,MAP_WIDTH+2,MAP_HEIGHT-3-GetRand(3),-FIXAMT*(3+GetRand(4)));
-					clock[1]=120-(lIndex*10)+GetRand(60);
+					evtClock[1]=120-(lIndex*10)+GetRand(60);
 				}
 			}
 			break;
@@ -698,13 +698,13 @@ void UpdateLevelFinal(void)
 		case 3:
 		case 4:
 			// stuff level 1 doesn't have
-			if(clock[0])	// flying alien timer
+			if(evtClock[0])	// flying alien timer
 			{
-				clock[0]--;
-				if(clock[0]==0)
+				evtClock[0]--;
+				if(evtClock[0]==0)
 				{
 					AddGuy(GUY_FLYALIEN,GetRand(MAP_WIDTH),-1,0);
-					clock[0]=120+GetRand(240);
+					evtClock[0]=120+GetRand(240);
 				}
 			}
 		case 0:
@@ -720,10 +720,10 @@ void UpdateLevelGlobulus(void)
 		case 2:
 		case 3:
 			// stuff level 1 doesn't have
-			if(clock[0])
+			if(evtClock[0])
 			{
-				clock[0]--;
-				if(clock[0]==0)
+				evtClock[0]--;
+				if(evtClock[0]==0)
 				{
 					AddGuy(GUY_EYEGUY,3+GetRand(MAP_WIDTH-6),-2,0);
 				}
@@ -743,10 +743,10 @@ void UpdateLevelVarakkis(void)
 		case 3:
 			// stuff level 1 doesn't have
 			// sandworm timer
-			if(clock[2])
+			if(evtClock[2])
 			{
-				clock[2]--;
-				if(clock[2]==0)
+				evtClock[2]--;
+				if(evtClock[2]==0)
 				{
 					if(GetRand(2))
 						AddGuy(GUY_SANDWORM,0,MAP_HEIGHT-3-GetRand(3),0);
@@ -756,19 +756,19 @@ void UpdateLevelVarakkis(void)
 			}
 		case 0:
 			// tumbleweed timer
-			if(clock[1])
+			if(evtClock[1])
 			{
-				clock[1]--;
-				if(clock[1]==0)
+				evtClock[1]--;
+				if(evtClock[1]==0)
 				{
 					AddGuy(GUY_TUMBLEWEED,GetRand(MAP_WIDTH),-1,0);
 				}
 			}
 			// Scorpion timer
-			if(clock[0])
+			if(evtClock[0])
 			{
-				clock[0]--;
-				if(clock[0]==0)
+				evtClock[0]--;
+				if(evtClock[0]==0)
 				{
 					AddGuy(GUY_SCORPION,GetRand(MAP_WIDTH),-2,FIXAMT*(3+lIndex));
 				}
@@ -795,10 +795,10 @@ void UpdateLevelBonus(void)
 			}
 			break;
 		case BNS_HORDE:
-			if(clock[0])
+			if(evtClock[0])
 			{
-				clock[0]--;
-				if(clock[0]==0)
+				evtClock[0]--;
+				if(evtClock[0]==0)
 					if(GetRand(2))
 						AddGuy(GUY_PWRUPUFO,-3,4,FIXAMT*4);
 					else
@@ -809,8 +809,8 @@ void UpdateLevelBonus(void)
 			if(levelClock<5*30)
 				return;	// for last 5 seconds, no more monsters
 
-			if(clock[0])
-				clock[0]--;
+			if(evtClock[0])
+				evtClock[0]--;
 			else
 			{
 				// launch some new menace, chosen at random
@@ -822,7 +822,7 @@ void UpdateLevelBonus(void)
 					case 18:
 						AddGuy(GUY_SPINSHIP,5,-4,FIXAMT);
 						AddGuy(GUY_SPINSHIP,25,-4,-FIXAMT);
-						clock[0]=30;
+						evtClock[0]=30;
 						break;
 					case 2:
 					case 19:
@@ -831,7 +831,7 @@ void UpdateLevelBonus(void)
 						AddGuy(GUY_SPINSHIP,5,-4,FIXAMT/2);
 						AddGuy(GUY_SPINSHIP,15,-4,0);
 						AddGuy(GUY_SPINSHIP,25,-4,-FIXAMT/2);
-						clock[0]=30;
+						evtClock[0]=30;
 						break;
 					case 3:
 					case 22:
@@ -841,7 +841,7 @@ void UpdateLevelBonus(void)
 						AddGuy(GUY_SPINSHIP,26,-6,-FIXAMT/2);
 						AddGuy(GUY_SPINSHIP,24,-7,-FIXAMT/2);
 						AddGuy(GUY_SPINSHIP,22,-8,-FIXAMT/2);
-						clock[0]=90;
+						evtClock[0]=90;
 						break;
 					case 4:
 					case 24:
@@ -851,31 +851,31 @@ void UpdateLevelBonus(void)
 						AddGuy(GUY_SPINSHIP,4,-6,FIXAMT/2);
 						AddGuy(GUY_SPINSHIP,6,-7,FIXAMT/2);
 						AddGuy(GUY_SPINSHIP,8,-8,FIXAMT/2);
-						clock[0]=90;
+						evtClock[0]=90;
 						break;
 					case 5:
 					case 6:
 						AddGuy(GUY_CLAWSHIP,GetRand(MAP_WIDTH-2)+1,-4,30);
-						clock[0]=120;
+						evtClock[0]=120;
 						break;
 					case 7:
 						AddGuy(GUY_CLAWSHIP,MAP_WIDTH/5,-4,60);
 						AddGuy(GUY_CLAWSHIP,(2*MAP_WIDTH)/5,-4,70);
 						AddGuy(GUY_CLAWSHIP,(3*MAP_WIDTH)/5,-4,80);
 						AddGuy(GUY_CLAWSHIP,(4*MAP_WIDTH)/5,-4,90);
-						clock[0]=140;
+						evtClock[0]=140;
 						break;
 					case 8:
 					case 9:
 						AddGuy(GUY_SMALLSHIP,MAP_WIDTH/2,-2,GetRand(2));
-						clock[0]=20;
+						evtClock[0]=20;
 						break;
 					case 10:
 					case 11:
 					case 12:
 						AddGuy(GUY_SMALLSHIP,MAP_WIDTH/4,-2,1);
 						AddGuy(GUY_SMALLSHIP,3*MAP_WIDTH/4,-3,0);
-						clock[0]=20;
+						evtClock[0]=20;
 						break;
 					case 13:
 					case 14:
@@ -883,7 +883,7 @@ void UpdateLevelBonus(void)
 						AddGuy(GUY_SMALLSHIP,MAP_WIDTH/2,-4,1);
 						AddGuy(GUY_SMALLSHIP,MAP_WIDTH/2,-6,0);
 						AddGuy(GUY_SMALLSHIP,MAP_WIDTH/2,-8,1);
-						clock[0]=30;
+						evtClock[0]=30;
 						break;
 					case 15:
 						AddGuy(GUY_SMALLSHIP,MAP_WIDTH/4,-2,1);
@@ -892,17 +892,17 @@ void UpdateLevelBonus(void)
 						AddGuy(GUY_SMALLSHIP,3*MAP_WIDTH/4,-1,0);
 						AddGuy(GUY_SMALLSHIP,3*MAP_WIDTH/4-2,-3,0);
 						AddGuy(GUY_SMALLSHIP,3*MAP_WIDTH/4-4,-5,0);
-						clock[0]=60;
+						evtClock[0]=60;
 						break;
 					case 16:
 						if(GetRand(2))
 							AddGuy(GUY_PWRUPUFO,-3,4,FIXAMT*4);
 						else
 							AddGuy(GUY_PWRUPUFO,MAP_WIDTH+3,4,FIXAMT*4);
-						clock[0]=10;
+						evtClock[0]=10;
 						break;
 				}
-				clock[0]+=(2-GetDifficulty())*10;	// lower difficulties have enemies less often
+				evtClock[0]+=(2-GetDifficulty())*10;	// lower difficulties have enemies less often
 			}
 			break;
 		default:
@@ -962,7 +962,7 @@ void TellEarthAboutIt(byte event,byte val)
 {
 	if(event==EVT_MONSDIE && val==GUY_SPIDER)
 	{
-		clock[0]=30+GetRand(120);
+		evtClock[0]=30+GetRand(120);
 	}
 }
 
@@ -970,14 +970,14 @@ void TellRigelAboutIt(byte event,byte val)
 {
 	if(event==EVT_MONSDIE && val==GUY_ICESPIDER)
 	{
-		clock[0]=30+GetRand(120);
+		evtClock[0]=30+GetRand(120);
 	}
 	if((event==EVT_MONSDIE || event==EVT_MONSGONE) && val==GUY_SNOWMAN)
 	{
 		if(lIndex==1)
-			clock[1]=60+GetRand(160);
+			evtClock[1]=60+GetRand(160);
 		else
-			clock[1]=30+GetRand(100);
+			evtClock[1]=30+GetRand(100);
 	}
 }
 
@@ -987,17 +987,17 @@ void TellAguaAboutIt(byte event,byte val)
 	{
 		if(lIndex==2 || lIndex==3)
 		{
-			if(clock[0])
-				clock[3]=30+GetRand(120);
+			if(evtClock[0])
+				evtClock[3]=30+GetRand(120);
 			else
-				clock[0]=30+GetRand(120);
+				evtClock[0]=30+GetRand(120);
 		}
 		else
-			clock[0]=30+GetRand(120);
+			evtClock[0]=30+GetRand(120);
 	}
 	if((event==EVT_MONSDIE || event==EVT_MONSGONE) && val==GUY_FROG)
 	{
-		clock[1]=60+GetRand(240);
+		evtClock[1]=60+GetRand(240);
 	}
 }
 
@@ -1005,11 +1005,11 @@ void TellPrometheusAboutIt(byte event,byte val)
 {
 	if(event==EVT_MONSDIE && val==GUY_SPIDERBOT)
 	{
-		clock[0]=30+GetRand(120);
+		evtClock[0]=30+GetRand(120);
 	}
 	if((event==EVT_MONSDIE || event==EVT_MONSGONE) && val==GUY_REPAIR)
 	{
-		clock[1]=60+GetRand(240);
+		evtClock[1]=60+GetRand(240);
 	}
 }
 
@@ -1017,11 +1017,11 @@ void TellTartarusAboutIt(byte event,byte val)
 {
 	if((event==EVT_MONSDIE || event==EVT_MONSGONE) && val==GUY_SPARKY)
 	{
-		clock[1]=60+GetRand(240);
+		evtClock[1]=60+GetRand(240);
 	}
 	if(event==EVT_MONSDIE && val==GUY_FIREANT)
 	{
-		clock[0]=30+GetRand(120);
+		evtClock[0]=30+GetRand(120);
 	}
 }
 
@@ -1034,7 +1034,7 @@ void TellGlobulusAboutIt(byte event,byte val)
 {
 	if(event==EVT_MONSDIE && val==GUY_EYEGUY)
 	{
-		clock[0]=30+GetRand(120);
+		evtClock[0]=30+GetRand(120);
 	}
 }
 
@@ -1042,15 +1042,15 @@ void TellVarakkisAboutIt(byte event,byte val)
 {
 	if((event==EVT_MONSDIE || event==EVT_MONSGONE) && val==GUY_SCORPION)
 	{
-		clock[0]=80+GetRand(120)+80*(lIndex<2);
+		evtClock[0]=80+GetRand(120)+80*(lIndex<2);
 	}
 	if((event==EVT_MONSDIE || event==EVT_MONSGONE) && val==GUY_TUMBLEWEED)
 	{
-		clock[1]=60+GetRand(60);
+		evtClock[1]=60+GetRand(60);
 	}
 	if(event==EVT_MONSDIE && val==GUY_SANDWORM)
 	{
-		clock[2]=60+GetRand(60);
+		evtClock[2]=60+GetRand(60);
 	}
 }
 
@@ -1067,12 +1067,12 @@ void TellBonusAboutIt(byte event,byte val)
 			break;
 		case BNS_HORDE:
 			if(event==EVT_MONSDIE && (val==GUY_SQUIDSHIP || val==GUY_DOUBLESHIP || val==GUY_FBALLSHIP))
-				clock[1]++;
-			if(clock[1]>4)
+				evtClock[1]++;
+			if(evtClock[1]>4)
 			{
 				// summon a powerup ship for taking out the monsters
-				clock[1]=0;
-				clock[0]=2;
+				evtClock[1]=0;
+				evtClock[0]=2;
 			}
 			break;
 	}

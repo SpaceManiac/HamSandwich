@@ -35,7 +35,7 @@ void InitOptions(void)
 		options.difficulty=DIFF_EASY;
 		options.sound=1;
 		options.music=1;
-		
+
 		options.hiScore[0]=10000;
 		options.hiScore[1]=5000;
 		options.hiScore[2]=2500;
@@ -184,11 +184,11 @@ byte OptionsScreenRun(int *lastTime)
 			cursorOn=6;
 		if(optmsy>389 && optmsy<440)
 			cursorOn=7;
-		
+
 		if(cursorOn!=0 && oldCur!=cursorOn)	// you moved onto a different one, make a noise
 			MakeSound(SND_TYPING,1000);
 
-		if(MouseClick() || ((keys&CONTROL_B1)&&(!(oldKeys&CONTROL_B1))))
+		if(mainmgl->MouseTap() || ((keys&CONTROL_B1)&&(!(oldKeys&CONTROL_B1))))
 		{
 			if(cursorOn!=0)
 				MakeSound(SND_MENUSELECT,1100);
@@ -238,7 +238,7 @@ byte OptionsScreenRun(int *lastTime)
 		}
 		*lastTime-=TIME_PER_FRAME;
 	}
-	if(LastKeyPressed()==27)
+	if(mainmgl->LastKeyPressed()==27)
 		return 0;
 
 	return 1;
@@ -295,7 +295,7 @@ void OptionsScreen(void)
 	optmsy=SCR_HEIGHT/2;
 	cursorOn=0;
 
-	LastKeyPressed();
+	mainmgl->LastKeyPressed();
 	keys=0xFF;
 
 	while(!quit)
@@ -307,7 +307,7 @@ void OptionsScreen(void)
 			quit=1;
 
 		OptionsScreenRender();
-		
+
 		endclock=GetTime();
 	}
 }

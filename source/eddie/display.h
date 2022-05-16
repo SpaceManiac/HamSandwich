@@ -60,7 +60,7 @@ class DisplayList
 
 		void HookIn(int me);
 		int GetOpenSlot(void);
-		
+
 
 		displayObj_t dispObj[MAX_DISPLAY_OBJS];
 		int head,nextfree;
@@ -73,17 +73,17 @@ byte FlipScreen(void);
 void ClearScreen(void);
 
 void SpriteRect(byte set,int s,int x,int y,int *rx,int *ry,int *rx2,int *ry2);
-void Print(int x,int y,char *s,byte f);
-void PrintBright(int x,int y,char *s,char brt,byte f);
-void PrintGreen(int x,int y,char *s);
-void CenterPrint(int y,char *s,byte f,char brt);
+void Print(int x,int y,const char *s,byte f);
+void PrintBright(int x,int y,const char *s,char brt,byte f);
+void PrintGreen(int x,int y,const char *s);
+void CenterPrint(int y,const char *s,byte f,char brt);
 void CenterPrint2(int y,char *s,byte f,char brt);
-void ColorCenterPrint(int y,char *s,byte f,byte col);
-void PrintCursor(int x,int y,char *s,byte pos,byte blink,char bright,byte f);
-int StringLength(char *s,byte f);
+void ColorCenterPrint(int y,const char *s,byte f,byte col);
+void PrintCursor(int x,int y,const char *s,byte pos,byte blink,char bright,byte f);
+int StringLength(const char *s,byte f);
 
-void SplashScreen(char *fname,int delay,byte sound,byte specialdeal);
-void GetPaletteFromBMP(char *fname);
+void SplashScreen(const char *fname,int delay,byte sound,byte specialdeal);
+void GetPaletteFromBMP(const char *fname);
 
 void Box(int x,int y,int x2,int y2,byte c);
 

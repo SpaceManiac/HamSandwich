@@ -6,7 +6,7 @@
 void InitStatus(void);
 void ExitStatus(void);
 
-void SetMonitorText(byte line,char *s);
+void SetMonitorText(byte line,const char *s);
 void MonitorSwitch(byte on);
 
 void EnterPauseMode(void);

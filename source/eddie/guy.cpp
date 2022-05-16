@@ -514,7 +514,7 @@ void BulletExplode(guy_t *me)
 			ExplodeParticles(PART_GREY,me->x,me->y,2,4);
 			me->type=GUY_NONE;
 			PlantShroom((me->x/TILE_WIDTH)>>FIXSHIFT,(me->y/TILE_HEIGHT)>>FIXSHIFT);
-			break;	
+			break;
 	}
 }
 
@@ -895,7 +895,7 @@ void GetHit(guy_t *me)
 					sx=me->x+50*FIXAMT;
 				ExplodeParticles(PART_GREY,sx,me->y+50*FIXAMT,2,7);
 				ExplodeParticles(PART_GREY,sx,me->y+50*FIXAMT,4,7);
-				
+
 				me->type=GUY_NONE;
 			}
 			else
@@ -1284,7 +1284,7 @@ byte CheckEnemyHit(guy_t *me)
 		{
 			if(guy[i].flags&GF_GHOST)
 				continue;
-			if(me->rectx<=guy[i].rectx2 && me->recty<=guy[i].recty2 && me->rectx2>=guy[i].rectx && 
+			if(me->rectx<=guy[i].rectx2 && me->recty<=guy[i].recty2 && me->rectx2>=guy[i].rectx &&
 				me->recty2>=guy[i].recty)
 			{
 				// hit!
@@ -1308,7 +1308,7 @@ byte NukeHit(guy_t *me)
 		{
 			if(guy[i].flags&GF_GHOST)
 				continue;
-			if(me->rectx<=guy[i].rectx2 && me->recty<=guy[i].recty2 && me->rectx2>=guy[i].rectx && 
+			if(me->rectx<=guy[i].rectx2 && me->recty<=guy[i].recty2 && me->rectx2>=guy[i].rectx &&
 				me->recty2>=guy[i].recty)
 			{
 				// hit!
@@ -1330,7 +1330,7 @@ byte CheckGoodguyHit(guy_t *me)
 		{
 			if(guy[i].flags&GF_GHOST)
 				continue;
-			if(me->rectx<=guy[i].rectx2 && me->recty<=guy[i].recty2 && me->rectx2>=guy[i].rectx && 
+			if(me->rectx<=guy[i].rectx2 && me->recty<=guy[i].recty2 && me->rectx2>=guy[i].rectx &&
 				me->recty2>=guy[i].recty)
 			{
 				// hit!
@@ -1358,7 +1358,7 @@ byte PlayerCheckMovement(guy_t *me)
 		{
 			if(guy[i].flags&GF_GHOST)
 				continue;
-			if(me->rectx<=guy[i].rectx2 && me->recty<=guy[i].recty2 && me->rectx2>=guy[i].rectx && 
+			if(me->rectx<=guy[i].rectx2 && me->recty<=guy[i].recty2 && me->rectx2>=guy[i].rectx &&
 				me->recty2>=guy[i].recty)
 			{
 				// check here to see if the guy you bumped was somebody who hurts you
@@ -1403,7 +1403,7 @@ byte MonsterCheckMovement(guy_t *me)
 		{
 			if((me->flags&GF_FIXTURRET) && (guy[i].type==GUY_TURRET) && (guy[i].hp==0))
 			{
-				if(me->rectx<=guy[i].rectx2 && me->recty<=guy[i].recty2 && me->rectx2>=guy[i].rectx && 
+				if(me->rectx<=guy[i].rectx2 && me->recty<=guy[i].recty2 && me->rectx2>=guy[i].rectx &&
 					me->recty2>=guy[i].recty)
 				{
 					guy[i].hp=2;
@@ -1416,7 +1416,7 @@ byte MonsterCheckMovement(guy_t *me)
 
 			if(guy[i].flags&GF_GHOST)
 				continue;
-			if(me->rectx<=guy[i].rectx2 && me->recty<=guy[i].recty2 && me->rectx2>=guy[i].rectx && 
+			if(me->rectx<=guy[i].rectx2 && me->recty<=guy[i].recty2 && me->rectx2>=guy[i].rectx &&
 				me->recty2>=guy[i].recty)
 			{
 				if(guy[i].parent!=255)
@@ -1581,7 +1581,7 @@ void UpdatePlayer(guy_t *me)
 
 	me->dx=(msx<<FIXSHIFT)/2;
 	me->dy=(msy<<FIXSHIFT)/2;
-	
+
 	Clamp(&me->dx,FIXAMT*16);
 	Clamp(&me->dy,FIXAMT*12);
 
@@ -1593,13 +1593,13 @@ void UpdatePlayer(guy_t *me)
 		{
 			me->facing-=4;
 			if(me->facing>128)
-				me->facing-=12;	
+				me->facing-=12;
 		}
 		if(me->dx>0 && me->facing<255-15)
 		{
 			me->facing+=4;
 			if(me->facing<128)
-				me->facing+=12;	
+				me->facing+=12;
 		}
 		if(me->dx==0)
 		{
@@ -1628,13 +1628,13 @@ void UpdatePlayer(guy_t *me)
 		{
 			me->facing-=8;
 			if(me->facing>128)
-				me->facing-=12;	
+				me->facing-=12;
 		}
 		if(me->dx>0 && me->facing<=255-8)
 		{
 			me->facing+=8;
 			if(me->facing<128)
-				me->facing+=12;	
+				me->facing+=12;
 		}
 		if(me->dx==0)
 		{
@@ -1657,7 +1657,7 @@ void UpdatePlayer(guy_t *me)
 		me->x+=me->dx;
 		UpdateGuyRect(me);
 	}
-	
+
 	me->y+=me->dy;
 	UpdateGuyRect(me);
 	while(me->dy && PlayerCheckMovement(me))
@@ -1667,8 +1667,8 @@ void UpdatePlayer(guy_t *me)
 		me->y+=me->dy;
 		UpdateGuyRect(me);
 	}
-	
-	if((MouseHeld() || (keys&CONTROL_B1)) && !me->reload)
+
+	if((mainmgl->MouseDown() || (keys&CONTROL_B1)) && !me->reload)
 	{
 		if(IsBonusStage() || GetWorld()==WORLD_ASTEROID)
 			AddGuyExact(GUY_BULLET,me->x,me->y-FIXAMT*8,0);
@@ -1679,7 +1679,7 @@ void UpdatePlayer(guy_t *me)
 		TellLevelAboutIt(EVT_FIRE,0);
 		me->reload=10-3*GetPower();	// more firepower=less reload time
 	}
-	if((RMouseHeld() || (keys&CONTROL_B2)) && !me->reload2)
+	if((mainmgl->RMouseDown() || (keys&CONTROL_B2)) && !me->reload2)
 	{
 		FireWeapon(me);
 		TellLevelAboutIt(EVT_FIRE,0);
@@ -1742,7 +1742,7 @@ void UpdateMissile(guy_t *me)
 {
 	me->y+=me->dy;
 	me->x+=me->dx;
-	
+
 	if(me->dy>-FIXAMT*10)
 		me->dy-=FIXAMT/2;
 
@@ -1753,7 +1753,7 @@ void UpdateMissile(guy_t *me)
 		me->dx+=GetRand(FIXAMT*2);
 	if(me->x>goodguy->x)
 		me->dx-=GetRand(FIXAMT*2);
-	
+
 	Clamp(&me->dx,FIXAMT*8);
 
 	AddParticle(PART_SMOKE,me->x-me->dx,me->y-me->dy,FIXAMT/4,8*3+7);
@@ -1769,7 +1769,7 @@ void UpdateMissile(guy_t *me)
 void UpdateCentihead(guy_t *me)
 {
 	int i,olddx;
-	
+
 	for(i=LOG_LENGTH-1;i>0;i--)
 		me->movelog[i]=me->movelog[i-1];
 
@@ -1934,7 +1934,7 @@ void UpdateCentibody(guy_t *me)
 
 	me->x=me->movelog[i].x;
 	me->y=me->movelog[i].y;
-	
+
 	if(me->movelog[0].facing>0)
 		me->facing=me->movelog[0].facing-1;
 	else me->facing=2;
@@ -2218,7 +2218,7 @@ void UpdateEnemyBullet(guy_t *me)
 		AddParticleExact(PART_GREEN,me->x,me->y,8*FIXAMT,FIXAMT-GetRand(FIXAMT*2),FIXAMT-GetRand(FIXAMT*2),
 			0,30);
 	}
-	
+
 	if(CheckGoodguyHit(me))
 		BulletExplode(me);
 	if(me->x<0 || me->y<0 || me->x>SCR_WIDTH*FIXAMT || me->y>SCR_HEIGHT*FIXAMT)
@@ -2408,7 +2408,7 @@ void UpdateRepairDroid(guy_t *me)
 
 	if(GetRand(12)==0)
 			PlantShroom((me->x>>FIXSHIFT)/TILE_WIDTH,(me->y>>FIXSHIFT)/TILE_WIDTH);
-	
+
 	me->anim++;
 	if(me->anim>15)
 	{
@@ -2473,18 +2473,18 @@ void UpdateRock(guy_t *me)
 	me->destx+=me->desty;		// destx=z, desty=dz
 
 	me->desty-=FIXAMT/2;
-	
+
 	if(me->desty<-FIXAMT*12)
 		me->desty=-FIXAMT*12;
 
 	me->anim++;
 
-	
+
 	if(me->destx<20*FIXAMT)
 	{
 		me->flags&=(~GF_GHOST);	// not a ghost anymore
 		MonsterCheckMovement(me);
-		
+
 		if(me->destx<=0)
 		{
 			me->type=GUY_NONE;
@@ -2939,7 +2939,7 @@ void UpdateClawShip(guy_t *me)
 
 	// slowly descend
 	me->y+=FIXAMT*2;
-	
+
 	if(me->y>(SCR_HEIGHT+50)*FIXAMT)
 	{
 		me->type=GUY_NONE;
@@ -3001,7 +3001,7 @@ void UpdateSmallShip(guy_t *me)
 			me->destx=5*FIXAMT*TILE_WIDTH;
 		me->dx-=FIXAMT/2;
 	}
-	
+
 	Clamp(&me->dx,FIXAMT*6);
 
 	me->anim=3;
@@ -3043,7 +3043,7 @@ void UpdateSquidShip(guy_t *me)
 		me->anim=9;
 		me->facing=0;
 	}
-	
+
 	// move
 	me->x+=me->dx;
 
@@ -3183,7 +3183,7 @@ void UpdatePterodactyl(guy_t *me)
 {
 	me->x+=me->dx;
 	me->y+=me->dy;
-	
+
 	// using destx as a Z coordinate
 	if(me->facing==0)	// heading up
 		me->destx+=FIXAMT;
@@ -3202,7 +3202,7 @@ void UpdatePterodactyl(guy_t *me)
 		}
 		if(me->anim==0)
 			me->reload=2;
-		
+
 		if(me->y>FIXAMT*(SCR_HEIGHT/2))
 		{
 			MakeSound(SND_PTEROSCREECH,1200);
@@ -3230,14 +3230,14 @@ void UpdatePterodactyl(guy_t *me)
 void UpdateEyeball(guy_t *me)
 {
 	int i;
-	
+
 	i=0;
 
 	me->anim+=(me->type-GUY_EYEBALL1+1);
 
 	if(me->anim>23)
 		me->anim-=24;
-	
+
 	me->x+=me->dx;
 	me->y+=me->dy;
 	UpdateGuyRect(me);
@@ -3289,7 +3289,7 @@ void UpdateEyeball(guy_t *me)
 				me->dx=me->speed;
 		}
 	}
-	
+
 	if(i==1)	// hit an obstacle
 	{
 		me->dx=-me->dx/2;
@@ -3372,7 +3372,7 @@ void UpdateEyeGuy(guy_t *me)
 			}
 			me->anim=fireAnimTable[me->reload2];
 		}
-		
+
 	}
 }
 
@@ -3807,7 +3807,7 @@ void UpdateAcidGlob(guy_t *me)
 	me->destx+=me->desty;		// destx=z, desty=dz
 
 	me->desty-=FIXAMT/2;
-	
+
 	if(me->desty<-FIXAMT*12)
 		me->desty=-FIXAMT*12;
 
@@ -3818,12 +3818,12 @@ void UpdateAcidGlob(guy_t *me)
 	if(me->type==GUY_ACIDGLOB)
 		AddParticleExact(PART_GREEN,me->x,me->y,me->destx,FIXAMT-GetRand(FIXAMT*2),FIXAMT-GetRand(FIXAMT*2),
 			0,20);
-	
+
 	if(me->destx<20*FIXAMT)
 	{
 		me->flags&=(~GF_GHOST);	// not a ghost anymore
 		MonsterCheckMovement(me);
-		
+
 		if(me->destx<=0)
 		{
 			BulletExplode(me);
@@ -3856,7 +3856,7 @@ void UpdateSatellite(guy_t *me)
 				if(guy[i].type==GUY_SATELLITE && (i!=me->num) &&
 					guy[i].rectx<me->rectx2-4 &&
 					guy[i].rectx2>=me->rectx+4 &&
-					guy[i].recty<me->recty2 && 
+					guy[i].recty<me->recty2 &&
 					guy[i].recty2>=me->recty)
 				{
 					me->type=GUY_NONE;
@@ -4120,7 +4120,7 @@ byte UpdateGuys(void)
 				guy[i].type==GUY_BULLET || guy[i].type==GUY_CHAINBULLET || guy[i].type==GUY_SHOTBULLET ||
 				guy[i].type==GUY_NUKE || guy[i].type==GUY_LASER || guy[i].type==GUY_MISSILE || guy[i].type==GUY_POWERUP ||
 				guy[i].type==GUY_RADIO || guy[i].type==GUY_NUKEBOOM || guy[i].type==GUY_WINGMAN || guy[i].type==GUY_PRESENT)
-				UpdateGuy(&guy[i],i);	
+				UpdateGuy(&guy[i],i);
 		}
 	// returns whether or not there are any existing VICTORY creatures (once they are all
 	// dead, the level is won)
@@ -4226,12 +4226,12 @@ void RenderGuy(guy_t *me)
 		case GUY_PLAYER:
 			if(GetInvincible()&1)
 				return;	// don't get drawn 50% of the time if you are invincible
-			
+
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,255,0,SPR_ROCKET,
 				me->anim,DISPLAY_DRAWME);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,0,SPR_ROCKET,
 				me->anim,DISPLAY_DRAWME|DISPLAY_SHADOW);
-			
+
 			if(GetShield())
 			{
 				if(IsBonusStage() || GetWorld()==WORLD_ASTEROID)
@@ -4643,7 +4643,7 @@ int FindTarget(byte type,int *x,int *y)
 	int i,best,bestxd,bestyd,xd,yd;
 
 	best=-1;
-	
+
 	for(i=0;i<MAX_GUYS;i++)
 	{
 		if(guy[i].type==type)
@@ -4722,9 +4722,9 @@ void PlantShroom(int x,int y)
 	for(i=0;i<MAX_GUYS;i++)
 	{
 		if(guy[i].type && (guy[i].flags&GF_GROWBLOCK) &&
-			guy[i].rectx<(x*TILE_WIDTH)+TILE_WIDTH && 
+			guy[i].rectx<(x*TILE_WIDTH)+TILE_WIDTH &&
 			guy[i].rectx2>=(x*TILE_WIDTH) &&
-			guy[i].recty<(y*TILE_HEIGHT)+TILE_HEIGHT && 
+			guy[i].recty<(y*TILE_HEIGHT)+TILE_HEIGHT &&
 			guy[i].recty2>=(y*TILE_HEIGHT))
 			return;
 	}
@@ -4743,9 +4743,9 @@ void PlantMonster(byte type,int x,int y)
 	for(i=0;i<MAX_GUYS;i++)
 	{
 		if(guy[i].type && (guy[i].flags&GF_GROWBLOCK) &&
-			guy[i].rectx<(x*TILE_WIDTH)+TILE_WIDTH && 
+			guy[i].rectx<(x*TILE_WIDTH)+TILE_WIDTH &&
 			guy[i].rectx2>=(x*TILE_WIDTH) &&
-			guy[i].recty<(y*TILE_HEIGHT)+TILE_HEIGHT && 
+			guy[i].recty<(y*TILE_HEIGHT)+TILE_HEIGHT &&
 			guy[i].recty2>=(y*TILE_HEIGHT))
 			return;
 	}
@@ -4764,9 +4764,9 @@ void PlantMonster2(byte type,int x,int y)
 	for(i=0;i<MAX_GUYS;i++)
 	{
 		if(guy[i].type && (guy[i].flags&GF_GROWBLOCK) &&
-			guy[i].rectx<(x*TILE_WIDTH)+TILE_WIDTH && 
+			guy[i].rectx<(x*TILE_WIDTH)+TILE_WIDTH &&
 			guy[i].rectx2>=(x*TILE_WIDTH) &&
-			guy[i].recty<(y*TILE_HEIGHT)+TILE_HEIGHT && 
+			guy[i].recty<(y*TILE_HEIGHT)+TILE_HEIGHT &&
 			guy[i].recty2>=(y*TILE_HEIGHT))
 		{
 			if(guy[i].type==GUY_SHROOM)
@@ -4789,15 +4789,15 @@ void PutPresents(int num)
 	{
 		x=GetRand(MAP_WIDTH);
 		y=GetRand(MAP_HEIGHT/4)+MAP_HEIGHT-MAP_HEIGHT/4;
-	
+
 		noadd=0;
 		// first check to be sure nothing else is in this square
 		for(i=0;i<MAX_GUYS;i++)
 		{
 			if(guy[i].type && (guy[i].flags&GF_GROWBLOCK) &&
-				guy[i].rectx<(x*TILE_WIDTH)+TILE_WIDTH && 
+				guy[i].rectx<(x*TILE_WIDTH)+TILE_WIDTH &&
 				guy[i].rectx2>=(x*TILE_WIDTH) &&
-				guy[i].recty<(y*TILE_HEIGHT)+TILE_HEIGHT && 
+				guy[i].recty<(y*TILE_HEIGHT)+TILE_HEIGHT &&
 				guy[i].recty2>=(y*TILE_HEIGHT))
 			{
 				tries++;
@@ -5099,7 +5099,7 @@ void GiveBirthToAlien(int x,int y,byte lefty)
 			guy[i].parent=255;
 			guy[i].hp=1;
 			guy[i].num=i;
-	
+
 			guy[i].flags=GF_VICTORY|GF_EVIL|GF_EVILMEAN|GF_GHOST;
 			guy[i].speed=FIXAMT*8;
 			if(lefty==1)
@@ -5349,7 +5349,7 @@ byte AddGuy(byte type,int x,int y,int value)
 					guy[i].dy=0;
 					guy[i].reload=60;
 					guy[i].anim=31;
-					
+
 
 					if(GetRand(2))
 						guy[i].reload2=0;

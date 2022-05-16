@@ -1,6 +1,6 @@
 #include "random.h"
-#include <mgraph.h>
-#include <windows.h>
+#include "clock.h"
+#include "mgldraw.h"
 
 void SeedRand(void)
 {

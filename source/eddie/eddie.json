@@ -1,0 +1,13 @@
+{
+	"title": "Eddie Galaxy",
+	"installers": [
+		{
+			"filename": "eddie_install.EXE",
+			"kind": "inno",
+			"sha256sum": "41f454e4a5ef93d38782fc36b979cbc7507ab7c858467e45f776769c5cc16967",
+			"link": "https://hamumu.itch.io/eddie-galaxy",
+			"file_id": 724529,
+			"description": "Base assets for Eddie Galaxy"
+		}
+	]
+}

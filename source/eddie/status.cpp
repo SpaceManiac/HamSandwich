@@ -72,7 +72,7 @@ void RenderStatusDisplay(void)
 	s=GetWeapon();
 	if(s!=WPN_NONE)
 		ShowSprite(SPR_STATUS,14+s,497,119);
-	
+
 	// display current ammo
 	if(s!=WPN_NONE)
 	{
@@ -235,7 +235,7 @@ void PauseModeUpdate(void)
 			hilited=6;
 	}
 	// this checks for clicks and such on the pause buttons
-	if(MouseClick() || ((keys&CONTROL_B1) && (!(oldKeys&CONTROL_B1))))
+	if(mainmgl->MouseTap() || ((keys&CONTROL_B1) && (!(oldKeys&CONTROL_B1))))
 	{
 		switch(hilited)
 		{
@@ -341,7 +341,7 @@ void UpdateStatusDisplay(void)
 
 	if(keys&(CONTROL_UP|CONTROL_LF|CONTROL_DN|CONTROL_RT))
 		StatusKeyPress();
-	
+
 	cursorX+=msx/2;
 	cursorY+=msy/2;
 	if(cursorX>(636-485-4))
@@ -365,7 +365,7 @@ void UpdateStatusDisplay(void)
 		PauseModeUpdate();
 }
 
-void SetMonitorText(byte line,char *s)
+void SetMonitorText(byte line,const char *s)
 {
 	strncpy(monitorText[line],s,32);
 }
@@ -459,14 +459,14 @@ byte HighScoreEntryUpdate(byte whichScore,int *lastTime)
 		(*lastTime)-=TIME_PER_FRAME;
 	}
 
-	if(c=LastKeyPressed())
+	if(c=mainmgl->LastKeyPressed())
 	{
 		if(c==8) // backspace
 		{
 			if(pos>0)
 			{
 				pos--;
-				buffer[pos]='\0';					
+				buffer[pos]='\0';
 			}
 			strcpy(GetHiScoreName(whichScore),buffer);
 		}
@@ -484,7 +484,7 @@ byte HighScoreEntryUpdate(byte whichScore,int *lastTime)
 		}
 		else if(pos<8)
 		{
-			buffer[pos]=c;				
+			buffer[pos]=c;
 			pos++;
 			buffer[pos]='\0';
 			strcpy(GetHiScoreName(whichScore),buffer);
@@ -521,12 +521,12 @@ void EnterHighScore(void)
 
 	if(rank<5)	// got a high score!
 	{
-		LastKeyPressed();
+		mainmgl->LastKeyPressed();
 		lastTime=0;
 		endclock=0;
 		clock=0;
 		while(1)
-		{	
+		{
 			lastTime+=endclock-clock;
 			clock=GetTime();
 
@@ -539,7 +539,7 @@ void EnterHighScore(void)
 			}
 			endclock=GetTime();
 		}
-		
+
 	}
 	else
 	{

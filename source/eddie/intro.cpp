@@ -66,7 +66,7 @@ byte UpdateIntro(int *lastTime)
 	oldKeys=keys;
 	keys=GetControls();
 
-	if(LastKeyPressed() || MouseClick() || ((keys&CONTROL_B1)&&(!(oldKeys&CONTROL_B1))))
+	if(mainmgl->LastKeyPressed() || mainmgl->MouseTap() || ((keys&CONTROL_B1)&&(!(oldKeys&CONTROL_B1))))
 		return 0;
 	else
 		return 1;
@@ -82,7 +82,7 @@ byte RenderIntro(void)
 		Print(5,5,txt[0],2);
 	else
 		PrintCursor(5,5,txt[0],curChar,blink,bright,2);
-	
+
 	for(i=1;i<5;i++)
 	{
 		if(curLine>i)
@@ -90,7 +90,7 @@ byte RenderIntro(void)
 		else if(curLine==i)
 			PrintCursor(5,75+i*20,txt[i],curChar,blink,bright,1);
 	}
-	
+
 	for(i=5;i<12;i++)
 	{
 		if(curLine>i)
@@ -98,7 +98,7 @@ byte RenderIntro(void)
 		else if(curLine==i)
 			PrintCursor(5,95+i*20,txt[i],curChar,blink,bright,1);
 	}
-	
+
 	RenderLogo();
 	RenderStatusDisplay();
 	return FlipScreen();
@@ -278,15 +278,15 @@ void DoIntro(byte world)
 	lastTime=TIME_PER_FRAME;
 
 	InitIntro();
-	LastKeyPressed();
+	mainmgl->LastKeyPressed();
 	while(1)
 	{
 		lastTime+=endclock-clock;
 		clock=GetTime();
-		
+
 		if(!UpdateIntro(&lastTime))
 			return;
-		
+
 		if(!RenderIntro())
 			return;
 

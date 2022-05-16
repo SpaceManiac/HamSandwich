@@ -3,6 +3,7 @@
 #include "backgd.h"
 #include "tile.h"
 #include "sound.h"
+#include "clock.h"
 
 static MGLDraw *dispmgl;
 sprite_set_t *spr[MAX_SPR];
@@ -119,43 +120,43 @@ void ExitDisplay(void)
 	}
 }
 
-void GetPaletteFromBMP(char *fname)
+void GetPaletteFromBMP(const char *fname)
 {
 	dispmgl->LoadBMP(fname);
 }
 
-void Print(int x,int y,char *s,byte f)
+void Print(int x,int y,const char *s,byte f)
 {
 	FontPrintString(x,y,s,&font[f]);
 }
 
-void PrintBright(int x,int y,char *s,char brt,byte f)
+void PrintBright(int x,int y,const char *s,char brt,byte f)
 {
 	FontPrintStringBright(x,y,s,&font[f],brt);
 }
 
-void PrintGreen(int x,int y,char *s)
+void PrintGreen(int x,int y,const char *s)
 {
 	FontPrintStringColor(x,y,s,&font[1],32);
 }
 
-int StringLength(char *s,byte f)
+int StringLength(const char *s,byte f)
 {
 	return FontStrLen(s,&font[f]);
 }
 
-void PrintCursor(int x,int y,char *s,byte pos,byte blink,char bright,byte f)
+void PrintCursor(int x,int y,const char *s,byte pos,byte blink,char bright,byte f)
 {
 	FontPrintStringCursorLit(x,y,pos,blink,s,&font[f],bright);
 }
 
-void CenterPrint(int y,char *s,byte f,char brt)
+void CenterPrint(int y,const char *s,byte f,char brt)
 {
 	// this centers in the play window, not the full screen
 	FontPrintStringBright(240-(FontStrLen(s,&font[f])/2),y,s,&font[f],brt);
 }
 
-void ColorCenterPrint(int y,char *s,byte f,byte col)
+void ColorCenterPrint(int y,const char *s,byte f,byte col)
 {
 	// this centers in the play window, not the full screen
 	FontPrintStringDropShadow(240-(FontStrLen(s,&font[f])/2),y,s,&font[f],col,2);
@@ -164,7 +165,7 @@ void ColorCenterPrint(int y,char *s,byte f,byte col)
 void CenterPrint2(int y,char *s,byte f,char brt)
 {
 	int len;
-	
+
 	len=(FontStrLen(s,&font[f])/2);
 	s[strlen(s)-1]='\0';	// strip the last character
 	// this centers in the play window, not the full screen
@@ -265,7 +266,7 @@ void RenderParticle(int x,int y,byte color,byte size)
 
 	if(x<0 || x>639 || y<0 || y>479)
 		return;
-	
+
 	scrn=dispmgl->GetScreen();
 
 	switch(size)
@@ -273,7 +274,7 @@ void RenderParticle(int x,int y,byte color,byte size)
 		case 2:	// big particle
 			if(x<2 || x>637 || y<2 || y>477)
 				return;
-			
+
 			if((color&31)>1)
 				c1=color-2;	// only do this if subtracting 2 keeps it in the same color group
 			else
@@ -339,7 +340,7 @@ void RenderGlowParticle(int x,int y,byte color,byte size)
 
 	if(x<0 || x>639 || y<0 || y>479)
 		return;
-	
+
 	scrn=dispmgl->GetScreen();
 
 	switch(size)
@@ -405,7 +406,7 @@ void RenderGlowParticle(int x,int y,byte color,byte size)
 		case 2:	// big particle
 			if(x<2 || x>637 || y<2 || y>477)
 				return;
-			
+
 			if((color&31)>1)
 				c1=color-2;	// only do this if subtracting 2 keeps it in the same color group
 			else
@@ -454,63 +455,25 @@ void RenderGlowParticle(int x,int y,byte color,byte size)
 	}
 }
 
-byte SpecialLoadBMP(char *name,palette_t *pal)
-{
-	FILE *f;
-	BITMAPFILEHEADER bmpFHead;
-	BITMAPINFOHEADER bmpIHead;
-	RGBQUAD	pal2[256];
-	
-	int i;
-	byte *scr;
-
-	f=fopen(name,"rb");
-	if(!f)
-		return FALSE;
-
-	fread(&bmpFHead,sizeof(BITMAPFILEHEADER),1,f);
-	fread(&bmpIHead,sizeof(BITMAPINFOHEADER),1,f);
-
-	// 8-bit BMPs only
-	if(bmpIHead.biBitCount!=8)
-		return FALSE;
-
-	fread(pal2,sizeof(pal2),1,f);
-	for(i=0;i<256;i++)
-	{
-		pal[i].red=pal2[i].rgbRed;
-		pal[i].green=pal2[i].rgbGreen;
-		pal[i].blue=pal2[i].rgbBlue;
-	}
-
-	for(i=0;i<bmpIHead.biHeight;i++)
-	{
-		scr=(byte *)((int)dispmgl->GetScreen()+(bmpIHead.biHeight-1-i)*640);
-		fread(scr,bmpIHead.biWidth,1,f);
-	}
-	fclose(f);
-	return TRUE;
-}
-
-void SplashScreen(char *fname,int delay,byte sound,byte specialdeal)
+void SplashScreen(const char *fname,int delay,byte sound,byte specialdeal)
 {
 	int i,j,clock;
 	dword tick,tock;
-	palette_t desiredpal[256],curpal[256];
+	RGB desiredpal[256],curpal[256];
 	byte mode,done;
 
 	for(i=0;i<256;i++)
 	{
-		curpal[i].red=0;
-		curpal[i].green=0;
-		curpal[i].blue=0;
+		curpal[i].r=0;
+		curpal[i].g=0;
+		curpal[i].b=0;
 	}
 	dispmgl->SetPalette(curpal);
 	dispmgl->RealizePalette();
 
 	dispmgl->LastKeyPressed();
-	
-	if(!SpecialLoadBMP(fname,desiredpal))
+
+	if(!dispmgl->LoadBMP(fname,desiredpal))
 		return;
 
 	mode=0;
@@ -533,10 +496,10 @@ void SplashScreen(char *fname,int delay,byte sound,byte specialdeal)
 
 		if((!specialdeal) || clock>delay)
 		{
-			if(dispmgl->LastKeyPressed() || MouseClick() || RMouseClick())
+			if(dispmgl->LastKeyPressed() || dispmgl->MouseTap() || dispmgl->RMouseTap())
 				mode=2;
 		}
-		
+
 		clock++;
 		switch(mode)
 		{
@@ -544,12 +507,12 @@ void SplashScreen(char *fname,int delay,byte sound,byte specialdeal)
 				for(j=0;j<8;j++)
 					for(i=0;i<256;i++)
 					{
-						if(curpal[i].red<desiredpal[i].red)
-							curpal[i].red++;
-						if(curpal[i].green<desiredpal[i].green)
-							curpal[i].green++;
-						if(curpal[i].blue<desiredpal[i].blue)
-							curpal[i].blue++;
+						if(curpal[i].r<desiredpal[i].r)
+							curpal[i].r++;
+						if(curpal[i].g<desiredpal[i].g)
+							curpal[i].g++;
+						if(curpal[i].b<desiredpal[i].b)
+							curpal[i].b++;
 					}
 				dispmgl->SetPalette(curpal);
 				dispmgl->RealizePalette();
@@ -576,16 +539,16 @@ void SplashScreen(char *fname,int delay,byte sound,byte specialdeal)
 				for(j=0;j<8;j++)
 					for(i=0;i<256;i++)
 					{
-						if(curpal[i].red>0)
-							curpal[i].red--;
+						if(curpal[i].r>0)
+							curpal[i].r--;
 						else
 							clock++;
-						if(curpal[i].green>0)
-							curpal[i].green--;
+						if(curpal[i].g>0)
+							curpal[i].g--;
 						else
 							clock++;
-						if(curpal[i].blue>0)
-							curpal[i].blue--;
+						if(curpal[i].b>0)
+							curpal[i].b--;
 						else
 							clock++;
 					}
@@ -616,7 +579,7 @@ DisplayList::~DisplayList(void)
 int DisplayList::GetOpenSlot(void)
 {
 	int i;
-	
+
 	for(i=0;i<MAX_DISPLAY_OBJS;i++)
 	{
 		if(dispObj[i].flags==0)
@@ -653,7 +616,7 @@ void DisplayList::HookIn(int me)
 		i=head;
 		while(i!=-1)
 		{
-			if((!(dispObj[i].flags&DISPLAY_SHADOW)) && 
+			if((!(dispObj[i].flags&DISPLAY_SHADOW)) &&
 				(dispObj[i].y>dispObj[me].y || (dispObj[i].y==dispObj[me].y && dispObj[i].z>dispObj[me].z)))
 			{
 				dispObj[me].prev=dispObj[i].prev;
@@ -682,7 +645,7 @@ bool DisplayList::DrawSprite(int x,int y,int z,byte hue,char bright,sprite_t *sp
 {
 	int i;
 
-	if(x<-DISPLAY_XBORDER || x>640+DISPLAY_XBORDER || 
+	if(x<-DISPLAY_XBORDER || x>640+DISPLAY_XBORDER ||
 	   y<-DISPLAY_YBORDER || y>480+DISPLAY_YBORDER)
 		return true;
 	i=GetOpenSlot();

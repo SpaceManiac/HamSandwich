@@ -56,7 +56,7 @@ byte CreditsRun(int *lastTime)
 
 		*lastTime-=TIME_PER_FRAME;
 	}
-	if(LastKeyPressed() || MouseClick())
+	if(mainmgl->LastKeyPressed() || mainmgl->MouseTap())
 	{
 		return 0;
 	}
@@ -101,7 +101,7 @@ byte CreditsRender(void)
 				CenterPrint(ypos-credY,s,1,0);
 			ypos+=20;
 		}
-		
+
 		i++;
 		if(ypos-credY>=480)
 			break;
@@ -129,7 +129,7 @@ void Credits(void)
 	//LoadBackgd("graphics\\space.bmp");
 	//SetBackScroll(1);
 
-	LastKeyPressed();
+	mainmgl->LastKeyPressed();
 
 	while(!quit)
 	{
@@ -141,7 +141,7 @@ void Credits(void)
 
 		if(!CreditsRender())
 			quit=1;
-		
+
 		endclock=GetTime();
 	}
 }

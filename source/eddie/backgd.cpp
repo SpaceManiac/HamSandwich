@@ -12,10 +12,10 @@ void InitBackgd(void)
 	backScroll=0;
 	backgd=(byte *)malloc(480*480);
 	if(!backgd)
-		MGL_fatalError("Out of memory!");
+		FatalError("Out of memory!");
 	statusBar=(byte *)malloc(160*480);
 	if(!statusBar)
-		MGL_fatalError("Out of memory!");
+		FatalError("Out of memory!");
 	LoadStatus();
 }
 
@@ -30,59 +30,19 @@ void SetBackScroll(byte on)
 	backScroll=on;
 }
 
-void LoadBackgd(char *name)
+void LoadBackgd(const char *name)
 {
-	FILE *f;
-	BITMAPFILEHEADER bmpFHead;
-	BITMAPINFOHEADER bmpIHead;
-	RGBQUAD	pal2[256];
-	
-	int i;
-	byte *scr;
-
-	f=fopen(name,"rb");
-	if(!f)
-		return;
-
-	fread(&bmpFHead,sizeof(BITMAPFILEHEADER),1,f);
-	fread(&bmpIHead,sizeof(BITMAPINFOHEADER),1,f);
-
-	fread(pal2,sizeof(pal2),1,f);	
-
-	for(i=0;i<bmpIHead.biHeight;i++)
-	{
-		scr=(byte *)((int)backgd+(bmpIHead.biHeight-1-i)*480);
-		fread(scr,bmpIHead.biWidth,1,f);
-	}
-	fclose(f);
+	SDL_Surface* bmp = SDL_LoadBMP(name);
+	memcpy(backgd, bmp->pixels, bmp->h * 480);
+	SDL_FreeSurface(bmp);
 	backgdY=0;
 }
 
 void LoadStatus(void)
 {
-	FILE *f;
-	BITMAPFILEHEADER bmpFHead;
-	BITMAPINFOHEADER bmpIHead;
-	RGBQUAD	pal2[256];
-	
-	int i;
-	byte *scr;
-
-	f=fopen("graphics\\status.bmp","rb");
-	if(!f)
-		return;
-
-	fread(&bmpFHead,sizeof(BITMAPFILEHEADER),1,f);
-	fread(&bmpIHead,sizeof(BITMAPINFOHEADER),1,f);
-
-	fread(pal2,sizeof(pal2),1,f);	
-
-	for(i=0;i<bmpIHead.biHeight;i++)
-	{
-		scr=(byte *)((int)statusBar+(bmpIHead.biHeight-1-i)*160);
-		fread(scr,bmpIHead.biWidth,1,f);
-	}
-	fclose(f);
+	SDL_Surface* bmp = SDL_LoadBMP("graphics/status.bmp");
+	memcpy(statusBar, bmp->pixels, bmp->h * 160);
+	SDL_FreeSurface(bmp);
 }
 
 void RenderBackgd(byte *scr)

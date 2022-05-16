@@ -1,5 +1,5 @@
 /* Eddie Galaxy: Intergalactic Exterminator
-   
+
    A HamumuSoft Production.
 
    v 1.2
@@ -10,31 +10,26 @@
 #include "mgldraw.h"
 #include "jamulfont.h"
 #include "jamulsound.h"
-
 #include "game.h"
+#include "extern.h"
 
-bool windowedGame=FALSE;
 MGLDraw *mainmgl;
 
-void parseCmdLine(char *cmdLine)
+TASK(int) main(int argc, char* argv[])
 {
-	char *token;
+	//HAM_EXTERN_FULFILL
 
-	token=strtok(cmdLine," ");
-	while(token!=NULL)
+	bool windowedGame=false;
+
+	for (int i = 1; i < argc; ++i)
 	{
-		if(!strcmp(token,"window"))
-			windowedGame=TRUE;
-		token=strtok(NULL," ");
+		if (!strcmp(argv[i], "window"))
+			windowedGame=true;
 	}
-}
 
-int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR cmdLine,int nCmdShow)
-{	
 	byte buy;
 
-	parseCmdLine(cmdLine);
-	mainmgl=new MGLDraw("Eddie Galaxy",640,480,8,windowedGame,hInstance);
+	mainmgl=new MGLDraw("Eddie Galaxy",640,480,windowedGame);
 	if(!mainmgl)
 		return 0;
 

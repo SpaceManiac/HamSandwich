@@ -663,6 +663,23 @@ void FontPrintStringDropShadow(int x, int y, const char *s, mfont_t *font, byte 
 	}
 }
 
+void FontPrintStringCursorLit(int x,int y,byte pos,byte blink,const char *s,mfont_t *font,char bright)
+{
+	int i;
+	char b;
+
+	for(i=0;i<=pos;i++)
+	{
+		b=bright-pos*2+i*2;
+		if(b<0)
+			b=0;
+		FontPrintCharBright(x,y,s[i],b,font);
+		x+=CharWidth(s[i],font)+font->gapSize;
+	}
+	if(blink)
+		FontPrintCharBright(x,y,'_',0,font);	// show the cursor
+}
+
 void FontPrintRectBlack(int x,int y,int x2,int y2, const char *s,int height,int bright,mfont_t *font)
 {
 	int tx,ty,len;

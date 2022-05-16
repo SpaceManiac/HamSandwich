@@ -33,7 +33,7 @@ void CentipedeInit(MGLDraw *mgl)
 {
 	gamemgl=mgl;
 	InitDisplay(mgl);
-	InitControls(mgl);
+	InitControls();
 	InitPlayer();
 	InitGuys();
 	InitBackgd();
@@ -84,7 +84,7 @@ byte CentipedePlay(void)
 	byte quit;
 	int lastTime;
 	dword clock,endclock;
-	
+
 	quit=0;
 	clock=0;
 	endclock=0;
@@ -101,7 +101,7 @@ byte CentipedePlay(void)
 	InitStatus();
 
 	SetupLevel(GetLevel());
-	LastKeyPressed();
+	mainmgl->LastKeyPressed();
 	naughtyCounter=0;
 
 	while(!quit)
@@ -128,7 +128,7 @@ byte CentipedePlay(void)
 		endclock=GetTime();
 		if(gameMode==GAMEMODE_QUIT)
 			quit=1;
-		
+
 		if(gameMode==GAMEMODE_WIN)
 		{
 			// you just won a level, set up the next one
@@ -161,7 +161,7 @@ byte CentipedeGame(void)
 	continuing=0;
 
 	//SplashScreen("graphics\\intro.bmp",3*30+64,108,0);
-	
+
 	GetPaletteFromBMP("graphics\\status.bmp");
 
 	while(!quit)
@@ -196,7 +196,7 @@ byte CentipedeGame(void)
 	ret=Nag(gamemgl);
 #endif
 	StopSong();
-	
+
 	//SplashScreen("graphics\\trail1.bmp",5*30+64,109,0);
 	//SplashScreen("graphics\\trail2.bmp",3*30,110,1);
 	return ret;
@@ -245,7 +245,7 @@ byte CentipedeRun(int *lastTime)
 
 		//update everything
 		UpdateMouse();
-		
+
 		if(gameMode==GAMEMODE_PLAY)
 		{
 			UpdateBackgd();
@@ -307,8 +307,8 @@ byte CentipedeRun(int *lastTime)
 		}
 	}
 	JamulSoundUpdate();
-	
-	k=LastKeyPressed();
+
+	k=mainmgl->LastKeyPressed();
 
 	if(k==27)
 	{
@@ -350,8 +350,10 @@ byte NaughtyTime(void)
 
 byte CentipedeDraw(void)
 {
+	/*
 	if(!GM_getDoDraw())
 		return 1;		// not supposed to draw
+	*/
 
 	// draw everything
 	DrawBackgd();
@@ -362,7 +364,7 @@ byte CentipedeDraw(void)
 	RenderMissionTarget();
 	RenderLogo();
 	RenderStatusDisplay();
-	
+
 	if(gameMode==GAMEMODE_START || gameMode==GAMEMODE_OVER)
 	{
 		CenterPrint(textY,lvlText[0],2,textBright);

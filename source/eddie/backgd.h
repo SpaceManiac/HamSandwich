@@ -5,7 +5,7 @@
 
 void InitBackgd(void);
 void ExitBackgd(void);
-void LoadBackgd(char *name);
+void LoadBackgd(const char *name);
 void LoadStatus(void);
 void RenderBackgd(byte *scr);
 void RenderStatusBar(byte *scr);

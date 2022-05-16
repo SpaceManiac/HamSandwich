@@ -1,7 +1,17 @@
 #include "sound.h"
+#include <stdio.h>
 #include "options.h"
+#include "hammusic.h"
 
 byte curSong;
+
+void JamulSoundSong(int sng, int x)
+{
+	char buf[64];
+	sprintf(buf, "sound/snd%03d.wav", sng);
+	PlaySongFile(buf);
+	SetMusicVolume(x == -700 ? 128 : 255);
+}
 
 void MakeSound(int snd,int priority)
 {
@@ -21,11 +31,6 @@ void PlaySong(int sng)
 	}
 }
 
-void StopSong(void)
-{
-	JamulSoundStopSong();
-}
-
 void ReplaySong(void)
 {
 	if(MusicIsOn())
@@ -40,7 +45,7 @@ void ReplaySong(void)
 void VolumeSong(byte hi)
 {
 	if(hi)
-		SetSongVolume(0);
+		SetMusicVolume(255);
 	else
-		SetSongVolume(-700);
+		SetMusicVolume(128);
 }
