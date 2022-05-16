@@ -383,10 +383,10 @@ struct Launcher
 			launcher_metadata["project_metadata"].erase(id);
 			games.emplace_back(id, value);
 			games.back().icon = icons_by_id[id];
-		}
 
-		if (!games.empty())
-			current_game = &games[0];
+			if (games.size() == 1 || id == "supreme")
+				current_game = &games.back();
+		}
 
 		// Load excluded games. The launcher knows how to download their assets,
 		// but not everything else.
