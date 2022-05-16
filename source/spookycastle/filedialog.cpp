@@ -1,43 +1,41 @@
 #include "filedialog.h"
 #include "editor.h"
+#include "appdata.h"
 
 #define MAX_FILES 18
 
-char fnames[MAX_FILES][32];
-char newfname[32]="";
-byte numFiles;
-long hFile;
+namespace
+{
+	char fnames[MAX_FILES][32];
+	char newfname[32]="";
+	byte numFiles;
+	long hFile;
+
+	std::vector<std::string> files_all;
+	std::vector<std::string>::iterator files_current;
+}
 
 void InitFileDialog(void)
 {
 	int i;
-	struct _finddata_t filedata;
 
 	for(i=0;i<MAX_FILES;i++)
 		fnames[i][0]='\0';
-		
+
 	numFiles=0;
-
-	hFile=_findfirst("*.scw",&filedata);
-
-	if(hFile!=-1)	// there's at least one
+	files_all = ListDirectory(".", ".scw", 32);
+	for (files_current = files_all.begin(); files_current != files_all.end(); ++files_current)
 	{
-		strncpy(fnames[0],filedata.name,32);
-		numFiles=1;
-
-		while(numFiles<MAX_FILES)
-		{
-			if(_findnext(hFile,&filedata)==0)
-				strncpy(fnames[numFiles++],filedata.name,32);
-			else	// no more files
-				break;
-		}
+		const char* name = files_current->c_str();
+		SDL_utf8strlcpy(fnames[numFiles++], name, 32);
+		if (numFiles >= MAX_FILES)
+			break;
 	}
 }
 
 void ExitFileDialog(void)
 {
-	_findclose(hFile);
+	files_all.clear();
 }
 
 void RenderFileDialog(int msx,int msy,MGLDraw *mgl)
@@ -105,26 +103,22 @@ byte FileDialogKey(char key)
 void FileDialogMoreFiles(void)
 {
 	int i;
-	struct _finddata_t filedata;
 
 	for(i=0;i<MAX_FILES;i++)
 		fnames[i][0]='\0';
-		
+
 	numFiles=0;
-		
-	while(numFiles<MAX_FILES)
+	for (; files_current != files_all.end(); ++files_current)
 	{
-		if(_findnext(hFile,&filedata)==0)
-			strncpy(fnames[numFiles++],filedata.name,32);
-		else	// no more files
-		{
-			if(numFiles==0)	// there aren't any more to list at all!
-			{
-				ExitFileDialog();
-				InitFileDialog();	// reget the first page of them
-			}
+		const char* name = files_current->c_str();
+		SDL_utf8strlcpy(fnames[numFiles++], name, 32);
+		if (numFiles >= MAX_FILES)
 			break;
-		}
+	}
+	if(numFiles==0)	// there aren't any more to list at all!
+	{
+		ExitFileDialog();
+		InitFileDialog();	// reget the first page of them
 	}
 }
 
@@ -166,6 +160,6 @@ byte FileDialogClick(int msx,int msy)
 	}
 	if(msx>370 && msy>370 && msx<420 && msy<370+14)	// Quit
 		return 0;
-	
+
 	return 1;
 }

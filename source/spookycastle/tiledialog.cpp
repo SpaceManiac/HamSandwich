@@ -1,43 +1,43 @@
 #include "tiledialog.h"
 #include "editor.h"
+#include "appdata.h"
 
 #define MAX_FILES 18
 
-static char fnames[MAX_FILES][32];
-static char newfname[32]="";
-static byte numFiles;
-static long hFile;
+namespace
+{
+	char fnames[MAX_FILES][32];
+	char newfname[32]="";
+	byte numFiles;
+	long hFile;
+
+	std::vector<std::string> files_all;
+	std::vector<std::string>::iterator files_current;
+}
 
 void InitTileDialog(void)
 {
 	int i;
-	struct _finddata_t filedata;
 
 	for(i=0;i<MAX_FILES;i++)
 		fnames[i][0]='\0';
-		
+
 	numFiles=0;
-	
-	hFile=_findfirst("graphics\\*.bmp",&filedata);
 
-	if(hFile!=-1)	// there's at least one
+	numFiles=0;
+	files_all = ListDirectory("graphics", ".bmp", 32);
+	for (files_current = files_all.begin(); files_current != files_all.end(); ++files_current)
 	{
-		strncpy(fnames[0],filedata.name,32);
-		numFiles=1;
-
-		while(numFiles<MAX_FILES)
-		{
-			if(_findnext(hFile,&filedata)==0)
-				strncpy(fnames[numFiles++],filedata.name,32);
-			else	// no more files
-				break;
-		}
+		const char* name = files_current->c_str();
+		strncpy(fnames[numFiles++], name, 32);
+		if (numFiles >= MAX_FILES)
+			break;
 	}
 }
 
 void ExitTileDialog(void)
 {
-	_findclose(hFile);
+	files_all.clear();
 }
 
 void RenderTileDialog(int msx,int msy,MGLDraw *mgl)
@@ -101,26 +101,22 @@ byte TileDialogKey(char key)
 void TileDialogMoreFiles(void)
 {
 	int i;
-	struct _finddata_t filedata;
 
 	for(i=0;i<MAX_FILES;i++)
 		fnames[i][0]='\0';
-		
+
 	numFiles=0;
-		
-	while(numFiles<MAX_FILES)
+	for (; files_current != files_all.end(); ++files_current)
 	{
-		if(_findnext(hFile,&filedata)==0)
-			strncpy(fnames[numFiles++],filedata.name,32);
-		else	// no more files
-		{
-			if(numFiles==0)	// there aren't any more to list at all!
-			{
-				ExitTileDialog();
-				InitTileDialog();	// reget the first page of them
-			}
+		const char* name = files_current->c_str();
+		strncpy(fnames[numFiles++], name, 32);
+		if (numFiles >= MAX_FILES)
 			break;
-		}
+	}
+	if(numFiles==0)	// there aren't any more to list at all!
+	{
+		ExitTileDialog();
+		InitTileDialog();	// reget the first page of them
 	}
 }
 
@@ -151,6 +147,6 @@ byte TileDialogClick(int msx,int msy)
 	}
 	if(msx>370 && msy>370 && msx<420 && msy<370+14)	// Quit
 		return 0;
-	
+
 	return 1;
 }

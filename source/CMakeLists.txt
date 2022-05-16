@@ -47,6 +47,7 @@ endif()
 # Comment out an entry to exclude it from the build entirely.
 # The order here is the order that games will appear in the launcher.
 add_subdirectory("eddie")
+add_subdirectory("spookycastle")
 add_subdirectory("lunatic" EXCLUDE_FROM_ALL)
 add_subdirectory("supreme")
 add_subdirectory("mystic")

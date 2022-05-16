@@ -1,4 +1,5 @@
 #include "tile.h"
+#include "jamulspr.h"
 
 tile_t tiles[NUMTILES];
 MGLDraw *tileMGL;
@@ -17,7 +18,7 @@ void SetTiles(byte *scrn)
 {
 	int i,j;
 	int x,y;
-	
+
 	x=0;
 	y=0;
 	for(i=0;i<NUMTILES;i++)
@@ -106,58 +107,16 @@ void RenderFloorTile(int x,int y,int t,char light)
 		}
 		return;
 	}
-	
 
-	__asm
+	while (hgt > 0)
 	{
-		pusha
-		push ds
-		pop	 es
-		mov  esi,src
-		mov  edi,dst
-		mov  edx,hgt
-		mov  ecx,wid
-		mov  bh,light
-loop1:
-		mov  al,[esi]
-		mov  bl,al
-		and  bl,~31
-		add  al,bh
-		cmp  al,bl
-		jae	 okay1
-		cmp  bh,0
-		jl	 fine
-		mov  al,bl
-		add  al,31
-		jmp okay2
-fine:
-		mov  al,bl
-		jmp okay2
-okay1:
-		add  bl,31
-		cmp  al,bl
-		jb	 okay2
-		cmp  bh,0
-		jl   fine2
-		mov  al,bl
-		jmp  okay2
-fine2:
-		mov  al,bl
-		and  al,(~31)
-okay2:
-		mov  [edi],al
-		inc  esi
-		inc  edi
-		dec  ecx
-		jnz	 loop1
-		mov  ecx,wid
-		add  esi,TILE_WIDTH
-		sub	 esi,wid
-		add  edi,640
-		sub  edi,wid
-		dec  edx
-		jnz  loop1
-		popa
+		hgt--;
+		for (int i = 0; i < wid; ++i)
+		{
+			dst[i] = SprModifyLight(src[i], light);
+		}
+		dst += 640;
+		src += 32;
 	}
 }
 
@@ -215,63 +174,15 @@ void RenderFloorTileShadow(int x,int y,int t,char light)
 	if(darkpart>wid)
 		light-=4;
 
-	__asm
+	while (hgt > 0)
 	{
-		pusha
-		push ds
-		pop	 es
-		mov  esi,src
-		mov  edi,dst
-		mov  edx,hgt
-		mov  ecx,wid
-		mov  bh,light
-loop1:
-		mov  al,[esi]
-		mov  bl,al
-		and  bl,~31
-		add  al,bh
-		cmp  al,bl
-		jae	 okay1
-		cmp  bh,0
-		jl	 fine
-		mov  al,bl
-		add  al,31
-		jmp okay2
-fine:
-		mov  al,bl
-		jmp okay2
-okay1:
-		add  bl,31
-		cmp  al,bl
-		jb	 okay2
-		cmp  bh,0
-		jl   fine2
-		mov  al,bl
-		jmp  okay2
-darkenit:
-		sub  bh,4
-		jmp  donedarken
-fine2:
-		mov  al,bl
-		and  al,(~31)
-okay2:
-		mov  [edi],al
-		inc  esi
-		inc  edi
-		cmp  ecx,darkpart
-		je   darkenit
-donedarken:
-		dec  ecx
-		jnz	 loop1
-		mov  bh,light
-		mov  ecx,wid
-		add  esi,TILE_WIDTH
-		sub	 esi,wid
-		add  edi,640
-		sub  edi,wid
-		dec  edx
-		jnz  loop1
-		popa
+		hgt--;
+		for (int i = 0; i < wid; ++i)
+		{
+			dst[i] = SprModifyLight(src[i], light - 4 * (i > wid - darkpart));
+		}
+		dst += 640;
+		src += 32;
 	}
 }
 
@@ -318,28 +229,12 @@ void RenderFloorTileUnlit(int x,int y,int t)
 	else
 		hgt=TILE_HEIGHT;
 
-	if(hgt<=0)
-		return;
-
-	__asm
+	while (hgt > 0)
 	{
-		pusha
-		push ds
-		pop	 es
-		mov  esi,src
-		mov  edi,dst
-		mov  edx,hgt
-		mov  ecx,wid
-loop1:
-		rep  movsb
-		mov  ecx,wid
-		add  esi,TILE_WIDTH
-		sub	 esi,wid
-		add  edi,640
-		sub  edi,wid
-		dec  edx
-		jnz  loop1
-		popa
+		hgt--;
+		memcpy(dst, src, wid);
+		dst += 640;
+		src += 32;
 	}
 }
 
@@ -389,59 +284,15 @@ void RenderFloorTileTrans(int x,int y,int t,char light)
 	if(hgt<=0)
 		return;
 
-	__asm
+	while (hgt > 0)
 	{
-		pusha
-		push ds
-		pop	 es
-		mov  esi,src
-		mov  edi,dst
-		mov  edx,hgt
-		mov  ecx,wid
-		mov  bh,light
-loop1:
-		mov  al,[esi]
-		cmp  al,0
-		je   trans
-		mov  bl,al
-		and  bl,~31
-		add  al,bh
-		cmp  al,bl
-		jae	 okay1
-		cmp  bh,0
-		jl	 fine
-		mov  al,bl
-		add  al,31
-		jmp okay2
-fine:
-		mov  al,bl
-		jmp okay2
-okay1:
-		add  bl,31
-		cmp  al,bl
-		jb	 okay2
-		cmp  bh,0
-		jl   fine2
-		mov  al,bl
-		jmp  okay2
-fine2:
-		mov  al,bl
-		and  al,(~31)
-okay2:
-		mov  [edi],al
-trans:
-		inc  esi
-		inc  edi
-		dec  ecx
-		jnz	 loop1
-		mov  ecx,wid
-		add  esi,TILE_WIDTH
-		sub	 esi,wid
-		add  edi,640
-		sub  edi,wid
-		dec  edx
-		jnz  loop1
-		popa
+		hgt--;
+		for (int i = 0; i < wid; ++i)
+		{
+			if (src[i]) dst[i] = SprModifyLight(src[i], light);
+		}
+		dst += 640;
+		src += 32;
 	}
 }
 

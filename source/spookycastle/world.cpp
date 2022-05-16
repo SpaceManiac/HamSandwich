@@ -26,7 +26,7 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	return 1;
 }
 
-byte LoadWorld(world_t *world,char *fname)
+byte LoadWorld(world_t *world,const char *fname)
 {
 	FILE *f;
 	int i;
@@ -36,7 +36,7 @@ byte LoadWorld(world_t *world,char *fname)
 		return 0;
 
 	fread(&world->numMaps,1,1,f);
-	
+
 	LoadTiles(f);
 
 	fread(world->terrain,200,sizeof(terrain_t),f);
@@ -55,7 +55,7 @@ byte LoadWorld(world_t *world,char *fname)
 	return 1;
 }
 
-byte SaveWorld(world_t *world,char *fname)
+byte SaveWorld(world_t *world,const char *fname)
 {
 	FILE *f;
 	int i;
@@ -65,7 +65,7 @@ byte SaveWorld(world_t *world,char *fname)
 		return 0;
 
 	fwrite(&world->numMaps,1,1,f);
-	
+
 	SaveTiles(f);
 
 	fwrite(world->terrain,200,sizeof(terrain_t),f);
@@ -100,7 +100,7 @@ void InitWorld(world_t *world,byte worldNum)
 	PlayerSetWorldWorth(worldNum,complete);
 }
 
-void GetWorldName(char *fname,char *buf)
+void GetWorldName(const char *fname,char *buf)
 {
 	FILE *f;
 	char fname2[60];

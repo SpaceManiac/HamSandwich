@@ -1,6 +1,7 @@
 #include "game.h"
 #include "title.h"
 #include "jamulfmv.h"
+#include "palettes.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -43,13 +44,13 @@ void LunaticInit(MGLDraw *mgl)
 	InitTiles(mgl);
 	InitItems();
 	InitInterface();
-	mgl->SetLastKey(0);
+	mgl->LastKeyPressed();
 	InitControls();
 	InitPlayer(INIT_GAME,0,0);
 }
 
 void LunaticExit(void)
-{	
+{
 	ExitItems();
 	ExitSound();
 	ExitDisplay();
@@ -303,7 +304,7 @@ void LunaticDraw(void)
 {
 	char s[32];
 	dword d;
-	
+
 	// add all the sprites to the list
 	if(gameMode!=GAMEMODE_PIC)
 	{
@@ -321,7 +322,7 @@ void LunaticDraw(void)
 	{
 		// nothing to do
 	}
-	
+
 	if(showStats)
 	{
 		sprintf(s,"QFPS %02.2f",frmRate);
@@ -381,7 +382,7 @@ void HandleKeyPresses(void)
 		k++;
 		if(k>3)
 			k=0;
-		gamemgl->GammaCorrect(k);
+		GammaCorrect(gamemgl, k);
 		SetGamma(k);
 		lastKey=0;
 	}
@@ -438,7 +439,7 @@ byte PlayALevel(byte map)
 	return exitcode;
 }
 
-byte LunaticWorld(byte world,char *worldName)
+byte LunaticWorld(byte world,const char *worldName)
 {
 	byte result;
 
@@ -495,7 +496,7 @@ void LunaticGame(MGLDraw *mgl,byte load)
 
 	if(!load)	// don't do this if loading a game, it was already done and the player was filled with values
 		InitPlayer(INIT_GAME,0,0);
-	
+
 	if(load>0)	// continuing a saved game
 		worldResult=WORLD_LOAD;
 	else
@@ -503,9 +504,9 @@ void LunaticGame(MGLDraw *mgl,byte load)
 	while(1)
 	{
 		b=0;
-		
+
 		worldResult=LunaticWorld(b,"castle.scw");
-		
+
 		if(worldResult==WORLD_QUITGAME)
 		{
 			mgl->LastKeyPressed();	// just to clear key buffer

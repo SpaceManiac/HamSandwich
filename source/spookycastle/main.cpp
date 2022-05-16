@@ -1,5 +1,5 @@
 /* DR. LUNATIC (working title)
-   
+
    A HamumuSoft Production.
 
    v 0.04
@@ -11,6 +11,8 @@
 #include "mgldraw.h"
 #include "jamulfont.h"
 #include "jamulsound.h"
+#include "appdata.h"
+#include "extern.h"
 
 #include "game.h"
 #include "editor.h"
@@ -19,26 +21,30 @@
 #include "monster.h"
 #include "title.h"
 
-bool windowedGame=FALSE;
 MGLDraw *mainmgl;
 
-void parseCmdLine(char *cmdLine)
+void ChooseNextSong() {}
+bool ConfigMusicEnabled() { return true; }
+bool ConfigSoundEnabled() { return true; }
+int ConfigNumSounds() { return 16; }
+SDL_RWops* SoundLoadOverride(int) { return nullptr; }
+void SoundSystemExists() {}
+void SetGameIdle(bool) {}
+
+TASK(int) main(int argc, char* argv[])
 {
-	char *token;
+	HAM_EXTERN_FULFILL
+	AppdataInit();
 
-	token=strtok(cmdLine," ");
-	while(token!=NULL)
+	bool windowedGame=false;
+
+	for (int i = 1; i < argc; ++i)
 	{
-		if(!strcmp(token,"window"))
-			windowedGame=TRUE;
-		token=strtok(NULL," ");
+		if (!strcmp(argv[i], "window"))
+			windowedGame=true;
 	}
-}
 
-int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR cmdLine,int nCmdShow)
-{	
-	parseCmdLine(cmdLine);
-	mainmgl=new MGLDraw("Dr. Lunatic",640,480,8,windowedGame,hInstance);
+	mainmgl=new MGLDraw("Spooky Castle",640,480,windowedGame);
 	if(!mainmgl)
 		return 0;
 

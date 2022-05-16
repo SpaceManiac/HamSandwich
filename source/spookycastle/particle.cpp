@@ -3,7 +3,7 @@
 
 Particle **particleList;
 int		maxParticles;
-static snowCount=0;
+static int snowCount=0;
 
 Particle::Particle(void)
 {
@@ -178,8 +178,8 @@ void Particle::Update(Map *map)
 					life++;	// can't die while airborne
 				break;
 		}
-	
-		
+
+
 		if(x<0 || y<0 || x>=((map->width*TILE_WIDTH)<<FIXSHIFT) || y>=((map->height*TILE_HEIGHT)<<FIXSHIFT))
 		{
 			life=0;
@@ -196,7 +196,7 @@ void Particle::Update(Map *map)
 		{
 			mapx=(x/TILE_WIDTH)>>FIXSHIFT;
 			mapy=(y/TILE_HEIGHT)>>FIXSHIFT;
-			
+
 			// brighten it appropriately
 			brt=map->map[mapx+mapy*map->width].templight;
 			c1=(color&(~31));	// c1 is the color range
@@ -252,16 +252,16 @@ void UpdateParticles(Map *map)
 void RenderParticle(int x,int y,byte *scrn,byte color,byte size)
 {
 	byte c1,c2;
-	
+
 	if(x<0 || x>639 || y<0 || y>479)
 		return;
-	
+
 	switch(size)
 	{
 		case 2:	// big particle
 			if(x<2 || x>637 || y<2 || y>477)
 				return;
-			
+
 			if((color&31)>1)
 				c1=color-2;	// only do this if subtracting 2 keeps it in the same color group
 			else
@@ -461,7 +461,7 @@ void MakeItSnow(Map *map)
 	{
 		if(!particleList[i]->Alive())
 		{
-			
+
 			particleList[i]->x=(MGL_random(640)+cx)<<FIXSHIFT;
 			particleList[i]->y=(MGL_random(480)+cy)<<FIXSHIFT;
 			particleList[i]->z=(300+MGL_random(300))<<FIXSHIFT;
@@ -485,7 +485,7 @@ void SpecialSnow(int x,int y)
 	{
 		if(!particleList[i]->Alive())
 		{
-			
+
 			particleList[i]->x=x;
 			particleList[i]->y=y;
 			particleList[i]->z=(10+MGL_random(20))<<FIXSHIFT;

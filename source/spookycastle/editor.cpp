@@ -47,7 +47,7 @@ byte InitEditor(void)
 
 	mouseX=320;
 	mouseY=240;
-	MS_moveTo(320,240);
+	editmgl->SetMouse(320,240);
 	PutCamera(0,0);
 	gameStartTime=timeGetTime();
 	InitGuys(128);
@@ -95,7 +95,7 @@ void EnemyPickerClick(void)
 		// several monster types can't be added, since they are parts of bigger monsters
 		if(i!=MONS_MATCLAW1 && i!=MONS_MATCLAW2 && i!=MONS_MATSKULL && i!=MONS_MATBRAIN &&
 			i!=MONS_MATBODY && i!=MONS_MATTAIL && i!=MONS_THINGTENT && i!=MONS_THINGTENTTIP &&
-			i!=MONS_SPHXARM1 && i!=MONS_SPHXARM2 && i!=MONS_CENTIBODY)		
+			i!=MONS_SPHXARM1 && i!=MONS_SPHXARM2 && i!=MONS_CENTIBODY)
 		{
 			if(mouseX>x-1 && mouseX<x+201 && mouseY>y-1 && mouseY<y+15)
 			{
@@ -202,7 +202,7 @@ void AddMapBadguy(int x,int y,byte type)
 	for(i=0;i<MAX_MAPMONS;i++)
 		if((curMap->badguy[i].type) && (curMap->badguy[i].x==x) && (curMap->badguy[i].y==y))
 			return;	// somebody is already on this square
-		
+
 	// only one bouapha allowed
 	if(type==MONS_BOUAPHA)
 	{
@@ -504,7 +504,7 @@ void EditorMenuClick(void)
 		editopt.displayFlags^=MAP_SHOWBADGUYS;
 	if(mouseX>171 && mouseX<213 && mouseY>437 && mouseY<438+14)
 		editopt.displayFlags^=MAP_SHOWSPECIALS;
-	
+
 	// song changing/playing
 	if(mouseX>215 && mouseX<227 && mouseY>421 && mouseY<422+14)
 	{
@@ -535,7 +535,7 @@ void EditorMenuClick(void)
 			musicPlaying=1;
 		}
 	}
-	
+
 	// file & world menus
 	if(mouseX>215 && mouseX<301 && mouseY>437 && mouseY<438+14)
 	{
@@ -583,20 +583,15 @@ void EditorMenuClick(void)
 	if(mouseX>487 && mouseX<529 && mouseY>421 && mouseY<422+14)
 		curMap->flags^=MAP_TORCHLIT;
 
-	
+
 	plopCounter=100;
 }
 
 void UpdateMouse(void)
 {
-	int msx,msy;
 	int cx,cy;
 
-	MS_getPos(&msx,&msy);
-	MS_moveTo(320,240);
-
-	mouseX+=(msx-320);
-	mouseY+=(msy-240);
+	editmgl->GetMouse(&mouseX,&mouseY);
 
 	if(mouseX<0)
 		mouseX=0;
@@ -606,12 +601,12 @@ void UpdateMouse(void)
 		mouseX=639;
 	if(mouseY>479)
 		mouseY=479;
-	
+
 	GetCamera(&cx,&cy);
 
 	tileX=(mouseX+cx-320);
 	tileY=(mouseY+cy-240);
-	
+
 	if(tileX<0)
 		tileX=tileX/TILE_WIDTH-1;
 	else
@@ -667,12 +662,12 @@ byte EditorRun(int *lastTime)
 	{
 		if(!editmgl->Process())
 			return QUITGAME;
-			
+
 		// update everything here
 		EditorUpdateGuys(curMap);
 		curMap->Update(UPDATE_EDIT,&world);
 		UpdateMouse();
-	
+
 		*lastTime-=TIME_PER_FRAME;
 		numRunsToMakeUp++;
 		updFrameCount++;
@@ -689,7 +684,7 @@ void RenderEditMenu(void)
 
 	editmgl->FillBox(0,420,639,420,16);
 	editmgl->FillBox(0,421,639,479,7);
-	
+
 	// the plopMode buttons
 	editmgl->Box(1,422,40,422+14,16+15*(editopt.plopMode==PLOP_FLOOR));
 	Print(3,424,"Floor",0,1);
@@ -762,7 +757,7 @@ void RenderEditMenu(void)
 	Print(448,456,"Secrt",0,1);
 	editmgl->Box(488,422,528,422+14,16+15*((curMap->flags&MAP_TORCHLIT)!=0));
 	Print(490,424,"Lit",0,1);
-	
+
 	// now show the current stuff for the plop mode
 	switch(editopt.plopMode)
 	{
@@ -833,7 +828,7 @@ void ShowTarget(void)
 	editmgl->Box(x1,y1,x2,y2,col);
 }
 
-void RenderCheckbox(int x,int y,int v,char *txt)
+void RenderCheckbox(int x,int y,int v,const char *txt)
 {
 	if(v)
 		editmgl->FillBox(x,y,x+11,y+11,16);
@@ -920,7 +915,7 @@ void RenderEnemyPickDisplay(void)
 			i!=MONS_SPHXARM1 && i!=MONS_SPHXARM2 && i!=MONS_CENTIBODY)
 
 		{
-			_snprintf(s,32,"%02d:%s",i,MonsterName(i));
+			SDL_snprintf(s,32,"%02d:%s",i,MonsterName(i));
 			if(mouseX>x-1 && mouseX<x+201 && mouseY>y-1 && mouseY<y+15)
 				editmgl->Box(x,y,x+200,y+14,31);
 			else
@@ -1315,7 +1310,7 @@ byte LunaticEditor(MGLDraw *mgl)
 		exitcode=EditorRun(&lastTime);
 		if(numRunsToMakeUp>0)
 			EditorDraw();
-		
+
 		if(lastKey==27)
 			exitcode=QUITGAME;
 

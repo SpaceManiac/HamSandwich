@@ -125,7 +125,7 @@ void PlayerRenderInterface(MGLDraw *mgl)
 					player.weapon,player.ammo,player.hamSpeed,mgl);
 }
 
-void SetCustomName(char *name)
+void SetCustomName(const char *name)
 {
 	strncpy(player.customName,name,32);
 }
@@ -513,7 +513,7 @@ void PlayerThrowHammer(Guy *me)
 void PlayerHeal(byte amt)
 {
 	HealGoodguy(amt);
-		
+
 	if(player.life+amt<128)
 		player.life+=amt;
 	else
@@ -805,7 +805,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			me->dx+=Cosine(me->facing*32)/4;
 			me->dy+=Sine(me->facing*32)/4;
 		}
-		
+
 		Clamp(&me->dx,PLYR_MAXSPD);
 		Clamp(&me->dy,PLYR_MAXSPD);
 

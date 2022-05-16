@@ -93,7 +93,7 @@ void ShowVictoryAnim(byte world)
 			break;
 	}
 	mgl->LoadBMP("graphics\\title.bmp");
-	
+
 	end=timeGetTime();
 	AddGarbageTime(end-start);
 }
@@ -139,7 +139,7 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 
 	rscrx+=scrdx;
 	rscry+=scrdy;
-	
+
 	if(rscrx<320<<FIXSHIFT)
 		rscrx=320<<FIXSHIFT;
 	if(rscrx>((map->width*TILE_WIDTH-320)<<FIXSHIFT))
@@ -165,7 +165,7 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 	scry=(rscry>>FIXSHIFT);
 }
 
-void Print(int x,int y,char *s,char bright,byte font)
+void Print(int x,int y,const char *s,char bright,byte font)
 {
 	if(font==0)
 		FontPrintStringBright(x,y,s,gameFont[0],bright);
@@ -178,7 +178,7 @@ void Print(int x,int y,char *s,char bright,byte font)
 	}
 }
 
-void CenterPrint(int y,char *s,char bright,byte font)
+void CenterPrint(int y,const char *s,char bright,byte font)
 {
 	int x;
 
@@ -197,7 +197,7 @@ void CenterPrint(int y,char *s,char bright,byte font)
 	}
 }
 
-int GetStrLength(char *s)
+int GetStrLength(const char *s)
 {
 	return FontStrLen(s,gameFont[0]);
 }
@@ -243,7 +243,7 @@ void SprDraw(int x,int y,int z,byte hue,char bright,sprite_t *spr,byte flags)
 void WallDraw(int x,int y,byte wall,byte floor,char light,byte flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
-	dispList->DrawSprite(x,y,0,floor,light,(sprite_t *)wall,flags);
+	dispList->DrawSprite(x,y,wall,floor,light,nullptr,flags);
 }
 
 void RoofDraw(int x,int y,byte roof,char light,byte flags)
@@ -274,7 +274,7 @@ DisplayList::~DisplayList(void)
 int DisplayList::GetOpenSlot(void)
 {
 	int i;
-	
+
 	for(i=0;i<MAX_DISPLAY_OBJS;i++)
 	{
 		if(dispObj[i].flags==0)
@@ -311,7 +311,7 @@ void DisplayList::HookIn(int me)
 		i=head;
 		while(i!=-1)
 		{
-			if((!(dispObj[i].flags&DISPLAY_SHADOW)) && 
+			if((!(dispObj[i].flags&DISPLAY_SHADOW)) &&
 				(dispObj[i].y>dispObj[me].y || (dispObj[i].y==dispObj[me].y && dispObj[i].z>dispObj[me].z)))
 			{
 				dispObj[me].prev=dispObj[i].prev;
@@ -340,7 +340,7 @@ bool DisplayList::DrawSprite(int x,int y,int z,byte hue,char bright,sprite_t *sp
 {
 	int i;
 
-	if((x-scrx+320)<-DISPLAY_XBORDER || (x-scrx+320)>640+DISPLAY_XBORDER || 
+	if((x-scrx+320)<-DISPLAY_XBORDER || (x-scrx+320)>640+DISPLAY_XBORDER ||
 	   (y-scry+240)<-DISPLAY_YBORDER || (y-scry+240)>480+DISPLAY_YBORDER)
 		return true;
 	i=GetOpenSlot();
@@ -385,9 +385,9 @@ void DisplayList::Render(void)
 			if(dispObj[i].flags&DISPLAY_WALLTILE)
 			{
 				if(dispObj[i].flags&DISPLAY_TRANSTILE)
-					RenderWallTileTrans(dispObj[i].x-scrx,dispObj[i].y-scry,(byte)dispObj[i].spr,dispObj[i].hue,dispObj[i].bright);
+					RenderWallTileTrans(dispObj[i].x-scrx,dispObj[i].y-scry,dispObj[i].z,dispObj[i].hue,dispObj[i].bright);
 				else
-					RenderWallTile(dispObj[i].x-scrx,dispObj[i].y-scry,(byte)dispObj[i].spr,dispObj[i].hue,dispObj[i].bright);
+					RenderWallTile(dispObj[i].x-scrx,dispObj[i].y-scry,dispObj[i].z,dispObj[i].hue,dispObj[i].bright);
 			}
 			else if(dispObj[i].flags&DISPLAY_ROOFTILE)
 			{

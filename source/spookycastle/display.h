@@ -50,7 +50,7 @@ class DisplayList
 
 		void HookIn(int me);
 		int GetOpenSlot(void);
-		
+
 
 		displayObj_t dispObj[MAX_DISPLAY_OBJS];
 		int head,nextfree;
@@ -67,10 +67,10 @@ void PutCamera(int x,int y);
 void GetCamera(int *x,int *y);
 // call this once per gameloop, with the X and Y of the object you want the camera to track
 void UpdateCamera(int x,int y,byte facing,Map *map);
-void Print(int x,int y,char *s,char bright,byte font);
-void CenterPrint(int y,char *s,char bright,byte font);
+void Print(int x,int y,const char *s,char bright,byte font);
+void CenterPrint(int y,const char *s,char bright,byte font);
 void RenderItAll(world_t *world,Map *map,byte flags);
-int GetStrLength(char *s);
+int GetStrLength(const char *s);
 
 void SprDraw(int x,int y,int z,byte hue,char bright,sprite_t *spr,byte flags);
 void WallDraw(int x,int y,byte wall,byte floor,char light,byte flags);

@@ -1,6 +1,5 @@
 #include "title.h"
 #include "game.h"
-#include <io.h>
 #include "jamulfmv.h"
 #include "pause.h"
 
@@ -184,7 +183,7 @@ void MainMenuDisplay(MGLDraw *mgl,title_t title)
 	scrn=mgl->GetScreen();
 	if(title.blueY>0)
 		memset(scrn,0,640*title.blueY);
-	
+
 	for(i=0;i<title.blueY;i++)
 	{
 		memset(scrn,color/65536+96,640);
@@ -209,7 +208,7 @@ void MainMenuDisplay(MGLDraw *mgl,title_t title)
 	Print(2-1,463-1,"Copyright 1998-2004, Hamumu Software",-32,1);
 	Print(2+1,463+1,"Copyright 1998-2004, Hamumu Software",-32,1);
 	Print(2,463,"Copyright 1998-2004, Hamumu Software",0,1);
-	
+
 	// now the menu options
 	planetSpr->GetSprite(3+(title.cursor==0))->Draw(title.optionsX+20,240,mgl);
 	planetSpr->GetSprite(5+(title.cursor==1))->Draw(title.optionsX,310,mgl);
@@ -243,7 +242,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 
 		if(title->blueY<200)
 			title->blueY+=8;
-		
+
 		// now real updating
 		c=GetControls();
 
@@ -265,7 +264,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 				title->cursor=0;
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) || 
+		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
 		   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
 		{
 			MakeNormalSound(SND_MENUSELECT);
@@ -303,7 +302,7 @@ byte MainMenu(MGLDraw *mgl)
 	mgl->ClearScreen();
 	oldc=CONTROL_B1|CONTROL_B2;
 	planetSpr=new sprite_set_t("graphics\\titlespr.jsp");
-		
+
 	title.bouaphaX=640;
 	title.optionsX=-300;
 	title.titleBright=-32;
@@ -366,7 +365,7 @@ void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 	scrn=mgl->GetScreen();
 	if(title.blueY>0)
 		memset(scrn,0,640*title.blueY);
-	
+
 	for(i=0;i<title.blueY;i++)
 	{
 		memset(scrn,color/65536+96,640);
@@ -391,7 +390,7 @@ void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 	Print(2-1,463-1,"Copyright 1998-2004, Hamumu Software",-32,1);
 	Print(2+1,463+1,"Copyright 1998-2004, Hamumu Software",-32,1);
 	Print(2,463,"Copyright 1998-2004, Hamumu Software",0,1);
-	
+
 	// now the game slots
 	for(i=0;i<3;i++)
 	{
@@ -456,7 +455,7 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 
 		if(title->blueY<200)
 			title->blueY+=8;
-		
+
 		// now real updating
 		c=GetControls();
 
@@ -478,7 +477,7 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 				title->savecursor=0;
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) || 
+		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
 		   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
 		{
 			MakeNormalSound(SND_MENUSELECT);
@@ -607,7 +606,7 @@ void Credits(MGLDraw *mgl)
 		}
 		mgl->ClearScreen();
 		CreditsRender(y);
-		
+
 		mgl->Flip();
 		if(!mgl->Process())
 			return;
@@ -692,7 +691,7 @@ byte SpecialLoadBMP(char *name,MGLDraw *mgl,palette_t *pal)
 	BITMAPFILEHEADER bmpFHead;
 	BITMAPINFOHEADER bmpIHead;
 	RGBQUAD	pal2[256];
-	
+
 	int i;
 	byte *scr;
 
@@ -740,7 +739,7 @@ void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound)
 	mgl->RealizePalette();
 
 	mgl->LastKeyPressed();
-	
+
 	SpecialLoadBMP(fname,mgl,desiredpal);
 
 	mode=0;
@@ -753,7 +752,7 @@ void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound)
 			return;
 		if(mgl->LastKeyPressed())
 			mode=2;
-		
+
 		clock++;
 		switch(mode)
 		{
@@ -821,63 +820,25 @@ void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound)
 }
 */
 
-byte SpecialLoadBMP(MGLDraw *dispmgl,char *name,palette_t *pal)
-{
-	FILE *f;
-	BITMAPFILEHEADER bmpFHead;
-	BITMAPINFOHEADER bmpIHead;
-	RGBQUAD	pal2[256];
-	
-	int i;
-	byte *scr;
-
-	f=fopen(name,"rb");
-	if(!f)
-		return FALSE;
-
-	fread(&bmpFHead,sizeof(BITMAPFILEHEADER),1,f);
-	fread(&bmpIHead,sizeof(BITMAPINFOHEADER),1,f);
-
-	// 8-bit BMPs only
-	if(bmpIHead.biBitCount!=8)
-		return FALSE;
-
-	fread(pal2,sizeof(pal2),1,f);
-	for(i=0;i<256;i++)
-	{
-		pal[i].red=pal2[i].rgbRed;
-		pal[i].green=pal2[i].rgbGreen;
-		pal[i].blue=pal2[i].rgbBlue;
-	}
-
-	for(i=0;i<bmpIHead.biHeight;i++)
-	{
-		scr=(byte *)((int)dispmgl->GetScreen()+(bmpIHead.biHeight-1-i)*640);
-		fread(scr,bmpIHead.biWidth,1,f);
-	}
-	fclose(f);
-	return TRUE;
-}
-
-void SplashScreen(MGLDraw *dispmgl,char *fname,int delay,byte sound,byte specialdeal)
+void SplashScreen(MGLDraw *dispmgl,const char *fname,int delay,byte sound,byte specialdeal)
 {
 	int i,j,clock;
 	dword tick,tock;
-	palette_t desiredpal[256],curpal[256];
+	RGB desiredpal[256],curpal[256];
 	byte mode,done;
 
 	for(i=0;i<256;i++)
 	{
-		curpal[i].red=0;
-		curpal[i].green=0;
-		curpal[i].blue=0;
+		curpal[i].r=0;
+		curpal[i].g=0;
+		curpal[i].b=0;
 	}
 	dispmgl->SetPalette(curpal);
 	dispmgl->RealizePalette();
 
 	dispmgl->LastKeyPressed();
-	
-	if(!SpecialLoadBMP(dispmgl,fname,desiredpal))
+
+	if(!dispmgl->LoadBMP(fname,desiredpal))
 		return;
 
 	mode=0;
@@ -903,7 +864,7 @@ void SplashScreen(MGLDraw *dispmgl,char *fname,int delay,byte sound,byte special
 			if(dispmgl->LastKeyPressed())
 				mode=2;
 		}
-		
+
 		clock++;
 		switch(mode)
 		{
@@ -911,12 +872,12 @@ void SplashScreen(MGLDraw *dispmgl,char *fname,int delay,byte sound,byte special
 				for(j=0;j<8;j++)
 					for(i=0;i<256;i++)
 					{
-						if(curpal[i].red<desiredpal[i].red)
-							curpal[i].red++;
-						if(curpal[i].green<desiredpal[i].green)
-							curpal[i].green++;
-						if(curpal[i].blue<desiredpal[i].blue)
-							curpal[i].blue++;
+						if(curpal[i].r<desiredpal[i].r)
+							curpal[i].r++;
+						if(curpal[i].g<desiredpal[i].g)
+							curpal[i].g++;
+						if(curpal[i].b<desiredpal[i].b)
+							curpal[i].b++;
 					}
 				dispmgl->SetPalette(curpal);
 				dispmgl->RealizePalette();
@@ -943,16 +904,16 @@ void SplashScreen(MGLDraw *dispmgl,char *fname,int delay,byte sound,byte special
 				for(j=0;j<8;j++)
 					for(i=0;i<256;i++)
 					{
-						if(curpal[i].red>0)
-							curpal[i].red--;
+						if(curpal[i].r>0)
+							curpal[i].r--;
 						else
 							clock++;
-						if(curpal[i].green>0)
-							curpal[i].green--;
+						if(curpal[i].g>0)
+							curpal[i].g--;
 						else
 							clock++;
-						if(curpal[i].blue>0)
-							curpal[i].blue--;
+						if(curpal[i].b>0)
+							curpal[i].b--;
 						else
 							clock++;
 					}
