@@ -45,7 +45,7 @@ void InitPlayer(void)
 	player.shield=0;
 	mouseX=0;
 	mouseY=0;
-	// TODO MS_moveTo(320,240);
+	mainmgl->SetMouse(320,240);
 }
 
 void ExitPlayer(void)
@@ -68,7 +68,7 @@ void ContinuePlayer(void)
 	player.shield=0;
 	mouseX=0;
 	mouseY=0;
-	// TODO MS_moveTo(320,240);
+	mainmgl->SetMouse(320,240);
 }
 
 // this resets everything that should be reset when you die
@@ -234,8 +234,8 @@ void UpdateMouse(void)
 {
 	int msx,msy;
 
-	// TODO MS_getPos(&msx,&msy);
-	// TODO MS_moveTo(320,240);
+	mainmgl->GetMouse(&msx,&msy);
+	mainmgl->SetMouse(320,240);
 
 	mouseX=(msx-320);
 	mouseY=(msy-240);
