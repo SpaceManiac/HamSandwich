@@ -1,5 +1,6 @@
 #include "pause.h"
 #include "player.h"
+#include "appdata.h"
 
 #define SUBMODE_NONE	 0
 #define SUBMODE_SLOTPICK 1
@@ -24,7 +25,7 @@ void RenderPauseMenu(void)
 	DrawBox(209,45,431,421,128+16);
 	DrawFillBox(210,46,430,420,0);
 	DrawBox(211,47,429,419,128+10);
-	
+
 	Print(320-GetStrLength("Cancel")/2,50, "Cancel",(cursor==0)*16,0);
 	Print(320-GetStrLength("Load Game")/2,110,"Load Game",(cursor==1)*16,0);
 	Print(320-GetStrLength("Save Game")/2,170,"Save Game",(cursor==2)*16,0);
@@ -72,7 +73,7 @@ void RenderSlotPickMenu(void)
 	else
 		sprintf(txt,"Slot 3 - %03.1f%%",percent[2]);
 	Print(375-GetStrLength(txt)/2,230, txt,(subcursor==2)*16,0);
-	
+
 }
 
 void HandlePauseKeyPresses(MGLDraw *mgl)
@@ -111,7 +112,7 @@ void InitPauseMenu(void)
 	lastKey=0;
 	subMode=0;
 
-	f=fopen("loony.sav","rb");
+	f=AppdataOpen("loony.sav");
 	if(!f)
 	{
 		percent[0]=0.0;
@@ -170,7 +171,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 				cursor=5;
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) || 
+		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
 		   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
 		{
 			MakeNormalSound(SND_MENUSELECT);
@@ -207,7 +208,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			if(subcursor==3)
 				subcursor=0;
 		}
-		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) || 
+		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
 		   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
 		{
 			MakeNormalSound(SND_MENUSELECT);

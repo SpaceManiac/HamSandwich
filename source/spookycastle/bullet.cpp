@@ -29,7 +29,7 @@ sprite_set_t *bulletSpr;
 
 void InitBullets(void)
 {
-	bulletSpr=new sprite_set_t("graphics\\bullets.jsp");
+	bulletSpr=new sprite_set_t("graphics/bullets.jsp");
 
 	memset(bullet,0,MAX_BULLETS*sizeof(bullet_t));
 }
@@ -143,7 +143,7 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 		case BLT_MEGABEAM1:
 			me->type=BLT_MEGABEAM2;
 			me->dy=0;
-			me->timer=2;			
+			me->timer=2;
 			break;
 		case BLT_SPORE:
 		case BLT_ICESPIKE:
@@ -631,7 +631,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			if(me->anim>6)
 				me->anim=0;
 			// hit goodguy
-			HitBadguys(me,map,world);			
+			HitBadguys(me,map,world);
 			break;
 		case BLT_SPORE:
 			me->anim++;
@@ -678,7 +678,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			// keep this beam locked onto its launcher
 			if(GetGuyPos(me->target,&me->x,&me->y))
 				me->y+=FIXAMT*8;
-			
+
 			break;
 		case BLT_MEGABEAM1:
 			HitBadguys(me,map,world);

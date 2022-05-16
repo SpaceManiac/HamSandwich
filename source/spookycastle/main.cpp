@@ -49,7 +49,7 @@ TASK(int) main(int argc, char* argv[])
 		return 0;
 
 	LunaticInit(mainmgl);
-	SplashScreen(mainmgl,"graphics\\hamumu.bmp",128,SND_HAMUMU,0);
+	SplashScreen(mainmgl,"graphics/hamumu.bmp",128,SND_HAMUMU,0);
 	while(1)
 	{
 		switch(MainMenu(mainmgl))

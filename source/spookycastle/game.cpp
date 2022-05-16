@@ -241,7 +241,7 @@ byte LunaticRun(int *lastTime)
 			{
 				gameMode=GAMEMODE_PLAY;
 				// restore the palette
-				gamemgl->LoadBMP("graphics\\title.bmp");
+				gamemgl->LoadBMP("graphics/title.bmp");
 			}
 		}
 
@@ -507,7 +507,7 @@ void LunaticGame(MGLDraw *mgl,byte load)
 
 		worldResult=LunaticWorld(b,"castle.scw");
 
-		if(worldResult==WORLD_QUITGAME)
+		if(worldResult==WORLD_QUITGAME || worldResult == WORLD_ABORT)
 		{
 			mgl->LastKeyPressed();	// just to clear key buffer
 			break;
@@ -520,7 +520,7 @@ void TrainingGame(MGLDraw *mgl)
 {
 	InitPlayer(INIT_GAME,0,0);
 	SetCustomName("training.dlw");
-	if(LunaticWorld(5,"worlds\\training.scw")==WORLD_LOAD)
+	if(LunaticWorld(5,"worlds/training.scw")==WORLD_LOAD)
 		LunaticGame(mgl,1);
 	mgl->LastKeyPressed();	// just to clear key buffer
 	ExitPlayer();

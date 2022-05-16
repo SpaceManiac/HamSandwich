@@ -28,7 +28,7 @@ static byte flip=0;
 
 void InitInterface(void)
 {
-	intfaceSpr=new sprite_set_t("graphics\\intface.jsp");
+	intfaceSpr=new sprite_set_t("graphics/intface.jsp");
 }
 
 void ExitInterface(void)
@@ -50,7 +50,7 @@ void DrawLifeMeter(int x,int y,byte amt)
 	if(amt==0)
 		return;
 	amt--;
-	
+
 	if(amt>64+16)
 		c=44;		// in the green
 	else if(amt>32)

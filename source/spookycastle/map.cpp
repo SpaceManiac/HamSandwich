@@ -13,7 +13,7 @@ Map::Map(FILE *f)
 
 	fread(s,5,sizeof(char),f);
 	s[5]='\0';
-		
+
 	fread(&width,1,sizeof(int),f);
 	fread(&height,1,sizeof(int),f);
 
@@ -28,7 +28,7 @@ Map::Map(FILE *f)
 	fread(map,width*height,sizeof(mapTile_t),f);
 }
 
-Map::Map(byte size,char *name)
+Map::Map(byte size,const char *name)
 {
 	switch(size)
 	{
@@ -45,7 +45,7 @@ Map::Map(byte size,char *name)
 			height=128;
 			break;
 	}
-	
+
 	strcpy(this->name,name);
 
 	map=(mapTile_t *)calloc(sizeof(mapTile_t)*width*height,1);
@@ -179,7 +179,7 @@ void Map::Update(byte mode,world_t *world)
 	timeToAnim++;
 
 	timeToReset=0;
-	
+
 	for(i=0;i<width*height;i++)
 	{
 		if(mode==UPDATE_FADEIN)
@@ -271,7 +271,7 @@ byte Map::LOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,
 {
 	int p1x,p1y,p2x,p2y;
 	int i,curx,cury;
-	
+
 	if(x<0 || x>=width || y<0 || y>=height)
 		return 0;
 
@@ -380,7 +380,7 @@ byte TempTorchCallback(int x,int y,int cx,int cy,int value,Map *map)
 
 	if(b<0)
 		return 1;
-	
+
 	if(b<16)
 	{
 		desiredLight=b-17;
@@ -471,7 +471,7 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 			if(i>=0 && i<width && j>=0 && j<height)
 			{
 				m=&map[i+j*width];
-				
+
 				if(!(flags&MAP_SHOWLIGHTS))	// we're ignoring lighting
 					lite=0;
 				else
@@ -487,7 +487,7 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 					{
 						// if the tile below this one is also a wall, don't waste the
 						// time of drawing the front of this wall
-						if(map[i+(j+1)*width].wall && 
+						if(map[i+(j+1)*width].wall &&
 							(!(world->terrain[map[i+(j+1)*width].floor].flags&TF_TRANS)))
 						{
 							if(world->terrain[m->floor].flags&TF_TRANS)
@@ -662,7 +662,7 @@ void RenderSpecialXes(MGLDraw *mgl,Map *map,byte world)
 {
 	int i;
 	int camx,camy;
-	
+
 	GetCamera(&camx,&camy);
 	camx-=320;
 	camy-=240;
@@ -806,7 +806,7 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 		case SPC_PICTURE:
 			EnterPictureDisplay();
 			MakeNormalSound(SND_MESSAGE);
-			sprintf(s,"graphics\\%s",spcl->msg);
+			sprintf(s,"graphics/%s",spcl->msg);
 			GetDisplayMGL()->LoadBMP(s);
 			break;
 	}

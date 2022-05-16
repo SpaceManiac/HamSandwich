@@ -16,7 +16,7 @@ void ExitSpclDialog(void)
 {
 }
 
-static void RenderCheckbox(int x,int y,int v,char *txt)
+static void RenderCheckbox(int x,int y,int v,const char *txt)
 {
 	if(v)
 		DrawFillBox(x,y,x+11,y+11,16);
@@ -25,7 +25,7 @@ static void RenderCheckbox(int x,int y,int v,char *txt)
 	Print(x+13,y,txt,0,1);
 }
 
-void RenderValueAdjuster(char *name,int value,int x,int y)
+void RenderValueAdjuster(const char *name,int value,int x,int y)
 {
 	char s[8];
 
@@ -49,7 +49,7 @@ void RenderSpclDialog(int msx,int msy,MGLDraw *mgl)
 	// box for the whole dialog
 	DrawFillBox(60,10,480,370,8);
 	DrawBox(60,10,480,370,16);
-	
+
 	// the trigger checkboxes
 	Print(62,12,"Trigger",0,1);
 
@@ -200,7 +200,7 @@ byte SpclDialogClick(int msx,int msy)
 		spcl->effect=SPC_EXIT;
 	if(msx>133 && msx<205 && msy>257 && msy<273)
 		spcl->effect=SPC_PICTURE;
-	
+
 	// trigger value
 	i=spcl->trigValue;
 	CheckValueAdjustClick(msx,msy,210,12,&i,0,255);

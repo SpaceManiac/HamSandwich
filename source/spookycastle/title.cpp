@@ -2,6 +2,7 @@
 #include "game.h"
 #include "jamulfmv.h"
 #include "pause.h"
+#include "appdata.h"
 
 // special codes in the credits:
 // @ = use GirlsRWeird font
@@ -297,11 +298,11 @@ byte MainMenu(MGLDraw *mgl)
 	title_t title;
 	int lastTime=1;
 
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	mgl->LastKeyPressed();
 	mgl->ClearScreen();
 	oldc=CONTROL_B1|CONTROL_B2;
-	planetSpr=new sprite_set_t("graphics\\titlespr.jsp");
+	planetSpr=new sprite_set_t("graphics/titlespr.jsp");
 
 	title.bouaphaX=640;
 	title.optionsX=-300;
@@ -500,7 +501,7 @@ void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 	FILE *f;
 	player_t p;
 
-	f=fopen("loony.sav","rb");
+	f=AppdataOpen("loony.sav");
 	if(!f)
 	{
 		title->percent[0]=0.0;
@@ -593,7 +594,7 @@ void Credits(MGLDraw *mgl)
 	dword lastTime;
 
 	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	lastTime=1;
 	while(1)
 	{
@@ -660,7 +661,7 @@ void VictoryText(MGLDraw *mgl)
 	dword lastTime;
 
 	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	lastTime=1;
 	while(1)
 	{
@@ -695,7 +696,7 @@ byte SpecialLoadBMP(char *name,MGLDraw *mgl,palette_t *pal)
 	int i;
 	byte *scr;
 
-	f=fopen(name,"rb");
+	f=AssetOpen(name);
 	if(!f)
 		return FALSE;
 

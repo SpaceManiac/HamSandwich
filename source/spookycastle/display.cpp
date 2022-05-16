@@ -28,14 +28,14 @@ bool InitDisplay(MGLDraw *mainmgl)
 	if(!gameFont[0])
 		return false;
 	FontInit(mgl);
-	if(FontLoad("graphics\\girlsrweird.jft",gameFont[0])!=FONT_OK)
+	if(FontLoad("graphics/girlsrweird.jft",gameFont[0])!=FONT_OK)
 		return false;
 
 	gameFont[1]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[1])
 		return false;
 
-	if(FontLoad("graphics\\verdana.jft",gameFont[1])!=FONT_OK)
+	if(FontLoad("graphics/verdana.jft",gameFont[1])!=FONT_OK)
 		return false;
 
 	dispList=new DisplayList();
@@ -67,32 +67,32 @@ void ShowVictoryAnim(byte world)
 	switch(world)
 	{
 		case 0:
-			FLI_play("graphics\\caverns.flc",0,80,mgl);
+			FLI_play("graphics/caverns.flc",0,80,mgl);
 			break;
 		case 1:
-			FLI_play("graphics\\icy.flc",0,60,mgl);
+			FLI_play("graphics/icy.flc",0,60,mgl);
 			break;
 		case 2:
-			FLI_play("graphics\\forest.flc",0,60,mgl);
+			FLI_play("graphics/forest.flc",0,60,mgl);
 			break;
 		case 3:
-			FLI_play("graphics\\desert.flc",0,60,mgl);
+			FLI_play("graphics/desert.flc",0,60,mgl);
 			break;
 		case 4:
 			// the final victory!
-			FLI_play("graphics\\asylum.flc",0,60,mgl);
+			FLI_play("graphics/asylum.flc",0,60,mgl);
 			break;
 		case 10:
-			FLI_play("graphics\\transfrm.flc",0,60,mgl);
+			FLI_play("graphics/transfrm.flc",0,60,mgl);
 			break;
 		case 11:
-			FLI_play("graphics\\asylumno.flc",0,40,mgl);
+			FLI_play("graphics/asylumno.flc",0,40,mgl);
 			break;
 		case 12:
-			FLI_play("graphics\\asylumys.flc",0,40,mgl);
+			FLI_play("graphics/asylumys.flc",0,40,mgl);
 			break;
 	}
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 
 	end=timeGetTime();
 	AddGarbageTime(end-start);
@@ -243,7 +243,7 @@ void SprDraw(int x,int y,int z,byte hue,char bright,sprite_t *spr,byte flags)
 void WallDraw(int x,int y,byte wall,byte floor,char light,byte flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
-	dispList->DrawSprite(x,y,wall,floor,light,nullptr,flags);
+	dispList->DrawSprite(x,y,wall,floor,light,(sprite_t *)1,flags);
 }
 
 void RoofDraw(int x,int y,byte roof,char light,byte flags)
