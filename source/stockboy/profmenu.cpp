@@ -82,7 +82,7 @@ void InitProfileMenu(void)
 	JamulSoundPurge();	// each level, that should be good
 	Music_Load(profile.songChoice[SONG_MENU]);
 	Music_Play();
-	
+
 	oldc=255;
 	controlX=10;
 	cursor=0;
@@ -122,7 +122,7 @@ void InitProfileMenu(void)
 	SetProfElem(OTHERSHEET,PE_SHEET,opt.curProfile,640,480+90,302,232);
 	SetProfElem(CURSHEET,PE_SHEET,(opt.curProfile+1)&7,640,480+90,640,480+90);
 
-	GetDisplayMGL()->SetColorblind(profile.colorblind);
+	// TODO GetDisplayMGL()->SetColorblind(profile.colorblind);
 	GetDisplayMGL()->RealizePalette();
 }
 
@@ -265,7 +265,7 @@ void SwitchEmployee(byte oldG,byte newG)
 	SetProfElem(OTHERSHEET,PE_SHEET,newG,640,480+90,302,232);
 	SetProfElem(CURSHEET,PE_SHEET,oldG,302,232,640,480+90);
 	profile=prof[newG];
-	GetDisplayMGL()->SetColorblind(profile.colorblind);
+	// TODO GetDisplayMGL()->SetColorblind(profile.colorblind);
 	GetDisplayMGL()->RealizePalette();
 	Music_Load(profile.songChoice[SONG_MENU]);
 	Music_Play();
@@ -278,7 +278,7 @@ byte Mode0MouseCheck(MGLDraw *mgl)
 	byte b;
 
 	mgl->GetMouse(&msx,&msy);
-	b=mgl->MouseDown(0);
+	b=mgl->MouseDown();
 
 	if(!b)	// not clicking, don't do anything!
 	{
@@ -366,7 +366,7 @@ byte Mode0MouseCheck(MGLDraw *mgl)
 			{
 				cursor=9;
 				profile.colorblind=1-profile.colorblind;
-				mgl->SetColorblind(profile.colorblind);
+				// TODO mgl->SetColorblind(profile.colorblind);
 				mgl->RealizePalette();
 				MakeNormalSound(SND_MENUSELECT);
 			}
@@ -407,7 +407,7 @@ byte Mode1MouseCheck(MGLDraw *mgl)
 	byte b;
 
 	mgl->GetMouse(&msx,&msy);
-	b=mgl->MouseDown(0);
+	b=mgl->MouseDown();
 
 	if(PointInRect(msx,msy,374,328,406,358))
 		yesno=0;
@@ -447,7 +447,7 @@ byte UpdateProfileMenu(int *lastTime,MGLDraw *mgl)
 	byte c2;
 	byte b;
 	int i;
-	
+
 	JamulSoundUpdate();
 
 	if(*lastTime>TIME_PER_FRAME*MAX_RUNS)
@@ -533,7 +533,7 @@ byte UpdateProfileMenu(int *lastTime,MGLDraw *mgl)
 							break;
 						case 9:	// colorblind
 							profile.colorblind=1-profile.colorblind;
-							mgl->SetColorblind(profile.colorblind);
+							// TODO mgl->SetColorblind(profile.colorblind);
 							mgl->RealizePalette();
 							MakeNormalSound(SND_MENUSELECT);
 							break;
@@ -581,7 +581,7 @@ byte UpdateProfileMenu(int *lastTime,MGLDraw *mgl)
 							break;
 						case 9:	// colorblind
 							profile.colorblind=1-profile.colorblind;
-							mgl->SetColorblind(profile.colorblind);
+							// TODO mgl->SetColorblind(profile.colorblind);
 							mgl->RealizePalette();
 							MakeNormalSound(SND_MENUSELECT);
 							break;
@@ -616,7 +616,7 @@ byte UpdateProfileMenu(int *lastTime,MGLDraw *mgl)
 							break;
 						case 9:	// colorblind
 							profile.colorblind=1-profile.colorblind;
-							mgl->SetColorblind(profile.colorblind);
+							// TODO mgl->SetColorblind(profile.colorblind);
 							mgl->RealizePalette();
 							MakeNormalSound(SND_MENUSELECT);
 							break;
@@ -661,7 +661,7 @@ byte UpdateProfileMenu(int *lastTime,MGLDraw *mgl)
 				{
 					c=mgl->LastKeyPressed();
 					c2=GetArrows()|GetControls();
-					
+
 					if(c==27)
 						prfMode=0;
 					if((c2&CONTROL_LF) && !(oldc&CONTROL_LF))
@@ -719,7 +719,7 @@ byte UpdateProfileMenu(int *lastTime,MGLDraw *mgl)
 						c=mgl->LastKeyPressed();
 						break;
 					}
-					
+
 					// right arrow can ONLY be used for right
 					if(c==77 && cursor!=5)
 					{
@@ -752,7 +752,7 @@ byte UpdateProfileMenu(int *lastTime,MGLDraw *mgl)
 				break;
 		}
 
-		
+
 		oldc=c2;
 
 		if(oldc&CONTROL_UP)
@@ -821,7 +821,7 @@ void RenderTab(int i,byte on,MGLDraw *mgl)
 	PrintLimited(280+i*46-15,18,280+i*46+33,prof[i].name,-32,1);
 }
 
-void RenderDataItem(int x,int y,char *txt,char *value,int length,MGLDraw *mgl)
+void RenderDataItem(int x,int y,const char *txt,const char *value,int length,MGLDraw *mgl)
 {
 	PrintUnGlow(x,y,txt,0);
 	mgl->FillBox(x+GetStrLength(txt,0)+3,y+18,x+GetStrLength(txt,0)+3+length,y+18,0);
@@ -829,7 +829,7 @@ void RenderDataItem(int x,int y,char *txt,char *value,int length,MGLDraw *mgl)
 	Print(x+GetStrLength(txt,0)+6,y+6,value,-32,1);
 }
 
-void RenderName(int x,int y,char *txt,char *value,int length,MGLDraw *mgl)
+void RenderName(int x,int y,const char *txt,const char *value,int length,MGLDraw *mgl)
 {
 	int i;
 
@@ -838,7 +838,7 @@ void RenderName(int x,int y,char *txt,char *value,int length,MGLDraw *mgl)
 	mgl->FillBox(x+GetStrLength(txt,0)+3,y+19,x+GetStrLength(txt,0)+3+length,y+19,64+24);
 
 	Print(x+GetStrLength(txt,0)+6,y+6,value,-32,1);
-	
+
 	if((flash/2)&1)
 	{
 		i=x+GetStrLength(txt,0)+6+GetStrLength(value,1);
@@ -884,7 +884,7 @@ void RenderSheetControls(int x,int y,MGLDraw *mgl,profile_t *prof)
 	s[3]='\0';
 
 	for(i=0;i<5;i++)
-	{		
+	{
 		if(prfMode==2 && cursor==i+2)
 			CenterPrint(x+95,y+25+i*15,s,-32,1);
 		else
@@ -911,7 +911,7 @@ void RenderDataSheet(int x,int y,profile_t *prof,MGLDraw *mgl)
 	y-=232;
 
 	RenderName(x+291,y+64,"Name:",prof->name,100,mgl);
-	
+
 	mgl->Box(x+288,y+92,x+610,y+177,0);
 
 	sprintf(tmp,"%d",charAges[prof->character]);
@@ -924,7 +924,7 @@ void RenderDataSheet(int x,int y,profile_t *prof,MGLDraw *mgl)
 	else
 		strcpy(tmp,"M");
 	RenderDataItem(x+450,y+94,"Gender:",tmp,50,mgl);
-	
+
 	RenderDataItem(x+291,y+124,"Height:",height[prof->character],50,mgl);
 	RenderDataItem(x+450,y+124,"Weight:",weight[prof->character],50,mgl);
 	RenderDataItem(x+291,y+154,"Disposition:",dispositions[prof->character],70,mgl);
@@ -940,7 +940,7 @@ void RenderDataSheet(int x,int y,profile_t *prof,MGLDraw *mgl)
 	mgl->FillBox(x+510+prof->bright+31,y+185,x+510+prof->bright+33,y+203,31);
 
 	RenderSheetControls(x+291,y+212,mgl,prof);
-	
+
 	RenderProfileStars(x+480,y+230,prof,mgl);
 
 	// the menu
@@ -992,8 +992,10 @@ void RenderProfileMenu(MGLDraw *mgl)
 
 	Music_Update();
 
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	mgl->FillBox(0,0,251,479,32*3+6);
 	mgl->FillBox(252,32,639,479,83);
@@ -1006,7 +1008,7 @@ void RenderProfileMenu(MGLDraw *mgl)
 		if(i!=opt.curProfile)
 			RenderTab(i,0,mgl);
 	RenderTab(opt.curProfile,1,mgl);
-	
+
 	if(prfMode==1)	// downsize yes/no
 	{
 		profSpr->GetSprite(4)->DrawBright(325,245,mgl,-32);
@@ -1102,10 +1104,10 @@ void ProfileMenu(MGLDraw *mgl)
 		RenderProfileMenu(mgl);
 		mgl->Flip();
 		EndClock();
-		
+
 		if(!mgl->Process())
 			done=1;
-		
+
 	}
 
 	ExitProfileMenu();

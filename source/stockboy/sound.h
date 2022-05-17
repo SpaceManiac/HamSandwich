@@ -135,4 +135,6 @@ void SoundSystemExists(void);
 void KillSong(void);
 void SetVolumes(int sndvol,int musvol);
 
+void PlayInstrument(int ins,int note,long vol,byte flags,byte seq);
+
 #endif

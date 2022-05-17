@@ -1077,13 +1077,92 @@ void FontPrintStringUnGlowRect(int x,int y,int x2,int y2,const char *s,int heigh
 	free(tmp);
 }
 
-void FontPrintStringUnGlowLimited(int x,int y,int maxX,const char*s,mfont_t *font)
+void FontPrintStringUnGlowLimited(int x,int y,int maxX,const char *s,mfont_t *font)
 {
 	size_t len = strlen(s);
 	for (size_t i = 0; i < len; ++i)
 	{
 		FontPrintCharUnGlowLimited(x,y,maxX,s[i],font);
 		x+=CharWidth(s[i],font)+font->gapSize;
+	}
+}
+
+void FontPrintStringAngleUnGlow(int x,int y,const char *s,mfont_t *font)
+{
+	int i;
+
+	for(i=0;i<(int)strlen(s);i++)
+	{
+		FontPrintCharUnGlow(x,y,s[i],font);
+		x+=CharWidth(s[i],font)+font->gapSize;
+		y-=2;
+	}
+}
+
+void FontPrintStringAngle2(int x,int y,const char *s,mfont_t *font)
+{
+	int i;
+
+	for(i=0;i<(int)strlen(s);i++)
+	{
+		FontPrintCharUnGlow(x,y,s[i],font);
+		FontPrintCharGlow(x-2,y-2,s[i],-10,font);
+		x+=CharWidth(s[i],font)+font->gapSize;
+		y-=(CharWidth(s[i],font)+font->gapSize)/2;
+	}
+}
+
+void FontPrintCharUnGlowSideways(int x, int y, int minY,char c, mfont_t *font)
+{
+	byte *dst,*src;
+	int scrWidth,scrHeight,chrWidth;
+	int i,j;
+	int b1,b2;
+
+	scrWidth=fontmgl->GetWidth();
+	scrHeight=fontmgl->GetHeight();
+	dst=fontmgl->GetScreen()+x+y*scrWidth;
+
+	if(c<font->firstChar || c>=(font->firstChar+font->numChars))
+		return; // unprintable
+
+	c-=(char)font->firstChar;
+
+	chrWidth=*(font->chars[c]);
+	src=font->chars[c]+1;
+	for(j=0;j<font->height;j++)
+	{
+		for(i=0;i<(*font->chars[c]);i++)
+		{
+			if(*src && (x>0) && (x<scrWidth) && (y>minY) && (y<scrHeight))
+			{
+				b2=(fontPal[*src]&31);
+				if(b2>0)
+				{
+					b1=((*dst)&31)-b2;
+					if(b1<0)
+						b1=0;
+					*dst=((*dst)&(~31))+b1;
+				}
+			}
+			dst-=scrWidth;
+			src++;
+			y--;
+		}
+		x++;
+		y+=chrWidth;
+		dst+=(scrWidth*chrWidth)+1;
+	}
+}
+
+void FontPrintStringUnGlowSideways(int x,int y,int minY,const char *s,mfont_t *font)
+{
+	int i;
+
+	for(i=0;i<(int)strlen(s);i++)
+	{
+		FontPrintCharUnGlowSideways(x,y,minY,s[i],font);
+		y-=(CharWidth(s[i],font)+font->gapSize);
 	}
 }
 

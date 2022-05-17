@@ -2,7 +2,6 @@
 #define INTERNET_H
 
 #include "mgldraw.h"
-#include <winsock.h>
 
 #define IE_OK			0
 #define IE_NOCONNECT	1
@@ -30,7 +29,7 @@ byte Web_Init(void);
 byte Web_Exit(void);
 // returns error codes, fills in socketNumber which you need in order to track the
 // download and get your data later
-byte Web_RequestData(MGLDraw *mgl,char *site,char *file,int *socketNumber);
+byte Web_RequestData(MGLDraw *mgl,const char *site,const char *file,int *socketNumber);
 byte Web_DownloadPercent(int sockNum);
 char *Web_ErrorString(void);
 char *Web_ErrorStringShort(void);
@@ -38,7 +37,7 @@ byte *Web_GetData(int sockNum);
 int Web_GetDataSize(int sockNum);
 void Web_KillSocket(int sockNum);
 
-void Web_HandleEvent(SOCKET sockie,int event,int error);
+//void Web_HandleEvent(SOCKET sockie,int event,int error);
 byte Web_GetState(int sockNum);
 byte Web_GetError(int sockNum);
 

@@ -15,8 +15,10 @@ void RenderPauseMenu(MGLDraw *mgl)
 {
 	char s[48];
 
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	DarkenScreen(darkness);
 
@@ -126,7 +128,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		if(cursor==5)
 			cursor=0;
 	}
-	if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) || 
+	if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
 	   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
 	{
 		switch(cursor)
@@ -181,7 +183,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		oldMsx=msx;
 		oldMsy=msy;
 	}
-	if(mgl->MouseDown(0))
+	if(mgl->MouseDown())
 	{
 		if(!oldMsBtn)
 		{
@@ -223,7 +225,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 	}
 	else
 		oldMsBtn=0;
-	
+
 	oldc=c;
 
 	HandlePauseKeyPresses(mgl);

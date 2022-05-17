@@ -10,8 +10,8 @@
 #include "highscore.h"
 #include "editmenu.h"
 #include "music.h"
-#include <io.h>
 #include "addonweb.h"
+#include "appdata.h"
 
 #define AOTEXTX	15
 #define AOTEXTY	66
@@ -51,13 +51,13 @@ void InitAddOnMenu(void)
 	GetArrowTaps();
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
-		GetDisplayMGL()->FatalError("Out of memory!");
+		FatalError("Out of memory!");
 
 	GetDisplayMGL()->LoadBMP("graphics\\addon.bmp");
 
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
-	
+
 	cursor=0;
 
 	for(i=0;i<6;i++)
@@ -101,7 +101,7 @@ void ExitAddOnMenu(void)
 	SaveOptions();
 }
 
-byte FileIsAddOn(char *fname)
+byte FileIsAddOn(const char *fname)
 {
 	int i;
 	char s[32];
@@ -136,8 +136,6 @@ byte FileIsAddOn(char *fname)
 
 void ScanForAddOns(void)
 {
-	struct _finddata_t filedata;
-	long hFile;
 	byte flip;
 	int i;
 	char tmp[FNAMELEN];
@@ -156,56 +154,35 @@ void ScanForAddOns(void)
 	setname=(char *)calloc(FNAMELEN*maxFiles,1);
 	author=(char *)calloc(FNAMELEN*maxFiles,1);
 
-	hFile=_findfirst("levels\\*.sbl",&filedata);
-
 	strcpy(setname,"Auto-Download Add-On Levels");
 	author[0]='\0';
 	filename[0]='\0';
 
-	if(hFile!=-1)	// there's at least one
+	for (const auto& file : ListDirectory("levels", ".sbl", FNAMELEN))
 	{
-		if(FileIsAddOn(filedata.name))
-		{
-			strncpy(&filename[numSets*FNAMELEN],filedata.name,FNAMELEN);
-			filename[FNAMELEN*(numSets+1)-1]='\0';
-			GetWorldName(&filename[numSets*FNAMELEN],&setname[numSets*FNAMELEN],
-						 &author[numSets*FNAMELEN]);
-			numSets=2;
-		}
-		else
-			numSets=1;
+		const char* name = file.c_str();
 
-		while(1)
+		// completely ignore ones with filenames that are too long!
+		// and ones that are not allowed to be edited
+		if(FileIsAddOn(name))
 		{
-			if(_findnext(hFile,&filedata)==0)
+			SDL_utf8strlcpy(&filename[numSets*FNAMELEN],name,FNAMELEN);
+			GetWorldName(&filename[numSets*FNAMELEN],&setname[numSets*FNAMELEN],
+							&author[numSets*FNAMELEN]);
+			numSets++;
+
+			if(numSets==maxFiles)
 			{
-				// completely ignore ones with filenames that are too long!
-				// and ones that are not allowed to be edited
-				if(strlen(filedata.name)<FNAMELEN && FileIsAddOn(filedata.name))
-				{
-					strncpy(&filename[numSets*FNAMELEN],filedata.name,FNAMELEN);
-					filename[FNAMELEN*(numSets+1)-1]='\0';
-					GetWorldName(&filename[numSets*FNAMELEN],&setname[numSets*FNAMELEN],
-								 &author[numSets*FNAMELEN]);
-					numSets++;
-					
-					if(numSets==maxFiles)
-					{
-						maxFiles+=32;
-						filename=(char *)realloc(filename,FNAMELEN*maxFiles);
-						setname=(char *)realloc(setname,FNAMELEN*maxFiles);
-						author=(char *)realloc(author,FNAMELEN*maxFiles);
-						// clear the future space
-						memset(&filename[numSets*FNAMELEN],0,FNAMELEN*maxFiles-FNAMELEN*numSets);
-						memset(&setname[numSets*FNAMELEN],0,FNAMELEN*maxFiles-FNAMELEN*numSets);
-						memset(&author[numSets*FNAMELEN],0,FNAMELEN*maxFiles-FNAMELEN*numSets);
-					}
-				}
+				maxFiles+=32;
+				filename=(char *)realloc(filename,FNAMELEN*maxFiles);
+				setname=(char *)realloc(setname,FNAMELEN*maxFiles);
+				author=(char *)realloc(author,FNAMELEN*maxFiles);
+				// clear the future space
+				memset(&filename[numSets*FNAMELEN],0,FNAMELEN*maxFiles-FNAMELEN*numSets);
+				memset(&setname[numSets*FNAMELEN],0,FNAMELEN*maxFiles-FNAMELEN*numSets);
+				memset(&author[numSets*FNAMELEN],0,FNAMELEN*maxFiles-FNAMELEN*numSets);
 			}
-			else	// no more files
-				break;
 		}
-		_findclose(hFile);
 	}
 
 	// sort them
@@ -297,7 +274,7 @@ byte UpdateAddOnMenu(int *lastTime,MGLDraw *mgl)
 		}
 
 		mgl->GetMouse(&msx,&msy);
-		btn=mgl->MouseDown(0);
+		btn=mgl->MouseTap();
 
 		c=mgl->LastKeyPressed();
 		t=GetTaps()|GetArrowTaps();
@@ -342,7 +319,7 @@ byte UpdateAddOnMenu(int *lastTime,MGLDraw *mgl)
 				}
 				if(t&CONTROL_B1)
 				{
-					MakeNormalSound(SND_MENUSELECT);					
+					MakeNormalSound(SND_MENUSELECT);
 					if(levelSet==0)
 					{
 						online=1;
@@ -869,12 +846,14 @@ void RenderAddOnMenu(MGLDraw *mgl)
 
 	Music_Update();
 
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
-	
+
 	switch(pickMode)
 	{
 		case 0:	// pick a set

@@ -5,7 +5,7 @@
 
 // level goals are defined like this:
 // GOALTYPE X GOALMODIFIER
-// 
+//
 // e.g.
 // push barrels, 10, red
 //   - means you must get 10 red barrels onto red colored spaces to finish
@@ -58,10 +58,10 @@ typedef struct goal_t
 	byte modifier;
 } goal_t;
 
-char *GoalColorName(byte mod);
-char *CreateGoalString(goal_t goal);
-char *EditGoalName(goal_t goal);
-char *EditGoalEnding(goal_t goal);
+const char *GoalColorName(byte mod);
+const char *CreateGoalString(goal_t goal);
+const char *EditGoalName(goal_t goal);
+const char *EditGoalEnding(goal_t goal);
 byte GoalModType(goal_t goal);
 byte GoalHasNumber(goal_t goal);
 void ChangeGoalType(goal_t *goal,byte noneok);

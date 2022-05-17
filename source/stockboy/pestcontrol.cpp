@@ -44,7 +44,7 @@ static Map *map;
 
 static byte pestLevel=1;
 
-static dword clock;
+static dword pestClock;
 static byte miniClock;
 
 static dword genTime;
@@ -67,7 +67,7 @@ static pestLevel_t lvlDef[]={
 void InitPestControl(Map *m)
 {
 	genTime=lvlDef[pestLevel-1].startGen;
-	miniClock=0;	
+	miniClock=0;
 	monsCount=254;
 	lastGen=-1;
 
@@ -77,9 +77,9 @@ void InitPestControl(Map *m)
 	else
 		genTime=0;
 
-	clock=genTime;
-	if(clock)
-		clock--;
+	pestClock=genTime;
+	if(pestClock)
+		pestClock--;
 
 	map=m;
 }
@@ -103,7 +103,7 @@ static void AddBomb(void)
 	while((i++)<10000)
 	{
 		j=Random(map->width*map->height);
-		if(map->map[j].item==0 && !FloorIsSolid(map->map[j].floor) && !FloorIsPit(map->map[j].floor) && 
+		if(map->map[j].item==0 && !FloorIsSolid(map->map[j].floor) && !FloorIsPit(map->map[j].floor) &&
 			!FloorIsSummoner(map->map[j].floor))
 		{
 			switch(lvlDef[pestLevel-1].wpn)
@@ -142,7 +142,7 @@ void SummonMonster(void)
 	int i;
 	int j;
 	int x,y;
-	
+
 	if(lvlDef[pestLevel-1].genType==GEN_RANDOM)
 	{
 		i=0;
@@ -192,13 +192,13 @@ void SummonMonster(void)
 
 void UpdatePestControl(void)
 {
-	clock++;
+	pestClock++;
 	miniClock++;
-	
-	if(clock>=genTime/100)
+
+	if(pestClock>=genTime/100)
 	{
 		SummonMonster();
-		clock=0;
+		pestClock=0;
 	}
 	if(miniClock==30)
 	{
@@ -235,7 +235,7 @@ void InitPestMenu(void)
 	GetArrowTaps();
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
-		GetDisplayMGL()->FatalError("Out of memory!");
+		FatalError("Out of memory!");
 
 	GetDisplayMGL()->LoadBMP("graphics\\pestcontrol.bmp");
 
@@ -302,7 +302,7 @@ byte UpdatePestMenu(int *lastTime,MGLDraw *mgl)
 		}
 
 		mgl->GetMouse(&msx,&msy);
-		btn=mgl->MouseDown(0);
+		btn=mgl->MouseDown();
 
 		c=mgl->LastKeyPressed();
 		t=GetTaps()|GetArrowTaps();
@@ -551,8 +551,10 @@ void RenderPestMenu(MGLDraw *mgl)
 
 	Music_Update();
 
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);

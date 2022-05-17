@@ -56,11 +56,11 @@ void SetupEmpYear(void)
 
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
-		GetDisplayMGL()->FatalError("Out of memory!");
+		FatalError("Out of memory!");
 
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
-	
+
 	GetTaps();
 	GetArrowTaps();
 	GetDisplayMGL()->LastKeyPressed();
@@ -100,7 +100,7 @@ byte UpdateEmpYear(int *lastTime,MGLDraw *mgl)
 	char c;
 	byte c2;
 	byte b;
-	
+
 	JamulSoundUpdate();
 
 	if(*lastTime>TIME_PER_FRAME*MAX_RUNS)
@@ -131,7 +131,7 @@ byte UpdateEmpYear(int *lastTime,MGLDraw *mgl)
 		}
 		c=mgl->LastKeyPressed();
 		c2=GetArrows()|GetControls();
-		b=mgl->MouseDown(0);
+		b=mgl->MouseDown();
 
 		if(!burning)
 		{
@@ -150,7 +150,7 @@ byte UpdateEmpYear(int *lastTime,MGLDraw *mgl)
 				starClock=starAdd+1;
 			}
 		}
-		
+
 		if((!burning && !StarsLeft()) && (c || (c2&&(!oldc)) || (b&&(!oldMsBtn))))
 		{
 			return 1;
@@ -167,12 +167,14 @@ void RenderEmpYear(MGLDraw *mgl)
 {
 	int i;
 
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
-	
+
 	// special smarch block only shown if smarch is there
 	if(GameType()==GAME_PARALLEL)
 	{
@@ -230,7 +232,7 @@ void EmpYear(MGLDraw *mgl)
 
 	SetupEmpYear();
 	lastTime=1;
-	
+
 	while(!done)
 	{
 		lastTime+=TimeLength();
@@ -239,10 +241,10 @@ void EmpYear(MGLDraw *mgl)
 		RenderEmpYear(mgl);
 		mgl->Flip();
 		EndClock();
-		
+
 		if(!mgl->Process())
 			done=1;
-		
+
 	}
 
 	ExitEmpYear();

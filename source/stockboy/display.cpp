@@ -180,7 +180,7 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 	scry=240;
 }
 
-void Print(int x,int y,char *s,char bright,byte font)
+void Print(int x,int y,const char *s,char bright,byte font)
 {
 	if(font!=1)
 		FontPrintStringBright(x,y,s,gameFont[font],bright);
@@ -193,7 +193,7 @@ void Print(int x,int y,char *s,char bright,byte font)
 	}
 }
 
-void PrintOutline(int x,int y,char *s,char bright,byte font)
+void PrintOutline(int x,int y,const char *s,char bright,byte font)
 {
 	FontPrintStringBright(x-1,y-1,s,gameFont[font],-32);
 	FontPrintStringBright(x+1,y+1,s,gameFont[font],-32);
@@ -202,7 +202,7 @@ void PrintOutline(int x,int y,char *s,char bright,byte font)
 	FontPrintStringBright(x,y,s,gameFont[font],bright);
 }
 
-void CenterPrintOutline(int x,int y,char *s,char bright,byte font)
+void CenterPrintOutline(int x,int y,const char *s,char bright,byte font)
 {
 	x=x-FontStrLen(s,gameFont[font])/2;
 	FontPrintStringBright(x-1,y-1,s,gameFont[font],-32);
@@ -212,7 +212,7 @@ void CenterPrintOutline(int x,int y,char *s,char bright,byte font)
 	FontPrintStringBright(x,y,s,gameFont[font],bright);
 }
 
-void RvsCenterPrintOutline(int x,int y,char *s,char bright,byte font)
+void RvsCenterPrintOutline(int x,int y,const char *s,char bright,byte font)
 {
 	char s2[64];
 	word i;
@@ -230,7 +230,7 @@ void RvsCenterPrintOutline(int x,int y,char *s,char bright,byte font)
 	FontPrintStringBright(x,y,s2,gameFont[font],bright);
 }
 
-void RightPrintOutline(int x,int y,char *s,char bright,byte font)
+void RightPrintOutline(int x,int y,const char *s,char bright,byte font)
 {
 	x=x-FontStrLen(s,gameFont[font]);
 	FontPrintStringBright(x-1,y-1,s,gameFont[font],-32);
@@ -240,66 +240,66 @@ void RightPrintOutline(int x,int y,char *s,char bright,byte font)
 	FontPrintStringBright(x,y,s,gameFont[font],bright);
 }
 
-void PrintLimited(int x,int y,int maxX,char *s,char bright,byte font)
+void PrintLimited(int x,int y,int maxX,const char *s,char bright,byte font)
 {
 	FontPrintStringBrightLimit(x,y,maxX,s,gameFont[font],bright);
 }
 
-void PrintColor(int x,int y,char *s,byte color,char bright,byte font)
+void PrintColor(int x,int y,const char *s,byte color,char bright,byte font)
 {
 	FontPrintStringColor(x,y,s,gameFont[font],color,bright);
 }
 
-void PrintGlow(int x,int y,char *s,char bright,byte font)
+void PrintGlow(int x,int y,const char *s,char bright,byte font)
 {
 	FontPrintStringGlow(x,y,s,gameFont[font],bright);
 }
 
-void PrintUnGlow(int x,int y,char *s,byte font)
+void PrintUnGlow(int x,int y,const char *s,byte font)
 {
 	FontPrintStringUnGlow(x,y,s,gameFont[font]);
 }
 
-void PrintUnGlowSideways(int x,int y,int minY,char *s,byte font)
+void PrintUnGlowSideways(int x,int y,int minY,const char *s,byte font)
 {
 	FontPrintStringUnGlowSideways(x,y,minY,s,gameFont[font]);
 }
 
-void CenterPrintUnGlow(int x,int y,char *s,byte font)
+void CenterPrintUnGlow(int x,int y,const char *s,byte font)
 {
 	x=x-FontStrLen(s,gameFont[font])/2;
 	FontPrintStringUnGlow(x,y,s,gameFont[font]);
 }
 
-void RightPrintUnGlow(int x,int y,char *s,byte font)
+void RightPrintUnGlow(int x,int y,const char *s,byte font)
 {
 	x=x-FontStrLen(s,gameFont[font]);
 	FontPrintStringUnGlow(x,y,s,gameFont[font]);
 }
 
-void PrintAngleUnGlow(int x,int y,char *s,byte font)
+void PrintAngleUnGlow(int x,int y,const char *s,byte font)
 {
 	FontPrintStringAngleUnGlow(x,y,s,gameFont[font]);
 }
 
-void PrintAngle2(int x,int y,char *s,byte font)
+void PrintAngle2(int x,int y,const char *s,byte font)
 {
 	FontPrintStringAngle2(x,y,s,gameFont[font]);
 }
 
-void CenterPrintGlow(int x,int y,char *s,char bright,byte font)
+void CenterPrintGlow(int x,int y,const char *s,char bright,byte font)
 {
 	x=x-FontStrLen(s,gameFont[font])/2;
 	FontPrintStringGlow(x,y,s,gameFont[font],bright);
 }
 
-void RightPrintGlow(int x,int y,char *s,char bright,byte font)
+void RightPrintGlow(int x,int y,const char *s,char bright,byte font)
 {
 	x=x-FontStrLen(s,gameFont[font]);
 	FontPrintStringGlow(x,y,s,gameFont[font],bright);
 }
 
-void CenterPrint(int x,int y,char *s,char bright,byte font)
+void CenterPrint(int x,int y,const char *s,char bright,byte font)
 {
 	if(font!=1)
 	{
@@ -318,13 +318,13 @@ void CenterPrint(int x,int y,char *s,char bright,byte font)
 	}
 }
 
-void CenterPrintLimit(int x,int y,int maxX,char *s,char bright,byte font)
+void CenterPrintLimit(int x,int y,int maxX,const char *s,char bright,byte font)
 {
 	x=x-FontStrLen(s,gameFont[font])/2;
 	FontPrintStringBrightLimit(x,y,maxX,s,gameFont[font],bright);
 }
 
-void RightPrint(int x,int y,char *s,char bright,byte font)
+void RightPrint(int x,int y,const char *s,char bright,byte font)
 {
 	if(font!=1)
 	{
@@ -343,19 +343,19 @@ void RightPrint(int x,int y,char *s,char bright,byte font)
 	}
 }
 
-void RightPrintColor(int x,int y,char *s,byte color,char bright,byte font)
+void RightPrintColor(int x,int y,const char *s,byte color,char bright,byte font)
 {
 	x=x-FontStrLen(s,gameFont[font]);
 	FontPrintStringColor(x,y,s,gameFont[font],color,bright);
 }
 
-void CenterPrintColor(int x,int y,char *s,byte color,char bright,byte font)
+void CenterPrintColor(int x,int y,const char *s,byte color,char bright,byte font)
 {
 	x=x-FontStrLen(s,gameFont[font])/2;
 	FontPrintStringColor(x,y,s,gameFont[font],color,bright);
 }
 
-int GetStrLength(char *s,byte f)
+int GetStrLength(const char *s,byte f)
 {
 	return FontStrLen(s,gameFont[f]);
 }
@@ -381,8 +381,10 @@ void FilmWiggle(byte howlong)
 
 void RenderItAll(world_t *world,Map *map,byte flags)
 {
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	if(shakeTimer)
 	{
@@ -423,7 +425,7 @@ void OffSprDraw(int x,int y,int z,byte hue,byte hue2,char bright,sprite_t *spr,w
 void WallDraw(int x,int y,word wall,word floor,char light,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
-	dispList->DrawSprite(x,y,0,0,floor,light,(sprite_t *)wall,flags);
+	dispList->DrawSprite(x,y,0,wall,floor,light,(sprite_t *)1,flags);
 }
 
 void RoofDraw(int x,int y,word roof,char light,word flags)
@@ -460,7 +462,7 @@ DisplayList::~DisplayList(void)
 int DisplayList::GetOpenSlot(void)
 {
 	int i;
-	
+
 	for(i=0;i<MAX_DISPLAY_OBJS;i++)
 	{
 		if(dispObj[i].flags==0)
@@ -493,11 +495,11 @@ void DisplayList::HookIn(int me)
 			head=me;
 			return;
 		}
-		
+
 		i=head;
 		while(i!=-1)
 		{
-			if((!(dispObj[i].flags&DISPLAY_SHADOW)) && 
+			if((!(dispObj[i].flags&DISPLAY_SHADOW)) &&
 				(dispObj[i].y>dispObj[me].y || (dispObj[i].y==dispObj[me].y && dispObj[i].z>dispObj[me].z)))
 			{
 				dispObj[me].prev=dispObj[i].prev;
@@ -526,7 +528,7 @@ bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,char bright,sprit
 {
 	int i;
 
-	if((x-scrx+320)<-DISPLAY_XBORDER || (x-scrx+320)>640+DISPLAY_XBORDER || 
+	if((x-scrx+320)<-DISPLAY_XBORDER || (x-scrx+320)>640+DISPLAY_XBORDER ||
 	   (y-scry+240)<-DISPLAY_YBORDER || (y-scry+240)>480+DISPLAY_YBORDER)
 		return true;
 	i=GetOpenSlot();
@@ -577,9 +579,9 @@ void DisplayList::Render(void)
 			if(dispObj[i].flags&DISPLAY_WALLTILE)
 			{
 				if(dispObj[i].flags&DISPLAY_TRANSTILE)
-					RenderWallTileTrans(dispObj[i].x-scrx,dispObj[i].y-scry,(word)dispObj[i].spr,dispObj[i].hue,dispObj[i].bright);
+					RenderWallTileTrans(dispObj[i].x-scrx,dispObj[i].y-scry,(word)dispObj[i].z2,dispObj[i].hue,dispObj[i].bright);
 				else
-					RenderWallTile(dispObj[i].x-scrx,dispObj[i].y-scry,(word)dispObj[i].spr,dispObj[i].hue,dispObj[i].bright);
+					RenderWallTile(dispObj[i].x-scrx,dispObj[i].y-scry,(word)dispObj[i].z2,dispObj[i].hue,dispObj[i].bright);
 			}
 			else if(dispObj[i].flags&DISPLAY_ROOFTILE)
 			{

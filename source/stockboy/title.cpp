@@ -1,6 +1,5 @@
 #include "title.h"
 #include "game.h"
-#include <io.h>
 #include "jamulfmv.h"
 #include "pause.h"
 #include "options.h"
@@ -55,7 +54,7 @@ char credits[][32]={
 	"TD Miller",
 	"Diana Peake",
 	"Barry Pennington",
-	"Donna Vaporis",	
+	"Donna Vaporis",
 	"%",
 	"Muse",
 	"Solange Hunt",
@@ -192,13 +191,13 @@ void SetupMenuChoices(void)
 	strcpy(menu[p].desc,desc[0]);
 	menu[p].menuChoice=MENU_TRAINING;
 	p++;
-	
+
 	strcpy(menu[p].toptxt,name[1*2]);
 	strcpy(menu[p].btmtxt,name[1*2+1]);
 	strcpy(menu[p].desc,desc[1]);
 	menu[p].menuChoice=MENU_STOCKROOM;
 	p++;
-	
+
 	if(profile.giftShop[GIFT_PARALLEL])
 	{
 		strcpy(menu[p].toptxt,name[2*2]);
@@ -278,7 +277,7 @@ void SetupMenuChoices(void)
 		}
 	}
 	stockDone=(100.0f*(float)k)/(4.0f*4.0f*12.0f);
-	
+
 	k=0;
 	for(i=0;i<12;i++)
 	{
@@ -353,7 +352,7 @@ void SetupMenuChoices(void)
 		i++;
 	if(profile.giftShop[GIFT_PARALLEL])
 		i*=2;
-	
+
 	hiddenDone=(100.0f*(float)k)/((float)i);
 	if(hiddenDone<0.001f)
 		hiddenDone=-1.0f;	// if you have done no hidden goals, let's not point them out!
@@ -406,14 +405,14 @@ byte HandleTitleKeys(MGLDraw *mgl)
 		return 0;	// play the game
 }
 
-void PrintPercentage(int y,char *name,float pct)
+void PrintPercentage(int y,const char *name,float pct)
 {
 	char s[48];
 	static int yy;
 
 	if(y==0)
 		yy=0;
-	
+
 	if(pct<0)
 		return;
 
@@ -452,7 +451,7 @@ void RenderProfSheet(MGLDraw *mgl)
 	PrintPercentage(1,"Smarch",smarchDone);
 	PrintPercentage(1,"Hidden Goals",hiddenDone);
 	PrintPercentage(1,"Boom Bounce",bounceDone);
-	
+
 	// bouncing guy
 	InstaRenderMonsterShadow(500+guyX,455,MONS_LOONY,1,mgl);
 	InstaRenderMonster(500+guyX,455-guyY,MONS_LOONY,1,profile.color,profile.bright+bright,mgl);
@@ -486,7 +485,7 @@ void MainMenuDisplay(MGLDraw *mgl)
 				CenterPrintOutline(x,y-40,menu[i].toptxt,0,0);
 				CenterPrintOutline(x,y+30,menu[i].btmtxt,0,0);
 			}
-			
+
 			x+=BUTTONDX;
 			if(((i+1)%4)==0)
 			{
@@ -501,7 +500,7 @@ void MainMenuDisplay(MGLDraw *mgl)
 	// Copyright:
 	RightPrint(639,178,"Copyright 2004, Hamumu Software",-32,1);
 	RightPrint(638,177,"Copyright 2004, Hamumu Software",0,1);
-	
+
 	RightPrintOutline(635,455,menu[cursor].desc,0,0);
 
 #ifdef BETA
@@ -570,7 +569,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 	if(*lastTime>TIME_PER_FRAME*MAX_RUNS)
 		*lastTime=TIME_PER_FRAME*MAX_RUNS;
 
-	btn=mgl->MouseDown(0);
+	btn=mgl->MouseDown();
 
 	while(*lastTime>=TIME_PER_FRAME)
 	{
@@ -583,7 +582,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		Music_Update();
 
 		UpdateParticles(NULL);
-		
+
 		UpdateStars();
 		if(StarsLeft())
 			showEndStar=30;
@@ -665,21 +664,21 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 			}
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		
+
 		if((c&(CONTROL_B1|CONTROL_B2)) && !(oldc&(CONTROL_B1|CONTROL_B2)))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			return menu[cursor].menuChoice+1;
 		}
-		
+
 		mgl->GetMouse(&msx,&msy);
 		for(i=0;i<MENU_CHOICES;i++)
 		{
-			if(menu[i].menuChoice<255 && 
+			if(menu[i].menuChoice<255 &&
 				msx>BUTTONX+(i%4)*BUTTONDX-BUTTONWIDTH/2 &&
 				msx<BUTTONX+(i%4)*BUTTONDX+BUTTONWIDTH/2 &&
-			    msy>BUTTONY+(i/4)*BUTTONDY-BUTTONHEIGHT/2 && 
-				msy<BUTTONY+(i/4)*BUTTONDY+BUTTONHEIGHT/2) 
+			    msy>BUTTONY+(i/4)*BUTTONDY-BUTTONHEIGHT/2 &&
+				msy<BUTTONY+(i/4)*BUTTONDY+BUTTONHEIGHT/2)
 			{
 				if(cursor!=i && (oldMsx!=msx || oldMsy!=msy))
 				{
@@ -725,7 +724,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 					}
 					Explosion((guyX+500)*FIXAMT,(460-guyY)*FIXAMT,0,(byte)Random(8));
 					MakeNormalSound(SND_BOMBBOOM+Random(3));
-					
+
 				}
 			}
 		}
@@ -756,7 +755,7 @@ byte MainMenu(byte pageUp,MGLDraw *mgl)
 
 	Music_Load(profile.songChoice[SONG_TITLE]);
 	Music_Play();
-	
+
 	SetupMenuChoices();
 
 	InitStars(4,profile.starsLeft);
@@ -770,7 +769,7 @@ byte MainMenu(byte pageUp,MGLDraw *mgl)
 
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
-		mgl->FatalError("Out of memory!");
+		FatalError("Out of memory!");
 
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],mgl->GetScreen()+mgl->GetWidth()*i,640);
@@ -782,7 +781,7 @@ byte MainMenu(byte pageUp,MGLDraw *mgl)
 	{
 		lastTime+=TimeLength();
 		StartClock();
-		
+
 		b=MainMenuUpdate(&lastTime,mgl);
 		MainMenuDisplay(mgl);
 		Music_Update();
@@ -821,7 +820,7 @@ void CreditsRender(int y)
 {
 	int i,ypos,xpos;
 	char *s;
-	
+
 	i=0;
 
 	ypos=0;
@@ -858,12 +857,12 @@ void Credits(MGLDraw *mgl,byte init)
 	int y=-470;
 	int lastTime;
 	int wid;
-	int pos;
+	byte* pos;
 	int i;
 	byte c;
 
 	dword hangon;
-	
+
 	EndClock();
 	hangon=TimeLength();
 
@@ -877,7 +876,7 @@ void Credits(MGLDraw *mgl,byte init)
 		StartClock();
 
 		wid=mgl->GetWidth();
-		pos=(int)mgl->GetScreen()+0*wid;
+		pos=mgl->GetScreen()+0*wid;
 		for(i=0;i<480;i++)
 		{
 			if(i>31)
@@ -889,13 +888,13 @@ void Credits(MGLDraw *mgl,byte init)
 			}
 			else
 				c=i+64;
-			memset((byte *)pos,c,640);
+			memset(pos,c,640);
 			pos+=wid;
 		}
 
 		Music_Update();
 		CreditsRender(y);
-		
+
 		if(lastTime>TIME_PER_FRAME*30)
 			lastTime=TIME_PER_FRAME*30;
 
@@ -915,12 +914,12 @@ void Credits(MGLDraw *mgl,byte init)
 			ResetClock(hangon);
 			return;
 		}
-		if(GetControls()||GetArrows()||mgl->MouseDown(0)||mgl->MouseDown(1)||mgl->LastKeyPressed())
+		if(GetControls()||GetArrows()||mgl->MouseDown()||mgl->RMouseDown()||mgl->LastKeyPressed())
 		{
 			ResetClock(hangon);
 			return;
 		}
-		
+
 		if(y==END_OF_CREDITS)
 		{
 			ResetClock(hangon);
@@ -930,57 +929,19 @@ void Credits(MGLDraw *mgl,byte init)
 	ResetClock(hangon);
 }
 
-byte SpecialLoadBMP(char *name,MGLDraw *mgl,palette_t *pal)
-{
-	FILE *f;
-	BITMAPFILEHEADER bmpFHead;
-	BITMAPINFOHEADER bmpIHead;
-	RGBQUAD	pal2[256];
-	
-	int i;
-	byte *scr;
-
-	f=fopen(name,"rb");
-	if(!f)
-		return FALSE;
-
-	fread(&bmpFHead,sizeof(BITMAPFILEHEADER),1,f);
-	fread(&bmpIHead,sizeof(BITMAPINFOHEADER),1,f);
-
-	// 8-bit BMPs only
-	if(bmpIHead.biBitCount!=8)
-		return FALSE;
-
-	fread(pal2,sizeof(pal2),1,f);
-	for(i=0;i<256;i++)
-	{
-		pal[i].red=pal2[i].rgbRed;
-		pal[i].green=pal2[i].rgbGreen;
-		pal[i].blue=pal2[i].rgbBlue;
-	}
-
-	for(i=0;i<bmpIHead.biHeight;i++)
-	{
-		scr=(byte *)((int)mgl->GetScreen()+(bmpIHead.biHeight-1-i)*640);
-		fread(scr,bmpIHead.biWidth,1,f);
-	}
-	fclose(f);
-	return TRUE;
-}
-
-byte SpeedSplash(MGLDraw *mgl,char *fname)
+byte SpeedSplash(MGLDraw *mgl,const char *fname)
 {
 	int i,j,clock;
-	palette_t desiredpal[256],curpal[256];
+	RGB desiredpal[256],curpal[256];
 	byte mode,done;
 	byte c,oldc;
 
 
 	for(i=0;i<256;i++)
 	{
-		curpal[i].red=0;
-		curpal[i].green=0;
-		curpal[i].blue=0;
+		curpal[i].r=0;
+		curpal[i].g=0;
+		curpal[i].b=0;
 	}
 	mgl->SetPalette(curpal);
 	mgl->RealizePalette();
@@ -988,7 +949,7 @@ byte SpeedSplash(MGLDraw *mgl,char *fname)
 	mgl->LastKeyPressed();
 	oldc=GetControls()|GetArrows();
 
-	SpecialLoadBMP(fname,mgl,desiredpal);
+	mgl->LoadBMP(fname, desiredpal);
 
 	mode=0;
 	clock=0;
@@ -1004,11 +965,11 @@ byte SpeedSplash(MGLDraw *mgl,char *fname)
 			return 0;
 		else if(c)
 			mode=2;
-		
+
 		c=GetControls()|GetArrows();
 		if((c&(CONTROL_B1|CONTROL_B2)) && (!(oldc&(CONTROL_B1|CONTROL_B2))))
 			mode=2;
-		if(mgl->MouseDown(0)>0 || mgl->MouseDown(1)>0)
+		if(mgl->MouseDown()>0 || mgl->RMouseDown()>0)
 			mode=2;
 
 		oldc=c;
@@ -1020,12 +981,12 @@ byte SpeedSplash(MGLDraw *mgl,char *fname)
 				for(j=0;j<16;j++)
 					for(i=0;i<256;i++)
 					{
-						if(curpal[i].red<desiredpal[i].red)
-							curpal[i].red++;
-						if(curpal[i].green<desiredpal[i].green)
-							curpal[i].green++;
-						if(curpal[i].blue<desiredpal[i].blue)
-							curpal[i].blue++;
+						if(curpal[i].r<desiredpal[i].r)
+							curpal[i].r++;
+						if(curpal[i].g<desiredpal[i].g)
+							curpal[i].g++;
+						if(curpal[i].b<desiredpal[i].b)
+							curpal[i].b++;
 					}
 				mgl->SetPalette(curpal);
 				mgl->RealizePalette();
@@ -1043,16 +1004,16 @@ byte SpeedSplash(MGLDraw *mgl,char *fname)
 				for(j=0;j<16;j++)
 					for(i=0;i<256;i++)
 					{
-						if(curpal[i].red>0)
-							curpal[i].red--;
+						if(curpal[i].r>0)
+							curpal[i].r--;
 						else
 							clock++;
-						if(curpal[i].green>0)
-							curpal[i].green--;
+						if(curpal[i].g>0)
+							curpal[i].g--;
 						else
 							clock++;
-						if(curpal[i].blue>0)
-							curpal[i].blue--;
+						if(curpal[i].b>0)
+							curpal[i].b--;
 						else
 							clock++;
 					}
@@ -1089,25 +1050,25 @@ void DemoSplashScreens(MGLDraw *mgl)
 		return;
 }
 
-void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound)
+void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
 {
 	int i,j,clock;
-	palette_t desiredpal[256],curpal[256];
+	RGB desiredpal[256],curpal[256];
 	byte mode,done;
 	dword now,then;
 
 	for(i=0;i<256;i++)
 	{
-		curpal[i].red=0;
-		curpal[i].green=0;
-		curpal[i].blue=0;
+		curpal[i].r=0;
+		curpal[i].g=0;
+		curpal[i].b=0;
 	}
 	mgl->SetPalette(curpal);
 	mgl->RealizePalette();
 
 	mgl->LastKeyPressed();
-	
-	SpecialLoadBMP(fname,mgl,desiredpal);
+
+	mgl->LoadBMP(fname, desiredpal);
 
 	mode=0;
 	clock=0;
@@ -1120,7 +1081,7 @@ void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound)
 			return;
 		if(mgl->LastKeyPressed())
 			mode=2;
-		if(mgl->MouseDown(0) || mgl->MouseDown(1))
+		if(mgl->MouseDown() || mgl->RMouseDown())
 			mode=2;
 
 		JamulSoundUpdate();
@@ -1136,12 +1097,12 @@ void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound)
 					for(j=0;j<8;j++)
 						for(i=0;i<256;i++)
 						{
-							if(curpal[i].red<desiredpal[i].red)
-								curpal[i].red++;
-							if(curpal[i].green<desiredpal[i].green)
-								curpal[i].green++;
-							if(curpal[i].blue<desiredpal[i].blue)
-								curpal[i].blue++;
+							if(curpal[i].r<desiredpal[i].r)
+								curpal[i].r++;
+							if(curpal[i].g<desiredpal[i].g)
+								curpal[i].g++;
+							if(curpal[i].b<desiredpal[i].b)
+								curpal[i].b++;
 						}
 					mgl->SetPalette(curpal);
 					mgl->RealizePalette();
@@ -1168,16 +1129,16 @@ void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound)
 					for(j=0;j<8;j++)
 						for(i=0;i<256;i++)
 						{
-							if(curpal[i].red>0)
-								curpal[i].red--;
+							if(curpal[i].r>0)
+								curpal[i].r--;
 							else
 								clock++;
-							if(curpal[i].green>0)
-								curpal[i].green--;
+							if(curpal[i].g>0)
+								curpal[i].g--;
 							else
 								clock++;
-							if(curpal[i].blue>0)
-								curpal[i].blue--;
+							if(curpal[i].b>0)
+								curpal[i].b--;
 							else
 								clock++;
 						}

@@ -13,7 +13,7 @@ YesNoMenu::~YesNoMenu(void)
 {
 }
 
-void YesNoMenu::Activate(char *settitle,char *settitle2,char *setyes,char *setno)
+void YesNoMenu::Activate(const char *settitle,const char *settitle2,const char *setyes,const char *setno)
 {
 	strcpy(title,settitle);
 	strcpy(title2,settitle2);
@@ -44,7 +44,7 @@ void YesNoMenu::Render(int msx,int msy)
 		CenterPrintGlow(400,170,"'Pick up' what's under the cursor",0,0);
 		CenterPrintGlow(400,190,"(picks up items when in item",0,0);
 		CenterPrintGlow(400,210,"mode, floors in floor mode, etc)",0,0);
-		
+
 		CenterPrintGlow(160,240,"T",0,0);
 		CenterPrintGlow(400,240,"Next Tool type",0,0);
 
@@ -64,7 +64,7 @@ void YesNoMenu::Render(int msx,int msy)
 	editspr->GetSprite(20)->Draw(x,y,mgl);
 	CenterPrintGlow(x+100,y+8,title,0,2);
 	CenterPrintGlow(x+100,y+30,title2,0,2);
-	
+
 	if(PointInRect(msx,msy,6,52,96,74))
 		editspr->GetSprite(22)->Draw(x+6,y+52,mgl);
 	else
@@ -86,7 +86,7 @@ byte YesNoMenu::Click(int msx,int msy,byte btn)
 
 	msx-=x;
 	msy-=y;
-	
+
 	if(title[0]=='!')
 	{
 		answer=ANSWER_NO;

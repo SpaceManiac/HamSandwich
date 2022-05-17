@@ -51,7 +51,7 @@ add_subdirectory("eddie")  # 1999-03, re-release 2004-06
 add_subdirectory("mystic")  # 1999-08, re-release 2004-10
 add_subdirectory("lunatic" EXCLUDE_FROM_ALL)  # 2000-05
 add_subdirectory("loonyland")  # 2001-03
-#add_subdirectory("stockboy")  # 2002-06
+add_subdirectory("stockboy")  # 2002-06
 add_subdirectory("supreme")  # 2003-08
 add_subdirectory("loonyland2")  # 2007-02
 add_subdirectory("sleepless")  # 2007-10

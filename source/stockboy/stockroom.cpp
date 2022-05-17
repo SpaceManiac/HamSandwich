@@ -40,7 +40,7 @@ static char monthName[16][13]={
 		"Smarch",
 	};
 
-void UpdateBackgd(void);
+static void UpdateBackgd(void);
 
 void InitStockroomMenu(void)
 {
@@ -54,7 +54,7 @@ void InitStockroomMenu(void)
 	GetArrowTaps();
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
-		GetDisplayMGL()->FatalError("Out of memory!");
+		FatalError("Out of memory!");
 
 	if(month==12)
 	{
@@ -69,7 +69,7 @@ void InitStockroomMenu(void)
 	moPic=200;
 	moUpClock=14;
 	UpdateBackgd();
-	
+
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
 	cursor=1;
@@ -98,7 +98,7 @@ void ExitStockroomMenu(void)
 	SaveOptions();
 }
 
-void UpdateBackgd(void)
+static void UpdateBackgd(void)
 {
 	char s[32];
 	int i;
@@ -124,9 +124,9 @@ void UpdateBackgd(void)
 		moUpClock=0;
 		sprintf(s,"graphics\\stockroom%02d.bmp",moPic);
 		GetDisplayMGL()->LoadBMP(s);
-	
+
 		for(i=0;i<480;i++)
-			memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);	
+			memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
 	}
 }
 
@@ -158,7 +158,7 @@ byte UpdateStockroomMenu(int *lastTime,MGLDraw *mgl)
 		Music_Update();
 
 		UpdateBackgd();
-		
+
 		for(t=0;t<6;t++)
 		{
 			if(cursor==t && txtLevel[t]<8)
@@ -168,7 +168,7 @@ byte UpdateStockroomMenu(int *lastTime,MGLDraw *mgl)
 		}
 
 		mgl->GetMouse(&msx,&msy);
-		btn=mgl->MouseDown(0);
+		btn=mgl->MouseDown();
 
 		c=mgl->LastKeyPressed();
 		t=GetTaps()|GetArrowTaps();
@@ -271,7 +271,7 @@ byte UpdateStockroomMenu(int *lastTime,MGLDraw *mgl)
 						}
 					}
 				}
-							
+
 				if(msx!=oldmsx || msy!=oldmsy)
 				{
 					for(i=0;i<4;i++)
@@ -586,8 +586,10 @@ void RenderStockroomMenu(MGLDraw *mgl)
 
 	Music_Update();
 
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
@@ -654,7 +656,7 @@ void RenderStockroomMenu(MGLDraw *mgl)
 		sprintf(s,"%s, Week %d",monthName[month],week+1);
 		RightPrintUnGlow(635,270,s,0);
 		RenderStartStar(450*FIXAMT,370*FIXAMT,mgl);
-	
+
 		if(month!=2 || !smarch)
 		{
 			RenderHighScore(GAME_STOCKROOM,month*4+week,2,500,315,mgl);

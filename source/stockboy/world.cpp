@@ -12,7 +12,7 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	strcpy(world->tileName,"basicTiles.bmp");
 	mgl->LoadBMP("graphics\\basicTiles.bmp");
 	SetTiles(mgl->GetScreen(),0);
-	
+
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
 
@@ -21,7 +21,7 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	return 1;
 }
 
-byte LoadWorld(world_t *world,char *fname,MGLDraw *mgl)
+byte LoadWorld(world_t *world,const char *fname,MGLDraw *mgl)
 {
 	FILE *f;
 	int i;
@@ -73,7 +73,7 @@ byte LoadWorld(world_t *world,char *fname,MGLDraw *mgl)
 	return 1;
 }
 
-byte SaveWorld(world_t *world,char *fname)
+byte SaveWorld(world_t *world,const char *fname)
 {
 	FILE *f;
 	int i;
@@ -103,7 +103,7 @@ byte SaveWorld(world_t *world,char *fname)
 
 byte GetWorldTiles(world_t *world,MGLDraw *mgl)
 {
-	char name[48];
+	char name[64];
 
 	sprintf(name,"graphics\\%s",world->tileName);
 	if(mgl->LoadBMP(name))
@@ -127,7 +127,7 @@ void InitWorld(world_t *world,byte worldNum)
 {
 }
 
-void GetWorldName(char *fname,char *buf,char *auth)
+void GetWorldName(const char *fname,char *buf,char *auth)
 {
 	FILE *f;
 	char fname2[60];
@@ -142,7 +142,7 @@ void GetWorldName(char *fname,char *buf,char *auth)
 
 	// this fseeks past:
 	//	 1 byte=version, 64 bytes=tilesetName, 1 byte numMaps
-	
+
 	fseek(f,4+2+64,SEEK_SET);
 	// read the name
 	fread(buf,1,32,f);
@@ -154,7 +154,7 @@ void GetWorldName(char *fname,char *buf,char *auth)
 	fclose(f);
 }
 
-int GetWorldPoints(char *fname)
+int GetWorldPoints(const char *fname)
 {
 	FILE *f;
 	char fname2[60];

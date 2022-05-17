@@ -29,7 +29,7 @@ static byte bright,tallyPic;
 static char tallyMsg[48];
 static byte noUpdateYet;
 
-void SetTallyMsg(char *msg,byte winpic)
+void SetTallyMsg(const char *msg,byte winpic)
 {
 	strcpy(tallyMsg,msg);
 	tallyPic=winpic;
@@ -77,7 +77,7 @@ void SetupTally(Map *map)
 
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
-		GetDisplayMGL()->FatalError("Out of memory!");
+		FatalError("Out of memory!");
 
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
@@ -101,7 +101,7 @@ void SetupTally(Map *map)
 	player.pencilBonus=0;
 	for(i=0;i<8;i++)
 		player.pencilBonus+=player.pencils[i];
-	
+
 	pScore=0;
 	baseScore=player.score;
 	for(i=0;i<7;i++)
@@ -327,7 +327,7 @@ byte UpdateTally(void)
 				deliverBonus+=10;
 				player.deliverBonus--;
 				player.score+=10;
-				
+
 				MakeNormalSound(SND_MENUCLICK);
 			}
 			else
@@ -340,7 +340,7 @@ byte UpdateTally(void)
 				rescueBonus+=20;
 				player.rescueBonus--;
 				player.score+=20;
-				
+
 				MakeNormalSound(SND_MENUCLICK);
 			}
 			else
@@ -353,7 +353,7 @@ byte UpdateTally(void)
 				dumpBonus+=5;
 				player.dumpBonus--;
 				player.score+=5;
-				
+
 				MakeNormalSound(SND_MENUCLICK);
 			}
 			else
@@ -366,7 +366,7 @@ byte UpdateTally(void)
 				timeBonus+=5*5;
 				player.timeBonus-=5;
 				player.score+=5*5;
-				
+
 				MakeNormalSound(SND_MENUCLICK);
 			}
 			else if(player.timeBonus>0)
@@ -386,7 +386,7 @@ byte UpdateTally(void)
 				escapeBonus+=1000;
 				player.escapeBonus=0;
 				player.score+=1000;
-				
+
 				MakeNormalSound(SND_MENUCLICK);
 			}
 			else
@@ -399,7 +399,7 @@ byte UpdateTally(void)
 				destructionBonus+=100;
 				player.destructionBonus-=100;
 				player.score+=100;
-				
+
 				MakeNormalSound(SND_MENUCLICK);
 			}
 			else if(player.destructionBonus>25)
@@ -428,7 +428,7 @@ byte UpdateTally(void)
 				collectBonus+=100;
 				player.pencilBonus-=100;
 				player.score+=100;
-				
+
 				MakeNormalSound(SND_MENUCLICK);
 			}
 			else if(player.pencilBonus>25)
@@ -490,7 +490,7 @@ byte UpdateTally(void)
 	return 1;
 }
 
-void PrintStat(int y,char *txt,int num)
+void PrintStat(int y,const char *txt,int num)
 {
 	char s[16];
 
@@ -498,7 +498,7 @@ void PrintStat(int y,char *txt,int num)
 	if(num==0)
 	{
 		PrintOutline(170,y,txt,0,0);
-		RightPrintOutline(470,y,s,0,0);	
+		RightPrintOutline(470,y,s,0,0);
 	}
 	else
 	{
@@ -512,8 +512,10 @@ void RenderTally(MGLDraw *mgl)
 	char s[128];
 	int i;
 
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);

@@ -72,8 +72,10 @@ void RenderFireworks(MGLDraw *mgl)
 {
 	int i;
 
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	if(!going)
 		return;
@@ -147,7 +149,7 @@ void LaunchShell(byte rank)
 	i=Random(rank+1);
 
 	type=FWORK_SHELL;
-	
+
 	if(i<1)
 		boom=FE_DUD;
 	else if(i<10)

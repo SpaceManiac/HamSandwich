@@ -1,9 +1,17 @@
 #include "profile.h"
 #include "options.h"
-#include <io.h>
 #include "monster.h"
+#include "appdata.h"
+#include "control.h"
 
 profile_t profile;
+
+void ApplyControlSettings(void)
+{
+	byte joyBinds[2] = { 1, 2 };
+	SetKeyboardBindings(0, 5, profile.keys);
+	SetJoystickBindings(2, joyBinds);
+}
 
 void InitProfile(void)
 {
@@ -49,8 +57,6 @@ byte LoadProfile(byte n)
 
 byte FindOpenProfile(void)
 {
-	long hFile;
-	struct _finddata_t filedata;
 	int i,thisNum;
 	byte used[MAX_PROFILES];
 	char numtxt[5];
@@ -58,25 +64,13 @@ byte FindOpenProfile(void)
 	for(i=0;i<MAX_PROFILES;i++)
 		used[i]=0;
 
-	hFile=_findfirst("profile*.pro",&filedata);
-
-	if(hFile!=-1)	// there's at least one
+	for (const auto& file : ListDirectory(".", ".pro"))
 	{
-
-		strncpy(numtxt,&filedata.name[7],3);
+		strncpy(numtxt,&file[7],3);
 		thisNum=atoi(numtxt);
 		if(thisNum<MAX_PROFILES)
 			used[thisNum]=1;
-		
-		while(_findnext(hFile,&filedata)==0)
-		{
-			strncpy(numtxt,&filedata.name[7],3);
-			thisNum=atoi(numtxt);
-			if(thisNum<MAX_PROFILES)
-				used[thisNum]=1;
-		}
 	}
-	_findclose(hFile);
 
 	for(i=0;i<MAX_PROFILES;i++)
 		if(!used[i])
@@ -107,10 +101,10 @@ byte SaveProfile(byte n)
 void DefaultProfile(profile_t *p)
 {
 	int i,j;
-	
+
 	strcpy(p->name,"Kiddo");
 	p->character=0;
-	
+
 	for(i=0;i<10;i++)
 		p->training[i]=0;
 	for(i=0;i<13;i++)
@@ -138,7 +132,7 @@ void DefaultProfile(profile_t *p)
 	p->stars=0;
 	p->starsLeft=0;
 	p->bestBounce=0;
-	
+
 	for(i=0;i<NUM_GAMES;i++)
 		for(j=0;j<MAX_SCORES;j++)
 		{

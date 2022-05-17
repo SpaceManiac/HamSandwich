@@ -13,9 +13,9 @@ typedef class YesNoMenu
 		YesNoMenu(MGLDraw *mymgl);
 		~YesNoMenu(void);
 
-		void Activate(char *settitle,char *settitle2,char *setyes,char *setno);
+		void Activate(const char *settitle,const char *settitle2,const char *setyes,const char *setno);
 		void Render(int msx,int msy);
-		
+
 		byte Click(int msx,int msy,byte btn);
 		byte KeyPress(char c);
 

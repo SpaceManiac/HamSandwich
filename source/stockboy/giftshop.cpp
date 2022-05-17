@@ -155,7 +155,7 @@ static int startx,starty;
 static int starx,stary;
 static int stardx,stardy;
 static byte starAng;
-	
+
 void InitGiftShop(void)
 {
 	int i;
@@ -166,14 +166,14 @@ void InitGiftShop(void)
 	oldc=255;
 	cursor=0;
 	oldMouseBtn=1;
-	
+
 	LoadOptions();
 
 	giftSpr=new sprite_set_t("graphics\\giftshop.jsp");
 
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
-		GetDisplayMGL()->FatalError("Out of memory!");
+		FatalError("Out of memory!");
 
 	GetDisplayMGL()->LoadBMP("graphics\\giftshop.bmp");
 
@@ -359,7 +359,7 @@ static byte GiftShopMouseCheck(MGLDraw *mgl)
 	byte oldcursor;
 
 	mgl->GetMouse(&msx,&msy);
-	b=mgl->MouseDown(0);
+	b=mgl->MouseDown();
 
 	oldcursor=cursor;
 
@@ -427,7 +427,7 @@ byte UpdateGiftShop(int *lastTime,MGLDraw *mgl)
 {
 	char c;
 	byte c2;
-	
+
 	JamulSoundUpdate();
 
 	if(*lastTime>TIME_PER_FRAME*MAX_RUNS)
@@ -483,7 +483,7 @@ byte UpdateGiftShop(int *lastTime,MGLDraw *mgl)
 		{
 			return 1;
 		}
-	
+
 		oldmsx=msx;
 		oldmsy=msy;
 		oldc=c2;
@@ -523,15 +523,17 @@ void RenderGiftShop(MGLDraw *mgl)
 
 	Music_Update();
 
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
 
 	msx=GIFT_MINX;
 	msy=GIFT_MINY;
-	
+
 	for(i=0;i<16;i++)
 	{
 		if(!inStock[i])
@@ -599,10 +601,10 @@ void GiftShop(MGLDraw *mgl)
 		RenderGiftShop(mgl);
 		mgl->Flip();
 		EndClock();
-		
+
 		if(!mgl->Process())
 			done=1;
-		
+
 	}
 
 	ExitGiftShop();

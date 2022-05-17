@@ -61,15 +61,15 @@ void LunaticInit(MGLDraw *mgl)
 	InitInterface();
 	LoadOptions();
 	InitMonsters();
-	
-	mgl->SetLastKey(0);
+
+	mgl->LastKeyPressed();
 	MGL_srand(timeGetTime());
 	InitControls();
 	InitPlayer(INIT_GAME,0,0);
 	msgFromOtherModules=0;
 	testingLevel=0;
 	Music_Init();
-	mgl->SetColorblind(profile.colorblind);
+	// TODO mgl->SetColorblind(profile.colorblind);
 	mgl->RealizePalette();
 }
 
@@ -79,7 +79,7 @@ void SetGameMGL(MGLDraw *mgl)
 }
 
 void LunaticExit(void)
-{	
+{
 	Music_Exit();
 	JamulSoundPurge();
 	ExitItems();
@@ -133,10 +133,10 @@ byte InitLevel(byte map)
 			break;
 		}
 	}
-	
+
 	if(curWorld.numMaps<=map)
 		return 0;	// can't go to illegal map
-	 
+
 	// make a copy of the map to be played
 	curMap=new Map(curWorld.map[map]);
 
@@ -196,11 +196,11 @@ byte GetGameIdle(void)
 void GameIdle(void)
 {
 	dword start,end;
-	
+
 	start=timeGetTime();
 	while(idleGame)
 	{
-		WaitMessage();
+		//WaitMessage();
 		if(!gamemgl->Process())
 			break;
 	}
@@ -289,7 +289,7 @@ byte LunaticRun(int *lastTime)
 					}
 					if(windingUp>5 || canWind)
 						windingUp--;
-					if(windingUp<6 && ((GetControls()|GetArrows()) || gamemgl->MouseDown(0)))
+					if(windingUp<6 && ((GetControls()|GetArrows()) || gamemgl->MouseDown()))
 						canWind=1;
 				}
 				else
@@ -494,8 +494,10 @@ void LunaticDraw(void)
 
 	Music_Update();
 
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	// add all the sprites to the list
 	if(gameMode!=GAMEMODE_PIC)
@@ -551,7 +553,7 @@ void LunaticDraw(void)
 	{
 		// nothing to do
 	}
-	
+
 	if(showStats)
 	{
 		sprintf(s,"QFPS %02.2f",frmRate);
@@ -680,7 +682,7 @@ byte PlayALevel(byte map)
 	return exitcode;
 }
 
-byte LunaticWorld(byte world,char *worldName)
+byte LunaticWorld(byte world,const char *worldName)
 {
 	byte result;
 
@@ -836,6 +838,6 @@ void LunaticGame(MGLDraw *mgl,byte load,byte mode)
 			break;
 	}
 	ExitPlayer();
-	GetDisplayMGL()->SetReversePal(0);
+	// TODO GetDisplayMGL()->SetReversePal(0);
 	GetDisplayMGL()->RealizePalette();
 }

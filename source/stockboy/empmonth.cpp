@@ -29,11 +29,11 @@ void SetupEmpMonth(void)
 	GetDisplayMGL()->LoadBMP("graphics\\empmonth.bmp");
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
-		GetDisplayMGL()->FatalError("Out of memory!");
+		FatalError("Out of memory!");
 
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
-	
+
 	GetTaps();
 	GetArrowTaps();
 	GetDisplayMGL()->LastKeyPressed();
@@ -51,7 +51,7 @@ void SetupEmpMonth(void)
 	typeClock=10;
 	burning=1;
 	yearSpr=new sprite_set_t("graphics\\empyear.jsp");
-	
+
 	doYear=0;
 	if(GameType()==GAME_STOCKROOM)
 	{
@@ -106,7 +106,7 @@ byte UpdateEmpMonth(int *lastTime,MGLDraw *mgl)
 	char c;
 	byte c2;
 	byte b;
-	
+
 	JamulSoundUpdate();
 
 	if(*lastTime>TIME_PER_FRAME*MAX_RUNS)
@@ -114,7 +114,7 @@ byte UpdateEmpMonth(int *lastTime,MGLDraw *mgl)
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		Music_Update();
-		
+
 		if(doYear==2)
 		{
 			yearY+=yearDY;
@@ -170,7 +170,7 @@ byte UpdateEmpMonth(int *lastTime,MGLDraw *mgl)
 		}
 		c=mgl->LastKeyPressed();
 		c2=GetArrows()|GetControls();
-		b=mgl->MouseDown(0);
+		b=mgl->MouseDown();
 
 		if(!burning)
 		{
@@ -189,7 +189,7 @@ byte UpdateEmpMonth(int *lastTime,MGLDraw *mgl)
 				starClock=starAdd+1;
 			}
 		}
-		
+
 		if(!burning && !StarsLeft() && doYear==1)
 		{
 			doYearTime--;
@@ -203,7 +203,7 @@ byte UpdateEmpMonth(int *lastTime,MGLDraw *mgl)
 				MakeNormalSound(SND_EMPYEAR);
 			}
 		}
-		
+
 		if((!burning && !StarsLeft() && (doYear==0 || doYear==3)) && (c || (c2&&(!oldc)) || (b&&(!oldMsBtn))))
 		{
 			return 1;
@@ -219,13 +219,15 @@ byte UpdateEmpMonth(int *lastTime,MGLDraw *mgl)
 void RenderEmpMonth(MGLDraw *mgl)
 {
 	int i;
-	
+
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
-	
+
 	if(GameType()==GAME_PARALLEL)
 	{
 		// special smarch block only shown if smarch is there
@@ -323,10 +325,10 @@ void EmpMonth(byte lvl,MGLDraw *mgl)
 		RenderEmpMonth(mgl);
 		mgl->Flip();
 		EndClock();
-		
+
 		if(!mgl->Process())
 			done=1;
-		
+
 	}
 
 	ExitEmpMonth();

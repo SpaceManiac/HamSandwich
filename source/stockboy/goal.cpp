@@ -7,13 +7,13 @@
 
 byte goalCheck[8];
 
-char *GoalColorName(byte mod)
+const char *GoalColorName(byte mod)
 {
 	static char colName[8][8]={"Grey","Green","Brown","Blue","Red","Yellow","Purple","Aqua"};
 	static char monsName[4][8]={"Blobby","Fluffy","Inchy","Piggy"};
 	static char pointsName[4][8]={"x1","x10","x100","x1,000"};
 	static char noColor[16]="ILLEGAL";
-	
+
 	if(mod==GM_ALL)
 		return "Any";
 	else if(mod>=GM_COLOR0 && mod<=GM_COLOR7)
@@ -26,7 +26,7 @@ char *GoalColorName(byte mod)
 		return noColor;
 }
 
-char *CreateGoalString(goal_t goal)
+const char *CreateGoalString(goal_t goal)
 {
 	static char txt[64];
 
@@ -195,7 +195,7 @@ void PrintGoal(goal_t goal,goal_t antigoal,int timer)
 	}
 }
 
-char *EditGoalName(goal_t goal)
+const char *EditGoalName(goal_t goal)
 {
 	switch(goal.type)
 	{
@@ -239,7 +239,7 @@ char *EditGoalName(goal_t goal)
 	return "ILLEGAL!";
 }
 
-char *EditGoalEnding(goal_t goal)
+const char *EditGoalEnding(goal_t goal)
 {
 	switch(goal.type)
 	{
@@ -457,7 +457,7 @@ byte GoalProgress(goal_t *goal,Map *map)
 			value=player.score;
 			break;
 		case GOAL_EXIT:
-			// no progress shown			
+			// no progress shown
 			break;
 		case GOAL_DUMP:
 			if(goal->modifier==GM_ALL)

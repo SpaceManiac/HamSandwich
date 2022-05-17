@@ -89,7 +89,7 @@ void TestLevel(byte map);
 byte PlayALevel(byte map);
 byte GameType(void);
 
-byte LunaticWorld(byte world,char *worldName);
+byte LunaticWorld(byte world,const char *worldName);
 void LunaticGame(MGLDraw *mgl,byte load,byte mode);
 
 void SendMessageToGame(byte msg,int content);

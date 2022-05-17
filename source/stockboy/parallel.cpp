@@ -40,7 +40,7 @@ static char monthName[16][13]={
 		"hcramS",
 	};
 
-void UpdateBackgd(void);
+static void UpdateBackgd(void);
 
 void InitParallelMenu(void)
 {
@@ -57,7 +57,7 @@ void InitParallelMenu(void)
 		week=0;
 	}
 
-	GetDisplayMGL()->SetReversePal(1);
+	// TODO GetDisplayMGL()->SetReversePal(1);
 	GetDisplayMGL()->RealizePalette();
 	JamulSoundPurge();
 	Music_Load(profile.songChoice[SONG_MENU]);
@@ -67,13 +67,13 @@ void InitParallelMenu(void)
 	GetArrowTaps();
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
-		GetDisplayMGL()->FatalError("Out of memory!");
+		FatalError("Out of memory!");
 
 
 	moPic=200;
 	moUpClock=14;
 	UpdateBackgd();
-	
+
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
 	cursor=0;
@@ -128,9 +128,9 @@ static void UpdateBackgd(void)
 		moUpClock=0;
 		sprintf(s,"graphics\\stockroom%02d.bmp",moPic);
 		GetDisplayMGL()->LoadBMP(s);
-	
+
 		for(i=0;i<480;i++)
-			memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);	
+			memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
 	}
 }
 
@@ -162,7 +162,7 @@ byte UpdateParallelMenu(int *lastTime,MGLDraw *mgl)
 		Music_Update();
 
 		UpdateBackgd();
-		
+
 		for(t=0;t<6;t++)
 		{
 			if(cursor==t && txtLevel[t]<8)
@@ -172,7 +172,7 @@ byte UpdateParallelMenu(int *lastTime,MGLDraw *mgl)
 		}
 
 		mgl->GetMouse(&msx,&msy);
-		btn=mgl->MouseDown(0);
+		btn=mgl->MouseDown();
 
 		c=mgl->LastKeyPressed();
 		t=GetTaps()|GetArrowTaps();
@@ -467,7 +467,7 @@ byte UpdateParallelMenu(int *lastTime,MGLDraw *mgl)
 								else
 									InitStars(profile.starGot[GAME_PARALLEL][12*4+week],0);
 								pickMode=1;
-								
+
 								if(oldMonth==month && oldWeek==week)
 								{
 									play=1;	// re-clicking the same level starts play
@@ -594,8 +594,10 @@ void RenderParallelMenu(MGLDraw *mgl)
 
 	Music_Update();
 
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);

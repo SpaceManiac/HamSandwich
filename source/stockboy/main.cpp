@@ -2,8 +2,6 @@
 #include "mgldraw.h"
 #include "jamulfont.h"
 #include "jamulsound.h"
-#include <shellapi.h>
-#include <crtdbg.h>
 
 #include "game.h"
 #include "editor.h"
@@ -18,45 +16,48 @@
 #include "empmonth.h"
 #include "addon.h"
 #include "internet.h"
+#include "extern.h"
+#include "appdata.h"
 
-bool windowedGame=FALSE;
-MGLDraw *mainmgl;
-
-void parseCmdLine(char *cmdLine)
-{
-	char *token;
-
-	token=strtok(cmdLine," ");
-	while(token!=NULL)
-	{
-		if(!strcmp(token,"window"))
-			windowedGame=TRUE;
-		token=strtok(NULL," ");
-	}
-}
-
-int PASCAL WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR cmdLine,int nCmdShow)
-{	
-#ifndef NDEBUG
-
-int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG); // Get current flag
-
-flag |= _CRTDBG_LEAK_CHECK_DF; // Turn on leak-checking bit
-
-_CrtSetDbgFlag(flag); // Set flag to the new value
-
+#ifdef _WIN32
+#include <crtdbg.h>
 #endif
 
-	parseCmdLine(cmdLine);
-	mainmgl=new MGLDraw("Stockboy",SCRWID,SCRHEI,8,windowedGame,hInstance);
+MGLDraw *mainmgl;
+
+void ChooseNextSong() {}
+bool ConfigMusicEnabled() { return true; }
+bool ConfigSoundEnabled() { return true; }
+int ConfigNumSounds() { return 16; }
+SDL_RWops* SoundLoadOverride(int) { return nullptr; }
+void SetGameIdle(bool) {}
+
+TASK(int) main(int argc, char* argv[])
+{
+#if defined(WIN32) && !defined(NDEBUG)
+	int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG); // Get current flag
+	flag |= _CRTDBG_LEAK_CHECK_DF; // Turn on leak-checking bit
+	_CrtSetDbgFlag(flag); // Set flag to the new value
+#endif
+
+	HAM_EXTERN_FULFILL
+	AppdataInit();
+
+	bool windowedGame=false;
+	for (int i = 1; i < argc; ++i)
+	{
+		if (!strcmp(argv[i], "window"))
+			windowedGame=true;
+	}
+
+	mainmgl=new MGLDraw("Stockboy",SCRWID,SCRHEI,windowedGame);
 	if(!mainmgl)
-		return 0;	
+		return 0;
 
 	LunaticInit(mainmgl);
-	
+
 	SplashScreen(mainmgl,"graphics\\hamumu.bmp",128,2);
 
-	
 	/*
 	if(Web_Init()==IE_OK)
 	{

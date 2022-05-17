@@ -17,7 +17,7 @@
 monsterType_t monsType[NUM_MONSTERS]=
 	{
 		{"Null",0,
-		 0,0,0,0,0,0,"",0},
+		 0,"",0,0,0,0,0,0},
 		{"SurfBoy",7,
 		 30,"graphics\\stockboy.jsp",0,MF_WATERWALK,
 			{
@@ -189,7 +189,7 @@ void InitMonsters(void)
 void ExitMonsters(void)
 {
 	int i;
-	
+
 	for(i=1;i<NUM_MONSTERS;i++)
 	{
 		if(monsType[i].spr)
@@ -271,7 +271,7 @@ void LoadMonsterSprite(byte type)
 			{
 				monsType[t].spr=new sprite_set_t(monsType[t].sprName);
 				if(monsType[t].spr==NULL)
-					MGL_fatalError("Out of memory!");
+					FatalError("Out of memory!");
 			}
 			monsType[type].spr=monsType[t].spr;
 		}
@@ -279,7 +279,7 @@ void LoadMonsterSprite(byte type)
 		{
 			monsType[type].spr=new sprite_set_t(monsType[type].sprName);
 			if(monsType[type].spr==NULL)
-				MGL_fatalError("Out of memory!");
+				FatalError("Out of memory!");
 		}
 	}
 	end=timeGetTime();
@@ -299,7 +299,7 @@ sprite_t *GetMonsterSprite(byte type,byte seq,byte frm,byte facing)
 
 	if(!(monsType[type].flags&MF_ONEFACE))
 		v+=(facing/2)*monsType[type].framesPerDir;
-	
+
 	if(monsType[type].flags&MF_FACECMD)
 		v+=facing;
 
@@ -331,7 +331,7 @@ void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,byte 
 
 	if(!(monsType[type].flags&MF_ONEFACE))
 		v+=(facing/2)*monsType[type].framesPerDir;
-	
+
 	if(isBouapha)
 	{
 		if(player.invinc&1)
@@ -353,7 +353,7 @@ void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,byte 
 
 	if(!(monsType[type].flags&MF_NOSHADOW))
 		SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,0,255,0,curSpr,DISPLAY_DRAWME|DISPLAY_SHADOW);
-	
+
 	if(ouch==0)
 	{
 		if(ice)
@@ -497,7 +497,7 @@ inline void FaceGoodguy2(Guy *me,Guy *goodguy)
 		else
 			desired=2;
 	}
-	
+
 	if(desired==me->facing)
 		return;
 
@@ -790,7 +790,7 @@ void AI_Blobby(Guy *me,Map *map,world_t *world)
 			me->dx=0;
 			me->dy=0;
 
-			// standing at destination			
+			// standing at destination
 			if(MonsterMoveTo(me,me->mapx+GetDX(me->facing/2),me->mapy+GetDY(me->facing/2)))
 			{
 				me->dx=0;
@@ -846,7 +846,7 @@ void AI_Bunny(Guy *me,Map *map,world_t *world)
 		if(!MonsterAtDestination(me,map))
 			return;
 
-		// standing at destination			
+		// standing at destination
 		if(MonsterMoveTo(me,me->mapx+GetDX(me->facing/2),me->mapy+GetDY(me->facing/2)))
 		{
 			me->tx=me->x+TILE_WIDTH*FIXAMT*GetDX(me->facing/2);
@@ -896,7 +896,7 @@ void AI_Inchy(Guy *me,Map *map,world_t *world)
 		if(!MonsterAtDestination(me,map))
 			return;
 
-		// standing at destination			
+		// standing at destination
 		if(MonsterMoveTo(me,me->mapx+GetDX(me->facing/2),me->mapy+GetDY(me->facing/2)))
 		{
 			me->tx=me->x+TILE_WIDTH*FIXAMT*GetDX(me->facing/2);
@@ -961,7 +961,7 @@ void AI_Piggy(Guy *me,Map *map,world_t *world)
 		if(!MonsterAtDestination(me,map))
 			return;
 
-		// standing at destination			
+		// standing at destination
 		if(MonsterMoveTo(me,me->mapx+GetDX(me->facing/2),me->mapy+GetDY(me->facing/2)))
 		{
 			me->tx=me->x+TILE_WIDTH*FIXAMT*GetDX(me->facing/2);

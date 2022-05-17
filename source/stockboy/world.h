@@ -47,16 +47,16 @@ typedef struct world_t
 	terrain_t terrain[200];
 } world_t;
 
-void WorldLoadBMP(char *name,byte *dst);
+void WorldLoadBMP(const char *name,byte *dst);
 
 byte NewWorld(world_t *world,MGLDraw *mgl);
-byte LoadWorld(world_t *world,char *fname,MGLDraw *mgl);
-byte SaveWorld(world_t *world,char *fname);
+byte LoadWorld(world_t *world,const char *fname,MGLDraw *mgl);
+byte SaveWorld(world_t *world,const char *fname);
 void FreeWorld(world_t *world);
 
 void InitWorld(world_t *world,byte worldNum);
-void GetWorldName(char *fname,char *buf,char *auth);
-int  GetWorldPoints(char *fname);
+void GetWorldName(const char *fname,char *buf,char *auth);
+int  GetWorldPoints(const char *fname);
 byte GetWorldTiles(world_t *world,MGLDraw *mgl);
 
 void MoveLevel(world_t *world,byte num,char d);

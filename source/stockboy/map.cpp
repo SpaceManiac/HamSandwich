@@ -17,7 +17,7 @@ Map::Map(FILE *f)
 {
 	width=MAP_SIZE;
 	height=MAP_SIZE;
-	
+
 	fread(name,sizeof(char),32,f);
 	fread(&goal,sizeof(goal_t),1,f);
 	fread(&antigoal,sizeof(goal_t),1,f);
@@ -27,7 +27,7 @@ Map::Map(FILE *f)
 	fread(map,sizeof(mapTile_t),width*height,f);
 }
 
-Map::Map(int wid,int hei,char *name)
+Map::Map(int wid,int hei,const char *name)
 {
 	width=wid;
 	height=hei;
@@ -86,7 +86,7 @@ void Map::Init(world_t *wrld)
 			map[i].item=ITM_NONE;
 		}
 	}
-	
+
 	summonClock=genTime;
 	world=wrld;
 	AddMapGuys(this);
@@ -144,7 +144,7 @@ void Map::Update(byte mode,world_t *world)
 	timeToAnim++;
 
 	timeToReset=0;
-	
+
 	if(mode==UPDATE_GAME)
 	{
 		summonClock--;
@@ -263,7 +263,7 @@ byte Map::ToggleDoors(byte color)
 			map[i].item!=0 && map[i].item!=ITM_OPENDOOR && map[i].item!=ITM_DOOR)
 			return 0;
 	}
-		
+
 	for(i=0;i<width*height;i++)
 	{
 		if(map[i].item==ITM_DOOR && (map[i].itemInfo%8)==color)
@@ -271,7 +271,7 @@ byte Map::ToggleDoors(byte color)
 			map[i].item=ITM_OPENDOOR;
 		}
 		else if((map[i].floor==82+color || map[i].floor==82+20+color ||
-			    map[i].floor==82+40+color || map[i].floor==82+60+color))	
+			    map[i].floor==82+40+color || map[i].floor==82+60+color))
 				// don't let it close if something is on it
 		{
 			if(map[i].item==0)
@@ -292,7 +292,7 @@ byte Map::ToggleDoors(byte color)
 byte Map::TurnArrows(void)
 {
 	int i;
-	
+
 	for(i=0;i<width*height;i++)
 	{
 		if(FloorArrowFacing(map[i].floor)!=NOT_AN_ARROW)
@@ -374,7 +374,7 @@ byte Map::LOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,
 {
 	int p1x,p1y,p2x,p2y;
 	int i,curx,cury;
-	
+
 	if(x<0 || x>=width || y<0 || y>=height)
 		return 0;
 
@@ -444,7 +444,7 @@ byte PlaceItemCallback(int x,int y,int cx,int cy,int value,Map *map)
 {
 	if(map->map[x+y*map->width].item)
 		return 1;
-	
+
 	map->map[x+y*map->width].item=(byte)value;
 	return 0;	// all done, you placed the item
 }
@@ -482,7 +482,7 @@ byte TempTorchCallback(int x,int y,int cx,int cy,int value,Map *map)
 
 	if(b<0)
 		return 1;
-	
+
 	if(b<16)
 	{
 		desiredLight=b-17;
@@ -650,7 +650,7 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 			if(i>=0 && i<width && j>=0 && j<height)
 			{
 				m=&map[i+j*width];
-				
+
 				if(!(flags&MAP_SHOWLIGHTS))	// we're ignoring lighting
 					lite=0;
 				else
@@ -689,7 +689,7 @@ void Map::RenderTiny(world_t *world,int x,int y)
 			if(i>=0 && i<width && j>=0 && j<height)
 			{
 				m=&map[i+j*width];
-				
+
 				RenderFloorTileSml(scrX,scrY,m->floor);
 			}
 			else
@@ -756,7 +756,7 @@ void Map::Parallelize(void)
 			m=map[i+j*width];
 			map[i+j*width]=map[width-1-i+j*width];
 			map[width-1-i+j*width]=m;
-			
+
 			m2=&map[i+j*width];
 			for(k=0;k<2;k++)
 			{

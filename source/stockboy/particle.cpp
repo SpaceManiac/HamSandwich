@@ -5,7 +5,7 @@
 
 Particle **particleList;
 int		maxParticles;
-static snowCount=0;
+static int snowCount=0;
 
 Particle::Particle(void)
 {
@@ -297,8 +297,8 @@ void Particle::Update(Map *map)
 					life=0;
 				break;
 		}
-	
-		
+
+
 		if(map!=NULL)
 		{
 			if(x<0 || y<0 || x>=((map->width*TILE_WIDTH)<<FIXSHIFT) || y>=((map->height*TILE_HEIGHT)<<FIXSHIFT))
@@ -317,7 +317,7 @@ void Particle::Update(Map *map)
 		{
 			mapx=(x/TILE_WIDTH)>>FIXSHIFT;
 			mapy=(y/TILE_HEIGHT)>>FIXSHIFT;
-			
+
 			// brighten it appropriately
 			if(map!=NULL)
 				brt=map->map[mapx+mapy*map->width].templight;
@@ -377,16 +377,16 @@ void UpdateParticles(Map *map)
 void RenderParticle(int x,int y,byte *scrn,byte color,byte size)
 {
 	byte c1,c2;
-	
+
 	if(x<0 || x>639 || y<0 || y>479)
 		return;
-	
+
 	switch(size)
 	{
 		case 2:	// big particle
 			if(x<2 || x>637 || y<2 || y>477)
 				return;
-			
+
 			if((color&31)>1)
 				c1=color-2;	// only do this if subtracting 2 keeps it in the same color group
 			else
@@ -574,7 +574,7 @@ void RenderCircleParticle(int x,int y,int radius,byte c,byte *scrn)
 				HLine3(x-curX,x+curX,y+curY,c,curY,scrn);
 				HLine3(x-curX,x+curX,y-curY,c,curY,scrn);
 			}
-			curY--;		
+			curY--;
 		}
 		curX++;
 	}
@@ -594,7 +594,7 @@ void RenderRingParticle(int x,int y,int radius,byte c,byte *scrn)
 	{
 		PlotPixel(x-curX,y+curX,c,scrn,pitch);
 		PlotPixel(x+curX,y+curX,c,scrn,pitch);
-		
+
 		if(curX!=0)
 		{
 			PlotPixel(x-curY,y-curX,c,scrn,pitch);
@@ -612,7 +612,7 @@ void RenderRingParticle(int x,int y,int radius,byte c,byte *scrn)
 				PlotPixel(x-curX,y-curY,c,scrn,pitch);
 				PlotPixel(x+curX,y-curY,c,scrn,pitch);
 			}
-			curY--;		
+			curY--;
 		}
 		curX++;
 	}
@@ -660,7 +660,7 @@ void RenderGlowCircleParticle(int x,int y,int radius,byte c,byte *scrn)
 				HLine2(x-curX,x+curX,y+curY,c,scrn);
 				HLine2(x-curX,x+curX,y-curY,c,scrn);
 			}
-			curY--;		
+			curY--;
 		}
 		curX++;
 		if(c&31)
@@ -676,7 +676,7 @@ byte ctab[]={8,3,2,3,8,
 			 2,1,0,1,2,
 			 3,2,1,2,3,
 			 8,3,2,3,8};
-	
+
 void RenderLightningParticle(int x1,int y1,int x2,int y2,int range,byte bright,byte *scrn)
 {
 	int midx,midy;
@@ -978,7 +978,7 @@ void MakeItSnow(Map *map)
 	{
 		if(!particleList[i]->Alive())
 		{
-			
+
 			particleList[i]->x=(Random(640)+cx)<<FIXSHIFT;
 			particleList[i]->y=(Random(480)+cy)<<FIXSHIFT;
 			particleList[i]->z=(300+Random(300))<<FIXSHIFT;
@@ -1002,7 +1002,7 @@ void SpecialSnow(int x,int y)
 	{
 		if(!particleList[i]->Alive())
 		{
-			
+
 			particleList[i]->x=x-FIXAMT*10+Random(FIXAMT*20);
 			particleList[i]->y=y-FIXAMT*10+Random(FIXAMT*20);
 			particleList[i]->z=(50+Random(20))<<FIXSHIFT;
@@ -1196,7 +1196,7 @@ void SmokePuff(int x,int y,byte color)
 void ShowArrow(int x,int y,byte dir)
 {
 	int i;
-	
+
 	x=(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT;
 	y=(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
 
@@ -1287,7 +1287,7 @@ void Laser(int x,int y,byte facein,byte faceout,byte color)
 			particleList[i]->life=8+Random(16);
 			particleList[i]->size=particleList[i]->life;
 			particleList[i]->type=PART_BOOM;
-			
+
 			if(xdone==0 && x1<x2)
 			{
 				x1+=FIXAMT*6;

@@ -1,10 +1,33 @@
 #include "internet.h"
-#include <conio.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <winsock.h>
-#pragma comment( lib, "wsock32" )
 #include "log.h"
+
+#ifdef _WIN32
+#include <conio.h>
+#include <winsock.h>
+
+// if I'm not mistaken, this number is NOT used by windows as a window event
+#define INTERNET_EVENT	(WM_USER+1)
+
+#define ERR_WOULDBLOCK WSAEWOULDBLOCK
+#define ERR_NOTCONN WSAENOTCONN
+
+#else
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <errno.h>
+#define SOCKET int
+#define SOCKET_ERROR (-1)
+#define INVALID_SOCKET (-1)
+#define closesocket close
+#define ERR_WOULDBLOCK EAGAIN
+#define ERR_NOTCONN EPIPE
+
+#endif
 
 #define NUM_SOCKETS	4
 
@@ -41,16 +64,16 @@ char errorDisp[128];
 
 byte Web_Init(void)
 {
-    WSADATA wsaData;
 	int i;
 
-    word version = MAKEWORD(1,1);
-
+#ifdef _WIN32
+	WSADATA wsaData;
 	// initialize WinSock
-    if(WSAStartup(version,&wsaData)!=0)
-    {
-        return IE_NOWINSOCK;
-    }
+	if(WSAStartup(MAKEWORD(1,1),&wsaData)!=0)
+	{
+		return IE_NOWINSOCK;
+	}
+#endif
 
 	for(i=0;i<NUM_SOCKETS;i++)
 	{
@@ -64,6 +87,15 @@ byte Web_Init(void)
 	return IE_OK;
 }
 
+inline int SocketLastError()
+{
+#ifdef _WIN32
+	return WSAGetLastError();
+#else
+	return errno;
+#endif
+}
+
 byte Web_Exit(void)
 {
 	int i;
@@ -72,7 +104,9 @@ byte Web_Exit(void)
 		if(sock[i].state!=SS_UNUSED)
 			Web_KillSocket(i);
 
-    WSACleanup();
+#ifdef _WIN32
+	WSACleanup();
+#endif
 	Log_Print("web_exit ok!");
 	return IE_OK;
 }
@@ -166,12 +200,12 @@ byte Web_TryReadingHeader(byte n)
 	return IE_OK;	// header's not done downloading yet
 }
 
-byte Web_RequestData(MGLDraw *mgl,char *site,char *file,int *socketNumber)
+byte Web_RequestData(MGLDraw *mgl,const char *site,const char *file,int *socketNumber)
 {
     struct hostent *host;
-	struct sockaddr_in addr; 
+	struct sockaddr_in addr;
 	int i,sockNum;
-    
+
 	Log_Print("web_requestdata");
 	Log_Print(site);
 	Log_Print(file);
@@ -232,7 +266,13 @@ byte Web_RequestData(MGLDraw *mgl,char *site,char *file,int *socketNumber)
     }
 
 	// set it to asynchronous - send windows messages whenever new things happen!
-	if((i=WSAAsyncSelect(sock[sockNum].s,mgl->GetHWnd(),INTERNET_EVENT,FD_READ|FD_WRITE|FD_CONNECT))!=0)
+	if((i=
+	#ifdef _WIN32
+		WSAAsyncSelect(sock[sockNum].s,mgl->GetHWnd(),(unsigned int)INTERNET_EVENT,FD_READ|FD_WRITE|FD_CONNECT)
+	#else
+		fcntl(sock[sockNum].s, F_SETFL, O_NONBLOCK)
+	#endif
+		)!=0)
 	{
 		// couldn't set it to asynchronous mode
 		Web_KillSocket(sockNum);
@@ -246,11 +286,11 @@ byte Web_RequestData(MGLDraw *mgl,char *site,char *file,int *socketNumber)
     memcpy(&addr.sin_addr,host->h_addr,host->h_length);
 
     i=connect(sock[sockNum].s,(struct sockaddr *)&addr,sizeof(addr));
-	
-	if(i==-1)
-		i=WSAGetLastError();
 
-	if(i==0 || i==WSAEWOULDBLOCK)
+	if(i==-1)
+		i=SocketLastError();
+
+	if(i==0 || i==ERR_WOULDBLOCK)
     {
 		// everything's fine, we're done, it's trying to connect!
 		Log_Print("web_requestdata ok!");
@@ -309,11 +349,12 @@ int Web_GetDataSize(int sockNum)
 	return sock[sockNum].dataSize;
 }
 
+#if 0
 void Web_HandleEvent(SOCKET sockie,int event,int error)
 {
 	int i;
 	int sockNum;
-	
+
 	Log_Print("web_event occurred");
 	for(i=0;i<NUM_SOCKETS;i++)
 	{
@@ -393,7 +434,7 @@ void Web_HandleEvent(SOCKET sockie,int event,int error)
 					sock[sockNum].state=SS_FAILED;
 					sock[sockNum].error=IE_RECVFAIL;
 					Log_Printnum("RECV error #",sockNum);
-					Log_Printnum("error code: ",WSAGetLastError());
+					Log_Printnum("error code: ",SocketLastError());
 					return;
 				}
 				Log_Printnum("Received ",i);
@@ -413,7 +454,7 @@ void Web_HandleEvent(SOCKET sockie,int event,int error)
 					sock[sockNum].state=SS_FAILED;
 					sock[sockNum].error=i;
 				}
-				
+
 				if(sock[sockNum].realDataGot==sock[sockNum].dataSize)
 				{
 					Log_Printnum("download complete #",sockNum);
@@ -432,15 +473,15 @@ void Web_HandleEvent(SOCKET sockie,int event,int error)
 				if(i==SOCKET_ERROR)
 				{
 					Log_Printnum("RECV error #",sockNum);
-					Log_Printnum("error code: ",WSAGetLastError());
+					Log_Printnum("error code: ",SocketLastError());
 					Web_KillSocket(sockNum);
 					sock[sockNum].state=SS_FAILED;
 					sock[sockNum].error=IE_RECVFAIL;
 					return;
 				}
-				
+
 				Log_Printnum("Received ",i);
-				
+
 				sock[sockNum].realDataGot+=i;
 
 				if(sock[sockNum].realDataGot==sock[sockNum].dataSize)
@@ -460,6 +501,7 @@ void Web_HandleEvent(SOCKET sockie,int event,int error)
 			break;
 	}
 }
+#endif
 
 byte Web_GetState(int sockNum)
 {

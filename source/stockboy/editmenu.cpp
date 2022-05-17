@@ -1,9 +1,9 @@
 #include "editmenu.h"
-#include <io.h>
 #include "goal.h"
 #include "floor.h"
 #include "profile.h"
 #include "highscore.h"
+#include "appdata.h"
 
 EditMenu::EditMenu(Map *map,YesNoMenu *yesNoMenu,ToolMenu *toolMenu,MGLDraw *mymgl)
 {
@@ -13,7 +13,7 @@ EditMenu::EditMenu(Map *map,YesNoMenu *yesNoMenu,ToolMenu *toolMenu,MGLDraw *mym
 	minmax=1;
 	winminmax=1;
 	menu=MENU_FILE;
-	
+
 	msClock=5;
 
 	yesno=yesNoMenu;
@@ -47,7 +47,7 @@ EditMenu::~EditMenu(void)
 		free(filename);
 }
 
-byte EditMenu::CanEditFile(char *fname)
+byte EditMenu::CanEditFile(const char *fname)
 {
 // in debug mode you can load all levels
 #ifndef _DEBUG
@@ -84,8 +84,6 @@ byte EditMenu::CanEditFile(char *fname)
 
 void EditMenu::ScanFiles(void)
 {
-	struct _finddata_t filedata;
-	long hFile;
 	int i;
 	char tmp[FNAMELEN];
 	byte flip;
@@ -104,43 +102,23 @@ void EditMenu::ScanFiles(void)
 
 	filename=(char *)calloc(FNAMELEN*maxFiles,1);
 
-	hFile=_findfirst("levels\\*.sbl",&filedata);
-
-	if(hFile!=-1)	// there's at least one
+	for (const auto& file : ListDirectory("levels", ".sbl", FNAMELEN))
 	{
-		if(CanEditFile(filedata.name))
+		// completely ignore ones with filenames that are too long!
+		// and ones that are not allowed to be edited
+		if(CanEditFile(file.c_str()))
 		{
-			strncpy(filename,filedata.name,FNAMELEN);
-			filename[FNAMELEN-1]='\0';
-			numFiles=1;
-		}
-		else
-			numFiles=0;
-
-		while(1)
-		{
-			if(_findnext(hFile,&filedata)==0)
+			strncpy(&filename[numFiles*FNAMELEN],file.c_str(),FNAMELEN);
+			numFiles++;
+			filename[FNAMELEN*numFiles-1]='\0';
+			if(numFiles==maxFiles)
 			{
-				// completely ignore ones with filenames that are too long!
-				// and ones that are not allowed to be edited
-				if(strlen(filedata.name)<FNAMELEN && CanEditFile(filedata.name))
-				{
-					strncpy(&filename[numFiles*FNAMELEN],filedata.name,FNAMELEN);
-					numFiles++;
-					filename[FNAMELEN*numFiles-1]='\0';
-					if(numFiles==maxFiles)
-					{
-						maxFiles+=32;
-						filename=(char *)realloc(filename,FNAMELEN*maxFiles);
-						// clear the future space
-						memset(&filename[numFiles*FNAMELEN],0,FNAMELEN*maxFiles-FNAMELEN*numFiles);
-					}
-				}
+				maxFiles+=32;
+				filename=(char *)realloc(filename,FNAMELEN*maxFiles);
+				// clear the future space
+				memset(&filename[numFiles*FNAMELEN],0,FNAMELEN*maxFiles-FNAMELEN*numFiles);
 			}
-			else	// no more files
-				break;
 		}
-		_findclose(hFile);
 	}
 
 	if(curFile>=numFiles)
@@ -205,7 +183,7 @@ void EditMenu::Render(int msx,int msy)
 	{
 		// draw the menu
 		editspr->GetSprite(3)->Draw(x,y,mgl);
-		
+
 		// all the buttons
 		for(i=7;i>=0;i--)
 		{
@@ -288,7 +266,7 @@ byte EditMenu::Click(int msx,int msy,byte btn)
 
 	msx-=x;
 	msy-=y;
-	
+
 	// min/max
 	if(PointInRect(msx,msy,0,0,18,10))
 	{
@@ -548,7 +526,7 @@ void EditMenu::LevelOptClick(int msx,int msy,byte btn)
 				EditorGetMap()->timer=0;
 		}
 	}
-	
+
 	// genTime
 	if(PointInRect(msx,msy,winx-x+156,winy-y+92,winx-x+190,winy-y+106))
 	{
@@ -597,7 +575,7 @@ void EditMenu::FileClick(int msx,int msy,byte btn)
 						MakeNormalSound(SND_MENUCANCEL);
 						break;
 					}
-					if(ShiftState())	// shift-click to merge levels
+					if(SDL_GetModState() & KMOD_SHIFT)	// shift-click to merge levels
 					{
 						sprintf(s,"%s?",curFname);
 						yesno->Activate("Merge in",s,"Yup","Nope");
@@ -651,7 +629,7 @@ void EditMenu::FileClick(int msx,int msy,byte btn)
 			strcpy(curFname,&filename[curFile*FNAMELEN]);
 		}
 	}
-	
+
 	if(PointInRect(msx,msy,winx-x+137,winy-y+8,winx-x+145,winy-y+59))
 	{
 		// top half of scroll bar
@@ -723,7 +701,7 @@ void EditMenu::SetOptClick(int msx,int msy,byte btn)
 			SetScoreTxt();
 		}
 	}
-	
+
 	if(PointInRect(msx,msy,winx-x+137,winy-y+8,winx-x+145,winy-y+59))
 	{
 		// top half of scroll bar
@@ -842,7 +820,7 @@ void EditMenu::RenderFileWindow(int msx,int msy)
 	winx=x+88;
 	winy=y+13;
 
-	if(ShiftState())
+	if(SDL_GetModState() & KMOD_SHIFT)
 	{
 		strcpy(btnName[1],"Merge");
 	}
@@ -970,7 +948,7 @@ void EditMenu::RenderLevelWindow(int msx,int msy)
 
 	// level name
 	PrintGlow(winx+4,winy+4,"Name",0,2);
-	
+
 	DrawBox(winx+50,winy+6,winx+165,winy+21,255-32+8);
 	DrawFillBox(winx+51,winy+7,winx+164,winy+20,255-32+4);
 
@@ -1061,7 +1039,7 @@ void EditMenu::RenderFloorWindow(int msx,int msy)
 	if(PointInRect(msx,msy,winx-x+140,winy-y+105,winx-x+190,winy-y+125))
 		mgl->FillBox(winx+139,winy+104,winx+195,winy+126,236);
 	PrintGlow(winx+140,winy+105,"Fill Map",0,2);
-	
+
 	t=GetTileNumber(toolmenu->curTool,toolmenu->color,toolmenu->facing);
 	// show the current floor tile
 	RenderFloorTile(winx+6,winy+6,t,0);
@@ -1108,9 +1086,9 @@ void EditMenu::RenderFloorWindow(int msx,int msy)
 		Print(winx+4,winy+52,"Impassable to all objects",0,1);
 		Print(winx+4,winy+72,"and critters.",0,1);
 	}
-	if((t>=5 && t<=11) || 
-	   (t>=25 && t<=31) || 
-	   (t>=45 && t<=51) || 
+	if((t>=5 && t<=11) ||
+	   (t>=25 && t<=31) ||
+	   (t>=45 && t<=51) ||
 	   (t>=65 && t<=71))
 	{
 		// color tiles
@@ -1120,9 +1098,9 @@ void EditMenu::RenderFloorWindow(int msx,int msy)
 		Print(winx+4,winy+72,"and critters of the same",0,1);
 		Print(winx+4,winy+92,"color as the tile.",0,1);
 	}
-	if((t>=12 && t<=19) || 
-	   (t>=32 && t<=39) || 
-	   (t>=52 && t<=59) || 
+	if((t>=12 && t<=19) ||
+	   (t>=32 && t<=39) ||
+	   (t>=52 && t<=59) ||
 	   (t>=72 && t<=79))
 	{
 		// pressure pads
@@ -1159,9 +1137,9 @@ void EditMenu::RenderFloorWindow(int msx,int msy)
 		Print(winx+4,winy+72,"falls in, it is gone",0,1);
 		Print(winx+4,winy+92,"forever.",0,1);
 	}
-	if((t>=82 && t<=89) || 
-	   (t>=102 && t<=109) || 
-	   (t>=122 && t<=129) || 
+	if((t>=82 && t<=89) ||
+	   (t>=102 && t<=109) ||
+	   (t>=122 && t<=129) ||
 	   (t>=142 && t<=149))
 	{
 		// door tiles
@@ -1171,9 +1149,9 @@ void EditMenu::RenderFloorWindow(int msx,int msy)
 		Print(winx+4,winy+72,"are. Placed automatically",0,1);
 		Print(winx+4,winy+92,"when you place a Door.",0,1);
 	}
-	if((t>=90 && t<=97) || 
-	   (t>=110 && t<=117) || 
-	   (t>=130 && t<=137) || 
+	if((t>=90 && t<=97) ||
+	   (t>=110 && t<=117) ||
+	   (t>=130 && t<=137) ||
 	   (t>=150 && t<=157))
 	{
 		// teleporters
@@ -1183,49 +1161,49 @@ void EditMenu::RenderFloorWindow(int msx,int msy)
 		Print(winx+4,winy+72,"other Teleporter of the",0,1);
 		Print(winx+4,winy+92,"same color.",0,1);
 	}
-	if((t>=160 && t<=167) || 
-	   (t>=180 && t<=187) || 
-	   (t>=200 && t<=207) || 
+	if((t>=160 && t<=167) ||
+	   (t>=180 && t<=187) ||
+	   (t>=200 && t<=207) ||
 	   (t>=220 && t<=227))
 	{
 		// blobby generator
 		PrintGlow(winx+40,winy+8,"Blobby Generator",0,2);
 		Print(winx+4,winy+32,"Creates Blobbies at the",0,1);
 		Print(winx+4,winy+52,"rate specified in Level",0,1);
-		Print(winx+4,winy+72,"Options.",0,1);	
+		Print(winx+4,winy+72,"Options.",0,1);
 	}
-	if((t>=168 && t<=175) || 
-	   (t>=188 && t<=195) || 
-	   (t>=208 && t<=215) || 
+	if((t>=168 && t<=175) ||
+	   (t>=188 && t<=195) ||
+	   (t>=208 && t<=215) ||
 	   (t>=228 && t<=235))
 	{
 		// fluffy generator
 		PrintGlow(winx+40,winy+8,"Fluffy Generator",0,2);
 		Print(winx+4,winy+32,"Creates Fluffies at the",0,1);
 		Print(winx+4,winy+52,"rate specified in Level",0,1);
-		Print(winx+4,winy+72,"Options.",0,1);	
+		Print(winx+4,winy+72,"Options.",0,1);
 	}
-	if((t>=240 && t<=247) || 
-	   (t>=260 && t<=267) || 
-	   (t>=280 && t<=287) || 
+	if((t>=240 && t<=247) ||
+	   (t>=260 && t<=267) ||
+	   (t>=280 && t<=287) ||
 	   (t>=300 && t<=307))
 	{
 		// inchy generator
 		PrintGlow(winx+40,winy+8,"Inchy Generator",0,2);
 		Print(winx+4,winy+32,"Creates Inchies at the",0,1);
 		Print(winx+4,winy+52,"rate specified in Level",0,1);
-		Print(winx+4,winy+72,"Options.",0,1);	
+		Print(winx+4,winy+72,"Options.",0,1);
 	}
-	if((t>=248 && t<=255) || 
-	   (t>=268 && t<=275) || 
-	   (t>=288 && t<=295) || 
+	if((t>=248 && t<=255) ||
+	   (t>=268 && t<=275) ||
+	   (t>=288 && t<=295) ||
 	   (t>=308 && t<=315))
 	{
 		// piggy generator
 		PrintGlow(winx+40,winy+8,"Piggy Generator",0,2);
 		Print(winx+4,winy+32,"Creates Piggies at the",0,1);
 		Print(winx+4,winy+52,"rate specified in Level",0,1);
-		Print(winx+4,winy+72,"Options.",0,1);	
+		Print(winx+4,winy+72,"Options.",0,1);
 	}
 	if((t>=160 && t<=175) || (t>=240 && t<=255))
 		Print(winx+4,winy+92,"They appear facing right.",0,1);
@@ -1235,16 +1213,16 @@ void EditMenu::RenderFloorWindow(int msx,int msy)
 		Print(winx+4,winy+92,"They appear facing left.",0,1);
 	else if((t>=220 && t<=235) || (t>=300 && t<=315))
 		Print(winx+4,winy+92,"They appear facing up.",0,1);
-	if(t==98 || 
-	   t==118 || 
-	   t==138 || 
+	if(t==98 ||
+	   t==118 ||
+	   t==138 ||
 	   t==158)
 	{
 		// exit
 		PrintGlow(winx+40,winy+8,"Exit",0,2);
 		Print(winx+4,winy+32,"Can be a goal of the",0,1);
 		Print(winx+4,winy+52,"level to escape here, or",0,1);
-		Print(winx+4,winy+72,"rescue critters here.",0,1);	
+		Print(winx+4,winy+72,"rescue critters here.",0,1);
 		Print(winx+4,winy+92,"Does not affect objects.",0,1);
 	}
 }
@@ -1305,7 +1283,7 @@ void EditMenu::RenderItemWindow(int msx,int msy)
 			PrintGlow(winx+52,winy+8,"Open Door",0,2);
 			Print(winx+4,winy+40,"The same as empty floor,",0,1);
 			Print(winx+4,winy+55,"but it can be shut with",0,1);
-			Print(winx+4,winy+70,"a switch or pressure pad.",0,1);			
+			Print(winx+4,winy+70,"a switch or pressure pad.",0,1);
 			break;
 		case ITM_BOMB:
 			PrintGlow(winx+52,winy+8,"Bomb",0,2);
@@ -1364,7 +1342,7 @@ void EditMenu::RenderItemWindow(int msx,int msy)
 			PrintGlow(winx+52,winy+8,"Goodie",0,2);
 			Print(winx+4,winy+40,"Invisible to the player.",0,1);
 			Print(winx+4,winy+55,"Maximum of one per level.",0,1);
-			Print(winx+4,winy+70,"It's just a special prize",0,1);			
+			Print(winx+4,winy+70,"It's just a special prize",0,1);
 			Print(winx+4,winy+85,"to find by:",0,1);
 			switch(toolmenu->facing)
 			{

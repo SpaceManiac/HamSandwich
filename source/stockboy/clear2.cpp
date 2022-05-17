@@ -25,7 +25,7 @@ void InitClear2(Map *m)
 	level=0;
 	clearWait=0;
 	map=m;
-	
+
 	diff=3+(opt.clearanceDiff);
 	if(diff>6)
 		diff=6;
@@ -54,7 +54,7 @@ void PlopBarrels(void)
 			map->map[i].item=ITM_CRATE;
 		map->map[i].itemInfo=invColorTable[Random(diff)];
 	}
-	
+
 	for(i=0;i<9;i++)
 		player.item[i]=PE_ACID*8;
 }
@@ -167,7 +167,7 @@ void InitClear2Menu(void)
 	GetArrowTaps();
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
-		GetDisplayMGL()->FatalError("Out of memory!");
+		FatalError("Out of memory!");
 
 	GetDisplayMGL()->LoadBMP("graphics\\clearance.bmp");
 
@@ -227,7 +227,7 @@ byte UpdateClear2Menu(int *lastTime,MGLDraw *mgl)
 		}
 
 		mgl->GetMouse(&msx,&msy);
-		btn=mgl->MouseDown(0);
+		btn=mgl->MouseDown();
 
 		c=mgl->LastKeyPressed();
 		t=GetTaps()|GetArrowTaps();
@@ -276,7 +276,7 @@ byte UpdateClear2Menu(int *lastTime,MGLDraw *mgl)
 						return 0;
 				}
 			}
-		
+
 			if(msx!=oldmsx || msy!=oldmsy)
 			{
 				for(i=0;i<5;i++)
@@ -428,13 +428,15 @@ void RenderClear2Menu(MGLDraw *mgl)
 		"Nevermind!",
 		"Really Reset High Scores",
 	};
-	
+
 	int i,x;
 
 	Music_Update();
 
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);

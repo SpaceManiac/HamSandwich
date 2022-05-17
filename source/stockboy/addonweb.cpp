@@ -1,7 +1,14 @@
 #include "addonweb.h"
+
+#if 1
+// Stubs
+void Download_Addons(void) {}
+byte Update_Download(MGLDraw *mgl,char key,byte tap,int msx,int msy,byte btn) { return true; }
+void Render_Download(MGLDraw *mgl,int msx,int msy) {}
+
+#else
 #include "display.h"
 #include "internet.h"
-#include <io.h>
 #include <time.h>
 #include "control.h"
 #include "game.h"
@@ -104,7 +111,7 @@ byte CheckForDownloads(MGLDraw *mgl)
 			// all done
 			return 0;	// no more downloads
 		}
-		
+
 		// read month
 		i=listPos;
 		while(addOnList[i]!='/')
@@ -270,7 +277,7 @@ void SaveAddOn(void)
 	f=fopen(addOn.destFileName,"wb");
 	fwrite(data,sizeof(byte),dataSize,f);
 	fclose(f);
-	
+
 	Web_KillSocket(fileSocket);
 	addOnsGot++;
 }
@@ -389,8 +396,10 @@ void Render_Download(MGLDraw *mgl,int msx,int msy)
 	DrawBox(10,100,629,250,0);
 	DrawBox(9,99,630,251,0);
 
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	if(PointInRect(msx,msy,270,195,369,225))
 	{
@@ -423,5 +432,7 @@ void Render_Download(MGLDraw *mgl,int msx,int msy)
 
 	PrintUnGlow(5,460,"Press ESC to cancel download at any time",0);
 	Print(5-2,460-2,"Press ESC to cancel download at any time",0,0);
-			
+
 }
+
+#endif

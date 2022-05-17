@@ -64,6 +64,9 @@ void FontPrintStringBrightGlow(int x, int y, const char *s, char brt, mfont_t *f
 void FontPrintStringDark(int x, int y, const char *s, mfont_t *font);
 void FontPrintStringDarkAdj(int x, int y, const char *s, int dark, mfont_t *font);
 void FontPrintStringCursorLit(int x,int y,byte pos,byte blink,const char *s,mfont_t *font,char bright);
+void FontPrintStringAngleUnGlow(int x,int y,const char *s,mfont_t *font);
+void FontPrintStringAngle2(int x,int y,const char *s,mfont_t *font);
+void FontPrintStringUnGlowSideways(int x,int y,int minY,const char *s,mfont_t *font);
 
 void FontPrintRectBlack(int x, int y, int x2, int y2, const char *s, int height, int bright, mfont_t *font);
 void FontPrintRectBlack2(int x, int y, int x2, int y2, const char *s, int height, mfont_t *font);

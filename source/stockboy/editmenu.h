@@ -53,7 +53,7 @@ typedef class EditMenu
 		void SetScores(void);
 
 		void ScanFiles(void);
-		byte CanEditFile(char *fname);
+		byte CanEditFile(const char *fname);
 
 		byte ShowGuys(void);
 		byte ShowItems(void);

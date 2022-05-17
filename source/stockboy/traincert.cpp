@@ -22,11 +22,11 @@ void SetupTrainCert(void)
 	GetDisplayMGL()->LoadBMP("graphics\\training_done.bmp");
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
-		GetDisplayMGL()->FatalError("Out of memory!");
+		FatalError("Out of memory!");
 
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
-	
+
 	GetTaps();
 	GetArrowTaps();
 	GetDisplayMGL()->LastKeyPressed();
@@ -59,7 +59,7 @@ byte UpdateTrainCert(int *lastTime,MGLDraw *mgl)
 	char c;
 	byte c2;
 	byte b;
-	
+
 	JamulSoundUpdate();
 
 	if(*lastTime>TIME_PER_FRAME*MAX_RUNS)
@@ -70,7 +70,7 @@ byte UpdateTrainCert(int *lastTime,MGLDraw *mgl)
 
 		c=mgl->LastKeyPressed();
 		c2=GetArrows()|GetControls();
-		b=mgl->MouseDown(0);
+		b=mgl->MouseDown();
 
 		UpdateStars();
 		if(starClock)
@@ -86,7 +86,7 @@ byte UpdateTrainCert(int *lastTime,MGLDraw *mgl)
 			}
 			starClock=starAdd+1;
 		}
-		
+
 		if(c || (c2&&(!oldc)) || (b&&(!oldMsBtn)))
 		{
 			return 1;
@@ -115,8 +115,10 @@ void RenderTrainCert(MGLDraw *mgl)
 		"Scoring",
 	};
 
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
@@ -146,10 +148,10 @@ void TrainCert(byte lvl,MGLDraw *mgl)
 		RenderTrainCert(mgl);
 		mgl->Flip();
 		EndClock();
-		
+
 		if(!mgl->Process())
 			done=1;
-		
+
 	}
 
 	ExitTrainCert();

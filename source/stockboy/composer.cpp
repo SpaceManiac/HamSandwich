@@ -6,9 +6,8 @@
 #include "title.h"
 #include "sound.h"
 #include "music.h"
-#include <io.h>
 #include "editmenu.h"
-#include <shellapi.h>
+#include "appdata.h"
 
 #define VOLUME_FACTOR	128
 
@@ -134,7 +133,7 @@ button_t btn[NUM_BUTTONS]={
 	{BTN_SONGZAP,  BTN_SML,300,BTNY+7+17*0,100,15,"Zap"},
 	{BTN_SONGCUT,  BTN_SML,300,BTNY+7+17*1,100,15,"Cut"},
 	{BTN_SONGPASTE,BTN_SML,300,BTNY+7+17*2,100,15,"Paste"},
-	{BTN_SONGCOVER,BTN_SML,300,BTNY+7+17*3,100,15,"Cover"},	
+	{BTN_SONGCOVER,BTN_SML,300,BTNY+7+17*3,100,15,"Cover"},
 
 	{BOX_SEQ,BTN_BOX,423,BTNY,214,95,"Seq Edit"},
 	{BTN_SEQNAME,   BTN_SML,427,BTNY+7+17*0,100,15,"Name"},
@@ -221,14 +220,14 @@ void InitComposer(void)
 	cursor=0;
 	oldMouseBtn=1;
 	oldMouseBtn2=1;
-	
+
 	LoadOptions();
 
 	compSpr=new sprite_set_t("graphics\\giftshop.jsp");
 
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
-		GetDisplayMGL()->FatalError("Out of memory!");
+		FatalError("Out of memory!");
 
 	GetDisplayMGL()->LoadBMP("graphics\\giftshop.bmp");
 
@@ -388,8 +387,6 @@ void ClearFileNames(void)
 
 void ScanForSongs(void)
 {
-	struct _finddata_t filedata;
-	long hFile;
 	int i;
 	char tmp[FNAMELEN];
 	byte flip;
@@ -414,45 +411,24 @@ void ScanForSongs(void)
 	songname=(char *)calloc(FNAMELEN*maxFiles,1);
 	author=(char *)calloc(FNAMELEN*maxFiles,1);
 
-	hFile=_findfirst("music\\*.sng",&filedata);
-
-	if(hFile!=-1)	// there's at least one
+	for (const auto& file : ListDirectory("music", ".sng", FNAMELEN))
 	{
-		strncpy(filename,filedata.name,FNAMELEN);
-		filename[FNAMELEN-1]='\0';
-		Music_GetSongName(filename,songname,author);
-		numSongs=1;
-				
-		while(1)
+		SDL_utf8strlcpy(&filename[numSongs*FNAMELEN],file.c_str(),FNAMELEN);
+		Music_GetSongName(&filename[numSongs*FNAMELEN],&songname[numSongs*FNAMELEN],
+						&author[numSongs*FNAMELEN]);
+		numSongs++;
+
+		if(numSongs==maxFiles)
 		{
-			if(_findnext(hFile,&filedata)==0)
-			{
-				// completely ignore ones with filenames that are too long!
-				if(strlen(filedata.name)<FNAMELEN)
-				{
-					strncpy(&filename[numSongs*FNAMELEN],filedata.name,FNAMELEN);
-					filename[FNAMELEN*(numSongs+1)-1]='\0';
-					Music_GetSongName(&filename[numSongs*FNAMELEN],&songname[numSongs*FNAMELEN],
-								 &author[numSongs*FNAMELEN]);
-					numSongs++;
-					
-					if(numSongs==maxFiles)
-					{
-						maxFiles+=32;
-						filename=(char *)realloc(filename,FNAMELEN*maxFiles);
-						songname=(char *)realloc(songname,FNAMELEN*maxFiles);
-						author=(char *)realloc(author,FNAMELEN*maxFiles);
-						// clear the future space
-						memset(&filename[numSongs*FNAMELEN],0,FNAMELEN*maxFiles-FNAMELEN*numSongs);
-						memset(&songname[numSongs*FNAMELEN],0,FNAMELEN*maxFiles-FNAMELEN*numSongs);
-						memset(&author[numSongs*FNAMELEN],0,FNAMELEN*maxFiles-FNAMELEN*numSongs);
-					}
-				}
-			}
-			else	// no more files
-				break;
+			maxFiles+=32;
+			filename=(char *)realloc(filename,FNAMELEN*maxFiles);
+			songname=(char *)realloc(songname,FNAMELEN*maxFiles);
+			author=(char *)realloc(author,FNAMELEN*maxFiles);
+			// clear the future space
+			memset(&filename[numSongs*FNAMELEN],0,FNAMELEN*maxFiles-FNAMELEN*numSongs);
+			memset(&songname[numSongs*FNAMELEN],0,FNAMELEN*maxFiles-FNAMELEN*numSongs);
+			memset(&author[numSongs*FNAMELEN],0,FNAMELEN*maxFiles-FNAMELEN*numSongs);
 		}
-		_findclose(hFile);
 	}
 
 	if(selectedFile>=numSongs)
@@ -557,7 +533,7 @@ static void ButtonClick(int num,byte id)
 			if(recMode>REC_HALF)
 				recMode=0;
 			MakeNormalSound(SND_MENUSELECT);
-			SetupButtonText();			
+			SetupButtonText();
 			break;
 		case BTN_ZOOM:
 			if(noteWid==3)
@@ -731,7 +707,7 @@ static void ButtonRightClick(int num,byte id)
 			if(recMode>REC_HALF)
 				recMode=REC_HALF;
 			MakeNormalSound(SND_MENUSELECT);
-			SetupButtonText();			
+			SetupButtonText();
 			break;
 		case BTN_ZOOM:
 			if(noteWid==3)
@@ -832,7 +808,7 @@ static byte SongLeftClick(byte tap,MGLDraw *mgl)
 		{
 			curSeq=(msy-SONGY)/PLAYHEI+songY;
 			songY=curSeq-SEQSFIT/2;
-			
+
 			if(Music_GetSong()->numSeqs-songY<SEQSFIT)
 				songY=Music_GetSong()->numSeqs-SEQSFIT;
 
@@ -896,7 +872,7 @@ static byte SongRightClick(byte tap,MGLDraw *mgl)
 {
 	int i,j;
 	int numSeqs;
-	
+
 	numSeqs=Music_GetSong()->numSeqs-songY;
 	if(numSeqs>SEQSFIT)
 		numSeqs=SEQSFIT;
@@ -991,8 +967,8 @@ static byte ComposerMouseCheck(MGLDraw *mgl)
 	int scrSize;
 
 	mgl->GetMouse(&msx,&msy);
-	b=mgl->MouseDown(0);
-	b2=mgl->MouseDown(1);
+	b=mgl->MouseDown();
+	b2=mgl->RMouseDown();
 
 	i=Music_GetSong()->numSeqs-songY;
 	if(i>SEQSFIT)
@@ -1128,8 +1104,8 @@ static byte TypingMouseCheck(MGLDraw *mgl)
 	byte oldcursor;
 
 	mgl->GetMouse(&msx,&msy);
-	b=mgl->MouseDown(0);
-	b2=mgl->MouseDown(1);
+	b=mgl->MouseDown();
+	b2=mgl->RMouseDown();
 
 	oldcursor=cursor;
 
@@ -1187,8 +1163,8 @@ static byte FileMouseCheck(MGLDraw *mgl)
 	int i;
 
 	mgl->GetMouse(&msx,&msy);
-	b=mgl->MouseDown(0);
-	b2=mgl->MouseDown(1);
+	b=mgl->MouseDown();
+	b2=mgl->RMouseDown();
 
 	oldcursor=cursor;
 
@@ -1304,8 +1280,8 @@ static byte SetupMouseCheck(MGLDraw *mgl)
 	int i;
 
 	mgl->GetMouse(&msx,&msy);
-	b=mgl->MouseDown(0);
-	b2=mgl->MouseDown(1);
+	b=mgl->MouseDown();
+	b2=mgl->RMouseDown();
 
 	oldcursor=cursor;
 
@@ -1433,8 +1409,8 @@ static byte YesNoMouseCheck(MGLDraw *mgl)
 	byte oldcursor;
 
 	mgl->GetMouse(&msx,&msy);
-	b=mgl->MouseDown(0);
-	b2=mgl->MouseDown(1);
+	b=mgl->MouseDown();
+	b2=mgl->RMouseDown();
 
 	oldcursor=cursor;
 
@@ -1523,7 +1499,7 @@ void Song_Paste(int dst)
 	}
 
 	song=Music_GetSong();
-	
+
 	wid=(songSelMax-songSelMin+1);
 	if(songSelMin>dst && songSelMax+wid>=SONG_LENGTH)
 	{
@@ -1563,7 +1539,7 @@ void Song_Cover(int dst)
 	}
 
 	song=Music_GetSong();
-	
+
 	wid=(songSelMax-songSelMin+1);
 	if(songSelMin>dst && songSelMax+wid>=SONG_LENGTH)
 	{
@@ -1741,7 +1717,7 @@ byte UpdateComposer(int *lastTime,MGLDraw *mgl)
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		Music_Update();
-		
+
 		if(lightUpTime)
 			lightUpTime--;
 
@@ -1993,7 +1969,7 @@ byte UpdateComposer(int *lastTime,MGLDraw *mgl)
 				break;
 			case CM_YESNO:
 				YesNoMouseCheck(mgl);
-				
+
 				if(c==27)
 				{
 					mode=CM_NORMAL;
@@ -2180,7 +2156,7 @@ void RenderSong(MGLDraw *mgl)
 			{
 				mgl->FillBox(SONGX+(j-songPos)*noteWid,y,SONGX+noteWid+(j-songPos)*noteWid,y+PLAYHEI-1,92);
 			}
-			
+
 			// if there is a play block here, show it, and track how many more blocks long it is
 			if(song->seq[i].play[j]==SP_PLAY)
 			{
@@ -2203,7 +2179,7 @@ void RenderSong(MGLDraw *mgl)
 					mgl->FillBox(SONGX+(j-songPos)*noteWid,y+PLAYHEI/2-1,SONGX+noteWid+(j-songPos)*noteWid,y+PLAYHEI/2+1,32*4+20);
 				}
 			}
-			
+
 			// if not in the skinniest zoom mode, then you want to make outlines around the blocks
 			if(noteWid>3)
 			{
@@ -2220,13 +2196,13 @@ void RenderSong(MGLDraw *mgl)
 
 	mgl->FillBox(SONGX,y,SONGX2,y,0);
 	mgl->FillBox(SONGX,y+BARHEIGHT,SONGX2,y+BARHEIGHT,0);
-	
+
 	// selection box
 	if(songSelMin!=-1)
 	{
 		i=(songSelMin-songPos)*noteWid+SONGX;
 		j=(songSelMax-songPos)*noteWid+noteWid+SONGX;
-		
+
 		if(j>=SONGX && i<640)	// don't render anything if it's all to the left or right
 		{
 			if(i<SONGX)
@@ -2359,7 +2335,7 @@ static void RenderSetupWindow(MGLDraw *mgl)
 	mgl->Box(20-1,50-1,619+1,370+1,0);
 
 	RightPrintGlow(616,55,"Music Setup",0,0);
-	
+
 	mgl->FillBox(25,80,320,319,0);
 
 	// scroll bar
@@ -2449,7 +2425,7 @@ static void RenderYesNo(MGLDraw *mgl)
 void RenderButton(button_t *b,MGLDraw *mgl)
 {
 	int x2,y2;
-	
+
 	x2=b->x+b->width-1;
 	y2=b->y+b->height-1;
 	switch(b->type)
@@ -2496,8 +2472,10 @@ void RenderComposer(MGLDraw *mgl)
 
 	Music_Update();
 
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	RenderSong(mgl);
 	RenderMusicStaff(mgl);
@@ -2568,7 +2546,7 @@ void Composer(MGLDraw *mgl)
 			done=1;
 		if(!mgl->Process())
 			done=1;
-		
+
 	}
 
 	ExitComposer();

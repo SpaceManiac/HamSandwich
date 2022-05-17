@@ -14,6 +14,7 @@ static char lastKey=0;
 static MGLDraw *editmgl;
 
 static world_t	world;
+#define curMap editMap
 static Map		*curMap;
 static byte		curMapNum;
 static int	   mouseX,mouseY;
@@ -55,7 +56,7 @@ byte InitEditor(void)
 
 	mouseX=320;
 	mouseY=240;
-	MS_moveTo(320,240);
+	editmgl->SetMouse(320,240);
 	gameStartTime=timeGetTime();
 	InitGuys(MAX_MAPMONS);
 	lastKey=0;
@@ -116,7 +117,7 @@ void Delete(int x,int y)
 
 	MakeNormalSound(SND_MENUCANCEL);
 	curMap->map[x+y*curMap->width].item=0;
-	
+
 	if(editMenu->DelMode()==0)
 		curMap->map[x+y*curMap->width].floor=0;
 
@@ -127,7 +128,7 @@ void Delete(int x,int y)
 byte EditorMouseClick(void)
 {
 	toolMenu->Plop(&curMap->map[tileX+tileY*curMap->width],curMap);
-	
+
 	MakeNormalSound(SND_MENUCLICK);
 
 	return 1;
@@ -140,7 +141,7 @@ void UpdateMouse(void)
 	static int oldTileX,oldTileY;
 
 	editmgl->GetMouse(&msx,&msy);
-	
+
 	mouseX=msx;
 	mouseY=msy;
 
@@ -152,12 +153,12 @@ void UpdateMouse(void)
 		mouseX=639;
 	if(mouseY>479)
 		mouseY=479;
-	
+
 	GetCamera(&cx,&cy);
 
 	tileX=(mouseX+cx-320);
 	tileY=(mouseY+cy-240);
-	
+
 	if(tileX<0)
 		tileX=tileX/TILE_WIDTH-1;
 	else
@@ -167,7 +168,7 @@ void UpdateMouse(void)
 	else
 		tileY=tileY/TILE_HEIGHT;
 
-	if(editmgl->MouseDown(0))
+	if(editmgl->MouseDown())
 	{
 		if(!msButton)
 		{
@@ -231,7 +232,7 @@ void UpdateMouse(void)
 			editMode=EDITMODE_EDIT;
 	}
 
-	if(editmgl->MouseDown(1))
+	if(editmgl->RMouseDown())
 	{
 		if(!msButton2)
 		{
@@ -258,7 +259,7 @@ void UpdateMouse(void)
 			Delete(tileX,tileY);
 			ms2HeldOnMenu=0;
 		}
-		else 
+		else
 		{
 			if(ms2HeldOnMenu)
 			{
@@ -286,7 +287,7 @@ byte EditorRun(int *lastTime)
 	{
 		if(!editmgl->Process())
 			return QUITGAME;
-			
+
 		// update everything here
 		cursorBright+=cursorDBright;
 		if(cursorBright>10)
@@ -298,11 +299,11 @@ byte EditorRun(int *lastTime)
 		UpdateItems();
 		curMap->Update(UPDATE_EDIT,&world);
 		UpdateMouse();
-	
+
 		*lastTime-=TIME_PER_FRAME;
 		numRunsToMakeUp++;
 		updFrameCount++;
-	
+
 		Music_Update();
 	}
 
@@ -401,7 +402,7 @@ static void HandleKeyPresses(void)
 		toolMenu->color--;
 		if(toolMenu->color>7)
 			toolMenu->color=7;
-		
+
 	}
 	if(c&CONTROL_RT)
 	{
@@ -452,7 +453,7 @@ byte LunaticEditor(MGLDraw *mgl)
 		HandleKeyPresses();
 		exitcode=EditorRun(&lastTime);
 		EditorDraw();
-		
+
 		if(editMode==EDITMODE_EXIT)
 			exitcode=QUITGAME;
 
@@ -499,7 +500,7 @@ void EditorMergeWorld(char *fname)
 {
 	int i;
 	world_t tmp;
-	
+
 	if(LoadWorld(&tmp,fname,editmgl))
 	{
 		for(i=0;i<tmp.numMaps;i++)

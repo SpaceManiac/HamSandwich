@@ -8,6 +8,6 @@ void SetupTally(Map *map);
 void ExitTally(void);
 byte UpdateTally(void);
 void RenderTally(MGLDraw *mgl);
-void SetTallyMsg(char *msg,byte winpic);
+void SetTallyMsg(const char *msg,byte winpic);
 
 #endif

@@ -6,7 +6,7 @@
 static FILE *logF;
 #endif
 
-void Log_Begin(char *fname)
+void Log_Begin(const char *fname)
 {
 #ifdef BETA
 	struct tm *newtime;
@@ -36,14 +36,14 @@ void Log_End(void)
 #endif
 }
 
-void Log_Print(char *txt)
+void Log_Print(const char *txt)
 {
 #ifdef BETA
 	fprintf(logF,"%s\n",txt);
 #endif
 }
 
-void Log_Printnum(char *txt,int num)
+void Log_Printnum(const char *txt,int num)
 {
 #ifdef BETA
 	fprintf(logF,"%s %d\n",txt,num);

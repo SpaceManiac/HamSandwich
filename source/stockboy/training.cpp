@@ -109,7 +109,7 @@ void InitTraining(void)
 	GetArrowTaps();
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
-		GetDisplayMGL()->FatalError("Out of memory!");
+		FatalError("Out of memory!");
 
 	GetDisplayMGL()->LoadBMP("graphics\\training.bmp");
 
@@ -243,7 +243,7 @@ void TrainingSetArrow(void)
 				TRN_XBASE+TRN_XADD*3
 				};
 	byte trAdd[]={1,2,4,7};
-	
+
 	if(mode==0)
 	{
 		if(selY==4)
@@ -412,7 +412,7 @@ byte UpdateTraining(int *lastTime,MGLDraw *mgl)
 			else
 				SubLevelMouseCheck(msx,msy);
 		}
-		btn=mgl->MouseDown(0);
+		btn=mgl->MouseDown();
 		if(btn && !oldMsBtn)
 		{
 			if(mode==0)

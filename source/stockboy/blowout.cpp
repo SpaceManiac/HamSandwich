@@ -107,7 +107,7 @@ byte UpdateDroppingBarrel(void)
 
 	barrelDZ-=FIXAMT/2;
 	barrelZ+=barrelDZ;
-	
+
 	if(barrelZ<=0)
 	{
 		if(map->map[barrelX+barrelY*map->width].item==ITM_PLAYER)
@@ -222,8 +222,10 @@ void UpdateBlowout(void)
 
 void RenderBlowout(void)
 {
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	if(!barrelWait)
 		RenderItem((barrelX*TILE_WIDTH+TILE_WIDTH/2),
@@ -257,7 +259,7 @@ void InitBlowoutMenu(void)
 	GetArrowTaps();
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
-		GetDisplayMGL()->FatalError("Out of memory!");
+		FatalError("Out of memory!");
 
 	GetDisplayMGL()->LoadBMP("graphics\\blowout.bmp");
 
@@ -320,7 +322,7 @@ byte UpdateBlowoutMenu(int *lastTime,MGLDraw *mgl)
 		}
 
 		mgl->GetMouse(&msx,&msy);
-		btn=mgl->MouseDown(0);
+		btn=mgl->MouseDown();
 
 		c=mgl->LastKeyPressed();
 		t=GetTaps()|GetArrowTaps();
@@ -551,8 +553,10 @@ void RenderBlowoutMenu(MGLDraw *mgl)
 
 	Music_Update();
 
+	/*
 	if(!GM_doDraw)
 		return;
+	*/
 
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
@@ -578,7 +582,7 @@ void RenderBlowoutMenu(MGLDraw *mgl)
 			RenderHighScore(GAME_BLOWOUT,blowoutLevel-1,1,415,270+60,mgl);
 			RenderHighScore(GAME_BLOWOUT,blowoutLevel-1,0,415,270+60*2,mgl);
 			CenterPrintOutline(475,450,lvlName[blowoutLevel-1],0,0);
-			
+
 		}
 		else
 		{
