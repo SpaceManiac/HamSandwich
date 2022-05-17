@@ -85,14 +85,13 @@ void KillSong(void)
 
 void SetVolumes(int sndvol,int musvol)
 {
-	sndvol=(sndvol-255)*16;
-	musvol=(musvol-255)*16;
 	JamulSoundVolume(sndvol);
 	musVolume = musvol;
 }
 
 void PlayInstrument(int ins,int note,long vol,byte flags,byte seq)
 {
+	GoPlaySound(200 + ins*15 + note, 0, vol, (flags & SND_SUSTAIN) ? (flags & ~SND_ONE & ~SND_CUTOFF) : flags, 0);
 #if 0
 	char txt[32];
 	int i,best;

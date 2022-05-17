@@ -69,7 +69,7 @@ byte Music_Load(char *fname)
 		free(curSong.seq);
 
 	// read in the basic data
-	fread(&curSong,sizeof(song_t),1,f);
+	fread(&curSong,76,1,f);
 
 	curSong.seq=(songSeq_t *)malloc(sizeof(songSeq_t)*curSong.numSeqs);
 	if(!curSong.seq)
@@ -116,7 +116,7 @@ byte Music_Save(char *fname)
 		return 0;
 
 	// write out the basic data
-	fwrite(&curSong,sizeof(song_t),1,f);
+	fwrite(&curSong,76,1,f);
 
 	// write each sequence
 	for(i=0;i<curSong.numSeqs;i++)
