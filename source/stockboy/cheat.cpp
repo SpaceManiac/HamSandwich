@@ -61,7 +61,7 @@ void DoCheat(byte w)
 			SendMessageToGame(MSG_WINLEVEL,0);
 			break;
 		case 1:	// get all stars
-#ifdef BETA
+#ifndef NDEBUG
 			profile.stars=999;
 			profile.starsLeft=999;
 			SaveProfile(opt.curProfile);

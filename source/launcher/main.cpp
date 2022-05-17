@@ -376,7 +376,9 @@ struct Launcher
 		}
 
 		// Load non-excluded games in order.
+		size_t idx = 0;
 		nlohmann::json launcher_metadata = nlohmann::json::parse(embed_launcher_json, embed_launcher_json + embed_launcher_json_size);
+		games.reserve(launcher_metadata["project_list"].size() + launcher_metadata["project_metadata"].size());
 		for (std::string id : launcher_metadata["project_list"])
 		{
 			auto value = launcher_metadata["project_metadata"][id];
@@ -384,8 +386,8 @@ struct Launcher
 			games.emplace_back(id, value);
 			games.back().icon = icons_by_id[id];
 
-			if (games.size() == 1 || id == "supreme")
-				current_game = &games.back();
+			if (id == "supreme")
+				idx = games.size() - 1;
 		}
 
 		// Load excluded games. The launcher knows how to download their assets,
@@ -395,6 +397,9 @@ struct Launcher
 			games.emplace_back(game.key(), game.value());
 			games.back().icon = icons_by_id[game.key()];
 		}
+
+		if (idx < games.size())
+			current_game = &games[idx];
 	}
 
 	// Returns number of ongoing transfers.

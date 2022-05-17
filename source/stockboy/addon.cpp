@@ -36,6 +36,8 @@ static byte worldLoaded;
 static byte button[3];
 static byte online;
 
+const bool onlinePossible = false;
+
 void ScanForAddOns(void);
 
 void InitAddOnMenu(void)
@@ -140,7 +142,7 @@ void ScanForAddOns(void)
 	int i;
 	char tmp[FNAMELEN];
 
-	numSets=1;
+	numSets=0;
 	maxFiles=32;
 
 	if(filename)
@@ -154,11 +156,15 @@ void ScanForAddOns(void)
 	setname=(char *)calloc(FNAMELEN*maxFiles,1);
 	author=(char *)calloc(FNAMELEN*maxFiles,1);
 
-	strcpy(setname,"Auto-Download Add-On Levels");
-	author[0]='\0';
-	filename[0]='\0';
+	if (onlinePossible)
+	{
+		strcpy(setname,"Auto-Download Add-On Levels");
+		author[0]='\0';
+		filename[0]='\0';
+	}
 
-	for (const auto& file : ListDirectory("levels", ".sbl", FNAMELEN))
+	auto foo = ListDirectory("levels", ".sbl", FNAMELEN);
+	for (const auto& file : foo)
 	{
 		const char* name = file.c_str();
 
@@ -213,7 +219,7 @@ byte GetLevelNames(MGLDraw *mgl)
 {
 	char s[64];
 
-	if(levelSet==0)
+	if(onlinePossible && levelSet==0)
 		return 1;
 
 	sprintf(s,"levels/%s",&filename[levelSet*FNAMELEN]);
@@ -320,7 +326,7 @@ byte UpdateAddOnMenu(int *lastTime,MGLDraw *mgl)
 				if(t&CONTROL_B1)
 				{
 					MakeNormalSound(SND_MENUSELECT);
-					if(levelSet==0)
+					if(onlinePossible && levelSet==0)
 					{
 						online=1;
 						Download_Addons();
@@ -378,7 +384,7 @@ byte UpdateAddOnMenu(int *lastTime,MGLDraw *mgl)
 							{
 								levelSet=i;
 								MakeNormalSound(SND_MENUSELECT);
-								if(levelSet==0)
+								if(onlinePossible && levelSet==0)
 								{
 									online=1;
 									Download_Addons();

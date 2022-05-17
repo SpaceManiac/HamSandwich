@@ -25,7 +25,7 @@ const char* Archive::navigate(const char* path, Directory*& current)
 		if (*ch == '\\' || *ch == '/')
 		{
 			std::string component { last_component, (size_t)(ch - last_component) };
-			if (component != ".")
+			if (component != "" && component != ".")
 			{
 				current = &current->directories[component];
 			}
@@ -43,7 +43,7 @@ const char* Archive::navigate(const char* path, const Directory*& current)
 		if (*ch == '\\' || *ch == '/')
 		{
 			std::string component { last_component, (size_t)(ch - last_component) };
-			if (component != ".")
+			if (component != "" && component != ".")
 			{
 				auto iter = current->directories.find(component);
 				if (iter == current->directories.end())
@@ -77,7 +77,7 @@ const Archive::Directory* Archive::get_directory(const char* path) const
 	if (!current || !last_component)
 		return nullptr;
 
-	if (!strcmp(last_component, "."))
+	if (!strcmp(last_component, "") || !strcmp(last_component, "."))
 		return current;
 
 	auto iter = current->directories.find(last_component);
