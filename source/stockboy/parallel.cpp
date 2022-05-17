@@ -81,7 +81,7 @@ void InitParallelMenu(void)
 	for(i=0;i<6;i++)
 		txtLevel[i]=0;
 
-	blowSpr=new sprite_set_t("graphics\\blowout.jsp");
+	blowSpr=new sprite_set_t("graphics/blowout.jsp");
 
 	GetDisplayMGL()->GetMouse(&oldmsx,&oldmsy);
 	oldMsBtn=255;
@@ -126,7 +126,7 @@ static void UpdateBackgd(void)
 	{
 		moPic=mo;
 		moUpClock=0;
-		sprintf(s,"graphics\\stockroom%02d.bmp",moPic);
+		sprintf(s,"graphics/stockroom%02d.bmp",moPic);
 		GetDisplayMGL()->LoadBMP(s);
 
 		for(i=0;i<480;i++)
@@ -780,7 +780,7 @@ byte ParallelMenu(MGLDraw *mgl)
 	{
 		if(month==2 && smarch)
 			month=12;
-		sprintf(s,"levels\\pu%02d.sbl",month);
+		sprintf(s,"levels/pu%02d.sbl",month);
 		player.levelNum=week;
 		return LunaticWorld(month,s);
 	}

@@ -53,7 +53,7 @@ void InitAddOnMenu(void)
 	if(!backScr)
 		FatalError("Out of memory!");
 
-	GetDisplayMGL()->LoadBMP("graphics\\addon.bmp");
+	GetDisplayMGL()->LoadBMP("graphics/addon.bmp");
 
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
@@ -63,7 +63,7 @@ void InitAddOnMenu(void)
 	for(i=0;i<6;i++)
 		txtLevel[i]=0;
 
-	blowSpr=new sprite_set_t("graphics\\blowout.jsp");
+	blowSpr=new sprite_set_t("graphics/blowout.jsp");
 
 	GetDisplayMGL()->GetMouse(&oldmsx,&oldmsy);
 	oldMsBtn=255;
@@ -216,7 +216,7 @@ byte GetLevelNames(MGLDraw *mgl)
 	if(levelSet==0)
 		return 1;
 
-	sprintf(s,"levels\\%s",&filename[levelSet*FNAMELEN]);
+	sprintf(s,"levels/%s",&filename[levelSet*FNAMELEN]);
 	if(worldLoaded)
 	{
 		FreeWorld(&world);
@@ -239,7 +239,7 @@ void DeleteAddOn(void)
 {
 	char s[64];
 
-	sprintf(s,"levels\\%s",&filename[levelSet*FNAMELEN]);
+	sprintf(s,"levels/%s",&filename[levelSet*FNAMELEN]);
 	remove(s);
 	s[strlen(s)-3]='h';
 	s[strlen(s)-2]='i';
@@ -1068,7 +1068,7 @@ byte AddOnMenu(MGLDraw *mgl)
 		EndClock();
 		if(play)
 		{
-			sprintf(s,"levels\\%s",&filename[levelSet*FNAMELEN]);
+			sprintf(s,"levels/%s",&filename[levelSet*FNAMELEN]);
 			player.levelNum=level;
 			b=LunaticWorld(levelSet,s);
 			if(b!=WORLD_ABORT)

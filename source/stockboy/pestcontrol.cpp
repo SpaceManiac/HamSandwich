@@ -237,7 +237,7 @@ void InitPestMenu(void)
 	if(!backScr)
 		FatalError("Out of memory!");
 
-	GetDisplayMGL()->LoadBMP("graphics\\pestcontrol.bmp");
+	GetDisplayMGL()->LoadBMP("graphics/pestcontrol.bmp");
 
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
@@ -246,9 +246,9 @@ void InitPestMenu(void)
 	for(i=0;i<6;i++)
 		txtLevel[i]=0;
 
-	LoadWorld(&world,"levels\\pestcontrol.sbl",GetDisplayMGL());
+	LoadWorld(&world,"levels/pestcontrol.sbl",GetDisplayMGL());
 
-	blowSpr=new sprite_set_t("graphics\\blowout.jsp");
+	blowSpr=new sprite_set_t("graphics/blowout.jsp");
 	blowSpin=0;
 
 	if(pestLevel==0)
@@ -677,7 +677,7 @@ byte PestControlMenu(MGLDraw *mgl)
 	ExitPestMenu();
 
 	if(play)
-		return LunaticWorld(pestLevel-1,"levels\\pestcontrol.sbl");
+		return LunaticWorld(pestLevel-1,"levels/pestcontrol.sbl");
 	else
 		return WORLD_ABORT;
 }

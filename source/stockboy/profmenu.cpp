@@ -95,7 +95,7 @@ void InitProfileMenu(void)
 
 	LoadOptions();
 
-	profSpr=new sprite_set_t("graphics\\profile.jsp");
+	profSpr=new sprite_set_t("graphics/profile.jsp");
 
 	for(i=0;i<8;i++)
 	{

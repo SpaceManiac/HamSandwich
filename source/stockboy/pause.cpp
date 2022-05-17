@@ -87,7 +87,7 @@ void InitPauseMenu(void)
 	oldc=255;
 	oldMsBtn=1;
 	GetDisplayMGL()->GetMouse(&oldMsx,&oldMsy);
-	blowSpr=new sprite_set_t("graphics\\blowout.jsp");
+	blowSpr=new sprite_set_t("graphics/blowout.jsp");
 }
 
 void ExitPauseMenu(void)

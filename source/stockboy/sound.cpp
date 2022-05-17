@@ -117,7 +117,7 @@ void PlayInstrument(int ins,int note,long vol,byte flags,byte seq)
 
 	if(soundHandle[num]==-1)
 	{
-		sprintf(txt,"sound\\snd%03d.wav",num);
+		sprintf(txt,"sound/snd%03d.wav",num);
 		soundHandle[num]=JamulSoundLoad(txt);
 		if(soundHandle[num]==-1)
 			return;	// can't play the sound, it won't load for some reason

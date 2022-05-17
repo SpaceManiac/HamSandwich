@@ -17,7 +17,7 @@ byte bulletHittingType;
 
 void InitBullets(void)
 {
-	bulletSpr=new sprite_set_t("graphics\\bullets.jsp");
+	bulletSpr=new sprite_set_t("graphics/bullets.jsp");
 
 	memset(bullet,0,MAX_BULLETS*sizeof(bullet_t));
 }
@@ -78,7 +78,7 @@ byte AcidSplash(Map *map,byte color,int x,int y)
 		return AcidSplash2(map,map->map[x+y*map->width].itemInfo%8,x,y);
 
 	m=&map->map[x+y*map->width];
-	if((((m->itemInfo%8)==color) || (color==0)) && 
+	if((((m->itemInfo%8)==color) || (color==0)) &&
 		(m->item==ITM_BARREL || m->item==ITM_BALL || m->item==ITM_CRATE ||
 		 m->item==ITM_ICEBERG) && (m->itemInfo%8)!=0)
 	{
@@ -97,7 +97,7 @@ byte AcidSplash(Map *map,byte color,int x,int y)
 			return 1;
 		}
 	}
-	else if((((m->itemInfo%8)==color) || (color==0)) && 
+	else if((((m->itemInfo%8)==color) || (color==0)) &&
 		(m->item==ITM_PENCIL) && (m->itemInfo%8)!=0)
 	{
 		player.deadPencils[m->itemInfo%8]++;
@@ -105,7 +105,7 @@ byte AcidSplash(Map *map,byte color,int x,int y)
 		m->item=ITM_NONE;
 		return 1;
 	}
-	else if((((m->itemInfo%8)==color) || (color==0)) && 
+	else if((((m->itemInfo%8)==color) || (color==0)) &&
 		(m->item==ITM_KEY) && (m->itemInfo%8)!=0)
 	{
 		BlowSmoke(x,y,color);
@@ -136,21 +136,21 @@ byte AcidSplash(Map *map,byte color,int x,int y)
 	}
 	else if(m->item==ITM_ACID)
 		return 0;
-	else if((((m->itemInfo%8)==color) || (color==0)) && 
+	else if((((m->itemInfo%8)==color) || (color==0)) &&
 		(m->item==ITM_LASER) && (m->itemInfo%8)!=0)
 	{
 		m->item=ITM_NONE;
 		BlowSmoke(x,y,color);
 		return 1;
 	}
-	else if((((m->itemInfo%8)==color) || (color==0)) && 
+	else if((((m->itemInfo%8)==color) || (color==0)) &&
 		(m->item==ITM_DETONATE) && (m->itemInfo%8)!=0)
 	{
 		m->item=ITM_NONE;
 		BlowSmoke(x,y,color);
 		return 1;
 	}
-	else if((((m->itemInfo%8)==color) || (color==0)) && 
+	else if((((m->itemInfo%8)==color) || (color==0)) &&
 		(m->item==ITM_BOMB) && (m->itemInfo%8)!=0)
 	{
 		m->item=ITM_NONE;
@@ -168,7 +168,7 @@ byte AcidSplash(Map *map,byte color,int x,int y)
 			g->type=MONS_NONE;
 			BlowSmoke(x,y,color);
 		}
-		
+
 
 		m->item=ITM_BOMB;
 		return 1;
@@ -355,7 +355,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 		case BLT_AQUA:
 			me->x+=me->dx;
 			me->y+=me->dy;
-	
+
 			me->mapx=me->x/(TILE_WIDTH*FIXAMT);
 			me->mapy=me->y/(TILE_HEIGHT*FIXAMT);
 
@@ -505,7 +505,7 @@ byte BulletExists(byte type)
 		{
 			return 1;
 		}
-	}	
+	}
 	return 0;
 }
 

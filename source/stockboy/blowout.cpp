@@ -261,7 +261,7 @@ void InitBlowoutMenu(void)
 	if(!backScr)
 		FatalError("Out of memory!");
 
-	GetDisplayMGL()->LoadBMP("graphics\\blowout.bmp");
+	GetDisplayMGL()->LoadBMP("graphics/blowout.bmp");
 
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
@@ -270,9 +270,9 @@ void InitBlowoutMenu(void)
 	for(i=0;i<6;i++)
 		txtLevel[i]=0;
 
-	LoadWorld(&world,"levels\\blowout.sbl",GetDisplayMGL());
+	LoadWorld(&world,"levels/blowout.sbl",GetDisplayMGL());
 
-	blowSpr=new sprite_set_t("graphics\\blowout.jsp");
+	blowSpr=new sprite_set_t("graphics/blowout.jsp");
 	blowSpin=0;
 	GetDisplayMGL()->GetMouse(&oldmsx,&oldmsy);
 	oldMsBtn=255;
@@ -677,7 +677,7 @@ byte BlowoutMenu(MGLDraw *mgl)
 	ExitBlowoutMenu();
 
 	if(blowoutLevel>0)
-		return LunaticWorld(blowoutLevel-1,"levels\\blowout.sbl");
+		return LunaticWorld(blowoutLevel-1,"levels/blowout.sbl");
 	else
 		return WORLD_ABORT;
 }

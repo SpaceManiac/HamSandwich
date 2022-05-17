@@ -1,6 +1,7 @@
 #include "log.h"
 #include <stdio.h>
 #include <time.h>
+#include "appdata.h"
 
 #ifdef BETA
 static FILE *logF;
@@ -12,7 +13,7 @@ void Log_Begin(const char *fname)
 	struct tm *newtime;
 	time_t clock;
 
-	logF=fopen(fname,"wt");
+	logF=AppdataOpen_Write(fname);
 
 	time(&clock);
 	newtime=localtime(&clock);

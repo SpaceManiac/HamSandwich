@@ -19,7 +19,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 		{"Null",0,
 		 0,"",0,0,0,0,0,0},
 		{"SurfBoy",7,
-		 30,"graphics\\stockboy.jsp",0,MF_WATERWALK,
+		 30,"graphics/stockboy.jsp",0,MF_WATERWALK,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -28,7 +28,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{15,16,17,18,19,20,21,20,19,18,19,20,21,20,19,18,18,17,16,15,255},		// A1 = shrug
 			}},
 		{"Ball",6,		// this number indicates which color to replace when recoloring
-		 8,"graphics\\ball.jsp",0,MF_ONEFACE,
+		 8,"graphics/ball.jsp",0,MF_ONEFACE,
 			{
 				{0,1,2,3,4,5,6,7,255},	// idle=roll right
 				{8,9,10,11,12,13,14,15,255},	// move=roll down
@@ -37,7 +37,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{15,14,13,12,11,10,9,8,255},	// A1=roll up
 			}},
 		{"Bomb",0,
-		 10,"graphics\\bomb.jsp",0,MF_ONEFACE,
+		 10,"graphics/bomb.jsp",0,MF_ONEFACE,
 			{
 				{0,1,255},	// idle=sizzle
 				{0,255},	// move=unused
@@ -53,7 +53,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// die
 			}},
 		{"Blobby",3,
-		 9,"graphics\\blob.jsp",0,0,
+		 9,"graphics/blob.jsp",0,0,
 			{
 				{0,1,2,3,2,1,255},	// idle
 				{4,5,4,6,7,8,7,6,5,4,0,255},	// move
@@ -61,7 +61,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// die
 			}},
 		{"Fluffy",6,
-		 5,"graphics\\bunny.jsp",0,0,
+		 5,"graphics/bunny.jsp",0,0,
 			{
 				{0,255},	// idle
 				{1,2,2,1,0,0,3,4,4,3,0,0,255},	// move
@@ -69,7 +69,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// die
 			}},
 		{"Inchy",3,
-		 11,"graphics\\inchy.jsp",0,0,
+		 11,"graphics/inchy.jsp",0,0,
 			{
 				{0,255},	// idle
 				{1,2,3,4,5,6,7,8,9,10,0,255},	// move
@@ -77,7 +77,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// die
 			}},
 		{"Piggy",6,
-		 7,"graphics\\piggy.jsp",0,0,
+		 7,"graphics/piggy.jsp",0,0,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -85,7 +85,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// die
 			}},
 		{"SurfBoy",7,
-		 30,"graphics\\stockboy.jsp",0,MF_WATERWALK,
+		 30,"graphics/stockboy.jsp",0,MF_WATERWALK,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -94,7 +94,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{15,16,17,18,19,20,21,20,19,18,19,20,21,20,19,18,18,17,16,15,255},		// A1 = shrug
 			}},
 		{"GothGirl",6,
-		 27,"graphics\\goth.jsp",0,MF_WATERWALK,
+		 27,"graphics/goth.jsp",0,MF_WATERWALK,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -103,7 +103,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{15,16,17,18,19,19,19,19,19,19,19,19,19,19,18,17,16,15,255},		// A1 = shrug
 			}},
 		{"Ro-Bot",5,
-		 35,"graphics\\robot.jsp",0,MF_WATERWALK,
+		 35,"graphics/robot.jsp",0,MF_WATERWALK,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -112,7 +112,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{15,16,17,18,19,20,21,22,23,24,25,26,27,28,255},		// A1 = shrug
 			}},
 		{"Happy Stick Boy",7,
-		 12,"graphics\\stick.jsp",0,MF_WATERWALK,
+		 12,"graphics/stick.jsp",0,MF_WATERWALK,
 			{
 				{0,255},	// idle
 				{1,0,2,0,255},	// move
@@ -121,7 +121,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{3,3,3,4,5,5,5,4,5,4,5,5,5,4,4,3,3,255},		// A1 = shrug
 			}},
 		{"Santa Claus",4,
-		 32,"graphics\\santa.jsp",0,MF_WATERWALK,
+		 32,"graphics/santa.jsp",0,MF_WATERWALK,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -130,7 +130,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{18,19,20,21,22,23,23,23,23,24,25,26,27,28,29,30,31,255},		// A1 = shrug
 			}},
 		{"Cherub",5,
-		 47,"graphics\\cherub.jsp",0,MF_WATERWALK|MF_FLYING,
+		 47,"graphics/cherub.jsp",0,MF_WATERWALK|MF_FLYING,
 			{
 				{0,1,2,3,2,1,0,4,5,6,5,4,255},	// idle
 				{7,8,9,10,9,8,7,11,12,13,12,11,255},	// move
@@ -139,7 +139,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{25,26,27,28,29,30,31,32,33,34,35,36,37,38,255},		// A1 = shrug
 			}},
 		{"Shroom",5,
-		 21,"graphics\\shroom.jsp",0,MF_WATERWALK,
+		 21,"graphics/shroom.jsp",0,MF_WATERWALK,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -148,7 +148,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{7,8,9,10,9,8,7,255},		// A1 = shrug
 			}},
 		{"War Pig",1,
-		 19,"graphics\\warpig.jsp",0,MF_WATERWALK,
+		 19,"graphics/warpig.jsp",0,MF_WATERWALK,
 			{
 				{0,255},	// idle
 				{6,7,6,0,8,9,8,0,255},	// move
@@ -157,7 +157,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{1,2,3,4,5,4,3,4,5,4,3,2,1,0,255},		// A1 = shrug
 			}},
 		{"Freako",4,
-		 24,"graphics\\freako.jsp",0,MF_WATERWALK,
+		 24,"graphics/freako.jsp",0,MF_WATERWALK,
 			{
 				{0,255},	// idle
 				{0,1,2,3,2,1,0,4,5,6,5,4,255},	// move
@@ -166,7 +166,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{16,17,18,19,18,17,16,255},		// A1 = shrug
 			}},
 		{"Hippie",5,
-		 27,"graphics\\hippie.jsp",0,MF_WATERWALK,
+		 27,"graphics/hippie.jsp",0,MF_WATERWALK,
 			{
 				{0,255},	// idle
 				{0,1,2,3,2,1,0,4,5,6,5,4,255},	// move

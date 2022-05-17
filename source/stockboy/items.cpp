@@ -47,7 +47,7 @@ static	int itemAnim;
 
 void InitItems(void)
 {
-	itmSpr[0]=new sprite_set_t("graphics\\items.jsp");
+	itmSpr[0]=new sprite_set_t("graphics/items.jsp");
 	itmSpr[1]=NULL;
 	itemAnim=0;
 }

@@ -56,7 +56,7 @@ TASK(int) main(int argc, char* argv[])
 
 	LunaticInit(mainmgl);
 
-	SplashScreen(mainmgl,"graphics\\hamumu.bmp",128,2);
+	SplashScreen(mainmgl,"graphics/hamumu.bmp",128,2);
 
 	/*
 	if(Web_Init()==IE_OK)

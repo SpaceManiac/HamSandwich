@@ -19,7 +19,7 @@ void SetupTrainCert(void)
 {
 	int i;
 
-	GetDisplayMGL()->LoadBMP("graphics\\training_done.bmp");
+	GetDisplayMGL()->LoadBMP("graphics/training_done.bmp");
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
 		FatalError("Out of memory!");

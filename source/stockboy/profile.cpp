@@ -8,7 +8,7 @@ profile_t profile;
 
 void ApplyControlSettings(void)
 {
-	byte joyBinds[2] = { 1, 2 };
+	byte joyBinds[2] = { 0, 1 };
 	SetKeyboardBindings(0, 5, profile.keys);
 	SetJoystickBindings(2, joyBinds);
 }
@@ -41,7 +41,7 @@ byte LoadProfile(byte n)
 	char name[32];
 
 	sprintf(name,"profile%03d.pro",n);
-	f=fopen(name,"rb");
+	f=AppdataOpen(name);
 	if(!f)
 		return 0;
 
@@ -85,7 +85,7 @@ byte SaveProfile(byte n)
 	char name[32];
 
 	sprintf(name,"profile%03d.pro",n);
-	f=fopen(name,"wb");
+	f=AppdataOpen_Write(name);
 	if(!f)
 		return 0;
 
@@ -120,11 +120,11 @@ void DefaultProfile(profile_t *p)
 
 	p->empYear=0;
 	p->empYear2=0;
-	p->keys[0]=72;	// up arrow
-	p->keys[1]=80;	// down arrow
-	p->keys[2]=75;	// left arrow
-	p->keys[3]=77;	// right arrow
-	p->keys[4]=29;	// control
+	p->keys[0]=SDL_SCANCODE_UP;	// up arrow
+	p->keys[1]=SDL_SCANCODE_DOWN;	// down arrow
+	p->keys[2]=SDL_SCANCODE_LEFT;	// left arrow
+	p->keys[3]=SDL_SCANCODE_RIGHT;	// right arrow
+	p->keys[4]=SDL_SCANCODE_LCTRL;	// control
 	p->color=7;
 	p->bright=0;
 	for(i=0;i<16;i++)

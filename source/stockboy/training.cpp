@@ -13,16 +13,16 @@
 #define TRN_YADD	88
 
 char trainingFile[10][32]={
-	"levels\\pyr1.sbl",
-	"levels\\pyr2.sbl",
-	"levels\\pyr3.sbl",
-	"levels\\pyr4.sbl",
-	"levels\\pyr5.sbl",
-	"levels\\pyr6.sbl",
-	"levels\\pyr7.sbl",
-	"levels\\pyr8.sbl",
-	"levels\\pyr9.sbl",
-	"levels\\pyr10.sbl",
+	"levels/pyr1.sbl",
+	"levels/pyr2.sbl",
+	"levels/pyr3.sbl",
+	"levels/pyr4.sbl",
+	"levels/pyr5.sbl",
+	"levels/pyr6.sbl",
+	"levels/pyr7.sbl",
+	"levels/pyr8.sbl",
+	"levels/pyr9.sbl",
+	"levels/pyr10.sbl",
 };
 
 char trainingName[11][32]={
@@ -111,13 +111,13 @@ void InitTraining(void)
 	if(!backScr)
 		FatalError("Out of memory!");
 
-	GetDisplayMGL()->LoadBMP("graphics\\training.bmp");
+	GetDisplayMGL()->LoadBMP("graphics/training.bmp");
 
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
 
 	trainingLevel=0;
-	trnSpr=new sprite_set_t("graphics\\training.jsp");
+	trnSpr=new sprite_set_t("graphics/training.jsp");
 	selX=0;
 	selY=0;
 	left.x=0;

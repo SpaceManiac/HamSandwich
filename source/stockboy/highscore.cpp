@@ -2,6 +2,7 @@
 #include "display.h"
 #include "player.h"
 #include "options.h"
+#include "appdata.h"
 
 #define HI_GUY_SPR 10
 
@@ -179,7 +180,7 @@ void LoadHiScoreSprites(void)
 {
 	if(!hiSpr)
 	{
-		hiSpr=new sprite_set_t("graphics\\hiscore.jsp");
+		hiSpr=new sprite_set_t("graphics/hiscore.jsp");
 	}
 }
 
@@ -367,7 +368,7 @@ byte LoadAddOnScores(char *fname)
 	addOnScoreName[strlen(addOnScoreName)-2]='i';
 	addOnScoreName[strlen(addOnScoreName)-1]='g';
 
-	f=fopen(addOnScoreName,"rb");
+	f=AppdataOpen(addOnScoreName);
 	if(!f)
 	{
 		// set up empty scores
@@ -412,14 +413,14 @@ byte SaveAddOnScores(void)
 {
 	FILE *f;
 
-	f=fopen(addOnScoreName,"wb");
+	f=AppdataOpen_Write(addOnScoreName);
 	if(!f)
 		return 0;
 
 	fwrite(goldScore,MAX_MAPS*3,sizeof(int),f);
 	fwrite(addOnScore,MAX_MAPS*3,sizeof(highScore_t),f);
 	fclose(f);
-	
+
 	return 1;
 }
 

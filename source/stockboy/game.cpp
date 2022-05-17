@@ -398,7 +398,7 @@ byte LunaticRun(int *lastTime)
 			{
 				gameMode=GAMEMODE_PLAY;
 				// restore the palette
-				gamemgl->LoadBMP("graphics\\title.bmp");
+				gamemgl->LoadBMP("graphics/title.bmp");
 			}
 		}
 

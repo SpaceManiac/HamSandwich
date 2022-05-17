@@ -40,38 +40,38 @@ void SetupTally(Map *map)
 	int i,j;
 
 	if(tallyPic==0)
-		GetDisplayMGL()->LoadBMP("graphics\\losegame.bmp");
+		GetDisplayMGL()->LoadBMP("graphics/losegame.bmp");
 	else switch(profile.character)
 	{
 		case CHAR_SURF:
-			GetDisplayMGL()->LoadBMP("graphics\\win_surfboy.bmp");
+			GetDisplayMGL()->LoadBMP("graphics/win_surfboy.bmp");
 			break;
 		case CHAR_GOTH:
-			GetDisplayMGL()->LoadBMP("graphics\\win_goth.bmp");
+			GetDisplayMGL()->LoadBMP("graphics/win_goth.bmp");
 			break;
 		case CHAR_ROBOT:
-			GetDisplayMGL()->LoadBMP("graphics\\win_robot.bmp");
+			GetDisplayMGL()->LoadBMP("graphics/win_robot.bmp");
 			break;
 		case CHAR_HAPPY:
-			GetDisplayMGL()->LoadBMP("graphics\\win_happystick.bmp");
+			GetDisplayMGL()->LoadBMP("graphics/win_happystick.bmp");
 			break;
 		case CHAR_SANTA:
-			GetDisplayMGL()->LoadBMP("graphics\\win_santa.bmp");
+			GetDisplayMGL()->LoadBMP("graphics/win_santa.bmp");
 			break;
 		case CHAR_CHERUB:
-			GetDisplayMGL()->LoadBMP("graphics\\win_cherub.bmp");
+			GetDisplayMGL()->LoadBMP("graphics/win_cherub.bmp");
 			break;
 		case CHAR_SHROOM:
-			GetDisplayMGL()->LoadBMP("graphics\\win_shroom.bmp");
+			GetDisplayMGL()->LoadBMP("graphics/win_shroom.bmp");
 			break;
 		case CHAR_PIG:
-			GetDisplayMGL()->LoadBMP("graphics\\win_warpig.bmp");
+			GetDisplayMGL()->LoadBMP("graphics/win_warpig.bmp");
 			break;
 		case CHAR_FREAK:
-			GetDisplayMGL()->LoadBMP("graphics\\win_freak.bmp");
+			GetDisplayMGL()->LoadBMP("graphics/win_freak.bmp");
 			break;
 		case CHAR_HIPPIE:
-			GetDisplayMGL()->LoadBMP("graphics\\win_hippie.bmp");
+			GetDisplayMGL()->LoadBMP("graphics/win_hippie.bmp");
 			break;
 	}
 

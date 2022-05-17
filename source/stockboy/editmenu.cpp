@@ -1733,7 +1733,7 @@ void EditMenu::GetAnswer(void)
 			{
 				if(CanEditFile(curFname))
 				{
-					sprintf(name,"levels\\%s",curFname);
+					sprintf(name,"levels/%s",curFname);
 					if(strlen(name)>4 && strcmp(&name[strlen(name)-4],".sbl"))
 					{
 						strcat(name,".sbl");	// concatenate the ending on
@@ -1758,7 +1758,7 @@ void EditMenu::GetAnswer(void)
 			{
 				if(CanEditFile(curFname))
 				{
-					sprintf(name,"levels\\%s",curFname);
+					sprintf(name,"levels/%s",curFname);
 					if(strlen(name)>4 && strcmp(&name[strlen(name)-4],".sbl"))
 					{
 						strcat(name,".sbl");	// concatenate the ending on
@@ -1820,7 +1820,7 @@ void EditMenu::GetAnswer(void)
 			{
 				if(CanEditFile(curFname))
 				{
-					sprintf(name,"levels\\%s",curFname);
+					sprintf(name,"levels/%s",curFname);
 					if(strlen(name)>4 && strcmp(&name[strlen(name)-4],".sbl"))
 					{
 						strcat(name,".sbl");	// concatenate the ending on

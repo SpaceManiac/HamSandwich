@@ -1,6 +1,7 @@
 #include "music.h"
 #include "sound.h"
 #include "player.h"
+#include "appdata.h"
 
 static song_t curSong;
 static dword musicClock;
@@ -59,14 +60,14 @@ byte Music_Load(char *fname)
 	if(fname[0]=='\0')
 		return 0;
 
-	sprintf(fn,"music\\%s",fname);
-	f=fopen(fn,"rb");
+	sprintf(fn,"music/%s",fname);
+	f=AssetOpen(fn);
 	if(!f)
 		return 0;
 
 	if(curSong.seq)
 		free(curSong.seq);
-	
+
 	// read in the basic data
 	fread(&curSong,sizeof(song_t),1,f);
 
@@ -92,7 +93,7 @@ byte Music_Load(char *fname)
 			fread(curSong.seq[i].note[j],sizeof(byte),curSong.seq[i].length*SEQ_BLOCK_SIZE,f);
 		fread(curSong.seq[i].play,sizeof(byte),curSong.seq[i].playLength,f);
 	}
-	
+
 	fclose(f);
 	playSeq=-1;
 	Music_Scan(0,-1);
@@ -109,8 +110,8 @@ byte Music_Save(char *fname)
 
 	Music_SetLengths();
 
-	sprintf(fn,"music\\%s",fname);
-	f=fopen(fn,"wb");
+	sprintf(fn,"music/%s",fname);
+	f=AssetOpen_Write(fn);
 	if(!f)
 		return 0;
 
@@ -130,7 +131,7 @@ byte Music_Save(char *fname)
 			fwrite(curSong.seq[i].note[j],sizeof(byte),curSong.seq[i].length*SEQ_BLOCK_SIZE,f);
 		fwrite(curSong.seq[i].play,sizeof(byte),curSong.seq[i].playLength,f);
 	}
-	
+
 	fclose(f);
 	return 1;
 }
@@ -141,9 +142,9 @@ byte Music_GetSongName(char *fname,char *title,char *author)
 	word w;
 	char s[64];
 
-	sprintf(s,"music\\%s",fname);
+	sprintf(s,"music/%s",fname);
 
-	f=fopen(s,"rb");
+	f=AssetOpen(s);
 	if(!f)
 		return 0;
 
@@ -387,7 +388,7 @@ void Music_PlayNotes(dword when,byte seq)
 			{
 				PlayInstrument(curSong.seq[seq].instrument,i,curSong.seq[seq].volume,curSong.seq[seq].insFlags|SND_SUSTAIN,seq);
 			}
-			
+
 		}
 	}
 }
@@ -405,7 +406,7 @@ void Music_New(void)
 		free(curSong.seq);
 		curSong.seq=NULL;
 	}
-	
+
 	curSong.tempo=60;
 	curSong.length=64;
 	strcpy(curSong.name,"Nosong");
@@ -461,9 +462,9 @@ byte Music_CloneSeq(byte src)
 		return 0;
 	curSong.seq=s;
 	i=curSong.numSeqs-1;
-	
+
 	curSong.seq[i]=curSong.seq[src];
-	
+
 	return 1;
 }
 
@@ -641,7 +642,7 @@ void Music_SetPlaySeq(int seq)
 void Music_SetLengths(void)
 {
 	int i,j,k;
-	
+
 	curSong.length=0;
 	for(i=0;i<curSong.numSeqs;i++)
 	{

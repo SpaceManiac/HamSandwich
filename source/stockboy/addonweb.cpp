@@ -14,6 +14,7 @@ void Render_Download(MGLDraw *mgl,int msx,int msy) {}
 #include "game.h"
 #include "display.h"
 #include "log.h"
+#include "appdata.h"
 
 #define MODE_GETLIST	0
 #define MODE_ERROR		1
@@ -50,13 +51,13 @@ byte ShouldDownloadAddOn(void)
 
 	if(!strcmp(&addOn.name[strlen(addOn.name)-3],"sbl") ||
 		!strcmp(&addOn.name[strlen(addOn.name)-3],"hig"))
-		sprintf(addOn.destFileName,"levels\\%s",addOn.name);
+		sprintf(addOn.destFileName,"levels/%s",addOn.name);
 	else if(!strcmp(&addOn.name[strlen(addOn.name)-3],"jsp") ||
 		!strcmp(&addOn.name[strlen(addOn.name)-3],"bmp") ||
 		!strcmp(&addOn.name[strlen(addOn.name)-3],"jft"))
-		sprintf(addOn.destFileName,"graphics\\%s",addOn.name);
+		sprintf(addOn.destFileName,"graphics/%s",addOn.name);
 	else if(!strcmp(&addOn.name[strlen(addOn.name)-3],"sng"))
-		sprintf(addOn.destFileName,"music\\%s",addOn.name);
+		sprintf(addOn.destFileName,"music/%s",addOn.name);
 	else
 		strcpy(addOn.destFileName,addOn.name);	// if it's none of those, put it in the main directory
 
@@ -274,7 +275,7 @@ void SaveAddOn(void)
 	Log_Print(addOn.destFileName);
 	Log_Printnum("size: ",dataSize);
 
-	f=fopen(addOn.destFileName,"wb");
+	f=AppdataOpen_Write(addOn.destFileName);
 	fwrite(data,sizeof(byte),dataSize,f);
 	fclose(f);
 

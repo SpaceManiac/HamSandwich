@@ -223,13 +223,13 @@ void InitComposer(void)
 
 	LoadOptions();
 
-	compSpr=new sprite_set_t("graphics\\giftshop.jsp");
+	compSpr=new sprite_set_t("graphics/giftshop.jsp");
 
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
 		FatalError("Out of memory!");
 
-	GetDisplayMGL()->LoadBMP("graphics\\giftshop.bmp");
+	GetDisplayMGL()->LoadBMP("graphics/giftshop.bmp");
 
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
@@ -679,7 +679,7 @@ static void ButtonClick(int num,byte id)
 			SetupButtonText();
 			break;
 		//case BTN_HELP:
-		//	ShellExecute(NULL,"open","help\\compose.html","","",SW_SHOWNORMAL);
+		//	ShellExecute(NULL,"open","help/compose.html","","",SW_SHOWNORMAL);
 		//	break;
 	}
 }

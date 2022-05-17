@@ -72,7 +72,7 @@ byte InitEditor(void)
 
 	cursorBright=0;
 	cursorDBright=1;
-	editspr=new sprite_set_t("graphics\\editmenu.jsp");
+	editspr=new sprite_set_t("graphics/editmenu.jsp");
 	toolMenu=new ToolMenu(editmgl);
 	yesNoMenu=new YesNoMenu(editmgl);
 	editMenu=new EditMenu(curMap,yesNoMenu,toolMenu,editmgl);

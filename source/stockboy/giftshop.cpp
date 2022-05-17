@@ -169,13 +169,13 @@ void InitGiftShop(void)
 
 	LoadOptions();
 
-	giftSpr=new sprite_set_t("graphics\\giftshop.jsp");
+	giftSpr=new sprite_set_t("graphics/giftshop.jsp");
 
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
 		FatalError("Out of memory!");
 
-	GetDisplayMGL()->LoadBMP("graphics\\giftshop.bmp");
+	GetDisplayMGL()->LoadBMP("graphics/giftshop.bmp");
 
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);

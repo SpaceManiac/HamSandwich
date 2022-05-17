@@ -26,7 +26,7 @@ void SetupEmpMonth(void)
 	int i;
 	byte m;
 
-	GetDisplayMGL()->LoadBMP("graphics\\empmonth.bmp");
+	GetDisplayMGL()->LoadBMP("graphics/empmonth.bmp");
 	backScr=(byte *)malloc(640*480);
 	if(!backScr)
 		FatalError("Out of memory!");
@@ -50,7 +50,7 @@ void SetupEmpMonth(void)
 	namePos=0;
 	typeClock=10;
 	burning=1;
-	yearSpr=new sprite_set_t("graphics\\empyear.jsp");
+	yearSpr=new sprite_set_t("graphics/empyear.jsp");
 
 	doYear=0;
 	if(GameType()==GAME_STOCKROOM)

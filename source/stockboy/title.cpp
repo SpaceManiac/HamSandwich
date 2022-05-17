@@ -762,8 +762,8 @@ byte MainMenu(byte pageUp,MGLDraw *mgl)
 	LoadOptions();
 	PurgeMonsterSprites();
 	InitParticles(50);
-	planetSpr=new sprite_set_t("graphics\\title.jsp");
-	mgl->LoadBMP("graphics\\title.bmp");
+	planetSpr=new sprite_set_t("graphics/title.jsp");
+	mgl->LoadBMP("graphics/title.bmp");
 	mgl->LastKeyPressed();
 	oldc=CONTROL_B1|CONTROL_B2;
 
@@ -800,7 +800,7 @@ byte MainMenu(byte pageUp,MGLDraw *mgl)
 			GetTaps();
 			oldc=255;
 			Credits(mgl,1);
-			mgl->LoadBMP("graphics\\title.bmp");
+			mgl->LoadBMP("graphics/title.bmp");
 			mgl->LastKeyPressed();
 			numRuns=0;
 		}
@@ -867,7 +867,7 @@ void Credits(MGLDraw *mgl,byte init)
 	hangon=TimeLength();
 
 	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics\\title.bmp");
+	mgl->LoadBMP("graphics/title.bmp");
 	lastTime=1;
 
 	while(1)
@@ -1036,7 +1036,7 @@ void HelpScreens(MGLDraw *mgl)
 
 	for(i=0;i<5;i++)
 	{
-		sprintf(name,"docs\\help%d.bmp",i+1);
+		sprintf(name,"docs/help%d.bmp",i+1);
 		if(!SpeedSplash(mgl,name))
 			return;
 	}
@@ -1044,9 +1044,9 @@ void HelpScreens(MGLDraw *mgl)
 
 void DemoSplashScreens(MGLDraw *mgl)
 {
-	if(!SpeedSplash(mgl,"docs\\demosplash.bmp"))
+	if(!SpeedSplash(mgl,"docs/demosplash.bmp"))
 		return;
-	if(!SpeedSplash(mgl,"docs\\demosplash2.bmp"))
+	if(!SpeedSplash(mgl,"docs/demosplash2.bmp"))
 		return;
 }
 

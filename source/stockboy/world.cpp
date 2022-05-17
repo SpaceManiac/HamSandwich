@@ -2,6 +2,7 @@
 #include "player.h"
 #include "editor.h"
 #include "highscore.h"
+#include "appdata.h"
 
 byte NewWorld(world_t *world,MGLDraw *mgl)
 {
@@ -10,7 +11,7 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	world->version=WORLD_VERSION;
 	world->numMaps=1;
 	strcpy(world->tileName,"basicTiles.bmp");
-	mgl->LoadBMP("graphics\\basicTiles.bmp");
+	mgl->LoadBMP("graphics/basicTiles.bmp");
 	SetTiles(mgl->GetScreen(),0);
 
 	for(i=0;i<MAX_MAPS;i++)
@@ -27,7 +28,7 @@ byte LoadWorld(world_t *world,const char *fname,MGLDraw *mgl)
 	int i;
 	char hdr[5];
 
-	f=fopen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 		return 0;
 
@@ -79,7 +80,7 @@ byte SaveWorld(world_t *world,const char *fname)
 	int i;
 	char hdr[5]="STBY";
 
-	f=fopen(fname,"wb");
+	f=AssetOpen_Write(fname);
 	if(!f)
 		return 0;
 
@@ -103,9 +104,9 @@ byte SaveWorld(world_t *world,const char *fname)
 
 byte GetWorldTiles(world_t *world,MGLDraw *mgl)
 {
-	char name[64];
+	char name[128];
 
-	sprintf(name,"graphics\\%s",world->tileName);
+	sprintf(name,"graphics/%s",world->tileName);
 	if(mgl->LoadBMP(name))
 	{
 		SetTiles(mgl->GetScreen(),0);
@@ -135,8 +136,8 @@ void GetWorldName(const char *fname,char *buf,char *auth)
 	if(fname[0]=='\0')
 		return;
 
-	sprintf(fname2,"levels\\%s",fname);
-	f=fopen(fname2,"rb");
+	sprintf(fname2,"levels/%s",fname);
+	f=AssetOpen(fname2);
 	if(!f)
 		return;
 
@@ -163,8 +164,8 @@ int GetWorldPoints(const char *fname)
 	if(fname[0]=='\0')
 		return 100;
 
-	sprintf(fname2,"worlds\\%s",fname);
-	f=fopen(fname2,"rb");
+	sprintf(fname2,"worlds/%s",fname);
+	f=AssetOpen(fname2);
 	if(!f)
 		return 100;
 

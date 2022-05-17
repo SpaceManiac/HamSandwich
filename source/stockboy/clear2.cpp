@@ -169,7 +169,7 @@ void InitClear2Menu(void)
 	if(!backScr)
 		FatalError("Out of memory!");
 
-	GetDisplayMGL()->LoadBMP("graphics\\clearance.bmp");
+	GetDisplayMGL()->LoadBMP("graphics/clearance.bmp");
 
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
@@ -178,9 +178,9 @@ void InitClear2Menu(void)
 	for(i=0;i<6;i++)
 		txtLevel[i]=0;
 
-	LoadWorld(&world,"levels\\clearance.sbl",GetDisplayMGL());
+	LoadWorld(&world,"levels/clearance.sbl",GetDisplayMGL());
 
-	blowSpr=new sprite_set_t("graphics\\blowout.jsp");
+	blowSpr=new sprite_set_t("graphics/blowout.jsp");
 	blowSpin=0;
 
 	GetDisplayMGL()->GetMouse(&oldmsx,&oldmsy);
@@ -552,7 +552,7 @@ byte Clear2Menu(MGLDraw *mgl)
 	ExitClear2Menu();
 
 	if(play)
-		return LunaticWorld(0,"levels\\clearance.sbl");
+		return LunaticWorld(0,"levels/clearance.sbl");
 	else
 		return WORLD_ABORT;
 }
