@@ -4,6 +4,7 @@
 #include "level.h"
 #include "guy.h"
 #include "options.h"
+#include "game.h"
 
 typedef struct player_t
 {

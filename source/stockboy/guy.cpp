@@ -42,14 +42,14 @@ void Guy::SeqFinished(void)
 		frmAdvance=128;
 		return;
 	}
-	if((seq==ANIM_DIE))
+	if(seq==ANIM_DIE)
 	{
 		if(type==player.monsType)
 		{
 			// restart current level
 			SendMessageToGame(MSG_RESET,0);
 		}
-		
+
 		t=type;
 		type=MONS_NONE;	// all gone
 	}
@@ -70,7 +70,7 @@ void Guy::NextFrame(void)
 	if(MonsterAnim(type,seq)[frm]==255)
 		// this sequence is done
 		SeqFinished();
-	
+
 	if(type==MONS_NONE)
 		return;	// seqfinished may have killed the guy
 }
@@ -98,16 +98,16 @@ void Guy::Update(Map *map,world_t *world)
 	{
 		MonsterControl(map,world);
 	}
-	
+
 	if(ouch>0)
 		ouch--;
 
 	oldx=x;
 	oldy=y;
-	
+
 	x+=dx;
 	y+=dy;
-	
+
 	if((MonsterFlags(type)&MF_FLYING) && seq!=ANIM_DIE)
 	{
 		if(z<10*FIXAMT)	// go up if you need to
@@ -135,7 +135,7 @@ void Guy::Update(Map *map,world_t *world)
 				dz-=FIXAMT*2;
 		}
 	}
-	
+
 	frmTimer+=frmAdvance;
 	while(frmTimer>255)
 	{
@@ -284,7 +284,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 	if(!ice)
 		ouch=4;
 	hp-=damage;
-	
+
 	if(ice)
 	{
 		ice/=2;
@@ -345,7 +345,7 @@ void InitGuys(int max)
 	int i;
 
 	maxGuys=512;
-	
+
 	guys=(Guy **)malloc(sizeof(Guy *)*maxGuys);
 	for(i=0;i<maxGuys;i++)
 		guys[i]=new Guy();
@@ -397,7 +397,7 @@ void UpdateGuys(Map *map,world_t *world)
 					continue;	// no moving when totally frozen
 
 				if(guys[i]->iceClock)
-				{	
+				{
 					guys[i]->iceClock--;
 					continue;
 				}
@@ -405,7 +405,7 @@ void UpdateGuys(Map *map,world_t *world)
 				{
 					guys[i]->iceClock=guys[i]->ice/16;
 				}
-				
+
 			}
 
 			guys[i]->Update(map,world);
@@ -454,7 +454,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 
 	for(i=0;i<maxGuys;i++)
 		if(guys[i]->type==MONS_NONE)
-		{		
+		{
 			guys[i]->type=type;
 			guys[i]->x=x;
 			guys[i]->y=y;
@@ -530,7 +530,7 @@ void LoadGuys(FILE *f)
 	InitGuys(MAX_MAPMONS);
 
 	fread(&num,sizeof(int),1,f);
-	
+
 	for(i=0;i<num;i++)
 	{
 		fread(guys[i],sizeof(Guy),1,f);
@@ -658,7 +658,7 @@ byte CheckHit(byte size,int xx,int yy,Guy *him)
 byte FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world)
 {
 	int i;
-	
+
 
 	for(i=0;i<maxGuys;i++)
 		if(guys[i]->type && guys[i]->hp && (guys[i]->type!=player.monsType))
@@ -676,7 +676,7 @@ byte FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t
 int FreezeVictim(int x,int y,byte size,int dx,int dy,int target,byte damage,Map *map,world_t *world)
 {
 	int i;
-	
+
 	for(i=0;i<maxGuys;i++)
 		if(guys[i]->type && guys[i]->hp && (guys[i]->type!=player.monsType) && guys[i]->ID!=target-1)
 		{
@@ -692,7 +692,7 @@ int FreezeVictim(int x,int y,byte size,int dx,int dy,int target,byte damage,Map 
 byte FindNewVictim(int x,int y,int *target,byte size,int dx,int dy,byte damage,Map *map,world_t *world)
 {
 	int i;
-	
+
 	for(i=0;i<maxGuys;i++)
 		if(guys[i]->type && guys[i]->hp && (guys[i]->type!=player.monsType) && i!=*target)
 		{
@@ -771,9 +771,9 @@ word LockOnEvil(int x,int y)
 	maxRange=(320+240)-100;
 	bestguy=65535;
 	bestRange=maxRange;
-	
+
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type && guys[i]->hp && guys[i]->active && (guys[i]->type!=player.monsType) && 
+		if(guys[i]->type && guys[i]->hp && guys[i]->active && (guys[i]->type!=player.monsType) &&
 			(!(MonsterFlags(guys[i]->type)&(MF_NOHIT|MF_INVINCIBLE))))
 		{
 			range=abs(x-(guys[i]->x>>FIXSHIFT))+abs(y-(guys[i]->y>>FIXSHIFT));
@@ -791,11 +791,11 @@ word LockOnEvil2(int x,int y)
 {
 	int i,j;
 	int range;
-	
+
 	for(j=0;j<128;j++)
 	{
 		i=Random(maxGuys);
-		if(guys[i]->type && guys[i]->hp && (guys[i]->type!=player.monsType) && guys[i]->active && 
+		if(guys[i]->type && guys[i]->hp && (guys[i]->type!=player.monsType) && guys[i]->active &&
 			(!(MonsterFlags(guys[i]->type)&MF_NOHIT)))
 		{
 			range=abs(x-(guys[i]->x>>FIXSHIFT))+abs(y-(guys[i]->y>>FIXSHIFT));
@@ -816,9 +816,9 @@ word LockOnEvil3(int x,int y,int maxRange)
 
 	bestguy=65535;
 	bestRange=maxRange;
-	
+
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type && guys[i]->hp && guys[i]->active && (guys[i]->type!=player.monsType) && 
+		if(guys[i]->type && guys[i]->hp && guys[i]->active && (guys[i]->type!=player.monsType) &&
 			(!(MonsterFlags(guys[i]->type)&(MF_NOHIT|MF_INVINCIBLE))))
 		{
 			range=abs(x-(guys[i]->x>>FIXSHIFT))+abs(y-(guys[i]->y>>FIXSHIFT));
@@ -972,7 +972,7 @@ Guy *FindBall(int x,int y)
 	int tx,ty;
 
 	for(i=0;i<maxGuys;i++)
-	{	
+	{
 		if(guys[i] && guys[i]->type==MONS_BALL)
 		{
 			tx=guys[i]->tx/(TILE_WIDTH*FIXAMT);
@@ -1003,8 +1003,8 @@ Guy *FindMonster(int x,int y)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i] && 
-		   guys[i]->type>=MONS_BLOBBY && guys[i]->type<=MONS_PIGGY && 
+		if(guys[i] &&
+		   guys[i]->type>=MONS_BLOBBY && guys[i]->type<=MONS_PIGGY &&
 		   guys[i]->tgtx==x && guys[i]->tgty==y)
 		{
 			return guys[i];
@@ -1235,8 +1235,8 @@ byte MonsterMoveTo(Guy *me,int x,int y)
 				// vaporize stuff (same effect as acid item)
 				// doesn't work on grey stuff
 				if((m->item==ITM_BALL || m->item==ITM_BARREL || m->item==ITM_CRATE ||
-					m->item==ITM_BOMB || m->item==ITM_ICEBERG || m->item==ITM_PENCIL || 
-					m->item==ITM_LASER || m->item==ITM_ACID || m->item==ITM_KEY || m->item==ITM_DETONATE) 
+					m->item==ITM_BOMB || m->item==ITM_ICEBERG || m->item==ITM_PENCIL ||
+					m->item==ITM_LASER || m->item==ITM_ACID || m->item==ITM_KEY || m->item==ITM_DETONATE)
 					&& (m->itemInfo%8)!=0)
 				{
 					BlowSmoke(x,y,m->itemInfo%8);
@@ -1256,7 +1256,7 @@ byte MonsterMoveTo(Guy *me,int x,int y)
 						MakeNormalSound(SND_ACID);
 					}
 					m->item=ITM_NONE;
-					
+
 					return 1;
 				}
 				return 0;
@@ -1281,7 +1281,7 @@ byte MonsterMoveTo(Guy *me,int x,int y)
 byte MonsterExplode(int x,int y,Map *map,byte greyOK)
 {
 	Guy *g;
-				
+
 	g=FindMonster(x,y);
 	if(g && (g->color!=0 || greyOK))
 	{

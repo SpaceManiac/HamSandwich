@@ -38,7 +38,7 @@ void ScrollPlasma(void)
 
 void SmoothPlasma(void)
 {
-	int x,y;
+	int x = 0, y = 0;
 	int total;
 	int pos;
 

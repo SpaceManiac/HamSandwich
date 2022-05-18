@@ -1,6 +1,7 @@
 #include "particle.h"
 #include "random.h"
 #include "display.h"
+#include "game.h"
 
 typedef struct particle_t
 {

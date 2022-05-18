@@ -969,7 +969,7 @@ byte SpeedSplash(MGLDraw *mgl,const char *fname)
 		c=GetControls()|GetArrows();
 		if((c&(CONTROL_B1|CONTROL_B2)) && (!(oldc&(CONTROL_B1|CONTROL_B2))))
 			mode=2;
-		if(mgl->MouseDown()>0 || mgl->RMouseDown()>0)
+		if(mgl->MouseDown() || mgl->RMouseDown())
 			mode=2;
 
 		oldc=c;

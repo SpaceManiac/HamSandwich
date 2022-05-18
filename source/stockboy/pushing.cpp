@@ -55,7 +55,7 @@ byte CanBePushedTo(int fromX,int fromY,int toX,int toY,Map *map)
 	if(b!=NOT_AN_ARROW)
 	{
 		b/=2;	// it returns 0-7 facing format
-			
+
 		if(toX-fromX!=dx[b] || toY-fromY!=dy[b])
 		{
 			ShowArrow(fromX,fromY,b*2);
@@ -177,7 +177,7 @@ void BlowUpNeighbors(Map *map,int x,int y,byte color)
 		else if(m->item>=ITM_MONS1 && m->item<=ITM_MONS4)
 		{
 			// find which monster is on this space
-			if(c=MonsterExplode(tx,ty,map,0))
+			if(c=MonsterExplode(tx,ty,map,0); c)
 			{
 				g=AddGuy((tx*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,
 					 (ty*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,
@@ -279,7 +279,7 @@ byte PushSwitch(Map *map,mapTile_t *me)
 
 byte TurnCrank(Map *map,mapTile_t *me)
 {
-	if((me->item==ITM_CRANK))
+	if(me->item==ITM_CRANK)
 	{
 		if((me->itemInfo/8)==0)
 		{
@@ -336,7 +336,7 @@ byte PushObject(int x,int y,Guy *me,mapTile_t *m,Map *curMap)
 				// ITEM FALL IN PIT!!!
 				MakeSound(SND_FALLINPIT,(destx*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,
 						  (desty*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,100);
-				
+
 			}
 			if(FloorIsTeleporter(m2->floor))
 			{
@@ -366,7 +366,7 @@ byte PushObject(int x,int y,Guy *me,mapTile_t *m,Map *curMap)
 				}
 			}
 		}
-		
+
 		return 1;
 	}
 	else
@@ -450,7 +450,7 @@ byte DetonateAllBombs(byte color,Map *map)
 	areBombs=0;
 	for(i=0;i<map->width*map->height;i++)
 	{
-		if((map->map[i].item==ITM_BOMB || map->map[i].item==ITM_ACTIVEBOMB) && 
+		if((map->map[i].item==ITM_BOMB || map->map[i].item==ITM_ACTIVEBOMB) &&
 			((map->map[i].itemInfo%8)==color || color==0))
 		{
 			g=FindBomb(x,y);

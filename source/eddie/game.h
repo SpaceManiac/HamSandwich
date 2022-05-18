@@ -28,4 +28,10 @@ void GameOver(void);
 void CheatWin(void);
 byte NaughtyTime(void);
 
+const int FIXSHIFT = 8;
+const int FIXAMT = 256;
+
+class MGLDraw;
+extern MGLDraw* mainmgl;
+
 #endif
