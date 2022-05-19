@@ -3,9 +3,9 @@
 ![Screenshots of game title screens](docs/titlescreens.png)
 
 **HamSandwich** is a collection of working source code for several of
-[Hamumu Software](http://hamumu.com/)'s titles. Running HamSandwich requires
-assets from official versions of the games, available for free from
-<https://hamumu.itch.io/>.
+[Hamumu Software](http://hamumu.com/)'s titles from 1998 through 2007.
+Running HamSandwich requires assets from official versions of the games,
+available for free from <https://hamumu.itch.io/>.
 
 Saves and profiles from the retail versions of the games are fully compatible
 with HamSandwich saves, except that controls will need to be reconfigured.
