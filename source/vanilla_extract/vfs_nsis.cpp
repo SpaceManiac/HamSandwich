@@ -161,7 +161,7 @@ NsisVfs::NsisVfs(SDL_RWops* fptr)
 				if (!chdir)
 					break;
 
-				if (const char* last_component = navigate_nsis(path, working_directory); strcmp(last_component, "") && strcmp(last_component, "."))
+				if (const char* last_component = navigate_nsis(path, working_directory); last_component && strcmp(last_component, "") && strcmp(last_component, "."))
 				{
 					working_directory = &working_directory->directories[last_component];
 				}
