@@ -61,8 +61,13 @@ deps_mingw64() {
 		mingw-w64-x86_64-{cmake,ninja,gcc}
 }
 
+sudo_apt-get_install() {
+	sudo DEBIAN_FRONTEND=noninteractive apt-get update
+	sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes "$@"
+}
+
 deps_ubuntu() {
-	packages 'sudo DEBIAN_FRONTEND=noninteractive apt-get update; sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes' \
+	packages 'sudo_apt-get_install' \
 		make g++ \
 		zlib1g-dev libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev \
 		python3-pip
