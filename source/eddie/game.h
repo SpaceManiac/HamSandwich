@@ -17,9 +17,9 @@ void CentipedeExit(void);
 
 void GameLevelSetup(char *name,byte level);
 
-byte CentipedeGame(void);
+TASK(byte) CentipedeGame(void);
 byte CentipedeRun(int *lastTime);
-byte CentipedeDraw(void);
+TASK(byte) CentipedeDraw(void);
 
 void StopPausing(void);
 void ExitGame(void);

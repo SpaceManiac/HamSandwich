@@ -172,12 +172,12 @@ void CenterPrint2(int y,char *s,byte f,char brt)
 	FontPrintStringBright(240-len,y,s,&font[f],brt);
 }
 
-byte FlipScreen(void)
+TASK(byte) FlipScreen(void)
 {
-	dispmgl->Flip();
+	AWAIT dispmgl->Flip();
 	if(!dispmgl->Process())
-		return 0;
-	return 1;
+		CO_RETURN 0;
+	CO_RETURN 1;
 }
 
 void AdvanceLogo(void)
@@ -455,7 +455,7 @@ void RenderGlowParticle(int x,int y,byte color,byte size)
 	}
 }
 
-void SplashScreen(const char *fname,int delay,byte sound,byte specialdeal)
+TASK(void) SplashScreen(const char *fname,int delay,byte sound,byte specialdeal)
 {
 	int i,j,clock;
 	dword tick,tock;
@@ -474,7 +474,7 @@ void SplashScreen(const char *fname,int delay,byte sound,byte specialdeal)
 	dispmgl->LastKeyPressed();
 
 	if(!dispmgl->LoadBMP(fname,desiredpal))
-		return;
+		CO_RETURN;
 
 	mode=0;
 	clock=0;
@@ -482,9 +482,9 @@ void SplashScreen(const char *fname,int delay,byte sound,byte specialdeal)
 	while(!done)
 	{
 		tick=timeGetTime();
-		dispmgl->Flip();
+		AWAIT dispmgl->Flip();
 		if(!dispmgl->Process())
-			return;
+			CO_RETURN;
 
 		// let it fade in & out at max speed, but the sitting still needs to be timed
 		if(mode==1)
@@ -560,7 +560,7 @@ void SplashScreen(const char *fname,int delay,byte sound,byte specialdeal)
 		}
 	}
 	dispmgl->ClearScreen();
-	dispmgl->Flip();
+	AWAIT dispmgl->Flip();
 }
 
 //---------------------------------------------------------------------------------------

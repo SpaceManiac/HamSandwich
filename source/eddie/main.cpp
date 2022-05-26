@@ -50,15 +50,15 @@ TASK(int) main(int argc, char* argv[])
 
 	mainmgl=new MGLDraw("Eddie Galaxy",640,480,windowedGame);
 	if(!mainmgl)
-		return 0;
+		CO_RETURN 0;
 
 	CentipedeInit(mainmgl);
-	buy=CentipedeGame();
+	buy=AWAIT CentipedeGame();
 	CentipedeExit();
 	delete mainmgl;
 #ifdef DEMO
 	if(buy)
 		ShellExecute(NULL,"open","http://hamumu.com/store.php?game=EDDIE&src=demoexit",NULL,NULL,SW_SHOWNORMAL);
 #endif
-	return 0;
+	CO_RETURN 0;
 }

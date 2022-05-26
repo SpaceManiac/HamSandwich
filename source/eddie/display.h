@@ -69,7 +69,7 @@ class DisplayList
 void InitDisplay(MGLDraw *mgl);
 void ExitDisplay(void);
 
-byte FlipScreen(void);
+TASK(byte) FlipScreen(void);
 void ClearScreen(void);
 
 void SpriteRect(byte set,int s,int x,int y,int *rx,int *ry,int *rx2,int *ry2);
@@ -82,7 +82,7 @@ void ColorCenterPrint(int y,const char *s,byte f,byte col);
 void PrintCursor(int x,int y,const char *s,byte pos,byte blink,char bright,byte f);
 int StringLength(const char *s,byte f);
 
-void SplashScreen(const char *fname,int delay,byte sound,byte specialdeal);
+TASK(void) SplashScreen(const char *fname,int delay,byte sound,byte specialdeal);
 void GetPaletteFromBMP(const char *fname);
 
 void Box(int x,int y,int x2,int y2,byte c);

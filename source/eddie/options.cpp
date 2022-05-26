@@ -245,7 +245,7 @@ byte OptionsScreenRun(int *lastTime)
 	return 1;
 }
 
-void OptionsScreenRender(void)
+TASK(void) OptionsScreenRender(void)
 {
 	int i;
 
@@ -276,10 +276,10 @@ void OptionsScreenRender(void)
 	ShowSprite(SPR_OPTION,16+(cursorOn==5)+2*(options.music==0),320,290);
 
 	ShowSprite(SPR_OPTION,1,optmsx,optmsy);
-	FlipScreen();
+	AWAIT FlipScreen();
 }
 
-void OptionsScreen(void)
+TASK(void) OptionsScreen(void)
 {
 	byte quit;
 	int lastTime;
@@ -307,7 +307,7 @@ void OptionsScreen(void)
 		if(OptionsScreenRun(&lastTime)==0)
 			quit=1;
 
-		OptionsScreenRender();
+		AWAIT OptionsScreenRender();
 
 		endclock=GetTime();
 	}

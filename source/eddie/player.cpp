@@ -185,35 +185,37 @@ void SetInvincible(byte b)
 	player.invincible=b;
 }
 
-byte PlayerWinLevel(void)
+TASK(byte) PlayerWinLevel(void)
 {
 	player.level++;
 
 #ifdef JUNIOR
 	if(player.level==26)
-		return 1;
+		CO_RETURN 1;
 #elif TRIAL
 	if(player.level==16)
-		return 1;
+		CO_RETURN 1;
 #elif DEMO
 	if(player.level==6*5+6)
-		return 1;
+		CO_RETURN 1;
 #else
 	if(player.level==51)
-		return 1;
+		CO_RETURN 1;
 #endif
 
 	if((player.level-1)%5==0)
 		player.world++;
-	SetupLevel(player.level);
-	return 0;
+	AWAIT SetupLevel(player.level);
+	CO_RETURN 0;
 }
 
+/*
 void PlayerSkipWorld(void)
 {
 	player.level=(player.world)*5;
 	PlayerWinLevel();
 }
+*/
 
 byte GetLevel(void)
 {

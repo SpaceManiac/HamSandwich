@@ -72,7 +72,7 @@ byte UpdateIntro(int *lastTime)
 		return 1;
 }
 
-byte RenderIntro(void)
+TASK(byte) RenderIntro(void)
 {
 	int i;
 
@@ -101,7 +101,7 @@ byte RenderIntro(void)
 
 	RenderLogo();
 	RenderStatusDisplay();
-	return FlipScreen();
+	CO_RETURN AWAIT FlipScreen();
 }
 
 void InitIntro(void)
@@ -264,13 +264,13 @@ void InitIntro(void)
 	}
 }
 
-void DoIntro(byte world)
+TASK(void) DoIntro(byte world)
 {
 	int lastTime;
 	dword clock,endclock;
 
 	if(world==1)
-		return;
+		CO_RETURN;
 
 	wrld=world-2;
 	clock=0;
@@ -285,10 +285,10 @@ void DoIntro(byte world)
 		clock=GetTime();
 
 		if(!UpdateIntro(&lastTime))
-			return;
+			CO_RETURN;
 
-		if(!RenderIntro())
-			return;
+		if(!(AWAIT RenderIntro()))
+			CO_RETURN;
 
 		endclock=GetTime();
 	}

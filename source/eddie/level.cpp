@@ -324,7 +324,7 @@ void InitAlienQueen(void)
 		PlantShroom(MAP_WIDTH/2-6+GetRand(13),MAP_HEIGHT/3+4+GetRand(5));
 }
 
-void SetupLevel(byte lvl)
+TASK(void) SetupLevel(byte lvl)
 {
 	int i;
 	levelDef_t *lDef;
@@ -406,7 +406,7 @@ void SetupLevel(byte lvl)
 	value[1]=lDef->value[1];
 
 	if(lIndex==0)
-		DoIntro(curWorld);
+		AWAIT DoIntro(curWorld);
 
 	levelClock=lDef->lvlclock;
 	if(lDef->lvlclock==0)

@@ -64,7 +64,7 @@ byte CreditsRun(int *lastTime)
 	return 1;
 }
 
-byte CreditsRender(void)
+TASK(byte) CreditsRender(void)
 {
 	int ypos,i;
 	char *s;
@@ -107,14 +107,14 @@ byte CreditsRender(void)
 			break;
 	}
 	if(credTxt[i][0]=='$' && ypos-credY<0)
-		return 0;
+		CO_RETURN 0;
 
 	RenderHiScoreDisplay();
-	FlipScreen();
-	return 1;
+	AWAIT FlipScreen();
+	CO_RETURN 1;
 }
 
-void Credits(void)
+TASK(void) Credits(void)
 {
 	byte quit;
 	int lastTime;
@@ -139,7 +139,7 @@ void Credits(void)
 		if(CreditsRun(&lastTime)==0)
 			quit=1;
 
-		if(!CreditsRender())
+		if(!(AWAIT CreditsRender()))
 			quit=1;
 
 		endclock=GetTime();

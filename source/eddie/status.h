@@ -2,6 +2,7 @@
 #define STATUS_H
 
 #include "jamultypes.h"
+#include "coro.h"
 
 void InitStatus(void);
 void ExitStatus(void);
@@ -14,7 +15,7 @@ void ExitPauseMode(void);
 
 void RenderStatusDisplay(void);
 void UpdateStatusDisplay(void);
-void EnterHighScore(void);
+TASK(void) EnterHighScore(void);
 void RenderHiScoreDisplay(void);
 
 #endif

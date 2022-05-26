@@ -146,7 +146,7 @@ byte TitleRun(int *lastTime)
 	return 1;
 }
 
-void TitleRender(void)
+TASK(void) TitleRender(void)
 {
 
 	DrawBackgd();
@@ -179,7 +179,7 @@ void TitleRender(void)
 
 	RenderHiScoreDisplay();
 
-	FlipScreen();
+	AWAIT FlipScreen();
 }
 
 void InitTitleMenu(void)
@@ -216,7 +216,7 @@ void InitTitleMenu(void)
 	keys=0xFF;
 }
 
-byte TitleMenu(void)
+TASK(byte) TitleMenu(void)
 {
 	byte quit;
 	int lastTime;
@@ -242,17 +242,17 @@ byte TitleMenu(void)
 		if(TitleRun(&lastTime)==0)
 			quit=1;
 
-		TitleRender();
+		AWAIT TitleRender();
 
 		endclock=GetTime();
 		if(runCount>=30*27)	// approximately the length of the title song
 		{
 			runCount=0;
-			Credits();
+			AWAIT Credits();
 			InitTitleMenu();
 		}
 	}
-	return menuCursor;
+	CO_RETURN menuCursor;
 }
 
 byte ContinueRun(int *lastTime)
@@ -319,7 +319,7 @@ byte ContinueRun(int *lastTime)
 	return 1;
 }
 
-void ContinueRender(void)
+TASK(void) ContinueRender(void)
 {
 	char s[4];
 
@@ -334,10 +334,10 @@ void ContinueRender(void)
 
 	RenderHiScoreDisplay();
 
-	FlipScreen();
+	AWAIT FlipScreen();
 }
 
-byte Continue(void)
+TASK(byte) Continue(void)
 {
 	byte quit;
 	int lastTime;
@@ -363,17 +363,17 @@ byte Continue(void)
 		if(ContinueRun(&lastTime)==0)
 			quit=1;
 
-		ContinueRender();
+		AWAIT ContinueRender();
 
 		endclock=GetTime();
 		if(runCount>=30*10-1)	// 10 second countdown
 		{
 			runCount=0;
 			MakeSound(SND_CONTNO,1200);
-			return 0;	// didn't continue
+			CO_RETURN 0;	// didn't continue
 		}
 	}
-	return menuCursor;
+	CO_RETURN menuCursor;
 }
 
 byte VictoryUpdate(int *lastTime)
@@ -461,7 +461,7 @@ byte VictoryUpdate(int *lastTime)
 	return 1;
 }
 
-void VictoryRender(void)
+TASK(void) VictoryRender(void)
 {
 	int i;
 
@@ -523,10 +523,10 @@ void VictoryRender(void)
 	}
 	RenderLogo();
 	RenderHiScoreDisplay();
-	FlipScreen();
+	AWAIT FlipScreen();
 }
 
-void Victory(void)
+TASK(void) Victory(void)
 {
 	int i;
 	byte quit;
@@ -568,7 +568,7 @@ void Victory(void)
 		if(VictoryUpdate(&lastTime)==0)
 			quit=1;
 
-		VictoryRender();
+		AWAIT VictoryRender();
 
 		endclock=GetTime();
 	}
@@ -581,5 +581,5 @@ void Victory(void)
 #else
 	PlaySong(107);
 #endif
-	Credits();
+	AWAIT Credits();
 }

@@ -2,6 +2,7 @@
 #define LEVEL_H
 
 #include "jamultypes.h"
+#include "coro.h"
 
 // these are the worlds
 #define WORLD_EARTH	1
@@ -58,7 +59,7 @@ typedef struct worldDef_t
 	levelDef_t level[5];
 } worldDef_t;
 
-void SetupLevel(byte lvl);
+TASK(void) SetupLevel(byte lvl);
 void UpdateLevel(void);
 void TellLevelAboutIt(byte event,byte value);
 byte IsBonusStage(void);

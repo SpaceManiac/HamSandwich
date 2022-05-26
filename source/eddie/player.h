@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include "jamultypes.h"
+#include "coro.h"
 
 #define WPN_NONE    0
 #define WPN_MISSILE 1
@@ -22,7 +23,7 @@ byte GetPower(void);
 void PlayerGetPoints(int p);
 byte GetInvincible(void);
 void SetInvincible(byte b);
-byte PlayerWinLevel(void);
+TASK(byte) PlayerWinLevel(void);
 byte GetLevel(void);
 byte GetWorld(void);
 void PlayerDeathReset(void);

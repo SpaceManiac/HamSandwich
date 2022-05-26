@@ -2,6 +2,7 @@
 #define OPTIONS_H
 
 #include "jamultypes.h"
+#include "coro.h"
 
 #define DIFF_EASY	0
 #define DIFF_NORMAL 1
@@ -36,6 +37,6 @@ byte Cheating(void);
 void ToggleMusic(void);
 void ToggleSound(void);
 
-void OptionsScreen(void);
+TASK(void) OptionsScreen(void);
 
 #endif

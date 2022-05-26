@@ -79,7 +79,7 @@ void GameLevelSetup(char *name,byte level)
 	textBright=32;
 }
 
-byte CentipedePlay(void)
+TASK(byte) CentipedePlay(void)
 {
 	byte quit;
 	int lastTime;
@@ -100,7 +100,7 @@ byte CentipedePlay(void)
 
 	InitStatus();
 
-	SetupLevel(GetLevel());
+	AWAIT SetupLevel(GetLevel());
 	mainmgl->LastKeyPressed();
 	naughtyCounter=0;
 
@@ -120,10 +120,10 @@ byte CentipedePlay(void)
 		}
 		*/
 		if(!CentipedeRun(&lastTime))
-			return 0;
+			CO_RETURN 0;
 		//if(numRunsToMakeUp)
-		if(!CentipedeDraw())
-			return 0;
+		if(!(AWAIT CentipedeDraw()))
+			CO_RETURN 0;
 
 		endclock=GetTime();
 		if(gameMode==GAMEMODE_QUIT)
@@ -132,7 +132,7 @@ byte CentipedePlay(void)
 		if(gameMode==GAMEMODE_WIN)
 		{
 			// you just won a level, set up the next one
-			if(PlayerWinLevel())
+			if(AWAIT PlayerWinLevel())
 			{
 				// just won the whole damn game
 				quit=2;
@@ -143,13 +143,13 @@ byte CentipedePlay(void)
 	}
 	if(quit==2)
 	{
-		Victory();
+		AWAIT Victory();
 	}
 
-	return 1;
+	CO_RETURN 1;
 }
 
-byte CentipedeGame(void)
+TASK(byte) CentipedeGame(void)
 {
 	byte quit;
 	byte k;
@@ -167,24 +167,24 @@ byte CentipedeGame(void)
 	while(!quit)
 	{
 		if(!continuing)
-			k=TitleMenu();
+			k=AWAIT TitleMenu();
 		else
 			k=0;
 		switch(k)
 		{
 			case 0:	//play
-				quit=1-CentipedePlay();
+				quit=1-(AWAIT CentipedePlay());
 				if(quitReason==QR_LOSE)
 				{
-					EnterHighScore();
-					continuing=Continue();
+					AWAIT EnterHighScore();
+					continuing=AWAIT Continue();
 				}
 				else if(quitReason==QR_WIN)
-					EnterHighScore();
+					AWAIT EnterHighScore();
 
 				break;
 			case 1: //options
-				OptionsScreen();
+				AWAIT OptionsScreen();
 				break;
 			case 2:
 				quit=1;
@@ -199,7 +199,7 @@ byte CentipedeGame(void)
 
 	//SplashScreen("graphics/trail1.bmp",5*30+64,109,0);
 	//SplashScreen("graphics/trail2.bmp",3*30,110,1);
-	return ret;
+	CO_RETURN ret;
 }
 
 void StopPausing(void)
@@ -348,7 +348,7 @@ byte NaughtyTime(void)
 	return (naughtyCounter>30*120);	// 2 minutes
 }
 
-byte CentipedeDraw(void)
+TASK(byte) CentipedeDraw(void)
 {
 	/*
 	if(!GM_getDoDraw())
@@ -376,8 +376,8 @@ byte CentipedeDraw(void)
 		CenterPrint(textY+62,lvlText[1],2,textBright);
 	}
 
-	if(!FlipScreen())
-		return 0;
+	if(!(AWAIT FlipScreen()))
+		CO_RETURN 0;
 
-	return 1;
+	CO_RETURN 1;
 }

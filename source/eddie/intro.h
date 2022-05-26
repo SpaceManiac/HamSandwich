@@ -2,7 +2,8 @@
 #define INTRO_H
 
 #include "jamultypes.h"
+#include "coro.h"
 
-void DoIntro(byte world);
+TASK(void) DoIntro(byte world);
 
 #endif

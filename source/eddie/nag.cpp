@@ -74,7 +74,7 @@ byte NagUpdate(int *lastTime)
 	return 1;
 }
 
-void NagRender(MGLDraw *mgl)
+TASK(void) NagRender(MGLDraw *mgl)
 {
 	int i;
 
@@ -94,10 +94,10 @@ void NagRender(MGLDraw *mgl)
 
 	ShowSprite(SPR_ROCKET,0,titmsx,titmsy);
 
-	FlipScreen();
+	AWAIT FlipScreen();
 }
 
-byte Nag(MGLDraw *mgl)
+TASK(byte) Nag(MGLDraw *mgl)
 {
 	byte quit;
 	int lastTime,i;
@@ -127,10 +127,10 @@ byte Nag(MGLDraw *mgl)
 		if(NagUpdate(&lastTime)==0)
 			quit=1;
 
-		NagRender(mgl);
+		AWAIT NagRender(mgl);
 
 		endclock=GetTime();
 	}
 	free(nagScr);
-	return menuCursor;
+	CO_RETURN menuCursor;
 }

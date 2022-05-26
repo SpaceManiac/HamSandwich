@@ -2,16 +2,17 @@
 #define TITLE_H
 
 #include "jamultypes.h"
+#include "coro.h"
 
 // returns:
 // 0=Play Game
 // 1=Options
 // 2=Exit
-byte TitleMenu(void);
+TASK(byte) TitleMenu(void);
 
 // returns whether the player chose to continue or not
-byte Continue(void);
+TASK(byte) Continue(void);
 
-void Victory(void);
+TASK(void) Victory(void);
 
 #endif

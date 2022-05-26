@@ -2,7 +2,8 @@
 #define CREDITS_H
 
 #include "jamultypes.h"
+#include "coro.h"
 
-void Credits(void);
+TASK(void) Credits(void);
 
 #endif

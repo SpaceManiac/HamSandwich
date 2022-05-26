@@ -3,6 +3,6 @@
 
 #include "mgldraw.h"
 
-byte Nag(MGLDraw *mgl);
+TASK(byte) Nag(MGLDraw *mgl);
 
 #endif

@@ -417,7 +417,7 @@ static char b=0;
 static char bdir=1;
 
 // this records a high score
-byte HighScoreEntryRender(char *txt)
+TASK(byte) HighScoreEntryRender(char *txt)
 {
 	int len;
 
@@ -440,10 +440,10 @@ byte HighScoreEntryRender(char *txt)
 	}
 	txt[len]='\0';
 
-	return FlipScreen();
+	CO_RETURN AWAIT FlipScreen();
 }
 
-byte HighScoreEntryUpdate(byte whichScore,int *lastTime)
+TASK(byte) HighScoreEntryUpdate(byte whichScore,int *lastTime)
 {
 	byte done=0;
 	char c;
@@ -459,7 +459,7 @@ byte HighScoreEntryUpdate(byte whichScore,int *lastTime)
 		(*lastTime)-=TIME_PER_FRAME;
 	}
 
-	if(c=mainmgl->LastKeyPressed())
+	if(c=mainmgl->LastKeyPressed(); c)
 	{
 		if(c==8) // backspace
 		{
@@ -490,13 +490,13 @@ byte HighScoreEntryUpdate(byte whichScore,int *lastTime)
 			strcpy(GetHiScoreName(whichScore),buffer);
 		}
 	}
-	if((!HighScoreEntryRender(buffer)) && (done==0))
-		return 1;
+	if((!(AWAIT HighScoreEntryRender(buffer))) && (done==0))
+		CO_RETURN 1;
 
-	return done;
+	CO_RETURN done;
 }
 
-void EnterHighScore(void)
+TASK(void) EnterHighScore(void)
 {
 	int i;
 	int rank;
@@ -530,12 +530,12 @@ void EnterHighScore(void)
 			lastTime+=endclock-clock;
 			clock=GetTime();
 
-			if(HighScoreEntryUpdate(rank,&lastTime))
+			if(AWAIT HighScoreEntryUpdate(rank,&lastTime))
 			{
 				if(Cheating())	// tee hee
 					strcpy(GetHiScoreName(rank),"CHEATER!");
 				ExitStatus();	// save high score
-				return;	// entered
+				CO_RETURN;	// entered
 			}
 			endclock=GetTime();
 		}
