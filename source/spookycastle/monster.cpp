@@ -3159,7 +3159,7 @@ void AI_TheThing(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			me->y+=((1-MGL_random(3))<<FIXSHIFT);
 			if(me->frm==14 && me->frmTimer<32)
 			{
-				ShowVictoryAnim(0);	// you killed the final boss
+				coro::launch(std::bind(ShowVictoryAnim, 0));	// you killed the final boss
 				SendMessageToGame(MSG_WINGAME,0);
 				EndClock();
 				StartClock();
@@ -5947,7 +5947,7 @@ void AI_DrLunatic(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	{
 		if(me->seq==ANIM_DIE && me->frm==15 && me->frmTimer<32)
 		{
-			ShowVictoryAnim(10);	// show him transforming
+			coro::launch(std::bind(ShowVictoryAnim, 10));	// show him transforming
 			me->type=MONS_SDZL;	// become the Super Duper Zombie Lunatic
 			me->hp=1500;
 			me->mind=0;
@@ -6103,7 +6103,7 @@ void AI_SDZL(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			if(GetPlayerWorld()==4)	// this is the real asylum, not some knock-off
 			{
-				ShowVictoryAnim(4);	// you killed him.
+				coro::launch(std::bind(ShowVictoryAnim, 4));	// you killed him.
 				SendMessageToGame(MSG_WINGAME,0);
 			}
 		}

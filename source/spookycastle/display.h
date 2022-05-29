@@ -77,12 +77,11 @@ void WallDraw(int x,int y,byte wall,byte floor,char light,byte flags);
 void RoofDraw(int x,int y,byte roof,char light,byte flags);
 void ParticleDraw(int x,int y,int z,byte type,byte size,byte flags);
 
-void MakeItFlip(void);
 void DrawBox(int x,int y,int x2,int y2,byte c);
 void DrawFillBox(int x,int y,int x2,int y2,byte c);
 void DrawDebugBox(int x,int y,int x2,int y2);
 void ShakeScreen(byte howlong);
-void ShowVictoryAnim(byte world);
+TASK(void) ShowVictoryAnim(byte world);
 MGLDraw *GetDisplayMGL(void);
 byte GetGamma(void);
 void SetGamma(byte g);

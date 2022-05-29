@@ -428,7 +428,7 @@ byte PlayerGetItem(byte itm)
 			if(player.worldNum<4)
 			{
 				player.lunacyKey[player.worldNum]=1;
-				ShowVictoryAnim(player.worldNum);
+				coro::launch(std::bind(ShowVictoryAnim, player.worldNum));
 			}
 			SendMessageToGame(MSG_WINLEVEL,1);	// win upon getting the key
 			return 0;

@@ -6,11 +6,11 @@
 
 struct title_t;
 
-byte MainMenu(MGLDraw *mgl);
-void Credits(MGLDraw *mgl);
-void SplashScreen(MGLDraw *dispmgl,const char *fname,int delay,byte sound,byte specialdeal);
-void VictoryText(MGLDraw *mgl);
+TASK(byte) MainMenu(MGLDraw *mgl);
+TASK(void) Credits(MGLDraw *mgl);
+TASK(void) SplashScreen(MGLDraw *dispmgl,const char *fname,int delay,byte sound,byte specialdeal);
+TASK(void) VictoryText(MGLDraw *mgl);
 
-byte GameSlotPicker(MGLDraw *mgl,title_t *title);
+TASK(byte) GameSlotPicker(MGLDraw *mgl,title_t *title);
 
 #endif

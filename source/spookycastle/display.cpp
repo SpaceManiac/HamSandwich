@@ -59,7 +59,7 @@ void ExitDisplay(void)
 	delete dispList;
 }
 
-void ShowVictoryAnim(byte world)
+TASK(void) ShowVictoryAnim(byte world)
 {
 	dword start,end;
 
@@ -67,29 +67,29 @@ void ShowVictoryAnim(byte world)
 	switch(world)
 	{
 		case 0:
-			FLI_play("graphics/caverns.flc",0,80,mgl);
+			AWAIT FLI_play("graphics/caverns.flc",0,80,mgl);
 			break;
 		case 1:
-			FLI_play("graphics/icy.flc",0,60,mgl);
+			AWAIT FLI_play("graphics/icy.flc",0,60,mgl);
 			break;
 		case 2:
-			FLI_play("graphics/forest.flc",0,60,mgl);
+			AWAIT FLI_play("graphics/forest.flc",0,60,mgl);
 			break;
 		case 3:
-			FLI_play("graphics/desert.flc",0,60,mgl);
+			AWAIT FLI_play("graphics/desert.flc",0,60,mgl);
 			break;
 		case 4:
 			// the final victory!
-			FLI_play("graphics/asylum.flc",0,60,mgl);
+			AWAIT FLI_play("graphics/asylum.flc",0,60,mgl);
 			break;
 		case 10:
-			FLI_play("graphics/transfrm.flc",0,60,mgl);
+			AWAIT FLI_play("graphics/transfrm.flc",0,60,mgl);
 			break;
 		case 11:
-			FLI_play("graphics/asylumno.flc",0,40,mgl);
+			AWAIT FLI_play("graphics/asylumno.flc",0,40,mgl);
 			break;
 		case 12:
-			FLI_play("graphics/asylumys.flc",0,40,mgl);
+			AWAIT FLI_play("graphics/asylumys.flc",0,40,mgl);
 			break;
 	}
 	mgl->LoadBMP("graphics/title.bmp");
@@ -436,11 +436,6 @@ void DisplayList::Render(void)
 	}
 }
 
-void MakeItFlip(void)
-{
-	mgl->Flip();
-}
-
 void DrawBox(int x,int y,int x2,int y2,byte c)
 {
 	mgl->Box(x,y,x2,y2,c);
@@ -453,7 +448,7 @@ void DrawDebugBox(int x,int y,int x2,int y2)
 	x2-=scrx-320;
 	y2-=scry-240;
 	mgl->Box(x,y,x2,y2,255);
-	mgl->Flip();
+	//mgl->Flip();
 }
 
 void DrawFillBox(int x,int y,int x2,int y2,byte c)

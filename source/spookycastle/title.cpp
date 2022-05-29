@@ -291,7 +291,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 	return 0;
 }
 
-byte MainMenu(MGLDraw *mgl)
+TASK(byte) MainMenu(MGLDraw *mgl)
 {
 	dword startTime,now;
 	byte b=0;
@@ -319,15 +319,15 @@ byte MainMenu(MGLDraw *mgl)
 		StartClock();
 		b=MainMenuUpdate(mgl,&title,&lastTime);
 		MainMenuDisplay(mgl,title);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			delete planetSpr;
-			return 255;
+			CO_RETURN 255;
 		}
 		if(b==1 && title.cursor==1)	// selected Continue
 		{
-			if(!GameSlotPicker(mgl,&title))	// pressed ESC on the slot picker
+			if(!AWAIT GameSlotPicker(mgl,&title))	// pressed ESC on the slot picker
 			{
 				b=0;
 			}
@@ -335,7 +335,7 @@ byte MainMenu(MGLDraw *mgl)
 		now=timeGetTime();
 		if(now-startTime>1000*10)
 		{
-			Credits(mgl);
+			AWAIT Credits(mgl);
 			startTime=timeGetTime();
 		}
 		EndClock();
@@ -344,12 +344,12 @@ byte MainMenu(MGLDraw *mgl)
 	if(b==1)	// something was selected
 	{
 		if(title.cursor==2)	// exit
-			return 255;
+			CO_RETURN 255;
 		else
-			return title.cursor;
+			CO_RETURN title.cursor;
 	}
 	else
-		return 255;	// ESC was pressed
+		CO_RETURN 255;	// ESC was pressed
 }
 
 void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
@@ -522,7 +522,7 @@ void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 	oldc=CONTROL_B1|CONTROL_B2;
 }
 
-byte GameSlotPicker(MGLDraw *mgl,title_t *title)
+TASK(byte) GameSlotPicker(MGLDraw *mgl,title_t *title)
 {
 	byte b=0;
 	int lastTime=1;
@@ -536,9 +536,9 @@ byte GameSlotPicker(MGLDraw *mgl,title_t *title)
 		StartClock();
 		b=GameSlotPickerUpdate(mgl,title,&lastTime);
 		GameSlotPickerDisplay(mgl,*title);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
-			return 0;
+			CO_RETURN 0;
 		EndClock();
 	}
 	if(b==1)	// something was selected
@@ -547,10 +547,10 @@ byte GameSlotPicker(MGLDraw *mgl,title_t *title)
 		PlayerLoadGame(title->savecursor);
 		// make it remember which was picked so the pause menu will start on the same
 		SetSubCursor(title->savecursor);
-		return 1;
+		CO_RETURN 1;
 	}
 	else
-		return 0;
+		CO_RETURN 0;
 }
 
 void CreditsRender(int y)
@@ -588,7 +588,7 @@ void CreditsRender(int y)
 	}
 }
 
-void Credits(MGLDraw *mgl)
+TASK(void) Credits(MGLDraw *mgl)
 {
 	int y=-470;
 	dword lastTime;
@@ -608,13 +608,13 @@ void Credits(MGLDraw *mgl)
 		mgl->ClearScreen();
 		CreditsRender(y);
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
-			return;
+			CO_RETURN;
 		if(mgl->LastKeyPressed())
-			return;
+			CO_RETURN;
 		if(y==END_OF_CREDITS)
-			return;
+			CO_RETURN;
 		EndClock();
 	}
 }
@@ -655,7 +655,7 @@ void VictoryTextRender(int y)
 	}
 }
 
-void VictoryText(MGLDraw *mgl)
+TASK(void) VictoryText(MGLDraw *mgl)
 {
 	int y=-470;
 	dword lastTime;
@@ -674,13 +674,13 @@ void VictoryText(MGLDraw *mgl)
 		}
 		mgl->ClearScreen();
 		VictoryTextRender(y);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
-			return;
+			CO_RETURN;
 		if(mgl->LastKeyPressed()==27)
-			return;
+			CO_RETURN;
 		if(y==END_OF_VICTORY)
-			return;
+			CO_RETURN;
 		EndClock();
 	}
 }
@@ -821,7 +821,7 @@ void SplashScreen(MGLDraw *mgl,char *fname,int delay,byte sound)
 }
 */
 
-void SplashScreen(MGLDraw *dispmgl,const char *fname,int delay,byte sound,byte specialdeal)
+TASK(void) SplashScreen(MGLDraw *dispmgl,const char *fname,int delay,byte sound,byte specialdeal)
 {
 	int i,j,clock;
 	dword tick,tock;
@@ -840,7 +840,7 @@ void SplashScreen(MGLDraw *dispmgl,const char *fname,int delay,byte sound,byte s
 	dispmgl->LastKeyPressed();
 
 	if(!dispmgl->LoadBMP(fname,desiredpal))
-		return;
+		CO_RETURN;
 
 	mode=0;
 	clock=0;
@@ -848,9 +848,9 @@ void SplashScreen(MGLDraw *dispmgl,const char *fname,int delay,byte sound,byte s
 	while(!done)
 	{
 		tick=timeGetTime();
-		dispmgl->Flip();
+		AWAIT dispmgl->Flip();
 		if(!dispmgl->Process())
-			return;
+			CO_RETURN;
 
 		// let it fade in & out at max speed, but the sitting still needs to be timed
 		if(mode==1)
@@ -926,5 +926,5 @@ void SplashScreen(MGLDraw *dispmgl,const char *fname,int delay,byte sound,byte s
 		}
 	}
 	dispmgl->ClearScreen();
-	dispmgl->Flip();
+	AWAIT dispmgl->Flip();
 }

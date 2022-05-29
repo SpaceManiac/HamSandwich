@@ -64,14 +64,14 @@ byte GameStartup(void);
 void EnterStatusScreen(void);
 void EnterPictureDisplay(void);
 
-byte LunaticRun(int *lastTime);
-void LunaticDraw(void);
+TASK(byte) LunaticRun(int *lastTime);
+TASK(void) LunaticDraw(void);
 
-byte PlayALevel(byte map);
+TASK(byte) PlayALevel(byte map);
 
-byte LunaticWorld(byte world,const char *worldName);
-void LunaticGame(MGLDraw *mgl,byte load);
-void TrainingGame(MGLDraw *mgl);
+TASK(byte) LunaticWorld(byte world,const char *worldName);
+TASK(void) LunaticGame(MGLDraw *mgl,byte load);
+TASK(void) TrainingGame(MGLDraw *mgl);
 
 void SendMessageToGame(byte msg,int content);
 void AddGarbageTime(dword t);

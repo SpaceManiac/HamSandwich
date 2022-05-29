@@ -55,30 +55,30 @@ TASK(int) main(int argc, char* argv[])
 
 	mainmgl=new MGLDraw("Spooky Castle",640,480,windowedGame);
 	if(!mainmgl)
-		return 0;
+		CO_RETURN 0;
 
 	LunaticInit(mainmgl);
-	SplashScreen(mainmgl,"graphics/hamumu.bmp",128,SND_HAMUMU,0);
+	AWAIT SplashScreen(mainmgl,"graphics/hamumu.bmp",128,SND_HAMUMU,0);
 	while(1)
 	{
-		switch(MainMenu(mainmgl))
+		switch(AWAIT MainMenu(mainmgl))
 		{
 			case 255:	// quit
 				mainmgl->ClearScreen();
-				mainmgl->Flip();
+				AWAIT mainmgl->Flip();
 				mainmgl->ClearScreen();
 				LunaticExit();
 				delete mainmgl;
-				return 0;
+				CO_RETURN 0;
 				break;
 			case 0:	// new game
-				LunaticGame(mainmgl,0);
+				AWAIT LunaticGame(mainmgl,0);
 				break;
 			case 1:	// continue
-				LunaticGame(mainmgl,1);
+				AWAIT LunaticGame(mainmgl,1);
 				break;
 			case 3:	// editor
-				LunaticEditor(mainmgl);
+				AWAIT LunaticEditor(mainmgl);
 				break;
 		}
 	}
