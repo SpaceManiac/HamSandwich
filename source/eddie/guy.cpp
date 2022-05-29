@@ -1200,7 +1200,7 @@ void GetHit(guy_t *me)
 				ExplodeParticles(PART_GREY,me->x,me->y,4,7);
 				TellLevelAboutIt(EVT_MONSDIE,me->type);
 				me->type=GUY_NONE;
-				if(me->parent!=-1)
+				if(me->parent!=255)
 					guy[me->parent].desty=1;	// tell it it no longer has a head
 			}
 			break;

@@ -799,10 +799,12 @@ void UpdateLevelBonus(void)
 			{
 				evtClock[0]--;
 				if(evtClock[0]==0)
+				{
 					if(GetRand(2))
 						AddGuy(GUY_PWRUPUFO,-3,4,FIXAMT*4);
 					else
 						AddGuy(GUY_PWRUPUFO,MAP_WIDTH+3,4,FIXAMT*4);
+				}
 			}
 			break;
 		case BNS_HOSTILE:
