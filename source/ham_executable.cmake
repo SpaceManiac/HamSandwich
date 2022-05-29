@@ -199,6 +199,7 @@ function(HamSandwich_add_executable target_name)
 			FILES "${CMAKE_SOURCE_DIR}/assets/splashes/${target_name}.jpg"
 			RENAME "splash.jpg"
 			DESTINATION "${CMAKE_INSTALL_PREFIX}/${target_name}"
+			OPTIONAL
 		)
 		get_target_property(ico "${target_name}" HamSandwich_ico)
 		install(
