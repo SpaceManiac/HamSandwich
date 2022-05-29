@@ -279,7 +279,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			MakeNormalSound(SND_MENUSELECT);
 			return 2;
 		}
-#ifdef _DEBUG
+#ifndef NDEBUG
 		if(c=='e')
 		{
 			title->cursor=3;

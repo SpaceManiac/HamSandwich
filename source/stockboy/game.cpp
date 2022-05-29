@@ -597,7 +597,7 @@ void HandleKeyPresses(void)
 		if((lastKey>='a' && lastKey<='z') || (lastKey>='A' && lastKey<='Z'))
 			CheatKey(lastKey);
 	}
-//#ifdef _DEBUG
+//#ifndef NDEBUG
 	// can't show stats unless in debug mode
 	/*
 	if(lastKey=='s')

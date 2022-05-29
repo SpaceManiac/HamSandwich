@@ -50,7 +50,7 @@ EditMenu::~EditMenu(void)
 byte EditMenu::CanEditFile(const char *fname)
 {
 // in debug mode you can load all levels
-#ifndef _DEBUG
+#ifndef NDEBUG
 
 	int i;
 	char s[32];
