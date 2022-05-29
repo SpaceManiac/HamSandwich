@@ -71,7 +71,7 @@ void ExitDisplay(void)
 	delete dispList;
 }
 
-void ShowVictoryAnim(byte world)
+TASK(void) ShowVictoryAnim(byte world)
 {
 	dword start,end;
 
@@ -85,14 +85,14 @@ void ShowVictoryAnim(byte world)
 			break;
 	}
 	mgl->ClearScreen();
-	mgl->Flip();
+	AWAIT mgl->Flip();
 	mgl->LoadBMP("graphics/title.bmp");
 	JamulSoundPurge();
 	end=timeGetTime();
 	AddGarbageTime(end-start);
 }
 
-void ShowImageOrFlic(char *str)
+TASK(void) ShowImageOrFlic(char *str)
 {
 	dword start,end;
 	int speed;
@@ -103,7 +103,7 @@ void ShowImageOrFlic(char *str)
 
 	fname=strtok(str,",\n");
 	if(!fname)
-		return;
+		CO_RETURN;
 
 	other=strtok(NULL,",\n");
 
@@ -115,7 +115,7 @@ void ShowImageOrFlic(char *str)
 		EnterPictureDisplay();
 		sprintf(nm,"graphics/%s",fname);
 		GetDisplayMGL()->LoadBMP(nm);
-		return;
+		CO_RETURN;
 	}
 
 	if(other)
@@ -126,7 +126,7 @@ void ShowImageOrFlic(char *str)
 	sprintf(nm,"graphics/%s",fname);
 
 	start=timeGetTime();
-	FLI_play(nm,0,speed,mgl,NULL);
+	AWAIT FLI_play(nm,0,speed,mgl,NULL);
 	mgl->LoadBMP("graphics/title.bmp");
 	end=timeGetTime();
 	AddGarbageTime(end-start);
@@ -689,10 +689,12 @@ void DisplayList::Render(void)
 	}
 }
 
+/*
 void MakeItFlip(void)
 {
 	mgl->Flip();
 }
+*/
 
 void DrawBox(int x,int y,int x2,int y2,byte c)
 {
@@ -706,7 +708,7 @@ void DrawDebugBox(int x,int y,int x2,int y2)
 	x2-=scrx-320;
 	y2-=scry-240;
 	mgl->Box(x,y,x2,y2,255);
-	mgl->Flip();
+	//mgl->Flip();
 }
 
 void DrawFillBox(int x,int y,int x2,int y2,byte c)

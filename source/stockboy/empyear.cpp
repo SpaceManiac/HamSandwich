@@ -225,7 +225,7 @@ void RenderEmpYear(MGLDraw *mgl)
 	RenderStars(mgl);
 }
 
-void EmpYear(MGLDraw *mgl)
+TASK(void) EmpYear(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -239,7 +239,7 @@ void EmpYear(MGLDraw *mgl)
 		StartClock();
 		done=UpdateEmpYear(&lastTime,mgl);
 		RenderEmpYear(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(!mgl->Process())

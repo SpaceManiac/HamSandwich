@@ -3,6 +3,6 @@
 
 #include "mgldraw.h"
 
-void EmpMonth(byte lvl,MGLDraw *mgl);
+TASK(void) EmpMonth(byte lvl,MGLDraw *mgl);
 
 #endif

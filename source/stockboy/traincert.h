@@ -3,6 +3,6 @@
 
 #include "mgldraw.h"
 
-void TrainCert(byte lvl,MGLDraw *mgl);
+TASK(void) TrainCert(byte lvl,MGLDraw *mgl);
 
 #endif

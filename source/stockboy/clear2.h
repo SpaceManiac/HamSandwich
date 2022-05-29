@@ -11,6 +11,6 @@ void RenderClear2(void);
 
 void Clear2Wait(void);
 
-byte Clear2Menu(MGLDraw *mgl);
+TASK(byte) Clear2Menu(MGLDraw *mgl);
 
 #endif

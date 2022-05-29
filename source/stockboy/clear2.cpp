@@ -520,7 +520,7 @@ void RenderClear2Menu(MGLDraw *mgl)
 	blowSpr->GetSprite(9)->Draw(oldmsx,oldmsy,mgl);
 }
 
-byte Clear2Menu(MGLDraw *mgl)
+TASK(byte) Clear2Menu(MGLDraw *mgl)
 {
 	byte b;
 	int lastTime=1;
@@ -539,11 +539,11 @@ byte Clear2Menu(MGLDraw *mgl)
 		StartClock();
 		b=UpdateClear2Menu(&lastTime,mgl);
 		RenderClear2Menu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			ExitClear2Menu();
-			return WORLD_ABORT;
+			CO_RETURN WORLD_ABORT;
 		}
 		EndClock();
 	}
@@ -552,7 +552,7 @@ byte Clear2Menu(MGLDraw *mgl)
 	ExitClear2Menu();
 
 	if(play)
-		return LunaticWorld(0,"levels/clearance.sbl");
+		CO_RETURN AWAIT LunaticWorld(0,"levels/clearance.sbl");
 	else
-		return WORLD_ABORT;
+		CO_RETURN WORLD_ABORT;
 }

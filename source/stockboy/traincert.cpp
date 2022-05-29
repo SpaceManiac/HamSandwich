@@ -131,7 +131,7 @@ void RenderTrainCert(MGLDraw *mgl)
 	RenderStars(mgl);
 }
 
-void TrainCert(byte lvl,MGLDraw *mgl)
+TASK(void) TrainCert(byte lvl,MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -146,7 +146,7 @@ void TrainCert(byte lvl,MGLDraw *mgl)
 		StartClock();
 		done=UpdateTrainCert(&lastTime,mgl);
 		RenderTrainCert(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(!mgl->Process())

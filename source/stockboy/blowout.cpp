@@ -646,7 +646,7 @@ void RenderBlowoutMenu(MGLDraw *mgl)
 	blowSpr->GetSprite(9)->Draw(oldmsx,oldmsy,mgl);
 }
 
-byte BlowoutMenu(MGLDraw *mgl)
+TASK(byte) BlowoutMenu(MGLDraw *mgl)
 {
 	byte b;
 	int lastTime=1;
@@ -664,11 +664,11 @@ byte BlowoutMenu(MGLDraw *mgl)
 		StartClock();
 		b=UpdateBlowoutMenu(&lastTime,mgl);
 		RenderBlowoutMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			ExitBlowoutMenu();
-			return WORLD_ABORT;
+			CO_RETURN WORLD_ABORT;
 		}
 		EndClock();
 	}
@@ -677,7 +677,7 @@ byte BlowoutMenu(MGLDraw *mgl)
 	ExitBlowoutMenu();
 
 	if(blowoutLevel>0)
-		return LunaticWorld(blowoutLevel-1,"levels/blowout.sbl");
+		CO_RETURN AWAIT LunaticWorld(blowoutLevel-1,"levels/blowout.sbl");
 	else
-		return WORLD_ABORT;
+		CO_RETURN WORLD_ABORT;
 }

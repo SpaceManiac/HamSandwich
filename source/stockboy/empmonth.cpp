@@ -308,7 +308,7 @@ void RenderEmpMonth(MGLDraw *mgl)
 	RenderStars(mgl);
 }
 
-void EmpMonth(byte lvl,MGLDraw *mgl)
+TASK(void) EmpMonth(byte lvl,MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -323,7 +323,7 @@ void EmpMonth(byte lvl,MGLDraw *mgl)
 		StartClock();
 		done=UpdateEmpMonth(&lastTime,mgl);
 		RenderEmpMonth(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(!mgl->Process())

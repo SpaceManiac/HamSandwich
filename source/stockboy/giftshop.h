@@ -20,6 +20,6 @@
 #define GIFT_STICK		14
 #define GIFT_EXIT		15
 
-void GiftShop(MGLDraw *mgl);
+TASK(void) GiftShop(MGLDraw *mgl);
 
 #endif

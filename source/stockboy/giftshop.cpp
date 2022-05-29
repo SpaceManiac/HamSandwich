@@ -584,7 +584,7 @@ void RenderGiftShop(MGLDraw *mgl)
 	giftSpr->GetSprite(0)->Draw(oldmsx,oldmsy,mgl);
 }
 
-void GiftShop(MGLDraw *mgl)
+TASK(void) GiftShop(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -599,7 +599,7 @@ void GiftShop(MGLDraw *mgl)
 		StartClock();
 		done=UpdateGiftShop(&lastTime,mgl);
 		RenderGiftShop(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(!mgl->Process())

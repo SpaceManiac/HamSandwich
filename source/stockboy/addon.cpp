@@ -1047,7 +1047,7 @@ void RenderAddOnMenu(MGLDraw *mgl)
 	blowSpr->GetSprite(9)->Draw(oldmsx,oldmsy,mgl);
 }
 
-byte AddOnMenu(MGLDraw *mgl)
+TASK(byte) AddOnMenu(MGLDraw *mgl)
 {
 	byte b;
 	int lastTime=1;
@@ -1065,18 +1065,18 @@ byte AddOnMenu(MGLDraw *mgl)
 		StartClock();
 		b=UpdateAddOnMenu(&lastTime,mgl);
 		RenderAddOnMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			ExitAddOnMenu();
-			return WORLD_ABORT;
+			CO_RETURN WORLD_ABORT;
 		}
 		EndClock();
 		if(play)
 		{
 			sprintf(s,"levels/%s",&filename[levelSet*FNAMELEN]);
 			player.levelNum=level;
-			b=LunaticWorld(levelSet,s);
+			b=AWAIT LunaticWorld(levelSet,s);
 			if(b!=WORLD_ABORT)
 				b=1;
 			play=0;
@@ -1090,5 +1090,5 @@ byte AddOnMenu(MGLDraw *mgl)
 	then=timeGetTime();
 	ResetClock(hangon);
 	ExitAddOnMenu();
-	return WORLD_ABORT;
+	CO_RETURN WORLD_ABORT;
 }

@@ -580,7 +580,7 @@ byte UpdateTraining(int *lastTime,MGLDraw *mgl)
 	return 1;
 }
 
-byte TrainingMenu(MGLDraw *mgl)
+TASK(byte) TrainingMenu(MGLDraw *mgl)
 {
 	byte b;
 	int lastTime=1;
@@ -599,23 +599,23 @@ byte TrainingMenu(MGLDraw *mgl)
 		b=UpdateTraining(&lastTime,mgl);
 		Music_Update();
 		RenderTraining(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			ExitTraining();
-			return WORLD_ABORT;
+			CO_RETURN WORLD_ABORT;
 		}
 		EndClock();
 		if(b==0 && trainingLevel>0)
 		{
 			player.levelNum=subLevel-1;
-			b=LunaticWorld(trainingLevel-1,trainingFile[trainingLevel-1]);
+			b=AWAIT LunaticWorld(trainingLevel-1,trainingFile[trainingLevel-1]);
 			if(b==WORLD_WIN)
 			{
 				if(profile.training[trainingLevel-1]<6)
 				{
 					profile.training[trainingLevel-1]++;
-					TrainCert(trainingLevel-1,mgl);
+					AWAIT TrainCert(trainingLevel-1,mgl);
 				}
 				mode=0;
 				TrainingSetArrow();
@@ -644,5 +644,5 @@ byte TrainingMenu(MGLDraw *mgl)
 	ResetClock(hangon);
 	ExitTraining();
 
-	return WORLD_ABORT;
+	CO_RETURN WORLD_ABORT;
 }

@@ -52,11 +52,11 @@ TASK(int) main(int argc, char* argv[])
 
 	mainmgl=new MGLDraw("Stockboy",SCRWID,SCRHEI,windowedGame);
 	if(!mainmgl)
-		return 0;
+		CO_RETURN 0;
 
 	LunaticInit(mainmgl);
 
-	SplashScreen(mainmgl,"graphics/hamumu.bmp",128,2);
+	AWAIT SplashScreen(mainmgl,"graphics/hamumu.bmp",128,2);
 
 	/*
 	if(Web_Init()==IE_OK)
@@ -69,46 +69,46 @@ TASK(int) main(int argc, char* argv[])
 
 	while(1)
 	{
-		switch(MainMenu(0,mainmgl)-1)
+		switch((AWAIT MainMenu(0,mainmgl))-1)
 		{
 			case 255:	// quit
 			case MENU_EXIT:
 				LunaticExit();
 				delete mainmgl;
-				return 0;
+				CO_RETURN 0;
 				break;
 			case MENU_STOCKROOM:	// stockroom mode
-				LunaticGame(mainmgl,0,GAME_STOCKROOM);
+				AWAIT LunaticGame(mainmgl,0,GAME_STOCKROOM);
 				break;
 			case MENU_PARALLEL:	// parallel universe
-				LunaticGame(mainmgl,0,GAME_PARALLEL);
+				AWAIT LunaticGame(mainmgl,0,GAME_PARALLEL);
 				break;
 			case MENU_PESTCONTROL:	// pest control
-				LunaticGame(mainmgl,0,GAME_PESTCONTROL);
+				AWAIT LunaticGame(mainmgl,0,GAME_PESTCONTROL);
 				break;
 			case MENU_TRAINING:	// training
-				LunaticGame(mainmgl,0,GAME_TRAINING);
+				AWAIT LunaticGame(mainmgl,0,GAME_TRAINING);
 				break;
 			case MENU_BLOWOUT:	// blowout
-				LunaticGame(mainmgl,0,GAME_BLOWOUT);
+				AWAIT LunaticGame(mainmgl,0,GAME_BLOWOUT);
 				break;
 			case MENU_CLEARANCE:	// clearance
-				LunaticGame(mainmgl,0,GAME_CLEARANCE);
+				AWAIT LunaticGame(mainmgl,0,GAME_CLEARANCE);
 				break;
 			case MENU_EDITOR:	// editor
-				LunaticEditor(mainmgl);
+				AWAIT LunaticEditor(mainmgl);
 				break;
 			case MENU_PROFILE:	// hi scores
-				ProfileMenu(mainmgl);
+				AWAIT ProfileMenu(mainmgl);
 				break;
 			case MENU_GIFTSHOP:	// gift shop
-				GiftShop(mainmgl);
+				AWAIT GiftShop(mainmgl);
 				break;
 			case MENU_COMPOSER:	// options
-				Composer(mainmgl);
+				AWAIT Composer(mainmgl);
 				break;
 			case MENU_ADDON:	// Add-On levels
-				LunaticGame(mainmgl,0,GAME_ADDON);
+				AWAIT LunaticGame(mainmgl,0,GAME_ADDON);
 				break;
 		}
 	}

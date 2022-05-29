@@ -257,7 +257,7 @@ void EditMenu::Render(int msx,int msy)
 }
 
 // returns whether or not the click occurred in this menu, and hence needs no more processing
-byte EditMenu::Click(int msx,int msy,byte btn)
+TASK(byte) EditMenu::Click(int msx,int msy,byte btn)
 {
 	int i;
 
@@ -271,7 +271,7 @@ byte EditMenu::Click(int msx,int msy,byte btn)
 	if(PointInRect(msx,msy,0,0,18,10))
 	{
 		minmax=1-minmax;
-		return 1;
+		CO_RETURN 1;
 	}
 	// mover
 	if(PointInRect(msx,msy,23,-1,39,15))
@@ -280,7 +280,7 @@ byte EditMenu::Click(int msx,int msy,byte btn)
 		editMode=EDITMODE_DRAGMENU;
 		relmsx=-msx;
 		relmsy=-msy;
-		return 1;
+		CO_RETURN 1;
 	}
 
 	if(minmax==1)	// these buttons require it to be maxed
@@ -302,7 +302,7 @@ byte EditMenu::Click(int msx,int msy,byte btn)
 						toolmenu->SwitchTool(TOOL_CRITTER);
 						break;
 				}
-				return 1;
+				CO_RETURN 1;
 			}
 
 		if(!winminmax)	// window is not maxed
@@ -324,7 +324,7 @@ byte EditMenu::Click(int msx,int msy,byte btn)
 			switch(menu)
 			{
 				case MENU_FILE:
-					FileClick(msx,msy,btn);
+					AWAIT FileClick(msx,msy,btn);
 					break;
 				case MENU_SETOPT:
 					SetOptClick(msx,msy,btn);
@@ -344,11 +344,11 @@ byte EditMenu::Click(int msx,int msy,byte btn)
 			}
 			// anywhere in the window space means the click is absorbed
 			if(PointInRect(msx,msy,88,13,289,143))
-				return 1;
+				CO_RETURN 1;
 		}
 	}
 
-	return 0;
+	CO_RETURN 0;
 }
 
 void EditMenu::MouseHold(int msx,int msy,byte btn)
@@ -545,14 +545,14 @@ void EditMenu::LevelOptClick(int msx,int msy,byte btn)
 	}
 }
 
-void EditMenu::FileClick(int msx,int msy,byte btn)
+TASK(void) EditMenu::FileClick(int msx,int msy,byte btn)
 {
 	int i;
 	int winx,winy;
 	char s[64];
 
 	if(btn==2)
-		return;
+		CO_RETURN;
 
 	winx=x+88;
 	winy=y+13;
@@ -604,7 +604,7 @@ void EditMenu::FileClick(int msx,int msy,byte btn)
 				case 3:	// test
 					ExitGuys();
 					PurgeMonsterSprites();
-					TestLevel(EditorGetMapNum());
+					AWAIT TestLevel(EditorGetMapNum());
 
 					InitGuys(MAX_MAPMONS);
 					AddMapGuys(EditorGetMap());

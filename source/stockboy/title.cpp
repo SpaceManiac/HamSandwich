@@ -747,7 +747,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-byte MainMenu(byte pageUp,MGLDraw *mgl)
+TASK(byte) MainMenu(byte pageUp,MGLDraw *mgl)
 {
 	byte b=0;
 	int i;
@@ -785,21 +785,21 @@ byte MainMenu(byte pageUp,MGLDraw *mgl)
 		b=MainMenuUpdate(&lastTime,mgl);
 		MainMenuDisplay(mgl);
 		Music_Update();
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			PurgeMonsterSprites();
 			free(backScr);
 			delete planetSpr;
 			ExitParticles();
-			return 255;
+			CO_RETURN 255;
 		}
 		EndClock();
 		if(numRuns>=30*20)
 		{
 			GetTaps();
 			oldc=255;
-			Credits(mgl,1);
+			AWAIT Credits(mgl,1);
 			mgl->LoadBMP("graphics/title.bmp");
 			mgl->LastKeyPressed();
 			numRuns=0;
@@ -811,7 +811,7 @@ byte MainMenu(byte pageUp,MGLDraw *mgl)
 	free(backScr);
 	delete planetSpr;
 	ExitParticles();
-	return b;
+	CO_RETURN b;
 }
 
 //-------------------------------------------------------------------------
@@ -852,7 +852,7 @@ void CreditsRender(int y)
 	}
 }
 
-void Credits(MGLDraw *mgl,byte init)
+TASK(void) Credits(MGLDraw *mgl,byte init)
 {
 	int y=-470;
 	int lastTime;
@@ -906,30 +906,30 @@ void Credits(MGLDraw *mgl,byte init)
 			lastTime-=TIME_PER_FRAME;
 		}
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(!mgl->Process())
 		{
 			ResetClock(hangon);
-			return;
+			CO_RETURN;
 		}
 		if(GetControls()||GetArrows()||mgl->MouseDown()||mgl->RMouseDown()||mgl->LastKeyPressed())
 		{
 			ResetClock(hangon);
-			return;
+			CO_RETURN;
 		}
 
 		if(y==END_OF_CREDITS)
 		{
 			ResetClock(hangon);
-			return;
+			CO_RETURN;
 		}
 	}
 	ResetClock(hangon);
 }
 
-byte SpeedSplash(MGLDraw *mgl,const char *fname)
+TASK(byte) SpeedSplash(MGLDraw *mgl,const char *fname)
 {
 	int i,j,clock;
 	RGB desiredpal[256],curpal[256];
@@ -956,13 +956,13 @@ byte SpeedSplash(MGLDraw *mgl,const char *fname)
 	done=0;
 	while(!done)
 	{
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
-			return 0;
+			CO_RETURN 0;
 		c=mgl->LastKeyPressed();
 
 		if(c==27)
-			return 0;
+			CO_RETURN 0;
 		else if(c)
 			mode=2;
 
@@ -1025,11 +1025,11 @@ byte SpeedSplash(MGLDraw *mgl,const char *fname)
 		}
 	}
 	mgl->ClearScreen();
-	mgl->Flip();
-	return 1;
+	AWAIT mgl->Flip();
+	CO_RETURN 1;
 }
 
-void HelpScreens(MGLDraw *mgl)
+TASK(void) HelpScreens(MGLDraw *mgl)
 {
 	int i;
 	char name[32];
@@ -1037,20 +1037,20 @@ void HelpScreens(MGLDraw *mgl)
 	for(i=0;i<5;i++)
 	{
 		sprintf(name,"docs/help%d.bmp",i+1);
-		if(!SpeedSplash(mgl,name))
-			return;
+		if(!AWAIT SpeedSplash(mgl,name))
+			CO_RETURN;
 	}
 }
 
-void DemoSplashScreens(MGLDraw *mgl)
+TASK(void) DemoSplashScreens(MGLDraw *mgl)
 {
-	if(!SpeedSplash(mgl,"docs/demosplash.bmp"))
-		return;
-	if(!SpeedSplash(mgl,"docs/demosplash2.bmp"))
-		return;
+	if(!AWAIT SpeedSplash(mgl,"docs/demosplash.bmp"))
+		CO_RETURN;
+	if(!AWAIT SpeedSplash(mgl,"docs/demosplash2.bmp"))
+		CO_RETURN;
 }
 
-void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
+TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
 {
 	int i,j,clock;
 	RGB desiredpal[256],curpal[256];
@@ -1076,9 +1076,9 @@ void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
 	then=timeGetTime();
 	while(!done)
 	{
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
-			return;
+			CO_RETURN;
 		if(mgl->LastKeyPressed())
 			mode=2;
 		if(mgl->MouseDown() || mgl->RMouseDown())
@@ -1151,5 +1151,5 @@ void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
 		}
 	}
 	mgl->ClearScreen();
-	mgl->Flip();
+	AWAIT mgl->Flip();
 }

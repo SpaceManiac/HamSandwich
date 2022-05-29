@@ -3,6 +3,6 @@
 
 #include "mgldraw.h"
 
-void EmpYear(MGLDraw *mgl);
+TASK(void) EmpYear(MGLDraw *mgl);
 
 #endif

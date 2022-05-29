@@ -19,11 +19,11 @@
 
 #define MENU_CHOICES	 12
 
-byte MainMenu(byte pageUp,MGLDraw *mgl);
-void Credits(MGLDraw *mgl,byte init);
-void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound);
-void VictoryText(MGLDraw *mgl);
-void HelpScreens(MGLDraw *mgl);
-void DemoSplashScreens(MGLDraw *mgl);
+TASK(byte) MainMenu(byte pageUp,MGLDraw *mgl);
+TASK(void) Credits(MGLDraw *mgl,byte init);
+TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound);
+TASK(void) VictoryText(MGLDraw *mgl);
+TASK(void) HelpScreens(MGLDraw *mgl);
+TASK(void) DemoSplashScreens(MGLDraw *mgl);
 
 #endif

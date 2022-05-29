@@ -738,7 +738,7 @@ void RenderStockroomMenu(MGLDraw *mgl)
 	blowSpr->GetSprite(9)->Draw(oldmsx,oldmsy,mgl);
 }
 
-byte StockroomMenu(MGLDraw *mgl)
+TASK(byte) StockroomMenu(MGLDraw *mgl)
 {
 	byte b;
 	int lastTime=1;
@@ -756,11 +756,11 @@ byte StockroomMenu(MGLDraw *mgl)
 		StartClock();
 		b=UpdateStockroomMenu(&lastTime,mgl);
 		RenderStockroomMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			ExitStockroomMenu();
-			return WORLD_ABORT;
+			CO_RETURN WORLD_ABORT;
 		}
 		EndClock();
 	}
@@ -774,10 +774,10 @@ byte StockroomMenu(MGLDraw *mgl)
 			month=12;
 		sprintf(s,"levels/sr%02d.sbl",month);
 		player.levelNum=week;
-		return LunaticWorld(month,s);
+		CO_RETURN AWAIT LunaticWorld(month,s);
 	}
 	else
-		return WORLD_ABORT;
+		CO_RETURN WORLD_ABORT;
 }
 
 char *NameLevel(void)

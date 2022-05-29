@@ -53,7 +53,7 @@ extern sprite_set_t *editspr;
 extern byte editMode;
 extern byte testingLevel;
 
-byte LunaticEditor(MGLDraw *mgl);
+TASK(byte) LunaticEditor(MGLDraw *mgl);
 
 void EditorNewWorld(void);
 void EditorLoadWorld(char *fname);

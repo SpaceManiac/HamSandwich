@@ -746,7 +746,7 @@ void RenderParallelMenu(MGLDraw *mgl)
 	blowSpr->GetSprite(9)->Draw(oldmsx,oldmsy,mgl);
 }
 
-byte ParallelMenu(MGLDraw *mgl)
+TASK(byte) ParallelMenu(MGLDraw *mgl)
 {
 	byte b;
 	int lastTime=1;
@@ -764,11 +764,11 @@ byte ParallelMenu(MGLDraw *mgl)
 		StartClock();
 		b=UpdateParallelMenu(&lastTime,mgl);
 		RenderParallelMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			ExitParallelMenu();
-			return WORLD_ABORT;
+			CO_RETURN WORLD_ABORT;
 		}
 		EndClock();
 	}
@@ -782,10 +782,10 @@ byte ParallelMenu(MGLDraw *mgl)
 			month=12;
 		sprintf(s,"levels/pu%02d.sbl",month);
 		player.levelNum=week;
-		return LunaticWorld(month,s);
+		CO_RETURN AWAIT LunaticWorld(month,s);
 	}
 	else
-		return WORLD_ABORT;
+		CO_RETURN WORLD_ABORT;
 }
 
 char *RvsNameLevel(void)

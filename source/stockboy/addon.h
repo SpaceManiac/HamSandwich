@@ -3,6 +3,6 @@
 
 #include "mgldraw.h"
 
-byte AddOnMenu(MGLDraw *mgl);
+TASK(byte) AddOnMenu(MGLDraw *mgl);
 
 #endif

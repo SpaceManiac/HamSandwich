@@ -9,7 +9,7 @@ void InitParallel(Map *m);
 void UpdateParallel(void);
 void RenderParallel(void);
 
-byte ParallelMenu(MGLDraw *mgl);
+TASK(byte) ParallelMenu(MGLDraw *mgl);
 
 char *RvsNameLevel(void);
 

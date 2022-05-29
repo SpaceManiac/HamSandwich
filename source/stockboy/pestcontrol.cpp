@@ -646,7 +646,7 @@ void RenderPestMenu(MGLDraw *mgl)
 	blowSpr->GetSprite(9)->Draw(oldmsx,oldmsy,mgl);
 }
 
-byte PestControlMenu(MGLDraw *mgl)
+TASK(byte) PestControlMenu(MGLDraw *mgl)
 {
 	byte b;
 	int lastTime=1;
@@ -664,11 +664,11 @@ byte PestControlMenu(MGLDraw *mgl)
 		StartClock();
 		b=UpdatePestMenu(&lastTime,mgl);
 		RenderPestMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			ExitPestMenu();
-			return WORLD_ABORT;
+			CO_RETURN WORLD_ABORT;
 		}
 		EndClock();
 	}
@@ -677,7 +677,7 @@ byte PestControlMenu(MGLDraw *mgl)
 	ExitPestMenu();
 
 	if(play)
-		return LunaticWorld(pestLevel-1,"levels/pestcontrol.sbl");
+		CO_RETURN AWAIT LunaticWorld(pestLevel-1,"levels/pestcontrol.sbl");
 	else
-		return WORLD_ABORT;
+		CO_RETURN WORLD_ABORT;
 }

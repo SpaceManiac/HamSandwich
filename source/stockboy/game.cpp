@@ -102,13 +102,13 @@ byte TestingLevel(void)
 	return testingLevel;
 }
 
-void TestLevel(byte map)
+TASK(void) TestLevel(byte map)
 {
 	gameType=GAME_STOCKROOM;
 	testingLevel=1;
 	player.levelNum=map;
 	memcpy(&curWorld,EditorGetWorld(),sizeof(world_t));
-	PlayALevel(map);
+	AWAIT PlayALevel(map);
 	Music_Stop();
 	ResetClock(0);
 	testingLevel=0;
@@ -487,7 +487,7 @@ byte LunaticRun(int *lastTime)
 	return LEVEL_PLAYING;
 }
 
-void LunaticDraw(void)
+TASK(void) LunaticDraw(void)
 {
 	char s[32];
 	dword d;
@@ -574,7 +574,7 @@ void LunaticDraw(void)
 		tickerTime=d;
 	}
 
-	gamemgl->Flip();
+	AWAIT gamemgl->Flip();
 
 	visFrameCount++;
 	visFrms++;
@@ -610,7 +610,7 @@ void HandleKeyPresses(void)
 //#endif
 }
 
-byte PlayALevel(byte map)
+TASK(byte) PlayALevel(byte map)
 {
 	int lastTime=1;
 	byte exitcode=0;
@@ -619,7 +619,7 @@ byte PlayALevel(byte map)
 	if(!InitLevel(map))
 	{
 		mapToGoTo=255;
-		return LEVEL_ABORT;
+		CO_RETURN LEVEL_ABORT;
 	}
 
 	switch(gameType)
@@ -648,7 +648,7 @@ byte PlayALevel(byte map)
 		garbageTime=0;
 		StartClock();
 		exitcode=LunaticRun(&lastTime);
-		LunaticDraw();
+		AWAIT LunaticDraw();
 
 		if(lastKey==27 && gameMode==GAMEMODE_PLAY && !windingUp && !windingDown)
 		{
@@ -679,15 +679,15 @@ byte PlayALevel(byte map)
 	}
 	ExitTally();
 	ExitLevel();
-	return exitcode;
+	CO_RETURN exitcode;
 }
 
-byte LunaticWorld(byte world,const char *worldName)
+TASK(byte) LunaticWorld(byte world,const char *worldName)
 {
 	byte result;
 
 	if(!LoadWorld(&curWorld,worldName,gamemgl))
-		return WORLD_ABORT;
+		CO_RETURN WORLD_ABORT;
 
 	worldNum=world;
 	InitWorld(&curWorld,worldNum);
@@ -700,7 +700,7 @@ byte LunaticWorld(byte world,const char *worldName)
 
 	while(1)
 	{
-		result=PlayALevel(mapNum);
+		result=AWAIT PlayALevel(mapNum);
 		if(result==LEVEL_ABORT)
 		{
 			if(mapToGoTo<255)
@@ -717,19 +717,19 @@ byte LunaticWorld(byte world,const char *worldName)
 				case GAME_CLEARANCE:
 				case GAME_PESTCONTROL:
 					FreeWorld(&curWorld);
-					return WORLD_MENUAGAIN;
+					CO_RETURN WORLD_MENUAGAIN;
 					break;
 			}
 		}
 		else if(result==LEVEL_LOADING)
 		{
 			FreeWorld(&curWorld);
-			return WORLD_LOAD;
+			CO_RETURN WORLD_LOAD;
 		}
 		else if(result==WORLD_QUITGAME)
 		{
 			FreeWorld(&curWorld);
-			return WORLD_QUITGAME;
+			CO_RETURN WORLD_QUITGAME;
 		}
 		else if(result==LEVEL_WIN)
 		{
@@ -743,9 +743,9 @@ byte LunaticWorld(byte world,const char *worldName)
 				   profile.starGot[GAME_STOCKROOM][player.worldNum*4+1]==4 &&
 				   profile.starGot[GAME_STOCKROOM][player.worldNum*4+2]==4 &&
 				   profile.starGot[GAME_STOCKROOM][player.worldNum*4+3]==4)
-				   EmpMonth(player.worldNum,gamemgl);
+					AWAIT EmpMonth(player.worldNum,gamemgl);
 				FreeWorld(&curWorld);
-				return WORLD_WIN;
+				CO_RETURN WORLD_WIN;
 			}
 			if(gameType==GAME_PARALLEL)
 			{
@@ -755,9 +755,9 @@ byte LunaticWorld(byte world,const char *worldName)
 				   profile.starGot[GAME_PARALLEL][player.worldNum*4+1]==4 &&
 				   profile.starGot[GAME_PARALLEL][player.worldNum*4+2]==4 &&
 				   profile.starGot[GAME_PARALLEL][player.worldNum*4+3]==4)
-				   EmpMonth(player.worldNum,gamemgl);
+					AWAIT EmpMonth(player.worldNum,gamemgl);
 				FreeWorld(&curWorld);
-				return WORLD_WIN;
+				CO_RETURN WORLD_WIN;
 			}
 			if(gameType==GAME_TRAINING && profile.training[player.worldNum]<player.levelNum+1)
 			{
@@ -767,20 +767,20 @@ byte LunaticWorld(byte world,const char *worldName)
 			if(mapNum>=curWorld.numMaps)
 			{
 				FreeWorld(&curWorld);
-				return WORLD_WIN;
+				CO_RETURN WORLD_WIN;
 			}
 			if(gameType==GAME_ADDON)
 			{
 				FreeWorld(&curWorld);
-				return WORLD_WIN;
+				CO_RETURN WORLD_WIN;
 			}
 		}
 	}
 	FreeWorld(&curWorld);
-	return WORLD_ABORT;
+	CO_RETURN WORLD_ABORT;
 }
 
-void LunaticGame(MGLDraw *mgl,byte load,byte mode)
+TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 {
 	byte worldResult;
 
@@ -794,37 +794,37 @@ void LunaticGame(MGLDraw *mgl,byte load,byte mode)
 		switch(mode)
 		{
 			case GAME_ADDON:
-				worldResult=AddOnMenu(mgl);
+				worldResult=AWAIT AddOnMenu(mgl);
 				if(worldResult!=WORLD_ABORT)
 					worldResult=WORLD_PLAYING;
 				break;
 			case GAME_TRAINING:
-				worldResult=TrainingMenu(mgl);
+				worldResult=AWAIT TrainingMenu(mgl);
 				if(worldResult!=WORLD_ABORT)
 					worldResult=WORLD_PLAYING;
 				break;
 			case GAME_BLOWOUT:
-				worldResult=BlowoutMenu(mgl);
+				worldResult=AWAIT BlowoutMenu(mgl);
 				if(worldResult!=WORLD_ABORT)
 					worldResult=WORLD_PLAYING;
 				break;
 			case GAME_CLEARANCE:
-				worldResult=Clear2Menu(mgl);
+				worldResult=AWAIT Clear2Menu(mgl);
 				if(worldResult!=WORLD_ABORT)
 					worldResult=WORLD_PLAYING;
 				break;
 			case GAME_PESTCONTROL:
-				worldResult=PestControlMenu(mgl);
+				worldResult=AWAIT PestControlMenu(mgl);
 				if(worldResult!=WORLD_ABORT)
 					worldResult=WORLD_PLAYING;
 				break;
 			case GAME_STOCKROOM:
-				worldResult=StockroomMenu(mgl);
+				worldResult=AWAIT StockroomMenu(mgl);
 				if(worldResult!=WORLD_ABORT)
 					worldResult=WORLD_PLAYING;
 				break;
 			case GAME_PARALLEL:
-				worldResult=ParallelMenu(mgl);
+				worldResult=AWAIT ParallelMenu(mgl);
 				if(worldResult!=WORLD_ABORT)
 					worldResult=WORLD_PLAYING;
 				break;

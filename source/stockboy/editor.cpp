@@ -134,7 +134,7 @@ byte EditorMouseClick(void)
 	return 1;
 }
 
-void UpdateMouse(void)
+TASK(void) UpdateMouse(void)
 {
 	int msx,msy;
 	int cx,cy;
@@ -178,19 +178,19 @@ void UpdateMouse(void)
 				MakeNormalSound(SND_MENUCLICK);
 				editMenu->GetAnswer();
 				msHeldOnMenu=1;
-				return;	// nothing more to do
+				CO_RETURN;	// nothing more to do
 			}
 			if(!menusHidden && toolMenu->Click(mouseX,mouseY,1))
 			{
 				MakeNormalSound(SND_MENUCLICK);
 				msHeldOnMenu=1;
-				return;	// nothing more to do
+				CO_RETURN;	// nothing more to do
 			}
-			if(!menusHidden && editMenu->Click(mouseX,mouseY,1))
+			if(!menusHidden && AWAIT editMenu->Click(mouseX,mouseY,1))
 			{
 				MakeNormalSound(SND_MENUCLICK);
 				msHeldOnMenu=1;
-				return;	// nothing more to do
+				CO_RETURN;	// nothing more to do
 			}
 
 			msHeldOnMenu=0;
@@ -203,17 +203,17 @@ void UpdateMouse(void)
 			if(editMode==EDITMODE_DRAGTOOL)
 			{
 				toolMenu->DraggedByMouse(mouseX,mouseY);
-				return;
+				CO_RETURN;
 			}
 			if(editMode==EDITMODE_DRAGMENU)
 			{
 				editMenu->DraggedByMouse(mouseX,mouseY);
-				return;
+				CO_RETURN;
 			}
 			if(msHeldOnMenu)
 			{
 				editMenu->MouseHold(mouseX,mouseY,1);
-				return;
+				CO_RETURN;
 			}
 			else if(editMode==EDITMODE_DRAGPLOP && (tileX!=oldTileX || tileY!=oldTileY))
 			{
@@ -242,19 +242,19 @@ void UpdateMouse(void)
 				MakeNormalSound(SND_MENUCLICK);
 				editMenu->GetAnswer();
 				ms2HeldOnMenu=1;
-				return;	// nothing more to do
+				CO_RETURN;	// nothing more to do
 			}
 			if(!menusHidden && toolMenu->Click(mouseX,mouseY,2))
 			{
 				MakeNormalSound(SND_MENUCLICK);
 				ms2HeldOnMenu=1;
-				return;	// nothing more to do
+				CO_RETURN;	// nothing more to do
 			}
-			if(!menusHidden && editMenu->Click(mouseX,mouseY,2))
+			if(!menusHidden && AWAIT editMenu->Click(mouseX,mouseY,2))
 			{
 				MakeNormalSound(SND_MENUCLICK);
 				ms2HeldOnMenu=1;
-				return;	// nothing more to do
+				CO_RETURN;	// nothing more to do
 			}
 			Delete(tileX,tileY);
 			ms2HeldOnMenu=0;
@@ -264,7 +264,7 @@ void UpdateMouse(void)
 			if(ms2HeldOnMenu)
 			{
 				editMenu->MouseHold(mouseX,mouseY,2);
-				return;
+				CO_RETURN;
 			}
 			else if(tileX!=oldTileX || tileY!=oldTileY)
 				Delete(tileX,tileY);
@@ -277,7 +277,7 @@ void UpdateMouse(void)
 	oldTileY=tileY;
 }
 
-byte EditorRun(int *lastTime)
+TASK(byte) EditorRun(int *lastTime)
 {
 	numRunsToMakeUp=0;
 	if(*lastTime>TIME_PER_FRAME*5)
@@ -286,7 +286,7 @@ byte EditorRun(int *lastTime)
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		if(!editmgl->Process())
-			return QUITGAME;
+			CO_RETURN QUITGAME;
 
 		// update everything here
 		cursorBright+=cursorDBright;
@@ -298,7 +298,7 @@ byte EditorRun(int *lastTime)
 		EditorUpdateGuys(curMap);
 		UpdateItems();
 		curMap->Update(UPDATE_EDIT,&world);
-		UpdateMouse();
+		AWAIT UpdateMouse();
 
 		*lastTime-=TIME_PER_FRAME;
 		numRunsToMakeUp++;
@@ -309,7 +309,7 @@ byte EditorRun(int *lastTime)
 
 	JamulSoundUpdate();
 
-	return CONTINUE;
+	CO_RETURN CONTINUE;
 }
 
 void ShowTarget(void)
@@ -346,8 +346,6 @@ void EditorDraw(void)
 
 	// draw the mouse cursor
 	editspr->GetSprite(19)->DrawBright(mouseX,mouseY,editmgl,cursorBright);
-
-	editmgl->Flip();
 }
 
 static void HandleKeyPresses(void)
@@ -434,7 +432,7 @@ void HideMenus(void)
 	menusHidden=1-menusHidden;
 }
 
-byte LunaticEditor(MGLDraw *mgl)
+TASK(byte) LunaticEditor(MGLDraw *mgl)
 {
 	int lastTime=1;
 	byte exitcode=0;
@@ -443,7 +441,7 @@ byte LunaticEditor(MGLDraw *mgl)
 	GetTaps();
 
 	if(!InitEditor())
-		return QUITGAME;
+		CO_RETURN QUITGAME;
 
 	exitcode=CONTINUE;
 	while(exitcode==CONTINUE)
@@ -451,8 +449,9 @@ byte LunaticEditor(MGLDraw *mgl)
 		lastTime+=TimeLength();
 		StartClock();
 		HandleKeyPresses();
-		exitcode=EditorRun(&lastTime);
+		exitcode=AWAIT EditorRun(&lastTime);
 		EditorDraw();
+		AWAIT editmgl->Flip();
 
 		if(editMode==EDITMODE_EXIT)
 			exitcode=QUITGAME;
@@ -463,7 +462,7 @@ byte LunaticEditor(MGLDraw *mgl)
 	}
 
 	ExitEditor();
-	return exitcode;
+	CO_RETURN exitcode;
 }
 
 void EditorNewWorld(void)

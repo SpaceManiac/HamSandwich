@@ -9,6 +9,6 @@ void InitBlowout(Map *m);
 void UpdateBlowout(void);
 void RenderBlowout(void);
 
-byte BlowoutMenu(MGLDraw *mgl);
+TASK(byte) BlowoutMenu(MGLDraw *mgl);
 
 #endif

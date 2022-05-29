@@ -2525,7 +2525,7 @@ void RenderComposer(MGLDraw *mgl)
 	compSpr->GetSprite(0)->Draw(oldmsx,oldmsy,mgl);
 }
 
-void Composer(MGLDraw *mgl)
+TASK(void) Composer(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -2539,7 +2539,7 @@ void Composer(MGLDraw *mgl)
 		StartClock();
 		done=UpdateComposer(&lastTime,mgl);
 		RenderComposer(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(mode==CM_EXIT)

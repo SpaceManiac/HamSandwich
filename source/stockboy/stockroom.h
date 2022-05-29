@@ -9,7 +9,7 @@ void InitStockroom(Map *m);
 void UpdateStockroom(void);
 void RenderStockroom(void);
 
-byte StockroomMenu(MGLDraw *mgl);
+TASK(byte) StockroomMenu(MGLDraw *mgl);
 
 char *NameLevel(void);
 

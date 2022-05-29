@@ -3,6 +3,6 @@
 
 #include "mgldraw.h"
 
-void Composer(MGLDraw *mgl);
+TASK(void) Composer(MGLDraw *mgl);
 
 #endif

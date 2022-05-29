@@ -3,6 +3,6 @@
 
 #include "mgldraw.h"
 
-byte TrainingMenu(MGLDraw *mgl);
+TASK(byte) TrainingMenu(MGLDraw *mgl);
 
 #endif

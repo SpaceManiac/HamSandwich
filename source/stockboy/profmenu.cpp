@@ -1088,7 +1088,7 @@ void RenderProfileMenu(MGLDraw *mgl)
 	profSpr->GetSprite(0)->Draw(msx,msy,mgl);
 }
 
-void ProfileMenu(MGLDraw *mgl)
+TASK(void) ProfileMenu(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -1102,7 +1102,7 @@ void ProfileMenu(MGLDraw *mgl)
 		StartClock();
 		done=UpdateProfileMenu(&lastTime,mgl);
 		RenderProfileMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(!mgl->Process())

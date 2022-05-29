@@ -3,6 +3,6 @@
 
 #include "mgldraw.h"
 
-void ProfileMenu(MGLDraw *mgl);
+TASK(void) ProfileMenu(MGLDraw *mgl);
 
 #endif

@@ -33,8 +33,8 @@ typedef class EditMenu
 		void RenderExtraWindow(int msx,int msy);
 		void RenderScoreWindow(int msx,int msy);
 
-		byte Click(int msx,int msy,byte btn);
-		void FileClick(int msx,int msy,byte btn);
+		TASK(byte) Click(int msx,int msy,byte btn);
+		TASK(void) FileClick(int msx,int msy,byte btn);
 		void LevelOptClick(int msx,int msy,byte btn);
 		void SetOptClick(int msx,int msy,byte btn);
 		void FloorClick(int msx,int msy,byte btn);
