@@ -136,7 +136,7 @@ HamSandwich_add_executable(
 To import another game's content, copy the relevant installer from the other
 game's `source/<project>/<project>.json` into that of the game you are modding,
 for example:
-```json
+```jsonc
 {
     "installers": [
         {
