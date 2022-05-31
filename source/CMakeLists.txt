@@ -30,6 +30,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	link_libraries(ws2_32 winmm)
 endif()
 
+# -----------------------------------------------------------------------------
 # Libraries
 include("ham_executable.cmake")
 add_subdirectory("vanilla_extract")
@@ -42,6 +43,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 	)
 endif()
 
+# -----------------------------------------------------------------------------
 # Games
 # Use EXCLUDE_FROM_ALL to exclude a game from the launcher and distribution.
 # Comment out an entry to exclude it from the build entirely.
@@ -56,6 +58,7 @@ add_subdirectory("supreme")  # 2003-08
 add_subdirectory("loonyland2")  # 2007-02
 add_subdirectory("sleepless")  # 2007-10
 
+# -----------------------------------------------------------------------------
 # Launcher
 if(EMSCRIPTEN)
 	# Assets for web distribution
@@ -84,4 +87,10 @@ elseif(ANDROID)
 else()
 	# Launcher for desktop platforms
 	add_subdirectory("launcher")
+endif()
+
+# -----------------------------------------------------------------------------
+# Developer Tools
+if(NOT EMSCRIPTEN AND NOT ANDROID)
+	add_subdirectory("lunaticpal" EXCLUDE_FROM_ALL)
 endif()
