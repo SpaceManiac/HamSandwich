@@ -16,6 +16,27 @@ function(HamSandwich_embed_file target_name filename symbol_name)
 	target_sources("${target_name}" PRIVATE "${cpp}")
 endfunction()
 
+function(HamSandwich_executable_icon target_name ico)
+	if(WIN32)
+		# On Windows, generate a simple .rc file that includes the icon.
+		file(GENERATE OUTPUT icon.rc CONTENT "allegro_icon ICON \"${ico}\"")
+		target_sources("${target_name}" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/icon.rc")
+	else()
+		# On other platforms, embed the .png version as a document.
+		set(ico2png_py "${CMAKE_SOURCE_DIR}/tools/build/ico2png.py")
+		set(png "${CMAKE_CURRENT_BINARY_DIR}/${arg_ICON}.png")
+		add_custom_command(
+			OUTPUT "${png}"
+			COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${ico2png_py}" "${ico}" "${png}"
+			MAIN_DEPENDENCY "${ico}"
+			DEPENDS "${ico2png_py}"
+			VERBATIM
+		)
+
+		HamSandwich_embed_file("${target_name}" "${png}" embed_game_icon)
+	endif()
+endfunction()
+
 function(HamSandwich_add_executable target_name)
 	# target_name
 	# opt: ICON whatever.ico, default: ${target_name}.ico

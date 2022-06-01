@@ -4,7 +4,13 @@
 #include <string>
 #include "globals.h"
 #include "editor.h"
-#include "resources.rc.h"
+
+extern const size_t embed_vera_size;
+extern const unsigned char embed_vera[];
+extern const size_t embed_fontawesome_size;
+extern const unsigned char embed_fontawesome[];
+extern const size_t embed_game_icon_size;
+extern const unsigned char embed_game_icon[];
 
 using namespace std;
 
@@ -20,16 +26,16 @@ int main(int argc, char** argv) {
     IMG_Init(IMG_INIT_PNG);
     if (TTF_Init()) printf("TTF_Init: %s\n", TTF_GetError());
 
-    gFont = TTF_OpenFontRW(EmbeddedRW(vera), true, 14);
+    gFont = TTF_OpenFontRW(SDL_RWFromConstMem(embed_vera, embed_vera_size), true, 14);
     if (!gFont) printf("vera.ttf: %s\n", TTF_GetError());
-    gIconFont = TTF_OpenFontRW(EmbeddedRW(fontawesome), true, 14);
+    gIconFont = TTF_OpenFontRW(SDL_RWFromConstMem(embed_fontawesome, embed_fontawesome_size), true, 14);
     if (!gIconFont) printf("fontawesome.ttf: %s\n", TTF_GetError());
 
     SDL_CreateWindowAndRenderer(DISPLAY_WIDTH, DISPLAY_HEIGHT, SDL_WINDOW_RESIZABLE, &window, &renderer);
     SDL_GetWindowSize(window, &DISPLAY_WIDTH, &DISPLAY_HEIGHT);
     SDL_SetWindowTitle(window, "JspEdit 3");
 
-    SDL_Surface *surface = IMG_Load_RW(EmbeddedRW(allegro_icon), true);
+    SDL_Surface *surface = IMG_Load_RW(SDL_RWFromConstMem(embed_game_icon, embed_game_icon_size), true);
     SDL_SetWindowIcon(window, surface);
     SDL_FreeSurface(surface);
 

@@ -92,6 +92,7 @@ endif()
 # -----------------------------------------------------------------------------
 # Developer Tools
 if(NOT EMSCRIPTEN AND NOT ANDROID)
+	add_subdirectory("jspedit" EXCLUDE_FROM_ALL)
 	add_subdirectory("lunaticpal" EXCLUDE_FROM_ALL)
 	add_subdirectory("jfttool" EXCLUDE_FROM_ALL)
 endif()

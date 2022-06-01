@@ -7,7 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <SDL2/SDL_image.h>
-#include <nfd.h>
+#include <tinyfiledialogs.h>
 
 using namespace std;
 
@@ -19,21 +19,23 @@ namespace editor {
 namespace dialog {
 
 bool open(const char* title, const char* patterns, std::string *buf) {
-    (void) title;
-    char *chosen = nullptr;
-    nfdresult_t result = NFD_OpenDialog(patterns, nullptr, &chosen);
-    *buf = chosen;
-    free(chosen);
-    return result == NFD_OKAY;
+	char* chosen = tinyfd_openFileDialog(title, nullptr, 0, nullptr, nullptr, false);
+	if (!chosen)
+		return false;
+
+	buf->assign(chosen);
+	//free(chosen);
+	return true;
 }
 
 bool save(const char* title, const char* patterns, std::string *buf) {
-    (void) title;
-    char *chosen = nullptr;
-    nfdresult_t result = NFD_SaveDialog(patterns, nullptr, &chosen);
-    *buf = chosen;
-    free(chosen);
-    return result == NFD_OKAY;
+	char* chosen = tinyfd_saveFileDialog(title, nullptr, 0, nullptr, nullptr);
+	if (!chosen)
+		return false;
+
+	buf->assign(chosen);
+	//free(chosen);
+	return true;
 }
 
 void showMessage(const char* body) {
@@ -820,7 +822,7 @@ void loadOnStartup(const char* fname) {
 
 void main() {
     Editor ed = Editor();
-    if (start_fname) {
+    if (start_fname && std::string_view{"window"} != start_fname) {
         ed.load(start_fname);
     }
     while (ed.running) {
