@@ -29,7 +29,9 @@ based on HamSandwich.
     * Support 64-bit builds with full save and add-on compatibility
     * Combine each game's control, music, movie, font, sound, and sprite handling into a common "Ham" core
 
-### [Source code blog](http://hamumu.com/blog.php?entry=1558391916)
+### Source code blogs
+* [Eddie Galaxy, Spooky Castle, and Stockboy](http://hamumu.com/blog.php?entry=1653318531) (2022-05-23)
+* [Dr. Lunatic, Supreme with Cheese, Sleepless Hollow, Loonyland, Loonyland 2, and Kid Mystic](http://hamumu.com/blog.php?entry=1558391916) (2019-05-20)
 
 ## Dr. Lunatic Supreme With Cheese
 
@@ -219,3 +221,25 @@ See "Also applicable to Sleepless Hollow" above.
 * Fix high-level Training's bonus XP overflowing and becoming useless
 
 ### v1.2CE (2007) - [Download](https://hamumu.itch.io/loonyland-2-winter-woods)
+
+## Stockboy
+
+### HamSandwich (2022–present)
+
+* Disable the internet addon downloading feature, since the server is long-gone
+
+### v1.5 (June 2004) - [Download](https://hamumu.itch.io/stockboy)
+
+## Spooky Castle
+
+### HamSandwich (2022–present)
+
+* Allow using the arrow keys to scroll around in the editor
+
+### Re-release (May 2004) - [Download](https://hamumu.itch.io/spooky-castle)
+
+## Eddie Galaxy
+
+### HamSandwich (2022–present)
+
+### Re-release (June 2004) - [Blog](http://hamumu.com/blog.php?yr=2004&mn=6&entry=1088030171) - [Download](https://hamumu.itch.io/eddie-galaxy)
