@@ -112,6 +112,8 @@ assets, and [Publish to Web](#publish-to-web) for how to publish to GitHub Pages
 
 ## Modding
 
+Check out existing mods on the [list of published mods](https://github.com/SpaceManiac/HamSandwich/wiki).
+
 To get started with custom worlds, graphics, music, and so on, place your
 custom files inside the `appdata/<project>/` folder alongside your profiles.
 When the game loads assets it checks that folder before the installer. Any
@@ -132,6 +134,8 @@ HamSandwich_add_executable(
     ...
 )
 ```
+
+### Importing another game's assets
 
 To import another game's content, copy the relevant installer from the other
 game's `source/<project>/<project>.json` into that of the game you are modding,
@@ -155,12 +159,51 @@ You can add a line like `"mountpoint": "mystic"` to an installer to access its
 files by a path like `mystic/graphics/items.jsp` instead of it overriding the
 original files.
 
-When the game searches for a world or asset file, it scans first the appdata
-folder, then the `assets/<project>/` folder, then the `installers` in order.
+When the game searches for a world or asset file, it scans in a particular order:
+
+1. The `appdata/<project>` folder.
+2. The `assets/<project>` folder.
+3. Inside any `.zip` files in the `addons/<project>` folder.
+4. The listed `"installers"` in order.
+
 That means that overrides should go at the beginning of the list and fallbacks
 should go at the end.
 
-Check out existing mods on the [list of published mods](https://github.com/SpaceManiac/HamSandwich/wiki).
+### Creating `.bmp` images with the correct palette
+
+Most image editors offer a facility to choose what palette (sometimes called a
+colormap) to use when authoring 256-color bitmaps. The palette can be imported
+from any asset from the games, or from the provided `src/lunaticpal/example.bmp`. In case you are
+having trouble, you can use the included LunaticPal tool with `./run lunaticpal` to
+convert images.
+
+Images shown with the "Show Pic/Movie" special effect, while still
+limited to 256 colors total, can use any palette. The game will temporarily
+switch palettes while displaying the image and switch back when finished.
+
+### Editing `.jft` fonts
+
+HamSandwich includes a quick-and-dirty JFT. Use it from the command line like:
+
+- `./run jfttool path/to/font.jft` to extract a `.txt` and a series of `.png` files from a font
+- `./run jfttool path/to/font.txt` to re-pack a `.txt` and `.png`s into a font
+
+### Editing `.jsp` sprite packs
+
+HamSandwich includes JspEdit, a GUI tool for editing `.jsp` files. The
+interface is reasonably self-exaplanatory. Run it with `./run jspedit`.
+
+### Creating `.flc` ([FLIC](https://en.wikipedia.org/wiki/FLIC_(file_format))) movies
+
+FLIC movies originated with Autodesk Animator. The movies included with Hamumu
+games were created with [3D Studio Max](https://en.wikipedia.org/wiki/Autodesk_3ds_Max).
+FLIC export is also provided by contemporary tools like Jasc Animation Shop, and
+the modern pixel art and animation editor [Aseprite](https://www.aseprite.org/).
+Note that HamSandwich fixes a bug in the engine's FLIC decoder which may cause
+some exported animations to render incorrectly on the retail versions of the games.
+
+For programmers, libraries like [Aseprite FLIC Library](https://github.com/aseprite/flic) and
+[LibFLIC](https://github.com/wangds/libflic) may be of use.
 
 ## Publishing
 
