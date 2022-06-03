@@ -303,7 +303,7 @@
 #define MONS_MEGABURNER 267
 #define MONS_SKULL	 	268
 #define MONS_LIGHTSWITCH 269
-#define MONS_KNIGHT2	270	
+#define MONS_KNIGHT2	270
 #define MONS_MADCOW	  	271
 #define MONS_MADCOW2	272
 #define MONS_SPATULA	273
@@ -580,7 +580,7 @@ typedef struct monsterType_t
 	byte framesPerDir;
 	word hp;
 	word points;
-	char sprName[32];
+	char sprName[64];
 	sprite_set_t *spr;
 	word flags;
 	dword theme;
