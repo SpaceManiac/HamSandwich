@@ -1343,7 +1343,7 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 				answer=1;
 			else
 				answer=0;
-			
+
 			break;
 		case TRG_ITEMRECT:
 			i=map->ItemCountInRect(t->value,t->x,t->y,(t->value2%256),(t->value2/256));	// count how many of this item there are in the rect
@@ -1457,7 +1457,6 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 				answer=0;
 			break;
 		case TRG_MONSAGE:
-			int maxGuys;
 			answer=CheckMonsterAge(t->x,t->y,t->value,t->value2,t->flags);
 			break;
 		case TRG_STANDTILE:
@@ -1578,7 +1577,6 @@ byte IsTriggered(byte chain,special_t *me,Map *map)
 
 void SpecialEffect(special_t *me,Map *map)
 {
-	static world_t *world;
 	int i,v,v2;
 	byte fx;
 

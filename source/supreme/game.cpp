@@ -238,7 +238,6 @@ void GameIdle(void)
 
 void RestoreGameplayGfx(void)
 {
-
 	if(profile.progress.purchase[modeShopNum[MODE_VIRTUAL]]&SIF_ACTIVE && !shopping)
 	{
 		RedPalette(gamemgl);

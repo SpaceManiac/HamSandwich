@@ -1,3 +1,4 @@
+#include "winpch.h"
 #include "leveldialog.h"
 #include "editor.h"
 #include "dialogbits.h"
@@ -401,7 +402,7 @@ byte ZoomTileColor(int x,int y)
 	for(i=0;i<MAX_MAPMONS;i++)
 		if (world->map[mapNum]->badguy[i].type &&
 			world->map[mapNum]->badguy[i].x==x &&
-			world->map[mapNum]->badguy[i].y==y && 
+			world->map[mapNum]->badguy[i].y==y &&
 			(world->map[mapNum]->badguy[i].type==MONS_BOUAPHA||world->map[mapNum]->badguy[i].type==MONS_BUNNY||world->map[mapNum]->badguy[i].type==MONS_FOLLOWBUNNY||world->map[mapNum]->badguy[i].type==MONS_FRIENDLY2||world->map[mapNum]->badguy[i].type==MONS_GOODROBOT||
 			world->map[mapNum]->badguy[i].type==MONS_GOODBONE||world->map[mapNum]->badguy[i].type==MONS_GOODROBOT2||world->map[mapNum]->badguy[i].type==MONS_WIZARD||world->map[mapNum]->badguy[i].type==MONS_PUNKBUNNY||world->map[mapNum]->badguy[i].type==MONS_MINECART||
 			world->map[mapNum]->badguy[i].type==MONS_RAFT||world->map[mapNum]->badguy[i].type==MONS_LOG||world->map[mapNum]->badguy[i].type==MONS_YERFDOG||

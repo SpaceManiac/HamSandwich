@@ -1360,7 +1360,7 @@ static void PicNameClick2(int id)
 	curEff=effStart + (id-ID_EFF0)/100;
 
 	mode=SMODE_PICKBMP;
-	InitFileDialog("user/*.*",FM_LOAD|FM_EXIT|FM_PICSONLY,"");
+	InitFileDialog("user",".bmp",FM_LOAD|FM_EXIT|FM_PICSONLY,"");
 }
 
 static void SongClick(int id)

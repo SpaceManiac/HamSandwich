@@ -12,7 +12,7 @@
 #include "recordbook.h"
 #include "scanner.h"
 #include "shop.h"
-#include "lsdir.h"
+#include "appdata.h"
 
 #if __linux__
 #include <unistd.h>
@@ -26,7 +26,7 @@ static char msBright,msDBright;
 static int msx,msy;
 int cardPage;
 dword monsSel;
-int time;
+int time1;
 int time2;
 int time3;
 int numObtained;
@@ -429,7 +429,7 @@ int GetMonsterCardChance(dword g)
 	{
 		if(cardsType[i].id == g)
 		{
-			chance = ceil(monsType[g].hp/pow(2,cardsType[i].rarity));
+			chance = ceil(GetMonsterType(g)->hp/pow(2,cardsType[i].rarity));
 			if (chance>1000)
 				chance = 1000;
 			else if (chance<1)
@@ -465,7 +465,7 @@ void InitCardMenu(MGLDraw *mgl)
 	msBright=0;
 	msDBright=1;
 	monsSel=0;
-	time = time2 = 0;
+	time1 = time2 = 0;
 
 	mgl->LoadBMP("graphics/profmenu.bmp");
 	backgd=(byte *)malloc(640*480);
@@ -484,11 +484,11 @@ byte UpdateCardMenu(int *lastTime,MGLDraw *mgl)
 {
 	int i,j;
 	char k;
-	
+
 	if(time2==4)
 	{
 		time2 = 0;
-		time++;
+		time1++;
 	}
 	time2++;
 
@@ -510,7 +510,7 @@ byte UpdateCardMenu(int *lastTime,MGLDraw *mgl)
 		mgl->Process();
 		*lastTime-=TIME_PER_FRAME;
 	}
-	
+
 	if(mgl->MouseTap())
 	{
 		for(i=0;i<16;i++)
@@ -521,10 +521,10 @@ byte UpdateCardMenu(int *lastTime,MGLDraw *mgl)
 				{
 					MakeNormalSound(SND_MENUSELECT);
 					GrabCardID((cardPage-1)*16+i);
-					time = time2 = 0;
+					time1 = time2 = 0;
 				}
 			}
-			
+
 		}
 		for(i=0;i<NUM_CARD_BTNS;i++)
 		{
@@ -552,7 +552,7 @@ byte UpdateCardMenu(int *lastTime,MGLDraw *mgl)
 			}
 		}
 	}
-	
+
 	if(k==27)//pressing ESC exits to menu
 	return 1;
 
@@ -580,7 +580,7 @@ void RenderCardMenu(MGLDraw *mgl)
 	int msx2,msy2;
 	char s[64];
 	static char yesno[][5]={"Off","On"};
-	
+
 	for(i=0;i<480;i++)
 		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
 
@@ -593,7 +593,7 @@ void RenderCardMenu(MGLDraw *mgl)
 	//what page?
 	sprintf(s,"Page %d/%d",cardPage,MAX_PAGES);
 	PrintGlow(290,44,s,0,2);
-	
+
 	SetSpriteConstraints(13,13,627,467);
 	DrawBox(290,72,590,448,1*32+16);
 	DrawBox(20,168,260,448,1*32+16);
@@ -607,7 +607,7 @@ void RenderCardMenu(MGLDraw *mgl)
 		msx2=622;
 	if(msy2>462)
 		msy2=462;
-	
+
 	if (cardPage>0)
 		{
 		for (i=0;i<16;i++)
@@ -631,10 +631,10 @@ void RenderCardMenu(MGLDraw *mgl)
 	if (monsSel>0)
 	{
 		SetSpriteConstraints(156,169,260,448);
-		InstaRenderMonsterAnimated2(208,420,monsSel,0,time,mgl);
+		InstaRenderMonsterAnimated2(208,420,monsSel,0,time1,mgl);
 		sprintf(s,"#%i",GetMonsterCard(monsSel)+1);
 		PrintGlow(22,150,s,0,2);
-		sprintf(s,"NAME: %s",monsType[monsSel].name);
+		sprintf(s,"NAME: %s",GetMonsterType(monsSel)->name);
 		PrintGlow(22,170,s,0,2);
 		sprintf(s,"RANK %i CHAR",GetCardID(GetMonsterCard(monsSel))->rarity+1);
 		PrintGlow(22,190,s,0,2);
@@ -652,7 +652,7 @@ void RenderCardMenu(MGLDraw *mgl)
 	plSpr->GetSprite(0)->DrawBright(msx2,msy2,mgl,msBright/2);
 	sprintf(s,"%i / %i CARDS OBTAINED",numObtained,NUM_CARDS);
 	PrintGlow(392,24,s,0,2);
-		
+
 }
 
 //exit
@@ -662,7 +662,7 @@ void ExitCardMenu(void)
 	delete plSpr;
 	delete frontSpr;
 	delete backSpr;
-	time = time2 = 0;
+	time1 = time2 = 0;
 }
 
 void CardMenu(MGLDraw *mgl)
@@ -672,16 +672,16 @@ void CardMenu(MGLDraw *mgl)
 
 	InitCardMenu(mgl);
 	PlaySongForce("SWC_21_secretlevel.ogg");
-	
+
 	while(!done)
 	{
 		lastTime+=TimeLength();
 		StartClock();
 		done=UpdateCardMenu(&lastTime,mgl);
 		RenderCardMenu(mgl);
-		
+
 		mgl->Flip();
-	
+
 		if(!mgl->Process())
 		done=1;
 		EndClock();

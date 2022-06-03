@@ -17,6 +17,8 @@ int GetMonsterCard(dword g);
 int GetMonsterCardChance(dword g);
 int GetMonsterCardRarity(dword g);
 
+extern int time1, time3;
+
 //CARD LIST:
 #define NUM_CARDS 332
 

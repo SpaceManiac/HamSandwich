@@ -7,6 +7,7 @@
 #include "goal.h"
 #include "water.h"
 #include "guy.h"
+#include "cards.h"
 
 /*
  -MT_GOOD	 -MT_EVIL		 -MT_SPOOKY		-MT_ZOMBIE	 -MT_VAMPIRE	-MT_SPIDER -MT_PYGMY
@@ -536,7 +537,7 @@ void InstaRenderMonsterAnimated2(int x,int y,dword type,char bright,int tm,MGLDr
 	if(monsType[type].anim[ANIM_MOVE][1]!=255)
 	{
 		if (monsType[type].anim[ANIM_MOVE][tm+1]==255)
-			time=0;
+			time1=0;
 		v=monsType[type].anim[ANIM_MOVE][tm];
 	}
 	else
