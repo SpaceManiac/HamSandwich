@@ -35,7 +35,7 @@ static int NUM_SOUNDS = 0;
 
 static byte soundIsOn=0;
 static int bufferCount;
-static soundList_t *soundList;
+static std::vector<soundList_t> soundList;
 static schannel_t *schannel;
 
 bool JamulSoundInit(int numBuffers)
@@ -70,10 +70,9 @@ bool JamulSoundInit(int numBuffers)
 
 	soundIsOn=1;
 	bufferCount=numBuffers;
-	soundList = new soundList_t[bufferCount];
+	soundList.clear();
+	soundList.reserve(bufferCount);
 	schannel = new schannel_t[NUM_SOUNDS+1];
-	for(i=0;i<bufferCount;i++)
-		soundList[i].sample=NULL;
 	for(i=0;i<NUM_SOUNDS;i++)
 	{
 		schannel[i].priority=0;
@@ -92,7 +91,7 @@ void JamulSoundExit(void)
 		JamulSoundPurge();
 		StopSong();
 		delete[] schannel;
-		delete[] soundList;
+		soundList.clear();
 		Mix_CloseAudio();
 	}
 }
@@ -130,6 +129,11 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 
 	vol=vol+sndVolume;
 	pan+=128;
+
+	if (soundList.size() < which + 1)
+	{
+		soundList.resize(which + 1);
+	}
 
 	if(soundList[which].sample==NULL)
 	{
@@ -261,7 +265,7 @@ void JamulSoundPurge(void)
 		schannel[i].voice=-1;
 		schannel[i].sample.reset();
 	}
-	for(i=0;i<bufferCount;i++)
+	for(i=0;i<soundList.size();i++)
 	{
 		if(soundList[i].sample)
 		{
