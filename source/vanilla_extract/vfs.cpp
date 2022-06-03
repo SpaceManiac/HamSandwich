@@ -47,11 +47,11 @@ SDL_RWops* VfsStack::open_sdl(const char* filename)
 		}
 	}
 
-	for (auto& mount : mounts)
+	for (auto iter = mounts.rbegin(); iter != mounts.rend(); ++iter)
 	{
-		if (const char* subfilename = mount.matches(filename))
+		if (const char* subfilename = iter->matches(filename))
 		{
-			if (SDL_RWops* rw = mount.vfs->open_sdl(subfilename))
+			if (SDL_RWops* rw = iter->vfs->open_sdl(subfilename))
 			{
 				return rw;
 			}
@@ -72,11 +72,11 @@ FILE* VfsStack::open_stdio(const char* filename)
 		}
 	}
 
-	for (auto& mount : mounts)
+	for (auto iter = mounts.rbegin(); iter != mounts.rend(); ++iter)
 	{
-		if (const char* subfilename = mount.matches(filename))
+		if (const char* subfilename = iter->matches(filename))
 		{
-			if (FILE* fp = mount.vfs->open_stdio(subfilename))
+			if (FILE* fp = iter->vfs->open_stdio(subfilename))
 			{
 				return fp;
 			}
@@ -120,19 +120,19 @@ void VfsStack::list_dir(const char* directory, std::set<std::string>& output)
 		write_mount->list_dir(directory, output);
 	}
 
-	for (auto& mount : mounts)
+	for (auto iter = mounts.rbegin(); iter != mounts.rend(); ++iter)
 	{
-		if (mount.mountpoint.empty())
+		if (iter->mountpoint.empty())
 		{
-			mount.vfs->list_dir(directory, output);
+			iter->vfs->list_dir(directory, output);
 		}
-		else if (const char* subdirectory = mount.matches(directory))
+		else if (const char* subdirectory = iter->matches(directory))
 		{
-			std::string mountpoint_slash = mount.mountpoint;
+			std::string mountpoint_slash = iter->mountpoint;
 			mountpoint_slash.push_back('/');
 
 			std::set<std::string> intermediate;
-			mount.vfs->list_dir(subdirectory, intermediate);
+			iter->vfs->list_dir(subdirectory, intermediate);
 
 			for (auto each : intermediate)
 			{

@@ -164,10 +164,10 @@ When the game searches for a world or asset file, it scans in a particular order
 1. The `appdata/<project>` folder.
 2. The `assets/<project>` folder.
 3. Inside any `.zip` files in the `addons/<project>` folder.
-4. The listed `"installers"` in order.
+4. The listed `"installers"` in reverse order.
 
-That means that overrides should go at the beginning of the list and fallbacks
-should go at the end.
+That means that overrides should go at the end of the list and base assets
+should go at the beginning.
 
 ### Creating `.bmp` images with the correct palette
 
