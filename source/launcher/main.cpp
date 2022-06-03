@@ -862,7 +862,7 @@ int main(int argc, char** argv)
 				environment << "HSW_APPDATA=appdata/" << launcher.current_game->appdata_folder_name << '\0';
 
 				int i = 0;
-				environment << "HSW_ASSETS_" << i++ << "=@stdio@assets/" << launcher.current_game->id << '\0';
+				environment << "HSW_ASSETS_" << i++ << "=@stdio@assets/" << launcher.current_game->appdata_folder_name << '\0';
 
 				for (const auto& asset : launcher.current_game->assets)
 				{
@@ -921,7 +921,7 @@ int main(int argc, char** argv)
 
 					int i = 0;
 					environment.str("");
-					environment << "HSW_ASSETS_" << i++ << "=@stdio@assets/" << launcher.current_game->id;
+					environment << "HSW_ASSETS_" << i++ << "=@stdio@assets/" << launcher.current_game->appdata_folder_name;
 					envs.push_back(environment.str());
 					raw_envs.push_back(envs.back().data());
 
