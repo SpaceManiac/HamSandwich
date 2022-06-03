@@ -388,138 +388,149 @@
 #define SND_JACKATTACK	329
 #define SND_JACKDIE		330
 
+// Import sounds from other games using synthetic sound numbers in the following ranges:
+#define SND_MYSTIC_START    1024
+#define SND_MYSTIC_END      (SND_MYSTIC_START + 511)
+#define SND_LOONYLAND_START 1536
+#define SND_LOONYLAND_END   (SND_LOONYLAND_START + 511)
+#define SND_SLEEPLESS_START 2048
+#define SND_SLEEPLESS_END   (SND_SLEEPLESS_START + 511)
+
 //kid mystic sounds
-#define SND_KOOLKATKM	331 	//kid mystic kool kat bad
-#define SND_DROWNKM		332		//kid mystic drown
-#define SND_WINKM		333		//kid mystic win level
-#define SND_KMOUCH		334		//kid mystic ouch
-#define SND_KMDIE		335		//kid mystic die
+#define SND_KOOLKATKM	(SND_MYSTIC_START + 19) 	//kid mystic kool kat bad
+#define SND_DROWNKM		(SND_MYSTIC_START + 25)		//kid mystic drown
+#define SND_WINKM		(SND_MYSTIC_START + 28)		//kid mystic win level
+#define SND_KMOUCH		(SND_MYSTIC_START + 89)		//kid mystic ouch
+#define SND_KMDIE		(SND_MYSTIC_START + 90)		//kid mystic die
 //peeper... oh man
-#define SND_PEEPDIE		336		//peeper
-#define SND_PEEPOUCH	337
-#define SND_PEEPSHOOT	338
+#define SND_PEEPDIE		(SND_MYSTIC_START + 169)		//peeper
+#define SND_PEEPOUCH	(SND_MYSTIC_START + 170)
+#define SND_PEEPSHOOT	(SND_MYSTIC_START + 171)
 //eyeguy
-#define SND_EYEGUYOUCH  339		//eye guy
-#define SND_EYEGUYDIE	340
+#define SND_EYEGUYOUCH  (SND_MYSTIC_START + 172)		//eye guy
+#define SND_EYEGUYDIE	(SND_MYSTIC_START + 173)
 //tower
-#define SND_TOWEROUCH	341
-#define SND_TOWERDIE	342
+#define SND_TOWEROUCH	(SND_MYSTIC_START + 175)
+#define SND_TOWERDIE	(SND_MYSTIC_START + 176)
 //lookey loo & xeno empress
-#define SND_LOOKEYOUCH  343		//also used by xeno empress
-#define SND_LOOKEYDIE	344
+#define SND_LOOKEYOUCH  (SND_MYSTIC_START + 177)		//also used by xeno empress
+#define SND_LOOKEYDIE	(SND_MYSTIC_START + 178)
 //grumpy golem
-#define SND_GOLEMPOUND	345		//grumpy golem
-#define SND_GOLEMOUCH	346
-#define SND_GOLEMDIE	347
+#define SND_GOLEMPOUND	(SND_MYSTIC_START + 185)		//grumpy golem
+#define SND_GOLEMOUCH	(SND_MYSTIC_START + 186)
+#define SND_GOLEMDIE	(SND_MYSTIC_START + 187)
 //bobby khan
-#define SND_BOBBYOUCH	348
-#define SND_BOBBYDIE	349
-#define SND_BOBBYSLASH	350		//also used by sdzl's charge
-#define SND_BOBBYSTOMP	351		//also used by sdzl's throwup
+#define SND_BOBBYOUCH	(SND_MYSTIC_START + 188)
+#define SND_BOBBYDIE	(SND_MYSTIC_START + 189)
+#define SND_BOBBYSLASH	(SND_MYSTIC_START + 190)		//also used by sdzl's charge
+#define SND_BOBBYSTOMP	(SND_MYSTIC_START + 191)		//also used by sdzl's throwup
 #define SND_BOBBYSPIN	149 	//basically the same sound as sdz's spit attack
-#define SND_BOBBYBLOCK	352
+#define SND_BOBBYBLOCK	(SND_MYSTIC_START + 193)
 //back to eye guy
-#define SND_EYEGUYSHT	353
+#define SND_EYEGUYSHT	(SND_MYSTIC_START + 168)
 //octon
-#define SND_OCTONSHOOT	354
-#define SND_OCTONSPLASH	355
-#define SND_OCTONOUCH	356
-#define SND_OCTONDIE	357
+#define SND_OCTONSHOOT	(SND_MYSTIC_START + 209)
+#define SND_OCTONSPLASH	(SND_MYSTIC_START + 210)
+#define SND_OCTONOUCH	(SND_MYSTIC_START + 211)
+#define SND_OCTONDIE	(SND_MYSTIC_START + 212)
 //bush
-#define SND_BUSHDIE		358
-#define SND_BUSHOUCH	359
+#define SND_BUSHDIE		(SND_MYSTIC_START + 213)
+#define SND_BUSHOUCH	(SND_MYSTIC_START + 214)
 //the incas
-#define SND_INCABEAM	360
-#define SND_INCAGEN		361
-#define SND_INCAHIT		362
-#define SND_INCADIE		363
-#define SND_INCATONGUE	364
+#define SND_INCABEAM	(SND_MYSTIC_START + 216)
+#define SND_INCAGEN		(SND_MYSTIC_START + 217)
+#define SND_INCAHIT		(SND_MYSTIC_START + 218)
+#define SND_INCADIE		(SND_MYSTIC_START + 219)
+#define SND_INCATONGUE	(SND_MYSTIC_START + 220)
 //snail
-#define SND_SNAILHIT	365
-#define SND_SNAILDIE	366
+#define SND_SNAILHIT	(SND_MYSTIC_START + 227)
+#define SND_SNAILDIE	(SND_MYSTIC_START + 228)
 //goat
-#define SND_GOATSHOOT	367
-#define SND_GOATHIT		368
-#define SND_GOATDIE		369
-#define SND_GOATRUN		370
-#define SND_GOATDIZZY	371
+#define SND_GOATSHOOT	(SND_MYSTIC_START + 231)
+#define SND_GOATHIT		(SND_MYSTIC_START + 232)
+#define SND_GOATDIE		(SND_MYSTIC_START + 233)
+#define SND_GOATRUN		(SND_MYSTIC_START + 234)
+#define SND_GOATDIZZY	(SND_MYSTIC_START + 235)
 //peeping bomb
-#define SND_PEEPALARM	372
+#define SND_PEEPALARM	(SND_MYSTIC_START + 238)
 
 //ah, time for loonyland sounds
-#define SND_SKELGAS		373		// gangrene gas attack
-#define SND_SKELSUMMON  374		// numbskull summoning
+#define SND_SKELGAS		(SND_LOONYLAND_START + 4)		// gangrene gas attack
+#define SND_SKELSUMMON  (SND_LOONYLAND_START + 5)		// numbskull summoning
 // player
-#define SND_LOONYOUCH	375
-#define SND_LOONYDIE	376
-#define SND_LOONYBORED	377
+#define SND_LOONYOUCH	(SND_LOONYLAND_START + 11)
+#define SND_LOONYDIE	(SND_LOONYLAND_START + 12)
+#define SND_LOONYBORED	(SND_LOONYLAND_START + 14)
 // Villager
-#define SND_VILLAGERSCRATCH	378
-#define SND_VILLAGERYAWN	379	// female
-#define SND_VILLDIE1	380	// male villager die
-#define SND_VILLDIE2	381	// female villager die
+#define SND_VILLAGERSCRATCH	(SND_LOONYLAND_START + 15)
+#define SND_VILLAGERYAWN	(SND_LOONYLAND_START + 16)	// female
+#define SND_VILLDIE1	(SND_LOONYLAND_START + 114)	// male villager die
+#define SND_VILLDIE2	(SND_LOONYLAND_START + 115)	// female villager die
 // Swampdog
-#define SND_SWAMPOUCH	382
-#define SND_SWAMPDIE	383
-#define SND_SWAMPALERT	384
-#define SND_SWAMPJAB	385
-#define SND_SWAMPCHARGE	386
-#define SND_SWAMPSHOOT	387
+#define SND_SWAMPOUCH	(SND_LOONYLAND_START + 40)
+#define SND_SWAMPDIE	(SND_LOONYLAND_START + 41)
+#define SND_SWAMPALERT	(SND_LOONYLAND_START + 42)
+#define SND_SWAMPJAB	(SND_LOONYLAND_START + 43)
+#define SND_SWAMPCHARGE	(SND_LOONYLAND_START + 44)
+#define SND_SWAMPSHOOT	(SND_LOONYLAND_START + 45)
 // Ghostly
-#define SND_GHOSTSPIN	388
-#define SND_GHOSTPUNCH	389
+#define SND_GHOSTSPIN	(SND_LOONYLAND_START + 48)
+#define SND_GHOSTPUNCH	(SND_LOONYLAND_START + 49)
 // Happy Stick Witch
 #define SND_STICKTAUNT	390
-#define SND_STICKOUCH	391
-#define SND_STICKDIE	392
+#define SND_STICKOUCH	(SND_LOONYLAND_START + 54)
+#define SND_STICKDIE	(SND_LOONYLAND_START + 55)
 // Frankenjulie
-#define SND_FRANKOUCH	393
-#define SND_FRANKDIE	394
-#define SND_FRANKHEAD	395
-#define SND_FRANKARMS	396
-#define SND_FRANKMISSILE 397
+#define SND_FRANKOUCH	(SND_LOONYLAND_START + 86)
+#define SND_FRANKDIE	(SND_LOONYLAND_START + 87)
+#define SND_FRANKHEAD	(SND_LOONYLAND_START + 88)
+#define SND_FRANKARMS	(SND_LOONYLAND_START + 89)
+#define SND_FRANKMISSILE (SND_LOONYLAND_START + 90)
 // Polterguy/Spookley
-#define SND_POLTEROUCH	398
-#define SND_POLTERDIE	399
-#define SND_POLTERSNEEZE 400
-#define SND_POLTERGET	401	// activating a chair/barrel/etc
+#define SND_POLTEROUCH	(SND_LOONYLAND_START + 91)
+#define SND_POLTERDIE	(SND_LOONYLAND_START + 92)
+#define SND_POLTERSNEEZE (SND_LOONYLAND_START + 93)
+#define SND_POLTERGET	(SND_LOONYLAND_START + 94)	// activating a chair/barrel/etc
 //PUMPKIN!
-#define SND_PUMPKINOUCH	402
+#define SND_PUMPKINOUCH	(SND_LOONYLAND_START + 99)
 // Mummy
-#define SND_MUMMYSHOOT	403
-#define SND_MUMMYSUMMON 404
+#define SND_MUMMYSHOOT	(SND_LOONYLAND_START + 104)
+#define SND_MUMMYSUMMON (SND_LOONYLAND_START + 25)
 // Evil tree
-#define SND_TREEOUCH	405
-#define SND_TREEDIE		406
-#define SND_TREEFROG	407
+#define SND_TREEOUCH	(SND_LOONYLAND_START + 26)
+#define SND_TREEDIE		(SND_LOONYLAND_START + 27)
+#define SND_TREEFROG	(SND_LOONYLAND_START + 28)
 // Elder vampires
-#define SND_ELDEROUCH	408
-#define SND_ELDERDIE	409
-#define SND_ELDERSHOOT	410
-#define SND_ELDERCHARGE 411
-#define SND_ELDERSUMMON 412
+#define SND_ELDEROUCH	(SND_LOONYLAND_START + 106)
+#define SND_ELDERDIE	(SND_LOONYLAND_START + 107)
+#define SND_ELDERSHOOT	(SND_LOONYLAND_START + 108)
+#define SND_ELDERCHARGE (SND_LOONYLAND_START + 109)
+#define SND_ELDERSUMMON (SND_LOONYLAND_START + 110)
 // Bonkula
-#define SND_BONKOUCH	413
-#define SND_BONKDIE		414
-#define SND_BONKSWING	415
-#define SND_BONKHIT		416
+#define SND_BONKOUCH	(SND_LOONYLAND_START + 116)
+#define SND_BONKDIE		(SND_LOONYLAND_START + 117)
+#define SND_BONKSWING	(SND_LOONYLAND_START + 118)
+#define SND_BONKHIT		(SND_LOONYLAND_START + 119)
 // Evilizer (and water)
-#define SND_EVILIZER	417	// the evilizer running
-#define SND_WATERSPURT	418
-#define SND_WATERSPLASH	419
+#define SND_EVILIZER	(SND_LOONYLAND_START + 153)	// the evilizer running
+#define SND_WATERSPURT	(SND_LOONYLAND_START + 144)
+#define SND_WATERSPLASH (SND_LOONYLAND_START + 145)
 // Larry
-#define SND_LARRYOUCH	420
-#define SND_LARRYDARTS	421
-#define SND_LARRYPOUNCE	422
-#define SND_LARRYHOWL	423
+#define SND_LARRYOUCH	(SND_LOONYLAND_START + 183)
+#define SND_LARRYDARTS	(SND_LOONYLAND_START + 184)
+#define SND_LARRYPOUNCE	(SND_LOONYLAND_START + 185)
+#define SND_LARRYHOWL	(SND_LOONYLAND_START + 186)
 // Forg
-#define SND_FROGOUCH	424
-#define SND_FROGDIE		425
-#define SND_FROGLICK	426
+#define SND_FROGOUCH	(SND_LOONYLAND_START + 20)
+#define SND_FROGDIE		(SND_LOONYLAND_START + 21)
+#define SND_FROGLICK	(SND_LOONYLAND_START + 22)
+
+// Sleepless Hollow sounds
 // Cow
-#define SND_COWMOO		427
-#define SND_COWOUCH		428
-#define SND_COWDIE		429
+#define SND_COWMOO		(SND_SLEEPLESS_START + 160)
+#define SND_COWOUCH		(SND_SLEEPLESS_START + 183)
+#define SND_COWDIE		(SND_SLEEPLESS_START + 184)
+
 // other
 #define SND_FRANKOUCH2 	68
 #define SND_CHEER 		430
@@ -532,7 +543,7 @@
 #define SND_HOLOSHOOT 	436
 #define SND_HOLODIE 	437
 #define SND_HOLOOUCH 	438
-#define SND_LOONYBRAINS	439
+#define SND_LOONYBRAINS	(SND_LOONYLAND_START + 73)
 // new sphinxter noises
 #define SND_SPHINXOUCH	440
 #define SND_SPHINXDIE	441
@@ -545,13 +556,16 @@
 // zombie
 #define SND_SZOMBIEOUCH	446
 #define SND_SZOMBIEDIE	447
+
+// Gap at 448 thru 512 where sounds embedded in a .dlw are inserted
+#define CUSTOM_SND_START 448
+#define MAX_CUSTOM_SOUNDS 64
+
+// Room for more custom sounds from 512 thru 1023...
 #define SND_SZOMBIELEAP	512
 
-#define NUM_ORIG_SOUNDS	448
-#define MAX_SOUNDS		512		// absolute maximum? @448, add sounds after 512 (513+)
-#define MAX_CUSTOM_SOUNDS 64
-#define CUSTOM_SND_START (MAX_SOUNDS-MAX_CUSTOM_SOUNDS)
 
+#define MAX_SOUNDS 4096
 
 
 //--------------------------------

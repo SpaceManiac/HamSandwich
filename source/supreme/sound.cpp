@@ -453,7 +453,7 @@ soundDesc_t soundInfo[MAX_SOUNDS]={
 };
 
 byte soundAvailable=0;
-static int numSounds,numCustom;
+static int numCustom;
 static byte *customSound[MAX_CUSTOM_SOUNDS];
 static int32_t customLength[MAX_CUSTOM_SOUNDS];
 
@@ -465,7 +465,6 @@ void SoundSystemExists(void)
 void InitSound(void)
 {
 	JamulSoundPurge();
-	numSounds=NUM_ORIG_SOUNDS;
 	memset(customSound,0,sizeof(byte *)*MAX_CUSTOM_SOUNDS);
 	numCustom=0;
 }
@@ -794,12 +793,33 @@ void MakeSpaceSound(int snd,int priority)
 
 SDL_RWops* SoundLoadOverride(int num)
 {
-	if (num < CUSTOM_SND_START || num > CUSTOM_SND_START+GetNumCustomSounds())
+	if (num >= CUSTOM_SND_START && num < CUSTOM_SND_START + GetNumCustomSounds())
+	{
+		byte* buf = GetCustomSound(num - CUSTOM_SND_START);
+		if (!buf)
+			return nullptr;
+		return SDL_RWFromConstMem(buf, GetCustomLength(num - CUSTOM_SND_START));
+	}
+	else if (num >= SND_MYSTIC_START && num <= SND_MYSTIC_END)
+	{
+		char fname[64];
+		sprintf(fname, "mystic/sound/snd%03d.wav", num - SND_MYSTIC_START);
+		return AssetOpen_SDL(fname);
+	}
+	else if (num >= SND_LOONYLAND_START && num <= SND_LOONYLAND_END)
+	{
+		char fname[64];
+		sprintf(fname, "loonyland/sound/snd%03d.wav", num - SND_LOONYLAND_START);
+		return AssetOpen_SDL(fname);
+	}
+	else if (num >= SND_SLEEPLESS_START && num <= SND_SLEEPLESS_END)
+	{
+		char fname[64];
+		sprintf(fname, "sleepless/sound/snd%03d.wav", num - SND_SLEEPLESS_START);
+		return AssetOpen_SDL(fname);
+	}
+	else
+	{
 		return nullptr;
-
-	byte* buf = GetCustomSound(num - CUSTOM_SND_START);
-	if (!buf)
-		return nullptr;
-
-	return SDL_RWFromConstMem(buf, GetCustomLength(num - CUSTOM_SND_START));
+	}
 }
