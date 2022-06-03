@@ -59,13 +59,13 @@ bool InitDisplay(MGLDraw *mainmgl)
 	gameFont[3]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[3])
 		return false;
-	if(FontLoad("graphics/listium.jft",gameFont[3])!=FONT_OK)
+	if(FontLoad("mystic/graphics/listium.jft",gameFont[3])!=FONT_OK)
 		return false;
 
 	gameFont[4]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[4])
 		return false;
-	if(FontLoad("graphics/listiumbig.jft",gameFont[4])!=FONT_OK)
+	if(FontLoad("mystic/graphics/listiumbig.jft",gameFont[4])!=FONT_OK)
 		return false;
 
 	dispList=new DisplayList();

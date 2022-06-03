@@ -3474,7 +3474,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},
 			}},
 		{"Froggy",255,255,0,AI_Frog, //good to go
-		 6,22,4,100,"graphics/frog.jsp",0,0,
+		 6,22,4,100,"loonyland/graphics/frog.jsp",0,0,
 		 MT_EVIL|MT_ANIMAL|MT_FOREST,MG_HOLLOW,MC_GREEN,
 			{
 				{0,255},	// idle
@@ -3567,7 +3567,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},
 			}},
 		{"Happy Stick Tree",255,255,0,AI_Tree, //good to go
-		 20,5,128,5000,"graphics/tree.jsp",0,MF_NOMOVE|MF_ONEFACE,
+		 20,5,128,5000,"sleepless/graphics/tree.jsp",0,MF_NOMOVE|MF_ONEFACE,
 		 MT_EVIL|MT_WACKY|MT_MINIBOSS|MT_FOREST,MG_HOLLOW,MC_AQUA,
 			{
 				{0,255},	// idle
@@ -3594,7 +3594,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{11,10,9,8,7,255},	// resurrect=A4
 		}},
 		{"Headless Horseradish",255,255,0,AI_Horseradish, //good to go - removed 10000 hp bs
-		 11,10,1000,10000,"graphics/radish.jsp",0,MF_NOMOVE|MF_ENEMYWALK|MF_FREEWALK,
+		 11,10,1000,10000,"sleepless/graphics/radish.jsp",0,MF_NOMOVE|MF_ENEMYWALK|MF_FREEWALK,
 		 MT_EVIL|MT_VEGGIE|MT_BOSS|MT_PUMPKIN,MG_HOLLOW,MC_GREY,
 			{
 				{0,255},	// idle
@@ -3765,7 +3765,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{26,27,28,29,30,31,32,33,255},	// attack
 			}},
 		{"Mad Cow",255,255,0,AI_MadCow, //good to go
-		 22,15,20,250,"graphics/cow.jsp",0,MF_NOMOVE,
+		 22,15,20,250,"sleepless/graphics/cow.jsp",0,MF_NOMOVE,
 		 MT_EVIL|MT_ANIMAL|MT_FOREST,MG_HOLLOW,MC_BROWN,
 			{
 				{0,255},	// idle
@@ -3775,7 +3775,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{5,5,6,6,6,5,5,255},	// attack
 			}},
 		{"Extremely Mad Cow",2,4,2,AI_MadCow2, //good to go
-		 32,15,1000,250,"graphics/cow.jsp",0,MF_NOMOVE,
+		 32,15,1000,250,"sleepless/graphics/cow.jsp",0,MF_NOMOVE,
 		 MT_EVIL|MT_ANIMAL|MT_FOREST,MG_HOLLOW,MC_RED,
 			{
 				{0,255},	// idle
@@ -4103,7 +4103,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,12,11,10,11,12,13,12,11,10,9,8,7,255},	// unused
 			}},
 		{"Croaker",1,6,-3,AI_Frog, //fix attack
-		 6,22,4,100,"graphics/frog.jsp",0,0,
+		 6,22,4,100,"loonyland/graphics/frog.jsp",0,0,
 		 MT_EVIL|MT_ANIMAL|MT_FOREST,MG_LOONY,MC_VIOLET,
 			{
 				{0,255},	// idle
@@ -4502,7 +4502,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// blank = A5
 			}},
 		{"Frogurt",1,5,2,AI_Frog, //cjheck source
-		 6,22,4,100,"graphics/frog.jsp",0,0,
+		 6,22,4,100,"loonyland/graphics/frog.jsp",0,0,
 		 MT_EVIL|MT_ANIMAL|MT_FOREST,MG_LOONY,MC_GREEN,
 			{
 				{0,255},	// idle

@@ -28,7 +28,7 @@ void InitWater(void)
 	if(!waterbkgd)
 		FatalError("out of memory!");
 
-	GetDisplayMGL()->LoadBMP("graphics/water.bmp");
+	GetDisplayMGL()->LoadBMP("mystic/graphics/water.bmp");
 
 	width=GetDisplayMGL()->GetWidth();
 	src=GetDisplayMGL()->GetScreen();
@@ -70,7 +70,7 @@ void SetupWater(void)
 	byte *src;
 	int width,i;
 
-	GetDisplayMGL()->LoadBMP("graphics/water.bmp");
+	GetDisplayMGL()->LoadBMP("mystic/graphics/water.bmp");
 
 	width=GetDisplayMGL()->GetWidth();
 	src=GetDisplayMGL()->GetScreen();
@@ -157,9 +157,9 @@ byte WaterPixel(int x,int y, int c)
 		s=0;
 	if(s>31)
 		s=31;
-	
+
 	return (byte)s+32*c;
-		
+
 }
 
 void WaterRipple(int x,int y,short amt)
