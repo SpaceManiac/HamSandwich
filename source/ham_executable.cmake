@@ -134,7 +134,7 @@ function(HamSandwich_add_executable target_name)
 		endif()
 
 		string(JSON mountpoint ERROR_VARIABLE mountpoint_err GET "${json_blob}" installers ${i} mountpoint)
-		if(NOT "${mountpoint_err}" EQUAL NOTFOUND)
+		if(NOT "${mountpoint_err}" STREQUAL "NOTFOUND")
 			set(mountpoint "")
 		endif()
 		string(JSON kind GET "${json_blob}" installers ${i} kind)
