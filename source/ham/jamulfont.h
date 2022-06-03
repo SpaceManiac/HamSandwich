@@ -1,7 +1,9 @@
 #ifndef JAMULFONT_H
 #define JAMULFONT_H
 
+#include <stddef.h>
 #include "jamultypes.h"
+#include "coro.h"
 
 class MGLDraw;
 
@@ -15,7 +17,7 @@ struct mfont_t
 	byte spaceSize;		// # of pixels wide to make spaces
 	byte gapSize;		// # of pixels between adjacent letters
 	byte gapHeight;		// # of pixels to descend for a carriage return
-	long dataSize;		// the size in bytes of the data of the characters themselves
+	int32_t dataSize;		// the size in bytes of the data of the characters themselves
 	byte *data;			// pointer to the character data
 	byte *chars[FONT_MAX_CHARS]; // pointers to each character's data (can't have more than FONT_MAX_CHARS)
 };
@@ -37,8 +39,9 @@ void FontExit(void);
 
 void FontFree(mfont_t *font);
 
-
+struct SDL_RWops;
 int FontLoad(const char *fname, mfont_t *font);
+int FontLoad(SDL_RWops* rw, mfont_t *font);
 int FontSave(const char *fname, mfont_t *font);
 
 void FontPrintString(int x, int y, const char *s, mfont_t *font);
@@ -60,13 +63,17 @@ void FontPrintStringUnGlowRect(int x, int y, int x2, int y2, const char *s, int 
 void FontPrintStringBrightGlow(int x, int y, const char *s, char brt, mfont_t *font);
 void FontPrintStringDark(int x, int y, const char *s, mfont_t *font);
 void FontPrintStringDarkAdj(int x, int y, const char *s, int dark, mfont_t *font);
+void FontPrintStringCursorLit(int x,int y,byte pos,byte blink,const char *s,mfont_t *font,char bright);
+void FontPrintStringAngleUnGlow(int x,int y,const char *s,mfont_t *font);
+void FontPrintStringAngle2(int x,int y,const char *s,mfont_t *font);
+void FontPrintStringUnGlowSideways(int x,int y,int minY,const char *s,mfont_t *font);
 
 void FontPrintRectBlack(int x, int y, int x2, int y2, const char *s, int height, int bright, mfont_t *font);
 void FontPrintRectBlack2(int x, int y, int x2, int y2, const char *s, int height, mfont_t *font);
 
 int FontStrLen(const char *s, mfont_t *font);
 void FontSetColors(byte first, byte count, byte *data);
-bool FontInputText(const char *prompt, char *buffer, int len, void (*renderScrn)(mfont_t *), mfont_t *font);
+TASK(bool) FontInputText(const char *prompt, char *buffer, int len, void (*renderScrn)(mfont_t *), mfont_t *font);
 
 byte RightBraceHack(mfont_t *font);
 

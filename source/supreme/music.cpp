@@ -100,7 +100,8 @@ void PlaySongForce(const char *fname)
 	if(!config.music)
 		return;
 
-	strcpy(curSongName,fname);
+	if(curSongName != fname)
+		strcpy(curSongName,fname);
 	sprintf(fullname,"music/%s",fname);
 	PlaySongFile(fullname);
 }

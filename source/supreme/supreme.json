@@ -1,0 +1,22 @@
+{
+	"title": "Dr. Lunatic Supreme With Cheese",
+	"installers": [
+		{
+			"filename": "supreme8_install.exe",
+			"kind": "nsis",
+			"sha256sum": "1c105ad826be1e0697b5de8483c71ff943d04bce91fe3547b6f355e9bc1c42d4",
+			"link": "https://hamumu.itch.io/dr-lunatic-supreme-with-cheese",
+			"file_id": 700882,
+			"description": "Base assets for Dr. Lunatic Supreme With Cheese"
+		},
+		{
+			"filename": "all_supreme_worlds.zip",
+			"kind": "zip",
+			"sha256sum": "f0f61589788909fecb051a69a1e9e1a8967b2f4bb35de8a0b13cd19041409215",
+			"link": "https://hamumu.itch.io/dr-lunatic-supreme-with-cheese",
+			"file_id": 824077,
+			"description": "Add-ons: All Supreme Worlds",
+			"optional": true
+		}
+	]
+}

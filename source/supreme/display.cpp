@@ -34,7 +34,7 @@ bool InitDisplay(MGLDraw *mainmgl)
 	mgl=mainmgl;
 	if(!mgl)
 		return false;
-	
+
 	gameFont[0]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[0])
 		return false;
@@ -110,7 +110,7 @@ void LoadText(const char *nm,byte mode)
 	char line[256];
 	int y;
 
-	f=AssetOpen(nm,"rt");
+	f=AssetOpen(nm);
 	if(!f)
 		return;
 
@@ -154,7 +154,7 @@ void LoadText(const char *nm,byte mode)
 	fclose(f);
 }
 
-void ShowImageOrFlic(char *str,byte nosnd,byte mode)
+TASK(void) ShowImageOrFlic(char *str,byte nosnd,byte mode)
 {
 	int speed;
 
@@ -164,7 +164,7 @@ void ShowImageOrFlic(char *str,byte nosnd,byte mode)
 
 	fname=strtok(str,",\n");
 	if(!fname)
-		return;
+		CO_RETURN;
 
 	other=strtok(NULL,",\n");
 
@@ -178,7 +178,7 @@ void ShowImageOrFlic(char *str,byte nosnd,byte mode)
 			MakeNormalSound(SND_MESSAGE);
 		sprintf(nm,"user/%s",fname);
 		GetDisplayMGL()->LoadBMP(nm);
-		return;
+		CO_RETURN;
 	}
 	if((fname[strlen(fname)-3]=='t' || fname[strlen(fname)-3]=='T') &&
 	   (fname[strlen(fname)-2]=='x' || fname[strlen(fname)-2]=='X') &&
@@ -189,7 +189,7 @@ void ShowImageOrFlic(char *str,byte nosnd,byte mode)
 			MakeNormalSound(SND_MESSAGE);
 		sprintf(nm,"user/%s",fname);
 		LoadText(nm,mode);
-		return;
+		CO_RETURN;
 	}
 
 	if(other)
@@ -199,7 +199,7 @@ void ShowImageOrFlic(char *str,byte nosnd,byte mode)
 
 	sprintf(nm,"user/%s",fname);
 
-	FLI_play(nm,0,speed,mgl);
+	AWAIT FLI_play(nm,0,speed,mgl);
 	mgl->LoadBMP("graphics/title.bmp");
 
 	if(!editing && (verified || shopping))
@@ -570,7 +570,7 @@ bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,char bright,sprit
 	dispObj[i].z=z;
 	dispObj[i].z2=z2;
 	if(dispObj[i].flags&(DISPLAY_WALLTILE|DISPLAY_ROOFTILE))
-		memcpy(dispObj[i].light,dispObj[i].spr,9);
+		memcpy(dispObj[i].light,(const char*)dispObj[i].spr,9);
 	HookIn(i);
 	return true;
 }
@@ -696,7 +696,7 @@ void DrawDebugBox(int x,int y,int x2,int y2)
 	x2-=scrx-320;
 	y2-=scry-240;
 	mgl->Box(x,y,x2,y2,255);
-	mgl->Flip();
+	//mgl->Flip();
 }
 
 void DrawFillBox(int x,int y,int x2,int y2,byte c)

@@ -1111,7 +1111,7 @@ void SpecialTakeEffect(byte num, Map *map, special_t *spcl, Guy *victim)
 					64 * FIXAMT, spcl->value);
 			break;
 		case SPC_PICTURE:
-			ShowImageOrFlic(spcl->msg);
+			coro::launch(std::bind(ShowImageOrFlic, spcl->msg));
 			break;
 		case SPC_PLAYSONG:
 			// play the chosen song, but ONLY if music is set to On

@@ -3,6 +3,6 @@
 
 #include "mgldraw.h"
 
-byte Credits(MGLDraw *mgl,byte ending);
+TASK(byte) Credits(MGLDraw *mgl,byte ending);
 
 #endif

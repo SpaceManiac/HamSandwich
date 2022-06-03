@@ -1,23 +1,22 @@
 #include "hammusic.h"
 #include "mgldraw.h"
 #include "log.h"
+#include "appdata.h"
+#include "extern.h"
 #include <stdio.h>
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL_mixer.h>
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL_mixer.h>
-#endif  // SDL_UNPREFIXED
+#include <SDL_mixer.h>
 
 static Mix_Music* curStream = nullptr;
 static int musVolume = 255;
 
 void UpdateMusic()
 {
-	if (ConfigMusicEnabled() && curStream && !Mix_PlayingMusic())
+	if (g_HamExtern.ConfigMusicEnabled && g_HamExtern.ConfigMusicEnabled() && curStream && !Mix_PlayingMusic())
 	{
 		Mix_PlayMusic(curStream, 1);
-		ChooseNextSong();
+		if (g_HamExtern.ChooseNextSong)
+			g_HamExtern.ChooseNextSong();
 	}
 }
 
@@ -32,15 +31,14 @@ void SetMusicVolume(int vol)
 
 void PlaySongFile(const char* fullname)
 {
-	if (!ConfigMusicEnabled())
+	if (!g_HamExtern.ConfigMusicEnabled || !g_HamExtern.ConfigMusicEnabled())
 		return;
 
 	StopSong();
 
-	SDL_RWops* rw = SDL_RWFromFile(fullname, "rb");
+	SDL_RWops* rw = AssetOpen_SDL(fullname);
 	if (!rw)
 	{
-		LogError("Open(%s): %s", fullname, SDL_GetError());
 		return;
 	}
 

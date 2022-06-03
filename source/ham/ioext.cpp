@@ -66,4 +66,8 @@ FilePtrStream::FilePtrStream(FILE* f)
 	: std::iostream(new FilePtrBuf(f))
 	, sb(rdbuf())
 {
+	if (!f)
+	{
+		setstate(std::ios_base::failbit);
+	}
 }

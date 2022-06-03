@@ -17,7 +17,7 @@ MonsterTool::MonsterTool(void)
 	monster[2]=MONS_BOUAPHA;
 	monster[3]=MONS_BOUAPHA;
 
-	itemMode=1;
+	itemMode=0;
 	specificItem=ITM_HAMMERUP;
 	pickingItem=0;
 	lastX=-1;

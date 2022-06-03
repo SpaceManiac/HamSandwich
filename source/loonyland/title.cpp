@@ -6,6 +6,7 @@
 #include "pause.h"
 #include "plasma.h"
 #include "palettes.h"
+#include "appdata.h"
 
 // special codes in the credits:
 // @ = use GirlsRWeird font
@@ -280,7 +281,7 @@ void GetSavesForMenu(void)
 	for(i=0;i<5;i++)
 	{
 		sprintf(txt,"save%d.sav",i+1);
-		f=fopen(txt,"rb");
+		f=AppdataOpen(txt);
 		if(!f)
 		{
 			pct=0.0;
@@ -303,17 +304,17 @@ void GetSavesForMenu(void)
 	}
 }
 
-byte LunaticTitle(MGLDraw *mgl)
+TASK(byte) LunaticTitle(MGLDraw *mgl)
 {
 	mgl->LoadBMP("graphics/title.bmp");
-	mgl->Flip();
+	AWAIT mgl->Flip();
 	while(!mgl->LastKeyPeek())
 	{
 		if(!mgl->Process())
-			return 2;
-		mgl->Flip();
+			CO_RETURN 2;
+		AWAIT mgl->Flip();
 	}
-	return HandleTitleKeys(mgl);
+	CO_RETURN HandleTitleKeys(mgl);
 }
 
 void ShowMenuOption(int x,int y,menu_t m,byte on)
@@ -578,7 +579,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		c=mgl->LastKeyPressed();
 		if(c==27)
 			return MENU_EXIT+1;
-#ifdef _DEBUG
+#ifndef NDEBUG
 		if(c=='e')
 			return MENU_EDITOR+1;
 #endif
@@ -711,7 +712,7 @@ byte ChooseDiffUpdate(int *lastTime,MGLDraw *mgl)
 	return 1;
 }
 
-byte MainMenu(MGLDraw *mgl)
+TASK(byte) MainMenu(MGLDraw *mgl)
 {
 	byte b=0;
 	int i;
@@ -780,7 +781,7 @@ byte MainMenu(MGLDraw *mgl)
 			else if(b==2)
 			{
 				free(backScr);
-				return MENU_LOADGAME+1;
+				CO_RETURN MENU_LOADGAME+1;
 			}
 			b=0;
 		}
@@ -797,25 +798,25 @@ byte MainMenu(MGLDraw *mgl)
 			{
 				free(backScr);
 				if(choosingDiffFor==0)
-					return MENU_ADVENTURE+1;
+					CO_RETURN MENU_ADVENTURE+1;
 				else
-					return MENU_REMIX+1;
+					CO_RETURN MENU_REMIX+1;
 			}
 			b=0;
 		}
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			free(backScr);
-			return 255;
+			CO_RETURN 255;
 		}
 		EndClock();
 		if(!loadingGame && numRuns>=30*15)
 		{
 			GetTaps();
 			oldc=255;
-			Credits(mgl,1);
+			AWAIT Credits(mgl,1);
 			mgl->LoadBMP("graphics/title.bmp");
 			numRuns=0;
 		}
@@ -846,7 +847,7 @@ byte MainMenu(MGLDraw *mgl)
 	}
 	free(backScr);
 
-	return b;
+	CO_RETURN b;
 }
 
 void CreditsRender(int y)
@@ -893,12 +894,12 @@ void CreditsRender(int y)
 	}
 }
 
-void Credits(MGLDraw *mgl,byte init)
+TASK(void) Credits(MGLDraw *mgl,byte init)
 {
 	int y=-470;
 	int lastTime;
 	int wid;
-	int pos;
+	byte* pos;
 	int i;
 	dword hangon;
 
@@ -917,7 +918,7 @@ void Credits(MGLDraw *mgl,byte init)
 			hangon++;
 
 	if(hangon==40)
-		CheatText(mgl,0);
+		AWAIT CheatText(mgl,0);
 
 	while(1)
 	{
@@ -925,7 +926,7 @@ void Credits(MGLDraw *mgl,byte init)
 		StartClock();
 
 		wid=mgl->GetWidth();
-		pos=(int)mgl->GetScreen()+0*wid;
+		pos=mgl->GetScreen()+0*wid;
 		for(i=0;i<480;i++)
 		{
 			memset((byte *)pos,4*32+2,640);
@@ -945,26 +946,26 @@ void Credits(MGLDraw *mgl,byte init)
 			lastTime-=TIME_PER_FRAME;
 		}
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(!mgl->Process())
 		{
 			ExitPlasma();
 			ResetClock(hangon);
-			return;
+			CO_RETURN;
 		}
 		if(mgl->LastKeyPressed())
 		{
 			ExitPlasma();
 			ResetClock(hangon);
-			return;
+			CO_RETURN;
 		}
 		if(y==END_OF_CREDITS)
 		{
 			ExitPlasma();
 			ResetClock(hangon);
-			return;
+			CO_RETURN;
 		}
 	}
 	ResetClock(hangon);
@@ -1014,12 +1015,12 @@ void CheatsRender(int y)
 	}
 }
 
-void CheatText(MGLDraw *mgl,byte init)
+TASK(void) CheatText(MGLDraw *mgl,byte init)
 {
 	int y=-470;
 	int lastTime;
 	int wid;
-	int pos;
+	byte* pos;
 	int i;
 	dword hangon;
 
@@ -1037,10 +1038,10 @@ void CheatText(MGLDraw *mgl,byte init)
 		StartClock();
 
 		wid=mgl->GetWidth();
-		pos=(int)mgl->GetScreen()+0*wid;
+		pos=mgl->GetScreen()+0*wid;
 		for(i=0;i<480;i++)
 		{
-			memset((byte *)pos,4*32+2,640);
+			memset(pos,4*32+2,640);
 			pos+=wid;
 		}
 
@@ -1057,26 +1058,26 @@ void CheatText(MGLDraw *mgl,byte init)
 			lastTime-=TIME_PER_FRAME;
 		}
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(!mgl->Process())
 		{
 			ExitPlasma();
 			ResetClock(hangon);
-			return;
+			CO_RETURN;
 		}
 		if(mgl->LastKeyPressed())
 		{
 			ExitPlasma();
 			ResetClock(hangon);
-			return;
+			CO_RETURN;
 		}
 		if(y==END_OF_CHEATS)
 		{
 			ExitPlasma();
 			ResetClock(hangon);
-			return;
+			CO_RETURN;
 		}
 	}
 	ResetClock(hangon);
@@ -1127,12 +1128,12 @@ void VictoryTextRender(int y)
 	}
 }
 
-void VictoryText(MGLDraw *mgl)
+TASK(void) VictoryText(MGLDraw *mgl)
 {
 	int y=-470;
 	int lastTime;
 	int wid;
-	int pos;
+	byte* pos;
 	int i;
 	dword hangon;
 
@@ -1148,10 +1149,10 @@ void VictoryText(MGLDraw *mgl)
 		StartClock();
 
 		wid=mgl->GetWidth();
-		pos=(int)mgl->GetScreen()+0*wid;
+		pos=mgl->GetScreen()+0*wid;
 		for(i=0;i<480;i++)
 		{
-			memset((byte *)pos,4*32+2,640);
+			memset(pos,4*32+2,640);
 			pos+=wid;
 		}
 
@@ -1168,28 +1169,28 @@ void VictoryText(MGLDraw *mgl)
 			UpdatePlasma();
 			lastTime-=TIME_PER_FRAME;
 		}
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 		if(!mgl->Process())
 		{
 			ResetClock(hangon);
-			return;
+			CO_RETURN;
 		}
 		if(mgl->LastKeyPressed()==27)
 		{
 			ResetClock(hangon);
-			return;
+			CO_RETURN;
 		}
 		if(y==END_OF_VICTORY)
 		{
 			ResetClock(hangon);
-			return;
+			CO_RETURN;
 		}
 	}
 	ResetClock(hangon);
 }
 
-byte SpeedSplash(MGLDraw *mgl,const char *fname)
+TASK(byte) SpeedSplash(MGLDraw *mgl,const char *fname)
 {
 	int i,j,clock;
 	RGB desiredpal[256],curpal[256];
@@ -1210,20 +1211,20 @@ byte SpeedSplash(MGLDraw *mgl,const char *fname)
 	oldc=GetControls()|GetArrows();
 
 	if (!mgl->LoadBMP(fname, desiredpal))
-		return 0;
+		CO_RETURN 0;
 
 	mode=0;
 	clock=0;
 	done=0;
 	while(!done)
 	{
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
-			return 0;
+			CO_RETURN 0;
 		c=mgl->LastKeyPressed();
 
 		if(c==27)
-			return 0;
+			CO_RETURN 0;
 		else if(c)
 			mode=2;
 
@@ -1283,11 +1284,11 @@ byte SpeedSplash(MGLDraw *mgl,const char *fname)
 		}
 	}
 	mgl->ClearScreen();
-	mgl->Flip();
-	return 1;
+	AWAIT mgl->Flip();
+	CO_RETURN 1;
 }
 
-void HelpScreens(MGLDraw *mgl)
+TASK(void) HelpScreens(MGLDraw *mgl)
 {
 	int i;
 	char name[32];
@@ -1295,18 +1296,18 @@ void HelpScreens(MGLDraw *mgl)
 	for(i=0;i<5;i++)
 	{
 		sprintf(name,"docs/help%d.bmp",i+1);
-		if(!SpeedSplash(mgl,name))
-			return;
+		if(!AWAIT SpeedSplash(mgl,name))
+			CO_RETURN;
 	}
 }
 
-void DemoSplashScreens(MGLDraw *mgl)
+TASK(void) DemoSplashScreens(MGLDraw *mgl)
 {
-	if(!SpeedSplash(mgl,"graphics/advert.bmp"))
-		return;
+	if(!AWAIT SpeedSplash(mgl,"graphics/advert.bmp"))
+		CO_RETURN;
 }
 
-void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
+TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
 {
 	int i,j,clock;
 	RGB desiredpal[256],curpal[256];
@@ -1325,7 +1326,7 @@ void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
 	mgl->LastKeyPressed();
 
 	if (!mgl->LoadBMP(fname, desiredpal))
-		return;
+		CO_RETURN;
 
 	StartClock();
 	mode=0;
@@ -1335,9 +1336,9 @@ void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
 	while(!done)
 	{
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
-			return;
+			CO_RETURN;
 		if(mgl->LastKeyPressed())
 			mode=2;
 		EndClock();
@@ -1407,5 +1408,5 @@ void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
 		}
 	}
 	mgl->ClearScreen();
-	mgl->Flip();
+	AWAIT mgl->Flip();
 }

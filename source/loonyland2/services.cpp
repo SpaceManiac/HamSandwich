@@ -70,7 +70,7 @@ void RenderServiceAlchemy(MGLDraw *mgl)
 void RenderServiceArena(MGLDraw *mgl)
 {
 	int i,cost;
-	char s[16];
+	char s[32];
 
 	PauseBox(120,40,520,320,234);
 

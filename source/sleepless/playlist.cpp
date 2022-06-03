@@ -5,7 +5,7 @@
 #include "player.h"
 #include "music.h"
 #include "dialogbits.h"
-#include "lsdir.h"
+#include "appdata.h"
 
 #define PM_NORMAL		0
 #define PM_SELPLAY		1	// selecting in playlist
@@ -68,7 +68,7 @@ static char *fileList=NULL;
 static byte mode;
 
 static int selectMin[2],selectMax[2],scrollOfsY;
-static int scrollY[2],scrollHeight[2],scrollOffset[2];
+static int scrollY[2],scrollHeight[2];
 
 void SortSongs(void)
 {
@@ -128,9 +128,10 @@ void InputSong(const char *fname)
 
 void ScanSongs(void)
 {
-	for (const char* name : filterdir("music", ".ogg", SONGNAME_LEN))
+	auto files = ListDirectory("music", ".ogg", SONGNAME_LEN);
+	for (const auto& str : files)
 	{
-		InputSong(name);
+		InputSong(str.c_str());
 	}
 	SortSongs();
 }
@@ -798,7 +799,7 @@ void RenderPlayListMenu(MGLDraw *mgl)
 
 //----------------
 
-void PlayListMenu(MGLDraw *mgl)
+TASK(void) PlayListMenu(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime=1;
@@ -811,7 +812,7 @@ void PlayListMenu(MGLDraw *mgl)
 		StartClock();
 		done=UpdatePlayListMenu(&lastTime,mgl);
 		RenderPlayListMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(mgl->LastKeyPressed()==27)
 			done=1;

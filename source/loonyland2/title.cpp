@@ -9,8 +9,8 @@
 #include "achieve.h"
 #include "gallery.h"
 #include "leveldef.h"
-#include "lsdir.h"
-#if __linux__
+#include "appdata.h"
+#if __linux__ || __EMSCRIPTEN__
 #include <unistd.h>
 #endif
 
@@ -20,6 +20,7 @@
 #define VERSION_NO	"Version 1.0O"
 #endif
 
+#pragma pack(push, 1)
 typedef struct save_t
 {
 	char name[16];
@@ -32,6 +33,8 @@ typedef struct save_t
 	byte mod[3];
 	char campName[64];
 } save_t;
+static_assert(sizeof(save_t) == 95);
+#pragma pack(pop)
 
 static byte oldc=0;
 static byte saveMod[3];
@@ -104,7 +107,7 @@ void GetAddOn(char *name,int spot)
 	addOnList[spot].dispName[0]='\0';
 	addOnList[spot].filename[0]='\0';
 	sprintf(line,"addons/%s",name);
-	f=fopen(line,"rt");
+	f=AssetOpen(line);
 
 	if(!f)
 	{
@@ -135,8 +138,10 @@ void GetAddOns(void)
 	// count up how many there are to deal with
 	ClearAddOns();
 
-	for (const char* name : filterdir("addons", ".txt"))
+	auto filenames = ListDirectory("addons", ".txt");
+	for (const auto& str : filenames)
 	{
+		const char* name = str.c_str();
 		if (strncmp(name, "lvl_", 4))
 			continue;
 		addOnCount++;
@@ -150,8 +155,9 @@ void GetAddOns(void)
 	addOnList[0].filename[0]='\0';
 
 	done=1;
-	for (char* name : filterdir("addons", ".txt"))
+	for (auto& str : filenames)
 	{
+		char* name = str.data();  // Since C++11, data() is null-terminated.
 		if (strncmp(name, "lvl_", 4))
 			continue;
 		GetAddOn(name, done);
@@ -172,7 +178,7 @@ void GetSavesForMenu(void)
 	for(i=0;i<MAX_CHARS;i++)
 	{
 		sprintf(txt,"profiles/char%02d.loony",i+1);
-		f=fopen(txt,"rb");
+		f=AppdataOpen(txt);
 		if(!f && hole==-1)
 		{
 			hole=i;
@@ -509,12 +515,12 @@ void DeleteCharacter(void)
 	char s[64];
 
 	sprintf(s,"profiles/char%02d.loony",save[whoToDelete].realNum+1);
-	unlink(s);	// delete that file
+	AppdataDelete(s);	// delete that file
 	GetSavesForMenu();
 	curChar=0;
 }
 
-byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
+TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 {
 	byte c,k;
 	static byte reptCounter=0;
@@ -594,7 +600,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 							MakeNormalSound(SND_MENUSELECT);
 							gameToLoad=save[curChar].realNum;
 							opt.lastProfile=gameToLoad;
-							return MENU_PLAY;
+							CO_RETURN MENU_PLAY;
 						}
 						break;
 					case MM_ERASE:	// erase guy
@@ -608,33 +614,33 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 							MakeNormalSound(SND_MENUCANCEL);
 						break;
 					case MM_ACHIEVE:
-						AchieveMenu(mgl,backScr);
+						AWAIT AchieveMenu(mgl,backScr);
 						break;
 #ifdef DIRECTORS
 					case MM_GALLERY:
 						if(HaveGallery())
-							Gallery(mgl);
+							AWAIT Gallery(mgl);
 						else
 							MakeNormalSound(SND_MENUCANCEL);
 						break;
 					case MM_EDITOR:
-						return MENU_EDITOR;
+						CO_RETURN MENU_EDITOR;
 						break;
 #endif
 					case MM_OPTIONS:	// options
-						OptionsMenu(mgl,backScr);
+						AWAIT OptionsMenu(mgl,backScr);
 						break;
 					case MM_QUIT:	// exit
 						MakeNormalSound(SND_MENUSELECT);
-						return MENU_EXIT;
+						CO_RETURN MENU_EXIT;
 						break;
 				}
 			}
 			if(k==27)
-				return MENU_EXIT;
-#ifdef _DEBUG
+				CO_RETURN MENU_EXIT;
+#ifndef NDEBUG
 			if(k=='e' || k=='E')
-				return MENU_EDITOR;
+				CO_RETURN MENU_EDITOR;
 #endif
 		}
 		else if(submode==1)	// sure you want to delete?
@@ -751,7 +757,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 						saveMod[0]=save[curChar].mod[0];
 						saveMod[1]=save[curChar].mod[1];
 						saveMod[2]=save[curChar].mod[2];
-						return MENU_NEWCHAR;
+						CO_RETURN MENU_NEWCHAR;
 						break;
 				}
 			}
@@ -776,7 +782,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 				MakeNormalSound(SND_MENUCLICK);
 				subcursor=1;
 			}
-			if((k>='a' && k<='z') || (k>='A' && k<='Z') || (k>='0' && k<='9') && subcursor==0)
+			if(((k>='a' && k<='z') || (k>='A' && k<='Z') || (k>='0' && k<='9')) && subcursor==0)
 			{
 				if(strlen(save[curChar].name)<10)
 				{
@@ -794,10 +800,10 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		*lastTime-=TIME_PER_FRAME;
 		numRuns++;
 	}
-	return 0;
+	CO_RETURN 0;
 }
 
-byte MainMenu(MGLDraw *mgl)
+TASK(byte) MainMenu(MGLDraw *mgl)
 {
 	byte b=0;
 	int lastTime=1;
@@ -809,25 +815,25 @@ byte MainMenu(MGLDraw *mgl)
 		lastTime+=TimeLength();
 		StartClock();
 
-		b=MainMenuUpdate(&lastTime,mgl);
+		b=AWAIT MainMenuUpdate(&lastTime,mgl);
 		MainMenuDisplay(mgl);
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			free(backScr);
-			return 255;
+			CO_RETURN 255;
 		}
 		EndClock();
 		if(timeToCred>30*20)
 		{
 			timeToCred=0;
-			Credits(mgl,0);
+			AWAIT Credits(mgl,0);
 		}
 	}
 	free(backScr);
 
-	return b;
+	CO_RETURN b;
 }
 
 char *GetSavedName(void)

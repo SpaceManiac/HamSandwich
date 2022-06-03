@@ -1,3 +1,5 @@
+#include "monster.h"
+
 monsterType_t monsType[NUM_MONSTERS]=
 	{
 		{"Null",255,255,0,NULL,

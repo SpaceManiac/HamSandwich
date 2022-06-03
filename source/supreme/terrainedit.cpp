@@ -164,14 +164,14 @@ void MoveClick(int id)
 
 void LoadClick(int id)
 {
-	InitFileDialog("tilegfx/*.bmp",FM_LOAD|FM_EXIT,bmpFilename);
+	InitFileDialog("tilegfx",".bmp",FM_LOAD|FM_EXIT,bmpFilename);
 	mode=TMODE_LOADBMP;
 	MakeNormalSound(SND_MENUCLICK);
 }
 
 void SaveClick(int id)
 {
-	InitFileDialog("tilegfx/*.bmp",FM_SAVE|FM_EXIT,bmpFilename);
+	InitFileDialog("tilegfx",".bmp",FM_SAVE|FM_EXIT,bmpFilename);
 	mode=TMODE_SAVEBMP;
 	MakeNormalSound(SND_MENUCLICK);
 }

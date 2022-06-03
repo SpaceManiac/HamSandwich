@@ -126,7 +126,6 @@ void Particle::GoRandom(byte type,int x,int y,int z,byte force)
 
 void Particle::GoRandomColor(byte color,int x,int y,int z,byte force)
 {
-	this->type=type;
 	if(force==0)
 		return;
 

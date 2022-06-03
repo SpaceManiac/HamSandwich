@@ -4,6 +4,7 @@
 #include "world.h"
 #include "monster.h"
 #include "sound.h"
+#include "appdata.h"
 
 static old_world_t *oldWorld;
 
@@ -87,7 +88,7 @@ byte Legacy_LoadWorld(world_t *world,const char *fname)
 
 	oldWorld=new old_world_t;
 
-	f=fopen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 		return 0;
 
@@ -592,7 +593,7 @@ byte Legacy_GetWorldName(const char *fname,char *buf)
 	if(fname[0]=='\0')
 		return 0;
 
-	f=fopen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 		return 0;
 

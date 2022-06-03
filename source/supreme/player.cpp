@@ -880,7 +880,6 @@ void PlayerFireWeapon(Guy *me)
 			else
 			{
 				player.wpnReload=5;
-				flameFlip=0;
 			}
 			DoPlayerFacing(c,me);
 			break;
@@ -1464,7 +1463,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	if(player.cheatrFlags&HMR_SPEED)
 		player.speed=255;
-	
+
 	if(player.cheatrFlags&HMR_STRENGTH)
 		me->strong=255;
 
@@ -1553,7 +1552,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	if(player.shield)
 		player.shield--;
-	
+
 	if(player.waterwalk)
 		player.waterwalk--;
 
@@ -2158,7 +2157,7 @@ void PlayerControlPowerArmor(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	if(player.shield)
 		player.shield=0;
-	
+
 	if(player.waterwalk)
 		player.waterwalk=0;
 
@@ -2346,7 +2345,7 @@ void PlayerControlMiniSub(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	if(player.shield)
 		player.shield=0;
-	
+
 	if(player.waterwalk)
 		player.waterwalk=0;
 

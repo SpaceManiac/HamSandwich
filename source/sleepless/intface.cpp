@@ -414,14 +414,14 @@ void RenderInterface(MGLDraw *mgl)
 	}
 
 	combo[0]=0;
-#ifdef _DEBUG
+#ifndef NDEBUG
 	for(i=0;i<8;i++)
 	{
-		sprintf(combo,"V%d: %d",i,player.var[i]);
-		Print(2+i*40,40,combo,0,1);
+		sprintf(combo,"V%d:%d",i,player.var[i]);
+		Print(14+i*40,23,combo,0,1);
 	}
 	sprintf(combo,"%d,%d",player.enterX,player.enterY);
-	Print(30,60,combo,0,1);
+	Print(14,36,combo,0,1);
 #endif
 }
 

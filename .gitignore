@@ -1,8 +1,18 @@
-# top-level folders
-/build
-/.vscode
-
 # file types
 *.pyc
 ~$*.*
 Thumbs.db
+
+# top-level folders and files
+/.vscode
+/.vs
+/addons
+/appdata
+/build
+/installers
+/CMakeUserPresets.json
+
+# Android
+/.idea
+/.gradle
+/local.properties

@@ -870,7 +870,6 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 void HitBadguys(bullet_t *me,Map *map,world_t *world)
 {
 	int i;
-	byte b;
 
 	attackType=me->type;
 	switch(me->type)
@@ -3552,6 +3551,15 @@ static const byte bulletFacingType[] = {
 	255,  	// BLT_FREEZE2	54		// a freeze bullet that drops like acid bullets and splats
 	7,  	// BLT_LUNA	55		// lunachick's bullets
 	7,  	// BLT_LUNA2	56		// lunachick's bullets with wall-bounce power
+	255,	// BLT_LIFEBLIP	57
+	255,	// BLT_AMMOBLIP	58
+	255,	// BLT_SITFLAME	59
+	255,	// BLT_FLAME3	60	// floaty flame, drifts up
+	255,	// BLT_IGNITE	61	// flamebringer shot that ignites the target hit
+	255,	// BLT_HOLESHOT 62	// black hole shot flying
+	0,		// BLT_BLACKHOLE 63	// black hole existing
+	255,	// BLT_BADGREEN 64
+	255,	// BLT_BADSITFLAME 65
 };
 
 byte BulletFacingType(byte type)

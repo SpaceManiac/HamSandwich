@@ -3,6 +3,6 @@
 
 #include "mgldraw.h"
 
-void RaceGame(MGLDraw *mgl);
+TASK(void) RaceGame(MGLDraw *mgl);
 
 #endif

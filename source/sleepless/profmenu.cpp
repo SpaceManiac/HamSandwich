@@ -14,8 +14,8 @@
 #include "goal.h"
 #include "comicbook.h"
 #include "customworld.h"
-#include "lsdir.h"
-#if __linux__
+#include "appdata.h"
+#if __linux__ || __EMSCRIPTEN__
 #include <unistd.h>
 #endif
 
@@ -140,8 +140,10 @@ void ScanProfiles(void)
 		fileList[i*PRFNAME_LEN]='\0';
 	numFiles=0;
 
-	for (const char* name : filterdir("profiles", ".prf", PRFNAME_LEN))
+	auto files = ListDirectory("profiles", ".prf", PRFNAME_LEN);
+	for (const auto& str : files)
 	{
+		const char* name = str.c_str();
 		strcpy(&fileList[numFiles*PRFNAME_LEN], name);
 		if (++numFiles >= MAX_PROFS)
 			break;
@@ -245,7 +247,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 							case BTN_COMIC:
 #ifndef DEMO
 								if(btn[i].txt[0]!='\0')	// only works if you are allowed!
-									ComicBook();
+									return 4;
 #endif
 								break;
 							case BTN_RESTART:
@@ -308,7 +310,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					{
 						sprintf(s,"profiles/%s.prf",profile.name);
 						FreeProfile();
-						unlink(s);
+						AppdataDelete(s);
 						if(numFiles==1)	// this was the only profile
 						{
 							mode=PROF_NORMAL;
@@ -332,7 +334,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						{
 							// delete all maps
 							sprintf(s,"profiles/%s.%03d",profile.name,i);
-							unlink(s);
+							AppdataDelete(s);
 						}
 						w=GetWorldProgress(profile.lastWorld);
 						w->levelOn=0;
@@ -527,7 +529,7 @@ void RenderProfMenu(MGLDraw *mgl)
 
 	sprintf(s,"%0.0f%% Complete",profile.progress.totalPercent);
 	PrintUnGlow(20,50,s,2);
-	sprintf(s,"Play time: %ld:%02ld",profile.progress.totalTime/(30*60*60),(profile.progress.totalTime/(30*60))%60);
+	sprintf(s,"Play time: %d:%02d",profile.progress.totalTime/(30*60*60),(profile.progress.totalTime/(30*60))%60);
 	PrintUnGlow(20,80,s,2);
 
 	PrintUnGlow(90,140,"Goals Completed",2);
@@ -612,7 +614,7 @@ void RenderKeyConfigMenu(MGLDraw *mgl)
 
 //----------------
 
-void ProfMenu(MGLDraw *mgl)
+TASK(void) ProfMenu(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime=1;
@@ -630,7 +632,7 @@ void ProfMenu(MGLDraw *mgl)
 		else
 			RenderKeyConfigMenu(mgl);
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;
@@ -638,15 +640,20 @@ void ProfMenu(MGLDraw *mgl)
 
 		if(done==2)
 		{
-			PlayListMenu(mgl);
+			AWAIT PlayListMenu(mgl);
 			done=0;
 		}
 		if(done==3)
 		{
-			NameEntry(mgl,1);
+			AWAIT NameEntry(mgl,1);
 			done=0;
 			ExitProfMenu();
 			InitProfMenu(mgl);
+		}
+		if(done==4)
+		{
+			AWAIT RecordBook(mgl);
+			done=0;
 		}
 	}
 

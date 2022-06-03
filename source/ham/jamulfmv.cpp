@@ -16,23 +16,25 @@
 
 struct fliheader
 {
-	long size;
-	word magic;
+	int32_t size;
+	word magic;  // FLC=0xAF12 (FLI=0xAF11, but no games use this)
 	word frames;
 	word width,height;
-	word flags;
-	word speed;
-	long next,frit;
-	byte expand[104];
+	word depth;  // ignored, they're all 8-bit
+	word flags;  // ignored, always 3, whatever that means
+	word speed;  // milliseconds per frame
+	int32_t next,frit;  // meaning unknown
 };
+static_assert(sizeof(fliheader) == 28);
 
 struct frmheader
 {
-	long size;
+	int32_t size;
 	word magic;    /* always $F1FA */
 	word chunks;
 	byte expand[8];
 };
+static_assert(sizeof(frmheader) == 16);
 
 // because of padding, the following 6-byte header is 8 bytes.
 // therefore use this define instead of sizeof() to read from a FLIc
@@ -40,7 +42,7 @@ struct frmheader
 
 struct chunkheader
 {
-	long size;
+	int32_t size;
 	word kind;
 };
 
@@ -49,65 +51,6 @@ static RGB FLI_pal[256];
 static word	fliWidth,fliHeight;
 
 //------------------------------------------------------------------------------
-
-static void PlotSolidRun(int x,int y,int len,byte *scrn,int scrWidth,byte c)
-{
-	int i;
-	int pos;
-
-	x*=2;
-	y*=2;
-	pos=x+y*scrWidth;
-	for(i=0;i<len;i++)
-	{
-		scrn[pos+scrWidth]=c;
-		scrn[pos+scrWidth+1]=c;
-		scrn[pos++]=c;
-		scrn[pos++]=c;
-	}
-}
-
-static void PlotSolidWordRun(int x,int y,int len,byte *scrn,int scrWidth,word c)
-{
-	int i;
-	int pos;
-	byte c2;
-
-	x*=2;
-	y*=2;
-	pos=x+y*scrWidth;
-	c2=(byte)(c>>8);
-	for(i=0;i<len;i++)
-	{
-		scrn[pos+scrWidth]=(byte)c;
-		scrn[pos+scrWidth+1]=(byte)c;
-		scrn[pos++]=(byte)c;
-		scrn[pos++]=(byte)c;
-		scrn[pos+scrWidth]=c2;
-		scrn[pos+scrWidth+1]=c2;
-		scrn[pos++]=c2;
-		scrn[pos++]=c2;
-	}
-}
-
-static void PlotDataRun(int x,int y,int len,byte *scrn,int scrWidth,byte *data)
-{
-	int i;
-	int pos;
-
-	x*=2;
-	y*=2;
-	pos=x+y*scrWidth;
-	for(i=0;i<len;i++)
-	{
-		scrn[pos+scrWidth]=*data;
-		scrn[pos+scrWidth+1]=*data;
-		scrn[pos++]=*data;
-		scrn[pos++]=*data;
-		data++;
-	}
-}
-
 
 static void FLI_docolor2(byte *p,MGLDraw *mgl)
 {
@@ -173,10 +116,10 @@ static void FLI_doDelta(byte *scrn,int scrWidth,byte *p)
 					y-=numPaks;
 					break;
 				case 0x4000:	// bottom bit, undefined
-					numPaks=numPaks;
+					//numPaks=numPaks;
 					break;
 				case 0x8000:	// top bit, supposedly last pixel thing
-					numPaks=numPaks;
+					//numPaks=numPaks;
 					break;
 			}
 		}
@@ -187,23 +130,19 @@ static void FLI_doDelta(byte *scrn,int scrWidth,byte *p)
 			sizeCount=(char)p[pos++];
 			if(sizeCount>0)	// copy sizeCount words
 			{
-				//memcpy(&scrn[scrWidth*y+x],&p[pos],sizeCount*2);
-				PlotDataRun(x,y,sizeCount*2,scrn,scrWidth,&p[pos]);
+				memcpy(&scrn[scrWidth*y+x],&p[pos],sizeCount*2);
 				pos+=sizeCount*2;
 				x+=sizeCount*2;
 			}
 			else if(sizeCount<0) // copy the word value -sizeCount times
 			{
 				memcpy(&v,&p[pos],2);
-				/*
 				while(sizeCount<0)
 				{
 					sizeCount++;
 					memcpy(&scrn[scrWidth*y+x],&v,2);
 					x+=2;
 				}
-				*/
-				PlotSolidWordRun(x,y,-sizeCount,scrn,scrWidth,v);
 				x-=2*sizeCount;
 				pos+=2;
 			}
@@ -219,7 +158,7 @@ static void FLI_doLC(byte *scrn,int scrWidth,byte *p)
 	word x,y;
 	byte packets,skip;
 	char size;
-	word pos=0;
+	size_t pos=0;
 
 	memcpy(&y,&p[pos++],2);
 	pos++;
@@ -235,14 +174,12 @@ static void FLI_doLC(byte *scrn,int scrWidth,byte *p)
 			size=p[pos++];
 			x+=skip;
 			if(size<0) {
-				//memset(&scrn[x+y*scrWidth],p[pos],-size);
-				PlotSolidRun(x,y,-size,scrn,scrWidth,p[pos]);
+				memset(&scrn[x+y*scrWidth],p[pos],-size);
 				pos++;
 				x-=size;
 			}
 			if(size>0) {
-				//memcpy(&scrn[x+y*scrWidth],&p[pos],size);
-				PlotDataRun(x,y,size,scrn,scrWidth,&p[pos]);
+				memcpy(&scrn[x+y*scrWidth],&p[pos],size);
 				pos+=size;
 				x+=size;
 			}
@@ -253,39 +190,30 @@ static void FLI_doLC(byte *scrn,int scrWidth,byte *p)
 
 static void FLI_doBRUN(byte *scrn,int scrWidth,byte *p)
 {
-	byte numpak;
-	word x,y=0;
-	char size;
-	word pos=0;
-
-	do {
-		x=0;
-		numpak=p[pos++];
-		while(numpak>0) {
-			numpak--;
-			size=p[pos++];
-			if(size>0) {
-				//memset(&scrn[x+y*scrWidth],p[pos],size);
-				PlotSolidRun(x,y,size,scrn,scrWidth,p[pos]);
-				pos++;
-				x+=size;
-			}
-			if(size<0) {
-				//memcpy(&scrn[x+y*scrWidth],&p[pos],-size);
-				PlotDataRun(x,y,-size,scrn,scrWidth,&p[pos]);
-				pos-=size;
-				x-=size;
+	for (word y = 0; y < fliHeight; ++y) {
+		word x = 0;
+		// In some movies, this number of packets is correct, but in movies
+		// like LL2/ending.flc and Factory.flc, it is 255, meaning "entire
+		// screen width", so just do that always, because it always works.
+		p++;
+		while (x < scrWidth) {
+			char size = *p++;
+			if(size >= 0) {
+				memset(&scrn[x+y*scrWidth], *p++, size);
+				x += size;
+			} else {
+				memcpy(&scrn[x+y*scrWidth], p, -size);
+				p += -size;
+				x += -size;
 			}
 		}
-		++y;
-	} while(y<fliHeight);
+	}
 }
 
 static void FLI_nextchunk(MGLDraw *mgl,int scrWidth)
 {
-	int i,j;
 	chunkheader chead;
-	byte *p,*src,*dst;
+	byte *p;
 
 	SDL_RWread(FLI_file, &chead,1,sizeofchunkheader);
 	if(chead.kind==FLI_COPY)
@@ -295,21 +223,7 @@ static void FLI_nextchunk(MGLDraw *mgl,int scrWidth)
 	switch(chead.kind)
 	{
 		case FLI_COPY:
-			dst=mgl->GetScreen();
-			src=p;
-			for(j=0;j<fliHeight;j++)
-			{
-				for(i=0;i<fliWidth;i++)
-				{
-					*dst=*src;
-					*(dst+1)=*src;
-					*(dst+scrWidth)=*src;
-					*(dst+scrWidth+1)=*src;
-					dst+=2;
-					src++;
-				}
-				dst+=scrWidth;
-			}
+			memcpy(mgl->GetScreen(), p, fliHeight * fliWidth);
 			break;
 		case FLI_BLACK:
 			mgl->ClearScreen();
@@ -337,62 +251,69 @@ static void FLI_nextchunk(MGLDraw *mgl,int scrWidth)
 
 static void FLI_nextfr(MGLDraw *mgl,int scrWidth)
 {
-	frmheader fhead;
-	int i;
+	long start = SDL_RWtell(FLI_file);
 
+	frmheader fhead;
 	SDL_RWread(FLI_file,&fhead,1,sizeof(frmheader));
 
 	// check to see if this is a FLC file's special frame... if it is, skip it
-	if(fhead.magic==0x00A1)
+	if (fhead.magic == 0xF1FA)
 	{
-		SDL_RWseek(FLI_file,fhead.size,RW_SEEK_CUR);
-		return;
+		for(int i=0; i < fhead.chunks; i++)
+			FLI_nextchunk(mgl, scrWidth);
 	}
+	// Other possible value of "magic" is 0x00A1, indicating the FLC file's
+	// special frame, but we already skip over that with the seek in FLI_play.
 
-	for(i=0;i<fhead.chunks;i++)
-		FLI_nextchunk(mgl,scrWidth);
+	// Some movies (TWOLCREDITS.flc) have padding at the end of the frame,
+	// after its chunks, so it needs to be skipped.
+	SDL_RWseek(FLI_file, start + fhead.size, RW_SEEK_SET);
 }
 
-static void FLI_skipfr(void)
-{
-	frmheader fhead;
-
-	SDL_RWread(FLI_file,&fhead,1,sizeof(frmheader));
-
-	SDL_RWseek(FLI_file,fhead.size-sizeof(frmheader),RW_SEEK_CUR);
-}
-
-byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack callback)
+TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack callback)
 {
 	int frmon=0;
-	long frsize;
 	fliheader FLI_hdr;
 	int scrWidth;
 	char k;
 	dword startTime,endTime;
 
-	FLI_file=AssetOpen_SDL(name,"rb");
+	FLI_file=AssetOpen_SDL(name);
 	if (!FLI_file)
 	{
-		perror(name);
-		return 0;
+		// Asset stack printed error already
+		CO_RETURN 0;
 	}
-	SDL_RWread(FLI_file, &FLI_hdr,1,sizeof(fliheader));
-	SDL_RWread(FLI_file, &frsize,1,4);
-	SDL_RWseek(FLI_file, -4, RW_SEEK_CUR);
-	fliWidth=FLI_hdr.width;
-	fliHeight=FLI_hdr.height;
+
+	// Read the main part of the header.
+	SDL_RWread(FLI_file, &FLI_hdr, 1, sizeof(fliheader));
+	fliWidth = FLI_hdr.width;
+	fliHeight = FLI_hdr.height;
+
+	// "wait" can be overridden, but defaults to the value from the file.
+	if (!wait)
+		wait = FLI_hdr.speed;
+
+	// Resizing the buffer here means that MGLDraw will handle the upscaling.
+	int oldWidth = mgl->GetWidth(), oldHeight = mgl->GetHeight();
+	mgl->ResizeBuffer(fliWidth, fliHeight);
+
+	// At this offset in the header is the offset of the first "real" frame.
+	// In older FLCs (everything except LL2's ending.flc), there is a dummy
+	// frame between the header and this location that must be skipped.
+	int32_t ofs1;
+	SDL_RWseek(FLI_file, 80, RW_SEEK_SET);
+	SDL_RWread(FLI_file, &ofs1, 4, 1);
+	// There is also the offset of the second frame following this, but all
+	// released movies have it at its expected location.
+
+	// The end of the header is at 128 bytes. In some movies, the real first
+	// frame is there, but in others there's a dummy frame with information
+	// we don't care about. Luckily ofs1 points to the real first frame.
+	SDL_RWseek(FLI_file, ofs1, RW_SEEK_SET);
 
 	mgl->LastKeyPressed();	// clear key buffer
 
-	// if this is a FLC, skip the first frame
-	if((name[strlen(name)-1]=='c')||
-			(name[strlen(name)-1]=='C'))
-	{
-		FLI_skipfr();
-		frmon++;
-		FLI_hdr.frames++;	// a confusion issue
-	}
 	do
 	{
 		startTime=timeGetTime();
@@ -401,11 +322,11 @@ byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack
 		FLI_nextfr(mgl,scrWidth);
 		if (callback && !callback(frmon))
 			break;
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if((loop)&&(frmon==FLI_hdr.frames+1))
 		{
 			frmon=1;
-			SDL_RWseek(FLI_file, 128 + frsize, RW_SEEK_SET);
+			SDL_RWseek(FLI_file, ofs1, RW_SEEK_SET);
 		}
 		if((!loop)&&(frmon==FLI_hdr.frames))
 			frmon=FLI_hdr.frames+1;
@@ -414,22 +335,14 @@ byte FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack
 
 		endTime=timeGetTime();
 		while((endTime-startTime)<wait)
+		{
+			SDL_Delay((startTime + wait - endTime) / 2);
 			endTime=timeGetTime();
+		}
 	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27));
+
 	SDL_RWclose(FLI_file);
-	return k != 27;
-}
+	mgl->ResizeBuffer(oldWidth, oldHeight);
 
-word FLI_numFrames(char *name)
-{
-	fliheader FLI_hdr;
-
-	SDL_RWops *f=AssetOpen_SDL(name,"rb");
-	SDL_RWread(f, &FLI_hdr,1,sizeof(fliheader));
-	SDL_RWclose(f);
-	if((name[strlen(name)-1]=='c')||
-			(name[strlen(name)-1]=='C'))
-		return FLI_hdr.frames;
-	else
-		return FLI_hdr.frames;
+	CO_RETURN k != 27;
 }

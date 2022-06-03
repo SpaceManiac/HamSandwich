@@ -3,7 +3,7 @@
 
 #include "mgldraw.h"
 
-void NameEntry(MGLDraw *mgl,byte makeNew);
+TASK(void) NameEntry(MGLDraw *mgl,byte makeNew);
 const char *GetEnteredName(void);
 
 #endif

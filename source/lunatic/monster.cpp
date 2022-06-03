@@ -7067,7 +7067,7 @@ void AI_SDZL(Guy *me, Map *map, world_t *world, Guy *goodguy)
 		{
 			if (GetPlayerWorld() == 4) // this is the real asylum, not some knock-off
 			{
-				ShowVictoryAnim(4); // you killed him.
+				coro::launch(std::bind(ShowVictoryAnim, 4)); // you killed him.
 				SendMessageToGame(MSG_WINGAME, 0);
 			}
 		}
@@ -7209,8 +7209,6 @@ void AI_Santa(Guy *me, Map *map, world_t *world, Guy *goodguy)
 }
 
 #ifdef EXPANDO
-#define MONSTER_CPP
-#include "monster2.cpp"
-#include "monster3.cpp"
-#undef MONSTER_CPP
+#include "monster2.inc"
+#include "monster3.inc"
 #endif

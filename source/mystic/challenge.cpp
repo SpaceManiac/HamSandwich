@@ -5,6 +5,7 @@
 #include "fairy.h"
 #include "shop.h"
 #include "guy.h"
+#include "appdata.h"
 
 #define ASK_RESETCHAR	1
 #define ASK_RESETSTAR	2
@@ -1242,7 +1243,7 @@ void LoadChallenge(void)
 {
 	FILE *f;
 
-	f=fopen("challenge.sav","rb");
+	f=AppdataOpen("challenge.sav");
 	if(!f)
 	{
 		ResetChallengeStats();
@@ -1260,12 +1261,13 @@ void SaveChallenge(void)
 {
 	FILE *f;
 
-	f=fopen("challenge.sav","wb");
+	f=AppdataOpen_Write("challenge.sav");
 	if(f)
 	{
 		memcpy(&chalData.player,&player,sizeof(player_t));
 		fwrite(&chalData,1,sizeof(chalData_t),f);
 		fclose(f);
+		AppdataSync();
 	}
 }
 
@@ -1328,7 +1330,7 @@ void InitAttempt(void)
 	attempt.quit=0;
 }
 
-byte ChallengeMenu(MGLDraw *mgl)
+TASK(byte) ChallengeMenu(MGLDraw *mgl)
 {
 	byte b=0;
 	int lastTime=1;
@@ -1343,9 +1345,9 @@ byte ChallengeMenu(MGLDraw *mgl)
 		StartClock();
 		b=ChallengeMenuUpdate(mgl,&lastTime);
 		ChallengeMenuRender(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
-			return 0;
+			CO_RETURN 0;
 		EndClock();
 		if(b==1)
 		{
@@ -1358,9 +1360,9 @@ byte ChallengeMenu(MGLDraw *mgl)
 			{
 				InitAttempt();
 				if(chal[chalCursor].chapter<4)
-					ChallengePlay(chal[chalCursor].chapter,chal[chalCursor].level);
+					AWAIT ChallengePlay(chal[chalCursor].chapter,chal[chalCursor].level);
 				else
-					ChallengePlay(chal[chalCursor].chapter-4,chal[chalCursor].level);
+					AWAIT ChallengePlay(chal[chalCursor].chapter-4,chal[chalCursor].level);
 				if(CurrentSong()!=SONG_SHOP)
 					PlaySong(SONG_SHOP);
 
@@ -1376,7 +1378,7 @@ byte ChallengeMenu(MGLDraw *mgl)
 		}
 	}
 	ExitChallengeMenu();
-	return 0;
+	CO_RETURN 0;
 }
 
 byte Challenging(void)
@@ -1730,13 +1732,13 @@ void InitChallengeTally(MGLDraw *mgl)
 		chalData.topCombo[chalCursor]=attempt.bestCombo;
 }
 
-void ChallengeTally(MGLDraw *mgl)
+TASK(void) ChallengeTally(MGLDraw *mgl)
 {
 	byte b=0;
 	int lastTime=1;
 
 	if(attempt.quit)
-		return;
+		CO_RETURN;
 
 	InitChallengeTally(mgl);
 	while(b==0)
@@ -1745,9 +1747,9 @@ void ChallengeTally(MGLDraw *mgl)
 		StartClock();
 		b=ChallengeTallyUpdate(mgl,&lastTime);
 		ChallengeTallyRender(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
-			return;
+			CO_RETURN;
 		EndClock();
 	}
 }

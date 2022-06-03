@@ -23,7 +23,7 @@ typedef struct netguy_t
 
 static word numPts;
 static netpt_t *points;
-static byte drawing,drawBright,numGuys;
+static byte drawing,drawBright;
 static netguy_t netGuy[MAX_NETGUYS];
 static int record,caught;
 static char caughtBright;

@@ -1,0 +1,22 @@
+{
+	"title": "Stockboy",
+	"installers": [
+		{
+			"filename": "stockboy_install.EXE",
+			"kind": "inno",
+			"sha256sum": "781aa144b2b49bf563990770a12529fcd9031b4feb033d9cb8538f986d0607ca",
+			"link": "https://hamumu.itch.io/stockboy",
+			"file_id": 709725,
+			"description": "Base assets for Stockboy"
+		},
+		{
+			"filename": "stockaddon.exe",
+			"kind": "nsis",
+			"sha256sum": "e82354f34f2ceee161f69afef90c0bc98189fcf47e558f292f4f4d8f15dfc5f4",
+			"link": "https://hamumu.itch.io/stockboy",
+			"file_id": 834523,
+			"description": "Add-ons: 2011 collection",
+			"optional": true
+		}
+	]
+}

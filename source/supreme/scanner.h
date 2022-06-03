@@ -13,7 +13,7 @@ byte UpdateCard(MGLDraw *mgl);
 void RenderScan(MGLDraw *mgl);
 void RenderCard(MGLDraw *mgl);
 
-void Bestiary(MGLDraw *mgl);
+TASK(void) Bestiary(MGLDraw *mgl);
 
 float ScanPercent(void);
 float CardPercent(void);

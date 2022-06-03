@@ -4,8 +4,8 @@
 #include "jamultypes.h"
 #include "mgldraw.h"
 #include "gallery.h"
-#pragma pack(1)
 
+#pragma pack(push, 1)
 typedef struct options_t
 {
 	byte control[2][8];	// key scancodes
@@ -18,13 +18,14 @@ typedef struct options_t
 	byte galPix[GALLERY_PIX];
 #endif
 } options_t;
+#pragma pack(pop)
 
 extern options_t opt;
 
 void LoadOptions(void);
 void SaveOptions(void);
 
-void OptionsMenu(MGLDraw *mgl,byte *backScr);
+TASK(void) OptionsMenu(MGLDraw *mgl,byte *backScr);
 
 void ApplyControlSettings(void);
 void ApplyControlSettingsMem(byte *data);

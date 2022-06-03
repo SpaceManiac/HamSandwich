@@ -4,6 +4,7 @@
 #include "items.h"
 #include "worldstitch.h"
 #include "log.h"
+#include "appdata.h"
 
 byte keyChainInLevel[MAX_MAPS];
 static swc_world_t *swcWorld;
@@ -45,7 +46,7 @@ byte LoadWorld(world_t *world,const char *fname)
 	int i;
 	char code[32];
 
-	f=fopen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 		return 0;
 
@@ -63,7 +64,7 @@ byte LoadWorld(world_t *world,const char *fname)
 		ClearCustomSounds();
 		return Legacy_LoadWorld(world,fname);
 	}
-	
+
 	swcWorld=new swc_world_t;
 
 	fread(&world->author,sizeof(char),32,f);
@@ -77,7 +78,7 @@ byte LoadWorld(world_t *world,const char *fname)
 
 	//LogError("SWC sizeof - %i , HAM sizeof - %i", sizeof(swc_terrain_t), sizeof(terrain_t));
 	fread(swcWorld->terrain,world->numTiles,sizeof(swc_terrain_t),f);
-	
+
 	for(i=0;i<world->numTiles;i++)
 	{
 		world->terrain[i].flags=(dword)swcWorld->terrain[i].flags;
@@ -111,7 +112,7 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 	int i;
 	char code[32];
 
-	f=fopen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 	{
 		SetStitchError("File Not Found");
@@ -184,17 +185,122 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 	return 1;
 }
 
+#define YES_IF(X) if(X) { return true; }
+// Checks for if a world *must* be saved as a HamSandwich format world.
+// The intent is to prefer the Supreme format when possible, and use the
+// newer HamSandwich format only for worlds which absolutely require it.
+// It might take a little work, but worlds which do not exceed the limits of
+// the relevant integer types should still "fit" in the Supreme format.
+
+// There are some lines checking sizeof() for simplicity. If you change them,
+// you can tweak the SaveWorld and LoadWorld functions to save/load the old
+// size and tweak those checks.
+
+static bool MustBeHamSandwichMap(const Map *map)
+{
+	YES_IF(map->width > 250);  // x=255 is special, so we need HSW in that case
+	YES_IF(map->height > 250);
+	YES_IF(strlen(map->name) > 31);
+	YES_IF(strlen(map->song) > 31);
+
+	int count = 0;
+	for (int i = 0; i < MAX_MAPMONS; ++i)
+	{
+		if (map->badguy[i].type)
+		{
+			++count;
+			YES_IF(count > UINT8_MAX);
+			YES_IF(map->badguy[i].x > UINT8_MAX);
+			YES_IF(map->badguy[i].y > UINT8_MAX);
+			YES_IF(map->badguy[i].type > UINT8_MAX);
+			YES_IF(map->badguy[i].item > UINT8_MAX);
+		}
+	}
+
+	for (int i = 0; i < MAX_SPECIAL; ++i)
+	{
+		const auto& spcl = map->special[i];
+		if (spcl.x != 255)
+		{
+			YES_IF(i > UINT8_MAX);
+			YES_IF(spcl.x > UINT8_MAX);
+			YES_IF(spcl.y > UINT8_MAX);
+			YES_IF(spcl.uses > UINT8_MAX);
+
+			for (int j = 0; j < NUM_TRIGGERS; ++j)
+			{
+				if (spcl.trigger[j].type)
+				{
+					YES_IF(j > 7);
+				}
+			}
+			for (int j = 0; j < NUM_EFFECTS; ++j)
+			{
+				if (spcl.effect[j].type)
+				{
+					YES_IF(j > 31);
+				}
+			}
+
+			YES_IF(sizeof(trigger_t) != 12);
+			YES_IF(sizeof(effect_t) != 44);
+		}
+	}
+
+	YES_IF(map->flags > UINT16_MAX);
+	YES_IF(map->numBrains > UINT16_MAX);
+	YES_IF(map->numCandles > UINT16_MAX);
+	YES_IF(map->itemDrops > UINT16_MAX);
+
+	for (int i = 0, max = map->width * map->height; i < max; ++i)
+	{
+		YES_IF(map->map[i].floor > UINT16_MAX);
+		YES_IF(map->map[i].wall > UINT16_MAX);
+		YES_IF(map->map[i].item > UINT8_MAX);
+		YES_IF(map->map[i].light < INT8_MIN || map->map[i].light > INT8_MAX);
+	}
+
+	return false;
+}
+
+bool MustBeHamSandwichWorld(const world_t *world)
+{
+	// If any "legacy" limits are exceeded.
+	YES_IF(strlen(world->author) > 31);
+	YES_IF(world->numMaps > UINT8_MAX);
+	YES_IF(world->numTiles > UINT16_MAX);
+
+	YES_IF(sizeof(terrain_t) != 4);
+
+	for(int i = 0; i < world->numMaps; ++i)
+	{
+		YES_IF(MustBeHamSandwichMap(world->map[i]));
+	}
+
+	// simply crossing our fingers that there are <65535 custom items...
+	YES_IF(sizeof(item_t) != 124);
+
+	YES_IF(sizeof(soundDesc_t) != 36);
+
+	return false;
+}
+#undef YES_IF
+
 byte SaveWorld(world_t *world, const char *fname)
 {
-	// Save new world
-	Ham_SaveWorld(world, fname);
-	std::string name = fname;
-	
-	name.erase(name.end()-3,name.end());
-	name.append("dlw");
-	fname = name.c_str();
+	std::string namebuf;
+	if (MustBeHamSandwichWorld(world))
+	{
+		// Save HamSandwich world.
+		printf("Saving HamSandwich world: %s\n", fname);
+		Ham_SaveWorld(world, fname);
+		// Save old world as backup.
+		namebuf = fname;
+		namebuf.append("_old");
+		fname = namebuf.c_str();
+	}
+	printf("Saving Supreme world: %s\n", fname);
 
-	// Save old world as backup
 	FILE *f;
 	int i;
 	char code[9]="SUPREME!";
@@ -205,7 +311,7 @@ byte SaveWorld(world_t *world, const char *fname)
 		if(world->map[i] && (!(world->map[i]->flags&MAP_HUB)))
 			world->totalPoints+=100;	// each level is worth 100 points except hubs which is worth nothing
 
-	f=fopen(fname,"wb");
+	f=AssetOpen_Write(fname);
 	if(!f)
 		return 0;
 
@@ -227,38 +333,39 @@ byte SaveWorld(world_t *world, const char *fname)
 	SaveCustomSounds(f);
 
 	fclose(f);
+	AppdataSync();
 
 	return 1;
 }
 
 byte GetWorldName(const char *fname,char *buffer,char *authbuffer)
 {
-	FILE *f;
+	SDL_RWops *f;
 	char code[9];
 
-	f=fopen(fname,"rb");
+	f=AssetOpen_SDL(fname);
 	if(!f)
 		return 0;
 
-	fread(code,sizeof(char),8,f);
+	SDL_RWread(f,code,sizeof(char),8);
 	code[8]='\0';
 	if(!strcmp(code,"HAMSWCH!"))
 	{
-		fclose(f);
+		SDL_RWclose(f);
 		return Ham_GetWorldName(fname, buffer, authbuffer);
 	}
 	else if(strcmp(code,"SUPREME!"))
 	{
-		fclose(f);
+		SDL_RWclose(f);
 
 		strcpy(authbuffer,"Unknown Author");
 		return Legacy_GetWorldName(fname,buffer);
 	}
 
-	fread(authbuffer,sizeof(char),32,f);
-	fread(buffer,sizeof(char),32,f);
+	SDL_RWread(f,authbuffer,sizeof(char),32);
+	SDL_RWread(f,buffer,sizeof(char),32);
 
-	fclose(f);
+	SDL_RWclose(f);
 	return 1;
 }
 
@@ -304,7 +411,7 @@ void LogRequirements(world_t *w)
 	int i,j,k;
 	FILE *f;
 
-	f=fopen("req_files.txt","wt");
+	f=AppdataOpen_Write("req_files.txt");
 	fprintf(f,"World: %s\n",w->map[0]->name);
 
 	for(i=0;i<w->numMaps;i++)
@@ -325,6 +432,7 @@ void LogRequirements(world_t *w)
 		}
 	}
 	fclose(f);
+	AppdataSync();
 }
 
 terrain_t *GetTerrain(world_t *w,word tile)

@@ -2,6 +2,7 @@
 #include "map.h"
 #include "water.h"
 #include "music.h"
+#include "appdata.h"
 
 #define PLOPRATE	5
 
@@ -1374,13 +1375,21 @@ void ShowSpecials(void)
 	if(!(editopt.displayFlags&MAP_SHOWSPECIALS))
 		return;
 
+	char spclNum[32];
+
 	GetCamera(&sx,&sy);
 	for(i=0;i<MAX_SPECIAL;i++)
 		if(curMap->special[i].trigger)
 		{
-			Print(curMap->special[i].x*TILE_WIDTH+2-sx+320,
-				  curMap->special[i].y*TILE_HEIGHT+6-sy+240,
-				  "Spcl",0,1);
+			Print(
+				curMap->special[i].x * TILE_WIDTH + 2 - sx + 320,
+				curMap->special[i].y * TILE_HEIGHT + 1 - sy + 240,
+				"Spcl", 0, 1);
+			sprintf(spclNum, "%03d", i);
+			Print(
+				curMap->special[i].x * TILE_WIDTH + 2 - sx + 320,
+				curMap->special[i].y * TILE_HEIGHT + 12 - sy + 240,
+				spclNum, 0, 1);
 		}
 }
 
@@ -1470,8 +1479,6 @@ void EditorDraw(void)
 
 	// draw the mouse cursor
 	DrawMouseCursor(mouseX,mouseY);
-
-	editmgl->Flip();
 }
 
 void Cavernize(void)
@@ -1836,7 +1843,7 @@ void ScanChests(void)
 	int i,j;
 	FILE *f;
 
-	f=fopen("blah.txt","wt");
+	f=AppdataOpen_Write("blah.txt");
 
 	for(i=0;i<99;i++)
 		pres[i]=0;
@@ -1869,6 +1876,7 @@ void ScanChests(void)
 			fprintf(f,"Chest #%d missing!\n",i);
 	}
 	fclose(f);
+	AppdataSync();
 }
 
 static void HandleKeyPresses(void)
@@ -2248,7 +2256,7 @@ static void HandleKeyPresses(void)
 	}
 }
 
-byte LunaticEditor(MGLDraw *mgl)
+TASK(byte) LunaticEditor(MGLDraw *mgl)
 {
 	int lastTime=1;
 	byte exitcode=0;
@@ -2256,7 +2264,7 @@ byte LunaticEditor(MGLDraw *mgl)
 	editmgl=mgl;
 
 	if(!InitEditor())
-		return QUITGAME;
+		CO_RETURN QUITGAME;
 
 	exitcode=CONTINUE;
 	while(exitcode==CONTINUE)
@@ -2266,6 +2274,7 @@ byte LunaticEditor(MGLDraw *mgl)
 		HandleKeyPresses();
 		exitcode=EditorRun(&lastTime);
 		EditorDraw();
+		AWAIT editmgl->Flip();
 
 		if(lastKey==27)
 			exitcode=QUITGAME;
@@ -2276,7 +2285,7 @@ byte LunaticEditor(MGLDraw *mgl)
 	}
 
 	ExitEditor();
-	return exitcode;
+	CO_RETURN exitcode;
 }
 
 void EditorNewWorld(void)

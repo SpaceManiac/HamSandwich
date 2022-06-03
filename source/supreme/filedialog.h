@@ -16,11 +16,12 @@
 #define FM_MERGE	128
 #define FM_PICSONLY	256
 
-void InitFileDialog(const char *fileSpec,dword menuItemsToShow,const char *defaultName);
+void InitFileDialog(const char *dir, const char *ext, byte menuItemsToShow,const char *defaultName);
 void ExitFileDialog(void);
 void RenderFileDialog(int msx,int msy,MGLDraw *mgl);
 byte FileDialogKey(char key);
 byte FileDialogClick(int msx,int msy);
+void FileDialogScroll(int msz);
 
 const char *GetFilename(const char *header);
 byte FileDialogCommand(void);

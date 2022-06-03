@@ -3,6 +3,7 @@
 #include "control.h"
 #include "clock.h"
 #include "sound.h"
+#include "appdata.h"
 
 option_t opt;
 
@@ -22,7 +23,7 @@ void InitOptions(void)
 {
 	FILE *f;
 
-	f=fopen("options.cfg","rb");
+	f=AppdataOpen("options.cfg");
 	if(!f)
 	{
 		opt.challenge=0;
@@ -70,9 +71,10 @@ void InitOptions(void)
 void ExitOptions(void)
 {
 	FILE *f;
-	f=fopen("options.cfg","wb");
+	f=AppdataOpen_Write("options.cfg");
 	fwrite(&opt,sizeof(option_t),1,f);
 	fclose(f);
+	AppdataSync();
 }
 
 
@@ -370,7 +372,7 @@ void RenderOptionsMenu(MGLDraw *mgl)
 	RenderControls(120,170,mgl);
 }
 
-void OptionsMenu(MGLDraw *mgl)
+TASK(void) OptionsMenu(MGLDraw *mgl)
 {
 	byte b=0;
 	int lastTime=1;
@@ -389,11 +391,11 @@ void OptionsMenu(MGLDraw *mgl)
 		StartClock();
 		b=UpdateOptionsMenu(mgl);
 		RenderOptionsMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			ExitOptionsMenu();
-			return;
+			CO_RETURN;
 		}
 
 		EndClock();

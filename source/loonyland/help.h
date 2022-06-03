@@ -3,6 +3,6 @@
 
 #include "game.h"
 
-void Help(MGLDraw *mgl);
+TASK(void) Help(MGLDraw *mgl);
 
 #endif

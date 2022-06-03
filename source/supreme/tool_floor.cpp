@@ -171,7 +171,7 @@ void FloorTool::PlopFill(int x,int y,int floor,int wall)
 	Map *m;
 	int preFloor,preWall;
 	m=EditorGetMap();
-	
+
 	if(x<0 || y<0 || x>=m->width || y>=m->height || tile[active]>=800 || tilesCleared>=10000)
 	{
 		MakeNormalSound(SND_BOMBBOOM);
@@ -204,12 +204,10 @@ void FloorTool::PlopFill(int x,int y,int floor,int wall)
 
 void FloorTool::Plop(void)
 {
-	Map *m;
 	int x,y;
 	int i,j,minusBrush,plusBrush;
 
 	EditorGetTileXY(&x,&y);
-	m=EditorGetMap();
 	tilesCleared = 0;
 
 	if(x!=lastX || y!=lastY)

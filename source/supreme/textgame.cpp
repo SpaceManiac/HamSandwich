@@ -122,8 +122,8 @@ static char helpTxt[HELPLEN][MAX_LINELEN]={
 	"Press the ESCAPE key to quit the game at any time.",
 };
 
-#include "textitems.cpp"
-#include "textrooms.cpp"
+#include "textitems.inc"
+#include "textrooms.inc"
 
 static txtItem_t items[TI_MAX];
 static txtRoom_t rooms[TR_MAX];
@@ -1979,7 +1979,7 @@ void RenderTextGame(MGLDraw *mgl)
 		inputTxt[strlen(inputTxt)-1]='\0';
 }
 
-void TextGame(MGLDraw *mgl)
+TASK(void) TextGame(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -1992,7 +1992,7 @@ void TextGame(MGLDraw *mgl)
 		StartClock();
 		done=UpdateTextGame(&lastTime,mgl);
 		RenderTextGame(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;

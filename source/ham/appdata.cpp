@@ -1,18 +1,125 @@
 #include "appdata.h"
 #include "log.h"
+#include "erase_if.h"
+#include "jamultypes.h"
+#include "metadata.h"
+#include "extern.h"
+#include <string>
+#include <vector>
+#include <memory>
+#include <algorithm>
+#include <set>
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL_platform.h>
-	#include <SDL_rwops.h>
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL_platform.h>
-	#include <SDL2/SDL_rwops.h>
-#endif  // SDL_UNPREFIXED
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <errno.h>
 
-// TODO: re-enable this when "DrLunatic" is overrideable,
-// and there's some means of porting existing installs.
+#ifndef _MSC_VER
+#include <unistd.h>
+#endif
+
+#ifdef _WIN32
+#include <windows.h>
+#include <direct.h>
+#else
+#include <sys/wait.h>
+#endif
+
+#include <SDL.h>
+
+#include <vanilla_extract.h>
+
+using vanilla::Vfs;
+using vanilla::WriteVfs;
+using vanilla::Mount;
+using vanilla::VfsStack;
+
+/*
+The interface in appdata.h currently distinguishes between AppdataOpen
+and AssetOpen, but the implementation treats them the same, instead switching
+based on whether the mode is read-only.
+
+We always first try to use the read-write ("appdata") directory. If the mode
+is read-only, we then try to use the read-only ("asset") directories in
+sequence.
+
+Emscripten
+	RW: /appdata/$GAME
+	Ro: /
+		Provided by build process + JS environment
+Android
+	if external storage is writeable:
+		RW: $EXTERNAL
+		Ro: $INTERNAL
+	else:
+		RW: $INTERNAL
+	Ro: SDL_RWFromFile, which reads from .apk
+		Tempfiles in $INTERNAL/.bundle_tmp when needed
+		Provided by build process
+Default
+	RW: $PWD
+
+Pseudocode for SDL_RWFromFile(file, mode):
+	if android:
+		if file is absolute:
+			return fopen(file, mode) if successful
+		else:
+			return fopen($INTERNAL/file, mode) if successful
+		return bundled asset from .apk
+	else if windows:
+		return windows_file_open(file, mode)
+	else:
+		if apple and mode is readonly:
+			return fopen($APP_BUNDLE/file, mode) if successful
+		return fopen(file, mode)
+*/
+
+static Mount init_vfs_spec(const char* what, const char* spec) {
+	std::string spec2 = spec;
+	char* mountpoint = spec2.data();
+	char* kind = mountpoint + strcspn(mountpoint, "@");
+	*kind++ = 0;
+	char* param = kind + strcspn(kind, "@");
+	*param++ = 0;
+
+	if (!strcmp(kind, "stdio")) {
+		return { vanilla::open_stdio(param), mountpoint };
+	} else if (!strcmp(kind, "zip")) {
+		SDL_RWops* fp = SDL_RWFromFile(param, "rb");
+		if (!fp) {
+			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
+			return { nullptr };
+		}
+		return { vanilla::open_zip(fp), mountpoint };
+	} else if (!strcmp(kind, "nsis")) {
+		SDL_RWops* fp = SDL_RWFromFile(param, "rb");
+		if (!fp) {
+			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
+			return { nullptr };
+		}
+		return { vanilla::open_nsis(fp), mountpoint };
+	} else if (!strcmp(kind, "inno")) {
+		SDL_RWops* fp = SDL_RWFromFile(param, "rb");
+		if (!fp) {
+			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
+			return { nullptr };
+		}
+		return { vanilla::open_inno(fp), mountpoint };
+	}
+#ifdef __ANDROID__
+	else if (!strcmp(kind, "android")) {
+		return { vanilla::open_android(param), mountpoint };
+	}
+#endif
+	else {
+		LogError("%s: unknown kind '%s' in VFS spec '%s'", what, kind, spec);
+		return { nullptr };
+	}
+}
+
+// ----------------------------------------------------------------------------
 #if 0  // #ifdef _WIN32
-// Windows ----------------------------------------------------------
+// Windows %APPDATA% configuration (not currently in use)
 
 #include <io.h>
 #include <shlobj.h> // for SHGetFolderPath
@@ -20,163 +127,358 @@
 #include <direct.h>
 #endif
 
-FILE* AppdataOpen(const char* file, const char* mode) {
-	char buffer[MAX_PATH];
-	SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, buffer);
-	strcat(buffer, "\\Hamumu");
-	mkdir(buffer);
-	strcat(buffer, "\\DrLunatic");
-	mkdir(buffer);
-	strcat(buffer, "\\");
-	strcat(buffer, file);
-	return fopen(file, mode);
+static VfsStack default_vfs_stack() {
+	char get_folder_path[MAX_PATH];
+	SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, get_folder_path);
+
+	std::string buffer = get_folder_path;
+	buffer.append("\\Hamumu\\");
+	buffer.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
+
+	VfsStack result;
+	result.set_appdata(std::make_unique<StdioVfs>(buffer));
+	result.push_back(std::make_unique<StdioVfs>("."));
+	return result;
 }
 
-FILE* AssetOpen(const char* file, const char* mode) {
-	return fopen(file, mode);
+// ----------------------------------------------------------------------------
+#elif defined(__EMSCRIPTEN__)
+// Emscripten configuration
+
+#include <emscripten.h>
+
+static VfsStack default_vfs_stack() {
+	std::string buffer = "/appdata/";
+	buffer.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
+
+	VfsStack result;
+	result.set_appdata(vanilla::open_stdio(buffer.c_str()));
+	result.push_back(vanilla::open_stdio(""));
+	return result;
 }
 
-SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
-	return SDL_RWFromFile(file, mode);
+#define HAS_APPDATA_SYNC
+void AppdataSync() {
+	EM_ASM(
+		HamSandwich.fsSync();
+	);
 }
 
+// ----------------------------------------------------------------------------
 #elif defined(__ANDROID__) && __ANDROID__
-// Android ----------------------------------------------------------
+// Android configuration
 
 #include <SDL_system.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <string.h>
-#include <unistd.h>
 
-#define MKDIR_MODE 0777
-
-static int mkdir_one(const char *path, mode_t mode) {
-	if (mkdir(path, mode) != 0 && errno != EEXIST)
-		return -1;
-	return 0;
-}
-
-static int mkdir_parents(const char *path, mode_t mode) {
-	char *copypath = strdup(path);
-	char *start = copypath;
-	char *next;
-
-	int status = 0;
-	while (status == 0 && (next = strchr(start, '/'))) {
-		if (next != start) {
-			// skip the root directory and double-slashes
-			*next = '\0';
-			status = mkdir_one(copypath, mode);
-			*next = '/';
-		}
-		start = next + 1;
-	}
-
-	free(copypath);
-
-	if (status != 0)
-		LogError("mkdirs(%s): %s", path, strerror(errno));
-	return status;
-}
-
-static bool is_write_mode(const char* mode) {
-	return mode[0] == 'w' || mode[0] == 'a' || (mode[0] == 'r' && mode[1] == '+');
-}
-
-FILE* AppdataOpen(const char* file, const char* mode) {
-	char buffer[1024];
-
-	// Only use external storage if it is both readable and writeable
+static VfsStack default_vfs_stack() {
+	VfsStack result;
 	int need_flags = SDL_ANDROID_EXTERNAL_STORAGE_READ | SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
 	if ((SDL_AndroidGetExternalStorageState() & need_flags) == need_flags) {
-		strcpy(buffer, SDL_AndroidGetExternalStoragePath());
+		result.set_appdata(vanilla::open_stdio(SDL_AndroidGetExternalStoragePath()));
+		result.push_back(vanilla::open_stdio(SDL_AndroidGetInternalStoragePath()));
 	} else {
-		strcpy(buffer, SDL_AndroidGetInternalStoragePath());
+		result.set_appdata(vanilla::open_stdio(SDL_AndroidGetInternalStoragePath()));
 	}
-
-	strcat(buffer, "/");
-	strcat(buffer, file);
-	if (is_write_mode(mode)) {
-		mkdir_parents(buffer, MKDIR_MODE);
-	}
-	FILE* fp = fopen(buffer, mode);
-	if (!fp) {
-		LogDebug("AppdataOpen(%s, %s): %s", file, mode, strerror(errno));
-	}
-	return fp;
+	result.push_back(vanilla::open_android());
+	return result;
 }
 
-FILE* AssetOpen(const char* file, const char* mode) {
-	LogDebug("AssetOpen(%s, %s)", file, mode);
-	if (is_write_mode(mode)) {
-		return AppdataOpen(file, mode);
-	}
+// ----------------------------------------------------------------------------
+#else
+// Naive stdio configuration
 
-	// Check internal storage to see if we've already extracted the file.
-	char fname_buf[1024];
-	sprintf(fname_buf, "%s/%s", SDL_AndroidGetInternalStoragePath(), file);
-	unlink(fname_buf);
+static bool detect_installers(VfsStack* result, const HamSandwichMetadata* meta) {
+	// `appdata/$NAME/`
+	std::string appdata = "appdata/";
+	appdata.append(meta->appdata_folder_name);
+	result->set_appdata(vanilla::open_stdio(appdata.c_str()));
 
-	// Not in internal storage, so ask SDL to pull it from the asset system.
-	SDL_RWops *rw = SDL_RWFromFile(file, mode);
-	if (!rw) {
-		LogError("AssetOpen(%s) bad SDL: %s", file, SDL_GetError());
-		return nullptr;
-	}
-
-	mkdir_parents(fname_buf, MKDIR_MODE);
-	FILE* fp = fopen(fname_buf, "wb");
-	if (!fp) {
-		LogError("AssetOpen(%s) bad save: %s", file, strerror(errno));
-		return nullptr;
-	}
-
-	// Copy everything.
-	char buffer[4096];
-	int read;
-	while ((read = SDL_RWread(rw, buffer, 1, sizeof(buffer))) > 0) {
-		fwrite(buffer, 1, read, fp);
-	}
-
-	// Return a FILE* pointing to the extracted asset.
-	fclose(fp);
-	fp = fopen(fname_buf, mode);
-	if (!fp) {
-		LogError("AssetOpen(%s) bad readback: %s", file, strerror(errno));
-	}
-	return fp;
-}
-
-SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
-	if (is_write_mode(mode)) {
-		LogDebug("AssetOpen_SDL(%s, %s) -> AppdataOpen", file, mode);
-		FILE *fp = AppdataOpen(file, mode);
-		if (fp) {
-            return SDL_RWFromFP(fp, SDL_TRUE);
+	// Assets from specs
+	bool ok = true;
+	for (int i = 0; meta->default_asset_specs[i]; ++i) {
+		auto mount = init_vfs_spec("built-in", meta->default_asset_specs[i]);
+		if (mount.vfs) {
+			result->push_back(std::move(mount));
 		} else {
-			return nullptr;
+			LogError("detect_installers: failed to mount builtin[%d]=%s", i, meta->default_asset_specs[i]);
+			ok = false;
+		}
+	}
+	return ok;
+}
+
+static VfsStack default_vfs_stack() {
+	const HamSandwichMetadata* meta = g_HamExtern.GetHamSandwichMetadata();
+	VfsStack result;
+
+	// Mount `assets/$NAME` in case it exists.
+	std::string assets = "assets/";
+	assets.append(meta->appdata_folder_name);
+	result.push_back(vanilla::open_stdio(assets.c_str()));
+
+	// Detect installers.
+	detect_installers(&result, meta);
+
+	// Use `appdata/$NAME` as our appdata folder.
+	std::string appdata = "appdata/";
+	appdata.append(meta->appdata_folder_name);
+	result.set_appdata(vanilla::open_stdio(appdata.c_str()));
+
+	return result;
+}
+
+// ----------------------------------------------------------------------------
+#endif
+
+// Common implementation
+
+static void missing_assets_message() {
+	struct stat sb;
+	// Tweak wording/ordering based on whether "installers" exists.
+	if (stat("installers", &sb) == 0) {
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+			"Missing Assets - HamSandwich",
+			"The game's assets appear to be missing.\n"
+			"\n"
+			"Download the appropriate installer and save it in\n"
+			"the \"installers\" folder.\n"
+#if defined(_WIN32) && defined(NDEBUG)
+			// Only talk about "nearby .dll files" on Windows release builds.
+			"\n"
+			"Alternatively, copy this .exe and nearby .dll files\n"
+			"into an existing installation of the game."
+#endif
+			, nullptr);
+	} else {
+		// The .exe has been divorced from the install package.
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+			"Missing Assets - HamSandwich",
+			"The game's assets appear to be missing.\n"
+			"\n"
+#if defined(_WIN32) && defined(NDEBUG)
+			// Only talk about "nearby .dll files" on Windows release builds.
+			"Copy this .exe and nearby .dll files\n"
+			"into an existing installation of the game.\n"
+			"\n"
+			"Alternatively, create "
+#else
+			"Create "
+#endif
+			"an \"installers\" folder and\n"
+			"download the appropriate installers there.",
+			nullptr);
+	}
+}
+
+static VfsStack vfs_stack_from_env() {
+	VfsStack result;
+	if (const char *appdata_spec = SDL_getenv("HSW_APPDATA"); appdata_spec && *appdata_spec) {
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "HSW_APPDATA=%s", appdata_spec);
+		result.set_appdata(vanilla::open_stdio(appdata_spec));
+
+		char buffer[32];
+		for (int i = 0; i < 1024; ++i) {
+			sprintf(buffer, "HSW_ASSETS_%d", i);
+			if (const char* asset_spec = SDL_getenv(buffer); asset_spec && *asset_spec) {
+				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s=%s", buffer, asset_spec);
+				auto mount = init_vfs_spec(buffer, asset_spec);
+				if (mount.vfs) {
+					result.push_back(std::move(mount));
+				} else {
+					LogError("vfs_stack_from_env: failed to mount %s=%s", buffer, asset_spec);
+				}
+			} else {
+				break;
+			}
 		}
 	} else {
-		// Will try to read from Android internal storage, or else
-		// pull from the asset system.
-		return SDL_RWFromFile(file, mode);
+		result = default_vfs_stack();
+	}
+	return result;
+}
+
+static bool check_assets(VfsStack& vfs) {
+	// Every game has this asset, so use it to sanity check.
+	SDL_RWops* check = vfs.open_sdl("graphics/verdana.jft");
+	if (check) {
+		SDL_RWclose(check);
+		return true;
+	}
+
+	return false;
+}
+
+static bool ends_with(std::string_view lhs, std::string_view rhs) {
+	return lhs.size() >= rhs.size() && lhs.compare(lhs.size() - rhs.size(), std::string_view::npos, rhs) == 0;
+}
+
+static char bin_dir_buf[1024] = {0};
+
+const char* EscapeBinDirectory() {
+#ifndef __ANDROID__
+	if (!bin_dir_buf[0]) {
+		getcwd(bin_dir_buf, sizeof(bin_dir_buf));
+		if (ends_with(bin_dir_buf, "/build/install") || ends_with(bin_dir_buf, "\\build\\install")) {
+			chdir("../..");
+		}
+	}
+#endif
+	return bin_dir_buf;
+}
+
+static bool run_download_helper() {
+#if defined(_WIN32)
+	std::string executable = bin_dir_buf;
+	executable.append("/launcher.exe");
+	if (GetFileAttributesA(executable.c_str()) != INVALID_FILE_ATTRIBUTES) {
+		std::string cmdline = executable;
+		cmdline.append(" --mini-gui ");
+		cmdline.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
+
+		STARTUPINFOA startupInfo = {};
+		PROCESS_INFORMATION processInfo = {};
+		startupInfo.cb = sizeof(startupInfo);
+		if (CreateProcessA(executable.data(), cmdline.data(), nullptr, nullptr, false, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &processInfo)) {
+			WaitForSingleObject(processInfo.hProcess, INFINITE);
+			CloseHandle(processInfo.hProcess);
+			CloseHandle(processInfo.hThread);
+			return true;
+		}
+	}
+#elif !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+	struct stat sb;
+	std::string executable = bin_dir_buf;
+	executable.append("/launcher");
+
+	if (stat(executable.c_str(), &sb) == 0) {
+		int child_pid = fork();
+		if (child_pid == 0) {
+			char second[] = "--mini-gui";
+			std::string third = g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name;
+			char* const argv[] = { executable.data(), second, third.data(), nullptr };
+			exit(execv(argv[0], argv));
+		} else if (child_pid > 0) {
+			int wstatus;
+			if (waitpid(child_pid, &wstatus, 0) >= 0) {
+				if (WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0) {
+					return true;
+				}
+			}
+		}
+	}
+#endif
+	return false;
+}
+
+static VfsStack init_vfs_stack() {
+	VfsStack result = vfs_stack_from_env();
+	if (check_assets(result)) {
+		return result;
+	}
+
+	if (run_download_helper()) {
+		result = vfs_stack_from_env();
+		if (check_assets(result)) {
+			return result;
+		}
+	}
+
+	missing_assets_message();
+	exit(1);
+}
+
+static void filter_files(std::set<std::string>* files, const char* extension = nullptr, size_t maxlen = 0)
+{
+	if (extension || maxlen > 0)
+	{
+		size_t extlen = extension ? strlen(extension) : 0;
+		erase_if(*files, [=](const std::string& value)
+		{
+			size_t len = value.size();
+			if (maxlen > 0 && len >= maxlen)
+			{
+				return true;
+			}
+			if (extlen > 0 && (len < extlen || strcasecmp(extension, &value.c_str()[len - extlen])))
+			{
+				return true;
+			}
+			return false;
+		});
 	}
 }
 
-#else
-// Default ----------------------------------------------------------
+static void import_addons(VfsStack* target)
+{
+	std::string path = "addons";
+	path.append("/");
+	path.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
+	auto addons = vanilla::open_stdio(path.c_str());
+	std::set<std::string> file_list;
+	addons->list_dir(".", file_list);
+	filter_files(&file_list, ".zip");
+	for (const auto& fname : file_list)
+	{
+		SDL_Log("mounting %s/%s", path.c_str(), fname.c_str());
+		target->push_back(vanilla::open_zip(addons->open_sdl(fname.c_str())));
+	}
 
-FILE* AppdataOpen(const char* file, const char* mode) {
-	return fopen(file, mode);
+	// Hacky to put this here, but too lazy to expose a proper API for this.
+	if (std::string_view("sleepless") == g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name)
+	{
+		target->push_back(vanilla::open_zip(target->open_sdl("worlds/sleepiest_world.zip")));
+	}
 }
 
-FILE* AssetOpen(const char* file, const char* mode) {
-	return fopen(file, mode);
+// Android does not play nice with static initializers.
+static VfsStack vfs_stack;
+
+// ----------------------------------------------------------------------------
+// Public interface
+
+void AppdataInit() {
+	LogInit();
+	EscapeBinDirectory();
+	vfs_stack = init_vfs_stack();
+	import_addons(&vfs_stack);
 }
 
-SDL_RWops* AssetOpen_SDL(const char* file, const char* mode) {
-	return SDL_RWFromFile(file, mode);
+bool AppdataIsInit() {
+	return !vfs_stack.empty();
 }
 
+FILE* AssetOpen(const char* filename) {
+	return vfs_stack.open_stdio(filename);
+}
+
+SDL_RWops* AssetOpen_SDL(const char* filename) {
+	return vfs_stack.open_sdl(filename);
+}
+
+FILE* AppdataOpen_Write(const char* filename) {
+	return vfs_stack.open_write_stdio(filename);
+}
+
+void AppdataDelete(const char* filename) {
+	vfs_stack.delete_file(filename);
+}
+
+#ifndef HAS_APPDATA_SYNC
+void AppdataSync() {}
 #endif
+
+std::vector<std::string> ListDirectory(const char* directory, const char* extension, size_t maxlen) {
+	std::set<std::string> output;
+	vfs_stack.list_dir(directory, output);
+	filter_files(&output, extension, maxlen);
+	return { output.begin(), output.end() };
+}
+
+// Aliases.
+FILE* AppdataOpen(const char* filename) {
+	return AssetOpen(filename);
+}
+
+FILE* AssetOpen_Write(const char* filename) {
+	return AppdataOpen_Write(filename);
+}

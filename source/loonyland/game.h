@@ -84,10 +84,10 @@ void ExitChatMode(void);
 byte LunaticRun(int *lastTime);
 void LunaticDraw(void);
 
-byte PlayALevel(byte map);
+TASK(byte) PlayALevel(byte map);
 
-byte LunaticWorld(byte world,const char *worldName);
-void LunaticGame(MGLDraw *mgl,byte load,byte mode);
+TASK(byte) LunaticWorld(byte world,const char *worldName);
+TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode);
 
 void SendMessageToGame(byte msg,int content);
 void AddGarbageTime(dword t);

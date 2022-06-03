@@ -10,11 +10,7 @@ now SDL2.
 #ifndef HAM_MGLDRAW_H
 #define HAM_MGLDRAW_H
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL.h>
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL.h>
-#endif  // SDL_UNPREFIXED
+#include <SDL.h>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -22,11 +18,14 @@ now SDL2.
 #endif  // _WIN32
 
 #include "jamultypes.h"
+#include "coro.h"
 
 struct RGB {
 	byte b, g, r, a;
 };
 typedef RGB PALETTE[256];
+
+class SoftJoystick;
 
 class MGLDraw
 {
@@ -40,17 +39,20 @@ public:
 	byte *GetScreen();
 	void ClearScreen();
 
+	// Resize the SCREEN BUFFER - does not resize the window.
+	void ResizeBuffer(int w, int h);
+
 	// Perform any necessary per-frame handling. Returns false if quit.
 	bool Process();
 	void Quit();
 
 	// Display the buffer to the screen.
-	void Flip();
-	void WaterFlip(int v);
-	void TeensyFlip();
-	void TeensyWaterFlip(int v);
-	void RasterFlip();
-	void RasterWaterFlip(int v);
+	TASK(void) Flip();
+	TASK(void) WaterFlip(int v);
+	TASK(void) TeensyFlip();
+	TASK(void) TeensyWaterFlip(int v);
+	TASK(void) RasterFlip();
+	TASK(void) RasterWaterFlip(int v);
 
 	// Return a pointer to the primary palette.
 	const RGB *GetPalette();
@@ -106,7 +108,7 @@ protected:
 	void PseudoCopy(int x, int y, byte* data, int len);
 
 	void StartFlip(void);
-	void FinishFlip(void);
+	TASK(void) FinishFlip(void);
 
 	bool windowed, readyToQuit, idle;
 
@@ -123,6 +125,9 @@ protected:
 	SDL_Renderer *renderer;
 	SDL_Texture *texture;
 	RGB *buffer;
+
+	friend class SoftJoystick;
+	SoftJoystick *softJoystick;
 };
 
 void FatalError(const char *msg);

@@ -68,7 +68,6 @@ void CastSpell(Guy *me)
 	byte c;
 	byte cost;
 	int i,j;
-	static byte flameFlip=0;
 	Guy *g;
 
 	if(player.life==0)
@@ -154,7 +153,6 @@ void CastSpell(Guy *me)
 			else
 			{
 				player.wpnReload=5;
-				flameFlip=0;
 			}
 			DoPlayerFacing(c,me);
 			break;

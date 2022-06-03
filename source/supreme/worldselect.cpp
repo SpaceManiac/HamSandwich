@@ -7,7 +7,9 @@
 #include "dialogbits.h"
 #include "shop.h"
 #include "hiscore.h"
-#include "lsdir.h"
+#include "appdata.h"
+#include "erase_if.h"
+#include <algorithm>
 
 #define WS_CONTINUE	0
 #define WS_EXIT		1
@@ -32,15 +34,15 @@
 
 typedef struct worldDesc_t
 {
-	char fname[32];
-	char name[32];
-	char author[32];
+	char fname[64];
+	char name[64];
+	char author[64];
 	float percentage;
 	byte complete;
 	byte dimmed;
 } worldDesc_t;
 
-static char curName[32];
+static char curName[64];
 static byte mode;
 static worldDesc_t *list;
 static int numWorlds,worldDescSize,listPos,choice;
@@ -57,7 +59,7 @@ static world_t tmpWorld;
 static int mouseZ;
 #ifdef WTG
 static byte showFilenames = 1;
-#elif defined(_DEBUG)
+#elif !defined(NDEBUG)
 static byte showFilenames = 1;
 #endif
 
@@ -78,7 +80,7 @@ void FlipEm(worldDesc_t *me,worldDesc_t *you)
 byte Compare(worldDesc_t *me,worldDesc_t *you,byte field,byte bkwds)
 {
 	byte f;
-	char tmp1[32],tmp2[32];
+	char tmp1[64] = {}, tmp2[64] = {};
 
 	if(me->dimmed!=you->dimmed)
 		return 0;	// no flipping between ones of different dim status
@@ -107,13 +109,13 @@ byte Compare(worldDesc_t *me,worldDesc_t *you,byte field,byte bkwds)
 	switch(field)
 	{
 		case 0:
-			strcpy(tmp1,me->name);
-			strcpy(tmp2,you->name);
+			SDL_strlcpy(tmp1,me->name,64);
+			SDL_strlcpy(tmp2,you->name,64);
 			f=(strcasecmp(tmp1,tmp2)>0);
 			break;
 		case 1:
-			strcpy(tmp1,me->author);
-			strcpy(tmp2,you->author);
+			SDL_strlcpy(tmp1,me->author,64);
+			SDL_strlcpy(tmp2,you->author,64);
 			f=(strcasecmp(tmp1,tmp2)>0);
 			break;
 		case 2:
@@ -235,66 +237,56 @@ void InputWorld(const char *fname)
 	profile.progress.totalWorlds=numWorlds;
 }
 
-void ScanWorlds(void)
+TASK(void) ScanWorlds(void)
 {
-	int count,done;
-
 #ifdef LEVELLIST
-	levelF=fopen("levellist.txt","wt");
-	level2F=fopen("worlds/levels.dat","wt");
-	authorF=fopen("authorlist.txt","wt");
+	levelF=AppdataOpen("levellist.txt","wt");
+	level2F=AssetOpen("worlds/levels.dat","wb");
+	authorF=AppdataOpen("authorlist.txt","wt");
 	totalLCount=0;
 #endif
-	// count up how many there are to deal with
-	count=0;
 
-	for (const char* name : filterdir("worlds", ".hsw", 32))
-	{
-		// rule out the backup worlds, so they don't show up
-		if((strcmp(name,"backup_load.hsw")) &&
-		   (strcmp(name,"backup_exit.hsw")) &&
-		   (strcmp(name,"backup_save.hsw")))
-			count++;
-	}
+	std::vector<std::string> files = ListDirectory("worlds", ".dlw", 32);
+	erase_if(files, [](const std::string& name) {
+		return name == "backup_load.dlw"
+			|| name == "backup_exit.dlw"
+			|| name == "backup_save.dlw";
+	});
 
-	done=0;
+	int count = files.size();
+	int done = 0;
 
 	dword start = timeGetTime();
-	for (const char* name : filterdir("worlds", ".hsw", 32))
+	for (const std::string& name : files)
 	{
-		// rule out the backup worlds, so they don't show up
-		if((strcmp(name,"backup_load.hsw")) &&
-		   (strcmp(name,"backup_exit.hsw")) &&
-		   (strcmp(name,"backup_save.hsw")))
-		{
-			InputWorld(name);
-			done++;
+		InputWorld(name.c_str());
+		done++;
 
-			dword now = timeGetTime();
-			if (now - start > 50)  // 50 ms = 20 fps
-			{
-				start = now;
-				GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450,32*1+16);
-				GetDisplayMGL()->Flip();
-			}
+		dword now = timeGetTime();
+		if (now - start > 50)  // 50 ms = 20 fps
+		{
+			start = now;
+			GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450,32*1+16);
+			AWAIT GetDisplayMGL()->Flip();
 		}
 	}
 #ifdef LEVELLIST
 	fclose(levelF);
 	fclose(level2F);
 	fclose(authorF);
+	AppdataSync();
 #endif
 }
 
 void CalcScrollBar(void)
 {
-	scrollHeight=SCROLLBAR_HEIGHT*WORLDS_PER_SCREEN/numWorlds;
+	scrollHeight=SCROLLBAR_HEIGHT*WORLDS_PER_SCREEN/(numWorlds ? numWorlds : 1);
 	if(scrollHeight<10)
 		scrollHeight=10;
 	if(scrollHeight>=SCROLLBAR_HEIGHT)
 		scrollHeight=SCROLLBAR_HEIGHT-1;
 
-	scrollY=SCROLLBAR_HEIGHT*listPos/numWorlds;
+	scrollY=SCROLLBAR_HEIGHT*listPos/(numWorlds ? numWorlds : 1);
 	if(scrollY+scrollHeight>SCROLLBAR_HEIGHT)
 		scrollY=SCROLLBAR_HEIGHT-scrollHeight;
 }
@@ -378,7 +370,7 @@ void FetchScores(byte backwards)
 void SelectLastWorld(void)
 {
 	int i;
-	char s[64];
+	char s[128];
 
 	choice=0;
 
@@ -391,17 +383,19 @@ void SelectLastWorld(void)
 	if(listPos>choice)
 		listPos=choice;
 
-	sprintf(s,"worlds/%s",list[choice].fname);
-	LoadWorld(&tmpWorld,s);
-	level=0;
-	scoreMode=0;
-	noScoresAtAll=0;
-	FetchScores(0);
+	if (choice < numWorlds) {
+		sprintf(s,"worlds/%s",list[choice].fname);
+		LoadWorld(&tmpWorld,s);
+		level=0;
+		scoreMode=0;
+		noScoresAtAll=0;
+		FetchScores(0);
+	}
 }
 
 void MoveToNewWorld(void)
 {
-	char s[64];
+	char s[128];
 
 	FreeWorld(&tmpWorld);
 	sprintf(s,"worlds/%s",list[choice].fname);
@@ -411,7 +405,7 @@ void MoveToNewWorld(void)
 	FetchScores(0);
 }
 
-void InitWorldSelect(MGLDraw *mgl)
+TASK(void) InitWorldSelect(MGLDraw *mgl)
 {
 	int i;
 	char s[512];
@@ -440,7 +434,7 @@ void InitWorldSelect(MGLDraw *mgl)
 	PrintGlow(20,360,"Did You Know?",0,2);
 	sprintf(s,dyk[Random(14)]);
 	PrintGlow(20,380,s,0,1);
-	mgl->Flip();
+	AWAIT mgl->Flip();
 
 	sortType=0;
 	sortDir=0;
@@ -449,7 +443,7 @@ void InitWorldSelect(MGLDraw *mgl)
 	numWorlds=0;
 
 	list=(worldDesc_t *)malloc(sizeof(worldDesc_t)*16);
-	ScanWorlds();
+	AWAIT ScanWorlds();
 	SortWorlds(sortType,sortDir);
 	SelectLastWorld();
 	CalcScrollBar();
@@ -470,7 +464,7 @@ void ExitWorldSelect(void)
 	delete wsSpr;
 }
 
-byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
+TASK(byte) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 {
 	static byte oldc=255;
 	char c;
@@ -529,8 +523,17 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			else
 			{
 				oldc=255;
-				return WS_PLAY;
+				CO_RETURN WS_PLAY;
 			}
+		}
+
+		byte scan = LastScanCode();
+		if (scan == SDL_SCANCODE_PAGEUP) {
+			listPos = std::max(listPos - WORLDS_PER_SCREEN, 0);
+			CalcScrollBar();
+		} else if (scan == SDL_SCANCODE_PAGEDOWN) {
+			listPos = std::min(listPos + WORLDS_PER_SCREEN, numWorlds - WORLDS_PER_SCREEN);
+			CalcScrollBar();
 		}
 
 		int mv=mouseZ-mgl->mouse_z;
@@ -573,7 +576,7 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 							else
 							{
 								oldc=255;
-								return WS_PLAY;
+								CO_RETURN WS_PLAY;
 							}
 						}
 					}
@@ -650,7 +653,7 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				else
 				{
 					oldc=255;
-					return WS_PLAY;
+					CO_RETURN WS_PLAY;
 				}
 			}
 			// reset world
@@ -677,7 +680,7 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			else if(PointInRect(msx,msy,20,443,20+150,443+WBTN_HEIGHT))
 			{
 				oldc=255;
-				return WS_EXIT;
+				CO_RETURN WS_EXIT;
 			}
 
 			// hi score buttons
@@ -725,7 +728,7 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				else
 					EraseHighScores(&tmpWorld);
 				ExitWorldSelect();
-				InitWorldSelect(mgl);
+				AWAIT InitWorldSelect(mgl);
 			}
 			else if(PointInRect(msx,msy,600-30-50,270,600-30-50+50,270+WBTN_HEIGHT))
 			{
@@ -739,7 +742,7 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 
 	c=mgl->LastKeyPressed();
 
-#if defined(WTG) || defined(_DEBUG)
+#if defined(WTG) || !defined(NDEBUG)
 	if (c == 'A')
 		showFilenames = !showFilenames;
 #endif
@@ -747,11 +750,11 @@ byte UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 	if(c==27)
 	{
 		oldc=255;
-		return WS_EXIT;
+		CO_RETURN WS_EXIT;
 	}
 
 	mouseB=mgl->mouse_b;
-	return WS_CONTINUE;
+	CO_RETURN WS_CONTINUE;
 }
 
 void RenderWorldSelectButton(int x,int y,int wid,const char *txt,MGLDraw *mgl)
@@ -800,7 +803,7 @@ void RenderWorldSelect(MGLDraw *mgl)
 			else
 				b=0;
 
-#if defined(WTG) || defined(_DEBUG)
+#if defined(WTG) || !defined(NDEBUG)
 			if (showFilenames)
 			{
 				PrintGlow(NAME_X,40+i*GAP_HEIGHT,list[i+listPos].name,b,1);
@@ -870,14 +873,14 @@ void RenderWorldSelect(MGLDraw *mgl)
 					if(i>=numScores)
 						strcpy(s,"0:00.00");
 					else
-						sprintf(s,"%lu:%02lu.%02lu",top3[i].score/(30*60),(top3[i].score/30)%60,(top3[i].score%30)*100/30);
+						sprintf(s,"%u:%02u.%02u",top3[i].score/(30*60),(top3[i].score/30)%60,(top3[i].score%30)*100/30);
 				}
 				else
 				{
 					if(i>=numScores)
 						strcpy(s,"0");
 					else
-						sprintf(s,"%lu",top3[i].score);
+						sprintf(s,"%u",top3[i].score);
 				}
 				PrintGlow(615-GetStrLength(s,2),395+i*20,s,0,2);
 			}
@@ -913,24 +916,24 @@ void RenderWorldSelect(MGLDraw *mgl)
 	SetSpriteConstraints(0,0,639,479);
 }
 
-byte WorldSelectMenu(MGLDraw *mgl)
+TASK(byte) WorldSelectMenu(MGLDraw *mgl)
 {
 	byte done=WS_CONTINUE;
 	int lastTime=1;
 	char fname[32];
 
-	InitWorldSelect(mgl);
+	AWAIT InitWorldSelect(mgl);
 
 	if(numWorlds==0)
-		return 1;	// just skip it if there are no worlds!
+		CO_RETURN 1;	// just skip it if there are no worlds!
 
 	while(done==WS_CONTINUE)
 	{
 		lastTime+=TimeLength();
 		StartClock();
-		done=UpdateWorldSelect(&lastTime,mgl);
+		done=AWAIT UpdateWorldSelect(&lastTime,mgl);
 		RenderWorldSelect(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=WS_EXIT;
@@ -939,18 +942,18 @@ byte WorldSelectMenu(MGLDraw *mgl)
 		{
 			strcpy(fname,list[choice].fname);
 			ExitWorldSelect();
-			if(PlayWorld(mgl,fname)==0)
+			if(AWAIT PlayWorld(mgl,fname)==0)
 			{
-				return 1;
+				CO_RETURN 1;
 			}
-			InitWorldSelect(mgl);
+			AWAIT InitWorldSelect(mgl);
 			done=WS_CONTINUE;
 		}
 		EndClock();
 	}
 
 	ExitWorldSelect();
-	return 1;
+	CO_RETURN 1;
 }
 
 const char *WorldFName(void)

@@ -7,7 +7,7 @@
 #include "dialogbits.h"
 #include "progress.h"
 #include "customworld.h"
-#include "lsdir.h"
+#include "appdata.h"
 
 static byte *backgd;
 static int textBright;
@@ -74,8 +74,10 @@ void ScanWorlds(void)
 
 	InputWorld("hollow.shw");
 
-	for (const char* name : filterdir("worlds", ".shw", FILENAME_LEN))
+	auto files = ListDirectory("worlds", ".shw", FILENAME_LEN);
+	for (const auto& str : files)
 	{
+		const char* name = str.c_str();
 		if (strcmp(name, "hollow.shw") &&
 				strcmp(name, "backup_save.shw") &&
 				strcmp(name, "backup_load.shw") &&
@@ -123,7 +125,7 @@ byte CheckForExistingName(const char *name)
 	char s[64];
 
 	sprintf(s,"profiles/%s.prf",name);
-	f=fopen(s,"rb");
+	f=AppdataOpen(s);
 	if(f)
 	{
 		fclose(f);
@@ -179,11 +181,6 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 		if(strlen(entry)<15)
 		{
 			entry[strlen(entry)+1]='\0';
-			if(ShiftState())
-			{
-				if(c>='a' && c<='z')
-					c+='A'-'a';
-			}
 			entry[strlen(entry)]=c;
 			MakeNormalSound(SND_MENUCLICK);
 		}
@@ -283,7 +280,7 @@ void RenderNameEntry(MGLDraw *mgl)
 
 //----------------
 
-void NameEntry(MGLDraw *mgl,byte makeNew)
+TASK(void) NameEntry(MGLDraw *mgl,byte makeNew)
 {
 	byte done=0;
 	int lastTime=1;
@@ -303,7 +300,7 @@ void NameEntry(MGLDraw *mgl,byte makeNew)
 
 		done=UpdateNameEntry(&lastTime,mgl);
 		RenderNameEntry(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=255;
@@ -311,6 +308,10 @@ void NameEntry(MGLDraw *mgl,byte makeNew)
 	}
 
 	ExitNameEntry();
+	if(FirstTime() && done == 255)
+	{
+		exit(0);
+	}
 	if(makeNew && done != 255)
 	{
 		FreeProfile();

@@ -73,10 +73,10 @@ typedef struct badge_t
 	byte rules;
 } badge_t;
 
-void BadgeMenu(MGLDraw *mgl);
+TASK(void) BadgeMenu(MGLDraw *mgl);
 void BadgeCheck(byte event,int value,Map *map);
-void ShowBadge(byte b);
-void ShowGameMode(byte mode,byte numBadges);
+TASK(void) ShowBadge(byte b);
+TASK(void) ShowGameMode(byte mode,byte numBadges);
 void EarnBadge(byte b);
 
 #endif

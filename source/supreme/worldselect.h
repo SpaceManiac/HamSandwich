@@ -3,7 +3,7 @@
 
 #include "mgldraw.h"
 
-byte WorldSelectMenu(MGLDraw *mgl);
+TASK(byte) WorldSelectMenu(MGLDraw *mgl);
 const char *WorldFName(void);
 
 #endif

@@ -3,7 +3,7 @@
 
 #include "mgldraw.h"
 
-void Moron(MGLDraw *mgl);
+TASK(void) Moron(MGLDraw *mgl);
 
 void ResetMoron(void);
 

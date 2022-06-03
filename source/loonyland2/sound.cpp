@@ -1,6 +1,6 @@
-#include "sound.h"
 #include "display.h"
 #include "options.h"
+#include "sound.h"
 
 byte soundAvailable=0;
 

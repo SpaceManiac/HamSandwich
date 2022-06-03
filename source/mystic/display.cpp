@@ -75,66 +75,66 @@ void ExitDisplay(void)
 	delete dispList;
 }
 
-void ShowVictoryAnim(byte world)
+TASK(void) ShowVictoryAnim(byte world)
 {
 	dword start,end;
 
 	start=timeGetTime();
 	mgl->ClearScreen();
-	mgl->Flip();
+	AWAIT mgl->Flip();
 	switch(world)
 	{
 		case 0:
 			PlaySong(SONG_CHAP12MAP);
-			FLI_play("graphics/CH1.FLC",0,60,mgl);
+			AWAIT FLI_play("graphics/CH1.FLC",0,60,mgl);
 			break;
 		case 1:
 			PlaySong(SONG_CHAP12MAP);
-			FLI_play("graphics/CH2.FLC",0,60,mgl);
+			AWAIT FLI_play("graphics/CH2.FLC",0,60,mgl);
 			break;
 		case 2:
 			PlaySong(SONG_CHAP34MAP);
-			FLI_play("graphics/CH3.FLC",0,60,mgl);
+			AWAIT FLI_play("graphics/CH3.FLC",0,60,mgl);
 			break;
 		case 3:
 			PlaySong(SONG_CHAP34MAP);
-			FLI_play("graphics/CH4.FLC",0,60,mgl);
+			AWAIT FLI_play("graphics/CH4.FLC",0,60,mgl);
 			break;
 		case 4:
 			// the final victory!
 			PlaySong(SONG_BEATNIK);
-			FLI_play("graphics/ENDING.FLC",0,100,mgl);
+			AWAIT FLI_play("graphics/ENDING.FLC",0,100,mgl);
 			if(player.nightmare)
-				VictoryText(mgl,1);
+				AWAIT VictoryText(mgl,1);
 			else
 			{
-				VictoryText(mgl,0);
-				Credits(mgl,1);
+				AWAIT VictoryText(mgl,0);
+				AWAIT Credits(mgl,1);
 			}
 			break;
 		case 5:
 			// winning the demo
 			PlaySong(SONG_SHOP);
-			VictoryText(mgl,2);
+			AWAIT VictoryText(mgl,2);
 			break;
 		case 10:
 			StopSong();
 			MakeNormalSound(SND_ARMAGEDDON);
-			FLI_play("graphics/SWORD.FLC",0,60,mgl);
+			AWAIT FLI_play("graphics/SWORD.FLC",0,60,mgl);
 			ReplaySong();
 			break;
 		case 11:
 			//PlaySong(SONG_INTRO);
 			StopSong();
 			MakeNormalSound(SONG_INTRO);
-			FLI_play("graphics/Intro.flc",0,60,mgl);
+			AWAIT FLI_play("graphics/Intro.flc",0,60,mgl);
 			JamulSoundStop(SONG_INTRO);
 			if (CurrentSong())
 				ReplaySong();
 			break;
 	}
 	mgl->ClearScreen();
-	mgl->Flip();
+	AWAIT mgl->Flip();
 	mgl->LoadBMP("graphics/pal.bmp");
 
 	end=timeGetTime();
@@ -431,7 +431,7 @@ bool DisplayList::DrawSprite(int x,int y,int z,word hue,char bright,sprite_t *sp
 	dispObj[i].y=y;
 	dispObj[i].z=z;
 	if(dispObj[i].flags&(DISPLAY_WALLTILE|DISPLAY_ROOFTILE))
-		memcpy(dispObj[i].light,dispObj[i].spr,9);
+		memcpy(dispObj[i].light,(const char*)dispObj[i].spr,9);
 	HookIn(i);
 	return true;
 }
@@ -521,11 +521,6 @@ void DisplayList::Render(void)
 	}
 }
 
-void MakeItFlip(void)
-{
-	mgl->Flip();
-}
-
 void DrawBox(int x,int y,int x2,int y2,byte c)
 {
 	mgl->Box(x,y,x2,y2,c);
@@ -538,7 +533,7 @@ void DrawDebugBox(int x,int y,int x2,int y2)
 	x2-=scrx-320;
 	y2-=scry-240;
 	mgl->Box(x,y,x2,y2,255);
-	mgl->Flip();
+	//mgl->Flip();
 }
 
 void DrawFillBox(int x,int y,int x2,int y2,byte c)

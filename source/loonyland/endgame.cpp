@@ -47,6 +47,8 @@ typedef struct stat_t
 	byte visible;
 } stat_t;
 
+// `stat` is a thing that might already exist depending on header coincidences
+#define stat loonystat
 stat_t stat[16];
 byte numStats;
 byte curStat;
@@ -54,7 +56,7 @@ int totalScore;
 
 void Commaize(char *s,int n)
 {
-	char s2[8];
+	char s2[16];
 	byte zero;
 
 	s[0]='\0';
@@ -776,7 +778,7 @@ byte UpdateEndGame(int *lastTime,MGLDraw *mgl)
 	return 1;
 }
 
-void EndGameTally(MGLDraw *mgl)
+TASK(void) EndGameTally(MGLDraw *mgl)
 {
 	byte b;
 	int lastTime=1;
@@ -797,10 +799,10 @@ void EndGameTally(MGLDraw *mgl)
 		StartClock();
 		b=UpdateEndGame(&lastTime,mgl);
 		RenderEndGame(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
-			return;
+			CO_RETURN;
 		}
 		EndClock();
 	}
@@ -811,7 +813,7 @@ void EndGameTally(MGLDraw *mgl)
 	ResetClock(hangon);
 	//AddGarbageTime(then-now);
 	MakeHighScore(&hs,totalScore);
-	CheckForHighScore(hs);
+	AWAIT CheckForHighScore(hs);
 	if(totalScore>=10000000)
 		EarnBadge(BADGE_SCORE);
 	BadgeCheck(BE_ENDGAME,0,curMap);

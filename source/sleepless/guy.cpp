@@ -953,7 +953,8 @@ void Guy::Render(byte light)
 
 	t=type;
 
-	if(fromColor!=255)
+	const bool recolor = fromColor!=255;
+	if(recolor)
 	{
 		oldFrom=GetMonsterType(t)->fromCol;
 		oldTo=GetMonsterType(t)->toCol;
@@ -963,7 +964,7 @@ void Guy::Render(byte light)
 	oldBrt=GetMonsterType(t)->brtChg;
 	GetMonsterType(t)->brtChg=brtChange;
 	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen,NULL/*customSpr*/); // TODO: custom monster jsps
-	if(fromColor!=255)
+	if(recolor)
 	{
 		GetMonsterType(t)->fromCol=oldFrom;
 		GetMonsterType(t)->toCol=oldTo;
@@ -1118,6 +1119,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 			player.ammo=0;
 		else
 			player.ammo-=damage;
+		realDam = 0;
 	}
 	else
 	{
@@ -3857,12 +3859,11 @@ byte BadguyRegions(int x,int y,int x2,int y2,int tx,int ty)
 	return 1;
 }
 
-static Guy* const NO_SUCH_GUY = (Guy *)(int)(65535);
+static const dword NO_SUCH_GUY = 65535;
 
 void SaveGuys(FILE *f)
 {
 	int i;
-	Guy *t,*p;
 
 	fwrite(&maxGuys,sizeof(int),1,f);
 
@@ -3871,19 +3872,14 @@ void SaveGuys(FILE *f)
 		fwrite(&guys[i]->type,sizeof(byte),1,f);
 		if(guys[i]->type)
 		{
-			t=guys[i]->target;
-			p=guys[i]->parent;
-			if(guys[i]->target)
-				guys[i]->target=(Guy *)(int)(guys[i]->target->ID);
-			else
-				guys[i]->target=NO_SUCH_GUY;
-			if(guys[i]->parent)
-				guys[i]->parent=(Guy *)(int)(guys[i]->parent->ID);
-			else
-				guys[i]->parent=NO_SUCH_GUY;
-			fwrite(guys[i],sizeof(Guy),1,f);
-			guys[i]->target=t;
-			guys[i]->parent=p;
+			dword target = guys[i]->target ? guys[i]->target->ID : NO_SUCH_GUY;
+			dword parent = guys[i]->parent ? guys[i]->parent->ID : NO_SUCH_GUY;
+			// sizes should total to 136
+			fwrite(guys[i],offsetof(Guy, target),1,f);
+			fwrite(&target,4,1,f);
+			fwrite(&parent,4,1,f);
+			fwrite(&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1,f);
+			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 136);
 		}
 	}
 }
@@ -3901,15 +3897,23 @@ void LoadGuys(FILE *f)
 		fread(&guys[i]->type,sizeof(byte),1,f);
 		if(guys[i]->type)
 		{
-			fread(guys[i],sizeof(Guy),1,f);
-			if(guys[i]->target==NO_SUCH_GUY)
+			dword target, parent;
+			// sizes should total to 136
+			fread(guys[i],offsetof(Guy, target),1,f);
+			fread(&target,4,1,f);
+			fread(&parent,4,1,f);
+			fread(&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1,f);
+			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 136);
+
+			if(target==NO_SUCH_GUY)
 				guys[i]->target=NULL;
 			else
-				guys[i]->target=GetGuy((word)(int)guys[i]->target);
-			if(guys[i]->parent==NO_SUCH_GUY)
+				guys[i]->target=GetGuy((word) target);
+
+			if(parent==NO_SUCH_GUY)
 				guys[i]->parent=NULL;
 			else
-				guys[i]->parent=GetGuy((word)(int)guys[i]->parent);
+				guys[i]->parent=GetGuy((word) parent);
 
 			if(guys[i]->type==MONS_NOBODY)
 				nobody=guys[i];
@@ -4072,9 +4076,11 @@ void GetSpook(void)
 	{
 		if(guys[i]->type==MONS_POLTERGUY || guys[i]->type==MONS_POLTERGUY2)
 		{
+			// make a copy of the spook
 			if(holdSpook==NULL)
-				holdSpook=new Guy();
-			memcpy(holdSpook,guys[i],sizeof(Guy));	// make a copy of the spook
+				holdSpook = new Guy(*guys[i]);
+			else
+				*holdSpook = *guys[i];
 			return;
 		}
 	}
@@ -4094,7 +4100,7 @@ void PutSpook(void)
 	{
 		g=AddGuy(0,0,0,MONS_POLTERGUY,0);
 		ID=g->ID;
-		memcpy(g,holdSpook,sizeof(Guy));
+		*g = std::move(*holdSpook);
 		g->ID=ID;
 		g->target=goodguy;
 		g->parent=NULL;

@@ -6,6 +6,7 @@
 #include "title.h"
 #include "pause.h"
 #include "music.h"
+#include "appdata.h"
 
 static byte subcursor=0;
 static char lastKey=0;
@@ -349,14 +350,14 @@ void ApplyControlSettings(void)
 {
 	SetKeyboardBindings(0, 8, opt.control[0]);
 	SetKeyboardBindings(1, 8, opt.control[1]);
-	SetJoystickBindings(4, opt.joyCtrl);
+	SetJoystickBindings(3, opt.joyCtrl);
 }
 
 void ApplyControlSettingsMem(byte *data)
 {
 	SetKeyboardBindings(0, 8, &data[0*8]);
 	SetKeyboardBindings(1, 8, &data[1*8]);
-	SetJoystickBindings(4, &data[2*8]);
+	SetJoystickBindings(3, &data[2*8]);
 }
 
 void LoadOptions(void)
@@ -364,7 +365,7 @@ void LoadOptions(void)
 	FILE *f;
 	int i;
 
-	f=fopen("loony.cfg","rb");
+	f=AppdataOpen("loony.cfg");
 	if(!f)
 	{
 		opt.sound=127;
@@ -425,12 +426,13 @@ void SaveOptions(void)
 {
 	FILE *f;
 
-	f=fopen("loony.cfg","wb");
+	f=AppdataOpen_Write("loony.cfg");
 	fwrite(&opt,sizeof(options_t),1,f);
 	fclose(f);
+	AppdataSync();
 }
 
-void OptionsMenu(MGLDraw *mgl,byte *backScr)
+TASK(void) OptionsMenu(MGLDraw *mgl,byte *backScr)
 {
 	byte done=0;
 	int lastTime;
@@ -451,7 +453,7 @@ void OptionsMenu(MGLDraw *mgl,byte *backScr)
 			lastTime-=TIME_PER_FRAME;
 		}
 		RenderOptionsMenu(offX,-offX-5-100,backScr);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(!mgl->Process())

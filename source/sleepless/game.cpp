@@ -12,8 +12,9 @@
 #include "log.h"
 #include "customworld.h"
 #include "palettes.h"
+#include "appdata.h"
 #include <stdlib.h>
-#if __linux__
+#if __linux__ || __EMSCRIPTEN__
 #include <unistd.h>
 #endif
 
@@ -137,7 +138,7 @@ byte InitLevel(byte map)
 		if(player.beenThere[map])	// you have been here - the fact that it's not saved means you are cheating!
 		{
 			NewMessage("YOU CHEAT!",50,1);
-#ifndef _DEBUG
+#ifdef NDEBUG
 			player.brains=0;
 			player.candles=0;
 			if(player.hammers>1)
@@ -201,6 +202,7 @@ void ExitLevel(void)
 	player.vehicle=0;
 
 	delete curMap;
+	curMap = nullptr;
 	PurgeMonsterSprites();
 }
 
@@ -260,7 +262,7 @@ byte GetGameMode(void)
 	return gameMode;
 }
 
-byte LunaticRun(int *lastTime)
+TASK(byte) LunaticRun(int *lastTime)
 {
 	byte frmsToRun;
 
@@ -277,7 +279,7 @@ byte LunaticRun(int *lastTime)
 		if(!gamemgl->Process())
 		{
 			mapToGoTo=255;
-			return LEVEL_ABORT;
+			CO_RETURN LEVEL_ABORT;
 		}
 
 		if(gameMode==GAMEMODE_PLAY)
@@ -329,7 +331,7 @@ byte LunaticRun(int *lastTime)
 				if(!windingDown)
 				{
 					PrintToLog("Wound Down",0);
-					return windDownReason;
+					CO_RETURN windDownReason;
 				}
 			}
 		}
@@ -353,33 +355,33 @@ byte LunaticRun(int *lastTime)
 						mapToGoTo=255;
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
-					return LEVEL_ABORT;
+					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_WORLDSEL:
 					mapToGoTo=255;
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
-					return WORLD_ABORT;	// dump out altogether
+					CO_RETURN WORLD_ABORT;	// dump out altogether
 					break;
 				case PAUSE_RETRY:
 					mapToGoTo=player.levelNum;	// repeat this level
 					lastKey=0;
 					RestoreGameplayGfx();
 					gameMode=GAMEMODE_PLAY;
-					return LEVEL_ABORT;
+					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_EXIT:
 					mapToGoTo=255;
 					lastKey=0;
 					RestoreGameplayGfx();
 					gameMode=GAMEMODE_PLAY;
-					return WORLD_QUITGAME;
+					CO_RETURN WORLD_QUITGAME;
 					break;
 				case PAUSE_SHOP:
 					mapToGoTo=255;
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
-					return WORLD_SHOP;
+					CO_RETURN WORLD_SHOP;
 					break;
 			}
 		}
@@ -438,8 +440,8 @@ byte LunaticRun(int *lastTime)
 		else if(msgFromOtherModules==MSG_WINLEVEL)
 		{
 			PlaySong("spooky-pumpkin.ogg");
-			VictoryText(gamemgl);
-			Credits(gamemgl);
+			AWAIT VictoryText(gamemgl);
+			AWAIT Credits(gamemgl);
 			CompleteGoal(9);
 			if(profile.progress.totalTime<30*60*240)
 				CompleteGoal(12);
@@ -462,11 +464,12 @@ byte LunaticRun(int *lastTime)
 			// It's cheatable but that's kind of ok
 			if (!IsCustomWorld())
 			{
-				FILE* f = fopen("profiles/editor.dat", "wt");
+				FILE* f = AppdataOpen_Write("profiles/editor.dat");
 				char text[256];
 				sprintf(text,"Editor unlocked by %s, what a cool guy!\n", profile.name);
 				fwrite(text, sizeof(char), strlen(text), f);
 				fclose(f);
+				AppdataSync();
 			}
 		}
 		else if(msgFromOtherModules==MSG_RESET)
@@ -494,8 +497,8 @@ byte LunaticRun(int *lastTime)
 			windingDown=1;
 			windDownReason=LEVEL_WIN;
 			msgFromOtherModules=MSG_NONE;
-			VictoryText(gamemgl);
-			Credits(gamemgl);
+			AWAIT VictoryText(gamemgl);
+			AWAIT Credits(gamemgl);
 			player.boredom=0;
 		}
 		//*lastTime-=TIME_PER_FRAME;
@@ -503,10 +506,10 @@ byte LunaticRun(int *lastTime)
 		updFrameCount++;
 	}
 
-	return LEVEL_PLAYING;
+	CO_RETURN LEVEL_PLAYING;
 }
 
-void LunaticDraw(void)
+TASK(void) LunaticDraw(void)
 {
 	char s[128];
 	dword d;
@@ -530,25 +533,25 @@ void LunaticDraw(void)
 		// nothing to do
 	}
 
-	if(showStats)
+	if(showStats && gameMode == GAMEMODE_PLAY)
 	{
-		sprintf(s,"Debug Menu - F3 to close");
-		PrintGlow(5,30,s,8,2);
+		sprintf(s,"F3 to close");
+		PrintGlow(80,36,s,8,1);
 
 		sprintf(s,"VFPS %02.2f",((float)visFrameCount/(float)((timeGetTime()-gameStartTime)/1000)));
-		PrintGlow(5,50,s,8,2);
+		PrintGlow(14,49,s,8,1);
 		sprintf(s,"GFPS %02.2f",((float)updFrameCount/(float)((timeGetTime()-gameStartTime)/1000)));
-		PrintGlow(120,50,s,8,2);
+		PrintGlow(120,49,s,8,1);
 
 		sprintf(s,"QFPS %02.2f",frmRate);
-		PrintGlow(5,70,s,8,2);
+		PrintGlow(14,62,s,8,1);
 		sprintf(s,"Runs %d",numRunsToMakeUp);
-		PrintGlow(120,70,s,8,2);
+		PrintGlow(120,62,s,8,1);
 
 		sprintf(s,"Mons %d",CountMonsters(MONS_ANYBODY));
-		PrintGlow(5,90,s,8,2);
+		PrintGlow(14,75,s,8,1);
 		sprintf(s,"Bul %d",config.numBullets - CountBullets(0)); // a little hackish but whatever
-		PrintGlow(120,90,s,8,2);
+		PrintGlow(120,75,s,8,1);
 
 		int n = 0;
 		for(int i=0; i<MAX_SPECIAL; i++)
@@ -556,9 +559,9 @@ void LunaticDraw(void)
 				++n;
 
 		sprintf(s,"Fx %d", CountParticles());
-		PrintGlow(5,110,s,8,2);
+		PrintGlow(14,88,s,8,1);
 		sprintf(s,"Spcl %03d", n);
-		PrintGlow(120,110,s,8,2);
+		PrintGlow(120,88,s,8,1);
 
 		n = 0;
 		for(int x=0; x<curMap->width; ++x)
@@ -568,9 +571,9 @@ void LunaticDraw(void)
 
 		mapTile_t* t = curMap->GetTile(goodguy->mapx, goodguy->mapy);
 		sprintf(s,"Light %d/%d", t->templight, t->light);
-		PrintGlow(5,130,s,8,2);
+		PrintGlow(14,101,s,8,1);
 		sprintf(s,"Items %d", n);
-		PrintGlow(120,130,s,8,2);
+		PrintGlow(120,101,s,8,1);
 
 		int KEY_MAX = 0;
 		const byte* key = SDL_GetKeyboardState(&KEY_MAX);
@@ -578,13 +581,13 @@ void LunaticDraw(void)
 		for (int i = 0; i < KEY_MAX; ++i)
 			if (key[i])
 				end += sprintf(end, "%s ", ScanCodeText(i));
-		PrintGlow(5,150,s,8,2);
+		PrintGlow(14,114,s,8,1);
 
 		end = s + sprintf(s,"Mouse: ");
 		for (int i = 0; i < 10; ++i)
 			if (gamemgl->mouse_b & (1<<i))
 				end += sprintf(end, "%d ", i);
-		PrintGlow(5,170,s,8,2);
+		PrintGlow(14,127,s,8,1);
 	}
 	// update statistics
 	d=timeGetTime();
@@ -598,23 +601,23 @@ void LunaticDraw(void)
 	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
 	{
 		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA))
-			gamemgl->TeensyWaterFlip(updFrameCount/2);
+			AWAIT gamemgl->TeensyWaterFlip(updFrameCount/2);
 		else
-			gamemgl->TeensyFlip();
+			AWAIT gamemgl->TeensyFlip();
 	}
 	else if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE)
 	{
 		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA))
-			gamemgl->RasterWaterFlip(updFrameCount/2);
+			AWAIT gamemgl->RasterWaterFlip(updFrameCount/2);
 		else
-			gamemgl->RasterFlip();
+			AWAIT gamemgl->RasterFlip();
 	}
 	else
 	{
 		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA))
-			gamemgl->WaterFlip(updFrameCount/2);
+			AWAIT gamemgl->WaterFlip(updFrameCount/2);
 		else
-			gamemgl->Flip();
+			AWAIT gamemgl->Flip();
 	}
 
 	visFrameCount++;
@@ -697,7 +700,7 @@ void PauseGame(void)
 	gameMode=GAMEMODE_MENU;
 }
 
-byte PlayALevel(byte map)
+TASK(byte) PlayALevel(byte map)
 {
 	int lastTime=1;
 	byte exitcode=0;
@@ -708,7 +711,7 @@ byte PlayALevel(byte map)
 	if(!InitLevel(map))
 	{
 		mapToGoTo=255;
-		return LEVEL_ABORT;
+		CO_RETURN LEVEL_ABORT;
 	}
 
 	exitcode=LEVEL_PLAYING;
@@ -725,9 +728,9 @@ byte PlayALevel(byte map)
 		StartClock();
 		if(gameMode==GAMEMODE_PLAY)
 			HandleKeyPresses();
-		exitcode=LunaticRun(&lastTime);
+		exitcode=AWAIT LunaticRun(&lastTime);
 		if(exitcode==LEVEL_PLAYING)
-			LunaticDraw();
+			AWAIT LunaticDraw();
 
 		if(gameMode==GAMEMODE_PLAY && wasPaused)
 		{
@@ -753,10 +756,10 @@ byte PlayALevel(byte map)
 		PlayerWinLevel(0);
 	}
 	ExitLevel();
-	return exitcode;
+	CO_RETURN exitcode;
 }
 
-byte PlayWorld(MGLDraw *mgl,const char *fname)
+TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 {
 	char fullName[64];
 	byte result;
@@ -768,7 +771,7 @@ byte PlayWorld(MGLDraw *mgl,const char *fname)
 
 	InitPlayer(GetWorldProgress(fname)->levelOn,fname);
 	if(!LoadWorld(&curWorld,fullName))
-		return 1;
+		CO_RETURN 1;
 
 	StopSong();
 	InitWorld(&curWorld);
@@ -776,13 +779,13 @@ byte PlayWorld(MGLDraw *mgl,const char *fname)
 	if (!IsCustomWorld() && !VerifyHollowShw())
 	{
 		// maybe be mean later
-		return 1;
+		CO_RETURN 1;
 	}
 
 	mapNum=player.levelNum;
 	while(1)
 	{
-		result=PlayALevel(mapNum);
+		result=AWAIT PlayALevel(mapNum);
 
 		if(result==LEVEL_ABORT)
 		{
@@ -805,18 +808,18 @@ byte PlayWorld(MGLDraw *mgl,const char *fname)
 	FreeWorld(&curWorld);
 
 	if(result==WORLD_QUITGAME || result==WORLD_SHOP)
-		return 0;
+		CO_RETURN 0;
 	else
-		return 1;
+		CO_RETURN 1;
 }
 
-void TestLevel(world_t *world,byte level)
+TASK(void) TestLevel(world_t *world,byte level)
 {
 	byte result;
 
 	// TODO: try to make testing make sense
 	MakeNormalSound(SND_BOUAPHAOUCH);
-	return;
+	CO_RETURN;
 
 	editing=2;
 
@@ -833,7 +836,7 @@ void TestLevel(world_t *world,byte level)
 	SetPlayerStart(-1,-1);
 	while(1)
 	{
-		result=PlayALevel(mapNum);
+		result=AWAIT PlayALevel(mapNum);
 		if(result==LEVEL_ABORT)
 		{
 			if(mapToGoTo<255)
@@ -863,6 +866,6 @@ void TestLevel(world_t *world,byte level)
 	{
 		// delete all maps
 		sprintf(s,"profiles/_editing_.%03d",i);
-		unlink(s);
+		AppdataDelete(s);
 	}
 }

@@ -843,7 +843,7 @@ void RenderBestiary(MGLDraw *mgl)
 	oldmsy=msy;
 }
 
-void Bestiary(MGLDraw *mgl)
+TASK(void) Bestiary(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime=1;
@@ -858,7 +858,7 @@ void Bestiary(MGLDraw *mgl)
 
 		done=UpdateBestiary(&lastTime,mgl);
 		RenderBestiary(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;

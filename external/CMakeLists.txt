@@ -1,0 +1,10 @@
+include("zlib.cmake")
+include("SDL2.cmake")
+add_subdirectory("lzma1900" EXCLUDE_FROM_ALL)
+add_subdirectory("nsis_exehead" EXCLUDE_FROM_ALL)
+
+if(NOT EMSCRIPTEN AND NOT ANDROID)
+	add_subdirectory("nlohmann_json")
+	include("imgui.cmake")
+	include("curl.cmake")
+endif()

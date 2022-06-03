@@ -4,7 +4,7 @@
 #include "mgldraw.h"
 #include "game.h"
 
-void SpaceGame(MGLDraw *mgl);
+TASK(void) SpaceGame(MGLDraw *mgl);
 
 // prototypes for internal whatnots
 void PutOnEdge(int i);

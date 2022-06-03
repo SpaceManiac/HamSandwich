@@ -3,6 +3,6 @@
 
 #include "mgldraw.h"
 
-void Tally(MGLDraw *mgl,const char *lvlName,byte countIt);
+TASK(void) Tally(MGLDraw *mgl,const char *lvlName,byte countIt);
 
 #endif

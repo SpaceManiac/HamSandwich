@@ -4,6 +4,7 @@
 #include "world.h"
 #include "music.h"
 #include "shop.h"
+#include "appdata.h"
 
 #include <iostream>
 #include <string>
@@ -29,7 +30,7 @@ void InitProfile(void)
 	int i;
 
 	firstTime=0;
-	f=fopen("profile.cfg","rt");
+	f=AppdataOpen("profile.cfg");
 	if(!f)
 	{
 		firstTime=1;	// ask the player to enter their name
@@ -83,14 +84,30 @@ void SaveProfile(void)
 	FILE *f;
 	int i,j;
 
-	f=fopen("profile.cfg","wt");
+	f=AppdataOpen("profile.cfg");
 	fprintf(f,"%s\n",profile.name);
 	fclose(f);
 
 	sprintf(prfName,"profiles/%s.prf",profile.name);
 	// also actually save the profile!
-	f=fopen(prfName,"wb");
-	fwrite(&profile,sizeof(profile_t),1,f);
+	f=AppdataOpen_Write(prfName);
+	// begin fwrite(&profile, sizeof(profile_t), 1, f) emulation
+	fwrite(&profile, 68, 1, f);
+	for(i = 0; i < NUM_PLAYLISTS; ++i)
+	{
+		fwrite("\0\0\0\0\0\0\0\0", 8, 1, f);
+	}
+	fwrite(&profile.difficulty, 8, 1, f);
+	// begin progress_t part
+	{
+		fwrite(&profile.progress, 112, 1, f);
+		fwrite("\0\0\0\0", 4, 1, f);  // skip worldData_t *world
+		fwrite(&profile.progress.kills, 2152 - 112 - 4, 1, f);
+	}
+	// end progress_t part
+	fwrite(&profile.motd, sizeof(profile.motd), 1, f);
+	SDL_assert(ftell(f) == 3284);
+	// end fwrite emulation
 
 	SavePlayLists(f);
 
@@ -99,13 +116,15 @@ void SaveProfile(void)
 	// so that we can save the word!
 	for(i=0;i<profile.progress.num_worlds;i++)
 	{
-		fwrite(&profile.progress.world[i],sizeof(worldData_t),1,f);
+		fwrite(&profile.progress.world[i],76,1,f);
+		fwrite("\0\0\0\0", 4, 1, f);
 		for(j=0;j<profile.progress.world[i].levels;j++)
 		{
 			fwrite(&profile.progress.world[i].level[j],sizeof(levelData_t),1,f);
 		}
 	}
 	fclose(f);
+	AppdataSync();
 	firstTime=0;
 }
 
@@ -135,18 +154,35 @@ void LoadProfile(const char *name)
 	sprintf(prfName,"profiles/%s.prf",profile.name);
 
 	// save this profile as the current one.
-	f=fopen("profile.cfg","wt");
+	f=AppdataOpen_Write("profile.cfg");
 	fprintf(f,"%s\n",profile.name);
 	fclose(f);
+	AppdataSync();
 
 	// now load it
-	f=fopen(prfName,"rb");
+	f=AppdataOpen(prfName);
 	if(!f)	// file doesn't exist
 	{
 		DefaultProfile(name);
 		return;
 	}
-	fread(&profile,sizeof(profile_t),1,f);
+	// begin fread(&profile, sizeof(profile_t), 1, f) emulation
+	fread(&profile, 68, 1, f);
+	for(i = 0; i < NUM_PLAYLISTS; ++i)
+	{
+		fseek(f, 8, SEEK_CUR);
+	}
+	fread(&profile.difficulty, 8, 1, f);
+	// begin progress_t part
+	{
+		fread(&profile.progress, 112, 1, f);
+		fseek(f, 4, SEEK_CUR);  // skip worldData_t *world
+		fread(&profile.progress.kills, 2152 - 112 - 4, 1, f);
+	}
+	// end progress_t part
+	fread(&profile.motd, sizeof(profile.motd), 1, f);
+	SDL_assert(ftell(f) == 3284);
+	// end fread emulation
 	LoadPlayLists(f);
 
 	if(profile.progress.num_worlds==0)
@@ -156,7 +192,8 @@ void LoadProfile(const char *name)
 		profile.progress.world=(worldData_t *)malloc(sizeof(worldData_t)*profile.progress.num_worlds);
 		for(i=0;i<profile.progress.num_worlds;i++)
 		{
-			fread(&profile.progress.world[i],sizeof(worldData_t),1,f);
+			fread(&profile.progress.world[i],76,1,f);
+			fseek(f, 4, SEEK_CUR);
 			profile.progress.world[i].level=(levelData_t *)malloc(sizeof(levelData_t)*profile.progress.world[i].levels);
 			for(j=0;j<profile.progress.world[i].levels;j++)
 			{

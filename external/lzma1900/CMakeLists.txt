@@ -1,0 +1,9 @@
+file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src")
+add_library(lzma1900 STATIC ${SOURCES})
+target_link_libraries(lzma1900 z)
+target_include_directories(lzma1900 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	target_compile_options(lzma1900 PRIVATE -fPIC)
+endif()

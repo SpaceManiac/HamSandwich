@@ -1,113 +1,228 @@
 #!/bin/bash
-# ./run - build then run a project in the appropriate directory
 set -euo pipefail
 
+# Help
 show_help() {
-	echo "Usage: $0 <project> [<options>]"
-	echo "Available projects:"
-	echo "    lunatic  supreme  sleepless  loonyland  loonyland2  mystic"
-	echo "Options:"
-	echo "    --fullscreen  Run the game in fullscreen (default: windowed)."
-	echo "    --release     Run the release build of the game (default: debug)."
-	echo "    --gdb         Start GDB prepared to debug the game."
-	echo "    --nobuild     Skip compiling before running."
-	echo "    --clang       Compile using the clang toolchain (default: gcc)."
-	echo "    --valgrind    Run the game under valgrind memory checker (slow)."
-	echo "    --callgrind   Run the game under callgrind profiler (slow)."
-	echo "    --two         Run two copies of the game at once."
+	echo "Usage: $0 [<setting=value>] <project> [-- <arguments>]"
+	echo "Settings:"
+	echo "    os=             One of:  windows  linux  macos  emscripten"
+	echo "    arch=           One of:  i686  x86_64"
+	echo "    mode=           One of:  debug  release"
+	echo "    preset=         Set os, arch, and mode together, ex: windows-i686-release"
+	echo "    nobuild=1       Skip compiling before running."
+	echo "    tool=gdb        Start GDB prepared to debug the game."
+	echo "    tool=valgrind   Run the game under valgrind memory checker (slow)."
+	echo "    tool=callgrind  Run the game under callgrind profiler (slow)."
+	echo "    tool=two        Run two instances of the game at once."
 }
 
-# Default settings
-TOOL=
-PROJECT=
-CONFIG=debug
-ARGS=window
-NOBUILD=
-TOOLSET=gcc
-TWO=
+# Default settings.
+project=launcher
+os=
+arch=
+mode=debug
+preset=
+nobuild=
+tool=
+override_args=
 
-# Read command-line arguments
-while [ $# -ne 0 ]; do
-	ARG="$1"; shift
-	case "$ARG" in
+# Read command-line arguments.
+while test $# -ne 0; do
+	arg="$1"; shift
+	case "$arg" in
+		# settings
+		project=* | os=* | arch=* | mode=* | preset=* | nobuild=* | tool=*)
+			declare "$arg"
+			;;
+		# show help on demand
+		--help)
+			show_help; exit
+			;;
+		--)
+			# -- indicates the start of overriden arguments
+			override_args=1
+			break
+			;;
+		# transitional adapters from ./run
 		"--fullscreen")
-			ARGS=
+			override_args=1
 			;;
 		"--release")
-			CONFIG=release
+			mode=release
 			;;
 		"--gdb")
-			TOOL=gdb
+			tool=gdb
 			;;
 		"--valgrind")
-			TOOL=valgrind
+			tool=valgrind
 			;;
 		"--callgrind")
-			TOOL=callgrind
+			tool=callgrind
 			;;
 		"--nobuild")
-			NOBUILD=ON
+			nobuild=1
 			;;
-		"--clang")
-			TOOLSET=clang
+		"--web")
+			os=emscripten
 			;;
 		"--two")
-			TWO=ON
+			tool=two
 			;;
-		-*)
+		# show help for unsupported settings or flags
+		*=* | -*)
 			show_help; exit 1
 			;;
+		# a setting without a variable name is $project
 		*)
-			if [ $PROJECT ]; then
-				# Exit if two projects were specified
-				show_help; exit 1
-			fi
-			PROJECT=$ARG
+			project="$arg"
 			;;
 	esac
 done
-if [ -z $PROJECT ]; then
-	# Exit if no project was specified
+
+# Abort if no project was specified.
+if test -z "$project"; then
 	show_help; exit 1
 fi
 
-# Ensure all dependencies are installed
-./tools/build/install-deps.sh
-
-# Ensure the project's build is up to date
-if [ -z "$NOBUILD" ]; then
-	make $PROJECT config=$CONFIG toolset=$TOOLSET
-fi
-
-# Ensure the project's assets exist
-GAMEDIR="build/game/$PROJECT"
-if [ ! -d "$GAMEDIR" ]; then
-	./tools/build/extract-assets.sh "$PROJECT"
-fi
-
-# Run the project
-EXE="$PWD/build/$TOOLSET-$CONFIG/$PROJECT/$PROJECT"
-cd "$GAMEDIR"
-if [ "$TOOL" = "gdb" ]; then
-	echo "==== Debugging $PROJECT ($CONFIG) ===="
-	# Catches "the runtime was asked to terminate in an usual way".
-	# If libc++ is dynamically linked, the breakpoint should be pending.
-	gdb -q \
-		-ex 'set breakpoint pending on' \
-		-ex 'break abort' \
-		-ex 'set breakpoint pending auto' \
-		--args "$EXE" $ARGS
-elif [ "$TOOL" = "valgrind" ]; then
-	echo "==== Valgrinding $PROJECT ($CONFIG) ===="
-	valgrind "$EXE" $ARGS
-elif [ "$TOOL" = "callgrind" ]; then
-	echo "==== Callgrinding $PROJECT ($CONFIG) ===="
-	valgrind --tool=callgrind "$EXE" $ARGS
-else
-	echo "==== Running $PROJECT ($CONFIG) ===="
-	if [ "$TWO" ]; then
-		"$EXE" $ARGS &
+# Fallback settings. Keep this in sync with `Makefile`!
+if test -z "$preset"; then
+	if test -z "$os"; then
+		# Detect OS and architecture.
+		case "$(uname -sm)" in
+			MINGW32*)
+				os=windows
+				arch=${arch:-i686}
+				;;
+			MINGW64*)
+				os=windows
+				arch=${arch:-x86_64}
+				;;
+			"Linux x86_64")
+				os=linux
+				arch=${arch:-x86_64}
+				;;
+			"Darwin x86_64")
+				os=macos
+				arch=${arch:-x86_64}
+				;;
+			*)
+				echo "Unknown \`uname -sm\`: $(uname -sm)"
+				exit 1
+		esac
+	elif test -z "$arch"; then
+		# Use default architecture for chosen OS.
+		case "$os" in
+			windows|emscripten)
+				arch=i686
+				;;
+			linux|macos)
+				arch=x86_64
+				;;
+		esac
 	fi
-	"$EXE" $ARGS
-	wait
+	preset="$os-$arch-$mode"
 fi
+
+tools/build/install-deps.sh
+if test -z "$tool" && test "$os" = "emscripten"; then
+	tool=emrun
+	source ./tools/emscripten/install-emsdk.sh
+fi
+
+# Default debug configuration
+debugdir="$PWD/build/install"
+cmakedir="$PWD/build/cmake-$preset"
+debugcommand="$cmakedir/source/$project/$project"
+if test "$os" = "windows"; then
+	debugcommand="$debugcommand.exe"
+fi
+debugargs=("window")
+debugenvs=()
+
+# Build and install
+if test -z "$nobuild"; then
+	if test "$os" = "emscripten"; then
+		# Web.
+		debugdir="$PWD/build/webroot"
+		if test "$project" != "launcher"; then
+			# Single project: build and install just that project.
+			make preset="$preset" "$project"
+			cmake --install "$cmakedir" --component "$project"/web --config Debug
+		else
+			# Otherwise, build and install everything.
+			make preset="$preset" install
+		fi
+	else
+		# Desktop.
+		if test "$project" != "launcher"; then
+			# Single project: build the launcher and that project.
+			make preset="$preset" "$project" launcher
+			# Install the launcher so that it can be used to download assets.
+			cmake --install "$cmakedir" --component Unspecified --config Debug
+			cmake --install "$cmakedir" --component generic/executables --config Debug
+			cmake --install "$cmakedir" --component launcher/executables --config Debug
+			# But we don't need to install the game's executable because we're
+			# going to run it right out its build directory.
+		else
+			# Launcher: build everything that isn't excluded, because that's
+			# what will be presented in the launcher UI.
+			make preset="$preset" install
+		fi
+	fi
+fi
+
+# Run the game executable or tool.
+mkdir -p "$debugdir"
+cd "$debugdir"
+if test ${#debugenvs[@]} -ne 0; then
+	export "${debugenvs[@]}"
+fi
+if test "$override_args"; then
+	debugargs=("$@")
+fi
+case "$tool" in
+	gdb)
+		echo "==== Debugging $project ($preset) ===="
+		# Catches "the runtime was asked to terminate in an usual way".
+		# If libc++ is dynamically linked, the breakpoint should be pending.
+		gdb -q \
+			-ex 'set breakpoint pending on' \
+			-ex 'break abort' \
+			-ex 'set breakpoint pending auto' \
+			--args "$debugcommand" "${debugargs[@]}"
+		;;
+	valgrind)
+		echo "==== Valgrinding $project ($preset) ===="
+		valgrind "$debugcommand" "${debugargs[@]}"
+		;;
+	callgrind)
+		echo "==== Callgrinding $project ($preset) ===="
+		valgrind --tool=callgrind "$debugcommand" "${debugargs[@]}"
+		;;
+	emrun)
+		echo "==== Hosting $project ($preset) ===="
+		if test "$project" = "launcher"; then
+			emrun --serve_after_close --serve_after_exit "$debugdir/index.html"
+		else
+			# TODO: Serve out of CMake dir, so non-installed projects work
+			emrun --serve_after_close "$debugdir/$project/index.html"
+		fi
+		;;
+	two)
+		echo "==== Running $project ($preset) ===="
+		"$debugcommand" "${debugargs[@]}" &
+		"$debugcommand" "${debugargs[@]}"
+		;;
+	"")
+		if test -f "$debugcommand"; then
+			echo "==== Running $project ($preset) ===="
+			"$debugcommand" "${debugargs[@]}"
+		else
+			echo "$project: not a runnable target."
+		fi
+		;;
+	*)
+		echo "$0: unknown tool: $tool"
+		exit 1
+		;;
+esac

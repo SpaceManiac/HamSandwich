@@ -85,7 +85,7 @@ static void SongClick(int id)
 	else
 	{
 		mode=LDMODE_SONGPICK;
-		InitFileDialog("music/*.ogg",FM_LOAD|FM_EXIT|FM_PLAYSONGS,world->map[mapNum]->song);
+		InitFileDialog("music",".ogg",FM_LOAD|FM_EXIT|FM_PLAYSONGS,world->map[mapNum]->song);
 	}
 }
 

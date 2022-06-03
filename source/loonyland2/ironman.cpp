@@ -9,6 +9,7 @@
 #include "quest.h"
 #include "achieve.h"
 
+#pragma pack(push, 1)
 typedef struct ironMan_t
 {
 	dword score;
@@ -19,6 +20,8 @@ typedef struct ironMan_t
 	word  crystals;
 	dword timeBonus;
 } ironMan_t;
+static_assert(sizeof(ironMan_t) == 23);
+#pragma pack(pop)
 
 static ironMan_t ironMan;
 
@@ -260,7 +263,7 @@ void RenderIronman(void)
 	}
 }
 
-void IronmanScreen(MGLDraw *mgl)
+TASK(void) IronmanScreen(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -281,7 +284,7 @@ void IronmanScreen(MGLDraw *mgl)
 			lastTime-=TIME_PER_FRAME;
 		}
 		RenderIronman();
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(!mgl->Process())

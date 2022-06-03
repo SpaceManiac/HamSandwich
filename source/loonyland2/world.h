@@ -4,7 +4,6 @@
 #include "winpch.h"
 #include "map.h"
 #include "tile.h"
-#pragma pack(4)
 
 #define MAX_MAPS	64
 
@@ -26,11 +25,13 @@
 #define TF_NOBULLET	(1<<14)	// bullets can't pass this
 #define TF_WATERFX	(1<<15)
 
+#pragma pack(push, 4)
 typedef struct terrain_t
 {
 	int flags;
 	word next;
 } terrain_t;
+static_assert(sizeof(terrain_t) == 8);
 
 typedef struct world_t
 {
@@ -39,6 +40,7 @@ typedef struct world_t
 	Map	 *map[MAX_MAPS];
 	terrain_t terrain[NUMTILES];
 } world_t;
+#pragma pack(pop)
 
 void WorldLoadBMP(const char *name,byte *dst);
 

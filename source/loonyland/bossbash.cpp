@@ -191,13 +191,13 @@ void RenderBossMenu(MGLDraw *mgl)
 {
 	int i;
 	int wid;
-	int pos;
+	byte* pos;
 
 	wid=mgl->GetWidth();
-	pos=(int)mgl->GetScreen()+40*wid;
+	pos=mgl->GetScreen()+40*wid;
 	for(i=40;i<480-40;i++)
 	{
-		memset((byte *)pos,6*32+2,640);
+		memset(pos,6*32+2,640);
 		pos+=wid;
 	}
 
@@ -272,7 +272,7 @@ void RenderBossMenu(MGLDraw *mgl)
 	}
 }
 
-byte BossMenu(MGLDraw *mgl)
+TASK(byte) BossMenu(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -287,7 +287,7 @@ byte BossMenu(MGLDraw *mgl)
 		StartClock();
 		done=UpdateBossMenu(&lastTime,mgl);
 		RenderBossMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(mgl->LastKeyPressed()==27)
 		{
@@ -304,9 +304,9 @@ byte BossMenu(MGLDraw *mgl)
 	ExitBossMenu();
 
 	if(victim==255)
-		return 0;
+		CO_RETURN 0;
 
-	return victim;
+	CO_RETURN victim;
 }
 
 byte BashPower(void)

@@ -5,7 +5,6 @@
 #include "map.h"
 #include "items.h"
 #include "equip.h"
-#pragma pack(1)
 
 #define POT_BRAINJUICE	(IT_POT1)
 #define POT_MUDMILK		(IT_POT2)

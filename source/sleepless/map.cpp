@@ -1344,8 +1344,7 @@ void Map::RenderEdit(world_t *world,int camX,int camY,byte flags)
 				{
 					if(!(flags&MAP_SHOWLIGHTS))	// we're ignoring lighting
 					{
-						for(lite=0;lite<9;lite++)
-							lites[lite]=0;
+						memset(lites, 0, 9);
 						lite=0;
 					}
 					else

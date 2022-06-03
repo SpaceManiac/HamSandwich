@@ -126,7 +126,6 @@ void Particle::GoRandom(byte type,int x,int y,int z,byte force)
 
 void Particle::GoRandomColor(byte color,int x,int y,int z,byte force)
 {
-	this->type=type;
 	if(force==0)
 		return;
 
@@ -635,7 +634,7 @@ void HLine(int x,int x2,int y,byte c,byte *scrn)
 void HLine2(int x,int x2,int y,byte c,byte *scrn)
 {
 	int i;
-	byte b,b2,b3;
+	byte b,b3;
 	byte c1,c2;
 
 	if(x<0)
@@ -657,7 +656,6 @@ void HLine2(int x,int x2,int y,byte c,byte *scrn)
 	for(i=x;i<=x2;i++)
 	{
 		b=*scrn;
-		b2=b&(~31);
 		b3=(b&31)+c1;
 		if(b3>31)
 			b3=31;
@@ -669,7 +667,7 @@ void HLine2(int x,int x2,int y,byte c,byte *scrn)
 void HLine3(int x,int x2,int y,byte c,byte less,byte *scrn)
 {
 	int i;
-	byte b,b2,b3;
+	byte b,b3;
 	byte colRange;
 	int centerCol;
 	int curCol;
@@ -708,7 +706,6 @@ void HLine3(int x,int x2,int y,byte c,byte less,byte *scrn)
 
 		realCol=(curCol/FIXAMT);
 		b=*scrn;
-		b2=b&(~31);
 		b3=(b&31)+realCol;
 		if(b3>31)
 			b3=31;

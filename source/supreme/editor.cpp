@@ -12,6 +12,7 @@
 #include "viewdialog.h"
 #include "worldstitch.h"
 #include "levelscan.h"
+#include "appdata.h"
 
 #define PLOPRATE	5
 
@@ -22,24 +23,17 @@ static MGLDraw *editmgl;
 static world_t	world;
 static Map		*editorMap;
 static byte		curMapNum;
-static int	   mouseX,mouseY;
+static int	   mouseX,mouseY,mouseZ;
 static int	   tileX,tileY;
 static int	rectX1,rectX2,rectY1,rectY2;
 static int  pickerWid,pickerHei;
 
-static byte  showStats=0;
-static dword gameStartTime,visFrameCount,updFrameCount;
+static dword gameStartTime,updFrameCount;
 static word  numRunsToMakeUp;
-
-static byte plopCounter=0;
-static byte msButton=0;
-static byte monsPage=0;
 
 static byte viewMenu,editMenu;
 
 static byte musicPlaying;
-
-static char worldFilename[FNAMELEN]="";
 
 static byte displayFlags;
 byte editing=0;
@@ -60,6 +54,7 @@ byte InitEditor(void)
 
 	mouseX=320;
 	mouseY=240;
+	mouseZ = editmgl->mouse_z;
 	PutCamera(0,0);
 	gameStartTime=timeGetTime();
 	InitGuys(256);
@@ -173,7 +168,7 @@ void ExitEditor(void)
 	{
 		MonsterAnim(i,0)[0]=254;
 	}
-	
+
 	StopSong();
 	ExitGuys();
 	FreeWorld(&world);
@@ -199,7 +194,7 @@ void Delete(int x,int y)
 	editorMap->GetTile(x,y)->item=0;
 
 	for(i=0;i<MAX_SPECIAL;i++)
-		if(editorMap->special[i].trigger && editorMap->special[i].x==x && editorMap->special[i].y==y)
+		if(editorMap->special[i].x==x && editorMap->special[i].y==y)
 		{
 			memset(&editorMap->special[i],0,sizeof(special_t));
 			editorMap->special[i].x=255;
@@ -216,10 +211,10 @@ void BackupWorld(const char *name)
 	sprintf(inName,"worlds/%s",name);
 	sprintf(outName,"worlds/backup_save.hsw");
 
-	inF=fopen(inName,"rb");
+	inF=AssetOpen(inName);
 	if(!inF)
 		return;	// the source didn't exist, so nothing to back up
-	outF=fopen(outName,"wb");
+	outF=AssetOpen_Write(outName);
 	if(!outF)
 	{
 		fclose(inF);
@@ -243,9 +238,10 @@ void BackupWorld(const char *name)
 	free(data);
 	fclose(inF);
 	fclose(outF);
+	AppdataSync();
 }
 
-void UpdateMouse(void)
+TASK(void) UpdateMouse(void)
 {
 	int cx,cy;
 
@@ -273,6 +269,9 @@ void UpdateMouse(void)
 		tileY=tileY/TILE_HEIGHT-1;
 	else
 		tileY=tileY/TILE_HEIGHT;
+
+	int scroll = editmgl->mouse_z - mouseZ;
+	mouseZ = editmgl->mouse_z;
 
 	if(mouseX==0)
 	{
@@ -309,7 +308,7 @@ void UpdateMouse(void)
 			TerrainEdit_Update(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_SPECIAL:
-			SpecialEdit_Update(mouseX,mouseY,editmgl);
+			SpecialEdit_Update(mouseX,mouseY,scroll,editmgl);
 			break;
 		case EDITMODE_ITEM:
 			ItemEdit_Update(mouseX,mouseY,editmgl);
@@ -322,7 +321,7 @@ void UpdateMouse(void)
 			break;
 		case EDITMODE_EDIT:
 			if(!viewMenu || !editMenu || (ToolDoing()!=TD_USING) || (viewMenu && ViewDialogClick(mouseX,mouseY)))
-				ToolUpdate(mouseX,mouseY,editMenu,editmgl);
+				AWAIT ToolUpdate(mouseX,mouseY,editMenu,editmgl);
 			break;
 		case EDITMODE_EXIT:
 			if(editmgl->MouseTap())
@@ -341,6 +340,8 @@ void UpdateMouse(void)
 		case EDITMODE_FILE:
 			if(editmgl->MouseTap())
 				FileDialogClick(mouseX,mouseY);
+			if(scroll)
+				FileDialogScroll(scroll);
 			switch(FileDialogCommand())
 			{
 				case FM_NEW:
@@ -405,6 +406,8 @@ void UpdateMouse(void)
 					editMode=EDITMODE_EDIT;
 				}
 			}
+			if (scroll)
+				MapDialogScroll(scroll);
 			break;
 		case EDITMODE_LEVELMENU:
 			if(editmgl->MouseTap())
@@ -507,7 +510,7 @@ void UpdateMouse(void)
 	}
 }
 
-byte EditorRun(int *lastTime)
+TASK(byte) EditorRun(int *lastTime)
 {
 	numRunsToMakeUp=0;
 	if(*lastTime>TIME_PER_FRAME*5)
@@ -516,7 +519,7 @@ byte EditorRun(int *lastTime)
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		if(!editmgl->Process())
-			return QUITGAME;
+			CO_RETURN QUITGAME;
 
 		// update everything here
 		UpdateItems();
@@ -529,7 +532,7 @@ byte EditorRun(int *lastTime)
 		else
 			editorMap->Update(UPDATE_EDIT,&world);
 
-		UpdateMouse();
+		AWAIT UpdateMouse();
 
 		*lastTime-=TIME_PER_FRAME;
 		numRunsToMakeUp++;
@@ -539,7 +542,7 @@ byte EditorRun(int *lastTime)
 	if(curMapNum==0)
 		editorMap->flags|=MAP_HUB;
 
-	return CONTINUE;
+	CO_RETURN CONTINUE;
 }
 
 void ShowSpecials(void)
@@ -770,11 +773,9 @@ void EditorDraw(void)
 
 	// draw the mouse cursor
 	DrawMouseCursor(mouseX,mouseY);
-
-	editmgl->Flip();
 }
 
-static void HandleKeyPresses(void)
+static TASK(void) HandleKeyPresses(void)
 {
 	char k;
 	byte s;
@@ -853,11 +854,11 @@ static void HandleKeyPresses(void)
 			case 'f':
 			case 'F':
 				editMode=EDITMODE_FILE;
-				InitFileDialog("worlds/*.hsw",FM_NEW|FM_LOAD|FM_SAVE|FM_ASKLOAD,ToolGetFilename());
+				InitFileDialog("worlds",".dlw",FM_NEW|FM_LOAD|FM_SAVE|FM_ASKLOAD,ToolGetFilename());
 				break;
 			case 'M':
 				editMode=EDITMODE_FILE;
-				InitFileDialog("worlds/*.hsw",FM_LOAD|FM_ASKLOAD|FM_MERGE,ToolGetFilename());
+				InitFileDialog("worlds",".dlw",FM_LOAD|FM_ASKLOAD|FM_MERGE,ToolGetFilename());
 				break;
 			case 'l':
 			case 'L':
@@ -873,7 +874,7 @@ static void HandleKeyPresses(void)
 			case 'T':
 				int cx,cy;
 				GetCamera(&cx,&cy);
-				TestLevel(EditorGetWorld(),EditorGetMapNum());
+				AWAIT TestLevel(EditorGetWorld(),EditorGetMapNum());
 				StopSong();
 				SetPlayerStart(-1,-1);
 				ExitPlayer();
@@ -1052,7 +1053,7 @@ void SetEditMode(byte m)
 		InitViewDialog();
 }
 
-byte LunaticEditor(MGLDraw *mgl)
+TASK(byte) LunaticEditor(MGLDraw *mgl)
 {
 	int lastTime=1;
 	byte exitcode=0;
@@ -1060,16 +1061,17 @@ byte LunaticEditor(MGLDraw *mgl)
 	editmgl=mgl;
 
 	if(!InitEditor())
-		return QUITGAME;
+		CO_RETURN QUITGAME;
 
 	exitcode=CONTINUE;
 	while(exitcode==CONTINUE)
 	{
 		lastTime+=TimeLength();
 		StartClock();
-		HandleKeyPresses();
-		exitcode=EditorRun(&lastTime);
+		AWAIT HandleKeyPresses();
+		exitcode=AWAIT EditorRun(&lastTime);
 		EditorDraw();
+		AWAIT editmgl->Flip();
 
 		if(editMode==EDITMODE_EXITYES)
 			exitcode=QUITGAME;
@@ -1079,7 +1081,7 @@ byte LunaticEditor(MGLDraw *mgl)
 	}
 
 	ExitEditor();
-	return exitcode;
+	CO_RETURN exitcode;
 }
 
 void EditorSaveWorld(const char *fname)

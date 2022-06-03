@@ -3,29 +3,31 @@
 #include "jamulsound.h"
 #include "hammusic.h"
 #include "log.h"
+#include "softjoystick.h"
+#include "appdata.h"
+#include "extern.h"
+#include <time.h>
 #include <random>
 #include <algorithm>
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL_image.h>
-	#ifdef _WIN32
-		#include <SDL_syswm.h>
-	#endif  // _WIN32
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL_image.h>
-	#ifdef _WIN32
-		#include <SDL2/SDL_syswm.h>
-	#endif  // _WIN32
-#endif
+#include <SDL_image.h>
+#ifdef _WIN32
+	#include <SDL_syswm.h>
+#endif  // _WIN32
 
-void SoundSystemExists();
+#ifdef __EMSCRIPTEN__
+	#include <emscripten.h>
+#endif  // _EMSCRIPTEN__
+
+// in control.cpp
 void ControlKeyDown(byte scancode);
 void ControlKeyUp(byte scancode);
-void SetGameIdle(bool idle);
 
 static const RGB BLACK = {0, 0, 0, 0};
 
 static MGLDraw *_globalMGLDraw = nullptr;
+
+static bool pixelMode = false;
 
 MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	: mouse_x(xRes / 2)
@@ -48,6 +50,16 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 {
 	_globalMGLDraw = this;
 
+#ifdef __EMSCRIPTEN__
+	// These don't actually do anything under Emscripten, and they log a debug
+	// message "Calling stub instead of sigaction()", so turn them off.
+	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
+
+	// Emscripten builds don't meaningfully receive argv, so they should not
+	// start fullscreen by default.
+	this->windowed = windowed = true;
+#endif  // __EMSCRIPTEN__
+
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK)) {
 		LogError("SDL_Init(VIDEO|JOYSTICK): %s", SDL_GetError());
 		FatalError("Failed to initialize SDL");
@@ -60,8 +72,8 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
 #endif
 
-	if(JamulSoundInit(512))
-		SoundSystemExists();
+	if(JamulSoundInit(512) && g_HamExtern.SoundSystemExists)
+		g_HamExtern.SoundSystemExists();
 
 	Uint32 flags = windowed ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP;
 	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, xRes, yRes, flags);
@@ -85,16 +97,16 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 		}
 	}
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__clang__)
 	// Icon embedding for non-Windows platforms.
 	// `tools/build/rescomp.py` produces a .cpp file containing these symbols.
 	// Marked `__attribute__((weak))` for platforms or projects which do not
 	// use this icon embedding method.
-	extern __attribute__((weak)) size_t WINDOW_ICON_SZ;
-	extern __attribute__((weak)) unsigned char WINDOW_ICON[];
-	if (&WINDOW_ICON && &WINDOW_ICON_SZ) {
+	extern __attribute__((weak)) const size_t embed_game_icon_size;
+	extern __attribute__((weak)) const unsigned char embed_game_icon[];
+	if (&embed_game_icon && &embed_game_icon_size) {
 		SDL_Surface *surface = IMG_Load_RW(
-			SDL_RWFromConstMem(WINDOW_ICON, WINDOW_ICON_SZ),
+			SDL_RWFromConstMem(embed_game_icon, embed_game_icon_size),
 			1
 		);
 		SDL_SetWindowIcon(window, surface);
@@ -102,7 +114,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	}
 #endif
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	SDL_RendererInfo info;
 	SDL_GetRendererInfo(renderer, &info);
 	LogDebug("renderer: %s", info.name);
@@ -126,6 +138,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	}
 #endif
 
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, pixelMode ? "0" : "1");
 	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, xRes, yRes);
 	if (!texture) {
 		LogError("SDL_CreateTexture: %s", SDL_GetError());
@@ -140,6 +153,12 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	buffer = new RGB[xRes * yRes];
 	thePal = pal;
 	SeedRNG();
+
+#ifdef __ANDROID__
+	softJoystick = new SoftJoystick(this);
+#else
+	softJoystick = nullptr;
+#endif
 }
 
 MGLDraw::~MGLDraw(void)
@@ -150,6 +169,7 @@ MGLDraw::~MGLDraw(void)
 	JamulSoundExit();
 	delete[] buffer;
 	delete[] scrn;
+	delete softJoystick;
 }
 
 int MGLDraw::GetWidth()
@@ -221,25 +241,67 @@ inline void MGLDraw::StartFlip(void)
 {
 }
 
-void MGLDraw::FinishFlip(void)
+void MGLDraw::ResizeBuffer(int w, int h)
 {
-	SDL_UpdateTexture(texture, NULL, buffer, pitch * sizeof(RGB));
+	SDL_DestroyTexture(texture);
+	delete[] buffer;
+	delete[] scrn;
 
-	SDL_RenderClear(renderer);
-	int scale = std::max(1, std::min(winWidth / xRes, winHeight / yRes));
+	xRes = pitch = w;
+	yRes = h;
+
+	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, xRes, yRes);
+	if (!texture) {
+		LogError("SDL_CreateTexture: %s", SDL_GetError());
+		FatalError("Failed to create texture");
+		return;
+	}
+	scrn = new byte[xRes * yRes];
+	buffer = new RGB[xRes * yRes];
+}
+
+static void TranslateKey(SDL_Keysym* sym)
+{
+	if (sym->scancode == SDL_SCANCODE_AC_BACK)
+	{
+		sym->scancode = SDL_SCANCODE_ESCAPE;
+		sym->sym = SDLK_ESCAPE;
+		return;
+	}
+#ifdef __EMSCRIPTEN__
+	if (sym->scancode == SDL_SCANCODE_GRAVE)
+	{
+		sym->scancode = SDL_SCANCODE_ESCAPE;
+		sym->sym = SDLK_ESCAPE;
+		return;
+	}
+#endif  // __EMSCRIPTEN__
+}
+
+TASK(void) MGLDraw::FinishFlip(void)
+{
+	float scale = std::max(1.0f, std::min((float)winWidth / xRes, (float)winHeight / yRes));
 	SDL_Rect dest = {
-		(winWidth - xRes * scale) / 2,
-		(winHeight - yRes * scale) / 2,
-		xRes * scale,
-		yRes * scale,
+		(int)((winWidth - xRes * scale) / 2),
+		(int)((winHeight - yRes * scale) / 2),
+		(int)(xRes * scale),
+		(int)(yRes * scale),
 	};
+
+	SDL_UpdateTexture(texture, NULL, buffer, pitch * sizeof(RGB));
+	SDL_RenderClear(renderer);
 	SDL_RenderCopy(renderer, texture, NULL, &dest);
+	if (softJoystick) {
+		softJoystick->update(this, scale);
+		softJoystick->render(renderer);
+	}
 	SDL_RenderPresent(renderer);
 	UpdateMusic();
 
 	SDL_Event e;
 	while(SDL_PollEvent(&e)) {
 		if (e.type == SDL_KEYDOWN) {
+			TranslateKey(&e.key.keysym);
 			ControlKeyDown(e.key.keysym.scancode);
 			lastRawCode = e.key.keysym.scancode;
 			if (!(e.key.keysym.sym & ~0xff))
@@ -249,19 +311,52 @@ void MGLDraw::FinishFlip(void)
 
 			if (e.key.keysym.scancode == SDL_SCANCODE_F11)
 			{
+#ifndef __EMSCRIPTEN__
 				windowed = !windowed;
 				if (windowed) {
 					SDL_SetWindowFullscreen(window, 0);
 				} else {
 					SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 				}
+#else  // __EMSCRIPTEN__
+				EM_ASM(
+					Module.requestFullscreen();
+				);
+#endif  // __EMSCRIPTEN__
+			}
+			else if (e.key.keysym.scancode == SDL_SCANCODE_F10)
+			{
+				pixelMode = !pixelMode;
+				SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, pixelMode ? "0" : "1");
+				SDL_Texture* newTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, xRes, yRes);
+				if (newTexture)
+				{
+					texture = newTexture;
+				}
+			}
+			else if (e.key.keysym.scancode == SDL_SCANCODE_F12)
+			{
+				time_t timeobj;
+				time(&timeobj);
+				tm* clock = localtime(&timeobj);
+
+				char fname[128];
+				sprintf(fname, "Screenshot %04d-%02d-%02d %02d:%02d:%02d.bmp", 1900 + clock->tm_year, 1 + clock->tm_mon, clock->tm_mday, clock->tm_hour, clock->tm_min, clock->tm_sec);
+				SaveBMP(fname);
 			}
 		} else if (e.type == SDL_TEXTINPUT) {
 			if (strlen(e.text.text) == 1)
 			{
+#ifdef __EMSCRIPTEN__
+				if (e.text.text[0] == '`')
+				{
+					continue;
+				}
+#endif
 				lastKeyPressed = e.text.text[0];
 			}
 		} else if (e.type == SDL_KEYUP) {
+			TranslateKey(&e.key.keysym);
 			ControlKeyUp(e.key.keysym.scancode);
 		} else if (e.type == SDL_MOUSEMOTION) {
 			mouse_x = (e.motion.x - dest.x) / scale;
@@ -276,24 +371,33 @@ void MGLDraw::FinishFlip(void)
 				mouse_b |= flag;
 			else
 				mouse_b &= ~flag;
+		} else if (e.type == SDL_MOUSEWHEEL) {
+			mouse_z += e.wheel.y;
 		} else if (e.type == SDL_QUIT) {
 			readyToQuit = 1;
 		} else if (e.type == SDL_WINDOWEVENT) {
 			if (e.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
 				idle = true;
-				SetGameIdle(true);
+				if (g_HamExtern.SetGameIdle)
+					g_HamExtern.SetGameIdle(true);
 			} else if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
-				SetGameIdle(false);
+				if (g_HamExtern.SetGameIdle)
+					g_HamExtern.SetGameIdle(false);
 				idle = false;
 			} else if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
 				winWidth = e.window.data1;
 				winHeight = e.window.data2;
 			}
 		}
+		if (softJoystick) {
+			softJoystick->handle_event(this, e);
+		}
 	}
+
+	AWAIT coro::next_frame();
 }
 
-void MGLDraw::Flip(void)
+TASK(void) MGLDraw::Flip(void)
 {
 	StartFlip();
 
@@ -305,10 +409,10 @@ void MGLDraw::Flip(void)
 	for(int i = 0; i < limit; ++i)
 		*target++ = thePal[*src++];
 
-	FinishFlip();
+	AWAIT FinishFlip();
 }
 
-void MGLDraw::WaterFlip(int v)
+TASK(void) MGLDraw::WaterFlip(int v)
 {
 	int i;
 	char table[24]={ 0, 1, 1, 1, 2, 2, 2, 2,
@@ -339,10 +443,10 @@ void MGLDraw::WaterFlip(int v)
 				v=0;
 		}
 	}
-	FinishFlip();
+	AWAIT FinishFlip();
 }
 
-void MGLDraw::TeensyFlip(void)
+TASK(void) MGLDraw::TeensyFlip(void)
 {
 	int i,j,x,y;
 
@@ -356,10 +460,10 @@ void MGLDraw::TeensyFlip(void)
 			putpixel(x+j,y,FormatPixel(j*2,i*2));
 		y++;
 	}
-	FinishFlip();
+	AWAIT FinishFlip();
 }
 
-void MGLDraw::TeensyWaterFlip(int v)
+TASK(void) MGLDraw::TeensyWaterFlip(int v)
 {
 	int i,j,x,y;
 	char table[24]={ 0, 1, 1, 1, 2, 2, 2, 2,
@@ -387,11 +491,10 @@ void MGLDraw::TeensyWaterFlip(int v)
 		}
 		y++;
 	}
-	FinishFlip();
+	AWAIT FinishFlip();
 }
 
-
-void MGLDraw::RasterFlip(void)
+TASK(void) MGLDraw::RasterFlip(void)
 {
 	int i,j;
 
@@ -409,10 +512,10 @@ void MGLDraw::RasterFlip(void)
 				putpixel(j,i,BLACK);
 		}
 	}
-	FinishFlip();
+	AWAIT FinishFlip();
 }
 
-void MGLDraw::RasterWaterFlip(int v)
+TASK(void) MGLDraw::RasterWaterFlip(int v)
 {
 	int i,j;
 	char table[24]={ 0, 1, 1, 1, 2, 2, 2, 2,
@@ -451,7 +554,7 @@ void MGLDraw::RasterWaterFlip(int v)
 				v=0;
 		}
 	}
-	FinishFlip();
+	AWAIT FinishFlip();
 }
 
 void MGLDraw::SetPalette(PALETTE newpal)
@@ -797,7 +900,24 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 {
 	int i,w;
 
-	SDL_Surface* b = IMG_Load(name);
+	SDL_RWops* rw = AssetOpen_SDL(name);
+	if (!rw) {
+		// Asset stack printed error already
+		return false;
+	}
+
+#ifdef __EMSCRIPTEN__
+	// Under Emscripten, IMG_Load can't load some files which SDL_LoadBMP can.
+	SDL_Surface* b = SDL_LoadBMP_RW(rw, SDL_FALSE);
+	if (!b)
+	{
+		b = IMG_Load_RW(rw, SDL_FALSE);
+	}
+	SDL_RWclose(rw);
+#else  // __EMSCRIPTEN__
+	SDL_Surface* b = IMG_Load_RW(rw, SDL_TRUE);
+#endif  // __EMSCRIPTEN__
+
 	if (!b) {
 		LogError("%s: %s", name, SDL_GetError());
 		return false;
@@ -838,7 +958,10 @@ bool MGLDraw::SaveBMP(const char *name)
 	SDL_LockSurface(surface);
 	memcpy(surface->pixels, scrn, xRes * yRes);
 	SDL_UnlockSurface(surface);
-	memcpy(surface->format->palette->colors, thePal, sizeof(PALETTE));
+	for (int i = 0; i < 256; ++i)
+	{
+		surface->format->palette->colors[i] = { thePal[i].r, thePal[i].g, thePal[i].b, thePal[i].a };
+	}
 	SDL_SaveBMP(surface, name);
 	SDL_FreeSurface(surface);
 	return true;

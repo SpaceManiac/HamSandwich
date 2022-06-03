@@ -70,7 +70,7 @@ byte ToolDoing(void)
 	return doing;
 }
 
-void ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl)
+TASK(void) ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl)
 {
 	switch(doing)
 	{
@@ -147,7 +147,7 @@ void ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl)
 					switch((msy-(400-16*NUM_MENUS))/16)
 					{
 						case MENU_FILE:
-							InitFileDialog("worlds/*.shw",FM_SAVE|FM_LOAD|FM_NEW|FM_EXIT|FM_ASKLOAD,worldFilename);
+							InitFileDialog("worlds",".shw",FM_SAVE|FM_LOAD|FM_NEW|FM_EXIT|FM_ASKLOAD,worldFilename);
 							SetEditMode(EDITMODE_FILE);
 							break;
 						case MENU_WORLD:
@@ -157,7 +157,7 @@ void ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl)
 						case MENU_TEST:
 							int cx,cy;
 							GetCamera(&cx,&cy);
-							TestLevel(EditorGetWorld(),EditorGetMapNum());
+							AWAIT TestLevel(EditorGetWorld(),EditorGetMapNum());
 							StopSong();
 							SetPlayerStart(-1,-1);
 							AddMapGuys(EditorGetMap());

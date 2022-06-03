@@ -1046,7 +1046,7 @@ void SpaceUpdateBadguys(void)
 					{
 						p=gameLevel*FIXAMT/4;
 						if(p>FIXAMT*6)
-							FIXAMT*6;
+							p=FIXAMT*6;
 						if(p<FIXAMT/2)
 							p=FIXAMT/2;
 						a=Random(256);
@@ -1075,7 +1075,7 @@ void SpaceUpdateBadguys(void)
 						spcBadguy[i].dy+=((-2+(int)Random(5))*FIXAMT);
 						p=gameLevel*FIXAMT;
 						if(p>FIXAMT*10)
-							FIXAMT*10;
+							p=FIXAMT*10;
 						if(p<FIXAMT*2)
 							p=FIXAMT*2;
 						Clamp(&spcBadguy[i].dx,p);
@@ -1105,7 +1105,7 @@ void SpaceUpdateBadguys(void)
 
 					p=gameLevel*FIXAMT/8;
 					if(p>FIXAMT*4)
-						FIXAMT*4;
+						p=FIXAMT*4;
 					if(p<FIXAMT*2)
 						p=FIXAMT*2;
 					Clamp(&spcBadguy[i].dx,p);
@@ -1157,7 +1157,7 @@ void SpaceUpdateBadguys(void)
 
 					p=(gameLevel-20)*FIXAMT/2;
 					if(p>FIXAMT*8)
-						FIXAMT*8;
+						p=FIXAMT*8;
 					if(p<FIXAMT*4)
 						p=FIXAMT*4;
 					Clamp(&spcBadguy[i].dx,p);
@@ -1501,7 +1501,7 @@ byte UpdateGameOver(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-void SpaceGame(MGLDraw *mgl)
+TASK(void) SpaceGame(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -1517,7 +1517,7 @@ void SpaceGame(MGLDraw *mgl)
 		else
 			done=UpdateGameOver(&lastTime,mgl);
 		RenderSpaceGame(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;

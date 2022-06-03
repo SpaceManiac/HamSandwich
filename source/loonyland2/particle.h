@@ -4,7 +4,6 @@
 #include "map.h"
 #include "jamultypes.h"
 #include "display.h"
-#pragma pack(1)
 
 #define PART_NONE  0
 #define PART_SNOW2 1	// speedy snow particles, just like hammer particles but white
@@ -39,6 +38,7 @@
 #define PART_SMOKESINGLE 56	// a single puff of smoke instead of a pile (which you get if you ParticleBoom(PART_SMOKE)
 #define PART_STEAM		57	// smoke particles shot upwards at high velocity
 
+#pragma pack(push, 1)
 class Particle
 {
 	public:
@@ -62,6 +62,7 @@ class Particle
 		int life;
 		short num;
 };
+#pragma pack(pop)
 
 void InitParticles(int max);
 void ExitParticles(void);

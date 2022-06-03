@@ -50,7 +50,7 @@ typedef struct caveGuy_t
 static byte oldc;
 static byte *map;
 static dword timer;
-static int score,curScore,lives,firePower,antTimer,life,pressure,coinsEarned;
+static int score,curScore,lives,firePower,antTimer,life,coinsEarned;
 static byte gameOver,gameOverClock,gameLevel,fireAng;
 static int totalTime,diamondsGot;
 static caveGuy_t *guy;
@@ -398,7 +398,7 @@ void RenderCaveGame(MGLDraw *mgl)
 		sprintf(s,"Level: %d",gameLevel-3);
 		PrintGlow(300,2,s,0,1);
 
-		sprintf(s,"Time: %lu:%02lu",(timer/(30*60)),(timer/30)%60);
+		sprintf(s,"Time: %u:%02u",(timer/(30*60)),(timer/30)%60);
 		PrintGlow(400,2,s,0,1);
 
 		sprintf(s,"Lives: %d",lives);
@@ -1180,7 +1180,7 @@ static byte UpdateGameOver(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-void CaveGame(MGLDraw *mgl)
+TASK(void) CaveGame(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -1196,7 +1196,7 @@ void CaveGame(MGLDraw *mgl)
 		else
 			done=UpdateGameOver(&lastTime,mgl);
 		RenderCaveGame(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;
@@ -1450,7 +1450,7 @@ void RenderArcade(MGLDraw *mgl)
 	}
 	RenderArcButton(440,440,180,"Quit",mgl,(cursor==2));
 
-	sprintf(s,"Coins: %lu",profile.progress.totalCoins-profile.progress.coinsSpent);
+	sprintf(s,"Coins: %u",profile.progress.totalCoins-profile.progress.coinsSpent);
 	PrintGlow(620-GetStrLength(s,2),415,s,0,2);
 
 	// mouse cursor
@@ -1469,7 +1469,7 @@ void RenderArcade(MGLDraw *mgl)
 	SetSpriteConstraints(0,0,639,479);
 }
 
-void Arcade(MGLDraw *mgl, byte gm)
+TASK(void) Arcade(MGLDraw *mgl, byte gm)
 {
 	byte done=0;
 	int lastTime=1;
@@ -1485,7 +1485,7 @@ void Arcade(MGLDraw *mgl, byte gm)
 		done=UpdateArcade(&lastTime,mgl);
 		RenderArcade(mgl);
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;
@@ -1496,13 +1496,13 @@ void Arcade(MGLDraw *mgl, byte gm)
 			switch(game)
 			{
 				case 0:
-					SpaceGame(mgl);
+					AWAIT SpaceGame(mgl);
 					break;
 				case 1:
-					CaveGame(mgl);
+					AWAIT CaveGame(mgl);
 					break;
 				case 2:
-					RaceGame(mgl);
+					AWAIT RaceGame(mgl);
 					break;
 			}
 			done=0;

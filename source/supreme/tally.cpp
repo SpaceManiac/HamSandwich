@@ -21,7 +21,7 @@ static int comboBonus;
 static byte lineNum,skip;
 static int baseScore,showBaseScore,finalScore,showFinalScore,points,totalCoins,showTotalCoins,bonusCoins;
 static char levelName[32];
-static int wait;
+static int tallyWait;
 static float destructBonus,destructPct,perfectBonus,diffBonus;
 static score_t topTimes[3];
 
@@ -43,7 +43,7 @@ void InitTally(MGLDraw *mgl)
 	finalScore=0;
 	points=player.score;
 	lineNum=0;
-	wait=0;
+	tallyWait=0;
 	skip=0;
 	totalCoins=profile.progress.totalCoins-profile.progress.coinsSpent;
 	showTotalCoins=totalCoins;
@@ -174,11 +174,11 @@ byte UpdateTally(int *lastTime,MGLDraw *mgl)
 			else if(showFinalScore>finalScore)
 				showFinalScore--;
 
-			wait++;
+			tallyWait++;
 		}
 		else
 		{
-			wait=30;
+			tallyWait=30;
 			baseScore=points+player.bestCombo*10;
 			if(baseScore>(int)(player.clock/10))
 				baseScore-=(player.clock/10);
@@ -213,17 +213,17 @@ byte UpdateTally(int *lastTime,MGLDraw *mgl)
 		switch(lineNum)
 		{
 			case 0:	// base points
-				if(wait>=30)
+				if(tallyWait>=30)
 				{
-					wait=0;
+					tallyWait=0;
 					lineNum=1;
 					baseScore+=player.bestCombo*10;
 				}
 				break;
 			case 1:	// combo
-				if(wait>=30)
+				if(tallyWait>=30)
 				{
-					wait=0;
+					tallyWait=0;
 					lineNum=2;
 					if(baseScore>(int)(player.clock/10))
 						baseScore-=(player.clock/10);
@@ -232,44 +232,44 @@ byte UpdateTally(int *lastTime,MGLDraw *mgl)
 				}
 				break;
 			case 2:	// time
-				if(wait>=30)
+				if(tallyWait>=30)
 				{
-					wait=0;
+					tallyWait=0;
 					lineNum=3;
 					finalScore=(int)((float)finalScore*diffBonus);
 				}
 				break;
 			case 3:	// difficulty bonus
-				if(wait>=30)
+				if(tallyWait>=30)
 				{
-					wait=0;
+					tallyWait=0;
 					lineNum=4;
 					finalScore=(int)((float)finalScore*destructBonus);
 				}
 				break;
 			case 4:	// destruction bonus
-				if(wait>=30)
+				if(tallyWait>=30)
 				{
-					wait=0;
+					tallyWait=0;
 					lineNum=5;
 					finalScore=(int)((float)finalScore*perfectBonus);
 				}
 				break;
 			case 5:	// perfect bonus
 				if(player.perfect==0)
-					wait=30;
-				if(wait>=30)
+					tallyWait=30;
+				if(tallyWait>=30)
 				{
-					wait=0;
+					tallyWait=0;
 					lineNum=6;
 					if(!player.cheated)
 						totalCoins+=player.coins;
 				}
 				break;
 			case 6:	// coins found
-				if(wait>=30)
+				if(tallyWait>=30)
 				{
-					wait=0;
+					tallyWait=0;
 					lineNum=7;
 					if(!player.cheated)
 					{
@@ -281,9 +281,9 @@ byte UpdateTally(int *lastTime,MGLDraw *mgl)
 				}
 				break;
 			case 7:	// bonus coins
-				if(wait>=30)
+				if(tallyWait>=30)
 				{
-					wait=0;
+					tallyWait=0;
 					lineNum=8;
 				}
 				break;
@@ -317,7 +317,7 @@ static void TallyLine(byte n,int y,const char *category,const char *value,const 
 	else if(lineNum>n)
 		bright=0;
 	else if(lineNum==n)
-		bright=(wait*2-30);
+		bright=(tallyWait*2-30);
 	else
 		bright=-32;
 
@@ -337,7 +337,7 @@ static void Tally2Line(byte n,int y,const char *category,const char *value,const
 	if(lineNum>n)
 		bright=0;
 	else if(lineNum==n)
-		bright=(wait*2-30);
+		bright=(tallyWait*2-30);
 	else
 		bright=-32;
 
@@ -355,7 +355,7 @@ void CoinLine(byte n,int y,const char *title,const char *num)
 	else if(lineNum>n)
 		bright=0;
 	else if(lineNum==n)
-		bright=(wait*2-30);
+		bright=(tallyWait*2-30);
 	else
 		bright=-32;
 
@@ -365,7 +365,7 @@ void CoinLine(byte n,int y,const char *title,const char *num)
 
 void MakeTime(char *s,dword clock)
 {
-	sprintf(s,"%lu:%05.2f",clock/(30*60),(float)((clock%(30*60))/30.0f));
+	sprintf(s,"%u:%05.2f",clock/(30*60),(float)((clock%(30*60))/30.0f));
 }
 
 void RenderTally(MGLDraw *mgl)
@@ -387,7 +387,7 @@ void RenderTally(MGLDraw *mgl)
 	mgl->FillBox(20,88,620,88,32*1+16);
 
 	sprintf(s,"%d",points);
-	sprintf(s2,"%lu",player.levelProg->recordBaseScore);
+	sprintf(s2,"%u",player.levelProg->recordBaseScore);
 	TallyLine(0,95,"Score",s,s,s2,(player.gotRecords&RECORD_BASE));
 
 	sprintf(s,"%d",player.bestCombo);
@@ -456,7 +456,7 @@ void RenderTally(MGLDraw *mgl)
 
 //----------------
 
-void Tally(MGLDraw *mgl,const char *lvlName,byte countIt)
+TASK(void) Tally(MGLDraw *mgl,const char *lvlName,byte countIt)
 {
 	byte done=0;
 	int lastTime=1;
@@ -472,7 +472,7 @@ void Tally(MGLDraw *mgl,const char *lvlName,byte countIt)
 
 		done=UpdateTally(&lastTime,mgl);
 		RenderTally(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;

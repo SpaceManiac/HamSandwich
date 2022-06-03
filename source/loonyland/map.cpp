@@ -1832,7 +1832,7 @@ void SpecialTakeEffect(byte num,Map *map,special_t *spcl,Guy *victim)
 			}
 			break;
 		case SPC_PICTURE:
-			ShowImageOrFlic(spcl->msg);
+			coro::launch(std::bind(ShowImageOrFlic, spcl->msg));
 			break;
 		case SPC_PLAYSOUND:
 			if(spcl->effectX==0 && spcl->effectY==0)

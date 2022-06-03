@@ -12,7 +12,7 @@
 #include "goal.h"
 #include "shop.h"
 #include "scanner.h"
-#include "lsdir.h"
+#include "appdata.h"
 
 #define PBTN_HEIGHT	19
 
@@ -33,8 +33,10 @@ float CalcPlayPercent(void)
 	worlds=0;
 
 	score=0.0f;
-	for (const char* name : filterdir("worlds", ".hsw", 32))
+	auto files = ListDirectory("worlds", ".dlw", 32);
+	for (const auto& str : files)
 	{
+		const char* name = str.c_str();
 		// rule out the backup worlds, so they don't show up
 		if((strcmp(name,"backup_load.hsw")) &&
 		   (strcmp(name,"backup_exit.hsw")) &&
@@ -177,7 +179,7 @@ void RenderStat(int x,int y,const char *txt,dword value)
 	char s[16];
 
 	PrintGlow(x,y,txt,0,2);
-	sprintf(s,"%lu",value);
+	sprintf(s,"%u",value);
 	PrintGlow(x+250-GetStrLength(s,2),y,s,0,2);
 }
 
@@ -186,7 +188,7 @@ void RenderStatOutOf(int x,int y,const char *txt,dword value,dword outof)
 	char s[16];
 
 	PrintGlow(x,y,txt,0,2);
-	sprintf(s,"%lu/%lu",value,outof);
+	sprintf(s,"%u/%u",value,outof);
 	PrintGlow(x+250-GetStrLength(s,2),y,s,0,2);
 }
 
@@ -195,7 +197,7 @@ void RenderStatTime(int x,int y,const char *txt,dword value)
 	char s[16];
 
 	PrintGlow(x,y,txt,0,2);
-	sprintf(s,"%lu:%02lu",(value/(30*60*60)),(value/(30*60))%60);
+	sprintf(s,"%u:%02u",(value/(30*60*60)),(value/(30*60))%60);
 	PrintGlow(x+250-GetStrLength(s,2),y,s,0,2);
 }
 
@@ -261,7 +263,7 @@ void RenderRecordBook(MGLDraw *mgl)
 		RenderStat(350,40+18*12,"Calories Burned:",profile.progress.calsBurned);
 		RenderStatTime(350,40+18*13,"Breath Held:",profile.progress.underwaterTime);
 		RenderStat(350,40+18*14,"Cheats Used:",profile.progress.cheats);
-		
+
 	RenderStatPercent(80,415,"SHOP:",shopPct);
 	RenderStatPercent(240,415,"CARD:",cardPct);
 	RenderStatPercent(400,415,"SCAN:",scanPct);
@@ -269,7 +271,7 @@ void RenderRecordBook(MGLDraw *mgl)
 	RenderStatPercent(320,439,"GAME:",gamePct);
 	}
 	mgl->FillBox(18,400,640-19,400,32*1+10);
-	
+
 	if(page == 1)
 	{
 		msx2=20;
@@ -286,7 +288,7 @@ void RenderRecordBook(MGLDraw *mgl)
 				c=5;
 			else
 				c=6;
-			
+
 			if(PointInRect(msx,msy,msx2,msy2,msx2+28,msy2+28))
 			{
 				DrawBox(msx2,msy2,msx2+28,msy2+28,32*c+16);
@@ -324,7 +326,7 @@ void RenderRecordBook(MGLDraw *mgl)
 
 //----------------
 
-void RecordBook(MGLDraw *mgl)
+TASK(void) RecordBook(MGLDraw *mgl)
 {
 	int lastTime=1;
 
@@ -337,7 +339,7 @@ void RecordBook(MGLDraw *mgl)
 		recbook=UpdateRecordBook(&lastTime,mgl);
 		RenderRecordBook(mgl);
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			recbook=1;

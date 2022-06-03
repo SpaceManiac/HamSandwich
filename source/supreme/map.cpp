@@ -269,7 +269,7 @@ byte Map::Save(FILE *f)
 	{
 		byte temp = badguy[i].type;
 		if (badguy[i].type > 0xff) {
-			LogError("WARNING: in legacy save, can't save monster '%s' with ID %lu > 255", MonsterName(badguy[i].type), badguy[i].type);
+			LogError("WARNING: in legacy save, can't save monster '%s' with ID %u > 255", MonsterName(badguy[i].type), badguy[i].type);
 			temp = 0;
 		}
 		fwrite(&badguy[i].x, 1, sizeof(byte), f);
@@ -1003,7 +1003,8 @@ void Map::Copy(int sx,int sy,int blkwidth,int blkheight,int dx,int dy)
 	// copy source to dest
 	for(i=0;i<blkheight;i++)
 	{
-		memcpy(&map[(i+dy)*width+dx],&map[(i+sy)*width+sx],sizeof(mapTile_t)*blkwidth);
+		// Has to be memmove instead of memcpy because the source and destination might overlap.
+		memmove(&map[(i+dy)*width+dx],&map[(i+sy)*width+sx],sizeof(mapTile_t)*blkwidth);
 	}
 
 	// move all specials that are in the target zone
@@ -1322,8 +1323,7 @@ void Map::RenderEdit(world_t *world,int camX,int camY,byte flags)
 				{
 					if(!(flags&MAP_SHOWLIGHTS))	// we're ignoring lighting
 					{
-						for(lite=0;lite<9;lite++)
-							lites[lite]=0;
+						memset(lites, 0, 9);
 						lite=0;
 					}
 					else

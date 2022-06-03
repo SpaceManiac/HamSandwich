@@ -31,8 +31,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.logTime=0;
 		player.logBright=0;
 		NewMessage("Welcome to Loonyland!",0);
-		for(i=0;i<1024;i++)
-			player.var[i]=0;
+		memset(&player.var[0], 0, 1024);
 		player.var[VAR_MODIFIER+0]=GetSavedMod(0);
 		player.var[VAR_MODIFIER+1]=GetSavedMod(1);
 		player.var[VAR_MODIFIER+2]=GetSavedMod(2);
@@ -657,7 +656,7 @@ void PlayerGetExactXP(int amt)
 	player.xp+=(int)amt;
 	if(oldXP/MADCAP_XP<player.xp/MADCAP_XP && player.var[VAR_MADCAP])
 	{
-		char s[32];
+		char s[64];
 		byte amt;
 
 		amt=(player.xp/MADCAP_XP)-(oldXP/MADCAP_XP);

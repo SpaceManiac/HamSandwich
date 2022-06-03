@@ -7,7 +7,6 @@
 #include "cossin.h"
 #include "map.h"
 #include "tile.h"
-#pragma pack(1)
 
 /* This file handles all screen displaying.  It's a go-between so that you
    don't have to pass the mgldraw object everywhere, and also handles the display
@@ -35,6 +34,7 @@
 #define DISPLAY_NUMBER		8192	// render a printed number
 #define DISPLAY_CLOCK		16384	// add clock hands!
 
+#pragma pack(push, 1)
 typedef struct displayObj_t
 {
 	int x,y,z,z2;
@@ -64,6 +64,7 @@ class DisplayList
 		displayObj_t dispObj[MAX_DISPLAY_OBJS];
 		int head,nextfree;
 };
+#pragma pack(pop)
 
 bool InitDisplay(MGLDraw *mainmgl);
 void ExitDisplay(void);
@@ -104,12 +105,11 @@ void LightningDraw(int x,int y,int x2,int y2,byte bright,char range);
 void PlotPixel(int x,int y,byte c,byte *scrn,int pitch);
 void NumberDraw(int x,int y,int z,byte type,byte color,short num,word flags);
 
-void MakeItFlip(void);
 void DrawBox(int x,int y,int x2,int y2,byte c);
 void DrawFillBox(int x,int y,int x2,int y2,byte c);
 void DrawDebugBox(int x,int y,int x2,int y2);
 void ShakeScreen(byte howlong);
-void ShowImageOrFlic(char *str);
+TASK(void) ShowImageOrFlic(char *str);
 void FilmWiggle(byte howlong);
 
 MGLDraw *GetDisplayMGL(void);

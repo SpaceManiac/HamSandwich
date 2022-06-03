@@ -2,6 +2,8 @@
 #define APPDATA_H
 
 #include <stdio.h>
+#include <vector>
+#include <string>
 
 typedef struct SDL_RWops SDL_RWops;
 
@@ -9,11 +11,25 @@ typedef struct SDL_RWops SDL_RWops;
 // situations, Appdata and Asset folders may overlap, so names should not be
 // reused. See appdata.cpp for implementation details for each platform.
 
-// Use for saves, options, config, etc.
-FILE* AppdataOpen(const char* file, const char* mode);
+const char* EscapeBinDirectory();
+void AppdataInit();
+bool AppdataIsInit();
 
-// Use for graphics, worlds, etc. Writes may go to a different location than reads.
-FILE* AssetOpen(const char* file, const char* mode);
-SDL_RWops* AssetOpen_SDL(const char* file, const char* mode);
+// Open for reading.
+FILE* AssetOpen(const char* filename);
+SDL_RWops* AssetOpen_SDL(const char* filename);
+// Open for writing or appending.
+FILE* AppdataOpen_Write(const char* filename);
+//FILE* AppdataOpen_Append(const char* filename);
+void AppdataDelete(const char* filename);
+// On platforms that need it, ensure appdata is really saved.
+void AppdataSync();
+
+// List a directory.
+std::vector<std::string> ListDirectory(const char* directory, const char* extension = nullptr, size_t maxlen = 0);
+
+// Aliases.
+FILE* AppdataOpen(const char* filename);
+FILE* AssetOpen_Write(const char* filename);
 
 #endif  // APPDATA_H

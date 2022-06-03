@@ -767,6 +767,16 @@ static void XY2Click(int id)
 	}
 }
 
+static void LevelGotoClick(int id)
+{
+	ExitClick(id);
+
+	curEff=effStart + (id-ID_EFF0)/100;
+	EditorSelectMap(spcl.effect[curEff].value);
+	if (spcl.effect[curEff].x != 255)
+		PutCamera((spcl.effect[curEff].x * TILE_WIDTH + TILE_WIDTH/2)<<FIXSHIFT,(spcl.effect[curEff].y * TILE_HEIGHT + TILE_HEIGHT/2)<<FIXSHIFT);
+}
+
 static void XY3Click(int id)
 {
 	MakeNormalSound(SND_MENUCLICK);
@@ -1343,7 +1353,7 @@ static void PicNameClick(int id)
 	curEff=effStart + (id-ID_EFF0)/100;
 
 	mode=SMODE_PICKBMP;
-	InitFileDialog("user/*.*",FM_LOAD|FM_EXIT|FM_NOWAVS,"");
+	InitFileDialog("user",nullptr,FM_LOAD|FM_EXIT|FM_NOWAVS,"");
 }
 static void PicNameClick2(int id)
 {
@@ -1364,7 +1374,7 @@ static void SongClick(int id)
 	else
 	{
 		mode=SMODE_PICKSONG;
-		InitFileDialog("music/*.ogg",FM_LOAD|FM_EXIT|FM_PLAYSONGS,spcl.effect[curEff].text);
+		InitFileDialog("music",".ogg",FM_LOAD|FM_EXIT|FM_PLAYSONGS,spcl.effect[curEff].text);
 	}
 }
 
@@ -2035,6 +2045,7 @@ static void SetupEffectButtons(int t,int y)
 			else
 				sprintf(s,"%d, %d",effect.x,effect.y);
 			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,422,y+17,70,14,s,XY2Click);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+4+100*t,0,520,y+17,65,14,"Jump to",LevelGotoClick);
 			break;
 		case EFF_GOTOMAP:
 		case EFF_GOTOMAP2:
@@ -2047,6 +2058,7 @@ static void SetupEffectButtons(int t,int y)
 			else
 				sprintf(s,"%d, %d",effect.x,effect.y);
 			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,322,y+17,70,14,s,XY2Click);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+4+100*t,0,520,y+17,65,14,"Jump to",LevelGotoClick);
 			break;
 		case EFF_TELEPORT:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Teleport",NULL);
@@ -2695,7 +2707,7 @@ void SpecialEdit_Exit(void)
 	memcpy(GetSpecial(specialNum),&spcl,sizeof(special_t));
 }
 
-void SpecialEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
+void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
 {
 	switch(mode)
 	{
@@ -2709,6 +2721,32 @@ void SpecialEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 			{
 				rightClick=1;
 				CheckButtons(mouseX,mouseY);
+			}
+			if (scroll)
+			{
+				if (mouseY < 240)
+				{
+					if (scroll > 0)
+					{
+						if (trgStart > 0) --trgStart;
+					}
+					else if (scroll < 0)
+					{
+						if (trgStart < NUM_TRIGGERS - 5) ++trgStart;
+					}
+				}
+				else
+				{
+					if (scroll > 0)
+					{
+						if (effStart > 0) --effStart;
+					}
+					else if (scroll < 0)
+					{
+						if (effStart < NUM_EFFECTS - 5) ++effStart;
+					}
+				}
+				SpecialEditSetupButtons();
 			}
 			break;
 		case SMODE_PICKBMP:
@@ -3015,6 +3053,40 @@ void SpecialEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 	Print(95,226,s,0,1);
 	sprintf(s,"%d-%d/%d",effStart+1,effStart+5,NUM_EFFECTS);
 	Print(95,462,s,0,1);
+
+	// highlight Up/Down buttons if there is anything there
+	for (i=0; i < trgStart; ++i)
+	{
+		if(spcl.trigger[i].type != TRG_NONE)
+		{
+			DrawFillBox(5,224,5+40,224+14,32*1+4);
+			break;
+		}
+	}
+	for(i=trgStart + 5; i < NUM_TRIGGERS; ++i)
+	{
+		if(spcl.trigger[i].type != TRG_NONE)
+		{
+			DrawFillBox(50,224,50+40,224+14,32*1+4);
+			break;
+		}
+	}
+	for (i=0; i < effStart; ++i)
+	{
+		if(spcl.effect[i].type != EFF_NONE)
+		{
+			DrawFillBox(5,460,5+40,460+14,32*1+4);
+			break;
+		}
+	}
+	for(i=effStart + 5; i < NUM_EFFECTS; ++i)
+	{
+		if(spcl.effect[i].type != EFF_NONE)
+		{
+			DrawFillBox(50,460,50+40,460+14,32*1+4);
+			break;
+		}
+	}
 
 	if(mode==SMODE_NORMAL)
 		RenderButtons(mouseX,mouseY,mgl);

@@ -72,7 +72,7 @@ static byte *backgd;
 static sprite_set_t *plSpr;
 static char msBright,msDBright;
 
-static byte netChoice,times,nameCheckFor;
+static byte times,nameCheckFor;
 static char errTxt[128];
 static int socketNum;
 static int scoresToUpload,scoresUploaded,scoreLen,numSent,totalUploaded,totalToGo;
@@ -187,7 +187,7 @@ void CatPair(char *buffer,const char *var,dword val)
 {
 	char s[32];
 
-	sprintf(s,"&%s=%lu",var,val);
+	sprintf(s,"&%s=%u",var,val);
 	strcat(buffer,s);
 }
 
@@ -201,7 +201,7 @@ void CreateProfileString(char *buffer)
 	profile.progress.calsBurned=(profile.progress.footDistance*150/168960)+profile.progress.hammersThrown+
 		profile.progress.grassChopped;
 
-	sprintf(buffer,"/supreme_score/profile.php?nam=%s&can=%lu",profile.name,profile.progress.totalCandles);
+	sprintf(buffer,"/supreme_score/profile.php?nam=%s&can=%u",profile.name,profile.progress.totalCandles);
 	CatPair(buffer,"bra",profile.progress.totalBrains);
 	CatPair(buffer,"tim",profile.progress.totalTime);
 	CatPair(buffer,"cn1",profile.progress.totalCoins);
@@ -446,7 +446,7 @@ void EndProfileUp(void)
 	webInited=0;
 }
 
-byte UpdateNetMenu(int *lastTime,MGLDraw *mgl)
+TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 {
 	int i;
 	byte b,mb;
@@ -550,23 +550,23 @@ byte UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 								//mode=NET_GETMOTD;
 								//BeginMOTDGet();
 								pageToDo=1;
-								return 1;
+								CO_RETURN 1;
 								break;
 							case BTN_ADDONPAGE:
 								//mode=NET_GETMOTD;
 								//BeginMOTDGet();
 								pageToDo=2;
-								return 1;
+								CO_RETURN 1;
 								break;
 							case BTN_EXIT:
-								return 1;
+								CO_RETURN 1;
 								break;
 						}
 					}
 				}
 			}
 			if(k==27)
-				return 1;	// exit
+				CO_RETURN 1;	// exit
 			break;
 		case NET_UPLOADYES:
 		case NET_CANCELUP:
@@ -604,7 +604,7 @@ byte UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 				}
 				if(mode==NET_BADNAME)
 				{
-					NameEntry(mgl,0);
+					AWAIT NameEntry(mgl,0);
 					ChangeHighScores(profile.name,GetEnteredName());
 					strcpy(profile.name,GetEnteredName());
 					SaveProfile();
@@ -815,7 +815,7 @@ byte UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 			break;
 	}
 
-	return 0;
+	CO_RETURN 0;
 }
 
 void RenderNetButton(int x,int y,int wid,const char *txt,MGLDraw *mgl)
@@ -979,7 +979,7 @@ void RenderNetMenu(MGLDraw *mgl)
 
 //----------------
 
-void NetMenu(MGLDraw *mgl)
+TASK(void) NetMenu(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime=1;
@@ -990,10 +990,10 @@ void NetMenu(MGLDraw *mgl)
 	{
 		lastTime+=TimeLength();
 		StartClock();
-		done=UpdateNetMenu(&lastTime,mgl);
+		done=AWAIT UpdateNetMenu(&lastTime,mgl);
 		RenderNetMenu(mgl);
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;

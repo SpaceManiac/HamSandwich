@@ -128,20 +128,17 @@ void RenderRacer(MGLDraw *mgl)
 
 void RenderRaceGame(MGLDraw *mgl)
 {
-	byte *scrn;
-	int pitch,spd;
-	char s[32];
+	int spd;
+	char s[64];
 
 	mgl->ClearScreen();
-	pitch=mgl->GetWidth();
-	scrn=mgl->GetScreen();
 
 	RenderRoad(mgl);
 
 	if(gameOver)
 	{
 		CenterPrint(320,100,"GAME OVER!",0,2);
-		sprintf(s,"Survived for %lu kilometers!",racer.distDone/1000);
+		sprintf(s,"Survived for %u kilometers!",racer.distDone/1000);
 		CenterPrint(320,150,s,0,1);
 		sprintf(s,"Total Score: %d",score);
 		CenterPrint(320,180,s,0,1);
@@ -156,7 +153,7 @@ void RenderRaceGame(MGLDraw *mgl)
 		// interface
 		sprintf(s,"Score: %08d",curScore);
 		PrintGlow(2,470,s,0,1);
-		sprintf(s,"Distance: %08lu",racer.distDone);
+		sprintf(s,"Distance: %08u",racer.distDone);
 		PrintGlow(500,470,s,0,1);
 
 		DrawBox(256,470,256+130,479,31);
@@ -364,7 +361,7 @@ static byte UpdateGameOver(int *lastTime,MGLDraw *mgl)
 	return 0;
 }
 
-void RaceGame(MGLDraw *mgl)
+TASK(void) RaceGame(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -380,7 +377,7 @@ void RaceGame(MGLDraw *mgl)
 		else
 			done=UpdateGameOver(&lastTime,mgl);
 		RenderRaceGame(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;

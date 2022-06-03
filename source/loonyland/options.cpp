@@ -5,6 +5,7 @@
 #include "player.h"
 #include "title.h"
 #include "plasma.h"
+#include "appdata.h"
 
 static byte cursor;
 static byte oldc;
@@ -221,7 +222,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				break;
 			case 2: // entering a specific key
 				c2=LastScanCode();
-				if(c2==1)	// ESC key
+				if(c2==SDL_SCANCODE_ESCAPE)	// ESC key
 				{
 					optMode=1;
 					c2=255;
@@ -356,14 +357,14 @@ void RenderOptionsMenu(MGLDraw *mgl)
 	char diffy[5][18]={"Beginner","Normal","Challenge","Mad","Loony"};
 
 	int wid;
-	int pos;
+	byte* pos;
 	int i;
 
 	wid=mgl->GetWidth();
-	pos=(int)mgl->GetScreen()+40*wid;
+	pos=mgl->GetScreen()+40*wid;
 	for(i=40;i<480-40;i++)
 	{
-		memset((byte *)pos,7*32+2,640);
+		memset(pos,7*32+2,640);
 		pos+=wid;
 	}
 
@@ -414,7 +415,7 @@ void LoadOptions(void)
 	FILE *f;
 	int i;
 
-	f=fopen("loony.cfg","rb");
+	f=AppdataOpen("loony.cfg");
 	if(!f)
 	{
 		opt.sound=1;
@@ -461,12 +462,13 @@ void SaveOptions(void)
 {
 	FILE *f;
 
-	f=fopen("loony.cfg","wb");
+	f=AppdataOpen_Write("loony.cfg");
 	fwrite(&opt,sizeof(options_t),1,f);
 	fclose(f);
+	AppdataSync();
 }
 
-void OptionsMenu(MGLDraw *mgl)
+TASK(void) OptionsMenu(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime;
@@ -480,7 +482,7 @@ void OptionsMenu(MGLDraw *mgl)
 		StartClock();
 		done=UpdateOptionsMenu(&lastTime,mgl);
 		RenderOptionsMenu(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(!mgl->Process())

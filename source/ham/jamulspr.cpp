@@ -92,6 +92,7 @@ sprite_t::sprite_t(byte *info)
 	memcpy(&ofsx,&info[4],2);
 	memcpy(&ofsy,&info[6],2);
 	memcpy(&size,&info[8],4);
+	data = nullptr;
 }
 
 sprite_t::~sprite_t(void)
@@ -152,7 +153,7 @@ void sprite_t::GetCoords(int x,int y,int *rx,int *ry,int *rx2,int *ry2)
 void sprite_t::Draw(int x, int y, MGLDraw *mgl)
 {
 	byte *src, *dst, b, skip;
-	dword pitch;
+	int pitch;
 	int srcx, srcy;
 	byte noDraw;
 
@@ -241,7 +242,8 @@ void sprite_t::Draw(int x, int y, MGLDraw *mgl)
 		{
 			srcx = x;
 			srcy++;
-			dst += pitch - width;
+			dst += pitch;
+			dst -= width;
 			if (srcy >= constrainY)
 				noDraw = 0;
 			if (srcy > constrainY2)
@@ -255,7 +257,7 @@ void sprite_t::Draw(int x, int y, MGLDraw *mgl)
 void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright)
 {
 	byte *src, *dst, b, skip;
-	dword pitch;
+	int pitch;
 	int srcx, srcy;
 	byte noDraw;
 	int i;
@@ -355,7 +357,8 @@ void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright)
 		{
 			srcx = x;
 			srcy++;
-			dst += pitch - width;
+			dst += pitch;
+			dst -= width;
 			if (srcy >= constrainY)
 				noDraw = 0;
 			if (srcy > constrainY2)
@@ -370,7 +373,7 @@ void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright)
 void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright)
 {
 	byte *src, *dst, b, skip;
-	dword pitch;
+	int pitch;
 	int srcx, srcy;
 	byte noDraw;
 	int i;
@@ -464,7 +467,8 @@ void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright)
 		{
 			srcx = x;
 			srcy++;
-			dst += pitch - width;
+			dst += pitch;
+			dst -= width;
 			if (srcy >= constrainY)
 				noDraw = 0;
 			if (srcy > constrainY2)
@@ -476,7 +480,7 @@ void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright)
 void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toColor, char bright)
 {
 	byte *src, *dst, b, skip;
-	dword pitch;
+	int pitch;
 	int srcx, srcy;
 	byte noDraw;
 	int i;
@@ -570,7 +574,8 @@ void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toC
 		{
 			srcx = x;
 			srcy++;
-			dst += pitch - width;
+			dst += pitch;
+			dst -= width;
 			if (srcy >= constrainY)
 				noDraw = 0;
 			if (srcy > constrainY2)
@@ -588,7 +593,7 @@ void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toC
 void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright)
 {
 	byte *src, *dst, b, skip;
-	dword pitch;
+	int pitch;
 	int srcx, srcy;
 	byte noDraw;
 	int i;
@@ -682,7 +687,8 @@ void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright)
 		{
 			srcx = x;
 			srcy++;
-			dst += pitch - width;
+			dst += pitch;
+			dst -= width;
 			if (srcy >= constrainY)
 				noDraw = 0;
 			if (srcy > constrainY2)
@@ -694,7 +700,7 @@ void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright)
 void sprite_t::DrawGlow(int x, int y, MGLDraw *mgl, char bright)
 {
 	byte *src, *dst, b, skip;
-	dword pitch;
+	int pitch;
 	int srcx, srcy;
 	byte noDraw;
 	int i;
@@ -788,7 +794,8 @@ void sprite_t::DrawGlow(int x, int y, MGLDraw *mgl, char bright)
 		{
 			srcx = x;
 			srcy++;
-			dst += pitch - width;
+			dst += pitch;
+			dst -= width;
 			if (srcy >= constrainY)
 				noDraw = 0;
 			if (srcy > constrainY2)
@@ -800,7 +807,7 @@ void sprite_t::DrawGlow(int x, int y, MGLDraw *mgl, char bright)
 void sprite_t::DrawShadow(int x, int y, MGLDraw *mgl)
 {
 	byte *src, *dst, b, skip;
-	dword pitch;
+	int pitch;
 	int srcx, srcy, x2;
 	byte noDraw;
 	byte alternate;
@@ -901,7 +908,8 @@ void sprite_t::DrawShadow(int x, int y, MGLDraw *mgl)
 			x2 += alternate;
 			srcx -= width - alternate;
 			srcy += alternate;
-			dst += (alternate ? pitch : 1) - width;
+			dst += (alternate ? pitch : 1);
+			dst -= width;
 			if (srcy >= constrainY)
 				noDraw = 0;
 			if (srcy > constrainY2)
@@ -942,9 +950,9 @@ bool sprite_set_t::Load(const char *fname)
 	if(spr)
 		Free();
 
-	SDL_RWops *f=AssetOpen_SDL(fname,"rb");
+	SDL_RWops *f=AssetOpen_SDL(fname);
 	if(!f) {
-		LogError("%s: %s", fname, SDL_GetError());
+		// Asset stack printed error already
 		return false;
 	}
 	// read the count
@@ -1004,7 +1012,7 @@ bool sprite_set_t::Save(const char *fname)
 	int i;
 	byte *buffer;
 
-	f=AssetOpen(fname,"wb");
+	f=AssetOpen_Write(fname);
 	if(!f)
 		return false;
 	// write the count
@@ -1039,6 +1047,7 @@ bool sprite_set_t::Save(const char *fname)
 		}
 	}
 	fclose(f);
+	AppdataSync();
 	return true;
 
 }
@@ -1078,7 +1087,7 @@ void SetSpriteConstraints(int x,int y,int x2,int y2)
 void sprite_t::DrawC(int x,int y,MGLDraw *mgl)
 {
 	byte *src,*dst,b,skip;
-	dword pitch;
+	int pitch;
 	int srcx,srcy;
 	byte noDraw;
 

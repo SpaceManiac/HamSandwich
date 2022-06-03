@@ -4,6 +4,7 @@
 #include "challenge.h"
 #include "options.h"
 #include "water.h"
+#include "appdata.h"
 
 #define PLYR_ACCEL	(FIXAMT)
 #define PLYR_DECEL	(FIXAMT*3/4)
@@ -51,7 +52,8 @@ void InitPlayer(byte initWhat,byte world,byte level)
 				player.levelPassed[i][j]=0;
 			player.totalCompletion[i]=100;
 			player.complete[i]=0;
-			player.lunacyKey[i]=0;
+			if(i<4)
+				player.lunacyKey[i]=0;
 		}
 		player.levelsPassed=0;
 		for(i=0;i<10;i++)
@@ -149,7 +151,7 @@ void PlayerLoadGame(byte which)
 {
 	FILE *f;
 
-	f=fopen("mystic.sav","rb");
+	f=AppdataOpen("mystic.sav");
 	if(!f)
 	{
 		InitPlayer(INIT_GAME,0,0);
@@ -173,7 +175,7 @@ void PlayerSaveGame(byte which)
 	int i;
 
 	player.prevMoney=player.money;
-	f=fopen("mystic.sav","rb");
+	f=AppdataOpen("mystic.sav");
 	if(!f)
 	{
 		memset(p,0,sizeof(player_t)*5);	// make an empty player
@@ -185,17 +187,18 @@ void PlayerSaveGame(byte which)
 			p[3].totalCompletion[i]=100;
 			p[4].totalCompletion[i]=100;
 		}
-		f=fopen("mystic.sav","wb");
+		f=AppdataOpen_Write("mystic.sav");
 		fwrite(p,sizeof(player_t),5,f);
 		fclose(f);
-		f=fopen("mystic.sav","rb");
+		f=AppdataOpen("mystic.sav");
 	}
 	fread(p,sizeof(player_t),5,f);
 	fclose(f);
 	memcpy(&p[which],&player,sizeof(player_t));
-	f=fopen("mystic.sav","wb");
+	f=AppdataOpen_Write("mystic.sav");
 	fwrite(p,sizeof(player_t),5,f);
 	fclose(f);
+	AppdataSync();
 }
 
 void SetPlayerSpeed(void)
@@ -393,7 +396,7 @@ byte KeyChainAllCheck(void)
 		player.staff=4;	// max out the staff, so you can't buy new staves
 		player.spell[9]=1;
 		NewBigMessage("The sword is complete!",30);
-		ShowVictoryAnim(10);
+		SendMessageToGame(MSG_SHOWANIM, 10);
 		SetKidSprite(1);
 		return 1;
 	}
@@ -844,7 +847,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 			if(player.worldNum<4)
 			{
 				player.lunacyKey[player.worldNum]=1;
-				ShowVictoryAnim(player.worldNum);
+				//ShowVictoryAnim(player.worldNum);
 			}
 			SendMessageToGame(MSG_WINLEVEL,1);	// win upon getting the key
 			return 0;

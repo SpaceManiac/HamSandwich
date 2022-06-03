@@ -4,6 +4,7 @@
 #include "pause.h"
 #include "challenge.h"
 #include "options.h"
+#include "appdata.h"
 
 // special codes in the credits:
 // @ = use GirlsRWeird font
@@ -249,7 +250,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			startTime=timeGetTime();	// reset the clock if any key is pressed
 			return 3;
 		}
-//#ifdef _DEBUG
+//#ifndef NDEBUG
 		if(c=='e')
 		{
 			title->cursor=5;
@@ -264,7 +265,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 	return 0;
 }
 
-byte MainMenu(MGLDraw *mgl)
+TASK(byte) MainMenu(MGLDraw *mgl)
 {
 	dword now;
 	byte b=0;
@@ -300,16 +301,16 @@ byte MainMenu(MGLDraw *mgl)
 		StartClock();
 		b=MainMenuUpdate(mgl,&title,&lastTime);
 		MainMenuDisplay(mgl,title);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			delete planetSpr;
 			free(backgd);
-			return 255;
+			CO_RETURN 255;
 		}
 		if(b==1 && title.cursor==1)	// selected Continue
 		{
-			if(!GameSlotPicker(mgl,&title))	// pressed ESC on the slot picker
+			if(!AWAIT GameSlotPicker(mgl,&title))	// pressed ESC on the slot picker
 			{
 				b=0;
 				startTime=timeGetTime();
@@ -320,9 +321,9 @@ byte MainMenu(MGLDraw *mgl)
 		{
 			// alternate between showing credits and the intro movie if the user sits at the title
 			if(creditsOrIntro)
-				ShowVictoryAnim(11);
+				AWAIT ShowVictoryAnim(11);
 			else
-				Credits(mgl,0);
+				AWAIT Credits(mgl,0);
 			creditsOrIntro=1-creditsOrIntro;
 
 			startTime=timeGetTime();
@@ -334,12 +335,12 @@ byte MainMenu(MGLDraw *mgl)
 	if(b==1)	// something was selected
 	{
 		if(title.cursor==4)	// exit
-			return 255;
+			CO_RETURN 255;
 		else
-			return title.cursor;
+			CO_RETURN title.cursor;
 	}
 	else
-		return 255;	// ESC was pressed
+		CO_RETURN 255;	// ESC was pressed
 }
 
 void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
@@ -442,7 +443,7 @@ void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 	player_t p;
 	int i;
 
-	f=fopen("mystic.sav","rb");
+	f=AppdataOpen("mystic.sav");
 	if(!f)
 	{
 		for(i=0;i<5;i++)
@@ -471,7 +472,7 @@ void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 	oldc=CONTROL_B1|CONTROL_B2;
 }
 
-byte GameSlotPicker(MGLDraw *mgl,title_t *title)
+TASK(byte) GameSlotPicker(MGLDraw *mgl,title_t *title)
 {
 	byte b=0;
 	int lastTime=1;
@@ -485,9 +486,9 @@ byte GameSlotPicker(MGLDraw *mgl,title_t *title)
 		StartClock();
 		b=GameSlotPickerUpdate(mgl,title,&lastTime);
 		GameSlotPickerDisplay(mgl,*title);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
-			return 0;
+			CO_RETURN 0;
 		EndClock();
 	}
 	if(b==1)	// something was selected
@@ -496,10 +497,10 @@ byte GameSlotPicker(MGLDraw *mgl,title_t *title)
 		PlayerLoadGame(title->savecursor);
 		// make it remember which was picked so the pause menu will start on the same
 		SetSubCursor(title->savecursor);
-		return 1;
+		CO_RETURN 1;
 	}
 	else
-		return 0;
+		CO_RETURN 0;
 }
 
 void CreditsRender(int y,byte mode)
@@ -538,7 +539,7 @@ void CreditsRender(int y,byte mode)
 	}
 }
 
-void Credits(MGLDraw *mgl,byte mode)
+TASK(void) Credits(MGLDraw *mgl,byte mode)
 {
 	int y=-470;
 	static byte flip=0;
@@ -560,13 +561,13 @@ void Credits(MGLDraw *mgl,byte mode)
 		if(y==END_OF_CREDITS-320 && mode==1)
 			scroll=0;
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
-			return;
+			CO_RETURN;
 		if(mgl->LastKeyPressed())
-			return;
+			CO_RETURN;
 		if(y==END_OF_CREDITS-320 && mode==0)
-			return;
+			CO_RETURN;
 
 		JamulSoundUpdate();
 
@@ -626,7 +627,7 @@ void VictoryTextRender(int y,byte type)
 	}
 }
 
-void VictoryText(MGLDraw *mgl,byte victoryType)
+TASK(void) VictoryText(MGLDraw *mgl,byte victoryType)
 {
 	int y=-470;
 	int darkY,i,j,k;
@@ -637,7 +638,7 @@ void VictoryText(MGLDraw *mgl,byte victoryType)
 
 	scr=(byte *)malloc(640*480);
 	if(!scr)
-		return;
+		CO_RETURN;
 
 	switch(victoryType)
 	{
@@ -665,7 +666,7 @@ void VictoryText(MGLDraw *mgl,byte victoryType)
 		VictoryTextRender(y,victoryType);
 		if((flip=1-flip) || victoryType==1 || victoryType==2)
 			y++;
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
 			break;
 		if(mgl->LastKeyPressed()==27)
@@ -697,7 +698,7 @@ void VictoryText(MGLDraw *mgl,byte victoryType)
 	free(scr);
 }
 
-void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound,byte specialdeal)
+TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound,byte specialdeal)
 {
 	int i,j,clock;
 	RGB desiredpal[256],curpal[256];
@@ -716,7 +717,7 @@ void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound,byte speci
 	mgl->LastKeyPressed();
 
 	if (!mgl->LoadBMP(fname, desiredpal))
-		return;
+		CO_RETURN;
 
 	StartClock();
 	mode=0;
@@ -726,9 +727,9 @@ void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound,byte speci
 	while(!done)
 	{
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		if(!mgl->Process())
-			return;
+			CO_RETURN;
 		if(mgl->LastKeyPressed())
 			mode=2;
 		EndClock();
@@ -798,5 +799,5 @@ void SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound,byte speci
 		}
 	}
 	mgl->ClearScreen();
-	mgl->Flip();
+	AWAIT mgl->Flip();
 }

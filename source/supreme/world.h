@@ -81,4 +81,6 @@ void LogRequirements(world_t *w);
 byte BeginAppendWorld(world_t *world,const char *fname);
 terrain_t *GetTerrain(world_t *w,word tile);
 
+bool MustBeHamSandwichWorld(const world_t *world);
+
 #endif

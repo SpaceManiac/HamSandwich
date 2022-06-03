@@ -46,7 +46,7 @@ byte CheckForExistingName(const char *name)
 	char s[64];
 
 	sprintf(s,"profiles/%s.prf",name);
-	f=AppdataOpen(s,"rb");
+	f=AppdataOpen(s);
 	if(f)
 	{
 		fclose(f);
@@ -182,7 +182,7 @@ void RenderNameEntry(MGLDraw *mgl)
 
 //----------------
 
-void NameEntry(MGLDraw *mgl,byte makeNew)
+TASK(void) NameEntry(MGLDraw *mgl,byte makeNew)
 {
 	byte done=0;
 	int lastTime=1;
@@ -196,7 +196,7 @@ void NameEntry(MGLDraw *mgl,byte makeNew)
 
 		done=UpdateNameEntry(&lastTime,mgl);
 		RenderNameEntry(mgl);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=255;
@@ -204,6 +204,10 @@ void NameEntry(MGLDraw *mgl,byte makeNew)
 	}
 
 	ExitNameEntry();
+	if(FirstTime() && done == 255)
+	{
+		exit(0);
+	}
 	if(makeNew && done != 255)
 	{
 		FreeProfile();

@@ -8,7 +8,7 @@
 #else
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <errno.h>
@@ -61,7 +61,7 @@ static FILE *logF;
 void Log_Init(void)
 {
 #ifdef LOG
-	logF=fopen("netlog.txt","wt");
+	logF=AppdataOpen("netlog.txt","wt");
 #endif
 }
 
@@ -69,6 +69,7 @@ void Log_Exit(void)
 {
 #ifdef LOG
 	fclose(logF);
+	AppdataSync();
 #endif
 }
 

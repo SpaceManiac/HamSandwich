@@ -1,5 +1,6 @@
 #include "world.h"
 #include "player.h"
+#include "appdata.h"
 
 byte NewWorld(world_t *world, MGLDraw *mgl)
 {
@@ -27,7 +28,7 @@ byte LoadWorld(world_t *world, const char *fname)
 	FILE *f;
 	int i;
 
-	f = fopen(fname, "rb");
+	f = AssetOpen(fname);
 	if (!f)
 		return 0;
 
@@ -76,7 +77,7 @@ byte SaveWorld(world_t *world, const char *fname)
 		if (world->map[i])
 			world->totalPoints += 100; // each level is worth 100 points except the hub which is worth nothing
 
-	f = fopen(fname, "wb");
+	f = AssetOpen_Write(fname);
 	if (!f)
 		return 0;
 
@@ -91,6 +92,7 @@ byte SaveWorld(world_t *world, const char *fname)
 		world->map[i]->Save(f);
 
 	fclose(f);
+	AppdataSync();
 	return 1;
 }
 
@@ -127,7 +129,7 @@ void GetWorldName(char *fname, char *buf)
 		return;
 
 	sprintf(fname2, "worlds/%s", fname);
-	f = fopen(fname2, "rb");
+	f = AssetOpen(fname2);
 	if (!f)
 		return;
 
@@ -152,7 +154,7 @@ int GetWorldPoints(const char *fname)
 		return 100;
 
 	sprintf(fname2, "worlds/%s", fname);
-	f = fopen(fname2, "rb");
+	f = AssetOpen(fname2);
 	if (!f)
 		return 100;
 

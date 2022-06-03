@@ -1,0 +1,2 @@
+include 'android-project'
+include 'android-project:SDL2'

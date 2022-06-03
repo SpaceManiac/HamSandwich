@@ -1,0 +1,67 @@
+// Basic Gradle setup.
+buildscript {
+	repositories {
+		mavenCentral()
+		google()
+	}
+
+	dependencies {
+		classpath 'com.android.tools.build:gradle:7.0.4'
+	}
+}
+
+allprojects {
+	repositories {
+		mavenCentral()
+		google()
+	}
+}
+
+buildDir = "../build/android/${project.name}"
+subprojects {
+	buildDir = "../../build/android/${project.name}"
+}
+
+// The HamSandwich Android app itself.
+apply plugin: 'com.android.application'
+
+dependencies {
+	implementation project(':android-project:SDL2')
+	implementation 'androidx.appcompat:appcompat:1.4.1'
+	implementation 'com.google.android.material:material:1.5.0'
+	implementation 'com.google.android.gms:play-services-basement:18.0.1'
+}
+
+android {
+	compileSdkVersion 31
+
+	defaultConfig {
+		// Modify this line to distinguish your app from the upstream.
+		// Example: 'io.github.YourUsername.hamsandwich'
+		applicationId 'com.platymuus.hamsandwich'
+		minSdk 16
+		targetSdkVersion 31
+		externalNativeBuild.cmake.arguments "-DANDROID_STL=c++_shared"
+	}
+
+	externalNativeBuild.cmake {
+		version '3.21.2'
+		path '../CMakeLists.txt'
+		buildStagingDirectory "${buildDir}.staging"
+	}
+
+	sourceSets.main {
+		assets.srcDir "../assets/android"
+		// Our CMake build puts assets to embed in the .apk here at build time.
+		assets.srcDir "${buildDir}/intermediates/cxx/hamsandwich-assets"
+	}
+}
+
+// Building this project depends on building SDL2 first.
+tasks.configureEach { task ->
+	if (task.name == 'buildCMakeDebug') {
+		task.dependsOn ':android-project:SDL2:externalNativeBuildDebug'
+	} else if (task.name == 'buildCMakeRelWithDebInfo') {
+		task.dependsOn ':android-project:SDL2:externalNativeBuildRelease'
+	}
+}

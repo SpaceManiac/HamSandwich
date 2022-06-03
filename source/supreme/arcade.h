@@ -4,7 +4,7 @@
 #include "mgldraw.h"
 #include "game.h"
 
-void CaveGame(MGLDraw *mgl);
-void Arcade(MGLDraw *mgl, byte gm);
+TASK(void) CaveGame(MGLDraw *mgl);
+TASK(void) Arcade(MGLDraw *mgl, byte gm);
 
 #endif

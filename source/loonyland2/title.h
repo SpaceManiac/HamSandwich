@@ -3,7 +3,6 @@
 
 #include "winpch.h"
 #include "display.h"
-#pragma pack(1)
 
 #define MAX_CHARS	(32)
 
@@ -39,7 +38,7 @@
 
 extern byte gameToLoad;
 
-byte MainMenu(MGLDraw *mgl);
+TASK(byte) MainMenu(MGLDraw *mgl);
 char *GetSavedName(void);
 byte GetSavedMod(byte n);
 void DeleteCharacter(void);

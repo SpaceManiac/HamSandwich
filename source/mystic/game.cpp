@@ -277,7 +277,7 @@ byte GetGameMode(void)
 	return gameMode;
 }
 
-byte LunaticRun(int *lastTime)
+TASK(byte) LunaticRun(int *lastTime)
 {
 	int b;
 
@@ -291,7 +291,7 @@ byte LunaticRun(int *lastTime)
 		if(!gamemgl->Process())
 		{
 			mapToGoTo=255;
-			return LEVEL_ABORT;
+			CO_RETURN LEVEL_ABORT;
 		}
 
 		b=TotalBrains();
@@ -384,7 +384,7 @@ byte LunaticRun(int *lastTime)
 						gameMode=GAMEMODE_FAIRY;
 					}
 					else
-						return windDownReason;
+						CO_RETURN windDownReason;
 				}
 			}
 			if(battle==1 && (!battleIsWon) && BadguyCount()==0)
@@ -437,19 +437,19 @@ byte LunaticRun(int *lastTime)
 					else if(battle==1 && (battleIsWon))
 					{
 						battle=0;
-						return LEVEL_WIN;
+						CO_RETURN LEVEL_WIN;
 					}
 					else
 						PlayerResetScore();	// if a regular level, reset the score
 					battle=0;
 					ChallengeEvent(CE_DIE,0);
-					return LEVEL_ABORT;
+					CO_RETURN LEVEL_ABORT;
 					break;
 				case 3:
 					mapToGoTo=255;
 					lastKey=0;
 					ChallengeEvent(CE_QUIT,0);
-					return WORLD_QUITGAME;	// dump out altogether
+					CO_RETURN WORLD_QUITGAME;	// dump out altogether
 					break;
 			}
 		}
@@ -605,11 +605,12 @@ byte LunaticRun(int *lastTime)
 		}
 		else if(msgFromOtherModules==MSG_WINGAME)
 		{
+			AWAIT ShowVictoryAnim(0);	// you killed the final boss
 			mapToGoTo=0;
 			windingDown=1;
 			windDownReason=LEVEL_WIN;
 			msgFromOtherModules=MSG_NONE;
-			ShowVictoryAnim(4);
+			AWAIT ShowVictoryAnim(4);
 		}
 		else if(msgFromOtherModules==MSG_BATTLE)
 		{
@@ -635,6 +636,10 @@ byte LunaticRun(int *lastTime)
 			windDownReason=LEVEL_ABORT;
 			msgFromOtherModules=MSG_NONE;
 		}
+		else if (msgFromOtherModules==MSG_SHOWANIM)
+		{
+			AWAIT ShowVictoryAnim(msgContent);
+		}
 
 		*lastTime-=TIME_PER_FRAME;
 		numRunsToMakeUp++;
@@ -645,10 +650,10 @@ byte LunaticRun(int *lastTime)
 	garbageTime=0;
 	JamulSoundUpdate();
 
-	return LEVEL_PLAYING;
+	CO_RETURN LEVEL_PLAYING;
 }
 
-void LunaticDraw(void)
+TASK(void) LunaticDraw(void)
 {
 	char s[32];
 	dword d;
@@ -708,7 +713,7 @@ void LunaticDraw(void)
 		tickerTime=d;
 	}
 
-	gamemgl->Flip();
+	AWAIT gamemgl->Flip();
 	CDMessingTime+=garbageTime;
 	garbageTime=0;
 
@@ -733,7 +738,7 @@ void HandleKeyPresses(void)
 		if((lastKey>='a' && lastKey<='z') || (lastKey>='A' && lastKey<='Z'))
 			CheatKey(lastKey);
 	}
-#ifdef _DEBUG
+#ifndef NDEBUG
 	// can't show stats unless in debug mode
 	if(lastKey=='S')
 	{
@@ -767,14 +772,14 @@ void HandleKeyPresses(void)
 	}
 }
 
-byte PlayALevel(byte map)
+TASK(byte) PlayALevel(byte map)
 {
 	int lastTime=1;
 	byte exitcode=0;
 
 	if(!InitLevel(map))
 	{
-		return LEVEL_ABORT;
+		CO_RETURN LEVEL_ABORT;
 		mapToGoTo=255;
 	}
 
@@ -790,9 +795,9 @@ byte PlayALevel(byte map)
 		StartClock();
 		if(gameMode==GAMEMODE_PLAY)
 			HandleKeyPresses();
-		exitcode=LunaticRun(&lastTime);
+		exitcode=AWAIT LunaticRun(&lastTime);
 		//if(numRunsToMakeUp>0)
-			LunaticDraw();
+			AWAIT LunaticDraw();
 
 		if(!gamemgl->Process())
 		{
@@ -803,20 +808,20 @@ byte PlayALevel(byte map)
 	}
 
 	if(Challenging())
-		ChallengeTally(gamemgl);
+		AWAIT ChallengeTally(gamemgl);
 
 	ExitLevel();
-	return exitcode;
+	CO_RETURN exitcode;
 }
 
-byte PlayOverworld(void)
+TASK(byte) PlayOverworld(void)
 {
 	int lastTime=1;
 	byte exitcode=0;
 
 	if(!InitLevel(1))
 	{
-		return LEVEL_ABORT;
+		CO_RETURN LEVEL_ABORT;
 		mapToGoTo=255;
 	}
 
@@ -832,9 +837,9 @@ byte PlayOverworld(void)
 		StartClock();
 		if(gameMode==GAMEMODE_PLAY && !windingUp && !windingDown)
 			HandleKeyPresses();
-		exitcode=LunaticRun(&lastTime);
+		exitcode=AWAIT LunaticRun(&lastTime);
 		//if(numRunsToMakeUp>0)
-			LunaticDraw();
+			AWAIT LunaticDraw();
 
 		if(!gamemgl->Process())
 		{
@@ -845,15 +850,15 @@ byte PlayOverworld(void)
 	}
 
 	ExitLevel();
-	return exitcode;
+	CO_RETURN exitcode;
 }
 
-byte ChallengePlay(byte world,byte lvl)
+TASK(byte) ChallengePlay(byte world,byte lvl)
 {
 	byte result;
 
 	if(!LoadWorld(&curWorld,worldName[world]))
-		return WORLD_ABORT;
+		CO_RETURN WORLD_ABORT;
 
 	InitPlayer(INIT_WORLD,world,0);
 
@@ -863,18 +868,18 @@ byte ChallengePlay(byte world,byte lvl)
 
 	mapNum=lvl;
 	battle=0;
-	result=PlayALevel(mapNum);
+	result=AWAIT PlayALevel(mapNum);
 
 	FreeWorld(&curWorld);
-	return 0;
+	CO_RETURN 0;
 }
 
-byte LunaticWorld(byte world)
+TASK(byte) LunaticWorld(byte world)
 {
 	byte result;
 
 	if(!LoadWorld(&curWorld,worldName[world]))
-		return WORLD_ABORT;
+		CO_RETURN WORLD_ABORT;
 
 	InitPlayer(INIT_WORLD,world,0);
 
@@ -887,9 +892,9 @@ byte LunaticWorld(byte world)
 	while(1)
 	{
 		if(mapNum!=1)
-			result=PlayALevel(mapNum);
+			result=AWAIT PlayALevel(mapNum);
 		else
-			result=PlayOverworld();
+			result=AWAIT PlayOverworld();
 
 		if(player.worldNum==3 && mapNum==18)
 		{
@@ -897,7 +902,7 @@ byte LunaticWorld(byte world)
 			player.nightmare=2;
 			FreeWorld(&curWorld);
 			if(!LoadWorld(&curWorld,worldName[player.worldNum]))
-				return WORLD_ABORT;
+				CO_RETURN WORLD_ABORT;
 			ResetPlayerLevels();
 			InitWorld(&curWorld,worldNum);
 			InitPlayer(INIT_WORLD,player.worldNum,1);
@@ -940,7 +945,7 @@ byte LunaticWorld(byte world)
 				InitPlayer(INIT_WORLD,player.worldNum,1);
 				FreeWorld(&curWorld);
 				if(!LoadWorld(&curWorld,worldName[player.worldNum]))
-					return WORLD_ABORT;
+					CO_RETURN WORLD_ABORT;
 
 				worldNum=player.worldNum;
 				world=worldNum;
@@ -949,12 +954,12 @@ byte LunaticWorld(byte world)
 				player.overworldX=-2000;
 				mapNum=1;
 				battle=0;
-				ShowVictoryAnim(player.worldNum);
+				AWAIT ShowVictoryAnim(player.worldNum);
 #endif
 			}
 			else if(player.worldNum==3 && mapNum==11)
 			{
-				ShowVictoryAnim(4);
+				AWAIT ShowVictoryAnim(4);
 				//return WORLD_QUITGAME;
 				if(player.nightmare)
 				{
@@ -972,7 +977,7 @@ byte LunaticWorld(byte world)
 					player.nightmare=1;
 					FreeWorld(&curWorld);
 					if(!LoadWorld(&curWorld,worldName[player.worldNum]))
-						return WORLD_ABORT;
+						CO_RETURN WORLD_ABORT;
 					ResetPlayerLevels();
 					InitWorld(&curWorld,worldNum);
 					InitPlayer(INIT_WORLD,player.worldNum,1);
@@ -993,27 +998,27 @@ byte LunaticWorld(byte world)
 		{
 			FreeWorld(&curWorld);
 			PlayerResetScore();
-			return WORLD_LOAD;
+			CO_RETURN WORLD_LOAD;
 		}
 		else if(result==WORLD_QUITGAME)
 		{
 			FreeWorld(&curWorld);
 			PlayerResetScore();
-			return WORLD_QUITGAME;
+			CO_RETURN WORLD_QUITGAME;
 		}
 	}
 	FreeWorld(&curWorld);
-	return WORLD_ABORT;
+	CO_RETURN WORLD_ABORT;
 }
 
-byte LunaticGame(MGLDraw *mgl,byte load)
+TASK(byte) LunaticGame(MGLDraw *mgl,byte load)
 {
 	byte b,worldResult;
 
 	if(!load)	// don't do this if loading a game, it was already done and the player was filled with values
 	{
 		InitPlayer(INIT_GAME,0,0);
-		ShowVictoryAnim(0);
+		AWAIT ShowVictoryAnim(0);
 	}
 
 	newGame=0;
@@ -1028,7 +1033,7 @@ byte LunaticGame(MGLDraw *mgl,byte load)
 	{
 		b=player.worldNum;
 
-		worldResult=LunaticWorld(b);
+		worldResult=AWAIT LunaticWorld(b);
 
 		if(worldResult==WORLD_QUITGAME)
 		{
@@ -1038,22 +1043,22 @@ byte LunaticGame(MGLDraw *mgl,byte load)
 		if(worldResult==WORLD_NAG)
 		{
 			ExitPlayer();
-			return 1;
+			CO_RETURN 1;
 		}
 	}
 	ExitPlayer();
-	return 0;
+	CO_RETURN 0;
 }
 
-void TrainingGame(MGLDraw *mgl)
+/*void TrainingGame(MGLDraw *mgl)
 {
 	InitPlayer(INIT_GAME,0,0);
 	SetCustomName("training.dlw");
-	if(LunaticWorld(5)==WORLD_LOAD)
+	if(AWAIT LunaticWorld(5)==WORLD_LOAD)
 		LunaticGame(mgl,1);
 	mgl->LastKeyPressed();	// just to clear key buffer
 	ExitPlayer();
-}
+}*/
 
 Map *CurrentMap(void)
 {

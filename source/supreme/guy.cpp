@@ -487,7 +487,7 @@ void Guy::SeqFinished(Guy *me)
 		}
 
 		type=MONS_NONE;
-		
+
 		if(ignited)
 		{
 			FireExactBullet(me,x,y,0,0,0,0,0,ignited,0,BLT_SITFLAME,1);
@@ -645,7 +645,7 @@ void Guy::Update(Guy *me, Map *map,world_t *world)
 		strong--;
 	if(confuse>0)
 		confuse--;
-	
+
 	if(poison>0)
 	{
 		if(hp>0 && ((poison&6)==0))
@@ -665,16 +665,16 @@ void Guy::Update(Guy *me, Map *map,world_t *world)
 		{
 			profile.progress.poisoned+=1/30;
 		}
-		
+
 	}
-	
+
 	if(ignited>0)
 	{
 		if(frozen)
 		frozen=0; //can't be frozen and burning at the same time!
 
 		ignited--;
-		
+
 		if(hp>0 && ((ignited&12)==0))
 		{
 			if(aiType==MONS_BOUAPHA && !editing && !player.cheated)
@@ -704,13 +704,13 @@ void Guy::Update(Guy *me, Map *map,world_t *world)
 
 	oldx=x;
 	oldy=y;
-	
+
 	int cf,rv;
 	if (confuse)
 		cf = -1;
 	else
 		cf = 1;
-	
+
 	if (profile.progress.purchase[modeShopNum[MODE_REVERSE]]&SIF_ACTIVE)
 		rv = -1;
 	else
@@ -852,7 +852,7 @@ void Guy::Update(Guy *me, Map *map,world_t *world)
 			tdx=dx/2;
 			tdy=dy/2;
 			UpdateCamera(x>>FIXSHIFT,y>>FIXSHIFT,tdx,tdy,map);
-		}	
+		}
 	}
 	if(aiType==MONS_BOUAPHA)	// special case, Bouapha is the player, follow him
 	{
@@ -878,7 +878,7 @@ void Guy::Update(Guy *me, Map *map,world_t *world)
 		}
 		else if (player.focus != NULL)
 			UpdateCamera(player.focus->x>>FIXSHIFT,player.focus->y>>FIXSHIFT,player.focus->dx,player.focus->dy,map);
-		
+
 		if((map->flags&MAP_TORCHLIT) || player.spotted)
 		{
 			if(player.spotted)
@@ -1000,7 +1000,7 @@ void Guy::Update(Guy *me, Map *map,world_t *world)
 		bright=map->GetTile(mapx,mapy)->templight;
 	else
 		bright=-32;
-	
+
 	if(profile.progress.damageTaken >= 500000){
 		CompleteGoal(104);
 	}
@@ -1074,7 +1074,8 @@ void Guy::Render(dword light)
 	else
 		t=type;
 
-	if(fromColor!=255)
+	const bool recolor = fromColor!=255;
+	if(recolor)
 	{
 		oldFrom=GetMonsterType(t)->fromCol;
 		oldTo=GetMonsterType(t)->toCol;
@@ -1084,7 +1085,7 @@ void Guy::Render(dword light)
 	oldBrt=GetMonsterType(t)->brtChg;
 	GetMonsterType(t)->brtChg=brtChange;
 	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen,weak,strong,ignited,confuse,special,customSpr);
-	if(fromColor!=255)
+	if(recolor)
 	{
 		GetMonsterType(t)->fromCol=oldFrom;
 		GetMonsterType(t)->toCol=oldTo;
@@ -1167,10 +1168,10 @@ void Guy::MonsterControl(Map *map,world_t *world)
 void Guy::GetShot(Guy *culprit,Guy *me,int dx,int dy,byte damage,Map *map,world_t *world)
 {
 	int w,s;
-	
+
 	if(me->attacker != culprit && culprit != 0)
 		me->attacker = culprit;
-	
+
 	if(weak>0)
 	{
 		if(profile.difficulty==0)
@@ -1202,7 +1203,7 @@ void Guy::GetShot(Guy *culprit,Guy *me,int dx,int dy,byte damage,Map *map,world_
 	}
 	else
 		s=1;
-	
+
 	int formerHP,newHP;
 	byte t;
 
@@ -1284,10 +1285,10 @@ void Guy::GetShot(Guy *culprit,Guy *me,int dx,int dy,byte damage,Map *map,world_
 		ouch=4;	// still do the ouch so you can see it
 		return;
 	}
-	
+
 	if((aiType==MONS_MINECARTEVIL && parent))
 		return; //can only hit when not boarded
-	
+
 	if(aiType==MONS_BOUAPHA && (profile.progress.purchase[modeShopNum[MODE_LUDICROUS]]&SIF_ACTIVE)&&(!strong))
 		hp=0;	// die instantly!
 
@@ -1305,7 +1306,7 @@ void Guy::GetShot(Guy *culprit,Guy *me,int dx,int dy,byte damage,Map *map,world_
 
 	if((aiType==MONS_LOOKEYLOO && !mind4)||(aiType==MONS_IMITATER && type==MONS_LOOKEYLOO && !mind4))
 		return;	// can only hit lookey-loo when its eye is open
-	
+
 	if(!editing && !player.cheated)
 	{
 		if(profile.difficulty==0)
@@ -1344,13 +1345,13 @@ void Guy::GetShot(Guy *culprit,Guy *me,int dx,int dy,byte damage,Map *map,world_
 				profile.progress.damageDone+=damage/2;
 		}
 	}
-	
+
 	if((aiType==MONS_BOBBY && ((seq==ANIM_A1 && frm>1 && frm<11) || (seq==ANIM_A4)))||
 	(type==MONS_BOBBY && aiType==MONS_IMITATER && ((seq==ANIM_A1 && frm>1 && frm<11) || (seq==ANIM_A4))))
 	{
 		if(seq==ANIM_A4)
 			return;	// just ignore it
-		
+
 		seq=ANIM_A4;
 		frm=0;
 		frmTimer=0;
@@ -1362,7 +1363,7 @@ void Guy::GetShot(Guy *culprit,Guy *me,int dx,int dy,byte damage,Map *map,world_
 
 	formerHP=hp;
 	ouch=4;
-	hp-=damage;	
+	hp-=damage;
 	newHP=hp;
 
 	if(hp<=0)
@@ -1570,7 +1571,7 @@ void UpdateGuys(Map *map,world_t *world)
 			MakeRadar(player.candleX,player.candleY,5);
 		}
 	}
-	
+
 	if(map->flags&(MAP_TIMER))
 	{
 		if(player.timer)
@@ -1865,9 +1866,9 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 				j=LockOnEvil(x>>FIXSHIFT,y>>FIXSHIFT);
 				k=LockOnGood(x>>FIXSHIFT,y>>FIXSHIFT);
 				if(type==MONS_HEALER && k!=65335)
-					guys[i]->target=guys[k]; 
+					guys[i]->target=guys[k];
 				else if(j!=65535)
-					guys[i]->target=guys[j]; 
+					guys[i]->target=guys[j];
 				else
 					guys[i]->target=NULL;
 				if(type==MONS_FRIENDLY2)
@@ -1885,7 +1886,7 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 				j=LockOnGood(x>>FIXSHIFT,y>>FIXSHIFT);
 				k=LockOnEvil(x>>FIXSHIFT,y>>FIXSHIFT);
 				if(type==MONS_HEALER && k!=65335)
-					guys[i]->target=guys[k]; 
+					guys[i]->target=guys[k];
 				else if(j!=65535)
 					guys[i]->target=guys[j];
 				else
@@ -1949,7 +1950,7 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 				guys[i]->mind2=15;
 			if(type==MONS_GENERATOR4)
 				guys[i]->mind2=30;
-			
+
 			if(type==MONS_SPOOKLEY || type==MONS_SPOOKLEY2)
 				guys[i]->mind3=255;
 
@@ -3008,7 +3009,7 @@ byte LogNearby(void)
 
 				mx=((guys[i]->x)>>FIXSHIFT)/TILE_WIDTH;
 				my=((guys[i]->y)>>FIXSHIFT)/TILE_HEIGHT;
-				
+
 				if(guys[i]->hp%4==2)
 				guys[i]->facing=3;
 				else
@@ -3277,7 +3278,7 @@ byte SwitchBody2(Guy *me)
 	me->frmTimer=0;
 	me->frmAdvance=128;
 	me->action=ACTION_IDLE;
-	
+
 	if(me->aiType==MONS_SUPERZOMBIE || me->aiType==MONS_SUMUZOMBIE || me->aiType==MONS_SUPRBOMBIE)
 		return 1;	// super zombies do not have their children frozen, on the extremely
 					// off chance that you freeze one while it is holding you
@@ -3961,7 +3962,7 @@ void PushOthers(Guy *g,byte h,Map *map)
 					guys[i]->ax-=FIXAMT*2;
 				else if (g->mapx < guys[i]->mapx)
 					guys[i]->ax+=FIXAMT*2;
-				
+
 			}
 			else if (!h && abs(g->mapx - guys[i]->mapx)<3)
 			{
@@ -4541,7 +4542,7 @@ void ChangeMonster(byte fx,int x,int y,int type,int newtype)
 			guys[i]->type=MONS_NONE;
 			drop=guys[i]->item;
 			g=AddGuy(guys[i]->x,guys[i]->y,guys[i]->z,newtype,f);
-			
+
 			if (guys[i]==BossMonster())
 			{
 				//Fix this later
@@ -5350,7 +5351,7 @@ byte DyingMummies(Guy *me)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i] && (guys[i]->type==MONS_MUMBLE || MONS_MUMBLE2 || MONS_MUMBLE3 || 
+		if(guys[i] && (guys[i]->type==MONS_MUMBLE || MONS_MUMBLE2 || MONS_MUMBLE3 ||
 		MONS_RAGMAN || MONS_PHARAOHF || MONS_PHARAOHG || MONS_KINGTOOT ||
 		MONS_PATROLLR || MONS_DPATROLUD || MONS_PATROLLR || MONS_DPATROLUD)
 			&& guys[i]->hp==0 && RangeToTarget(me,guys[i])<(128*FIXAMT) && guys[i]->seq==ANIM_DIE && guys[i]->aiType!=MONS_NUMBSKULL)
@@ -5363,7 +5364,7 @@ void RaiseMummies(Guy *me)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i] && (guys[i]->type==MONS_MUMBLE || MONS_MUMBLE2 || MONS_MUMBLE3 || 
+		if(guys[i] && (guys[i]->type==MONS_MUMBLE || MONS_MUMBLE2 || MONS_MUMBLE3 ||
 		MONS_RAGMAN || MONS_PHARAOHF || MONS_PHARAOHG || MONS_KINGTOOT ||
 		MONS_PATROLLR || MONS_DPATROLUD || MONS_PATROLLR || MONS_DPATROLUD)
 			&& guys[i]->hp==0 && RangeToTarget(me,guys[i])<(128*FIXAMT) && guys[i]->seq==ANIM_DIE)

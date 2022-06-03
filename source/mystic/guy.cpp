@@ -4,6 +4,7 @@
 #include "fairy.h"
 #include "spell.h"
 #include "challenge.h"
+#include <limits.h>
 
 Guy **guys;
 Guy *goodguy;
@@ -1982,7 +1983,7 @@ void KillPinkeyes(void)
 Guy *NearestEnemy(Guy *me)
 {
 	Guy *victim=NULL;
-	int range=2222222222;
+	int range=INT_MAX;
 	int i,j;
 	word f;
 

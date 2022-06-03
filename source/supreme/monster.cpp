@@ -7,8 +7,15 @@
 #include "goal.h"
 #include "water.h"
 #include "guy.h"
-#include "monsterlist.cpp"
-#include "cards.cpp"
+
+/*
+ -MT_GOOD	 -MT_EVIL		 -MT_SPOOKY		-MT_ZOMBIE	 -MT_VAMPIRE	-MT_SPIDER -MT_PYGMY
+ -MT_BOSS	 -MT_MINIBOSS	 -MT_WACKY		-MT_PUMPKIN	 -MT_THINGY		-MT_VEGGIE -MT_ARCTIC
+ -MT_ZOID	 -MT_DESERT		 -MT_CRAZIES	-MT_VEHICLE	 -MT_GENERATE	-MT_TRAP   -MT_ALIEN
+ -MT_ANIMAL	 -MT_HUMAN		 -MT_URBAN		-MT_AQUATIC	 -MT_UNDERSEA
+ -MT_FLYING  -MT_HIGHTECH	 -MT_BITS
+*/
+extern monsterType_t monsType[NUM_MONSTERS]; // see monsterlist.cpp
 
 void InitMonsters(void)
 {
@@ -225,7 +232,7 @@ sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 
 	if(monsType[type].flags&MF_FACECMD)
 		v+=facing;
-	
+
 	return monsType[type].spr->GetSprite(v);
 }
 
@@ -288,18 +295,18 @@ void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byt
 			v+=8*monsType[type].framesPerDir;
 		shld=PlayerShield();
 		shld2=PlayerShieldWater();
-		
+
 		if(shld2)
 			curSpr=monsType[MONS_BOUAPHA].spr->GetSprite(472+(shld&7));
 		else
 			curSpr=monsType[MONS_BOUAPHA].spr->GetSprite(464+(shld&7));
-		
+
 		if((shld2<16) && (shld2&2))	// it blinks when there is 1/2 second left
 			shld2=0;
-			
+
 		if((shld<16) && (shld&2))	// it blinks when there is 1/2 second left
 			shld=0;
-		
+
 		if(curSpr==NULL)
 			return;
 		if(shld2||shld||(shld2&&shld))
@@ -492,7 +499,7 @@ int InstaRenderMonsterAnimated(int x,int y,dword type,char bright,MGLDraw *mgl)
 	int v;
 	byte f;
 	int time;
-	
+
 	if(!f)
 		f=1;
 	else
@@ -516,7 +523,7 @@ int InstaRenderMonsterAnimated(int x,int y,dword type,char bright,MGLDraw *mgl)
 	else
 		curSpr->DrawOffColor(x,y,mgl,monsType[type].fromCol,monsType[type].toCol,
 				bright+monsType[type].brtChg);
-				
+
 	return curSpr->height;
 }
 
@@ -525,7 +532,7 @@ void InstaRenderMonsterAnimated2(int x,int y,dword type,char bright,int tm,MGLDr
 	sprite_t *curSpr;
 	int v;
 	LoadMySprite(type);
-	
+
 	if(monsType[type].anim[ANIM_MOVE][1]!=255)
 	{
 		if (monsType[type].anim[ANIM_MOVE][tm+1]==255)
@@ -911,11 +918,11 @@ void SelectDestination(Guy *me,Guy *goodguy,Map *map,byte repeat)
 // here be the AIs for each monster type
 //--------------------------------------------------------------------------------------
 
-#include "monsterai1.cpp" //original
-#include "monsterai2.cpp" //expando
-#include "monsterai3.cpp" //fun
-#include "monsterai4.cpp" //supreme
-#include "monsterai5.cpp" //kid mystic
-#include "monsterai6.cpp" //sleepless hollow
-#include "monsterai7.cpp" //loonyland
-#include "monsterai8.cpp" //v8 (NEW!!)
+#include "monsterai1.inc" //original
+#include "monsterai2.inc" //expando
+#include "monsterai3.inc" //fun
+#include "monsterai4.inc" //supreme
+#include "monsterai5.inc" //kid mystic
+#include "monsterai6.inc" //sleepless hollow
+#include "monsterai7.inc" //loonyland
+#include "monsterai8.inc" //v8 (NEW!!)

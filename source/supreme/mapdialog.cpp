@@ -3,6 +3,7 @@
 #include "dialogbits.h"
 #include "textdialog.h"
 #include "repair.h"
+#include <algorithm>
 
 #define WD_NORMAL	0
 #define WD_NAME		1
@@ -308,7 +309,7 @@ byte MapDialogClick(int msx,int msy)
 		if(msx>400 && msy>92+17*2 && msx<400+56 && msy<92+17*2+15)
 		{
 			// rename level
-			strncpy(world->map[mapNum]->name,newmapname,32);
+			SDL_strlcpy(world->map[mapNum]->name, newmapname, sizeof(world->map[mapNum]->name));
 		}
 		if(msx>400 && msy>92+17*3 && msx<400+56 && msy<92+17*3+15)
 		{
@@ -408,4 +409,25 @@ byte MapDialogClick(int msx,int msy)
 	}
 
 	return 1;
+}
+
+void MapDialogScroll(int msz)
+{
+	if (msz > 0)
+	{
+		mapPos = std::max(mapPos - msz, 0);
+	}
+	else if (msz < 0)
+	{
+		mapPos = std::min(mapPos - msz, world->numMaps - 1);
+	}
+
+	int i=0;
+	while(i<MAX_MAPSHOW)
+	{
+		sprintf(mapnames[i],"%02d: %s",i+mapPos,world->map[i+mapPos]->name);
+		i++;
+		if(i+mapPos>=world->numMaps)
+			break;
+	}
 }

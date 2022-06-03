@@ -11,8 +11,8 @@
 #include "yesnodialog.h"
 #include "recordbook.h"
 #include "shop.h"
-#include "lsdir.h"
-#if __linux__
+#include "appdata.h"
+#if __linux__ || __EMSCRIPTEN__
 #include <unistd.h>
 #endif
 
@@ -149,8 +149,10 @@ void ScanProfiles(void)
 		fileList[i*PRFNAME_LEN]='\0';
 	numFiles=0;
 
-	for (const char* name : filterdir("profiles", ".prf", PRFNAME_LEN))
+	auto files = ListDirectory("profiles", ".prf", PRFNAME_LEN);
+	for (const auto& str : files)
 	{
+		const char* name = str.c_str();
 		strcpy(&fileList[numFiles*PRFNAME_LEN], name);
 		if (++numFiles >= MAX_PROFS)
 			break;
@@ -269,7 +271,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 								break;
 							case BTN_RECORDS:
 								if(recordBook)
-									RecordBook(mgl);
+									return 4;
 								break;
 							case BTN_DIFFICULTY:
 								profile.difficulty++;
@@ -347,7 +349,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					mode=PROF_NORMAL;
 					sprintf(s,"profiles/%s.prf",profile.name);
 					FreeProfile();
-					unlink(s);
+					AppdataDelete(s);
 					if(numFiles==1)	// this was the only profile
 					{
 						return 3;	// so force them to create a new profile
@@ -634,7 +636,7 @@ void RenderKeyConfigMenu(MGLDraw *mgl)
 
 //----------------
 
-void ProfMenu(MGLDraw *mgl)
+TASK(void) ProfMenu(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime=1;
@@ -652,7 +654,7 @@ void ProfMenu(MGLDraw *mgl)
 		else
 			RenderKeyConfigMenu(mgl);
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;
@@ -660,15 +662,20 @@ void ProfMenu(MGLDraw *mgl)
 
 		if(done==2)
 		{
-			PlayListMenu(mgl);
+			AWAIT PlayListMenu(mgl);
 			done=0;
 		}
 		if(done==3)
 		{
-			NameEntry(mgl,1);
+			AWAIT NameEntry(mgl,1);
 			done=0;
 			ExitProfMenu();
 			InitProfMenu(mgl);
+		}
+		if(done==4)
+		{
+			AWAIT RecordBook(mgl);
+			done=0;
 		}
 	}
 

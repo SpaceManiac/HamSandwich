@@ -11,6 +11,7 @@
 #include "mgldraw.h"
 #include "jamulfont.h"
 #include "jamulsound.h"
+#include "extern.h"
 
 #include "moron.h"
 #include "game.h"
@@ -30,15 +31,16 @@
 #include "netmenu.h"
 #include "cards.h"
 #include "internet.h"
+#include "appdata.h"
 
 #ifdef _WIN32
 #include <shellapi.h>
 #endif
 
-MGLDraw *mainmgl;
-
-int main(int argc, char* argv[])
+TASK(int) main(int argc, char* argv[])
 {
+	HAM_EXTERN_FULFILL
+
 	bool windowedGame=false;
 
 	for (int i = 1; i < argc; ++i)
@@ -47,51 +49,52 @@ int main(int argc, char* argv[])
 			windowedGame=true;
 	}
 
+	AppdataInit();
 	LoadConfig();
-	mainmgl=new MGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame);
+	MGLDraw *mainmgl=new MGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame);
 	if(!mainmgl)
-		return 0;
+		CO_RETURN 0;
 
 	LunaticInit(mainmgl);
 
 	//CryptoTest();
 #ifdef ARCADETOWN
-	SplashScreen(mainmgl,"graphics/at_presents.bmp",32,0);
+	AWAIT SplashScreen(mainmgl,"graphics/at_presents.bmp",32,0);
 #endif
-	SplashScreen(mainmgl,"graphics/hamumu.bmp",32,2);
+	AWAIT SplashScreen(mainmgl,"graphics/hamumu.bmp",32,2);
 
 	//NewComputerSpriteFix("graphics/items.jsp");
 	//NewComputerSpriteFix("graphics/intface.jsp");
 	shopping=0;
 	while(1)
 	{
-		switch(MainMenu(mainmgl))
+		switch(AWAIT MainMenu(mainmgl))
 		{
 			case 255:	// quit
 				LunaticExit();
 				delete mainmgl;
-				return 0;
+				CO_RETURN 0;
 				break;
 			case 0:	// new game
 				shopping=0;
-				WorldSelectMenu(mainmgl);
+				AWAIT WorldSelectMenu(mainmgl);
 				break;
 			case 1:	// continue
 				shopping=0;
-				ProfMenu(mainmgl);
+				AWAIT ProfMenu(mainmgl);
 				break;
 			case 2:	// tutorial
 				shopping=0;
-				if(PlayWorld(mainmgl,"tutorial.hsw"))
-					WorldSelectMenu(mainmgl);
+				if(AWAIT PlayWorld(mainmgl,"tutorial.dlw"))
+					AWAIT WorldSelectMenu(mainmgl);
 				break;
 			case 3:	// instructions
-				HelpScreens(mainmgl);
+				AWAIT HelpScreens(mainmgl);
 				break;
 			case 6:	// shopping
 				shopping=1;
 				ResetMoron();
-				PlayWorld(mainmgl,"spismall.hsw");
+				AWAIT PlayWorld(mainmgl,"spismall.zlw");
 				break;
 			case 5:	// cards
 				shopping=0;
@@ -99,14 +102,14 @@ int main(int argc, char* argv[])
 				break;
 			case 7:	// editor
 				shopping=0;
-				LunaticEditor(mainmgl);
+				AWAIT LunaticEditor(mainmgl);
 				break;
 			case 8:	// insta-play the last world you were on
 				shopping=0;
 				if(profile.lastWorld[0]!='\0')
 				{
-					if(PlayWorld(mainmgl,profile.lastWorld))
-						WorldSelectMenu(mainmgl);
+					if(AWAIT PlayWorld(mainmgl,profile.lastWorld))
+						AWAIT WorldSelectMenu(mainmgl);
 				}
 				break;
 		}

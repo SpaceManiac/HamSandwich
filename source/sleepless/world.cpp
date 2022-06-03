@@ -3,6 +3,7 @@
 #include "repair.h"
 #include "items.h"
 #include "worldstitch.h"
+#include "appdata.h"
 
 #define WORLDCODE "SHOLLOW!"
 
@@ -41,7 +42,7 @@ byte LoadWorld(world_t *world,const char *fname)
 	int i;
 	char code[32];
 
-	f=fopen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 		return 0;
 
@@ -90,7 +91,7 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 	int i;
 	char code[32];
 
-	f=fopen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 	{
 		SetStitchError("File Not Found");
@@ -172,7 +173,7 @@ byte SaveWorld(world_t *world,const char *fname)
 		if(world->map[i] && (!(world->map[i]->flags&MAP_HUB)))
 			world->totalPoints+=100;	// each level is worth 100 points except hubs which is worth nothing
 
-	f=fopen(fname,"wb");
+	f=AssetOpen_Write(fname);
 	if(!f)
 		return 0;
 
@@ -194,6 +195,7 @@ byte SaveWorld(world_t *world,const char *fname)
 	SaveCustomSounds(f);
 
 	fclose(f);
+	AppdataSync();
 
 	return 1;
 }
@@ -203,7 +205,7 @@ byte GetWorldName(const char *fname,char *buffer,char *authbuffer)
 	FILE *f;
 	char code[9];
 
-	f=fopen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 		return 0;
 
@@ -266,7 +268,7 @@ void LogRequirements(world_t *w)
 	int i,j,k;
 	FILE *f;
 
-	f=fopen("req_files.txt","wt");
+	f=AppdataOpen_Write("req_files.txt");
 	fprintf(f,"World: %s\n",w->map[0]->name);
 
 	for(i=0;i<w->numMaps;i++)
@@ -287,6 +289,7 @@ void LogRequirements(world_t *w)
 		}
 	}
 	fclose(f);
+	AppdataSync();
 }
 
 terrain_t *GetTerrain(world_t *w,word tile)

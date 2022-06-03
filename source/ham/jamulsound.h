@@ -9,11 +9,11 @@ enum {
 	SND_MAXPRIORITY = 2,	// ignore priority value, this sound is a must-have
 	SND_ONE = 4,			// only one copy may play at once
 	SND_PLAYING = 8,		// well, it's not for everyone, but it goes here
-	SND_LOOPING = 16,
-	SND_SUSTAIN = 32,		// only used by instruments
-	SND_RANDOM = 64, 		// randomize pitch up or down 10%
-	SND_BACKWARDS = 128,
-	SND_DOUBLESPEED = 256,
+	SND_LOOPING = 32,
+	SND_SUSTAIN = 64,		// only used by instruments
+	SND_RANDOM = 128, 		// randomize pitch up or down 10%
+	SND_BACKWARDS = 256,
+	SND_DOUBLESPEED = 512,
 };
 
 const int MAX_SNDPRIORITY = 65536;

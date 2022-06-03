@@ -15,7 +15,7 @@
 #define BOSS_EVILIZER 8
 #define BOSS_WITCH	9
 
-byte BossMenu(MGLDraw *mgl);
+TASK(byte) BossMenu(MGLDraw *mgl);
 byte BashPower(void);
 void UpdateBash(void);
 char *BashPowerName(byte lvl);

@@ -2,8 +2,9 @@
 #include "editor.h"
 #include "dialogbits.h"
 #include "viewdialog.h"
-#include "lsdir.h"
+#include "appdata.h"
 #include <string.h>
+#include <algorithm>
 
 #define MAX_FILES 18
 #define FILE_ALLOC_AMT	64
@@ -18,7 +19,7 @@ static byte asking,yesNo;
 static char question[64];
 static byte exitCode;
 
-void ObtainFilenames(const char *fileSpec)
+static void ObtainFilenames(const char *dir, const char *ext)
 {
 	int i;
 
@@ -38,31 +39,15 @@ void ObtainFilenames(const char *fileSpec)
 
 	numFiles=0;
 
-	const char* secondPart = strchr(fileSpec, '/') + 1;
-	const char* filter;
-	if (strcmp(secondPart, "*.*") == 0)
+	auto files = ListDirectory(dir, ext, FNAMELEN);
+	for (const auto& str : files)
 	{
-		filter = NULL;
-	}
-	else
-	{
-		filter = secondPart + 1;
-	}
-	char dirname[64];
-	strncpy(dirname, fileSpec, secondPart-fileSpec-1);
-	dirname[secondPart-fileSpec-1] = '\0';
-
-	lsdir ls(dirname);
-	while(const char* name = ls.next())
-	{
+		const char* name = str.c_str();
 		if(!strcmp(name,".") || !strcmp(name,".."))
 			continue;
 
 		if((menuItems&FM_NOWAVS) && !strcmp(&name[strlen(name)-3],"wav"))
 			continue;	// ignore wavs
-
-		if(filter && !strstr(name, filter))
-			continue;
 
 		strncpy(&fnames[numFiles*FNAMELEN],name,FNAMELEN);
 		numFiles++;
@@ -85,14 +70,39 @@ void ObtainFilenames(const char *fileSpec)
 	}
 }
 
-void InitFileDialog(const char *fileSpec,byte menuItemsToShow,const char *defaultName)
+static void SortFilenames(void)
+{
+	byte flip;
+	int i;
+	char tmp[FNAMELEN];
+
+	flip=1;
+
+	while(flip)
+	{
+		flip=0;
+		for(i=0;i<numFiles-1;i++)
+		{
+			if(strcasecmp(&fnames[i*FNAMELEN],&fnames[(i+1)*FNAMELEN])>0)
+			{
+				SDL_strlcpy(tmp, &fnames[i*FNAMELEN], FNAMELEN);
+				SDL_strlcpy(&fnames[i*FNAMELEN], &fnames[(i+1)*FNAMELEN], FNAMELEN);
+				SDL_strlcpy(&fnames[(i+1)*FNAMELEN], tmp, FNAMELEN);
+				flip=1;
+			}
+		}
+	}
+}
+
+void InitFileDialog(const char *dir, const char *ext, byte menuItemsToShow,const char *defaultName)
 {
 	menuItems=menuItemsToShow;
 	asking=0;
 	exitCode=0;
 	filePos=0;
 
-	ObtainFilenames(fileSpec);
+	ObtainFilenames(dir, ext);
+	SortFilenames();
 	strcpy(newfname,defaultName);
 }
 
@@ -103,6 +113,18 @@ void ExitFileDialog(void)
 	if(menuItems&FM_PLAYSONGS)
 		ReturnToSong();
 	fnames=NULL;
+}
+
+void FileDialogScroll(int msz)
+{
+	if (msz > 0)
+	{
+		filePos = std::max(filePos - msz, 0);
+	}
+	else if (msz < 0)
+	{
+		filePos = std::min(filePos - msz, numFiles - 1);
+	}
 }
 
 void RenderFileDialog(int msx,int msy,MGLDraw *mgl)

@@ -1,4 +1,5 @@
-//jeff
+#include "monster.h"
+
 #define MT_WEIRD MT_BITS
 #define MT_SPOOKY MT_MANSION
 #define MT_PYGMY MT_ISLAND
@@ -5135,7 +5136,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{14,15,16,17,18,19,20,21,21,21,21,21,20,19,18,17,16,15,14,1,2,3,2,1,255},	// attack=funny teleport
 				{7,7,7,8,8,8,9,9,9,9,9,9,9,9,9,9,9,9,10,9,8,7,255},	// attack=slow fire
 			}},
-		
+
 		{"Flying Zombie",3,4,-1,AI_Zombie, //make it cooler
 		 11,32,40,250,"graphics/zombie.jsp",0,MF_FLYING|MF_WATERWALK,
 		 MT_SPOOKY|MT_ZOMBIE|MT_EVIL|MT_FLYING,MG_NEW,MC_GREY,

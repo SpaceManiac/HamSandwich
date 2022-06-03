@@ -33,7 +33,7 @@ void MakeSound(int snd, int x, int y, int flags, int priority)
 	GetCamera(&cx, &cy);
 	x >>= FIXSHIFT;
 	y >>= FIXSHIFT;
-	pan = 127 + (x - cx)*127/800; // (x-cx)*2 in range -1600 to 1600, this is 0-255
+	pan = (x - cx)*127/800; // (x-cx)*2 in range -1600 to 1600, this is 0-255
 	vol = -((x - cx)*(x - cx)+(y - cy)*(y - cy)) / 128;
 	if (vol<-5000)
 		return; // too quiet to play

@@ -3,7 +3,6 @@
 
 #include "jamultypes.h"
 #include "mgldraw.h"
-#pragma pack(1)
 
 #define QUEST_WOOD		0	// collect 10 logs for the Woodsman
 #define QUEST_PRESENTS	1	// collect all 99 presents
@@ -71,6 +70,7 @@
 
 char *QuestName(byte quest);
 
+#pragma pack(push, 1)
 typedef struct Convo
 {
 	public:
@@ -78,6 +78,7 @@ typedef struct Convo
 		byte action;
 		word next;
 } Convo;
+#pragma pack(pop)
 
 void BeginChatting(byte tag);
 void UpdateChat(byte inShop);

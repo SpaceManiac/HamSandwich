@@ -1744,7 +1744,7 @@ void SpecialEffect(special_t *me,Map *map)
 
 				break;
 			case EFF_PICTURE:
-				ShowImageOrFlic(me->effect[i].text,(me->effect[i].flags&EF_NOFX),me->effect[i].value);
+				coro::launch(std::bind(ShowImageOrFlic,me->effect[i].text,(me->effect[i].flags&EF_NOFX),me->effect[i].value));
 				break;
 			case EFF_ITEM:
 				if(me->effect[i].flags&EF_CONTIGUOUS)

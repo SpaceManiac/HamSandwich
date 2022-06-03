@@ -5,6 +5,7 @@
 #include "options.h"
 #include "title.h"
 
+#pragma pack(push, 1)
 typedef struct achieve_t
 {
 	char name[24];
@@ -12,12 +13,14 @@ typedef struct achieve_t
 	byte type;
 	word amt;
 } achieve_t;
+static_assert(sizeof(achieve_t) == 59);
 
 typedef struct mod_t
 {
 	char name[16];
 	char desc[128];
 } mod_t;
+#pragma pack(pop)
 
 achieve_t achievement[100]={
 	// row 1
@@ -658,7 +661,7 @@ void RenderAchieveMenu(byte *backScr)
 	PrintGlow(5,464,"Left, Right, Up and Down move around the chart.  Fire, Jump, or ESC will exit.",0,1);
 }
 
-void AchieveMenu(MGLDraw *mgl,byte *backScr)
+TASK(void) AchieveMenu(MGLDraw *mgl,byte *backScr)
 {
 	byte done=0;
 	int lastTime;
@@ -679,7 +682,7 @@ void AchieveMenu(MGLDraw *mgl,byte *backScr)
 			lastTime-=TIME_PER_FRAME;
 		}
 		RenderAchieveMenu(backScr);
-		mgl->Flip();
+		AWAIT mgl->Flip();
 		EndClock();
 
 		if(!mgl->Process())

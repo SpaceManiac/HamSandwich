@@ -90,8 +90,8 @@ byte ShopItemNumber(byte type,byte num);
 void SetupShops(Map *map);
 void DefaultShopAvailability(void);
 
-void InitShopping(int x,int y);
-byte UpdateShopping(MGLDraw *mgl);
+TASK(void) InitShopping(int x,int y);
+TASK(byte) UpdateShopping(MGLDraw *mgl);
 void RenderShopping(MGLDraw *mgl);
 
 float ShopPercent(void);

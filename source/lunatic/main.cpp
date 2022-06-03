@@ -11,6 +11,7 @@
 #include "mgldraw.h"
 #include "jamulfont.h"
 #include "jamulsound.h"
+#include "extern.h"
 
 #include "game.h"
 #include "editor.h"
@@ -19,13 +20,16 @@
 #include "monster.h"
 #include "title.h"
 #include "options.h"
+#include "appdata.h"
 
 #ifdef _WIN32
 #include <shellapi.h>
 #endif
 
-int main(int argc, char* argv[])
+TASK(int) main(int argc, char* argv[])
 {
+	HAM_EXTERN_FULFILL
+
 	bool windowedGame=false;
 
 	for (int i = 1; i < argc; ++i)
@@ -34,31 +38,32 @@ int main(int argc, char* argv[])
 			windowedGame=true;
 	}
 
+	AppdataInit();
 	LoadOptions();
 	MGLDraw *mainmgl = new MGLDraw("Dr. Lunatic", 640, 480, windowedGame);
 	if (!mainmgl)
-		return 0;
+		CO_RETURN 0;
 
 	LunaticInit(mainmgl);
-	SplashScreen(mainmgl, "graphics/hamumu.bmp", 128, 2);
+	AWAIT SplashScreen(mainmgl, "graphics/hamumu.bmp", 128, 2);
 	ChooseNextSong();
 
 	while (1)
 	{
-		switch (MainMenu(mainmgl)) {
+		switch (AWAIT MainMenu(mainmgl)) {
 			case 255: // quit
 				LunaticExit();
 				delete mainmgl;
-				return 0;
+				CO_RETURN 0;
 				break;
 			case 0: // new game
-				LunaticGame(mainmgl, 0);
+				AWAIT LunaticGame(mainmgl, 0);
 				break;
 			case 1: // continue
-				LunaticGame(mainmgl, 1);
+				AWAIT LunaticGame(mainmgl, 1);
 				break;
 			case 3: // editor
-				LunaticEditor(mainmgl);
+				AWAIT LunaticEditor(mainmgl);
 				break;
 			case 4: // ordering
 				LunaticExit();
@@ -66,7 +71,7 @@ int main(int argc, char* argv[])
 #ifdef _WIN32
 				ShellExecuteA(NULL, "open", "docs\\order.html", "", "", SW_SHOWNORMAL);
 #endif
-				return 0;
+				CO_RETURN 0;
 				break;
 		}
 	}

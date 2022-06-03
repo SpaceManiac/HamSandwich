@@ -46,6 +46,6 @@ void RenderAchieve(MGLDraw *mgl);
 void AchieveCheck(void);
 void AchieveNow(byte n);
 
-void AchieveMenu(MGLDraw *mgl,byte *backScr);
+TASK(void) AchieveMenu(MGLDraw *mgl,byte *backScr);
 
 #endif

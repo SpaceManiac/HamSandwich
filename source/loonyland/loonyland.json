@@ -1,0 +1,21 @@
+{
+	"title": "Loonyland: Halloween Hill",
+	"installers": [
+		{
+			"filename": "loonyland_install.EXE",
+			"kind": "inno",
+			"sha256sum": "cf3cdc555297e41f6c2da61d89815dbbc740d6fc677c83ec6c6e1acfa117de34",
+			"link": "https://hamumu.itch.io/loonyland-halloween-hill",
+			"file_id": 702760,
+			"description": "Base assets for Loonyland: Halloween Hill"
+		},
+		{
+			"filename": "loonyland_editor.exe",
+			"kind": "nsis",
+			"sha256sum": "865550d077e984ca28324aaf4291211aa4009cdad9f2b74144179c6342f2be39",
+			"link": "https://hamumu.itch.io/loonyland-halloween-hill",
+			"file_id": 782965,
+			"description": "Loonyland editor templates"
+		}
+	]
+}

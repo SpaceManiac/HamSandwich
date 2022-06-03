@@ -11,7 +11,7 @@
 void SpecialEdit_Init(int s);
 void SpecialEdit_Exit(void);
 
-void SpecialEdit_Update(int mouseX,int mouseY,MGLDraw *mgl);
+void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl);
 void SpecialEdit_Render(int mouseX,int mouseY,MGLDraw *mgl);
 
 void SpecialEdit_Key(char k);

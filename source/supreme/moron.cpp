@@ -10,6 +10,7 @@
 #include "nameentry.h"
 #include "yesnodialog.h"
 #include "goal.h"
+#include "appdata.h"
 #include <assert.h>
 
 void PickQuestion(void);
@@ -81,7 +82,7 @@ byte GetQuestions(void)
 	int i;
 	FILE *f;
 
-	f=fopen("gallery/mrqs.bmp","rt");
+	f=AssetOpen("gallery/mrqs.bmp");
 	if(!f)
 		return 0;	// can't play without questions!
 
@@ -400,7 +401,7 @@ void RenderMoron(MGLDraw *mgl)
 		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
 
 	InstaRenderItem(TILE_WIDTH/2,18,ITM_COIN,0,mgl);
-	sprintf(s,"%lu",profile.progress.totalCoins-profile.progress.coinsSpent);
+	sprintf(s,"%u",profile.progress.totalCoins-profile.progress.coinsSpent);
 	Print(32-1,4,s,-32,2);
 	Print(32+1,4,s,-32,2);
 	Print(32,4+1,s,-32,2);
@@ -454,13 +455,13 @@ void RenderMoron(MGLDraw *mgl)
 
 //----------------
 
-void Moron(MGLDraw *mgl)
+TASK(void) Moron(MGLDraw *mgl)
 {
 	byte done=0;
 	int lastTime=1;
 
 	if(!InitMoron(mgl))
-		return;
+		CO_RETURN;
 
 	while(!done)
 	{
@@ -469,7 +470,7 @@ void Moron(MGLDraw *mgl)
 		done=UpdateMoron(&lastTime,mgl);
 		RenderMoron(mgl);
 
-		mgl->Flip();
+		AWAIT mgl->Flip();
 
 		if(!mgl->Process())
 			done=1;

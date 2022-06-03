@@ -2,6 +2,7 @@
 #include "monster.h"
 #include "sound.h"
 #include "music.h"
+#include "appdata.h"
 
 levelDef_t levelDef[NUM_LEVELS];
 
@@ -363,7 +364,7 @@ void LoadLevelDefs(char *name)
 	err[0]='\0';
 	ResetLevelDefs();
 	sprintf(line,"addons/lvl_%s.txt",name);
-	f=fopen(line,"rt");
+	f=AssetOpen(line);
 	if(!f)
 		return;
 

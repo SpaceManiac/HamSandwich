@@ -1,0 +1,1 @@
+Splash art based on [posters](https://twitter.com/benrose_hsb/status/1071878242477367297) ([Kid Mystic](https://twitter.com/benrose_hsb/status/1369350095452315648/photo/1)) by [Ben Rose](https://twitter.com/benrose_hsb), used with permission.

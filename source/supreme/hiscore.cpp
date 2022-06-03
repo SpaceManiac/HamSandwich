@@ -6,8 +6,9 @@
 #include "editor.h"
 #include "game.h"
 #include "config.h"
+#include "appdata.h"
 
-#if __linux__
+#if __linux__ || __EMSCRIPTEN__
 #include <unistd.h>
 #endif
 
@@ -103,7 +104,7 @@ void SetupCrypto(int key1,int key2,int key3)
 	/*
 	FILE *f;
 
-	f=fopen("cryptotable.txt","wt");
+	f=AppdataOpen("cryptotable.txt","wt");
 	fprintf(f,"<?php\ncryptoTable=array(\n");
 	for(i=0;i<scoreLen;i++)
 	{
@@ -254,12 +255,12 @@ void CryptoTest(void)
 	memcpy(&test2,&test,sizeof(score_t));
 
 	SetupCrypto(3574,858734,298437);
-	f=fopen("test.txt","wt");
+	f=AppdataOpen_Write("test.txt");
 	EncryptScore(&test);
 	fprintf(f,"Encrypted:\n%s\n\n",enc_score);
 	DecryptScore(&test);
 	fprintf(f,"Decrypted:\n");
-	fprintf(f,"name: %s\nchecksum: %lu\n\n",test.name,test.scoreChecksum);
+	fprintf(f,"name: %s\nchecksum: %u\n\n",test.name,test.scoreChecksum);
 	fprintf(f,"memcmp: %d\n",memcmp(&test,&test2,sizeof(score_t)));
 	fclose(f);
 	ExitCrypto();
@@ -344,7 +345,10 @@ dword ChecksumMap(Map *map)
 	{
 		if(map->badguy[i].type)
 		{
-			AddToSum(map->badguy[i].type);
+			if (map->badguy[i].type > UINT8_MAX)
+				AddToSum(map->badguy[i].type);
+			else
+				AddToSum((byte) map->badguy[i].type);
 			AddToSum(map->badguy[i].x);
 			AddToSum(map->badguy[i].y);
 			AddToSum(map->badguy[i].item);
@@ -493,7 +497,6 @@ static byte saved[4];		// an indicator of whether each of those 4 came from the 
 
 static score_t *hiScore=NULL,*hiTime=NULL;
 static word numScores=0,numTimes=0;
-static dword topScore,topTime;
 
 void InitHiScores(void)
 {
@@ -519,14 +522,15 @@ void SaveHiScoreFile(score_t *list,word num,const char *fname)
 
 	if(num==0)
 	{
-		f=fopen(fname,"wb");
+		f=AppdataOpen_Write(fname);
 		if(!f)
 			return;
 		fwrite(&num,sizeof(word),1,f);
 		fclose(f);
+		AppdataSync();
 		return;
 	}
-	f=fopen(fname,"wb");
+	f=AppdataOpen_Write(fname);
 	if(!f)
 		return;
 	fwrite(&num,sizeof(word),1,f);	// write out the number of scores
@@ -539,6 +543,7 @@ void SaveHiScoreFile(score_t *list,word num,const char *fname)
 	}
 	ExitCrypto();
 	fclose(f);
+	AppdataSync();
 }
 
 void SaveHiScores(void)
@@ -555,7 +560,7 @@ void LoadHiScoresFile(void)
 	if(!config.hiscores)
 		return;
 
-	f=fopen("hiscore.dat","rb");
+	f=AppdataOpen("hiscore.dat");
 	if(!f)
 	{
 		numScores=0;
@@ -591,7 +596,7 @@ void LoadHiTimesFile(void)
 	if(!config.hiscores)
 		return;
 
-	f=fopen("hitime.dat","rb");
+	f=AppdataOpen("hitime.dat");
 	if(!f)
 	{
 		numTimes=0;
@@ -1143,5 +1148,5 @@ void ChangeHighScores(const char *oldName,const char *newName)
 	}
 	SaveHiScores();
 	sprintf(s,"profiles/%s.prf",oldName);
-	unlink(s);	// delete the old profile file
+	AppdataDelete(s);	// delete the old profile file
 }

@@ -797,7 +797,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_GASBLAST:
-			if(b=FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,24,me->dx,me->dy,0,map,world))
+			if((b=FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,24,me->dx,me->dy,0,map,world)))
 			{
 				// 3 hearts/seconds of poison please
 				if(b==2)
@@ -870,7 +870,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_ICE:
 		case BLT_ICE2:
-			if(i=FreezeVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,me->dx,me->dy,me->target,128,map,world))
+			if((i=FreezeVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,me->dx,me->dy,me->target,128,map,world)))
 			{
 				me->target=i;
 				if(player.wpnLevel>0 && me->type!=BLT_ICE2)
@@ -935,7 +935,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_SWAMPGAS:
 		case BLT_SWAMPGAS2:
-			if(b=FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,10,me->dx,me->dy,0,map,world))
+			if((b=FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,10,me->dx,me->dy,0,map,world)))
 			{
 				// 1 hearts/seconds of poison please
 				if(b==2)

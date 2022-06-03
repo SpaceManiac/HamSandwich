@@ -22,11 +22,11 @@ typedef struct highScore_t
 	int	  spclValue;	// values needed for various modes
 } highScore_t;
 
-void NameEntry(MGLDraw *mgl);
-void HighScore(MGLDraw *mgl);
+TASK(void) NameEntry(MGLDraw *mgl);
+TASK(void) HighScore(MGLDraw *mgl);
 
 void ResetHighScores(void);
-void CheckForHighScore(highScore_t myScore);
+TASK(void) CheckForHighScore(highScore_t myScore);
 void MakeHighScore(highScore_t *me,int score);
 
 #endif

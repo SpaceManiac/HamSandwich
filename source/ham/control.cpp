@@ -1,6 +1,7 @@
 #include "control.h"
 #include "mgldraw.h"
 #include "log.h"
+#include "softjoystick.h"
 #include <vector>
 #include <algorithm>
 
@@ -10,8 +11,6 @@ static byte lastScanCode;
 static byte keyState, keyTap;
 // fixed arrow keys and return controls
 static byte arrowState, arrowTap;
-// 1=lshift, 2=rshift
-static byte shiftState;
 
 // joysticks
 static std::vector<SDL_Joystick*> joysticks;
@@ -34,7 +33,6 @@ void InitControls(void)
 	keyTap=0;
 	arrowState=0;
 	arrowTap=0;
-	shiftState=0;
 	oldJoy=0;
 
 	for (int i = 0; i < SDL_NumJoysticks(); ++i) {
@@ -47,14 +45,14 @@ void InitControls(void)
 }
 
 byte GetControls() {
-	return keyState | GetJoyState();
+	return keyState | GetJoyState() | SoftJoystickState();
 }
 
 byte GetTaps() {
 	GetJoyState();  // Updates keyTap.
 	byte result = keyTap;
 	keyTap = 0;
-	return result;
+	return result | SoftJoystickTaps();
 }
 
 byte GetArrows() {
@@ -103,11 +101,8 @@ void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys) {
 }
 
 void SetJoystickBindings(int nbuttons, const byte* buttons) {
+	SoftJoystickNumButtons(nbuttons);
 	memcpy(joyBtn, buttons, std::min(nbuttons, NUM_JOYBTNS));
-}
-
-byte ShiftState() {
-	return shiftState;
 }
 
 // Called upon SDL events
@@ -154,13 +149,6 @@ void ControlKeyDown(byte k)
 			arrowState |= CONTROL_B1;
 			arrowTap |= CONTROL_B1;
 			break;
-		// track shift keys being held
-		case SDL_SCANCODE_LSHIFT:
-			shiftState |= 1;
-			break;
-		case SDL_SCANCODE_RSHIFT:
-			shiftState |= 2;
-			break;
 	}
 }
 
@@ -199,13 +187,6 @@ void ControlKeyUp(byte k)
 		case SDL_SCANCODE_RETURN:
 			arrowState &= ~CONTROL_B1;
 			break;
-		// track shift keys being held
-		case SDL_SCANCODE_LSHIFT:
-			shiftState &= ~1;
-			break;
-		case SDL_SCANCODE_RSHIFT:
-			shiftState &= ~2;
-			break;
 	}
 }
 
@@ -231,25 +212,27 @@ static byte GetJoyState(void)
 		if (SDL_JoystickNumHats(joystick) > 0)
 			hat = SDL_JoystickGetHat(joystick, 0);
 
-		if(SDL_JoystickGetAxis(joystick, 0) < -DEADZONE || (hat & SDL_HAT_LEFT))
+		int numAxes = SDL_JoystickNumAxes(joystick);
+
+		if((numAxes >= 2 && SDL_JoystickGetAxis(joystick, 0) < -DEADZONE) || (hat & SDL_HAT_LEFT))
 		{
 			if(!(oldJoy&CONTROL_LF))
 				keyTap|=CONTROL_LF;
 			joyState|=CONTROL_LF;
 		}
-		else if(SDL_JoystickGetAxis(joystick, 0) > DEADZONE || (hat & SDL_HAT_RIGHT))
+		else if((numAxes >= 2 && SDL_JoystickGetAxis(joystick, 0) > DEADZONE) || (hat & SDL_HAT_RIGHT))
 		{
 			if(!(oldJoy&CONTROL_RT))
 				keyTap|=CONTROL_RT;
 			joyState|=CONTROL_RT;
 		}
-		if(SDL_JoystickGetAxis(joystick, 1) < -DEADZONE || (hat & SDL_HAT_UP))
+		if((numAxes >= 2 && SDL_JoystickGetAxis(joystick, 1) < -DEADZONE) || (hat & SDL_HAT_UP))
 		{
 			if(!(oldJoy&CONTROL_UP))
 				keyTap|=CONTROL_UP;
 			joyState|=CONTROL_UP;
 		}
-		else if(SDL_JoystickGetAxis(joystick, 1) > DEADZONE || (hat & SDL_HAT_DOWN))
+		else if((numAxes >= 2 && SDL_JoystickGetAxis(joystick, 1) > DEADZONE) || (hat & SDL_HAT_DOWN))
 		{
 			if(!(oldJoy&CONTROL_DN))
 				keyTap|=CONTROL_DN;

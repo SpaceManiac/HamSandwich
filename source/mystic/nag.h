@@ -4,6 +4,6 @@
 #include "winpch.h"
 #include "display.h"
 
-byte Nag(MGLDraw *mgl);
+TASK(byte) Nag(MGLDraw *mgl);
 
 #endif

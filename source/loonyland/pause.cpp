@@ -3,6 +3,7 @@
 #include "options.h"
 #include "quest.h"
 #include "ch_summon.h"
+#include "appdata.h"
 
 #define SUBMODE_NONE	 0
 #define SUBMODE_SLOTPICK 1
@@ -393,7 +394,7 @@ void GetSaves(void)
 	for(i=0;i<5;i++)
 	{
 		sprintf(txt,"save%d.sav",i+1);
-		f=fopen(txt,"rb");
+		f=AppdataOpen(txt);
 		if(!f)
 		{
 			percent[i]=0;
@@ -418,7 +419,7 @@ void LoadGame(int i)
 	char txt[12];
 
 	sprintf(txt,"save%d.sav",i+1);
-	f=fopen(txt,"rb");
+	f=AppdataOpen(txt);
 	if(!f)
 	{
 		InitPlayer(INIT_GAME,0,0);
@@ -467,7 +468,7 @@ void SaveGame(int i)
 	char txt[12];
 
 	sprintf(txt,"save%d.sav",i+1);
-	f=fopen(txt,"wb");
+	f=AppdataOpen_Write(txt);
 	if(!f)
 	{
 		return;
@@ -485,6 +486,7 @@ void SaveGame(int i)
 		SaveGuys(f);
 		curMap->SaveProgress(f);
 		fclose(f);
+		AppdataSync();
 		NewBigMessage("Game Saved",30);
 		MakeNormalSound(SND_SAVEGAME);
 	}

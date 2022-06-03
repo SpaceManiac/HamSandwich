@@ -3,6 +3,7 @@
 #include "jamulfont.h"
 #include "jamulsound.h"
 #include "config.h"
+#include "extern.h"
 
 #include "game.h"
 #include "editor.h"
@@ -13,8 +14,7 @@
 #include "options.h"
 #include "sound.h"
 #include "music.h"
-
-MGLDraw *mainmgl;
+#include "appdata.h"
 
 // SPISPOPD helper for atkins!
 /*
@@ -39,19 +39,23 @@ void GetPal(void)
 }
 */
 
-int main(int argc, char* argv[])
+TASK(int) main(int argc, char* argv[])
 {
+	HAM_EXTERN_FULFILL
+
 	bool windowedGame=false;
 	for (int i = 1; i < argc; ++i)
 	{
 		if (!strcmp(argv[i], "window"))
 			windowedGame=true;
 	}
+
+	AppdataInit();
 	LoadConfig();
-	mainmgl=new MGLDraw("Loonyland 2", SCRWID, SCRHEI, windowedGame);
+	MGLDraw *mainmgl=new MGLDraw("Loonyland 2", SCRWID, SCRHEI, windowedGame);
 
 	if(!mainmgl)
-		return 0;
+		CO_RETURN 0;
 
 	LunaticInit(mainmgl);
 	//NewComputerSpriteFix("graphics\\villager.jsp",0,-6);
@@ -60,27 +64,27 @@ int main(int argc, char* argv[])
 	{
 		player.var[VAR_COMMENTARY]=0;
 		Song(SONG_FACTORY);
-		switch(MainMenu(mainmgl))
+		switch(AWAIT MainMenu(mainmgl))
 		{
 			case 255:	// quit
 			case MENU_EXIT:
 				LunaticExit();
 				delete mainmgl;
-				return 0;
+				CO_RETURN 0;
 				break;
 			case MENU_NEWCHAR:	// new game
 				//set_keyboard_rate(0,0);
-				LunaticGame(mainmgl,0,WORLD_NORMAL);
+				AWAIT LunaticGame(mainmgl,0,WORLD_NORMAL);
 				//set_keyboard_rate(400,80);
 				break;
 			case MENU_PLAY:	// continue
 				//set_keyboard_rate(0,0);
-				LunaticGame(mainmgl,1,WORLD_NORMAL);
+				AWAIT LunaticGame(mainmgl,1,WORLD_NORMAL);
 				//set_keyboard_rate(400,80);
 				JamulSoundPurge();
 				break;
 			case MENU_EDITOR:	// editor
-				LunaticEditor(mainmgl);
+				AWAIT LunaticEditor(mainmgl);
 				mainmgl->LastKeyPressed();
 				break;
 		}

@@ -355,8 +355,7 @@ static void CopyClick(int id)
 		memcpy(GetItem(i),GetItem(curItem),sizeof(item_t));
 		GetItem(i)->theme=IT_CUSTOM;	// copy everything but the theme
 		sprintf(s,"Copy of %s",GetItem(curItem)->name);
-		strncpy(GetItem(i)->name,s,31);
-		GetItem(i)->name[31]='\0';
+		SDL_strlcpy(GetItem(i)->name, s, sizeof(GetItem(i)->name));
 		curItem=i;
 		curTheme=16;
 		MakeItemList();

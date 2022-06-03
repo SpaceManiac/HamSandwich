@@ -2,8 +2,9 @@
 #include "editor.h"
 #include "dialogbits.h"
 #include "viewdialog.h"
+#include "appdata.h"
 #include <string.h>
-#include "lsdir.h"
+#include <algorithm>
 
 #define MAX_FILES 18
 #define FILE_ALLOC_AMT	64
@@ -17,8 +18,9 @@ static int filePos;
 static byte asking,yesNo;
 static char question[64];
 static byte exitCode;
+static bool hamSandwich;
 
-void ObtainFilenames(const char *fileSpec)
+static void ObtainFilenames(const char *dir, const char *ext)
 {
 	int i;
 
@@ -38,23 +40,10 @@ void ObtainFilenames(const char *fileSpec)
 
 	numFiles=0;
 
-	const char* secondPart = strchr(fileSpec, '/') + 1;
-	const char* filter;
-	if (strcmp(secondPart, "*.*") == 0)
+	auto files = ListDirectory(dir, ext, FNAMELEN);
+	for (const auto& str : files)
 	{
-		filter = NULL;
-	}
-	else
-	{
-		filter = secondPart + 1;
-	}
-	char dirname[64];
-	strncpy(dirname, fileSpec, secondPart-fileSpec-1);
-	dirname[secondPart-fileSpec-1] = '\0';
-
-	lsdir ls(dirname);
-	while(const char* name = ls.next())
-	{
+		const char* name = str.c_str();
 		if(!strcmp(name,".") || !strcmp(name,".."))
 			continue;
 
@@ -63,9 +52,6 @@ void ObtainFilenames(const char *fileSpec)
 
 		if((menuItems&FM_PICSONLY) && strcmp(&name[strlen(name)-3],"bmp"))
 			continue;	// bmps only!
-
-		if(filter && !strstr(name, filter))
-			continue;
 
 		strncpy(&fnames[numFiles*FNAMELEN],name,FNAMELEN);
 		numFiles++;
@@ -88,17 +74,45 @@ void ObtainFilenames(const char *fileSpec)
 	}
 }
 
-void InitFileDialog(const char *fileSpec,dword menuItemsToShow,const char *defaultName)
+static void SortFilenames(void)
+{
+	byte flip;
+	int i;
+	char tmp[FNAMELEN];
+
+	flip=1;
+
+	while(flip)
+	{
+		flip=0;
+		for(i=0;i<numFiles-1;i++)
+		{
+			if(strcasecmp(&fnames[i*FNAMELEN],&fnames[(i+1)*FNAMELEN])>0)
+			{
+				SDL_strlcpy(tmp, &fnames[i*FNAMELEN], FNAMELEN);
+				SDL_strlcpy(&fnames[i*FNAMELEN], &fnames[(i+1)*FNAMELEN], FNAMELEN);
+				SDL_strlcpy(&fnames[(i+1)*FNAMELEN], tmp, FNAMELEN);
+				flip=1;
+			}
+		}
+	}
+}
+
+void InitFileDialog(const char *dir, const char *ext, byte menuItemsToShow,const char *defaultName)
 {
 	menuItems=menuItemsToShow;
 	asking=0;
 	exitCode=0;
 	filePos=0;
 
-	//if(menuItems&FM_PICSONLY)
-	
-	ObtainFilenames(fileSpec);
+	ObtainFilenames(dir, ext);
+	SortFilenames();
 	strcpy(newfname,defaultName);
+
+	if (menuItems & FM_SAVE)
+	{
+		hamSandwich = MustBeHamSandwichWorld(EditorGetWorld());
+	}
 }
 
 void ExitFileDialog(void)
@@ -108,6 +122,18 @@ void ExitFileDialog(void)
 	if(menuItems&FM_PLAYSONGS)
 		ReturnToSong();
 	fnames=NULL;
+}
+
+void FileDialogScroll(int msz)
+{
+	if (msz > 0)
+	{
+		filePos = std::max(filePos - msz, 0);
+	}
+	else if (msz < 0)
+	{
+		filePos = std::min(filePos - msz, numFiles - 1);
+	}
 }
 
 void RenderFileDialog(int msx,int msy,MGLDraw *mgl)
@@ -162,6 +188,12 @@ void RenderFileDialog(int msx,int msy,MGLDraw *mgl)
 			mgl->FillBox(370,270,420,270+14,8+32*1);
 		mgl->Box(370,270,420,270+14,31);
 		Print(372,272,"Save",0,1);
+
+		if (hamSandwich)
+		{
+			Print(366,286,"HamSwch",0,1);
+			Print(366,298,"format",0,1);
+		}
 	}
 
 	if(msx>=370 && msx<=420 && msy>=370 && msy<=370+14)

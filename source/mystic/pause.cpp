@@ -3,6 +3,7 @@
 #include "shop.h"
 #include "options.h"
 #include "challenge.h"
+#include "appdata.h"
 
 #define SUBMODE_NONE	 0
 #define SUBMODE_SLOTPICK 1
@@ -150,7 +151,7 @@ void InitPauseMenu(void)
 	lastKey=0;
 	subMode=0;
 
-	f=fopen("mystic.sav","rb");
+	f=AppdataOpen("mystic.sav");
 	if(!f)
 	{
 		for(i=0;i<5;i++)

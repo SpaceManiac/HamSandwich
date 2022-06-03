@@ -672,7 +672,6 @@ void PlayerFireWeapon(Guy *me)
 {
 	byte c;
 	int i;
-	static byte flameFlip=0;
 	Guy *g;
 
 	// fishing!
@@ -801,7 +800,6 @@ void PlayerFireWeapon(Guy *me)
 			else
 			{
 				player.wpnReload=5;
-				flameFlip=0;
 			}
 			DoPlayerFacing(c,me);
 			break;
@@ -1369,7 +1367,7 @@ void PutPlayerAtStart(Guy *g)
 		g->x=(player.enterX*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT;
 		g->y=(player.enterY*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
 	}
-	else
+	else if (!editing)
 	{
 		int i;
 
