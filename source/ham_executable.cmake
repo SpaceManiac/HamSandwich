@@ -168,7 +168,7 @@ function(HamSandwich_add_executable target_name)
 		};
 
 		static const HamSandwichMetadata metadata = {
-			"]] "${target_name}" [[",
+			"]] "${arg_APPDATA_NAME}" [[",
 			default_asset_specs
 		};
 
