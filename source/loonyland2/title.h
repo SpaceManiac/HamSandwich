@@ -36,6 +36,21 @@
 
 #define MENU_EDITOR	   254	// special since you can't normally do it
 
+#define MENU_MODE_NORMAL	0
+#define MENU_MODE_ERASE		1
+#define MENU_MODE_NEW		2
+
+#define SC_NONE			0
+
+#define SC_YES			0
+#define SC_NO			1
+
+#define SC_PLAYER_NAME	0
+#define SC_MODIFIER_1	1
+#define SC_MODIFIER_2	2
+#define SC_MODIFIER_3	3
+#define SC_START_GAME	4
+
 extern byte gameToLoad;
 
 TASK(byte) MainMenu(MGLDraw *mgl);
