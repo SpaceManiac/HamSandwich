@@ -64,7 +64,7 @@ Compiling and running:
     1. On the Get Started screen, choose "Clone a repository".
     2. For "Repository location", enter `https://github.com/SpaceManiac/HamSandwich`.
     3. Click Clone.
-3. *OR,* use Git to clone the code anywhere you like and "Open Folder".
+3. *OR,* use Git to clone the code anywhere you like and "Open Folder" the "HamSandwich" folder.
 4. After the project loads for the first time, select the game you want to run:
     1. Click the down arrow next to "Select Startup Item".
     2. Uncheck "Select All".

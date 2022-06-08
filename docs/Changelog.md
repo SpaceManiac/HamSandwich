@@ -215,6 +215,7 @@ See "Also applicable to Sleepless Hollow" above.
 * Fix high-level Restoration invincibility time and healing wrapping to low again
 * Allow using the arrow keys to scroll around in the editor
 * Show special ID numbers in the editor
+* Fix typing into the new save Name field while it's not selected
 
 ### Unknown pre-HamSandwich
 
