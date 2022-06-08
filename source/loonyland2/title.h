@@ -51,6 +51,10 @@
 #define SC_MODIFIER_3	3
 #define SC_START_GAME	4
 
+// Modifer positions must be contiguous to work correctly
+static_assert(SC_MODIFIER_2 == SC_MODIFIER_1 + 1);
+static_assert(SC_MODIFIER_3 == SC_MODIFIER_1 + 2);
+
 extern byte gameToLoad;
 
 TASK(byte) MainMenu(MGLDraw *mgl);
