@@ -19,7 +19,7 @@
 #include "appdata.h"
 #include "sha256.h"
 
-#if defined(_MSC_VER) || defined(__clang__)
+#if __has_include(<filesystem>)
 #include <filesystem>
 namespace filesystem = std::filesystem;
 #else
@@ -27,19 +27,40 @@ namespace filesystem = std::filesystem;
 namespace filesystem = std::experimental::filesystem::v1;
 #endif
 
-#ifdef _WIN32
-#include <direct.h>
-#define platform_mkdir(path) _mkdir(path)
-#else
-#include <unistd.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
-#define platform_mkdir(path) mkdir(path, 0777)
-#endif
-
 #ifdef __MACOSX__
 #include <crt_externs.h>
 #define environ *_NSGetEnviron()
+#endif
+
+#ifdef _WIN32
+#include <windows.h>
+#include <direct.h>
+#include <string>
+
+void OpenFolder(std::string_view folder)
+{
+	char* pwd = _getcwd(nullptr, 0);
+	std::string buf = pwd;
+	free(pwd);
+	buf.append("/");
+	buf.append(folder);
+	ShellExecute(nullptr, "explore", buf.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+}
+#else
+#include <unistd.h>
+#include <sys/wait.h>
+#include <string>
+
+void OpenFolder(std::string_view folder)
+{
+	if (fork() == 0)
+	{
+		std::string first = "xdg-open";
+		std::string second { folder };
+		char* const argv[] = { first.data(), second.data(), nullptr };
+		execvp(argv[0], argv);
+	}
+}
 #endif
 
 // Embed Hamumu editor font for extra flavor.
@@ -444,7 +465,7 @@ enum class Action
 int main(int argc, char** argv)
 {
 	const char* bin_dir = EscapeBinDirectory();
-	platform_mkdir("installers");
+	filesystem::create_directories("installers");
 
 	// Set up curl
 	curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -699,7 +720,7 @@ int main(int argc, char** argv)
 				if (launcher.wants_to_play)
 					launcher.current_game->start_missing_downloads(launcher.downloads);
 			}
-			ImGui::SameLine(212);
+			ImGui::SameLine();
 			if (ImGui::Checkbox("Fullscreen", &launcher.wants_fullscreen))
 			{
 				if (launcher.wants_fullscreen)
@@ -710,6 +731,14 @@ int main(int argc, char** argv)
 				{
 					filesystem::remove(fullscreen_file);
 				}
+			}
+			ImGui::SameLine(ImGui::GetWindowWidth() - 160);
+			if (ImGui::Button("Open save folder", { 160, 0 }))
+			{
+				std::string to_open = "appdata/";
+				to_open.append(launcher.current_game->appdata_folder_name);
+				filesystem::create_directories(to_open);
+				OpenFolder(to_open);
 			}
 
 			ImGui::Spacing();
