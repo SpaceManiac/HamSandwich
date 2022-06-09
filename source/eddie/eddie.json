@@ -1,5 +1,6 @@
 {
 	"title": "Eddie Galaxy",
+	"registry_key": "EddieGalaxy",
 	"installers": [
 		{
 			"filename": "eddie_install.EXE",

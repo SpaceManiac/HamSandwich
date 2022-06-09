@@ -1,5 +1,6 @@
 {
 	"title": "Spooky Castle",
+	"registry_key": "Spooky Castle",
 	"installers": [
 		{
 			"filename": "spookycastle_install.EXE",

@@ -1,5 +1,6 @@
 {
 	"title": "Stockboy",
+	"registry_key": "Stockboy",
 	"installers": [
 		{
 			"filename": "stockboy_install.EXE",

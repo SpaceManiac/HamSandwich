@@ -35,16 +35,14 @@ namespace filesystem = std::experimental::filesystem::v1;
 #ifdef _WIN32
 #include <windows.h>
 #include <direct.h>
+#include <shellapi.h>
+#include <shlobj_core.h>
 #include <string>
 
 void OpenFolder(std::string_view folder)
 {
-	char* pwd = _getcwd(nullptr, 0);
-	std::string buf = pwd;
-	free(pwd);
-	buf.append("/");
-	buf.append(folder);
-	ShellExecute(nullptr, "explore", buf.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+	filesystem::path buf = filesystem::absolute(folder);
+	ShellExecuteW(nullptr, L"explore", buf.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
 }
 #else
 #include <unistd.h>
@@ -296,12 +294,78 @@ struct Asset
 	}
 };
 
+#ifdef _WIN32
+std::string VirtualStoreOf(std::string_view original)
+{
+	// SHGetFolderPathA is deprecated formally, but its replacement SHGetKnownFolderPath
+	// has no narrow ('A') version, so use SHGetFolderPathA to do the conversion.
+	char appdata_local[MAX_PATH];
+	if (SHGetFolderPathA(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, appdata_local) != S_OK)
+	{
+		return "";
+	}
+
+	std::string result = appdata_local;
+	result.append("/VirtualStore");
+	result.append(original.substr(2)); // everything after C:
+	return result;
+}
+#endif
+
+struct RetailProfile
+{
+	bool enabled = true; // TODO: persistence
+	std::string program_files;
+	std::string virtual_store;
+
+	explicit RetailProfile(const std::string& registry_key)
+	{
+		if (registry_key.empty())
+		{
+			return;
+		}
+
+		// HKEY_CURRENT_USER/Software/Hamumu Software/$registry_key/InstalledIn REG_SZ
+#ifdef _WIN32
+		std::string stuff = "Software\\Hamumu Software\\";
+		stuff.append(registry_key);
+		//stuff.append("\\InstalledIn");
+
+		char installed_in[2 * MAX_PATH];
+		DWORD installed_in_size = sizeof(installed_in);
+		LSTATUS error = RegGetValueA(HKEY_CURRENT_USER, stuff.c_str(), "InstalledIn", RRF_RT_REG_SZ, nullptr, installed_in, &installed_in_size);
+		if (error != ERROR_SUCCESS)
+		{
+			// NB: error 2 is file not found, means there is no retail installation.
+			printf("%s/InstalledIn: error %d\n", registry_key.c_str(), error);
+			return;
+		}
+
+		program_files.assign(installed_in, installed_in_size - 1);  // -1 because size includes the null terminator
+		if (!filesystem::is_directory(program_files))
+		{
+			printf("registry for %s had \"%s\" but it's not a directory\n", registry_key.c_str(), program_files.c_str());
+			program_files.clear();
+			return;
+		}
+
+		virtual_store = VirtualStoreOf(program_files);
+		if (!filesystem::is_directory(virtual_store))
+		{
+			printf("projected VirtualStore \"%s\" is not a directory, ignoring\n", virtual_store.c_str());
+			virtual_store.clear();
+		}
+#endif
+	}
+};
+
 struct Game
 {
 	std::string id;
 	std::string title;
 	bool excluded;
 	std::string appdata_folder_name;
+	RetailProfile retail_profile;
 
 	std::vector<Asset> assets;
 	const Icon* icon = nullptr;
@@ -312,6 +376,7 @@ struct Game
 		, title(manifest["title"])
 		, excluded(manifest.contains("excluded") && manifest["excluded"])
 		, appdata_folder_name(manifest.contains("appdataName") ? static_cast<std::string>(manifest["appdataName"]) : id)
+		, retail_profile(manifest.contains("registry_key") ? static_cast<std::string>(manifest["registry_key"]) : "")
 	{
 		for (const auto& installer : manifest["installers"])
 		{
@@ -743,10 +808,40 @@ int main(int argc, char** argv)
 
 			ImGui::Spacing();
 			ImGui::Separator();
-			ImGui::Text("Official assets and add-ons:");
+			ImGui::Text("Content selection:");
 
+			bool doneRetailProfile = false;
+			auto doRetailProfile = [&]()
+			{
+				doneRetailProfile = true;
+				if (!launcher.current_game->retail_profile.program_files.empty())
+				{
+					ImGui::PushID("retail_profile");
+					ImGui::Checkbox("Save data from detected retail installation (read-only)", &launcher.current_game->retail_profile.enabled);
+					ImGui::SameLine(ImGui::GetWindowWidth() - 128);
+					if (ImGui::Button("Open", { 128, 0 }))
+					{
+						if (!launcher.current_game->retail_profile.virtual_store.empty())
+						{
+							OpenFolder(launcher.current_game->retail_profile.virtual_store);
+						}
+						else
+						{
+							OpenFolder(launcher.current_game->retail_profile.program_files);
+						}
+					}
+					ImGui::PopID();
+				}
+			};
 			for (auto& asset : launcher.current_game->assets)
 			{
+				// For now, stick the retail profile before the first non-required asset.
+				// A better design would be including this in the asset stack as its own entry.
+				if (!asset.required && !doneRetailProfile)
+				{
+					doRetailProfile();
+				}
+
 				ImGui::PushID(asset.filename.c_str());
 				if (asset.required || launcher.wants_to_play)
 				{
@@ -835,6 +930,10 @@ int main(int argc, char** argv)
 				}
 				ImGui::PopID();
 			}
+			if (!doneRetailProfile)
+			{
+				doRetailProfile();
+			}
 
 			/*
 			ImGui::Spacing();
@@ -893,19 +992,45 @@ int main(int argc, char** argv)
 				int i = 0;
 				environment << "HSW_ASSETS_" << i++ << "=@stdio@assets/" << launcher.current_game->appdata_folder_name << '\0';
 
+				bool doneRetailProfile = false;
+				auto doRetailProfile = [&]()
+				{
+					doneRetailProfile = true;
+					if (launcher.current_game->retail_profile.enabled)
+					{
+						// NB: VirtualStore comes after and thus overrides Program Files
+						if (!launcher.current_game->retail_profile.program_files.empty())
+						{
+							environment << "HSW_ASSETS_" << i++ << "=@stdio@" << launcher.current_game->retail_profile.program_files << '\0';
+						}
+						if (!launcher.current_game->retail_profile.virtual_store.empty())
+						{
+							environment << "HSW_ASSETS_" << i++ << "=@stdio@" << launcher.current_game->retail_profile.virtual_store << '\0';
+						}
+					}
+				};
 				for (const auto& asset : launcher.current_game->assets)
 				{
+					if (!asset.required && !doneRetailProfile)
+					{
+						doRetailProfile();
+					}
+
 					if (asset.required || asset.enabled)
 					{
 						environment << "HSW_ASSETS_" << i++ << "=" << asset.mountpoint << "@" << asset.kind << "@installers/" << asset.filename << '\0';
 					}
+				}
+				if (!doneRetailProfile)
+				{
+					doRetailProfile();
 				}
 				environment << '\0';
 
 				STARTUPINFOA startupInfo = {};
 				PROCESS_INFORMATION processInfo = {};
 				startupInfo.cb = sizeof(startupInfo);
-				if (CreateProcessA(executable.c_str(), cmdline.data(), nullptr, nullptr, false, CREATE_NO_WINDOW, environment.str().data(), nullptr, &startupInfo, &processInfo))
+				if (CreateProcessA(executable.c_str(), cmdline.data(), nullptr, nullptr, false, 0, environment.str().data(), nullptr, &startupInfo, &processInfo))
 				{
 					SDL_HideWindow(window);  // Hide window now that we know the child process was created.
 					WaitForSingleObject(processInfo.hProcess, INFINITE);

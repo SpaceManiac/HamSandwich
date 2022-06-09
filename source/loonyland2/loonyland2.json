@@ -1,5 +1,6 @@
 {
 	"title": "Loonyland 2: Winter Woods",
+	"registry_key": "Loonyland2CE",
 	"installers": [
 		{
 			"filename": "LL2CEinstall.exe",

@@ -1,5 +1,6 @@
 {
 	"title": "Kid Mystic",
+	"registry_key": "KidMystic",
 	"installers": [
 		{
 			"filename": "mystic_install.exe",

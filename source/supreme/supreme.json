@@ -1,5 +1,6 @@
 {
 	"title": "Dr. Lunatic Supreme With Cheese",
+	"registry_key": "LunaticSupreme",
 	"installers": [
 		{
 			"filename": "supreme8_install.exe",

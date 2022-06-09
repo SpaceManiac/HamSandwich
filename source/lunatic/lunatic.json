@@ -1,5 +1,6 @@
 {
 	"title": "Dr. Lunatic",
+	"registry_key": "Lunatic",
 	"installers": [
 		{
 			"filename": "lunatic_install.exe",

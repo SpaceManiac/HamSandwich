@@ -1,5 +1,6 @@
 {
 	"title": "Sleepless Hollow",
+	"registry_key": "SleeplessHollow",
 	"installers": [
 		{
 			"filename": "hollow_betainstall.exe",

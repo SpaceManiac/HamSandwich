@@ -1,5 +1,6 @@
 {
 	"title": "Loonyland: Halloween Hill",
+	"registry_key": "Loonyland",
 	"installers": [
 		{
 			"filename": "loonyland_install.EXE",
