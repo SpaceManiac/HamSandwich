@@ -95,6 +95,20 @@ void CyclePalette(MGLDraw *mgl, int c)
 	mgl->SetSecondaryPalette(pal2);
 }
 
+void ReversePalette(MGLDraw *mgl)
+{
+	const RGB* pal = mgl->GetPalette();
+	PALETTE pal2;
+
+	for(int i=0;i<8;i++)
+		for(int j=0;j<32;j++)
+		{
+			pal2[i*32+j]=pal[i*32+(31-j)];
+		}
+
+	mgl->SetSecondaryPalette(pal2);
+}
+
 void GammaCorrect(MGLDraw *mgl, byte gamma)
 {
 	const RGB* pal = mgl->GetPalette();

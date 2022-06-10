@@ -10,6 +10,7 @@
 #include "highscore.h"
 #include "giftshop.h"
 #include "music.h"
+#include "palettes.h"
 
 // the parallel universe menu!
 static byte *backScr;
@@ -57,8 +58,7 @@ void InitParallelMenu(void)
 		week=0;
 	}
 
-	// TODO GetDisplayMGL()->SetReversePal(1);
-	GetDisplayMGL()->RealizePalette();
+	ReversePalette(GetDisplayMGL());
 	JamulSoundPurge();
 	Music_Load(profile.songChoice[SONG_MENU]);
 	Music_Play();
@@ -127,7 +127,7 @@ static void UpdateBackgd(void)
 		moPic=mo;
 		moUpClock=0;
 		sprintf(s,"graphics/stockroom%02d.bmp",moPic);
-		GetDisplayMGL()->LoadBMP(s);
+		GetDisplayMGL()->LoadBMP(s, nullptr);
 
 		for(i=0;i<480;i++)
 			memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);

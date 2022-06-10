@@ -656,7 +656,7 @@ TASK(byte) PlayALevel(byte map)
 			{
 				InitPauseMenu();
 				gameMode=GAMEMODE_MENU;
-				gamemgl->RealizePalette();
+				//gamemgl->RealizePalette();
 			}
 			else
 			{
@@ -838,6 +838,5 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 			break;
 	}
 	ExitPlayer();
-	// TODO GetDisplayMGL()->SetReversePal(0);
 	GetDisplayMGL()->RealizePalette();
 }

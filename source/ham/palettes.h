@@ -11,6 +11,7 @@ void DumbSidePalette(MGLDraw *mgl);
 void GreyPalette(MGLDraw *mgl);
 void DarkPalette(MGLDraw *mgl);
 void CyclePalette(MGLDraw *mgl, int c);
+void ReversePalette(MGLDraw *mgl);
 
 void GammaCorrect(MGLDraw *mgl, byte gamma);
 

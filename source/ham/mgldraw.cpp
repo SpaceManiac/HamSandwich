@@ -893,7 +893,10 @@ bool MGLDraw::MouseDown3(void)
 
 bool MGLDraw::LoadBMP(const char *name)
 {
-	return LoadBMP(name, pal);
+	if (!LoadBMP(name, pal))
+		return false;
+	RealizePalette();
+	return true;
 }
 
 bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
@@ -930,7 +933,6 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 			pal[i].g = b->format->palette->colors[i].g;
 			pal[i].b = b->format->palette->colors[i].b;
 		}
-	RealizePalette();
 
 	w=b->w;
 	if(w>xRes)

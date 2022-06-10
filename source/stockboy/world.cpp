@@ -107,7 +107,7 @@ byte GetWorldTiles(world_t *world,MGLDraw *mgl)
 	char name[128];
 
 	sprintf(name,"graphics/%s",world->tileName);
-	if(mgl->LoadBMP(name))
+	if(mgl->LoadBMP(name, nullptr))
 	{
 		SetTiles(mgl->GetScreen(),0);
 		return 1;
