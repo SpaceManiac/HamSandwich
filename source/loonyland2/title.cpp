@@ -20,6 +20,43 @@
 #define VERSION_NO	"Version 1.0O"
 #endif
 
+#ifdef DIRECTORS
+#define MM_PLAY			0
+#define MM_ERASE		1
+#define MM_ACHIEVE		2
+#define MM_GALLERY		3
+#define MM_EDITOR		4
+#define MM_OPTIONS		5
+#define MM_QUIT			6
+#define MENU_CHOICES	7
+#else
+#define MM_PLAY			0
+#define MM_ERASE		1
+#define MM_ACHIEVE		2
+#define MM_OPTIONS		3
+#define MM_QUIT			4
+#define MENU_CHOICES	5
+#endif
+
+#define MENU_MODE_NORMAL	0
+#define MENU_MODE_ERASE		1
+#define MENU_MODE_NEW		2
+
+#define SC_NONE			0
+
+#define SC_YES			0
+#define SC_NO			1
+
+#define SC_PLAYER_NAME	0
+#define SC_MODIFIER_1	1
+#define SC_MODIFIER_2	2
+#define SC_MODIFIER_3	3
+#define SC_START_GAME	4
+
+// Modifer positions must be contiguous to work correctly
+static_assert(SC_MODIFIER_2 == SC_MODIFIER_1 + 1);
+static_assert(SC_MODIFIER_3 == SC_MODIFIER_1 + 2);
+
 #pragma pack(push, 1)
 typedef struct save_t
 {
@@ -230,8 +267,8 @@ void InitMainMenu(MGLDraw *mgl)
 	helpTime=0;
 	saveName[0]='\0';
 	ofsX=0;
-	submode=0;
-	subcursor=0;
+	submode=MENU_MODE_NORMAL;
+	subcursor=SC_NONE;
 	cursor=0;
 
 	mgl->LoadBMP(TITLEBMP);
@@ -375,12 +412,12 @@ void EraseCharDisplay(MGLDraw *mgl)
 	sprintf(s,"Really erase '%s'?",save[curChar].name);
 	CenterPrintGlow(x+390,y+100,s,0,0);
 
-	if(subcursor==0)
+	if(subcursor==SC_YES)
 		PauseBox(x+250,y+200,x+380,y+235,32*5+16);
 	else
 		PauseBox(x+250,y+200,x+380,y+235,240);
 	CenterPrintDark(x+315,y+204,"Yes",0);
-	if(subcursor==1)
+	if(subcursor==SC_NO)
 		PauseBox(x+400,y+200,x+530,y+235,32*5+16);
 	else
 		PauseBox(x+400,y+200,x+530,y+235,240);
@@ -405,27 +442,27 @@ void NewCharDisplay(MGLDraw *mgl)
 	PauseBox(120,50,520,400,234);
 	CenterPrintGlow(320,58,"New Game",0,0);
 
-	NewCharButton(125,100,(subcursor==0),"Name",mgl);
+	NewCharButton(125,100,(subcursor==SC_PLAYER_NAME),"Name",mgl);
 
-	NewCharButton(125,140,(subcursor==1),"Mod1",mgl);
+	NewCharButton(125,140,(subcursor==SC_MODIFIER_1),"Mod1",mgl);
 	PrintDark(250,145,ModifierName(save[curChar].mod[0]),0);
-	NewCharButton(125,180,(subcursor==2),"Mod2",mgl);
+	NewCharButton(125,180,(subcursor==SC_MODIFIER_2),"Mod2",mgl);
 	PrintDark(250,185,ModifierName(save[curChar].mod[1]),0);
-	NewCharButton(125,220,(subcursor==3),"Mod3",mgl);
+	NewCharButton(125,220,(subcursor==SC_MODIFIER_3),"Mod3",mgl);
 	PrintDark(250,225,ModifierName(save[curChar].mod[2]),0);
 
 	switch(subcursor)
 	{
-		case 0:
+		case SC_PLAYER_NAME:
 			PrintRectBlack2(125,265,515,350,"Type in a name for this profile.  Up and Down will select other options.",14,1);
 			break;
-		case 1:
-		case 2:
-		case 3:
+		case SC_MODIFIER_1:
+		case SC_MODIFIER_2:
+		case SC_MODIFIER_3:
 			PrintRectBlack2(125,265,515,320,"Press Left or Right to flip through Modifiers.  You may apply up to 3 Modifiers to your game.  You'll unlock more as you play.",14,1);
 			PrintRectBlack2(125,320,515,355,ModifierDesc(save[curChar].mod[subcursor-1]),14,1);
 			break;
-		case 4:
+		case SC_START_GAME:
 #ifdef DIRECTORS
 			PrintRectBlack2(125,265,515,350,"Press Left or Right to choose which campaign to play.  \"Original\" is the normal game.  Any other campaign is at your own risk!  Press Fire to start playing!!  Or ESC to cancel.",14,1);
 #else
@@ -435,10 +472,10 @@ void NewCharDisplay(MGLDraw *mgl)
 	}
 
 	PrintDark(250,105,save[curChar].name,0);
-	if(flip && subcursor==0)
+	if(flip && subcursor==SC_PLAYER_NAME)
 		PrintDark(250+GetStrLength(save[curChar].name,0),105,"_",0);
 
-	NewCharButton(125,355,(subcursor==4),"Go!",mgl);
+	NewCharButton(125,355,(subcursor==SC_START_GAME),"Go!",mgl);
 #ifdef DIRECTORS
 	PrintDark(230,360,"Campaign to play:",1);
 	PrintDark(230,376,addOnList[addOnChoice].dispName,1);
@@ -465,7 +502,7 @@ void MainMenuDisplay(MGLDraw *mgl)
 	PrintDark(2,467,s,1);
 
 	CenterPrint(320,4,LevelError(),0,1);
-	if(submode==0 && helpTime>90)
+	if(submode==MENU_MODE_NORMAL && helpTime>90)
 	{
 		strcpy(s,"Left & Right to change profile, Up & Down to select options, Fire or Enter to go!");
 		CenterPrint(320-1,170-1,s,0,1);
@@ -504,9 +541,9 @@ void MainMenuDisplay(MGLDraw *mgl)
 #endif
 	}
 
-	if(submode==1)	// erase char
+	if(submode==MENU_MODE_ERASE)	// erase char
 		EraseCharDisplay(mgl);
-	if(submode==2)	// new char
+	if(submode==MENU_MODE_NEW)	// new char
 		NewCharDisplay(mgl);
 }
 
@@ -530,7 +567,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 
 	while(*lastTime>=TIME_PER_FRAME)
 	{
-		if(submode==0)
+		if(submode==MENU_MODE_NORMAL)
 			helpTime++;
 
 		if(ofsX<0)
@@ -547,7 +584,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		if(c!=0 || k!=0)
 			timeToCred=0;
 
-		if(submode==0)	// normal menu
+		if(submode==MENU_MODE_NORMAL)	// normal menu
 		{
 			if((c&CONTROL_UP) && !(oldc&CONTROL_UP))
 			{
@@ -592,8 +629,8 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 							MakeNormalSound(SND_MENUSELECT);
 							gameToLoad=save[curChar].realNum;
 							opt.lastProfile=gameToLoad;
-							submode=2;
-							subcursor=0;
+							submode=MENU_MODE_NEW;
+							subcursor=SC_NONE;
 						}
 						else
 						{
@@ -607,8 +644,8 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 						if(save[curChar].newbie==0)
 						{
 							MakeNormalSound(SND_MENUSELECT);
-							submode=1;
-							subcursor=1;
+							submode=MENU_MODE_ERASE;
+							subcursor=SC_NO;
 						}
 						else
 							MakeNormalSound(SND_MENUCANCEL);
@@ -643,7 +680,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 				CO_RETURN MENU_EDITOR;
 #endif
 		}
-		else if(submode==1)	// sure you want to delete?
+		else if(submode==MENU_MODE_ERASE)	// sure you want to delete?
 		{
 			if((c&CONTROL_LF) && !(oldc&CONTROL_LF))
 			{
@@ -660,18 +697,18 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 			{
 				switch(subcursor)
 				{
-					case 0:	// yep, slice him up
+					case SC_YES:	// yep, slice him up
 						MakeNormalSound(SND_MENUSELECT);
 						DeleteCharacter();
 						whoToDelete=0;
-						subcursor=0;
-						submode=0;
+						subcursor=SC_NONE;
+						submode=MENU_MODE_NORMAL;
 						cursor=0;
 						break;
-					case 1:	// nevermind
+					case SC_NO:	// nevermind
 						MakeNormalSound(SND_MENUSELECT);
-						subcursor=0;
-						submode=0;
+						subcursor=SC_NONE;
+						submode=MENU_MODE_NORMAL;
 						cursor=0;
 						break;
 				}
@@ -680,43 +717,48 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 			{
 				// nevermind
 				MakeNormalSound(SND_MENUCANCEL);
-				subcursor=0;
-				submode=0;
+				subcursor=SC_NONE;
+				submode=MENU_MODE_NORMAL;
 				cursor=0;
 			}
 			if(k==27)
 			{
 				MakeNormalSound(SND_MENUCANCEL);
-				subcursor=0;
-				submode=0;
+				subcursor=SC_NONE;
+				submode=MENU_MODE_NORMAL;
 				cursor=0;
 			}
 		}
-		else if(submode==2)	// make a new char
+		else if(submode==MENU_MODE_NEW)	// make a new char
 		{
 			if((c&CONTROL_UP) && !(oldc&CONTROL_UP))
 			{
 				subcursor--;
-				if(subcursor>4)
-					subcursor=4;
+				if(subcursor>SC_START_GAME)
+					subcursor=SC_START_GAME;
 				MakeNormalSound(SND_MENUCLICK);
 			}
 			if((c&CONTROL_DN) && !(oldc&CONTROL_DN))
 			{
 				subcursor++;
-				if(subcursor>4)
-					subcursor=0;
+				if(subcursor>SC_START_GAME)
+					subcursor=SC_PLAYER_NAME;
 				MakeNormalSound(SND_MENUCLICK);
 			}
 			if((c&CONTROL_LF) && !(oldc&CONTROL_LF))
 			{
-				if(subcursor>=1 && subcursor<=3)
+				if(subcursor>=SC_MODIFIER_1 && subcursor<=SC_MODIFIER_3)
 				{
-					AdjustModifier(&save[curChar].mod[subcursor-1],subcursor-1,-1,save[curChar].mod);
+					AdjustModifier(
+						&save[curChar].mod[subcursor-SC_MODIFIER_1],
+						subcursor-SC_MODIFIER_1,
+						-1,
+						save[curChar].mod
+					);
 					MakeNormalSound(SND_MENUCLICK);
 				}
 #ifdef DIRECTORS
-				if(subcursor==4)
+				if(subcursor==SC_START_GAME)
 				{
 					addOnChoice--;
 					while(addOnChoice<0 || addOnChoice>=addOnCount || (addOnList[addOnChoice].filename[0]=='\0' && addOnChoice!=0))
@@ -726,13 +768,18 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 			}
 			if((c&CONTROL_RT) && !(oldc&CONTROL_RT))
 			{
-				if(subcursor>=1 && subcursor<=3)
+				if(subcursor>=SC_MODIFIER_1 && subcursor<=SC_MODIFIER_3)
 				{
-					AdjustModifier(&save[curChar].mod[subcursor-1],subcursor-1,1,save[curChar].mod);
+					AdjustModifier(
+						&save[curChar].mod[subcursor-SC_MODIFIER_1],
+						subcursor-SC_MODIFIER_1,
+						1,
+						save[curChar].mod
+					);
 					MakeNormalSound(SND_MENUCLICK);
 				}
 #ifdef DIRECTORS
-				if(subcursor==4)
+				if(subcursor==SC_START_GAME)
 				{
 					addOnChoice++;
 					while(addOnChoice<0 || addOnChoice>=addOnCount || (addOnList[addOnChoice].filename[0]=='\0' && addOnChoice!=0))
@@ -744,13 +791,13 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 			{
 				switch(subcursor)
 				{
-					case 0:	// don't do anything, just enter that name
+					case SC_PLAYER_NAME:	// don't do anything, just enter that name
 						break;
-					case 1:	// modifiers
-					case 2:
-					case 3:
+					case SC_MODIFIER_1:	// modifiers
+					case SC_MODIFIER_2:
+					case SC_MODIFIER_3:
 						break;
-					case 4:	// go!
+					case SC_START_GAME:	// go!
 						MakeNormalSound(SND_MENUSELECT);
 						gameToLoad=save[curChar].realNum;
 						strcpy(saveName,save[curChar].name);
@@ -764,11 +811,11 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 			if(k==27)
 			{
 				MakeNormalSound(SND_MENUCANCEL);
-				subcursor=0;
-				submode=0;
+				subcursor=SC_NONE;
+				submode=MENU_MODE_NORMAL;
 				cursor=0;
 			}
-			if(k==8 && subcursor==0)
+			if(k==8 && subcursor==SC_PLAYER_NAME)
 			{
 				// backspace
 				if(strlen(save[curChar].name)>0)
@@ -782,7 +829,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 				MakeNormalSound(SND_MENUCLICK);
 				subcursor=1;
 			}
-			if(((k>='a' && k<='z') || (k>='A' && k<='Z') || (k>='0' && k<='9')) && subcursor==0)
+			if(((k>='a' && k<='z') || (k>='A' && k<='Z') || (k>='0' && k<='9')) && subcursor==SC_PLAYER_NAME)
 			{
 				if(strlen(save[curChar].name)<10)
 				{
