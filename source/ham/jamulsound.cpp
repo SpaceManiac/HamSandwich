@@ -5,6 +5,7 @@
 #include "appdata.h"
 #include "extern.h"
 #include <stdio.h>
+#include <limits.h>
 #include <memory>
 
 #include <SDL.h>
@@ -75,7 +76,7 @@ bool JamulSoundInit(int numBuffers)
 	schannel = new schannel_t[NUM_SOUNDS+1];
 	for(i=0;i<NUM_SOUNDS;i++)
 	{
-		schannel[i].priority=0;
+		schannel[i].priority=INT_MIN;
 		schannel[i].soundNum=-1;
 		schannel[i].voice=-1;
 	}
@@ -110,7 +111,7 @@ void JamulSoundUpdate(void)
 			if(!Mix_Playing(schannel[i].voice))
 			{
 				schannel[i].soundNum=-1;
-				schannel[i].priority=0;
+				schannel[i].priority=INT_MIN;
 				schannel[i].voice=-1;
 			}
 		}
@@ -165,7 +166,7 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 				// TODO: only cut this sound off if it is not playing or SND_CUTOFF is set
 				Mix_HaltChannel(schannel[i].voice);
 				schannel[i].soundNum=-1;
-				schannel[i].priority=0;
+				schannel[i].priority=INT_MIN;
 				schannel[i].voice=-1;
 			}
 	}
@@ -240,7 +241,7 @@ bool JamulSoundStop(int which)
 		{
 			Mix_HaltChannel(schannel[i].voice);
 			schannel[i].soundNum=-1;
-			schannel[i].priority=0;
+			schannel[i].priority=INT_MIN;
 			schannel[i].voice=-1;
 		}
 	}
@@ -261,7 +262,7 @@ void JamulSoundPurge(void)
 		if(schannel[i].soundNum!=-1)
 			Mix_HaltChannel(schannel[i].voice);
 		schannel[i].soundNum=-1;
-		schannel[i].priority=0;
+		schannel[i].priority=INT_MIN;
 		schannel[i].voice=-1;
 		schannel[i].sample.reset();
 	}
