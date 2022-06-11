@@ -36,7 +36,7 @@ namespace filesystem = std::experimental::filesystem::v1;
 #include <windows.h>
 #include <direct.h>
 #include <shellapi.h>
-#include <shlobj_core.h>
+#include <shlobj.h>
 #include <string>
 
 void OpenFolder(std::string_view folder)
@@ -337,7 +337,7 @@ struct RetailProfile
 		if (error != ERROR_SUCCESS)
 		{
 			// NB: error 2 is file not found, means there is no retail installation.
-			printf("%s/InstalledIn: error %d\n", registry_key.c_str(), error);
+			printf("%s/InstalledIn: error %ld\n", registry_key.c_str(), error);
 			return;
 		}
 
