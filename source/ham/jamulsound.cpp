@@ -63,7 +63,7 @@ bool JamulSoundInit(int numBuffers)
 	int frequency, channels;
 	uint16_t format;
 	Mix_QuerySpec(&frequency, &format, &channels);
-	printf("audio format: freq=%d, channels=%d, format=0x%x\n", frequency, channels, format);
+	LogDebug("audio format: freq=%d, channels=%d, format=0x%x\n", frequency, channels, format);
 #endif
 
 	NUM_SOUNDS = g_HamExtern.ConfigNumSounds ? g_HamExtern.ConfigNumSounds() : 0;

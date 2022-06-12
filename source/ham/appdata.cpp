@@ -136,8 +136,8 @@ static VfsStack default_vfs_stack() {
 	buffer.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
 
 	VfsStack result;
-	result.set_appdata(std::make_unique<StdioVfs>(buffer));
 	result.push_back(std::make_unique<StdioVfs>("."));
+	result.set_appdata(std::make_unique<StdioVfs>(buffer));
 	return result;
 }
 
@@ -152,8 +152,8 @@ static VfsStack default_vfs_stack() {
 	buffer.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
 
 	VfsStack result;
-	result.set_appdata(vanilla::open_stdio(buffer.c_str()));
 	result.push_back(vanilla::open_stdio(""));
+	result.set_appdata(vanilla::open_stdio(buffer.c_str()));
 	return result;
 }
 
@@ -174,8 +174,8 @@ static VfsStack default_vfs_stack() {
 	VfsStack result;
 	int need_flags = SDL_ANDROID_EXTERNAL_STORAGE_READ | SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
 	if ((SDL_AndroidGetExternalStorageState() & need_flags) == need_flags) {
-		result.set_appdata(vanilla::open_stdio(SDL_AndroidGetExternalStoragePath()));
 		result.push_back(vanilla::open_stdio(SDL_AndroidGetInternalStoragePath()));
+		result.set_appdata(vanilla::open_stdio(SDL_AndroidGetExternalStoragePath()));
 	} else {
 		result.set_appdata(vanilla::open_stdio(SDL_AndroidGetInternalStoragePath()));
 	}
@@ -187,41 +187,31 @@ static VfsStack default_vfs_stack() {
 #else
 // Naive stdio configuration
 
-static bool detect_installers(VfsStack* result, const HamSandwichMetadata* meta) {
-	// `appdata/$NAME/`
-	std::string appdata = "appdata/";
-	appdata.append(meta->appdata_folder_name);
-	result->set_appdata(vanilla::open_stdio(appdata.c_str()));
-
-	// Assets from specs
-	bool ok = true;
-	for (int i = 0; meta->default_asset_specs[i]; ++i) {
-		auto mount = init_vfs_spec("built-in", meta->default_asset_specs[i]);
-		if (mount.vfs) {
-			result->push_back(std::move(mount));
-		} else {
-			LogError("detect_installers: failed to mount builtin[%d]=%s", i, meta->default_asset_specs[i]);
-			ok = false;
-		}
-	}
-	return ok;
-}
-
 static VfsStack default_vfs_stack() {
 	const HamSandwichMetadata* meta = g_HamExtern.GetHamSandwichMetadata();
 	VfsStack result;
 
-	// Mount `assets/$NAME` in case it exists.
+	// Lowest priority: installers in order.
+	for (int i = 0; meta->default_asset_specs[i]; ++i) {
+		auto mount = init_vfs_spec("built-in", meta->default_asset_specs[i]);
+		if (mount.vfs) {
+			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "auto %d: %s", i, meta->default_asset_specs[i]);
+			result.push_back(std::move(mount));
+		} else {
+			LogError("detect_installers: failed to mount builtin[%d]: %s", i, meta->default_asset_specs[i]);
+		}
+	}
+
+	// High priority: custom assets provided directly.
 	std::string assets = "assets/";
 	assets.append(meta->appdata_folder_name);
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "auto assets: %s", assets.c_str());
 	result.push_back(vanilla::open_stdio(assets.c_str()));
-
-	// Detect installers.
-	detect_installers(&result, meta);
 
 	// Use `appdata/$NAME` as our appdata folder.
 	std::string appdata = "appdata/";
 	appdata.append(meta->appdata_folder_name);
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "auto appdata: %s", appdata.c_str());
 	result.set_appdata(vanilla::open_stdio(appdata.c_str()));
 
 	return result;

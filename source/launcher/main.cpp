@@ -987,11 +987,9 @@ int main(int argc, char** argv)
 					originalEnv += strlen(originalEnv) + 1;
 				}
 
-				environment << "HSW_APPDATA=appdata/" << launcher.current_game->appdata_folder_name << '\0';
-
 				int i = 0;
-				environment << "HSW_ASSETS_" << i++ << "=@stdio@assets/" << launcher.current_game->appdata_folder_name << '\0';
 
+				// Lowest priority: installers in order.
 				bool doneRetailProfile = false;
 				auto doRetailProfile = [&]()
 				{
@@ -1011,6 +1009,7 @@ int main(int argc, char** argv)
 				};
 				for (const auto& asset : launcher.current_game->assets)
 				{
+					// In the middle: retail profile.
 					if (!asset.required && !doneRetailProfile)
 					{
 						doRetailProfile();
@@ -1025,8 +1024,16 @@ int main(int argc, char** argv)
 				{
 					doRetailProfile();
 				}
-				environment << '\0';
 
+				// High priority: custom assets provided directly.
+				environment << "HSW_ASSETS_" << i++ << "=@stdio@assets/" << launcher.current_game->appdata_folder_name << '\0';
+
+				// Lastly: the game itself mounts addons/$game/*.zip
+				// And appdata/$game/ overrides them all, of course.
+				environment << "HSW_APPDATA=appdata/" << launcher.current_game->appdata_folder_name << '\0';
+
+				// Finish if off and launch.
+				environment << '\0';
 				STARTUPINFOA startupInfo = {};
 				PROCESS_INFORMATION processInfo = {};
 				startupInfo.cb = sizeof(startupInfo);
@@ -1068,17 +1075,10 @@ int main(int argc, char** argv)
 						++originalEnv;
 					}
 
-					std::ostringstream environment;
-					environment << "HSW_APPDATA=appdata/" << launcher.current_game->appdata_folder_name;
-					envs.push_back(environment.str());
-					raw_envs.push_back(envs.back().data());
-
 					int i = 0;
-					environment.str("");
-					environment << "HSW_ASSETS_" << i++ << "=@stdio@assets/" << launcher.current_game->appdata_folder_name;
-					envs.push_back(environment.str());
-					raw_envs.push_back(envs.back().data());
+					std::ostringstream environment;
 
+					// Lowest priority: installers in order.
 					for (const auto& asset : launcher.current_game->assets)
 					{
 						if (asset.required || asset.enabled)
@@ -1089,8 +1089,22 @@ int main(int argc, char** argv)
 							raw_envs.push_back(envs.back().data());
 						}
 					}
-					raw_envs.push_back(nullptr);
 
+					// High priority: custom assets provided directly.
+					environment.str("");
+					environment << "HSW_ASSETS_" << i++ << "=@stdio@assets/" << launcher.current_game->appdata_folder_name;
+					envs.push_back(environment.str());
+					raw_envs.push_back(envs.back().data());
+
+					// Lastly: the game itself mounts addons/$game/*.zip
+					// And appdata/$game/ overrides them all, of course.
+					environment.str("");
+					environment << "HSW_APPDATA=appdata/" << launcher.current_game->appdata_folder_name;
+					envs.push_back(environment.str());
+					raw_envs.push_back(envs.back().data());
+
+					// Finish it off and launch.
+					raw_envs.push_back(nullptr);
 					execve(argv[0], argv, raw_envs.data());
 					perror("execve");
 					exit(1);

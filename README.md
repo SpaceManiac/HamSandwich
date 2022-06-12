@@ -162,8 +162,8 @@ original files.
 When the game searches for a world or asset file, it scans in a particular order:
 
 1. The `appdata/<project>` folder.
-2. The `assets/<project>` folder.
-3. Inside any `.zip` files in the `addons/<project>` folder.
+2. Inside any `.zip` files in the `addons/<project>` folder.
+3. The `assets/<project>` folder.
 4. The listed `"installers"` in reverse order.
 
 That means that overrides should go at the end of the list and base assets
