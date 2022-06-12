@@ -89,7 +89,8 @@ if test -z "$preset"; then
 	if test -z "$os"; then
 		# Detect OS and architecture.
 		case "$(uname -sm)" in
-			MINGW32*)
+			MSYS*|MINGW32*)
+				# Note: MSYS not actually supported, but `install-deps` & `make` will report that.
 				os=windows
 				arch=${arch:-i686}
 				;;

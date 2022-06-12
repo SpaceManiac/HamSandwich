@@ -11,8 +11,7 @@ if test "${MSYSTEM:-}"; then
 	elif test "$MSYSTEM" = "MINGW64"; then
 		SYS=mingw64
 	else
-		echo "The project cannot be built in '$MSYSTEM' mode. Return to the Start Menu" >&2
-		echo "and open 'MSYS2 MinGW x86' or 'MSYS2 MinGW x64'." >&2
+		echo "The project cannot be built in '$MSYSTEM' mode. Return to the Start Menu and open 'MSYS2 MinGW x86' or 'MSYS2 MinGW x64'." >&2
 		exit 1
 	fi
 elif command -v apt-get >/dev/null 2>&1; then
