@@ -51,7 +51,6 @@ static void ExitClick(int id)
 
 static void PickMonsterClick(int id)
 {
-	PurgeMonsterSprites();
 	RadioOn(id,ID_PICKMONS,ID_PICKMONS+50);
 	curMons=monsList[monsStart+(id-ID_PICKMONS)];
 	SetupMonsterDisplay();
