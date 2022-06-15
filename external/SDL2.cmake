@@ -128,38 +128,39 @@ else()
 	target_link_libraries(SDL2_mixer INTERFACE ${SDL2_mixer_LIBRARIES})
 	target_compile_options(SDL2 INTERFACE ${SDL2_CFLAGS_OTHER})
 
-	# For release, bundle not the system libraries but the Steam runtime.
-	if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-		include(FetchContent)
-		FetchContent_Declare(steam_sdl2
-			URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2/libsdl2-2.0-0_2.0.20+dfsg-1~steamrt1.1+srt1_amd64.deb
-			URL_HASH SHA256=152c8f4d1fc364a5eaea83a243f44d43568e8fd69dd4e45e93ecdd4eb685e9fb
-			PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
-		)
-		FetchContent_Declare(steam_sdl2_image
-			URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2-image/libsdl2-image-2.0-0_2.0.5+dfsg1-3~steamrt1.2+srt1_amd64.deb
-			URL_HASH SHA256=b144c57f8cc3b0ddf9ffcfbab138a3c6477b72d23a52d4176390aa2e8a1423ec
-			PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
-		)
-		FetchContent_Declare(steam_sdl2_mixer
-			URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2-mixer/libsdl2-mixer-2.0-0_2.0.4.~reimport-0+steamrt1.2+srt1_amd64.deb
-			URL_HASH SHA256=78860d794928a0f7a31cd4ee83f395151dedb74f0e2613c6833438aa0d3f1d54
-			PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
-		)
-		FetchContent_Declare(steam_libpng
-			URL https://repo.steampowered.com/steamrt/pool/main/libp/libpng/libpng12-0_1.2.46-3ubuntu4.3+steamrt1.1+srt1_amd64.deb
-			URL_HASH SHA256=07f3e5c0873fddccdfff6cc83d9652c69685260ea7b07fc30b17bc8bb583d625
-			PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
-		)
-		FetchContent_MakeAvailable(steam_sdl2 steam_sdl2_image steam_sdl2_mixer steam_libpng)
+	# Bundle Steam runtime libraries.
+	include(FetchContent)
+	FetchContent_Declare(steam_sdl2
+		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2/libsdl2-2.0-0_2.0.20+dfsg-1~steamrt1.1+srt1_amd64.deb
+		URL_HASH SHA256=152c8f4d1fc364a5eaea83a243f44d43568e8fd69dd4e45e93ecdd4eb685e9fb
+		PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
+	)
+	FetchContent_Declare(steam_sdl2_image
+		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2-image/libsdl2-image-2.0-0_2.0.5+dfsg1-3~steamrt1.2+srt1_amd64.deb
+		URL_HASH SHA256=b144c57f8cc3b0ddf9ffcfbab138a3c6477b72d23a52d4176390aa2e8a1423ec
+		PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
+	)
+	FetchContent_Declare(steam_sdl2_mixer
+		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2-mixer/libsdl2-mixer-2.0-0_2.0.4.~reimport-0+steamrt1.2+srt1_amd64.deb
+		URL_HASH SHA256=78860d794928a0f7a31cd4ee83f395151dedb74f0e2613c6833438aa0d3f1d54
+		PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
+	)
+	FetchContent_Declare(steam_libpng
+		URL https://repo.steampowered.com/steamrt/pool/main/libp/libpng/libpng12-0_1.2.46-3ubuntu4.3+steamrt1.1+srt1_amd64.deb
+		URL_HASH SHA256=07f3e5c0873fddccdfff6cc83d9652c69685260ea7b07fc30b17bc8bb583d625
+		PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
+	)
+	FetchContent_MakeAvailable(steam_sdl2 steam_sdl2_image steam_sdl2_mixer steam_libpng)
 
-		install(FILES "${steam_sdl2_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0.18.2" RENAME "libSDL2-2.0.so.0" TYPE BIN COMPONENT generic/executables)
-		# Patch the rpath for the SDL library so that calls to `SDL_LoadObject` can find `libpng12.so.0`.
-		install(CODE [[
-			execute_process(COMMAND patchelf --set-rpath \$ORIGIN "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/./libSDL2-2.0.so.0")
-		]])
-		install(FILES "${steam_sdl2_image_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2_image-2.0.so.0.2.3" RENAME "libSDL2_image-2.0.so.0" TYPE BIN COMPONENT generic/executables)
-		install(FILES "${steam_sdl2_mixer_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so.0.2.2" RENAME "libSDL2_mixer-2.0.so.0" TYPE BIN COMPONENT generic/executables)
-		install(FILES "${steam_libpng_SOURCE_DIR}/lib/x86_64-linux-gnu/libpng12.so.0.46.0" RENAME "libpng12.so.0" TYPE BIN COMPONENT generic/executables)
-	endif()
+	install(FILES "${steam_sdl2_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0.18.2" RENAME "libSDL2-2.0.so.0" TYPE BIN COMPONENT generic/executables)
+	# Patch the rpath for the SDL library so that calls to `SDL_LoadObject` can find `libpng12.so.0`.
+	install(CODE [[
+		execute_process(
+			COMMAND patchelf --set-rpath \$ORIGIN "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/./libSDL2-2.0.so.0"
+			COMMAND_ERROR_IS_FATAL ANY
+		)
+	]] COMPONENT generic/executables)
+	install(FILES "${steam_sdl2_image_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2_image-2.0.so.0.2.3" RENAME "libSDL2_image-2.0.so.0" TYPE BIN COMPONENT generic/executables)
+	install(FILES "${steam_sdl2_mixer_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so.0.2.2" RENAME "libSDL2_mixer-2.0.so.0" TYPE BIN COMPONENT generic/executables)
+	install(FILES "${steam_libpng_SOURCE_DIR}/lib/x86_64-linux-gnu/libpng12.so.0.46.0" RENAME "libpng12.so.0" TYPE BIN COMPONENT generic/executables)
 endif()

@@ -684,6 +684,10 @@ int main(int argc, char** argv)
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->w, img->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixels);
 				SDL_FreeSurface(img);
 			}
+			else
+			{
+				printf("Failed to load %s icon: %s\n", game.id.c_str(), IMG_GetError());
+			}
 		}
 	}
 
