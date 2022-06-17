@@ -51,7 +51,7 @@ bool JamulSoundInit(int numBuffers)
 		LogError("SDL_Init(AUDIO): %s", SDL_GetError());
 		return false;
 	}
-	if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 1024) != 0) {
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) != 0) {
 		LogError("Mix_OpenAudio: %s", Mix_GetError());
 		return false;
 	}
