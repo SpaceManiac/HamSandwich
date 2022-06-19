@@ -666,6 +666,10 @@ int main(int argc, char** argv)
 			SDL_Surface* img = IMG_Load_RW(SDL_RWFromConstMem(game.icon->data, game.icon->size), true);
 			if (img)
 			{
+				// For some reason scaling to 64x64 delivers best results even though we display at 32x32.
+				SDL_Surface* imgScaled = SDL_CreateRGBSurfaceWithFormat(0, 64, 64, 32, SDL_PIXELFORMAT_ABGR8888);
+				SDL_BlitScaled(img, nullptr, imgScaled, nullptr);
+
 				game.loaded_icon.width = img->w;
 				game.loaded_icon.height = img->h;
 				glGenTextures(1, &game.loaded_icon.texture);
@@ -681,8 +685,9 @@ int main(int argc, char** argv)
 #if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
 				glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 #endif
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->w, img->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixels);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgScaled->w, imgScaled->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, imgScaled->pixels);
 				SDL_FreeSurface(img);
+				SDL_FreeSurface(imgScaled);
 			}
 			else
 			{
