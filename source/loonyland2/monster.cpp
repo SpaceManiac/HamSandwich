@@ -1505,4 +1505,4 @@ byte IsBoss(byte type)
 		return 0;
 }
 
-#include "monster_ai.inc"
+#include "monster_ai.inl"

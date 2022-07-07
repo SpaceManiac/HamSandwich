@@ -122,8 +122,8 @@ static char helpTxt[HELPLEN][MAX_LINELEN]={
 	"Press the ESCAPE key to quit the game at any time.",
 };
 
-#include "textitems.inc"
-#include "textrooms.inc"
+#include "textitems.inl"
+#include "textrooms.inl"
 
 static txtItem_t items[TI_MAX];
 static txtRoom_t rooms[TR_MAX];

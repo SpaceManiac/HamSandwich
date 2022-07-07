@@ -7209,6 +7209,6 @@ void AI_Santa(Guy *me, Map *map, world_t *world, Guy *goodguy)
 }
 
 #ifdef EXPANDO
-#include "monster2.inc"
-#include "monster3.inc"
+#include "monster2.inl"
+#include "monster3.inl"
 #endif

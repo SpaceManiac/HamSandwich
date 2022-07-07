@@ -655,8 +655,8 @@ void WanderAI(Guy *me,int wanderRate,int wanderTime,int unWanderRate,Map *map,wo
 // here be the AIs for each monster type
 //--------------------------------------------------------------------------------------
 
-#include "monsterai1.inc"
-#include "monsterai2.inc"
-#include "monsterai3.inc"
-#include "monsterai4.inc"
-#include "monsterhollow.inc"
+#include "monsterai1.inl"
+#include "monsterai2.inl"
+#include "monsterai3.inl"
+#include "monsterai4.inl"
+#include "monsterhollow.inl"
