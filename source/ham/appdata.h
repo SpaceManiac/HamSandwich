@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <vector>
 #include <string>
+#include <set>
 
 typedef struct SDL_RWops SDL_RWops;
 
@@ -27,6 +28,7 @@ void AppdataSync();
 
 // List a directory.
 std::vector<std::string> ListDirectory(const char* directory, const char* extension = nullptr, size_t maxlen = 0);
+std::set<std::string> SearchAddons(const char* path);
 
 // Aliases.
 FILE* AppdataOpen(const char* filename);

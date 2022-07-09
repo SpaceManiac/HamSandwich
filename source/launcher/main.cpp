@@ -366,6 +366,7 @@ struct Game
 	bool excluded;
 	std::string appdata_folder_name;
 	RetailProfile retail_profile;
+	std::string addons_folder;
 
 	std::vector<Asset> assets;
 	const Icon* icon = nullptr;
@@ -377,7 +378,9 @@ struct Game
 		, excluded(manifest.contains("excluded") && manifest["excluded"])
 		, appdata_folder_name(manifest.contains("appdataName") ? static_cast<std::string>(manifest["appdataName"]) : id)
 		, retail_profile(manifest.contains("registry_key") ? static_cast<std::string>(manifest["registry_key"]) : "")
+		, addons_folder("addons/")
 	{
+		addons_folder.append(appdata_folder_name);
 		for (const auto& installer : manifest["installers"])
 		{
 			assets.emplace_back(installer);
@@ -785,6 +788,8 @@ int main(int argc, char** argv)
 			window_title.append("###current_game");
 			ImGui::Begin(window_title.c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoFocusOnAppearing);
 
+			// ----------------------------------------------------------------
+			// Play button
 			const char* message = launcher.wants_to_play ? "Downloading...###game_play"
 				: launcher.current_game->is_ready_to_play() ? "Play###game_play"
 				: "Download & Play###game_play";
@@ -815,7 +820,9 @@ int main(int argc, char** argv)
 				OpenFolder(to_open);
 			}
 
-			ImGui::Spacing();
+			// ----------------------------------------------------------------
+			// Content selection
+			ImGui::Dummy({ 0, 4 });
 			ImGui::Separator();
 			ImGui::Text("Content selection:");
 
@@ -944,17 +951,33 @@ int main(int argc, char** argv)
 				doRetailProfile();
 			}
 
-			/*
-			ImGui::Spacing();
+			// ----------------------------------------------------------------
+			// Addons
+			ImGui::Dummy({ 0, 4 });
 			ImGui::Separator();
-			ImGui::Text("Local add-ons:");
-			ImGui::SameLine(ImGui::GetWindowWidth() - 256);
-			if (ImGui::Button("Open folder", { 256, 0 }))
-				;
+			ImGui::Text("Local addons:");
+			ImGui::SameLine(ImGui::GetWindowWidth() - 160);
+			if (ImGui::Button("Open addons folder", { 160, 0 }))
+			{
+				filesystem::create_directories(launcher.current_game->addons_folder);
+				OpenFolder(launcher.current_game->addons_folder);
+			}
 
-			ImGui::Text("None");
-			*/
+			auto addons = SearchAddons(launcher.current_game->addons_folder.c_str());
+			for (const auto& fname : addons)
+			{
+				bool dummy = true;
+				ImGui::BeginDisabled();
+				ImGui::Checkbox(fname.c_str(), &dummy);
+				ImGui::EndDisabled();
+			}
 
+			if (addons.empty())
+			{
+				ImGui::Text("Add .zip files to the addons folder and they will be loaded automatically.");
+			}
+
+			// ----------------------------------------------------------------
 			ImGui::End();
 		}
 

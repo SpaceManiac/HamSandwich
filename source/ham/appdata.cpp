@@ -398,10 +398,18 @@ static void filter_files(std::set<std::string>* files, const char* extension = n
 	}
 }
 
+std::set<std::string> SearchAddons(const char* path)
+{
+	auto addons = vanilla::open_stdio(path);
+	std::set<std::string> file_list;
+	addons->list_dir(".", file_list);
+	filter_files(&file_list, ".zip");
+	return file_list;
+}
+
 static void import_addons(VfsStack* target)
 {
-	std::string path = "addons";
-	path.append("/");
+	std::string path = "addons/";
 	path.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
 	auto addons = vanilla::open_stdio(path.c_str());
 	std::set<std::string> file_list;
