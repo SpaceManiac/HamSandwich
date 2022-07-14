@@ -16,11 +16,11 @@ namespace vanilla
 	class WriteVfs;
 
 	// Helpers
-	int mkdir_parents(const char* path);
-	FILE* fp_from_bundle(const char* filename, SDL_RWops* rw);
+	int mkdir_parents(std::string_view path);
+	FILE* fp_from_bundle(std::string_view filename, SDL_RWops* rw);
 
 	// Available providers
-	std::unique_ptr<WriteVfs> open_stdio(const char* prefix);
+	std::unique_ptr<WriteVfs> open_stdio(std::string_view prefix);
 	std::unique_ptr<Vfs> open_nsis(SDL_RWops* rw);
 	std::unique_ptr<Vfs> open_inno(SDL_RWops* rw);
 	std::unique_ptr<Vfs> open_zip(SDL_RWops* rw);

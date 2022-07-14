@@ -31,9 +31,9 @@ static int mkdir_one(const char *path)
 	return 0;
 }
 
-int vanilla::mkdir_parents(const char *path)
+int vanilla::mkdir_parents(std::string_view path)
 {
-	std::string copypath = path;
+	std::string copypath { path };
 	char *start = copypath.data();
 	char *next;
 
@@ -75,9 +75,13 @@ static FILE* android_tmpfile()
 
 #endif
 
+// Helpers for using printf, SDL_LogError, &c. with std::string_view arguments.
+#define FSPEC_STRING_VIEW "%.*s"
+#define FMT_STRING_VIEW(X) (int)(X).size(), (X).data()
+
 // ----------------------------------------------------------------------------
 // "Extract to temporary directory" helper
-FILE* vanilla::fp_from_bundle(const char* filename, SDL_RWops* rw)
+FILE* vanilla::fp_from_bundle(std::string_view filename, SDL_RWops* rw)
 {
 	if (!rw)
 		return nullptr;
@@ -85,7 +89,7 @@ FILE* vanilla::fp_from_bundle(const char* filename, SDL_RWops* rw)
 	FILE* fp = tmpfile();
 	if (!fp)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fp_from_bundle(%s) bad tmpfile: %s", filename, strerror(errno));
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fp_from_bundle(%.*s) bad tmpfile: %s", FMT_STRING_VIEW(filename), strerror(errno));
 		return nullptr;
 	}
 
@@ -99,7 +103,7 @@ FILE* vanilla::fp_from_bundle(const char* filename, SDL_RWops* rw)
 
 	if (read < 0)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fp_from_bundle(%s) bad SDL_RWread: %s", filename, SDL_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fp_from_bundle(%.*s) bad SDL_RWread: %s", FMT_STRING_VIEW(filename), SDL_GetError());
 		return nullptr;
 	}
 

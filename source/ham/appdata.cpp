@@ -153,7 +153,7 @@ static VfsStack default_vfs_stack() {
 
 	VfsStack result;
 	result.push_back(vanilla::open_stdio(""));
-	result.set_appdata(vanilla::open_stdio(buffer.c_str()));
+	result.set_appdata(vanilla::open_stdio(buffer));
 	return result;
 }
 
@@ -206,13 +206,13 @@ static VfsStack default_vfs_stack() {
 	std::string assets = "assets/";
 	assets.append(meta->appdata_folder_name);
 	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "auto assets: %s", assets.c_str());
-	result.push_back(vanilla::open_stdio(assets.c_str()));
+	result.push_back(vanilla::open_stdio(assets));
 
 	// Use `appdata/$NAME` as our appdata folder.
 	std::string appdata = "appdata/";
 	appdata.append(meta->appdata_folder_name);
 	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "auto appdata: %s", appdata.c_str());
-	result.set_appdata(vanilla::open_stdio(appdata.c_str()));
+	result.set_appdata(vanilla::open_stdio(appdata));
 
 	return result;
 }
@@ -411,7 +411,7 @@ static void import_addons(VfsStack* target)
 {
 	std::string path = "addons/";
 	path.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
-	auto addons = vanilla::open_stdio(path.c_str());
+	auto addons = vanilla::open_stdio(path);
 	std::set<std::string> file_list;
 	addons->list_dir(".", file_list);
 	filter_files(&file_list, ".zip");

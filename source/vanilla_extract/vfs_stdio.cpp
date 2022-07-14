@@ -14,7 +14,7 @@ class StdioVfs : public vanilla::WriteVfs
 	std::string prefix;
 	FILE* open_stdio_internal(const char* filename, const char* mode, bool write);
 public:
-	StdioVfs(std::string prefix) : prefix(prefix) {}
+	StdioVfs(std::string&& prefix) : prefix(prefix) {}
 	FILE* open_stdio(const char* filename);
 	SDL_RWops* open_sdl(const char* filename);
 	FILE* open_write_stdio(const char* filename);
@@ -22,9 +22,9 @@ public:
 	bool delete_file(const char* filename);
 };
 
-std::unique_ptr<vanilla::WriteVfs> vanilla::open_stdio(const char* prefix)
+std::unique_ptr<vanilla::WriteVfs> vanilla::open_stdio(std::string_view prefix)
 {
-	return std::make_unique<StdioVfs>(prefix);
+	return std::make_unique<StdioVfs>(std::string { prefix });
 }
 
 FILE* StdioVfs::open_stdio_internal(const char* file, const char* mode, bool write)
@@ -34,7 +34,7 @@ FILE* StdioVfs::open_stdio_internal(const char* file, const char* mode, bool wri
 	buffer.append(file);
 	if (write)
 	{
-		vanilla::mkdir_parents(buffer.c_str());
+		vanilla::mkdir_parents(buffer);
 	}
 	FILE* fp = fopen(buffer.c_str(), mode);
 
