@@ -3879,7 +3879,7 @@ void SaveGuys(FILE *f)
 			fwrite(&target,4,1,f);
 			fwrite(&parent,4,1,f);
 			fwrite(&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1,f);
-			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 136);
+			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 136, "save compatibility broken; adjust this assertion if you are sure");
 		}
 	}
 }
@@ -3903,7 +3903,7 @@ void LoadGuys(FILE *f)
 			fread(&target,4,1,f);
 			fread(&parent,4,1,f);
 			fread(&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1,f);
-			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 136);
+			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 136, "save compatibility broken; adjust this assertion if you are sure");
 
 			if(target==NO_SUCH_GUY)
 				guys[i]->target=NULL;

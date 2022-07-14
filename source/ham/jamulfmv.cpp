@@ -25,7 +25,8 @@ struct fliheader
 	word speed;  // milliseconds per frame
 	int32_t next,frit;  // meaning unknown
 };
-static_assert(sizeof(fliheader) == 28);
+static_assert(sizeof(fliheader) == 28, "sizeof(fliheader) is incorrect for direct i/o");
+static_assert(SDL_BYTEORDER == SDL_LIL_ENDIAN, "HamSandwich currently only support big-endian processors");
 
 struct frmheader
 {
@@ -34,7 +35,7 @@ struct frmheader
 	word chunks;
 	byte expand[8];
 };
-static_assert(sizeof(frmheader) == 16);
+static_assert(sizeof(frmheader) == 16, "sizeof(frmheader) is incorrect for direct i/o");
 
 // because of padding, the following 6-byte header is 8 bytes.
 // therefore use this define instead of sizeof() to read from a FLIc

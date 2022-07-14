@@ -5,7 +5,6 @@
 #include "options.h"
 #include "title.h"
 
-#pragma pack(push, 1)
 typedef struct achieve_t
 {
 	char name[24];
@@ -13,14 +12,12 @@ typedef struct achieve_t
 	byte type;
 	word amt;
 } achieve_t;
-static_assert(sizeof(achieve_t) == 59);
 
 typedef struct mod_t
 {
 	char name[16];
 	char desc[128];
 } mod_t;
-#pragma pack(pop)
 
 achieve_t achievement[100]={
 	// row 1

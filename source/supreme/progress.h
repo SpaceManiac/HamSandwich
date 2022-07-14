@@ -64,6 +64,7 @@ typedef struct worldData_t	// contains your progress for one world
 
 #define EXPANSION_SIZE	(1019)
 
+// WARNING: changing this struct's contents may break save compatibility or require modifications in Load/SaveProfile.
 typedef struct progress_t
 {
 	// total values for stats
@@ -107,6 +108,7 @@ typedef struct playList_t
 	char *song;
 } playList_t;
 
+// WARNING: changing this struct's contents may break save compatibility or require modifications in Load/SaveProfile.
 typedef struct profile_t
 {
 	char name[16];

@@ -2825,7 +2825,7 @@ void SaveGuys(FILE *f)
 			fwrite(&target,4,1,f);
 			fwrite(&parent,4,1,f);
 			fwrite(&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1,f);
-			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 124);
+			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 124, "save compatibility broken; adjust this assertion if you are sure");
 		}
 	}
 }
@@ -2848,7 +2848,7 @@ void LoadGuys(FILE *f)
 		fread(&target,4,1,f);
 		fread(&parent,4,1,f);
 		fread(&g.hp,sizeof(Guy) - offsetof(Guy, hp),1,f);
-		static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 124);
+		static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 124, "save compatibility broken; adjust this assertion if you are sure");
 
 		(*guys[g.ID])=g;
 		if(target==65535)

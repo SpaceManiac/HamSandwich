@@ -28,6 +28,7 @@ static ZPOS64_T zsdl_tell64(void* userdata, void* stream)
 	return SDL_RWtell((SDL_RWops*) stream);
 }
 
+// Skip writing a switch by directly mapping the seek types.
 static_assert(ZLIB_FILEFUNC_SEEK_SET == RW_SEEK_SET);
 static_assert(ZLIB_FILEFUNC_SEEK_CUR == RW_SEEK_CUR);
 static_assert(ZLIB_FILEFUNC_SEEK_END == RW_SEEK_END);

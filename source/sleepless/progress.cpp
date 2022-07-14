@@ -606,7 +606,7 @@ byte LoadState(byte lvl,byte getPlayer)
 	{
 		fseek(f, 368, SEEK_CUR);
 	}
-	static_assert(sizeof(player_t) - offsetof(player_t, shield) + offsetof(player_t, worldProg) + 8 == 368);
+	static_assert(sizeof(player_t) - offsetof(player_t, shield) + offsetof(player_t, worldProg) + 8 == 368, "save compatibility broken; adjust this assertion if you are sure");
 
 	// next the ID of whoever is tagged
 	fread(&tagged,sizeof(word),1,f);

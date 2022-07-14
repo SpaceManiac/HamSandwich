@@ -134,6 +134,7 @@ void LoadPlayLists(FILE *f)
 		{
 			profile.playList[i].song=(char *)malloc(SONGNAME_LEN*profile.playList[i].numSongs);
 			fread(profile.playList[i].song,SONGNAME_LEN,profile.playList[i].numSongs,f);
+			static_assert(SONGNAME_LEN == 128, "save compatibility broken; adjust this assertion if you are sure");
 		}
 		else
 			profile.playList[i].song=NULL;
@@ -163,16 +164,17 @@ void LoadProfile(const char *name)
 	}
 	// begin fread(&profile, sizeof(profile_t), 1, f) emulation
 	fread(&profile, 68, 1, f);
-	for(i = 0; i < NUM_PLAYLISTS; ++i)
-	{
-		fseek(f, 8, SEEK_CUR);
-	}
+	fseek(f, NUM_PLAYLISTS * 8, SEEK_CUR);
+	static_assert(NUM_PLAYLISTS == 4, "save compatibility broken; adjust this assertion if you are sure");
 	fread(&profile.difficulty, 8, 1, f);
 	// begin progress_t part
 	{
 		fread(&profile.progress, 112, 1, f);
+		static_assert(offsetof(progress_t, world) == 112, "save compatibility broken; adjust this assertion if you are sure");
 		fseek(f, 4, SEEK_CUR);  // skip worldData_t *world
 		fread(&profile.progress.kills, 2152 - 112 - 4, 1, f);
+		static_assert(sizeof(progress_t) == 2152 + sizeof(worldData_t*), "save compatibility broken; adjust this assertion if you are sure");
+		static_assert(NUM_PROFILE_MONSTERS == 211, "save compatibility broken; adjust this assertion if you are sure");
 	}
 	// end progress_t part
 	fread(&profile.motd, sizeof(profile.motd), 1, f);

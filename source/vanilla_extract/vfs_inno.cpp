@@ -77,6 +77,7 @@ static SRes SeekInStream_RW_Read(const ISeekInStream *p, void *buf, size_t *size
 	return SZ_OK;
 }
 
+// Skip writing a switch by directly mapping the seek types.
 static_assert(SZ_SEEK_SET == RW_SEEK_SET);
 static_assert(SZ_SEEK_CUR == RW_SEEK_CUR);
 static_assert(SZ_SEEK_END == RW_SEEK_END);
