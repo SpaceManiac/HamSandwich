@@ -742,11 +742,13 @@ byte Scan_Vars(world_t *world)
 					{
 						case TRG_COMPVAR: // value is one, compared to value2
 							var_checks[world->map[i]->special[j].trigger[k].value2]++;
+							[[fallthrough]];
 						case TRG_VAR:	// value
 							var_checks[world->map[i]->special[j].trigger[k].value]++;
 							break;
 						case TRG_EQUVAR:	// value, and a text thing
 							var_checks[world->map[i]->special[j].trigger[k].value]++;
+							[[fallthrough]];
 						case TRG_EQUATION:	// text thing
 							Find_Text_Vars(world->map[i]->special[j].effect[k].text,1);
 							break;

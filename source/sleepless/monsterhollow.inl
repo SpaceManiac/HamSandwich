@@ -2377,7 +2377,7 @@ void AI_Sparky(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 void AI_Bobber(Guy *me,Map *map,world_t *world,Guy *badguy)
 {
-	if(me->mapx<0 || me->mapy<0 || me->mapx>=map->width || me->mapy>=map->height)
+	if(me->mapx>=map->width || me->mapy>=map->height)
 	{
 		MakeNormalSound(SND_TURRETBZZT);
 		me->type=MONS_NONE;

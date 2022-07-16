@@ -6,5 +6,5 @@ HamSandwich_add_executable(
 )
 
 if(CMAKE_COMPILER_IS_GNUCC)
-	target_compile_options(supreme PRIVATE -Wall -Wno-unused-but-set-variable)
+	target_compile_options(supreme PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-unused-but-set-variable)
 endif()

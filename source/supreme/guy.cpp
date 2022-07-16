@@ -746,7 +746,7 @@ void Guy::Update(Map *map,world_t *world)
 	if((oldmapx!=mapx || oldmapy!=mapy) && type!=MONS_NOBODY)
 		EventOccur(EVT_STEP,ID,mapx,mapy,this);
 
-	if(mapx>=0 && mapy>=0 && mapx<map->width && mapy<map->height)
+	if(mapx<map->width && mapy<map->height)
 		bright=map->GetTile(mapx,mapy)->templight;
 	else
 		bright=-32;

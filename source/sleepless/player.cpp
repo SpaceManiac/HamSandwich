@@ -1436,7 +1436,7 @@ void PlayerGetWeaponXP(byte wpn,word amt)
 		amt*=2;
 
 	wpn--;
-	if(wpn<0 || wpn>5)
+	if(wpn>5)
 		return;
 
 	if(player.weaponLvl[wpn]==0)

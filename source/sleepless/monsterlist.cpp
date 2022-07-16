@@ -3,7 +3,7 @@
 monsterType_t monsType[NUM_MONSTERS]=
 	{
 		{"Null",255,255,0,NULL,
-		 0,0,0,0,"",0,0,0},
+		 0,0,0,0,"",0,0,0,{}},
 		{"Bouapha",255,255,0,NULL,
 		 11,29,128,0,"graphics/bouapha.jsp",0,MF_WATERWALK,
 		 MT_GOOD,

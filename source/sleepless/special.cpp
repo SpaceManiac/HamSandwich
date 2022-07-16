@@ -347,6 +347,7 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 		case EFF_MAKEBULLET:
 			strcpy(eff->text, "0");
 			eff->value2=1;
+			[[fallthrough]];
 		case EFF_CHANGEBULLET:
 			eff->value=BLT_NONE;
 			eff->value2=BLT_HAMMER;
@@ -1127,7 +1128,7 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 			}
 			break;
 		case TRG_FLOOR:
-			if(t->x>=0 && t->y>=0 && t->x<map->width && t->y<map->height &&
+			if(t->x<map->width && t->y<map->height &&
 				map->GetTile(t->x,t->y)->floor==t->value)
 				answer=1;
 			break;

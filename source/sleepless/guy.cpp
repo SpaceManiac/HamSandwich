@@ -911,7 +911,7 @@ void Guy::Update(Map *map,world_t *world)
 			mind=1;	// know when you enter a space
 	}
 
-	if(mapx>=0 && mapy>=0 && mapx<map->width && mapy<map->height)
+	if(mapx<map->width && mapy<map->height)
 		bright=map->GetTile(mapx,mapy)->templight;
 	else
 		bright=-32;
