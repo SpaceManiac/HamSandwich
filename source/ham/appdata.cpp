@@ -127,7 +127,7 @@ static Mount init_vfs_spec(const char* what, const char* spec) {
 #include <direct.h>
 #endif
 
-static VfsStack default_vfs_stack() {
+static VfsStack default_vfs_stack(bool* error) {
 	char get_folder_path[MAX_PATH];
 	SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, get_folder_path);
 
@@ -147,7 +147,7 @@ static VfsStack default_vfs_stack() {
 
 #include <emscripten.h>
 
-static VfsStack default_vfs_stack() {
+static VfsStack default_vfs_stack(bool* error) {
 	std::string buffer = "/appdata/";
 	buffer.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
 
@@ -170,7 +170,7 @@ void AppdataSync() {
 
 #include <SDL_system.h>
 
-static VfsStack default_vfs_stack() {
+static VfsStack default_vfs_stack(bool* error) {
 	VfsStack result;
 	int need_flags = SDL_ANDROID_EXTERNAL_STORAGE_READ | SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
 	if ((SDL_AndroidGetExternalStorageState() & need_flags) == need_flags) {
@@ -187,7 +187,7 @@ static VfsStack default_vfs_stack() {
 #else
 // Naive stdio configuration
 
-static VfsStack default_vfs_stack() {
+static VfsStack default_vfs_stack(bool* error) {
 	const HamSandwichMetadata* meta = g_HamExtern.GetHamSandwichMetadata();
 	VfsStack result;
 
@@ -199,6 +199,7 @@ static VfsStack default_vfs_stack() {
 			result.push_back(std::move(mount));
 		} else {
 			LogError("detect_installers: failed to mount builtin[%d]: %s", i, meta->default_asset_specs[i]);
+			*error = true;
 		}
 	}
 
@@ -260,7 +261,7 @@ static void missing_assets_message() {
 	}
 }
 
-static VfsStack vfs_stack_from_env() {
+static VfsStack vfs_stack_from_env(bool* error) {
 	VfsStack result;
 	if (const char *appdata_spec = SDL_getenv("HSW_APPDATA"); appdata_spec && *appdata_spec) {
 		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "HSW_APPDATA=%s", appdata_spec);
@@ -276,13 +277,14 @@ static VfsStack vfs_stack_from_env() {
 					result.push_back(std::move(mount));
 				} else {
 					LogError("vfs_stack_from_env: failed to mount %s=%s", buffer, asset_spec);
+					*error = true;
 				}
 			} else {
 				break;
 			}
 		}
 	} else {
-		result = default_vfs_stack();
+		result = default_vfs_stack(error);
 	}
 	return result;
 }
@@ -361,14 +363,16 @@ static bool run_download_helper() {
 }
 
 static VfsStack init_vfs_stack() {
-	VfsStack result = vfs_stack_from_env();
-	if (check_assets(result)) {
+	bool error = false;
+	VfsStack result = vfs_stack_from_env(&error);
+	if (!error && check_assets(result)) {
 		return result;
 	}
 
 	if (run_download_helper()) {
-		result = vfs_stack_from_env();
-		if (check_assets(result)) {
+		error = false;
+		result = vfs_stack_from_env(&error);
+		if (!error && check_assets(result)) {
 			return result;
 		}
 	}
