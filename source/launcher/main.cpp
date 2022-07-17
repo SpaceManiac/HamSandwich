@@ -125,6 +125,19 @@ struct LoadedIcon
 	int width = 0, height = 0;
 };
 
+void print_curl_error(CURL* transfer, const char* explainer, CURLcode result)
+{
+	fprintf(stderr, "%s: %d: %s\n", explainer, result, curl_easy_strerror(result));
+	if (result == CURLE_HTTP_RETURNED_ERROR)
+	{
+		long code = 0;
+		if (curl_easy_getinfo(transfer, CURLINFO_RESPONSE_CODE, &code) == CURLE_OK)
+		{
+			fprintf(stderr, "    HTTP %ld\n", code);
+		}
+	}
+}
+
 // Asset and installer handling
 struct Asset
 {
@@ -215,7 +228,7 @@ struct Asset
 
 			if (result != CURLE_OK)
 			{
-				fprintf(stderr, "Metadata download failed: %d\n", result);
+				print_curl_error(transfer, "Metadata download failed", result);
 				return 0;
 			}
 
@@ -251,7 +264,7 @@ struct Asset
 
 			if (result != CURLE_OK)
 			{
-				fprintf(stderr, "Content download failed: %d\n", result);
+				print_curl_error(transfer, "Content download failed", result);
 				return 0;
 			}
 
