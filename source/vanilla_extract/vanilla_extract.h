@@ -11,22 +11,9 @@ struct SDL_RWops;
 
 namespace vanilla
 {
-	// Forward declarations
-	class Vfs;
-	class WriteVfs;
-
 	// Helpers
 	int mkdir_parents(std::string_view path);
 	FILE* fp_from_bundle(std::string_view filename, SDL_RWops* rw);
-
-	// Available providers
-	std::unique_ptr<WriteVfs> open_stdio(std::string_view prefix);
-	std::unique_ptr<Vfs> open_nsis(SDL_RWops* rw);
-	std::unique_ptr<Vfs> open_inno(SDL_RWops* rw);
-	std::unique_ptr<Vfs> open_zip(SDL_RWops* rw);
-#if defined(__ANDROID__) && __ANDROID__
-	std::unique_ptr<Vfs> open_android(const char* prefix = nullptr);
-#endif
 
 	// A single VFS provider, read-only by default.
 	class Vfs
@@ -111,6 +98,15 @@ namespace vanilla
 		FILE* open_write_stdio(const char* filename);
 		bool delete_file(const char* filename);
 	};
+
+	// Available providers
+	std::unique_ptr<WriteVfs> open_stdio(std::string_view prefix);
+	std::unique_ptr<Vfs> open_nsis(SDL_RWops* rw);
+	std::unique_ptr<Vfs> open_inno(SDL_RWops* rw);
+	std::unique_ptr<Vfs> open_zip(SDL_RWops* rw);
+#if defined(__ANDROID__) && __ANDROID__
+	std::unique_ptr<Vfs> open_android(const char* prefix = nullptr);
+#endif
 }
 
 #endif  // VANILLA_EXTRACT_H
