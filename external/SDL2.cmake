@@ -152,14 +152,19 @@ else()
 	)
 	FetchContent_MakeAvailable(steam_sdl2 steam_sdl2_image steam_sdl2_mixer steam_libpng)
 
-	install(FILES "${steam_sdl2_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0.18.2" RENAME "libSDL2-2.0.so.0" TYPE BIN COMPONENT generic/executables)
 	# Patch the rpath for the SDL library so that calls to `SDL_LoadObject` can find `libpng12.so.0`.
-	install(CODE [[
-		execute_process(
-			COMMAND patchelf --set-rpath \$ORIGIN "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/./libSDL2-2.0.so.0"
-			COMMAND_ERROR_IS_FATAL ANY
-		)
-	]] COMPONENT generic/executables)
+	set(sdl2_original "${steam_sdl2_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0.18.2")
+	set(sdl2_with_rpath "${CMAKE_CURRENT_BINARY_DIR}/libSDL2-2.0.so.0")
+	add_custom_command(
+		OUTPUT "${sdl2_with_rpath}"
+		COMMAND "${CMAKE_COMMAND}" -E copy "${sdl2_original}" "${sdl2_with_rpath}"
+		COMMAND patchelf --set-rpath \$ORIGIN "${sdl2_with_rpath}"
+		DEPENDS "${sdl2_original}"
+		VERBATIM
+	)
+	add_custom_target(sdl2_rpath ALL DEPENDS "${sdl2_with_rpath}")
+
+	install(FILES "${sdl2_with_rpath}" RENAME "libSDL2-2.0.so.0" TYPE BIN COMPONENT generic/executables)
 	install(FILES "${steam_sdl2_image_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2_image-2.0.so.0.2.3" RENAME "libSDL2_image-2.0.so.0" TYPE BIN COMPONENT generic/executables)
 	install(FILES "${steam_sdl2_mixer_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so.0.2.2" RENAME "libSDL2_mixer-2.0.so.0" TYPE BIN COMPONENT generic/executables)
 	install(FILES "${steam_libpng_SOURCE_DIR}/lib/x86_64-linux-gnu/libpng12.so.0.46.0" RENAME "libpng12.so.0" TYPE BIN COMPONENT generic/executables)
