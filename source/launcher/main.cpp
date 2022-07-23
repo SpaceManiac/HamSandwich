@@ -801,6 +801,8 @@ int main(int argc, char** argv)
 			window_title.append("###current_game");
 			ImGui::Begin(window_title.c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoFocusOnAppearing);
 
+			float paneWidth = ImGui::GetContentRegionAvail().x + 16;
+
 			// ----------------------------------------------------------------
 			// Play button
 			const char* message = launcher.wants_to_play ? "Downloading...###game_play"
@@ -824,7 +826,7 @@ int main(int argc, char** argv)
 					filesystem::remove(fullscreen_file);
 				}
 			}
-			ImGui::SameLine(ImGui::GetWindowWidth() - 160);
+			ImGui::SameLine(paneWidth - 160);
 			if (ImGui::Button("Open save folder", { 160, 0 }))
 			{
 				std::string to_open = "appdata/";
@@ -847,7 +849,7 @@ int main(int argc, char** argv)
 				{
 					ImGui::PushID("retail_profile");
 					ImGui::Checkbox("Save data from detected retail installation (read-only)", &launcher.current_game->retail_profile.enabled);
-					ImGui::SameLine(ImGui::GetWindowWidth() - 128);
+					ImGui::SameLine(paneWidth - 128);
 					if (ImGui::Button("Open", { 128, 0 }))
 					{
 						if (!launcher.current_game->retail_profile.virtual_store.empty())
@@ -897,7 +899,7 @@ int main(int argc, char** argv)
 					}
 				}
 
-				ImGui::SameLine(ImGui::GetWindowWidth() - 128);
+				ImGui::SameLine(paneWidth - 128);
 
 				std::string fullPath = "installers/";
 				fullPath.append(asset.filename);
@@ -969,7 +971,7 @@ int main(int argc, char** argv)
 			ImGui::Dummy({ 0, 4 });
 			ImGui::Separator();
 			ImGui::Text("Local addons:");
-			ImGui::SameLine(ImGui::GetWindowWidth() - 160);
+			ImGui::SameLine(paneWidth - 160);
 			if (ImGui::Button("Open addons folder", { 160, 0 }))
 			{
 				filesystem::create_directories(launcher.current_game->addons_folder);
