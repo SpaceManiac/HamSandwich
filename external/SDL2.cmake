@@ -131,8 +131,8 @@ else()
 	# Bundle Steam runtime libraries.
 	include(FetchContent)
 	FetchContent_Declare(steam_sdl2
-		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2/libsdl2-2.0-0_2.0.20+dfsg-1~steamrt1.1+srt1_amd64.deb
-		URL_HASH SHA256=152c8f4d1fc364a5eaea83a243f44d43568e8fd69dd4e45e93ecdd4eb685e9fb
+		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2/libsdl2-2.0-0_2.0.22+dfsg-1+steamrt1.1+srt1_amd64.deb
+		URL_HASH SHA256=d28b1f2a4d595cffabddad668742f6a1914bbc8cdabb27a66260606cdf296bf0
 		PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
 	)
 	FetchContent_Declare(steam_sdl2_image
@@ -153,7 +153,7 @@ else()
 	FetchContent_MakeAvailable(steam_sdl2 steam_sdl2_image steam_sdl2_mixer steam_libpng)
 
 	# Patch the rpath for the SDL library so that calls to `SDL_LoadObject` can find `libpng12.so.0`.
-	set(sdl2_original "${steam_sdl2_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0.18.2")
+	set(sdl2_original "${steam_sdl2_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0.22.0")
 	set(sdl2_with_rpath "${CMAKE_CURRENT_BINARY_DIR}/libSDL2-2.0.so.0")
 	add_custom_command(
 		OUTPUT "${sdl2_with_rpath}"
