@@ -157,7 +157,7 @@ if test -z "$nobuild"; then
 		# Desktop.
 		if test "$project" != "launcher"; then
 			# Single project: build the launcher and that project.
-			make preset="$preset" "$project" launcher
+			make preset="$preset" "$project" launcher sdl2_rpath
 			# Install the launcher so that it can be used to download assets.
 			cmake --install "$cmakedir" --component Unspecified --config Debug
 			cmake --install "$cmakedir" --component generic/executables --config Debug
