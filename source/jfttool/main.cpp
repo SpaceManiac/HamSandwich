@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "palette.h"
+#include "lunaticpal.h"
 
 using namespace std;
 
@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
 
             for (int y = 0; y < (int)header.height; ++y) {
                 for (int x = 0; x < width; ++x) {
-                    pixels[y * pitch + x] = palette::getColor(in.get());
+                    pixels[y * pitch + x] = lunaticpal::GetColor(in.get());
                 }
             }
             SDL_UnlockSurface(surf);
@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
             data.push_back(surf->w);
             for (int y = 0; y < surf->h; ++y) {
                 for (int x = 0; x < surf->w; ++x) {
-                    data.push_back(palette::getNearest(pixels[y * pitch + x]));
+                    data.push_back(lunaticpal::GetNearest(pixels[y * pitch + x]));
                 }
             }
             SDL_UnlockSurface(surf);

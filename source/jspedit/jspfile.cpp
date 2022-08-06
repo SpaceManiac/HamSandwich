@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <stdint.h>
-#include "palette.h"
+#include "lunaticpal.h"
 
 using namespace std;
 
@@ -109,7 +109,7 @@ bool JspFile::load(string fname) {
                 for (uint8_t j = 0; j < value; ++j) {
                     uint8_t index = in.get();
                     ++read;
-                    pixels[y * pitch + x] = palette::getColor(index);
+                    pixels[y * pitch + x] = lunaticpal::GetColor(index);
                     if (++x >= info.width) {
                         x = 0; ++y;
                     }
@@ -168,7 +168,7 @@ bool JspFile::save(string fname) {
         int pitch = frame.surface->pitch / sizeof(SDL_Color);
         for (int y = 0; y < info.height; ++y) {
             for (int x = 0; x < info.width; ++x) {
-                temp[y * info.width + x] = palette::getExact(pixels[y * pitch + x]);
+                temp[y * info.width + x] = lunaticpal::GetNearest(pixels[y * pitch + x]);
             }
         }
         SDL_UnlockSurface(frame.surface.get());

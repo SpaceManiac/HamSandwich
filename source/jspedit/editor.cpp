@@ -3,7 +3,7 @@
 #include "jspfile.h"
 #include "fontawesome.h"
 #include "gui.h"
-#include "palette.h"
+#include "lunaticpal.h"
 #include <iostream>
 #include <sstream>
 #include <SDL2/SDL_image.h>
@@ -254,7 +254,7 @@ bool Editor::import_frame(string fname, bool batch) {
         surface = {SDL_ConvertSurfaceFormat(surface.get(), SDL_PIXELFORMAT_ABGR8888, 0), SDL_FreeSurface};
     }
 
-    if (palette::reduceImage(surface.get()) && !batch) {
+    if (lunaticpal::ReduceImage(surface.get()) && !batch) {
         dialog::showMessage("The image's colors were adjusted");
     }
 
@@ -391,7 +391,7 @@ void Editor::convertAlpha() {
     SDL_Color *pixels = (SDL_Color*) surface->pixels;
     int pitch = surface->pitch / sizeof(SDL_Color);
     SDL_LockSurface(surface);
-    SDL_Color key = palette::getColor(208);
+    SDL_Color key = lunaticpal::GetColor(208);
 
     for (int y = 0; y < surface->h; ++y) {
         for (int x = 0; x < surface->h; ++x) {
