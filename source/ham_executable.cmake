@@ -13,7 +13,7 @@ function(HamSandwich_executable_icon target_name ico)
 	else()
 		# On other platforms, embed the .png version as a document.
 		set(ico2png_py "${CMAKE_SOURCE_DIR}/tools/build/ico2png.py")
-		set(png "${CMAKE_CURRENT_BINARY_DIR}/${arg_ICON}.png")
+		set(png "${CMAKE_CURRENT_BINARY_DIR}/executable_icon.png")
 		add_custom_command(
 			OUTPUT "${png}"
 			COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${ico2png_py}" "${ico}" "${png}"
