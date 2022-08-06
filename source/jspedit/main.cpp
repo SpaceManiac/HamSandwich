@@ -31,9 +31,9 @@ int main(int argc, char** argv) {
     gIconFont = TTF_OpenFontRW(SDL_RWFromConstMem(embed_fontawesome, embed_fontawesome_size), true, 14);
     if (!gIconFont) printf("fontawesome.ttf: %s\n", TTF_GetError());
 
-    SDL_CreateWindowAndRenderer(DISPLAY_WIDTH, DISPLAY_HEIGHT, SDL_WINDOW_RESIZABLE, &window, &renderer);
+    window = SDL_CreateWindow("JspEdit 3", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DISPLAY_WIDTH, DISPLAY_HEIGHT, SDL_WINDOW_RESIZABLE);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
     SDL_GetWindowSize(window, &DISPLAY_WIDTH, &DISPLAY_HEIGHT);
-    SDL_SetWindowTitle(window, "JspEdit 3");
 
     SDL_Surface *surface = IMG_Load_RW(SDL_RWFromConstMem(embed_game_icon, embed_game_icon_size), true);
     SDL_SetWindowIcon(window, surface);
