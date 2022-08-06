@@ -822,7 +822,7 @@ void loadOnStartup(const char* fname) {
 
 void main() {
     Editor ed = Editor();
-    if (start_fname && std::string_view{"window"} != start_fname) {
+    if (start_fname) {
         ed.load(start_fname);
     }
     while (ed.running) {

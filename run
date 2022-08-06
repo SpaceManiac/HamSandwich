@@ -137,7 +137,7 @@ debugcommand="$cmakedir/source/$project/$project"
 if test "$os" = "windows"; then
 	debugcommand="$debugcommand.exe"
 fi
-debugargs=("window")
+debugargs=()
 debugenvs=()
 
 # Build and install
@@ -155,20 +155,28 @@ if test -z "$nobuild"; then
 		fi
 	else
 		# Desktop.
-		if test "$project" != "launcher"; then
-			# Single project: build the launcher and that project.
-			make preset="$preset" "$project" launcher sdl2_rpath
-			# Install the launcher so that it can be used to download assets.
-			cmake --install "$cmakedir" --component Unspecified --config Debug
-			cmake --install "$cmakedir" --component generic/executables --config Debug
-			cmake --install "$cmakedir" --component launcher/executables --config Debug
-			# But we don't need to install the game's executable because we're
-			# going to run it right out its build directory.
-		else
-			# Launcher: build everything that isn't excluded, because that's
-			# what will be presented in the launcher UI.
-			make preset="$preset" install
-		fi
+		case "$project" in
+			launcher)
+				# Launcher: build everything that isn't excluded, because that's
+				# what will be presented in the launcher UI.
+				make preset="$preset" install
+				;;
+			jfttool|jspedit|lunaticpal|mini_xxd)
+				# Tool: build just that project. Don't bother installing it.
+				make preset="$preset" "$project"
+				;;
+			*)
+				# Single game project: build the launcher and that project.
+				debugargs=("window")
+				make preset="$preset" "$project" launcher sdl2_rpath
+				# Install the launcher so that it can be used to download assets.
+				cmake --install "$cmakedir" --component Unspecified --config Debug
+				cmake --install "$cmakedir" --component generic/executables --config Debug
+				cmake --install "$cmakedir" --component launcher/executables --config Debug
+				# But we don't need to install the game's executable because we're
+				# going to run it right out its build directory.
+				;;
+		esac
 	fi
 fi
 
@@ -220,6 +228,7 @@ case "$tool" in
 			"$debugcommand" "${debugargs[@]}"
 		else
 			echo "$project: not a runnable target."
+			exit 1
 		fi
 		;;
 	*)
