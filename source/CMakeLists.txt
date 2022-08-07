@@ -32,8 +32,8 @@ endif()
 
 # -----------------------------------------------------------------------------
 # Libraries
-add_subdirectory("mini_xxd")
 include("ham_executable.cmake")
+add_subdirectory("mini_xxd")
 add_subdirectory("vanilla_extract")
 add_subdirectory("ham")
 

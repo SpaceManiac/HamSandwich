@@ -1,7 +1,7 @@
 #ifndef LUNATICPAL_H
 
 #include <stdint.h>
-#include <SDL2/SDL_pixels.h>
+#include <SDL_pixels.h>
 
 struct SDL_Surface;
 

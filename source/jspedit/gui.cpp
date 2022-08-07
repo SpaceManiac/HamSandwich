@@ -1,5 +1,5 @@
 #include "gui.h"
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 Gui::Gui()
     : mx(0)
@@ -114,5 +114,5 @@ bool Gui::iconButton(int x, int y, FAChar ch, const std::string &desc, KbdShortc
 }
 
 bool Gui::hotkey(KbdShortcut shortcut) {
-    return (shortcut != (KbdShortcut){ 0, 0 } && justTyped == shortcut);
+    return (shortcut != KbdShortcut { 0, 0 } && justTyped == shortcut);
 }

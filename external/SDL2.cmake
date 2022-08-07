@@ -2,6 +2,7 @@
 add_library(SDL2 INTERFACE)
 add_library(SDL2_image INTERFACE)
 add_library(SDL2_mixer INTERFACE)
+add_library(SDL2_ttf INTERFACE)
 
 if(EMSCRIPTEN)
 	target_compile_options(SDL2 INTERFACE -sUSE_SDL=2)
@@ -47,7 +48,11 @@ elseif(WIN32)
 		URL https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.0.4-VC.zip
 		URL_HASH SHA256=258788438b7e0c8abb386de01d1d77efe79287d9967ec92fbb3f89175120f0b0
 	)
-	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer)
+	FetchContent_Declare(SDL2_ttf
+		URL https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-devel-2.0.15-VC.zip
+		URL_HASH SHA256=aab0d81f1aa6fe654be412efc85829f2b188165dca6c90eb4b12b673f93e054b
+	)
+	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf)
 
 	target_include_directories(SDL2 INTERFACE "${sdl2_SOURCE_DIR}/include")
 	set(sdl2_LIBS "${sdl2_SOURCE_DIR}/lib/${SDL_PLATFORM}")
@@ -73,11 +78,19 @@ elseif(WIN32)
 		"${sdl2_mixer_LIBS}/libvorbis-0.dll"
 		"${sdl2_mixer_LIBS}/libvorbisfile-3.dll"
 		TYPE BIN COMPONENT generic/executables)
+
+	target_include_directories(SDL2_ttf INTERFACE "${sdl2_ttf_SOURCE_DIR}/include")
+	target_link_directories(SDL2_ttf INTERFACE "${sdl2_ttf_SOURCE_DIR}/lib/${SDL_PLATFORM}")
+	target_link_libraries(SDL2_ttf INTERFACE "SDL2_ttf.lib")
+	install(FILES
+		"${sdl2_ttf_SOURCE_DIR}/lib/${SDL_PLATFORM}/SDL2_ttf.dll"
+		"${sdl2_ttf_SOURCE_DIR}/lib/${SDL_PLATFORM}/libfreetype-6.dll"
+		"${sdl2_ttf_SOURCE_DIR}/lib/${SDL_PLATFORM}/LICENSE.freetype.txt"
+		"${sdl2_ttf_SOURCE_DIR}/lib/${SDL_PLATFORM}/zlib1.dll"
+		TYPE BIN COMPONENT sdl2_ttf/executables)
 elseif(APPLE)
 	# Like Windows, use the official SDL2 prebuild binaries.
 	include(FetchContent)
-	# SDL 2.0.8 is the real pinned version, but SDL 2.0.9 fixes a Windows-only bug:
-	# https://github.com/libsdl-org/SDL/commit/c04dca0dad2696d7dcd51427c8183b19ebff8a60
 	FetchContent_Declare(SDL2
 		URL https://www.libsdl.org/release/SDL2-2.0.8.dmg
 		URL_HASH SHA256=74dd2cb6b18e35e8181523590115f10f1da774939c21ce27768a2a80ba57ad5f
@@ -97,6 +110,14 @@ elseif(APPLE)
 	FetchContent_Declare(SDL2_mixer
 		URL https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.4.dmg
 		URL_HASH SHA256=ed9c904121ae763cf7d3c7bf08b95cd0e23d370f112c787a17e871bd2c764fe3
+		DOWNLOAD_NO_EXTRACT TRUE
+		PATCH_COMMAND hdiutil mount <DOWNLOADED_FILE> -mountpoint dmg_mount
+		COMMAND cp -r dmg_mount dmg_content
+		COMMAND hdiutil unmount dmg_mount
+	)
+	FetchContent_Declare(SDL2_ttf
+		URL https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-2.0.15.dmg
+		URL_HASH SHA256=318bc896ea89e776a6cd07fc71aff11571e05631390fcdd360dc831cc88cf849
 		DOWNLOAD_NO_EXTRACT TRUE
 		PATCH_COMMAND hdiutil mount <DOWNLOADED_FILE> -mountpoint dmg_mount
 		COMMAND cp -r dmg_mount dmg_content
@@ -122,10 +143,12 @@ else()
 	find_package(SDL2 REQUIRED)
 	find_library(SDL2_image_LIBRARIES SDL2_image REQUIRED)
 	find_library(SDL2_mixer_LIBRARIES SDL2_mixer REQUIRED)
+	find_library(SDL2_ttf_LIBRARIES SDL2_ttf REQUIRED)
 	target_include_directories(SDL2 INTERFACE ${SDL2_INCLUDE_DIRS})
 	target_link_libraries(SDL2 INTERFACE ${SDL2_LIBRARIES})
 	target_link_libraries(SDL2_image INTERFACE ${SDL2_image_LIBRARIES})
 	target_link_libraries(SDL2_mixer INTERFACE ${SDL2_mixer_LIBRARIES})
+	target_link_libraries(SDL2_ttf INTERFACE ${SDL2_ttf_LIBRARIES})
 	target_compile_options(SDL2 INTERFACE ${SDL2_CFLAGS_OTHER})
 
 	# Bundle Steam runtime libraries.
@@ -145,6 +168,11 @@ else()
 		URL_HASH SHA256=78860d794928a0f7a31cd4ee83f395151dedb74f0e2613c6833438aa0d3f1d54
 		PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
 	)
+	FetchContent_Declare(steam_sdl2_ttf
+		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2-ttf/libsdl2-ttf-2.0-0_2.0.15-0+steamrt1.1+srt2_amd64.deb
+		URL_HASH SHA256=4444fb73f3bc2b7229dea2564baba233958158d82c73489724d4107bd31e3e6c
+		PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
+	)
 	FetchContent_Declare(steam_libpng
 		URL https://repo.steampowered.com/steamrt/pool/main/libp/libpng/libpng12-0_1.2.46-3ubuntu4.3+steamrt1.1+srt1_amd64.deb
 		URL_HASH SHA256=07f3e5c0873fddccdfff6cc83d9652c69685260ea7b07fc30b17bc8bb583d625
@@ -162,10 +190,12 @@ else()
 		DEPENDS "${sdl2_original}"
 		VERBATIM
 	)
-	add_custom_target(sdl2_rpath ALL DEPENDS "${sdl2_with_rpath}")
+	set(sdl2_rpath_depends "${sdl2_with_rpath}")
 
 	install(FILES "${sdl2_with_rpath}" RENAME "libSDL2-2.0.so.0" TYPE BIN COMPONENT generic/executables)
 	install(FILES "${steam_sdl2_image_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2_image-2.0.so.0.2.3" RENAME "libSDL2_image-2.0.so.0" TYPE BIN COMPONENT generic/executables)
 	install(FILES "${steam_sdl2_mixer_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so.0.2.2" RENAME "libSDL2_mixer-2.0.so.0" TYPE BIN COMPONENT generic/executables)
 	install(FILES "${steam_libpng_SOURCE_DIR}/lib/x86_64-linux-gnu/libpng12.so.0.46.0" RENAME "libpng12.so.0" TYPE BIN COMPONENT generic/executables)
 endif()
+
+add_custom_target(sdl2_rpath ALL DEPENDS "${sdl2_rpath_depends}")

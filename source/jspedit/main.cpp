@@ -1,6 +1,6 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
 #include <string>
 #include "globals.h"
 #include "editor.h"
@@ -9,8 +9,10 @@ extern const size_t embed_vera_size;
 extern const unsigned char embed_vera[];
 extern const size_t embed_fontawesome_size;
 extern const unsigned char embed_fontawesome[];
+#if !defined(_WIN32) && !defined(__clang__)
 extern const size_t embed_game_icon_size;
 extern const unsigned char embed_game_icon[];
+#endif
 
 using namespace std;
 
@@ -35,9 +37,11 @@ int main(int argc, char** argv) {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
     SDL_GetWindowSize(window, &DISPLAY_WIDTH, &DISPLAY_HEIGHT);
 
+#if !defined(_WIN32) && !defined(__clang__)
     SDL_Surface *surface = IMG_Load_RW(SDL_RWFromConstMem(embed_game_icon, embed_game_icon_size), true);
     SDL_SetWindowIcon(window, surface);
     SDL_FreeSurface(surface);
+#endif
 
     if (argc > 1) {
         editor::loadOnStartup(argv[1]);

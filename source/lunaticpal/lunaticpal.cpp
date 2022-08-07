@@ -1,7 +1,8 @@
 #include "lunaticpal.h"
 #include <vector>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <zlib.h>
+#include <stdio.h>
 
 extern const unsigned char embed_compressed_lookup_table[];
 extern const size_t embed_compressed_lookup_table_size;

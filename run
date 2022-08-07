@@ -164,6 +164,9 @@ if test -z "$nobuild"; then
 			jfttool|jspedit|lunaticpal|mini_xxd)
 				# Tool: build just that project. Don't bother installing it.
 				make preset="$preset" "$project"
+				if test "$project" = "jspedit"; then
+					cmake --install "$cmakedir" --component sdl2_ttf/executables --config Debug
+				fi
 				;;
 			*)
 				# Single game project: build the launcher and that project.
