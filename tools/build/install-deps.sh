@@ -68,7 +68,7 @@ sudo_apt-get_install() {
 deps_ubuntu() {
 	packages 'sudo_apt-get_install' \
 		make g++ \
-		zlib1g-dev libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev \
+		zlib1g-dev libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev libsdl2-ttf-dev \
 		python3-pip
 }
 
@@ -76,7 +76,7 @@ deps_arch() {
 	packages 'sudo pacman -S --needed --quiet' \
 		wget \
 		make gcc gcc-libs \
-		zlib sdl2 sdl2_image sdl2_mixer \
+		zlib sdl2 sdl2_image sdl2_mixer sdl2_ttf \
 		python-pip
 
 	premake5_linux
@@ -86,7 +86,7 @@ deps_alpine() {
 	# Note: non-autoinstalled dependency on `bash` and `sudo` packages.
 	packages 'sudo apk add' \
 		make g++ zlib-dev \
-		sdl2-dev sdl2_mixer-dev sdl2_image-dev \
+		sdl2-dev sdl2_mixer-dev sdl2_image-dev sdl2_ttf-dev \
 		python3 py3-pip jpeg-dev python3-dev
 
 	# TODO: premake5's linux binaries are not compatible.
