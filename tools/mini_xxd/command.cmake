@@ -1,7 +1,3 @@
-add_executable(mini_xxd main.cpp)
-# Always optimize, even in Debug mode, because otherwise we're just wasting time.
-gnu_compile_options(mini_xxd PRIVATE -O3)
-
 function(MiniXxd_add_command bin_fname cpp_fname symbol_name)
 	add_custom_command(
 		OUTPUT "${cpp_fname}"

@@ -24,6 +24,28 @@ if(APPLE)
 	set(CMAKE_INSTALL_RPATH "@executable_path")
 endif()
 
+# Include the host build tools.
+if (CMAKE_CROSSCOMPILING)
+	# If we're cross-compiling, such as for Emscripten or Android, build the
+	# tools in a separate process then import them.
+	execute_process(
+		COMMAND
+			"${CMAKE_COMMAND}"
+			-E env
+			--unset=CXX
+			--unset=CC
+			"${CMAKE_COMMAND}"
+			-DCMAKE_BUILD_TYPE:STRING=Release
+			-B${CMAKE_CURRENT_BINARY_DIR}/host_tools
+			-H=${CMAKE_CURRENT_SOURCE_DIR}/tools
+		COMMAND_ERROR_IS_FATAL ANY
+	)
+	include("${CMAKE_CURRENT_BINARY_DIR}/host_tools/host_tools.cmake")
+else()
+	# Not cross-compiling, so just import the tools directory outright.
+	add_subdirectory(tools)
+endif()
+
 # Include the external/ and source/ directories to get most of the build.
 add_subdirectory("external")
 add_subdirectory("source")
