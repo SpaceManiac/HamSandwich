@@ -18,6 +18,7 @@ function (export_tool target)
 				--build ${CMAKE_BINARY_DIR}
 				--target ${target}
 				--config ${CMAKE_BUILD_TYPE}
+			VERBATIM
 			COMMENT \"Building host tool: ${target}\"
 		)
 		add_dependencies(${target} hostbuild_${target})

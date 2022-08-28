@@ -173,7 +173,7 @@ should go at the beginning.
 
 Most image editors offer a facility to choose what palette (sometimes called a
 colormap) to use when authoring 256-color bitmaps. The palette can be imported
-from any asset from the games, or from the provided `src/lunaticpal/example.bmp`. In case you are
+from any asset from the games, or from the provided `source/lunaticpal/example.bmp`. In case you are
 having trouble, you can use the included LunaticPal tool with `./run lunaticpal` to
 convert images.
 
