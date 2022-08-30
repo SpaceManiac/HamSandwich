@@ -67,9 +67,27 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: make install mode=release os=emscripten
-      - if: github.event_name == 'push' && github.ref_name == 'master'
-        uses: peaceiris/actions-gh-pages@v3
+      - uses: actions/upload-pages-artifact@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/webroot
-          force_orphan: true
+          path: ./build/webroot
+  web-deploy:
+    name: Deploy to GitHub Pages
+    needs: web
+    if: github.event_name == 'push' && github.ref_name == 'master'
+    permissions:
+      pages: write  # To deploy to Pages
+      id-token: write  # To verify the deployment originates from an appropriate source
+    environment:
+      # GH recommends this environment name
+      name: github-pages
+      # Export the GitHub Pages URL as the environment's URL
+      url: ${{ steps.deployment.outputs.page_url }}
+    # Allow only one concurrent deployment
+    concurrency:
+      group: "pages"
+      cancel-in-progress: true
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/configure-pages@v2
+    - uses: actions/deploy-pages@v1
+      id: deployment
