@@ -113,24 +113,9 @@ void ChooseNextSong()
 	// always just keep looping
 }
 
-bool ConfigMusicEnabled()
-{
-	return true;
-}
-
 int CurrentSong(void)
 {
 	return curSong;
-}
-
-bool ConfigSoundEnabled()
-{
-	return 1;
-}
-
-int ConfigNumSounds()
-{
-	return 32;
 }
 
 SDL_RWops* SoundLoadOverride(int which)

@@ -45,16 +45,6 @@ void MakeNormalSound(int snd)
 	GoPlaySound(snd, 0, 255, SND_MAXPRIORITY | SND_CUTOFF | SND_ONE, MAX_SNDPRIORITY);
 }
 
-bool ConfigSoundEnabled()
-{
-	return 1;
-}
-
-int ConfigNumSounds()
-{
-	return 32;
-}
-
 SDL_RWops* SoundLoadOverride(int which)
 {
 	return nullptr;

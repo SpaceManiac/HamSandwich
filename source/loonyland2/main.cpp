@@ -52,6 +52,8 @@ TASK(int) main(int argc, char* argv[])
 
 	AppdataInit();
 	LoadConfig();
+	SetHamMusicEnabled(config.music);
+	SetJamulSoundEnabled(config.sound, config.numSounds);
 	MGLDraw *mainmgl=new MGLDraw("Loonyland 2", SCRWID, SCRHEI, windowedGame);
 
 	if(!mainmgl)

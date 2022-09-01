@@ -112,11 +112,6 @@ const char *CurSongTitle(void)
 	return curSongName;
 }
 
-bool ConfigMusicEnabled()
-{
-	return config.music;
-}
-
 void PlayNextSong(void)
 {
 	byte pl;

@@ -18,6 +18,7 @@ enum {
 
 const int MAX_SNDPRIORITY = 65536;
 
+void SetJamulSoundEnabled(bool enabled, int numSounds);
 bool JamulSoundInit(int numBuffers);
 void JamulSoundExit(void);
 bool SoundIsAvailable();

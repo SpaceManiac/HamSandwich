@@ -26,9 +26,6 @@
 MGLDraw *mainmgl;
 
 void ChooseNextSong() {}
-bool ConfigMusicEnabled() { return true; }
-bool ConfigSoundEnabled() { return true; }
-int ConfigNumSounds() { return 16; }
 SDL_RWops* SoundLoadOverride(int) { return nullptr; }
 void SetGameIdle(bool) {}
 
@@ -42,6 +39,7 @@ TASK(int) main(int argc, char* argv[])
 
 	HAM_EXTERN_FULFILL
 	AppdataInit();
+	SetJamulSoundEnabled(true, 16);
 
 	bool windowedGame=false;
 	for (int i = 1; i < argc; ++i)

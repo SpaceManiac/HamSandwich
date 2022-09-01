@@ -48,8 +48,3 @@ void CDStop(void)
 	StopSong();
 	trackNum = 0;
 }
-
-bool ConfigMusicEnabled()
-{
-	return true;
-}

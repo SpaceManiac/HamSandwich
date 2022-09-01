@@ -50,6 +50,8 @@ TASK(int) main(int argc, char* argv[])
 
 	AppdataInit();
 	LoadConfig();
+	SetHamMusicEnabled(config.music);
+	SetJamulSoundEnabled(config.sound, config.numSounds);
 	MGLDraw *mainmgl=new MGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame);
 	if(!mainmgl)
 		CO_RETURN 0;

@@ -24,9 +24,6 @@
 MGLDraw *mainmgl;
 
 void ChooseNextSong() {}
-bool ConfigMusicEnabled() { return true; }
-bool ConfigSoundEnabled() { return true; }
-int ConfigNumSounds() { return 16; }
 SDL_RWops* SoundLoadOverride(int) { return nullptr; }
 void SetGameIdle(bool) {}
 
@@ -34,6 +31,7 @@ TASK(int) main(int argc, char* argv[])
 {
 	HAM_EXTERN_FULFILL
 	AppdataInit();
+	SetJamulSoundEnabled(true, 16);
 
 	byte kb0[6] = { SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT, SDL_SCANCODE_LCTRL, SDL_SCANCODE_LSHIFT };
 	byte kb1[6] = { SDL_SCANCODE_KP_8, SDL_SCANCODE_KP_2, SDL_SCANCODE_KP_4, SDL_SCANCODE_KP_6, SDL_SCANCODE_Z, SDL_SCANCODE_X };

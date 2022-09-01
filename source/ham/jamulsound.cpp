@@ -32,6 +32,9 @@ struct schannel_t
 
 namespace
 {
+	bool soundEnabled = true;
+	int configNumSounds = 32;
+
 	int sndVolume;
 
 	int NUM_SOUNDS = 0;
@@ -40,13 +43,19 @@ namespace
 	int bufferCount;
 	std::vector<soundList_t> soundList;
 	schannel_t *schannel;
-};
+}
+
+void SetJamulSoundEnabled(bool enable, int numSounds)
+{
+	soundEnabled = enable;
+	configNumSounds = numSounds;
+}
 
 bool JamulSoundInit(int numBuffers)
 {
 	int i;
 
-	if (!g_HamExtern.ConfigSoundEnabled || !g_HamExtern.ConfigSoundEnabled()) {
+	if (!soundEnabled) {
 		LogDebug("sound disabled in config");
 		return false;
 	}
@@ -69,7 +78,7 @@ bool JamulSoundInit(int numBuffers)
 	LogDebug("audio format: freq=%d, channels=%d, format=0x%x\n", frequency, channels, format);
 #endif
 
-	NUM_SOUNDS = g_HamExtern.ConfigNumSounds ? g_HamExtern.ConfigNumSounds() : 0;
+	NUM_SOUNDS = configNumSounds;  // Only copied over here to avoid problems if SetJamulSoundEnabled is called after init.
 	Mix_AllocateChannels(NUM_SOUNDS + 1);
 
 	bufferCount=numBuffers;

@@ -7,12 +7,22 @@
 
 #include <SDL_mixer.h>
 
-static Mix_Music* curStream = nullptr;
-static int musVolume = 255;
+namespace
+{
+	bool musicEnabled = true;
+
+	Mix_Music* curStream = nullptr;
+	int musVolume = 255;
+}
+
+void SetHamMusicEnabled(bool enabled)
+{
+	musicEnabled = enabled;
+}
 
 void UpdateMusic()
 {
-	if (g_HamExtern.ConfigMusicEnabled && g_HamExtern.ConfigMusicEnabled() && curStream && !Mix_PlayingMusic())
+	if (musicEnabled && curStream && !Mix_PlayingMusic())
 	{
 		Mix_PlayMusic(curStream, 1);
 		if (g_HamExtern.ChooseNextSong)
@@ -31,7 +41,7 @@ void SetMusicVolume(int vol)
 
 void PlaySongFile(const char* fullname)
 {
-	if (!g_HamExtern.ConfigMusicEnabled || !g_HamExtern.ConfigMusicEnabled())
+	if (!musicEnabled)
 		return;
 
 	StopSong();

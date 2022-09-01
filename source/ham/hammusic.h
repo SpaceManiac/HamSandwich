@@ -3,6 +3,8 @@
 
 #include "jamultypes.h"
 
+void SetHamMusicEnabled(bool enabled);
+
 void UpdateMusic();
 
 void SetMusicVolume(int vol);

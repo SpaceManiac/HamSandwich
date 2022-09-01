@@ -102,24 +102,9 @@ void KillSong(void)
 	sndNum=-1;
 }
 
-bool ConfigSoundEnabled()
-{
-	return 1;
-}
-
-int ConfigNumSounds()
-{
-	return 32;
-}
-
 SDL_RWops* SoundLoadOverride(int which)
 {
 	return nullptr;
-}
-
-bool ConfigMusicEnabled()
-{
-	return false;  // We just use the sound system for music.
 }
 
 void ChooseNextSong()

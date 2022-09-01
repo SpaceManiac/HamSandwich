@@ -95,13 +95,3 @@ void LoadConfig(void)
 		fclose(f);
 	}
 }
-
-bool ConfigSoundEnabled()
-{
-	return config.sound;
-}
-
-int ConfigNumSounds()
-{
-	return config.numSounds;
-}
