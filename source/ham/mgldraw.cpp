@@ -29,6 +29,12 @@ static MGLDraw *_globalMGLDraw = nullptr;
 
 static bool pixelMode = false;
 
+static bool idleGame = false;
+bool GetGameIdle()
+{
+	return idleGame;
+}
+
 MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	: mouse_x(xRes / 2)
 	, mouse_y(yRes / 2)
@@ -377,11 +383,9 @@ TASK(void) MGLDraw::FinishFlip(void)
 		} else if (e.type == SDL_WINDOWEVENT) {
 			if (e.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
 				idle = true;
-				if (g_HamExtern.SetGameIdle)
-					g_HamExtern.SetGameIdle(true);
+				idleGame = true;
 			} else if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
-				if (g_HamExtern.SetGameIdle)
-					g_HamExtern.SetGameIdle(false);
+				idleGame = false;
 				idle = false;
 			} else if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
 				winWidth = e.window.data1;

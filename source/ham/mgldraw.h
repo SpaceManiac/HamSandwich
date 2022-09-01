@@ -138,4 +138,6 @@ int MGL_random(int range);
 long MGL_randoml(long range);
 void MGL_srand(int seed);
 
+bool GetGameIdle();
+
 #endif

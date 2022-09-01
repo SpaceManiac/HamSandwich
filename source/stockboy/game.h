@@ -95,9 +95,6 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode);
 void SendMessageToGame(byte msg,int content);
 void AddGarbageTime(dword t);
 
-void SetGameIdle(byte b);
-byte GetGameIdle(void);
-void GameIdle(void);
 byte WindingDown(void);
 byte WindingUp(void);
 void StopWindingUp(void);

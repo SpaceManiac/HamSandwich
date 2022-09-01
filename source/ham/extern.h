@@ -15,15 +15,11 @@ extern struct HamExtern
 
 	// ---- jamulsound ----
 	SDL_RWops* (*SoundLoadOverride)(int);
-
-	// ---- mgldraw ----
-	void (*SetGameIdle)(bool);
 } g_HamExtern;
 
 #define HAM_EXTERN_FULFILL \
 	extern const HamSandwichMetadata* GetHamSandwichMetadata(void); g_HamExtern.GetHamSandwichMetadata = &GetHamSandwichMetadata; \
 	extern void ChooseNextSong(void); g_HamExtern.ChooseNextSong = &ChooseNextSong; \
-	extern SDL_RWops* SoundLoadOverride(int); g_HamExtern.SoundLoadOverride = &SoundLoadOverride; \
-	extern void SetGameIdle(bool); g_HamExtern.SetGameIdle = &SetGameIdle;
+	extern SDL_RWops* SoundLoadOverride(int); g_HamExtern.SoundLoadOverride = &SoundLoadOverride;
 
 #endif  // HAM_EXTERN_H

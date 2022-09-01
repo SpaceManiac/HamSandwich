@@ -44,7 +44,7 @@ byte msgContent;
 word windingDown;
 byte windingUp;
 byte windDownReason;
-static byte idleGame=0,pictureNoKey;
+static byte pictureNoKey;
 
 void LunaticInit(MGLDraw *mgl)
 {
@@ -199,32 +199,6 @@ void ExitLevel(void)
 	gamemgl->RealizePalette();
 	if(shopping)
 		ExitGallery();
-}
-
-void SetGameIdle(bool b)
-{
-	idleGame = b;
-}
-
-byte GetGameIdle(void)
-{
-	return idleGame;
-}
-
-// this is run whenever the game is swapped away from
-void GameIdle(void)
-{
-	dword start,end;
-
-	start=timeGetTime();
-	while(idleGame)
-	{
-		if(!gamemgl->Process())
-			break;
-	}
-	end=timeGetTime();
-	player.boredom=0;
-	return;
 }
 
 void RestoreGameplayGfx(void)
@@ -693,7 +667,7 @@ TASK(byte) PlayALevel(byte map)
 			if(!(GetJoyButtons()&4))
 				wasPaused=0;
 		}
-		if((lastKey==27 || (GetJoyButtons()&4) || idleGame) && !wasPaused && gameMode==GAMEMODE_PLAY)
+		if((lastKey==27 || (GetJoyButtons()&4) || GetGameIdle()) && !wasPaused && gameMode==GAMEMODE_PLAY)
 		{
 			wasPaused=1;
 			PauseGame();

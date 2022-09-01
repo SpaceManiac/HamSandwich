@@ -32,7 +32,6 @@ byte msgContent;
 word windingDown;
 byte windingUp;
 byte windDownReason;
-static byte idleGame = 0;
 FILE *logFile;
 
 Map* GameCurrentMap()
@@ -147,34 +146,6 @@ void ExitLevel(void)
 	delete curMap;
 	curMap = NULL;
 	PurgeMonsterSprites();
-}
-
-void SetGameIdle(bool b)
-{
-	idleGame = b;
-}
-
-byte GetGameIdle(void)
-{
-	return idleGame;
-}
-
-// this is run whenever the game is swapped away from
-
-void GameIdle(void)
-{
-	dword start, end;
-
-	start = timeGetTime();
-	while (idleGame)
-	{
-		if (!gamemgl->Process())
-			break;
-	}
-	end = timeGetTime();
-	AddGarbageTime(end - start);
-	player.boredom = 0;
-	return;
 }
 
 void EnterStatusScreen(void)

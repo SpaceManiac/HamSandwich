@@ -47,7 +47,6 @@ word windingDown;
 byte windingUp;
 byte windDownReason;
 byte loadGame;
-static byte idleGame=0;
 
 void LunaticInit(MGLDraw *mgl)
 {
@@ -180,35 +179,6 @@ void ExitLevel(void)
 	curMap=NULL;
 	PurgeMonsterSprites();
 	SaveOptions();
-}
-
-void SetGameIdle(byte b)
-{
-	idleGame=b;
-}
-
-byte GetGameIdle(void)
-{
-	return idleGame;
-}
-
-// this is run whenever the game is swapped away from
-void GameIdle(void)
-{
-	dword start,end;
-
-	start=timeGetTime();
-	while(idleGame)
-	{
-		//WaitMessage();
-		if(!gamemgl->Process())
-			break;
-	}
-	end=timeGetTime();
-	AddGarbageTime(end-start);
-	player.boredom=0;
-	ResetClock(0);
-	return;
 }
 
 void EnterStatusScreen(void)

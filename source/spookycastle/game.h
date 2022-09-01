@@ -76,8 +76,4 @@ TASK(void) TrainingGame(MGLDraw *mgl);
 void SendMessageToGame(byte msg,int content);
 void AddGarbageTime(dword t);
 
-void SetGameIdle(byte b);
-byte GetGameIdle(void);
-void GameIdle(void);
-
 #endif

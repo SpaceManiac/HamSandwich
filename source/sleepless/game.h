@@ -85,10 +85,6 @@ TASK(byte) LunaticWorld(byte world,const char *worldName);
 
 void SendMessageToGame(byte msg,int content);
 
-void SetGameIdle(bool b);
-byte GetGameIdle(void);
-void GameIdle(void);
-
 TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname);
 void PauseGame(void);
 

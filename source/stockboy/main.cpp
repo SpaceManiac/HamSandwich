@@ -27,7 +27,6 @@ MGLDraw *mainmgl;
 
 void ChooseNextSong() {}
 SDL_RWops* SoundLoadOverride(int) { return nullptr; }
-void SetGameIdle(bool) {}
 
 TASK(int) main(int argc, char* argv[])
 {
