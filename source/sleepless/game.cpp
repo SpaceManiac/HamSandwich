@@ -209,8 +209,6 @@ void ExitLevel(void)
 void SetGameIdle(bool b)
 {
 	idleGame=b;
-	if (b)
-		PauseGame();
 }
 
 byte GetGameIdle(void)
@@ -737,7 +735,7 @@ TASK(byte) PlayALevel(byte map)
 			if(!(GetJoyButtons()&4))
 				wasPaused=0;
 		}
-		if((lastKey==27 || (GetJoyButtons()&4)) && !wasPaused && gameMode==GAMEMODE_PLAY && windingDown==0 && windingUp==0)
+		if((lastKey==27 || (GetJoyButtons()&4) || idleGame) && !wasPaused && gameMode==GAMEMODE_PLAY && windingDown==0 && windingUp==0)
 		{
 			wasPaused=1;
 			PauseGame();
