@@ -131,7 +131,6 @@ void MakeSound(int snd,int x,int y,int flags,int priority);
 void MakeNormalSound(int snd);
 void MakeNormalSound2(int snd);
 void LoopingSound(int snd);
-void SoundSystemExists(void);
 void KillSong(void);
 void SetVolumes(int sndvol,int musvol);
 

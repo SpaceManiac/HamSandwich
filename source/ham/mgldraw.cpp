@@ -72,8 +72,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
 #endif
 
-	if(JamulSoundInit(512) && g_HamExtern.SoundSystemExists)
-		g_HamExtern.SoundSystemExists();
+	JamulSoundInit(512);
 
 	Uint32 flags = windowed ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP;
 	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, xRes, yRes, flags);

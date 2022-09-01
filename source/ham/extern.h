@@ -20,7 +20,6 @@ extern struct HamExtern
 	SDL_RWops* (*SoundLoadOverride)(int);
 
 	// ---- mgldraw ----
-	void (*SoundSystemExists)();
 	void (*SetGameIdle)(bool);
 } g_HamExtern;
 
@@ -31,7 +30,6 @@ extern struct HamExtern
 	extern bool ConfigSoundEnabled(void); g_HamExtern.ConfigSoundEnabled = &ConfigSoundEnabled; \
 	extern int ConfigNumSounds(void); g_HamExtern.ConfigNumSounds = &ConfigNumSounds; \
 	extern SDL_RWops* SoundLoadOverride(int); g_HamExtern.SoundLoadOverride = &SoundLoadOverride; \
-	extern void SoundSystemExists(void); g_HamExtern.SoundSystemExists = &SoundSystemExists; \
 	extern void SetGameIdle(bool); g_HamExtern.SetGameIdle = &SetGameIdle;
 
 #endif  // HAM_EXTERN_H

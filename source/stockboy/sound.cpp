@@ -2,14 +2,8 @@
 #include "display.h"
 #include "options.h"
 
-byte soundAvailable=0;
 int sndNum;
 int musVolume;
-
-void SoundSystemExists(void)
-{
-	soundAvailable=1;
-}
 
 void InitSound(void)
 {
@@ -27,7 +21,7 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 	long pan,vol;
 	int cx,cy;
 
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 	if(!opt.sound)
 		return;
@@ -44,7 +38,7 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 
 void MakeNormalSound(int snd)
 {
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 
 	if(!opt.sound)
@@ -55,7 +49,7 @@ void MakeNormalSound(int snd)
 
 void MakeNormalSound2(int snd)
 {
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 
 	if(!opt.sound)
@@ -66,7 +60,7 @@ void MakeNormalSound2(int snd)
 
 void LoopingSound(int snd)
 {
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 
 	if(!opt.sound)

@@ -236,7 +236,6 @@ void MakeNormalSound(int snd);
 void MakeNormalSound2(int snd);
 void MakeSpaceSound(int snd,int priority);
 void LoopingSound(int snd);
-void SoundSystemExists(void);
 void KillSong(void);
 
 #endif

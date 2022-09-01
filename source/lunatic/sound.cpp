@@ -3,13 +3,6 @@
 #include "options.h"
 #include "music.h"
 
-byte soundAvailable = 0;
-
-void SoundSystemExists(void)
-{
-	soundAvailable = 1;
-}
-
 void InitSound(void)
 {
 	JamulSoundPurge();
@@ -25,7 +18,7 @@ void MakeSound(int snd, int x, int y, int flags, int priority)
 	long pan, vol;
 	int cx, cy;
 
-	if (!soundAvailable)
+	if (!SoundIsAvailable())
 		return;
 	if (!opt.sound)
 		return;
@@ -43,7 +36,7 @@ void MakeSound(int snd, int x, int y, int flags, int priority)
 
 void MakeNormalSound(int snd)
 {
-	if (!soundAvailable)
+	if (!SoundIsAvailable())
 		return;
 
 	if (!opt.sound)

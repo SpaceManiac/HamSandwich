@@ -21,7 +21,6 @@ bool ConfigMusicEnabled() { return true; }
 bool ConfigSoundEnabled() { return true; }
 int ConfigNumSounds() { return 16; }
 SDL_RWops* SoundLoadOverride(int) { return nullptr; }
-void SoundSystemExists() {}
 void SetGameIdle(bool) {}
 
 TASK(int) main(int argc, char* argv[])

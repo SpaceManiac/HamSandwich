@@ -20,6 +20,7 @@ const int MAX_SNDPRIORITY = 65536;
 
 bool JamulSoundInit(int numBuffers);
 void JamulSoundExit(void);
+bool SoundIsAvailable();
 
 // --------------------------------
 // here's the fun and easy sound manager

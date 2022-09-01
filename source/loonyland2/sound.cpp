@@ -2,13 +2,6 @@
 #include "options.h"
 #include "sound.h"
 
-byte soundAvailable=0;
-
-void SoundSystemExists(void)
-{
-	soundAvailable=1;
-}
-
 void InitSound(void)
 {
 	JamulSoundPurge();
@@ -24,7 +17,7 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 	long pan,vol;
 	int cx,cy;
 
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 	if(!opt.sound)
 		return;
@@ -41,7 +34,7 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 
 void MakeNormalSound(int snd)
 {
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 
 	if(!opt.sound)
@@ -52,7 +45,7 @@ void MakeNormalSound(int snd)
 
 void MakeNormalSound2(int snd)
 {
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 
 	if(!opt.sound)
@@ -63,7 +56,7 @@ void MakeNormalSound2(int snd)
 
 void MakeSpaceSound(int snd,int priority)
 {
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 
 	if(!opt.sound)

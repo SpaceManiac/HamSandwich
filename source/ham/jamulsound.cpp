@@ -17,27 +17,30 @@ struct ChunkDeleter {
 
 typedef std::unique_ptr<Mix_Chunk, ChunkDeleter> OwnedChunk;
 
-typedef struct soundList_t
+struct soundList_t
 {
 	OwnedChunk sample;
-} soundList_t;
+};
 
-typedef struct schannel_t
+struct schannel_t
 {
 	int soundNum;
 	int priority;
 	int voice;
 	OwnedChunk sample;
-} schannel_t;
+};
 
-static int sndVolume;
+namespace
+{
+	int sndVolume;
 
-static int NUM_SOUNDS = 0;
+	int NUM_SOUNDS = 0;
 
-static byte soundIsOn=0;
-static int bufferCount;
-static std::vector<soundList_t> soundList;
-static schannel_t *schannel;
+	bool soundIsOn = false;
+	int bufferCount;
+	std::vector<soundList_t> soundList;
+	schannel_t *schannel;
+};
 
 bool JamulSoundInit(int numBuffers)
 {
@@ -69,7 +72,6 @@ bool JamulSoundInit(int numBuffers)
 	NUM_SOUNDS = g_HamExtern.ConfigNumSounds ? g_HamExtern.ConfigNumSounds() : 0;
 	Mix_AllocateChannels(NUM_SOUNDS + 1);
 
-	soundIsOn=1;
 	bufferCount=numBuffers;
 	soundList.clear();
 	soundList.reserve(bufferCount);
@@ -81,7 +83,7 @@ bool JamulSoundInit(int numBuffers)
 		schannel[i].voice=-1;
 	}
 	sndVolume=128;
-	return true;
+	return soundIsOn = true;
 }
 
 void JamulSoundExit(void)
@@ -95,6 +97,11 @@ void JamulSoundExit(void)
 		soundList.clear();
 		Mix_CloseAudio();
 	}
+}
+
+bool SoundIsAvailable()
+{
+	return soundIsOn;
 }
 
 void JamulSoundUpdate(void)
