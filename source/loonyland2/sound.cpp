@@ -64,8 +64,3 @@ void MakeSpaceSound(int snd,int priority)
 
 	GoPlaySound(snd,0,0,SND_CUTOFF,priority);
 }
-
-SDL_RWops* SoundLoadOverride(int which)
-{
-	return nullptr;
-}

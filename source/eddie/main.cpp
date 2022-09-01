@@ -16,14 +16,10 @@
 
 MGLDraw *mainmgl;
 
-void ChooseNextSong() {}
-SDL_RWops* SoundLoadOverride(int) { return nullptr; }
-
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
 TASK(int) main(int argc, char* argv[])
 {
-	HAM_EXTERN_FULFILL
 	AppdataInit(GetHamSandwichMetadata());
 	SetJamulSoundEnabled(true, 16);
 

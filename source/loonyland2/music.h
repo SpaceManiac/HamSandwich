@@ -12,5 +12,6 @@
 #define SONG_FACTORY	(245)
 
 void Song(byte w);
+void ChooseNextSong();
 
 #endif

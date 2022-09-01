@@ -435,4 +435,7 @@ void MakeSpaceSound(int snd,int priority);
 
 int AppendCustomSounds(FILE *f);
 
+typedef struct SDL_RWops SDL_RWops;
+SDL_RWops* SoundLoadOverride(int num);
+
 #endif

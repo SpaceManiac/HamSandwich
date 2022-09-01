@@ -18,6 +18,7 @@
 #define MUSIC_SEQUENTIAL (16)
 #define MUSIC_REPEAT	(0)
 
+void ChooseNextSong();
 void PlaySong(const char *fname);
 void PlaySongForce(const char *fname);
 void StopSong(void);

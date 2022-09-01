@@ -26,8 +26,6 @@ extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
 TASK(int) main(int argc, char* argv[])
 {
-	HAM_EXTERN_FULFILL
-
 #ifdef DEMO
 	byte n;
 #endif

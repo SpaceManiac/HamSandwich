@@ -25,9 +25,6 @@
 
 MGLDraw *mainmgl;
 
-void ChooseNextSong() {}
-SDL_RWops* SoundLoadOverride(int) { return nullptr; }
-
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
 TASK(int) main(int argc, char* argv[])
@@ -38,7 +35,6 @@ TASK(int) main(int argc, char* argv[])
 	_CrtSetDbgFlag(flag); // Set flag to the new value
 #endif
 
-	HAM_EXTERN_FULFILL
 	AppdataInit(GetHamSandwichMetadata());
 	SetJamulSoundEnabled(true, 16);
 

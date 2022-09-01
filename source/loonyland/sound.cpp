@@ -101,12 +101,3 @@ void KillSong(void)
 		JamulSoundStop(sndNum);
 	sndNum=-1;
 }
-
-SDL_RWops* SoundLoadOverride(int which)
-{
-	return nullptr;
-}
-
-void ChooseNextSong()
-{
-}

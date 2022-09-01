@@ -108,17 +108,7 @@ void VolumeSound(byte hi)
 	}
 }
 
-void ChooseNextSong()
-{
-	// always just keep looping
-}
-
 int CurrentSong(void)
 {
 	return curSong;
-}
-
-SDL_RWops* SoundLoadOverride(int which)
-{
-	return nullptr;
 }

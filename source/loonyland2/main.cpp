@@ -43,7 +43,7 @@ extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
 TASK(int) main(int argc, char* argv[])
 {
-	HAM_EXTERN_FULFILL
+	g_HamExtern.ChooseNextSong = ChooseNextSong;
 
 	bool windowedGame=false;
 	for (int i = 1; i < argc; ++i)
