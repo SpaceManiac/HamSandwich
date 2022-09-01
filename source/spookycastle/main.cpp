@@ -26,10 +26,12 @@ MGLDraw *mainmgl;
 void ChooseNextSong() {}
 SDL_RWops* SoundLoadOverride(int) { return nullptr; }
 
+extern const HamSandwichMetadata* GetHamSandwichMetadata();
+
 TASK(int) main(int argc, char* argv[])
 {
 	HAM_EXTERN_FULFILL
-	AppdataInit();
+	AppdataInit(GetHamSandwichMetadata());
 	SetJamulSoundEnabled(true, 16);
 
 	byte kb0[6] = { SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT, SDL_SCANCODE_LCTRL, SDL_SCANCODE_LSHIFT };

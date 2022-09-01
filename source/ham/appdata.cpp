@@ -34,6 +34,8 @@ using vanilla::WriteVfs;
 using vanilla::Mount;
 using vanilla::VfsStack;
 
+static const HamSandwichMetadata* globalMetadata = nullptr;
+
 /*
 The interface in appdata.h currently distinguishes between AppdataOpen
 and AssetOpen, but the implementation treats them the same, instead switching
@@ -133,7 +135,7 @@ static VfsStack default_vfs_stack(bool* error) {
 
 	std::string buffer = get_folder_path;
 	buffer.append("\\Hamumu\\");
-	buffer.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
+	buffer.append(globalMetadata->appdata_folder_name);
 
 	VfsStack result;
 	result.push_back(std::make_unique<StdioVfs>("."));
@@ -149,7 +151,7 @@ static VfsStack default_vfs_stack(bool* error) {
 
 static VfsStack default_vfs_stack(bool* error) {
 	std::string buffer = "/appdata/";
-	buffer.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
+	buffer.append(globalMetadata->appdata_folder_name);
 
 	VfsStack result;
 	result.push_back(vanilla::open_stdio(""));
@@ -188,7 +190,7 @@ static VfsStack default_vfs_stack(bool* error) {
 // Naive stdio configuration
 
 static VfsStack default_vfs_stack(bool* error) {
-	const HamSandwichMetadata* meta = g_HamExtern.GetHamSandwichMetadata();
+	const HamSandwichMetadata* meta = globalMetadata;
 	VfsStack result;
 
 	// Lowest priority: installers in order.
@@ -325,7 +327,7 @@ static bool run_download_helper() {
 	if (GetFileAttributesA(executable.c_str()) != INVALID_FILE_ATTRIBUTES) {
 		std::string cmdline = executable;
 		cmdline.append(" --mini-gui ");
-		cmdline.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
+		cmdline.append(globalMetadata->appdata_folder_name);
 
 		STARTUPINFOA startupInfo = {};
 		PROCESS_INFORMATION processInfo = {};
@@ -346,7 +348,7 @@ static bool run_download_helper() {
 		int child_pid = fork();
 		if (child_pid == 0) {
 			char second[] = "--mini-gui";
-			std::string third = g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name;
+			std::string third = globalMetadata->appdata_folder_name;
 			char* const argv[] = { executable.data(), second, third.data(), nullptr };
 			exit(execv(argv[0], argv));
 		} else if (child_pid > 0) {
@@ -414,7 +416,7 @@ std::set<std::string> SearchAddons(const char* path)
 static void import_addons(VfsStack* target)
 {
 	std::string path = "addons/";
-	path.append(g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name);
+	path.append(globalMetadata->appdata_folder_name);
 	auto addons = vanilla::open_stdio(path);
 	std::set<std::string> file_list;
 	addons->list_dir(".", file_list);
@@ -426,7 +428,7 @@ static void import_addons(VfsStack* target)
 	}
 
 	// Hacky to put this here, but too lazy to expose a proper API for this.
-	if (std::string_view("sleepless") == g_HamExtern.GetHamSandwichMetadata()->appdata_folder_name)
+	if (std::string_view("sleepless") == globalMetadata->appdata_folder_name)
 	{
 		target->push_back(vanilla::open_zip(target->open_sdl("worlds/sleepiest_world.zip")));
 	}
@@ -438,7 +440,8 @@ static VfsStack vfs_stack;
 // ----------------------------------------------------------------------------
 // Public interface
 
-void AppdataInit() {
+void AppdataInit(const HamSandwichMetadata* metadata) {
+	globalMetadata = metadata;
 	LogInit();
 	EscapeBinDirectory();
 	vfs_stack = init_vfs_stack();

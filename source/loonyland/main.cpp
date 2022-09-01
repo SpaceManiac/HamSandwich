@@ -15,6 +15,8 @@
 #include "log.h"
 #include "appdata.h"
 
+extern const HamSandwichMetadata* GetHamSandwichMetadata();
+
 TASK(int) main(int argc, char *argv[])
 {
 	HAM_EXTERN_FULFILL
@@ -28,7 +30,7 @@ TASK(int) main(int argc, char *argv[])
 			windowedGame=true;
 	}
 
-	AppdataInit();
+	AppdataInit(GetHamSandwichMetadata());
 
 	DBG("b");
 	MGLDraw *mainmgl=new MGLDraw("Loonyland", SCRWID, SCRHEI, windowedGame);

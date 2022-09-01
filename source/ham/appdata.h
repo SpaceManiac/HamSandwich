@@ -7,13 +7,14 @@
 #include <set>
 
 typedef struct SDL_RWops SDL_RWops;
+struct HamSandwichMetadata;
 
 // Methods for accessing assets/saves 'correctly' on each platform. In some
 // situations, Appdata and Asset folders may overlap, so names should not be
 // reused. See appdata.cpp for implementation details for each platform.
 
 const char* EscapeBinDirectory();
-void AppdataInit();
+void AppdataInit(const HamSandwichMetadata* metadata);
 bool AppdataIsInit();
 
 // Open for reading.

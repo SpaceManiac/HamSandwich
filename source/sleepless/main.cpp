@@ -34,6 +34,8 @@
 #include <shellapi.h>
 #endif
 
+extern const HamSandwichMetadata* GetHamSandwichMetadata();
+
 TASK(int) main(int argc, char* argv[])
 {
 	HAM_EXTERN_FULFILL
@@ -46,7 +48,7 @@ TASK(int) main(int argc, char* argv[])
 			windowedGame=true;
 	}
 
-	AppdataInit();
+	AppdataInit(GetHamSandwichMetadata());
 	LoadConfig();
 	SetHamMusicEnabled(config.music);
 	SetJamulSoundEnabled(config.sound, config.numSounds);

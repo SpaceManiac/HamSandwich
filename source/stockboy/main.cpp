@@ -28,6 +28,8 @@ MGLDraw *mainmgl;
 void ChooseNextSong() {}
 SDL_RWops* SoundLoadOverride(int) { return nullptr; }
 
+extern const HamSandwichMetadata* GetHamSandwichMetadata();
+
 TASK(int) main(int argc, char* argv[])
 {
 #if defined(WIN32) && !defined(NDEBUG)
@@ -37,7 +39,7 @@ TASK(int) main(int argc, char* argv[])
 #endif
 
 	HAM_EXTERN_FULFILL
-	AppdataInit();
+	AppdataInit(GetHamSandwichMetadata());
 	SetJamulSoundEnabled(true, 16);
 
 	bool windowedGame=false;

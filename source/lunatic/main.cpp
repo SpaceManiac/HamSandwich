@@ -26,6 +26,8 @@
 #include <shellapi.h>
 #endif
 
+extern const HamSandwichMetadata* GetHamSandwichMetadata();
+
 TASK(int) main(int argc, char* argv[])
 {
 	HAM_EXTERN_FULFILL
@@ -38,7 +40,7 @@ TASK(int) main(int argc, char* argv[])
 			windowedGame=true;
 	}
 
-	AppdataInit();
+	AppdataInit(GetHamSandwichMetadata());
 	LoadOptions();
 	MGLDraw *mainmgl = new MGLDraw("Dr. Lunatic", 640, 480, windowedGame);
 	if (!mainmgl)
