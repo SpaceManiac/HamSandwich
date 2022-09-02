@@ -20,12 +20,10 @@ byte *changed;
 Guy::Guy(void)
 {
 	type=MONS_NONE;
-	customSpr=NULL;
 }
 
 Guy::~Guy(void)
 {
-	if (customSpr) delete customSpr;
 }
 
 byte Guy::CoconutBonk(int xx,int yy,Guy *him)
@@ -819,7 +817,7 @@ void Guy::Render(byte light)
 	}
 	oldBrt=GetMonsterType(t)->brtChg;
 	GetMonsterType(t)->brtChg=brtChange;
-	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen,customSpr);
+	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen,customSpr.get());
 	if(recolor)
 	{
 		GetMonsterType(t)->fromCol=oldFrom;
@@ -1464,6 +1462,7 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i]->fromColor=255;
 			guys[i]->aiType=guys[i]->type;
 			guys[i]->brtChange=GetMonsterType(guys[i]->type)->brtChg;
+			guys[i]->customSpr=nullptr;
 
 			if(type==MONS_ISOZOID && editing!=1)
 			{
@@ -2736,17 +2735,10 @@ void SetMonsterGraphics(byte fx,int x,int y,int type,char *name)
 			char buf[64];
 			sprintf(buf,"user/%s", name);
 
-			if (guys[i]->customSpr) delete guys[i]->customSpr;
-
-			sprite_set_t* spr = new sprite_set_t();
-			if (spr->Load(buf))
+			guys[i]->customSpr = std::make_unique<sprite_set_t>();
+			if (!guys[i]->customSpr->Load(buf))
 			{
-				guys[i]->customSpr = spr;
-			}
-			else
-			{
-				delete spr;
-				guys[i]->customSpr = NULL;
+				guys[i]->customSpr = nullptr;
 			}
 		}
 	}
