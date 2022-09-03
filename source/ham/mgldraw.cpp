@@ -154,13 +154,13 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	SDL_SetWindowTitle(window, name);
 	SDL_ShowCursor(SDL_DISABLE);
 
-	scrn = new byte[xRes * yRes];
-	buffer = new RGB[xRes * yRes];
+	scrn = std::make_unique<byte[]>(xRes * yRes);
+	buffer = std::make_unique<RGB[]>(xRes * yRes);
 	thePal = pal;
 	SeedRNG();
 
 #ifdef __ANDROID__
-	softJoystick = new SoftJoystick(this);
+	softJoystick = std::make_unique<SoftJoystick>(this);
 #else
 	softJoystick = nullptr;
 #endif
@@ -172,9 +172,6 @@ MGLDraw::~MGLDraw(void)
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	JamulSoundExit();
-	delete[] buffer;
-	delete[] scrn;
-	delete softJoystick;
 }
 
 int MGLDraw::GetWidth()
@@ -189,12 +186,12 @@ int MGLDraw::GetHeight()
 
 byte *MGLDraw::GetScreen()
 {
-	return scrn;
+	return scrn.get();
 }
 
 void MGLDraw::ClearScreen()
 {
-	memset(scrn, 0, xRes * yRes);
+	memset(scrn.get(), 0, xRes * yRes);
 }
 
 void MGLDraw::GetMouse(int *x,int *y)
@@ -249,8 +246,6 @@ inline void MGLDraw::StartFlip(void)
 void MGLDraw::ResizeBuffer(int w, int h)
 {
 	SDL_DestroyTexture(texture);
-	delete[] buffer;
-	delete[] scrn;
 
 	xRes = pitch = w;
 	yRes = h;
@@ -261,8 +256,8 @@ void MGLDraw::ResizeBuffer(int w, int h)
 		FatalError("Failed to create texture");
 		return;
 	}
-	scrn = new byte[xRes * yRes];
-	buffer = new RGB[xRes * yRes];
+	scrn = std::make_unique<byte[]>(xRes * yRes);
+	buffer = std::make_unique<RGB[]>(xRes * yRes);
 }
 
 static void TranslateKey(SDL_Keysym* sym)
@@ -293,7 +288,7 @@ TASK(void) MGLDraw::FinishFlip(void)
 		(int)(yRes * scale),
 	};
 
-	SDL_UpdateTexture(texture, NULL, buffer, pitch * sizeof(RGB));
+	SDL_UpdateTexture(texture, NULL, buffer.get(), pitch * sizeof(RGB));
 	SDL_RenderClear(renderer);
 	SDL_RenderCopy(renderer, texture, NULL, &dest);
 	if (softJoystick) {
@@ -406,8 +401,8 @@ TASK(void) MGLDraw::Flip(void)
 
 	// blit to the screen
 	int limit = pitch * yRes;
-	byte* src = scrn;
-	RGB* target = buffer;
+	byte* src = scrn.get();
+	RGB* target = buffer.get();
 
 	for(int i = 0; i < limit; ++i)
 		*target++ = thePal[*src++];
@@ -961,7 +956,7 @@ bool MGLDraw::SaveBMP(const char *name)
 	SDL_Surface* surface = SDL_CreateRGBSurface(0, xRes, yRes, 8, 0, 0, 0, 0);
 #endif
 	SDL_LockSurface(surface);
-	memcpy(surface->pixels, scrn, xRes * yRes);
+	memcpy(surface->pixels, scrn.get(), xRes * yRes);
 	SDL_UnlockSurface(surface);
 	for (int i = 0; i < 256; ++i)
 	{

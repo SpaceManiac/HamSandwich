@@ -10,6 +10,7 @@ now SDL2.
 #ifndef HAM_MGLDRAW_H
 #define HAM_MGLDRAW_H
 
+#include <memory>
 #include <SDL.h>
 
 #ifdef _WIN32
@@ -113,7 +114,7 @@ protected:
 	bool windowed, readyToQuit, idle;
 
 	int xRes, yRes, pitch, winWidth, winHeight;
-	byte *scrn;
+	std::unique_ptr<byte[]> scrn;
 	PALETTE pal, pal2;
 	RGB *thePal;
 
@@ -124,10 +125,10 @@ protected:
 	SDL_Window *window;
 	SDL_Renderer *renderer;
 	SDL_Texture *texture;
-	RGB *buffer;
+	std::unique_ptr<RGB[]> buffer;
 
 	friend class SoftJoystick;
-	SoftJoystick *softJoystick;
+	std::unique_ptr<SoftJoystick> softJoystick;
 };
 
 void FatalError(const char *msg);
