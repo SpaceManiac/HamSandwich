@@ -30,8 +30,8 @@ based on HamSandwich.
     * Combine each game's control, music, movie, font, sound, and sprite handling into a common "Ham" core
 
 ### Source code blogs
-* [Eddie Galaxy, Spooky Castle, and Stockboy](http://hamumu.com/blog.php?entry=1653318531) (2022-05-23)
-* [Dr. Lunatic, Supreme with Cheese, Sleepless Hollow, Loonyland, Loonyland 2, and Kid Mystic](http://hamumu.com/blog.php?entry=1558391916) (2019-05-20)
+* [Eddie Galaxy, Spooky Castle, and Stockboy](https://hamumu.com/blog.php?entry=1653318531) (2022-05-23)
+* [Dr. Lunatic, Supreme with Cheese, Sleepless Hollow, Loonyland, Loonyland 2, and Kid Mystic](https://hamumu.com/blog.php?entry=1558391916) (2019-05-20)
 
 ## Dr. Lunatic Supreme With Cheese
 
@@ -60,7 +60,7 @@ Also applicable to Sleepless Hollow:
 * When switching maps in the editor, place the camera on Bouapha
 * Fix memory corruption if the Delete Special effect deletes a used-up special
 
-### v8.0d (2012-10-01) - [Blog](http://hamumu.com/blog.php?entry=1349133281) - [Download](https://hamumu.itch.io/dr-lunatic-supreme-with-cheese)
+### v8.0d (2012-10-01) - [Blog](https://hamumu.com/blog.php?entry=1349133281) - [Download](https://hamumu.itch.io/dr-lunatic-supreme-with-cheese)
 
 * Fixed "Megabeam Endo" bullet to be named "Megabeam End"
 * Added debugging display activatable via <kbd>F3</kbd>
@@ -97,7 +97,7 @@ Also applicable to Sleepless Hollow:
 * Updated level and world scans to account for new special effets.
 * Cleaned up some graphics code in an attempt to reduce places issues might arise.
 
-### v8.0a (2012-05-24) - [Blog](http://hamumu.com/blog.php?entry=1337832568) - [Photo album](https://imgur.com/a/qnseO#0)
+### v8.0a (2012-05-24) - [Blog](https://hamumu.com/blog.php?entry=1337832568) - [Photo album](https://imgur.com/a/qnseO#0)
 
 * Add "big" option to Show Message effect
 * Allow up to 7 triggers and 31 effects on a single special, up from 5 each
@@ -126,7 +126,7 @@ See "Also applicable to Sleepless Hollow" above.
 
 * Disallow placement of monsters in the AI Only category
 
-### v2.0d (2012-10-31) - [Blog](http://hamumu.com/blog.php?entry=1351698249) - [Download](https://hamumu.itch.io/sleepless-hollow)
+### v2.0d (2012-10-31) - [Blog](https://hamumu.com/blog.php?entry=1351698249) - [Download](https://hamumu.itch.io/sleepless-hollow)
 
 * Add more monster notes, and a progress indicator
 * Fix resetting progress to clear all 64 levels in case of custom worlds
@@ -171,7 +171,7 @@ See "Also applicable to Sleepless Hollow" above.
 
 * Show special ID numbers in the editor
 
-### v3.0 (2011-10-11) - [Blog](http://hamumu.com/blog.php?entry=1318300063) - [Source code blog](http://hamumu.com/blog.php?entry=1318711596) - [Download](https://hamumu.itch.io/dr-lunatic)
+### v3.0 (2011-10-11) - [Blog](https://hamumu.com/blog.php?entry=1318300063) - [Source code blog](https://hamumu.com/blog.php?entry=1318711596) - [Download](https://hamumu.itch.io/dr-lunatic)
 
 * Fix graphical glitches by implementing 8-bit to 32-bit conversion in software
 * Add Smooth Lighting option, backported from Supreme With Cheese
@@ -243,4 +243,4 @@ See "Also applicable to Sleepless Hollow" above.
 
 ### HamSandwich (2022–present)
 
-### Re-release (June 2004) - [Blog](http://hamumu.com/blog.php?yr=2004&mn=6&entry=1088030171) - [Download](https://hamumu.itch.io/eddie-galaxy)
+### Re-release (June 2004) - [Blog](https://hamumu.com/blog.php?yr=2004&mn=6&entry=1088030171) - [Download](https://hamumu.itch.io/eddie-galaxy)
