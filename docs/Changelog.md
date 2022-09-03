@@ -38,6 +38,7 @@ based on HamSandwich.
 ### HamSandwich (2019–present)
 
 * Fix crash if world select is empty
+* Fix "Monster Sprites" effect persisting if a monster ID is reused
 * Add <kbd>Page Up</kbd> and <kbd>Page Down</kbd> hotkeys to scroll world select
 * Speed up the world select loading
 * Add a tentative new world format that allows exceeding the 256 monster type and other limits
