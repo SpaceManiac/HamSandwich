@@ -92,7 +92,7 @@ ZipVfs::~ZipVfs()
 
 SDL_RWops* ZipVfs::open_sdl(const char* filename)
 {
-	if (unzLocateFile(zip, filename, 0) != UNZ_OK)
+	if (unzLocateFile(zip, filename, 2) != UNZ_OK)
 		return nullptr;
 	unz_file_info64 file_info;
 	if (unzGetCurrentFileInfo64(zip, &file_info, nullptr, 0, nullptr, 0, nullptr, 0) != UNZ_OK)
