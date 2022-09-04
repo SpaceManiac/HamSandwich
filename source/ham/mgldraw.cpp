@@ -899,8 +899,6 @@ bool MGLDraw::LoadBMP(const char *name)
 
 bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 {
-	int i,w;
-
 	SDL_RWops* rw = AssetOpen_SDL(name);
 	if (!rw) {
 		// Asset stack printed error already
@@ -925,25 +923,45 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 	}
 
 	if(pal && b->format->palette)
-		for(i=0; i<256 && i < b->format->palette->ncolors; i++)
+		for(int i = 0; i < 256 && i < b->format->palette->ncolors; i++)
 		{
 			pal[i].r = b->format->palette->colors[i].r;
 			pal[i].g = b->format->palette->colors[i].g;
 			pal[i].b = b->format->palette->colors[i].b;
 		}
 
-	w=b->w;
-	if(w>xRes)
-		w=xRes;
-
-	SDL_LockSurface(b);
-	for(i=0;i<b->h;i++)
+	if (b->format->BitsPerPixel != 8)
 	{
-		if(i<yRes)
-			memcpy(&scrn[i*pitch], &((byte*) b->pixels)[b->pitch * i], w);
+		// Trying to load a truecolor image or something. Convert it to the palette.
+		SDL_PixelFormat* format = SDL_AllocFormat(SDL_PIXELFORMAT_INDEX8);
+		format->palette = SDL_AllocPalette(256);
+		for (int i = 0; i < 256; ++i)
+		{
+			format->palette->colors[i].r = thePal[i].r;
+			format->palette->colors[i].g = thePal[i].g;
+			format->palette->colors[i].b = thePal[i].b;
+			format->palette->colors[i].a = 255;
+		}
+
+		SDL_Surface* b2 = SDL_ConvertSurface(b, format, 0);
+		SDL_FreeSurface(b);
+		b = b2;
+
+		SDL_FreeFormat(format);
 	}
 
+	// 8-bit image suitable for loading directly into `srcn`.
+	// Either we saved the palette above or threw it away.
+	int w = std::min(b->w, xRes);
+	int h = std::min(b->h, yRes);
+
+	SDL_LockSurface(b);
+	for(int i = 0; i < h; i++)
+	{
+		memcpy(&scrn[i*pitch], &((byte*) b->pixels)[b->pitch * i], w);
+	}
 	SDL_UnlockSurface(b);
+
 	SDL_FreeSurface(b);
 	return true;
 }
