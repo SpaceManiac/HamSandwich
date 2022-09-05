@@ -554,6 +554,19 @@ TASK(void) LunaticDraw(void)
 				if (gamemgl->mouse_b & (1<<i))
 					end += sprintf(end, "%d ", i);
 			PrintGlow(5,190,s,8,2);
+
+#ifndef NDEBUG
+			for(int i=0;i<8;i++)
+			{
+				sprintf(s,"V%d: %d",i,player.var[i]);
+				Print(5,220+i*16,s,0,1);
+			}
+			for(int i=0;i<8;i++)
+			{
+				sprintf(s,"G%d: %d",i,player.worldProg->var[i]);
+				Print(5,220+(i+8)*16,s,0,1);
+			}
+#endif
 		}
 	}
 	else if(gameMode==GAMEMODE_PIC)
