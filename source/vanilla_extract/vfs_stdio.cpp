@@ -18,6 +18,7 @@ public:
 	FILE* open_stdio(const char* filename);
 	SDL_RWops* open_sdl(const char* filename);
 	FILE* open_write_stdio(const char* filename);
+	SDL_RWops* open_write_sdl(const char* filename);
 	bool list_dir(const char* directory, std::set<std::string>& output);
 	bool delete_file(const char* filename);
 };
@@ -78,20 +79,41 @@ FILE* StdioVfs::open_stdio(const char* file)
 	return open_stdio_internal(file, "rb", false);
 }
 
+#if defined(_WIN32) && !defined(__GNUC__)
+// The public MSVC binaries of SDL2 are compiled without support for SDL_RWFromFP.
+
 SDL_RWops* StdioVfs::open_sdl(const char* filename)
 {
-#if defined(_WIN32) && !defined(__GNUC__)
-	// The public MSVC binaries of SDL2 are compiled without support for SDL_RWFromFP.
 	std::string buffer = prefix;
 	buffer.append("/");
 	buffer.append(filename);
 	return SDL_RWFromFile(buffer.c_str(), "rb");
+}
+
+SDL_RWops* StdioVfs::open_write_sdl(const char* filename)
+{
+	std::string buffer = prefix;
+	buffer.append("/");
+	buffer.append(filename);
+	return SDL_RWFromFile(buffer.c_str(), "wb");
+}
+
 #else
-	// Delegate to open_stdio above.
+// Delegate to open_stdio above.
+
+SDL_RWops* StdioVfs::open_sdl(const char* filename)
+{
 	FILE* fp = open_stdio(filename);
 	return fp ? SDL_RWFromFP(fp, SDL_TRUE) : nullptr;
-#endif
 }
+
+SDL_RWops* StdioVfs::open_write_sdl(const char* filename)
+{
+	FILE* fp = open_write_stdio(filename);
+	return fp ? SDL_RWFromFP(fp, SDL_TRUE) : nullptr;
+}
+
+#endif
 
 #ifdef __GNUC__
 #include <dirent.h>

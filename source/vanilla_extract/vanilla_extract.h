@@ -42,6 +42,7 @@ namespace vanilla
 		virtual ~WriteVfs() {}
 
 		virtual FILE* open_write_stdio(const char* filename) = 0;
+		virtual SDL_RWops* open_write_sdl(const char* filename) = 0;
 		virtual bool delete_file(const char* filename) = 0;
 	};
 
@@ -95,6 +96,7 @@ namespace vanilla
 		SDL_RWops* open_sdl(const char* filename);
 		FILE* open_stdio(const char* filename);
 		void list_dir(const char* directory, std::set<std::string>& output);
+		SDL_RWops* open_write_sdl(const char* filename);
 		FILE* open_write_stdio(const char* filename);
 		bool delete_file(const char* filename);
 	};

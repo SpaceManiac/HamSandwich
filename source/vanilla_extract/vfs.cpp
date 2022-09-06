@@ -87,6 +87,19 @@ FILE* VfsStack::open_stdio(const char* filename)
 	return nullptr;
 }
 
+SDL_RWops* VfsStack::open_write_sdl(const char* filename)
+{
+	if (write_mount)
+	{
+		return write_mount->open_write_sdl(filename);
+	}
+	else
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "open_write_sdl(%s): appdata not mounted", filename);
+		return nullptr;
+	}
+}
+
 FILE* VfsStack::open_write_stdio(const char* filename)
 {
 	if (write_mount)

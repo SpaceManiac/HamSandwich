@@ -341,7 +341,7 @@ TASK(void) MGLDraw::FinishFlip(void)
 				tm* clock = localtime(&timeobj);
 
 				char fname[128];
-				sprintf(fname, "Screenshot %04d-%02d-%02d %02d:%02d:%02d.bmp", 1900 + clock->tm_year, 1 + clock->tm_mon, clock->tm_mday, clock->tm_hour, clock->tm_min, clock->tm_sec);
+				sprintf(fname, "Screenshot %04d-%02d-%02d %02d-%02d-%02d.bmp", 1900 + clock->tm_year, 1 + clock->tm_mon, clock->tm_mday, clock->tm_hour, clock->tm_min, clock->tm_sec);
 				SaveBMP(fname);
 			}
 		} else if (e.type == SDL_TEXTINPUT) {
@@ -980,7 +980,7 @@ bool MGLDraw::SaveBMP(const char *name)
 	{
 		surface->format->palette->colors[i] = { thePal[i].r, thePal[i].g, thePal[i].b, thePal[i].a };
 	}
-	SDL_SaveBMP(surface, name);
+	SDL_SaveBMP_RW(surface, AppdataOpen_Write_SDL(name), SDL_TRUE);
 	SDL_FreeSurface(surface);
 	return true;
 }
