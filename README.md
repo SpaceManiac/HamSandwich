@@ -230,7 +230,7 @@ comments there.
 ### Publish to GitHub Pages
 
 1. In your GitHub repository's Settings > Pages tab,
-   change the "Source" from "None" to "gh-pages" and click "Save".
+   ensure the "Source" is set to "GitHub Actions".
 2. Your site will be published at `https://YourGithubUsername.github.io/HamSandwich`
 3. Future pushes will automatically update your site.
 

@@ -18,8 +18,10 @@ based on HamSandwich.
 * Add global <kbd>F10</kbd> hotkey to toggle scaling mode between nearest-neighbor and linear filtering
 * Allow games to optionally load resources directly from the official installer rather than extracting it first
 * Add a proper close curly brace `}` character to the font used in the editors
+* Fix FLC movies exported from modern tools like Aseprite displaying slightly incorrectly
 * Port to new platforms
     * Linux
+    * macOS
     * Android
         * Add onscreen touch joystick and controls
         * Add mapping so Android "back" button acts like pressing the Escape key
@@ -30,8 +32,8 @@ based on HamSandwich.
     * Combine each game's control, music, movie, font, sound, and sprite handling into a common "Ham" core
 
 ### Source code blogs
+* [Dr. Lunatic, Supreme With Cheese, Sleepless Hollow, Loonyland, Loonyland 2, and Kid Mystic](https://hamumu.com/blog.php?entry=1558391916) (2019-05-20)
 * [Eddie Galaxy, Spooky Castle, and Stockboy](https://hamumu.com/blog.php?entry=1653318531) (2022-05-23)
-* [Dr. Lunatic, Supreme with Cheese, Sleepless Hollow, Loonyland, Loonyland 2, and Kid Mystic](https://hamumu.com/blog.php?entry=1558391916) (2019-05-20)
 
 ## Dr. Lunatic Supreme With Cheese
 
