@@ -132,7 +132,7 @@ function(HamSandwich_add_executable target_name)
 	string(APPEND metadata_cpp [[
 		#include "metadata.h"
 
-		static const char* default_asset_specs[] = {
+		static AssetSpec default_asset_specs[] = {
 	]])
 
 	string(JSON len LENGTH "${json_blob}" installers)
@@ -140,7 +140,9 @@ function(HamSandwich_add_executable target_name)
 	foreach(i RANGE "${len}")
 		string(JSON optional ERROR_VARIABLE optional_err GET "${json_blob}" installers ${i} optional)
 		if("${optional_err}" STREQUAL "NOTFOUND" AND "${optional}" STREQUAL "ON")  # "error not found" means "ok"
-			continue()
+			set(optional "true")
+		else()
+			set(optional "false")
 		endif()
 
 		string(JSON mountpoint ERROR_VARIABLE mountpoint_err GET "${json_blob}" installers ${i} mountpoint)
@@ -149,11 +151,11 @@ function(HamSandwich_add_executable target_name)
 		endif()
 		string(JSON kind GET "${json_blob}" installers ${i} kind)
 		string(JSON filename GET "${json_blob}" installers ${i} filename)
-		string(APPEND metadata_cpp "\t\"${mountpoint}@${kind}@installers/${filename}\",\n")
+		string(APPEND metadata_cpp "\t{\"${mountpoint}\", \"${kind}\", \"installers/${filename}\", ${optional} },\n")
 	endforeach()
 
 	string(APPEND metadata_cpp [[
-			nullptr
+			{ nullptr, nullptr, nullptr, false }
 		};
 
 		static const HamSandwichMetadata metadata = {

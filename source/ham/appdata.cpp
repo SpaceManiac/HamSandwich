@@ -76,34 +76,27 @@ Pseudocode for SDL_RWFromFile(file, mode):
 		return fopen(file, mode)
 */
 
-static Mount init_vfs_spec(const char* what, const char* spec) {
-	std::string spec2 = spec;
-	char* mountpoint = spec2.data();
-	char* kind = mountpoint + strcspn(mountpoint, "@");
-	*kind++ = 0;
-	char* param = kind + strcspn(kind, "@");
-	*param++ = 0;
-
+static Mount init_vfs_spec(const char* what, const char* mountpoint, const char* kind, const char* param) {
 	if (!strcmp(kind, "stdio")) {
 		return { vanilla::open_stdio(param), mountpoint };
 	} else if (!strcmp(kind, "zip")) {
 		SDL_RWops* fp = SDL_RWFromFile(param, "rb");
 		if (!fp) {
-			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
+			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
 			return { nullptr };
 		}
 		return { vanilla::open_zip(fp), mountpoint };
 	} else if (!strcmp(kind, "nsis")) {
 		SDL_RWops* fp = SDL_RWFromFile(param, "rb");
 		if (!fp) {
-			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
+			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
 			return { nullptr };
 		}
 		return { vanilla::open_nsis(fp), mountpoint };
 	} else if (!strcmp(kind, "inno")) {
 		SDL_RWops* fp = SDL_RWFromFile(param, "rb");
 		if (!fp) {
-			LogError("%s: failed to open '%s' in VFS spec '%s'", what, param, spec);
+			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
 			return { nullptr };
 		}
 		return { vanilla::open_inno(fp), mountpoint };
@@ -114,9 +107,19 @@ static Mount init_vfs_spec(const char* what, const char* spec) {
 	}
 #endif
 	else {
-		LogError("%s: unknown kind '%s' in VFS spec '%s'", what, kind, spec);
+		LogError("%s: unknown kind '%s' in VFS spec '%s@%s@%s'", what, kind, mountpoint, kind, param);
 		return { nullptr };
 	}
+}
+
+static Mount init_vfs_spec_str(const char* what, const char* spec) {
+	std::string spec2 = spec;
+	char* mountpoint = spec2.data();
+	char* kind = mountpoint + strcspn(mountpoint, "@");
+	*kind++ = 0;
+	char* param = kind + strcspn(kind, "@");
+	*param++ = 0;
+	return init_vfs_spec(what, mountpoint, kind, param);
 }
 
 // ----------------------------------------------------------------------------
@@ -194,14 +197,19 @@ static VfsStack default_vfs_stack(bool* error) {
 	VfsStack result;
 
 	// Lowest priority: installers in order.
-	for (int i = 0; meta->default_asset_specs[i]; ++i) {
-		auto mount = init_vfs_spec("built-in", meta->default_asset_specs[i]);
-		if (mount.vfs) {
-			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "auto %d: %s", i, meta->default_asset_specs[i]);
-			result.push_back(std::move(mount));
+	for (int i = 0; meta->default_asset_specs[i].mountpoint; ++i) {
+		const auto& spec = meta->default_asset_specs[i];
+		if (spec.should_auto_mount()) {
+			auto mount = init_vfs_spec("built-in", spec.mountpoint, spec.kind, spec.param);
+			if (mount.vfs) {
+				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "auto %d %s: %s@%s@%s", i, spec.optional ? "enabled" : "required", spec.mountpoint, spec.kind, spec.param);
+				result.push_back(std::move(mount));
+			} else {
+				LogError("detect_installers: failed to mount builtin[%d]: %s@%s@%s", i, spec.mountpoint, spec.kind, spec.param);
+				*error = true;
+			}
 		} else {
-			LogError("detect_installers: failed to mount builtin[%d]: %s", i, meta->default_asset_specs[i]);
-			*error = true;
+			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "auto %d disabled: %s@%s@%s", i, spec.mountpoint, spec.kind, spec.param);
 		}
 	}
 
@@ -274,7 +282,7 @@ static VfsStack vfs_stack_from_env(bool* error) {
 			sprintf(buffer, "HSW_ASSETS_%d", i);
 			if (const char* asset_spec = SDL_getenv(buffer); asset_spec && *asset_spec) {
 				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s=%s", buffer, asset_spec);
-				auto mount = init_vfs_spec(buffer, asset_spec);
+				auto mount = init_vfs_spec_str(buffer, asset_spec);
 				if (mount.vfs) {
 					result.push_back(std::move(mount));
 				} else {
