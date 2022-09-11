@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <unzip.h>
 #include "vec_rw.h"
+#include "base_archive.h"
 
 using namespace vanilla;
 
@@ -54,6 +55,9 @@ static int zsdl_testerror(void* userdata, void* stream)
 class ZipVfs : public Vfs
 {
 	unzFile zip;
+	std::vector<unz64_file_pos> files;
+	vanilla::Archive archive;
+
 	ZipVfs(const ZipVfs& other) = delete;
 	ZipVfs(ZipVfs&& other) = delete;
 	ZipVfs& operator=(const ZipVfs& other) = delete;
@@ -73,6 +77,41 @@ public:
 			rw,
 		};
 		zip = unzOpen2_64(nullptr, &sdl_zlib_io);
+
+		// Traverse the .zip file linearly once, building a directory tree.
+		// This is significantly faster than unzLocateFile, which does this
+		// linear traversal for every single lookup.
+		int err = unzGoToFirstFile(zip);
+		while (err == UNZ_OK)
+		{
+			char filename[256+1];
+			err = unzGetCurrentFileInfo64(
+				zip,
+				nullptr,
+				filename, sizeof(filename)-1,
+				nullptr, 0,
+				nullptr, 0);
+			if (err == UNZ_OK)
+			{
+				unz64_file_pos file_pos;
+				unzGetFilePos64(zip, &file_pos);
+
+				size_t location = files.size();
+				files.push_back(file_pos);
+
+				vanilla::Archive::Directory* current = &archive.root;
+				if (const char* last_component = vanilla::Archive::navigate(filename, current))
+				{
+					current->files.insert(make_pair(std::string(last_component), location));
+				}
+
+				err = unzGoToNextFile(zip);
+			}
+		}
+		if (err != UNZ_OK && err != UNZ_END_OF_LIST_OF_FILE)
+		{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs: bad construction: %d", err);
+		}
 	}
 	~ZipVfs();
 
@@ -92,8 +131,14 @@ ZipVfs::~ZipVfs()
 
 SDL_RWops* ZipVfs::open_sdl(const char* filename)
 {
-	if (unzLocateFile(zip, filename, 2) != UNZ_OK)
+	size_t file = archive.get_file(filename);
+	if (file == SIZE_MAX)
 		return nullptr;
+	if (unzGoToFilePos64(zip, &files[file]) != UNZ_OK)
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::open_sdl(%s): bad unzGoToFilePos64", filename);
+		return nullptr;
+	}
 	unz_file_info64 file_info;
 	if (unzGetCurrentFileInfo64(zip, &file_info, nullptr, 0, nullptr, 0, nullptr, 0) != UNZ_OK)
 	{
@@ -117,43 +162,5 @@ SDL_RWops* ZipVfs::open_sdl(const char* filename)
 
 bool ZipVfs::list_dir(const char* directory_raw, std::set<std::string>& output)
 {
-	std::string_view directory = directory_raw;
-
-	unz_global_info64 gi;
-	if (unzGetGlobalInfo64(zip, &gi) != UNZ_OK)
-	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::list_dir(): bad unzGetGlobalInfo64");
-		return false;
-	}
-	if (unzGoToFirstFile(zip) != UNZ_OK)
-	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::list_dir(): bad unzGoToFirstFile");
-		return false;
-	}
-	for (size_t i = 0; i < gi.number_entry; ++i)
-	{
-		unz_file_info64 file_info;
-		char filename_buf[1024];
-		if (unzGetCurrentFileInfo64(zip, &file_info, filename_buf, sizeof(filename_buf), nullptr, 0, nullptr, 0) != UNZ_OK)
-		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::list_dir(): bad unzGetCurrentFileInfo64");
-			return false;
-		}
-
-		std::string_view filename(filename_buf, file_info.size_filename);
-		if (filename.substr(0, directory.size()) == directory && filename[directory.size()] == '/')
-		{
-			output.insert(std::string(filename.substr(directory.size() + 1)));
-		}
-
-		if (i + 1 < gi.number_entry)
-		{
-			if (unzGoToNextFile(zip) != UNZ_OK)
-			{
-				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::list_dir(): bad unzGoToNextFile");
-				return false;
-			}
-		}
-	}
-	return true;
+	return archive.list_dir(directory_raw, output);
 }
