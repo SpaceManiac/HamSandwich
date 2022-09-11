@@ -95,6 +95,8 @@ static void SortFilenames(void)
 	}
 }
 
+void FindFilename(const char *str);
+
 void InitFileDialog(const char *dir, const char *ext, byte menuItemsToShow,const char *defaultName)
 {
 	menuItems=menuItemsToShow;
@@ -105,6 +107,7 @@ void InitFileDialog(const char *dir, const char *ext, byte menuItemsToShow,const
 	ObtainFilenames(dir, ext);
 	SortFilenames();
 	strcpy(newfname,defaultName);
+	FindFilename(defaultName);
 
 	if (menuItems & FM_SAVE)
 	{
