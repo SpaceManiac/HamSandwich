@@ -814,12 +814,16 @@ int main(int argc, char** argv)
 			const char* message = launcher.wants_to_play ? "Downloading...###game_play"
 				: launcher.current_game->is_ready_to_play() ? "Play###game_play"
 				: "Download & Play###game_play";
+			ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0x23, 0x6c, 0x2a, 255));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(0x0a, 0xaa, 0x0f, 255));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(0x35, 0xc8, 0x43, 255));
 			if (ImGui::Button(message, { 196, 0 }))
 			{
 				launcher.wants_to_play = !launcher.wants_to_play;
 				if (launcher.wants_to_play)
 					launcher.current_game->start_missing_downloads(launcher.downloads);
 			}
+			ImGui::PopStyleColor(3);
 			ImGui::SameLine();
 			if (ImGui::Checkbox("Fullscreen", &launcher.wants_fullscreen))
 			{
