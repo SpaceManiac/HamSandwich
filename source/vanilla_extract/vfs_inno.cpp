@@ -33,7 +33,7 @@ public:
 		return setup_1_bin.size();
 	}
 
-	SDL_RWops* open_sdl(const char* filename);
+	owned::SDL_RWops open_sdl(const char* filename);
 	bool list_dir(const char* directory, std::set<std::string>& output);
 };
 
@@ -94,7 +94,7 @@ static SRes SeekInStream_RW_Seek(const ISeekInStream *p, Int64 *pos, ESzSeek ori
 // ----------------------------------------------------------------------------
 // Inno setup data types
 
-static SDL_RWops* zlib_crc_block_reader(uint8_t** input_buffer)
+static owned::SDL_RWops zlib_crc_block_reader(uint8_t** input_buffer)
 {
 	uint32_t header_crc32, compressed_size, uncompressed_size;
 	memcpy(&header_crc32, *input_buffer, 4); *input_buffer += 4;
@@ -278,7 +278,8 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 	}
 	position += 64;
 
-	SDL_RWops* headers = zlib_crc_block_reader(&position);
+	owned::SDL_RWops headers2 = zlib_crc_block_reader(&position);
+	SDL_RWops* headers = headers2.get();
 	binary_string(headers);  // app_name
 	binary_string(headers);  // app_versioned_name
 	binary_string(headers);  // app_id
@@ -368,14 +369,13 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 			}
 		}
 	}
-	SDL_RWclose(headers);
+	headers2.reset();
 
 	// Parse the second zlib'd block containing the data entries.
-	SDL_RWops* datas = zlib_crc_block_reader(&position);
+	owned::SDL_RWops datas = zlib_crc_block_reader(&position);
 	if (position != end)
 	{
 		fprintf(stderr, "inno::Archive: extra data at end of setup.0\n");
-		SDL_RWclose(datas);
 		return;
 	}
 
@@ -389,7 +389,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 		SDL_RWread(datas, &data_entries[i].chunk_size, 8, 1);
 		SDL_RWseek(datas, 4 + 8 + 8 + 1, RW_SEEK_CUR);
 	}
-	SDL_RWclose(datas);
+	datas.reset();
 
 	// Extract setup-1.bin into memory.
 	res = SzArEx_Extract(
@@ -416,7 +416,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 	SzArEx_Free(&zip, vanilla::LZMA_ALLOCATOR);
 }
 
-SDL_RWops* InnoVfs::open_sdl(const char* path)
+owned::SDL_RWops InnoVfs::open_sdl(const char* path)
 {
 	size_t data_entry_idx = archive.get_file(path);
 	if (data_entry_idx == SIZE_MAX)
@@ -428,7 +428,7 @@ SDL_RWops* InnoVfs::open_sdl(const char* path)
 	{
 		// Skip decompression if contents are nothing but
 		// [magic number:4][zlib header][file]
-		return SDL_RWFromConstMem(&setup_1_bin[entry.chunk_offset + 11], entry.file_size);
+		return owned::SDL_RWFromConstMem(&setup_1_bin[entry.chunk_offset + 11], entry.file_size);
 	}
 
 	std::vector<uint8_t> uncompressed(entry.file_size);

@@ -13,28 +13,27 @@
 class NsisVfs : public vanilla::Vfs
 {
 	vanilla::Archive archive;
-	SDL_RWops* archive_rw;
+	owned::SDL_RWops archive_rw;
 	size_t datablock_start;
 
 	const char* navigate_nsis(const char* path, vanilla::Archive::Directory*& current);
 	bool extract_internal(bool compressed, uint32_t size, std::vector<uint8_t>& result);
 
 public:
-	explicit NsisVfs(SDL_RWops* fp);
-	~NsisVfs();
+	explicit NsisVfs(owned::SDL_RWops fp);
 
 	bool is_ok()
 	{
 		return archive_rw != nullptr;
 	}
 
-	SDL_RWops* open_sdl(const char* filename);
+	owned::SDL_RWops open_sdl(const char* filename);
 	bool list_dir(const char* directory, std::set<std::string>& output);
 };
 
-std::unique_ptr<vanilla::Vfs> vanilla::open_nsis(SDL_RWops* rw)
+std::unique_ptr<vanilla::Vfs> vanilla::open_nsis(owned::SDL_RWops rw)
 {
-	return std::make_unique<NsisVfs>(rw);
+	return std::make_unique<NsisVfs>(std::move(rw));
 }
 
 bool NsisVfs::list_dir(const char* directory, std::set<std::string>& output)
@@ -61,15 +60,7 @@ const uint32_t SIZE_COMPRESSED = 0x80000000;
 // ----------------------------------------------------------------------------
 // Decoding the file list
 
-NsisVfs::~NsisVfs()
-{
-	if (archive_rw)
-	{
-		SDL_RWclose(archive_rw);
-	}
-}
-
-NsisVfs::NsisVfs(SDL_RWops* fptr)
+NsisVfs::NsisVfs(owned::SDL_RWops fptr)
 	: archive_rw(nullptr)
 {
 	// Find the "first header" in the file.
@@ -116,22 +107,19 @@ NsisVfs::NsisVfs(SDL_RWops* fptr)
 		archive_rw = vanilla::create_vec_rwops(std::move(datablock));
 		if (!SDL_RWread(archive_rw, &header_size, 4, 1))
 		{
-			SDL_RWclose(archive_rw);
 			archive_rw = nullptr;
 			return;
 		}
 	}
 	else
 	{
-		archive_rw = fptr;
-		fptr = nullptr;
+		archive_rw = std::move(fptr);
 	}
 
 	// Decompress the "header block".
 	std::vector<uint8_t> header;
 	if (!extract_internal(header_size & SIZE_COMPRESSED, header_size & ~SIZE_COMPRESSED, header))
 	{
-		SDL_RWclose(archive_rw);
 		archive_rw = nullptr;
 		return;
 	}
@@ -215,7 +203,7 @@ const char* NsisVfs::navigate_nsis(const char* path, vanilla::Archive::Directory
 // ----------------------------------------------------------------------------
 // Extracting individual files
 
-SDL_RWops* NsisVfs::open_sdl(const char* path)
+owned::SDL_RWops NsisVfs::open_sdl(const char* path)
 {
 	size_t offset = archive.get_file(path);
 	if (offset == SIZE_MAX)
@@ -237,7 +225,7 @@ SDL_RWops* NsisVfs::open_sdl(const char* path)
 	// Optimization to avoid extra copies of already-decompressed data.
 	if ((archive_rw->type == SDL_RWOPS_MEMORY || archive_rw->type == SDL_RWOPS_MEMORY_RO) && !(size & SIZE_COMPRESSED))
 	{
-		return SDL_RWFromConstMem(archive_rw->hidden.mem.here, size);
+		return owned::SDL_RWFromConstMem(archive_rw->hidden.mem.here, size);
 	}
 
 	std::vector<uint8_t> result;

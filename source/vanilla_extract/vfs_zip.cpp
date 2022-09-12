@@ -63,7 +63,7 @@ class ZipVfs : public Vfs
 	ZipVfs& operator=(const ZipVfs& other) = delete;
 	ZipVfs& operator=(ZipVfs&& other) = delete;
 public:
-	ZipVfs(SDL_RWops* rw)
+	ZipVfs(owned::SDL_RWops rw)
 	{
 		zlib_filefunc64_def sdl_zlib_io =
 		{
@@ -74,7 +74,7 @@ public:
 			zsdl_seek64,
 			zsdl_close,
 			zsdl_testerror,
-			rw,
+			rw.release(),  // Our zsdl_close above will call SDL_RWclose.
 		};
 		zip = unzOpen2_64(nullptr, &sdl_zlib_io);
 
@@ -115,13 +115,13 @@ public:
 	}
 	~ZipVfs();
 
-	SDL_RWops* open_sdl(const char* filename);
+	owned::SDL_RWops open_sdl(const char* filename);
 	bool list_dir(const char* directory, std::set<std::string>& output);
 };
 
-std::unique_ptr<Vfs> vanilla::open_zip(SDL_RWops* rw)
+std::unique_ptr<Vfs> vanilla::open_zip(owned::SDL_RWops rw)
 {
-	return std::make_unique<ZipVfs>(rw);
+	return std::make_unique<ZipVfs>(std::move(rw));
 }
 
 ZipVfs::~ZipVfs()
@@ -129,7 +129,7 @@ ZipVfs::~ZipVfs()
 	unzClose(zip);
 }
 
-SDL_RWops* ZipVfs::open_sdl(const char* filename)
+owned::SDL_RWops ZipVfs::open_sdl(const char* filename)
 {
 	size_t file = archive.get_file(filename);
 	if (file == SIZE_MAX)

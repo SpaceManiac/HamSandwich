@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <stdint.h>
+#include "owned.h"
 
 struct SDL_RWops;
 
@@ -10,7 +11,7 @@ namespace vanilla
 {
 
 	// Create an SDL_RWops from an owned byte buffer. It will be freed when closed.
-	SDL_RWops* create_vec_rwops(std::vector<uint8_t>&& buffer);
+	owned::SDL_RWops create_vec_rwops(std::vector<uint8_t>&& buffer);
 
 }  // namespace vanilla
 

@@ -80,26 +80,26 @@ static Mount init_vfs_spec(const char* what, const char* mountpoint, const char*
 	if (!strcmp(kind, "stdio")) {
 		return { vanilla::open_stdio(param), mountpoint };
 	} else if (!strcmp(kind, "zip")) {
-		SDL_RWops* fp = SDL_RWFromFile(param, "rb");
+		owned::SDL_RWops fp = owned::SDL_RWFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
 			return { nullptr };
 		}
-		return { vanilla::open_zip(fp), mountpoint };
+		return { vanilla::open_zip(std::move(fp)), mountpoint };
 	} else if (!strcmp(kind, "nsis")) {
-		SDL_RWops* fp = SDL_RWFromFile(param, "rb");
+		owned::SDL_RWops fp = owned::SDL_RWFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
 			return { nullptr };
 		}
-		return { vanilla::open_nsis(fp), mountpoint };
+		return { vanilla::open_nsis(std::move(fp)), mountpoint };
 	} else if (!strcmp(kind, "inno")) {
-		SDL_RWops* fp = SDL_RWFromFile(param, "rb");
+		owned::SDL_RWops fp = owned::SDL_RWFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
 			return { nullptr };
 		}
-		return { vanilla::open_inno(fp), mountpoint };
+		return { vanilla::open_inno(fp.get()), mountpoint };
 	}
 #ifdef __ANDROID__
 	else if (!strcmp(kind, "android")) {
@@ -301,13 +301,7 @@ static VfsStack vfs_stack_from_env(bool* error) {
 
 static bool check_assets(VfsStack& vfs) {
 	// Every game has this asset, so use it to sanity check.
-	SDL_RWops* check = vfs.open_sdl("graphics/verdana.jft");
-	if (check) {
-		SDL_RWclose(check);
-		return true;
-	}
-
-	return false;
+	return vfs.open_sdl("graphics/verdana.jft") != nullptr;
 }
 
 static bool ends_with(std::string_view lhs, std::string_view rhs) {
@@ -461,19 +455,19 @@ bool AppdataIsInit() {
 }
 
 FILE* AssetOpen(const char* filename) {
-	return vfs_stack.open_stdio(filename);
+	return vfs_stack.open_stdio(filename).release();
 }
 
 SDL_RWops* AssetOpen_SDL(const char* filename) {
-	return vfs_stack.open_sdl(filename);
+	return vfs_stack.open_sdl(filename).release();
 }
 
 FILE* AppdataOpen_Write(const char* filename) {
-	return vfs_stack.open_write_stdio(filename);
+	return vfs_stack.open_write_stdio(filename).release();
 }
 
 SDL_RWops* AppdataOpen_Write_SDL(const char* filename) {
-	return vfs_stack.open_write_sdl(filename);
+	return vfs_stack.open_write_sdl(filename).release();
 }
 
 void AppdataDelete(const char* filename) {

@@ -81,12 +81,12 @@ static FILE* android_tmpfile()
 
 // ----------------------------------------------------------------------------
 // "Extract to temporary directory" helper
-FILE* vanilla::fp_from_bundle(std::string_view filename, SDL_RWops* rw)
+owned::FILE vanilla::fp_from_bundle(std::string_view filename, SDL_RWops* rw)
 {
 	if (!rw)
 		return nullptr;
 
-	FILE* fp = tmpfile();
+	owned::FILE fp { tmpfile() };
 	if (!fp)
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fp_from_bundle(%.*s) bad tmpfile: %s", FMT_STRING_VIEW(filename), strerror(errno));

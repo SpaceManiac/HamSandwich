@@ -12,13 +12,13 @@
 class StdioVfs : public vanilla::WriteVfs
 {
 	std::string prefix;
-	FILE* open_stdio_internal(const char* filename, const char* mode, bool write);
+	owned::FILE open_stdio_internal(const char* filename, const char* mode, bool write);
 public:
 	StdioVfs(std::string&& prefix) : prefix(prefix) {}
-	FILE* open_stdio(const char* filename);
-	SDL_RWops* open_sdl(const char* filename);
-	FILE* open_write_stdio(const char* filename);
-	SDL_RWops* open_write_sdl(const char* filename);
+	owned::FILE open_stdio(const char* filename);
+	owned::SDL_RWops open_sdl(const char* filename);
+	owned::FILE open_write_stdio(const char* filename);
+	owned::SDL_RWops open_write_sdl(const char* filename);
 	bool list_dir(const char* directory, std::set<std::string>& output);
 	bool delete_file(const char* filename);
 };
@@ -28,7 +28,7 @@ std::unique_ptr<vanilla::WriteVfs> vanilla::open_stdio(std::string_view prefix)
 	return std::make_unique<StdioVfs>(std::string { prefix });
 }
 
-FILE* StdioVfs::open_stdio_internal(const char* file, const char* mode, bool write)
+owned::FILE StdioVfs::open_stdio_internal(const char* file, const char* mode, bool write)
 {
 	std::string buffer = prefix;
 	buffer.append("/");
@@ -37,7 +37,7 @@ FILE* StdioVfs::open_stdio_internal(const char* file, const char* mode, bool wri
 	{
 		vanilla::mkdir_parents(buffer);
 	}
-	FILE* fp = fopen(buffer.c_str(), mode);
+	owned::FILE fp { fopen(buffer.c_str(), mode) };
 
 #ifndef _WIN32
 	// On non-Windows, try to case-correct file lookups
@@ -55,7 +55,7 @@ FILE* StdioVfs::open_stdio_internal(const char* file, const char* mode, bool wri
 			{
 				buffer[i] = '/';
 				memcpy(&buffer[i + 1], name.data(), name.length());
-				fp = fopen(buffer.c_str(), mode);
+				fp.reset(fopen(buffer.c_str(), mode));
 				break;
 			}
 		}
@@ -69,12 +69,12 @@ FILE* StdioVfs::open_stdio_internal(const char* file, const char* mode, bool wri
 	return fp;
 }
 
-FILE* StdioVfs::open_write_stdio(const char* file)
+owned::FILE StdioVfs::open_write_stdio(const char* file)
 {
 	return open_stdio_internal(file, "wb", true);
 }
 
-FILE* StdioVfs::open_stdio(const char* file)
+owned::FILE StdioVfs::open_stdio(const char* file)
 {
 	return open_stdio_internal(file, "rb", false);
 }
@@ -82,35 +82,36 @@ FILE* StdioVfs::open_stdio(const char* file)
 #if defined(_WIN32) && !defined(__GNUC__)
 // The public MSVC binaries of SDL2 are compiled without support for SDL_RWFromFP.
 
-SDL_RWops* StdioVfs::open_sdl(const char* filename)
+owned::SDL_RWops StdioVfs::open_sdl(const char* filename)
 {
 	std::string buffer = prefix;
 	buffer.append("/");
 	buffer.append(filename);
-	return SDL_RWFromFile(buffer.c_str(), "rb");
+	return owned::SDL_RWFromFile(buffer.c_str(), "rb");
 }
 
-SDL_RWops* StdioVfs::open_write_sdl(const char* filename)
+owned::SDL_RWops StdioVfs::open_write_sdl(const char* filename)
 {
 	std::string buffer = prefix;
 	buffer.append("/");
 	buffer.append(filename);
-	return SDL_RWFromFile(buffer.c_str(), "wb");
+	vanilla::mkdir_parents(buffer);
+	return owned::SDL_RWFromFile(buffer.c_str(), "wb");
 }
 
 #else
 // Delegate to open_stdio above.
 
-SDL_RWops* StdioVfs::open_sdl(const char* filename)
+owned::SDL_RWops StdioVfs::open_sdl(const char* filename)
 {
-	FILE* fp = open_stdio(filename);
-	return fp ? SDL_RWFromFP(fp, SDL_TRUE) : nullptr;
+	owned::FILE fp = open_stdio(filename);
+	return fp ? owned::SDL_RWFromFP(std::move(fp)) : nullptr;
 }
 
-SDL_RWops* StdioVfs::open_write_sdl(const char* filename)
+owned::SDL_RWops StdioVfs::open_write_sdl(const char* filename)
 {
-	FILE* fp = open_write_stdio(filename);
-	return fp ? SDL_RWFromFP(fp, SDL_TRUE) : nullptr;
+	owned::FILE fp = open_write_stdio(filename);
+	return fp ? owned::SDL_RWFromFP(std::move(fp)) : nullptr;
 }
 
 #endif

@@ -37,11 +37,11 @@ std::unique_ptr<WriteVfs> VfsStack::set_appdata(std::unique_ptr<WriteVfs> new_va
 	return new_value;
 }
 
-SDL_RWops* VfsStack::open_sdl(const char* filename)
+owned::SDL_RWops VfsStack::open_sdl(const char* filename)
 {
 	if (write_mount)
 	{
-		if (SDL_RWops* rw = write_mount->open_sdl(filename))
+		if (owned::SDL_RWops rw = write_mount->open_sdl(filename))
 		{
 			return rw;
 		}
@@ -51,7 +51,7 @@ SDL_RWops* VfsStack::open_sdl(const char* filename)
 	{
 		if (const char* subfilename = iter->matches(filename))
 		{
-			if (SDL_RWops* rw = iter->vfs->open_sdl(subfilename))
+			if (owned::SDL_RWops rw = iter->vfs->open_sdl(subfilename))
 			{
 				return rw;
 			}
@@ -62,11 +62,11 @@ SDL_RWops* VfsStack::open_sdl(const char* filename)
 	return nullptr;
 }
 
-FILE* VfsStack::open_stdio(const char* filename)
+owned::FILE VfsStack::open_stdio(const char* filename)
 {
 	if (write_mount)
 	{
-		if (FILE* fp = write_mount->open_stdio(filename))
+		if (owned::FILE fp = write_mount->open_stdio(filename))
 		{
 			return fp;
 		}
@@ -76,7 +76,7 @@ FILE* VfsStack::open_stdio(const char* filename)
 	{
 		if (const char* subfilename = iter->matches(filename))
 		{
-			if (FILE* fp = iter->vfs->open_stdio(subfilename))
+			if (owned::FILE fp = iter->vfs->open_stdio(subfilename))
 			{
 				return fp;
 			}
@@ -87,7 +87,7 @@ FILE* VfsStack::open_stdio(const char* filename)
 	return nullptr;
 }
 
-SDL_RWops* VfsStack::open_write_sdl(const char* filename)
+owned::SDL_RWops VfsStack::open_write_sdl(const char* filename)
 {
 	if (write_mount)
 	{
@@ -100,7 +100,7 @@ SDL_RWops* VfsStack::open_write_sdl(const char* filename)
 	}
 }
 
-FILE* VfsStack::open_write_stdio(const char* filename)
+owned::FILE VfsStack::open_write_stdio(const char* filename)
 {
 	if (write_mount)
 	{

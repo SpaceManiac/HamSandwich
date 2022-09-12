@@ -18,7 +18,7 @@ static int delete_vec_close(SDL_RWops* rw) {
 	return 0;
 }
 
-SDL_RWops* create_vec_rwops(std::vector<uint8_t>&& buffer) {
+owned::SDL_RWops create_vec_rwops(std::vector<uint8_t>&& buffer) {
 	// Use a modified RWFromConstMem so the JS audio code knows how to slurp it
 	SDL_RWops* rw_base = SDL_RWFromConstMem(buffer.data(), buffer.size());
 	if (!rw_base)
@@ -33,7 +33,7 @@ SDL_RWops* create_vec_rwops(std::vector<uint8_t>&& buffer) {
 	SDL_FreeRW(rw_base);
 	new(&rw->vec) std::vector<uint8_t>(std::move(buffer));
 	rw->base.close = delete_vec_close;
-	return &rw->base;
+	return owned::SDL_RWops { &rw->base };
 }
 
 }  // namespace vanilla

@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include "owned.h"
 
 struct SDL_RWops;
 
@@ -13,7 +14,7 @@ namespace vanilla
 {
 	// Helpers
 	int mkdir_parents(std::string_view path);
-	FILE* fp_from_bundle(std::string_view filename, SDL_RWops* rw);
+	owned::FILE fp_from_bundle(std::string_view filename, SDL_RWops* rw);
 
 	// A single VFS provider, read-only by default.
 	class Vfs
@@ -26,10 +27,11 @@ namespace vanilla
 		Vfs() {}
 		virtual ~Vfs() {}
 
-		virtual SDL_RWops* open_sdl(const char* filename) = 0;
-		virtual FILE* open_stdio(const char* filename)
+		virtual owned::SDL_RWops open_sdl(const char* filename) = 0;
+		virtual owned::FILE open_stdio(const char* filename)
 		{
-			return fp_from_bundle(filename, open_sdl(filename));
+			auto sdl = open_sdl(filename);
+			return fp_from_bundle(filename, sdl.get());
 		}
 		virtual bool list_dir(const char* directory, std::set<std::string>& output) = 0;
 	};
@@ -41,8 +43,8 @@ namespace vanilla
 		WriteVfs() {}
 		virtual ~WriteVfs() {}
 
-		virtual FILE* open_write_stdio(const char* filename) = 0;
-		virtual SDL_RWops* open_write_sdl(const char* filename) = 0;
+		virtual owned::FILE open_write_stdio(const char* filename) = 0;
+		virtual owned::SDL_RWops open_write_sdl(const char* filename) = 0;
 		virtual bool delete_file(const char* filename) = 0;
 	};
 
@@ -93,19 +95,19 @@ namespace vanilla
 		std::unique_ptr<WriteVfs> set_appdata(std::unique_ptr<WriteVfs> new_value);
 
 		// Forward to children
-		SDL_RWops* open_sdl(const char* filename);
-		FILE* open_stdio(const char* filename);
+		owned::SDL_RWops open_sdl(const char* filename);
+		owned::FILE open_stdio(const char* filename);
 		void list_dir(const char* directory, std::set<std::string>& output);
-		SDL_RWops* open_write_sdl(const char* filename);
-		FILE* open_write_stdio(const char* filename);
+		owned::SDL_RWops open_write_sdl(const char* filename);
+		owned::FILE open_write_stdio(const char* filename);
 		bool delete_file(const char* filename);
 	};
 
 	// Available providers
 	std::unique_ptr<WriteVfs> open_stdio(std::string_view prefix);
-	std::unique_ptr<Vfs> open_nsis(SDL_RWops* rw);
+	std::unique_ptr<Vfs> open_nsis(owned::SDL_RWops rw);
 	std::unique_ptr<Vfs> open_inno(SDL_RWops* rw);
-	std::unique_ptr<Vfs> open_zip(SDL_RWops* rw);
+	std::unique_ptr<Vfs> open_zip(owned::SDL_RWops rw);
 #if defined(__ANDROID__) && __ANDROID__
 	std::unique_ptr<Vfs> open_android(const char* prefix = nullptr);
 #endif
