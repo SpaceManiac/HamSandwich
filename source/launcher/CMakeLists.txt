@@ -44,6 +44,14 @@ file(GENERATE OUTPUT embed_game_icons.cpp CONTENT "
 ")
 target_sources(launcher PRIVATE embed_game_icons.cpp)
 
+# Embed a Git version number.
+find_program(git git)
+if(NOT "${git}" STREQUAL "git-NOTFOUND")
+	execute_process(COMMAND "${git}" rev-parse HEAD OUTPUT_VARIABLE git_version)
+	string(STRIP "${git_version}" git_version)
+	target_compile_definitions(launcher PRIVATE GIT_VERSION="${git_version}")
+endif()
+
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_link_libraries(launcher stdc++fs)
 	target_compile_options(launcher PRIVATE -Wall -Wextra -Wno-missing-field-initializers)

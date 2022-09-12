@@ -784,6 +784,12 @@ int main(int argc, char** argv)
 				ImGui::PopID();
 			}
 
+#ifdef GIT_VERSION
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Text("Version: %.*s", 10, GIT_VERSION);
+#endif
+
 #ifndef NDEBUG
 			ImGui::Spacing();
 			ImGui::Separator();
