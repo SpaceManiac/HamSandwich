@@ -552,6 +552,34 @@ struct Launcher
 	}
 };
 
+static bool ends_with(std::string_view lhs, std::string_view rhs)
+{
+	return lhs.size() >= rhs.size() && lhs.compare(lhs.size() - rhs.size(), std::string_view::npos, rhs) == 0;
+}
+
+void CopyToAddonsFolder(std::string_view addonsFolder, std::string_view sourcePath)
+{
+	// .zip files only
+	if (!ends_with(sourcePath, ".zip"))
+	{
+		return;
+	}
+
+	std::string_view sourceLeaf = sourcePath;
+	if (size_t x = sourcePath.find_last_of("/\\"); x != std::string_view::npos)
+	{
+		sourceLeaf = sourcePath.substr(x + 1);
+	}
+	filesystem::create_directories(addonsFolder);
+
+	std::string destinationPath { addonsFolder };
+	destinationPath.append("/");
+	destinationPath.append(sourceLeaf);
+
+	// no overwriting
+	filesystem::copy_file(sourcePath, destinationPath, filesystem::copy_options::skip_existing);
+}
+
 // ----------------------------------------------------------------------------
 // Main code
 enum class Action
@@ -753,6 +781,11 @@ int main(int argc, char** argv)
 				done = true;
 			if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
 				done = true;
+			if (event.type == SDL_DROPFILE)
+			{
+				CopyToAddonsFolder(launcher.current_game->addons_folder, event.drop.file);
+				SDL_free(event.drop.file);
+			}
 		}
 
 		int windowWidth, windowHeight;
