@@ -163,9 +163,9 @@ struct Asset
 		: mountpoint(installer.contains("mountpoint") ? installer["mountpoint"] : "")
 		, kind(installer["kind"])
 		, filename(installer["filename"])
-		, sha256sum(installer["sha256sum"])
+		, sha256sum(installer.contains("sha256sum") ? installer["sha256sum"] : "")
 		, link(installer["link"])
-		, file_id(installer["file_id"])
+		, file_id(installer.contains("file_id") ? static_cast<long>(installer["file_id"]) : 0)
 		, description(installer["description"])
 		, required(!installer.contains("optional") || !installer["optional"])
 		, enabled(is_enabled(filename))
@@ -206,18 +206,52 @@ struct Asset
 		if (metadata_download || content_download)
 			return;
 
-		std::ostringstream full_url;
-		full_url << link << "/file/" << file_id;
+		if (file_id)
+		{
+			// An itch.io file ID is specified, so use the Itch download path.
+			std::ostringstream full_url;
+			full_url << link << "/file/" << file_id;
 
-		metadata_progress = "";
-		metadata_download = curl_easy_init();
-		curl_easy_setopt(metadata_download, CURLOPT_URL, full_url.str().c_str());
-		curl_easy_setopt(metadata_download, CURLOPT_POST, true);
-		curl_easy_setopt(metadata_download, CURLOPT_POSTFIELDSIZE, 0);
-		curl_easy_setopt(metadata_download, CURLOPT_WRITEFUNCTION, Asset::metadata_write_callback);
-		curl_easy_setopt(metadata_download, CURLOPT_WRITEDATA, this);
-		curl_easy_setopt(metadata_download, CURLOPT_FAILONERROR, true);
-		curl_multi_add_handle(downloads, metadata_download);
+			metadata_progress = "";
+			metadata_download = curl_easy_init();
+			curl_easy_setopt(metadata_download, CURLOPT_URL, full_url.str().c_str());
+			curl_easy_setopt(metadata_download, CURLOPT_POST, true);
+			curl_easy_setopt(metadata_download, CURLOPT_POSTFIELDSIZE, 0);
+			curl_easy_setopt(metadata_download, CURLOPT_WRITEFUNCTION, Asset::metadata_write_callback);
+			curl_easy_setopt(metadata_download, CURLOPT_WRITEDATA, this);
+			curl_easy_setopt(metadata_download, CURLOPT_FAILONERROR, true);
+			curl_multi_add_handle(downloads, metadata_download);
+		}
+		else
+		{
+			// Treat it as a raw URL.
+			start_content_download(downloads, link);
+		}
+	}
+
+	void start_content_download(CURLM* downloads, const std::string& url)
+	{
+
+		std::string full_path = "installers/";
+		full_path.append(filename);
+		full_path.append(".part");
+		content_progress = fopen(full_path.c_str(), "wb");  // TODO: error handling
+		my_sha256_init(&content_hash);
+
+		if (!content_download)
+			content_download = curl_easy_init();
+
+		curl_easy_setopt(content_download, CURLOPT_URL, url.c_str());
+		//curl_easy_setopt(content_download, CURLOPT_BUFFERSIZE, 102400L);
+		//curl_easy_setopt(content_download, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
+		curl_easy_setopt(content_download, CURLOPT_WRITEFUNCTION, Asset::content_write_callback);
+		curl_easy_setopt(content_download, CURLOPT_WRITEDATA, this);
+		curl_easy_setopt(content_download, CURLOPT_NOPROGRESS, 0);
+		curl_easy_setopt(content_download, CURLOPT_XFERINFOFUNCTION, Asset::content_progress_callback);
+		curl_easy_setopt(content_download, CURLOPT_XFERINFODATA, this);
+		curl_easy_setopt(content_download, CURLOPT_FAILONERROR, true);
+
+		curl_multi_add_handle(downloads, content_download);
 	}
 
 	int transfer_completed(CURLM* downloads, CURL* transfer, CURLcode result)
@@ -235,25 +269,9 @@ struct Asset
 			auto message = nlohmann::json::parse(metadata_progress);
 			std::string url = message["url"];
 
-			std::string full_path = "installers/";
-			full_path.append(filename);
-			full_path.append(".part");
-			content_progress = fopen(full_path.c_str(), "wb");  // TODO: error handling
-			my_sha256_init(&content_hash);
-
 			curl_easy_reset(transfer);
 			content_download = transfer;
-			curl_easy_setopt(content_download, CURLOPT_URL, url.c_str());
-			//curl_easy_setopt(content_download, CURLOPT_BUFFERSIZE, 102400L);
-			//curl_easy_setopt(content_download, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
-			curl_easy_setopt(content_download, CURLOPT_WRITEFUNCTION, Asset::content_write_callback);
-			curl_easy_setopt(content_download, CURLOPT_WRITEDATA, this);
-			curl_easy_setopt(content_download, CURLOPT_NOPROGRESS, 0);
-			curl_easy_setopt(content_download, CURLOPT_XFERINFOFUNCTION, Asset::content_progress_callback);
-			curl_easy_setopt(content_download, CURLOPT_XFERINFODATA, this);
-			curl_easy_setopt(content_download, CURLOPT_FAILONERROR, true);
-
-			curl_multi_add_handle(downloads, content_download);
+			start_content_download(downloads, url);
 			return 1;
 		}
 		else if (transfer == content_download)
