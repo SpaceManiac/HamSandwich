@@ -177,9 +177,16 @@ from any asset from the games, or from the provided `source/lunaticpal/example.b
 having trouble, you can use the included LunaticPal tool with `./run lunaticpal` to
 convert images.
 
-Images shown with the "Show Pic/Movie" special effect, while still
-limited to 256 colors total, can use any palette. The game will temporarily
-switch palettes while displaying the image and switch back when finished.
+**However,** note that `.bmp` images shown with the "Show Pic/Movie" special
+effect can use *any* palette of up to 256 colors and are not limited to the
+palette used by LunaticPal. You should use an image editor such as [GIMP] to
+convert such images to Indexed mode, which will give superior results compared
+to LunaticPal.
+
+LunaticPal is mainly useful for tiles, backgrounds, menus, and so on which
+will appear on-screen at the same time as other graphics.
+
+[GIMP]: https://www.gimp.org/
 
 ### Editing `.jft` fonts
 
