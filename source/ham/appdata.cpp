@@ -304,17 +304,13 @@ static bool check_assets(VfsStack& vfs) {
 	return vfs.open_sdl("graphics/verdana.jft") != nullptr;
 }
 
-static bool ends_with(std::string_view lhs, std::string_view rhs) {
-	return lhs.size() >= rhs.size() && lhs.compare(lhs.size() - rhs.size(), std::string_view::npos, rhs) == 0;
-}
-
 static char bin_dir_buf[1024] = {0};
 
 const char* EscapeBinDirectory() {
 #ifndef __ANDROID__
 	if (!bin_dir_buf[0]) {
 		getcwd(bin_dir_buf, sizeof(bin_dir_buf));
-		if (ends_with(bin_dir_buf, "/build/install") || ends_with(bin_dir_buf, "\\build\\install")) {
+		if (vanilla::ends_with(bin_dir_buf, "/build/install") || vanilla::ends_with(bin_dir_buf, "\\build\\install")) {
 			chdir("../..");
 		}
 	}

@@ -15,6 +15,7 @@ namespace vanilla
 	// Helpers
 	int mkdir_parents(std::string_view path);
 	owned::FILE fp_from_bundle(std::string_view filename, SDL_RWops* rw);
+	bool ends_with(std::string_view haystack, std::string_view suffix);
 
 	// A single VFS provider, read-only by default.
 	class Vfs
@@ -66,6 +67,8 @@ namespace vanilla
 		}
 
 		const char* matches(const char* filename) const;
+		owned::SDL_RWops open_sdl(const char* filename);
+		owned::FILE open_stdio(const char* filename);
 	};
 
 	// A full filesystem, including a list of mounts and the write (appdata) mount.

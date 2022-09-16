@@ -4,12 +4,17 @@
 
 using namespace vanilla;
 
-// ----------------------------------------------------------------------------
-// VfsStack implementation
-
 #ifdef _WIN32
 #define strncasecmp _strnicmp
 #endif
+
+bool vanilla::ends_with(std::string_view lhs, std::string_view rhs)
+{
+	return lhs.size() >= rhs.size() && lhs.compare(lhs.size() - rhs.size(), std::string_view::npos, rhs) == 0;
+}
+
+// ----------------------------------------------------------------------------
+// Mount implementation
 
 const char* Mount::matches(const char* filename) const
 {
@@ -31,6 +36,36 @@ const char* Mount::matches(const char* filename) const
 	return nullptr;  // No match.
 }
 
+owned::SDL_RWops Mount::open_sdl(const char* filename)
+{
+	if (const char* subfilename = matches(filename))
+	{
+		return vfs->open_sdl(subfilename);
+	}
+	return nullptr;
+}
+
+owned::FILE Mount::open_stdio(const char* filename)
+{
+	if (const char* subfilename = matches(filename))
+	{
+		return vfs->open_stdio(subfilename);
+	}
+	return nullptr;
+}
+
+// ----------------------------------------------------------------------------
+// VfsStack implementation
+
+const static std::string_view TOMBSTONE_SUFFIX = ".$delete";
+
+static std::string tombstone_name(std::string_view filename)
+{
+	std::string tombstone { filename };
+	tombstone.append(TOMBSTONE_SUFFIX);
+	return tombstone;
+}
+
 std::unique_ptr<WriteVfs> VfsStack::set_appdata(std::unique_ptr<WriteVfs> new_value)
 {
 	std::swap(new_value, write_mount);
@@ -39,8 +74,15 @@ std::unique_ptr<WriteVfs> VfsStack::set_appdata(std::unique_ptr<WriteVfs> new_va
 
 owned::SDL_RWops VfsStack::open_sdl(const char* filename)
 {
+	std::string tombstone = tombstone_name(filename);
+
+	// Iterate top to bottom, so we stop as soon as we see a tombstone or the file.
 	if (write_mount)
 	{
+		if (owned::SDL_RWops deleted = write_mount->open_sdl(tombstone.c_str()))
+		{
+			return nullptr;
+		}
 		if (owned::SDL_RWops rw = write_mount->open_sdl(filename))
 		{
 			return rw;
@@ -49,12 +91,13 @@ owned::SDL_RWops VfsStack::open_sdl(const char* filename)
 
 	for (auto iter = mounts.rbegin(); iter != mounts.rend(); ++iter)
 	{
-		if (const char* subfilename = iter->matches(filename))
+		if (owned::SDL_RWops deleted = iter->open_sdl(tombstone.c_str()))
 		{
-			if (owned::SDL_RWops rw = iter->vfs->open_sdl(subfilename))
-			{
-				return rw;
-			}
+			return nullptr;
+		}
+		if (owned::SDL_RWops rw = iter->open_sdl(filename))
+		{
+			return rw;
 		}
 	}
 
@@ -64,8 +107,15 @@ owned::SDL_RWops VfsStack::open_sdl(const char* filename)
 
 owned::FILE VfsStack::open_stdio(const char* filename)
 {
+	std::string tombstone = tombstone_name(filename);
+
+	// Iterate top to bottom, so we stop as soon as we see a tombstone or the file.
 	if (write_mount)
 	{
+		if (owned::SDL_RWops deleted = write_mount->open_sdl(tombstone.c_str()))
+		{
+			return nullptr;
+		}
 		if (owned::FILE fp = write_mount->open_stdio(filename))
 		{
 			return fp;
@@ -74,12 +124,13 @@ owned::FILE VfsStack::open_stdio(const char* filename)
 
 	for (auto iter = mounts.rbegin(); iter != mounts.rend(); ++iter)
 	{
-		if (const char* subfilename = iter->matches(filename))
+		if (owned::SDL_RWops deleted = iter->open_sdl(tombstone.c_str()))
 		{
-			if (owned::FILE fp = iter->vfs->open_stdio(subfilename))
-			{
-				return fp;
-			}
+			return nullptr;
+		}
+		if (owned::FILE fp = iter->open_stdio(filename))
+		{
+			return fp;
 		}
 	}
 
@@ -126,32 +177,44 @@ bool VfsStack::delete_file(const char* filename)
 	}
 }
 
+static void list_dir_inner(std::string_view prefix, Vfs* vfs, const char* directory, std::set<std::string>& output)
+{
+	std::set<std::string> intermediate;
+	vfs->list_dir(directory, intermediate);
+	for (auto each : intermediate)
+	{
+		each.insert(0, prefix);
+		if (ends_with(each, TOMBSTONE_SUFFIX))
+		{
+			each.erase(each.size() - TOMBSTONE_SUFFIX.size());
+			output.erase(each);
+		}
+		else
+		{
+			output.insert(each);
+		}
+	}
+}
+
 void VfsStack::list_dir(const char* directory, std::set<std::string>& output)
 {
-	if (write_mount)
-	{
-		write_mount->list_dir(directory, output);
-	}
-
-	for (auto iter = mounts.rbegin(); iter != mounts.rend(); ++iter)
+	// Iterate bottom to top, so higher tombstones can erase their children
+	for (auto iter = mounts.begin(); iter != mounts.end(); ++iter)
 	{
 		if (iter->mountpoint.empty())
 		{
-			iter->vfs->list_dir(directory, output);
+			list_dir_inner("", iter->vfs.get(), directory, output);
 		}
 		else if (const char* subdirectory = iter->matches(directory))
 		{
 			std::string mountpoint_slash = iter->mountpoint;
 			mountpoint_slash.push_back('/');
-
-			std::set<std::string> intermediate;
-			iter->vfs->list_dir(subdirectory, intermediate);
-
-			for (auto each : intermediate)
-			{
-				each.insert(0, mountpoint_slash);
-				output.insert(each);
-			}
+			list_dir_inner(mountpoint_slash, iter->vfs.get(), subdirectory, output);
 		}
+	}
+
+	if (write_mount)
+	{
+		list_dir_inner("", write_mount.get(), directory, output);
 	}
 }

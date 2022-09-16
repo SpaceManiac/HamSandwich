@@ -18,6 +18,7 @@
 #include "jamulfont.h"
 #include "appdata.h"
 #include "sha256.h"
+#include "vanilla_extract.h"
 
 #if __has_include(<filesystem>)
 #include <filesystem>
@@ -552,15 +553,10 @@ struct Launcher
 	}
 };
 
-static bool ends_with(std::string_view lhs, std::string_view rhs)
-{
-	return lhs.size() >= rhs.size() && lhs.compare(lhs.size() - rhs.size(), std::string_view::npos, rhs) == 0;
-}
-
 void CopyToAddonsFolder(std::string_view addonsFolder, std::string_view sourcePath)
 {
 	// .zip files only
-	if (!ends_with(sourcePath, ".zip"))
+	if (!vanilla::ends_with(sourcePath, ".zip"))
 	{
 		return;
 	}
