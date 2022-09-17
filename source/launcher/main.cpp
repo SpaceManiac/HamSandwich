@@ -585,6 +585,166 @@ enum class Action
 	MiniGui,
 };
 
+bool Launch(std::string_view bin_dir, const Game* game, bool fullscreen, SDL_Window* window)
+{
+#if defined(_WIN32)
+	std::string cmdline { bin_dir };
+	cmdline.append("/");
+	cmdline.append(game->id);
+	cmdline.append(".exe");
+	std::string executable = cmdline;
+	if (!fullscreen)
+		cmdline.append(" window");
+
+	std::ostringstream environment;
+	const char* originalEnv = GetEnvironmentStringsA();
+	while (*originalEnv)
+	{
+		environment << originalEnv << '\0';
+		originalEnv += strlen(originalEnv) + 1;
+	}
+
+	int i = 0;
+
+	// Lowest priority: installers in order.
+	bool doneRetailProfile = false;
+	auto doRetailProfile = [&]()
+	{
+		doneRetailProfile = true;
+		if (game->retail_profile.enabled)
+		{
+			// NB: VirtualStore comes after and thus overrides Program Files
+			if (!game->retail_profile.program_files.empty())
+			{
+				environment << "HSW_ASSETS_" << i++ << "=@stdio@" << game->retail_profile.program_files << '\0';
+			}
+			if (!game->retail_profile.virtual_store.empty())
+			{
+				environment << "HSW_ASSETS_" << i++ << "=@stdio@" << game->retail_profile.virtual_store << '\0';
+			}
+		}
+	};
+	for (const auto& asset : game->assets)
+	{
+		// In the middle: retail profile.
+		if (!asset.required && !doneRetailProfile)
+		{
+			doRetailProfile();
+		}
+
+		if (asset.required || asset.enabled)
+		{
+			environment << "HSW_ASSETS_" << i++ << "=" << asset.mountpoint << "@" << asset.kind << "@installers/" << asset.filename << '\0';
+		}
+	}
+	if (!doneRetailProfile)
+	{
+		doRetailProfile();
+	}
+
+	// High priority: custom assets provided directly.
+	environment << "HSW_ASSETS_" << i++ << "=@stdio@assets/" << game->appdata_folder_name << '\0';
+
+	// Lastly: the game itself mounts addons/$game/*.zip
+	// And appdata/$game/ overrides them all, of course.
+	environment << "HSW_APPDATA=appdata/" << game->appdata_folder_name << '\0';
+
+	// Finish if off and launch.
+	environment << '\0';
+	STARTUPINFOA startupInfo = {};
+	PROCESS_INFORMATION processInfo = {};
+	startupInfo.cb = sizeof(startupInfo);
+	if (CreateProcessA(executable.c_str(), cmdline.data(), nullptr, nullptr, false, 0, environment.str().data(), nullptr, &startupInfo, &processInfo))
+	{
+		SDL_HideWindow(window);  // Hide window now that we know the child process was created.
+		WaitForSingleObject(processInfo.hProcess, INFINITE);
+		DWORD exitCode;
+		if (!GetExitCodeProcess(processInfo.hProcess, &exitCode))
+			exitCode = -1;
+		CloseHandle(processInfo.hProcess);
+		CloseHandle(processInfo.hThread);
+		return exitCode == 0;
+	}
+	else
+	{
+		fprintf(stderr, "CreateProcess failed: %lu\n", GetLastError());
+		return false;
+	}
+#elif !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+	int child_pid = fork();
+	if (child_pid == 0)
+	{
+		std::string program { bin_dir };
+		program.append("/");
+		program.append(game->id);
+		char window[] = "window";
+		char* argv[3] = { program.data(), nullptr, nullptr };
+		if (!fullscreen)
+			argv[1] = window;
+
+		std::vector<std::string> envs;
+		std::vector<char*> raw_envs;
+
+		char** originalEnv = environ;
+		while (originalEnv && *originalEnv)
+		{
+			raw_envs.push_back(*originalEnv);
+			++originalEnv;
+		}
+
+		int i = 0;
+		std::ostringstream environment;
+
+		// Lowest priority: installers in order.
+		for (const auto& asset : game->assets)
+		{
+			if (asset.required || asset.enabled)
+			{
+				environment.str("");
+				environment << "HSW_ASSETS_" << i++ << "=" << asset.mountpoint << "@" << asset.kind << "@installers/" << asset.filename;
+				envs.push_back(environment.str());
+				raw_envs.push_back(envs.back().data());
+			}
+		}
+
+		// High priority: custom assets provided directly.
+		environment.str("");
+		environment << "HSW_ASSETS_" << i++ << "=@stdio@assets/" << game->appdata_folder_name;
+		envs.push_back(environment.str());
+		raw_envs.push_back(envs.back().data());
+
+		// Lastly: the game itself mounts addons/$game/*.zip
+		// And appdata/$game/ overrides them all, of course.
+		environment.str("");
+		environment << "HSW_APPDATA=appdata/" << game->appdata_folder_name;
+		envs.push_back(environment.str());
+		raw_envs.push_back(envs.back().data());
+
+		// Finish it off and launch.
+		raw_envs.push_back(nullptr);
+		execve(argv[0], argv, raw_envs.data());
+		perror("execve");
+		exit(1);
+	}
+	else if (child_pid > 0)
+	{
+		SDL_HideWindow(window);  // Hide window. Unfortunately happens even if execvp fails.
+		SDL_MinimizeWindow(window);  // Minimize on MacOS for now, though it's a little wonky.
+
+		int wstatus;
+		if (waitpid(child_pid, &wstatus, 0) >= 0 && WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0)
+			return true;  // Success, so clean up and exit in the background.
+		fprintf(stderr, "child exited with code: %d\n", wstatus);
+		return false;
+	}
+	else
+	{
+		perror("fork");
+		return false;
+	}
+#endif
+}
+
 int main(int argc, char** argv)
 {
 	const char* bin_dir = EscapeBinDirectory();
@@ -1073,163 +1233,13 @@ int main(int argc, char** argv)
 			else if (launcher.wants_to_play)
 			{
 				launcher.wants_to_play = false;
-
-#if defined(_WIN32)
-				std::string cmdline { bin_dir };
-				cmdline.append("/");
-				cmdline.append(launcher.current_game->id);
-				cmdline.append(".exe");
-				std::string executable = cmdline;
-				if (!launcher.wants_fullscreen)
-					cmdline.append(" window");
-
-				std::ostringstream environment;
-				const char* originalEnv = GetEnvironmentStringsA();
-				while (*originalEnv)
+				if (Launch(bin_dir, launcher.current_game, launcher.wants_fullscreen, window))
 				{
-					environment << originalEnv << '\0';
-					originalEnv += strlen(originalEnv) + 1;
+					// Success, so clean up and exit in the background.
+					break;
 				}
 
-				int i = 0;
-
-				// Lowest priority: installers in order.
-				bool doneRetailProfile = false;
-				auto doRetailProfile = [&]()
-				{
-					doneRetailProfile = true;
-					if (launcher.current_game->retail_profile.enabled)
-					{
-						// NB: VirtualStore comes after and thus overrides Program Files
-						if (!launcher.current_game->retail_profile.program_files.empty())
-						{
-							environment << "HSW_ASSETS_" << i++ << "=@stdio@" << launcher.current_game->retail_profile.program_files << '\0';
-						}
-						if (!launcher.current_game->retail_profile.virtual_store.empty())
-						{
-							environment << "HSW_ASSETS_" << i++ << "=@stdio@" << launcher.current_game->retail_profile.virtual_store << '\0';
-						}
-					}
-				};
-				for (const auto& asset : launcher.current_game->assets)
-				{
-					// In the middle: retail profile.
-					if (!asset.required && !doneRetailProfile)
-					{
-						doRetailProfile();
-					}
-
-					if (asset.required || asset.enabled)
-					{
-						environment << "HSW_ASSETS_" << i++ << "=" << asset.mountpoint << "@" << asset.kind << "@installers/" << asset.filename << '\0';
-					}
-				}
-				if (!doneRetailProfile)
-				{
-					doRetailProfile();
-				}
-
-				// High priority: custom assets provided directly.
-				environment << "HSW_ASSETS_" << i++ << "=@stdio@assets/" << launcher.current_game->appdata_folder_name << '\0';
-
-				// Lastly: the game itself mounts addons/$game/*.zip
-				// And appdata/$game/ overrides them all, of course.
-				environment << "HSW_APPDATA=appdata/" << launcher.current_game->appdata_folder_name << '\0';
-
-				// Finish if off and launch.
-				environment << '\0';
-				STARTUPINFOA startupInfo = {};
-				PROCESS_INFORMATION processInfo = {};
-				startupInfo.cb = sizeof(startupInfo);
-				if (CreateProcessA(executable.c_str(), cmdline.data(), nullptr, nullptr, false, 0, environment.str().data(), nullptr, &startupInfo, &processInfo))
-				{
-					SDL_HideWindow(window);  // Hide window now that we know the child process was created.
-					WaitForSingleObject(processInfo.hProcess, INFINITE);
-					DWORD exitCode;
-					if (!GetExitCodeProcess(processInfo.hProcess, &exitCode))
-						exitCode = -1;
-					CloseHandle(processInfo.hProcess);
-					CloseHandle(processInfo.hThread);
-					if (exitCode == 0)
-						break;  // Success, so clean up and exit in the background.
-				}
-				else
-				{
-					fprintf(stderr, "CreateProcess failed: %lu\n", GetLastError());
-				}
-#elif !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
-				int child_pid = fork();
-				if (child_pid == 0)
-				{
-					std::string program { bin_dir };
-					program.append("/");
-					program.append(launcher.current_game->id);
-					char window[] = "window";
-					char* argv[3] = { program.data(), nullptr, nullptr };
-					if (!launcher.wants_fullscreen)
-						argv[1] = window;
-
-					std::vector<std::string> envs;
-					std::vector<char*> raw_envs;
-
-					char** originalEnv = environ;
-					while (originalEnv && *originalEnv)
-					{
-						raw_envs.push_back(*originalEnv);
-						++originalEnv;
-					}
-
-					int i = 0;
-					std::ostringstream environment;
-
-					// Lowest priority: installers in order.
-					for (const auto& asset : launcher.current_game->assets)
-					{
-						if (asset.required || asset.enabled)
-						{
-							environment.str("");
-							environment << "HSW_ASSETS_" << i++ << "=" << asset.mountpoint << "@" << asset.kind << "@installers/" << asset.filename;
-							envs.push_back(environment.str());
-							raw_envs.push_back(envs.back().data());
-						}
-					}
-
-					// High priority: custom assets provided directly.
-					environment.str("");
-					environment << "HSW_ASSETS_" << i++ << "=@stdio@assets/" << launcher.current_game->appdata_folder_name;
-					envs.push_back(environment.str());
-					raw_envs.push_back(envs.back().data());
-
-					// Lastly: the game itself mounts addons/$game/*.zip
-					// And appdata/$game/ overrides them all, of course.
-					environment.str("");
-					environment << "HSW_APPDATA=appdata/" << launcher.current_game->appdata_folder_name;
-					envs.push_back(environment.str());
-					raw_envs.push_back(envs.back().data());
-
-					// Finish it off and launch.
-					raw_envs.push_back(nullptr);
-					execve(argv[0], argv, raw_envs.data());
-					perror("execve");
-					exit(1);
-				}
-				else if (child_pid > 0)
-				{
-					SDL_HideWindow(window);  // Hide window. Unfortunately happens even if execvp fails.
-					SDL_MinimizeWindow(window);  // Minimize on MacOS for now, though it's a little wonky.
-
-					int wstatus;
-					if (waitpid(child_pid, &wstatus, 0) >= 0 && WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0)
-						break;  // Success, so clean up and exit in the background.
-					fprintf(stderr, "child exited with code: %d\n", wstatus);
-				}
-				else
-				{
-					perror("fork");
-				}
-#endif
-
-				// Child process failed, so bring the launcher back.
+				// Child process failed, so bring the launcher window back.
 				SDL_RestoreWindow(window);
 				SDL_ShowWindow(window);
 			}
