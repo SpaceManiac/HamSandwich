@@ -57,15 +57,17 @@ static score_t top3[3];
 static byte level,scoreMode,numScores,noScoresAtAll;
 static world_t tmpWorld;
 static int mouseZ;
+
 #ifdef WTG
+#define WORLD_DEBUGGING
 static byte showFilenames = 1;
 #elif !defined(NDEBUG)
+#define WORLD_DEBUGGING
 static byte showFilenames = 0;
 #endif
 
-#ifdef LEVELLIST
-static FILE *levelF,*level2F,*authorF;
-static int totalLCount;
+#ifdef WORLD_DEBUGGING
+static byte numMapsVerified = 0;
 #endif
 
 void FlipEm(worldDesc_t *me,worldDesc_t *you)
@@ -189,6 +191,8 @@ void SortWorlds(byte field,byte backwards)
 	}
 }
 
+bool VerifyLevel(Map* map);
+
 void InputWorld(const char *fname)
 {
 	char fullname[64];
@@ -197,27 +201,6 @@ void InputWorld(const char *fname)
 	strcpy(list[numWorlds].fname,fname);
 	sprintf(fullname,"worlds/%s",fname);
 
-#ifdef LEVELLIST
-	int i;
-	world_t wor;
-	dword d;
-
-	LoadWorld(&wor,fullname);
-
-	fprintf(authorF,"%s\n",wor.author);
-	fprintf(levelF,"W:%s\n",wor.map[0]->name);
-	for(i=0;i<wor.numMaps;i++)
-	{
-		//fprintf(levelF,"lvl%04d: %s\n",totalLCount++,wor.map[i]->name);
-		d=ChecksumMap(wor.map[i]);
-		fwrite(&d,sizeof(dword),1,level2F);
-		if(!(wor.map[i]->flags&MAP_HUB))
-			fprintf(levelF,"L: %s|%d\n",wor.map[i]->name,d);
-	}
-
-
-	FreeWorld(&wor);
-#endif
 	GetWorldName(fullname,list[numWorlds].name,list[numWorlds].author);
 	w=GetWorldProgressNoCreate(list[numWorlds].fname);
 
@@ -239,13 +222,6 @@ void InputWorld(const char *fname)
 
 TASK(void) ScanWorlds(void)
 {
-#ifdef LEVELLIST
-	levelF=AppdataOpen("levellist.txt","wt");
-	level2F=AssetOpen("worlds/levels.dat","wb");
-	authorF=AppdataOpen("authorlist.txt","wt");
-	totalLCount=0;
-#endif
-
 	std::vector<std::string> files = ListDirectory("worlds", ".dlw", 32);
 	erase_if(files, [](const std::string& name) {
 		return name == "backup_load.dlw"
@@ -270,12 +246,6 @@ TASK(void) ScanWorlds(void)
 			AWAIT GetDisplayMGL()->Flip();
 		}
 	}
-#ifdef LEVELLIST
-	fclose(levelF);
-	fclose(level2F);
-	fclose(authorF);
-	AppdataSync();
-#endif
 }
 
 void CalcScrollBar(void)
@@ -365,6 +335,13 @@ void FetchScores(byte backwards)
 			break;
 		}
 	}
+
+#ifdef WORLD_DEBUGGING
+	numMapsVerified = 0;
+	for (int i = 0; i < tmpWorld.numMaps; ++i)
+		if (VerifyLevel(tmpWorld.map[i]))
+			++numMapsVerified;
+#endif
 }
 
 void SelectLastWorld(void)
@@ -517,6 +494,12 @@ TASK(byte) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			listPos = std::min(listPos + WORLDS_PER_SCREEN, numWorlds - WORLDS_PER_SCREEN);
 			CalcScrollBar();
 		}
+#ifdef WORLD_DEBUGGING
+		else if (scan == SDL_SCANCODE_F3)
+		{
+			showFilenames = !showFilenames;
+		}
+#endif
 
 		int mv=mouseZ-mgl->mouse_z;
 		mouseZ=mgl->mouse_z;
@@ -686,6 +669,48 @@ TASK(byte) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 					level=0;
 				FetchScores(0);
 			}
+
+#ifdef WORLD_DEBUGGING
+			if (showFilenames && PointInRect(msx, msy, 180,443,180+150,443+WBTN_HEIGHT))
+			{
+				printf("Verifying world: %s\n", tmpWorld.map[0]->name);
+
+				std::set<dword> seen;
+				std::vector<dword> ordered;
+
+				SDL_RWops* input = AssetOpen_SDL("worlds/levels.dat");
+				for (dword item; SDL_RWread(input, &item, sizeof(dword), 1) == 1;)
+				{
+					seen.insert(item);
+					ordered.push_back(item);
+				}
+				SDL_RWclose(input);
+
+				for (int i = 0; i < tmpWorld.numMaps; ++i)
+				{
+					dword item = ChecksumMap(tmpWorld.map[i]);
+					if (seen.find(item) == seen.end())
+					{
+						seen.insert(item);
+						ordered.push_back(item);
+						printf("Adding: %s\n", tmpWorld.map[i]->name);
+					}
+					else
+					{
+						printf("Already verified: %s\n", tmpWorld.map[i]->name);
+					}
+				}
+
+				FILE* output = AssetOpen_Write("worlds/levels.dat");
+				for (dword item : ordered)
+				{
+					fwrite(&item, sizeof(dword), 1, output);
+				}
+				fclose(output);
+
+				FetchScores(0);
+			}
+#endif
 		}
 	}
 	else if(mode==MODE_SCROLL)
@@ -723,11 +748,6 @@ TASK(byte) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 	oldc=c;
 
 	c=mgl->LastKeyPressed();
-
-#if defined(WTG) || !defined(NDEBUG)
-	if (c == 'A')
-		showFilenames = !showFilenames;
-#endif
 
 	if(c==27)
 	{
@@ -785,26 +805,28 @@ void RenderWorldSelect(MGLDraw *mgl)
 			else
 				b=0;
 
-#if defined(WTG) || !defined(NDEBUG)
+#ifdef WORLD_DEBUGGING
 			if (showFilenames)
 			{
+				// Debug/WTG mode: show name, fname, author
 				PrintGlow(NAME_X,40+i*GAP_HEIGHT,list[i+listPos].name,b,1);
 				PrintGlow(AUTH_X-70,40+i*GAP_HEIGHT,list[i+listPos].fname,b,1);
-				PrintGlow(AUTH_X+100,40+i*GAP_HEIGHT,list[i+listPos].author,b,1);
+				PrintGlow(AUTH_X+120,40+i*GAP_HEIGHT,list[i+listPos].author,b,1);
 			}
 			else
 #endif
 			{
+				// Normal mode: show name, author, and % completion
 				PrintGlow(NAME_X,40+i*GAP_HEIGHT,list[i+listPos].name,b,2);
 				PrintGlow(AUTH_X,40+i*GAP_HEIGHT,list[i+listPos].author,b,2);
+				if(list[i+listPos].percentage==0.0f)
+					strcpy(s,"0%");
+				else if(list[i+listPos].percentage==100.0f)
+					strcpy(s,"100%");
+				else
+					sprintf(s,"%0.1f%%",list[i+listPos].percentage);
+				PrintGlow(PERCENT_X-GetStrLength(s,2),40+i*GAP_HEIGHT,s,b,2);
 			}
-			if(list[i+listPos].percentage==0.0f)
-				strcpy(s,"0%");
-			else if(list[i+listPos].percentage==100.0f)
-				strcpy(s,"100%");
-			else
-				sprintf(s,"%0.1f%%",list[i+listPos].percentage);
-			PrintGlow(PERCENT_X-GetStrLength(s,2),40+i*GAP_HEIGHT,s,b,2);
 		}
 		else
 			break;
@@ -868,6 +890,29 @@ void RenderWorldSelect(MGLDraw *mgl)
 			}
 		}
 	}
+
+#ifdef WORLD_DEBUGGING
+	if (showFilenames)
+	{
+		char msg[64];
+		if (numMapsVerified == 0)
+		{
+			sprintf(msg, "V: no");
+		}
+		else if (numMapsVerified == tmpWorld.numMaps)
+		{
+			sprintf(msg, "V: all maps");
+		}
+		else
+		{
+			sprintf(msg, "V: %d of %d maps", numMapsVerified, tmpWorld.numMaps);
+		}
+
+		PrintGlow(180,395,list[choice].fname,0,1);
+		PrintGlow(180,419,msg,0,1);
+		RenderWorldSelectButton(180,443,150,"Verify World",mgl);
+	}
+#endif
 
 	if(mode==MODE_VERIFY || mode==MODE_VERIFY2)
 	{

@@ -85,7 +85,7 @@ void LunaticExit(void)
 	StopSong();
 }
 
-byte VerifyLevel(Map *map)
+bool VerifyLevel(Map *map)
 {
 	dword chk,cmp;
 	FILE *f;
