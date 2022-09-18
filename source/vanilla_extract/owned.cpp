@@ -2,6 +2,7 @@
 #include <SDL_rwops.h>
 #include <SDL_log.h>
 #include <errno.h>
+#include <string.h>
 
 void owned::_deleter::SDL_RWops::operator()(::SDL_RWops* ptr)
 {
