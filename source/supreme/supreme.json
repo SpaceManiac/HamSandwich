@@ -16,7 +16,15 @@
 			"sha256sum": "f0f61589788909fecb051a69a1e9e1a8967b2f4bb35de8a0b13cd19041409215",
 			"link": "https://hamumu.itch.io/dr-lunatic-supreme-with-cheese",
 			"file_id": 824077,
-			"description": "Add-ons: All Supreme Worlds",
+			"description": "All Supreme Worlds (2018)",
+			"optional": true
+		},
+		{
+			"filename": "sup_GloomValleyRemastered.zip",
+			"kind": "zip",
+			"sha256sum": "dcda7a4928636b6b5d08060a30030e74c4a1d0f415096f9ad100295f526dea5d",
+			"link": "https://wombat.platymuus.com/hamsandwich/worlds/sup_GloomValleyRemastered.zip",
+			"description": "Gloom Valley Remastered, by HappyStikBeaver",
 			"optional": true
 		}
 	]
