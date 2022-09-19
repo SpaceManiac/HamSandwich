@@ -1507,44 +1507,36 @@ void SpecialEffect(special_t *me,Map *map)
 				}
 				break;
 			case EFF_SUMMON:
-				Guy *g;
-
-				if(MonsterFlags(me->effect[i].value,me->effect[i].value)&MF_FLYING)
-				{
-					g=AddGuy((me->effect[i].x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,
-					   (me->effect[i].y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,
-					   0*FIXAMT,me->effect[i].value,2);
-				}
-				else
-				{
-					g=AddGuy((me->effect[i].x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,
-					   (me->effect[i].y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,
-					   20*FIXAMT,me->effect[i].value,2);
-				}
+			{
+				Guy *g = AddGuy(
+					(me->effect[i].x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,
+					(me->effect[i].y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,
+					20*FIXAMT,
+					me->effect[i].value,
+					2
+				);
 				if(g)
 				{
-					byte b;
+					if (MonsterFlags(g->type, g->aiType) & MF_FLYING)
+						g->z = 0 * FIXAMT;
 
 					g->item=me->effect[i].value2;
 
-					if(g->aiType==MONS_SPHINX)
-						b=1;
-					else
-						b=0;
-
-					if(b)
+					bool isSphinx = g->aiType==MONS_SPHINX;
+					if(isSphinx)
 					{
 						SetMonsterFlags(MONS_SPHXARM1,MF_ONEFACE|MF_NOMOVE|MF_SPRITEBOX|MF_ENEMYWALK|MF_FREEWALK);
 						SetMonsterFlags(MONS_SPHXARM2,MF_ONEFACE|MF_NOMOVE|MF_SPRITEBOX|MF_ENEMYWALK|MF_FREEWALK);
 					}
 					TeleportGuy(g,me->effect[i].x,me->effect[i].y,map,(me->effect[i].flags&EF_NOFX));
-					if(b)
+					if(isSphinx)
 					{
 						SetMonsterFlags(MONS_SPHXARM1,MF_ONEFACE|MF_NOMOVE|MF_SPRITEBOX);
 						SetMonsterFlags(MONS_SPHXARM2,MF_ONEFACE|MF_NOMOVE|MF_SPRITEBOX);
 					}
 				}
 				break;
+			}
 			case EFF_LIGHT:
 				if(!(me->effect[i].flags&EF_PERMLIGHT))
 					map->BrightTorch(me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].value2);
