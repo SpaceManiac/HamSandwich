@@ -1,4 +1,5 @@
 #include "metadata.h"
+#include "owned.h"
 #include <string>
 
 bool AssetSpec::should_auto_mount() const
@@ -8,11 +9,26 @@ bool AssetSpec::should_auto_mount() const
 
 	std::string enabled_file = param;
 	enabled_file.append(".enabled");
-	FILE* f = fopen(enabled_file.c_str(), "rb");
-	if (f)
+	return owned::fopen(enabled_file.c_str(), "rb") != nullptr;
+}
+
+bool AddonSpec::is_enabled() const
+{
+	std::string disabled_file = filename;
+	disabled_file.append(".disabled");
+	return source_vfs->open_sdl(disabled_file.c_str()) == nullptr;
+}
+
+void AddonSpec::set_enabled(bool enabled)
+{
+	std::string disabled_file = filename;
+	disabled_file.append(".disabled");
+	if (enabled)
 	{
-		fclose(f);
-		return true;
+		source_vfs->delete_file(disabled_file.c_str());
 	}
-	return false;
+	else
+	{
+		source_vfs->open_write_sdl(disabled_file.c_str());
+	}
 }

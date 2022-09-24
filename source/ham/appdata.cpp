@@ -402,13 +402,18 @@ static void filter_files(std::set<std::string>* files, const char* extension = n
 	}
 }
 
-std::set<std::string> SearchAddons(const char* path)
+std::vector<AddonSpec> AddonSpec::SearchAddons(vanilla::WriteVfs* vfs)
 {
-	auto addons = vanilla::open_stdio(path);
 	std::set<std::string> file_list;
-	addons->list_dir(".", file_list);
+	vfs->list_dir(".", file_list);
 	filter_files(&file_list, ".zip");
-	return file_list;
+
+	std::vector<AddonSpec> result;
+	while (!file_list.empty())
+	{
+		result.push_back({ vfs, std::move(file_list.extract(file_list.begin()).value()) });
+	}
+	return result;
 }
 
 static void import_addons(VfsStack* target)
@@ -416,13 +421,17 @@ static void import_addons(VfsStack* target)
 	std::string path = "addons/";
 	path.append(globalMetadata->appdata_folder_name);
 	auto addons = vanilla::open_stdio(path);
-	std::set<std::string> file_list;
-	addons->list_dir(".", file_list);
-	filter_files(&file_list, ".zip");
-	for (const auto& fname : file_list)
+	for (const auto& spec : AddonSpec::SearchAddons(addons.get()))
 	{
-		SDL_Log("mounting %s/%s", path.c_str(), fname.c_str());
-		target->push_back(vanilla::open_zip(addons->open_sdl(fname.c_str())));
+		if (spec.is_enabled())
+		{
+			SDL_Log("mounting addon: %s/%s", path.c_str(), spec.filename.c_str());
+			target->push_back(vanilla::open_zip(addons->open_sdl(spec.filename.c_str())));
+		}
+		else
+		{
+			SDL_Log("addon disabled: %s/%s", path.c_str(), spec.filename.c_str());
+		}
 	}
 
 	// Hacky to put this here, but too lazy to expose a proper API for this.

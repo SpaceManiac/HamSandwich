@@ -19,6 +19,7 @@
 #include "appdata.h"
 #include "sha256.h"
 #include "vanilla_extract.h"
+#include "metadata.h"
 
 #if __has_include(<filesystem>)
 #include <filesystem>
@@ -1195,16 +1196,17 @@ int main(int argc, char** argv)
 				OpenFolder(launcher.current_game->addons_folder);
 			}
 
-			auto addons = SearchAddons(launcher.current_game->addons_folder.c_str());
-			for (const auto& fname : addons)
+			auto addons_vfs = vanilla::open_stdio(launcher.current_game->addons_folder);
+			bool any_addons = false;
+			for (auto& spec : AddonSpec::SearchAddons(addons_vfs.get()))
 			{
-				bool dummy = true;
-				ImGui::BeginDisabled();
-				ImGui::Checkbox(fname.c_str(), &dummy);
-				ImGui::EndDisabled();
+				any_addons = true;
+				bool enabled = spec.is_enabled();
+				if (ImGui::Checkbox(spec.filename.c_str(), &enabled))
+					spec.set_enabled(enabled);
 			}
 
-			if (addons.empty())
+			if (!any_addons)
 			{
 				ImGui::Text("Add .zip files to the addons folder and they will be loaded automatically.");
 			}
