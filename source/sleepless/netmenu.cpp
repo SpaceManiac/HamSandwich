@@ -9,7 +9,6 @@
 #include "playlist.h"
 #include "nameentry.h"
 #include "yesnodialog.h"
-#include "recordbook.h"
 #include "shop.h"
 #include "internet.h"
 #include "nameentry.h"

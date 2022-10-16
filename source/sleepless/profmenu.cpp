@@ -9,7 +9,6 @@
 #include "playlist.h"
 #include "nameentry.h"
 #include "yesnodialog.h"
-#include "recordbook.h"
 #include "shop.h"
 #include "goal.h"
 #include "comicbook.h"
@@ -653,7 +652,7 @@ TASK(void) ProfMenu(MGLDraw *mgl)
 		}
 		if(done==4)
 		{
-			AWAIT RecordBook(mgl);
+			AWAIT ComicBook();
 			done=0;
 		}
 	}
