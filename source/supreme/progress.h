@@ -139,6 +139,7 @@ void FreeProfile(void);
 void DefaultControls(void);
 void DefaultProfile(const char *name);
 
+void SetFirstTime();
 byte FirstTime(void);
 void EraseWorldProgress(const char *fname);
 worldData_t *GetWorldProgress(const char *fname);

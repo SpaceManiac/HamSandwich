@@ -206,6 +206,12 @@ byte FirstTime(void)
 	return firstTime;
 }
 
+void SetFirstTime()
+{
+	AppdataDelete("profile.cfg");
+	firstTime = true;
+}
+
 void ClearProgress(void)
 {
 	int i;

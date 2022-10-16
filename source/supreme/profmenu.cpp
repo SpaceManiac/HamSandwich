@@ -334,14 +334,16 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 
 					mode=PROF_NORMAL;
 					sprintf(s,"profiles/%s.prf",profile.name);
-					FreeProfile();
 					AppdataDelete(s);
 					if(numFiles==1)	// this was the only profile
 					{
+						AppdataDelete("profile.cfg");
+						InitProfile();
 						return 3;	// so force them to create a new profile
 					}
 					else
 					{
+						FreeProfile();
 						if(profChoice>0)
 							LoadProfile(ShortName(&fileList[0]));
 						else	// load profile #1 if you just deleted #0
