@@ -154,23 +154,23 @@ else()
 	# Bundle Steam runtime libraries.
 	include(FetchContent)
 	FetchContent_Declare(steam_sdl2
-		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2/libsdl2-2.0-0_2.0.22+dfsg-1+steamrt1.1+srt1_amd64.deb
-		URL_HASH SHA256=d28b1f2a4d595cffabddad668742f6a1914bbc8cdabb27a66260606cdf296bf0
+		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2/libsdl2-2.0-0_2.0.22+dfsg-6~steamrt1.1+srt1_amd64.deb
+		URL_HASH SHA256=276f44504ae0b0c76045d42ba6e4d42b9577185a55843e2fa2805242cdfd79a9
 		PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
 	)
 	FetchContent_Declare(steam_sdl2_image
-		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2-image/libsdl2-image-2.0-0_2.0.5+dfsg1-3~steamrt1.2+srt1_amd64.deb
-		URL_HASH SHA256=b144c57f8cc3b0ddf9ffcfbab138a3c6477b72d23a52d4176390aa2e8a1423ec
+		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2-image/libsdl2-image-2.0-0_2.6.0+dfsg-1~steamrt1.1+srt1_amd64.deb
+		URL_HASH SHA256=8b586dd51532e368ba35302e7b67e26988e023f5c86cf2654bab7afa2c953571
 		PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
 	)
 	FetchContent_Declare(steam_sdl2_mixer
-		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2-mixer/libsdl2-mixer-2.0-0_2.0.4.~reimport-0+steamrt1.2+srt1_amd64.deb
-		URL_HASH SHA256=78860d794928a0f7a31cd4ee83f395151dedb74f0e2613c6833438aa0d3f1d54
+		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2-mixer/libsdl2-mixer-2.0-0_2.6.1+dfsg-1~steamrt1.1+srt1_amd64.deb
+		URL_HASH SHA256=cbd1f9e189c42b2228c2888d4582bc93d254bc0c3e2aaab06ed4f4625e837edd
 		PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
 	)
 	FetchContent_Declare(steam_sdl2_ttf
-		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2-ttf/libsdl2-ttf-2.0-0_2.0.15-0+steamrt1.1+srt2_amd64.deb
-		URL_HASH SHA256=4444fb73f3bc2b7229dea2564baba233958158d82c73489724d4107bd31e3e6c
+		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2-ttf/libsdl2-ttf-2.0-0_2.20.0-0+steamrt1.1+srt1_amd64.deb
+		URL_HASH SHA256=eb9897620a94756411fedfc308424129f155d4c786a1e91b2bbd46e2543d1308
 		PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
 	)
 	FetchContent_Declare(steam_libpng
@@ -193,8 +193,8 @@ else()
 	set(sdl2_rpath_depends "${sdl2_with_rpath}")
 
 	install(FILES "${sdl2_with_rpath}" RENAME "libSDL2-2.0.so.0" TYPE BIN COMPONENT generic/executables)
-	install(FILES "${steam_sdl2_image_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2_image-2.0.so.0.2.3" RENAME "libSDL2_image-2.0.so.0" TYPE BIN COMPONENT generic/executables)
-	install(FILES "${steam_sdl2_mixer_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so.0.2.2" RENAME "libSDL2_mixer-2.0.so.0" TYPE BIN COMPONENT generic/executables)
+	install(FILES "${steam_sdl2_image_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2_image-2.0.so.0.600.0" RENAME "libSDL2_image-2.0.so.0" TYPE BIN COMPONENT generic/executables)
+	install(FILES "${steam_sdl2_mixer_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so.0.600.1" RENAME "libSDL2_mixer-2.0.so.0" TYPE BIN COMPONENT generic/executables)
 	install(FILES "${steam_libpng_SOURCE_DIR}/lib/x86_64-linux-gnu/libpng12.so.0.46.0" RENAME "libpng12.so.0" TYPE BIN COMPONENT generic/executables)
 endif()
 
