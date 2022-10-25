@@ -956,8 +956,7 @@ int main(int argc, char** argv)
 
 		ImGui::SetNextWindowPos({ 0, 0 });
 		ImGui::SetNextWindowSize({ leftPaneWidth, (float)windowHeight });
-		if (action == Action::MiniGui)
-			ImGui::BeginDisabled();
+		ImGui::BeginDisabled(action == Action::MiniGui);
 		if (ImGui::Begin("Games", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
 		{
 			for (auto& game : launcher.games)
@@ -1214,9 +1213,8 @@ int main(int argc, char** argv)
 			// ----------------------------------------------------------------
 			ImGui::End();
 		}
+		ImGui::EndDisabled(); // pairs with Action::MiniGui
 
-		if (action == Action::MiniGui)
-			ImGui::EndDisabled();
 		// Rendering
 		ImGui::Render();
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
