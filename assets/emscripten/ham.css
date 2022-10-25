@@ -1,42 +1,93 @@
 @charset "utf-8";
+* {
+	box-sizing: border-box;
+	/* Eliminate half-pixel offsets, at which the Win98 font looks awful. */
+	transform: translate(0);
+}
+
+/* ------------------------------------------------------------------------- */
+/* 98.css extensions */
+/* Title bar extensions */
+.title-bar {
+	height: 18px;
+}
+
+.title-bar-icon {
+	width: 16px;
+	height: 16px;
+	vertical-align: bottom;
+	margin-top: -2px;
+	margin-bottom: -1px;
+	margin-right: -1px; /* Assuming followed by whitespace. */
+}
+
+.title-bar-controls button.with-text,
+.title-bar-controls button.with-text:active {
+	padding: 0 8px;
+	margin-left: 2px;
+}
+.title-bar-controls button.with-text[aria-label] {
+	padding-left: 16px;
+}
+
+/* Body extensions */
+.window-body-scrollable {
+	overflow-y: auto;
+	height: 480px;
+}
+
+fieldset {
+	margin-bottom: 8px;
+}
+fieldset > legend + p {
+	margin-top: 0;
+}
+
+button, input[type="reset"], input[type="submit"] {
+	/* Override 75px with 76px to avoid half-pixel centering issue. */
+	min-width: 76px;
+}
+
 /* ------------------------------------------------------------------------- */
 /* Overarching page layout */
 body {
-	background-color: #f5f5f5;
-	overflow-y: scroll;
-	margin: 8px;
-}
-@media (max-width: 599px) {
-	body {
-		margin: 0;
-	}
-}
-body > * {
-	max-width: 640px;
-	margin: 8px auto;
-	background-color: white;
-	padding: 10px;
+	background-color: #008080;
+	width: 100vw;
+	height: 100vh;
+	margin: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	--canvas-width: 640px;
+	--canvas-height: 480px;
 }
 
-#canvas-stacker {
+/* Game canvas */
+.canvas-sized {
+	max-width: 100%;
+	width: var(--canvas-width);
+	height: var(--canvas-height);
+}
+.canvas-stacker {
 	position: relative;
 	background-color: black;
 }
-#canvas-stacker > * {
+.canvas-stacker > * {
 	position: absolute;
 	left: 0;
 	top: 0;
 	width: 100%;
 	height: 100%;
 }
-#canvas {
+.canvas {
 	position: relative;
 	margin: auto;
 	display: block;
 	border: 0px none;
 	background-color: black;
-	min-width: 640px;
-	min-height: 480px;
+	min-width: var(--canvas-width);
+	min-height: var(--canvas-height);
 
 	pointer-events: none;
 	opacity: 0;
@@ -56,7 +107,9 @@ body > * {
 	padding: 10px;
 	background: rgba(0, 0, 0, 0.7);
 	color: white;
-	text-align: center;
+	/* Not text-align:center to avoid half-pixel offset issues */
+	display: flex;
+	justify-content: center;
 }
 .canvas-notice > img {
 	margin: auto;
@@ -70,26 +123,8 @@ body > * {
 	display: none !important;
 }
 
-details > summary {
-	user-select: none;
-}
-
-details[open] > summary {
-	margin-bottom: 10px;
-}
-
 p {
 	margin: 10px 0;
-}
-
-/* ------------------------------------------------------------------------- */
-/* Classes */
-.flex-row {
-	display: flex;
-	flex-wrap: wrap;
-}
-.flex-row > * {
-	margin-right: 8px;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -106,45 +141,4 @@ table.flat-table td {
 
 table.flat-table td:not(:last-child) {
 	padding-right: 10px;
-}
-
-/* ------------------------------------------------------------------------- */
-/* Spinner animation */
-.spinner {
-	display: inline-block;
-	position: relative;
-	width: 30px;
-	top: 1px;
-}
-.loading-pulse {
-	position: relative;
-	width: 6px;
-	height: 16px;
-	left: 12px;
-	background: rgb(51, 51, 51);
-	animation: pulse 1500ms infinite;
-	animation-delay: 250ms;
-}
-.loading-pulse:before, .loading-pulse:after {
-	content: '';
-	position: absolute;
-	display: block;
-	height: 16px;
-	width: 6px;
-	background: rgb(51, 51, 51);
-	top: 50%;
-	transform: translateY(-50%);
-	animation: pulse 1500ms infinite;
-}
-.loading-pulse:before {
-	left: -12px;
-}
-.loading-pulse:after {
-	left: 12px;
-	animation-delay: 500ms;
-}
-@keyframes pulse {
-	50% {
-		background: white;
-	}
 }

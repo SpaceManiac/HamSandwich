@@ -198,6 +198,7 @@ function(HamSandwich_add_executable target_name)
 		endif()
 	elseif(EMSCRIPTEN)
 		# Generate index.html from the json metadata.
+		set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/assets/emscripten/index.html")
 		file(READ "${CMAKE_SOURCE_DIR}/assets/emscripten/index.html" INDEX_HTML)
 		string(REPLACE "__HAMSANDWICH_METADATA__" "${json_blob}" INDEX_HTML "${INDEX_HTML}")
 		file(GENERATE OUTPUT index.html CONTENT "${INDEX_HTML}")
@@ -216,6 +217,11 @@ function(HamSandwich_add_executable target_name)
 		get_target_property(ico "${target_name}" HamSandwich_ico)
 		install(
 			FILES
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98.css"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif.woff"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif.woff2"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif_bold.woff"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif_bold.woff2"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.css"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.js"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/jszip.min.js"

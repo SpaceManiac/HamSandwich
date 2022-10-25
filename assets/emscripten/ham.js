@@ -222,9 +222,11 @@ var Module = (function() {
 	var totalDependencies = 0, unsatisfied = 0;
 	var hasContext = true;
 
-	document.getElementById('fullscreen')?.addEventListener('click', function() {
-		Module.canvas.requestFullscreen();
-	});
+	for (let button of document.getElementsByClassName('js-fullscreen')) {
+		button.addEventListener('click', function() {
+			Module.canvas.requestFullscreen();
+		});
+	}
 
 	document.getElementById('export')?.addEventListener('click', function() {
 		function saveAs(file, filename) {
@@ -297,7 +299,7 @@ var Module = (function() {
 				text = "Downloading data (" + pct + "%)";
 			}
 
-			spinner.hidden = !text;
+			if (spinner) spinner.hidden = !text;
 			status.innerText = text;
 		},
 		monitorRunDependencies: function(left) {
@@ -342,7 +344,8 @@ var Module = (function() {
 Module.setStatus("Downloading...");
 window.onerror = function(event) {
 	Module.setStatus("Error! See browser console.");
-	spinner.hidden = true;
+	var spinner = document.getElementById('spinner');
+	if (spinner) spinner.hidden = true;
 	Module.setStatus = Module.printErr;
 };
 
