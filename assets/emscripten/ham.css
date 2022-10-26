@@ -33,7 +33,7 @@
 /* Body extensions */
 .window-body-scrollable {
 	overflow-y: auto;
-	height: 480px;
+	max-height: 480px;
 }
 
 fieldset {
@@ -61,6 +61,16 @@ body {
 
 	--canvas-width: 640px;
 	--canvas-height: 480px;
+}
+
+.stacker {
+	display: grid;
+	justify-items: center;
+	align-items: center;
+}
+
+.stacker > * {
+	grid-area: 1 / 1 / 1 / 1;
 }
 
 /* Game canvas */
@@ -115,6 +125,10 @@ body {
 	margin: auto;
 	max-width: 100%;
 	max-height: 100%;
+}
+
+body.menu-open .canvas {
+	cursor: initial !important;
 }
 
 /* ------------------------------------------------------------------------- */

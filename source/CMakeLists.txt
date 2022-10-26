@@ -64,12 +64,23 @@ add_subdirectory("sleepless")  # 2007-10
 if(EMSCRIPTEN)
 	# Assets for web distribution
 	get_property(launcher_metadata GLOBAL PROPERTY HamSandwich_launcher_metadata)
-	file(READ "${CMAKE_SOURCE_DIR}/assets/homepage/index.html" index_html)
+	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/assets/emscripten/index.html")
+	file(READ "${CMAKE_SOURCE_DIR}/assets/emscripten/index.html" index_html)
 	string(REPLACE "__HOMEPAGE_METADATA__" "${launcher_metadata}" index_html "${index_html}")
 	file(GENERATE OUTPUT index.html CONTENT "${index_html}")
 
-	install(FILES
+	install(
+		FILES
 		"${CMAKE_CURRENT_BINARY_DIR}/index.html"
+		"${CMAKE_SOURCE_DIR}/assets/emscripten/98.css"
+		"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif.woff"
+		"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif.woff2"
+		"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif_bold.woff"
+		"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif_bold.woff2"
+		"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.css"
+		"${CMAKE_SOURCE_DIR}/assets/emscripten/shortcut.png"
+		"${CMAKE_SOURCE_DIR}/assets/emscripten/yerfdog.png"
+		"${CMAKE_SOURCE_DIR}/assets/emscripten/github.png"
 		DESTINATION "${CMAKE_INSTALL_PREFIX}"
 	)
 	install(

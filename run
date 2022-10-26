@@ -217,7 +217,7 @@ case "$tool" in
 			emrun --serve_after_close --serve_after_exit "$debugdir/index.html"
 		else
 			# TODO: Serve out of CMake dir, so non-installed projects work
-			emrun --serve_after_close "$debugdir/$project/index.html"
+			emrun --serve_after_close "$debugdir/$project.html"
 		fi
 		;;
 	two)

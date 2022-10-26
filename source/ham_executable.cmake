@@ -198,10 +198,11 @@ function(HamSandwich_add_executable target_name)
 		endif()
 	elseif(EMSCRIPTEN)
 		# Generate index.html from the json metadata.
-		set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/assets/emscripten/index.html")
-		file(READ "${CMAKE_SOURCE_DIR}/assets/emscripten/index.html" INDEX_HTML)
-		string(REPLACE "__HAMSANDWICH_METADATA__" "${json_blob}" INDEX_HTML "${INDEX_HTML}")
-		file(GENERATE OUTPUT index.html CONTENT "${INDEX_HTML}")
+		set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/assets/emscripten/game.html")
+		file(READ "${CMAKE_SOURCE_DIR}/assets/emscripten/game.html" index_html)
+		string(REPLACE "__HAMSANDWICH_METADATA__" "${json_blob}" index_html "${index_html}")
+		string(REPLACE "__HAMSANDWICH_ID__" "${target_name}" index_html "${index_html}")
+		file(GENERATE OUTPUT "${target_name}.html" CONTENT "${index_html}")
 
 		target_link_libraries("${target_name}" idbfs.js)
 		if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -210,8 +211,8 @@ function(HamSandwich_add_executable target_name)
 
 		install(
 			FILES "${CMAKE_SOURCE_DIR}/assets/splashes/${target_name}.jpg"
-			RENAME "splash.jpg"
-			DESTINATION "${CMAKE_INSTALL_PREFIX}/${target_name}"
+			RENAME "${target_name}.splash.jpg"
+			DESTINATION "${CMAKE_INSTALL_PREFIX}"
 			OPTIONAL
 		)
 		get_target_property(ico "${target_name}" HamSandwich_ico)
@@ -225,16 +226,16 @@ function(HamSandwich_add_executable target_name)
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.css"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.js"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/jszip.min.js"
-			"${CMAKE_CURRENT_BINARY_DIR}/index.html"
+			"${CMAKE_CURRENT_BINARY_DIR}/${target_name}.html"
 			"${CMAKE_CURRENT_BINARY_DIR}/${target_name}.js"
 			"${CMAKE_CURRENT_BINARY_DIR}/${target_name}.wasm"
-			DESTINATION "${CMAKE_INSTALL_PREFIX}/${target_name}"
+			DESTINATION "${CMAKE_INSTALL_PREFIX}"
 			COMPONENT "${target_name}/web"
 		)
 		install(
 			FILES "${ico}"
-			RENAME "favicon.ico"
-			DESTINATION "${CMAKE_INSTALL_PREFIX}/${target_name}"
+			RENAME "${target_name}.ico"
+			DESTINATION "${CMAKE_INSTALL_PREFIX}"
 			COMPONENT "${target_name}/web"
 		)
 
