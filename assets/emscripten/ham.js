@@ -80,11 +80,16 @@ var HamSandwich = (function () {
 	}
 	setWindowTitle(metadata.title);
 
-	function setRunStatus(text) {
+	function setRunStatus(text, callback) {
 		var notice = document.getElementById('runstatus-notice');
 		if (notice) {
 			notice.hidden = !text;
 			notice.innerText = text;
+			if (callback) {
+				notice.ariaRoleDescription = 'button';
+				notice.style.cursor = 'pointer';
+				notice.addEventListener('click', callback);
+			}
 			return notice;
 		}
 	}
@@ -174,7 +179,7 @@ var InstallerUpload = (function () {
 		} catch (e) {
 			status[fname].statusTd.innerText = '\u2014';
 			HamSandwich.toggleMenu(true);
-			HamSandwich.setRunStatus('Provide the installer below to play.');
+			HamSandwich.setRunStatus('Provide the installer to play.', () => HamSandwich.toggleMenu(true));
 			return;
 		}
 
@@ -194,22 +199,30 @@ var InstallerUpload = (function () {
 			} else {
 				status[fname].statusTd.innerText = 'Bad';
 				HamSandwich.toggleMenu(true);
-				HamSandwich.setRunStatus('Provide the installer below to play.');
+				HamSandwich.setRunStatus('Provide the installer to play.', () => HamSandwich.toggleMenu(true));
 			}
 		});
 	}
 
 	function preInit() {
 		for (var installer of meta) {
-			HamSandwich.pushAssets(installer.mountpoint, installer.kind, '/installers/' + installer.filename);
-			if (!installer.optional)
+			if (!installer.optional) {
 				Module.addRunDependency('installer ' + installer.filename);
+			}
 		}
 	}
 
 	function onFsInit() {
 		for (var installer of meta) {
 			checkFsFile(installer.filename, false, installer.optional);
+			if (installer.optional) {
+				try {
+					FS.stat('/installers/' + installer.filename);
+					HamSandwich.pushAssets(installer.mountpoint, installer.kind, '/installers/' + installer.filename);
+				} catch {}
+			} else {
+				HamSandwich.pushAssets(installer.mountpoint, installer.kind, '/installers/' + installer.filename);
+			}
 		}
 	}
 
@@ -232,6 +245,7 @@ var Module = (function() {
 	for (let button of document.getElementsByClassName('js-fullscreen')) {
 		button.addEventListener('click', function() {
 			Module.canvas.requestFullscreen();
+			setTimeout(() => button.blur());
 		});
 	}
 
@@ -254,7 +268,13 @@ var Module = (function() {
 		}
 
 		function collect(zip, fsPath) {
-			var list = FS.readdir(fsPath);
+			let list;
+			try {
+				list = FS.readdir(fsPath);
+			} catch {
+				alert('No save to export!');
+				return false;
+			}
 			for (var item of list) {
 				if (item == "." || item == "..") continue;
 				var fullItem = fsPath + "/" + item;
@@ -264,11 +284,16 @@ var Module = (function() {
 					zip.file(item, FS.readFile(fullItem));
 				}
 			}
+			return true;
 		}
 
 		Module.setStatus("Zipping...");
 		var zip = new JSZip();
-		collect(zip, '/appdata/' + HamSandwich.metadata.appdataName);
+		if (!collect(zip, '/appdata/' + HamSandwich.metadata.appdataName)) {
+			// If there's nothing to export.
+			Module.setStatus("");
+			return;
+		}
 		zip.generateAsync({ type: "blob" }).then(function(content) {
 			saveAs(content, "HamSandwich Saves.zip");
 			Module.setStatus("");
@@ -335,20 +360,18 @@ var Module = (function() {
 					canvas.style.opacity = '1';
 					canvas.style.pointerEvents = 'auto';
 				};
-				quit_ = function() {
-					Module.hamQuit();
+				quit_ = function(code) {
+					if (!code) {
+						Module.hamQuit();
+					}
 
 					// If the above didn't actually navigate us anywhere...
 					canvas.style.opacity = '0';
 					canvas.style.pointerEvents = 'none';
 
-					var notice = HamSandwich.setRunStatus('Refresh or click here to play again.');
-					if (notice) {
-						notice.style.cursor = 'pointer';
-						notice.addEventListener('click', () => {
-							window.location.reload();
-						});
-					}
+					HamSandwich.setRunStatus('Refresh or click here to play again.', () => {
+						window.location.reload();
+					});
 				};
 			},
 			InstallerUpload.preInit,
