@@ -70,6 +70,8 @@ jobs:
       - uses: actions/upload-pages-artifact@v1
         with:
           path: ./build/webroot
+      - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
+        run: tools/bootstrap/butler push --if-changed build/webroot "$ITCH_GAME:web" --userversion="$(git rev-parse --short=10 HEAD)"
   web-deploy:
     name: Deploy to GitHub Pages
     needs: web
