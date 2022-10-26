@@ -8,6 +8,14 @@
 		<link rel="stylesheet" href="98/98.css"/>
 		<link rel="stylesheet" href="ham.css"/>
 		<style>
+			body {
+				color: white;
+				/* From 98.css */
+				-webkit-font-smoothing: none;
+				font-family: "Pixelated MS Sans Serif", Arial;
+				font-size: 11px;
+			}
+
 			.desktop {
 				padding: 16px;
 				display: grid;
@@ -15,12 +23,6 @@
 			}
 
 			.desktop-icon {
-				/* From 98.css */
-				-webkit-font-smoothing: none;
-				font-family: "Pixelated MS Sans Serif", Arial;
-				font-size: 11px;
-
-				/* Custom */
 				color: white;
 				text-decoration: none;
 
@@ -58,12 +60,12 @@
 		<main id="main" class="canvas-sized desktop">
 			<a class="desktop-icon" href="https://hamumu.com" target="_blank">
 				<img src="yerfdog.png">
-				<img class="shortcut" src="shortcut.png">
+				<img class="shortcut" src="shortcut.png" role="presentation" alt="">
 				<div class="centerfix"><span>Hamumu</span> <span>Games,</span> <span>Inc.</span></div>
 			</a>
 			<a class="desktop-icon" href="https://github.com/SpaceManiac/HamSandwich" target="_blank">
 				<img src="github.png">
-				<img class="shortcut" src="shortcut.png">
+				<img class="shortcut" src="shortcut.png" role="presentation" alt="">
 				<div class="centerfix"><span>HamSandwich</span> <span>project</span></div>
 			</a>
 			<noscript>JavaScript is required to play these games.</noscript>
