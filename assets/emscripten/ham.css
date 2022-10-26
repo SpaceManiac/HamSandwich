@@ -33,7 +33,8 @@
 /* Body extensions */
 .window-body-scrollable {
 	overflow-y: auto;
-	max-height: 480px;
+	max-height: 432px;
+	max-width: 576px;
 }
 
 fieldset {
