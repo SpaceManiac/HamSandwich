@@ -78,16 +78,26 @@ if(EMSCRIPTEN)
 
 		install(
 			FILES
-			"${CMAKE_CURRENT_BINARY_DIR}/index.html"
-			"${CMAKE_SOURCE_DIR}/assets/emscripten/98.css"
-			"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif.woff"
-			"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif.woff2"
-			"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif_bold.woff"
-			"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif_bold.woff2"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/98.css"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/98.license.txt"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif.readme.txt"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif.license.txt"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif.woff"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif.woff2"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif_bold.readme.txt"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif_bold.license.txt"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif_bold.woff"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif_bold.woff2"
+			DESTINATION "${CMAKE_INSTALL_PREFIX}/98"
+			COMPONENT "${target_name}/web"
+		)
+		install(
+			FILES
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.css"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/shortcut.png"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/yerfdog.png"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/github.png"
+			"${CMAKE_CURRENT_BINARY_DIR}/index.html"
 			DESTINATION "${CMAKE_INSTALL_PREFIX}"
 		)
 		install(

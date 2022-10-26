@@ -218,11 +218,21 @@ function(HamSandwich_add_executable target_name)
 		get_target_property(ico "${target_name}" HamSandwich_ico)
 		install(
 			FILES
-			"${CMAKE_SOURCE_DIR}/assets/emscripten/98.css"
-			"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif.woff"
-			"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif.woff2"
-			"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif_bold.woff"
-			"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif_bold.woff2"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/98.css"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/98.license.txt"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif.readme.txt"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif.license.txt"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif.woff"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif.woff2"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif_bold.readme.txt"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif_bold.license.txt"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif_bold.woff"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif_bold.woff2"
+			DESTINATION "${CMAKE_INSTALL_PREFIX}/98"
+			COMPONENT "${target_name}/web"
+		)
+		install(
+			FILES
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.css"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.js"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/jszip.min.js"
