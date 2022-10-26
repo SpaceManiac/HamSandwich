@@ -149,12 +149,11 @@ var InstallerUpload = (function () {
 		var fileTd = document.createElement('td');
 		let fileInput = document.createElement('input');
 		fileInput.type = 'file';
-		fileInput.addEventListener('change', () => {
+		fileInput.addEventListener('change', async () => {
 			setSpinner(statusTd);
-			fileInput.files[0].arrayBuffer().then(buf => {
-				FS.writeFile('/installers/' + installer.filename, new Uint8Array(buf));
-				checkFsFile(installer.filename, true, installer.optional);
-			});
+			let buf = await fileInput.files[0].arrayBuffer();
+			FS.writeFile('/installers/' + installer.filename, new Uint8Array(buf));
+			checkFsFile(installer, true);
 		});
 		fileTd.appendChild(fileInput);
 
@@ -172,36 +171,62 @@ var InstallerUpload = (function () {
 		};
 	}
 
-	function checkFsFile(fname, sync, optional) {
-		var buffer;
+	async function downloadInstaller(installer) {
+		try {
+			status[installer.filename].fileInput.disabled = true;
+			let link = installer.link;
+			if (installer.file_id) {
+				link = `https://wombat.platymuus.com/hamsandwich/itch_proxy.php?url=${installer.link}/file/${installer.file_id}`;
+			}
+
+			let response = await fetch(link);
+			let buf = await response.arrayBuffer();
+			FS.writeFile('/installers/' + installer.filename, new Uint8Array(buf));
+			checkFsFile(installer, true);
+		} catch {
+			status[installer.filename].fileInput.disabled = false;
+		}
+	}
+
+	async function checkFsFile(installer, sync) {
+		let fname = installer.filename;
+
+		let buffer;
 		try {
 			buffer = FS.readFile('/installers/' + fname);
 		} catch (e) {
+			if (!sync && !installer.optional) {
+				downloadInstaller(installer);
+				return;
+			}
+
 			status[fname].statusTd.innerText = '\u2014';
-			HamSandwich.toggleMenu(true);
-			HamSandwich.setRunStatus('Provide the installer to play.', () => HamSandwich.toggleMenu(true));
+			if (!installer.optional) {
+				HamSandwich.toggleMenu(true);
+				HamSandwich.setRunStatus('Provide the installer to play.', () => HamSandwich.toggleMenu(true));
+			}
 			return;
 		}
 
 		// Warning: `crypto.subtle` is only available on HTTPS sites.
-		crypto.subtle.digest('SHA-256', buffer).then(hashBuffer => {
-			var hexdigest = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-			if (hexdigest === status[fname].sha256sum) {
-				status[fname].accepted = true;
-				status[fname].statusTd.innerText = 'Ok';
-				status[fname].fileInput.disabled = true;
-				status[fname].fileInput.hidden = true;
-				if (sync) {
-					HamSandwich.fsSync({ installers: true });
-				}
-				if (!optional)
-					Module.removeRunDependency('installer ' + fname);
-			} else {
-				status[fname].statusTd.innerText = 'Bad';
-				HamSandwich.toggleMenu(true);
-				HamSandwich.setRunStatus('Provide the installer to play.', () => HamSandwich.toggleMenu(true));
+		let hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+		let hexdigest = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+		if (hexdigest === status[fname].sha256sum) {
+			status[fname].accepted = true;
+			status[fname].statusTd.innerText = 'Ok';
+			status[fname].fileInput.disabled = true;
+			status[fname].fileInput.hidden = true;
+			if (sync) {
+				HamSandwich.fsSync({ installers: true });
 			}
-		});
+			if (!installer.optional) {
+				Module.removeRunDependency('installer ' + fname);
+			}
+		} else {
+			status[fname].statusTd.innerText = 'Bad';
+			HamSandwich.toggleMenu(true);
+			HamSandwich.setRunStatus('Provide the installer to play.', () => HamSandwich.toggleMenu(true));
+		}
 	}
 
 	function preInit() {
@@ -214,7 +239,7 @@ var InstallerUpload = (function () {
 
 	function onFsInit() {
 		for (var installer of meta) {
-			checkFsFile(installer.filename, false, installer.optional);
+			checkFsFile(installer, false);
 			if (installer.optional) {
 				try {
 					FS.stat('/installers/' + installer.filename);
@@ -249,7 +274,7 @@ var Module = (function() {
 		});
 	}
 
-	document.getElementById('export')?.addEventListener('click', function() {
+	document.getElementById('export')?.addEventListener('click', async function() {
 		function saveAs(file, filename) {
 			if (window.navigator.msSaveOrOpenBlob) { // IE10+
 				window.navigator.msSaveOrOpenBlob(file, filename);
@@ -294,10 +319,9 @@ var Module = (function() {
 			Module.setStatus("");
 			return;
 		}
-		zip.generateAsync({ type: "blob" }).then(function(content) {
-			saveAs(content, "HamSandwich Saves.zip");
-			Module.setStatus("");
-		});
+		let content = await zip.generateAsync({ type: "blob" });
+		saveAs(content, "HamSandwich Saves.zip");
+		Module.setStatus("");
 	});
 
 	// As a default initial behavior, pop up an alert when webgl context is lost. To make your
