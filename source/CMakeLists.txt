@@ -64,30 +64,38 @@ add_subdirectory("sleepless")  # 2007-10
 if(EMSCRIPTEN)
 	# Assets for web distribution
 	get_property(launcher_metadata GLOBAL PROPERTY HamSandwich_launcher_metadata)
-	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/assets/emscripten/index.html")
-	file(READ "${CMAKE_SOURCE_DIR}/assets/emscripten/index.html" index_html)
-	string(REPLACE "__HOMEPAGE_METADATA__" "${launcher_metadata}" index_html "${index_html}")
-	file(GENERATE OUTPUT index.html CONTENT "${index_html}")
+	string(JSON num_projects LENGTH "${launcher_metadata}" "project_list")
+	if (num_projects EQUAL 1)
+		# Exactly one game: rename its .html to index.html.
+		string(JSON target_name GET "${launcher_metadata}" "project_list" 0)
+		install(CODE "file(RENAME \${CMAKE_INSTALL_PREFIX}/${target_name}.html \${CMAKE_INSTALL_PREFIX}/index.html)")
+	else()
+		# More than one game: create a root index.html listing all games.
+		set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/assets/emscripten/index.html")
+		file(READ "${CMAKE_SOURCE_DIR}/assets/emscripten/index.html" index_html)
+		string(REPLACE "__HOMEPAGE_METADATA__" "${launcher_metadata}" index_html "${index_html}")
+		file(GENERATE OUTPUT index.html CONTENT "${index_html}")
 
-	install(
-		FILES
-		"${CMAKE_CURRENT_BINARY_DIR}/index.html"
-		"${CMAKE_SOURCE_DIR}/assets/emscripten/98.css"
-		"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif.woff"
-		"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif.woff2"
-		"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif_bold.woff"
-		"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif_bold.woff2"
-		"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.css"
-		"${CMAKE_SOURCE_DIR}/assets/emscripten/shortcut.png"
-		"${CMAKE_SOURCE_DIR}/assets/emscripten/yerfdog.png"
-		"${CMAKE_SOURCE_DIR}/assets/emscripten/github.png"
-		DESTINATION "${CMAKE_INSTALL_PREFIX}"
-	)
-	install(
-		FILES "${CMAKE_CURRENT_SOURCE_DIR}/supreme/lunatic.ico"
-		RENAME "favicon.ico"
-		DESTINATION "${CMAKE_INSTALL_PREFIX}"
-	)
+		install(
+			FILES
+			"${CMAKE_CURRENT_BINARY_DIR}/index.html"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/98.css"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif.woff"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif.woff2"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif_bold.woff"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/ms_sans_serif_bold.woff2"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/ham.css"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/shortcut.png"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/yerfdog.png"
+			"${CMAKE_SOURCE_DIR}/assets/emscripten/github.png"
+			DESTINATION "${CMAKE_INSTALL_PREFIX}"
+		)
+		install(
+			FILES "${CMAKE_CURRENT_SOURCE_DIR}/supreme/lunatic.ico"
+			RENAME "favicon.ico"
+			DESTINATION "${CMAKE_INSTALL_PREFIX}"
+		)
+	endif()
 elseif(ANDROID)
 	# Assets for Android build
 	# This folder corresponds to the one set in `android-project/build.gradle`. It erases the
