@@ -94,10 +94,11 @@ var HamSandwich = (function () {
 		}
 	}
 
-	function toggleMenu(state) {
+	function toggleMenu(state, auto) {
 		var menuWindow = document.getElementById('menu');
 		menuWindow.hidden = !(state ?? menuWindow.hidden);
 		document.body.classList.toggle('menu-open', !menuWindow.hidden);
+		toggleMenu.auto = auto;
 	}
 
 	return {
@@ -202,7 +203,7 @@ var InstallerUpload = (function () {
 
 			status[fname].statusTd.innerText = '\u2014';
 			if (!installer.optional) {
-				HamSandwich.toggleMenu(true);
+				HamSandwich.toggleMenu(true, true);
 				HamSandwich.setRunStatus('Provide the installer to play.', () => HamSandwich.toggleMenu(true));
 			}
 			return;
@@ -224,7 +225,7 @@ var InstallerUpload = (function () {
 			}
 		} else {
 			status[fname].statusTd.innerText = 'Bad';
-			HamSandwich.toggleMenu(true);
+			HamSandwich.toggleMenu(true, true);
 			HamSandwich.setRunStatus('Provide the installer to play.', () => HamSandwich.toggleMenu(true));
 		}
 	}
@@ -403,7 +404,9 @@ var Module = (function() {
 		],
 
 		postRun: function() {
-			HamSandwich.toggleMenu(false);
+			if (HamSandwich.toggleMenu.auto) {
+				HamSandwich.toggleMenu(false);
+			}
 		},
 	};
 })();

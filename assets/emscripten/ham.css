@@ -157,3 +157,8 @@ table.flat-table td {
 table.flat-table td:not(:last-child) {
 	padding-right: 10px;
 }
+
+table.squeeze-table td:first-child {
+	width: 0;
+	white-space: nowrap;
+}
