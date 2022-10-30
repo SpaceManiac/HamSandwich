@@ -61,7 +61,6 @@ var HamSandwich = (function () {
 		FS.syncfs(true, fsInitCallback);
 
 		Module.ENV['HSW_APPDATA'] = 'appdata/' + HamSandwich.metadata.appdataName;
-		pushAssets(null, 'stdio', '.');
 	}
 
 	var assetCounter = 0;
@@ -250,6 +249,7 @@ var InstallerUpload = (function () {
 				HamSandwich.pushAssets(installer.mountpoint, installer.kind, '/installers/' + installer.filename);
 			}
 		}
+		HamSandwich.pushAssets(null, 'stdio', '.');
 	}
 
 	return {

@@ -252,7 +252,7 @@ function(HamSandwich_add_executable target_name)
 		# Use a GLOB to reconfigure if a new asset directory is created.
 		file(GLOB fake_sources LIST_DIRECTORIES true CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/assets/*")
 		file(GLOB_RECURSE any_files "${CMAKE_SOURCE_DIR}/assets/${target_name}/*")
-		if("${any_files}")
+		if(any_files)
 			set(data "${CMAKE_CURRENT_BINARY_DIR}/${target_name}.data")
 			set(data_js "${data}.js")
 			set(data_d "${data_js}.d")
@@ -281,7 +281,7 @@ function(HamSandwich_add_executable target_name)
 
 			install(
 				FILES "${data}"
-				DESTINATION "${CMAKE_INSTALL_PREFIX}/${target_name}"
+				DESTINATION "${CMAKE_INSTALL_PREFIX}"
 				COMPONENT "${target_name}/web"
 			)
 		endif()
