@@ -206,8 +206,10 @@ static int titleRuns;
 static int msx,msy,oldmsx,oldmsy;
 static byte cursor;
 static byte sliceOut[8];
-char menuTxt[][16]={"Play","Profile","Tutorial","Instructions","Exit","Internet","Shop","Editor"};
+char menuTxt[][16]={"Play","Options","Discord","Exit"};
 int igfX,igfY,igfDX,igfDY;
+
+PALETTE desiredpal,curpal;
 
 void MainMenuDisplay(MGLDraw *mgl)
 {
@@ -219,35 +221,19 @@ void MainMenuDisplay(MGLDraw *mgl)
 		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
 
 	// version #:
-	Print(556,2,VERSION_NO,1,1);
-	Print(555,2,VERSION_NO,0,1);
+	//Print(556,2,VERSION_NO,1,1);
+	//Print(555,2,VERSION_NO,0,1);
 	// Copyright:
-	Print(3,467,"Copyright " COPYRIGHT_YEARS ", Hamumu Software",1,1);
-	Print(2,466,"Copyright " COPYRIGHT_YEARS ", Hamumu Software",0,1);
+	//Print(3,467,"Copyright " COPYRIGHT_YEARS ", Hamumu Software",1,1);
+	//Print(2,466,"Copyright " COPYRIGHT_YEARS ", Hamumu Software",0,1);
 
-	for(i=0;i<8;i++)
+	for(i=0;i<4;i++)
 	{
-		x=((Cosine(ang[i])*sliceOut[i])/FIXAMT);
-		y=((Sine(ang[i])*sliceOut[i])/FIXAMT);
-		planetSpr->GetSprite(i)->Draw(320+x,280+y,mgl);
+		x=320;
+		y=180+i*64;
+		CenterPrint(x,y,menuTxt[i],(cursor==i)*10,0);
 	}
 
-	for(i=0;i<8;i++)
-	{
-		x=((Cosine(ang[i])*sliceOut[i])/FIXAMT);
-		y=((Sine(ang[i])*sliceOut[i])/FIXAMT);
-		x+=((Cosine(ang[i])*100)/FIXAMT);
-		y+=((Sine(ang[i])*70)/FIXAMT);
-		if(i<2 || i>5)
-			y-=40;
-		if(i>3)
-			x-=GetStrLength(menuTxt[i],0);
-		if(i==0 || i==7)
-			y-=30;
-		if(i==3 || i==4)
-			y+=30;
-		Print(320+x,280+y,menuTxt[i],(cursor==i)*10,0);
-	}
 	sprintf(s,"Profile: %s",profile.name);
 	Print(638-GetStrLength(s,2)-1,460-1,s,-32,2);
 	Print(638-GetStrLength(s,2)+1,460+1,s,-32,2);
@@ -265,8 +251,21 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 {
 	byte c;
 	static byte reptCounter=0;
-	int i;
+	int i,j;
 	byte formerCursor;
+
+	for(j=0;j<2;j++)
+		for(i=0;i<256;i++)
+		{
+			if(curpal[i].r<desiredpal[i].r)
+				curpal[i].r++;
+			if(curpal[i].g<desiredpal[i].g)
+				curpal[i].g++;
+			if(curpal[i].b<desiredpal[i].b)
+				curpal[i].b++;
+		}
+	mgl->SetPalette(curpal);
+	mgl->RealizePalette();
 
 	mgl->GetMouse(&msx,&msy);
 
@@ -305,49 +304,8 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 	{
 		titleRuns=0;
 
-		if(msx>320)
-		{
-			if(msy<280)
-			{
-				// upper right quadrant
-				if(abs(msx-320)>abs(msy-280))
-					cursor=1;
-				else
-					cursor=0;
-			}
-			else
-			{
-				// lower right quadrant
-				if(abs(msx-320)>abs(msy-280))
-					cursor=2;
-				else
-					cursor=3;
-			}
-		}
-		else
-		{
-			if(msy<280)
-			{
-				// upper left quadrant
-				if(abs(msx-320)>abs(msy-280))
-					cursor=6;
-				else
-				{
-					if(ItemPurchased(SHOP_MAJOR,MAJOR_EDITOR))
-						cursor=7;
-					else
-						cursor=6;
-				}
-			}
-			else
-			{
-				// lower left quadrant
-				if(abs(msx-320)>abs(msy-280))
-					cursor=5;
-				else
-					cursor=4;
-			}
-		}
+		if(msx >= 160 && msx < 640-160 && msy >= 184 && msy < 184 + 4*64)
+			cursor = (msy - 184) / 64;
 	}
 	oldmsx=msx;
 	oldmsy=msy;
@@ -359,9 +317,9 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 	{
 		cursor--;
 		if(cursor==255)
-			cursor=7;
-		if(cursor==7 && !ItemPurchased(SHOP_MAJOR,MAJOR_EDITOR))
-			cursor=6;
+			cursor=3;
+		/*if(cursor==7 && !ItemPurchased(SHOP_MAJOR,MAJOR_EDITOR))
+			cursor=6;*/
 
 		titleRuns=0;
 		MakeNormalSound(SND_MENUCLICK);
@@ -369,10 +327,10 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 	if((c&(CONTROL_DN|CONTROL_RT)) && !(oldc&(CONTROL_DN|CONTROL_RT)))
 	{
 		cursor++;
-		if(cursor==8)
+		if(cursor==4)
 			cursor=0;
-		if(cursor==7 && !ItemPurchased(SHOP_MAJOR,MAJOR_EDITOR))
-			cursor=0;
+		/*if(cursor==7 && !ItemPurchased(SHOP_MAJOR,MAJOR_EDITOR))
+			cursor=0;*/
 
 		titleRuns=0;
 		MakeNormalSound(SND_MENUCLICK);
@@ -394,6 +352,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		CO_RETURN 1;
 	}
 
+	/*
 	if(formerCursor!=cursor)
 	{
 		if((formerCursor==cursor-1) || (formerCursor==7 && cursor==0))
@@ -426,6 +385,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		secretClicks=0;
 		secretDir=0;
 	}
+	*/
 
 	if(mgl->MouseTap())
 		CO_RETURN 1;
@@ -460,6 +420,16 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 	}
 
 	mgl->LoadBMP("graphics/title.bmp");
+	memcpy(desiredpal, mgl->GetPalette(), sizeof(PALETTE));
+	for(i=0;i<256;i++)
+	{
+		curpal[i].r=0;
+		curpal[i].g=0;
+		curpal[i].b=0;
+	}
+	mgl->SetPalette(curpal);
+	mgl->RealizePalette();
+
 	backgd=(byte *)malloc(640*480);
 	if(!backgd)
 		FatalError("Out of memory!");
@@ -472,7 +442,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 	oldc=CONTROL_B1|CONTROL_B2;
 	planetSpr=new sprite_set_t("graphics/pizza.jsp");
 
-	PlaySongForce("002title.ogg");
+	PlaySongForce("LoonylandTheme.ogg");
 
 	igfX=Random(500)+100;
 	igfY=Random(300)+100;
@@ -507,7 +477,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 	delete planetSpr;
 	free(backgd);
 
-	if(cursor==4)	// exit
+	if(cursor==3)	// exit
 		CO_RETURN 255;
 	else
 		CO_RETURN cursor;

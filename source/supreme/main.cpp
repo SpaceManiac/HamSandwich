@@ -65,7 +65,7 @@ TASK(int) main(int argc, char* argv[])
 #ifdef ARCADETOWN
 	AWAIT SplashScreen(mainmgl,"graphics/at_presents.bmp",32,0);
 #endif
-	AWAIT SplashScreen(mainmgl,"graphics/hamumu.bmp",32,2);
+	//AWAIT SplashScreen(mainmgl,"graphics/hamumu.bmp",32,2);
 
 	//NewComputerSpriteFix("graphics/items.jsp");
 	//NewComputerSpriteFix("graphics/intface.jsp");
