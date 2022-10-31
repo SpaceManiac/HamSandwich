@@ -205,6 +205,12 @@ void MGLDraw::SetMouse(int x,int y)
 	if (idle)
 		return;
 
+	if (SDL_GetRelativeMouseMode()) {
+		mouse_x = x;
+		mouse_y = y;
+		return;
+	}
+
 	int scale = std::max(1, std::min(winWidth / xRes, winHeight / yRes));
 	x = (winWidth - xRes * scale) / 2 + x * scale;
 	y = (winHeight - yRes * scale) / 2 + y * scale;
@@ -359,8 +365,13 @@ TASK(void) MGLDraw::FinishFlip(void)
 			TranslateKey(&e.key.keysym);
 			ControlKeyUp(e.key.keysym.scancode);
 		} else if (e.type == SDL_MOUSEMOTION) {
-			mouse_x = (e.motion.x - dest.x) / scale;
-			mouse_y = (e.motion.y - dest.y) / scale;
+			if (SDL_GetRelativeMouseMode()) {
+				mouse_x += e.motion.xrel;
+				mouse_y += e.motion.yrel;
+			} else {
+				mouse_x = (e.motion.x - dest.x) / scale;
+				mouse_y = (e.motion.y - dest.y) / scale;
+			}
 		} else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
 			int flag = 0;
 			if (e.button.button == 1)
