@@ -79,7 +79,7 @@ owned::FILE StdioVfs::open_stdio(const char* file)
 	return open_stdio_internal(file, "rb", false);
 }
 
-#if defined(_WIN32) && !defined(__GNUC__)
+#if defined(_WIN32)
 // The public MSVC binaries of SDL2 are compiled without support for SDL_RWFromFP.
 
 owned::SDL_RWops StdioVfs::open_sdl(const char* filename)
