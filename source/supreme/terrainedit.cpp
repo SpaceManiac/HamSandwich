@@ -471,8 +471,8 @@ byte MoveTilesTo(int dest)
 	selMin=dest;
 	selMax=dest+i-1;
 
-	delete tempTerrain;
-	delete tempImg;
+	delete[] tempTerrain;
+	delete[] tempImg;
 
 	MakeNormalSound(SND_MENUSELECT);
 	return 1;
