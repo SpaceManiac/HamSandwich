@@ -1593,6 +1593,9 @@ Guy *AddGuy(int x,int y,int z,byte type)
 	return NULL;
 }
 
+static_assert(offsetof(Guy, parent) == 64, "save compatibility broken; adjust this assertion if you are sure");
+static_assert(offsetof(Guy, hp) + 28 <= sizeof(Guy), "save compatibility broken; adjust this assertion if you are sure");
+
 void SaveGuys(FILE *f)
 {
 	int i,num;
@@ -1612,7 +1615,13 @@ void SaveGuys(FILE *f)
 	{
 		if(guys[i]->type!=MONS_NONE && guys[i]->type!=player.monsType)
 		{
-			fwrite(guys[i],sizeof(Guy),1,f);
+			// Always write 32-bit-compatible saves.
+			fwrite(guys[i], 64, 1, f);
+			// Write 0 for Guy* parent. The only monster in LL1 that uses parent is Polterguy and you can't save on his map.
+			// If you ever need to save this, do like LL2 does and save the Guy's ID instead.
+			dword zero = 0;
+			fwrite(&zero, 4, 1, f);
+			fwrite(&guys[i]->hp, 28, 1, f);
 		}
 	}
 }
@@ -1626,9 +1635,36 @@ void LoadGuys(FILE *f)
 
 	fread(&num,sizeof(int),1,f);
 
+	bool saveIs64Bit = false;
+
 	for(i=0;i<num;i++)
 	{
-		fread(guys[i],sizeof(Guy),1,f);
+		fread(guys[i], 64, 1, f);
+		fseek(f, 4, SEEK_CUR);  // Skip 4 bytes of Guy* parent.
+		guys[i]->parent = nullptr;  // Set parent to null.
+		fread(&guys[i]->hp, 28, 1, f);
+
+		// The above loads 32-bit saves, but there may be 64-bit save files
+		// floating about, since the incompatibility was not discovered right
+		// away. Use an incorrect rectx as a signal that the save is in the
+		// bad format and load it anyways. It will be re-saved correctly.
+		if (i == 0)
+		{
+			int oldRectX = guys[i]->rectx;
+			guys[i]->CalculateRect();
+			if (oldRectX != guys[i]->rectx)
+			{
+				saveIs64Bit = true;
+				printf("Warning: assuming 64-bit save based on rectx %d != %d\n", oldRectX, guys[i]->rectx);
+			}
+		}
+		if (saveIs64Bit)
+		{
+			fseek(f, -28 + 4, SEEK_CUR);  // Seek back 28, then +4 for the second half of Guy* parent.
+			fread(&guys[i]->hp, 28, 1, f);  // Read the second half of Guy again.
+			fseek(f, 4, SEEK_CUR);  // Skip 4 bytes of padding.
+		}
+
 		if(guys[i]->type==MONS_HELPERBAT)
 			guys[i]->type=MONS_NONE;
 	}
