@@ -34,7 +34,7 @@ public class Asset {
 		filename = installer.getString("filename");
 		sha256sum = installer.getString("sha256sum");
 		link = installer.getString("link");
-		file_id = installer.getLong("file_id");
+		file_id = installer.has("file_id") ? installer.getLong("file_id") : -1;
 		description = installer.getString("description");
 		required = !installer.has("optional") || !installer.getBoolean("optional");
 
@@ -88,33 +88,40 @@ public class Asset {
 			HttpURLConnection connection = null;
 			try {
 				byte[] buffer = new byte[16 * 1024];
-
-				// Download metadata
 				uiThread.runOnUiThread(() -> button.setText("Starting..."));
-				JSONObject metadata;
-				{
-					URL metadataUrl = new URL(link + "/file/" + file_id);
-					connection = (HttpURLConnection) metadataUrl.openConnection();
-					connection.setRequestMethod("POST");
-					InputStream inputStream = connection.getInputStream();
 
-					ByteArrayOutputStream result = new ByteArrayOutputStream();
-					for (int read; (read = inputStream.read(buffer)) != -1; ) {
-						result.write(buffer, 0, read);
-						if (wantsCancel)
-							return;
+				URL contentUrl;
+				if (file_id <= 0) {
+					// Direct download.
+					contentUrl = new URL(link);
+				} else {
+					// Itch. Download metadata:
+					JSONObject metadata;
+					{
+						URL metadataUrl = new URL(link + "/file/" + file_id);
+						connection = (HttpURLConnection) metadataUrl.openConnection();
+						connection.setRequestMethod("POST");
+						InputStream inputStream = connection.getInputStream();
+
+						ByteArrayOutputStream result = new ByteArrayOutputStream();
+						for (int read; (read = inputStream.read(buffer)) != -1; ) {
+							result.write(buffer, 0, read);
+							if (wantsCancel)
+								return;
+						}
+						connection.disconnect();
+						connection = null;
+
+						metadata = new JSONObject(result.toString("UTF-8"));
 					}
-					connection.disconnect();
-					connection = null;
 
-					metadata = new JSONObject(result.toString("UTF-8"));
+					if (wantsCancel)
+						return;
+
+					contentUrl = new URL(metadata.getString("url"));
 				}
 
-				if (wantsCancel)
-					return;
-
 				// Download content
-				URL contentUrl = new URL(metadata.getString("url"));
 				connection = (HttpURLConnection) contentUrl.openConnection();
 				long contentLength;
 				if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
@@ -140,9 +147,12 @@ public class Asset {
 				connection = null;
 
 				// Commit the rename only at the very end.
-				assert partFile.renameTo(file);
-				uiThread.runOnUiThread(() -> button.setText("Delete"));
-				uiThread.runOnUiThread(uiThread::someDownloadFinished);
+				if (partFile.renameTo(file)) {
+					uiThread.runOnUiThread(() -> button.setText("Delete"));
+					uiThread.runOnUiThread(uiThread::someDownloadFinished);
+				} else {
+					uiThread.runOnUiThread(() -> button.setText("Can't Save"));
+				}
 			} catch (Exception e) {
 				uiThread.runOnUiThread(() -> button.setText("Errored"));
 				e.printStackTrace();
