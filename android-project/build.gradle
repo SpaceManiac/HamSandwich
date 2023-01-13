@@ -55,6 +55,26 @@ android {
 		// Our CMake build puts assets to embed in the .apk here at build time.
 		assets.srcDir "${buildDir}/intermediates/cxx/hamsandwich-assets"
 	}
+
+	// Self-sign release APKs.
+	if (System.getenv('ANDROID_KEYSTORE')) {
+		signingConfigs {
+			release {
+				storeFile file(System.getenv('ANDROID_KEYSTORE'))
+				keyAlias "hamsandwich"
+				storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+				keyPassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+
+				v1SigningEnabled true
+				v2SigningEnabled true
+			}
+		}
+		buildTypes {
+			release {
+				signingConfig signingConfigs.release
+			}
+		}
+	}
 }
 
 // Building this project depends on building SDL2 first.
