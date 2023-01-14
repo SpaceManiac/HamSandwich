@@ -78,10 +78,15 @@ android {
 }
 
 // Building this project depends on building SDL2 first.
+// Merging assets depends on building first.
 tasks.configureEach { task ->
 	if (task.name == 'buildCMakeDebug') {
 		task.dependsOn ':android-project:SDL2:externalNativeBuildDebug'
 	} else if (task.name == 'buildCMakeRelWithDebInfo') {
 		task.dependsOn ':android-project:SDL2:externalNativeBuildRelease'
+	} else if (task.name == 'mergeDebugAssets') {
+		task.dependsOn ':android-project:buildCMakeDebug'
+	} else if (task.name == 'mergeReleaseAssets') {
+		task.dependsOn ':android-project:buildCMakeRelWithDebInfo'
 	}
 }
