@@ -67,19 +67,17 @@ sudo_apt-get_install() {
 
 deps_ubuntu() {
 	packages 'sudo_apt-get_install' \
-		make g++ \
+		make g++ patchelf \
 		zlib1g-dev libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev libsdl2-ttf-dev \
-		python3-pip
+		python3-pip python3-venv
 }
 
 deps_arch() {
 	packages 'sudo pacman -S --needed --quiet' \
 		wget \
-		make gcc gcc-libs \
+		make gcc gcc-libs patchelf \
 		zlib sdl2 sdl2_image sdl2_mixer sdl2_ttf \
-		python-pip
-
-	premake5_linux
+		python-pip python-venv
 }
 
 deps_alpine() {
@@ -88,8 +86,6 @@ deps_alpine() {
 		make g++ zlib-dev \
 		sdl2-dev sdl2_mixer-dev sdl2_image-dev sdl2_ttf-dev \
 		python3 py3-pip jpeg-dev python3-dev
-
-	# TODO: premake5's linux binaries are not compatible.
 }
 
 deps_macports() {
