@@ -5,6 +5,17 @@ function(HamSandwich_embed_file target_name filename symbol_name)
 	target_sources("${target_name}" PRIVATE "${cpp}")
 endfunction()
 
+function(HamSandwich_ico2png ico png)
+	set(ico2png_py "${CMAKE_SOURCE_DIR}/tools/build/ico2png.py")
+	add_custom_command(
+		OUTPUT "${png}"
+		COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${ico2png_py}" "${ico}" "${png}"
+		MAIN_DEPENDENCY "${ico}"
+		DEPENDS "${ico2png_py}"
+		VERBATIM
+	)
+endfunction()
+
 function(HamSandwich_executable_icon target_name ico)
 	if(WIN32)
 		# On Windows, generate a simple .rc file that includes the icon.
@@ -12,16 +23,8 @@ function(HamSandwich_executable_icon target_name ico)
 		target_sources("${target_name}" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/icon.rc")
 	else()
 		# On other platforms, embed the .png version as a document.
-		set(ico2png_py "${CMAKE_SOURCE_DIR}/tools/build/ico2png.py")
 		set(png "${CMAKE_CURRENT_BINARY_DIR}/executable_icon.png")
-		add_custom_command(
-			OUTPUT "${png}"
-			COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${ico2png_py}" "${ico}" "${png}"
-			MAIN_DEPENDENCY "${ico}"
-			DEPENDS "${ico2png_py}"
-			VERBATIM
-		)
-
+		HamSandwich_ico2png("${ico}" "${png}")
 		HamSandwich_embed_file("${target_name}" "${png}" embed_game_icon)
 	endif()
 endfunction()
@@ -55,17 +58,10 @@ function(HamSandwich_add_executable target_name)
 		set(arg_ICON "${target_name}.ico")
 	endif()
 	if(arg_ICON)
-		set(ico "${CMAKE_CURRENT_SOURCE_DIR}/${arg_ICON}")
 		# Convert the icon to .png for embedding.
-		set(ico2png_py "${CMAKE_SOURCE_DIR}/tools/build/ico2png.py")
+		set(ico "${CMAKE_CURRENT_SOURCE_DIR}/${arg_ICON}")
 		set(png "${CMAKE_CURRENT_BINARY_DIR}/${arg_ICON}.png")
-		add_custom_command(
-			OUTPUT "${png}"
-			COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${ico2png_py}" "${ico}" "${png}"
-			MAIN_DEPENDENCY "${ico}"
-			DEPENDS "${ico2png_py}"
-			VERBATIM
-		)
+		HamSandwich_ico2png("${ico}" "${png}")
 
 		if(WIN32)
 			# On Windows, generate a simple .rc file that includes the icon.
