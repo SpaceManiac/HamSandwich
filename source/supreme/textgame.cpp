@@ -152,7 +152,7 @@ void TypeLine(const char *line)
 
 void EchoInput(void)
 {
-	char tmp[MAX_LINELEN];
+	char tmp[MAX_LINELEN + 2];
 
 	sprintf(tmp,"> %s",inputTxt);
 	TypeLine("");

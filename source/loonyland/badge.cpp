@@ -991,7 +991,7 @@ void EarnBadge(byte b)
 
 void RenderGameMode(MGLDraw *mgl,byte progress,byte mode,byte numBadges)
 {
-	char s[32];
+	char s[64];
 	char modeName[5][32]={"Survival","Boss Bash","Loonyball","Bowling","Remix"};
 
 	mgl->ClearScreen();
