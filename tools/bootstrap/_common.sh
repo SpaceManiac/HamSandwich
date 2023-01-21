@@ -31,11 +31,11 @@ case "$(uname)" in
 		# MacOS provides curl, but not wget.
 		download_file() {  # <url> <outfile>
 			echo "Downloading: $1" >&2
-			curl -L "$1" -o "$2" -#
+			curl --fail -L "$1" -o "$2" -#
 		}
 
 		download_file_quiet() {  # <url> <outfile>
-			curl -L "$1" -o "$2" -s
+			curl --fail -L "$1" -o "$2" -s
 		}
 
 		# An equivalent to sha256sum is available under a different name.

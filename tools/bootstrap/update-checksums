@@ -1,5 +1,6 @@
-#!/bin/sh
-set -eu
+#!/bin/bash
+# Sorry posix shell users, but I need to know when a URL 404s.
+set -euo pipefail
 
 Bootstrap=$(dirname "$0")
 . "$Bootstrap/_common.sh"

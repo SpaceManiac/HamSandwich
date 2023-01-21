@@ -81,7 +81,9 @@
 			"name": "linux-x86_64-debug",
 			"inherits": "base",
 			"cacheVariables": {
-				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja"
+				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja",
+				"CMAKE_C_COMPILER": "gcc-9",
+				"CMAKE_CXX_COMPILER": "g++-9"
 			},
 			"vendor": {
 				"microsoft.com/VisualStudioSettings/CMake/1.0": {
@@ -96,7 +98,9 @@
 			"inherits": "base",
 			"cacheVariables": {
 				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja",
-				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo",
+				"CMAKE_C_COMPILER": "gcc-9",
+				"CMAKE_CXX_COMPILER": "g++-9"
 			},
 			"vendor": {
 				"microsoft.com/VisualStudioSettings/CMake/1.0": {

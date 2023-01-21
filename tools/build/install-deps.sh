@@ -4,6 +4,10 @@ set -euo pipefail
 
 mkdir -p "build"
 
+if test "${HSW_NO_INSTALL_DEPS:-}"; then
+	exit
+fi
+
 # Check for supported system
 if test "${MSYSTEM:-}"; then
 	if test "$MSYSTEM" = "MINGW32"; then
@@ -68,16 +72,14 @@ sudo_apt-get_install() {
 deps_ubuntu() {
 	packages 'sudo_apt-get_install' \
 		make g++ patchelf \
-		zlib1g-dev libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev libsdl2-ttf-dev \
-		python3-pip python3-venv
+		zlib1g-dev libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev libsdl2-ttf-dev
 }
 
 deps_arch() {
 	packages 'sudo pacman -S --needed --quiet' \
 		wget \
 		make gcc gcc-libs patchelf \
-		zlib sdl2 sdl2_image sdl2_mixer sdl2_ttf \
-		python-pip python-venv
+		zlib sdl2 sdl2_image sdl2_mixer sdl2_ttf
 }
 
 deps_alpine() {

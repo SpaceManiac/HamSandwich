@@ -1,0 +1,18 @@
+#!/bin/bash
+# Run a command in a container built from the local Dockerfile.
+# Use the current user to avoid permission conflicts with the host.
+# Build with BUILDKIT for speed, particularly when image is up-to-date.
+# Remove the container afterwards to avoid accruing garbage.
+tag=${PWD}
+tag=${tag,,}
+tag=${tag##*/}
+exec docker run \
+	--rm \
+	-v /etc/passwd:/etc/passwd:ro \
+	-v /etc/group:/etc/group:ro \
+	-v "$PWD":"$PWD" \
+	-v "$(readlink -f external/steamworks_sdk):$PWD/external/steamworks_sdk" \
+	-w "$PWD" \
+	-u "$(id -u):$(id -g)" \
+	-it "$(env DOCKER_BUILDKIT=1 docker build -q -t "${tag}" .)" \
+	"$@"
