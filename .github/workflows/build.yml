@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - run: make install mode=release
+      - run: ./container make install mode=release
       - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
         run: tools/bootstrap/butler push --if-changed build/install "$ITCH_GAME:linux" --userversion="$(git rev-parse --short=10 HEAD)"
   mac:
