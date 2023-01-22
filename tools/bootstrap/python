@@ -59,7 +59,7 @@ if test "$OS" != "Windows"; then
 	PythonDir="$Cache/python-venv-$PYTHON_VERSION"
 	if ! test -d "$PythonDir"; then
 		python_venv() {
-			TmpPythonDir=$(temp_directory)
+			TmpPythonDir=$(mktemp -d "$PythonDir.tmpXXXXXXXX")
 			"$PythonExe" -m venv "$TmpPythonDir"
 			mv "$TmpPythonDir" "$PythonDir"
 		}

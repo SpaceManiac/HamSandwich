@@ -6,13 +6,21 @@
 tag=${PWD}
 tag=${tag,,}
 tag=${tag##*/}
+
+tty=false
+if test -t 0; then
+	tty=true
+fi
+
 exec docker run \
 	--rm \
-	-v /etc/passwd:/etc/passwd:ro \
-	-v /etc/group:/etc/group:ro \
-	-v "$PWD":"$PWD" \
-	-v "$(readlink -f external/steamworks_sdk):$PWD/external/steamworks_sdk" \
-	-w "$PWD" \
-	-u "$(id -u):$(id -g)" \
-	-it "$(env DOCKER_BUILDKIT=1 docker build -q -t "${tag}" .)" \
+	--volume /etc/passwd:/etc/passwd:ro \
+	--volume /etc/group:/etc/group:ro \
+	--volume "$PWD":"$PWD" \
+	--volume "$(readlink -f external/steamworks_sdk):$PWD/external/steamworks_sdk" \
+	--workdir "$PWD" \
+	--user "$(id -u):$(id -g)" \
+	--tty="$tty" \
+	--interactive \
+	"$(env DOCKER_BUILDKIT=1 docker build -q -t "${tag}" .)" \
 	"$@"
