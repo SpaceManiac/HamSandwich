@@ -32,10 +32,13 @@ if test "$OS" != "Windows"; then
 		if test "$OS" = Linux && ! command -v fusermount >/dev/null 2>&1; then
 			ExtractedDir="$Cache/python-$PYTHON_VERSION.$PYTHON_LINUX_PATCH-$PYTHON_MANYLINUX.extracted"
 			if ! test -d "$ExtractedDir"; then
-				PythonExe=$(realpath "$PythonExe")
-				TempDir=$(temp_directory)
-				(cd "$TempDir" && "$PythonExe" --appimage-extract >/dev/null)
-				mv "$TempDir/squashfs-root" "$ExtractedDir"
+				python_extract() {
+					PythonExe=$(realpath "$PythonExe")
+					TempDir=$(temp_directory)
+					(cd "$TempDir" && "$PythonExe" --appimage-extract >/dev/null)
+					mv "$TempDir/squashfs-root" "$ExtractedDir"
+				}
+				one_at_a_time python_extract
 			fi
 			PythonExe="$ExtractedDir/AppRun"
 		fi

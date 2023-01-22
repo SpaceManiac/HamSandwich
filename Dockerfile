@@ -9,13 +9,14 @@ FROM registry.gitlab.steamos.cloud/steamrt/scout/sdk:0.20220601.1
 # available option for Steam deployment so it's irrelevant for now.
 SHELL ["/bin/bash", "-c"]
 
+# Install ImageMagick for icon conversion.
+# Install unzip for Ninja bootstrap.
+RUN apt-get install -y imagemagick unzip
+
 # Install a newer version of CMake from their binary releases.
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.21.2/cmake-3.21.2-linux-x86_64.tar.gz -O cmake.tar.gz
 RUN sha256sum -c <<<'d5517d949eaa8f10a149ca250e811e1473ee3f6f10935f1f69596a1e184eafc1 *cmake.tar.gz'
 RUN tar xf cmake.tar.gz -C /usr/local --strip-components=1
-
-# Install ImageMagick for icon conversion.
-RUN apt-get install -y imagemagick
 
 # Install patchelf for setting SDL2's RPATH to '$ORIGIN' so PNG loading works.
 RUN wget https://github.com/NixOS/patchelf/releases/download/0.14.5/patchelf-0.14.5-x86_64.tar.gz -O patchelf.tar.gz
