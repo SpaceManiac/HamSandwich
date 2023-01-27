@@ -20,6 +20,7 @@
 #include "sha256.h"
 #include "vanilla_extract.h"
 #include "metadata.h"
+#include "ico.h"
 
 #if __has_include(<filesystem>)
 #include <filesystem>
@@ -882,12 +883,11 @@ int main(int argc, char** argv)
 	{
 		if (game.icon)
 		{
-			SDL_Surface* img = IMG_Load_RW(SDL_RWFromConstMem(game.icon->data, game.icon->size), true);
+			auto img = ReadIcoFile(owned::SDL_RWFromConstMem(game.icon->data, game.icon->size), 32);
 			if (img)
 			{
-				// For some reason scaling to 64x64 delivers best results even though we display at 32x32.
-				SDL_Surface* imgScaled = SDL_CreateRGBSurfaceWithFormat(0, 64, 64, 32, SDL_PIXELFORMAT_ABGR8888);
-				SDL_BlitScaled(img, nullptr, imgScaled, nullptr);
+				// For best results, bake a 32x32 PNG frame into the .ico file.
+				// OpenGL will handle any necessary up- or down-scaling.
 
 				game.loaded_icon.width = img->w;
 				game.loaded_icon.height = img->h;
@@ -904,9 +904,7 @@ int main(int argc, char** argv)
 #if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
 				glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 #endif
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgScaled->w, imgScaled->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, imgScaled->pixels);
-				SDL_FreeSurface(img);
-				SDL_FreeSurface(imgScaled);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->w, img->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixels);
 			}
 			else
 			{

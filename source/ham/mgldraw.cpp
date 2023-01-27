@@ -6,6 +6,7 @@
 #include "softjoystick.h"
 #include "appdata.h"
 #include "extern.h"
+#include "ico.h"
 #include <time.h>
 #include <random>
 #include <algorithm>
@@ -110,12 +111,8 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	extern __attribute__((weak)) const size_t embed_game_icon_size;
 	extern __attribute__((weak)) const unsigned char embed_game_icon[];
 	if (&embed_game_icon && &embed_game_icon_size) {
-		SDL_Surface *surface = IMG_Load_RW(
-			SDL_RWFromConstMem(embed_game_icon, embed_game_icon_size),
-			1
-		);
-		SDL_SetWindowIcon(window, surface);
-		SDL_FreeSurface(surface);
+		owned::SDL_Surface surface = ReadIcoFile(owned::SDL_RWFromConstMem(embed_game_icon, embed_game_icon_size), -1);
+		SDL_SetWindowIcon(window, surface.get());
 	}
 #endif
 

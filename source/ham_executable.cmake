@@ -5,27 +5,14 @@ function(HamSandwich_embed_file target_name filename symbol_name)
 	target_sources("${target_name}" PRIVATE "${cpp}")
 endfunction()
 
-function(HamSandwich_ico2png ico png)
-	set(ico2png_py "${CMAKE_SOURCE_DIR}/tools/build/ico2png.py")
-	add_custom_command(
-		OUTPUT "${png}"
-		COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${ico2png_py}" "${ico}" "${png}"
-		MAIN_DEPENDENCY "${ico}"
-		DEPENDS "${ico2png_py}"
-		VERBATIM
-	)
-endfunction()
-
 function(HamSandwich_executable_icon target_name ico)
 	if(WIN32)
 		# On Windows, generate a simple .rc file that includes the icon.
 		file(GENERATE OUTPUT icon.rc CONTENT "allegro_icon ICON \"${ico}\"")
 		target_sources("${target_name}" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/icon.rc")
 	else()
-		# On other platforms, embed the .png version as a document.
-		set(png "${CMAKE_CURRENT_BINARY_DIR}/executable_icon.png")
-		HamSandwich_ico2png("${ico}" "${png}")
-		HamSandwich_embed_file("${target_name}" "${png}" embed_game_icon)
+		# On other platforms, embed the .ico as a document.
+		HamSandwich_embed_file("${target_name}" "${ico}" embed_game_icon)
 	endif()
 endfunction()
 
@@ -58,23 +45,21 @@ function(HamSandwich_add_executable target_name)
 		set(arg_ICON "${target_name}.ico")
 	endif()
 	if(arg_ICON)
-		# Convert the icon to .png for embedding.
+		# Embed the .ico.
 		set(ico "${CMAKE_CURRENT_SOURCE_DIR}/${arg_ICON}")
-		set(png "${CMAKE_CURRENT_BINARY_DIR}/${arg_ICON}.png")
-		HamSandwich_ico2png("${ico}" "${png}")
 
 		if(WIN32)
 			# On Windows, generate a simple .rc file that includes the icon.
 			file(GENERATE OUTPUT icon.rc CONTENT "allegro_icon ICON \"${ico}\"")
 			target_sources("${target_name}" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/icon.rc")
 		else()
-			# On other platforms, embed the .png version as a document.
-			HamSandwich_embed_file("${target_name}" "${png}" embed_game_icon)
+			# On other platforms, embed the .ico as a document.
+			HamSandwich_embed_file("${target_name}" "${ico}" embed_game_icon)
 		endif()
 
 		set_target_properties("${target_name}" PROPERTIES HamSandwich_ico "${ico}")
 
-		# Include the .png icon in the launcher metadata.
+		# Include the icon in the launcher metadata.
 		get_property(is_excluded DIRECTORY PROPERTY EXCLUDE_FROM_ALL)
 		if(NOT "${is_excluded}")
 			get_property(launcher_icons GLOBAL PROPERTY HamSandwich_launcher_icons)
@@ -83,7 +68,7 @@ function(HamSandwich_add_executable target_name)
 			# The reason this has to be its own target created at this precise moment is:
 			# > If any dependency is an OUTPUT of another custom command in the same directory (CMakeLists.txt file), CMake automatically brings the other custom command into the target in which this command is built.
 			add_library("${target_name}_icon" STATIC)
-			HamSandwich_embed_file("${target_name}_icon" "${png}" "embed_icon_${target_name}")
+			HamSandwich_embed_file("${target_name}_icon" "${ico}" "embed_icon_${target_name}")
 		endif()
 	endif()
 
