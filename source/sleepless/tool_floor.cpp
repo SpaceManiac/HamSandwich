@@ -8,10 +8,7 @@ FloorTool::FloorTool(void)
 	active=0;
 	brush=0;
 	plopMode=PLOP_NORMAL;
-	tile[0]=0;
-	tile[1]=0;
-	tile[2]=0;
-	tile[3]=0;
+	memset(tile, 0, sizeof(tile));
 	lastX=-1;
 	lastY=-1;
 }
@@ -29,10 +26,10 @@ void FloorTool::Update(int msx,int msy)
 
 	if(GetDisplayMGL()->MouseTap())
 	{
-		for(i=0;i<4;i++)
+		for(i=0;i<NUM_TILES;i++)
 			if(PointInRect(msx,msy,
-				           564+(i%2)*(TILE_WIDTH+4)-2,420+(i/2)*(TILE_HEIGHT+4)-2,
-			               564+(i%2)*(TILE_WIDTH+4)+TILE_WIDTH+1,420+(i/2)*(TILE_HEIGHT+4)+TILE_HEIGHT+1))
+				           492+(i%ROW_TILES)*(TILE_WIDTH+4)-2,420+(i/ROW_TILES)*(TILE_HEIGHT+4)-2,
+			               492+(i%ROW_TILES)*(TILE_WIDTH+4)+TILE_WIDTH+1,420+(i/ROW_TILES)*(TILE_HEIGHT+4)+TILE_HEIGHT+1))
 			{
 				active=i;
 				if(GetDisplayMGL()->RMouseDown())
@@ -57,10 +54,10 @@ void FloorTool::Update(int msx,int msy)
 
 	if(GetDisplayMGL()->RMouseTap())
 	{
-		for(i=0;i<4;i++)
+		for(i=0;i<NUM_TILES;i++)
 			if(PointInRect(msx,msy,
-				           564+(i%2)*(TILE_WIDTH+4)-2,420+(i/2)*(TILE_HEIGHT+4)-2,
-			               564+(i%2)*(TILE_WIDTH+4)+TILE_WIDTH+1,420+(i/2)*(TILE_HEIGHT+4)+TILE_HEIGHT+1))
+				           492+(i%ROW_TILES)*(TILE_WIDTH+4)-2,420+(i/ROW_TILES)*(TILE_HEIGHT+4)-2,
+			               492+(i%ROW_TILES)*(TILE_WIDTH+4)+TILE_WIDTH+1,420+(i/ROW_TILES)*(TILE_HEIGHT+4)+TILE_HEIGHT+1))
 			{
 				pickingTile=i;
 				active=i;
@@ -85,33 +82,33 @@ void FloorTool::Render(int msx,int msy)
 
 	char plopText[][12]={"Normal","Random","Cycle","BigRandom","BigCycle"};
 
-	for(i=0;i<4;i++)
+	for(i=0;i<NUM_TILES;i++)
 	{
 		if(tile[i]<800)
-			RenderFloorTile(564+(i%2)*(TILE_WIDTH+4),420+(i/2)*(TILE_HEIGHT+4),tile[i],0);
+			RenderFloorTile(492+(i%ROW_TILES)*(TILE_WIDTH+4),420+(i/ROW_TILES)*(TILE_HEIGHT+4),tile[i],0);
 		else
 		{
-			Print(564+(i%2)*(TILE_WIDTH+4)+2,420+(i/2)*(TILE_HEIGHT+4)+1,"N",0,1);
-			Print(564+(i%2)*(TILE_WIDTH+4)+9,420+(i/2)*(TILE_HEIGHT+4)+5,"O",0,1);
-			Print(564+(i%2)*(TILE_WIDTH+4)+17,420+(i/2)*(TILE_HEIGHT+4)+10,"N",0,1);
-			Print(564+(i%2)*(TILE_WIDTH+4)+24,420+(i/2)*(TILE_HEIGHT+4)+15,"E",0,1);
+			Print(492+(i%ROW_TILES)*(TILE_WIDTH+4)+2,420+(i/ROW_TILES)*(TILE_HEIGHT+4)+1,"N",0,1);
+			Print(492+(i%ROW_TILES)*(TILE_WIDTH+4)+9,420+(i/ROW_TILES)*(TILE_HEIGHT+4)+5,"O",0,1);
+			Print(492+(i%ROW_TILES)*(TILE_WIDTH+4)+17,420+(i/ROW_TILES)*(TILE_HEIGHT+4)+10,"N",0,1);
+			Print(492+(i%ROW_TILES)*(TILE_WIDTH+4)+24,420+(i/ROW_TILES)*(TILE_HEIGHT+4)+15,"E",0,1);
 		}
 
-		DrawBox(564+(i%2)*(TILE_WIDTH+4)-2,420+(i/2)*(TILE_HEIGHT+4)-2,
-			    564+(i%2)*(TILE_WIDTH+4)+TILE_WIDTH+1,420+(i/2)*(TILE_HEIGHT+4)+TILE_HEIGHT+1,
+		DrawBox(492+(i%ROW_TILES)*(TILE_WIDTH+4)-2,420+(i/ROW_TILES)*(TILE_HEIGHT+4)-2,
+			    492+(i%ROW_TILES)*(TILE_WIDTH+4)+TILE_WIDTH+1,420+(i/ROW_TILES)*(TILE_HEIGHT+4)+TILE_HEIGHT+1,
 				16);
 	}
 
 	// highlight the active one
 	i=active;
-	DrawBox(564+(i%2)*(TILE_WIDTH+4)-1,420+(i/2)*(TILE_HEIGHT+4)-1,
-			564+(i%2)*(TILE_WIDTH+4)+TILE_WIDTH,420+(i/2)*(TILE_HEIGHT+4)+TILE_HEIGHT,
+	DrawBox(492+(i%ROW_TILES)*(TILE_WIDTH+4)-1,420+(i/ROW_TILES)*(TILE_HEIGHT+4)-1,
+			492+(i%ROW_TILES)*(TILE_WIDTH+4)+TILE_WIDTH,420+(i/ROW_TILES)*(TILE_HEIGHT+4)+TILE_HEIGHT,
 			16);
-	DrawBox(564+(i%2)*(TILE_WIDTH+4)-2,420+(i/2)*(TILE_HEIGHT+4)-2,
-			564+(i%2)*(TILE_WIDTH+4)+TILE_WIDTH+1,420+(i/2)*(TILE_HEIGHT+4)+TILE_HEIGHT+1,
+	DrawBox(492+(i%ROW_TILES)*(TILE_WIDTH+4)-2,420+(i/ROW_TILES)*(TILE_HEIGHT+4)-2,
+			492+(i%ROW_TILES)*(TILE_WIDTH+4)+TILE_WIDTH+1,420+(i/ROW_TILES)*(TILE_HEIGHT+4)+TILE_HEIGHT+1,
 			31);
-	DrawBox(564+(i%2)*(TILE_WIDTH+4)-3,420+(i/2)*(TILE_HEIGHT+4)-3,
-			564+(i%2)*(TILE_WIDTH+4)+TILE_WIDTH+2,420+(i/2)*(TILE_HEIGHT+4)+TILE_HEIGHT+2,
+	DrawBox(492+(i%ROW_TILES)*(TILE_WIDTH+4)-3,420+(i/ROW_TILES)*(TILE_HEIGHT+4)-3,
+			492+(i%ROW_TILES)*(TILE_WIDTH+4)+TILE_WIDTH+2,420+(i/ROW_TILES)*(TILE_HEIGHT+4)+TILE_HEIGHT+2,
 			16);
 
 	// plop mode
@@ -158,11 +155,11 @@ void FloorTool::PlopOne(int x,int y)
 	}
 
 	if(plopMode==PLOP_RANDOM)
-		active=(byte)Random(4);
+		active=(byte)Random(NUM_TILES);
 	if(plopMode==PLOP_CYCLE)
 	{
 		active++;
-		if(active>3)
+		if(active>=NUM_TILES)
 			active=0;
 	}
 }
@@ -189,12 +186,12 @@ void FloorTool::Plop(void)
 		lastY=y;
 		if(plopMode==PLOP_RANDOM || plopMode==PLOP_RANDOM2)
 		{
-			active=(byte)Random(4);
+			active=(byte)Random(NUM_TILES);
 		}
 		if(plopMode==PLOP_CYCLE2)
 		{
 			active++;
-			if(active>3)
+			if(active>=NUM_TILES)
 				active=0;
 		}
 	}
