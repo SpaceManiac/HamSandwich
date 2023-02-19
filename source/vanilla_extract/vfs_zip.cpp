@@ -50,18 +50,40 @@ static int zsdl_testerror(void* userdata, void* stream)
 }
 
 // ----------------------------------------------------------------------------
+// Owned unzFile
+
+#if !(defined(STRICTUNZIP) || defined(STRICTZIPUNZIP))
+typedef void unzFile__;
+#endif
+
+namespace owned
+{
+	namespace _deleter
+	{
+		struct unzFile__
+		{
+			void operator()(::unzFile ptr)
+			{
+				int err;
+				if (ptr && (err = unzClose(ptr)) != UNZ_OK)
+				{
+					SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unzClose: %d", err);
+				}
+			}
+		};
+	}
+
+	typedef std::unique_ptr<::unzFile__, _deleter::unzFile__> unzFile;
+}
+
+// ----------------------------------------------------------------------------
 // Zip VFS implementation
 
 class ZipVfs : public Vfs
 {
-	unzFile zip;
+	owned::unzFile zip;
 	std::vector<unz64_file_pos> files;
 	vanilla::Archive archive;
-
-	ZipVfs(const ZipVfs& other) = delete;
-	ZipVfs(ZipVfs&& other) = delete;
-	ZipVfs& operator=(const ZipVfs& other) = delete;
-	ZipVfs& operator=(ZipVfs&& other) = delete;
 public:
 	ZipVfs(owned::SDL_RWops rw)
 	{
@@ -76,25 +98,26 @@ public:
 			zsdl_testerror,
 			rw.release(),  // Our zsdl_close above will call SDL_RWclose.
 		};
-		zip = unzOpen2_64(nullptr, &sdl_zlib_io);
+		zip.reset(unzOpen2_64(nullptr, &sdl_zlib_io));
 
 		// Traverse the .zip file linearly once, building a directory tree.
 		// This is significantly faster than unzLocateFile, which does this
 		// linear traversal for every single lookup.
-		int err = unzGoToFirstFile(zip);
+		int err = unzGoToFirstFile(zip.get());
 		while (err == UNZ_OK)
 		{
 			char filename[256+1];
 			err = unzGetCurrentFileInfo64(
-				zip,
+				zip.get(),
 				nullptr,
 				filename, sizeof(filename)-1,
 				nullptr, 0,
-				nullptr, 0);
+				nullptr, 0
+			);
 			if (err == UNZ_OK)
 			{
 				unz64_file_pos file_pos;
-				unzGetFilePos64(zip, &file_pos);
+				unzGetFilePos64(zip.get(), &file_pos);
 
 				size_t location = files.size();
 				files.push_back(file_pos);
@@ -105,7 +128,7 @@ public:
 					current->files.insert(make_pair(std::string(last_component), location));
 				}
 
-				err = unzGoToNextFile(zip);
+				err = unzGoToNextFile(zip.get());
 			}
 		}
 		if (err != UNZ_OK && err != UNZ_END_OF_LIST_OF_FILE)
@@ -113,7 +136,6 @@ public:
 			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs: bad construction: %d", err);
 		}
 	}
-	~ZipVfs();
 
 	owned::SDL_RWops open_sdl(const char* filename);
 	bool list_dir(const char* directory, std::set<std::string>& output);
@@ -124,39 +146,34 @@ std::unique_ptr<Vfs> vanilla::open_zip(owned::SDL_RWops rw)
 	return std::make_unique<ZipVfs>(std::move(rw));
 }
 
-ZipVfs::~ZipVfs()
-{
-	unzClose(zip);
-}
-
 owned::SDL_RWops ZipVfs::open_sdl(const char* filename)
 {
 	size_t file = archive.get_file(filename);
 	if (file == SIZE_MAX)
 		return nullptr;
-	if (unzGoToFilePos64(zip, &files[file]) != UNZ_OK)
+	if (unzGoToFilePos64(zip.get(), &files[file]) != UNZ_OK)
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::open_sdl(%s): bad unzGoToFilePos64", filename);
 		return nullptr;
 	}
 	unz_file_info64 file_info;
-	if (unzGetCurrentFileInfo64(zip, &file_info, nullptr, 0, nullptr, 0, nullptr, 0) != UNZ_OK)
+	if (unzGetCurrentFileInfo64(zip.get(), &file_info, nullptr, 0, nullptr, 0, nullptr, 0) != UNZ_OK)
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::open_sdl(%s): bad unzGetCurrentFileInfo64", filename);
 		return nullptr;
 	}
-	if (unzOpenCurrentFile(zip) != UNZ_OK)
+	if (unzOpenCurrentFile(zip.get()) != UNZ_OK)
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::open_sdl(%s): bad unzOpenCurrentFile", filename);
 		return nullptr;
 	}
 	std::vector<uint8_t> buffer(file_info.uncompressed_size);
-	if (unzReadCurrentFile(zip, buffer.data(), file_info.uncompressed_size) < 0)
+	if (unzReadCurrentFile(zip.get(), buffer.data(), file_info.uncompressed_size) < 0)
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::open_sdl(%s): bad unzReadCurrentFile", filename);
 		return nullptr;
 	}
-	unzCloseCurrentFile(zip);
+	unzCloseCurrentFile(zip.get());
 	return vanilla::create_vec_rwops(std::move(buffer));
 }
 
