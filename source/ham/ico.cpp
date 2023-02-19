@@ -1,11 +1,6 @@
 #include "ico.h"
 #include <SDL_image.h>
 
-void owned::_deleter::SDL_Surface::operator()(::SDL_Surface* ptr)
-{
-	SDL_FreeSurface(ptr);
-}
-
 struct IconDirEntry
 {
 	int width, height, colorCount;

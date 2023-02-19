@@ -6,7 +6,8 @@
 #include <string>
 #include <vector>
 #include <set>
-#include "owned.h"
+#include "owned_stdio.h"
+#include "owned_sdl.h"
 
 struct SDL_RWops;
 

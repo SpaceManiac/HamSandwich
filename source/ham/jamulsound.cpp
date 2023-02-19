@@ -11,16 +11,11 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 
-struct ChunkDeleter
-{
-	inline void operator()(Mix_Chunk* ptr) { return Mix_FreeChunk(ptr); }
-};
-
-typedef std::unique_ptr<Mix_Chunk, ChunkDeleter> OwnedChunk;
+#include "owned_mixer.h"
 
 struct soundList_t
 {
-	OwnedChunk sample;
+	owned::Mix_Chunk sample;
 };
 
 struct schannel_t
@@ -28,7 +23,7 @@ struct schannel_t
 	int soundNum;
 	int priority;
 	int voice;
-	OwnedChunk sample;
+	owned::Mix_Chunk sample;
 };
 
 namespace
@@ -166,7 +161,8 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 			// If not, try to load it from a file instead
 			sprintf(s,"sound/snd%03d.wav",which);
 			rw = AssetOpen_SDL(s);
-			if(!rw) {
+			if (!rw)
+			{
 				return 0;
 			}
 		}
@@ -219,17 +215,17 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 #ifndef __EMSCRIPTEN__
 	if (playFlags & SND_RANDOM)
 	{
-		schannel[chosen].sample.reset(FxRandomPitch(playing));
+		schannel[chosen].sample = FxRandomPitch(playing);
 		playing = schannel[chosen].sample.get();
 	}
 	if (playFlags & SND_BACKWARDS)
 	{
-		schannel[chosen].sample.reset(FxBackwards(playing));
+		schannel[chosen].sample = FxBackwards(playing);
 		playing = schannel[chosen].sample.get();
 	}
 	if (playFlags & SND_DOUBLESPEED)
 	{
-		schannel[chosen].sample.reset(FxDoubleSpeed(playing));
+		schannel[chosen].sample = FxDoubleSpeed(playing);
 		playing = schannel[chosen].sample.get();
 	}
 #endif

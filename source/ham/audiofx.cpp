@@ -11,7 +11,7 @@ static int SampleSize(uint16_t format)
 	return SDL_AUDIO_BITSIZE(format) / 8;
 }
 
-Mix_Chunk* FxRandomPitch(Mix_Chunk* sample)
+owned::Mix_Chunk FxRandomPitch(Mix_Chunk* sample)
 {
 	int freq, channels;
 	uint16_t format;
@@ -26,12 +26,12 @@ Mix_Chunk* FxRandomPitch(Mix_Chunk* sample)
 	memcpy(cvt.buf, sample->abuf, sample->alen);
 	SDL_ConvertAudio(&cvt);
 
-	Mix_Chunk* output = Mix_QuickLoad_RAW(cvt.buf, cvt.len_cvt);
+	owned::Mix_Chunk output { Mix_QuickLoad_RAW(cvt.buf, cvt.len_cvt) };
 	output->allocated = true;
 	return output;
 }
 
-Mix_Chunk* FxBackwards(Mix_Chunk* sample)
+owned::Mix_Chunk FxBackwards(Mix_Chunk* sample)
 {
 	int channels;
 	uint16_t format;
@@ -49,12 +49,12 @@ Mix_Chunk* FxBackwards(Mix_Chunk* sample)
 		to += each_len;
 	}
 
-	Mix_Chunk* output = Mix_QuickLoad_RAW(buf, sample->alen);
+	owned::Mix_Chunk output { Mix_QuickLoad_RAW(buf, sample->alen) };
 	output->allocated = true;
 	return output;
 }
 
-Mix_Chunk* FxDoubleSpeed(Mix_Chunk* sample)
+owned::Mix_Chunk FxDoubleSpeed(Mix_Chunk* sample)
 {
 	int channels;
 	uint16_t format;
@@ -70,7 +70,7 @@ Mix_Chunk* FxDoubleSpeed(Mix_Chunk* sample)
 		memcpy(&buf[i * each_len], &sample->abuf[2 * i * each_len], each_len);
 	}
 
-	Mix_Chunk* output = Mix_QuickLoad_RAW(buf, new_len);
+	owned::Mix_Chunk output { Mix_QuickLoad_RAW(buf, new_len) };
 	output->allocated = true;
 	return output;
 }

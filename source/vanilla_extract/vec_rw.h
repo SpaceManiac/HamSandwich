@@ -3,9 +3,7 @@
 
 #include <vector>
 #include <stdint.h>
-#include "owned.h"
-
-struct SDL_RWops;
+#include "owned_sdl.h"
 
 namespace vanilla
 {

@@ -1,54 +1,13 @@
-#ifndef OWNED_H
-#define OWNED_H
+#ifndef OWNED_SDL_H
+#define OWNED_SDL_H
 
-#include <stdio.h>
-#include <SDL_rwops.h>
 #include <memory>
+#include <SDL.h>
 #include "rw_functions.h"
+#include "owned_stdio.h"
 
 // ----------------------------------------------------------------------------
-// C stdlib
-
-namespace owned
-{
-	namespace _deleter
-	{
-		struct FILE
-		{
-			void operator()(::FILE* ptr);
-		};
-	}
-
-	typedef std::unique_ptr<::FILE, _deleter::FILE> FILE;
-
-	inline FILE fopen(const char *pathname, const char *mode)
-	{
-		return FILE { ::fopen(pathname, mode) };
-	}
-}
-
-inline size_t fread(void *ptr, size_t size, size_t nmemb, const owned::FILE& stream)
-{
-	return fread(ptr, size, nmemb, stream.get());
-}
-
-inline size_t fwrite(const void *ptr, size_t size, size_t nmemb, const owned::FILE& stream)
-{
-	return fwrite(ptr, size, nmemb, stream.get());
-}
-
-inline int fseek(const owned::FILE& stream, long offset, int whence)
-{
-	return fseek(stream.get(), offset, whence);
-}
-
-inline int fclose(owned::FILE stream)
-{
-	return fclose(stream.release());
-}
-
-// ----------------------------------------------------------------------------
-// SDL
+// SDL_RWops
 
 namespace owned
 {
@@ -56,7 +15,13 @@ namespace owned
 	{
 		struct SDL_RWops
 		{
-			void operator()(::SDL_RWops* ptr);
+			void operator()(::SDL_RWops* ptr)
+			{
+				if (ptr && SDL_RWclose(ptr) != 0)
+				{
+					SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RWclose: %s", SDL_GetError());
+				}
+			}
 		};
 	}
 
@@ -111,6 +76,22 @@ inline size_t SDL_RWwrite(const owned::SDL_RWops& context, const void *ptr, size
 inline int SDL_RWclose(owned::SDL_RWops context)
 {
 	return SDL_RWclose(context.release());
+}
+
+// ----------------------------------------------------------------------------
+// SDL_Surface
+
+namespace owned
+{
+	namespace _deleter
+	{
+		struct SDL_Surface
+		{
+			void operator()(::SDL_Surface* ptr) { return SDL_FreeSurface(ptr); }
+		};
+	}
+
+	typedef std::unique_ptr<::SDL_Surface, _deleter::SDL_Surface> SDL_Surface;
 }
 
 #endif
