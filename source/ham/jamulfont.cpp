@@ -27,7 +27,7 @@ void FontFree(mfont_t *font)
 		free(font->data);
 }
 
-int FontLoad(const char *fname, mfont_t *font)
+FontError FontLoad(const char *fname, mfont_t *font)
 {
 	SDL_RWops* f = AssetOpen_SDL(fname);
 	if (!f)
@@ -35,7 +35,7 @@ int FontLoad(const char *fname, mfont_t *font)
 	return FontLoad(f, font);
 }
 
-int FontLoad(SDL_RWops* f, mfont_t* font)
+FontError FontLoad(SDL_RWops* f, mfont_t* font)
 {
 	// Size of the header in .jft files, fixed by the format.
 	const int MFONT_SIZE_TOTAL = 528;
@@ -67,7 +67,7 @@ int FontLoad(SDL_RWops* f, mfont_t* font)
 	return FONT_OK;
 }
 
-int FontSave(char *fname, mfont_t *font)
+FontError FontSave(char *fname, mfont_t *font)
 {
 	FILE *f;
 
@@ -683,15 +683,13 @@ void FontPrintStringCursorLit(int x,int y,byte pos,byte blink,const char *s,mfon
 void FontPrintRectBlack(int x,int y,int x2,int y2, const char *s,int height,int bright,mfont_t *font)
 {
 	int tx,ty,len;
-	char *tmp;
 	char *tok;
 
-	tmp=(char *)malloc(strlen(s)+2);
-	strcpy(tmp,s);
+	std::string tmp = s;
 
 	tx=x+2;
 	ty=y+2;
-	tok=strtok(tmp," \n\t");
+	tok=strtok(tmp.data()," \n\t");
 	while(tok)
 	{
 		if(tok[0]=='^')
@@ -700,7 +698,6 @@ void FontPrintRectBlack(int x,int y,int x2,int y2, const char *s,int height,int 
 			ty+=height;
 			if(ty>y2-height-2)
 			{
-				free(tmp);
 				return;	// no more room
 			}
 		}
@@ -714,7 +711,6 @@ void FontPrintRectBlack(int x,int y,int x2,int y2, const char *s,int height,int 
 				if(ty>y2-height-2)
 				{
 					FontPrintStringDarkAdj(tx,ty,"+",bright,font);
-					free(tmp);
 					return;	// no more room
 				}
 			}
@@ -726,25 +722,21 @@ void FontPrintRectBlack(int x,int y,int x2,int y2, const char *s,int height,int 
 		tok=strtok(NULL," \n\t");
 		if(bright>32)
 		{
-			free(tmp);
 			return;
 		}
 	}
-	free(tmp);
 }
 
 void FontPrintRectBlack2(int x,int y,int x2,int y2, const char *s,int height,mfont_t *font)
 {
 	int tx,ty,len;
-	char *tmp;
 	char *tok;
 
-	tmp=(char *)malloc(strlen(s)+2);
-	strcpy(tmp,s);
+	std::string tmp = s;
 
 	tx=x+2;
 	ty=y+2;
-	tok=strtok(tmp," \n\t");
+	tok=strtok(tmp.data()," \n\t");
 	while(tok)
 	{
 		if(tok[0]=='^')
@@ -753,7 +745,6 @@ void FontPrintRectBlack2(int x,int y,int x2,int y2, const char *s,int height,mfo
 			ty+=height;
 			if(ty>y2-height-2)
 			{
-				free(tmp);
 				return;	// no more room
 			}
 		}
@@ -767,7 +758,6 @@ void FontPrintRectBlack2(int x,int y,int x2,int y2, const char *s,int height,mfo
 				if(ty>y2-height-2)
 				{
 					FontPrintStringDark(tx,ty,"+",font);
-					free(tmp);
 					return;	// no more room
 				}
 			}
@@ -777,7 +767,6 @@ void FontPrintRectBlack2(int x,int y,int x2,int y2, const char *s,int height,mfo
 		}
 		tok=strtok(NULL," \n\t");
 	}
-	free(tmp);
 }
 
 void FontSetColors(byte first, byte count, byte *data)
@@ -894,15 +883,13 @@ void FontPrintStringBrightLimit(int x,int y,int maxX,const char*s,mfont_t *font,
 void FontPrintStringRect(int x,int y,int x2,int y2,const char*s,int height,mfont_t *font)
 {
 	int tx,ty;
-	char *tmp;
 	char *tok;
 
-	tmp=(char *)malloc(strlen(s)+2);
-	strcpy(tmp,s);
+	std::string tmp = s;
 
 	tx=x+2;
 	ty=y+2;
-	tok=strtok(tmp," \n\t");
+	tok=strtok(tmp.data()," \n\t");
 	while(tok)
 	{
 		if(tok[0]=='^')
@@ -911,7 +898,6 @@ void FontPrintStringRect(int x,int y,int x2,int y2,const char*s,int height,mfont
 			ty+=height;
 			if(ty>y2-height-2)
 			{
-				free(tmp);
 				return;	// no more room
 			}
 		}
@@ -923,7 +909,6 @@ void FontPrintStringRect(int x,int y,int x2,int y2,const char*s,int height,mfont
 				ty+=height;
 				if(ty>y2-height-2)
 				{
-					free(tmp);
 					return;	// no more room
 				}
 			}
@@ -937,21 +922,18 @@ void FontPrintStringRect(int x,int y,int x2,int y2,const char*s,int height,mfont
 		}
 		tok=strtok(NULL," \n\t");
 	}
-	free(tmp);
 }
 
 void FontPrintStringGlowRect(int x,int y,int x2,int y2,const char*s,int height,char bright,mfont_t *font)
 {
 	int tx,ty;
-	char *tmp;
 	char *tok;
 
-	tmp=(char *)malloc(strlen(s)+2);
-	strcpy(tmp,s);
+	std::string tmp = s;
 
 	tx=x+2;
 	ty=y+2;
-	tok=strtok(tmp," \n\t");
+	tok=strtok(tmp.data()," \n\t");
 	while(tok)
 	{
 		if(tok[0]=='^')
@@ -960,7 +942,6 @@ void FontPrintStringGlowRect(int x,int y,int x2,int y2,const char*s,int height,c
 			ty+=height;
 			if(ty>y2-height-2)
 			{
-				free(tmp);
 				return;	// no more room
 			}
 		}
@@ -972,7 +953,6 @@ void FontPrintStringGlowRect(int x,int y,int x2,int y2,const char*s,int height,c
 				ty+=height;
 				if(ty>y2-height-2)
 				{
-					free(tmp);
 					return;	// no more room
 				}
 			}
@@ -986,7 +966,6 @@ void FontPrintStringGlowRect(int x,int y,int x2,int y2,const char*s,int height,c
 		}
 		tok=strtok(NULL," \n\t");
 	}
-	free(tmp);
 }
 
 void FontPrintStringGlowLimited(int x,int y,int maxX,const char*s,mfont_t *font,char bright)
@@ -1031,15 +1010,13 @@ void FontPrintStringUnGlow(int x,int y,const char*s,mfont_t *font)
 void FontPrintStringUnGlowRect(int x,int y,int x2,int y2,const char *s,int height,mfont_t *font)
 {
 	int tx,ty;
-	char *tmp;
 	char *tok;
 
-	tmp=(char *)malloc(strlen(s)+2);
-	strcpy(tmp,s);
+	std::string tmp = s;
 
 	tx=x+2;
 	ty=y+2;
-	tok=strtok(tmp," \n\t");
+	tok=strtok(tmp.data()," \n\t");
 	while(tok)
 	{
 		if(tok[0]=='^')
@@ -1048,7 +1025,6 @@ void FontPrintStringUnGlowRect(int x,int y,int x2,int y2,const char *s,int heigh
 			ty+=height;
 			if(ty>y2-height-2)
 			{
-				free(tmp);
 				return;	// no more room
 			}
 		}
@@ -1060,7 +1036,6 @@ void FontPrintStringUnGlowRect(int x,int y,int x2,int y2,const char *s,int heigh
 				ty+=height;
 				if(ty>y2-height-2)
 				{
-					free(tmp);
 					return;	// no more room
 				}
 			}
@@ -1074,7 +1049,6 @@ void FontPrintStringUnGlowRect(int x,int y,int x2,int y2,const char *s,int heigh
 		}
 		tok=strtok(NULL," \n\t");
 	}
-	free(tmp);
 }
 
 void FontPrintStringUnGlowLimited(int x,int y,int maxX,const char *s,mfont_t *font)

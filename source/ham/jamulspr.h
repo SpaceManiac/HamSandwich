@@ -1,8 +1,10 @@
 #ifndef JAMULSPR_H
 #define JAMULSPR_H
 
-#include "jamultypes.h"
 #include <stdio.h>
+#include <vector>
+#include <memory>
+#include "jamultypes.h"
 
 typedef struct SDL_RWops SDL_RWops;
 
@@ -14,23 +16,21 @@ public:
 	sprite_t();
 	sprite_t(byte *info);
 
-	~sprite_t();
-
 	bool LoadData(SDL_RWops *f);
-	bool SaveData(FILE *f);
-	void GetHeader(byte *buffer);
-	void Draw(int x, int y, MGLDraw *mgl);
+	bool SaveData(FILE *f) const;
+	void GetHeader(byte *buffer) const;
+	void Draw(int x, int y, MGLDraw *mgl) const;
 
-	void DrawBright(int x, int y, MGLDraw *mgl, char bright);
-	void DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright);
-	void DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toColor, char bright);
-	void DrawGhost(int x, int y, MGLDraw *mgl, char bright);
-	void DrawGlow(int x, int y, MGLDraw *mgl, char bright);
-	void DrawC(int x, int y, MGLDraw *mgl);
+	void DrawBright(int x, int y, MGLDraw *mgl, char bright) const;
+	void DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright) const;
+	void DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toColor, char bright) const;
+	void DrawGhost(int x, int y, MGLDraw *mgl, char bright) const;
+	void DrawGlow(int x, int y, MGLDraw *mgl, char bright) const;
+	void DrawC(int x, int y, MGLDraw *mgl) const;
 
 	// this makes half-height tilted black shadows (they darken by 4)
-	void DrawShadow(int x, int y, MGLDraw *mgl);
-	void GetCoords(int x, int y, int *rx, int *ry, int *rx2, int *ry2);
+	void DrawShadow(int x, int y, MGLDraw *mgl) const;
+	void GetCoords(int x, int y, int *rx, int *ry, int *rx2, int *ry2) const;
 
 	word width;
 	word height;
@@ -38,7 +38,7 @@ public:
 	int16_t ofsy;
 protected:
 	dword size;
-	byte *data;
+	std::vector<byte> data;
 };
 
 class sprite_set_t
@@ -47,17 +47,13 @@ public:
 	sprite_set_t();
 	sprite_set_t(const char *fname);
 
-	~sprite_set_t();
-
-	bool Save(const char *fname);
+	bool Save(const char *fname) const;
 	bool Load(const char *fname);
-	sprite_t *GetSprite(int which);
-	word GetCount();
+	sprite_t* GetSprite(int which);
+	const sprite_t* GetSprite(int which) const;
+	word GetCount() const;
 protected:
-	void Free();
-
-	word count;
-	sprite_t **spr;
+	std::vector<std::unique_ptr<sprite_t>> spr;
 };
 
 void NewComputerSpriteFix(const char *fname);

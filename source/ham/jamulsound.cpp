@@ -11,7 +11,8 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 
-struct ChunkDeleter {
+struct ChunkDeleter
+{
 	inline void operator()(Mix_Chunk* ptr) { return Mix_FreeChunk(ptr); }
 };
 
@@ -42,7 +43,7 @@ namespace
 	bool soundIsOn = false;
 	int bufferCount;
 	std::vector<soundList_t> soundList;
-	schannel_t *schannel;
+	std::vector<schannel_t> schannel;
 }
 
 void SetJamulSoundEnabled(bool enable, int numSounds)
@@ -55,19 +56,23 @@ bool JamulSoundInit(int numBuffers)
 {
 	int i;
 
-	if (!soundEnabled) {
+	if (!soundEnabled)
+	{
 		LogDebug("sound disabled in config");
 		return false;
 	}
-	if (SDL_Init(SDL_INIT_AUDIO) != 0) {
+	if (SDL_Init(SDL_INIT_AUDIO) != 0)
+	{
 		LogError("SDL_Init(AUDIO): %s", SDL_GetError());
 		return false;
 	}
-	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) != 0) {
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) != 0)
+	{
 		LogError("Mix_OpenAudio: %s", Mix_GetError());
 		return false;
 	}
-	if (Mix_Init(MIX_INIT_OGG) != MIX_INIT_OGG) {
+	if (Mix_Init(MIX_INIT_OGG) != MIX_INIT_OGG)
+	{
 		LogError("Mix_Init: %s", Mix_GetError());
 	}
 
@@ -84,7 +89,7 @@ bool JamulSoundInit(int numBuffers)
 	bufferCount=numBuffers;
 	soundList.clear();
 	soundList.reserve(bufferCount);
-	schannel = new schannel_t[NUM_SOUNDS+1];
+	schannel.resize(NUM_SOUNDS+1);
 	for(i=0;i<NUM_SOUNDS;i++)
 	{
 		schannel[i].priority=INT_MIN;
@@ -102,7 +107,7 @@ void JamulSoundExit(void)
 		soundIsOn = false;
 		JamulSoundPurge();
 		StopSong();
-		delete[] schannel;
+		schannel.clear();
 		soundList.clear();
 		Mix_CloseAudio();
 	}
@@ -168,7 +173,8 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 
 		// Now try to load it
 		soundList[which].sample.reset(Mix_LoadWAV_RW(rw, 1));
-		if(soundList[which].sample==NULL) {
+		if(soundList[which].sample==NULL)
+		{
 			LogError("LoadWAV(%d): %s", which, Mix_GetError());
 			return 0;
 		}

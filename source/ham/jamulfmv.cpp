@@ -214,13 +214,15 @@ static void FLI_doBRUN(byte *scrn,int scrWidth,byte *p)
 static void FLI_nextchunk(MGLDraw *mgl,int scrWidth)
 {
 	chunkheader chead;
-	byte *p;
 
 	SDL_RWread(FLI_file, &chead,1,sizeofchunkheader);
 	if(chead.kind==FLI_COPY)
 		chead.size=fliWidth*fliHeight+sizeofchunkheader;	// a hack to make up for a bug in Animator?
-	p=(byte *)malloc(chead.size-sizeofchunkheader);
+
+	std::vector<byte> buffer(chead.size-sizeofchunkheader, 0);
+	byte *p = buffer.data();
 	SDL_RWread(FLI_file, p,1,chead.size-sizeofchunkheader);
+
 	switch(chead.kind)
 	{
 		case FLI_COPY:
@@ -247,7 +249,6 @@ static void FLI_nextchunk(MGLDraw *mgl,int scrWidth)
 			FLI_docolor2(p,mgl);
 			break;
 	}
-	free(p);
 }
 
 static void FLI_nextfr(MGLDraw *mgl,int scrWidth)

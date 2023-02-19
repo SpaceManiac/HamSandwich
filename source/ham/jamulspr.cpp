@@ -76,13 +76,12 @@ static int constrainX=0,constrainY=0,constrainX2=639,constrainY2=479;
 
 // CONSTRUCTORS & DESTRUCTORS
 sprite_t::sprite_t(void)
+	: width(0)
+	, height(0)
+	, ofsx(0)
+	, ofsy(0)
+	, size(0)
 {
-	width=0;
-	height=0;
-	ofsx=0;
-	ofsy=0;
-	size=0;
-	data=NULL;
 }
 
 sprite_t::sprite_t(byte *info)
@@ -92,13 +91,6 @@ sprite_t::sprite_t(byte *info)
 	memcpy(&ofsx,&info[4],2);
 	memcpy(&ofsy,&info[6],2);
 	memcpy(&size,&info[8],4);
-	data = nullptr;
-}
-
-sprite_t::~sprite_t(void)
-{
-	if(data)
-		free(data);
 }
 
 // REGULAR MEMBER FUNCTIONS
@@ -107,33 +99,31 @@ bool sprite_t::LoadData(SDL_RWops *f)
 	if(size==0)
 		return true;
 
-	data=(byte *)malloc(size);
-	if(!data)
-		return false;
+	data.resize(size);
 
-	if(SDL_RWread(f,data,1,size)!=size)
+	if(SDL_RWread(f,data.data(),1,size)!=size)
 	{
 		return false;
 	}
 	return true;
 }
 
-bool sprite_t::SaveData(FILE *f)
+bool sprite_t::SaveData(FILE *f) const
 {
 	if(size==0)
 		return true;
 
-	if(!data)
+	if(data.empty())
 		return true;
 
-	if(fwrite(data,1,size,f)!=size)
+	if(fwrite(data.data(),1,size,f)!=size)
 	{
 		return false;
 	}
 	return true;
 }
 
-void sprite_t::GetHeader(byte *buffer)
+void sprite_t::GetHeader(byte *buffer) const
 {
 	memcpy(&buffer[0],&width,2);
 	memcpy(&buffer[2],&height,2);
@@ -142,7 +132,7 @@ void sprite_t::GetHeader(byte *buffer)
 	memcpy(&buffer[8],&size,4);
 }
 
-void sprite_t::GetCoords(int x,int y,int *rx,int *ry,int *rx2,int *ry2)
+void sprite_t::GetCoords(int x,int y,int *rx,int *ry,int *rx2,int *ry2) const
 {
 	*rx=x-ofsx;
 	*ry=y-ofsy;
@@ -150,9 +140,10 @@ void sprite_t::GetCoords(int x,int y,int *rx,int *ry,int *rx2,int *ry2)
 	*ry2=*ry+height;
 }
 
-void sprite_t::Draw(int x, int y, MGLDraw *mgl)
+void sprite_t::Draw(int x, int y, MGLDraw *mgl) const
 {
-	byte *src, *dst, b, skip;
+	const byte *src;
+	byte *dst, b, skip;
 	int pitch;
 	int srcx, srcy;
 	byte noDraw;
@@ -163,7 +154,7 @@ void sprite_t::Draw(int x, int y, MGLDraw *mgl)
 		return; // whole sprite is offscreen
 
 	pitch = mgl->GetWidth();
-	src = data;
+	src = data.data();
 	dst = mgl->GetScreen() + x + y*pitch;
 
 	srcx = x;
@@ -254,9 +245,10 @@ void sprite_t::Draw(int x, int y, MGLDraw *mgl)
 
 //   bright: how much to darken or lighten the whole thing (-16 to +16 reasonable)
 
-void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright)
+void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright) const
 {
-	byte *src, *dst, b, skip;
+	const byte *src;
+	byte *dst, b, skip;
 	int pitch;
 	int srcx, srcy;
 	byte noDraw;
@@ -274,7 +266,7 @@ void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright)
 		return; // whole sprite is offscreen
 
 	pitch = mgl->GetWidth();
-	src = data;
+	src = data.data();
 	dst = mgl->GetScreen() + x + y*pitch;
 
 	srcx = x;
@@ -370,9 +362,10 @@ void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright)
 //	 color:  which hue (0-7) to use for the entire thing, ignoring its real hue
 //   bright: how much to darken or lighten the whole thing (-16 to +16 reasonable)
 
-void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright)
+void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright) const
 {
-	byte *src, *dst, b, skip;
+	const byte *src;
+	byte *dst, b, skip;
 	int pitch;
 	int srcx, srcy;
 	byte noDraw;
@@ -384,7 +377,7 @@ void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright)
 		return; // whole sprite is offscreen
 
 	pitch = mgl->GetWidth();
-	src = data;
+	src = data.data();
 	dst = mgl->GetScreen() + x + y*pitch;
 
 	srcx = x;
@@ -477,9 +470,10 @@ void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright)
 	}
 }
 
-void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toColor, char bright)
+void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toColor, char bright) const
 {
-	byte *src, *dst, b, skip;
+	const byte *src;
+	byte *dst, b, skip;
 	int pitch;
 	int srcx, srcy;
 	byte noDraw;
@@ -491,7 +485,7 @@ void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toC
 		return; // whole sprite is offscreen
 
 	pitch = mgl->GetWidth();
-	src = data;
+	src = data.data();
 	dst = mgl->GetScreen() + x + y*pitch;
 
 	srcx = x;
@@ -590,9 +584,10 @@ void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toC
 // degree to which the background should be brightened instead of drawn over.
 //   bright: how much to darken or lighten the whole thing (-16 to +16 reasonable)
 
-void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright)
+void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright) const
 {
-	byte *src, *dst, b, skip;
+	const byte *src;
+	byte *dst, b, skip;
 	int pitch;
 	int srcx, srcy;
 	byte noDraw;
@@ -604,7 +599,7 @@ void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright)
 		return; // whole sprite is offscreen
 
 	pitch = mgl->GetWidth();
-	src = data;
+	src = data.data();
 	dst = mgl->GetScreen() + x + y*pitch;
 
 	srcx = x;
@@ -697,9 +692,10 @@ void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright)
 	}
 }
 
-void sprite_t::DrawGlow(int x, int y, MGLDraw *mgl, char bright)
+void sprite_t::DrawGlow(int x, int y, MGLDraw *mgl, char bright) const
 {
-	byte *src, *dst, b, skip;
+	const byte *src;
+	byte *dst, b, skip;
 	int pitch;
 	int srcx, srcy;
 	byte noDraw;
@@ -711,7 +707,7 @@ void sprite_t::DrawGlow(int x, int y, MGLDraw *mgl, char bright)
 		return; // whole sprite is offscreen
 
 	pitch = mgl->GetWidth();
-	src = data;
+	src = data.data();
 	dst = mgl->GetScreen() + x + y*pitch;
 
 	srcx = x;
@@ -804,9 +800,10 @@ void sprite_t::DrawGlow(int x, int y, MGLDraw *mgl, char bright)
 	}
 }
 
-void sprite_t::DrawShadow(int x, int y, MGLDraw *mgl)
+void sprite_t::DrawShadow(int x, int y, MGLDraw *mgl) const
 {
-	byte *src, *dst, b, skip;
+	const byte *src;
+	byte *dst, b, skip;
 	int pitch;
 	int srcx, srcy, x2;
 	byte noDraw;
@@ -819,7 +816,7 @@ void sprite_t::DrawShadow(int x, int y, MGLDraw *mgl)
 		return; // whole sprite is offscreen
 
 	pitch = mgl->GetWidth();
-	src = data;
+	src = data.data();
 	dst = mgl->GetScreen() + x + y*pitch;
 
 	srcx = x;
@@ -925,30 +922,19 @@ void sprite_t::DrawShadow(int x, int y, MGLDraw *mgl)
 // CONSTRUCTORS & DESTRUCTORS
 sprite_set_t::sprite_set_t(void)
 {
-	count=0;
-	spr=NULL;
 }
 
 sprite_set_t::sprite_set_t(const char *fname)
 {
-	count=0;
-	spr=NULL;
 	Load(fname);
-}
-
-sprite_set_t::~sprite_set_t(void)
-{
-	Free();
 }
 
 // REGULAR MEMBER FUNCTIONS
 bool sprite_set_t::Load(const char *fname)
 {
 	int i;
-	byte *buffer;
 
-	if(spr)
-		Free();
+	spr.clear();
 
 	SDL_RWops *f=AssetOpen_SDL(fname);
 	if(!f) {
@@ -956,89 +942,64 @@ bool sprite_set_t::Load(const char *fname)
 		return false;
 	}
 	// read the count
+	word count;
 	SDL_RWread(f, &count, 2, 1);
 
-	spr=(sprite_t **)malloc(sizeof(sprite_t *)*count);
-	if(!spr)
-	{
-		SDL_RWclose(f);
-		return false;
-	}
+	spr.resize(count);
 
 	// allocate a buffer to load sprites into
-	buffer=(byte *)malloc(SPRITE_INFO_SIZE*count);
-	if(!buffer)
-	{
-		SDL_RWclose(f);
-		free(spr);
-		spr=NULL;
-		return false;
-	}
+	std::vector<byte> buffer(SPRITE_INFO_SIZE*count);
 
 	// read in the sprite headers
-	if(SDL_RWread(f,buffer,SPRITE_INFO_SIZE,count)!=count)
+	if(SDL_RWread(f,buffer.data(),SPRITE_INFO_SIZE,count)!=count)
 	{
 		SDL_RWclose(f);
-		free(spr);
-		free(buffer);
-		spr=NULL;
+		spr.clear();
 		return false;
 	}
 
 	// allocate the sprites and read in the data for them
 	for(i=0;i<count;i++)
 	{
-		spr[i]=new sprite_t(&buffer[i*SPRITE_INFO_SIZE]);
-		if(!spr[i])
-		{
-			SDL_RWclose(f);
-			return false;
-		}
+		spr[i] = std::make_unique<sprite_t>(&buffer[i*SPRITE_INFO_SIZE]);
 		if(!spr[i]->LoadData(f))
 		{
 			SDL_RWclose(f);
-			spr[i]=NULL;
+			spr[i] = nullptr;
 			return false;
 		}
 	}
-	free(buffer);
 	SDL_RWclose(f);
 	return true;
 }
 
-bool sprite_set_t::Save(const char *fname)
+bool sprite_set_t::Save(const char *fname) const
 {
 	FILE *f;
 	int i;
-	byte *buffer;
 
 	f=AssetOpen_Write(fname);
 	if(!f)
 		return false;
 	// write the count
+	word count = spr.size();
 	fwrite(&count,2,1,f);
 
 	// allocate a buffer to copy sprites into
-	buffer=(byte *)malloc(SPRITE_INFO_SIZE*count);
-	if(!buffer)
-	{
-		fclose(f);
-		return false;
-	}
+	std::vector<byte> buffer(SPRITE_INFO_SIZE*count);
 
 	for(i=0;i<count;i++)
 		spr[i]->GetHeader(&buffer[i*SPRITE_INFO_SIZE]);
 
 	// write the sprites out
-	if(fwrite(buffer,SPRITE_INFO_SIZE,count,f)!=count)
+	if(fwrite(buffer.data(),SPRITE_INFO_SIZE,count,f)!=count)
 	{
 		fclose(f);
-		free(buffer);
 		return false;
 	}
 
 	// write the sprite data
-	for(i=0;i<count;i++)
+	for(i=0;i<spr.size();i++)
 	{
 		if(!spr[i]->SaveData(f))
 		{
@@ -1049,31 +1010,25 @@ bool sprite_set_t::Save(const char *fname)
 	fclose(f);
 	AppdataSync();
 	return true;
-
 }
 
-void sprite_set_t::Free(void)
+sprite_t* sprite_set_t::GetSprite(int which)
 {
-	int i;
-	if (!spr) return;
-
-	for(i=0;i<count;i++)
-		if (spr[i])
-			delete spr[i];
-	free(spr);
-	spr=NULL;
+	if (which >= 0 && which < spr.size() && spr[which])
+		return spr[which].get();
+	return nullptr;
 }
 
-sprite_t *sprite_set_t::GetSprite(int which)
+const sprite_t* sprite_set_t::GetSprite(int which) const
 {
-	if(spr && which<count && spr[which])
-		return spr[which];
-	return NULL;
+	if (which >= 0 && which < spr.size() && spr[which])
+		return spr[which].get();
+	return nullptr;
 }
 
-word sprite_set_t::GetCount(void)
+word sprite_set_t::GetCount(void) const
 {
-	return count;
+	return spr.size();
 }
 
 void SetSpriteConstraints(int x,int y,int x2,int y2)
@@ -1084,9 +1039,10 @@ void SetSpriteConstraints(int x,int y,int x2,int y2)
 	constrainY2=y2;
 }
 
-void sprite_t::DrawC(int x,int y,MGLDraw *mgl)
+void sprite_t::DrawC(int x,int y,MGLDraw *mgl) const
 {
-	byte *src,*dst,b,skip;
+	const byte *src;
+	byte *dst,b,skip;
 	int pitch;
 	int srcx,srcy;
 	byte noDraw;
@@ -1097,7 +1053,7 @@ void sprite_t::DrawC(int x,int y,MGLDraw *mgl)
 		return;	// whole sprite is offscreen
 
 	pitch=mgl->GetWidth();
-	src=data;
+	src=data.data();
 	dst=mgl->GetScreen()+x+y*pitch;
 
 	srcx=x;
@@ -1188,15 +1144,13 @@ void sprite_t::DrawC(int x,int y,MGLDraw *mgl)
 void NewComputerSpriteFix(char *fname)
 {
 	int i;
-	sprite_set_t *s;
 
-	s=new sprite_set_t(fname);
+	sprite_set_t s { fname };
 
-	for(i=0;i<s->GetCount();i++)
+	for(i=0;i<s.GetCount();i++)
 	{
-		s->GetSprite(i)->ofsx+=1;
-		s->GetSprite(i)->ofsy-=2;
+		s.GetSprite(i)->ofsx+=1;
+		s.GetSprite(i)->ofsy-=2;
 	}
-	s->Save(fname);
-	delete s;
+	s.Save(fname);
 }
