@@ -92,6 +92,80 @@ namespace owned
 	}
 
 	typedef std::unique_ptr<::SDL_Surface, _deleter::SDL_Surface> SDL_Surface;
+
+	inline SDL_Surface SDL_LoadBMP_RW(::SDL_RWops* rw)
+	{
+		return SDL_Surface { SDL_LoadBMP_RW(rw, SDL_FALSE) };
+	}
+
+	inline SDL_Surface SDL_LoadBMP_RW(owned::SDL_RWops rw)
+	{
+		return SDL_Surface { SDL_LoadBMP_RW(rw.release(), SDL_TRUE) };
+	}
+}
+
+// ----------------------------------------------------------------------------
+// SDL_Window
+
+namespace owned
+{
+	namespace _deleter
+	{
+		struct SDL_Window
+		{
+			void operator()(::SDL_Window* ptr) { return SDL_DestroyWindow(ptr); }
+		};
+	}
+
+	typedef std::unique_ptr<::SDL_Window, _deleter::SDL_Window> SDL_Window;
+}
+
+// ----------------------------------------------------------------------------
+// SDL_Renderer
+
+namespace owned
+{
+	namespace _deleter
+	{
+		struct SDL_Renderer
+		{
+			void operator()(::SDL_Renderer* ptr) { return SDL_DestroyRenderer(ptr); }
+		};
+	}
+
+	typedef std::unique_ptr<::SDL_Renderer, _deleter::SDL_Renderer> SDL_Renderer;
+}
+
+// ----------------------------------------------------------------------------
+// SDL_Texture
+
+namespace owned
+{
+	namespace _deleter
+	{
+		struct SDL_Texture
+		{
+			void operator()(::SDL_Texture* ptr) { return SDL_DestroyTexture(ptr); }
+		};
+	}
+
+	typedef std::unique_ptr<::SDL_Texture, _deleter::SDL_Texture> SDL_Texture;
+}
+
+// ----------------------------------------------------------------------------
+// SDL_GLContext
+
+namespace owned
+{
+	namespace _deleter
+	{
+		struct SDL_GLContext
+		{
+			void operator()(::SDL_GLContext ptr) { return SDL_GL_DeleteContext(ptr); }
+		};
+	}
+
+	typedef std::unique_ptr<void, _deleter::SDL_GLContext> SDL_GLContext;
 }
 
 #endif
