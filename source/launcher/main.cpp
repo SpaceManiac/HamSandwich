@@ -71,13 +71,13 @@ extern const size_t embed_verdana_size;
 void Verdana(ImGuiIO* io)
 {
 	mfont_t jamfont;
-	if (FontLoad(SDL_RWFromConstMem(embed_verdana, embed_verdana_size), &jamfont) != FONT_OK)
+	if (FontLoad(owned::SDL_RWFromConstMem(embed_verdana, embed_verdana_size).get(), &jamfont) != FONT_OK)
 		return;
 
 	ImFontConfig config;
 	config.SizePixels = jamfont.height;
 	ImFont* font = io->Fonts->AddFontDefault(&config);
-	int rect_ids[FONT_MAX_CHARS];
+	std::vector<int> rect_ids(jamfont.numChars);
 	for (int i = 0; i < jamfont.numChars; ++i)
 	{
 		rect_ids[i] = io->Fonts->AddCustomRectFontGlyph(font, jamfont.firstChar + i, *jamfont.chars[i], jamfont.height + 1, *jamfont.chars[i] + jamfont.gapSize);
