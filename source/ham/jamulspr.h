@@ -19,17 +19,16 @@ public:
 	bool LoadData(SDL_RWops *f);
 	bool SaveData(FILE *f) const;
 	void GetHeader(byte *buffer) const;
-	void Draw(int x, int y, MGLDraw *mgl) const;
 
+	void Draw(int x, int y, MGLDraw *mgl) const;
 	void DrawBright(int x, int y, MGLDraw *mgl, char bright) const;
 	void DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright) const;
 	void DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toColor, char bright) const;
 	void DrawGhost(int x, int y, MGLDraw *mgl, char bright) const;
 	void DrawGlow(int x, int y, MGLDraw *mgl, char bright) const;
-	void DrawC(int x, int y, MGLDraw *mgl) const;
-
 	// this makes half-height tilted black shadows (they darken by 4)
 	void DrawShadow(int x, int y, MGLDraw *mgl) const;
+
 	void GetCoords(int x, int y, int *rx, int *ry, int *rx2, int *ry2) const;
 
 	word width;
@@ -57,7 +56,9 @@ protected:
 };
 
 void NewComputerSpriteFix(const char *fname);
+// x2 and y2 are inclusive.
 void SetSpriteConstraints(int x, int y, int x2, int y2);
+void ClearSpriteConstraints();
 
 byte SprModifyColor(byte color, byte hue);
 byte SprGetColor(byte color);

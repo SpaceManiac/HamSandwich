@@ -154,7 +154,7 @@ void MonsterTool::Render(int msx,int msy)
 	DrawBox(462,442-15,494,442+16,31);
 
 	Print(462,442-26,"Item",0,1);
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 
 	// plop mode
 	RenderButtonImage(msx,msy,382,462,30,15,"Plop");

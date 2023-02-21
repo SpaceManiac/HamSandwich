@@ -217,7 +217,7 @@ void RenderPauseMenu(void)
 	if(msy2>pauseY+260)
 		msy2=pauseY+260;
 	pauseSpr->GetSprite(0)->DrawBright(msx2,msy2,GetDisplayMGL(),msBright/2);
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 }
 
 void HandlePauseKeyPresses(MGLDraw *mgl)

@@ -2,6 +2,7 @@
 #include "mgldraw.h"
 #include "appdata.h"
 #include "log.h"
+#include <limits.h>
 
 // the sprites are 12 bytes, not including the data itself
 constexpr int SPRITE_INFO_SIZE = 16;
@@ -32,10 +33,7 @@ count structures:
 */
 
 // -------------------------------------------------------------------------
-// ****************************** SPRITE_T *********************************
-// -------------------------------------------------------------------------
-
-// Helper shenanigans for C stuff
+// Color manipulation
 
 byte SprModifyColor(byte color, byte hue)
 {
@@ -72,7 +70,60 @@ byte SprModifyGlow(byte src, byte dst, char bright)
 	return SprModifyLight(src, (dst & 31) + bright);
 }
 
-static int constrainX=0,constrainY=0,constrainX2=639,constrainY2=479;
+// -------------------------------------------------------------------------
+// Constraints
+
+struct Recolor
+{
+	byte hue[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+	int8_t bright[8] = {};
+
+	byte Apply(byte color);
+};
+
+byte Recolor::Apply(byte color)
+{
+	return (hue[color >> 5] << 5) | std::clamp((color & 31) + bright[color >> 5], 0, 31);
+}
+
+namespace
+{
+	int constrainX = 0;
+	int constrainY = 0;
+	// X2 and Y2 are inclusive.
+	int constrainX2 = INT_MAX;
+	int constrainY2 = INT_MAX;
+}
+
+void SetSpriteConstraints(int x,int y,int x2,int y2)
+{
+	constrainX = x;
+	constrainY = y;
+	constrainX2 = x2;
+	constrainY2 = y2;
+}
+
+void ClearSpriteConstraints()
+{
+	constrainX = 0;
+	constrainY = 0;
+	constrainX2 = INT_MAX;
+	constrainY2 = INT_MAX;
+}
+
+static inline int ResolveConstrainX2(MGLDraw* mgl)
+{
+	return std::min(mgl->GetWidth() - 1, constrainX2);
+}
+
+static inline int ResolveConstrainY2(MGLDraw* mgl)
+{
+	return std::min(mgl->GetHeight() - 1, constrainY2);
+}
+
+// -------------------------------------------------------------------------
+// ****************************** SPRITE_T *********************************
+// -------------------------------------------------------------------------
 
 // CONSTRUCTORS & DESTRUCTORS
 sprite_t::sprite_t(void)
@@ -150,6 +201,8 @@ void sprite_t::Draw(int x, int y, MGLDraw *mgl) const
 
 	x -= ofsx;
 	y -= ofsy;
+	int constrainX2 = ResolveConstrainX2(mgl);
+	int constrainY2 = ResolveConstrainY2(mgl);
 	if (x > constrainX2 || y > constrainY2)
 		return; // whole sprite is offscreen
 
@@ -262,6 +315,8 @@ void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright) const
 
 	x -= ofsx;
 	y -= ofsy;
+	int constrainX2 = ResolveConstrainX2(mgl);
+	int constrainY2 = ResolveConstrainY2(mgl);
 	if (x > constrainX2 || y > constrainY2)
 		return; // whole sprite is offscreen
 
@@ -373,6 +428,8 @@ void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright) 
 
 	x -= ofsx;
 	y -= ofsy;
+	int constrainX2 = ResolveConstrainX2(mgl);
+	int constrainY2 = ResolveConstrainY2(mgl);
 	if (x > constrainX2 || y > constrainY2)
 		return; // whole sprite is offscreen
 
@@ -481,6 +538,8 @@ void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toC
 
 	x -= ofsx;
 	y -= ofsy;
+	int constrainX2 = ResolveConstrainX2(mgl);
+	int constrainY2 = ResolveConstrainY2(mgl);
 	if (x > constrainX2 || y > constrainY2)
 		return; // whole sprite is offscreen
 
@@ -595,6 +654,8 @@ void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright) const
 
 	x -= ofsx;
 	y -= ofsy;
+	int constrainX2 = ResolveConstrainX2(mgl);
+	int constrainY2 = ResolveConstrainY2(mgl);
 	if (x > constrainX2 || y > constrainY2)
 		return; // whole sprite is offscreen
 
@@ -703,6 +764,8 @@ void sprite_t::DrawGlow(int x, int y, MGLDraw *mgl, char bright) const
 
 	x -= ofsx;
 	y -= ofsy;
+	int constrainX2 = ResolveConstrainX2(mgl);
+	int constrainY2 = ResolveConstrainY2(mgl);
 	if (x > constrainX2 || y > constrainY2)
 		return; // whole sprite is offscreen
 
@@ -812,6 +875,8 @@ void sprite_t::DrawShadow(int x, int y, MGLDraw *mgl) const
 
 	x -= ofsx + height / 2;
 	y -= ofsy / 2;
+	int constrainX2 = ResolveConstrainX2(mgl);
+	int constrainY2 = ResolveConstrainY2(mgl);
 	if (x > constrainX2 || y > constrainY2)
 		return; // whole sprite is offscreen
 
@@ -1029,116 +1094,6 @@ const sprite_t* sprite_set_t::GetSprite(int which) const
 word sprite_set_t::GetCount(void) const
 {
 	return spr.size();
-}
-
-void SetSpriteConstraints(int x,int y,int x2,int y2)
-{
-	constrainX=x;
-	constrainX2=x2;
-	constrainY=y;
-	constrainY2=y2;
-}
-
-void sprite_t::DrawC(int x,int y,MGLDraw *mgl) const
-{
-	const byte *src;
-	byte *dst,b,skip;
-	int pitch;
-	int srcx,srcy;
-	byte noDraw;
-
-	x-=ofsx;
-	y-=ofsy;
-	if(x>constrainX2 || y>constrainY2)
-		return;	// whole sprite is offscreen
-
-	pitch=mgl->GetWidth();
-	src=data.data();
-	dst=mgl->GetScreen()+x+y*pitch;
-
-	srcx=x;
-	srcy=y;
-	if(srcy<constrainY)
-		noDraw=1;
-	else
-		noDraw=0;
-	while(srcy<height+y)
-	{
-		if((*src)&128)	// transparent run
-		{
-			b=(*src)&127;
-			srcx+=b;
-			dst+=b;
-			src++;
-		}
-		else	// solid run
-		{
-			b=*src;
-			src++;
-			if(srcx<constrainX-b || srcx>constrainX2)
-			{
-				// don't draw this line
-				src+=b;
-				srcx+=b;
-				dst+=b;
-			}
-			else if(srcx<constrainX)
-			{
-				// skip some of the beginning
-				skip=(constrainX-srcx)-1;
-				src+=skip;
-				srcx+=skip;
-				dst+=skip;
-				b-=skip;
-				if(srcx>constrainX2-b)
-				{
-					skip=(b-(constrainX2-srcx))-1;
-					if(!noDraw)
-						memcpy(dst,src,b-skip);
-					src+=b;
-					srcx+=b;
-					dst+=b;
-				}
-				else
-				{
-					if(!noDraw)
-						memcpy(dst,src,b);
-					src+=b;
-					srcx+=b;
-					dst+=b;
-				}
-			}
-			else if(srcx>constrainX2-b)
-			{
-				// skip some of the end
-				skip=(srcx-(constrainX2-b))-1;
-				if(!noDraw)
-					memcpy(dst,src,b-skip);
-				src+=b;
-				srcx+=b;
-				dst+=b;
-			}
-			else
-			{
-				// do it all!
-				if(!noDraw)
-					memcpy(dst,src,b);
-				srcx+=b;
-				src+=b;
-				dst+=b;
-			}
-		}
-		if(srcx>=width+x)
-		{
-			srcx=x;
-			srcy++;
-			dst+=pitch-width;
-			if(srcy>=constrainY)
-				noDraw=0;
-			if(srcy>constrainY2)
-				return;
-		}
-	}
 }
 
 void NewComputerSpriteFix(char *fname)

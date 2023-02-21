@@ -1134,7 +1134,7 @@ void ItemEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 	// the sprite and its position
 	SetSpriteConstraints(481,201,637,357);
 	InstaRenderItem(560,280,curItem,0,mgl);
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 	mgl->Box(560-TILE_WIDTH/2,280-TILE_HEIGHT/2,560+TILE_WIDTH/2-1,280+TILE_HEIGHT/2-1,32*backColor+18);
 
 	// misc. lines and the background behind the buttons

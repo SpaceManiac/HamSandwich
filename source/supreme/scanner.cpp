@@ -290,7 +290,7 @@ void RenderScan(MGLDraw *mgl)
 		if(i>480+add)
 			break;
 	}
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 
 	PrintGlowRect(20,20,620,60,20,groupTxt,2);
 	PrintGlow(20,80,nameTxt,0,2);
@@ -648,7 +648,7 @@ void RenderBestiary(MGLDraw *mgl)
 		if(i>480+add)
 			break;
 	}
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 
 	PrintGlowRect(170,208,500,453,16,MonsterNotes(curMons),2);
 
@@ -673,7 +673,7 @@ void RenderBestiary(MGLDraw *mgl)
 	if(msy2>462)
 		msy2=462;
 	bestSpr->GetSprite(0)->DrawBright(msx2,msy2,mgl,msBright/2);
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 
 	oldmsx=msx;
 	oldmsy=msy;

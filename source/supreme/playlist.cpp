@@ -787,7 +787,7 @@ void RenderPlayListMenu(MGLDraw *mgl)
 	if(msy2>462)
 		msy2=462;
 	plSpr->GetSprite(0)->DrawBright(msx2,msy2,mgl,msBright/2);
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 }
 
 //----------------

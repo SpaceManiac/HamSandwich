@@ -450,7 +450,7 @@ void RenderMoron(MGLDraw *mgl)
 	if(msy>462)
 		msy=462;
 	plSpr->GetSprite(0)->DrawBright(msx,msy,mgl,msBright/2);
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 }
 
 //----------------
