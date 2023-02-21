@@ -202,16 +202,29 @@ void MGLDraw::SetMouse(int x,int y)
 	if (idle)
 		return;
 
-	if (SDL_GetRelativeMouseMode()) {
+	if (SDL_GetRelativeMouseMode())
+	{
 		mouse_x = x;
 		mouse_y = y;
 		return;
 	}
 
-	int scale = std::max(1, std::min(winWidth / xRes, winHeight / yRes));
-	x = (winWidth - xRes * scale) / 2 + x * scale;
-	y = (winHeight - yRes * scale) / 2 + y * scale;
+	float scale = std::max(1.0f, std::min((float)winWidth / xRes, (float)winHeight / yRes));
+	int destX = (int)((winWidth - xRes * scale) / 2);
+	int destY = (int)((winHeight - yRes * scale) / 2);
+	x = destX + x * scale;
+	y = destY + y * scale;
 	SDL_WarpMouseInWindow(window, x, y);
+
+	// After warping, update mouse_x and mouse_y immediately so a following
+	// call to GetMouse will correctly confirm the completed warp.
+	SDL_PumpEvents();
+	if (!idle)
+	{
+		SDL_GetMouseState(&x, &y);
+		mouse_x = (x - destX) / scale;
+		mouse_y = (y - destY) / scale;
+	}
 }
 
 bool MGLDraw::Process(void)
