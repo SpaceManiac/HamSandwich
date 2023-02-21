@@ -176,7 +176,7 @@ unset OldPWD
 # In particular, GitHub Desktop has a MSYS2 with sh.exe but without coreutils.
 if command -v powershell.exe >/dev/null 2>/dev/null; then
 	busybox_w32() {
-		powershell.exe -NoLogo -ExecutionPolicy Bypass -File "$Bootstrap/busybox_.ps1" "$@"
+		"$Bootstrap/busybox.exe" "$@"
 	}
 
 	if ! command -v sha256sum >/dev/null 2>/dev/null; then
