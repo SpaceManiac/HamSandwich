@@ -12,30 +12,36 @@
    don't have to pass the mgldraw object everywhere, and also handles the display
    list and camera, so everything is drawn in sorted order (or not drawn). */
 
-#define MAX_DISPLAY_OBJS 1024
+constexpr int MAX_DISPLAY_OBJS = 1024 * 4;
 
-#define DISPLAY_XBORDER 128
-#define DISPLAY_YBORDER 128
+constexpr int DISPLAY_XBORDER = 128;
+constexpr int DISPLAY_YBORDER = 128;
 
-//display object flags
-#define DISPLAY_DRAWME		1
-#define DISPLAY_SHADOW		2
-#define DISPLAY_WALLTILE	4
-#define DISPLAY_ROOFTILE	8
-#define DISPLAY_PARTICLE	16
-#define DISPLAY_GHOST		32
-#define DISPLAY_GLOW		64
-#define DISPLAY_TRANSTILE	128
-#define DISPLAY_LIGHTNING	256
-#define DISPLAY_OFFCOLOR	512
-#define DISPLAY_TILESPRITE	1024
+// Display object flags.
+enum : word
+{
+	DISPLAY_DRAWME      = 1 << 0,
+	DISPLAY_SHADOW      = 1 << 1,
+	DISPLAY_WALLTILE    = 1 << 2,
+	DISPLAY_ROOFTILE    = 1 << 3,
+	DISPLAY_PARTICLE    = 1 << 4,
+	DISPLAY_GHOST       = 1 << 5,
+	DISPLAY_GLOW        = 1 << 6,
+	DISPLAY_TRANSTILE   = 1 << 7,
+	DISPLAY_LIGHTNING   = 1 << 8,
+	DISPLAY_OFFCOLOR    = 1 << 9,
+	DISPLAY_TILESPRITE  = 1 << 10,
+};
 
-
-// text file display modes
-#define TEXTFILE_NORMAL		0
-#define TEXTFILE_YERFDOG	1
-#define TEXTFILE_COMPUTER	2
-#define TEXTFILE_MAX		3
+// Text file display modes.
+// SERIALIZED in special effect Show Pic/Movie.
+enum : byte
+{
+	TEXTFILE_NORMAL     = 0,
+	TEXTFILE_YERFDOG    = 1,
+	TEXTFILE_COMPUTER   = 2,
+	TEXTFILE_MAX
+};
 
 typedef struct displayObj_t
 {
