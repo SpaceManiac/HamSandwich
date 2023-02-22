@@ -40,7 +40,7 @@ public:
 	byte *GetScreen();
 	void ClearScreen();
 
-	// Resize the SCREEN BUFFER - does not resize the window.
+	// Resize the SCREEN BUFFER - window is only resized if necessary.
 	void ResizeBuffer(int w, int h);
 
 	// Perform any necessary per-frame handling. Returns false if quit.

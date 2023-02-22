@@ -88,6 +88,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 		FatalError("Failed to create window");
 		return;
 	}
+	SDL_SetWindowMinimumSize(window, xRes, yRes);
 	LogDebug("window format: %s", SDL_GetPixelFormatName(SDL_GetWindowPixelFormat(window)));
 	SDL_GetWindowSize(window, &winWidth, &winHeight);
 
@@ -261,6 +262,10 @@ inline void MGLDraw::StartFlip(void)
 
 void MGLDraw::ResizeBuffer(int w, int h)
 {
+	if (xRes == w && yRes == h)
+		return;
+
+	// Resize the 8-bit buffer, truecolor buffer, and GPU texture.
 	SDL_DestroyTexture(texture);
 
 	xRes = pitch = w;
@@ -269,11 +274,33 @@ void MGLDraw::ResizeBuffer(int w, int h)
 	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, xRes, yRes);
 	if (!texture) {
 		LogError("SDL_CreateTexture: %s", SDL_GetError());
-		FatalError("Failed to create texture");
+		FatalError("SDL_CreateTexture failed in ResizeBuffer");
 		return;
 	}
 	scrn = std::make_unique<byte[]>(xRes * yRes);
 	buffer = std::make_unique<RGB[]>(xRes * yRes);
+
+	// Resize the window, but only on increases.
+	if (windowed && (xRes > winWidth || yRes > winHeight))
+	{
+		int px, py;
+		SDL_GetWindowPosition(window, &px, &py);
+		px -= std::max(0, xRes - winWidth) / 2;
+		py -= std::max(0, yRes - winHeight) / 2;
+		px = std::max(0, px);
+		py = std::max(0, py);
+		SDL_SetWindowPosition(window, px, py);
+	}
+	SDL_SetWindowMinimumSize(window, xRes, yRes);
+
+	// Update mouse_x and mouse_y.
+	float scale = std::max(1.0f, std::min((float)winWidth / xRes, (float)winHeight / yRes));
+	int destX = (int)((winWidth - xRes * scale) / 2);
+	int destY = (int)((winHeight - yRes * scale) / 2);
+	int mx, my;
+	SDL_GetMouseState(&mx, &my);
+	mouse_x = (mx - destX) / scale;
+	mouse_y = (my - destY) / scale;
 }
 
 static void TranslateKey(SDL_Keysym* sym)
@@ -331,6 +358,16 @@ TASK(void) MGLDraw::FinishFlip(void)
 				windowed = !windowed;
 				if (windowed) {
 					SDL_SetWindowFullscreen(window, 0);
+
+					int px, py;
+					SDL_GetWindowPosition(window, &px, &py);
+					px -= (xRes - winWidth) / 2;
+					py -= (yRes - winHeight) / 2;
+					px = std::max(0, px);
+					py = std::max(0, py);
+					SDL_SetWindowPosition(window, px, py);
+
+					SDL_SetWindowSize(window, xRes, yRes);
 				} else {
 					SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 				}
