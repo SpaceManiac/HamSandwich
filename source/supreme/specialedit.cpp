@@ -1256,7 +1256,15 @@ static void PicNameClick(int id)
 	curEff=effStart + (id-ID_EFF0)/100;
 
 	mode=SMODE_PICKBMP;
-	InitFileDialog("user",nullptr,FM_LOAD|FM_EXIT|FM_NOWAVS,"");
+	InitFileDialog("user",nullptr,FM_LOAD|FM_EXIT|FM_PICMOVIE,spcl.effect[curEff].text);
+}
+
+static void JspNameClick(int id)
+{
+	curEff=effStart + (id-ID_EFF0)/100;
+
+	mode=SMODE_PICKBMP;
+	InitFileDialog("user",".jsp",FM_LOAD|FM_EXIT,spcl.effect[curEff].text);
 }
 
 static void SongClick(int id)
@@ -1269,7 +1277,6 @@ static void SongClick(int id)
 	}
 	else
 	{
-
 		mode=SMODE_PICKSONG;
 		InitFileDialog("music",".ogg",FM_LOAD|FM_EXIT|FM_PLAYSONGS,spcl.effect[curEff].text);
 	}
@@ -2298,12 +2305,12 @@ static void SetupEffectButtons(int t,int y)
 			else
 				sprintf(s,"%d, %d",effect.x,effect.y);
 			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,258,y+17,70,14,s,XY3Click);
-			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,332,y+17,1,1,"to Graphics",NULL);
-			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,430,y+17,140,14,effect.text,PicNameClick);
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,332,y+17,1,1,"to graphics",NULL);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,430,y+17,140,14,effect.text,JspNameClick);
 			break;
 		case EFF_ITEMGRAPHICS:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Use custom item sprites",NULL);
-			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,240,y+17,250,14,effect.text,PicNameClick);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,240,y+17,250,14,effect.text,JspNameClick);
 			break;
 		case EFF_VARBAR:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Set",NULL);
@@ -2446,6 +2453,7 @@ void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
 			break;
 		case SMODE_PICKBMP:
 		case SMODE_PICKSONG:
+			FileDialogScroll(scroll);
 			if(mgl->MouseTap())
 			{
 				FileDialogClick(mouseX,mouseY);

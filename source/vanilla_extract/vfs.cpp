@@ -183,6 +183,9 @@ static void list_dir_inner(std::string_view prefix, Vfs* vfs, const char* direct
 	vfs->list_dir(directory, intermediate);
 	for (auto each : intermediate)
 	{
+		if (each == "" || each == "." || each == "..")
+			continue;
+
 		each.insert(0, prefix);
 		if (ends_with(each, TOMBSTONE_SUFFIX))
 		{
@@ -191,7 +194,7 @@ static void list_dir_inner(std::string_view prefix, Vfs* vfs, const char* direct
 		}
 		else
 		{
-			output.insert(each);
+			output.insert(std::move(each));
 		}
 	}
 }

@@ -4,16 +4,19 @@
 #include <stdio.h>
 #include "display.h"
 
-#define FNAMELEN  32
+constexpr int FNAMELEN = 32;
 
-#define FM_NEW		1
-#define FM_LOAD		2
-#define FM_SAVE		4
-#define FM_EXIT		8
-#define FM_ASKLOAD	16
-#define FM_PLAYSONGS 32
-#define FM_NOWAVS	64	// disregard wav files
-#define FM_MERGE	128
+enum : byte
+{
+	FM_NEW          = 1 << 0,
+	FM_LOAD         = 1 << 1,
+	FM_SAVE         = 1 << 2,
+	FM_EXIT         = 1 << 3,
+	FM_ASKLOAD      = 1 << 4,
+	FM_PLAYSONGS    = 1 << 5,
+	FM_PICMOVIE     = 1 << 6,
+	FM_MERGE        = 1 << 7,
+};
 
 void InitFileDialog(const char *dir, const char *ext, byte menuItemsToShow,const char *defaultName);
 void ExitFileDialog(void);

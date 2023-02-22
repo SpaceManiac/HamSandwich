@@ -44,11 +44,9 @@ static void ObtainFilenames(const char *dir, const char *ext)
 	for (const auto& str : files)
 	{
 		const char* name = str.c_str();
-		if(!strcmp(name,".") || !strcmp(name,".."))
-			continue;
 
-		if((menuItems&FM_NOWAVS) && !strcmp(&name[strlen(name)-3],"wav"))
-			continue;	// ignore wavs
+		if((menuItems&FM_PICMOVIE) && (!strcmp(&name[strlen(name)-3],"wav") || !strcmp(&name[strlen(name)-3],"jsp")))
+			continue;	// ignore wavs and jsps
 
 		strncpy(&fnames[numFiles*FNAMELEN],name,FNAMELEN);
 		numFiles++;
