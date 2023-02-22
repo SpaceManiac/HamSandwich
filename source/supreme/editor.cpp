@@ -14,33 +14,36 @@
 #include "levelscan.h"
 #include "appdata.h"
 
-#define PLOPRATE	5
+byte editing = 0;
 
-static char lastKey=0;
+namespace
+{
+	char lastKey = 0;
 
-static MGLDraw *editmgl;
+	MGLDraw *editmgl;
 
-static world_t	world;
-static Map		*editorMap;
-static byte		curMapNum;
-static int	   mouseX,mouseY,mouseZ;
-static int	   tileX,tileY;
-static int	rectX1,rectX2,rectY1,rectY2;
-static int  pickerWid,pickerHei;
+	world_t world;
+	Map *editorMap;
+	byte curMapNum;
+	int mouseX,mouseY,mouseZ;
+	int tileX,tileY;
+	int rectX1,rectX2,rectY1,rectY2;
+	int pickerWid,pickerHei;
 
-static dword gameStartTime,updFrameCount;
-static word  numRunsToMakeUp;
+	dword gameStartTime,updFrameCount;
+	word numRunsToMakeUp;
 
-static byte viewMenu,editMenu;
+	byte viewMenu, editMenu;
 
-static byte musicPlaying;
+	byte musicPlaying;
+	word displayFlags;
 
-static byte displayFlags;
-byte editing=0;
+	byte editMode = EDITMODE_EDIT;
 
-static int lastPick;
+	int lastPick;
 
-byte editMode=EDITMODE_EDIT;
+	byte zoom = 1;
+}
 
 byte InitEditor(void)
 {
@@ -102,8 +105,14 @@ byte InitEditor(void)
 	editMode=EDITMODE_HELP;
 	InitEditHelp(HELP_BASIC);
 
-	displayFlags=MAP_SHOWWALLS|MAP_SHOWLIGHTS|MAP_SHOWBADGUYS|
-			MAP_SHOWSPECIALS|MAP_SHOWPICKUPS|MAP_SHOWOTHERITEMS;
+	displayFlags =
+		MAP_SHOWWALLS |
+		MAP_SHOWLIGHTS |
+		MAP_SHOWBADGUYS |
+		MAP_SHOWSPECIALS |
+		MAP_SHOWPICKUPS |
+		MAP_SHOWOTHERITEMS |
+		(zoom == 1 ? 0 : MAP_ZOOMOUT);
 
 	InitSpecials(world.map[0]->special);
 	StopSong();
@@ -153,6 +162,8 @@ void ExitEditor(void)
 	FreeWorld(&world);
 	PurgeMonsterSprites();
 	editing=0;
+
+	editmgl->ResizeBuffer(SCRWID, SCRHEI);
 }
 
 void Delete(int x,int y)
@@ -230,15 +241,15 @@ TASK(void) UpdateMouse(void)
 		mouseX=0;
 	if(mouseY<0)
 		mouseY=0;
-	if(mouseX>639)
-		mouseX=639;
-	if(mouseY>479)
-		mouseY=479;
+	if(mouseX>=editmgl->GetWidth())
+		mouseX=editmgl->GetWidth()-1;
+	if(mouseY>=editmgl->GetHeight())
+		mouseY=editmgl->GetHeight()-1;
 
 	GetCamera(&cx,&cy);
 
-	tileX=(mouseX+cx-320);
-	tileY=(mouseY+cy-240);
+	tileX=(mouseX+cx - editmgl->GetWidth()/2);
+	tileY=(mouseY+cy - editmgl->GetHeight()/2);
 
 	if(tileX<0)
 		tileX=tileX/TILE_WIDTH-1;
@@ -259,7 +270,7 @@ TASK(void) UpdateMouse(void)
 			cx=0;
 		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
 	}
-	if(mouseX==639)
+	if(mouseX==editmgl->GetWidth()-1)
 	{
 		cx+=8;
 		if(cx>editorMap->width*TILE_WIDTH)
@@ -273,7 +284,7 @@ TASK(void) UpdateMouse(void)
 			cy=0;
 		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
 	}
-	if(mouseY==479)
+	if(mouseY==editmgl->GetHeight()-1)
 	{
 		cy+=8;
 		if(cy>editorMap->height*TILE_HEIGHT)
@@ -537,24 +548,24 @@ void ShowSpecials(void)
 	for(i=0;i<MAX_SPECIAL;i++)
 		if(editorMap->special[i].x!=255)
 		{
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320-1,
-				  editorMap->special[i].y*TILE_HEIGHT-sy+240-1,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
+				  editorMap->special[i].y*TILE_HEIGHT-sy+editmgl->GetHeight()/2-1,
 				  "Spcl",-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320+1,
-				  editorMap->special[i].y*TILE_HEIGHT-sy+240+1,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
+				  editorMap->special[i].y*TILE_HEIGHT-sy+editmgl->GetHeight()/2+1,
 				  "Spcl",-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320,
-				  editorMap->special[i].y*TILE_HEIGHT-sy+240,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
+				  editorMap->special[i].y*TILE_HEIGHT-sy+editmgl->GetHeight()/2,
 				  "Spcl",0,1);
 			sprintf(s,"%03d",i);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320-1,
-				  editorMap->special[i].y*TILE_HEIGHT+12-sy+240-1,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
+				  editorMap->special[i].y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2-1,
 				  s,-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320+1,
-				  editorMap->special[i].y*TILE_HEIGHT+12-sy+240+1,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
+				  editorMap->special[i].y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2+1,
 				  s,-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320,
-				  editorMap->special[i].y*TILE_HEIGHT+12-sy+240,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
+				  editorMap->special[i].y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2,
 				  s,0,1);
 		}
 }
@@ -571,17 +582,18 @@ void ShowSpecials2(void)
 	for(i=0;i<MAX_SPECIAL;i++)
 		if(editorMap->special[i].x!=255)
 		{
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320-1,
-				  editorMap->special[i].y*TILE_HEIGHT+6-sy+240-1,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
+				  editorMap->special[i].y*TILE_HEIGHT+6-sy+editmgl->GetHeight()/2-1,
 				  "Spcl",-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320+1,
-				  editorMap->special[i].y*TILE_HEIGHT+6-sy+240+1,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
+				  editorMap->special[i].y*TILE_HEIGHT+6-sy+editmgl->GetHeight()/2+1,
 				  "Spcl",-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320,
-				  editorMap->special[i].y*TILE_HEIGHT+6-sy+240,
+			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
+				  editorMap->special[i].y*TILE_HEIGHT+6-sy+editmgl->GetHeight()/2,
 				  "Spcl",0,1);
 		}
 }
+
 void EditorShowRect(void)
 {
 	int x1,x2,y1,y2,cx,cy;
@@ -607,11 +619,11 @@ void EditorShowRect(void)
 	}
 	GetCamera(&cx,&cy);
 
-	x1=x1*TILE_WIDTH-(cx-320);
-	y1=y1*TILE_HEIGHT-(cy-240);
+	x1=x1*TILE_WIDTH-(cx-editmgl->GetWidth()/2);
+	y1=y1*TILE_HEIGHT-(cy-editmgl->GetHeight()/2);
 
-	x2=x2*TILE_WIDTH-(cx-320)+TILE_WIDTH-1;
-	y2=y2*TILE_HEIGHT-(cy-240)+TILE_HEIGHT-1;
+	x2=x2*TILE_WIDTH-(cx-editmgl->GetWidth()/2)+TILE_WIDTH-1;
+	y2=y2*TILE_HEIGHT-(cy-editmgl->GetHeight()/2)+TILE_HEIGHT-1;
 
 	DrawBox(x1,y1,x2,y2,col);
 }
@@ -623,6 +635,7 @@ void EditorDraw(void)
 	switch(editMode)
 	{
 		case EDITMODE_EDIT:
+			editmgl->ResizeBuffer(SCRWID * zoom, SCRHEI * zoom);
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -634,6 +647,7 @@ void EditorDraw(void)
 				RenderViewDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_PICKSPOT:
+			editmgl->ResizeBuffer(SCRWID * zoom, SCRHEI * zoom);
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -648,6 +662,7 @@ void EditorDraw(void)
 			Print(579,465,s,0,1);
 			break;
 		case EDITMODE_PICKSPOT2:
+			editmgl->ResizeBuffer(SCRWID * zoom, SCRHEI * zoom);
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -666,6 +681,7 @@ void EditorDraw(void)
 			Print(579,465,s,0,1);
 			break;
 		case EDITMODE_PICKRSPOT:
+			editmgl->ResizeBuffer(SCRWID * zoom, SCRHEI * zoom);
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -680,6 +696,7 @@ void EditorDraw(void)
 			Print(579,465,s,0,1);
 			break;
 		case EDITMODE_PICKRSPOT2:
+			editmgl->ResizeBuffer(SCRWID * zoom, SCRHEI * zoom);
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -694,6 +711,7 @@ void EditorDraw(void)
 			Print(579,465,s,0,1);
 			break;
 		case EDITMODE_HELP:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -706,21 +724,27 @@ void EditorDraw(void)
 			RenderEditHelp(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_TERRAIN:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			TerrainEdit_Render(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_ITEM:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			ItemEdit_Render(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_SPECIAL:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			SpecialEdit_Render(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_SOUND:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			SoundEdit_Render(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_PICKENEMY:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			MonsterEdit_Render(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_FILE:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -728,6 +752,7 @@ void EditorDraw(void)
 			RenderFileDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_EXIT:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -735,6 +760,7 @@ void EditorDraw(void)
 			RenderYesNoDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_MAPMENU:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -742,6 +768,7 @@ void EditorDraw(void)
 			RenderMapDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_LEVELMENU:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -823,6 +850,9 @@ static TASK(void) HandleKeyPresses(void)
 			break;
 		case SDL_SCANCODE_TAB:
 			editMenu=1-editMenu;
+			break;
+		case SDL_SCANCODE_F2:
+			ToggleDisplayFlag(MAP_ZOOMOUT);
 			break;
 	}
 
@@ -1137,14 +1167,15 @@ void SetEditPickerRect(int wid,int hei)
 	pickerHei=hei;
 }
 
-byte GetDisplayFlags(void)
+word GetDisplayFlags(void)
 {
 	return displayFlags;
 }
 
-void ToggleDisplayFlag(byte f)
+void ToggleDisplayFlag(word f)
 {
-	displayFlags^=f;
+	displayFlags ^= f;
+	zoom = (displayFlags & MAP_ZOOMOUT) ? 2 : 1;
 }
 
 void ViewMenuOff(void)

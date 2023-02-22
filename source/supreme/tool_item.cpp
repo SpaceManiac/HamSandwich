@@ -26,16 +26,17 @@ ItemTool::~ItemTool(void)
 void ItemTool::Update(int msx,int msy)
 {
 	int i;
+	MGLDraw* mgl = GetDisplayMGL();
 
-	if(msx<380 || msy<400 || msx>639 || msy>479)
+	if(msx<mgl->GetWidth()-260 || msy<mgl->GetHeight()-80 || msx>=mgl->GetWidth() || msy>=mgl->GetHeight())
 		return;
 
 	if(GetDisplayMGL()->MouseTap())
 	{
 		for(i=0;i<4;i++)
-			if(PointInRect(msx,msy,
-			   496+i*(TILE_WIDTH+4)-2,424-2,
-			   496+i*(TILE_WIDTH+4)+TILE_WIDTH+1,424+TILE_HEIGHT*2+1))
+			if(PointInRect(msx, msy,
+				mgl->GetWidth()-144+i*(TILE_WIDTH+4)-2, mgl->GetHeight()-56-2,
+				mgl->GetWidth()-144+i*(TILE_WIDTH+4)+TILE_WIDTH+1, mgl->GetHeight()-56+TILE_HEIGHT*2+1))
 			{
 				active=i;
 				if(GetDisplayMGL()->RMouseDown())
@@ -45,13 +46,13 @@ void ItemTool::Update(int msx,int msy)
 
 				MakeNormalSound(SND_MENUCLICK);
 			}
-		if(PointInRect(msx,msy,382,462,382+30,462+15))
+		if(PointInRect(msx, msy, mgl->GetWidth()-258, mgl->GetHeight()-18, mgl->GetWidth()-258+30, mgl->GetHeight()-18+15))
 		{
 			plopMode++;
 			if(plopMode>=PLOP_MODES)
 				plopMode=0;
 		}
-		if(PointInRect(msx,msy,397-15,442-15,397+16,442+16))
+		if(PointInRect(msx, msy, mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16))
 		{
 			brush++;
 			if(brush>13)
@@ -63,9 +64,9 @@ void ItemTool::Update(int msx,int msy)
 	{
 		for(i=0;i<4;i++)
 		{
-			if(PointInRect(msx,msy,
-				           496+i*(TILE_WIDTH+4)-2,424-2,
-						   496+i*(TILE_WIDTH+4)+TILE_WIDTH+1,424+TILE_HEIGHT*2+1))
+			if(PointInRect(msx, msy,
+				mgl->GetWidth()-144+i*(TILE_WIDTH+4)-2, mgl->GetHeight()-56-2,
+				mgl->GetWidth()-144+i*(TILE_WIDTH+4)+TILE_WIDTH+1, mgl->GetHeight()-56+TILE_HEIGHT*2+1))
 			{
 				pickingItem=i;
 				active=i;
@@ -75,7 +76,7 @@ void ItemTool::Update(int msx,int msy)
 				MakeNormalSound(SND_MENUCLICK);
 			}
 		}
-		if(PointInRect(msx,msy,397-15,442-15,397+16,442+16))
+		if(PointInRect(msx, msy, mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16))
 		{
 			brush--;
 			if(brush>13)
@@ -89,54 +90,62 @@ void ItemTool::Render(int msx,int msy)
 	int i;
 	int minusBrush,plusBrush;
 
-	char plopText[][12]={"Normal","Random","Cycle","BigRandom","BigCycle"};
+	MGLDraw* mgl = GetDisplayMGL();
 
+	char plopText[][12]={"Normal","Random","Cycle","BigRandom","BigCycle"};
 
 	for(i=0;i<4;i++)
 	{
-		SetSpriteConstraints(496+i*(TILE_WIDTH+4)-1,424-1,
-			496+i*(TILE_WIDTH+4)+TILE_WIDTH,424+TILE_HEIGHT*2);
+		SetSpriteConstraints(
+			mgl->GetWidth()-144+i*(TILE_WIDTH+4)-1,
+			mgl->GetHeight()-56-1,
+			mgl->GetWidth()-144+i*(TILE_WIDTH+4)+TILE_WIDTH,
+			mgl->GetHeight()-56+TILE_HEIGHT*2
+		);
 
 		if(item[i]<256)
-			InstaRenderItem(496+i*(TILE_WIDTH+4)+2+TILE_WIDTH/2,424+TILE_HEIGHT+6,(byte)item[i],0,GetDisplayMGL());
+			InstaRenderItem(mgl->GetWidth()-144+i*(TILE_WIDTH+4)+2+TILE_WIDTH/2,mgl->GetHeight()-56+TILE_HEIGHT+6,(byte)item[i],0,mgl);
 		else
 		{
-			Print(496+i*(TILE_WIDTH+4)+2,424+2,"N",0,1);
-			Print(496+i*(TILE_WIDTH+4)+9,424+13,"O",0,1);
-			Print(496+i*(TILE_WIDTH+4)+17,424+25,"N",0,1);
-			Print(496+i*(TILE_WIDTH+4)+24,424+36,"E",0,1);
+			Print(mgl->GetWidth()-144+i*(TILE_WIDTH+4)+2,mgl->GetHeight()-56+2,"N",0,1);
+			Print(mgl->GetWidth()-144+i*(TILE_WIDTH+4)+9,mgl->GetHeight()-56+13,"O",0,1);
+			Print(mgl->GetWidth()-144+i*(TILE_WIDTH+4)+17,mgl->GetHeight()-56+25,"N",0,1);
+			Print(mgl->GetWidth()-144+i*(TILE_WIDTH+4)+24,mgl->GetHeight()-56+36,"E",0,1);
 		}
 
-		DrawBox(496+i*(TILE_WIDTH+4)-2,424-2,
-				496+i*(TILE_WIDTH+4)+TILE_WIDTH+1,424+TILE_HEIGHT*2+1,16);
+		DrawBox(mgl->GetWidth()-144+i*(TILE_WIDTH+4)-2,mgl->GetHeight()-56-2,
+				mgl->GetWidth()-144+i*(TILE_WIDTH+4)+TILE_WIDTH+1,mgl->GetHeight()-56+TILE_HEIGHT*2+1,16);
 	}
 	ClearSpriteConstraints();
 
 	// highlight the active one
 	i=active;
-	DrawBox(496+i*(TILE_WIDTH+4)-3,424-3,
-			496+i*(TILE_WIDTH+4)+TILE_WIDTH+2,424+TILE_HEIGHT*2+2,16);
-	DrawBox(496+i*(TILE_WIDTH+4)-2,424-2,
-			496+i*(TILE_WIDTH+4)+TILE_WIDTH+1,424+TILE_HEIGHT*2+1,31);
-	DrawBox(496+i*(TILE_WIDTH+4)-1,424-1,
-			496+i*(TILE_WIDTH+4)+TILE_WIDTH,424+TILE_HEIGHT*2,16);
+	DrawBox(mgl->GetWidth()-144+i*(TILE_WIDTH+4)-3,mgl->GetHeight()-56-3,
+			mgl->GetWidth()-144+i*(TILE_WIDTH+4)+TILE_WIDTH+2,mgl->GetHeight()-56+TILE_HEIGHT*2+2,16);
+	DrawBox(mgl->GetWidth()-144+i*(TILE_WIDTH+4)-2,mgl->GetHeight()-56-2,
+			mgl->GetWidth()-144+i*(TILE_WIDTH+4)+TILE_WIDTH+1,mgl->GetHeight()-56+TILE_HEIGHT*2+1,31);
+	DrawBox(mgl->GetWidth()-144+i*(TILE_WIDTH+4)-1,mgl->GetHeight()-56-1,
+			mgl->GetWidth()-144+i*(TILE_WIDTH+4)+TILE_WIDTH,mgl->GetHeight()-56+TILE_HEIGHT*2,16);
 
 	// plop mode
-	RenderButtonImage(msx,msy,382,462,30,15,"Plop");
-	Print(416,464,plopText[plopMode],0,1);
+	RenderButtonImage(msx, msy, mgl->GetWidth()-258, mgl->GetHeight()-18, 30, 15, "Plop");
+	Print(mgl->GetWidth()-224, mgl->GetHeight()-16, plopText[plopMode], 0, 1);
 
 	// brush size
 	minusBrush=brush;
 	plusBrush=brush+1;
 
-	if(PointInRect(msx,msy,397-15,442-15,397+16,442+16))
-		DrawFillBox(397-15,442-15,397+16,442+16,8+32*1);
-	DrawBox(397-15,442-15,397+16,442+16,31);
-	DrawFillBox(397-(minusBrush),
-				442-(minusBrush),
-				397+(plusBrush),
-				442+(plusBrush),24);
-	Print(397-15,442-26,"Brush",0,1);
+	if(PointInRect(msx,msy,mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16))
+		DrawFillBox(mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16, 8+32*1);
+	DrawBox(mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16, 31);
+	DrawFillBox(
+		mgl->GetWidth()-243-(minusBrush),
+		mgl->GetHeight()-38-(minusBrush),
+		mgl->GetWidth()-243+(plusBrush),
+		mgl->GetHeight()-38+(plusBrush),
+		24
+	);
+	Print(mgl->GetWidth()-243-15, mgl->GetHeight()-38-26, "Brush", 0, 1);
 }
 
 void ItemTool::SetInk(void)
@@ -238,11 +247,11 @@ void ItemTool::ShowTarget(void)
 	tileX-=minusBrush;
 	tileY-=minusBrush;
 
-	x1=tileX*TILE_WIDTH-(cx-320);
-	y1=tileY*TILE_HEIGHT-(cy-240);
+	x1=tileX*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2);
+	y1=tileY*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2);
 
-	x2=tileX2*TILE_WIDTH-(cx-320)+TILE_WIDTH-1;
-	y2=tileY2*TILE_HEIGHT-(cy-240)+TILE_HEIGHT-1;
+	x2=tileX2*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2)+TILE_WIDTH-1;
+	y2=tileY2*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2)+TILE_HEIGHT-1;
 
 	DrawBox(x1,y1,x2,y1,col);
 	DrawBox(x1,y2,x2,y2,col);

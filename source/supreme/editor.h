@@ -49,8 +49,8 @@ byte EditorShowMonsItems(void);
 byte EditorGetSelectMode(void);
 void EditorSetSelectMode(byte mode);
 byte EditorGetMapNum(void);
-byte GetDisplayFlags(void);
-void ToggleDisplayFlag(byte f);
+word GetDisplayFlags(void);
+void ToggleDisplayFlag(word f);
 void ViewMenuOn(void);
 void ViewMenuOff(void);
 

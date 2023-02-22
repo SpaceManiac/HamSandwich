@@ -392,12 +392,12 @@ void RenderItAll(world_t *world,Map *map,byte flags)
 	else
 		map->Render(world,scrx,scry,flags);
 
-	scrx-=320;
-	scry-=240;
+	scrx -= mgl->GetWidth() / 2;
+	scry -= mgl->GetHeight() / 2;
 	dispList->Render();
 	dispList->ClearList();
-	scrx+=320;
-	scry+=240;
+	scrx += mgl->GetWidth() / 2;
+	scry += mgl->GetHeight() / 2;
 
 	if(editing==1)
 		map->RenderSelect(world,scrx,scry,flags);
@@ -526,8 +526,12 @@ bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,char bright,sprit
 {
 	int i;
 
-	if((x-scrx+320)<-DISPLAY_XBORDER || (x-scrx+320)>640+DISPLAY_XBORDER ||
-	   (y-scry+240)<-DISPLAY_YBORDER || (y-scry+240)>480+DISPLAY_YBORDER)
+	if (
+		(x-scrx+mgl->GetWidth()/2) < -DISPLAY_XBORDER ||
+		(x-scrx+mgl->GetWidth()/2) > mgl->GetWidth()+DISPLAY_XBORDER ||
+		(y-scry+mgl->GetHeight()/2) < -DISPLAY_YBORDER ||
+		(y-scry+mgl->GetHeight()/2) > mgl->GetHeight()+DISPLAY_YBORDER
+	)
 		return true;
 	i=GetOpenSlot();
 	if(i==-1)

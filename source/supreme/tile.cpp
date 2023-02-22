@@ -10,6 +10,9 @@ tile_t tiles[NUMTILES];
 MGLDraw *tileMGL;
 int numTiles;
 
+#define SCRWID (tileMGL->GetWidth())
+#define SCRHEI (tileMGL->GetHeight())
+
 void InitTiles(MGLDraw *mgl)
 {
 	tileMGL=mgl;

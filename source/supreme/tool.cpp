@@ -77,17 +77,17 @@ TASK(void) ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl)
 		case TD_USING:
 			if(editMenu)
 			{
-				if(PointInRect(msx,msy,380,386,435,400))	// tool name
+				if(PointInRect(msx, msy, mgl->GetWidth()-260, mgl->GetHeight()-80-14, mgl->GetWidth()-260+55, mgl->GetHeight()-80))  // tool name
 				{
 					if(mgl->MouseTap())
 						doing=TD_PICKTOOL;
 				}
-				else if(PointInRect(msx,msy,584,386,639,400))	// menu list
+				else if(PointInRect(msx, msy, mgl->GetWidth()-55-1, mgl->GetHeight()-80-14, mgl->GetWidth()-1, mgl->GetHeight()-80))  // menu list
 				{
 					if(mgl->MouseTap())
 						doing=TD_PICKMENU;
 				}
-				else if(!PointInRect(msx,msy,380,400,639,479))
+				else if(!PointInRect(msx, msy, mgl->GetWidth()-260, mgl->GetHeight()-80, mgl->GetWidth()-1, mgl->GetHeight()-1))
 				{
 					// not anywhere in the menu
 					if(mgl->MouseTap())
@@ -126,9 +126,9 @@ TASK(void) ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl)
 			else
 			{
 				// you released the mouse, so select the tool if on it
-				if(PointInRect(msx,msy,380,400-16*NUM_TOOLS,435,399))
+				if(PointInRect(msx,msy,mgl->GetWidth()-260,mgl->GetHeight()-80-16*NUM_TOOLS,mgl->GetWidth()-260+55,mgl->GetHeight()-80-1))
 				{
-					whichTool=(msy-(400-16*NUM_TOOLS))/16;
+					whichTool=(msy-(mgl->GetHeight()-80-16*NUM_TOOLS))/16;
 					curTool=tool[whichTool];
 				}
 				doing=TD_USING;
@@ -142,9 +142,9 @@ TASK(void) ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl)
 			else
 			{
 				// you released the mouse, so select the menu if on it
-				if(PointInRect(msx,msy,584,400-16*NUM_MENUS,639,399))
+				if(PointInRect(msx,msy,mgl->GetWidth()-55-1,mgl->GetHeight()-80-16*NUM_MENUS,mgl->GetWidth()-1,mgl->GetHeight()-80-1))
 				{
-					switch((msy-(400-16*NUM_MENUS))/16)
+					switch((msy-(mgl->GetHeight()-80-16*NUM_MENUS))/16)
 					{
 						case MENU_FILE:
 							InitFileDialog("worlds",".dlw",FM_SAVE|FM_LOAD|FM_NEW|FM_EXIT|FM_ASKLOAD,worldFilename);
@@ -216,66 +216,64 @@ TASK(void) ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl)
 
 void RenderToolList(int msx,int msy,MGLDraw *mgl)
 {
-	int i;
-
-	mgl->FillBox(380,400-16*NUM_TOOLS,435,400,6);
-	mgl->Box(380,400-16*NUM_TOOLS,435,400,31);
-	for(i=0;i<NUM_TOOLS;i++)
+	mgl->FillBox(mgl->GetWidth()-260, mgl->GetHeight()-80-16*NUM_TOOLS, mgl->GetWidth()-260+55, mgl->GetHeight()-80, 6);
+	mgl->Box(mgl->GetWidth()-260, mgl->GetHeight()-80-16*NUM_TOOLS, mgl->GetWidth()-260+55, mgl->GetHeight()-80, 31);
+	for (int i=0; i<NUM_TOOLS; i++)
 	{
-		if(PointInRect(msx,msy,380,400-16*NUM_TOOLS+i*16,435,400-16*NUM_TOOLS+i*16+15))
-			mgl->FillBox(381,401-16*NUM_TOOLS+i*16,434,400-16*NUM_TOOLS+i*16+15,8+32*1);
-		CenterPrint((435-380)/2+380,400-16*NUM_TOOLS+2+i*16,toolName[i],0,1);
+		if (PointInRect(msx, msy, mgl->GetWidth()-260, mgl->GetHeight()-80-16*NUM_TOOLS+i*16, mgl->GetWidth()-260+55, mgl->GetHeight()-80-16*NUM_TOOLS+i*16+15))
+			mgl->FillBox(mgl->GetWidth()-260+1, mgl->GetHeight()-80+1-16*NUM_TOOLS+i*16, mgl->GetWidth()-260+55-1, mgl->GetHeight()-80-16*NUM_TOOLS+i*16+15, 8+32*1);
+		CenterPrint(mgl->GetWidth()-260+55/2, mgl->GetHeight()-80-16*NUM_TOOLS+2+i*16, toolName[i], 0, 1);
 	}
 }
 
 void RenderMenuList(int msx,int msy,MGLDraw *mgl)
 {
-	int i;
-
-	mgl->FillBox(584,400-16*NUM_MENUS,639,400,6);
-	mgl->Box(584,400-16*NUM_MENUS,639,400,31);
-	for(i=0;i<NUM_MENUS;i++)
+	mgl->FillBox(mgl->GetWidth()-55-1, mgl->GetHeight()-80-16*NUM_MENUS, mgl->GetWidth()-1, mgl->GetHeight()-80, 6);
+	mgl->Box(mgl->GetWidth()-55-1, mgl->GetHeight()-80-16*NUM_MENUS, mgl->GetWidth()-1, mgl->GetHeight()-80, 31);
+	for (int i=0; i<NUM_MENUS; i++)
 	{
-		if(PointInRect(msx,msy,584,400-16*NUM_MENUS+i*16,639,400-16*NUM_MENUS+i*16+15))
-			mgl->FillBox(585,401-16*NUM_MENUS+i*16,638,400-16*NUM_MENUS+i*16+15,8+32*1);
-		CenterPrint((639-584)/2+584,400-16*NUM_MENUS+2+i*16,menuName[i],0,1);
+		if (PointInRect(msx, msy, mgl->GetWidth()-55-1, mgl->GetHeight()-80-16*NUM_MENUS+i*16, mgl->GetWidth()-1, mgl->GetHeight()-80-16*NUM_MENUS+i*16+15))
+			mgl->FillBox(mgl->GetWidth()-55, mgl->GetHeight()-80+1-16*NUM_MENUS+i*16, mgl->GetWidth()-2, mgl->GetHeight()-80-16*NUM_MENUS+i*16+15, 8+32*1);
+		CenterPrint(mgl->GetWidth()-1-55+55/2, mgl->GetHeight()-80-16*NUM_MENUS+2+i*16, menuName[i], 0, 1);
 	}
-
 }
 
 void ToolRender(int msx,int msy,MGLDraw *mgl)
 {
 	// the base portion of the tool menu
-	mgl->FillBox(380,400,639,479,6);
-	mgl->Box(380,400,639,479,31);
+	mgl->FillBox(mgl->GetWidth()-260, mgl->GetHeight()-80, mgl->GetWidth()-1, mgl->GetHeight()-1, 6);
+	mgl->Box(mgl->GetWidth()-260, mgl->GetHeight()-80, mgl->GetWidth()-1, mgl->GetHeight()-1, 31);
 
-	if(doing!=TD_PICKTOOL)
+	if(doing==TD_PICKTOOL)
+	{
+		RenderToolList(msx, msy, mgl);
+	}
+	else
 	{
 		// make the tab for the tool name
-		if(PointInRect(msx,msy,380,386,435,400))
-			mgl->FillBox(380,386,435,400,8+32*1);
+		if(PointInRect(msx, msy, mgl->GetWidth()-260, mgl->GetHeight()-80-14, mgl->GetWidth()-260+55, mgl->GetHeight()-80))
+			mgl->FillBox(mgl->GetWidth()-260, mgl->GetHeight()-80-14, mgl->GetWidth()-260+55, mgl->GetHeight()-80, 8+32*1);
 		else
-			mgl->FillBox(380,386,435,400,6);
-		mgl->Box(380,386,435,400,31);
-		CenterPrint((435-380)/2+380,389,toolName[whichTool],0,1);
-	}
-	else
-	{
-		RenderToolList(msx,msy,mgl);
-	}
-	if(doing==TD_PICKMENU)
-		RenderMenuList(msx,msy,mgl);
-	else
-	{
-		if(PointInRect(msx,msy,584,386,639,400))
-			mgl->FillBox(584,386,639,400,8+32*1);
-		else
-			mgl->FillBox(584,386,639,400,6);
-		mgl->Box(584,386,639,400,31);
-		CenterPrint((639-584)/2+584,389,"Menus",0,1);
+			mgl->FillBox(mgl->GetWidth()-260, mgl->GetHeight()-80-14, mgl->GetWidth()-260+55, mgl->GetHeight()-80, 6);
+		mgl->Box(mgl->GetWidth()-260, mgl->GetHeight()-80-14, mgl->GetWidth()-260+55, mgl->GetHeight()-80, 31);
+		CenterPrint(mgl->GetWidth()-260+55/2, mgl->GetHeight()-91, toolName[whichTool], 0, 1);
 	}
 
-	curTool->Render(msx,msy);
+	if(doing==TD_PICKMENU)
+	{
+		RenderMenuList(msx,msy,mgl);
+	}
+	else
+	{
+		if(PointInRect(msx, msy, mgl->GetWidth()-1-55, mgl->GetHeight()-80-14, mgl->GetWidth()-1, mgl->GetHeight()-80))
+			mgl->FillBox(mgl->GetWidth()-1-55, mgl->GetHeight()-80-14, mgl->GetWidth()-1, mgl->GetHeight()-80, 8+32*1);
+		else
+			mgl->FillBox(mgl->GetWidth()-1-55, mgl->GetHeight()-80-14, mgl->GetWidth()-1, mgl->GetHeight()-80, 6);
+		mgl->Box(mgl->GetWidth()-1-55, mgl->GetHeight()-80-14, mgl->GetWidth()-1, mgl->GetHeight()-80, 31);
+		CenterPrint(mgl->GetWidth()-55-1+55/2, mgl->GetHeight()-91, "Menus", 0, 1);
+	}
+
+	curTool->Render(msx, msy);
 }
 
 void ToolPickInk(void)

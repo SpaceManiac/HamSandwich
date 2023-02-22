@@ -15,6 +15,7 @@
 #include "log.h"
 #include "palettes.h"
 #include "appdata.h"
+#include "winpch.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -761,6 +762,7 @@ TASK(void) TestLevel(world_t *world,byte level)
 	byte result;
 
 	editing=2;
+	gamemgl->ResizeBuffer(SCRWID,SCRHEI);
 
 	ExitGuys();
 	ClearTestProgress();

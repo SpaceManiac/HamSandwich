@@ -295,8 +295,8 @@ void Map::Init(world_t *wrld)
 
 	for(i=0;i<NUM_STARS;i++)
 	{
-		starX[i]=Random(640);
-		starY[i]=Random(480);
+		starX[i]=Random(GetDisplayMGL()->GetWidth());
+		starY[i]=Random(GetDisplayMGL()->GetHeight());
 		starCol[i]=(byte)Random(32);
 	}
 
@@ -1062,8 +1062,8 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 	char lites[9];
 	byte shdw;
 
-	camX-=320;
-	camY-=240;
+	camX -= GetDisplayMGL()->GetWidth()/2;
+	camY -= GetDisplayMGL()->GetHeight()/2;
 
 	tileX=(camX/TILE_WIDTH)-1;
 	tileY=(camY/TILE_HEIGHT)-1;
@@ -1071,10 +1071,10 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 	ofsY=camY%TILE_HEIGHT;
 
 	scrX=-ofsX-TILE_WIDTH;
-	for(i=tileX;i<tileX+(640/TILE_WIDTH+4);i++)
+	for(i=tileX;i<tileX+(GetDisplayMGL()->GetWidth()/TILE_WIDTH+4);i++)
 	{
 		scrY=-ofsY-TILE_HEIGHT;
-		for(j=tileY;j<tileY+(480/TILE_HEIGHT+6);j++)
+		for(j=tileY;j<tileY+(GetDisplayMGL()->GetHeight()/TILE_HEIGHT+6);j++)
 		{
 			if(i>=0 && i<width && j>=0 && j<height)
 			{
@@ -1288,8 +1288,8 @@ void Map::RenderEdit(world_t *world,int camX,int camY,byte flags)
 	char lite,lites[9];
 	byte shdw;
 
-	camX-=320;
-	camY-=240;
+	camX -= GetDisplayMGL()->GetWidth()/2;
+	camY -= GetDisplayMGL()->GetHeight()/2;
 
 	tileX=(camX/TILE_WIDTH)-1;
 	tileY=(camY/TILE_HEIGHT)-1;
@@ -1297,10 +1297,10 @@ void Map::RenderEdit(world_t *world,int camX,int camY,byte flags)
 	ofsY=camY%TILE_HEIGHT;
 
 	scrX=-ofsX-TILE_WIDTH;
-	for(i=tileX;i<tileX+(640/TILE_WIDTH+4);i++)
+	for(i=tileX;i<tileX+(GetDisplayMGL()->GetWidth()/TILE_WIDTH+4);i++)
 	{
 		scrY=-ofsY-TILE_HEIGHT;
-		for(j=tileY;j<tileY+(480/TILE_HEIGHT+6);j++)
+		for(j=tileY;j<tileY+(GetDisplayMGL()->GetHeight()/TILE_HEIGHT+6);j++)
 		{
 			if(i>=0 && i<width && j>=0 && j<height)
 			{
@@ -1534,8 +1534,8 @@ void Map::RenderSelect(world_t *world,int camX,int camY,byte flags)
 	if(flags&MAP_SHOWSELECT)
 		return;
 
-	camX-=320;
-	camY-=240;
+	camX -= GetDisplayMGL()->GetWidth() / 2;
+	camY -= GetDisplayMGL()->GetHeight() / 2;
 
 	tileX=(camX/TILE_WIDTH)-1;
 	tileY=(camY/TILE_HEIGHT)-1;
@@ -1543,10 +1543,10 @@ void Map::RenderSelect(world_t *world,int camX,int camY,byte flags)
 	ofsY=camY%TILE_HEIGHT;
 
 	scrX=-ofsX-TILE_WIDTH;
-	for(i=tileX;i<tileX+(640/TILE_WIDTH+4);i++)
+	for(i=tileX;i<tileX+(GetDisplayMGL()->GetWidth()/TILE_WIDTH+4);i++)
 	{
 		scrY=-ofsY-TILE_HEIGHT;
-		for(j=tileY;j<tileY+(480/TILE_HEIGHT+6);j++)
+		for(j=tileY;j<tileY+(GetDisplayMGL()->GetHeight()/TILE_HEIGHT+6);j++)
 		{
 			if(i>=0 && i<width && j>=0 && j<height)
 			{

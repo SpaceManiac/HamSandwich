@@ -23,12 +23,13 @@ LightTool::~LightTool(void)
 void LightTool::Update(int msx,int msy)
 {
 	int i;
+	MGLDraw* mgl = GetDisplayMGL();
 
 	if(dragSlider)
 	{
 		if(dragSlider==1)
 		{
-			i=(msx-570)-32;
+			i=(msx-(mgl->GetWidth()-70))-32;
 			if(i<-32)
 				i=-32;
 			if(i>31)
@@ -37,65 +38,65 @@ void LightTool::Update(int msx,int msy)
 		}
 		else
 		{
-			i=(msx-570)/4;
+			i=(msx-(mgl->GetWidth()-70))/4;
 			if(i<0)
 				i=0;
 			if(i>15)
 				i=15;
 			random=(char)i;
 		}
-		if(!GetDisplayMGL()->MouseDown())
+		if(!mgl->MouseDown())
 			dragSlider=0;
 
 		return;
 	}
 
-	if(msx<380 || msy<400 || msx>639 || msy>479)
+	if(msx<mgl->GetWidth()-260 || msy<mgl->GetHeight()-80 || msx>=mgl->GetWidth() || msy>=mgl->GetHeight())
 		return;
 
-	if(GetDisplayMGL()->MouseTap())
+	if(mgl->MouseTap())
 	{
-		if(PointInRect(msx,msy,382,462,382+30,462+15))
+		if(PointInRect(msx, msy, mgl->GetWidth()-258, mgl->GetHeight()-18, mgl->GetWidth()-258+30, mgl->GetHeight()-18+15))
 		{
 			plopMode++;
 			if(plopMode>=LIGHTPLOP_MODES)
 				plopMode=LIGHTPLOP_SOLID;
 		}
-		if(PointInRect(msx,msy,397-15,442-15,397+16,442+16))
+		if(PointInRect(msx, msy, mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16))
 		{
 			brush++;
 			if(brush>13)
 				brush=0;
 		}
-		if(PointInRect(msx,msy,520,460,520+100,460+14))
+		if(PointInRect(msx,msy, mgl->GetWidth()-120, mgl->GetHeight()-20, mgl->GetWidth()-120+100, mgl->GetHeight()-20+14))
 		{
 			lineOfSight=1-lineOfSight;
 		}
 	}
 
-	if(GetDisplayMGL()->RMouseTap())
+	if(mgl->RMouseTap())
 	{
 		for(i=0;i<4;i++)
 			if(PointInRect(msx,msy,
-				           564+(i%2)*(TILE_WIDTH+4)-2,420+(i/2)*(TILE_HEIGHT+4)-2,
-			               564+(i%2)*(TILE_WIDTH+4)+TILE_WIDTH+1,420+(i/2)*(TILE_HEIGHT+4)+TILE_HEIGHT+1))
+				mgl->GetWidth()-76+(i%2)*(TILE_WIDTH+4)-2, mgl->GetHeight()-220+(i/2)*(TILE_HEIGHT+4)-2,
+				mgl->GetWidth()-76+(i%2)*(TILE_WIDTH+4)+TILE_WIDTH+1, mgl->GetHeight()-220+(i/2)*(TILE_HEIGHT+4)+TILE_HEIGHT+1))
 			{
 				MakeNormalSound(SND_MENUCLICK);
 			}
-		if(PointInRect(msx,msy,397-15,442-15,397+16,442+16))
+		if(PointInRect(msx, msy, mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16))
 		{
 			brush--;
 			if(brush>13)
 				brush=13;
 		}
 	}
-	if(GetDisplayMGL()->MouseDown())
+	if(mgl->MouseDown())
 	{
-		if(PointInRect(msx,msy,570,410-4,570+63,410+5))
+		if(PointInRect(msx,msy,mgl->GetWidth()-70,mgl->GetHeight()-70-4,mgl->GetWidth()-70+63,mgl->GetHeight()-70+5))
 		{
 			dragSlider=1;
 		}
-		if(PointInRect(msx,msy,570,431-4,570+63,431+5))
+		if(PointInRect(msx,msy,mgl->GetWidth()-70,mgl->GetHeight()-49-4,mgl->GetWidth()-70+63,mgl->GetHeight()-49+5))
 		{
 			dragSlider=2;
 		}
@@ -107,6 +108,8 @@ void LightTool::Render(int msx,int msy)
 	int minusBrush,plusBrush;
 	char num[20];
 
+	MGLDraw* mgl = GetDisplayMGL();
+
 	char plopText[][12]={"Solid","Fade","Torch","Smooth"};
 
 	// brightness slider
@@ -114,36 +117,39 @@ void LightTool::Render(int msx,int msy)
 		sprintf(num,"Bright: %d",bright);
 	else
 		sprintf(num,"Bright:%d",bright);
-	Print(500,404,num,0,1);
-	RenderSliderImage(msx,msy,570,410,(bright+32));
+	Print(mgl->GetWidth()-140,mgl->GetHeight()-76,num,0,1);
+	RenderSliderImage(msx,msy,mgl->GetWidth()-70,mgl->GetHeight()-70,(bright+32));
 
 	// random slider
 	sprintf(num,"Random: %d",random);
-	Print(490,425,num,0,1);
-	RenderSliderImage(msx,msy,570,431,(random*4));
+	Print(mgl->GetWidth()-150,mgl->GetHeight()-55,num,0,1);
+	RenderSliderImage(msx,msy,mgl->GetWidth()-70,mgl->GetHeight()-49,(random*4));
 
 	// plop mode
-	RenderButtonImage(msx,msy,382,462,30,15,"Plop");
-	Print(416,464,plopText[plopMode],0,1);
+	RenderButtonImage(msx, msy, mgl->GetWidth()-258, mgl->GetHeight()-18, 30, 15, "Plop");
+	Print(mgl->GetWidth()-224, mgl->GetHeight()-16, plopText[plopMode], 0, 1);
 
 	// line of sight
-	if(PointInRect(msx,msy,520,460,520+100,460+14))
-		RenderCheckbox(1,520,460,lineOfSight*CHECK_ON,"Line Of Sight",GetDisplayMGL());
-	else
-		RenderCheckbox(0,520,460,lineOfSight*CHECK_ON,"Line Of Sight",GetDisplayMGL());
+	RenderCheckbox(
+		PointInRect(msx,msy,mgl->GetWidth()-120, mgl->GetHeight()-20,mgl->GetWidth()-120+100, mgl->GetHeight()-20+14),
+		mgl->GetWidth()-120, mgl->GetHeight()-20, lineOfSight*CHECK_ON, "Line Of Sight", mgl
+	);
 
 	// brush size
 	minusBrush=brush;
 	plusBrush=brush+1;
 
-	if(PointInRect(msx,msy,397-15,442-15,397+16,442+16))
-		DrawFillBox(397-15,442-15,397+16,442+16,8+32*1);
-	DrawBox(397-15,442-15,397+16,442+16,31);
-	DrawFillBox(397-(minusBrush),
-				442-(minusBrush),
-				397+(plusBrush),
-				442+(plusBrush),24);
-	Print(397-15,442-26,"Brush",0,1);
+	if(PointInRect(msx,msy,mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16))
+		DrawFillBox(mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16, 8+32*1);
+	DrawBox(mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16, 31);
+	DrawFillBox(
+		mgl->GetWidth()-243-(minusBrush),
+		mgl->GetHeight()-38-(minusBrush),
+		mgl->GetWidth()-243+(plusBrush),
+		mgl->GetHeight()-38+(plusBrush),
+		24
+	);
+	Print(mgl->GetWidth()-243-15, mgl->GetHeight()-38-26, "Brush", 0, 1);
 }
 
 void LightTool::SetInk(void)
@@ -256,11 +262,11 @@ void LightTool::ShowTarget(void)
 	tileX-=minusBrush;
 	tileY-=minusBrush;
 
-	x1=tileX*TILE_WIDTH-(cx-320);
-	y1=tileY*TILE_HEIGHT-(cy-240);
+	x1=tileX*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2);
+	y1=tileY*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2);
 
-	x2=tileX2*TILE_WIDTH-(cx-320)+TILE_WIDTH-1;
-	y2=tileY2*TILE_HEIGHT-(cy-240)+TILE_HEIGHT-1;
+	x2=tileX2*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2)+TILE_WIDTH-1;
+	y2=tileY2*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2)+TILE_HEIGHT-1;
 
 	DrawBox(x1,y1,x2,y1,col);
 	DrawBox(x1,y2,x2,y2,col);

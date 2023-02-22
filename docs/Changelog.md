@@ -46,6 +46,9 @@ based on HamSandwich.
 * Add a tentative new world format that allows exceeding the 256 monster type and other limits
     * Worlds save in the old format unless they actually exceed these limits
 
+Editor features:
+* Add Zoom Out option (hotkey: <kbd>F2</kbd>) to View menu that increases the resolution while editing
+
 Also applicable to Sleepless Hollow:
 * Add "Jump to" button to Goto/Win Level effects
 * Allow using the mouse wheel to scroll the File and World menus
