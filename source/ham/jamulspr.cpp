@@ -3,6 +3,7 @@
 #include "appdata.h"
 #include "log.h"
 #include <limits.h>
+#include <algorithm>
 
 // the sprites are 12 bytes, not including the data itself
 constexpr int SPRITE_INFO_SIZE = 16;
