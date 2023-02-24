@@ -6,6 +6,7 @@
 #include "shop.h"
 #include "dialogbits.h"
 #include "music.h"
+#include <memory>
 
 #define PE_CONTINUE	0	// back to gameplay
 #define PE_RETRY	1	// retry this level
@@ -119,18 +120,21 @@ static pauseItem_t musicPause[]={
 	{PE_DONE,""},
 };
 
-byte cursor=0;
-static char lastKey=0;
-static byte menuMode;
-static sprite_set_t *pauseSpr=NULL;
-static int pauseX=640,pauseY=480;
-static byte numItems;
-static pauseItem_t menu[15];
-static int msx,msy;
-static char msBright,msDBright;
-static byte oldc=255;
+namespace
+{
+	byte cursor = 0;
+	char lastKey = 0;
+	byte menuMode;
+	std::unique_ptr<sprite_set_t> pauseSpr;
+	int pauseX, pauseY;
+	byte numItems;
+	pauseItem_t menu[15];
+	int msx, msy;
+	char msBright, msDBright;
+	byte oldc = 255;
 
-byte volumeSpot[]={0,26,51,77,102,128,153,179,204,230,255};
+	const byte volumeSpot[]={0,26,51,77,102,128,153,179,204,230,255};
+}
 
 void RenderPauseButton(byte b,int x,int y,int wid,char *txt,MGLDraw *mgl)
 {
@@ -147,7 +151,7 @@ void RenderPauseButton(byte b,int x,int y,int wid,char *txt,MGLDraw *mgl)
 
 void RenderUnpaused(void)
 {
-	if(pauseX<640)
+	if(pauseX < GetDisplayMGL()->GetWidth())
 		RenderPauseMenu();
 }
 
@@ -156,11 +160,11 @@ void RenderPauseMenu(void)
 	int i;
 	int msx2,msy2,cx,cy,cx2,cy2;
 
-	if(pauseSpr==NULL)
+	if(!pauseSpr)
 	{
-		pauseX=640;
-		pauseY=480;
-		pauseSpr=new sprite_set_t("graphics/pause.jsp");
+		pauseX = GetDisplayMGL()->GetWidth();
+		pauseY = GetDisplayMGL()->GetHeight();
+		pauseSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
 	}
 
 	pauseSpr->GetSprite(3)->Draw(pauseX,pauseY,GetDisplayMGL());
@@ -327,10 +331,10 @@ void InitPauseMenu(void)
 	}
 
 	MakeNormalSound(SND_PAUSE);
-	if(pauseSpr==NULL)
-		pauseSpr=new sprite_set_t("graphics/pause.jsp");
-	pauseX=640;
-	pauseY=480;
+	if(!pauseSpr)
+		pauseSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
+	pauseX=GetDisplayMGL()->GetWidth();
+	pauseY=GetDisplayMGL()->GetHeight();
 	menuMode=0;
 	msBright=0;
 	msDBright=1;
@@ -339,17 +343,15 @@ void InitPauseMenu(void)
 
 void ExitPauseMenu(void)
 {
-	if(pauseSpr)
-		delete pauseSpr;
-	pauseSpr=NULL;
+	pauseSpr.reset();
 }
 
 void UpdateUnpaused(void)
 {
-	if(pauseX<640)
-		pauseX+=15;
-	if(pauseY<480)
-		pauseY+=20;
+	if(pauseX < GetDisplayMGL()->GetWidth())
+		pauseX += 15;
+	if(pauseY < GetDisplayMGL()->GetHeight())
+		pauseY += 20;
 }
 
 byte NextVolumeSpot(byte v)
@@ -394,21 +396,23 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 	if(msBright<-2)
 		msDBright=1;
 
-	if(pauseX>427)
+	int destX = mgl->GetWidth() - 213;
+	if(pauseX > mgl->GetWidth() - 213)
 	{
 		pauseX-=15;
 		mgl->SetMouse(msx-15,msy);
 		mgl->GetMouse(&msx,&msy);
-		if(pauseX<427)
-			pauseX=427;
+		if(pauseX < destX)
+			pauseX = destX;
 	}
-	if(pauseY>206)
+	int destY = mgl->GetHeight() - 274;
+	if(pauseY > destY)
 	{
 		pauseY-=20;
 		mgl->SetMouse(msx,msy-20);
 		mgl->GetMouse(&msx,&msy);
-		if(pauseY<206)
-			pauseY=206;
+		if(pauseY < destY)
+			pauseY = destY;
 	}
 
 

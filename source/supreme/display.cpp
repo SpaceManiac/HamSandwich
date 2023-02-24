@@ -251,14 +251,25 @@ void UpdateCamera(int x,int y,int dx,int dy,Map *map)
 	rscrx+=scrdx;
 	rscry+=scrdy;
 
-	if(rscrx<320<<FIXSHIFT)
-		rscrx=320<<FIXSHIFT;
-	if(rscrx>((map->width*TILE_WIDTH-320)<<FIXSHIFT))
-		rscrx=(map->width*TILE_WIDTH-320)<<FIXSHIFT;
-	if(rscry<(240-TILE_HEIGHT)<<FIXSHIFT)
-		rscry=(240-TILE_HEIGHT)<<FIXSHIFT;
-	if(rscry>((map->height*TILE_HEIGHT-240)<<FIXSHIFT))
-		rscry=(map->height*TILE_HEIGHT-240)<<FIXSHIFT;
+	int minX = (GetDisplayMGL()->GetWidth() / 2) << FIXSHIFT;
+	int maxX = ((map->width * TILE_WIDTH) << FIXSHIFT) - minX;
+	int minY = (GetDisplayMGL()->GetHeight() / 2) << FIXSHIFT;
+	int maxY = ((map->height * TILE_HEIGHT) << FIXSHIFT) - minY;
+	minY -= TILE_HEIGHT << FIXSHIFT;
+
+	if (minX > maxX)
+		rscrx = (minX + maxX) / 2;
+	else if (rscrx < minX)
+		rscrx = minX;
+	else if (rscrx > maxX)
+		rscrx = maxX;
+
+	if (minY > maxY)
+		rscry = (minY + maxY) / 2;
+	else if (rscry < minY)
+		rscry = minY;
+	else if (rscry > maxY)
+		rscry = maxY;
 
 	if(scrx>desiredX+10)
 		scrdx=-((scrx-(desiredX+10))*FIXAMT/16);

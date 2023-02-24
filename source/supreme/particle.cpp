@@ -420,14 +420,15 @@ void UpdateParticles(Map *map)
 void RenderParticle(int x,int y,byte *scrn,byte color,byte size)
 {
 	byte c1,c2;
+	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
 
-	if(x<0 || x>=SCRWID || y<0 || y>=SCRHEI)
+	if(x<0 || x>=wid || y<0 || y>=hei)
 		return;
 
 	switch(size)
 	{
 		case 2:	// big particle
-			if(x<2 || x>=SCRWID-2 || y<2 || y>=SCRHEI-2)
+			if(x<2 || x>=wid-2 || y<2 || y>=hei-2)
 				return;
 
 			if((color&31)>1)
@@ -439,87 +440,91 @@ void RenderParticle(int x,int y,byte *scrn,byte color,byte size)
 			else
 				c2=c1;
 
-			scrn+=(x+(y-2)*SCRWID);
+			scrn+=(x+(y-2)*wid);
 			*scrn=c2;
-			scrn+=SCRWID-1;
+			scrn+=wid-1;
 			*scrn++=c1;
 			*scrn++=color;
 			*scrn=c1;
-			scrn+=SCRWID-3;
+			scrn+=wid-3;
 			*scrn++=c2;
 			*scrn++=c1;
 			*scrn++=color;
 			*scrn++=c1;
 			*scrn=c2;
-			scrn+=SCRWID-3;
+			scrn+=wid-3;
 			*scrn++=c1;
 			*scrn++=color;
 			*scrn=c1;
-			*(scrn+SCRWID-1)=c2;
+			*(scrn+wid-1)=c2;
 			break;
 		case 1:	// normal particle
-			if(x<1 || x>SCRWID-2 || y<1 || y>SCRHEI-2)
+			if(x<1 || x>wid-2 || y<1 || y>hei-2)
 				return;
 			if(color&31)
 				c1=color-1;	// only do this if subtracting 1 keeps it in the same color group
 			else
 				c1=color;
-			scrn+=(x+(y-1)*SCRWID);
+			scrn+=(x+(y-1)*wid);
 			*scrn=c1;
-			scrn+=SCRWID-1;
+			scrn+=wid-1;
 			*scrn++=c1;
 			*scrn++=color;
 			*scrn=c1;
-			scrn+=SCRWID-1;
+			scrn+=wid-1;
 			*scrn=c1;
 			break;
 		case 0:	// tiny particle (1 pixel)
-			scrn[x+y*SCRWID]=color;
+			scrn[x+y*wid]=color;
 			break;
 	}
 }
 
 void HLine(int x,int x2,int y,byte c,byte *scrn)
 {
+	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
+
 	if(x<0)
 		x=0;
-	if(x2>=SCRWID)
-		x2=SCRWID-1;
+	if(x2>=wid)
+		x2=wid-1;
 	if(x2<0)
 		return;
-	if(x>=SCRWID)
+	if(x>=wid)
 		return;
 	if(y<0)
 		return;
-	if(y>=SCRHEI)
+	if(y>=hei)
 		return;
 
-	scrn+=(x+y*SCRWID);
+	scrn+=(x+y*wid);
 	memset(scrn,c,x2-x+1);
 }
 
 void HLine2(int x,int x2,int y,byte c,byte *scrn)
 {
+	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
+
 	int i;
 	byte b,b3;
 	byte c1,c2;
 
 	if(x<0)
 		x=0;
-	if(x2>=SCRWID)
-		x2=SCRWID-1;
+	if(x2>=wid)
+		x2=wid-1;
 	if(x2<0)
 		return;
-	if(x>=SCRWID)
+	if(x>=wid)
 		return;
 	if(y<0)
 		return;
-	if(y>=SCRHEI)
+	if(y>=hei)
 		return;
 
 	c1=(c&31);
 	c2=(c&(~31));
-	scrn+=(x+y*SCRWID);
+	scrn+=(x+y*wid);
 	for(i=x;i<=x2;i++)
 	{
 		b=*scrn;
@@ -533,6 +538,8 @@ void HLine2(int x,int x2,int y,byte c,byte *scrn)
 
 void HLine3(int x,int x2,int y,byte c,byte less,byte *scrn)
 {
+	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
+
 	int i;
 	byte b,b3;
 	byte colRange;
@@ -543,15 +550,15 @@ void HLine3(int x,int x2,int y,byte c,byte less,byte *scrn)
 
 	if(x<0)
 		x=0;
-	if(x2>=SCRWID)
-		x2=SCRWID-1;
+	if(x2>=wid)
+		x2=wid-1;
 	if(x2<0)
 		return;
-	if(x>=SCRWID)
+	if(x>=wid)
 		return;
 	if(y<0)
 		return;
-	if(y>=SCRHEI)
+	if(y>=hei)
 		return;
 
 	if((c&31)<less)
@@ -567,7 +574,7 @@ void HLine3(int x,int x2,int y,byte c,byte less,byte *scrn)
 	dCol=(centerCol/((x2-x)/2));
 
 	colRange=(c&(~31));
-	scrn+=(x+y*SCRWID);
+	scrn+=(x+y*wid);
 	for(i=x;i<=x2;i++)
 	{
 
@@ -652,6 +659,8 @@ byte ctab[]={8,3,2,3,8,
 
 void RenderLightningParticle(int x1,int y1,int x2,int y2,int range,byte bright,byte *scrn)
 {
+	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
+
 	int midx,midy;
 	byte *ctptr;
 	byte b,brt;
@@ -659,9 +668,9 @@ void RenderLightningParticle(int x1,int y1,int x2,int y2,int range,byte bright,b
 	// base case: draw the (x1,y1) pixel
 	if((x1-x2<2 && x1-x2>-2) && (y1-y2<2 && y1-y2>-2))
 	{
-		if(x1>=0 && x1<SCRWID-5 && y1>=0 && y1<SCRHEI-5)
+		if(x1>=0 && x1<wid-5 && y1>=0 && y1<hei-5)
 		{
-			scrn+=(x1+y1*SCRWID);
+			scrn+=(x1+y1*wid);
 			ctptr=&ctab[0];
 			for(midy=y1;midy<y1+5;midy++)
 			{
@@ -676,7 +685,7 @@ void RenderLightningParticle(int x1,int y1,int x2,int y2,int range,byte bright,b
 					ctptr++;
 					scrn++;
 				}
-				scrn+=SCRWID-5;
+				scrn+=wid-5;
 			}
 		}
 	}
@@ -1143,6 +1152,8 @@ void ColorDrop(byte color,int x,int y,int z)
 
 void MakeItSnow(Map *map)
 {
+	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
+
 	int i;
 	int cx,cy;
 
@@ -1157,9 +1168,8 @@ void MakeItSnow(Map *map)
 	{
 		if(!particleList[i]->Alive())
 		{
-
-			particleList[i]->x=(Random(SCRWID)+cx)<<FIXSHIFT;
-			particleList[i]->y=(Random(SCRHEI)+cy)<<FIXSHIFT;
+			particleList[i]->x=(Random(wid)+cx)<<FIXSHIFT;
+			particleList[i]->y=(Random(hei)+cy)<<FIXSHIFT;
 			particleList[i]->z=(300+Random(300))<<FIXSHIFT;
 			particleList[i]->dx=0;
 			particleList[i]->dy=0;
@@ -1175,6 +1185,8 @@ void MakeItSnow(Map *map)
 
 void MakeItRain(Map *map)
 {
+	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
+
 	int i;
 	int cx,cy;
 
@@ -1189,9 +1201,8 @@ void MakeItRain(Map *map)
 	{
 		if(!particleList[i]->Alive())
 		{
-
-			particleList[i]->x=(Random(SCRWID)+cx)<<FIXSHIFT;
-			particleList[i]->y=(Random(SCRHEI)+cy)<<FIXSHIFT;
+			particleList[i]->x=(Random(wid)+cx)<<FIXSHIFT;
+			particleList[i]->y=(Random(hei)+cy)<<FIXSHIFT;
 			particleList[i]->z=(300+Random(300))<<FIXSHIFT;
 			particleList[i]->dx=0;
 			particleList[i]->dy=0;

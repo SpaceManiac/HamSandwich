@@ -116,19 +116,19 @@ intface_t defaultSetup[NUM_INTF]={
 	 18,2,
 	 0,128,
 	 0},
-	{639,-102,639,25,	// brains
+	{SCRWID-1,-102,SCRWID-1,25,	// brains
 	 SPR_BRAINOMETER,
 	 IV_VERTMETER,64,
 	 -6,10,
 	 0,50,
 	 0},
-	{639,-70,639,9,	// weapon
+	{SCRWID-1,-70,SCRWID-1,9,	// weapon
 	 SPR_WEAPONBOX,
 	 IV_SMALLMETER,40,
 	 -42,10,
 	 0,10,
 	 1},
-	{639,-50,639,-1,	// score
+	{SCRWID-1,-50,SCRWID-1,-1,	// score
 	 SPR_SCORE,
 	 IV_NUMBER,6,
 	 -54,3,
@@ -140,13 +140,13 @@ intface_t defaultSetup[NUM_INTF]={
 	 0,0,
 	 0,0,
 	 0},
-	{0,520,0,479,		// enemy life
+	{0,SCRHEI+40,0,SCRHEI-1,		// enemy life
 	 SPR_ENEMYLIFE,
 	 IV_EVILMETER,196,
 	 2,-16,
 	 0,196,
 	 0},
-	{639,520,639,479,	// coins
+	{SCRWID-1,SCRHEI+40,SCRWID-1,SCRHEI-1,	// coins
 	 SPR_COINBOX,
 	 IV_NUMBER,2,
 	 -18,-14,
@@ -178,6 +178,20 @@ void ResetInterface(void)
 	monsTimer=0;
 	curBrains=0;
 	memcpy(intf,defaultSetup,sizeof(intface_t)*NUM_INTF);
+
+	// Static defaults above don't know currency screen size, so apply an adjustment on init.
+	int w = GetDisplayMGL()->GetWidth(), h = GetDisplayMGL()->GetHeight();
+	for (int i = 0; i < NUM_INTF; ++i)
+	{
+		if (intf[i].x >= SCRWID/2)
+			intf[i].x += w - SCRWID;
+		if (intf[i].tx >= SCRWID/2)
+			intf[i].tx += w - SCRWID;
+		if (intf[i].y >= SCRHEI/2)
+			intf[i].y += h - SCRHEI;
+		if (intf[i].ty >= SCRHEI/2)
+			intf[i].ty += h - SCRHEI;
+	}
 }
 
 void DrawLifeMeter(int x,int y,byte amt)
@@ -321,7 +335,7 @@ void ShowEnemyLife(char *name,byte formerLife,byte life,byte alive)
 	strcpy(monsName,name);
 	monsTimer=90;	// 3 seconds
 	monsAlive=alive;
-	intf[INTF_ENEMY].ty=479;
+	intf[INTF_ENEMY].ty=GetDisplayMGL()->GetHeight()-1;
 }
 
 void RenderRage(byte size,MGLDraw *mgl)
@@ -488,7 +502,7 @@ void DrawPULightning(int x,int y,int height,byte color,MGLDraw *mgl)
 		db=-1;
 	for(i=0;i<height;i++)
 	{
-		if(x+x2>=0 && x+x2<639 && y>=0 && y<480)
+		if(x+x2>=0 && x+x2<mgl->GetWidth()-1 && y>=0 && y<mgl->GetHeight())
 		{
 			scrn[x2]=color+b;
 			scrn[x2+1]=color+b;
@@ -713,35 +727,35 @@ void UpdateInterface(Map *map)
 	// now do the same stuff for the other side of the screen
 	if(player.brains>=map->numBrains)
 	{
-		intf[INTF_BRAINS].tx=640+30;
+		intf[INTF_BRAINS].tx=GetDisplayMGL()->GetWidth()+30;
 		intf[INTF_BRAINS].ty=25;
 	}
 	else
 	{
-		intf[INTF_BRAINS].tx=639;
+		intf[INTF_BRAINS].tx=GetDisplayMGL()->GetWidth()-1;
 		intf[INTF_BRAINS].ty=25;
 	}
 	if(player.weapon)
 	{
-		intf[INTF_WEAPON].tx=639;
+		intf[INTF_WEAPON].tx=GetDisplayMGL()->GetWidth()-1;
 		intf[INTF_WEAPON].ty=9;
 	}
 	else
 	{
-		intf[INTF_WEAPON].tx=639;
+		intf[INTF_WEAPON].tx=GetDisplayMGL()->GetWidth()-1;
 		intf[INTF_WEAPON].ty=-10;
 		intf[INTF_BRAINS].ty-=10;
 	}
 
 	if(player.coins)
 	{
-		intf[INTF_COINS].tx=639;
-		intf[INTF_COINS].ty=479;
+		intf[INTF_COINS].tx=GetDisplayMGL()->GetWidth()-1;
+		intf[INTF_COINS].ty=GetDisplayMGL()->GetHeight()-1;
 	}
 	else
 	{
-		intf[INTF_COINS].tx=639;
-		intf[INTF_COINS].ty=480+20;
+		intf[INTF_COINS].tx=GetDisplayMGL()->GetWidth()-1;
+		intf[INTF_COINS].ty=GetDisplayMGL()->GetHeight()+20;
 	}
 
 	intfFlip=1-intfFlip;
@@ -814,12 +828,12 @@ void UpdateInterface(Map *map)
 					}
 					intf[i].vDesired=curMonsLife*intf[i].valueLength/128;
 					intf[i].value=curMonsLife*intf[i].valueLength/128;
-					intf[i].ty=479;
+					intf[i].ty=GetDisplayMGL()->GetHeight()-1;
 				}
 				else
 				{
 					intf[i].vDesired=0;
-					intf[i].ty=479+30;
+					intf[i].ty=GetDisplayMGL()->GetHeight()-1+30;
 				}
 				break;
 		}

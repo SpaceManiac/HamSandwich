@@ -3,6 +3,7 @@
 #include "appdata.h"
 #include "owned_sdl.h"
 #include <stdio.h>
+#include <algorithm>
 
 // Size of the header in .jft files, fixed by the format.
 constexpr int MFONT_SIZE_TOTAL = 528;
@@ -528,8 +529,7 @@ static void FontPrintCharGlowLimited(int x, int y, int maxX, dword c, const mfon
 	scrHeight=fontmgl->GetHeight();
 	dst=fontmgl->GetScreen()+x+y*scrWidth;
 
-	if(maxX>639)
-		maxX=639;
+	maxX = std::min(maxX, scrWidth - 1);
 
 	if(c<font->firstChar || c>=(font->firstChar+font->numChars))
 		return; // unprintable
