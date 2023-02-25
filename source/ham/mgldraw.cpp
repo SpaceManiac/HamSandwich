@@ -18,7 +18,7 @@
 
 #ifdef __EMSCRIPTEN__
 	#include <emscripten.h>
-#endif  // _EMSCRIPTEN__
+#endif  // __EMSCRIPTEN__
 
 // in control.cpp
 void ControlKeyDown(byte scancode);
@@ -902,49 +902,44 @@ void MGLDraw::ClearKeys(void)
 
 bool MGLDraw::MouseTap(void)
 {
-	byte b,mb;
-
-	mb=mouse_b&1;
-
-	if((mb&1) && !(tapTrack&1))
-		b=1;
-	else
-		b=0;
-
-	tapTrack&=2;
-	tapTrack|=mb;
-	return b;
+	byte mb = mouse_b & 1;
+	bool result = mb && !(tapTrack & 1);
+	tapTrack &= ~1;
+	tapTrack |= mb;
+	return result;
 }
 
 bool MGLDraw::RMouseTap(void)
 {
-	byte b,mb;
+	byte mb = mouse_b & 2;
+	bool result = mb && !(tapTrack & 2);
+	tapTrack &= ~2;
+	tapTrack |= mb;
+	return result;
+}
 
-	mb=mouse_b&2;
-
-	if((mb&2) && !(tapTrack&2))
-		b=1;
-	else
-		b=0;
-
-	tapTrack&=1;
-	tapTrack|=mb;
-	return b;
+bool MGLDraw::MouseTap3()
+{
+	byte mb = mouse_b & 4;
+	bool result = mb && !(tapTrack & 4);
+	tapTrack &= ~4;
+	tapTrack |= mb;
+	return result;
 }
 
 bool MGLDraw::MouseDown(void)
 {
-	return ((mouse_b&1)!=0);
+	return mouse_b & 1;
 }
 
 bool MGLDraw::RMouseDown(void)
 {
-	return ((mouse_b&2)!=0);
+	return mouse_b & 2;
 }
 
 bool MGLDraw::MouseDown3(void)
 {
-	return ((mouse_b&4)!=0);
+	return mouse_b & 4;
 }
 
 bool MGLDraw::LoadBMP(const char *name)
