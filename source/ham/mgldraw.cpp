@@ -1048,6 +1048,29 @@ HWND MGLDraw::GetHWnd(void)
 }
 #endif
 
+void MGLDraw::StartTextInput(int x, int y, int x2, int y2)
+{
+	float scale = std::max(1.0f, std::min((float)winWidth / xRes, (float)winHeight / yRes));
+	int destX = (int)((winWidth - xRes * scale) / 2);
+	int destY = (int)((winHeight - yRes * scale) / 2);
+
+	SDL_Rect rect = { x, y, x2-x, y2-y };
+	rect.x = destX + rect.x * scale;
+	rect.y = destY + rect.y * scale;
+	rect.w *= scale;
+	rect.h *= scale;
+
+	SDL_SetTextInputRect(&rect);
+	SDL_StartTextInput();
+}
+
+void MGLDraw::StopTextInput()
+{
+	SDL_Rect rect = { 0, 0, 0, 0 };
+	SDL_SetTextInputRect(&rect);
+	SDL_StopTextInput();
+}
+
 //--------------------------------------------------------------------------
 // Fatal error
 

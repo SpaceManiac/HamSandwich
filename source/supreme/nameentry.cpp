@@ -8,12 +8,15 @@
 #include "progress.h"
 #include "appdata.h"
 
-static byte *backgd;
-static int textBright;
-static char entry[16];
-static char cursorBright,dCBright;
-static byte curLine,error;
-static int errorBright;
+namespace
+{
+	byte* backgd;
+	int textBright;
+	char entry[16];
+	char cursorBright, dCBright;
+	byte curLine, error;
+	int errorBright;
+}
 
 void InitNameEntry(MGLDraw *mgl)
 {
@@ -33,10 +36,13 @@ void InitNameEntry(MGLDraw *mgl)
 
 	for(i=0;i<480;i++)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
+
+	mgl->StartTextInput(15, 315, 640-15, 315+28);
 }
 
-void ExitNameEntry(void)
+void ExitNameEntry()
 {
+	MGLDraw::StopTextInput();
 	free(backgd);
 }
 
@@ -216,7 +222,7 @@ TASK(void) NameEntry(MGLDraw *mgl,byte makeNew)
 	}
 }
 
-const char *GetEnteredName(void)
+const char *GetEnteredName()
 {
 	return entry;
 }

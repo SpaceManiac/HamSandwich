@@ -87,6 +87,10 @@ public:
 	void BrightBox(int x, int y, int x2, int y2, byte amt);
 	void DarkBox(int x, int y, int x2, int y2, byte amt);
 
+	// Like SDL's text input functions but in MGL coordinates.
+	void StartTextInput(int x, int y, int x2, int y2);
+	static void StopTextInput();
+
 	// mouse functions
 	void GetMouse(int *x, int *y);
 	void SetMouse(int x, int y);
