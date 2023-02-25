@@ -132,7 +132,7 @@ void LoadText(const char *nm,byte mode)
 	fclose(f);
 }
 
-TASK(void) ShowImageOrFlic(char *str,byte nosnd,byte mode)
+TASK(void) ShowImageOrFlic(const char *str,byte nosnd,byte mode)
 {
 	int speed;
 
@@ -140,7 +140,9 @@ TASK(void) ShowImageOrFlic(char *str,byte nosnd,byte mode)
 	char *other;
 	char nm[64];
 
-	fname=strtok(str,",\n");
+	std::string copy = str;
+
+	fname=strtok(copy.data(),",\n");
 	if(!fname)
 		CO_RETURN;
 
