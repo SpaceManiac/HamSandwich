@@ -166,6 +166,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 
 MGLDraw::~MGLDraw(void)
 {
+	softJoystick.reset();
 	SDL_DestroyTexture(texture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
@@ -334,15 +335,19 @@ TASK(void) MGLDraw::FinishFlip(void)
 	SDL_UpdateTexture(texture, NULL, buffer.get(), pitch * sizeof(RGB));
 	SDL_RenderClear(renderer);
 	SDL_RenderCopy(renderer, texture, NULL, &dest);
-	if (softJoystick) {
+	bool enableTouchMouse = true;
+	if (softJoystick)
+	{
 		softJoystick->update(this, scale);
 		softJoystick->render(renderer);
+		enableTouchMouse = softJoystick->enableTouchMouse();
 	}
 	SDL_RenderPresent(renderer);
 	UpdateMusic();
 
 	SDL_Event e;
-	while(SDL_PollEvent(&e)) {
+	while(SDL_PollEvent(&e))
+	{
 		if (e.type == SDL_KEYDOWN) {
 			TranslateKey(&e.key.keysym);
 			ControlKeyDown(e.key.keysym.scancode);
@@ -356,7 +361,8 @@ TASK(void) MGLDraw::FinishFlip(void)
 			{
 #ifndef __EMSCRIPTEN__
 				windowed = !windowed;
-				if (windowed) {
+				if (windowed)
+				{
 					SDL_SetWindowFullscreen(window, 0);
 
 					int px, py;
@@ -368,7 +374,9 @@ TASK(void) MGLDraw::FinishFlip(void)
 					SDL_SetWindowPosition(window, px, py);
 
 					SDL_SetWindowSize(window, xRes, yRes);
-				} else {
+				}
+				else
+				{
 					SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 				}
 #else  // __EMSCRIPTEN__
@@ -397,7 +405,8 @@ TASK(void) MGLDraw::FinishFlip(void)
 				sprintf(fname, "Screenshot %04d-%02d-%02d %02d-%02d-%02d.bmp", 1900 + clock->tm_year, 1 + clock->tm_mon, clock->tm_mday, clock->tm_hour, clock->tm_min, clock->tm_sec);
 				SaveBMP(fname);
 			}
-		} else if (e.type == SDL_TEXTINPUT) {
+		} else if (e.type == SDL_TEXTINPUT)
+		{
 			if (strlen(e.text.text) == 1)
 			{
 #ifdef __EMSCRIPTEN__
@@ -408,44 +417,81 @@ TASK(void) MGLDraw::FinishFlip(void)
 #endif
 				lastKeyPressed = e.text.text[0];
 			}
-		} else if (e.type == SDL_KEYUP) {
+		}
+		else if (e.type == SDL_KEYUP)
+		{
 			TranslateKey(&e.key.keysym);
 			ControlKeyUp(e.key.keysym.scancode);
-		} else if (e.type == SDL_MOUSEMOTION) {
-			if (SDL_GetRelativeMouseMode()) {
-				mouse_x += e.motion.xrel;
-				mouse_y += e.motion.yrel;
-			} else {
-				mouse_x = (e.motion.x - dest.x) / scale;
-				mouse_y = (e.motion.y - dest.y) / scale;
+		}
+		else if (e.type == SDL_MOUSEMOTION)
+		{
+			if (enableTouchMouse || e.motion.which != SDL_TOUCH_MOUSEID)
+			{
+				if (SDL_GetRelativeMouseMode())
+				{
+					mouse_x += e.motion.xrel;
+					mouse_y += e.motion.yrel;
+				}
+				else
+				{
+					mouse_x = (e.motion.x - dest.x) / scale;
+					mouse_y = (e.motion.y - dest.y) / scale;
+				}
 			}
-		} else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
+		}
+		else if (e.type == SDL_MOUSEBUTTONUP)
+		{
+			// Always accept mouseups.
 			int flag = 0;
-			if (e.button.button == 1)
+			if (e.button.button == SDL_BUTTON_LEFT)
 				flag = 1;
-			else if (e.button.button == 3)
+			else if (e.button.button == SDL_BUTTON_RIGHT)
 				flag = 2;
-			if (e.button.state == SDL_PRESSED)
+			mouse_b &= ~flag;
+		}
+		else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP)
+		{
+			// Only accept mousedowns that are inside the real scene.
+			// Also ignore mousedowns if soft joystick is active.
+			SDL_Point p = {e.button.x, e.button.y};
+			if (SDL_PointInRect(&p, &dest) && (e.motion.which != SDL_TOUCH_MOUSEID || enableTouchMouse))
+			{
+				int flag = 0;
+				if (e.button.button == SDL_BUTTON_LEFT)
+					flag = 1;
+				else if (e.button.button == SDL_BUTTON_RIGHT)
+					flag = 2;
 				mouse_b |= flag;
-			else
-				mouse_b &= ~flag;
-		} else if (e.type == SDL_MOUSEWHEEL) {
+			}
+		}
+		else if (e.type == SDL_MOUSEWHEEL)
+		{
 			mouse_z += e.wheel.y;
-		} else if (e.type == SDL_QUIT) {
+		}
+		else if (e.type == SDL_QUIT)
+		{
 			readyToQuit = 1;
-		} else if (e.type == SDL_WINDOWEVENT) {
-			if (e.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
+		}
+		else if (e.type == SDL_WINDOWEVENT)
+		{
+			if (e.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
+			{
 				idle = true;
 				idleGame = true;
-			} else if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
+			}
+			else if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+			{
 				idleGame = false;
 				idle = false;
-			} else if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+			}
+			else if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+			{
 				winWidth = e.window.data1;
 				winHeight = e.window.data2;
 			}
 		}
-		if (softJoystick) {
+		if (softJoystick)
+		{
 			softJoystick->handle_event(this, e);
 		}
 	}
