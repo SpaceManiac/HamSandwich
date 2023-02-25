@@ -281,7 +281,7 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 	fliheader FLI_hdr;
 	int scrWidth;
 	char k;
-	dword startTime,endTime;
+	dword playbackTime, currentTime;
 
 	FLI_file=AssetOpen_SDL(name);
 	if (!FLI_file)
@@ -319,31 +319,40 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 
 	mgl->LastKeyPressed();	// clear key buffer
 
+	playbackTime = timeGetTime() - 1;
 	do
 	{
-		startTime=timeGetTime();
-		frmon++;
-		scrWidth=mgl->GetWidth();
-		FLI_nextfr(mgl,scrWidth);
-		if (callback && !callback(frmon))
-			break;
-		AWAIT mgl->Flip();
-		if((loop)&&(frmon==FLI_hdr.frames+1))
+		currentTime = timeGetTime();
+
+		// If vsync time is faster than FLC framerate, idle.
+		while (currentTime < playbackTime)
 		{
-			frmon=1;
-			SDL_RWseek(FLI_file, ofs1, RW_SEEK_SET);
+			SDL_Delay((playbackTime - currentTime) / 2);
+			currentTime = timeGetTime();
 		}
-		if((!loop)&&(frmon==FLI_hdr.frames))
-			frmon=FLI_hdr.frames+1;
+
+		// If the FLC's framerate is faster than vsync time, skip frames.
+		while (playbackTime < currentTime)
+		{
+			frmon++;
+			scrWidth=mgl->GetWidth();
+			FLI_nextfr(mgl,scrWidth);
+			if (callback && !callback(frmon))
+				break;
+			if((loop)&&(frmon==FLI_hdr.frames+1))
+			{
+				frmon=1;
+				SDL_RWseek(FLI_file, ofs1, RW_SEEK_SET);
+			}
+			if((!loop)&&(frmon==FLI_hdr.frames))
+				frmon=FLI_hdr.frames+1;
+
+			playbackTime += wait;
+		}
+
+		AWAIT mgl->Flip();
 		k=mgl->LastKeyPressed();
 		// key #27 is escape
-
-		endTime=timeGetTime();
-		while((endTime-startTime)<wait)
-		{
-			SDL_Delay((startTime + wait - endTime) / 2);
-			endTime=timeGetTime();
-		}
 	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27));
 
 	SDL_RWclose(FLI_file);
