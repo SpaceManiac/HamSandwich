@@ -295,7 +295,7 @@ TASK(void) UpdateMouse(void)
 	switch(editMode)
 	{
 		case EDITMODE_TERRAIN:
-			TerrainEdit_Update(mouseX,mouseY,editmgl);
+			TerrainEdit_Update(mouseX,mouseY,scroll,editmgl);
 			break;
 		case EDITMODE_SPECIAL:
 			SpecialEdit_Update(mouseX,mouseY,scroll,editmgl);
