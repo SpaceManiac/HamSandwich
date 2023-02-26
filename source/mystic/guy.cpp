@@ -1663,12 +1663,19 @@ void AddRandomGuy(Map *map,world_t *world,byte chapter,byte rnd)
 	int x,y;
 	int cx,cy;
 
+	// NOTE: the code here does not match the original comments. The intent was
+	// that the last chapter would have a 1-in-100 chance per frame of a badguy
+	// spawning, but the "else" was written without braces so the real effect
+	// is that on Chapter 4, a new guy spawns every single frame. The presence
+	// of this bug has been confirmed on retail v3.7, so it will remain.
+	// Commented spawn rates: 0.5% and 1%. Actual spawn rates: 1.495% and 100%.
 	if(chapter<4)
+	{
 		if((rnd>0) && MGL_random(200))
 			return;	// only 1 in 200 chance of badguy appearing
-	else
 		if((rnd>0) && MGL_random(100))
 			return;	// only 1 in 100 chance of badguy appearing on final chapter
+	}
 
 	switch(chapter)
 	{
