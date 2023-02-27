@@ -2,6 +2,7 @@
 #include "mgldraw.h"
 #include "appdata.h"
 #include "owned_sdl.h"
+#include "recolor.h"
 #include <stdio.h>
 #include <algorithm>
 
@@ -294,14 +295,7 @@ static void FontPrintCharBright(int x, int y, dword c, char bright, const mfont_
 		{
 			if (*src && (x >= 0) && (x < scrWidth) && (y >= 0) && (y < scrHeight))
 			{
-				*dst = *src + bright;
-				if ((*dst & (~31)) != (*src & (~31)))
-				{
-					if (bright > 0)
-						*dst = *src | 31;
-					else
-						*dst = *src & (~31);
-				}
+				*dst = SprModifyLight(*src, bright);
 			}
 			dst++;
 			src++;

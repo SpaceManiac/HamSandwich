@@ -60,10 +60,4 @@ void NewComputerSpriteFix(const char *fname);
 void SetSpriteConstraints(int x, int y, int x2, int y2);
 void ClearSpriteConstraints();
 
-byte SprModifyColor(byte color, byte hue);
-byte SprGetColor(byte color);
-byte SprModifyLight(byte color, char bright);
-byte SprModifyGhost(byte src, byte dst, char bright);
-byte SprModifyGlow(byte src, byte dst, char bright);
-
 #endif
