@@ -234,6 +234,7 @@ function(HamSandwich_add_executable target_name)
 		file(GLOB fake_sources LIST_DIRECTORIES true CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/assets/*")
 		file(GLOB_RECURSE any_files "${CMAKE_SOURCE_DIR}/assets/${target_name}/*")
 		if(any_files)
+			find_program(python NAMES python3 python REQUIRED)
 			set(data "${CMAKE_CURRENT_BINARY_DIR}/${target_name}.data")
 			set(data_js "${data}.js")
 			set(data_d "${data_js}.d")
@@ -242,7 +243,7 @@ function(HamSandwich_add_executable target_name)
 				COMMAND
 					"${CMAKE_COMMAND}" -E env
 					"EMSCRIPTEN_ROOT_PATH=${EMSCRIPTEN_ROOT_PATH}"
-					"${CMAKE_SOURCE_DIR}/tools/bootstrap/python"
+					"${python}"
 					"${CMAKE_SOURCE_DIR}/tools/emscripten/file_packager_deps.py"
 					"${data}"
 					"--js-output=${data_js}"
@@ -250,9 +251,6 @@ function(HamSandwich_add_executable target_name)
 					"--preload"
 					"${CMAKE_SOURCE_DIR}/assets/${target_name}@"
 				DEPENDS
-					"${CMAKE_SOURCE_DIR}/dependencies.sh"
-					"${CMAKE_SOURCE_DIR}/tools/bootstrap/_common.sh"
-					"${CMAKE_SOURCE_DIR}/tools/bootstrap/python"
 					"${CMAKE_SOURCE_DIR}/tools/emscripten/file_packager_deps.py"
 				DEPFILE "${data_d}"
 				VERBATIM

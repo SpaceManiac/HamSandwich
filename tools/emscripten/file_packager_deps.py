@@ -59,6 +59,6 @@ file_packager.add = add
 # List walked files and directories in output
 ret = file_packager.main()
 with open(f'{js_output}.d', 'w', encoding='utf-8') as f:
-	joined = " \\\n ".join(walked)
-	f.write(f'{packfile}: \\\n {joined}\n')
+	joined = " \\\n".join(walked)
+	f.write(f'{packfile} \\\n{js_output} \\\n: \\\n{joined} \\\n')
 exit(ret)
