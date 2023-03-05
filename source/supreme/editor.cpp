@@ -628,6 +628,18 @@ void EditorShowRect(void)
 	DrawBox(x1,y1,x2,y2,col);
 }
 
+static void ApplyZoom()
+{
+	if (zoom == 1)
+	{
+		editmgl->ResizeBuffer(SCRWID, SCRHEI);
+	}
+	else
+	{
+		editmgl->ResizeBuffer(SCRWID * zoom * 4 / 3, SCRHEI * zoom);
+	}
+}
+
 void EditorDraw(void)
 {
 	char s[16];
@@ -635,7 +647,7 @@ void EditorDraw(void)
 	switch(editMode)
 	{
 		case EDITMODE_EDIT:
-			editmgl->ResizeBuffer(SCRWID * zoom, SCRHEI * zoom);
+			ApplyZoom();
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -647,7 +659,7 @@ void EditorDraw(void)
 				RenderViewDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_PICKSPOT:
-			editmgl->ResizeBuffer(SCRWID * zoom, SCRHEI * zoom);
+			ApplyZoom();
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -662,7 +674,7 @@ void EditorDraw(void)
 			Print(579,465,s,0,1);
 			break;
 		case EDITMODE_PICKSPOT2:
-			editmgl->ResizeBuffer(SCRWID * zoom, SCRHEI * zoom);
+			ApplyZoom();
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -681,7 +693,7 @@ void EditorDraw(void)
 			Print(579,465,s,0,1);
 			break;
 		case EDITMODE_PICKRSPOT:
-			editmgl->ResizeBuffer(SCRWID * zoom, SCRHEI * zoom);
+			ApplyZoom();
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -696,7 +708,7 @@ void EditorDraw(void)
 			Print(579,465,s,0,1);
 			break;
 		case EDITMODE_PICKRSPOT2:
-			editmgl->ResizeBuffer(SCRWID * zoom, SCRHEI * zoom);
+			ApplyZoom();
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
