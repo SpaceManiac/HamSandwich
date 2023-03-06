@@ -275,28 +275,28 @@ TASK(void) UpdateMouse(void)
 		default:
 			if(mouseX==0)
 			{
-				cx-=8;
+				cx -= 8 * zoom;
 				if(cx<0)
 					cx=0;
 				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
 			}
 			if(mouseX==editmgl->GetWidth()-1)
 			{
-				cx+=8;
+				cx += 8 * zoom;
 				if(cx>editorMap->width*TILE_WIDTH)
 					cx=editorMap->width*TILE_WIDTH;
 				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
 			}
 			if(mouseY==0)
 			{
-				cy-=8;
+				cy -= 8 * zoom;
 				if(cy<0)
 					cy=0;
 				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
 			}
 			if(mouseY==editmgl->GetHeight()-1)
 			{
-				cy+=8;
+				cy += 8 * zoom;
 				if(cy>editorMap->height*TILE_HEIGHT)
 					cy=editorMap->height*TILE_HEIGHT;
 				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
