@@ -264,35 +264,48 @@ TASK(void) UpdateMouse(void)
 	int scroll = editmgl->mouse_z - mouseZ;
 	mouseZ = editmgl->mouse_z;
 
-	if(mouseX==0)
+	// Mouse scrolling, but exclude fullscreen modes.
+	switch (editMode)
 	{
-		cx-=8;
-		if(cx<0)
-			cx=0;
-		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
-	}
-	if(mouseX==639)
-	{
-		cx+=8;
-		if(cx>editorMap->width*TILE_WIDTH)
-			cx=editorMap->width*TILE_WIDTH;
-		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
-	}
-	if(mouseY==0)
-	{
-		cy-=8;
-		if(cy<0)
-			cy=0;
-		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
-	}
-	if(mouseY==479)
-	{
-		cy+=8;
-		if(cy>editorMap->height*TILE_HEIGHT)
-			cy=editorMap->height*TILE_HEIGHT;
-		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+		case EDITMODE_TERRAIN:
+		case EDITMODE_SPECIAL:
+		case EDITMODE_ITEM:
+		case EDITMODE_SOUND:
+		case EDITMODE_PICKENEMY:
+			break;
+		default:
+			if(mouseX==0)
+			{
+				cx-=8;
+				if(cx<0)
+					cx=0;
+				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			}
+			if(mouseX==639)
+			{
+				cx+=8;
+				if(cx>editorMap->width*TILE_WIDTH)
+					cx=editorMap->width*TILE_WIDTH;
+				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			}
+			if(mouseY==0)
+			{
+				cy-=8;
+				if(cy<0)
+					cy=0;
+				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			}
+			if(mouseY==479)
+			{
+				cy+=8;
+				if(cy>editorMap->height*TILE_HEIGHT)
+					cy=editorMap->height*TILE_HEIGHT;
+				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			}
+			break;
 	}
 
+	// The mode itself.
 	switch(editMode)
 	{
 		case EDITMODE_TERRAIN:
