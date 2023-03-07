@@ -1,15 +1,30 @@
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
+#
+# SPDX-License-Identifier: curl
+
 name: macOS
 
 on:
-  # Trigger the workflow on push or pull requests, but only for the
-  # master branch
   push:
     branches:
     - master
     - '*/ci'
+    paths-ignore:
+    - '**/*.md'
   pull_request:
     branches:
     - master
+    paths-ignore:
+    - '**/*.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+permissions: {}
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_14.0.1.app/Contents/Developer
 
 jobs:
   autotools:
@@ -31,6 +46,10 @@ jobs:
         - name: libssh2
           install: nghttp2 libssh2
           configure: --enable-debug --with-libssh2 --without-ssl
+          macosx-version-min: 10.9
+        - name: libssh-c-ares
+          install: openssl nghttp2 libssh
+          configure: --enable-debug --with-libssh --with-openssl=/usr/local/opt/openssl --enable-ares
           macosx-version-min: 10.9
         - name: libssh
           install: openssl nghttp2 libssh
@@ -80,9 +99,15 @@ jobs:
     - run: brew update && for i in 1 2 3; do brew bundle install --no-lock --file /tmp/Brewfile && break || sleep 1; done
       name: 'brew install'
 
-    - uses: actions/checkout@v2
+    - run: python3 -m pip install impacket
+      name: 'pip3 install'
 
-    - run: ./buildconf && ./configure --enable-warnings --enable-werror ${{ matrix.build.configure }}
+    - uses: actions/checkout@v3
+
+    - run: autoreconf -fi
+      name: 'autoreconf'
+
+    - run: ./configure --enable-warnings --enable-werror ${{ matrix.build.configure }}  --enable-websockets
       name: 'configure'
       env:
         # -Wvla is caused by brotli
@@ -91,8 +116,14 @@ jobs:
     - run: make V=1
       name: 'make'
 
+    - run: make V=1 examples
+      name: 'make examples'
+
+    - run: make V=1 -C tests
+      name: 'make tests'
+
     - run: make V=1 test-ci
-      name: 'test'
+      name: 'run tests'
       env:
         TFLAGS: "${{ matrix.build.tflags }} ~1452"
 
@@ -107,8 +138,8 @@ jobs:
         - CC: clang
           CXX: clang++
           CFLAGS: "-mmacosx-version-min=10.15 -Wno-deprecated-declarations"
-        - CC: gcc-9
-          CXX: g++-9
+        - CC: gcc-12
+          CXX: g++-12
           CFLAGS: "-mmacosx-version-min=10.15 -Wno-error=undef -Wno-error=conversion"
         build:
         - name: OpenSSL
@@ -127,9 +158,12 @@ jobs:
     - run: brew update && brew bundle install --no-lock --file /tmp/Brewfile
       name: 'brew install'
 
-    - uses: actions/checkout@v2
+    - run: python3 -m pip install impacket
+      name: 'pip3 install'
 
-    - run: cmake -H. -Bbuild -DCURL_WERROR=ON -DPICKY_COMPILER=ON ${{ matrix.build.generate }}
+    - uses: actions/checkout@v3
+
+    - run: cmake -S. -Bbuild -DCURL_WERROR=ON -DPICKY_COMPILER=ON ${{ matrix.build.generate }}
       name: 'cmake generate'
 
     - run: cmake --build build

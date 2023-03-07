@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
 .\" *
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
+.\" *
+.\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
 .\"
@@ -86,20 +88,23 @@ Keep output and log files in log/ after a test run, even if no error was
 detected. Useful for debugging.
 .IP "-L <file>"
 Load and execute the specified file which should contain perl code.
-This option allows to change \fIruntests.pl\fP behaviour by overwriting
+This option allows one to change \fIruntests.pl\fP behaviour by overwriting
 functions and variables and is useful when testing external proxies
 using curl's regression test suite.
 .IP "-l"
 Lists all test case names.
 .IP "-n"
 Disable the check for and use of valgrind.
+.IP "--no-debuginfod"
+Delete the DEBUGINFOD_URLS variable if that is defined. Makes valgrind, gdb
+etc not able to use this functionality.
 .IP "-o <variablename=value>"
 Overwrite the specified internal \fBvariable\fP with \fBvalue\fP.
 Useful to change variables that didn't get a dedicated flag to change them.
 Check the source to see which variables are available.
 .IP "-P <proxy>"
 Use the specified HTTP proxy when executing tests, even if the tests
-themselves don't specify a proxy. This option allows to test external
+themselves don't specify a proxy. This option allows one to test external
 proxies using curl's regression test suite.
 .IP "-p"
 Prints out all files in "log/" to stdout when a test case fails. Very

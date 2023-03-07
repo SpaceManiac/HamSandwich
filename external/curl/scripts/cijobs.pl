@@ -6,7 +6,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -18,6 +18,8 @@
 #
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
+#
+# SPDX-License-Identifier: curl
 #
 ###########################################################################
 
@@ -235,7 +237,7 @@ sub appveyor {
             }
         }
         $job{'line'} = $line;
-        if($_ =~ /^      - APPVEYOR_BUILD_WORKER_IMAGE: \"(.*)\"/) {
+        if($_ =~ /^        APPVEYOR_BUILD_WORKER_IMAGE: \"(.*)\"/) {
             $job{'image'}= $1;
         }
         elsif($_ =~ /^        BUILD_SYSTEM: (.*)/) {
@@ -248,22 +250,22 @@ sub appveyor {
             $job{'config'} = $1;
         }
         elsif($_ =~ /^        OPENSSL: (.*)/) {
-            $job{'openssl'} = $1 eq "ON" ? "true": "false";;
+            $job{'openssl'} = $1 eq "ON" ? "true": "false";
         }
         elsif($_ =~ /^        SCHANNEL: (.*)/) {
-            $job{'schannel'} = $1 eq "ON" ? "true": "false";;
+            $job{'schannel'} = $1 eq "ON" ? "true": "false";
         }
         elsif($_ =~ /^        ENABLE_UNICODE: (.*)/) {
-            $job{'unicode'} = $1 eq "ON" ? "true": "false";;
+            $job{'unicode'} = $1 eq "ON" ? "true": "false";
         }
         elsif($_ =~ /^        HTTP_ONLY: (.*)/) {
-            $job{'http-only'} = $1 eq "ON" ? "true": "false";;
+            $job{'http-only'} = $1 eq "ON" ? "true": "false";
         }
         elsif($_ =~ /^        TESTING: (.*)/) {
-            $job{'testing'} = $1 eq "ON" ? "true": "false";;
+            $job{'testing'} = $1 eq "ON" ? "true": "false";
         }
         elsif($_ =~ /^        SHARED: (.*)/) {
-            $job{'shared'} = $1 eq "ON" ? "true": "false";;
+            $job{'shared'} = $1 eq "ON" ? "true": "false";
         }
         elsif($_ =~ /^        TARGET: \"-A (.*)\"/) {
             $job{'target'} = $1;
@@ -495,7 +497,8 @@ sub zuul {
     return $c;
 }
 
-my $tag = "origin/master";
+my $tag = `git rev-parse --abbrev-ref HEAD 2>/dev/null` || "master";
+chomp $tag;
 githubactions($tag);
 azurepipelines($tag);
 appveyor($tag);

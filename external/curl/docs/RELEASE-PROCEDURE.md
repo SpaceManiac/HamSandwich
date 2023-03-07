@@ -16,14 +16,14 @@ in the source code repo
   tag and we use underscores instead of dots in the version number. Make sure
   the tag is GPG signed (using -s).
 
-- run "./maketgz 7.34.0" to build the release tarballs. It is important that
+- run `./maketgz 7.34.0` to build the release tarballs. It is important that
   you run this on a machine with the correct set of autotools etc installed
   as this is what then will be shipped and used by most users on \*nix like
   systems.
 
 - push the git commits and the new tag
 
-- gpg sign the 4 tarballs as maketgz suggests
+- GPG sign the 4 tarballs as `maketgz` suggests
 
 - upload the 8 resulting files to the primary download directory
 
@@ -89,18 +89,30 @@ of common public holidays or when the lead release manager is away traveling,
 the release date can be moved forwards or backwards a full week. This is then
 advertised well in advance.
 
+Critical problems
+-----------------
+
+We can break the release cycle and do a patch release at any point if a
+critical enough problem is reported. There is no exact definition of how to
+assess such criticality, but if an issue is highly disturbing or has a
+security impact on a large enough share of the user population it might
+qualify.
+
+If you think an issue qualifies, bring it to the curl-library mailing list and
+push for it.
+
 Coming dates
 ------------
 
 Based on the description above, here are some planned release dates (at the
 time of this writing):
 
-- January 5, 2022 (7.81.0)
-- March 2, 2022
-- April 27, 2022
-- June 22, 2022
-- August 17, 2022
-- October 12, 2022
-- December 7, 2022
-- February 1, 2023
-- March 20, 2023 (8.0.0)
+- October 26, 2022 (7.86.0)
+- December 21, 2022
+- February 15, 2023 (last version 7 release, no feature window after)
+- March 20, 2023 (8.0.0 - curl 25 years)
+- April 17, 2023
+- July 12, 2023
+- September 6, 2023
+- November 1, 2023
+- December 27, 2023
