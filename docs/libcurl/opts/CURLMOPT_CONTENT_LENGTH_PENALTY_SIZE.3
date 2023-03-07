@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
 .\" *
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
+.\" *
+.\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
 .\"
@@ -33,8 +35,8 @@ CURLMcode curl_multi_setopt(CURLM *handle, CURLMOPT_CONTENT_LENGTH_PENALTY_SIZE,
 .SH DESCRIPTION
 No function since pipelining was removed in 7.62.0.
 
-Pass a long with a \fBsize\fP in bytes. If a pipelined connection is currently
-processing a request with a Content-Length larger than this
+Pass a long with a \fBsize\fP in bytes. If a transfer in a pipeline is
+currently processing a request with a Content-Length larger than this
 \fICURLMOPT_CONTENT_LENGTH_PENALTY_SIZE(3)\fP, that pipeline will then not be
 considered for additional requests, even if it is shorter than
 \fICURLMOPT_MAX_PIPELINE_LENGTH(3)\fP.

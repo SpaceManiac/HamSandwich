@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
 .\" *
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
+.\" *
+.\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
 .\"
@@ -33,9 +35,9 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_TFTP_BLKSIZE, long blocksize);
 Specify \fIblocksize\fP to use for TFTP data transmission. Valid range as per
 RFC2348 is 8-65464 bytes. The default of 512 bytes will be used if this option
 is not specified. The specified block size will only be used pending support
-by the remote server. If the server does not return an option acknowledgement
-or returns an option acknowledgement with no blksize, the default of 512 bytes
-will be used.
+by the remote server. If the server does not return an option acknowledgment
+or returns an option acknowledgment with no block size, the default of 512
+bytes will be used.
 .SH DEFAULT
 512
 .SH PROTOCOLS

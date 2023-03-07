@@ -6,7 +6,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -18,6 +18,8 @@
 #
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
+#
+# SPDX-License-Identifier: curl
 #
 ###########################################################################
 
@@ -73,7 +75,7 @@ setenv DYNBNDDIR        'CURL'                  # Dynamic binding directory.
 setenv SRVPGM           "CURL.${SONAME}"        # Service program.
 setenv TGTCCSID         '500'                   # Target CCSID of objects.
 setenv DEBUG            '*ALL'                  # Debug level.
-setenv OPTIMIZE         '10'                    # Optimisation level
+setenv OPTIMIZE         '10'                    # Optimization level
 setenv OUTPUT           '*NONE'                 # Compilation output option.
 setenv TGTRLS           '*CURRENT'              # Target OS release.
 setenv IFSDIR           '/curl'                 # Installation IFS directory.
@@ -232,14 +234,14 @@ make_module()
         CMD="${CMD} OPTIMIZE(${OPTIMIZE})"
         CMD="${CMD} DBGVIEW(${DEBUG})"
 
-        DEFINES="${3} BUILDING_LIBCURL"
+        DEFINES="${3} BUILDING_LIBCURL 'qadrt_use_inline'"
 
         if [ "${WITH_ZLIB}" != "0" ]
-        then    DEFINES="${DEFINES} HAVE_LIBZ HAVE_ZLIB_H"
+        then    DEFINES="${DEFINES} HAVE_LIBZ"
         fi
 
         if [ "${WITH_LIBSSH2}" != "0" ]
-        then    DEFINES="${DEFINES} USE_LIBSSH2 HAVE_LIBSSH2_H"
+        then    DEFINES="${DEFINES} USE_LIBSSH2"
         fi
 
         if [ "${DEFINES}" ]

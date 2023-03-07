@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
 .\" *
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
+.\" *
+.\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
 .\"
@@ -201,7 +203,7 @@ See \fICURLINFO_LOCAL_PORT(3)\fP
 List of all known cookies.
 See \fICURLINFO_COOKIELIST(3)\fP
 .IP CURLINFO_LASTSOCKET
-Last socket used.
+(Deprecated) Last socket used.
 See \fICURLINFO_LASTSOCKET(3)\fP
 .IP CURLINFO_ACTIVESOCKET
 The session's active socket.
@@ -209,6 +211,12 @@ See \fICURLINFO_ACTIVESOCKET(3)\fP
 .IP CURLINFO_FTP_ENTRY_PATH
 The entry path after logging in to an FTP server.
 See \fICURLINFO_FTP_ENTRY_PATH(3)\fP
+.IP CURLINFO_CAPATH
+Get the default value for \fICURLOPT_CAPATH(3)\fP.
+See \fICURLINFO_CAPATH(3)\fP
+.IP CURLINFO_CAINFO
+Get the default value for \fICURLOPT_CAINFO(3)\fP.
+See \fICURLINFO_CAINFO(3)\fP
 .IP CURLINFO_CERTINFO
 Certificate chain.
 See \fICURLINFO_CERTINFO(3)\fP
@@ -235,7 +243,7 @@ See \fICURLINFO_RTSP_SERVER_CSEQ(3)\fP
 RTSP CSeq last received.
 See \fICURLINFO_RTSP_CSEQ_RECV(3)\fP
 .IP CURLINFO_PROTOCOL
-The protocol used for the connection. (Added in 7.52.0)
+(Deprecated) The protocol used for the connection. (Added in 7.52.0)
 See \fICURLINFO_PROTOCOL(3)\fP
 .IP CURLINFO_SCHEME
 The scheme used for the connection. (Added in 7.52.0)

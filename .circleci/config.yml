@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 2021, 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
 #
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
+#
+# SPDX-License-Identifier: curl
 #
 ###########################################################################
 
@@ -30,21 +32,21 @@ commands:
     steps:
       - run:
           command: |
-            ./buildconf
+            autoreconf -fi
             ./configure --enable-warnings --enable-werror --with-openssl
 
   configure-openssl-no-verbose:
     steps:
       - run:
           command: |
-            ./buildconf
+            autoreconf -fi
             ./configure --disable-verbose --enable-werror --with-openssl
 
   configure-no-proxy:
     steps:
       - run:
           command: |
-            ./buildconf
+            autoreconf -fi
             ./configure --disable-proxy --enable-werror --with-openssl
 
   install-cares:
@@ -69,50 +71,52 @@ commands:
     steps:
       - run:
           command: |
-            ./buildconf
+            autoreconf -fi
             ./configure --enable-warnings --enable-werror --with-openssl --with-libssh
 
   install-wolfssl:
     steps:
       - run:
           command: |
-            curl -LO https://github.com/wolfSSL/wolfssl/archive/v5.1.1-stable.tar.gz
-            tar -xzf v5.1.1-stable.tar.gz
-            cd wolfssl-5.1.1-stable
+            WOLFSSL_VER=5.5.4
+            curl -LOsSf --retry 6 --retry-connrefused --max-time 999 https://github.com/wolfSSL/wolfssl/archive/v$WOLFSSL_VER-stable.tar.gz
+            tar -xzf v$WOLFSSL_VER-stable.tar.gz
+            cd wolfssl-$WOLFSSL_VER-stable
             ./autogen.sh
             ./configure --enable-tls13 --enable-all --enable-harden --prefix=$HOME/wssl
-            make && make install
+            make install
 
   install-wolfssh:
     steps:
       - run:
           command: |
-            curl -LO https://github.com/wolfSSL/wolfssh/archive/v1.4.8-stable.tar.gz
-            tar -xzf v1.4.8-stable.tar.gz
-            cd wolfssh-1.4.8-stable
+            WOLFSSH_VER=1.4.12
+            curl -LOsSf --retry 6 --retry-connrefused --max-time 999 https://github.com/wolfSSL/wolfssh/archive/v$WOLFSSH_VER-stable.tar.gz
+            tar -xzf v$WOLFSSH_VER-stable.tar.gz
+            cd wolfssh-$WOLFSSH_VER-stable
             ./autogen.sh
             ./configure --with-wolfssl=$HOME/wssl --prefix=$HOME/wssh --enable-scp --enable-sftp --disable-examples
-            make && make install
+            make install
 
   configure-cares:
     steps:
       - run:
           command: |
-            ./buildconf
+            autoreconf -fi
             ./configure --enable-warnings --enable-werror --with-openssl --enable-ares
 
   configure-wolfssh:
     steps:
       - run:
           command: |
-            ./buildconf
+            autoreconf -fi
             LDFLAGS="-Wl,-rpath,$HOME/wssh/lib" ./configure --enable-warnings --enable-werror --with-wolfssl=$HOME/wssl --with-wolfssh=$HOME/wssh
 
   configure-cares-debug:
     steps:
       - run:
           command: |
-            ./buildconf
+            autoreconf -fi
             ./configure --enable-debug --enable-werror --with-openssl --enable-ares
 
   build:

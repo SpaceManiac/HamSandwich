@@ -6,7 +6,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 2016 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -18,6 +18,8 @@
 #
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
+#
+# SPDX-License-Identifier: curl
 #
 ###########################################################################
 #
@@ -146,6 +148,7 @@ my %opts = (
     '--no-sessionid' => 1,
     '--no-keepalive' => 1,
     '--no-progress-meter' => 1,
+    '--no-clobber' => 1,
 
     # pretend these options without -no exist in curl.1 and tool_listhelp.c
     '--alpn' => 6,
@@ -156,8 +159,9 @@ my %opts = (
     '-N, --buffer' => 6,
     '--sessionid' => 6,
     '--progress-meter' => 6,
+    '--clobber' => 6,
 
-    # deprecated options do not need to be in tool_listhelp.c nor curl.1
+    # deprecated options do not need to be in tool_help.c nor curl.1
     '--krb4' => 6,
     '--ftp-ssl' => 6,
     '--ftp-ssl-reqd' => 6,

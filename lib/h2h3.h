@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -19,6 +19,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 #include "curl_setup.h"
@@ -43,12 +45,13 @@ struct h2h3req {
 
 /*
  * Curl_pseudo_headers() creates the array with pseudo headers to be
- * used in a HTTP/2 or HTTP/3 request. Returns an allocated struct.
+ * used in an HTTP/2 or HTTP/3 request. Returns an allocated struct.
  * Free it with Curl_pseudo_free().
  */
 CURLcode Curl_pseudo_headers(struct Curl_easy *data,
                              const char *request,
                              const size_t len,
+                             size_t* hdrlen /* optional */,
                              struct h2h3req **hp);
 
 /*
