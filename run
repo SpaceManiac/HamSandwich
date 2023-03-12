@@ -141,6 +141,9 @@ debugargs=()
 debugenvs=()
 
 # Build and install
+cmake() {
+	tools/bootstrap/cmake "$@"
+}
 if test -z "$nobuild"; then
 	if test "$os" = "emscripten"; then
 		# Web.

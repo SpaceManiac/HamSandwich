@@ -144,12 +144,10 @@ else()
 	find_library(SDL2_image_LIBRARIES SDL2_image REQUIRED)
 	find_library(SDL2_mixer_LIBRARIES SDL2_mixer REQUIRED)
 	find_library(SDL2_ttf_LIBRARIES SDL2_ttf REQUIRED)
-	target_include_directories(SDL2 INTERFACE ${SDL2_INCLUDE_DIRS})
-	target_link_libraries(SDL2 INTERFACE ${SDL2_LIBRARIES})
+	target_link_libraries(SDL2 INTERFACE SDL2::SDL2)
 	target_link_libraries(SDL2_image INTERFACE ${SDL2_image_LIBRARIES})
 	target_link_libraries(SDL2_mixer INTERFACE ${SDL2_mixer_LIBRARIES})
 	target_link_libraries(SDL2_ttf INTERFACE ${SDL2_ttf_LIBRARIES})
-	target_compile_options(SDL2 INTERFACE ${SDL2_CFLAGS_OTHER})
 
 	# Patch the rpath for the SDL library so that calls to `SDL_LoadObject` can find `libpng12.so.0`.
 	find_library(sdl2_original SDL2)

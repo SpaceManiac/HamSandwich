@@ -2,11 +2,11 @@
 # install-deps.sh - install dependencies for the current platform
 set -euo pipefail
 
-mkdir -p "build"
-
 if test "${HSW_NO_INSTALL_DEPS:-}"; then
 	exit
 fi
+
+mkdir -p "build"
 
 # Check for supported system
 if test "${MSYSTEM:-}"; then
@@ -40,54 +40,118 @@ else
 fi
 
 # Helper functions
-packages() {
-	local cmd="$1"
-	shift
-	local fname="build/.packages-$SYS"
-	if test "$force" || ! test -f "$fname" || test "$(cat "$fname")" != "$*"; then
-		echo "==== Updating system packages ===="
-		echo "$cmd" "$@"
-		$cmd "$@"
-		echo "$*" >"$fname"
+show_banner() {
+	echo "==== Installing missing dependencies ===="
+}
+
+echo_and() {
+	echo + "$@"
+	"$@"
+}
+
+pacman_needed() {
+	env LC_ALL=C pacman -Q "$@" 2>&1 \
+	| sed -nr "s/^error: package '(.+)' was not found\$/\1/p" \
+	|| true
+}
+
+# Systems
+deps_mingw32() {
+	local wanted=(
+		make
+		mingw-w64-i686-cmake
+		mingw-w64-i686-ninja
+		mingw-w64-i686-gcc
+	)
+	local needed
+	needed=$(pacman_needed "${wanted[@]}")
+	if test "$needed"; then
+		show_banner
+		echo_and pacman -S --noconfirm "${needed[@]}"
 	fi
 }
 
-deps_mingw32() {
-	packages 'pacman -S --needed --noconfirm --quiet' \
-		make \
-		mingw-w64-i686-{cmake,ninja,gcc}
-}
-
 deps_mingw64() {
-	packages 'pacman -S --needed --noconfirm --quiet' \
-		make \
-		mingw-w64-x86_64-{cmake,ninja,gcc}
-}
-
-sudo_apt-get_install() {
-	sudo DEBIAN_FRONTEND=noninteractive apt-get update
-	sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes "$@"
+	local wanted=(
+		make
+		mingw-w64-x86_64-cmake
+		mingw-w64-x86_64-ninja
+		mingw-w64-x86_64-gcc
+	)
+	local needed
+	needed=$(pacman_needed "${wanted[@]}")
+	if test "$needed"; then
+		show_banner
+		echo_and pacman -S --noconfirm "${needed[@]}"
+	fi
 }
 
 deps_ubuntu() {
-	packages 'sudo_apt-get_install' \
-		make g++ patchelf \
-		zlib1g-dev libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev libsdl2-ttf-dev
+	local wanted=(
+		unzip
+		make
+		g++
+		patchelf
+		zlib1g-dev
+		libsdl2-dev
+		libsdl2-mixer-dev
+		libsdl2-image-dev
+		libsdl2-ttf-dev
+	)
+	local needed
+	needed=$(
+		env LC_ALL=C dpkg-query -W "${wanted[@]}" \
+		2>&1 | sed -nr 's/^dpkg-query: no packages found matching (.+)$/\1/p' || true
+	)
+	if test "$needed"; then
+		show_banner
+		echo "+ sudo apt-get update && sudo apt-get install" "${needed[@]}"
+		sudo DEBIAN_FRONTEND=noninteractive apt-get update
+		sudo DEBIAN_FRONTEND=noninteractive apt-get install "${needed[@]}"
+	fi
 }
 
 deps_arch() {
-	packages 'sudo pacman -S --needed --quiet' \
-		wget \
-		make gcc gcc-libs patchelf \
-		zlib sdl2 sdl2_image sdl2_mixer sdl2_ttf
+	local wanted=(
+		unzip
+		make
+		gcc
+		gcc-libs
+		patchelf
+		zlib
+		sdl2
+		sdl2_image
+		sdl2_mixer
+		sdl2_ttf
+	)
+	local needed
+	needed=$(pacman_needed "${wanted[@]}")
+	if test "$needed"; then
+		show_banner
+		echo_and sudo pacman -S "${needed[@]}"
+	fi
 }
 
 deps_alpine() {
 	# Note: non-autoinstalled dependency on `bash` and `sudo` packages.
-	packages 'sudo apk add' \
-		make g++ zlib-dev \
-		sdl2-dev sdl2_mixer-dev sdl2_image-dev sdl2_ttf-dev \
-		python3 py3-pip jpeg-dev python3-dev
+	wanted=(
+		make
+		g++
+		patchelf
+		zlib-dev
+		sdl2-dev
+		sdl2_mixer-dev
+		libvorbis-dev
+		sdl2_image-dev
+		libpng-dev
+		sdl2_ttf-dev
+		openssl-dev
+	)
+	if ! apk info -e "${wanted[@]}" >/dev/null; then
+		show_banner
+		echo_and sudo apk add -t hamsandwich-deps "${wanted[@]}"
+	fi
+	# Use `sudo apk del hamsandwich-deps` to revert.
 }
 
 deps_macports() {
@@ -99,14 +163,4 @@ deps_homebrew() {
 }
 
 # Install dependencies for the correct system
-force=
-while test $# -gt 0; do
-	arg=$1; shift
-	case "$arg" in
-		--force)
-			force=1
-			;;
-	esac
-done
-
 deps_"$SYS"
