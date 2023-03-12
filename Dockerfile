@@ -25,5 +25,7 @@ RUN tar xf patchelf.tar.gz -C /usr/local
 
 # Skip install-deps.sh to avoid having to code it to actually work inside this.
 ENV HSW_NO_INSTALL_DEPS 1
+ENV CC gcc-9
+ENV CXX g++-9
 
 # Volume management is left to container runtime; see `./container`.
