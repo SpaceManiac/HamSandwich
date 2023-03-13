@@ -140,12 +140,15 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 	int i,chosen,lowpriority;
 
 	if(!soundIsOn)
-		return 0;
+		return false;
 
 	JamulSoundUpdate();
 
 	vol=vol+sndVolume;
 	pan+=128;
+
+	if (vol < 0)
+		return false;
 
 	if (soundList.size() < which + 1)
 	{
@@ -163,7 +166,7 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 			rw = AssetOpen_SDL(s);
 			if (!rw)
 			{
-				return 0;
+				return false;
 			}
 		}
 
@@ -172,7 +175,7 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 		if(soundList[which].sample==NULL)
 		{
 			LogError("LoadWAV(%d): %s", which, Mix_GetError());
-			return 0;
+			return false;
 		}
 	}
 
@@ -205,7 +208,7 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 	}
 
 	if(chosen==-1)	// no sounds of lower priority to kick out, give up
-		return 0;
+		return false;
 
 	// if you're replacing a sound, stop it first
 	if(schannel[chosen].soundNum!=-1)
@@ -231,17 +234,15 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 #endif
 
 	i=Mix_PlayChannel(-1, playing, (playFlags & SND_LOOPING) ? -1 : 0);
-	if(i!=-1)
-	{
-		Mix_Volume(i, vol / 2);
-		Mix_SetPanning(i, 255 - pan, pan);
-
-		schannel[chosen].soundNum=which;
-		schannel[chosen].priority=priority;
-		schannel[chosen].voice=i;
-	}
-	else
+	if (i == -1)
 		return false;
+
+	Mix_Volume(i, vol / 2);
+	Mix_SetPanning(i, 255 - pan, pan);
+
+	schannel[chosen].soundNum=which;
+	schannel[chosen].priority=priority;
+	schannel[chosen].voice=i;
 
 	return true;
 }
