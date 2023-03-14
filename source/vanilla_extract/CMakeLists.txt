@@ -4,5 +4,5 @@ target_link_libraries(vanilla_extract SDL2 lzma1900 nsis_exehead minizip)
 target_include_directories(vanilla_extract INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	target_compile_options(vanilla_extract PRIVATE -fPIC)
+	target_compile_options(vanilla_extract PRIVATE -fPIC -Wall -Wextra)
 endif()

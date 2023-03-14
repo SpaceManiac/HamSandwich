@@ -11,21 +11,26 @@ using namespace vanilla;
 
 static void* zsdl_open64(void* userdata, const void* filename, int mode)
 {
+	(void)filename;
+	(void)mode;
 	return userdata;
 }
 
 static uLong zsdl_read(void* userdata, void* stream, void* buf, uLong size)
 {
+	(void)userdata;
 	return SDL_RWread((SDL_RWops*) stream, buf, 1, size);
 }
 
 static uLong zsdl_write(void* userdata, void* stream, const void* buf, uLong size)
 {
+	(void)userdata;
 	return SDL_RWwrite((SDL_RWops*) stream, buf, 1, size);
 }
 
 static ZPOS64_T zsdl_tell64(void* userdata, void* stream)
 {
+	(void)userdata;
 	return SDL_RWtell((SDL_RWops*) stream);
 }
 
@@ -35,17 +40,21 @@ static_assert(ZLIB_FILEFUNC_SEEK_CUR == RW_SEEK_CUR);
 static_assert(ZLIB_FILEFUNC_SEEK_END == RW_SEEK_END);
 static long zsdl_seek64(void* userdata, void* stream, ZPOS64_T offset, int origin)
 {
+	(void)userdata;
 	SDL_RWseek((SDL_RWops*) stream, offset, origin);
 	return 0;
 }
 
 static int zsdl_close(void* userdata, void* stream)
 {
+	(void)userdata;
 	return SDL_RWclose((SDL_RWops*) stream);
 }
 
 static int zsdl_testerror(void* userdata, void* stream)
 {
+	(void)userdata;
+	(void)stream;
 	return 0;
 }
 

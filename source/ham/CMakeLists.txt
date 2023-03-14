@@ -19,3 +19,7 @@ target_include_directories(ham INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 if(ham_library_type STREQUAL "SHARED")
 	install(TARGETS ham LIBRARY RUNTIME COMPONENT generic/executables)
 endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	target_compile_options(ham PRIVATE -Wall -Wextra)
+endif()

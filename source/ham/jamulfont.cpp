@@ -1092,7 +1092,7 @@ void FontPrintStringAngle2(int x,int y,const char *s,const mfont_t *font)
 	}
 }
 
-void FontPrintCharUnGlowSideways(int x, int y, int minY,char c, const mfont_t *font)
+void FontPrintCharUnGlowSideways(int x, int y, int minY,dword c, const mfont_t *font)
 {
 	byte *dst,*src;
 	int scrWidth,scrHeight,chrWidth;

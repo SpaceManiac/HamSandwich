@@ -150,9 +150,10 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 	if (vol < 0)
 		return false;
 
-	if (soundList.size() < which + 1)
+	size_t wantSize = which + 1;
+	if (soundList.size() < wantSize)
 	{
-		soundList.resize(which + 1);
+		soundList.resize(wantSize);
 	}
 
 	if(soundList[which].sample==NULL)
@@ -271,23 +272,22 @@ bool JamulSoundStop(int which)
 // now here is all the big sound manager stuff, that allows multiple sounds at once
 void JamulSoundPurge(void)
 {
-	int i;
-
-	if(!soundIsOn)
+	if (!soundIsOn)
 		return;
 
-	for(i=0;i<NUM_SOUNDS;i++)
+	for (int i = 0; i < NUM_SOUNDS; i++)
 	{
-		if(schannel[i].soundNum!=-1)
+		if (schannel[i].soundNum != -1)
 			Mix_HaltChannel(schannel[i].voice);
-		schannel[i].soundNum=-1;
-		schannel[i].priority=INT_MIN;
-		schannel[i].voice=-1;
+		schannel[i].soundNum = -1;
+		schannel[i].priority = INT_MIN;
+		schannel[i].voice = -1;
 		schannel[i].sample.reset();
 	}
-	for(i=0;i<soundList.size();i++)
+
+	for (size_t i = 0; i < soundList.size(); i++)
 	{
-		if(soundList[i].sample)
+		if (soundList[i].sample)
 		{
 			soundList[i].sample.reset();
 		}

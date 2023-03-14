@@ -992,7 +992,7 @@ bool sprite_set_t::Load(const char *fname)
 bool sprite_set_t::Save(const char *fname) const
 {
 	FILE *f;
-	int i;
+	word i;
 
 	f=AssetOpen_Write(fname);
 	if(!f)
@@ -1015,7 +1015,7 @@ bool sprite_set_t::Save(const char *fname) const
 	}
 
 	// write the sprite data
-	for(i=0;i<spr.size();i++)
+	for(i=0;i<count;i++)
 	{
 		if(!spr[i]->SaveData(f))
 		{
@@ -1030,14 +1030,14 @@ bool sprite_set_t::Save(const char *fname) const
 
 sprite_t* sprite_set_t::GetSprite(int which)
 {
-	if (which >= 0 && which < spr.size() && spr[which])
+	if (which >= 0 && (size_t)which < spr.size() && spr[which])
 		return spr[which].get();
 	return nullptr;
 }
 
 const sprite_t* sprite_set_t::GetSprite(int which) const
 {
-	if (which >= 0 && which < spr.size() && spr[which])
+	if (which >= 0 && (size_t)which < spr.size() && spr[which])
 		return spr[which].get();
 	return nullptr;
 }

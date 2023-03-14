@@ -17,6 +17,7 @@ static FILE* errorLog = nullptr;
 
 void HamLogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message)
 {
+	(void)userdata;
 	original(originalUserdata, category, priority, message);
 	if (errorLog && priority >= SDL_LOG_PRIORITY_WARN)
 	{

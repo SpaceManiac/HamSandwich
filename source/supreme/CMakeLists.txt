@@ -5,6 +5,6 @@ HamSandwich_add_executable(
 	SOURCES ${sources}
 )
 
-if(CMAKE_COMPILER_IS_GNUCC)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	target_compile_options(supreme PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-unused-but-set-variable)
 endif()
