@@ -67,7 +67,8 @@ deps_mingw32() {
 	needed=$(pacman_needed "${wanted[@]}")
 	if test "$needed"; then
 		show_banner
-		echo_and pacman -S --noconfirm "${needed[@]}"
+		# shellcheck disable=SC2086
+		echo_and pacman -S --noconfirm $needed
 	fi
 }
 
@@ -82,7 +83,8 @@ deps_mingw64() {
 	needed=$(pacman_needed "${wanted[@]}")
 	if test "$needed"; then
 		show_banner
-		echo_and pacman -S --noconfirm "${needed[@]}"
+		# shellcheck disable=SC2086
+		echo_and pacman -S --noconfirm $needed
 	fi
 }
 
@@ -128,7 +130,8 @@ deps_arch() {
 	needed=$(pacman_needed "${wanted[@]}")
 	if test "$needed"; then
 		show_banner
-		echo_and sudo pacman -S "${needed[@]}"
+		# shellcheck disable=SC2086
+		echo_and sudo pacman -S $needed
 	fi
 }
 
