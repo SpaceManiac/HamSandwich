@@ -88,6 +88,7 @@ deps_mingw64() {
 	fi
 }
 
+# shellcheck disable=SC2086
 deps_ubuntu() {
 	local wanted=(
 		unzip
@@ -107,9 +108,9 @@ deps_ubuntu() {
 	)
 	if test "$needed"; then
 		show_banner
-		echo "+ sudo apt-get update && sudo apt-get install" "${needed[@]}"
+		echo "+ sudo apt-get update && sudo apt-get install" $needed
 		sudo DEBIAN_FRONTEND=noninteractive apt-get update
-		sudo DEBIAN_FRONTEND=noninteractive apt-get install "${needed[@]}"
+		sudo DEBIAN_FRONTEND=noninteractive apt-get install $needed
 	fi
 }
 
