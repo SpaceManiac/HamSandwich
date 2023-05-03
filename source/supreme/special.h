@@ -4,7 +4,7 @@
 #include "mgldraw.h"
 #include <stdio.h>
 
-#define MAX_SPECIAL	128
+#define MAX_SPECIAL	250
 #define MAX_EVENT   128
 
 //special triggers
