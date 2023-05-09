@@ -9,12 +9,13 @@
 	#define M_PI 3.1415926535897
 #endif
 
+static constexpr byte MAX_BUTTONS = 4;
 static byte numButtons = 2;
 static byte state = 0;
 static byte taps = 0;
 
 void SoftJoystickNumButtons(byte n) {
-	numButtons = std::max((byte) 1, std::min(n, (byte) 4));
+	numButtons = std::max((byte) 1, std::min(n, MAX_BUTTONS));
 }
 
 byte SoftJoystickState() {
@@ -51,7 +52,16 @@ SoftJoystick::SoftJoystick(MGLDraw* mgl) {
 }
 
 void SoftJoystick::update(MGLDraw* mgl, float scale) {
-	int spare = (int)(mgl->winWidth - mgl->xRes * scale) / 2;
+	int spare = std::clamp(
+		// Preferred: the entire width of the letterbox.
+		(int)(mgl->winWidth - mgl->xRes * scale) / 2,
+		// Minimum: buttons too small will be unclickable.
+		// Also, forbid negative values if actually there is no letterbox.
+		80,
+		// Maximum: buttons too big will overlap vertically.
+		mgl->winHeight / (2 + MAX_BUTTONS)
+	);
+
 	int right = mgl->winWidth - spare;
 	trough.rect = { 0, 0, 3 * spare, 3 * spare };
 	stick.rect = { 0, 0, 3 * spare, 3 * spare };
