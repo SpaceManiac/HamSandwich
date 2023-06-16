@@ -2020,6 +2020,12 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 
 	switch(me->type)
 	{
+		case BLT_SCANLOCK:
+			// In normal play, BLT_SCANNER just transmutes into this, but we
+			// want Summon Bullet to work sensibly.
+			me->timer=60;
+			me->target=65535;
+			break;
 		case BLT_SCANSHOT:
 			me->facing=Random(256);
 			me->dx=Cosine(me->facing)*4;
@@ -2027,6 +2033,7 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 			me->dz=0;
 			me->anim=0;
 			me->timer=60;
+			me->target=65535;
 			break;
 		case BLT_SCANNER:
 			me->dx=Cosine(facing*32)*16;
@@ -2206,6 +2213,7 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 			me->dx=0;
 			me->dy=0;
 			me->dz=0;
+			me->target=65535;
 			MakeSound(SND_MEGABEAM,me->x,me->y,SND_CUTOFF,5000);
 			break;
 		case BLT_MEGABEAM1:
