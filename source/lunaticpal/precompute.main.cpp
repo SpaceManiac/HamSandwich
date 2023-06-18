@@ -5,6 +5,7 @@
 #include <vector>
 #include <fstream>
 #include <zlib.h>
+#include <stdint.h>
 
 const uint8_t palette[256][3] =
 {
