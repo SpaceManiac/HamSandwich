@@ -40,6 +40,7 @@ based on HamSandwich.
 ### HamSandwich (2019–present)
 
 * Fix crash if world select is empty
+* Fix rare crash when using Summon/Change Bullet with Scanner Shot, Scanner Lock, or Megabeam
 * Fix "Monster Sprites" effect persisting if a monster ID is reused
 * Add <kbd>Page Up</kbd> and <kbd>Page Down</kbd> hotkeys to scroll world select
 * Speed up the world select loading
@@ -48,6 +49,7 @@ based on HamSandwich.
 
 Editor features:
 * Add Zoom Out option (hotkey: <kbd>F2</kbd>) to View menu that increases the resolution while editing
+* Increase per-map special limit to 250, up from 128
 
 Also applicable to Sleepless Hollow:
 * Add "Jump to" button to Goto/Win Level effects
