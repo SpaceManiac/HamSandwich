@@ -25,6 +25,7 @@ public:
 	void DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright) const;
 	void DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toColor, char bright) const;
 	void DrawGhost(int x, int y, MGLDraw *mgl, char bright) const;
+	void DrawGhostBright(int x, int y, MGLDraw *mgl, char bright) const;
 	void DrawGlow(int x, int y, MGLDraw *mgl, char bright) const;
 	// this makes half-height tilted black shadows (they darken by 4)
 	void DrawShadow(int x, int y, MGLDraw *mgl) const;

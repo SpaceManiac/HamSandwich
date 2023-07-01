@@ -593,7 +593,8 @@ void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toC
 // (color 1-31).  Wherever those colors occur, they are instead used as the
 // degree to which the background should be brightened instead of drawn over.
 //   bright: how much to darken or lighten the whole thing (-16 to +16 reasonable)
-
+// Ghostly parts are NOT affected by brightness.
+// Default in Spooky Castle, Lunatic, Supreme, Eddie, Mystic, Sleepless.
 void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright) const
 {
 	const byte *src;
@@ -685,6 +686,119 @@ void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright) const
 				if (!noDraw)
 					for (i = 0; i < b; ++i)
 						dst[i] = SprModifyGhost(src[i], dst[i], bright);
+				srcx += b;
+				src += b;
+				dst += b;
+			}
+		}
+		if (srcx >= width + x)
+		{
+			srcx = x;
+			srcy++;
+			dst += pitch;
+			dst -= width;
+			if (srcy >= constrainY)
+				noDraw = 0;
+			if (srcy > constrainY2)
+				return;
+		}
+	}
+}
+
+// See DrawGhost above.
+// Ghostly parts ARE affected by brightness.
+// Default in Stockboy, Loonyland, Loonyland 2.
+void sprite_t::DrawGhostBright(int x, int y, MGLDraw *mgl, char bright) const
+{
+	const byte *src;
+	byte *dst, b, skip;
+	int pitch;
+	int srcx, srcy;
+	byte noDraw;
+	int i;
+
+	x -= ofsx;
+	y -= ofsy;
+	int constrainX2 = ResolveConstrainX2(mgl);
+	int constrainY2 = ResolveConstrainY2(mgl);
+	if (x > constrainX2 || y > constrainY2)
+		return; // whole sprite is offscreen
+
+	pitch = mgl->GetWidth();
+	src = data.data();
+	dst = mgl->GetScreen() + x + y*pitch;
+
+	srcx = x;
+	srcy = y;
+	if (srcy < constrainY)
+		noDraw = 1;
+	else
+		noDraw = 0;
+	while (srcy < height + y)
+	{
+		if ((*src)&128) // transparent run
+		{
+			b = (*src)&127;
+			srcx += b;
+			dst += b;
+			src++;
+		}
+		else // solid run
+		{
+			b = *src;
+			src++;
+			if (srcx < constrainX - b || srcx > constrainX2)
+			{
+				// don't draw this line
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else if (srcx < constrainX)
+			{
+				// skip some of the beginning
+				skip = (constrainX - srcx);
+				src += skip;
+				srcx += skip;
+				dst += skip;
+				b -= skip;
+				if (srcx > constrainX2 - b)
+				{
+					skip = (b - (constrainX2 - srcx)) - 1;
+					if (!noDraw)
+						for (i = 0; i < b - skip; ++i)
+							dst[i] = SprModifyGhostBright(src[i], dst[i], bright);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+				else
+				{
+					if (!noDraw)
+						for (i = 0; i < b; ++i)
+							dst[i] = SprModifyGhostBright(src[i], dst[i], bright);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+			}
+			else if (srcx > constrainX2 - b)
+			{
+				// skip some of the end
+				skip = (srcx - (constrainX2 - b)) - 1;
+				if (!noDraw)
+					for (i = 0; i < b - skip; ++i)
+						dst[i] = SprModifyGhostBright(src[i], dst[i], bright);
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else
+			{
+				// do it all!
+				if (!noDraw)
+					for (i = 0; i < b; ++i)
+						dst[i] = SprModifyGhostBright(src[i], dst[i], bright);
 				srcx += b;
 				src += b;
 				dst += b;

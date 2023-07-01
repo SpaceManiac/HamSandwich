@@ -614,15 +614,15 @@ void RenderInterface(MGLDraw *mgl)
 	{
 		if(Random(10)==0)
 		{
-			intfaceSpr->GetSprite(18+Random(6))->DrawGhost(Random(640),Random(480),
+			intfaceSpr->GetSprite(18+Random(6))->DrawGhostBright(Random(640),Random(480),
 				mgl,-8+(byte)Random(17));
 			if(Random(10)==0)
 			{
-				intfaceSpr->GetSprite(18+Random(6))->DrawGhost(Random(640),Random(480),
+				intfaceSpr->GetSprite(18+Random(6))->DrawGhostBright(Random(640),Random(480),
 					mgl,-8+(byte)Random(17));
 				if(Random(10)==0)
 				{
-					intfaceSpr->GetSprite(18+Random(6))->DrawGhost(Random(640),Random(480),
+					intfaceSpr->GetSprite(18+Random(6))->DrawGhostBright(Random(640),Random(480),
 						mgl,-8+(byte)Random(17));
 				}
 			}
