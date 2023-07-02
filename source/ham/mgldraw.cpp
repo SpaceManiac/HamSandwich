@@ -82,6 +82,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	JamulSoundInit(512);
 
 	Uint32 flags = windowed ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP;
+	flags |= SDL_WINDOW_HIDDEN;  // Hide the window on creation, and show it a little later, to avoid flicker if SDL_CreateRenderer recreates the window.
 	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, xRes, yRes, flags);
 	if (!window) {
 		LogError("SDL_CreateWindow: %s", SDL_GetError());
@@ -151,6 +152,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 
 	SDL_SetWindowTitle(window, name);
 	SDL_ShowCursor(SDL_DISABLE);
+	SDL_ShowWindow(window);
 
 	scrn = std::make_unique<byte[]>(xRes * yRes);
 	buffer = std::make_unique<RGB[]>(xRes * yRes);
