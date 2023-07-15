@@ -994,12 +994,6 @@ int main(int argc, char** argv)
 			ImGui::Separator();
 			ImGui::Text("Version: %.*s", 10, GIT_VERSION);
 #endif
-
-#ifndef NDEBUG
-			ImGui::Spacing();
-			ImGui::Separator();
-			ImGui::Text("Transfers: %d", running_downloads);
-#endif
 		}
 		ImGui::End();
 
