@@ -32,8 +32,10 @@ based on HamSandwich.
     * Combine each game's control, music, movie, font, sound, and sprite handling into a common "Ham" core
 
 ### Source code blogs
-* [Dr. Lunatic, Supreme With Cheese, Sleepless Hollow, Loonyland, Loonyland 2, and Kid Mystic](https://hamumu.com/blog.php?entry=1558391916) (2019-05-20)
+* [Dr. Lunatic](https://hamumu.com/blog.php?entry=1318711596) (2011-08-15)
+* [Supreme With Cheese, Sleepless Hollow, Loonyland, Loonyland 2, and Kid Mystic](https://hamumu.com/blog.php?entry=1558391916) (2019-05-20)
 * [Eddie Galaxy, Spooky Castle, and Stockboy](https://hamumu.com/blog.php?entry=1653318531) (2022-05-23)
+* Amazin' SPISPOPD is believed lost.
 
 ## Dr. Lunatic Supreme With Cheese
 
