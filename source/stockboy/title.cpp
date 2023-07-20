@@ -11,6 +11,7 @@
 #include "stars.h"
 #include "giftshop.h"
 #include "music.h"
+#include "appdata.h"
 
 // special codes in the credits:
 // @ = use GirlsRWeird font
@@ -237,6 +238,18 @@ void SetupMenuChoices(void)
 		strcpy(menu[p].desc,desc[6]);
 		menu[p].menuChoice=MENU_EDITOR;
 		p++;
+	}
+	// HamSandwich change: show Add-on Levels if one of the level sets from the
+	// 2011 stockaddon.exe is detected. Ordinarily it would require the editor
+	// to be unlocked, but old fans may be replaying the game and want quick access.
+	bool showAddons = profile.giftShop[GIFT_EDITOR];
+	if (SDL_RWops* testAddon = AssetOpen_SDL("levels/cavern.sbl"))
+	{
+		SDL_RWclose(testAddon);
+		showAddons = true;
+	}
+	if (showAddons)
+	{
 		strcpy(menu[p].toptxt,name[7*2]);
 		strcpy(menu[p].btmtxt,name[7*2+1]);
 		strcpy(menu[p].desc,desc[7]);

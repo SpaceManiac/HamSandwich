@@ -238,6 +238,7 @@ See "Also applicable to Sleepless Hollow" above.
 ### HamSandwich (2022–present)
 
 * Disable the internet addon downloading feature, since the server is long-gone
+* Unlock the "Add-On Level" menu automatically when the "All Stockboy add-ons" pack is enabled
 
 ### v1.5 (June 2004) - [Download](https://hamumu.itch.io/stockboy)
 
