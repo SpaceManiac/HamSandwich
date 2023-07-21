@@ -21,5 +21,5 @@ if(ham_library_type STREQUAL "SHARED")
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	target_compile_options(ham PRIVATE -Wall -Wextra)
+	target_compile_options(ham PRIVATE -Wall -Wextra -Wpedantic)
 endif()

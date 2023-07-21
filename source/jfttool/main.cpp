@@ -181,7 +181,7 @@ int main(int argc, char **argv) {
         ofstream out { fname, ios::out | ios::binary };
         write(out, &header);
         out.write((char*) data.data(), data.size());
-        out.put(0xCD);  // apparent padding
+        out.put(static_cast<char>(0xCD));  // apparent padding
 
         cout << "saved " << fname << endl;
     } else {

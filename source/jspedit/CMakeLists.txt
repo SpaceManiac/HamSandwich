@@ -9,7 +9,7 @@ HamSandwich_embed_file(jspedit "${CMAKE_CURRENT_SOURCE_DIR}/fontawesome.ttf" emb
 HamSandwich_executable_icon(jspedit "${CMAKE_CURRENT_SOURCE_DIR}/bomb.ico")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	target_compile_options(jspedit PRIVATE -Wall -Wextra)
+	target_compile_options(jspedit PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
 if(WIN32 AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")

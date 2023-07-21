@@ -6,5 +6,5 @@ HamSandwich_add_executable(
 )
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	target_compile_options(supreme PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-unused-but-set-variable)
+	target_compile_options(supreme PRIVATE -Wall -Wextra -Wpedantic -Wno-unused-parameter -Wno-unused-but-set-variable)
 endif()
