@@ -747,6 +747,8 @@ bool Launch(std::string_view bin_dir, const Game* game, bool fullscreen, SDL_Win
 #endif
 }
 
+const char GAME_SELECTION_FILENAME[] = "appdata/game_selection.txt";
+
 int main(int argc, char** argv)
 {
 	const char* bin_dir = EscapeBinDirectory();
@@ -818,6 +820,26 @@ int main(int argc, char** argv)
 		{
 			while (launcher.update_transfers());
 			return 0;
+		}
+	}
+	else
+	{
+		// Try to preselect the last selected game.
+		owned::FILE game_selection_file = owned::fopen(GAME_SELECTION_FILENAME, "rb");
+		if (game_selection_file)
+		{
+			char game_selection[256];
+			fgets(game_selection, sizeof game_selection, game_selection_file.get());
+			// If the file exists but its content is invalid, select nothing.
+			// If the file didn't exist select the default (Supreme) as usual.
+			launcher.current_game = nullptr;
+			for (auto& game : launcher.games)
+			{
+				if (game_selection == game.id)
+				{
+					launcher.current_game = &game;
+				}
+			}
 		}
 	}
 
@@ -973,6 +995,13 @@ int main(int argc, char** argv)
 					{
 						launcher.wants_to_play = true;
 						game.start_missing_downloads(launcher.downloads);
+					}
+
+					// On click, save the selection.
+					owned::FILE game_selection_file = owned::fopen(GAME_SELECTION_FILENAME, "wb");
+					if (game_selection_file)
+					{
+						fputs(launcher.current_game->id.c_str(), game_selection_file.get());
 					}
 				}
 				if (game.loaded_icon.texture)
