@@ -1,26 +1,18 @@
 #!/bin/bash
 # Run a command in a container built from the local Dockerfile.
-# Use the current user to avoid permission conflicts with the host.
-# Build with BUILDKIT for speed, particularly when image is up-to-date.
+# Use rootless Podman to avoid permission conflicts with the host.
+# Make it interactive and use an init to allow input and ^C to terminate.
 # Remove the container afterwards to avoid accruing garbage.
-tag=${PWD}
-tag=${tag,,}
-tag=${tag##*/}
-
-tty=false
+set -euo pipefail
+ttyopts=()
 if test -t 0; then
-	tty=true
+	ttyopts=(--interactive --tty)
 fi
-
-exec docker run \
+id="$(podman build --format=docker --quiet .)"
+exec podman run \
 	--rm \
-	--volume /etc/passwd:/etc/passwd:ro \
-	--volume /etc/group:/etc/group:ro \
 	--volume "$PWD":"$PWD" \
-	--volume "$(readlink -f external/steamworks_sdk):$PWD/external/steamworks_sdk" \
 	--workdir "$PWD" \
-	--user "$(id -u):$(id -g)" \
-	--tty="$tty" \
-	--interactive \
-	"$(env DOCKER_BUILDKIT=1 docker build -q -t "${tag}" .)" \
+	"${ttyopts[@]}" --init \
+	"$id" \
 	"$@"
