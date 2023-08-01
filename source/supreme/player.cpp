@@ -49,7 +49,9 @@ void InitPlayer(byte level,const char *fname)
 {
 	int i;
 
-	strcpy(player.worldName,fname);
+	if (fname != player.worldName)  // Genuine pointer check to avoid self-overwriting.
+		strcpy(player.worldName, fname);
+
 	player.worldProg=GetWorldProgress(player.worldName);
 
 	player.levelNum=level;
