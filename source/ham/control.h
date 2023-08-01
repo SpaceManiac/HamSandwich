@@ -6,15 +6,15 @@
 // The various control flags.
 enum {
 	// Directional states.
-	CONTROL_UP = 1,
-	CONTROL_DN = 2,
-	CONTROL_LF = 4,
-	CONTROL_RT = 8,
+	CONTROL_UP = (1 << 0),
+	CONTROL_DN = (1 << 1),
+	CONTROL_LF = (1 << 2),
+	CONTROL_RT = (1 << 3),
 	// Called B1-4, but actually whatever button is bound to that control.
-	CONTROL_B1 = 16,
-	CONTROL_B2 = 32,
-	CONTROL_B3 = 64,
-	CONTROL_B4 = 128,
+	CONTROL_B1 = (1 << 4),
+	CONTROL_B2 = (1 << 5),
+	CONTROL_B3 = (1 << 6),
+	CONTROL_B4 = (1 << 7),
 };
 
 void InitControls();

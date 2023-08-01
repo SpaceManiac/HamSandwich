@@ -2,6 +2,7 @@
 #include "mgldraw.h"
 #include "log.h"
 #include "softjoystick.h"
+#include "owned_sdl.h"
 #include <vector>
 #include <algorithm>
 
@@ -13,7 +14,7 @@ static byte keyState, keyTap;
 static byte arrowState, arrowTap;
 
 // joysticks
-static std::vector<SDL_Joystick*> joysticks;
+static std::vector<owned::SDL_Joystick> joysticks;
 static byte oldJoy;
 
 // mappings
@@ -36,9 +37,11 @@ void InitControls(void)
 	oldJoy=0;
 
 	for (int i = 0; i < SDL_NumJoysticks(); ++i) {
-		SDL_Joystick* joystick = SDL_JoystickOpen(i);
-		if (joystick)
-			joysticks.push_back(joystick);
+		owned::SDL_Joystick joystick = owned::SDL_JoystickOpen(i);
+		if (joystick) {
+			LogDebug("Joystick available: %s", SDL_JoystickName(joystick.get()));
+			joysticks.push_back(std::move(joystick));
+		}
 		else
 			LogError("JoystickOpen(%d, %s): %s", i, SDL_JoystickNameForIndex(i), SDL_GetError());
 	}
@@ -79,11 +82,11 @@ const char *ScanCodeText(byte s) {
 dword GetJoyButtons() {
 	dword held = 0;
 
-	for (SDL_Joystick* joystick : joysticks) {
-		int n = SDL_JoystickNumButtons(joystick);
+	for (owned::SDL_Joystick& joystick : joysticks) {
+		int n = SDL_JoystickNumButtons(joystick.get());
 		int j = 1;
 		for (int i = 0; i < n && i < 32; ++i) {
-			if (SDL_JoystickGetButton(joystick, i)) {
+			if (SDL_JoystickGetButton(joystick.get(), i)) {
 				held |= j;
 			}
 			j *= 2;
@@ -197,7 +200,7 @@ static byte GetJoyState(void)
 
 	for (auto iter = joysticks.begin(); iter != joysticks.end(); ++iter)
 	{
-		SDL_Joystick* joystick = *iter;
+		SDL_Joystick* joystick = iter->get();
 		if (!SDL_JoystickGetAttached(joystick))
 		{
 			// Drop disconnected joysticks.
@@ -266,10 +269,10 @@ static byte GetJoyState(void)
 
 	// Add newly connected joysticks.
 	for (int i = joysticks.size(); i < SDL_NumJoysticks(); ++i) {
-		SDL_Joystick* joystick = SDL_JoystickOpen(i);
+		owned::SDL_Joystick joystick = owned::SDL_JoystickOpen(i);
 		if (joystick) {
-			LogDebug("Joystick added: %s", SDL_JoystickName(joystick));
-			joysticks.push_back(joystick);
+			LogDebug("Joystick added: %s", SDL_JoystickName(joystick.get()));
+			joysticks.push_back(std::move(joystick));
 		}
 	}
 

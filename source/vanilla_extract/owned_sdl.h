@@ -168,4 +168,27 @@ namespace owned
 	typedef std::unique_ptr<void, _deleter::SDL_GLContext> SDL_GLContext;
 }
 
+// ----------------------------------------------------------------------------
+// SDL_Joystick
+
+namespace owned
+{
+	namespace _deleter
+	{
+		struct SDL_Joystick
+		{
+			void operator()(::SDL_Joystick* ptr) { return SDL_JoystickClose(ptr); }
+		};
+	}
+
+	typedef std::unique_ptr<::SDL_Joystick, _deleter::SDL_Joystick> SDL_Joystick;
+
+	inline SDL_Joystick SDL_JoystickOpen(int device_index)
+	{
+		return SDL_Joystick { ::SDL_JoystickOpen(device_index) };
+	}
+
+	// NB: SDL_JoystickFromInstanceID does not return an owned ptr
+}
+
 #endif
