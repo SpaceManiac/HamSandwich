@@ -56,7 +56,7 @@ namespace vanilla
 		std::unique_ptr<Vfs> vfs;
 		std::string mountpoint;
 
-		Mount(std::unique_ptr<Vfs>&& vfs, const std::string& mountpoint = "")
+		Mount(std::unique_ptr<Vfs>&& vfs, std::string&& mountpoint = "")
 			: vfs(std::move(vfs))
 			, mountpoint(mountpoint)
 		{
@@ -84,9 +84,9 @@ namespace vanilla
 		{
 			mounts.push_back(std::move(mount));
 		}
-		void push_back(std::unique_ptr<Vfs>&& entry, std::string mountpoint = "")
+		void push_back(std::unique_ptr<Vfs>&& entry, std::string&& mountpoint = "")
 		{
-			mounts.push_back(Mount { std::move(entry), mountpoint });
+			mounts.push_back(Mount { std::move(entry), std::move(mountpoint) });
 		}
 
 		// Returns true if this VfsStack is empty and therefore not useable.

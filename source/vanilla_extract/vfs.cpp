@@ -27,7 +27,7 @@ const char* Mount::matches(const char* filename) const
 		{
 			return &filename[mountpoint.size() + 1];
 		}
-		else if (filename[mountpoint.size()] == '0')
+		else if (filename[mountpoint.size()] == '\0')
 		{
 			return "";
 		}
