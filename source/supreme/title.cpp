@@ -859,7 +859,7 @@ TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
 		AWAIT mgl->Flip();
 		if(!mgl->Process())
 			CO_RETURN;
-		if(mgl->LastKeyPressed())
+		if(mgl->LastKeyPressed() || GetJoyButtons())
 			mode=2;
 
 		EndClock();
