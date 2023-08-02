@@ -176,6 +176,13 @@
 				"CMAKE_CXX_FLAGS": "-fsanitize=undefined",
 				"LINK_FLAGS": "-fsanitize=undefined"
 			}
+		},
+		{
+			"name": "iwyu",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_CXX_INCLUDE_WHAT_YOU_USE": "include-what-you-use"
+			}
 		}
 	]
 }
