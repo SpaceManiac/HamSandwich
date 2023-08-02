@@ -19,7 +19,7 @@ jobs:
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
           cmake --preset windows-i686-release
-          cmake --build build/cmake-windows-i686-release16.0 --target install
+          cmake --build build/cmake-windows-i686-release16.0 --target install/strip
       - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
         run: tools/bootstrap/butler push --if-changed build/install "${ENV:ITCH_GAME}:windows" ("--userversion=" + (git rev-parse --short=10 HEAD))
   mingw32:
@@ -34,13 +34,13 @@ jobs:
           # to install `make` manually here.
           install: make
       - shell: msys2 {0}
-        run: make install mode=release
+        run: make install/strip mode=release
   linux:
     name: Linux
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - run: ./container make install mode=release
+      - run: ./container make install/strip mode=release
       - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
         run: tools/bootstrap/butler push --if-changed build/install "$ITCH_GAME:linux" --userversion="$(git rev-parse --short=10 HEAD)"
   mac:
@@ -48,7 +48,7 @@ jobs:
     runs-on: macos-11
     steps:
       - uses: actions/checkout@v2
-      - run: make install mode=release
+      - run: make install/strip mode=release
       - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
         run: tools/bootstrap/butler push --if-changed build/install "$ITCH_GAME:macos" --userversion="$(git rev-parse --short=10 HEAD)"
   android:
@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - run: make install mode=release os=emscripten
+      - run: make install/strip mode=release os=emscripten
       - uses: actions/upload-pages-artifact@v1
         with:
           path: ./build/webroot
