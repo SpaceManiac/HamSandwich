@@ -165,6 +165,17 @@
 					]
 				}
 			}
+		},
+		{
+			"name": "ubsan",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_C_COMPILER": "clang",
+				"CMAKE_CXX_COMPILER": "clang++",
+				"CMAKE_C_FLAGS": "-fsanitize=undefined",
+				"CMAKE_CXX_FLAGS": "-fsanitize=undefined",
+				"LINK_FLAGS": "-fsanitize=undefined"
+			}
 		}
 	]
 }
