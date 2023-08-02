@@ -43,7 +43,6 @@ class LightTool : public Tool
 
 		byte brush;		// brush size
 		byte plopMode;	// how it plops when clicked
-		byte lastPlop;	// for "Cycle" plop mode
 		byte dragSlider;
 		int lastX,lastY;	// last place plopped
 };

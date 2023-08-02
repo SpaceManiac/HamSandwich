@@ -32,7 +32,6 @@ class FloorTool : public Tool
 		byte active;	// which of the four is active
 		byte brush;		// brush size
 		byte plopMode;	// how it plops when clicked
-		byte lastPlop;	// for "Cycle" plop mode
 		int lastX,lastY;	// last place plopped
 		int pickingTile;	// which of the four tiles you are picking for
 };

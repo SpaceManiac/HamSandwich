@@ -40,7 +40,7 @@ void write_string(std::ostream& o, string_view s);
 bool read_varint(std::istream& i, size_t* id);
 bool read_string(std::istream& i, Buffer buffer);
 
-class Section
+class Section final
 {
 public:
 	std::stringstream stream;
@@ -51,7 +51,7 @@ public:
 	size_t read_varint();
 	bool read_string(Buffer buffer);
 
-	virtual std::string save();
+	std::string save();
 };
 
 class Save final
