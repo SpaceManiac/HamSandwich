@@ -14,7 +14,7 @@ static byte keyState, keyTap;
 static byte arrowState, arrowTap;
 
 // joysticks
-static std::vector<owned::SDL_Joystick> joysticks;
+static std::vector<owned::SDL_GameController> joysticks;
 static byte oldJoy;
 
 // mappings
@@ -37,13 +37,18 @@ void InitControls(void)
 	oldJoy=0;
 
 	for (int i = 0; i < SDL_NumJoysticks(); ++i) {
-		owned::SDL_Joystick joystick = owned::SDL_JoystickOpen(i);
+		if (!SDL_IsGameController(i)) {
+			LogDebug("Skipping non-gamepad joystick: %s", SDL_JoystickNameForIndex(i));
+			continue;
+		}
+
+		owned::SDL_GameController joystick = owned::SDL_GameControllerOpen(i);
 		if (joystick) {
-			LogDebug("Joystick available: %s", SDL_JoystickName(joystick.get()));
+			LogDebug("Gamepad init: %s", SDL_GameControllerName(joystick.get()));
 			joysticks.push_back(std::move(joystick));
 		}
 		else
-			LogError("JoystickOpen(%d, %s): %s", i, SDL_JoystickNameForIndex(i), SDL_GetError());
+			LogError("SDL_GameControllerOpen(%d, %s): %s", i, SDL_GameControllerNameForIndex(i), SDL_GetError());
 	}
 }
 
@@ -82,11 +87,12 @@ const char *ScanCodeText(byte s) {
 dword GetJoyButtons() {
 	dword held = 0;
 
-	for (owned::SDL_Joystick& joystick : joysticks) {
-		int n = SDL_JoystickNumButtons(joystick.get());
+	for (owned::SDL_GameController& gamepad : joysticks) {
+		SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gamepad.get());
+		int n = SDL_JoystickNumButtons(joystick);
 		int j = 1;
 		for (int i = 0; i < n && i < 32; ++i) {
-			if (SDL_JoystickGetButton(joystick.get(), i)) {
+			if (SDL_JoystickGetButton(joystick, i)) {
 				held |= j;
 			}
 			j *= 2;
@@ -200,47 +206,44 @@ static byte GetJoyState(void)
 
 	for (auto iter = joysticks.begin(); iter != joysticks.end(); ++iter)
 	{
-		SDL_Joystick* joystick = iter->get();
+		SDL_GameController* gamepad = iter->get();
+		SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gamepad);
 		if (!SDL_JoystickGetAttached(joystick))
 		{
 			// Drop disconnected joysticks.
-			LogDebug("Joystick removed: %s", SDL_JoystickName(joystick));
+			LogDebug("Gamepad removed: %s", SDL_GameControllerName(gamepad));
 			iter = joysticks.erase(iter);
 			if (iter == joysticks.end())
 				break;
 			continue;
 		}
 
-		byte hat = SDL_HAT_CENTERED;
-		if (SDL_JoystickNumHats(joystick) > 0)
-			hat = SDL_JoystickGetHat(joystick, 0);
-
-		int numAxes = SDL_JoystickNumAxes(joystick);
-
-		if((numAxes >= 2 && SDL_JoystickGetAxis(joystick, 0) < -DEADZONE) || (hat & SDL_HAT_LEFT))
+		if(SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX) < -DEADZONE || SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_LEFT))
 		{
 			if(!(oldJoy&CONTROL_LF))
 				keyTap|=CONTROL_LF;
 			joyState|=CONTROL_LF;
 		}
-		else if((numAxes >= 2 && SDL_JoystickGetAxis(joystick, 0) > DEADZONE) || (hat & SDL_HAT_RIGHT))
+		else if(SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX) > DEADZONE || SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_RIGHT))
 		{
 			if(!(oldJoy&CONTROL_RT))
 				keyTap|=CONTROL_RT;
 			joyState|=CONTROL_RT;
 		}
-		if((numAxes >= 2 && SDL_JoystickGetAxis(joystick, 1) < -DEADZONE) || (hat & SDL_HAT_UP))
+
+		if(SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY) < -DEADZONE || SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_UP))
 		{
 			if(!(oldJoy&CONTROL_UP))
 				keyTap|=CONTROL_UP;
 			joyState|=CONTROL_UP;
 		}
-		else if((numAxes >= 2 && SDL_JoystickGetAxis(joystick, 1) > DEADZONE) || (hat & SDL_HAT_DOWN))
+		else if(SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY) > DEADZONE || SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_DOWN))
 		{
 			if(!(oldJoy&CONTROL_DN))
 				keyTap|=CONTROL_DN;
 			joyState|=CONTROL_DN;
 		}
+
 		if(SDL_JoystickGetButton(joystick, joyBtn[0]))
 		{
 			if(!(oldJoy&CONTROL_B1))
@@ -269,10 +272,10 @@ static byte GetJoyState(void)
 
 	// Add newly connected joysticks.
 	for (int i = joysticks.size(); i < SDL_NumJoysticks(); ++i) {
-		owned::SDL_Joystick joystick = owned::SDL_JoystickOpen(i);
-		if (joystick) {
-			LogDebug("Joystick added: %s", SDL_JoystickName(joystick.get()));
-			joysticks.push_back(std::move(joystick));
+		owned::SDL_GameController gamepad = owned::SDL_GameControllerOpen(i);
+		if (gamepad) {
+			LogDebug("Gamepad added: %s", SDL_GameControllerName(gamepad.get()));
+			joysticks.push_back(std::move(gamepad));
 		}
 	}
 

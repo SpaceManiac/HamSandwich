@@ -191,4 +191,25 @@ namespace owned
 	// NB: SDL_JoystickFromInstanceID does not return an owned ptr
 }
 
+// ----------------------------------------------------------------------------
+// SDL_GameController
+
+namespace owned
+{
+	namespace _deleter
+	{
+		struct SDL_GameController
+		{
+			void operator()(::SDL_GameController* ptr) { return SDL_GameControllerClose(ptr); }
+		};
+	}
+
+	typedef std::unique_ptr<::SDL_GameController, _deleter::SDL_GameController> SDL_GameController;
+
+	inline SDL_GameController SDL_GameControllerOpen(int device_index)
+	{
+		return SDL_GameController { ::SDL_GameControllerOpen(device_index) };
+	}
+}
+
 #endif
