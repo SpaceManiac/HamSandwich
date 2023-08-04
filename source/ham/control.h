@@ -31,7 +31,8 @@ byte LastScanCode();
 const char *ScanCodeText(byte s);
 
 // Options menu support.
-dword GetJoyButtons();
+dword GetJoyButtons();  // Joystick-specific indexes.
+dword GetGamepadButtons();  // x & (1 << SDL_GAMECONTROLLER_BUTTON_*)
 void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys);
 void SetJoystickBindings(int nbuttons, const byte* buttons);
 

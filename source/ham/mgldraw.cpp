@@ -23,6 +23,7 @@
 // in control.cpp
 void ControlKeyDown(byte scancode);
 void ControlKeyUp(byte scancode);
+void ControlHandleNewGamepad(int which);
 
 static const RGB BLACK = {0, 0, 0, 0};
 
@@ -67,7 +68,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	this->windowed = windowed = true;
 #endif  // __EMSCRIPTEN__
 
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK)) {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER)) {
 		LogError("SDL_Init(VIDEO|JOYSTICK): %s", SDL_GetError());
 		FatalError("Failed to initialize SDL");
 		return;
@@ -474,6 +475,10 @@ TASK(void) MGLDraw::FinishFlip(void)
 		{
 			readyToQuit = 1;
 		}
+		else if (e.type == SDL_CONTROLLERDEVICEADDED)
+		{
+			ControlHandleNewGamepad(e.cdevice.which);
+		}
 		else if (e.type == SDL_WINDOWEVENT)
 		{
 			if (e.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
@@ -492,6 +497,7 @@ TASK(void) MGLDraw::FinishFlip(void)
 				winHeight = e.window.data2;
 			}
 		}
+
 		if (softJoystick)
 		{
 			softJoystick->handle_event(this, e);

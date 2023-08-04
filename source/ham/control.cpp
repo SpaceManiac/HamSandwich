@@ -36,6 +36,7 @@ void InitControls(void)
 	arrowTap=0;
 	oldJoy=0;
 
+	/*
 	for (int i = 0; i < SDL_NumJoysticks(); ++i) {
 		if (!SDL_IsGameController(i)) {
 			LogDebug("Skipping non-gamepad joystick: %s", SDL_JoystickNameForIndex(i));
@@ -50,6 +51,7 @@ void InitControls(void)
 		else
 			LogError("SDL_GameControllerOpen(%d, %s): %s", i, SDL_GameControllerNameForIndex(i), SDL_GetError());
 	}
+	*/
 }
 
 byte GetControls() {
@@ -199,6 +201,15 @@ void ControlKeyUp(byte k)
 	}
 }
 
+void ControlHandleNewGamepad(int which)
+{
+	owned::SDL_GameController gamepad = owned::SDL_GameControllerOpen(which);
+	if (gamepad) {
+		LogDebug("Gamepad added: %s", SDL_GameControllerName(gamepad.get()));
+		joysticks.push_back(std::move(gamepad));
+	}
+}
+
 static byte GetJoyState(void)
 {
 	const int DEADZONE = 8192;
@@ -267,15 +278,6 @@ static byte GetJoyState(void)
 			if(!(oldJoy&CONTROL_B4))
 				keyTap|=CONTROL_B4;
 			joyState|=CONTROL_B4;
-		}
-	}
-
-	// Add newly connected joysticks.
-	for (int i = joysticks.size(); i < SDL_NumJoysticks(); ++i) {
-		owned::SDL_GameController gamepad = owned::SDL_GameControllerOpen(i);
-		if (gamepad) {
-			LogDebug("Gamepad added: %s", SDL_GameControllerName(gamepad.get()));
-			joysticks.push_back(std::move(gamepad));
 		}
 	}
 
