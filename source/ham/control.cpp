@@ -104,6 +104,21 @@ dword GetJoyButtons() {
 	return held;
 }
 
+static_assert(SDL_CONTROLLER_BUTTON_MAX <= 8 * sizeof(dword));
+dword GetGamepadButtons() {
+	dword held = 0;
+
+	for (owned::SDL_GameController& gamepad : joysticks) {
+		for (int button = 0; button < SDL_CONTROLLER_BUTTON_MAX; ++button) {
+			if (SDL_GameControllerGetButton(gamepad.get(), static_cast<SDL_GameControllerButton>(button))) {
+				held |= (1 << button);
+			}
+		}
+	}
+
+	return held;
+}
+
 void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys) {
 	nkeys = std::min(nkeys, NUM_CONTROLS);
 	for (int i = 0; i < nkeys; ++i) {

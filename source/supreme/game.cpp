@@ -678,10 +678,10 @@ TASK(byte) PlayALevel(byte map)
 
 		if(gameMode==GAMEMODE_PLAY && wasPaused)
 		{
-			if(!(GetJoyButtons()&4))
+			if(!(GetGamepadButtons()&(1<<SDL_CONTROLLER_BUTTON_START)))
 				wasPaused=0;
 		}
-		if((lastKey==27 || (GetJoyButtons()&4) || GetGameIdle()) && !wasPaused && gameMode==GAMEMODE_PLAY)
+		if((lastKey==27 || (GetGamepadButtons()&(1<<SDL_CONTROLLER_BUTTON_START)) || GetGameIdle()) && !wasPaused && gameMode==GAMEMODE_PLAY)
 		{
 			wasPaused=1;
 			PauseGame();

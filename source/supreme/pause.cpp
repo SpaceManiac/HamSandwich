@@ -132,6 +132,7 @@ namespace
 	int msx, msy;
 	char msBright, msDBright;
 	byte oldc = 255;
+	dword oldGamepad = ~0;
 
 	const byte volumeSpot[]={0,26,51,77,102,128,153,179,204,230,255};
 }
@@ -224,15 +225,6 @@ void RenderPauseMenu(void)
 	ClearSpriteConstraints();
 }
 
-void HandlePauseKeyPresses(MGLDraw *mgl)
-{
-	char k;
-
-	k=mgl->LastKeyPressed();
-	if(k)
-		lastKey=k;
-}
-
 void SetupSoundItems(void)
 {
 	int i;
@@ -311,9 +303,10 @@ void FillPauseMenu(pauseItem_t *src)
 
 void InitPauseMenu(void)
 {
-	lastKey=0;
-	cursor=0;
-	oldc=255;
+	lastKey = 0;
+	cursor = 0;
+	oldc = ~0;
+	oldGamepad = ~0;
 
 	if(!editing)
 	{
@@ -384,10 +377,10 @@ byte PrevVolumeSpot(byte v)
 
 byte UpdatePauseMenu(MGLDraw *mgl)
 {
-	byte c;
 	int i;
 	static byte reptCounter=0;
 
+	int oldMsx = msx, oldMsy = msy;
 	mgl->GetMouse(&msx,&msy);
 
 	msBright+=msDBright;
@@ -415,14 +408,17 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			pauseY = destY;
 	}
 
-
-	for(i=0;i<numItems;i++)
+	if (msx != oldMsx || msy != oldMsy)
 	{
-		if(PointInRect(msx,msy,pauseX+20,pauseY+15+22*i,pauseX+20+125,pauseY+15+22*i+19))
-			cursor=i;
+		for(i=0;i<numItems;i++)
+		{
+			if(PointInRect(msx,msy,pauseX+20,pauseY+15+22*i,pauseX+20+125,pauseY+15+22*i+19))
+				cursor=i;
+		}
 	}
 
-	c=GetControls()|GetArrows();
+	byte c = GetControls() | GetArrows();
+	dword gamepad = GetGamepadButtons();
 
 	reptCounter++;
 	if((!oldc) || (reptCounter>10))
@@ -486,7 +482,6 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		SetupSoundItems();
 	}
 	if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
-	   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))) ||
 	   mgl->MouseTap())
 	{
 		MakeNormalSound(SND_MENUSELECT);
@@ -655,16 +650,16 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		SetupSoundItems();
 	}
 
-
-	HandlePauseKeyPresses(mgl);
-	if(lastKey==27 || ((c&CONTROL_B3) && !(oldc&CONTROL_B3)))	// hit ESC to exit pause menu
+	lastKey = mgl->LastKeyPressed();
+	if(lastKey==27 || (gamepad & ~oldGamepad) & (1 << SDL_CONTROLLER_BUTTON_START))	// hit ESC to exit pause menu
 	{
 		MakeNormalSound(SND_MENUSELECT);
 		lastKey=0;
 		return PAUSE_CONTINUE;
 	}
 
-	oldc=c;
+	oldc = c;
+	oldGamepad = gamepad;
 
 	return PAUSE_PAUSED;
 }
