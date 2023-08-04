@@ -269,6 +269,14 @@ void MGLDraw::ResizeBuffer(int w, int h)
 	if (xRes == w && yRes == h)
 		return;
 
+	// Clamp the requested width/height to be no more than the display size.
+	SDL_DisplayMode mode = {};
+	SDL_GetWindowDisplayMode(window, &mode);
+	if (mode.w > 640 && mode.w < w)
+		w = mode.w;
+	if (mode.h > 480 && mode.h < h)
+		h = mode.h;
+
 	// Resize the 8-bit buffer, truecolor buffer, and GPU texture.
 	SDL_DestroyTexture(texture);
 
