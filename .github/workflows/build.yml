@@ -19,7 +19,7 @@ jobs:
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
           cmake --preset windows-i686-release
-          cmake --build build/cmake-windows-i686-release16.0 --target install/strip
+          cmake --build build/cmake-windows-i686-release16.0 --target install
       - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
         run: tools/bootstrap/butler push --if-changed build/install "${ENV:ITCH_GAME}:windows" ("--userversion=" + (git rev-parse --short=10 HEAD))
   mingw32:
