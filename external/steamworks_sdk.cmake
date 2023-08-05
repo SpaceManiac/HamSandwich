@@ -10,7 +10,7 @@ elseif(NOT EXISTS "${STEAMWORKS_SDK}")
 	# No warning, just a message, because all the Itch builds are like this.
 	message("To build with Steamworks SDK, extract it to: ${STEAMWORKS_SDK}")
 elseif(WIN32)
-	target_include_directories(steam_api INTERFACE "${STEAMWORKS_SDK}/public")
+	target_include_directories(steam_api SYSTEM INTERFACE "${STEAMWORKS_SDK}/public")
 	target_compile_definitions(steam_api INTERFACE HAS_STEAM_API)
 
 	if(CMAKE_SIZEOF_VOID_P EQUAL 4)
@@ -21,7 +21,7 @@ elseif(WIN32)
 		install(FILES "${STEAMWORKS_SDK}/redistributable_bin/win64/steam_api64.dll" TYPE BIN COMPONENT Executables)
 	endif()
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	target_include_directories(steam_api INTERFACE "${STEAMWORKS_SDK}/public")
+	target_include_directories(steam_api SYSTEM INTERFACE "${STEAMWORKS_SDK}/public")
 	target_compile_definitions(steam_api INTERFACE HAS_STEAM_API)
 
 	if(CMAKE_SIZEOF_VOID_P EQUAL 4)

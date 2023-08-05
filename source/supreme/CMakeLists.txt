@@ -4,6 +4,7 @@ HamSandwich_add_executable(
 	ICON lunatic.ico
 	SOURCES ${sources}
 )
+target_link_libraries(supreme steam_api)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	target_compile_options(supreme PRIVATE -Wall -Wextra -Wpedantic -Wno-unused-parameter -Wno-unused-but-set-variable)
