@@ -85,6 +85,7 @@ if test -z "$project"; then
 fi
 
 # Fallback settings. Keep this in sync with `Makefile`!
+container=
 if test -z "$preset"; then
 	if test -z "$os"; then
 		# Detect OS and architecture.
@@ -100,6 +101,7 @@ if test -z "$preset"; then
 				;;
 			"Linux x86_64")
 				os=linux
+				container=./container
 				arch=${arch:-x86_64}
 				;;
 			"Darwin x86_64")
@@ -162,23 +164,23 @@ if test -z "$nobuild"; then
 			launcher)
 				# Launcher: build everything that isn't excluded, because that's
 				# what will be presented in the launcher UI.
-				make preset="$preset" install
+				$container make preset="$preset" install
 				;;
 			jfttool|jspedit|lunaticpal|mini_xxd)
 				# Tool: build just that project. Don't bother installing it.
-				make preset="$preset" "$project"
+				$container make preset="$preset" "$project"
 				if test "$project" = "jspedit"; then
-					cmake --install "$cmakedir" --component sdl2_ttf/executables --config Debug
+					$container cmake --install "$cmakedir" --component sdl2_ttf/executables --config Debug
 				fi
 				;;
 			*)
 				# Single game project: build the launcher and that project.
 				debugargs=("window")
-				make preset="$preset" "$project" launcher sdl2_rpath
+				$container make preset="$preset" "$project" launcher sdl2_rpath
 				# Install the launcher so that it can be used to download assets.
-				cmake --install "$cmakedir" --component Unspecified --config Debug
-				cmake --install "$cmakedir" --component generic/executables --config Debug
-				cmake --install "$cmakedir" --component launcher/executables --config Debug
+				$container cmake --install "$cmakedir" --component Unspecified --config Debug
+				$container cmake --install "$cmakedir" --component generic/executables --config Debug
+				$container cmake --install "$cmakedir" --component launcher/executables --config Debug
 				# But we don't need to install the game's executable because we're
 				# going to run it right out its build directory.
 				;;
