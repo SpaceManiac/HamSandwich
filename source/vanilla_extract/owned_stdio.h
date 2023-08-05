@@ -46,6 +46,7 @@ inline int fseek(const owned::FILE& stream, long offset, int whence)
 	return fseek(stream.get(), offset, whence);
 }
 
+[[nodiscard]] // If you don't care about the return value, use .reset() instead.
 inline int fclose(owned::FILE stream)
 {
 	return fclose(stream.release());

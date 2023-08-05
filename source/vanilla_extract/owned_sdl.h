@@ -73,6 +73,7 @@ inline size_t SDL_RWwrite(const owned::SDL_RWops& context, const void *ptr, size
 	return context->write(context.get(), ptr, size, num);
 }
 
+[[nodiscard]] // If you don't care about the return value, use .reset() instead.
 inline int SDL_RWclose(owned::SDL_RWops context)
 {
 	return SDL_RWclose(context.release());

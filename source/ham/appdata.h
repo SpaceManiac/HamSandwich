@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <set>
+#include "owned_sdl.h"
 
 typedef struct SDL_RWops SDL_RWops;
 struct HamSandwichMetadata;
@@ -20,9 +21,10 @@ bool AppdataIsInit();
 // Open for reading.
 FILE* AssetOpen(const char* filename);
 SDL_RWops* AssetOpen_SDL(const char* filename);
+owned::SDL_RWops AssetOpen_SDL_Owned(const char* filename);
 // Open for writing or appending.
 FILE* AppdataOpen_Write(const char* filename);
-SDL_RWops* AppdataOpen_Write_SDL(const char* filename);
+owned::SDL_RWops AppdataOpen_Write_SDL(const char* filename);
 //FILE* AppdataOpen_Append(const char* filename);
 void AppdataDelete(const char* filename);
 // On platforms that need it, ensure appdata is really saved.
