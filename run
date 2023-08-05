@@ -14,6 +14,7 @@ show_help() {
 	echo "    tool=valgrind   Run the game under valgrind memory checker (slow)."
 	echo "    tool=callgrind  Run the game under callgrind profiler (slow)."
 	echo "    tool=two        Run two instances of the game at once."
+	echo "    tool=deck       Upload to and run on a Steam Deck over SSH. Linux only."
 }
 
 # Default settings.
@@ -229,6 +230,25 @@ case "$tool" in
 		echo "==== Running $project ($preset) ===="
 		"$debugcommand" "${debugargs[@]}" &
 		"$debugcommand" "${debugargs[@]}"
+		;;
+	deck)
+		# TODO: remove requirement that "SteamOS Devkit Client" has been set up
+		# TODO: allow configuring deck_addr
+		deck_addr=deck@steamdeck.local
+		deck_game=HamSandwich
+		echo "==== Uploading to $deck_addr:devkit-game/$deck_game ===="
+		deck_exe=${debugcommand##*/}
+		rsync -av --chmod=Du=rwx,Dgo=rx,Fu=rwx,Fog=rx -e "ssh -o StrictHostKeyChecking=no -i $HOME/.config/steamos-devkit/devkit_rsa" ./ "$debugcommand" "$deck_addr:/home/deck/devkit-game/$deck_game/"
+		# shellcheck disable=SC2087
+		ssh -o StrictHostKeyChecking=no -i ~/.config/steamos-devkit/devkit_rsa "$deck_addr" sh <<-EOD
+			set -eu
+			devkit-utils/steam-client-create-shortcut --parms '{"gameid": "$deck_game", "directory": "/home/deck/devkit-game/$deck_game", "argv": ["./$deck_exe"], "settings": {"steam_play": "0"}}'
+		EOD
+		# TODO: launch the game automatically
+		# data = parse ~/.local/share/Steam/userdata/$USERID/config/shortcuts.vdf
+		# appid = ((data['shortcuts']['N']['appid'] & 0xffffffff) << 32) | 0x02000000
+		# steam steam://rungameid/$appid
+		# TODO: tail -F a logfile or pipe to read console output
 		;;
 	"")
 		if test -f "$debugcommand"; then
