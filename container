@@ -5,13 +5,18 @@
 # Remove the container afterwards to avoid accruing garbage.
 set -euo pipefail
 ttyopts=()
+steamopts=()
 if test -t 0; then
 	ttyopts=(--interactive --tty)
+fi
+if test -L external/steamworks_sdk; then
+	steamopts=(--volume "$(readlink -f external/steamworks_sdk):$(readlink external/steamworks_sdk)")
 fi
 id="$(podman build --format=docker --quiet .)"
 exec podman run \
 	--rm \
 	--volume "$PWD":"$PWD" \
+	"${steamopts[@]}" \
 	--workdir "$PWD" \
 	"${ttyopts[@]}" --init \
 	"$id" \
