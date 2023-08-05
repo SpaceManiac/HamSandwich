@@ -4,33 +4,50 @@
 #include "map.h"
 #include "tile.h"
 
-#define MAX_MAPS	64
+constexpr int MAX_MAPS = 64;
 
 // terrain flags
-#define TF_SOLID	1
-#define TF_ICE		2
-#define TF_MUD		4
-#define TF_WATER	8
-#define TF_LAVA		16
-#define TF_PUSHY	32		// if this is the roof of a wall, the wall is pushable
-#define TF_PUSHON	64		// only PUSHON terrain can have things pushed over it
-#define TF_ANIM		128		// changes every 1/4 second or so
-#define TF_STEP		256		// changes when stepped on
-#define TF_DESTRUCT 512		// changes when hit
-#define TF_TRANS    1024	// transparent roof
-#define TF_MINECART 2048	// minecarts go on it
-#define TF_BUNNY	4096	// bunnies travel on it
-#define TF_NOGHOST  8192	// ghosts can't cross it
-#define TF_NOENEMY	16384	// enemies can't cross it
-#define TF_RUBBER	32768	// bouncy!
+enum : dword
+{
+	TF_SOLID      = 1 << 0,
+	TF_ICE        = 1 << 1,
+	TF_MUD        = 1 << 2,
+	TF_WATER      = 1 << 3,
+	TF_LAVA       = 1 << 4,
+	TF_PUSHY      = 1 << 5,   // if this is the roof of a wall, the wall is pushable
+	TF_PUSHON     = 1 << 6,   // only PUSHON terrain can have things pushed over it
+	TF_ANIM       = 1 << 7,   // changes every 1/4 second or so
+	TF_STEP       = 1 << 8,   // changes when stepped on
+	TF_DESTRUCT   = 1 << 9,   // changes when hit
+	TF_TRANS      = 1 << 10,  // transparent roof
+	TF_MINECART   = 1 << 11,  // minecarts go on it
+	TF_BUNNY      = 1 << 12,  // bunnies travel on it
+	TF_NOGHOST    = 1 << 13,  // ghosts can't cross it
+	TF_NOENEMY    = 1 << 14,  // enemies can't cross it
+	TF_RUBBER     = 1 << 15,  // bouncy!
+	// Extended flags that encroach on the "next" field when saved/loaded.
+	TF_SHADOWLESS = 1 << 16,  // shadowless wall
+	// Adding flag 1<<17 would leave room for 16384 tiles.
+	// Adding flag 1<<18 would leave room for 8192 tiles.
+	// Adding flag 1<<19 would leave room for 4096 tiles.
+	// Adding flag 1<<20 would leave room for 2048 tiles.
+	// Adding flag 1<<21 would leave room for 1024 tiles.
+	// Flag 1<<22 wouldn't leave room for 800 tiles, so cannot be added.
+};
 
-typedef struct terrain_t
+struct io_terrain_t
 {
 	word flags;
 	word next;
-} terrain_t;
+};
 
-typedef struct world_t
+struct terrain_t
+{
+	dword flags;
+	word next;
+};
+
+struct world_t
 {
 	byte numMaps;
 	int  totalPoints;
@@ -38,11 +55,9 @@ typedef struct world_t
 	word numTiles;
 	terrain_t terrain[NUMTILES];
 	char author[32];
-} world_t;
+};
 
 extern byte keyChainInLevel[MAX_MAPS];
-
-void WorldLoadBMP(const char *name,byte *dst);
 
 byte NewWorld(world_t *world,MGLDraw *mgl);
 byte LoadWorld(world_t *world,const char *fname);

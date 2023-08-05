@@ -602,7 +602,7 @@ byte Legacy_GetWorldName(const char *fname,char *buf)
 	//   the 200 terrain types, the width&height of map 0, and bam there it is at the name
 	//   of map 0.
 
-	fseek(f,1+sizeof(int)+400*32*24+200*sizeof(terrain_t)+2*sizeof(int),SEEK_SET);
+	fseek(f,1+sizeof(int)+400*32*24+200*sizeof(old_terrain_t)+2*sizeof(int),SEEK_SET);
 	// read the name
 	fread(buf,1,32,f);
 	fclose(f);

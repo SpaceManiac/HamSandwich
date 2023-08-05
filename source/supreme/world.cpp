@@ -39,6 +39,49 @@ byte Ham_GetWorldName(const char *fname, char *buffer, char *authbuffer);
 byte Ham_LoadWorld(world_t *world, const char *fname);
 byte Ham_SaveWorld(world_t *world, const char *fname);
 
+static terrain_t LoadOneTerrain(io_terrain_t io_terrain)
+{
+	terrain_t r = { io_terrain.flags, static_cast<word>(io_terrain.next & 0x3ff) };
+	if (io_terrain.next & (1 << 15))
+		r.flags |= TF_SHADOWLESS;
+	return r;
+}
+
+static io_terrain_t SaveOneTerrain(terrain_t terrain)
+{
+	io_terrain_t r = { static_cast<word>(terrain.flags & 0xffffff), terrain.next };
+	if (terrain.flags & TF_SHADOWLESS)
+		r.next |= (1 << 15);
+	return r;
+}
+
+static void LoadTerrain(world_t *world, const char *fname, FILE *f)
+{
+	for (int i = 0; i < world->numTiles; ++i)
+	{
+		io_terrain_t io_terrain;
+		fread(&io_terrain, sizeof(io_terrain_t), 1, f);
+		world->terrain[i] = LoadOneTerrain(io_terrain);
+	}
+
+	// In 2012, Shadowless Wall was added as an additional meaning of the
+	// Transparent Roof flag. However, only about 10 worlds since then have
+	// used the feature, while about 150 worlds from before that point are at
+	// some risk of unexpected appearance due to the change. Therefore, with
+	// the flags being split in 2023, only autofill the new flag for those
+	// specific worlds, indicated by the presence of this marker file.
+	std::string buf = fname;
+	buf.append(".shadowless");
+	if (AssetOpen_SDL_Owned(buf.c_str()))
+	{
+		for (int i = 0; i < world->numTiles; ++i)
+		{
+			if (world->terrain[i].flags & TF_TRANS)
+				world->terrain[i].flags |= TF_SHADOWLESS;
+		}
+	}
+}
+
 byte LoadWorld(world_t *world,const char *fname)
 {
 	FILE *f;
@@ -72,8 +115,7 @@ byte LoadWorld(world_t *world,const char *fname)
 	SetNumTiles(world->numTiles);
 
 	LoadTiles(f);
-
-	fread(world->terrain,world->numTiles,sizeof(terrain_t),f);
+	LoadTerrain(world, fname, f);
 
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
@@ -134,8 +176,7 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 	SetNumTiles(world->numTiles+stitchTileOffset);
 
 	AppendTiles(stitchTileOffset,f);
-
-	fread(world->terrain,world->numTiles,sizeof(terrain_t),f);
+	LoadTerrain(world, fname, f);
 
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
@@ -256,7 +297,7 @@ bool MustBeHamSandwichWorld(const world_t *world)
 	YES_IF(world->numMaps > UINT8_MAX);
 	YES_IF(world->numTiles > UINT16_MAX);
 
-	YES_IF(sizeof(terrain_t) != 4);
+	YES_IF(sizeof(io_terrain_t) != 4);
 
 	for(int i = 0; i < world->numMaps; ++i)
 	{
@@ -310,7 +351,11 @@ byte SaveWorld(world_t *world, const char *fname)
 
 	SaveTiles(f);
 
-	fwrite(world->terrain,world->numTiles,sizeof(terrain_t),f);
+	for(i = 0; i < world->numTiles; ++i)
+	{
+		io_terrain_t io_terrain = SaveOneTerrain(world->terrain[i]);
+		fwrite(&io_terrain, sizeof(io_terrain_t), 1, f);
+	}
 
 	for(i=0;i<world->numMaps;i++)
 		world->map[i]->Save(f);

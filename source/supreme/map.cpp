@@ -1183,7 +1183,7 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 				else
 				{
 					// Shadow wall macro: used to determine both a wall is there and it's not marked shadowless
-#define SHADOW_WALL(WALL) ((WALL) && !(GetTerrain(world, (WALL))->flags&TF_TRANS))
+#define SHADOW_WALL(WALL) ((WALL) && !(GetTerrain(world, (WALL))->flags&TF_SHADOWLESS))
 					if(config.shading==0)
 					{
 						if(i<width-1 && SHADOW_WALL(map[i+1+j*width].wall))
