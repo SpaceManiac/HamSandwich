@@ -375,7 +375,7 @@ byte PrevVolumeSpot(byte v)
 	return 0;
 }
 
-byte UpdatePauseMenu(MGLDraw *mgl)
+PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 {
 	int i;
 	static byte reptCounter=0;

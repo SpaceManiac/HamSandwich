@@ -5,7 +5,7 @@
 #include "editor.h"
 #include <ctype.h>
 
-char cheatName[NUM_CHEATS][16]={
+const char cheatName[NUM_CHEATS][16]={
 	"Win Level",
 	"Ultra Hammer-Up",
 	"Max. Health",
@@ -220,7 +220,7 @@ void DoCheat(byte w)
 	}
 }
 
-char *CheatName(byte w)
+const char *CheatName(byte w)
 {
 	return cheatName[w];
 }

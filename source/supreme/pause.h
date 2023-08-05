@@ -3,13 +3,16 @@
 
 #include "display.h"
 
-#define PAUSE_CONTINUE	0
-#define PAUSE_WORLDSEL	1
-#define PAUSE_GIVEUP	2
-#define PAUSE_RETRY		3
-#define PAUSE_PAUSED	4
-#define PAUSE_EXIT		5
-#define PAUSE_SHOP		6
+enum PauseMenuResult : byte
+{
+	PAUSE_CONTINUE,
+	PAUSE_WORLDSEL,
+	PAUSE_GIVEUP,
+	PAUSE_RETRY,
+	PAUSE_PAUSED,
+	PAUSE_EXIT,
+	PAUSE_SHOP,
+};
 
 struct player_t;
 
@@ -17,7 +20,7 @@ void UpdateUnpaused(void);
 void RenderUnpaused(void);
 
 void RenderPauseMenu(void);
-byte UpdatePauseMenu(MGLDraw *mgl);
+PauseMenuResult UpdatePauseMenu(MGLDraw *mgl);
 void InitPauseMenu(void);
 void ExitPauseMenu(void);
 

@@ -9,75 +9,82 @@
 #include "sound.h"
 #include "particle.h"
 
-#define BLT_NONE	0
-#define BLT_HAMMER  1
-#define BLT_HAMMER2 2	// this is a hammer with reflection
-#define BLT_MISSILE 3
-#define BLT_FLAME   4
-#define BLT_LASER	5
-#define BLT_ACID	6
-#define BLT_BOMB	7
-#define BLT_BOOM	8
-#define BLT_ENERGY  9
-#define BLT_MEGABEAM 10		// this is a ball of energy that launches off a megabeam1
-#define BLT_MEGABEAM1 11	// this is a huge laser beam (downward)
-#define BLT_MEGABEAM2 12	// this is the laser hitting an object (just a visual effect)
-#define BLT_FLAME2	13	// just like flame, except it is anti-Bouapha
-#define BLT_SPORE	14
-#define BLT_SHROOM  15
-#define BLT_GRENADE 16	// energy grenade, an enemy weapon
-#define BLT_YELBOOM 17	// yellow explosion made by energy grenade
-#define BLT_SHOCKWAVE 18	// purple shockwave, for Super Zombie stomp
-#define BLT_LILBOOM 19	// explosion made by missile
-#define BLT_SNOWBALL 20
-#define BLT_BIGSNOW  21
-#define BLT_ICESPIKE 22	// spike juts out of the ground
-#define BLT_ROCK	 23
-#define BLT_SPINE	 24 // cactus spine
-#define BLT_EVILHAMMER 25 // a grey hammer that is anti-bouapha
-#define BLT_BIGSHELL 26	// Bouapha's power armor shoots these
-#define BLT_BIGAXE	 27	// Bouapha weapon
-#define BLT_LIGHTNING 28 // Bouapha weapon
-#define BLT_SPEAR	 29	// Bouapha's version of the pygmy spear
-#define BLT_SLASH	 30	// Bouapha's machete slash
-#define BLT_MINE	 31	// Bouapha's mines
-#define BLT_BADSPEAR 32	// pygmy-thrown spear
-#define BLT_ORBITER  33	// guy that flies around Bouapha shooting
-#define BLT_GREEN	 34	// friendly green bullets
-#define BLT_BALLLIGHTNING 35
-#define BLT_LIGHTNING2 36
-#define BLT_MINDWIPE	37
-#define BLT_REFLECT	 38
-#define BLT_SWAP	 39
-#define BLT_SHARK	 40
-#define BLT_ORBITER2 41	// orbit bomber
-#define BLT_HARPOON	 42	// a spear, underwater - only difference is it sinks much more slowly
-#define BLT_SCANNER	 43	// what the scanner scans with
-#define BLT_SCANSHOT 44	// the shots the scanner fires after scanning
-#define BLT_TORPEDO	 45	// Bouapha's minisub shoots them
-#define BLT_DIRTSPIKE 46	// ice spike in brown
-#define BLT_PAPER	47
-#define BLT_SCANLOCK 48	// the scanner locked onto a guy
-#define BLT_BUBBLE	49
-#define BLT_FREEZE	50
-#define BLT_BUBBLEPOP 51	// a bubble that is popping, just visual effect
-#define BLT_LILBOOM2 52		// a harmless lilboom
-#define BLT_CHEESEHAMMER 53	// enhanced hammers
-#define BLT_FREEZE2	54		// a freeze bullet that drops like acid bullets and splats
-#define BLT_LUNA	55		// lunachick's bullets
-#define BLT_LUNA2	56		// lunachick's bullets with wall-bounce power
+// SERIALIZED in the Summon/Change Bullet special effects. Add to end, don't reorder.
+enum : byte
+{
+	BLT_NONE,
+	BLT_HAMMER,
+	BLT_HAMMER2, // this is a hammer with reflection
+	BLT_MISSILE,
+	BLT_FLAME,
+	BLT_LASER,
+	BLT_ACID,
+	BLT_BOMB,
+	BLT_BOOM,
+	BLT_ENERGY,
+	BLT_MEGABEAM, // this is a ball of energy that launches off a megabeam1
+	BLT_MEGABEAM1, // this is a huge laser beam (downward)
+	BLT_MEGABEAM2, // this is the laser hitting an object (just a visual effect)
+	BLT_FLAME2, // just like flame, except it is anti-Bouapha
+	BLT_SPORE,
+	BLT_SHROOM,
+	BLT_GRENADE, // energy grenade, an enemy weapon
+	BLT_YELBOOM, // yellow explosion made by energy grenade
+	BLT_SHOCKWAVE, // purple shockwave, for Super Zombie stomp
+	BLT_LILBOOM, // explosion made by missile
+	BLT_SNOWBALL,
+	BLT_BIGSNOW,
+	BLT_ICESPIKE, // spike juts out of the ground
+	BLT_ROCK,
+	BLT_SPINE, // cactus spine
+	BLT_EVILHAMMER, // a grey hammer that is anti-bouapha
+	BLT_BIGSHELL, // Bouapha's power armor shoots these
+	BLT_BIGAXE, // Bouapha weapon
+	BLT_LIGHTNING, // Bouapha weapon
+	BLT_SPEAR, // Bouapha's version of the pygmy spear
+	BLT_SLASH, // Bouapha's machete slash
+	BLT_MINE, // Bouapha's mines
+	BLT_BADSPEAR, // pygmy-thrown spear
+	BLT_ORBITER, // guy that flies around Bouapha shooting
+	BLT_GREEN, // friendly green bullets
+	BLT_BALLLIGHTNING,
+	BLT_LIGHTNING2,
+	BLT_MINDWIPE,
+	BLT_REFLECT,
+	BLT_SWAP,
+	BLT_SHARK,
+	BLT_ORBITER2, // orbit bomber
+	BLT_HARPOON, // a spear, underwater - only difference is it sinks much more slowly
+	BLT_SCANNER, // what the scanner scans with
+	BLT_SCANSHOT, // the shots the scanner fires after scanning
+	BLT_TORPEDO, // Bouapha's minisub shoots them
+	BLT_DIRTSPIKE, // ice spike in brown
+	BLT_PAPER,
+	BLT_SCANLOCK, // the scanner locked onto a guy
+	BLT_BUBBLE,
+	BLT_FREEZE,
+	BLT_BUBBLEPOP, // a bubble that is popping, just visual effect
+	BLT_LILBOOM2, // a harmless lilboom
+	BLT_CHEESEHAMMER, // enhanced hammers
+	BLT_FREEZE2, // a freeze bullet that drops like acid bullets and splats
+	BLT_LUNA, // lunachick's bullets
+	BLT_LUNA2, // lunachick's bullets with wall-bounce power
+};
 
 // the special hammer flags for different powerups
-#define HMR_REVERSE 1
-#define HMR_REFLECT 2
-#define HMR_WATERWALK 4	// not really a hammer powerup, it's a cheat code, but this is a good spot for it
-#define HMR_SHIELD	8	// also cheat code
-#define HMR_SPEED	16	// another cheat
-#define HMR_OXYGEN	32	// another cheat
-#define HMR_NOSKID	64	// another cheat
-#define HMR_LIGHT	128	// another cheat
+enum : byte
+{
+	HMR_REVERSE   = 1 << 0,
+	HMR_REFLECT   = 1 << 1,
+	HMR_WATERWALK = 1 << 2, // not really a hammer powerup, it's a cheat code, but this is a good spot for it
+	HMR_SHIELD    = 1 << 3, // also cheat code
+	HMR_SPEED     = 1 << 4, // another cheat
+	HMR_OXYGEN    = 1 << 5, // another cheat
+	HMR_NOSKID    = 1 << 6, // another cheat
+	HMR_LIGHT     = 1 << 7, // another cheat
+};
 
-typedef struct bullet_t
+struct bullet_t
 {
 	int x,y,z;
 	int dx,dy,dz;
@@ -88,7 +95,7 @@ typedef struct bullet_t
 	byte type;
 	char bright;
 	byte friendly;
-} bullet_t;
+};
 
 void InitBullets(void);
 void ExitBullets(void);

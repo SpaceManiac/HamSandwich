@@ -4,6 +4,8 @@
 #include "dialogbits.h"
 #include "goal.h"
 
+constexpr int MAX_SCAN = 16;
+
 byte scanQueue[MAX_SCAN];
 byte scanQPos,firstScan;
 byte noKeyTime;

@@ -43,7 +43,7 @@ enum : byte
 	TEXTFILE_MAX
 };
 
-typedef struct displayObj_t
+struct displayObj_t
 {
 	int x,y,z,z2;
 	sprite_t *spr;
@@ -52,7 +52,7 @@ typedef struct displayObj_t
 	word flags;
 	char light[9];
 	int prev,next;
-} displayObj_t;
+};
 
 class DisplayList
 {
