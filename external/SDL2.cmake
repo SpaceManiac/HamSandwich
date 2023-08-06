@@ -163,16 +163,18 @@ else()
 	install(FILES "${sdl2_with_rpath}" TYPE BIN COMPONENT generic/executables)
 
 	# Install SDL2_image .so
-	install_as_soname(${SDL2_image_LIBRARIES})
+	install_as_soname(generic/executables ${SDL2_image_LIBRARIES})
 	find_library(png_LIBRARIES png REQUIRED)
-	install_as_soname(${png_LIBRARIES})
+	install_as_soname(generic/executables ${png_LIBRARIES})
 
 	# Install SDL2_mixer .so
-	install_as_soname(${SDL2_mixer_LIBRARIES})
+	install_as_soname(generic/executables ${SDL2_mixer_LIBRARIES})
 	find_library(ogg_LIBRARIES ogg REQUIRED)
 	find_library(vorbis_LIBRARIES vorbis REQUIRED)
 	find_library(vorbisfile_LIBRARIES vorbisfile REQUIRED)
-	install_as_soname(${ogg_LIBRARIES} ${vorbis_LIBRARIES} ${vorbisfile_LIBRARIES})
+	install_as_soname(generic/executables ${ogg_LIBRARIES} ${vorbis_LIBRARIES} ${vorbisfile_LIBRARIES})
+	install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_mixer/external/libogg-1.3.2/COPYING" TYPE BIN COMPONENT generic/executables RENAME "LICENSE.ogg.txt")
+	install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_mixer/external/libvorbis-1.3.5/COPYING" TYPE BIN COMPONENT generic/executables RENAME "LICENSE.vorbis.txt")
 
 	# SDL2_ttf is only used by JspEdit, not installed
 endif()

@@ -1,19 +1,19 @@
-function(install_no_symlink fname namepart)
+function(install_no_symlink component fname namepart)
 	if(NOT namepart)
 		get_filename_component(namepart "${fname}" NAME)
 	endif()
 	install(CODE "
 		get_filename_component(realpath \"${fname}\" REALPATH)
 		file(INSTALL DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}\" TYPE FILE MESSAGE_LAZY RENAME \"${namepart}\" FILES \"\${realpath}\")
-	")
+	" COMPONENT "${component}")
 endfunction()
-function(install_as_soname)
+function(install_as_soname component)
 	foreach(fname IN LISTS ARGN)
 		install(CODE "
 			execute_process(COMMAND patchelf --print-soname \"${fname}\" OUTPUT_VARIABLE soname OUTPUT_STRIP_TRAILING_WHITESPACE)
 			get_filename_component(realpath \"${fname}\" REALPATH)
 			file(INSTALL DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}\" TYPE FILE MESSAGE_LAZY RENAME \"\${soname}\" FILES \"\${realpath}\")
-		")
+		" COMPONENT "${component}")
 	endforeach()
 endfunction()
 

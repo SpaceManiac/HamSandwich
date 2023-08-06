@@ -209,7 +209,7 @@ function(HamSandwich_add_executable target_name)
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif_bold.license.txt"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif_bold.woff"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif_bold.woff2"
-			DESTINATION "${CMAKE_INSTALL_PREFIX}/98"
+			DESTINATION "98"
 			COMPONENT "${target_name}/web"
 		)
 		install(
@@ -220,13 +220,13 @@ function(HamSandwich_add_executable target_name)
 			"${CMAKE_CURRENT_BINARY_DIR}/${target_name}.html"
 			"${CMAKE_CURRENT_BINARY_DIR}/${target_name}.js"
 			"${CMAKE_CURRENT_BINARY_DIR}/${target_name}.wasm"
-			DESTINATION "${CMAKE_INSTALL_PREFIX}"
+			DESTINATION "."
 			COMPONENT "${target_name}/web"
 		)
 		install(
 			FILES "${ico}"
 			RENAME "${target_name}.ico"
-			DESTINATION "${CMAKE_INSTALL_PREFIX}"
+			DESTINATION "."
 			COMPONENT "${target_name}/web"
 		)
 
@@ -260,7 +260,7 @@ function(HamSandwich_add_executable target_name)
 
 			install(
 				FILES "${data}"
-				DESTINATION "${CMAKE_INSTALL_PREFIX}"
+				DESTINATION "."
 				COMPONENT "${target_name}/web"
 			)
 		endif()
@@ -271,7 +271,7 @@ function(HamSandwich_add_executable target_name)
 			DIRECTORY
 			"${CMAKE_SOURCE_DIR}/assets/${target_name}"
 			OPTIONAL
-			DESTINATION "${CMAKE_INSTALL_PREFIX}/assets"
+			DESTINATION "assets"
 			COMPONENT "${target_name}/assets"
 		)
 	endif()
