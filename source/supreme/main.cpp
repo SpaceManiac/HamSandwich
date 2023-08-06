@@ -142,4 +142,5 @@ TASK(int) main(int argc, char* argv[])
 	delete mainmgl;
 	SteamManager::Quit();
 	JamulSoundExit();
+	return 0;
 }

@@ -4,6 +4,7 @@
 Thumbs.db
 
 # top-level folders and files
+/.vagrant
 /.vscode
 /.vs
 /addons

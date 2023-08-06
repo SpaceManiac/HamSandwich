@@ -1,10 +1,10 @@
 #include "steam.h"
 #include <memory>
 
-#include <vector>
-
 #ifdef HAS_STEAM_API
 #include <steam/steam_api.h>
+#include <vector>
+#include <string>
 
 class SteamManagerImpl : public SteamManager
 {
