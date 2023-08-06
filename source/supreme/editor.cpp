@@ -379,9 +379,10 @@ TASK(void) UpdateMouse(void)
 						editMode=EDITMODE_EDIT;
 					break;
 				case FM_SAVE:
+				case FM_SAVEPACK:
 					if(GetFilename("")[0])	// don't do any of this if the filename is blank!
 					{
-						if(strcmp(&GetFilename("")[strlen(GetFilename(""))-4],".dlw"))
+						if(strlen(GetFilename(""))<4 || strcmp(&GetFilename("")[strlen(GetFilename(""))-4],".dlw"))
 						{
 							AddDLWToFilename();
 						}
@@ -391,6 +392,11 @@ TASK(void) UpdateMouse(void)
 						SaveWorld(&world,GetFilename("worlds/"));
 						EditorSelectMap(curMapNum);
 						PutCamera(cx*FIXAMT,cy*FIXAMT);
+
+						if (FileDialogCommand() == FM_SAVEPACK)
+						{
+							MakeNormalSound(SND_ACIDSPLAT);
+						}
 					}
 					else
 						MakeNormalSound(SND_TURRETBZZT);
@@ -888,7 +894,7 @@ static TASK(void) HandleKeyPresses(void)
 			case 'f':
 			case 'F':
 				editMode=EDITMODE_FILE;
-				InitFileDialog("worlds",".dlw",FM_NEW|FM_LOAD|FM_SAVE|FM_ASKLOAD,ToolGetFilename());
+				InitFileDialog("worlds",".dlw",FM_NEW|FM_LOAD|FM_SAVE|FM_SAVEPACK|FM_ASKLOAD,ToolGetFilename());
 				break;
 			case 'M':
 				editMode=EDITMODE_FILE;
