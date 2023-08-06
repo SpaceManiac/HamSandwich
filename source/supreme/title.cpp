@@ -360,7 +360,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 	if((!oldc) || (reptCounter>10))
 		reptCounter=0;
 
-	if((c&(CONTROL_UP|CONTROL_LF)) && !(oldc&(CONTROL_UP|CONTROL_LF)))
+	if((c & ~oldc) & (CONTROL_UP|CONTROL_LF))
 	{
 		cursor--;
 		if(cursor==255)
@@ -371,7 +371,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		titleRuns=0;
 		MakeNormalSound(SND_MENUCLICK);
 	}
-	if((c&(CONTROL_DN|CONTROL_RT)) && !(oldc&(CONTROL_DN|CONTROL_RT)))
+	if((c & ~oldc) & (CONTROL_UP|CONTROL_LF))
 	{
 		cursor++;
 		if(cursor==8)
@@ -382,8 +382,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		titleRuns=0;
 		MakeNormalSound(SND_MENUCLICK);
 	}
-	if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
-	   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
+	if((c & ~oldc) & CONTROL_B1)
 	{
 		titleRuns=0;
 		MakeNormalSound(SND_MENUSELECT);
@@ -474,7 +473,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 
 	mgl->LastKeyPressed();
 	mgl->MouseTap();
-	oldc=CONTROL_B1|CONTROL_B2;
+	oldc=~0;
 	planetSpr=new sprite_set_t("graphics/pizza.jsp");
 
 	PlaySongForce("002title.ogg");
@@ -506,7 +505,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 			titleRuns=0;
 			mgl->LastKeyPressed();
 			mgl->MouseTap();
-			oldc=CONTROL_B1|CONTROL_B2;
+			oldc=~0;
 		}
 	}
 	delete planetSpr;
@@ -692,7 +691,7 @@ TASK(byte) SpeedSplash(MGLDraw *mgl,const char *fname)
 			mode=2;
 
 		c=GetControls()|GetArrows();
-		if((c&(CONTROL_B1|CONTROL_B2)) && (!(oldc&(CONTROL_B1|CONTROL_B2))))
+		if((c & ~oldc) & (CONTROL_B1 | CONTROL_B2))
 			mode=2;
 		oldc=c;
 
