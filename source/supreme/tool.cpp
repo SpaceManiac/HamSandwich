@@ -19,17 +19,20 @@
 #include "leveldialog.h"
 #include "viewdialog.h"
 
-static Tool *tool[NUM_TOOLS],*curTool;
+static Tool *tool[NUM_TOOLS];
+static Tool *curTool;
 
 static byte whichTool;
 static byte doing;
 
-static char toolName[NUM_TOOLS][16]={"Floor","Wall","Item","Badguy","Light","Special","Select",
-		"Eraser"};
-static char menuName[NUM_MENUS][16]={"File","World","TEST!","Level","View","Tiles","Items","Sound",
-		"Exit"};
+static const char toolName[NUM_TOOLS][16]={
+	"Floor","Wall","Item","Badguy","Light","Special","Select","Eraser"
+};
+static const char menuName[NUM_MENUS][16]={
+	"File","World","TEST!","Level","View","Tiles","Items","Sound","Exit"
+};
 
-char worldFilename[64];
+static char worldFilename[64];
 
 void ToolInit(void)
 {
