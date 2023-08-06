@@ -10,7 +10,7 @@
 #include "textgame.h"
 #include "steam.h"
 
-#define COPYRIGHT_YEARS "1998-2012"
+#define COPYRIGHT_YEARS "1998-2023"
 
 // special codes in the credits:
 // @ = use GirlsRWeird font

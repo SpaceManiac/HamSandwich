@@ -1,6 +1,8 @@
 #ifndef STEAM_H
 #define STEAM_H
 
+struct HamSandwichMetadata;
+
 // The interface from the rest of the game to the Steam module.
 class SteamManager
 {
@@ -13,6 +15,7 @@ public:
 
 	// Useful stuff
 	virtual const char* DescribeEdition() { return ""; }
+	virtual const HamSandwichMetadata* ReplaceMetadata(const HamSandwichMetadata* original) { return original; }
 };
 
 #endif

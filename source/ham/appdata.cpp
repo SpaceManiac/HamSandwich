@@ -77,6 +77,14 @@ Pseudocode for SDL_RWFromFile(file, mode):
 */
 
 static Mount init_vfs_spec(const char* what, const char* mountpoint, const char* kind, const char* param) {
+	// For Steam releases, check if this installer is pre-extracted.
+	struct stat sb;
+	stat(param, &sb);
+	if ((sb.st_mode & S_IFMT) == S_IFDIR && strcmp(kind, "stdio")) {
+		SDL_Log("%s: ignoring '%s' and assuming '%s' is pre-extracted", what, kind, param);
+		kind = "stdio";
+	}
+
 	if (!strcmp(kind, "stdio")) {
 		return { vanilla::open_stdio(param), mountpoint };
 	} else if (!strcmp(kind, "zip")) {

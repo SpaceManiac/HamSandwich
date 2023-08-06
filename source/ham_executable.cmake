@@ -113,7 +113,7 @@ function(HamSandwich_add_executable target_name)
 	string(APPEND metadata_cpp [[
 		#include "metadata.h"
 
-		static AssetSpec default_asset_specs[] = {
+		static const AssetSpec default_asset_specs[] = {
 	]])
 
 	string(JSON len LENGTH "${json_blob}" installers)

@@ -1,0 +1,34 @@
+#!/bin/bash
+set -euo pipefail
+
+vdf=supreme
+steam_branch=default
+
+# Extract credentials
+echo "==== Uploading to Steam ===="
+if test -f tools/steam/steamcmd_creds.txt; then
+	read -ra steamcmd_creds <tools/steam/steamcmd_creds.txt
+else
+	read -p 'Enter your Steam username: ' -ra steamcmd_creds
+	echo "${steamcmd_creds[@]}" >tools/steam/steamcmd_creds.txt
+fi
+
+# Run the steamcmd build and parse the AppID and BuildID from its output
+declare steam_appid steam_buildid
+tty=$(tty)
+eval "$(\
+	external/steamworks_sdk/tools/ContentBuilder/builder_linux/steamcmd.sh \
+		+login "${steamcmd_creds[@]}" \
+		+run_app_build "$PWD/tools/steam/$vdf.vdf" \
+		+quit | \
+	tee "$tty" |
+	awk 'match($0, /Successfully finished AppID ([0-9]+) build \(BuildID ([0-9]+)\)/, captures) { print "steam_appid="captures[1], "steam_buildid="captures[2] }'
+)"
+git tag "steam-$steam_buildid"
+
+# Prompt for Steam publish
+echo "Use the Steamworks site to publish the build. Press Enter to confirm, or Ctrl-C to cancel."
+url="https://partner.steamgames.com/apps/previewbuildchange/$steam_appid/$steam_buildid?betakey=$steam_branch"
+echo "    $url"
+xdg-open "$url"
+read -r
