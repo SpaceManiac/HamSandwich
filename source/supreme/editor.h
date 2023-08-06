@@ -31,6 +31,7 @@ enum : byte
 	EDITMODE_EXIT,
 	EDITMODE_EXITYES,
 	EDITMODE_LEVELMENU,
+	EDITMODE_EXPORT,
 };
 
 extern byte editing;

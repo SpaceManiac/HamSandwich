@@ -13,6 +13,7 @@
 #include "worldstitch.h"
 #include "levelscan.h"
 #include "appdata.h"
+#include "exportdialog.h"
 
 byte editing = 0;
 
@@ -380,6 +381,7 @@ TASK(void) UpdateMouse(void)
 					break;
 				case FM_SAVE:
 				case FM_SAVEPACK:
+					editMode = EDITMODE_EDIT;
 					if(GetFilename("")[0])	// don't do any of this if the filename is blank!
 					{
 						if(strlen(GetFilename(""))<4 || strcmp(&GetFilename("")[strlen(GetFilename(""))-4],".dlw"))
@@ -395,12 +397,12 @@ TASK(void) UpdateMouse(void)
 
 						if (FileDialogCommand() == FM_SAVEPACK)
 						{
-							MakeNormalSound(SND_ACIDSPLAT);
+							InitExportDialog(&world, GetFilename("worlds/"));
+							editMode = EDITMODE_EXPORT;
 						}
 					}
 					else
 						MakeNormalSound(SND_TURRETBZZT);
-					editMode=EDITMODE_EDIT;
 					break;
 				case FM_EXIT:
 					editMode=EDITMODE_EDIT;
@@ -515,6 +517,13 @@ TASK(void) UpdateMouse(void)
 				}
 				SetSpecialRect(rectX1,rectY1,rectX2,rectY2);
 			}
+			break;
+		case EDITMODE_EXPORT:
+			if(editmgl->MouseTap())
+				if (!ExportDialogClick(mouseX,mouseY))
+					SetEditMode(EDITMODE_EDIT);
+			if(scroll)
+				ExportDialogScroll(scroll);
 			break;
 	}
 }
@@ -806,6 +815,14 @@ void EditorDraw(void)
 			ShowSpecials();
 			RenderLevelDialog(mouseX,mouseY,editmgl);
 			break;
+		case EDITMODE_EXPORT:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
+			if(displayFlags&MAP_SHOWBADGUYS)
+				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
+			RenderItAll(&world,editorMap,displayFlags);
+			ShowSpecials();
+			RenderExportDialog(editmgl, mouseX, mouseY);
+			break;
 	}
 
 	// draw the mouse cursor
@@ -1073,6 +1090,14 @@ static TASK(void) HandleKeyPresses(void)
 			SetEditMode(EDITMODE_EDIT);
 		}
 		lastKey=0;
+	}
+	else if (editMode == EDITMODE_EXPORT)
+	{
+		if (!ExportDialogKey(lastKey))
+		{
+			SetEditMode(EDITMODE_EDIT);
+		}
+		lastKey = 0;
 	}
 	else
 	{
