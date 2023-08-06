@@ -14,6 +14,7 @@ public:
 	static void Quit();
 
 	// Useful stuff
+	virtual void Update() {}
 	virtual const char* DescribeEdition() { return ""; }
 	virtual const HamSandwichMetadata* ReplaceMetadata(const HamSandwichMetadata* original) { return original; }
 };

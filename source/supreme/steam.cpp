@@ -5,6 +5,7 @@
 #include <steam/steam_api.h>
 #include <vector>
 #include <string>
+#include "game.h"
 
 class SteamManagerImpl : public SteamManager
 {
@@ -35,9 +36,24 @@ public:
 		}
 	}
 
-	const char* DescribeEdition()
+	void Update() override
+	{
+		SteamAPI_RunCallbacks();
+	}
+
+	const char* DescribeEdition() override
 	{
 		return "Steam edition";
+	}
+
+	// ------------------------------------------------------------------------
+	// Automatically pause on overlay opening
+	STEAM_CALLBACK(SteamManagerImpl, on_overlay_activated, GameOverlayActivated_t)
+	{
+		if (pParam->m_bActive)
+		{
+			PauseGame();
+		}
 	}
 };
 

@@ -7,5 +7,11 @@ HamSandwich_add_executable(
 target_link_libraries(supreme steam_api)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	target_compile_options(supreme PRIVATE -Wall -Wextra -Wpedantic -Wno-unused-parameter -Wno-unused-but-set-variable)
+	target_compile_options(supreme PRIVATE
+		# Lots of warnings, but some exclusions
+		-Wall -Wextra -Wpedantic
+		-Wno-unused-parameter -Wno-unused-but-set-variable
+		# STEAM_CALLBACK macro warns about this, but it seems fine in practice.
+		-Wno-invalid-offsetof
+	)
 endif()

@@ -32,7 +32,7 @@ class MGLDraw
 {
 public:
 	MGLDraw(const char *name, int xRes, int yRes, bool window);
-	~MGLDraw();
+	virtual ~MGLDraw();
 
 	int GetWidth();
 	int GetHeight();
@@ -44,7 +44,7 @@ public:
 	void ResizeBuffer(int w, int h);
 
 	// Perform any necessary per-frame handling. Returns false if quit.
-	bool Process();
+	virtual bool Process();
 	void Quit();
 
 	// Display the buffer to the screen.

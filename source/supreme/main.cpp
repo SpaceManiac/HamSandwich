@@ -39,6 +39,19 @@
 
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
+class SteamMGLDraw : public MGLDraw
+{
+public:
+	SteamMGLDraw(const char *name, int xRes, int yRes, bool window)
+		: MGLDraw(name, xRes, yRes, window) {}
+
+	bool Process() override
+	{
+		SteamManager::Get()->Update();
+		return MGLDraw::Process();
+	}
+};
+
 TASK(int) main(int argc, char* argv[])
 {
 	g_HamExtern.ChooseNextSong = ChooseNextSong;
@@ -57,7 +70,7 @@ TASK(int) main(int argc, char* argv[])
 	SetHamMusicEnabled(config.music);
 	SetJamulSoundEnabled(config.sound, config.numSounds);
 	SteamManager::Init();
-	MGLDraw *mainmgl=new MGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame);
+	MGLDraw *mainmgl = new SteamMGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame);
 	if(!mainmgl)
 		CO_RETURN 0;
 
