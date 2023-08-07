@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include "game.h"
+#include "log.h"
 
 class SteamManagerImpl : public SteamManager
 {
@@ -39,6 +40,15 @@ public:
 	void Update() override
 	{
 		SteamAPI_RunCallbacks();
+
+		if (stats_store_cooldown > 0)
+		{
+			--stats_store_cooldown;
+		}
+		else if (stats_need_store)
+		{
+			StoreStats();
+		}
 	}
 
 	const char* DescribeEdition() override
@@ -54,6 +64,83 @@ public:
 		{
 			PauseGame();
 		}
+	}
+
+	// ------------------------------------------------------------------------
+	// Achievements & statistics
+	const static word STATS_STORE_COOLDOWN = 2 * 60 * 30;  // 2 minutes
+	bool steam_stats_ready = false;
+	bool game_profile_ready = false;
+	bool stats_need_store = false;
+	word stats_store_cooldown = 0;
+
+	STEAM_CALLBACK(SteamManagerImpl, on_stats_received, UserStatsReceived_t)
+	{
+		if (pParam->m_eResult == k_EResultOK && !steam_stats_ready)
+		{
+			steam_stats_ready = true;
+			StartupSyncStats();
+		}
+	}
+
+	void ProfileReady() override
+	{
+		if (!game_profile_ready)
+		{
+			game_profile_ready = true;
+			StartupSyncStats();
+		}
+	}
+
+	void StartupSyncStats()
+	{
+		if (steam_stats_ready && game_profile_ready)
+		{
+			for (int goal = 0; goal < 100; ++goal)
+			{
+				if (profile.progress.goal[goal])
+				{
+					CompleteGoal(goal);
+				}
+			}
+
+			// TOOD: set stats here
+
+			stats_store_cooldown = 0;
+		}
+	}
+
+	void CompleteGoal(int goal) override
+	{
+		if (!steam_stats_ready)
+		{
+			return;
+		}
+
+		char name[64];
+		sprintf(name, "goal_%d", goal);
+
+		bool steamAchieved;
+		if (SteamUserStats()->GetAchievement(name, &steamAchieved) && !steamAchieved)
+		{
+			if (SteamUserStats()->SetAchievement(name))
+			{
+				LogDebug("SetAchievement(%s) OK", name);
+				stats_need_store = true;
+				// Store achievements immediately so the message is triggered.
+				stats_store_cooldown = 2;
+			}
+		}
+	}
+
+	void StoreStats()
+	{
+		if (SteamUserStats()->StoreStats())
+		{
+			LogDebug("StoreStats() OK");
+		}
+		stats_need_store = false;
+		stats_store_cooldown = STATS_STORE_COOLDOWN;
 	}
 };
 

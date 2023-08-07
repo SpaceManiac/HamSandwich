@@ -5,6 +5,7 @@
 #include "music.h"
 #include "shop.h"
 #include "appdata.h"
+#include "steam.h"
 
 static char prfName[64];
 static byte firstTime;
@@ -199,6 +200,8 @@ void LoadProfile(const char *name)
 		}
 	}
 	fclose(f);
+
+	SteamManager::Get()->ProfileReady();
 }
 
 byte FirstTime(void)
