@@ -431,30 +431,30 @@ void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,const sprite
 void SprDrawTile(int x,int y,word tile,char light,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
-	dispList->DrawSprite(x,y,0,0,tile,light,(sprite_t *)1,flags|DISPLAY_TILESPRITE);
+	dispList->DrawSprite(x,y,0,0,tile,light,(const sprite_t *)1,flags|DISPLAY_TILESPRITE);
 }
 
 void WallDraw(int x,int y,word wall,word floor,const char *light,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
-	dispList->DrawSprite(x,y,0,wall,floor,0,(sprite_t *)light,flags);
+	dispList->DrawSprite(x,y,0,wall,floor,0,(const sprite_t *)light,flags);
 }
 
 void RoofDraw(int x,int y,word roof,const char *light,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
-	dispList->DrawSprite(x,y,TILE_HEIGHT,0,roof,0,(sprite_t *)light,flags);
+	dispList->DrawSprite(x,y,TILE_HEIGHT,0,roof,0,(const sprite_t *)light,flags);
 }
 
 void ParticleDraw(int x,int y,int z,byte color,byte size,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
-	dispList->DrawSprite(x,y,z,0,color,size,(sprite_t *)1,flags);
+	dispList->DrawSprite(x,y,z,0,color,size,(const sprite_t *)1,flags);
 }
 
 void LightningDraw(int x,int y,int x2,int y2,byte bright,char range)
 {
-	dispList->DrawSprite(x,y,x2,y2,bright,range,(sprite_t *)1,DISPLAY_DRAWME|DISPLAY_LIGHTNING);
+	dispList->DrawSprite(x,y,x2,y2,bright,range,(const sprite_t *)1,DISPLAY_DRAWME|DISPLAY_LIGHTNING);
 }
 
 //---------------------------------------------------------------------------------------
@@ -535,7 +535,7 @@ void DisplayList::HookIn(int me)
 	}
 }
 
-bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,char bright,sprite_t *spr,word flags)
+bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,char bright,const sprite_t *spr,word flags)
 {
 	int i;
 

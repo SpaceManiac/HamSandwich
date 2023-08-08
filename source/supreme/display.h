@@ -46,7 +46,7 @@ enum : byte
 struct displayObj_t
 {
 	int x,y,z,z2;
-	sprite_t *spr;
+	const sprite_t *spr;
 	word hue;
 	char bright;
 	word flags;
@@ -60,7 +60,7 @@ class DisplayList
 		DisplayList(void);
 		~DisplayList(void);
 
-		bool DrawSprite(int x,int y,int z,int z2,word hue,char bright,sprite_t *spr,word flags);
+		bool DrawSprite(int x,int y,int z,int z2,word hue,char bright,const sprite_t *spr,word flags);
 		void ClearList(void);
 		void Render(void);
 	private:
@@ -98,8 +98,8 @@ void CenterPrint(int x,int y,std::string_view s,char bright,byte font);
 void RenderItAll(world_t *world,Map *map,byte flags);
 int GetStrLength(std::string_view s,byte font);
 
-void SprDraw(int x,int y,int z,byte hue,char bright,sprite_t *spr,word flags);
-void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,sprite_t *spr,word flags);
+void SprDraw(int x,int y,int z,byte hue,char bright,const sprite_t *spr,word flags);
+void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,const sprite_t *spr,word flags);
 void SprDrawTile(int x,int y,word tile,char light,word flags);	// use a tile as a sprite
 
 void WallDraw(int x,int y,word wall,word floor,const char *light,word flags);
