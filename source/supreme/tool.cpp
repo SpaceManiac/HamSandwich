@@ -150,7 +150,7 @@ TASK(void) ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl)
 					switch((msy-(mgl->GetHeight()-80-16*NUM_MENUS))/16)
 					{
 						case MENU_FILE:
-							InitFileDialog("worlds",".dlw",FM_SAVE|FM_LOAD|FM_NEW|FM_EXIT|FM_ASKLOAD,worldFilename);
+							InitFileDialog("worlds",".dlw",FM_SAVE|FM_LOAD|FM_NEW|FM_EXIT|FM_ASKLOAD|FM_SAVEPACK,worldFilename);
 							SetEditMode(EDITMODE_FILE);
 							break;
 						case MENU_WORLD:
