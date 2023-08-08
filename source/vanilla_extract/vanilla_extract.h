@@ -18,6 +18,15 @@ namespace vanilla
 	owned::FILE fp_from_bundle(std::string_view filename, SDL_RWops* rw);
 	bool ends_with(std::string_view haystack, std::string_view suffix);
 
+	// A description of
+	enum class VfsSourceKind
+	{
+		Unspecified,
+		BaseGame,  // Base game content that is known to always be present.
+		Addon,     // An optional addon of some type, from an external source.
+		Appdata,   // The user's own addons or data.
+	};
+
 	// A single VFS provider, read-only by default.
 	class Vfs
 	{
@@ -28,6 +37,8 @@ namespace vanilla
 	public:
 		Vfs() {}
 		virtual ~Vfs() {}
+
+		VfsSourceKind source_kind;
 
 		virtual owned::SDL_RWops open_sdl(const char* filename) = 0;
 		virtual owned::FILE open_stdio(const char* filename)
@@ -51,14 +62,16 @@ namespace vanilla
 	};
 
 	// A pair of Vfs and mountpoint.
-	struct Mount
+	struct Mount final
 	{
 		std::unique_ptr<Vfs> vfs;
 		std::string mountpoint;
+		VfsSourceKind source_kind;
 
-		Mount(std::unique_ptr<Vfs>&& vfs, std::string&& mountpoint = "")
+		Mount(std::unique_ptr<Vfs>&& vfs, std::string&& mountpoint = "", VfsSourceKind source_kind = VfsSourceKind::Unspecified)
 			: vfs(std::move(vfs))
 			, mountpoint(mountpoint)
+			, source_kind(source_kind)
 		{
 			// Strip trailing '/' from mountpoint.
 			if (!this->mountpoint.empty() && this->mountpoint.back() == '/')
@@ -73,7 +86,7 @@ namespace vanilla
 	};
 
 	// A full filesystem, including a list of mounts and the write (appdata) mount.
-	class VfsStack
+	class VfsStack final
 	{
 		std::vector<Mount> mounts;
 		std::unique_ptr<WriteVfs> write_mount;
@@ -84,9 +97,9 @@ namespace vanilla
 		{
 			mounts.push_back(std::move(mount));
 		}
-		void push_back(std::unique_ptr<Vfs>&& entry, std::string&& mountpoint = "")
+		void push_back(std::unique_ptr<Vfs>&& entry, std::string&& mountpoint = "", VfsSourceKind source_kind = VfsSourceKind::Unspecified)
 		{
-			mounts.push_back(Mount { std::move(entry), std::move(mountpoint) });
+			mounts.push_back(Mount { std::move(entry), std::move(mountpoint), source_kind });
 		}
 
 		// Returns true if this VfsStack is empty and therefore not useable.
@@ -105,6 +118,9 @@ namespace vanilla
 		owned::SDL_RWops open_write_sdl(const char* filename);
 		owned::FILE open_write_stdio(const char* filename);
 		bool delete_file(const char* filename);
+
+		// Query metadata for a given path.
+		bool query_bottom(const char* filename, VfsSourceKind* kind);
 	};
 
 	// Available providers

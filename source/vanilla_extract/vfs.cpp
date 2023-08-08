@@ -221,3 +221,39 @@ void VfsStack::list_dir(const char* directory, std::set<std::string>& output)
 		list_dir_inner("", write_mount.get(), directory, output);
 	}
 }
+
+bool VfsStack::query_bottom(const char* filename, VfsSourceKind* kind)
+{
+	std::string tombstone = tombstone_name(filename);
+
+	// Iterate top to bottom, so we stop as soon as we see a tombstone or the file.
+	// However, if a file exists in an addon (ex: all_supreme_worlds.zip) and
+	// ALSO the base game, mark it as base game by going all the way down.
+	bool retval = false;
+	if (write_mount)
+	{
+		if (owned::SDL_RWops deleted = write_mount->open_sdl(tombstone.c_str()))
+		{
+			return retval;
+		}
+		if (owned::FILE fp = write_mount->open_stdio(filename))
+		{
+			*kind = VfsSourceKind::Appdata;
+			retval = true;
+		}
+	}
+
+	for (auto iter = mounts.rbegin(); iter != mounts.rend(); ++iter)
+	{
+		if (owned::SDL_RWops deleted = iter->open_sdl(tombstone.c_str()))
+		{
+			return retval;
+		}
+		if (owned::FILE fp = iter->open_stdio(filename))
+		{
+			*kind = iter->source_kind;
+			retval = true;
+		}
+	}
+	return retval;
+}

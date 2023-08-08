@@ -9,6 +9,10 @@
 
 typedef struct SDL_RWops SDL_RWops;
 struct HamSandwichMetadata;
+namespace vanilla
+{
+	class VfsStack;
+}
 
 // Methods for accessing assets/saves 'correctly' on each platform. In some
 // situations, Appdata and Asset folders may overlap, so names should not be
@@ -17,6 +21,7 @@ struct HamSandwichMetadata;
 const char* EscapeBinDirectory();
 void AppdataInit(const HamSandwichMetadata* metadata);
 bool AppdataIsInit();
+vanilla::VfsStack& AppdataVfs();
 
 // Open for reading.
 FILE* AssetOpen(const char* filename);

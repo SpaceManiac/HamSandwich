@@ -165,7 +165,7 @@ static VfsStack default_vfs_stack(bool* error) {
 	buffer.append(globalMetadata->appdata_folder_name);
 
 	VfsStack result;
-	result.push_back(vanilla::open_stdio(""));
+	result.push_back(vanilla::open_stdio(""), "", vanilla::VfsSourceKind::BaseGame);
 	result.set_appdata(vanilla::open_stdio(buffer));
 	return result;
 }
@@ -186,13 +186,13 @@ void AppdataSync() {
 static VfsStack default_vfs_stack(bool* error) {
 	VfsStack result;
 	int need_flags = SDL_ANDROID_EXTERNAL_STORAGE_READ | SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
+	result.push_back(vanilla::open_android(), "", vanilla::VfsSourceKind::BaseGame);
 	if ((SDL_AndroidGetExternalStorageState() & need_flags) == need_flags) {
-		result.push_back(vanilla::open_stdio(SDL_AndroidGetInternalStoragePath()));
+		result.push_back(vanilla::open_stdio(SDL_AndroidGetInternalStoragePath()), "", vanilla::VfsSourceKind::Appdata);
 		result.set_appdata(vanilla::open_stdio(SDL_AndroidGetExternalStoragePath()));
 	} else {
 		result.set_appdata(vanilla::open_stdio(SDL_AndroidGetInternalStoragePath()));
 	}
-	result.push_back(vanilla::open_android());
 	return result;
 }
 
@@ -209,6 +209,7 @@ static VfsStack default_vfs_stack(bool* error) {
 		const auto& spec = meta->default_asset_specs[i];
 		if (spec.should_auto_mount()) {
 			auto mount = init_vfs_spec("built-in", spec.mountpoint, spec.kind, spec.param);
+			mount.source_kind = spec.optional ? vanilla::VfsSourceKind::Addon : vanilla::VfsSourceKind::BaseGame;
 			if (mount.vfs) {
 				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "auto %d %s: %s@%s@%s", i, spec.optional ? "enabled" : "required", spec.mountpoint, spec.kind, spec.param);
 				result.push_back(std::move(mount));
@@ -225,7 +226,7 @@ static VfsStack default_vfs_stack(bool* error) {
 	std::string assets = "assets/";
 	assets.append(meta->appdata_folder_name);
 	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "auto assets: %s", assets.c_str());
-	result.push_back(vanilla::open_stdio(assets));
+	result.push_back(vanilla::open_stdio(assets), "", vanilla::VfsSourceKind::BaseGame);
 
 	// Use `appdata/$NAME` as our appdata folder.
 	std::string appdata = "appdata/";
@@ -434,7 +435,7 @@ static void import_addons(VfsStack* target)
 		if (spec.is_enabled())
 		{
 			SDL_Log("mounting addon: %s/%s", path.c_str(), spec.filename.c_str());
-			target->push_back(vanilla::open_zip(addons->open_sdl(spec.filename.c_str())));
+			target->push_back(vanilla::open_zip(addons->open_sdl(spec.filename.c_str())), "", vanilla::VfsSourceKind::Addon);
 		}
 		else
 		{
@@ -445,7 +446,7 @@ static void import_addons(VfsStack* target)
 	// Hacky to put this here, but too lazy to expose a proper API for this.
 	if (std::string_view("sleepless") == globalMetadata->appdata_folder_name)
 	{
-		target->push_back(vanilla::open_zip(target->open_sdl("worlds/sleepiest_world.zip")));
+		target->push_back(vanilla::open_zip(target->open_sdl("worlds/sleepiest_world.zip")), "", vanilla::VfsSourceKind::BaseGame);
 	}
 }
 
@@ -465,6 +466,10 @@ void AppdataInit(const HamSandwichMetadata* metadata) {
 
 bool AppdataIsInit() {
 	return !vfs_stack.empty();
+}
+
+vanilla::VfsStack& AppdataVfs() {
+	return vfs_stack;
 }
 
 FILE* AssetOpen(const char* filename) {
