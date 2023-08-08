@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <set>
 #include "owned_stdio.h"

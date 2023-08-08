@@ -3,6 +3,7 @@
 #include <string>
 #include <string_view>
 #include <algorithm>
+#include <zip.h>
 #include "world.h"
 #include "display.h"
 #include "appdata.h"
@@ -48,6 +49,7 @@ namespace
 	enum class ButtonId
 	{
 		None,
+		Close,
 		SaveReqFilesTxt,
 		SaveZip,
 	};
@@ -64,7 +66,7 @@ static void AddDependency(std::string_view part1, std::string_view part2)
 	if (!seen.insert(fname).second)
 		return;
 
-	FileKind kind;
+	FileKind kind = FileKind::DependencyMissing;
 	vanilla::VfsSourceKind sourceKind;
 	if (AppdataVfs().query_bottom(fname.c_str(), &sourceKind))
 	{
@@ -81,10 +83,6 @@ static void AddDependency(std::string_view part1, std::string_view part2)
 				kind = FileKind::DependencyBaseGame;
 				break;
 		}
-	}
-	else
-	{
-		kind = FileKind::DependencyMissing;
 	}
 
 	files.push_back({ kind, std::move(fname) });
@@ -124,6 +122,87 @@ static void SaveReqFilesTxt()
 	fclose(f);
 	AppdataSync();
 	saveTxtResult = "Saved OK!";
+}
+
+static void SaveZip()
+{
+	constexpr int BUFSIZE = 16 * 1024;
+	char buf[BUFSIZE];
+
+	std::string pathname = "addons/";
+	pathname.append(zipName);
+	pathname.append(".zip");
+	vanilla::mkdir_parents(pathname);
+
+	zipFile zf = zipOpen(pathname.c_str(), false);
+	if (!zf)
+	{
+		saveZipResult = "Error opening zip file";
+		return;
+	}
+
+	int err = ZIP_OK;
+	for (const auto& file : files)
+	{
+		zip_fileinfo zi;
+		zi.tmz_date.tm_sec = zi.tmz_date.tm_min = zi.tmz_date.tm_hour = 0;
+		zi.tmz_date.tm_mday = zi.tmz_date.tm_mon = zi.tmz_date.tm_year = 0;
+		zi.dosDate = 0;
+		zi.internal_fa = 0;
+		zi.external_fa = 0;
+
+		if (file.kind == FileKind::Root || file.kind == FileKind::DependencyAppdata || file.kind == FileKind::DependencyOtherAddon)
+		{
+			err = zipOpenNewFileInZip(
+				zf,
+				file.filename.c_str(),
+				&zi,
+				/*extrafield_local*/ nullptr, 0,
+				/*extrafield_global*/ nullptr, 0,
+				/*comment*/ nullptr,
+				/*method*/ Z_DEFLATED,
+				/*level*/ Z_DEFAULT_COMPRESSION
+			);
+			if (err != ZIP_OK)
+				break;
+
+			owned::SDL_RWops rw = AssetOpen_SDL_Owned(file.filename.c_str());
+			while (true)
+			{
+				int read = SDL_RWread(rw, buf, 1, BUFSIZE);
+				if (read == 0)
+					break;
+				err = zipWriteInFileInZip(zf, buf, read);
+				if (err != ZIP_OK)
+					break;
+			}
+			if (err != ZIP_OK)
+				break;
+
+			err = zipCloseFileInZip(zf);
+			if (err != ZIP_OK)
+				break;
+		}
+	}
+
+	if (err == ZIP_OK)
+	{
+		err = zipClose(zf, nullptr);
+	}
+	else
+	{
+		zipClose(zf, nullptr);
+	}
+
+	if (err == ZIP_OK)
+	{
+		saveZipResult = "Saved OK!";
+	}
+	else
+	{
+		saveZipResult = "Zip error ";
+		saveZipResult.append(std::to_string(err));
+	}
 }
 
 void InitExportDialog(const world_t* world, const char* filename)
@@ -211,6 +290,14 @@ void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 	// Background, title, exit
 	mgl->FillBox(0, 0, mgl->GetWidth()-1, mgl->GetHeight()-1, 8);
 	Print(5, 3, saveTxtOnly ? "Requirements scan" : "Export: File List", 0, 1);
+
+	if (msx >= mgl->GetWidth() - 100 && msx <= mgl->GetWidth() - 5 && msy >= 3 && msy <= 3+14)
+	{
+		mgl->FillBox(mgl->GetWidth() - 100, 3, mgl->GetWidth() - 5, 3 + 14, 8+32*1);
+		curButton = ButtonId::Close;
+	}
+	mgl->Box(mgl->GetWidth() - 100, 3, mgl->GetWidth() - 5, 3+14, 31);
+	Print(mgl->GetWidth() - 100 + 2, 3 + 2, "Close", 0, 1);
 
 	// Left half: the file list proper
 	mgl->FillBox(2, 18, midX - 10, 18 + 2 + 14*FILES_PER_PAGE, 0);
@@ -315,12 +402,13 @@ bool ExportDialogClick(int msx, int msy)
 {
 	switch (curButton)
 	{
+		case ButtonId::Close:
+			return false;
 		case ButtonId::SaveReqFilesTxt:
 			SaveReqFilesTxt();
 			break;
 		case ButtonId::SaveZip:
-			// TODO
-			saveZipResult = "Saved OK!";
+			SaveZip();
 			break;
 		default:
 			break;

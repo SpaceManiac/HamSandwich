@@ -13,8 +13,10 @@ elseif(MSVC)
 endif()
 
 add_library(minizip STATIC
+	"${zlib}/contrib/minizip/zip.c"
 	"${zlib}/contrib/minizip/unzip.c"
 	"${zlib}/contrib/minizip/ioapi.c")
+target_compile_definitions(minizip PUBLIC NOCRYPT)
 target_include_directories(minizip PUBLIC "${zlib}/contrib/minizip")
 target_link_libraries(minizip PUBLIC z)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")

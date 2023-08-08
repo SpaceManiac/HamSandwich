@@ -1,6 +1,7 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
+#include <string_view>
 #include "mgldraw.h"
 #include "jamulspr.h"
 #include "jamulfont.h"
