@@ -664,7 +664,7 @@ static void ApplyZoom()
 	}
 	else
 	{
-		editmgl->ResizeBuffer(SCRWID * zoom * 4 / 3, SCRHEI * zoom);
+		editmgl->ResizeBuffer(SCRWID * zoom * 4 / 3, SCRHEI * zoom, /*clamp*/ true);
 	}
 }
 
