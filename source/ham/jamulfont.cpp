@@ -569,40 +569,36 @@ static byte CharWidth(dword c, const mfont_t *font)
 	return *(font->chars[c]);
 }
 
-void FontPrintString(int x, int y, const char *s, const mfont_t *font)
+void FontPrintString(int x, int y, std::string_view s, const mfont_t *font)
 {
-	size_t len = strlen(s);
-	for (size_t i = 0; i < len; ++i)
+	for (char ch : s)
 	{
-		FontPrintChar(x, y, s[i], font);
-		x += CharWidth(s[i], font) + font->gapSize;
+		FontPrintChar(x, y, ch, font);
+		x += CharWidth(ch, font) + font->gapSize;
 	}
 }
 
-void FontPrintStringColor(int x, int y, const char *s, const mfont_t *font, byte color, char bright)
+void FontPrintStringColor(int x, int y, std::string_view s, const mfont_t *font, byte color, char bright)
 {
-	size_t len = strlen(s);
-	for (size_t i = 0; i < len; ++i)
+	for (char ch : s)
 	{
-		FontPrintCharColor(x, y, s[i], color, bright, font);
-		x += CharWidth(s[i], font) + font->gapSize;
+		FontPrintCharColor(x, y, ch, color, bright, font);
+		x += CharWidth(ch, font) + font->gapSize;
 	}
 }
 
-void FontPrintStringDark(int x,int y,const char *s,const mfont_t *font)
+void FontPrintStringDark(int x,int y,std::string_view s,const mfont_t *font)
 {
-	size_t len = strlen(s);
-	for (size_t i = 0; i < len; ++i)
+	for (char ch : s)
 	{
-		FontPrintCharDark(x,y,s[i],font);
-		x+=CharWidth(s[i],font)+font->gapSize;
+		FontPrintCharDark(x,y,ch,font);
+		x+=CharWidth(ch,font)+font->gapSize;
 	}
 }
 
-void FontPrintStringDarkAdj(int x,int y, const char *s,int dark,const mfont_t *font)
+void FontPrintStringDarkAdj(int x,int y, std::string_view s,int dark,const mfont_t *font)
 {
-	size_t len = strlen(s);
-	for (size_t i = 0; i < len; ++i)
+	for (size_t i = 0; i < s.size(); ++i)
 	{
 		int d = dark + (int) i;
 		if (d < 0)
@@ -618,50 +614,45 @@ void FontPrintStringDarkAdj(int x,int y, const char *s,int dark,const mfont_t *f
 	}
 }
 
-void FontPrintStringBright(int x, int y, const char *s, const mfont_t *font, char bright)
+void FontPrintStringBright(int x, int y, std::string_view s, const mfont_t *font, char bright)
 {
-	size_t len = strlen(s);
-	for (size_t i = 0; i < len; ++i)
+	for (size_t i = 0; i < s.size(); ++i)
 	{
 		FontPrintCharBright(x, y, s[i], bright, font);
 		x += CharWidth(s[i], font) + font->gapSize;
 	}
 }
 
-void FontPrintStringSolid(int x, int y, const char *s, const mfont_t *font, byte color)
+void FontPrintStringSolid(int x, int y, std::string_view s, const mfont_t *font, byte color)
 {
-	size_t len = strlen(s);
-	for (size_t i = 0; i < len; ++i)
+	for (size_t i = 0; i < s.size(); ++i)
 	{
 		FontPrintCharSolid(x, y, s[i], font, color);
 		x += CharWidth(s[i], font) + font->gapSize;
 	}
 }
 
-void FontPrintStringGlow(int x, int y, const char *s, const mfont_t *font, char bright)
+void FontPrintStringGlow(int x, int y, std::string_view s, const mfont_t *font, char bright)
 {
-	size_t len = strlen(s);
-	for (size_t i = 0; i < len; ++i)
+	for (size_t i = 0; i < s.size(); ++i)
 	{
 		FontPrintCharGlow(x, y, s[i], bright, font);
 		x+=CharWidth(s[i],font)+font->gapSize;
 	}
 }
 
-void FontPrintStringBrightGlow(int x, int y, const char *s, char brt, const mfont_t *font)
+void FontPrintStringBrightGlow(int x, int y, std::string_view s, char brt, const mfont_t *font)
 {
-	size_t len = strlen(s);
-	for (size_t i = 0; i < len; ++i)
+	for (size_t i = 0; i < s.size(); ++i)
 	{
 		FontPrintCharBrightGlow(x,y,s[i],brt,font);
 		x+=CharWidth(s[i],font)+font->gapSize;
 	}
 }
 
-void FontPrintStringDropShadow(int x, int y, const char *s, const mfont_t *font, byte shadowColor, byte shadowOffset)
+void FontPrintStringDropShadow(int x, int y, std::string_view s, const mfont_t *font, byte shadowColor, byte shadowOffset)
 {
-	size_t len = strlen(s);
-	for (size_t i = 0; i < len; ++i)
+	for (size_t i = 0; i < s.size(); ++i)
 	{
 		FontPrintCharSolid(x + shadowOffset, y + shadowOffset, s[i], font, shadowColor);
 		FontPrintChar(x, y, s[i], font);
@@ -669,7 +660,7 @@ void FontPrintStringDropShadow(int x, int y, const char *s, const mfont_t *font,
 	}
 }
 
-void FontPrintStringCursorLit(int x,int y,byte pos,byte blink,const char *s,const mfont_t *font,char bright)
+void FontPrintStringCursorLit(int x,int y,byte pos,byte blink,std::string_view s,const mfont_t *font,char bright)
 {
 	int i;
 	char b;
@@ -686,12 +677,12 @@ void FontPrintStringCursorLit(int x,int y,byte pos,byte blink,const char *s,cons
 		FontPrintCharBright(x,y,'_',0,font);	// show the cursor
 }
 
-void FontPrintRectBlack(int x,int y,int x2,int y2, const char *s,int height,int bright,const mfont_t *font)
+void FontPrintRectBlack(int x,int y,int x2,int y2, std::string_view s,int height,int bright,const mfont_t *font)
 {
 	int tx,ty,len;
 	char *tok;
 
-	std::string tmp = s;
+	std::string tmp { s };
 
 	tx=x+2;
 	ty=y+2;
@@ -733,12 +724,12 @@ void FontPrintRectBlack(int x,int y,int x2,int y2, const char *s,int height,int 
 	}
 }
 
-void FontPrintRectBlack2(int x,int y,int x2,int y2, const char *s,int height,const mfont_t *font)
+void FontPrintRectBlack2(int x,int y,int x2,int y2, std::string_view s,int height,const mfont_t *font)
 {
 	int tx,ty,len;
 	char *tok;
 
-	std::string tmp = s;
+	std::string tmp { s };
 
 	tx=x+2;
 	ty=y+2;
@@ -780,18 +771,17 @@ void FontSetColors(byte first, byte count, byte *data)
 	memcpy(&fontPal[first], data, count);
 }
 
-int FontStrLen(const char *s, const mfont_t *font)
+int FontStrLen(std::string_view s, const mfont_t *font)
 {
 	int width = 0;
-	size_t len = strlen(s);
-	for (size_t i = 0; i < len; ++i)
+	for (char ch : s)
 	{
-		width += CharWidth(s[i], font) + font->gapSize;
+		width += CharWidth(ch, font) + font->gapSize;
 	}
 	return width;
 }
 
-TASK(bool) FontInputText(const char *prompt, char *buffer, int len, void (*renderScrn)(const mfont_t *), const mfont_t *font)
+TASK(bool) FontInputText(std::string_view prompt, char *buffer, int len, void (*renderScrn)(const mfont_t *), const mfont_t *font)
 {
 	int pos = 0;
 	bool done = 0;
@@ -842,10 +832,9 @@ TASK(bool) FontInputText(const char *prompt, char *buffer, int len, void (*rende
 	CO_RETURN true;
 }
 
-void FontPrintStringLimit(int x,int y,int maxX,const char*s,const mfont_t *font)
+void FontPrintStringLimit(int x,int y,int maxX,std::string_view s,const mfont_t *font)
 {
-	size_t len = strlen(s);
-	for (size_t i = 0; i < len; ++i)
+	for (size_t i = 0; i < s.size(); ++i)
 	{
 		if(x+CharWidth(s[i],font)<maxX)
 		{
@@ -857,10 +846,9 @@ void FontPrintStringLimit(int x,int y,int maxX,const char*s,const mfont_t *font)
 	}
 }
 
-void FontPrintStringSolidLimit(int x,int y,int maxX,const char*s,const mfont_t *font,byte color)
+void FontPrintStringSolidLimit(int x,int y,int maxX,std::string_view s,const mfont_t *font,byte color)
 {
-	size_t len = strlen(s);
-	for (size_t i = 0; i < len; ++i)
+	for (size_t i = 0; i < s.size(); ++i)
 	{
 		if(x+CharWidth(s[i],font)<maxX)
 		{
@@ -871,10 +859,9 @@ void FontPrintStringSolidLimit(int x,int y,int maxX,const char*s,const mfont_t *
 	}
 }
 
-void FontPrintStringBrightLimit(int x,int y,int maxX,const char*s,const mfont_t *font,char bright)
+void FontPrintStringBrightLimit(int x,int y,int maxX,std::string_view s,const mfont_t *font,char bright)
 {
-	size_t len = strlen(s);
-	for (size_t i = 0; i < len; ++i)
+	for (size_t i = 0; i < s.size(); ++i)
 	{
 		if(x+CharWidth(s[i],font)<maxX)
 		{
@@ -886,12 +873,12 @@ void FontPrintStringBrightLimit(int x,int y,int maxX,const char*s,const mfont_t 
 	}
 }
 
-void FontPrintStringRect(int x,int y,int x2,int y2,const char*s,int height,const mfont_t *font)
+void FontPrintStringRect(int x,int y,int x2,int y2,std::string_view s,int height,const mfont_t *font)
 {
 	int tx,ty;
 	char *tok;
 
-	std::string tmp = s;
+	std::string tmp { s };
 
 	tx=x+2;
 	ty=y+2;
@@ -930,12 +917,12 @@ void FontPrintStringRect(int x,int y,int x2,int y2,const char*s,int height,const
 	}
 }
 
-void FontPrintStringGlowRect(int x,int y,int x2,int y2,const char*s,int height,char bright,const mfont_t *font)
+void FontPrintStringGlowRect(int x,int y,int x2,int y2,std::string_view s,int height,char bright,const mfont_t *font)
 {
 	int tx,ty;
 	char *tok;
 
-	std::string tmp = s;
+	std::string tmp { s };
 
 	tx=x+2;
 	ty=y+2;
@@ -974,21 +961,19 @@ void FontPrintStringGlowRect(int x,int y,int x2,int y2,const char*s,int height,c
 	}
 }
 
-void FontPrintStringGlowLimited(int x,int y,int maxX,const char*s,const mfont_t *font,char bright)
+void FontPrintStringGlowLimited(int x,int y,int maxX,std::string_view s,const mfont_t *font,char bright)
 {
-	size_t len = strlen(s);
-	for (size_t i = 0; i < len; ++i)
+	for (size_t i = 0; i < s.size(); ++i)
 	{
 		FontPrintCharGlowLimited(x,y,maxX,s[i],font,bright);
 		x+=CharWidth(s[i],font)+font->gapSize;
 	}
 }
 
-void FontPrintStringProgressiveGlow(int x,int y,const char*s,const mfont_t *font,int bright)
+void FontPrintStringProgressiveGlow(int x,int y,std::string_view s,const mfont_t *font,int bright)
 {
-	size_t len = strlen(s);
-	int br=bright+len*4;
-	for (size_t i = 0; i < len; ++i)
+	int br=bright+s.size()*4;
+	for (size_t i = 0; i < s.size(); ++i)
 	{
 		if(br<0)
 			FontPrintCharGlow(x,y,s[i],br,font);
@@ -1003,22 +988,21 @@ void FontPrintStringProgressiveGlow(int x,int y,const char*s,const mfont_t *font
 	}
 }
 
-void FontPrintStringUnGlow(int x,int y,const char*s,const mfont_t *font)
+void FontPrintStringUnGlow(int x,int y,std::string_view s,const mfont_t *font)
 {
-	size_t len = strlen(s);
-	for (size_t i = 0; i < len; ++i)
+	for (size_t i = 0; i < s.size(); ++i)
 	{
 		FontPrintCharUnGlow(x,y,s[i],font);
 		x+=CharWidth(s[i],font)+font->gapSize;
 	}
 }
 
-void FontPrintStringUnGlowRect(int x,int y,int x2,int y2,const char *s,int height,const mfont_t *font)
+void FontPrintStringUnGlowRect(int x,int y,int x2,int y2,std::string_view s,int height,const mfont_t *font)
 {
 	int tx,ty;
 	char *tok;
 
-	std::string tmp = s;
+	std::string tmp { s };
 
 	tx=x+2;
 	ty=y+2;
@@ -1057,21 +1041,18 @@ void FontPrintStringUnGlowRect(int x,int y,int x2,int y2,const char *s,int heigh
 	}
 }
 
-void FontPrintStringUnGlowLimited(int x,int y,int maxX,const char *s,const mfont_t *font)
+void FontPrintStringUnGlowLimited(int x,int y,int maxX,std::string_view s,const mfont_t *font)
 {
-	size_t len = strlen(s);
-	for (size_t i = 0; i < len; ++i)
+	for (size_t i = 0; i < s.size(); ++i)
 	{
 		FontPrintCharUnGlowLimited(x,y,maxX,s[i],font);
 		x+=CharWidth(s[i],font)+font->gapSize;
 	}
 }
 
-void FontPrintStringAngleUnGlow(int x,int y,const char *s,const mfont_t *font)
+void FontPrintStringAngleUnGlow(int x,int y,std::string_view s,const mfont_t *font)
 {
-	int i;
-
-	for(i=0;i<(int)strlen(s);i++)
+	for (size_t i = 0; i < s.size(); ++i)
 	{
 		FontPrintCharUnGlow(x,y,s[i],font);
 		x+=CharWidth(s[i],font)+font->gapSize;
@@ -1079,11 +1060,9 @@ void FontPrintStringAngleUnGlow(int x,int y,const char *s,const mfont_t *font)
 	}
 }
 
-void FontPrintStringAngle2(int x,int y,const char *s,const mfont_t *font)
+void FontPrintStringAngle2(int x,int y,std::string_view s,const mfont_t *font)
 {
-	int i;
-
-	for(i=0;i<(int)strlen(s);i++)
+	for (size_t i = 0; i < s.size(); ++i)
 	{
 		FontPrintCharUnGlow(x,y,s[i],font);
 		FontPrintCharGlow(x-2,y-2,s[i],-10,font);
@@ -1135,11 +1114,9 @@ void FontPrintCharUnGlowSideways(int x, int y, int minY,dword c, const mfont_t *
 	}
 }
 
-void FontPrintStringUnGlowSideways(int x,int y,int minY,const char *s,const mfont_t *font)
+void FontPrintStringUnGlowSideways(int x,int y,int minY,std::string_view s,const mfont_t *font)
 {
-	int i;
-
-	for(i=0;i<(int)strlen(s);i++)
+	for (size_t i = 0; i < s.size(); ++i)
 	{
 		FontPrintCharUnGlowSideways(x,y,minY,s[i],font);
 		y-=(CharWidth(s[i],font)+font->gapSize);
