@@ -289,7 +289,7 @@ void UpdateCamera(int x,int y,int dx,int dy,Map *map)
 	scry=(rscry>>FIXSHIFT);
 }
 
-void Print(int x,int y,const char *s,char bright,byte font)
+void Print(int x,int y,std::string_view s,char bright,byte font)
 {
 	if(font==0)
 		FontPrintStringBright(x,y,s,gameFont[0],bright);
@@ -302,47 +302,47 @@ void Print(int x,int y,const char *s,char bright,byte font)
 	}
 }
 
-void PrintGlow(int x,int y,const char *s,char bright,byte font)
+void PrintGlow(int x,int y,std::string_view s,char bright,byte font)
 {
 	FontPrintStringGlow(x,y,s,gameFont[font],bright);
 }
 
-void PrintUnGlow(int x,int y,const char *s,byte font)
+void PrintUnGlow(int x,int y,std::string_view s,byte font)
 {
 	FontPrintStringUnGlow(x,y,s,gameFont[font]);
 }
 
-void PrintGlowLimited(int x,int y,int maxX,const char *s,char bright,byte font)
+void PrintGlowLimited(int x,int y,int maxX,std::string_view s,char bright,byte font)
 {
 	FontPrintStringGlowLimited(x,y,maxX,s,gameFont[font],bright);
 }
 
-void PrintProgressiveGlow(int x,int y,const char *s,int bright,byte font)
+void PrintProgressiveGlow(int x,int y,std::string_view s,int bright,byte font)
 {
 	FontPrintStringProgressiveGlow(x,y,s,gameFont[font],bright);
 }
 
-void PrintRect(int x,int y,int x2,int y2,int height,const char *s,byte font)
+void PrintRect(int x,int y,int x2,int y2,int height,std::string_view s,byte font)
 {
 	FontPrintStringRect(x,y,x2,y2,s,height,gameFont[font]);
 }
 
-void PrintGlowRect(int x,int y,int x2,int y2,int height,const char *s,byte font)
+void PrintGlowRect(int x,int y,int x2,int y2,int height,std::string_view s,byte font)
 {
 	FontPrintStringGlowRect(x,y,x2,y2,s,height,0,gameFont[font]);
 }
 
-void PrintGlowRectBright(int x,int y,int x2,int y2,int height,const char *s,char bright,byte font)
+void PrintGlowRectBright(int x,int y,int x2,int y2,int height,std::string_view s,char bright,byte font)
 {
 	FontPrintStringGlowRect(x,y,x2,y2,s,height,bright,gameFont[font]);
 }
 
-void PrintUnGlowRect(int x,int y,int x2,int y2,int height,const char *s,byte font)
+void PrintUnGlowRect(int x,int y,int x2,int y2,int height,std::string_view s,byte font)
 {
 	FontPrintStringUnGlowRect(x,y,x2,y2,s,height,gameFont[font]);
 }
 
-void PrintLimited(int x,int y,int maxX,const char *s,char bright,byte font)
+void PrintLimited(int x,int y,int maxX,std::string_view s,char bright,byte font)
 {
 	if(bright==0)
 			FontPrintStringLimit(x,y,maxX,s,gameFont[font]);
@@ -351,7 +351,7 @@ void PrintLimited(int x,int y,int maxX,const char *s,char bright,byte font)
 }
 
 
-void CenterPrint(int x,int y,const char *s,char bright,byte font)
+void CenterPrint(int x,int y,std::string_view s,char bright,byte font)
 {
 	if(font==0)
 	{
@@ -370,7 +370,7 @@ void CenterPrint(int x,int y,const char *s,char bright,byte font)
 	}
 }
 
-int GetStrLength(const char *s,byte font)
+int GetStrLength(std::string_view s,byte font)
 {
 	return FontStrLen(s,gameFont[font]);
 }
@@ -416,13 +416,13 @@ void RenderItAll(world_t *world,Map *map,byte flags)
 		map->RenderSelect(world,scrx,scry,flags);
 }
 
-void SprDraw(int x,int y,int z,byte hue,char bright,sprite_t *spr,word flags)
+void SprDraw(int x,int y,int z,byte hue,char bright,const sprite_t *spr,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,z,0,hue,bright,spr,flags);
 }
 
-void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,sprite_t *spr,word flags)
+void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,const sprite_t *spr,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,z,fromHue,hue,bright,spr,flags|DISPLAY_OFFCOLOR);
