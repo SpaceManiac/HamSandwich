@@ -437,35 +437,6 @@ void LocateKeychains(world_t *w)
 	}
 }
 
-void LogRequirements(world_t *w)
-{
-	int i,j,k;
-	FILE *f;
-
-	f=AppdataOpen_Write("req_files.txt");
-	fprintf(f,"World: %s\n",w->map[0]->name);
-
-	for(i=0;i<w->numMaps;i++)
-	{
-		for(j=0;j<MAX_SPECIAL;j++)
-		{
-			if(w->map[i]->special[j].x!=255)
-			{
-				for(k=0;k<NUM_EFFECTS;k++)
-				{
-					byte type = w->map[i]->special[j].effect[k].type;
-					if(type==EFF_PICTURE || type==EFF_MONSGRAPHICS || type==EFF_ITEMGRAPHICS)
-					{
-						fprintf(f,"user/%s\n",w->map[i]->special[j].effect[k].text);
-					}
-				}
-			}
-		}
-	}
-	fclose(f);
-	AppdataSync();
-}
-
 terrain_t *GetTerrain(world_t *w,word tile)
 {
 	static terrain_t tmp={0,0};

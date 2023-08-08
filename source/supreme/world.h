@@ -70,7 +70,6 @@ byte GetWorldName(const char *fname,char *buffer,char *authbuffer);
 void RepairTileToTile(world_t *w);
 
 void LocateKeychains(world_t *w);
-void LogRequirements(world_t *w);
 
 byte BeginAppendWorld(world_t *world,const char *fname);
 terrain_t *GetTerrain(world_t *w,word tile);

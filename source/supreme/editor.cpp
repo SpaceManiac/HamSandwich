@@ -959,10 +959,8 @@ static TASK(void) HandleKeyPresses(void)
 				ToolSuckUp(tileX,tileY);
 				break;
 			case 'Q':
-				LogRequirements(&world);
-				SetStitchError("Saved world requirements list to req_files.txt.");
-				InitEditHelp(HELP_WORLDSTITCH);
-				editMode=EDITMODE_HELP;
+				InitExportDialog(&world, nullptr);
+				editMode = EDITMODE_EXPORT;
 				break;
 			case 'I':
 				if(!Scan_Level(&world,editorMap) || !Scan_Vars(&world))

@@ -41,6 +41,17 @@ namespace
 	std::string saveZipResult;
 
 	constexpr int midX = 405;
+
+	bool saveTxtOnly = false;
+	std::string saveTxtResult;
+
+	enum class ButtonId
+	{
+		None,
+		SaveReqFilesTxt,
+		SaveZip,
+	};
+	ButtonId curButton;
 }
 
 static void AddDependency(std::string_view part1, std::string_view part2)
@@ -85,15 +96,50 @@ static bool BadCharacter(char ch)
 	return !(ch >= 32 && ch < 127 && ch != '/' && ch != '<' && ch != '>' && ch != ':' && ch != '"' && ch != '\\' && ch != '|' && ch != '?' && ch != '*');
 }
 
+static void SaveReqFilesTxt()
+{
+	FILE *f = AppdataOpen_Write("req_files.txt");
+	fprintf(f, "# World: %s\n", title.c_str());
+	for (const auto& file : files)
+	{
+		switch (file.kind)
+		{
+			case FileKind::Root:
+				fprintf(f, "# Root: %s\n", file.filename.c_str());
+				break;
+			case FileKind::DependencyMissing:
+				fprintf(f, "%s    # MISSING!\n", file.filename.c_str());
+				break;
+			case FileKind::DependencyAppdata:
+			case FileKind::DependencyOtherAddon:
+				fprintf(f, "%s\n", file.filename.c_str());
+				break;
+			case FileKind::DependencyBaseGame:
+				fprintf(f, "# Base game: %s\n", file.filename.c_str());
+				break;
+			default:
+				break;
+		}
+	}
+	fclose(f);
+	AppdataSync();
+	saveTxtResult = "Saved OK!";
+}
+
 void InitExportDialog(const world_t* world, const char* filename)
 {
 	seen.clear();
-	seen.insert(filename);
 	files.clear();
-	files.push_back({ FileKind::Root, filename });
 	warnings.clear();
 	saveZipResult.clear();
 	offset = 0;
+	saveTxtOnly = false;
+
+	if (filename)
+	{
+		seen.insert(filename);
+		files.push_back({ FileKind::Root, filename });
+	}
 
 	for (int i = 0; i < world->numMaps; ++i)
 	{
@@ -150,23 +196,31 @@ void InitExportDialog(const world_t* world, const char* filename)
 	// Filter out characters that are not permissible in filenames.
 	zipName = title;
 	zipName.erase(std::remove_if(zipName.begin(), zipName.end(), BadCharacter), zipName.end());
+
+	if (!filename)
+	{
+		SaveReqFilesTxt();
+		saveTxtOnly = true;
+	}
 }
 
 void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 {
+	curButton = ButtonId::None;
+
 	// Background, title, exit
 	mgl->FillBox(0, 0, mgl->GetWidth()-1, mgl->GetHeight()-1, 8);
-	Print(5, 3, "Export: File List", 0, 1);
+	Print(5, 3, saveTxtOnly ? "Requirements scan" : "Export: File List", 0, 1);
 
 	// Left half: the file list proper
 	mgl->FillBox(2, 18, midX - 10, 18 + 2 + 14*FILES_PER_PAGE, 0);
 	mgl->Box(2, 18, midX - 10, 18 + 2 + 14*FILES_PER_PAGE, 31);
 
 	size_t start = offset, end = std::min(files.size(), offset + FILES_PER_PAGE);
+	int y = 7 + 13;
 	for (size_t i = start; i < end; ++i)
 	{
 		//int color = 0;
-		int y = 7 + 13 + 14*(i - offset);
 		switch (files[i].kind)
 		{
 			case FileKind::Root:
@@ -191,11 +245,14 @@ void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 				break;
 		}
 		Print(100, y, files[i].filename.c_str(), 0, 1);
+		y += 14;
 	}
+	y = 7 + 13 + 14 * FILES_PER_PAGE;
 
+	y += 5;
 	char buf[256];
 	sprintf(buf, "Viewing %zu-%zu of %zu files.", start+1, end, files.size());
-	Print(5, 7 + 13 + 5 + 14*(FILES_PER_PAGE), buf, 0, 1);
+	Print(5, y, buf, 0, 1);
 
 	int included = 0;
 	for (const auto& file : files)
@@ -210,17 +267,34 @@ void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 				break;
 		}
 	}
+	y += 14;
 	sprintf(buf, "Including %d of %zu files.", included, files.size());
-	Print(5, 7 + 13 + 5 + 14*(FILES_PER_PAGE + 1), buf, 0, 1);
+	Print(5, y, buf, 0, 1);
+
+	y += 14;
+	if (msx >= 5 && msx <= 5 + 200 && msy >= y && msy <= y+14)
+	{
+		mgl->FillBox(5, y, 5 + 200, y + 14, 8+32*1);
+		curButton = ButtonId::SaveReqFilesTxt;
+	}
+	mgl->Box(5, y, 5 + 200, y + 14, 31);
+	Print(5 + 2, y + 2, "Save list to req_files.txt", 0, 1);
+	Print(5 + 210, y + 2, saveTxtResult.c_str(), 0, 1);
 
 	// Right half: buttons to go to the next step
-	sprintf(buf, "%s.zip", zipName.c_str());
-	Print(midX, 18, buf, 0, 1);
+	if (!saveTxtOnly)
+	{
+		sprintf(buf, "%s.zip", zipName.c_str());
+		Print(midX, 18, buf, 0, 1);
 
-	if(msx >= midX && msx <= midX + 200 && msy >= 35 && msy <= 35+14)
-		mgl->FillBox(midX, 35, midX + 200, 35+14, 8+32*1);
-	mgl->Box(midX, 35, midX + 200, 35+14, 31);
-	Print(midX + 2, 35 + 2, "Save to addons folder", 0, 1);
+		if (msx >= midX && msx <= midX + 200 && msy >= 35 && msy <= 35+14)
+		{
+			mgl->FillBox(midX, 35, midX + 200, 35+14, 8+32*1);
+			curButton = ButtonId::SaveZip;
+		}
+		mgl->Box(midX, 35, midX + 200, 35+14, 31);
+		Print(midX + 2, 35 + 2, "Save to addons folder", 0, 1);
+	}
 
 	Print(midX, 53, saveZipResult.c_str(), 0, 1);
 
@@ -239,11 +313,19 @@ void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 
 bool ExportDialogClick(int msx, int msy)
 {
-	if(msx >= midX && msx <= midX + 200 && msy >= 35 && msy <= 35+14)
+	switch (curButton)
 	{
-		// TODO
-		saveZipResult = "Saved OK!";
+		case ButtonId::SaveReqFilesTxt:
+			SaveReqFilesTxt();
+			break;
+		case ButtonId::SaveZip:
+			// TODO
+			saveZipResult = "Saved OK!";
+			break;
+		default:
+			break;
 	}
+
 	return true;
 }
 
