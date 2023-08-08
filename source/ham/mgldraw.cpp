@@ -1025,12 +1025,12 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 
 #ifdef __EMSCRIPTEN__
 	// Under Emscripten, IMG_Load can't load some files which SDL_LoadBMP can.
-	SDL_Surface* b = SDL_LoadBMP_RW(rw, SDL_FALSE);
+	SDL_Surface* b = SDL_LoadBMP_RW(rw.get(), SDL_FALSE);
 	if (!b)
 	{
-		b = IMG_Load_RW(rw, SDL_FALSE);
+		b = IMG_Load_RW(rw.get(), SDL_FALSE);
 	}
-	SDL_RWclose(rw);
+	rw.reset();
 #else  // __EMSCRIPTEN__
 	SDL_Surface* b = IMG_Load_RW(rw.release(), SDL_TRUE);
 #endif  // __EMSCRIPTEN__
