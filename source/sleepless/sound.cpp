@@ -661,7 +661,7 @@ void MakeSpaceSound(int snd,int priority)
 	GoPlaySound(snd,0,0,SND_CUTOFF|GlobalFlags(),priority);
 }
 
-SDL_RWops* SoundLoadOverride(int num)
+owned::SDL_RWops SoundLoadOverride(int num)
 {
 	if (num < CUSTOM_SND_START || num > CUSTOM_SND_START+GetNumCustomSounds())
 		return nullptr;
@@ -670,5 +670,5 @@ SDL_RWops* SoundLoadOverride(int num)
 	if (!buf)
 		return nullptr;
 
-	return SDL_RWFromConstMem(buf, GetCustomLength(num - CUSTOM_SND_START));
+	return owned::SDL_RWFromConstMem(buf, GetCustomLength(num - CUSTOM_SND_START));
 }

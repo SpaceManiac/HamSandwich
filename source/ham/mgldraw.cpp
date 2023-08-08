@@ -1014,7 +1014,7 @@ bool MGLDraw::LoadBMP(const char *name)
 
 bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 {
-	SDL_RWops* rw = AssetOpen_SDL(name);
+	owned::SDL_RWops rw = AssetOpen_SDL_Owned(name);
 	if (!rw) {
 		// Asset stack printed error already
 		return false;
@@ -1029,7 +1029,7 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 	}
 	SDL_RWclose(rw);
 #else  // __EMSCRIPTEN__
-	SDL_Surface* b = IMG_Load_RW(rw, SDL_TRUE);
+	SDL_Surface* b = IMG_Load_RW(rw.release(), SDL_TRUE);
 #endif  // __EMSCRIPTEN__
 
 	if (!b) {

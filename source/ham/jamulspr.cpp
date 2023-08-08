@@ -1066,7 +1066,7 @@ bool sprite_set_t::Load(const char *fname)
 
 	spr.clear();
 
-	SDL_RWops *f=AssetOpen_SDL(fname);
+	owned::SDL_RWops f = AssetOpen_SDL_Owned(fname);
 	if(!f) {
 		// Asset stack printed error already
 		return false;
@@ -1083,7 +1083,6 @@ bool sprite_set_t::Load(const char *fname)
 	// read in the sprite headers
 	if(SDL_RWread(f,buffer.data(),SPRITE_INFO_SIZE,count)!=count)
 	{
-		SDL_RWclose(f);
 		spr.clear();
 		return false;
 	}
@@ -1092,14 +1091,12 @@ bool sprite_set_t::Load(const char *fname)
 	for(i=0;i<count;i++)
 	{
 		spr[i] = std::make_unique<sprite_t>(&buffer[i*SPRITE_INFO_SIZE]);
-		if(!spr[i]->LoadData(f))
+		if(!spr[i]->LoadData(f.get()))
 		{
-			SDL_RWclose(f);
 			spr[i] = nullptr;
 			return false;
 		}
 	}
-	SDL_RWclose(f);
 	return true;
 }
 

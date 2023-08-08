@@ -159,12 +159,12 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 	if(soundList[which].sample==NULL)
 	{
 		// See if sound loading is overridden for this sound...
-		SDL_RWops* rw = g_HamExtern.SoundLoadOverride ? g_HamExtern.SoundLoadOverride(which) : nullptr;
+		owned::SDL_RWops rw = g_HamExtern.SoundLoadOverride ? g_HamExtern.SoundLoadOverride(which) : nullptr;
 		if (!rw)
 		{
 			// If not, try to load it from a file instead
 			sprintf(s,"sound/snd%03d.wav",which);
-			rw = AssetOpen_SDL(s);
+			rw = AssetOpen_SDL_Owned(s);
 			if (!rw)
 			{
 				return false;
@@ -172,7 +172,7 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 		}
 
 		// Now try to load it
-		soundList[which].sample.reset(Mix_LoadWAV_RW(rw, 1));
+		soundList[which].sample = owned::Mix_LoadWAV_RW(std::move(rw));
 		if(soundList[which].sample==NULL)
 		{
 			LogError("LoadWAV(%d): %s", which, Mix_GetError());
