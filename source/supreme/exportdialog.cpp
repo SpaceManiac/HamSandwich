@@ -10,6 +10,8 @@
 #include "vanilla_extract.h"
 #include "log.h"
 #include "steam.h"
+#include "guy.h"
+#include "editor.h"
 
 #ifdef HAS_STEAM_API
 #include <steam/steam_api.h>
@@ -96,6 +98,7 @@ namespace
 		void SubmitUpdate()
 		{
 			UGCUpdateHandle_t handle = SteamUGC()->StartItemUpdate(WORKSHOP_APPID, workshopItemId);
+
 			if (!SteamUGC()->SetItemTitle(handle, title.c_str()))
 			{
 				LogError("SteamUGC::SetItemTitle failed for title \"%s\"", title.c_str());
@@ -103,6 +106,7 @@ namespace
 				progressMessage = "Invalid title";
 				return;
 			}
+
 			if (!SteamUGC()->SetItemContent(handle, folder.c_str()))
 			{
 				LogError("SteamUGC::SetItemContent failed for folder \"%s\"", folder.c_str());
@@ -110,6 +114,7 @@ namespace
 				progressMessage = "Invalid content folder";
 				return;
 			}
+
 			const char* tags[] = {"World"};
 			SteamParamStringArray_t tagArray = { tags, SDL_arraysize(tags) };
 			if (!SteamUGC()->SetItemTags(handle, &tagArray))
@@ -118,7 +123,14 @@ namespace
 				progressMessage = "Invalid tags";
 				return;
 			}
-			// TODO: Preview
+
+			if (!SteamUGC()->SetItemPreview(handle, preview.c_str()))
+			{
+				progress = Progress::Failed;
+				progressMessage = "Invalid preview file";
+				return;
+			}
+
 			submit_update_result.Set(SteamUGC()->SubmitItemUpdate(handle, nullptr), this, &SteamWorkshopUpload::SubmitUpdateCallback);
 			progress = Progress::Working;
 			progressMessage = "Uploading content...";
@@ -126,6 +138,14 @@ namespace
 
 		void SubmitUpdateCallback(SubmitItemUpdateResult_t* result, bool)
 		{
+			if (result->m_bUserNeedsToAcceptWorkshopLegalAgreement)
+			{
+				LogError("User needs to accept Workshop legal agreement");
+				progress = Progress::Failed;
+				progressMessage = "EULA";
+				return;
+			}
+
 			if (result->m_eResult != k_EResultOK)
 			{
 				LogError("SteamUGC::SubmitItemUpdate: %d\n", result->m_eResult);
@@ -151,7 +171,7 @@ namespace
 		Progress progress = Progress::Idle;
 		std::string progressMessage;
 
-		std::string folder;
+		std::string folder, preview;
 
 		void Start()
 		{
@@ -160,10 +180,15 @@ namespace
 				progress = Progress::Failed;
 				progressMessage = "Error preparing files to upload";
 			}
+			else if (preview.empty())
+			{
+				progress = Progress::Failed;
+				progressMessage = "Error preparing preview";
+			}
 			else if (!workshopItemId)
 			{
 				progress = Progress::Working;
-				progressMessage = "Creating new Workshop item...";
+				progressMessage = "Registering new item...";
 				create_result.Set(SteamUGC()->CreateItem(WORKSHOP_APPID, k_EWorkshopFileTypeCommunity), this, &SteamWorkshopUpload::CreateCallback);
 			}
 			else
@@ -381,9 +406,37 @@ static std::string PrepareWorkshopFolder()
 	return destFolder;
 }
 
+static std::string PrepareWorkshopPreview()
+{
+	char destFolder[L_tmpnam];
+	tmpnam(destFolder);
+	std::string pngFilename = destFolder;
+	pngFilename.append(".png");
+	SDL_Log("Steam Workshop preview file: %s\n", pngFilename.c_str());
+
+	MGLDraw* mgl = GetDisplayMGL();
+	mgl->ClearScreen();
+	EditorSelectMap(0);
+	PutCamera(goodguy->x, goodguy->y);
+	UpdateCamera(goodguy->x, goodguy->y, 0, 0, EditorGetMap());
+	editing=0;
+	RenderGuys(true);
+	RenderItAll(EditorGetWorld(), EditorGetMap(), MAP_SHOWWALLS | MAP_SHOWLIGHTS | MAP_SHOWBADGUYS | MAP_SHOWPICKUPS | MAP_SHOWOTHERITEMS);
+	editing=1;
+	if (!mgl->SavePNG(pngFilename.c_str()))
+	{
+		LogError("Failed to save preview to %s\n", pngFilename.c_str());
+		return "";
+	}
+	mgl->ClearScreen();
+
+	return pngFilename;
+}
+
 static void PublishToSteamWorkshop()
 {
 	steamWorkshopUpload.folder = PrepareWorkshopFolder();
+	steamWorkshopUpload.preview = PrepareWorkshopPreview();
 	steamWorkshopUpload.Start();
 }
 #endif  // HAS_STEAM_API
@@ -403,20 +456,23 @@ void InitExportDialog(const world_t* world, const char* filename)
 	steamWorkshopUpload.progress = SteamWorkshopUpload::Progress::Idle;
 	steamWorkshopUpload.progressMessage = "";
 
-	std::string workshopDataFilename = filename;
-	workshopDataFilename.append(".workshop");
-	if (owned::FILE f { AppdataOpen(workshopDataFilename.c_str()) })
+	if (filename)
 	{
-		char buf[128];
-		while (fgets(buf, SDL_arraysize(buf), f.get()))
+		std::string workshopDataFilename = filename;
+		workshopDataFilename.append(".workshop");
+		if (owned::FILE f { AppdataOpen(workshopDataFilename.c_str()) })
 		{
-			char* eq = strchr(buf, '=');
-			if (eq)
+			char buf[128];
+			while (fgets(buf, SDL_arraysize(buf), f.get()))
 			{
-				*eq = '\0';
-				if (!strcmp(buf, "workshop_item_id"))
+				char* eq = strchr(buf, '=');
+				if (eq)
 				{
-					steamWorkshopUpload.workshopItemId = atoll(eq + 1);
+					*eq = '\0';
+					if (!strcmp(buf, "workshop_item_id"))
+					{
+						steamWorkshopUpload.workshopItemId = atoll(eq + 1);
+					}
 				}
 			}
 		}

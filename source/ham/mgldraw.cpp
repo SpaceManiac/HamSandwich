@@ -1103,6 +1103,25 @@ bool MGLDraw::SaveBMP(const char *name)
 	return true;
 }
 
+bool MGLDraw::SavePNG(const char* name)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 5)
+	SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, xRes, yRes, 8, SDL_PIXELFORMAT_INDEX8);
+#else
+	SDL_Surface* surface = SDL_CreateRGBSurface(0, xRes, yRes, 8, 0, 0, 0, 0);
+#endif
+	SDL_LockSurface(surface);
+	memcpy(surface->pixels, scrn.get(), xRes * yRes);
+	SDL_UnlockSurface(surface);
+	for (int i = 0; i < 256; ++i)
+	{
+		surface->format->palette->colors[i] = { thePal[i].r, thePal[i].g, thePal[i].b, thePal[i].a };
+	}
+	IMG_SavePNG_RW(surface, name[0] == '/' ? SDL_RWFromFile(name, "wb") : AppdataOpen_Write_SDL(name).release(), SDL_TRUE);
+	SDL_FreeSurface(surface);
+	return true;
+}
+
 #ifdef _WIN32
 HWND MGLDraw::GetHWnd(void)
 {

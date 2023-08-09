@@ -68,8 +68,9 @@ public:
 	bool LoadBMP(const char *name);
 	// Load an image and store its palette to `pal`.
 	bool LoadBMP(const char *name, PALETTE pal);
-	// Save an image with the current
+	// Save an image with the current contents of the screen.
 	bool SaveBMP(const char *name);
+	bool SavePNG(const char *name);
 
 	// Get and clear the last pressed key.
 	// Based on SDL_Keycode and includes only keys representable as characters.
