@@ -142,6 +142,13 @@ public:
 		stats_need_store = false;
 		stats_store_cooldown = STATS_STORE_COOLDOWN;
 	}
+
+	// ------------------------------------------------------------------------
+	// Workshop upload
+	bool CanUploadToWorkshop() override
+	{
+		return true;
+	}
 };
 
 #endif  // HAS_STEAM_API

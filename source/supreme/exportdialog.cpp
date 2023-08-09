@@ -8,6 +8,12 @@
 #include "display.h"
 #include "appdata.h"
 #include "vanilla_extract.h"
+#include "log.h"
+#include "steam.h"
+
+#ifdef HAS_STEAM_API
+#include <steam/steam_api.h>
+#endif
 
 namespace
 {
@@ -41,7 +47,7 @@ namespace
 
 	std::string saveZipResult;
 
-	constexpr int midX = 405;
+	constexpr int midX = 390;
 
 	bool saveTxtOnly = false;
 	std::string saveTxtResult;
@@ -52,8 +58,126 @@ namespace
 		Close,
 		SaveReqFilesTxt,
 		SaveZip,
+		PublishToSteamWorkshop,
+		ViewWorkshopItem,
 	};
 	ButtonId curButton;
+
+#ifdef HAS_STEAM_API
+	class SteamWorkshopUpload final
+	{
+		constexpr static AppId_t WORKSHOP_APPID = 2547330;
+		CCallResult<SteamWorkshopUpload, CreateItemResult_t> create_result;
+		CCallResult<SteamWorkshopUpload, SubmitItemUpdateResult_t> submit_update_result;
+
+		void CreateCallback(CreateItemResult_t* result, bool)
+		{
+			if (result->m_bUserNeedsToAcceptWorkshopLegalAgreement)
+			{
+				LogError("User needs to accept Workshop legal agreement");
+				progress = Progress::Failed;
+				progressMessage = "EULA";
+				return;
+			}
+
+			if (result->m_eResult != k_EResultOK)
+			{
+				LogError("SteamUGC::CreateItem: %d\n", result->m_eResult);
+				progress = Progress::Failed;
+				progressMessage = "Failed to create item";
+				return;
+			}
+
+			workshopItemId = result->m_nPublishedFileId;
+
+			SubmitUpdate();
+		}
+
+		void SubmitUpdate()
+		{
+			UGCUpdateHandle_t handle = SteamUGC()->StartItemUpdate(WORKSHOP_APPID, workshopItemId);
+			if (!SteamUGC()->SetItemTitle(handle, title.c_str()))
+			{
+				LogError("SteamUGC::SetItemTitle failed for title \"%s\"", title.c_str());
+				progress = Progress::Failed;
+				progressMessage = "Invalid title";
+				return;
+			}
+			if (!SteamUGC()->SetItemContent(handle, folder.c_str()))
+			{
+				LogError("SteamUGC::SetItemContent failed for folder \"%s\"", folder.c_str());
+				progress = Progress::Failed;
+				progressMessage = "Invalid content folder";
+				return;
+			}
+			const char* tags[] = {"World"};
+			SteamParamStringArray_t tagArray = { tags, SDL_arraysize(tags) };
+			if (!SteamUGC()->SetItemTags(handle, &tagArray))
+			{
+				progress = Progress::Failed;
+				progressMessage = "Invalid tags";
+				return;
+			}
+			// TODO: Preview
+			submit_update_result.Set(SteamUGC()->SubmitItemUpdate(handle, nullptr), this, &SteamWorkshopUpload::SubmitUpdateCallback);
+			progress = Progress::Working;
+			progressMessage = "Uploading content...";
+		}
+
+		void SubmitUpdateCallback(SubmitItemUpdateResult_t* result, bool)
+		{
+			if (result->m_eResult != k_EResultOK)
+			{
+				LogError("SteamUGC::SubmitItemUpdate: %d\n", result->m_eResult);
+				progress = Progress::Failed;
+				progressMessage = "Failed to submit update";
+				return;
+			}
+
+			progress = Progress::Succeeded;
+			progressMessage = "Workshop upload OK!";
+		}
+
+	public:
+		uint64_t workshopItemId = 0;
+
+		enum class Progress
+		{
+			Idle,
+			Working,
+			Succeeded,
+			Failed,
+		};
+		Progress progress = Progress::Idle;
+		std::string progressMessage;
+
+		std::string folder;
+
+		void Start()
+		{
+			if (folder.empty())
+			{
+				progress = Progress::Failed;
+				progressMessage = "Error preparing files to upload";
+			}
+			else if (!workshopItemId)
+			{
+				progress = Progress::Working;
+				progressMessage = "Creating new Workshop item...";
+				create_result.Set(SteamUGC()->CreateItem(WORKSHOP_APPID, k_EWorkshopFileTypeCommunity), this, &SteamWorkshopUpload::CreateCallback);
+			}
+			else
+			{
+				SubmitUpdate();
+			}
+		}
+	} steamWorkshopUpload;
+#endif  // HAS_STEAM_API
+}
+
+static bool IncludeKind(FileKind kind)
+{
+	return kind == FileKind::Root || kind == FileKind::DependencyAppdata || kind == FileKind::DependencyOtherAddon;
 }
 
 static void AddDependency(std::string_view part1, std::string_view part2)
@@ -126,7 +250,7 @@ static void SaveReqFilesTxt()
 
 static void SaveZip()
 {
-	constexpr int BUFSIZE = 16 * 1024;
+	constexpr size_t BUFSIZE = 16 * 1024;
 	char buf[BUFSIZE];
 
 	std::string pathname = "addons/";
@@ -151,7 +275,7 @@ static void SaveZip()
 		zi.internal_fa = 0;
 		zi.external_fa = 0;
 
-		if (file.kind == FileKind::Root || file.kind == FileKind::DependencyAppdata || file.kind == FileKind::DependencyOtherAddon)
+		if (IncludeKind(file.kind))
 		{
 			err = zipOpenNewFileInZip(
 				zf,
@@ -167,14 +291,17 @@ static void SaveZip()
 				break;
 
 			owned::SDL_RWops rw = AssetOpen_SDL_Owned(file.filename.c_str());
+			if (!rw)
+			{
+				err = 10;
+				break;
+			}
 			while (true)
 			{
-				int read = SDL_RWread(rw, buf, 1, BUFSIZE);
+				size_t read = SDL_RWread(rw, buf, 1, BUFSIZE);
 				if (read == 0)
 					break;
 				err = zipWriteInFileInZip(zf, buf, read);
-				if (err != ZIP_OK)
-					break;
 			}
 			if (err != ZIP_OK)
 				break;
@@ -205,14 +332,96 @@ static void SaveZip()
 	}
 }
 
+#ifdef HAS_STEAM_API
+static std::string PrepareWorkshopFolder()
+{
+	constexpr size_t BUFSIZE = 16 * 1024;
+	char buf[BUFSIZE];
+
+	char destFolder[L_tmpnam];
+	tmpnam(destFolder);
+	SDL_Log("Steam Workshop folder: %s\n", destFolder);
+
+	for (const auto& file : files)
+	{
+		if (IncludeKind(file.kind))
+		{
+			std::string destFilename = destFolder;
+			destFilename.append("/");
+			destFilename.append(file.filename);
+			vanilla::mkdir_parents(destFilename);
+			owned::FILE f = owned::fopen(destFilename.c_str(), "wb");
+			if (!f)
+			{
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Workshop: Failed to open for writing: %s", destFilename.c_str());
+				return "";
+			}
+
+			owned::SDL_RWops rw = AssetOpen_SDL_Owned(file.filename.c_str());
+			if (!rw)
+			{
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Workshop: Failed to open for reading: %s", file.filename.c_str());
+				return "";
+			}
+
+			while (true)
+			{
+				size_t read = SDL_RWread(rw, buf, 1, BUFSIZE);
+				if (read == 0)
+					break;
+				if (fwrite(buf, 1, read, f) < read)
+				{
+					SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Workshop: Error while writing to: %s", destFilename.c_str());
+					return "";
+				}
+			}
+		}
+	}
+
+	return destFolder;
+}
+
+static void PublishToSteamWorkshop()
+{
+	steamWorkshopUpload.folder = PrepareWorkshopFolder();
+	steamWorkshopUpload.Start();
+}
+#endif  // HAS_STEAM_API
+
 void InitExportDialog(const world_t* world, const char* filename)
 {
 	seen.clear();
 	files.clear();
 	warnings.clear();
 	saveZipResult.clear();
+	saveTxtResult.clear();
 	offset = 0;
 	saveTxtOnly = false;
+
+#ifdef HAS_STEAM_API
+	steamWorkshopUpload.workshopItemId = 0;
+	steamWorkshopUpload.progress = SteamWorkshopUpload::Progress::Idle;
+	steamWorkshopUpload.progressMessage = "";
+
+	std::string workshopDataFilename = filename;
+	workshopDataFilename.append(".workshop");
+	if (owned::FILE f { AppdataOpen(workshopDataFilename.c_str()) })
+	{
+		char buf[128];
+		while (fgets(buf, SDL_arraysize(buf), f.get()))
+		{
+			char* eq = strchr(buf, '=');
+			if (eq)
+			{
+				*eq = '\0';
+				if (!strcmp(buf, "workshop_item_id"))
+				{
+					steamWorkshopUpload.workshopItemId = atoll(eq + 1);
+				}
+			}
+		}
+	}
+#endif  // HAS_STEAM_API
 
 	if (filename)
 	{
@@ -344,15 +553,7 @@ void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 	int included = 0;
 	for (const auto& file : files)
 	{
-		switch (file.kind)
-		{
-			case FileKind::Root:
-			case FileKind::DependencyAppdata:
-			case FileKind::DependencyOtherAddon:
-				included += 1;
-			default:
-				break;
-		}
+		included += IncludeKind(file.kind) ? 1 : 0;
 	}
 	y += 14;
 	sprintf(buf, "Including %d of %zu files.", included, files.size());
@@ -381,19 +582,51 @@ void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 		}
 		mgl->Box(midX, 35, midX + 200, 35+14, 31);
 		Print(midX + 2, 35 + 2, "Save to addons folder", 0, 1);
-	}
+		Print(midX, 53, saveZipResult, 0, 1);
 
-	Print(midX, 53, saveZipResult.c_str(), 0, 1);
+#ifdef HAS_STEAM_API
+		if (SteamManager::Get()->CanUploadToWorkshop())
+		{
+			y = 200;
+			Print(midX, y, "- OR -", 0, 1);
+			y += 14;
+			Print(midX, y, steamWorkshopUpload.workshopItemId ? "Publish update to Steam Workshop" : "Publish to Steam Workshop", 0, 1);
+			y += 14;
+
+			if (msx >= midX && msx <= midX + 200 && msy >= y && msy <= y+14)
+			{
+				mgl->FillBox(midX, y, midX + 200, y+14, 8+32*1);
+				curButton = ButtonId::PublishToSteamWorkshop;
+			}
+			mgl->Box(midX, y, midX + 200, y+14, 31);
+			Print(midX + 2, y + 2, "Upload and publish", 0, 1);
+			y += 16;
+			Print(midX, y, steamWorkshopUpload.progressMessage, 0, 1);
+			y += 14;
+
+			if (steamWorkshopUpload.workshopItemId)
+			{
+				if (msx >= midX && msx <= midX + 200 && msy >= y && msy <= y+14)
+				{
+					mgl->FillBox(midX, y, midX + 200, y+14, 8+32*1);
+					curButton = ButtonId::ViewWorkshopItem;
+				}
+				mgl->Box(midX, y, midX + 200, y+14, 31);
+				Print(midX + 2, y + 2, "View in Workshop", 0, 1);
+			}
+		}
+#endif  // HAS_STEAM_API
+	}
 
 	if (!warnings.empty())
 	{
+		y = 400;
 		Print(midX, 400, "Warning!", 0, 1);
-		int i = 0;
 		for (const auto& warning : warnings)
 		{
-			++i;
-			Print(midX, 400 + 14 * i, "-", 0, 1);
-			Print(midX + 10, 400 + 14 * i, warning.c_str(), 0, 1);
+			y += 14;
+			Print(midX, y, "-", 0, 1);
+			Print(midX + 10, y, warning.c_str(), 0, 1);
 		}
 	}
 }
@@ -410,6 +643,19 @@ bool ExportDialogClick(int msx, int msy)
 		case ButtonId::SaveZip:
 			SaveZip();
 			break;
+#ifdef HAS_STEAM_API
+		case ButtonId::PublishToSteamWorkshop:
+			PublishToSteamWorkshop();
+			break;
+		case ButtonId::ViewWorkshopItem:
+		{
+			std::string url = "https://steamcommunity.com/sharedfiles/filedetails/?id=";
+			url.append(std::to_string(steamWorkshopUpload.workshopItemId));
+			//SteamManager::Get()->OpenUrl(url.c_str());
+			SteamFriends()->ActivateGameOverlayToWebPage(url.c_str());
+			break;
+		}
+#endif
 		default:
 			break;
 	}

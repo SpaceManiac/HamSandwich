@@ -1,8 +1,6 @@
 #ifndef STEAM_H
 #define STEAM_H
 
-struct HamSandwichMetadata;
-
 // The interface from the rest of the game to the Steam module.
 class SteamManager
 {
@@ -18,6 +16,8 @@ public:
 	virtual const char* DescribeEdition() { return ""; }
 	virtual void ProfileReady() {}
 	virtual void CompleteGoal(int goal) {}
+
+	virtual bool CanUploadToWorkshop() { return false; }
 };
 
 #endif
