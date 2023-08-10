@@ -29,6 +29,11 @@ public:
 		{
 			MountWorkshopContent();
 		}
+
+		if (!SteamUserStats()->RequestCurrentStats())
+		{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SteamUserStats::RequestCurrentStats() failed");
+		}
 	}
 
 	void Update() override

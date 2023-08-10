@@ -318,9 +318,9 @@ static char bin_dir_buf[1024] = {0};
 const char* EscapeBinDirectory() {
 #ifndef __ANDROID__
 	if (!bin_dir_buf[0]) {
-		getcwd(bin_dir_buf, sizeof(bin_dir_buf));
+		(void)getcwd(bin_dir_buf, sizeof(bin_dir_buf));
 		if (vanilla::ends_with(bin_dir_buf, "/build/install") || vanilla::ends_with(bin_dir_buf, "\\build\\install")) {
-			chdir("../..");
+			(void)chdir("../..");
 		}
 	}
 #endif
