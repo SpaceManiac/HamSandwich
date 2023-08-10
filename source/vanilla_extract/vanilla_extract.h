@@ -28,6 +28,12 @@ namespace vanilla
 		Appdata,   // The user's own addons or data.
 	};
 
+	struct VfsMeta
+	{
+		VfsSourceKind kind = VfsSourceKind::Unspecified;
+		uint64_t steamWorkshopId = 0;
+	};
+
 	// A single VFS provider, read-only by default.
 	class Vfs
 	{
@@ -38,8 +44,6 @@ namespace vanilla
 	public:
 		Vfs() {}
 		virtual ~Vfs() {}
-
-		VfsSourceKind source_kind;
 
 		virtual owned::SDL_RWops open_sdl(const char* filename) = 0;
 		virtual owned::FILE open_stdio(const char* filename)
@@ -67,12 +71,12 @@ namespace vanilla
 	{
 		std::unique_ptr<Vfs> vfs;
 		std::string mountpoint;
-		VfsSourceKind source_kind;
+		VfsMeta meta;
 
-		Mount(std::unique_ptr<Vfs>&& vfs, std::string&& mountpoint = "", VfsSourceKind source_kind = VfsSourceKind::Unspecified)
+		Mount(std::unique_ptr<Vfs>&& vfs, std::string&& mountpoint = "", VfsMeta meta = {})
 			: vfs(std::move(vfs))
 			, mountpoint(mountpoint)
-			, source_kind(source_kind)
+			, meta(meta)
 		{
 			// Strip trailing '/' from mountpoint.
 			if (!this->mountpoint.empty() && this->mountpoint.back() == '/')
@@ -89,18 +93,23 @@ namespace vanilla
 	// A full filesystem, including a list of mounts and the write (appdata) mount.
 	class VfsStack final
 	{
+	public:
 		std::vector<Mount> mounts;
 		std::unique_ptr<WriteVfs> write_mount;
-	public:
+
 		VfsStack() {}
 
 		void push_back(Mount mount)
 		{
 			mounts.push_back(std::move(mount));
 		}
-		void push_back(std::unique_ptr<Vfs>&& entry, std::string&& mountpoint = "", VfsSourceKind source_kind = VfsSourceKind::Unspecified)
+		void push_back(std::unique_ptr<Vfs>&& entry, std::string&& mountpoint = "", VfsMeta meta = {})
 		{
-			mounts.push_back(Mount { std::move(entry), std::move(mountpoint), source_kind });
+			mounts.push_back(Mount { std::move(entry), std::move(mountpoint), meta });
+		}
+		void push_back(std::unique_ptr<Vfs>&& entry, std::string&& mountpoint, VfsSourceKind kind)
+		{
+			mounts.push_back(Mount { std::move(entry), std::move(mountpoint), VfsMeta { kind, 0 } });
 		}
 
 		// Returns true if this VfsStack is empty and therefore not useable.

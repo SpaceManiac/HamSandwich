@@ -5,8 +5,13 @@
 #include <steam/steam_api.h>
 #include <vector>
 #include <string>
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+#include "appdata.h"
+#include "vanilla_extract.h"
 #include "game.h"
 #include "log.h"
+#include "erase_if.h"
 
 class SteamManagerImpl : public SteamManager
 {
@@ -20,20 +25,9 @@ public:
 
 	SteamManagerImpl()
 	{
-		uint32_t subscribedCount = SteamUGC()->GetNumSubscribedItems();
-		subscribedItemIds.resize(subscribedCount);
-		subscribedCount = SteamUGC()->GetSubscribedItems(subscribedItemIds.data(), subscribedCount);
-		subscribedItemIds.resize(subscribedCount);
-
-		printf("Num items: %d\n", (int)subscribedItemIds.size());
-		for (auto fileId : subscribedItemIds) {
-			uint32_t state = SteamUGC()->GetItemState(fileId);
-			printf("  Item %llu has state %u\n", fileId, state);
-			if ((state & k_EItemStateInstalled) && (state & k_EItemStateSubscribed)) {
-				std::string fname(1024, '\0');
-				printf("    installinfo? %s\n", SteamUGC()->GetItemInstallInfo(fileId, nullptr, fname.data(), fname.size(), nullptr) ? "true" : "false");
-				printf("    fname = %s\n", fname.c_str());
-			}
+		if (AppdataIsInit())
+		{
+			MountWorkshopContent();
 		}
 	}
 
@@ -148,6 +142,76 @@ public:
 	bool CanUploadToWorkshop() override
 	{
 		return true;
+	}
+
+	// ------------------------------------------------------------------------
+	// Workshop download
+	void MountWorkshopContent()
+	{
+		vanilla::VfsStack& vfs_stack = AppdataVfs();
+
+		// Unmount all existing Workshop content and remount it in the loop below.
+		erase_if(vfs_stack.mounts, [](const vanilla::Mount& mount) { return mount.meta.steamWorkshopId != 0; });
+
+		uint32_t subscribedCount = SteamUGC()->GetNumSubscribedItems();
+		subscribedItemIds.resize(subscribedCount);
+		subscribedCount = SteamUGC()->GetSubscribedItems(subscribedItemIds.data(), subscribedCount);
+		subscribedItemIds.resize(subscribedCount);
+
+		for (PublishedFileId_t fileId : subscribedItemIds)
+		{
+			uint32_t state = SteamUGC()->GetItemState(fileId);
+			if (state & k_EItemStateNeedsUpdate)
+			{
+				if (SteamUGC()->DownloadItem(fileId, false))
+				{
+					SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu started", fileId);
+				}
+				else
+				{
+					SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu failed to start", fileId);
+				}
+			}
+			else if ((state & k_EItemStateInstalled) && (state & k_EItemStateSubscribed) && !(state & k_EItemStateDownloadPending))
+			{
+				char dirname[1024];
+				if (SteamUGC()->GetItemInstallInfo(fileId, nullptr, dirname, SDL_arraysize(dirname), nullptr))
+				{
+					SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop: %s", dirname);
+					vfs_stack.push_back(vanilla::open_stdio(dirname), "", { vanilla::VfsSourceKind::Addon, fileId });
+				}
+				else
+				{
+					SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "workshop %llu: GetItemInstallInfo failed", fileId);
+				}
+			}
+			else
+			{
+				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop %llu: state is %" PRIu32, fileId, state);
+			}
+		}
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop end");
+	}
+
+	STEAM_CALLBACK(SteamManagerImpl, on_subscriptions_change, UserSubscribedItemsListChanged_t)
+	{
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "subscriptions changed for %u", pParam->m_nAppID);
+		// TODO: check that it's our appid?
+		MountWorkshopContent();
+	}
+
+	STEAM_CALLBACK(SteamManagerImpl, on_item_downloaded, DownloadItemResult_t)
+	{
+		// TODO: check that it's our appid?
+		if (pParam->m_eResult == k_EResultOK)
+		{
+			SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu succeeded", pParam->m_nPublishedFileId);
+			MountWorkshopContent();
+		}
+		else
+		{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu failed: %d", pParam->m_nPublishedFileId, pParam->m_eResult);
+		}
 	}
 };
 

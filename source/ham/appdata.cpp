@@ -209,7 +209,7 @@ static VfsStack default_vfs_stack(bool* error) {
 		const auto& spec = meta->default_asset_specs[i];
 		if (spec.should_auto_mount()) {
 			auto mount = init_vfs_spec("built-in", spec.mountpoint, spec.kind, spec.param);
-			mount.source_kind = spec.optional ? vanilla::VfsSourceKind::Addon : vanilla::VfsSourceKind::BaseGame;
+			mount.meta.kind = spec.optional ? vanilla::VfsSourceKind::Addon : vanilla::VfsSourceKind::BaseGame;
 			if (mount.vfs) {
 				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "auto %d %s: %s@%s@%s", i, spec.optional ? "enabled" : "required", spec.mountpoint, spec.kind, spec.param);
 				result.push_back(std::move(mount));

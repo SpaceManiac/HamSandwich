@@ -251,7 +251,7 @@ bool VfsStack::query_bottom(const char* filename, VfsSourceKind* kind)
 		}
 		if (owned::FILE fp = iter->open_stdio(filename))
 		{
-			*kind = iter->source_kind;
+			*kind = iter->meta.kind;
 			retval = true;
 		}
 	}
