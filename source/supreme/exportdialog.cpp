@@ -4,6 +4,8 @@
 #include <string_view>
 #include <algorithm>
 #include <zip.h>
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 #include "world.h"
 #include "display.h"
 #include "appdata.h"
@@ -72,6 +74,12 @@ namespace
 		CCallResult<SteamWorkshopUpload, CreateItemResult_t> create_result;
 		CCallResult<SteamWorkshopUpload, SubmitItemUpdateResult_t> submit_update_result;
 
+		void SaveWorkshopDataFile()
+		{
+			owned::FILE f { AssetOpen_Write(workshopDataFilename.c_str()) };
+			fprintf(f.get(), "workshop_item_id=%" PRIu64 "\n", workshopItemId);
+		}
+
 		void CreateCallback(CreateItemResult_t* result, bool)
 		{
 			if (result->m_bUserNeedsToAcceptWorkshopLegalAgreement)
@@ -91,6 +99,8 @@ namespace
 			}
 
 			workshopItemId = result->m_nPublishedFileId;
+
+			SaveWorkshopDataFile();
 
 			SubmitUpdate();
 		}
@@ -133,7 +143,7 @@ namespace
 
 			submit_update_result.Set(SteamUGC()->SubmitItemUpdate(handle, nullptr), this, &SteamWorkshopUpload::SubmitUpdateCallback);
 			progress = Progress::Working;
-			progressMessage = "Uploading content...";
+			progressMessage = "Uploading content, please wait...";
 		}
 
 		void SubmitUpdateCallback(SubmitItemUpdateResult_t* result, bool)
@@ -171,7 +181,28 @@ namespace
 		Progress progress = Progress::Idle;
 		std::string progressMessage;
 
-		std::string folder, preview;
+		std::string folder, preview, workshopDataFilename;
+
+		void LoadWorkshopDataFile(std::string source)
+		{
+			workshopDataFilename = std::move(source);
+			if (owned::FILE f { AppdataOpen(workshopDataFilename.c_str()) })
+			{
+				char buf[128];
+				while (fgets(buf, SDL_arraysize(buf), f.get()))
+				{
+					char* eq = strchr(buf, '=');
+					if (eq)
+					{
+						*eq = '\0';
+						if (!strcmp(buf, "workshop_item_id"))
+						{
+							workshopItemId = atoll(eq + 1);
+						}
+					}
+				}
+			}
+		}
 
 		void Start()
 		{
@@ -460,22 +491,7 @@ void InitExportDialog(const world_t* world, const char* filename)
 	{
 		std::string workshopDataFilename = filename;
 		workshopDataFilename.append(".workshop");
-		if (owned::FILE f { AppdataOpen(workshopDataFilename.c_str()) })
-		{
-			char buf[128];
-			while (fgets(buf, SDL_arraysize(buf), f.get()))
-			{
-				char* eq = strchr(buf, '=');
-				if (eq)
-				{
-					*eq = '\0';
-					if (!strcmp(buf, "workshop_item_id"))
-					{
-						steamWorkshopUpload.workshopItemId = atoll(eq + 1);
-					}
-				}
-			}
-		}
+		steamWorkshopUpload.LoadWorkshopDataFile(std::move(workshopDataFilename));
 	}
 #endif  // HAS_STEAM_API
 
