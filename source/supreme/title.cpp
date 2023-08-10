@@ -371,7 +371,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		titleRuns=0;
 		MakeNormalSound(SND_MENUCLICK);
 	}
-	if((c & ~oldc) & (CONTROL_UP|CONTROL_LF))
+	if((c & ~oldc) & (CONTROL_DN|CONTROL_RT))
 	{
 		cursor++;
 		if(cursor==8)
