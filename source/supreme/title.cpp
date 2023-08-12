@@ -10,8 +10,6 @@
 #include "textgame.h"
 #include "steam.h"
 
-#define COPYRIGHT_YEARS "1998-2023"
-
 // special codes in the credits:
 // @ = use GirlsRWeird font
 // # = draw a major horizontal line
@@ -26,7 +24,7 @@ char credits[][32]={
 	"",
 	"",
 	"Copyright " COPYRIGHT_YEARS ",",
-	"By Hamumu Software",
+	"By " COPYRIGHT_COMPANY,
 	"#",
 	"&Original Concept",
 	"Mike Hommel",
@@ -223,8 +221,8 @@ void MainMenuDisplay(MGLDraw *mgl)
 	Print(SCRWID - GetStrLength(VERSION_NO, 1), 3, VERSION_NO, 1, 1);
 	Print(SCRWID - GetStrLength(VERSION_NO, 1) - 1, 3-1, VERSION_NO, 0, 1);
 	// Copyright:
-	Print(3,467,"Copyright " COPYRIGHT_YEARS ", Hamumu Software",1,1);
-	Print(2,466,"Copyright " COPYRIGHT_YEARS ", Hamumu Software",0,1);
+	Print(3,467,"Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY,1,1);
+	Print(2,466,"Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY,0,1);
 	// Steam edition info
 	const char* edition = SteamManager::Get()->DescribeEdition();
 	Print(SCRWID - GetStrLength(edition, 1), 20, edition, 1, 1);
