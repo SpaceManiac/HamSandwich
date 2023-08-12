@@ -1189,6 +1189,9 @@ void ItemEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 
 void ItemEditHelp(void)
 {
+	if (mode == IMODE_HELP)
+		return;
+
 	helpRemember=mode;
 	if(mode==IMODE_SELECT)
 		InitEditHelp(HELP_ITEMPICK);
