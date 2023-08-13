@@ -37,8 +37,6 @@ void InitNameEntry(MGLDraw *mgl)
 
 	for(i=0;i<480;i++)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
-
-	mgl->StartTextInput(15, 315, 640-15, 315+28);
 }
 
 void ExitNameEntry()
@@ -47,19 +45,11 @@ void ExitNameEntry()
 	free(backgd);
 }
 
-byte CheckForExistingName(const char *name)
+static bool CheckForExistingName(const char *name)
 {
-	FILE *f;
 	char s[64];
-
 	sprintf(s,"profiles/%s.prf",name);
-	f=AppdataOpen(s);
-	if(f)
-	{
-		fclose(f);
-		return 1;
-	}
-	return 0;
+	return AssetOpen_SDL_Owned(s) != nullptr;
 }
 
 byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
@@ -96,6 +86,12 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 			dCBright=2;
 
 		*lastTime-=TIME_PER_FRAME;
+	}
+
+	if (curLine == 9)
+	{
+		mgl->StartTextInput(15, 315, 640-15, 315+28);
+		curLine = 10;
 	}
 
 	c=mgl->LastKeyPressed();
