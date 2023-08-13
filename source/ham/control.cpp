@@ -227,7 +227,7 @@ void ControlHandleNewGamepad(int which)
 
 static byte GetJoyState(void)
 {
-	const int DEADZONE = 8192;
+	constexpr int DEADZONE = 8192;
 	byte joyState = 0;
 
 	for (auto iter = joysticks.begin(); iter != joysticks.end(); ++iter)
@@ -244,59 +244,69 @@ static byte GetJoyState(void)
 			continue;
 		}
 
-		if(SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX) < -DEADZONE || SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_LEFT))
+		int leftX = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
+		int leftY = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
+		if (leftX * leftX + leftY * leftY > DEADZONE * DEADZONE)
 		{
-			if(!(oldJoy&CONTROL_LF))
-				keyTap|=CONTROL_LF;
+			double angle = atan2(leftY, leftX) * 180.0 / M_PI;
+			if (angle < 22.5 + -4*45) {
+				joyState |= CONTROL_LF;
+			} else if (angle < 22.5 + -3*45) {
+				joyState |= CONTROL_LF | CONTROL_UP;
+			} else if (angle < 22.5 + -2*45) {
+				joyState |= CONTROL_UP;
+			} else if (angle < 22.5 + -1*45) {
+				joyState |= CONTROL_UP | CONTROL_RT;
+			} else if (angle < 22.5 + 0*45) {
+				joyState |= CONTROL_RT;
+			} else if (angle < 22.5 + 1*45) {
+				joyState |= CONTROL_RT | CONTROL_DN;
+			} else if (angle < 22.5 + 2*45) {
+				joyState |= CONTROL_DN;
+			} else if (angle < 22.5 + 3*45) {
+				joyState |= CONTROL_DN | CONTROL_LF;
+			} else if (angle < 22.5 + 4*45) {
+				joyState |= CONTROL_LF;
+			}
+		}
+
+		if(SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_LEFT))
+		{
 			joyState|=CONTROL_LF;
 		}
-		else if(SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX) > DEADZONE || SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_RIGHT))
+		else if(SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_RIGHT))
 		{
-			if(!(oldJoy&CONTROL_RT))
-				keyTap|=CONTROL_RT;
 			joyState|=CONTROL_RT;
 		}
 
-		if(SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY) < -DEADZONE || SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_UP))
+		if(SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_UP))
 		{
-			if(!(oldJoy&CONTROL_UP))
-				keyTap|=CONTROL_UP;
 			joyState|=CONTROL_UP;
 		}
-		else if(SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY) > DEADZONE || SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_DOWN))
+		else if(SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_DOWN))
 		{
-			if(!(oldJoy&CONTROL_DN))
-				keyTap|=CONTROL_DN;
 			joyState|=CONTROL_DN;
 		}
 
 		if(SDL_JoystickGetButton(joystick, joyBtn[0]))
 		{
-			if(!(oldJoy&CONTROL_B1))
-				keyTap|=CONTROL_B1;
 			joyState|=CONTROL_B1;
 		}
 		if(SDL_JoystickGetButton(joystick, joyBtn[1]))
 		{
-			if(!(oldJoy&CONTROL_B2))
-				keyTap|=CONTROL_B2;
 			joyState|=CONTROL_B2;
 		}
 		if(SDL_JoystickGetButton(joystick, joyBtn[2]))
 		{
-			if(!(oldJoy&CONTROL_B3))
-				keyTap|=CONTROL_B3;
 			joyState|=CONTROL_B3;
 		}
 		if(SDL_JoystickGetButton(joystick, joyBtn[3]))
 		{
-			if(!(oldJoy&CONTROL_B4))
-				keyTap|=CONTROL_B4;
 			joyState|=CONTROL_B4;
 		}
 	}
 
-	oldJoy=joyState;
-
+	keyTap = joyState & ~oldJoy;
+	oldJoy = joyState;
 	return joyState;
 }
