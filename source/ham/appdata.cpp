@@ -82,36 +82,39 @@ static Mount init_vfs_spec(const char* what, const char* mountpoint, const char*
 	stat(param, &sb);
 	if ((sb.st_mode & S_IFMT) == S_IFDIR && strcmp(kind, "stdio")) {
 		SDL_Log("%s: ignoring '%s' and assuming '%s' is pre-extracted", what, kind, param);
-		kind = "stdio";
+		return { vanilla::open_stdio(param), mountpoint, { vanilla::VfsSourceKind::BaseGame } };
 	}
 
+	// Guess at kind. Not strictly accurate.
+	// Environment variable path currently uses this guess.
+	// Builtin knows more details.
 	if (!strcmp(kind, "stdio")) {
-		return { vanilla::open_stdio(param), mountpoint };
+		return { vanilla::open_stdio(param), mountpoint, { vanilla::VfsSourceKind::Appdata } };
 	} else if (!strcmp(kind, "zip")) {
 		owned::SDL_RWops fp = owned::SDL_RWFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
 			return { nullptr };
 		}
-		return { vanilla::open_zip(std::move(fp)), mountpoint };
+		return { vanilla::open_zip(std::move(fp)), mountpoint, { vanilla::VfsSourceKind::Addon } };
 	} else if (!strcmp(kind, "nsis")) {
 		owned::SDL_RWops fp = owned::SDL_RWFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
 			return { nullptr };
 		}
-		return { vanilla::open_nsis(std::move(fp)), mountpoint };
+		return { vanilla::open_nsis(std::move(fp)), mountpoint, { vanilla::VfsSourceKind::BaseGame } };
 	} else if (!strcmp(kind, "inno")) {
 		owned::SDL_RWops fp = owned::SDL_RWFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
 			return { nullptr };
 		}
-		return { vanilla::open_inno(fp.get()), mountpoint };
+		return { vanilla::open_inno(fp.get()), mountpoint, { vanilla::VfsSourceKind::BaseGame } };
 	}
 #ifdef __ANDROID__
 	else if (!strcmp(kind, "android")) {
-		return { vanilla::open_android(param), mountpoint };
+		return { vanilla::open_android(param), mountpoint, vanilla::VfsSourceKind::BaseGame };
 	}
 #endif
 	else {
