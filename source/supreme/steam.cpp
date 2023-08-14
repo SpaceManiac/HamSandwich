@@ -5,6 +5,7 @@
 #include <steam/steam_api.h>
 #include <vector>
 #include <string>
+#include <map>
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #include "appdata.h"
@@ -12,6 +13,18 @@
 #include "game.h"
 #include "log.h"
 #include "erase_if.h"
+
+std::map<std::string, int32_t> GetStats()
+{
+	return {
+		// GoalTimeDist
+		{ "totalTime", profile.progress.totalTime },
+		{ "footDistance", profile.progress.footDistance },
+		{ "raftDistance", profile.progress.raftDistance },
+		{ "driveDistance+cartDistance", profile.progress.driveDistance + profile.progress.cartDistance },
+		{ "underwaterTime", profile.progress.underwaterTime },
+	};
+}
 
 class SteamManagerImpl : public SteamManager
 {
@@ -78,7 +91,11 @@ public:
 		if (pParam->m_eResult == k_EResultOK && !steam_stats_ready)
 		{
 			steam_stats_ready = true;
-			StartupSyncStats();
+			if (game_profile_ready)
+			{
+				SyncStats();
+				stats_store_cooldown = 0;
+			}
 		}
 	}
 
@@ -87,11 +104,15 @@ public:
 		if (!game_profile_ready)
 		{
 			game_profile_ready = true;
-			StartupSyncStats();
+			if (steam_stats_ready)
+			{
+				SyncStats();
+				stats_store_cooldown = 0;
+			}
 		}
 	}
 
-	void StartupSyncStats()
+	void SyncStats()
 	{
 		if (steam_stats_ready && game_profile_ready)
 		{
@@ -103,9 +124,15 @@ public:
 				}
 			}
 
-			// TOOD: set stats here
-
-			stats_store_cooldown = 0;
+			auto stats = GetStats();
+			for (const auto& pair : stats)
+			{
+				int32_t steamValue;
+				if (SteamUserStats()->GetStat(pair.first.c_str(), &steamValue) && steamValue != pair.second && SteamUserStats()->SetStat(pair.first.c_str(), pair.second))
+				{
+					stats_need_store = true;
+				}
+			}
 		}
 	}
 
