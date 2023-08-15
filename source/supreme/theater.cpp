@@ -78,19 +78,34 @@ void ExitTheater(void)
 	delete bestSpr;
 }
 
-byte AllMoviesSeen(void)
+bool AllMoviesSeen(void)
 {
 	int i;
 
 	for(i=0;i<32;i++)
 	{
 		if(movie[i].filename[0]=='!')
-			return 1;
+			return true;
 		if(!profile.progress.movie[i])
-			return 0;
+			return false;
 	}
 
-	return 1;
+	return true;
+}
+
+byte NumMoviesSeen()
+{
+	int i, j = 0;
+
+	for(i=0;i<32;i++)
+	{
+		if(movie[i].filename[0]=='!')
+			break;
+		if(profile.progress.movie[i])
+			++j;
+	}
+
+	return j;
 }
 
 TASK(byte) UpdateTheater(int *lastTime,MGLDraw *mgl)

@@ -79,11 +79,14 @@ typedef struct shopItem_t
 
 class Map;
 
-byte CanPlayWorld(const char *fname);
-byte ItemPurchased(byte type,byte num);
-byte AllOfTypePurchased(byte type);
-byte AllPurchased(void);
-byte AllLockersOpen(void);
+bool CanPlayWorld(const char *fname);
+bool ItemPurchased(byte type,byte num);
+bool AllOfTypePurchased(byte type);
+byte NumOfTypePurchased(byte type);
+bool AllPurchased(void);
+byte NumPurchased();
+bool AllLockersOpen(void);
+byte NumLockersOpen();
 
 byte ShopItemNumber(byte type,byte num);
 void SetupShops(Map *map);

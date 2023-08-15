@@ -797,7 +797,7 @@ static byte itemCoords[]={
 
 static byte modeToToggle;
 
-byte CanPlayWorld(const char *fname)
+bool CanPlayWorld(const char *fname)
 {
 	int i;
 
@@ -812,10 +812,10 @@ byte CanPlayWorld(const char *fname)
 	}
 
 	// if it didn't match any of the built-in names, it's an add-on, so it's okay
-	return 1;
+	return true;
 }
 
-byte AllOfTypePurchased(byte type)
+bool AllOfTypePurchased(byte type)
 {
 	int j;
 
@@ -823,13 +823,27 @@ byte AllOfTypePurchased(byte type)
 	{
 		if(shop[j].type==type && !(profile.progress.purchase[j]&SIF_BOUGHT))
 		{
-			return 0;
+			return false;
 		}
 	}
-	return 1;	// they've all been bought!
+	return true;	// they've all been bought!
 }
 
-byte AllLockersOpen(void)
+byte NumOfTypePurchased(byte type)
+{
+	int j, i = 0;
+
+	for(j=0;j<NUMSHOPITEMS;j++)
+	{
+		if(shop[j].type==type && (profile.progress.purchase[j]&SIF_BOUGHT))
+		{
+			++i;
+		}
+	}
+	return i;
+}
+
+bool AllLockersOpen(void)
 {
 	int j;
 
@@ -837,13 +851,27 @@ byte AllLockersOpen(void)
 	{
 		if(shop[j].shop==SHOP_LOCKERS && !(profile.progress.purchase[j]&SIF_BOUGHT))
 		{
-			return 0;
+			return false;
 		}
 	}
-	return 1;	// they've all been opened
+	return true;	// they've all been opened
 }
 
-byte AllPurchased(void)
+byte NumLockersOpen()
+{
+	int j, i = 0;
+
+	for(j=0;j<NUMSHOPITEMS;j++)
+	{
+		if(shop[j].shop==SHOP_LOCKERS && (profile.progress.purchase[j]&SIF_BOUGHT))
+		{
+			++i;
+		}
+	}
+	return i;
+}
+
+bool AllPurchased(void)
 {
 	int j;
 
@@ -851,10 +879,24 @@ byte AllPurchased(void)
 	{
 		if(!(profile.progress.purchase[j]&SIF_BOUGHT))
 		{
-			return 0;
+			return false;
 		}
 	}
-	return 1;	// they've all been bought!
+	return true;	// they've all been bought!
+}
+
+byte NumPurchased()
+{
+	int j, i = 0;
+
+	for(j=0;j<NUMSHOPITEMS;j++)
+	{
+		if((profile.progress.purchase[j]&SIF_BOUGHT))
+		{
+			++i;
+		}
+	}
+	return i;
 }
 
 float ShopPercent(void)
@@ -870,7 +912,7 @@ float ShopPercent(void)
 	return ((float)bought*100.0f/(float)NUMSHOPITEMS);
 }
 
-byte ItemPurchased(byte type,byte num)
+bool ItemPurchased(byte type,byte num)
 {
 	return ((profile.progress.purchase[ShopItemNumber(type,num)]&SIF_BOUGHT)>0);	// true if you've bought it
 }

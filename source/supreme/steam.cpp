@@ -13,9 +13,40 @@
 #include "game.h"
 #include "log.h"
 #include "erase_if.h"
+#include "shop.h"
+#include "theater.h"
 
 std::map<std::string, int32_t> GetStats()
 {
+	int totalKills = 0, distinctKills = 0;
+	for (int i = 2; i < NUM_PROFILE_MONSTERS; i++) // skip Bouapha
+	{
+		totalKills += profile.progress.kills[i];
+
+		if(!(MonsterFlags(i,i)&(MF_INVINCIBLE|MF_NOHIT)) && !(MonsterTheme(i)&(MT_GOOD|MT_BITS)) &&
+			(MonsterTheme(i)))
+		{
+			// only count those that can be hurt, aren't body parts, and aren't in the 'good' group
+			distinctKills += (profile.progress.kills[i] ? 1 : 0);
+		}
+	}
+
+	int scanned = 0, scanTotal = 0;
+	for (int i = 0; i < NUM_PROFILE_MONSTERS; i++)
+	{
+		if (MonsterTheme(i)) ++scanTotal;
+		if (MonsterTheme(i) && profile.progress.scanned[i])
+		{
+			++scanned;
+		}
+	}
+
+	int totalGoals = 0;
+	for (int i = 0; i < 100; i++)
+		totalGoals += (profile.progress.goal[i] ? 1 : 0);
+
+	CalcFinishedWorlds();
+
 	return {
 		// GoalTimeDist
 		{ "totalTime", profile.progress.totalTime },
@@ -23,6 +54,48 @@ std::map<std::string, int32_t> GetStats()
 		{ "raftDistance", profile.progress.raftDistance },
 		{ "driveDistance+cartDistance", profile.progress.driveDistance + profile.progress.cartDistance },
 		{ "underwaterTime", profile.progress.underwaterTime },
+		// GoalKilledSomebody
+		{ "deaths", profile.progress.kills[MONS_BOUAPHA] },
+		{ "killsSvenBjorn", (profile.progress.kills[MONS_SVEN] ? 1 : 0) + (profile.progress.kills[MONS_BJORN] ? 1 : 0) },
+		{ "killsStickman", profile.progress.kills[MONS_STICKMAN] },
+		{ "killsEvilClone", profile.progress.kills[MONS_EVILCLONE] },
+		{ "killsVampire", profile.progress.kills[MONS_VAMPIRE] + profile.progress.kills[MONS_DARKVAMP] + profile.progress.kills[MONS_COUNTESS] + profile.progress.kills[MONS_SPIKEY] },
+		{ "runOver", profile.progress.runOver },
+		{ "totalKills", totalKills },
+		{ "distinctKills", distinctKills },
+		// GoalTallyPage
+		{ "totalCoins", profile.progress.totalCoins },
+		// GoalPurchase
+		{ "purchasedWorlds", NumOfTypePurchased(SHOP_WORLD) },
+		{ "purchasedAbilities", NumOfTypePurchased(SHOP_ABILITY) },
+		{ "purchasedMajors", NumOfTypePurchased(SHOP_MAJOR) },
+		{ "purchasedCheats", NumOfTypePurchased(SHOP_CHEAT) },
+		{ "moviesSeen", NumMoviesSeen() },
+		{ "lockersOpened", NumLockersOpen() },
+		{ "purchasedTotal", NumPurchased() },
+		// shop.cpp
+		{ "purchasedDonation", profile.progress.purchase[SHOP_DONATION] },
+		// GoalWinLevel
+		{ "levelsPassed", CountLevelsPassed() },
+		{ "finishedWorlds", profile.progress.finishedWorlds },
+		// GoalFire
+		{ "hammersThrown", profile.progress.hammersThrown },
+		{ "rages", profile.progress.rages },
+		{ "shotsFired", profile.progress.shotsFired },
+		// items.cpp
+		{ "loonyKeys", profile.progress.loonyKeys },
+		{ "keysFound", profile.progress.keysFound },
+		{ "doorsOpened", profile.progress.doorsOpened },
+		{ "grassChopped", profile.progress.grassChopped },
+		// player.cpp
+		{ "totalBrains", profile.progress.totalBrains },
+		{ "totalCandles", profile.progress.totalCandles },
+		// guy.cpp
+		{ "calories", profile.progress.calories },
+		// scanner.cpp
+		{ "scanned", scanned },
+		// and finally...
+		{ "totalGoals", totalGoals },
 	};
 }
 
