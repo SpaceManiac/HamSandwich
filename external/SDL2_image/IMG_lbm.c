@@ -1,6 +1,6 @@
 /*
   SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -236,12 +236,6 @@ SDL_Surface *IMG_LoadLBM_RW( SDL_RWops *src )
     {
         bytesperline *= 8;
         nbplanes = 1;
-    }
-
-    if ((nbplanes != 1) && (nbplanes != 4) && (nbplanes != 8) && (nbplanes != 24))
-    {
-        error="unsupported number of color planes";
-        goto done;
     }
 
     stencil = (bmhd.mask & 1);   /* There is a mask ( 'stencil' ) */
