@@ -306,7 +306,7 @@ static byte GetJoyState(void)
 		}
 	}
 
-	keyTap = joyState & ~oldJoy;
+	keyTap |= joyState & ~oldJoy;
 	oldJoy = joyState;
 	return joyState;
 }
