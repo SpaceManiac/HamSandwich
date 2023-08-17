@@ -1,4 +1,6 @@
 #include "worldselect.h"
+#include <algorithm>
+#include <memory>
 #include "world.h"
 #include "winpch.h"
 #include "clock.h"
@@ -9,49 +11,53 @@
 #include "hiscore.h"
 #include "appdata.h"
 #include "erase_if.h"
-#include <algorithm>
 
-#define WS_CONTINUE	0
-#define WS_EXIT		1
-#define WS_PLAY		2
+enum Done : byte
+{
+	WS_CONTINUE,
+	WS_EXIT,
+	WS_PLAY,
+};
 
-#define MODE_PICKWORLD	0
-#define MODE_SCROLL		1
-#define MODE_MENU		2
-#define MODE_VERIFY		3
-#define MODE_VERIFY2	4
+enum Mode : byte
+{
+	MODE_PICKWORLD,
+	MODE_SCROLL,
+	MODE_MENU,
+	MODE_VERIFY,
+	MODE_VERIFY2,
+};
 
-#define NAME_X	20
-#define AUTH_X	300
-#define PERCENT_X 580
-#define GAP_HEIGHT	18
+constexpr int NAME_X = 20;
+constexpr int AUTH_X = 300;
+constexpr int PERCENT_X = 580;
 
-#define SCROLLBAR_HEIGHT 320
-#define WORLDS_PER_SCREEN 18
-#define CLICK_SCROLL_AMT (WORLDS_PER_SCREEN*3/4)
+constexpr int GAP_HEIGHT = 18;
+constexpr int SCROLLBAR_HEIGHT = 320;
+constexpr int WORLDS_PER_SCREEN = 18;
+constexpr int CLICK_SCROLL_AMT = WORLDS_PER_SCREEN * 3 / 4;
 
-#define WBTN_HEIGHT		19
+constexpr int WBTN_HEIGHT = 19;
 
-typedef struct worldDesc_t
+struct worldDesc_t
 {
 	char fname[64];
 	char name[64];
 	char author[64];
 	float percentage;
-	byte complete;
-	byte dimmed;
-} worldDesc_t;
+	bool dimmed;
+};
 
 static char curName[64];
-static byte mode;
-static worldDesc_t *list;
-static int numWorlds,worldDescSize,listPos,choice;
+static Mode mode;
+static std::vector<worldDesc_t> list;
+static int listPos, choice;
 static byte *backgd;
 static byte sortType,sortDir;
 static int scrollY,scrollHeight,scrollOffset;
 static int msx,msy;
 static byte mouseB=255;
-static sprite_set_t *wsSpr;
+static std::unique_ptr<sprite_set_t> wsSpr;
 static char msBright,msDBright;
 static score_t top3[3];
 static byte level,scoreMode,numScores,noScoresAtAll;
@@ -70,13 +76,9 @@ static byte showFilenames = 0;
 static byte numMapsVerified = 0;
 #endif
 
-void FlipEm(worldDesc_t *me,worldDesc_t *you)
+inline void FlipEm(worldDesc_t *me,worldDesc_t *you)
 {
-	worldDesc_t tmp;
-
-	memcpy(&tmp,me,sizeof(worldDesc_t));
-	memcpy(me,you,sizeof(worldDesc_t));
-	memcpy(you,&tmp,sizeof(worldDesc_t));
+	std::swap(*me, *you);
 }
 
 byte Compare(worldDesc_t *me,worldDesc_t *you,byte field,byte bkwds)
@@ -141,7 +143,7 @@ void SortWorlds(byte field,byte backwards)
 	while(flipped)
 	{
 		flipped=0;
-		for(i=0;i<numWorlds-1;i++)
+		for(i=0;i<(int)list.size()-1;i++)
 		{
 			if(backwards)
 			{
@@ -178,16 +180,16 @@ void SortWorlds(byte field,byte backwards)
 		listPos=choice;
 		if(listPos<0)
 			listPos=0;
-		if(listPos>numWorlds-WORLDS_PER_SCREEN)
-			listPos=numWorlds-WORLDS_PER_SCREEN;
+		if(listPos>(int)list.size()-WORLDS_PER_SCREEN)
+			listPos=list.size()-WORLDS_PER_SCREEN;
 	}
 	if(choice>=listPos+WORLDS_PER_SCREEN)
 	{
 		listPos=choice-WORLDS_PER_SCREEN+1;
 		if(listPos<0)
 			listPos=0;
-		if(listPos>numWorlds-WORLDS_PER_SCREEN)
-			listPos=numWorlds-WORLDS_PER_SCREEN;
+		if(listPos>(int)list.size()-WORLDS_PER_SCREEN)
+			listPos=list.size()-WORLDS_PER_SCREEN;
 	}
 }
 
@@ -195,29 +197,20 @@ bool VerifyLevel(Map* map);
 
 void InputWorld(const char *fname)
 {
+	worldDesc_t newItem;
+	SDL_strlcpy(newItem.fname, fname, SDL_arraysize(newItem.fname));
+
 	char fullname[64];
-	worldData_t *w;
+	snprintf(fullname, SDL_arraysize(fullname), "worlds/%s", fname);
+	GetWorldName(fullname, newItem.name, newItem.author);
 
-	strcpy(list[numWorlds].fname,fname);
-	sprintf(fullname,"worlds/%s",fname);
+	worldData_t *w = GetWorldProgressNoCreate(newItem.fname);
+	newItem.percentage = w ? w->percentage : 0.0f;
 
-	GetWorldName(fullname,list[numWorlds].name,list[numWorlds].author);
-	w=GetWorldProgressNoCreate(list[numWorlds].fname);
+	newItem.dimmed = !CanPlayWorld(fname);
 
-	if(w)
-		list[numWorlds].percentage=w->percentage;
-	else
-		list[numWorlds].percentage=0.0f;
-
-	list[numWorlds].dimmed=(!CanPlayWorld(fname));
-
-	numWorlds++;
-	if(numWorlds==worldDescSize)
-	{
-		worldDescSize+=16;
-		list=(worldDesc_t *)realloc(list,sizeof(worldDesc_t)*worldDescSize);
-	}
-	profile.progress.totalWorlds=numWorlds;
+	list.push_back(newItem);
+	profile.progress.totalWorlds = list.size();
 }
 
 TASK(void) ScanWorlds(void)
@@ -250,13 +243,13 @@ TASK(void) ScanWorlds(void)
 
 void CalcScrollBar(void)
 {
-	scrollHeight=SCROLLBAR_HEIGHT*WORLDS_PER_SCREEN/(numWorlds ? numWorlds : 1);
+	scrollHeight=SCROLLBAR_HEIGHT*WORLDS_PER_SCREEN/(list.size() ? list.size() : 1);
 	if(scrollHeight<10)
 		scrollHeight=10;
 	if(scrollHeight>=SCROLLBAR_HEIGHT)
 		scrollHeight=SCROLLBAR_HEIGHT-1;
 
-	scrollY=SCROLLBAR_HEIGHT*listPos/(numWorlds ? numWorlds : 1);
+	scrollY=SCROLLBAR_HEIGHT*listPos/(list.size() ? list.size() : 1);
 	if(scrollY+scrollHeight>SCROLLBAR_HEIGHT)
 		scrollY=SCROLLBAR_HEIGHT-scrollHeight;
 }
@@ -269,7 +262,7 @@ void ReverseCalcScrollBar(void)
 		scrollY=SCROLLBAR_HEIGHT-scrollHeight-1;
 
 	if(scrollY>0)
-		listPos=scrollY*numWorlds/SCROLLBAR_HEIGHT+1;
+		listPos=scrollY*list.size()/SCROLLBAR_HEIGHT+1;
 	else
 		listPos=0;
 }
@@ -351,7 +344,7 @@ void SelectLastWorld(void)
 
 	choice=0;
 
-	for(i=0;i<numWorlds;i++)
+	for(i=0; i<(int)list.size(); i++)
 		if(!strcmp(list[i].fname,profile.lastWorld))
 			choice=i;
 
@@ -360,7 +353,7 @@ void SelectLastWorld(void)
 	if(listPos>choice)
 		listPos=choice;
 
-	if (choice < numWorlds) {
+	if (choice < (int)list.size()) {
 		sprintf(s,"worlds/%s",list[choice].fname);
 		LoadWorld(&tmpWorld,s);
 		level=0;
@@ -398,17 +391,15 @@ TASK(void) InitWorldSelect(MGLDraw *mgl)
 	sortType=0;
 	sortDir=0;
 	listPos=0;
-	worldDescSize=16;
-	numWorlds=0;
 
-	list=(worldDesc_t *)malloc(sizeof(worldDesc_t)*16);
+	list.clear();
 	AWAIT ScanWorlds();
 	SortWorlds(sortType,sortDir);
 	SelectLastWorld();
 	CalcScrollBar();
 	mgl->GetMouse(&msx,&msy);
 	mode=MODE_PICKWORLD;
-	wsSpr=new sprite_set_t("graphics/pause.jsp");
+	wsSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
 	msBright=0;
 	msDBright=1;
 	PlaySongForce("003worldpicker.ogg");
@@ -418,12 +409,12 @@ TASK(void) InitWorldSelect(MGLDraw *mgl)
 void ExitWorldSelect(void)
 {
 	free(backgd);
-	free(list);
+	list.clear();
 	FreeWorld(&tmpWorld);
-	delete wsSpr;
+	wsSpr.reset();
 }
 
-TASK(byte) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
+TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 {
 	static byte oldc=255;
 	char c;
@@ -464,7 +455,7 @@ TASK(byte) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 		}
 		if((c&CONTROL_DN) && !(oldc&CONTROL_DN))
 		{
-			if(choice<numWorlds-1)
+			if(choice<(int)list.size()-1)
 			{
 				choice++;
 				MoveToNewWorld();
@@ -491,7 +482,7 @@ TASK(byte) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			listPos = std::max(listPos - WORLDS_PER_SCREEN, 0);
 			CalcScrollBar();
 		} else if (scan == SDL_SCANCODE_PAGEDOWN) {
-			listPos = std::min(listPos + WORLDS_PER_SCREEN, numWorlds - WORLDS_PER_SCREEN);
+			listPos = std::min(listPos + WORLDS_PER_SCREEN, (int)list.size() - WORLDS_PER_SCREEN);
 			CalcScrollBar();
 		}
 #ifdef WORLD_DEBUGGING
@@ -513,8 +504,8 @@ TASK(byte) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 		else if(mv>0)
 		{
 			listPos+=mv;
-			if(listPos>numWorlds-WORLDS_PER_SCREEN)
-				listPos=numWorlds-WORLDS_PER_SCREEN;
+			if(listPos>(int)list.size()-WORLDS_PER_SCREEN)
+				listPos=list.size()-WORLDS_PER_SCREEN;
 			if(listPos<0)
 				listPos=0;
 			CalcScrollBar();
@@ -525,7 +516,7 @@ TASK(byte) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			// clicking on a world
 			for(i=0;i<18;i++)
 			{
-				if(i+listPos<numWorlds)
+				if(i+listPos<(int)list.size())
 				{
 					if(PointInRect(msx,msy,17,39+i*GAP_HEIGHT,599,39+GAP_HEIGHT+i*GAP_HEIGHT-1))
 					{
@@ -602,8 +593,8 @@ TASK(byte) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				else if(msy>41+scrollY+scrollHeight-1)
 				{
 					listPos+=CLICK_SCROLL_AMT;
-					if(listPos>numWorlds-WORLDS_PER_SCREEN)
-						listPos=numWorlds-WORLDS_PER_SCREEN;
+					if(listPos>(int)list.size()-WORLDS_PER_SCREEN)
+						listPos=list.size()-WORLDS_PER_SCREEN;
 					if(listPos<0)
 						listPos=0;
 					CalcScrollBar();
@@ -791,7 +782,7 @@ void RenderWorldSelect(MGLDraw *mgl)
 	// the world list
 	for(i=0;i<18;i++)
 	{
-		if(i+listPos<numWorlds)
+		if(i+listPos<(int)list.size())
 		{
 			if(choice==i+listPos)
 				mgl->FillBox(17,39+i*GAP_HEIGHT,599,39+GAP_HEIGHT+i*GAP_HEIGHT-1,32+8);
@@ -945,13 +936,13 @@ void RenderWorldSelect(MGLDraw *mgl)
 
 TASK(byte) WorldSelectMenu(MGLDraw *mgl)
 {
-	byte done=WS_CONTINUE;
+	Done done=WS_CONTINUE;
 	int lastTime=1;
 	char fname[32];
 
 	AWAIT InitWorldSelect(mgl);
 
-	if(numWorlds==0)
+	if(list.empty())
 		CO_RETURN 1;	// just skip it if there are no worlds!
 
 	while(done==WS_CONTINUE)
