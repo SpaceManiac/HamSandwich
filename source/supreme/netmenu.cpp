@@ -549,13 +549,13 @@ TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 							case BTN_SCOREPAGE:
 								//mode=NET_GETMOTD;
 								//BeginMOTDGet();
-								pageToDo=1;
+								SDL_OpenURL("http://hamumu.com/scores.php");
 								CO_RETURN 1;
 								break;
 							case BTN_ADDONPAGE:
 								//mode=NET_GETMOTD;
 								//BeginMOTDGet();
-								pageToDo=2;
+								SDL_OpenURL("http://hamumu.com/addon.php");
 								CO_RETURN 1;
 								break;
 							case BTN_EXIT:
@@ -1002,9 +1002,4 @@ TASK(void) NetMenu(MGLDraw *mgl)
 
 	SaveProfile();
 	ExitNetMenu();
-}
-
-byte DoWebPage(void)
-{
-	return pageToDo;
 }

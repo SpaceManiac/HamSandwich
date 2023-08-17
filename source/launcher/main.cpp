@@ -54,13 +54,10 @@ void OpenFolder(std::string_view folder)
 
 void OpenFolder(std::string_view folder)
 {
-	if (fork() == 0)
-	{
-		std::string first = "xdg-open";
-		std::string second { folder };
-		char* const argv[] = { first.data(), second.data(), nullptr };
-		execvp(argv[0], argv);
-	}
+	filesystem::path buf = filesystem::absolute(folder);
+	std::string url = "file://";
+	url.append(buf);
+	SDL_OpenURL(url.c_str());
 }
 #endif
 

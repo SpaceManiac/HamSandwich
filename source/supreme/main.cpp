@@ -33,10 +33,6 @@
 #include "appdata.h"
 #include "steam.h"
 
-#ifdef _WIN32
-#include <shellapi.h>
-#endif
-
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
 class SteamMGLDraw : public MGLDraw
@@ -118,22 +114,6 @@ TASK(int) main(int argc, char* argv[])
 			case 5:	// internet
 				shopping=0;
 				AWAIT NetMenu(mainmgl);
-
-				if(DoWebPage()==1)
-				{
-#ifdef _WIN32
-					ShellExecuteA(NULL,"open","http://hamumu.com/scores.php",NULL,NULL,SW_SHOWNORMAL);
-#endif
-					running = false;
-				}
-				else if(DoWebPage()==2)
-				{
-
-#ifdef _WIN32
-					ShellExecuteA(NULL,"open","http://hamumu.com/addon.php",NULL,NULL,SW_SHOWNORMAL);
-#endif
-					running = false;
-				}
 				break;
 			case 7:	// editor
 				shopping=0;
