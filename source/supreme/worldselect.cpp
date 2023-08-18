@@ -28,6 +28,21 @@ enum Mode : byte
 	MODE_VERIFY2,
 };
 
+enum class ButtonId
+{
+	WorldList,
+	PlayThisWorld,
+	ResetThisWorld,
+	ResetHighScores,
+	ExitToMenu,
+	RecordScoresTimes,
+	PrevLevel,
+	NextLevel,
+	Yes,
+	No,
+	VerifyWorld,
+};
+
 constexpr int NAME_X = 20;
 constexpr int AUTH_X = 300;
 constexpr int PERCENT_X = 580;
@@ -63,6 +78,8 @@ static score_t top3[3];
 static byte level,scoreMode,numScores,noScoresAtAll;
 static world_t tmpWorld;
 static int mouseZ;
+
+static ButtonId curButton;
 
 #ifdef WTG
 #define WORLD_DEBUGGING
@@ -404,6 +421,8 @@ TASK(void) InitWorldSelect(MGLDraw *mgl)
 	msDBright=1;
 	PlaySongForce("003worldpicker.ogg");
 	mouseZ=mgl->mouse_z;
+
+	curButton = ButtonId::WorldList;
 }
 
 void ExitWorldSelect(void)
@@ -440,41 +459,132 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 
 	if(mode==MODE_PICKWORLD)
 	{
-		if((c&CONTROL_UP) && !(oldc&CONTROL_UP))
+		if ((c & ~oldc) & CONTROL_UP)
 		{
-			if(choice>0)
+			switch (curButton)
 			{
-				choice--;
-				MoveToNewWorld();
-			}
-			if(choice<listPos)
-			{
-				listPos--;
-				CalcScrollBar();
+				case ButtonId::WorldList:
+					if(choice>0)
+					{
+						choice--;
+						MoveToNewWorld();
+					}
+					if(choice<listPos)
+					{
+						listPos--;
+						CalcScrollBar();
+					}
+					break;
+				case ButtonId::PlayThisWorld:
+					curButton = ButtonId::ExitToMenu;
+					break;
+				case ButtonId::ResetThisWorld:
+					curButton = ButtonId::PlayThisWorld;
+					break;
+				case ButtonId::ResetHighScores:
+					curButton = ButtonId::ResetThisWorld;
+					break;
+				case ButtonId::ExitToMenu:
+					curButton = ButtonId::ResetHighScores;
+					break;
+				default: break;
 			}
 		}
-		if((c&CONTROL_DN) && !(oldc&CONTROL_DN))
+
+		if ((c & ~oldc) & CONTROL_DN)
 		{
-			if(choice<(int)list.size()-1)
+			switch (curButton)
 			{
-				choice++;
-				MoveToNewWorld();
-			}
-			if(choice>listPos+17)
-			{
-				listPos++;
-				CalcScrollBar();
+				case ButtonId::WorldList:
+					if(choice<(int)list.size()-1)
+					{
+						choice++;
+						MoveToNewWorld();
+					}
+					if(choice>listPos+17)
+					{
+						listPos++;
+						CalcScrollBar();
+					}
+					break;
+				case ButtonId::PlayThisWorld:
+					curButton = ButtonId::ResetThisWorld;
+					break;
+				case ButtonId::ResetThisWorld:
+					curButton = ButtonId::ResetHighScores;
+					break;
+				case ButtonId::ResetHighScores:
+					curButton = ButtonId::ExitToMenu;
+					break;
+				case ButtonId::ExitToMenu:
+					curButton = ButtonId::PlayThisWorld;
+					break;
+				default: break;
 			}
 		}
-		if((c&CONTROL_B1) && !(oldc&CONTROL_B1))
+
+		if ((c & ~oldc) & CONTROL_RT)
 		{
-			if(list[choice].dimmed)
-				MakeNormalSound(SND_TURRETBZZT);
+			switch (curButton)
+			{
+				case ButtonId::PlayThisWorld:
+				case ButtonId::ResetThisWorld:
+				case ButtonId::ResetHighScores:
+				case ButtonId::ExitToMenu:
+					curButton = ButtonId::RecordScoresTimes;
+					break;
+				case ButtonId::RecordScoresTimes:
+					if (!noScoresAtAll)
+						curButton = ButtonId::PrevLevel;
+					break;
+				case ButtonId::PrevLevel:
+					curButton = ButtonId::NextLevel;
+					break;
+				default: break;
+			}
+		}
+
+		if ((c & ~oldc) & CONTROL_LF)
+		{
+			switch (curButton)
+			{
+				case ButtonId::RecordScoresTimes:
+					curButton = ButtonId::PlayThisWorld;
+					break;
+				case ButtonId::PrevLevel:
+					curButton = ButtonId::RecordScoresTimes;
+					break;
+				case ButtonId::NextLevel:
+					curButton = ButtonId::PrevLevel;
+					break;
+				default: break;
+			}
+		}
+
+		if ((c & ~oldc) & CONTROL_B1)
+		{
+			switch (curButton)
+			{
+				case ButtonId::WorldList:
+				case ButtonId::PlayThisWorld:
+					if(list[choice].dimmed)
+						MakeNormalSound(SND_TURRETBZZT);
+					else
+					{
+						oldc=255;
+						CO_RETURN WS_PLAY;
+					}
+					break;
+				default: break;
+			}
+		}
+
+		if ((c & ~oldc) & CONTROL_B2)
+		{
+			if (curButton == ButtonId::WorldList)
+				curButton = ButtonId::PlayThisWorld;
 			else
-			{
-				oldc=255;
-				CO_RETURN WS_PLAY;
-			}
+				curButton = ButtonId::WorldList;
 		}
 
 		byte scan = LastScanCode();
@@ -750,9 +860,9 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 	CO_RETURN WS_CONTINUE;
 }
 
-void RenderWorldSelectButton(int x,int y,int wid,const char *txt,MGLDraw *mgl)
+void RenderWorldSelectButton(int x,int y,int wid,const char *txt,MGLDraw *mgl, ButtonId id)
 {
-	if(PointInRect(msx,msy,x,y,x+wid,y+WBTN_HEIGHT))
+	if(PointInRect(msx,msy,x,y,x+wid,y+WBTN_HEIGHT) || curButton == id)
 	{
 		mgl->Box(x,y,x+wid,y+WBTN_HEIGHT,32+31);
 		mgl->FillBox(x+1,y+1,x+wid-1,y+WBTN_HEIGHT-1,32+8);
@@ -829,10 +939,10 @@ void RenderWorldSelect(MGLDraw *mgl)
 	mgl->FillBox(607,41+scrollY,618,41+scrollY+scrollHeight,32+20);
 
 	// buttons
-	RenderWorldSelectButton(20,371,150,"Play This World",mgl);
-	RenderWorldSelectButton(20,395,150,"Reset This World",mgl);
-	RenderWorldSelectButton(20,419,150,"Reset High Scores",mgl);
-	RenderWorldSelectButton(20,443,150,"Exit To Menu",mgl);
+	RenderWorldSelectButton(20,371,150,"Play This World",mgl, ButtonId::PlayThisWorld);
+	RenderWorldSelectButton(20,395,150,"Reset This World",mgl, ButtonId::ResetThisWorld);
+	RenderWorldSelectButton(20,419,150,"Reset High Scores",mgl, ButtonId::ResetHighScores);
+	RenderWorldSelectButton(20,443,150,"Exit To Menu",mgl, ButtonId::ExitToMenu);
 
 	if(list[choice].dimmed)
 	{
@@ -842,15 +952,15 @@ void RenderWorldSelect(MGLDraw *mgl)
 	{
 		// high score section
 		if(scoreMode==1)
-			RenderWorldSelectButton(180,371,150,"Record Times",mgl);
+			RenderWorldSelectButton(180,371,150,"Record Times",mgl, ButtonId::RecordScoresTimes);
 		else
-			RenderWorldSelectButton(180,371,150,"Record Scores",mgl);
+			RenderWorldSelectButton(180,371,150,"Record Scores",mgl, ButtonId::RecordScoresTimes);
 
 		if(!noScoresAtAll)
 		{
-			RenderWorldSelectButton(335,371,20,"<<",mgl);
+			RenderWorldSelectButton(335,371,20,"<<",mgl, ButtonId::PrevLevel);
 			PrintGlowLimited(359,373,590,tmpWorld.map[level]->name,0,2);
-			RenderWorldSelectButton(592,371,20,">>",mgl);
+			RenderWorldSelectButton(592,371,20,">>",mgl, ButtonId::NextLevel);
 
 			// now the scores themselves
 			for(i=0;i<3;i++)
@@ -901,7 +1011,7 @@ void RenderWorldSelect(MGLDraw *mgl)
 
 		PrintGlow(180,395,list[choice].fname,0,1);
 		PrintGlow(180,419,msg,0,1);
-		RenderWorldSelectButton(180,443,150,"Verify World",mgl);
+		RenderWorldSelectButton(180,443,150,"Verify World",mgl, ButtonId::VerifyWorld);
 	}
 #endif
 
@@ -915,8 +1025,8 @@ void RenderWorldSelect(MGLDraw *mgl)
 		else
 			PrintGlowRect(50,160,590,250,18,"Are you sure you want to reset the high scores for this world?  That will erase "
 										   "the high scores, but keep your progress in the world.",2);
-		RenderWorldSelectButton(70,270,50,"Yes",mgl);
-		RenderWorldSelectButton(600-30-50,270,50,"No",mgl);
+		RenderWorldSelectButton(70,270,50,"Yes",mgl, ButtonId::Yes);
+		RenderWorldSelectButton(600-30-50,270,50,"No",mgl, ButtonId::No);
 	}
 
 	SetSpriteConstraints(13,13,627,467);
