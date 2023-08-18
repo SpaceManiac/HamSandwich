@@ -17,6 +17,7 @@
 #include "nameentry.h"
 #include "scanner.h"
 #include "netgame.h"
+#include "steam.h"
 
 constexpr int PBTN_HEIGHT = 19;
 
@@ -42,9 +43,9 @@ enum class ButtonId
 	None,
 	Exit,
 	HamumuWebsite,
-	HamSandwichGithub,
+	HamSandwich,
+	LoonyChat,
 	SteamWorkshop,
-	SteamLeaderboards,
 	Yes,
 	No,
 	// ...
@@ -58,15 +59,16 @@ struct profButton_t
 {
 	int x,y;
 	int wid;
-	char txt[32];
+	char txt[64];
 	ButtonId id;
+	bool steamOnly = false;
 };
 
 static profButton_t btn[]={
-	{20,100,180,"Upload My Scores", ButtonId::Upload},
-	{20,160,180,"Upload My Profile", ButtonId::Profile},
-	{20,220,180,"View World Records", ButtonId::ScorePage},
-	{20,280,180,"Look For Add-Ons", ButtonId::AddonPage},
+	{20,100,320,"More games by Hamumu", ButtonId::HamumuWebsite},
+	{20,160,320,"Get this game's source code", ButtonId::HamSandwich},
+	{20,220,320,"Join the LoonyChat on Discord", ButtonId::LoonyChat},
+	{20,280,320,"Browse add-ons in the Steam Workshop", ButtonId::SteamWorkshop, true},
 	{20,444,180,"Exit", ButtonId::Exit},
 };
 
@@ -115,6 +117,8 @@ void InitNetMenu(MGLDraw *mgl)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
 
 	plSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
+
+	GetTaps(); GetArrowTaps();
 
 	Init_Netgame();
 }
@@ -463,37 +467,27 @@ void EndProfileUp(void)
 
 TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 {
-	int i;
-	byte b,mb;
-	char k;
+	byte b;
 	byte state;
 
+	// Mouse
 	int oldMsx = msx, oldMsy = msy;
 	mgl->GetMouse(&msx, &msy);
-
-	if (msx != oldMsx || msy != oldMsy)
+	bool mb = mgl->MouseTap();
+	if (mb || (msx != oldMsx || msy != oldMsy))
 	{
 		curButton = ButtonId::None;
-		for(i=0;i<NUM_NET_BTNS;i++)
+		for(int i=0; i<NUM_NET_BTNS; i++)
 		{
-			if(PointInRect(msx,msy,btn[i].x,btn[i].y,btn[i].x+btn[i].wid,btn[i].y+PBTN_HEIGHT))
+			if ((!btn[i].steamOnly || SteamManager::Get()->IsSteamEdition()) && PointInRect(msx,msy,btn[i].x,btn[i].y,btn[i].x+btn[i].wid,btn[i].y+PBTN_HEIGHT))
 			{
 				curButton = btn[i].id;
 			}
 		}
 	}
 
-	if(*lastTime>TIME_PER_FRAME*5)
-		*lastTime=TIME_PER_FRAME*5;
-
-	k=mgl->LastKeyPressed();
-
-	if(webInited)
-		Web_Poll(socketNum);
-
 	if(mousemode == MouseMode::Idle)	// not locked into either buttons or game right now
 	{
-		mb=mgl->MouseTap();
 		if(mb)
 		{
 			if (curButton != ButtonId::None)
@@ -507,13 +501,69 @@ TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 	}
 	else
 	{
-		mb=mgl->MouseDown();
-		if(!mb)
+		if(!mgl->MouseDown())
 			mousemode = MouseMode::Idle;
 		else
-			mb = 0;
+			mb = false;
 	}
 
+	// Keyboard
+	char k = mgl->LastKeyPressed();
+
+	// Controller
+	byte tap = GetTaps() | GetArrowTaps();
+
+	if (tap & CONTROL_DN)
+	{
+		switch (curButton)
+		{
+			case ButtonId::None:
+				curButton = ButtonId::HamumuWebsite;
+				break;
+			case ButtonId::HamumuWebsite:
+				curButton = ButtonId::HamSandwich;
+				break;
+			case ButtonId::HamSandwich:
+				curButton = ButtonId::LoonyChat;
+				break;
+			case ButtonId::LoonyChat:
+				curButton = SteamManager::Get()->IsSteamEdition() ? ButtonId::SteamWorkshop : ButtonId::Exit;
+				break;
+			case ButtonId::SteamWorkshop:
+				curButton = ButtonId::Exit;
+				break;
+			default: break;
+		}
+	}
+	if (tap & CONTROL_UP)
+	{
+		switch (curButton)
+		{
+			case ButtonId::HamSandwich:
+				curButton = ButtonId::HamumuWebsite;
+				break;
+			case ButtonId::LoonyChat:
+				curButton = ButtonId::HamSandwich;
+				break;
+			case ButtonId::SteamWorkshop:
+				curButton = ButtonId::LoonyChat;
+				break;
+			case ButtonId::Exit:
+				curButton = SteamManager::Get()->IsSteamEdition() ? ButtonId::SteamWorkshop : ButtonId::LoonyChat;
+				break;
+			case ButtonId::None:
+				curButton = ButtonId::Exit;
+				break;
+			default: break;
+		}
+	}
+
+	// Polling
+	if(webInited)
+		Web_Poll(socketNum);
+
+	if(*lastTime>TIME_PER_FRAME*5)
+		*lastTime=TIME_PER_FRAME*5;
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		Update_Netgame(mode == NET_NORMAL && mousemode==MouseMode::NetGame, msx, msy);
@@ -531,10 +581,25 @@ TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 	switch(mode)
 	{
 		case NET_NORMAL:
-			if(mb)
+			if(mb || (tap & CONTROL_B1))
 			{
 				switch (curButton)
 				{
+					case ButtonId::HamumuWebsite:
+						if (SteamManager::Get()->IsSteamEdition())
+							SteamManager::Get()->OpenURLOverlay("https://store.steampowered.com/developer/Hamumu");
+						else
+							SDL_OpenURL("https://hamumu.com");
+						break;
+					case ButtonId::HamSandwich:
+						SteamManager::Get()->OpenURLOverlay("https://github.com/SpaceManiac/HamSandwich");
+						break;
+					case ButtonId::LoonyChat:
+						SDL_OpenURL("https://discord.gg/BJpDSCK9s4");
+						break;
+					case ButtonId::SteamWorkshop:
+						SteamManager::Get()->OpenURLOverlay("https://steamcommunity.com/app/2547330/workshop/");
+						break;
 					case ButtonId::Upload:
 						if(profile.nameVerified)
 						{
@@ -931,11 +996,14 @@ void RenderNetMenu(MGLDraw *mgl)
 
 	for(i=0;i<NUM_NET_BTNS;i++)
 	{
-		RenderNetButton(btn[i].x,btn[i].y,btn[i].wid,btn[i].txt,mgl, btn[i].id);
+		if (!btn[i].steamOnly || SteamManager::Get()->IsSteamEdition())
+		{
+			RenderNetButton(btn[i].x,btn[i].y,btn[i].wid,btn[i].txt,mgl, btn[i].id);
+		}
 	}
 
-	PrintGlow(20,245,"(Exits the game and opens a web browser)",0,2);
-	PrintGlow(20,305,"(Exits the game and opens a web browser)",0,2);
+	//PrintGlow(20,245,"(Exits the game and opens a web browser)",0,2);
+	//PrintGlow(20,305,"(Exits the game and opens a web browser)",0,2);
 	PrintGlow(20,20,"Please be sure you are connected to the internet before",0,2);
 	PrintGlow(20,40,"using any of these functions.",0,2);
 
