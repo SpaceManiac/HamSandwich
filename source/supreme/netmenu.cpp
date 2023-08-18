@@ -1,4 +1,5 @@
 #include "netmenu.h"
+#include <memory>
 #include "mgldraw.h"
 #include "control.h"
 #include "display.h"
@@ -17,59 +18,68 @@
 #include "scanner.h"
 #include "netgame.h"
 
-#define PBTN_HEIGHT	19
+constexpr int PBTN_HEIGHT = 19;
 
-#define NET_NORMAL	0
-#define NET_UPLOADYES	1
-#define NET_UPLOADING	2
-#define NET_ERROR		5
-#define NET_CANCELUP	6
-#define NET_CANCELNAME	7
-#define NET_UPLOADDONE	8
-#define NET_NAMECHECK	9
-#define NET_BADNAME		10
-#define NET_GETMOTD		11
-#define NET_CANCELMOTD	12
-#define NET_PROFILEUP	13
-#define NET_CANCELPROF	14
+enum Mode : byte
+{
+	NET_NORMAL,
+	NET_UPLOADYES,
+	NET_UPLOADING,
+	NET_ERROR,
+	NET_CANCELUP,
+	NET_CANCELNAME,
+	NET_UPLOADDONE,
+	NET_NAMECHECK,
+	NET_BADNAME,
+	NET_GETMOTD,
+	NET_CANCELMOTD,
+	NET_PROFILEUP,
+	NET_CANCELPROF,
+};
 
-#define BTN_UPLOAD		1
-#define BTN_SCOREPAGE	2
-#define BTN_PROFILE		3
-#define BTN_EXIT		4
-#define BTN_ADDONPAGE	5
+enum class ButtonId
+{
+	None,
+	Exit,
+	HamumuWebsite,
+	HamSandwichGithub,
+	SteamWorkshop,
+	SteamLeaderboards,
+	Yes,
+	No,
+	// ...
+	Upload,
+	Profile,
+	ScorePage,
+	AddonPage,
+};
 
-typedef struct profButton_t
+struct profButton_t
 {
 	int x,y;
 	int wid;
 	char txt[32];
-	byte id;
-} profButton_t;
+	ButtonId id;
+};
 
 static profButton_t btn[]={
-	{20,100,180,"Upload My Scores",BTN_UPLOAD},
-	{20,160,180,"Upload My Profile",BTN_PROFILE},
-	{20,220,180,"View World Records",BTN_SCOREPAGE},
-#ifndef ARCADETOWN
-	{20,280,180,"Look For Add-Ons",BTN_ADDONPAGE},
-#endif
-	{20,444,180,"Exit",BTN_EXIT},
+	{20,100,180,"Upload My Scores", ButtonId::Upload},
+	{20,160,180,"Upload My Profile", ButtonId::Profile},
+	{20,220,180,"View World Records", ButtonId::ScorePage},
+	{20,280,180,"Look For Add-Ons", ButtonId::AddonPage},
+	{20,444,180,"Exit", ButtonId::Exit},
 };
 
 #define SCORE_DOMAIN "hamumu.com"
 
-#ifdef ARCADETOWN
-#define NUM_NET_BTNS	4
-#else
-#define NUM_NET_BTNS	5
-#endif
+constexpr int NUM_NET_BTNS = SDL_arraysize(btn);
 
-static byte mode,webInited;
+static Mode mode;
+static bool webInited;
 static int msx,msy;
 
 static byte *backgd;
-static sprite_set_t *plSpr;
+static std::unique_ptr<sprite_set_t> plSpr;
 static char msBright,msDBright;
 
 static byte times,nameCheckFor;
@@ -79,27 +89,32 @@ static int scoresToUpload,scoresUploaded,scoreLen,numSent,totalUploaded,totalToG
 static int numRecord[3],numTimeRecord[3],numFail,numIllegal;
 static char *uploadList;
 
-static byte pageToDo=0;
-static byte mousemode;
+static ButtonId curButton = ButtonId::None;
+
+enum class MouseMode
+{
+	Idle,
+	Buttons,
+	NetGame,
+};
+static MouseMode mousemode;
 
 void InitNetMenu(MGLDraw *mgl)
 {
-	int i;
-
-	mousemode=0;
-	pageToDo=0;
-	mode=NET_NORMAL;
-	webInited=0;
-	msBright=0;
-	msDBright=1;
-	uploadList=NULL;
+	mousemode = MouseMode::Idle;
+	mode = NET_NORMAL;
+	webInited = false;
+	msBright = 0;
+	msDBright = 1;
+	uploadList = NULL;
+	curButton = ButtonId::None;
 
 	mgl->LoadBMP("graphics/profmenu.bmp");
 	backgd=(byte *)malloc(640*480);
-	plSpr=new sprite_set_t("graphics/pause.jsp");
-
-	for(i=0;i<480;i++)
+	for(int i=0; i<480; i++)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
+
+	plSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
 
 	Init_Netgame();
 }
@@ -107,7 +122,7 @@ void InitNetMenu(MGLDraw *mgl)
 void ExitNetMenu(void)
 {
 	free(backgd);
-	delete plSpr;
+	plSpr.reset();
 	if(webInited)
 		Web_Exit();
 
@@ -304,7 +319,7 @@ void BeginUpload(void)
 		NetError(err);
 		return;
 	}
-	webInited=1;
+	webInited = true;
 
 	if((err=Web_RequestData(GetDisplayMGL(),SCORE_DOMAIN,CreateUploadString(),&socketNum))!=IE_OK)
 	{
@@ -335,7 +350,7 @@ void BeginNameCheck(void)
 		NetError(err);
 		return;
 	}
-	webInited=1;
+	webInited = true;
 
 	sprintf(req,"/supreme_score/namecheck.php?name=%s",profile.name);
 	if((err=Web_RequestData(GetDisplayMGL(),SCORE_DOMAIN,req,&socketNum))!=IE_OK)
@@ -348,7 +363,7 @@ void BeginNameCheck(void)
 void EndNameCheck(void)
 {
 	Web_Exit();
-	webInited=0;
+	webInited = false;
 }
 
 void DealWithSetUploaded(void)
@@ -401,7 +416,7 @@ void BeginMOTDGet(void)
 		NetError(err);
 		return;
 	}
-	webInited=1;
+	webInited = true;
 
 	if((err=Web_RequestData(GetDisplayMGL(),SCORE_DOMAIN,"/supreme_score/supremenews.php",&socketNum))!=IE_OK)
 	{
@@ -413,7 +428,7 @@ void BeginMOTDGet(void)
 void EndMOTDGet(void)
 {
 	Web_Exit();
-	webInited=0;
+	webInited = false;
 }
 
 void BeginProfileUpload(void)
@@ -427,7 +442,7 @@ void BeginProfileUpload(void)
 		NetError(err);
 		return;
 	}
-	webInited=1;
+	webInited = true;
 
 	req=(char *)malloc(1024);
 	CreateProfileString(req);
@@ -443,7 +458,7 @@ void BeginProfileUpload(void)
 void EndProfileUp(void)
 {
 	Web_Exit();
-	webInited=0;
+	webInited = false;
 }
 
 TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
@@ -453,7 +468,20 @@ TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 	char k;
 	byte state;
 
-	mgl->GetMouse(&msx,&msy);
+	int oldMsx = msx, oldMsy = msy;
+	mgl->GetMouse(&msx, &msy);
+
+	if (msx != oldMsx || msy != oldMsy)
+	{
+		curButton = ButtonId::None;
+		for(i=0;i<NUM_NET_BTNS;i++)
+		{
+			if(PointInRect(msx,msy,btn[i].x,btn[i].y,btn[i].x+btn[i].wid,btn[i].y+PBTN_HEIGHT))
+			{
+				curButton = btn[i].id;
+			}
+		}
+	}
 
 	if(*lastTime>TIME_PER_FRAME*5)
 		*lastTime=TIME_PER_FRAME*5;
@@ -463,43 +491,32 @@ TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 	if(webInited)
 		Web_Poll(socketNum);
 
-	if(mousemode==0)	// not locked into either buttons or game right now
+	if(mousemode == MouseMode::Idle)	// not locked into either buttons or game right now
 	{
 		mb=mgl->MouseTap();
 		if(mb)
 		{
-			for(i=0;i<NUM_NET_BTNS;i++)
-			{
-				if(PointInRect(msx,msy,btn[i].x,btn[i].y,btn[i].x+btn[i].wid,btn[i].y+PBTN_HEIGHT))
-					mousemode=1;	// in buttons-only mode
-			}
-			if(mousemode==0 && mode==NET_NORMAL)
-				mousemode=2;	// game-only mode
+			if (curButton != ButtonId::None)
+				mousemode = MouseMode::Buttons;	// in buttons-only mode
+
+			if(mousemode == MouseMode::Idle && mode==NET_NORMAL)
+				mousemode = MouseMode::NetGame;	// game-only mode
 			else
-				mousemode=1;
+				mousemode = MouseMode::Buttons;
 		}
 	}
 	else
 	{
 		mb=mgl->MouseDown();
 		if(!mb)
-			mousemode=0;
+			mousemode = MouseMode::Idle;
 		else
-			mb=0;
+			mb = 0;
 	}
 
 	while(*lastTime>=TIME_PER_FRAME)
 	{
-		if(mode==NET_NORMAL)
-		{
-			if(mousemode==2)
-				Update_Netgame(1,msx,msy);
-			else
-				Update_Netgame(0,msx,msy);
-
-		}
-		else
-			Update_Netgame(0,msx,msy);
+		Update_Netgame(mode == NET_NORMAL && mousemode==MouseMode::NetGame, msx, msy);
 
 		msBright+=msDBright;
 		if(msBright>10)
@@ -516,53 +533,43 @@ TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 		case NET_NORMAL:
 			if(mb)
 			{
-				for(i=0;i<NUM_NET_BTNS;i++)
+				switch (curButton)
 				{
-					if(PointInRect(msx,msy,btn[i].x,btn[i].y,btn[i].x+btn[i].wid,btn[i].y+PBTN_HEIGHT))
-					{
-						MakeNormalSound(SND_MENUSELECT);
-						switch(btn[i].id)
+					case ButtonId::Upload:
+						if(profile.nameVerified)
 						{
-							case BTN_UPLOAD:
-								if(profile.nameVerified)
-								{
-									times=0;
-									BeginUpload();
-								}
-								else
-								{
-									nameCheckFor=NET_UPLOADING;
-									BeginNameCheck();
-								}
-								break;
-							case BTN_PROFILE:
-								if(profile.nameVerified)
-								{
-									BeginProfileUpload();
-								}
-								else
-								{
-									nameCheckFor=NET_PROFILEUP;
-									BeginNameCheck();
-								}
-								break;
-							case BTN_SCOREPAGE:
-								//mode=NET_GETMOTD;
-								//BeginMOTDGet();
-								SDL_OpenURL("http://hamumu.com/scores.php");
-								CO_RETURN 1;
-								break;
-							case BTN_ADDONPAGE:
-								//mode=NET_GETMOTD;
-								//BeginMOTDGet();
-								SDL_OpenURL("http://hamumu.com/addon.php");
-								CO_RETURN 1;
-								break;
-							case BTN_EXIT:
-								CO_RETURN 1;
-								break;
+							times=0;
+							BeginUpload();
 						}
-					}
+						else
+						{
+							nameCheckFor=NET_UPLOADING;
+							BeginNameCheck();
+						}
+						break;
+					case ButtonId::Profile:
+						if(profile.nameVerified)
+						{
+							BeginProfileUpload();
+						}
+						else
+						{
+							nameCheckFor=NET_PROFILEUP;
+							BeginNameCheck();
+						}
+						break;
+					case ButtonId::ScorePage:
+						SDL_OpenURL("http://hamumu.com/scores.php");
+						CO_RETURN 1;
+						break;
+					case ButtonId::AddonPage:
+						SDL_OpenURL("http://hamumu.com/addon.php");
+						CO_RETURN 1;
+						break;
+					case ButtonId::Exit:
+						CO_RETURN 1;
+						break;
+					default: break;
 				}
 			}
 			if(k==27)
@@ -598,7 +605,7 @@ TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 				if(mode==NET_CANCELUP || mode==NET_CANCELNAME || mode==NET_CANCELMOTD || mode==NET_CANCELPROF)
 				{
 					Web_Exit();
-					webInited=0;
+					webInited = false;
 					mode=NET_NORMAL;
 					SaveHiScores();
 				}
@@ -657,13 +664,13 @@ TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 					{
 						times=1;
 						Web_Exit();
-						webInited=0;
+						webInited = false;
 						BeginUpload();
 					}
 					else
 					{
 						Web_Exit();
-						webInited=0;
+						webInited = false;
 						SaveHiScores();
 						mode=NET_UPLOADDONE;
 					}
@@ -818,9 +825,9 @@ TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 	CO_RETURN 0;
 }
 
-void RenderNetButton(int x,int y,int wid,const char *txt,MGLDraw *mgl)
+void RenderNetButton(int x, int y, int wid, const char *txt, MGLDraw *mgl, ButtonId buttonId)
 {
-	if(PointInRect(msx,msy,x,y,x+wid,y+PBTN_HEIGHT))
+	if (curButton == buttonId)
 	{
 		mgl->Box(x,y,x+wid,y+PBTN_HEIGHT,32+31);
 		mgl->FillBox(x+1,y+1,x+wid-1,y+PBTN_HEIGHT-1,32+8);
@@ -874,9 +881,9 @@ void RenderUpload(MGLDraw *mgl)
 	}
 
 	if(mode==NET_UPLOADDONE)
-		RenderNetButton(110,370,130,"Okay!",mgl);
+		RenderNetButton(110,370,130,"Okay!",mgl,ButtonId::Yes);
 	else
-		RenderNetButton(110,370,130,"Cancel Upload",mgl);
+		RenderNetButton(110,370,130,"Cancel Upload",mgl,ButtonId::No);
 }
 
 void RenderNameCheck(MGLDraw *mgl)
@@ -887,7 +894,7 @@ void RenderNameCheck(MGLDraw *mgl)
 
 	PrintGlow(102,102,"Verifying your profile name...",0,2);
 
-	RenderNetButton(110,370,130,"Cancel",mgl);
+	RenderNetButton(110,370,130,"Cancel",mgl,ButtonId::No);
 }
 
 void RenderMOTDGet(MGLDraw *mgl)
@@ -898,7 +905,7 @@ void RenderMOTDGet(MGLDraw *mgl)
 
 	PrintGlow(102,102,"Downloading latest news...",0,2);
 
-	RenderNetButton(110,370,130,"Cancel",mgl);
+	RenderNetButton(110,370,130,"Cancel",mgl,ButtonId::No);
 }
 
 void RenderProfileUp(MGLDraw *mgl)
@@ -909,7 +916,7 @@ void RenderProfileUp(MGLDraw *mgl)
 
 	PrintGlow(102,102,"Uploading your profile...",0,2);
 
-	RenderNetButton(110,370,130,"Cancel",mgl);
+	RenderNetButton(110,370,130,"Cancel",mgl,ButtonId::No);
 }
 
 void RenderNetMenu(MGLDraw *mgl)
@@ -924,13 +931,11 @@ void RenderNetMenu(MGLDraw *mgl)
 
 	for(i=0;i<NUM_NET_BTNS;i++)
 	{
-		RenderNetButton(btn[i].x,btn[i].y,btn[i].wid,btn[i].txt,mgl);
+		RenderNetButton(btn[i].x,btn[i].y,btn[i].wid,btn[i].txt,mgl, btn[i].id);
 	}
 
 	PrintGlow(20,245,"(Exits the game and opens a web browser)",0,2);
-#ifndef ARCADETOWN
 	PrintGlow(20,305,"(Exits the game and opens a web browser)",0,2);
-#endif
 	PrintGlow(20,20,"Please be sure you are connected to the internet before",0,2);
 	PrintGlow(20,40,"using any of these functions.",0,2);
 
