@@ -1,12 +1,18 @@
+#define __STDC_FORMAT_MACROS
 #include "steam.h"
 #include <memory>
+#include <SDL_misc.h>
+
+void SteamManager::OpenURLOverlay(const char *url)
+{
+	(void)SDL_OpenURL(url);
+}
 
 #ifdef HAS_STEAM_API
 #include <steam/steam_api.h>
 #include <vector>
 #include <string>
 #include <map>
-#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #include "appdata.h"
 #include "vanilla_extract.h"
@@ -136,9 +142,19 @@ public:
 		}
 	}
 
+	bool IsSteamEdition() override
+	{
+		return true;
+	}
+
 	const char* DescribeEdition() override
 	{
 		return "Steam edition";
+	}
+
+	void OpenURLOverlay(const char *url) override
+	{
+		SteamFriends()->ActivateGameOverlayToWebPage(url);
 	}
 
 	// ------------------------------------------------------------------------

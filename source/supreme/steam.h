@@ -13,11 +13,14 @@ public:
 
 	// Useful stuff
 	virtual void Update() {}
+	virtual bool IsSteamEdition() { return false; }
 	virtual const char* DescribeEdition() { return ""; }
 	virtual void ProfileReady() {}
 	virtual void CompleteGoal(int goal) {}
 
 	virtual bool CanUploadToWorkshop() { return false; }
+
+	virtual void OpenURLOverlay(const char* url);
 };
 
 #endif
