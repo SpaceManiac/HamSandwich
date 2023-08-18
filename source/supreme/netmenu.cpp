@@ -17,6 +17,7 @@
 #include "nameentry.h"
 #include "scanner.h"
 #include "netgame.h"
+#include "openurl.h"
 #include "steam.h"
 
 constexpr int PBTN_HEIGHT = 19;

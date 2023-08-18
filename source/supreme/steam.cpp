@@ -1,7 +1,7 @@
 #define __STDC_FORMAT_MACROS
 #include "steam.h"
 #include <memory>
-#include <SDL_misc.h>
+#include "openurl.h"
 
 void SteamManager::OpenURLOverlay(const char *url)
 {
