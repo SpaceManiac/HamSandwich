@@ -114,7 +114,7 @@ static Mount init_vfs_spec(const char* what, const char* mountpoint, const char*
 	}
 #ifdef __ANDROID__
 	else if (!strcmp(kind, "android")) {
-		return { vanilla::open_android(param), mountpoint, vanilla::VfsSourceKind::BaseGame };
+		return { vanilla::open_android(param), mountpoint, { vanilla::VfsSourceKind::BaseGame } };
 	}
 #endif
 	else {
