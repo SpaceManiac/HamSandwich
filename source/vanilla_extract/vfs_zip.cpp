@@ -94,7 +94,7 @@ class ZipVfs : public Vfs
 	std::vector<unz64_file_pos> files;
 	vanilla::Archive archive;
 public:
-	ZipVfs(owned::SDL_RWops rw)
+	explicit ZipVfs(owned::SDL_RWops rw)
 	{
 		zlib_filefunc64_def sdl_zlib_io =
 		{

@@ -14,7 +14,7 @@ class StdioVfs : public vanilla::WriteVfs
 	std::string prefix;
 	owned::FILE open_stdio_internal(const char* filename, const char* mode, bool write);
 public:
-	StdioVfs(std::string&& prefix) : prefix(prefix) {}
+	explicit StdioVfs(std::string&& prefix) : prefix(prefix) {}
 	owned::FILE open_stdio(const char* filename);
 	owned::SDL_RWops open_sdl(const char* filename);
 	owned::FILE open_write_stdio(const char* filename);

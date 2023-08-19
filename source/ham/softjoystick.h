@@ -30,7 +30,7 @@ class SoftJoystick {
 	void recalculate_state();
 
 public:
-	SoftJoystick(MGLDraw* mgl);
+	explicit SoftJoystick(MGLDraw* mgl);
 
 	void update(MGLDraw *mgl, float scale);
 	void render(SDL_Renderer* renderer);

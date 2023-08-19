@@ -70,7 +70,7 @@ class Save final
 	owned::SDL_RWops stream;
 	SdlRwStream output;
 public:
-	Save(const char* fname);
+	explicit Save(const char* fname);
 	~Save();
 
 	void header(string_view author, string_view name, string_view app);
@@ -82,7 +82,7 @@ class Load final
 	owned::SDL_RWops stream;
 	SdlRwStream input;
 public:
-	Load(const char* fname);
+	explicit Load(const char* fname);
 	~Load();
 
 	int version();

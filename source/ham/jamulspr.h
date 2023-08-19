@@ -14,7 +14,7 @@ class sprite_t
 {
 public:
 	sprite_t();
-	sprite_t(byte *info);
+	explicit sprite_t(byte *info);
 
 	bool LoadData(SDL_RWops *f);
 	bool SaveData(FILE *f) const;
@@ -45,7 +45,7 @@ class sprite_set_t
 {
 public:
 	sprite_set_t();
-	sprite_set_t(const char *fname);
+	explicit sprite_set_t(const char *fname);
 
 	bool Save(const char *fname) const;
 	bool Load(const char *fname);
