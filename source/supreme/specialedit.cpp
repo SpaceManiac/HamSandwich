@@ -1491,12 +1491,18 @@ static void SetupTriggerButtons(int t,int y)
 			sprintf(s,"%0.2f",(float)trigger.value2/30.0f);
 			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+3+100*t,0,360,y+17,60,14,s,Float3Click);
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+4+100*t,0,424,y+17,1,1,"seconds elapse",NULL);
+			sprintf(s, "%d frames", trigger.value);
+			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+5+100*t,0,190,y,1,1,s,NULL);
+			sprintf(s, "%d frames", trigger.value2);
+			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+6+100*t,0,360,y,1,1,s,NULL);
 			break;
 		case TRG_DELAY:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Trigger continuously after",NULL);
 			sprintf(s,"%0.2f",(float)trigger.value/30.0f);
 			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,250,y+17,60,14,s,FloatClick);
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+2+100*t,0,314,y+17,1,1,"seconds have passed",NULL);
+			sprintf(s, "%d frames", trigger.value);
+			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+3+100*t,0,250,y,1,1,s,NULL);
 			break;
 		case TRG_MONSTER:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If there are",NULL);
@@ -2521,17 +2527,17 @@ void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
 					}
 					else if(mode==SMODE_FVALUE)
 					{
-						spcl.trigger[curTrig].value=(short)(atof(GetText())*30.0f);
+						spcl.trigger[curTrig].value=(short)round(atof(GetText())*30.0f);
 						SetupTriggerButtons(curTrig-trgStart,(curTrig-trgStart)*38+30);
 					}
 					else if(mode==SMODE_FVALUE2)
 					{
-						spcl.trigger[curTrig].value=(short)(atof(GetText())*(float)FIXAMT);
+						spcl.trigger[curTrig].value=(short)round(atof(GetText())*(float)FIXAMT);
 						SetupTriggerButtons(curTrig-trgStart,(curTrig-trgStart)*38+30);
 					}
 					else if(mode==SMODE_FVALUE3)
 					{
-						spcl.trigger[curTrig].value2=(short)(atof(GetText())*30.0f);
+						spcl.trigger[curTrig].value2=(short)round(atof(GetText())*30.0f);
 						SetupTriggerButtons(curTrig-trgStart,(curTrig-trgStart)*38+30);
 					}
 					else if(mode==SMODE_USES)
