@@ -693,13 +693,13 @@ void EditorDraw(void)
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			ToolShowTarget();
-			Print(3,466,"Click on a location!",-32,1);
-			Print(1,464,"Click on a location!",-32,1);
-			Print(2,465,"Click on a location!",0,1);
+			Print(3,editmgl->GetHeight()-480+466,"Click on a location!",-32,1);
+			Print(1,editmgl->GetHeight()-480+464,"Click on a location!",-32,1);
+			Print(2,editmgl->GetHeight()-480+465,"Click on a location!",0,1);
 			sprintf(s,"(%03d,%03d)",tileX,tileY);
-			Print(580,466,s,-32,1);
-			Print(578,464,s,-32,1);
-			Print(579,465,s,0,1);
+			Print(editmgl->GetWidth()-640+580,editmgl->GetHeight()-480+466,s,-32,1);
+			Print(editmgl->GetWidth()-640+578,editmgl->GetHeight()-480+464,s,-32,1);
+			Print(editmgl->GetWidth()-640+579,editmgl->GetHeight()-480+465,s,0,1);
 			break;
 		case EDITMODE_PICKSPOT2:
 			ApplyZoom();
@@ -712,13 +712,13 @@ void EditorDraw(void)
 			rectX2=tileX+pickerWid;
 			rectY2=tileY+pickerHei;
 			EditorShowRect();
-			Print(3,466,"Click on a location!",-32,1);
-			Print(1,464,"Click on a location!",-32,1);
-			Print(2,465,"Click on a location!",0,1);
+			Print(3,editmgl->GetHeight()-480+466,"Click on a location!",-32,1);
+			Print(1,editmgl->GetHeight()-480+464,"Click on a location!",-32,1);
+			Print(2,editmgl->GetHeight()-480+465,"Click on a location!",0,1);
 			sprintf(s,"(%03d,%03d)",tileX,tileY);
-			Print(580,466,s,-32,1);
-			Print(578,464,s,-32,1);
-			Print(579,465,s,0,1);
+			Print(editmgl->GetWidth()-640+580,editmgl->GetHeight()-480+466,s,-32,1);
+			Print(editmgl->GetWidth()-640+578,editmgl->GetHeight()-480+464,s,-32,1);
+			Print(editmgl->GetWidth()-640+579,editmgl->GetHeight()-480+465,s,0,1);
 			break;
 		case EDITMODE_PICKRSPOT:
 			ApplyZoom();
@@ -727,13 +727,13 @@ void EditorDraw(void)
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			ToolShowTarget();
-			Print(3,466,"Click a corner of your rectangle!",-32,1);
-			Print(1,464,"Click a corner of your rectangle!",-32,1);
-			Print(2,465,"Click a corner of your rectangle!",0,1);
+			Print(3,editmgl->GetHeight()-480+466,"Click a corner of your rectangle!",-32,1);
+			Print(1,editmgl->GetHeight()-480+464,"Click a corner of your rectangle!",-32,1);
+			Print(2,editmgl->GetHeight()-480+465,"Click a corner of your rectangle!",0,1);
 			sprintf(s,"(%03d,%03d)",tileX,tileY);
-			Print(580,466,s,-32,1);
-			Print(578,464,s,-32,1);
-			Print(579,465,s,0,1);
+			Print(editmgl->GetWidth()-640+580,editmgl->GetHeight()-480+466,s,-32,1);
+			Print(editmgl->GetWidth()-640+578,editmgl->GetHeight()-480+464,s,-32,1);
+			Print(editmgl->GetWidth()-640+579,editmgl->GetHeight()-480+465,s,0,1);
 			break;
 		case EDITMODE_PICKRSPOT2:
 			ApplyZoom();
@@ -742,13 +742,13 @@ void EditorDraw(void)
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			EditorShowRect();
-			Print(3,466,"Click the other corner of your rectangle!",-32,1);
-			Print(1,464,"Click the other corner of your rectangle!",-32,1);
-			Print(2,465,"Click the other corner of your rectangle!",0,1);
+			Print(3,editmgl->GetHeight()-480+466,"Click the other corner of your rectangle!",-32,1);
+			Print(1,editmgl->GetHeight()-480+464,"Click the other corner of your rectangle!",-32,1);
+			Print(2,editmgl->GetHeight()-480+465,"Click the other corner of your rectangle!",0,1);
 			sprintf(s,"(%03d,%03d)",tileX,tileY);
-			Print(580,466,s,-32,1);
-			Print(578,464,s,-32,1);
-			Print(579,465,s,0,1);
+			Print(editmgl->GetWidth()-640+580,editmgl->GetHeight()-480+466,s,-32,1);
+			Print(editmgl->GetWidth()-640+578,editmgl->GetHeight()-480+464,s,-32,1);
+			Print(editmgl->GetWidth()-640+579,editmgl->GetHeight()-480+465,s,0,1);
 			break;
 		case EDITMODE_HELP:
 			editmgl->ResizeBuffer(SCRWID, SCRHEI);
