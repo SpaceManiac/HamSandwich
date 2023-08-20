@@ -118,6 +118,7 @@ byte InitEditor(void)
 	InitSpecials(world.map[0]->special);
 	StopSong();
 	SetPlayerStart(-1,-1);
+	InitStars();
 	return 1;
 }
 

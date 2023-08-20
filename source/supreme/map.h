@@ -159,6 +159,7 @@ class Map
 		special_t   special[MAX_SPECIAL];
 	private:
 		void LOSPoints(int x,int y,int curx,int cury,int *p1x,int *p1y,int *p2x,int *p2y);
+		void RenderStars(int camX, int camY);
 };
 
 byte PlaceItemCallback(int x,int y,int cx,int cy,int value,Map *map);
@@ -176,5 +177,7 @@ void ZapWall(Map *map,int x,int y,word newFloor);
 void SpecialShootCheck(Map *map,int x,int y);
 void SpecialAnytimeCheck(Map *map);
 void SpecialKillCheck(Map *map,byte type);
+
+void InitStars();
 
 #endif

@@ -304,7 +304,7 @@ void PlotStar(int x,int y,byte col,byte tx,byte ty,word tileNum)
 
 	if(tiles[tileNum][tx+ty*TILE_WIDTH]==0)
 	{
-		dst=tileMGL->GetScreen()+x+y*SCRWID;
+		dst=tileMGL->GetScreen()+x+y*tileMGL->GetWidth();
 		*dst=col;
 	}
 }

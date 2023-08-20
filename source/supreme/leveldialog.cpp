@@ -96,6 +96,8 @@ static void FlagClick(int id)
 		return;	// can't unhub level zero
 
 	world->map[mapNum]->flags^=flagNum[id-ID_FLAG];
+	if (flagNum[id-ID_FLAG] == MAP_STARS)
+		InitStars();
 	LevelDialogButtons();
 }
 

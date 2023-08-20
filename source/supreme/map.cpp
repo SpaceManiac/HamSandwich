@@ -289,16 +289,20 @@ byte Map::Save(FILE *f)
 	return 1;
 }
 
+void InitStars()
+{
+	for (int i=0; i<NUM_STARS; i++)
+	{
+		starX[i]=Random(SCRWID);
+		starY[i]=Random(SCRHEI);
+		starCol[i]=(byte)Random(32);
+	}
+}
+
 void Map::Init(world_t *wrld)
 {
 	int i;
-
-	for(i=0;i<NUM_STARS;i++)
-	{
-		starX[i]=Random(GetDisplayMGL()->GetWidth());
-		starY[i]=Random(GetDisplayMGL()->GetHeight());
-		starCol[i]=(byte)Random(32);
-	}
+	InitStars();
 
 	for(i=0;i<width*height;i++)
 	{
@@ -1050,6 +1054,31 @@ int Map::ItemCountInRect(byte itm,int x,int y,int x2,int y2)
 	return cnt;
 }
 
+void Map::RenderStars(int camX, int camY)
+{
+	int w = GetDisplayMGL()->GetWidth(), h = GetDisplayMGL()->GetHeight();
+	for(int i=0; i<NUM_STARS; i++)
+	{
+		for (int x = starX[i]; x < w; x += SCRWID)
+		{
+			for (int y = starY[i]; y < h; y += SCRHEI)
+			{
+				auto dtx = div(x + camX, TILE_WIDTH);
+				auto dty = div(y + camY, TILE_HEIGHT);
+
+				if((x+camX)<0 || (y+camY)<0 || dtx.quot>=width || dty.quot>=height)
+					continue;
+
+				mapTile_t *m = &map[dtx.quot+dty.quot*width];
+				if(m->wall)
+					continue;
+
+				PlotStar(x,y,starCol[i],dtx.rem,dty.rem,m->floor);
+			}
+		}
+	}
+}
+
 void Map::Render(world_t *world,int camX,int camY,byte flags)
 {
 	int i,j;
@@ -1258,22 +1287,7 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 
 	if(this->flags&MAP_STARS)
 	{
-		int tx,ty;
-
-		for(i=0;i<NUM_STARS;i++)
-		{
-			tx=(starX[i]+camX)/TILE_WIDTH;
-			ty=(starY[i]+camY)/TILE_HEIGHT;
-
-			if(tx<0 || ty<0 || tx>=width || ty>=height)
-				continue;
-
-			m=&map[tx+ty*width];
-			if(m->wall)
-				continue;
-
-			PlotStar(starX[i],starY[i],starCol[i],(starX[i]+camX-tx*TILE_WIDTH),(starY[i]+camY-ty*TILE_HEIGHT),m->floor);
-		}
+		RenderStars(camX, camY);
 	}
 }
 
@@ -1503,22 +1517,7 @@ void Map::RenderEdit(world_t *world,int camX,int camY,byte flags)
 
 	if(this->flags&MAP_STARS)
 	{
-		int tx,ty;
-
-		for(i=0;i<NUM_STARS;i++)
-		{
-			tx=(starX[i]+camX)/TILE_WIDTH;
-			ty=(starY[i]+camY)/TILE_HEIGHT;
-
-			if(tx<0 || ty<0 || tx>=width || ty>=height)
-				continue;
-
-			m=&map[tx+ty*width];
-			if(m->wall)
-				continue;
-
-			PlotStar(starX[i],starY[i],starCol[i],(starX[i]+camX-tx*TILE_WIDTH),(starY[i]+camY-ty*TILE_HEIGHT),m->floor);
-		}
+		RenderStars(camX, camY);
 	}
 }
 
