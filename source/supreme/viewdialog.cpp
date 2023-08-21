@@ -131,7 +131,7 @@ void RenderViewDialog(int msx,int msy,MGLDraw *mgl)
 	sprintf(s,"T#%03d (%03d,%03d)",t,x,y);
 
 	Print(DLG_X+190,DLG_Y+2,s,0,1);
-	PrintSpecialComment(DLG_X+3,DLG_Y2-13,x,y);
+	PrintSpecialComment(DLG_X+3,DLG_Y-15,x,y);
 }
 
 byte ViewDialogClick(int msx,int msy)
