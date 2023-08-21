@@ -100,8 +100,13 @@ void PlaySongForce(const char *fname)
 
 	if(curSongName != fname)
 		strcpy(curSongName,fname);
-	sprintf(fullname,"music/%s",fname);
-	PlaySongFile(fullname);
+	if (fname[0])
+	{
+		sprintf(fullname,"music/%s",fname);
+		PlaySongFile(fullname);
+	}
+	else
+		StopSong();
 }
 
 const char *CurSongTitle(void)
