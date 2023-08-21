@@ -44,6 +44,8 @@ namespace
 	int lastPick;
 
 	byte zoom = 1;
+
+	dword oldGamepad = ~0;
 }
 
 byte InitEditor(void)
@@ -99,6 +101,7 @@ byte InitEditor(void)
 	editmgl->MouseTap();
 	editmgl->RMouseTap();
 	editmgl->LastKeyPressed();
+	oldGamepad = ~0;
 
 	viewMenu=0;
 	editMenu=1;
@@ -832,14 +835,13 @@ void EditorDraw(void)
 
 static TASK(void) HandleKeyPresses(void)
 {
-	char k;
-	byte s;
-	int x,y;
+	int x, y;
 
-	s=LastScanCode();
-	k=editmgl->LastKeyPressed();
+	byte s = LastScanCode();
+	char k = editmgl->LastKeyPressed();
 	if(k)
-		lastKey=k;
+		lastKey = k;
+	dword gamepad = GetGamepadButtons();
 
 	switch(s)
 	{
@@ -993,6 +995,12 @@ static TASK(void) HandleKeyPresses(void)
 				PickTool(k-'1');
 				break;
 		}
+
+		if ((gamepad & ~oldGamepad) & (1 << SDL_CONTROLLER_BUTTON_BACK))
+		{
+			InitYesNoDialog("Exit the editor?", "Yes", "No");
+			editMode = EDITMODE_EXIT;
+		}
 	}
 	else if(editMode==EDITMODE_PICKSPOT || editMode==EDITMODE_PICKRSPOT || editMode==EDITMODE_PICKRSPOT2 ||
 		editMode==EDITMODE_PICKSPOT2)
@@ -1026,6 +1034,11 @@ static TASK(void) HandleKeyPresses(void)
 	}
 	else if(editMode==EDITMODE_EXIT)
 	{
+		if((gamepad & ~oldGamepad & (1 << SDL_CONTROLLER_BUTTON_BACK)))
+		{
+			YesNoDialogKey('y');
+		}
+
 		if(k)
 		{
 			YesNoDialogKey(lastKey);
@@ -1083,11 +1096,12 @@ static TASK(void) HandleKeyPresses(void)
 	}
 	else if(editMode==EDITMODE_HELP)
 	{
-		if(!EditHelpKey(lastKey))
+		if(!EditHelpKey(lastKey) || (gamepad & ~oldGamepad & (1 << SDL_CONTROLLER_BUTTON_BACK)))
 		{
 			ExitEditHelp();
 			SetEditMode(EDITMODE_EDIT);
 		}
+
 		lastKey=0;
 	}
 	else if (editMode == EDITMODE_EXPORT)
@@ -1108,6 +1122,8 @@ static TASK(void) HandleKeyPresses(void)
 				break;
 		}
 	}
+
+	oldGamepad = gamepad;
 }
 
 void SetEditMode(byte m)
