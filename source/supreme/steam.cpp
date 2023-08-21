@@ -37,10 +37,9 @@ std::map<std::string, int32_t> GetStats()
 		}
 	}
 
-	int scanned = 0, scanTotal = 0;
+	int scanned = 0;
 	for (int i = 0; i < NUM_PROFILE_MONSTERS; i++)
 	{
-		if (MonsterTheme(i)) ++scanTotal;
 		if (MonsterTheme(i) && profile.progress.scanned[i])
 		{
 			++scanned;
@@ -71,6 +70,7 @@ std::map<std::string, int32_t> GetStats()
 		{ "distinctKills", distinctKills },
 		// GoalTallyPage
 		{ "totalCoins", profile.progress.totalCoins },
+		{ "coinsInHand", profile.progress.totalCoins - profile.progress.coinsSpent },
 		// GoalPurchase
 		{ "purchasedWorlds", NumOfTypePurchased(SHOP_WORLD) },
 		{ "purchasedAbilities", NumOfTypePurchased(SHOP_ABILITY) },
