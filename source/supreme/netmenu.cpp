@@ -475,7 +475,7 @@ TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 	int oldMsx = msx, oldMsy = msy;
 	mgl->GetMouse(&msx, &msy);
 	bool mb = mgl->MouseTap();
-	if (mb || (msx != oldMsx || msy != oldMsy))
+	if (mb || msx != oldMsx || msy != oldMsy)
 	{
 		curButton = ButtonId::None;
 		for(int i=0; i<NUM_NET_BTNS; i++)

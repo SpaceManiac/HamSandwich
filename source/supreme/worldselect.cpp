@@ -24,8 +24,8 @@ enum Mode : byte
 	MODE_PICKWORLD,
 	MODE_SCROLL,
 	MODE_MENU,
-	MODE_VERIFY,
-	MODE_VERIFY2,
+	MODE_CONFIRM_ERASE_PROGRESS,
+	MODE_CONFIRM_ERASE_SCORES,
 };
 
 enum class ButtonId
@@ -41,6 +41,9 @@ enum class ButtonId
 	Yes,
 	No,
 	VerifyWorld,
+	SortName,
+	SortAuthor,
+	SortComplete,
 };
 
 constexpr int NAME_X = 20;
@@ -78,6 +81,8 @@ static score_t top3[3];
 static byte level,scoreMode,numScores,noScoresAtAll;
 static world_t tmpWorld;
 static int mouseZ;
+static int oldGamepad = ~0;
+static bool mouseMode = false;
 
 static ButtonId curButton;
 
@@ -423,6 +428,7 @@ TASK(void) InitWorldSelect(MGLDraw *mgl)
 	mouseZ=mgl->mouse_z;
 
 	curButton = ButtonId::WorldList;
+	oldGamepad = ~0;
 }
 
 void ExitWorldSelect(void)
@@ -435,15 +441,86 @@ void ExitWorldSelect(void)
 
 TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 {
-	static byte oldc=255;
-	char c;
+	static byte oldc = ~0;
 	int i;
+
+	int oldMsx = msx, oldMsy = msy;
+	mgl->GetMouse(&msx, &msy);
+	bool mb = mgl->MouseTap();
+	if (mb || msx != oldMsx || msy != oldMsy)
+	{
+		mouseMode = true;
+		curButton = ButtonId::WorldList;
+
+		if (mode == MODE_PICKWORLD)
+		{
+			// clicking on the sort possibilities
+			if (PointInRect(msx,msy,NAME_X,20,AUTH_X-20,37))
+			{
+				curButton = ButtonId::SortName;
+			}
+			else if (PointInRect(msx,msy,AUTH_X,20,PERCENT_X-GetStrLength("Complete",2)-20,37))
+			{
+				curButton = ButtonId::SortAuthor;
+			}
+			else if (PointInRect(msx,msy,PERCENT_X-GetStrLength("Complete",2),20,PERCENT_X+4,37))
+			{
+				curButton = ButtonId::SortComplete;
+			}
+			// play world
+			else if (PointInRect(msx,msy,20,371,20+150,371+WBTN_HEIGHT))
+			{
+				curButton = ButtonId::PlayThisWorld;
+			}
+			// reset world
+			else if (PointInRect(msx,msy,20,395,20+150,395+WBTN_HEIGHT))
+			{
+				curButton = ButtonId::ResetThisWorld;
+			}
+			// reset high scores
+			else if (PointInRect(msx,msy,20,419,20+150,419+WBTN_HEIGHT))
+			{
+				curButton = ButtonId::ResetHighScores;
+			}
+			// exit to menu
+			else if (PointInRect(msx,msy,20,443,20+150,443+WBTN_HEIGHT))
+			{
+				curButton = ButtonId::ExitToMenu;
+			}
+			// hi score buttons
+			else if (PointInRect(msx,msy,180,371,180+150,371+WBTN_HEIGHT) && !list[choice].dimmed)
+			{
+				curButton = ButtonId::RecordScoresTimes;
+			}
+			else if (PointInRect(msx,msy,335,371,335+20,371+WBTN_HEIGHT) && !list[choice].dimmed)
+			{
+				curButton = ButtonId::PrevLevel;
+			}
+			else if (PointInRect(msx,msy,592,371,592+20,371+WBTN_HEIGHT) && !list[choice].dimmed)
+			{
+				curButton = ButtonId::NextLevel;
+			}
+		}
+		else if (mode == MODE_CONFIRM_ERASE_PROGRESS || mode == MODE_CONFIRM_ERASE_SCORES)
+		{
+			if (PointInRect(msx,msy,70,270,70+50,270+WBTN_HEIGHT))
+			{
+				curButton = ButtonId::Yes;
+			}
+			else if (PointInRect(msx,msy,600-30-50,270,600-30-50+50,270+WBTN_HEIGHT))
+			{
+				curButton = ButtonId::No;
+			}
+		}
+	}
+
+	byte c = GetControls() | GetArrows();
+	dword gamepad = GetGamepadButtons();
+	if (gamepad)
+		mouseMode = false;
 
 	if(*lastTime>TIME_PER_FRAME*5)
 		*lastTime=TIME_PER_FRAME*5;
-
-	mgl->GetMouse(&msx,&msy);
-
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		msBright+=msDBright;
@@ -454,8 +531,6 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 		mgl->Process();
 		*lastTime-=TIME_PER_FRAME;
 	}
-
-	c=GetControls()|GetArrows();
 
 	if(mode==MODE_PICKWORLD)
 	{
@@ -476,7 +551,7 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 					}
 					break;
 				case ButtonId::PlayThisWorld:
-					curButton = ButtonId::ExitToMenu;
+					curButton = ButtonId::SortName;
 					break;
 				case ButtonId::ResetThisWorld:
 					curButton = ButtonId::PlayThisWorld;
@@ -516,7 +591,9 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				case ButtonId::ResetHighScores:
 					curButton = ButtonId::ExitToMenu;
 					break;
-				case ButtonId::ExitToMenu:
+				case ButtonId::SortName:
+				case ButtonId::SortAuthor:
+				case ButtonId::SortComplete:
 					curButton = ButtonId::PlayThisWorld;
 					break;
 				default: break;
@@ -540,6 +617,12 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				case ButtonId::PrevLevel:
 					curButton = ButtonId::NextLevel;
 					break;
+				case ButtonId::SortName:
+					curButton = ButtonId::SortAuthor;
+					break;
+				case ButtonId::SortAuthor:
+					curButton = ButtonId::SortComplete;
+					break;
 				default: break;
 			}
 		}
@@ -557,15 +640,24 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				case ButtonId::NextLevel:
 					curButton = ButtonId::PrevLevel;
 					break;
+				case ButtonId::SortAuthor:
+					curButton = ButtonId::SortName;
+					break;
+				case ButtonId::SortComplete:
+					curButton = ButtonId::SortAuthor;
+					break;
 				default: break;
 			}
 		}
 
-		if ((c & ~oldc) & CONTROL_B1)
+		if (mb || ((c & ~oldc) & CONTROL_B1))
 		{
 			switch (curButton)
 			{
 				case ButtonId::WorldList:
+					if (mb)
+						break;
+					[[fallthrough]];
 				case ButtonId::PlayThisWorld:
 					if(list[choice].dimmed)
 						MakeNormalSound(SND_TURRETBZZT);
@@ -575,6 +667,82 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 						CO_RETURN WS_PLAY;
 					}
 					break;
+
+				case ButtonId::SortName:
+					if(sortType==0)
+						sortDir=1-sortDir;
+					else
+					{
+						sortType=0;
+						sortDir=0;
+					}
+					SortWorlds(sortType,sortDir);
+					CalcScrollBar();
+					break;
+				case ButtonId::SortAuthor:
+					if(sortType==1)
+						sortDir=1-sortDir;
+					else
+					{
+						sortType=1;
+						sortDir=0;
+					}
+					SortWorlds(sortType,sortDir);
+					CalcScrollBar();
+					break;
+				case ButtonId::SortComplete:
+					if(sortType==2)
+						sortDir=1-sortDir;
+					else
+					{
+						sortType=2;
+						sortDir=0;
+					}
+					SortWorlds(sortType,sortDir);
+					CalcScrollBar();
+					break;
+
+				case ButtonId::ResetThisWorld:
+					if(list[choice].dimmed)
+						MakeNormalSound(SND_TURRETBZZT);
+					else
+					{
+						mode = MODE_CONFIRM_ERASE_PROGRESS;
+						if (!mouseMode) curButton = ButtonId::No;
+					}
+					break;
+				case ButtonId::ResetHighScores:
+					if(list[choice].dimmed)
+						MakeNormalSound(SND_TURRETBZZT);
+					else
+					{
+						mode = MODE_CONFIRM_ERASE_SCORES;
+						if (!mouseMode) curButton = ButtonId::No;
+					}
+					break;
+				case ButtonId::ExitToMenu:
+					oldc=255;
+					CO_RETURN WS_EXIT;
+					break;
+
+				case ButtonId::RecordScoresTimes:
+					scoreMode=1-scoreMode;
+					noScoresAtAll=0;
+					FetchScores(0);
+					break;
+				case ButtonId::PrevLevel:
+					level--;
+					if(level>=tmpWorld.numMaps)
+						level=tmpWorld.numMaps-1;
+					FetchScores(1);
+					break;
+				case ButtonId::NextLevel:
+					level++;
+					if(level>=tmpWorld.numMaps)
+						level=0;
+					FetchScores(0);
+					break;
+
 				default: break;
 			}
 		}
@@ -588,12 +756,17 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 		}
 
 		byte scan = LastScanCode();
-		if (scan == SDL_SCANCODE_PAGEUP) {
+		if (scan == SDL_SCANCODE_PAGEUP || (gamepad & ~oldGamepad & (1 << SDL_CONTROLLER_BUTTON_LEFTSHOULDER))) {
 			listPos = std::max(listPos - WORLDS_PER_SCREEN, 0);
+			choice = std::max(choice - WORLDS_PER_SCREEN, 0);
 			CalcScrollBar();
-		} else if (scan == SDL_SCANCODE_PAGEDOWN) {
+			MoveToNewWorld();
+		}
+		if (scan == SDL_SCANCODE_PAGEDOWN || (gamepad & ~oldGamepad & (1 << SDL_CONTROLLER_BUTTON_RIGHTSHOULDER))) {
 			listPos = std::min(listPos + WORLDS_PER_SCREEN, (int)list.size() - WORLDS_PER_SCREEN);
+			choice = std::min(choice + WORLDS_PER_SCREEN, (int)list.size() - 1);
 			CalcScrollBar();
+			MoveToNewWorld();
 		}
 #ifdef WORLD_DEBUGGING
 		else if (scan == SDL_SCANCODE_F3)
@@ -621,7 +794,7 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			CalcScrollBar();
 		}
 
-		if((mgl->mouse_b&1) && !(mouseB&1))
+		if(mb)
 		{
 			// clicking on a world
 			for(i=0;i<18;i++)
@@ -648,43 +821,6 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 					}
 				}
 			}
-			// clicking on the sort possibilities
-			if(PointInRect(msx,msy,NAME_X,20,AUTH_X-20,37))
-			{
-				if(sortType==0)
-					sortDir=1-sortDir;
-				else
-				{
-					sortType=0;
-					sortDir=0;
-				}
-				SortWorlds(sortType,sortDir);
-				CalcScrollBar();
-			}
-			if(PointInRect(msx,msy,AUTH_X,20,PERCENT_X-GetStrLength("Complete",2)-20,37))
-			{
-				if(sortType==1)
-					sortDir=1-sortDir;
-				else
-				{
-					sortType=1;
-					sortDir=0;
-				}
-				SortWorlds(sortType,sortDir);
-				CalcScrollBar();
-			}
-			if(PointInRect(msx,msy,PERCENT_X-GetStrLength("Complete",2),20,PERCENT_X+4,37))
-			{
-				if(sortType==2)
-					sortDir=1-sortDir;
-				else
-				{
-					sortType=2;
-					sortDir=0;
-				}
-				SortWorlds(sortType,sortDir);
-				CalcScrollBar();
-			}
 			// scroll bar click
 			if(PointInRect(msx,msy,605,40,620,42+SCROLLBAR_HEIGHT))
 			{
@@ -709,66 +845,6 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 						listPos=0;
 					CalcScrollBar();
 				}
-			}
-
-			// play world
-			if(PointInRect(msx,msy,20,371,20+150,371+WBTN_HEIGHT))
-			{
-				if(list[choice].dimmed)
-					MakeNormalSound(SND_TURRETBZZT);
-				else
-				{
-					oldc=255;
-					CO_RETURN WS_PLAY;
-				}
-			}
-			// reset world
-			else if(PointInRect(msx,msy,20,395,20+150,395+WBTN_HEIGHT))
-			{
-				if(list[choice].dimmed)
-					MakeNormalSound(SND_TURRETBZZT);
-				else
-				{
-					mode=MODE_VERIFY;
-				}
-			}
-			// reset high scores
-			else if(PointInRect(msx,msy,20,419,20+150,419+WBTN_HEIGHT))
-			{
-				if(list[choice].dimmed)
-					MakeNormalSound(SND_TURRETBZZT);
-				else
-				{
-					mode=MODE_VERIFY2;
-				}
-			}
-			// exit to menu
-			else if(PointInRect(msx,msy,20,443,20+150,443+WBTN_HEIGHT))
-			{
-				oldc=255;
-				CO_RETURN WS_EXIT;
-			}
-
-			// hi score buttons
-			if(PointInRect(msx,msy,180,371,180+150,371+WBTN_HEIGHT) && !list[choice].dimmed)
-			{
-				scoreMode=1-scoreMode;
-				noScoresAtAll=0;
-				FetchScores(0);
-			}
-			else if(PointInRect(msx,msy,335,371,335+20,371+WBTN_HEIGHT) && !list[choice].dimmed)
-			{
-				level--;
-				if(level>=tmpWorld.numMaps)
-					level=tmpWorld.numMaps-1;
-				FetchScores(1);
-			}
-			else if(PointInRect(msx,msy,592,371,592+20,371+WBTN_HEIGHT) && !list[choice].dimmed)
-			{
-				level++;
-				if(level>=tmpWorld.numMaps)
-					level=0;
-				FetchScores(0);
 			}
 
 #ifdef WORLD_DEBUGGING
@@ -824,33 +900,56 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			ReverseCalcScrollBar();
 		}
 	}
-	else if(mode==MODE_VERIFY || mode==MODE_VERIFY2)
+	else if(mode==MODE_CONFIRM_ERASE_PROGRESS || mode==MODE_CONFIRM_ERASE_SCORES)
 	{
-		if((mgl->mouse_b&1) && !(mouseB&1))
+		if (c & ~oldc & (CONTROL_LF | CONTROL_RT))
 		{
-			if(PointInRect(msx,msy,70,270,70+50,270+WBTN_HEIGHT))
+			switch (curButton)
 			{
-				MakeNormalSound(SND_MENUSELECT);
-				if(mode==MODE_VERIFY)
-					EraseWorldProgress(list[choice].fname);
-				else
-					EraseHighScores(&tmpWorld);
-				ExitWorldSelect();
-				AWAIT InitWorldSelect(mgl);
+				case ButtonId::Yes:
+				default:
+					curButton = ButtonId::No;
+					break;
+				case ButtonId::No:
+					curButton = ButtonId::Yes;
+					break;
 			}
-			else if(PointInRect(msx,msy,600-30-50,270,600-30-50+50,270+WBTN_HEIGHT))
+		}
+
+		if (mb || (c & ~oldc & CONTROL_B1))
+		{
+			switch (curButton)
 			{
-				MakeNormalSound(SND_MENUSELECT);
-				mode=MODE_PICKWORLD;
+				case ButtonId::Yes:
+					MakeNormalSound(SND_MENUSELECT);
+					if(mode==MODE_CONFIRM_ERASE_PROGRESS)
+						EraseWorldProgress(list[choice].fname);
+					else
+						EraseHighScores(&tmpWorld);
+					ExitWorldSelect();
+					AWAIT InitWorldSelect(mgl);
+					break;
+				case ButtonId::No:
+					MakeNormalSound(SND_MENUSELECT);
+					mode = MODE_PICKWORLD;
+					curButton = ButtonId::WorldList;
+					break;
+				default: break;
 			}
+		}
+
+		if ((c & ~oldc & CONTROL_B2) || (gamepad & ~oldGamepad & (1 << SDL_CONTROLLER_BUTTON_BACK)))
+		{
+			MakeNormalSound(SND_MENUSELECT);
+			mode = MODE_PICKWORLD;
+			curButton = ButtonId::WorldList;
 		}
 	}
 
-	oldc=c;
+	oldc = c;
+	oldGamepad = gamepad;
 
-	c=mgl->LastKeyPressed();
-
-	if(c==27)
+	if(mgl->LastKeyPressed() == 27)
 	{
 		oldc=255;
 		CO_RETURN WS_EXIT;
@@ -862,7 +961,7 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 
 void RenderWorldSelectButton(int x,int y,int wid,const char *txt,MGLDraw *mgl, ButtonId id)
 {
-	if(PointInRect(msx,msy,x,y,x+wid,y+WBTN_HEIGHT) || curButton == id)
+	if(curButton == id)
 	{
 		mgl->Box(x,y,x+wid,y+WBTN_HEIGHT,32+31);
 		mgl->FillBox(x+1,y+1,x+wid-1,y+WBTN_HEIGHT-1,32+8);
@@ -881,6 +980,13 @@ void RenderWorldSelect(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
 
+	if (curButton == ButtonId::SortName)
+		mgl->FillBox(NAME_X,20,AUTH_X-20,37,32+8);
+	if (curButton == ButtonId::SortAuthor)
+		mgl->FillBox(AUTH_X,20,PERCENT_X-GetStrLength("Complete",2)-20,37,32+8);
+	if (curButton == ButtonId::SortComplete)
+		mgl->FillBox(PERCENT_X-GetStrLength("Complete",2),20,PERCENT_X+4,37,32+8);
+
 	PrintGlow(NAME_X,20,"World",6,2);
 	PrintGlow(AUTH_X,20,"Author",6,2);
 	PrintGlow(PERCENT_X-GetStrLength("Complete",2),20,"Complete",6,2);
@@ -895,9 +1001,14 @@ void RenderWorldSelect(MGLDraw *mgl)
 		if(i+listPos<(int)list.size())
 		{
 			if(choice==i+listPos)
-				mgl->FillBox(17,39+i*GAP_HEIGHT,599,39+GAP_HEIGHT+i*GAP_HEIGHT-1,32+8);
+			{
+				if (mouseMode || curButton == ButtonId::WorldList)
+					mgl->FillBox(17,39+i*GAP_HEIGHT,599,39+GAP_HEIGHT+i*GAP_HEIGHT-1,32+8);
+				else
+					mgl->Box(17,39+i*GAP_HEIGHT,599,39+GAP_HEIGHT+i*GAP_HEIGHT-1,32+16);
+			}
 
-			if(PointInRect(msx,msy,17,39+i*GAP_HEIGHT,599,39+GAP_HEIGHT+i*GAP_HEIGHT-1))
+			if(mouseMode && PointInRect(msx,msy,17,39+i*GAP_HEIGHT,599,39+GAP_HEIGHT+i*GAP_HEIGHT-1))
 			{
 				mgl->Box(17,39+i*GAP_HEIGHT,599,39+GAP_HEIGHT+i*GAP_HEIGHT-1,32+16);
 			}
@@ -1015,11 +1126,11 @@ void RenderWorldSelect(MGLDraw *mgl)
 	}
 #endif
 
-	if(mode==MODE_VERIFY || mode==MODE_VERIFY2)
+	if(mode==MODE_CONFIRM_ERASE_PROGRESS || mode==MODE_CONFIRM_ERASE_SCORES)
 	{
 		mgl->FillBox(40,150,600,300,32*1+4);
 		mgl->Box(40,150,600,300,32*1+16);
-		if(mode==MODE_VERIFY)
+		if(mode==MODE_CONFIRM_ERASE_PROGRESS)
 			PrintGlowRect(50,160,590,250,18,"Are you sure you want to reset this world?  That will erase all of your progress "
 										   "in the world, but leave high scores unchanged.",2);
 		else
@@ -1029,19 +1140,22 @@ void RenderWorldSelect(MGLDraw *mgl)
 		RenderWorldSelectButton(600-30-50,270,50,"No",mgl, ButtonId::No);
 	}
 
-	SetSpriteConstraints(13,13,627,467);
-	msx2=msx;
-	msy2=msy;
-	if(msx2<13)
-		msx2=13;
-	if(msy2<13)
-		msy2=13;
-	if(msx2>622)
-		msx2=622;
-	if(msy2>462)
-		msy2=462;
-	wsSpr->GetSprite(0)->DrawBright(msx2,msy2,mgl,msBright/2);
-	ClearSpriteConstraints();
+	if (mouseMode)
+	{
+		SetSpriteConstraints(13,13,627,467);
+		msx2=msx;
+		msy2=msy;
+		if(msx2<13)
+			msx2=13;
+		if(msy2<13)
+			msy2=13;
+		if(msx2>622)
+			msx2=622;
+		if(msy2>462)
+			msy2=462;
+		wsSpr->GetSprite(0)->DrawBright(msx2,msy2,mgl,msBright/2);
+		ClearSpriteConstraints();
+	}
 }
 
 TASK(byte) WorldSelectMenu(MGLDraw *mgl)
