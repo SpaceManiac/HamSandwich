@@ -354,6 +354,13 @@ void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 		if(old->trigger&trigList[i])
 			AddTrigger(trigList[i],old->trigValue,me,old->msg,(i<6));
 	}
+	if (!me->trigger[0].type)
+	{
+		// In Dr. L, triggers are negative logic such that a special with NO
+		// triggers is one that ALWAYS triggers. We need to preserve that.
+		// Example: Jubilee.dlw #05
+		me->trigger[0].type = TRG_DELAY;
+	}
 
 	me->effect[0].x=old->effectX;
 	me->effect[0].y=old->effectY;
