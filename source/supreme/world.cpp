@@ -35,7 +35,7 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	return 1;
 }
 
-byte Ham_GetWorldName(const char *fname, char *buffer, char *authbuffer);
+bool Ham_GetWorldName(const char *fname, char *buffer, char *authbuffer);
 byte Ham_LoadWorld(world_t *world, const char *fname);
 byte Ham_SaveWorld(world_t *world, const char *fname);
 
@@ -369,12 +369,11 @@ byte SaveWorld(world_t *world, const char *fname)
 	return 1;
 }
 
-byte GetWorldName(const char *fname,char *buffer,char *authbuffer)
+bool GetWorldName(const char *fname,char *buffer,char *authbuffer)
 {
-	SDL_RWops *f;
 	char code[9];
 
-	f=AssetOpen_SDL(fname);
+	owned::SDL_RWops f = AssetOpen_SDL_Owned(fname);
 	if(!f)
 		return 0;
 
@@ -382,12 +381,12 @@ byte GetWorldName(const char *fname,char *buffer,char *authbuffer)
 	code[8]='\0';
 	if(!strcmp(code,"HAMSWCH!"))
 	{
-		SDL_RWclose(f);
+		f.reset();
 		return Ham_GetWorldName(fname, buffer, authbuffer);
 	}
 	else if(strcmp(code,"SUPREME!"))
 	{
-		SDL_RWclose(f);
+		f.reset();
 
 		strcpy(authbuffer,"Unknown Author");
 		return Legacy_GetWorldName(fname,buffer);
@@ -396,7 +395,6 @@ byte GetWorldName(const char *fname,char *buffer,char *authbuffer)
 	SDL_RWread(f,authbuffer,sizeof(char),32);
 	SDL_RWread(f,buffer,sizeof(char),32);
 
-	SDL_RWclose(f);
 	return 1;
 }
 

@@ -396,7 +396,7 @@ static std::string PrepareWorkshopFolder()
 
 	char destFolder[L_tmpnam];
 	tmpnam(destFolder);
-	SDL_Log("Steam Workshop folder: %s\n", destFolder);
+	SDL_Log("Steam Workshop folder: %s", destFolder);
 
 	for (const auto& file : files)
 	{
@@ -443,7 +443,7 @@ static std::string PrepareWorkshopPreview()
 	tmpnam(destFolder);
 	std::string pngFilename = destFolder;
 	pngFilename.append(".png");
-	SDL_Log("Steam Workshop preview file: %s\n", pngFilename.c_str());
+	SDL_Log("Steam Workshop preview file: %s", pngFilename.c_str());
 
 	MGLDraw* mgl = GetDisplayMGL();
 	mgl->ClearScreen();

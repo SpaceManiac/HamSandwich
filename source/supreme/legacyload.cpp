@@ -586,25 +586,22 @@ Map::Map(old_map_t *old)
 	}
 }
 
-byte Legacy_GetWorldName(const char *fname,char *buf)
+bool Legacy_GetWorldName(const char *fname,char *buf)
 {
-	FILE *f;
-
 	if(fname[0]=='\0')
-		return 0;
+		return false;
 
-	f=AssetOpen(fname);
+	owned::SDL_RWops f = AssetOpen_SDL_Owned(fname);
 	if(!f)
-		return 0;
+		return false;
 
 	// this fseeks past:
 	//   the int totalpoints, the 400 32x24 tiles,
 	//   the 200 terrain types, the width&height of map 0, and bam there it is at the name
 	//   of map 0.
 
-	fseek(f,1+sizeof(int)+400*32*24+200*sizeof(old_terrain_t)+2*sizeof(int),SEEK_SET);
+	SDL_RWseek(f,1+sizeof(int)+400*32*24+200*sizeof(old_terrain_t)+2*sizeof(int),SEEK_SET);
 	// read the name
-	fread(buf,1,32,f);
-	fclose(f);
-	return 1;
+	SDL_RWread(f,buf,1,32);
+	return true;
 }
