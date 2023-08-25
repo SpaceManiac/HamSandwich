@@ -101,7 +101,6 @@ owned::SDL_RWops VfsStack::open_sdl(const char* filename)
 		}
 	}
 
-	SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "open_sdl(%s): not found in any vfs", filename);
 	return nullptr;
 }
 
@@ -134,7 +133,6 @@ owned::FILE VfsStack::open_stdio(const char* filename)
 		}
 	}
 
-	SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "open_stdio(%s): not found in any vfs", filename);
 	return nullptr;
 }
 

@@ -160,26 +160,26 @@ owned::SDL_RWops ZipVfs::open_sdl(const char* filename)
 	size_t file = archive.get_file(filename);
 	if (file == SIZE_MAX)
 		return nullptr;
-	if (unzGoToFilePos64(zip.get(), &files[file]) != UNZ_OK)
+	if (int r = unzGoToFilePos64(zip.get(), &files[file]); r != UNZ_OK)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::open_sdl(%s): bad unzGoToFilePos64", filename);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::open_sdl(%s): bad unzGoToFilePos64: %d", filename, r);
 		return nullptr;
 	}
 	unz_file_info64 file_info;
-	if (unzGetCurrentFileInfo64(zip.get(), &file_info, nullptr, 0, nullptr, 0, nullptr, 0) != UNZ_OK)
+	if (int r = unzGetCurrentFileInfo64(zip.get(), &file_info, nullptr, 0, nullptr, 0, nullptr, 0); r != UNZ_OK)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::open_sdl(%s): bad unzGetCurrentFileInfo64", filename);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::open_sdl(%s): bad unzGetCurrentFileInfo64: %d", filename, r);
 		return nullptr;
 	}
-	if (unzOpenCurrentFile(zip.get()) != UNZ_OK)
+	if (int r = unzOpenCurrentFile(zip.get()); r != UNZ_OK)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::open_sdl(%s): bad unzOpenCurrentFile", filename);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::open_sdl(%s): bad unzOpenCurrentFile: %d", filename, r);
 		return nullptr;
 	}
 	std::vector<uint8_t> buffer(file_info.uncompressed_size);
-	if (unzReadCurrentFile(zip.get(), buffer.data(), file_info.uncompressed_size) < 0)
+	if (int r = unzReadCurrentFile(zip.get(), buffer.data(), file_info.uncompressed_size); r < 0)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::open_sdl(%s): bad unzReadCurrentFile", filename);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ZipVfs::open_sdl(%s): bad unzReadCurrentFile: %d", filename, r);
 		return nullptr;
 	}
 	unzCloseCurrentFile(zip.get());

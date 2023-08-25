@@ -17,7 +17,7 @@ class NsisVfs : public vanilla::Vfs
 	size_t datablock_start;
 
 	const char* navigate_nsis(const char* path, vanilla::Archive::Directory*& current);
-	bool extract_internal(bool compressed, uint32_t size, std::vector<uint8_t>& result);
+	bool extract_internal(const char* path, bool compressed, uint32_t size, std::vector<uint8_t>& result);
 
 public:
 	explicit NsisVfs(owned::SDL_RWops fp);
@@ -118,7 +118,7 @@ NsisVfs::NsisVfs(owned::SDL_RWops fptr)
 
 	// Decompress the "header block".
 	std::vector<uint8_t> header;
-	if (!extract_internal(header_size & SIZE_COMPRESSED, header_size & ~SIZE_COMPRESSED, header))
+	if (!extract_internal("<header block>", header_size & SIZE_COMPRESSED, header_size & ~SIZE_COMPRESSED, header))
 	{
 		archive_rw = nullptr;
 		return;
@@ -209,16 +209,16 @@ owned::SDL_RWops NsisVfs::open_sdl(const char* path)
 	if (offset == SIZE_MAX)
 		return nullptr;
 
-	if (SDL_RWseek(archive_rw, datablock_start + offset, RW_SEEK_SET) < 0)
+	if (int r = SDL_RWseek(archive_rw, datablock_start + offset, RW_SEEK_SET); r < 0)
 	{
-		fprintf(stderr, "nsis::Archive::extract: fseek error\n");
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "NsisVfs::open_sdl(%s): seek error: %s", path, SDL_GetError());
 		return nullptr;
 	}
 
 	uint32_t size;
 	if (!SDL_RWread(archive_rw, &size, 4, 1))
 	{
-		fprintf(stderr, "nsis::Archive::extract: fread size error\n");
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "NsisVfs::open_sdl(%s): read error: %s", path, SDL_GetError());
 		return nullptr;
 	}
 
@@ -229,18 +229,18 @@ owned::SDL_RWops NsisVfs::open_sdl(const char* path)
 	}
 
 	std::vector<uint8_t> result;
-	if (!extract_internal(size & SIZE_COMPRESSED, size & ~SIZE_COMPRESSED, result))
+	if (!extract_internal(path, size & SIZE_COMPRESSED, size & ~SIZE_COMPRESSED, result))
 		return nullptr;
 	return vanilla::create_vec_rwops(std::move(result));
 }
 
-bool NsisVfs::extract_internal(bool is_compressed, uint32_t size, std::vector<uint8_t>& result)
+bool NsisVfs::extract_internal(const char* path, bool is_compressed, uint32_t size, std::vector<uint8_t>& result)
 {
 	std::vector<uint8_t> compressed(size);
 	size_t got = SDL_RWread(archive_rw, compressed.data(), 1, compressed.size());
 	if (got < compressed.size())
 	{
-		fprintf(stderr, "nsis::Archive::extract: expected %zu, got %zu\n", compressed.size(), got);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "NsisVfs::extract_internal(%s): expected %zu, got %zu: %s", path, compressed.size(), got, SDL_GetError());
 		return false;
 	}
 

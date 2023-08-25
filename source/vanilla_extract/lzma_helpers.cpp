@@ -1,7 +1,8 @@
 #include "lzma_helpers.h"
-#include <LzmaDec.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <SDL_log.h>
+#include <LzmaDec.h>
 
 // ----------------------------------------------------------------------------
 // LZMA decompression utils
@@ -28,9 +29,9 @@ bool vanilla::lzma_decompress(std::vector<uint8_t>& dest, uint8_t* src, size_t s
 {
 	CLzmaDec decoder;
 	LzmaDec_Construct(&decoder);
-	if (LzmaDec_AllocateProbs(&decoder, src, propsize, &alloc) != SZ_OK)
+	if (int r = LzmaDec_AllocateProbs(&decoder, src, propsize, &alloc); r != SZ_OK)
 	{
-		fprintf(stderr, "LzmaDec_AllocateProbs failed\n");
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "bad LzmaDec_AllocateProbs: %d", r);
 		return false;
 	}
 	src += propsize;
@@ -50,7 +51,10 @@ bool vanilla::lzma_decompress(std::vector<uint8_t>& dest, uint8_t* src, size_t s
 		srclen -= read;
 		read = srclen;
 		if (!read)
+		{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LzmaDec_DecodeToDic ran out of content early");
 			return false;
+		}
 
 		dest.resize(dest.size() + BUFSIZE_OUT);
 		decoder.dic = dest.data();
@@ -60,5 +64,13 @@ bool vanilla::lzma_decompress(std::vector<uint8_t>& dest, uint8_t* src, size_t s
 	}
 	dest.resize(decoder.dicPos);
 	LzmaDec_FreeProbs(&decoder, &alloc);
-	return res == SZ_OK;
+	if (res == SZ_OK)
+	{
+		return true;
+	}
+	else
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "bad LzmaDec_DecodeToDic: %d", res);
+		return false;
+	}
 }

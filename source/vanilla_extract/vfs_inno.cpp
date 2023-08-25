@@ -118,31 +118,30 @@ static owned::SDL_RWops zlib_crc_block_reader(uint8_t** input_buffer)
 
 		if (first)
 		{
-			if (inflateInit(&zip) != Z_OK)
+			if (int r = inflateInit(&zip); r != Z_OK)
 			{
-				fprintf(stderr, "zlib_crc_block_reader: bad inflateInit\n");
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad inflateInit: %d", r);
 				return nullptr;
 			}
 			first = false;
 		}
-		int r = inflate(&zip, Z_NO_FLUSH);
-		if (r != Z_OK && r != Z_STREAM_END)
+		if (int r = inflate(&zip, Z_NO_FLUSH); r != Z_OK && r != Z_STREAM_END)
 		{
-			fprintf(stderr, "zlib_crc_block_reader: bad inflate: %d\n", r);
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad inflate: %d", r);
 			return nullptr;
 		}
 
 		compressed_size -= to_read;
 		*input_buffer += to_read;
 	}
-	if (inflate(&zip, Z_FINISH) != Z_STREAM_END)
+	if (int r = inflate(&zip, Z_FINISH); r != Z_STREAM_END)
 	{
-		fprintf(stderr, "zlib_crc_block_reader: bad flush\n");
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad flush: %d", r);
 		return nullptr;
 	}
-	if (inflateEnd(&zip) != Z_OK)
+	if (int r = inflateEnd(&zip); r != Z_OK)
 	{
-		fprintf(stderr, "zlib_crc_block_reader: bad inflateEnd\n");
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad inflateInit: %d", r);
 		return nullptr;
 	}
 
@@ -182,7 +181,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 
 	if (memcmp(signature, k7zSignature, k7zSignatureSize))
 	{
-		fprintf(stderr, "inno::Archive: 7z signature missing at offset 0x%zx", OFFSET_OF_7Z_IN_EXE);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs: 7z signature missing at offset 0x%zx", OFFSET_OF_7Z_IN_EXE);
 		return;
 	}
 
@@ -217,7 +216,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 	SRes res = SzArEx_Open(&zip, stream, vanilla::LZMA_ALLOCATOR, vanilla::LZMA_ALLOCATOR);
 	if (res != SZ_OK)
 	{
-		fprintf(stderr, "inno::Archive: SzArEx_Open failed: %d\n", res);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs: SzArEx_Open failed: %d", res);
 		return;
 	}
 
@@ -242,7 +241,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 
 	if (fileIndex_setup_0 == UINT32_MAX || fileIndex_setup_1_bin == UINT32_MAX)
 	{
-		fprintf(stderr, "inno::Archive: archive is missing setup.0 or setup-1.bin\n");
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs: archive is missing setup.0 or setup-1.bin");
 		return;
 	}
 
@@ -265,7 +264,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 		vanilla::LZMA_ALLOCATOR);
 	if (res != SZ_OK)
 	{
-		fprintf(stderr, "inno::Archive: SzArEx_Extract setup.0 failed: %d\n", res);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs: SzArEx_Extract setup.0 failed: %d", res);
 		return;
 	}
 
@@ -273,7 +272,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 	uint8_t *position = &outBuffer[offset], *end = &outBuffer[offset + outSizeProcessed];
 	if (memcmp(&outBuffer[offset], INNO_VERSION, sizeof(INNO_VERSION)))
 	{
-		fprintf(stderr, "inno::Archive: bad inno version %s\n", &outBuffer[offset]);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs: bad inno version %s", &outBuffer[offset]);
 		return;
 	}
 	position += 64;
@@ -375,7 +374,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 	owned::SDL_RWops datas = zlib_crc_block_reader(&position);
 	if (position != end)
 	{
-		fprintf(stderr, "inno::Archive: extra data at end of setup.0\n");
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs: extra data at end of setup.0");
 		return;
 	}
 
@@ -405,7 +404,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 		vanilla::LZMA_ALLOCATOR);
 	if (res != SZ_OK)
 	{
-		fprintf(stderr, "inno::Archive: SzArEx_Extract setup-1.bin failed: %d\n", res);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs: SzArEx_Extract setup-1.bin failed: %d", res);
 		return;
 	}
 
@@ -439,19 +438,19 @@ owned::SDL_RWops InnoVfs::open_sdl(const char* path)
 	zip.next_in = &setup_1_bin[entry.chunk_offset + 4];
 	zip.avail_in = entry.chunk_size - 4;
 
-	if (inflateInit(&zip) != Z_OK)
+	if (int r = inflateInit(&zip); r != Z_OK)
 	{
-		fprintf(stderr, "inno::Archive::open_file: bad inflateInit\n");
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs::open_sdl(%s): bad inflateInit: %d", path, r);
 		return nullptr;
 	}
 	if (int r = inflate(&zip, Z_NO_FLUSH); r != Z_OK && r != Z_STREAM_END)
 	{
-		fprintf(stderr, "inno::Archive::open_file: bad inflate: %d\n", r);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs::open_sdl(%s): bad inflate: %d", path, r);
 		return nullptr;
 	}
-	if (inflateEnd(&zip) != Z_OK)
+	if (int r = inflateEnd(&zip); r != Z_OK)
 	{
-		fprintf(stderr, "inno::Archive::open_file: bad inflateEnd\n");
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs::open_sdl(%s): bad inflateEnd: %d", path, r);
 		return nullptr;
 	}
 
