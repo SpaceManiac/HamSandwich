@@ -80,7 +80,7 @@ std::map<std::string, int32_t> GetStats()
 		{ "lockersOpened", NumLockersOpen() },
 		{ "purchasedTotal", NumPurchased() },
 		// shop.cpp
-		{ "purchasedDonation", profile.progress.purchase[SHOP_DONATION] },
+		{ "purchasedDonation", profile.progress.purchase[157] },
 		// GoalWinLevel
 		{ "levelsPassed", CountLevelsPassed() },
 		{ "finishedWorlds", profile.progress.finishedWorlds },
