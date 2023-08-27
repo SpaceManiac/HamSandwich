@@ -11,6 +11,7 @@ Thumbs.db
 /appdata
 /build
 /installers
+/exports
 /CMakeUserPresets.json
 
 # Android

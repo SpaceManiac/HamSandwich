@@ -309,7 +309,7 @@ static void SaveZip()
 	constexpr size_t BUFSIZE = 16 * 1024;
 	char buf[BUFSIZE];
 
-	std::string pathname = "addons/";
+	std::string pathname = "exports/";
 	pathname.append(zipName);
 	pathname.append(".zip");
 	vanilla::mkdir_parents(pathname);
@@ -653,7 +653,7 @@ void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 			curButton = ButtonId::SaveZip;
 		}
 		mgl->Box(midX, 35, midX + 200, 35+14, 31);
-		Print(midX + 2, 35 + 2, "Save to addons folder", 0, 1);
+		Print(midX + 2, 35 + 2, "Save to 'exports' folder", 0, 1);
 		Print(midX, 53, saveZipResult, 0, 1);
 
 #ifdef HAS_STEAM_API
