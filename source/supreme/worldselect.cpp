@@ -608,7 +608,8 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				case ButtonId::ResetThisWorld:
 				case ButtonId::ResetHighScores:
 				case ButtonId::ExitToMenu:
-					curButton = ButtonId::RecordScoresTimes;
+					if (!list[choice].dimmed)
+						curButton = ButtonId::RecordScoresTimes;
 					break;
 				case ButtonId::RecordScoresTimes:
 					if (!noScoresAtAll)
