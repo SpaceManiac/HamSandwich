@@ -362,7 +362,8 @@ TASK(void) MGLDraw::FinishFlip(void)
 	SDL_Event e;
 	while(SDL_PollEvent(&e))
 	{
-		if (e.type == SDL_KEYDOWN) {
+		if (e.type == SDL_KEYDOWN)
+		{
 			TranslateKey(&e.key.keysym);
 			ControlKeyDown(e.key.keysym.scancode);
 			lastRawCode = e.key.keysym.scancode;
@@ -419,7 +420,8 @@ TASK(void) MGLDraw::FinishFlip(void)
 				sprintf(fname, "Screenshot %04d-%02d-%02d %02d-%02d-%02d.bmp", 1900 + clock->tm_year, 1 + clock->tm_mon, clock->tm_mday, clock->tm_hour, clock->tm_min, clock->tm_sec);
 				SaveBMP(fname);
 			}
-		} else if (e.type == SDL_TEXTINPUT)
+		}
+		else if (e.type == SDL_TEXTINPUT)
 		{
 			if (strlen(e.text.text) == 1)
 			{
@@ -1145,7 +1147,32 @@ void MGLDraw::StartTextInput(int x, int y, int x2, int y2)
 	rect.h *= scale;
 
 	SDL_SetTextInputRect(&rect);
-	SDL_StartTextInput();
+
+	if (SDL_GetHintBoolean("SteamDeck", SDL_FALSE))
+	{
+		SDL_EventState(SDL_TEXTINPUT, SDL_ENABLE);
+		SDL_EventState(SDL_TEXTEDITING, SDL_ENABLE);
+
+		// The original addition of Steam Deck keyboard support doesn't set the
+		// rect https://github.com/libsdl-org/SDL/pull/6515 so do it ourselves.
+		// https://partner.steamgames.com/doc/api/ISteamUtils#ShowFloatingGamepadTextInput
+		// > The text field position is specified in pixels relative the origin
+		// > of the game window and is used to position the floating keyboard
+		// > in a way that doesn't cover the text field.
+		char deeplink[128];
+		SDL_snprintf(deeplink, sizeof(deeplink),
+			"steam://open/keyboard?XPosition=%d&YPosition=%d&Width=%d&Height=%d&Mode=%d",
+			rect.x,
+			rect.y,
+			rect.w,
+			rect.h,
+			SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE) ? 0 : 1);
+		SDL_OpenURL(deeplink);
+	}
+	else
+	{
+		SDL_StartTextInput();
+	}
 }
 
 void MGLDraw::StopTextInput()

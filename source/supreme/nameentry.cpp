@@ -17,6 +17,8 @@ namespace
 	char cursorBright, dCBright;
 	byte curLine, error;
 	int errorBright;
+
+	dword lastGamepad;
 }
 
 void InitNameEntry(MGLDraw *mgl)
@@ -37,6 +39,8 @@ void InitNameEntry(MGLDraw *mgl)
 
 	for(i=0;i<480;i++)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
+
+	lastGamepad = ~0;
 }
 
 void ExitNameEntry()
@@ -55,6 +59,7 @@ static bool CheckForExistingName(const char *name)
 byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 {
 	char c;
+	bool startTextInput = false;
 
 	if(*lastTime>TIME_PER_FRAME*5)
 		*lastTime=TIME_PER_FRAME*5;
@@ -78,6 +83,8 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 			if(errorBright<0 && Random(2)==0)
 				MakeNormalSound(SND_BULLETHIT);
 			errorBright+=8;
+			if (errorBright >= 40)
+				startTextInput = true;
 		}
 		cursorBright+=dCBright;
 		if(cursorBright>8)
@@ -88,10 +95,21 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 		*lastTime-=TIME_PER_FRAME;
 	}
 
+	dword gamepad = GetGamepadButtons();
+
 	if (curLine == 9)
 	{
-		mgl->StartTextInput(15, 315, 640-15, 315+28);
+		startTextInput = true;
 		curLine = 10;
+	}
+
+	if (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_X))
+		startTextInput = true;
+
+	if (startTextInput)
+	{
+		SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "0");
+		mgl->StartTextInput(15, 315, 640-15, 315+28);
 	}
 
 	c=mgl->LastKeyPressed();
@@ -114,7 +132,7 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 			errorBright=-200;
 		}
 	}
-	else if(c == SDLK_ESCAPE)
+	else if(c == SDLK_ESCAPE || (gamepad & ~lastGamepad & ((1 << SDL_CONTROLLER_BUTTON_B) | (1 << SDL_CONTROLLER_BUTTON_BACK))))
 	{
 		return 255;  // cancel
 	}
@@ -141,6 +159,7 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 		errorBright=-200;
 	}
 
+	lastGamepad = gamepad;
 	return 0;
 }
 
@@ -151,6 +170,7 @@ void RenderLine(int y,const char *txt,int num)
 	else if(curLine>num)
 		PrintGlow(20,y,txt,0,2);
 }
+
 void RenderNameEntry(MGLDraw *mgl)
 {
 	int i;
