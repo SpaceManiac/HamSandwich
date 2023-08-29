@@ -238,7 +238,7 @@ case "$tool" in
 		deck_game=HamSandwich
 		echo "==== Uploading to $deck_addr:devkit-game/$deck_game ===="
 		deck_exe=${debugcommand##*/}
-		rsync -av --chmod=Du=rwx,Dgo=rx,Fu=rwx,Fog=rx -e "ssh -o StrictHostKeyChecking=no -i $HOME/.config/steamos-devkit/devkit_rsa" ./ "$debugcommand" "$deck_addr:/home/deck/devkit-game/$deck_game/"
+		rsync -av --chmod=Du=rwx,Dgo=rx,Fu=rwx,Fog=rx -e "ssh -o StrictHostKeyChecking=no -i $HOME/.config/steamos-devkit/devkit_rsa" "$debugcommand" ./ "$deck_addr:/home/deck/devkit-game/$deck_game/"
 		# shellcheck disable=SC2087
 		ssh -o StrictHostKeyChecking=no -i ~/.config/steamos-devkit/devkit_rsa "$deck_addr" sh <<-EOD
 			set -eu
