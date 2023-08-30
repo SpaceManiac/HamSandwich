@@ -141,6 +141,13 @@ namespace
 				return;
 			}
 
+			if (!SteamUGC()->SetItemVisibility(handle, k_ERemoteStoragePublishedFileVisibilityPublic))
+			{
+				progress = Progress::Failed;
+				progressMessage = "Invalid visibility";
+				return;
+			}
+
 			submit_update_result.Set(SteamUGC()->SubmitItemUpdate(handle, nullptr), this, &SteamWorkshopUpload::SubmitUpdateCallback);
 			progress = Progress::Working;
 			progressMessage = "Uploading content, please wait...";
@@ -672,9 +679,7 @@ void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 			}
 			mgl->Box(midX, y, midX + 200, y+14, 31);
 			Print(midX + 2, y + 2, "Upload and publish", 0, 1);
-			y += 16;
-			Print(midX, y, steamWorkshopUpload.progressMessage, 0, 1);
-			y += 14;
+			y += 18;
 
 			if (steamWorkshopUpload.workshopItemId)
 			{
@@ -686,6 +691,10 @@ void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 				mgl->Box(midX, y, midX + 200, y+14, 31);
 				Print(midX + 2, y + 2, "View in Workshop", 0, 1);
 			}
+			y += 18;
+
+			Print(midX, y, steamWorkshopUpload.progressMessage, 0, 1);
+			y += 14;
 		}
 #endif  // HAS_STEAM_API
 	}
