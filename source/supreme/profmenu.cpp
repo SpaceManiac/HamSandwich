@@ -16,89 +16,109 @@
 #include <unistd.h>
 #endif
 
-#define PBTN_HEIGHT	19
+constexpr int PBTN_HEIGHT = 19;
 
-#define PROF_NORMAL	0
-#define PROF_DELETE	1
-#define PROF_KEYCONFIG 2
+enum Mode
+{
+	PROF_NORMAL,
+	PROF_DELETE,
+	PROF_KEYCONFIG,
+};
 
-#define BTN_PLAYLIST	1
-#define BTN_DEL_PROF	2
-#define BTN_BRAINRADAR	3
-#define BTN_CANDLERADAR	4
-#define BTN_MOVENSHOOT	5
-#define BTN_EXIT		6
-#define BTN_KEYCONFIG	7
-#define BTN_DIFFICULTY	8
-#define BTN_CHARACTER	9
-#define BTN_RECORDS		10
+enum class ButtonId
+{
+	None,
+	Playlist,
+	DelProf,
+	BrainRadar,
+	CandleRadar,
+	MoveNShoot,
+	Exit,
+	KeyConfig,
+	Difficulty,
+	Character,
+	Records,
+	// keyconfig buttons
+	Keys1_0,
+	Keys1_1,
+	Keys1_2,
+	Keys1_3,
+	Keys1_4,
+	Keys1_5,
+	Keys2_0,
+	Keys2_1,
+	Keys2_2,
+	Keys2_3,
+	Keys2_4,
+	Keys2_5,
+	KeysDefault,
+	KeysExit,
+};
 
-#define MAX_PROFS	20
-#define PRFNAME_LEN	32
+constexpr int MAX_PROFS = 20;
+constexpr int PRFNAME_LEN = 32;
 
-// keyconfig buttons
-#define BTN_K1		10
-#define BTN_K2		20
-#define BTN_DEFAULT	30
-#define BTN_EXITKEYS 31
-
-typedef struct profButton_t
+struct profButton_t
 {
 	int x,y;
 	int wid;
 	char txt[32];
-	byte id;
-} profButton_t;
-
-static profButton_t btn[]={
-	{20,60,122,"Difficulty",BTN_DIFFICULTY},
-	{20,90,122,"Character",BTN_CHARACTER},
-	{20,120,122,"Brain Radar",BTN_BRAINRADAR},
-	{20,150,122,"Candle Radar",BTN_CANDLERADAR},
-	{20,180,122,"Move N' Shoot",BTN_MOVENSHOOT},
-	{20,210,122,"Record Book",BTN_RECORDS},
-	{20,374,200,"Configure Keys",BTN_KEYCONFIG},
-	{20,396,200,"Edit Song Playlists",BTN_PLAYLIST},
-	{20,418,200,"Delete This Profile",BTN_DEL_PROF},
-	{20,440,200,"Save & Exit",BTN_EXIT},
+	ButtonId id;
 };
-#define NUM_PROF_BTNS	10
+
+static const profButton_t btn[]={
+	{20,60,122,"Difficulty", ButtonId::Difficulty},
+	{20,90,122,"Character", ButtonId::Character},
+	{20,120,122,"Brain Radar", ButtonId::BrainRadar},
+	{20,150,122,"Candle Radar", ButtonId::CandleRadar},
+	{20,180,122,"Move N' Shoot", ButtonId::MoveNShoot},
+	{20,210,122,"Record Book", ButtonId::Records},
+	{20,374,200,"Configure Keys", ButtonId::KeyConfig},
+	{20,396,200,"Edit Song Playlists", ButtonId::Playlist},
+	{20,418,200,"Delete This Profile", ButtonId::DelProf},
+	{20,440,200,"Save & Exit", ButtonId::Exit},
+};
+constexpr int NUM_PROF_BTNS = SDL_arraysize(btn);
 
 static profButton_t kcBtn[]={
-	{90,90,102,"",BTN_K1+0},
-	{90,112,102,"",BTN_K1+1},
-	{90,134,102,"",BTN_K1+2},
-	{90,156,102,"",BTN_K1+3},
-	{90,178,102,"",BTN_K1+4},
-	{90,200,102,"",BTN_K1+5},
+	{90,90,102,"", ButtonId::Keys1_0},
+	{90,112,102,"",ButtonId::Keys1_1},
+	{90,134,102,"",ButtonId::Keys1_2},
+	{90,156,102,"",ButtonId::Keys1_3},
+	{90,178,102,"",ButtonId::Keys1_4},
+	{90,200,102,"",ButtonId::Keys1_5},
 
-	{196,90,102,"",BTN_K2+0},
-	{196,112,102,"",BTN_K2+1},
-	{196,134,102,"",BTN_K2+2},
-	{196,156,102,"",BTN_K2+3},
-	{196,178,102,"",BTN_K2+4},
-	{196,200,102,"",BTN_K2+5},
+	{196,90,102,"", ButtonId::Keys2_0},
+	{196,112,102,"",ButtonId::Keys2_1},
+	{196,134,102,"",ButtonId::Keys2_2},
+	{196,156,102,"",ButtonId::Keys2_3},
+	{196,178,102,"",ButtonId::Keys2_4},
+	{196,200,102,"",ButtonId::Keys2_5},
 
-	{20,300,200,"Default Controls",BTN_DEFAULT},
-	{20,350,200,"Exit",BTN_EXITKEYS},
+	{20,300,200,"Default Controls", ButtonId::KeysDefault},
+	{20,350,200,"Exit", ButtonId::KeysExit},
 };
-#define NUM_KC_BTNS	14
+constexpr int NUM_KC_BTNS = SDL_arraysize(kcBtn);
 
-static byte mode,kcMode,kBtnNum,canHitKeys;
+static Mode mode;
+static byte kcMode,kBtnNum,canHitKeys;
 static int msx,msy;
 
 static byte *backgd;
-static sprite_set_t *plSpr;
+static std::unique_ptr<sprite_set_t> plSpr;
 static char msBright,msDBright;
 
 static char fileList[PRFNAME_LEN*MAX_PROFS];
 static int numFiles;
 static byte profChoice;
 
-static char diffName[][16]={"Normal","Hard","Lunatic"};
-static char charName[][16]={"Bouapha","Happy Stick Man","Dr. Lunatic","Shtupid Shroom","LunaChick","MechaBouapha"};
+static const char diffName[][16]={"Normal","Hard","Lunatic"};
+static const char charName[][16]={"Bouapha","Happy Stick Man","Dr. Lunatic","Shtupid Shroom","LunaChick","MechaBouapha"};
 
 static byte recordBook,candleRadar,brainRadar,moveNShoot;
+
+static ButtonId curButton;
+static byte oldc;
 
 static char *ShortName(const char *name)
 {
@@ -172,7 +192,7 @@ void InitProfMenu(MGLDraw *mgl)
 
 	mgl->LoadBMP("graphics/profmenu.bmp");
 	backgd=(byte *)malloc(640*480);
-	plSpr=new sprite_set_t("graphics/pause.jsp");
+	plSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
 
 	for(i=0;i<480;i++)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
@@ -182,12 +202,15 @@ void InitProfMenu(MGLDraw *mgl)
 	candleRadar=ItemPurchased(SHOP_ABILITY,ABIL_CANDLE);
 	brainRadar=ItemPurchased(SHOP_ABILITY,ABIL_BRAIN);
 	moveNShoot=ItemPurchased(SHOP_ABILITY,ABIL_MOVESHOOT);
+
+	curButton = ButtonId::None;
+	oldc = ~0;
 }
 
 void ExitProfMenu(void)
 {
 	free(backgd);
-	delete plSpr;
+	plSpr.reset();
 }
 
 void InitKeyConfig(void)
@@ -207,18 +230,50 @@ void InitKeyConfig(void)
 byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 {
 	int i,j;
-	char k;
 
 	int KEY_MAX = 0;
 	const byte* key = SDL_GetKeyboardState(&KEY_MAX);
 
+	int oldMsx = msx, oldMsy = msy;
 	mgl->GetMouse(&msx,&msy);
+	bool mb = mgl->MouseTap();
+	if (mb || msx != oldMsx || msy != oldMsy)
+	{
+		curButton = ButtonId::None;
+
+		if (mode == PROF_NORMAL)
+		{
+			for(i=0;i<NUM_PROF_BTNS;i++)
+			{
+				if(PointInRect(msx,msy,btn[i].x,btn[i].y,btn[i].x+btn[i].wid,btn[i].y+PBTN_HEIGHT))
+				{
+					curButton = btn[i].id;
+				}
+			}
+		}
+		else if (mode == PROF_DELETE)
+		{
+
+		}
+		else if (mode == PROF_KEYCONFIG)
+		{
+			if (kcMode == 0)
+			{
+				for(i=0;i<NUM_KC_BTNS;i++)
+				{
+					if(PointInRect(msx,msy,kcBtn[i].x,kcBtn[i].y,kcBtn[i].x+kcBtn[i].wid,kcBtn[i].y+PBTN_HEIGHT))
+					{
+						curButton = kcBtn[i].id;
+					}
+				}
+			}
+		}
+	}
+
+	byte c = GetControls() | GetArrows();
 
 	if(*lastTime>TIME_PER_FRAME*5)
 		*lastTime=TIME_PER_FRAME*5;
-
-	k=mgl->LastKeyPressed();
-
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		msBright+=msDBright;
@@ -231,68 +286,148 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 		*lastTime-=TIME_PER_FRAME;
 	}
 
+	char k = mgl->LastKeyPressed();
+
 	switch(mode)
 	{
 		case PROF_NORMAL:
-			if(mgl->MouseTap())
+			if (c & ~oldc & CONTROL_UP)
 			{
-				for(i=0;i<NUM_PROF_BTNS;i++)
+				switch (curButton)
 				{
-					if(PointInRect(msx,msy,btn[i].x,btn[i].y,btn[i].x+btn[i].wid,btn[i].y+PBTN_HEIGHT))
-					{
-						MakeNormalSound(SND_MENUSELECT);
-						switch(btn[i].id)
-						{
-							case BTN_BRAINRADAR:
-								if(ItemPurchased(SHOP_ABILITY,ABIL_BRAIN))
-									profile.brainRadar=1-profile.brainRadar;
-								break;
-							case BTN_CANDLERADAR:
-								if(ItemPurchased(SHOP_ABILITY,ABIL_CANDLE))
-									profile.candleRadar=1-profile.candleRadar;
-								break;
-							case BTN_MOVENSHOOT:
-								if(ItemPurchased(SHOP_ABILITY,ABIL_MOVESHOOT))
-									profile.moveNShoot=1-profile.moveNShoot;
-								break;
-							case BTN_RECORDS:
-								if(recordBook)
-									return 4;
-								break;
-							case BTN_DIFFICULTY:
-								profile.difficulty++;
-								if(profile.difficulty>2)
-									profile.difficulty=0;
-								break;
-							case BTN_CHARACTER:
-								profile.playAs++;
-								if(profile.playAs>5)
-									profile.playAs=0;
-								while(profile.playAs!=PLAY_BOUAPHA && !ItemPurchased(SHOP_PLAYABLE,profile.playAs))
-								{
-									profile.playAs++;
-									if(profile.playAs>5)
-										profile.playAs=0;
-								}
-								break;
-							case BTN_PLAYLIST:
-								return 2;
-								break;
-							case BTN_KEYCONFIG:
-								InitKeyConfig();
-								mode=PROF_KEYCONFIG;
-								kcMode=0;
-								break;
-							case BTN_DEL_PROF:
-								mode=PROF_DELETE;
-								InitYesNoDialog("Really delete this profile?","Yes","No");
-								break;
-							case BTN_EXIT:
-								return 1;
-								break;
-						}
-					}
+					case ButtonId::Character:
+						curButton = ButtonId::Difficulty;
+						break;
+					case ButtonId::BrainRadar:
+						curButton = ButtonId::Character;
+						break;
+					case ButtonId::CandleRadar:
+						curButton = ButtonId::BrainRadar;
+						break;
+					case ButtonId::MoveNShoot:
+						curButton = ButtonId::CandleRadar;
+						break;
+					case ButtonId::Records:
+						curButton = ButtonId::MoveNShoot;
+						break;
+					case ButtonId::KeyConfig:
+						curButton = ButtonId::Records;
+						break;
+					case ButtonId::Playlist:
+						curButton = ButtonId::KeyConfig;
+						break;
+					case ButtonId::DelProf:
+						curButton = ButtonId::Playlist;
+						break;
+					case ButtonId::Exit:
+						curButton = ButtonId::DelProf;
+						break;
+					case ButtonId::None:
+						curButton = ButtonId::Exit;
+						break;
+					default: break;
 				}
+			}
+
+			if (c & ~oldc & CONTROL_DN)
+			{
+				switch (curButton)
+				{
+					case ButtonId::None:
+						curButton = ButtonId::Difficulty;
+						break;
+					case ButtonId::Difficulty:
+						curButton = ButtonId::Character;
+						break;
+					case ButtonId::Character:
+						curButton = ButtonId::BrainRadar;
+						break;
+					case ButtonId::BrainRadar:
+						curButton = ButtonId::CandleRadar;
+						break;
+					case ButtonId::CandleRadar:
+						curButton = ButtonId::MoveNShoot;
+						break;
+					case ButtonId::MoveNShoot:
+						curButton = ButtonId::Records;
+						break;
+					case ButtonId::Records:
+						curButton = ButtonId::KeyConfig;
+						break;
+					case ButtonId::KeyConfig:
+						curButton = ButtonId::Playlist;
+						break;
+					case ButtonId::Playlist:
+						curButton = ButtonId::DelProf;
+						break;
+					case ButtonId::DelProf:
+						curButton = ButtonId::Exit;
+						break;
+					default: break;
+				}
+			}
+
+			if (mb || (c & ~oldc & CONTROL_B1))
+			{
+				if (curButton != ButtonId::None)
+					MakeNormalSound(SND_MENUSELECT);
+				switch (curButton)
+				{
+					case ButtonId::BrainRadar:
+						if(ItemPurchased(SHOP_ABILITY,ABIL_BRAIN))
+							profile.brainRadar=1-profile.brainRadar;
+						break;
+					case ButtonId::CandleRadar:
+						if(ItemPurchased(SHOP_ABILITY,ABIL_CANDLE))
+							profile.candleRadar=1-profile.candleRadar;
+						break;
+					case ButtonId::MoveNShoot:
+						if(ItemPurchased(SHOP_ABILITY,ABIL_MOVESHOOT))
+							profile.moveNShoot=1-profile.moveNShoot;
+						break;
+					case ButtonId::Records:
+						if(recordBook)
+							return 4;
+						break;
+					case ButtonId::Difficulty:
+						profile.difficulty++;
+						if(profile.difficulty>2)
+							profile.difficulty=0;
+						break;
+					case ButtonId::Character:
+						profile.playAs++;
+						if(profile.playAs>5)
+							profile.playAs=0;
+						while(profile.playAs!=PLAY_BOUAPHA && !ItemPurchased(SHOP_PLAYABLE,profile.playAs))
+						{
+							profile.playAs++;
+							if(profile.playAs>5)
+								profile.playAs=0;
+						}
+						break;
+					case ButtonId::Playlist:
+						return 2;
+						break;
+					case ButtonId::KeyConfig:
+						InitKeyConfig();
+						mode=PROF_KEYCONFIG;
+						if (!mb)
+							curButton = ButtonId::Keys1_0;
+						kcMode=0;
+						break;
+					case ButtonId::DelProf:
+						mode=PROF_DELETE;
+						InitYesNoDialog("Really delete this profile?","Yes","No");
+						break;
+					case ButtonId::Exit:
+						return 1;
+						break;
+					default: break;
+				}
+			}
+
+			if(mb)
+			{
 				if(PointInRect(msx,msy,470,39,470+150,38+361))
 				{
 					// profile list
@@ -321,7 +456,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 				return 1;	// exit
 			break;
 		case PROF_DELETE:
-			if(mgl->MouseTap())
+			if(mb)
 			{
 				YesNoDialogClick(msx,msy);
 			}
@@ -364,43 +499,202 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 		case PROF_KEYCONFIG:
 			if(kcMode==0)
 			{
-				if(mgl->MouseTap())
+				if (c & ~oldc & CONTROL_UP)
 				{
-					for(i=0;i<NUM_KC_BTNS;i++)
+					switch (curButton)
 					{
-						if(PointInRect(msx,msy,kcBtn[i].x,kcBtn[i].y,kcBtn[i].x+kcBtn[i].wid,kcBtn[i].y+PBTN_HEIGHT))
+						case ButtonId::None:
+							curButton = ButtonId::KeysExit;
+							break;
+						case ButtonId::Keys1_1:
+							curButton = ButtonId::Keys1_0;
+							break;
+						case ButtonId::Keys1_2:
+							curButton = ButtonId::Keys1_1;
+							break;
+						case ButtonId::Keys1_3:
+							curButton = ButtonId::Keys1_2;
+							break;
+						case ButtonId::Keys1_4:
+							curButton = ButtonId::Keys1_3;
+							break;
+						case ButtonId::Keys1_5:
+							curButton = ButtonId::Keys1_4;
+							break;
+						case ButtonId::Keys2_1:
+							curButton = ButtonId::Keys2_0;
+							break;
+						case ButtonId::Keys2_2:
+							curButton = ButtonId::Keys2_1;
+							break;
+						case ButtonId::Keys2_3:
+							curButton = ButtonId::Keys2_2;
+							break;
+						case ButtonId::Keys2_4:
+							curButton = ButtonId::Keys2_3;
+							break;
+						case ButtonId::Keys2_5:
+							curButton = ButtonId::Keys2_4;
+							break;
+						case ButtonId::KeysDefault:
+							curButton = ButtonId::Keys1_5;
+							break;
+						case ButtonId::KeysExit:
+							curButton = ButtonId::KeysDefault;
+							break;
+						default: break;
+					}
+				}
+
+				if (c & ~oldc & CONTROL_DN)
+				{
+					switch (curButton)
+					{
+						case ButtonId::None:
+							curButton = ButtonId::Keys1_0;
+							break;
+						case ButtonId::Keys1_0:
+							curButton = ButtonId::Keys1_1;
+							break;
+						case ButtonId::Keys1_1:
+							curButton = ButtonId::Keys1_2;
+							break;
+						case ButtonId::Keys1_2:
+							curButton = ButtonId::Keys1_3;
+							break;
+						case ButtonId::Keys1_3:
+							curButton = ButtonId::Keys1_4;
+							break;
+						case ButtonId::Keys1_4:
+							curButton = ButtonId::Keys1_5;
+							break;
+						case ButtonId::Keys2_0:
+							curButton = ButtonId::Keys2_1;
+							break;
+						case ButtonId::Keys2_1:
+							curButton = ButtonId::Keys2_2;
+							break;
+						case ButtonId::Keys2_2:
+							curButton = ButtonId::Keys2_3;
+							break;
+						case ButtonId::Keys2_3:
+							curButton = ButtonId::Keys2_4;
+							break;
+						case ButtonId::Keys2_4:
+							curButton = ButtonId::Keys2_5;
+							break;
+						case ButtonId::Keys1_5:
+						case ButtonId::Keys2_5:
+							curButton = ButtonId::KeysDefault;
+							break;
+						case ButtonId::KeysDefault:
+							curButton = ButtonId::KeysExit;
+							break;
+						default: break;
+					}
+				}
+
+				if (c & ~oldc & CONTROL_RT)
+				{
+					switch (curButton)
+					{
+						case ButtonId::None:
+							curButton = ButtonId::Keys1_0;
+							break;
+						case ButtonId::Keys1_0:
+							curButton = ButtonId::Keys2_0;
+							break;
+						case ButtonId::Keys1_1:
+							curButton = ButtonId::Keys2_1;
+							break;
+						case ButtonId::Keys1_2:
+							curButton = ButtonId::Keys2_2;
+							break;
+						case ButtonId::Keys1_3:
+							curButton = ButtonId::Keys2_3;
+							break;
+						case ButtonId::Keys1_4:
+							curButton = ButtonId::Keys2_4;
+							break;
+						case ButtonId::Keys1_5:
+							curButton = ButtonId::Keys2_5;
+							break;
+						default: break;
+					}
+				}
+
+				if (c & ~oldc & CONTROL_LF)
+				{
+					switch (curButton)
+					{
+						case ButtonId::None:
+							curButton = ButtonId::Keys1_0;
+							break;
+						case ButtonId::Keys2_0:
+							curButton = ButtonId::Keys1_0;
+							break;
+						case ButtonId::Keys2_1:
+							curButton = ButtonId::Keys1_1;
+							break;
+						case ButtonId::Keys2_2:
+							curButton = ButtonId::Keys1_2;
+							break;
+						case ButtonId::Keys2_3:
+							curButton = ButtonId::Keys1_3;
+							break;
+						case ButtonId::Keys2_4:
+							curButton = ButtonId::Keys1_4;
+							break;
+						case ButtonId::Keys2_5:
+							curButton = ButtonId::Keys1_5;
+							break;
+						default: break;
+					}
+				}
+
+				if(mb || (c & ~oldc & CONTROL_B1))
+				{
+					kBtnNum = 0;
+					for (i = 0; i < NUM_KC_BTNS; i++)
+					{
+						if (kcBtn[i].id == curButton)
 						{
-							kBtnNum=i;
-							MakeNormalSound(SND_MENUSELECT);
-							if(kcBtn[i].id>=BTN_K1 && kcBtn[i].id<BTN_K1+6)
-							{
-								kcMode=kcBtn[i].id-BTN_K1+1;
-								canHitKeys=0;
-							}
-							else if(kcBtn[i].id>=BTN_K2 && kcBtn[i].id<BTN_K2+6)
-							{
-								kcMode=kcBtn[i].id-BTN_K2+7;
-								canHitKeys=0;
-							}
-							else if(kcBtn[i].id==BTN_EXITKEYS)
-							{
-								mode=PROF_NORMAL;
-								SaveProfile();
-							}
-							else if(kcBtn[i].id==BTN_DEFAULT)
-							{
-								DefaultControls();
-								InitKeyConfig();
-							}
-							if(kcMode!=0)
-								mgl->ClearKeys();
+							kBtnNum = i;
+							break;
 						}
+					}
+
+					MakeNormalSound(SND_MENUSELECT);
+					if(curButton>=ButtonId::Keys1_0 && curButton<=ButtonId::Keys1_5)
+					{
+						kcMode=(byte)curButton-(byte)ButtonId::Keys1_0+1;
+						canHitKeys=0;
+						mgl->ClearKeys();
+					}
+					else if(curButton>=ButtonId::Keys2_0 && curButton<=ButtonId::Keys2_5)
+					{
+						kcMode=(byte)curButton-(byte)ButtonId::Keys2_0+7;
+						canHitKeys=0;
+						mgl->ClearKeys();
+					}
+					else if(curButton==ButtonId::KeysExit)
+					{
+						mode=PROF_NORMAL;
+						if(!mb)
+							curButton = ButtonId::KeyConfig;
+						SaveProfile();
+					}
+					else if(curButton==ButtonId::KeysDefault)
+					{
+						DefaultControls();
+						InitKeyConfig();
 					}
 				}
 
 				if(k==27)
 				{
 					mode=PROF_NORMAL;
+					curButton = ButtonId::KeyConfig;
 					SaveProfile();
 				}
 
@@ -425,7 +719,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 				else
 					strcpy(kcBtn[kBtnNum].txt,"? ? ?");
 
-				if(k==27)
+				if(k==27 || (GetGamepadButtons() & ~(1 << SDL_CONTROLLER_BUTTON_A)))
 				{
 					InitKeyConfig();
 					kcMode=0;
@@ -464,12 +758,14 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 			break;
 	}
 
+	oldc = c;
+
 	return 0;
 }
 
-void RenderProfButton(int x,int y,int wid,const char *txt,MGLDraw *mgl)
+void RenderProfButton(int x,int y,int wid,const char *txt,MGLDraw *mgl, ButtonId buttonId)
 {
-	if((mode==PROF_NORMAL || mode==PROF_KEYCONFIG) && PointInRect(msx,msy,x,y,x+wid,y+PBTN_HEIGHT))
+	if((mode==PROF_NORMAL || mode==PROF_KEYCONFIG) && curButton == buttonId)
 	{
 		mgl->Box(x,y,x+wid,y+PBTN_HEIGHT,32+31);
 		mgl->FillBox(x+1,y+1,x+wid-1,y+PBTN_HEIGHT-1,32+8);
@@ -516,16 +812,16 @@ void RenderProfMenu(MGLDraw *mgl)
 
 	for(i=0;i<NUM_PROF_BTNS;i++)
 	{
-		if(btn[i].id==BTN_RECORDS && !recordBook)
-			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,"?????",mgl);
-		else if(btn[i].id==BTN_CANDLERADAR && !candleRadar)
-			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,"?????",mgl);
-		else if(btn[i].id==BTN_BRAINRADAR && !brainRadar)
-			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,"?????",mgl);
-		else if(btn[i].id==BTN_MOVENSHOOT && !moveNShoot)
-			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,"?????",mgl);
+		if(btn[i].id==ButtonId::Records && !recordBook)
+			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,"?????",mgl,btn[i].id);
+		else if(btn[i].id==ButtonId::CandleRadar && !candleRadar)
+			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,"?????",mgl,btn[i].id);
+		else if(btn[i].id==ButtonId::BrainRadar && !brainRadar)
+			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,"?????",mgl,btn[i].id);
+		else if(btn[i].id==ButtonId::MoveNShoot && !moveNShoot)
+			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,"?????",mgl,btn[i].id);
 		else
-			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,btn[i].txt,mgl);
+			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,btn[i].txt,mgl,btn[i].id);
 	}
 
 	PrintGlow(472,20,"Available Profiles",0,2);
@@ -572,7 +868,7 @@ void RenderKeyConfigMenu(MGLDraw *mgl)
 		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
 
 	for(i=0;i<NUM_KC_BTNS;i++)
-		RenderProfButton(kcBtn[i].x,kcBtn[i].y,kcBtn[i].wid,kcBtn[i].txt,mgl);
+		RenderProfButton(kcBtn[i].x,kcBtn[i].y,kcBtn[i].wid,kcBtn[i].txt,mgl,kcBtn[i].id);
 
 	PrintGlow(20,20,"Configure Controls",0,2);
 
