@@ -7,6 +7,7 @@
 #include "game.h"
 #include "config.h"
 #include "appdata.h"
+#include "steam.h"
 
 #if __linux__ || __EMSCRIPTEN__
 #include <unistd.h>
@@ -895,7 +896,10 @@ byte TryHighScore(void)
 		gotRecords=0;
 
 	if(gotRecords)
+	{
 		SaveHiScores();
+		SteamManager::Get()->UploadWorldScore();
+	}
 
 	return gotRecords;
 }

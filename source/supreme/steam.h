@@ -21,6 +21,8 @@ public:
 	virtual bool CanUploadToWorkshop() { return false; }
 
 	virtual void OpenURLOverlay(const char* url);
+
+	virtual void UploadWorldScore() {}
 };
 
 #endif

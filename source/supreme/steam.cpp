@@ -21,6 +21,38 @@ void SteamManager::OpenURLOverlay(const char *url)
 #include "erase_if.h"
 #include "shop.h"
 #include "theater.h"
+#include "hiscore.h"
+#include "progress.h"
+
+int32_t PackWorldProgress(worldData_t* worldProgress)
+{
+	int32_t percentage10x = int32_t(std::clamp(worldProgress->percentage * 10.0f, 0.0f, 1000.0f));
+	return (worldProgress->keychains & 0xff)
+		| ((percentage10x & 0x3ff) << 8);
+}
+
+void UnpackWorldProgress(int32_t packed, byte* keychains, float* percentage)
+{
+	*keychains = (packed & 0xff);
+	int32_t percentage10x = (packed & 0x3ff00) >> 8;
+	*percentage = float(percentage10x) / 10.0f;
+}
+
+int32_t PackMapScore(score_t* score)
+{
+	// Top 3 bits for playAs, next 2 for, remaining 27 for score.
+	// Per-level score display thus capped at 134,217,727.
+	return (std::min(score->score, 0x7ffffffu))
+		| ((score->difficulty & 0x3) << 27)
+		| (std::min(score->playAs, byte(0x7)) << 29);
+}
+
+void UnpackMapScore(int32_t packed, dword* score, byte* playAs, byte* difficulty)
+{
+	*score = packed & 0x7ffffff;
+	*difficulty = (packed & 0x18000000) >> 27;
+	*playAs = (packed & 0xe0000000) >> 29;
+}
 
 std::map<std::string, int32_t> GetStats()
 {
@@ -333,6 +365,120 @@ public:
 		{
 			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu failed: %d", pParam->m_nPublishedFileId, pParam->m_eResult);
 		}
+	}
+
+	// ------------------------------------------------------------------------
+	// Per-world score leaderboards
+
+	class UploadWorldScoreJob
+	{
+		int32_t totalScore;
+		int32_t extraData[k_cLeaderboardDetailsMax];
+		int extraDataCount;
+
+		CCallResult<UploadWorldScoreJob, LeaderboardFindResult_t> findLeaderboardCall;
+		CCallResult<UploadWorldScoreJob, LeaderboardScoreUploaded_t> uploadScoreCall;
+
+	public:
+		UploadWorldScoreJob(const char* fullFilename, world_t* world, worldData_t* worldProgress)
+		{
+			// Pack keychain flags and NNN.N% completion into extra data for display
+			extraData[0] = PackWorldProgress(worldProgress);
+			extraDataCount = 1;
+
+			totalScore = 0;
+			for (int i = 0; i < world->numMaps; ++i)
+			{
+				int32_t packedMapScore = 0;
+				Map* map = world->map[i];
+				score_t winners[3];
+				// Take the top score on this machine, regardless of profile.
+				if (GetTopScores(winners, map) > 0)
+				{
+					packedMapScore = PackMapScore(&winners[0]);
+					totalScore += winners[0].score;
+				}
+
+				// Pack per-level top score, character, and difficulty into extra slots.
+				// HUB levels are skipped, but unscored levels get explicit zeroes.
+				if (!(map->flags & MAP_HUB) && extraDataCount < k_cLeaderboardDetailsMax)
+				{
+					// 4 bits for playable character
+					// 2 bits for difficulty
+					// leaving 29 bits for
+					extraData[extraDataCount] = packedMapScore;
+					++extraDataCount;
+				}
+			}
+
+			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "FindOrCreateLeaderboard(%s)", fullFilename);
+			findLeaderboardCall.Set(SteamUserStats()->FindOrCreateLeaderboard(
+				fullFilename,
+				k_ELeaderboardSortMethodDescending,
+				k_ELeaderboardDisplayTypeNumeric
+			), this, &UploadWorldScoreJob::FindLeaderboardCallback);
+		}
+
+	private:
+		void FindLeaderboardCallback(LeaderboardFindResult_t* result, bool ioError)
+		{
+			if (!ioError && result->m_bLeaderboardFound && result->m_hSteamLeaderboard)
+			{
+				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "UploadLeaderboardScore(%llu, %d, ...[%d])",
+					result->m_hSteamLeaderboard, totalScore, extraDataCount);
+				uploadScoreCall.Set(SteamUserStats()->UploadLeaderboardScore(
+					result->m_hSteamLeaderboard,
+					k_ELeaderboardUploadScoreMethodKeepBest,
+					totalScore,
+					extraData,
+					extraDataCount
+				), this, &UploadWorldScoreJob::UploadScoreCallback);
+			}
+			else
+			{
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "FindOrCreateLeaderboard failed");
+				delete this;  // living on the edge
+			}
+		}
+
+		void UploadScoreCallback(LeaderboardScoreUploaded_t* result, bool ioError)
+		{
+			if (!ioError && result->m_bSuccess)
+			{
+				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "UploadLeaderboardScore OK: changed=%d, rank %d -> %d",
+					result->m_bScoreChanged, result->m_nGlobalRankPrevious, result->m_nGlobalRankNew);
+			}
+			else
+			{
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "UploadLeaderboardScore failed");
+			}
+			delete this;
+		}
+	};
+
+	void UploadWorldScore() override
+	{
+		const char* worldFilename = profile.lastWorld;
+
+		std::string fullFilename = "worlds/";
+		fullFilename.append(worldFilename);
+
+		world_t world;
+		if (!LoadWorld(&world, fullFilename.c_str()))
+		{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "UploadWorldScore(%s): bad LoadWorld", worldFilename);
+			return;
+		}
+
+		worldData_t* progress = GetWorldProgressNoCreate(worldFilename);
+		if (!progress)
+		{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "UploadWorldScore(%s): no progress", worldFilename);
+			return;
+		}
+
+		// raw new() so the job can delete itself when its callbacks complete
+		new UploadWorldScoreJob(fullFilename.c_str(), &world, progress);
 	}
 };
 
