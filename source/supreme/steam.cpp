@@ -190,6 +190,24 @@ public:
 	}
 
 	// ------------------------------------------------------------------------
+	// Prefill your Steam name when creating your profile
+	void GetUsername(char* buffer, size_t size) override
+	{
+		const char* personaName = SteamFriends()->GetPersonaName();
+		size_t pos = 0;
+		while (pos < size - 1)
+		{
+			char c = *personaName++;
+			if (!c) break;
+			if ((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9'))
+			{
+				buffer[pos++] = c;
+			}
+		}
+		buffer[pos] = 0;
+	}
+
+	// ------------------------------------------------------------------------
 	// Automatically pause on overlay opening
 	STEAM_CALLBACK(SteamManagerImpl, on_overlay_activated, GameOverlayActivated_t)
 	{

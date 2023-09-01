@@ -1,6 +1,8 @@
 #ifndef STEAM_H
 #define STEAM_H
 
+#include <stddef.h>
+
 // The interface from the rest of the game to the Steam module.
 class SteamManager
 {
@@ -23,6 +25,8 @@ public:
 	virtual void OpenURLOverlay(const char* url);
 
 	virtual void UploadWorldScore() {}
+
+	virtual void GetUsername(char* buffer, size_t size) {}
 };
 
 #endif
