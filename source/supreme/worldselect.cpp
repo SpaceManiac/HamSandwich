@@ -11,6 +11,8 @@
 #include "hiscore.h"
 #include "appdata.h"
 #include "erase_if.h"
+#include "vanilla_extract.h"
+#include "steam.h"
 
 enum Done : byte
 {
@@ -36,6 +38,7 @@ enum class ButtonId
 	ResetHighScores,
 	ExitToMenu,
 	RecordScoresTimes,
+	ViewInWorkshop,
 	PrevLevel,
 	NextLevel,
 	Yes,
@@ -80,6 +83,7 @@ static char msBright,msDBright;
 static score_t top3[3];
 static byte level,scoreMode,numScores,noScoresAtAll;
 static world_t tmpWorld;
+static vanilla::VfsMeta worldMeta;
 static int mouseZ;
 static int oldGamepad = ~0;
 static bool mouseMode = false;
@@ -382,6 +386,7 @@ void SelectLastWorld(void)
 		scoreMode=0;
 		noScoresAtAll=0;
 		FetchScores(0);
+		AppdataVfs().query_bottom(s, &worldMeta);
 	}
 }
 
@@ -395,6 +400,7 @@ void MoveToNewWorld(void)
 	level=0;
 	noScoresAtAll=0;
 	FetchScores(0);
+	AppdataVfs().query_bottom(s, &worldMeta);
 }
 
 TASK(void) InitWorldSelect(MGLDraw *mgl)
@@ -500,6 +506,11 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			{
 				curButton = ButtonId::NextLevel;
 			}
+			// Steam features
+			else if (PointInRect(msx,msy,180,395,180+150,395+WBTN_HEIGHT) && !list[choice].dimmed && worldMeta.steamWorkshopId)
+			{
+				curButton = ButtonId::ViewInWorkshop;
+			}
 		}
 		else if (mode == MODE_CONFIRM_ERASE_PROGRESS || mode == MODE_CONFIRM_ERASE_SCORES)
 		{
@@ -562,6 +573,9 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				case ButtonId::ExitToMenu:
 					curButton = ButtonId::ResetHighScores;
 					break;
+				case ButtonId::ViewInWorkshop:
+					curButton = ButtonId::RecordScoresTimes;
+					break;
 				default: break;
 			}
 		}
@@ -596,6 +610,10 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				case ButtonId::SortComplete:
 					curButton = ButtonId::PlayThisWorld;
 					break;
+				case ButtonId::RecordScoresTimes:
+					if (worldMeta.steamWorkshopId)
+						curButton = ButtonId::ViewInWorkshop;
+					break;
 				default: break;
 			}
 		}
@@ -605,11 +623,14 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			switch (curButton)
 			{
 				case ButtonId::PlayThisWorld:
+					if (!list[choice].dimmed)
+						curButton = ButtonId::RecordScoresTimes;
+					break;
 				case ButtonId::ResetThisWorld:
 				case ButtonId::ResetHighScores:
 				case ButtonId::ExitToMenu:
 					if (!list[choice].dimmed)
-						curButton = ButtonId::RecordScoresTimes;
+						curButton = worldMeta.steamWorkshopId ? ButtonId::ViewInWorkshop : ButtonId::RecordScoresTimes;
 					break;
 				case ButtonId::RecordScoresTimes:
 					if (!noScoresAtAll)
@@ -646,6 +667,9 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 					break;
 				case ButtonId::SortComplete:
 					curButton = ButtonId::SortAuthor;
+					break;
+				case ButtonId::ViewInWorkshop:
+					curButton = ButtonId::ResetThisWorld;
 					break;
 				default: break;
 			}
@@ -743,6 +767,13 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 						level=0;
 					FetchScores(0);
 					break;
+
+				case ButtonId::ViewInWorkshop: {
+					std::string url = "https://steamcommunity.com/sharedfiles/filedetails/?id=";
+					url.append(std::to_string(worldMeta.steamWorkshopId));
+					SteamManager::Get()->OpenURLOverlay(url.c_str());
+					break;
+				}
 
 				default: break;
 			}
@@ -1101,6 +1132,11 @@ void RenderWorldSelect(MGLDraw *mgl)
 				}
 				PrintGlow(615-GetStrLength(s,2),395+i*20,s,0,2);
 			}
+		}
+
+		if (worldMeta.steamWorkshopId)
+		{
+			RenderWorldSelectButton(180,395,150, "View in Workshop", mgl, ButtonId::ViewInWorkshop);
 		}
 	}
 
