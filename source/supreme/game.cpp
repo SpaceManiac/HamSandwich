@@ -127,9 +127,6 @@ byte InitLevel(byte map)
 	curMap=new Map(curWorld.map[map]);
 
 	verified=VerifyLevel(curMap);
-#ifndef NDEBUG
-	verified=true;
-#endif
 
 	PrintToLog(curMap->name,0);
 
