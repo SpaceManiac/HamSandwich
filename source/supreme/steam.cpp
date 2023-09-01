@@ -14,6 +14,7 @@ void SteamManager::OpenURLOverlay(const char *url)
 #include <string>
 #include <map>
 #include <inttypes.h>
+#include <sstream>
 #include "appdata.h"
 #include "vanilla_extract.h"
 #include "game.h"
@@ -317,6 +318,13 @@ public:
 
 	// ------------------------------------------------------------------------
 	// Workshop download
+	std::string workshopStatus;
+
+	const char* DescribeWorkshopStatus() override
+	{
+		return workshopStatus.c_str();
+	}
+
 	void MountWorkshopContent()
 	{
 		vanilla::VfsStack& vfs_stack = AppdataVfs();
@@ -329,9 +337,16 @@ public:
 		subscribedCount = SteamUGC()->GetSubscribedItems(subscribedItemIds.data(), subscribedCount);
 		subscribedItemIds.resize(subscribedCount);
 
+		int numBusy = 0;
 		for (PublishedFileId_t fileId : subscribedItemIds)
 		{
 			uint32_t state = SteamUGC()->GetItemState(fileId);
+
+			if (state & (k_EItemStateNeedsUpdate | k_EItemStateDownloading | k_EItemStateDownloadPending))
+			{
+				numBusy++;
+			}
+
 			if (state & k_EItemStateNeedsUpdate)
 			{
 				if (SteamUGC()->DownloadItem(fileId, false))
@@ -361,6 +376,18 @@ public:
 				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop %llu: state is %" PRIu32, fileId, state);
 			}
 		}
+
+		if (numBusy == 0)
+		{
+			workshopStatus = "";
+		}
+		else
+		{
+			std::ostringstream status;
+			status << "Updating " << numBusy << " Workshop add-on" << (numBusy == 1 ? "" : "s") << "...";
+			workshopStatus = status.str();
+		}
+
 		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop end");
 	}
 

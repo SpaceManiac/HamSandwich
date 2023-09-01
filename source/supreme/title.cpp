@@ -235,6 +235,9 @@ void MainMenuDisplay(MGLDraw *mgl)
 	const char* edition = SteamManager::Get()->DescribeEdition();
 	Print(SCRWID - GetStrLength(edition, 1), 20, edition, 1, 1);
 	Print(SCRWID - GetStrLength(edition, 1) - 1, 20-1, edition, 0, 1);
+	const char* workshopStatus = SteamManager::Get()->DescribeWorkshopStatus();
+	Print(3, 3, workshopStatus, 1, 1);
+	Print(3-1, 3-1, workshopStatus, 0, 1);
 
 	for(i=0;i<8;i++)
 	{

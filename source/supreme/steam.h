@@ -25,6 +25,7 @@ public:
 	virtual void ProfileReady() {}
 	virtual void CompleteGoal(int goal) {}
 
+	virtual const char* DescribeWorkshopStatus() { return ""; }
 	virtual bool CanUploadToWorkshop() { return false; }
 	virtual void StartPlaytimeTracking(const char* fullFilename) {}
 	virtual void StopPlaytimeTracking() {}
