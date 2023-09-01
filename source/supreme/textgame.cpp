@@ -1907,7 +1907,7 @@ byte UpdateTextGame(int *lastTime,MGLDraw *mgl)
 
 	c=mgl->LastKeyPressed();
 
-	if(c==27)
+	if(c==27 || (GetGamepadButtons() & (1 << SDL_CONTROLLER_BUTTON_BACK)))
 		return 1;
 
 	if(c==13)	// enter
@@ -1921,6 +1921,7 @@ byte UpdateTextGame(int *lastTime,MGLDraw *mgl)
 		{
 			if(HandleInput())
 				TimePassed();
+			mgl->StartTextInput(35, 440, 640-35, 440+28);
 		}
 
 		strcpy(lastInput,inputTxt);
@@ -1985,6 +1986,9 @@ TASK(void) TextGame(MGLDraw *mgl)
 	int lastTime;
 
 	InitTextGame(mgl);
+	SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "0");
+	mgl->StartTextInput(35, 440, 640-35, 440+28);
+
 	lastTime=1;
 	while(!done)
 	{
