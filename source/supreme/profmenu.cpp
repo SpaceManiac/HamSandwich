@@ -18,6 +18,9 @@
 
 constexpr int PBTN_HEIGHT = 19;
 
+constexpr int MAX_PROFS = 20;
+constexpr int PRFNAME_LEN = 32;
+
 enum Mode
 {
 	PROF_NORMAL,
@@ -25,38 +28,47 @@ enum Mode
 	PROF_KEYCONFIG,
 };
 
-enum class ButtonId
+// dorky enum-in-namespace to scope the entries but allow math
+namespace ButtonIdNs
 {
-	None,
-	Playlist,
-	DelProf,
-	BrainRadar,
-	CandleRadar,
-	MoveNShoot,
-	Exit,
-	KeyConfig,
-	Difficulty,
-	Character,
-	Records,
-	// keyconfig buttons
-	Keys1_0,
-	Keys1_1,
-	Keys1_2,
-	Keys1_3,
-	Keys1_4,
-	Keys1_5,
-	Keys2_0,
-	Keys2_1,
-	Keys2_2,
-	Keys2_3,
-	Keys2_4,
-	Keys2_5,
-	KeysDefault,
-	KeysExit,
-};
-
-constexpr int MAX_PROFS = 20;
-constexpr int PRFNAME_LEN = 32;
+	enum ButtonId
+	{
+		None,
+		Playlist,
+		DelProf,
+		BrainRadar,
+		CandleRadar,
+		MoveNShoot,
+		Exit,
+		KeyConfig,
+		Difficulty,
+		Character,
+		Records,
+		// delete profile
+		Yes,
+		No,
+		// keyconfig buttons
+		Keys1_0,
+		Keys1_1,
+		Keys1_2,
+		Keys1_3,
+		Keys1_4,
+		Keys1_5,
+		Keys2_0,
+		Keys2_1,
+		Keys2_2,
+		Keys2_3,
+		Keys2_4,
+		Keys2_5,
+		KeysDefault,
+		KeysExit,
+		// Profile buttons
+		Profile_New,
+		Profile_0,
+		Profile_End = Profile_0 + MAX_PROFS,
+	};
+}
+using ButtonIdNs::ButtonId;
 
 struct profButton_t
 {
@@ -250,10 +262,25 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					curButton = btn[i].id;
 				}
 			}
+
+			int x = 470, y = 38;
+			for(i=0;i<numFiles;i++)
+			{
+				if(PointInRect(msx,msy,x,y+i*18,x+150,y+i*18+18))
+					curButton = ButtonId(ButtonId::Profile_0 + i);
+			}
+			if(i<MAX_PROFS)
+			{
+				if(PointInRect(msx,msy,x,y+i*18,x+150,y+i*18+18))
+					curButton = ButtonId::Profile_New;
+			}
 		}
 		else if (mode == PROF_DELETE)
 		{
-
+			if (PointInRect(msx, msy, 320-100-60,270,320-100-60+60,270+15))
+				curButton = ButtonId::Yes;
+			else if (PointInRect(msx, msy, 320+100,270,320+100+60,270+15))
+				curButton = ButtonId::No;
 		}
 		else if (mode == PROF_KEYCONFIG)
 		{
@@ -323,9 +350,19 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						curButton = ButtonId::DelProf;
 						break;
 					case ButtonId::None:
+					case ButtonId::Difficulty:
 						curButton = ButtonId::Exit;
 						break;
+					case ButtonId::Profile_New:
+						curButton = ButtonId(ButtonId::Profile_0 + numFiles - 1);
+						break;
 					default: break;
+				}
+
+				if (curButton >= ButtonId::Profile_0 && curButton < ButtonId::Profile_0 + numFiles)
+				{
+					// NB: Profile_0 rolls down to Profile_New for wraparound
+					curButton = ButtonId(curButton - 1);
 				}
 			}
 
@@ -334,6 +371,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 				switch (curButton)
 				{
 					case ButtonId::None:
+					case ButtonId::Exit:
 						curButton = ButtonId::Difficulty;
 						break;
 					case ButtonId::Difficulty:
@@ -362,6 +400,45 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						break;
 					case ButtonId::DelProf:
 						curButton = ButtonId::Exit;
+						break;
+					case ButtonId::Profile_New:
+						curButton = ButtonId::Profile_0;
+						break;
+					default: break;
+				}
+
+				if (curButton >= ButtonId::Profile_0 && curButton < ButtonId::Profile_0 + numFiles)
+				{
+					curButton = ButtonId(curButton + 1);
+					if (curButton >= ButtonId::Profile_0 + numFiles)
+						curButton = ButtonId::Profile_New;
+				}
+			}
+
+			if (c & ~oldc & CONTROL_LF)
+			{
+				if (curButton == ButtonId::Profile_New || (curButton >= ButtonId::Profile_0 && curButton < ButtonId::Profile_End))
+				{
+					curButton = ButtonId::Difficulty;
+				}
+			}
+
+			if (c & ~oldc & CONTROL_RT)
+			{
+				switch (curButton)
+				{
+					case ButtonId::None:
+					case ButtonId::Difficulty:
+					case ButtonId::Character:
+					case ButtonId::BrainRadar:
+					case ButtonId::CandleRadar:
+					case ButtonId::MoveNShoot:
+					case ButtonId::Records:
+					case ButtonId::KeyConfig:
+					case ButtonId::Playlist:
+					case ButtonId::DelProf:
+					case ButtonId::Exit:
+						curButton = ButtonId(ButtonId::Profile_0 + profChoice);
 						break;
 					default: break;
 				}
@@ -411,47 +488,43 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					case ButtonId::KeyConfig:
 						InitKeyConfig();
 						mode=PROF_KEYCONFIG;
-						if (!mb)
-							curButton = ButtonId::Keys1_0;
+						curButton = mb ? ButtonId::None : ButtonId::Keys1_0;
 						kcMode=0;
 						break;
 					case ButtonId::DelProf:
 						mode=PROF_DELETE;
+						curButton = mb ? ButtonId::None : ButtonId::No;
 						InitYesNoDialog("Really delete this profile?","Yes","No");
 						break;
 					case ButtonId::Exit:
 						return 1;
 						break;
+					case ButtonId::Profile_New:
+						if (numFiles < MAX_PROFS)
+						{
+							SaveProfile();
+							return 3;
+						}
+						break;
 					default: break;
+				}
+
+				if (curButton >= ButtonId::Profile_0 && curButton < ButtonId::Profile_0 + numFiles)
+				{
+					i = curButton - ButtonId::Profile_0;
+					// selecting a profile
+					MakeNormalSound(SND_MENUSELECT);
+					SaveProfile();
+					FreeProfile();
+					profChoice=i;
+					LoadProfile(ShortName(&fileList[i*PRFNAME_LEN]));
+					recordBook=ItemPurchased(SHOP_MAJOR,MAJOR_RECORDBOOK);
+					candleRadar=ItemPurchased(SHOP_ABILITY,ABIL_CANDLE);
+					brainRadar=ItemPurchased(SHOP_ABILITY,ABIL_BRAIN);
+					moveNShoot=ItemPurchased(SHOP_ABILITY,ABIL_MOVESHOOT);
 				}
 			}
 
-			if(mb)
-			{
-				if(PointInRect(msx,msy,470,39,470+150,38+361))
-				{
-					// profile list
-					i=(msy-39)/18;
-					if(i<numFiles)	// selecting a profile
-					{
-						MakeNormalSound(SND_MENUSELECT);
-						SaveProfile();
-						FreeProfile();
-						profChoice=i;
-						LoadProfile(ShortName(&fileList[i*PRFNAME_LEN]));
-						recordBook=ItemPurchased(SHOP_MAJOR,MAJOR_RECORDBOOK);
-						candleRadar=ItemPurchased(SHOP_ABILITY,ABIL_CANDLE);
-						brainRadar=ItemPurchased(SHOP_ABILITY,ABIL_BRAIN);
-						moveNShoot=ItemPurchased(SHOP_ABILITY,ABIL_MOVESHOOT);
-					}
-					else if(i==numFiles && numFiles<MAX_PROFS)
-					{
-						SaveProfile();
-						MakeNormalSound(SND_MENUSELECT);
-						return 3;
-					}
-				}
-			}
 			if(k==27)
 				return 1;	// exit
 			break;
@@ -462,7 +535,29 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 			}
 			if(k!=0)
 				YesNoDialogKey(k);
-			switch(YesNoDialogCommand())
+			int command;
+			command = YesNoDialogCommand();
+
+			if (c & ~oldc & (CONTROL_LF | CONTROL_RT))
+			{
+				curButton = curButton == ButtonId::No ? ButtonId::Yes : ButtonId::No;
+			}
+
+			if (c & ~oldc & CONTROL_B1)
+			{
+				switch (curButton)
+				{
+					case ButtonId::Yes:
+						command = YNM_YES;
+						break;
+					case ButtonId::No:
+						command = YNM_NO;
+						break;
+					default: break;
+				}
+			}
+
+			switch(command)
 			{
 				case YNM_YES:
 					char s[64];
@@ -490,9 +585,11 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						moveNShoot=ItemPurchased(SHOP_ABILITY,ABIL_MOVESHOOT);
 					}
 					mode=PROF_NORMAL;
+					curButton = mb ? ButtonId::None : ButtonId::Exit;
 					break;
 				case YNM_NO:
 					mode=PROF_NORMAL;
+					curButton = mb ? ButtonId::None : ButtonId::DelProf;
 					break;
 			}
 			break;
@@ -787,14 +884,14 @@ void RenderProfList(int x,int y,MGLDraw *mgl)
 	{
 		if(i==profChoice)
 			mgl->FillBox(x+1,y+1+i*18,x+149,y+i*18+18,32*1+8);
-		if(PointInRect(msx,msy,x,y+i*18,x+150,y+i*18+18))
+		if(curButton == ButtonId::Profile_0 + i)
 			mgl->Box(x+1,y+1+i*18,x+149,y+i*18+18,32*1+12);
 		PrintGlowLimited(x+2,y+2+i*18,x+150,ShortName(&fileList[i*PRFNAME_LEN]),0,2);
 	}
 
 	if(i<MAX_PROFS)
 	{
-		if(PointInRect(msx,msy,x,y+i*18,x+150,y+i*18+18))
+		if(curButton == ButtonId::Profile_New)
 			mgl->Box(x+1,y+1+i*18,x+149,y+i*18+18,32*1+12);
 		PrintGlowLimited(x+2,y+2+i*18,x+150,"<New Profile>",0,2);
 	}
@@ -841,7 +938,7 @@ void RenderProfMenu(MGLDraw *mgl)
 
 	if(mode==PROF_DELETE)
 	{
-		RenderYesNoDialog2(msx,msy,mgl);
+		RenderYesNoDialog2(msx, msy, mgl, curButton == ButtonId::Yes ? 0 : curButton == ButtonId::No ? 1 : -1);
 	}
 	// mouse cursor
 	SetSpriteConstraints(13,13,627,467);
