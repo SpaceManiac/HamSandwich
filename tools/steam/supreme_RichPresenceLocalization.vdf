@@ -1,0 +1,12 @@
+"lang"
+{
+	"english"
+	{
+		"tokens"
+		{
+			"#Status_PlayingWorld"	"Playing world: %world_name%"
+			"#Status_Shopping"	"Shopping"
+			"#Status_Editing"	"In the Editor"
+		}
+	}
+}

@@ -14,6 +14,7 @@
 #include "levelscan.h"
 #include "appdata.h"
 #include "exportdialog.h"
+#include "steam.h"
 
 byte editing = 0;
 
@@ -122,6 +123,8 @@ byte InitEditor(void)
 	StopSong();
 	SetPlayerStart(-1,-1);
 	InitStars();
+
+	SteamManager::Get()->SetPresenceEditor();
 	return 1;
 }
 
@@ -169,6 +172,8 @@ void ExitEditor(void)
 	editing=0;
 
 	editmgl->ResizeBuffer(SCRWID, SCRHEI);
+
+	SteamManager::Get()->SetPresenceNone();
 }
 
 void Delete(int x,int y)

@@ -16,6 +16,7 @@
 #include "palettes.h"
 #include "appdata.h"
 #include "winpch.h"
+#include "steam.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -724,6 +725,14 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 	StopSong();
 	InitWorld(&curWorld);
 
+	if (!editing)
+	{
+		if (shopping)
+			SteamManager::Get()->SetPresenceShopping();
+		else
+			SteamManager::Get()->SetPresenceWorld(curWorld.map[0]->name);
+	}
+
 	mapNum=player.levelNum;
 	SetPlayerStart(-1,-1);
 	while(1)
@@ -751,6 +760,8 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 	FreeWorld(&curWorld);
 	if(result==WORLD_SHOP)
 		doShop=1;
+
+	SteamManager::Get()->SetPresenceNone();
 	if(result==WORLD_QUITGAME || result==WORLD_SHOP)
 		CO_RETURN 0;
 	else

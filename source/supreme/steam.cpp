@@ -386,6 +386,34 @@ public:
 	}
 
 	// ------------------------------------------------------------------------
+	// Steam Friends rich presence
+	void SetPresenceNone() override
+	{
+		SteamFriends()->ClearRichPresence();
+	}
+
+	void SetPresenceWorld(const char* worldName) override
+	{
+		// TODO: set up a connect command?
+		SteamFriends()->SetRichPresence("steam_display", "#Status_PlayingWorld");
+		SteamFriends()->SetRichPresence("world_name", worldName);
+	}
+
+	void SetPresenceEditor() override
+	{
+		SteamFriends()->SetRichPresence("steam_display", "#Status_Editing");
+		SteamFriends()->SetRichPresence("status", nullptr);
+		SteamFriends()->SetRichPresence("connect", nullptr);
+	}
+
+	void SetPresenceShopping() override
+	{
+		SteamFriends()->SetRichPresence("steam_display", "#Status_Shopping");
+		SteamFriends()->SetRichPresence("status", nullptr);
+		SteamFriends()->SetRichPresence("connect", nullptr);
+	}
+
+	// ------------------------------------------------------------------------
 	// Per-world score leaderboards
 
 	class UploadWorldScoreJob

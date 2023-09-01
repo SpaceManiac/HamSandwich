@@ -27,6 +27,11 @@ public:
 	virtual void UploadWorldScore() {}
 
 	virtual void GetUsername(char* buffer, size_t size) {}
+
+	virtual void SetPresenceNone() {}
+	virtual void SetPresenceWorld(const char* worldName) {}
+	virtual void SetPresenceEditor() {}
+	virtual void SetPresenceShopping() {}
 };
 
 #endif
