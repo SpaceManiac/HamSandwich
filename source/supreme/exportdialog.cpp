@@ -1,11 +1,11 @@
+#define __STDC_FORMAT_MACROS
 #include "exportdialog.h"
 #include <vector>
 #include <string>
 #include <string_view>
 #include <algorithm>
-#include <zip.h>
-#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+#include <zip.h>
 #include "world.h"
 #include "display.h"
 #include "appdata.h"
@@ -16,6 +16,9 @@
 #include "editor.h"
 
 #ifdef HAS_STEAM_API
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include <steam/steam_api.h>
 #endif
 
@@ -94,7 +97,7 @@ namespace
 			{
 				LogError("SteamUGC::CreateItem: %d\n", result->m_eResult);
 				progress = Progress::Failed;
-				progressMessage = "Failed to create item";
+				progressMessage = "Failed to create item (code " + std::to_string(result->m_eResult) + ")";
 				return;
 			}
 
@@ -166,8 +169,11 @@ namespace
 			if (result->m_eResult != k_EResultOK)
 			{
 				LogError("SteamUGC::SubmitItemUpdate: %d\n", result->m_eResult);
+				LogError("  title: %s", title.c_str());
+				LogError("  folder: %s", folder.c_str());
+				LogError("  preview: %s", preview.c_str());
 				progress = Progress::Failed;
-				progressMessage = "Failed to submit update";
+				progressMessage = "Failed to submit update (code " + std::to_string(result->m_eResult) + ")";
 				return;
 			}
 
@@ -396,14 +402,29 @@ static void SaveZip()
 }
 
 #ifdef HAS_STEAM_API
+static std::string TempName()
+{
+	std::string base;
+#ifdef _WIN32
+	char buf[MAX_PATH];
+	size_t len = GetTempPathA(SDL_arraysize(buf), buf);
+	base.assign(buf, len);
+#else
+	base = "/tmp";
+#endif
+
+	base.append("/supreme_");
+	for (int i = 0; i < 16; ++i)
+		base += "0123456789"[rand() % 10];
+	return base;
+}
+
 static std::string PrepareWorkshopFolder()
 {
 	constexpr size_t BUFSIZE = 16 * 1024;
 	char buf[BUFSIZE];
 
-	char destFolder[L_tmpnam];
-	tmpnam(destFolder);
-	SDL_Log("Steam Workshop folder: %s", destFolder);
+	std::string destFolder = TempName();
 
 	for (const auto& file : files)
 	{
@@ -416,14 +437,14 @@ static std::string PrepareWorkshopFolder()
 			owned::FILE f = owned::fopen(destFilename.c_str(), "wb");
 			if (!f)
 			{
-				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Workshop: Failed to open for writing: %s", destFilename.c_str());
+				LogError("Workshop: Failed to open for writing: %s", destFilename.c_str());
 				return "";
 			}
 
 			owned::SDL_RWops rw = AssetOpen_SDL_Owned(file.filename.c_str());
 			if (!rw)
 			{
-				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Workshop: Failed to open for reading: %s", file.filename.c_str());
+				LogError("Workshop: Failed to open for reading: %s", file.filename.c_str());
 				return "";
 			}
 
@@ -434,7 +455,7 @@ static std::string PrepareWorkshopFolder()
 					break;
 				if (fwrite(buf, 1, read, f) < read)
 				{
-					SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Workshop: Error while writing to: %s", destFilename.c_str());
+					LogError("Workshop: Error while writing to: %s", destFilename.c_str());
 					return "";
 				}
 			}
@@ -446,9 +467,7 @@ static std::string PrepareWorkshopFolder()
 
 static std::string PrepareWorkshopPreview()
 {
-	char destFolder[L_tmpnam];
-	tmpnam(destFolder);
-	std::string pngFilename = destFolder;
+	std::string pngFilename = TempName();
 	pngFilename.append(".png");
 	SDL_Log("Steam Workshop preview file: %s", pngFilename.c_str());
 
@@ -652,7 +671,7 @@ void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 	if (!saveTxtOnly)
 	{
 		sprintf(buf, "%s.zip", zipName.c_str());
-		Print(midX, 18, buf, 0, 1);
+		Print(midX, 20, buf, 0, 1);
 
 		if (msx >= midX && msx <= midX + 200 && msy >= 35 && msy <= 35+14)
 		{

@@ -35,11 +35,15 @@ int vanilla::mkdir_parents(std::string_view path)
 {
 	std::string copypath { path };
 	char *start = copypath.data();
-	char *next;
+	size_t span;
 
 	int status = 0;
-	while (status == 0 && (next = strchr(start, '/')))
+	while (status == 0)
 	{
+		span = strcspn(start, "/\\");
+		if (span == strlen(start))
+			break;
+		char *next = start + span;
 		if (next != start)
 		{
 			// skip the root directory and double-slashes

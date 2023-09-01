@@ -179,8 +179,8 @@ void GetLeftStick(int16_t* x, int16_t* y, byte* dpad)
 			*dpad|=CONTROL_B4;
 		}
 	}
-	*x = std::clamp(xx, INT16_MIN, INT16_MAX);
-	*y = std::clamp(yy, INT16_MIN, INT16_MAX);
+	*x = int16_t(std::clamp(xx, int32_t(INT16_MIN), int32_t(INT16_MAX)));
+	*y = int16_t(std::clamp(yy, int32_t(INT16_MIN), int32_t(INT16_MAX)));
 }
 
 // Options menu support.

@@ -1119,9 +1119,10 @@ bool MGLDraw::SavePNG(const char* name)
 	{
 		surface->format->palette->colors[i] = { thePal[i].r, thePal[i].g, thePal[i].b, thePal[i].a };
 	}
-	IMG_SavePNG_RW(surface, name[0] == '/' ? SDL_RWFromFile(name, "wb") : AppdataOpen_Write_SDL(name).release(), SDL_TRUE);
+	// NB: Unlike SaveBMP, this expects an absolute path. Maybe slightly surprising.
+	bool ok = IMG_SavePNG_RW(surface, SDL_RWFromFile(name, "wb"), SDL_TRUE) == 0;
 	SDL_FreeSurface(surface);
-	return true;
+	return ok;
 }
 
 #ifdef _WIN32

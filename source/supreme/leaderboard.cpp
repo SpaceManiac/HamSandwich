@@ -1,6 +1,7 @@
 #include "leaderboard.h"
 
 #ifdef HAS_STEAM_API
+#include <algorithm>
 #include <steam/steam_api.h>
 #include "steam.h"
 #include "world.h"
