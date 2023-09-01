@@ -342,6 +342,8 @@ TASK(byte) LunaticRun(int *lastTime)
 						mapToGoTo=255;
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
+					if (!shopping && !editing)
+						SteamManager::Get()->StartPlaytimeTracking(nullptr);
 					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_WORLDSEL:
@@ -354,6 +356,8 @@ TASK(byte) LunaticRun(int *lastTime)
 					mapToGoTo=player.levelNum;	// repeat this level
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
+					if (!shopping && !editing)
+						SteamManager::Get()->StartPlaytimeTracking(nullptr);
 					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_EXIT:
