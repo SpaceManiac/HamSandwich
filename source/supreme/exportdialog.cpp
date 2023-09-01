@@ -254,10 +254,10 @@ static void AddDependency(std::string_view part1, std::string_view part2)
 		return;
 
 	FileKind kind = FileKind::DependencyMissing;
-	vanilla::VfsSourceKind sourceKind;
-	if (AppdataVfs().query_bottom(fname.c_str(), &sourceKind))
+	vanilla::VfsMeta meta;
+	if (AppdataVfs().query_bottom(fname.c_str(), &meta))
 	{
-		switch (sourceKind)
+		switch (meta.kind)
 		{
 			case vanilla::VfsSourceKind::Addon:
 				kind = FileKind::DependencyOtherAddon;

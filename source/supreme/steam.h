@@ -6,8 +6,13 @@
 // The interface from the rest of the game to the Steam module.
 class SteamManager
 {
+	SteamManager(const SteamManager&) = delete;
+	SteamManager(SteamManager&&) = delete;
+	SteamManager& operator=(const SteamManager&) = delete;
+	SteamManager& operator=(SteamManager&&) = delete;
 public:
 	// Singleton and setup
+	SteamManager() {}
 	virtual ~SteamManager() {}
 	static SteamManager* Init();
 	static SteamManager* Get();
@@ -21,6 +26,8 @@ public:
 	virtual void CompleteGoal(int goal) {}
 
 	virtual bool CanUploadToWorkshop() { return false; }
+	virtual void StartPlaytimeTracking(const char* fullFilename) {}
+	virtual void StopPlaytimeTracking() {}
 
 	virtual void OpenURLOverlay(const char* url);
 

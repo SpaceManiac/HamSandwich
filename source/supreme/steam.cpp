@@ -386,6 +386,31 @@ public:
 	}
 
 	// ------------------------------------------------------------------------
+	// Workshop playtime tracking
+	PublishedFileId_t playtimeTrackingId = 0;
+
+	void StartPlaytimeTracking(const char* fullFilename) override
+	{
+		// nullptr = use whatever the last thing was (for unpausing)
+		vanilla::VfsMeta meta;
+		if (fullFilename && AppdataVfs().query_bottom(fullFilename, &meta))
+		{
+			playtimeTrackingId = meta.steamWorkshopId;
+		}
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "StartPlaytimeTracking(%s) = %llu", fullFilename ? fullFilename : "nullptr", playtimeTrackingId);
+		if (playtimeTrackingId)
+		{
+			SteamUGC()->StartPlaytimeTracking(&playtimeTrackingId, 1);
+		}
+	}
+
+	void StopPlaytimeTracking() override
+	{
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "StopPlaytimeTracking");
+		SteamUGC()->StopPlaytimeTrackingForAllItems();
+	}
+
+	// ------------------------------------------------------------------------
 	// Steam Friends rich presence
 	void SetPresenceNone() override
 	{

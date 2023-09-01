@@ -130,7 +130,7 @@ namespace vanilla
 		bool delete_file(const char* filename);
 
 		// Query metadata for a given path.
-		bool query_bottom(const char* filename, VfsSourceKind* kind);
+		bool query_bottom(const char* filename, VfsMeta* meta);
 	};
 
 	// Available providers

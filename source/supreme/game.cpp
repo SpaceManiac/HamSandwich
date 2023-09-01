@@ -331,6 +331,8 @@ TASK(byte) LunaticRun(int *lastTime)
 				case PAUSE_CONTINUE:
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
+					if (!shopping && !editing)
+						SteamManager::Get()->StartPlaytimeTracking(nullptr);
 					break;
 				case PAUSE_GIVEUP:
 					SetPlayerStart(-1,-1);
@@ -647,6 +649,7 @@ void PauseGame(void)
 		return;
 	InitPauseMenu();
 	gameMode=GAMEMODE_MENU;
+	SteamManager::Get()->StopPlaytimeTracking();
 }
 
 TASK(byte) PlayALevel(byte map)
@@ -730,7 +733,10 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 		if (shopping)
 			SteamManager::Get()->SetPresenceShopping();
 		else
+		{
 			SteamManager::Get()->SetPresenceWorld(curWorld.map[0]->name);
+			SteamManager::Get()->StartPlaytimeTracking(fullName);
+		}
 	}
 
 	mapNum=player.levelNum;

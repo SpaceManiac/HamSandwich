@@ -220,7 +220,7 @@ void VfsStack::list_dir(const char* directory, std::set<std::string>& output)
 	}
 }
 
-bool VfsStack::query_bottom(const char* filename, VfsSourceKind* kind)
+bool VfsStack::query_bottom(const char* filename, VfsMeta* meta)
 {
 	std::string tombstone = tombstone_name(filename);
 
@@ -236,7 +236,7 @@ bool VfsStack::query_bottom(const char* filename, VfsSourceKind* kind)
 		}
 		if (owned::FILE fp = write_mount->open_stdio(filename))
 		{
-			*kind = VfsSourceKind::Appdata;
+			*meta = VfsMeta { VfsSourceKind::Appdata };
 			retval = true;
 		}
 	}
@@ -249,7 +249,7 @@ bool VfsStack::query_bottom(const char* filename, VfsSourceKind* kind)
 		}
 		if (owned::FILE fp = iter->open_stdio(filename))
 		{
-			*kind = iter->meta.kind;
+			*meta = iter->meta;
 			retval = true;
 		}
 	}
