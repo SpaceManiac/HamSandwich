@@ -54,6 +54,10 @@ void InitControls(void)
 	*/
 }
 
+byte GetKeyControls() {
+	return keyState;
+}
+
 byte GetControls() {
 	return keyState | GetJoyState() | SoftJoystickState();
 }
@@ -85,7 +89,7 @@ const char *ScanCodeText(byte s) {
 	return SDL_GetKeyName(SDL_GetKeyFromScancode((SDL_Scancode) s));
 }
 
-// Options menu support.
+// Gamepad special
 dword GetJoyButtons() {
 	dword held = 0;
 
@@ -119,6 +123,67 @@ dword GetGamepadButtons() {
 	return held;
 }
 
+void GetLeftStick(int16_t* x, int16_t* y, byte* dpad)
+{
+	*dpad = 0;
+	int32_t xx = 0, yy = 0;
+	for (auto iter = joysticks.begin(); iter != joysticks.end(); ++iter)
+	{
+		SDL_GameController* gamepad = iter->get();
+		SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gamepad);
+		if (!SDL_JoystickGetAttached(joystick))
+		{
+			// Drop disconnected joysticks.
+			LogDebug("Gamepad removed: %s", SDL_GameControllerName(gamepad));
+			iter = joysticks.erase(iter);
+			if (iter == joysticks.end())
+				break;
+			continue;
+		}
+
+		xx += SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
+		yy += SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
+
+		if(SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_LEFT))
+		{
+			*dpad|=CONTROL_LF;
+		}
+		if(SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_RIGHT))
+		{
+			*dpad|=CONTROL_RT;
+		}
+
+		if(SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_UP))
+		{
+			*dpad|=CONTROL_UP;
+		}
+		if(SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_DOWN))
+		{
+			*dpad|=CONTROL_DN;
+		}
+
+		if(SDL_JoystickGetButton(joystick, joyBtn[0]))
+		{
+			*dpad|=CONTROL_B1;
+		}
+		if(SDL_JoystickGetButton(joystick, joyBtn[1]))
+		{
+			*dpad|=CONTROL_B2;
+		}
+		if(SDL_JoystickGetButton(joystick, joyBtn[2]))
+		{
+			*dpad|=CONTROL_B3;
+		}
+		if(SDL_JoystickGetButton(joystick, joyBtn[3]))
+		{
+			*dpad|=CONTROL_B4;
+		}
+	}
+	*x = std::clamp(xx, INT16_MIN, INT16_MAX);
+	*y = std::clamp(yy, INT16_MIN, INT16_MAX);
+}
+
+// Options menu support.
 void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys) {
 	nkeys = std::min(nkeys, NUM_CONTROLS);
 	for (int i = 0; i < nkeys; ++i) {

@@ -20,6 +20,7 @@ enum {
 void InitControls();
 
 // Get controls which are currently held. Union of all keyboards and joysticks.
+byte GetKeyControls();
 byte GetControls();
 byte GetTaps();  // Tapped since last GetTaps().
 
@@ -30,9 +31,11 @@ byte GetArrowTaps();  // Tapped since last GetArrowTaps().
 byte LastScanCode();
 const char *ScanCodeText(byte s);
 
-// Options menu support.
 dword GetJoyButtons();  // Joystick-specific indexes.
 dword GetGamepadButtons();  // x & (1 << SDL_GAMECONTROLLER_BUTTON_*)
+void GetLeftStick(int16_t* x, int16_t* y, byte* dpad);
+
+// Options menu support.
 void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys);
 void SetJoystickBindings(int nbuttons, const byte* buttons);
 
