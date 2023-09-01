@@ -709,7 +709,7 @@ TASK(byte) SpeedSplash(MGLDraw *mgl,const char *fname)
 
 		if(c==27)
 			CO_RETURN 0;
-		else if(c)
+		else if(c || mgl->MouseTap())
 			mode=2;
 
 		c=GetControls()|GetArrows();
