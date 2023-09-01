@@ -25,21 +25,14 @@ void SteamManager::OpenURLOverlay(const char *url)
 #include "hiscore.h"
 #include "progress.h"
 
-int32_t PackWorldProgress(worldData_t* worldProgress)
+// Matches Unpack* in leaderboard.cpp
+static int32_t PackWorldProgress(worldData_t* worldProgress)
 {
 	int32_t percentage10x = int32_t(std::clamp(worldProgress->percentage * 10.0f, 0.0f, 1000.0f));
 	return (worldProgress->keychains & 0xff)
 		| ((percentage10x & 0x3ff) << 8);
 }
-
-void UnpackWorldProgress(int32_t packed, byte* keychains, float* percentage)
-{
-	*keychains = (packed & 0xff);
-	int32_t percentage10x = (packed & 0x3ff00) >> 8;
-	*percentage = float(percentage10x) / 10.0f;
-}
-
-int32_t PackMapScore(score_t* score)
+static int32_t PackMapScore(score_t* score)
 {
 	// Top 3 bits for playAs, next 2 for, remaining 27 for score.
 	// Per-level score display thus capped at 134,217,727.
@@ -48,14 +41,7 @@ int32_t PackMapScore(score_t* score)
 		| (std::min(score->playAs, byte(0x7)) << 29);
 }
 
-void UnpackMapScore(int32_t packed, dword* score, byte* playAs, byte* difficulty)
-{
-	*score = packed & 0x7ffffff;
-	*difficulty = (packed & 0x18000000) >> 27;
-	*playAs = (packed & 0xe0000000) >> 29;
-}
-
-std::map<std::string, int32_t> GetStats()
+static std::map<std::string, int32_t> GetStats()
 {
 	int totalKills = 0, distinctKills = 0;
 	for (int i = 2; i < NUM_PROFILE_MONSTERS; i++) // skip Bouapha
@@ -466,8 +452,7 @@ public:
 	}
 
 	// ------------------------------------------------------------------------
-	// Per-world score leaderboards
-
+	// Per-world score leaderboard upload
 	class UploadWorldScoreJob
 	{
 		int32_t totalScore;
@@ -556,7 +541,7 @@ public:
 
 	void UploadWorldScore() override
 	{
-		const char* worldFilename = profile.lastWorld;
+		const char* worldFilename = player.worldName;
 
 		std::string fullFilename = "worlds/";
 		fullFilename.append(worldFilename);
@@ -578,6 +563,37 @@ public:
 		// raw new() so the job can delete itself when its callbacks complete
 		new UploadWorldScoreJob(fullFilename.c_str(), &world, progress);
 	}
+
+	// ------------------------------------------------------------------------
+	// Per-world score leaderboard display
+	CCallResult<SteamManagerImpl, LeaderboardFindResult_t> findLeaderboardCall;
+	SteamLeaderboard_t worldLeaderboardId = 0;
+
+	void PrepWorldLeaderboard(const char* fullFilename) override
+	{
+		worldLeaderboardId = 0;
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "PrepWorldLeaderboard(%s)", fullFilename);
+		findLeaderboardCall.Set(SteamUserStats()->FindLeaderboard(fullFilename), this, &SteamManagerImpl::FindLeaderboardCallback);
+	}
+
+	void FindLeaderboardCallback(LeaderboardFindResult_t* result, bool ioError)
+	{
+		if (!ioError && result->m_bLeaderboardFound && result->m_hSteamLeaderboard)
+		{
+			worldLeaderboardId = result->m_hSteamLeaderboard;
+		}
+		else
+		{
+			worldLeaderboardId = 0;
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "FindLeaderboard failed");
+		}
+	}
+
+	uint64_t WorldHasLeaderboard() override
+	{
+		return worldLeaderboardId;
+	}
+	// Remainder in leaderboard.cpp
 };
 
 #endif  // HAS_STEAM_API

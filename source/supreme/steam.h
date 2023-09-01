@@ -2,6 +2,7 @@
 #define STEAM_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 // The interface from the rest of the game to the Steam module.
 class SteamManager
@@ -33,6 +34,8 @@ public:
 	virtual void OpenURLOverlay(const char* url);
 
 	virtual void UploadWorldScore() {}
+	virtual void PrepWorldLeaderboard(const char* fullFilename) {}
+	virtual uint64_t WorldHasLeaderboard() { return 0; }
 
 	virtual void GetUsername(char* buffer, size_t size) {}
 
