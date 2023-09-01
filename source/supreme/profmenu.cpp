@@ -356,13 +356,13 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					case ButtonId::Profile_New:
 						curButton = ButtonId(ButtonId::Profile_0 + numFiles - 1);
 						break;
-					default: break;
-				}
-
-				if (curButton >= ButtonId::Profile_0 && curButton < ButtonId::Profile_0 + numFiles)
-				{
-					// NB: Profile_0 rolls down to Profile_New for wraparound
-					curButton = ButtonId(curButton - 1);
+					default:
+						if (curButton >= ButtonId::Profile_0 && curButton < ButtonId::Profile_0 + numFiles)
+						{
+							// NB: Profile_0 rolls down to Profile_New for wraparound
+							curButton = ButtonId(curButton - 1);
+						}
+						break;
 				}
 			}
 
@@ -404,14 +404,14 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					case ButtonId::Profile_New:
 						curButton = ButtonId::Profile_0;
 						break;
-					default: break;
-				}
-
-				if (curButton >= ButtonId::Profile_0 && curButton < ButtonId::Profile_0 + numFiles)
-				{
-					curButton = ButtonId(curButton + 1);
-					if (curButton >= ButtonId::Profile_0 + numFiles)
-						curButton = ButtonId::Profile_New;
+					default:
+						if (curButton >= ButtonId::Profile_0 && curButton < ButtonId::Profile_0 + numFiles)
+						{
+							curButton = ButtonId(curButton + 1);
+							if (curButton >= ButtonId::Profile_0 + numFiles)
+								curButton = ButtonId::Profile_New;
+						}
+						break;
 				}
 			}
 
