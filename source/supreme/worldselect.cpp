@@ -797,6 +797,7 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 
 				case ButtonId::SteamLeaderboard:
 					AWAIT ViewWorldLeaderboard(mgl, &tmpWorld);
+					mouseZ=mgl->mouse_z;
 					oldc = ~0;
 					CO_RETURN WS_CONTINUE;
 
