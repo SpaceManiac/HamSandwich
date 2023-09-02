@@ -110,15 +110,90 @@ static void RenderButton(MGLDraw *mgl, int x, int y, int wid, std::string_view t
 
 static TASK(void) ViewDetails(MGLDraw *mgl, const byte* backgd, const sprite_set_t& pauseJsp, const world_t* world, const Score& score)
 {
+	// Init
+	constexpr int ENTRIES_PER_SCREEN = 20;
 	char buf[256];
 
+	struct Entry
+	{
+		int num;
+		const char* name;
+		dword score;
+		byte playAs;
+		byte difficulty;
+	};
+	std::vector<Entry> entries;
+	size_t detailsIdx = 1;
+	for (int i = 0; i < world->numMaps && detailsIdx < SDL_arraysize(score.details); ++i)
+	{
+		if (world->map[i]->flags & MAP_HUB)
+			continue;
+
+		int32_t details = score.details[detailsIdx++];
+		if (details == 0)
+			continue;
+
+		Entry entry;
+		entry.num = i;
+		entry.name = world->map[i]->name;
+		UnpackMapScore(details, &entry.score, &entry.playAs, &entry.difficulty);
+		entries.push_back(entry);
+	}
+
+	enum ButtonId
+	{
+		None,
+		Back,
+	} curButton = ButtonId::None;
+	int msz = mgl->mouse_z, offset = 0;
+	int msx, msy;
+
+	// Main
+	GetTaps();
+	mgl->GetMouse(&msx, &msy);
 	while (true)
 	{
 		// Update
+		int oldmsx = msx, oldmsy = msy;
+		mgl->GetMouse(&msx, &msy);
+		bool mb = mgl->MouseTap();
+		if (mb || oldmsx != msx || oldmsy != msy)
+		{
+			curButton = ButtonId::None;
+			int y = 18;
+			if (PointInRect(msx, msy, 640-20-100, y-2, 640-20, y-2+BTN_HEIGHT))
+			{
+				curButton = ButtonId::Back;
+			}
+		}
+
+		offset = std::max(0, std::min(offset + msz - mgl->mouse_z, int(entries.size()) - ENTRIES_PER_SCREEN));
+		msz = mgl->mouse_z;
+
+		byte taps = GetTaps() | GetArrowTaps();
+		if (taps & CONTROL_UP)
+		{
+			if (offset > 0)
+				offset--;
+		}
+		if (taps & CONTROL_DN)
+		{
+			if (offset < int(entries.size()) - ENTRIES_PER_SCREEN)
+				offset++;
+		}
+		if (mb || (taps & CONTROL_B1))
+		{
+			if (curButton == ButtonId::Back)
+				break;
+		}
+		if (taps & CONTROL_B2)
+			break;
+
 		if (mgl->LastKeyPressed() == 27)
 			break;
 
-		// TODO: mouse and control handling
+		if (taps)
+			curButton = ButtonId::Back;
 
 		// Render
 		for (int i=0; i<480; i++)
@@ -127,7 +202,7 @@ static TASK(void) ViewDetails(MGLDraw *mgl, const byte* backgd, const sprite_set
 		int y = 18;
 		snprintf(buf, sizeof buf, "%s - %d. %s", world->map[0]->name, score.globalRank, SteamFriends()->GetFriendPersonaName(score.steamId));
 		PrintGlow(20, y, buf, 0, 2);
-		RenderButton(mgl, 640-20-100, y-2, 100, "Back", /*curButton == ButtonId::Back*/false);
+		RenderButton(mgl, 640-20-100, y-2, 100, "Back", curButton == ButtonId::Back);
 		y += 24;
 
 		PrintGlow(45, y, "Level", 0, 2);
@@ -136,41 +211,33 @@ static TASK(void) ViewDetails(MGLDraw *mgl, const byte* backgd, const sprite_set
 		PrintGlow(600 - GetStrLength("Difficulty", 2), y, "Difficulty", 0, 2);
 		y += 24;
 
-		size_t detailsIdx = 1;
-		// TODO: scroll, and clamp at 20 per screen
-		for (int i = 0; i < world->numMaps && detailsIdx < SDL_arraysize(score.details); ++i)
+		if (offset > 0)
+			PrintGlow(610, y, "^", 0, 2);
+		for (int i = 0; i < ENTRIES_PER_SCREEN; ++i)
 		{
-			if (world->map[i]->flags & MAP_HUB)
-				continue;
+			const Entry& entry = entries[offset + i];
 
-			int32_t details = score.details[detailsIdx++];
-			if (details == 0)
-				continue;
-
-			dword levelScore = 0;
-			byte playAs = ~0, difficulty = ~0;
-			UnpackMapScore(details, &levelScore, &playAs, &difficulty);
-
-			snprintf(buf, sizeof buf, "%d.", i);
+			snprintf(buf, sizeof buf, "%d.", entry.num);
 			PrintGlow(40 - GetStrLength(buf, 2), y, buf, 0, 2);
-			PrintGlow(45, y, world->map[i]->name, 0, 2);
+			PrintGlow(45, y, entry.name, 0, 2);
 
-			snprintf(buf, sizeof buf, "%d", levelScore);
+			snprintf(buf, sizeof buf, "%d", entry.score);
 			PrintGlow(390 - GetStrLength(buf, 2), y, buf, 0, 2);
 
-			if (playAs < SDL_arraysize(charName))
+			if (entry.playAs < SDL_arraysize(charName))
 			{
-
-				PrintGlow(530 - GetStrLength(charName[playAs], 2), y, charName[playAs], 0, 2);
+				PrintGlow(530 - GetStrLength(charName[entry.playAs], 2), y, charName[entry.playAs], 0, 2);
 			}
 
-			if (difficulty < SDL_arraysize(diffName))
+			if (entry.difficulty < SDL_arraysize(diffName))
 			{
-				PrintGlow(600 - GetStrLength(diffName[difficulty], 2), y, diffName[difficulty], 0, 2);
+				PrintGlow(600 - GetStrLength(diffName[entry.difficulty], 2), y, diffName[entry.difficulty], 0, 2);
 			}
 
 			y += 20;
 		}
+		if (offset < int(entries.size()) - ENTRIES_PER_SCREEN)
+			PrintGlow(610, y - 20, "v", 0, 2);
 
 		if (/*mouseMode*/ true)
 		{
@@ -246,7 +313,25 @@ TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t* world)
 			}
 		}
 
-		// TODO: UP and DN
+		if (taps & CONTROL_UP)
+		{
+			if (curButton == ButtonId::None || curButton == ButtonId::Back)
+				curButton = ButtonId(ButtonId::Details + download.scores.size() - 1);  // becomes Back if size=0
+			else if (curButton == ButtonId::Details)
+				curButton = ButtonId::Back;
+			else if (curButton >= ButtonId::Details && curButton < ButtonId::Details + download.scores.size())
+				curButton = ButtonId(curButton - 1);
+		}
+
+		if (taps & CONTROL_DN)
+		{
+			if (curButton == ButtonId::None || curButton == ButtonId::Details + download.scores.size() - 1)
+				curButton = ButtonId::Back;
+			else if (curButton == ButtonId::Back && !download.scores.empty())
+				curButton = ButtonId::Details;
+			else if (curButton >= ButtonId::Details && curButton < ButtonId::Details + download.scores.size())
+				curButton = ButtonId(curButton + 1);
+		}
 
 		if (mb || (taps & CONTROL_B1))
 		{
@@ -260,6 +345,9 @@ TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t* world)
 				continue;
 			}
 		}
+
+		if (taps & CONTROL_B2)
+			break;
 
 		if (mgl->LastKeyPressed() == 27)
 			break;
@@ -276,7 +364,7 @@ TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t* world)
 
 		PrintGlow(45, y, "Player", 0, 2);
 		PrintGlow(390 - 1 - GetStrLength("World Score", 2), y, "World Score", 0, 2);
-		PrintGlow(520 - GetStrLength("Complete", 2), y, "Complete", 0, 2);
+		PrintGlow(530 - GetStrLength("Complete", 2), y, "Complete", 0, 2);
 		y += 24;
 
 		PrintGlow(20, y, download.status.c_str(), 0, 2);

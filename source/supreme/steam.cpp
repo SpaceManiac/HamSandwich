@@ -511,7 +511,7 @@ public:
 					result->m_hSteamLeaderboard, totalScore, extraDataCount);
 				uploadScoreCall.Set(SteamUserStats()->UploadLeaderboardScore(
 					result->m_hSteamLeaderboard,
-					k_ELeaderboardUploadScoreMethodKeepBest,
+					k_ELeaderboardUploadScoreMethodForceUpdate,
 					totalScore,
 					extraData,
 					extraDataCount
