@@ -585,7 +585,7 @@ public:
 		else
 		{
 			worldLeaderboardId = 0;
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "FindLeaderboard failed");
+			//SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "FindLeaderboard failed");
 		}
 	}
 
