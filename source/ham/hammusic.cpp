@@ -55,12 +55,15 @@ void PlaySongFile(const char* fullname)
 	curStream = owned::Mix_LoadMUS_RW(std::move(rw));
 	if (!curStream)
 	{
-		LogError("LoadMUS(%s): %s", fullname, Mix_GetError());
+		LogError("Mix_LoadMUS(%s): %s", fullname, Mix_GetError());
 		return;
 	}
 
 	Mix_VolumeMusic(musVolume / 2);
-	Mix_PlayMusic(curStream.get(), 1);
+	if (Mix_PlayMusic(curStream.get(), 1))
+	{
+		LogError("Mix_PlayMusic(%s): %s", fullname, Mix_GetError());
+	}
 	UpdateMusic();
 }
 

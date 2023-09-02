@@ -66,7 +66,7 @@ bool JamulSoundInit(int numBuffers)
 		LogError("Mix_OpenAudio: %s", Mix_GetError());
 		return false;
 	}
-	if (Mix_Init(MIX_INIT_OGG) != MIX_INIT_OGG)
+	if (Mix_Init(MIX_INIT_OGG | MIX_INIT_MID) != (MIX_INIT_OGG | MIX_INIT_MID))
 	{
 		LogError("Mix_Init: %s", Mix_GetError());
 	}
