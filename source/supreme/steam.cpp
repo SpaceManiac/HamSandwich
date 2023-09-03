@@ -28,17 +28,23 @@ void SteamManager::OpenURLOverlay(const char *url)
 // Matches Unpack* in leaderboard.cpp
 static int32_t PackWorldProgress(worldData_t* worldProgress)
 {
+	// 8 bits keychains (5 used).
+	// 10 bits for progress out of 1000.
+	// 14 bits reserved.
 	int32_t percentage10x = int32_t(std::clamp(worldProgress->percentage * 10.0f, 0.0f, 1000.0f));
 	return (worldProgress->keychains & 0xff)
 		| ((percentage10x & 0x3ff) << 8);
 }
 static int32_t PackMapScore(score_t* score)
 {
-	// Top 3 bits for playAs, next 2 for, remaining 27 for score.
-	// Per-level score display thus capped at 134,217,727.
-	return (std::min(score->score, 0x7ffffffu))
-		| ((score->difficulty & 0x3) << 27)
-		| (std::min(score->playAs, byte(0x7)) << 29);
+	// 24 bits score. Maxes at 16,777,215.
+	// 1 bit reserved.
+	// 2 bits difficulty. Normal, Hard, Lunatic, unused.
+	// 3 bits playAs.
+	// 2 bits reserved.
+	return (std::min(score->score, 0xffffffu))
+		| ((score->difficulty & 0x3) << 25)
+		| (std::min(score->playAs, byte(0x7)) << 27);
 }
 
 static std::map<std::string, int32_t> GetStats()

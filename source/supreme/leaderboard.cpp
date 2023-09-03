@@ -21,15 +21,23 @@ static const char charName[][16]={"Bouapha","Happy Stick Man","Dr. Lunatic","Sht
 // Matches Pack* in steam.cpp
 static void UnpackWorldProgress(int32_t packed, byte* keychains, float* percentage)
 {
+	// 8 bits keychains (5 used).
+	// 10 bits for progress out of 1000.
+	// 14 bits reserved.
 	*keychains = (packed & 0xff);
 	int32_t percentage10x = (packed & 0x3ff00) >> 8;
 	*percentage = float(percentage10x) / 10.0f;
 }
 static void UnpackMapScore(int32_t packed, dword* score, byte* playAs, byte* difficulty)
 {
-	*score = packed & 0x7ffffff;
-	*difficulty = (packed & 0x18000000) >> 27;
-	*playAs = (packed & 0xe0000000) >> 29;
+	// 24 bits score. Maxes at 16,777,215.
+	// 1 bit reserved.
+	// 2 bits difficulty. Normal, Hard, Lunatic, unused.
+	// 3 bits playAs.
+	// 2 bits reserved.
+	*score = packed & 0xffffff;
+	*difficulty = (packed & 0x6000000) >> 25;
+	*playAs = (packed & 0x38000000) >> 27;
 }
 
 struct Score
@@ -200,7 +208,7 @@ static TASK(void) ViewDetails(MGLDraw *mgl, const byte* backgd, const sprite_set
 			memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
 
 		int y = 18;
-		snprintf(buf, sizeof buf, "%s - %d. %s", world->map[0]->name, score.globalRank, SteamFriends()->GetFriendPersonaName(score.steamId));
+		snprintf(buf, sizeof(buf), "%s - %d. %s", world->map[0]->name, score.globalRank, SteamFriends()->GetFriendPersonaName(score.steamId));
 		PrintGlow(20, y, buf, 0, 2);
 		RenderButton(mgl, 640-20-100, y-2, 100, "Back", curButton == ButtonId::Back);
 		y += 24;
@@ -217,11 +225,11 @@ static TASK(void) ViewDetails(MGLDraw *mgl, const byte* backgd, const sprite_set
 		{
 			const Entry& entry = entries[offset + i];
 
-			snprintf(buf, sizeof buf, "%d.", entry.num);
+			snprintf(buf, sizeof(buf), "%d.", entry.num);
 			PrintGlow(40 - GetStrLength(buf, 2), y, buf, 0, 2);
 			PrintGlow(45, y, entry.name, 0, 2);
 
-			snprintf(buf, sizeof buf, "%d", entry.score);
+			snprintf(buf, sizeof(buf), "%d", entry.score);
 			PrintGlow(390 - GetStrLength(buf, 2), y, buf, 0, 2);
 
 			if (entry.playAs < SDL_arraysize(charName))
@@ -357,7 +365,7 @@ TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t* world)
 			memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
 
 		int y = 18;
-		snprintf(buf, sizeof buf, "%s", world->map[0]->name);
+		snprintf(buf, sizeof(buf), "%s", world->map[0]->name);
 		PrintGlow(20, y, buf, 0, 2);
 		RenderButton(mgl, 640-20-100, y-2, 100, "Back", curButton == ButtonId::Back);
 		y += 24;
@@ -371,14 +379,14 @@ TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t* world)
 		for (size_t i = 0; i < download.scores.size(); ++i)
 		{
 			const auto& score = download.scores[i];
-			snprintf(buf, sizeof buf, "%d.", score.globalRank);
+			snprintf(buf, sizeof(buf), "%d.", score.globalRank);
 			PrintGlow(40 - GetStrLength(buf, 2), y, buf, 0, 2);
 			PrintGlow(45, y, SteamFriends()->GetFriendPersonaName(score.steamId), 0, 2);
 
-			snprintf(buf, sizeof buf, "%d", score.score);
+			snprintf(buf, sizeof(buf), "%d", score.score);
 			PrintGlow(390 - GetStrLength(buf, 2), y, buf, 0, 2);
 
-			snprintf(buf, sizeof buf, "%0.1f%%", score.percentage);
+			snprintf(buf, sizeof(buf), "%0.1f%%", score.percentage);
 			PrintGlow(530 - GetStrLength(buf, 2), y, buf, 0, 2);
 
 			if (score.keychains & KC_LOONY)
