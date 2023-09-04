@@ -7,42 +7,51 @@
 #include "dialogbits.h"
 #include "appdata.h"
 
-#define PM_NORMAL		0
-#define PM_SELPLAY		1	// selecting in playlist
-#define PM_SELFILE		2	// selecting in filelist
-#define PM_SELPLAY2		3	// selecting in playlist backwards
-#define PM_SELFILE2		4	// selecting in filelist backwards
-#define PM_SCROLL		5	// moving scroll bar
-#define PM_SCROLL2		6	// moving file scroll bar
+enum
+{
+	PM_NORMAL,
+	PM_SELPLAY,   // selecting in playlist
+	PM_SELFILE,   // selecting in filelist
+	PM_SELPLAY2,  // selecting in playlist backwards
+	PM_SELFILE2,  // selecting in filelist backwards
+	PM_SCROLL,    // moving scroll bar
+	PM_SCROLL2,   // moving file scroll bar
+};
 
-#define PLBTN_HEIGHT	19
-#define LISTSPACING		18
+constexpr int PLBTN_HEIGHT = 19;
+constexpr int LISTSPACING = 18;
 
-#define BTN_LIST1		1
-#define BTN_LIST2		2
-#define BTN_LIST3		3
-#define BTN_LIST4		4
-#define BTN_ADD			5
-#define BTN_ERASE		6
-#define BTN_EXIT		7
-#define BTN_MOVEUP		8
-#define BTN_MOVEDN		9
+enum ButtonId : byte
+{
+	None,
+	BTN_LIST1,
+	BTN_LIST2,
+	BTN_LIST3,
+	BTN_LIST4,
+	BTN_ADD,
+	BTN_ERASE,
+	BTN_EXIT,
+	BTN_MOVEUP,
+	BTN_MOVEDN,
+	Playlist,
+	AvailableSongs,
+};
 
-#define NUMFILESTOGET	16
+constexpr int NUMFILESTOGET = 16;
 
-#define SONGS_PER_PAGE	20
+constexpr int SONGS_PER_PAGE = 20;
 
-#define SCROLLBAR_HEIGHT	(361-4)
+constexpr int SCROLLBAR_HEIGHT = 361 - 4;
 
-typedef struct playButton_t
+struct playButton_t
 {
 	int x,y;
 	int wid;
 	char txt[32];
-	byte id;
-} playButton_t;
+	ButtonId id;
+};
 
-static playButton_t btn[]={
+const static playButton_t btn[]={
 	{20,20,50,"List#1",BTN_LIST1},
 	{75,20,50,"List#2",BTN_LIST2},
 	{130,20,50,"List#3",BTN_LIST3},
@@ -54,13 +63,13 @@ static playButton_t btn[]={
 	{280,300,80,"Move Dn",BTN_MOVEDN},
 	{280,380,80,"Exit",BTN_EXIT},
 };
-#define NUM_PLAY_BTNS	9
+constexpr int NUM_PLAY_BTNS = SDL_arraysize(btn);
 
 static int listNum,listPos;
 static int msx,msy;
 
 static byte *backgd;
-static sprite_set_t *plSpr;
+static std::unique_ptr<sprite_set_t> plSpr;
 static char msBright,msDBright;
 
 static int numFiles,bufferSize,filePos;
@@ -69,6 +78,9 @@ static byte mode;
 
 static int selectMin[2],selectMax[2],scrollOfsY;
 static int scrollY[2],scrollHeight[2];
+
+static ButtonId curButton;
+static bool mouseMode = true;
 
 void SortSongs(void)
 {
@@ -219,21 +231,25 @@ void InitPlayListMenu(MGLDraw *mgl)
 	filePos=0;
 	mode=PM_NORMAL;
 
-	mgl->LoadBMP("graphics/profmenu.bmp");
-	plSpr=new sprite_set_t("graphics/pause.jsp");
+	plSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
 
+	mgl->LoadBMP("graphics/profmenu.bmp");
 	backgd=(byte *)malloc(640*480);
 	for(i=0;i<480;i++)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
+
 	ScanSongs();
 	CalcScrollBar(0);
 	CalcScrollBar(1);
+
+	curButton = ButtonId::None;
+	GetTaps(); GetArrowTaps();
 }
 
 void ExitPlayListMenu(void)
 {
 	free(backgd);
-	delete plSpr;
+	plSpr.reset();
 }
 
 void AddSongs(void)
@@ -308,8 +324,21 @@ void RemoveSongs(void)
 	}
 	profile.playList[listNum].song=(char *)realloc(profile.playList[listNum].song,SONGNAME_LEN*(profile.playList[listNum].numSongs-killSongs));
 	profile.playList[listNum].numSongs-=killSongs;
-	selectMin[0]=-1;
-	selectMax[0]=-1;
+	if (mouseMode)
+	{
+		selectMin[0]=-1;
+		selectMax[0]=-1;
+	}
+	else if (selectMin[0] > profile.playList[listNum].numSongs - killSongs)
+	{
+		selectMin[0] -= killSongs;
+		selectMax[0] -= killSongs;
+		if (selectMin[0] < 0 || selectMax[0] < 0)
+		{
+			selectMin[0] = -1;
+			selectMax[0] = -1;
+		}
+	}
 	CalcScrollBar(0);
 }
 
@@ -349,11 +378,8 @@ byte UpdatePlayListMenu(int *lastTime,MGLDraw *mgl)
 {
 	int i;
 
-	mgl->GetMouse(&msx,&msy);
-
 	if(*lastTime>TIME_PER_FRAME*5)
 		*lastTime=TIME_PER_FRAME*5;
-
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		msBright+=msDBright;
@@ -361,336 +387,546 @@ byte UpdatePlayListMenu(int *lastTime,MGLDraw *mgl)
 			msDBright=-1;
 		if(msBright<-2)
 			msDBright=1;
-
-		switch(mode)
-		{
-			case PM_NORMAL:
-				if(mgl->RMouseTap())
-				{
-					if(PointInRect(msx,msy,18,48,18+232,48+360))
-					{
-						i=((msy-48)/LISTSPACING)+listPos;
-						if(i<profile.playList[listNum].numSongs)
-							PlaySongForce(&profile.playList[listNum].song[i*SONGNAME_LEN]);
-					}
-					if(PointInRect(msx,msy,370,48,370+232,48+360))
-					{
-						i=((msy-48)/LISTSPACING)+filePos;
-						if(i<numFiles)
-							PlaySongForce(&fileList[i*SONGNAME_LEN]);
-					}
-				}
-				if(mgl->MouseTap())
-				{
-					if(PointInRect(msx,msy,18,48,18+232,48+360))
-					{
-						selectMin[0]=((msy-48)/LISTSPACING)+listPos;
-						selectMax[0]=selectMin[0];
-						if(selectMin[0]>=profile.playList[listNum].numSongs)
-						{
-							selectMin[0]=-1;
-							selectMax[0]=-1;
-							MakeNormalSound(SND_BOMBBOOM);
-						}
-						else
-						{
-							MakeNormalSound(SND_MENUCLICK);
-							mode=PM_SELPLAY;
-						}
-					}
-					if(PointInRect(msx,msy,370,48,370+232,48+360))
-					{
-						selectMin[1]=((msy-48)/LISTSPACING)+filePos;
-						selectMax[1]=selectMin[1];
-						if(selectMin[1]>=numFiles)
-						{
-							selectMin[1]=-1;
-							selectMax[1]=-1;
-							MakeNormalSound(SND_BOMBBOOM);
-						}
-						else
-						{
-							mode=PM_SELFILE;
-							MakeNormalSound(SND_MENUCLICK);
-						}
-					}
-					for(i=0;i<NUM_PLAY_BTNS;i++)
-					{
-						if(PointInRect(msx,msy,btn[i].x,btn[i].y,btn[i].x+btn[i].wid,btn[i].y+PLBTN_HEIGHT))
-						{
-							switch(btn[i].id)
-							{
-								case BTN_LIST1:
-								case BTN_LIST2:
-								case BTN_LIST3:
-								case BTN_LIST4:
-									listNum=btn[i].id-BTN_LIST1;
-									listPos=0;
-									selectMin[0]=-1;
-									selectMax[0]=-1;
-									CalcScrollBar(0);
-									MakeNormalSound(SND_MENUSELECT);
-									break;
-								case BTN_ADD:
-									if(selectMin[1]==-1 || selectMax[1]==-1)
-										MakeNormalSound(SND_BOMBBOOM);
-									else
-									{
-										MakeNormalSound(SND_MENUSELECT);
-										AddSongs();
-									}
-									break;
-								case BTN_ERASE:
-									if(selectMin[0]==-1 || selectMax[0]==-1)
-										MakeNormalSound(SND_BOMBBOOM);
-									else
-									{
-										MakeNormalSound(SND_MENUSELECT);
-										RemoveSongs();
-									}
-									break;
-								case BTN_MOVEUP:
-									MoveSongs(-1);
-									break;
-								case BTN_MOVEDN:
-									MoveSongs(1);
-									break;
-								case BTN_EXIT:
-									MakeNormalSound(SND_MENUSELECT);
-									return 1;
-							}
-						}
-					}
-
-					if(PointInRect(msx,msy,18+234,48,18+249,48+361))
-					{
-						MakeNormalSound(SND_MENUCLICK);
-						if(msy<scrollY[0]+48+2)
-						{
-							listPos-=SONGS_PER_PAGE-2;
-							if(listPos<0)
-								listPos=0;
-							CalcScrollBar(0);
-						}
-						else if(msy>48+2+scrollY[0]+scrollHeight[0])
-						{
-							listPos+=SONGS_PER_PAGE-2;
-							if(listPos>profile.playList[listNum].numSongs-SONGS_PER_PAGE)
-								listPos=profile.playList[listNum].numSongs-SONGS_PER_PAGE;
-							CalcScrollBar(0);
-						}
-						else
-						{
-							mode=PM_SCROLL;
-							scrollOfsY=msy-scrollY[0];
-						}
-					}
-
-					if(PointInRect(msx,msy,370+234,48,370+249,48+361))
-					{
-						MakeNormalSound(SND_MENUCLICK);
-						if(msy<scrollY[1]+48+2)
-						{
-							filePos-=SONGS_PER_PAGE-2;
-							if(filePos<0)
-								filePos=0;
-							CalcScrollBar(1);
-						}
-						else if(msy>48+2+scrollY[1]+scrollHeight[1])
-						{
-							filePos+=SONGS_PER_PAGE-2;
-							if(filePos>numFiles-SONGS_PER_PAGE)
-								filePos=numFiles-SONGS_PER_PAGE;
-							CalcScrollBar(1);
-						}
-						else
-						{
-							mode=PM_SCROLL2;
-							scrollOfsY=msy-scrollY[1];
-						}
-					}
-				}
-				break;
-			case PM_SCROLL:
-				scrollY[0]=msy-scrollOfsY;
-				ReverseCalcScrollBar(0);
-				if(!mgl->MouseDown())
-				{
-					mode=PM_NORMAL;
-				}
-				break;
-			case PM_SCROLL2:
-				scrollY[1]=msy-scrollOfsY;
-				ReverseCalcScrollBar(1);
-				if(!mgl->MouseDown())
-				{
-					mode=PM_NORMAL;
-				}
-				break;
-			case PM_SELPLAY:
-				if(!mgl->MouseDown())
-				{
-					mode=PM_NORMAL;
-				}
-				else
-				{
-					if(msy<=48)
-					{
-						if(listPos>0)
-							listPos--;
-						i=listPos;
-						CalcScrollBar(0);
-					}
-					else if(msy>=48+361)
-					{
-						if(listPos<profile.playList[listNum].numSongs-SONGS_PER_PAGE)
-							listPos++;
-						i=listPos+SONGS_PER_PAGE-1;
-						if(i>=profile.playList[listNum].numSongs)
-							i=profile.playList[listNum].numSongs-1;
-						CalcScrollBar(0);
-					}
-					else
-						i=((msy-48)/LISTSPACING)+listPos;
-					if(i>=0 && i<profile.playList[listNum].numSongs)
-					{
-						if(i<selectMin[0])
-						{
-							selectMax[0]=selectMin[0];
-							selectMin[0]=i;
-							mode=PM_SELPLAY2;
-						}
-						else
-							selectMax[0]=i;
-					}
-				}
-				break;
-			case PM_SELPLAY2:
-				if(!mgl->MouseDown())
-				{
-					mode=PM_NORMAL;
-				}
-				else
-				{
-					if(msy<=48)
-					{
-						if(listPos>0)
-							listPos--;
-						i=listPos;
-						CalcScrollBar(0);
-					}
-					else if(msy>=48+361)
-					{
-						if(listPos<profile.playList[listNum].numSongs-SONGS_PER_PAGE)
-							listPos++;
-						i=listPos+SONGS_PER_PAGE-1;
-						if(i>=profile.playList[listNum].numSongs)
-							i=profile.playList[listNum].numSongs-1;
-						CalcScrollBar(0);
-					}
-					else
-						i=((msy-48)/LISTSPACING)+listPos;
-					if(i>=0 && i<profile.playList[listNum].numSongs)
-					{
-						if(i>selectMax[0])
-						{
-							selectMin[0]=selectMax[0];
-							selectMax[0]=i;
-							mode=PM_SELPLAY;
-						}
-						else
-							selectMin[0]=i;
-					}
-				}
-				break;
-			case PM_SELFILE:
-				if(!mgl->MouseDown())
-				{
-					mode=PM_NORMAL;
-				}
-				else
-				{
-					if(msy<=48)
-					{
-						if(filePos>0)
-							filePos--;
-						i=filePos;
-						CalcScrollBar(1);
-					}
-					else if(msy>=48+361)
-					{
-						if(filePos<numFiles-SONGS_PER_PAGE)
-							filePos++;
-						i=filePos+SONGS_PER_PAGE-1;
-						if(i>=numFiles)
-							i=numFiles-1;
-						CalcScrollBar(1);
-					}
-					else
-						i=((msy-48)/LISTSPACING)+filePos;
-					if(i>=0 && i<numFiles)
-					{
-						if(i<selectMin[1])
-						{
-							selectMax[1]=selectMin[1];
-							selectMin[1]=i;
-							mode=PM_SELFILE2;
-						}
-						else
-							selectMax[1]=i;
-					}
-				}
-				break;
-			case PM_SELFILE2:
-				if(!mgl->MouseDown())
-				{
-					mode=PM_NORMAL;
-				}
-				else
-				{
-					if(msy<=48)
-					{
-						if(filePos>0)
-							filePos--;
-						i=filePos;
-						CalcScrollBar(1);
-					}
-					else if(msy>=48+361)
-					{
-						if(filePos<numFiles-SONGS_PER_PAGE)
-							filePos++;
-						i=filePos+SONGS_PER_PAGE-1;
-						if(i>=numFiles)
-							i=numFiles-1;
-						CalcScrollBar(1);
-					}
-					else
-						i=((msy-48)/LISTSPACING)+filePos;
-					if(i>=0 && i<numFiles)
-					{
-						if(i>selectMax[1])
-						{
-							selectMin[1]=selectMax[1];
-							selectMax[1]=i;
-							mode=PM_SELFILE;
-						}
-						else
-							selectMin[1]=i;
-					}
-				}
-				break;
-		}
-
 		mgl->Process();
 		*lastTime-=TIME_PER_FRAME;
 	}
 
+	int oldMsx = msx, oldMsy = msy;
+	mgl->GetMouse(&msx,&msy);
+	bool mb = mgl->MouseTap();
+	if (mb || msx != oldMsx || msy != oldMsy)
+	{
+		mouseMode = true;
+		curButton = ButtonId::None;
+		for(i=0;i<NUM_PLAY_BTNS;i++)
+		{
+			if(PointInRect(msx,msy,btn[i].x,btn[i].y,btn[i].x+btn[i].wid,btn[i].y+PLBTN_HEIGHT))
+			{
+				curButton = btn[i].id;
+			}
+		}
+	}
+
+	byte taps = GetTaps() | GetArrowTaps();
+	if (taps)
+	{
+		mode = PM_NORMAL;
+		mouseMode = false;
+	}
+
+	switch(mode)
+	{
+		case PM_NORMAL:
+			if (taps & CONTROL_UP)
+			{
+				switch (curButton)
+				{
+					case ButtonId::None:
+					case ButtonId::BTN_LIST1:
+					case ButtonId::BTN_LIST2:
+					case ButtonId::BTN_LIST3:
+					case ButtonId::BTN_LIST4:
+						curButton = ButtonId::BTN_EXIT;
+						break;
+					case ButtonId::BTN_ADD:
+						curButton = ButtonId(ButtonId::BTN_LIST1 + listNum);
+						break;
+					case ButtonId::BTN_ERASE:
+						curButton = ButtonId::BTN_ADD;
+						break;
+					case ButtonId::BTN_MOVEUP:
+						curButton = ButtonId::BTN_ERASE;
+						break;
+					case ButtonId::BTN_MOVEDN:
+						curButton = ButtonId::BTN_MOVEUP;
+						break;
+					case ButtonId::BTN_EXIT:
+						curButton = ButtonId::BTN_MOVEDN;
+						break;
+					case ButtonId::Playlist:
+						if (selectMin[0] > 0)
+						{
+							selectMax[0] = selectMin[0] = selectMin[0] - 1;
+						}
+						if (listPos > selectMin[0])
+						{
+							listPos = selectMin[0];
+						}
+						CalcScrollBar(0);
+						break;
+					case ButtonId::AvailableSongs:
+						if (selectMin[1] > 0)
+						{
+							selectMax[1] = selectMin[1] = selectMin[1] - 1;
+						}
+						if (filePos > selectMin[1])
+						{
+							filePos = selectMin[1];
+						}
+						CalcScrollBar(1);
+						break;
+				}
+			}
+			if (taps & CONTROL_DN)
+			{
+				switch (curButton)
+				{
+					case ButtonId::None:
+					case ButtonId::BTN_LIST1:
+					case ButtonId::BTN_LIST2:
+					case ButtonId::BTN_LIST3:
+					case ButtonId::BTN_LIST4:
+						curButton = ButtonId::BTN_ADD;
+						break;
+					case ButtonId::BTN_ADD:
+						curButton = ButtonId::BTN_ERASE;
+						break;
+					case ButtonId::BTN_ERASE:
+						curButton = ButtonId::BTN_MOVEUP;
+						break;
+					case ButtonId::BTN_MOVEUP:
+						curButton = ButtonId::BTN_MOVEDN;
+						break;
+					case ButtonId::BTN_MOVEDN:
+						curButton = ButtonId::BTN_EXIT;
+						break;
+					case ButtonId::BTN_EXIT:
+						curButton = ButtonId(ButtonId::BTN_LIST1 + listNum);
+						break;
+					case ButtonId::Playlist:
+						if (selectMin[0] < profile.playList[listNum].numSongs)
+						{
+							selectMax[0] = selectMin[0] = selectMin[0] + 1;
+						}
+						if (listPos < selectMin[0] - SONGS_PER_PAGE + 1)
+						{
+							listPos = selectMin[0] - SONGS_PER_PAGE + 1;
+						}
+						CalcScrollBar(0);
+						break;
+					case ButtonId::AvailableSongs:
+						if (selectMin[1] < numFiles)
+						{
+							selectMax[1] = selectMin[1] = selectMin[1] + 1;
+						}
+						if (filePos < selectMin[1] - SONGS_PER_PAGE + 1)
+						{
+							filePos = selectMin[1] - SONGS_PER_PAGE + 1;
+						}
+						CalcScrollBar(1);
+						break;
+				}
+			}
+			if (taps & CONTROL_LF)
+			{
+				switch (curButton)
+				{
+					case ButtonId::None:
+					case ButtonId::BTN_ADD:
+					case ButtonId::BTN_ERASE:
+					case ButtonId::BTN_MOVEUP:
+					case ButtonId::BTN_MOVEDN:
+					case ButtonId::BTN_EXIT:
+						curButton = ButtonId::Playlist;
+						if (profile.playList[listNum].numSongs && (selectMax[0] == -1 || selectMin[0] == -1))
+						{
+							selectMax[0] = selectMin[0] = 0;
+						}
+						break;
+					case ButtonId::BTN_LIST1:
+						curButton = ButtonId::BTN_LIST4;
+						break;
+					case ButtonId::BTN_LIST2:
+						curButton = ButtonId::BTN_LIST1;
+						break;
+					case ButtonId::BTN_LIST3:
+						curButton = ButtonId::BTN_LIST2;
+						break;
+					case ButtonId::BTN_LIST4:
+						curButton = ButtonId::BTN_LIST3;
+						break;
+					case ButtonId::AvailableSongs:
+						curButton = ButtonId::BTN_ADD;
+						break;
+					case ButtonId::Playlist:
+						break;
+				}
+			}
+			if (taps & CONTROL_RT)
+			{
+				switch (curButton)
+				{
+					case ButtonId::None:
+					case ButtonId::BTN_ADD:
+					case ButtonId::BTN_ERASE:
+					case ButtonId::BTN_MOVEUP:
+					case ButtonId::BTN_MOVEDN:
+					case ButtonId::BTN_EXIT:
+						curButton = ButtonId::AvailableSongs;
+						if (numFiles && (selectMax[1] == -1 || selectMin[1] == -1))
+						{
+							selectMax[1] = selectMin[1] = 0;
+						}
+						break;
+					case ButtonId::BTN_LIST1:
+						curButton = ButtonId::BTN_LIST2;
+						break;
+					case ButtonId::BTN_LIST2:
+						curButton = ButtonId::BTN_LIST3;
+						break;
+					case ButtonId::BTN_LIST3:
+						curButton = ButtonId::BTN_LIST4;
+						break;
+					case ButtonId::BTN_LIST4:
+						curButton = ButtonId::BTN_LIST1;
+						break;
+					case ButtonId::Playlist:
+						curButton = ButtonId::BTN_ERASE;
+						break;
+					case ButtonId::AvailableSongs:
+						break;
+				}
+			}
+			if (mb || (taps & CONTROL_B1))
+			{
+				switch (curButton)
+				{
+					case ButtonId::None:
+						break;
+					case BTN_LIST1:
+					case BTN_LIST2:
+					case BTN_LIST3:
+					case BTN_LIST4:
+						listNum=curButton-BTN_LIST1;
+						listPos=0;
+						selectMin[0]=-1;
+						selectMax[0]=-1;
+						CalcScrollBar(0);
+						MakeNormalSound(SND_MENUSELECT);
+						break;
+					case BTN_ADD:
+					case ButtonId::AvailableSongs:
+						if(selectMin[1]==-1 || selectMax[1]==-1)
+							MakeNormalSound(SND_BOMBBOOM);
+						else
+						{
+							MakeNormalSound(SND_MENUSELECT);
+							AddSongs();
+						}
+						break;
+					case BTN_ERASE:
+					case ButtonId::Playlist:
+						if(selectMin[0]==-1 || selectMax[0]==-1)
+							MakeNormalSound(SND_BOMBBOOM);
+						else
+						{
+							MakeNormalSound(SND_MENUSELECT);
+							RemoveSongs();
+						}
+						break;
+					case BTN_MOVEUP:
+						MoveSongs(-1);
+						break;
+					case BTN_MOVEDN:
+						MoveSongs(1);
+						break;
+					case BTN_EXIT:
+						MakeNormalSound(SND_MENUSELECT);
+						return 1;
+				}
+			}
+			if (taps & CONTROL_B2)
+			{
+				switch (curButton)
+				{
+					case ButtonId::Playlist:
+						if (selectMin[0] != -1)
+							PlaySongForce(&profile.playList[listNum].song[selectMin[0]*SONGNAME_LEN]);
+						break;
+					case ButtonId::AvailableSongs:
+						if (selectMin[1] != -1)
+							PlaySongForce(&fileList[selectMin[1]*SONGNAME_LEN]);
+						break;
+					default: break;
+				}
+			}
+
+			if(mgl->RMouseTap())
+			{
+				if(PointInRect(msx,msy,18,48,18+232,48+360))
+				{
+					i=((msy-48)/LISTSPACING)+listPos;
+					if(i<profile.playList[listNum].numSongs)
+						PlaySongForce(&profile.playList[listNum].song[i*SONGNAME_LEN]);
+				}
+				if(PointInRect(msx,msy,370,48,370+232,48+360))
+				{
+					i=((msy-48)/LISTSPACING)+filePos;
+					if(i<numFiles)
+						PlaySongForce(&fileList[i*SONGNAME_LEN]);
+				}
+			}
+			if(mb)
+			{
+				if(PointInRect(msx,msy,18,48,18+232,48+360))
+				{
+					selectMin[0]=((msy-48)/LISTSPACING)+listPos;
+					selectMax[0]=selectMin[0];
+					if(selectMin[0]>=profile.playList[listNum].numSongs)
+					{
+						selectMin[0]=-1;
+						selectMax[0]=-1;
+						MakeNormalSound(SND_BOMBBOOM);
+					}
+					else
+					{
+						MakeNormalSound(SND_MENUCLICK);
+						mode=PM_SELPLAY;
+					}
+				}
+				if(PointInRect(msx,msy,370,48,370+232,48+360))
+				{
+					selectMin[1]=((msy-48)/LISTSPACING)+filePos;
+					selectMax[1]=selectMin[1];
+					if(selectMin[1]>=numFiles)
+					{
+						selectMin[1]=-1;
+						selectMax[1]=-1;
+						MakeNormalSound(SND_BOMBBOOM);
+					}
+					else
+					{
+						mode=PM_SELFILE;
+						MakeNormalSound(SND_MENUCLICK);
+					}
+				}
+
+				if(PointInRect(msx,msy,18+234,48,18+249,48+361))
+				{
+					MakeNormalSound(SND_MENUCLICK);
+					if(msy<scrollY[0]+48+2)
+					{
+						listPos-=SONGS_PER_PAGE-2;
+						if(listPos<0)
+							listPos=0;
+						CalcScrollBar(0);
+					}
+					else if(msy>48+2+scrollY[0]+scrollHeight[0])
+					{
+						listPos+=SONGS_PER_PAGE-2;
+						if(listPos>profile.playList[listNum].numSongs-SONGS_PER_PAGE)
+							listPos=profile.playList[listNum].numSongs-SONGS_PER_PAGE;
+						CalcScrollBar(0);
+					}
+					else
+					{
+						mode=PM_SCROLL;
+						scrollOfsY=msy-scrollY[0];
+					}
+				}
+
+				if(PointInRect(msx,msy,370+234,48,370+249,48+361))
+				{
+					MakeNormalSound(SND_MENUCLICK);
+					if(msy<scrollY[1]+48+2)
+					{
+						filePos-=SONGS_PER_PAGE-2;
+						if(filePos<0)
+							filePos=0;
+						CalcScrollBar(1);
+					}
+					else if(msy>48+2+scrollY[1]+scrollHeight[1])
+					{
+						filePos+=SONGS_PER_PAGE-2;
+						if(filePos>numFiles-SONGS_PER_PAGE)
+							filePos=numFiles-SONGS_PER_PAGE;
+						CalcScrollBar(1);
+					}
+					else
+					{
+						mode=PM_SCROLL2;
+						scrollOfsY=msy-scrollY[1];
+					}
+				}
+			}
+			break;
+		case PM_SCROLL:
+			scrollY[0]=msy-scrollOfsY;
+			ReverseCalcScrollBar(0);
+			if(!mgl->MouseDown())
+			{
+				mode=PM_NORMAL;
+			}
+			break;
+		case PM_SCROLL2:
+			scrollY[1]=msy-scrollOfsY;
+			ReverseCalcScrollBar(1);
+			if(!mgl->MouseDown())
+			{
+				mode=PM_NORMAL;
+			}
+			break;
+		case PM_SELPLAY:
+			if(!mgl->MouseDown())
+			{
+				mode=PM_NORMAL;
+			}
+			else
+			{
+				if(msy<=48)
+				{
+					if(listPos>0)
+						listPos--;
+					i=listPos;
+					CalcScrollBar(0);
+				}
+				else if(msy>=48+361)
+				{
+					if(listPos<profile.playList[listNum].numSongs-SONGS_PER_PAGE)
+						listPos++;
+					i=listPos+SONGS_PER_PAGE-1;
+					if(i>=profile.playList[listNum].numSongs)
+						i=profile.playList[listNum].numSongs-1;
+					CalcScrollBar(0);
+				}
+				else
+					i=((msy-48)/LISTSPACING)+listPos;
+				if(i>=0 && i<profile.playList[listNum].numSongs)
+				{
+					if(i<selectMin[0])
+					{
+						selectMax[0]=selectMin[0];
+						selectMin[0]=i;
+						mode=PM_SELPLAY2;
+					}
+					else
+						selectMax[0]=i;
+				}
+			}
+			break;
+		case PM_SELPLAY2:
+			if(!mgl->MouseDown())
+			{
+				mode=PM_NORMAL;
+			}
+			else
+			{
+				if(msy<=48)
+				{
+					if(listPos>0)
+						listPos--;
+					i=listPos;
+					CalcScrollBar(0);
+				}
+				else if(msy>=48+361)
+				{
+					if(listPos<profile.playList[listNum].numSongs-SONGS_PER_PAGE)
+						listPos++;
+					i=listPos+SONGS_PER_PAGE-1;
+					if(i>=profile.playList[listNum].numSongs)
+						i=profile.playList[listNum].numSongs-1;
+					CalcScrollBar(0);
+				}
+				else
+					i=((msy-48)/LISTSPACING)+listPos;
+				if(i>=0 && i<profile.playList[listNum].numSongs)
+				{
+					if(i>selectMax[0])
+					{
+						selectMin[0]=selectMax[0];
+						selectMax[0]=i;
+						mode=PM_SELPLAY;
+					}
+					else
+						selectMin[0]=i;
+				}
+			}
+			break;
+		case PM_SELFILE:
+			if(!mgl->MouseDown())
+			{
+				mode=PM_NORMAL;
+			}
+			else
+			{
+				if(msy<=48)
+				{
+					if(filePos>0)
+						filePos--;
+					i=filePos;
+					CalcScrollBar(1);
+				}
+				else if(msy>=48+361)
+				{
+					if(filePos<numFiles-SONGS_PER_PAGE)
+						filePos++;
+					i=filePos+SONGS_PER_PAGE-1;
+					if(i>=numFiles)
+						i=numFiles-1;
+					CalcScrollBar(1);
+				}
+				else
+					i=((msy-48)/LISTSPACING)+filePos;
+				if(i>=0 && i<numFiles)
+				{
+					if(i<selectMin[1])
+					{
+						selectMax[1]=selectMin[1];
+						selectMin[1]=i;
+						mode=PM_SELFILE2;
+					}
+					else
+						selectMax[1]=i;
+				}
+			}
+			break;
+		case PM_SELFILE2:
+			if(!mgl->MouseDown())
+			{
+				mode=PM_NORMAL;
+			}
+			else
+			{
+				if(msy<=48)
+				{
+					if(filePos>0)
+						filePos--;
+					i=filePos;
+					CalcScrollBar(1);
+				}
+				else if(msy>=48+361)
+				{
+					if(filePos<numFiles-SONGS_PER_PAGE)
+						filePos++;
+					i=filePos+SONGS_PER_PAGE-1;
+					if(i>=numFiles)
+						i=numFiles-1;
+					CalcScrollBar(1);
+				}
+				else
+					i=((msy-48)/LISTSPACING)+filePos;
+				if(i>=0 && i<numFiles)
+				{
+					if(i>selectMax[1])
+					{
+						selectMin[1]=selectMax[1];
+						selectMax[1]=i;
+						mode=PM_SELFILE;
+					}
+					else
+						selectMin[1]=i;
+				}
+			}
+			break;
+	}
+
+
 	return 0;
 }
 
-void RenderPlayListButton(int x,int y,int wid,char *txt,MGLDraw *mgl)
+void RenderPlayListButton(int x,int y,int wid,const char *txt,MGLDraw *mgl, ButtonId buttonId)
 {
-	if(PointInRect(msx,msy,x,y,x+wid,y+PLBTN_HEIGHT))
+	if(curButton == buttonId)
 	{
 		mgl->Box(x,y,x+wid,y+PLBTN_HEIGHT,32+31);
 		mgl->FillBox(x+1,y+1,x+wid-1,y+PLBTN_HEIGHT-1,32+8);
@@ -707,7 +943,7 @@ char *ShortName(char *name)
 
 	strcpy(result,name);
 
-	if(!strcmp(".ogg",&name[strlen(name)-4]))
+	if(!strcasecmp(".ogg",&name[strlen(name)-4]))
 	{
 		result[strlen(name)-4]='\0';
 	}
@@ -727,10 +963,20 @@ void RenderSongList(char *list,int pos,int num,int x,int y,int selectMin,int sel
 	{
 		if(i<num)
 		{
-			if(i>=selectMin && i<=selectMax)
-				mgl->FillBox(x+1,y+1+(i-pos)*18,x+231,y+(i-pos)*18+18,32*1+8);
-			if(PointInRect(msx,msy,x,y+(i-pos)*18,x+232,y+(i-pos)*18+18))
-				mgl->Box(x+1,y+1+(i-pos)*18,x+231,y+(i-pos)*18+18,32*1+12);
+			if (mouseMode)
+			{
+				if(i>=selectMin && i<=selectMax)
+					mgl->FillBox(x+1,y+1+(i-pos)*18,x+231,y+(i-pos)*18+18,32*1+8);
+				if(PointInRect(msx,msy,x,y+(i-pos)*18,x+232,y+(i-pos)*18+18))
+					mgl->Box(x+1,y+1+(i-pos)*18,x+231,y+(i-pos)*18+18,32*1+12);
+			}
+			else if(i>=selectMin && i<=selectMax)
+			{
+				if (curButton == (scroll ? ButtonId::AvailableSongs : ButtonId::Playlist))
+					mgl->FillBox(x+1,y+1+(i-pos)*18,x+231,y+(i-pos)*18+18,32*1+8);
+				else
+					mgl->Box(x+1,y+1+(i-pos)*18,x+231,y+(i-pos)*18+18,32*1+12);
+			}
 			PrintGlowLimited(x+2,y+2+(i-pos)*18,x+232,ShortName(&list[i*SONGNAME_LEN]),0,2);
 		}
 	}
@@ -759,11 +1005,19 @@ void RenderPlayListMenu(MGLDraw *mgl)
 	PrintGlow(20,410,s,0,2);
 	PrintGlow(372,410,"Available Songs",0,2);
 
-	PrintGlow(20,432,"Right click a song to hear it. Click or drag to select, and use the buttons to",0,2);
-	PrintGlow(20,450,"modify the playlist. Press ESC to exit.",0,2);
+	if (mouseMode)
+	{
+		PrintGlow(20,432,"Right click a song to hear it. Click or drag to select, and use the buttons to",0,2);
+		PrintGlow(20,450,"modify the playlist. Press ESC to exit.",0,2);
+	}
+	else
+	{
+		PrintGlow(20,432,"Press button 1 to add or remove a song. Press button 2 to hear it.",0,2);
+		PrintGlow(20,450,"Use bumpers to reorder songs.",0,2);
+	}
 
 	for(i=0;i<NUM_PLAY_BTNS;i++)
-		RenderPlayListButton(btn[i].x,btn[i].y,btn[i].wid,btn[i].txt,mgl);
+		RenderPlayListButton(btn[i].x,btn[i].y,btn[i].wid,btn[i].txt,mgl,btn[i].id);
 
 	// box in the selected playlist
 	mgl->Box(18+55*listNum,18,18+54+55*listNum,18+PLBTN_HEIGHT+4,32*1+20);
@@ -775,19 +1029,22 @@ void RenderPlayListMenu(MGLDraw *mgl)
 	// file list
 	RenderSongList(fileList,filePos,numFiles,370,48,selectMin[1],selectMax[1],1,mgl);
 
-	SetSpriteConstraints(13,13,627,467);
-	msx2=msx;
-	msy2=msy;
-	if(msx2<13)
-		msx2=13;
-	if(msy2<13)
-		msy2=13;
-	if(msx2>622)
-		msx2=622;
-	if(msy2>462)
-		msy2=462;
-	plSpr->GetSprite(0)->DrawBright(msx2,msy2,mgl,msBright/2);
-	ClearSpriteConstraints();
+	if (mouseMode)
+	{
+		SetSpriteConstraints(13,13,627,467);
+		msx2=msx;
+		msy2=msy;
+		if(msx2<13)
+			msx2=13;
+		if(msy2<13)
+			msy2=13;
+		if(msx2>622)
+			msx2=622;
+		if(msy2>462)
+			msy2=462;
+		plSpr->GetSprite(0)->DrawBright(msx2,msy2,mgl,msBright/2);
+		ClearSpriteConstraints();
+	}
 }
 
 //----------------

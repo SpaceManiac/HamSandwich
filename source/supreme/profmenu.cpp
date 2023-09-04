@@ -1029,6 +1029,7 @@ TASK(void) ProfMenu(MGLDraw *mgl)
 		if(done==2)
 		{
 			AWAIT PlayListMenu(mgl);
+			oldc = ~0;
 			done=0;
 		}
 		if(done==3)
