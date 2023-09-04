@@ -1615,7 +1615,7 @@ void SpecialEffect(special_t *me,Map *map)
 						map->flags^=w;
 						break;
 				}
-				if((w2&MAP_UNDERWATER) && !(map->flags&MAP_UNDERWATER))
+				if((w2&(MAP_UNDERWATER|MAP_OXYGEN)) && !(map->flags&(MAP_UNDERWATER|MAP_OXYGEN)))
 					player.oxygen=127*256;
 
 				if(map->flags&MAP_UNDERWATER)
