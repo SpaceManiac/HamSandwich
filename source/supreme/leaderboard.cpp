@@ -221,7 +221,7 @@ static TASK(void) ViewDetails(MGLDraw *mgl, const byte* backgd, const sprite_set
 
 		if (offset > 0)
 			PrintGlow(610, y, "^", 0, 2);
-		for (int i = 0; i < ENTRIES_PER_SCREEN; ++i)
+		for (int i = 0; i < ENTRIES_PER_SCREEN && offset + i < int(entries.size()); ++i)
 		{
 			const Entry& entry = entries[offset + i];
 
