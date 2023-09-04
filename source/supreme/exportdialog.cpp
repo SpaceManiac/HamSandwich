@@ -553,6 +553,10 @@ void InitExportDialog(const world_t* world, const char* filename)
 						}
 						AddDependency("user/", text);
 					}
+					else if (type == EFF_SONG)
+					{
+						AddDependency("music/", effect.text);
+					}
 				}
 			}
 		}
