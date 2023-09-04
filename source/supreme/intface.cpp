@@ -339,6 +339,20 @@ void DrawScore(int x,int y,int score,MGLDraw *mgl)
 	}
 }
 
+void DrawSmallGauge(int x, int y, byte b, byte c)
+{
+	if (b > 0)
+	{
+		DrawFillBox(x+1,y+13-b,x+1,y+13,c+2);
+		DrawFillBox(x+2,y+13-b,x+2,y+13,c);
+	}
+	if (b > 2)
+	{
+		DrawFillBox(x,y+12-(b-2),x,y+12,c-4);
+		DrawFillBox(x+3,y+12-(b-2),x+3,y+12,c-4);
+	}
+}
+
 void DrawHammerSpeed(int x,int y,byte spd)
 {
 	byte b;
@@ -356,6 +370,7 @@ void DrawHammerSpeed(int x,int y,byte spd)
 		DrawFillBox(x,y+12-(b-2),x,y+12,138);
 		DrawFillBox(x+3,y+12-(b-2),x+3,y+12,138);
 	}
+	printf("HammerSpeed b = %d\n", b);
 }
 
 void DrawLitGauge(int x,int y,byte c)
@@ -905,11 +920,12 @@ void UpdateInterface(Map *map)
 // Option to use classic Dr. L interface, with these differences:
 // - Pause menu is still Supreme's. Options too different, impractical to replace.
 // - Weapons will use item appearance instead of baked sprite if edited from base.
+// - New oxygen meter in between the reflect indicator and the hammer icons.
 // Missing elements of Supreme's interface:
 // - No powerup meter, since classic Dr. L had 5 powerups of Supreme's 7 and no meter.
 // - No combo indicator.
 // - No coin meter.
-// - TODO: No oxygen meter.
+// - TODO: No stealth indicator.
 // - TODO: No varbar.
 static void RenderInterfaceOld(MGLDraw *mgl)
 {
@@ -965,9 +981,28 @@ static void RenderInterfaceOld(MGLDraw *mgl)
 	if (hmrFlags & 2)
 		DrawLitGauge(159, 8, 175);
 
+	// oxygen indicator
+	int x = 167;
+	if (curMap->flags & (MAP_UNDERWATER | MAP_OXYGEN))
+	{
+		oldIntfaceSpr->GetSprite(OLD_SPR_MINIGAUGE)->Draw(x - 1, 3, mgl);
+		if (player.oxygen==0)
+		{
+			if (intfFlip)
+				DrawSmallGauge(x + 1, 8, 13, 4*32+16);
+		}
+		else if (player.oxygen<127*256/4)
+			DrawSmallGauge(x + 1, 8, 14*player.oxygen/(127*256+1), 4*32+16);
+		else if (player.oxygen<127*256/2)
+			DrawSmallGauge(x + 1, 8, 14*player.oxygen/(127*256+1), 5*32+16);
+		else
+			DrawSmallGauge(x + 1, 8, 14*player.oxygen/(127*256+1), 1*32+16);
+		x += 9;
+	}
+
 	// number of hammers
 	for (i = 0; i < hammers; i++)
-		oldIntfaceSpr->GetSprite(OLD_SPR_IFHAMMER)->Draw(167 + i * 19, 3, mgl);
+		oldIntfaceSpr->GetSprite(OLD_SPR_IFHAMMER)->Draw(x + i * 19, 3, mgl);
 
 	DrawScore(432, 2, score, mgl);
 
