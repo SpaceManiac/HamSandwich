@@ -16,6 +16,7 @@ enum {
 	SPR_ENEMYLIFE   = 11,
 	SPR_NUMBERS     = 12,
 	SPR_COINBOX     = 62,
+	SPR_STEALTH     = 63,
 	SPR_WPNNAME     = 22,
 	SPR_LOONYKEY    = 50,
 	SPR_CANDLE      = 51,
@@ -1123,7 +1124,12 @@ void RenderInterface(MGLDraw *mgl)
 	}
 
 	if(curMap && curMap->flags&MAP_STEALTH)
-		intfaceSpr->GetSprite(SPR_COINBOX+1)->Draw(625,460,mgl);
+	{
+		if (player.stealthy)
+			intfaceSpr->GetSprite(SPR_STEALTH)->Draw(625,460,mgl);
+		else
+			intfaceSpr->GetSprite(SPR_STEALTH)->DrawOffColor(625,460,mgl,1,5,0);
+	}
 
 	for(i=0;i<NUM_INTF;i++)
 	{
