@@ -26,6 +26,7 @@
 #define PE_BZZT		15		// an invalid option
 #define PE_SHOP		16	// go shopping, go back to playing
 #define PE_WPNLOCK	17	// weapon lock
+#define PE_OLDHUD   18
 
 #define PE_CHEATS	50
 
@@ -43,6 +44,7 @@ static pauseItem_t gamePause[]={
 	{PE_SNDVOL,""},
 	{PE_MUSIC,"Music Options"},
 	{PE_WPNLOCK,"Weapon Lock"},
+	{PE_OLDHUD,"HUD: Supreme"},
 	{PE_SHOP,"Quit & Shop"},
 	{PE_EXIT,"Exit Game"},
 	{PE_DONE,""}
@@ -52,6 +54,7 @@ static pauseItem_t shopPause[]={
 	{PE_CONTINUE,"Continue"},
 	{PE_SNDVOL,""},
 	{PE_MUSIC,"Music Options"},
+	{PE_OLDHUD,"HUD: Supreme"},
 	{PE_SHOP,"Quit & Play"},
 	{PE_EXIT,"Main Menu"},
 	{PE_DONE,""}
@@ -65,6 +68,7 @@ static pauseItem_t editPause[]={
 	{PE_MUSIC,"Music Options"},
 	{PE_CHEAT,"Cheats!!"},
 	{PE_WPNLOCK,"Weapon Lock"},
+	{PE_OLDHUD,"HUD: Supreme"},
 	{PE_EXIT,"Editor"},
 	{PE_DONE,""}
 };
@@ -78,6 +82,7 @@ static pauseItem_t gameCheatPause[]={
 	{PE_MUSIC,"Music Options"},
 	{PE_CHEAT,"Cheats!!"},
 	{PE_WPNLOCK,"Weapon Lock"},
+	{PE_OLDHUD,"HUD: Supreme"},
 	{PE_SHOP,"Quit & Shop"},
 	{PE_EXIT,"Exit Game"},
 	{PE_DONE,""}
@@ -296,6 +301,13 @@ void FillPauseMenu(pauseItem_t *src)
 				strcpy(menu[i].text,"Wpn Lock: On");
 			else
 				strcpy(menu[i].text,"Wpn Lock: Off");
+		}
+		if(src[i].effect==PE_OLDHUD)
+		{
+			if(profile.progress.oldHud)
+				strcpy(menu[i].text,"HUD: Classic");
+			else
+				strcpy(menu[i].text,"HUD: Supreme");
 		}
 	}
 	SetupSoundItems();
@@ -615,10 +627,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 				MakeNormalSound(SND_TURRETBZZT);
 				break;
 			case PE_WPNLOCK:
-				if(profile.progress.wpnLock)
-					profile.progress.wpnLock=0;
-				else
-					profile.progress.wpnLock=1;
+				profile.progress.wpnLock = !profile.progress.wpnLock;
 				if(menuMode==1)
 				{
 					FillPauseMenu(cheatPause);
@@ -639,7 +648,29 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 						FillPauseMenu(editPause);
 					}
 				}
+				break;
+			case PE_OLDHUD:
+				profile.progress.oldHud = !profile.progress.oldHud;
+				if(menuMode==1)
+				{
+					FillPauseMenu(cheatPause);
+				}
+				else
+				{
+					if(!editing)
+					{
+						// if cheats are available, use cheat game list instead
+						if(ItemPurchased(SHOP_MAJOR,MAJOR_CHEATMENU))
+							FillPauseMenu(gameCheatPause);
+						else
+							FillPauseMenu(gamePause);
 
+					}
+					else
+					{
+						FillPauseMenu(editPause);
+					}
+				}
 				break;
 		}
 		if(i==0 && menu[cursor].effect>=PE_CHEATS)

@@ -990,7 +990,10 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 
 void DrawRedX(int x,int y,byte candle,MGLDraw *mgl)
 {
-	itmSpr->GetSprite(140+candle)->Draw(x+61,y+71,mgl);
+	if (profile.progress.oldHud)
+		itmSpr->GetSprite(8)->Draw(x - 5, y, mgl);
+	else
+		itmSpr->GetSprite(140+candle)->Draw(x+61,y+71,mgl);
 }
 
 item_t *GetItem(int type)

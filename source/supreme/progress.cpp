@@ -248,6 +248,7 @@ void ClearProgress(void)
 	profile.progress.cheats=0;
 
 	profile.progress.wpnLock=0;
+	profile.progress.oldHud=0;
 	for(i=0;i<NUM_PROFILE_MONSTERS;i++)
 	{
 		profile.progress.kills[i]=0;
