@@ -151,6 +151,25 @@ static void ItemDropClick(int id)
 	InitTextDialog("Enter chance for enemies to drop items:","",5);
 }
 
+static bool CountsDouble(int type)
+{
+	// Enemies that drop 1 baby on death count 2x, once for them and once for baby.
+	// Enemies with infinite babies are impossible to account for, so don't bother.
+	return type == MONS_ZOMBONI || type == MONS_COFFIN || type == MONS_DARKCOFFIN || type == MONS_XENOEGG;
+}
+
+static int BrainsForMonster(int type, int item)
+{
+	int result = 0, brainsPerBrain = BrainsGiven(ITM_BRAIN), brainsForItem = BrainsGiven(item);
+	if (type == MONS_ZOMBIE || type == MONS_ZOMBONI || type == MONS_MUTANT)
+		result += brainsPerBrain;
+	if (type == MONS_SUPERZOMBIE)
+		result += 2 * brainsPerBrain;
+	if (brainsForItem > 0 && type)
+		result += (CountsDouble(type) ? 2 : 1) * brainsForItem;
+	return result;
+}
+
 static void AutoBrainsClick(int id)
 {
 	// autocalc brains needed
@@ -168,12 +187,7 @@ static void AutoBrainsClick(int id)
 	}
 	for(i=0;i<MAX_MAPMONS;i++)
 	{
-		if(m->badguy[i].type==MONS_ZOMBIE || m->badguy[i].type==MONS_ZOMBONI || m->badguy[i].type==MONS_MUTANT)
-			m->numBrains++;
-		if(m->badguy[i].type==MONS_SUPERZOMBIE)
-			m->numBrains+=2;
-		if(m->badguy[i].type && BrainsGiven(m->badguy[i].item)>0)
-			m->numBrains+=BrainsGiven(m->badguy[i].item);
+		m->numBrains += BrainsForMonster(m->badguy[i].type, m->badguy[i].item);
 	}
 
 	for(i=0;i<MAX_SPECIAL;i++)
@@ -188,13 +202,7 @@ static void AutoBrainsClick(int id)
 					m->numBrains+=BrainsGiven(m->special[i].effect[j].value2);
 				if(m->special[i].effect[j].type==EFF_SUMMON)
 				{
-					if(BrainsGiven(m->special[i].effect[j].value2)>0)
-						m->numBrains+=BrainsGiven(m->special[i].effect[j].value2);
-					if(m->special[i].effect[j].value==MONS_ZOMBIE || m->special[i].effect[j].value==MONS_ZOMBONI ||
-						m->special[i].effect[j].value==MONS_MUTANT)
-						m->numBrains++;
-					if(m->special[i].effect[j].value==MONS_SUPERZOMBIE)
-						m->numBrains+=2;
+					m->numBrains += BrainsForMonster(m->special[i].effect[j].value, m->special[i].effect[j].value2);
 				}
 			}
 		}
@@ -221,7 +229,7 @@ static void AutoCandlesClick(int id)
 	for(i=0;i<MAX_MAPMONS;i++)
 	{
 		if(m->badguy[i].type)
-			m->numCandles+=CandlesGiven(m->badguy[i].item);
+			m->numCandles += (CountsDouble(m->badguy[i].type) ? 2 : 1) * CandlesGiven(m->badguy[i].item);
 	}
 
 	for(i=0;i<MAX_SPECIAL;i++)
@@ -235,7 +243,7 @@ static void AutoCandlesClick(int id)
 				if(m->special[i].effect[j].type==EFF_MONSITEM && CandlesGiven(m->special[i].effect[j].value2)>0)
 					m->numCandles+=CandlesGiven(m->special[i].effect[j].value2);
 				if(m->special[i].effect[j].type==EFF_SUMMON && CandlesGiven(m->special[i].effect[j].value2)>0)
-					m->numCandles+=CandlesGiven(m->special[i].effect[j].value2);
+					m->numCandles += (CountsDouble(m->special[i].effect[j].value) ? 2 : 1) * CandlesGiven(m->special[i].effect[j].value2);
 			}
 		}
 	}
