@@ -34,7 +34,12 @@ static bool pixelMode = false;
 static bool idleGame = false;
 bool GetGameIdle()
 {
-	return idleGame;
+	if (idleGame)
+	{
+		idleGame = false;
+		return true;
+	}
+	return false;
 }
 
 MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
@@ -491,6 +496,11 @@ TASK(void) MGLDraw::FinishFlip(void)
 		else if (e.type == SDL_CONTROLLERDEVICEADDED)
 		{
 			ControlHandleNewGamepad(e.cdevice.which);
+		}
+		else if (e.type == SDL_CONTROLLERDEVICEREMOVED)
+		{
+			idle = true;
+			idleGame = true;
 		}
 		else if (e.type == SDL_WINDOWEVENT)
 		{
