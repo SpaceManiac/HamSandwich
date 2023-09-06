@@ -153,6 +153,7 @@ public:
 		}
 	}
 
+	dword oldGamepad = ~0;
 	void Update() override
 	{
 		SteamAPI_RunCallbacks();
@@ -165,6 +166,13 @@ public:
 		{
 			StoreStats();
 		}
+
+		dword gamepad = GetGamepadButtons();
+		if (gamepad & ~oldGamepad & (1 << SDL_CONTROLLER_BUTTON_GUIDE))
+		{
+			SteamFriends()->ActivateGameOverlay(nullptr);
+		}
+		oldGamepad = gamepad;
 	}
 
 	bool IsSteamEdition() override
