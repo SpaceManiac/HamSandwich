@@ -371,7 +371,6 @@ void DrawHammerSpeed(int x,int y,byte spd)
 		DrawFillBox(x,y+12-(b-2),x,y+12,138);
 		DrawFillBox(x+3,y+12-(b-2),x+3,y+12,138);
 	}
-	printf("HammerSpeed b = %d\n", b);
 }
 
 void DrawLitGauge(int x,int y,byte c)
