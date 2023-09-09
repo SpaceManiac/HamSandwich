@@ -14,6 +14,7 @@
 #include "vanilla_extract.h"
 #include "steam.h"
 #include "leaderboard.h"
+#include "strnatcmp.h"
 
 enum Done : byte
 {
@@ -143,12 +144,12 @@ byte Compare(worldDesc_t *me,worldDesc_t *you,byte field,byte bkwds)
 		case 0:
 			SDL_strlcpy(tmp1,me->name,64);
 			SDL_strlcpy(tmp2,you->name,64);
-			f=(strcasecmp(tmp1,tmp2)>0);
+			f=(strnatcasecmp(tmp1,tmp2)>0);
 			break;
 		case 1:
 			SDL_strlcpy(tmp1,me->author,64);
 			SDL_strlcpy(tmp2,you->author,64);
-			f=(strcasecmp(tmp1,tmp2)>0);
+			f=(strnatcasecmp(tmp1,tmp2)>0);
 			break;
 		case 2:
 			f=(me->percentage>you->percentage);
