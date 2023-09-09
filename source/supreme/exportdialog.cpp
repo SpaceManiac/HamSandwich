@@ -251,6 +251,9 @@ static bool IncludeKind(FileKind kind)
 
 static void AddDependency(std::string_view part1, std::string_view part2)
 {
+	if (part2.empty())
+		return;
+
 	std::string fname;
 	fname.reserve(part1.size() + part2.size());
 	fname.append(part1);
@@ -530,10 +533,7 @@ void InitExportDialog(const world_t* world, const char* filename)
 	for (int i = 0; i < world->numMaps; ++i)
 	{
 		const Map* map = world->map[i];
-		if (map->song[0])
-		{
-			AddDependency("music/", map->song);
-		}
+		AddDependency("music/", map->song);
 
 		for (int j = 0; j < MAX_SPECIAL; ++j)
 		{
@@ -578,7 +578,7 @@ void InitExportDialog(const world_t* world, const char* filename)
 	{
 		warnings.push_back("World name not set");
 	}
-	if (!strcmp(world->author, "Nobody"))
+	if (!strcmp(world->author, "Nobody") || !strcmp(world->author, "Unknown Author") || !strcmp(world->author, "Author Unknown!"))
 	{
 		warnings.push_back("Author name not set");
 	}
