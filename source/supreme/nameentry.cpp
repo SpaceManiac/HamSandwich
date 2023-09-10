@@ -20,6 +20,23 @@ namespace
 	int errorBright;
 
 	dword lastGamepad;
+
+	bool gamepadMode;
+	enum class KeyboardShift {
+		None,
+		One,
+		//Many,
+	} keyboardShift;
+	int curRow = 0, curCol = 0;
+
+	constexpr int KEYBOARD_WIDTH = 10;
+	constexpr int KEYBOARD_HEIGHT = 4;
+	const char KEYBOARD[KEYBOARD_HEIGHT][KEYBOARD_WIDTH+1] = {
+		"1234567890",
+		"qwertyuiop",
+		"asdfghjkl ", // backspace
+		" zxcvbnm  ", // shift, done
+	};
 }
 
 void InitNameEntry(MGLDraw *mgl)
@@ -42,6 +59,8 @@ void InitNameEntry(MGLDraw *mgl)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
 
 	lastGamepad = ~0;
+	gamepadMode = false;
+	keyboardShift = KeyboardShift::None;
 }
 
 void ExitNameEntry()
@@ -59,7 +78,6 @@ static bool CheckForExistingName(const char *name)
 
 byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 {
-	char c;
 	bool startTextInput = false;
 
 	if(*lastTime>TIME_PER_FRAME*5)
@@ -106,6 +124,76 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 
 	if (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_X))
 		startTextInput = true;
+	if (gamepad)
+		gamepadMode = true;
+
+	char c = mgl->LastKeyPressed();
+	byte taps = GetTaps();
+	if (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_Y))
+	{
+		switch (keyboardShift)
+		{
+			case KeyboardShift::None:
+				keyboardShift = KeyboardShift::One;
+				break;
+			case KeyboardShift::One:
+				keyboardShift = KeyboardShift::None;
+				break;
+		}
+	}
+	if (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_A))
+	{
+		if (curRow == 2 && curCol == 9)
+		{
+			c = SDLK_BACKSPACE;
+		}
+		else if (curRow == 3 && curCol == 0)
+		{
+			switch (keyboardShift)
+			{
+				case KeyboardShift::None:
+					keyboardShift = KeyboardShift::One;
+					break;
+				case KeyboardShift::One:
+					keyboardShift = KeyboardShift::None;
+					break;
+			}
+		}
+		else if (curRow == 3 && curCol == 8)
+		{
+			c = SDLK_RETURN;
+		}
+		else if (KEYBOARD[curRow][curCol] != ' ')
+		{
+			c = KEYBOARD[curRow][curCol];
+			if (keyboardShift != KeyboardShift::None)
+				c = toupper(c);
+			if (keyboardShift == KeyboardShift::One)
+				keyboardShift = KeyboardShift::None;
+		}
+	}
+	if (taps & CONTROL_LF)
+	{
+		if (curCol > 0)
+			--curCol;
+	}
+	if (taps & CONTROL_RT)
+	{
+		if (curCol < KEYBOARD_WIDTH - 1)
+			++curCol;
+	}
+	if (taps & CONTROL_UP)
+	{
+		if (curRow > 0)
+			--curRow;
+	}
+	if (taps & CONTROL_DN)
+	{
+		if (curRow < KEYBOARD_HEIGHT - 1)
+			++curRow;
+	}
+	if (curRow == 3 && curCol == 9)
+		curCol = 8;
 
 	if (startTextInput)
 	{
@@ -113,8 +201,7 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 		mgl->StartTextInput(15, 315, 640-15, 315+28);
 	}
 
-	c=mgl->LastKeyPressed();
-	if(c==13)	// enter
+	if(c==SDLK_RETURN)	// enter
 	{
 		MakeNormalSound(SND_MENUSELECT);
 		if(strlen(entry)>2)
@@ -133,7 +220,7 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 			errorBright=-200;
 		}
 	}
-	else if(c == SDLK_ESCAPE || (gamepad & ~lastGamepad & ((1 << SDL_CONTROLLER_BUTTON_B) | (1 << SDL_CONTROLLER_BUTTON_BACK))))
+	else if(c == SDLK_ESCAPE || (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_BACK)))
 	{
 		return 255;  // cancel
 	}
@@ -146,7 +233,7 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 			MakeNormalSound(SND_MENUCLICK);
 		}
 	}
-	else if(c==8)
+	else if(c==SDLK_BACKSPACE || (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_B)))
 	{
 		if(strlen(entry)>0)
 		{
@@ -202,6 +289,52 @@ void RenderNameEntry(MGLDraw *mgl)
 		PrintProgressiveGlow(20,350,"Login name may only contain letters and numbers.",errorBright,2);
 	else if(error==3)
 		PrintProgressiveGlow(20,350,"That name's already in use on this computer!",errorBright,2);
+
+	if (gamepadMode && !SDL_HasScreenKeyboardSupport())
+	{
+		for (int row = 0; row < KEYBOARD_HEIGHT; ++row)
+		{
+			for (int col = 0; col < KEYBOARD_WIDTH; ++col)
+			{
+				char ch = KEYBOARD[row][col];
+				std::string_view msg;
+				int w = 40-4;
+				if (ch != ' ')
+				{
+					if (keyboardShift != KeyboardShift::None)
+						ch = toupper(ch);
+					msg = { &ch, 1 };
+				}
+				else if (row == 2)
+				{
+					msg = "Del";
+				}
+				else if (row == 3 && col == 0)
+				{
+					msg = "Shift";
+				}
+				else if (row == 3 && col == 8)
+				{
+					msg = "Enter";
+					w = 80-4;
+				}
+
+				if (!msg.empty())
+				{
+					int x = 100 + col * 40, y = 375 + row * 23;
+					if (curRow == row && curCol == col)
+					{
+						mgl->FillBox(x, y, x+w, y+20, 32+8);
+						mgl->Box(x, y, x+w, y+20, 32+31);
+					}
+					else
+						mgl->Box(x, y, x+w, y+20, 32+16);
+
+					PrintGlow(x + (w - GetStrLength(msg, 2)) / 2, y + 2, msg, 0, 2);
+				}
+			}
+		}
+	}
 }
 
 //----------------
