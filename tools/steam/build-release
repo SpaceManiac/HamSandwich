@@ -23,9 +23,9 @@ echo "==== Linux build ===="
 	set -euo pipefail
 	cmake --preset linux-x86_64-release
 	cmake --build build/cmake-linux-x86_64-release --target supreme
-	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/steam-omnibus --component generic/executables
-	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/steam-omnibus --component supreme/executables
-	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/steam-omnibus --component supreme/assets
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/steam-linux --component generic/executables
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/steam-linux --component supreme/executables
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/steam-assets --component supreme/assets
 "
 
 # Windows executables

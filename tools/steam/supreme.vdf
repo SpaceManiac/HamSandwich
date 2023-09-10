@@ -12,7 +12,7 @@
 		{
 			"FileMapping"
 			{
-				"LocalPath" "steam-omnibus/*"
+				"LocalPath" "steam-assets/*"
 				"DepotPath" "."
 				"Recursive" "1"
 			}
@@ -23,6 +23,24 @@
 			{
 				"LocalPath" "supreme8/*"
 				"DepotPath" "installers/supreme8_install.exe/"
+				"Recursive" "1"
+			}
+		}
+		"2547333"
+		{
+			"FileMapping"
+			{
+				"LocalPath" "steam-windows/*"
+				"DepotPath" "."
+				"Recursive" "1"
+			}
+		}
+		"2547334"
+		{
+			"FileMapping"
+			{
+				"LocalPath" "steam-linux/*"
+				"DepotPath" "."
 				"Recursive" "1"
 			}
 		}
