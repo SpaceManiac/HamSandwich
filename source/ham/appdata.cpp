@@ -313,7 +313,7 @@ static VfsStack vfs_stack_from_env(bool* error) {
 
 static bool check_assets(VfsStack& vfs) {
 	// Every game has this asset, so use it to sanity check.
-	return vfs.open_sdl("graphics/verdana.jft") != nullptr;
+	return vfs.open_sdl("sound/snd001.wav") != nullptr;
 }
 
 static char bin_dir_buf[1024] = {0};
