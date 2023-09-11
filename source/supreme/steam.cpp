@@ -621,6 +621,11 @@ SteamManager* SteamManager::Init()
 	{
 		gSteamManager = std::make_unique<SteamManagerImpl>();
 	}
+	else
+	{
+		// Compensate for error message not having newline.
+		fwrite("\n", 1, 1, stderr);
+	}
 #endif  // HAS_STEAM_API
 
 	if (!gSteamManager)
