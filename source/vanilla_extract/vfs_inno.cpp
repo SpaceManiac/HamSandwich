@@ -164,6 +164,30 @@ static void binary_string(SDL_RWops* rw, std::string* dest = nullptr)
 }
 
 // ----------------------------------------------------------------------------
+// RAII units
+
+struct OwnedCSzArEx : CSzArEx
+{
+	OwnedCSzArEx() { SzArEx_Init(this); }
+	~OwnedCSzArEx() { SzArEx_Free(this, vanilla::LZMA_ALLOCATOR); }
+	OwnedCSzArEx(const OwnedCSzArEx&) = delete;
+	OwnedCSzArEx(OwnedCSzArEx&&) = delete;
+	OwnedCSzArEx& operator=(const OwnedCSzArEx&) = delete;
+	OwnedCSzArEx& operator=(OwnedCSzArEx&&) = delete;
+};
+
+struct LzmaOutBuffer
+{
+	uint8_t* raw;
+	LzmaOutBuffer() : raw(nullptr) {}
+	~LzmaOutBuffer() { vanilla::LZMA_ALLOCATOR->Free(vanilla::LZMA_ALLOCATOR, raw); }
+	LzmaOutBuffer(const LzmaOutBuffer&) = delete;
+	LzmaOutBuffer(LzmaOutBuffer&&) = delete;
+	LzmaOutBuffer& operator=(const LzmaOutBuffer&) = delete;
+	LzmaOutBuffer& operator=(LzmaOutBuffer&&) = delete;
+};
+
+// ----------------------------------------------------------------------------
 // Decoding the file list
 
 static bool crc_table_generated = false;
@@ -211,8 +235,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 		crc_table_generated = true;
 	}
 
-	CSzArEx zip;
-	SzArEx_Init(&zip);
+	OwnedCSzArEx zip;
 	SRes res = SzArEx_Open(&zip, stream, vanilla::LZMA_ALLOCATOR, vanilla::LZMA_ALLOCATOR);
 	if (res != SZ_OK)
 	{
@@ -247,7 +270,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 
 	// Extract setup.0 into memory.
 	uint32_t blockIndex = 0;
-	uint8_t* outBuffer = nullptr;
+	LzmaOutBuffer outBuffer;
 	size_t outBufferSize = 0;
 	size_t offset;
 	size_t outSizeProcessed;
@@ -256,7 +279,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 		stream,
 		fileIndex_setup_0,
 		&blockIndex,
-		&outBuffer,
+		&outBuffer.raw,
 		&outBufferSize,
 		&offset,
 		&outSizeProcessed,
@@ -269,10 +292,10 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 	}
 
 	// Parse it.
-	uint8_t *position = &outBuffer[offset], *end = &outBuffer[offset + outSizeProcessed];
-	if (memcmp(&outBuffer[offset], INNO_VERSION, sizeof(INNO_VERSION)))
+	uint8_t *position = &outBuffer.raw[offset], *end = &outBuffer.raw[offset + outSizeProcessed];
+	if (memcmp(position, INNO_VERSION, sizeof(INNO_VERSION)))
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs: bad inno version %s", &outBuffer[offset]);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs: bad inno version %s", position);
 		return;
 	}
 	position += 64;
@@ -308,7 +331,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 	SDL_RWread(headers, &language_count, 4, 1);
 	SDL_RWseek(headers, 4 * 2, RW_SEEK_CUR);  // type_count, component_count
 	SDL_RWread(headers, &task_count, 4, 1);
-	SDL_RWseek(headers, 4 * 1, RW_SEEK_CUR);  // task_count
+	SDL_RWseek(headers, 4 * 1, RW_SEEK_CUR);  // directory_count
 	SDL_RWread(headers, &file_count, 4, 1);
 	SDL_RWread(headers, &data_entry_count, 4, 1);
 	SDL_RWseek(headers, 91, RW_SEEK_CUR);
@@ -396,7 +419,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 		stream,
 		fileIndex_setup_1_bin,
 		&blockIndex,
-		&outBuffer,
+		&outBuffer.raw,
 		&outBufferSize,
 		&offset,
 		&outSizeProcessed,
@@ -408,11 +431,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 		return;
 	}
 
-	setup_1_bin.assign(outBuffer + offset, outBuffer + offset + outSizeProcessed);
-
-	// Clean up.
-	vanilla::LZMA_ALLOCATOR->Free(vanilla::LZMA_ALLOCATOR, outBuffer);
-	SzArEx_Free(&zip, vanilla::LZMA_ALLOCATOR);
+	setup_1_bin.assign(outBuffer.raw + offset, outBuffer.raw + offset + outSizeProcessed);
 }
 
 owned::SDL_RWops InnoVfs::open_sdl(const char* path)
