@@ -7,6 +7,7 @@
 #include "appdata.h"
 #include "extern.h"
 #include "ico.h"
+#include "openurl.h"
 #include <time.h>
 #include <random>
 #include <algorithm>
