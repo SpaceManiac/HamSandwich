@@ -4,8 +4,9 @@
 #include "control.h"
 #include "extern.h"
 #include "appdata.h"
-
-MGLDraw *mainmgl;
+#include "display.h"
+#include "map.h"
+#include "guy.h"
 
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
@@ -26,22 +27,22 @@ TASK(int) main(int argc, char* argv[])
 			windowedGame=true;
 	}
 
-	mainmgl = new MGLDraw("Amazin' SPISPOPD", 640, 480, windowedGame);
-	if (!mainmgl)
+	g_MGL = new MGLDraw("Amazin' SPISPOPD", 640, 480, windowedGame);
+	if (!g_MGL)
 		CO_RETURN 1;
 
-	/*
 	DisplayInit();
-	MapInitGfx();
-	LoadConfig();
+	MapInit();
+	//LoadConfig();
 	GuysInitGfx();
-	SplashInit(0);
-	StartClockAndLoopMain();
+	//SplashInit(0);
+	//StartClockAndLoopMain();
 	GuysExitGfx();
-	SaveConfig();
-	MapExitGfx();
-	UnloadFonts();
-	MglDestroy();
+	//SaveConfig();
+	MapExit();
+	DisplayExit();
+	delete g_MGL;
+	/*
 	if (g_QuitAction == 1) {
 		ShellExecuteA((HWND)0x0,&s_open_1,s_http://www.hamumu.com_00477eec,&DAT_0048db60,&DAT_0048db5c,1);
 	}
