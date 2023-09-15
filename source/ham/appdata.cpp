@@ -112,6 +112,14 @@ static Mount init_vfs_spec(const char* what, const char* mountpoint, const char*
 		}
 		return { vanilla::open_inno(fp.get()), mountpoint, { vanilla::VfsSourceKind::BaseGame } };
 	}
+	else if (!strcmp(kind, "inno3")) {
+		owned::SDL_RWops fp = owned::SDL_RWFromFile(param, "rb");
+		if (!fp) {
+			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
+			return { nullptr };
+		}
+		return { vanilla::open_inno3(std::move(fp)), mountpoint, { vanilla::VfsSourceKind::BaseGame } };
+	}
 #ifdef __ANDROID__
 	else if (!strcmp(kind, "android")) {
 		return { vanilla::open_android(param), mountpoint, { vanilla::VfsSourceKind::BaseGame } };

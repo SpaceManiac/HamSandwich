@@ -136,7 +136,8 @@ namespace vanilla
 	// Available providers
 	std::unique_ptr<WriteVfs> open_stdio(std::string_view prefix);
 	std::unique_ptr<Vfs> open_nsis(owned::SDL_RWops rw);
-	std::unique_ptr<Vfs> open_inno(SDL_RWops* rw);
+	std::unique_ptr<Vfs> open_inno(SDL_RWops* rw);  // 4.0.5 7zipped
+	std::unique_ptr<Vfs> open_inno3(owned::SDL_RWops rw);  // 3.0.4 raw
 	std::unique_ptr<Vfs> open_zip(owned::SDL_RWops rw);
 #if defined(__ANDROID__) && __ANDROID__
 	std::unique_ptr<Vfs> open_android(const char* prefix = nullptr);
