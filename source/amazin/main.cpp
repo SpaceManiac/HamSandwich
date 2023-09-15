@@ -6,7 +6,10 @@
 #include "appdata.h"
 #include "display.h"
 #include "map.h"
+#include "config.h"
 #include "guy.h"
+#include "title.h"
+#include "loop.h"
 
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
@@ -33,12 +36,12 @@ TASK(int) main(int argc, char* argv[])
 
 	DisplayInit();
 	MapInit();
-	//LoadConfig();
+	LoadConfig();
 	GuysInitGfx();
-	//SplashInit(0);
-	//StartClockAndLoopMain();
+	SplashInit(0);
+	AWAIT LoopMain();
 	GuysExitGfx();
-	//SaveConfig();
+	SaveConfig();
 	MapExit();
 	DisplayExit();
 	delete g_MGL;
