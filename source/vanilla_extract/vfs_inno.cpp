@@ -120,14 +120,14 @@ static owned::SDL_RWops zlib_crc_block_reader(uint8_t** input_buffer)
 		{
 			if (int r = inflateInit(&zip); r != Z_OK)
 			{
-				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad inflateInit: %d", r);
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad inflateInit: %d: %s", r, zip.msg);
 				return nullptr;
 			}
 			first = false;
 		}
 		if (int r = inflate(&zip, Z_NO_FLUSH); r != Z_OK && r != Z_STREAM_END)
 		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad inflate: %d", r);
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad inflate: %d: %s", r, zip.msg);
 			return nullptr;
 		}
 
@@ -136,12 +136,12 @@ static owned::SDL_RWops zlib_crc_block_reader(uint8_t** input_buffer)
 	}
 	if (int r = inflate(&zip, Z_FINISH); r != Z_STREAM_END)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad flush: %d", r);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad finish: %d: %s", r, zip.msg);
 		return nullptr;
 	}
 	if (int r = inflateEnd(&zip); r != Z_OK)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad inflateInit: %d", r);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad inflateEnd: %d: %s", r, zip.msg);
 		return nullptr;
 	}
 
@@ -440,17 +440,17 @@ owned::SDL_RWops InnoVfs::open_sdl(const char* path)
 
 	if (int r = inflateInit(&zip); r != Z_OK)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs::open_sdl(%s): bad inflateInit: %d", path, r);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs::open_sdl(%s): bad inflateInit: %d: %s", path, r, zip.msg);
 		return nullptr;
 	}
-	if (int r = inflate(&zip, Z_NO_FLUSH); r != Z_OK && r != Z_STREAM_END)
+	if (int r = inflate(&zip, Z_NO_FLUSH); r != Z_OK)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs::open_sdl(%s): bad inflate: %d", path, r);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs::open_sdl(%s): bad inflate: %d: %s", path, r, zip.msg);
 		return nullptr;
 	}
 	if (int r = inflateEnd(&zip); r != Z_OK)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs::open_sdl(%s): bad inflateEnd: %d", path, r);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs::open_sdl(%s): bad inflateEnd: %d: %s", path, r, zip.msg);
 		return nullptr;
 	}
 
