@@ -15,3 +15,6 @@ endif()
 if(WIN32 AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 	set_target_properties(jspedit PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()
+
+install(TARGETS jspedit COMPONENT "jspedit/executables")
+install(TARGETS lunaticpal_lib COMPONENT "jspedit/executables")

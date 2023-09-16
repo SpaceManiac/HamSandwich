@@ -87,7 +87,7 @@ elseif(WIN32)
 		"${sdl2_ttf_SOURCE_DIR}/lib/${SDL_PLATFORM}/libfreetype-6.dll"
 		"${sdl2_ttf_SOURCE_DIR}/lib/${SDL_PLATFORM}/LICENSE.freetype.txt"
 		"${sdl2_ttf_SOURCE_DIR}/lib/${SDL_PLATFORM}/zlib1.dll"
-		TYPE BIN COMPONENT sdl2_ttf/executables)
+		TYPE BIN COMPONENT jspedit/executables)
 elseif(APPLE)
 	# Like Windows, use the official SDL2 prebuild binaries.
 	include(FetchContent)
@@ -138,6 +138,11 @@ elseif(APPLE)
 	target_link_libraries(SDL2_mixer INTERFACE "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework/SDL2_mixer")
 	install(DIRECTORY "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework" TYPE BIN COMPONENT generic/executables)
 	install(FILES "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework/Frameworks/Ogg.framework/Resources/LICENSE.ogg-vorbis.txt" TYPE BIN COMPONENT generic/executables)
+
+	target_include_directories(SDL2_ttf INTERFACE "${sdl2_ttf_SOURCE_DIR}/dmg_content/SDL2_ttf.framework/Headers")
+	target_link_libraries(SDL2_ttf INTERFACE "${sdl2_ttf_SOURCE_DIR}/dmg_content/SDL2_ttf.framework/SDL2_ttf")
+	install(DIRECTORY "${sdl2_ttf_SOURCE_DIR}/dmg_content/SDL2_ttf.framework" TYPE BIN COMPONENT jspedit/executables)
+	install(FILES "${sdl2_ttf_SOURCE_DIR}/dmg_content/SDL2_ttf.framework/Frameworks/FreeType.framework/Resources/LICENSE.freetype.txt" TYPE BIN COMPONENT jspedit/executables)
 else()
 	# Use system libraries.
 	find_package(SDL2 REQUIRED)
@@ -166,6 +171,8 @@ else()
 	install_as_soname(generic/executables ${SDL2_image_LIBRARIES})
 	find_library(png_LIBRARIES png REQUIRED)
 	install_as_soname(generic/executables ${png_LIBRARIES})
+	find_library(z_LIBRARIES z REQUIRED)
+	install_as_soname(generic/executables ${z_LIBRARIES})
 
 	# Install SDL2_mixer .so
 	install_as_soname(generic/executables ${SDL2_mixer_LIBRARIES})
@@ -176,7 +183,24 @@ else()
 	install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_mixer/external/libogg-1.3.2/COPYING" TYPE BIN COMPONENT generic/executables RENAME "LICENSE.ogg.txt")
 	install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_mixer/external/libvorbis-1.3.5/COPYING" TYPE BIN COMPONENT generic/executables RENAME "LICENSE.vorbis.txt")
 
-	# SDL2_ttf is only used by JspEdit, not installed
+	# SDL2_ttf is only used by JspEdit.
+	# SDL2_ttf takes a *direct* dependency on libfreetype.so.6, so it needs RUNPATH set or else it might find the system's.
+	set(sdl2_ttf_with_rpath "${CMAKE_CURRENT_BINARY_DIR}/libSDL2_ttf-2.0.so.0")
+	add_custom_command(
+		OUTPUT "${sdl2_ttf_with_rpath}"
+		COMMAND "${CMAKE_COMMAND}" -E copy "${SDL2_ttf_LIBRARIES}" "${sdl2_ttf_with_rpath}"
+		COMMAND patchelf --set-rpath \$ORIGIN "${sdl2_ttf_with_rpath}"
+		DEPENDS "${SDL2_ttf_LIBRARIES}"
+		VERBATIM
+	)
+	list(APPEND sdl2_rpath_depends "${sdl2_ttf_with_rpath}")
+	install(FILES "${sdl2_ttf_with_rpath}" TYPE BIN COMPONENT jspedit/executables)
+
+	find_library(freetype_LIBRARIES freetype REQUIRED)
+	install_as_soname(jspedit/executables ${freetype_LIBRARIES})
+	if (EXISTS "/usr/share/doc/libfreetype6-dev/copyright")
+		install(FILES "/usr/share/doc/libfreetype6-dev/copyright" TYPE BIN COMPONENT jspedit/executables RENAME "LICENSE.freetype.txt")
+	endif()
 endif()
 
 add_custom_target(sdl2_rpath ALL DEPENDS "${sdl2_rpath_depends}")
