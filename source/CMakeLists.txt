@@ -60,6 +60,14 @@ add_subdirectory("loonyland2")  # 2007-02
 add_subdirectory("sleepless")  # 2007-10
 
 # -----------------------------------------------------------------------------
+# Developer Tools
+if(NOT EMSCRIPTEN AND NOT ANDROID)
+	add_subdirectory("lunaticpal" EXCLUDE_FROM_ALL)
+	add_subdirectory("jspedit")
+	add_subdirectory("jfttool" EXCLUDE_FROM_ALL)
+endif()
+
+# -----------------------------------------------------------------------------
 # Launcher
 if(EMSCRIPTEN)
 	# Assets for web distribution
@@ -117,12 +125,4 @@ elseif(ANDROID)
 else()
 	# Launcher for desktop platforms
 	add_subdirectory("launcher")
-endif()
-
-# -----------------------------------------------------------------------------
-# Developer Tools
-if(NOT EMSCRIPTEN AND NOT ANDROID)
-	add_subdirectory("lunaticpal" EXCLUDE_FROM_ALL)
-	add_subdirectory("jspedit")
-	add_subdirectory("jfttool" EXCLUDE_FROM_ALL)
 endif()

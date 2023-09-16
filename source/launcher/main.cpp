@@ -123,6 +123,27 @@ struct LoadedIcon
 {
 	GLuint texture = 0;
 	int width = 0, height = 0;
+
+	LoadedIcon() {}
+	explicit LoadedIcon(SDL_Surface* img)
+	{
+		width = img->w;
+		height = img->h;
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		// Setup filtering parameters for display
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
+
+		// Upload pixels into texture
+#if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+#endif
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->w, img->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixels);
+	}
 };
 
 void print_curl_error(CURL* transfer, const char* explainer, CURLcode result)
@@ -476,6 +497,7 @@ namespace owned
 
 struct Launcher
 {
+	std::map<std::string, const Icon*> icons_by_id;
 	std::vector<Game> games;
 	Game* current_game = nullptr;
 	bool wants_to_play = false;
@@ -487,7 +509,6 @@ struct Launcher
 	{
 		downloads.reset(curl_multi_init());
 
-		std::map<std::string, const Icon*> icons_by_id;
 		const Icon* current = embed_icons;
 		while (current->name)
 		{
@@ -744,6 +765,53 @@ bool Launch(std::string_view bin_dir, const Game* game, bool fullscreen, SDL_Win
 #endif
 }
 
+bool LaunchTool(std::string_view bin_dir, std::string_view exename)
+{
+#if defined(_WIN32)
+	std::string cmdline { bin_dir };
+	cmdline.append("/");
+	cmdline.append(exename);
+	cmdline.append(".exe");
+
+	STARTUPINFOA startupInfo = {};
+	PROCESS_INFORMATION processInfo = {};
+	startupInfo.cb = sizeof(startupInfo);
+	if (CreateProcessA(cmdline.c_str(), cmdline.data(), nullptr, nullptr, false, 0, nullptr, nullptr, &startupInfo, &processInfo))
+	{
+		CloseHandle(processInfo.hProcess);
+		CloseHandle(processInfo.hThread);
+		return true;
+	}
+	else
+	{
+		fprintf(stderr, "CreateProcess failed: %lu\n", GetLastError());
+		return false;
+	}
+#else
+	int child_pid = fork();
+	if (child_pid == 0)
+	{
+		std::string program { bin_dir };
+		program.append("/");
+		program.append(exename);
+		char* argv[2] = { program.data(), nullptr };
+
+		execv(argv[0], argv);
+		perror("execv");
+		exit(1);
+	}
+	else if (child_pid > 0)
+	{
+		return true;
+	}
+	else
+	{
+		perror("fork");
+		return false;
+	}
+#endif
+}
+
 const char GAME_SELECTION_FILENAME[] = "appdata/game_selection.txt";
 
 int main(int argc, char** argv)
@@ -907,27 +975,24 @@ int main(int argc, char** argv)
 			{
 				// For best results, bake a 32x32 PNG frame into the .ico file.
 				// OpenGL will handle any necessary up- or down-scaling.
-
-				game.loaded_icon.width = img->w;
-				game.loaded_icon.height = img->h;
-				glGenTextures(1, &game.loaded_icon.texture);
-				glBindTexture(GL_TEXTURE_2D, game.loaded_icon.texture);
-
-				// Setup filtering parameters for display
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
-
-				// Upload pixels into texture
-#if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
-				glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-#endif
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->w, img->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixels);
+				game.loaded_icon = LoadedIcon(img.get());
 			}
 			else
 			{
 				printf("Failed to load %s icon: %s\n", game.id.c_str(), IMG_GetError());
+			}
+		}
+	}
+
+	LoadedIcon jspedit_icon;
+	{
+		const Icon* icon = launcher.icons_by_id["jspedit"];
+		if (icon)
+		{
+			auto img = ReadIcoFile(owned::SDL_RWFromConstMem(icon->data, icon->size), 32);
+			if (img)
+			{
+				jspedit_icon = LoadedIcon(img.get());
 			}
 		}
 	}
@@ -976,12 +1041,12 @@ int main(int argc, char** argv)
 		ImGui::BeginDisabled(action == Action::MiniGui);
 		if (ImGui::Begin("Games", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
 		{
+			const int vertical_padding = 1;
+
 			for (auto& game : launcher.games)
 			{
 				if (game.excluded)
 					continue;
-
-				const int vertical_padding = 1;
 
 				ImGui::PushID(game.id.c_str());
 				if (ImGui::Selectable("", launcher.current_game == &game, ImGuiSelectableFlags_AllowDoubleClick, { 0, 32 + 2 * vertical_padding }))
@@ -1015,8 +1080,34 @@ int main(int argc, char** argv)
 				ImGui::PopID();
 			}
 
+			ImGui::Separator();
+
+			ImGui::PushID("jspedit");
+			ImGui::Text("Tools (double-click to run)");
+			if (ImGui::Selectable("", false, ImGuiSelectableFlags_AllowDoubleClick, { 0, 32 + 2 * vertical_padding }))
+			{
+				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+				{
+					if (LaunchTool(bin_dir, "jspedit"))
+					{
+						break;
+					}
+				}
+			}
+			if (jspedit_icon.texture)
+			{
+				ImGui::SameLine(8);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + vertical_padding);
+				ImGui::Image((void*)(intptr_t)jspedit_icon.texture, { 32, 32 });
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - vertical_padding);
+			}
+			ImGui::SameLine(48);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (8 + vertical_padding));
+			ImGui::Text("JspEdit");
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (8 + vertical_padding));
+			ImGui::PopID();
+
 #ifdef GIT_VERSION
-			ImGui::Spacing();
 			ImGui::Separator();
 			ImGui::Text("Version: %.*s", 10, GIT_VERSION);
 #endif
