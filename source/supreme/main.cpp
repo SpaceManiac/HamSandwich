@@ -32,6 +32,7 @@
 #include "internet.h"
 #include "appdata.h"
 #include "steam.h"
+#include "unpickled.h"
 
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
@@ -53,24 +54,33 @@ TASK(int) main(int argc, char* argv[])
 	g_HamExtern.ChooseNextSong = ChooseNextSong;
 	g_HamExtern.SoundLoadOverride = SoundLoadOverride;
 
-	bool windowedGame=false;
+	bool windowedGame = false;
+	bool unpickled = false;
 
 	for (int i = 1; i < argc; ++i)
 	{
 		if (!strcmp(argv[i], "window"))
-			windowedGame=true;
+			windowedGame = true;
+		else if (!strcmp(argv[i], "--unpickled"))
+			unpickled = true;
 	}
 
 	AppdataInit(GetHamSandwichMetadata());
 	LoadConfig();
-	SetHamMusicEnabled(config.music);
-	SetJamulSoundEnabled(config.sound, config.numSounds);
+	SetHamMusicEnabled(config.music && !unpickled);
+	SetJamulSoundEnabled(config.sound && !unpickled, config.numSounds);
 	SteamManager::Init();
-	MGLDraw *mainmgl = new SteamMGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame);
+	MGLDraw *mainmgl = new SteamMGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame || unpickled);
 	if(!mainmgl)
 		CO_RETURN 0;
 
 	LunaticInit(mainmgl);
+
+	if (unpickled)
+	{
+		UnpickledMain();
+		CO_RETURN 0;
+	}
 
 	//CryptoTest();
 #ifdef ARCADETOWN
