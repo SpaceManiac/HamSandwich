@@ -14,6 +14,7 @@
 #include "steam.h"
 #include "guy.h"
 #include "editor.h"
+#include "winpch.h"
 
 #ifdef HAS_STEAM_API
 #ifdef _WIN32
@@ -476,13 +477,19 @@ static std::string PrepareWorkshopPreview()
 
 	MGLDraw* mgl = GetDisplayMGL();
 	mgl->ClearScreen();
+
 	EditorSelectMap(0);
+	world_t* world = EditorGetWorld();
+	Map* map = EditorGetMap();
+
 	PutCamera(goodguy->x, goodguy->y);
-	UpdateCamera(goodguy->x, goodguy->y, 0, 0, EditorGetMap());
-	editing=0;
+	UpdateCamera(goodguy->x >> FIXSHIFT, goodguy->y >> FIXSHIFT, 0, 0, map);
+
+	editing = 0;
 	RenderGuys(true);
-	RenderItAll(EditorGetWorld(), EditorGetMap(), MAP_SHOWWALLS | MAP_SHOWLIGHTS | MAP_SHOWBADGUYS | MAP_SHOWPICKUPS | MAP_SHOWOTHERITEMS);
+	RenderItAll(world, map, MAP_SHOWWALLS | MAP_SHOWLIGHTS | MAP_SHOWBADGUYS | MAP_SHOWPICKUPS | MAP_SHOWOTHERITEMS);
 	editing=1;
+
 	if (!mgl->SavePNG(pngFilename.c_str()))
 	{
 		LogError("Failed to save preview to %s\n", pngFilename.c_str());

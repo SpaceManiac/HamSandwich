@@ -1105,7 +1105,8 @@ bool MGLDraw::SaveBMP(const char *name)
 	SDL_Surface* surface = SDL_CreateRGBSurface(0, xRes, yRes, 8, 0, 0, 0, 0);
 #endif
 	SDL_LockSurface(surface);
-	memcpy(surface->pixels, scrn.get(), xRes * yRes);
+	for (int y = 0; y < yRes; ++y)
+		memcpy(&((uint8_t*)surface->pixels)[y * surface->pitch], &scrn[y * pitch], xRes);
 	SDL_UnlockSurface(surface);
 	for (int i = 0; i < 256; ++i)
 	{
@@ -1124,7 +1125,8 @@ bool MGLDraw::SavePNG(const char* name)
 	SDL_Surface* surface = SDL_CreateRGBSurface(0, xRes, yRes, 8, 0, 0, 0, 0);
 #endif
 	SDL_LockSurface(surface);
-	memcpy(surface->pixels, scrn.get(), xRes * yRes);
+	for (int y = 0; y < yRes; ++y)
+		memcpy(&((uint8_t*)surface->pixels)[y * surface->pitch], &scrn[y * pitch], xRes);
 	SDL_UnlockSurface(surface);
 	for (int i = 0; i < 256; ++i)
 	{

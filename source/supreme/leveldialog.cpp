@@ -459,7 +459,7 @@ void InitLevelDialog(world_t *wrld,byte currentMap)
 void ExitLevelDialog(void)
 {
 	ClearButtons();
-	delete mapZoom;
+	delete[] mapZoom;
 	delete levelSpr;
 }
 
