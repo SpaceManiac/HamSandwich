@@ -25,6 +25,7 @@ set_property(GLOBAL PROPERTY HamSandwich_launcher_icons "${launcher_icons}")
 
 # Install
 install(TARGETS jspedit COMPONENT "jspedit/executables")
-if(ham_library_type STREQUAL "SHARED")
+if(NOT WIN32)
+	# Install lunaticpal_lib only if it's shared.
 	install(TARGETS lunaticpal_lib COMPONENT "jspedit/executables")
 endif()
