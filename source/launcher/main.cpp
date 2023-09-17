@@ -597,17 +597,59 @@ void CopyToAddonsFolder(std::string_view addonsFolder, std::string_view sourcePa
 }
 
 // ----------------------------------------------------------------------------
-// Main code
-enum class Action
-{
-	Gui,
-	MiniCli,
-	MiniGui,
-};
+// Platform-specific child process spawning
 
-bool Launch(std::string_view bin_dir, const Game* game, bool fullscreen, SDL_Window* window)
-{
+// HideWindowAndWaitForChild keeps the launcher open in the background while
+// the child runs. If the child exits OK, the launcher quietly exits too. If
+// the child crashed, bring the launcher back so the user can try again.
+
+// LaunchTool simply executes the given process.
+
+// LaunchGame also supplies HSW_* environment variables and a "window" argument.
+
 #if defined(_WIN32)
+// Launch for Windows
+bool HideWindowAndWaitForChild(SDL_Window* window, const PROCESS_INFORMATION& processInfo)
+{
+	SDL_HideWindow(window);  // Hide window now that we know the child process was created.
+	WaitForSingleObject(processInfo.hProcess, INFINITE);
+	DWORD exitCode;
+	if (!GetExitCodeProcess(processInfo.hProcess, &exitCode))
+		exitCode = -1;
+	CloseHandle(processInfo.hProcess);
+	CloseHandle(processInfo.hThread);
+	if (exitCode == 0)
+		return true;  // Success, so clean up and exit in the background.
+	fprintf(stderr, "child exited with code: %u\n", exitCode);
+
+	// Child process failed, so bring the launcher window back.
+	SDL_ShowWindow(window);  // Undo Hide
+	return false;
+}
+
+bool LaunchTool(std::string_view bin_dir, std::string_view exename, SDL_Window* window)
+{
+	std::string cmdline { bin_dir };
+	cmdline.append("/");
+	cmdline.append(exename);
+	cmdline.append(".exe");
+
+	STARTUPINFOA startupInfo = {};
+	PROCESS_INFORMATION processInfo = {};
+	startupInfo.cb = sizeof(startupInfo);
+	if (CreateProcessA(cmdline.c_str(), cmdline.data(), nullptr, nullptr, false, 0, nullptr, nullptr, &startupInfo, &processInfo))
+	{
+		return HideWindowAndWaitForChild(window, processInfo);
+	}
+	else
+	{
+		fprintf(stderr, "CreateProcess failed: %lu\n", GetLastError());
+		return false;
+	}
+}
+
+bool LaunchGame(std::string_view bin_dir, const Game* game, bool fullscreen, SDL_Window* window)
+{
 	std::string cmdline { bin_dir };
 	cmdline.append("/");
 	cmdline.append(game->id);
@@ -676,24 +718,71 @@ bool Launch(std::string_view bin_dir, const Game* game, bool fullscreen, SDL_Win
 	startupInfo.cb = sizeof(startupInfo);
 	if (CreateProcessA(executable.c_str(), cmdline.data(), nullptr, nullptr, false, 0, environment.str().data(), nullptr, &startupInfo, &processInfo))
 	{
-		SDL_HideWindow(window);  // Hide window now that we know the child process was created.
-		WaitForSingleObject(processInfo.hProcess, INFINITE);
-		DWORD exitCode;
-		if (!GetExitCodeProcess(processInfo.hProcess, &exitCode))
-			exitCode = -1;
-		CloseHandle(processInfo.hProcess);
-		CloseHandle(processInfo.hThread);
-		return exitCode == 0;
+		return HideWindowAndWaitForChild(window, processInfo);
 	}
 	else
 	{
 		fprintf(stderr, "CreateProcess failed: %lu\n", GetLastError());
 		return false;
 	}
+}
+// End Launch for Windows
 #elif !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+// Launch for Linux and Mac
+bool HideWindowAndWaitForChild(SDL_Window* window, int child_pid)
+{
+	SDL_HideWindow(window);  // Hide window. Unfortunately happens even if execvp fails.
+	SDL_MinimizeWindow(window);  // Minimize on MacOS for now, though it's a little wonky.
+
+	int wstatus;
+	// NB: SDL catches SIGINT and SIGTERM and turns them into a QUIT event and
+	// clean exit, so those won't bubble up as errors here.
+	if (waitpid(child_pid, &wstatus, 0) >= 0 && WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0)
+		return true;  // Success, so clean up and exit in the background.
+	if (WIFEXITED(wstatus))
+		fprintf(stderr, "child exited with code: %d\n", WEXITSTATUS(wstatus));
+	else if (WIFSIGNALED(wstatus))
+		fprintf(stderr, "child exited with signal: %d\n", WTERMSIG(wstatus));
+	else
+		fprintf(stderr, "child exited in unknown way: %x\n", wstatus);
+
+	// Child process failed, so bring the launcher window back.
+	SDL_RestoreWindow(window);  // Undo Minimize.
+	SDL_ShowWindow(window);  // Undo Hide.
+	return false;
+}
+
+bool LaunchTool(std::string_view bin_dir, std::string_view exename, SDL_Window* window)
+{
 	int child_pid = fork();
 	if (child_pid == 0)
 	{
+		std::string program { bin_dir };
+		program.append("/");
+		program.append(exename);
+		char* argv[2] = { program.data(), nullptr };
+
+		execv(argv[0], argv);
+		perror("execv");
+		exit(1);
+	}
+	else if (child_pid > 0)
+	{
+		return HideWindowAndWaitForChild(window, child_pid);
+	}
+	else
+	{
+		perror("fork");
+		return false;
+	}
+}
+
+bool LaunchGame(std::string_view bin_dir, const Game* game, bool fullscreen, SDL_Window* window)
+{
+	int child_pid = fork();
+	if (child_pid == 0)
+	{
+		// We're in the child, so either exec or exit with an error code.
 		std::string program { bin_dir };
 		program.append("/");
 		program.append(game->id);
@@ -748,69 +837,25 @@ bool Launch(std::string_view bin_dir, const Game* game, bool fullscreen, SDL_Win
 	}
 	else if (child_pid > 0)
 	{
-		SDL_HideWindow(window);  // Hide window. Unfortunately happens even if execvp fails.
-		SDL_MinimizeWindow(window);  // Minimize on MacOS for now, though it's a little wonky.
-
-		int wstatus;
-		if (waitpid(child_pid, &wstatus, 0) >= 0 && WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0)
-			return true;  // Success, so clean up and exit in the background.
-		fprintf(stderr, "child exited with code: %d\n", wstatus);
-		return false;
+		return HideWindowAndWaitForChild(window, child_pid);
 	}
 	else
 	{
 		perror("fork");
 		return false;
 	}
-#endif
 }
+// End Launch for Linux and Mac
+#endif
 
-bool LaunchTool(std::string_view bin_dir, std::string_view exename)
+// ----------------------------------------------------------------------------
+// Main code
+enum class Action
 {
-#if defined(_WIN32)
-	std::string cmdline { bin_dir };
-	cmdline.append("/");
-	cmdline.append(exename);
-	cmdline.append(".exe");
-
-	STARTUPINFOA startupInfo = {};
-	PROCESS_INFORMATION processInfo = {};
-	startupInfo.cb = sizeof(startupInfo);
-	if (CreateProcessA(cmdline.c_str(), cmdline.data(), nullptr, nullptr, false, 0, nullptr, nullptr, &startupInfo, &processInfo))
-	{
-		CloseHandle(processInfo.hProcess);
-		CloseHandle(processInfo.hThread);
-		return true;
-	}
-	else
-	{
-		fprintf(stderr, "CreateProcess failed: %lu\n", GetLastError());
-		return false;
-	}
-#else
-	int child_pid = fork();
-	if (child_pid == 0)
-	{
-		std::string program { bin_dir };
-		program.append("/");
-		program.append(exename);
-		char* argv[2] = { program.data(), nullptr };
-
-		execv(argv[0], argv);
-		perror("execv");
-		exit(1);
-	}
-	else if (child_pid > 0)
-	{
-		return true;
-	}
-	else
-	{
-		perror("fork");
-		return false;
-	}
-#endif
-}
+	Gui,
+	MiniCli,
+	MiniGui,
+};
 
 const char GAME_SELECTION_FILENAME[] = "appdata/game_selection.txt";
 
@@ -1087,8 +1132,9 @@ int main(int argc, char** argv)
 			const int selectable_padding = 2;
 			if (ImGui::Button("", { ImGui::GetContentRegionAvail().x, 32 + 2 * (vertical_padding + selectable_padding) }))
 			{
-				if (LaunchTool(bin_dir, "jspedit"))
+				if (LaunchTool(bin_dir, "jspedit", window))
 				{
+					// Success, so clean up and exit in the background.
 					break;
 				}
 			}
@@ -1340,15 +1386,11 @@ int main(int argc, char** argv)
 			else if (launcher.wants_to_play)
 			{
 				launcher.wants_to_play = false;
-				if (Launch(bin_dir, launcher.current_game, launcher.wants_fullscreen, window))
+				if (LaunchGame(bin_dir, launcher.current_game, launcher.wants_fullscreen, window))
 				{
 					// Success, so clean up and exit in the background.
 					break;
 				}
-
-				// Child process failed, so bring the launcher window back.
-				SDL_RestoreWindow(window);
-				SDL_ShowWindow(window);
 			}
 		}
 	}
