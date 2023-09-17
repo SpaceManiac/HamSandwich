@@ -61,6 +61,7 @@ void InitNameEntry(MGLDraw *mgl)
 	lastGamepad = ~0;
 	gamepadMode = false;
 	keyboardShift = KeyboardShift::None;
+	GetTaps();
 }
 
 void ExitNameEntry()
