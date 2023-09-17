@@ -42,6 +42,8 @@ public:
 
 	// Resize the SCREEN BUFFER - window is only resized if necessary.
 	void ResizeBuffer(int w, int h, bool clamp = false);
+	bool IsWindowed();
+	void SetWindowed(bool windowed);
 
 	// Perform any necessary per-frame handling. Returns false if quit.
 	virtual bool Process();

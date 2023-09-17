@@ -249,6 +249,46 @@ void MGLDraw::Quit()
 	readyToQuit = true;
 }
 
+bool MGLDraw::IsWindowed()
+{
+	return windowed;
+}
+
+void MGLDraw::SetWindowed(bool newWindowed)
+{
+	if (windowed == newWindowed)
+		return;
+
+	windowed = newWindowed;
+#ifndef __EMSCRIPTEN__
+	if (windowed)
+	{
+		SDL_SetWindowFullscreen(window, 0);
+
+		int px, py;
+		SDL_GetWindowPosition(window, &px, &py);
+		px -= (xRes - winWidth) / 2;
+		py -= (yRes - winHeight) / 2;
+		px = std::max(0, px);
+		py = std::max(0, py);
+		SDL_SetWindowPosition(window, px, py);
+
+		SDL_SetWindowSize(window, xRes, yRes);
+	}
+	else
+	{
+		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+	}
+#else  // __EMSCRIPTEN__
+	if (!windowed)
+	{
+		EM_ASM(
+			Module.requestFullscreen();
+		);
+	}
+#endif  // __EMSCRIPTEN__
+}
+
 inline void MGLDraw::putpixel(int x, int y, RGB value)
 {
 	buffer[y * pitch + x] = value;
@@ -381,25 +421,7 @@ TASK(void) MGLDraw::FinishFlip(void)
 			if (e.key.keysym.scancode == SDL_SCANCODE_F11)
 			{
 #ifndef __EMSCRIPTEN__
-				windowed = !windowed;
-				if (windowed)
-				{
-					SDL_SetWindowFullscreen(window, 0);
-
-					int px, py;
-					SDL_GetWindowPosition(window, &px, &py);
-					px -= (xRes - winWidth) / 2;
-					py -= (yRes - winHeight) / 2;
-					px = std::max(0, px);
-					py = std::max(0, py);
-					SDL_SetWindowPosition(window, px, py);
-
-					SDL_SetWindowSize(window, xRes, yRes);
-				}
-				else
-				{
-					SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-				}
+				SetWindowed(!windowed);
 #else  // __EMSCRIPTEN__
 				EM_ASM(
 					Module.requestFullscreen();
