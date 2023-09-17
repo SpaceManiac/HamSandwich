@@ -587,18 +587,22 @@ TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 				switch (curButton)
 				{
 					case ButtonId::HamumuWebsite:
+						MakeNormalSound(SND_MENUSELECT);
 						if (SteamManager::Get()->IsSteamEdition())
 							SteamManager::Get()->OpenURLOverlay("https://store.steampowered.com/developer/Hamumu");
 						else
 							SDL_OpenURL("https://hamumu.com");
 						break;
 					case ButtonId::HamSandwich:
+						MakeNormalSound(SND_MENUSELECT);
 						SteamManager::Get()->OpenURLOverlay("https://github.com/SpaceManiac/HamSandwich");
 						break;
 					case ButtonId::LoonyChat:
+						MakeNormalSound(SND_MENUSELECT);
 						SDL_OpenURL("https://discord.gg/BJpDSCK9s4");
 						break;
 					case ButtonId::SteamWorkshop:
+						MakeNormalSound(SND_MENUSELECT);
 						SteamManager::Get()->OpenURLOverlay("https://steamcommunity.com/app/2547330/workshop/");
 						break;
 					case ButtonId::Upload:
