@@ -1081,30 +1081,28 @@ int main(int argc, char** argv)
 			}
 
 			ImGui::Separator();
+			ImGui::Text("Tools");
 
 			ImGui::PushID("jspedit");
-			ImGui::Text("Tools (double-click to run)");
-			if (ImGui::Selectable("", false, ImGuiSelectableFlags_AllowDoubleClick, { 0, 32 + 2 * vertical_padding }))
+			const int selectable_padding = 2;
+			if (ImGui::Button("", { ImGui::GetContentRegionAvail().x, 32 + 2 * (vertical_padding + selectable_padding) }))
 			{
-				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+				if (LaunchTool(bin_dir, "jspedit"))
 				{
-					if (LaunchTool(bin_dir, "jspedit"))
-					{
-						break;
-					}
+					break;
 				}
 			}
 			if (jspedit_icon.texture)
 			{
-				ImGui::SameLine(8);
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + vertical_padding);
+				ImGui::SameLine(8 + 2);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (vertical_padding + selectable_padding));
 				ImGui::Image((void*)(intptr_t)jspedit_icon.texture, { 32, 32 });
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - vertical_padding);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (vertical_padding + selectable_padding));
 			}
 			ImGui::SameLine(48);
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (8 + vertical_padding));
-			ImGui::Text("JspEdit");
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (8 + vertical_padding));
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (8 + vertical_padding - selectable_padding));
+			ImGui::Text("JspEdit 3");
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (8 + vertical_padding - selectable_padding));
 			ImGui::PopID();
 
 #ifdef GIT_VERSION
