@@ -65,6 +65,8 @@ if(WIN32 AND CMAKE_COMPILER_IS_GNUCC)
 	install_dll("libwinpthread-1.dll")
 endif()
 
+install(FILES "LICENSE.md" RENAME "LICENSE.HamSandwich.txt" TYPE BIN COMPONENT generic/executables)
+
 # Install Itch metadata.
 if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT EMSCRIPTEN)
 	set(pathext "")
