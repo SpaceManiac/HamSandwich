@@ -1,4 +1,5 @@
 #include "winpch.h"
+#include <math.h>
 #include "specialedit.h"
 #include "dialogbits.h"
 #include "filedialog.h"

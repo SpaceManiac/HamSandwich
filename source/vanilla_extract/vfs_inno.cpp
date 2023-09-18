@@ -181,7 +181,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 
 	if (memcmp(signature, k7zSignature, k7zSignatureSize))
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs: 7z signature missing at offset 0x%zx", OFFSET_OF_7Z_IN_EXE);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs: 7z signature missing at offset 0x%x", (unsigned int)OFFSET_OF_7Z_IN_EXE);
 		return;
 	}
 

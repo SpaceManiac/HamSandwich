@@ -240,7 +240,7 @@ bool NsisVfs::extract_internal(const char* path, bool is_compressed, uint32_t si
 	size_t got = SDL_RWread(archive_rw, compressed.data(), 1, compressed.size());
 	if (got < compressed.size())
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "NsisVfs::extract_internal(%s): expected %zu, got %zu: %s", path, compressed.size(), got, SDL_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "NsisVfs::extract_internal(%s): expected %u, got %u: %s", path, (unsigned int)(compressed.size()), (unsigned int)(got), SDL_GetError());
 		return false;
 	}
 
