@@ -9,6 +9,7 @@
 
 void UnpickledMain()
 {
+#ifndef __EMSCRIPTEN__
 	MGLDraw* mgl = GetDisplayMGL();
 	mgl->ClearScreen();
 	PALETTE pal;
@@ -108,4 +109,5 @@ void UnpickledMain()
 		}
 		if (!mgl->Process()) break;
 	}
+#endif
 }
