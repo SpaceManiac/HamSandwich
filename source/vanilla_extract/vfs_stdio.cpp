@@ -47,7 +47,7 @@ owned::FILE StdioVfs::open_stdio_internal(const char* file, const char* mode, bo
 		buffer[i] = '\0';
 
 		std::set<std::string> temp;
-		list_dir(buffer.c_str(), temp);
+		list_dir(&buffer.c_str()[prefix.length() + 1], temp);
 
 		for (const auto& name : temp)
 		{
