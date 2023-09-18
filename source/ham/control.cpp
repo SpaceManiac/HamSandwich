@@ -1,10 +1,11 @@
 #include "control.h"
+#include <math.h>
+#include <vector>
+#include <algorithm>
 #include "mgldraw.h"
 #include "log.h"
 #include "softjoystick.h"
 #include "owned_sdl.h"
-#include <vector>
-#include <algorithm>
 
 static byte lastScanCode;
 
