@@ -656,7 +656,7 @@ void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 
 	y += 5;
 	char buf[256];
-	sprintf(buf, "Viewing %zu-%zu of %zu files.", start+1, end, files.size());
+	sprintf(buf, "Viewing %u-%u of %u files.", (unsigned int)(start+1), (unsigned int)(end), (unsigned int)(files.size()));
 	Print(5, y, buf, 0, 1);
 
 	int included = 0;
@@ -665,7 +665,7 @@ void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 		included += IncludeKind(file.kind) ? 1 : 0;
 	}
 	y += 14;
-	sprintf(buf, "Including %d of %zu files.", included, files.size());
+	sprintf(buf, "Including %d of %u files.", included, (unsigned int)(files.size()));
 	Print(5, y, buf, 0, 1);
 
 	y += 14;
