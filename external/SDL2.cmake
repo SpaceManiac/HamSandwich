@@ -123,7 +123,7 @@ elseif(APPLE)
 		COMMAND cp -r dmg_mount dmg_content
 		COMMAND hdiutil unmount dmg_mount
 	)
-	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer)
+	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf)
 
 	target_include_directories(SDL2 INTERFACE "${sdl2_SOURCE_DIR}/dmg_content/SDL2.framework/Headers")
 	target_compile_options(SDL2 INTERFACE -F "${sdl2_SOURCE_DIR}/dmg_content")  # so SDL_mixer finds <SDL2/SDL.h>
