@@ -74,7 +74,6 @@ namespace
 #ifdef HAS_STEAM_API
 	class SteamWorkshopUpload final
 	{
-		constexpr static AppId_t WORKSHOP_APPID = 2547330;
 		CCallResult<SteamWorkshopUpload, CreateItemResult_t> create_result;
 		CCallResult<SteamWorkshopUpload, SubmitItemUpdateResult_t> submit_update_result;
 
@@ -111,7 +110,7 @@ namespace
 
 		void SubmitUpdate()
 		{
-			UGCUpdateHandle_t handle = SteamUGC()->StartItemUpdate(WORKSHOP_APPID, workshopItemId);
+			UGCUpdateHandle_t handle = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), workshopItemId);
 
 			if (!SteamUGC()->SetItemTitle(handle, title.c_str()))
 			{
@@ -234,7 +233,7 @@ namespace
 			{
 				progress = Progress::Working;
 				progressMessage = "Registering new item...";
-				create_result.Set(SteamUGC()->CreateItem(WORKSHOP_APPID, k_EWorkshopFileTypeCommunity), this, &SteamWorkshopUpload::CreateCallback);
+				create_result.Set(SteamUGC()->CreateItem(SteamUtils()->GetAppID(), k_EWorkshopFileTypeCommunity), this, &SteamWorkshopUpload::CreateCallback);
 			}
 			else
 			{
