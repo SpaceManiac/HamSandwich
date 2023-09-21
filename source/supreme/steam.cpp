@@ -470,16 +470,18 @@ public:
 	class LeaderboardUploadJob
 	{
 	protected:
-		int32_t score;
+		int32_t score = 0;
+		ELeaderboardSortMethod sortMethod = k_ELeaderboardSortMethodDescending;
+		ELeaderboardDisplayType displayType = k_ELeaderboardDisplayTypeNumeric;
 	private:
 		int32_t extraData[k_cLeaderboardDetailsMax];
-		int extraDataCount;
+		int extraDataCount = 0;
 
 		CCallResult<LeaderboardUploadJob, LeaderboardFindResult_t> findLeaderboardCall;
 		CCallResult<LeaderboardUploadJob, LeaderboardScoreUploaded_t> uploadScoreCall;
 
 	protected:
-		LeaderboardUploadJob() : score(0), extraDataCount(0) {}
+		LeaderboardUploadJob() {}
 
 		// Try to add a detail. Returns false if you're out of space.
 		bool AddDetail(int32_t detail)
@@ -507,8 +509,8 @@ public:
 			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "FindOrCreateLeaderboard(%s)", leaderboardId);
 			findLeaderboardCall.Set(SteamUserStats()->FindOrCreateLeaderboard(
 				leaderboardId,
-				k_ELeaderboardSortMethodDescending,
-				k_ELeaderboardDisplayTypeNumeric
+				sortMethod,
+				displayType
 			), this, &LeaderboardUploadJob::FindLeaderboardCallback);
 		}
 
@@ -579,6 +581,62 @@ public:
 		}
 	};
 
+	struct UploadWorldTimeJob : public LeaderboardUploadJob
+	{
+		UploadWorldTimeJob(world_t* world, worldData_t* worldProgress)
+		{
+			sortMethod = k_ELeaderboardSortMethodAscending;
+			displayType = k_ELeaderboardDisplayTypeTimeMilliSeconds;  // INT_MAX is about 596:31:23.645
+
+			// Pack keychain flags and NNN.N% completion into extra data for display
+			AddDetail(PackWorldProgress(worldProgress));
+
+			score = 0;
+			int mapsMissed = 0;
+			for (int i = 0; i < world->numMaps; ++i)
+			{
+				Map* map = world->map[i];
+				// Pack per-level top time, character, and difficulty into extra slots.
+				// HUB levels are skipped, but unscored levels get explicit all-ones.
+				if (!(map->flags & MAP_HUB))
+				{
+					int32_t packedMapTime = ~0;
+					score_t winners[3];
+					// Take the top time on this machine, regardless of profile.
+					if (GetTopTimes(winners, map) > 0)
+					{
+						packedMapTime = PackMapScore(&winners[0]);
+						score += winners[0].score;
+					}
+					else
+					{
+						++mapsMissed;
+					}
+
+					// MAX_MAPS - 1 for guaranteed hub
+					// k_cLeaderboardDetailsMax - 1 for PackWorldProgress
+					static_assert(MAX_MAPS - 1 <= k_cLeaderboardDetailsMax - 1);
+					AddDetail(packedMapTime);
+				}
+			}
+
+			// If the player missed any maps, bucket them at the very bottom of the leaderboard
+			// based on how many maps they have left to go.
+			if (mapsMissed > 0)
+			{
+				// missed 0 maps = your real total time, which is <
+				// missed 1/10 maps = MAX-9, which is <
+				// missed 2/10 maps = MAX-8, so on
+				score = INT32_MAX - world->numMaps + mapsMissed;
+			}
+			else
+			{
+				// score is now total time in frames - convert it to milliseconds for Steam's benefit
+				score = score * 1000 / 30;
+			}
+		}
+	};
+
 	void UploadWorldScore() override
 	{
 		const char* worldFilename = player.worldName;
@@ -601,6 +659,8 @@ public:
 		}
 
 		LeaderboardUploadJob::Send(fullFilename.c_str(), std::make_unique<UploadWorldScoreJob>(&world, progress));
+		fullFilename.append("/time");
+		LeaderboardUploadJob::Send(fullFilename.c_str(), std::make_unique<UploadWorldTimeJob>(&world, progress));
 	}
 
 	// ------------------------------------------------------------------------
