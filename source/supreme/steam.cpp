@@ -467,69 +467,64 @@ public:
 
 	// ------------------------------------------------------------------------
 	// Per-world score leaderboard upload
-	class UploadWorldScoreJob
+	class LeaderboardUploadJob
 	{
-		int32_t totalScore;
+	protected:
+		int32_t score;
+	private:
 		int32_t extraData[k_cLeaderboardDetailsMax];
 		int extraDataCount;
 
-		CCallResult<UploadWorldScoreJob, LeaderboardFindResult_t> findLeaderboardCall;
-		CCallResult<UploadWorldScoreJob, LeaderboardScoreUploaded_t> uploadScoreCall;
+		CCallResult<LeaderboardUploadJob, LeaderboardFindResult_t> findLeaderboardCall;
+		CCallResult<LeaderboardUploadJob, LeaderboardScoreUploaded_t> uploadScoreCall;
+
+	protected:
+		LeaderboardUploadJob() : score(0), extraDataCount(0) {}
+
+		// Try to add a detail. Returns false if you're out of space.
+		bool AddDetail(int32_t detail)
+		{
+			if (extraDataCount < k_cLeaderboardDetailsMax)
+			{
+				extraData[extraDataCount] = detail;
+				++extraDataCount;
+				return true;
+			}
+			return false;
+		}
 
 	public:
-		UploadWorldScoreJob(const char* fullFilename, world_t* world, worldData_t* worldProgress)
+		static void Send(const char* leaderboardId, std::unique_ptr<LeaderboardUploadJob> job)
 		{
-			// Pack keychain flags and NNN.N% completion into extra data for display
-			extraData[0] = PackWorldProgress(worldProgress);
-			extraDataCount = 1;
-
-			totalScore = 0;
-			for (int i = 0; i < world->numMaps; ++i)
-			{
-				int32_t packedMapScore = 0;
-				Map* map = world->map[i];
-				score_t winners[3];
-				// Take the top score on this machine, regardless of profile.
-				if (GetTopScores(winners, map) > 0)
-				{
-					packedMapScore = PackMapScore(&winners[0]);
-					totalScore += winners[0].score;
-				}
-
-				// Pack per-level top score, character, and difficulty into extra slots.
-				// HUB levels are skipped, but unscored levels get explicit zeroes.
-				if (!(map->flags & MAP_HUB) && extraDataCount < k_cLeaderboardDetailsMax)
-				{
-					// 4 bits for playable character
-					// 2 bits for difficulty
-					// leaving 29 bits for
-					extraData[extraDataCount] = packedMapScore;
-					++extraDataCount;
-				}
-			}
-
-			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "FindOrCreateLeaderboard(%s)", fullFilename);
-			findLeaderboardCall.Set(SteamUserStats()->FindOrCreateLeaderboard(
-				fullFilename,
-				k_ELeaderboardSortMethodDescending,
-				k_ELeaderboardDisplayTypeNumeric
-			), this, &UploadWorldScoreJob::FindLeaderboardCallback);
+			// std::unique_ptr type enforces that we can call .release() and `delete` it later.
+			job.release()->Send2(leaderboardId);
 		}
 
 	private:
+		// Safety: `this` must be on the heap and this object is now responsible for `delete`ing itself.
+		void Send2(const char* leaderboardId)
+		{
+			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "FindOrCreateLeaderboard(%s)", leaderboardId);
+			findLeaderboardCall.Set(SteamUserStats()->FindOrCreateLeaderboard(
+				leaderboardId,
+				k_ELeaderboardSortMethodDescending,
+				k_ELeaderboardDisplayTypeNumeric
+			), this, &LeaderboardUploadJob::FindLeaderboardCallback);
+		}
+
 		void FindLeaderboardCallback(LeaderboardFindResult_t* result, bool ioError)
 		{
 			if (!ioError && result->m_bLeaderboardFound && result->m_hSteamLeaderboard)
 			{
 				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "UploadLeaderboardScore(%llu, %d, ...[%d])",
-					result->m_hSteamLeaderboard, totalScore, extraDataCount);
+					result->m_hSteamLeaderboard, score, extraDataCount);
 				uploadScoreCall.Set(SteamUserStats()->UploadLeaderboardScore(
 					result->m_hSteamLeaderboard,
 					k_ELeaderboardUploadScoreMethodForceUpdate,
-					totalScore,
+					score,
 					extraData,
 					extraDataCount
-				), this, &UploadWorldScoreJob::UploadScoreCallback);
+				), this, &LeaderboardUploadJob::UploadScoreCallback);
 			}
 			else
 			{
@@ -550,6 +545,37 @@ public:
 				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "UploadLeaderboardScore failed");
 			}
 			delete this;
+		}
+	};
+
+	struct UploadWorldScoreJob : public LeaderboardUploadJob
+	{
+		UploadWorldScoreJob(world_t* world, worldData_t* worldProgress)
+		{
+			// Pack keychain flags and NNN.N% completion into extra data for display
+			AddDetail(PackWorldProgress(worldProgress));
+
+			score = 0;
+			for (int i = 0; i < world->numMaps; ++i)
+			{
+				Map* map = world->map[i];
+				// Pack per-level top score, character, and difficulty into extra slots.
+				// HUB levels are skipped, but unscored levels get explicit zeroes.
+				if (!(map->flags & MAP_HUB))
+				{
+					int32_t packedMapScore = 0;
+					score_t winners[3];
+					// Take the top score on this machine, regardless of profile.
+					if (GetTopScores(winners, map) > 0)
+					{
+						packedMapScore = PackMapScore(&winners[0]);
+						score += winners[0].score;
+					}
+
+					static_assert(MAX_MAPS - 1 <= k_cLeaderboardDetailsMax - 1);
+					AddDetail(packedMapScore);
+				}
+			}
 		}
 	};
 
@@ -574,8 +600,7 @@ public:
 			return;
 		}
 
-		// raw new() so the job can delete itself when its callbacks complete
-		new UploadWorldScoreJob(fullFilename.c_str(), &world, progress);
+		LeaderboardUploadJob::Send(fullFilename.c_str(), std::make_unique<UploadWorldScoreJob>(&world, progress));
 	}
 
 	// ------------------------------------------------------------------------
