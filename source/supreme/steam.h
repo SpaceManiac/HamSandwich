@@ -35,7 +35,8 @@ public:
 
 	virtual void UploadWorldScore() {}
 	virtual void PrepWorldLeaderboard(const char* fullFilename) {}
-	virtual uint64_t WorldHasLeaderboard() { return 0; }
+	virtual uint64_t LeaderboardIdScore() { return 0; }
+	virtual uint64_t LeaderboardIdTime() { return 0; }
 
 	virtual void GetUsername(char* buffer, size_t size) {}
 

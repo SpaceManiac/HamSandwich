@@ -665,32 +665,52 @@ public:
 
 	// ------------------------------------------------------------------------
 	// Per-world score leaderboard display
-	CCallResult<SteamManagerImpl, LeaderboardFindResult_t> findLeaderboardCall;
-	SteamLeaderboard_t worldLeaderboardId = 0;
+	CCallResult<SteamManagerImpl, LeaderboardFindResult_t> findScoreCall, findTimeCall;
+	SteamLeaderboard_t leaderboardIdScore = 0, leaderboardIdTime = 0;
 
 	void PrepWorldLeaderboard(const char* fullFilename) override
 	{
-		worldLeaderboardId = 0;
+		leaderboardIdScore = leaderboardIdTime = 0;
+
 		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "PrepWorldLeaderboard(%s)", fullFilename);
-		findLeaderboardCall.Set(SteamUserStats()->FindLeaderboard(fullFilename), this, &SteamManagerImpl::FindLeaderboardCallback);
+		findScoreCall.Set(SteamUserStats()->FindLeaderboard(fullFilename), this, &SteamManagerImpl::FindScoreCallback);
+		std::string buf = fullFilename;
+		buf.append("/time");
+		findTimeCall.Set(SteamUserStats()->FindLeaderboard(buf.c_str()), this, &SteamManagerImpl::FindTimeCallback);
 	}
 
-	void FindLeaderboardCallback(LeaderboardFindResult_t* result, bool ioError)
+	void FindScoreCallback(LeaderboardFindResult_t* result, bool ioError)
 	{
 		if (!ioError && result->m_bLeaderboardFound && result->m_hSteamLeaderboard)
 		{
-			worldLeaderboardId = result->m_hSteamLeaderboard;
+			leaderboardIdScore = result->m_hSteamLeaderboard;
 		}
 		else
 		{
-			worldLeaderboardId = 0;
-			//SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "FindLeaderboard failed");
+			leaderboardIdScore = 0;
 		}
 	}
 
-	uint64_t WorldHasLeaderboard() override
+	void FindTimeCallback(LeaderboardFindResult_t* result, bool ioError)
 	{
-		return worldLeaderboardId;
+		if (!ioError && result->m_bLeaderboardFound && result->m_hSteamLeaderboard)
+		{
+			leaderboardIdTime = result->m_hSteamLeaderboard;
+		}
+		else
+		{
+			leaderboardIdTime = 0;
+		}
+	}
+
+	uint64_t LeaderboardIdScore() override
+	{
+		return leaderboardIdScore;
+	}
+
+	uint64_t LeaderboardIdTime() override
+	{
+		return leaderboardIdTime;
 	}
 	// Remainder in leaderboard.cpp
 };
