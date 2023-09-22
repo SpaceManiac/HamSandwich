@@ -1143,7 +1143,9 @@ void RenderWorldSelect(MGLDraw *mgl)
 			{
 				// Normal mode: show name, author, and % completion
 				PrintGlow(NAME_X,40+i*GAP_HEIGHT,list[i+listPos].name,b,2);
-				PrintGlow(AUTH_X,40+i*GAP_HEIGHT,list[i+listPos].author,b,2);
+				// Shift over the author if the world name is a little long
+				int endX = NAME_X + GetStrLength(list[i+listPos].name, 2) + 8;
+				PrintGlow(std::max(AUTH_X, endX),40+i*GAP_HEIGHT,list[i+listPos].author,b,2);
 				if(list[i+listPos].percentage==0.0f)
 					strcpy(s,"0%");
 				else if(list[i+listPos].percentage==100.0f)
