@@ -896,10 +896,7 @@ byte TryHighScore(void)
 		gotRecords=0;
 
 	if(gotRecords)
-	{
 		SaveHiScores();
-		SteamManager::Get()->UploadWorldScore();
-	}
 
 	return gotRecords;
 }

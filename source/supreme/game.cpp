@@ -726,6 +726,10 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 	if(!LoadWorld(&curWorld,fullName))
 		CO_RETURN 1;
 
+	player.pendingLeaderboardUpload = false;
+	float oldPercentage = player.worldProg->percentage;
+	byte oldKeychains = player.worldProg->keychains;
+
 	StopSong();
 	InitWorld(&curWorld);
 
@@ -767,6 +771,11 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 	FreeWorld(&curWorld);
 	if(result==WORLD_SHOP)
 		doShop=1;
+
+	if (player.pendingLeaderboardUpload || player.worldProg->percentage != oldPercentage || player.worldProg->keychains != oldKeychains)
+	{
+		SteamManager::Get()->UploadWorldScore();
+	}
 
 	SteamManager::Get()->SetPresenceNone();
 	if(result==WORLD_QUITGAME || result==WORLD_SHOP)
