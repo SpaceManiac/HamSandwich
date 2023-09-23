@@ -305,7 +305,7 @@ void FillPauseMenu(pauseItem_t *src)
 		if(src[i].effect==PE_HUDCHOICE)
 		{
 			if(profile.progress.hudChoice == 2)
-				strcpy(menu[i].text,"HUD: Speedrun");
+				strcpy(menu[i].text,"HUD: Advanced");
 			else if(profile.progress.hudChoice == 1)
 				strcpy(menu[i].text,"HUD: Classic");
 			else
