@@ -185,11 +185,17 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 		for(i=0;i<NUM_SOUNDS;i++)
 			if(schannel[i].soundNum==which)
 			{
-				// TODO: only cut this sound off if it is not playing or SND_CUTOFF is set
-				Mix_HaltChannel(schannel[i].voice);
-				schannel[i].soundNum=-1;
-				schannel[i].priority=INT_MIN;
-				schannel[i].voice=-1;
+				// JamulSoundUpdate above ensures that sounds that finish are
+				// erased from schannel.
+				if (playFlags&SND_CUTOFF)
+				{
+					Mix_HaltChannel(schannel[i].voice);
+					schannel[i].soundNum=-1;
+					schannel[i].priority=INT_MIN;
+					schannel[i].voice=-1;
+				}
+				else
+					return false;
 			}
 	}
 
@@ -201,10 +207,15 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 	// see if there are any spots of lower priority,
 	for(i=0;i<NUM_SOUNDS;i++)
 	{
-		if(schannel[i].priority<=lowpriority || ((playFlags & SND_CUTOFF) && schannel[i].soundNum == which))
+		if ((playFlags & SND_CUTOFF) && schannel[i].soundNum == which)
 		{
-			chosen=i;
-			lowpriority=schannel[i].priority;
+			chosen = i;
+			break;  // Otherwise lowpriority will get increased and random other sounds will be cut off.
+		}
+		if(schannel[i].priority <= lowpriority)
+		{
+			chosen = i;
+			lowpriority = schannel[i].priority;
 		}
 	}
 
