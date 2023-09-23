@@ -620,7 +620,7 @@ bool HideWindowAndWaitForChild(SDL_Window* window, const PROCESS_INFORMATION& pr
 	CloseHandle(processInfo.hThread);
 	if (exitCode == 0)
 		return true;  // Success, so clean up and exit in the background.
-	fprintf(stderr, "child exited with code: %u\n", exitCode);
+	fprintf(stderr, "child exited with code: %lu\n", exitCode);
 
 	// Child process failed, so bring the launcher window back.
 	SDL_ShowWindow(window);  // Undo Hide
