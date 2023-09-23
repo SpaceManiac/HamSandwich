@@ -10,6 +10,7 @@
 #include "guy.h"
 #include "title.h"
 #include "loop.h"
+#include "openurl.h"
 
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
@@ -45,17 +46,17 @@ TASK(int) main(int argc, char* argv[])
 	MapExit();
 	DisplayExit();
 	delete mgl;
-	/* TODO
-	if (g_QuitAction == 1) {
-		ShellExecuteA((HWND)0x0,&s_open_1,s_http://www.hamumu.com_00477eec,&DAT_0048db60,&DAT_0048db5c,1);
+	if (g_QuitAction == QuitAction::HamumuWebsite)
+	{
+		SDL_OpenURL("https://hamumu.com");  // was "http://www.hamumu.com"
 	}
-	else if (g_QuitAction == 2) {
-		ShellExecuteA((HWND)0x0,&s_open_2,s_http://www.hamumu.com/game_amazi_00477f0c,&DAT_0048db68,&DAT_0048db64,1);
+	else if (g_QuitAction == QuitAction::BuyOnline)
+	{
+		SDL_OpenURL("https://hamumu.itch.io/amazin-spispopd");  // was "http://www.hamumu.com/game_amazin.html"
 	}
-	else if (g_QuitAction == 3) {
-		ShellExecuteA((HWND)0x0,&s_open_3,s_register.txt_00477f3c,&DAT_0048db70,&DAT_0048db6c,1);
+	else if (g_QuitAction == QuitAction::RegisterTxt)
+	{
+		// SDL_OpenURL("register.txt");
 	}
-	*/
-
 	CO_RETURN 0;
 }

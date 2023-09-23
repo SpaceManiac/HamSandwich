@@ -1,5 +1,6 @@
 #include "guy.h"
 #include "jamulspr.h"
+#include "title.h"
 
 sprite_set_t* g_GuySprites[8];
 
@@ -12,7 +13,7 @@ void GuysInitGfx()
 	g_GuySprites[4] = new sprite_set_t("graphics/chuckles.jsp");
 	g_GuySprites[5] = new sprite_set_t("graphics/helga.jsp");
 	g_GuySprites[6] = new sprite_set_t("graphics/pete.jsp");
-	g_GuySprites[7] = new sprite_set_t("graphics/buttons.jsp");
+	g_ButtonsJsp = new sprite_set_t("graphics/buttons.jsp");
 }
 
 void GuysExitGfx()
@@ -23,5 +24,5 @@ void GuysExitGfx()
 	delete g_GuySprites[4];
 	delete g_GuySprites[5];
 	delete g_GuySprites[6];
-	delete g_GuySprites[7];
+	delete g_ButtonsJsp;
 }
