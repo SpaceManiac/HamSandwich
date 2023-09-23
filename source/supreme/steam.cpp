@@ -651,6 +651,15 @@ public:
 			return;
 		}
 
+		for (int i = 0; i < world.numMaps; ++i)
+		{
+			if (!VerifyLevel(world.map[i]))
+			{
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "UploadWorldScore(%s): map #%02d not verified", worldFilename, i);
+				return;
+			}
+		}
+
 		worldData_t* progress = GetWorldProgressNoCreate(worldFilename);
 		if (!progress)
 		{

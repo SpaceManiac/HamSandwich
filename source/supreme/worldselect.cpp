@@ -223,8 +223,6 @@ void SortWorlds(byte field,byte backwards)
 	}
 }
 
-bool VerifyLevel(Map* map);
-
 void InputWorld(const char *fname)
 {
 	worldDesc_t newItem;

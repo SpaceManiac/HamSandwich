@@ -772,7 +772,7 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 	if(result==WORLD_SHOP)
 		doShop=1;
 
-	if (player.pendingLeaderboardUpload || player.worldProg->percentage != oldPercentage || player.worldProg->keychains != oldKeychains)
+	if (!editing && !shopping && (player.pendingLeaderboardUpload || player.worldProg->percentage != oldPercentage || player.worldProg->keychains != oldKeychains))
 	{
 		SteamManager::Get()->UploadWorldScore();
 	}
