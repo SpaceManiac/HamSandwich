@@ -30,10 +30,10 @@ void SplashInit(byte which)
 		g_SplashPalette[i].g = 0;
 		g_SplashPalette[i].b = 0;
 	}
-	g_MGL->SetPalette(g_SplashPalette);
+	mgl->SetPalette(g_SplashPalette);
 	SetUpdate(SplashUpdate);
 	SetRender(SplashRender);
-	g_MGL->LastKeyPressed();
+	mgl->LastKeyPressed();
 }
 
 void SplashExit()
@@ -47,7 +47,7 @@ bool SplashUpdate()
 	int j;
 	int done_colors;
 
-	keych = g_MGL->LastKeyPressed();
+	keych = mgl->LastKeyPressed();
 	if (keych != '\0')
 	{
 		g_SplashMode = 2;
@@ -92,7 +92,7 @@ bool SplashUpdate()
 				g_SplashTimer = 0;
 			}
 		}
-		g_MGL->SetSecondaryPalette(g_SplashPalette);
+		mgl->SetSecondaryPalette(g_SplashPalette);
 		break;
 	case 1:
 		g_SplashTimer = g_SplashTimer + 1;
@@ -134,12 +134,12 @@ bool SplashUpdate()
 			}
 			if (done_colors == 0x300)
 			{
-				g_MGL->SetSecondaryPalette(g_SplashPalette);
+				mgl->SetSecondaryPalette(g_SplashPalette);
 				g_SplashMode = 3;
 				return true;
 			}
 		}
-		g_MGL->SetSecondaryPalette(g_SplashPalette);
+		mgl->SetSecondaryPalette(g_SplashPalette);
 		break;
 	case 4:
 		SplashExit();
@@ -157,7 +157,7 @@ void SplashRender(void)
 	if (g_SplashMode == 0xff)
 	{
 		if ((g_SplashWhich == 0) &&
-		    !g_MGL->LoadBMP("graphics/hamumu.bmp", g_HamumuBmpPalette))
+		    !mgl->LoadBMP("graphics/hamumu.bmp", g_HamumuBmpPalette))
 		{
 			TitleInit();
 			return;
@@ -166,7 +166,7 @@ void SplashRender(void)
 	}
 	if (g_SplashMode == 3)
 	{
-		g_MGL->RealizePalette();
+		mgl->RealizePalette();
 		g_SplashMode = 4;
 	}
 	return;

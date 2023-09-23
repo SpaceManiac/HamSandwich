@@ -3,7 +3,7 @@
 
 #include "mgldraw.h"
 
-extern MGLDraw* g_MGL;
+extern MGLDraw* mgl;
 
 void DisplayInit();
 void DisplayExit();

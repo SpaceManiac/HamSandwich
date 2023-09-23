@@ -54,7 +54,7 @@ void MglUpdate()
 		JamulSoundUpdate();
 		if (g_Update && !g_Update())
 		{
-			g_MGL->Quit();
+			mgl->Quit();
 			g_WantsRender = false;
 			return;
 		}
@@ -70,7 +70,7 @@ TASK(void) MglRender()
 	{
 		g_Render();
 	}
-	AWAIT g_MGL->Flip();
+	AWAIT mgl->Flip();
 }
 
 TASK(void) LoopMain()
@@ -83,5 +83,5 @@ TASK(void) LoopMain()
 		{
 			AWAIT MglRender();
 		}
-	} while (g_MGL->Process());
+	} while (mgl->Process());
 }

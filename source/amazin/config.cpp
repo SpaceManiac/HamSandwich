@@ -5,11 +5,7 @@
 
 amazinConfig g_Config;
 
-void ApplyKeyConfigs()
-{
-	SetKeyboardBindings(0, 4, g_Config.keys[0]);
-	SetKeyboardBindings(1, 4, g_Config.keys[1]);
-}
+void ApplyKeyConfigs();
 
 void LoadConfig()
 {
@@ -78,4 +74,60 @@ void SaveConfig()
 	g_Config.registrationIdx = 0;
 	auto f = AppdataOpen_Write_SDL("amazin.cfg");
 	SDL_RWwrite(f, &g_Config, 1, 0x2ec);
+}
+
+void ApplyKeyConfigs()
+{
+	SetKeyboardBindings(0, 4, g_Config.keys[0]);
+	SetKeyboardBindings(1, 4, g_Config.keys[1]);
+}
+
+bool ConfigGetSoundEnabled()
+{
+	return g_Config.sound;
+}
+
+bool ConfigGetMusicEnabled()
+{
+	return g_Config.music;
+}
+
+byte ConfigGetLives()
+{
+	return g_Config.lives;
+}
+
+bool ConfigGetBouaphettaMode()
+{
+	return g_Config.bouaphettaMode;
+}
+
+bool ConfigGetRivalryPumpkins()
+{
+	return g_Config.rivalryPumpkins;
+}
+
+byte ConfigGetRivalryLevel()
+{
+	return g_Config.rivalryLevel;
+}
+
+byte ConfigGetRivalryMapSize()
+{
+	return g_Config.rivalryMapMode;
+}
+
+byte ConfigGetRivalryMode()
+{
+	return g_Config.rivalryMapMode;
+}
+
+byte ConfigGetRivalryPowerups()
+{
+	return g_Config.rivalryPowerups;
+}
+
+byte ConfigGetRivalryMatches()
+{
+	return g_Config.rivalryMatches;
 }

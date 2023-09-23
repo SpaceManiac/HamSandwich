@@ -44,4 +44,15 @@ extern amazinConfig g_Config;
 void LoadConfig();
 void SaveConfig();
 
+bool ConfigGetSoundEnabled();
+bool ConfigGetMusicEnabled();
+byte ConfigGetLives();
+bool ConfigGetBouaphettaMode();
+bool ConfigGetRivalryPumpkins();
+byte ConfigGetRivalryLevel();
+byte ConfigGetRivalryMapSize();
+byte ConfigGetRivalryMode();
+byte ConfigGetRivalryPowerups();
+byte ConfigGetRivalryMatches();
+
 #endif  // CONFIG_H

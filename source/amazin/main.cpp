@@ -30,8 +30,8 @@ TASK(int) main(int argc, char* argv[])
 			windowedGame=true;
 	}
 
-	g_MGL = new MGLDraw("Amazin' SPISPOPD", 640, 480, windowedGame);
-	if (!g_MGL)
+	mgl = new MGLDraw("Amazin' SPISPOPD", 640, 480, windowedGame);
+	if (!mgl)
 		CO_RETURN 1;
 
 	DisplayInit();
@@ -44,7 +44,7 @@ TASK(int) main(int argc, char* argv[])
 	SaveConfig();
 	MapExit();
 	DisplayExit();
-	delete g_MGL;
+	delete mgl;
 	/* TODO
 	if (g_QuitAction == 1) {
 		ShellExecuteA((HWND)0x0,&s_open_1,s_http://www.hamumu.com_00477eec,&DAT_0048db60,&DAT_0048db5c,1);

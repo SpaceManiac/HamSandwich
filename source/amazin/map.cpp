@@ -37,7 +37,7 @@ void MapInit(void)
 		map[t].reachability = 0;
 		map[t].tileAnim = 0;
 	}
-	if (!g_MGL->LoadBMP("graphics/tiles.bmp"))
+	if (!mgl->LoadBMP("graphics/tiles.bmp"))
 	{
 		FatalError("Missing file: graphics/tiles.bmp");
 		exit(1);
@@ -50,7 +50,7 @@ void MapInit(void)
 		{
 			for (y = 0; y < 0x20; y = y + 1)
 			{
-				g_Tiles[t][y][x] = g_MGL->GetScreen()[sx + x + (sy + y) * g_MGL->GetWidth()];
+				g_Tiles[t][y][x] = mgl->GetScreen()[sx + x + (sy + y) * mgl->GetWidth()];
 			}
 		}
 		sx = sx + 0x20;

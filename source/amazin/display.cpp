@@ -2,7 +2,7 @@
 #include "jamulfont.h"
 #include "mgldraw.h"
 
-MGLDraw* g_MGL;
+MGLDraw* mgl;
 
 mfont_t g_FontBronco;
 
