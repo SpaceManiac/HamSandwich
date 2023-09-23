@@ -957,49 +957,49 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 					CalcScrollBar();
 				}
 			}
+		}
 
 #ifdef WORLD_DEBUGGING
-			if (showFilenames && PointInRect(msx, msy, 180,443,180+150,443+WBTN_HEIGHT))
+		if (showFilenames && scan == SDL_SCANCODE_KP_PLUS)
+		{
+			printf("Verifying world: %s\n", tmpWorld.map[0]->name);
+
+			std::set<dword> seen;
+			std::vector<dword> ordered;
+
+			SDL_RWops* input = AssetOpen_SDL("worlds/levels.dat");
+			for (dword item; SDL_RWread(input, &item, sizeof(dword), 1) == 1;)
 			{
-				printf("Verifying world: %s\n", tmpWorld.map[0]->name);
+				seen.insert(item);
+				ordered.push_back(item);
+			}
+			SDL_RWclose(input);
 
-				std::set<dword> seen;
-				std::vector<dword> ordered;
-
-				SDL_RWops* input = AssetOpen_SDL("worlds/levels.dat");
-				for (dword item; SDL_RWread(input, &item, sizeof(dword), 1) == 1;)
+			for (int i = 0; i < tmpWorld.numMaps; ++i)
+			{
+				dword item = ChecksumMap(tmpWorld.map[i]);
+				if (seen.find(item) == seen.end())
 				{
 					seen.insert(item);
 					ordered.push_back(item);
+					printf("Adding: %s\n", tmpWorld.map[i]->name);
 				}
-				SDL_RWclose(input);
-
-				for (int i = 0; i < tmpWorld.numMaps; ++i)
+				else
 				{
-					dword item = ChecksumMap(tmpWorld.map[i]);
-					if (seen.find(item) == seen.end())
-					{
-						seen.insert(item);
-						ordered.push_back(item);
-						printf("Adding: %s\n", tmpWorld.map[i]->name);
-					}
-					else
-					{
-						printf("Already verified: %s\n", tmpWorld.map[i]->name);
-					}
+					printf("Already verified: %s\n", tmpWorld.map[i]->name);
 				}
-
-				FILE* output = AssetOpen_Write("worlds/levels.dat");
-				for (dword item : ordered)
-				{
-					fwrite(&item, sizeof(dword), 1, output);
-				}
-				fclose(output);
-
-				FetchScores(0);
 			}
-#endif
+
+			FILE* output = AssetOpen_Write("worlds/levels.dat");
+			for (dword item : ordered)
+			{
+				fwrite(&item, sizeof(dword), 1, output);
+			}
+			fclose(output);
+
+			FetchScores(0);
 		}
+#endif
 	}
 	else if(mode==MODE_SCROLL)
 	{
@@ -1134,7 +1134,28 @@ void RenderWorldSelect(MGLDraw *mgl)
 				// Debug/WTG mode: show name, fname, author
 				PrintGlow(NAME_X,40+i*GAP_HEIGHT,list[i+listPos].name,b,1);
 				PrintGlow(AUTH_X-70,40+i*GAP_HEIGHT,list[i+listPos].fname,b,1);
-				PrintGlow(AUTH_X+120,40+i*GAP_HEIGHT,list[i+listPos].author,b,1);
+
+				if (choice == i+listPos)
+				{
+					char msg[64];
+					if (numMapsVerified == 0)
+					{
+						sprintf(msg, "V: no");
+					}
+					else if (numMapsVerified == tmpWorld.numMaps)
+					{
+						sprintf(msg, "V: all maps");
+					}
+					else
+					{
+						sprintf(msg, "V: %d of %d maps", numMapsVerified, tmpWorld.numMaps);
+					}
+					PrintGlow(AUTH_X+120,40+i*GAP_HEIGHT,msg,0,1);
+				}
+				else
+				{
+					PrintGlow(AUTH_X+120,40+i*GAP_HEIGHT,list[i+listPos].author,b,1);
+				}
 			}
 			else
 #endif
@@ -1229,29 +1250,6 @@ void RenderWorldSelect(MGLDraw *mgl)
 			RenderWorldSelectButton(180,443,150, "Steam Top Times", mgl, ButtonId::SteamLeaderboardTime);
 		}
 	}
-
-#ifdef WORLD_DEBUGGING
-	if (showFilenames)
-	{
-		char msg[64];
-		if (numMapsVerified == 0)
-		{
-			sprintf(msg, "V: no");
-		}
-		else if (numMapsVerified == tmpWorld.numMaps)
-		{
-			sprintf(msg, "V: all maps");
-		}
-		else
-		{
-			sprintf(msg, "V: %d of %d maps", numMapsVerified, tmpWorld.numMaps);
-		}
-
-		PrintGlow(180,395,list[choice].fname,0,1);
-		PrintGlow(180,419,msg,0,1);
-		RenderWorldSelectButton(180,443,150,"Verify World",mgl, ButtonId::VerifyWorld);
-	}
-#endif
 
 	if(mode==MODE_CONFIRM_ERASE_PROGRESS || mode==MODE_CONFIRM_ERASE_SCORES)
 	{
