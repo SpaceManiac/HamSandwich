@@ -24,6 +24,8 @@ enum {
 	SPR_BRAIN       = 56,
 	SPR_RAGE        = 57,
 	SPR_VARBAR      = 64,
+	SPR_TIME		= 65,
+	SPR_LOCK		= 65,
 };
 
 enum {
@@ -42,6 +44,7 @@ constexpr int KEYRINGY = 38;
 
 static std::unique_ptr<sprite_set_t> intfaceSpr;
 static std::unique_ptr<sprite_set_t> oldIntfaceSpr;
+static std::unique_ptr<sprite_set_t> speedrunIntfaceSpr;
 static byte curLife=0;
 static byte curBrains=0;
 static byte monsAlive=0;
@@ -66,6 +69,7 @@ enum {
 	INTF_HAMMERS,
 	INTF_ENEMY,
 	INTF_COINS,
+	INTF_TIME,
 	NUM_INTF,
 };
 
@@ -79,6 +83,7 @@ enum {
 	IV_KEYS,
 	IV_DIAL,  // the oxygen dial
 	IV_EVILMETER,
+	IV_TIME,
 };
 
 static const byte weaponToItem[MAX_WEAPONS] = {
@@ -189,6 +194,12 @@ intface_t defaultSetup[NUM_INTF]={
 	 -18,-14,
 	 0,0,
 	 0},
+	{SCRWID-79,-50,SCRWID-79,-1,	// time
+	 SPR_TIME,
+	 IV_TIME,2,
+	 -19,3,
+	 0,0,
+	 20},
 };
 
 static byte intfFlip;
@@ -489,7 +500,31 @@ void DrawVertMeter(int x,int y,int value,int height,MGLDraw *mgl)
 	mgl->FillBox(x+4,y+height-(value-1),x+4,y+height,c+7);
 }
 
-void DrawNumber(int x,int y,int value,byte length,MGLDraw *mgl)
+void DrawNumber(int x,int y,int value,byte length,MGLDraw *mgl, int width = 0)
+{
+	int i;
+	char s[8];
+
+	if(value<0)		// I don't think you can have a negative score
+		value=0;
+	if(value>999999)
+		value=999999;
+
+	sprintf(s,"%0*d", width, value);
+
+	if(strlen(s)<length)
+	{
+		x+=9*(length-strlen(s));
+		length=strlen(s);
+	}
+	for(i=0;i<length;i++)
+	{
+		intfaceSpr->GetSprite(s[i]-'0'+SPR_NUMBERS)->Draw(x,y,mgl);
+		x+=9;
+	}
+}
+
+void DrawTime(int x,int y,int value,byte length,MGLDraw *mgl)
 {
 	int i;
 	char s[8];
@@ -508,6 +543,11 @@ void DrawNumber(int x,int y,int value,byte length,MGLDraw *mgl)
 	}
 	for(i=0;i<length;i++)
 	{
+		if(i==2)
+		{
+			//extra distance for colon
+			x+=2;
+		}
 		intfaceSpr->GetSprite(s[i]-'0'+SPR_NUMBERS)->Draw(x,y,mgl);
 		x+=9;
 	}
@@ -795,9 +835,21 @@ void UpdateInterface(Map *map)
 	}
 	else
 	{
+		
 		intf[INTF_WEAPON].tx=GetDisplayMGL()->GetWidth()-1;
 		intf[INTF_WEAPON].ty=-10;
 		intf[INTF_BRAINS].ty-=10;
+	}
+	
+	if(profile.progress.hudChoice == 2)
+	{
+		intf[INTF_TIME].tx=GetDisplayMGL()->GetWidth()-79;
+		intf[INTF_TIME].ty=-1;
+	}
+	else
+	{
+		intf[INTF_TIME].tx=GetDisplayMGL()->GetWidth()-79;
+		intf[INTF_TIME].ty=-20;
 	}
 
 	if(player.coins)
@@ -842,6 +894,9 @@ void UpdateInterface(Map *map)
 				break;
 			case INTF_SCORE:
 				intf[i].vDesired=player.score;
+				break;
+			case INTF_TIME:
+				intf[i].vDesired= (int)(player.clock/30);
 				break;
 			case INTF_COINS:
 				intf[i].vDesired=player.coins;
@@ -1159,6 +1214,11 @@ void RenderInterface(MGLDraw *mgl)
 				break;
 			case IV_NUMBER:
 				DrawNumber(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,intf[i].valueLength,mgl);
+				break;
+			case IV_TIME:
+				DrawNumber(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value % 60,intf[i].	valueLength,mgl, 2);
+				if(intf[i].value >=60)
+					DrawNumber(intf[i].x+intf[i].vOffX-intf[i].otherVal,intf[i].y+intf[i].vOffY,intf[i].value / 60,intf[i].	valueLength,mgl);
 				break;
 			case IV_VERTMETER:
 				if(i==INTF_POWERUP)
