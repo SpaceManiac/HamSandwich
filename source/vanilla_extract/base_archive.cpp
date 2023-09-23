@@ -8,15 +8,6 @@ namespace vanilla {
 // ----------------------------------------------------------------------------
 // Archive directory listing
 
-#ifndef __GNUC__
-#define strcasecmp _stricmp
-#endif // __GNUC__
-
-bool Archive::CaseInsensitive::operator() (const std::string& lhs, const std::string& rhs) const
-{
-	return strcasecmp(lhs.c_str(), rhs.c_str()) < 0;
-}
-
 const char* Archive::navigate(const char* path, Directory*& current)
 {
 	const char* last_component = path;
@@ -87,7 +78,7 @@ const Archive::Directory* Archive::get_directory(const char* path) const
 	return &iter->second;
 }
 
-bool Archive::list_dir(const char* path, std::set<std::string>& output) const
+bool Archive::list_dir(const char* path, std::set<std::string, CaseInsensitive>& output) const
 {
 	const Directory* current = get_directory(path);
 	if (!current)

@@ -147,7 +147,7 @@ public:
 	}
 
 	owned::SDL_RWops open_sdl(const char* filename);
-	bool list_dir(const char* directory, std::set<std::string>& output);
+	bool list_dir(const char* directory, std::set<std::string, CaseInsensitive>& output);
 };
 
 std::unique_ptr<Vfs> vanilla::open_zip(owned::SDL_RWops rw)
@@ -186,7 +186,7 @@ owned::SDL_RWops ZipVfs::open_sdl(const char* filename)
 	return vanilla::create_vec_rwops(std::move(buffer));
 }
 
-bool ZipVfs::list_dir(const char* directory_raw, std::set<std::string>& output)
+bool ZipVfs::list_dir(const char* directory_raw, std::set<std::string, CaseInsensitive>& output)
 {
 	return archive.list_dir(directory_raw, output);
 }

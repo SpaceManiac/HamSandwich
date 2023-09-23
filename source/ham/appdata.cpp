@@ -1,9 +1,4 @@
 #include "appdata.h"
-#include "log.h"
-#include "erase_if.h"
-#include "jamultypes.h"
-#include "metadata.h"
-#include "extern.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -27,7 +22,13 @@
 
 #include <SDL.h>
 
-#include <vanilla_extract.h>
+#include "vanilla_extract.h"
+
+#include "log.h"
+#include "erase_if.h"
+#include "jamultypes.h"
+#include "metadata.h"
+#include "extern.h"
 
 using vanilla::Vfs;
 using vanilla::WriteVfs;
@@ -396,7 +397,7 @@ static VfsStack init_vfs_stack() {
 	exit(1);
 }
 
-static void filter_files(std::set<std::string>* files, const char* extension = nullptr, size_t maxlen = 0)
+static void filter_files(std::set<std::string, vanilla::CaseInsensitive>* files, const char* extension = nullptr, size_t maxlen = 0)
 {
 	if (extension || maxlen > 0)
 	{
@@ -419,7 +420,7 @@ static void filter_files(std::set<std::string>* files, const char* extension = n
 
 std::vector<AddonSpec> AddonSpec::SearchAddons(vanilla::WriteVfs* vfs)
 {
-	std::set<std::string> file_list;
+	std::set<std::string, vanilla::CaseInsensitive> file_list;
 	vfs->list_dir(".", file_list);
 	filter_files(&file_list, ".zip");
 
@@ -507,7 +508,7 @@ void AppdataSync() {}
 #endif
 
 std::vector<std::string> ListDirectory(const char* directory, const char* extension, size_t maxlen) {
-	std::set<std::string> output;
+	std::set<std::string, vanilla::CaseInsensitive> output;
 	vfs_stack.list_dir(directory, output);
 	filter_files(&output, extension, maxlen);
 	return { output.begin(), output.end() };

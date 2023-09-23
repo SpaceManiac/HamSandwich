@@ -27,8 +27,8 @@ public:
 		return archive_rw != nullptr;
 	}
 
-	owned::SDL_RWops open_sdl(const char* filename);
-	bool list_dir(const char* directory, std::set<std::string>& output);
+	owned::SDL_RWops open_sdl(const char* filename) override;
+	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output) override;
 };
 
 std::unique_ptr<vanilla::Vfs> vanilla::open_nsis(owned::SDL_RWops rw)
@@ -36,7 +36,7 @@ std::unique_ptr<vanilla::Vfs> vanilla::open_nsis(owned::SDL_RWops rw)
 	return std::make_unique<NsisVfs>(std::move(rw));
 }
 
-bool NsisVfs::list_dir(const char* directory, std::set<std::string>& output)
+bool NsisVfs::list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output)
 {
 	return archive.list_dir(directory, output);
 }

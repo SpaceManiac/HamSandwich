@@ -15,12 +15,12 @@ class StdioVfs : public vanilla::WriteVfs
 	owned::FILE open_stdio_internal(const char* filename, const char* mode, bool write);
 public:
 	explicit StdioVfs(std::string&& prefix) : prefix(prefix) {}
-	owned::FILE open_stdio(const char* filename);
-	owned::SDL_RWops open_sdl(const char* filename);
-	owned::FILE open_write_stdio(const char* filename);
-	owned::SDL_RWops open_write_sdl(const char* filename);
-	bool list_dir(const char* directory, std::set<std::string>& output);
-	bool delete_file(const char* filename);
+	owned::FILE open_stdio(const char* filename) override;
+	owned::SDL_RWops open_sdl(const char* filename) override;
+	owned::FILE open_write_stdio(const char* filename) override;
+	owned::SDL_RWops open_write_sdl(const char* filename) override;
+	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output) override;
+	bool delete_file(const char* filename) override;
 };
 
 std::unique_ptr<vanilla::WriteVfs> vanilla::open_stdio(std::string_view prefix)
@@ -46,7 +46,7 @@ owned::FILE StdioVfs::open_stdio_internal(const char* file, const char* mode, bo
 		size_t i = buffer.rfind("/");
 		buffer[i] = '\0';
 
-		std::set<std::string> temp;
+		std::set<std::string, vanilla::CaseInsensitive> temp;
 		list_dir(&buffer.c_str()[prefix.length() + 1], temp);
 
 		for (const auto& name : temp)
@@ -119,7 +119,7 @@ owned::SDL_RWops StdioVfs::open_write_sdl(const char* filename)
 #ifdef __GNUC__
 #include <dirent.h>
 
-bool StdioVfs::list_dir(const char* directory, std::set<std::string>& output)
+bool StdioVfs::list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output)
 {
 	std::string buffer = prefix;
 	buffer.append("/");
@@ -138,7 +138,7 @@ bool StdioVfs::list_dir(const char* directory, std::set<std::string>& output)
 #elif defined(_MSC_VER)
 #include <io.h>
 
-bool StdioVfs::list_dir(const char* directory, std::set<std::string>& output)
+bool StdioVfs::list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output)
 {
 	std::string buffer = prefix;
 	buffer.append("/");
