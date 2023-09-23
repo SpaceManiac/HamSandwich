@@ -25,7 +25,7 @@ enum {
 	SPR_RAGE        = 57,
 	SPR_VARBAR      = 64,
 	SPR_TIME		= 65,
-	SPR_LOCK		= 65,
+	SPR_LOCK		= 66,
 };
 
 enum {
@@ -44,7 +44,6 @@ constexpr int KEYRINGY = 38;
 
 static std::unique_ptr<sprite_set_t> intfaceSpr;
 static std::unique_ptr<sprite_set_t> oldIntfaceSpr;
-static std::unique_ptr<sprite_set_t> speedrunIntfaceSpr;
 static byte curLife=0;
 static byte curBrains=0;
 static byte monsAlive=0;
@@ -64,6 +63,7 @@ enum {
 	INTF_OXYGEN,
 	INTF_LIFE,
 	INTF_BRAINS,
+	INTF_LOCK,
 	INTF_WEAPON,
 	INTF_SCORE,
 	INTF_HAMMERS,
@@ -84,6 +84,7 @@ enum {
 	IV_DIAL,  // the oxygen dial
 	IV_EVILMETER,
 	IV_TIME,
+	IV_LOCK,
 };
 
 static const byte weaponToItem[MAX_WEAPONS] = {
@@ -163,6 +164,12 @@ intface_t defaultSetup[NUM_INTF]={
 	 IV_VERTMETER,64,
 	 -6,10,
 	 0,50,
+	 0},
+	{SCRWID-79,-70,SCRWID-79,16,	// weapon lock
+	 SPR_LOCK,
+	 IV_LOCK,2,
+	 0,0,
+	 0,0,
 	 0},
 	{SCRWID-1,-70,SCRWID-1,9,	// weapon
 	 SPR_WEAPONBOX,
@@ -712,6 +719,11 @@ void DrawHammers(int x,int y,MGLDraw *mgl)
 	if(player.hammerFlags&HMR_REVERSE)
 		intfaceSpr->GetSprite(49)->Draw(x,y,mgl);
 }
+void DrawLock(int x,int y,MGLDraw *mgl, int value)
+{
+	if(value)
+		intfaceSpr->GetSprite(67)->Draw(x,y,mgl);
+}
 
 void UpdateInterface(Map *map)
 {
@@ -835,7 +847,6 @@ void UpdateInterface(Map *map)
 	}
 	else
 	{
-		
 		intf[INTF_WEAPON].tx=GetDisplayMGL()->GetWidth()-1;
 		intf[INTF_WEAPON].ty=-10;
 		intf[INTF_BRAINS].ty-=10;
@@ -850,6 +861,17 @@ void UpdateInterface(Map *map)
 	{
 		intf[INTF_TIME].tx=GetDisplayMGL()->GetWidth()-79;
 		intf[INTF_TIME].ty=-20;
+	}
+	
+	if(profile.progress.hudChoice == 2 && player.weapon)
+	{
+		intf[INTF_LOCK].tx=GetDisplayMGL()->GetWidth()-79;
+		intf[INTF_LOCK].ty=16;
+	}
+	else
+	{
+		intf[INTF_LOCK].tx=GetDisplayMGL()->GetWidth()-60;
+		intf[INTF_LOCK].ty=-3;
 	}
 
 	if(player.coins)
@@ -906,6 +928,9 @@ void UpdateInterface(Map *map)
 					intf[i].vDesired=player.ammo*intf[i].valueLength/WeaponMaxAmmo(player.weapon);
 				else
 					intf[i].vDesired=0;
+				break;
+			case INTF_LOCK:
+				intf[i].vDesired = profile.progress.wpnLock;
 				break;
 			case INTF_BRAINS:
 				int b;
@@ -1234,6 +1259,9 @@ void RenderInterface(MGLDraw *mgl)
 				break;
 			case IV_DIAL:
 				DrawDial(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,intf[i].valueLength,mgl);
+				break;
+			case IV_LOCK:
+				DrawLock(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,mgl,intf[i].value);
 				break;
 		}
 		if(i==INTF_WEAPON)
