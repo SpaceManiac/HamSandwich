@@ -29,7 +29,7 @@ bool LaunchTool(char* cmdline)
 	STARTUPINFOA startupInfo = {};
 	PROCESS_INFORMATION processInfo = {};
 	startupInfo.cb = sizeof(startupInfo);
-	if (CreateProcessA(cmdline, cmdline, nullptr, nullptr, false, 0, nullptr, nullptr, &startupInfo, &processInfo))
+	if (CreateProcessA(cmdline, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, &startupInfo, &processInfo))
 	{
 		CloseHandle(processInfo.hProcess);
 		CloseHandle(processInfo.hThread);
