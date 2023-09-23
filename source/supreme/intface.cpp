@@ -1093,7 +1093,7 @@ static void RenderInterfaceOld(MGLDraw *mgl)
 
 void RenderInterface(MGLDraw *mgl)
 {
-	if (profile.progress.oldHud)
+	if (profile.progress.hudChoice == 1)
 		return RenderInterfaceOld(mgl);
 
 	int i;
