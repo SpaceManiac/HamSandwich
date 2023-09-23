@@ -30,10 +30,10 @@ struct amazinConfig
 	byte rivalryMapSize;
 	byte rivalryMapMode;
 	byte rivalryLevel;
-	byte keys[8];
+	byte keys[2][4];
 	char scoreNames[5][11];
 	int32_t scores[5];
-	hitime times[40];
+	hitime times[2][20];
 };
 
 static_assert(sizeof(amazinConfig) == 0x2ec);

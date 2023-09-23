@@ -45,7 +45,7 @@ TASK(int) main(int argc, char* argv[])
 	MapExit();
 	DisplayExit();
 	delete g_MGL;
-	/*
+	/* TODO
 	if (g_QuitAction == 1) {
 		ShellExecuteA((HWND)0x0,&s_open_1,s_http://www.hamumu.com_00477eec,&DAT_0048db60,&DAT_0048db5c,1);
 	}
