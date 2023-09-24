@@ -473,6 +473,7 @@ public:
 		int32_t score = 0;
 		ELeaderboardSortMethod sortMethod = k_ELeaderboardSortMethodDescending;
 		ELeaderboardDisplayType displayType = k_ELeaderboardDisplayTypeNumeric;
+		ELeaderboardUploadScoreMethod uploadScoreMethod = k_ELeaderboardUploadScoreMethodKeepBest;
 	private:
 		int32_t extraData[k_cLeaderboardDetailsMax];
 		int extraDataCount = 0;
@@ -522,7 +523,7 @@ public:
 					result->m_hSteamLeaderboard, score, extraDataCount);
 				uploadScoreCall.Set(SteamUserStats()->UploadLeaderboardScore(
 					result->m_hSteamLeaderboard,
-					k_ELeaderboardUploadScoreMethodForceUpdate,
+					uploadScoreMethod,
 					score,
 					extraData,
 					extraDataCount
@@ -554,6 +555,8 @@ public:
 	{
 		UploadWorldScoreJob(world_t* world, worldData_t* worldProgress)
 		{
+			uploadScoreMethod = k_ELeaderboardUploadScoreMethodForceUpdate;
+
 			// Pack keychain flags and NNN.N% completion into extra data for display
 			AddDetail(PackWorldProgress(worldProgress));
 
@@ -585,6 +588,7 @@ public:
 	{
 		UploadWorldTimeJob(world_t* world, worldData_t* worldProgress)
 		{
+			uploadScoreMethod = k_ELeaderboardUploadScoreMethodForceUpdate;
 			sortMethod = k_ELeaderboardSortMethodAscending;
 			displayType = k_ELeaderboardDisplayTypeTimeMilliSeconds;  // INT_MAX is about 596:31:23.645
 
@@ -637,6 +641,14 @@ public:
 		}
 	};
 
+	struct UploadArcadeScoreJob : public LeaderboardUploadJob
+	{
+		UploadArcadeScoreJob(int32_t score)
+		{
+			this->score = score;
+		}
+	};
+
 	void UploadWorldScore() override
 	{
 		const char* worldFilename = player.worldName;
@@ -670,6 +682,11 @@ public:
 		LeaderboardUploadJob::Send(fullFilename.c_str(), std::make_unique<UploadWorldScoreJob>(&world, progress));
 		fullFilename.append("/time");
 		LeaderboardUploadJob::Send(fullFilename.c_str(), std::make_unique<UploadWorldTimeJob>(&world, progress));
+	}
+
+	void UploadArcadeScore(const char* fullName, int32_t score) override
+	{
+		LeaderboardUploadJob::Send(fullName, std::make_unique<UploadArcadeScoreJob>(score));
 	}
 
 	// ------------------------------------------------------------------------

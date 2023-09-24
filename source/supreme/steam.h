@@ -38,6 +38,8 @@ public:
 	virtual uint64_t LeaderboardIdScore() { return 0; }
 	virtual uint64_t LeaderboardIdTime() { return 0; }
 
+	virtual void UploadArcadeScore(const char* fullName, int32_t score) {}
+
 	virtual void GetUsername(char* buffer, size_t size) {}
 
 	virtual void SetPresenceNone() {}
