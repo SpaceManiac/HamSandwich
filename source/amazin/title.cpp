@@ -248,7 +248,7 @@ void TitleRender()
 	g_ButtonsJsp->GetSprite(25)->Draw(310, g_TitleTimer + 8, mgl);
 	if (!RegistrationCurrentlyValid())
 	{
-		// TODO PrintMultiline(g_RegistrationTextX + 640, 236, registrationDescription);
+		PrintMultiline(g_RegistrationTextX + 640, 236, registrationDescription);
 	}
 
 	// TODO: GuysRender()
@@ -270,22 +270,20 @@ void TitleRender()
 	}
 	g_ButtonsJsp->GetSprite(14 + (g_TitleButton == 11))->Draw(422 - g_TitleTimer, 374 - g_TitleTimer, mgl);
 
-	/* TODO
 	CenterPrintMultiline(320, 430, buttonDescriptions[g_TitleButton]);
 	if (-32 < g_TitleTextBright)
 	{
-		CenterPrintShadow(120, 200, "Smoove", g_TitleTextBright);
-		CenterPrintShadow(260, 200, "Chuckles", g_TitleTextBright);
-		CenterPrintShadow(380, 200, "Helga", g_TitleTextBright);
-		CenterPrintShadow(520, 200, "Pete", g_TitleTextBright);
+		CenterPrintBright(120, 200, "Smoove", g_TitleTextBright);
+		CenterPrintBright(260, 200, "Chuckles", g_TitleTextBright);
+		CenterPrintBright(380, 200, "Helga", g_TitleTextBright);
+		CenterPrintBright(520, 200, "Pete", g_TitleTextBright);
 	}
 
 	if (!RegistrationCurrentlyValid())
 	{
-		CenterPrintShadow(70, 50, "*DEMO*", 0);
-		CenterPrintShadow(570, 50, "*DEMO*", 0);
+		CenterPrintBright(70, 50, "*DEMO*", 0);
+		CenterPrintBright(570, 50, "*DEMO*", 0);
 	}
-	*/
 
 	if (g_TitleMouseMode != false)
 	{

@@ -69,6 +69,7 @@ void FontPrintStringCursorLit(int x,int y,byte pos,byte blink,std::string_view s
 void FontPrintStringAngleUnGlow(int x,int y,std::string_view s,const mfont_t *font);
 void FontPrintStringAngle2(int x,int y,std::string_view s,const mfont_t *font);
 void FontPrintStringUnGlowSideways(int x,int y,int minY,std::string_view s,const mfont_t *font);
+void FontPrintStringMultiline(int x, int y, std::string_view s, const mfont_t *font);
 
 void FontPrintRectBlack(int x, int y, int x2, int y2, std::string_view s, int height, int bright, const mfont_t *font);
 void FontPrintRectBlack2(int x, int y, int x2, int y2, std::string_view s, int height, const mfont_t *font);

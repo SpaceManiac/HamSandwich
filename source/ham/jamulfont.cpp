@@ -1123,6 +1123,21 @@ void FontPrintStringUnGlowSideways(int x,int y,int minY,std::string_view s,const
 	}
 }
 
+void FontPrintStringMultiline(int x, int y, std::string_view s, const mfont_t *font)
+{
+	int x0 = x;
+	for (char ch : s)
+	{
+		FontPrintChar(x, y, ch, font);
+		x += font->gapSize + CharWidth(ch, font);
+		if (ch == '\n')
+		{
+			y = y + font->gapHeight;
+			x = x0;
+		}
+	}
+}
+
 byte RightBraceHack(mfont_t *font)
 {
 	static byte RIGHT_BRACE[] = {
