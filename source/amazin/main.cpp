@@ -12,6 +12,8 @@
 #include "loop.h"
 #include "openurl.h"
 
+MGLDraw *mgl;
+
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
 TASK(int) main(int argc, char* argv[])

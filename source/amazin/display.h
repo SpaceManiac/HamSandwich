@@ -4,7 +4,19 @@
 #include <string_view>
 #include "mgldraw.h"
 
-extern MGLDraw* mgl;
+class sprite_t;
+
+enum class DisplayEffect
+{
+	Normal,
+	Ghost,
+	Bright,
+	Red,
+	Blue,
+	Grey,
+};
+
+extern MGLDraw *mgl;
 
 void DisplayInit();
 void DisplayExit();
@@ -19,4 +31,8 @@ void Print(int x, int y, std::string_view s);
 void RightPrint(int x, int y, std::string_view s);
 void RightPrintMultiline(int x, int y, std::string_view s);
 
-#endif  // DISPLAY_H
+void DisplayListClear();
+void DisplayListAdd(const sprite_t *spr, int x, int y, int z, int sort, char bright, DisplayEffect effect);
+void DisplayListRender();
+
+#endif // DISPLAY_H

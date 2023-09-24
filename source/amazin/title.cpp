@@ -6,6 +6,7 @@
 #include "loop.h"
 #include "register.h"
 #include "sound.h"
+#include "guy.h"
 
 int32_t g_TitleTimer;
 sprite_set_t *g_ButtonsJsp;
@@ -36,7 +37,7 @@ void TitleInit()
 	SetUpdate(TitleUpdate);
 	SetRender(TitleRender);
 	g_TitleOldHeld = 0xff;
-	// TODO TitleInitGuys();
+	TitleInitGuys();
 	g_TitleTextBright = -150;
 	StopSong();
 	PlaySong(100);
@@ -52,7 +53,7 @@ void TitleExit()
 
 bool TitleUpdate()
 {
-	// TODO TitleUpdateGuys();
+	TitleUpdateGuys();
 	int oldMouseY = g_TitleMouseY;
 	int oldMouseX = g_TitleMouseX;
 	if (g_TitleTextBright < 0)
@@ -92,12 +93,12 @@ bool TitleUpdate()
 		return true;
 	}
 	g_TitleSongTimer = g_TitleSongTimer + 1;
-	if (g_TitleSongTimer == 0xd2)
+	if (g_TitleSongTimer == 210)
 	{
 		StopSong();
 	}
 	byte held = /* TODO GetControls(0) | GetControls(1) | */ GetArrows();
-	if (mgl->MouseTap() && 17 < g_TitleMouseX && g_TitleMouseX < 0x270 && 259 < g_TitleMouseY && g_TitleMouseY < 412)
+	if (mgl->MouseTap() && 17 < g_TitleMouseX && g_TitleMouseX < 624 && 259 < g_TitleMouseY && g_TitleMouseY < 412)
 	{
 		k = '\r';
 	}
@@ -251,8 +252,8 @@ void TitleRender()
 		PrintMultiline(g_RegistrationTextX + 640, 236, registrationDescription);
 	}
 
-	// TODO: GuysRender()
-	// TODO: DisplayListRender()
+	GuysRender();
+	DisplayListRender();
 
 	g_ButtonsJsp->GetSprite(0 + (g_TitleButton == 0))->Draw(g_TitleTimer + 18, g_TitleTimer + 260, mgl);
 	g_ButtonsJsp->GetSprite(4 + (g_TitleButton == 1))->Draw(220, g_TitleTimer * 2 + 260, mgl);
