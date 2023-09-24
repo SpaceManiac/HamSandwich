@@ -12,8 +12,8 @@ class AndroidBundleVfs : public vanilla::Vfs
 	std::string prefix;
 public:
 	AndroidBundleVfs(const char* prefix) : prefix(prefix) {}
-	owned::SDL_RWops open_sdl(const char* filename);
-	bool list_dir(const char* directory, std::set<std::string>& output);
+	owned::SDL_RWops open_sdl(const char* filename) override;
+	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output) override;
 };
 
 std::unique_ptr<vanilla::Vfs> vanilla::open_android(const char* prefix)
@@ -137,7 +137,7 @@ static SDL_bool Android_JNI_ExceptionOccurred(JNIEnv *mEnv, SDL_bool silent)
 // ----------------------------------------------------------------------------
 // Implementation which calls AssetManager.list() to do some real work
 
-bool AndroidBundleVfs::list_dir(const char* directory, std::set<std::string>& output)
+bool AndroidBundleVfs::list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output)
 {
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
 
