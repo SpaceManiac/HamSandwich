@@ -460,7 +460,7 @@ TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t* world, WorldLeaderb
 
 #else  // HAS_STEAM_API
 
-TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t* world)
+TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t *world, WorldLeaderboardKind kind, uint64_t id)
 {
 	CO_RETURN;
 }
