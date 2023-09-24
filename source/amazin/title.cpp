@@ -7,6 +7,7 @@
 #include "register.h"
 #include "sound.h"
 #include "guy.h"
+#include "help.h"
 
 int32_t g_TitleTimer;
 sprite_set_t *g_ButtonsJsp;
@@ -89,7 +90,7 @@ bool TitleUpdate()
 		{
 			return false;
 		}
-		// TODO HelpInit(24);
+		HelpInit(24);
 		return true;
 	}
 	g_TitleSongTimer = g_TitleSongTimer + 1;
@@ -137,7 +138,7 @@ bool TitleUpdate()
 			break;
 		case 7:
 			TitleExit();
-			// TODO HelpInit(0);
+			HelpInit(0);
 			break;
 		case 8:
 			g_QuitAction = QuitAction::HamumuWebsite;
@@ -145,11 +146,11 @@ bool TitleUpdate()
 			return false;
 		case 9:
 			TitleExit();
-			// TODO HelpInit(22);
+			HelpInit(22);
 			break;
 		case 10:
 			TitleExit();
-			// TODO HelpInit(20);
+			HelpInit(20);
 			break;
 		case 11:
 			TitleExit();
@@ -157,7 +158,7 @@ bool TitleUpdate()
 			{
 				return false;
 			}
-			// TODO HelpInit(24);
+			HelpInit(24);
 			return true;
 		}
 	}
