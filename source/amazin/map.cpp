@@ -1,7 +1,7 @@
 #include "map.h"
-#include "jamultypes.h"
 #include "display.h"
 #include "jamulspr.h"
+#include "jamultypes.h"
 
 struct mapTile
 {
@@ -17,8 +17,8 @@ struct mapTile
 mapTile g_Map[14][19];
 byte g_Tiles[21][32][32];
 
-sprite_set_t* g_WallsJsp;
-sprite_set_t* g_ItemsJsp;
+sprite_set_t *g_WallsJsp;
+sprite_set_t *g_ItemsJsp;
 
 void MapInit(void)
 {
@@ -68,4 +68,15 @@ void MapExit()
 {
 	delete g_WallsJsp;
 	delete g_ItemsJsp;
+}
+
+void TileRender(byte tile, int x, int y)
+{
+	for (int px = 0; px < 0x20; px = px + 1)
+	{
+		for (int py = 0; py < 0x20; py = py + 1)
+		{
+			mgl->GetScreen()[px + x + (y + py) * mgl->GetWidth()] = g_Tiles[tile][py][px];
+		}
+	}
 }

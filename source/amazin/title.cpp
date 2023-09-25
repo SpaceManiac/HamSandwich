@@ -98,7 +98,7 @@ bool TitleUpdate()
 	{
 		StopSong();
 	}
-	byte held = /* TODO GetControls(0) | GetControls(1) | */ GetArrows();
+	byte held = GetPlayerControls(0) | GetPlayerControls(1) | GetArrows();
 	if (mgl->MouseTap() && 17 < g_TitleMouseX && g_TitleMouseX < 624 && 259 < g_TitleMouseY && g_TitleMouseY < 412)
 	{
 		k = '\r';

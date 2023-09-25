@@ -340,3 +340,8 @@ void GuysRender()
 		}
 	}
 }
+
+const sprite_t* GetGuySprite(byte type, byte frame)
+{
+	return g_GuySprites[type]->GetSprite(frame);
+}

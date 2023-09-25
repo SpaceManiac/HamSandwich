@@ -15,6 +15,7 @@ enum class QuitAction
 extern QuitAction g_QuitAction;
 extern sprite_set_t* g_ButtonsJsp;
 
+void TitleInit();
 void SplashInit(byte which);
 
 #endif // TITLE_H
