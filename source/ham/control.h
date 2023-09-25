@@ -22,6 +22,7 @@ void InitControls();
 // Get controls which are currently held. Union of all keyboards and joysticks.
 byte GetKeyControls();
 byte GetControls();
+byte GetPlayerControls(byte player);
 byte GetTaps();  // Tapped since last GetTaps().
 
 // Get arrow keys (non-mappable) which are currently held. Return=B1.

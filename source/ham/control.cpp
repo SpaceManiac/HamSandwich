@@ -62,6 +62,11 @@ byte GetControls() {
 	return keyState | GetJoyState() | SoftJoystickState();
 }
 
+byte GetPlayerControls(byte player) {
+	(void)player;  // TODO
+	return GetControls();
+}
+
 byte GetTaps() {
 	GetJoyState();  // Updates keyTap.
 	byte result = keyTap;
