@@ -17,6 +17,7 @@ enum class DisplayEffect
 };
 
 extern MGLDraw *mgl;
+extern byte *g_Background;
 
 void DisplayInit();
 void DisplayExit();

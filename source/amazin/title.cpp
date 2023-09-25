@@ -8,6 +8,7 @@
 #include "sound.h"
 #include "guy.h"
 #include "help.h"
+#include "timeattack.h"
 
 int32_t g_TitleTimer;
 sprite_set_t *g_ButtonsJsp;
@@ -118,7 +119,7 @@ bool TitleUpdate()
 			break;
 		case 2:
 			TitleExit();
-			// TODO TimeAttackInit();
+			TimeAttackInit();
 			break;
 		case 3:
 			TitleExit();
