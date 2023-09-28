@@ -7,6 +7,7 @@
 #include "jamulspr.h"
 #include "loop.h"
 #include "title.h"
+#include "register.h"
 
 byte g_KeyConfigPlayer;
 AmazinConfig g_Config;
@@ -400,14 +401,363 @@ void OptionsRender()
 	CenterPrintMultiline(0x140, 0x1c2, "Up & Down select. Left, Right, & Enter adjust.");
 }
 
+bool KeyConfigUpdate();
+void KeyConfigRender();
+
 void KeyConfigInit()
 {
-	// TODO
-	OptionsInit();
+	SetUpdate(KeyConfigUpdate);
+	SetRender(KeyConfigRender);
+	g_KeyConfigPlayer = g_OptionsSelection != 4;
+	g_KeyConfigSelection = 0;
+	LastScanCode();
 }
+
+void KeyConfigExit()
+{
+	ApplyKeyConfigs();
+	mgl->LastKeyPressed();
+}
+
+bool KeyConfigUpdate()
+{
+	byte scan;
+
+	g_KeyConfigFlip = 1 - g_KeyConfigFlip;
+	scan = LastScanCode();
+	if (scan != 0)
+	{
+		if (scan == SDL_SCANCODE_ESCAPE)
+		{
+			KeyConfigExit();
+			OptionsInit();
+		}
+		else
+		{
+			g_KeyConfigInProgress[g_KeyConfigSelection] = scan;
+			g_KeyConfigSelection = g_KeyConfigSelection + 1;
+			if (g_KeyConfigSelection == 4)
+			{
+				if (g_KeyConfigPlayer == 0)
+				{
+					g_Config.keys[0][0] = g_KeyConfigInProgress[0];
+					g_Config.keys[0][1] = g_KeyConfigInProgress[1];
+					g_Config.keys[0][2] = g_KeyConfigInProgress[2];
+					g_Config.keys[0][3] = g_KeyConfigInProgress[3];
+				}
+				else
+				{
+					g_Config.keys[1][0] = g_KeyConfigInProgress[0];
+					g_Config.keys[1][1] = g_KeyConfigInProgress[1];
+					g_Config.keys[1][2] = g_KeyConfigInProgress[2];
+					g_Config.keys[1][3] = g_KeyConfigInProgress[3];
+				}
+				KeyConfigExit();
+				OptionsInit();
+			}
+		}
+	}
+	return true;
+}
+
+void KeyConfigRender()
+{
+	byte(*activeKeys)[4];
+	char buf[32];
+
+	memcpy(mgl->GetScreen(), g_Background, 0x4b000);
+	sprintf(buf, "Setup Keyboard%d", g_KeyConfigPlayer + 1);
+	CenterPrint(0x140, 2, buf);
+	if (g_KeyConfigPlayer == 0)
+	{
+		activeKeys = &g_Config.keys[0];
+	}
+	else
+	{
+		activeKeys = &g_Config.keys[1];
+	}
+	PrintMultiline(0x2a, 0x2a, "Old Up Key:");
+	PrintMultiline(0xfc, 0x2a, ScanCodeText((*activeKeys)[0]));
+	PrintMultiline(0x2a, 0x48, "Old Down Key:");
+	PrintMultiline(0xfc, 0x48, ScanCodeText((*activeKeys)[1]));
+	PrintMultiline(0x2a, 0x66, "Old Left Key:");
+	PrintMultiline(0xfc, 0x66, ScanCodeText((*activeKeys)[2]));
+	PrintMultiline(0x2a, 0x84, "Old Right Key:");
+	PrintMultiline(0xfc, 0x84, ScanCodeText((*activeKeys)[3]));
+	PrintMultiline(0x2a, 0xb6, "New Up Key:");
+	if (g_KeyConfigSelection != 0)
+	{
+		PrintMultiline(0x2a, 0xd4, "New Down Key:");
+	}
+	if (1 < g_KeyConfigSelection)
+	{
+		PrintMultiline(0x2a, 0xf2, "New Left Key:");
+	}
+	if (2 < g_KeyConfigSelection)
+	{
+		PrintMultiline(0x2a, 0x110, "New Right Key:");
+	}
+	PrintMultiline(0x2a, 0x156, "Press ESC to cancel changes");
+	if (g_KeyConfigSelection == 0)
+	{
+		if (g_KeyConfigFlip != 0)
+		{
+			PrintMultiline(0xfc, 0xb6, "???");
+		}
+	}
+	else
+	{
+		PrintMultiline(0xfc, 0xb6, ScanCodeText(g_KeyConfigInProgress[0]));
+	}
+	if (g_KeyConfigSelection == 1)
+	{
+		if (g_KeyConfigFlip != 0)
+		{
+			PrintMultiline(0xfc, 0xd4, "???");
+		}
+	}
+	else if (1 < g_KeyConfigSelection)
+	{
+		PrintMultiline(0xfc, 0xd4, ScanCodeText(g_KeyConfigInProgress[1]));
+	}
+	if (g_KeyConfigSelection == 2)
+	{
+		if (g_KeyConfigFlip != 0)
+		{
+			PrintMultiline(0xfc, 0xf2, "???");
+		}
+	}
+	else if (2 < g_KeyConfigSelection)
+	{
+		PrintMultiline(0xfc, 0xf2, ScanCodeText(g_KeyConfigInProgress[2]));
+	}
+	if (g_KeyConfigSelection == 3)
+	{
+		if (g_KeyConfigFlip != 0)
+		{
+			PrintMultiline(0xfc, 0x110, "???");
+		}
+	}
+	else if (3 < g_KeyConfigSelection)
+	{
+		PrintMultiline(0xfc, 0x110, ScanCodeText(g_KeyConfigInProgress[3]));
+	}
+	return;
+}
+
+bool RivalryOptionsUpdate();
+void RivalryOptionsRender();
 
 void RivalryOptionsInit()
 {
-	// TODO
-	OptionsInit();
+	SetUpdate(RivalryOptionsUpdate);
+	SetRender(RivalryOptionsRender);
+	g_OptionsSelection = 0;
+	g_OptionsOldHeld = 0xff;
+}
+
+void RivalryOptionsExit()
+{
+}
+
+bool RivalryOptionsUpdate()
+{
+	char k = mgl->LastKeyPressed();
+	byte held = GetPlayerControls(0) | GetPlayerControls(1) | GetArrows();
+	if (k == '\x1b')
+	{
+		RivalryOptionsExit();
+		OptionsInit();
+		held = g_OptionsOldHeld;
+	}
+	else
+	{
+		if ((((k == '\r') || (k == ' ')) ||
+		     (((held & CONTROL_B1) != 0 && ((g_OptionsOldHeld & CONTROL_B1) == 0)))) ||
+		    (((held & CONTROL_RT) != 0 && ((g_OptionsOldHeld & CONTROL_RT) == 0))))
+		{
+			switch (g_OptionsSelection)
+			{
+			case 0:
+				if (RegistrationCurrentlyValid())
+				{
+					g_Config.rivalryPumpkins = (bool)('\x01' - g_Config.rivalryPumpkins);
+				}
+				break;
+			case 1:
+				if (RegistrationCurrentlyValid() &&
+				    (g_Config.rivalryMatches = g_Config.rivalryMatches + 1, 5 < g_Config.rivalryMatches))
+				{
+					g_Config.rivalryMatches = 1;
+				}
+				break;
+			case 2:
+				if (RegistrationCurrentlyValid() &&
+				    (g_Config.rivalryPowerups = g_Config.rivalryPowerups + 1, 10 < g_Config.rivalryPowerups))
+				{
+					g_Config.rivalryPowerups = 0;
+				}
+				break;
+			case 3:
+				if (RegistrationCurrentlyValid())
+				{
+					g_Config.rivalryMapMode = 3 - g_Config.rivalryMapMode;
+				}
+				break;
+			case 4:
+				if (RegistrationCurrentlyValid() &&
+				    (g_Config.rivalryMapSize = g_Config.rivalryMapSize + 1, 5 < g_Config.rivalryMapSize))
+				{
+					g_Config.rivalryMapSize = 1;
+				}
+				break;
+			case 5:
+				if (RegistrationCurrentlyValid() &&
+				    (g_Config.rivalryLevel = g_Config.rivalryLevel + 1, 0x14 < g_Config.rivalryLevel))
+				{
+					g_Config.rivalryLevel = 1;
+				}
+				break;
+			case 6:
+				RivalryOptionsExit();
+				OptionsInit();
+				return true;
+			}
+		}
+		if (((held & CONTROL_LF) != 0) && ((g_OptionsOldHeld & CONTROL_LF) == 0))
+		{
+			switch (g_OptionsSelection)
+			{
+			case 0:
+				if (RegistrationCurrentlyValid())
+				{
+					g_Config.rivalryPumpkins = (bool)('\x01' - g_Config.rivalryPumpkins);
+				}
+				break;
+			case 1:
+				if (RegistrationCurrentlyValid() &&
+				    (g_Config.rivalryMatches = g_Config.rivalryMatches - 1, g_Config.rivalryMatches == 0))
+				{
+					g_Config.rivalryMatches = 5;
+				}
+				break;
+			case 2:
+				if (RegistrationCurrentlyValid() &&
+				    (g_Config.rivalryPowerups = g_Config.rivalryPowerups - 1, 10 < g_Config.rivalryPowerups))
+				{
+					g_Config.rivalryPowerups = 10;
+				}
+				break;
+			case 3:
+				if (RegistrationCurrentlyValid())
+				{
+					g_Config.rivalryMapMode = 3 - g_Config.rivalryMapMode;
+				}
+				break;
+			case 4:
+				if (RegistrationCurrentlyValid() &&
+				    (g_Config.rivalryMapSize = g_Config.rivalryMapSize - 1, g_Config.rivalryMapSize == 0))
+				{
+					g_Config.rivalryMapSize = 5;
+				}
+				break;
+			case 5:
+				if (RegistrationCurrentlyValid() &&
+				    (g_Config.rivalryLevel = g_Config.rivalryLevel - 1, g_Config.rivalryLevel == 0))
+				{
+					g_Config.rivalryLevel = 0x14;
+				}
+				break;
+			case 6:
+				OptionsExit();
+				TitleInit();
+				return true;
+			}
+		}
+		if (((held & CONTROL_DN) != 0) && ((g_OptionsOldHeld & CONTROL_DN) == 0))
+		{
+			g_OptionsSelection = g_OptionsSelection + 1;
+			if (6 < g_OptionsSelection)
+			{
+				g_OptionsSelection = 0;
+			}
+			if ((g_OptionsSelection == 4) && (g_Config.rivalryMapMode == 1))
+			{
+				g_OptionsSelection = 5;
+			}
+		}
+		if (((held & CONTROL_UP) != 0) && ((g_OptionsOldHeld & CONTROL_UP) == 0))
+		{
+			g_OptionsSelection = g_OptionsSelection - 1;
+			if (6 < g_OptionsSelection)
+			{
+				g_OptionsSelection = 6;
+			}
+			if ((g_OptionsSelection == 4) && (g_Config.rivalryMapMode == 1))
+			{
+				g_OptionsSelection = 3;
+			}
+		}
+	}
+	g_OptionsOldHeld = held;
+	return true;
+}
+
+void RivalryOptionsRender()
+{
+	static const char sizes[5][12] = {
+		"Tiny",
+		"Small",
+		"Medium",
+		"Large",
+		"Huge",
+	};
+	static const char help[7][48] = {
+		"Include pumpkins in the battle or not",
+		"Number of matches to determine a winner",
+		"How often powerups appear (0 means never)",
+		"Play on game maps, or random ones",
+		"Specify the size of the random maps",
+		"How dangerous pumpkins are",
+		"",
+	};
+	char buf[32];
+
+	memcpy(mgl->GetScreen(), g_Background, 0x4b000);
+	CenterPrint(0x140, 2, "Sibling Rivalry Options");
+	if (g_Config.rivalryPumpkins == false)
+	{
+		PrintMultiline(0x52, 0x2a, "Rivalry Pumpkins: Off");
+	}
+	else
+	{
+		PrintMultiline(0x52, 0x2a, "Rivalry Pumpkins: On");
+	}
+	sprintf(buf, "Rivalry Matches: Best %d of %d", (uint)g_Config.rivalryMatches, (uint)g_Config.rivalryMatches * 2 + -1);
+	PrintMultiline(0x52, 0x48, buf);
+	sprintf(buf, "Rivalry Powerups: %d", (uint)g_Config.rivalryPowerups);
+	PrintMultiline(0x52, 0x66, buf);
+	if (g_Config.rivalryMapMode == 1)
+	{
+		PrintMultiline(0x52, 0x84, "Rivalry Map: Preset");
+	}
+	else
+	{
+		PrintMultiline(0x52, 0x84, "Rivalry Map: Random");
+	}
+	if (g_Config.rivalryMapMode == 2)
+	{
+		sprintf(buf, "Rivalry Map Size: %s", sizes[g_Config.rivalryMapSize - 1]);
+		PrintMultiline(0x52, 0xa2, buf);
+	}
+	sprintf(buf, "Rivalry Level: %d", (uint)g_Config.rivalryLevel);
+	PrintMultiline(0x52, 0xc0, buf);
+	PrintMultiline(0x52, 0xde, "Exit");
+	GetGuySprite(6, 13)->Draw(0x43, (uint)g_OptionsSelection * 0x1e + 0x3a, mgl);
+	if (!RegistrationCurrentlyValid())
+	{
+		CenterPrintMultiline(0x140, 0x186, "*** NOT AVAILABLE IN DEMO! ***");
+	}
+	CenterPrintMultiline(0x140, 0x1a4, (char *)help[g_OptionsSelection]);
+	CenterPrintMultiline(0x140, 0x1c2, "Up & Down select. Left, Right, & Enter adjust.");
 }

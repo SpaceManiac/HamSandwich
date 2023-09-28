@@ -1,5 +1,6 @@
 {
 	"title": "Amazin' SPISPOPD",
+	"registry_key": "Amazin",
 	"installers": [
 		{
 			"filename": "amazin_full_install.EXE",
