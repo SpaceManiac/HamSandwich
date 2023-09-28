@@ -7,6 +7,7 @@
 #include "loop.h"
 #include "register.h"
 #include "title.h"
+#include "game.h"
 #include <stdint.h>
 
 byte g_TimeAttackBright;
@@ -88,10 +89,10 @@ bool TimeAttackUpdate()
 				}
 				if (g_TimeAttackTheme == 0)
 				{
-					// TODO GameInit(GameMode::HappyFields, true, mapNum, 1);
+					GameInit(GameMode::HappyFields, true, mapNum, 1);
 					return true;
 				}
-				// TODO GameInit(GameMode::DankDungeons, true, mapNum, 1);
+				GameInit(GameMode::DankDungeons, true, mapNum, 1);
 				return true;
 			}
 			g_TimeAttackTheme = 1 - g_TimeAttackTheme;

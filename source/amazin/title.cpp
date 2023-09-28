@@ -10,6 +10,7 @@
 #include "help.h"
 #include "timeattack.h"
 #include "options.h"
+#include "game.h"
 
 int32_t g_TitleTimer;
 sprite_set_t *g_ButtonsJsp;
@@ -112,11 +113,11 @@ bool TitleUpdate()
 		{
 		case 0:
 			TitleExit();
-			// TODO GameInit(GameMode::HappyFields, false, 1, 1);
+			GameInit(GameMode::HappyFields, false, 1, 1);
 			break;
 		case 1:
 			TitleExit();
-			// TODO GameInit(GameMode::DankDungeons, false, 1, 1);
+			GameInit(GameMode::DankDungeons, false, 1, 1);
 			break;
 		case 2:
 			TitleExit();
@@ -124,15 +125,15 @@ bool TitleUpdate()
 			break;
 		case 3:
 			TitleExit();
-			// TODO GameInit(GameMode::HappyFields, false, 1, 2);
+			GameInit(GameMode::HappyFields, false, 1, 2);
 			break;
 		case 4:
 			TitleExit();
-			// TODO GameInit(GameMode::DankDungeons, false, 1, 2);
+			GameInit(GameMode::DankDungeons, false, 1, 2);
 			break;
 		case 5:
 			TitleExit();
-			// TODO GameInit(GameMode::SiblingRivalry, false, 1, 2);
+			GameInit(GameMode::SiblingRivalry, false, 1, 2);
 			break;
 		case 6:
 			TitleExit();
