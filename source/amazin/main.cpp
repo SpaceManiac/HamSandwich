@@ -6,7 +6,7 @@
 #include "appdata.h"
 #include "display.h"
 #include "map.h"
-#include "config.h"
+#include "options.h"
 #include "guy.h"
 #include "title.h"
 #include "loop.h"

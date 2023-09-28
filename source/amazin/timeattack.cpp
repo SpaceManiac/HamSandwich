@@ -1,5 +1,5 @@
 #include "timeattack.h"
-#include "config.h"
+#include "options.h"
 #include "control.h"
 #include "display.h"
 #include "hammusic.h"

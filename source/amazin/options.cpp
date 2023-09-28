@@ -1,4 +1,4 @@
-#include "config.h"
+#include "options.h"
 #include "appdata.h"
 #include "control.h"
 #include "hammusic.h"

@@ -1,5 +1,5 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef OPTIONS_H
+#define OPTIONS_H
 
 #include "jamultypes.h"
 #include "stddef.h"
@@ -55,4 +55,4 @@ byte ConfigGetRivalryMode();
 byte ConfigGetRivalryPowerups();
 byte ConfigGetRivalryMatches();
 
-#endif  // CONFIG_H
+#endif  // OPTIONS_H

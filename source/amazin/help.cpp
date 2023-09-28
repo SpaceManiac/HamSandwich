@@ -1,6 +1,6 @@
 #include "help.h"
 #include "appdata.h"
-#include "config.h"
+#include "options.h"
 #include "control.h"
 #include "display.h"
 #include "guy.h"

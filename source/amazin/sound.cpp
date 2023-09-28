@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "jamulsound.h"
 #include "hammusic.h"
-#include "config.h"
+#include "options.h"
 
 void PlaySound(int sound, int priority)
 {
