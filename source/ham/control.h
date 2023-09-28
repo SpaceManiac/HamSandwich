@@ -39,5 +39,6 @@ void GetLeftStick(int16_t* x, int16_t* y, byte* dpad);
 // Options menu support.
 void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys);
 void SetJoystickBindings(int nbuttons, const byte* buttons);
+void ControlSetUseJoystick(byte player, byte joystickNumber);
 
 #endif  // HAMCONTROL_H

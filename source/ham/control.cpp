@@ -25,6 +25,8 @@ static const int NUM_JOYBTNS = 4;
 static byte kb[NUM_CONTROLS][NUM_KEYBOARDS];
 static byte joyBtn[NUM_JOYBTNS];
 
+static byte playerUsesJoystick[NUM_KEYBOARDS] = { true, false, false, false };
+
 static byte GetJoyState();
 
 void InitControls(void)
@@ -63,8 +65,10 @@ byte GetControls() {
 }
 
 byte GetPlayerControls(byte player) {
-	(void)player;  // TODO
-	return GetControls();
+	if (playerUsesJoystick[player] == 2)
+		return GetJoyState() | SoftJoystickState();
+	else  // TODO: support keyboard2 split here
+		return GetControls();
 }
 
 byte GetTaps() {
@@ -199,6 +203,10 @@ void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys) {
 void SetJoystickBindings(int nbuttons, const byte* buttons) {
 	SoftJoystickNumButtons(nbuttons);
 	memcpy(joyBtn, buttons, std::min(nbuttons, NUM_JOYBTNS));
+}
+
+void ControlSetUseJoystick(byte player, byte joystickNumber) {
+	playerUsesJoystick[player] = joystickNumber;
 }
 
 // Called upon SDL events

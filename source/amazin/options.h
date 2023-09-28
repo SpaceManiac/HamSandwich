@@ -4,7 +4,7 @@
 #include "jamultypes.h"
 #include "stddef.h"
 
-struct hitime
+struct HighTime
 {
 	char name[8];
 	byte seconds;
@@ -12,10 +12,10 @@ struct hitime
 	dword frames;
 };
 
-static_assert(sizeof(hitime) == 0x10);
-static_assert(offsetof(hitime, frames) == 0xc);
+static_assert(sizeof(HighTime) == 0x10);
+static_assert(offsetof(HighTime, frames) == 0xc);
 
-struct amazinConfig
+struct AmazinConfig
 {
 	char registrationCode[9];
 	byte registrationIdx;
@@ -23,7 +23,7 @@ struct amazinConfig
 	bool music;
 	byte lives;
 	bool bouaphettaMode;
-	bool useJoystick[2];
+	byte useJoystick[2];
 	bool rivalryPumpkins;
 	byte rivalryMatches;
 	byte rivalryPowerups;
@@ -33,13 +33,13 @@ struct amazinConfig
 	byte keys[2][4];
 	char scoreNames[5][11];
 	int32_t scores[5];
-	hitime times[2][20];
+	HighTime times[2][20];
 };
 
-static_assert(sizeof(amazinConfig) == 0x2ec);
-static_assert(offsetof(amazinConfig, scores) == 0x58);
+static_assert(sizeof(AmazinConfig) == 0x2ec);
+static_assert(offsetof(AmazinConfig, scores) == 0x58);
 
-extern amazinConfig g_Config;
+extern AmazinConfig g_Config;
 
 void LoadConfig();
 void SaveConfig();
@@ -54,5 +54,7 @@ byte ConfigGetRivalryMapSize();
 byte ConfigGetRivalryMode();
 byte ConfigGetRivalryPowerups();
 byte ConfigGetRivalryMatches();
+
+void OptionsInit();
 
 #endif  // OPTIONS_H
