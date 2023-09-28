@@ -11,6 +11,7 @@
 #include "timeattack.h"
 #include "options.h"
 #include "game.h"
+#include "editor.h"
 
 int32_t g_TitleTimer;
 sprite_set_t *g_ButtonsJsp;
@@ -96,6 +97,14 @@ bool TitleUpdate()
 		HelpInit(24);
 		return true;
 	}
+#ifndef NDEBUG
+	if (k == 'e')
+	{
+		TitleExit();
+		EditorInit();
+		return true;
+	}
+#endif
 	g_TitleSongTimer = g_TitleSongTimer + 1;
 	if (g_TitleSongTimer == 210)
 	{
