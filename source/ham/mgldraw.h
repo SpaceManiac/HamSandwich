@@ -113,7 +113,7 @@ public:
 protected:
 	void putpixel(int x, int y, RGB value);
 	RGB FormatPixel(int x, int y);
-	void PseudoCopy(int x, int y, byte* data, int len);
+	void PseudoCopy(int y, int x, byte* data, int len);
 
 	void StartFlip(void);
 	TASK(void) FinishFlip(void);

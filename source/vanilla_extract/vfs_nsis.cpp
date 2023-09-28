@@ -137,7 +137,8 @@ NsisVfs::NsisVfs(owned::SDL_RWops fptr)
 	vanilla::Archive::Directory* working_directory = &archive.root;
 	for (size_t offset = code_offset; offset < string_table_offset - sizeof(entry); offset += 4)
 	{
-		entry current = *(entry*)&header[offset];
+		entry current;
+		memcpy(&current, &header[offset], sizeof(entry));
 		switch (current.which)
 		{
 			case EW_CREATEDIR:

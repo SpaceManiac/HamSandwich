@@ -11,7 +11,7 @@ class AndroidBundleVfs : public vanilla::Vfs
 {
 	std::string prefix;
 public:
-	AndroidBundleVfs(const char* prefix) : prefix(prefix) {}
+	explicit AndroidBundleVfs(const char* prefix) : prefix(prefix) {}
 	owned::SDL_RWops open_sdl(const char* filename) override;
 	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output) override;
 };
