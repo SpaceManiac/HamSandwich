@@ -10,6 +10,11 @@ enum class GameMode
 	SiblingRivalry = 3,
 };
 
+extern GameMode g_GameMode;
+extern byte g_NumPlayers;
+extern int g_RecordTimeFrames;
+extern bool g_IsTimeAttack;
+
 void GameInit(GameMode gameMode, bool isTimeAttack, byte mapNum, byte numPlayers);
 
 #endif // GAME_H

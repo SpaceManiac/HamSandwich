@@ -3,6 +3,17 @@
 
 #include "jamultypes.h"
 
+enum class GuyType
+{
+	None,
+	Bouapha,
+	Bouaphetta,
+	Smoove,
+	Chuckles,
+	Helga,
+	Pete,
+};
+
 class sprite_t;
 
 void GuysInit();

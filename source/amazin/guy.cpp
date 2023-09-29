@@ -3,17 +3,6 @@
 #include "title.h"
 #include "display.h"
 
-enum class GuyType
-{
-	None,
-	Bouapha,
-	Bouaphetta,
-	Smoove,
-	Chuckles,
-	Helga,
-	Pete,
-};
-
 enum class Direction
 {
 	East,
