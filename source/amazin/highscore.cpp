@@ -244,8 +244,8 @@ bool HighTimeUpdate(void)
 		{
 			g_RecordPlayer = 1;
 			g_Config.times[g_GameMode == GameMode::DankDungeons][g_MapNum - 1].frames = g_RecordTimeFrames;
-			g_Config.times[g_GameMode == GameMode::DankDungeons][g_MapNum - 1].seconds = (unsigned long long)g_RecordTimeFrames / 0x708;
-			g_Config.times[g_GameMode == GameMode::DankDungeons][g_MapNum - 1].minutes =
+			g_Config.times[g_GameMode == GameMode::DankDungeons][g_MapNum - 1].minutes = (unsigned long long)g_RecordTimeFrames / 0x708;
+			g_Config.times[g_GameMode == GameMode::DankDungeons][g_MapNum - 1].seconds =
 				(char)((unsigned long long)g_RecordTimeFrames / 0x1e) +
 				(char)((unsigned long long)g_RecordTimeFrames / 0x708) * -0x3c;
 			g_Config.times[g_GameMode == GameMode::DankDungeons][g_MapNum - 1].name[0] = 0;

@@ -7,8 +7,8 @@
 struct HighTime
 {
 	char name[8];
-	byte seconds;
 	byte minutes;
+	byte seconds;
 	dword frames;
 };
 

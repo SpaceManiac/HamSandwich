@@ -21,7 +21,7 @@ void ApplyKeyConfigs();
 
 void LoadConfig()
 {
-	auto f = AssetOpen_SDL_Owned("amazin.config");
+	auto f = AssetOpen_SDL_Owned("amazin.cfg");
 	if (!f)
 	{
 		g_Config.sound = true;
@@ -57,12 +57,12 @@ void LoadConfig()
 		for (int i = 0; i < 0x14; i = i + 1)
 		{
 			strcpy(g_Config.times[0][i].name, "Nobody");
-			g_Config.times[0][i].seconds = 99;
-			g_Config.times[0][i].minutes = 0x3b;
+			g_Config.times[0][i].minutes = 99;
+			g_Config.times[0][i].seconds = 0x3b;
 			g_Config.times[0][i].frames = 0x2bf02;
 			strcpy(g_Config.times[1][i].name, "Nobody");
-			g_Config.times[1][i].seconds = 99;
-			g_Config.times[1][i].minutes = 0x3b;
+			g_Config.times[1][i].minutes = 99;
+			g_Config.times[1][i].seconds = 0x3b;
 			g_Config.times[1][i].frames = 0x2bf02;
 		}
 	}
