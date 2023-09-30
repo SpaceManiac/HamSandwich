@@ -2,11 +2,12 @@
 #include "display.h"
 #include "game.h"
 #include "jamulspr.h"
+#include "map.h"
 #include "options.h"
 #include "particle.h"
 #include "player.h"
+#include "sound.h"
 #include "title.h"
-#include "map.h"
 
 namespace GuyFlags
 {
@@ -41,6 +42,9 @@ struct Guy
 };
 
 constexpr int MAX_GUYS = 16;
+
+const int8_t g_DirectionX[4] = {1, 0, -1, 0};
+const int8_t g_DirectionY[4] = {0, 1, 0, -1};
 
 sprite_set_t *g_GuySprites[8];
 Guy g_Guys[16];
@@ -164,6 +168,211 @@ void GuyAdd(byte x, byte y, GuyType type)
 	GuyUpdate(g_Guys + i);
 }
 
+bool GuyStartWalking(byte x, byte y, Direction dir, Guy *me)
+{
+	bool bVar1;
+	uint rivalY;
+	uint rivalX;
+	int i;
+
+	rivalX = 200;
+	rivalY = 200;
+	if ((me->type == GuyType::Bouapha) || (me->type == GuyType::Bouaphetta))
+	{
+		for (i = 0; i < 0x10; i = i + 1)
+		{
+			if (byte(g_Guys[i].type) == 3 - byte(me->type))
+			{
+				rivalX = (uint)g_Guys[i].gridX;
+				rivalY = (uint)g_Guys[i].gridY;
+			}
+		}
+	}
+	if (dir == Direction::East)
+	{
+		if (x < 0x12)
+		{
+			if ((me->ghostTime == 0) && ((g_Map[y][x + 1].flags & TileFlags::WallV) != 0))
+			{
+				bVar1 = false;
+			}
+			else if (((me->flags & GuyFlags::Player) == 0) || ((g_Map[y][x + 1].flags & TileFlags::P) == 0))
+			{
+				if ((((me->flags & GuyFlags::Pumpkin) == 0) || (me->hammerTime == 0)) ||
+				    ((g_Map[y][x + 1].flags & TileFlags::P) != 0))
+				{
+					if ((me->ghostTime == 0) && (g_Map[y][x + 1].item == ItemType::IceTrail))
+					{
+						bVar1 = false;
+					}
+					else if ((x + 1 == rivalX) && (y == rivalY))
+					{
+						g_RivalsColliding = true;
+						bVar1 = false;
+					}
+					else if (((g_Map[y][x + 1].tile == 3) || (g_Map[y][x + 1].tile == 10)) || (g_Map[y][x + 1].tile == 0xd))
+					{
+						bVar1 = false;
+					}
+					else
+					{
+						bVar1 = true;
+					}
+				}
+				else
+				{
+					bVar1 = false;
+				}
+			}
+			else
+			{
+				bVar1 = false;
+			}
+		}
+		else
+		{
+			bVar1 = false;
+		}
+	}
+	else if (dir == Direction::South)
+	{
+		if (y < 0xd)
+		{
+			if ((me->ghostTime == 0) && ((g_Map[y][x].flags & TileFlags::WallH) != 0))
+			{
+				bVar1 = false;
+			}
+			else if (((me->flags & GuyFlags::Player) == 0) || ((g_Map[y + 1][x].flags & TileFlags::P) == 0))
+			{
+				if ((((me->flags & GuyFlags::Pumpkin) == 0) || (me->hammerTime == 0)) ||
+				    ((g_Map[y + 1][x].flags & TileFlags::P) != 0))
+				{
+					if ((me->ghostTime == 0) && (g_Map[y + 1][x].item == ItemType::IceTrail))
+					{
+						bVar1 = false;
+					}
+					else if ((x == rivalX) && (y + 1 == rivalY))
+					{
+						g_RivalsColliding = true;
+						bVar1 = false;
+					}
+					else if (((g_Map[y + 1][x].tile == 3) || (g_Map[y + 1][x].tile == 10)) || (g_Map[y + 1][x].tile == 0xd))
+					{
+						bVar1 = false;
+					}
+					else
+					{
+						bVar1 = true;
+					}
+				}
+				else
+				{
+					bVar1 = false;
+				}
+			}
+			else
+			{
+				bVar1 = false;
+			}
+		}
+		else
+		{
+			bVar1 = false;
+		}
+	}
+	else if (dir == Direction::West)
+	{
+		if (x == 0)
+		{
+			bVar1 = false;
+		}
+		else if ((me->ghostTime == 0) && ((g_Map[y][x].flags & TileFlags::WallV) != 0))
+		{
+			bVar1 = false;
+		}
+		else if (((me->flags & GuyFlags::Player) == 0) || ((g_Map[y - 1][x + 0x12].flags & TileFlags::P) == 0))
+		{
+			if ((((me->flags & GuyFlags::Pumpkin) == 0) || (me->hammerTime == 0)) ||
+			    ((g_Map[y - 1][x + 0x12].flags & TileFlags::P) != 0))
+			{
+				if ((me->ghostTime == 0) && (g_Map[y - 1][x + 0x12].item == ItemType::IceTrail))
+				{
+					bVar1 = false;
+				}
+				else if ((x - 1 == rivalX) && (y == rivalY))
+				{
+					g_RivalsColliding = true;
+					bVar1 = false;
+				}
+				else if (((g_Map[y - 1][x + 0x12].tile == 3) || (g_Map[y - 1][x + 0x12].tile == 10)) || (g_Map[y - 1][x + 0x12].tile == 0xd))
+				{
+					bVar1 = false;
+				}
+				else
+				{
+					bVar1 = true;
+				}
+			}
+			else
+			{
+				bVar1 = false;
+			}
+		}
+		else
+		{
+			bVar1 = false;
+		}
+	}
+	else if (dir == Direction::North)
+	{
+		if (y == 0)
+		{
+			bVar1 = false;
+		}
+		else if ((me->ghostTime == 0) && ((g_Map[y - 1][x].flags & TileFlags::WallH) != 0))
+		{
+			bVar1 = false;
+		}
+		else if (((me->flags & GuyFlags::Player) == 0) || ((g_Map[y - 1][x].flags & TileFlags::P) == 0))
+		{
+			if ((((me->flags & GuyFlags::Pumpkin) == 0) || (me->hammerTime == 0)) ||
+			    ((g_Map[y - 1][x].flags & TileFlags::P) != 0))
+			{
+				if ((me->ghostTime == 0) && (g_Map[y - 1][x].item == ItemType::IceTrail))
+				{
+					bVar1 = false;
+				}
+				else if ((x == rivalX) && (y - 1 == rivalY))
+				{
+					g_RivalsColliding = true;
+					bVar1 = false;
+				}
+				else if (((g_Map[y - 1][x].tile == 3) || (g_Map[y - 1][x].tile == 10)) || (g_Map[y - 1][x].tile == 0xd))
+				{
+					bVar1 = false;
+				}
+				else
+				{
+					bVar1 = true;
+				}
+			}
+			else
+			{
+				bVar1 = false;
+			}
+		}
+		else
+		{
+			bVar1 = false;
+		}
+	}
+	else
+	{
+		bVar1 = false;
+	}
+	return bVar1;
+}
+
 static void GuyUpdatePlayer(Guy *me)
 {
 	// TODO
@@ -171,7 +380,125 @@ static void GuyUpdatePlayer(Guy *me)
 
 static void GuyUpdatePumpkinRetreat(Guy *me)
 {
-	// TODO
+	static const byte anim[11] = {
+		10, 9, 9, 9, 8, 8, 8, 7, 7, 7, 0
+	};
+
+	bool east;
+	bool south;
+	bool west;
+	bool north;
+	byte bVar1;
+	int hammerTime;
+	byte distanceFromSpawn;
+
+	if (me->anim == 1)
+	{
+		if (me->direction == Direction::East)
+		{
+			me->x = me->x + 0x600;
+			if (me->destX < me->x)
+			{
+				me->x = me->destX;
+			}
+		}
+		else if (me->direction == Direction::South)
+		{
+			me->y = me->y + 0x600;
+			if (me->destY < me->y)
+			{
+				me->y = me->destY;
+			}
+		}
+		else if (me->direction == Direction::West)
+		{
+			me->x = me->x + -0x600;
+			if (me->x < me->destX)
+			{
+				me->x = me->destX;
+			}
+		}
+		else if ((me->direction == Direction::North) && (me->y = me->y + -0x600, me->y < me->destY))
+		{
+			me->y = me->destY;
+		}
+		if ((me->x == me->destX) && (me->y == me->destY))
+		{
+			me->anim = 0;
+			me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->flags = me->flags & ~GuyFlags::Player;
+			if ((g_Map[me->gridY][me->gridX].flags & TileFlags::PK) != 0)
+			{
+				me->anim = 3;
+				me->frame = 0;
+				PlaySound(0xc, 0x4b0);
+			}
+		}
+	}
+	if (me->anim == 0)
+	{
+		east = GuyStartWalking(me->gridX, me->gridY, Direction::East, me);
+		south = GuyStartWalking(me->gridX, me->gridY, Direction::South, me);
+		west = GuyStartWalking(me->gridX, me->gridY, Direction::West, me);
+		north = GuyStartWalking(me->gridX, me->gridY, Direction::North, me);
+		distanceFromSpawn = 0xff;
+		if ((east) && (g_Map[me->gridY][me->gridX + 1].distanceFromPumpkinSpawn != 0xff))
+		{
+			distanceFromSpawn = g_Map[me->gridY][me->gridX + 1].distanceFromPumpkinSpawn;
+			me->direction = Direction::East;
+		}
+		if ((south) && (g_Map[me->gridY + 1][me->gridX].distanceFromPumpkinSpawn < distanceFromSpawn))
+		{
+			distanceFromSpawn = g_Map[me->gridY + 1][me->gridX].distanceFromPumpkinSpawn;
+			me->direction = Direction::South;
+		}
+		if ((west) &&
+		    (g_Map[me->gridY - 1][me->gridX + 0x12].distanceFromPumpkinSpawn < distanceFromSpawn))
+		{
+			distanceFromSpawn = g_Map[me->gridY - 1][me->gridX + 0x12].distanceFromPumpkinSpawn;
+			me->direction = Direction::West;
+		}
+		if ((north) && (g_Map[me->gridY - 1][me->gridX].distanceFromPumpkinSpawn < distanceFromSpawn))
+		{
+			me->direction = Direction::North;
+		}
+		me->anim = 1;
+		me->destX = me->x + g_DirectionX[byte(me->direction)] * 0x2000;
+		me->destY = me->y + g_DirectionY[byte(me->direction)] * 0x2000;
+	}
+	if ((me->anim == 3) && (me->frame = me->frame + 1, 10 < me->frame))
+	{
+		me->flags = me->flags & ~GuyFlags::Retreating;
+		if (g_MapNum < 0x14)
+		{
+			hammerTime = (uint)g_MapNum * -0xf + 0xb4;
+		}
+		else
+		{
+			hammerTime = -0x78;
+		}
+		if (hammerTime < 1)
+		{
+			hammerTime = 1;
+		}
+		me->hammerTime = (short)hammerTime;
+		me->frame = 0;
+		me->direction = Direction::South;
+		me->spr = g_GuySprites[int(me->type)]->GetSprite((uint)me->direction * 0xd);
+	}
+	else
+	{
+		bVar1 = byte(me->direction) * 13;
+		if (me->anim == 3)
+		{
+			me->spr = g_GuySprites[int(me->type)]->GetSprite((uint)anim[me->frame] + (uint)bVar1);
+		}
+		else
+		{
+			me->spr = g_GuySprites[int(me->type)]->GetSprite(bVar1 + 10);
+		}
+	}
 }
 
 static void GuyUpdatePumpkin(Guy *me)
