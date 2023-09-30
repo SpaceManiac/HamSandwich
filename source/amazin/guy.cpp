@@ -1380,7 +1380,450 @@ static void GuyUpdatePumpkinRetreat(Guy *me)
 
 static void GuyUpdatePumpkin(Guy *me)
 {
-	// TODO
+	static const byte anim3a[30] = {
+		0xb,
+		0xb,
+		0xc,
+		0xc,
+		0xb,
+		0xb,
+		0,
+		0,
+		0xb,
+		0xb,
+		0xc,
+		0xc,
+		0xb,
+		0xb,
+		0,
+		0,
+		0xb,
+		0xb,
+		0xc,
+		0xc,
+		0xb,
+		0xb,
+		0,
+		0,
+		0xb,
+		0xb,
+		0xc,
+		0xc,
+		0xb,
+		0xb,
+	};
+	static const byte anim3b[30] = {
+		0xb,
+		0xb,
+		0,
+		0,
+		0xc,
+		0xc,
+		0,
+		0,
+		0xb,
+		0xb,
+		0,
+		0,
+		0xc,
+		0xc,
+		0,
+		0,
+		0xb,
+		0xb,
+		0,
+		0,
+		0xc,
+		0xc,
+		0,
+		0,
+		0xb,
+		0xb,
+		0,
+		0,
+		0,
+		0,
+	};
+	static const byte anim4[11] = {
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		7,
+		8,
+		9,
+		10,
+	};
+
+	uint uVar1;
+	int iVar2;
+	int iVar3;
+	sprite_t *psVar4;
+	byte bVar5;
+	int local_2c;
+	Direction j;
+	int speed;
+	bool canGo[4];
+	byte i;
+	byte local_c[4];
+	byte frame;
+
+	if ((g_LevelWon != 0) && (me->anim != g_EndAnimPumpkins))
+	{
+		me->anim = g_EndAnimPumpkins;
+		me->frame = 0;
+	}
+	if (me->hammerTime != 0)
+	{
+		me->hammerTime = me->hammerTime + -1;
+	}
+	if (me->speedTime != 0)
+	{
+		me->speedTime = me->speedTime - 1;
+	}
+	if (me->sleepTime != 0)
+	{
+		me->sleepTime = me->sleepTime + -1;
+		return;
+	}
+	me->iceTime = (ushort)g_SnowTimer;
+	if ((g_Map[me->gridY][me->gridX].tile == 0x14) && (me->anim != 4))
+	{
+		me->anim = 4;
+		me->frame = 7;
+		PlaySound(0x10, 0x640);
+	}
+	if ((g_Map[me->gridY][me->gridX].item == ItemType::FireTrail) && (me->anim != 4))
+	{
+		me->anim = 4;
+		me->frame = 7;
+		PlaySound(0x11, 2000);
+	}
+	frame = 0;
+	if (me->anim == 1)
+	{
+		switch (me->type)
+		{
+		case GuyType::Smoove:
+			speed = (uint)g_MapNum * 0x20 + 0x180;
+			break;
+		case GuyType::Chuckles:
+			speed = (uint)g_MapNum * 0x20 + 0x100;
+			break;
+		case GuyType::Helga:
+			speed = (uint)g_MapNum * 0x20 + 0x200;
+			break;
+		case GuyType::Pete:
+			speed = (uint)g_MapNum * 0x20 + 0x300;
+		}
+		if (g_SnowTimer != 0)
+		{
+			speed = (int)(speed + (speed >> 0x1f & 3U)) >> 2;
+		}
+		me->frame = me->frame + 1;
+		if (6 < me->frame)
+		{
+			me->frame = me->frame - 7;
+		}
+		if (me->direction == Direction::East)
+		{
+			me->x = me->x + speed;
+			if (me->destX < me->x)
+			{
+				me->x = me->destX;
+			}
+		}
+		else if (me->direction == Direction::South)
+		{
+			me->y = me->y + speed;
+			if (me->destY < me->y)
+			{
+				me->y = me->destY;
+			}
+		}
+		else if (me->direction == Direction::West)
+		{
+			me->x = me->x - speed;
+			if (me->x < me->destX)
+			{
+				me->x = me->destX;
+			}
+		}
+		else if ((me->direction == Direction::North) && (me->y = me->y - speed, me->y < me->destY))
+		{
+			me->y = me->destY;
+		}
+		if ((me->x == me->destX) && (me->y == me->destY))
+		{
+			me->anim = 0;
+			frame = me->frame;
+			me->frame = 0;
+			me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			if ((g_Map[me->gridY][me->gridX].flags & TileFlags::P) == 0)
+			{
+				me->flags = me->flags | GuyFlags::Player;
+			}
+			if ((g_Map[me->gridY][me->gridX].flags & TileFlags::TP) != 0)
+			{
+				me->anim = 5;
+				me->frame = 0;
+				ParticleAddTeleport(me->x, me->y);
+				PlaySound(0x13, 2000);
+			}
+		}
+	}
+	if (me->anim == 0)
+	{
+		canGo[0] = GuyStartWalking(me->gridX, me->gridY, Direction::East, me);
+		canGo[1] = GuyStartWalking(me->gridX, me->gridY, Direction::South, me);
+		canGo[2] = GuyStartWalking(me->gridX, me->gridY, Direction::West, me);
+		canGo[3] = GuyStartWalking(me->gridX, me->gridY, Direction::North, me);
+		i = 0;
+		if (((me->hammerTime == 0) && (me->type != GuyType::Pete)) && (g_PlayersWithHammers == 0))
+		{
+			if ((me->type == GuyType::Helga) || (me->type == GuyType::Smoove))
+			{
+				bVar5 = canGo[0] + canGo[1] + canGo[2] + canGo[3];
+				if (bVar5 == 0)
+				{
+					return;
+				}
+				if (1 < bVar5)
+				{
+					canGo[byte(me->direction) + 2 & 3] = false;
+				}
+				i = 0xff;
+				for (int _j = 0; _j < 4; _j = _j + 1)
+				{
+					if ((canGo[_j] != false) &&
+					    (g_Map[(uint)me->gridY + (int)g_DirectionY[_j]]
+					          [(uint)me->gridX + (int)g_DirectionX[_j]]
+					              .tileAnim < i))
+					{
+						me->direction = j;
+						i = g_Map[(uint)me->gridY + (int)g_DirectionY[_j]]
+						         [(uint)me->gridX + (int)g_DirectionX[_j]]
+						             .tileAnim;
+					}
+				}
+				if ((i == 0xff) && (me->type == GuyType::Smoove))
+				{
+					do
+					{
+						uVar1 = MGL_random(4);
+						me->direction = (Direction)uVar1;
+					} while (canGo[byte(me->direction)] == false);
+				}
+			}
+		}
+		else
+		{
+			bVar5 = canGo[0] + canGo[1] + canGo[2] + canGo[3];
+			if (bVar5 == 0)
+			{
+				return;
+			}
+			if (1 < bVar5)
+			{
+				canGo[byte(me->direction) + 2 & 3] = false;
+			}
+			do
+			{
+				uVar1 = MGL_random(4);
+				i = (byte)uVar1;
+			} while (canGo[uVar1 & 0xff] == false);
+			me->direction = Direction(i);
+		}
+		if ((((me->type == GuyType::Chuckles) && (me->hammerTime == 0)) && (g_PlayersWithHammers == 0)) || ((me->type == GuyType::Helga && (i == 0xff))))
+		{
+			bVar5 = canGo[0] + canGo[1] + canGo[2] + canGo[3];
+			if (bVar5 == 0)
+			{
+				return;
+			}
+			if (1 < bVar5)
+			{
+				canGo[byte(me->direction) + 2 & 3] = false;
+			}
+			i = 0xff;
+			for (int _j = 0; _j < 0x10; _j = _j + 1)
+			{
+				if ((g_Guys[_j].type == GuyType::Bouapha) || (g_Guys[_j].type == GuyType::Bouaphetta))
+				{
+					if (i == 0xff)
+					{
+						i = _j;
+						iVar2 = abs(me->x - g_Guys[_j].x);
+						iVar3 = abs(me->y - g_Guys[_j].y);
+						local_2c = iVar2 + iVar3;
+					}
+					else
+					{
+						iVar2 = abs(me->x - g_Guys[_j].x);
+						iVar3 = abs(me->y - g_Guys[_j].y);
+						if (iVar2 + iVar3 < local_2c)
+						{
+							i = _j;
+							iVar2 = abs(me->x - g_Guys[_j].x);
+							iVar3 = abs(me->y - g_Guys[_j].y);
+							local_2c = iVar2 + iVar3;
+						}
+					}
+				}
+			}
+			if (i == 0xff)
+			{
+				return;
+			}
+			iVar2 = abs(g_Guys[i].x - me->x);
+			iVar3 = abs(g_Guys[i].y - me->y);
+			if (iVar3 < iVar2)
+			{
+				if (g_Guys[i].x < me->x)
+				{
+					local_c[2] = 4;
+					local_c[0] = 0;
+				}
+				else
+				{
+					local_c[0] = 4;
+					local_c[2] = 0;
+				}
+				if (g_Guys[i].y < me->y)
+				{
+					local_c[3] = 3;
+					local_c[1] = 2;
+				}
+				else
+				{
+					local_c[1] = 3;
+					local_c[3] = 2;
+				}
+			}
+			else
+			{
+				if (g_Guys[i].y < me->y)
+				{
+					local_c[3] = 4;
+					local_c[1] = 0;
+				}
+				else
+				{
+					local_c[1] = 4;
+					local_c[3] = 0;
+				}
+				if (g_Guys[i].x < me->x)
+				{
+					local_c[2] = 3;
+					local_c[0] = 2;
+				}
+				else
+				{
+					local_c[0] = 3;
+					local_c[2] = 2;
+				}
+			}
+			me->direction = Direction(0xff);
+			for (i = 0; i < 4; i = i + 1)
+			{
+				if ((canGo[i] != false) &&
+				    ((me->direction == Direction(0xff) || (local_c[byte(me->direction)] < local_c[i]))))
+				{
+					me->direction = Direction(i);
+				}
+			}
+		}
+		me->anim = 1;
+		me->frame = frame;
+		me->destX = me->x + g_DirectionX[byte(me->direction)] * 0x2000;
+		me->destY = me->y + g_DirectionY[byte(me->direction)] * 0x2000;
+	}
+	if (me->anim == 3)
+	{
+		me->frame = me->frame + 1;
+		if (me->frame < 0x1e)
+		{
+			if (((me->frame == 10) && ((me->flags & GuyFlags::Player) != 0)) && (g_LevelWon == 0))
+			{
+				PlaySound(byte(me->type) + 5, 0x708);
+			}
+		}
+		else
+		{
+			if (g_LevelWon == 0)
+			{
+				me->anim = 0;
+			}
+			me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->x = ((uint)me->gridX * 0x20 + 0x10) * 0x100;
+			me->y = ((uint)me->gridY * 0x20 + 0x10) * 0x100;
+			me->frame = 0;
+		}
+	}
+	if ((me->anim == 4) && (me->frame = me->frame + 1, 9 < me->frame))
+	{
+		if (g_LevelWon == 0)
+		{
+			me->anim = 0;
+			me->frame = 0;
+			me->flags = me->flags | GuyFlags::Retreating;
+			me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->x = ((uint)me->gridX * 0x20 + 0x10) * 0x100;
+			me->y = ((uint)me->gridY * 0x20 + 0x10) * 0x100;
+			GuyUpdatePumpkinRetreat(me);
+			return;
+		}
+		me->frame = 9;
+	}
+	if (me->anim == 5)
+	{
+		me->frame = me->frame + 1;
+		if (me->frame == 9)
+		{
+			GuyRespawn(me);
+		}
+		else if (0x12 < me->frame)
+		{
+			me->anim = 0;
+			me->frame = 0;
+		}
+	}
+	bVar5 = byte(me->direction) * 13;
+	switch (me->anim)
+	{
+	case 0:
+		psVar4 = g_GuySprites[byte(me->type)]->GetSprite((uint)bVar5);
+		me->spr = psVar4;
+		break;
+	case 1:
+		psVar4 = g_GuySprites[byte(me->type)]->GetSprite((uint)me->frame + (uint)bVar5);
+		me->spr = psVar4;
+		break;
+	case 3:
+		if ((me->type == GuyType::Smoove) || (me->type == GuyType::Chuckles))
+		{
+			psVar4 = g_GuySprites[byte(me->type)]->GetSprite(anim3a[me->frame] + 0xd);
+			me->spr = psVar4;
+		}
+		else
+		{
+			psVar4 = g_GuySprites[byte(me->type)]->GetSprite(anim3b[me->frame] + 0xd);
+			me->spr = psVar4;
+		}
+		break;
+	case 4:
+		psVar4 = g_GuySprites[byte(me->type)]->GetSprite((uint)anim4[me->frame] + (uint)bVar5);
+		me->spr = psVar4;
+		break;
+	case 5:
+		psVar4 = g_GuySprites[byte(me->type)]->GetSprite((uint)bVar5);
+		me->spr = psVar4;
+	}
 }
 
 static void TitleUpdateGuyPumpkin(Guy *me)
