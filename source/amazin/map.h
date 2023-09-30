@@ -81,10 +81,12 @@ void TileRender(byte tile, int x, int y);
 void MapSetupStart();
 void MapRandomize(int w, int h);
 void MapFilterForRivalry();
+void GetPlayerStart(byte player, int *x, int *y);
 
 void MapRedrawTile(byte tx, byte ty);
 void MapSpawnItems();
 
+void ErasePowerup();
 void ShootEvilEye(int x, unsigned int y, Direction direction);
 bool MapUpdate(byte);
 void CheatYippee();

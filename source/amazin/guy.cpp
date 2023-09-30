@@ -1,4 +1,5 @@
 #include "guy.h"
+#include "control.h"
 #include "display.h"
 #include "game.h"
 #include "jamulspr.h"
@@ -166,6 +167,176 @@ void GuyAdd(byte x, byte y, GuyType type)
 	g_Guys[i].iceTime = 0;
 	g_Guys[i].evilEyeTime = 0;
 	GuyUpdate(g_Guys + i);
+}
+
+void GuyScarePumpkins()
+{
+	int i;
+
+	for (i = 0; i < 0x10; i = i + 1)
+	{
+		if (((g_Guys[i].type != GuyType::None) && ((g_Guys[i].flags & GuyFlags::Pumpkin) != 0)) &&
+		    ((g_Guys[i].flags & GuyFlags::Retreating) == 0))
+		{
+			switch (g_Guys[i].direction)
+			{
+			case Direction::East:
+				g_Guys[i].destX = g_Guys[i].destX + -0x2000;
+				g_Guys[i].direction = Direction::West;
+				break;
+			case Direction::South:
+				g_Guys[i].destY = g_Guys[i].destY + -0x2000;
+				g_Guys[i].direction = Direction::North;
+				break;
+			case Direction::West:
+				g_Guys[i].destX = g_Guys[i].destX + 0x2000;
+				g_Guys[i].direction = Direction::East;
+				break;
+			case Direction::North:
+				g_Guys[i].destY = g_Guys[i].destY + 0x2000;
+				g_Guys[i].direction = Direction::South;
+			}
+		}
+	}
+	return;
+}
+
+void GuysPutToSleep()
+{
+	int i;
+
+	for (i = 0; i < 0x10; i = i + 1)
+	{
+		if ((g_Guys[i].flags & GuyFlags::Pumpkin) != 0)
+		{
+			g_Guys[i].sleepTime = 0x96;
+		}
+	}
+	return;
+}
+
+void GetItem(Guy *me)
+{
+	ItemType item;
+	byte x;
+	byte y;
+
+	x = me->gridX;
+	y = me->gridY;
+	item = g_Map[y][x].item;
+	if ((ItemType::HammerUp < item) && (item < ItemType::FireTrail))
+	{
+		ErasePowerup();
+	}
+	switch (item)
+	{
+	case ItemType::None:
+	case ItemType::FireTrail:
+	case ItemType::IceTrail:
+		PlaySound(1, 100);
+		break;
+	case ItemType::Candle:
+		g_Map[y][x].flags = g_Map[y][x].flags & ~TileFlags::Candle;
+		PlaySound(0, 2000);
+		g_Map[y][x].item = ItemType::None;
+		g_Player[me->player - 1].candles = g_Player[me->player - 1].candles + 1;
+		break;
+	case ItemType::HammerUp:
+	case ItemType::HammerUpRandom:
+		g_Map[y][x].flags = g_Map[y][x].flags & ~TileFlags::HammerUp;
+		PlaySound(4, 2000);
+		if (me->hammerTime == 0)
+		{
+			g_PlayersWithHammers = g_PlayersWithHammers + 1;
+		}
+		if (g_MapNum < 0x14)
+		{
+			me->hammerTime = (ushort)g_MapNum * -10 + 300;
+		}
+		else
+		{
+			me->hammerTime = 100;
+		}
+		g_Map[y][x].item = ItemType::None;
+		GuyScarePumpkins();
+		break;
+	case ItemType::Points100:
+		PlayerGetPoints(me->player - 1, 100);
+		PlaySound(0x1b, 1000);
+		break;
+	case ItemType::Points250:
+		PlayerGetPoints(me->player - 1, 200);
+		PlaySound(0x1b, 1000);
+		break;
+	case ItemType::Points500:
+		PlayerGetPoints(me->player - 1, 500);
+		PlaySound(0x1b, 1000);
+		break;
+	case ItemType::Points1000:
+		PlayerGetPoints(me->player - 1, 1000);
+		PlaySound(0x1b, 1000);
+		break;
+	case ItemType::SpeedyBoots:
+		me->speedTime = me->speedTime + 150;
+		PlaySound(0x14, 0x5dc);
+		break;
+	case ItemType::Ghost:
+		me->ghostTime = me->ghostTime + 150;
+		PlaySound(0x1c, 1000);
+		break;
+	case ItemType::IceCream:
+		g_SnowTimer = 150;
+		ParticleAddSnow(100);
+		PlaySound(22, 0x5dc);
+		break;
+	case ItemType::Zzz:
+		GuysPutToSleep();
+		PlaySound(21, 0x5dc);
+		break;
+	case ItemType::Shield:
+		me->invincibleTime = me->invincibleTime + 90;
+		PlaySound(0x19, 1000);
+		break;
+	case ItemType::OneUp:
+		g_Player[me->player - 1].lives = g_Player[me->player - 1].lives + 1;
+		PlaySound(0xf, 1000);
+		break;
+	case ItemType::FirePower:
+		me->fireTime = me->fireTime + 0x96;
+		PlaySound(0x17, 0x5dc);
+		break;
+	case ItemType::IcePower:
+		me->iceTime = me->iceTime + 0xd2;
+		PlaySound(0x1a, 1000);
+		break;
+	case ItemType::EvilEye:
+		me->evilEyeTime = me->evilEyeTime + 300;
+		PlaySound(0x18, 0x5dc);
+		break;
+	case ItemType::BigCandle:
+		g_Player[me->player - 1].candles = g_Player[me->player - 1].candles + 5;
+		PlaySound(0x1d, 0x5dc);
+	}
+	switch (item)
+	{
+	case ItemType::None:
+	case ItemType::Points100:
+	case ItemType::Points250:
+	case ItemType::Points500:
+	case ItemType::Points1000:
+	case ItemType::FireTrail:
+	case ItemType::IceTrail:
+		break;
+	case ItemType::Candle:
+		PlayerGetPoints(me->player - 1, 5);
+		break;
+	case ItemType::HammerUp:
+		PlayerGetPoints(me->player - 1, 250);
+		break;
+	default:
+		PlayerGetPoints(me->player - 1, 50);
+	}
+	return;
 }
 
 bool GuyStartWalking(byte x, byte y, Direction dir, Guy *me)
@@ -373,9 +544,715 @@ bool GuyStartWalking(byte x, byte y, Direction dir, Guy *me)
 	return bVar1;
 }
 
+void GuyGetHurt(Guy *me, Guy *enemy, bool sound)
+{
+	me->anim = 4;
+	me->frame = 0;
+	if (sound)
+	{
+		PlaySound(byte(me->type) + 0xc, 0x898);
+	}
+	if (g_GameMode == GameMode::SiblingRivalry)
+	{
+		if (g_Player[me->player - 1].candles != 0)
+		{
+			g_Player[me->player - 1].candles = g_Player[me->player - 1].candles - 1;
+		}
+		if ((enemy == nullptr) || ((uint)enemy->type == 3 - byte(me->type)))
+		{
+			g_Player[1 - (me->player - 1)].candles = g_Player[1 - (me->player - 1)].candles + 1;
+		}
+	}
+	else if (g_IsTimeAttack == false)
+	{
+		if (PlayerLoseLife(0) && (g_LevelWon == 0))
+		{
+			g_LevelWon = 0x78;
+			g_EndAnim[0] = 4;
+			g_EndAnim[1] = 4;
+			g_EndAnimPumpkins = 3;
+		}
+	}
+	else
+	{
+		g_RecordTimeFrames = g_RecordTimeFrames + 300;
+	}
+}
+
+Guy *FindGuy1(Guy *me)
+{
+	int i;
+
+	if ((g_LevelWon == 0) && ((me->invincibleTime == 0 || (me->hammerTime != 0))))
+	{
+		for (i = 0; i < 0x10; i = i + 1)
+		{
+			if ((((g_Guys[i].type != GuyType::None) && (g_Guys + i != me)) &&
+			     ((g_Guys[i].flags & GuyFlags::Retreating) == 0)) &&
+			    ((g_Guys[i].anim != 4 && (g_Guys[i].invincibleTime == 0))))
+			{
+				if (((me->x + -0xc00 < g_Guys[i].x + 0xc00) &&
+				     ((me->y + -0xc00 < g_Guys[i].y + 0xc00 && (g_Guys[i].x + -0xc00 < me->x + 0xc00)))) &&
+				    (g_Guys[i].y + -0xc00 < me->y + 0xc00))
+				{
+					return g_Guys + i;
+				}
+			}
+		}
+	}
+	return (Guy *)0x0;
+}
+
+Guy *FindGuy2(Guy *me)
+{
+	GuyType GVar1;
+	int i;
+
+	if (g_LevelWon == 0)
+	{
+		if (me->type == GuyType::Bouapha)
+		{
+			GVar1 = GuyType::Bouaphetta;
+		}
+		else
+		{
+			GVar1 = GuyType::Bouapha;
+		}
+		for (i = 0; i < 0x10; i = i + 1)
+		{
+			if (g_Guys[i].type == GVar1)
+			{
+				if ((((me->x + -0xf00 < g_Guys[i].x + 0xf00) && (me->y + -0xf00 < g_Guys[i].y + 0xf00)) &&
+				     (g_Guys[i].x + -0xf00 < me->x + 0xf00)) &&
+				    (g_Guys[i].y + -0xf00 < me->y + 0xf00))
+				{
+					return g_Guys + i;
+				}
+			}
+		}
+	}
+	return (Guy *)0x0;
+}
+
+void GuyRespawn(Guy *me)
+{
+	uint uVar1;
+	uint uVar2;
+	byte y;
+	byte x;
+	Guy *enemy;
+
+	do
+	{
+		do
+		{
+			uVar1 = MGL_random(0x13);
+			uVar1 = uVar1 & 0xffff;
+			uVar2 = MGL_random(0xe);
+			uVar2 = uVar2 & 0xffff;
+		} while ((g_Map[uVar2][uVar1].flags & TileFlags::TP) == 0);
+	} while ((uVar1 == me->gridX) && (uVar2 == me->gridY));
+	x = (byte)uVar1;
+	me->gridX = x;
+	y = (byte)uVar2;
+	me->gridY = y;
+	me->x = ((uint)me->gridX * 0x20 + 0x10) * 0x100;
+	me->y = ((uint)me->gridY * 0x20 + 0x10) * 0x100;
+	ParticleAddRespawn(me->x, me->y);
+	enemy = FindGuy1(me);
+	while (enemy != (Guy *)0x0)
+	{
+		switch (enemy->type)
+		{
+		case GuyType::Bouapha:
+		case GuyType::Bouaphetta:
+			GuyGetHurt(enemy, me, false);
+			PlaySound(5, 2000);
+			break;
+		case GuyType::Smoove:
+		case GuyType::Chuckles:
+		case GuyType::Helga:
+		case GuyType::Pete:
+			enemy->anim = 4;
+			enemy->frame = 0;
+			if ((me->type == GuyType::Bouapha) || (me->type == GuyType::Bouaphetta))
+			{
+				PlayerGetPoints(me->player - 1, 100);
+			}
+			PlaySound(5, 2000);
+		}
+		enemy = FindGuy1(me);
+	}
+}
+
 static void GuyUpdatePlayer(Guy *me)
 {
-	// TODO
+	static const byte anim1[11] = {
+		1,
+		2,
+		3,
+		2,
+		1,
+		0,
+		4,
+		5,
+		6,
+		5,
+		4,
+	};
+	static const byte anim3[19] = {
+		7,
+		8,
+		9,
+		8,
+		7,
+		0,
+		0,
+		0,
+		7,
+		8,
+		9,
+		8,
+		7,
+		8,
+		9,
+		8,
+		7,
+		0,
+		0,
+	};
+
+	bool bVar1;
+	byte bVar2;
+	uint uVar3;
+	Guy *pGVar4;
+	int iVar5;
+	int iVar6;
+	sprite_t *spr;
+	bool bVar7;
+	int speed;
+	Guy *local_1c;
+	byte local_8;
+
+	if ((g_LevelWon != 0) && (me->anim != g_EndAnim[me->player - 1]))
+	{
+		me->anim = g_EndAnim[me->player - 1];
+		me->frame = 0;
+		me->direction = Direction::South;
+	}
+	if (((me->hammerTime != 0) && (me->anim != 2)) &&
+	    (me->hammerTime = me->hammerTime + -1, me->hammerTime == 0))
+	{
+		g_PlayersWithHammers = g_PlayersWithHammers - 1;
+	}
+	if (me->invincibleTime != 0)
+	{
+		me->invincibleTime = me->invincibleTime - 1;
+	}
+	if (me->speedTime != 0)
+	{
+		me->speedTime = me->speedTime - 1;
+	}
+	if (me->ghostTime != 0)
+	{
+		me->ghostTime = me->ghostTime + -1;
+	}
+	if (me->fireTime != 0)
+	{
+		me->fireTime = me->fireTime + -1;
+	}
+	if (me->iceTime != 0)
+	{
+		me->iceTime = me->iceTime + -1;
+	}
+	if (me->evilEyeTime == 0)
+	{
+		if (((g_Map[me->gridY][me->gridX].tile == 0x14) && (me->anim != 4)) && (me->invincibleTime == 0))
+		{
+			GuyGetHurt(me, (Guy *)0x0, true);
+			PlaySound(0x10, 2000);
+		}
+	}
+	else
+	{
+		me->evilEyeTime = me->evilEyeTime + -1;
+	}
+	if (((g_Map[me->gridY][me->gridX].item == ItemType::FireTrail) && (me->anim != 4)) &&
+	    (me->invincibleTime == 0))
+	{
+		GuyGetHurt(me, (Guy *)0x0, true);
+		PlaySound(0x11, 2000);
+	}
+	g_RivalsColliding = false;
+	bVar7 = false;
+	local_8 = 0;
+	speed = 0x400;
+	if (me->speedTime != 0)
+	{
+		speed = 0x800;
+	}
+	if (me->anim == 1)
+	{
+		me->frame = me->frame + 1;
+		if (0xb < me->frame)
+		{
+			me->frame = me->frame - 0xc;
+		}
+		uVar3 = GetPlayerControls(me->player - 1);
+		if (me->direction == Direction::East)
+		{
+			me->x = me->x + speed;
+			pGVar4 = FindGuy2(me);
+			bVar7 = pGVar4 != (Guy *)0x0;
+			if (bVar7)
+			{
+				me->x = me->x - speed;
+			}
+			if (me->destX < me->x)
+			{
+				me->x = me->destX;
+			}
+			if ((uVar3 & 4) != 0)
+			{
+				me->destX = me->destX + -0x2000;
+				me->direction = Direction::West;
+			}
+		}
+		else if (me->direction == Direction::South)
+		{
+			me->y = me->y + speed;
+			pGVar4 = FindGuy2(me);
+			bVar7 = pGVar4 != (Guy *)0x0;
+			if (bVar7)
+			{
+				me->y = me->y - speed;
+			}
+			if (me->destY < me->y)
+			{
+				me->y = me->destY;
+			}
+			if ((uVar3 & 1) != 0)
+			{
+				me->destY = me->destY + -0x2000;
+				me->direction = Direction::North;
+			}
+		}
+		else if (me->direction == Direction::West)
+		{
+			me->x = me->x - speed;
+			pGVar4 = FindGuy2(me);
+			bVar7 = pGVar4 != (Guy *)0x0;
+			if (bVar7)
+			{
+				me->x = me->x + speed;
+			}
+			if (me->x < me->destX)
+			{
+				me->x = me->destX;
+			}
+			if ((uVar3 & 8) != 0)
+			{
+				me->destX = me->destX + 0x2000;
+				me->direction = Direction::East;
+			}
+		}
+		else if (me->direction == Direction::North)
+		{
+			me->y = me->y - speed;
+			pGVar4 = FindGuy2(me);
+			bVar7 = pGVar4 != (Guy *)0x0;
+			if (bVar7)
+			{
+				me->y = me->y + speed;
+			}
+			if (me->y < me->destY)
+			{
+				me->y = me->destY;
+			}
+			if ((uVar3 & 2) != 0)
+			{
+				me->destY = me->destY + 0x2000;
+				me->direction = Direction::South;
+			}
+		}
+		if (((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 0xd != (uint)me->gridX) ||
+		    ((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 0xd != (uint)me->gridY))
+		{
+			if (me->fireTime == 0)
+			{
+				if ((me->iceTime != 0) && (g_Map[me->gridY][me->gridX].item == ItemType::None))
+				{
+					g_Map[me->gridY][me->gridX].item = ItemType::IceTrail;
+					g_Map[me->gridY][me->gridX].itemAnim = 0;
+				}
+			}
+			else if (g_Map[me->gridY][me->gridX].item == ItemType::None)
+			{
+				g_Map[me->gridY][me->gridX].item = ItemType::FireTrail;
+				g_Map[me->gridY][me->gridX].itemAnim = 0;
+			}
+			me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			GetItem(me);
+		}
+		if ((me->x == me->destX) && (me->y == me->destY))
+		{
+			me->anim = 0;
+			local_8 = me->frame;
+			me->frame = 0;
+			me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			g_Map[me->gridY][me->gridX].tileAnim = 0;
+			if ((g_Map[me->gridY][me->gridX].flags & TileFlags::TP) != 0)
+			{
+				me->anim = 5;
+				me->frame = 0;
+				ParticleAddTeleport(me->x, me->y);
+				PlaySound(0x13, 2000);
+			}
+		}
+	}
+	if (me->anim == 0)
+	{
+		uVar3 = GetPlayerControls(me->player - 1);
+		if ((uVar3 & 1) == 0)
+		{
+			if ((uVar3 & 2) == 0)
+			{
+				if ((uVar3 & 4) == 0)
+				{
+					if ((uVar3 & 8) != 0)
+					{
+						me->direction = Direction::East;
+						bVar1 = GuyStartWalking(me->gridX, me->gridY, me->direction, me);
+						if (bVar1)
+						{
+							me->anim = 1;
+							me->frame = local_8;
+							me->destX = me->x + 0x2000;
+							me->destY = me->y;
+						}
+					}
+				}
+				else
+				{
+					me->direction = Direction::West;
+					bVar1 = GuyStartWalking(me->gridX, me->gridY, me->direction, me);
+					if (bVar1)
+					{
+						me->anim = 1;
+						me->frame = local_8;
+						me->destX = me->x + -0x2000;
+						me->destY = me->y;
+					}
+				}
+			}
+			else
+			{
+				me->direction = Direction::South;
+				bVar1 = GuyStartWalking(me->gridX, me->gridY, me->direction, me);
+				if (bVar1)
+				{
+					me->anim = 1;
+					me->frame = local_8;
+					me->destX = me->x;
+					me->destY = me->y + 0x2000;
+				}
+			}
+		}
+		else
+		{
+			me->direction = Direction::North;
+			bVar1 = GuyStartWalking(me->gridX, me->gridY, me->direction, me);
+			if (bVar1)
+			{
+				me->anim = 1;
+				me->frame = local_8;
+				me->destX = me->x;
+				me->destY = me->y + -0x2000;
+			}
+		}
+	}
+	if ((g_GameMode == GameMode::SiblingRivalry) && ((me->anim == 0 || (me->anim == 1))))
+	{
+		local_1c = (Guy *)0x0;
+		for (speed = 0; speed < 0x10; speed = speed + 1)
+		{
+			if ((uint)g_Guys[speed].type == 3 - byte(me->type))
+			{
+				local_1c = g_Guys + speed;
+			}
+		}
+		if (((local_1c != (Guy *)0x0) && ((local_1c->anim == 0 || (local_1c->anim == 1)))) &&
+		    ((bVar7 || (g_RivalsColliding != false))))
+		{
+			if ((me->hammerTime != 0) && (local_1c->invincibleTime == 0))
+			{
+				me->anim = 2;
+				me->frame = 0;
+				GuyGetHurt(local_1c, me, true);
+				PlaySound(byte(me->type) + 5, 2200);
+				iVar5 = abs(local_1c->x - me->x);
+				iVar6 = abs(local_1c->y - me->y);
+				if (iVar5 < iVar6)
+				{
+					if (local_1c->y < me->y)
+					{
+						me->direction = Direction::North;
+					}
+					else if (me->y < local_1c->y)
+					{
+						me->direction = Direction::South;
+					}
+				}
+				else if (local_1c->x < me->x)
+				{
+					me->direction = Direction::West;
+				}
+				else if (me->x < local_1c->x)
+				{
+					me->direction = Direction::East;
+				}
+			}
+			if ((local_1c->hammerTime != 0) && (me->invincibleTime == 0))
+			{
+				if (local_1c->anim != 4)
+				{
+					local_1c->anim = 2;
+					local_1c->frame = 0;
+				}
+				GuyGetHurt(me, local_1c, true);
+				PlaySound(byte(local_1c->type) + 5, 0x898);
+				iVar5 = abs(local_1c->x - me->x);
+				iVar6 = abs(local_1c->y - me->y);
+				if (iVar5 < iVar6)
+				{
+					if (me->y < local_1c->y)
+					{
+						local_1c->direction = Direction::North;
+					}
+					else if (local_1c->y < me->y)
+					{
+						local_1c->direction = Direction::South;
+					}
+				}
+				else if (me->x < local_1c->x)
+				{
+					local_1c->direction = Direction::West;
+				}
+				else if (local_1c->x < me->x)
+				{
+					local_1c->direction = Direction::East;
+				}
+			}
+		}
+	}
+	if (me->anim == 2)
+	{
+		me->frame = me->frame + 1;
+		if (me->frame < 10)
+		{
+			if (me->frame == 4)
+			{
+				PlaySound(5, 0x640);
+			}
+		}
+		else
+		{
+			me->anim = 0;
+			me->frame = 0;
+			me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->x = ((uint)me->gridX * 0x20 + 0x10) * 0x100;
+			me->y = ((uint)me->gridY * 0x20 + 0x10) * 0x100;
+			if ((g_Map[me->gridY][me->gridX].flags & TileFlags::TP) != 0)
+			{
+				me->anim = 5;
+				me->frame = 0;
+				ParticleAddTeleport(me->x, me->y);
+				PlaySound(0x13, 2000);
+			}
+		}
+	}
+	if (me->anim == 4)
+	{
+		me->frame = me->frame + 1;
+		if (me->frame < 0x12)
+		{
+			if ((g_LevelWon != 0) && (9 < me->frame))
+			{
+				me->frame = 9;
+			}
+		}
+		else
+		{
+			GetPlayerStart(me->player, &me->x, &me->y);
+			me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->anim = 0;
+			me->frame = 0;
+			me->invincibleTime = 0x3c;
+			me->hammerTime = 0;
+			me->ghostTime = 0;
+			me->speedTime = 0;
+			me->fireTime = 0;
+			me->iceTime = 0;
+			me->evilEyeTime = 0;
+			pGVar4 = FindGuy2(me);
+			if (pGVar4 != (Guy *)0x0)
+			{
+				GetPlayerStart(3 - me->player, &me->x, &me->y);
+				me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+				me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			}
+		}
+	}
+	if ((me->anim == 3) && (me->frame = me->frame + 1, 0x13 < me->frame))
+	{
+		me->frame = 0;
+	}
+	if (me->anim == 5)
+	{
+		me->frame = me->frame + 1;
+		if (me->frame == 9)
+		{
+			GuyRespawn(me);
+		}
+		else if (0x12 < me->frame)
+		{
+			me->anim = 0;
+			me->frame = 0;
+		}
+	}
+	if ((((me->anim != 2) && (me->anim != 4)) && (me->anim != 3)) &&
+	    ((pGVar4 = FindGuy1(me), pGVar4 != (Guy *)0x0 && ((pGVar4->flags & GuyFlags::Pumpkin) != 0))))
+	{
+		if (me->hammerTime == 0)
+		{
+			GuyGetHurt(me, pGVar4, true);
+			pGVar4->anim = 3;
+			pGVar4->frame = 0;
+			pGVar4->sleepTime = 0;
+		}
+		else
+		{
+			me->anim = 2;
+			me->frame = 0;
+			pGVar4->anim = 4;
+			pGVar4->frame = 0;
+			pGVar4->sleepTime = 0;
+			PlaySound(byte(me->type) + 5, 0x898);
+			PlayerGetPoints(me->player - 1, 100);
+		}
+		iVar5 = abs(pGVar4->x - me->x);
+		iVar6 = abs(pGVar4->y - me->y);
+		if (iVar5 < iVar6)
+		{
+			if (pGVar4->y < me->y)
+			{
+				me->direction = Direction::North;
+			}
+			else if (me->y < pGVar4->y)
+			{
+				me->direction = Direction::South;
+			}
+		}
+		else if (pGVar4->x < me->x)
+		{
+			me->direction = Direction::West;
+		}
+		else if (me->x < pGVar4->x)
+		{
+			me->direction = Direction::East;
+		}
+	}
+	if (((ushort)me->hammerTime < 0x1f) && ((me->hammerTime == 0 || ((me->hammerTime & 1U) != 0))))
+	{
+		bVar2 = byte(me->direction) * 0x13;
+		switch (me->anim)
+		{
+		case 0:
+			spr = g_GuySprites[byte(me->type)]->GetSprite((uint)bVar2);
+			me->spr = spr;
+			break;
+		case 1:
+			spr = g_GuySprites[byte(me->type)]->GetSprite((uint)anim1[me->frame] + (uint)bVar2);
+			me->spr = spr;
+			if (me->speedTime != 0)
+			{
+				ParticleAddSpeed(me->type, anim1[me->frame] + bVar2, me->x, me->y);
+			}
+			break;
+		case 2:
+			bVar2 = byte(me->direction) * 0x11 + 0x4c;
+			spr = g_GuySprites[byte(me->type)]->GetSprite(me->frame + 7 + (uint)bVar2);
+			me->spr = spr;
+			if (me->speedTime != 0)
+			{
+				ParticleAddSpeed(me->type, me->frame + 7 + bVar2, me->x, me->y);
+			}
+			break;
+		case 3:
+			spr = g_GuySprites[byte(me->type)]->GetSprite((uint)anim3[me->frame] + (uint)bVar2);
+			me->spr = spr;
+			break;
+		case 4:
+			spr = g_GuySprites[byte(me->type)]->GetSprite(((int)(uint)me->frame >> 1) + 10 + (uint)bVar2);
+			me->spr = spr;
+			if (me->speedTime != 0)
+			{
+				ParticleAddSpeed(me->type, (char)((int)(uint)me->frame >> 1) + 10 + bVar2, me->x, me->y);
+			}
+			break;
+		case 5:
+			spr = g_GuySprites[byte(me->type)]->GetSprite((uint)bVar2);
+			me->spr = spr;
+		}
+	}
+	else
+	{
+		bVar2 = byte(me->direction) * 0x11 + 0x4c;
+		switch (me->anim)
+		{
+		case 0:
+			spr = g_GuySprites[byte(me->type)]->GetSprite((uint)bVar2);
+			me->spr = spr;
+			break;
+		case 1:
+			spr = g_GuySprites[byte(me->type)]->GetSprite((uint)anim1[me->frame] + (uint)bVar2);
+			me->spr = spr;
+			if (me->speedTime != 0)
+			{
+				ParticleAddSpeed(me->type, anim1[byte(me->frame)] + bVar2, me->x, me->y);
+			}
+			break;
+		case 2:
+			spr = g_GuySprites[byte(me->type)]->GetSprite(me->frame + 7 + (uint)bVar2);
+			me->spr = spr;
+			if (me->speedTime != 0)
+			{
+				ParticleAddSpeed(me->type, me->frame + 7 + bVar2, me->x, me->y);
+			}
+			break;
+		case 3:
+			spr = g_GuySprites[byte(me->type)]->GetSprite((uint)anim3[me->frame] + (uint)(byte)(byte(me->direction) * 0x13));
+			me->spr = spr;
+			break;
+		case 4:
+			bVar2 = byte(me->direction) * 0x13;
+			spr = g_GuySprites[byte(me->type)]->GetSprite(((int)(uint)me->frame >> 1) + 10 + (uint)bVar2);
+			me->spr = spr;
+			if (me->speedTime != 0)
+			{
+				ParticleAddSpeed(me->type, (char)((int)(uint)me->frame >> 1) + '\n' + bVar2, me->x, me->y);
+			}
+			break;
+		case 5:
+			spr = g_GuySprites[byte(me->type)]->GetSprite((uint)bVar2);
+			me->spr = spr;
+		}
+	}
+	return;
 }
 
 static void GuyUpdatePumpkinRetreat(Guy *me)

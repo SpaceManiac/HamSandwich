@@ -11,11 +11,13 @@ enum class GameMode
 	SiblingRivalry = 3,
 };
 
+extern byte g_EndAnim[2], g_EndAnimPumpkins;
 extern GameMode g_GameMode;
 extern byte g_NumPlayers;
 extern int g_RecordTimeFrames;
 extern bool g_IsTimeAttack;
 extern byte g_MapNum;
+extern byte g_LevelWon;
 
 void GameInit(GameMode gameMode, bool isTimeAttack, byte mapNum, byte numPlayers);
 

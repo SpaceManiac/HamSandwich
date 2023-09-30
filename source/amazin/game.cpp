@@ -16,8 +16,7 @@
 #include "timeattack.h"
 #include "title.h"
 
-byte g_EndAnimP1;
-byte g_EndAnimP2;
+byte g_EndAnim[2];
 byte g_EndAnimPumpkins;
 byte g_LevelWon;
 byte g_RivalryRound;
@@ -322,30 +321,30 @@ bool GameUpdate(void)
 				{
 					if (g_GameMode < GameMode::SiblingRivalry)
 					{
-						g_EndAnimP1 = 3;
-						g_EndAnimP2 = 3;
+						g_EndAnim[0] = 3;
+						g_EndAnim[1] = 3;
 						g_EndAnimPumpkins = 4;
 					}
 					else if (g_GameMode == GameMode::SiblingRivalry)
 					{
 						if (g_Player[1].candles < g_Player[0].candles)
 						{
-							g_EndAnimP1 = 3;
-							g_EndAnimP2 = 4;
+							g_EndAnim[0] = 3;
+							g_EndAnim[1] = 4;
 							g_Player[0].score = g_Player[0].score + 1;
 							g_RivalryWinner = 0;
 						}
 						else if (g_Player[0].candles < g_Player[1].candles)
 						{
-							g_EndAnimP2 = 3;
-							g_EndAnimP1 = 4;
+							g_EndAnim[1] = 3;
+							g_EndAnim[0] = 4;
 							g_Player[1].score = g_Player[1].score + 1;
 							g_RivalryWinner = 1;
 						}
 						else
 						{
-							g_EndAnimP2 = 4;
-							g_EndAnimP1 = 4;
+							g_EndAnim[1] = 4;
+							g_EndAnim[0] = 4;
 							g_RivalryWinner = 2;
 						}
 						uVar2 = ConfigGetRivalryMatches();

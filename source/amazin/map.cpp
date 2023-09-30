@@ -687,6 +687,20 @@ void MapFilterForRivalry()
 	}
 }
 
+void GetPlayerStart(byte player, int *x, int *y)
+{
+	if (player == 1)
+	{
+		*x = g_Player1StartX;
+		*y = g_Player1StartY;
+	}
+	else
+	{
+		*x = g_Player2StartX;
+		*y = g_Player2StartY;
+	}
+}
+
 void MapRedrawTile(byte tx, byte ty)
 {
 	int py;
