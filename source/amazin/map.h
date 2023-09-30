@@ -53,6 +53,7 @@ struct MapTile
 	byte tile;
 	ItemType item;
 	byte itemAnim;
+	byte _7;
 };
 static_assert(sizeof(MapTile) == 8);
 

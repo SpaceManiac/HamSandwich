@@ -4,6 +4,8 @@
 #include "jamulspr.h"
 #include "jamultypes.h"
 #include "options.h"
+#include "sound.h"
+#include "particle.h"
 
 byte g_MapTimer;
 int g_Player1StartX, g_Player1StartY;
@@ -344,6 +346,122 @@ void MapSpawnItems()
 
 void PlacePowerup()
 {
+	static const byte normalOdds[16] = {
+		0x1e,
+		0x14,
+		0x14,
+		10,
+		4,
+		3,
+		3,
+		3,
+		3,
+		3,
+		0,
+		1,
+		0,
+		0,
+		0,
+		0,
+	};
+	static const byte rivalryOdds[16] = {
+		0,
+		0,
+		0,
+		0,
+		0xc,
+		0xc,
+		5,
+		0xc,
+		5,
+		10,
+		0,
+		0,
+		10,
+		10,
+		0xc,
+		0xc,
+	};
+
+	uint x;
+	uint y;
+	uint roll;
+	int totalRoll;
+	uint odds2;
+	byte y2;
+	uint powerup;
+	byte x2;
+	byte odds;
+
+	do
+	{
+		do
+		{
+			x = MGL_random(0x13);
+			x = x & 0xffff;
+			y = MGL_random(0xe);
+			y = y & 0xffff;
+		} while ((g_Map[y][x].flags & TileFlags::PU) == 0);
+	} while (g_Map[y][x].item != ItemType::None);
+	roll = MGL_random(100);
+	totalRoll = 0;
+	powerup = 0;
+	do
+	{
+		if (0xf < (int)powerup)
+		{
+		LAB_00411737:
+			ParticleAddTeleport((x * 0x20 + 0x10) * 0x100, (y * 0x20 + 0x10) * 0x100);
+			PlaySound(0x1e, 2000);
+			g_PowerupNeedsPlacing = 1;
+			if (g_GameMode != GameMode::HappyFields)
+			{
+				if (g_GameMode == GameMode::DankDungeons)
+				{
+					powerup = (uint)g_MapNum;
+					if (0x14 < powerup)
+					{
+						powerup = 0x14;
+					}
+					g_TimeUntilPowerupExpires = (short)(powerup / 2) * -0x14 + 0x1c2;
+					g_PowerupNeedsPlacing = 1;
+					return;
+				}
+				if (g_GameMode != GameMode::SiblingRivalry)
+				{
+					g_PowerupNeedsPlacing = 1;
+					return;
+				}
+			}
+			g_TimeUntilPowerupExpires = (short)((int)(uint)g_MapNum >> 1) * -0x19 + 0x1c2;
+			return;
+		}
+		if (g_GameMode == GameMode::SiblingRivalry)
+		{
+			odds = rivalryOdds[powerup];
+		}
+		else
+		{
+			odds = normalOdds[powerup];
+		}
+		odds2 = (uint)odds;
+		totalRoll = totalRoll + odds2;
+		if ((odds2 != 0) && ((int)(roll & 0xffff) < totalRoll))
+		{
+			x2 = (byte)x;
+			g_PowerupX = x2;
+			y2 = (byte)y;
+			g_PowerupY = y2;
+			g_Map[y][x].item = ItemType(powerup + byte(ItemType::Points100));
+			g_Map[y][x].itemAnim = 0;
+			goto LAB_00411737;
+		}
+		powerup = powerup + 1;
+	} while (true);
+}
+
+void ErasePowerup()
+{
 	byte bVar1;
 	uint uVar2;
 
@@ -371,17 +489,137 @@ void PlacePowerup()
 	return;
 }
 
+void ItemAnimate(byte p)
+{
+	auto map = &g_Map[0][0];
+	switch (map[p].item)
+	{
+	case ItemType::Candle:
+	case ItemType::BigCandle:
+		map[p].itemAnim = map[p].itemAnim + 1;
+		if (0xb < map[p].itemAnim)
+		{
+			map[p].itemAnim = map[p].itemAnim - 0xc;
+		}
+		break;
+	case ItemType::HammerUp:
+		break;
+	default:
+		map[p].itemAnim = map[p].itemAnim + 1;
+		break;
+	case ItemType::EvilEye:
+		map[p].itemAnim = map[p].itemAnim + 1;
+		if (0xf < map[p].itemAnim)
+		{
+			map[p].itemAnim = map[p].itemAnim - 0x10;
+		}
+		break;
+	case ItemType::FireTrail:
+		map[p].itemAnim = map[p].itemAnim + 1;
+		if (map[p].itemAnim == 0x96)
+		{
+			map[p].item = ItemType::None;
+		}
+		break;
+	case ItemType::IceTrail:
+		map[p].itemAnim = map[p].itemAnim + 1;
+		if (map[p].itemAnim == 0x96)
+		{
+			map[p].item = ItemType::None;
+		}
+	}
+	return;
+}
+
 bool MapUpdate(byte)
 {
-	// TODO
-	return false;
+	uint uVar1;
+	byte ty;
+	int i;
+	int tx;
+	int candlesLeft;
+
+	g_MapTimer = g_MapTimer + 1;
+	g_MapChirpTimer = g_MapChirpTimer - 1;
+	if (g_MapChirpTimer == 0)
+	{
+		if (g_MapTheme == GameMode::HappyFields)
+		{
+			uVar1 = MGL_random(3);
+			if ((uVar1 & 0xffff) == 1)
+			{
+				PlaySound(2, 2);
+			}
+			else if ((uVar1 & 0xffff) == 2)
+			{
+				PlaySound(3, 2);
+			}
+		}
+		uVar1 = MGL_random(200);
+		g_MapChirpTimer = (char)uVar1 + 3;
+	}
+	candlesLeft = 0;
+	tx = 0;
+	ty = 0;
+	auto map = &g_Map[0][0];
+	for (i = 0; i < 0x10a; i = i + 1)
+	{
+		if (map[i].item != ItemType::None)
+		{
+			ItemAnimate((byte)i);
+		}
+		if ((map[i].flags & TileFlags::Candle) != 0)
+		{
+			candlesLeft = candlesLeft + 1;
+		}
+		if (map[i].tileAnim != 0xff)
+		{
+			map[i].tileAnim = map[i].tileAnim + 1;
+		}
+		if (((0xd < map[i].tile) && (map[i].tile < 0x14)) && ((g_MapTimer & 7) == 0))
+		{
+			if ((map[i].tile & 1) == 0)
+			{
+				map[i].tile = map[i].tile | 1;
+			}
+			else
+			{
+				map[i].tile = map[i].tile & 0xfe;
+			}
+			MapRedrawTile((byte)tx, ty);
+		}
+		if (map[i].tile == 0x14)
+		{
+			map[i].tile = 0xb;
+			MapRedrawTile((byte)tx, ty);
+		}
+		tx = tx + 1;
+		if (tx == 0x13)
+		{
+			tx = 0;
+			ty = ty + 1;
+		}
+	}
+	if ((g_PowerupNeedsPlacing < 2) &&
+	    (g_TimeUntilPowerupExpires = g_TimeUntilPowerupExpires + -1, g_TimeUntilPowerupExpires == 0))
+	{
+		if (g_PowerupNeedsPlacing == 1)
+		{
+			ErasePowerup();
+		}
+		else
+		{
+			PlacePowerup();
+		}
+	}
+	return candlesLeft == 0;
 }
 
 void CheatYippee(void)
 {
 	if (g_PowerupNeedsPlacing == 1)
 	{
-		PlacePowerup();
+		ErasePowerup();
 	}
 	g_TimeUntilPowerupExpires = 1;
 }
