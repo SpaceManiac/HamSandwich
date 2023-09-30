@@ -3,13 +3,20 @@
 #include "display.h"
 #include "jamulspr.h"
 #include "jamultypes.h"
+#include "options.h"
 
+byte g_MapTimer;
+int g_Player1StartX, g_Player1StartY;
+byte g_MapChirpTimer;
+int g_Player2StartX, g_Player2StartY;
 MapTile g_Map[14][19];
-byte g_Tiles[21][32][32];
 sprite_set_t *g_ItemsJsp;
 GameMode g_MapTheme;
 sprite_set_t *g_WallsJsp;
 word g_TimeUntilPowerupExpires;
+byte g_PowerupNeedsPlacing;
+byte g_Tiles[21][32][32];
+byte g_PowerupX, g_PowerupY;
 
 void MapInit(void)
 {
@@ -25,7 +32,7 @@ void MapInit(void)
 	{
 		map[t].flags = 0;
 		map[t].tile = 0;
-		map[t].reachability = 0;
+		map[t].distanceFromPumpkinSpawn = 0;
 		map[t].tileAnim = 0;
 	}
 	if (!mgl->LoadBMP("graphics/tiles.bmp"))
@@ -159,6 +166,117 @@ void TileRender(byte tile, int x, int y)
 	}
 }
 
+void MapFloodFillReachable(int x, int y)
+{
+	if (((0 < y) && ((g_Map[y + -1][x].flags & TileFlags::WallH) == 0)) &&
+	    (g_Map[y][x].distanceFromPumpkinSpawn + 1 < (uint)g_Map[y + -1][x].distanceFromPumpkinSpawn))
+	{
+		g_Map[y + -1][x].distanceFromPumpkinSpawn = g_Map[y][x].distanceFromPumpkinSpawn + 1;
+		MapFloodFillReachable(x, y + -1);
+	}
+	if (((0 < x) && ((g_Map[y][x].flags & TileFlags::WallV) == 0)) &&
+	    (g_Map[y][x].distanceFromPumpkinSpawn + 1 < (uint)g_Map[y + -1][x + 0x12].distanceFromPumpkinSpawn))
+	{
+		g_Map[y + -1][x + 0x12].distanceFromPumpkinSpawn = g_Map[y][x].distanceFromPumpkinSpawn + 1;
+		MapFloodFillReachable(x + -1, y);
+	}
+	if (((x < 0x12) && ((g_Map[y][x + 1].flags & TileFlags::WallV) == 0)) &&
+	    (g_Map[y][x].distanceFromPumpkinSpawn + 1 < (uint)g_Map[y][x + 1].distanceFromPumpkinSpawn))
+	{
+		g_Map[y][x + 1].distanceFromPumpkinSpawn = g_Map[y][x].distanceFromPumpkinSpawn + 1;
+		MapFloodFillReachable(x + 1, y);
+	}
+	if (((y < 0xd) && ((g_Map[y][x].flags & TileFlags::WallH) == 0)) &&
+	    (g_Map[y][x].distanceFromPumpkinSpawn + 1 < (uint)g_Map[y + 1][x].distanceFromPumpkinSpawn))
+	{
+		g_Map[y + 1][x].distanceFromPumpkinSpawn = g_Map[y][x].distanceFromPumpkinSpawn + 1;
+		MapFloodFillReachable(x, y + 1);
+	}
+}
+
+void MapSetupStart(void)
+{
+	int startY;
+	int startX;
+	int y;
+	int x;
+
+	for (y = 0; y < 0xe; y = y + 1)
+	{
+		for (x = 0; x < 0x13; x = x + 1)
+		{
+			if ((g_Map[y][x].flags & TileFlags::PK) == 0)
+			{
+				g_Map[y][x].distanceFromPumpkinSpawn = 0xff;
+			}
+			else
+			{
+				g_Map[y][x].distanceFromPumpkinSpawn = 0;
+				startX = x;
+				startY = y;
+			}
+			if ((g_Map[y][x].flags & TileFlags::P1) != 0)
+			{
+				g_Player1StartX = (x * 0x20 + 0x10) * 0x100;
+				g_Player1StartY = (y * 0x20 + 0x10) * 0x100;
+			}
+			if ((g_Map[y][x].flags & TileFlags::P2) != 0)
+			{
+				g_Player2StartX = (x * 0x20 + 0x10) * 0x100;
+				g_Player2StartY = (y * 0x20 + 0x10) * 0x100;
+			}
+			g_Map[y][x].tileAnim = 0xff;
+		}
+	}
+	MapFloodFillReachable(startX, startY);
+}
+
+void MapRandomize(int w, int h)
+{
+	// TODO
+}
+
+void MapFilterForRivalry()
+{
+	byte bVar1;
+	int y;
+	int x;
+
+	for (x = 0; x < 0x13; x = x + 1)
+	{
+		for (y = 0; y < 0xe; y = y + 1)
+		{
+			bVar1 = g_Map[y][x].tile;
+			if ((bVar1 < 2) || ((3 < bVar1 && (bVar1 < 9))))
+			{
+				bVar1 = 0xb;
+			}
+			if ((bVar1 == 2) || (bVar1 == 9))
+			{
+				bVar1 = 0xc;
+			}
+			if ((bVar1 == 3) || (bVar1 == 10))
+			{
+				bVar1 = 0xd;
+			}
+			if ((bVar1 == 0xe) || (bVar1 == 0x12))
+			{
+				bVar1 = 0x10;
+			}
+			if ((bVar1 == 0xf) || (bVar1 == 0x13))
+			{
+				bVar1 = 0x11;
+			}
+			g_Map[y][x].tile = bVar1;
+			if (((g_Map[y][x].flags & TileFlags::P) == 0) &&
+			    ((g_Map[y][x].flags & (TileFlags::Candle | TileFlags::HammerUp | TileFlags::P1 | TileFlags::P2)) != 0))
+			{
+				g_Map[y][x].flags = g_Map[y][x].flags | TileFlags::PU;
+			}
+		}
+	}
+}
+
 void MapRedrawTile(byte tx, byte ty)
 {
 	int py;
@@ -173,6 +291,99 @@ void MapRedrawTile(byte tx, byte ty)
 		}
 	}
 	return;
+}
+
+void MapSpawnItems()
+{
+	byte bVar1;
+	uint uVar2;
+	int i;
+
+	auto map = &g_Map[0][0];
+	for (i = 0; i < 0x10a; i = i + 1)
+	{
+		if ((map[i].flags & TileFlags::Candle) == 0)
+		{
+			if ((map[i].flags & TileFlags::HammerUp) == 0)
+			{
+				map[i].item = ItemType::None;
+			}
+			else
+			{
+				map[i].item = ItemType::HammerUp;
+			}
+		}
+		else
+		{
+			map[i].item = ItemType::Candle;
+			uVar2 = MGL_random(0xc);
+			map[i].itemAnim = (byte)uVar2;
+		}
+	}
+	g_PowerupNeedsPlacing = 0;
+	if (g_GameMode == GameMode::HappyFields)
+	{
+		g_TimeUntilPowerupExpires = 0x1c2;
+	}
+	else if (g_GameMode == GameMode::DankDungeons)
+	{
+		uVar2 = MGL_random(0x14);
+		g_TimeUntilPowerupExpires = ((short)uVar2 + 5) * 0x1e;
+	}
+	else if (g_GameMode == GameMode::SiblingRivalry)
+	{
+		bVar1 = ConfigGetRivalryPowerups();
+		g_TimeUntilPowerupExpires = (10 - (ushort)bVar1) * 0x3c + 0x3c;
+		bVar1 = ConfigGetRivalryPowerups();
+		if (bVar1 == 0)
+		{
+			g_PowerupNeedsPlacing = 2;
+		}
+	}
+}
+
+void PlacePowerup()
+{
+	byte bVar1;
+	uint uVar2;
+
+	g_Map[g_PowerupY][g_PowerupX].item = ItemType::None;
+	g_PowerupNeedsPlacing = 0;
+	if (g_GameMode == GameMode::HappyFields)
+	{
+		g_TimeUntilPowerupExpires = (ushort)g_MapNum * -10 + 0x1c2;
+	}
+	else if (g_GameMode == GameMode::DankDungeons)
+	{
+		uVar2 = MGL_random(0x14);
+		g_TimeUntilPowerupExpires = ((short)uVar2 + 5) * 0x1e;
+	}
+	else if (g_GameMode == GameMode::SiblingRivalry)
+	{
+		bVar1 = ConfigGetRivalryPowerups();
+		g_TimeUntilPowerupExpires = (10 - (ushort)bVar1) * 0x3c + 1;
+		bVar1 = ConfigGetRivalryPowerups();
+		if (bVar1 == 0)
+		{
+			g_PowerupNeedsPlacing = 1;
+		}
+	}
+	return;
+}
+
+bool MapUpdate(byte)
+{
+	// TODO
+	return false;
+}
+
+void CheatYippee(void)
+{
+	if (g_PowerupNeedsPlacing == 1)
+	{
+		PlacePowerup();
+	}
+	g_TimeUntilPowerupExpires = 1;
 }
 
 void ItemRender(ItemType item, byte itemAnim, int x, int y)

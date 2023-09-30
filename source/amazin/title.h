@@ -16,6 +16,7 @@ extern QuitAction g_QuitAction;
 extern sprite_set_t* g_ButtonsJsp;
 
 void TitleInit();
+void CongratsInit();
 void SplashInit(byte which);
 
 #endif // TITLE_H

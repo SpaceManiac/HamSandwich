@@ -1,7 +1,20 @@
 #include "guy.h"
-#include "jamulspr.h"
-#include "title.h"
 #include "display.h"
+#include "game.h"
+#include "jamulspr.h"
+#include "player.h"
+#include "title.h"
+#include "options.h"
+
+namespace GuyFlags
+{
+	enum : byte
+	{
+		Player = 0x1,
+		Retreating = 0x2,
+		Pumpkin = 0x4,
+	};
+}
 
 enum class Direction
 {
@@ -30,6 +43,7 @@ struct Guy
 	word fireTime;
 	word iceTime;
 	word evilEyeTime;
+	byte flags;
 };
 
 constexpr int MAX_GUYS = 16;
@@ -75,6 +89,85 @@ void GuysExitGfx()
 	delete g_GuySprites[5];
 	delete g_GuySprites[6];
 	delete g_ButtonsJsp;
+}
+
+void GuyUpdate(Guy *me);
+
+void GuyAdd(byte x, byte y, GuyType type)
+{
+	ushort uVar1;
+	bool bVar2;
+	uint uVar3;
+	int i;
+
+	i = 0;
+	while (true)
+	{
+		if (0xf < i)
+		{
+			return;
+		}
+		if (g_Guys[i].type == GuyType::None)
+			break;
+		i = i + 1;
+	}
+	g_Guys[i].type = type;
+	if (g_Guys[i].type == GuyType::Bouapha)
+	{
+		bVar2 = ConfigGetBouaphettaMode();
+		g_Guys[i].player = bVar2 + 1;
+	}
+	else if (g_Guys[i].type == GuyType::Bouaphetta)
+	{
+		bVar2 = ConfigGetBouaphettaMode();
+		g_Guys[i].player = 2 - bVar2;
+	}
+	else
+	{
+		g_Guys[i].player = 0;
+	}
+	g_Guys[i].x = ((uint)x * 0x20 + 0x10) * 0x100;
+	g_Guys[i].y = ((uint)y * 0x20 + 0x10) * 0x100;
+	g_Guys[i].gridX = x;
+	g_Guys[i].gridY = y;
+	g_Guys[i].direction = Direction::South;
+	g_Guys[i].anim = 0;
+	g_Guys[i].frame = 0;
+	if ((g_Guys[i].type == GuyType::Bouapha) || (g_Guys[i].type == GuyType::Bouaphetta))
+	{
+		g_Guys[i].hammerTime = 0;
+	}
+	else if ((((g_Guys[i].type == GuyType::Smoove) || (g_Guys[i].type == GuyType::Chuckles)) || (g_Guys[i].type == GuyType::Helga)) || (g_Guys[i].type == GuyType::Pete))
+	{
+		if (g_MapNum < 0x15)
+		{
+			uVar1 = (ushort)g_MapNum;
+			uVar3 = MGL_random(0x28);
+			g_Guys[i].hammerTime = uVar1 * -5 + 0x78 + (short)uVar3;
+		}
+		else
+		{
+			uVar3 = MGL_random(0x28);
+			g_Guys[i].hammerTime = (short)uVar3 + 10;
+		}
+	}
+	g_Guys[i].destX = g_Guys[i].x;
+	g_Guys[i].destY = g_Guys[i].y;
+	if ((g_Guys[i].type == GuyType::Bouapha) || (g_Guys[i].type == GuyType::Bouaphetta))
+	{
+		g_Guys[i].flags = GuyFlags::Player;
+	}
+	else
+	{
+		g_Guys[i].flags = GuyFlags::Pumpkin;
+	}
+	g_Guys[i].sleepTime = 0;
+	g_Guys[i].speedTime = 0;
+	g_Guys[i].ghostTime = 0;
+	g_Guys[i].fireTime = 0;
+	g_Guys[i].iceTime = 0;
+	g_Guys[i].evilEyeTime = 0;
+	GuyUpdate(g_Guys + i);
 }
 
 static void TitleUpdateGuyPumpkin(Guy *me)
@@ -212,6 +305,16 @@ static void TitleUpdateGuyPlayer(Guy *me)
 	}
 }
 
+void GuyUpdate(Guy *me)
+{
+	// TODO
+}
+
+void GuysUpdate()
+{
+	// TODO
+}
+
 void TitleUpdateGuys(void)
 {
 	int i;
@@ -231,7 +334,7 @@ void TitleUpdateGuys(void)
 	}
 }
 
-void TitleInitGuys(void)
+void TitleInitGuys()
 {
 	int i;
 
@@ -278,6 +381,36 @@ void TitleInitGuys(void)
 	g_Guys[5].y = 0x9e00;
 	g_Guys[5].direction = Direction::West;
 	g_Guys[5].destX = 0x1f800;
+	TitleUpdateGuys();
+}
+
+void CongratsInitGuys()
+{
+	int i;
+
+	GuysInit();
+	for (i = 0; i < 2; i = i + 1)
+	{
+		g_Guys[i].invincibleTime = 0;
+		g_Guys[i].anim = 1;
+		g_Guys[i].frame = 0;
+		g_Guys[i].sleepTime = 0;
+		g_Guys[i].speedTime = 0;
+		g_Guys[i].ghostTime = 0;
+		g_Guys[i].fireTime = 0;
+		g_Guys[i].iceTime = 0;
+		g_Guys[i].evilEyeTime = 0;
+	}
+	g_Guys[0].type = GuyType::Bouapha;
+	g_Guys[0].x = 0x6800;
+	g_Guys[0].y = 0x13e00;
+	g_Guys[0].direction = Direction::East;
+	g_Guys[0].destX = 0x6800;
+	g_Guys[1].type = GuyType::Bouaphetta;
+	g_Guys[1].x = 0x1f800;
+	g_Guys[1].y = 0x13e00;
+	g_Guys[1].direction = Direction::West;
+	g_Guys[1].destX = 0x1f800;
 	TitleUpdateGuys();
 }
 
@@ -330,7 +463,7 @@ void GuysRender()
 	}
 }
 
-const sprite_t* GetGuySprite(byte type, byte frame)
+const sprite_t *GetGuySprite(byte type, byte frame)
 {
 	return g_GuySprites[type]->GetSprite(frame);
 }

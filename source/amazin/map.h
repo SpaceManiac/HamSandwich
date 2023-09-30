@@ -48,7 +48,7 @@ enum class ItemType : byte
 struct MapTile
 {
 	word flags;
-	byte reachability;
+	byte distanceFromPumpkinSpawn;
 	byte tileAnim;
 	byte tile;
 	ItemType item;
@@ -69,8 +69,15 @@ void MapSave(const char* fname);
 void MapClear(GameMode theme);
 void MapRenderToBackground(GameMode theme);
 void TileRender(byte tile, int x, int y);
+void MapSetupStart();
+void MapRandomize(int w, int h);
+void MapFilterForRivalry();
 
 void MapRedrawTile(byte tx, byte ty);
+void MapSpawnItems();
+
+bool MapUpdate(byte);
+void CheatYippee();
 
 void MapRender(bool editor);
 

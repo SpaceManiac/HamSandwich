@@ -49,7 +49,7 @@ void StatusRender()
 	}
 	else
 	{
-		g_StatusJsp->GetSprite(2)->Draw(0x2c, 0x1f, mgl);
+		g_StatusJsp->GetSprite(2)->Draw(0x3c, 0x1f, mgl);
 		sprintf(buf, "%09d", g_Player[0].score);
 		Print(0x3c, 2, buf);
 		if (g_NumPlayers == 2)

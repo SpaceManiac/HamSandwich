@@ -1,17 +1,19 @@
 #include "title.h"
 #include "control.h"
 #include "display.h"
+#include "editor.h"
+#include "game.h"
+#include "guy.h"
+#include "help.h"
+#include "highscore.h"
 #include "jamulspr.h"
 #include "jamultypes.h"
 #include "loop.h"
+#include "options.h"
+#include "player.h"
 #include "register.h"
 #include "sound.h"
-#include "guy.h"
-#include "help.h"
 #include "timeattack.h"
-#include "options.h"
-#include "game.h"
-#include "editor.h"
 
 int32_t g_TitleTimer;
 sprite_set_t *g_ButtonsJsp;
@@ -304,6 +306,87 @@ void TitleRender()
 		int msx, msy;
 		mgl->GetMouse(&msx, &msy);
 		g_ButtonsJsp->GetSprite(26)->Draw(msx, msy, mgl);
+	}
+}
+
+bool CongratsUpdate();
+void CongratsRender();
+
+void CongratsInit()
+{
+	mgl->LoadBMP("grahics/backgd.bmp");
+	memcpy(g_Background, mgl->GetScreen(), 0x4b000);
+	SetUpdate(CongratsUpdate);
+	SetRender(CongratsRender);
+	g_TitleTextBright = -0x20;
+	g_TitleTimer = 0;
+	mgl->LastKeyPressed();
+	CongratsInitGuys();
+	if (RegistrationCurrentlyValid())
+	{
+		g_Player[0].score = g_Player[0].score + 5000;
+		g_Player[1].score = g_Player[1].score + 5000;
+	}
+}
+
+void CongratsExit()
+{
+}
+
+bool CongratsUpdate()
+{
+	char k;
+
+	TitleUpdateGuys();
+	if (g_TitleTextBright < 0)
+	{
+		g_TitleTextBright = g_TitleTextBright + 1;
+	}
+	k = mgl->LastKeyPressed();
+	if (k == '\x1b')
+	{
+		CongratsExit();
+		HighScoreInit();
+	}
+	else
+	{
+		g_TitleTimer = g_TitleTimer + 1;
+		if (g_TitleTimer == 300)
+		{
+			CongratsExit();
+			HighScoreInit();
+		}
+	}
+	return true;
+}
+
+void CongratsRender()
+{
+	memcpy(mgl->GetScreen(), g_Background, 0x4b000);
+	GuysRender();
+	DisplayListRender();
+	if (RegistrationCurrentlyValid())
+	{
+		CenterPrintBright(0x140, 100, "CONGRATULATIONS!", (int8_t)g_TitleTextBright);
+		CenterPrintBright(0x140, 0x82, "You recovered all the candles", (int8_t)g_TitleTextBright);
+		CenterPrintBright(0x140, 0xa0, "from the Happy Fields.", (int8_t)g_TitleTextBright);
+		CenterPrintBright(0x140, 0xbe, "Pretty darn impressive.", (int8_t)g_TitleTextBright);
+	}
+	else if (g_GameMode == GameMode::HappyFields)
+	{
+		CenterPrintBright(0x140, 100, "That's as far as you can", (int8_t)g_TitleTextBright);
+		CenterPrintBright(0x140, 0x82, "get in this demo version of", (int8_t)g_TitleTextBright);
+		CenterPrintBright(0x140, 0xa0, "Amazin' SPISPOPD.  Order the", (int8_t)g_TitleTextBright);
+		CenterPrintBright(0x140, 0xbe, "full version to get the real", (int8_t)g_TitleTextBright);
+		CenterPrintBright(0x140, 0xdc, "good stuff!", (int8_t)g_TitleTextBright);
+	}
+	else
+	{
+		CenterPrintBright(0x140, 100, "That's as far as you can", (int8_t)g_TitleTextBright);
+		CenterPrintBright(0x140, 0x82, "get in this demo version of", (int8_t)g_TitleTextBright);
+		CenterPrintBright(0x140, 0xa0, "Amazin' SPISPOPD.  In the full", (int8_t)g_TitleTextBright);
+		CenterPrintBright(0x140, 0xbe, "version, the Dungeons keep", (int8_t)g_TitleTextBright);
+		CenterPrintBright(0x140, 0xdc, "getting bigger and scarier!", (int8_t)g_TitleTextBright);
 	}
 }
 

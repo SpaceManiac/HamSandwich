@@ -21,8 +21,12 @@ void GuysExit();
 void GuysInitGfx();
 void GuysExitGfx();
 
+void GuyAdd(byte x, byte y, GuyType type);
+
+void GuysUpdate();
 void TitleUpdateGuys();
 void TitleInitGuys();
+void CongratsInitGuys();
 
 void GuysRender();
 const sprite_t* GetGuySprite(byte type, byte frame);
