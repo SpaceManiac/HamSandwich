@@ -283,8 +283,7 @@ bool GameUpdate(void)
 	isPaused = IsPaused();
 	if (!isPaused)
 	{
-		k = '\0';
-		mgl->LastKeyPressed();
+		k = mgl->LastKeyPressed();
 		if (k == '\x1b')
 		{
 			PauseInit();

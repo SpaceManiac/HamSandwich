@@ -177,9 +177,9 @@ void MapFloodFillReachable(int x, int y)
 		MapFloodFillReachable(x, y + -1);
 	}
 	if (((0 < x) && ((g_Map[y][x].flags & TileFlags::WallV) == 0)) &&
-	    (g_Map[y][x].distanceFromPumpkinSpawn + 1 < (uint)g_Map[y + -1][x + 0x12].distanceFromPumpkinSpawn))
+	    (g_Map[y][x].distanceFromPumpkinSpawn + 1 < (uint)g_Map[y][x - 1].distanceFromPumpkinSpawn))
 	{
-		g_Map[y + -1][x + 0x12].distanceFromPumpkinSpawn = g_Map[y][x].distanceFromPumpkinSpawn + 1;
+		g_Map[y][x - 1].distanceFromPumpkinSpawn = g_Map[y][x].distanceFromPumpkinSpawn + 1;
 		MapFloodFillReachable(x + -1, y);
 	}
 	if (((x < 0x12) && ((g_Map[y][x + 1].flags & TileFlags::WallV) == 0)) &&
@@ -235,7 +235,415 @@ void MapSetupStart(void)
 
 void MapRandomize(int w, int h)
 {
-	// TODO
+	byte bVar1;
+	byte bVar2;
+	bool bVar3;
+	ItemType IVar4;
+	byte bVar5;
+	uint x;
+	uint y;
+	uint uVar6;
+	int iVar7;
+	int iVar8;
+	uint y2;
+	uint x2;
+	int local_870;
+	int j;
+	uint i;
+	int centerY;
+	int centerX;
+	int local_85c;
+	MapTile tempMap[14][19];
+	MapTile *tile;
+
+	auto map = &g_Map[0][0];
+	for (i = 0; (int)i < 0x10a; i = i + 1)
+	{
+		map[i].flags = 0;
+		map[i].tile = 0;
+		map[i].distanceFromPumpkinSpawn = 0;
+		map[i].tileAnim = 0;
+	}
+	for (i = 0; (int)i < w; i = i + 1)
+	{
+		for (j = 0; j < h; j = j + 1)
+		{
+			g_Map[j][i].flags = 0;
+			if (0 < (int)i)
+			{
+				g_Map[j][i].flags = g_Map[j][i].flags | TileFlags::WallV;
+			}
+			if (j < h + -1)
+			{
+				g_Map[j][i].flags = g_Map[j][i].flags | TileFlags::WallH;
+			}
+			g_Map[j][i].distanceFromPumpkinSpawn = (byte)i;
+			g_Map[j][i].tileAnim = (byte)j;
+		}
+	}
+	x = MGL_random(2);
+	if ((x & 0xffff) == 0)
+	{
+		x = MGL_random((ushort)w - 2);
+		x = x & 0xffff;
+		i = x + 1;
+		y = MGL_random((ushort)h);
+		y = y & 0xffff;
+		g_Map[y][x + 1].flags = TileFlags::WallH | TileFlags::PK | TileFlags::P;
+		g_Map[y][x].flags = TileFlags::WallV | TileFlags::WallH | TileFlags::P;
+		g_Map[y][x].distanceFromPumpkinSpawn = (byte)i;
+		g_Map[y][x + 2].flags = TileFlags::WallH | TileFlags::P;
+		g_Map[y][x + 2].distanceFromPumpkinSpawn = (byte)i;
+	}
+	else
+	{
+		x = MGL_random((ushort)w);
+		x = x & 0xffff;
+		y = MGL_random((ushort)h - 2);
+		y = y & 0xffff;
+		g_Map[y + 1][x].flags = TileFlags::WallV | TileFlags::PK | TileFlags::P;
+		g_Map[y][x].flags = TileFlags::WallV | TileFlags::P;
+		j = y + 1;
+		g_Map[y][x].tileAnim = (byte)j;
+		g_Map[y + 2][x].flags = TileFlags::WallV | TileFlags::WallH | TileFlags::P;
+		g_Map[y + 2][x].tileAnim = (byte)j;
+	}
+	bVar3 = false;
+LAB_0040f9c3:
+	do
+	{
+		do
+		{
+			x = MGL_random((ushort)w);
+			x = x & 0xffff;
+			y = MGL_random((ushort)h);
+			y = y & 0xffff;
+		} while ((g_Map[y][x].flags & TileFlags::P) != 0);
+		uVar6 = MGL_random(4);
+		switch (uVar6 & 0xffff)
+		{
+		case 0:
+			if (((x == w - 1U) || (((g_Map[y][x + 1].flags & TileFlags::P) != 0 && (bVar3)))) ||
+			    (((g_Map[y][x + 1].distanceFromPumpkinSpawn == g_Map[y][x].distanceFromPumpkinSpawn &&
+			       (g_Map[y][x + 1].tileAnim == g_Map[y][x].tileAnim)) ||
+			      ((g_Map[y][x + 1].flags & TileFlags::WallV) == 0))))
+				goto LAB_0040f9c3;
+			g_Map[y][x + 1].flags = g_Map[y][x + 1].flags & ~TileFlags::WallV;
+			if ((g_Map[y][x + 1].flags & TileFlags::P) != 0)
+			{
+				bVar3 = true;
+			}
+			x2 = (uint)g_Map[y][x + 1].distanceFromPumpkinSpawn;
+			y2 = (uint)g_Map[y][x + 1].tileAnim;
+			break;
+		case 1:
+			if ((((y == h - 1U) || (((g_Map[y + 1][x].flags & TileFlags::P) != 0 && (bVar3)))) ||
+			     ((g_Map[y + 1][x].distanceFromPumpkinSpawn == g_Map[y][x].distanceFromPumpkinSpawn &&
+			       (g_Map[y + 1][x].tileAnim == g_Map[y][x].tileAnim)))) ||
+			    ((g_Map[y][x].flags & TileFlags::WallH) == 0))
+				goto LAB_0040f9c3;
+			g_Map[y][x].flags = g_Map[y][x].flags & ~TileFlags::WallH;
+			if ((g_Map[y + 1][x].flags & TileFlags::P) != 0)
+			{
+				bVar3 = true;
+			}
+			x2 = (uint)g_Map[y + 1][x].distanceFromPumpkinSpawn;
+			y2 = (uint)g_Map[y + 1][x].tileAnim;
+			break;
+		case 2:
+			if (((x == 0) || (((g_Map[y][x - 1].flags & TileFlags::P) != 0 && (bVar3)))) ||
+			    (((g_Map[y][x - 1].distanceFromPumpkinSpawn == g_Map[y][x].distanceFromPumpkinSpawn && (g_Map[y][x - 1].tileAnim == g_Map[y][x].tileAnim)) ||
+			      ((g_Map[y][x].flags & TileFlags::WallV) == 0))))
+				goto LAB_0040f9c3;
+			g_Map[y][x].flags = g_Map[y][x].flags & ~TileFlags::WallV;
+			if ((g_Map[y][x - 1].flags & TileFlags::P) != 0)
+			{
+				bVar3 = true;
+			}
+			x2 = (uint)g_Map[y][x - 1].distanceFromPumpkinSpawn;
+			y2 = (uint)g_Map[y][x - 1].tileAnim;
+			break;
+		case 3:
+			if ((((y == 0) || (((g_Map[y - 1][x].flags & TileFlags::P) != 0 && (bVar3)))) ||
+			     ((g_Map[y - 1][x].distanceFromPumpkinSpawn == g_Map[y][x].distanceFromPumpkinSpawn &&
+			       (g_Map[y - 1][x].tileAnim == g_Map[y][x].tileAnim)))) ||
+			    ((g_Map[y - 1][x].flags & TileFlags::WallH) == 0))
+				goto LAB_0040f9c3;
+			g_Map[y - 1][x].flags = g_Map[y - 1][x].flags & ~TileFlags::WallH;
+			if ((g_Map[y - 1][x].flags & TileFlags::P) != 0)
+			{
+				bVar3 = true;
+			}
+			x2 = (uint)g_Map[y - 1][x].distanceFromPumpkinSpawn;
+			y2 = (uint)g_Map[y - 1][x].tileAnim;
+		}
+		local_85c = 0;
+		bVar1 = g_Map[y][x].distanceFromPumpkinSpawn;
+		bVar2 = g_Map[y][x].tileAnim;
+		for (i = 0; (int)i < w; i = i + 1)
+		{
+			for (j = 0; j < h; j = j + 1)
+			{
+				if ((g_Map[j][i].distanceFromPumpkinSpawn == x2) && (g_Map[j][i].tileAnim == y2))
+				{
+					g_Map[j][i].distanceFromPumpkinSpawn = bVar1;
+					g_Map[j][i].tileAnim = bVar2;
+				}
+				if ((g_Map[j][i].distanceFromPumpkinSpawn == bVar1) && (g_Map[j][i].tileAnim == bVar2))
+				{
+					local_85c = local_85c + 1;
+				}
+			}
+		}
+		if (local_85c == w * h)
+		{
+			local_870 = 1000;
+			while (iVar7 = local_870 + -1, 0 < local_870)
+			{
+				x = MGL_random((ushort)w);
+				x = x & 0xffff;
+				y = MGL_random((ushort)h);
+				y = y & 0xffff;
+				local_870 = iVar7;
+				if ((g_Map[y][x].flags & TileFlags::P) == 0)
+				{
+					i = 0;
+					if ((x == 0) || ((g_Map[y][x].flags & TileFlags::WallV) != 0))
+					{
+						i = 1;
+					}
+					if ((x == w - 1U) || ((g_Map[y][x + 1].flags & TileFlags::WallV) != 0))
+					{
+						i = i + 1;
+					}
+					if ((y == 0) || ((g_Map[y - 1][x].flags & TileFlags::WallH) != 0))
+					{
+						i = i + 1;
+					}
+					if ((y == h - 1U) || ((g_Map[y][x].flags & TileFlags::WallH) != 0))
+					{
+						i = i + 1;
+					}
+					if (2 < i)
+					{
+						uVar6 = MGL_random(4);
+						switch (uVar6 & 0xffff)
+						{
+						case 0:
+							if (((x != w - 1U) && ((g_Map[y][x + 1].flags & TileFlags::P) == 0)) &&
+							    ((g_Map[y][x + 1].flags & TileFlags::WallV) != 0))
+							{
+								g_Map[y][x + 1].flags = g_Map[y][x + 1].flags & ~TileFlags::WallV;
+							}
+							break;
+						case 1:
+							if (((y != h - 1U) && ((g_Map[y + 1][x].flags & TileFlags::P) == 0)) &&
+							    ((g_Map[y][x].flags & TileFlags::WallH) != 0))
+							{
+								g_Map[y][x].flags = g_Map[y][x].flags & ~TileFlags::WallH;
+							}
+							break;
+						case 2:
+							if (((x != 0) && ((g_Map[y][x - 1].flags & TileFlags::P) == 0)) &&
+							    ((g_Map[y][x].flags & TileFlags::WallV) != 0))
+							{
+								g_Map[y][x].flags = g_Map[y][x].flags & ~TileFlags::WallV;
+							}
+							break;
+						case 3:
+							if (((y != 0) && ((g_Map[y - 1][x].flags & TileFlags::P) == 0)) &&
+							    ((g_Map[y - 1][x].flags & TileFlags::WallH) != 0))
+							{
+								g_Map[y - 1][x].flags = g_Map[y - 1][x].flags & ~TileFlags::WallH;
+							}
+						}
+					}
+				}
+			}
+			do
+			{
+				x = MGL_random((ushort)(w / 2));
+				x = x & 0xffff;
+				y = MGL_random((ushort)(h / 2));
+				y = y & 0xffff;
+			} while ((g_Map[y][x].flags & TileFlags::P) != 0);
+			g_Map[y][x].flags = g_Map[y][x].flags | TileFlags::HammerUp;
+			do
+			{
+				x = MGL_random((ushort)(w / 2));
+				iVar7 = (x & 0xffff) + w / 2;
+				x = MGL_random((ushort)(h / 2));
+				x = x & 0xffff;
+			} while ((g_Map[x][iVar7].flags & TileFlags::P) != 0);
+			g_Map[x][iVar7].flags = g_Map[x][iVar7].flags | TileFlags::HammerUp;
+			do
+			{
+				x = MGL_random((ushort)(w / 2));
+				x = x & 0xffff;
+				y = MGL_random((ushort)(h / 2));
+				iVar7 = (y & 0xffff) + h / 2;
+			} while ((g_Map[iVar7][x].flags & TileFlags::P) != 0);
+			g_Map[iVar7][x].flags = g_Map[iVar7][x].flags | TileFlags::HammerUp;
+			do
+			{
+				x = MGL_random((ushort)(w / 2));
+				iVar7 = (x & 0xffff) + w / 2;
+				x = MGL_random((ushort)(h / 2));
+				iVar8 = (x & 0xffff) + h / 2;
+			} while ((g_Map[iVar8][iVar7].flags & TileFlags::P) != 0);
+			g_Map[iVar8][iVar7].flags = g_Map[iVar8][iVar7].flags | TileFlags::HammerUp;
+			do
+			{
+				x = MGL_random((ushort)w);
+				x = x & 0xffff;
+				y = MGL_random((ushort)h);
+				y = y & 0xffff;
+			} while ((g_Map[y][x].flags & (TileFlags::HammerUp | TileFlags::P)) != 0);
+			g_Map[y][x].flags = g_Map[y][x].flags | (TileFlags::PU | TileFlags::P1);
+			if (g_NumPlayers == 2)
+			{
+				do
+				{
+					x = MGL_random((ushort)w);
+					x = x & 0xffff;
+					y = MGL_random((ushort)h);
+					y = y & 0xffff;
+				} while ((g_Map[y][x].flags & (TileFlags::HammerUp | TileFlags::P1 | TileFlags::P)) != 0);
+				g_Map[y][x].flags = g_Map[y][x].flags | (TileFlags::PU | TileFlags::P2);
+			}
+			x = MGL_random((short)((w * h) / 10) + 1);
+			for (x = x & 0xffff; x != 0; x = x - 1)
+			{
+				do
+				{
+					y = MGL_random((ushort)w);
+					y = y & 0xffff;
+					uVar6 = MGL_random((ushort)h);
+					uVar6 = uVar6 & 0xffff;
+				} while ((g_Map[uVar6][y].flags &
+				          (TileFlags::HammerUp | TileFlags::P1 | TileFlags::P2 | TileFlags::P)) != 0);
+				g_Map[uVar6][y].flags = g_Map[uVar6][y].flags | TileFlags::PU;
+			}
+			iVar7 = w + -0xc + h;
+			if (0 < iVar7)
+			{
+				x = MGL_random((ushort)(iVar7 & 0xffff));
+				if (1 < (x & 0xffff))
+				{
+					x = MGL_random((short)(iVar7 / 6) + 2);
+					i = (x & 0xffff) + 2;
+					do
+					{
+						do
+						{
+							x = MGL_random((ushort)w);
+							x = x & 0xffff;
+							y = MGL_random((ushort)h);
+							y = y & 0xffff;
+						} while ((g_Map[y][x].flags &
+						          (TileFlags::HammerUp | TileFlags::PU | TileFlags::P1 | TileFlags::P2 | TileFlags::P)) != 0);
+						g_Map[y][x].flags = g_Map[y][x].flags | TileFlags::TP;
+						i = i + -1;
+					} while (i != 0);
+				}
+			}
+			for (i = 0; (int)i < w; i = i + 1)
+			{
+				for (j = 0; j < h; j = j + 1)
+				{
+					if ((g_Map[j][i].flags & (TileFlags::HammerUp | TileFlags::PU | TileFlags::P | TileFlags::TP)) == 0)
+					{
+						g_Map[j][i].flags = g_Map[j][i].flags | TileFlags::Candle;
+					}
+				}
+			}
+			if ((w < 0x13) || (h < 0xe))
+			{
+				memcpy(tempMap, g_Map, 0x850);
+				centerX = (0x13 - w) / 2;
+				centerY = (0xe - h) / 2;
+				for (i = 0; (int)i < 0x13; i = i + 1)
+				{
+					for (j = 0; j < 0xe; j = j + 1)
+					{
+						x2 = i - centerX;
+						y2 = j - centerY;
+						if ((int)x2 < 0)
+						{
+							x2 = x2 + 0x13;
+						}
+						if ((int)y2 < 0)
+						{
+							y2 = y2 + 0xe;
+						}
+						g_Map[j][i] = tempMap[y2][x2];
+					}
+				}
+				i = centerY;
+				if (w < 0x13)
+				{
+					for (; (int)i < centerY + h; i = i + 1)
+					{
+						g_Map[i][centerX + w].flags = g_Map[i][centerX + w].flags | TileFlags::WallV;
+					}
+				}
+				i = centerX;
+				if (0 < centerY)
+				{
+					for (; (int)i < centerX + w; i = i + 1)
+					{
+						g_Map[centerY + -1][i].flags = g_Map[centerY + -1][i].flags | TileFlags::WallH;
+					}
+				}
+				i = centerY;
+				if (0 < centerX)
+				{
+					for (; (int)i < centerY + h; i = i + 1)
+					{
+						g_Map[i][centerX].flags = g_Map[i][centerX].flags | TileFlags::WallV;
+					}
+				}
+				i = centerX;
+				if (h < 0xe)
+				{
+					for (; (int)i < centerX + w; i = i + 1)
+					{
+						g_Map[centerY + -1 + h][i].flags = g_Map[centerY + -1 + h][i].flags | TileFlags::WallH;
+					}
+				}
+			}
+			else
+			{
+				centerX = 0;
+				centerY = 0;
+			}
+			for (i = 0; (int)i < 0x13; i = i + 1)
+			{
+				for (j = 0; j < 0xe; j = j + 1)
+				{
+					if ((((int)i < centerX) || (centerX + -1 + w < (int)i)) ||
+					    ((j < centerY || (centerY + -1 + h < j))))
+					{
+						g_Map[j][i].tile = 10;
+					}
+					else
+					{
+						x = MGL_random(5);
+						g_Map[j][i].tile = (char)x + 4;
+					}
+					if ((g_Map[j][i].flags & TileFlags::P) != 0)
+					{
+						g_Map[j][i].tile = 9;
+					}
+					if ((g_Map[j][i].flags & TileFlags::TP) != 0)
+					{
+						g_Map[j][i].tile = 0x12;
+					}
+				}
+			}
+			return;
+		}
+	} while (true);
 }
 
 void MapFilterForRivalry()
