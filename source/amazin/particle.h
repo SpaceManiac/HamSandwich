@@ -10,6 +10,6 @@ void ParticlesRender();
 void ParticleAddTeleport(int x, int y);
 void ParticleAddRespawn(int x, int y);
 void ParticleAddSpeed(GuyType player, byte life, int x, int y);
-void PartcileAddSnow(byte amount);
+void ParticleAddSnow(byte amount);
 
 #endif  // PARTICLE_H

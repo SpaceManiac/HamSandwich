@@ -4,6 +4,14 @@
 #include "jamultypes.h"
 #include "game.h"
 
+enum class Direction
+{
+	East,
+	South,
+	West,
+	North,
+};
+
 namespace TileFlags
 {
 	enum : word
@@ -77,6 +85,7 @@ void MapFilterForRivalry();
 void MapRedrawTile(byte tx, byte ty);
 void MapSpawnItems();
 
+void ShootEvilEye(int x, unsigned int y, Direction direction);
 bool MapUpdate(byte);
 void CheatYippee();
 

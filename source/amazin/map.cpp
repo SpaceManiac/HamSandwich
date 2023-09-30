@@ -4,8 +4,8 @@
 #include "jamulspr.h"
 #include "jamultypes.h"
 #include "options.h"
-#include "sound.h"
 #include "particle.h"
+#include "sound.h"
 
 byte g_MapTimer;
 int g_Player1StartX, g_Player1StartY;
@@ -526,6 +526,71 @@ void ItemAnimate(byte p)
 		if (map[p].itemAnim == 0x96)
 		{
 			map[p].item = ItemType::None;
+		}
+	}
+	return;
+}
+
+void ShootEvilEye(int x, unsigned int y, Direction direction)
+{
+	unsigned int i;
+
+	switch (direction)
+	{
+	case Direction::East:
+		for (i = x; (int)i < 0x13; i = i + 1)
+		{
+			if ((g_Map[y][i].tile == 0xb) && (i != x))
+			{
+				g_Map[y][i].tile = 0x14;
+				MapRedrawTile((byte)i, (byte)y);
+			}
+			if (((int)i < 0x12) && ((g_Map[y][i + 1].flags & TileFlags::WallV) != 0))
+			{
+				return;
+			}
+		}
+		break;
+	case Direction::South:
+		for (i = y; (int)i < 0xe; i = i + 1)
+		{
+			if ((g_Map[i][x].tile == 0xb) && (i != y))
+			{
+				g_Map[i][x].tile = 0x14;
+				MapRedrawTile((byte)x, (byte)i);
+			}
+			if ((g_Map[i][x].flags & TileFlags::WallH) != 0)
+			{
+				return;
+			}
+		}
+		break;
+	case Direction::West:
+		for (i = x; -1 < (int)i; i = i + -1)
+		{
+			if ((g_Map[y][i].tile == 0xb) && (i != x))
+			{
+				g_Map[y][i].tile = 0x14;
+				MapRedrawTile((byte)i, (byte)y);
+			}
+			if ((g_Map[y][i].flags & TileFlags::WallV) != 0)
+			{
+				return;
+			}
+		}
+		break;
+	case Direction::North:
+		for (i = y; 0 < (int)i; i = i - 1)
+		{
+			if ((g_Map[i][x].tile == 0xb) && (i != y))
+			{
+				g_Map[i][x].tile = 0x14;
+				MapRedrawTile((byte)x, (byte)i);
+			}
+			if ((0 < (int)i) && ((g_Map[i - 1][x].flags & TileFlags::WallH) != 0))
+			{
+				return;
+			}
 		}
 	}
 	return;

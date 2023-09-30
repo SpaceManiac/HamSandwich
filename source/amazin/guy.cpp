@@ -2,9 +2,11 @@
 #include "display.h"
 #include "game.h"
 #include "jamulspr.h"
+#include "options.h"
+#include "particle.h"
 #include "player.h"
 #include "title.h"
-#include "options.h"
+#include "map.h"
 
 namespace GuyFlags
 {
@@ -15,14 +17,6 @@ namespace GuyFlags
 		Pumpkin = 0x4,
 	};
 }
-
-enum class Direction
-{
-	East,
-	South,
-	West,
-	North,
-};
 
 struct Guy
 {
@@ -170,6 +164,21 @@ void GuyAdd(byte x, byte y, GuyType type)
 	GuyUpdate(g_Guys + i);
 }
 
+static void GuyUpdatePlayer(Guy *me)
+{
+	// TODO
+}
+
+static void GuyUpdatePumpkinRetreat(Guy *me)
+{
+	// TODO
+}
+
+static void GuyUpdatePumpkin(Guy *me)
+{
+	// TODO
+}
+
 static void TitleUpdateGuyPumpkin(Guy *me)
 {
 	static const byte smooveChucklesAnim[29] = {
@@ -307,12 +316,52 @@ static void TitleUpdateGuyPlayer(Guy *me)
 
 void GuyUpdate(Guy *me)
 {
-	// TODO
+	switch (me->type)
+	{
+	case GuyType::Bouapha:
+	case GuyType::Bouaphetta:
+		GuyUpdatePlayer(me);
+		break;
+	case GuyType::Smoove:
+	case GuyType::Chuckles:
+	case GuyType::Helga:
+	case GuyType::Pete:
+		if ((me->flags & GuyFlags::Retreating) == 0)
+		{
+			GuyUpdatePumpkin(me);
+		}
+		else
+		{
+			GuyUpdatePumpkinRetreat(me);
+		}
+	}
+	return;
 }
 
 void GuysUpdate()
 {
-	// TODO
+	int i;
+
+	if (g_SnowTimer != 0)
+	{
+		ParticleAddSnow(10);
+		g_SnowTimer = g_SnowTimer - 1;
+	}
+	for (i = 0; i < 0x10; i = i + 1)
+	{
+		if (g_Guys[i].evilEyeTime != 0)
+		{
+			ShootEvilEye((uint)g_Guys[i].gridX, (uint)g_Guys[i].gridY, g_Guys[i].direction);
+		}
+	}
+	for (i = 0; i < 0x10; i = i + 1)
+	{
+		if (g_Guys[i].type != GuyType::None)
+		{
+			GuyUpdate(g_Guys + i);
+		}
+	}
+	return;
 }
 
 void TitleUpdateGuys(void)
