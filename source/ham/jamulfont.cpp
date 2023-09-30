@@ -561,6 +561,9 @@ static void FontPrintCharGlowLimited(int x, int y, int maxX, dword c, const mfon
 
 static byte CharWidth(dword c, const mfont_t *font)
 {
+	if (c == '\n')
+		return 0;
+
 	if (c < font->firstChar || c >= (font->firstChar + font->numChars))
 		return font->spaceSize; // unprintable
 

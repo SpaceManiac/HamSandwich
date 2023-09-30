@@ -243,7 +243,7 @@ static void LoadHelpPage(FILE *f)
 	{
 		while (true)
 		{
-			if (fscanf(f, "%[^\n]\n", line) == -1)
+			if (fscanf(f, "%[^\r\n]\n", line) == -1)
 			{
 				return;
 			}
