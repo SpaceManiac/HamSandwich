@@ -16,7 +16,7 @@ sprite_set_t *g_ItemsJsp;
 GameMode g_MapTheme;
 sprite_set_t *g_WallsJsp;
 word g_TimeUntilPowerupExpires;
-byte g_PowerupNeedsPlacing;
+byte g_PowerupOnMap;
 byte g_Tiles[21][32][32];
 byte g_PowerupX, g_PowerupY;
 
@@ -744,7 +744,7 @@ void MapSpawnItems()
 			map[i].itemAnim = (byte)uVar2;
 		}
 	}
-	g_PowerupNeedsPlacing = 0;
+	g_PowerupOnMap = 0;
 	if (g_GameMode == GameMode::HappyFields)
 	{
 		g_TimeUntilPowerupExpires = 0x1c2;
@@ -761,7 +761,7 @@ void MapSpawnItems()
 		bVar1 = ConfigGetRivalryPowerups();
 		if (bVar1 == 0)
 		{
-			g_PowerupNeedsPlacing = 2;
+			g_PowerupOnMap = 2;
 		}
 	}
 }
@@ -769,18 +769,18 @@ void MapSpawnItems()
 void PlacePowerup()
 {
 	static const byte normalOdds[16] = {
-		0x1e,
-		0x14,
-		0x14,
-		10,
-		4,
-		3,
-		3,
-		3,
-		3,
-		3,
+		30,  // Points100
+		20,  // Points250
+		20,  // Points500
+		10,  // Points1000
+		4,   // SpeedyBoots
+		3,   // Ghost
+		3,   // IceCream
+		3,   // HammerUpRandom
+		3,   // Zzz
+		3,   // Shield
 		0,
-		1,
+		1,   // OneUp
 		0,
 		0,
 		0,
@@ -791,28 +791,25 @@ void PlacePowerup()
 		0,
 		0,
 		0,
-		0xc,
-		0xc,
-		5,
-		0xc,
-		5,
-		10,
+		12,  // SpeedyBoots
+		12,  // Ghost
+		5,   // IceCream
+		12,  // HammerUpRandom
+		5,   // Zzz
+		10,  // Shield
 		0,
 		0,
-		10,
-		10,
-		0xc,
-		0xc,
+		10,  // FirePower
+		10,  // IcePower
+		12,  // EvilEye
+		12,  // BigCandle
 	};
 
 	uint x;
 	uint y;
 	uint roll;
-	int totalRoll;
-	uint odds2;
-	byte y2;
+	int totalOdds;
 	uint powerup;
-	byte x2;
 	byte odds;
 
 	do
@@ -825,39 +822,12 @@ void PlacePowerup()
 			y = y & 0xffff;
 		} while ((g_Map[y][x].flags & TileFlags::PU) == 0);
 	} while (g_Map[y][x].item != ItemType::None);
+
 	roll = MGL_random(100);
-	totalRoll = 0;
-	powerup = 0;
-	do
+	totalOdds = 0;
+
+	for (powerup = 0; powerup < 16; ++powerup)
 	{
-		if (0xf < (int)powerup)
-		{
-		LAB_00411737:
-			ParticleAddTeleport((x * 0x20 + 0x10) * 0x100, (y * 0x20 + 0x10) * 0x100);
-			PlaySound(0x1e, 2000);
-			g_PowerupNeedsPlacing = 1;
-			if (g_GameMode != GameMode::HappyFields)
-			{
-				if (g_GameMode == GameMode::DankDungeons)
-				{
-					powerup = (uint)g_MapNum;
-					if (0x14 < powerup)
-					{
-						powerup = 0x14;
-					}
-					g_TimeUntilPowerupExpires = (short)(powerup / 2) * -0x14 + 0x1c2;
-					g_PowerupNeedsPlacing = 1;
-					return;
-				}
-				if (g_GameMode != GameMode::SiblingRivalry)
-				{
-					g_PowerupNeedsPlacing = 1;
-					return;
-				}
-			}
-			g_TimeUntilPowerupExpires = (short)((int)(uint)g_MapNum >> 1) * -0x19 + 0x1c2;
-			return;
-		}
 		if (g_GameMode == GameMode::SiblingRivalry)
 		{
 			odds = rivalryOdds[powerup];
@@ -866,20 +836,39 @@ void PlacePowerup()
 		{
 			odds = normalOdds[powerup];
 		}
-		odds2 = (uint)odds;
-		totalRoll = totalRoll + odds2;
-		if ((odds2 != 0) && ((int)(roll & 0xffff) < totalRoll))
+		totalOdds = totalOdds + odds;
+
+		if (odds && roll < totalOdds)
 		{
-			x2 = (byte)x;
-			g_PowerupX = x2;
-			y2 = (byte)y;
-			g_PowerupY = y2;
+			g_PowerupX = x;
+			g_PowerupY = y;
 			g_Map[y][x].item = ItemType(powerup + byte(ItemType::Points100));
 			g_Map[y][x].itemAnim = 0;
-			goto LAB_00411737;
+			break;
 		}
-		powerup = powerup + 1;
-	} while (true);
+	}
+
+	ParticleAddTeleport((x * 0x20 + 0x10) * 0x100, (y * 0x20 + 0x10) * 0x100);
+	PlaySound(0x1e, 2000);
+	g_PowerupOnMap = 1;
+	if (g_GameMode == GameMode::HappyFields)
+	{
+		g_TimeUntilPowerupExpires = (short)((int)(uint)g_MapNum >> 1) * -0x19 + 0x1c2;
+	}
+	else if (g_GameMode == GameMode::DankDungeons)
+	{
+		powerup = (uint)g_MapNum;
+		if (0x14 < powerup)
+		{
+			powerup = 0x14;
+		}
+		g_TimeUntilPowerupExpires = (short)(powerup / 2) * -0x14 + 0x1c2;
+		g_PowerupOnMap = 1;
+	}
+	else if (g_GameMode != GameMode::SiblingRivalry)
+	{
+		g_PowerupOnMap = 1;
+	}
 }
 
 void ErasePowerup()
@@ -888,7 +877,7 @@ void ErasePowerup()
 	uint uVar2;
 
 	g_Map[g_PowerupY][g_PowerupX].item = ItemType::None;
-	g_PowerupNeedsPlacing = 0;
+	g_PowerupOnMap = 0;
 	if (g_GameMode == GameMode::HappyFields)
 	{
 		g_TimeUntilPowerupExpires = (ushort)g_MapNum * -10 + 0x1c2;
@@ -905,7 +894,7 @@ void ErasePowerup()
 		bVar1 = ConfigGetRivalryPowerups();
 		if (bVar1 == 0)
 		{
-			g_PowerupNeedsPlacing = 1;
+			g_PowerupOnMap = 1;
 		}
 	}
 	return;
@@ -1087,10 +1076,10 @@ bool MapUpdate(byte)
 			ty = ty + 1;
 		}
 	}
-	if ((g_PowerupNeedsPlacing < 2) &&
+	if ((g_PowerupOnMap < 2) &&
 	    (g_TimeUntilPowerupExpires = g_TimeUntilPowerupExpires + -1, g_TimeUntilPowerupExpires == 0))
 	{
-		if (g_PowerupNeedsPlacing == 1)
+		if (g_PowerupOnMap == 1)
 		{
 			ErasePowerup();
 		}
@@ -1104,7 +1093,7 @@ bool MapUpdate(byte)
 
 void CheatYippee(void)
 {
-	if (g_PowerupNeedsPlacing == 1)
+	if (g_PowerupOnMap == 1)
 	{
 		ErasePowerup();
 	}
