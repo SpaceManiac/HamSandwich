@@ -1124,11 +1124,11 @@ void ItemRender(ItemType item, byte itemAnim, int x, int y)
 		case ItemType::Points1000:
 			if ((itemAnim & 7) == 0)
 			{
-				DisplayListAdd(g_ItemsJsp->GetSprite(19), x, y, 0, y, 4, DisplayEffect::Bright);
+				DisplayListAdd(g_ItemsJsp->GetSprite(byte(item) + 19), x, y, 0, y, 4, DisplayEffect::Bright);
 			}
 			else
 			{
-				DisplayListAdd(g_ItemsJsp->GetSprite(19), x, y, 0, y, 0, DisplayEffect::Normal);
+				DisplayListAdd(g_ItemsJsp->GetSprite(byte(item) + 19), x, y, 0, y, 0, DisplayEffect::Normal);
 			}
 			break;
 		case ItemType::SpeedyBoots:

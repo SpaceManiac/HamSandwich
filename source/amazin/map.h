@@ -44,6 +44,7 @@ enum class ItemType : byte
 	HammerUpRandom,
 	Zzz,
 	Shield,
+	_13,
 	OneUp,
 	FirePower,
 	IcePower,
