@@ -159,8 +159,8 @@ void DisplayListRender()
 			case DisplayEffect::Normal:
 				g_DisplayList[i].spr->Draw(g_DisplayList[i].x, g_DisplayList[i].y, mgl);
 				break;
-			case DisplayEffect::Ghost:
-				g_DisplayList[i].spr->DrawGhost(g_DisplayList[i].x, g_DisplayList[i].y, mgl, g_DisplayList[i].bright);
+			case DisplayEffect::Glow:
+				g_DisplayList[i].spr->DrawGlow(g_DisplayList[i].x, g_DisplayList[i].y, mgl, g_DisplayList[i].bright);
 				break;
 			case DisplayEffect::Bright:
 				g_DisplayList[i].spr->DrawBright(g_DisplayList[i].x, g_DisplayList[i].y, mgl, g_DisplayList[i].bright);

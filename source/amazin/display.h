@@ -9,7 +9,7 @@ class sprite_t;
 enum class DisplayEffect
 {
 	Normal,
-	Ghost,
+	Glow,
 	Bright,
 	Red,
 	Blue,

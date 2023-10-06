@@ -2128,7 +2128,7 @@ static void GuyRender(Guy *me)
 		}
 		else if (me->ghostTime != 0)
 		{
-			DisplayListAdd(me->spr, (me->x >> 8) + 0x10, (me->y >> 8) + 0x20, 0, (me->y >> 8) + 0x20, 0, DisplayEffect::Ghost);
+			DisplayListAdd(me->spr, (me->x >> 8) + 0x10, (me->y >> 8) + 0x20, 0, (me->y >> 8) + 0x20, 0, DisplayEffect::Glow);
 		}
 		else if (me->evilEyeTime != 0 || me->sleepTime != 0)
 		{
