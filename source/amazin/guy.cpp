@@ -1463,7 +1463,6 @@ static void GuyUpdatePumpkin(Guy *me)
 	sprite_t *psVar4;
 	byte bVar5;
 	int local_2c;
-	Direction j;
 	int speed;
 	bool canGo[4];
 	byte i;
@@ -1603,7 +1602,7 @@ static void GuyUpdatePumpkin(Guy *me)
 					          [(uint)me->gridX + (int)g_DirectionX[_j]]
 					              .tileAnim < i))
 					{
-						me->direction = j;
+						me->direction = Direction(_j);
 						i = g_Map[(uint)me->gridY + (int)g_DirectionY[_j]]
 						         [(uint)me->gridX + (int)g_DirectionX[_j]]
 						             .tileAnim;
