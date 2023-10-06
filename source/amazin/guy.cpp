@@ -687,7 +687,7 @@ void GuyRespawn(Guy *me)
 
 static void GuyUpdatePlayer(Guy *me)
 {
-	static const byte anim1[11] = {
+	static const byte anim1[12] = {
 		1,
 		2,
 		3,
@@ -699,8 +699,9 @@ static void GuyUpdatePlayer(Guy *me)
 		6,
 		5,
 		4,
+		0,
 	};
-	static const byte anim3[19] = {
+	static const byte anim3[20] = {
 		7,
 		8,
 		9,
@@ -718,6 +719,7 @@ static void GuyUpdatePlayer(Guy *me)
 		9,
 		8,
 		7,
+		0,
 		0,
 		0,
 	};
@@ -1827,17 +1829,17 @@ static void GuyUpdatePumpkin(Guy *me)
 
 static void TitleUpdateGuyPumpkin(Guy *me)
 {
-	static const byte smooveChucklesAnim[29] = {
+	static const byte smooveChucklesAnim[30] = {
 		0xb, 0xb, 0xc, 0xc, 0xb, 0xb, 0, 0,
 		0xb, 0xb, 0xc, 0xc, 0xb, 0xb, 0, 0,
 		0xb, 0xb, 0xc, 0xc, 0xb, 0xb, 0, 0,
-		0xb, 0xb, 0xc, 0xc, 0xb
+		0xb, 0xb, 0xc, 0xc, 0xb, 0xb
 	};
-	static const byte peteHelgaAnim[29] = {
+	static const byte peteHelgaAnim[30] = {
 		0xb, 0xb, 0, 0, 0xc, 0xc, 0, 0,
 		0xb, 0xb, 0, 0, 0xc, 0xc, 0, 0,
 		0xb, 0xb, 0, 0, 0xc, 0xc, 0, 0,
-		0xb, 0xb, 0, 0, 0
+		0xb, 0xb, 0, 0, 0, 0
 	};
 	int speed;
 
@@ -1909,11 +1911,11 @@ static void TitleUpdateGuyPumpkin(Guy *me)
 
 static void TitleUpdateGuyPlayer(Guy *me)
 {
-	static const byte walkAnim[11] = {
-		1, 2, 3, 2, 1, 0, 4, 5, 6, 5, 4
+	static const byte walkAnim[12] = {
+		1, 2, 3, 2, 1, 0, 4, 5, 6, 5, 4, 0
 	};
-	static const byte jumpAnim[11] = {
-		7, 7, 8, 8, 9, 8, 8, 7, 7, 0, 0
+	static const byte jumpAnim[13] = {
+		7, 7, 8, 8, 9, 8, 8, 7, 7, 0, 0, 0, 0
 	};
 
 	if (me->anim == 1)
