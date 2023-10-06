@@ -166,7 +166,7 @@ void ParticlesUpdate()
 void ParticleDrawGlow(int x, int y, byte bright)
 {
 	byte bVar1;
-	uint local_8;
+	unsigned int local_8;
 	byte under;
 
 	if ((((0 < x) && (x < mgl->GetWidth() + -1)) && (0 < y)) && ((y < mgl->GetHeight() + -1 && (bright != 0))))
@@ -180,7 +180,7 @@ void ParticleDrawGlow(int x, int y, byte bright)
 			bVar1 = bright - 2;
 		}
 		under = mgl->GetScreen()[x + y * mgl->GetWidth()];
-		local_8 = (uint)under;
+		local_8 = (unsigned int)under;
 		if ((local_8 + bright & 0xffffffe0) == (local_8 & 0xe0))
 		{
 			mgl->GetScreen()[x + y * mgl->GetWidth()] = under + bright;
@@ -190,7 +190,7 @@ void ParticleDrawGlow(int x, int y, byte bright)
 			mgl->GetScreen()[x + y * mgl->GetWidth()] = (under & 0xe0) + 0x1f;
 		}
 		under = mgl->GetScreen()[x + y * mgl->GetWidth() + -1];
-		local_8 = (uint)under;
+		local_8 = (unsigned int)under;
 		if ((local_8 + bVar1 & 0xffffffe0) == (local_8 & 0xe0))
 		{
 			mgl->GetScreen()[x + y * mgl->GetWidth() + -1] = under + bVar1;
@@ -200,7 +200,7 @@ void ParticleDrawGlow(int x, int y, byte bright)
 			mgl->GetScreen()[x + y * mgl->GetWidth() + -1] = (under & 0xe0) + 0x1f;
 		}
 		under = mgl->GetScreen()[x + y * mgl->GetWidth() + 1];
-		if (((uint)under + (uint)bVar1 & 0xffffffe0) == (uint)(under & 0xe0))
+		if (((unsigned int)under + (unsigned int)bVar1 & 0xffffffe0) == (unsigned int)(under & 0xe0))
 		{
 			mgl->GetScreen()[x + y * mgl->GetWidth() + 1] = under + bVar1;
 		}
@@ -209,7 +209,7 @@ void ParticleDrawGlow(int x, int y, byte bright)
 			mgl->GetScreen()[x + y * mgl->GetWidth() + 1] = (under & 0xe0) + 0x1f;
 		}
 		under = mgl->GetScreen()[x + (y + -1) * mgl->GetWidth()];
-		if (((uint)under + (uint)bVar1 & 0xffffffe0) == (uint)(under & 0xe0))
+		if (((unsigned int)under + (unsigned int)bVar1 & 0xffffffe0) == (unsigned int)(under & 0xe0))
 		{
 			mgl->GetScreen()[x + (y + -1) * mgl->GetWidth()] = under + bVar1;
 		}
@@ -218,7 +218,7 @@ void ParticleDrawGlow(int x, int y, byte bright)
 			mgl->GetScreen()[x + (y + -1) * mgl->GetWidth()] = (under & 0xe0) + 0x1f;
 		}
 		under = mgl->GetScreen()[x + (y + 1) * mgl->GetWidth()];
-		if (((uint)under + (uint)bVar1 & 0xffffffe0) == (uint)(under & 0xe0))
+		if (((unsigned int)under + (unsigned int)bVar1 & 0xffffffe0) == (unsigned int)(under & 0xe0))
 		{
 			mgl->GetScreen()[x + (y + 1) * mgl->GetWidth()] = under + bVar1;
 		}
@@ -263,7 +263,7 @@ void ParticlesRender()
 
 void ParticleAddTeleport(int x, int y)
 {
-	uint uVar1;
+	unsigned int uVar1;
 	int local_c;
 	int i;
 
@@ -301,7 +301,7 @@ void ParticleAddTeleport(int x, int y)
 
 void ParticleAddRespawn(int x, int y)
 {
-	uint uVar1;
+	unsigned int uVar1;
 	int local_c;
 	int i;
 
@@ -368,7 +368,7 @@ void ParticleAddSpeed(GuyType player, byte life, int x, int y)
 
 void ParticleAddSnow(byte amount)
 {
-	uint uVar1;
+	unsigned int uVar1;
 	int local_8;
 
 	local_8 = 0;
@@ -381,9 +381,9 @@ void ParticleAddSnow(byte amount)
 		if (g_Particles[local_8].type == ParticleType::None)
 		{
 			g_Particles[local_8].type = ParticleType::Snow;
-			uVar1 = MGL_random((ushort)mgl->GetWidth());
+			uVar1 = MGL_random((unsigned short)mgl->GetWidth());
 			g_Particles[local_8].x = (uVar1 & 0xffff) << 8;
-			uVar1 = MGL_random((ushort)mgl->GetHeight());
+			uVar1 = MGL_random((unsigned short)mgl->GetHeight());
 			g_Particles[local_8].y = (uVar1 & 0xffff) << 8;
 			g_Particles[local_8].z = 0;
 			uVar1 = MGL_random(0xa00);

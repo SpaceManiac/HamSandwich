@@ -34,17 +34,17 @@ void StatusRender()
 	}
 	if (g_GameMode == GameMode::SiblingRivalry)
 	{
-		sprintf(buf, "%03d", (uint)g_Player[0].candles);
+		sprintf(buf, "%03d", (unsigned int)g_Player[0].candles);
 		Print(0x3c, 4, buf);
-		sprintf(buf, "%03d", (uint)g_Player[1].candles);
+		sprintf(buf, "%03d", (unsigned int)g_Player[1].candles);
 		Print(0x21c, 4, buf);
 		for (i = 0; i < g_Player[0].score; i = i + 1)
 		{
-			g_StatusJsp->GetSprite(ConfigGetBouaphettaMode())->Draw((uint)i * 0x14 + 0x96, 0x24, mgl);
+			g_StatusJsp->GetSprite(ConfigGetBouaphettaMode())->Draw((unsigned int)i * 0x14 + 0x96, 0x24, mgl);
 		}
 		for (i = 0; i < g_Player[1].score; i = i + 1)
 		{
-			g_StatusJsp->GetSprite(!ConfigGetBouaphettaMode())->Draw(0x280 - ((uint)i * 0x14 + 0x96), 0x24, mgl);
+			g_StatusJsp->GetSprite(!ConfigGetBouaphettaMode())->Draw(0x280 - ((unsigned int)i * 0x14 + 0x96), 0x24, mgl);
 		}
 	}
 	else
@@ -61,7 +61,7 @@ void StatusRender()
 		if (g_IsTimeAttack == false)
 		{
 			g_StatusJsp->GetSprite(3)->Draw(300, 0x1f, mgl);
-			sprintf(buf, "%02d", (uint)g_Player[0].lives);
+			sprintf(buf, "%02d", (unsigned int)g_Player[0].lives);
 			Print(300, 2, buf);
 		}
 	}

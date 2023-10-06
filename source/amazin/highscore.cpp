@@ -88,7 +88,7 @@ bool HighScoreUpdate(void)
 	LAB_0040e439:
 		if (recordIndex < 5)
 		{
-			if (g_Player[0].score < (uint)g_Config.scores[recordIndex] ||
+			if (g_Player[0].score < (unsigned int)g_Config.scores[recordIndex] ||
 			    g_Player[0].score == g_Config.scores[recordIndex])
 				goto LAB_0040e430;
 			g_RecordPlayer = 1;
@@ -119,7 +119,7 @@ bool HighScoreUpdate(void)
 			LAB_0040e555:
 				if (recordIndex < 5)
 				{
-					if (g_Player[1].score < (uint)g_Config.scores[recordIndex] ||
+					if (g_Player[1].score < (unsigned int)g_Config.scores[recordIndex] ||
 					    g_Player[1].score == g_Config.scores[recordIndex])
 						goto LAB_0040e54c;
 					g_RecordPlayer = 2;

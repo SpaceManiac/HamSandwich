@@ -85,7 +85,7 @@ void GameInitHappy()
 	int x;
 	char buf[32];
 
-	sprintf(buf, "data/happy%03d.map", (uint)g_MapNum);
+	sprintf(buf, "data/happy%03d.map", (unsigned int)g_MapNum);
 	MapLoad(buf);
 	MapRenderToBackground(GameMode::HappyFields);
 	MapSetupStart();
@@ -130,8 +130,8 @@ void GameInitDank()
 {
 	bool bVar1;
 	byte y;
-	uint h;
-	uint w;
+	unsigned int h;
+	unsigned int w;
 	int i;
 	int x;
 
@@ -140,7 +140,7 @@ void GameInitDank()
 	{
 		w = 0x13;
 	}
-	h = ((int)(uint)g_MapNum >> 1) + 5;
+	h = ((int)(unsigned int)g_MapNum >> 1) + 5;
 	if (0xe < h)
 	{
 		h = 0xe;
@@ -189,10 +189,10 @@ void GameInitRivalry(void)
 {
 	bool bVar1;
 	byte cVar2;
-	uint uVar2;
-	uint local_30;
+	unsigned int uVar2;
+	unsigned int local_30;
 	int i;
-	uint x;
+	unsigned int x;
 	char buf[32];
 	byte y;
 
@@ -209,13 +209,13 @@ void GameInitRivalry(void)
 		else if (cVar2 == 2)
 		{
 			y = ConfigGetRivalryMapSize();
-			x = (uint)y * 4 + 2;
+			x = (unsigned int)y * 4 + 2;
 			if (0x13 < x)
 			{
 				x = 0x13;
 			}
 			y = ConfigGetRivalryMapSize();
-			local_30 = (uint)y * 3 + 2;
+			local_30 = (unsigned int)y * 3 + 2;
 			if (0xe < local_30)
 			{
 				local_30 = 0xe;
@@ -277,7 +277,7 @@ bool GameUpdate(void)
 	bool bVar1;
 	char k;
 	Cheat cheat;
-	uint uVar2;
+	unsigned int uVar2;
 
 	isPaused = IsPaused();
 	if (!isPaused)
@@ -525,7 +525,7 @@ void GameRender()
 		{
 			CenterPrintBright(g_LevelIntroX + 2, 0xca, "Happy Fields", -0x20);
 			CenterPrintMultiline(g_LevelIntroX, 200, "Happy Fields");
-			sprintf(buf, "Level %02d", (uint)g_MapNum);
+			sprintf(buf, "Level %02d", (unsigned int)g_MapNum);
 			CenterPrintBright(g_LevelIntroX + 2, 0xe8, buf, -0x20);
 			CenterPrintMultiline(g_LevelIntroX, 0xe6, buf);
 			CenterPrintBright(g_LevelIntroX + 2, 0x11a, "Get Ready!", -0x20);
@@ -535,7 +535,7 @@ void GameRender()
 		{
 			CenterPrintBright(g_LevelIntroX + 2, 0xca, "Dank Dungeons", -0x20);
 			CenterPrintMultiline(g_LevelIntroX, 200, "Dank Dungeons");
-			sprintf(buf, "Level %02d", (uint)g_MapNum);
+			sprintf(buf, "Level %02d", (unsigned int)g_MapNum);
 			CenterPrintBright(g_LevelIntroX + 2, 0xe8, buf, -0x20);
 			CenterPrintMultiline(g_LevelIntroX, 0xe6, buf);
 			CenterPrintBright(g_LevelIntroX + 2, 0x11a, "Get Ready!", -0x20);
@@ -545,7 +545,7 @@ void GameRender()
 		{
 			CenterPrintBright(g_LevelIntroX + 2, 0xca, "Sibling Rivalry", -0x20);
 			CenterPrintMultiline(g_LevelIntroX, 200, "Sibling Rivalry");
-			sprintf(buf, "Round %02d", (uint)g_RivalryRound);
+			sprintf(buf, "Round %02d", (unsigned int)g_RivalryRound);
 			CenterPrintBright(g_LevelIntroX + 2, 0xe8, buf, -0x20);
 			CenterPrintMultiline(g_LevelIntroX, 0xe6, buf);
 			CenterPrintBright(g_LevelIntroX + 2, 0x11a, "Get Ready!", -0x20);

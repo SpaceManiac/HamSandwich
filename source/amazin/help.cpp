@@ -348,8 +348,8 @@ bool HelpButtonIsHovered(Help *me)
 	const sprite_t *spr = g_ButtonsJsp->GetSprite(me->spriteNum + 1);
 	int x = me->x + (int)spr->ofsx;
 	int y = me->y + (int)spr->ofsy;
-	if ((((g_HelpMouseX < x) || (g_HelpMouseY < y)) || ((int)(x + (uint)spr->width) < g_HelpMouseX)) ||
-	    ((int)(y + (uint)spr->height) < g_HelpMouseY))
+	if ((((g_HelpMouseX < x) || (g_HelpMouseY < y)) || ((int)(x + (unsigned int)spr->width) < g_HelpMouseX)) ||
+	    ((int)(y + (unsigned int)spr->height) < g_HelpMouseY))
 	{
 		return false;
 	}
@@ -383,7 +383,7 @@ bool HelpUpdate()
 	mgl->GetMouse(&g_HelpMouseX, &g_HelpMouseY);
 	if ((oldMouseX != g_HelpMouseX) || (oldMouseY != g_HelpMouseY))
 	{
-		for (i = 0; i < (int)(uint)g_HelpLen; i = i + 1)
+		for (i = 0; i < (int)(unsigned int)g_HelpLen; i = i + 1)
 		{
 			if (g_Help[i].type == HelpType::Btn)
 			{
@@ -476,7 +476,7 @@ bool HelpUpdate()
 	if (held != 0)
 	{
 		g_HelpHovered = (Help *)0x0;
-		for (i = 0; i < (int)(uint)g_HelpLen; i = i + 1)
+		for (i = 0; i < (int)(unsigned int)g_HelpLen; i = i + 1)
 		{
 			if ((g_Help[i].cursorId == g_HelpCursor) &&
 			    ((g_Help[i].type == HelpType::Btn || (g_Help[i].type == HelpType::IBtn))))
@@ -504,7 +504,7 @@ void HelpRender()
 		mgl->FillBox(0, i * -2 + 0x10, 0x27f, i * -2 + 0x11, (char)i + 0x60);
 	}
 	mgl->FillBox(0, 0x1c2, 0x27f, 0x1df, 0x69);
-	for (i = 0; i < (int)(uint)g_HelpLen; i = i + 1)
+	for (i = 0; i < (int)(unsigned int)g_HelpLen; i = i + 1)
 	{
 		switch (g_Help[i].type)
 		{

@@ -122,7 +122,7 @@ void DisplayListAdd(const sprite_t *spr, int x, int y, int z, int sort, char bri
 			{
 				if (g_DisplayList[i].next == -1)
 				{
-					g_DisplayList[i].next = (uint)g_DisplayListLen;
+					g_DisplayList[i].next = (unsigned int)g_DisplayListLen;
 					g_DisplayList[g_DisplayListLen].prev = i;
 					g_DisplayList[g_DisplayListLen].next = -1;
 					g_DisplayListLen = g_DisplayListLen + 1;
@@ -133,13 +133,13 @@ void DisplayListAdd(const sprite_t *spr, int x, int y, int z, int sort, char bri
 			g_DisplayList[g_DisplayListLen].next = i;
 			if (g_DisplayList[i].prev == -1)
 			{
-				g_DisplayListHead = (uint)g_DisplayListLen;
+				g_DisplayListHead = (unsigned int)g_DisplayListLen;
 			}
 			else
 			{
-				g_DisplayList[g_DisplayList[i].prev].next = (uint)g_DisplayListLen;
+				g_DisplayList[g_DisplayList[i].prev].next = (unsigned int)g_DisplayListLen;
 			}
-			g_DisplayList[i].prev = (uint)g_DisplayListLen;
+			g_DisplayList[i].prev = (unsigned int)g_DisplayListLen;
 		}
 		g_DisplayListLen = g_DisplayListLen + 1;
 	}

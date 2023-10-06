@@ -94,9 +94,9 @@ void GuyUpdate(Guy *me);
 
 void GuyAdd(byte x, byte y, GuyType type)
 {
-	ushort uVar1;
+	unsigned short uVar1;
 	bool bVar2;
-	uint uVar3;
+	unsigned int uVar3;
 	int i;
 
 	i = 0;
@@ -125,8 +125,8 @@ void GuyAdd(byte x, byte y, GuyType type)
 	{
 		g_Guys[i].player = 0;
 	}
-	g_Guys[i].x = ((uint)x * 0x20 + 0x10) * 0x100;
-	g_Guys[i].y = ((uint)y * 0x20 + 0x10) * 0x100;
+	g_Guys[i].x = ((unsigned int)x * 0x20 + 0x10) * 0x100;
+	g_Guys[i].y = ((unsigned int)y * 0x20 + 0x10) * 0x100;
 	g_Guys[i].gridX = x;
 	g_Guys[i].gridY = y;
 	g_Guys[i].direction = Direction::South;
@@ -140,7 +140,7 @@ void GuyAdd(byte x, byte y, GuyType type)
 	{
 		if (g_MapNum < 0x15)
 		{
-			uVar1 = (ushort)g_MapNum;
+			uVar1 = (unsigned short)g_MapNum;
 			uVar3 = MGL_random(0x28);
 			g_Guys[i].hammerTime = uVar1 * -5 + 0x78 + (short)uVar3;
 		}
@@ -251,7 +251,7 @@ void GetItem(Guy *me)
 		}
 		if (g_MapNum < 0x14)
 		{
-			me->hammerTime = (ushort)g_MapNum * -10 + 300;
+			me->hammerTime = (unsigned short)g_MapNum * -10 + 300;
 		}
 		else
 		{
@@ -342,8 +342,8 @@ void GetItem(Guy *me)
 bool GuyStartWalking(byte x, byte y, Direction dir, Guy *me)
 {
 	bool bVar1;
-	uint rivalY;
-	uint rivalX;
+	unsigned int rivalY;
+	unsigned int rivalX;
 	int i;
 
 	rivalX = 200;
@@ -354,8 +354,8 @@ bool GuyStartWalking(byte x, byte y, Direction dir, Guy *me)
 		{
 			if (byte(g_Guys[i].type) == 3 - byte(me->type))
 			{
-				rivalX = (uint)g_Guys[i].gridX;
-				rivalY = (uint)g_Guys[i].gridY;
+				rivalX = (unsigned int)g_Guys[i].gridX;
+				rivalY = (unsigned int)g_Guys[i].gridY;
 			}
 		}
 	}
@@ -558,7 +558,7 @@ void GuyGetHurt(Guy *me, Guy *enemy, bool sound)
 		{
 			g_Player[me->player - 1].candles = g_Player[me->player - 1].candles - 1;
 		}
-		if ((enemy == nullptr) || ((uint)enemy->type == 3 - byte(me->type)))
+		if ((enemy == nullptr) || ((unsigned int)enemy->type == 3 - byte(me->type)))
 		{
 			g_Player[1 - (me->player - 1)].candles = g_Player[1 - (me->player - 1)].candles + 1;
 		}
@@ -636,8 +636,8 @@ Guy *FindGuy2(Guy *me)
 
 void GuyRespawn(Guy *me)
 {
-	uint uVar1;
-	uint uVar2;
+	unsigned int uVar1;
+	unsigned int uVar2;
 	byte y;
 	byte x;
 	Guy *enemy;
@@ -656,8 +656,8 @@ void GuyRespawn(Guy *me)
 	me->gridX = x;
 	y = (byte)uVar2;
 	me->gridY = y;
-	me->x = ((uint)me->gridX * 0x20 + 0x10) * 0x100;
-	me->y = ((uint)me->gridY * 0x20 + 0x10) * 0x100;
+	me->x = ((unsigned int)me->gridX * 0x20 + 0x10) * 0x100;
+	me->y = ((unsigned int)me->gridY * 0x20 + 0x10) * 0x100;
 	ParticleAddRespawn(me->x, me->y);
 	enemy = FindGuy1(me);
 	while (enemy != (Guy *)0x0)
@@ -726,7 +726,7 @@ static void GuyUpdatePlayer(Guy *me)
 
 	bool bVar1;
 	byte bVar2;
-	uint uVar3;
+	unsigned int uVar3;
 	Guy *pGVar4;
 	int iVar5;
 	int iVar6;
@@ -877,8 +877,8 @@ static void GuyUpdatePlayer(Guy *me)
 				me->direction = Direction::South;
 			}
 		}
-		if (((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 0xd != (uint)me->gridX) ||
-		    ((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 0xd != (uint)me->gridY))
+		if (((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 0xd != (unsigned int)me->gridX) ||
+		    ((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 0xd != (unsigned int)me->gridY))
 		{
 			if (me->fireTime == 0)
 			{
@@ -893,8 +893,8 @@ static void GuyUpdatePlayer(Guy *me)
 				g_Map[me->gridY][me->gridX].item = ItemType::FireTrail;
 				g_Map[me->gridY][me->gridX].itemAnim = 0;
 			}
-			me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
-			me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridX = (byte)((unsigned int)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridY = (byte)((unsigned int)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
 			GetItem(me);
 		}
 		if ((me->x == me->destX) && (me->y == me->destY))
@@ -902,8 +902,8 @@ static void GuyUpdatePlayer(Guy *me)
 			me->anim = 0;
 			local_8 = me->frame;
 			me->frame = 0;
-			me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
-			me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridX = (byte)((unsigned int)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridY = (byte)((unsigned int)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
 			g_Map[me->gridY][me->gridX].tileAnim = 0;
 			if ((g_Map[me->gridY][me->gridX].flags & TileFlags::TP) != 0)
 			{
@@ -980,7 +980,7 @@ static void GuyUpdatePlayer(Guy *me)
 		local_1c = (Guy *)0x0;
 		for (speed = 0; speed < 0x10; speed = speed + 1)
 		{
-			if ((uint)g_Guys[speed].type == 3 - byte(me->type))
+			if ((unsigned int)g_Guys[speed].type == 3 - byte(me->type))
 			{
 				local_1c = g_Guys + speed;
 			}
@@ -1063,10 +1063,10 @@ static void GuyUpdatePlayer(Guy *me)
 		{
 			me->anim = 0;
 			me->frame = 0;
-			me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
-			me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
-			me->x = ((uint)me->gridX * 0x20 + 0x10) * 0x100;
-			me->y = ((uint)me->gridY * 0x20 + 0x10) * 0x100;
+			me->gridX = (byte)((unsigned int)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridY = (byte)((unsigned int)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->x = ((unsigned int)me->gridX * 0x20 + 0x10) * 0x100;
+			me->y = ((unsigned int)me->gridY * 0x20 + 0x10) * 0x100;
 			if ((g_Map[me->gridY][me->gridX].flags & TileFlags::TP) != 0)
 			{
 				me->anim = 5;
@@ -1089,8 +1089,8 @@ static void GuyUpdatePlayer(Guy *me)
 		else
 		{
 			GetPlayerStart(me->player, &me->x, &me->y);
-			me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
-			me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridX = (byte)((unsigned int)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridY = (byte)((unsigned int)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
 			me->anim = 0;
 			me->frame = 0;
 			me->invincibleTime = 0x3c;
@@ -1104,8 +1104,8 @@ static void GuyUpdatePlayer(Guy *me)
 			if (pGVar4 != (Guy *)0x0)
 			{
 				GetPlayerStart(3 - me->player, &me->x, &me->y);
-				me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
-				me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+				me->gridX = (byte)((unsigned int)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+				me->gridY = (byte)((unsigned int)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
 			}
 		}
 	}
@@ -1168,17 +1168,17 @@ static void GuyUpdatePlayer(Guy *me)
 			me->direction = Direction::East;
 		}
 	}
-	if (((ushort)me->hammerTime < 0x1f) && ((me->hammerTime == 0 || ((me->hammerTime & 1U) != 0))))
+	if (((unsigned short)me->hammerTime < 0x1f) && ((me->hammerTime == 0 || ((me->hammerTime & 1U) != 0))))
 	{
 		bVar2 = byte(me->direction) * 0x13;
 		switch (me->anim)
 		{
 		case 0:
-			spr = g_GuySprites[byte(me->type)]->GetSprite((uint)bVar2);
+			spr = g_GuySprites[byte(me->type)]->GetSprite((unsigned int)bVar2);
 			me->spr = spr;
 			break;
 		case 1:
-			spr = g_GuySprites[byte(me->type)]->GetSprite((uint)anim1[me->frame] + (uint)bVar2);
+			spr = g_GuySprites[byte(me->type)]->GetSprite((unsigned int)anim1[me->frame] + (unsigned int)bVar2);
 			me->spr = spr;
 			if (me->speedTime != 0)
 			{
@@ -1187,7 +1187,7 @@ static void GuyUpdatePlayer(Guy *me)
 			break;
 		case 2:
 			bVar2 = byte(me->direction) * 0x11 + 0x4c;
-			spr = g_GuySprites[byte(me->type)]->GetSprite(me->frame + 7 + (uint)bVar2);
+			spr = g_GuySprites[byte(me->type)]->GetSprite(me->frame + 7 + (unsigned int)bVar2);
 			me->spr = spr;
 			if (me->speedTime != 0)
 			{
@@ -1195,19 +1195,19 @@ static void GuyUpdatePlayer(Guy *me)
 			}
 			break;
 		case 3:
-			spr = g_GuySprites[byte(me->type)]->GetSprite((uint)anim3[me->frame] + (uint)bVar2);
+			spr = g_GuySprites[byte(me->type)]->GetSprite((unsigned int)anim3[me->frame] + (unsigned int)bVar2);
 			me->spr = spr;
 			break;
 		case 4:
-			spr = g_GuySprites[byte(me->type)]->GetSprite(((int)(uint)me->frame >> 1) + 10 + (uint)bVar2);
+			spr = g_GuySprites[byte(me->type)]->GetSprite(((int)(unsigned int)me->frame >> 1) + 10 + (unsigned int)bVar2);
 			me->spr = spr;
 			if (me->speedTime != 0)
 			{
-				ParticleAddSpeed(me->type, (char)((int)(uint)me->frame >> 1) + 10 + bVar2, me->x, me->y);
+				ParticleAddSpeed(me->type, (char)((int)(unsigned int)me->frame >> 1) + 10 + bVar2, me->x, me->y);
 			}
 			break;
 		case 5:
-			spr = g_GuySprites[byte(me->type)]->GetSprite((uint)bVar2);
+			spr = g_GuySprites[byte(me->type)]->GetSprite((unsigned int)bVar2);
 			me->spr = spr;
 		}
 	}
@@ -1217,11 +1217,11 @@ static void GuyUpdatePlayer(Guy *me)
 		switch (me->anim)
 		{
 		case 0:
-			spr = g_GuySprites[byte(me->type)]->GetSprite((uint)bVar2);
+			spr = g_GuySprites[byte(me->type)]->GetSprite((unsigned int)bVar2);
 			me->spr = spr;
 			break;
 		case 1:
-			spr = g_GuySprites[byte(me->type)]->GetSprite((uint)anim1[me->frame] + (uint)bVar2);
+			spr = g_GuySprites[byte(me->type)]->GetSprite((unsigned int)anim1[me->frame] + (unsigned int)bVar2);
 			me->spr = spr;
 			if (me->speedTime != 0)
 			{
@@ -1229,7 +1229,7 @@ static void GuyUpdatePlayer(Guy *me)
 			}
 			break;
 		case 2:
-			spr = g_GuySprites[byte(me->type)]->GetSprite(me->frame + 7 + (uint)bVar2);
+			spr = g_GuySprites[byte(me->type)]->GetSprite(me->frame + 7 + (unsigned int)bVar2);
 			me->spr = spr;
 			if (me->speedTime != 0)
 			{
@@ -1237,20 +1237,20 @@ static void GuyUpdatePlayer(Guy *me)
 			}
 			break;
 		case 3:
-			spr = g_GuySprites[byte(me->type)]->GetSprite((uint)anim3[me->frame] + (uint)(byte)(byte(me->direction) * 0x13));
+			spr = g_GuySprites[byte(me->type)]->GetSprite((unsigned int)anim3[me->frame] + (unsigned int)(byte)(byte(me->direction) * 0x13));
 			me->spr = spr;
 			break;
 		case 4:
 			bVar2 = byte(me->direction) * 0x13;
-			spr = g_GuySprites[byte(me->type)]->GetSprite(((int)(uint)me->frame >> 1) + 10 + (uint)bVar2);
+			spr = g_GuySprites[byte(me->type)]->GetSprite(((int)(unsigned int)me->frame >> 1) + 10 + (unsigned int)bVar2);
 			me->spr = spr;
 			if (me->speedTime != 0)
 			{
-				ParticleAddSpeed(me->type, (char)((int)(uint)me->frame >> 1) + '\n' + bVar2, me->x, me->y);
+				ParticleAddSpeed(me->type, (char)((int)(unsigned int)me->frame >> 1) + '\n' + bVar2, me->x, me->y);
 			}
 			break;
 		case 5:
-			spr = g_GuySprites[byte(me->type)]->GetSprite((uint)bVar2);
+			spr = g_GuySprites[byte(me->type)]->GetSprite((unsigned int)bVar2);
 			me->spr = spr;
 		}
 	}
@@ -1304,8 +1304,8 @@ static void GuyUpdatePumpkinRetreat(Guy *me)
 		if ((me->x == me->destX) && (me->y == me->destY))
 		{
 			me->anim = 0;
-			me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
-			me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridX = (byte)((unsigned int)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridY = (byte)((unsigned int)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
 			me->flags = me->flags & ~GuyFlags::Player;
 			if ((g_Map[me->gridY][me->gridX].flags & TileFlags::PK) != 0)
 			{
@@ -1351,7 +1351,7 @@ static void GuyUpdatePumpkinRetreat(Guy *me)
 		me->flags = me->flags & ~GuyFlags::Retreating;
 		if (g_MapNum < 0x14)
 		{
-			hammerTime = (uint)g_MapNum * -0xf + 0xb4;
+			hammerTime = (unsigned int)g_MapNum * -0xf + 0xb4;
 		}
 		else
 		{
@@ -1364,14 +1364,14 @@ static void GuyUpdatePumpkinRetreat(Guy *me)
 		me->hammerTime = (short)hammerTime;
 		me->frame = 0;
 		me->direction = Direction::South;
-		me->spr = g_GuySprites[int(me->type)]->GetSprite((uint)me->direction * 0xd);
+		me->spr = g_GuySprites[int(me->type)]->GetSprite((unsigned int)me->direction * 0xd);
 	}
 	else
 	{
 		bVar1 = byte(me->direction) * 13;
 		if (me->anim == 3)
 		{
-			me->spr = g_GuySprites[int(me->type)]->GetSprite((uint)anim[me->frame] + (uint)bVar1);
+			me->spr = g_GuySprites[int(me->type)]->GetSprite((unsigned int)anim[me->frame] + (unsigned int)bVar1);
 		}
 		else
 		{
@@ -1459,7 +1459,7 @@ static void GuyUpdatePumpkin(Guy *me)
 		10,
 	};
 
-	uint uVar1;
+	unsigned int uVar1;
 	int iVar2;
 	int iVar3;
 	sprite_t *psVar4;
@@ -1489,7 +1489,7 @@ static void GuyUpdatePumpkin(Guy *me)
 		me->sleepTime = me->sleepTime + -1;
 		return;
 	}
-	me->iceTime = (ushort)g_SnowTimer;
+	me->iceTime = (unsigned short)g_SnowTimer;
 	if ((g_Map[me->gridY][me->gridX].tile == 0x14) && (me->anim != 4))
 	{
 		me->anim = 4;
@@ -1508,16 +1508,16 @@ static void GuyUpdatePumpkin(Guy *me)
 		switch (me->type)
 		{
 		case GuyType::Smoove:
-			speed = (uint)g_MapNum * 0x20 + 0x180;
+			speed = (unsigned int)g_MapNum * 0x20 + 0x180;
 			break;
 		case GuyType::Chuckles:
-			speed = (uint)g_MapNum * 0x20 + 0x100;
+			speed = (unsigned int)g_MapNum * 0x20 + 0x100;
 			break;
 		case GuyType::Helga:
-			speed = (uint)g_MapNum * 0x20 + 0x200;
+			speed = (unsigned int)g_MapNum * 0x20 + 0x200;
 			break;
 		case GuyType::Pete:
-			speed = (uint)g_MapNum * 0x20 + 0x300;
+			speed = (unsigned int)g_MapNum * 0x20 + 0x300;
 		}
 		if (g_SnowTimer != 0)
 		{
@@ -1561,8 +1561,8 @@ static void GuyUpdatePumpkin(Guy *me)
 			me->anim = 0;
 			frame = me->frame;
 			me->frame = 0;
-			me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
-			me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridX = (byte)((unsigned int)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridY = (byte)((unsigned int)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
 			if ((g_Map[me->gridY][me->gridX].flags & TileFlags::P) == 0)
 			{
 				me->flags = me->flags | GuyFlags::Player;
@@ -1600,13 +1600,13 @@ static void GuyUpdatePumpkin(Guy *me)
 				for (int _j = 0; _j < 4; _j = _j + 1)
 				{
 					if ((canGo[_j] != false) &&
-					    (g_Map[(uint)me->gridY + (int)g_DirectionY[_j]]
-					          [(uint)me->gridX + (int)g_DirectionX[_j]]
+					    (g_Map[(unsigned int)me->gridY + (int)g_DirectionY[_j]]
+					          [(unsigned int)me->gridX + (int)g_DirectionX[_j]]
 					              .tileAnim < i))
 					{
 						me->direction = Direction(_j);
-						i = g_Map[(uint)me->gridY + (int)g_DirectionY[_j]]
-						         [(uint)me->gridX + (int)g_DirectionX[_j]]
+						i = g_Map[(unsigned int)me->gridY + (int)g_DirectionY[_j]]
+						         [(unsigned int)me->gridX + (int)g_DirectionX[_j]]
 						             .tileAnim;
 					}
 				}
@@ -1758,10 +1758,10 @@ static void GuyUpdatePumpkin(Guy *me)
 			{
 				me->anim = 0;
 			}
-			me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
-			me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
-			me->x = ((uint)me->gridX * 0x20 + 0x10) * 0x100;
-			me->y = ((uint)me->gridY * 0x20 + 0x10) * 0x100;
+			me->gridX = (byte)((unsigned int)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridY = (byte)((unsigned int)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->x = ((unsigned int)me->gridX * 0x20 + 0x10) * 0x100;
+			me->y = ((unsigned int)me->gridY * 0x20 + 0x10) * 0x100;
 			me->frame = 0;
 		}
 	}
@@ -1772,10 +1772,10 @@ static void GuyUpdatePumpkin(Guy *me)
 			me->anim = 0;
 			me->frame = 0;
 			me->flags = me->flags | GuyFlags::Retreating;
-			me->gridX = (byte)((uint)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
-			me->gridY = (byte)((uint)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
-			me->x = ((uint)me->gridX * 0x20 + 0x10) * 0x100;
-			me->y = ((uint)me->gridY * 0x20 + 0x10) * 0x100;
+			me->gridX = (byte)((unsigned int)((int)(me->x + (me->x >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->gridY = (byte)((unsigned int)((int)(me->y + (me->y >> 0x1f & 0x1fU)) >> 5) >> 8);
+			me->x = ((unsigned int)me->gridX * 0x20 + 0x10) * 0x100;
+			me->y = ((unsigned int)me->gridY * 0x20 + 0x10) * 0x100;
 			GuyUpdatePumpkinRetreat(me);
 			return;
 		}
@@ -1798,11 +1798,11 @@ static void GuyUpdatePumpkin(Guy *me)
 	switch (me->anim)
 	{
 	case 0:
-		psVar4 = g_GuySprites[byte(me->type)]->GetSprite((uint)bVar5);
+		psVar4 = g_GuySprites[byte(me->type)]->GetSprite((unsigned int)bVar5);
 		me->spr = psVar4;
 		break;
 	case 1:
-		psVar4 = g_GuySprites[byte(me->type)]->GetSprite((uint)me->frame + (uint)bVar5);
+		psVar4 = g_GuySprites[byte(me->type)]->GetSprite((unsigned int)me->frame + (unsigned int)bVar5);
 		me->spr = psVar4;
 		break;
 	case 3:
@@ -1818,11 +1818,11 @@ static void GuyUpdatePumpkin(Guy *me)
 		}
 		break;
 	case 4:
-		psVar4 = g_GuySprites[byte(me->type)]->GetSprite((uint)anim4[me->frame] + (uint)bVar5);
+		psVar4 = g_GuySprites[byte(me->type)]->GetSprite((unsigned int)anim4[me->frame] + (unsigned int)bVar5);
 		me->spr = psVar4;
 		break;
 	case 5:
-		psVar4 = g_GuySprites[byte(me->type)]->GetSprite((uint)bVar5);
+		psVar4 = g_GuySprites[byte(me->type)]->GetSprite((unsigned int)bVar5);
 		me->spr = psVar4;
 	}
 }
@@ -1999,7 +1999,7 @@ void GuysUpdate()
 	{
 		if (g_Guys[i].evilEyeTime != 0)
 		{
-			ShootEvilEye((uint)g_Guys[i].gridX, (uint)g_Guys[i].gridY, g_Guys[i].direction);
+			ShootEvilEye((unsigned int)g_Guys[i].gridX, (unsigned int)g_Guys[i].gridY, g_Guys[i].direction);
 		}
 	}
 	for (i = 0; i < 0x10; i = i + 1)

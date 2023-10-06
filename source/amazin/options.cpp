@@ -362,7 +362,7 @@ void OptionsRender()
 
 	memcpy(mgl->GetScreen(), g_Background, 0x4b000);
 	CenterPrint(0x140, 2, "Game Options");
-	sprintf(buf, "Lives: %d", (uint)g_Config.lives);
+	sprintf(buf, "Lives: %d", (unsigned int)g_Config.lives);
 	PrintMultiline(0x52, 0x2a, buf);
 	if (g_Config.bouaphettaMode == false)
 	{
@@ -396,7 +396,7 @@ void OptionsRender()
 		PrintMultiline(0x52, 0x11a, "Music: On");
 	}
 	PrintMultiline(0x52, 0x138, "Exit");
-	GetGuySprite(6, 13)->Draw(0x43, (uint)g_OptionsSelection * 0x1e + 0x3a, mgl);
+	GetGuySprite(6, 13)->Draw(0x43, (unsigned int)g_OptionsSelection * 0x1e + 0x3a, mgl);
 	CenterPrintMultiline(0x140, 0x1a4, optionDescriptions[g_OptionsSelection]);
 	CenterPrintMultiline(0x140, 0x1c2, "Up & Down select. Left, Right, & Enter adjust.");
 }
@@ -733,9 +733,9 @@ void RivalryOptionsRender()
 	{
 		PrintMultiline(0x52, 0x2a, "Rivalry Pumpkins: On");
 	}
-	sprintf(buf, "Rivalry Matches: Best %d of %d", (uint)g_Config.rivalryMatches, (uint)g_Config.rivalryMatches * 2 + -1);
+	sprintf(buf, "Rivalry Matches: Best %d of %d", (unsigned int)g_Config.rivalryMatches, (unsigned int)g_Config.rivalryMatches * 2 + -1);
 	PrintMultiline(0x52, 0x48, buf);
-	sprintf(buf, "Rivalry Powerups: %d", (uint)g_Config.rivalryPowerups);
+	sprintf(buf, "Rivalry Powerups: %d", (unsigned int)g_Config.rivalryPowerups);
 	PrintMultiline(0x52, 0x66, buf);
 	if (g_Config.rivalryMapMode == 1)
 	{
@@ -750,10 +750,10 @@ void RivalryOptionsRender()
 		sprintf(buf, "Rivalry Map Size: %s", sizes[g_Config.rivalryMapSize - 1]);
 		PrintMultiline(0x52, 0xa2, buf);
 	}
-	sprintf(buf, "Rivalry Level: %d", (uint)g_Config.rivalryLevel);
+	sprintf(buf, "Rivalry Level: %d", (unsigned int)g_Config.rivalryLevel);
 	PrintMultiline(0x52, 0xc0, buf);
 	PrintMultiline(0x52, 0xde, "Exit");
-	GetGuySprite(6, 13)->Draw(0x43, (uint)g_OptionsSelection * 0x1e + 0x3a, mgl);
+	GetGuySprite(6, 13)->Draw(0x43, (unsigned int)g_OptionsSelection * 0x1e + 0x3a, mgl);
 	if (!RegistrationCurrentlyValid())
 	{
 		CenterPrintMultiline(0x140, 0x186, "*** NOT AVAILABLE IN DEMO! ***");

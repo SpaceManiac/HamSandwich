@@ -471,7 +471,7 @@ bool SplashUpdate()
 		break;
 	case 1:
 		g_SplashTimer = g_SplashTimer + 1;
-		if (g_SplashTimer == (uint)g_SplashWhich * 0xf0 + 0x3c)
+		if (g_SplashTimer == (unsigned int)g_SplashWhich * 0xf0 + 0x3c)
 		{
 			g_SplashMode = 2;
 		}

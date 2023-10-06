@@ -89,7 +89,7 @@ void MapSave(const char *fname)
 
 void MapClear(GameMode theme)
 {
-	uint r;
+	unsigned int r;
 	int y;
 	int x;
 
@@ -171,25 +171,25 @@ void TileRender(byte tile, int x, int y)
 void MapFloodFillReachable(int x, int y)
 {
 	if (((0 < y) && ((g_Map[y + -1][x].flags & TileFlags::WallH) == 0)) &&
-	    (g_Map[y][x].distanceFromPumpkinSpawn + 1 < (uint)g_Map[y + -1][x].distanceFromPumpkinSpawn))
+	    (g_Map[y][x].distanceFromPumpkinSpawn + 1 < (unsigned int)g_Map[y + -1][x].distanceFromPumpkinSpawn))
 	{
 		g_Map[y + -1][x].distanceFromPumpkinSpawn = g_Map[y][x].distanceFromPumpkinSpawn + 1;
 		MapFloodFillReachable(x, y + -1);
 	}
 	if (((0 < x) && ((g_Map[y][x].flags & TileFlags::WallV) == 0)) &&
-	    (g_Map[y][x].distanceFromPumpkinSpawn + 1 < (uint)g_Map[y][x - 1].distanceFromPumpkinSpawn))
+	    (g_Map[y][x].distanceFromPumpkinSpawn + 1 < (unsigned int)g_Map[y][x - 1].distanceFromPumpkinSpawn))
 	{
 		g_Map[y][x - 1].distanceFromPumpkinSpawn = g_Map[y][x].distanceFromPumpkinSpawn + 1;
 		MapFloodFillReachable(x + -1, y);
 	}
 	if (((x < 0x12) && ((g_Map[y][x + 1].flags & TileFlags::WallV) == 0)) &&
-	    (g_Map[y][x].distanceFromPumpkinSpawn + 1 < (uint)g_Map[y][x + 1].distanceFromPumpkinSpawn))
+	    (g_Map[y][x].distanceFromPumpkinSpawn + 1 < (unsigned int)g_Map[y][x + 1].distanceFromPumpkinSpawn))
 	{
 		g_Map[y][x + 1].distanceFromPumpkinSpawn = g_Map[y][x].distanceFromPumpkinSpawn + 1;
 		MapFloodFillReachable(x + 1, y);
 	}
 	if (((y < 0xd) && ((g_Map[y][x].flags & TileFlags::WallH) == 0)) &&
-	    (g_Map[y][x].distanceFromPumpkinSpawn + 1 < (uint)g_Map[y + 1][x].distanceFromPumpkinSpawn))
+	    (g_Map[y][x].distanceFromPumpkinSpawn + 1 < (unsigned int)g_Map[y + 1][x].distanceFromPumpkinSpawn))
 	{
 		g_Map[y + 1][x].distanceFromPumpkinSpawn = g_Map[y][x].distanceFromPumpkinSpawn + 1;
 		MapFloodFillReachable(x, y + 1);
@@ -240,16 +240,16 @@ void MapRandomize(int w, int h)
 	bool bVar3;
 	ItemType IVar4;
 	byte bVar5;
-	uint x;
-	uint y;
-	uint uVar6;
+	unsigned int x;
+	unsigned int y;
+	unsigned int uVar6;
 	int iVar7;
 	int iVar8;
-	uint y2;
-	uint x2;
+	unsigned int y2;
+	unsigned int x2;
 	int local_870;
 	int j;
-	uint i;
+	unsigned int i;
 	int centerY;
 	int centerX;
 	int local_85c;
@@ -284,10 +284,10 @@ void MapRandomize(int w, int h)
 	x = MGL_random(2);
 	if ((x & 0xffff) == 0)
 	{
-		x = MGL_random((ushort)w - 2);
+		x = MGL_random((unsigned short)w - 2);
 		x = x & 0xffff;
 		i = x + 1;
-		y = MGL_random((ushort)h);
+		y = MGL_random((unsigned short)h);
 		y = y & 0xffff;
 		g_Map[y][x + 1].flags = TileFlags::WallH | TileFlags::PK | TileFlags::P;
 		g_Map[y][x].flags = TileFlags::WallV | TileFlags::WallH | TileFlags::P;
@@ -297,9 +297,9 @@ void MapRandomize(int w, int h)
 	}
 	else
 	{
-		x = MGL_random((ushort)w);
+		x = MGL_random((unsigned short)w);
 		x = x & 0xffff;
-		y = MGL_random((ushort)h - 2);
+		y = MGL_random((unsigned short)h - 2);
 		y = y & 0xffff;
 		g_Map[y + 1][x].flags = TileFlags::WallV | TileFlags::PK | TileFlags::P;
 		g_Map[y][x].flags = TileFlags::WallV | TileFlags::P;
@@ -314,9 +314,9 @@ LAB_0040f9c3:
 	{
 		do
 		{
-			x = MGL_random((ushort)w);
+			x = MGL_random((unsigned short)w);
 			x = x & 0xffff;
-			y = MGL_random((ushort)h);
+			y = MGL_random((unsigned short)h);
 			y = y & 0xffff;
 		} while ((g_Map[y][x].flags & TileFlags::P) != 0);
 		uVar6 = MGL_random(4);
@@ -333,8 +333,8 @@ LAB_0040f9c3:
 			{
 				bVar3 = true;
 			}
-			x2 = (uint)g_Map[y][x + 1].distanceFromPumpkinSpawn;
-			y2 = (uint)g_Map[y][x + 1].tileAnim;
+			x2 = (unsigned int)g_Map[y][x + 1].distanceFromPumpkinSpawn;
+			y2 = (unsigned int)g_Map[y][x + 1].tileAnim;
 			break;
 		case 1:
 			if ((((y == h - 1U) || (((g_Map[y + 1][x].flags & TileFlags::P) != 0 && (bVar3)))) ||
@@ -347,8 +347,8 @@ LAB_0040f9c3:
 			{
 				bVar3 = true;
 			}
-			x2 = (uint)g_Map[y + 1][x].distanceFromPumpkinSpawn;
-			y2 = (uint)g_Map[y + 1][x].tileAnim;
+			x2 = (unsigned int)g_Map[y + 1][x].distanceFromPumpkinSpawn;
+			y2 = (unsigned int)g_Map[y + 1][x].tileAnim;
 			break;
 		case 2:
 			if (((x == 0) || (((g_Map[y][x - 1].flags & TileFlags::P) != 0 && (bVar3)))) ||
@@ -360,8 +360,8 @@ LAB_0040f9c3:
 			{
 				bVar3 = true;
 			}
-			x2 = (uint)g_Map[y][x - 1].distanceFromPumpkinSpawn;
-			y2 = (uint)g_Map[y][x - 1].tileAnim;
+			x2 = (unsigned int)g_Map[y][x - 1].distanceFromPumpkinSpawn;
+			y2 = (unsigned int)g_Map[y][x - 1].tileAnim;
 			break;
 		case 3:
 			if ((((y == 0) || (((g_Map[y - 1][x].flags & TileFlags::P) != 0 && (bVar3)))) ||
@@ -374,8 +374,8 @@ LAB_0040f9c3:
 			{
 				bVar3 = true;
 			}
-			x2 = (uint)g_Map[y - 1][x].distanceFromPumpkinSpawn;
-			y2 = (uint)g_Map[y - 1][x].tileAnim;
+			x2 = (unsigned int)g_Map[y - 1][x].distanceFromPumpkinSpawn;
+			y2 = (unsigned int)g_Map[y - 1][x].tileAnim;
 		}
 		local_85c = 0;
 		bVar1 = g_Map[y][x].distanceFromPumpkinSpawn;
@@ -400,9 +400,9 @@ LAB_0040f9c3:
 			local_870 = 1000;
 			while (iVar7 = local_870 + -1, 0 < local_870)
 			{
-				x = MGL_random((ushort)w);
+				x = MGL_random((unsigned short)w);
 				x = x & 0xffff;
-				y = MGL_random((ushort)h);
+				y = MGL_random((unsigned short)h);
 				y = y & 0xffff;
 				local_870 = iVar7;
 				if ((g_Map[y][x].flags & TileFlags::P) == 0)
@@ -462,41 +462,41 @@ LAB_0040f9c3:
 			}
 			do
 			{
-				x = MGL_random((ushort)(w / 2));
+				x = MGL_random((unsigned short)(w / 2));
 				x = x & 0xffff;
-				y = MGL_random((ushort)(h / 2));
+				y = MGL_random((unsigned short)(h / 2));
 				y = y & 0xffff;
 			} while ((g_Map[y][x].flags & TileFlags::P) != 0);
 			g_Map[y][x].flags = g_Map[y][x].flags | TileFlags::HammerUp;
 			do
 			{
-				x = MGL_random((ushort)(w / 2));
+				x = MGL_random((unsigned short)(w / 2));
 				iVar7 = (x & 0xffff) + w / 2;
-				x = MGL_random((ushort)(h / 2));
+				x = MGL_random((unsigned short)(h / 2));
 				x = x & 0xffff;
 			} while ((g_Map[x][iVar7].flags & TileFlags::P) != 0);
 			g_Map[x][iVar7].flags = g_Map[x][iVar7].flags | TileFlags::HammerUp;
 			do
 			{
-				x = MGL_random((ushort)(w / 2));
+				x = MGL_random((unsigned short)(w / 2));
 				x = x & 0xffff;
-				y = MGL_random((ushort)(h / 2));
+				y = MGL_random((unsigned short)(h / 2));
 				iVar7 = (y & 0xffff) + h / 2;
 			} while ((g_Map[iVar7][x].flags & TileFlags::P) != 0);
 			g_Map[iVar7][x].flags = g_Map[iVar7][x].flags | TileFlags::HammerUp;
 			do
 			{
-				x = MGL_random((ushort)(w / 2));
+				x = MGL_random((unsigned short)(w / 2));
 				iVar7 = (x & 0xffff) + w / 2;
-				x = MGL_random((ushort)(h / 2));
+				x = MGL_random((unsigned short)(h / 2));
 				iVar8 = (x & 0xffff) + h / 2;
 			} while ((g_Map[iVar8][iVar7].flags & TileFlags::P) != 0);
 			g_Map[iVar8][iVar7].flags = g_Map[iVar8][iVar7].flags | TileFlags::HammerUp;
 			do
 			{
-				x = MGL_random((ushort)w);
+				x = MGL_random((unsigned short)w);
 				x = x & 0xffff;
-				y = MGL_random((ushort)h);
+				y = MGL_random((unsigned short)h);
 				y = y & 0xffff;
 			} while ((g_Map[y][x].flags & (TileFlags::HammerUp | TileFlags::P)) != 0);
 			g_Map[y][x].flags = g_Map[y][x].flags | (TileFlags::PU | TileFlags::P1);
@@ -504,9 +504,9 @@ LAB_0040f9c3:
 			{
 				do
 				{
-					x = MGL_random((ushort)w);
+					x = MGL_random((unsigned short)w);
 					x = x & 0xffff;
-					y = MGL_random((ushort)h);
+					y = MGL_random((unsigned short)h);
 					y = y & 0xffff;
 				} while ((g_Map[y][x].flags & (TileFlags::HammerUp | TileFlags::P1 | TileFlags::P)) != 0);
 				g_Map[y][x].flags = g_Map[y][x].flags | (TileFlags::PU | TileFlags::P2);
@@ -516,9 +516,9 @@ LAB_0040f9c3:
 			{
 				do
 				{
-					y = MGL_random((ushort)w);
+					y = MGL_random((unsigned short)w);
 					y = y & 0xffff;
-					uVar6 = MGL_random((ushort)h);
+					uVar6 = MGL_random((unsigned short)h);
 					uVar6 = uVar6 & 0xffff;
 				} while ((g_Map[uVar6][y].flags &
 				          (TileFlags::HammerUp | TileFlags::P1 | TileFlags::P2 | TileFlags::P)) != 0);
@@ -527,7 +527,7 @@ LAB_0040f9c3:
 			iVar7 = w + -0xc + h;
 			if (0 < iVar7)
 			{
-				x = MGL_random((ushort)(iVar7 & 0xffff));
+				x = MGL_random((unsigned short)(iVar7 & 0xffff));
 				if (1 < (x & 0xffff))
 				{
 					x = MGL_random((short)(iVar7 / 6) + 2);
@@ -536,9 +536,9 @@ LAB_0040f9c3:
 					{
 						do
 						{
-							x = MGL_random((ushort)w);
+							x = MGL_random((unsigned short)w);
 							x = x & 0xffff;
-							y = MGL_random((ushort)h);
+							y = MGL_random((unsigned short)h);
 							y = y & 0xffff;
 						} while ((g_Map[y][x].flags &
 						          (TileFlags::HammerUp | TileFlags::PU | TileFlags::P1 | TileFlags::P2 | TileFlags::P)) != 0);
@@ -710,7 +710,7 @@ void MapRedrawTile(byte tx, byte ty)
 	{
 		for (py = 0; py < 0x20; py = py + 1)
 		{
-			g_Background[px + (uint)tx * 0x20 + 0x10 + (py + (uint)ty * 0x20 + 0x20) * mgl->GetWidth()] =
+			g_Background[px + (unsigned int)tx * 0x20 + 0x10 + (py + (unsigned int)ty * 0x20 + 0x20) * mgl->GetWidth()] =
 				g_Tiles[g_Map[ty][tx].tile][py][px];
 		}
 	}
@@ -720,7 +720,7 @@ void MapRedrawTile(byte tx, byte ty)
 void MapSpawnItems()
 {
 	byte bVar1;
-	uint uVar2;
+	unsigned int uVar2;
 	int i;
 
 	auto map = &g_Map[0][0];
@@ -757,7 +757,7 @@ void MapSpawnItems()
 	else if (g_GameMode == GameMode::SiblingRivalry)
 	{
 		bVar1 = ConfigGetRivalryPowerups();
-		g_TimeUntilPowerupExpires = (10 - (ushort)bVar1) * 0x3c + 0x3c;
+		g_TimeUntilPowerupExpires = (10 - (unsigned short)bVar1) * 0x3c + 0x3c;
 		bVar1 = ConfigGetRivalryPowerups();
 		if (bVar1 == 0)
 		{
@@ -805,11 +805,11 @@ void PlacePowerup()
 		12,  // BigCandle
 	};
 
-	uint x;
-	uint y;
-	uint roll;
+	unsigned int x;
+	unsigned int y;
+	unsigned int roll;
 	int totalOdds;
-	uint powerup;
+	unsigned int powerup;
 	byte odds;
 
 	do
@@ -853,11 +853,11 @@ void PlacePowerup()
 	g_PowerupOnMap = 1;
 	if (g_GameMode == GameMode::HappyFields)
 	{
-		g_TimeUntilPowerupExpires = (short)((int)(uint)g_MapNum >> 1) * -0x19 + 0x1c2;
+		g_TimeUntilPowerupExpires = (short)((int)(unsigned int)g_MapNum >> 1) * -0x19 + 0x1c2;
 	}
 	else if (g_GameMode == GameMode::DankDungeons)
 	{
-		powerup = (uint)g_MapNum;
+		powerup = (unsigned int)g_MapNum;
 		if (0x14 < powerup)
 		{
 			powerup = 0x14;
@@ -874,13 +874,13 @@ void PlacePowerup()
 void ErasePowerup()
 {
 	byte bVar1;
-	uint uVar2;
+	unsigned int uVar2;
 
 	g_Map[g_PowerupY][g_PowerupX].item = ItemType::None;
 	g_PowerupOnMap = 0;
 	if (g_GameMode == GameMode::HappyFields)
 	{
-		g_TimeUntilPowerupExpires = (ushort)g_MapNum * -10 + 0x1c2;
+		g_TimeUntilPowerupExpires = (unsigned short)g_MapNum * -10 + 0x1c2;
 	}
 	else if (g_GameMode == GameMode::DankDungeons)
 	{
@@ -890,7 +890,7 @@ void ErasePowerup()
 	else if (g_GameMode == GameMode::SiblingRivalry)
 	{
 		bVar1 = ConfigGetRivalryPowerups();
-		g_TimeUntilPowerupExpires = (10 - (ushort)bVar1) * 0x3c + 1;
+		g_TimeUntilPowerupExpires = (10 - (unsigned short)bVar1) * 0x3c + 1;
 		bVar1 = ConfigGetRivalryPowerups();
 		if (bVar1 == 0)
 		{
@@ -1009,7 +1009,7 @@ void ShootEvilEye(int x, unsigned int y, Direction direction)
 
 bool MapUpdate(byte)
 {
-	uint uVar1;
+	unsigned int uVar1;
 	byte ty;
 	int i;
 	int tx;
@@ -1113,7 +1113,7 @@ void ItemRender(ItemType item, byte itemAnim, int x, int y)
 		switch (item)
 		{
 		case ItemType::Candle:
-			DisplayListAdd(g_ItemsJsp->GetSprite(((int)(uint)itemAnim >> 2) + 3), x, y, 0, y, 0, DisplayEffect::Normal);
+			DisplayListAdd(g_ItemsJsp->GetSprite(((int)(unsigned int)itemAnim >> 2) + 3), x, y, 0, y, 0, DisplayEffect::Normal);
 			break;
 		case ItemType::HammerUp:
 			DisplayListAdd(g_ItemsJsp->GetSprite(6), x, y, 0, y, 0, DisplayEffect::Normal);
@@ -1142,7 +1142,7 @@ void ItemRender(ItemType item, byte itemAnim, int x, int y)
 			}
 			break;
 		case ItemType::Ghost:
-			DisplayListAdd(g_ItemsJsp->GetSprite(((int)(uint)itemAnim >> 2 & 1U) + 7), x, y, 0, y, 0, DisplayEffect::Normal);
+			DisplayListAdd(g_ItemsJsp->GetSprite(((int)(unsigned int)itemAnim >> 2 & 1U) + 7), x, y, 0, y, 0, DisplayEffect::Normal);
 			break;
 		case ItemType::IceCream:
 			if ((itemAnim & 7) == 0)
@@ -1215,11 +1215,11 @@ void ItemRender(ItemType item, byte itemAnim, int x, int y)
 			}
 			break;
 		case ItemType::EvilEye:
-			if ((int)(uint)itemAnim >> 2 == 0)
+			if ((int)(unsigned int)itemAnim >> 2 == 0)
 			{
 				sprIdx = 14;
 			}
-			else if (((int)(uint)itemAnim >> 2 == 1) || ((int)(uint)itemAnim >> 2 == 3))
+			else if (((int)(unsigned int)itemAnim >> 2 == 1) || ((int)(unsigned int)itemAnim >> 2 == 3))
 			{
 				sprIdx = 15;
 			}
@@ -1230,7 +1230,7 @@ void ItemRender(ItemType item, byte itemAnim, int x, int y)
 			DisplayListAdd(g_ItemsJsp->GetSprite(sprIdx), x, y, 0, y, 0, DisplayEffect::Normal);
 			break;
 		case ItemType::BigCandle:
-			DisplayListAdd(g_ItemsJsp->GetSprite(((int)(uint)itemAnim >> 2) + 17), x, y, 0, y, 0, DisplayEffect::Normal);
+			DisplayListAdd(g_ItemsJsp->GetSprite(((int)(unsigned int)itemAnim >> 2) + 17), x, y, 0, y, 0, DisplayEffect::Normal);
 			break;
 		case ItemType::FireTrail:
 			DisplayListAdd(spr, x, y, 0, y + -0x2000, 0, DisplayEffect::Normal);
