@@ -38,6 +38,7 @@ void ParticlesInit()
 // This doesn't accomplish anything, but it matches the disassembly!
 void Dampen(int *value, int amt)
 {
+/*
 	if (value > 0)
 	{
 		value -= amt;
@@ -50,6 +51,7 @@ void Dampen(int *value, int amt)
 		if (value > 0)
 			value = 0;
 	}
+*/
 }
 
 void Approach(int *val, int target, int incr)
