@@ -123,6 +123,27 @@ struct LoadedIcon
 {
 	GLuint texture = 0;
 	int width = 0, height = 0;
+
+	LoadedIcon() {}
+	explicit LoadedIcon(SDL_Surface* img)
+	{
+		width = img->w;
+		height = img->h;
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		// Setup filtering parameters for display
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
+
+		// Upload pixels into texture
+#if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+#endif
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->w, img->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixels);
+	}
 };
 
 void print_curl_error(CURL* transfer, const char* explainer, CURLcode result)
@@ -476,6 +497,7 @@ namespace owned
 
 struct Launcher
 {
+	std::map<std::string, const Icon*> icons_by_id;
 	std::vector<Game> games;
 	Game* current_game = nullptr;
 	bool wants_to_play = false;
@@ -487,7 +509,6 @@ struct Launcher
 	{
 		downloads.reset(curl_multi_init());
 
-		std::map<std::string, const Icon*> icons_by_id;
 		const Icon* current = embed_icons;
 		while (current->name)
 		{
@@ -576,17 +597,59 @@ void CopyToAddonsFolder(std::string_view addonsFolder, std::string_view sourcePa
 }
 
 // ----------------------------------------------------------------------------
-// Main code
-enum class Action
-{
-	Gui,
-	MiniCli,
-	MiniGui,
-};
+// Platform-specific child process spawning
 
-bool Launch(std::string_view bin_dir, const Game* game, bool fullscreen, SDL_Window* window)
-{
+// HideWindowAndWaitForChild keeps the launcher open in the background while
+// the child runs. If the child exits OK, the launcher quietly exits too. If
+// the child crashed, bring the launcher back so the user can try again.
+
+// LaunchTool simply executes the given process.
+
+// LaunchGame also supplies HSW_* environment variables and a "window" argument.
+
 #if defined(_WIN32)
+// Launch for Windows
+bool HideWindowAndWaitForChild(SDL_Window* window, const PROCESS_INFORMATION& processInfo)
+{
+	SDL_HideWindow(window);  // Hide window now that we know the child process was created.
+	WaitForSingleObject(processInfo.hProcess, INFINITE);
+	DWORD exitCode;
+	if (!GetExitCodeProcess(processInfo.hProcess, &exitCode))
+		exitCode = -1;
+	CloseHandle(processInfo.hProcess);
+	CloseHandle(processInfo.hThread);
+	if (exitCode == 0)
+		return true;  // Success, so clean up and exit in the background.
+	fprintf(stderr, "child exited with code: %lu\n", exitCode);
+
+	// Child process failed, so bring the launcher window back.
+	SDL_ShowWindow(window);  // Undo Hide
+	return false;
+}
+
+bool LaunchTool(std::string_view bin_dir, std::string_view exename, SDL_Window* window)
+{
+	std::string cmdline { bin_dir };
+	cmdline.append("/");
+	cmdline.append(exename);
+	cmdline.append(".exe");
+
+	STARTUPINFOA startupInfo = {};
+	PROCESS_INFORMATION processInfo = {};
+	startupInfo.cb = sizeof(startupInfo);
+	if (CreateProcessA(cmdline.c_str(), cmdline.data(), nullptr, nullptr, false, 0, nullptr, nullptr, &startupInfo, &processInfo))
+	{
+		return HideWindowAndWaitForChild(window, processInfo);
+	}
+	else
+	{
+		fprintf(stderr, "CreateProcess failed: %lu\n", GetLastError());
+		return false;
+	}
+}
+
+bool LaunchGame(std::string_view bin_dir, const Game* game, bool fullscreen, SDL_Window* window)
+{
 	std::string cmdline { bin_dir };
 	cmdline.append("/");
 	cmdline.append(game->id);
@@ -655,24 +718,71 @@ bool Launch(std::string_view bin_dir, const Game* game, bool fullscreen, SDL_Win
 	startupInfo.cb = sizeof(startupInfo);
 	if (CreateProcessA(executable.c_str(), cmdline.data(), nullptr, nullptr, false, 0, environment.str().data(), nullptr, &startupInfo, &processInfo))
 	{
-		SDL_HideWindow(window);  // Hide window now that we know the child process was created.
-		WaitForSingleObject(processInfo.hProcess, INFINITE);
-		DWORD exitCode;
-		if (!GetExitCodeProcess(processInfo.hProcess, &exitCode))
-			exitCode = -1;
-		CloseHandle(processInfo.hProcess);
-		CloseHandle(processInfo.hThread);
-		return exitCode == 0;
+		return HideWindowAndWaitForChild(window, processInfo);
 	}
 	else
 	{
 		fprintf(stderr, "CreateProcess failed: %lu\n", GetLastError());
 		return false;
 	}
+}
+// End Launch for Windows
 #elif !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+// Launch for Linux and Mac
+bool HideWindowAndWaitForChild(SDL_Window* window, int child_pid)
+{
+	SDL_HideWindow(window);  // Hide window. Unfortunately happens even if execvp fails.
+	SDL_MinimizeWindow(window);  // Minimize on MacOS for now, though it's a little wonky.
+
+	int wstatus;
+	// NB: SDL catches SIGINT and SIGTERM and turns them into a QUIT event and
+	// clean exit, so those won't bubble up as errors here.
+	if (waitpid(child_pid, &wstatus, 0) >= 0 && WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0)
+		return true;  // Success, so clean up and exit in the background.
+	if (WIFEXITED(wstatus))
+		fprintf(stderr, "child exited with code: %d\n", WEXITSTATUS(wstatus));
+	else if (WIFSIGNALED(wstatus))
+		fprintf(stderr, "child exited with signal: %d\n", WTERMSIG(wstatus));
+	else
+		fprintf(stderr, "child exited in unknown way: %x\n", wstatus);
+
+	// Child process failed, so bring the launcher window back.
+	SDL_RestoreWindow(window);  // Undo Minimize.
+	SDL_ShowWindow(window);  // Undo Hide.
+	return false;
+}
+
+bool LaunchTool(std::string_view bin_dir, std::string_view exename, SDL_Window* window)
+{
 	int child_pid = fork();
 	if (child_pid == 0)
 	{
+		std::string program { bin_dir };
+		program.append("/");
+		program.append(exename);
+		char* argv[2] = { program.data(), nullptr };
+
+		execv(argv[0], argv);
+		perror("execv");
+		exit(1);
+	}
+	else if (child_pid > 0)
+	{
+		return HideWindowAndWaitForChild(window, child_pid);
+	}
+	else
+	{
+		perror("fork");
+		return false;
+	}
+}
+
+bool LaunchGame(std::string_view bin_dir, const Game* game, bool fullscreen, SDL_Window* window)
+{
+	int child_pid = fork();
+	if (child_pid == 0)
+	{
+		// We're in the child, so either exec or exit with an error code.
 		std::string program { bin_dir };
 		program.append("/");
 		program.append(game->id);
@@ -727,22 +837,25 @@ bool Launch(std::string_view bin_dir, const Game* game, bool fullscreen, SDL_Win
 	}
 	else if (child_pid > 0)
 	{
-		SDL_HideWindow(window);  // Hide window. Unfortunately happens even if execvp fails.
-		SDL_MinimizeWindow(window);  // Minimize on MacOS for now, though it's a little wonky.
-
-		int wstatus;
-		if (waitpid(child_pid, &wstatus, 0) >= 0 && WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0)
-			return true;  // Success, so clean up and exit in the background.
-		fprintf(stderr, "child exited with code: %d\n", wstatus);
-		return false;
+		return HideWindowAndWaitForChild(window, child_pid);
 	}
 	else
 	{
 		perror("fork");
 		return false;
 	}
-#endif
 }
+// End Launch for Linux and Mac
+#endif
+
+// ----------------------------------------------------------------------------
+// Main code
+enum class Action
+{
+	Gui,
+	MiniCli,
+	MiniGui,
+};
 
 const char GAME_SELECTION_FILENAME[] = "appdata/game_selection.txt";
 
@@ -907,27 +1020,24 @@ int main(int argc, char** argv)
 			{
 				// For best results, bake a 32x32 PNG frame into the .ico file.
 				// OpenGL will handle any necessary up- or down-scaling.
-
-				game.loaded_icon.width = img->w;
-				game.loaded_icon.height = img->h;
-				glGenTextures(1, &game.loaded_icon.texture);
-				glBindTexture(GL_TEXTURE_2D, game.loaded_icon.texture);
-
-				// Setup filtering parameters for display
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
-
-				// Upload pixels into texture
-#if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
-				glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-#endif
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->w, img->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixels);
+				game.loaded_icon = LoadedIcon(img.get());
 			}
 			else
 			{
 				printf("Failed to load %s icon: %s\n", game.id.c_str(), IMG_GetError());
+			}
+		}
+	}
+
+	LoadedIcon jspedit_icon;
+	{
+		const Icon* icon = launcher.icons_by_id["jspedit"];
+		if (icon)
+		{
+			auto img = ReadIcoFile(owned::SDL_RWFromConstMem(icon->data, icon->size), 32);
+			if (img)
+			{
+				jspedit_icon = LoadedIcon(img.get());
 			}
 		}
 	}
@@ -976,12 +1086,12 @@ int main(int argc, char** argv)
 		ImGui::BeginDisabled(action == Action::MiniGui);
 		if (ImGui::Begin("Games", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
 		{
+			const int vertical_padding = 1;
+
 			for (auto& game : launcher.games)
 			{
 				if (game.excluded)
 					continue;
-
-				const int vertical_padding = 1;
 
 				ImGui::PushID(game.id.c_str());
 				if (ImGui::Selectable("", launcher.current_game == &game, ImGuiSelectableFlags_AllowDoubleClick, { 0, 32 + 2 * vertical_padding }))
@@ -1015,8 +1125,33 @@ int main(int argc, char** argv)
 				ImGui::PopID();
 			}
 
+			ImGui::Separator();
+			ImGui::Text("Tools");
+
+			ImGui::PushID("jspedit");
+			const int selectable_padding = 2;
+			if (ImGui::Button("", { ImGui::GetContentRegionAvail().x, 32 + 2 * (vertical_padding + selectable_padding) }))
+			{
+				if (LaunchTool(bin_dir, "jspedit", window))
+				{
+					// Success, so clean up and exit in the background.
+					break;
+				}
+			}
+			if (jspedit_icon.texture)
+			{
+				ImGui::SameLine(8 + 2);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (vertical_padding + selectable_padding));
+				ImGui::Image((void*)(intptr_t)jspedit_icon.texture, { 32, 32 });
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (vertical_padding + selectable_padding));
+			}
+			ImGui::SameLine(48);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (8 + vertical_padding - selectable_padding));
+			ImGui::Text("JspEdit 3");
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (8 + vertical_padding - selectable_padding));
+			ImGui::PopID();
+
 #ifdef GIT_VERSION
-			ImGui::Spacing();
 			ImGui::Separator();
 			ImGui::Text("Version: %.*s", 10, GIT_VERSION);
 #endif
@@ -1251,15 +1386,11 @@ int main(int argc, char** argv)
 			else if (launcher.wants_to_play)
 			{
 				launcher.wants_to_play = false;
-				if (Launch(bin_dir, launcher.current_game, launcher.wants_fullscreen, window))
+				if (LaunchGame(bin_dir, launcher.current_game, launcher.wants_fullscreen, window))
 				{
 					// Success, so clean up and exit in the background.
 					break;
 				}
-
-				// Child process failed, so bring the launcher window back.
-				SDL_RestoreWindow(window);
-				SDL_ShowWindow(window);
 			}
 		}
 	}

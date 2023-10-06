@@ -27,8 +27,8 @@ public:
 		return archive_rw != nullptr;
 	}
 
-	owned::SDL_RWops open_sdl(const char* filename);
-	bool list_dir(const char* directory, std::set<std::string>& output);
+	owned::SDL_RWops open_sdl(const char* filename) override;
+	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output) override;
 };
 
 std::unique_ptr<vanilla::Vfs> vanilla::open_nsis(owned::SDL_RWops rw)
@@ -36,7 +36,7 @@ std::unique_ptr<vanilla::Vfs> vanilla::open_nsis(owned::SDL_RWops rw)
 	return std::make_unique<NsisVfs>(std::move(rw));
 }
 
-bool NsisVfs::list_dir(const char* directory, std::set<std::string>& output)
+bool NsisVfs::list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output)
 {
 	return archive.list_dir(directory, output);
 }
@@ -137,7 +137,8 @@ NsisVfs::NsisVfs(owned::SDL_RWops fptr)
 	vanilla::Archive::Directory* working_directory = &archive.root;
 	for (size_t offset = code_offset; offset < string_table_offset - sizeof(entry); offset += 4)
 	{
-		entry current = *(entry*)&header[offset];
+		entry current;
+		memcpy(&current, &header[offset], sizeof(entry));
 		switch (current.which)
 		{
 			case EW_CREATEDIR:
@@ -240,7 +241,7 @@ bool NsisVfs::extract_internal(const char* path, bool is_compressed, uint32_t si
 	size_t got = SDL_RWread(archive_rw, compressed.data(), 1, compressed.size());
 	if (got < compressed.size())
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "NsisVfs::extract_internal(%s): expected %zu, got %zu: %s", path, compressed.size(), got, SDL_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "NsisVfs::extract_internal(%s): expected %u, got %u: %s", path, (unsigned int)(compressed.size()), (unsigned int)(got), SDL_GetError());
 		return false;
 	}
 

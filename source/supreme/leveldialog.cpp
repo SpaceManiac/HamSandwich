@@ -459,8 +459,15 @@ void InitLevelDialog(world_t *wrld,byte currentMap)
 void ExitLevelDialog(void)
 {
 	ClearButtons();
-	delete mapZoom;
+	delete[] mapZoom;
 	delete levelSpr;
+}
+
+void RenderLevelDialogZoom(MGLDraw *mgl)
+{
+	mgl->ResizeBuffer(world->map[mapNum]->width, world->map[mapNum]->height);
+	for (int y = 0; y < mgl->GetHeight(); ++y)
+		memcpy(mgl->GetScreen() + mgl->GetWidth() * y, &mapZoom[y * MAX_MAPSIZE], mgl->GetWidth());
 }
 
 void RenderLevelDialog(int msx,int msy,MGLDraw *mgl)

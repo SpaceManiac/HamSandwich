@@ -49,7 +49,7 @@ enum : byte
 	VE_YUGO,
 };
 
-typedef struct player_t
+struct player_t
 {
 	// per-world value
 	char worldName[32];
@@ -90,6 +90,7 @@ typedef struct player_t
 	byte torch;
 	byte cheesePower;
 	byte gotRecords;
+	bool pendingLeaderboardUpload;
 	byte spotted;
 	int oxygen;
 	int comboClock;
@@ -107,7 +108,7 @@ typedef struct player_t
 	int brainX,brainY,candleX,candleY;
 	word brainTime,candleTime;
 	byte playAs;
-} player_t;
+};
 
 extern player_t player;
 

@@ -116,7 +116,7 @@ static void RenderButton(MGLDraw *mgl, int x, int y, int wid, std::string_view t
 	PrintGlow(x+2, y+2, txt, 0, 2);
 }
 
-static TASK(void) ViewDetails(MGLDraw *mgl, const byte* backgd, const sprite_set_t& pauseJsp, const world_t* world, const Score& score)
+static TASK(void) ViewDetails(MGLDraw *mgl, const byte* backgd, const sprite_set_t& pauseJsp, const world_t* world, const Score& score, WorldLeaderboardKind kind)
 {
 	// Init
 	constexpr int ENTRIES_PER_SCREEN = 20;
@@ -138,7 +138,7 @@ static TASK(void) ViewDetails(MGLDraw *mgl, const byte* backgd, const sprite_set
 			continue;
 
 		int32_t details = score.details[detailsIdx++];
-		if (details == 0)
+		if (details == (kind == WorldLeaderboardKind::Time ? ~0 : 0))
 			continue;
 
 		Entry entry;
@@ -214,7 +214,8 @@ static TASK(void) ViewDetails(MGLDraw *mgl, const byte* backgd, const sprite_set
 		y += 24;
 
 		PrintGlow(45, y, "Level", 0, 2);
-		PrintGlow(390 - 1 - GetStrLength("Level Score", 2), y, "Level Score", 0, 2);
+		std::string_view score_title = kind == WorldLeaderboardKind::Time ? "Level Time" : "Level Score";
+		PrintGlow(390 - 1 - GetStrLength(score_title, 2), y, score_title, 0, 2);
 		PrintGlow(530 - GetStrLength("Character", 2), y, "Character", 0, 2);
 		PrintGlow(600 - GetStrLength("Difficulty", 2), y, "Difficulty", 0, 2);
 		y += 24;
@@ -229,7 +230,16 @@ static TASK(void) ViewDetails(MGLDraw *mgl, const byte* backgd, const sprite_set
 			PrintGlow(40 - GetStrLength(buf, 2), y, buf, 0, 2);
 			PrintGlow(45, y, entry.name, 0, 2);
 
-			snprintf(buf, sizeof(buf), "%d", entry.score);
+			if (kind == WorldLeaderboardKind::Time)
+			{
+				float seconds = (entry.score % 1800) / 30.0f;
+				int minutes = entry.score / 1800;
+				snprintf(buf, sizeof(buf), "%d:%05.2f", minutes, seconds);
+			}
+			else
+			{
+				snprintf(buf, sizeof(buf), "%d", entry.score);
+			}
 			PrintGlow(390 - GetStrLength(buf, 2), y, buf, 0, 2);
 
 			if (entry.playAs < SDL_arraysize(charName))
@@ -265,7 +275,7 @@ static TASK(void) ViewDetails(MGLDraw *mgl, const byte* backgd, const sprite_set
 	}
 }
 
-TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t* world)
+TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t* world, WorldLeaderboardKind kind, uint64_t id)
 {
 	char buf[256];
 
@@ -278,7 +288,7 @@ TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t* world)
 	sprite_set_t pauseJsp { "graphics/pause.jsp" };
 	sprite_set_t intfaceSpr { "graphics/intface.jsp" };
 
-	LeaderboardDownload download { SteamManager::Get()->WorldHasLeaderboard() };
+	LeaderboardDownload download { id };
 
 	enum ButtonId
 	{
@@ -349,7 +359,7 @@ TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t* world)
 			}
 			else if (curButton >= ButtonId::Details && curButton < ButtonId::Details + download.scores.size())
 			{
-				AWAIT ViewDetails(mgl, backgd, pauseJsp, world, download.scores[curButton - ButtonId::Details]);
+				AWAIT ViewDetails(mgl, backgd, pauseJsp, world, download.scores[curButton - ButtonId::Details], kind);
 				continue;
 			}
 		}
@@ -371,7 +381,8 @@ TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t* world)
 		y += 24;
 
 		PrintGlow(45, y, "Player", 0, 2);
-		PrintGlow(390 - 1 - GetStrLength("World Score", 2), y, "World Score", 0, 2);
+		std::string_view score_title = kind == WorldLeaderboardKind::Time ? "World Time" : "World Score";
+		PrintGlow(390 - 1 - GetStrLength(score_title, 2), y, score_title, 0, 2);
 		PrintGlow(530 - GetStrLength("Complete", 2), y, "Complete", 0, 2);
 		y += 24;
 
@@ -383,7 +394,28 @@ TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t* world)
 			PrintGlow(40 - GetStrLength(buf, 2), y, buf, 0, 2);
 			PrintGlow(45, y, SteamFriends()->GetFriendPersonaName(score.steamId), 0, 2);
 
-			snprintf(buf, sizeof(buf), "%d", score.score);
+			if (kind == WorldLeaderboardKind::Time)
+			{
+				if (score.score >= INT32_MAX - MAX_MAPS)
+				{
+					int mapsMissed = -(INT32_MAX - score.score - world->numMaps);
+					int totalMaps = 0;
+					for (int j = 0; j < world->numMaps; ++j)
+						if (!(world->map[j]->flags & MAP_HUB))
+							++totalMaps;
+					snprintf(buf, sizeof(buf), "(%d to go)", mapsMissed);
+				}
+				else
+				{
+					float seconds = (score.score % 60000) / 1000.0f;  // largest legal value is 59.97
+					int minutes = score.score / 60000;
+					snprintf(buf, sizeof(buf), "%d:%05.2f", minutes, seconds);
+				}
+			}
+			else
+			{
+				snprintf(buf, sizeof(buf), "%d", score.score);
+			}
 			PrintGlow(390 - GetStrLength(buf, 2), y, buf, 0, 2);
 
 			snprintf(buf, sizeof(buf), "%0.1f%%", score.percentage);
@@ -428,8 +460,9 @@ TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t* world)
 
 #else  // HAS_STEAM_API
 
-TASK(void) ViewWorldLeaderboard(MGLDraw *mgl)
+TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t *world, WorldLeaderboardKind kind, uint64_t id)
 {
+	CO_RETURN;
 }
 
 #endif  // HAS_STEAM_API

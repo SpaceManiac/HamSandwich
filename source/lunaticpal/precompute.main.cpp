@@ -81,10 +81,10 @@ int main(int argc, char** argv)
 	uint32_t crc = crc32(crc32(0L, Z_NULL, 0), table.data(), table.size());
 	if (crc != expected_crc)
 	{
-		fprintf(stderr, "lunaticpal_precompute: warning: expected crc32=%08x, got crc32=%08x\n", expected_crc, crc);
+		fprintf(stderr, "lunaticpal_precompute: expected crc32=%08x, got crc32=%08x\n", expected_crc, crc);
+		return 1;
 	}
 
-#if 1
 	// ------------------------------------------------------------------------
 	// Compress it with zlib deflate.
 
@@ -96,28 +96,34 @@ int main(int argc, char** argv)
 	zip.next_in = table.data();
 	zip.avail_in = table.size();
 
-	if (deflateInit(&zip, Z_DEFAULT_COMPRESSION) != Z_OK)
+	if (int r = deflateInit(&zip, Z_DEFAULT_COMPRESSION); r != Z_OK)
 	{
-		fprintf(stderr, "lunaticpal_precompute: deflateInit failed\n");
+		fprintf(stderr, "lunaticpal_precompute: deflateInit failed: %d: %s\n", r, zip.msg);
 		return 1;
 	}
-	if (deflate(&zip, Z_FINISH) != Z_STREAM_END)
+	if (int r = deflate(&zip, Z_FINISH); r != Z_STREAM_END)
 	{
-		fprintf(stderr, "lunaticpal_precompute: deflate failed\n");
+		fprintf(stderr, "lunaticpal_precompute: bad deflate: %d: %s\n", r, zip.msg);
 		return 1;
 	}
 	size_t compressed_written = compressed.size() - zip.avail_out;
-	(void)deflateEnd(&zip);
+	if (int r = deflateEnd(&zip); r != Z_OK)
+	{
+		fprintf(stderr, "lunaticpal_precompute: bad deflateEnd: %d: %s\n", r, zip.msg);
+		return 1;
+	}
 
 	// ------------------------------------------------------------------------
 	// Write it to the output file.
 
-	std::ofstream out(out_fname);
+	std::ofstream out(out_fname, std::ios_base::binary);
 	out.write((const char*)compressed.data(), compressed_written);
-#else
+#if 0
 	// Debugging variant: write uncompressed.
-	std::ofstream out(out_fname);
-	out.write((const char*)table.data(), table.size());
+	std::string alt = out_fname;
+	alt.append(".uncompressed");
+	std::ofstream out2(alt, std::ios_base::binary);
+	out2.write((const char*)table.data(), table.size());
 #endif
 
 	return 0;

@@ -39,19 +39,37 @@ based on HamSandwich.
 
 ## Dr. Lunatic Supreme With Cheese
 
+### [Supreme With Steam](https://store.steampowered.com/app/2547330/Dr_Lunatic_Supreme_With_Steam/) special features
+
+* Show off your Gallery Goals and track your progress with Steam Achievements
+* Find and play over 400 new worlds on the Steam Workshop
+* Upload your own worlds to the Steam Workshop from the Editor's "Save & Export" menu
+* Compete with friends and foes on high-score Leaderboards for every world in the game
+* Automatically transfer your saves across devices with Steam Cloud
+* Smash pumpkins anywhere with a native Steam Deck build
+
 ### HamSandwich (2019–present)
 
-* Fix crash if world select is empty
+* Show HUD Stealth eye in yellow when the player is not concealed
+* Add Classic HUD option to the pause menu
+* Add full gamepad support to the menus
+* Replace contents of Internet menu with some links that actually work
+* Add <kbd>Page Up</kbd> and <kbd>Page Down</kbd> hotkeys to scroll world select
+* Speed up World Select load times, improve sorting, and fix a crash if there are zero worlds
 * Fix rare crash when using Summon/Change Bullet with Scanner Shot, Scanner Lock, or Megabeam
 * Fix "Monster Sprites" effect persisting if a monster ID is reused
-* Add <kbd>Page Up</kbd> and <kbd>Page Down</kbd> hotkeys to scroll world select
-* Speed up the world select loading
-* Add a tentative new world format that allows exceeding the 256 monster type and other limits
-    * Worlds save in the old format unless they actually exceed these limits
+* Fix some levels missing music due to `006cavernboss.ogg` bug
+* Fix missing messages when playing some legacy Dr. Lunatic worlds
 
 Editor features:
-* Add Zoom Out option (hotkey: <kbd>F2</kbd>) to View menu that increases the resolution while editing
 * Increase per-map special limit to 250, up from 128
+* Improve rounding behavior when entering times for "Timed" and "Delayed" special triggers
+* Improve accuracy of automatic brain and candle counting in some cases
+* Add Zoom Out option (hotkey: <kbd>F2</kbd>) to View menu that increases the resolution while editing
+* Add "Save & Export" menu to create `.zip` files containing your world and all required files
+    * <kbd>Shift+Q</kbd> now includes all the extra detail in `req_files.txt`
+* Fix soft-lock on pressing <kbd>F1</kbd> twice in the Item Editor
+* Fix some art errors in the default tiles for new worlds (does not affect existing worlds)
 
 Also applicable to Sleepless Hollow:
 * Add "Jump to" button to Goto/Win Level effects

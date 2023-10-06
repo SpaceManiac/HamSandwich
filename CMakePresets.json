@@ -175,6 +175,13 @@
 				"CMAKE_C_FLAGS": "-fsanitize=undefined",
 				"CMAKE_CXX_FLAGS": "-fsanitize=undefined",
 				"LINK_FLAGS": "-fsanitize=undefined"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Linux"
+					]
+				}
 			}
 		},
 		{
@@ -182,6 +189,13 @@
 			"inherits": "base",
 			"cacheVariables": {
 				"CMAKE_CXX_INCLUDE_WHAT_YOU_USE": "include-what-you-use"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Linux"
+					]
+				}
 			}
 		}
 	]

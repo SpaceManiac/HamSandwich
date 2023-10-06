@@ -33,8 +33,8 @@ public:
 		return setup_1_bin.size();
 	}
 
-	owned::SDL_RWops open_sdl(const char* filename);
-	bool list_dir(const char* directory, std::set<std::string>& output);
+	owned::SDL_RWops open_sdl(const char* filename) override;
+	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output) override;
 };
 
 std::unique_ptr<vanilla::Vfs> vanilla::open_inno(SDL_RWops* rw)
@@ -42,7 +42,7 @@ std::unique_ptr<vanilla::Vfs> vanilla::open_inno(SDL_RWops* rw)
 	return std::make_unique<InnoVfs>(rw);
 }
 
-bool InnoVfs::list_dir(const char* directory, std::set<std::string>& output)
+bool InnoVfs::list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output)
 {
 	return archive.list_dir(directory, output);
 }
@@ -120,14 +120,14 @@ static owned::SDL_RWops zlib_crc_block_reader(uint8_t** input_buffer)
 		{
 			if (int r = inflateInit(&zip); r != Z_OK)
 			{
-				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad inflateInit: %d", r);
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad inflateInit: %d: %s", r, zip.msg);
 				return nullptr;
 			}
 			first = false;
 		}
 		if (int r = inflate(&zip, Z_NO_FLUSH); r != Z_OK && r != Z_STREAM_END)
 		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad inflate: %d", r);
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad inflate: %d: %s", r, zip.msg);
 			return nullptr;
 		}
 
@@ -136,12 +136,12 @@ static owned::SDL_RWops zlib_crc_block_reader(uint8_t** input_buffer)
 	}
 	if (int r = inflate(&zip, Z_FINISH); r != Z_STREAM_END)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad flush: %d", r);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad finish: %d: %s", r, zip.msg);
 		return nullptr;
 	}
 	if (int r = inflateEnd(&zip); r != Z_OK)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad inflateInit: %d", r);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "zlib_crc_block_reader: bad inflateEnd: %d: %s", r, zip.msg);
 		return nullptr;
 	}
 
@@ -205,7 +205,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 
 	if (memcmp(signature, k7zSignature, k7zSignatureSize))
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs: 7z signature missing at offset 0x%zx", OFFSET_OF_7Z_IN_EXE);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs: 7z signature missing at offset 0x%x", (unsigned int)OFFSET_OF_7Z_IN_EXE);
 		return;
 	}
 
@@ -459,17 +459,17 @@ owned::SDL_RWops InnoVfs::open_sdl(const char* path)
 
 	if (int r = inflateInit(&zip); r != Z_OK)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs::open_sdl(%s): bad inflateInit: %d", path, r);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs::open_sdl(%s): bad inflateInit: %d: %s", path, r, zip.msg);
 		return nullptr;
 	}
-	if (int r = inflate(&zip, Z_NO_FLUSH); r != Z_OK && r != Z_STREAM_END)
+	if (int r = inflate(&zip, Z_NO_FLUSH); r != Z_OK)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs::open_sdl(%s): bad inflate: %d", path, r);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs::open_sdl(%s): bad inflate: %d: %s", path, r, zip.msg);
 		return nullptr;
 	}
 	if (int r = inflateEnd(&zip); r != Z_OK)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs::open_sdl(%s): bad inflateEnd: %d", path, r);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs::open_sdl(%s): bad inflateEnd: %d: %s", path, r, zip.msg);
 		return nullptr;
 	}
 

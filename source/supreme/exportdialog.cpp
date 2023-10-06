@@ -14,6 +14,7 @@
 #include "steam.h"
 #include "guy.h"
 #include "editor.h"
+#include "winpch.h"
 
 #ifdef HAS_STEAM_API
 #ifdef _WIN32
@@ -73,7 +74,6 @@ namespace
 #ifdef HAS_STEAM_API
 	class SteamWorkshopUpload final
 	{
-		constexpr static AppId_t WORKSHOP_APPID = 2547330;
 		CCallResult<SteamWorkshopUpload, CreateItemResult_t> create_result;
 		CCallResult<SteamWorkshopUpload, SubmitItemUpdateResult_t> submit_update_result;
 
@@ -110,7 +110,7 @@ namespace
 
 		void SubmitUpdate()
 		{
-			UGCUpdateHandle_t handle = SteamUGC()->StartItemUpdate(WORKSHOP_APPID, workshopItemId);
+			UGCUpdateHandle_t handle = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), workshopItemId);
 
 			if (!SteamUGC()->SetItemTitle(handle, title.c_str()))
 			{
@@ -233,7 +233,7 @@ namespace
 			{
 				progress = Progress::Working;
 				progressMessage = "Registering new item...";
-				create_result.Set(SteamUGC()->CreateItem(WORKSHOP_APPID, k_EWorkshopFileTypeCommunity), this, &SteamWorkshopUpload::CreateCallback);
+				create_result.Set(SteamUGC()->CreateItem(SteamUtils()->GetAppID(), k_EWorkshopFileTypeCommunity), this, &SteamWorkshopUpload::CreateCallback);
 			}
 			else
 			{
@@ -476,13 +476,19 @@ static std::string PrepareWorkshopPreview()
 
 	MGLDraw* mgl = GetDisplayMGL();
 	mgl->ClearScreen();
+
 	EditorSelectMap(0);
+	world_t* world = EditorGetWorld();
+	Map* map = EditorGetMap();
+
 	PutCamera(goodguy->x, goodguy->y);
-	UpdateCamera(goodguy->x, goodguy->y, 0, 0, EditorGetMap());
-	editing=0;
+	UpdateCamera(goodguy->x >> FIXSHIFT, goodguy->y >> FIXSHIFT, 0, 0, map);
+
+	editing = 0;
 	RenderGuys(true);
-	RenderItAll(EditorGetWorld(), EditorGetMap(), MAP_SHOWWALLS | MAP_SHOWLIGHTS | MAP_SHOWBADGUYS | MAP_SHOWPICKUPS | MAP_SHOWOTHERITEMS);
+	RenderItAll(world, map, MAP_SHOWWALLS | MAP_SHOWLIGHTS | MAP_SHOWBADGUYS | MAP_SHOWPICKUPS | MAP_SHOWOTHERITEMS);
 	editing=1;
+
 	if (!mgl->SavePNG(pngFilename.c_str()))
 	{
 		LogError("Failed to save preview to %s\n", pngFilename.c_str());
@@ -649,7 +655,7 @@ void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 
 	y += 5;
 	char buf[256];
-	sprintf(buf, "Viewing %zu-%zu of %zu files.", start+1, end, files.size());
+	sprintf(buf, "Viewing %u-%u of %u files.", (unsigned int)(start+1), (unsigned int)(end), (unsigned int)(files.size()));
 	Print(5, y, buf, 0, 1);
 
 	int included = 0;
@@ -658,7 +664,7 @@ void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 		included += IncludeKind(file.kind) ? 1 : 0;
 	}
 	y += 14;
-	sprintf(buf, "Including %d of %zu files.", included, files.size());
+	sprintf(buf, "Including %d of %u files.", included, (unsigned int)(files.size()));
 	Print(5, y, buf, 0, 1);
 
 	y += 14;

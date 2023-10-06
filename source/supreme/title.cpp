@@ -1,7 +1,8 @@
 #include "winpch.h"
+#include <stdio.h>
+#include <math.h>
 #include "title.h"
 #include "game.h"
-#include <stdio.h>
 #include "jamulfmv.h"
 #include "pause.h"
 #include "nameentry.h"

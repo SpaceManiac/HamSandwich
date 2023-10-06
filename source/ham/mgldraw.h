@@ -42,6 +42,8 @@ public:
 
 	// Resize the SCREEN BUFFER - window is only resized if necessary.
 	void ResizeBuffer(int w, int h, bool clamp = false);
+	bool IsWindowed();
+	void SetWindowed(bool windowed);
 
 	// Perform any necessary per-frame handling. Returns false if quit.
 	virtual bool Process();
@@ -111,7 +113,7 @@ public:
 protected:
 	void putpixel(int x, int y, RGB value);
 	RGB FormatPixel(int x, int y);
-	void PseudoCopy(int x, int y, byte* data, int len);
+	void PseudoCopy(int y, int x, byte* data, int len);
 
 	void StartFlip(void);
 	TASK(void) FinishFlip(void);

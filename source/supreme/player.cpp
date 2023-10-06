@@ -174,7 +174,14 @@ void PlayerWinLevel(byte isSecret)
 	StoreWorldResults(player.worldProg,&curWorld);
 	PrintToLog("TryHighScore",0);
 	if(!player.cheated)
-		player.gotRecords=TryHighScore();
+	{
+		player.gotRecords = TryHighScore();
+		// Steam Leaderboard uploads are deferred until you quit the world in
+		// order to stay under Steam's 10 uploads per 10 minutes rate limit.
+		// NB: marks for upload even if you got local 2nd place...
+		if (player.gotRecords)
+			player.pendingLeaderboardUpload = true;
+	}
 	else
 		player.gotRecords=0;
 	PrintToLog("GoalWinLevel",0);

@@ -7,6 +7,8 @@
 #include <set>
 #include <stdint.h>
 
+#include "vanilla_extract.h"
+
 namespace vanilla
 {
 	class Archive
@@ -17,11 +19,6 @@ namespace vanilla
 		Archive& operator=(Archive&&) = delete;
 
 	public:
-		struct CaseInsensitive
-		{
-			bool operator() (const std::string& lhs, const std::string& rhs) const;
-		};
-
 		struct Directory
 		{
 			std::map<std::string, size_t, CaseInsensitive> files;
@@ -38,7 +35,7 @@ namespace vanilla
 		size_t get_file(const char* path) const;
 		const Directory* get_directory(const char* path) const;
 
-		bool list_dir(const char* path, std::set<std::string>& output) const;
+		bool list_dir(const char* path, std::set<std::string, CaseInsensitive>& output) const;
 	};
 }  // namespace vanilla
 

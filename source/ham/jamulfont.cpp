@@ -790,7 +790,7 @@ TASK(bool) FontInputText(std::string_view prompt, char *buffer, int len, void (*
 	bool done = 0;
 	char c;
 
-	while (buffer[pos] && pos < len)
+	while (pos < len && buffer[pos])
 		pos++;
 	while (!done)
 	{

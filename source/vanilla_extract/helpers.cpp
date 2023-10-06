@@ -35,12 +35,11 @@ int vanilla::mkdir_parents(std::string_view path)
 {
 	std::string copypath { path };
 	char *start = copypath.data();
-	size_t span;
 
 	int status = 0;
 	while (status == 0)
 	{
-		span = strcspn(start, "/\\");
+		size_t span = strcspn(start, "/\\");
 		if (span == strlen(start))
 			break;
 		char *next = start + span;

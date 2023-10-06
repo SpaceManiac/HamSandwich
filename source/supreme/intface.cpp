@@ -1091,8 +1091,32 @@ static void RenderInterfaceOld(MGLDraw *mgl)
 	oldIntfaceSpr->GetSprite(OLD_SPR_BRAINOMETER + 1)->Draw(617, 342, mgl);
 }
 
+// special mutant interface when shopping
+void RenderInterfaceShopping(MGLDraw *mgl)
+{
+	char combo[16];
+
+	InstaRenderItem(639-TILE_WIDTH/2,479-8,ITM_COIN,0,mgl);
+	sprintf(combo,"%u",profile.progress.totalCoins-profile.progress.coinsSpent);
+	Print(639-TILE_WIDTH-GetStrLength(combo,2)-1,479-18,combo,-32,2);
+	Print(639-TILE_WIDTH-GetStrLength(combo,2)+1,479-18,combo,-32,2);
+	Print(639-TILE_WIDTH-GetStrLength(combo,2),479-18+1,combo,-32,2);
+	Print(639-TILE_WIDTH-GetStrLength(combo,2),479-18-1,combo,-32,2);
+	PrintGlow(639-TILE_WIDTH-GetStrLength(combo,2),479-18,combo,0,2);
+
+	InstaRenderItem(639-TILE_WIDTH/2,479-38,ITM_LOONYKEY,0,mgl);
+	sprintf(combo,"%u",profile.progress.loonyKeys-profile.progress.loonyKeysUsed);
+	Print(639-TILE_WIDTH-GetStrLength(combo,2)-1,479-38,combo,-32,2);
+	Print(639-TILE_WIDTH-GetStrLength(combo,2)+1,479-38,combo,-32,2);
+	Print(639-TILE_WIDTH-GetStrLength(combo,2),479-38+1,combo,-32,2);
+	Print(639-TILE_WIDTH-GetStrLength(combo,2),479-38-1,combo,-32,2);
+	PrintGlow(639-TILE_WIDTH-GetStrLength(combo,2),479-38,combo,0,2);
+}
+
 void RenderInterface(MGLDraw *mgl)
 {
+	if (shopping)
+		return RenderInterfaceShopping(mgl);
 	if (profile.progress.oldHud)
 		return RenderInterfaceOld(mgl);
 
@@ -1101,26 +1125,6 @@ void RenderInterface(MGLDraw *mgl)
 
 	//sprintf(combo,"%d:%02d:%02d",(profile.progress.totalTime/(30*60*60)),(profile.progress.totalTime/(30*60))%60,(profile.progress.totalTime/30)%60);
 	//PrintGlow(5,240,combo,0,2);
-
-	if(shopping)	// special mutant interface when shopping
-	{
-		InstaRenderItem(639-TILE_WIDTH/2,479-8,ITM_COIN,0,mgl);
-		sprintf(combo,"%u",profile.progress.totalCoins-profile.progress.coinsSpent);
-		Print(639-TILE_WIDTH-GetStrLength(combo,2)-1,479-18,combo,-32,2);
-		Print(639-TILE_WIDTH-GetStrLength(combo,2)+1,479-18,combo,-32,2);
-		Print(639-TILE_WIDTH-GetStrLength(combo,2),479-18+1,combo,-32,2);
-		Print(639-TILE_WIDTH-GetStrLength(combo,2),479-18-1,combo,-32,2);
-		PrintGlow(639-TILE_WIDTH-GetStrLength(combo,2),479-18,combo,0,2);
-
-		InstaRenderItem(639-TILE_WIDTH/2,479-38,ITM_LOONYKEY,0,mgl);
-		sprintf(combo,"%u",profile.progress.loonyKeys-profile.progress.loonyKeysUsed);
-		Print(639-TILE_WIDTH-GetStrLength(combo,2)-1,479-38,combo,-32,2);
-		Print(639-TILE_WIDTH-GetStrLength(combo,2)+1,479-38,combo,-32,2);
-		Print(639-TILE_WIDTH-GetStrLength(combo,2),479-38+1,combo,-32,2);
-		Print(639-TILE_WIDTH-GetStrLength(combo,2),479-38-1,combo,-32,2);
-		PrintGlow(639-TILE_WIDTH-GetStrLength(combo,2),479-38,combo,0,2);
-		return;
-	}
 
 	if(curMap && curMap->flags&MAP_STEALTH)
 	{
