@@ -19,6 +19,11 @@ namespace vanilla
 	owned::FILE fp_from_bundle(std::string_view filename, SDL_RWops* rw);
 	bool ends_with(std::string_view haystack, std::string_view suffix);
 
+	struct CaseInsensitive
+	{
+		bool operator() (const std::string& lhs, const std::string& rhs) const;
+	};
+
 	// A description of
 	enum class VfsSourceKind
 	{
@@ -51,7 +56,7 @@ namespace vanilla
 			auto sdl = open_sdl(filename);
 			return fp_from_bundle(filename, sdl.get());
 		}
-		virtual bool list_dir(const char* directory, std::set<std::string>& output) = 0;
+		virtual bool list_dir(const char* directory, std::set<std::string, CaseInsensitive>& output) = 0;
 	};
 
 	// A single writeable VFS provider.
@@ -124,7 +129,7 @@ namespace vanilla
 		// Forward to children
 		owned::SDL_RWops open_sdl(const char* filename);
 		owned::FILE open_stdio(const char* filename);
-		void list_dir(const char* directory, std::set<std::string>& output);
+		void list_dir(const char* directory, std::set<std::string, CaseInsensitive>& output);
 		owned::SDL_RWops open_write_sdl(const char* filename);
 		owned::FILE open_write_stdio(const char* filename);
 		bool delete_file(const char* filename);
@@ -136,7 +141,8 @@ namespace vanilla
 	// Available providers
 	std::unique_ptr<WriteVfs> open_stdio(std::string_view prefix);
 	std::unique_ptr<Vfs> open_nsis(owned::SDL_RWops rw);
-	std::unique_ptr<Vfs> open_inno(SDL_RWops* rw);
+	std::unique_ptr<Vfs> open_inno(SDL_RWops* rw);  // 4.0.5 7zipped
+	std::unique_ptr<Vfs> open_inno3(owned::SDL_RWops rw);  // 3.0.4 raw
 	std::unique_ptr<Vfs> open_zip(owned::SDL_RWops rw);
 #if defined(__ANDROID__) && __ANDROID__
 	std::unique_ptr<Vfs> open_android(const char* prefix = nullptr);

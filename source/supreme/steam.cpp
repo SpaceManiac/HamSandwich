@@ -467,69 +467,67 @@ public:
 
 	// ------------------------------------------------------------------------
 	// Per-world score leaderboard upload
-	class UploadWorldScoreJob
+	class LeaderboardUploadJob
 	{
-		int32_t totalScore;
+	protected:
+		int32_t score = 0;
+		ELeaderboardSortMethod sortMethod = k_ELeaderboardSortMethodDescending;
+		ELeaderboardDisplayType displayType = k_ELeaderboardDisplayTypeNumeric;
+		ELeaderboardUploadScoreMethod uploadScoreMethod = k_ELeaderboardUploadScoreMethodKeepBest;
+	private:
 		int32_t extraData[k_cLeaderboardDetailsMax];
-		int extraDataCount;
+		int extraDataCount = 0;
 
-		CCallResult<UploadWorldScoreJob, LeaderboardFindResult_t> findLeaderboardCall;
-		CCallResult<UploadWorldScoreJob, LeaderboardScoreUploaded_t> uploadScoreCall;
+		CCallResult<LeaderboardUploadJob, LeaderboardFindResult_t> findLeaderboardCall;
+		CCallResult<LeaderboardUploadJob, LeaderboardScoreUploaded_t> uploadScoreCall;
+
+	protected:
+		LeaderboardUploadJob() {}
+
+		// Try to add a detail. Returns false if you're out of space.
+		bool AddDetail(int32_t detail)
+		{
+			if (extraDataCount < k_cLeaderboardDetailsMax)
+			{
+				extraData[extraDataCount] = detail;
+				++extraDataCount;
+				return true;
+			}
+			return false;
+		}
 
 	public:
-		UploadWorldScoreJob(const char* fullFilename, world_t* world, worldData_t* worldProgress)
+		static void Send(const char* leaderboardId, std::unique_ptr<LeaderboardUploadJob> job)
 		{
-			// Pack keychain flags and NNN.N% completion into extra data for display
-			extraData[0] = PackWorldProgress(worldProgress);
-			extraDataCount = 1;
-
-			totalScore = 0;
-			for (int i = 0; i < world->numMaps; ++i)
-			{
-				int32_t packedMapScore = 0;
-				Map* map = world->map[i];
-				score_t winners[3];
-				// Take the top score on this machine, regardless of profile.
-				if (GetTopScores(winners, map) > 0)
-				{
-					packedMapScore = PackMapScore(&winners[0]);
-					totalScore += winners[0].score;
-				}
-
-				// Pack per-level top score, character, and difficulty into extra slots.
-				// HUB levels are skipped, but unscored levels get explicit zeroes.
-				if (!(map->flags & MAP_HUB) && extraDataCount < k_cLeaderboardDetailsMax)
-				{
-					// 4 bits for playable character
-					// 2 bits for difficulty
-					// leaving 29 bits for
-					extraData[extraDataCount] = packedMapScore;
-					++extraDataCount;
-				}
-			}
-
-			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "FindOrCreateLeaderboard(%s)", fullFilename);
-			findLeaderboardCall.Set(SteamUserStats()->FindOrCreateLeaderboard(
-				fullFilename,
-				k_ELeaderboardSortMethodDescending,
-				k_ELeaderboardDisplayTypeNumeric
-			), this, &UploadWorldScoreJob::FindLeaderboardCallback);
+			// std::unique_ptr type enforces that we can call .release() and `delete` it later.
+			job.release()->Send2(leaderboardId);
 		}
 
 	private:
+		// Safety: `this` must be on the heap and this object is now responsible for `delete`ing itself.
+		void Send2(const char* leaderboardId)
+		{
+			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "FindOrCreateLeaderboard(%s)", leaderboardId);
+			findLeaderboardCall.Set(SteamUserStats()->FindOrCreateLeaderboard(
+				leaderboardId,
+				sortMethod,
+				displayType
+			), this, &LeaderboardUploadJob::FindLeaderboardCallback);
+		}
+
 		void FindLeaderboardCallback(LeaderboardFindResult_t* result, bool ioError)
 		{
 			if (!ioError && result->m_bLeaderboardFound && result->m_hSteamLeaderboard)
 			{
 				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "UploadLeaderboardScore(%llu, %d, ...[%d])",
-					result->m_hSteamLeaderboard, totalScore, extraDataCount);
+					result->m_hSteamLeaderboard, score, extraDataCount);
 				uploadScoreCall.Set(SteamUserStats()->UploadLeaderboardScore(
 					result->m_hSteamLeaderboard,
-					k_ELeaderboardUploadScoreMethodForceUpdate,
-					totalScore,
+					uploadScoreMethod,
+					score,
 					extraData,
 					extraDataCount
-				), this, &UploadWorldScoreJob::UploadScoreCallback);
+				), this, &LeaderboardUploadJob::UploadScoreCallback);
 			}
 			else
 			{
@@ -553,6 +551,104 @@ public:
 		}
 	};
 
+	struct UploadWorldScoreJob : public LeaderboardUploadJob
+	{
+		UploadWorldScoreJob(world_t* world, worldData_t* worldProgress)
+		{
+			uploadScoreMethod = k_ELeaderboardUploadScoreMethodForceUpdate;
+
+			// Pack keychain flags and NNN.N% completion into extra data for display
+			AddDetail(PackWorldProgress(worldProgress));
+
+			score = 0;
+			for (int i = 0; i < world->numMaps; ++i)
+			{
+				Map* map = world->map[i];
+				// Pack per-level top score, character, and difficulty into extra slots.
+				// HUB levels are skipped, but unscored levels get explicit zeroes.
+				if (!(map->flags & MAP_HUB))
+				{
+					int32_t packedMapScore = 0;
+					score_t winners[3];
+					// Take the top score on this machine, regardless of profile.
+					if (GetTopScores(winners, map) > 0)
+					{
+						packedMapScore = PackMapScore(&winners[0]);
+						score += winners[0].score;
+					}
+
+					static_assert(MAX_MAPS - 1 <= k_cLeaderboardDetailsMax - 1);
+					AddDetail(packedMapScore);
+				}
+			}
+		}
+	};
+
+	struct UploadWorldTimeJob : public LeaderboardUploadJob
+	{
+		UploadWorldTimeJob(world_t* world, worldData_t* worldProgress)
+		{
+			uploadScoreMethod = k_ELeaderboardUploadScoreMethodForceUpdate;
+			sortMethod = k_ELeaderboardSortMethodAscending;
+			displayType = k_ELeaderboardDisplayTypeTimeMilliSeconds;  // INT_MAX is about 596:31:23.645
+
+			// Pack keychain flags and NNN.N% completion into extra data for display
+			AddDetail(PackWorldProgress(worldProgress));
+
+			score = 0;
+			int mapsMissed = 0;
+			for (int i = 0; i < world->numMaps; ++i)
+			{
+				Map* map = world->map[i];
+				// Pack per-level top time, character, and difficulty into extra slots.
+				// HUB levels are skipped, but unscored levels get explicit all-ones.
+				if (!(map->flags & MAP_HUB))
+				{
+					int32_t packedMapTime = ~0;
+					score_t winners[3];
+					// Take the top time on this machine, regardless of profile.
+					if (GetTopTimes(winners, map) > 0)
+					{
+						packedMapTime = PackMapScore(&winners[0]);
+						score += winners[0].score;
+					}
+					else
+					{
+						++mapsMissed;
+					}
+
+					// MAX_MAPS - 1 for guaranteed hub
+					// k_cLeaderboardDetailsMax - 1 for PackWorldProgress
+					static_assert(MAX_MAPS - 1 <= k_cLeaderboardDetailsMax - 1);
+					AddDetail(packedMapTime);
+				}
+			}
+
+			// If the player missed any maps, bucket them at the very bottom of the leaderboard
+			// based on how many maps they have left to go.
+			if (mapsMissed > 0)
+			{
+				// missed 0 maps = your real total time, which is <
+				// missed 1/10 maps = MAX-9, which is <
+				// missed 2/10 maps = MAX-8, so on
+				score = INT32_MAX - world->numMaps + mapsMissed;
+			}
+			else
+			{
+				// score is now total time in frames - convert it to milliseconds for Steam's benefit
+				score = score * 1000 / 30;
+			}
+		}
+	};
+
+	struct UploadArcadeScoreJob : public LeaderboardUploadJob
+	{
+		UploadArcadeScoreJob(int32_t score)
+		{
+			this->score = score;
+		}
+	};
+
 	void UploadWorldScore() override
 	{
 		const char* worldFilename = player.worldName;
@@ -567,6 +663,15 @@ public:
 			return;
 		}
 
+		for (int i = 0; i < world.numMaps; ++i)
+		{
+			if (!VerifyLevel(world.map[i]))
+			{
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "UploadWorldScore(%s): map #%02d not verified", worldFilename, i);
+				return;
+			}
+		}
+
 		worldData_t* progress = GetWorldProgressNoCreate(worldFilename);
 		if (!progress)
 		{
@@ -574,38 +679,64 @@ public:
 			return;
 		}
 
-		// raw new() so the job can delete itself when its callbacks complete
-		new UploadWorldScoreJob(fullFilename.c_str(), &world, progress);
+		LeaderboardUploadJob::Send(fullFilename.c_str(), std::make_unique<UploadWorldScoreJob>(&world, progress));
+		fullFilename.append("/time");
+		LeaderboardUploadJob::Send(fullFilename.c_str(), std::make_unique<UploadWorldTimeJob>(&world, progress));
+	}
+
+	void UploadArcadeScore(const char* fullName, int32_t score) override
+	{
+		LeaderboardUploadJob::Send(fullName, std::make_unique<UploadArcadeScoreJob>(score));
 	}
 
 	// ------------------------------------------------------------------------
 	// Per-world score leaderboard display
-	CCallResult<SteamManagerImpl, LeaderboardFindResult_t> findLeaderboardCall;
-	SteamLeaderboard_t worldLeaderboardId = 0;
+	CCallResult<SteamManagerImpl, LeaderboardFindResult_t> findScoreCall, findTimeCall;
+	SteamLeaderboard_t leaderboardIdScore = 0, leaderboardIdTime = 0;
 
 	void PrepWorldLeaderboard(const char* fullFilename) override
 	{
-		worldLeaderboardId = 0;
+		leaderboardIdScore = leaderboardIdTime = 0;
+
 		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "PrepWorldLeaderboard(%s)", fullFilename);
-		findLeaderboardCall.Set(SteamUserStats()->FindLeaderboard(fullFilename), this, &SteamManagerImpl::FindLeaderboardCallback);
+		findScoreCall.Set(SteamUserStats()->FindLeaderboard(fullFilename), this, &SteamManagerImpl::FindScoreCallback);
+		std::string buf = fullFilename;
+		buf.append("/time");
+		findTimeCall.Set(SteamUserStats()->FindLeaderboard(buf.c_str()), this, &SteamManagerImpl::FindTimeCallback);
 	}
 
-	void FindLeaderboardCallback(LeaderboardFindResult_t* result, bool ioError)
+	void FindScoreCallback(LeaderboardFindResult_t* result, bool ioError)
 	{
 		if (!ioError && result->m_bLeaderboardFound && result->m_hSteamLeaderboard)
 		{
-			worldLeaderboardId = result->m_hSteamLeaderboard;
+			leaderboardIdScore = result->m_hSteamLeaderboard;
 		}
 		else
 		{
-			worldLeaderboardId = 0;
-			//SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "FindLeaderboard failed");
+			leaderboardIdScore = 0;
 		}
 	}
 
-	uint64_t WorldHasLeaderboard() override
+	void FindTimeCallback(LeaderboardFindResult_t* result, bool ioError)
 	{
-		return worldLeaderboardId;
+		if (!ioError && result->m_bLeaderboardFound && result->m_hSteamLeaderboard)
+		{
+			leaderboardIdTime = result->m_hSteamLeaderboard;
+		}
+		else
+		{
+			leaderboardIdTime = 0;
+		}
+	}
+
+	uint64_t LeaderboardIdScore() override
+	{
+		return leaderboardIdScore;
+	}
+
+	uint64_t LeaderboardIdTime() override
+	{
+		return leaderboardIdTime;
 	}
 	// Remainder in leaderboard.cpp
 };

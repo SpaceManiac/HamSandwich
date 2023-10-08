@@ -7,10 +7,15 @@
 #include "softjoystick.h"
 #include "owned_sdl.h"
 
+static const int NUM_KEYBOARDS = 4;
+static const int NUM_CONTROLS = 8;
+static const int NUM_JOYBTNS = 4;
+
 static byte lastScanCode;
 
 // normal mapped controls: kbd, joystick, etc.
 static byte keyState, keyTap;
+static byte keyState2[NUM_KEYBOARDS];
 // fixed arrow keys and return controls
 static byte arrowState, arrowTap;
 
@@ -19,12 +24,9 @@ static std::vector<owned::SDL_GameController> joysticks;
 static byte oldJoy;
 
 // mappings
-static const int NUM_KEYBOARDS = 4;
-static const int NUM_CONTROLS = 8;
-static const int NUM_JOYBTNS = 4;
-
 static byte kb[NUM_CONTROLS][NUM_KEYBOARDS];
 static byte joyBtn[NUM_JOYBTNS];
+static byte playerUsesJoystick[NUM_KEYBOARDS] = { 3, 3, 3, 3 };
 
 static byte GetJoyState();
 
@@ -36,6 +38,7 @@ void InitControls(void)
 	arrowState=0;
 	arrowTap=0;
 	oldJoy=0;
+	memset(keyState2, 0, sizeof(keyState2));
 
 	/*
 	for (int i = 0; i < SDL_NumJoysticks(); ++i) {
@@ -61,6 +64,21 @@ byte GetKeyControls() {
 
 byte GetControls() {
 	return keyState | GetJoyState() | SoftJoystickState();
+}
+
+byte GetPlayerControls(byte player)
+{
+	switch (playerUsesJoystick[player])
+	{
+		case 0:  // Keyboard1
+			return keyState2[0] | SoftJoystickState();
+		case 1:  // Keyboard2
+			return keyState2[1];
+		case 2:  // Joystick
+			return GetJoyState();
+		default:  // ???
+			return GetControls();
+	}
 }
 
 byte GetTaps() {
@@ -197,6 +215,10 @@ void SetJoystickBindings(int nbuttons, const byte* buttons) {
 	memcpy(joyBtn, buttons, std::min(nbuttons, NUM_JOYBTNS));
 }
 
+void ControlSetUseJoystick(byte player, byte joystickNumber) {
+	playerUsesJoystick[player] = joystickNumber;
+}
+
 // Called upon SDL events
 void ControlKeyDown(byte k)
 {
@@ -214,6 +236,7 @@ void ControlKeyDown(byte k)
 			{
 				keyState|=bit;
 				keyTap|=bit;
+				keyState2[i] |= bit;
 			}
 			bit*=2;
 		}
@@ -257,6 +280,7 @@ void ControlKeyUp(byte k)
 			if(k==kb[j][i])
 			{
 				keyState&=(~bit);
+				keyState2[i] &= ~bit;
 			}
 			bit*=2;
 		}

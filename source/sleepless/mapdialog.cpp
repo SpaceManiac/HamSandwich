@@ -309,7 +309,7 @@ byte MapDialogClick(int msx,int msy)
 		if(msx>400 && msy>92+17*2 && msx<400+56 && msy<92+17*2+15)
 		{
 			// rename level
-			strncpy(world->map[mapNum]->name,newmapname,32);
+			SDL_strlcpy(world->map[mapNum]->name,newmapname,32);
 		}
 		if(msx>400 && msy>92+17*3 && msx<400+56 && msy<92+17*3+15)
 		{

@@ -133,13 +133,15 @@ if test -z "$tool" && test "$os" = "emscripten"; then
 	source ./tools/emscripten/install-emsdk.sh
 fi
 
+debugext=
+if test "$os" = "windows"; then
+	debugext=".exe"
+fi
+
 # Default debug configuration
 debugdir="$PWD/build/install"
 cmakedir="$PWD/build/cmake-$preset"
-debugcommand="$cmakedir/source/$project/$project"
-if test "$os" = "windows"; then
-	debugcommand="$debugcommand.exe"
-fi
+debugcommand="$debugdir/$project$debugext"
 debugargs=()
 debugenvs=()
 
@@ -169,10 +171,9 @@ if test -z "$nobuild"; then
 				;;
 			jfttool|jspedit|lunaticpal|mini_xxd)
 				# Tool: build just that project. Don't bother installing it.
-				$container make preset="$preset" "$project"
-				if test "$project" = "jspedit"; then
-					$container cmake --install "$cmakedir" --component sdl2_ttf/executables --config Debug
-				fi
+				$container make preset="$preset" "$project" sdl2_rpath
+				$container cmake --install "$cmakedir" --component generic/executables --config Debug
+				$container cmake --install "$cmakedir" --component "$project"/executables --config Debug
 				;;
 			*)
 				# Single game project: build the launcher and that project.
@@ -182,10 +183,17 @@ if test -z "$nobuild"; then
 				$container cmake --install "$cmakedir" --component Unspecified --config Debug
 				$container cmake --install "$cmakedir" --component generic/executables --config Debug
 				$container cmake --install "$cmakedir" --component launcher/executables --config Debug
-				# But we don't need to install the game's executable because we're
-				# going to run it right out its build directory.
+				$container cmake --install "$cmakedir" --component "$project"/executables --config Debug
 				;;
 		esac
+	fi
+fi
+
+# Handle ./run jfttool and lunaticpal which don't have CMake install scripts.
+if ! test -f "$debugcommand"; then
+	cp "$cmakedir/source/$project/$project$debugext" "$debugcommand"
+	if test "$os" = "linux"; then
+		patchelf --add-rpath "\$ORIGIN" "$debugcommand"
 	fi
 fi
 

@@ -4,13 +4,19 @@
 
 using namespace vanilla;
 
-#ifdef _WIN32
+#ifndef __GNUC__
 #define strncasecmp _strnicmp
+#define strcasecmp _stricmp
 #endif
 
 bool vanilla::ends_with(std::string_view lhs, std::string_view rhs)
 {
 	return lhs.size() >= rhs.size() && lhs.compare(lhs.size() - rhs.size(), std::string_view::npos, rhs) == 0;
+}
+
+bool vanilla::CaseInsensitive::operator() (const std::string& lhs, const std::string& rhs) const
+{
+	return strcasecmp(lhs.c_str(), rhs.c_str()) < 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -175,9 +181,9 @@ bool VfsStack::delete_file(const char* filename)
 	}
 }
 
-static void list_dir_inner(std::string_view prefix, Vfs* vfs, const char* directory, std::set<std::string>& output)
+static void list_dir_inner(std::string_view prefix, Vfs* vfs, const char* directory, std::set<std::string, CaseInsensitive>& output)
 {
-	std::set<std::string> intermediate;
+	std::set<std::string, vanilla::CaseInsensitive> intermediate;
 	vfs->list_dir(directory, intermediate);
 	for (auto each : intermediate)
 	{
@@ -197,7 +203,7 @@ static void list_dir_inner(std::string_view prefix, Vfs* vfs, const char* direct
 	}
 }
 
-void VfsStack::list_dir(const char* directory, std::set<std::string>& output)
+void VfsStack::list_dir(const char* directory, std::set<std::string, CaseInsensitive>& output)
 {
 	// Iterate bottom to top, so higher tombstones can erase their children
 	for (auto iter = mounts.begin(); iter != mounts.end(); ++iter)

@@ -404,6 +404,8 @@ TASK(void) MGLDraw::FinishFlip(void)
 	}
 	SDL_RenderPresent(renderer);
 	UpdateMusic();
+	if (g_HamExtern.AfterFlip)
+		g_HamExtern.AfterFlip();
 
 	SDL_Event e;
 	while(SDL_PollEvent(&e))

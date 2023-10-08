@@ -36,23 +36,16 @@
 
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
-class SteamMGLDraw : public MGLDraw
+void AfterFlip()
 {
-public:
-	SteamMGLDraw(const char *name, int xRes, int yRes, bool window)
-		: MGLDraw(name, xRes, yRes, window) {}
-
-	bool Process() override
-	{
-		SteamManager::Get()->Update();
-		return MGLDraw::Process();
-	}
-};
+	SteamManager::Get()->Update();
+}
 
 TASK(int) main(int argc, char* argv[])
 {
 	g_HamExtern.ChooseNextSong = ChooseNextSong;
 	g_HamExtern.SoundLoadOverride = SoundLoadOverride;
+	g_HamExtern.AfterFlip = AfterFlip;
 
 	bool windowedGame = false;
 	bool unpickled = false;
@@ -70,7 +63,7 @@ TASK(int) main(int argc, char* argv[])
 	SetHamMusicEnabled(config.music && !unpickled);
 	SetJamulSoundEnabled(config.sound && !unpickled, config.numSounds);
 	SteamManager::Init();
-	MGLDraw *mainmgl = new SteamMGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame || unpickled);
+	MGLDraw *mainmgl = new MGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame || unpickled);
 	if(!mainmgl)
 		CO_RETURN 0;
 

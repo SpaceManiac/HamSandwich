@@ -1,0 +1,14 @@
+{
+	"title": "Amazin' SPISPOPD",
+	"registry_key": "Amazin",
+	"installers": [
+		{
+			"filename": "amazin_full_install.EXE",
+			"kind": "inno3",
+			"sha256sum": "2a3a232e5645c45bc7bb7d2d04dc9467ae96f8c032f4d18532f7024f55ce232c",
+			"link": "https://hamumu.itch.io/amazin-spispopd",
+			"file_id": 720246,
+			"description": "Base assets for Amazin' SPISPOPD"
+		}
+	]
+}

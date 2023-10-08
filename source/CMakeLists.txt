@@ -51,6 +51,7 @@ endif()
 # The order here is the order that games will appear in the launcher.
 add_subdirectory("spookycastle")  # 1998-12, re-release 2004-05
 add_subdirectory("eddie")  # 1999-03, re-release 2004-06
+add_subdirectory("amazin")  # 1999-07
 add_subdirectory("mystic")  # 1999-08, re-release 2004-10
 add_subdirectory("lunatic" EXCLUDE_FROM_ALL)  # 2000-05
 add_subdirectory("loonyland")  # 2001-03

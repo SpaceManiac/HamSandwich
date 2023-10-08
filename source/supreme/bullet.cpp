@@ -736,7 +736,6 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 				MakeSound(SND_LIGHTNING,me->x,me->y,SND_CUTOFF,900);
 				for(i=0;i<player.hammers-1;i++)
 					FireBullet(me->x,me->y,0,BLT_LIGHTNING2,me->friendly);
-				me->type=BLT_NONE;
 			}
 			break;
 		case BLT_HAMMER:

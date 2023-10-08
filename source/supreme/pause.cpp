@@ -54,7 +54,6 @@ static pauseItem_t shopPause[]={
 	{PE_CONTINUE,"Continue"},
 	{PE_SNDVOL,""},
 	{PE_MUSIC,"Music Options"},
-	{PE_HUDCHOICE,"HUD: Supreme"},
 	{PE_SHOP,"Quit & Play"},
 	{PE_EXIT,"Main Menu"},
 	{PE_DONE,""}
