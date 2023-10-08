@@ -99,7 +99,7 @@ typedef struct progress_t
 
 	dword cheats;				// how often you've cheated
 	byte wpnLock;				// weapon lock
-	byte oldHud;
+	byte hudChoice;
 	byte expansion[EXPANSION_SIZE];		// unused space for possible future expansion
 } progress_t;
 

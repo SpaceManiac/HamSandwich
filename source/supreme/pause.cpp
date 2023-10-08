@@ -26,7 +26,7 @@
 #define PE_BZZT		15		// an invalid option
 #define PE_SHOP		16	// go shopping, go back to playing
 #define PE_WPNLOCK	17	// weapon lock
-#define PE_OLDHUD   18
+#define PE_HUDCHOICE   18
 
 #define PE_CHEATS	50
 
@@ -44,7 +44,7 @@ static pauseItem_t gamePause[]={
 	{PE_SNDVOL,""},
 	{PE_MUSIC,"Music Options"},
 	{PE_WPNLOCK,"Weapon Lock"},
-	{PE_OLDHUD,"HUD: Supreme"},
+	{PE_HUDCHOICE,"HUD: Supreme"},
 	{PE_SHOP,"Quit & Shop"},
 	{PE_EXIT,"Exit Game"},
 	{PE_DONE,""}
@@ -67,7 +67,7 @@ static pauseItem_t editPause[]={
 	{PE_MUSIC,"Music Options"},
 	{PE_CHEAT,"Cheats!!"},
 	{PE_WPNLOCK,"Weapon Lock"},
-	{PE_OLDHUD,"HUD: Supreme"},
+	{PE_HUDCHOICE,"HUD: Supreme"},
 	{PE_EXIT,"Editor"},
 	{PE_DONE,""}
 };
@@ -81,7 +81,7 @@ static pauseItem_t gameCheatPause[]={
 	{PE_MUSIC,"Music Options"},
 	{PE_CHEAT,"Cheats!!"},
 	{PE_WPNLOCK,"Weapon Lock"},
-	{PE_OLDHUD,"HUD: Supreme"},
+	{PE_HUDCHOICE,"HUD: Supreme"},
 	{PE_SHOP,"Quit & Shop"},
 	{PE_EXIT,"Exit Game"},
 	{PE_DONE,""}
@@ -301,9 +301,11 @@ void FillPauseMenu(pauseItem_t *src)
 			else
 				strcpy(menu[i].text,"Wpn Lock: Off");
 		}
-		if(src[i].effect==PE_OLDHUD)
+		if(src[i].effect==PE_HUDCHOICE)
 		{
-			if(profile.progress.oldHud)
+			if(profile.progress.hudChoice == 2)
+				strcpy(menu[i].text,"HUD: Advanced");
+			else if(profile.progress.hudChoice == 1)
 				strcpy(menu[i].text,"HUD: Classic");
 			else
 				strcpy(menu[i].text,"HUD: Supreme");
@@ -648,8 +650,10 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 					}
 				}
 				break;
-			case PE_OLDHUD:
-				profile.progress.oldHud = !profile.progress.oldHud;
+			case PE_HUDCHOICE:
+				profile.progress.hudChoice++;
+				if (profile.progress.hudChoice > 2)
+					profile.progress.hudChoice = 0;
 				if(menuMode==1)
 				{
 					FillPauseMenu(cheatPause);
