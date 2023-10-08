@@ -39,6 +39,7 @@ char credits[][32]={
 	"Ben Rose",
 	"%",
 	"&HamSandwich Contributors",
+	"Alex Walley",
 	"AutomaticFrenzy",
 	"CPE Gaebler",
 	"Hypexion",
