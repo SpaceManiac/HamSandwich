@@ -303,9 +303,9 @@ void FillPauseMenu(pauseItem_t *src)
 		}
 		if(src[i].effect==PE_HUDCHOICE)
 		{
-			if(profile.progress.hudChoice == 2)
+			if(profile.progress.hudChoice == HudChoice::Advanced)
 				strcpy(menu[i].text,"HUD: Advanced");
-			else if(profile.progress.hudChoice == 1)
+			else if(profile.progress.hudChoice == HudChoice::Classic)
 				strcpy(menu[i].text,"HUD: Classic");
 			else
 				strcpy(menu[i].text,"HUD: Supreme");
@@ -651,9 +651,20 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 				}
 				break;
 			case PE_HUDCHOICE:
-				profile.progress.hudChoice++;
-				if (profile.progress.hudChoice > 2)
-					profile.progress.hudChoice = 0;
+				switch (profile.progress.hudChoice)
+				{
+					case HudChoice::Supreme:
+						profile.progress.hudChoice = HudChoice::Advanced;
+						break;
+					case HudChoice::Advanced:
+						profile.progress.hudChoice = HudChoice::Classic;
+						break;
+					case HudChoice::Classic:
+					default:
+						profile.progress.hudChoice = HudChoice::Supreme;
+						break;
+				}
+
 				if(menuMode==1)
 				{
 					FillPauseMenu(cheatPause);

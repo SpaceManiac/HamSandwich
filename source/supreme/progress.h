@@ -62,6 +62,16 @@ typedef struct worldData_t	// contains your progress for one world
 	levelData_t *level;	// progress info for each level that HAS been passed only.
 } worldData_t;
 
+enum class HudChoice : byte  // SERIALIZED in the player profile.
+{
+	// Supreme With Cheese, and the default choice.
+	Supreme  = 0,
+	// Like classic Dr. Lunatic. See `RenderInterfaceOld` for details.
+	Classic  = 1,
+	// Supreme, plus weapon lock indicator and speedrun timer.
+	Advanced = 2,
+};
+
 #define EXPANSION_SIZE	(1018)
 
 // WARNING: changing this struct's contents may break save compatibility or require modifications in Load/SaveProfile.
@@ -99,7 +109,7 @@ typedef struct progress_t
 
 	dword cheats;				// how often you've cheated
 	byte wpnLock;				// weapon lock
-	byte hudChoice;
+	HudChoice hudChoice;
 	byte expansion[EXPANSION_SIZE];		// unused space for possible future expansion
 } progress_t;
 

@@ -852,7 +852,7 @@ void UpdateInterface(Map *map)
 		intf[INTF_BRAINS].ty-=10;
 	}
 
-	if(profile.progress.hudChoice == 2)
+	if(profile.progress.hudChoice == HudChoice::Advanced)
 	{
 		intf[INTF_TIME].tx=GetDisplayMGL()->GetWidth()-79;
 		intf[INTF_TIME].ty=-1;
@@ -863,7 +863,7 @@ void UpdateInterface(Map *map)
 		intf[INTF_TIME].ty=-20;
 	}
 
-	if(profile.progress.hudChoice == 2 && player.weapon)
+	if(profile.progress.hudChoice == HudChoice::Advanced && player.weapon)
 	{
 		intf[INTF_LOCK].tx=GetDisplayMGL()->GetWidth()-79;
 		intf[INTF_LOCK].ty=16;
@@ -1197,7 +1197,7 @@ void RenderInterface(MGLDraw *mgl)
 {
 	if (shopping)
 		return RenderInterfaceShopping(mgl);
-	if (profile.progress.hudChoice == 1)
+	if (profile.progress.hudChoice == HudChoice::Classic)
 		return RenderInterfaceOld(mgl);
 
 	int i;
