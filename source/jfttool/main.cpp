@@ -6,9 +6,11 @@
 #include <memory>
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include <stdint.h>
 #include <SDL.h>
 #include <SDL_image.h>
+#include <string.h>
 #include "lunaticpal.h"
 
 using namespace std;
@@ -46,12 +48,22 @@ enum ConversionError {
 
 int usage(const char* argv0) {
 	cerr << "Usage: one of:\n";
-	cerr << "    " << argv0 << " <fontname.jft> - Extract .txt and .pngs from font\n";
-	cerr << "    " << argv0 << " <fontname.txt> - Collect font from .txt and .pngs\n";
+	cerr << "    " << argv0 << " <fontname.jft> [--out outFolderName] - Extract .txt and .pngs from font\n";
+	cerr << "    " << argv0 << " <fontname.txt> [--out jftFileName] - Collect font from .txt and .pngs\n";
 	return 1;
 }
 
-ConversionError convertFontToPNG(string fname) {
+static void assertFolderExists(filesystem::path folderPath) {
+	if(folderPath.empty()) { return; }
+
+	filesystem::directory_entry entry{folderPath};
+	if(!entry.exists()) {
+		filesystem::create_directory(folderPath);
+	}
+}
+
+
+ConversionError convertFontToPNG(string fname, char* outFolder) {
 	// READING THE FONT
 	ifstream in { fname, ios::in | ios::binary };
 	Header header;
@@ -60,17 +72,23 @@ ConversionError convertFontToPNG(string fname) {
 		return ConversionError::CouldNotReadHeader;
 	}
 
-	fname.erase(fname.size() - 4);
-	fname.append(".txt");
+	filesystem::path filePath = fname;
 
-	ofstream txt { fname, ios::out };
+	filesystem::path outFolderPath = "";
+	if(outFolder != nullptr) {
+		outFolderPath = outFolder;
+		filePath = outFolderPath / filePath.filename();
+	}
+	filePath.replace_extension(".txt");
+
+	ofstream txt { filePath, ios::out };
 	txt << "numChars " << (int)header.numChars << endl;
 	txt << "firstChar " << (int)header.firstChar << endl;
 	txt << "height " << (int)header.height << endl;
 	txt << "spaceSize " << (int)header.spaceSize << endl;
 	txt << "gapSize " << (int)header.gapSize << endl;
 	txt << "gapHeight " << (int)header.gapHeight << endl;
-	cout << "saved " << fname << endl;
+	cout << "saved " << filePath << endl;
 
 	size_t ofs = in.tellg();
 	for (int i = 0; i < header.numChars; ++i) {
@@ -89,10 +107,21 @@ ConversionError convertFontToPNG(string fname) {
 		}
 		SDL_UnlockSurface(surf);
 
+		string outFullFileName = "";
 		char outfname[64];
 		sprintf(outfname, "U+%X.png", i + (int)header.firstChar);
-		if (IMG_SavePNG(surf, outfname) != 0) {
-			cerr << "error: bad save " << outfname << ": " << IMG_GetError() << endl;
+		string outfnameStr = outfname;
+
+		if(!outFolderPath.empty()) {
+			outFullFileName = (outFolderPath / outfnameStr).generic_string();
+		} else {
+			outFullFileName = (filePath.parent_path() / outfnameStr).generic_string();
+		}
+
+		cout << "writing: " << outFullFileName << endl;
+
+		if (IMG_SavePNG(surf, outFullFileName.c_str()) != 0) {
+			cerr << "error: bad save " << outFullFileName << ": " << IMG_GetError() << endl;
 		}
 
 		SDL_FreeSurface(surf);
@@ -108,11 +137,16 @@ ConversionError convertFontToPNG(string fname) {
 	return ConversionError::None;
 }
 
-ConversionError convertTextToFont(string fname) {
+
+
+
+ConversionError convertTextToFont(string fname, char* outFileName) {
 	// WRITING THE FONT
 	Header header;
 	memset(&header, 0, sizeof(Header));
 
+
+	cout << "FILE NAME: " << fname << endl;
 	ifstream txt { fname, ios::in };
 	std::string key;
 	int value;
@@ -123,6 +157,7 @@ ConversionError convertTextToFont(string fname) {
 			header.firstChar = value;
 		} else if (key == "height") {
 			header.height = value;
+			cout << "height: " << value << endl;
 		} else if (key == "spaceSize") {
 			header.spaceSize = value;
 		} else if (key == "gapSize") {
@@ -143,7 +178,12 @@ ConversionError convertTextToFont(string fname) {
 	for (int i = 0; i < header.numChars; ++i) {
 		char infname[64];
 		sprintf(infname, "U+%X.png", i + (int)header.firstChar);
-		SDL_Surface* surf = IMG_Load(infname);
+		string inFileNameStr = infname;
+
+		filesystem::path filePath = fname;
+		string fullFileName = (filePath.parent_path() / inFileNameStr).generic_string();
+
+		SDL_Surface* surf = IMG_Load(fullFileName.c_str());
 		if (!surf) {
 			cerr << "error: bad " << infname << ": " << IMG_GetError() << endl;
 			return ConversionError::BadFile;
@@ -178,8 +218,12 @@ ConversionError convertTextToFont(string fname) {
 
 	header.dataSize = data.size();
 
-	fname.erase(fname.size() - 4);
-	fname.append(".jft");
+	if(outFileName != nullptr) {
+		fname = outFileName;
+	} else {
+		fname.erase(fname.size() - 4);
+		fname.append(".jft");
+	}
 
 	ofstream out { fname, ios::out | ios::binary };
 	write(out, &header);
@@ -194,15 +238,41 @@ ConversionError convertTextToFont(string fname) {
 int main(int argc, char **argv) {
 	SDL_Init(0);
 
-	if (argc != 2) {
+	char* out = nullptr;
+
+	// CASE 2: prgName fileName
+	// CASE 4: prgName fileName --out folderName/fileName
+	if(argc == 4) {
+		if(strncmp(argv[2], "--out", strlen("--out")) != 0) {
+			return usage(argv[0]);
+		}
+		out = argv[3];
+	} else if (argc != 2) {
 		return usage(argv[0]);
 	}
 
 	string fname = argv[1];
 	if (fname.size() >= 4 && fname.find(".jft") == fname.size() - 4) {
-		return convertFontToPNG(fname) != ConversionError::None;
+
+		if(out) {
+			filesystem::path outPath = out;
+			assertFolderExists(out);
+		}
+
+		return convertFontToPNG(fname, out) != ConversionError::None;
 	} else if (fname.size() && fname.find(".txt") == fname.size() - 4) {
-		return convertTextToFont(fname) != ConversionError::None;
+
+		if(out) {
+			filesystem::path outPath = out;
+			if(outPath.extension() != ".jft") {
+				cerr << "ERROR: out path must have .jft extension" << endl;
+				return usage(argv[0]);
+			}
+			auto root = outPath.parent_path();
+			assertFolderExists(root);
+		}
+
+		return convertTextToFont(fname, out) != ConversionError::None;
 	} else {
 		return usage(argv[0]);
 	}
