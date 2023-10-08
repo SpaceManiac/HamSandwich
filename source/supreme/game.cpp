@@ -321,6 +321,11 @@ TASK(byte) LunaticRun(int *lastTime)
 		}
 		else if(gameMode==GAMEMODE_MENU)
 		{
+			// With the addition of the Advanced HUD, it's confusing to not see
+			// it slide in when you select the option, so now let the HUD
+			// animate even when the game is paused.
+			UpdateInterface(curMap);
+
 			switch(UpdatePauseMenu(gamemgl))
 			{
 				case PAUSE_PAUSED:
