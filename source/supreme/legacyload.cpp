@@ -6,6 +6,62 @@
 #include "sound.h"
 #include "appdata.h"
 
+constexpr int OLD_MAX_MAPMONS = 128;
+constexpr int OLD_MAX_SPECIAL = 32;
+constexpr int OLD_MAX_MAPS = 24;
+
+struct old_special_t
+{
+	word trigger;
+	byte trigValue;
+	byte effect;
+	byte x,y;
+	byte effectX,effectY;
+	int value;
+	char msg[32];
+};
+
+struct old_mapTile_t
+{
+	byte floor;
+	byte wall;
+	byte item;
+	char light;
+	char templight;
+	byte opaque;
+};
+
+struct old_mapBadguy_t
+{
+	byte x,y;
+	byte type;
+};
+
+struct old_map_t
+{
+	int width,height;
+	old_mapTile_t *map;
+	char name[32];
+	byte song;
+	byte flags;
+	old_mapBadguy_t badguy[OLD_MAX_MAPMONS];
+	old_special_t   special[OLD_MAX_SPECIAL];
+};
+
+struct old_terrain_t
+{
+	word flags;
+	byte next;
+};
+
+struct old_world_t
+{
+	byte numMaps;
+	int  totalPoints;
+	old_map_t *map[OLD_MAX_MAPS];
+	old_terrain_t terrain[200];
+};
+
 static old_world_t *oldWorld;
 
 static const char songTab[23][32]={
