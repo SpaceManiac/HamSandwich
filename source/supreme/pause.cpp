@@ -36,7 +36,7 @@ typedef struct pauseItem_t
 	char text[16];
 } pauseItem_t;
 
-static pauseItem_t gamePause[]={
+static const pauseItem_t gamePause[]={
 	{PE_CONTINUE,"Continue"},
 	{PE_RETRY,"Retry"},
 	{PE_GIVEUP,"Give Up"},
@@ -50,7 +50,7 @@ static pauseItem_t gamePause[]={
 	{PE_DONE,""}
 };
 
-static pauseItem_t shopPause[]={
+static const pauseItem_t shopPause[]={
 	{PE_CONTINUE,"Continue"},
 	{PE_SNDVOL,""},
 	{PE_MUSIC,"Music Options"},
@@ -59,7 +59,7 @@ static pauseItem_t shopPause[]={
 	{PE_DONE,""}
 };
 
-static pauseItem_t editPause[]={
+static const pauseItem_t editPause[]={
 	{PE_CONTINUE,"Continue"},
 	{PE_RETRY,"Retry"},
 	{PE_GIVEUP,"Give Up"},
@@ -72,7 +72,7 @@ static pauseItem_t editPause[]={
 	{PE_DONE,""}
 };
 
-static pauseItem_t gameCheatPause[]={
+static const pauseItem_t gameCheatPause[]={
 	{PE_CONTINUE,"Continue"},
 	{PE_RETRY,"Retry"},
 	{PE_GIVEUP,"Give Up"},
@@ -87,7 +87,7 @@ static pauseItem_t gameCheatPause[]={
 	{PE_DONE,""}
 };
 
-static pauseItem_t cheatPause[]={
+static const pauseItem_t cheatPause[]={
 	{PE_CHEAT,"Stop Cheating!"},
 	{PE_CHEATS+CHEAT_WINLEVEL,"Win Level"},
 	{PE_CHEATS+CHEAT_HAMMERUP,"UltraHammerUp"},
@@ -102,7 +102,7 @@ static pauseItem_t cheatPause[]={
 	{PE_DONE,""},
 };
 
-static pauseItem_t cheatPause2[]={
+static const pauseItem_t cheatPause2[]={
 	{PE_PREVCHEATS,"Prev. Cheats"},
 	{PE_CHEATS+CHEAT_SCANNER,"Free Scanner"},
 	{PE_CHEATS+CHEAT_AMMO,"Ammo Crate"},
@@ -115,7 +115,7 @@ static pauseItem_t cheatPause2[]={
 	{PE_DONE,""},
 };
 
-static pauseItem_t musicPause[]={
+static const pauseItem_t musicPause[]={
 	{PE_MUSVOL,""},
 	{PE_MUSICTYPE,""},
 	{PE_MUSICMODE,""},
@@ -270,7 +270,33 @@ void SetupSoundItems(void)
 	}
 }
 
-void FillPauseMenu(pauseItem_t *src)
+static void SetupOptionItems()
+{
+	int i;
+
+	for(i=0;i<numItems;i++)
+	{
+		switch(menu[i].effect)
+		{
+			case PE_WPNLOCK:
+				if(profile.progress.wpnLock)
+					strcpy(menu[i].text,"Wpn Lock: On");
+				else
+					strcpy(menu[i].text,"Wpn Lock: Off");
+				break;
+			case PE_HUDCHOICE:
+				if(profile.progress.hudChoice == HudChoice::Advanced)
+					strcpy(menu[i].text,"HUD: Advanced");
+				else if(profile.progress.hudChoice == HudChoice::Classic)
+					strcpy(menu[i].text,"HUD: Classic");
+				else
+					strcpy(menu[i].text,"HUD: Supreme");
+				break;
+		}
+	}
+}
+
+void FillPauseMenu(const pauseItem_t *src)
 {
 	int i;
 
@@ -294,24 +320,9 @@ void FillPauseMenu(pauseItem_t *src)
 				}
 			}
 		}
-		if(src[i].effect==PE_WPNLOCK)
-		{
-			if(profile.progress.wpnLock)
-				strcpy(menu[i].text,"Wpn Lock: On");
-			else
-				strcpy(menu[i].text,"Wpn Lock: Off");
-		}
-		if(src[i].effect==PE_HUDCHOICE)
-		{
-			if(profile.progress.hudChoice == HudChoice::Advanced)
-				strcpy(menu[i].text,"HUD: Advanced");
-			else if(profile.progress.hudChoice == HudChoice::Classic)
-				strcpy(menu[i].text,"HUD: Classic");
-			else
-				strcpy(menu[i].text,"HUD: Supreme");
-		}
 	}
 	SetupSoundItems();
+	SetupOptionItems();
 }
 
 void InitPauseMenu(void)
@@ -471,6 +482,24 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 			case PE_SONG:
 				PlayPrevSong();
 				break;
+			case PE_HUDCHOICE:
+				MakeNormalSound(SND_MENUSELECT);
+				switch (profile.progress.hudChoice)
+				{
+					case HudChoice::Supreme:
+						profile.progress.hudChoice = HudChoice::Classic;
+						break;
+					case HudChoice::Advanced:
+						profile.progress.hudChoice = HudChoice::Supreme;
+						break;
+					case HudChoice::Classic:
+						profile.progress.hudChoice = HudChoice::Advanced;
+						break;
+					default:
+						profile.progress.hudChoice = HudChoice::Supreme;
+				}
+				SetupOptionItems();
+				break;
 		}
 		SetupSoundItems();
 	}
@@ -490,6 +519,24 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 				break;
 			case PE_SONG:
 				PlayNextSong();
+				break;
+			case PE_HUDCHOICE:
+				MakeNormalSound(SND_MENUSELECT);
+				switch (profile.progress.hudChoice)
+				{
+					case HudChoice::Supreme:
+						profile.progress.hudChoice = HudChoice::Advanced;
+						break;
+					case HudChoice::Advanced:
+						profile.progress.hudChoice = HudChoice::Classic;
+						break;
+					case HudChoice::Classic:
+						profile.progress.hudChoice = HudChoice::Supreme;
+						break;
+					default:
+						profile.progress.hudChoice = HudChoice::Supreme;
+				}
+				SetupOptionItems();
 				break;
 		}
 		SetupSoundItems();
@@ -629,26 +676,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 				break;
 			case PE_WPNLOCK:
 				profile.progress.wpnLock = !profile.progress.wpnLock;
-				if(menuMode==1)
-				{
-					FillPauseMenu(cheatPause);
-				}
-				else
-				{
-					if(!editing)
-					{
-						// if cheats are available, use cheat game list instead
-						if(ItemPurchased(SHOP_MAJOR,MAJOR_CHEATMENU))
-							FillPauseMenu(gameCheatPause);
-						else
-							FillPauseMenu(gamePause);
-
-					}
-					else
-					{
-						FillPauseMenu(editPause);
-					}
-				}
+				SetupOptionItems();
 				break;
 			case PE_HUDCHOICE:
 				switch (profile.progress.hudChoice)
@@ -660,31 +688,12 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 						profile.progress.hudChoice = HudChoice::Classic;
 						break;
 					case HudChoice::Classic:
-					default:
 						profile.progress.hudChoice = HudChoice::Supreme;
 						break;
+					default:
+						profile.progress.hudChoice = HudChoice::Supreme;
 				}
-
-				if(menuMode==1)
-				{
-					FillPauseMenu(cheatPause);
-				}
-				else
-				{
-					if(!editing)
-					{
-						// if cheats are available, use cheat game list instead
-						if(ItemPurchased(SHOP_MAJOR,MAJOR_CHEATMENU))
-							FillPauseMenu(gameCheatPause);
-						else
-							FillPauseMenu(gamePause);
-
-					}
-					else
-					{
-						FillPauseMenu(editPause);
-					}
-				}
+				SetupOptionItems();
 				break;
 		}
 		if(i==0 && menu[cursor].effect>=PE_CHEATS)
