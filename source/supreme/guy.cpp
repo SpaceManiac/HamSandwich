@@ -1434,7 +1434,10 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i]->x=x;
 			guys[i]->y=y;
 			guys[i]->z=z;
+			guys[i]->oldx=-1;
+			guys[i]->oldy=-1;
 			guys[i]->seq=ANIM_IDLE;
+			guys[i]->action=ACTION_IDLE;
 			guys[i]->frm=0;
 			guys[i]->frmTimer=0;
 			guys[i]->frmAdvance=128;
@@ -1452,6 +1455,7 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i]->mind3=0;
 			guys[i]->reload=0;
 			guys[i]->parent=NULL;
+			guys[i]->aiType=guys[i]->type;
 			guys[i]->CalculateRect();
 			guys[i]->ID=i;
 			guys[i]->frozen=0;
@@ -1460,7 +1464,6 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i]->item=ITM_RANDOM;
 			strcpy(guys[i]->name,MonsterName(type));
 			guys[i]->fromColor=255;
-			guys[i]->aiType=guys[i]->type;
 			guys[i]->brtChange=GetMonsterType(guys[i]->type)->brtChg;
 			guys[i]->customSpr=nullptr;
 
