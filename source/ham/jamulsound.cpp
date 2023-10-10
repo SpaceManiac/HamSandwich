@@ -202,17 +202,17 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 	if(playFlags & SND_MAXPRIORITY)
 		priority = MAX_SNDPRIORITY;
 
-	chosen=-1;
-	lowpriority=priority;
+	chosen = -1;
+	lowpriority = priority;
 	// see if there are any spots of lower priority,
-	for(i=0;i<NUM_SOUNDS;i++)
+	for (i = 0; i < NUM_SOUNDS; i++)
 	{
-		if ((playFlags & SND_CUTOFF) && schannel[i].soundNum == which)
+		if (schannel[i].soundNum == -1)
 		{
 			chosen = i;
-			break;  // Otherwise lowpriority will get increased and random other sounds will be cut off.
+			break; // can't beat that
 		}
-		if(schannel[i].priority <= lowpriority)
+		else if (schannel[i].priority <= lowpriority || (chosen == -1 && (playFlags & SND_CUTOFF) && schannel[i].soundNum == which))
 		{
 			chosen = i;
 			lowpriority = schannel[i].priority;
