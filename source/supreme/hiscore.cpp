@@ -284,9 +284,9 @@ void AddToSum(byte b)
 {
 	byte cipher;
 
-	cipher=(b^(r>>8));
-	r=(cipher+r)*c1+c2;
-	sum+=cipher;
+	cipher = (b ^ (r >> 8));
+	r = (word)((unsigned int)(cipher + r) * (unsigned int)c1 + (unsigned int)c2);
+	sum += cipher;
 }
 
 void AddToSum(word w)
@@ -295,7 +295,7 @@ void AddToSum(word w)
 	AddToSum((byte)(w&255));
 }
 
-void AddToSum(int i)
+void AddToSum(int32_t i)
 {
 	AddToSum((byte)((i>>24)&255));
 	AddToSum((byte)((i>>16)&255));
