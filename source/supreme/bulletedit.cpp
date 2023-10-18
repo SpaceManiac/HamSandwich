@@ -19,13 +19,14 @@ void BulletPickClick(int id)
 	SetEditMode(rememberMode);
 }
 
-void BulletEditSetupButtons()
+void BulletEditSetupButtons(bool allowAnything)
 {
 	ClearButtons();
 
+	const int start = allowAnything ? BLT_NONE : BLT_HAMMER;
 	const int width = 160;
 	int x = 0, y = 0;
-	for (byte i = BLT_HAMMER; i < BLT_NUM; ++i)
+	for (byte i = start; i < BLT_NUM; ++i)
 	{
 		std::string name = BulletName(i);
 		MakeButton(BTN_NORMAL, ID_PICKBULLET + i, true, x, y, width, 16, name.c_str(), BulletPickClick);
@@ -38,11 +39,11 @@ void BulletEditSetupButtons()
 	}
 }
 
-void BulletEdit_Init(byte modeFrom)
+void BulletEdit_Init(byte modeFrom, bool allowAnything)
 {
 	rememberMode = modeFrom;
 	GetDisplayMGL()->MouseTap();
-	BulletEditSetupButtons();
+	BulletEditSetupButtons(allowAnything);
 }
 
 void BulletEdit_Exit()

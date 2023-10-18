@@ -2,7 +2,7 @@
 #include <jamultypes.h>
 #include <mgldraw.h>
 
-void BulletEdit_Init(byte modeFrom);
+void BulletEdit_Init(byte modeFrom, bool allowAnything);
 void BulletEdit_Exit();
 
 void BulletEdit_Update(int mouseX, int mouseY, MGLDraw* mgl);

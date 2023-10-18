@@ -1340,7 +1340,7 @@ static void BulletClick(int id)
 	curEff = effStart + (id - ID_EFF0) / 100;
 	mode = SMODE_PICKBULLET;
 	SetEditMode(EDITMODE_PICKBULLET);
-	BulletEdit_Init(EDITMODE_SPECIAL);
+	BulletEdit_Init(EDITMODE_SPECIAL, false);
 }
 
 static void Bullet1Click(int id)
@@ -1358,7 +1358,7 @@ static void Bullet1Click(int id)
 
 	mode = SMODE_PICKBULLET1;
 	SetEditMode(EDITMODE_PICKBULLET);
-	BulletEdit_Init(EDITMODE_SPECIAL);
+	BulletEdit_Init(EDITMODE_SPECIAL, effMode);
 }
 
 static void SetupTriggerButtons(int t,int y)
