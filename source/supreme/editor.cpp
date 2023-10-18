@@ -4,6 +4,7 @@
 #include "itemedit.h"
 #include "soundedit.h"
 #include "monsteredit.h"
+#include "bulletedit.h"
 #include "specialedit.h"
 #include "tool.h"
 #include "edithelp.h"
@@ -281,6 +282,7 @@ TASK(void) UpdateMouse(void)
 		case EDITMODE_ITEM:
 		case EDITMODE_SOUND:
 		case EDITMODE_PICKENEMY:
+		case EDITMODE_PICKBULLET:
 			break;
 		default:
 			if(mouseX==0)
@@ -331,6 +333,9 @@ TASK(void) UpdateMouse(void)
 			break;
 		case EDITMODE_PICKENEMY:
 			MonsterEdit_Update(mouseX,mouseY,editmgl);
+			break;
+		case EDITMODE_PICKBULLET:
+			BulletEdit_Update(mouseX, mouseY, editmgl);
 			break;
 		case EDITMODE_EDIT:
 			if(!viewMenu || !editMenu || (ToolDoing()!=TD_USING) || (viewMenu && ViewDialogClick(mouseX,mouseY)))
@@ -792,6 +797,9 @@ void EditorDraw(void)
 			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			MonsterEdit_Render(mouseX,mouseY,editmgl);
 			break;
+		case EDITMODE_PICKBULLET:
+			BulletEdit_Render(mouseX, mouseY, editmgl);
+			break;
 		case EDITMODE_FILE:
 			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			if(displayFlags&MAP_SHOWBADGUYS)
@@ -1098,6 +1106,11 @@ static TASK(void) HandleKeyPresses(void)
 	{
 		MonsterEdit_Key(lastKey);
 		lastKey=0;
+	}
+	else if (editMode == EDITMODE_PICKBULLET)
+	{
+		BulletEdit_Key(lastKey);
+		lastKey = 0;
 	}
 	else if(editMode==EDITMODE_HELP)
 	{

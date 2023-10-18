@@ -2933,3 +2933,8 @@ void SpecialEdit_Help(void)
 	InitEditHelp(HELP_SPECIALEDIT);
 	mode=SMODE_HELP;
 }
+
+std::string BulletName(int type)
+{
+	return std::string(bulletName[type]);
+}
