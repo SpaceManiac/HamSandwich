@@ -6,6 +6,7 @@
 #include "items.h"
 #include "textdialog.h"
 #include "monsteredit.h"
+#include "bulletedit.h"
 #include "itemedit.h"
 #include "vars.h"
 #include "terrainedit.h"
@@ -45,6 +46,8 @@
 #define SMODE_PICKITEM3	24
 #define SMODE_HELP		25
 #define SMODE_PICKRECT3T 26
+#define SMODE_PICKBULLET 27
+#define SMODE_PICKBULLET1 28
 
 #define ID_EXIT		1
 #define ID_USES		2
@@ -254,7 +257,6 @@ static char bulletName[][20]={
 	"Lunachick Ray",
 	"Bouncy Lunachick"
 };
-#define MAX_BULLETS (BLT_LUNA2 + 1)
 
 static void SetupTriggerButtons(int t,int y);
 static void SetupEffectButtons(int t,int y);
@@ -1335,22 +1337,10 @@ static void Toggle2Click(int id)
 
 static void BulletClick(int id)
 {
-	curEff=effStart+(id-ID_EFF0)/100;
-
-	if(rightClick)
-	{
-		spcl.effect[curEff].value2--;
-		if(spcl.effect[curEff].value2<=0)
-			spcl.effect[curEff].value2=MAX_BULLETS-1;
-	}
-	else
-	{
-		spcl.effect[curEff].value2++;
-		if(spcl.effect[curEff].value2>=MAX_BULLETS)
-			spcl.effect[curEff].value2=1;
-	}
-
-	SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
+	curEff = effStart + (id - ID_EFF0) / 100;
+	mode = SMODE_PICKBULLET;
+	SetEditMode(EDITMODE_PICKBULLET);
+	BulletEdit_Init(EDITMODE_SPECIAL);
 }
 
 static void Bullet1Click(int id)
@@ -1359,40 +1349,16 @@ static void Bullet1Click(int id)
 	{
 		effMode=0;
 		curTrig=trgStart + id/100-1;
-
-		if(rightClick)
-		{
-			spcl.trigger[curTrig].value--;
-			if(spcl.trigger[curTrig].value<0)
-				spcl.trigger[curTrig].value=MAX_BULLETS-1;
-		}
-		else
-		{
-			spcl.trigger[curTrig].value++;
-			if(spcl.trigger[curTrig].value>=MAX_BULLETS)
-				spcl.trigger[curTrig].value=0;
-		}
-		SetupTriggerButtons(curTrig-trgStart,(curTrig-trgStart)*38+30);
 	}
 	else
 	{
 		effMode=1;
 		curEff=effStart+(id-ID_EFF0)/100;
-
-		if(rightClick)
-		{
-			spcl.effect[curEff].value--;
-			if(spcl.effect[curEff].value<0)
-				spcl.effect[curEff].value=MAX_BULLETS-1;
-		}
-		else
-		{
-			spcl.effect[curEff].value++;
-			if(spcl.effect[curEff].value>=MAX_BULLETS)
-				spcl.effect[curEff].value=0;
-		}
-		SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
 	}
+
+	mode = SMODE_PICKBULLET1;
+	SetEditMode(EDITMODE_PICKBULLET);
+	BulletEdit_Init(EDITMODE_SPECIAL);
 }
 
 static void SetupTriggerButtons(int t,int y)
@@ -2678,7 +2644,27 @@ void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
 					mode=helpRemember;
 			}
 			break;
+		case SMODE_PICKBULLET:
+			if (EditorGetLastPick() != -1)
+				spcl.effect[curEff].value2 = EditorGetLastPick();
+			mode = SMODE_NORMAL;
+			SpecialEditSetupButtons();
+			break;
+		case SMODE_PICKBULLET1:
+			if (effMode) {
+				if (EditorGetLastPick() != -1)
+					spcl.effect[curEff].value = EditorGetLastPick();
+			}
+			else
+			{
+				if (EditorGetLastPick() != -1)
+					spcl.trigger[curTrig].value = EditorGetLastPick();
+			}
 
+			mode = SMODE_NORMAL;
+			SpecialEditSetupButtons();
+			break;
+			break;
 	}
 }
 
