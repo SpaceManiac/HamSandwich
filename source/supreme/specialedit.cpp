@@ -2651,7 +2651,8 @@ void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
 			SpecialEditSetupButtons();
 			break;
 		case SMODE_PICKBULLET1:
-			if (effMode) {
+			if (effMode)
+			{
 				if (EditorGetLastPick() != -1)
 					spcl.effect[curEff].value = EditorGetLastPick();
 			}
@@ -2663,7 +2664,6 @@ void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
 
 			mode = SMODE_NORMAL;
 			SpecialEditSetupButtons();
-			break;
 			break;
 	}
 }
@@ -2920,7 +2920,9 @@ void SpecialEdit_Help(void)
 	mode=SMODE_HELP;
 }
 
-std::string BulletName(int type)
+const char* BulletName(int type)
 {
-	return std::string(bulletName[type]);
+	if (type >= 0 && type < NUM_BULLETS)
+		return bulletName[type];
+	return "";
 }

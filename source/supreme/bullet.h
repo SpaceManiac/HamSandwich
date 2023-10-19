@@ -70,7 +70,7 @@ enum : byte
 	BLT_LUNA, // lunachick's bullets
 	BLT_LUNA2, // lunachick's bullets with wall-bounce power
 
-	BLT_NUM // how many bullets there are in total. Put new types BEFORE this one!
+	NUM_BULLETS // how many bullets there are in total. Put new types BEFORE this one!
 };
 
 // the special hammer flags for different powerups

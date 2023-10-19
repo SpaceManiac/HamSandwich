@@ -6,14 +6,11 @@
 #include "specialedit.h"
 
 static byte rememberMode;
-static bool realClick = false;
 
-#define ID_PICKBULLET  500
+constexpr int ID_PICKBULLET = 500;
 
 void BulletPickClick(int id)
 {
-	if (!realClick) return;
-
 	PickedTile(id - ID_PICKBULLET);
 	MakeNormalSound(SND_MENUCLICK);
 	SetEditMode(rememberMode);
@@ -23,16 +20,16 @@ void BulletEditSetupButtons(bool allowAnything)
 {
 	ClearButtons();
 
-	const int start = allowAnything ? BLT_NONE : BLT_HAMMER;
 	const int width = 160;
 	int x = 0, y = 0;
-	for (byte i = start; i < BLT_NUM; ++i)
+	for (int i = 0; i < NUM_BULLETS; ++i)
 	{
-		std::string name = BulletName(i);
-		MakeButton(BTN_NORMAL, ID_PICKBULLET + i, true, x, y, width, 16, name.c_str(), BulletPickClick);
-		y += 16;
+		if (allowAnything || i != BLT_NONE)
+			MakeButton(BTN_NORMAL, ID_PICKBULLET + i, true, x, y, width - 1, 16, BulletName(i), BulletPickClick);
+		y += 17;
 
-		if (y > 480 - 32) {
+		if (y > 480 - 32)
+		{
 			y = 0;
 			x += width;
 		}
@@ -53,8 +50,8 @@ void BulletEdit_Exit()
 
 void BulletEdit_Update(int mouseX, int mouseY, MGLDraw* mgl)
 {
-	realClick = mgl->MouseTap();
-	CheckButtons(mouseX, mouseY);
+	if (mgl->MouseTap())
+		CheckButtons(mouseX, mouseY);
 }
 
 void BulletEdit_Render(int mouseX, int mouseY, MGLDraw* mgl)
@@ -66,7 +63,8 @@ void BulletEdit_Render(int mouseX, int mouseY, MGLDraw* mgl)
 
 void BulletEdit_Key(char k)
 {
-	if (k == 27) {
+	if (k == 27)
+	{
 		PickedTile(-1);
 		SetEditMode(rememberMode);
 	}
