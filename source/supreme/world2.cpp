@@ -91,7 +91,7 @@ static void LoadSound(hamworld::Section *f)
 
 	soundDesc_t *desc = AddCustomSound(data, size);
 	if (desc)
-		hamworld::StringDestination(desc->name).assign(name);
+		StringDestination(desc->name).assign(name);
 
 	f->read_varint();  // ignore extension flags
 }
