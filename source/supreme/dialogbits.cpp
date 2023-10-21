@@ -1,7 +1,22 @@
 #include "dialogbits.h"
 #include "display.h"
+#include "string_extras.h"
 
-button_t button[MAX_BUTTONS];
+constexpr int MAX_BUTTONS = 128;
+constexpr int BTN_TXT_LEN = 32;
+
+struct button_t
+{
+	byte type;
+	int id;
+	byte on;
+	int x,y;
+	int width,height;
+	char text[BTN_TXT_LEN];
+	buttonFunc callback;
+};
+
+static button_t button[MAX_BUTTONS];
 static byte stopChecking;
 
 byte PointInRect(int x,int y,int rx1,int ry1,int rx2,int ry2)
@@ -31,7 +46,7 @@ void ClearButtons(int minID,int maxID)
 }
 
 
-byte MakeButton(byte type,int id,byte on,int x,int y,int width,int height,const char *txt,buttonFunc func)
+byte MakeButton(ButtonType type,int id,byte on,int x,int y,int width,int height,std::string_view txt,buttonFunc func)
 {
 	int i;
 
@@ -46,8 +61,7 @@ byte MakeButton(byte type,int id,byte on,int x,int y,int width,int height,const 
 			button[i].y=y;
 			button[i].width=width;
 			button[i].height=height;
-			memcpy(button[i].text,txt,31);
-			button[i].text[31]='\0';
+			StringDestination(button[i].text).assign(txt);
 			button[i].callback=func;
 			return i;
 		}
@@ -131,7 +145,7 @@ void CheckButtons(int mouseX,int mouseY)
 	}
 }
 
-void RenderCheckbox(byte light,int x,int y,int v,const char *txt,MGLDraw *editmgl)
+void RenderCheckbox(byte light,int x,int y,int v,std::string_view txt,MGLDraw *editmgl)
 {
 	editmgl->Box(x,y,x+11,y+11,31);
 
@@ -213,7 +227,7 @@ void RenderButton(int mouseX,int mouseY,int id,MGLDraw *mgl)
 	}
 }
 
-void RenderButtonImage(int mouseX,int mouseY,int x,int y,int width,int height,const char *txt)
+void RenderButtonImage(int mouseX,int mouseY,int x,int y,int width,int height, std::string_view txt)
 {
 	if(PointInRect(mouseX,mouseY,x,y,x+width,y+height))
 		DrawFillBox(x,y,x+width,y+height,8+32*1);
@@ -221,7 +235,7 @@ void RenderButtonImage(int mouseX,int mouseY,int x,int y,int width,int height,co
 	PrintLimited(x+2,y+2,x+width-1,txt,0,1);
 }
 
-void RenderButtonImageLit(int mouseX,int mouseY,int x,int y,int width,int height,const char *txt)
+void RenderButtonImageLit(int mouseX,int mouseY,int x,int y,int width,int height, std::string_view txt)
 {
 	if(PointInRect(mouseX,mouseY,x,y,x+width,y+height))
 		DrawFillBox(x,y,x+width,y+height,31);
