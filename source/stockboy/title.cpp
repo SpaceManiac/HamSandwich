@@ -243,9 +243,8 @@ void SetupMenuChoices(void)
 	// 2011 stockaddon.exe is detected. Ordinarily it would require the editor
 	// to be unlocked, but old fans may be replaying the game and want quick access.
 	bool showAddons = profile.giftShop[GIFT_EDITOR];
-	if (SDL_RWops* testAddon = AssetOpen_SDL("levels/cavern.sbl"))
+	if (AssetOpen_SDL_Owned("levels/cavern.sbl"))
 	{
-		SDL_RWclose(testAddon);
 		showAddons = true;
 	}
 	if (showAddons)

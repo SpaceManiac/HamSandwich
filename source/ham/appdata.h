@@ -25,7 +25,6 @@ vanilla::VfsStack& AppdataVfs();
 
 // Open for reading.
 FILE* AssetOpen(const char* filename);
-SDL_RWops* AssetOpen_SDL(const char* filename);
 owned::SDL_RWops AssetOpen_SDL_Owned(const char* filename);
 // Open for writing or appending.
 FILE* AppdataOpen_Write(const char* filename);

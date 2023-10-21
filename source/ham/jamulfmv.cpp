@@ -29,7 +29,7 @@ struct fliheader
 	int32_t next,frit;  // meaning unknown
 };
 static_assert(sizeof(fliheader) == 28, "sizeof(fliheader) is incorrect for direct i/o");
-static_assert(SDL_BYTEORDER == SDL_LIL_ENDIAN, "HamSandwich currently only support big-endian processors");
+static_assert(SDL_BYTEORDER == SDL_LIL_ENDIAN, "HamSandwich currently only supports little-endian processors");
 
 struct frmheader
 {
@@ -50,7 +50,6 @@ struct chunkheader
 	word kind;
 };
 
-static SDL_RWops* FLI_file;
 static RGB FLI_pal[256];
 static word	fliWidth,fliHeight;
 
@@ -214,7 +213,7 @@ static void FLI_doBRUN(byte *scrn,int scrWidth,byte *p)
 	}
 }
 
-static void FLI_nextchunk(MGLDraw *mgl,int scrWidth)
+static void FLI_nextchunk(SDL_RWops* FLI_file, MGLDraw *mgl, int scrWidth)
 {
 	chunkheader chead;
 
@@ -254,7 +253,7 @@ static void FLI_nextchunk(MGLDraw *mgl,int scrWidth)
 	}
 }
 
-static void FLI_nextfr(MGLDraw *mgl,int scrWidth)
+static void FLI_nextfr(SDL_RWops* FLI_file, MGLDraw *mgl, int scrWidth)
 {
 	long start = SDL_RWtell(FLI_file);
 
@@ -265,7 +264,7 @@ static void FLI_nextfr(MGLDraw *mgl,int scrWidth)
 	if (fhead.magic == 0xF1FA)
 	{
 		for(int i=0; i < fhead.chunks; i++)
-			FLI_nextchunk(mgl, scrWidth);
+			FLI_nextchunk(FLI_file, mgl, scrWidth);
 	}
 	// Other possible value of "magic" is 0x00A1, indicating the FLC file's
 	// special frame, but we already skip over that with the seek in FLI_play.
@@ -283,7 +282,7 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 	char k;
 	dword playbackTime, currentTime;
 
-	FLI_file=AssetOpen_SDL(name);
+	owned::SDL_RWops FLI_file = AssetOpen_SDL_Owned(name);
 	if (!FLI_file)
 	{
 		// Asset stack printed error already
@@ -336,7 +335,7 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 		{
 			frmon++;
 			scrWidth=mgl->GetWidth();
-			FLI_nextfr(mgl,scrWidth);
+			FLI_nextfr(FLI_file.get(), mgl, scrWidth);
 			if (callback && !callback(frmon))
 				break;
 			if((loop)&&(frmon==FLI_hdr.frames+1))
@@ -355,7 +354,7 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 		// key #27 is escape
 	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27));
 
-	SDL_RWclose(FLI_file);
+	FLI_file.reset();
 	mgl->ResizeBuffer(oldWidth, oldHeight);
 
 	CO_RETURN k != 27;

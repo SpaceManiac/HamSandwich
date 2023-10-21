@@ -491,10 +491,6 @@ FILE* AssetOpen(const char* filename) {
 	return vfs_stack.open_stdio(filename).release();
 }
 
-SDL_RWops* AssetOpen_SDL(const char* filename) {
-	return vfs_stack.open_sdl(filename).release();
-}
-
 owned::SDL_RWops AssetOpen_SDL_Owned(const char* filename) {
 	return vfs_stack.open_sdl(filename);
 }

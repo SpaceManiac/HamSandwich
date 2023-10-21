@@ -967,13 +967,13 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			std::set<dword> seen;
 			std::vector<dword> ordered;
 
-			SDL_RWops* input = AssetOpen_SDL("worlds/levels.dat");
+			owned::SDL_RWops input = AssetOpen_SDL_Owned("worlds/levels.dat");
 			for (dword item; SDL_RWread(input, &item, sizeof(dword), 1) == 1;)
 			{
 				seen.insert(item);
 				ordered.push_back(item);
 			}
-			SDL_RWclose(input);
+			input.reset();
 
 			for (int i = 0; i < tmpWorld.numMaps; ++i)
 			{
