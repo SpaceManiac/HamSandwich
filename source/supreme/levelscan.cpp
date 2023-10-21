@@ -11,19 +11,6 @@
 
 static FILE *scanF;
 
-static const char lvlFlagName[][16]={
-	"Snowing",
-	"Raining",
-	"Hub Level",
-	"Secret Level",
-	"Torch Lit",
-	"Lantern Lit",
-	"Star Background",
-	"Underwater",
-	"Underlava",
-	"Stealth",
-};
-
 static const char wpnName[][16]={
 	"None",
 	"Missiles",
@@ -400,7 +387,7 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
 			PrintFX(me->flags);
 			break;
 		case EFF_LEVELFLAG:
-			fprintf(scanF,"Change level flag %s to ",lvlFlagName[me->value]);
+			fprintf(scanF,"Change level flag %s to ",MapFlagName(me->value));
 			switch(me->value2)
 			{
 				case 0:

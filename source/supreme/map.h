@@ -47,8 +47,8 @@ enum : word
 	MAP_WAVY        = 1 << 10,
 	MAP_OXYGEN      = 1 << 11,
 };
-
 constexpr int NUM_LVL_FLAGS = 12;
+const char* MapFlagName(int flagIndex);  // expects 0, 1, 2, 3, not the constants above
 
 // map updating modes
 enum

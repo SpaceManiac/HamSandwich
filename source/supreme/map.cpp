@@ -1993,3 +1993,25 @@ mapTile_t *Map::GetTile(int x,int y)
 	else
 		return &map[x+y*width];
 }
+
+static const char lvlFlagName[NUM_LVL_FLAGS][16] = {
+	"Snowing",
+	"Raining",
+	"Hub Level",
+	"Secret Level",
+	"Torch Lit",
+	"Lantern Lit",
+	"Star Background",
+	"Underwater",
+	"Underlava",
+	"Stealth",
+	"Wavy",
+	"Oxygen Meter",
+};
+
+const char* MapFlagName(int flagIndex)
+{
+	if (flagIndex >= 0 && flagIndex < NUM_LVL_FLAGS)
+		return lvlFlagName[flagIndex];
+	return "???";
+}

@@ -48,20 +48,6 @@ static world_t *world;
 
 static word flagNum[]={MAP_SNOWING,MAP_RAIN,MAP_HUB,MAP_SECRET,MAP_TORCHLIT,MAP_WELLLIT,
 				MAP_STARS,MAP_UNDERWATER,MAP_LAVA,MAP_STEALTH,MAP_WAVY,MAP_OXYGEN};
-static const char flagName[][16]={
-	"Snowing",
-	"Raining",
-	"Hub Level",
-	"Secret Level",
-	"Torch Lit",
-	"Lantern Lit",
-	"Star Background",
-	"Underwater",
-	"Underlava",
-	"Stealth",
-	"Wavy",
-	"Oxygen Meter",
-};
 
 static byte *mapZoom;
 static byte desiredWidth,desiredHeight;
@@ -357,7 +343,7 @@ void LevelDialogButtons(void)
 	for(i=0;i<NUM_LVL_FLAGS;i++)
 	{
 		MakeButton(BTN_CHECK,ID_FLAG+i,((world->map[mapNum]->flags&flagNum[i])!=0)*CHECK_ON,DLG_X+2,DLG_Y+66+16*i,
-			150,15,flagName[i],FlagClick);
+			150,15,MapFlagName(i),FlagClick);
 	}
 
 	MakeButton(BTN_NORMAL,ID_PREV,0,DLG_X2-104,DLG_Y+2,50,15,"Prev",PrevClick);

@@ -160,21 +160,6 @@ static const char effName[][16]={
 	"Change Bullet"
 };
 
-static const char lvlFlagName[][16]={
-	"Snowing",
-	"Raining",
-	"Hub Level",
-	"Secret Level",
-	"Torch Lit",
-	"Lantern Lit",
-	"Star Background",
-	"Underwater",
-	"Underlava",
-	"Stealth",
-	"Wavy",
-	"Oxygen Meter",
-};
-
 static const char wpnName[][16]={
 	"None",
 	"Missiles",
@@ -1989,7 +1974,7 @@ static void SetupEffectButtons(int t,int y)
 			break;
 		case EFF_LEVELFLAG:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Change level flag",NULL);
-			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,170,y+17,140,14,lvlFlagName[effect.value],LevelFlagClick);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,170,y+17,140,14,MapFlagName(effect.value),LevelFlagClick);
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,314,y+17,1,1,"to",NULL);
 			switch(effect.value2)
 			{
