@@ -11,7 +11,7 @@
 
 static FILE *scanF;
 
-static char lvlFlagName[][16]={
+static const char lvlFlagName[][16]={
 	"Snowing",
 	"Raining",
 	"Hub Level",
@@ -24,7 +24,7 @@ static char lvlFlagName[][16]={
 	"Stealth",
 };
 
-static char wpnName[][16]={
+static const char wpnName[][16]={
 	"None",
 	"Missiles",
 	"AK-8087",

@@ -15,7 +15,7 @@
 
 // ---------------- Encrypting scores into strings!
 
-static char ctab[]=
+static const char ctab[]=
 	"0123456789"	// 0-9
 	"abcdefghij"	// 10-19
 	"klmnopqrst"	// 20-29

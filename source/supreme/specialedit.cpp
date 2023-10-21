@@ -83,7 +83,7 @@ static byte previousMap;
 static byte helpRemember;
 static byte trgStart,effStart;
 
-static char trigName[][16]={
+static const char trigName[][16]={
 	"Unused",
 	"Step On/Near",
 	"Step In Rect",
@@ -119,7 +119,7 @@ static char trigName[][16]={
 	"Bullet In Rect"
 };
 
-static char effName[][16]={
+static const char effName[][16]={
 	"Unused",
 	"Message",
 	"Sound",
@@ -160,7 +160,7 @@ static char effName[][16]={
 	"Change Bullet"
 };
 
-static char lvlFlagName[][16]={
+static const char lvlFlagName[][16]={
 	"Snowing",
 	"Raining",
 	"Hub Level",
@@ -175,7 +175,7 @@ static char lvlFlagName[][16]={
 	"Oxygen Meter",
 };
 
-static char wpnName[][16]={
+static const char wpnName[][16]={
 	"None",
 	"Missiles",
 	"AK-8087",
@@ -201,7 +201,7 @@ static char wpnName[][16]={
 static void SetupTriggerButtons(int t,int y);
 static void SetupEffectButtons(int t,int y);
 
-static char *WeaponName(byte n)
+static const char *WeaponName(byte n)
 {
 	return wpnName[n];
 }

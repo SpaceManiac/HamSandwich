@@ -79,7 +79,7 @@ typedef struct itemEff_t
 	byte buttonType;
 } itemEff_t;
 
-static itemEff_t itemEff[]={
+static const itemEff_t itemEff[]={
 	{"No Effect","",0,0,IEBTN_NONE},
 	{"Explode into particles","Color",0,7,IEBTN_COLOR},
 	{"Heal/Harm Target","Amount",-9999,9999,IEBTN_NUM},
@@ -111,7 +111,7 @@ static itemEff_t itemEff[]={
 	{"Move","Direction",0,3,IEBTN_DIR},
 };
 
-static char pwrUpName[MAX_POWERUP][32]={
+static const char pwrUpName[MAX_POWERUP][32]={
 	"",
 	"Reverse Hammer",
 	"Reflect Hammer",
@@ -125,7 +125,7 @@ static char pwrUpName[MAX_POWERUP][32]={
 	"Poison",
 };
 
-static char wpnName[MAX_WEAPONS][32]={
+static const char wpnName[MAX_WEAPONS][32]={
 	"None",
 	"Missiles",
 	"AK-8087",
@@ -149,7 +149,7 @@ static char wpnName[MAX_WEAPONS][32]={
 	"Stopwatch",
 };
 
-static char colorName[8][16]={
+static const char colorName[8][16]={
 	"Grey",
 	"Green",
 	"Brown",
@@ -160,21 +160,21 @@ static char colorName[8][16]={
 	"Aqua",
 };
 
-static char keyColorName[4][16]={
+static const char keyColorName[4][16]={
 	"Yellow",
 	"Red",
 	"Green",
 	"Blue",
 };
 
-static char keychainName[4][16]={
+static const char keychainName[4][16]={
 	"Pumpkin",
 	"Hammer",
 	"Rocket",
 	"Squash",
 };
 
-static char directionName[4][16]={
+static const char directionName[4][16]={
 	"Right",
 	"Down",
 	"Left",
@@ -743,7 +743,7 @@ static void SoundClick(int id)
 
 static void SetupEffect(void)
 {
-	itemEff_t *ie;
+	const itemEff_t *ie;
 	char s[64];
 
 	ie=&itemEff[GetItem(curItem)->effect];

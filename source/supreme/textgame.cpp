@@ -105,7 +105,7 @@ typedef struct txtItem_t
 	dword flags;
 } txtItem_t;
 
-static char helpTxt[HELPLEN][MAX_LINELEN]={
+static const char helpTxt[HELPLEN][MAX_LINELEN]={
 	"Type 2-word commands to do things, always 'VERB NOUN'.  For example,",
 	"'GET TORCH' or 'OPEN DOOR'.  There are several handy shortcuts - ",
 	"just type 'N' to move North, or 'W', 'S', or 'E' for the other ",

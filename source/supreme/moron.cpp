@@ -27,15 +27,15 @@ byte numQs[10];
 question_t *questions[10];	// 10 arrays, one for each level of question
 int levelValue[10]={1,5,10,25,45,75,120,200,320,500};
 
-static char introAns[4][8]={"Yes!","Sure!","Indeed!","No."};
-static char playedAns[4][16]={"Drat!","Darn!","Shoot!","Foiled again!"};
+static const char introAns[4][8]={"Yes!","Sure!","Indeed!","No."};
+static const char playedAns[4][16]={"Drat!","Darn!","Shoot!","Foiled again!"};
 
 static byte *backgd;
 static sprite_set_t *plSpr;
 static char msBright,msDBright;
 static int msx,msy,oldMsx,oldMsy;
 static char buf[384];
-static char *ans[4];
+static const char *ans[4];
 static byte whichIsRight,level;
 static byte cursor,lastQuestion;
 static int winnings;
@@ -193,7 +193,7 @@ void PickQuestion(void)
 {
 	byte l;
 	byte q,a,w,prevW[2];
-	char *c;
+	const char *c;
 
 	if(Random(5)==0)
 		l=(level-1+Random(3));
