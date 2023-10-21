@@ -7,44 +7,44 @@
 #include "shop.h"
 #include "config.h"
 
-#define SPR_FLAME   0
-#define SPR_LASER   5
-#define SPR_HAMMER  21
-#define SPR_MISSILE 149
-#define SPR_SMOKE	165
-#define SPR_ACID	172
-#define SPR_BOMB	228
-#define SPR_ENERGY	236
-#define SPR_BOOM	238
-#define SPR_MEGABEAM 246
-#define SPR_SPORE	254
-#define SPR_SHROOM  258
-#define SPR_GRENADE 266
-#define SPR_YELBOOM 268
-#define SPR_SHOCKWAVE 273
-#define SPR_LILBOOM 277
-#define SPR_SNOWBALL 282
-#define SPR_BIGSNOW  283
-#define SPR_ICESPIKE 286
-#define SPR_ROCK	 290
-#define SPR_SPINE	 294
-#define SPR_BIGAXE	 310
-#define SPR_SPEAR	 318
-#define SPR_SLASH	 326
-#define SPR_MINE	 350
-#define SPR_STINKY	 355
-#define SPR_GREEN	 358
-#define SPR_ORBITER  359
-#define SPR_PAPER	 367
-#define SPR_BUBBLE	 375
-#define SPR_SCANSHOT 384
-#define SPR_SCANLOCK 387
+constexpr int SPR_FLAME     = 0;
+constexpr int SPR_LASER     = 5;
+constexpr int SPR_HAMMER    = 21;
+constexpr int SPR_MISSILE   = 149;
+constexpr int SPR_SMOKE     = 165;
+constexpr int SPR_ACID      = 172;
+constexpr int SPR_BOMB      = 228;
+constexpr int SPR_ENERGY    = 236;
+constexpr int SPR_BOOM      = 238;
+constexpr int SPR_MEGABEAM  = 246;
+constexpr int SPR_SPORE     = 254;
+constexpr int SPR_SHROOM    = 258;
+constexpr int SPR_GRENADE   = 266;
+constexpr int SPR_YELBOOM   = 268;
+constexpr int SPR_SHOCKWAVE = 273;
+constexpr int SPR_LILBOOM   = 277;
+constexpr int SPR_SNOWBALL  = 282;
+constexpr int SPR_BIGSNOW   = 283;
+constexpr int SPR_ICESPIKE  = 286;
+constexpr int SPR_ROCK      = 290;
+constexpr int SPR_SPINE     = 294;
+constexpr int SPR_BIGAXE    = 310;
+constexpr int SPR_SPEAR     = 318;
+constexpr int SPR_SLASH     = 326;
+constexpr int SPR_MINE      = 350;
+constexpr int SPR_STINKY    = 355;
+constexpr int SPR_GREEN     = 358;
+constexpr int SPR_ORBITER   = 359;
+constexpr int SPR_PAPER     = 367;
+constexpr int SPR_BUBBLE    = 375;
+constexpr int SPR_SCANSHOT  = 384;
+constexpr int SPR_SCANLOCK  = 387;
 
-bullet_t *bullet;
-sprite_set_t *bulletSpr;
-byte reflect=0;
-byte attackType;
-int activeBulDX,activeBulDY;
+static bullet_t *bullet;
+static sprite_set_t *bulletSpr;
+static byte reflect = 0;
+static byte attackType;
+static int activeBulDX, activeBulDY;
 
 void GetBulletDeltas(int *bdx,int *bdy)
 {
