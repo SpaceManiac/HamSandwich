@@ -1,12 +1,13 @@
 #include "winpch.h"
 #include "levelscan.h"
+#include <algorithm>
 #include "monster.h"
 #include "sound.h"
 #include "vars.h"
 #include "shop.h"
 #include "control.h"
 #include "appdata.h"
-#include <algorithm>
+#include "bullet.h"
 
 static FILE *scanF;
 
@@ -45,66 +46,6 @@ static char wpnName[][16]={
 	"Mini-Sub",
 	"Freeze Ray",
 	"Stopwatch"};
-
-static char bulletName[][20]={
-	"None",
-	"Hammer",
-	"Bouncy Hammer",
-	"Missile",
-	"Flame",
-	"AK-8087 Shot",
-	"Acid",
-	"Cherry Bomb",
-	"Explosion",
-	"Red Bullet",
-	"Megabeam Source",
-	"Megabeam Part",
-	"Megabeam Endo",
-	"Evil Flame",
-	"Spore",
-	"Mushroom",
-	"Grenade",
-	"Grenade Boom",
-	"SDZ Shockwave",
-	"Missile Boom",
-	"Snowball",
-	"Big Snowball",
-	"Ice Spike",
-	"Rock",
-	"Cactus Spine",
-	"Evil Hammer",
-	"Power Shell",
-	"Big Axe",
-	"Lightning",
-	"Spear",
-	"Machete",
-	"Landmine",
-	"Evil Spear",
-	"Orbiter",
-	"Green Bullet",
-	"Ball Lightning",
-	"Zap Wand Shock",
-	"Mind Control",
-	"Reflect Shield",
-	"Swap Gun",
-	"Water Shot",
-	"Orbit Bomber",
-	"Harpoon",
-	"Scanner",
-	"Scanner Shot",
-	"Torpedo",
-	"Dirt Spike",
-	"Paper",
-	"Scanner Lock",
-	"Bubble",
-	"Freeze Ray",
-	"Bubble Pop",
-	"Harmless Boom",
-	"Cheese Hammer",
-	"Evil Freeze",
-	"Lunachick Ray",
-	"Bouncy Lunachick"
-};
 
 void PrintFX(word flags)
 {
@@ -300,7 +241,7 @@ void Scan_Trigger(world_t *world,Map *map,int num,trigger_t *me,char *effText)
 			PrintLessMore(me->flags);
 			break;
 		case TRG_BULLETRECT:
-			fprintf(scanF,"If any %s are in (%03d,%03d)-(%03d,%03d)",bulletName[me->value],me->x,me->y,((word)me->value2)%256,((word)me->value2)/256);
+			fprintf(scanF,"If any %s are in (%03d,%03d)-(%03d,%03d)",BulletName(me->value),me->x,me->y,((word)me->value2)%256,((word)me->value2)/256);
 			break;
 	}
 	if(me->flags&TF_AND)
@@ -569,7 +510,7 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
 			fprintf(scanF," varbar to %s (color %d)\n",VarName(me->value),((word)me->value2)%256);
 			break;
 		case EFF_MAKEBULLET:
-			fprintf(scanF,"Summon bullet %s at (%03d,%03d) facing \"%s\"\n",bulletName[me->value2], me->x, me->y, me->text);
+			fprintf(scanF,"Summon bullet %s at (%03d,%03d) facing \"%s\"\n",BulletName(me->value2), me->x, me->y, me->text);
 			break;
 		default:
 			fprintf(scanF,"Unhandled effect type %d\n",me->type);

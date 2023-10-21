@@ -2938,8 +2938,13 @@ void ChangeBullet(byte fx,int x,int y,int type,int newtype)
 
 }
 
+byte GetBulletAttackType(void)
+{
+	return attackType;
+}
+
 // TORPEDO, LASER
-static const byte bulletFacingType[] = {
+static const byte bulletFacingType[NUM_BULLETS] = {
 	0,  	// BLT_NONE    0
 	7,  	// BLT_HAMMER  1
 	7,  	// BLT_HAMMER2 2	// this is a hammer with reflection
@@ -3001,10 +3006,73 @@ static const byte bulletFacingType[] = {
 
 byte BulletFacingType(byte type)
 {
+	SDL_assert(type < NUM_BULLETS);
 	return bulletFacingType[type];
 }
 
-byte GetBulletAttackType(void)
+static const char bulletName[NUM_BULLETS][20] = {
+	"Anything",
+	"Hammer",
+	"Bouncy Hammer",
+	"Missile",
+	"Flame",
+	"AK-8087 Shot",
+	"Acid",
+	"Cherry Bomb",
+	"Explosion",
+	"Red Bullet",
+	"Megabeam Source",
+	"Megabeam Part",
+	"Megabeam End",
+	"Evil Flame",
+	"Spore",
+	"Mushroom",
+	"Grenade",
+	"Grenade Boom",
+	"SDZ Shockwave",
+	"Missile Boom",
+	"Snowball",
+	"Big Snowball",
+	"Ice Spike",
+	"Rock",
+	"Cactus Spine",
+	"Evil Hammer",
+	"Power Shell",
+	"Big Axe",
+	"Lightning",
+	"Spear",
+	"Machete",
+	"Landmine",
+	"Evil Spear",
+	"Orbiter",
+	"Green Bullet",
+	"Ball Lightning",
+	"Zap Wand Shock",
+	"Mind Control",
+	"Reflect Shield",
+	"Swap Gun",
+	"Water Shot",
+	"Orbit Bomber",
+	"Harpoon",
+	"Scanner",
+	"Scanner Shot",
+	"Torpedo",
+	"Dirt Spike",
+	"Paper",
+	"Scanner Lock",
+	"Bubble",
+	"Freeze Ray",
+	"Bubble Pop",
+	"Harmless Boom",
+	"Cheese Hammer",
+	"Evil Freeze",
+	"Lunachick Ray",
+	"Bouncy Lunachick",
+};
+
+const char* BulletName(int type)
 {
-	return attackType;
+	if (type >= 0 && type < NUM_BULLETS)
+		return bulletName[type];
+	return "???";
 }

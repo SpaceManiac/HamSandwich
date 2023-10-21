@@ -134,6 +134,7 @@ int CountBullets(byte type);                                     // For specials
 int CountBulletsInRect(byte type, int x, int y, int x2, int y2); // for specials to check for bullets
 void ChangeBullet(byte fx, int x, int y, int type, int newtype); // for specials to change bullets
 byte BulletFacingType(byte type);                                // To check if a type of bullet uses none, 0-7, or 0-255 facings
+const char* BulletName(int type);
 
 void GetBulletDeltas(int *bdx, int *bdy);
 

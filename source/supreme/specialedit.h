@@ -21,6 +21,4 @@ void SetSpecialRect(int x,int y,int x2,int y2);
 
 void SpecialEdit_Help(void);
 
-const char* BulletName(int type);
-
 #endif

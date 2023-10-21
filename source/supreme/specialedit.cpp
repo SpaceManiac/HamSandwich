@@ -198,66 +198,6 @@ static char wpnName[][16]={
 	"Freeze Ray",
 	"Stopwatch"};
 
-static char bulletName[][20]={
-	"Anything",
-	"Hammer",
-	"Bouncy Hammer",
-	"Missile",
-	"Flame",
-	"AK-8087 Shot",
-	"Acid",
-	"Cherry Bomb",
-	"Explosion",
-	"Red Bullet",
-	"Megabeam Source",
-	"Megabeam Part",
-	"Megabeam End",
-	"Evil Flame",
-	"Spore",
-	"Mushroom",
-	"Grenade",
-	"Grenade Boom",
-	"SDZ Shockwave",
-	"Missile Boom",
-	"Snowball",
-	"Big Snowball",
-	"Ice Spike",
-	"Rock",
-	"Cactus Spine",
-	"Evil Hammer",
-	"Power Shell",
-	"Big Axe",
-	"Lightning",
-	"Spear",
-	"Machete",
-	"Landmine",
-	"Evil Spear",
-	"Orbiter",
-	"Green Bullet",
-	"Ball Lightning",
-	"Zap Wand Shock",
-	"Mind Control",
-	"Reflect Shield",
-	"Swap Gun",
-	"Water Shot",
-	"Orbit Bomber",
-	"Harpoon",
-	"Scanner",
-	"Scanner Shot",
-	"Torpedo",
-	"Dirt Spike",
-	"Paper",
-	"Scanner Lock",
-	"Bubble",
-	"Freeze Ray",
-	"Bubble Pop",
-	"Harmless Boom",
-	"Cheese Hammer",
-	"Evil Freeze",
-	"Lunachick Ray",
-	"Bouncy Lunachick"
-};
-
 static void SetupTriggerButtons(int t,int y);
 static void SetupEffectButtons(int t,int y);
 
@@ -1739,7 +1679,7 @@ static void SetupTriggerButtons(int t,int y)
 			break;
 		case TRG_BULLETRECT:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If any",NULL);
-			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,90,y+17,140,14,bulletName[trigger.value],Bullet1Click);
+			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,90,y+17,140,14,BulletName(trigger.value),Bullet1Click);
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+2+100*t,0,235,y+17,1,1,"are in the area: ",NULL);
 			sprintf(s,"(%d,%d)-(%d,%d)",trigger.x,trigger.y,((word)trigger.value2)%256,((word)trigger.value2)/256);
 			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+3+100*t,0,370,y+17,150,14,s,RectClick);
@@ -2303,7 +2243,7 @@ static void SetupEffectButtons(int t,int y)
 			break;
 		case EFF_MAKEBULLET:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Summon",NULL);
-			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,104,y+17,140,14,bulletName[effect.value2],BulletClick);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,104,y+17,140,14,BulletName(effect.value2),BulletClick);
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,248,y+17,1,1,"at",NULL);
 			if(effect.x==255)
 				sprintf(s,"Tagged");
@@ -2326,7 +2266,7 @@ static void SetupEffectButtons(int t,int y)
 			break;
 		case EFF_CHANGEBULLET:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Change",NULL);
-			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,104,y+17,140,14,bulletName[effect.value],Bullet1Click);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,104,y+17,140,14,BulletName(effect.value),Bullet1Click);
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,248,y+17,1,1,"at",NULL);
 			if(effect.x==255)
 				strcpy(s,"Anywhere");
@@ -2334,7 +2274,7 @@ static void SetupEffectButtons(int t,int y)
 				sprintf(s,"%d, %d",effect.x,effect.y);
 			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,268,y+17,70,14,s,XY3Click);
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,342,y+17,1,1,"to",NULL);
-			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,360,y+17,140,14,bulletName[effect.value2],BulletClick);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,360,y+17,140,14,BulletName(effect.value2),BulletClick);
 
 			if(effect.flags&EF_NOFX)
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+6+100*t,0,520,y+17,65,14,"No FX",NoFXClick);
@@ -2918,11 +2858,4 @@ void SpecialEdit_Help(void)
 	helpRemember=mode;
 	InitEditHelp(HELP_SPECIALEDIT);
 	mode=SMODE_HELP;
-}
-
-const char* BulletName(int type)
-{
-	if (type >= 0 && type < NUM_BULLETS)
-		return bulletName[type];
-	return "";
 }
