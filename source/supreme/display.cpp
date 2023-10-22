@@ -181,6 +181,7 @@ TASK(void) ShowImageOrFlic(const char *str,byte nosnd,byte mode)
 
 	AWAIT FLI_play(nm,0,speed,mgl);
 	mgl->LoadBMP("graphics/title.bmp");
+	RestoreGameplayGfx();
 
 	if(!editing && (verified || shopping))
 	{

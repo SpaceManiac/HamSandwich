@@ -51,6 +51,7 @@ public:
 
 	// Display the buffer to the screen.
 	TASK(void) Flip();
+	void BufferFlip();  // Convert 8-bit to 32-bit, but don't present.
 	TASK(void) WaterFlip(int v);
 	TASK(void) TeensyFlip();
 	TASK(void) TeensyWaterFlip(int v);

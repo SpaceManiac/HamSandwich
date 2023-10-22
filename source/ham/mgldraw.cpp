@@ -555,10 +555,8 @@ TASK(void) MGLDraw::FinishFlip(void)
 	AWAIT coro::next_frame();
 }
 
-TASK(void) MGLDraw::Flip(void)
+void MGLDraw::BufferFlip()
 {
-	StartFlip();
-
 	// blit to the screen
 	int limit = pitch * yRes;
 	byte* src = scrn.get();
@@ -566,7 +564,12 @@ TASK(void) MGLDraw::Flip(void)
 
 	for(int i = 0; i < limit; ++i)
 		*target++ = thePal[*src++];
+}
 
+TASK(void) MGLDraw::Flip(void)
+{
+	StartFlip();
+	BufferFlip();
 	AWAIT FinishFlip();
 }
 

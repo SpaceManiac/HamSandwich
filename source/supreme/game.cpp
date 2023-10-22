@@ -202,6 +202,15 @@ void ExitLevel(void)
 
 void RestoreGameplayGfx(void)
 {
+	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
+	{
+		gamemgl->ClearScreen();
+		GetDisplayMGL()->LoadBMP("graphics/gamepal.bmp");
+		gamemgl->BufferFlip();
+	}
+	if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE)
+		gamemgl->ClearScreen();
+
 	if(curMap)
 	{
 		if(curMap->flags&MAP_UNDERWATER)
@@ -209,15 +218,6 @@ void RestoreGameplayGfx(void)
 		else if(curMap->flags&MAP_LAVA)
 			LavaPalette(gamemgl);
 	}
-
-	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
-	{
-		gamemgl->ClearScreen();
-		GetDisplayMGL()->LoadBMP("graphics/gamepal.bmp");
-		//gamemgl->Flip();  // TODO: is this needed?
-	}
-	if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE)
-		gamemgl->ClearScreen();
 }
 
 void EnterPictureDisplay(void)
