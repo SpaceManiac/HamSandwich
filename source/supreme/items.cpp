@@ -1825,3 +1825,24 @@ int FindItemByName(const char *name)
 	}
 	return 0;
 }
+
+static const char pwrUpName[MAX_POWERUP][32] = {
+	"",
+	"Reverse Hammer",
+	"Reflect Hammer",
+	"Energy Shield",
+	"Garlic",
+	"Speed Up",
+	"Invisibility",
+	"Infinite Ammo",
+	"Reload Weapon",
+	"Hammer Enhance",
+	"Poison",
+};
+
+const char *GetPowerupName(int powerup)
+{
+	if (powerup >= 0 && powerup < MAX_POWERUP)
+		return pwrUpName[powerup];
+	return "???";
+}

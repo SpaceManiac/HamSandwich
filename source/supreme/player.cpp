@@ -269,7 +269,7 @@ byte PlayerGetWeapon(byte wpn,int x,int y)
 	return 1;
 }
 
-byte PlayerPowerup(char powerup)
+byte PlayerPowerup(int powerup)
 {
 	if(powerup>0)
 	{

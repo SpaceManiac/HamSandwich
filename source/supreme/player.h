@@ -143,7 +143,7 @@ byte StealWeapon(void);
 
 int WeaponMaxAmmo(byte wpn);
 byte PlayerGetWeapon(byte wpn,int x,int y);
-byte PlayerPowerup(char powerup);
+byte PlayerPowerup(int powerup);
 void PlayerRadioactiveFood(void);
 void PlayerChineseFood(void);
 void KeyChainAllCheck(void);

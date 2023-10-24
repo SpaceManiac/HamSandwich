@@ -71,14 +71,14 @@ static word trigs[]={ITR_GET,ITR_SHOOT,ITR_PLAYERBUMP,ITR_ENEMYBUMP,ITR_FRIENDBU
 #define IEBTN_VAR	   10	// choose a variable (right click toggles G or V, left click cycles num)
 #define IEBTN_DIR	   11	// choose a direction
 
-typedef struct itemEff_t
+struct itemEff_t
 {
 	char name[32];
 	char btnTxt[32];
 	int buttonMin;
 	int buttonMax;
 	byte buttonType;
-} itemEff_t;
+};
 
 static const itemEff_t itemEff[]={
 	{"No Effect","",0,0,IEBTN_NONE},
@@ -110,20 +110,6 @@ static const itemEff_t itemEff[]={
 	{"Increment","Variable",0,15,IEBTN_VAR},
 	{"Decrement","Variable",0,15,IEBTN_VAR},
 	{"Move","Direction",0,3,IEBTN_DIR},
-};
-
-static const char pwrUpName[MAX_POWERUP][32]={
-	"",
-	"Reverse Hammer",
-	"Reflect Hammer",
-	"Energy Shield",
-	"Garlic",
-	"Speed Up",
-	"Invisibility",
-	"Infinite Ammo",
-	"Reload Weapon",
-	"Hammer Enhance",
-	"Poison",
 };
 
 static const char colorName[8][16]={
@@ -783,10 +769,10 @@ static void SetupEffect(void)
 			// choose from the powerup list
 			MakeButton(BTN_NORMAL,ID_ITEMEFFMOD,0,174,132+17*16,80,15,itemEff[GetItem(curItem)->effect].btnTxt,EffModClick);
 			if(GetItem(curItem)->effectAmt>0)
-				MakeButton(BTN_STATIC,ID_NAME2,0,256,132+17*16,80,15,pwrUpName[GetItem(curItem)->effectAmt],NULL);
+				MakeButton(BTN_STATIC,ID_NAME2,0,256,132+17*16,80,15,GetPowerupName(GetItem(curItem)->effectAmt),NULL);
 			else
 			{
-				sprintf(s,"Remove %s",pwrUpName[-GetItem(curItem)->effectAmt]);
+				sprintf(s,"Remove %s",GetPowerupName(-GetItem(curItem)->effectAmt));
 				MakeButton(BTN_STATIC,ID_NAME2,0,256,132+17*16,80,15,s,NULL);
 			}
 			break;
