@@ -1709,3 +1709,20 @@ void RenderShopping(MGLDraw *mgl)
 		}
 	}
 }
+
+static const char charName[][16] = {
+	"Bouapha",
+	"Happy Stick Man",
+	"Dr. Lunatic",
+	"Shtupid Shroom",
+	"LunaChick",
+	"MechaBouapha",
+};
+static_assert(SDL_arraysize(charName) == MAX_PLAYAS, "Must give new playable character a name");
+
+const char* GetPlayableCharacterName(int playAs)
+{
+	if (playAs >= 0 && playAs < MAX_PLAYAS)
+		return charName[playAs];
+	return "???";
+}

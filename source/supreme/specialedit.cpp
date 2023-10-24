@@ -648,7 +648,7 @@ static void PlayAsClick(int id)
 		curTrig=trgStart + id/100-1;
 
 		spcl.trigger[curTrig].value++;
-		if(spcl.trigger[curTrig].value>PLAY_MECHA)
+		if(spcl.trigger[curTrig].value>=MAX_PLAYAS)
 			spcl.trigger[curTrig].value=PLAY_BOUAPHA;
 
 		MakeNormalSound(SND_MENUCLICK);
@@ -660,7 +660,7 @@ static void PlayAsClick(int id)
 		MakeNormalSound(SND_MENUCLICK);
 
 		spcl.effect[curEff].value++;
-		if(spcl.effect[curEff].value>PLAY_MECHA)
+		if(spcl.effect[curEff].value>=MAX_PLAYAS)
 			spcl.effect[curEff].value=PLAY_BOUAPHA;
 
 		SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
@@ -1578,18 +1578,7 @@ static void SetupTriggerButtons(int t,int y)
 			break;
 		case TRG_PLAYAS:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If player is playing as",NULL);
-			if(trigger.value==PLAY_BOUAPHA)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Bouapha",PlayAsClick);
-			else if(trigger.value==PLAY_LUNATIC)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Dr. Lunatic",PlayAsClick);
-			else if(trigger.value==PLAY_HAPPY)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Happy Stick Man",PlayAsClick);
-			else if(trigger.value==PLAY_SHROOM)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Shtupid Shroom",PlayAsClick);
-			else if(trigger.value==PLAY_LUNACHIK)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Lunachick",PlayAsClick);
-			else if(trigger.value==PLAY_MECHA)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Mechabouapha",PlayAsClick);
+			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,GetPlayableCharacterName(trigger.value),PlayAsClick);
 			break;
 		case TRG_MONSCOLOR:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If",NULL);
@@ -2154,18 +2143,7 @@ static void SetupEffectButtons(int t,int y)
 			break;
 		case EFF_PLAYAS:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Force player to play as",NULL);
-			if(effect.value==PLAY_BOUAPHA)
-				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Bouapha",PlayAsClick);
-			else if(effect.value==PLAY_LUNATIC)
-				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Dr. Lunatic",PlayAsClick);
-			else if(effect.value==PLAY_HAPPY)
-				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Happy Stick Man",PlayAsClick);
-			else if(effect.value==PLAY_SHROOM)
-				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Shtupid Shroom",PlayAsClick);
-			else if(effect.value==PLAY_LUNACHIK)
-				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Lunachick",PlayAsClick);
-			else if(effect.value==PLAY_MECHA)
-				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Mechabouapha",PlayAsClick);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,GetPlayableCharacterName(effect.value),PlayAsClick);
 			break;
 		case EFF_MONSGRAPHICS:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Change",NULL);

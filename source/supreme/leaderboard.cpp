@@ -8,6 +8,7 @@
 #include "control.h"
 #include "progress.h"
 #include "dialogbits.h"
+#include "shop.h"
 
 constexpr int NUM_SCORES = 20;
 constexpr int BTN_HEIGHT = 19;
@@ -16,7 +17,6 @@ constexpr int SPR_LOONYKEY = 50;
 constexpr int SPR_KEYCH = 52;
 
 static const char diffName[][16]={"Normal","Hard","Lunatic"};
-static const char charName[][16]={"Bouapha","Happy Stick Man","Dr. Lunatic","Shtupid Shroom","LunaChick","MechaBouapha"};
 
 // Matches Pack* in steam.cpp
 static void UnpackWorldProgress(int32_t packed, byte* keychains, float* percentage)
@@ -242,10 +242,8 @@ static TASK(void) ViewDetails(MGLDraw *mgl, const byte* backgd, const sprite_set
 			}
 			PrintGlow(390 - GetStrLength(buf, 2), y, buf, 0, 2);
 
-			if (entry.playAs < SDL_arraysize(charName))
-			{
-				PrintGlow(530 - GetStrLength(charName[entry.playAs], 2), y, charName[entry.playAs], 0, 2);
-			}
+			const char* playAs = GetPlayableCharacterName(entry.playAs);
+			PrintGlow(530 - GetStrLength(playAs, 2), y, playAs, 0, 2);
 
 			if (entry.difficulty < SDL_arraysize(diffName))
 			{

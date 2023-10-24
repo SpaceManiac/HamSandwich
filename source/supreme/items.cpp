@@ -1826,7 +1826,7 @@ int FindItemByName(const char *name)
 	return 0;
 }
 
-static const char pwrUpName[MAX_POWERUP][32] = {
+static const char pwrUpName[][32] = {
 	"",
 	"Reverse Hammer",
 	"Reflect Hammer",
@@ -1839,6 +1839,7 @@ static const char pwrUpName[MAX_POWERUP][32] = {
 	"Hammer Enhance",
 	"Poison",
 };
+static_assert(SDL_arraysize(pwrUpName) == MAX_POWERUP, "Must give new powerups a name");
 
 const char *GetPowerupName(int powerup)
 {

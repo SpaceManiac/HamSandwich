@@ -180,19 +180,7 @@ void Scan_Trigger(world_t *world,Map *map,int num,trigger_t *me,char *effText)
 			}
 			break;
 		case TRG_PLAYAS:
-			fprintf(scanF,"If player is playing as ");
-			if(me->value==PLAY_BOUAPHA)
-				fprintf(scanF,"Bouapha");
-			else if(me->value==PLAY_LUNATIC)
-				fprintf(scanF,"Lunatic");
-			else if(me->value==PLAY_HAPPY)
-				fprintf(scanF,"Happy Stick Man");
-			else if(me->value==PLAY_SHROOM)
-				fprintf(scanF,"Shtupid Shroom");
-			else if(me->value==PLAY_LUNACHIK)
-				fprintf(scanF,"Lunachick");
-			else if(me->value==PLAY_MECHA)
-				fprintf(scanF,"Mechabouapha");
+			fprintf(scanF,"If player is playing as %s", GetPlayableCharacterName(me->value));
 			break;
 		case TRG_MONSCOLOR:
 			fprintf(scanF,"If %s at (%03d,%03d) is painted %d",MonsterName(me->value),me->x,me->y,me->value2);
@@ -445,19 +433,7 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
 			fprintf(scanF,"Change brightness of %s at (%03d,%03d) to %d\n",MonsterName(me->value),me->x,me->y,me->value2);
 			break;
 		case EFF_PLAYAS:
-			fprintf(scanF,"Force player to play as ");
-			if(me->value==PLAY_BOUAPHA)
-				fprintf(scanF,"Bouapha\n");
-			else if(me->value==PLAY_LUNATIC)
-				fprintf(scanF,"Lunatic\n");
-			else if(me->value==PLAY_HAPPY)
-				fprintf(scanF,"Happy Stick Man\n");
-			else if(me->value==PLAY_SHROOM)
-				fprintf(scanF,"Shtupid Shroom\n");
-			else if(me->value==PLAY_LUNACHIK)
-				fprintf(scanF,"Lunachick\n");
-			else if(me->value==PLAY_MECHA)
-				fprintf(scanF,"Mechabouapha\n");
+			fprintf(scanF,"Force player to play as %s\n", GetPlayableCharacterName(me->value));
 			break;
 		case EFF_MONSGRAPHICS:
 			fprintf(scanF,"Change graphics of %s at (%03d,%03d) to %s",MonsterName(me->value),me->x,me->y,me->text);

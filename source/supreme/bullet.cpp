@@ -3010,7 +3010,7 @@ byte BulletFacingType(byte type)
 	return bulletFacingType[type];
 }
 
-static const char bulletName[NUM_BULLETS][20] = {
+static const char bulletName[][20] = {
 	"Anything",
 	"Hammer",
 	"Bouncy Hammer",
@@ -3069,6 +3069,7 @@ static const char bulletName[NUM_BULLETS][20] = {
 	"Lunachick Ray",
 	"Bouncy Lunachick",
 };
+static_assert(SDL_arraysize(bulletName) == NUM_BULLETS, "Must give new bullets a name");
 
 const char* BulletName(int type)
 {

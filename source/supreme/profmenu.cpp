@@ -125,7 +125,6 @@ static int numFiles;
 static byte profChoice;
 
 static const char diffName[][16]={"Normal","Hard","Lunatic"};
-static const char charName[][16]={"Bouapha","Happy Stick Man","Dr. Lunatic","Shtupid Shroom","LunaChick","MechaBouapha"};
 
 static byte recordBook,candleRadar,brainRadar,moveNShoot;
 
@@ -928,7 +927,7 @@ void RenderProfMenu(MGLDraw *mgl)
 	PrintGlow(20,20,s,0,2);
 
 	PrintGlow(146,62,diffName[profile.difficulty],0,2);
-	PrintGlow(146,92,charName[profile.playAs],0,2);
+	PrintGlow(146,92,GetPlayableCharacterName(profile.playAs),0,2);
 	if(brainRadar)
 		PrintGlow(146,122,yesno[profile.brainRadar],0,2);
 	if(candleRadar)

@@ -46,6 +46,7 @@ static int32_t PackMapScore(score_t* score)
 		| ((score->difficulty & 0x3) << 25)
 		| (std::min(score->playAs, byte(0x7)) << 27);
 }
+static_assert(MAX_PLAYAS <= 8, "Leaderboard code must be adapted for new playable characters, such as by claiming reserved bits.");
 
 static std::map<std::string, int32_t> GetStats()
 {

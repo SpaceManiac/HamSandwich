@@ -1994,7 +1994,7 @@ mapTile_t *Map::GetTile(int x,int y)
 		return &map[x+y*width];
 }
 
-static const char lvlFlagName[NUM_LVL_FLAGS][16] = {
+static const char lvlFlagName[][16] = {
 	"Snowing",
 	"Raining",
 	"Hub Level",
@@ -2008,6 +2008,7 @@ static const char lvlFlagName[NUM_LVL_FLAGS][16] = {
 	"Wavy",
 	"Oxygen Meter",
 };
+static_assert(SDL_arraysize(lvlFlagName) == NUM_LVL_FLAGS, "Must give new level flags a name");
 
 const char* MapFlagName(int flagIndex)
 {

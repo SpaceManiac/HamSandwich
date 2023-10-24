@@ -1995,7 +1995,7 @@ void PutPlayerAtStart(Guy *g)
 	}
 }
 
-static const char wpnName[MAX_WEAPONS][32] = {
+static const char wpnName[][32] = {
 	"None",
 	"Missiles",
 	"AK-8087",
@@ -2018,6 +2018,7 @@ static const char wpnName[MAX_WEAPONS][32] = {
 	"Freeze Ray",
 	"Stopwatch",
 };
+static_assert(SDL_arraysize(wpnName) == MAX_WEAPONS, "Must give new weapon a name");
 
 const char* GetWeaponName(byte weapon)
 {

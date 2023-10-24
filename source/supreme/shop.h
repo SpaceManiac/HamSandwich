@@ -47,13 +47,19 @@
 #define MAJOR_ARCADE	8
 #define MAJOR_BESTIARY	9
 
-// playables
-#define PLAY_BOUAPHA	0
-#define PLAY_HAPPY		1
-#define PLAY_LUNATIC	2
-#define PLAY_SHROOM		3
-#define PLAY_LUNACHIK	4
-#define PLAY_MECHA		5
+// Playable characters. SERIALIZED in profile and specials.
+enum : byte
+{
+	PLAY_BOUAPHA  = 0,
+	PLAY_HAPPY    = 1,
+	PLAY_LUNATIC  = 2,
+	PLAY_SHROOM   = 3,
+	PLAY_LUNACHIK = 4,
+	PLAY_MECHA    = 5,
+
+	MAX_PLAYAS // End marker. Add new items above this.
+};
+const char* GetPlayableCharacterName(int playAs);
 
 // shop item flags (used in the player progress file)
 #define SIF_AVAILABLE	1
