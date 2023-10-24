@@ -1994,3 +1994,34 @@ void PutPlayerAtStart(Guy *g)
 		PutCamera(g->x,g->y);
 	}
 }
+
+static const char wpnName[MAX_WEAPONS][32] = {
+	"None",
+	"Missiles",
+	"AK-8087",
+	"Bombs",
+	"Flamethrower",
+	"Power Armor",
+	"Big Axe",
+	"Lightning Rod",
+	"Spears",
+	"Machete",
+	"Mines",
+	"Turrets",
+	"Mind Control Ray",
+	"Reflect Shield",
+	"Jetpack",
+	"Swapgun",
+	"Torch",
+	"Scanner",
+	"Mini-Sub",
+	"Freeze Ray",
+	"Stopwatch",
+};
+
+const char* GetWeaponName(byte weapon)
+{
+	if (weapon < MAX_WEAPONS)
+		return wpnName[weapon];
+	return "???";
+}

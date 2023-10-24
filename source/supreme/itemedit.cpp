@@ -1,4 +1,5 @@
 #include "itemedit.h"
+#include <stdlib.h>
 #include "dialogbits.h"
 #include "filedialog.h"
 #include "items.h"
@@ -9,7 +10,7 @@
 #include "terrainedit.h"
 #include "vars.h"
 #include "edithelp.h"
-#include <stdlib.h>
+#include "player.h"
 
 #define IMODE_NORMAL	0	// doing nothing
 #define IMODE_SELECT	1	// selecting an item (for instance to define what item this one becomes)
@@ -123,30 +124,6 @@ static const char pwrUpName[MAX_POWERUP][32]={
 	"Reload Weapon",
 	"Hammer Enhance",
 	"Poison",
-};
-
-static const char wpnName[MAX_WEAPONS][32]={
-	"None",
-	"Missiles",
-	"AK-8087",
-	"Bombs",
-	"Flamethrower",
-	"Power Armor",
-	"Big Axe",
-	"Lightning Rod",
-	"Spears",
-	"Machete",
-	"Mines",
-	"Turrets",
-	"Mind Control Ray",
-	"Reflect Shield",
-	"Jetpack",
-	"Swapgun",
-	"Torch",
-	"Scanner",
-	"Mini-Sub",
-	"Freeze Ray",
-	"Stopwatch",
 };
 
 static const char colorName[8][16]={
@@ -782,7 +759,7 @@ static void SetupEffect(void)
 		case IEBTN_WEAPON:
 			// choose a weapon
 			MakeButton(BTN_NORMAL,ID_ITEMEFFMOD,0,174,132+17*16,80,15,itemEff[GetItem(curItem)->effect].btnTxt,EffModClick);
-			MakeButton(BTN_STATIC,ID_NAME2,0,256,132+17*16,80,15,wpnName[GetItem(curItem)->effectAmt],NULL);
+			MakeButton(BTN_STATIC,ID_NAME2,0,256,132+17*16,80,15,GetWeaponName(GetItem(curItem)->effectAmt),NULL);
 			break;
 		case IEBTN_COLOR:
 			// choose a color

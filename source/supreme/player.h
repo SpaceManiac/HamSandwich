@@ -39,6 +39,7 @@ enum : byte
 
 	MAX_WEAPONS
 };
+const char* GetWeaponName(byte weapon);
 
 // vehicles you could be on
 enum : byte

@@ -1,6 +1,6 @@
 #include "winpch.h"
-#include <math.h>
 #include "specialedit.h"
+#include <math.h>
 #include "dialogbits.h"
 #include "filedialog.h"
 #include "items.h"
@@ -14,6 +14,7 @@
 #include "edithelp.h"
 #include "viewdialog.h"
 #include "shop.h"
+#include "player.h"
 
 // Originally 14
 #define TRGPICKER_HEIGHT 12
@@ -160,36 +161,8 @@ static const char effName[][16]={
 	"Change Bullet"
 };
 
-static const char wpnName[][16]={
-	"None",
-	"Missiles",
-	"AK-8087",
-	"Bombs",
-	"Toaster",
-	"Power Armor",
-	"Big Axe",
-	"Zap Wand",
-	"Spears",
-	"Machete",
-	"Mines",
-	"Turrets",
-	"Mind Control",
-	"Reflect",
-	"Jetpack",
-	"Swapgun",
-	"Torch",
-	"Scanner",
-	"Mini-Sub",
-	"Freeze Ray",
-	"Stopwatch"};
-
 static void SetupTriggerButtons(int t,int y);
 static void SetupEffectButtons(int t,int y);
-
-static const char *WeaponName(byte n)
-{
-	return wpnName[n];
-}
 
 static void SpecialEditSetupButtons(void);
 static void PageClick(int id)
@@ -2036,7 +2009,7 @@ static void SetupEffectButtons(int t,int y)
 			break;
 		case EFF_WEAPON:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Force player's weapon to",NULL);
-			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,224,y+17,140,14,WeaponName(effect.value),WeaponClick);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,224,y+17,140,14,GetWeaponName(effect.value),WeaponClick);
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,370,y+17,1,1,"and",NULL);
 
 			if(effect.value2==0)

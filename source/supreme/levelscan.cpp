@@ -8,31 +8,9 @@
 #include "control.h"
 #include "appdata.h"
 #include "bullet.h"
+#include "player.h"
 
 static FILE *scanF;
-
-static const char wpnName[][16]={
-	"None",
-	"Missiles",
-	"AK-8087",
-	"Bombs",
-	"Toaster",
-	"Power Armor",
-	"Big Axe",
-	"Zap Wand",
-	"Spears",
-	"Machete",
-	"Mines",
-	"Turrets",
-	"Mind Control",
-	"Reflect",
-	"Jetpack",
-	"Swapgun",
-	"Torch",
-	"Scanner",
-	"Mini-Sub",
-	"Freeze Ray",
-	"Stopwatch"};
 
 void PrintFX(word flags)
 {
@@ -415,7 +393,7 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
 			PrintFX(me->flags);
 			break;
 		case EFF_WEAPON:
-			fprintf(scanF,"Force player's weapon to %s and ",wpnName[me->value]);
+			fprintf(scanF,"Force player's weapon to %s and ",GetWeaponName(me->value));
 			if(me->value2==0)
 				fprintf(scanF,"don't");
 			else
