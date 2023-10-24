@@ -32,7 +32,7 @@ enum : dword
 	// Adding flag 1<<19 would leave room for 4096 tiles.
 	// Adding flag 1<<20 would leave room for 2048 tiles.
 	// Adding flag 1<<21 would leave room for 1024 tiles.
-	// Flag 1<<22 wouldn't leave room for 800 tiles, so cannot be added.
+	// Flag 1<<22 wouldn't leave room for 1000 tiles, so cannot be added.
 };
 
 struct io_terrain_t

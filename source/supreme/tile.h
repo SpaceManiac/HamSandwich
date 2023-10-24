@@ -5,9 +5,9 @@
 #include <iostream>
 #include <stdio.h>
 
-#define TILE_WIDTH  32
-#define TILE_HEIGHT 24
-#define NUMTILES	800
+constexpr int TILE_WIDTH  = 32;
+constexpr int TILE_HEIGHT = 24;
+constexpr int NUMTILES    = 1000;
 
 typedef byte tile_t[TILE_WIDTH*TILE_HEIGHT];
 
@@ -35,13 +35,6 @@ byte *GetTileData(int t);
 void AppendTiles(int start,FILE *f);
 
 void LoadOldTiles(FILE *f);	// for legacy loading
-
-
-// disco tiles
-void RenderFloorTileTransDisco(int x,int y,int t,char light);
-void RenderFloorTileUnlitDisco(int x,int y,int t);
-void RenderFloorTileShadowDisco(int x,int y,int t,char light);
-void RenderFloorTileDisco(int x,int y,int t,char light);
 
 // super shading!
 void RenderFloorTileFancy(int x,int y,int t,byte shadow,const char *light);

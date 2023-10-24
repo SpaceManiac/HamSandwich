@@ -7,9 +7,9 @@
 #include "ioext.h"
 #include "recolor.h"
 
-tile_t tiles[NUMTILES];
-MGLDraw *tileMGL;
-int numTiles;
+static tile_t tiles[NUMTILES];
+static MGLDraw *tileMGL;
+static int numTiles;
 
 #define SCRWID (tileMGL->GetWidth())
 #define SCRHEI (tileMGL->GetHeight())
