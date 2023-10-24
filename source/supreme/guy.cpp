@@ -920,7 +920,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 	if(aiType==MONS_BOUAPHA && frozen)
 		frozen/=2;
 
-	if(profile.difficulty==0 && damage>0)
+	if(profile.difficulty==DIFFICULTY_NORMAL && damage>0)
 	{
 		if(friendly)
 			damage=damage/2;
@@ -929,7 +929,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 		if(damage==0)
 			damage=1;
 	}
-	if(profile.difficulty==2 && damage>0)
+	if(profile.difficulty==DIFFICULTY_LUNATIC && damage>0)
 	{
 		if(friendly)
 			damage=damage*2;
@@ -971,27 +971,28 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 
 	if(!editing && !player.cheated && verified)
 	{
-		if(profile.difficulty==0)
+		if(profile.difficulty==DIFFICULTY_NORMAL)
 		{
 			if(aiType==MONS_BOUAPHA)
 				profile.progress.damageTaken+=damage*2;
 			else
 				profile.progress.damageDone+=damage/2;
 		}
-		else if(profile.difficulty==1)
+		else if(profile.difficulty==DIFFICULTY_HARD)
 		{
 			if(aiType==MONS_BOUAPHA)
 				profile.progress.damageTaken+=damage;
 			else
 				profile.progress.damageDone+=damage;
 		}
-		else
+		else if (profile.difficulty==DIFFICULTY_LUNATIC)
 		{
 			if(aiType==MONS_BOUAPHA)
 				profile.progress.damageTaken+=damage/2;
 			else
 				profile.progress.damageDone+=damage*2;
 		}
+		static_assert(MAX_DIFFICULTY == 3, "Must handle new difficulty here");
 	}
 
 	newHP=hp;
@@ -1254,11 +1255,11 @@ void UpdateGuys(Map *map,world_t *world)
 					if(((speedClock&3)==0) && guys[i]->aiType!=MONS_BOUAPHA && guys[i]->aiType!=MONS_RAFT &&
 						guys[i]->aiType!=MONS_MINECART && guys[i]->aiType!=MONS_RAFT && guys[i]->aiType!=MONS_YUGO)
 					{
-						if(profile.difficulty==0)
+						if(profile.difficulty==DIFFICULTY_NORMAL)
 						{
 							// skip the update!
 						}
-						else if(profile.difficulty==2)
+						else if(profile.difficulty==DIFFICULTY_LUNATIC)
 						{
 							// double update!
 							guys[i]->Update(map,world);

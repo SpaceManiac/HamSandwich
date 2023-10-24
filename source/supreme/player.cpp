@@ -151,7 +151,7 @@ void PoisonVictim(Guy *me,byte amt)
 {
 	if(me==goodguy && player.shield)
 		return;	// can't be poisoned when invulnerable
-	if(me==goodguy && profile.difficulty==0)
+	if(me==goodguy && profile.difficulty==DIFFICULTY_NORMAL)
 	{
 		amt/=2;
 		if(amt==0)
@@ -623,7 +623,7 @@ void PlayerThrowHammer(Guy *me)
 
 void PlayerHeal(byte amt)
 {
-	if(profile.difficulty==0)
+	if(profile.difficulty==DIFFICULTY_NORMAL)
 	{
 		if(amt>127)
 			amt=255;

@@ -139,13 +139,7 @@ void Scan_Trigger(world_t *world,Map *map,int num,trigger_t *me,char *effText)
 			fprintf(scanF,"If any %s are in (%03d,%03d)-(%03d,%03d)",GetItem(me->value)->name,me->x,me->y,((word)me->value2)%256,((word)me->value2)/256);
 			break;
 		case TRG_DIFFICULTY:
-			fprintf(scanF,"If difficulty is ");
-			if(me->value==0)
-				fprintf(scanF,"Normal");
-			else if(me->value==1)
-				fprintf(scanF,"Hard");
-			else
-				fprintf(scanF,"Lunatic");
+			fprintf(scanF,"If difficulty is %s", GetDifficultyName(me->value));
 			PrintLessMore(me->flags);
 			break;
 		case TRG_KEYPRESS:

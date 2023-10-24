@@ -565,3 +565,17 @@ void EraseWorldProgress(const char *fname)
 	profile.progress.world=(worldData_t *)realloc(profile.progress.world,sizeof(worldData_t)*profile.progress.num_worlds);
 	SaveProfile();
 }
+
+static const char diffName[][16] = {
+	"Normal",
+	"Hard",
+	"Lunatic",
+};
+static_assert(SDL_arraysize(diffName) == MAX_DIFFICULTY, "Must give new difficulties a name");
+
+const char* GetDifficultyName(int difficulty)
+{
+	if (difficulty >= 0 && difficulty < MAX_DIFFICULTY)
+		return diffName[difficulty];
+	return "???";
+}

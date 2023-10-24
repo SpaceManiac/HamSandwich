@@ -119,6 +119,17 @@ typedef struct playList_t
 	char *song;
 } playList_t;
 
+// Difficulty levels. SERIALIZED in profile, specials, and leaderboards.
+enum : byte
+{
+	DIFFICULTY_NORMAL  = 0,
+	DIFFICULTY_HARD    = 1,
+	DIFFICULTY_LUNATIC = 2,
+
+	MAX_DIFFICULTY  // End marker. Add new entries above this.
+};
+const char* GetDifficultyName(int difficulty);
+
 // WARNING: changing this struct's contents may break save compatibility or require modifications in Load/SaveProfile.
 typedef struct profile_t
 {

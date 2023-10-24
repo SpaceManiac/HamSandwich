@@ -1541,12 +1541,7 @@ static void SetupTriggerButtons(int t,int y)
 			break;
 		case TRG_DIFFICULTY:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If difficulty is",NULL);
-			if(trigger.value==0)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,160,y+17,80,14,"Normal",DiffyClick);
-			else if(trigger.value==1)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,160,y+17,80,14,"Hard",DiffyClick);
-			else
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,160,y+17,80,14,"Lunatic",DiffyClick);
+			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,160,y+17,80,14,GetDifficultyName(trigger.value),DiffyClick);
 			if(trigger.flags&TF_LESS)
 				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+4+100*t,0,243,y+17,80,14,"Or Less",LessMoreClick);
 			else if(trigger.flags&TF_MORE)

@@ -68,12 +68,13 @@ void InitTally(MGLDraw *mgl)
 	else
 		perfectBonus=1.0f;
 
-	if(profile.difficulty==0)
-		diffBonus=0.75f;
-	else if(profile.difficulty==1)
-		diffBonus=1.0f;
-	else
-		diffBonus=1.25f;
+	if (profile.difficulty == DIFFICULTY_NORMAL)
+		diffBonus = 0.75f;
+	else if (profile.difficulty == DIFFICULTY_HARD)
+		diffBonus = 1.0f;
+	else if (profile.difficulty == DIFFICULTY_LUNATIC)
+		diffBonus = 1.25f;
+	static_assert(MAX_DIFFICULTY == 3, "Must handle new difficulty here");
 
 	mgl->LastKeyPressed();
 
@@ -404,12 +405,8 @@ void RenderTally(MGLDraw *mgl)
 	sprintf(s,"x%1.2f",diffBonus);
 	if(player.cheated)
 		Tally2Line(3,210,"Difficulty","CHEATER!",s);
-	else if(profile.difficulty==0)
-		Tally2Line(3,210,"Difficulty","Normal",s);
-	else if(profile.difficulty==1)
-		Tally2Line(3,210,"Difficulty","Hard",s);
 	else
-		Tally2Line(3,210,"Difficulty","Lunatic",s);
+		Tally2Line(3,210,"Difficulty",GetDifficultyName(profile.difficulty),s);
 
 	sprintf(s,"%0.1f%%",destructPct);
 	sprintf(s2,"x%1.1f",destructBonus);

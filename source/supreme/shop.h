@@ -47,7 +47,7 @@
 #define MAJOR_ARCADE	8
 #define MAJOR_BESTIARY	9
 
-// Playable characters. SERIALIZED in profile and specials.
+// Playable characters. SERIALIZED in profile, specials, and leaderboards.
 enum : byte
 {
 	PLAY_BOUAPHA  = 0,

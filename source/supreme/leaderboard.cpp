@@ -16,8 +16,6 @@ constexpr int BTN_HEIGHT = 19;
 constexpr int SPR_LOONYKEY = 50;
 constexpr int SPR_KEYCH = 52;
 
-static const char diffName[][16]={"Normal","Hard","Lunatic"};
-
 // Matches Pack* in steam.cpp
 static void UnpackWorldProgress(int32_t packed, byte* keychains, float* percentage)
 {
@@ -245,10 +243,8 @@ static TASK(void) ViewDetails(MGLDraw *mgl, const byte* backgd, const sprite_set
 			const char* playAs = GetPlayableCharacterName(entry.playAs);
 			PrintGlow(530 - GetStrLength(playAs, 2), y, playAs, 0, 2);
 
-			if (entry.difficulty < SDL_arraysize(diffName))
-			{
-				PrintGlow(600 - GetStrLength(diffName[entry.difficulty], 2), y, diffName[entry.difficulty], 0, 2);
-			}
+			const char* difficulty = GetDifficultyName(entry.difficulty);
+			PrintGlow(600 - GetStrLength(difficulty, 2), y, difficulty, 0, 2);
 
 			y += 20;
 		}

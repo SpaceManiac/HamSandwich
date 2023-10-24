@@ -124,8 +124,6 @@ static char fileList[PRFNAME_LEN*MAX_PROFS];
 static int numFiles;
 static byte profChoice;
 
-static const char diffName[][16]={"Normal","Hard","Lunatic"};
-
 static byte recordBook,candleRadar,brainRadar,moveNShoot;
 
 static ButtonId curButton;
@@ -467,8 +465,8 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						break;
 					case ButtonId::Difficulty:
 						profile.difficulty++;
-						if(profile.difficulty>2)
-							profile.difficulty=0;
+						if(profile.difficulty >= MAX_DIFFICULTY)
+							profile.difficulty = 0;
 						break;
 					case ButtonId::Character:
 						profile.playAs++;
@@ -926,7 +924,7 @@ void RenderProfMenu(MGLDraw *mgl)
 	sprintf(s,"Username: %s",profile.name);
 	PrintGlow(20,20,s,0,2);
 
-	PrintGlow(146,62,diffName[profile.difficulty],0,2);
+	PrintGlow(146,62,GetDifficultyName(profile.difficulty),0,2);
 	PrintGlow(146,92,GetPlayableCharacterName(profile.playAs),0,2);
 	if(brainRadar)
 		PrintGlow(146,122,yesno[profile.brainRadar],0,2);
