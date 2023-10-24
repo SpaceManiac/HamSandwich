@@ -87,7 +87,7 @@ enum {
 	IV_LOCK,
 };
 
-static const byte weaponToItem[MAX_WEAPONS] = {
+static const byte weaponToItem[] = {
 	ITM_NONE,
 	ITM_MISSILES,
 	ITM_AK8087,
@@ -110,6 +110,7 @@ static const byte weaponToItem[MAX_WEAPONS] = {
 	ITM_FREEZERAY,
 	ITM_STOPWATCH,
 };
+static_assert(SDL_arraysize(weaponToItem) == MAX_WEAPONS, "Weapons need item specified for Classic HUD display");
 
 struct intface_t
 {

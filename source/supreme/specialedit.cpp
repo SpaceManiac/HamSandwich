@@ -1412,7 +1412,7 @@ static void SetupTriggerButtons(int t,int y)
 			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,180,y+17,70,14,s,XYClick);
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+2+100*t,0,254,y+17,1,1,"is",NULL);
 			sprintf(s,"%c%c",(char)(trigger.value%128),(char)(trigger.value/128));
-			MakeButton(BTN_TILE,ID_TRIG0+OFS_CUSTOM+3+100*t,0,270,y+2,34,26,s,TileClick);
+			MakeButton(BTN_TILE,ID_TRIG0+OFS_CUSTOM+3+100*t,0,270,y+2,34,26,{s,2},TileClick);
 			break;
 		case TRG_RANDOM:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Random Chance:",NULL);
@@ -1425,7 +1425,7 @@ static void SetupTriggerButtons(int t,int y)
 			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,147,y+17,140,14,s,RectClick);
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+2+100*t,0,291,y+17,1,1,"is entirely",NULL);
 			sprintf(s,"%c%c",(char)(trigger.value%128),(char)(trigger.value/128));
-			MakeButton(BTN_TILE,ID_TRIG0+OFS_CUSTOM+3+100*t,0,362,y+2,34,26,s,TileClick);
+			MakeButton(BTN_TILE,ID_TRIG0+OFS_CUSTOM+3+100*t,0,362,y+2,34,26,{s,2},TileClick);
 			break;
 		case TRG_LIFE:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If",NULL);
@@ -1453,7 +1453,7 @@ static void SetupTriggerButtons(int t,int y)
 			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,55,y+17,140,14,MonsterName(trigger.value),MonsterClick);
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+2+100*t,0,200,y+17,1,1,"steps on the tile",NULL);
 			sprintf(s,"%c%c",(char)(trigger.value2%128),(char)(trigger.value2/128));
-			MakeButton(BTN_TILE,ID_TRIG0+OFS_CUSTOM+3+100*t,0,342,y+2,34,26,s,Tile2Click);
+			MakeButton(BTN_TILE,ID_TRIG0+OFS_CUSTOM+3+100*t,0,342,y+2,34,26,{s,2},Tile2Click);
 			break;
 		case TRG_GETITEM:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If player gets item at",NULL);
@@ -1726,11 +1726,11 @@ static void SetupEffectButtons(int t,int y)
 
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,304,y+17,1,1,"to floor",NULL);
 			sprintf(s,"%c%c",(char)(effect.value%128),(char)(effect.value/128));
-			MakeButton(BTN_TILE,ID_EFF0+OFS_CUSTOM+5+100*t,0,366,y+2,34,26,s,TileClick);
+			MakeButton(BTN_TILE,ID_EFF0+OFS_CUSTOM+5+100*t,0,366,y+2,34,26,{s,2},TileClick);
 
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+6+100*t,0,404,y+17,1,1,"& wall",NULL);
 			sprintf(s,"%c%c",(char)(effect.value2%128),(char)(effect.value2/128));
-			MakeButton(BTN_TILE2,ID_EFF0+OFS_CUSTOM+7+100*t,0,456,y+2,34,26,s,Tile2Click);
+			MakeButton(BTN_TILE2,ID_EFF0+OFS_CUSTOM+7+100*t,0,456,y+2,34,26,{s,2},Tile2Click);
 
 			if(effect.flags&EF_NOFX)
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+8+100*t,0,520,y+17,65,14,"No FX",NoFXClick);
@@ -1954,11 +1954,11 @@ static void SetupEffectButtons(int t,int y)
 
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,304,y+17,1,1,"to floor",NULL);
 			sprintf(s,"%c%c",(char)(effect.value%128),(char)(effect.value/128));
-			MakeButton(BTN_TILE,ID_EFF0+OFS_CUSTOM+5+100*t,0,366,y+2,34,26,s,TileClick);
+			MakeButton(BTN_TILE,ID_EFF0+OFS_CUSTOM+5+100*t,0,366,y+2,34,26,{s,2},TileClick);
 
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+6+100*t,0,404,y+17,1,1,"& wall",NULL);
 			sprintf(s,"%c%c",(char)(effect.value2%128),(char)(effect.value2/128));
-			MakeButton(BTN_TILE2,ID_EFF0+OFS_CUSTOM+7+100*t,0,464,y+2,34,26,s,Tile2Click);
+			MakeButton(BTN_TILE2,ID_EFF0+OFS_CUSTOM+7+100*t,0,464,y+2,34,26,{s,2},Tile2Click);
 
 			if(effect.flags&EF_NOFX)
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+8+100*t,0,520,y+17,65,14,"No FX",NoFXClick);
