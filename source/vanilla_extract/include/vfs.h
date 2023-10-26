@@ -14,9 +14,6 @@ struct SDL_RWops;
 
 namespace vanilla
 {
-	// Helpers
-	int mkdir_parents(std::string_view path);
-	owned::FILE fp_from_bundle(std::string_view filename, SDL_RWops* rw);
 	bool ends_with(std::string_view haystack, std::string_view suffix);
 
 	struct CaseInsensitive
@@ -24,15 +21,15 @@ namespace vanilla
 		bool operator() (const std::string& lhs, const std::string& rhs) const;
 	};
 
-	// A description of
 	enum class VfsSourceKind
 	{
 		Unspecified,
 		BaseGame,  // Base game content that is known to always be present.
 		Addon,     // An optional addon of some type, from an external source.
-		Appdata,   // The user's own addons or data.
+		Appdata,   // The user's own data, including work-in-progress addons.
 	};
 
+	// Description of where a VFS and the files in it came from.
 	struct VfsMeta
 	{
 		VfsSourceKind kind = VfsSourceKind::Unspecified;
@@ -51,11 +48,7 @@ namespace vanilla
 		virtual ~Vfs() {}
 
 		virtual owned::SDL_RWops open_sdl(const char* filename) = 0;
-		virtual owned::FILE open_stdio(const char* filename)
-		{
-			auto sdl = open_sdl(filename);
-			return fp_from_bundle(filename, sdl.get());
-		}
+		virtual owned::FILE open_stdio(const char* filename);
 		virtual bool list_dir(const char* directory, std::set<std::string, CaseInsensitive>& output) = 0;
 	};
 

@@ -1,11 +1,58 @@
 #include "vfs_stdio.h"
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <SDL_rwops.h>
 #include <SDL_log.h>
-#include <errno.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
+
+// ----------------------------------------------------------------------------
+// mkdir_parents
+#ifdef _WIN32
+#include <direct.h>
+
+#define platform_mkdir(path) _mkdir(path)
+#else
+#define platform_mkdir(path) mkdir(path, 0777)
+#endif
+
+static int mkdir_one(const char *path)
+{
+	if (platform_mkdir(path) != 0 && errno != EEXIST)
+		return -1;
+	return 0;
+}
+
+int vanilla::mkdir_parents(std::string_view path)
+{
+	std::string copypath { path };
+	char *start = copypath.data();
+
+	int status = 0;
+	while (status == 0)
+	{
+		size_t span = strcspn(start, "/\\");
+		if (span == strlen(start))
+			break;
+		char *next = start + span;
+		if (next != start)
+		{
+			// skip the root directory and double-slashes
+			*next = '\0';
+			status = mkdir_one(copypath.c_str());
+			*next = '/';
+		}
+		start = next + 1;
+	}
+
+	if (status != 0)
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "mkdir_parents(%s): %s", copypath.c_str(), strerror(errno));
+
+	return status;
+}
 
 // ----------------------------------------------------------------------------
 // Stdio VFS implementation

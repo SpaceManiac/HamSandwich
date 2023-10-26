@@ -2,12 +2,19 @@
 #include <string.h>
 #include <SDL.h>
 
+#ifdef __ANDROID__
+#include <SDL_system.h>
+#endif
+
 using namespace vanilla;
 
 #ifndef __GNUC__
 #define strncasecmp _strnicmp
 #define strcasecmp _stricmp
 #endif
+
+// ----------------------------------------------------------------------------
+// Simple helpers
 
 bool vanilla::ends_with(std::string_view lhs, std::string_view rhs)
 {
@@ -17,6 +24,71 @@ bool vanilla::ends_with(std::string_view lhs, std::string_view rhs)
 bool vanilla::CaseInsensitive::operator() (const std::string& lhs, const std::string& rhs) const
 {
 	return strcasecmp(lhs.c_str(), rhs.c_str()) < 0;
+}
+
+// ----------------------------------------------------------------------------
+// fp_from_bundle
+#ifdef __ANDROID__
+
+// tmpfile replacement for Android
+static FILE* android_tmpfile()
+{
+	std::string buf = SDL_AndroidGetInternalStoragePath();
+	buf.append("/tmp.XXXXXX");
+	int fd = mkstemp(buf.data());
+	if (fd < 0)
+		return nullptr;
+	FILE* fp = fdopen(fd, "w+b");
+	unlink(buf.c_str());
+	return fp;
+}
+#define tmpfile android_tmpfile
+
+#endif  // __ANDROID__
+
+// Helpers for using printf, SDL_LogError, &c. with std::string_view arguments.
+#define FSPEC_STRING_VIEW "%.*s"
+#define FMT_STRING_VIEW(X) (int)(X).size(), (X).data()
+
+// Copy an SDL_RWops to a temporary file, either in memory or in /tmp or similar, so it can be a FILE*
+static owned::FILE fp_from_bundle(std::string_view filename, SDL_RWops* rw)
+{
+	if (!rw)
+		return nullptr;
+
+	owned::FILE fp { tmpfile() };
+	if (!fp)
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fp_from_bundle(%.*s) bad tmpfile: %s", FMT_STRING_VIEW(filename), strerror(errno));
+		return nullptr;
+	}
+
+	// Copy everything from the SDL_RWops to the FILE.
+	char buffer[16 * 1024];
+	int read;
+	while ((read = SDL_RWread(rw, buffer, 1, sizeof(buffer))) > 0)
+	{
+		fwrite(buffer, 1, read, fp);
+	}
+
+	if (read < 0)
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fp_from_bundle(%.*s) bad SDL_RWread: %s", FMT_STRING_VIEW(filename), SDL_GetError());
+		return nullptr;
+	}
+
+	// Reset the stream and return it
+	fseek(fp, 0, SEEK_SET);
+	return fp;
+}
+
+// ----------------------------------------------------------------------------
+// Vfs default implementation
+
+owned::FILE Vfs::open_stdio(const char* filename)
+{
+	auto sdl = open_sdl(filename);
+	return fp_from_bundle(filename, sdl.get());
 }
 
 // ----------------------------------------------------------------------------
