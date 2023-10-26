@@ -1,4 +1,4 @@
-#include "vanilla_extract.h"
+#include "vfs_inno3.h"
 #include <string.h>
 #include <vector>
 #include <zlib.h>

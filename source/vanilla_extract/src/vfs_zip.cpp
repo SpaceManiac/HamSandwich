@@ -1,4 +1,4 @@
-#include "vanilla_extract.h"
+#include "vfs_zip.h"
 #include <SDL.h>
 #include <unzip.h>
 #include "vec_rw.h"

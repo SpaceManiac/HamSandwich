@@ -1,4 +1,4 @@
-#include "vanilla_extract.h"
+#include "vfs_nsis.h"
 #include <string.h>
 #include <vector>
 #include <SDL_rwops.h>

@@ -1,4 +1,4 @@
-#include "vanilla_extract.h"
+#include "vfs_stdio.h"
 #include <SDL_rwops.h>
 #include <SDL_log.h>
 #include <errno.h>

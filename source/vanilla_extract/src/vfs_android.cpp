@@ -1,5 +1,5 @@
 #if defined(__ANDROID__) && __ANDROID__
-#include "vanilla_extract.h"
+#include "vfs_android.h"
 #include <string.h>
 #include <jni.h>
 #include <SDL_system.h>
