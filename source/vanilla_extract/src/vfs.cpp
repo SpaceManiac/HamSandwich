@@ -4,6 +4,7 @@
 
 #ifdef __ANDROID__
 #include <SDL_system.h>
+#include <unistd.h>
 #endif
 
 using namespace vanilla;

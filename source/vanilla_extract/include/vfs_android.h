@@ -1,6 +1,8 @@
 #ifndef VFS_ANDROID_H
 #define VFS_ANDROID_H
 
+#include "vfs.h"
+
 #if defined(__ANDROID__) && __ANDROID__
 namespace vanilla
 {
