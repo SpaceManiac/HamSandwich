@@ -417,8 +417,7 @@ static std::string TempName()
 #endif
 
 	base.append("/supreme_");
-	for (int i = 0; i < 16; ++i)
-		base += "0123456789"[rand() % 10];
+	base += std::to_string(time(nullptr));
 	return base;
 }
 
