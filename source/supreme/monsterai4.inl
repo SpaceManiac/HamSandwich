@@ -641,7 +641,7 @@ void AI_Cone(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			f=me->facing*32;
 			FireExactBullet(me->x,me->y,FIXAMT*10,Cosine(f)*10,Sine(f)*10,0,0,20,f,BLT_BIGSHELL,me->friendly);
-			MakeSound(SND_MUSHMISSILE,me->x,me->y,SND_CUTOFF,1050);
+			//MakeSound(SND_MUSHMISSILE,me->x,me->y,SND_CUTOFF,1050);
 			me->reload=4;
 		}
 		if(me->seq==ANIM_DIE)
