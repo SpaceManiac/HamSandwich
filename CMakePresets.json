@@ -172,9 +172,9 @@
 			"cacheVariables": {
 				"CMAKE_C_COMPILER": "clang",
 				"CMAKE_CXX_COMPILER": "clang++",
-				"CMAKE_C_FLAGS": "-fsanitize=undefined",
-				"CMAKE_CXX_FLAGS": "-fsanitize=undefined",
-				"LINK_FLAGS": "-fsanitize=undefined"
+				"CMAKE_C_FLAGS": "-fsanitize=undefined,address",
+				"CMAKE_CXX_FLAGS": "-fsanitize=undefined,address",
+				"LINK_FLAGS": "-fsanitize=undefined,address"
 			},
 			"vendor": {
 				"microsoft.com/VisualStudioSettings/CMake/1.0": {
