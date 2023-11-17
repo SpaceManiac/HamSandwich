@@ -121,6 +121,12 @@ void Particle::GoRandom(byte type,int x,int y,int z,byte force)
 	this->life=Random(force)+20;
 	if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
 		size=20;
+
+	// Might be rendered before being updated, so don't leave color uninitialized.
+	if (type == PART_WATER)
+	{
+		color = 96 + std::clamp(life, 8, 31);
+	}
 }
 
 void Particle::GoRandomColor(byte color,int x,int y,int z,byte force)
