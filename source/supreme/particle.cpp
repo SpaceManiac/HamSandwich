@@ -1,5 +1,6 @@
 #include "winpch.h"
 #include "particle.h"
+#include <algorithm>
 #include "bullet.h"
 #include "monster.h"
 #include "progress.h"
