@@ -2093,8 +2093,8 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 			me->anim=0;
 			me->timer=50;
 			me->z=FIXAMT*15;
-			me->dx=Cosine(me->facing*32)*14;
-			me->dy=Sine(me->facing*32)*14;
+			me->dx=Cosine(me->facing)*14;
+			me->dy=Sine(me->facing)*14;
 			me->dz=0;
 			break;
 		case BLT_EVILHAMMER:
@@ -2998,7 +2998,7 @@ static const byte bulletFacingType[NUM_BULLETS] = {
 	255,  	// BLT_FREEZE	50
 	0,  	// BLT_BUBBLEPOP 51	// a bubble that is popping, just visual effect
 	0,  	// BLT_LILBOOM2 52		// a harmless lilboom
-	7,  	// BLT_CHEESEHAMMER 53	// enhanced hammers
+	255,  	// BLT_CHEESEHAMMER 53	// enhanced hammers
 	255,  	// BLT_FREEZE2	54		// a freeze bullet that drops like acid bullets and splats
 	7,  	// BLT_LUNA	55		// lunachick's bullets
 	7,  	// BLT_LUNA2	56		// lunachick's bullets with wall-bounce power
