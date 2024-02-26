@@ -219,6 +219,10 @@ static void FlagClick(int id)
 				MakeNormalSound(SND_TURRETBZZT);
 				GetItem(curItem)->flags&=(~IF_USERJSP);
 				SetButtonState(id,CHECK_OFF);
+
+				helpRemember = mode;
+				InitEditHelp(HELP_ITEMJSP);
+				mode = IMODE_HELP;
 			}
 			else
 			{
