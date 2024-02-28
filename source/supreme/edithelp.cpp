@@ -155,8 +155,8 @@ const char* const helpTxt[NUM_HELPS] = {
 	"",
 	// item JSP
 	"To use this option, add a Special to your hub level with the Item Sprites effect. "
-	"It can use JSP files in the 'user' folder. For best results, use a single JSP file ",
-	"containing every custom item sprite for your world."
+	"It can use JSP files in the 'user' folder. For best results, use a single JSP file "
+	"containing every custom item sprite for your world.",
 };
 
 void InitEditHelp(byte mode)
