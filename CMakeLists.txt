@@ -24,6 +24,9 @@ if(APPLE)
 	set(CMAKE_INSTALL_RPATH "@executable_path")
 endif()
 
+# Include external/, possibly including dependencies of host build tools.
+add_subdirectory("external")
+
 # Include the host build tools.
 if (CMAKE_CROSSCOMPILING)
 	# If we're cross-compiling, such as for Emscripten or Android, build the
@@ -35,6 +38,7 @@ if (CMAKE_CROSSCOMPILING)
 			--unset=CXX
 			--unset=CC
 			"${CMAKE_COMMAND}"
+			-DCMAKE_GENERATOR=${CMAKE_GENERATOR}
 			-DCMAKE_BUILD_TYPE:STRING=Release
 			-B${CMAKE_CURRENT_BINARY_DIR}/host_tools
 			-H=${CMAKE_CURRENT_SOURCE_DIR}/tools
@@ -46,8 +50,7 @@ else()
 	add_subdirectory(tools)
 endif()
 
-# Include the external/ and source/ directories to get most of the build.
-add_subdirectory("external")
+# Include the source/ directories with all the actual programs.
 add_subdirectory("source")
 
 # On MinGW, install the requisite .dll files.

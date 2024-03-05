@@ -1,11 +1,11 @@
 # zlib target
-set(zlib "${CMAKE_CURRENT_SOURCE_DIR}/zlib")
+set(zlib "${CMAKE_CURRENT_LIST_DIR}/zlib")
 
 if(EMSCRIPTEN)
 	add_library(z INTERFACE)
 	target_compile_options(z INTERFACE -sUSE_ZLIB=1)
 	target_link_options(z INTERFACE -sUSE_ZLIB=1)
-elseif(MSVC)
+elseif(WIN32)
 	add_library(z INTERFACE)
 	add_subdirectory("zlib" EXCLUDE_FROM_ALL)
 	target_link_libraries(z INTERFACE zlibstatic)

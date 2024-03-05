@@ -1,19 +1,7 @@
 # -----------------------------------------------------------------------------
-# A precomputer which generates a compressed 16MiB RGB -> 8-bit lookup table.
-add_executable(lunaticpal_precompute precompute.main.cpp)
-gnu_compile_options(lunaticpal_precompute PRIVATE -Wall -Wextra -Wpedantic -Wno-missing-field-initializers)
-target_link_libraries(lunaticpal_precompute z)
-# Always optimize, even in Debug mode, because otherwise we're just wasting time.
-gnu_compile_options(lunaticpal_precompute PRIVATE -O3)
-
+# See tools/lunaticpal_precompute/CMakeLists.txt
 set(compressed "${CMAKE_CURRENT_BINARY_DIR}/lunaticpal_lookup_table.deflate")
-add_custom_command(
-	OUTPUT "${compressed}"
-	COMMAND lunaticpal_precompute "${compressed}"
-	DEPENDS lunaticpal_precompute
-	COMMENT "Generating Lunatic palette lookup table"
-	VERBATIM
-)
+lunaticpal_precompute_add_command("${compressed}")
 
 # -----------------------------------------------------------------------------
 # A library including the compressed lookup table and routines to access it.
