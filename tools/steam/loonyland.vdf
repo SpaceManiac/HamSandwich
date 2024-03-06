@@ -1,0 +1,54 @@
+"AppBuild"
+{
+	"AppID" "2876900"
+	"Desc" "Loonyland root"
+
+	"ContentRoot" "../../build/dist/loonyland/"
+	"BuildOutput" "../../build/steam-cache/"
+
+	"Depots"
+	{
+		"2876901"
+		{
+			"FileMapping"
+			{
+				"LocalPath" "steam-assets/*"
+				"DepotPath" "."
+				"Recursive" "1"
+			}
+		}
+		"2876902"
+		{
+			"FileMapping"
+			{
+				"LocalPath" "app/*"
+				"DepotPath" "installers/loonyland_install.EXE/"
+				"Recursive" "1"
+			}
+			"FileMapping"
+			{
+				"LocalPath" "editor/*"
+				"DepotPath" "installers/loonyland_install.EXE/"
+				"Recursive" "1"
+			}
+		}
+		"2876903"
+		{
+			"FileMapping"
+			{
+				"LocalPath" "steam-windows/*"
+				"DepotPath" "."
+				"Recursive" "1"
+			}
+		}
+		"2876904"
+		{
+			"FileMapping"
+			{
+				"LocalPath" "steam-linux/*"
+				"DepotPath" "."
+				"Recursive" "1"
+			}
+		}
+	}
+}
