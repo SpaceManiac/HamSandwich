@@ -2,8 +2,8 @@
 set -euo pipefail
 
 # Clean the installation directory just in case
-if test -d build/dist; then
-	rm -r build/dist
+if test -d build/dist/supreme; then
+	rm -r build/dist/supreme
 fi
 
 # Require Steamworks SDK
@@ -14,7 +14,7 @@ fi
 
 # Pre-extract Supreme8 installer to a Steam depot for maximum-speed access
 # shellcheck disable=SC2016
-7z x installers/supreme8_install.exe -o"build/dist/supreme8" \
+7z x installers/supreme8_install.exe -o"build/dist/supreme/supreme8" \
 	-x'!$PLUGINSDIR' -x'!*.exe' -x'!*.dll' -x'!profiles'
 
 # Linux executables
@@ -23,10 +23,10 @@ echo "==== Linux build ===="
 	set -euo pipefail
 	cmake --preset linux-x86_64-release
 	cmake --build build/cmake-linux-x86_64-release --target supreme jspedit
-	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/steam-linux --component generic/executables
-	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/steam-linux --component supreme/executables
-	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/steam-linux --component jspedit/executables
-	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/steam-assets --component supreme/assets
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/steam-linux --component generic/executables
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/steam-linux --component supreme/executables
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/steam-linux --component jspedit/executables
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/steam-assets --component supreme/assets
 "
 
 # Windows executables
@@ -35,7 +35,7 @@ tools/windows-cross/container bash -c "
 	set -euo pipefail
 	cmake --preset windows-i686-release -Wno-dev
 	cmake --build build/cmake-windows-i686-release --target supreme jspedit
-	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/steam-windows --component generic/executables
-	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/steam-windows --component supreme/executables
-	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/steam-windows --component jspedit/executables
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/steam-windows --component generic/executables
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/steam-windows --component supreme/executables
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/steam-windows --component jspedit/executables
 "

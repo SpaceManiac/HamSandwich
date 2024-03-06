@@ -3,7 +3,7 @@
 	"AppID" "2547330"
 	"Desc" "Supreme With Cheese root Steam build script"
 
-	"ContentRoot" "../../build/dist/"
+	"ContentRoot" "../../build/dist/supreme/"
 	"BuildOutput" "../../build/steam-cache/"
 
 	"Depots"
