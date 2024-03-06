@@ -2,7 +2,7 @@
 #define TILE_H
 
 #include "mgldraw.h"
-#include <iostream>
+#include <iosfwd>
 #include <stdio.h>
 
 constexpr int TILE_WIDTH  = 32;

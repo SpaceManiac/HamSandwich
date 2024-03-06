@@ -150,7 +150,7 @@ Inno3Vfs::Inno3Vfs(owned::SDL_RWops rw)
 
 	if (memcmp(signature, INNO_MAGIC, INNO_MAGIC_SZ))
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Inno3Vfs: Inno signature missing at offset 0x%zx", OFFSET_OF_INNO_IN_EXE);
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Inno3Vfs: Inno signature missing at offset 0x%x", (uint32_t)OFFSET_OF_INNO_IN_EXE);
 		return;
 	}
 

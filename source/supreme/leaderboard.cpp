@@ -2,6 +2,7 @@
 
 #ifdef HAS_STEAM_API
 #include <algorithm>
+#include <string>
 #include <steam/steam_api.h>
 #include "steam.h"
 #include "world.h"

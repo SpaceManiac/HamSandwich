@@ -4,7 +4,6 @@
 #include "fontawesome.h"
 #include "gui.h"
 #include "lunaticpal.h"
-#include <iostream>
 #include <sstream>
 #include <SDL_image.h>
 #include <tinyfiledialogs.h>
@@ -203,14 +202,14 @@ void Editor::load(string fname) {
     newFile.curSprite = 0;
     newFile.unsaved = false;
 
-    cout << "Editor::load " << fname << endl;
+    printf("Editor::load %s\n", fname.c_str());
     working("Loading, please wait...");
     if (newFile.jsp.load(fname)) {
-        cout << "Success" << endl;
+        printf("Success\n");
         curFile = files.size();
         files.push_back(newFile);
     } else {
-        cout << "Failure: " << newFile.jsp.error << endl;
+        printf("Failure: %s\n", newFile.jsp.error.c_str());
         dialog::error("Failed to load:", newFile.jsp.error.c_str());
     }
 }
@@ -227,15 +226,15 @@ void Editor::save() {
         return;
     }
 
-    cout << "Editor::save " << file.fname << endl;
+    printf("Editor::save %s\n", file.fname.c_str());
     working("Saving, please wait...");
 
     // perform save
     if (file.jsp.save(file.fname)) {
         file.unsaved = false;
-        cout << "Success" << endl;
+        printf("Success\n");
     } else {
-        cout << "Failure: " << file.jsp.error << endl;
+        printf("Failure: %s\n", file.jsp.error.c_str());
         dialog::error("Failed to save:", file.jsp.error.c_str());
     }
 }
@@ -834,7 +833,7 @@ const char* start_fname = nullptr;
 
 void loadOnStartup(const char* fname) {
     start_fname = fname;
-    cout << "loadOnStartup " << fname << endl;
+    printf("loadOnStartup %s\n", fname);
 }
 
 void main() {

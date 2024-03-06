@@ -1,7 +1,7 @@
 #ifndef IOEXT_H
 #define IOEXT_H
 
-#include <iostream>
+#include <istream>
 #include <memory>
 
 struct SDL_RWops;
