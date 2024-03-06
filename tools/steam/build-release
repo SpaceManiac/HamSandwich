@@ -31,5 +31,11 @@ echo "==== Linux build ===="
 
 # Windows executables
 echo "==== Windows build ===="
-vagrant up windows
-vagrant winrm windows --command 'C:/vagrant/tools/windows-vm/build-release-msvc.bat'
+tools/windows-cross/container bash -c "
+	set -euo pipefail
+	cmake --preset windows-i686-release -Wno-dev
+	cmake --build build/cmake-windows-i686-release --target supreme jspedit
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/steam-windows --component generic/executables
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/steam-windows --component supreme/executables
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/steam-windows --component jspedit/executables
+"
