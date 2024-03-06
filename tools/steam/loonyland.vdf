@@ -28,7 +28,7 @@
 			"FileMapping"
 			{
 				"LocalPath" "editor/*"
-				"DepotPath" "installers/loonyland_install.EXE/"
+				"DepotPath" "installers/loonyland_editor.exe/"
 				"Recursive" "1"
 			}
 		}
