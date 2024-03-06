@@ -2944,7 +2944,7 @@ byte GetBulletAttackType(void)
 }
 
 // TORPEDO, LASER
-static const byte bulletFacingType[NUM_BULLETS] = {
+static const byte bulletFacingType[] = {
 	0,  	// BLT_NONE    0
 	7,  	// BLT_HAMMER  1
 	7,  	// BLT_HAMMER2 2	// this is a hammer with reflection
@@ -3003,6 +3003,7 @@ static const byte bulletFacingType[NUM_BULLETS] = {
 	7,  	// BLT_LUNA	55		// lunachick's bullets
 	7,  	// BLT_LUNA2	56		// lunachick's bullets with wall-bounce power
 };
+static_assert(SDL_arraysize(bulletFacingType) == NUM_BULLETS, "Must give new bullets a facing type");
 
 byte BulletFacingType(byte type)
 {
