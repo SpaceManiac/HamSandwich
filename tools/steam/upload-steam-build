@@ -6,17 +6,18 @@ steam_branch=default
 
 # Extract credentials
 echo "==== Uploading to Steam ===="
-if test -f tools/steam/steamcmd_creds.txt; then
-	read -ra steamcmd_creds <tools/steam/steamcmd_creds.txt
+if test -f build/steamcmd_creds.txt; then
+	read -ra steamcmd_creds <build/steamcmd_creds.txt
 else
 	read -p 'Enter your Steam username: ' -ra steamcmd_creds
-	echo "${steamcmd_creds[@]}" >tools/steam/steamcmd_creds.txt
+	echo "${steamcmd_creds[@]}" >build/steamcmd_creds.txt
 fi
 
 # Run the steamcmd build and parse the AppID and BuildID from its output
 declare steam_appid steam_buildid
 tty=$(tty)
 eval "$(\
+	env HOME="$PWD/build/steam-home" \
 	external/steamworks_sdk/tools/ContentBuilder/builder_linux/steamcmd.sh \
 		+login "${steamcmd_creds[@]}" \
 		+run_app_build "$PWD/tools/steam/$vdf.vdf" \
