@@ -205,8 +205,8 @@ bool EditorUpdate()
 			MapRenderToBackground(g_EditorTheme);
 		}
 		mgl->GetMouse(&g_EditorMouseX, &g_EditorMouseY);
-		g_EditorX = (int)(g_EditorMouseX + -0x10 + (g_EditorMouseX + -0x10 >> 0x1f & 0x1fU)) >> 5;
-		g_EditorY = (int)(g_EditorMouseY + -0x20 + (g_EditorMouseY + -0x20 >> 0x1f & 0x1fU)) >> 5;
+		g_EditorX = (int)(g_EditorMouseX + -0x10 + ((g_EditorMouseX + -0x10) >> 0x1f & 0x1fU)) >> 5;
+		g_EditorY = (int)(g_EditorMouseY + -0x20 + ((g_EditorMouseY + -0x20) >> 0x1f & 0x1fU)) >> 5;
 		if (g_EditorX < 0)
 		{
 			g_EditorX = 0;

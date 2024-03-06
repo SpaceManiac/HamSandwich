@@ -236,7 +236,7 @@ void ParticleRender(Particle *me)
 	switch (me->type)
 	{
 	case ParticleType::Teleport:
-		ParticleDrawGlow(me->x >> 8, me->y - me->z >> 8, 0x1e - me->life);
+		ParticleDrawGlow(me->x >> 8, (me->y - me->z) >> 8, 0x1e - me->life);
 		break;
 	case ParticleType::Snow:
 		ParticleDrawGlow(me->x >> 8, me->y >> 8, 0x12);
@@ -246,7 +246,7 @@ void ParticleRender(Particle *me)
 		GetGuySprite(byte(me->type) - 3, me->life)->DrawGhost(me->x >> 8, me->y >> 8, mgl, -8);
 		break;
 	case ParticleType::Respawn:
-		ParticleDrawGlow(me->x >> 8, me->y - me->z >> 8, me->life);
+		ParticleDrawGlow(me->x >> 8, (me->y - me->z) >> 8, me->life);
 	}
 }
 

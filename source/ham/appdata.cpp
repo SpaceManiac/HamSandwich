@@ -173,6 +173,8 @@ static VfsStack default_vfs_stack(bool* error) {
 #include <emscripten.h>
 
 static VfsStack default_vfs_stack(bool* error) {
+	(void)error;
+
 	std::string buffer = "/appdata/";
 	buffer.append(globalMetadata->appdata_folder_name);
 
