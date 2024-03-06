@@ -3,8 +3,8 @@
 
 #include "display.h"
 
-#define VERSION_NO         "Version 9.0"
-#define COPYRIGHT_YEARS    "1998-2023"
+#define VERSION_NO         "Version 9.3"
+#define COPYRIGHT_YEARS    "1998-2024"
 #define COPYRIGHT_COMPANY  "Hamumu Games, Inc."
 
 struct title_t;
