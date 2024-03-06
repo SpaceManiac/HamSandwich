@@ -1022,7 +1022,7 @@ static void RenderInterfaceOld(MGLDraw *mgl)
 
 	int i;
 	static byte flip = 0;
-	char s[6];
+	char s[16];
 
 	flip++;
 

@@ -180,7 +180,7 @@ void NetError(byte err)
 char *CreateUploadString(void)
 {
 	int i;
-	char tmp[5];
+	char tmp[16];
 	static char upString[512];
 
 	strcpy(upString,"/supreme_score/put.php?s0=");
