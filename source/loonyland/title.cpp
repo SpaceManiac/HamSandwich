@@ -8,18 +8,22 @@
 #include "palettes.h"
 #include "appdata.h"
 
+#define VERSION_NO         "Version 3.0"
+#define COPYRIGHT_YEARS    "2001-2024"
+#define COPYRIGHT_COMPANY  "Hamumu Games, Inc."
+
 // special codes in the credits:
 // @ = use GirlsRWeird font
 // # = draw a major horizontal line
 // % = draw a minor horizontal line
 // $ = last line of the whole deal
-char credits[][32]={
+static const char credits[][48]={
 	"@LoonyLand:",
 	"",
 	"@Halloween Hill",
 	"",
 	"",
-	"Copyright 2004, Hamumu Software",
+	"Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY,
 	"#",
 	"Original Concept",
 	"Mike Hommel",
@@ -75,7 +79,7 @@ char credits[][32]={
 	"$"
 	};
 
-char victoryTxt[][64]={
+static const char victoryTxt[][64]={
 	"",
 	"",
 	"After a little time to rest and wipe off a whole",
@@ -124,7 +128,7 @@ char victoryTxt[][64]={
 	"$"
 	};
 
-char cheatTxt[][64]={
+static const char cheatTxt[][64]={
 	"@Congratulations on getting",
 	"",
 	"",
@@ -202,8 +206,6 @@ char cheatTxt[][64]={
 
 // the most custom worlds it will handle
 #define MAX_CUSTOM (64-5)
-
-#define VERSION_NO	"Version 2.0"
 
 sprite_set_t *planetSpr;
 static int numRunsToMakeUp;
@@ -367,7 +369,7 @@ void MainMenuDisplay(MGLDraw *mgl)
 	Print(555,3,VERSION_NO,1,1);
 	Print(554,2,VERSION_NO,0,1);
 	// Copyright:
-	PrintGlow(395,467,"Copyright 2004, Hamumu Software",-10,1);
+	RightPrintGlow(641, 467, "Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY, -10, 1);
 
 	// menu options
 	x=5;
@@ -455,7 +457,7 @@ void LoadGameDisplay(MGLDraw *mgl)
 	Print(560,3,VERSION_NO,1,1);
 	Print(559,2,VERSION_NO,0,1);
 	// Copyright:
-	PrintGlow(395,467,"Copyright 2004, Hamumu Software",-10,1);
+	RightPrintGlow(641, 467, "Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY, -10, 1);
 
 	PrintGlow(5,360,"Select a game to load",0,0);
 	PrintGlow(5,390,"Or press ESC to cancel",0,0);
@@ -853,7 +855,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 void CreditsRender(int y)
 {
 	int i,ypos;
-	char *s;
+	const char *s;
 	char b;
 
 	i=0;
@@ -974,7 +976,7 @@ TASK(void) Credits(MGLDraw *mgl,byte init)
 void CheatsRender(int y)
 {
 	int i,ypos;
-	char *s;
+	const char *s;
 	char b;
 
 	i=0;
@@ -1086,7 +1088,7 @@ TASK(void) CheatText(MGLDraw *mgl,byte init)
 void VictoryTextRender(int y)
 {
 	int i,ypos;
-	char *s;
+	const char *s;
 	char b;
 
 	i=0;
