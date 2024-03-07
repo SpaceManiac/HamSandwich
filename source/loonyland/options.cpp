@@ -1,11 +1,14 @@
 #include "options.h"
 #include "mgldraw.h"
+#include "badge.h"
 #include "control.h"
 #include "display.h"
 #include "player.h"
 #include "title.h"
 #include "plasma.h"
 #include "appdata.h"
+
+#include <map>
 
 static byte cursor;
 static byte oldc;
@@ -497,4 +500,118 @@ void KilledBoss(byte boss)
 {
 	opt.bossDead[boss]=1;
 	SaveOptions();
+}
+
+static std::map<PlayerCharacterType, int> characterCheat = {
+	{PC_Bonkula,	CH_BONKULA},
+	{PC_Toad,		CH_TOAD},
+	{PC_Swampdog,	CH_SWAMPDOG},
+	{PC_Witch,		CH_WITCH},
+	{PC_Werewolf,	CH_WEREWOLF},
+	{PC_Summon,		CH_SUMMON},
+	{PC_Thief,		CH_THIEF},
+};
+
+static std::map<PlayerCharacterType, PlayerCharacterType> nextCharacter = {
+	{PC_Loony, PC_Bonkula},
+	{PC_Bonkula, PC_Toad},
+	{PC_Toad, PC_Swampdog},
+	{PC_Swampdog, PC_Witch},
+	{PC_Witch, PC_Werewolf},
+	{PC_Werewolf, PC_Summon},
+	{PC_Summon, PC_Thief},
+	{PC_Thief, PC_Loony}
+};
+static std::map<PlayerCharacterType, PlayerCharacterType> prevCharacter = {
+	{PC_Loony, PC_Thief},
+	{PC_Bonkula, PC_Loony},
+	{PC_Toad, PC_Bonkula},
+	{PC_Swampdog, PC_Toad},
+	{PC_Witch, PC_Swampdog},
+	{PC_Werewolf, PC_Witch},
+	{PC_Summon, PC_Werewolf},
+	{PC_Thief, PC_Summon}
+};
+
+PlayerCharacterType GetCurrentPC() {
+	if (opt.cheats[CH_BONKULA])
+		return PC_Bonkula;
+	if (opt.cheats[CH_TOAD])
+		return PC_Toad;
+	if (opt.cheats[CH_SWAMPDOG])
+		return PC_Swampdog;
+	if (opt.cheats[CH_WITCH])
+		return PC_Witch;
+	if (opt.cheats[CH_WEREWOLF])
+		return PC_Werewolf;
+	if (opt.cheats[CH_SUMMON])
+		return PC_Summon;
+	if (opt.cheats[CH_THIEF])
+		return PC_Thief;
+
+	return PC_Loony;
+}
+
+bool IsCharacterUnlocked(PlayerCharacterType pc) {
+	switch (pc) {
+		case PC_Loony: return true;
+		case PC_Bonkula: return opt.meritBadge[BADGE_BONKULA];
+		case PC_Toad: return opt.meritBadge[BADGE_ANNOY];
+		case PC_Swampdog: return opt.meritBadge[BADGE_SNEAK];
+		case PC_Witch: return opt.meritBadge[BADGE_WITCH];
+		case PC_Werewolf: return opt.meritBadge[BADGE_WOLFDEN];
+		case PC_Summon: return opt.meritBadge[BADGE_REMIX];
+		case PC_Thief: return opt.meritBadge[BADGE_WITCHCRAFT];
+		default: return false;
+	}
+}
+
+void SetCharacter(PlayerCharacterType pc)
+{
+	ResetCharacterCheats();
+	if (pc != PC_Loony) {
+		opt.cheats[characterCheat[pc]] = 1;
+	}
+}
+
+bool IsAnyCharacterUnlocked()
+{
+	return opt.meritBadge[BADGE_BONKULA] ||
+		opt.meritBadge[BADGE_ANNOY] ||
+		opt.meritBadge[BADGE_SNEAK] ||
+		opt.meritBadge[BADGE_WITCH] ||
+		opt.meritBadge[BADGE_WOLFDEN] ||
+		opt.meritBadge[BADGE_REMIX] ||
+		opt.meritBadge[BADGE_WITCHCRAFT];
+}
+
+void NextCharacter()
+{
+	PlayerCharacterType pc = GetCurrentPC();
+	do {
+		pc = nextCharacter[pc];
+	} while (!IsCharacterUnlocked(pc));
+
+	SetCharacter(pc);
+}
+
+void PrevCharacter()
+{
+	PlayerCharacterType pc = GetCurrentPC();
+	do {
+		pc = prevCharacter[pc];
+	} while (!IsCharacterUnlocked(pc));
+
+	SetCharacter(pc);
+}
+
+void ResetCharacterCheats()
+{
+	opt.cheats[CH_BONKULA] = 0;
+	opt.cheats[CH_TOAD] = 0;
+	opt.cheats[CH_WITCH] = 0;
+	opt.cheats[CH_SWAMPDOG] = 0;
+	opt.cheats[CH_WEREWOLF] = 0;
+	opt.cheats[CH_SUMMON] = 0;
+	opt.cheats[CH_THIEF] = 0;
 }

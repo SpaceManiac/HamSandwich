@@ -776,13 +776,7 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 					case CH_WEREWOLF:
 					case CH_SUMMON:
 					case CH_THIEF:
-						opt.cheats[CH_BONKULA]=0;
-						opt.cheats[CH_TOAD]=0;
-						opt.cheats[CH_WITCH]=0;
-						opt.cheats[CH_SWAMPDOG]=0;
-						opt.cheats[CH_WEREWOLF]=0;
-						opt.cheats[CH_SUMMON]=0;
-						opt.cheats[CH_THIEF]=0;
+						ResetCharacterCheats();
 						opt.cheats[badge[cursor].cheatNum]=1;
 						break;
 				}
