@@ -4,6 +4,6 @@ add_library(lzma1900 STATIC ${SOURCES})
 target_link_libraries(lzma1900 z)
 target_include_directories(lzma1900 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
 	target_compile_options(lzma1900 PRIVATE -fPIC)
 endif()

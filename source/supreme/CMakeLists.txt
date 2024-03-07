@@ -6,7 +6,7 @@ HamSandwich_add_executable(
 )
 target_link_libraries(supreme steam_api minizip)
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
 	target_compile_options(supreme PRIVATE
 		# Lots of warnings, but some exclusions
 		-Wall -Wextra -Wpedantic

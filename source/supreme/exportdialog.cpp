@@ -5,6 +5,7 @@
 #include <string_view>
 #include <algorithm>
 #include <inttypes.h>
+#include <time.h>
 #include <zip.h>
 #include "world.h"
 #include "display.h"
