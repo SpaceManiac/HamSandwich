@@ -6,6 +6,7 @@
 #include "title.h"
 #include "plasma.h"
 #include "appdata.h"
+#include "steam.h"
 
 static byte cursor;
 static byte oldc;
@@ -456,6 +457,7 @@ void LoadOptions(void)
 		fclose(f);
 	}
 	ApplyControlSettings();
+	Steam()->ProfileReady();
 }
 
 void SaveOptions(void)

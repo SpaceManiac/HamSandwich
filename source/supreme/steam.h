@@ -15,7 +15,7 @@ public:
 	// Singleton and setup
 	SteamManager() {}
 	virtual ~SteamManager() {}
-	static SteamManager* Init();
+	static SteamManager* Init(const char* appId);
 	static SteamManager* Get();
 	static void Quit();
 

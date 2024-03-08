@@ -9,12 +9,13 @@ void SteamManager::OpenURLOverlay(const char *url)
 }
 
 #ifdef HAS_STEAM_API
-#include <steam/steam_api.h>
+#include <stdlib.h>
 #include <vector>
 #include <string>
 #include <map>
 #include <inttypes.h>
 #include <sstream>
+#include <steam/steam_api.h>
 #include "appdata.h"
 #include "vanilla_extract.h"
 #include "game.h"
@@ -747,9 +748,19 @@ public:
 
 static std::unique_ptr<SteamManager> gSteamManager = nullptr;
 
-SteamManager* SteamManager::Init()
+SteamManager* SteamManager::Init(const char* appId)
 {
 #ifdef HAS_STEAM_API
+	if (appId && !getenv("SteamAppId"))
+	{
+		// setenv is wildly non-threadsafe, so do this before spawning threads
+#ifdef _WIN32
+		_putenv_s("SteamAppId", appId);
+#else
+		setenv("SteamAppId", appId, 0);
+#endif
+	}
+
 	if (SteamAPI_Init())
 	{
 		gSteamManager = std::make_unique<SteamManagerImpl>();

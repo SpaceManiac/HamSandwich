@@ -9,6 +9,7 @@
 #include "fireworks.h"
 #include "title.h"
 #include "palettes.h"
+#include "steam.h"
 
 static byte cursor;
 static byte oldc;
@@ -952,6 +953,7 @@ static TASK(void) EarnBadgeTask(byte b)
 
 	MakeNormalSound(SND_BADGEGET);
 	opt.meritBadge[b]=1;
+	Steam()->CompleteGoal(b);
 	AWAIT ShowBadge(b);
 
 	if(c>=5 && opt.modes[0]==0)
