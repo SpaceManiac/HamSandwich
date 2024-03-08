@@ -96,4 +96,6 @@ byte WindingDown(void);
 
 void UndoWindDown(void);
 
+void PauseGame();
+
 #endif

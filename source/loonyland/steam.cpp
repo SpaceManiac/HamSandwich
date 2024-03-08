@@ -74,6 +74,16 @@ public:
 	}
 
 	// ------------------------------------------------------------------------
+	// Automatically pause on overlay opening
+	STEAM_CALLBACK(SteamManagerImpl, on_overlay_activated, GameOverlayActivated_t)
+	{
+		if (pParam->m_bActive)
+		{
+			PauseGame();
+		}
+	}
+
+	// ------------------------------------------------------------------------
 	// Achievements & statistics
 	const static word STATS_STORE_COOLDOWN = 2 * 60 * 30;  // 2 minutes
 	bool steam_stats_ready = false;

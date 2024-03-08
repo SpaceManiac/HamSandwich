@@ -486,6 +486,12 @@ void HandleKeyPresses(void)
 //#endif
 }
 
+void PauseGame()
+{
+	InitPauseMenu();
+	gameMode = GAMEMODE_MENU;
+}
+
 TASK(byte) PlayALevel(byte map)
 {
 	int lastTime=1;
@@ -522,8 +528,7 @@ TASK(byte) PlayALevel(byte map)
 
 		if(lastKey==27 && gameMode==GAMEMODE_PLAY)
 		{
-			InitPauseMenu();
-			gameMode=GAMEMODE_MENU;
+			PauseGame();
 		}
 
 		if(!gamemgl->Process())
