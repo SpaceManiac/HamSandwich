@@ -363,7 +363,7 @@ void RenderSlotPickMenu(void)
 	DrawBox(98,98,542,302,142);
 	DrawBox(100,100,540,300,142);
 
-	if(cursor==1)
+	if(cursor==2)
 		CenterPrint(320,105,"Load Game",32,0);
 	else
 		CenterPrint(320,105,"Save Game",32,0);
