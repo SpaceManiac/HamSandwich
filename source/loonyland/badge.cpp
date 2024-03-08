@@ -172,7 +172,7 @@ badge_t badge[NUM_BADGES]={
 	 "",
 	 0},
 	{"Vampire Slayin'",
-	 "Earned for beating Bonkula in one minute.",
+	 "Earned for beating Bonkula in two minutes.",
 	 "",
 	 CH_BONKULA,
 	 "Play As Bonkula",
