@@ -24,6 +24,8 @@ public:
 	virtual void ProfileReady() {}
 	virtual void CompleteGoal(int goal) {}
 
+	virtual const char* DescribeWorkshopStatus() { return ""; }
+
 	virtual void OpenURLOverlay(const char* url);
 };
 SteamManager* Steam();

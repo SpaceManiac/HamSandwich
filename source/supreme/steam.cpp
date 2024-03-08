@@ -136,8 +136,6 @@ static std::map<std::string, int32_t> GetStats()
 class SteamManagerImpl : public SteamManager
 {
 public:
-	std::vector<PublishedFileId_t> subscribedItemIds;
-
 	~SteamManagerImpl()
 	{
 		SteamAPI_Shutdown();
@@ -322,6 +320,7 @@ public:
 	// ------------------------------------------------------------------------
 	// Workshop download
 	std::string workshopStatus;
+	std::vector<PublishedFileId_t> subscribedItemIds;
 
 	const char* DescribeWorkshopStatus() override
 	{

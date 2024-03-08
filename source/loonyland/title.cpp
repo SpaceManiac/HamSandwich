@@ -7,6 +7,7 @@
 #include "plasma.h"
 #include "palettes.h"
 #include "appdata.h"
+#include "steam.h"
 
 #define VERSION_NO         "Version 3.0"
 #define COPYRIGHT_YEARS    "2001-2024"
@@ -366,9 +367,13 @@ void MainMenuDisplay(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
 
+	// Workshop status
+	const char* workshopStatus = Steam()->DescribeWorkshopStatus();
+	Print(3, 3, workshopStatus, 1, 1);
+	Print(3-1, 3-1, workshopStatus, 0, 1);
 	// version #:
-	Print(555,3,VERSION_NO,1,1);
-	Print(554,2,VERSION_NO,0,1);
+	Print(560,3,VERSION_NO,1,1);
+	Print(559,2,VERSION_NO,0,1);
 	// Copyright:
 	RightPrintGlow(641, 467, "Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY, -10, 1);
 
@@ -420,6 +425,10 @@ void DiffChooseDisplay(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
 
+	// Workshop status
+	const char* workshopStatus = Steam()->DescribeWorkshopStatus();
+	Print(3, 3, workshopStatus, 1, 1);
+	Print(3-1, 3-1, workshopStatus, 0, 1);
 	// version #:
 	Print(560,3,VERSION_NO,1,1);
 	Print(559,2,VERSION_NO,0,1);
@@ -454,6 +463,10 @@ void LoadGameDisplay(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
 
+	// Workshop status
+	const char* workshopStatus = Steam()->DescribeWorkshopStatus();
+	Print(3, 3, workshopStatus, 1, 1);
+	Print(3-1, 3-1, workshopStatus, 0, 1);
 	// version #:
 	Print(560,3,VERSION_NO,1,1);
 	Print(559,2,VERSION_NO,0,1);

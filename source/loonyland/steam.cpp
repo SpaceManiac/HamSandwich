@@ -9,13 +9,17 @@ void SteamManager::OpenURLOverlay(const char *url)
 }
 
 #ifdef HAS_STEAM_API
-#include <steam/steam_api.h>
 #include <stdlib.h>
+#include <sstream>
+#include <steam/steam_api.h>
 #include "extern.h"
 #include "jamultypes.h"
 #include "control.h"
 #include "options.h"
 #include "log.h"
+#include "appdata.h"
+#include "vanilla_extract.h"
+#include "erase_if.h"
 
 static void SteamAfterFlip()
 {
@@ -33,6 +37,11 @@ public:
 
 	SteamManagerImpl()
 	{
+		if (AppdataIsInit())
+		{
+			MountWorkshopContent();
+		}
+
 		if (!SteamUserStats()->RequestCurrentStats())
 		{
 			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SteamUserStats::RequestCurrentStats() failed");
@@ -168,6 +177,104 @@ public:
 		stats_need_store = false;
 		stats_store_cooldown = STATS_STORE_COOLDOWN;
 	}
+
+	// ------------------------------------------------------------------------
+	// Workshop download
+	std::string workshopStatus;
+	std::vector<PublishedFileId_t> subscribedItemIds;
+
+	const char* DescribeWorkshopStatus() override
+	{
+		return workshopStatus.c_str();
+	}
+
+	void MountWorkshopContent()
+	{
+		vanilla::VfsStack& vfs_stack = AppdataVfs();
+
+		// Unmount all existing Workshop content and remount it in the loop below.
+		erase_if(vfs_stack.mounts, [](const vanilla::Mount& mount) { return mount.meta.steamWorkshopId != 0; });
+
+		uint32_t subscribedCount = SteamUGC()->GetNumSubscribedItems();
+		subscribedItemIds.resize(subscribedCount);
+		subscribedCount = SteamUGC()->GetSubscribedItems(subscribedItemIds.data(), subscribedCount);
+		subscribedItemIds.resize(subscribedCount);
+
+		int numBusy = 0;
+		for (PublishedFileId_t fileId : subscribedItemIds)
+		{
+			uint32_t state = SteamUGC()->GetItemState(fileId);
+
+			if (state & (k_EItemStateNeedsUpdate | k_EItemStateDownloading | k_EItemStateDownloadPending))
+			{
+				numBusy++;
+			}
+
+			if (state & k_EItemStateNeedsUpdate)
+			{
+				if (SteamUGC()->DownloadItem(fileId, false))
+				{
+					SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu started", fileId);
+				}
+				else
+				{
+					SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu failed to start", fileId);
+				}
+			}
+			else if ((state & k_EItemStateInstalled) && (state & k_EItemStateSubscribed) && !(state & k_EItemStateDownloadPending))
+			{
+				char dirname[1024];
+				if (SteamUGC()->GetItemInstallInfo(fileId, nullptr, dirname, SDL_arraysize(dirname), nullptr))
+				{
+					SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop: %s", dirname);
+					vfs_stack.push_back(vanilla::open_stdio(dirname), "", { vanilla::VfsSourceKind::Addon, fileId });
+				}
+				else
+				{
+					SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "workshop %llu: GetItemInstallInfo failed", fileId);
+				}
+			}
+			else
+			{
+				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop %llu: state is %" PRIu32, fileId, state);
+			}
+		}
+
+		if (numBusy == 0)
+		{
+			workshopStatus = "";
+		}
+		else
+		{
+			std::ostringstream status;
+			status << "Updating " << numBusy << " Workshop add-on" << (numBusy == 1 ? "" : "s") << "...";
+			workshopStatus = status.str();
+		}
+
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop end");
+	}
+
+	STEAM_CALLBACK(SteamManagerImpl, on_subscriptions_change, UserSubscribedItemsListChanged_t)
+	{
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "subscriptions changed for %u", pParam->m_nAppID);
+		// TODO: check that it's our appid?
+		MountWorkshopContent();
+	}
+
+	STEAM_CALLBACK(SteamManagerImpl, on_item_downloaded, DownloadItemResult_t)
+	{
+		// TODO: check that it's our appid?
+		if (pParam->m_eResult == k_EResultOK)
+		{
+			SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu succeeded", pParam->m_nPublishedFileId);
+			MountWorkshopContent();
+		}
+		else
+		{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu failed: %d", pParam->m_nPublishedFileId, pParam->m_eResult);
+		}
+	}
+
 };
 
 #endif  // HAS_STEAM_API
