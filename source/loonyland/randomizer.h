@@ -35,6 +35,7 @@ struct location
 };
 
 
+void RandomizeSeed();
 
 void PlaceItems(const std::vector<location>& locs);
 

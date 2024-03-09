@@ -32,7 +32,7 @@ bool allItems = false;
 //auto rng = std::default_random_engine(std::random_device{}());
 auto rng = std::minstd_rand0(std::random_device{}());
 
-#define MAX_SEED_LENGTH 32
+#define MAX_SEED_LENGTH 20
 #define R_NUM_LOCATIONS 105
 
 location basic_locations[R_NUM_LOCATIONS] = {
@@ -328,6 +328,7 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 					break;
 				case 1: //randomize
 					MakeNormalSound(SND_MENUSELECT);
+					RandomizeSeed();
 					break;
 				case 2: //seed entry
 					MakeNormalSound(SND_MENUSELECT);
@@ -344,7 +345,7 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 					
 						while(!CheckBeatable(RandomFill())){
 							genTries++;
-							MakeNormalSound(SND_MENUCANCEL);
+							//MakeNormalSound(SND_MENUCANCEL);
 						}
 					MakeNormalSound(SND_POWERUP);
 					}else{
@@ -399,7 +400,7 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 			}
 			else if (c != 0)
 			{
-				if (seed.length() >= 32)
+				if (seed.length() >= MAX_SEED_LENGTH)
 				{
 					MakeNormalSound(SND_MENUCANCEL);
 				}
@@ -524,6 +525,16 @@ RandomizerMenu(MGLDraw *mgl)
 	}
 
 	ExitRandomizerMenu();
+}
+
+void RandomizeSeed() {
+	static std::string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+	char c;
+	seed = "";
+	while (seed.length() < MAX_SEED_LENGTH) {
+		c = charset[rand() % charset.size()];
+		seed += c;
+	}
 }
 
 
@@ -836,3 +847,4 @@ bool CanCleanseCrypts(const std::set<int>& inv)
 {
 	return (HaveLightSource(inv) && inv.count(VAR_BOOTS));
 }
+
