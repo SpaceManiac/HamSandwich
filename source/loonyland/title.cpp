@@ -18,7 +18,7 @@
 // # = draw a major horizontal line
 // % = draw a minor horizontal line
 // $ = last line of the whole deal
-static const char credits[][48]={
+static const char* credits[] = {
 	"@LoonyLand:",
 	"",
 	"@Halloween Hill",
@@ -81,56 +81,56 @@ static const char credits[][48]={
 	"$"
 	};
 
-static const char victoryTxt[][64]={
+static const char* victoryTxt[] = {
 	"",
 	"",
-	"After a little time to rest and wipe off a whole",
+	"&After a little time to rest and wipe off a whole",
 	"",
-	"lot of mud, Loony got back to his feet and returned",
+	"&lot of mud, Loony got back to his feet and returned",
 	"",
-	"to Luniton, a hero at last.",
-	"",
-	"",
-	"",
-	"#",
-	"",
-	"",
-	"All around the land of Halloween Hill, life was",
-	"",
-	"returning to normal.  The frogs stopped licking",
-	"",
-	"so viciously, the mummies settled down and returned",
-	"",
-	"to their work in the toilet paper industry - Even",
-	"",
-	"the werewolves went back to their den to take a nap.",
-	"",
-	"Yes, everything was back to being as peaceful as it",
-	"",
-	"gets in Halloween Hill.  Which, by the way, is not",
-	"",
-	"terribly peaceful.",
-	"",
-	"",
+	"&to Luniton, a hero at last.",
 	"",
 	"",
 	"",
 	"#",
 	"",
 	"",
-	"There was just one thing wrong...",
+	"&All around the land of Halloween Hill, life was",
 	"",
-	"The trees in the south of Wicked Woods were still",
+	"&returning to normal.  The frogs stopped licking",
 	"",
-	"hung with stick figures.  Almost as if the evil",
+	"&so viciously, the mummies settled down and returned",
 	"",
-	"presence there hadn't been the result of the",
+	"&to their work in the toilet paper industry - Even",
 	"",
-	"Evilizer at all... and was still lurking somewhere.",
+	"&the werewolves went back to their den to take a nap.",
+	"",
+	"&Yes, everything was back to being as peaceful as it",
+	"",
+	"&gets in Halloween Hill.  Which, by the way, is not",
+	"",
+	"&terribly peaceful.",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"#",
+	"",
+	"",
+	"&There was just one thing wrong...",
+	"",
+	"&The trees in the south of Wicked Woods were still",
+	"",
+	"&hung with stick figures.  Almost as if the evil",
+	"",
+	"&presence there hadn't been the result of the",
+	"",
+	"&Evilizer at all... and was still lurking somewhere.",
 	"$"
 	};
 
-static const char cheatTxt[][64]={
+static const char* cheatTxt[] = {
 	"@Congratulations on getting",
 	"",
 	"",
@@ -201,25 +201,11 @@ static const char cheatTxt[][64]={
 	"$",
 };
 
-// once the credits have scrolled to END_OF_CREDITS pixels, they end
-#define END_OF_CREDITS 480*4-330
-#define END_OF_VICTORY 480*2
-#define END_OF_CHEATS 480*3-100
-
-// the most custom worlds it will handle
-#define MAX_CUSTOM (64-5)
-
-sprite_set_t *planetSpr;
-static int numRunsToMakeUp;
-
 static byte oldc=0;
 
-static byte keyAnim=0;
-char lvlName[32];
 static byte cursor;
 byte *backScr;
 int numRuns;
-byte demoTextCounter;
 byte songRestart;
 
 static byte loadingGame;
@@ -248,20 +234,6 @@ menu_t menu[MENU_CHOICES]={
 
 menu_t saves[5];
 byte choosingDiffFor;
-
-byte HandleTitleKeys(MGLDraw *mgl)
-{
-	char k;
-
-	k=mgl->LastKeyPressed();
-
-	if(k=='e')
-		return 1;	// go to the editor
-	if(k==27)
-		return 2;	// exit
-	else
-		return 0;	// play the game
-}
 
 void SetSongRestart(byte b)
 {
@@ -305,19 +277,6 @@ void GetSavesForMenu(void)
 		sprintf(saves[i].txt,"%s - %0.1f%%",txt,pct);
 		saves[i].bright=-32;
 	}
-}
-
-TASK(byte) LunaticTitle(MGLDraw *mgl)
-{
-	mgl->LoadBMP("graphics/title.bmp");
-	AWAIT mgl->Flip();
-	while(!mgl->LastKeyPeek())
-	{
-		if(!mgl->Process())
-			CO_RETURN 2;
-		AWAIT mgl->Flip();
-	}
-	CO_RETURN HandleTitleKeys(mgl);
 }
 
 void ShowMenuOption(int x,int y,menu_t m,byte on)
@@ -865,7 +824,8 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 	CO_RETURN b;
 }
 
-void CreditsRender(int y)
+// true = continue, false = document is now offscreen
+bool CreditsRender(int y, const char* const* document)
 {
 	int i,ypos;
 	const char *s;
@@ -874,9 +834,9 @@ void CreditsRender(int y)
 	i=0;
 
 	ypos=0;
-	while(credits[i][0]!='$')
+	while(document[i][0]!='$')
 	{
-		s=credits[i];
+		s=document[i];
 		if(ypos-y>-60)
 		{
 			if(ypos-y>240)
@@ -899,427 +859,93 @@ void CreditsRender(int y)
 			{
 				DrawFillBox(320-70,ypos-y+8,320+70,ypos-y+9,4*32+31+b);
 			}
+			else if(s[0]=='&')
+			{
+				CenterPrintColor(320,ypos-y,&s[1],4,b,0);
+			}
 			else
 				CenterPrintColor(320,ypos-y,s,4,b,1);
 		}
 		ypos+=20;
 		i++;
 		if(ypos-y>=480)
-			return;
+			return true;  // went off the bottom before document ended
 	}
+
+	// document ended, was it off the top?
+	return ypos-y>-60;
 }
 
-TASK(void) Credits(MGLDraw *mgl,byte init)
+static TASK(void) DoCredits(MGLDraw *mgl, const char* const* document)
 {
-	int y=-470;
-	int lastTime;
-	int wid;
-	byte* pos;
-	int i;
-	dword hangon;
+	int y = -470;
+	dword lastTime = 0;
 
-	EndClock();
-	hangon=TimeLength();
-
+	GetTaps();
 	mgl->LastKeyPressed();
 	mgl->LoadBMP("graphics/title.bmp");
-	lastTime=1;
+
+	StartClock();
+	while (true)
+	{
+		EndClock();
+		lastTime += TimeLength();
+		StartClock();
+
+		lastTime = std::min(lastTime, TIME_PER_FRAME * 30u);
+		while (lastTime >= TIME_PER_FRAME)
+		{
+			if (GetControls() & CONTROL_UP)
+				y = std::max(-470, y - 3);
+			else if (GetControls() & (CONTROL_DN | CONTROL_B1))
+				y += 3;
+			else
+				y += 1;
+			UpdatePlasma();
+			lastTime -= TIME_PER_FRAME;
+		}
+
+		memset(mgl->GetScreen(), 4*32 + 2, mgl->GetWidth() * mgl->GetHeight());
+		RenderPlasma2(mgl);
+		bool stillGoing = CreditsRender(y, document);
+		AWAIT mgl->Flip();
+
+		if(!mgl->Process() || mgl->LastKeyPressed() == SDLK_ESCAPE || (GetTaps() & CONTROL_B2) || !stillGoing)
+		{
+			break;
+		}
+	}
+	ExitPlasma();
+}
+
+TASK(void) Credits(MGLDraw *mgl, byte init)
+{
 	if(init)
 		InitPlasma(4);
 
-	hangon=0;
-	for(i=0;i<40;i++)
+	int hangon=0;
+	for(int i=0;i<40;i++)
 		if(opt.meritBadge[i])
 			hangon++;
 
 	if(hangon==40)
 		AWAIT CheatText(mgl,0);
 
-	while(1)
-	{
-		lastTime+=TimeLength();
-		StartClock();
-
-		wid=mgl->GetWidth();
-		pos=mgl->GetScreen()+0*wid;
-		for(i=0;i<480;i++)
-		{
-			memset((byte *)pos,4*32+2,640);
-			pos+=wid;
-		}
-
-		RenderPlasma2(mgl);
-		CreditsRender(y);
-
-		if(lastTime>TIME_PER_FRAME*30)
-			lastTime=TIME_PER_FRAME*30;
-
-		while(lastTime>=TIME_PER_FRAME)
-		{
-			y+=1;
-			UpdatePlasma();
-			lastTime-=TIME_PER_FRAME;
-		}
-
-		AWAIT mgl->Flip();
-		EndClock();
-
-		if(!mgl->Process())
-		{
-			ExitPlasma();
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-		if(mgl->LastKeyPressed())
-		{
-			ExitPlasma();
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-		if(y==END_OF_CREDITS)
-		{
-			ExitPlasma();
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-	}
-	ResetClock(hangon);
-}
-
-void CheatsRender(int y)
-{
-	int i,ypos;
-	const char *s;
-	char b;
-
-	i=0;
-
-	ypos=0;
-	while(cheatTxt[i][0]!='$')
-	{
-		s=cheatTxt[i];
-		if(ypos-y>-60)
-		{
-			if(ypos-y>240)
-				b=-((ypos-y)-300)/10;
-			else
-				b=0;
-
-			if(b>0)
-				b=0;
-
-			if(s[0]=='@')
-			{
-				CenterPrintColor(320,ypos-y,&s[1],4,b,2);
-			}
-			else if(s[0]=='#')
-			{
-				DrawFillBox(320-200,ypos-y+8,320+200,ypos-y+11,4*32+31+b);
-			}
-			else if(s[0]=='%')
-			{
-				DrawFillBox(320-70,ypos-y+8,320+70,ypos-y+9,4*32+31+b);
-			}
-			else
-				CenterPrintColor(320,ypos-y,s,4,b,1);
-		}
-		ypos+=20;
-		i++;
-		if(ypos-y>=480)
-			return;
-	}
+	AWAIT DoCredits(mgl, credits);
 }
 
 TASK(void) CheatText(MGLDraw *mgl,byte init)
 {
-	int y=-470;
-	int lastTime;
-	int wid;
-	byte* pos;
-	int i;
-	dword hangon;
-
-	EndClock();
-	hangon=TimeLength();
-
-	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics/title.bmp");
-	lastTime=1;
 	if(init)
 		InitPlasma(4);
-	while(1)
-	{
-		lastTime+=TimeLength();
-		StartClock();
 
-		wid=mgl->GetWidth();
-		pos=mgl->GetScreen()+0*wid;
-		for(i=0;i<480;i++)
-		{
-			memset(pos,4*32+2,640);
-			pos+=wid;
-		}
-
-		RenderPlasma2(mgl);
-		CheatsRender(y);
-
-		if(lastTime>TIME_PER_FRAME*30)
-			lastTime=TIME_PER_FRAME*30;
-
-		while(lastTime>=TIME_PER_FRAME)
-		{
-			y+=1;
-			UpdatePlasma();
-			lastTime-=TIME_PER_FRAME;
-		}
-
-		AWAIT mgl->Flip();
-		EndClock();
-
-		if(!mgl->Process())
-		{
-			ExitPlasma();
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-		if(mgl->LastKeyPressed())
-		{
-			ExitPlasma();
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-		if(y==END_OF_CHEATS)
-		{
-			ExitPlasma();
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-	}
-	ResetClock(hangon);
-}
-
-void VictoryTextRender(int y)
-{
-	int i,ypos;
-	const char *s;
-	char b;
-
-	i=0;
-
-	ypos=0;
-	while(victoryTxt[i][0]!='$')
-	{
-		s=victoryTxt[i];
-		if(ypos-y>-60)
-		{
-			if(ypos-y>240)
-				b=-((ypos-y)-300)/10;
-			else
-				b=0;
-
-			if(b>0)
-				b=0;
-
-			if(s[0]=='@')
-			{
-				CenterPrintColor(320,ypos-y,&s[1],4,b,2);
-			}
-			else if(s[0]=='#')
-			{
-				DrawFillBox(320-200,ypos-y+8,320+200,ypos-y+11,4*32+31+b);
-			}
-			else if(s[0]=='%')
-			{
-				DrawFillBox(320-70,ypos-y+8,320+70,ypos-y+9,4*32+31+b);
-			}
-			else
-				CenterPrintColor(320,ypos-y,s,4,b,0);
-		}
-
-		ypos+=20;
-		i++;
-		if(ypos-y>=480)
-			return;
-	}
+	AWAIT DoCredits(mgl, cheatTxt);
 }
 
 TASK(void) VictoryText(MGLDraw *mgl)
 {
-	int y=-470;
-	int lastTime;
-	int wid;
-	byte* pos;
-	int i;
-	dword hangon;
-
-	EndClock();
-	hangon=TimeLength();
-	lastTime=1;
-	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics/title.bmp");
 	InitPlasma(4);
-	while(1)
-	{
-		lastTime+=TimeLength();
-		StartClock();
-
-		wid=mgl->GetWidth();
-		pos=mgl->GetScreen()+0*wid;
-		for(i=0;i<480;i++)
-		{
-			memset(pos,4*32+2,640);
-			pos+=wid;
-		}
-
-		RenderPlasma2(mgl);
-
-		VictoryTextRender(y);
-
-		if(lastTime>TIME_PER_FRAME*30)
-			lastTime=TIME_PER_FRAME*30;
-
-		while(lastTime>=TIME_PER_FRAME)
-		{
-			y++;
-			UpdatePlasma();
-			lastTime-=TIME_PER_FRAME;
-		}
-		AWAIT mgl->Flip();
-		EndClock();
-		if(!mgl->Process())
-		{
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-		if(mgl->LastKeyPressed()==27)
-		{
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-		if(y==END_OF_VICTORY)
-		{
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-	}
-	ResetClock(hangon);
-}
-
-TASK(byte) SpeedSplash(MGLDraw *mgl,const char *fname)
-{
-	int i,j,clock;
-	RGB desiredpal[256],curpal[256];
-	byte mode,done;
-	byte c,oldc;
-
-
-	for(i=0;i<256;i++)
-	{
-		curpal[i].r=0;
-		curpal[i].g=0;
-		curpal[i].b=0;
-	}
-	mgl->SetPalette(curpal);
-	mgl->RealizePalette();
-
-	mgl->LastKeyPressed();
-	oldc=GetControls()|GetArrows();
-
-	if (!mgl->LoadBMP(fname, desiredpal))
-		CO_RETURN 0;
-
-	mode=0;
-	clock=0;
-	done=0;
-	while(!done)
-	{
-		AWAIT mgl->Flip();
-		if(!mgl->Process())
-			CO_RETURN 0;
-		c=mgl->LastKeyPressed();
-
-		if(c==27)
-			CO_RETURN 0;
-		else if(c)
-			mode=2;
-
-		c=GetControls()|GetArrows();
-		if((c&(CONTROL_B1|CONTROL_B2)) && (!(oldc&(CONTROL_B1|CONTROL_B2))))
-			mode=2;
-		oldc=c;
-
-		clock++;
-		switch(mode)
-		{
-			case 0:	// fading in
-				for(j=0;j<16;j++)
-					for(i=0;i<256;i++)
-					{
-						if(curpal[i].r<desiredpal[i].r)
-							curpal[i].r++;
-						if(curpal[i].g<desiredpal[i].g)
-							curpal[i].g++;
-						if(curpal[i].b<desiredpal[i].b)
-							curpal[i].b++;
-					}
-				mgl->SetPalette(curpal);
-				mgl->RealizePalette();
-				if(clock>16)
-				{
-					mode=1;
-					clock=0;
-				}
-				break;
-			case 1:
-				// sit around
-				break;
-			case 2:	// fading out
-				clock=0;
-				for(j=0;j<16;j++)
-					for(i=0;i<256;i++)
-					{
-						if(curpal[i].r>0)
-							curpal[i].r--;
-						else
-							clock++;
-						if(curpal[i].g>0)
-							curpal[i].g--;
-						else
-							clock++;
-						if(curpal[i].b>0)
-							curpal[i].b--;
-						else
-							clock++;
-					}
-				mgl->SetPalette(curpal);
-				mgl->RealizePalette();
-				if(clock==256*3*16)
-					done=1;
-				break;
-		}
-	}
-	mgl->ClearScreen();
-	AWAIT mgl->Flip();
-	CO_RETURN 1;
-}
-
-TASK(void) HelpScreens(MGLDraw *mgl)
-{
-	int i;
-	char name[32];
-
-	for(i=0;i<5;i++)
-	{
-		sprintf(name,"docs/help%d.bmp",i+1);
-		if(!AWAIT SpeedSplash(mgl,name))
-			CO_RETURN;
-	}
-}
-
-TASK(void) DemoSplashScreens(MGLDraw *mgl)
-{
-	if(!AWAIT SpeedSplash(mgl,"graphics/advert.bmp"))
-		CO_RETURN;
+	AWAIT DoCredits(mgl, victoryTxt);
 }
 
 TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
@@ -1354,7 +980,7 @@ TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
 		AWAIT mgl->Flip();
 		if(!mgl->Process())
 			CO_RETURN;
-		if(mgl->LastKeyPressed())
+		if(mgl->LastKeyPressed() || GetJoyButtons())
 			mode=2;
 		EndClock();
 		tick+=TimeLength();
