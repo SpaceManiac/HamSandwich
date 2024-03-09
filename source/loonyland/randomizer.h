@@ -57,6 +57,17 @@ bool HaveAllMushrooms(const std::set<int>& inv);
 
 bool CanCleanseCrypts(const std::set<int>& inv);
 
+bool CanEnterRockyCliffs(const std::set<int>& inv);
+
+bool CanEnterVampy(const std::set<int>& inv);
+
+bool CanEnterVampyII(const std::set<int>& inv);
+
+bool CanEnterVampyIII(const std::set<int>& inv);
+
+bool CanEnterVampyIV(const std::set<int>& inv);
+
+
 int RandomFill(std::vector<location>& locs);
 
 bool CheckBeatable(std::vector<location>& locs);
