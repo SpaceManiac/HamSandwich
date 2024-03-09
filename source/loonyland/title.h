@@ -16,11 +16,8 @@
 #define MENU_OPTIONS	9
 #define MENU_EDITOR		10
 #define MENU_EXIT		11
-#define MENU_NOTHING2	12
 
-#define MENU_CHOICES	13
-
-//#define MENU_EDITOR	   254	// special since you can't normally do it
+#define MENU_CHOICES	12
 
 TASK(byte) LunaticTitle(MGLDraw *mgl);
 TASK(byte) MainMenu(MGLDraw *mgl);

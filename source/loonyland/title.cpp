@@ -244,7 +244,6 @@ menu_t menu[MENU_CHOICES]={
 	{"Options",1,-32},
 	{"Editor",1,-32},
 	{"Exit",1,-32},
-	{"!",0,-32}
 };
 
 menu_t saves[5];
