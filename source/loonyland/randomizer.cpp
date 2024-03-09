@@ -541,23 +541,25 @@ void RandomizeSeed() {
 
 int RandomFill(std::vector<location>& locs)
 {
-	std::vector<rItem> items;
-	for (location l : basic_locations)
-	{
-		//handle bonkula
-		locs.push_back(l);
-	}
+	std::vector<rItem> remainingItems;
+	std::vector<location*> remainingLocs;
 
 	for (rItem r : itemList)
 	{
-		items.push_back(r);
+		remainingItems.push_back(r);
 	}
 
-	shuffleList(items.begin(), items.end(), rng);
+
+	for (location l : basic_locations)
+	{
+		locs.push_back(l);
+	}
+
+	shuffleList(remainingItems.begin(), remainingItems.end(), rng);
 
 	for (int i = 0; i < locs.size(); i++)
 	{
-		locs[i].item = items[i];
+		locs[i].item = remainingItems[i];
 	}
 	return 1;
 }
@@ -565,6 +567,7 @@ int RandomFill(std::vector<location>& locs)
 bool CheckBeatable(std::vector<location>& locs){
 	std::set<int> collectedItems;
 	std::set<int> tempItems;
+	std::vector<location> remainingLocs = locs;
 	std::vector<location> visited;
 	bool gotEvilizer = false;
 	int foundItems = 0;
@@ -576,9 +579,9 @@ bool CheckBeatable(std::vector<location>& locs){
 	do
 	{
 		foundItems = 0;
-		for (int i = 0; i < locs.size(); i++)
+		for (int i = 0; i < remainingLocs.size(); i++)
 		{
-			location l = locs[i];
+			location l = remainingLocs[i];
 			if (l.requirements(collectedItems))
 			{
 				//visited.insert( l.newItem.playerVarId );
@@ -590,8 +593,8 @@ bool CheckBeatable(std::vector<location>& locs){
 
 				tempItems.insert(l.item.playerVarId);
 
-				visited.push_back(l);
-				locs.erase(locs.begin() + i);
+				//visited.push_back(l);
+				remainingLocs.erase(remainingLocs.begin() + i);
 				i--;
 			}
 			else
@@ -609,10 +612,10 @@ bool CheckBeatable(std::vector<location>& locs){
 	}*/
 
 	//printf("Evilizer: %d\n", gotEvilizer);
-	if ((gotEvilizer && !allItems) || (allItems && locs.empty()))
+	if ((gotEvilizer && !allItems) || (allItems && remainingLocs.empty()))
 	{
-		visited.insert( visited.end(), locs.begin(), locs.end());
-		PlaceItems(visited);
+		//visited.insert( visited.end(), locs.begin(), locs.end());
+		PlaceItems(locs);
 		return true;
 	}else{
 		
