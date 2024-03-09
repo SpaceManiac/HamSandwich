@@ -2201,7 +2201,7 @@ void GiveRandoItem(int index)
 // END CHATTING
 
 void LoadRandoItems(){
-	std::FILE* f = AppdataOpen("quest.txt", "r");
+	std::FILE* f = AppdataOpen("quest.txt");
 	if (f == NULL)
 	{
 		return;

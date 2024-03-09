@@ -621,8 +621,8 @@ std::vector<location> RandomFill()
 	}
 	std::filesystem::copy("loony.llw", "rando.llw");*/
 
-	std::FILE* baseWorld = AppdataOpen("loony.llw", "rb");
-	std::FILE* newWorld = AppdataOpen("rando.llw", "wb");
+	std::FILE* baseWorld = AppdataOpen("loony.llw");
+	std::FILE* newWorld = AppdataOpen_Write("rando.llw");
 	
 	char buf[4096];
 	while (int n = fread(buf, 1, 4096, baseWorld))
@@ -650,7 +650,7 @@ std::vector<location> RandomFill()
 		sprintf(buff, "%s spoiler.txt", seed.c_str());
 	}
 
-	std::FILE* f = AppdataOpen(buff, "w");
+	std::FILE* f = AppdataOpen_Write(buff);
 	{
 		FilePtrStream spoilerFile(f);
 
@@ -760,7 +760,7 @@ void PlaceItems(const std::vector<location>& loclist)
 	//for each, go into the world
 	
   	//questFile.open ("quest.txt");
-	std::FILE* f = AppdataOpen("quest.txt", "w");
+	std::FILE* f = AppdataOpen_Write("quest.txt");
 	FilePtrStream stream(f);
 	
 
