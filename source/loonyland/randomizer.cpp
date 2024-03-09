@@ -32,9 +32,6 @@ bool allItems = false;
 //auto rng = std::default_random_engine(std::random_device{}());
 auto rng = std::minstd_rand0(std::random_device{}());
 
-#define MAX_SEED_LENGTH 20
-#define R_NUM_LOCATIONS 105
-
 location basic_locations[R_NUM_LOCATIONS] = {
 	{false, "Halloween Hill", 0, 194, 5, 24, 25, "Swamp Mud Path", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
 	{false, "Halloween Hill",  0, 187, 112, 11, 12, "Bog Beast Home", [](const std::set<int>& inv) { return true; }},
@@ -341,9 +338,12 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 						std::seed_seq seed2(seed.begin(), seed.end());
 						//rng = std::default_random_engine(seed2);
 						rng = std::minstd_rand0(seed2);
-						
+						bool success = false;
 					
-						while(!CheckBeatable(RandomFill())){
+						while(!success){
+							std::vector<location> loc;
+							RandomFill(loc);
+							success = CheckBeatable(loc);
 							genTries++;
 							//MakeNormalSound(SND_MENUCANCEL);
 						}
@@ -538,153 +538,30 @@ void RandomizeSeed() {
 }
 
 
-/*void AssumedFill()
+
+int RandomFill(std::vector<location>& locs)
 {
-
-	ownedItems = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
-				  90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135,
-				  160, 161, 162, 164, 165, 166, 167, 189, 218, 220};
-	//const . copyOptions = std::filesystem::copy_options::update_existing;
-	if (std::filesystem::exists("rando.llw"))
-	{
-		std::filesystem::remove("rando.llw");
-	}
-	std::filesystem::copy("loony.llw", "rando.llw");
-
-	world_t world;
-	LoadWorld(&world, "rando.llw");
-
-	//fix that awful, singular, flipped special
-	//Castle Vampy III "halloween" specials
-	special_t tempSpecial = world.map[34]->special[9];
-	world.map[34]->special[9].x = world.map[34]->special[10].x;
-	world.map[34]->special[9].y = world.map[34]->special[10].y;
-	world.map[34]->special[10].x = tempSpecial.x;
-	world.map[34]->special[10].y = tempSpecial.y;
-
-	//fix trigger for cat tree
-	world.map[0]->special[97].trigger = TRG_GETITEM;
-
-	SaveWorld(&world, "rando.llw");
-
-	for (int i = 0; i < 94; i++)
-	{
-		int s1 = doublecheck[i][0];
-		int s2 = doublecheck[i][1];
-		int x = doublecheck[i][2];
-		int y = doublecheck[i][3];
-		int mapnum = doublecheck[i][4];
-		if (!(world.map[mapnum]->special[s1].x == x && world.map[mapnum]->special[s1].y == y)){
-			printf("issue with map %d, %d isn't right x, y\n", mapnum, s1);
-		}
-		if (!(world.map[mapnum]->special[s2].x + 1 == x && world.map[mapnum]->special[s1].y == y)){
-			printf("issue with map %d, s2 %d isn't right x, y\n", mapnum, s2);
-		}
-		if (!(world.map[mapnum]->special[s1].trigger==TRG_GETITEM)){
-			printf("issue with map %d, s1 %d isn't right trigger\n", mapnum, s1);
-		}
-		if (!(world.map[mapnum]->special[s2].trigger==TRG_VARON)){
-			printf("issue with map %d, s2 %d isn't right trigger\n", mapnum, s2);
-		}
-	}*/
-
-	/*
-	for(int i = 0; i < world.numMaps; i++)
-	{
-		if (world.map[i] == NULL)
-		{
-			continue;
-		}
-		Map m = world.map[i];
-		printf("%s\n", m.name);
-		int specialNum = 0;
-		for (special_t s : m.special)
-		{
-			if (s.trigger == TRG_GETITEM){
-				printf("\t%d, %X, %d, %d, %d\n", specialNum, s.effect, s.x, s.y, s.value);
-				
-			}
-			specialNum++;
-		}
-	}
-
-	//world.map[i]->special[y]
-
-	//prefill section, keys to bosses
-
-	//pick a random item
-	//pick a random location
-
-	//if its a quest, set entry in quest reward to item id
-	//if its a physical spot, edit specials to use new item id
-
-	//go until out of items
-
-	//verify beatable
-}*/
-
-std::vector<location> RandomFill()
-{
-
-	/*if (std::filesystem::exists("rando.llw"))
-	{
-		std::filesystem::remove("rando.llw");
-	}
-	std::filesystem::copy("loony.llw", "rando.llw");*/
-
-	std::FILE* baseWorld = AppdataOpen("loony.llw");
-	std::FILE* newWorld = AppdataOpen_Write("rando.llw");
-	
-	char buf[4096];
-	while (int n = fread(buf, 1, 4096, baseWorld))
-	{
-    	fwrite(buf, 1, 4096, newWorld);
-	}
-
-	fclose(baseWorld);
-	fclose(newWorld);
-
-	//asset fopen steam from one to the other
-
-	std::vector<location> remaining;
+	std::vector<rItem> items;
 	for (location l : basic_locations)
 	{
-		remaining.push_back(l);
+		locs.push_back(l);
 	}
 
-	shuffleList(remaining.begin(), remaining.end(), rng);
-
-	char buff[128] = "";
-	if(allItems){
-		sprintf(buff, "ALLITEMS %s spoiler.txt", seed.c_str());
-	}else{
-		sprintf(buff, "%s spoiler.txt", seed.c_str());
-	}
-
-	std::FILE* f = AppdataOpen_Write(buff);
+	for (rItem r : itemList)
 	{
-		FilePtrStream spoilerFile(f);
-
-		bool shortcircuit = false;
-		for (int i = 0; i < remaining.size(); i++)
-		{
-			//make sure bonkula isn't holing a vamp statue or key
-			/*if (remaining[i].description.compare("Bonkula") == 0 &&
-				((itemList[i].playerVarId >= VAR_VAMPBUST && itemList[i].playerVarId <= VAR_VAMPBUST + 7) ||
-				itemList[i].playerVarId == VAR_SKULLKEY || itemList[i].playerVarId == VAR_BATKEY || itemList[i].playerVarId == VAR_PUMPKINKEY))
-			{
-				//spoilerFile.close();
-				//return;
-			}*/
-			remaining[i].item = itemList[i];
-			spoilerFile << remaining[i].mapId << "\t\t" << remaining[i].mapName << "\t\t" << remaining[i].description << "\t\t" << itemList[i].playerVarId << "\t\t" << itemList[i].itemName << "\n";
-		}
+		items.push_back(r);
 	}
-	fclose(f);
-	return remaining;
+
+	shuffleList(items.begin(), items.end(), rng);
+
+	for (int i = 0; i < locs.size(); i++)
+	{
+		locs[i].item = items[i];
+	}
+	return 1;
 }
 
-bool CheckBeatable(std::vector<location> remaining){
+bool CheckBeatable(std::vector<location>& locs){
 	std::set<int> collectedItems;
 	std::set<int> tempItems;
 	std::vector<location> visited;
@@ -698,9 +575,9 @@ bool CheckBeatable(std::vector<location> remaining){
 	do
 	{
 		foundItems = 0;
-		for (int i = 0; i < remaining.size(); i++)
+		for (int i = 0; i < locs.size(); i++)
 		{
-			location l = remaining[i];
+			location l = locs[i];
 			if (l.requirements(collectedItems))
 			{
 				//visited.insert( l.newItem.playerVarId );
@@ -713,7 +590,7 @@ bool CheckBeatable(std::vector<location> remaining){
 				tempItems.insert(l.item.playerVarId);
 
 				visited.push_back(l);
-				remaining.erase(remaining.begin() + i);
+				locs.erase(locs.begin() + i);
 				i--;
 			}
 			else
@@ -731,9 +608,9 @@ bool CheckBeatable(std::vector<location> remaining){
 	}*/
 
 	//printf("Evilizer: %d\n", gotEvilizer);
-	if ((gotEvilizer && !allItems) || (allItems && remaining.empty()))
+	if ((gotEvilizer && !allItems) || (allItems && locs.empty()))
 	{
-		visited.insert( visited.end(), remaining.begin(), remaining.end());
+		visited.insert( visited.end(), locs.begin(), locs.end());
 		PlaceItems(visited);
 		return true;
 	}else{
@@ -750,8 +627,19 @@ bool CheckBeatable(std::vector<location> remaining){
 	
 }
 
-void PlaceItems(const std::vector<location>& loclist)
+void PlaceItems(std::vector<location>& locList)
 {
+	std::FILE* baseWorld = AppdataOpen("loony.llw");
+	std::FILE* newWorld = AppdataOpen_Write("rando.llw");
+
+	char buf[4096];
+	while (int n = fread(buf, 1, 4096, baseWorld))
+	{
+		fwrite(buf, 1, 4096, newWorld);
+	}
+
+	fclose(baseWorld);
+	fclose(newWorld);
 
 	world_t world;
 	LoadWorld(&world, "rando.llw");
@@ -773,10 +661,22 @@ void PlaceItems(const std::vector<location>& loclist)
   	//questFile.open ("quest.txt");
 	std::FILE* f = AppdataOpen_Write("quest.txt");
 	FilePtrStream stream(f);
-	
 
-	for (location loc : loclist)
+	char buff[128] = "";
+	if (allItems) {
+		sprintf(buff, "ALLITEMS %s spoiler.txt", seed.c_str());
+	}
+	else {
+		sprintf(buff, "%s spoiler.txt", seed.c_str());
+	}
+
+	std::FILE* f2 = AppdataOpen_Write(buff);
+	FilePtrStream spoilerFile(f2);
+
+	for (location loc : locList)
 	{
+		spoilerFile << loc.mapId << "\t\t" << loc.mapName << "\t\t" << loc.description << "\t\t" << loc.item.playerVarId << "\t\t" << loc.item.itemName << "\n";
+
 		if (loc.isQuest){
 			//quest list of map id points to loc.item now
 			stream << loc.mapId << "\t" << loc.item.playerVarId << "\t" << loc.item.itemId  << "\n";
@@ -792,6 +692,8 @@ void PlaceItems(const std::vector<location>& loclist)
 			tempMap->map[loc.xcoord+loc.ycoord*tempMap->width].item=loc.item.itemId;
 		}
 	}
+
+	fclose(f2);
 
 	//fclose(f);
 

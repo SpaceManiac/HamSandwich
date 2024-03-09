@@ -7,6 +7,8 @@
 #include <string>
 #include <set>
 
+#define MAX_SEED_LENGTH 20
+#define R_NUM_LOCATIONS 105
 
 TASK(void) RandomizerMenu(MGLDraw *mgl);
 
@@ -37,7 +39,7 @@ struct location
 
 void RandomizeSeed();
 
-void PlaceItems(const std::vector<location>& locs);
+void PlaceItems(std::vector<location>& loc);
 
 bool HaveLightSource(const std::set<int>& inv);
 
@@ -55,8 +57,8 @@ bool HaveAllMushrooms(const std::set<int>& inv);
 
 bool CanCleanseCrypts(const std::set<int>& inv);
 
-std::vector<location> RandomFill();
+int RandomFill(std::vector<location>& locs);
 
-bool CheckBeatable( std::vector<location> remaining);
+bool CheckBeatable(std::vector<location>& locs);
 
 #endif
