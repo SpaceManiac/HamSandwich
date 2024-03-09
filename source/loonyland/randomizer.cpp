@@ -390,7 +390,7 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 				c2 = 255;
 				oldc = 255;
 				mgl->LastKeyPressed();
-				MakeNormalSound(SND_MENUCANCEL);
+				MakeNormalSound(SND_MENUSELECT);
 				CO_RETURN 0;
 			}
 			else if (c == SDLK_BACKSPACE && seed.length() > 0)
@@ -468,7 +468,12 @@ void RenderRandomizerMenu(MGLDraw *mgl)
 	if (cursor == 2)
 	{
 		PrintColor(239, 99, "Seed: ", 0, 0, 0);
-		PrintColor(299, 99, seed.c_str(), 0, 0, 0);
+		if (optMode == 1) {
+			PrintColor(299, 99, seed.c_str(), 0, 0, 0);
+		}
+		else {
+			PrintColor(299, 99, seed.c_str(), 0, -5, 0);
+		}
 	}
 
 	PrintColor(240, 120, "Generate", 7, -10, 0);

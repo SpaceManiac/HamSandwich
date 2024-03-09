@@ -104,7 +104,7 @@ TASK(int) main(int argc, char *argv[])
 				break;
 			case MENU_RANDOMIZER: //Randomizer settings
 				AWAIT RandomizerMenu(mainmgl);
-				SetSongRestart(1);
+				SetSongRestart(0);
 				break;
 
 		}
