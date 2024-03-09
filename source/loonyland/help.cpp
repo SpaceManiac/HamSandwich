@@ -124,7 +124,7 @@ static byte oldc;
 void HelpDisplay(MGLDraw *mgl)
 {
 	int i,p;
-	byte colTab[]={0,32,0,96,128,192,32,224};
+	byte colTab[]={0,32,0,96,128,192,32,224,226};
 
 	p=player.worldNum;
 
