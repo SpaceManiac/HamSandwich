@@ -20,7 +20,7 @@ jobs:
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
           cmake --preset windows-i686-release
           cmake --build build/cmake-windows-i686-release16.0 --target install
-      - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
+      - if: github.event_name == 'push' && github.ref_name == 'Loonyland-Randomizer' && env.ITCH_GAME && env.BUTLER_API_KEY
         run: tools/bootstrap/butler push --if-changed build/install "${ENV:ITCH_GAME}:windows" ("--userversion=" + (git rev-parse --short=10 HEAD))
   mingw32:
     name: Windows (MINGW32)
@@ -41,7 +41,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: ./container make install/strip mode=release
-      - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
+      - if: github.event_name == 'push' && github.ref_name == 'Loonyland-Randomizer' && env.ITCH_GAME && env.BUTLER_API_KEY
         run: tools/bootstrap/butler push --if-changed build/install "$ITCH_GAME:linux" --userversion="$(git rev-parse --short=10 HEAD)"
   mac:
     name: MacOS
@@ -49,7 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: make install/strip mode=release
-      - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
+      - if: github.event_name == 'push' && github.ref_name == 'Loonyland-Randomizer' && env.ITCH_GAME && env.BUTLER_API_KEY
         run: tools/bootstrap/butler push --if-changed build/install "$ITCH_GAME:macos" --userversion="$(git rev-parse --short=10 HEAD)"
   android:
     name: Android
@@ -67,7 +67,7 @@ jobs:
           ./gradlew packageRelease
       # Newer devices reject unsigned APKs, so don't bother publishing if signing is not configured.
       - name: Publish APK to Itch
-        if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY && env.ANDROID_KEYSTORE_B64 && env.ANDROID_KEYSTORE_PASSWORD
+        if: github.event_name == 'push' && github.ref_name == 'Loonyland-Randomizer' && env.ITCH_GAME && env.BUTLER_API_KEY && env.ANDROID_KEYSTORE_B64 && env.ANDROID_KEYSTORE_PASSWORD
         run: |
           cp build/android/android-project/outputs/apk/release/android-project-release.apk hamsandwich-android.apk
           tools/bootstrap/butler push --if-changed hamsandwich-android.apk "$ITCH_GAME:android" --userversion="$(git rev-parse --short=10 HEAD)"
@@ -80,12 +80,12 @@ jobs:
       - uses: actions/upload-pages-artifact@v1
         with:
           path: ./build/webroot
-      - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
+      - if: github.event_name == 'push' && github.ref_name == 'Loonyland-Randomizer' && env.ITCH_GAME && env.BUTLER_API_KEY
         run: tools/bootstrap/butler push --if-changed build/webroot "$ITCH_GAME:web" --userversion="$(git rev-parse --short=10 HEAD)"
   web-deploy:
     name: Deploy to GitHub Pages
     needs: web
-    if: github.event_name == 'push' && github.ref_name == 'master'
+    if: github.event_name == 'push' && github.ref_name == 'Loonyland-Randomizer'
     permissions:
       pages: write  # To deploy to Pages
       id-token: write  # To verify the deployment originates from an appropriate source
