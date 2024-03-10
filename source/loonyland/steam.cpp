@@ -11,6 +11,7 @@ void SteamManager::OpenURLOverlay(const char *url)
 #ifdef HAS_STEAM_API
 #include <stdlib.h>
 #include <sstream>
+#include <inttypes.h>
 #include <steam/steam_api.h>
 #include "extern.h"
 #include "jamultypes.h"

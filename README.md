@@ -82,9 +82,11 @@ Compiling and running:
 3. *OR,* use Git to clone the code anywhere you like and "Open Folder" the "HamSandwich" folder.
 4. After the project loads for the first time, select the game you want to run:
     1. Click the down arrow next to "Select Startup Item".
-    2. Uncheck "Select All".
-    3. Check "eddie.exe (Install)", "launcher.exe (Install)", "loonyland.exe (Install)", "loonyland2.exe (Install)", "lunatic.exe (Install)", "mystic.exe (Install)", "sleepless.exe (Install)", "spookycastle.exe (Install)", "stockboy.exe (Install)", and "supreme.exe (Install)" and click OK.
-    4. Click the down arrow again and pick the game you want to run.
+    2. Click "Show/Hide Debug Targets...".
+    3. Uncheck "Select All".
+    4. Check "launcher.exe (Install)" as well as "*gamename*.exe (Install)" for each game you care about, and click OK.
+        * If the games are missing from this list, try using the Visual Studio Installer to install "C++ CMake tools for Windows" and reopening the project.
+    5. Click the down arrow again and pick the game you want to run.
 5. Click the button to compile and run the game.
 6. To run in windowed mode, go to "Debug" > "Debug and Launch Settings for (game)" and add `, "args": ["window"]`.
 
