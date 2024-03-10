@@ -304,8 +304,11 @@ void InitPlayer(byte initWhat,byte world,byte level)
 			for(i=0;i<7;i++)
 				player.var[VAR_WEAPON+i]=1;
 			player.var[VAR_POTION]=1;
-			player.var[VAR_QUESTASSIGN+QUEST_SILVER]=1;
-			player.var[VAR_QUESTDONE+QUEST_SILVER]=1;
+			if (player.worldNum != WORLD_RANDOMIZER) {
+				player.var[VAR_QUESTASSIGN+QUEST_SILVER]=1;
+				player.var[VAR_QUESTDONE+QUEST_SILVER]=1;
+			}
+			player.var[VAR_SILVERSLING]=1;
 			player.var[VAR_HELPERBAT]=1;
 			player.var[VAR_QUESTASSIGN+QUEST_FARLEY]=1;
 			player.var[VAR_QUESTDONE+QUEST_FARLEY]=1;
