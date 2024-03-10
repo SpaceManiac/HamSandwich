@@ -7,7 +7,7 @@
 #include <string>
 #include <set>
 
-#define MAX_SEED_LENGTH 20
+#define MAX_SEED_LENGTH 11
 #define R_NUM_LOCATIONS 105
 
 TASK(void) RandomizerMenu(MGLDraw *mgl);
@@ -71,5 +71,7 @@ bool CanEnterVampyIV(const std::set<int>& inv);
 int RandomFill(std::vector<location>& locs);
 
 bool CheckBeatable(std::vector<location>& locs);
+
+std::string GetSeed();
 
 #endif

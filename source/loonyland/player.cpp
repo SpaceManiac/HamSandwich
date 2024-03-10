@@ -5,6 +5,7 @@
 #include "slingshot.h"
 #include "badge.h"
 #include "bossbash.h"
+#include "randomizer.h"
 
 // characters
 #include "ch_loony.h"
@@ -372,6 +373,12 @@ void InitPlayer(byte initWhat,byte world,byte level)
 			player.fireRange=0;
 			player.fireRate=0;
 			player.monsterPoints=0;
+		}
+		if (player.worldNum == WORLD_RANDOMIZER) {
+			std::string seed = GetSeed();
+			for (int i = 0; i < MAX_SEED_LENGTH; i++) {
+				player.var[VAR_SEEDSTART + i] = seed[i];
+			}
 		}
 
 		if(player.monsType==MONS_PLYRSWAMPDOG)
@@ -1518,6 +1525,15 @@ void PlayerFireUltraWeapon(Guy *me)
 			player.wpnReload=10;
 			break;
 	}
+}
+
+std::string GetPlayerSeed()
+{
+	std::string seed = "";
+	for (int i = 0; i < MAX_SEED_LENGTH; i++) {
+		seed += (char)(player.var[VAR_SEEDSTART + i]);
+	}
+	return seed;
 }
 
 byte GetTportClock(void)

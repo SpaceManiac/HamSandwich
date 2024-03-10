@@ -19,15 +19,17 @@
 #include <charconv>
 #include <string>
 #include "uniform_int_dist.h"
+#include <sys/stat.h>
 
 static byte cursor;
 static byte oldc;
 static dword oldBtn;
 static byte optMode;
-static std::string seed;
+static std::string seed = "";
 std::set<int> ownedItems;
 static int genTries = 0;
 bool allItems = true;
+bool generated = false;
 
 //auto rng = std::default_random_engine(std::random_device{}());
 auto rng = std::minstd_rand0(std::random_device{}());
@@ -268,7 +270,8 @@ void InitRandomizerMenu(void)
 	oldc = 255;
 	cursor = 0;
 	InitPlasma(7);
-	seed = "";
+	//seed = "";
+	CreateDirectory("randomizer", NULL);
 }
 
 void ExitRandomizerMenu(void)
@@ -319,10 +322,16 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 				switch (cursor)
 				{
 				case 0: //play
-					MakeNormalSound(SND_MENUSELECT);
-					AWAIT LunaticGame(mgl,0,WORLD_RANDOMIZER);
-					CO_RETURN 1;
-					break;
+					if (generated && seed.compare("") != 0) {
+						MakeNormalSound(SND_MENUSELECT);
+						AWAIT LunaticGame(mgl, 0, WORLD_RANDOMIZER);
+						CO_RETURN 1;
+						break;
+					}
+					else {
+						MakeNormalSound(SND_MENUCANCEL);
+						break;
+					}
 				case 1: //randomize
 					MakeNormalSound(SND_MENUSELECT);
 					RandomizeSeed();
@@ -347,7 +356,8 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 							genTries++;
 							//MakeNormalSound(SND_MENUCANCEL);
 						}
-					MakeNormalSound(SND_POWERUP);
+						generated = true;
+						MakeNormalSound(SND_POWERUP);
 					}else{
 						MakeNormalSound(SND_MENUCANCEL);
 					}
@@ -626,7 +636,7 @@ bool CheckBeatable(std::vector<location>& locs){
 		
 		char buff[64];
 		if(allItems){
-			sprintf(buff, "ALLITEMS %s spoiler.txt", seed.c_str());
+			sprintf(buff, "%s ALLITEMS spoiler.txt", seed.c_str());
 		}else{
 			sprintf(buff, "%s spoiler.txt", seed.c_str());
 		}
@@ -636,22 +646,29 @@ bool CheckBeatable(std::vector<location>& locs){
 	
 }
 
+std::string GetSeed()
+{
+	return seed;
+}
+
 void PlaceItems(std::vector<location>& locList)
 {
+	char buff[4096];
 	std::FILE* baseWorld = AppdataOpen("loony.llw");
-	std::FILE* newWorld = AppdataOpen_Write("rando.llw");
+	sprintf(buff, "randomizer/%s rando.llw", seed.c_str());
+	std::FILE* newWorld = AppdataOpen_Write(buff);
 
-	char buf[4096];
-	while (int n = fread(buf, 1, 4096, baseWorld))
+	while (int n = fread(buff, 1, 4096, baseWorld))
 	{
-		fwrite(buf, 1, 4096, newWorld);
+		fwrite(buff, 1, 4096, newWorld);
 	}
 
 	fclose(baseWorld);
 	fclose(newWorld);
 
 	world_t world;
-	LoadWorld(&world, "rando.llw");
+	sprintf(buff, "randomizer/%s rando.llw", seed.c_str());
+	LoadWorld(&world, buff);
 
 	//fix that awful, singular, flipped special
 	//Castle Vampy III "halloween" specials
@@ -668,15 +685,15 @@ void PlaceItems(std::vector<location>& locList)
 	//for each, go into the world
 	
   	//questFile.open ("quest.txt");
-	std::FILE* f = AppdataOpen_Write("quest.txt");
+	sprintf(buff, "randomizer/%s quest.txt", seed.c_str());
+	std::FILE* f = AppdataOpen_Write(buff);
 	FilePtrStream stream(f);
 
-	char buff[128] = "";
 	if (allItems) {
-		sprintf(buff, "ALLITEMS %s spoiler.txt", seed.c_str());
+		sprintf(buff, "randomizer/ALLITEMS %s spoiler.txt", seed.c_str());
 	}
 	else {
-		sprintf(buff, "%s spoiler.txt", seed.c_str());
+		sprintf(buff, "randomizer/%s spoiler.txt", seed.c_str());
 	}
 
 	std::FILE* f2 = AppdataOpen_Write(buff);
@@ -706,8 +723,8 @@ void PlaceItems(std::vector<location>& locList)
 
 	//fclose(f);
 
-
-	SaveWorld(&world, "rando.llw");
+	sprintf(buff, "randomizer/%s rando.llw", seed.c_str());
+	SaveWorld(&world, buff);
 
 	//if quest, update rando quest table
 

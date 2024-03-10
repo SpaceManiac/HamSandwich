@@ -87,6 +87,9 @@
 #define VAR_CROPSREWARD	222 // 222 = Rewarded for crop smash
 #define VAR_ZOMBIEGEM	223 // 223 = red 100 gem
 
+#define VAR_SEEDSTART	224 // 224 = first char of seed
+//#define VAR_SEEDEND		   234 = last char of seed
+
 	// temp variables
 #define VAR_TEMP		240	// 240-255 = temporary variables - cleared when leaving a level
 
@@ -210,5 +213,7 @@ void CallFarley(Guy *me);
 void HandlePoison(Guy *me);
 byte WeaponCost(byte wpn,byte level);
 void PlayerFireUltraWeapon(Guy *me);
+
+std::string GetPlayerSeed();
 
 #endif

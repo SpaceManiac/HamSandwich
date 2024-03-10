@@ -417,6 +417,7 @@ void LoadGame(int i)
 {
 	FILE *f;
 	char txt[12];
+	char buff[128];
 
 	sprintf(txt,"save%d.sav",i+1);
 	f=AppdataOpen(txt);
@@ -444,9 +445,11 @@ void LoadGame(int i)
 		else if(player.worldNum==WORLD_RANDOMIZER)
 		{
 			FreeWorld(&curWorld);
-			LoadWorld(&curWorld,"rando.llw");
+			//get seed from player data
+
+			sprintf(buff, "randomizer/%s rando.llw", GetPlayerSeed().c_str());
+			LoadWorld(&curWorld,buff);
 			LoadRandoItems();
-			//todo load quest rewards from file
 
 			InitWorld(&curWorld,WORLD_RANDOMIZER);
 		}

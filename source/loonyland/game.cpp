@@ -662,6 +662,7 @@ TASK(byte) LunaticWorld(byte world,const char *worldName)
 TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 {
 	byte worldResult;
+	char buff[128];
 
 	InitPlayer(INIT_GAME,mode,0);
 
@@ -685,7 +686,8 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 				if(!loadGame)
 					AWAIT Help(gamemgl);
 				LoadRandoItems();
-				worldResult=AWAIT LunaticWorld(WORLD_RANDOMIZER,"rando.llw");
+				sprintf(buff, "randomizer/%s rando.llw", GetSeed().c_str());
+				worldResult=AWAIT LunaticWorld(WORLD_RANDOMIZER,buff);
 				break;
 			case WORLD_SURVIVAL:
 				AWAIT Help(gamemgl);
@@ -707,6 +709,8 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 				AWAIT Help(gamemgl);
 				worldResult=AWAIT LunaticWorld(0,"boss.llw");
 				break;
+			default:
+				worldResult = 5;
 		}
 		if(worldResult==WORLD_QUITGAME)
 		{

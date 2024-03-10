@@ -2201,7 +2201,9 @@ void GiveRandoItem(int index)
 // END CHATTING
 
 void LoadRandoItems(){
-	std::FILE* f = AppdataOpen("quest.txt");
+	char buff[128];
+	sprintf(buff, "randomizer/%s quest.txt", GetPlayerSeed().c_str());
+	std::FILE* f = AppdataOpen(buff);
 	if (f == NULL)
 	{
 		return;
