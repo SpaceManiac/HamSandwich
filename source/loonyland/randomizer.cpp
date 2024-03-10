@@ -270,8 +270,6 @@ void InitRandomizerMenu(void)
 	oldc = 255;
 	cursor = 0;
 	InitPlasma(7);
-	//seed = "";
-	CreateDirectory("randomizer", NULL);
 }
 
 void ExitRandomizerMenu(void)
