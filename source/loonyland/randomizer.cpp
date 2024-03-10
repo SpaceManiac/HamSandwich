@@ -27,7 +27,7 @@ static byte optMode;
 static std::string seed;
 std::set<int> ownedItems;
 static int genTries = 0;
-bool allItems = false;
+bool allItems = true;
 
 //auto rng = std::default_random_engine(std::random_device{}());
 auto rng = std::minstd_rand0(std::random_device{}());
