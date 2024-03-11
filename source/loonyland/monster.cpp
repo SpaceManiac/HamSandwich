@@ -3048,7 +3048,7 @@ void AI_Ghost(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				goodguy->dx=0;
 				goodguy->dy=0;
 				player.stone=30*2;
-				MakeSound(SND_FREEZE,x*FIXAMT,y*FIXAMT,SND_CUTOFF,1200);
+				//MakeSound(SND_FREEZE,me->x,me->y,SND_CUTOFF,1200);
 			}
 		}
 		return;	// can't do nothin' right now
