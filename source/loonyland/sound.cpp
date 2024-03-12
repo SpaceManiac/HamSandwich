@@ -2,9 +2,7 @@
 #include "display.h"
 #include "options.h"
 
-const double PAN_MULTIPLIER = 0.1984375;
-
-int sndNum;
+static int sndNum;
 
 void InitSound(void)
 {
@@ -37,7 +35,7 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 	vol=-((x-cx)*(x-cx)+(y-cy)*(y-cy))/128;
 	if(vol<-5000)
 		return;	// too quiet to play
-	GoPlaySound(snd,pan * PAN_MULTIPLIER,vol,(byte)flags,priority);
+	GoPlaySound(snd, pan * 127 / 640, vol * 255 / 5000, flags, priority);
 }
 
 void MakeNormalSound(int snd)

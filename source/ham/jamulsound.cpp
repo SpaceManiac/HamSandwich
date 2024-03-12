@@ -134,6 +134,8 @@ void JamulSoundUpdate(void)
 	}
 }
 
+// pan: -128 (left) to 127 (right)
+// vol: -255 (silent) to 0 (no attenuation)
 bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 {
 	char s[32];
