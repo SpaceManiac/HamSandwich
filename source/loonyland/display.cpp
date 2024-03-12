@@ -150,6 +150,7 @@ TASK(void) ShowVictoryAnim(byte world)
 	mgl->LoadBMP("graphics/title.bmp");
 	KillSong();
 	JamulSoundPurge();
+	KillSong();
 	MakeNormalSound(SND_ENDSONG);
 	end=timeGetTime();
 	AddGarbageTime(end-start);

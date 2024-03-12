@@ -795,6 +795,7 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 				{
 					GreyPalette(GetDisplayMGL());
 					JamulSoundPurge();
+					KillSong();
 				}
 				else
 				{

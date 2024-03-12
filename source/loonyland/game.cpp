@@ -82,6 +82,7 @@ byte GetCurSong(void)
 byte InitLevel(byte map)
 {
 	JamulSoundPurge();	// each level, that should be good
+	KillSong();
 
 	if(opt.cheats[CH_VINTAGE])
 		GreyPalette(gamemgl);
@@ -631,6 +632,7 @@ TASK(byte) LunaticWorld(byte world,const char *worldName)
 				AWAIT VictoryText(gamemgl);
 				AWAIT Credits(gamemgl,0);
 				JamulSoundPurge();
+				KillSong();
 				AWAIT EndGameTally(gamemgl);
 				mapNum=0;
 			}

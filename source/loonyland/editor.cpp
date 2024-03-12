@@ -54,6 +54,7 @@ static editopt_t editopt={MAP_SHOWLIGHTS|MAP_SHOWWALLS|MAP_SHOWITEMS|MAP_SHOWBAD
 byte InitEditor(void)
 {
 	JamulSoundPurge();
+	KillSong();
 	NewWorld(&world,editmgl);
 	curMap=world.map[0];
 	curMapNum=0;

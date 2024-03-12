@@ -7,12 +7,43 @@
 #include "plasma.h"
 #include "appdata.h"
 #include "steam.h"
+#include "hammusic.h"
 
 static byte cursor;
 static byte oldc;
 static dword oldBtn;
 static byte controlX,controlY;
 static byte optMode;
+
+static const byte DEFAULT_VOLUME = 128;
+static const byte volumeSpot[]={0,26,51,77,102,128,153,179,204,230,255};
+static byte NextVolumeSpot(byte v)
+{
+	int i;
+
+	for(i=0;i<10;i++)
+	{
+		if(v==volumeSpot[i])
+			return volumeSpot[i+1];
+	}
+	if(v==volumeSpot[10])
+		return volumeSpot[0];
+
+	return 0;
+}
+static byte PrevVolumeSpot(byte v)
+{
+	int i;
+
+	for(i=1;i<11;i++)
+	{
+		if(v==volumeSpot[i])
+			return volumeSpot[i-1];
+	}
+	if(v==volumeSpot[0])
+		return volumeSpot[10];
+	return 0;
+}
 
 options_t opt;
 
@@ -79,9 +110,14 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 					switch(cursor)
 					{
 						case 0:
-							opt.sound=1-opt.sound;
+							opt.sound = PrevVolumeSpot(opt.sound);
+							JamulSoundVolume(opt.sound);
+							SetMusicVolume(opt.sound);
 							if(opt.sound==0)
+							{
 								JamulSoundPurge();
+								KillSong();
+							}
 							else
 								LoopingSound(SND_HAMUMU);
 							MakeNormalSound(SND_MENUSELECT);
@@ -104,9 +140,14 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 					switch(cursor)
 					{
 						case 0:
-							opt.sound=1-opt.sound;
+							opt.sound = NextVolumeSpot(opt.sound);
+							JamulSoundVolume(opt.sound);
+							SetMusicVolume(opt.sound);
 							if(opt.sound==0)
+							{
 								JamulSoundPurge();
+								KillSong();
+							}
 							else
 								LoopingSound(SND_HAMUMU);
 							MakeNormalSound(SND_MENUSELECT);
@@ -129,9 +170,14 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 					switch(cursor)
 					{
 						case 0:
-							opt.sound=1-opt.sound;
+							opt.sound = NextVolumeSpot(opt.sound);
+							JamulSoundVolume(opt.sound);
+							SetMusicVolume(opt.sound);
 							if(opt.sound==0)
+							{
 								JamulSoundPurge();
+								KillSong();
+							}
 							else
 								LoopingSound(SND_HAMUMU);
 							MakeNormalSound(SND_MENUSELECT);
@@ -356,6 +402,7 @@ void RenderOptionsMenu(MGLDraw *mgl)
 {
 	char onoff[3][8]={"Off","On"};
 	char diffy[5][18]={"Beginner","Normal","Challenge","Mad","Loony"};
+	char buf[32];
 
 	int wid;
 	byte* pos;
@@ -375,11 +422,12 @@ void RenderOptionsMenu(MGLDraw *mgl)
 	CenterPrintGlow(320,2,"Game Options",0,2);
 
 	PrintColor(240,50,"Sound",7,-10,0);
-	PrintColor(360,50,onoff[opt.sound],7,-10,0);
+	snprintf(buf, 32, "%d%%", opt.sound * 100 / 255);
+	PrintColor(360,50,buf,7,-10,0);
 	if(cursor==0)
 	{
 		PrintColor(239,49,"Sound",0,0,0);
-		PrintColor(359,49,onoff[opt.sound],0,0,0);
+		PrintColor(359,49,buf,0,0,0);
 	}
 
 	PrintColor(240,80,"Help Screen",7,-10,0);
@@ -419,7 +467,7 @@ void LoadOptions(void)
 	f=AppdataOpen("loony.cfg");
 	if(!f)
 	{
-		opt.sound=1;
+		opt.sound = DEFAULT_VOLUME;
 
 		opt.control[0][0]=SDL_SCANCODE_UP;	// up
 		opt.control[0][1]=SDL_SCANCODE_DOWN;	// down
@@ -455,8 +503,16 @@ void LoadOptions(void)
 	{
 		fread(&opt,sizeof(options_t),1,f);
 		fclose(f);
+
+		if (opt.sound == 1)
+		{
+			// old setting for sound=on, make that volume=50%
+			opt.sound = DEFAULT_VOLUME;
+		}
 	}
 	ApplyControlSettings();
+	JamulSoundVolume(opt.sound);
+	SetMusicVolume(opt.sound);
 	Steam()->ProfileReady();
 }
 
