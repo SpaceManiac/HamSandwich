@@ -711,7 +711,8 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 	c=mgl->LastKeyPressed();
 	c2=GetControls()|GetArrows();
 
-	if(c==27)
+	// Ctrl+Shift is still how to type cheats, but gamepad CONTROL_B2 is quit
+	if(c==27 || (GetGamepadButtons() & ((1 << SDL_CONTROLLER_BUTTON_B) | (1 << SDL_CONTROLLER_BUTTON_BACK))))
 	{
 		return 1;
 	}
@@ -759,7 +760,7 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 			cursor+=10;
 		MakeNormalSound(SND_MENUCLICK);
 	}
-	if((c2&(CONTROL_B1|CONTROL_B2|CONTROL_B3)) && (!(oldc&(CONTROL_B1|CONTROL_B2|CONTROL_B3))))
+	if((c2 & ~oldc) & (CONTROL_B1 | CONTROL_B3))
 	{
 		if(opt.meritBadge[cursor])
 		{
