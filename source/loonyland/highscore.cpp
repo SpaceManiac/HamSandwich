@@ -224,17 +224,17 @@ byte UpdateHighScore(int *lastTime)
 					curMode--;
 					if(curMode>WORLD_REMIX)
 						curMode=WORLD_REMIX;
-					if(curMode==WORLD_REMIX && opt.expando[0])
+					if(curMode==WORLD_REMIX && opt.remixMode)
 						break;
-					if(curMode==WORLD_SURVIVAL && opt.modes[0])
+					if(curMode==WORLD_SURVIVAL && opt.modes[MODE_SURVIVAL])
 						break;
-					if(curMode==WORLD_INFSURV && opt.modes[0] && opt.meritBadge[BADGE_SURVCOMBO])
+					if(curMode==WORLD_INFSURV && opt.modes[MODE_SURVIVAL] && opt.meritBadge[BADGE_SURVCOMBO])
 						break;
-					if(curMode==WORLD_BOSSBASH && opt.modes[1])
+					if(curMode==WORLD_BOSSBASH && opt.modes[MODE_BOSSBASH])
 						break;
-					if(curMode==WORLD_LOONYBALL && opt.modes[2])
+					if(curMode==WORLD_LOONYBALL && opt.modes[MODE_LOONYBALL])
 						break;
-					if(curMode==WORLD_BOWLING && opt.modes[3])
+					if(curMode==WORLD_BOWLING && opt.modes[MODE_BOWLING])
 						break;
 					if(curMode==WORLD_NORMAL)
 						break;
@@ -249,17 +249,17 @@ byte UpdateHighScore(int *lastTime)
 					curMode++;
 					if(curMode>WORLD_REMIX)
 						curMode=WORLD_NORMAL;
-					if(curMode==WORLD_REMIX && opt.expando[0])
+					if(curMode==WORLD_REMIX && opt.remixMode)
 						break;
-					if(curMode==WORLD_SURVIVAL && opt.modes[0])
+					if(curMode==WORLD_SURVIVAL && opt.modes[MODE_SURVIVAL])
 						break;
-					if(curMode==WORLD_INFSURV && opt.modes[0] && opt.meritBadge[BADGE_SURVCOMBO])
+					if(curMode==WORLD_INFSURV && opt.modes[MODE_SURVIVAL] && opt.meritBadge[BADGE_SURVCOMBO])
 						break;
-					if(curMode==WORLD_BOSSBASH && opt.modes[1])
+					if(curMode==WORLD_BOSSBASH && opt.modes[MODE_BOSSBASH])
 						break;
-					if(curMode==WORLD_LOONYBALL && opt.modes[2])
+					if(curMode==WORLD_LOONYBALL && opt.modes[MODE_LOONYBALL])
 						break;
-					if(curMode==WORLD_BOWLING && opt.modes[3])
+					if(curMode==WORLD_BOWLING && opt.modes[MODE_BOWLING])
 						break;
 					if(curMode==WORLD_NORMAL)
 						break;
@@ -351,7 +351,7 @@ void RenderHighScore(MGLDraw *mgl)
 	DrawBox(0,85,639,86,31);
 
 	// only even suggest the presence of multimodes if there are some
-	if(opt.modes[0])
+	if(opt.modes[MODE_SURVIVAL])
 	{
 		DrawBox(0,54,639,54,31);
 		CenterPrintGlow(320,56,modeText[curMode],0,0);

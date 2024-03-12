@@ -632,15 +632,15 @@ void BadgeCheatKey(char c)
 					b++;
 
 			if(b>=5)
-				opt.modes[0]=1;
+				opt.modes[MODE_SURVIVAL]=1;
 			if(b>=10)
-				opt.modes[1]=1;
+				opt.modes[MODE_BOSSBASH]=1;
 			if(b>=15)
-				opt.modes[2]=1;
+				opt.modes[MODE_LOONYBALL]=1;
 			if(b>=20)
-				opt.modes[3]=1;
+				opt.modes[MODE_BOWLING]=1;
 			if(b>0)
-				opt.modes[4]=1;
+				opt.modes[MODE_BADGES]=1;
 		}
 		else
 		{
@@ -650,15 +650,15 @@ void BadgeCheatKey(char c)
 					b++;
 
 			if(b<5)
-				opt.modes[0]=0;
+				opt.modes[MODE_SURVIVAL]=0;
 			if(b<10)
-				opt.modes[1]=0;
+				opt.modes[MODE_BOSSBASH]=0;
 			if(b<15)
-				opt.modes[2]=0;
+				opt.modes[MODE_LOONYBALL]=0;
 			if(b<20)
-				opt.modes[3]=0;
+				opt.modes[MODE_BOWLING]=0;
 			if(b==0)
-				opt.modes[4]=0;
+				opt.modes[MODE_BADGES]=0;
 		}
 
 		MakeSuperLoony();
@@ -941,9 +941,9 @@ static TASK(void) EarnBadgeTask(byte b)
 		if(opt.meritBadge[i])
 			c++;
 
-	if(c>=25 && opt.expando[0]==0)
+	if(c>=25 && opt.remixMode==0)
 	{
-		opt.expando[0]=1;
+		opt.remixMode=1;
 		AWAIT ShowGameMode(4,25);
 		SaveOptions();
 	}
@@ -951,31 +951,31 @@ static TASK(void) EarnBadgeTask(byte b)
 	if(opt.meritBadge[b])
 		CO_RETURN;
 
-	opt.modes[4]=1;	// this just indicates that badge listings should be available
+	opt.modes[MODE_BADGES]=1;	// this just indicates that badge listings should be available
 
 	MakeNormalSound(SND_BADGEGET);
 	opt.meritBadge[b]=1;
 	Steam()->CompleteGoal(b);
 	AWAIT ShowBadge(b);
 
-	if(c>=5 && opt.modes[0]==0)
+	if(c>=5 && opt.modes[MODE_SURVIVAL]==0)
 	{
-		opt.modes[0]=1;
+		opt.modes[MODE_SURVIVAL]=1;
 		AWAIT ShowGameMode(0,5);
 	}
-	if(c>=10 && opt.modes[1]==0)
+	if(c>=10 && opt.modes[MODE_BOSSBASH]==0)
 	{
-		opt.modes[1]=1;
+		opt.modes[MODE_BOSSBASH]=1;
 		AWAIT ShowGameMode(1,10);
 	}
-	if(c>=15 && opt.modes[2]==0)
+	if(c>=15 && opt.modes[MODE_LOONYBALL]==0)
 	{
-		opt.modes[2]=1;
+		opt.modes[MODE_LOONYBALL]=1;
 		AWAIT ShowGameMode(2,15);
 	}
-	if(c>=20 && opt.modes[3]==0)
+	if(c>=20 && opt.modes[MODE_BOWLING]==0)
 	{
-		opt.modes[3]=1;
+		opt.modes[MODE_BOWLING]=1;
 		AWAIT ShowGameMode(3,20);
 	}
 

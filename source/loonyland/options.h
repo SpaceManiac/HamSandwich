@@ -53,6 +53,15 @@
 #define CH_REGEN	38		// monster regeneration
 #define CH_NOFARLEY 39		// no farley
 
+enum
+{
+	MODE_SURVIVAL  = 0,
+	MODE_BOSSBASH  = 1,
+	MODE_LOONYBALL = 2,
+	MODE_BOWLING   = 3,
+	MODE_BADGES    = 4,
+};
+
 typedef struct options_t
 {
 	byte control[2][6];	// key scancodes
@@ -65,7 +74,8 @@ typedef struct options_t
 	byte helpOn;
 	byte wpnLock;
 	byte bossDead[10];	// have killed each boss
-	byte expando[9];	// room for expansion
+	byte remixMode;
+	byte expando[8];	// room for expansion
 
 	// best scores
 	highScore_t score[8][15];	// high scores in different modes

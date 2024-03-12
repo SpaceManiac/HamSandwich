@@ -9,6 +9,10 @@
 #include "steam.h"
 #include "hammusic.h"
 
+static_assert(sizeof(options_t) == 6364, "Save compatibility at risk");
+
+options_t opt;
+
 static byte cursor;
 static byte oldc;
 static dword oldBtn;
@@ -44,8 +48,6 @@ static byte PrevVolumeSpot(byte v)
 		return volumeSpot[10];
 	return 0;
 }
-
-options_t opt;
 
 void InitOptionsMenu(void)
 {
@@ -494,7 +496,8 @@ void LoadOptions(void)
 			opt.cheats[i]=0;
 		for(i=0;i<10;i++)
 			opt.bossDead[i]=0;
-		for(i=0;i<9;i++)
+		opt.remixMode=0;
+		for(i=0;i<SDL_arraysize(opt.expando);i++)
 			opt.expando[i]=0;
 
 		ResetHighScores();

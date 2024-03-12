@@ -714,17 +714,17 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],mgl->GetScreen()+mgl->GetWidth()*i,640);
 
-	if(opt.modes[4])
+	if(opt.modes[MODE_BADGES])
 		menu[MENU_BADGES].known=1;
-	if(opt.modes[3])
+	if(opt.modes[MODE_BOWLING])
 		menu[MENU_BOWLING].known=1;
-	if(opt.modes[2])
+	if(opt.modes[MODE_LOONYBALL])
 		menu[MENU_LOONYBALL].known=1;
-	if(opt.modes[1])
+	if(opt.modes[MODE_BOSSBASH])
 		menu[MENU_BOSSATTACK].known=1;
-	if(opt.modes[0])
+	if(opt.modes[MODE_SURVIVAL])
 		menu[MENU_SURVIVAL].known=1;
-	if(opt.expando[0])
+	if(opt.remixMode)
 		menu[MENU_REMIX].known=1;
 
 	cursor=0;
