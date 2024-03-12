@@ -318,6 +318,9 @@ byte LunaticRun(int *lastTime)
 				case 0:
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
+					// try to prevent losing your gems
+					player.reload = std::max(player.reload, (byte)10);
+					player.wpnReload = std::max(player.wpnReload, (byte)10);
 					break;
 				case 2:
 					break;
