@@ -147,7 +147,11 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 	JamulSoundUpdate();
 
 	vol=((vol + 255) * sndVolume) / 255;
-	pan+=128;
+	pan += 128;
+	if (pan < 0)
+		pan = 0;
+	if (pan > 255)
+		pan = 255;
 
 	if (vol < 0)
 		return false;
