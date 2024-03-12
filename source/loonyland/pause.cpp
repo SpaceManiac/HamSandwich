@@ -536,7 +536,6 @@ void InitPauseMenu(void)
 
 byte UpdatePauseMenu(MGLDraw *mgl)
 {
-	byte c;
 	static byte reptCounter=0;
 
 	if(darkness<16)
@@ -548,11 +547,13 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			offX=0;
 	}
 
-	c=GetControls()|GetArrows();
+	byte c = GetControls()|GetArrows();
+	byte tap = c & ~oldc;
 
 	reptCounter++;
 	if((!oldc) || (reptCounter>10))
 		reptCounter=0;
+	oldc = c;
 
 	if(subMode==SUBMODE_NONE)	// not in any submenu
 	{
@@ -573,8 +574,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX)) && cursor==3)
 				cursor=4;
 		}
-		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
-		   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
+		if (tap & CONTROL_B1)
 		{
 			switch(cursor)
 			{
@@ -616,8 +616,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			if(subcursor==5)
 				subcursor=0;
 		}
-		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
-		   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
+		if (tap & CONTROL_B1)
 		{
 			if(cursor==2)	// Load
 			{
@@ -646,10 +645,9 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			subMode=SUBMODE_NONE;
 		}
 	}
-	oldc=c;
 
 	HandlePauseKeyPresses(mgl);
-	if(lastKey==27)	// hit ESC to exit pause menu
+	if(lastKey==27 || (tap & CONTROL_B2))	// hit ESC to exit pause menu
 	{
 		if(subMode==SUBMODE_NONE || cursor==3)
 			return 0;
