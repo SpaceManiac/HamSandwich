@@ -329,7 +329,7 @@ void RenderPauseMenu(MGLDraw *mgl)
 		else
 			strcat(s,"Off");
 
-		if(opt.cheats[CH_SAVEANY] && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX))
+		if(opt.cheats[CH_SAVEANY] && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX) && !(player.cheatsOn & PC_HARDCORE))
 		{
 			PrintColor(10,295,"Cancel",4-4*(cursor==CURSOR_CANCEL),-8+8*(cursor==CURSOR_CANCEL),2);
 			PrintColor(10,330,s,4-4*(cursor==CURSOR_WPNLOCK),-8+8*(cursor==CURSOR_WPNLOCK),2);
@@ -345,7 +345,7 @@ void RenderPauseMenu(MGLDraw *mgl)
 			PrintColor(10,295,"Cancel",4-4*(cursor==CURSOR_CANCEL),-8+8*(cursor==CURSOR_CANCEL),2);
 			PrintColor(10,342,s,4-4*(cursor==CURSOR_WPNLOCK),-8+8*(cursor==CURSOR_WPNLOCK),2);
 			PrintColor(10,388,"Load Game",4-4*(cursor==CURSOR_LOAD),-8+8*(cursor==CURSOR_LOAD),2);
-			PrintColor(10,435,"Quit",4-4*(cursor==CURSOR_QUIT),-8+8*(cursor==CURSOR_QUIT),2);
+			PrintColor(10,435,((player.cheatsOn & PC_HARDCORE) ? "Save & Quit" : "Quit"),4-4*(cursor==CURSOR_QUIT),-8+8*(cursor==CURSOR_QUIT),2);
 		}
 
 		if((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX))
@@ -507,7 +507,7 @@ void DeleteSave(int i)
 	char txt[12];
 
 	sprintf(txt,"save%d.sav",i);
-	remove(txt);
+	AppdataDelete(txt);
 }
 
 
@@ -572,7 +572,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 			cursor = (Cursor)(cursor - 1);
 			if(cursor>CURSOR_QUIT)
 				cursor=CURSOR_QUIT;
-			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX)) && cursor==CURSOR_SAVE)
+			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX) || (player.cheatsOn & PC_HARDCORE)) && cursor==CURSOR_SAVE)
 				cursor=CURSOR_LOAD;
 
 		}
@@ -581,7 +581,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 			cursor = (Cursor)(cursor + 1);
 			if(cursor>CURSOR_QUIT)
 				cursor=CURSOR_CANCEL;
-			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX)) && cursor==CURSOR_SAVE)
+			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX) || (player.cheatsOn & PC_HARDCORE)) && cursor==CURSOR_SAVE)
 				cursor=CURSOR_QUIT;
 		}
 		if (tap & CONTROL_B1)
@@ -604,7 +604,12 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 				case 4: // quit game
 					if(player.cheatsOn&PC_HARDCORE)
 					{
-						cursor=CURSOR_LOAD;
+						if (player.lastSave != 255)
+						{
+							SaveGame(player.lastSave);
+							return PauseMenuResult::Quit;
+						}
+						cursor=CURSOR_SAVE;
 						subMode=SubMode::SlotPick;
 					}
 					else
