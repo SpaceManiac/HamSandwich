@@ -315,16 +315,16 @@ byte LunaticRun(int *lastTime)
 		{
 			switch(UpdatePauseMenu(gamemgl))
 			{
-				case 0:
+				case PauseMenuResult::Continue:
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
-					// try to prevent losing your gems
-					player.reload = std::max(player.reload, (byte)10);
-					player.wpnReload = std::max(player.wpnReload, (byte)10);
+					// try to prevent losing your gems if using controller (B) instead of keyboard (Esc)
+					player.reload = 20;
+					player.wpnReload = 20;
 					break;
-				case 2:
+				case PauseMenuResult::Paused:
 					break;
-				case 3:
+				case PauseMenuResult::GiveUp:
 					if(mapNum)
 						mapToGoTo=0;
 					else
@@ -332,7 +332,7 @@ byte LunaticRun(int *lastTime)
 					lastKey=0;
 					return LEVEL_ABORT;
 					break;
-				case 4:
+				case PauseMenuResult::Quit:
 					mapToGoTo=255;
 					lastKey=0;
 					return WORLD_QUITGAME;	// dump out altogether
@@ -679,7 +679,7 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 	while(1)
 	{
 		loadGame=load;
-		SetNoSaving(0);
+		SetNoSaving(false);
 		switch(player.worldNum)
 		{
 			case WORLD_NORMAL:

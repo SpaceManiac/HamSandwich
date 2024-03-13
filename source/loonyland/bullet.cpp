@@ -2217,7 +2217,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			switch(me->target)
 			{
 				case 0:
-					SetNoSaving(1);
+					SetNoSaving(true);
 					ShakeScreen(10);
 					// lighting up around the edges
 					if(me->timer==20)
@@ -2233,7 +2233,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 					}
 					break;
 				case 1:
-					SetNoSaving(1);
+					SetNoSaving(true);
 					ShakeScreen(10);
 					// shooting into the center
 					if(me->timer==20)
@@ -2250,7 +2250,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 					}
 					break;
 				case 2:
-					SetNoSaving(0);
+					SetNoSaving(false);
 					// removing the zappers
 					if(me->timer==20)
 					{
