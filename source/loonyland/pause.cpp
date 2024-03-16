@@ -321,7 +321,7 @@ void RenderPauseMenu(MGLDraw *mgl)
 
 	DarkenScreen(darkness);
 
-	if(subMode!=SubMode::SlotPick || cursor!=CURSOR_LOAD)
+	if(subMode!=SubMode::SlotPick)
 	{
 		strcpy(s,"Wpn Lock: ");
 		if(player.fireFlags&FF_WPNLOCK)
@@ -513,7 +513,7 @@ void DeleteSave(int i)
 
 void BumpSaveGem(void)
 {
-	if(player.cheatsOn&PC_HARDCORE)
+	if((player.cheatsOn&PC_HARDCORE) && player.lastSave != 255)
 		return;	// no effect of save gems!!
 
 	if(noSaving)
@@ -652,8 +652,9 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 			}
 			else if(cursor==CURSOR_SAVE)	// Save
 			{
+				bool savedYet = player.lastSave != 255;
 				SaveGame(subcursor);
-				if(player.cheatsOn&PC_HARDCORE)
+				if((player.cheatsOn&PC_HARDCORE) && savedYet)
 					return PauseMenuResult::Quit;	// returns exit if you saved in hardcore mode
 				return PauseMenuResult::Continue;
 			}
@@ -664,7 +665,15 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 	HandlePauseKeyPresses(mgl);
 	if(lastKey==27 || (tap & CONTROL_B2))	// hit ESC to exit pause menu
 	{
-		if(subMode==SubMode::None || cursor==CURSOR_SAVE)
+		if (cursor == CURSOR_SAVE)
+		{
+			// Refusing to pick a slot on hardcore = quit.
+			// Otherwise there's no way to quit a new hardcore game without overwriting one of your other saves.
+			if (player.cheatsOn & PC_HARDCORE)
+				return PauseMenuResult::Quit;
+			return PauseMenuResult::Continue;
+		}
+		else if(subMode==SubMode::None)
 			return PauseMenuResult::Continue;
 		else
 			subMode=SubMode::None;

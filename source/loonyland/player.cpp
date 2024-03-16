@@ -61,7 +61,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.crystalBall=0;
 		player.xtraByte=0;
 
-		if(opt.cheats[CH_HARDCORE])
+		if(opt.cheats[CH_HARDCORE] && (world == WORLD_NORMAL || world == WORLD_REMIX))
 			player.cheatsOn|=PC_HARDCORE;
 
 		if(opt.cheats[CH_ALLACCESS])

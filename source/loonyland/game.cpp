@@ -520,6 +520,12 @@ TASK(byte) PlayALevel(byte map)
 
 	PrepGuys(curMap);
 
+	if ((player.worldNum == WORLD_NORMAL || player.worldNum == WORLD_REMIX) && (player.cheatsOn & PC_HARDCORE) && player.lastSave == 255)
+	{
+		SetAreaName(&curWorld);
+		BumpSaveGem();
+	}
+
 	tl=0;
 	while(exitcode==LEVEL_PLAYING)
 	{
