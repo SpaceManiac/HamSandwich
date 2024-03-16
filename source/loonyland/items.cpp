@@ -170,6 +170,7 @@ void ExitItems(void)
 {
 	delete itmSpr[0];
 	delete itmSpr[1];
+	delete itmSpr[2];
 }
 
 char *WeaponName(byte w)
