@@ -37,7 +37,7 @@ auto rng = std::minstd_rand0(std::random_device{}());
 location basic_locations[R_NUM_LOCATIONS] = {
 	{false, "Halloween Hill", 0, 194, 5, 24, 25, "Swamp Mud Path", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
 	{false, "Halloween Hill",  0, 187, 112, 11, 12, "Bog Beast Home", [](const std::set<int>& inv) { return true; }},
-	{false, "Halloween Hill",  0, 2, 46, 69, 70, "Rocky Cliffs below Upper Caverns", [](const std::set<int>& inv) { return HaveAnyBigGem(inv); }},
+	{false, "Halloween Hill",  0, 2, 46, 69, 70, "Rocky Cliffs below Upper Caverns", [](const std::set<int>& inv) { return CanEnterRockyCliffs(inv); }},
 	{false, "Halloween Hill",  0, 131, 26, 10, 9, "Sapling Shrine", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
 	{false, "Halloween Hill",  0, 83, 145, 33, 34, "Terror Glade", [](const std::set<int>& inv) { return true; }},
 	{false, "Halloween Hill",  0, 1, 73, 47, 48, "Rocky Cliffs Vine", [](const std::set<int>& inv) { return inv.count(VAR_FERTILIZER); }},
@@ -120,7 +120,7 @@ location basic_locations[R_NUM_LOCATIONS] = {
 	{false, "Castle Vampy IV", 35, 104, 68, 3, 4, "Ballroom Right", [](const std::set<int>& inv) { return inv.count(VAR_POTION) && inv.count(VAR_SILVERSLING) && CanEnterVampyIV(inv);; }},
 	{false, "Castle Vampy IV", 35, 111, 102, 10, 11, "Right Secret Wall", [](const std::set<int>& inv) { return CanEnterVampyIV(inv); }},
 	{false, "Castle Vampy IV", 35, 23, 68, 1, 2, "Ballroom Left", [](const std::set<int>& inv) { return inv.count(VAR_POTION) && inv.count(VAR_SILVERSLING) && CanEnterVampyIV(inv); }},
-	{false, "Castle Vampy Roof", 37, 13, 18, 3, 4, "Gutsy the Elder", [](const std::set<int>& inv) { return CanEnterVampy(inv) && HaveAllBats(inv) && HaveAnySpecialWeapon(inv); }},
+	{false, "Castle Vampy Roof", 37, 13, 18, 3, 4, "Gutsy the Elder", [](const std::set<int>& inv) { return CanEnterVampy(inv) && HaveAllBats(inv) && HaveSpecialWeaponDamage(inv); }},
 	{false, "Castle Vampy Roof", 38, 13, 18, 3, 4, "Stoney the Elder", [](const std::set<int>& inv) { return CanEnterVampy(inv) && HaveAllBats(inv); }},
 	{false, "Castle Vampy Roof", 39, 13, 18, 3, 4, "Drippy the Elder", [](const std::set<int>& inv) { return CanEnterVampy(inv) && HaveAllBats(inv); }},
 	{false, "Castle Vampy Roof", 40, 13, 18, 3, 4, "Toasty the Elder", [](const std::set<int>& inv) { return CanEnterVampy(inv) && HaveAllBats(inv); }},
@@ -129,7 +129,7 @@ location basic_locations[R_NUM_LOCATIONS] = {
 	{false, "A Hidey Hole", 43, 18, 22, 4, 5, "Pebbles", [](const std::set<int>& inv) { return true; }},
 	{false, "Swampdog Lair", 45, 55, 49, 0, 1, "Entrance", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
 	{false, "Swampdog Lair", 45, 55, 36, 5, 6, "End", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_FERTILIZER); }},
-	{true, "Ghostbusting", 0, 0, 0, 0, 0, "Ghostbusting", [](const std::set<int>& inv) { return inv.count(VAR_DAISY) && HaveAllMushrooms(inv); }},
+	{true, "Ghostbusting", 0, 0, 0, 0, 0, "Ghostbusting", [](const std::set<int>& inv) { return HaveAnyBigGem(inv) && inv.count(VAR_DAISY) && HaveAllMushrooms(inv); }},
 	{true, "Hairy Larry", 1, 0, 0, 0, 0, "Hairy Larry", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING); }},
 	{true, "Scaredy Cat", 2, 0, 0, 0, 0, "Scaredy Cat", [](const std::set<int>& inv) { return inv.count(VAR_CAT); }},
 	{true, "Silver Bullet", 3, 0, 0, 0, 0, "Silver Bullet", [](const std::set<int>& inv) { return inv.count(VAR_SILVER) && CanCleanseCrypts(inv); }},
@@ -756,9 +756,10 @@ bool HaveAllVamps(const std::set<int>& inv)
 			inv.count(VAR_VAMPBUST + 4) && inv.count(VAR_VAMPBUST + 5) && inv.count(VAR_VAMPBUST + 6) && inv.count(VAR_VAMPBUST + 7));
 }
 
-bool HaveAnySpecialWeapon(const std::set<int>& inv)
+bool HaveSpecialWeaponDamage(const std::set<int>& inv)
 {
-	return (inv.count(VAR_WEAPON) || inv.count(VAR_WEAPON + 1) || inv.count(VAR_WEAPON + 2) || inv.count(VAR_WEAPON + 4) ||
+	return (inv.count(VAR_WEAPON) || inv.count(VAR_WEAPON + 1) //|| inv.count(VAR_WEAPON + 2) //ice wand doesn't hurt the elder
+		|| inv.count(VAR_WEAPON + 4) ||
 			inv.count(VAR_WEAPON + 5) || inv.count(VAR_WEAPON + 6));
 }
 

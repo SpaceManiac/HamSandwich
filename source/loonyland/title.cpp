@@ -413,7 +413,7 @@ void DiffChooseDisplay(MGLDraw *mgl)
 		"For masochists.  Enemies do double damage, you do 1/4 damage, you begin with ONE",
 		"Heart, poison is twice as deadly, enemies move faster, and enemies only drop items",
 		"when Combo'd!",
-		// Loony
+		// Rando Special
 		"Intended difficulty for the randomizer. It's mostly challenge mode, but enemies",
 		"take damage like normal mode so they aren't super bulky, and item drops are",
 		"slightly better than challenge and slightly worse than normal"

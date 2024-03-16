@@ -51,7 +51,7 @@ bool HaveAllBats(const std::set<int>& inv);
 
 bool HaveAllVamps(const std::set<int>& inv);
 
-bool HaveAnySpecialWeapon(const std::set<int>& inv);
+bool HaveSpecialWeaponDamage(const std::set<int>& inv);
 
 bool HaveAllMushrooms(const std::set<int>& inv);
 
