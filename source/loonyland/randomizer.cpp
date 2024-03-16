@@ -343,7 +343,6 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 					genTries=0;
 					if (!seed.empty()){
 						std::seed_seq seed2(seed.begin(), seed.end());
-						//rng = std::default_random_engine(seed2);
 						rng = std::minstd_rand0(seed2);
 						bool success = false;
 					
@@ -382,23 +381,6 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 				break;
 				}
 			}
-			/*if (c == SDLK_j)
-			{
-				genTries=0;
-					if (!seed.empty()){
-						allItems = true;
-						std::seed_seq seed2(seed.begin(), seed.end());
-						//rng = std::default_random_engine(seed2);
-						rng = std::minstd_rand0(seed2);
-						
-					}
-					while(!CheckBeatable(RandomFill())){
-						genTries++;
-						MakeNormalSound(SND_MENUCANCEL);
-					}
-					MakeNormalSound(SND_POWERUP);
-					break;
-			}*/
 			break;
 		case 1: // Typing in something
 			c = mgl->LastKeyPressed();
@@ -597,10 +579,6 @@ bool CheckBeatable(std::vector<location>& locs){
 	std::vector<location> visited;
 	bool gotEvilizer = false;
 	int foundItems = 0;
-	/*for (int i = 0; i < VAR_SILVERSLING + 1; i++){
-		collectedItems.insert(i);
-	}*/
-	//collectedItems.insert(VAR_BOOTS);
 
 	do
 	{
@@ -633,14 +611,9 @@ bool CheckBeatable(std::vector<location>& locs){
 		tempItems.clear();
 
 	} while (foundItems > 0);
-	/*if (remaining.size() == 0){
-		gotEvilizer = true;
-	}*/
 
-	//printf("Evilizer: %d\n", gotEvilizer);
 	if ((gotEvilizer && !allItems) || (allItems && remainingLocs.empty()))
 	{
-		//visited.insert( visited.end(), locs.begin(), locs.end());
 		PlaceItems(locs);
 		return true;
 	}else{
@@ -693,7 +666,6 @@ void PlaceItems(std::vector<location>& locList)
 	//fix trigger for cat tree
 	world.map[0]->special[97].trigger = TRG_GETITEM;
 	world.map[0]->special[98].value = 0;
-	//for each, go into the world
 	
   	//questFile.open ("quest.txt");
 	sprintf(buff, "randomizer/%s quest.txt", seed.c_str());
@@ -732,14 +704,9 @@ void PlaceItems(std::vector<location>& locList)
 
 	fclose(f2);
 
-	//fclose(f);
-
 	sprintf(buff, "randomizer/%s rando.llw", seed.c_str());
 	SaveWorld(&world, buff);
 
-	//if quest, update rando quest table
-
-	//if physical, place item and update specials
 }
 
 bool HaveLightSource(const std::set<int>& inv)
