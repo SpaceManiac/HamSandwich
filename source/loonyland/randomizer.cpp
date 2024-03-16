@@ -34,6 +34,17 @@ bool generated = false;
 //auto rng = std::default_random_engine(std::random_device{}());
 auto rng = std::minstd_rand0(std::random_device{}());
 
+#define CURSOR_RANDOSEED	0
+#define CURSOR_SEEDENTRY	1
+#define CURSOR_GENERATE		2
+#define CURSOR_PLAY			3
+#define CURSOR_EXIT			4
+#define CURSOR_COMPLETION	5
+
+#define CURSOR_START	0
+#define CURSOR_END		5
+
+
 location basic_locations[R_NUM_LOCATIONS] = {
 	{false, "Halloween Hill", 0, 194, 5, 24, 25, "Swamp Mud Path", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
 	{false, "Halloween Hill",  0, 187, 112, 11, 12, "Bog Beast Home", [](const std::set<int>& inv) { return true; }},
@@ -268,7 +279,7 @@ void shuffleList(RandomIt first, RandomIt last, URBG&& g)
 void InitRandomizerMenu(void)
 {
 	oldc = 255;
-	cursor = 0;
+	cursor = CURSOR_START;
 	InitPlasma(7);
 }
 
@@ -304,14 +315,14 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 			if ((c2 & CONTROL_UP) && (!(oldc & CONTROL_UP)))
 			{
 				cursor--;
-				if (cursor > 5)
-					cursor = 5;
+				if (cursor < CURSOR_START)
+					cursor = CURSOR_END;
 				MakeNormalSound(SND_MENUCLICK);
 			}
 			if ((c2 & CONTROL_DN) && (!(oldc & CONTROL_DN)))
 			{
 				cursor++;
-				if (cursor > 5)
+				if (cursor > CURSOR_END)
 					cursor = 0;
 				MakeNormalSound(SND_MENUCLICK);
 			}
@@ -319,27 +330,16 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 			{
 				switch (cursor)
 				{
-				case 0: //play
-					if (generated && seed.compare("") != 0) {
-						MakeNormalSound(SND_MENUSELECT);
-						AWAIT LunaticGame(mgl, 0, WORLD_RANDOMIZER);
-						CO_RETURN 1;
-						break;
-					}
-					else {
-						MakeNormalSound(SND_MENUCANCEL);
-						break;
-					}
-				case 1: //randomize
+				case CURSOR_RANDOSEED: //randomize seed
 					MakeNormalSound(SND_MENUSELECT);
 					RandomizeSeed();
 					break;
-				case 2: //seed entry
+				case CURSOR_SEEDENTRY: //seed entry
 					MakeNormalSound(SND_MENUSELECT);
 					LastScanCode();
 					optMode = 1;
 					break;
-				case 3: //generate
+				case CURSOR_GENERATE: //generate
 					genTries=0;
 					if (!seed.empty()){
 						std::seed_seq seed2(seed.begin(), seed.end());
@@ -360,13 +360,23 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 						MakeNormalSound(SND_MENUCANCEL);
 					}
 					break;
-
-				case 4: //exit
+				case CURSOR_PLAY: //play
+					if (generated && seed.compare("") != 0) {
+						MakeNormalSound(SND_MENUSELECT);
+						AWAIT LunaticGame(mgl, 0, WORLD_RANDOMIZER);
+						CO_RETURN 1;
+						break;
+					}
+					else {
+						MakeNormalSound(SND_MENUCANCEL);
+						break;
+					}
+				case CURSOR_EXIT: //exit
 					MakeNormalSound(SND_MENUSELECT);
 					CO_RETURN 1;
 					break;
 
-				case 5: //logic toggle
+				case CURSOR_COMPLETION: //logic toggle
 					MakeNormalSound(SND_MENUSELECT);
 					allItems = !allItems;
 				break;
@@ -458,57 +468,60 @@ void RenderRandomizerMenu(MGLDraw *mgl)
 
 	CenterPrintGlow(320, 2, "Game Randomizer", 0, 2);
 
-	PrintColor(240, 60, "Play!", 7, -10, 0);
-	if (cursor == 0)
+	PrintColor(240, 60 + CURSOR_RANDOSEED * 20, "Randomize Seed", 7, -10, 0);
+	if (cursor == CURSOR_RANDOSEED)
 	{
-		PrintColor(239, 59, "Play!", 0, 0, 0);
-
+		PrintColor(239, 59 + CURSOR_RANDOSEED * 20, "Randomize Seed", 0, 0, 0);
 	}
 
-	PrintColor(240, 80, "Randomize Seed", 7, -10, 0);
-	if (cursor == 1)
+	PrintColor(240, 60 + CURSOR_SEEDENTRY * 20, "Seed: ", 7, -10, 0);
+	PrintColor(300, 60 + CURSOR_SEEDENTRY * 20, seed.c_str(), 7, -10, 0);
+	if (cursor == CURSOR_SEEDENTRY)
 	{
-		PrintColor(239, 79, "Randomize Seed", 0, 0, 0);
-	}
-
-	PrintColor(240, 100, "Seed: ", 7, -10, 0);
-	PrintColor(300, 100, seed.c_str(), 7, -10, 0);
-	if (cursor == 2)
-	{
-		PrintColor(239, 99, "Seed: ", 0, 0, 0);
+		PrintColor(239, 59 + CURSOR_SEEDENTRY * 20, "Seed: ", 0, 0, 0);
 		if (optMode == 1) {
-			PrintColor(299, 99, seed.c_str(), 0, 0, 0);
+			PrintColor(299, 59 + CURSOR_SEEDENTRY * 20, seed.c_str(), 0, 0, 0);
 		}
 		else {
-			PrintColor(299, 99, seed.c_str(), 0, -5, 0);
+			PrintColor(299, 59 + CURSOR_SEEDENTRY * 20, seed.c_str(), 0, -5, 0);
 		}
 	}
 
-	PrintColor(240, 120, "Generate", 7, -10, 0);
-	PrintColor(350, 120, strTries.c_str(), 7, -10, 0);
-	if (cursor == 3)
+	PrintColor(240, 60 + CURSOR_GENERATE * 20, "Generate", 7, -10, 0);
+	PrintColor(350, 60 + CURSOR_GENERATE * 20, strTries.c_str(), 7, -10, 0);
+	if (cursor == CURSOR_GENERATE)
 	{
-		PrintColor(239, 119, "Generate", 0, 0, 0);
-		PrintColor(349, 119, strTries.c_str(), 7, -10, 0);
+		PrintColor(239, 59 + CURSOR_GENERATE * 20, "Generate", 0, 0, 0);
+		PrintColor(349, 59 + CURSOR_GENERATE * 20, strTries.c_str(), 7, -10, 0);
 	}
 
-	PrintColor(240, 140, "Exit To Main Menu", 7, -10, 0);
-	if (cursor == 4)
-		PrintColor(239, 139, "Exit To Main Menu", 0, 0, 0);
+	PrintColor(240, 60 + CURSOR_PLAY * 20, "Play!", 7, -10, 0);
+	if (cursor == CURSOR_PLAY)
+	{
+		PrintColor(239, 59 + CURSOR_PLAY * 20, "Play!", 0, 0, 0);
 
-	PrintColor(240, 180, "Game Completion: ", 7, -10, 0);
+	}
+
+	PrintColor(240, 60 + CURSOR_EXIT * 20, "Exit To Main Menu", 7, -10, 0);
+	if (cursor == CURSOR_EXIT)
+		PrintColor(239, 59 + CURSOR_EXIT * 20, "Exit To Main Menu", 0, 0, 0);
+
+
+	//80 instead of 60 to give a line break after exit for logic/difficulty toggles
+
+	PrintColor(240, 80 + CURSOR_COMPLETION * 20, "Game Completion: ", 7, -10, 0);
 	if(allItems){
-		PrintColor(400, 180, "100%", 7, -10, 0);
+		PrintColor(400, 80 + CURSOR_COMPLETION * 20, "100%", 7, -10, 0);
 	}else{
-		PrintColor(400, 180, "beatable", 7, -10, 0);
+		PrintColor(400, 80 + CURSOR_COMPLETION * 20, "beatable", 7, -10, 0);
 	}
-	if (cursor == 5)
+	if (cursor == CURSOR_COMPLETION)
 	{
-		PrintColor(239, 179, "Game Completion: ", 0, 0, 0);
+		PrintColor(239, 79 + CURSOR_COMPLETION * 20, "Game Completion: ", 0, 0, 0);
 		if(allItems){
-			PrintColor(399, 179, "100%", 0, 0, 0);
+			PrintColor(399, 79 + CURSOR_COMPLETION * 20, "100%", 0, 0, 0);
 		}else{
-			PrintColor(399, 179, "beatable", 0, 0, 0);
+			PrintColor(399, 79 + CURSOR_COMPLETION * 20, "beatable", 0, 0, 0);
 		}
 	}
 }
