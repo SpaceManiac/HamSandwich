@@ -11,7 +11,7 @@
 #define DIFF_MAD		3
 #define DIFF_LOONY		4
 
-#define DIFF_RANDO		5
+#define DIFF_HARD		5
 
 // special cheats
 #define CH_LIGHT	0		// always see everything

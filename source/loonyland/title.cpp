@@ -390,7 +390,7 @@ void DiffChooseDisplay(MGLDraw *mgl)
 {
 	int i;
 
-	char diffName[6][16]={"Beginner","Normal","Challenge","Mad","Loony", "Rando Special"};
+	char diffName[6][16]={"Beginner","Normal","Challenge","Mad","Loony","Hard" };
 
 	char diffDesc[][128]={
 		// beginner
@@ -413,10 +413,10 @@ void DiffChooseDisplay(MGLDraw *mgl)
 		"For masochists.  Enemies do double damage, you do 1/4 damage, you begin with ONE",
 		"Heart, poison is twice as deadly, enemies move faster, and enemies only drop items",
 		"when Combo'd!",
-		// Rando Special
-		"Intended difficulty for the randomizer. It's mostly challenge mode, but enemies",
-		"take damage like normal mode so they aren't super bulky, and item drops are",
-		"slightly better than challenge and slightly worse than normal"
+		// Hard
+		"Compared to normal, Enemies deal more damage, and item drops are slightly reduced.",
+		"Inteded difficulty for the randomizer",
+		""
 	};
 
 	for(i=0;i<480;i++)

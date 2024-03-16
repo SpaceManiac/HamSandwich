@@ -357,7 +357,7 @@ void RenderControls(int x,int y)
 void RenderOptionsMenu(MGLDraw *mgl)
 {
 	char onoff[3][8]={"Off","On"};
-	char diffy[6][18]={"Beginner","Normal","Challenge","Mad","Loony","Rando Special"};
+	char diffy[6][18]={"Beginner","Normal","Challenge","Mad","Loony","Hard" };
 
 	int wid;
 	byte* pos;

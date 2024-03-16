@@ -1022,7 +1022,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 		{
 			damage*=2;
 		}
-		else if(player.difficulty==DIFF_NORMAL || player.difficulty==DIFF_RANDO)
+		else if(player.difficulty==DIFF_NORMAL || player.difficulty==DIFF_HARD)
 		{
 			damage=damage*3/2;
 		}
@@ -1221,7 +1221,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 					v=(byte)(combo/4+1);
 				else if(player.difficulty==DIFF_LOONY)
 					v=(byte)(combo/4);
-				else if(player.difficulty==DIFF_RANDO)
+				else if(player.difficulty==DIFF_HARD)
 					v=(byte)(combo/2+1);
 
 				for(combo=0;combo<v;combo++)

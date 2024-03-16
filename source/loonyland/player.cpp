@@ -103,7 +103,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		}
 
 		//if(player.worldNum==WORLD_RANDOMIZER){
-		//	player.difficulty = DIFF_RANDO;
+		//	player.difficulty = DIFF_HARD;
 		//}else{
 			player.difficulty=opt.difficulty;
 		//}
@@ -1165,7 +1165,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 				break;
 			case ITM_STICK:
 				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
-				NewBigMessage("woo a stick",90);
+				NewBigMessage("A STICK!",90);
 				MakeNormalSound(SND_POWERUP);
 				break;
 
