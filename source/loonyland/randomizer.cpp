@@ -283,6 +283,7 @@ void InitRandomizerMenu(void)
 {
 	oldc = 255;
 	cursor = CURSOR_START;
+	std::srand(std::time(nullptr)); //used in random seed generator, not item logic
 	InitPlasma(7);
 }
 
