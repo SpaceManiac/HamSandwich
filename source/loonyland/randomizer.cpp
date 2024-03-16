@@ -20,6 +20,7 @@
 #include <string>
 #include "uniform_int_dist.h"
 #include <sys/stat.h>
+#include "options.h"
 
 static byte cursor;
 static byte oldc;
@@ -39,10 +40,12 @@ auto rng = std::minstd_rand0(std::random_device{}());
 #define CURSOR_GENERATE		2
 #define CURSOR_PLAY			3
 #define CURSOR_EXIT			4
-#define CURSOR_COMPLETION	5
+#define CURSOR_DIFFICULTY	5
+#define CURSOR_COMPLETION	6
+
 
 #define CURSOR_START	0
-#define CURSOR_END		5
+#define CURSOR_END		6
 
 
 location basic_locations[R_NUM_LOCATIONS] = {
@@ -315,7 +318,7 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 			if ((c2 & CONTROL_UP) && (!(oldc & CONTROL_UP)))
 			{
 				cursor--;
-				if (cursor < CURSOR_START)
+				if (cursor > CURSOR_END)
 					cursor = CURSOR_END;
 				MakeNormalSound(SND_MENUCLICK);
 			}
@@ -373,6 +376,15 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 				case CURSOR_EXIT: //exit
 					MakeNormalSound(SND_MENUSELECT);
 					CO_RETURN 1;
+					break;
+
+				case CURSOR_DIFFICULTY: //difficulty
+					MakeNormalSound(SND_MENUSELECT);
+					opt.difficulty++;
+					if (opt.difficulty > DIFF_HARD)
+					{
+						opt.difficulty = DIFF_BEGINNER;
+					}
 					break;
 
 				case CURSOR_COMPLETION: //logic toggle
@@ -434,6 +446,8 @@ void RenderRandomizerMenu(MGLDraw *mgl)
 	byte *pos;
 	int i;
 	std::string strTries = std::to_string(genTries);
+
+	char diffy[6][18] = { "Beginner","Normal","Challenge","Mad","Loony","Hard" };
 	
 	
 
@@ -490,6 +504,15 @@ void RenderRandomizerMenu(MGLDraw *mgl)
 
 
 	//80 instead of 60 to give a line break after exit for logic/difficulty toggles
+
+	PrintColor(240, 80 + CURSOR_DIFFICULTY * 20, "Difficulty: ", 7, -10, 0);
+	PrintColor(400, 80 + CURSOR_DIFFICULTY * 20, diffy[opt.difficulty], 7, -10, 0);
+
+	if (cursor == CURSOR_DIFFICULTY)
+	{
+		PrintColor(239, 79 + CURSOR_DIFFICULTY * 20, "Difficulty: ", 0, 0, 0);
+		PrintColor(400, 79 + CURSOR_DIFFICULTY * 20, diffy[opt.difficulty], 0, 0, 0);
+	}
 
 	PrintColor(240, 80 + CURSOR_COMPLETION * 20, "Game Completion: ", 7, -10, 0);
 	if(allItems){
