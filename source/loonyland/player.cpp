@@ -1128,44 +1128,44 @@ byte PlayerGetItem(byte itm,int x,int y)
 				PlayerSetVar(VAR_QUESTASSIGN+QUEST_WITCH,1);
 				break;
 			case ITM_CAT:
-				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
-				NewBigMessage("CAT OBTAIN!",90);
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Cat!", 90);
 				MakeNormalSound(SND_POWERUP);
 				break;
 			case ITM_BOOTS:
-				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
-				NewBigMessage("MUD BOOTS!",90);
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Mud Boots!", 90);
 				MakeNormalSound(SND_POWERUP);
 				break;
 			case ITM_FERTILIZER:
-				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
-				NewBigMessage("FERTILIZER!",90);
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Fertilizer!", 90);
 				MakeNormalSound(SND_POWERUP);
 				break;
 			case ITM_GHOSTPOTION:
 			case ITM_POTION:
-				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
-				NewBigMessage("GHOST SLAYING POTION!",90);
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Ghost Slaying Potion!", 90);
 				MakeNormalSound(SND_POWERUP);
 				break;
 			case ITM_LANTERN:
-				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
-				NewBigMessage("LANTERN!",90);
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Lantern!", 90);
 				MakeNormalSound(SND_POWERUP);
 				break;
 			case ITM_REFLECTGEM:
-				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
-				NewBigMessage("REFLECT GEM!",90);
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Reflect Gem!", 90);
 				MakeNormalSound(SND_POWERUP);
 				break;
 			case ITM_SILVERSLING:
-				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
-				NewBigMessage("SILVER BULLETS!",90);
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Silver Bullets!", 90);
 				MakeNormalSound(SND_POWERUP);
 				break;
 			case ITM_STICK:
-				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
-				NewBigMessage("A STICK!",90);
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("A Stick!", 90);
 				MakeNormalSound(SND_POWERUP);
 				break;
 
