@@ -417,7 +417,7 @@ void PlayerClearTempVars(void)
 		player.keys[0]=0;
 }
 
-float CalcPercent(player_t *p)
+float CalcPercent(const player_t *p)
 {
 	int i,totalpoints,gotpoints;
 
@@ -1700,4 +1700,9 @@ void HandlePoison(Guy *me)
 		}
 		player.poison--;
 	}
+}
+
+void DescribeSave(char* buf, size_t n, const player_t* player)
+{
+	snprintf(buf, n, "Slot %d - %s%s - %03.1f%%", player->lastSave + 1, player->worldNum == WORLD_REMIX ? "*" : "", player->areaName, CalcPercent(player));
 }

@@ -181,7 +181,7 @@ void PoisonPlayer(byte amt);
 byte PlayerIsPoisoned(void);
 void SetTportClock(byte tp);
 byte GetTportClock(void);
-float CalcPercent(player_t *p);
+float CalcPercent(const player_t *p);
 void PlayerSetVar(int v,int val);
 void PlayerClearTempVars(void);
 void PlayerGetWeapon(byte wpn);
@@ -199,5 +199,7 @@ void CallFarley(Guy *me);
 void HandlePoison(Guy *me);
 byte WeaponCost(byte wpn,byte level);
 void PlayerFireUltraWeapon(Guy *me);
+
+void DescribeSave(char* buf, size_t n, const player_t* player);
 
 #endif

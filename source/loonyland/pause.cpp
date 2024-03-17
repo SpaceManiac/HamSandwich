@@ -26,8 +26,7 @@ namespace
 	byte subcursor=0;  // save slot
 
 	char lastKey=0;
-	float percent[5];	// the percentages in each save slot
-	char  area[5][32];		// which area the player was in in each
+	char saveDesc[5][64];		// which area the player was in in each
 	byte darkness;
 	int offX;
 	byte oldc;
@@ -380,8 +379,15 @@ void RenderSlotPickMenu(void)
 
 	for(i=0;i<5;i++)
 	{
-		sprintf(txt,"Slot %d - %s - %03.1f%%",i+1,area[i],percent[i]);
-		PrintColor(110,135+i*30,txt,4-4*(subcursor==i),-8+16*(subcursor==i),0);
+		if (saveDesc[i][0] == '\0')
+		{
+			sprintf(txt, "Slot %d - Unused - 0.0%%", i + 1);
+			PrintColor(110,135+i*30,txt,4-4*(subcursor==i),-8+16*(subcursor==i),0);
+		}
+		else
+		{
+			PrintColor(110,135+i*30,saveDesc[i],4-4*(subcursor==i),-8+16*(subcursor==i),0);
+		}
 	}
 }
 
@@ -407,18 +413,14 @@ void GetSaves(void)
 		f=AppdataOpen(txt);
 		if(!f)
 		{
-			percent[i]=0;
-			sprintf(area[i],"Unused");
+			saveDesc[i][0] = '\0';
 		}
 		else
 		{
 			fread(&p,sizeof(player_t),1,f);
 			fclose(f);
-			percent[i]=CalcPercent(&p);
-			if(p.worldNum==WORLD_NORMAL)
-				strcpy(area[i],p.areaName);
-			else
-				sprintf(area[i],"*%s",p.areaName);
+
+			DescribeSave(saveDesc[i], 64, &p);
 		}
 	}
 }
@@ -635,7 +637,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 		{
 			if(cursor==CURSOR_LOAD)	// Load
 			{
-				if(!strcmp(area[subcursor],"Unused"))
+				if(saveDesc[subcursor][0] == '\0')
 				{
 					MakeNormalSound(SND_MENUCANCEL);
 				}

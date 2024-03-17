@@ -259,22 +259,17 @@ void GetSavesForMenu(void)
 		f=AppdataOpen(txt);
 		if(!f)
 		{
-			pct=0.0;
-			sprintf(txt,"Unused");
+			sprintf(saves[i].txt, "Slot %d - Unused - 0.0%%", i+1);
 			saves[i].known=0;
 		}
 		else
 		{
 			fread(&p,sizeof(player_t),1,f);
 			fclose(f);
-			pct=CalcPercent(&p);
-			if(p.worldNum==WORLD_NORMAL)
-				strcpy(txt,p.areaName);
-			else
-				sprintf(txt,"*%s",p.areaName);
+
+			DescribeSave(saves[i].txt, 64, &p);
 			saves[i].known=1;
 		}
-		sprintf(saves[i].txt,"%s - %0.1f%%",txt,pct);
 		saves[i].bright=-32;
 	}
 }
@@ -434,11 +429,11 @@ void LoadGameDisplay(MGLDraw *mgl)
 	PrintGlow(5,360,"Select a game to load",0,0);
 	PrintGlow(5,390,"Or press ESC to cancel",0,0);
 	// menu options
-	x=320;
+	x=320 - 80;
 	y=320;
 	for(i=0;i<5;i++)
 	{
-		ShowSavedGame(x,y-menu[i].bright/4,saves[i],(cursor==i));
+		ShowSavedGame(x,y-saves[i].bright/4,saves[i],(cursor==i));
 		y+=26;
 	}
 }
