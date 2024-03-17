@@ -1,4 +1,5 @@
 #include "player.h"
+#include "string_extras.h"
 #include "options.h"
 #include "title.h"
 #include "quest.h"
@@ -1702,7 +1703,24 @@ void HandlePoison(Guy *me)
 	}
 }
 
-void DescribeSave(char* buf, size_t n, const player_t* player)
+void DescribeSave(span<char> dst, const player_t* player)
 {
-	snprintf(buf, n, "Slot %d - %s%s - %03.1f%%", player->lastSave + 1, player->worldNum == WORLD_REMIX ? "*" : "", player->areaName, CalcPercent(player));
+	// Slot number and area name
+	dst = ham_sprintf(dst, "%d: %s", player->lastSave + 1, player->areaName);
+	dst = ham_strcpy(dst, " - ");
+	// Percentage
+	dst = ham_sprintf(dst, "%03.1f%%", CalcPercent(player));
+	// World name (if needed)
+	if (player->worldNum == WORLD_REMIX)
+	{
+		dst = ham_strcpy(dst, " Remix");
+	}
+	dst = ham_strcpy(dst, " - ");
+	// Difficulty name, including Hardcore and Terror
+	if (player->cheatsOn & PC_HARDCORE)
+		dst = ham_strcpy(dst, "Hardcore+");
+	if (player->cheatsOn & PC_TERROR)
+		dst = ham_strcpy(dst, "Terror+");
+	dst = ham_sprintf(dst, "%s", DifficultyName(player->difficulty));
+	// Character name would be nice too, but there's no room!
 }

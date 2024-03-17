@@ -364,13 +364,13 @@ void RenderPauseMenu(MGLDraw *mgl)
 
 void RenderSlotPickMenu(void)
 {
-	char txt[48];
+	char txt[64];
 	int i;
 
 
-	DrawFillBox(100,100,540,300,0);
-	DrawBox(98,98,542,302,142);
-	DrawBox(100,100,540,300,142);
+	DrawFillBox(10,100,SCRWID-10,300,0);
+	DrawBox(10-2,100-2,SCRWID-10+2,300+2,142);
+	DrawBox(10,100,SCRWID-10,300,142);
 
 	if(cursor==CURSOR_LOAD)
 		CenterPrint(320,105,"Load Game",32,0);
@@ -381,12 +381,12 @@ void RenderSlotPickMenu(void)
 	{
 		if (saveDesc[i][0] == '\0')
 		{
-			sprintf(txt, "Slot %d - Unused - 0.0%%", i + 1);
-			PrintColor(110,135+i*30,txt,4-4*(subcursor==i),-8+16*(subcursor==i),0);
+			sprintf(txt, "%d: Unused", i + 1);
+			PrintColor(20,135+i*30,txt,4-4*(subcursor==i),-8+16*(subcursor==i),0);
 		}
 		else
 		{
-			PrintColor(110,135+i*30,saveDesc[i],4-4*(subcursor==i),-8+16*(subcursor==i),0);
+			PrintColor(20,135+i*30,saveDesc[i],4-4*(subcursor==i),-8+16*(subcursor==i),0);
 		}
 	}
 }
@@ -420,7 +420,7 @@ void GetSaves(void)
 			fread(&p,sizeof(player_t),1,f);
 			fclose(f);
 
-			DescribeSave(saveDesc[i], 64, &p);
+			DescribeSave(saveDesc[i], &p);
 		}
 	}
 }

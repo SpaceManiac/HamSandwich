@@ -259,7 +259,7 @@ void GetSavesForMenu(void)
 		f=AppdataOpen(txt);
 		if(!f)
 		{
-			sprintf(saves[i].txt, "Slot %d - Unused - 0.0%%", i+1);
+			sprintf(saves[i].txt, "%d: Unused", i+1);
 			saves[i].known=0;
 		}
 		else
@@ -267,7 +267,7 @@ void GetSavesForMenu(void)
 			fread(&p,sizeof(player_t),1,f);
 			fclose(f);
 
-			DescribeSave(saves[i].txt, 64, &p);
+			DescribeSave(saves[i].txt, &p);
 			saves[i].known=1;
 		}
 		saves[i].bright=-32;
@@ -350,9 +350,7 @@ void DiffChooseDisplay(MGLDraw *mgl)
 {
 	int i;
 
-	char diffName[5][16]={"Beginner","Normal","Challenge","Mad","Loony"};
-
-	char diffDesc[][128]={
+	const static char diffDesc[][128]={
 		// beginner
 		"Enemies never do more than 1 Heart of damage, and move slower than normal.  You",
 		"begin with 15 Hearts, and do extra damage.  Enemies drop more items than normal.",
@@ -391,8 +389,8 @@ void DiffChooseDisplay(MGLDraw *mgl)
 	if(opt.difficulty>0)
 		PrintGlow(280,330,"<<<",0,2);
 
-	CenterPrintGlow(440,330,diffName[opt.difficulty],0,2);
-	CenterPrintGlow(440-4+Random(9),330-4+Random(9),diffName[opt.difficulty],-20,2);
+	CenterPrintGlow(440,330,DifficultyName(opt.difficulty),0,2);
+	CenterPrintGlow(440-4+Random(9),330-4+Random(9),DifficultyName(opt.difficulty),-20,2);
 
 	if(opt.difficulty<4)
 		PrintGlow(560,330,">>>",0,2);
@@ -423,17 +421,14 @@ void LoadGameDisplay(MGLDraw *mgl)
 	// version #:
 	Print(560,3,VERSION_NO,1,1);
 	Print(559,2,VERSION_NO,0,1);
-	// Copyright:
-	RightPrintGlow(641, 467, "Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY, -10, 1);
 
-	PrintGlow(5,360,"Select a game to load",0,0);
-	PrintGlow(5,390,"Or press ESC to cancel",0,0);
+	PrintGlow(5,467,"Select a game to load or press ESC to cancel",0,1);
 	// menu options
-	x=320 - 80;
+	x=20;
 	y=320;
 	for(i=0;i<5;i++)
 	{
-		ShowSavedGame(x,y-saves[i].bright/4,saves[i],(cursor==i));
+		ShowSavedGame(x+saves[i].bright/4,y,saves[i],(cursor==i));
 		y+=26;
 	}
 }

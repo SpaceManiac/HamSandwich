@@ -329,7 +329,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 
 void RenderControls(int x,int y)
 {
-	char dirName[6][12]={"Up","Down","Left","Right","Fire","Weapon"};
+	static const char dirName[6][12]={"Up","Down","Left","Right","Fire","Weapon"};
 	char btnTxt[64];
 	int i;
 
@@ -402,8 +402,7 @@ void RenderControls(int x,int y)
 
 void RenderOptionsMenu(MGLDraw *mgl)
 {
-	char onoff[3][8]={"Off","On"};
-	char diffy[5][18]={"Beginner","Normal","Challenge","Mad","Loony"};
+	const static char onoff[3][8]={"Off","On"};
 	char buf[32];
 
 	int wid;
@@ -441,11 +440,11 @@ void RenderOptionsMenu(MGLDraw *mgl)
 	}
 
 	PrintColor(240,110,"Difficulty",7,-10,0);
-	PrintColor(360,110,diffy[opt.difficulty],7,-10,0);
+	PrintColor(360,110,DifficultyName(opt.difficulty),7,-10,0);
 	if(cursor==2)
 	{
 		PrintColor(239,109,"Difficulty",0,0,0);
-		PrintColor(359,109,diffy[opt.difficulty],0,0,0);
+		PrintColor(359,109,DifficultyName(opt.difficulty),0,0,0);
 	}
 
 	PrintColor(240,140,"Configure Controls",7,-10,0);
@@ -558,4 +557,22 @@ void KilledBoss(byte boss)
 {
 	opt.bossDead[boss]=1;
 	SaveOptions();
+}
+
+const static char difficultyName[][18] = {
+	"Beginner",
+	"Normal",
+	"Challenge",
+	"Mad",
+	"Loony",
+};
+static_assert(SDL_arraysize(difficultyName) == MAX_DIFFICULTY);
+
+const char* DifficultyName(byte difficulty)
+{
+	if (difficulty < SDL_arraysize(difficultyName))
+	{
+		return difficultyName[difficulty];
+	}
+	return "???";
 }

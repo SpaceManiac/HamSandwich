@@ -9,6 +9,7 @@
 #include "bullet.h"
 #include "world.h"
 #include "intface.h"
+#include "string_extras.h"
 
 #define MAX_MONEY	250
 #define COMBO_TIME	30*2
@@ -200,6 +201,6 @@ void HandlePoison(Guy *me);
 byte WeaponCost(byte wpn,byte level);
 void PlayerFireUltraWeapon(Guy *me);
 
-void DescribeSave(char* buf, size_t n, const player_t* player);
+void DescribeSave(span<char> dst, const player_t* player);
 
 #endif

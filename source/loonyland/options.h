@@ -5,11 +5,18 @@
 #include "mgldraw.h"
 #include "highscore.h"
 
-#define DIFF_BEGINNER	0
-#define DIFF_NORMAL		1
-#define DIFF_CHALLENGE	2
-#define DIFF_MAD		3
-#define DIFF_LOONY		4
+// Serialized to options and savefiles - don't reorder.
+enum : byte
+{
+	DIFF_BEGINNER  = 0,
+	DIFF_NORMAL    = 1,
+	DIFF_CHALLENGE = 2,
+	DIFF_MAD       = 3,
+	DIFF_LOONY     = 4,
+
+	MAX_DIFFICULTY
+};
+const char* DifficultyName(byte difficulty);
 
 // special cheats
 #define CH_LIGHT	0		// always see everything
