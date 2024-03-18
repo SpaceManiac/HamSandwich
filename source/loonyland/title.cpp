@@ -203,6 +203,7 @@ static const char* cheatTxt[] = {
 
 static byte oldc=0;
 
+static int saveOffset = 0;
 static byte cursor;
 byte *backScr;
 int numRuns;
@@ -242,7 +243,7 @@ void SetSongRestart(byte b)
 
 byte WhichGameToLoad(void)
 {
-	return cursor;
+	return saveOffset + cursor;
 }
 
 void GetSavesForMenu(void)
@@ -255,11 +256,11 @@ void GetSavesForMenu(void)
 
 	for(i=0;i<5;i++)
 	{
-		sprintf(txt,"save%d.sav",i+1);
+		sprintf(txt,"save%d.sav", saveOffset + i + 1);
 		f=AppdataOpen(txt);
 		if(!f)
 		{
-			sprintf(saves[i].txt, "%d: Unused", i+1);
+			sprintf(saves[i].txt, "%d: Unused", saveOffset + i + 1);
 			saves[i].known=0;
 		}
 		else
@@ -422,6 +423,9 @@ void LoadGameDisplay(MGLDraw *mgl)
 	Print(560,3,VERSION_NO,1,1);
 	Print(559,2,VERSION_NO,0,1);
 
+	PrintGlow(20-23/4, 117+320-135, "^", 0, 0);
+	PrintGlow(20-23/4, 273+320-135-(30-26)*5, "v", 0, 0);
+
 	PrintGlow(5,467,"Select a game to load or press ESC to cancel",0,1);
 	// menu options
 	x=20;
@@ -561,6 +565,18 @@ byte LoadGameUpdate(int *lastTime,MGLDraw *mgl)
 	if(*lastTime>TIME_PER_FRAME*30)
 		*lastTime=TIME_PER_FRAME*30;
 
+	byte scan = LastScanCode();
+	if (scan == SDL_SCANCODE_PAGEUP)
+	{
+		saveOffset = (saveOffset + 250 - 5) % 250;
+		GetSavesForMenu();
+	}
+	else if (scan == SDL_SCANCODE_PAGEDOWN)
+	{
+		saveOffset = (saveOffset + 5) % 250;
+		GetSavesForMenu();
+	}
+
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		for(i=0;i<5;i++)
@@ -586,14 +602,22 @@ byte LoadGameUpdate(int *lastTime,MGLDraw *mgl)
 		{
 			cursor--;
 			if(cursor>4)
+			{
 				cursor=4;
+				saveOffset = (saveOffset + 250 - 5) % 250;
+				GetSavesForMenu();
+			}
 			MakeNormalSound(SND_MENUCLICK);
 		}
 		if((c&CONTROL_DN) && !(oldc&CONTROL_DN))
 		{
 			cursor++;
 			if(cursor>4)
+			{
 				cursor=0;
+				saveOffset = (saveOffset + 5) % 250;
+				GetSavesForMenu();
+			}
 			MakeNormalSound(SND_MENUCLICK);
 		}
 

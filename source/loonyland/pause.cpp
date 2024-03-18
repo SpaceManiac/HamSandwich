@@ -25,7 +25,8 @@ namespace
 	SubMode subMode;
 	byte subcursor=0;  // save slot
 
-	char lastKey=0;
+	char lastKey = 0;
+	int saveOffset = 0;  // 0, 5, 10, ... 245
 	char saveDesc[5][64];		// which area the player was in in each
 	byte darkness;
 	int offX;
@@ -377,11 +378,14 @@ void RenderSlotPickMenu(void)
 	else
 		CenterPrint(320,105,"Save Game",32,0);
 
+	PrintColor(20, 117, "^", 4, -8, 0);
+	PrintColor(20, 273, "v", 4, -8, 0);
+
 	for(i=0;i<5;i++)
 	{
 		if (saveDesc[i][0] == '\0')
 		{
-			sprintf(txt, "%d: Unused", i + 1);
+			sprintf(txt, "%d: Unused", saveOffset + i + 1);
 			PrintColor(20,135+i*30,txt,4-4*(subcursor==i),-8+16*(subcursor==i),0);
 		}
 		else
@@ -409,7 +413,7 @@ void GetSaves(void)
 
 	for(i=0;i<5;i++)
 	{
-		sprintf(txt,"save%d.sav",i+1);
+		sprintf(txt,"save%d.sav", saveOffset + i + 1);
 		f=AppdataOpen(txt);
 		if(!f)
 		{
@@ -621,17 +625,36 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 	}
 	else if(subMode==SubMode::SlotPick)
 	{
+		byte scan = LastScanCode();
 		if((c&CONTROL_UP) && (!reptCounter))
 		{
 			subcursor--;
 			if(subcursor==255)
+			{
 				subcursor=4;
+				saveOffset = (saveOffset + 250 - 5) % 250;
+				GetSaves();
+			}
 		}
 		if((c&CONTROL_DN) && (!reptCounter))
 		{
 			subcursor++;
 			if(subcursor==5)
+			{
 				subcursor=0;
+				saveOffset = (saveOffset + 5) % 250;
+				GetSaves();
+			}
+		}
+		if (scan == SDL_SCANCODE_PAGEUP)
+		{
+			saveOffset = (saveOffset + 250 - 5) % 250;
+			GetSaves();
+		}
+		if (scan == SDL_SCANCODE_PAGEDOWN)
+		{
+			saveOffset = (saveOffset + 5) % 250;
+			GetSaves();
 		}
 		if (tap & CONTROL_B1)
 		{
@@ -643,7 +666,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 				}
 				else
 				{
-					LoadGame(subcursor);
+					LoadGame(saveOffset + subcursor);
 					CameraOnPlayer(0);
 					ExitBullets();
 					InitBullets();
@@ -655,7 +678,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 			else if(cursor==CURSOR_SAVE)	// Save
 			{
 				bool savedYet = player.lastSave != 255;
-				SaveGame(subcursor);
+				SaveGame(saveOffset + subcursor);
 				if((player.cheatsOn&PC_HARDCORE) && savedYet)
 					return PauseMenuResult::Quit;	// returns exit if you saved in hardcore mode
 				return PauseMenuResult::Continue;
