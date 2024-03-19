@@ -160,6 +160,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	SDL_SetWindowTitle(window, name);
 	SDL_ShowCursor(SDL_DISABLE);
 	SDL_ShowWindow(window);
+	SDL_SetWindowResizable(window, SDL_TRUE);  // Set after showing so i3 treats it as non-resizable to start.
 
 	scrn = std::make_unique<byte[]>(xRes * yRes);
 	buffer = std::make_unique<RGB[]>(xRes * yRes);
@@ -263,10 +264,12 @@ void MGLDraw::SetWindowed(bool newWindowed)
 #ifndef __EMSCRIPTEN__
 	if (windowed)
 	{
-		SDL_SetWindowFullscreen(window, 0);
-
 		int px, py;
 		SDL_GetWindowPosition(window, &px, &py);
+
+		SDL_SetWindowFullscreen(window, 0);
+		SDL_SetWindowResizable(window, SDL_TRUE);  // Set now in case we started fullscreen.
+
 		px -= (xRes - winWidth) / 2;
 		py -= (yRes - winHeight) / 2;
 		px = std::max(0, px);
@@ -423,7 +426,48 @@ TASK(void) MGLDraw::FinishFlip(void)
 			if (e.key.keysym.scancode == SDL_SCANCODE_F11)
 			{
 #ifndef __EMSCRIPTEN__
-				SetWindowed(!windowed);
+				if (windowed)
+				{
+					// increase scale by 1
+					int scale = std::min(winWidth / xRes, winHeight / yRes) + 1;
+					int newWidth = xRes * scale, newHeight = yRes * scale;
+					// compare to desktop size
+					SDL_DisplayMode mode;
+					int index = SDL_GetWindowDisplayIndex(window);
+					if (index < 0)
+					{
+						LogError("SDL_GetWindowDisplayIndex: %s", SDL_GetError());
+						SetWindowed(false);
+					}
+					else if (SDL_GetDesktopDisplayMode(index, &mode) < 0)
+					{
+						LogError("SDL_GetDesktopDisplayMode: %s", SDL_GetError());
+						SetWindowed(false);
+					}
+					else if (newWidth >= mode.w || newHeight >= mode.h)
+					{
+						// too big, go to fullscreen
+						SetWindowed(false);
+					}
+					else
+					{
+						// bump up window size
+						int px, py;
+						SDL_GetWindowPosition(window, &px, &py);
+						px -= (newWidth - winWidth) / 2;
+						py -= (newHeight - winHeight) / 2;
+						px = std::max(0, px);
+						py = std::max(0, py);
+						SDL_SetWindowPosition(window, px, py);
+
+						SDL_SetWindowSize(window, newWidth, newHeight);
+					}
+				}
+				else
+				{
+					// just go to exact window size
+					SetWindowed(true);
+				}
 #else  // __EMSCRIPTEN__
 				EM_ASM(
 					Module.requestFullscreen();
@@ -543,6 +587,14 @@ TASK(void) MGLDraw::FinishFlip(void)
 			{
 				winWidth = e.window.data1;
 				winHeight = e.window.data2;
+			}
+			else if (e.window.event == SDL_WINDOWEVENT_EXPOSED)
+			{
+				// On some platforms (Linux i3) we don't get SIZE_CHANGED when
+				// we go fullscreen, but we do get an EXPOSED, and this works.
+				SDL_GetWindowSize(window, &winWidth, &winHeight);
+				SDL_Rect rect = { 0, 0, winWidth, winHeight };
+				SDL_RenderSetViewport(renderer, &rect);
 			}
 		}
 
