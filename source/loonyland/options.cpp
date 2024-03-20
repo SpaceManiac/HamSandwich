@@ -212,7 +212,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				c=mgl->LastKeyPressed();
 				c2=GetControls()|GetArrows();
 
-				if(c==27)
+				if(c==27 || (GetGamepadButtons() & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START))))
 				{
 					optMode=0;
 					controlX=10;
@@ -251,7 +251,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 					if(controlX>2)
 						controlX=0;
 				}
-				if((c2&(CONTROL_B1|CONTROL_B2|CONTROL_B3)) && (!(oldc&(CONTROL_B1|CONTROL_B2|CONTROL_B3))))
+				if((c2&(CONTROL_B1)) && (!(oldc&(CONTROL_B1))))
 				{
 					if(controlX<2)
 					{

@@ -528,7 +528,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 			MakeNormalSound(SND_MENUCLICK);
 		}
 
-		if((c&(CONTROL_B1|CONTROL_B2)) && !(oldc&(CONTROL_B1|CONTROL_B2)))
+		if(c & ~oldc & CONTROL_B1)
 		{
 			if(menu[cursor].known)
 			{
@@ -597,8 +597,9 @@ byte LoadGameUpdate(int *lastTime,MGLDraw *mgl)
 
 		// now real updating
 		c=GetControls()|GetArrows();
+		byte taps = c & ~oldc;
 
-		if((c&CONTROL_UP) && !(oldc&CONTROL_UP))
+		if(taps & CONTROL_UP)
 		{
 			cursor--;
 			if(cursor>4)
@@ -609,7 +610,7 @@ byte LoadGameUpdate(int *lastTime,MGLDraw *mgl)
 			}
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if((c&CONTROL_DN) && !(oldc&CONTROL_DN))
+		if(taps & CONTROL_DN)
 		{
 			cursor++;
 			if(cursor>4)
@@ -621,7 +622,7 @@ byte LoadGameUpdate(int *lastTime,MGLDraw *mgl)
 			MakeNormalSound(SND_MENUCLICK);
 		}
 
-		if((c&(CONTROL_B1|CONTROL_B2)) && !(oldc&(CONTROL_B1|CONTROL_B2)))
+		if(taps & CONTROL_B1)
 		{
 			if(saves[cursor].known)
 			{
@@ -638,7 +639,7 @@ byte LoadGameUpdate(int *lastTime,MGLDraw *mgl)
 		oldc=c;
 
 		c=mgl->LastKeyPressed();
-		if(c==27)
+		if(c==27 || (taps & CONTROL_B2))
 		{
 			MakeNormalSound(SND_MENUCANCEL);
 			return 0;
@@ -661,21 +662,22 @@ byte ChooseDiffUpdate(int *lastTime,MGLDraw *mgl)
 	{
 		// now real updating
 		c=GetControls()|GetArrows();
+		byte taps = c & ~oldc;
 
-		if((c&CONTROL_LF) && !(oldc&CONTROL_LF))
+		if(taps & CONTROL_LF)
 		{
 			if(opt.difficulty>0)
 				opt.difficulty--;
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if((c&CONTROL_RT) && !(oldc&CONTROL_RT))
+		if(taps & CONTROL_RT)
 		{
 			if(opt.difficulty<4)
 				opt.difficulty++;
 			MakeNormalSound(SND_MENUCLICK);
 		}
 
-		if((c&(CONTROL_B1|CONTROL_B2)) && !(oldc&(CONTROL_B1|CONTROL_B2)))
+		if(taps & CONTROL_B1)
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			SaveOptions();
@@ -688,7 +690,7 @@ byte ChooseDiffUpdate(int *lastTime,MGLDraw *mgl)
 		oldc=c;
 
 		c=mgl->LastKeyPressed();
-		if(c==27)
+		if(c==27 || (taps & CONTROL_B2))
 		{
 			MakeNormalSound(SND_MENUCANCEL);
 			return 0;
