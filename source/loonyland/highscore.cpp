@@ -38,7 +38,7 @@ void InitNameEntry(void)
 	GetTaps();
 	InitFireworks();
 	txtpos=0;
-	buffer[0]='\0';
+	memset(buffer, 0, sizeof(buffer));
 	flip=0;
 	MakeNormalSound(SND_HISCORE);
 }
@@ -60,6 +60,7 @@ byte UpdateNameEntry(int *lastTime)
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		flip=1-flip;
+		byte taps = GetTaps();
 
 		UpdateFireworks();
 
@@ -77,7 +78,7 @@ byte UpdateNameEntry(int *lastTime)
 
 		c=GetDisplayMGL()->LastKeyPressed();
 
-		if(c==8) // backspace
+		if(c==8 || (taps & CONTROL_B2)) // backspace
 		{
 			if(txtpos>0)
 			{
@@ -96,11 +97,50 @@ byte UpdateNameEntry(int *lastTime)
 			strcpy(me->name,buffer);
 			return 0;
 		}
-		else if(c!=0 && txtpos<3)
+		else if(txtpos<3 && c >= ' ' && c <= '~')
 		{
 			buffer[txtpos]=c;
 			txtpos++;
 			buffer[txtpos]='\0';
+		}
+		else if (taps & CONTROL_DN)
+		{
+			// Gamepads are limited to A thru Z for ease of nagivation.
+			if (buffer[txtpos] == '\0')
+			{
+				buffer[txtpos] = 'A';
+			}
+			else
+			{
+				buffer[txtpos]++;
+				if (buffer[txtpos] < 'A' || buffer[txtpos] > 'Z')
+					buffer[txtpos] = 'A';
+			}
+		}
+		else if (taps & CONTROL_UP)
+		{
+			if (buffer[txtpos] == '\0')
+			{
+				buffer[txtpos] = 'Z';
+			}
+			else
+			{
+				buffer[txtpos]--;
+				if (buffer[txtpos] < 'A' || buffer[txtpos] > 'Z')
+					buffer[txtpos] = 'Z';
+			}
+		}
+		else if (taps & CONTROL_B1)
+		{
+			buffer[txtpos+1]=buffer[txtpos];
+			txtpos++;
+			buffer[txtpos+1]='\0';
+			// End if you ran out of space or if you just mashed A.
+			if (txtpos >= 3 || buffer[txtpos - 1] == '\0')
+			{
+				ham_strcpy(me->name, buffer);
+				return 0;
+			}
 		}
 
 		*lastTime-=TIME_PER_FRAME;
@@ -201,24 +241,25 @@ byte UpdateHighScore(int *lastTime)
 	{
 		flip=1-flip;
 		c=GetControls()|GetArrows();
+		byte taps = c & ~oldc;
 
 		if(!deleting)
 		{
-			if((c&CONTROL_UP) && !(oldc&CONTROL_UP))
+			if(taps & CONTROL_UP)
 			{
 				curScore--;
 				if(curScore>14)
 					curScore=14;
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if((c&CONTROL_DN) && !(oldc&CONTROL_DN))
+			if(taps & CONTROL_DN)
 			{
 				curScore++;
 				if(curScore>14)
 					curScore=0;
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if((c&CONTROL_LF) && !(oldc&CONTROL_LF))
+			if(taps & CONTROL_LF)
 			{
 				while(1)
 				{
@@ -243,7 +284,7 @@ byte UpdateHighScore(int *lastTime)
 				InitPlasma(colors[curMode]);
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if((c&CONTROL_RT) && !(oldc&CONTROL_RT))
+			if(taps & CONTROL_RT)
 			{
 				while(1)
 				{
@@ -268,7 +309,7 @@ byte UpdateHighScore(int *lastTime)
 				InitPlasma(colors[curMode]);
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if((c&(CONTROL_B1|CONTROL_B2)) && !(oldc&(CONTROL_B1|CONTROL_B2)))
+			if(taps & CONTROL_B1)
 			{
 				if(opt.score[curMode][curScore].mode==255)
 					MakeNormalSound(SND_MENUCANCEL);
@@ -282,12 +323,12 @@ byte UpdateHighScore(int *lastTime)
 		}
 		else
 		{
-			if(((c&CONTROL_UP) && !(oldc&CONTROL_UP)) || ((c&CONTROL_DN) && !(oldc&CONTROL_DN)))
+			if(taps & (CONTROL_UP | CONTROL_DN))
 			{
 				delCursor=1-delCursor;
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if((c&(CONTROL_B1|CONTROL_B2)) && !(oldc&(CONTROL_B1|CONTROL_B2)))
+			if(taps & CONTROL_B1)
 			{
 				if(delCursor==0)
 				{
@@ -312,7 +353,7 @@ byte UpdateHighScore(int *lastTime)
 		oldc=c;
 
 		c=GetDisplayMGL()->LastKeyPressed();
-		if(c==27)
+		if(c==27 || (taps & CONTROL_B2))
 		{
 			if(deleting)
 			{
