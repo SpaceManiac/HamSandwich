@@ -7,6 +7,7 @@
 #include "options.h"
 #include "endgame.h"
 #include "plasma.h"
+#include "steam.h"
 
 static byte position;
 static highScore_t *me;
@@ -17,7 +18,7 @@ static byte oldc;
 static byte delCursor;
 static byte deleting;
 
-char modeText[][32]={
+static const char modeText[][32]={
 	"Adventure Mode",
 	"Survival Mode",
 	"Slingshot Mode",
@@ -467,6 +468,7 @@ TASK(void) CheckForHighScore(highScore_t myScore)
 				opt.score[myScore.mode][i]=myScore;
 				position=i;
 				me=&opt.score[myScore.mode][i];
+				Steam()->UploadHighScore(me, 255);
 				AWAIT NameEntry(GetDisplayMGL());
 				CO_RETURN;
 			}
@@ -481,6 +483,7 @@ TASK(void) CheckForHighScore(highScore_t myScore)
 			opt.score[myScore.mode][i]=myScore;
 			position=i;
 			me=&opt.score[myScore.mode][i];
+			Steam()->UploadHighScore(me, player.levelNum);
 			AWAIT NameEntry(GetDisplayMGL());
 			CO_RETURN;
 		}

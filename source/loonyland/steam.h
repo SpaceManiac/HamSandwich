@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+struct highScore_t;
+
 // The interface from the rest of the game to the Steam module.
 class SteamManager
 {
@@ -23,6 +25,8 @@ public:
 	virtual bool IsSteamEdition() { return false; }
 	virtual void ProfileReady() {}
 	virtual void CompleteGoal(int goal) {}
+
+	virtual void UploadHighScore(const highScore_t* score, uint8_t subMode) {}
 
 	virtual const char* DescribeWorkshopStatus() { return ""; }
 
