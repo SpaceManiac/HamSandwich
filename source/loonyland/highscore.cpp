@@ -78,6 +78,14 @@ byte UpdateNameEntry(int *lastTime)
 
 		c=GetDisplayMGL()->LastKeyPressed();
 
+		// Up and down edit the last character, inserting a new one if empty.
+		// Gamepads are limited to A thru Z for ease of nagivation.
+		// B1 duplicates the last character, or finishes if full.
+		// Characters add to the end.
+		// B2 or Backspace deletes the last character.
+		// Enter finishes.
+		// ESC resets to "???" and quits.
+
 		if(c==8 || (taps & CONTROL_B2)) // backspace
 		{
 			if(txtpos>0)
@@ -85,16 +93,16 @@ byte UpdateNameEntry(int *lastTime)
 				txtpos--;
 				buffer[txtpos]='\0';
 			}
-			strcpy(me->name,buffer);
+			ham_strcpy(me->name, buffer);
 		}
-		else if(c==27)
+		else if(c==27)  // escape
 		{
-			strcpy(me->name,"???");
+			ham_strcpy(me->name, "???");
 			return 0;
 		}
-		else if(c==13)
+		else if(c==13)  // enter
 		{
-			strcpy(me->name,buffer);
+			ham_strcpy(me->name, "???");
 			return 0;
 		}
 		else if(txtpos<3 && c >= ' ' && c <= '~')
@@ -105,41 +113,39 @@ byte UpdateNameEntry(int *lastTime)
 		}
 		else if (taps & CONTROL_DN)
 		{
-			// Gamepads are limited to A thru Z for ease of nagivation.
-			if (buffer[txtpos] == '\0')
+			if (txtpos == 0)
 			{
-				buffer[txtpos] = 'A';
+				buffer[0] = 'Z';  // will be ++'d into A
+				txtpos++;
 			}
-			else
-			{
-				buffer[txtpos]++;
-				if (buffer[txtpos] < 'A' || buffer[txtpos] > 'Z')
-					buffer[txtpos] = 'A';
-			}
+			buffer[txtpos - 1]++;
+			if (buffer[txtpos - 1] < 'A' || buffer[txtpos - 1] > 'Z')
+				buffer[txtpos - 1] = 'A';
 		}
 		else if (taps & CONTROL_UP)
 		{
-			if (buffer[txtpos] == '\0')
+			if (txtpos == 0)
 			{
-				buffer[txtpos] = 'Z';
+				buffer[0] = 'A';  // will be --'d into Z
+				txtpos++;
 			}
-			else
-			{
-				buffer[txtpos]--;
-				if (buffer[txtpos] < 'A' || buffer[txtpos] > 'Z')
-					buffer[txtpos] = 'Z';
-			}
+			buffer[txtpos - 1]--;
+			if (buffer[txtpos - 1] < 'A' || buffer[txtpos - 1] > 'Z')
+				buffer[txtpos - 1] = 'Z';
 		}
 		else if (taps & CONTROL_B1)
 		{
-			buffer[txtpos+1]=buffer[txtpos];
-			txtpos++;
-			buffer[txtpos+1]='\0';
-			// End if you ran out of space or if you just mashed A.
-			if (txtpos >= 3 || buffer[txtpos - 1] == '\0')
+			if (txtpos >= 3)
 			{
+				// End if you ran out of space or if you just mashed A.
 				ham_strcpy(me->name, buffer);
 				return 0;
+			}
+			else if (txtpos > 0)
+			{
+				buffer[txtpos]=buffer[txtpos-1];
+				txtpos++;
+				buffer[txtpos]='\0';
 			}
 		}
 
