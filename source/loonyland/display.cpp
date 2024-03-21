@@ -305,6 +305,11 @@ void PrintGlow(int x,int y,const char *s,char bright,byte font)
 	FontPrintStringGlow(x,y,s,gameFont[font],bright);
 }
 
+void PrintGlowRect(int x, int y, int x2, int y2, std::string_view s, int height, char bright, byte font)
+{
+	FontPrintStringGlowRect(x, y, x2, y2, s, height, bright, gameFont[font]);
+}
+
 void CenterPrintGlow(int x,int y,const char *s,char bright,byte font)
 {
 	x=x-FontStrLen(s,gameFont[font])/2;

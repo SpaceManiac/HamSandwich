@@ -14,7 +14,7 @@ enum : byte
 	DIFF_MAD       = 3,
 	DIFF_LOONY     = 4,
 
-	MAX_DIFFICULTY
+	NUM_DIFFICULTY
 };
 const char* DifficultyName(byte difficulty);
 
@@ -81,6 +81,7 @@ enum PlayerCharacterType : int
 	PC_Thief = 7,
 	PC_MAX
 };
+const char* PlayerCharacterName(PlayerCharacterType character);
 
 typedef struct options_t
 {

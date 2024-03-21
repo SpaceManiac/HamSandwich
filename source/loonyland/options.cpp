@@ -569,7 +569,7 @@ const static char difficultyName[][18] = {
 	"Mad",
 	"Loony",
 };
-static_assert(SDL_arraysize(difficultyName) == MAX_DIFFICULTY);
+static_assert(SDL_arraysize(difficultyName) == NUM_DIFFICULTY);
 
 const char* DifficultyName(byte difficulty)
 {
@@ -580,7 +580,28 @@ const char* DifficultyName(byte difficulty)
 	return "???";
 }
 
-static std::map<PlayerCharacterType, int> characterCheat = {
+const static char playerCharacterName[][11] = {
+	"Loony",
+	"Bonkula",
+	"Toad",
+	"Swampdog",
+	"Witch",
+	"Werewolf",
+	"Summony",
+	"Ninja Girl",
+};
+static_assert(SDL_arraysize(playerCharacterName) == PC_MAX);
+
+const char* PlayerCharacterName(PlayerCharacterType character)
+{
+	if (character >= 0 && character < SDL_arraysize(playerCharacterName))
+	{
+		return playerCharacterName[character];
+	}
+	return "???";
+}
+
+static const std::map<PlayerCharacterType, int> characterCheat = {
 	{PC_Bonkula,	CH_BONKULA},
 	{PC_Toad,		CH_TOAD},
 	{PC_Swampdog,	CH_SWAMPDOG},
@@ -590,7 +611,7 @@ static std::map<PlayerCharacterType, int> characterCheat = {
 	{PC_Thief,		CH_THIEF},
 };
 
-static std::map<PlayerCharacterType, PlayerCharacterType> nextCharacter = {
+static const std::map<PlayerCharacterType, PlayerCharacterType> nextCharacter = {
 	{PC_Loony, PC_Bonkula},
 	{PC_Bonkula, PC_Toad},
 	{PC_Toad, PC_Swampdog},
@@ -600,7 +621,7 @@ static std::map<PlayerCharacterType, PlayerCharacterType> nextCharacter = {
 	{PC_Summon, PC_Thief},
 	{PC_Thief, PC_Loony}
 };
-static std::map<PlayerCharacterType, PlayerCharacterType> prevCharacter = {
+static const std::map<PlayerCharacterType, PlayerCharacterType> prevCharacter = {
 	{PC_Loony, PC_Thief},
 	{PC_Bonkula, PC_Loony},
 	{PC_Toad, PC_Bonkula},
@@ -611,7 +632,8 @@ static std::map<PlayerCharacterType, PlayerCharacterType> prevCharacter = {
 	{PC_Thief, PC_Summon}
 };
 
-PlayerCharacterType GetCurrentPC() {
+PlayerCharacterType GetCurrentPC()
+{
 	if (opt.cheats[CH_BONKULA])
 		return PC_Bonkula;
 	if (opt.cheats[CH_TOAD])
@@ -630,8 +652,10 @@ PlayerCharacterType GetCurrentPC() {
 	return PC_Loony;
 }
 
-bool IsCharacterUnlocked(PlayerCharacterType pc) {
-	switch (pc) {
+bool IsCharacterUnlocked(PlayerCharacterType pc)
+{
+	switch (pc)
+	{
 		case PC_Loony: return true;
 		case PC_Bonkula: return opt.meritBadge[BADGE_BONKULA];
 		case PC_Toad: return opt.meritBadge[BADGE_ANNOY];
@@ -647,8 +671,9 @@ bool IsCharacterUnlocked(PlayerCharacterType pc) {
 void SetCharacter(PlayerCharacterType pc)
 {
 	ResetCharacterCheats();
-	if (pc != PC_Loony) {
-		opt.cheats[characterCheat[pc]] = 1;
+	if (pc != PC_Loony)
+	{
+		opt.cheats[characterCheat.at(pc)] = 1;
 	}
 }
 
@@ -666,8 +691,9 @@ bool IsAnyCharacterUnlocked()
 void NextCharacter()
 {
 	PlayerCharacterType pc = GetCurrentPC();
-	do {
-		pc = nextCharacter[pc];
+	do
+	{
+		pc = nextCharacter.at(pc);
 	} while (!IsCharacterUnlocked(pc));
 
 	SetCharacter(pc);
@@ -676,8 +702,9 @@ void NextCharacter()
 void PrevCharacter()
 {
 	PlayerCharacterType pc = GetCurrentPC();
-	do {
-		pc = prevCharacter[pc];
+	do
+	{
+		pc = prevCharacter.at(pc);
 	} while (!IsCharacterUnlocked(pc));
 
 	SetCharacter(pc);

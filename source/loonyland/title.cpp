@@ -8,6 +8,7 @@
 #include "palettes.h"
 #include "appdata.h"
 #include "steam.h"
+#include "badge.h"
 
 #define VERSION_NO         "Version 3.0"
 #define COPYRIGHT_YEARS    "2001-2024"
@@ -205,11 +206,17 @@ static byte oldc=0;
 
 static int saveOffset = 0;
 static byte cursor;
-byte *backScr;
-int numRuns;
-byte songRestart;
+static byte *backScr;
+static int numRuns;
+static byte songRestart;
 
-static byte loadingGame;
+enum class TitleSubmenu : byte
+{
+	MainMenu,
+	LoadGame,
+	ChooseDiff,  // difficulty chooser
+};
+static TitleSubmenu loadingGame;
 
 typedef struct menu_t
 {
@@ -218,7 +225,7 @@ typedef struct menu_t
 	char bright;
 } menu_t;
 
-menu_t menu[MENU_CHOICES]={
+static menu_t menu[MENU_CHOICES]={
 	{"New Game",1,-32},
 	{"Load Game",1,-32},
 	{"Bowling",0,-32},
@@ -233,8 +240,8 @@ menu_t menu[MENU_CHOICES]={
 	{"Exit",1,-32},
 };
 
-menu_t saves[5];
-byte choosingDiffFor;
+static menu_t saves[5];
+static byte choosingDiffFor;
 
 void SetSongRestart(byte b)
 {
@@ -385,38 +392,66 @@ void DiffChooseDisplay(MGLDraw *mgl)
 	Print(560,3,VERSION_NO,1,1);
 	Print(559,2,VERSION_NO,0,1);
 
-	PrintGlow(5,330,"Difficulty Level:",0,2);
-
-	if(opt.difficulty>0)
-		PrintGlow(280,330,"<<<",0,2);
-
-	CenterPrintGlow(440,330,DifficultyName(opt.difficulty),0,2);
-	CenterPrintGlow(440-4+Random(9),330-4+Random(9),DifficultyName(opt.difficulty),-20,2);
-
-	if(opt.difficulty<4)
-		PrintGlow(560,330,">>>",0,2);
-
-	PrintGlow(5,450,"The chosen difficulty applies to all game modes.  You can change it at any time",0,1);
-	PrintGlow(5,465,"in the Options menu on the title screen, but that doesn't affect saved games.",0,1);
-
 	PrintGlow(310,318,"Select with arrow keys and press Enter",0,1);
-	for(i=0;i<3;i++)
+	if (cursor == 0)
 	{
-		PrintGlow(5,390+i*15,diffDesc[opt.difficulty*3+i],0,1);
+		PrintGlow(5,330,"Difficulty Level:",0,2);
+
+		if(opt.difficulty>0)
+			PrintGlow(280,330,"<<<",0,2);
+
+		CenterPrintGlow(440,330,DifficultyName(opt.difficulty),0,2);
+		CenterPrintGlow(440-4+Random(9),330-4+Random(9),DifficultyName(opt.difficulty),-20,2);
+
+		if(opt.difficulty<4)
+			PrintGlow(560,330,">>>",0,2);
+
+		for(i=0;i<3;i++)
+		{
+			PrintGlow(5,390+i*15,diffDesc[opt.difficulty*3+i],0,1);
+		}
+
+		PrintGlow(5,450,"The chosen difficulty applies to all game modes.  You can change it at any time",0,1);
+		PrintGlow(5,465,"in the Options menu on the title screen, but that doesn't affect saved games.",0,1);
 	}
-}
+	else if (cursor == 1)
+	{
+		auto pc = GetCurrentPC();
+		PrintGlow(5, 330, "Character:", 0, 2);
 
-void CharacterChooseDisplay(MGLDraw* mgl)
-{
-	if (!IsAnyCharacterUnlocked())
-		return;
+		if (pc > 0)
+			PrintGlow(280,330,"<<<",0,2);
 
-	char playerName[PC_MAX][9] = {"Loony","Bonkula","Toad","Swampdog","Witch","Werewolf","Summony","Ninja"};
+		CenterPrintGlow(440,330,PlayerCharacterName(pc),0,2);
+		CenterPrintGlow(440-4+Random(9),330-4+Random(9),PlayerCharacterName(pc),-20,2);
 
-	//PrintGlow(280, 200, "^", 0, 2);
-	PrintGlow(200, 200, "Character:", 0, 2);
-	PrintGlow(200, 260, "Use up and down to select a character.", 0, 1);
-	CenterPrintGlow(440, 200, playerName[GetCurrentPC()], 0, 2);
+		if (pc < PC_MAX - 1)
+			PrintGlow(560,330,">>>",0,2);
+
+		auto desc = GetCharacterDescription(pc);
+		if (desc != nullptr)
+		{
+			char together[512];
+			span<char> dst = together;
+			for (i = 0; i < 8; i++)
+			{
+				dst = ham_sprintf(dst, "%s ", desc[i]);
+			}
+
+			PrintGlowRect(3, 388, SCRWID-3, SCRHEI, together, 15, 0, 1);
+		}
+		else
+		{
+			PrintGlow(5, 450, "The chosen character applies to all game modes.  You can change it at any time", 0, 1);
+			PrintGlow(5, 465, "in the Badges menu on the title screen, but that doesn't affect saved games.", 0, 1);
+		}
+	}
+
+	if (IsAnyCharacterUnlocked())
+	{
+		PrintGlow(5+35, 330-30+20, "^^^", 0, 0);
+		PrintGlow(5+38, 330+60-28, "vvv", 0, 0);
+	}
 }
 
 void LoadGameDisplay(MGLDraw *mgl)
@@ -676,27 +711,42 @@ byte ChooseDiffUpdate(int *lastTime,MGLDraw *mgl)
 		c=GetControls()|GetArrows();
 		byte taps = c & ~oldc;
 
-		if(taps & CONTROL_LF)
+		if (IsAnyCharacterUnlocked() && (taps & (CONTROL_UP | CONTROL_DN)))
 		{
-			if(opt.difficulty>0)
-				opt.difficulty--;
-			MakeNormalSound(SND_MENUCLICK);
+			cursor = !cursor;
 		}
-		if(taps & CONTROL_RT)
+
+		if (cursor == 0)
 		{
-			if(opt.difficulty<4)
-				opt.difficulty++;
-			MakeNormalSound(SND_MENUCLICK);
+			if (taps & CONTROL_LF)
+			{
+				if(opt.difficulty > 0)
+					opt.difficulty--;
+				else
+					opt.difficulty = NUM_DIFFICULTY - 1;
+				MakeNormalSound(SND_MENUCLICK);
+			}
+			if(taps & CONTROL_RT)
+			{
+				if(opt.difficulty < NUM_DIFFICULTY - 1)
+					opt.difficulty++;
+				else
+					opt.difficulty = 0;
+				MakeNormalSound(SND_MENUCLICK);
+			}
 		}
-		if ((c & CONTROL_DN) && !(oldc & CONTROL_DN) && IsAnyCharacterUnlocked())
+		else if (cursor == 1)
 		{
-			NextCharacter();
-			MakeNormalSound(SND_MENUCLICK);
-		}
-		if ((c & CONTROL_UP) && !(oldc & CONTROL_UP) && IsAnyCharacterUnlocked())
-		{
-			PrevCharacter();
-			MakeNormalSound(SND_MENUCLICK);
+			if (taps & CONTROL_LF)
+			{
+				PrevCharacter();
+				MakeNormalSound(SND_MENUCLICK);
+			}
+			if (taps & CONTROL_RT)
+			{
+				NextCharacter();
+				MakeNormalSound(SND_MENUCLICK);
+			}
 		}
 
 		if(taps & CONTROL_B1)
@@ -766,19 +816,19 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 		menu[MENU_REMIX].known=1;
 
 	cursor=0;
-	loadingGame=0;
+	loadingGame=TitleSubmenu::MainMenu;
 	GetTaps();
 	while(b==0)
 	{
 		lastTime+=TimeLength();
 		StartClock();
 
-		if(loadingGame==0)
+		if(loadingGame==TitleSubmenu::MainMenu)
 		{
 			b=MainMenuUpdate(&lastTime,mgl);
 			MainMenuDisplay(mgl);
 		}
-		else if(loadingGame==1)
+		else if(loadingGame==TitleSubmenu::LoadGame)
 		{
 			b=LoadGameUpdate(&lastTime,mgl);
 			LoadGameDisplay(mgl);
@@ -788,7 +838,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 					menu[i].bright=-32;
 
 				cursor=1;
-				loadingGame=0;
+				loadingGame=TitleSubmenu::MainMenu;
 			}
 			else if(b==2)
 			{
@@ -797,15 +847,14 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 			}
 			b=0;
 		}
-		else
+		else if (loadingGame == TitleSubmenu::ChooseDiff)
 		{
 			b=ChooseDiffUpdate(&lastTime,mgl);
 			DiffChooseDisplay(mgl);
-			CharacterChooseDisplay(mgl);
 			if(b==0)
 			{
 				cursor=0;
-				loadingGame=0;
+				loadingGame=TitleSubmenu::MainMenu;
 			}
 			else if(b==2)
 			{
@@ -825,7 +874,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 			CO_RETURN 255;
 		}
 		EndClock();
-		if(!loadingGame && numRuns>=30*15)
+		if(loadingGame==TitleSubmenu::MainMenu && numRuns>=30*15)
 		{
 			GetTaps();
 			oldc=255;
@@ -833,25 +882,25 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 			mgl->LoadBMP("graphics/title.bmp");
 			numRuns=0;
 		}
-		if(!loadingGame && b==MENU_LOADGAME+1)
+		if(loadingGame==TitleSubmenu::MainMenu && b==MENU_LOADGAME+1)
 		{
-			loadingGame=1;
+			loadingGame=TitleSubmenu::LoadGame;
 			GetSavesForMenu();
 			cursor=0;
 			b=0;
 			oldc=255;
 		}
-		if(!loadingGame && b==MENU_ADVENTURE+1)
+		if(loadingGame==TitleSubmenu::MainMenu && b==MENU_ADVENTURE+1)
 		{
-			loadingGame=2;
+			loadingGame=TitleSubmenu::ChooseDiff;
 			choosingDiffFor=0;
 			cursor=0;
 			b=0;
 			oldc=255;
 		}
-		if(!loadingGame && b==MENU_REMIX+1)
+		if(loadingGame==TitleSubmenu::MainMenu && b==MENU_REMIX+1)
 		{
-			loadingGame=2;
+			loadingGame=TitleSubmenu::ChooseDiff;
 			choosingDiffFor=1;
 			cursor=0;
 			b=0;

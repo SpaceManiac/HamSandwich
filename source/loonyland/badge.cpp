@@ -17,7 +17,7 @@ static byte viewing;
 static byte cantearn;
 static char badgeKeys[17];
 
-badge_t badge[NUM_BADGES]={
+static const badge_t badge[NUM_BADGES]={
 	{"Evil Smashin'",
 	 "Earned for defeating The Evilizer in three",
 	 "minutes.",
@@ -1304,4 +1304,27 @@ void BadgeCheck(byte event,int value,Map *map)
 	//AddGarbageTime(then-now);
 	ResetClock(0);
 
+}
+
+auto GetCharacterDescription(PlayerCharacterType character) -> const char(*)[55]
+{
+	switch (character)
+	{
+		case PC_Bonkula:
+			return badge[BADGE_BONKULA].cheatDesc;
+		case PC_Toad:
+			return badge[BADGE_ANNOY].cheatDesc;
+		case PC_Swampdog:
+			return badge[BADGE_SNEAK].cheatDesc;
+		case PC_Witch:
+			return badge[BADGE_WITCH].cheatDesc;
+		case PC_Werewolf:
+			return badge[BADGE_WOLFDEN].cheatDesc;
+		case PC_Summon:
+			return badge[BADGE_REMIX].cheatDesc;
+		case PC_Thief:
+			return badge[BADGE_WITCHCRAFT].cheatDesc;
+		default:
+			return nullptr;
+	}
 }
