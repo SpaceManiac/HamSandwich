@@ -153,7 +153,7 @@ location basic_locations[R_NUM_LOCATIONS] = {
 	{true, "The Rescue", 7, 0, 0, 0, 0, "The Rescue", [](const std::set<int>& inv) { return HaveLightSource(inv) && CanEnterRockyCliffs(inv); }},
 	{true, "Tree Trimming", 8, 0, 0, 0, 0, "Tree Trimming", [](const std::set<int>& inv) { return true; }},
 	{true, "Witch Mushrooms", 9, 0, 0, 0, 0, "Witch Mushrooms", [](const std::set<int>& inv) { return HaveAllMushrooms(inv); }},
-	{true, "Zombie Stomp", 10, 0, 0, 0, 0, "Zombie Stomp", [](const std::set<int>& inv) { return CanCleanseCrypts(inv); }}};
+	{true, "Zombie Stomp", 10, 0, 0, 0, 0, "Zombie Stomp", [](const std::set<int>& inv) { return CanCleanseCrypts(inv); }} };
 
 
 rItem itemList[R_NUM_LOCATIONS] = {
@@ -267,16 +267,16 @@ rItem itemList[R_NUM_LOCATIONS] = {
 template<class RandomIt, class URBG>
 void shuffleList(RandomIt first, RandomIt last, URBG&& g)
 {
-    typedef typename std::iterator_traits<RandomIt>::difference_type diff_t;
-    typedef sure::uniform_int_distribution<diff_t> distr_t;
-    typedef typename distr_t::param_type param_t;
- 
-    distr_t D;
-    diff_t n = last - first;
-    for (diff_t i = n-1; i > 0; --i) {
-        using std::swap;
-        swap(first[i], first[D(g, param_t(0, i))]);
-    }
+	typedef typename std::iterator_traits<RandomIt>::difference_type diff_t;
+	typedef sure::uniform_int_distribution<diff_t> distr_t;
+	typedef typename distr_t::param_type param_t;
+
+	distr_t D;
+	diff_t n = last - first;
+	for (diff_t i = n - 1; i > 0; --i) {
+		using std::swap;
+		swap(first[i], first[D(g, param_t(0, i))]);
+	}
 }
 
 void InitRandomizerMenu(void)
@@ -293,13 +293,13 @@ void ExitRandomizerMenu(void)
 }
 
 TASK(byte)
-UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
+UpdateRandomizerMenu(int* lastTime, MGLDraw* mgl)
 {
 	char c;
 	byte c2;
 	dword btn, j;
 	int i;
-	
+
 
 	if (*lastTime > TIME_PER_FRAME * 30)
 		*lastTime = TIME_PER_FRAME * 30;
@@ -344,13 +344,13 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 					optMode = 1;
 					break;
 				case CURSOR_GENERATE: //generate
-					genTries=0;
-					if (!seed.empty()){
+					genTries = 0;
+					if (!seed.empty()) {
 						std::seed_seq seed2(seed.begin(), seed.end());
 						rng = std::minstd_rand0(seed2);
 						bool success = false;
-					
-						while(!success){
+
+						while (!success) {
 							std::vector<location> loc;
 							RandomFill(loc);
 							success = CheckBeatable(loc);
@@ -359,7 +359,8 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 						}
 						generated = true;
 						MakeNormalSound(SND_POWERUP);
-					}else{
+					}
+					else {
 						MakeNormalSound(SND_MENUCANCEL);
 					}
 					break;
@@ -391,7 +392,7 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 				case CURSOR_COMPLETION: //logic toggle
 					MakeNormalSound(SND_MENUSELECT);
 					allItems = !allItems;
-				break;
+					break;
 				}
 			}
 			break;
@@ -440,17 +441,17 @@ UpdateRandomizerMenu(int *lastTime, MGLDraw *mgl)
 	CO_RETURN 0;
 }
 
-void RenderRandomizerMenu(MGLDraw *mgl)
+void RenderRandomizerMenu(MGLDraw* mgl)
 {
 
 	int wid;
-	byte *pos;
+	byte* pos;
 	int i;
 	std::string strTries = std::to_string(genTries);
 
 	char diffy[6][18] = { "Beginner","Normal","Challenge","Mad","Loony","Hard" };
-	
-	
+
+
 
 	wid = mgl->GetWidth();
 	pos = mgl->GetScreen() + 40 * wid;
@@ -516,17 +517,19 @@ void RenderRandomizerMenu(MGLDraw *mgl)
 	}
 
 	PrintColor(240, 80 + CURSOR_COMPLETION * 20, "Game Completion: ", 7, -10, 0);
-	if(allItems){
+	if (allItems) {
 		PrintColor(400, 80 + CURSOR_COMPLETION * 20, "100%", 7, -10, 0);
-	}else{
+	}
+	else {
 		PrintColor(400, 80 + CURSOR_COMPLETION * 20, "beatable", 7, -10, 0);
 	}
 	if (cursor == CURSOR_COMPLETION)
 	{
 		PrintColor(239, 79 + CURSOR_COMPLETION * 20, "Game Completion: ", 0, 0, 0);
-		if(allItems){
+		if (allItems) {
 			PrintColor(399, 79 + CURSOR_COMPLETION * 20, "100%", 0, 0, 0);
-		}else{
+		}
+		else {
 			PrintColor(399, 79 + CURSOR_COMPLETION * 20, "beatable", 0, 0, 0);
 		}
 	}
@@ -535,7 +538,7 @@ void RenderRandomizerMenu(MGLDraw *mgl)
 //----------------
 
 TASK(void)
-RandomizerMenu(MGLDraw *mgl)
+RandomizerMenu(MGLDraw* mgl)
 {
 	byte done = 0;
 	int lastTime;
@@ -547,7 +550,7 @@ RandomizerMenu(MGLDraw *mgl)
 	{
 		lastTime += TimeLength();
 		StartClock();
-		done =  AWAIT UpdateRandomizerMenu(&lastTime, mgl);
+		done = AWAIT UpdateRandomizerMenu(&lastTime, mgl);
 		RenderRandomizerMenu(mgl);
 		AWAIT mgl->Flip();
 		EndClock();
@@ -573,12 +576,12 @@ void RandomizeSeed() {
 
 int RandomFill(std::vector<location>& locs)
 {
-	std::vector<rItem> remainingItems;
-	std::vector<location*> remainingLocs;
+	std::vector<rItem *> remainingItems;
+	//std::vector<location*> remainingLocs;
 
-	for (rItem r : itemList)
+	for (int i = 0; i<R_NUM_LOCATIONS; i++)
 	{
-		remainingItems.push_back(r);
+		remainingItems.push_back(&itemList[i]);
 	}
 
 
@@ -591,17 +594,23 @@ int RandomFill(std::vector<location>& locs)
 
 	for (int i = 0; i < locs.size(); i++)
 	{
-		locs[i].item = remainingItems[i];
+		locs[i].item = *remainingItems[i];
 	}
+
+	remainingItems.clear();
+
 	return 1;
+
+
 }
 
-bool CheckBeatable(std::vector<location>& locs){
+bool CheckBeatable(std::vector<location>& locs) {
 	std::set<int> collectedItems;
 	std::set<int> tempItems;
 	std::vector<location> remainingLocs = locs;
-	std::vector<location> visited;
+	//std::vector<location> visited;
 	bool gotEvilizer = false;
+	bool result = false;
 	int foundItems = 0;
 
 	do
@@ -639,19 +648,26 @@ bool CheckBeatable(std::vector<location>& locs){
 	if ((gotEvilizer && !allItems) || (allItems && remainingLocs.empty()))
 	{
 		PlaceItems(locs);
-		return true;
-	}else{
-		
+		result = true;
+	}
+	else {
+
 		char buff[64];
-		if(allItems){
+		if (allItems) {
 			sprintf(buff, "%s ALLITEMS spoiler.txt", seed.c_str());
-		}else{
+		}
+		else {
 			sprintf(buff, "%s spoiler.txt", seed.c_str());
 		}
 		remove(buff);
-		return false;
 	}
-	
+
+	collectedItems.clear();
+	tempItems.clear();
+	remainingLocs.clear();
+
+	return result;
+
 }
 
 std::string GetSeed()
@@ -671,7 +687,7 @@ void PlaceItems(std::vector<location>& locList)
 		fwrite(buff, 1, 4096, newWorld);
 	}
 
-	fclose(baseWorld);
+ 	fclose(baseWorld);
 	fclose(newWorld);
 
 	world_t world;
@@ -685,13 +701,13 @@ void PlaceItems(std::vector<location>& locList)
 	world.map[34]->special[9].y = world.map[34]->special[10].y;
 	world.map[34]->special[10].x = tempSpecial.x;
 	world.map[34]->special[10].y = tempSpecial.y;
-	
+
 
 	//fix trigger for cat tree
 	world.map[0]->special[97].trigger = TRG_GETITEM;
 	world.map[0]->special[98].value = 0;
-	
-  	//questFile.open ("quest.txt");
+
+	//questFile.open ("quest.txt");
 	sprintf(buff, "randomizer/%s quest.txt", seed.c_str());
 	std::FILE* f = AppdataOpen_Write(buff);
 
@@ -711,9 +727,9 @@ void PlaceItems(std::vector<location>& locList)
 		{
 			spoilerFile << loc.mapId << "\t\t" << loc.mapName << "\t\t" << loc.description << "\t\t" << loc.item.playerVarId << "\t\t" << loc.item.itemName << "\n";
 
-			if (loc.isQuest){
+			if (loc.isQuest) {
 				//quest list of map id points to loc.item now
-				stream << loc.mapId << "\t" << loc.item.playerVarId << "\t" << loc.item.itemId  << "\n";
+				stream << loc.mapId << "\t" << loc.item.playerVarId << "\t" << loc.item.itemId << "\n";
 
 			}
 			else
@@ -723,7 +739,7 @@ void PlaceItems(std::vector<location>& locList)
 				tempMap->special[loc.s1].effectTag = 1;
 
 				tempMap->special[loc.s2].trigValue = loc.item.playerVarId;
-				tempMap->map[loc.xcoord+loc.ycoord*tempMap->width].item=loc.item.itemId;
+				tempMap->map[loc.xcoord + loc.ycoord * tempMap->width].item = loc.item.itemId;
 			}
 		}
 	}
@@ -732,6 +748,8 @@ void PlaceItems(std::vector<location>& locList)
 
 	sprintf(buff, "randomizer/%s rando.llw", seed.c_str());
 	SaveWorld(&world, buff);
+
+	FreeWorld(&world);
 
 }
 
@@ -743,7 +761,7 @@ bool HaveLightSource(const std::set<int>& inv)
 bool HaveAnyBigGem(const std::set<int>& inv)
 {
 	return (inv.count(VAR_GEM) || inv.count(VAR_GEM + 1) || inv.count(VAR_GEM + 2) ||
-			inv.count(VAR_GEM + 3) || inv.count(VAR_GEM + 4) || inv.count(VAR_GEM + 5));
+		inv.count(VAR_GEM + 3) || inv.count(VAR_GEM + 4) || inv.count(VAR_GEM + 5));
 }
 
 bool HaveAllOrbs(const std::set<int>& inv)
@@ -759,21 +777,21 @@ bool HaveAllBats(const std::set<int>& inv)
 bool HaveAllVamps(const std::set<int>& inv)
 {
 	return (inv.count(VAR_VAMPBUST) && inv.count(VAR_VAMPBUST + 1) && inv.count(VAR_VAMPBUST + 2) && inv.count(VAR_VAMPBUST + 3) &&
-			inv.count(VAR_VAMPBUST + 4) && inv.count(VAR_VAMPBUST + 5) && inv.count(VAR_VAMPBUST + 6) && inv.count(VAR_VAMPBUST + 7));
+		inv.count(VAR_VAMPBUST + 4) && inv.count(VAR_VAMPBUST + 5) && inv.count(VAR_VAMPBUST + 6) && inv.count(VAR_VAMPBUST + 7));
 }
 
 bool HaveSpecialWeaponDamage(const std::set<int>& inv)
 {
 	return (inv.count(VAR_WEAPON) || inv.count(VAR_WEAPON + 1) //|| inv.count(VAR_WEAPON + 2) //ice wand doesn't hurt the elder
 		|| inv.count(VAR_WEAPON + 4) ||
-			inv.count(VAR_WEAPON + 5) || inv.count(VAR_WEAPON + 6));
+		inv.count(VAR_WEAPON + 5) || inv.count(VAR_WEAPON + 6));
 }
 
 bool HaveAllMushrooms(const std::set<int>& inv)
 {
 	return (inv.count(VAR_MUSHROOM) && inv.count(VAR_MUSHROOM + 1) && inv.count(VAR_MUSHROOM + 2) && inv.count(VAR_MUSHROOM + 3) &&
-			inv.count(VAR_MUSHROOM + 4) && inv.count(VAR_MUSHROOM + 5) && inv.count(VAR_MUSHROOM + 6) && inv.count(VAR_MUSHROOM + 7) &&
-			inv.count(VAR_MUSHROOM + 8) && inv.count(VAR_MUSHROOM + 9));
+		inv.count(VAR_MUSHROOM + 4) && inv.count(VAR_MUSHROOM + 5) && inv.count(VAR_MUSHROOM + 6) && inv.count(VAR_MUSHROOM + 7) &&
+		inv.count(VAR_MUSHROOM + 8) && inv.count(VAR_MUSHROOM + 9));
 }
 
 bool CanCleanseCrypts(const std::set<int>& inv)
