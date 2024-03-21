@@ -694,7 +694,6 @@ void PlaceItems(std::vector<location>& locList)
   	//questFile.open ("quest.txt");
 	sprintf(buff, "randomizer/%s quest.txt", seed.c_str());
 	std::FILE* f = AppdataOpen_Write(buff);
-	FilePtrStream stream(f);
 
 	if (allItems) {
 		sprintf(buff, "randomizer/ALLITEMS %s spoiler.txt", seed.c_str());
@@ -704,29 +703,32 @@ void PlaceItems(std::vector<location>& locList)
 	}
 
 	std::FILE* f2 = AppdataOpen_Write(buff);
-	FilePtrStream spoilerFile(f2);
-
-	for (location loc : locList)
 	{
-		spoilerFile << loc.mapId << "\t\t" << loc.mapName << "\t\t" << loc.description << "\t\t" << loc.item.playerVarId << "\t\t" << loc.item.itemName << "\n";
+		FilePtrStream stream(f);
+		FilePtrStream spoilerFile(f2);
 
-		if (loc.isQuest){
-			//quest list of map id points to loc.item now
-			stream << loc.mapId << "\t" << loc.item.playerVarId << "\t" << loc.item.itemId  << "\n";
-
-		}
-		else
+		for (location loc : locList)
 		{
-			Map* tempMap = world.map[loc.mapId];
-			tempMap->special[loc.s1].value = loc.item.playerVarId;
-			tempMap->special[loc.s1].effectTag = 1;
+			spoilerFile << loc.mapId << "\t\t" << loc.mapName << "\t\t" << loc.description << "\t\t" << loc.item.playerVarId << "\t\t" << loc.item.itemName << "\n";
 
-			tempMap->special[loc.s2].trigValue = loc.item.playerVarId;			
-			tempMap->map[loc.xcoord+loc.ycoord*tempMap->width].item=loc.item.itemId;
+			if (loc.isQuest){
+				//quest list of map id points to loc.item now
+				stream << loc.mapId << "\t" << loc.item.playerVarId << "\t" << loc.item.itemId  << "\n";
+
+			}
+			else
+			{
+				Map* tempMap = world.map[loc.mapId];
+				tempMap->special[loc.s1].value = loc.item.playerVarId;
+				tempMap->special[loc.s1].effectTag = 1;
+
+				tempMap->special[loc.s2].trigValue = loc.item.playerVarId;
+				tempMap->map[loc.xcoord+loc.ycoord*tempMap->width].item=loc.item.itemId;
+			}
 		}
 	}
-
 	fclose(f2);
+	fclose(f);
 
 	sprintf(buff, "randomizer/%s rando.llw", seed.c_str());
 	SaveWorld(&world, buff);
