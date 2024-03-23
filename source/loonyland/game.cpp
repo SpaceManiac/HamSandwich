@@ -520,9 +520,9 @@ TASK(byte) PlayALevel(byte map)
 
 	PrepGuys(curMap);
 
+	SetAreaName(&curWorld);
 	if ((player.worldNum == WORLD_NORMAL || player.worldNum == WORLD_REMIX) && (player.cheatsOn & PC_HARDCORE) && player.lastSave == 255)
 	{
-		SetAreaName(&curWorld);
 		BumpSaveGem();
 	}
 
