@@ -442,14 +442,16 @@ byte Guy::IsActive(Map *map)
 
 		if(opt.cheats[CH_RADAR])
 		{
+			// Matches AnyMonsterExists so "kill all guys" checks only requires you to get red off the radar.
 			if(type==player.monsType)
-				AddRadarBlip(mapx,mapy,32*1+16,map);
-			else if(type==MONS_HELPERBAT ||
-				(type>=MONS_VILLAGER && type<=MONS_VILLAGER6))
-				AddRadarBlip(mapx,mapy,31,map);
-			else if(type!=MONS_EVILTREE2)
-				AddRadarBlip(mapx,mapy,128+16,map);
-
+				AddRadarBlip(mapx,mapy,32*1+16,map);  // player: green
+			else if(type==MONS_HELPERBAT || (type >= MONS_VILLAGER && type <= MONS_VILLAGER6) || (type >= MONS_SUMBOMBIE && type <= MONS_SUMDOG))
+				AddRadarBlip(mapx,mapy,31,map);  // allies: gray
+			else if(type==MONS_EVILTREE2 || type == MONS_LIGHTBALL || type == MONS_LIGHTBALL2 || type == MONS_LIGHTBALL4 || type == MONS_LIGHTBALL5 || type == MONS_BUBBLE)
+				AddRadarBlip(mapx,mapy,224+20,map);  // invincible guys: lightish aqua
+			else
+				AddRadarBlip(mapx,mapy,128+16,map);  // normal guys: red
+			// evilizer, bonkula, wolfmen etc. are red despite sometimes being invincible
 		}
 	}
 	return active;
@@ -2605,11 +2607,25 @@ byte AnyMonsterExists(void)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type!=player.monsType && guys[i]->type!=MONS_HELPERBAT &&
-			guys[i]->type!=MONS_NONE && (guys[i]->type<MONS_VILLAGER || guys[i]->type>MONS_VILLAGER6) &&
-			guys[i]->type!=MONS_EVILTREE2 && (guys[i]->type<MONS_LIGHTBALL || guys[i]->type>MONS_LIGHTBALL5) &&
-			guys[i]->type!=MONS_BUBBLE && guys[i]->type<MONS_SUMBOMBIE)
+	{
+		byte type = guys[i]->type;
+		if (!(
+			type == MONS_NONE ||
+			// player
+			type == player.monsType ||
+			// allies
+			type == MONS_HELPERBAT ||
+			(type >= MONS_VILLAGER && type <= MONS_VILLAGER6) ||
+			(type >= MONS_SUMBOMBIE && type <= MONS_SUMDOG) ||
+			// invincible guys
+			type == MONS_EVILTREE2 ||
+			// used to also exclude vincible lightball, but that's irrelevant for existing checks
+			type == MONS_LIGHTBALL || type == MONS_LIGHTBALL2 || type == MONS_LIGHTBALL4 || type == MONS_LIGHTBALL5 ||
+			type == MONS_BUBBLE
+			// evilizer, bonkula, wolfmen etc. are targets despite sometimes being invisible
+		))
 			return 1;
+	}
 
 	return 0;
 }
