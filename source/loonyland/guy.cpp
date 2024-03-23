@@ -1328,7 +1328,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 	}
 	else if(type==player.monsType)
 	{
-		byte invinc[]={30*3,30*2,30,15,0,30};
+		byte invinc[]={30*3,30*2,30,15,0,45};
 		SetPlayerHP(hp);
 		player.invinc=invinc[player.difficulty];
 
