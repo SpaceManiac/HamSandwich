@@ -66,7 +66,7 @@ public:
 	owned::SDL_RWops open_sdl(const char* filename) override;
 	owned::FILE open_write_stdio(const char* filename) override;
 	owned::SDL_RWops open_write_sdl(const char* filename) override;
-	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output) override;
+	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>* output) override;
 	bool delete_file(const char* filename) override;
 };
 
@@ -94,7 +94,7 @@ owned::FILE StdioVfs::open_stdio_internal(const char* file, const char* mode, bo
 		buffer[i] = '\0';
 
 		std::set<std::string, vanilla::CaseInsensitive> temp;
-		list_dir(&buffer.c_str()[prefix.length() + 1], temp);
+		list_dir(&buffer.c_str()[prefix.length() + 1], &temp);
 
 		for (const auto& name : temp)
 		{
@@ -166,7 +166,7 @@ owned::SDL_RWops StdioVfs::open_write_sdl(const char* filename)
 #ifdef __GNUC__
 #include <dirent.h>
 
-bool StdioVfs::list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output)
+bool StdioVfs::list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>* output)
 {
 	std::string buffer = prefix;
 	buffer.append("/");
@@ -176,7 +176,7 @@ bool StdioVfs::list_dir(const char* directory, std::set<std::string, vanilla::Ca
 		return false;
 
 	while (struct dirent *dp = readdir(dir))
-		output.insert(dp->d_name);
+		output->insert(dp->d_name);
 
 	closedir(dir);
 	return true;
@@ -185,7 +185,7 @@ bool StdioVfs::list_dir(const char* directory, std::set<std::string, vanilla::Ca
 #elif defined(_MSC_VER)
 #include <io.h>
 
-bool StdioVfs::list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output)
+bool StdioVfs::list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>* output)
 {
 	std::string buffer = prefix;
 	buffer.append("/");
@@ -199,7 +199,7 @@ bool StdioVfs::list_dir(const char* directory, std::set<std::string, vanilla::Ca
 
 	do
 	{
-		output.insert(finddata.name);
+		output->insert(finddata.name);
 	} while (_findnext(hFile, &finddata) == 0);
 
 	_findclose(hFile);

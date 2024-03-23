@@ -1,5 +1,5 @@
 #if defined(__ANDROID__) && __ANDROID__
-#include "vfs_android.h"
+#include "./vfs_android.h"
 #include <string.h>
 #include <jni.h>
 #include <SDL_system.h>
@@ -13,7 +13,7 @@ class AndroidBundleVfs : public vanilla::Vfs
 public:
 	explicit AndroidBundleVfs(const char* prefix) : prefix(prefix) {}
 	owned::SDL_RWops open_sdl(const char* filename) override;
-	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output) override;
+	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>* output) override;
 };
 
 std::unique_ptr<vanilla::Vfs> vanilla::open_android(const char* prefix)
@@ -137,7 +137,7 @@ static SDL_bool Android_JNI_ExceptionOccurred(JNIEnv *mEnv, SDL_bool silent)
 // ----------------------------------------------------------------------------
 // Implementation which calls AssetManager.list() to do some real work
 
-bool AndroidBundleVfs::list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output)
+bool AndroidBundleVfs::list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>* output)
 {
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
 
@@ -195,7 +195,7 @@ bool AndroidBundleVfs::list_dir(const char* directory, std::set<std::string, van
 	{
 		str = (jstring) mEnv->GetObjectArrayElement(fileList, i);
 		buffer = mEnv->GetStringUTFChars(str, nullptr);
-		output.insert(buffer);
+		output->insert(buffer);
 		mEnv->ReleaseStringUTFChars(str, buffer);
 	}
 

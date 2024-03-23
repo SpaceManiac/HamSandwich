@@ -1,5 +1,5 @@
 #include "vec_rw.h"
-
+#include <utility>
 #include <SDL_rwops.h>
 
 namespace vanilla

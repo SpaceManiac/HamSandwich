@@ -11,7 +11,7 @@ typedef const ISzAlloc* ISzAllocPtr;
 namespace vanilla
 {
 	extern const ISzAllocPtr LZMA_ALLOCATOR;
-	bool lzma_decompress(std::vector<uint8_t>& dest, uint8_t* src, size_t srclen, size_t propsize);
+	bool lzma_decompress(std::vector<uint8_t>* dest, const uint8_t* src, size_t srclen, size_t propsize);
 }
 
 #endif  // VANILLA_EXTRACT_LZMA_HELPERS_H

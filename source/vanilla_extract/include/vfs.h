@@ -49,7 +49,7 @@ namespace vanilla
 
 		virtual owned::SDL_RWops open_sdl(const char* filename) = 0;
 		virtual owned::FILE open_stdio(const char* filename);
-		virtual bool list_dir(const char* directory, std::set<std::string, CaseInsensitive>& output) = 0;
+		virtual bool list_dir(const char* directory, std::set<std::string, CaseInsensitive>* output) = 0;
 	};
 
 	// A single writeable VFS provider.
@@ -122,7 +122,7 @@ namespace vanilla
 		// Forward to children
 		owned::SDL_RWops open_sdl(const char* filename);
 		owned::FILE open_stdio(const char* filename);
-		void list_dir(const char* directory, std::set<std::string, CaseInsensitive>& output);
+		void list_dir(const char* directory, std::set<std::string, CaseInsensitive>* output);
 		owned::SDL_RWops open_write_sdl(const char* filename);
 		owned::FILE open_write_stdio(const char* filename);
 		bool delete_file(const char* filename);

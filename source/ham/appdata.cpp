@@ -433,7 +433,7 @@ static void filter_files(std::set<std::string, vanilla::CaseInsensitive>* files,
 std::vector<AddonSpec> AddonSpec::SearchAddons(vanilla::WriteVfs* vfs)
 {
 	std::set<std::string, vanilla::CaseInsensitive> file_list;
-	vfs->list_dir(".", file_list);
+	vfs->list_dir(".", &file_list);
 	filter_files(&file_list, ".zip");
 
 	std::vector<AddonSpec> result;
@@ -517,7 +517,7 @@ void AppdataSync() {}
 
 std::vector<std::string> ListDirectory(const char* directory, const char* extension, size_t maxlen) {
 	std::set<std::string, vanilla::CaseInsensitive> output;
-	vfs_stack.list_dir(directory, output);
+	vfs_stack.list_dir(directory, &output);
 	filter_files(&output, extension, maxlen);
 	return { output.begin(), output.end() };
 }

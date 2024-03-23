@@ -254,10 +254,10 @@ bool VfsStack::delete_file(const char* filename)
 	}
 }
 
-static void list_dir_inner(std::string_view prefix, Vfs* vfs, const char* directory, std::set<std::string, CaseInsensitive>& output)
+static void list_dir_inner(std::string_view prefix, Vfs* vfs, const char* directory, std::set<std::string, CaseInsensitive>* output)
 {
 	std::set<std::string, vanilla::CaseInsensitive> intermediate;
-	vfs->list_dir(directory, intermediate);
+	vfs->list_dir(directory, &intermediate);
 	for (auto each : intermediate)
 	{
 		if (each == "" || each == "." || each == "..")
@@ -267,16 +267,16 @@ static void list_dir_inner(std::string_view prefix, Vfs* vfs, const char* direct
 		if (ends_with(each, TOMBSTONE_SUFFIX))
 		{
 			each.erase(each.size() - TOMBSTONE_SUFFIX.size());
-			output.erase(each);
+			output->erase(each);
 		}
 		else
 		{
-			output.insert(std::move(each));
+			output->insert(std::move(each));
 		}
 	}
 }
 
-void VfsStack::list_dir(const char* directory, std::set<std::string, CaseInsensitive>& output)
+void VfsStack::list_dir(const char* directory, std::set<std::string, CaseInsensitive>* output)
 {
 	// Iterate bottom to top, so higher tombstones can erase their children
 	for (auto iter = mounts.begin(); iter != mounts.end(); ++iter)

@@ -29,13 +29,13 @@ namespace vanilla
 
 		Archive() {}
 
-		static const char* navigate(const char* path, Directory*& current);
-		static const char* navigate(const char* path, const Directory*& current);
+		static const char* navigate(const char* path, Directory** current);
+		static const char* navigate(const char* path, const Directory** current);
 
 		size_t get_file(const char* path) const;
 		const Directory* get_directory(const char* path) const;
 
-		bool list_dir(const char* path, std::set<std::string, CaseInsensitive>& output) const;
+		bool list_dir(const char* path, std::set<std::string, CaseInsensitive>* output) const;
 	};
 }  // namespace vanilla
 
