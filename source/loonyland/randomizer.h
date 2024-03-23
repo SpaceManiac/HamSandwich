@@ -53,6 +53,10 @@ bool HaveAllVamps(const std::set<int>& inv);
 
 bool HaveSpecialWeaponDamage(const std::set<int>& inv);
 
+bool HaveSpecialWeaponBullet(const std::set<int>& inv);
+
+bool HaveSpecialWeaponRangeDamage(const std::set<int>& inv);
+
 bool HaveAllMushrooms(const std::set<int>& inv);
 
 bool CanCleanseCrypts(const std::set<int>& inv);
