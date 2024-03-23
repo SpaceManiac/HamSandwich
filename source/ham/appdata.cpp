@@ -4,6 +4,7 @@
 #include <memory>
 #include <algorithm>
 #include <set>
+#include <utility>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -29,6 +30,7 @@
 #include "jamultypes.h"
 #include "metadata.h"
 #include "extern.h"
+#include "string_extras.h"
 
 using vanilla::Vfs;
 using vanilla::WriteVfs;
@@ -77,11 +79,13 @@ Pseudocode for SDL_RWFromFile(file, mode):
 		return fopen(file, mode)
 */
 
-static Mount init_vfs_spec(const char* what, const char* mountpoint, const char* kind, const char* param) {
+static Mount init_vfs_spec(const char* what, const char* mountpoint, const char* kind, const char* param)
+{
 	// For Steam releases, check if this installer is pre-extracted.
 	struct stat sb;
 	stat(param, &sb);
-	if ((sb.st_mode & S_IFMT) == S_IFDIR && strcmp(kind, "stdio")) {
+	if ((sb.st_mode & S_IFMT) == S_IFDIR && strcmp(kind, "stdio"))
+	{
 		SDL_Log("%s: ignoring '%s' and assuming '%s' is pre-extracted", what, kind, param);
 		return { vanilla::open_stdio(param), mountpoint, { vanilla::VfsSourceKind::BaseGame } };
 	}
@@ -89,23 +93,30 @@ static Mount init_vfs_spec(const char* what, const char* mountpoint, const char*
 	// Guess at kind. Not strictly accurate.
 	// Environment variable path currently uses this guess.
 	// Builtin knows more details.
-	if (!strcmp(kind, "stdio")) {
+	if (!strcmp(kind, "stdio"))
+	{
 		return { vanilla::open_stdio(param), mountpoint, { vanilla::VfsSourceKind::Appdata } };
-	} else if (!strcmp(kind, "zip")) {
+	}
+	else if (!strcmp(kind, "zip"))
+	{
 		owned::SDL_RWops fp = owned::SDL_RWFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
 			return { nullptr };
 		}
 		return { vanilla::open_zip(std::move(fp)), mountpoint, { vanilla::VfsSourceKind::Addon } };
-	} else if (!strcmp(kind, "nsis")) {
+	}
+	else if (!strcmp(kind, "nsis"))
+	{
 		owned::SDL_RWops fp = owned::SDL_RWFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
 			return { nullptr };
 		}
 		return { vanilla::open_nsis(std::move(fp)), mountpoint, { vanilla::VfsSourceKind::BaseGame } };
-	} else if (!strcmp(kind, "inno")) {
+	}
+	else if (!strcmp(kind, "inno"))
+	{
 		owned::SDL_RWops fp = owned::SDL_RWFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
@@ -113,7 +124,8 @@ static Mount init_vfs_spec(const char* what, const char* mountpoint, const char*
 		}
 		return { vanilla::open_inno(fp.get()), mountpoint, { vanilla::VfsSourceKind::BaseGame } };
 	}
-	else if (!strcmp(kind, "inno3")) {
+	else if (!strcmp(kind, "inno3"))
+	{
 		owned::SDL_RWops fp = owned::SDL_RWFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
@@ -122,11 +134,13 @@ static Mount init_vfs_spec(const char* what, const char* mountpoint, const char*
 		return { vanilla::open_inno3(std::move(fp)), mountpoint, { vanilla::VfsSourceKind::BaseGame } };
 	}
 #ifdef __ANDROID__
-	else if (!strcmp(kind, "android")) {
+	else if (!strcmp(kind, "android"))
+	{
 		return { vanilla::open_android(param), mountpoint, { vanilla::VfsSourceKind::BaseGame } };
 	}
 #endif
-	else {
+	else
+	{
 		LogError("%s: unknown kind '%s' in VFS spec '%s@%s@%s'", what, kind, mountpoint, kind, param);
 		return { nullptr };
 	}
@@ -304,7 +318,7 @@ static VfsStack vfs_stack_from_env(bool* error) {
 
 		char buffer[32];
 		for (int i = 0; i < 1024; ++i) {
-			sprintf(buffer, "HSW_ASSETS_%d", i);
+			ham_sprintf(buffer, "HSW_ASSETS_%d", i);
 			if (const char* asset_spec = SDL_getenv(buffer); asset_spec && *asset_spec) {
 				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s=%s", buffer, asset_spec);
 				auto mount = init_vfs_spec_str(buffer, asset_spec);
@@ -324,9 +338,9 @@ static VfsStack vfs_stack_from_env(bool* error) {
 	return result;
 }
 
-static bool check_assets(VfsStack& vfs) {
+static bool check_assets(VfsStack* vfs) {
 	// Every game has this asset, so use it to sanity check.
-	return vfs.open_sdl("sound/snd001.wav") != nullptr;
+	return vfs->open_sdl("sound/snd001.wav") != nullptr;
 }
 
 static char bin_dir_buf[1024] = {0};
@@ -336,10 +350,12 @@ const char* EscapeBinDirectory() {
 	if (!bin_dir_buf[0]) {
 		if (!getcwd(bin_dir_buf, sizeof(bin_dir_buf))) {
 			perror("EscapeBinDirectory: getcwd");
-			strcpy(bin_dir_buf, ".");
+			ham_strcpy(bin_dir_buf, ".");
 		}
 		if (vanilla::ends_with(bin_dir_buf, "/build/install") || vanilla::ends_with(bin_dir_buf, "\\build\\install")) {
-			(void)chdir("../..");
+			if (chdir("../..") < 0) {
+				perror("EscapeBinDirectory: chdir");
+			}
 		}
 	}
 #endif
@@ -393,14 +409,14 @@ static bool run_download_helper() {
 static VfsStack init_vfs_stack() {
 	bool error = false;
 	VfsStack result = vfs_stack_from_env(&error);
-	if (!error && check_assets(result)) {
+	if (!error && check_assets(&result)) {
 		return result;
 	}
 
 	if (run_download_helper()) {
 		error = false;
 		result = vfs_stack_from_env(&error);
-		if (!error && check_assets(result)) {
+		if (!error && check_assets(&result)) {
 			return result;
 		}
 	}

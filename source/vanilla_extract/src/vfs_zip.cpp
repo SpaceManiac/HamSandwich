@@ -4,7 +4,8 @@
 #include "vec_rw.h"
 #include "base_archive.h"
 
-using namespace vanilla;
+using vanilla::CaseInsensitive;
+using vanilla::Vfs;
 
 // ----------------------------------------------------------------------------
 // For Android's benefit, a wrapper from SDL_RWops to zip i/o
@@ -80,10 +81,10 @@ namespace owned
 				}
 			}
 		};
-	}
+	}  // namespace _deleter
 
 	typedef std::unique_ptr<::unzFile__, _deleter::unzFile__> unzFile;
-}
+}  // namespace owned
 
 // ----------------------------------------------------------------------------
 // Zip VFS implementation

@@ -1,4 +1,5 @@
 #include "ico.h"
+#include <utility>
 #include <SDL_image.h>
 
 struct IconDirEntry

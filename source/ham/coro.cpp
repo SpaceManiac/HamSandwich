@@ -48,7 +48,8 @@ struct executor {
 
 			current.resume();
 			// if resuming it finished it, awake its dependents
-			if (current.done()) {
+			if (current.done())
+			{
 				//printf("  done\n");
 				auto it = wake_on_done.find(current);
 				if (it != wake_on_done.end()) {
@@ -61,7 +62,8 @@ struct executor {
 				current.destroy();  // it's done, so destroy it
 			}
 #ifndef NDEBUG
-			else {
+			else
+			{
 				// if it isn't put to sleep, it's still awake
 				bool asleep = false;
 				for (const auto& pair : wake_on_done) {

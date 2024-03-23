@@ -1,17 +1,18 @@
 #include "jamulsound.h"
+#include <stdio.h>
+#include <limits.h>
+#include <memory>
+#include <vector>
+#include <utility>
+#include <SDL.h>
+#include <SDL_mixer.h>
 #include "hammusic.h"
 #include "log.h"
 #include "audiofx.h"
 #include "appdata.h"
 #include "extern.h"
-#include <stdio.h>
-#include <limits.h>
-#include <memory>
-
-#include <SDL.h>
-#include <SDL_mixer.h>
-
 #include "owned_mixer.h"
+#include "string_extras.h"
 
 struct soundList_t
 {
@@ -39,7 +40,7 @@ namespace
 	int bufferCount;
 	std::vector<soundList_t> soundList;
 	std::vector<schannel_t> schannel;
-}
+}  // namespace
 
 void SetJamulSoundEnabled(bool enable, int numSounds)
 {
@@ -169,7 +170,7 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 		if (!rw)
 		{
 			// If not, try to load it from a file instead
-			sprintf(s,"sound/snd%03d.wav",which);
+			ham_sprintf(s,"sound/snd%03d.wav",which);
 			rw = AssetOpen_SDL_Owned(s);
 			if (!rw)
 			{

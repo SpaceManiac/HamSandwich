@@ -1,4 +1,7 @@
 #include "mgldraw.h"
+#include <time.h>
+#include <random>
+#include <algorithm>
 #include "clock.h"
 #include "jamulsound.h"
 #include "hammusic.h"
@@ -8,9 +11,7 @@
 #include "extern.h"
 #include "ico.h"
 #include "openurl.h"
-#include <time.h>
-#include <random>
-#include <algorithm>
+#include "string_extras.h"
 
 #include <SDL_image.h>
 #ifdef _WIN32
@@ -130,17 +131,18 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	SDL_GetRendererInfo(renderer, &info);
 	LogDebug("renderer: %s", info.name);
 
-	char flagbuf[64] = "  flags:";
+	char flagbuf[64];
+	span<char> dst = ham_strcpy(flagbuf, "  flags:");
 	if (info.flags & SDL_RENDERER_SOFTWARE)
-		strcat(flagbuf, " software");
+		dst = ham_strcpy(dst, " software");
 	if (info.flags & SDL_RENDERER_ACCELERATED)
-		strcat(flagbuf, " accelerated");
+		dst = ham_strcpy(dst, " accelerated");
 	if (info.flags & SDL_RENDERER_PRESENTVSYNC)
-		strcat(flagbuf, " vsync");
+		dst = ham_strcpy(dst, " vsync");
 	if (info.flags & SDL_RENDERER_TARGETTEXTURE)
-		strcat(flagbuf, " ttex");
+		dst = ham_strcpy(dst, " ttex");
 	if (!info.flags)
-		strcat(flagbuf, " 0");
+		dst = ham_strcpy(dst, " 0");
 	LogDebug("%s", flagbuf);
 	LogDebug("  texture: (%d, %d)", info.max_texture_width, info.max_texture_height);
 	LogDebug("  formats (%d):", info.num_texture_formats);
@@ -491,7 +493,7 @@ TASK(void) MGLDraw::FinishFlip(void)
 				tm* clock = localtime(&timeobj);
 
 				char fname[128];
-				sprintf(fname, "Screenshot %04d-%02d-%02d %02d-%02d-%02d.bmp", 1900 + clock->tm_year, 1 + clock->tm_mon, clock->tm_mday, clock->tm_hour, clock->tm_min, clock->tm_sec);
+				ham_sprintf(fname, "Screenshot %04d-%02d-%02d %02d-%02d-%02d.bmp", 1900 + clock->tm_year, 1 + clock->tm_mon, clock->tm_mday, clock->tm_hour, clock->tm_min, clock->tm_sec);
 				SaveBMP(fname);
 			}
 		}
@@ -1133,12 +1135,14 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 	}
 
 	if(pal && b->format->palette)
+	{
 		for(int i = 0; i < 256 && i < b->format->palette->ncolors; i++)
 		{
 			pal[i].r = b->format->palette->colors[i].r;
 			pal[i].g = b->format->palette->colors[i].g;
 			pal[i].b = b->format->palette->colors[i].b;
 		}
+	}
 
 	if (b->format->BitsPerPixel != 8)
 	{
@@ -1184,8 +1188,9 @@ bool MGLDraw::SaveBMP(const char *name)
 	SDL_Surface* surface = SDL_CreateRGBSurface(0, xRes, yRes, 8, 0, 0, 0, 0);
 #endif
 	SDL_LockSurface(surface);
+	uint8_t* pixels = (uint8_t*)surface->pixels;
 	for (int y = 0; y < yRes; ++y)
-		memcpy(&((uint8_t*)surface->pixels)[y * surface->pitch], &scrn[y * pitch], xRes);
+		memcpy(&pixels[y * surface->pitch], &scrn[y * pitch], xRes);
 	SDL_UnlockSurface(surface);
 	for (int i = 0; i < 256; ++i)
 	{
@@ -1204,8 +1209,9 @@ bool MGLDraw::SavePNG(const char* name)
 	SDL_Surface* surface = SDL_CreateRGBSurface(0, xRes, yRes, 8, 0, 0, 0, 0);
 #endif
 	SDL_LockSurface(surface);
+	uint8_t* pixels = (uint8_t*)surface->pixels;
 	for (int y = 0; y < yRes; ++y)
-		memcpy(&((uint8_t*)surface->pixels)[y * surface->pitch], &scrn[y * pitch], xRes);
+		memcpy(&pixels[y * surface->pitch], &scrn[y * pitch], xRes);
 	SDL_UnlockSurface(surface);
 	for (int i = 0; i < 256; ++i)
 	{

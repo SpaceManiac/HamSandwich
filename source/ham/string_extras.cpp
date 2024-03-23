@@ -1,5 +1,6 @@
 #include "string_extras.h"
 #include <string.h>
+#include <algorithm>
 #include <SDL_assert.h>
 
 char* StringDestination::prepare(size_t *len)

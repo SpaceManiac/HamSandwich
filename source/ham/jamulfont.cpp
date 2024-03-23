@@ -1,10 +1,16 @@
 #include "jamulfont.h"
+#include <stdio.h>
+#include <string.h>
+#include <algorithm>
+#include <string>
 #include "mgldraw.h"
 #include "appdata.h"
 #include "owned_sdl.h"
 #include "recolor.h"
-#include <stdio.h>
-#include <algorithm>
+
+#ifdef _MSC_VER
+#define strtok_r strtok_s
+#endif
 
 // Size of the header in .jft files, fixed by the format.
 constexpr int MFONT_SIZE_TOTAL = 528;
@@ -683,13 +689,13 @@ void FontPrintStringCursorLit(int x,int y,byte pos,byte blink,std::string_view s
 void FontPrintRectBlack(int x,int y,int x2,int y2, std::string_view s,int height,int bright,const mfont_t *font)
 {
 	int tx,ty,len;
-	char *tok;
+	char *tok, *save = nullptr;
 
 	std::string tmp { s };
 
 	tx=x+2;
 	ty=y+2;
-	tok=strtok(tmp.data()," \n\t");
+	tok=strtok_r(tmp.data()," \n\t", &save);
 	while(tok)
 	{
 		if(tok[0]=='^')
@@ -719,7 +725,7 @@ void FontPrintRectBlack(int x,int y,int x2,int y2, std::string_view s,int height
 			tx+=len;
 			tx+=font->spaceSize;
 		}
-		tok=strtok(NULL," \n\t");
+		tok=strtok_r(NULL, " \n\t", &save);
 		if(bright>32)
 		{
 			return;
@@ -730,13 +736,13 @@ void FontPrintRectBlack(int x,int y,int x2,int y2, std::string_view s,int height
 void FontPrintRectBlack2(int x,int y,int x2,int y2, std::string_view s,int height,const mfont_t *font)
 {
 	int tx,ty,len;
-	char *tok;
+	char *tok, *save = nullptr;
 
 	std::string tmp { s };
 
 	tx=x+2;
 	ty=y+2;
-	tok=strtok(tmp.data()," \n\t");
+	tok=strtok_r(tmp.data()," \n\t",&save);
 	while(tok)
 	{
 		if(tok[0]=='^')
@@ -765,7 +771,7 @@ void FontPrintRectBlack2(int x,int y,int x2,int y2, std::string_view s,int heigh
 			tx+=len;
 			tx+=font->spaceSize;
 		}
-		tok=strtok(NULL," \n\t");
+		tok=strtok_r(NULL," \n\t",&save);
 	}
 }
 
@@ -879,13 +885,13 @@ void FontPrintStringBrightLimit(int x,int y,int maxX,std::string_view s,const mf
 void FontPrintStringRect(int x,int y,int x2,int y2,std::string_view s,int height,const mfont_t *font)
 {
 	int tx,ty;
-	char *tok;
+	char *tok, *save = nullptr;
 
 	std::string tmp { s };
 
 	tx=x+2;
 	ty=y+2;
-	tok=strtok(tmp.data()," \n\t");
+	tok=strtok_r(tmp.data()," \n\t",&save);
 	while(tok)
 	{
 		if(tok[0]=='^')
@@ -916,20 +922,20 @@ void FontPrintStringRect(int x,int y,int x2,int y2,std::string_view s,int height
 			}
 			tx+=CharWidth(' ',font)+font->gapSize;
 		}
-		tok=strtok(NULL," \n\t");
+		tok=strtok_r(NULL," \n\t",&save);
 	}
 }
 
 void FontPrintStringGlowRect(int x,int y,int x2,int y2,std::string_view s,int height,char bright,const mfont_t *font)
 {
 	int tx,ty;
-	char *tok;
+	char *tok, *save = nullptr;
 
 	std::string tmp { s };
 
 	tx=x+2;
 	ty=y+2;
-	tok=strtok(tmp.data()," \n\t");
+	tok=strtok_r(tmp.data()," \n\t",&save);
 	while(tok)
 	{
 		if(tok[0]=='^')
@@ -960,7 +966,7 @@ void FontPrintStringGlowRect(int x,int y,int x2,int y2,std::string_view s,int he
 			}
 			tx+=CharWidth(' ',font)+font->gapSize;
 		}
-		tok=strtok(NULL," \n\t");
+		tok=strtok_r(NULL," \n\t",&save);
 	}
 }
 
@@ -1003,13 +1009,13 @@ void FontPrintStringUnGlow(int x,int y,std::string_view s,const mfont_t *font)
 void FontPrintStringUnGlowRect(int x,int y,int x2,int y2,std::string_view s,int height,const mfont_t *font)
 {
 	int tx,ty;
-	char *tok;
+	char *tok, *save = nullptr;
 
 	std::string tmp { s };
 
 	tx=x+2;
 	ty=y+2;
-	tok=strtok(tmp.data()," \n\t");
+	tok=strtok_r(tmp.data()," \n\t",&save);
 	while(tok)
 	{
 		if(tok[0]=='^')
@@ -1040,7 +1046,7 @@ void FontPrintStringUnGlowRect(int x,int y,int x2,int y2,std::string_view s,int 
 			}
 			tx+=CharWidth(' ',font)+font->gapSize;
 		}
-		tok=strtok(NULL," \n\t");
+		tok=strtok_r(NULL," \n\t",&save);
 	}
 }
 

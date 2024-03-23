@@ -3272,7 +3272,7 @@ void FireBulletZ(int x,int y,int z,byte facing,byte type)
 // this is used for the Megabeam to ensure that all the laser bits stay lined up nicely
 void FireBulletAfter(int x,int y,byte facing,byte type,bullet_t *thisone)
 {
-	int i,j,start;
+	int i,j,start=MAX_BULLETS;
 
 	for(j=0;j<MAX_BULLETS;j++)
 		if(&bullet[j]==thisone)

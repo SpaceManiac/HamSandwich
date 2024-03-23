@@ -3,7 +3,6 @@
 #include "jamulfmv.h"
 #include "pause.h"
 #include "options.h"
-#include "pause.h"
 #include "plasma.h"
 #include "palettes.h"
 #include "appdata.h"
@@ -358,7 +357,7 @@ void DiffChooseDisplay(MGLDraw *mgl)
 {
 	int i;
 
-	const static char diffDesc[][128]={
+	static const char diffDesc[][128]={
 		// beginner
 		"Enemies never do more than 1 Heart of damage, and move slower than normal.  You",
 		"begin with 15 Hearts, and do extra damage.  Enemies drop more items than normal.",

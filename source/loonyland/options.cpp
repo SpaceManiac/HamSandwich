@@ -405,7 +405,7 @@ void RenderControls(int x,int y)
 
 void RenderOptionsMenu(MGLDraw *mgl)
 {
-	const static char onoff[3][8]={"Off","On"};
+	static const char onoff[3][8]={"Off","On"};
 	char buf[32];
 
 	int wid;
@@ -562,7 +562,7 @@ void KilledBoss(byte boss)
 	SaveOptions();
 }
 
-const static char difficultyName[][18] = {
+static const char difficultyName[][18] = {
 	"Beginner",
 	"Normal",
 	"Challenge",
@@ -580,7 +580,7 @@ const char* DifficultyName(byte difficulty)
 	return "???";
 }
 
-const static char playerCharacterName[][11] = {
+static const char playerCharacterName[][11] = {
 	"Loony",
 	"Bonkula",
 	"Toad",

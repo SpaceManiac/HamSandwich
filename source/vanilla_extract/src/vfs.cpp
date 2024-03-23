@@ -7,7 +7,7 @@
 #include <unistd.h>
 #endif
 
-using namespace vanilla;
+namespace vanilla {
 
 #ifndef __GNUC__
 #define strncasecmp _strnicmp
@@ -17,7 +17,7 @@ using namespace vanilla;
 // ----------------------------------------------------------------------------
 // Simple helpers
 
-bool vanilla::ends_with(std::string_view lhs, std::string_view rhs)
+bool ends_with(std::string_view lhs, std::string_view rhs)
 {
 	return lhs.size() >= rhs.size() && lhs.compare(lhs.size() - rhs.size(), std::string_view::npos, rhs) == 0;
 }
@@ -136,7 +136,7 @@ owned::FILE Mount::open_stdio(const char* filename)
 // ----------------------------------------------------------------------------
 // VfsStack implementation
 
-const static std::string_view TOMBSTONE_SUFFIX = ".$delete";
+static const std::string_view TOMBSTONE_SUFFIX = ".$delete";
 
 static std::string tombstone_name(std::string_view filename)
 {
@@ -334,3 +334,5 @@ bool VfsStack::query_bottom(const char* filename, VfsMeta* meta)
 	}
 	return retval;
 }
+
+}  // namespace vanilla
