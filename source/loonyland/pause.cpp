@@ -476,6 +476,9 @@ void LoadGame(int i)
 			player.invinc=60;	// and make you invincible briefly
 	}
 	noSaving=0;
+
+	saveOffset = 5 * (i / 5);
+	subcursor = i % 5;
 }
 
 void SaveGame(int i)
