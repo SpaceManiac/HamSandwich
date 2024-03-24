@@ -348,17 +348,7 @@ UpdateRandomizerMenu(int* lastTime, MGLDraw* mgl)
 					if (!seed.empty()) {
 						std::seed_seq seed2(seed.begin(), seed.end());
 						rng = std::minstd_rand0(seed2);
-						bool success = false;
-
-						while (!success) {
-							std::vector<location> loc;
-							RandomFill(loc);
-							success = CheckBeatable(loc);
-							genTries++;
-							//MakeNormalSound(SND_MENUCANCEL);
-						}
-						generated = true;
-						MakeNormalSound(SND_POWERUP);
+						optMode = 2;
 					}
 					else {
 						MakeNormalSound(SND_MENUCANCEL);
@@ -429,9 +419,34 @@ UpdateRandomizerMenu(int* lastTime, MGLDraw* mgl)
 			}
 			c2 = 255;
 			break;
+		case 2: //generating
+
+			c = mgl->LastKeyPressed();
+			c2 = GetControls() | GetArrows();
+
+			std::vector<location> loc;
+			RandomFill(loc);
+			if (CheckBeatable(loc)) {
+				optMode = 0;
+				generated = true;
+				MakeNormalSound(SND_POWERUP);
+
+			}
+			genTries++;
+			if (c == SDLK_ESCAPE || c == SDLK_RETURN) // ESC key
+			{
+				optMode = 0;
+				c2 = 255;
+				oldc = 255;
+				mgl->LastKeyPressed();
+				MakeNormalSound(SND_MENUCANCEL);
+				CO_RETURN 0;
+			}
 		}
 
+
 		oldc = c2;
+
 
 		UpdatePlasma();
 
@@ -485,12 +500,12 @@ void RenderRandomizerMenu(MGLDraw* mgl)
 		}
 	}
 
-	PrintColor(240, 60 + CURSOR_GENERATE * 20, "Generate", 7, -10, 0);
-	PrintColor(350, 60 + CURSOR_GENERATE * 20, strTries.c_str(), 7, -10, 0);
+	PrintColor(240, 60 + CURSOR_GENERATE * 20, "Generate      tries", 7, -10, 0);
+	PrintColor(330, 60 + CURSOR_GENERATE * 20, strTries.c_str(), 7, -10, 0);
 	if (cursor == CURSOR_GENERATE)
 	{
-		PrintColor(239, 59 + CURSOR_GENERATE * 20, "Generate", 0, 0, 0);
-		PrintColor(349, 59 + CURSOR_GENERATE * 20, strTries.c_str(), 7, -10, 0);
+		PrintColor(239, 59 + CURSOR_GENERATE * 20, "Generate      tries", 0, 0, 0);
+		PrintColor(329, 59 + CURSOR_GENERATE * 20, strTries.c_str(), 7, 0, 0);
 	}
 
 	PrintColor(240, 60 + CURSOR_PLAY * 20, "Play!", 7, -10, 0);
