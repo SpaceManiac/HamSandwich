@@ -408,12 +408,12 @@ void GetSaves(void)
 {
 	FILE *f;
 	int i;
-	char txt[12];
+	char txt[32];
 	player_t p;
 
 	for(i=0;i<5;i++)
 	{
-		sprintf(txt,"save%d.sav", saveOffset + i + 1);
+		ham_sprintf(txt,"save%d.sav", saveOffset + i + 1);
 		f=AppdataOpen(txt);
 		if(!f)
 		{
@@ -432,9 +432,9 @@ void GetSaves(void)
 void LoadGame(int i)
 {
 	FILE *f;
-	char txt[12];
+	char txt[32];
 
-	sprintf(txt,"save%d.sav",i+1);
+	ham_sprintf(txt,"save%d.sav",i+1);
 	f=AppdataOpen(txt);
 	if(!f)
 	{
@@ -484,9 +484,9 @@ void LoadGame(int i)
 void SaveGame(int i)
 {
 	FILE *f;
-	char txt[12];
+	char txt[32];
 
-	sprintf(txt,"save%d.sav",i+1);
+	ham_sprintf(txt,"save%d.sav",i+1);
 	f=AppdataOpen_Write(txt);
 	if(!f)
 	{
@@ -513,9 +513,9 @@ void SaveGame(int i)
 
 void DeleteSave(int i)
 {
-	char txt[12];
+	char txt[32];
 
-	sprintf(txt,"save%d.sav",i);
+	ham_sprintf(txt,"save%d.sav",i);
 	AppdataDelete(txt);
 }
 

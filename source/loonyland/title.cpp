@@ -262,7 +262,7 @@ void GetSavesForMenu(void)
 
 	for(i=0;i<5;i++)
 	{
-		sprintf(txt,"save%d.sav", saveOffset + i + 1);
+		ham_sprintf(txt,"save%d.sav", saveOffset + i + 1);
 		f=AppdataOpen(txt);
 		if(!f)
 		{
