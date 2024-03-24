@@ -85,13 +85,13 @@ location basic_locations[R_NUM_LOCATIONS] = {
 	{false, "Swamp Gas Cavern", 6, 3, 7, 23, 24, "Stair room", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
 	{false, "Swamp Gas Cavern", 6, 43, 58, 18, 19, "Rock Prison", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS) && inv.count(VAR_WEAPON); }},
 	{false, "A Tiny Cabin", 7, 11, 16, 1, 2, "Tiny Cabin", [](const std::set<int>& inv) { return inv.count(VAR_SKULLKEY); }},
-	{false, "A Cabin", 8, 19, 15, 3, 4, "Bedside ", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
+	{false, "A Cabin", 8, 19, 15, 3, 4, "Bedside ", [](const std::set<int>& inv) { return CanEnterLoonyton(inv); }},
 	{false, "Dusty Crypt", 10, 2, 44, 2, 3, "Pumpkin Door", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_PUMPKINKEY); }},
 	{false, "Dusty Crypt", 10, 5, 36, 4, 5, "Maze", [](const std::set<int>& inv) { return HaveLightSource(inv); }},
-	{false, "Musty Crypt", 11, 51, 82, 11, 12, "Big Closed Room", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_BOOTS) && HaveSpecialWeaponBullet(inv); }},
+	{false, "Musty Crypt", 11, 51, 82, 11, 12, "Big Closed Room", [](const std::set<int>& inv) { return HaveLightSource(inv) && CanEnterLoonyton(inv) && HaveSpecialWeaponBullet(inv); }},
 	{false, "Rusty Crypt", 12, 49, 73, 15, 16, "Spike Vine", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_FERTILIZER); }},
 	{false, "Rusty Crypt", 12, 7, 97, 0, 1, "Boulders", [](const std::set<int>& inv) { return HaveLightSource(inv); }},
-	{false, "A Messy Cabin", 13, 13, 6, 1, 2, "Barrel Mess", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
+	{false, "A Messy Cabin", 13, 13, 6, 1, 2, "Barrel Mess", [](const std::set<int>& inv) { return CanEnterLoonyton(inv); }},
 	{false, "Under the Lake", 14, 40, 13, 6, 7, "Lightning Rod Secret", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAllOrbs(inv); }},
 	{false, "Under the Lake", 14, 73, 20, 8, 9, "Bat Door", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_BATKEY) && HaveAllOrbs(inv); }},
 	{false, "Deeper Under the Lake", 15, 58, 77, 12, 13, "SE corner", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAllOrbs(inv); }},
@@ -851,7 +851,12 @@ bool HaveAllMushrooms(const std::set<int>& inv)
 
 bool CanCleanseCrypts(const std::set<int>& inv)
 {
-	return (HaveLightSource(inv) && inv.count(VAR_BOOTS) && HaveSpecialWeaponRangeDamage(inv));
+	return (HaveLightSource(inv) && CanEnterLoonyton(inv) && HaveSpecialWeaponRangeDamage(inv));
+}
+
+bool CanEnterLoonyton(const std::set<int>& inv)
+{
+	return inv.count(VAR_BOOTS);
 }
 
 bool CanEnterRockyCliffs(const std::set<int>& inv)

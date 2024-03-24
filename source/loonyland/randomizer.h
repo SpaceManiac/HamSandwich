@@ -61,6 +61,8 @@ bool HaveSpecialWeaponThroughWalls(const std::set<int>& inv);
 
 bool HaveAllMushrooms(const std::set<int>& inv);
 
+bool CanEnterLoonyton(const std::set<int>& inv);
+
 bool CanCleanseCrypts(const std::set<int>& inv);
 
 bool CanEnterRockyCliffs(const std::set<int>& inv);
