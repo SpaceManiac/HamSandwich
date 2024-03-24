@@ -444,13 +444,13 @@ byte Guy::IsActive(Map *map)
 		{
 			// Matches AnyMonsterExists so "kill all guys" checks only requires you to get red off the radar.
 			if(type==player.monsType)
-				AddRadarBlip(mapx,mapy,32*1+16,map);  // player: green
+				AddRadarBlip(x,y,32*1+16,map);  // player: green
 			else if(type==MONS_HELPERBAT || (type >= MONS_VILLAGER && type <= MONS_VILLAGER6) || (type >= MONS_SUMBOMBIE && type <= MONS_SUMDOG))
-				AddRadarBlip(mapx,mapy,31,map);  // allies: gray
+				AddRadarBlip(x,y,31,map);  // allies: gray
 			else if(type==MONS_EVILTREE2 || type == MONS_LIGHTBALL || type == MONS_LIGHTBALL2 || type == MONS_LIGHTBALL4 || type == MONS_LIGHTBALL5 || type == MONS_BUBBLE)
-				AddRadarBlip(mapx,mapy,224+20,map);  // invincible guys: lightish aqua
+				AddRadarBlip(x,y,224+20,map);  // invincible guys: lightish aqua
 			else
-				AddRadarBlip(mapx,mapy,128+16,map);  // normal guys: red
+				AddRadarBlip(x,y,128+16,map);  // normal guys: red
 			// evilizer, bonkula, wolfmen etc. are red despite sometimes being invincible
 		}
 	}
