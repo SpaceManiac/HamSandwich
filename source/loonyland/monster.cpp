@@ -446,7 +446,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,14,15,15,14,13,255},	// point = A2
 			}},
 		{"Happy Stick Witch",{255,255,0},
-		 100,12,20,500,5,8*FIXAMT,"graphics/altwitch.jsp",0,MF_ONEFACE,
+		 100,12,20,500,5,8*FIXAMT,"graphics/stikwtch.jsp",0,MF_ONEFACE,
 			{
 				{0,255},	// idle
 				{1,1,0,2,2,0,255},	// move
