@@ -572,6 +572,11 @@ void RandomizeSeed() {
 	}
 }
 
+void ClearSeed() {
+	seed = "";
+	genTries = 0;
+}
+
 
 
 int RandomFill(std::vector<location>& locs)

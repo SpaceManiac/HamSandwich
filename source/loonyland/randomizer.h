@@ -39,6 +39,8 @@ struct location
 
 void RandomizeSeed();
 
+void ClearSeed();
+
 void PlaceItems(std::vector<location>& loc);
 
 bool HaveLightSource(const std::set<int>& inv);

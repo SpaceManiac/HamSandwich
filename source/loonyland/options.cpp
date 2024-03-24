@@ -7,6 +7,8 @@
 #include "title.h"
 #include "plasma.h"
 #include "appdata.h"
+#include "randomizer.h"
+
 
 #include <map>
 
@@ -614,4 +616,7 @@ void ResetCharacterCheats()
 	opt.cheats[CH_WEREWOLF] = 0;
 	opt.cheats[CH_SUMMON] = 0;
 	opt.cheats[CH_THIEF] = 0;
+
+	//invalidate randomizer seed
+	ClearSeed();
 }
