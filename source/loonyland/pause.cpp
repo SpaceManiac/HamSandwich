@@ -632,7 +632,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			if(subcursor==5)
 				subcursor=0;
 		}
-		if ((c & CONTROL_LF) && (!reptCounter))
+		if ((c & CONTROL_LF) && (!reptCounter) && player.worldNum == WORLD_RANDOMIZER)
 		{
 			warpCount++;
 			if (warpCount > 4) {
