@@ -611,6 +611,7 @@ bool CheckBeatable(std::vector<location>& locs) {
 	//std::vector<location> visited;
 	bool gotEvilizer = false;
 	bool result = false;
+	int sphere = 0;
 	int foundItems = 0;
 
 	do
@@ -639,9 +640,18 @@ bool CheckBeatable(std::vector<location>& locs) {
 				//std::cout << "cant get " << l.description << "\n";
 			}
 		}
+		if (sphere == 0 && opt.cheats[CH_WITCH] && !tempItems.count(VAR_WEAPON + 3)) {
+			//make sure witch has cactus
+			collectedItems.clear();
+			tempItems.clear();
+			remainingLocs.clear();
+
+			return false;
+		}
 		//printf("%d locations\n", foundItems);
 		collectedItems.insert(tempItems.begin(), tempItems.end());
 		tempItems.clear();
+		sphere++;
 
 	} while (foundItems > 0);
 
