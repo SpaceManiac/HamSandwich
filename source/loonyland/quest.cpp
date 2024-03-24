@@ -2194,8 +2194,10 @@ void RenderChat(MGLDraw *mgl)
 
 void GiveRandoItem(int index)
 {
-	PlayerSetVar(randoReward[index].playerVarId, 1);
-	PlayerGetItem(randoReward[index].itemId, 0, 0);
+	if (player.var[randoReward[index].playerVarId] == 0) { //check var before giving item, incase of badges
+		PlayerSetVar(randoReward[index].playerVarId, 1);
+		PlayerGetItem(randoReward[index].itemId, 0, 0);
+	}
 }
 //--------------------------------------------
 // END CHATTING
