@@ -332,6 +332,11 @@ byte LunaticRun(int *lastTime)
 					lastKey=0;
 					return WORLD_QUITGAME;	// dump out altogether
 					break;
+				case 5:
+					mapToGoTo = 0;
+					lastKey = 0;
+					return LEVEL_ABORT;
+					break;
 			}
 			
 		}

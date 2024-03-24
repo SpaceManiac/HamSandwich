@@ -18,6 +18,7 @@ static byte darkness;
 static int offX;
 static byte oldc;
 static byte noSaving=0;
+static int warpCount = 0;
 
 void SetSubCursor(byte s)
 {
@@ -542,6 +543,7 @@ void InitPauseMenu(void)
 	darkness=0;
 	offX=400;
 	oldc=255;
+	warpCount = 0;
 
 	GetSaves();
 }
@@ -618,15 +620,24 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 	{
 		if((c&CONTROL_UP) && (!reptCounter))
 		{
+			warpCount = 0;
 			subcursor--;
 			if(subcursor==255)
 				subcursor=4;
 		}
 		if((c&CONTROL_DN) && (!reptCounter))
 		{
+			warpCount = 0;
 			subcursor++;
 			if(subcursor==5)
 				subcursor=0;
+		}
+		if ((c & CONTROL_LF) && (!reptCounter))
+		{
+			warpCount++;
+			if (warpCount > 4) {
+				return 5;
+			}
 		}
 		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
 		   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
