@@ -43,6 +43,8 @@ void ClearSeed();
 
 void PlaceItems(std::vector<location>& loc);
 
+bool HaveBombs(const std::set<int>& inv);
+
 bool HaveLightSource(const std::set<int>& inv);
 
 bool HaveAnyBigGem(const std::set<int>& inv);

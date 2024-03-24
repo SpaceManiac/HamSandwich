@@ -56,7 +56,7 @@ location basic_locations[R_NUM_LOCATIONS] = {
 	{false, "Halloween Hill",  0, 83, 145, 33, 34, "Terror Glade", [](const std::set<int>& inv) { return true; }},
 	{false, "Halloween Hill",  0, 1, 73, 47, 48, "Rocky Cliffs Vine", [](const std::set<int>& inv) { return inv.count(VAR_FERTILIZER); }},
 	{false, "Halloween Hill",  0, 30, 39, 73, 74, "Rocky Cliffs Grand Pharoh", [](const std::set<int>& inv) { return CanEnterRockyCliffs(inv); }},
-	{false, "Halloween Hill",  0, 69, 59, 66, 67, "Rocky Cliffs Rock Corner", [](const std::set<int>& inv) { return CanEnterRockyCliffs(inv) && inv.count(VAR_WEAPON); }},
+	{false, "Halloween Hill",  0, 69, 59, 66, 67, "Rocky Cliffs Rock Corner", [](const std::set<int>& inv) { return CanEnterRockyCliffs(inv) && HaveBombs(inv); }},
 	{false, "Halloween Hill",  0, 115, 70, 18, 19, "Mushroom outside town", [](const std::set<int>& inv) { return true; }},
 	{false, "Halloween Hill",  0, 159, 85, 20, 21, "North of UG Passage", [](const std::set<int>& inv) { return true; }},
 	{false, "Halloween Hill", 0, 117, 33, 22, 23, "Top left mushroom spot", [](const std::set<int>& inv) { return true; }},
@@ -83,7 +83,7 @@ location basic_locations[R_NUM_LOCATIONS] = {
 	{false, "Swamp Gas Cavern", 6, 32, 45, 2, 3, "Scratch Wall", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS) && HaveSpecialWeaponBullet(inv); }},
 	{false, "Swamp Gas Cavern", 6, 44, 37, 15, 17, "Bat Mound", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS) && inv.count(VAR_BATKEY); }},
 	{false, "Swamp Gas Cavern", 6, 3, 7, 23, 24, "Stair room", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
-	{false, "Swamp Gas Cavern", 6, 43, 58, 18, 19, "Rock Prison", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS) && inv.count(VAR_WEAPON); }},
+	{false, "Swamp Gas Cavern", 6, 43, 58, 18, 19, "Rock Prison", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS) && HaveBombs(inv); }},
 	{false, "A Tiny Cabin", 7, 11, 16, 1, 2, "Tiny Cabin", [](const std::set<int>& inv) { return inv.count(VAR_SKULLKEY); }},
 	{false, "A Cabin", 8, 19, 15, 3, 4, "Bedside ", [](const std::set<int>& inv) { return CanEnterLoonyton(inv); }},
 	{false, "Dusty Crypt", 10, 2, 44, 2, 3, "Pumpkin Door", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_PUMPKINKEY); }},
@@ -778,6 +778,11 @@ bool HaveLightSource(const std::set<int>& inv)
 	return (inv.count(VAR_LANTERN) || inv.count(VAR_STICK) && inv.count(VAR_BOOTS) || inv.count(VAR_TORCH));
 }
 
+bool HaveBombs(const std::set<int>& inv)
+{
+	return inv.count(VAR_WEAPON) || opt.cheats[CH_WEREWOLF];
+}
+
 bool HaveAnyBigGem(const std::set<int>& inv)
 {
 	return (inv.count(VAR_GEM) || inv.count(VAR_GEM + 1) || inv.count(VAR_GEM + 2) ||
@@ -823,26 +828,39 @@ bool HaveSpecialWeaponDamage(const std::set<int>& inv)
 
 bool HaveSpecialWeaponBullet(const std::set<int>& inv)
 {
-	return (inv.count(VAR_WEAPON) 
-		//|| inv.count(VAR_WEAPON + 1) shock wand isn't bullet
-		|| inv.count(VAR_WEAPON + 2) 
-		|| inv.count(VAR_WEAPON + 3) 
-		|| inv.count(VAR_WEAPON + 4) 
-		|| inv.count(VAR_WEAPON + 5) 
-		|| inv.count(VAR_WEAPON + 6)   //pants surprisingly are
-		);
+	if (opt.cheats[CH_TOAD] || opt.cheats[CH_BONKULA]) {
+		return (inv.count(VAR_WEAPON)
+			//|| inv.count(VAR_WEAPON + 1) shock wand isn't bullet
+			|| inv.count(VAR_WEAPON + 2)
+			|| inv.count(VAR_WEAPON + 3)
+			|| inv.count(VAR_WEAPON + 4)
+			|| inv.count(VAR_WEAPON + 5)
+			|| inv.count(VAR_WEAPON + 6)   //pants surprisingly are
+			);
+	}
+	else
+	{
+		return true; //slingshot counts
+	}
 }
 
 bool HaveSpecialWeaponRangeDamage(const std::set<int>& inv)
 {
-	return (inv.count(VAR_WEAPON)
-		|| inv.count(VAR_WEAPON + 1)
-		//|| inv.count(VAR_WEAPON + 2) Ice spear no damage
-		|| inv.count(VAR_WEAPON + 3)
-		|| inv.count(VAR_WEAPON + 4)
-		//|| inv.count(VAR_WEAPON + 5) whopee not ranged
-		//|| inv.count(VAR_WEAPON + 6)	   hot pants not ranged
-		);
+	if (opt.cheats[CH_TOAD])
+	{
+		return (inv.count(VAR_WEAPON)
+			|| inv.count(VAR_WEAPON + 1)
+			//|| inv.count(VAR_WEAPON + 2) Ice spear no damage
+			|| inv.count(VAR_WEAPON + 3)
+			|| inv.count(VAR_WEAPON + 4)
+			//|| inv.count(VAR_WEAPON + 5) whopee not ranged
+			//|| inv.count(VAR_WEAPON + 6)	   hot pants not ranged
+			);
+	}
+	else
+	{
+		return true;
+	}
 }
 
 /*bool HaveSpecialWeaponThroughWalls(const std::set<int>& inv)
