@@ -85,13 +85,13 @@ location basic_locations[R_NUM_LOCATIONS] = {
 	{false, "Swamp Gas Cavern", 6, 3, 7, 23, 24, "Stair room", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
 	{false, "Swamp Gas Cavern", 6, 43, 58, 18, 19, "Rock Prison", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS) && inv.count(VAR_WEAPON); }},
 	{false, "A Tiny Cabin", 7, 11, 16, 1, 2, "Tiny Cabin", [](const std::set<int>& inv) { return inv.count(VAR_SKULLKEY); }},
-	{false, "A Cabin", 8, 19, 15, 3, 4, "Bedside ", [](const std::set<int>& inv) { return true; }},
+	{false, "A Cabin", 8, 19, 15, 3, 4, "Bedside ", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
 	{false, "Dusty Crypt", 10, 2, 44, 2, 3, "Pumpkin Door", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_PUMPKINKEY); }},
 	{false, "Dusty Crypt", 10, 5, 36, 4, 5, "Maze", [](const std::set<int>& inv) { return HaveLightSource(inv); }},
 	{false, "Musty Crypt", 11, 51, 82, 11, 12, "Big Closed Room", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_BOOTS) && HaveSpecialWeaponBullet(inv); }},
 	{false, "Rusty Crypt", 12, 49, 73, 15, 16, "Spike Vine", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_FERTILIZER); }},
 	{false, "Rusty Crypt", 12, 7, 97, 0, 1, "Boulders", [](const std::set<int>& inv) { return HaveLightSource(inv); }},
-	{false, "A Messy Cabin", 13, 13, 6, 1, 2, "Barrel Mess", [](const std::set<int>& inv) { return true; }},
+	{false, "A Messy Cabin", 13, 13, 6, 1, 2, "Barrel Mess", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
 	{false, "Under the Lake", 14, 40, 13, 6, 7, "Lightning Rod Secret", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAllOrbs(inv); }},
 	{false, "Under the Lake", 14, 73, 20, 8, 9, "Bat Door", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_BATKEY) && HaveAllOrbs(inv); }},
 	{false, "Deeper Under the Lake", 15, 58, 77, 12, 13, "SE corner", [](const std::set<int>& inv) { return HaveLightSource(inv) && HaveAllOrbs(inv); }},
@@ -109,7 +109,7 @@ location basic_locations[R_NUM_LOCATIONS] = {
 	{false, "The Wolf Den", 26, 2, 5, 1, 2, "Wolf Top Left", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING); }},
 	{false, "The Wolf Den", 26, 6, 14, 6, 7, "Pumpkin Door", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING) && inv.count(VAR_PUMPKINKEY); }},
 	{false, "The Wolf Den", 26, 40, 88, 3, 4, "Grow Room", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING); }},
-	{false, "Upper Creepy Cavern", 28, 88, 38, 3, 4, "The Three Hombres", [](const std::set<int>& inv) { return HaveLightSource(inv) && CanEnterRockyCliffs(inv); }},
+	{false, "Upper Creepy Cavern", 28, 88, 38, 3, 4, "The Three ombres", [](const std::set<int>& inv) { return HaveLightSource(inv) && CanEnterRockyCliffs(inv); }},
 	{false, "Under the Ravine", 29, 35, 39, 1, 2, "Left Vine", [](const std::set<int>& inv) { return HaveLightSource(inv) && CanEnterRockyCliffs(inv) && inv.count(VAR_FERTILIZER); }},
 	{false, "Under the Ravine", 29, 103, 22, 3, 4, "Right Vine", [](const std::set<int>& inv) { return HaveLightSource(inv) && CanEnterRockyCliffs(inv) && inv.count(VAR_FERTILIZER); }},
 	{false, "Creepy Caverns", 30, 117, 76, 3, 4, "M Pharoh bat Room", [](const std::set<int>& inv) { return HaveLightSource(inv) && CanEnterRockyCliffs(inv) && inv.count(VAR_BATKEY); }},
@@ -144,7 +144,7 @@ location basic_locations[R_NUM_LOCATIONS] = {
 	{false, "Swampdog Lair", 45, 55, 49, 0, 1, "Entrance", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
 	{false, "Swampdog Lair", 45, 55, 36, 5, 6, "End", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_FERTILIZER); }},
 	{true, "Ghostbusting", 0, 0, 0, 0, 0, "Ghostbusting", [](const std::set<int>& inv) { return HaveAnyBigGem(inv) && inv.count(VAR_DAISY) && HaveAllMushrooms(inv); }},
-	{true, "Hairy Larry", 1, 0, 0, 0, 0, "Hairy Larry", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING); }},
+	{true, "Hairy Larry", 1, 0, 0, 0, 0, "Hairy Larry", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING) && inv.count(VAR_BOOTS);  }},
 	{true, "Scaredy Cat", 2, 0, 0, 0, 0, "Scaredy Cat", [](const std::set<int>& inv) { return inv.count(VAR_CAT); }},
 	{true, "Silver Bullet", 3, 0, 0, 0, 0, "Silver Bullet", [](const std::set<int>& inv) { return inv.count(VAR_SILVER) && CanCleanseCrypts(inv); }},
 	{true, "Smashing Pumpkins", 4, 0, 0, 0, 0, "Smashing Pumpkins", [](const std::set<int>& inv) { return CanCleanseCrypts(inv); }},
@@ -694,6 +694,11 @@ void PlaceItems(std::vector<location>& locList)
 	sprintf(buff, "randomizer/%s rando.llw", seed.c_str());
 	LoadWorld(&world, buff);
 
+	//add some hearts to loonyton
+	world.map[0]->map[91 + 90 * world.map[0]->width].item = 2;
+	world.map[0]->map[92 + 90 * world.map[0]->width].item = 2;
+	
+
 	//fix that awful, singular, flipped special
 	//Castle Vampy III "halloween" specials
 	special_t tempSpecial = world.map[34]->special[9];
@@ -780,6 +785,15 @@ bool HaveAllVamps(const std::set<int>& inv)
 		inv.count(VAR_VAMPBUST + 4) && inv.count(VAR_VAMPBUST + 5) && inv.count(VAR_VAMPBUST + 6) && inv.count(VAR_VAMPBUST + 7));
 }
 
+
+/* {ITM_WBOMB, VAR_WEAPON + 0, "Bombs"},
+{ ITM_WLIGHTNING, VAR_WEAPON + 1, "Shock Wand" },
+{ ITM_WICE, VAR_WEAPON + 2, "Ice spear" },
+{ ITM_WCACTUS, VAR_WEAPON + 3, "Cactus" },
+{ ITM_WBOOMERANG, VAR_WEAPON + 4, "Boomerang" },
+{ ITM_WWHOOPEE, VAR_WEAPON + 5, "Whoopee" },
+{ ITM_WHOTPANTS, VAR_WEAPON + 6, "Hot Pants" },*/
+
 bool HaveSpecialWeaponDamage(const std::set<int>& inv)
 {
 	return (inv.count(VAR_WEAPON) 
@@ -815,6 +829,18 @@ bool HaveSpecialWeaponRangeDamage(const std::set<int>& inv)
 		//|| inv.count(VAR_WEAPON + 6)	   hot pants not ranged
 		);
 }
+
+/*bool HaveSpecialWeaponThroughWalls(const std::set<int>& inv)
+{
+	return (inv.count(VAR_WEAPON)
+		|| inv.count(VAR_WEAPON + 1)
+		//|| inv.count(VAR_WEAPON + 2) not through walls
+		//|| inv.count(VAR_WEAPON + 3) not through walls
+		//|| inv.count(VAR_WEAPON + 4) not through walls
+		|| inv.count(VAR_WEAPON + 5)
+		//|| inv.count(VAR_WEAPON + 6)
+		);
+}*/
 
 bool HaveAllMushrooms(const std::set<int>& inv)
 {
