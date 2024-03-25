@@ -680,17 +680,6 @@ bool CheckBeatable(std::vector<location>& locs) {
 		PlaceItems(locs);
 		result = true;
 	}
-	else {
-
-		char buff[64];
-		if (allItems) {
-			sprintf(buff, "%s ALLITEMS spoiler.txt", seed.c_str());
-		}
-		else {
-			sprintf(buff, "%s spoiler.txt", seed.c_str());
-		}
-		remove(buff);
-	}
 
 	collectedItems.clear();
 	tempItems.clear();
