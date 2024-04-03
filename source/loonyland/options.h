@@ -55,6 +55,19 @@
 #define CH_REGEN	38		// monster regeneration
 #define CH_NOFARLEY 39		// no farley
 
+enum PlayerCharacterType : int
+{
+	PC_Loony = 0,
+	PC_Bonkula = 1,
+	PC_Toad = 2,
+	PC_Swampdog = 3,
+	PC_Witch = 4,
+	PC_Werewolf = 5,
+	PC_Summon = 6,
+	PC_Thief = 7,
+	PC_MAX
+};
+
 typedef struct options_t
 {
 	byte control[2][6];	// key scancodes
@@ -80,5 +93,11 @@ void SaveOptions(void);
 
 TASK(void) OptionsMenu(MGLDraw *mgl);
 void KilledBoss(byte boss);
+
+bool IsAnyCharacterUnlocked();
+void NextCharacter();
+void PrevCharacter();
+void ResetCharacterCheats();
+PlayerCharacterType GetCurrentPC();
 
 #endif

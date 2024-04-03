@@ -1,0 +1,202 @@
+{
+	"version": 3,
+	"cmakeMinimumRequired": {
+		"major": 3,
+		"minor": 19
+	},
+	"configurePresets": [
+		{
+			"name": "base",
+			"hidden": true,
+			"generator": "Ninja",
+			"binaryDir": "${sourceDir}/build/cmake-${presetName}$env{VisualStudioVersion}",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
+			"name": "i686-base",
+			"hidden": true,
+			"inherits": "base",
+			"architecture": {
+				"value": "x86",
+				"strategy": "external"
+			},
+			"toolset": {
+				"value": "host=x86",
+				"strategy": "external"
+			}
+		},
+		{
+			"name": "windows-i686-debug",
+			"inherits": "i686-base",
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Windows"
+					]
+				}
+			}
+		},
+		{
+			"name": "windows-i686-release",
+			"inherits": "i686-base",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Windows"
+					]
+				}
+			}
+		},
+		{
+			"name": "windows-x86_64-debug",
+			"inherits": "base",
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Windows"
+					]
+				}
+			}
+		},
+		{
+			"name": "windows-x86_64-release",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Windows"
+					]
+				}
+			}
+		},
+		{
+			"name": "linux-x86_64-debug",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Linux"
+					]
+				}
+			}
+		},
+		{
+			"name": "linux-x86_64-release",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja",
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Linux"
+					]
+				}
+			}
+		},
+		{
+			"name": "macos-x86_64-debug",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"macOS"
+					]
+				}
+			}
+		},
+		{
+			"name": "macos-x86_64-release",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja",
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"macOS"
+					]
+				}
+			}
+		},
+		{
+			"name": "emscripten-i686-debug",
+			"inherits": "i686-base",
+			"toolchainFile": "build/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+			"cacheVariables": {
+				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Linux"
+					]
+				}
+			}
+		},
+		{
+			"name": "emscripten-i686-release",
+			"inherits": "i686-base",
+			"toolchainFile": "build/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+			"cacheVariables": {
+				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja",
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Linux"
+					]
+				}
+			}
+		},
+		{
+			"name": "ubsan",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_C_COMPILER": "clang",
+				"CMAKE_CXX_COMPILER": "clang++",
+				"CMAKE_C_FLAGS": "-fsanitize=undefined,address",
+				"CMAKE_CXX_FLAGS": "-fsanitize=undefined,address",
+				"LINK_FLAGS": "-fsanitize=undefined,address"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Linux"
+					]
+				}
+			}
+		},
+		{
+			"name": "iwyu",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_CXX_INCLUDE_WHAT_YOU_USE": "include-what-you-use"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Linux"
+					]
+				}
+			}
+		}
+	]
+}

@@ -105,7 +105,7 @@ typedef struct txtItem_t
 	dword flags;
 } txtItem_t;
 
-static char helpTxt[HELPLEN][MAX_LINELEN]={
+static const char helpTxt[HELPLEN][MAX_LINELEN]={
 	"Type 2-word commands to do things, always 'VERB NOUN'.  For example,",
 	"'GET TORCH' or 'OPEN DOOR'.  There are several handy shortcuts - ",
 	"just type 'N' to move North, or 'W', 'S', or 'E' for the other ",
@@ -122,8 +122,8 @@ static char helpTxt[HELPLEN][MAX_LINELEN]={
 	"Press the ESCAPE key to quit the game at any time.",
 };
 
-#include "textitems.cpp"
-#include "textrooms.cpp"
+#include "textitems.inl"
+#include "textrooms.inl"
 
 static txtItem_t items[TI_MAX];
 static txtRoom_t rooms[TR_MAX];
@@ -137,6 +137,21 @@ static byte vineGrown;
 static byte inv[INV_SIZE];
 static byte *backgd;
 char textbuf[MAX_LINES][MAX_LINELEN];
+
+namespace
+{
+	dword lastGamepad;
+	bool gamepadMode;
+	constexpr int KEYBOARD_WIDTH = 10;
+	constexpr int KEYBOARD_HEIGHT = 4;
+	const char KEYBOARD[KEYBOARD_HEIGHT][KEYBOARD_WIDTH+1] = {
+		"1234567890",
+		"QWERTYUIOP",
+		"ASDFGHJKL~", // backspace
+		" ZXCVBNM~~", // space, enter
+	};
+	int curRow = 0, curCol = 0;
+}
 
 void TypeLine(const char *line)
 {
@@ -152,7 +167,7 @@ void TypeLine(const char *line)
 
 void EchoInput(void)
 {
-	char tmp[MAX_LINELEN];
+	char tmp[MAX_LINELEN + 2];
 
 	sprintf(tmp,"> %s",inputTxt);
 	TypeLine("");
@@ -1690,6 +1705,10 @@ void InitTextGame(MGLDraw *mgl)
 	memcpy(rooms,baseRooms,sizeof(txtRoom_t)*TR_MAX);
 
 	DescribeRoom();
+
+	lastGamepad = ~0;
+	gamepadMode = false;
+	GetTaps();
 }
 
 void ExitTextGame(void)
@@ -1900,17 +1919,57 @@ void TimePassed(void)
 
 byte UpdateTextGame(int *lastTime,MGLDraw *mgl)
 {
-	char c;
+	char c = mgl->LastKeyPressed();
+	dword gamepad = GetGamepadButtons();
+	byte taps = GetTaps();
 
-	if(*lastTime>TIME_PER_FRAME*5)
-		*lastTime=TIME_PER_FRAME*5;
+	if (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_A))
+	{
+		if (curRow == 2 && curCol == 9)
+		{
+			c = SDLK_BACKSPACE;
+		}
+		else if (curRow == 3 && curCol == 8)
+		{
+			c = SDLK_RETURN;
+		}
+		else if (KEYBOARD[curRow][curCol] != '~')
+		{
+			c = KEYBOARD[curRow][curCol];
+		}
+	}
+	if (taps & CONTROL_LF)
+	{
+		if (curCol > 0)
+			--curCol;
+	}
+	if (taps & CONTROL_RT)
+	{
+		if (curCol < KEYBOARD_WIDTH - 1)
+			++curCol;
+	}
+	if (taps & CONTROL_UP)
+	{
+		if (curRow > 0)
+			--curRow;
+	}
+	if (taps & CONTROL_DN)
+	{
+		if (curRow < KEYBOARD_HEIGHT - 1)
+			++curRow;
+	}
+	if (curRow == 3 && curCol == 9)
+		curCol = 8;
 
-	c=mgl->LastKeyPressed();
+	if (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_X))
+		mgl->StartTextInput(35, 440, 640-35, 440+28);
+	if (gamepad)
+		gamepadMode = true;
 
-	if(c==27)
+	if(c == SDLK_ESCAPE || (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_BACK)))
 		return 1;
 
-	if(c==13)	// enter
+	if(c == SDLK_RETURN || (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_Y)))	// enter
 	{
 		MakeNormalSound(SND_MENUSELECT);
 		if(lunaticCaught)
@@ -1921,6 +1980,7 @@ byte UpdateTextGame(int *lastTime,MGLDraw *mgl)
 		{
 			if(HandleInput())
 				TimePassed();
+			mgl->StartTextInput(35, 440, 640-35, 440+28);
 		}
 
 		strcpy(lastInput,inputTxt);
@@ -1937,7 +1997,7 @@ byte UpdateTextGame(int *lastTime,MGLDraw *mgl)
 			MakeNormalSound(SND_MENUCLICK);
 		}
 	}
-	else if(c==8)
+	else if(c == SDLK_BACKSPACE || (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_B)))
 	{
 		if(strlen(inputTxt)>0)
 		{
@@ -1946,12 +2006,15 @@ byte UpdateTextGame(int *lastTime,MGLDraw *mgl)
 		}
 	}
 
+	if(*lastTime>TIME_PER_FRAME*5)
+		*lastTime=TIME_PER_FRAME*5;
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		mgl->Process();
 		*lastTime-=TIME_PER_FRAME;
 	}
 
+	lastGamepad = gamepad;
 	return 0;
 }
 
@@ -1960,12 +2023,14 @@ void RenderTextGame(MGLDraw *mgl)
 	int i;
 	static byte flash=0;
 
+	bool showGamepadTyper = gamepadMode && !SDL_HasScreenKeyboardSupport();
+
 	flash=1-flash;
 
 	for(i=0;i<480;i++)
 		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
 
-	for(i=0;i<MAX_LINES;i++)
+	for (i = (showGamepadTyper ? 4 : 0); i<MAX_LINES; i++)
 		PrintGlow(20,20+i*20,textbuf[i],0,2);
 
 	PrintGlow(20,440,"> ",0,2);
@@ -1977,6 +2042,50 @@ void RenderTextGame(MGLDraw *mgl)
 	PrintGlow(35,440,inputTxt,0,2);
 	if(flash)
 		inputTxt[strlen(inputTxt)-1]='\0';
+
+	if (showGamepadTyper)
+	{
+		for (int row = 0; row < KEYBOARD_HEIGHT; ++row)
+		{
+			for (int col = 0; col < KEYBOARD_WIDTH; ++col)
+			{
+				char ch = KEYBOARD[row][col];
+				std::string_view msg;
+				int w = 40-4;
+				if (ch == ' ')
+				{
+					msg = "__";
+				}
+				else if (ch != '~')
+				{
+					msg = { &ch, 1 };
+				}
+				else if (row == 2)
+				{
+					msg = "Del";
+				}
+				else if (row == 3 && col == 8)
+				{
+					msg = "Enter";
+					w = 80-4;
+				}
+
+				if (!msg.empty())
+				{
+					int x = 100 + col * 40, y = 10 + row * 23;
+					if (curRow == row && curCol == col)
+					{
+						mgl->FillBox(x, y, x+w, y+20, 32+8);
+						mgl->Box(x, y, x+w, y+20, 32+31);
+					}
+					else
+						mgl->Box(x, y, x+w, y+20, 32+16);
+
+					PrintGlow(x + (w - GetStrLength(msg, 2)) / 2, y + 2, msg, 0, 2);
+				}
+			}
+		}
+	}
 }
 
 TASK(void) TextGame(MGLDraw *mgl)
@@ -1985,6 +2094,9 @@ TASK(void) TextGame(MGLDraw *mgl)
 	int lastTime;
 
 	InitTextGame(mgl);
+	SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "0");
+	mgl->StartTextInput(35, 440, 640-35, 440+28);
+
 	lastTime=1;
 	while(!done)
 	{

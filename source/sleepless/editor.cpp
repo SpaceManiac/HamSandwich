@@ -28,19 +28,12 @@ static int	   tileX,tileY;
 static int	rectX1,rectX2,rectY1,rectY2;
 static int  pickerWid,pickerHei;
 
-static byte  showStats=0;
-static dword gameStartTime,visFrameCount,updFrameCount;
+static dword gameStartTime,updFrameCount;
 static word  numRunsToMakeUp;
-
-static byte plopCounter=0;
-static byte msButton=0;
-static byte monsPage=0;
 
 static byte viewMenu,editMenu;
 
 static byte musicPlaying;
-
-static char worldFilename[FNAMELEN]="";
 
 static byte displayFlags;
 byte editing=0;
@@ -192,7 +185,7 @@ void Delete(int x,int y)
 	editorMap->GetTile(x,y)->item=0;
 
 	for(i=0;i<MAX_SPECIAL;i++)
-		if(editorMap->special[i].trigger && editorMap->special[i].x==x && editorMap->special[i].y==y)
+		if(editorMap->special[i].x==x && editorMap->special[i].y==y)
 		{
 			memset(&editorMap->special[i],0,sizeof(special_t));
 			editorMap->special[i].x=255;
@@ -209,10 +202,10 @@ void BackupWorld(const char *name)
 	sprintf(inName,"worlds/%s",name);
 	sprintf(outName,"worlds/backup_save.shw");
 
-	inF=AssetOpen(inName,"rb");
+	inF=AssetOpen(inName);
 	if(!inF)
 		return;	// the source didn't exist, so nothing to back up
-	outF=AssetOpen(outName,"wb");
+	outF=AssetOpen_Write(outName);
 	if(!outF)
 	{
 		fclose(inF);
@@ -271,39 +264,52 @@ TASK(void) UpdateMouse(void)
 	int scroll = editmgl->mouse_z - mouseZ;
 	mouseZ = editmgl->mouse_z;
 
-	if(mouseX==0)
+	// Mouse scrolling, but exclude fullscreen modes.
+	switch (editMode)
 	{
-		cx-=8;
-		if(cx<0)
-			cx=0;
-		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
-	}
-	if(mouseX==639)
-	{
-		cx+=8;
-		if(cx>editorMap->width*TILE_WIDTH)
-			cx=editorMap->width*TILE_WIDTH;
-		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
-	}
-	if(mouseY==0)
-	{
-		cy-=8;
-		if(cy<0)
-			cy=0;
-		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
-	}
-	if(mouseY==479)
-	{
-		cy+=8;
-		if(cy>editorMap->height*TILE_HEIGHT)
-			cy=editorMap->height*TILE_HEIGHT;
-		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+		case EDITMODE_TERRAIN:
+		case EDITMODE_SPECIAL:
+		case EDITMODE_ITEM:
+		case EDITMODE_SOUND:
+		case EDITMODE_PICKENEMY:
+			break;
+		default:
+			if(mouseX==0)
+			{
+				cx-=8;
+				if(cx<0)
+					cx=0;
+				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			}
+			if(mouseX==639)
+			{
+				cx+=8;
+				if(cx>editorMap->width*TILE_WIDTH)
+					cx=editorMap->width*TILE_WIDTH;
+				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			}
+			if(mouseY==0)
+			{
+				cy-=8;
+				if(cy<0)
+					cy=0;
+				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			}
+			if(mouseY==479)
+			{
+				cy+=8;
+				if(cy>editorMap->height*TILE_HEIGHT)
+					cy=editorMap->height*TILE_HEIGHT;
+				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			}
+			break;
 	}
 
+	// The mode itself.
 	switch(editMode)
 	{
 		case EDITMODE_TERRAIN:
-			TerrainEdit_Update(mouseX,mouseY,editmgl);
+			TerrainEdit_Update(mouseX,mouseY,scroll,editmgl);
 			break;
 		case EDITMODE_SPECIAL:
 			SpecialEdit_Update(mouseX,mouseY,scroll,editmgl);
@@ -409,6 +415,8 @@ TASK(void) UpdateMouse(void)
 					editMode=EDITMODE_EDIT;
 				}
 			}
+			if (scroll)
+				MapDialogScroll(scroll);
 			break;
 		case EDITMODE_LEVELMENU:
 			if(editmgl->MouseTap())

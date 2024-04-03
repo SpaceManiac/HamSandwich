@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+
+Bootstrap=$(dirname "$0")
+. "$Bootstrap/_common.sh"
+
+ButlerExe="$Cache/butler-$BUTLER_VERSION-$OS$ExeExt"
+if ! test -f "$ButlerExe"; then
+	TmpExtract=$(temp_unzip "$(temp_download_and_verify BUTLER_VERSION "$OS")")
+	mv "$TmpExtract/butler$ExeExt" "$ButlerExe"
+fi
+
+exec "$ButlerExe" "$@"

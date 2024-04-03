@@ -21,9 +21,9 @@ static int comboBonus;
 static byte lineNum,skip;
 static int baseScore,showBaseScore,finalScore,showFinalScore,points,totalCoins,showTotalCoins,bonusCoins;
 static char levelName[32];
-static int wait;
+static int tallyWait;
 static float destructBonus,destructPct,perfectBonus,diffBonus;
-static score_t topTimes[3];
+static score_t topTimes[3], topScores[3];
 
 void InitTally(MGLDraw *mgl)
 {
@@ -43,7 +43,7 @@ void InitTally(MGLDraw *mgl)
 	finalScore=0;
 	points=player.score;
 	lineNum=0;
-	wait=0;
+	tallyWait=0;
 	skip=0;
 	totalCoins=profile.progress.totalCoins-profile.progress.coinsSpent;
 	showTotalCoins=totalCoins;
@@ -68,12 +68,13 @@ void InitTally(MGLDraw *mgl)
 	else
 		perfectBonus=1.0f;
 
-	if(profile.difficulty==0)
-		diffBonus=0.75f;
-	else if(profile.difficulty==1)
-		diffBonus=1.0f;
-	else
-		diffBonus=1.25f;
+	if (profile.difficulty == DIFFICULTY_NORMAL)
+		diffBonus = 0.75f;
+	else if (profile.difficulty == DIFFICULTY_HARD)
+		diffBonus = 1.0f;
+	else if (profile.difficulty == DIFFICULTY_LUNATIC)
+		diffBonus = 1.25f;
+	static_assert(MAX_DIFFICULTY == 3, "Must handle new difficulty here");
 
 	mgl->LastKeyPressed();
 
@@ -84,6 +85,8 @@ void InitTally(MGLDraw *mgl)
 
 	topTimes[0].score=9*60*60*30+99*30*60+59*30;
 	GetTopTimes(topTimes,curWorld.map[player.levelNum]);
+	topScores[0].score=0;
+	GetTopScores(topScores, curWorld.map[player.levelNum]);
 
 	if(profile.progress.bestCombo<player.bestCombo)
 		profile.progress.bestCombo=player.bestCombo;
@@ -168,11 +171,11 @@ byte UpdateTally(int *lastTime,MGLDraw *mgl)
 			else if(showFinalScore>finalScore)
 				showFinalScore--;
 
-			wait++;
+			tallyWait++;
 		}
 		else
 		{
-			wait=30;
+			tallyWait=30;
 			baseScore=points+player.bestCombo*10;
 			if(baseScore>(int)(player.clock/10))
 				baseScore-=(player.clock/10);
@@ -207,17 +210,17 @@ byte UpdateTally(int *lastTime,MGLDraw *mgl)
 		switch(lineNum)
 		{
 			case 0:	// base points
-				if(wait>=30)
+				if(tallyWait>=30)
 				{
-					wait=0;
+					tallyWait=0;
 					lineNum=1;
 					baseScore+=player.bestCombo*10;
 				}
 				break;
 			case 1:	// combo
-				if(wait>=30)
+				if(tallyWait>=30)
 				{
-					wait=0;
+					tallyWait=0;
 					lineNum=2;
 					if(baseScore>(int)(player.clock/10))
 						baseScore-=(player.clock/10);
@@ -226,44 +229,44 @@ byte UpdateTally(int *lastTime,MGLDraw *mgl)
 				}
 				break;
 			case 2:	// time
-				if(wait>=30)
+				if(tallyWait>=30)
 				{
-					wait=0;
+					tallyWait=0;
 					lineNum=3;
 					finalScore=(int)((float)finalScore*diffBonus);
 				}
 				break;
 			case 3:	// difficulty bonus
-				if(wait>=30)
+				if(tallyWait>=30)
 				{
-					wait=0;
+					tallyWait=0;
 					lineNum=4;
 					finalScore=(int)((float)finalScore*destructBonus);
 				}
 				break;
 			case 4:	// destruction bonus
-				if(wait>=30)
+				if(tallyWait>=30)
 				{
-					wait=0;
+					tallyWait=0;
 					lineNum=5;
 					finalScore=(int)((float)finalScore*perfectBonus);
 				}
 				break;
 			case 5:	// perfect bonus
 				if(player.perfect==0)
-					wait=30;
-				if(wait>=30)
+					tallyWait=30;
+				if(tallyWait>=30)
 				{
-					wait=0;
+					tallyWait=0;
 					lineNum=6;
 					if(!player.cheated)
 						totalCoins+=player.coins;
 				}
 				break;
 			case 6:	// coins found
-				if(wait>=30)
+				if(tallyWait>=30)
 				{
-					wait=0;
+					tallyWait=0;
 					lineNum=7;
 					if(!player.cheated)
 					{
@@ -275,9 +278,9 @@ byte UpdateTally(int *lastTime,MGLDraw *mgl)
 				}
 				break;
 			case 7:	// bonus coins
-				if(wait>=30)
+				if(tallyWait>=30)
 				{
-					wait=0;
+					tallyWait=0;
 					lineNum=8;
 				}
 				break;
@@ -311,7 +314,7 @@ static void TallyLine(byte n,int y,const char *category,const char *value,const 
 	else if(lineNum>n)
 		bright=0;
 	else if(lineNum==n)
-		bright=(wait*2-30);
+		bright=(tallyWait*2-30);
 	else
 		bright=-32;
 
@@ -331,7 +334,7 @@ static void Tally2Line(byte n,int y,const char *category,const char *value,const
 	if(lineNum>n)
 		bright=0;
 	else if(lineNum==n)
-		bright=(wait*2-30);
+		bright=(tallyWait*2-30);
 	else
 		bright=-32;
 
@@ -349,7 +352,7 @@ void CoinLine(byte n,int y,const char *title,const char *num)
 	else if(lineNum>n)
 		bright=0;
 	else if(lineNum==n)
-		bright=(wait*2-30);
+		bright=(tallyWait*2-30);
 	else
 		bright=-32;
 
@@ -402,12 +405,8 @@ void RenderTally(MGLDraw *mgl)
 	sprintf(s,"x%1.2f",diffBonus);
 	if(player.cheated)
 		Tally2Line(3,210,"Difficulty","CHEATER!",s);
-	else if(profile.difficulty==0)
-		Tally2Line(3,210,"Difficulty","Normal",s);
-	else if(profile.difficulty==1)
-		Tally2Line(3,210,"Difficulty","Hard",s);
 	else
-		Tally2Line(3,210,"Difficulty","Lunatic",s);
+		Tally2Line(3,210,"Difficulty",GetDifficultyName(profile.difficulty),s);
 
 	sprintf(s,"%0.1f%%",destructPct);
 	sprintf(s2,"x%1.1f",destructBonus);
@@ -430,6 +429,10 @@ void RenderTally(MGLDraw *mgl)
 	else
 		PrintGlow(POINTS_X-GetStrLength(s,2),310,s,0,2);
 	PrintGlow(420,310,"Total Score:",0,2);
+
+	sprintf(s,"%d",topScores[0].score);
+	PrintGlow(420,330,"Record:",0,2);
+	PrintGlow(POINTS_X-GetStrLength(s,2),330,s,0,2);
 
 	sprintf(s,"%d",player.coins);
 	CoinLine(6,330,"Coins Found",s);

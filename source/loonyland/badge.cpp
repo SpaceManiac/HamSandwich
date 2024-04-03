@@ -776,13 +776,7 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 					case CH_WEREWOLF:
 					case CH_SUMMON:
 					case CH_THIEF:
-						opt.cheats[CH_BONKULA]=0;
-						opt.cheats[CH_TOAD]=0;
-						opt.cheats[CH_WITCH]=0;
-						opt.cheats[CH_SWAMPDOG]=0;
-						opt.cheats[CH_WEREWOLF]=0;
-						opt.cheats[CH_SUMMON]=0;
-						opt.cheats[CH_THIEF]=0;
+						ResetCharacterCheats();
 						opt.cheats[badge[cursor].cheatNum]=1;
 						break;
 				}
@@ -991,7 +985,7 @@ void EarnBadge(byte b)
 
 void RenderGameMode(MGLDraw *mgl,byte progress,byte mode,byte numBadges)
 {
-	char s[32];
+	char s[64];
 	char modeName[5][32]={"Survival","Boss Bash","Loonyball","Bowling","Remix"};
 
 	mgl->ClearScreen();

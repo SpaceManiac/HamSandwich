@@ -3,58 +3,64 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL_platform.h>
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL_platform.h>
-#endif  // SDL_UNPREFIXED
+#include <SDL_platform.h>
+#include <SDL_log.h>
 
 #ifdef __ANDROID__
 	#include <android/log.h>
 #endif
 
+static SDL_LogOutputFunction original = nullptr;
+static void* originalUserdata = nullptr;
 static bool errorLogAttempted = false;
 static FILE* errorLog = nullptr;
 
-void LogDebug(const char* fmt, ...) {
-	va_list args;
-	va_start(args, fmt);
-#ifdef __ANDROID__
-	__android_log_vprint(ANDROID_LOG_DEBUG, "HamSandwich", fmt, args);
-#else
-	vprintf(fmt, args);
-	printf("\n");
-#endif
-	va_end(args);
-}
-
-void LogError(const char* fmt, ...) {
-	if (!errorLogAttempted) {
-		errorLogAttempted = true;
-		errorLog = AppdataOpen("error.log", "wt");
-	}
-
-	va_list args;
-	va_start(args, fmt);
-
-	if (errorLog) {
-		va_list dup;
-		va_copy(dup, args);
-		vfprintf(errorLog, fmt, dup);
-		fprintf(errorLog, "\n");
-		va_end(dup);
-	}
-
-#ifdef __ANDROID__
-	__android_log_vprint(ANDROID_LOG_ERROR, "HamSandwich", fmt, args);
-#else
-	vprintf(fmt, args);
-	printf("\n");
-#endif
-	va_end(args);
-
-	if (errorLog) {
+void HamLogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message)
+{
+	(void)userdata;
+	original(originalUserdata, category, priority, message);
+	if (errorLog && priority >= SDL_LOG_PRIORITY_WARN)
+	{
+		fprintf(errorLog, "%s\n", message);
 		fflush(errorLog);
 		AppdataSync();
 	}
+}
+
+void LogInit()
+{
+	if (!original)
+	{
+#ifndef NDEBUG
+		SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_DEBUG);
+#endif
+		SDL_LogGetOutputFunction(&original, &originalUserdata);
+		SDL_LogSetOutputFunction(HamLogOutput, nullptr);
+	}
+
+	if (!errorLogAttempted && AppdataIsInit())
+	{
+		errorLogAttempted = true;
+		errorLog = AppdataOpen_Write("error.log");
+	}
+}
+
+void LogDebug(const char* fmt, ...)
+{
+	LogInit();
+
+	va_list args;
+	va_start(args, fmt);
+	SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, fmt, args);
+	va_end(args);
+}
+
+void LogError(const char* fmt, ...)
+{
+	LogInit();
+
+	va_list args;
+	va_start(args, fmt);
+	SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, fmt, args);
+	va_end(args);
 }

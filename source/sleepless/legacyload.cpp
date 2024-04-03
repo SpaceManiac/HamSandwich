@@ -88,7 +88,7 @@ byte Legacy_LoadWorld(world_t *world,const char *fname)
 
 	oldWorld=new old_world_t;
 
-	f=AssetOpen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 		return 0;
 
@@ -593,7 +593,7 @@ byte Legacy_GetWorldName(const char *fname,char *buf)
 	if(fname[0]=='\0')
 		return 0;
 
-	f=AssetOpen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 		return 0;
 

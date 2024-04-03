@@ -38,8 +38,3 @@ void ChooseNextSong()
 		StopSong();
 #endif
 }
-
-bool ConfigMusicEnabled()
-{
-	return config.music;
-}

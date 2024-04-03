@@ -7,7 +7,6 @@
 #include "jamulspr.h"
 #include "display.h"
 #include "bullet.h"
-#pragma pack(4)
 
 #define ACTION_IDLE	0
 #define ACTION_BUSY 1
@@ -15,6 +14,7 @@
 #define GOOD	(1)
 #define EVIL	(2)
 
+#pragma pack(push, 4)
 class Guy
 {
 	public:
@@ -87,6 +87,7 @@ class Guy
 		word shroomTime;	// how long to stay shroomed
 		word ignited;		// how long to stay on fire
 };
+#pragma pack(pop)
 
 extern Guy *goodguy;
 extern Guy *meleeAttacker;

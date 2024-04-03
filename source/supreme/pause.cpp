@@ -6,6 +6,7 @@
 #include "shop.h"
 #include "dialogbits.h"
 #include "music.h"
+#include <memory>
 
 #define PE_CONTINUE	0	// back to gameplay
 #define PE_RETRY	1	// retry this level
@@ -25,6 +26,7 @@
 #define PE_BZZT		15		// an invalid option
 #define PE_SHOP		16	// go shopping, go back to playing
 #define PE_WPNLOCK	17	// weapon lock
+#define PE_HUDCHOICE   18
 
 #define PE_CHEATS	50
 
@@ -34,7 +36,7 @@ typedef struct pauseItem_t
 	char text[16];
 } pauseItem_t;
 
-static pauseItem_t gamePause[]={
+static const pauseItem_t gamePause[]={
 	{PE_CONTINUE,"Continue"},
 	{PE_RETRY,"Retry"},
 	{PE_GIVEUP,"Give Up"},
@@ -42,12 +44,13 @@ static pauseItem_t gamePause[]={
 	{PE_SNDVOL,""},
 	{PE_MUSIC,"Music Options"},
 	{PE_WPNLOCK,"Weapon Lock"},
+	{PE_HUDCHOICE,"HUD: Supreme"},
 	{PE_SHOP,"Quit & Shop"},
 	{PE_EXIT,"Exit Game"},
 	{PE_DONE,""}
 };
 
-static pauseItem_t shopPause[]={
+static const pauseItem_t shopPause[]={
 	{PE_CONTINUE,"Continue"},
 	{PE_SNDVOL,""},
 	{PE_MUSIC,"Music Options"},
@@ -56,7 +59,7 @@ static pauseItem_t shopPause[]={
 	{PE_DONE,""}
 };
 
-static pauseItem_t editPause[]={
+static const pauseItem_t editPause[]={
 	{PE_CONTINUE,"Continue"},
 	{PE_RETRY,"Retry"},
 	{PE_GIVEUP,"Give Up"},
@@ -64,11 +67,12 @@ static pauseItem_t editPause[]={
 	{PE_MUSIC,"Music Options"},
 	{PE_CHEAT,"Cheats!!"},
 	{PE_WPNLOCK,"Weapon Lock"},
+	{PE_HUDCHOICE,"HUD: Supreme"},
 	{PE_EXIT,"Editor"},
 	{PE_DONE,""}
 };
 
-static pauseItem_t gameCheatPause[]={
+static const pauseItem_t gameCheatPause[]={
 	{PE_CONTINUE,"Continue"},
 	{PE_RETRY,"Retry"},
 	{PE_GIVEUP,"Give Up"},
@@ -77,12 +81,13 @@ static pauseItem_t gameCheatPause[]={
 	{PE_MUSIC,"Music Options"},
 	{PE_CHEAT,"Cheats!!"},
 	{PE_WPNLOCK,"Weapon Lock"},
+	{PE_HUDCHOICE,"HUD: Supreme"},
 	{PE_SHOP,"Quit & Shop"},
 	{PE_EXIT,"Exit Game"},
 	{PE_DONE,""}
 };
 
-static pauseItem_t cheatPause[]={
+static const pauseItem_t cheatPause[]={
 	{PE_CHEAT,"Stop Cheating!"},
 	{PE_CHEATS+CHEAT_WINLEVEL,"Win Level"},
 	{PE_CHEATS+CHEAT_HAMMERUP,"UltraHammerUp"},
@@ -97,7 +102,7 @@ static pauseItem_t cheatPause[]={
 	{PE_DONE,""},
 };
 
-static pauseItem_t cheatPause2[]={
+static const pauseItem_t cheatPause2[]={
 	{PE_PREVCHEATS,"Prev. Cheats"},
 	{PE_CHEATS+CHEAT_SCANNER,"Free Scanner"},
 	{PE_CHEATS+CHEAT_AMMO,"Ammo Crate"},
@@ -110,7 +115,7 @@ static pauseItem_t cheatPause2[]={
 	{PE_DONE,""},
 };
 
-static pauseItem_t musicPause[]={
+static const pauseItem_t musicPause[]={
 	{PE_MUSVOL,""},
 	{PE_MUSICTYPE,""},
 	{PE_MUSICMODE,""},
@@ -119,18 +124,22 @@ static pauseItem_t musicPause[]={
 	{PE_DONE,""},
 };
 
-byte cursor=0;
-static char lastKey=0;
-static byte menuMode;
-static sprite_set_t *pauseSpr=NULL;
-static int pauseX=640,pauseY=480;
-static byte numItems;
-static pauseItem_t menu[15];
-static int msx,msy;
-static char msBright,msDBright;
-static byte oldc=255;
+namespace
+{
+	byte cursor = 0;
+	char lastKey = 0;
+	byte menuMode;
+	std::unique_ptr<sprite_set_t> pauseSpr;
+	int pauseX, pauseY;
+	byte numItems;
+	pauseItem_t menu[15];
+	int msx, msy;
+	char msBright, msDBright;
+	byte oldc = 255;
+	dword oldGamepad = ~0;
 
-byte volumeSpot[]={0,26,51,77,102,128,153,179,204,230,255};
+	const byte volumeSpot[]={0,26,51,77,102,128,153,179,204,230,255};
+}
 
 void RenderPauseButton(byte b,int x,int y,int wid,char *txt,MGLDraw *mgl)
 {
@@ -147,7 +156,7 @@ void RenderPauseButton(byte b,int x,int y,int wid,char *txt,MGLDraw *mgl)
 
 void RenderUnpaused(void)
 {
-	if(pauseX<640)
+	if(pauseX < GetDisplayMGL()->GetWidth())
 		RenderPauseMenu();
 }
 
@@ -156,11 +165,11 @@ void RenderPauseMenu(void)
 	int i;
 	int msx2,msy2,cx,cy,cx2,cy2;
 
-	if(pauseSpr==NULL)
+	if(!pauseSpr)
 	{
-		pauseX=640;
-		pauseY=480;
-		pauseSpr=new sprite_set_t("graphics/pause.jsp");
+		pauseX = GetDisplayMGL()->GetWidth();
+		pauseY = GetDisplayMGL()->GetHeight();
+		pauseSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
 	}
 
 	pauseSpr->GetSprite(3)->Draw(pauseX,pauseY,GetDisplayMGL());
@@ -217,16 +226,7 @@ void RenderPauseMenu(void)
 	if(msy2>pauseY+260)
 		msy2=pauseY+260;
 	pauseSpr->GetSprite(0)->DrawBright(msx2,msy2,GetDisplayMGL(),msBright/2);
-	SetSpriteConstraints(0,0,639,479);
-}
-
-void HandlePauseKeyPresses(MGLDraw *mgl)
-{
-	char k;
-
-	k=mgl->LastKeyPressed();
-	if(k)
-		lastKey=k;
+	ClearSpriteConstraints();
 }
 
 void SetupSoundItems(void)
@@ -270,7 +270,33 @@ void SetupSoundItems(void)
 	}
 }
 
-void FillPauseMenu(pauseItem_t *src)
+static void SetupOptionItems()
+{
+	int i;
+
+	for(i=0;i<numItems;i++)
+	{
+		switch(menu[i].effect)
+		{
+			case PE_WPNLOCK:
+				if(profile.progress.wpnLock)
+					strcpy(menu[i].text,"Wpn Lock: On");
+				else
+					strcpy(menu[i].text,"Wpn Lock: Off");
+				break;
+			case PE_HUDCHOICE:
+				if(profile.progress.hudChoice == HudChoice::Advanced)
+					strcpy(menu[i].text,"HUD: Advanced");
+				else if(profile.progress.hudChoice == HudChoice::Classic)
+					strcpy(menu[i].text,"HUD: Classic");
+				else
+					strcpy(menu[i].text,"HUD: Supreme");
+				break;
+		}
+	}
+}
+
+void FillPauseMenu(const pauseItem_t *src)
 {
 	int i;
 
@@ -294,22 +320,17 @@ void FillPauseMenu(pauseItem_t *src)
 				}
 			}
 		}
-		if(src[i].effect==PE_WPNLOCK)
-		{
-			if(profile.progress.wpnLock)
-				strcpy(menu[i].text,"Wpn Lock: On");
-			else
-				strcpy(menu[i].text,"Wpn Lock: Off");
-		}
 	}
 	SetupSoundItems();
+	SetupOptionItems();
 }
 
 void InitPauseMenu(void)
 {
-	lastKey=0;
-	cursor=0;
-	oldc=255;
+	lastKey = 0;
+	cursor = 0;
+	oldc = ~0;
+	oldGamepad = ~0;
 
 	if(!editing)
 	{
@@ -327,10 +348,10 @@ void InitPauseMenu(void)
 	}
 
 	MakeNormalSound(SND_PAUSE);
-	if(pauseSpr==NULL)
-		pauseSpr=new sprite_set_t("graphics/pause.jsp");
-	pauseX=640;
-	pauseY=480;
+	if(!pauseSpr)
+		pauseSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
+	pauseX=GetDisplayMGL()->GetWidth();
+	pauseY=GetDisplayMGL()->GetHeight();
 	menuMode=0;
 	msBright=0;
 	msDBright=1;
@@ -339,17 +360,15 @@ void InitPauseMenu(void)
 
 void ExitPauseMenu(void)
 {
-	if(pauseSpr)
-		delete pauseSpr;
-	pauseSpr=NULL;
+	pauseSpr.reset();
 }
 
 void UpdateUnpaused(void)
 {
-	if(pauseX<640)
-		pauseX+=15;
-	if(pauseY<480)
-		pauseY+=20;
+	if(pauseX < GetDisplayMGL()->GetWidth())
+		pauseX += 15;
+	if(pauseY < GetDisplayMGL()->GetHeight())
+		pauseY += 20;
 }
 
 byte NextVolumeSpot(byte v)
@@ -380,12 +399,12 @@ byte PrevVolumeSpot(byte v)
 	return 0;
 }
 
-byte UpdatePauseMenu(MGLDraw *mgl)
+PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 {
-	byte c;
 	int i;
 	static byte reptCounter=0;
 
+	int oldMsx = msx, oldMsy = msy;
 	mgl->GetMouse(&msx,&msy);
 
 	msBright+=msDBright;
@@ -394,31 +413,36 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 	if(msBright<-2)
 		msDBright=1;
 
-	if(pauseX>427)
+	int destX = mgl->GetWidth() - 213;
+	if(pauseX > mgl->GetWidth() - 213)
 	{
 		pauseX-=15;
 		mgl->SetMouse(msx-15,msy);
 		mgl->GetMouse(&msx,&msy);
-		if(pauseX<427)
-			pauseX=427;
+		if(pauseX < destX)
+			pauseX = destX;
 	}
-	if(pauseY>206)
+	int destY = mgl->GetHeight() - 274;
+	if(pauseY > destY)
 	{
 		pauseY-=20;
 		mgl->SetMouse(msx,msy-20);
 		mgl->GetMouse(&msx,&msy);
-		if(pauseY<206)
-			pauseY=206;
+		if(pauseY < destY)
+			pauseY = destY;
 	}
 
-
-	for(i=0;i<numItems;i++)
+	if (msx != oldMsx || msy != oldMsy)
 	{
-		if(PointInRect(msx,msy,pauseX+20,pauseY+15+22*i,pauseX+20+125,pauseY+15+22*i+19))
-			cursor=i;
+		for(i=0;i<numItems;i++)
+		{
+			if(PointInRect(msx,msy,pauseX+20,pauseY+15+22*i,pauseX+20+125,pauseY+15+22*i+19))
+				cursor=i;
+		}
 	}
 
-	c=GetControls()|GetArrows();
+	byte c = GetControls() | GetArrows();
+	dword gamepad = GetGamepadButtons();
 
 	reptCounter++;
 	if((!oldc) || (reptCounter>10))
@@ -458,6 +482,24 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			case PE_SONG:
 				PlayPrevSong();
 				break;
+			case PE_HUDCHOICE:
+				MakeNormalSound(SND_MENUSELECT);
+				switch (profile.progress.hudChoice)
+				{
+					case HudChoice::Supreme:
+						profile.progress.hudChoice = HudChoice::Classic;
+						break;
+					case HudChoice::Advanced:
+						profile.progress.hudChoice = HudChoice::Supreme;
+						break;
+					case HudChoice::Classic:
+						profile.progress.hudChoice = HudChoice::Advanced;
+						break;
+					default:
+						profile.progress.hudChoice = HudChoice::Supreme;
+				}
+				SetupOptionItems();
+				break;
 		}
 		SetupSoundItems();
 	}
@@ -478,11 +520,28 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			case PE_SONG:
 				PlayNextSong();
 				break;
+			case PE_HUDCHOICE:
+				MakeNormalSound(SND_MENUSELECT);
+				switch (profile.progress.hudChoice)
+				{
+					case HudChoice::Supreme:
+						profile.progress.hudChoice = HudChoice::Advanced;
+						break;
+					case HudChoice::Advanced:
+						profile.progress.hudChoice = HudChoice::Classic;
+						break;
+					case HudChoice::Classic:
+						profile.progress.hudChoice = HudChoice::Supreme;
+						break;
+					default:
+						profile.progress.hudChoice = HudChoice::Supreme;
+				}
+				SetupOptionItems();
+				break;
 		}
 		SetupSoundItems();
 	}
 	if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
-	   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))) ||
 	   mgl->MouseTap())
 	{
 		MakeNormalSound(SND_MENUSELECT);
@@ -616,31 +675,25 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 				MakeNormalSound(SND_TURRETBZZT);
 				break;
 			case PE_WPNLOCK:
-				if(profile.progress.wpnLock)
-					profile.progress.wpnLock=0;
-				else
-					profile.progress.wpnLock=1;
-				if(menuMode==1)
+				profile.progress.wpnLock = !profile.progress.wpnLock;
+				SetupOptionItems();
+				break;
+			case PE_HUDCHOICE:
+				switch (profile.progress.hudChoice)
 				{
-					FillPauseMenu(cheatPause);
+					case HudChoice::Supreme:
+						profile.progress.hudChoice = HudChoice::Advanced;
+						break;
+					case HudChoice::Advanced:
+						profile.progress.hudChoice = HudChoice::Classic;
+						break;
+					case HudChoice::Classic:
+						profile.progress.hudChoice = HudChoice::Supreme;
+						break;
+					default:
+						profile.progress.hudChoice = HudChoice::Supreme;
 				}
-				else
-				{
-					if(!editing)
-					{
-						// if cheats are available, use cheat game list instead
-						if(ItemPurchased(SHOP_MAJOR,MAJOR_CHEATMENU))
-							FillPauseMenu(gameCheatPause);
-						else
-							FillPauseMenu(gamePause);
-
-					}
-					else
-					{
-						FillPauseMenu(editPause);
-					}
-				}
-
+				SetupOptionItems();
 				break;
 		}
 		if(i==0 && menu[cursor].effect>=PE_CHEATS)
@@ -651,16 +704,16 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		SetupSoundItems();
 	}
 
-
-	HandlePauseKeyPresses(mgl);
-	if(lastKey==27 || ((c&CONTROL_B3) && !(oldc&CONTROL_B3)))	// hit ESC to exit pause menu
+	lastKey = mgl->LastKeyPressed();
+	if(lastKey==27 || (gamepad & ~oldGamepad) & (1 << SDL_CONTROLLER_BUTTON_START))	// hit ESC to exit pause menu
 	{
 		MakeNormalSound(SND_MENUSELECT);
 		lastKey=0;
 		return PAUSE_CONTINUE;
 	}
 
-	oldc=c;
+	oldc = c;
+	oldGamepad = gamepad;
 
 	return PAUSE_PAUSED;
 }

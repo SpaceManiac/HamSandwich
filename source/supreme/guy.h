@@ -1,6 +1,7 @@
 #ifndef GUY_H
 #define GUY_H
 
+#include <memory>
 #include "map.h"
 #include "monster.h"
 #include "jamulspr.h"
@@ -68,7 +69,7 @@ class Guy
 		char brtChange;
 		char name[32];
 
-		sprite_set_t* customSpr; // custom sprites
+		std::unique_ptr<sprite_set_t> customSpr; // custom sprites
 };
 
 extern Guy *goodguy;

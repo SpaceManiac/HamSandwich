@@ -9,7 +9,6 @@
 #include "playlist.h"
 #include "nameentry.h"
 #include "yesnodialog.h"
-#include "recordbook.h"
 #include "shop.h"
 #include "goal.h"
 #include "comicbook.h"
@@ -309,15 +308,16 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					if(mode==PROF_DELETE)
 					{
 						sprintf(s,"profiles/%s.prf",profile.name);
-						FreeProfile();
 						AppdataDelete(s);
 						if(numFiles==1)	// this was the only profile
 						{
 							mode=PROF_NORMAL;
+							SetFirstTime();
 							return 3;	// so force them to create a new profile
 						}
 						else
 						{
+							FreeProfile();
 							if(profChoice>0)
 								LoadProfile(ShortName(&fileList[0]));
 							else	// load profile #1 if you just deleted #0
@@ -652,7 +652,7 @@ TASK(void) ProfMenu(MGLDraw *mgl)
 		}
 		if(done==4)
 		{
-			AWAIT RecordBook(mgl);
+			AWAIT ComicBook();
 			done=0;
 		}
 	}

@@ -1,4 +1,5 @@
 #include "itemedit.h"
+#include <stdlib.h>
 #include "dialogbits.h"
 #include "filedialog.h"
 #include "items.h"
@@ -9,7 +10,7 @@
 #include "terrainedit.h"
 #include "vars.h"
 #include "edithelp.h"
-#include <stdlib.h>
+#include "player.h"
 
 #define IMODE_NORMAL	0	// doing nothing
 #define IMODE_SELECT	1	// selecting an item (for instance to define what item this one becomes)
@@ -70,16 +71,16 @@ static word trigs[]={ITR_GET,ITR_SHOOT,ITR_PLAYERBUMP,ITR_ENEMYBUMP,ITR_FRIENDBU
 #define IEBTN_VAR	   10	// choose a variable (right click toggles G or V, left click cycles num)
 #define IEBTN_DIR	   11	// choose a direction
 
-typedef struct itemEff_t
+struct itemEff_t
 {
 	char name[32];
 	char btnTxt[32];
 	int buttonMin;
 	int buttonMax;
 	byte buttonType;
-} itemEff_t;
+};
 
-static itemEff_t itemEff[]={
+static const itemEff_t itemEff[]={
 	{"No Effect","",0,0,IEBTN_NONE},
 	{"Explode into particles","Color",0,7,IEBTN_COLOR},
 	{"Heal/Harm Target","Amount",-9999,9999,IEBTN_NUM},
@@ -111,45 +112,7 @@ static itemEff_t itemEff[]={
 	{"Move","Direction",0,3,IEBTN_DIR},
 };
 
-static char pwrUpName[MAX_POWERUP][32]={
-	"",
-	"Reverse Hammer",
-	"Reflect Hammer",
-	"Energy Shield",
-	"Garlic",
-	"Speed Up",
-	"Invisibility",
-	"Infinite Ammo",
-	"Reload Weapon",
-	"Hammer Enhance",
-	"Poison",
-};
-
-static char wpnName[MAX_WEAPONS][32]={
-	"None",
-	"Missiles",
-	"AK-8087",
-	"Bombs",
-	"Flamethrower",
-	"Power Armor",
-	"Big Axe",
-	"Lightning Rod",
-	"Spears",
-	"Machete",
-	"Mines",
-	"Turrets",
-	"Mind Control Ray",
-	"Reflect Shield",
-	"Jetpack",
-	"Swapgun",
-	"Torch",
-	"Scanner",
-	"Mini-Sub",
-	"Freeze Ray",
-	"Stopwatch",
-};
-
-static char colorName[8][16]={
+static const char colorName[8][16]={
 	"Grey",
 	"Green",
 	"Brown",
@@ -160,21 +123,21 @@ static char colorName[8][16]={
 	"Aqua",
 };
 
-static char keyColorName[4][16]={
+static const char keyColorName[4][16]={
 	"Yellow",
 	"Red",
 	"Green",
 	"Blue",
 };
 
-static char keychainName[4][16]={
+static const char keychainName[4][16]={
 	"Pumpkin",
 	"Hammer",
 	"Rocket",
 	"Squash",
 };
 
-static char directionName[4][16]={
+static const char directionName[4][16]={
 	"Right",
 	"Down",
 	"Left",
@@ -256,6 +219,10 @@ static void FlagClick(int id)
 				MakeNormalSound(SND_TURRETBZZT);
 				GetItem(curItem)->flags&=(~IF_USERJSP);
 				SetButtonState(id,CHECK_OFF);
+
+				helpRemember = mode;
+				InitEditHelp(HELP_ITEMJSP);
+				mode = IMODE_HELP;
 			}
 			else
 			{
@@ -326,8 +293,7 @@ static void CopyClick(int id)
 		memcpy(GetItem(i),GetItem(curItem),sizeof(item_t));
 		GetItem(i)->theme=IT_CUSTOM;	// copy everything but the theme
 		sprintf(s,"Copy of %s",GetItem(curItem)->name);
-		strncpy(GetItem(i)->name,s,31);
-		GetItem(i)->name[31]='\0';
+		SDL_strlcpy(GetItem(i)->name, s, sizeof(GetItem(i)->name));
 		curItem=i;
 		curTheme=16;
 		MakeItemList();
@@ -744,7 +710,7 @@ static void SoundClick(int id)
 
 static void SetupEffect(void)
 {
-	itemEff_t *ie;
+	const itemEff_t *ie;
 	char s[64];
 
 	ie=&itemEff[GetItem(curItem)->effect];
@@ -783,7 +749,7 @@ static void SetupEffect(void)
 		case IEBTN_WEAPON:
 			// choose a weapon
 			MakeButton(BTN_NORMAL,ID_ITEMEFFMOD,0,174,132+17*16,80,15,itemEff[GetItem(curItem)->effect].btnTxt,EffModClick);
-			MakeButton(BTN_STATIC,ID_NAME2,0,256,132+17*16,80,15,wpnName[GetItem(curItem)->effectAmt],NULL);
+			MakeButton(BTN_STATIC,ID_NAME2,0,256,132+17*16,80,15,GetWeaponName(GetItem(curItem)->effectAmt),NULL);
 			break;
 		case IEBTN_COLOR:
 			// choose a color
@@ -807,10 +773,10 @@ static void SetupEffect(void)
 			// choose from the powerup list
 			MakeButton(BTN_NORMAL,ID_ITEMEFFMOD,0,174,132+17*16,80,15,itemEff[GetItem(curItem)->effect].btnTxt,EffModClick);
 			if(GetItem(curItem)->effectAmt>0)
-				MakeButton(BTN_STATIC,ID_NAME2,0,256,132+17*16,80,15,pwrUpName[GetItem(curItem)->effectAmt],NULL);
+				MakeButton(BTN_STATIC,ID_NAME2,0,256,132+17*16,80,15,GetPowerupName(GetItem(curItem)->effectAmt),NULL);
 			else
 			{
-				sprintf(s,"Remove %s",pwrUpName[-GetItem(curItem)->effectAmt]);
+				sprintf(s,"Remove %s",GetPowerupName(-GetItem(curItem)->effectAmt));
 				MakeButton(BTN_STATIC,ID_NAME2,0,256,132+17*16,80,15,s,NULL);
 			}
 			break;
@@ -1135,7 +1101,7 @@ void ItemEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 	// the sprite and its position
 	SetSpriteConstraints(481,201,637,357);
 	InstaRenderItem(560,280,curItem,0,mgl);
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 	mgl->Box(560-TILE_WIDTH/2,280-TILE_HEIGHT/2,560+TILE_WIDTH/2-1,280+TILE_HEIGHT/2-1,32*backColor+18);
 
 	// misc. lines and the background behind the buttons
@@ -1190,6 +1156,9 @@ void ItemEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 
 void ItemEditHelp(void)
 {
+	if (mode == IMODE_HELP)
+		return;
+
 	helpRemember=mode;
 	if(mode==IMODE_SELECT)
 		InitEditHelp(HELP_ITEMPICK);

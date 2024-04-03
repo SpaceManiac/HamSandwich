@@ -1,15 +1,16 @@
 #include "winpch.h"
+#include <stdio.h>
+#include <math.h>
 #include "title.h"
 #include "game.h"
-#include <stdio.h>
 #include "jamulfmv.h"
 #include "pause.h"
 #include "nameentry.h"
 #include "progress.h"
 #include "shop.h"
 #include "textgame.h"
-
-#define COPYRIGHT_YEARS "1998-2012"
+#include "steam.h"
+#include "softjoystick.h"
 
 // special codes in the credits:
 // @ = use GirlsRWeird font
@@ -24,17 +25,25 @@ char credits[][32]={
 	"@SUPREME WITH CHEESE",
 	"",
 	"",
-	"Copyright " COPYRIGHT_YEARS ",",
-	"By Hamumu Software",
+	("Copyright " COPYRIGHT_YEARS ","),
+	("By " COPYRIGHT_COMPANY),
 	"#",
 	"&Original Concept",
 	"Mike Hommel",
 	"%",
 	"&Programming",
 	"Mike Hommel",
-	"%",
-	"&Modernizing",
 	"Tad \"SpaceManiac\" Hardesty",
+	"%",
+	"&Steam Edition Art",
+	"Ben Rose",
+	"%",
+	"&HamSandwich Contributors",
+	"Alex Walley",
+	"AutomaticFrenzy",
+	"CPE Gaebler",
+	"Hypexion",
+	"Sam Atkins",
 	"%",
 	"&Character Design",
 	"Jack Darby",
@@ -186,7 +195,6 @@ char victoryTxt[][64]={
 #define END_OF_VICTORY 480*2
 
 sprite_set_t *planetSpr;
-static int numRunsToMakeUp;
 byte pickerpos;
 char pickeroffset;
 byte offsetdir;
@@ -195,7 +203,6 @@ byte curCustom;
 static byte oldc=0;
 mfont_t pickerFont;
 
-static byte keyAnim=0;
 char lvlName[32];
 static byte secretClicks,secretDir;
 
@@ -205,7 +212,7 @@ byte demoTextCounter;
 
 static byte *backgd;
 static int titleRuns;
-static int msx,msy,oldmsx,oldmsy;
+static int msx,msy,msx2,msy2;
 static byte cursor;
 static byte sliceOut[8];
 char menuTxt[][16]={"Play","Profile","Tutorial","Instructions","Exit","Internet","Shop","Editor"};
@@ -221,11 +228,18 @@ void MainMenuDisplay(MGLDraw *mgl)
 		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
 
 	// version #:
-	Print(556,2,VERSION_NO,1,1);
-	Print(555,2,VERSION_NO,0,1);
+	Print(SCRWID - GetStrLength(VERSION_NO, 1), 3, VERSION_NO, 1, 1);
+	Print(SCRWID - GetStrLength(VERSION_NO, 1) - 1, 3-1, VERSION_NO, 0, 1);
 	// Copyright:
-	Print(3,467,"Copyright " COPYRIGHT_YEARS ", Hamumu Software",1,1);
-	Print(2,466,"Copyright " COPYRIGHT_YEARS ", Hamumu Software",0,1);
+	Print(3,467,"Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY,1,1);
+	Print(2,466,"Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY,0,1);
+	// Steam edition info
+	/*const char* edition = SteamManager::Get()->DescribeEdition();
+	Print(SCRWID - GetStrLength(edition, 1), 20, edition, 1, 1);
+	Print(SCRWID - GetStrLength(edition, 1) - 1, 20-1, edition, 0, 1);*/
+	const char* workshopStatus = SteamManager::Get()->DescribeWorkshopStatus();
+	Print(3, 3, workshopStatus, 1, 1);
+	Print(3-1, 3-1, workshopStatus, 0, 1);
 
 	for(i=0;i<8;i++)
 	{
@@ -254,7 +268,7 @@ void MainMenuDisplay(MGLDraw *mgl)
 	Print(638-GetStrLength(s,2)-1,460-1,s,-32,2);
 	Print(638-GetStrLength(s,2)+1,460+1,s,-32,2);
 	Print(638-GetStrLength(s,2),460,s,0,2);
-	DrawMouseCursor(msx,msy);
+	DrawMouseCursor(msx2,msy2);
 
 #ifdef IGF
 	CenterPrint(igfX-1,igfY-1,"IGF Judge Edition!  Do Not Distribute",-32,2);
@@ -266,17 +280,12 @@ void MainMenuDisplay(MGLDraw *mgl)
 TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 {
 	byte c;
-	static byte reptCounter=0;
+	static byte reptCounter = 0;
 	int i;
 	byte formerCursor;
 
-	mgl->GetMouse(&msx,&msy);
-
 	if(*lastTime>TIME_PER_FRAME*5)
 		*lastTime=TIME_PER_FRAME*5;
-
-	c=GetControls()|GetArrows();
-
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		igfX+=igfDX;
@@ -303,16 +312,39 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 
 	formerCursor=cursor;
 
+	int16_t lsx, lsy;
+	byte dpad;  // dpad + buttons, but not left stick
+	GetLeftStick(&lsx, &lsy, &dpad);
+	c = GetKeyControls() | GetArrows() | SoftJoystickState() | dpad;
+
+	int oldmsx = msx, oldmsy = msy;
+	mgl->GetMouse(&msx, &msy);
+	bool doMouse = false;
 	if(msx!=oldmsx || msy!=oldmsy)
+	{
+		doMouse = true;
+		msx2 = msx;
+		msy2 = msy;
+	}
+
+	if (lsx*lsx + lsy*lsy > (INT16_MAX/2)*(INT16_MAX/2))
+	{
+		double angle = atan2(lsy, lsx);
+		msx2 = 320 + cos(angle) * 200;
+		msy2 = 280 + sin(angle) * 200;
+		doMouse = true;
+	}
+
+	if(doMouse)
 	{
 		titleRuns=0;
 
-		if(msx>320)
+		if(msx2>320)
 		{
-			if(msy<280)
+			if(msy2<280)
 			{
 				// upper right quadrant
-				if(abs(msx-320)>abs(msy-280))
+				if(abs(msx2-320)>abs(msy2-280))
 					cursor=1;
 				else
 					cursor=0;
@@ -320,7 +352,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 			else
 			{
 				// lower right quadrant
-				if(abs(msx-320)>abs(msy-280))
+				if(abs(msx2-320)>abs(msy2-280))
 					cursor=2;
 				else
 					cursor=3;
@@ -328,10 +360,10 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		}
 		else
 		{
-			if(msy<280)
+			if(msy2<280)
 			{
 				// upper left quadrant
-				if(abs(msx-320)>abs(msy-280))
+				if(abs(msx2-320)>abs(msy2-280))
 					cursor=6;
 				else
 				{
@@ -344,20 +376,18 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 			else
 			{
 				// lower left quadrant
-				if(abs(msx-320)>abs(msy-280))
+				if(abs(msx2-320)>abs(msy2-280))
 					cursor=5;
 				else
 					cursor=4;
 			}
 		}
 	}
-	oldmsx=msx;
-	oldmsy=msy;
 
 	if((!oldc) || (reptCounter>10))
 		reptCounter=0;
 
-	if((c&(CONTROL_UP|CONTROL_LF)) && !(oldc&(CONTROL_UP|CONTROL_LF)))
+	if((c & ~oldc) & (CONTROL_UP|CONTROL_LF))
 	{
 		cursor--;
 		if(cursor==255)
@@ -368,7 +398,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		titleRuns=0;
 		MakeNormalSound(SND_MENUCLICK);
 	}
-	if((c&(CONTROL_DN|CONTROL_RT)) && !(oldc&(CONTROL_DN|CONTROL_RT)))
+	if((c & ~oldc) & (CONTROL_DN|CONTROL_RT))
 	{
 		cursor++;
 		if(cursor==8)
@@ -379,8 +409,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		titleRuns=0;
 		MakeNormalSound(SND_MENUCLICK);
 	}
-	if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
-	   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
+	if((c & ~oldc) & CONTROL_B1)
 	{
 		titleRuns=0;
 		MakeNormalSound(SND_MENUSELECT);
@@ -461,7 +490,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 			CO_RETURN 6;	// start shopping!
 	}
 
-	mgl->LoadBMP("graphics/title.bmp");
+	mgl->LoadBMP(SteamManager::Get()->IsSteamEdition() ? "graphics/title_steam.bmp" : "graphics/title.bmp");
 	backgd=(byte *)malloc(640*480);
 	if(!backgd)
 		FatalError("Out of memory!");
@@ -471,7 +500,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 
 	mgl->LastKeyPressed();
 	mgl->MouseTap();
-	oldc=CONTROL_B1|CONTROL_B2;
+	oldc=~0;
 	planetSpr=new sprite_set_t("graphics/pizza.jsp");
 
 	PlaySongForce("002title.ogg");
@@ -503,7 +532,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 			titleRuns=0;
 			mgl->LastKeyPressed();
 			mgl->MouseTap();
-			oldc=CONTROL_B1|CONTROL_B2;
+			oldc=~0;
 		}
 	}
 	delete planetSpr;
@@ -685,11 +714,11 @@ TASK(byte) SpeedSplash(MGLDraw *mgl,const char *fname)
 
 		if(c==27)
 			CO_RETURN 0;
-		else if(c)
+		else if(c || mgl->MouseTap())
 			mode=2;
 
 		c=GetControls()|GetArrows();
-		if((c&(CONTROL_B1|CONTROL_B2)) && (!(oldc&(CONTROL_B1|CONTROL_B2))))
+		if((c & ~oldc) & (CONTROL_B1 | CONTROL_B2))
 			mode=2;
 		oldc=c;
 
@@ -861,7 +890,7 @@ TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
 		AWAIT mgl->Flip();
 		if(!mgl->Process())
 			CO_RETURN;
-		if(mgl->LastKeyPressed())
+		if(mgl->LastKeyPressed() || GetJoyButtons())
 			mode=2;
 
 		EndClock();

@@ -5,6 +5,7 @@
 #include "music.h"
 #include "shop.h"
 #include "appdata.h"
+#include "steam.h"
 
 static char prfName[64];
 static byte firstTime;
@@ -25,7 +26,7 @@ void InitProfile(void)
 	int i;
 
 	firstTime=0;
-	f=AppdataOpen("profile.cfg","rt");
+	f=AppdataOpen("profile.cfg");
 	if(!f)
 	{
 		firstTime=1;	// ask the player to enter their name
@@ -79,13 +80,13 @@ void SaveProfile(void)
 	FILE *f;
 	int i,j;
 
-	f=AppdataOpen("profile.cfg","wt");
+	f=AppdataOpen("profile.cfg");
 	fprintf(f,"%s\n",profile.name);
 	fclose(f);
 
 	sprintf(prfName,"profiles/%s.prf",profile.name);
 	// also actually save the profile!
-	f=AppdataOpen(prfName,"wb");
+	f=AppdataOpen_Write(prfName);
 	// begin fwrite(&profile, sizeof(profile_t), 1, f) emulation
 	fwrite(&profile, 68, 1, f);
 	for(i = 0; i < NUM_PLAYLISTS; ++i)
@@ -134,6 +135,7 @@ void LoadPlayLists(FILE *f)
 		{
 			profile.playList[i].song=(char *)malloc(SONGNAME_LEN*profile.playList[i].numSongs);
 			fread(profile.playList[i].song,SONGNAME_LEN,profile.playList[i].numSongs,f);
+			static_assert(SONGNAME_LEN == 128, "save compatibility broken; adjust this assertion if you are sure");
 		}
 		else
 			profile.playList[i].song=NULL;
@@ -149,13 +151,13 @@ void LoadProfile(const char *name)
 	sprintf(prfName,"profiles/%s.prf",profile.name);
 
 	// save this profile as the current one.
-	f=AppdataOpen("profile.cfg","wt");
+	f=AppdataOpen_Write("profile.cfg");
 	fprintf(f,"%s\n",profile.name);
 	fclose(f);
 	AppdataSync();
 
 	// now load it
-	f=AppdataOpen(prfName,"rb");
+	f=AppdataOpen(prfName);
 	if(!f)	// file doesn't exist
 	{
 		DefaultProfile(name);
@@ -163,16 +165,17 @@ void LoadProfile(const char *name)
 	}
 	// begin fread(&profile, sizeof(profile_t), 1, f) emulation
 	fread(&profile, 68, 1, f);
-	for(i = 0; i < NUM_PLAYLISTS; ++i)
-	{
-		fseek(f, 8, SEEK_CUR);
-	}
+	fseek(f, NUM_PLAYLISTS * 8, SEEK_CUR);
+	static_assert(NUM_PLAYLISTS == 4, "save compatibility broken; adjust this assertion if you are sure");
 	fread(&profile.difficulty, 8, 1, f);
 	// begin progress_t part
 	{
 		fread(&profile.progress, 112, 1, f);
+		static_assert(offsetof(progress_t, world) == 112, "save compatibility broken; adjust this assertion if you are sure");
 		fseek(f, 4, SEEK_CUR);  // skip worldData_t *world
 		fread(&profile.progress.kills, 2152 - 112 - 4, 1, f);
+		//static_assert(sizeof(progress_t) == 2152 + sizeof(worldData_t*), "save compatibility broken; adjust this assertion if you are sure");
+		static_assert(NUM_PROFILE_MONSTERS == 211, "save compatibility broken; adjust this assertion if you are sure");
 	}
 	// end progress_t part
 	fread(&profile.motd, sizeof(profile.motd), 1, f);
@@ -197,11 +200,19 @@ void LoadProfile(const char *name)
 		}
 	}
 	fclose(f);
+
+	SteamManager::Get()->ProfileReady();
 }
 
 byte FirstTime(void)
 {
 	return firstTime;
+}
+
+void SetFirstTime()
+{
+	AppdataDelete("profile.cfg");
+	firstTime = true;
 }
 
 void ClearProgress(void)
@@ -237,6 +248,7 @@ void ClearProgress(void)
 	profile.progress.cheats=0;
 
 	profile.progress.wpnLock=0;
+	profile.progress.hudChoice = HudChoice::Supreme;
 	for(i=0;i<NUM_PROFILE_MONSTERS;i++)
 	{
 		profile.progress.kills[i]=0;
@@ -552,4 +564,18 @@ void EraseWorldProgress(const char *fname)
 	profile.progress.num_worlds--;
 	profile.progress.world=(worldData_t *)realloc(profile.progress.world,sizeof(worldData_t)*profile.progress.num_worlds);
 	SaveProfile();
+}
+
+static const char diffName[][16] = {
+	"Normal",
+	"Hard",
+	"Lunatic",
+};
+static_assert(SDL_arraysize(diffName) == MAX_DIFFICULTY, "Must give new difficulties a name");
+
+const char* GetDifficultyName(int difficulty)
+{
+	if (difficulty >= 0 && difficulty < MAX_DIFFICULTY)
+		return diffName[difficulty];
+	return "???";
 }

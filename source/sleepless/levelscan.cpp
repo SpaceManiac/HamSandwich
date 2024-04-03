@@ -608,7 +608,7 @@ byte Scan_Level(world_t *world,Map *map)
 	char s[64];
 
 	sprintf(s,"level%s.txt",map->name);
-	scanF=AppdataOpen(s,"wt");
+	scanF=AppdataOpen_Write(s);
 	if(!scanF)
 		return 0;
 
@@ -701,7 +701,7 @@ byte Scan_Vars(world_t *world)
 {
 	int i,j,k;
 
-	scanF=AppdataOpen("var_scan.txt","wt");
+	scanF=AppdataOpen_Write("var_scan.txt");
 	if(!scanF)
 		return 0;
 
@@ -726,11 +726,13 @@ byte Scan_Vars(world_t *world)
 					{
 						case TRG_COMPVAR: // value is one, compared to value2
 							var_checks[world->map[i]->special[j].trigger[k].value2]++;
+							[[fallthrough]];
 						case TRG_VAR:	// value
 							var_checks[world->map[i]->special[j].trigger[k].value]++;
 							break;
 						case TRG_EQUVAR:	// value, and a text thing
 							var_checks[world->map[i]->special[j].trigger[k].value]++;
+							[[fallthrough]];
 						case TRG_EQUATION:	// text thing
 							Find_Text_Vars(world->map[i]->special[j].effect[k].text,1);
 							break;

@@ -1,0 +1,105 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+
+env:
+  ITCH_GAME: ${{ secrets.ITCH_GAME }}
+  BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+
+jobs:
+  windows:
+    name: Windows (MSVC)
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Windows release
+        shell: cmd
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
+          cmake --preset windows-i686-release
+          cmake --build build/cmake-windows-i686-release16.0 --target install
+      - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
+        run: tools/bootstrap/butler push --if-changed build/install "${ENV:ITCH_GAME}:windows" ("--userversion=" + (git rev-parse --short=10 HEAD))
+  mingw32:
+    name: Windows (MINGW32)
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW32
+          # For users, `./run` will install `make` automatically, but we need
+          # to install `make` manually here.
+          install: make
+      - shell: msys2 {0}
+        run: make install/strip mode=release
+  linux:
+    name: Linux
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./container make install/strip mode=release
+      - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
+        run: tools/bootstrap/butler push --if-changed build/install "$ITCH_GAME:linux" --userversion="$(git rev-parse --short=10 HEAD)"
+  mac:
+    name: MacOS
+    runs-on: macos-11
+    steps:
+      - uses: actions/checkout@v4
+      - run: make install/strip mode=release
+      - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
+        run: tools/bootstrap/butler push --if-changed build/install "$ITCH_GAME:macos" --userversion="$(git rev-parse --short=10 HEAD)"
+  android:
+    name: Android
+    runs-on: ubuntu-20.04
+    env:
+      ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install openjdk-11-jdk ninja-build
+      - name: Build signed release APK
+        run: |
+          if test "$ANDROID_KEYSTORE_B64"; then export ANDROID_KEYSTORE=$HOME/hamsandwich.keystore; base64 -d <<<"$ANDROID_KEYSTORE_B64" >$ANDROID_KEYSTORE; fi
+          export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+          ./gradlew packageRelease
+      # Newer devices reject unsigned APKs, so don't bother publishing if signing is not configured.
+      - name: Publish APK to Itch
+        if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY && env.ANDROID_KEYSTORE_B64 && env.ANDROID_KEYSTORE_PASSWORD
+        run: |
+          cp build/android/android-project/outputs/apk/release/android-project-release.apk hamsandwich-android.apk
+          tools/bootstrap/butler push --if-changed hamsandwich-android.apk "$ITCH_GAME:android" --userversion="$(git rev-parse --short=10 HEAD)"
+  web:
+    name: Web
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: make install/strip mode=release os=emscripten
+      - uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./build/webroot
+      - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
+        run: tools/bootstrap/butler push --if-changed build/webroot "$ITCH_GAME:web" --userversion="$(git rev-parse --short=10 HEAD)"
+  web-deploy:
+    name: Deploy to GitHub Pages
+    needs: web
+    if: github.event_name == 'push' && github.ref_name == 'master'
+    permissions:
+      pages: write  # To deploy to Pages
+      id-token: write  # To verify the deployment originates from an appropriate source
+    environment:
+      # GH recommends this environment name
+      name: github-pages
+      # Export the GitHub Pages URL as the environment's URL
+      url: ${{ steps.deployment.outputs.page_url }}
+    # Allow only one concurrent deployment
+    concurrency:
+      group: "pages"
+      cancel-in-progress: true
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/configure-pages@v2
+    - uses: actions/deploy-pages@v1
+      id: deployment

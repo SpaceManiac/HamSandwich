@@ -44,7 +44,7 @@ byte msgContent;
 word windingDown;
 byte windingUp;
 byte windDownReason;
-static byte idleGame=0,pictureNoKey,loadingUp=1;
+static byte pictureNoKey,loadingUp=1;
 
 void LunaticInit(MGLDraw *mgl)
 {
@@ -138,7 +138,7 @@ byte InitLevel(byte map)
 		if(player.beenThere[map])	// you have been here - the fact that it's not saved means you are cheating!
 		{
 			NewMessage("YOU CHEAT!",50,1);
-#ifndef _DEBUG
+#ifdef NDEBUG
 			player.brains=0;
 			player.candles=0;
 			if(player.hammers>1)
@@ -206,34 +206,6 @@ void ExitLevel(void)
 	PurgeMonsterSprites();
 }
 
-void SetGameIdle(bool b)
-{
-	idleGame=b;
-	if (b)
-		PauseGame();
-}
-
-byte GetGameIdle(void)
-{
-	return idleGame;
-}
-
-// this is run whenever the game is swapped away from
-void GameIdle(void)
-{
-	dword start,end;
-
-	start=timeGetTime();
-	while(idleGame)
-	{
-		if(!gamemgl->Process())
-			break;
-	}
-	end=timeGetTime();
-	player.boredom=0;
-	return;
-}
-
 void RestoreGameplayGfx(void)
 {
 	if(curMap)
@@ -282,6 +254,7 @@ TASK(byte) LunaticRun(int *lastTime)
 			CO_RETURN LEVEL_ABORT;
 		}
 
+		SDL_SetRelativeMouseMode(gameMode == GAMEMODE_PLAY ? SDL_TRUE : SDL_FALSE);
 		if(gameMode==GAMEMODE_PLAY)
 		{
 			profile.progress.totalTime=player.clock;
@@ -464,7 +437,7 @@ TASK(byte) LunaticRun(int *lastTime)
 			// It's cheatable but that's kind of ok
 			if (!IsCustomWorld())
 			{
-				FILE* f = AppdataOpen("profiles/editor.dat", "wt");
+				FILE* f = AppdataOpen_Write("profiles/editor.dat");
 				char text[256];
 				sprintf(text,"Editor unlocked by %s, what a cool guy!\n", profile.name);
 				fwrite(text, sizeof(char), strlen(text), f);
@@ -737,7 +710,7 @@ TASK(byte) PlayALevel(byte map)
 			if(!(GetJoyButtons()&4))
 				wasPaused=0;
 		}
-		if((lastKey==27 || (GetJoyButtons()&4)) && !wasPaused && gameMode==GAMEMODE_PLAY && windingDown==0 && windingUp==0)
+		if((lastKey==27 || (GetJoyButtons()&4) || GetGameIdle()) && !wasPaused && gameMode==GAMEMODE_PLAY && windingDown==0 && windingUp==0)
 		{
 			wasPaused=1;
 			PauseGame();

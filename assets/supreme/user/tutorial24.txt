@@ -1,0 +1,12 @@
+Pausing... exciting topic!  Any time you're playing, you can press the ESC
+key or the Start gamepad button to pause the game.  But wait, there's 
+more!  While it's paused you have several options you should know about:
+Continue - back to gameplay!
+Retry - starts the level over.  Use it if you get stuck!
+Give Up - returns you to the world's Hub Level.
+World Select - returns you all the way to the World Select screen.
+Sound - Adjust the sound effect volume.
+Music - Tweak music options from a wide variety of choices.
+Quit Game - Hmm...
+It sounds pretty trivial, but those are things you need to know
+about while you're playing.  Now beat these Mumbles!

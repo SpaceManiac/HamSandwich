@@ -88,7 +88,7 @@ void LoadText(const char *nm,byte mode)
 	char line[256];
 	int y;
 
-	f=AssetOpen(nm,"rt");
+	f=AssetOpen(nm);
 	if(!f)
 		return;
 
@@ -132,7 +132,7 @@ void LoadText(const char *nm,byte mode)
 	fclose(f);
 }
 
-TASK(void) ShowImageOrFlic(char *str,byte nosnd,byte mode)
+TASK(void) ShowImageOrFlic(const char *str,byte nosnd,byte mode)
 {
 	int speed;
 
@@ -140,7 +140,9 @@ TASK(void) ShowImageOrFlic(char *str,byte nosnd,byte mode)
 	char *other;
 	char nm[64];
 
-	fname=strtok(str,",\n");
+	std::string copy = str;
+
+	fname=strtok(copy.data(),",\n");
 	if(!fname)
 		CO_RETURN;
 
@@ -179,6 +181,7 @@ TASK(void) ShowImageOrFlic(char *str,byte nosnd,byte mode)
 
 	AWAIT FLI_play(nm,0,speed,mgl);
 	mgl->LoadBMP("graphics/title.bmp");
+	RestoreGameplayGfx();
 
 	if(!editing && (verified || shopping))
 	{
@@ -251,14 +254,25 @@ void UpdateCamera(int x,int y,int dx,int dy,Map *map)
 	rscrx+=scrdx;
 	rscry+=scrdy;
 
-	if(rscrx<320<<FIXSHIFT)
-		rscrx=320<<FIXSHIFT;
-	if(rscrx>((map->width*TILE_WIDTH-320)<<FIXSHIFT))
-		rscrx=(map->width*TILE_WIDTH-320)<<FIXSHIFT;
-	if(rscry<(240-TILE_HEIGHT)<<FIXSHIFT)
-		rscry=(240-TILE_HEIGHT)<<FIXSHIFT;
-	if(rscry>((map->height*TILE_HEIGHT-240)<<FIXSHIFT))
-		rscry=(map->height*TILE_HEIGHT-240)<<FIXSHIFT;
+	int minX = (GetDisplayMGL()->GetWidth() / 2) << FIXSHIFT;
+	int maxX = ((map->width * TILE_WIDTH) << FIXSHIFT) - minX;
+	int minY = (GetDisplayMGL()->GetHeight() / 2) << FIXSHIFT;
+	int maxY = ((map->height * TILE_HEIGHT) << FIXSHIFT) - minY;
+	minY -= TILE_HEIGHT << FIXSHIFT;
+
+	if (minX > maxX)
+		rscrx = (minX + maxX) / 2;
+	else if (rscrx < minX)
+		rscrx = minX;
+	else if (rscrx > maxX)
+		rscrx = maxX;
+
+	if (minY > maxY)
+		rscry = (minY + maxY) / 2;
+	else if (rscry < minY)
+		rscry = minY;
+	else if (rscry > maxY)
+		rscry = maxY;
 
 	if(scrx>desiredX+10)
 		scrdx=-((scrx-(desiredX+10))*FIXAMT/16);
@@ -276,7 +290,7 @@ void UpdateCamera(int x,int y,int dx,int dy,Map *map)
 	scry=(rscry>>FIXSHIFT);
 }
 
-void Print(int x,int y,const char *s,char bright,byte font)
+void Print(int x,int y,std::string_view s,char bright,byte font)
 {
 	if(font==0)
 		FontPrintStringBright(x,y,s,gameFont[0],bright);
@@ -289,47 +303,47 @@ void Print(int x,int y,const char *s,char bright,byte font)
 	}
 }
 
-void PrintGlow(int x,int y,const char *s,char bright,byte font)
+void PrintGlow(int x,int y,std::string_view s,char bright,byte font)
 {
 	FontPrintStringGlow(x,y,s,gameFont[font],bright);
 }
 
-void PrintUnGlow(int x,int y,const char *s,byte font)
+void PrintUnGlow(int x,int y,std::string_view s,byte font)
 {
 	FontPrintStringUnGlow(x,y,s,gameFont[font]);
 }
 
-void PrintGlowLimited(int x,int y,int maxX,const char *s,char bright,byte font)
+void PrintGlowLimited(int x,int y,int maxX,std::string_view s,char bright,byte font)
 {
 	FontPrintStringGlowLimited(x,y,maxX,s,gameFont[font],bright);
 }
 
-void PrintProgressiveGlow(int x,int y,const char *s,int bright,byte font)
+void PrintProgressiveGlow(int x,int y,std::string_view s,int bright,byte font)
 {
 	FontPrintStringProgressiveGlow(x,y,s,gameFont[font],bright);
 }
 
-void PrintRect(int x,int y,int x2,int y2,int height,const char *s,byte font)
+void PrintRect(int x,int y,int x2,int y2,int height,std::string_view s,byte font)
 {
 	FontPrintStringRect(x,y,x2,y2,s,height,gameFont[font]);
 }
 
-void PrintGlowRect(int x,int y,int x2,int y2,int height,const char *s,byte font)
+void PrintGlowRect(int x,int y,int x2,int y2,int height,std::string_view s,byte font)
 {
 	FontPrintStringGlowRect(x,y,x2,y2,s,height,0,gameFont[font]);
 }
 
-void PrintGlowRectBright(int x,int y,int x2,int y2,int height,const char *s,char bright,byte font)
+void PrintGlowRectBright(int x,int y,int x2,int y2,int height,std::string_view s,char bright,byte font)
 {
 	FontPrintStringGlowRect(x,y,x2,y2,s,height,bright,gameFont[font]);
 }
 
-void PrintUnGlowRect(int x,int y,int x2,int y2,int height,const char *s,byte font)
+void PrintUnGlowRect(int x,int y,int x2,int y2,int height,std::string_view s,byte font)
 {
 	FontPrintStringUnGlowRect(x,y,x2,y2,s,height,gameFont[font]);
 }
 
-void PrintLimited(int x,int y,int maxX,const char *s,char bright,byte font)
+void PrintLimited(int x,int y,int maxX,std::string_view s,char bright,byte font)
 {
 	if(bright==0)
 			FontPrintStringLimit(x,y,maxX,s,gameFont[font]);
@@ -338,7 +352,7 @@ void PrintLimited(int x,int y,int maxX,const char *s,char bright,byte font)
 }
 
 
-void CenterPrint(int x,int y,const char *s,char bright,byte font)
+void CenterPrint(int x,int y,std::string_view s,char bright,byte font)
 {
 	if(font==0)
 	{
@@ -357,7 +371,7 @@ void CenterPrint(int x,int y,const char *s,char bright,byte font)
 	}
 }
 
-int GetStrLength(const char *s,byte font)
+int GetStrLength(std::string_view s,byte font)
 {
 	return FontStrLen(s,gameFont[font]);
 }
@@ -392,24 +406,24 @@ void RenderItAll(world_t *world,Map *map,byte flags)
 	else
 		map->Render(world,scrx,scry,flags);
 
-	scrx-=320;
-	scry-=240;
+	scrx -= mgl->GetWidth() / 2;
+	scry -= mgl->GetHeight() / 2;
 	dispList->Render();
 	dispList->ClearList();
-	scrx+=320;
-	scry+=240;
+	scrx += mgl->GetWidth() / 2;
+	scry += mgl->GetHeight() / 2;
 
 	if(editing==1)
 		map->RenderSelect(world,scrx,scry,flags);
 }
 
-void SprDraw(int x,int y,int z,byte hue,char bright,sprite_t *spr,word flags)
+void SprDraw(int x,int y,int z,byte hue,char bright,const sprite_t *spr,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,z,0,hue,bright,spr,flags);
 }
 
-void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,sprite_t *spr,word flags)
+void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,const sprite_t *spr,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,z,fromHue,hue,bright,spr,flags|DISPLAY_OFFCOLOR);
@@ -418,30 +432,30 @@ void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,sprite_t *sp
 void SprDrawTile(int x,int y,word tile,char light,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
-	dispList->DrawSprite(x,y,0,0,tile,light,(sprite_t *)1,flags|DISPLAY_TILESPRITE);
+	dispList->DrawSprite(x,y,0,0,tile,light,(const sprite_t *)1,flags|DISPLAY_TILESPRITE);
 }
 
 void WallDraw(int x,int y,word wall,word floor,const char *light,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
-	dispList->DrawSprite(x,y,0,wall,floor,0,(sprite_t *)light,flags);
+	dispList->DrawSprite(x,y,0,wall,floor,0,(const sprite_t *)light,flags);
 }
 
 void RoofDraw(int x,int y,word roof,const char *light,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
-	dispList->DrawSprite(x,y,TILE_HEIGHT,0,roof,0,(sprite_t *)light,flags);
+	dispList->DrawSprite(x,y,TILE_HEIGHT,0,roof,0,(const sprite_t *)light,flags);
 }
 
 void ParticleDraw(int x,int y,int z,byte color,byte size,word flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
-	dispList->DrawSprite(x,y,z,0,color,size,(sprite_t *)1,flags);
+	dispList->DrawSprite(x,y,z,0,color,size,(const sprite_t *)1,flags);
 }
 
 void LightningDraw(int x,int y,int x2,int y2,byte bright,char range)
 {
-	dispList->DrawSprite(x,y,x2,y2,bright,range,(sprite_t *)1,DISPLAY_DRAWME|DISPLAY_LIGHTNING);
+	dispList->DrawSprite(x,y,x2,y2,bright,range,(const sprite_t *)1,DISPLAY_DRAWME|DISPLAY_LIGHTNING);
 }
 
 //---------------------------------------------------------------------------------------
@@ -522,12 +536,16 @@ void DisplayList::HookIn(int me)
 	}
 }
 
-bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,char bright,sprite_t *spr,word flags)
+bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,char bright,const sprite_t *spr,word flags)
 {
 	int i;
 
-	if((x-scrx+320)<-DISPLAY_XBORDER || (x-scrx+320)>640+DISPLAY_XBORDER ||
-	   (y-scry+240)<-DISPLAY_YBORDER || (y-scry+240)>480+DISPLAY_YBORDER)
+	if (
+		(x-scrx+mgl->GetWidth()/2) < -DISPLAY_XBORDER ||
+		(x-scrx+mgl->GetWidth()/2) > mgl->GetWidth()+DISPLAY_XBORDER ||
+		(y-scry+mgl->GetHeight()/2) < -DISPLAY_YBORDER ||
+		(y-scry+mgl->GetHeight()/2) > mgl->GetHeight()+DISPLAY_YBORDER
+	)
 		return true;
 	i=GetOpenSlot();
 	if(i==-1)
@@ -542,7 +560,7 @@ bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,char bright,sprit
 	dispObj[i].z=z;
 	dispObj[i].z2=z2;
 	if(dispObj[i].flags&(DISPLAY_WALLTILE|DISPLAY_ROOFTILE))
-		memcpy(dispObj[i].light,dispObj[i].spr,9);
+		memcpy(dispObj[i].light,(const char*)dispObj[i].spr,9);
 	HookIn(i);
 	return true;
 }

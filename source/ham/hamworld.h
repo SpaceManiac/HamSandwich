@@ -1,46 +1,28 @@
 #ifndef HAMWORLD_H
 #define HAMWORLD_H
 
-#include "jamultypes.h"
-#include "ioext.h"
 #include <stddef.h>
 #include <string_view>
 #include <fstream>
 #include <sstream>
 #include <vector>
 #include <map>
+#include "jamultypes.h"
+#include "ioext.h"
+#include "owned_sdl.h"
+#include "string_extras.h"
 
 namespace hamworld {
 
 using std::string_view;
 
-class Buffer
-{
-	void* ptr;
-	size_t sz;
-public:
-	Buffer(std::string* str)
-		: ptr(str), sz(SIZE_MAX) {}
-	Buffer(char* ch, size_t sz)
-		: ptr(ch), sz(sz) {}
-	Buffer(std::nullptr_t)
-		: ptr(nullptr), sz(0) {}
-
-	template<size_t N>
-	Buffer(char (&array)[N])
-		: ptr(array), sz(N) {}
-
-	char* prepare(size_t* sz);
-	void assign(string_view s);
-};
-
 size_t size_varint(size_t id);
 void write_varint(std::ostream& o, size_t id);
 void write_string(std::ostream& o, string_view s);
 bool read_varint(std::istream& i, size_t* id);
-bool read_string(std::istream& i, Buffer buffer);
+bool read_string(std::istream& i, StringDestination buffer);
 
-class Section
+class Section final
 {
 public:
 	std::stringstream stream;
@@ -49,16 +31,17 @@ public:
 	void write_string(string_view s);
 
 	size_t read_varint();
-	bool read_string(Buffer buffer);
+	bool read_string(StringDestination buffer);
 
-	virtual std::string save();
+	std::string save();
 };
 
 class Save final
 {
-	FilePtrStream output;
+	owned::SDL_RWops stream;
+	SdlRwStream output;
 public:
-	Save(const char* fname);
+	explicit Save(const char* fname);
 	~Save();
 
 	void header(string_view author, string_view name, string_view app);
@@ -67,14 +50,15 @@ public:
 
 class Load final
 {
-	FilePtrStream input;
+	owned::SDL_RWops stream;
+	SdlRwStream input;
 public:
-	Load(const char* fname);
+	explicit Load(const char* fname);
 	~Load();
 
 	int version();
 
-	bool header(Buffer author, Buffer name, Buffer app);
+	bool header(StringDestination author, StringDestination name, StringDestination app);
 	bool section(std::string* name, Section* section);
 };
 

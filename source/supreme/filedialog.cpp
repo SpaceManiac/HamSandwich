@@ -12,12 +12,12 @@
 static char *fnames=NULL;
 static char newfname[FNAMELEN]="";
 static int numFiles;
-static byte menuItems;
+static word menuItems;
 static int numAlloc;
 static int filePos;
 static byte asking,yesNo;
 static char question[64];
-static byte exitCode;
+static word exitCode;
 static bool hamSandwich;
 
 static void ObtainFilenames(const char *dir, const char *ext)
@@ -44,11 +44,9 @@ static void ObtainFilenames(const char *dir, const char *ext)
 	for (const auto& str : files)
 	{
 		const char* name = str.c_str();
-		if(!strcmp(name,".") || !strcmp(name,".."))
-			continue;
 
-		if((menuItems&FM_NOWAVS) && !strcmp(&name[strlen(name)-3],"wav"))
-			continue;	// ignore wavs
+		if((menuItems&FM_PICMOVIE) && (!strcmp(&name[strlen(name)-3],"wav") || !strcmp(&name[strlen(name)-3],"jsp")))
+			continue;	// ignore wavs and jsps
 
 		strncpy(&fnames[numFiles*FNAMELEN],name,FNAMELEN);
 		numFiles++;
@@ -86,16 +84,18 @@ static void SortFilenames(void)
 		{
 			if(strcasecmp(&fnames[i*FNAMELEN],&fnames[(i+1)*FNAMELEN])>0)
 			{
-				strcpy(tmp,&fnames[i*FNAMELEN]);
-				strcpy(&fnames[i*FNAMELEN],&fnames[(i+1)*FNAMELEN]);
-				strcpy(&fnames[(i+1)*FNAMELEN],tmp);
+				SDL_strlcpy(tmp, &fnames[i*FNAMELEN], FNAMELEN);
+				SDL_strlcpy(&fnames[i*FNAMELEN], &fnames[(i+1)*FNAMELEN], FNAMELEN);
+				SDL_strlcpy(&fnames[(i+1)*FNAMELEN], tmp, FNAMELEN);
 				flip=1;
 			}
 		}
 	}
 }
 
-void InitFileDialog(const char *dir, const char *ext, byte menuItemsToShow,const char *defaultName)
+void FindFilename(const char *str);
+
+void InitFileDialog(const char *dir, const char *ext, word menuItemsToShow,const char *defaultName)
 {
 	menuItems=menuItemsToShow;
 	asking=0;
@@ -105,8 +105,9 @@ void InitFileDialog(const char *dir, const char *ext, byte menuItemsToShow,const
 	ObtainFilenames(dir, ext);
 	SortFilenames();
 	strcpy(newfname,defaultName);
+	FindFilename(defaultName);
 
-	if (menuItems & FM_SAVE)
+	if (menuItems & (FM_SAVE | FM_SAVEPACK))
 	{
 		hamSandwich = MustBeHamSandwichWorld(EditorGetWorld());
 	}
@@ -191,6 +192,14 @@ void RenderFileDialog(int msx,int msy,MGLDraw *mgl)
 			Print(366,286,"HamSwch",0,1);
 			Print(366,298,"format",0,1);
 		}
+	}
+	if ((menuItems&FM_SAVEPACK) && !hamSandwich)  // For now, no exporting worlds in new format.
+	{
+		if(msx>=370 && msx<=420 && msy>=290 && msy<=290+27)
+			mgl->FillBox(370,290,420,290+27,8+32*1);
+		mgl->Box(370,290,420,290+27,31);
+		Print(372,292,"Save&",0,1);
+		Print(372,292+13,"Export",0,1);
 	}
 
 	if(msx>=370 && msx<=420 && msy>=370 && msy<=370+14)
@@ -308,7 +317,7 @@ void FileDialogMoreFiles(void)
 		filePos=0;
 }
 
-byte FileDialogClick(int msx,int msy)
+word FileDialogClick(int msx,int msy)
 {
 	int i;
 
@@ -388,6 +397,14 @@ byte FileDialogClick(int msx,int msy)
 				}
 			}
 		}
+		if(msx>=370 && msx<=420 && msy>=290 && msy<=290+27)  // Save&Export
+		{
+			if ((menuItems & FM_SAVEPACK) && !hamSandwich && newfname[0])
+			{
+				exitCode = FM_SAVEPACK;
+				return FM_SAVEPACK;
+			}
+		}
 		if(msx>370 && msy>370 && msx<420 && msy<370+14)	// Quit
 		{
 			exitCode=FM_EXIT;
@@ -415,7 +432,7 @@ void AddDLWToFilename(void)
 	strcpy(newfname,result);
 }
 
-byte FileDialogCommand(void)
+word FileDialogCommand(void)
 {
 	if((menuItems&FM_MERGE) && exitCode==FM_LOAD)
 		return FM_MERGE;

@@ -92,15 +92,14 @@ void InitGallery(Map *map)
 {
 	FILE *f;
 	int pos;
-	char *s;
 
 	galpix=new galpic_t[100];
 	pos=0;
-	f=AssetOpen("gallery/galpix.dat","rt");
+	f=AssetOpen("gallery/galpix.dat");
 	if(!f)
 		return;
 
-	s=new char[2048];
+	char s[2048];
 
 	while(fgets(s,2048,f))
 	{
@@ -109,7 +108,6 @@ void InitGallery(Map *map)
 		if(pos==100)
 			break;
 	}
-	delete s;
 	fclose(f);
 
 	SetupGalPix(map);

@@ -8,7 +8,7 @@
 #else
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <errno.h>

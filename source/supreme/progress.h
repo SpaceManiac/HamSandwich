@@ -62,8 +62,19 @@ typedef struct worldData_t	// contains your progress for one world
 	levelData_t *level;	// progress info for each level that HAS been passed only.
 } worldData_t;
 
-#define EXPANSION_SIZE	(1019)
+enum class HudChoice : byte  // SERIALIZED in the player profile.
+{
+	// Supreme With Cheese, and the default choice.
+	Supreme  = 0,
+	// Like classic Dr. Lunatic. See `RenderInterfaceOld` for details.
+	Classic  = 1,
+	// Supreme, plus weapon lock indicator and speedrun timer.
+	Advanced = 2,
+};
 
+#define EXPANSION_SIZE	(1018)
+
+// WARNING: changing this struct's contents may break save compatibility or require modifications in Load/SaveProfile.
 typedef struct progress_t
 {
 	// total values for stats
@@ -98,6 +109,7 @@ typedef struct progress_t
 
 	dword cheats;				// how often you've cheated
 	byte wpnLock;				// weapon lock
+	HudChoice hudChoice;
 	byte expansion[EXPANSION_SIZE];		// unused space for possible future expansion
 } progress_t;
 
@@ -107,6 +119,18 @@ typedef struct playList_t
 	char *song;
 } playList_t;
 
+// Difficulty levels. SERIALIZED in profile, specials, and leaderboards.
+enum : byte
+{
+	DIFFICULTY_NORMAL  = 0,
+	DIFFICULTY_HARD    = 1,
+	DIFFICULTY_LUNATIC = 2,
+
+	MAX_DIFFICULTY  // End marker. Add new entries above this.
+};
+const char* GetDifficultyName(int difficulty);
+
+// WARNING: changing this struct's contents may break save compatibility or require modifications in Load/SaveProfile.
 typedef struct profile_t
 {
 	char name[16];
@@ -137,6 +161,7 @@ void FreeProfile(void);
 void DefaultControls(void);
 void DefaultProfile(const char *name);
 
+void SetFirstTime();
 byte FirstTime(void);
 void EraseWorldProgress(const char *fname);
 worldData_t *GetWorldProgress(const char *fname);

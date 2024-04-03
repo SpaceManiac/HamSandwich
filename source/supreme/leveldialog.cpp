@@ -48,20 +48,6 @@ static world_t *world;
 
 static word flagNum[]={MAP_SNOWING,MAP_RAIN,MAP_HUB,MAP_SECRET,MAP_TORCHLIT,MAP_WELLLIT,
 				MAP_STARS,MAP_UNDERWATER,MAP_LAVA,MAP_STEALTH,MAP_WAVY,MAP_OXYGEN};
-static char flagName[][16]={
-	"Snowing",
-	"Raining",
-	"Hub Level",
-	"Secret Level",
-	"Torch Lit",
-	"Lantern Lit",
-	"Star Background",
-	"Underwater",
-	"Underlava",
-	"Stealth",
-	"Wavy",
-	"Oxygen Meter",
-};
 
 static byte *mapZoom;
 static byte desiredWidth,desiredHeight;
@@ -96,6 +82,8 @@ static void FlagClick(int id)
 		return;	// can't unhub level zero
 
 	world->map[mapNum]->flags^=flagNum[id-ID_FLAG];
+	if (flagNum[id-ID_FLAG] == MAP_STARS)
+		InitStars();
 	LevelDialogButtons();
 }
 
@@ -149,6 +137,25 @@ static void ItemDropClick(int id)
 	InitTextDialog("Enter chance for enemies to drop items:","",5);
 }
 
+static bool CountsDouble(int type)
+{
+	// Enemies that drop 1 baby on death count 2x, once for them and once for baby.
+	// Enemies with infinite babies are impossible to account for, so don't bother.
+	return type == MONS_ZOMBONI || type == MONS_COFFIN || type == MONS_DARKCOFFIN || type == MONS_XENOEGG;
+}
+
+static int BrainsForMonster(int type, int item)
+{
+	int result = 0, brainsPerBrain = BrainsGiven(ITM_BRAIN), brainsForItem = BrainsGiven(item);
+	if (type == MONS_ZOMBIE || type == MONS_ZOMBONI || type == MONS_MUTANT)
+		result += brainsPerBrain;
+	if (type == MONS_SUPERZOMBIE)
+		result += 2 * brainsPerBrain;
+	if (brainsForItem > 0 && type)
+		result += (CountsDouble(type) ? 2 : 1) * brainsForItem;
+	return result;
+}
+
 static void AutoBrainsClick(int id)
 {
 	// autocalc brains needed
@@ -166,12 +173,7 @@ static void AutoBrainsClick(int id)
 	}
 	for(i=0;i<MAX_MAPMONS;i++)
 	{
-		if(m->badguy[i].type==MONS_ZOMBIE || m->badguy[i].type==MONS_ZOMBONI || m->badguy[i].type==MONS_MUTANT)
-			m->numBrains++;
-		if(m->badguy[i].type==MONS_SUPERZOMBIE)
-			m->numBrains+=2;
-		if(m->badguy[i].type && BrainsGiven(m->badguy[i].item)>0)
-			m->numBrains+=BrainsGiven(m->badguy[i].item);
+		m->numBrains += BrainsForMonster(m->badguy[i].type, m->badguy[i].item);
 	}
 
 	for(i=0;i<MAX_SPECIAL;i++)
@@ -186,13 +188,7 @@ static void AutoBrainsClick(int id)
 					m->numBrains+=BrainsGiven(m->special[i].effect[j].value2);
 				if(m->special[i].effect[j].type==EFF_SUMMON)
 				{
-					if(BrainsGiven(m->special[i].effect[j].value2)>0)
-						m->numBrains+=BrainsGiven(m->special[i].effect[j].value2);
-					if(m->special[i].effect[j].value==MONS_ZOMBIE || m->special[i].effect[j].value==MONS_ZOMBONI ||
-						m->special[i].effect[j].value==MONS_MUTANT)
-						m->numBrains++;
-					if(m->special[i].effect[j].value==MONS_SUPERZOMBIE)
-						m->numBrains+=2;
+					m->numBrains += BrainsForMonster(m->special[i].effect[j].value, m->special[i].effect[j].value2);
 				}
 			}
 		}
@@ -219,7 +215,7 @@ static void AutoCandlesClick(int id)
 	for(i=0;i<MAX_MAPMONS;i++)
 	{
 		if(m->badguy[i].type)
-			m->numCandles+=CandlesGiven(m->badguy[i].item);
+			m->numCandles += (CountsDouble(m->badguy[i].type) ? 2 : 1) * CandlesGiven(m->badguy[i].item);
 	}
 
 	for(i=0;i<MAX_SPECIAL;i++)
@@ -233,7 +229,7 @@ static void AutoCandlesClick(int id)
 				if(m->special[i].effect[j].type==EFF_MONSITEM && CandlesGiven(m->special[i].effect[j].value2)>0)
 					m->numCandles+=CandlesGiven(m->special[i].effect[j].value2);
 				if(m->special[i].effect[j].type==EFF_SUMMON && CandlesGiven(m->special[i].effect[j].value2)>0)
-					m->numCandles+=CandlesGiven(m->special[i].effect[j].value2);
+					m->numCandles += (CountsDouble(m->special[i].effect[j].value) ? 2 : 1) * CandlesGiven(m->special[i].effect[j].value2);
 			}
 		}
 	}
@@ -347,7 +343,7 @@ void LevelDialogButtons(void)
 	for(i=0;i<NUM_LVL_FLAGS;i++)
 	{
 		MakeButton(BTN_CHECK,ID_FLAG+i,((world->map[mapNum]->flags&flagNum[i])!=0)*CHECK_ON,DLG_X+2,DLG_Y+66+16*i,
-			150,15,flagName[i],FlagClick);
+			150,15,MapFlagName(i),FlagClick);
 	}
 
 	MakeButton(BTN_NORMAL,ID_PREV,0,DLG_X2-104,DLG_Y+2,50,15,"Prev",PrevClick);
@@ -449,8 +445,15 @@ void InitLevelDialog(world_t *wrld,byte currentMap)
 void ExitLevelDialog(void)
 {
 	ClearButtons();
-	delete mapZoom;
+	delete[] mapZoom;
 	delete levelSpr;
+}
+
+void RenderLevelDialogZoom(MGLDraw *mgl)
+{
+	mgl->ResizeBuffer(world->map[mapNum]->width, world->map[mapNum]->height);
+	for (int y = 0; y < mgl->GetHeight(); ++y)
+		memcpy(mgl->GetScreen() + mgl->GetWidth() * y, &mapZoom[y * MAX_MAPSIZE], mgl->GetWidth());
 }
 
 void RenderLevelDialog(int msx,int msy,MGLDraw *mgl)

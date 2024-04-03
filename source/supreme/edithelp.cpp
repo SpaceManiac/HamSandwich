@@ -6,7 +6,7 @@
 static byte help;
 static byte exitCode;
 
-char helpName[NUM_HELPS][32]={
+const static char helpName[NUM_HELPS][32]={
 	"Basic Help",
 	"Floor Tool Help",
 	"Wall Tool Help",
@@ -24,9 +24,11 @@ char helpName[NUM_HELPS][32]={
 	"Special Edit Help",
 	"Terrain Edit Help",
 	"Tile Select Help",
+	"",
+	"Custom Item JSP Help",
 };
 
-char helpTxt[NUM_HELPS][612]={
+const char* const helpTxt[NUM_HELPS] = {
 	// basics
 	"Press F1 any time to get help with any menu or tool. "
 	"^ ^ Basic Editor Usage: ^ ^ "
@@ -151,14 +153,16 @@ char helpTxt[NUM_HELPS][612]={
 	"Just click on any tile to select it!  Click Next Page to see more tiles.",
 	// world stitcher
 	"",
+	// item JSP
+	"To use this option, add a Special to your hub level with the Item Sprites effect. "
+	"It can use JSP files in the 'user' folder. For best results, use a single JSP file "
+	"containing every custom item sprite for your world.",
 };
 
 void InitEditHelp(byte mode)
 {
 	exitCode=0;
 	help=mode;
-	if(mode==HELP_WORLDSTITCH)
-		strcpy(helpTxt[HELP_WORLDSTITCH],GetStitchError());
 }
 
 void ExitEditHelp(void)
@@ -173,7 +177,7 @@ void RenderEditHelp(int msx,int msy,MGLDraw *mgl)
 
 	CenterPrint(320,104,helpName[help],0,1);
 
-	PrintRect(12,120,628,280,13,helpTxt[help],1);
+	PrintRect(12,120,628,280,13,(help == HELP_WORLDSTITCH ? GetStitchError() : helpTxt[help]),1);
 	RenderButtonImage(msx,msy,588,283,40,15,"Exit");
 }
 

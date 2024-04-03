@@ -1,24 +1,32 @@
 #include "hammusic.h"
+#include <stdio.h>
+#include <SDL_mixer.h>
 #include "mgldraw.h"
 #include "log.h"
 #include "appdata.h"
-#include <stdio.h>
+#include "extern.h"
+#include "owned_mixer.h"
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL_mixer.h>
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL_mixer.h>
-#endif  // SDL_UNPREFIXED
+namespace
+{
+	bool musicEnabled = true;
 
-static Mix_Music* curStream = nullptr;
-static int musVolume = 255;
+	owned::Mix_Music curStream = nullptr;
+	int musVolume = 255;
+}
+
+void SetHamMusicEnabled(bool enabled)
+{
+	musicEnabled = enabled;
+}
 
 void UpdateMusic()
 {
-	if (ConfigMusicEnabled() && curStream && !Mix_PlayingMusic())
+	if (musicEnabled && curStream && !Mix_PlayingMusic())
 	{
-		Mix_PlayMusic(curStream, 1);
-		ChooseNextSong();
+		Mix_PlayMusic(curStream.get(), 1);
+		if (g_HamExtern.ChooseNextSong)
+			g_HamExtern.ChooseNextSong();
 	}
 }
 
@@ -33,26 +41,29 @@ void SetMusicVolume(int vol)
 
 void PlaySongFile(const char* fullname)
 {
-	if (!ConfigMusicEnabled())
+	if (!musicEnabled)
 		return;
 
 	StopSong();
 
-	SDL_RWops* rw = AssetOpen_SDL(fullname, "rb");
+	owned::SDL_RWops rw = AssetOpen_SDL_Owned(fullname);
 	if (!rw)
 	{
 		return;
 	}
 
-	curStream = Mix_LoadMUS_RW(rw, 1);
+	curStream = owned::Mix_LoadMUS_RW(std::move(rw));
 	if (!curStream)
 	{
-		LogError("LoadMUS(%s): %s", fullname, Mix_GetError());
+		LogError("Mix_LoadMUS(%s): %s", fullname, Mix_GetError());
 		return;
 	}
 
 	Mix_VolumeMusic(musVolume / 2);
-	Mix_PlayMusic(curStream, 1);
+	if (Mix_PlayMusic(curStream.get(), 1))
+	{
+		LogError("Mix_PlayMusic(%s): %s", fullname, Mix_GetError());
+	}
 	UpdateMusic();
 }
 
@@ -61,8 +72,7 @@ void StopSong()
 	if (curStream)
 	{
 		Mix_HaltMusic();
-		Mix_FreeMusic(curStream);
-		curStream = nullptr;
+		curStream.reset();
 	}
 }
 

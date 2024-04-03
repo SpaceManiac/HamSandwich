@@ -101,7 +101,8 @@ void PlaySongForce(const char *fname)
 	if(!config.music)
 		return;
 
-	strcpy(curSongName,fname);
+	if (curSongName != fname)
+		strcpy(curSongName,fname);
 	sprintf(fullname,"music/%s",fname);
 	PlaySongFile(fullname);
 }
@@ -109,11 +110,6 @@ void PlaySongForce(const char *fname)
 const char *CurSongTitle(void)
 {
 	return curSongName;
-}
-
-bool ConfigMusicEnabled()
-{
-	return config.music;
 }
 
 void PlayNextSong(void)

@@ -47,13 +47,19 @@
 #define MAJOR_ARCADE	8
 #define MAJOR_BESTIARY	9
 
-// playables
-#define PLAY_BOUAPHA	0
-#define PLAY_HAPPY		1
-#define PLAY_LUNATIC	2
-#define PLAY_SHROOM		3
-#define PLAY_LUNACHIK	4
-#define PLAY_MECHA		5
+// Playable characters. SERIALIZED in profile, specials, and leaderboards.
+enum : byte
+{
+	PLAY_BOUAPHA  = 0,
+	PLAY_HAPPY    = 1,
+	PLAY_LUNATIC  = 2,
+	PLAY_SHROOM   = 3,
+	PLAY_LUNACHIK = 4,
+	PLAY_MECHA    = 5,
+
+	MAX_PLAYAS // End marker. Add new items above this.
+};
+const char* GetPlayableCharacterName(int playAs);
 
 // shop item flags (used in the player progress file)
 #define SIF_AVAILABLE	1
@@ -79,11 +85,14 @@ typedef struct shopItem_t
 
 class Map;
 
-byte CanPlayWorld(const char *fname);
-byte ItemPurchased(byte type,byte num);
-byte AllOfTypePurchased(byte type);
-byte AllPurchased(void);
-byte AllLockersOpen(void);
+bool CanPlayWorld(const char *fname);
+bool ItemPurchased(byte type,byte num);
+bool AllOfTypePurchased(byte type);
+byte NumOfTypePurchased(byte type);
+bool AllPurchased(void);
+byte NumPurchased();
+bool AllLockersOpen(void);
+byte NumLockersOpen();
 
 byte ShopItemNumber(byte type,byte num);
 void SetupShops(Map *map);

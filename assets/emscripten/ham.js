@@ -60,15 +60,12 @@ var HamSandwich = (function () {
 		installerMount = FS.mount(IDBFS, {}, '/installers').mount;
 		FS.syncfs(true, fsInitCallback);
 
-		Module.ENV['HSW_APPDATA'] = '/@stdio@/appdata/' + HamSandwich.metadata.projectName;
-		if (HamSandwich.metadata.hasAssets) {
-			pushAssets(null, 'stdio', '.');
-		}
+		Module.ENV['HSW_APPDATA'] = 'appdata/' + HamSandwich.metadata.appdataName;
 	}
 
 	var assetCounter = 0;
 	function pushAssets(mountpoint) {
-		mountpoint = mountpoint || '/';
+		mountpoint = mountpoint || '';
 		Module.ENV['HSW_ASSETS_' + (assetCounter++)] = Array.prototype.join.call(arguments, '@');
 	}
 
@@ -82,13 +79,25 @@ var HamSandwich = (function () {
 	}
 	setWindowTitle(metadata.title);
 
-	function setRunStatus(text) {
+	function setRunStatus(text, callback) {
 		var notice = document.getElementById('runstatus-notice');
 		if (notice) {
 			notice.hidden = !text;
 			notice.innerText = text;
+			if (callback) {
+				notice.ariaRoleDescription = 'button';
+				notice.style.cursor = 'pointer';
+				notice.addEventListener('click', callback);
+			}
 			return notice;
 		}
+	}
+
+	function toggleMenu(state, auto) {
+		var menuWindow = document.getElementById('menu');
+		menuWindow.hidden = !(state ?? menuWindow.hidden);
+		document.body.classList.toggle('menu-open', !menuWindow.hidden);
+		toggleMenu.auto = auto;
 	}
 
 	return {
@@ -98,14 +107,15 @@ var HamSandwich = (function () {
 		setWindowTitle,
 		pushAssets,
 		setRunStatus,
+		toggleMenu,
 	};
 })();
 
 // ----------------------------------------------------------------------------
 // Installer upload
 var InstallerUpload = (function () {
-	var details = document.getElementById('installer-upload');
-	var table = details.querySelector('table');
+	var installerUpload = document.getElementById('installer-upload');
+	var table = installerUpload.querySelector('table');
 	var meta = HamSandwich.metadata.installers;
 
 	function setSpinner(td) {
@@ -119,29 +129,31 @@ var InstallerUpload = (function () {
 	}
 
 	var status = {};
-	details.hidden = true;
-	for (let fname in meta) {
-		details.hidden = false;
+	installerUpload.hidden = true;
+	for (let installer of meta) {
+		installerUpload.hidden = false;
 
 		let statusTd = document.createElement('td');
 		setSpinner(statusTd);
 
 		var fnameTd = document.createElement('td');
+		if (installer.optional)
+			fnameTd.append('Optional: ');
+
 		var a = document.createElement('a');
-		a.href = meta[fname].link;
-		a.innerText = fname;
+		a.href = installer.link;
+		a.innerText = installer.filename;
 		a.target = '_blank';
 		fnameTd.appendChild(a);
 
 		var fileTd = document.createElement('td');
 		let fileInput = document.createElement('input');
 		fileInput.type = 'file';
-		fileInput.addEventListener('change', () => {
+		fileInput.addEventListener('change', async () => {
 			setSpinner(statusTd);
-			fileInput.files[0].arrayBuffer().then(buf => {
-				FS.writeFile('/installers/' + fname, new Uint8Array(buf));
-				checkFsFile(fname, true);
-			});
+			let buf = await fileInput.files[0].arrayBuffer();
+			FS.writeFile('/installers/' + installer.filename, new Uint8Array(buf));
+			checkFsFile(installer, true);
 		});
 		fileTd.appendChild(fileInput);
 
@@ -151,55 +163,93 @@ var InstallerUpload = (function () {
 		tr.appendChild(fileTd);
 		table.appendChild(tr);
 
-		status[fname] = {
+		status[installer.filename] = {
 			statusTd,
 			fileInput,
 			accepted: false,
+			sha256sum: installer.sha256sum,
 		};
 	}
 
-	function checkFsFile(fname, sync) {
-		var buffer;
+	async function downloadInstaller(installer) {
+		try {
+			status[installer.filename].fileInput.disabled = true;
+			let link = installer.link;
+			if (installer.file_id) {
+				link = `https://wombat.platymuus.com/hamsandwich/itch_proxy.php?url=${installer.link}/file/${installer.file_id}`;
+			}
+
+			let response = await fetch(link);
+			let buf = await response.arrayBuffer();
+			FS.writeFile('/installers/' + installer.filename, new Uint8Array(buf));
+			checkFsFile(installer, true);
+		} catch {
+			status[installer.filename].fileInput.disabled = false;
+		}
+	}
+
+	async function checkFsFile(installer, sync) {
+		let fname = installer.filename;
+
+		let buffer;
 		try {
 			buffer = FS.readFile('/installers/' + fname);
 		} catch (e) {
+			if (!sync && !installer.optional) {
+				downloadInstaller(installer);
+				return;
+			}
+
 			status[fname].statusTd.innerText = '\u2014';
-			details.open = true;
-			HamSandwich.setRunStatus('Provide the installer below to play.');
+			if (!installer.optional) {
+				HamSandwich.toggleMenu(true, true);
+				HamSandwich.setRunStatus('Provide the installer to play.', () => HamSandwich.toggleMenu(true));
+			}
 			return;
 		}
 
 		// Warning: `crypto.subtle` is only available on HTTPS sites.
-		crypto.subtle.digest('SHA-256', buffer).then(hashBuffer => {
-			var hexdigest = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-			if (hexdigest === meta[fname].sha256sum) {
-				status[fname].accepted = true;
-				status[fname].statusTd.innerText = 'Ok';
-				status[fname].fileInput.disabled = true;
-				status[fname].fileInput.hidden = true;
-				if (sync) {
-					HamSandwich.fsSync({ installers: true });
-				}
-				Module.removeRunDependency('installer ' + fname);
-			} else {
-				status[fname].statusTd.innerText = 'Bad';
-				details.open = true;
-				HamSandwich.setRunStatus('Provide the installer below to play.');
+		let hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+		let hexdigest = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+		if (hexdigest === status[fname].sha256sum) {
+			status[fname].accepted = true;
+			status[fname].statusTd.innerText = 'Ok';
+			status[fname].fileInput.disabled = true;
+			status[fname].fileInput.hidden = true;
+			if (sync) {
+				HamSandwich.fsSync({ installers: true });
 			}
-		});
+			if (!installer.optional) {
+				Module.removeRunDependency('installer ' + fname);
+			}
+		} else {
+			status[fname].statusTd.innerText = 'Bad';
+			HamSandwich.toggleMenu(true, true);
+			HamSandwich.setRunStatus('Provide the installer to play.', () => HamSandwich.toggleMenu(true));
+		}
 	}
 
 	function preInit() {
-		for (var fname in meta) {
-			HamSandwich.pushAssets(meta[fname].mountpoint, meta[fname].kind, '/installers/' + fname);
-			Module.addRunDependency('installer ' + fname);
+		for (var installer of meta) {
+			if (!installer.optional) {
+				Module.addRunDependency('installer ' + installer.filename);
+			}
 		}
 	}
 
 	function onFsInit() {
-		for (var fname in meta) {
-			checkFsFile(fname, false);
+		for (var installer of meta) {
+			checkFsFile(installer, false);
+			if (installer.optional) {
+				try {
+					FS.stat('/installers/' + installer.filename);
+					HamSandwich.pushAssets(installer.mountpoint, installer.kind, '/installers/' + installer.filename);
+				} catch {}
+			} else {
+				HamSandwich.pushAssets(installer.mountpoint, installer.kind, '/installers/' + installer.filename);
+			}
 		}
+		HamSandwich.pushAssets(null, 'stdio', '.');
 	}
 
 	return {
@@ -218,11 +268,14 @@ var Module = (function() {
 	var totalDependencies = 0, unsatisfied = 0;
 	var hasContext = true;
 
-	document.getElementById('fullscreen')?.addEventListener('click', function() {
-		Module.canvas.requestFullscreen();
-	});
+	for (let button of document.getElementsByClassName('js-fullscreen')) {
+		button.addEventListener('click', function() {
+			Module.canvas.requestFullscreen();
+			setTimeout(() => button.blur());
+		});
+	}
 
-	document.getElementById('export')?.addEventListener('click', function() {
+	document.getElementById('export')?.addEventListener('click', async function() {
 		function saveAs(file, filename) {
 			if (window.navigator.msSaveOrOpenBlob) { // IE10+
 				window.navigator.msSaveOrOpenBlob(file, filename);
@@ -241,7 +294,13 @@ var Module = (function() {
 		}
 
 		function collect(zip, fsPath) {
-			var list = FS.readdir(fsPath);
+			let list;
+			try {
+				list = FS.readdir(fsPath);
+			} catch {
+				alert('No save to export!');
+				return false;
+			}
 			for (var item of list) {
 				if (item == "." || item == "..") continue;
 				var fullItem = fsPath + "/" + item;
@@ -251,15 +310,19 @@ var Module = (function() {
 					zip.file(item, FS.readFile(fullItem));
 				}
 			}
+			return true;
 		}
 
 		Module.setStatus("Zipping...");
 		var zip = new JSZip();
-		collect(zip, '/appdata/' + HamSandwich.metadata.projectName);
-		zip.generateAsync({ type: "blob" }).then(function(content) {
-			saveAs(content, "HamSandwich Saves.zip");
+		if (!collect(zip, '/appdata/' + HamSandwich.metadata.appdataName)) {
+			// If there's nothing to export.
 			Module.setStatus("");
-		});
+			return;
+		}
+		let content = await zip.generateAsync({ type: "blob" });
+		saveAs(content, "HamSandwich Saves.zip");
+		Module.setStatus("");
 	});
 
 	// As a default initial behavior, pop up an alert when webgl context is lost. To make your
@@ -293,13 +356,23 @@ var Module = (function() {
 				text = "Downloading data (" + pct + "%)";
 			}
 
-			spinner.hidden = !text;
+			if (spinner) spinner.hidden = !text;
 			status.innerText = text;
 		},
 		monitorRunDependencies: function(left) {
 			totalDependencies += Math.max(0, left - unsatisfied);
 			unsatisfied = left;
 			Module.setStatus("Preparing... (" + (totalDependencies - left) + "/" + totalDependencies + ")");
+		},
+
+		hamQuit: function () {
+			if (history.length > 1) {
+				// If there's history to go back to, go back (probably to index.html).
+				history.back();
+			} else if (!location.pathname.endsWith('/') && !location.pathname.endsWith('/index.html')) {
+				// If we're not index.html or /, go to index.html.
+				location = '.';  // Go to index.html.
+			}
 		},
 
 		preInit: [
@@ -312,17 +385,18 @@ var Module = (function() {
 					canvas.style.opacity = '1';
 					canvas.style.pointerEvents = 'auto';
 				};
-				quit_ = function() {
+				quit_ = function(code) {
+					if (!code) {
+						Module.hamQuit();
+					}
+
+					// If the above didn't actually navigate us anywhere...
 					canvas.style.opacity = '0';
 					canvas.style.pointerEvents = 'none';
 
-					var notice = HamSandwich.setRunStatus('Refresh or click here to play again.');
-					if (notice) {
-						notice.style.cursor = 'pointer';
-						notice.addEventListener('click', () => {
-							window.location.reload();
-						});
-					}
+					HamSandwich.setRunStatus('Refresh or click here to play again.', () => {
+						window.location.reload();
+					});
 				};
 			},
 			InstallerUpload.preInit,
@@ -330,7 +404,9 @@ var Module = (function() {
 		],
 
 		postRun: function() {
-			document.getElementById('installer-upload').open = false;
+			if (HamSandwich.toggleMenu.auto) {
+				HamSandwich.toggleMenu(false);
+			}
 		},
 	};
 })();
@@ -338,12 +414,18 @@ var Module = (function() {
 Module.setStatus("Downloading...");
 window.onerror = function(event) {
 	Module.setStatus("Error! See browser console.");
-	spinner.hidden = true;
+	var spinner = document.getElementById('spinner');
+	if (spinner) spinner.hidden = false;
 	Module.setStatus = Module.printErr;
 };
 
-(function () {
-	var tag = document.createElement('script');
-	tag.src = HamSandwich.metadata.projectName + '.js';
-	document.body.appendChild(tag);
-})();
+for (let close of document.getElementsByClassName('js-close')) {
+	close.addEventListener('click', () => {
+		Module.hamQuit();
+		close.remove();
+	});
+	if (history.length <= 1 && (location.pathname.endsWith('/') || location.pathname.endsWith('/index.html'))) {
+		// Hide the close button if Module.hamQuit() definitely wouldn't succeed.
+		close.remove();
+	}
+}

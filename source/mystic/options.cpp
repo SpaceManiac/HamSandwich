@@ -23,7 +23,7 @@ void InitOptions(void)
 {
 	FILE *f;
 
-	f=AppdataOpen("options.cfg","rb");
+	f=AppdataOpen("options.cfg");
 	if(!f)
 	{
 		opt.challenge=0;
@@ -71,7 +71,7 @@ void InitOptions(void)
 void ExitOptions(void)
 {
 	FILE *f;
-	f=AppdataOpen("options.cfg","wb");
+	f=AppdataOpen_Write("options.cfg");
 	fwrite(&opt,sizeof(option_t),1,f);
 	fclose(f);
 	AppdataSync();

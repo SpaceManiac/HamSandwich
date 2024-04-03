@@ -42,7 +42,6 @@ static byte newGame;
 word windingDown;
 byte windingUp;
 byte windDownReason;
-static byte idleGame=0;
 
 #ifndef VALUE
 char worldName[4][32]={
@@ -212,32 +211,6 @@ void ExitLevel(void)
 
 	delete curMap;
 	PurgeMonsterSprites();
-}
-
-void SetGameIdle(bool b)
-{
-	idleGame=b;
-}
-
-byte GetGameIdle(void)
-{
-	return idleGame;
-}
-
-// this is run whenever the game is swapped away from
-void GameIdle(void)
-{
-	dword start,end;
-
-	start=timeGetTime();
-	while(idleGame)
-	{
-		if(!gamemgl->Process())
-			break;
-	}
-	end=timeGetTime();
-	AddGarbageTime(end-start);
-	return;
 }
 
 void EnterStatusScreen(void)
@@ -639,6 +612,7 @@ TASK(byte) LunaticRun(int *lastTime)
 		else if (msgFromOtherModules==MSG_SHOWANIM)
 		{
 			AWAIT ShowVictoryAnim(msgContent);
+			msgFromOtherModules=MSG_NONE;
 		}
 
 		*lastTime-=TIME_PER_FRAME;
@@ -738,7 +712,7 @@ void HandleKeyPresses(void)
 		if((lastKey>='a' && lastKey<='z') || (lastKey>='A' && lastKey<='Z'))
 			CheatKey(lastKey);
 	}
-#ifdef _DEBUG
+#ifndef NDEBUG
 	// can't show stats unless in debug mode
 	if(lastKey=='S')
 	{

@@ -341,15 +341,9 @@ soundDesc_t soundInfo[MAX_SOUNDS]={
 	{SND_JACKDIE,"Jack Frost Die",ST_MONSTER},
 };
 
-byte soundAvailable=0;
 static int numSounds,numCustom;
 static byte *customSound[MAX_CUSTOM_SOUNDS];
 static int32_t customLength[MAX_CUSTOM_SOUNDS];
-
-void SoundSystemExists(void)
-{
-	soundAvailable=1;
-}
 
 void InitSound(void)
 {
@@ -397,7 +391,7 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 	if(snd==0)
 		return;
 
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 	if(profile.sound==0)
 		return;
@@ -424,7 +418,7 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 
 void MakeNormalSound(int snd)
 {
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 
 	if(profile.sound==0)
@@ -441,7 +435,7 @@ void MakeCustomSound(int snd,int x,int y,int flags,int priority)
 	if(snd==0)
 		return;
 
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 	if(profile.sound==0)
 		return;
@@ -471,7 +465,7 @@ void MakeNormalCustomSound(int snd)
 	if(snd==0)
 		return;
 
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 
 	if(profile.sound==0)
@@ -512,7 +506,7 @@ byte AddCustomSound(const char *fname)
 	if(numCustom==MAX_CUSTOM_SOUNDS)
 		return 0;
 
-	f=AssetOpen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 		return 0;
 	fseek(f,0,SEEK_END);
@@ -547,7 +541,7 @@ byte ReplaceCustomSound(int n,const char *fname)
 	if(customSound[n])
 		free(customSound[n]);
 
-	f=AssetOpen(fname,"rb");
+	f=AssetOpen(fname);
 	if(!f)
 		return 0;
 	fseek(f,0,SEEK_END);
@@ -659,7 +653,7 @@ int GetCustomSoundByName(const char *name)
 
 void MakeSpaceSound(int snd,int priority)
 {
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 	if(profile.sound==0)
 		return;
@@ -667,7 +661,7 @@ void MakeSpaceSound(int snd,int priority)
 	GoPlaySound(snd,0,0,SND_CUTOFF|GlobalFlags(),priority);
 }
 
-SDL_RWops* SoundLoadOverride(int num)
+owned::SDL_RWops SoundLoadOverride(int num)
 {
 	if (num < CUSTOM_SND_START || num > CUSTOM_SND_START+GetNumCustomSounds())
 		return nullptr;
@@ -676,5 +670,5 @@ SDL_RWops* SoundLoadOverride(int num)
 	if (!buf)
 		return nullptr;
 
-	return SDL_RWFromConstMem(buf, GetCustomLength(num - CUSTOM_SND_START));
+	return owned::SDL_RWFromConstMem(buf, GetCustomLength(num - CUSTOM_SND_START));
 }

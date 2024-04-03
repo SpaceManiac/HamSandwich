@@ -431,7 +431,7 @@ bool DisplayList::DrawSprite(int x,int y,int z,word hue,char bright,sprite_t *sp
 	dispObj[i].y=y;
 	dispObj[i].z=z;
 	if(dispObj[i].flags&(DISPLAY_WALLTILE|DISPLAY_ROOFTILE))
-		memcpy(dispObj[i].light,dispObj[i].spr,9);
+		memcpy(dispObj[i].light,(const char*)dispObj[i].spr,9);
 	HookIn(i);
 	return true;
 }

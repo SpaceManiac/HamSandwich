@@ -4,7 +4,6 @@
 #include "hammusic.h"
 
 static int curSong;
-static int soundExists=0;
 
 void InitSound(void)
 {
@@ -22,7 +21,7 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 	long pan,vol;
 	int cx,cy;
 
-	if(!soundExists)
+	if(!SoundIsAvailable())
 		return;
 
 	GetCamera(&cx,&cy);
@@ -37,7 +36,7 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 
 void MakeNormalSound(int snd)
 {
-	if(!soundExists)
+	if(!SoundIsAvailable())
 		return;
 
 	GoPlaySound(snd,0,0,SND_MAXPRIORITY|SND_CUTOFF|SND_ONE,MAX_SNDPRIORITY);
@@ -55,7 +54,7 @@ void ReplaySong()
 
 void PlaySong(int sng)
 {
-	if(!soundExists)
+	if(!SoundIsAvailable())
 		return;
 
 	if(sng == curSong)
@@ -67,7 +66,7 @@ void PlaySong(int sng)
 
 void VolumeSong(byte hi)
 {
-	if(!soundExists)
+	if(!SoundIsAvailable())
 		return;
 
 	switch(hi)
@@ -89,7 +88,7 @@ void VolumeSong(byte hi)
 
 void VolumeSound(byte hi)
 {
-	if(!soundExists)
+	if(!SoundIsAvailable())
 		return;
 
 	switch(hi)
@@ -109,37 +108,7 @@ void VolumeSound(byte hi)
 	}
 }
 
-void ChooseNextSong()
-{
-	// always just keep looping
-}
-
-bool ConfigMusicEnabled()
-{
-	return true;
-}
-
 int CurrentSong(void)
 {
 	return curSong;
-}
-
-void SoundSystemExists(void)
-{
-	soundExists=1;
-}
-
-bool ConfigSoundEnabled()
-{
-	return 1;
-}
-
-int ConfigNumSounds()
-{
-	return 32;
-}
-
-SDL_RWops* SoundLoadOverride(int which)
-{
-	return nullptr;
 }

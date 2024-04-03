@@ -471,8 +471,8 @@ byte MoveTilesTo(int dest)
 	selMin=dest;
 	selMax=dest+i-1;
 
-	delete tempTerrain;
-	delete tempImg;
+	delete[] tempTerrain;
+	delete[] tempImg;
 
 	MakeNormalSound(SND_MENUSELECT);
 	return 1;
@@ -549,7 +549,7 @@ void ImportTiles(void)
 	selMax=-1;
 }
 
-void TerrainEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
+void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl)
 {
 	int n;
 
@@ -566,7 +566,6 @@ void TerrainEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 
 		nextTileShow=world->terrain[showNextFrom].next;
 	}
-
 
 	n=(mouseX/TILE_WIDTH)+(mouseY/TILE_HEIGHT)*20;
 
@@ -653,6 +652,7 @@ void TerrainEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 			}
 			break;
 		case TMODE_LOADBMP:
+			FileDialogScroll(scroll);
 			if(mgl->MouseTap())
 			{
 				n=FileDialogClick(mouseX,mouseY);
@@ -668,6 +668,7 @@ void TerrainEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 			}
 			break;
 		case TMODE_SAVEBMP:
+			FileDialogScroll(scroll);
 			if(mgl->MouseTap())
 			{
 				n=FileDialogClick(mouseX,mouseY);

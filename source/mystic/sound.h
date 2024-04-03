@@ -307,6 +307,5 @@ void ReplaySong(void);
 void VolumeSong(byte hi);
 void VolumeSound(byte hi);
 int CurrentSong(void);
-void SoundSystemExists(void);
 
 #endif

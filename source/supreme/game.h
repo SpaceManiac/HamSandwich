@@ -84,15 +84,13 @@ TASK(void) TestLevel(world_t *world,byte level);
 
 void SendMessageToGame(byte msg,int content);
 
-void SetGameIdle(bool b);
-byte GetGameIdle(void);
-void GameIdle(void);
-
 TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname);
 void PauseGame(void);
 
 void RestoreGameplayGfx(void);
 
 byte GetGameMode(void);
+
+bool VerifyLevel(Map* map);
 
 #endif

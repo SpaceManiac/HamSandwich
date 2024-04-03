@@ -245,20 +245,25 @@
 
 #define IE_MAX		29	// max # of effects
 
-// power ups
-#define PU_REVERSE	1	// reverse hammer
-#define PU_REFLECT	2	// reflect hammer
-#define PU_SHIELD	3	// energy shield
-#define PU_GARLIC	4	// garlic
-#define PU_SPEED	5	// particle accelerator effect
-#define PU_INVISO	6	// invisibility
-#define PU_AMMO		7	// infinite ammo
-#define PU_AMMO2	8	// reload current weapon
-#define PU_CHEESE	9	// supreme cheese
-#define PU_POISON	10	// poison
-#define MAX_POWERUP 11
+// Power ups. SERIALIZED in custom item definitions.
+enum : int
+{
+	PU_REVERSE  = 1,  // reverse hammer
+	PU_REFLECT  = 2,  // reflect hammer
+	PU_SHIELD   = 3,  // energy shield
+	PU_GARLIC   = 4,  // garlic
+	PU_SPEED    = 5,  // particle accelerator effect
+	PU_INVISO   = 6,  // invisibility
+	PU_AMMO     = 7,  // infinite ammo
+	PU_AMMO2    = 8,  // reload current weapon
+	PU_CHEESE   = 9,  // supreme cheese
+	PU_POISON   = 10, // poison
 
-typedef struct item_t
+	MAX_POWERUP  // End marker. Add new powerups above this.
+};
+const char* GetPowerupName(int powerup);
+
+struct item_t
 {
 	char name[32];
 	char xofs,yofs;	// draw it offset by some pixels
@@ -273,7 +278,7 @@ typedef struct item_t
 	int effectAmt;	// a modifier for the effect
 	char msg[64];	// message when effect occurs
 	word sound;		// sound when effect occurs
-} item_t;
+};
 
 void InitItems(void);
 void ExitItems(void);

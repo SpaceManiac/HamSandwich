@@ -216,7 +216,7 @@ void LeaveFairyBox(void)
 
 void FairyCaughtText(byte w)
 {
-	char s[32];
+	char s[64];
 
 	sprintf(s,"You caught %s!",fairyName[w-1]);
 	NewMessage(s,60);

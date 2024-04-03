@@ -1,0 +1,77 @@
+{
+	"title": "Loonyland 2: Winter Woods",
+	"registry_key": "Loonyland2CE",
+	"installers": [
+		{
+			"filename": "LL2CEinstall.exe",
+			"kind": "nsis",
+			"sha256sum": "0806e1615eb94332bf805128d2d3857af420e93ee6f48692eebf17c05e9b14e2",
+			"link": "https://hamumu.itch.io/loonyland-2-winter-woods",
+			"file_id": 705653,
+			"description": "Base assets for Loonyland 2: Winter Woods"
+		},
+		{
+			"filename": "blackduck_comm.exe",
+			"kind": "nsis",
+			"sha256sum": "f0a3cb1c2cb09281adc7b9087d7dbdbfc22d3851e98b365c61960ce2e681cec2",
+			"link": "https://hamumu.itch.io/loonyland-2-winter-woods",
+			"file_id": 712515,
+			"description": "Replacement commentary by Blackduck",
+			"optional": true
+		},
+		{
+			"filename": "ll2_challenge.exe",
+			"kind": "nsis",
+			"sha256sum": "efff6dcfe00f8cb1e70cecc096524011b9e33c5b1637e5be5cb7b32d02ce10de",
+			"link": "https://hamumu.itch.io/loonyland-2-winter-woods",
+			"file_id": 712518,
+			"description": "Add-on World: Challenge",
+			"optional": true
+		},
+		{
+			"filename": "ll2_epicadv.exe",
+			"kind": "nsis",
+			"sha256sum": "901ab9cecbf1fe5da2a7baa3084315ec14914ab004796809acbbdc7f42117aa3",
+			"link": "https://hamumu.itch.io/loonyland-2-winter-woods",
+			"file_id": 712516,
+			"description": "Add-on World: Epic Adventure",
+			"optional": true
+		},
+		{
+			"filename": "ll2_knittel.exe",
+			"kind": "nsis",
+			"sha256sum": "e0f6f19d2280e0443aa5945e548384a05cef98d25577d8e9e5663eb1ac916072",
+			"link": "https://hamumu.itch.io/loonyland-2-winter-woods",
+			"file_id": 712519,
+			"description": "Add-on World: Knittel's Adventure",
+			"optional": true
+		},
+		{
+			"filename": "ll2_summerwoods.exe",
+			"kind": "nsis",
+			"sha256sum": "93e641b0c3e201a81996f951cb6768956271334b82b77b89cf9d780d0f087822",
+			"link": "https://hamumu.itch.io/loonyland-2-winter-woods",
+			"file_id": 712517,
+			"description": "Add-on World: Summer Woods",
+			"optional": true
+		},
+		{
+			"filename": "ll2_ww6rb.exe",
+			"kind": "nsis",
+			"sha256sum": "e9f697d35ead9e9ef54af9f5294bd38d9f7d766b4e79a2cf83b9e35b203aec77",
+			"link": "https://hamumu.itch.io/loonyland-2-winter-woods",
+			"file_id": 712520,
+			"description": "Add-on World: Winter Wackiness 6 by Redbone",
+			"optional": true
+		},
+		{
+			"filename": "ll2_ww8qb.exe",
+			"kind": "nsis",
+			"sha256sum": "69cae670936a978044eac4b12b705fb332ebcf68388c3ac76a3dbec1500c419d",
+			"link": "https://hamumu.itch.io/loonyland-2-winter-woods",
+			"file_id": 712521,
+			"description": "Add-on World: Winter Wackiness 8 by Qwertybub",
+			"optional": true
+		}
+	]
+}

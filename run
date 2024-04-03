@@ -1,145 +1,274 @@
 #!/bin/bash
-# ./run - build then run a project in the appropriate directory
 set -euo pipefail
 
+# Help
 show_help() {
-	echo "Usage: $0 <project> [<options>]"
-	echo "Available projects:"
-	echo "    lunatic  supreme  sleepless  loonyland  loonyland2  mystic"
-	echo "Options:"
-	echo "    --fullscreen  Run the game in fullscreen (default: windowed)."
-	echo "    --release     Run the release build of the game (default: debug)."
-	echo "    --gdb         Start GDB prepared to debug the game."
-	echo "    --nobuild     Skip compiling before running."
-	echo "    --clang       Compile using the clang toolchain (default: gcc)."
-	echo "    --valgrind    Run the game under valgrind memory checker (slow)."
-	echo "    --callgrind   Run the game under callgrind profiler (slow)."
-	echo "    --two         Run two copies of the game at once."
-	echo "    --32, --64    Explicitly specify an architecture."
+	echo "Usage: $0 [<setting=value>] <project> [-- <arguments>]"
+	echo "Settings:"
+	echo "    os=             One of:  windows  linux  macos  emscripten"
+	echo "    arch=           One of:  i686  x86_64"
+	echo "    mode=           One of:  debug  release"
+	echo "    preset=         Set os, arch, and mode together, ex: windows-i686-release"
+	echo "    nobuild=1       Skip compiling before running."
+	echo "    tool=gdb        Start GDB prepared to debug the game."
+	echo "    tool=valgrind   Run the game under valgrind memory checker (slow)."
+	echo "    tool=callgrind  Run the game under callgrind profiler (slow)."
+	echo "    tool=two        Run two instances of the game at once."
+	echo "    tool=deck       Upload to and run on a Steam Deck over SSH. Linux only."
 }
 
-# Default settings
-TOOL=
-PROJECT=
-CONFIG=debug
-BITS=
-ARGS=window
-NOBUILD=
-TOOLSET=gcc
-TWO=
+# Default settings.
+project=launcher
+os=
+arch=
+mode=debug
+preset=
+nobuild=
+tool=
+override_args=
 
-# Default bitness
-if [ "${MSYSTEM:-}" = "MINGW64" ]; then
-	BITS=64
-elif [[ "$(uname -v)" = *Ubuntu* ]] && [ "$(uname -m)" = "x86_64" ]; then
-	BITS=64
-fi
-
-# Read command-line arguments
-while [ $# -ne 0 ]; do
-	ARG="$1"; shift
-	case "$ARG" in
+# Read command-line arguments.
+while test $# -ne 0; do
+	arg="$1"; shift
+	case "$arg" in
+		# settings
+		project=* | os=* | arch=* | mode=* | preset=* | nobuild=* | tool=*)
+			declare "$arg"
+			;;
+		# show help on demand
+		--help)
+			show_help; exit
+			;;
+		--)
+			# -- indicates the start of overriden arguments
+			override_args=1
+			break
+			;;
+		# transitional adapters from ./run
 		"--fullscreen")
-			ARGS=
+			override_args=1
 			;;
 		"--release")
-			CONFIG=release
-			;;
-		"--32")
-			BITS=
-			;;
-		"--64")
-			BITS=64
+			mode=release
 			;;
 		"--gdb")
-			TOOL=gdb
+			tool=gdb
 			;;
 		"--valgrind")
-			TOOL=valgrind
+			tool=valgrind
 			;;
 		"--callgrind")
-			TOOL=callgrind
+			tool=callgrind
 			;;
 		"--nobuild")
-			NOBUILD=ON
-			;;
-		"--clang")
-			TOOLSET=clang
+			nobuild=1
 			;;
 		"--web")
-			TOOLSET=emcc
-			BITS=
+			os=emscripten
 			;;
 		"--two")
-			TWO=ON
+			tool=two
 			;;
-		-*)
+		# show help for unsupported settings or flags
+		*=* | -*)
 			show_help; exit 1
 			;;
+		# a setting without a variable name is $project
 		*)
-			if [ "$PROJECT" ]; then
-				# Exit if two projects were specified
-				show_help; exit 1
-			fi
-			PROJECT=$ARG
+			project="$arg"
 			;;
 	esac
 done
-if [ -z "$PROJECT" ]; then
-	# Exit if no project was specified
+
+# Abort if no project was specified.
+if test -z "$project"; then
 	show_help; exit 1
 fi
-CONFIG=$CONFIG$BITS
 
-# Ensure all dependencies are installed
-./tools/build/install-deps.sh
-
-# Ensure the project's assets exist
-GAMEDIR="build/game/$PROJECT"
-if [ "$TOOLSET" = "emcc" ]; then
-	# If there's no Emscripten SDK active, then activate a private one.
-	if ! command -v em++ >/dev/null 2>&1; then
-		source ./tools/build/install-emsdk.sh
+# Fallback settings. Keep this in sync with `Makefile`!
+container=
+if test -z "$preset"; then
+	if test -z "$os"; then
+		# Detect OS and architecture.
+		case "$(uname -sm)" in
+			MSYS*|MINGW32*)
+				# Note: MSYS not actually supported, but `install-deps` & `make` will report that.
+				os=windows
+				arch=${arch:-i686}
+				;;
+			MINGW64*)
+				os=windows
+				arch=${arch:-x86_64}
+				;;
+			"Linux x86_64")
+				os=linux
+				container=./container
+				arch=${arch:-x86_64}
+				;;
+			"Darwin x86_64")
+				os=macos
+				arch=${arch:-x86_64}
+				;;
+			*)
+				echo "Unknown \`uname -sm\`: $(uname -sm)"
+				exit 1
+		esac
+	elif test -z "$arch"; then
+		# Use default architecture for chosen OS.
+		case "$os" in
+			windows|emscripten)
+				arch=i686
+				;;
+			linux|macos)
+				arch=x86_64
+				;;
+		esac
 	fi
-
-	# Emscripten doesn't require extracting assets ahead of time, because
-	# the installers are provided to the game at runtime.
-	GAMEDIR="$PWD/build/$TOOLSET-$CONFIG/$PROJECT"
-elif [ ! -d "$GAMEDIR" ]; then
-	./tools/build/extract-assets.sh "$PROJECT" "$GAMEDIR"
+	preset="$os-$arch-$mode"
 fi
 
-# Ensure the project's build is up to date
-if [ -z "$NOBUILD" ]; then
-	make "$PROJECT" config="$CONFIG" toolset="$TOOLSET"
+tools/build/install-deps.sh
+if test -z "$tool" && test "$os" = "emscripten"; then
+	tool=emrun
+	source ./tools/emscripten/install-emsdk.sh
 fi
 
-# Run the project
-EXE="$PWD/build/$TOOLSET-$CONFIG/$PROJECT/$PROJECT"
-cd "$GAMEDIR"
-if [ "$TOOL" = "gdb" ]; then
-	echo "==== Debugging $PROJECT ($CONFIG) ===="
-	# Catches "the runtime was asked to terminate in an usual way".
-	# If libc++ is dynamically linked, the breakpoint should be pending.
-	gdb -q \
-		-ex 'set breakpoint pending on' \
-		-ex 'break abort' \
-		-ex 'set breakpoint pending auto' \
-		--args "$EXE" $ARGS
-elif [ "$TOOL" = "valgrind" ]; then
-	echo "==== Valgrinding $PROJECT ($CONFIG) ===="
-	valgrind "$EXE" $ARGS
-elif [ "$TOOL" = "callgrind" ]; then
-	echo "==== Callgrinding $PROJECT ($CONFIG) ===="
-	valgrind --tool=callgrind "$EXE" $ARGS
-elif [ "$TOOLSET" = "emcc" ]; then
-	echo "==== Hosting $PROJECT ($CONFIG) ===="
-	emrun --serve_after_close "index.html"
-else
-	echo "==== Running $PROJECT ($CONFIG) ===="
-	if [ "$TWO" ]; then
-		"$EXE" $ARGS &
+debugext=
+if test "$os" = "windows"; then
+	debugext=".exe"
+fi
+
+# Default debug configuration
+debugdir="$PWD/build/install"
+cmakedir="$PWD/build/cmake-$preset"
+debugcommand="$debugdir/$project$debugext"
+debugargs=()
+debugenvs=()
+
+# Build and install
+cmake() {
+	tools/bootstrap/cmake "$@"
+}
+if test -z "$nobuild"; then
+	if test "$os" = "emscripten"; then
+		# Web.
+		debugdir="$PWD/build/webroot"
+		if test "$project" != "launcher"; then
+			# Single project: build and install just that project.
+			make preset="$preset" "$project"
+			cmake --install "$cmakedir" --component "$project"/web --config Debug
+		else
+			# Otherwise, build and install everything.
+			make preset="$preset" install
+		fi
+	else
+		# Desktop.
+		case "$project" in
+			launcher)
+				# Launcher: build everything that isn't excluded, because that's
+				# what will be presented in the launcher UI.
+				$container make preset="$preset" install
+				;;
+			jfttool|jspedit|lunaticpal|mini_xxd)
+				# Tool: build just that project. Don't bother installing it.
+				$container make preset="$preset" "$project" sdl2_rpath
+				$container cmake --install "$cmakedir" --component generic/executables --config Debug
+				$container cmake --install "$cmakedir" --component "$project"/executables --config Debug
+				;;
+			*)
+				# Single game project: build the launcher and that project.
+				debugargs=("window")
+				$container make preset="$preset" "$project" launcher sdl2_rpath
+				# Install the launcher so that it can be used to download assets.
+				$container cmake --install "$cmakedir" --component Unspecified --config Debug
+				$container cmake --install "$cmakedir" --component generic/executables --config Debug
+				$container cmake --install "$cmakedir" --component launcher/executables --config Debug
+				$container cmake --install "$cmakedir" --component "$project"/executables --config Debug
+				;;
+		esac
 	fi
-	"$EXE" $ARGS
-	wait
 fi
+
+# Handle ./run jfttool and lunaticpal which don't have CMake install scripts.
+if ! test -f "$debugcommand"; then
+	cp "$cmakedir/source/$project/$project$debugext" "$debugcommand"
+	if test "$os" = "linux"; then
+		patchelf --add-rpath "\$ORIGIN" "$debugcommand"
+	fi
+fi
+
+# Run the game executable or tool.
+mkdir -p "$debugdir"
+cd "$debugdir"
+if test ${#debugenvs[@]} -ne 0; then
+	export "${debugenvs[@]}"
+fi
+if test "$override_args"; then
+	debugargs=("$@")
+fi
+case "$tool" in
+	gdb)
+		echo "==== Debugging $project ($preset) ===="
+		# Catches "the runtime was asked to terminate in an usual way".
+		# If libc++ is dynamically linked, the breakpoint should be pending.
+		gdb -q \
+			-ex 'set breakpoint pending on' \
+			-ex 'break abort' \
+			-ex 'set breakpoint pending auto' \
+			--args "$debugcommand" "${debugargs[@]}"
+		;;
+	valgrind)
+		echo "==== Valgrinding $project ($preset) ===="
+		valgrind "$debugcommand" "${debugargs[@]}"
+		;;
+	callgrind)
+		echo "==== Callgrinding $project ($preset) ===="
+		valgrind --tool=callgrind "$debugcommand" "${debugargs[@]}"
+		;;
+	emrun)
+		echo "==== Hosting $project ($preset) ===="
+		if test "$project" = "launcher"; then
+			emrun --serve_after_close --serve_after_exit "$debugdir/index.html"
+		else
+			# TODO: Serve out of CMake dir, so non-installed projects work
+			emrun --serve_after_close "$debugdir/$project.html"
+		fi
+		;;
+	two)
+		echo "==== Running $project ($preset) ===="
+		"$debugcommand" "${debugargs[@]}" &
+		"$debugcommand" "${debugargs[@]}"
+		;;
+	deck)
+		# TODO: remove requirement that "SteamOS Devkit Client" has been set up
+		# TODO: allow configuring deck_addr
+		deck_addr=deck@steamdeck.local
+		deck_game=HamSandwich
+		echo "==== Uploading to $deck_addr:devkit-game/$deck_game ===="
+		deck_exe=${debugcommand##*/}
+		rsync -av --chmod=Du=rwx,Dgo=rx,Fu=rwx,Fog=rx -e "ssh -o StrictHostKeyChecking=no -i $HOME/.config/steamos-devkit/devkit_rsa" "$debugcommand" ./ "$deck_addr:/home/deck/devkit-game/$deck_game/"
+		# shellcheck disable=SC2087
+		ssh -o StrictHostKeyChecking=no -i ~/.config/steamos-devkit/devkit_rsa "$deck_addr" sh <<-EOD
+			set -eu
+			devkit-utils/steam-client-create-shortcut --parms '{"gameid": "$deck_game", "directory": "/home/deck/devkit-game/$deck_game", "argv": ["./$deck_exe"], "settings": {"steam_play": "0"}}'
+		EOD
+		# TODO: launch the game automatically
+		# data = parse ~/.local/share/Steam/userdata/$USERID/config/shortcuts.vdf
+		# appid = ((data['shortcuts']['N']['appid'] & 0xffffffff) << 32) | 0x02000000
+		# steam steam://rungameid/$appid
+		# TODO: tail -F a logfile or pipe to read console output
+		;;
+	"")
+		if test -f "$debugcommand"; then
+			echo "==== Running $project ($preset) ===="
+			"$debugcommand" "${debugargs[@]}"
+		else
+			echo "$project: not a runnable target."
+			exit 1
+		fi
+		;;
+	*)
+		echo "$0: unknown tool: $tool"
+		exit 1
+		;;
+esac

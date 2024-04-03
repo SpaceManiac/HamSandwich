@@ -5,38 +5,43 @@
 #include "log.h"
 #include "softjoystick.h"
 #include "appdata.h"
+#include "extern.h"
+#include "ico.h"
+#include "openurl.h"
+#include <time.h>
 #include <random>
 #include <algorithm>
 
-#ifdef SDL_UNPREFIXED
-	#include <SDL_image.h>
-	#ifdef _WIN32
-		#include <SDL_syswm.h>
-	#endif  // _WIN32
-#else  // SDL_UNPREFIXED
-	#include <SDL2/SDL_image.h>
-	#ifdef _WIN32
-		#include <SDL2/SDL_syswm.h>
-	#endif  // _WIN32
-#endif
+#include <SDL_image.h>
+#ifdef _WIN32
+	#include <SDL_syswm.h>
+#endif  // _WIN32
 
 #ifdef __EMSCRIPTEN__
 	#include <emscripten.h>
-#endif  // _EMSCRIPTEN__
-
-// provided by games
-void SoundSystemExists();
-void SetGameIdle(bool idle);
+#endif  // __EMSCRIPTEN__
 
 // in control.cpp
 void ControlKeyDown(byte scancode);
 void ControlKeyUp(byte scancode);
+void ControlHandleNewGamepad(int which);
 
 static const RGB BLACK = {0, 0, 0, 0};
 
 static MGLDraw *_globalMGLDraw = nullptr;
 
 static bool pixelMode = false;
+
+static bool idleGame = false;
+bool GetGameIdle()
+{
+	if (idleGame)
+	{
+		idleGame = false;
+		return true;
+	}
+	return false;
+}
 
 MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	: mouse_x(xRes / 2)
@@ -69,7 +74,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	this->windowed = windowed = true;
 #endif  // __EMSCRIPTEN__
 
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK)) {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER)) {
 		LogError("SDL_Init(VIDEO|JOYSTICK): %s", SDL_GetError());
 		FatalError("Failed to initialize SDL");
 		return;
@@ -81,16 +86,17 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
 #endif
 
-	if(JamulSoundInit(512))
-		SoundSystemExists();
+	JamulSoundInit(512);
 
 	Uint32 flags = windowed ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP;
+	flags |= SDL_WINDOW_HIDDEN;  // Hide the window on creation, and show it a little later, to avoid flicker if SDL_CreateRenderer recreates the window.
 	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, xRes, yRes, flags);
 	if (!window) {
 		LogError("SDL_CreateWindow: %s", SDL_GetError());
 		FatalError("Failed to create window");
 		return;
 	}
+	SDL_SetWindowMinimumSize(window, xRes, yRes);
 	LogDebug("window format: %s", SDL_GetPixelFormatName(SDL_GetWindowPixelFormat(window)));
 	SDL_GetWindowSize(window, &winWidth, &winHeight);
 
@@ -106,24 +112,20 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 		}
 	}
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__clang__)
 	// Icon embedding for non-Windows platforms.
 	// `tools/build/rescomp.py` produces a .cpp file containing these symbols.
 	// Marked `__attribute__((weak))` for platforms or projects which do not
 	// use this icon embedding method.
-	extern __attribute__((weak)) size_t WINDOW_ICON_SZ;
-	extern __attribute__((weak)) unsigned char WINDOW_ICON[];
-	if (&WINDOW_ICON && &WINDOW_ICON_SZ) {
-		SDL_Surface *surface = IMG_Load_RW(
-			SDL_RWFromConstMem(WINDOW_ICON, WINDOW_ICON_SZ),
-			1
-		);
-		SDL_SetWindowIcon(window, surface);
-		SDL_FreeSurface(surface);
+	extern __attribute__((weak)) const size_t embed_game_icon_size;
+	extern __attribute__((weak)) const unsigned char embed_game_icon[];
+	if (&embed_game_icon && &embed_game_icon_size) {
+		owned::SDL_Surface surface = ReadIcoFile(owned::SDL_RWFromConstMem(embed_game_icon, embed_game_icon_size), -1);
+		SDL_SetWindowIcon(window, surface.get());
 	}
 #endif
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	SDL_RendererInfo info;
 	SDL_GetRendererInfo(renderer, &info);
 	LogDebug("renderer: %s", info.name);
@@ -157,14 +159,15 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 
 	SDL_SetWindowTitle(window, name);
 	SDL_ShowCursor(SDL_DISABLE);
+	SDL_ShowWindow(window);
 
-	scrn = new byte[xRes * yRes];
-	buffer = new RGB[xRes * yRes];
+	scrn = std::make_unique<byte[]>(xRes * yRes);
+	buffer = std::make_unique<RGB[]>(xRes * yRes);
 	thePal = pal;
 	SeedRNG();
 
 #ifdef __ANDROID__
-	softJoystick = new SoftJoystick(this);
+	softJoystick = std::make_unique<SoftJoystick>(this);
 #else
 	softJoystick = nullptr;
 #endif
@@ -172,13 +175,11 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 
 MGLDraw::~MGLDraw(void)
 {
+	softJoystick.reset();
 	SDL_DestroyTexture(texture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	JamulSoundExit();
-	delete[] buffer;
-	delete[] scrn;
-	delete softJoystick;
 }
 
 int MGLDraw::GetWidth()
@@ -193,12 +194,12 @@ int MGLDraw::GetHeight()
 
 byte *MGLDraw::GetScreen()
 {
-	return scrn;
+	return scrn.get();
 }
 
 void MGLDraw::ClearScreen()
 {
-	memset(scrn, 0, xRes * yRes);
+	memset(scrn.get(), 0, xRes * yRes);
 }
 
 void MGLDraw::GetMouse(int *x,int *y)
@@ -212,10 +213,29 @@ void MGLDraw::SetMouse(int x,int y)
 	if (idle)
 		return;
 
-	int scale = std::max(1, std::min(winWidth / xRes, winHeight / yRes));
-	x = (winWidth - xRes * scale) / 2 + x * scale;
-	y = (winHeight - yRes * scale) / 2 + y * scale;
+	if (SDL_GetRelativeMouseMode())
+	{
+		mouse_x = x;
+		mouse_y = y;
+		return;
+	}
+
+	float scale = std::max(1.0f, std::min((float)winWidth / xRes, (float)winHeight / yRes));
+	int destX = (int)((winWidth - xRes * scale) / 2);
+	int destY = (int)((winHeight - yRes * scale) / 2);
+	x = destX + x * scale;
+	y = destY + y * scale;
 	SDL_WarpMouseInWindow(window, x, y);
+
+	// After warping, update mouse_x and mouse_y immediately so a following
+	// call to GetMouse will correctly confirm the completed warp.
+	SDL_PumpEvents();
+	if (!idle)
+	{
+		SDL_GetMouseState(&x, &y);
+		mouse_x = (x - destX) / scale;
+		mouse_y = (y - destY) / scale;
+	}
 }
 
 bool MGLDraw::Process(void)
@@ -227,6 +247,46 @@ bool MGLDraw::Process(void)
 void MGLDraw::Quit()
 {
 	readyToQuit = true;
+}
+
+bool MGLDraw::IsWindowed()
+{
+	return windowed;
+}
+
+void MGLDraw::SetWindowed(bool newWindowed)
+{
+	if (windowed == newWindowed)
+		return;
+
+	windowed = newWindowed;
+#ifndef __EMSCRIPTEN__
+	if (windowed)
+	{
+		SDL_SetWindowFullscreen(window, 0);
+
+		int px, py;
+		SDL_GetWindowPosition(window, &px, &py);
+		px -= (xRes - winWidth) / 2;
+		py -= (yRes - winHeight) / 2;
+		px = std::max(0, px);
+		py = std::max(0, py);
+		SDL_SetWindowPosition(window, px, py);
+
+		SDL_SetWindowSize(window, xRes, yRes);
+	}
+	else
+	{
+		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+	}
+#else  // __EMSCRIPTEN__
+	if (!windowed)
+	{
+		EM_ASM(
+			Module.requestFullscreen();
+		);
+	}
+#endif  // __EMSCRIPTEN__
 }
 
 inline void MGLDraw::putpixel(int x, int y, RGB value)
@@ -250,11 +310,24 @@ inline void MGLDraw::StartFlip(void)
 {
 }
 
-void MGLDraw::ResizeBuffer(int w, int h)
+void MGLDraw::ResizeBuffer(int w, int h, bool clamp)
 {
+	if (xRes == w && yRes == h)
+		return;
+
+	if (clamp)
+	{
+		// Clamp the requested width/height to be no more than the display size.
+		SDL_DisplayMode mode = {};
+		SDL_GetWindowDisplayMode(window, &mode);
+		if (mode.w > 640 && mode.w < w)
+			w = mode.w;
+		if (mode.h > 480 && mode.h < h)
+			h = mode.h;
+	}
+
+	// Resize the 8-bit buffer, truecolor buffer, and GPU texture.
 	SDL_DestroyTexture(texture);
-	delete[] buffer;
-	delete[] scrn;
 
 	xRes = pitch = w;
 	yRes = h;
@@ -262,11 +335,33 @@ void MGLDraw::ResizeBuffer(int w, int h)
 	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, xRes, yRes);
 	if (!texture) {
 		LogError("SDL_CreateTexture: %s", SDL_GetError());
-		FatalError("Failed to create texture");
+		FatalError("SDL_CreateTexture failed in ResizeBuffer");
 		return;
 	}
-	scrn = new byte[xRes * yRes];
-	buffer = new RGB[xRes * yRes];
+	scrn = std::make_unique<byte[]>(xRes * yRes);
+	buffer = std::make_unique<RGB[]>(xRes * yRes);
+
+	// Resize the window, but only on increases.
+	if (windowed && (xRes > winWidth || yRes > winHeight))
+	{
+		int px, py;
+		SDL_GetWindowPosition(window, &px, &py);
+		px -= std::max(0, xRes - winWidth) / 2;
+		py -= std::max(0, yRes - winHeight) / 2;
+		px = std::max(0, px);
+		py = std::max(0, py);
+		SDL_SetWindowPosition(window, px, py);
+	}
+	SDL_SetWindowMinimumSize(window, xRes, yRes);
+
+	// Update mouse_x and mouse_y.
+	float scale = std::max(1.0f, std::min((float)winWidth / xRes, (float)winHeight / yRes));
+	int destX = (int)((winWidth - xRes * scale) / 2);
+	int destY = (int)((winHeight - yRes * scale) / 2);
+	int mx, my;
+	SDL_GetMouseState(&mx, &my);
+	mouse_x = (mx - destX) / scale;
+	mouse_y = (my - destY) / scale;
 }
 
 static void TranslateKey(SDL_Keysym* sym)
@@ -297,19 +392,26 @@ TASK(void) MGLDraw::FinishFlip(void)
 		(int)(yRes * scale),
 	};
 
-	SDL_UpdateTexture(texture, NULL, buffer, pitch * sizeof(RGB));
+	SDL_UpdateTexture(texture, NULL, buffer.get(), pitch * sizeof(RGB));
 	SDL_RenderClear(renderer);
 	SDL_RenderCopy(renderer, texture, NULL, &dest);
-	if (softJoystick) {
+	bool enableTouchMouse = true;
+	if (softJoystick)
+	{
 		softJoystick->update(this, scale);
 		softJoystick->render(renderer);
+		enableTouchMouse = softJoystick->enableTouchMouse();
 	}
 	SDL_RenderPresent(renderer);
 	UpdateMusic();
+	if (g_HamExtern.AfterFlip)
+		g_HamExtern.AfterFlip();
 
 	SDL_Event e;
-	while(SDL_PollEvent(&e)) {
-		if (e.type == SDL_KEYDOWN) {
+	while(SDL_PollEvent(&e))
+	{
+		if (e.type == SDL_KEYDOWN)
+		{
 			TranslateKey(&e.key.keysym);
 			ControlKeyDown(e.key.keysym.scancode);
 			lastRawCode = e.key.keysym.scancode;
@@ -321,12 +423,7 @@ TASK(void) MGLDraw::FinishFlip(void)
 			if (e.key.keysym.scancode == SDL_SCANCODE_F11)
 			{
 #ifndef __EMSCRIPTEN__
-				windowed = !windowed;
-				if (windowed) {
-					SDL_SetWindowFullscreen(window, 0);
-				} else {
-					SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-				}
+				SetWindowed(!windowed);
 #else  // __EMSCRIPTEN__
 				EM_ASM(
 					Module.requestFullscreen();
@@ -343,7 +440,19 @@ TASK(void) MGLDraw::FinishFlip(void)
 					texture = newTexture;
 				}
 			}
-		} else if (e.type == SDL_TEXTINPUT) {
+			else if (e.key.keysym.scancode == SDL_SCANCODE_F12)
+			{
+				time_t timeobj;
+				time(&timeobj);
+				tm* clock = localtime(&timeobj);
+
+				char fname[128];
+				sprintf(fname, "Screenshot %04d-%02d-%02d %02d-%02d-%02d.bmp", 1900 + clock->tm_year, 1 + clock->tm_mon, clock->tm_mday, clock->tm_hour, clock->tm_min, clock->tm_sec);
+				SaveBMP(fname);
+			}
+		}
+		else if (e.type == SDL_TEXTINPUT)
+		{
 			if (strlen(e.text.text) == 1)
 			{
 #ifdef __EMSCRIPTEN__
@@ -354,39 +463,91 @@ TASK(void) MGLDraw::FinishFlip(void)
 #endif
 				lastKeyPressed = e.text.text[0];
 			}
-		} else if (e.type == SDL_KEYUP) {
+		}
+		else if (e.type == SDL_KEYUP)
+		{
 			TranslateKey(&e.key.keysym);
 			ControlKeyUp(e.key.keysym.scancode);
-		} else if (e.type == SDL_MOUSEMOTION) {
-			mouse_x = (e.motion.x - dest.x) / scale;
-			mouse_y = (e.motion.y - dest.y) / scale;
-		} else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
+		}
+		else if (e.type == SDL_MOUSEMOTION)
+		{
+			if (enableTouchMouse || e.motion.which != SDL_TOUCH_MOUSEID)
+			{
+				if (SDL_GetRelativeMouseMode())
+				{
+					mouse_x += e.motion.xrel;
+					mouse_y += e.motion.yrel;
+				}
+				else
+				{
+					mouse_x = (e.motion.x - dest.x) / scale;
+					mouse_y = (e.motion.y - dest.y) / scale;
+				}
+			}
+		}
+		else if (e.type == SDL_MOUSEBUTTONUP)
+		{
+			// Always accept mouseups.
 			int flag = 0;
-			if (e.button.button == 1)
+			if (e.button.button == SDL_BUTTON_LEFT)
 				flag = 1;
-			else if (e.button.button == 3)
+			else if (e.button.button == SDL_BUTTON_RIGHT)
 				flag = 2;
-			if (e.button.state == SDL_PRESSED)
+			mouse_b &= ~flag;
+		}
+		else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP)
+		{
+			// Only accept mousedowns that are inside the real scene.
+			// Also ignore mousedowns if soft joystick is active.
+			SDL_Point p = {e.button.x, e.button.y};
+			if (SDL_PointInRect(&p, &dest) && (e.motion.which != SDL_TOUCH_MOUSEID || enableTouchMouse))
+			{
+				int flag = 0;
+				if (e.button.button == SDL_BUTTON_LEFT)
+					flag = 1;
+				else if (e.button.button == SDL_BUTTON_RIGHT)
+					flag = 2;
 				mouse_b |= flag;
-			else
-				mouse_b &= ~flag;
-		} else if (e.type == SDL_MOUSEWHEEL) {
+			}
+		}
+		else if (e.type == SDL_MOUSEWHEEL)
+		{
 			mouse_z += e.wheel.y;
-		} else if (e.type == SDL_QUIT) {
+		}
+		else if (e.type == SDL_QUIT)
+		{
 			readyToQuit = 1;
-		} else if (e.type == SDL_WINDOWEVENT) {
-			if (e.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
+		}
+		else if (e.type == SDL_CONTROLLERDEVICEADDED)
+		{
+			ControlHandleNewGamepad(e.cdevice.which);
+		}
+		else if (e.type == SDL_CONTROLLERDEVICEREMOVED)
+		{
+			idle = true;
+			idleGame = true;
+		}
+		else if (e.type == SDL_WINDOWEVENT)
+		{
+			if (e.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
+			{
 				idle = true;
-				SetGameIdle(true);
-			} else if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
-				SetGameIdle(false);
+				idleGame = true;
+			}
+			else if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+			{
+				idleGame = false;
 				idle = false;
-			} else if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+			}
+			else if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+			{
 				winWidth = e.window.data1;
 				winHeight = e.window.data2;
 			}
 		}
-		if (softJoystick) {
+
+		if (softJoystick)
+		{
 			softJoystick->handle_event(this, e);
 		}
 	}
@@ -394,18 +555,21 @@ TASK(void) MGLDraw::FinishFlip(void)
 	AWAIT coro::next_frame();
 }
 
-TASK(void) MGLDraw::Flip(void)
+void MGLDraw::BufferFlip()
 {
-	StartFlip();
-
 	// blit to the screen
 	int limit = pitch * yRes;
-	byte* src = scrn;
-	RGB* target = buffer;
+	byte* src = scrn.get();
+	RGB* target = buffer.get();
 
 	for(int i = 0; i < limit; ++i)
 		*target++ = thePal[*src++];
+}
 
+TASK(void) MGLDraw::Flip(void)
+{
+	StartFlip();
+	BufferFlip();
 	AWAIT FinishFlip();
 }
 
@@ -843,61 +1007,57 @@ void MGLDraw::ClearKeys(void)
 
 bool MGLDraw::MouseTap(void)
 {
-	byte b,mb;
-
-	mb=mouse_b&1;
-
-	if((mb&1) && !(tapTrack&1))
-		b=1;
-	else
-		b=0;
-
-	tapTrack&=2;
-	tapTrack|=mb;
-	return b;
+	byte mb = mouse_b & 1;
+	bool result = mb && !(tapTrack & 1);
+	tapTrack &= ~1;
+	tapTrack |= mb;
+	return result;
 }
 
 bool MGLDraw::RMouseTap(void)
 {
-	byte b,mb;
+	byte mb = mouse_b & 2;
+	bool result = mb && !(tapTrack & 2);
+	tapTrack &= ~2;
+	tapTrack |= mb;
+	return result;
+}
 
-	mb=mouse_b&2;
-
-	if((mb&2) && !(tapTrack&2))
-		b=1;
-	else
-		b=0;
-
-	tapTrack&=1;
-	tapTrack|=mb;
-	return b;
+bool MGLDraw::MouseTap3()
+{
+	byte mb = mouse_b & 4;
+	bool result = mb && !(tapTrack & 4);
+	tapTrack &= ~4;
+	tapTrack |= mb;
+	return result;
 }
 
 bool MGLDraw::MouseDown(void)
 {
-	return ((mouse_b&1)!=0);
+	return mouse_b & 1;
 }
 
 bool MGLDraw::RMouseDown(void)
 {
-	return ((mouse_b&2)!=0);
+	return mouse_b & 2;
 }
 
 bool MGLDraw::MouseDown3(void)
 {
-	return ((mouse_b&4)!=0);
+	return mouse_b & 4;
 }
 
 bool MGLDraw::LoadBMP(const char *name)
 {
-	return LoadBMP(name, pal);
+	if (!LoadBMP(name, pal))
+		return false;
+	RealizePalette();
+	return true;
 }
 
 bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 {
-	int i,w;
-
-	SDL_RWops* rw = AssetOpen_SDL(name, "rb");
+	owned::SDL_RWops rw = AssetOpen_SDL_Owned(name);
 	if (!rw) {
 		// Asset stack printed error already
 		return false;
@@ -905,14 +1065,14 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 
 #ifdef __EMSCRIPTEN__
 	// Under Emscripten, IMG_Load can't load some files which SDL_LoadBMP can.
-	SDL_Surface* b = SDL_LoadBMP_RW(rw, SDL_FALSE);
+	SDL_Surface* b = SDL_LoadBMP_RW(rw.get(), SDL_FALSE);
 	if (!b)
 	{
-		b = IMG_Load_RW(rw, SDL_FALSE);
+		b = IMG_Load_RW(rw.get(), SDL_FALSE);
 	}
-	SDL_RWclose(rw);
+	rw.reset();
 #else  // __EMSCRIPTEN__
-	SDL_Surface* b = IMG_Load_RW(rw, SDL_TRUE);
+	SDL_Surface* b = IMG_Load_RW(rw.release(), SDL_TRUE);
 #endif  // __EMSCRIPTEN__
 
 	if (!b) {
@@ -921,26 +1081,45 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 	}
 
 	if(pal && b->format->palette)
-		for(i=0; i<256 && i < b->format->palette->ncolors; i++)
+		for(int i = 0; i < 256 && i < b->format->palette->ncolors; i++)
 		{
 			pal[i].r = b->format->palette->colors[i].r;
 			pal[i].g = b->format->palette->colors[i].g;
 			pal[i].b = b->format->palette->colors[i].b;
 		}
-	RealizePalette();
 
-	w=b->w;
-	if(w>xRes)
-		w=xRes;
-
-	SDL_LockSurface(b);
-	for(i=0;i<b->h;i++)
+	if (b->format->BitsPerPixel != 8)
 	{
-		if(i<yRes)
-			memcpy(&scrn[i*pitch], &((byte*) b->pixels)[b->pitch * i], w);
+		// Trying to load a truecolor image or something. Convert it to the palette.
+		SDL_PixelFormat* format = SDL_AllocFormat(SDL_PIXELFORMAT_INDEX8);
+		format->palette = SDL_AllocPalette(256);
+		for (int i = 0; i < 256; ++i)
+		{
+			format->palette->colors[i].r = thePal[i].r;
+			format->palette->colors[i].g = thePal[i].g;
+			format->palette->colors[i].b = thePal[i].b;
+			format->palette->colors[i].a = 255;
+		}
+
+		SDL_Surface* b2 = SDL_ConvertSurface(b, format, 0);
+		SDL_FreeSurface(b);
+		b = b2;
+
+		SDL_FreeFormat(format);
 	}
 
+	// 8-bit image suitable for loading directly into `srcn`.
+	// Either we saved the palette above or threw it away.
+	int w = std::min(b->w, xRes);
+	int h = std::min(b->h, yRes);
+
+	SDL_LockSurface(b);
+	for(int i = 0; i < h; i++)
+	{
+		memcpy(&scrn[i*pitch], &((byte*) b->pixels)[b->pitch * i], w);
+	}
 	SDL_UnlockSurface(b);
+
 	SDL_FreeSurface(b);
 	return true;
 }
@@ -953,15 +1132,37 @@ bool MGLDraw::SaveBMP(const char *name)
 	SDL_Surface* surface = SDL_CreateRGBSurface(0, xRes, yRes, 8, 0, 0, 0, 0);
 #endif
 	SDL_LockSurface(surface);
-	memcpy(surface->pixels, scrn, xRes * yRes);
+	for (int y = 0; y < yRes; ++y)
+		memcpy(&((uint8_t*)surface->pixels)[y * surface->pitch], &scrn[y * pitch], xRes);
 	SDL_UnlockSurface(surface);
 	for (int i = 0; i < 256; ++i)
 	{
 		surface->format->palette->colors[i] = { thePal[i].r, thePal[i].g, thePal[i].b, thePal[i].a };
 	}
-	SDL_SaveBMP(surface, name);
+	SDL_SaveBMP_RW(surface, AppdataOpen_Write_SDL(name).release(), SDL_TRUE);
 	SDL_FreeSurface(surface);
 	return true;
+}
+
+bool MGLDraw::SavePNG(const char* name)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 5)
+	SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, xRes, yRes, 8, SDL_PIXELFORMAT_INDEX8);
+#else
+	SDL_Surface* surface = SDL_CreateRGBSurface(0, xRes, yRes, 8, 0, 0, 0, 0);
+#endif
+	SDL_LockSurface(surface);
+	for (int y = 0; y < yRes; ++y)
+		memcpy(&((uint8_t*)surface->pixels)[y * surface->pitch], &scrn[y * pitch], xRes);
+	SDL_UnlockSurface(surface);
+	for (int i = 0; i < 256; ++i)
+	{
+		surface->format->palette->colors[i] = { thePal[i].r, thePal[i].g, thePal[i].b, thePal[i].a };
+	}
+	// NB: Unlike SaveBMP, this expects an absolute path. Maybe slightly surprising.
+	bool ok = IMG_SavePNG_RW(surface, SDL_RWFromFile(name, "wb"), SDL_TRUE) == 0;
+	SDL_FreeSurface(surface);
+	return ok;
 }
 
 #ifdef _WIN32
@@ -973,6 +1174,54 @@ HWND MGLDraw::GetHWnd(void)
 	return info.info.win.window;
 }
 #endif
+
+void MGLDraw::StartTextInput(int x, int y, int x2, int y2)
+{
+	float scale = std::max(1.0f, std::min((float)winWidth / xRes, (float)winHeight / yRes));
+	int destX = (int)((winWidth - xRes * scale) / 2);
+	int destY = (int)((winHeight - yRes * scale) / 2);
+
+	SDL_Rect rect = { x, y, x2-x, y2-y };
+	rect.x = destX + rect.x * scale;
+	rect.y = destY + rect.y * scale;
+	rect.w *= scale;
+	rect.h *= scale;
+
+	SDL_SetTextInputRect(&rect);
+
+	if (SDL_GetHintBoolean("SteamDeck", SDL_FALSE))
+	{
+		SDL_EventState(SDL_TEXTINPUT, SDL_ENABLE);
+		SDL_EventState(SDL_TEXTEDITING, SDL_ENABLE);
+
+		// The original addition of Steam Deck keyboard support doesn't set the
+		// rect https://github.com/libsdl-org/SDL/pull/6515 so do it ourselves.
+		// https://partner.steamgames.com/doc/api/ISteamUtils#ShowFloatingGamepadTextInput
+		// > The text field position is specified in pixels relative the origin
+		// > of the game window and is used to position the floating keyboard
+		// > in a way that doesn't cover the text field.
+		char deeplink[128];
+		SDL_snprintf(deeplink, sizeof(deeplink),
+			"steam://open/keyboard?XPosition=%d&YPosition=%d&Width=%d&Height=%d&Mode=%d",
+			rect.x,
+			rect.y,
+			rect.w,
+			rect.h,
+			SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE) ? 0 : 1);
+		SDL_OpenURL(deeplink);
+	}
+	else
+	{
+		SDL_StartTextInput();
+	}
+}
+
+void MGLDraw::StopTextInput()
+{
+	SDL_Rect rect = { 0, 0, 0, 0 };
+	SDL_SetTextInputRect(&rect);
+	SDL_StopTextInput();
+}
 
 //--------------------------------------------------------------------------
 // Fatal error

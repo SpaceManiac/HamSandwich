@@ -1,41 +1,25 @@
-# top-level folders
-/build
-/.vscode
-/appdata
-
 # file types
 *.pyc
 ~$*.*
 Thumbs.db
-source/loonyland/.vs/VSWorkspaceState.json
-source/loonyland/.vs/slnx.sqlite
-source/loonyland/.vs/ProjectSettings.json
-source/loonyland/.vs/loonyland/v16/ipch/AutoPCH/b62c8d812a9b2c8/HIGHSCORE.ipch
-source/loonyland/.vs/loonyland/v16/ipch/AutoPCH/acae2b1f96442475/GUY.ipch
-source/loonyland/.vs/loonyland/v16/ipch/AutoPCH/6a147620a2c98961/EDITOR.ipch
-source/loonyland/.vs/loonyland/v16/ipch/AutoPCH/566a946175d1282d/PLAYER.ipch
-source/loonyland/.vs/loonyland/v16/Browse.VC.db
-source/loonyland/.vs/loonyland/v16/.suo
-tools/jspedit/fontawesome.ttf
-tools/jspedit/jspedit.exe
-tools/jspedit/Readme.txt
-tools/jspedit/vera.ttf
-docs/.~lock.Access Requirements.ods#
-assets/rando/boots.png
-assets/rando/cat.png
-assets/rando/fertilizaer.png
-assets/rando/ghostpotion.png
-assets/rando/Lantern.png
-assets/rando/reflect.png
-assets/rando/silversling.png
-assets/rando/stick.png
-assets/rando/test0.png
-assets/rando/test1.png
-assets/rando/test2.png
-assets/rando/test3.png
-assets/rando/test4.png
-assets/rando/test5.png
-assets/rando/test6.png
-assets/rando/test7.png
-*.ods#
-*.ods#
+
+# top-level folders and files
+/.vagrant
+/.vscode
+/.vs
+/addons
+/appdata
+/build
+/installers
+/exports
+/CMakeUserPresets.json
+
+# Android
+/.idea
+/.gradle
+/local.properties
+
+# Proprietary Steamworks SDK.
+# Needs to be downloaded from behind the authentication and unzipped manually.
+# https://partner.steamgames.com/downloads/steamworks_sdk.zip
+/external/steamworks_sdk

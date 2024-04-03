@@ -289,16 +289,20 @@ byte Map::Save(FILE *f)
 	return 1;
 }
 
+void InitStars()
+{
+	for (int i=0; i<NUM_STARS; i++)
+	{
+		starX[i]=Random(SCRWID);
+		starY[i]=Random(SCRHEI);
+		starCol[i]=(byte)Random(32);
+	}
+}
+
 void Map::Init(world_t *wrld)
 {
 	int i;
-
-	for(i=0;i<NUM_STARS;i++)
-	{
-		starX[i]=Random(640);
-		starY[i]=Random(480);
-		starCol[i]=(byte)Random(32);
-	}
+	InitStars();
 
 	for(i=0;i<width*height;i++)
 	{
@@ -1003,7 +1007,8 @@ void Map::Copy(int sx,int sy,int blkwidth,int blkheight,int dx,int dy)
 	// copy source to dest
 	for(i=0;i<blkheight;i++)
 	{
-		memcpy(&map[(i+dy)*width+dx],&map[(i+sy)*width+sx],sizeof(mapTile_t)*blkwidth);
+		// Has to be memmove instead of memcpy because the source and destination might overlap.
+		memmove(&map[(i+dy)*width+dx],&map[(i+sy)*width+sx],sizeof(mapTile_t)*blkwidth);
 	}
 
 	// move all specials that are in the target zone
@@ -1049,6 +1054,31 @@ int Map::ItemCountInRect(byte itm,int x,int y,int x2,int y2)
 	return cnt;
 }
 
+void Map::RenderStars(int camX, int camY)
+{
+	int w = GetDisplayMGL()->GetWidth(), h = GetDisplayMGL()->GetHeight();
+	for(int i=0; i<NUM_STARS; i++)
+	{
+		for (int x = starX[i]; x < w; x += SCRWID)
+		{
+			for (int y = starY[i]; y < h; y += SCRHEI)
+			{
+				auto dtx = div(x + camX, TILE_WIDTH);
+				auto dty = div(y + camY, TILE_HEIGHT);
+
+				if((x+camX)<0 || (y+camY)<0 || dtx.quot>=width || dty.quot>=height)
+					continue;
+
+				mapTile_t *m = &map[dtx.quot+dty.quot*width];
+				if(m->wall)
+					continue;
+
+				PlotStar(x,y,starCol[i],dtx.rem,dty.rem,m->floor);
+			}
+		}
+	}
+}
+
 void Map::Render(world_t *world,int camX,int camY,byte flags)
 {
 	int i,j;
@@ -1061,8 +1091,8 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 	char lites[9];
 	byte shdw;
 
-	camX-=320;
-	camY-=240;
+	camX -= GetDisplayMGL()->GetWidth()/2;
+	camY -= GetDisplayMGL()->GetHeight()/2;
 
 	tileX=(camX/TILE_WIDTH)-1;
 	tileY=(camY/TILE_HEIGHT)-1;
@@ -1070,10 +1100,10 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 	ofsY=camY%TILE_HEIGHT;
 
 	scrX=-ofsX-TILE_WIDTH;
-	for(i=tileX;i<tileX+(640/TILE_WIDTH+4);i++)
+	for(i=tileX;i<tileX+(GetDisplayMGL()->GetWidth()/TILE_WIDTH+4);i++)
 	{
 		scrY=-ofsY-TILE_HEIGHT;
-		for(j=tileY;j<tileY+(480/TILE_HEIGHT+6);j++)
+		for(j=tileY;j<tileY+(GetDisplayMGL()->GetHeight()/TILE_HEIGHT+6);j++)
 		{
 			if(i>=0 && i<width && j>=0 && j<height)
 			{
@@ -1182,7 +1212,7 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 				else
 				{
 					// Shadow wall macro: used to determine both a wall is there and it's not marked shadowless
-#define SHADOW_WALL(WALL) ((WALL) && !(GetTerrain(world, (WALL))->flags&TF_TRANS))
+#define SHADOW_WALL(WALL) ((WALL) && !(GetTerrain(world, (WALL))->flags&TF_SHADOWLESS))
 					if(config.shading==0)
 					{
 						if(i<width-1 && SHADOW_WALL(map[i+1+j*width].wall))
@@ -1257,22 +1287,7 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 
 	if(this->flags&MAP_STARS)
 	{
-		int tx,ty;
-
-		for(i=0;i<NUM_STARS;i++)
-		{
-			tx=(starX[i]+camX)/TILE_WIDTH;
-			ty=(starY[i]+camY)/TILE_HEIGHT;
-
-			if(tx<0 || ty<0 || tx>=width || ty>=height)
-				continue;
-
-			m=&map[tx+ty*width];
-			if(m->wall)
-				continue;
-
-			PlotStar(starX[i],starY[i],starCol[i],(starX[i]+camX-tx*TILE_WIDTH),(starY[i]+camY-ty*TILE_HEIGHT),m->floor);
-		}
+		RenderStars(camX, camY);
 	}
 }
 
@@ -1287,8 +1302,8 @@ void Map::RenderEdit(world_t *world,int camX,int camY,byte flags)
 	char lite,lites[9];
 	byte shdw;
 
-	camX-=320;
-	camY-=240;
+	camX -= GetDisplayMGL()->GetWidth()/2;
+	camY -= GetDisplayMGL()->GetHeight()/2;
 
 	tileX=(camX/TILE_WIDTH)-1;
 	tileY=(camY/TILE_HEIGHT)-1;
@@ -1296,10 +1311,10 @@ void Map::RenderEdit(world_t *world,int camX,int camY,byte flags)
 	ofsY=camY%TILE_HEIGHT;
 
 	scrX=-ofsX-TILE_WIDTH;
-	for(i=tileX;i<tileX+(640/TILE_WIDTH+4);i++)
+	for(i=tileX;i<tileX+(GetDisplayMGL()->GetWidth()/TILE_WIDTH+4);i++)
 	{
 		scrY=-ofsY-TILE_HEIGHT;
-		for(j=tileY;j<tileY+(480/TILE_HEIGHT+6);j++)
+		for(j=tileY;j<tileY+(GetDisplayMGL()->GetHeight()/TILE_HEIGHT+6);j++)
 		{
 			if(i>=0 && i<width && j>=0 && j<height)
 			{
@@ -1502,22 +1517,7 @@ void Map::RenderEdit(world_t *world,int camX,int camY,byte flags)
 
 	if(this->flags&MAP_STARS)
 	{
-		int tx,ty;
-
-		for(i=0;i<NUM_STARS;i++)
-		{
-			tx=(starX[i]+camX)/TILE_WIDTH;
-			ty=(starY[i]+camY)/TILE_HEIGHT;
-
-			if(tx<0 || ty<0 || tx>=width || ty>=height)
-				continue;
-
-			m=&map[tx+ty*width];
-			if(m->wall)
-				continue;
-
-			PlotStar(starX[i],starY[i],starCol[i],(starX[i]+camX-tx*TILE_WIDTH),(starY[i]+camY-ty*TILE_HEIGHT),m->floor);
-		}
+		RenderStars(camX, camY);
 	}
 }
 
@@ -1533,8 +1533,8 @@ void Map::RenderSelect(world_t *world,int camX,int camY,byte flags)
 	if(flags&MAP_SHOWSELECT)
 		return;
 
-	camX-=320;
-	camY-=240;
+	camX -= GetDisplayMGL()->GetWidth() / 2;
+	camY -= GetDisplayMGL()->GetHeight() / 2;
 
 	tileX=(camX/TILE_WIDTH)-1;
 	tileY=(camY/TILE_HEIGHT)-1;
@@ -1542,10 +1542,10 @@ void Map::RenderSelect(world_t *world,int camX,int camY,byte flags)
 	ofsY=camY%TILE_HEIGHT;
 
 	scrX=-ofsX-TILE_WIDTH;
-	for(i=tileX;i<tileX+(640/TILE_WIDTH+4);i++)
+	for(i=tileX;i<tileX+(GetDisplayMGL()->GetWidth()/TILE_WIDTH+4);i++)
 	{
 		scrY=-ofsY-TILE_HEIGHT;
-		for(j=tileY;j<tileY+(480/TILE_HEIGHT+6);j++)
+		for(j=tileY;j<tileY+(GetDisplayMGL()->GetHeight()/TILE_HEIGHT+6);j++)
 		{
 			if(i>=0 && i<width && j>=0 && j<height)
 			{
@@ -1992,4 +1992,27 @@ mapTile_t *Map::GetTile(int x,int y)
 		return &fake;
 	else
 		return &map[x+y*width];
+}
+
+static const char lvlFlagName[][16] = {
+	"Snowing",
+	"Raining",
+	"Hub Level",
+	"Secret Level",
+	"Torch Lit",
+	"Lantern Lit",
+	"Star Background",
+	"Underwater",
+	"Underlava",
+	"Stealth",
+	"Wavy",
+	"Oxygen Meter",
+};
+static_assert(SDL_arraysize(lvlFlagName) == NUM_LVL_FLAGS, "Must give new level flags a name");
+
+const char* MapFlagName(int flagIndex)
+{
+	if (flagIndex >= 0 && flagIndex < NUM_LVL_FLAGS)
+		return lvlFlagName[flagIndex];
+	return "???";
 }

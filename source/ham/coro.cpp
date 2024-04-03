@@ -60,7 +60,7 @@ struct executor {
 				}
 				current.destroy();  // it's done, so destroy it
 			}
-#ifdef _DEBUG
+#ifndef NDEBUG
 			else {
 				// if it isn't put to sleep, it's still awake
 				bool asleep = false;
@@ -132,7 +132,7 @@ static void em_main_loop() {
 
 int main(int argc, char** argv) {
 	coro::launch([=]() -> coro::task<void> {
-		AWAIT coro::main(argc, argv);
+		AWAIT coro__main(argc, argv);
 	});
 	emscripten_set_main_loop(em_main_loop, 0, 1);
 	return 0;

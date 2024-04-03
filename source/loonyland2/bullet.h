@@ -9,7 +9,6 @@
 #include "cossin.h"
 #include "sound.h"
 #include "particle.h"
-#pragma pack(1)
 
 // bullet traits
 #define BF_HITEVIL	(1)
@@ -45,6 +44,7 @@
 #define BS_RADIUS	(4)	// randomly scattered over your hit radius
 #define BS_CIRCLE	(5)	// in a ring, evenly spaced around you
 
+#pragma pack(push, 1)
 typedef struct bulletDef_t
 {
 	dword flags;
@@ -91,12 +91,14 @@ typedef struct bulletDef_t
 	byte spawnMethod;	// how to spawn, above
 	byte spawnCount;	// number of them to spawn
 	byte spawnRate;		// delay before spawning again (0=just do it once)
-	byte spawnDmg;		// damage of spawned projectiles
+	short spawnDmg;		// damage of spawned projectiles
 	// particles
 	byte partDelay;
 	byte partType;
 	byte partRate;	// same features as spawning, but the type is an explosion type, covering how many and what direction by itself
 } bulletDef_t;
+static_assert(sizeof(bulletDef_t) == 55);
+#pragma pack(pop)
 
 #define BLT_NONE    0
 #define BLT_AXE		1
@@ -182,6 +184,7 @@ typedef struct bulletDef_t
 #define FF_HELPER  64	// if you have a helper bat or not
 #define FF_HELPERHERE 128	// is the helper bat present?
 
+#pragma pack(push, 1)
 typedef struct bullet_t
 {
 	int x,y,z;
@@ -207,6 +210,8 @@ typedef struct bullet_t
 	word bSpawnTimer;
 	byte bounces,pierces;
 } bullet_t;
+static_assert(sizeof(bullet_t) == 57);
+#pragma pack(pop)
 
 extern bulletDef_t bulDef[BLT_TYPES];
 extern byte bulletHittingType;

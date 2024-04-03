@@ -11,6 +11,7 @@
 #include "mgldraw.h"
 #include "jamulfont.h"
 #include "jamulsound.h"
+#include "extern.h"
 
 #include "moron.h"
 #include "game.h"
@@ -29,32 +30,50 @@
 #include "log.h"
 #include "netmenu.h"
 #include "internet.h"
+#include "appdata.h"
+#include "steam.h"
+#include "unpickled.h"
 
-#ifdef _WIN32
-#include <shellapi.h>
-#endif
+extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
-const char* AppdataFolderName()
+void AfterFlip()
 {
-	return PROJECT_NAME;
+	SteamManager::Get()->Update();
 }
 
 TASK(int) main(int argc, char* argv[])
 {
-	bool windowedGame=false;
+	g_HamExtern.ChooseNextSong = ChooseNextSong;
+	g_HamExtern.SoundLoadOverride = SoundLoadOverride;
+	g_HamExtern.AfterFlip = AfterFlip;
+
+	bool windowedGame = false;
+	bool unpickled = false;
 
 	for (int i = 1; i < argc; ++i)
 	{
 		if (!strcmp(argv[i], "window"))
-			windowedGame=true;
+			windowedGame = true;
+		else if (!strcmp(argv[i], "--unpickled"))
+			unpickled = true;
 	}
 
+	AppdataInit(GetHamSandwichMetadata());
 	LoadConfig();
-	MGLDraw *mainmgl=new MGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame);
+	SetHamMusicEnabled(config.music && !unpickled);
+	SetJamulSoundEnabled(config.sound && !unpickled, config.numSounds);
+	SteamManager::Init();
+	MGLDraw *mainmgl = new MGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame || unpickled);
 	if(!mainmgl)
 		CO_RETURN 0;
 
 	LunaticInit(mainmgl);
+
+	if (unpickled)
+	{
+		UnpickledMain();
+		CO_RETURN 0;
+	}
 
 	//CryptoTest();
 #ifdef ARCADETOWN
@@ -65,14 +84,14 @@ TASK(int) main(int argc, char* argv[])
 	//NewComputerSpriteFix("graphics/items.jsp");
 	//NewComputerSpriteFix("graphics/intface.jsp");
 	shopping=0;
-	while(1)
+
+	bool running = true;
+	while(running)
 	{
 		switch(AWAIT MainMenu(mainmgl))
 		{
 			case 255:	// quit
-				LunaticExit();
-				delete mainmgl;
-				CO_RETURN 0;
+				running = false;
 				break;
 			case 0:	// new game
 				shopping=0;
@@ -98,26 +117,6 @@ TASK(int) main(int argc, char* argv[])
 			case 5:	// internet
 				shopping=0;
 				AWAIT NetMenu(mainmgl);
-
-				if(DoWebPage()==1)
-				{
-					LunaticExit();
-					delete mainmgl;
-#ifdef _WIN32
-					ShellExecuteA(NULL,"open","http://hamumu.com/scores.php",NULL,NULL,SW_SHOWNORMAL);
-#endif
-					CO_RETURN 0;
-				}
-				else if(DoWebPage()==2)
-				{
-					LunaticExit();
-					delete mainmgl;
-
-#ifdef _WIN32
-					ShellExecuteA(NULL,"open","http://hamumu.com/addon.php",NULL,NULL,SW_SHOWNORMAL);
-#endif
-					CO_RETURN 0;
-				}
 				break;
 			case 7:	// editor
 				shopping=0;
@@ -137,5 +136,7 @@ TASK(int) main(int argc, char* argv[])
 	StopSong();
 	LunaticExit();
 	delete mainmgl;
+	SteamManager::Quit();
 	JamulSoundExit();
+	CO_RETURN 0;
 }

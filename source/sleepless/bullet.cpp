@@ -870,7 +870,6 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 void HitBadguys(bullet_t *me,Map *map,world_t *world)
 {
 	int i;
-	byte b;
 
 	attackType=me->type;
 	switch(me->type)

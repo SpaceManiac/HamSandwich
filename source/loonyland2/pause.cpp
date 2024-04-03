@@ -985,7 +985,7 @@ void LoadGame(void)
 
 
 	sprintf(txt,"profiles/char%02d.loony",gameToLoad+1);
-	f=AppdataOpen(txt,"rb");
+	f=AppdataOpen(txt);
 	if(!f)
 	{
 		InitPlayer(INIT_GAME,0,0);
@@ -1023,7 +1023,7 @@ void SaveGame(void)
 	char txt[64];
 
 	sprintf(txt,"profiles/char%02d.loony",gameToLoad+1);
-	f=AppdataOpen(txt,"wb");
+	f=AppdataOpen_Write(txt);
 	if(!f)
 	{
 		return;

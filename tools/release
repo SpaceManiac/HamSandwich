@@ -1,0 +1,18 @@
+#!/bin/bash
+set -euo pipefail
+
+game="$1"
+
+# Bail if working directory is dirty
+if ! test -z "$(git status -s --porcelain)"; then
+	echo "Working directory is dirty; clean or commit before publishing."
+	exit 1
+fi
+
+# Build the artifacts
+tools/steam/"$game"_build
+
+# Build and upload Steam depots
+tools/steam/upload-steam-build "$game"
+
+echo "==== Complete ===="

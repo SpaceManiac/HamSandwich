@@ -20,12 +20,10 @@ byte *changed;
 Guy::Guy(void)
 {
 	type=MONS_NONE;
-	customSpr=NULL;
 }
 
 Guy::~Guy(void)
 {
-	if (customSpr) delete customSpr;
 }
 
 byte Guy::CoconutBonk(int xx,int yy,Guy *him)
@@ -746,7 +744,7 @@ void Guy::Update(Map *map,world_t *world)
 	if((oldmapx!=mapx || oldmapy!=mapy) && type!=MONS_NOBODY)
 		EventOccur(EVT_STEP,ID,mapx,mapy,this);
 
-	if(mapx>=0 && mapy>=0 && mapx<map->width && mapy<map->height)
+	if(mapx<map->width && mapy<map->height)
 		bright=map->GetTile(mapx,mapy)->templight;
 	else
 		bright=-32;
@@ -809,7 +807,8 @@ void Guy::Render(byte light)
 	else
 		t=type;
 
-	if(fromColor!=255)
+	const bool recolor = fromColor!=255;
+	if(recolor)
 	{
 		oldFrom=GetMonsterType(t)->fromCol;
 		oldTo=GetMonsterType(t)->toCol;
@@ -818,8 +817,8 @@ void Guy::Render(byte light)
 	}
 	oldBrt=GetMonsterType(t)->brtChg;
 	GetMonsterType(t)->brtChg=brtChange;
-	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen,customSpr);
-	if(fromColor!=255)
+	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen,customSpr.get());
+	if(recolor)
 	{
 		GetMonsterType(t)->fromCol=oldFrom;
 		GetMonsterType(t)->toCol=oldTo;
@@ -921,7 +920,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 	if(aiType==MONS_BOUAPHA && frozen)
 		frozen/=2;
 
-	if(profile.difficulty==0 && damage>0)
+	if(profile.difficulty==DIFFICULTY_NORMAL && damage>0)
 	{
 		if(friendly)
 			damage=damage/2;
@@ -930,7 +929,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 		if(damage==0)
 			damage=1;
 	}
-	if(profile.difficulty==2 && damage>0)
+	if(profile.difficulty==DIFFICULTY_LUNATIC && damage>0)
 	{
 		if(friendly)
 			damage=damage*2;
@@ -972,27 +971,28 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 
 	if(!editing && !player.cheated && verified)
 	{
-		if(profile.difficulty==0)
+		if(profile.difficulty==DIFFICULTY_NORMAL)
 		{
 			if(aiType==MONS_BOUAPHA)
 				profile.progress.damageTaken+=damage*2;
 			else
 				profile.progress.damageDone+=damage/2;
 		}
-		else if(profile.difficulty==1)
+		else if(profile.difficulty==DIFFICULTY_HARD)
 		{
 			if(aiType==MONS_BOUAPHA)
 				profile.progress.damageTaken+=damage;
 			else
 				profile.progress.damageDone+=damage;
 		}
-		else
+		else if (profile.difficulty==DIFFICULTY_LUNATIC)
 		{
 			if(aiType==MONS_BOUAPHA)
 				profile.progress.damageTaken+=damage/2;
 			else
 				profile.progress.damageDone+=damage*2;
 		}
+		static_assert(MAX_DIFFICULTY == 3, "Must handle new difficulty here");
 	}
 
 	newHP=hp;
@@ -1255,11 +1255,11 @@ void UpdateGuys(Map *map,world_t *world)
 					if(((speedClock&3)==0) && guys[i]->aiType!=MONS_BOUAPHA && guys[i]->aiType!=MONS_RAFT &&
 						guys[i]->aiType!=MONS_MINECART && guys[i]->aiType!=MONS_RAFT && guys[i]->aiType!=MONS_YUGO)
 					{
-						if(profile.difficulty==0)
+						if(profile.difficulty==DIFFICULTY_NORMAL)
 						{
 							// skip the update!
 						}
-						else if(profile.difficulty==2)
+						else if(profile.difficulty==DIFFICULTY_LUNATIC)
 						{
 							// double update!
 							guys[i]->Update(map,world);
@@ -1435,7 +1435,10 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i]->x=x;
 			guys[i]->y=y;
 			guys[i]->z=z;
+			guys[i]->oldx=-1;
+			guys[i]->oldy=-1;
 			guys[i]->seq=ANIM_IDLE;
+			guys[i]->action=ACTION_IDLE;
 			guys[i]->frm=0;
 			guys[i]->frmTimer=0;
 			guys[i]->frmAdvance=128;
@@ -1453,6 +1456,7 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i]->mind3=0;
 			guys[i]->reload=0;
 			guys[i]->parent=NULL;
+			guys[i]->aiType=guys[i]->type;
 			guys[i]->CalculateRect();
 			guys[i]->ID=i;
 			guys[i]->frozen=0;
@@ -1461,8 +1465,8 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i]->item=ITM_RANDOM;
 			strcpy(guys[i]->name,MonsterName(type));
 			guys[i]->fromColor=255;
-			guys[i]->aiType=guys[i]->type;
 			guys[i]->brtChange=GetMonsterType(guys[i]->type)->brtChg;
+			guys[i]->customSpr=nullptr;
 
 			if(type==MONS_ISOZOID && editing!=1)
 			{
@@ -2735,17 +2739,10 @@ void SetMonsterGraphics(byte fx,int x,int y,int type,char *name)
 			char buf[64];
 			sprintf(buf,"user/%s", name);
 
-			if (guys[i]->customSpr) delete guys[i]->customSpr;
-
-			sprite_set_t* spr = new sprite_set_t();
-			if (spr->Load(buf))
+			guys[i]->customSpr = std::make_unique<sprite_set_t>();
+			if (!guys[i]->customSpr->Load(buf))
 			{
-				guys[i]->customSpr = spr;
-			}
-			else
-			{
-				delete spr;
-				guys[i]->customSpr = NULL;
+				guys[i]->customSpr = nullptr;
 			}
 		}
 	}

@@ -2,7 +2,6 @@
 #define CH_LOONY_H
 
 #include "player.h"
-#pragma pack(1)
 
 void LoonyControlMe(Guy *me,mapTile_t *mapTile,world_t *world);
 void LoonyControlStunned(Guy *me,mapTile_t *mapTile,world_t *world);

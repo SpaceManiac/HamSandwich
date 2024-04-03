@@ -250,7 +250,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			startTime=timeGetTime();	// reset the clock if any key is pressed
 			return 3;
 		}
-//#ifdef _DEBUG
+//#ifndef NDEBUG
 		if(c=='e')
 		{
 			title->cursor=5;
@@ -443,7 +443,7 @@ void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 	player_t p;
 	int i;
 
-	f=AppdataOpen("mystic.sav","rb");
+	f=AppdataOpen("mystic.sav");
 	if(!f)
 	{
 		for(i=0;i<5;i++)

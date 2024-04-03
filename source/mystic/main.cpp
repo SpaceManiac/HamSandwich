@@ -9,6 +9,7 @@
 #include "mgldraw.h"
 #include "jamulfont.h"
 #include "jamulsound.h"
+#include "extern.h"
 
 #include "game.h"
 #include "editor.h"
@@ -19,11 +20,9 @@
 #include "challenge.h"
 #include "options.h"
 #include "nag.h"
+#include "appdata.h"
 
-const char* AppdataFolderName()
-{
-	return PROJECT_NAME;
-}
+extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
 TASK(int) main(int argc, char* argv[])
 {
@@ -37,6 +36,7 @@ TASK(int) main(int argc, char* argv[])
 			windowedGame=true;
 	}
 
+	AppdataInit(GetHamSandwichMetadata());
 	InitOptions();
 	MGLDraw *mainmgl=new MGLDraw("Kid Mystic", SCRWID, SCRHEI, windowedGame);
 	if(!mainmgl)

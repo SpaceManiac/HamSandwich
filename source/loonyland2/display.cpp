@@ -500,7 +500,7 @@ bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,int bright,sprite
 	dispObj[i].z=z;
 	dispObj[i].z2=z2;
 	if(dispObj[i].flags&(DISPLAY_WALLTILE|DISPLAY_ROOFTILE))
-		memcpy(dispObj[i].light,dispObj[i].spr,9);
+		memcpy(dispObj[i].light,(const char*)dispObj[i].spr,9);
 	HookIn(i);
 	if(dispObj[i].flags&DISPLAY_LIGHTNING)
 	{
@@ -611,7 +611,7 @@ void DisplayList::Render(void)
 			{
 				if(dispObj[i].flags&DISPLAY_GHOST)
 				{
-					dispObj[i].spr->DrawGhost(dispObj[i].x-scrx,dispObj[i].y-scry-dispObj[i].z,mgl,
+					dispObj[i].spr->DrawGhostBright(dispObj[i].x-scrx,dispObj[i].y-scry-dispObj[i].z,mgl,
 							dispObj[i].bright);
 				}
 				else if(dispObj[i].flags&DISPLAY_GLOW)

@@ -4,7 +4,6 @@
 #include "winpch.h"
 #include "display.h"
 #include "world.h"
-#pragma pack(1)
 
 void InitSpclDialog(special_t *theSpcl,byte spnum,world_t *wrld,byte currentMap);
 void ExitSpclDialog(void);

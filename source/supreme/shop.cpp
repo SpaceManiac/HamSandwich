@@ -15,7 +15,7 @@
 
 word moneyAmts[11]={25,75,1500,5000,2222,250,17,300,2,716,42};
 
-shopItem_t shop[NUMSHOPITEMS]={
+static const shopItem_t shop[NUMSHOPITEMS]={
 
 	// bones, bats, and beyond
 	{SHOP_SPOOKY,
@@ -680,26 +680,26 @@ shopItem_t shop[NUMSHOPITEMS]={
 	 0},
 };
 
-char worldFName[NUMBUILTINWORLDS][32]={
+static const char worldFName[NUMBUILTINWORLDS][32]={
 	"mansion.dlw",			// 0
-	"hauntedh.dlw",
+	"HauntedH.dlw",
 	"loonyhalloween.dlw",
 
 	"halloweenBP.dlw",
 	"halloweenMS.dlw",
-	"halloweenPOP.dlw",
-	"halloweenMH.dlw",
+	"HalloweenPOP.dlw",
+	"HalloweenMH.dlw",
 
-	"halloween2TDM.dlw",
+	"Halloween2TDM.dlw",
 	"halloween2BP.dlw",
 	"halloween2LK.dlw",
 	"halloween2RZ.dlw",		// 10
 	"halloween2POP.dlw",
-	"halloween2MH.dlw",
+	"Halloween2MH.dlw",
 
 	"halloween3BP.dlw",
-	"halloween3LK.dlw",
-	"halloween3POP.dlw",
+	"Halloween3LK.dlw",
+	"Halloween3POP.dlw",
 	"halloween3TDM.dlw",
 
 	"treasurehunting.dlw",
@@ -707,7 +707,7 @@ char worldFName[NUMBUILTINWORLDS][32]={
 	"ez8675.dlw",
 	"spacedout.dlw",		// 20
 	"interluna.dlw",
-	"spaced.dlw",
+	"Spaced.dlw",
 	"space.dlw",
 	"spacebattle.dlw",
 	"islandadventure.dlw",
@@ -716,41 +716,41 @@ char worldFName[NUMBUILTINWORLDS][32]={
 	"citanul.dlw",
 	"cavernhavoc.dlw",
 	"cliffs.dlw",			// 30
-	"woods.dlw",
-	"creepymeadows.dlw",
+	"Woods.dlw",
+	"CreepyMeadows.dlw",
 	"wackywoods.dlw",
-	"dead.dlw",
+	"Dead.dlw",
 	"Looniesgooniesbaboonies.dlw",
 	"disorder.dlw",
 	"dimensionx.dlw",
-	"nuclear.dlw",
+	"Nuclear.dlw",
 	"loonystew.dlw",
 	"splitlevellunacy.dlw",		// 40
 	"doubletrouble.dlw",
-	"bouaphaq.dlw",
+	"BouaphaQ.dlw",
 	"excellent.dlw",
 	"junglequest.dlw",
 	"halloweenhill.dlw",
 	"fieldtrip.dlw",
-	"thecastle.dlw",
+	"Thecastle.dlw",
 	"hauntedcastle.dlw",
-	"winterwackinessLK.dlw",
-	"winterwackinessRK.dlw",	// 50
-	"winterwackinessBP.dlw",
-	"winterwackiness2BP.dlw",
-	"winterwackiness2LK.dlw",
-	"winterwackiness2TDM.dlw",
+	"WinterWackinessLK.dlw",
+	"WinterWackinessRK.dlw",	// 50
+	"winterwackinessbp.dlw",
+	"winterwackiness2bp.dlw",
+	"winterwackiness2lk.dlw",
+	"WinterWackiness2TDM.dlw",
 	"seasonsbeatings.dlw",
 	"icyadv.dlw",
 	"smallworld.dlw",
 	"blastoff.dlw",
-	"loonies.dlw",
+	"Loonies.dlw",
 	"coolbuthard.dlw",		// 60
-	"cookies.dlw",
+	"Cookies.dlw",
 	"justdeserts.dlw",
 	"desertrats.dlw",
 	"desertarena.dlw",
-	"tvlunacy.dlw",
+	"TVLunacy.dlw",
 	"blockbuster.dlw",
 	"tunnelvision.dlw",
 	"castlerevisited.dlw",
@@ -766,7 +766,7 @@ char worldFName[NUMBUILTINWORLDS][32]={
 	"champ.dlw",
 };
 
-static char shopName[][32]={
+static const char shopName[][32]={
 	"Bones, Bats & Beyond",
 	"Sputnik's",
 	"Pier 2",
@@ -797,7 +797,7 @@ static byte itemCoords[]={
 
 static byte modeToToggle;
 
-byte CanPlayWorld(const char *fname)
+bool CanPlayWorld(const char *fname)
 {
 	int i;
 
@@ -812,10 +812,10 @@ byte CanPlayWorld(const char *fname)
 	}
 
 	// if it didn't match any of the built-in names, it's an add-on, so it's okay
-	return 1;
+	return true;
 }
 
-byte AllOfTypePurchased(byte type)
+bool AllOfTypePurchased(byte type)
 {
 	int j;
 
@@ -823,13 +823,27 @@ byte AllOfTypePurchased(byte type)
 	{
 		if(shop[j].type==type && !(profile.progress.purchase[j]&SIF_BOUGHT))
 		{
-			return 0;
+			return false;
 		}
 	}
-	return 1;	// they've all been bought!
+	return true;	// they've all been bought!
 }
 
-byte AllLockersOpen(void)
+byte NumOfTypePurchased(byte type)
+{
+	int j, i = 0;
+
+	for(j=0;j<NUMSHOPITEMS;j++)
+	{
+		if(shop[j].type==type && (profile.progress.purchase[j]&SIF_BOUGHT))
+		{
+			++i;
+		}
+	}
+	return i;
+}
+
+bool AllLockersOpen(void)
 {
 	int j;
 
@@ -837,13 +851,27 @@ byte AllLockersOpen(void)
 	{
 		if(shop[j].shop==SHOP_LOCKERS && !(profile.progress.purchase[j]&SIF_BOUGHT))
 		{
-			return 0;
+			return false;
 		}
 	}
-	return 1;	// they've all been opened
+	return true;	// they've all been opened
 }
 
-byte AllPurchased(void)
+byte NumLockersOpen()
+{
+	int j, i = 0;
+
+	for(j=0;j<NUMSHOPITEMS;j++)
+	{
+		if(shop[j].shop==SHOP_LOCKERS && (profile.progress.purchase[j]&SIF_BOUGHT))
+		{
+			++i;
+		}
+	}
+	return i;
+}
+
+bool AllPurchased(void)
 {
 	int j;
 
@@ -851,10 +879,24 @@ byte AllPurchased(void)
 	{
 		if(!(profile.progress.purchase[j]&SIF_BOUGHT))
 		{
-			return 0;
+			return false;
 		}
 	}
-	return 1;	// they've all been bought!
+	return true;	// they've all been bought!
+}
+
+byte NumPurchased()
+{
+	int j, i = 0;
+
+	for(j=0;j<NUMSHOPITEMS;j++)
+	{
+		if((profile.progress.purchase[j]&SIF_BOUGHT))
+		{
+			++i;
+		}
+	}
+	return i;
 }
 
 float ShopPercent(void)
@@ -870,7 +912,7 @@ float ShopPercent(void)
 	return ((float)bought*100.0f/(float)NUMSHOPITEMS);
 }
 
-byte ItemPurchased(byte type,byte num)
+bool ItemPurchased(byte type,byte num)
 {
 	return ((profile.progress.purchase[ShopItemNumber(type,num)]&SIF_BOUGHT)>0);	// true if you've bought it
 }
@@ -1666,4 +1708,21 @@ void RenderShopping(MGLDraw *mgl)
 			RenderShopButton(1,320-48,240+shopSize/2-27,95,"Thank you!",mgl);
 		}
 	}
+}
+
+static const char charName[][16] = {
+	"Bouapha",
+	"Happy Stick Man",
+	"Dr. Lunatic",
+	"Shtupid Shroom",
+	"LunaChick",
+	"MechaBouapha",
+};
+static_assert(SDL_arraysize(charName) == MAX_PLAYAS, "Must give new playable character a name");
+
+const char* GetPlayableCharacterName(int playAs)
+{
+	if (playAs >= 0 && playAs < MAX_PLAYAS)
+		return charName[playAs];
+	return "???";
 }

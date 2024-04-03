@@ -347,6 +347,7 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 		case EFF_MAKEBULLET:
 			strcpy(eff->text, "0");
 			eff->value2=1;
+			[[fallthrough]];
 		case EFF_CHANGEBULLET:
 			eff->value=BLT_NONE;
 			eff->value2=BLT_HAMMER;
@@ -1127,7 +1128,7 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 			}
 			break;
 		case TRG_FLOOR:
-			if(t->x>=0 && t->y>=0 && t->x<map->width && t->y<map->height &&
+			if(t->x<map->width && t->y<map->height &&
 				map->GetTile(t->x,t->y)->floor==t->value)
 				answer=1;
 			break;
@@ -1493,44 +1494,36 @@ void SpecialEffect(special_t *me,Map *map)
 				}
 				break;
 			case EFF_SUMMON:
-				Guy *g;
-
-				if(MonsterFlags(me->effect[i].value,me->effect[i].value)&MF_FLYING)
-				{
-					g=AddGuy((me->effect[i].x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,
-					   (me->effect[i].y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,
-					   0*FIXAMT,me->effect[i].value,2);
-				}
-				else
-				{
-					g=AddGuy((me->effect[i].x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,
-					   (me->effect[i].y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,
-					   20*FIXAMT,me->effect[i].value,2);
-				}
+			{
+				Guy *g = AddGuy(
+					(me->effect[i].x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,
+					(me->effect[i].y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,
+					20*FIXAMT,
+					me->effect[i].value,
+					2
+				);
 				if(g)
 				{
-					byte b;
+					if (MonsterFlags(g->type, g->aiType) & MF_FLYING)
+						g->z = 0 * FIXAMT;
 
 					g->item=me->effect[i].value2;
 
-					if(g->aiType==MONS_SPHINX)
-						b=1;
-					else
-						b=0;
-
-					if(b)
+					bool isSphinx = g->aiType==MONS_SPHINX;
+					if(isSphinx)
 					{
 						SetMonsterFlags(MONS_SPHXARM1,MF_ONEFACE|MF_NOMOVE|MF_SPRITEBOX|MF_ENEMYWALK|MF_FREEWALK);
 						SetMonsterFlags(MONS_SPHXARM2,MF_ONEFACE|MF_NOMOVE|MF_SPRITEBOX|MF_ENEMYWALK|MF_FREEWALK);
 					}
 					TeleportGuy(g,me->effect[i].x,me->effect[i].y,map,(me->effect[i].flags&EF_NOFX));
-					if(b)
+					if(isSphinx)
 					{
 						SetMonsterFlags(MONS_SPHXARM1,MF_ONEFACE|MF_NOMOVE|MF_SPRITEBOX);
 						SetMonsterFlags(MONS_SPHXARM2,MF_ONEFACE|MF_NOMOVE|MF_SPRITEBOX);
 					}
 				}
 				break;
+			}
 			case EFF_LIGHT:
 				if(!(me->effect[i].flags&EF_PERMLIGHT))
 					map->BrightTorch(me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].value2);

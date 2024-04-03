@@ -2,6 +2,7 @@
 #include "mgldraw.h"
 #include "jamulfont.h"
 #include "jamulsound.h"
+#include "extern.h"
 
 #include "game.h"
 #include "editor.h"
@@ -13,11 +14,9 @@
 #include "badge.h"
 #include "randomizer.h"
 #include "log.h"
+#include "appdata.h"
 
-const char* AppdataFolderName()
-{
-	return PROJECT_NAME;
-}
+extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
 TASK(int) main(int argc, char *argv[])
 {
@@ -29,6 +28,8 @@ TASK(int) main(int argc, char *argv[])
 		if (!strcmp(argv[i], "window"))
 			windowedGame=true;
 	}
+
+	AppdataInit(GetHamSandwichMetadata());
 
 	DBG("b");
 	MGLDraw *mainmgl=new MGLDraw("Loonyland", SCRWID, SCRHEI, windowedGame);

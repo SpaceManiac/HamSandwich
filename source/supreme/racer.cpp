@@ -4,6 +4,7 @@
 #include "progress.h"
 #include "game.h"
 #include "goal.h"
+#include "steam.h"
 
 #define RACE_MAPWIDTH	(32)
 #define RACE_MAPHEIGHT	(32)
@@ -92,6 +93,8 @@ byte RaceDie(void)
 		coinsEarned=score/1000;
 		profile.progress.totalCoins+=coinsEarned;
 		MakeNormalSound(SND_BOMBBOOM);
+
+		SteamManager::Get()->UploadArcadeScore("arcade/cave_zoomer", score);
 		return 1;
 	}
 	racer.speed=minSpeed;
@@ -128,13 +131,10 @@ void RenderRacer(MGLDraw *mgl)
 
 void RenderRaceGame(MGLDraw *mgl)
 {
-	byte *scrn;
-	int pitch,spd;
-	char s[32];
+	int spd;
+	char s[64];
 
 	mgl->ClearScreen();
-	pitch=mgl->GetWidth();
-	scrn=mgl->GetScreen();
 
 	RenderRoad(mgl);
 

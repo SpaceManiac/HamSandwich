@@ -27,15 +27,15 @@ byte numQs[10];
 question_t *questions[10];	// 10 arrays, one for each level of question
 int levelValue[10]={1,5,10,25,45,75,120,200,320,500};
 
-static char introAns[4][8]={"Yes!","Sure!","Indeed!","No."};
-static char playedAns[4][16]={"Drat!","Darn!","Shoot!","Foiled again!"};
+static const char introAns[4][8]={"Yes!","Sure!","Indeed!","No."};
+static const char playedAns[4][16]={"Drat!","Darn!","Shoot!","Foiled again!"};
 
 static byte *backgd;
 static sprite_set_t *plSpr;
 static char msBright,msDBright;
 static int msx,msy,oldMsx,oldMsy;
 static char buf[384];
-static char *ans[4];
+static const char *ans[4];
 static byte whichIsRight,level;
 static byte cursor,lastQuestion;
 static int winnings;
@@ -71,7 +71,7 @@ byte GetQuestion(question_t *q,FILE *f)
 			q->wrongAns[q->wrong][strlen(q->wrongAns[q->wrong])-1]='\0';
 			q->wrong++;
 		}
-		else if(buf[0] == '\n' || buf[0] == '\n')	// dead end, bucko!
+		else if(buf[0] == '\r' || buf[0] == '\n')	// dead end, bucko!
 			return 1;
 	}
 	return 0;	// if you got here, the file ended
@@ -82,7 +82,7 @@ byte GetQuestions(void)
 	int i;
 	FILE *f;
 
-	f=AssetOpen("gallery/mrqs.bmp","rt");
+	f=AssetOpen("gallery/mrqs.bmp");
 	if(!f)
 		return 0;	// can't play without questions!
 
@@ -193,7 +193,7 @@ void PickQuestion(void)
 {
 	byte l;
 	byte q,a,w,prevW[2];
-	char *c;
+	const char *c;
 
 	if(Random(5)==0)
 		l=(level-1+Random(3));
@@ -450,7 +450,7 @@ void RenderMoron(MGLDraw *mgl)
 	if(msy>462)
 		msy=462;
 	plSpr->GetSprite(0)->DrawBright(msx,msy,mgl,msBright/2);
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 }
 
 //----------------

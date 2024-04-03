@@ -3,6 +3,7 @@
 #include "jamulfont.h"
 #include "jamulsound.h"
 #include "config.h"
+#include "extern.h"
 
 #include "game.h"
 #include "editor.h"
@@ -13,6 +14,7 @@
 #include "options.h"
 #include "sound.h"
 #include "music.h"
+#include "appdata.h"
 
 // SPISPOPD helper for atkins!
 /*
@@ -37,20 +39,23 @@ void GetPal(void)
 }
 */
 
-const char* AppdataFolderName()
-{
-	return PROJECT_NAME;
-}
+extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
 TASK(int) main(int argc, char* argv[])
 {
+	g_HamExtern.ChooseNextSong = ChooseNextSong;
+
 	bool windowedGame=false;
 	for (int i = 1; i < argc; ++i)
 	{
 		if (!strcmp(argv[i], "window"))
 			windowedGame=true;
 	}
+
+	AppdataInit(GetHamSandwichMetadata());
 	LoadConfig();
+	SetHamMusicEnabled(config.music);
+	SetJamulSoundEnabled(config.sound, config.numSounds);
 	MGLDraw *mainmgl=new MGLDraw("Loonyland 2", SCRWID, SCRHEI, windowedGame);
 
 	if(!mainmgl)

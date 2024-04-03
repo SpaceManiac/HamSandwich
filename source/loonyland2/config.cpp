@@ -23,7 +23,7 @@ void LoadConfig(void)
 	config.camera=1;
 	config.shading=1;
 
-	f=AppdataOpen("config.txt","rt");
+	f=AppdataOpen("config.txt");
 	if(!f)
 	{
 		return;
@@ -94,14 +94,4 @@ void LoadConfig(void)
 		}
 		fclose(f);
 	}
-}
-
-bool ConfigSoundEnabled()
-{
-	return config.sound;
-}
-
-int ConfigNumSounds()
-{
-	return config.numSounds;
 }

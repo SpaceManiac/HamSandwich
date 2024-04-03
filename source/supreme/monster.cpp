@@ -13,7 +13,7 @@
  -MT_ANIMAL	 -MT_HUMAN		 -MT_URBAN		-MT_AQUATIC	 -MT_UNDERSEA
  -MT_FLYING  -MT_HIGHTECH	 -MT_BITS
 */
-#include "monsterlist.cpp"
+extern monsterType_t monsType[NUM_MONSTERS]; // see monsterlist.cpp
 
 void InitMonsters(void)
 {
@@ -640,7 +640,7 @@ void FlailLock(Guy *me)
 // here be the AIs for each monster type
 //--------------------------------------------------------------------------------------
 
-#include "monsterai1.cpp"
-#include "monsterai2.cpp"
-#include "monsterai3.cpp"
-#include "monsterai4.cpp"
+#include "monsterai1.inl"
+#include "monsterai2.inl"
+#include "monsterai3.inl"
+#include "monsterai4.inl"

@@ -2,7 +2,6 @@
 #define NEWSKILL_H
 
 #include "mgldraw.h"
-#pragma pack(1)
 
 void InitNewSkill(byte sk);
 byte UpdateNewSkill(MGLDraw *mgl);

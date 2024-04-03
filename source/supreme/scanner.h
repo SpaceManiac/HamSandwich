@@ -4,8 +4,6 @@
 #include "mgldraw.h"
 #include "guy.h"
 
-#define MAX_SCAN 16
-
 void ScanGuy(Guy *g);
 
 byte UpdateScan(MGLDraw *mgl);

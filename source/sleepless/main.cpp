@@ -11,6 +11,7 @@
 #include "mgldraw.h"
 #include "jamulfont.h"
 #include "jamulsound.h"
+#include "extern.h"
 
 #include "game.h"
 #include "editor.h"
@@ -24,6 +25,7 @@
 #include "log.h"
 #include "netmenu.h"
 #include "internet.h"
+#include "appdata.h"
 #ifdef DEMO
 #include "nag.h"
 #endif
@@ -32,13 +34,13 @@
 #include <shellapi.h>
 #endif
 
-const char* AppdataFolderName()
-{
-	return PROJECT_NAME;
-}
+extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
 TASK(int) main(int argc, char* argv[])
 {
+	g_HamExtern.ChooseNextSong = ChooseNextSong;
+	g_HamExtern.SoundLoadOverride = SoundLoadOverride;
+
 	bool windowedGame=false;
 
 	for (int i = 1; i < argc; ++i)
@@ -47,7 +49,10 @@ TASK(int) main(int argc, char* argv[])
 			windowedGame=true;
 	}
 
+	AppdataInit(GetHamSandwichMetadata());
 	LoadConfig();
+	SetHamMusicEnabled(config.music);
+	SetJamulSoundEnabled(config.sound, config.numSounds);
 	MGLDraw *mainmgl=new MGLDraw("Sleepless Hollow", SCRWID, SCRHEI, windowedGame);
 	if(!mainmgl)
 		CO_RETURN 0;
@@ -96,32 +101,11 @@ TASK(int) main(int argc, char* argv[])
 #ifndef DEMO
 				shopping=0;
 				AWAIT NetMenu(mainmgl);
-
-				if(DoWebPage()==1)
-				{
-					LunaticExit();
-					delete mainmgl;
-#ifdef _WIN32
-					ShellExecuteA(NULL,"open","http://hamumu.com/scores.php",NULL,NULL,SW_SHOWNORMAL);
-#endif
-					CO_RETURN 0;
-				}
-				else if(DoWebPage()==2)
-				{
-					LunaticExit();
-					delete mainmgl;
-#ifdef _WIN32
-					ShellExecuteA(NULL,"open","http://hamumu.com/addon.php",NULL,NULL,SW_SHOWNORMAL);
-#endif
-					CO_RETURN 0;
-				}
 #else
 				LunaticExit();
 				delete mainmgl;
 				ExitLog();
-#ifdef _WIN32
-				ShellExecute(NULL,"open","http://hamumu.com/game.php?game=HOLLOW",NULL,NULL,SW_SHOWNORMAL);
-#endif
+				SDL_OpenURL("http://hamumu.com/game.php?game=HOLLOW");
 				CO_RETURN 0;
 #endif
 				break;

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en-us">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>HamSandwich</title>
+		<link rel="stylesheet" href="98/98.css" />
+		<link rel="stylesheet" href="ham.css" />
+		<link rel="icon" type="image/png" href="__HAMSANDWICH_ID__.ico"/>
+	</head>
+	<body class="stacker">
+		<div class="window">
+			<div class="title-bar">
+				<div class="title-bar-text">
+					<img class="title-bar-icon" src="__HAMSANDWICH_ID__.ico" onerror="this.remove()">
+					<span id="title"></span>
+					<span id="spinner">&mdash;</span>
+					<span id="status"></span>
+				</div>
+				<div class="title-bar-controls">
+					<button class="js-menu-open" aria-label="Help" onclick="HamSandwich.toggleMenu()"></button>
+					<button class="js-fullscreen" aria-label="Maximize"></button>
+					<button class="js-close" aria-label="Close"></button>
+				</div>
+			</div>
+			<div id="game" class="canvas-sized" style="background: black">
+				<div id="game" class="canvas-stacker">
+					<div class="canvas-notice">
+						<img src="__HAMSANDWICH_ID__.splash.jpg" onerror="this.remove()" />
+					</div>
+					<div class="canvas-notice">
+						<div id="runstatus-notice" hidden><span></span></div>
+					</div>
+					<noscript class="canvas-notice">
+						<div><span>JavaScript is required to play this game.</span></div>
+					</noscript>
+					<canvas class="canvas" id="canvas" width="640" height="480" oncontextmenu="event.preventDefault()"></canvas>
+				</div>
+			</div>
+		</div>
+		<div class="window" id="menu" hidden>
+			<div class="title-bar">
+				<div class="title-bar-text">
+					Menu
+				</div>
+				<div class="title-bar-controls">
+					<button class="js-menu-close" aria-label="Close" onclick="HamSandwich.toggleMenu()"></button>
+				</div>
+			</div>
+			<div class="window-body-scrollable">
+				<div class="window-body">
+					<fieldset>
+						<legend>Save management</legend>
+						<button id="export">Export ZIP</button>
+					</fieldset>
+					<fieldset id="installer-upload">
+						<legend>Import assets</legend>
+						<p>The game uses assets from the official release. If they failed to be fetched automatically, you can provide your own copy here.</p>
+						<table class="flat-table"></table>
+					</fieldset>
+					<fieldset>
+						<legend>Credits</legend>
+						<table class="flat-table squeeze-table">
+							<tr><td>Original games</td><td><a href="https://hamumu.com/" target="_blank">Hamumu Games, Inc.</a></td></tr>
+							<tr><td>Web ports</td><td><a href="https://github.com/SpaceManiac/HamSandwich/" target="_blank">HamSandwich project</a></td></tr>
+							<tr><td>Splash art</td><td><a href="https://twitter.com/benrose_hsb" target="_blank">Ben Rose</a></td></tr>
+							<tr style="height: 8px"></tr>
+							<tr><td valign="top">ZIP file tool</td><td>
+								<a href="https://github.com/Stuk/jszip/blob/main/LICENSE.markdown" target="_blank">jszip</a><br>
+								<a href="https://github.com/nodeca/pako/blob/master/LICENSE" target="_blank">pako</a>
+							</td></tr>
+							<tr style="height: 8px"></tr>
+							<tr><td valign="top">Windows 98 theme</td><td>
+								<a href="98/98.license.txt" target="_blank">98.css</a><br>
+								<a href="98/ms_sans_serif.readme.txt" target="_blank">MS Sans Serif</a><br>
+								<a href="98/ms_sans_serif_bold.readme.txt" target="_blank">MS Sans Serif Bold</a>
+							</td></tr>
+						</table>
+					</fieldset>
+				</div>
+			</div>
+		</div>
+
+		<script src="jszip.min.js"></script>
+		<script id="ham-meta" type="text/json">__HAMSANDWICH_METADATA__</script>
+		<script src="ham.js"></script>
+		<script src="__HAMSANDWICH_ID__.js"></script>
+	</body>
+</html>

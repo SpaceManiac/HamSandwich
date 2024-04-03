@@ -1128,8 +1128,6 @@ void HealRing(byte color,int x,int y,int z,byte num,byte force)
 			particleList[i]->life=50;
 			particleList[i]->ty=y;
 			a+=aPlus;
-			if(a>255)
-				a-=256;
 			if(!--num)
 				break;
 		}

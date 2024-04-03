@@ -3,7 +3,6 @@
 
 #include "winpch.h"
 #include "jamulspr.h"
-#pragma pack(1)
 
 enum itemList {
 	IT_NONE,
@@ -248,12 +247,14 @@ enum itemList {
 #define IF_BOTTOM		2048	// draw under everything else, even shadows
 #define IF_STEAM		4096	// it hurts you if you have no asbestos.  If you have asbestos, it is an exit to a specific place
 
+#pragma pack(push, 1)
 typedef struct item_t
 {
 	char name[32];
 	int sprset,rate,spr,spr2;
 	dword flags;
 } item_t;
+#pragma pack(pop)
 
 class Map;
 extern item_t itemInfo[MAX_ITMS];

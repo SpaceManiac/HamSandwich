@@ -282,7 +282,7 @@ void GetSavesForMenu(void)
 	for(i=0;i<5;i++)
 	{
 		sprintf(txt,"save%d.sav",i+1);
-		f=AppdataOpen(txt,"rb");
+		f=AppdataOpen(txt);
 		if(!f)
 		{
 			pct=0.0;
@@ -447,6 +447,18 @@ void DiffChooseDisplay(MGLDraw *mgl)
 	}
 }
 
+void CharacterChooseDisplay(MGLDraw* mgl)
+{
+	if (!IsAnyCharacterUnlocked())
+		return;
+
+	char playerName[PC_MAX][9] = {"Loony","Bonkula","Toad","Swampdog","Witch","Werewolf","Summony","Ninja"};
+
+	//PrintGlow(280, 200, "^", 0, 2);
+	PrintGlow(200, 200, "Character:", 0, 2);
+	PrintGlow(200, 260, "Use up and down to select a character.", 0, 1);
+	CenterPrintGlow(440, 200, playerName[GetCurrentPC()], 0, 2);
+}
 
 void LoadGameDisplay(MGLDraw *mgl)
 {
@@ -584,7 +596,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		c=mgl->LastKeyPressed();
 		if(c==27)
 			return MENU_EXIT+1;
-#ifdef _DEBUG
+#ifndef NDEBUG
 		if(c=='e')
 			return MENU_EDITOR+1;
 #endif
@@ -691,6 +703,16 @@ byte ChooseDiffUpdate(int *lastTime,MGLDraw *mgl)
 				opt.difficulty++;
 			MakeNormalSound(SND_MENUCLICK);
 		}
+		if ((c & CONTROL_DN) && !(oldc & CONTROL_DN) && IsAnyCharacterUnlocked())
+		{
+			NextCharacter();
+			MakeNormalSound(SND_MENUCLICK);
+		}
+		if ((c & CONTROL_UP) && !(oldc & CONTROL_UP) && IsAnyCharacterUnlocked())
+		{
+			PrevCharacter();
+			MakeNormalSound(SND_MENUCLICK);
+		}
 
 		if((c&(CONTROL_B1|CONTROL_B2)) && !(oldc&(CONTROL_B1|CONTROL_B2)))
 		{
@@ -784,6 +806,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 		{
 			b=ChooseDiffUpdate(&lastTime,mgl);
 			DiffChooseDisplay(mgl);
+			CharacterChooseDisplay(mgl);
 			if(b==0)
 			{
 				cursor=0;

@@ -1,110 +1,16 @@
 #include "winpch.h"
 #include "levelscan.h"
+#include <algorithm>
 #include "monster.h"
 #include "sound.h"
 #include "vars.h"
 #include "shop.h"
 #include "control.h"
 #include "appdata.h"
-#include <algorithm>
+#include "bullet.h"
+#include "player.h"
 
 static FILE *scanF;
-
-static char lvlFlagName[][16]={
-	"Snowing",
-	"Raining",
-	"Hub Level",
-	"Secret Level",
-	"Torch Lit",
-	"Lantern Lit",
-	"Star Background",
-	"Underwater",
-	"Underlava",
-	"Stealth",
-};
-
-static char wpnName[][16]={
-	"None",
-	"Missiles",
-	"AK-8087",
-	"Bombs",
-	"Toaster",
-	"Power Armor",
-	"Big Axe",
-	"Zap Wand",
-	"Spears",
-	"Machete",
-	"Mines",
-	"Turrets",
-	"Mind Control",
-	"Reflect",
-	"Jetpack",
-	"Swapgun",
-	"Torch",
-	"Scanner",
-	"Mini-Sub",
-	"Freeze Ray",
-	"Stopwatch"};
-
-static char bulletName[][20]={
-	"None",
-	"Hammer",
-	"Bouncy Hammer",
-	"Missile",
-	"Flame",
-	"AK-8087 Shot",
-	"Acid",
-	"Cherry Bomb",
-	"Explosion",
-	"Red Bullet",
-	"Megabeam Source",
-	"Megabeam Part",
-	"Megabeam Endo",
-	"Evil Flame",
-	"Spore",
-	"Mushroom",
-	"Grenade",
-	"Grenade Boom",
-	"SDZ Shockwave",
-	"Missile Boom",
-	"Snowball",
-	"Big Snowball",
-	"Ice Spike",
-	"Rock",
-	"Cactus Spine",
-	"Evil Hammer",
-	"Power Shell",
-	"Big Axe",
-	"Lightning",
-	"Spear",
-	"Machete",
-	"Landmine",
-	"Evil Spear",
-	"Orbiter",
-	"Green Bullet",
-	"Ball Lightning",
-	"Zap Wand Shock",
-	"Mind Control",
-	"Reflect Shield",
-	"Swap Gun",
-	"Water Shot",
-	"Orbit Bomber",
-	"Harpoon",
-	"Scanner",
-	"Scanner Shot",
-	"Torpedo",
-	"Dirt Spike",
-	"Paper",
-	"Scanner Lock",
-	"Bubble",
-	"Freeze Ray",
-	"Bubble Pop",
-	"Harmless Boom",
-	"Cheese Hammer",
-	"Evil Freeze",
-	"Lunachick Ray",
-	"Bouncy Lunachick"
-};
 
 void PrintFX(word flags)
 {
@@ -233,13 +139,7 @@ void Scan_Trigger(world_t *world,Map *map,int num,trigger_t *me,char *effText)
 			fprintf(scanF,"If any %s are in (%03d,%03d)-(%03d,%03d)",GetItem(me->value)->name,me->x,me->y,((word)me->value2)%256,((word)me->value2)/256);
 			break;
 		case TRG_DIFFICULTY:
-			fprintf(scanF,"If difficulty is ");
-			if(me->value==0)
-				fprintf(scanF,"Normal");
-			else if(me->value==1)
-				fprintf(scanF,"Hard");
-			else
-				fprintf(scanF,"Lunatic");
+			fprintf(scanF,"If difficulty is %s", GetDifficultyName(me->value));
 			PrintLessMore(me->flags);
 			break;
 		case TRG_KEYPRESS:
@@ -274,19 +174,7 @@ void Scan_Trigger(world_t *world,Map *map,int num,trigger_t *me,char *effText)
 			}
 			break;
 		case TRG_PLAYAS:
-			fprintf(scanF,"If player is playing as ");
-			if(me->value==PLAY_BOUAPHA)
-				fprintf(scanF,"Bouapha");
-			else if(me->value==PLAY_LUNATIC)
-				fprintf(scanF,"Lunatic");
-			else if(me->value==PLAY_HAPPY)
-				fprintf(scanF,"Happy Stick Man");
-			else if(me->value==PLAY_SHROOM)
-				fprintf(scanF,"Shtupid Shroom");
-			else if(me->value==PLAY_LUNACHIK)
-				fprintf(scanF,"Lunachick");
-			else if(me->value==PLAY_MECHA)
-				fprintf(scanF,"Mechabouapha");
+			fprintf(scanF,"If player is playing as %s", GetPlayableCharacterName(me->value));
 			break;
 		case TRG_MONSCOLOR:
 			fprintf(scanF,"If %s at (%03d,%03d) is painted %d",MonsterName(me->value),me->x,me->y,me->value2);
@@ -300,7 +188,7 @@ void Scan_Trigger(world_t *world,Map *map,int num,trigger_t *me,char *effText)
 			PrintLessMore(me->flags);
 			break;
 		case TRG_BULLETRECT:
-			fprintf(scanF,"If any %s are in (%03d,%03d)-(%03d,%03d)",bulletName[me->value],me->x,me->y,((word)me->value2)%256,((word)me->value2)/256);
+			fprintf(scanF,"If any %s are in (%03d,%03d)-(%03d,%03d)",BulletName(me->value),me->x,me->y,((word)me->value2)%256,((word)me->value2)/256);
 			break;
 	}
 	if(me->flags&TF_AND)
@@ -459,7 +347,7 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
 			PrintFX(me->flags);
 			break;
 		case EFF_LEVELFLAG:
-			fprintf(scanF,"Change level flag %s to ",lvlFlagName[me->value]);
+			fprintf(scanF,"Change level flag %s to ",MapFlagName(me->value));
 			switch(me->value2)
 			{
 				case 0:
@@ -487,7 +375,7 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
 			PrintFX(me->flags);
 			break;
 		case EFF_WEAPON:
-			fprintf(scanF,"Force player's weapon to %s and ",wpnName[me->value]);
+			fprintf(scanF,"Force player's weapon to %s and ",GetWeaponName(me->value));
 			if(me->value2==0)
 				fprintf(scanF,"don't");
 			else
@@ -539,19 +427,7 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
 			fprintf(scanF,"Change brightness of %s at (%03d,%03d) to %d\n",MonsterName(me->value),me->x,me->y,me->value2);
 			break;
 		case EFF_PLAYAS:
-			fprintf(scanF,"Force player to play as ");
-			if(me->value==PLAY_BOUAPHA)
-				fprintf(scanF,"Bouapha\n");
-			else if(me->value==PLAY_LUNATIC)
-				fprintf(scanF,"Lunatic\n");
-			else if(me->value==PLAY_HAPPY)
-				fprintf(scanF,"Happy Stick Man\n");
-			else if(me->value==PLAY_SHROOM)
-				fprintf(scanF,"Shtupid Shroom\n");
-			else if(me->value==PLAY_LUNACHIK)
-				fprintf(scanF,"Lunachick\n");
-			else if(me->value==PLAY_MECHA)
-				fprintf(scanF,"Mechabouapha\n");
+			fprintf(scanF,"Force player to play as %s\n", GetPlayableCharacterName(me->value));
 			break;
 		case EFF_MONSGRAPHICS:
 			fprintf(scanF,"Change graphics of %s at (%03d,%03d) to %s",MonsterName(me->value),me->x,me->y,me->text);
@@ -569,7 +445,7 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
 			fprintf(scanF," varbar to %s (color %d)\n",VarName(me->value),((word)me->value2)%256);
 			break;
 		case EFF_MAKEBULLET:
-			fprintf(scanF,"Summon bullet %s at (%03d,%03d) facing \"%s\"\n",bulletName[me->value2], me->x, me->y, me->text);
+			fprintf(scanF,"Summon bullet %s at (%03d,%03d) facing \"%s\"\n",BulletName(me->value2), me->x, me->y, me->text);
 			break;
 		default:
 			fprintf(scanF,"Unhandled effect type %d\n",me->type);
@@ -624,7 +500,7 @@ byte Scan_Level(world_t *world,Map *map)
 	word itemCount[LEN];
 	int totalMons;
 
-	scanF=AppdataOpen("level_scan.txt","wt");
+	scanF=AppdataOpen_Write("level_scan.txt");
 	if(!scanF)
 		return 0;
 
@@ -717,7 +593,7 @@ byte Scan_Vars(world_t *world)
 {
 	int i,j,k;
 
-	scanF=AppdataOpen("var_scan.txt","wt");
+	scanF=AppdataOpen_Write("var_scan.txt");
 	if(!scanF)
 		return 0;
 
@@ -742,11 +618,13 @@ byte Scan_Vars(world_t *world)
 					{
 						case TRG_COMPVAR: // value is one, compared to value2
 							var_checks[world->map[i]->special[j].trigger[k].value2]++;
+							[[fallthrough]];
 						case TRG_VAR:	// value
 							var_checks[world->map[i]->special[j].trigger[k].value]++;
 							break;
 						case TRG_EQUVAR:	// value, and a text thing
 							var_checks[world->map[i]->special[j].trigger[k].value]++;
+							[[fallthrough]];
 						case TRG_EQUATION:	// text thing
 							Find_Text_Vars(world->map[i]->special[j].effect[k].text,1);
 							break;

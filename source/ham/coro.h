@@ -11,9 +11,8 @@ namespace coro {
 
 inline void next_frame() {}
 inline void launch(std::function<void()> entry_point) { entry_point(); }
-inline int main() { return 0; }
 
-};  // namespace coro
+}  // namespace coro
 
 #define TASK(TY) TY
 #define AWAIT

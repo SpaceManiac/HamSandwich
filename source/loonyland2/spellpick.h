@@ -2,7 +2,6 @@
 #define SPELLPICK_H
 
 #include "mgldraw.h"
-#pragma pack(1)
 
 void InitSpellPick(void);
 byte UpdateSpellPick(MGLDraw *mgl);

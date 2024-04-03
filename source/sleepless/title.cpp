@@ -131,7 +131,6 @@ char victoryTxt[][64]={
 #define END_OF_VICTORY 480*2+50
 
 sprite_set_t *planetSpr;
-static int numRunsToMakeUp;
 byte pickerpos;
 char pickeroffset;
 byte offsetdir;
@@ -140,13 +139,12 @@ byte curCustom;
 static byte oldc=0;
 mfont_t pickerFont;
 
-static byte keyAnim=0;
 char lvlName[32];
 
 byte starColorTable[]={214,81,63,49,33,21,32,83,93};
 
 byte demoTextCounter;
-static byte canEditor;
+static byte canEditor=1;
 
 static byte *backgd;
 static int titleRuns;
@@ -176,7 +174,7 @@ void MainMenuDisplay(MGLDraw *mgl)
 #ifdef DEMO
 	Print(350,170,"DEMO VERSION!",10,0);
 #endif
-#ifdef _DEBUG
+#ifndef NDEBUG
 	Print(300,170,"DEBUG VERSION!",10,0);
 #endif
 
@@ -299,17 +297,6 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 
 	for(i=0;i<480;i++)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
-
-	canEditor=0;
-	FILE* f = AppdataOpen("profiles/editor.dat", "rt");
-	if (f)
-	{
-		canEditor=1;
-		fclose(f);
-	}
-#ifdef _DEBUG
-	canEditor=1;
-#endif
 
 	mgl->LastKeyPressed();
 	mgl->MouseTap();

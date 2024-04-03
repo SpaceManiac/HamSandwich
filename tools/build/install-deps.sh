@@ -2,26 +2,35 @@
 # install-deps.sh - install dependencies for the current platform
 set -euo pipefail
 
+if test "${HSW_NO_INSTALL_DEPS:-}"; then
+	exit
+fi
+
 mkdir -p "build"
 
 # Check for supported system
-if [ "${MSYSTEM:-}" ]; then
-	if [ "$MSYSTEM" = "MINGW32" ]; then
+if test "${MSYSTEM:-}"; then
+	if test "$MSYSTEM" = "MINGW32"; then
 		SYS=mingw32
-	elif [ "$MSYSTEM" = "MINGW64" ]; then
+	elif test "$MSYSTEM" = "MINGW64"; then
 		SYS=mingw64
 	else
-		echo "The project cannot be built in Cygwin mode. Return to the Start Menu"
-		echo "and open 'MSYS2 MinGW 32-bit' or 'MSYS2 MinGW 64-bit'."
+		echo "The project cannot be built in '$MSYSTEM' mode. Return to the Start Menu and open 'MSYS2 MinGW x86' or 'MSYS2 MinGW x64'." >&2
 		exit 1
 	fi
 elif command -v apt-get >/dev/null 2>&1; then
 	SYS=ubuntu
 elif command -v pacman >/dev/null 2>&1; then
 	SYS=arch
+elif command -v apk >/dev/null 2>&1; then
+	SYS=alpine
+elif command -v port >/dev/null 2>&1; then
+	SYS=macports
+elif command -v brew >/dev/null 2>&1; then
+	SYS=homebrew
 else
 	WARNFILE="build/.install-deps-warning"
-	if [ ! -f "$WARNFILE" ]; then
+	if ! test -f "$WARNFILE"; then
 		echo "Automatic dependency installation is not available for your platform."
 		echo "Press Enter to continue anyways, or Ctrl-C to cancel."
 		read -r
@@ -31,88 +40,131 @@ else
 fi
 
 # Helper functions
-packages() {
-	local CMD="$1"
-	shift
-	local FNAME="build/.packages-$SYS"
-	if [ ! -f "$FNAME" ] || [ "$(cat $FNAME)" != "$*" ]; then
-		echo "==== Updating system packages ===="
-		echo "$CMD" "$@"
-		$CMD "$@"
-		echo "$*" >"$FNAME"
-	fi
+show_banner() {
+	echo "==== Installing missing dependencies ===="
 }
 
-premake5_linux() {
-	# Download Premake5 binary
-	if [ ! -f "build/premake5" ]; then
-		echo "==== Downloading premake5 binary ===="
-		wget -q -O "build/premake5.tar.gz" "https://github.com/premake/premake-core/releases/download/v5.0.0-alpha14/premake-5.0.0-alpha14-linux.tar.gz"
-		sha256sum -c <<<'5f3fe8731b52270a5222e698ee1144e2474cf17c02fcadc8727796b918b9d2de *build/premake5.tar.gz'
-		tar -C "build/" -x -f 'build/premake5.tar.gz'
-		rm "build/premake5.tar.gz"
-	fi
+echo_and() {
+	echo + "$@"
+	"$@"
 }
 
-deps_mingw_generic() {
-	# Download Premake5 binary
-	if [ ! -f "build/premake5" ]; then
-		echo "==== Downloading premake5 binary ===="
-		wget -q -O "build/premake5.zip" "https://github.com/premake/premake-core/releases/download/v5.0.0-alpha14/premake-5.0.0-alpha14-windows.zip"
-		sha256sum -c <<<'070419eedbb4c8737664d05f0e3701055741014c1135a9214c35d6feb03724a7 *build/premake5.zip'
-		7z x -o"build/" "build/premake5.zip"
-		rm "build/premake5.zip"
-	fi
-
-	# Download Innoextract binary
-	if [ ! -f "build/innoextract" ]; then
-		echo "==== Downloading Innoextract binary ===="
-		wget -q -O "build/innoextract.zip" "https://constexpr.org/innoextract/files/innoextract-1.7-windows.zip"
-		sha256sum -c <<<'9a0ede947448132c9a8fa390ae92da8fb25a5dffc666306f777e611b60b82fbd *build/innoextract.zip'
-		7z x -o"build/" -i'!innoextract.exe' "build/innoextract.zip"
-		rm "build/innoextract.zip"
-	fi
+pacman_needed() {
+	env LC_ALL=C pacman -Q "$@" 2>&1 \
+	| sed -nr "s/^error: package '(.+)' was not found\$/\1/p" \
+	|| true
 }
 
+# Systems
 deps_mingw32() {
-	# Install system packages
-	packages 'pacman -S --needed --noconfirm --quiet' \
-		p7zip make \
-		mingw-w64-i686-binutils mingw-w64-i686-gcc mingw-w64-i686-zlib \
-		mingw-w64-i686-SDL2 mingw-w64-i686-SDL2_mixer mingw-w64-i686-SDL2_image
-
-	deps_mingw_generic
+	local wanted=(
+		make
+		mingw-w64-i686-cmake
+		mingw-w64-i686-ninja
+		mingw-w64-i686-gcc
+	)
+	local needed
+	needed=$(pacman_needed "${wanted[@]}")
+	if test "$needed"; then
+		show_banner
+		# shellcheck disable=SC2086
+		echo_and pacman -S --noconfirm $needed
+	fi
 }
 
 deps_mingw64() {
-	# Install system packages
-	packages 'pacman -S --needed --noconfirm --quiet' \
-		p7zip make \
-		mingw-w64-x86_64-binutils mingw-w64-x86_64-gcc mingw-w64-x86_64-zlib \
-		mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-SDL2_image
-
-	deps_mingw_generic
+	local wanted=(
+		make
+		mingw-w64-x86_64-cmake
+		mingw-w64-x86_64-ninja
+		mingw-w64-x86_64-gcc
+	)
+	local needed
+	needed=$(pacman_needed "${wanted[@]}")
+	if test "$needed"; then
+		show_banner
+		# shellcheck disable=SC2086
+		echo_and pacman -S --noconfirm $needed
+	fi
 }
 
+# shellcheck disable=SC2086
 deps_ubuntu() {
-	packages 'sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes' \
-		p7zip innoextract \
-		make g++ zlib1g-dev \
-		libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev \
-		python3-pip python3-pil
-
-	premake5_linux
+	local wanted=(
+		unzip
+		make
+		g++
+		patchelf
+		zlib1g-dev
+		libsdl2-dev
+		libsdl2-mixer-dev
+		libsdl2-image-dev
+		libsdl2-ttf-dev
+	)
+	local needed
+	needed=$(
+		env LC_ALL=C dpkg-query -W "${wanted[@]}" \
+		2>&1 | sed -nr 's/^dpkg-query: no packages found matching (.+)$/\1/p' || true
+	)
+	if test "$needed"; then
+		show_banner
+		echo "+ sudo apt-get update && sudo apt-get install" $needed
+		sudo DEBIAN_FRONTEND=noninteractive apt-get update
+		sudo DEBIAN_FRONTEND=noninteractive apt-get install $needed
+	fi
 }
 
 deps_arch() {
-	packages 'sudo pacman -S --needed --quiet' \
-		p7zip wget innoextract \
-		make gcc lib32-gcc-libs lib32-zlib \
-		lib32-sdl2 lib32-sdl2_image lib32-sdl2_mixer \
-		python-pip
+	local wanted=(
+		unzip
+		make
+		gcc
+		gcc-libs
+		patchelf
+		zlib
+		sdl2
+		sdl2_image
+		sdl2_mixer
+		sdl2_ttf
+	)
+	local needed
+	needed=$(pacman_needed "${wanted[@]}")
+	if test "$needed"; then
+		show_banner
+		# shellcheck disable=SC2086
+		echo_and sudo pacman -S $needed
+	fi
+}
 
-	premake5_linux
+deps_alpine() {
+	# Note: non-autoinstalled dependency on `bash` and `sudo` packages.
+	wanted=(
+		make
+		g++
+		patchelf
+		zlib-dev
+		sdl2-dev
+		sdl2_mixer-dev
+		libvorbis-dev
+		sdl2_image-dev
+		libpng-dev
+		sdl2_ttf-dev
+		openssl-dev
+	)
+	if ! apk info -e "${wanted[@]}" >/dev/null; then
+		show_banner
+		echo_and sudo apk add -t hamsandwich-deps "${wanted[@]}"
+	fi
+	# Use `sudo apk del hamsandwich-deps` to revert.
+}
+
+deps_macports() {
+	:
+}
+
+deps_homebrew() {
+	:
 }
 
 # Install dependencies for the correct system
-deps_$SYS
+deps_"$SYS"

@@ -1,0 +1,23 @@
+#!/bin/bash
+# Run a command in a container built from the local Dockerfile.
+# Use rootless Podman to avoid permission conflicts with the host.
+# Make it interactive and use an init to allow input and ^C to terminate.
+# Remove the container afterwards to avoid accruing garbage.
+set -euo pipefail
+ttyopts=()
+steamopts=()
+if test -t 0; then
+	ttyopts=(--interactive --tty)
+fi
+if test -L external/steamworks_sdk; then
+	steamopts=(--volume "$(readlink -f external/steamworks_sdk):$(readlink external/steamworks_sdk)")
+fi
+id="$(podman build --format=docker --quiet tools/windows-cross)"
+exec podman run \
+	--rm \
+	--volume "$PWD":"$PWD" \
+	"${steamopts[@]}" \
+	--workdir "$PWD" \
+	"${ttyopts[@]}" --init \
+	"$id" \
+	"$@"

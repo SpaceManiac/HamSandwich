@@ -1,0 +1,17 @@
+STOCKBOY SOURCE CODE LICENSE
+
+The Stockboy source code is provided AS-IS, and you use it at your own risk.  If it blows up your
+computer, that's your problem.
+
+You may use the source code for any legal purpose.  It would be nice to give credit to Hamumu Software
+if you did, but it's not required.
+
+THE MUSIC, GRAPHICS, AND SOUND EFFECTS ARE NOT FREE TO USE.  They are copyrighted by Hamumu Software
+and you may not distribute them in any way.  This includes the music, graphics, and sound effects contained in
+the demo version of the game.  If you wish to create something using this source code, you must create your 
+own graphics, sound, and music, or distribute an EXE that people who already own the game or have the demo
+can use.
+
+YOU MAY NOT DISTRIBUTE THE MUSIC, GRAPHICS, AND SOUND EFFECTS OF STOCKBOY, INCLUDING THOSE INCLUDED IN THE DEMO.
+
+The demo may be distributed freely, but only in full unmodified form, without added files.
