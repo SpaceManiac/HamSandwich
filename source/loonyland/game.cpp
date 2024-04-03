@@ -81,6 +81,7 @@ byte GetCurSong(void)
 byte InitLevel(byte map)
 {
 	JamulSoundPurge();	// each level, that should be good
+	KillSong();
 
 	if(opt.cheats[CH_VINTAGE])
 		GreyPalette(gamemgl);
@@ -313,13 +314,16 @@ byte LunaticRun(int *lastTime)
 		{
 			switch(UpdatePauseMenu(gamemgl))
 			{
-				case 0:
+				case PauseMenuResult::Continue:
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
+					// try to prevent losing your gems if using controller (B) instead of keyboard (Esc)
+					player.reload = 20;
+					player.wpnReload = 20;
 					break;
-				case 2:
+				case PauseMenuResult::Paused:
 					break;
-				case 3:
+				case PauseMenuResult::GiveUp:
 					if(mapNum)
 						mapToGoTo=0;
 					else
@@ -327,18 +331,18 @@ byte LunaticRun(int *lastTime)
 					lastKey=0;
 					return LEVEL_ABORT;
 					break;
-				case 4:
+				case PauseMenuResult::Quit:
 					mapToGoTo=255;
 					lastKey=0;
 					return WORLD_QUITGAME;	// dump out altogether
 					break;
-				case 5:
+				case PauseMenuResult::WarpToLooniton:
 					mapToGoTo = 0;
 					lastKey = 0;
 					return LEVEL_ABORT;
 					break;
 			}
-			
+
 		}
 		else if(gameMode==GAMEMODE_PIC)	// gamemode_pic
 		{
@@ -490,6 +494,12 @@ void HandleKeyPresses(void)
 //#endif
 }
 
+void PauseGame()
+{
+	InitPauseMenu();
+	gameMode = GAMEMODE_MENU;
+}
+
 TASK(byte) PlayALevel(byte map)
 {
 	int lastTime=1;
@@ -514,6 +524,12 @@ TASK(byte) PlayALevel(byte map)
 
 	PrepGuys(curMap);
 
+	SetAreaName(&curWorld);
+	if ((player.worldNum == WORLD_NORMAL || player.worldNum == WORLD_REMIX) && (player.cheatsOn & PC_HARDCORE) && player.lastSave == 255)
+	{
+		BumpSaveGem();
+	}
+
 	tl=0;
 	while(exitcode==LEVEL_PLAYING)
 	{
@@ -524,10 +540,9 @@ TASK(byte) PlayALevel(byte map)
 		LunaticDraw();
 		AWAIT gamemgl->Flip();
 
-		if(lastKey==27 && gameMode==GAMEMODE_PLAY)
+		if((lastKey==27 || (GetGamepadButtons()&(1<<SDL_CONTROLLER_BUTTON_START))) && gameMode==GAMEMODE_PLAY)
 		{
-			InitPauseMenu();
-			gameMode=GAMEMODE_MENU;
+			PauseGame();
 		}
 
 		if(!gamemgl->Process())
@@ -630,6 +645,7 @@ TASK(byte) LunaticWorld(byte world,const char *worldName)
 				AWAIT VictoryText(gamemgl);
 				AWAIT Credits(gamemgl,0);
 				JamulSoundPurge();
+				KillSong();
 				AWAIT EndGameTally(gamemgl);
 				mapNum=0;
 			}
@@ -674,7 +690,7 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 	while(1)
 	{
 		loadGame=load;
-		SetNoSaving(0);
+		SetNoSaving(false);
 		switch(player.worldNum)
 		{
 			case WORLD_NORMAL:

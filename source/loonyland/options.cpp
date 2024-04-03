@@ -1,4 +1,5 @@
 #include "options.h"
+#include <map>
 #include "mgldraw.h"
 #include "badge.h"
 #include "control.h"
@@ -7,10 +8,14 @@
 #include "title.h"
 #include "plasma.h"
 #include "appdata.h"
+#include "steam.h"
+#include "hammusic.h"
 #include "randomizer.h"
 
+//static_assert(sizeof(options_t) == 6364, "Save compatibility at risk");
 
-#include <map>
+options_t opt;
+
 
 static byte cursor;
 static byte oldc;
@@ -18,7 +23,35 @@ static dword oldBtn;
 static byte controlX,controlY;
 static byte optMode;
 
-options_t opt;
+static const byte DEFAULT_VOLUME = 128;
+static const byte volumeSpot[]={0,26,51,77,102,128,153,179,204,230,255};
+static byte NextVolumeSpot(byte v)
+{
+	int i;
+
+	for(i=0;i<10;i++)
+	{
+		if(v==volumeSpot[i])
+			return volumeSpot[i+1];
+	}
+	if(v==volumeSpot[10])
+		return volumeSpot[0];
+
+	return 0;
+}
+static byte PrevVolumeSpot(byte v)
+{
+	int i;
+
+	for(i=1;i<11;i++)
+	{
+		if(v==volumeSpot[i])
+			return volumeSpot[i-1];
+	}
+	if(v==volumeSpot[0])
+		return volumeSpot[10];
+	return 0;
+}
 
 void InitOptionsMenu(void)
 {
@@ -83,9 +116,14 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 					switch(cursor)
 					{
 						case 0:
-							opt.sound=1-opt.sound;
+							opt.sound = PrevVolumeSpot(opt.sound);
+							JamulSoundVolume(opt.sound);
+							SetMusicVolume(opt.sound);
 							if(opt.sound==0)
+							{
 								JamulSoundPurge();
+								KillSong();
+							}
 							else
 								LoopingSound(SND_HAMUMU);
 							MakeNormalSound(SND_MENUSELECT);
@@ -98,7 +136,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 							MakeNormalSound(SND_MENUSELECT);
 							// diffy
 							opt.difficulty--;
-							if(opt.difficulty>5)
+							if(opt.difficulty>=NUM_DIFFICULTY)
 								opt.difficulty=0;
 							break;
 					}
@@ -108,9 +146,14 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 					switch(cursor)
 					{
 						case 0:
-							opt.sound=1-opt.sound;
+							opt.sound = NextVolumeSpot(opt.sound);
+							JamulSoundVolume(opt.sound);
+							SetMusicVolume(opt.sound);
 							if(opt.sound==0)
+							{
 								JamulSoundPurge();
+								KillSong();
+							}
 							else
 								LoopingSound(SND_HAMUMU);
 							MakeNormalSound(SND_MENUSELECT);
@@ -123,8 +166,8 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 							MakeNormalSound(SND_MENUSELECT);
 							// diffy
 							opt.difficulty++;
-							if(opt.difficulty>5)
-								opt.difficulty=5;
+							if(opt.difficulty>=NUM_DIFFICULTY)
+								opt.difficulty=NUM_DIFFICULTY-1;
 							break;
 					}
 				}
@@ -133,9 +176,14 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 					switch(cursor)
 					{
 						case 0:
-							opt.sound=1-opt.sound;
+							opt.sound = NextVolumeSpot(opt.sound);
+							JamulSoundVolume(opt.sound);
+							SetMusicVolume(opt.sound);
 							if(opt.sound==0)
+							{
 								JamulSoundPurge();
+								KillSong();
+							}
 							else
 								LoopingSound(SND_HAMUMU);
 							MakeNormalSound(SND_MENUSELECT);
@@ -168,7 +216,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				c=mgl->LastKeyPressed();
 				c2=GetControls()|GetArrows();
 
-				if(c==27)
+				if(c==27 || (GetGamepadButtons() & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START))))
 				{
 					optMode=0;
 					controlX=10;
@@ -207,7 +255,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 					if(controlX>2)
 						controlX=0;
 				}
-				if((c2&(CONTROL_B1|CONTROL_B2|CONTROL_B3)) && (!(oldc&(CONTROL_B1|CONTROL_B2|CONTROL_B3))))
+				if((c2&(CONTROL_B1)) && (!(oldc&(CONTROL_B1))))
 				{
 					if(controlX<2)
 					{
@@ -285,7 +333,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 
 void RenderControls(int x,int y)
 {
-	char dirName[6][12]={"Up","Down","Left","Right","Fire","Weapon"};
+	static const char dirName[6][12]={"Up","Down","Left","Right","Fire","Weapon"};
 	char btnTxt[64];
 	int i;
 
@@ -358,8 +406,8 @@ void RenderControls(int x,int y)
 
 void RenderOptionsMenu(MGLDraw *mgl)
 {
-	char onoff[3][8]={"Off","On"};
-	char diffy[6][18]={"Beginner","Normal","Challenge","Mad","Loony","Hard" };
+	static const char onoff[3][8]={"Off","On"};
+	char buf[32];
 
 	int wid;
 	byte* pos;
@@ -379,11 +427,12 @@ void RenderOptionsMenu(MGLDraw *mgl)
 	CenterPrintGlow(320,2,"Game Options",0,2);
 
 	PrintColor(240,50,"Sound",7,-10,0);
-	PrintColor(360,50,onoff[opt.sound],7,-10,0);
+	snprintf(buf, 32, "%d%%", opt.sound * 100 / 255);
+	PrintColor(360,50,buf,7,-10,0);
 	if(cursor==0)
 	{
 		PrintColor(239,49,"Sound",0,0,0);
-		PrintColor(359,49,onoff[opt.sound],0,0,0);
+		PrintColor(359,49,buf,0,0,0);
 	}
 
 	PrintColor(240,80,"Help Screen",7,-10,0);
@@ -395,11 +444,11 @@ void RenderOptionsMenu(MGLDraw *mgl)
 	}
 
 	PrintColor(240,110,"Difficulty",7,-10,0);
-	PrintColor(360,110,diffy[opt.difficulty],7,-10,0);
+	PrintColor(360,110,DifficultyName(opt.difficulty),7,-10,0);
 	if(cursor==2)
 	{
 		PrintColor(239,109,"Difficulty",0,0,0);
-		PrintColor(359,109,diffy[opt.difficulty],0,0,0);
+		PrintColor(359,109,DifficultyName(opt.difficulty),0,0,0);
 	}
 
 	PrintColor(240,140,"Configure Controls",7,-10,0);
@@ -423,7 +472,7 @@ void LoadOptions(void)
 	f=AppdataOpen("loony.cfg");
 	if(!f)
 	{
-		opt.sound=1;
+		opt.sound = DEFAULT_VOLUME;
 
 		opt.control[0][0]=SDL_SCANCODE_UP;	// up
 		opt.control[0][1]=SDL_SCANCODE_DOWN;	// down
@@ -441,7 +490,7 @@ void LoadOptions(void)
 		opt.joyCtrl[0]=0;
 		opt.joyCtrl[1]=1;
 
-		opt.difficulty=5;		// default to Rando Special
+		opt.difficulty=DIFF_HARD;		// default to Rando Special
 		opt.helpOn=1;
 
 		for(i=0;i<40;i++)
@@ -450,7 +499,8 @@ void LoadOptions(void)
 			opt.cheats[i]=0;
 		for(i=0;i<10;i++)
 			opt.bossDead[i]=0;
-		for(i=0;i<9;i++)
+		opt.remixMode=0;
+		for(i=0;i<SDL_arraysize(opt.expando);i++)
 			opt.expando[i]=0;
 
 		ResetHighScores();
@@ -459,8 +509,17 @@ void LoadOptions(void)
 	{
 		fread(&opt,sizeof(options_t),1,f);
 		fclose(f);
+
+		if (opt.sound == 1)
+		{
+			// old setting for sound=on, make that volume=50%
+			opt.sound = DEFAULT_VOLUME;
+		}
 	}
 	ApplyControlSettings();
+	JamulSoundVolume(opt.sound);
+	SetMusicVolume(opt.sound);
+	Steam()->ProfileReady();
 }
 
 void SaveOptions(void)
@@ -504,7 +563,47 @@ void KilledBoss(byte boss)
 	SaveOptions();
 }
 
-static std::map<PlayerCharacterType, int> characterCheat = {
+static const char difficultyName[][18] = {
+	"Beginner",
+	"Normal",
+	"Challenge",
+	"Mad",
+	"Loony",
+	"Hard",
+};
+static_assert(SDL_arraysize(difficultyName) == NUM_DIFFICULTY);
+
+const char* DifficultyName(byte difficulty)
+{
+	if (difficulty < SDL_arraysize(difficultyName))
+	{
+		return difficultyName[difficulty];
+	}
+	return "???";
+}
+
+static const char playerCharacterName[][11] = {
+	"Loony",
+	"Bonkula",
+	"Toad",
+	"Swampdog",
+	"Witch",
+	"Werewolf",
+	"Summony",
+	"Ninja Girl",
+};
+static_assert(SDL_arraysize(playerCharacterName) == PC_MAX);
+
+const char* PlayerCharacterName(PlayerCharacterType character)
+{
+	if (character >= 0 && character < SDL_arraysize(playerCharacterName))
+	{
+		return playerCharacterName[character];
+	}
+	return "???";
+}
+
+static const std::map<PlayerCharacterType, int> characterCheat = {
 	{PC_Bonkula,	CH_BONKULA},
 	{PC_Toad,		CH_TOAD},
 	{PC_Swampdog,	CH_SWAMPDOG},
@@ -514,7 +613,7 @@ static std::map<PlayerCharacterType, int> characterCheat = {
 	{PC_Thief,		CH_THIEF},
 };
 
-static std::map<PlayerCharacterType, PlayerCharacterType> nextCharacter = {
+static const std::map<PlayerCharacterType, PlayerCharacterType> nextCharacter = {
 	{PC_Loony, PC_Bonkula},
 	{PC_Bonkula, PC_Toad},
 	{PC_Toad, PC_Swampdog},
@@ -524,7 +623,7 @@ static std::map<PlayerCharacterType, PlayerCharacterType> nextCharacter = {
 	{PC_Summon, PC_Thief},
 	{PC_Thief, PC_Loony}
 };
-static std::map<PlayerCharacterType, PlayerCharacterType> prevCharacter = {
+static const std::map<PlayerCharacterType, PlayerCharacterType> prevCharacter = {
 	{PC_Loony, PC_Thief},
 	{PC_Bonkula, PC_Loony},
 	{PC_Toad, PC_Bonkula},
@@ -535,7 +634,8 @@ static std::map<PlayerCharacterType, PlayerCharacterType> prevCharacter = {
 	{PC_Thief, PC_Summon}
 };
 
-PlayerCharacterType GetCurrentPC() {
+PlayerCharacterType GetCurrentPC()
+{
 	if (opt.cheats[CH_BONKULA])
 		return PC_Bonkula;
 	if (opt.cheats[CH_TOAD])
@@ -554,8 +654,10 @@ PlayerCharacterType GetCurrentPC() {
 	return PC_Loony;
 }
 
-bool IsCharacterUnlocked(PlayerCharacterType pc) {
-	switch (pc) {
+bool IsCharacterUnlocked(PlayerCharacterType pc)
+{
+	switch (pc)
+	{
 		case PC_Loony: return true;
 		case PC_Bonkula: return opt.meritBadge[BADGE_BONKULA];
 		case PC_Toad: return opt.meritBadge[BADGE_ANNOY];
@@ -571,8 +673,9 @@ bool IsCharacterUnlocked(PlayerCharacterType pc) {
 void SetCharacter(PlayerCharacterType pc)
 {
 	ResetCharacterCheats();
-	if (pc != PC_Loony) {
-		opt.cheats[characterCheat[pc]] = 1;
+	if (pc != PC_Loony)
+	{
+		opt.cheats[characterCheat.at(pc)] = 1;
 	}
 }
 
@@ -590,8 +693,9 @@ bool IsAnyCharacterUnlocked()
 void NextCharacter()
 {
 	PlayerCharacterType pc = GetCurrentPC();
-	do {
-		pc = nextCharacter[pc];
+	do
+	{
+		pc = nextCharacter.at(pc);
 	} while (!IsCharacterUnlocked(pc));
 
 	SetCharacter(pc);
@@ -600,8 +704,9 @@ void NextCharacter()
 void PrevCharacter()
 {
 	PlayerCharacterType pc = GetCurrentPC();
-	do {
-		pc = prevCharacter[pc];
+	do
+	{
+		pc = prevCharacter.at(pc);
 	} while (!IsCharacterUnlocked(pc));
 
 	SetCharacter(pc);

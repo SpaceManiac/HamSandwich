@@ -51,7 +51,7 @@ struct playButton_t
 	ButtonId id;
 };
 
-const static playButton_t btn[]={
+static const playButton_t btn[]={
 	{20,20,50,"List#1",BTN_LIST1},
 	{75,20,50,"List#2",BTN_LIST2},
 	{130,20,50,"List#3",BTN_LIST3},

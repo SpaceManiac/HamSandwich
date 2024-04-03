@@ -62,7 +62,7 @@ TASK(int) main(int argc, char* argv[])
 	LoadConfig();
 	SetHamMusicEnabled(config.music && !unpickled);
 	SetJamulSoundEnabled(config.sound && !unpickled, config.numSounds);
-	SteamManager::Init();
+	SteamManager::Init("2547330");
 	MGLDraw *mainmgl = new MGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame || unpickled);
 	if(!mainmgl)
 		CO_RETURN 0;

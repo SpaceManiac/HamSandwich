@@ -1,12 +1,16 @@
 #include "editor.h"
+#include <sstream>
+#include <memory>
+#include <vector>
+#include <string>
+#include <utility>
+#include <SDL_image.h>
+#include <tinyfiledialogs.h>
 #include "globals.h"
 #include "jspfile.h"
 #include "fontawesome.h"
 #include "gui.h"
 #include "lunaticpal.h"
-#include <sstream>
-#include <SDL_image.h>
-#include <tinyfiledialogs.h>
 
 using namespace std;
 

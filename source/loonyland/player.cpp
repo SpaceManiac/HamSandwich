@@ -1,4 +1,5 @@
 #include "player.h"
+#include "string_extras.h"
 #include "options.h"
 #include "title.h"
 #include "quest.h"
@@ -62,7 +63,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.crystalBall=0;
 		player.xtraByte=0;
 
-		if(opt.cheats[CH_HARDCORE])
+		if(opt.cheats[CH_HARDCORE] && (world == WORLD_NORMAL || world == WORLD_REMIX))
 			player.cheatsOn|=PC_HARDCORE;
 
 		if(opt.cheats[CH_ALLACCESS])
@@ -431,7 +432,7 @@ void PlayerClearTempVars(void)
 		player.keys[0]=0;
 }
 
-float CalcPercent(player_t *p)
+float CalcPercent(const player_t *p)
 {
 	int i,totalpoints,gotpoints;
 
@@ -1780,4 +1781,26 @@ void HandlePoison(Guy *me)
 		}
 		player.poison--;
 	}
+}
+
+void DescribeSave(span<char> dst, const player_t* player)
+{
+	// Slot number and area name
+	dst = ham_sprintf(dst, "%d: %s", player->lastSave + 1, player->areaName);
+	dst = ham_strcpy(dst, " - ");
+	// Percentage
+	dst = ham_sprintf(dst, "%03.1f%%", CalcPercent(player));
+	// World name (if needed)
+	if (player->worldNum == WORLD_REMIX)
+	{
+		dst = ham_strcpy(dst, " Remix");
+	}
+	dst = ham_strcpy(dst, " - ");
+	// Difficulty name, including Hardcore and Terror
+	if (player->cheatsOn & PC_HARDCORE)
+		dst = ham_strcpy(dst, "Hardcore+");
+	if (player->cheatsOn & PC_TERROR)
+		dst = ham_strcpy(dst, "Terror+");
+	dst = ham_sprintf(dst, "%s", DifficultyName(player->difficulty));
+	// Character name would be nice too, but there's no room!
 }

@@ -6,7 +6,7 @@
 static byte help;
 static byte exitCode;
 
-const static char helpName[NUM_HELPS][32]={
+static const char helpName[NUM_HELPS][32]={
 	"Basic Help",
 	"Floor Tool Help",
 	"Wall Tool Help",
@@ -28,7 +28,7 @@ const static char helpName[NUM_HELPS][32]={
 	"Custom Item JSP Help",
 };
 
-const char* const helpTxt[NUM_HELPS] = {
+static const char* const helpTxt[NUM_HELPS] = {
 	// basics
 	"Press F1 any time to get help with any menu or tool. "
 	"^ ^ Basic Editor Usage: ^ ^ "

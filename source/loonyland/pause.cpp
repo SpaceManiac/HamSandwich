@@ -5,24 +5,34 @@
 #include "ch_summon.h"
 #include "appdata.h"
 
-#define SUBMODE_NONE	 0
-#define SUBMODE_SLOTPICK 1
-
-byte cursor=0;
-static byte subcursor=0;
-static char lastKey=0;
-byte subMode;
-float percent[5];	// the percentages in each save slot
-char  area[5][32];		// which area the player was in in each
-static byte darkness;
-static int offX;
-static byte oldc;
-static byte noSaving=0;
-static int warpCount = 0;
-
-void SetSubCursor(byte s)
+namespace
 {
-	subcursor=s;
+	enum Cursor : byte
+	{
+		CURSOR_CANCEL,
+		CURSOR_WPNLOCK,
+		CURSOR_LOAD,
+		CURSOR_SAVE,
+		CURSOR_QUIT,
+	};
+	enum class SubMode : byte
+	{
+		None,
+		SlotPick,
+	};
+
+	Cursor cursor=CURSOR_CANCEL;
+	SubMode subMode;
+	byte subcursor=0;  // save slot
+
+	char lastKey = 0;
+	int saveOffset = 0;  // 0, 5, 10, ... 245
+	char saveDesc[5][64];		// which area the player was in in each
+	byte darkness;
+	int offX;
+	byte oldc;
+	bool noSaving = false;
+	int warpCount = 0;
 }
 
 void RenderPowerUps(int x,int y)
@@ -312,7 +322,7 @@ void RenderPauseMenu(MGLDraw *mgl)
 
 	DarkenScreen(darkness);
 
-	if(subMode!=SUBMODE_SLOTPICK || cursor!=2)
+	if(subMode!=SubMode::SlotPick)
 	{
 		strcpy(s,"Wpn Lock: ");
 		if(player.fireFlags&FF_WPNLOCK)
@@ -320,23 +330,23 @@ void RenderPauseMenu(MGLDraw *mgl)
 		else
 			strcat(s,"Off");
 
-		if(opt.cheats[CH_SAVEANY] && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
+		if(opt.cheats[CH_SAVEANY] && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER) && !(player.cheatsOn & PC_HARDCORE))
 		{
-			PrintColor(10,295,"Cancel",4-4*(cursor==0),-8+8*(cursor==0),2);
-			PrintColor(10,330,s,4-4*(cursor==1),-8+8*(cursor==1),2);
-			PrintColor(10,365,"Load Game",4-4*(cursor==2),-8+8*(cursor==2),2);
+			PrintColor(10,295,"Cancel",4-4*(cursor==CURSOR_CANCEL),-8+8*(cursor==CURSOR_CANCEL),2);
+			PrintColor(10,330,s,4-4*(cursor==CURSOR_WPNLOCK),-8+8*(cursor==CURSOR_WPNLOCK),2);
+			PrintColor(10,365,"Load Game",4-4*(cursor==CURSOR_LOAD),-8+8*(cursor==CURSOR_LOAD),2);
 			if(noSaving)
-				PrintColor(10,400,"Save Game",0,-8+8*(cursor==3),2);
+				PrintColor(10,400,"Save Game",0,-8+8*(cursor==CURSOR_SAVE),2);
 			else
-				PrintColor(10,400,"Save Game",4-4*(cursor==3),-8+8*(cursor==3),2);
-			PrintColor(10,435,"Quit",4-4*(cursor==4),-8+8*(cursor==4),2);
+				PrintColor(10,400,"Save Game",4-4*(cursor==CURSOR_SAVE),-8+8*(cursor==CURSOR_SAVE),2);
+			PrintColor(10,435,"Quit",4-4*(cursor==CURSOR_QUIT),-8+8*(cursor==CURSOR_QUIT),2);
 		}
 		else
 		{
-			PrintColor(10,295,"Cancel",4-4*(cursor==0),-8+8*(cursor==0),2);
-			PrintColor(10,342,s,4-4*(cursor==1),-8+8*(cursor==1),2);
-			PrintColor(10,388,"Load Game",4-4*(cursor==2),-8+8*(cursor==2),2);
-			PrintColor(10,435,"Quit",4-4*(cursor==4),-8+8*(cursor==4),2);
+			PrintColor(10,295,"Cancel",4-4*(cursor==CURSOR_CANCEL),-8+8*(cursor==CURSOR_CANCEL),2);
+			PrintColor(10,342,s,4-4*(cursor==CURSOR_WPNLOCK),-8+8*(cursor==CURSOR_WPNLOCK),2);
+			PrintColor(10,388,"Load Game",4-4*(cursor==CURSOR_LOAD),-8+8*(cursor==CURSOR_LOAD),2);
+			PrintColor(10,435,((player.cheatsOn & PC_HARDCORE) ? "Save & Quit" : "Quit"),4-4*(cursor==CURSOR_QUIT),-8+8*(cursor==CURSOR_QUIT),2);
 		}
 
 		if((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
@@ -350,29 +360,39 @@ void RenderPauseMenu(MGLDraw *mgl)
 			RenderPowerUps(5-offX,-5);
 		}
 	}
-	if(subMode==SUBMODE_SLOTPICK)
+	if(subMode==SubMode::SlotPick)
 		RenderSlotPickMenu();
 }
 
 void RenderSlotPickMenu(void)
 {
-	char txt[48];
+	char txt[64];
 	int i;
 
 
-	DrawFillBox(100,100,540,300,0);
-	DrawBox(98,98,542,302,142);
-	DrawBox(100,100,540,300,142);
+	DrawFillBox(10,100,SCRWID-10,300,0);
+	DrawBox(10-2,100-2,SCRWID-10+2,300+2,142);
+	DrawBox(10,100,SCRWID-10,300,142);
 
-	if(cursor==1)
+	if(cursor==CURSOR_LOAD)
 		CenterPrint(320,105,"Load Game",32,0);
 	else
 		CenterPrint(320,105,"Save Game",32,0);
 
+	PrintColor(20, 117, "^", 4, -8, 0);
+	PrintColor(20, 273, "v", 4, -8, 0);
+
 	for(i=0;i<5;i++)
 	{
-		sprintf(txt,"Slot %d - %s - %03.1f%%",i+1,area[i],percent[i]);
-		PrintColor(110,135+i*30,txt,4-4*(subcursor==i),-8+16*(subcursor==i),0);
+		if (saveDesc[i][0] == '\0')
+		{
+			sprintf(txt, "%d: Unused", saveOffset + i + 1);
+			PrintColor(20,135+i*30,txt,4-4*(subcursor==i),-8+16*(subcursor==i),0);
+		}
+		else
+		{
+			PrintColor(20,135+i*30,saveDesc[i],4-4*(subcursor==i),-8+16*(subcursor==i),0);
+		}
 	}
 }
 
@@ -389,27 +409,23 @@ void GetSaves(void)
 {
 	FILE *f;
 	int i;
-	char txt[12];
+	char txt[32];
 	player_t p;
 
 	for(i=0;i<5;i++)
 	{
-		sprintf(txt,"save%d.sav",i+1);
+		ham_sprintf(txt,"save%d.sav", saveOffset + i + 1);
 		f=AppdataOpen(txt);
 		if(!f)
 		{
-			percent[i]=0;
-			sprintf(area[i],"Unused");
+			saveDesc[i][0] = '\0';
 		}
 		else
 		{
 			fread(&p,sizeof(player_t),1,f);
 			fclose(f);
-			percent[i]=CalcPercent(&p);
-			if(p.worldNum==WORLD_NORMAL)
-				strcpy(area[i],p.areaName);
-			else
-				sprintf(area[i],"*%s",p.areaName);
+
+			DescribeSave(saveDesc[i], &p);
 		}
 	}
 }
@@ -417,10 +433,9 @@ void GetSaves(void)
 void LoadGame(int i)
 {
 	FILE *f;
-	char txt[12];
-	char buff[128];
+	char txt[128];
 
-	sprintf(txt,"save%d.sav",i+1);
+	ham_sprintf(txt,"save%d.sav",i+1);
 	f=AppdataOpen(txt);
 	if(!f)
 	{
@@ -448,8 +463,8 @@ void LoadGame(int i)
 			FreeWorld(&curWorld);
 			//get seed from player data
 
-			sprintf(buff, "randomizer/%s rando.llw", GetPlayerSeed().c_str());
-			LoadWorld(&curWorld,buff);
+			ham_sprintf(txt, "randomizer/%s rando.llw", GetPlayerSeed().c_str());
+			LoadWorld(&curWorld,txt);
 			LoadRandoItems();
 
 			InitWorld(&curWorld,WORLD_RANDOMIZER);
@@ -473,14 +488,17 @@ void LoadGame(int i)
 			player.invinc=60;	// and make you invincible briefly
 	}
 	noSaving=0;
+
+	saveOffset = 5 * (i / 5);
+	subcursor = i % 5;
 }
 
 void SaveGame(int i)
 {
 	FILE *f;
-	char txt[12];
+	char txt[32];
 
-	sprintf(txt,"save%d.sav",i+1);
+	ham_sprintf(txt,"save%d.sav",i+1);
 	f=AppdataOpen_Write(txt);
 	if(!f)
 	{
@@ -507,16 +525,16 @@ void SaveGame(int i)
 
 void DeleteSave(int i)
 {
-	char txt[12];
+	char txt[32];
 
-	sprintf(txt,"save%d.sav",i);
-	remove(txt);
+	ham_sprintf(txt,"save%d.sav",i);
+	AppdataDelete(txt);
 }
 
 
 void BumpSaveGem(void)
 {
-	if(player.cheatsOn&PC_HARDCORE)
+	if((player.cheatsOn&PC_HARDCORE) && player.lastSave != 255)
 		return;	// no effect of save gems!!
 
 	if(noSaving)
@@ -524,12 +542,12 @@ void BumpSaveGem(void)
 
 	EnterStatusScreen();
 	InitPauseMenu();
-	subMode=SUBMODE_SLOTPICK;
-	cursor=3;
+	subMode=SubMode::SlotPick;
+	cursor=CURSOR_SAVE;
 	player.saveClock=20;
 }
 
-void SetNoSaving(byte on)
+void SetNoSaving(bool on)
 {
 	noSaving=on;
 }
@@ -538,8 +556,8 @@ void InitPauseMenu(void)
 {
 	MakeNormalSound(SND_PAUSE);
 	lastKey=0;
-	subMode=0;
-	cursor=0;
+	subMode=SubMode::None;
+	cursor=CURSOR_CANCEL;
 	darkness=0;
 	offX=400;
 	oldc=255;
@@ -548,9 +566,8 @@ void InitPauseMenu(void)
 	GetSaves();
 }
 
-byte UpdatePauseMenu(MGLDraw *mgl)
+PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 {
-	byte c;
 	static byte reptCounter=0;
 
 	if(darkness<16)
@@ -562,123 +579,158 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			offX=0;
 	}
 
-	c=GetControls()|GetArrows();
+	byte c = GetControls()|GetArrows();
+	byte tap = c & ~oldc;
 
 	reptCounter++;
 	if((!oldc) || (reptCounter>10))
 		reptCounter=0;
+	oldc = c;
 
-	if(subMode==SUBMODE_NONE)	// not in any submenu
+	if(subMode==SubMode::None)	// not in any submenu
 	{
 		if((c&CONTROL_UP) && (!reptCounter))
 		{
-			cursor--;
-			if(cursor==255)
-				cursor=4;
-			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX&& player.worldNum!=WORLD_RANDOMIZER)) && cursor==3)
-				cursor=2;
+			cursor = (Cursor)(cursor - 1);
+			if(cursor>CURSOR_QUIT)
+				cursor=CURSOR_QUIT;
+			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX && player.worldNum!=WORLD_RANDOMIZER) || (player.cheatsOn & PC_HARDCORE)) && cursor==CURSOR_SAVE)
+				cursor=CURSOR_LOAD;
 
 		}
 		if((c&CONTROL_DN) && (!reptCounter))
 		{
-			cursor++;
-			if(cursor==5)
-				cursor=0;
-			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX && player.worldNum!=WORLD_RANDOMIZER)) && cursor==3)
-				cursor=4;
+			cursor = (Cursor)(cursor + 1);
+			if(cursor>CURSOR_QUIT)
+				cursor=CURSOR_CANCEL;
+			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX && player.worldNum!=WORLD_RANDOMIZER) || (player.cheatsOn & PC_HARDCORE)) && cursor==CURSOR_SAVE)
+				cursor=CURSOR_QUIT;
 		}
-		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
-		   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
+		if (tap & CONTROL_B1)
 		{
 			switch(cursor)
 			{
 				case 0: // cancel
-					return 0;
+					return PauseMenuResult::Continue;
 					break;
 				case 1:	// weapon lock
 					player.fireFlags^=FF_WPNLOCK;
 					break;
 				case 2:	// Load
-					subMode=SUBMODE_SLOTPICK;
+					subMode=SubMode::SlotPick;
 					break;
 				case 3:	// Save
 					if(!noSaving)
-						subMode=SUBMODE_SLOTPICK;
+						subMode=SubMode::SlotPick;
 					break;
 				case 4: // quit game
 					if(player.cheatsOn&PC_HARDCORE)
 					{
-						cursor=2;
-						subMode=SUBMODE_SLOTPICK;
+						if (player.lastSave != 255)
+						{
+							SaveGame(player.lastSave);
+							return PauseMenuResult::Quit;
+						}
+						cursor=CURSOR_SAVE;
+						subMode=SubMode::SlotPick;
 					}
 					else
-						return 4;
+						return PauseMenuResult::Quit;
 			}
 		}
 	}
-	else if(subMode==SUBMODE_SLOTPICK)
+	else if(subMode==SubMode::SlotPick)
 	{
+		byte scan = LastScanCode();
 		if((c&CONTROL_UP) && (!reptCounter))
 		{
 			warpCount = 0;
 			subcursor--;
 			if(subcursor==255)
+			{
 				subcursor=4;
+				saveOffset = (saveOffset + 250 - 5) % 250;
+				GetSaves();
+			}
 		}
 		if((c&CONTROL_DN) && (!reptCounter))
 		{
 			warpCount = 0;
 			subcursor++;
 			if(subcursor==5)
+			{
 				subcursor=0;
+				saveOffset = (saveOffset + 5) % 250;
+				GetSaves();
+			}
 		}
+		if (scan == SDL_SCANCODE_PAGEUP)
+		{
+			saveOffset = (saveOffset + 250 - 5) % 250;
+			GetSaves();
+		}
+		if (scan == SDL_SCANCODE_PAGEDOWN)
+		{
+			saveOffset = (saveOffset + 5) % 250;
+			GetSaves();
+		}
+
 		if ((c & CONTROL_LF) && (!reptCounter) && player.worldNum == WORLD_RANDOMIZER)
 		{
 			warpCount++;
-			if (warpCount > 4) {
-				return 5;
+			if (warpCount > 4)
+			{
+				return PauseMenuResult::WarpToLooniton;
 			}
 		}
-		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
-		   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
+
+		if (tap & CONTROL_B1)
 		{
-			if(cursor==2)	// Load
+			if(cursor==CURSOR_LOAD)	// Load
 			{
-				if(!strcmp(area[subcursor],"Unused"))
+				if(saveDesc[subcursor][0] == '\0')
 				{
 					MakeNormalSound(SND_MENUCANCEL);
 				}
 				else
 				{
-					LoadGame(subcursor);
+					LoadGame(saveOffset + subcursor);
 					CameraOnPlayer(0);
 					ExitBullets();
 					InitBullets();
 					NewBigMessage("Game Loaded!",30);
 					UndoWindDown();
-					return 0;
+					return PauseMenuResult::Continue;
 				}
 			}
-			else if(cursor==3)	// Save
+			else if(cursor==CURSOR_SAVE)	// Save
 			{
-				SaveGame(subcursor);
-				if(player.cheatsOn&PC_HARDCORE)
-					return 4;	// returns exit if you saved in hardcore mode
-				return 0;
+				bool savedYet = player.lastSave != 255;
+				SaveGame(saveOffset + subcursor);
+				if((player.cheatsOn&PC_HARDCORE) && savedYet)
+					return PauseMenuResult::Quit;	// returns exit if you saved in hardcore mode
+				return PauseMenuResult::Continue;
 			}
-			subMode=SUBMODE_NONE;
+			subMode=SubMode::None;
 		}
 	}
-	oldc=c;
 
 	HandlePauseKeyPresses(mgl);
-	if(lastKey==27)	// hit ESC to exit pause menu
+	if(lastKey==27 || (tap & CONTROL_B2))	// hit ESC to exit pause menu
 	{
-		if(subMode==SUBMODE_NONE || cursor==3)
-			return 0;
+		if (cursor == CURSOR_SAVE)
+		{
+			// Refusing to pick a slot on hardcore = quit.
+			// Otherwise there's no way to quit a new hardcore game without overwriting one of your other saves.
+			if (player.cheatsOn & PC_HARDCORE)
+				return PauseMenuResult::Quit;
+			return PauseMenuResult::Continue;
+		}
+		else if(subMode==SubMode::None)
+			return PauseMenuResult::Continue;
 		else
-			subMode=SUBMODE_NONE;
+			subMode=SubMode::None;
 		lastKey=0;
 	}
-	return 1;
+	return PauseMenuResult::Paused;
 }

@@ -1,8 +1,9 @@
 #include "jamulfmv.h"
+#include <stdio.h>
+#include <vector>
 #include "mgldraw.h"
 #include "clock.h"
 #include "appdata.h"
-#include <stdio.h>
 
 // different kinds of flic chunks
 enum

@@ -35,7 +35,7 @@ public:
 	}
 
 	owned::SDL_RWops open_sdl(const char* filename) override;
-	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output) override;
+	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>* output) override;
 };
 
 std::unique_ptr<vanilla::Vfs> vanilla::open_inno3(owned::SDL_RWops rw)
@@ -43,7 +43,7 @@ std::unique_ptr<vanilla::Vfs> vanilla::open_inno3(owned::SDL_RWops rw)
 	return std::make_unique<Inno3Vfs>(std::move(rw));
 }
 
-bool Inno3Vfs::list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output)
+bool Inno3Vfs::list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>* output)
 {
 	return archive.list_dir(directory, output);
 }
@@ -288,7 +288,7 @@ Inno3Vfs::Inno3Vfs(owned::SDL_RWops rw)
 		if (source.empty() && !memcmp(destination.data(), APP_PREFIX, APP_PREFIX_SZ))
 		{
 			vanilla::Archive::Directory* current = &archive.root;
-			if (const char* last_component = vanilla::Archive::navigate(destination.c_str() + APP_PREFIX_SZ, current))
+			if (const char* last_component = vanilla::Archive::navigate(destination.c_str() + APP_PREFIX_SZ, &current))
 			{
 				current->files.insert(make_pair(std::string(last_component), location));
 			}

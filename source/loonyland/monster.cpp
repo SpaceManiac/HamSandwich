@@ -4806,9 +4806,9 @@ void AI_Evilizer(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	SetBossHP(me->hp,MonsterHP(me->type));
 
 	if(me->hp && RangeToTarget(me,goodguy)<780*FIXAMT)
-		SetNoSaving(1);
+		SetNoSaving(true);
 	if(me->hp==0)
-		SetNoSaving(0);
+		SetNoSaving(false);
 
 	if(me->ouch==4)
 		MakeSound(SND_METALSMACK,me->x,me->y,SND_CUTOFF,1200);

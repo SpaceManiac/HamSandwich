@@ -5,11 +5,19 @@
 #include "mgldraw.h"
 #include "highscore.h"
 
-#define DIFF_BEGINNER	0
-#define DIFF_NORMAL		1
-#define DIFF_CHALLENGE	2
-#define DIFF_MAD		3
-#define DIFF_LOONY		4
+// Serialized to options and savefiles - don't reorder.
+enum : byte
+{
+	DIFF_BEGINNER  = 0,
+	DIFF_NORMAL    = 1,
+	DIFF_CHALLENGE = 2,
+	DIFF_MAD       = 3,
+	DIFF_LOONY     = 4,
+	DIFF_HARD      = 5,
+
+	NUM_DIFFICULTY
+};
+const char* DifficultyName(byte difficulty);
 
 #define DIFF_HARD		5
 
@@ -55,6 +63,15 @@
 #define CH_REGEN	38		// monster regeneration
 #define CH_NOFARLEY 39		// no farley
 
+enum
+{
+	MODE_SURVIVAL  = 0,
+	MODE_BOSSBASH  = 1,
+	MODE_LOONYBALL = 2,
+	MODE_BOWLING   = 3,
+	MODE_BADGES    = 4,
+};
+
 enum PlayerCharacterType : int
 {
 	PC_Loony = 0,
@@ -67,6 +84,7 @@ enum PlayerCharacterType : int
 	PC_Thief = 7,
 	PC_MAX
 };
+const char* PlayerCharacterName(PlayerCharacterType character);
 
 typedef struct options_t
 {
@@ -80,7 +98,8 @@ typedef struct options_t
 	byte helpOn;
 	byte wpnLock;
 	byte bossDead[10];	// have killed each boss
-	byte expando[9];	// room for expansion
+	byte remixMode;
+	byte expando[8];	// room for expansion
 
 	// best scores
 	highScore_t score[9][15];	// high scores in different modes

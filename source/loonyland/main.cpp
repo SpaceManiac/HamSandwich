@@ -15,13 +15,12 @@
 #include "randomizer.h"
 #include "log.h"
 #include "appdata.h"
+#include "steam.h"
 
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
 TASK(int) main(int argc, char *argv[])
 {
-	DBG("a");
-
 	bool windowedGame=false;
 	for (int i = 1; i < argc; ++i)
 	{
@@ -30,23 +29,20 @@ TASK(int) main(int argc, char *argv[])
 	}
 
 	AppdataInit(GetHamSandwichMetadata());
+	SteamManager::Init("2876900");
 
-	DBG("b");
 	MGLDraw *mainmgl=new MGLDraw("Loonyland", SCRWID, SCRHEI, windowedGame);
-	DBG("c");
 	if(!mainmgl)
 		CO_RETURN 0;
-	DBG("d");
-	DBG("Init!");
+
 	LunaticInit(mainmgl);
 
-	DBG("Songstart");
 	LoopingSound(SND_HAMUMU);
 	SetSongRestart(0);
-	DBG("Splash");
 	AWAIT SplashScreen(mainmgl,"graphics/hamumu.bmp",128,2);
 
-	while(1)
+	bool running = true;
+	while (running)
 	{
 		DBG("Mainmenu");
 		switch((AWAIT MainMenu(mainmgl)) - 1)
@@ -54,10 +50,7 @@ TASK(int) main(int argc, char *argv[])
 			default:
 			case 255:	// quit
 			case MENU_EXIT:
-				LunaticExit();
-				KillSong();
-				delete mainmgl;
-				CO_RETURN 0;
+				running = false;
 				break;
 			case MENU_ADVENTURE:	// new game
 				AWAIT LunaticGame(mainmgl,0,WORLD_NORMAL);
@@ -109,4 +102,10 @@ TASK(int) main(int argc, char *argv[])
 
 		}
 	}
+
+	LunaticExit();
+	KillSong();
+	delete mainmgl;
+	SteamManager::Quit();
+	CO_RETURN 0;
 }

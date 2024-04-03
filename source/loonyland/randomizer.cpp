@@ -458,15 +458,10 @@ UpdateRandomizerMenu(int* lastTime, MGLDraw* mgl)
 
 void RenderRandomizerMenu(MGLDraw* mgl)
 {
-
 	int wid;
 	byte* pos;
 	int i;
 	std::string strTries = std::to_string(genTries);
-
-	char diffy[6][18] = { "Beginner","Normal","Challenge","Mad","Loony","Hard" };
-
-
 
 	wid = mgl->GetWidth();
 	pos = mgl->GetScreen() + 40 * wid;
@@ -523,12 +518,12 @@ void RenderRandomizerMenu(MGLDraw* mgl)
 	//80 instead of 60 to give a line break after exit for logic/difficulty toggles
 
 	PrintColor(240, 80 + CURSOR_DIFFICULTY * 20, "Difficulty: ", 7, -10, 0);
-	PrintColor(400, 80 + CURSOR_DIFFICULTY * 20, diffy[opt.difficulty], 7, -10, 0);
+	PrintColor(400, 80 + CURSOR_DIFFICULTY * 20, DifficultyName(opt.difficulty), 7, -10, 0);
 
 	if (cursor == CURSOR_DIFFICULTY)
 	{
 		PrintColor(239, 79 + CURSOR_DIFFICULTY * 20, "Difficulty: ", 0, 0, 0);
-		PrintColor(400, 79 + CURSOR_DIFFICULTY * 20, diffy[opt.difficulty], 0, 0, 0);
+		PrintColor(400, 79 + CURSOR_DIFFICULTY * 20, DifficultyName(opt.difficulty), 0, 0, 0);
 	}
 
 	PrintColor(240, 80 + CURSOR_COMPLETION * 20, "Game Completion: ", 7, -10, 0);
@@ -716,7 +711,7 @@ void PlaceItems(std::vector<location>& locList)
 	//add some hearts to loonyton
 	world.map[0]->map[91 + 90 * world.map[0]->width].item = 2;
 	world.map[0]->map[92 + 90 * world.map[0]->width].item = 2;
-	
+
 
 	//fix that awful, singular, flipped special
 	//Castle Vampy III "halloween" specials
@@ -820,12 +815,12 @@ bool HaveAllVamps(const std::set<int>& inv)
 
 bool HaveSpecialWeaponDamage(const std::set<int>& inv)
 {
-	return (inv.count(VAR_WEAPON) 
-		|| inv.count(VAR_WEAPON + 1) 
+	return (inv.count(VAR_WEAPON)
+		|| inv.count(VAR_WEAPON + 1)
 		//|| inv.count(VAR_WEAPON + 2)  ice doesn't hurt elder
-		|| inv.count(VAR_WEAPON + 3) 
-		|| inv.count(VAR_WEAPON + 4) 
-		|| inv.count(VAR_WEAPON + 5) 
+		|| inv.count(VAR_WEAPON + 3)
+		|| inv.count(VAR_WEAPON + 4)
+		|| inv.count(VAR_WEAPON + 5)
 		|| inv.count(VAR_WEAPON + 6)
 		);
 }

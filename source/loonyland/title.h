@@ -22,16 +22,11 @@
 #define MENU_LOONYBALL	11
 #define MENU_REMIX		12
 
-//#define MENU_EDITOR	   254	// special since you can't normally do it
-
-TASK(byte) LunaticTitle(MGLDraw *mgl);
 TASK(byte) MainMenu(MGLDraw *mgl);
 TASK(void) Credits(MGLDraw *mgl,byte init);
 TASK(void) CheatText(MGLDraw *mgl,byte init);
 TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound);
 TASK(void) VictoryText(MGLDraw *mgl);
-TASK(void) HelpScreens(MGLDraw *mgl);
-TASK(void) DemoSplashScreens(MGLDraw *mgl);
 
 byte WhichGameToLoad(void);
 void SetSongRestart(byte b);

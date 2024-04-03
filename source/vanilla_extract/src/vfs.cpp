@@ -7,7 +7,7 @@
 #include <unistd.h>
 #endif
 
-using namespace vanilla;
+namespace vanilla {
 
 #ifndef __GNUC__
 #define strncasecmp _strnicmp
@@ -17,7 +17,7 @@ using namespace vanilla;
 // ----------------------------------------------------------------------------
 // Simple helpers
 
-bool vanilla::ends_with(std::string_view lhs, std::string_view rhs)
+bool ends_with(std::string_view lhs, std::string_view rhs)
 {
 	return lhs.size() >= rhs.size() && lhs.compare(lhs.size() - rhs.size(), std::string_view::npos, rhs) == 0;
 }
@@ -136,7 +136,7 @@ owned::FILE Mount::open_stdio(const char* filename)
 // ----------------------------------------------------------------------------
 // VfsStack implementation
 
-const static std::string_view TOMBSTONE_SUFFIX = ".$delete";
+static const std::string_view TOMBSTONE_SUFFIX = ".$delete";
 
 static std::string tombstone_name(std::string_view filename)
 {
@@ -254,10 +254,10 @@ bool VfsStack::delete_file(const char* filename)
 	}
 }
 
-static void list_dir_inner(std::string_view prefix, Vfs* vfs, const char* directory, std::set<std::string, CaseInsensitive>& output)
+static void list_dir_inner(std::string_view prefix, Vfs* vfs, const char* directory, std::set<std::string, CaseInsensitive>* output)
 {
 	std::set<std::string, vanilla::CaseInsensitive> intermediate;
-	vfs->list_dir(directory, intermediate);
+	vfs->list_dir(directory, &intermediate);
 	for (auto each : intermediate)
 	{
 		if (each == "" || each == "." || each == "..")
@@ -267,16 +267,16 @@ static void list_dir_inner(std::string_view prefix, Vfs* vfs, const char* direct
 		if (ends_with(each, TOMBSTONE_SUFFIX))
 		{
 			each.erase(each.size() - TOMBSTONE_SUFFIX.size());
-			output.erase(each);
+			output->erase(each);
 		}
 		else
 		{
-			output.insert(std::move(each));
+			output->insert(std::move(each));
 		}
 	}
 }
 
-void VfsStack::list_dir(const char* directory, std::set<std::string, CaseInsensitive>& output)
+void VfsStack::list_dir(const char* directory, std::set<std::string, CaseInsensitive>* output)
 {
 	// Iterate bottom to top, so higher tombstones can erase their children
 	for (auto iter = mounts.begin(); iter != mounts.end(); ++iter)
@@ -334,3 +334,5 @@ bool VfsStack::query_bottom(const char* filename, VfsMeta* meta)
 	}
 	return retval;
 }
+
+}  // namespace vanilla

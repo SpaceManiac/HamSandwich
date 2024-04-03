@@ -3,29 +3,35 @@
 #include "jamulfmv.h"
 #include "pause.h"
 #include "options.h"
-#include "pause.h"
 #include "plasma.h"
 #include "palettes.h"
 #include "appdata.h"
+#include "steam.h"
+#include "badge.h"
+
+#define VERSION_NO         "Version 3.0"
+#define COPYRIGHT_YEARS    "2001-2024"
+#define COPYRIGHT_COMPANY  "Hamumu Games, Inc."
 
 // special codes in the credits:
 // @ = use GirlsRWeird font
 // # = draw a major horizontal line
 // % = draw a minor horizontal line
 // $ = last line of the whole deal
-char credits[][32]={
+static const char* credits[] = {
 	"@LoonyLand:",
 	"",
 	"@Halloween Hill",
 	"",
 	"",
-	"Copyright 2004, Hamumu Software",
+	("Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY),
 	"#",
 	"Original Concept",
 	"Mike Hommel",
 	"%",
 	"Programming",
 	"Mike Hommel",
+	"Tad \"SpaceManiac\" Hardesty",
 	"%",
 	"Character Design",
 	"Mike Hommel",
@@ -75,56 +81,56 @@ char credits[][32]={
 	"$"
 	};
 
-char victoryTxt[][64]={
+static const char* victoryTxt[] = {
 	"",
 	"",
-	"After a little time to rest and wipe off a whole",
+	"&After a little time to rest and wipe off a whole",
 	"",
-	"lot of mud, Loony got back to his feet and returned",
+	"&lot of mud, Loony got back to his feet and returned",
 	"",
-	"to Luniton, a hero at last.",
-	"",
-	"",
-	"",
-	"#",
-	"",
-	"",
-	"All around the land of Halloween Hill, life was",
-	"",
-	"returning to normal.  The frogs stopped licking",
-	"",
-	"so viciously, the mummies settled down and returned",
-	"",
-	"to their work in the toilet paper industry - Even",
-	"",
-	"the werewolves went back to their den to take a nap.",
-	"",
-	"Yes, everything was back to being as peaceful as it",
-	"",
-	"gets in Halloween Hill.  Which, by the way, is not",
-	"",
-	"terribly peaceful.",
-	"",
-	"",
+	"&to Luniton, a hero at last.",
 	"",
 	"",
 	"",
 	"#",
 	"",
 	"",
-	"There was just one thing wrong...",
+	"&All around the land of Halloween Hill, life was",
 	"",
-	"The trees in the south of Wicked Woods were still",
+	"&returning to normal.  The frogs stopped licking",
 	"",
-	"hung with stick figures.  Almost as if the evil",
+	"&so viciously, the mummies settled down and returned",
 	"",
-	"presence there hadn't been the result of the",
+	"&to their work in the toilet paper industry - Even",
 	"",
-	"Evilizer at all... and was still lurking somewhere.",
+	"&the werewolves went back to their den to take a nap.",
+	"",
+	"&Yes, everything was back to being as peaceful as it",
+	"",
+	"&gets in Halloween Hill.  Which, by the way, is not",
+	"",
+	"&terribly peaceful.",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"#",
+	"",
+	"",
+	"&There was just one thing wrong...",
+	"",
+	"&The trees in the south of Wicked Woods were still",
+	"",
+	"&hung with stick figures.  Almost as if the evil",
+	"",
+	"&presence there hadn't been the result of the",
+	"",
+	"&Evilizer at all... and was still lurking somewhere.",
 	"$"
 	};
 
-char cheatTxt[][64]={
+static const char* cheatTxt[] = {
 	"@Congratulations on getting",
 	"",
 	"",
@@ -195,30 +201,21 @@ char cheatTxt[][64]={
 	"$",
 };
 
-// once the credits have scrolled to END_OF_CREDITS pixels, they end
-#define END_OF_CREDITS 480*4-330
-#define END_OF_VICTORY 480*2
-#define END_OF_CHEATS 480*3-100
-
-// the most custom worlds it will handle
-#define MAX_CUSTOM (64-5)
-
-#define VERSION_NO	"Version 2.0"
-
-sprite_set_t *planetSpr;
-static int numRunsToMakeUp;
-
 static byte oldc=0;
 
-static byte keyAnim=0;
-char lvlName[32];
+static int saveOffset = 0;
 static byte cursor;
-byte *backScr;
-int numRuns;
-byte demoTextCounter;
-byte songRestart;
+static byte *backScr;
+static int numRuns;
+static byte songRestart;
 
-static byte loadingGame;
+enum class TitleSubmenu : byte
+{
+	MainMenu,
+	LoadGame,
+	ChooseDiff,  // difficulty chooser
+};
+static TitleSubmenu loadingGame;
 
 typedef struct menu_t
 {
@@ -227,7 +224,7 @@ typedef struct menu_t
 	char bright;
 } menu_t;
 
-menu_t menu[MENU_CHOICES]={
+static menu_t menu[MENU_CHOICES]={
 	{"New Game",1,-32},
 	{"Load Game",1,-32},
 	{"Randomizer",1,-32},
@@ -241,25 +238,10 @@ menu_t menu[MENU_CHOICES]={
 	{"Options",1,-32},
 	{"Editor",1,-32},
 	{"Exit",1,-32},
-	{"!",0,-32}
 };
 
-menu_t saves[5];
-byte choosingDiffFor;
-
-byte HandleTitleKeys(MGLDraw *mgl)
-{
-	char k;
-
-	k=mgl->LastKeyPressed();
-
-	if(k=='e')
-		return 1;	// go to the editor
-	if(k==27)
-		return 2;	// exit
-	else
-		return 0;	// play the game
-}
+static menu_t saves[5];
+static byte choosingDiffFor;
 
 void SetSongRestart(byte b)
 {
@@ -268,7 +250,7 @@ void SetSongRestart(byte b)
 
 byte WhichGameToLoad(void)
 {
-	return cursor;
+	return saveOffset + cursor;
 }
 
 void GetSavesForMenu(void)
@@ -281,41 +263,23 @@ void GetSavesForMenu(void)
 
 	for(i=0;i<5;i++)
 	{
-		sprintf(txt,"save%d.sav",i+1);
+		ham_sprintf(txt,"save%d.sav", saveOffset + i + 1);
 		f=AppdataOpen(txt);
 		if(!f)
 		{
-			pct=0.0;
-			sprintf(txt,"Unused");
+			sprintf(saves[i].txt, "%d: Unused", saveOffset + i + 1);
 			saves[i].known=0;
 		}
 		else
 		{
 			fread(&p,sizeof(player_t),1,f);
 			fclose(f);
-			pct=CalcPercent(&p);
-			if(p.worldNum==WORLD_NORMAL)
-				strcpy(txt,p.areaName);
-			else
-				sprintf(txt,"*%s",p.areaName);
+
+			DescribeSave(saves[i].txt, &p);
 			saves[i].known=1;
 		}
-		sprintf(saves[i].txt,"%s - %0.1f%%",txt,pct);
 		saves[i].bright=-32;
 	}
-}
-
-TASK(byte) LunaticTitle(MGLDraw *mgl)
-{
-	mgl->LoadBMP("graphics/title.bmp");
-	AWAIT mgl->Flip();
-	while(!mgl->LastKeyPeek())
-	{
-		if(!mgl->Process())
-			CO_RETURN 2;
-		AWAIT mgl->Flip();
-	}
-	CO_RETURN HandleTitleKeys(mgl);
 }
 
 void ShowMenuOption(int x,int y,menu_t m,byte on)
@@ -364,11 +328,15 @@ void MainMenuDisplay(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
 
+	// Workshop status
+	const char* workshopStatus = Steam()->DescribeWorkshopStatus();
+	Print(3, 3, workshopStatus, 1, 1);
+	Print(3-1, 3-1, workshopStatus, 0, 1);
 	// version #:
-	Print(555,3,VERSION_NO,1,1);
-	Print(554,2,VERSION_NO,0,1);
+	Print(560,3,VERSION_NO,1,1);
+	Print(559,2,VERSION_NO,0,1);
 	// Copyright:
-	PrintGlow(395,467,"Copyright 2004, Hamumu Software",-10,1);
+	RightPrintGlow(641, 467, "Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY, -10, 1);
 
 	// menu options
 	x=5;
@@ -390,9 +358,7 @@ void DiffChooseDisplay(MGLDraw *mgl)
 {
 	int i;
 
-	char diffName[6][16]={"Beginner","Normal","Challenge","Mad","Loony","Hard" };
-
-	char diffDesc[][128]={
+	static const char diffDesc[][128]={
 		// beginner
 		"Enemies never do more than 1 Heart of damage, and move slower than normal.  You",
 		"begin with 15 Hearts, and do extra damage.  Enemies drop more items than normal.",
@@ -422,42 +388,74 @@ void DiffChooseDisplay(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
 
+	// Workshop status
+	const char* workshopStatus = Steam()->DescribeWorkshopStatus();
+	Print(3, 3, workshopStatus, 1, 1);
+	Print(3-1, 3-1, workshopStatus, 0, 1);
 	// version #:
 	Print(560,3,VERSION_NO,1,1);
 	Print(559,2,VERSION_NO,0,1);
 
-	PrintGlow(5,330,"Difficulty Level:",0,2);
-
-	if(opt.difficulty>0)
-		PrintGlow(280,330,"<<<",0,2);
-
-	CenterPrintGlow(440,330,diffName[opt.difficulty],0,2);
-	CenterPrintGlow(440-4+Random(9),330-4+Random(9),diffName[opt.difficulty],-20,2);
-
-	if(opt.difficulty<5)
-		PrintGlow(560,330,">>>",0,2);
-
-	PrintGlow(5,450,"The chosen difficulty applies to all game modes.  You can change it at any time",0,1);
-	PrintGlow(5,465,"in the Options menu on the title screen, but that doesn't affect saved games.",0,1);
-
 	PrintGlow(310,318,"Select with arrow keys and press Enter",0,1);
-	for(i=0;i<3;i++)
+	if (cursor == 0)
 	{
-		PrintGlow(5,390+i*15,diffDesc[opt.difficulty*3+i],0,1);
+		PrintGlow(5,330,"Difficulty Level:",0,2);
+
+		if(opt.difficulty>0)
+			PrintGlow(280,330,"<<<",0,2);
+
+		CenterPrintGlow(440,330,DifficultyName(opt.difficulty),0,2);
+		CenterPrintGlow(440-4+Random(9),330-4+Random(9),DifficultyName(opt.difficulty),-20,2);
+
+		if(opt.difficulty<4)
+			PrintGlow(560,330,">>>",0,2);
+
+		for(i=0;i<3;i++)
+		{
+			PrintGlow(5,390+i*15,diffDesc[opt.difficulty*3+i],0,1);
+		}
+
+		PrintGlow(5,450,"The chosen difficulty applies to all game modes.  You can change it at any time",0,1);
+		PrintGlow(5,465,"in the Options menu on the title screen, but that doesn't affect saved games.",0,1);
 	}
-}
+	else if (cursor == 1)
+	{
+		auto pc = GetCurrentPC();
+		PrintGlow(5, 330, "Character:", 0, 2);
 
-void CharacterChooseDisplay(MGLDraw* mgl)
-{
-	if (!IsAnyCharacterUnlocked())
-		return;
+		if (pc > 0)
+			PrintGlow(280,330,"<<<",0,2);
 
-	char playerName[PC_MAX][9] = {"Loony","Bonkula","Toad","Swampdog","Witch","Werewolf","Summony","Ninja"};
+		CenterPrintGlow(440,330,PlayerCharacterName(pc),0,2);
+		CenterPrintGlow(440-4+Random(9),330-4+Random(9),PlayerCharacterName(pc),-20,2);
 
-	//PrintGlow(280, 200, "^", 0, 2);
-	PrintGlow(200, 200, "Character:", 0, 2);
-	PrintGlow(200, 260, "Use up and down to select a character.", 0, 1);
-	CenterPrintGlow(440, 200, playerName[GetCurrentPC()], 0, 2);
+		if (pc < PC_MAX - 1)
+			PrintGlow(560,330,">>>",0,2);
+
+		auto desc = GetCharacterDescription(pc);
+		if (desc != nullptr)
+		{
+			char together[512];
+			span<char> dst = together;
+			for (i = 0; i < 8; i++)
+			{
+				dst = ham_sprintf(dst, "%s ", desc[i]);
+			}
+
+			PrintGlowRect(3, 388, SCRWID-3, SCRHEI, together, 15, 0, 1);
+		}
+		else
+		{
+			PrintGlow(5, 450, "The chosen character applies to all game modes.  You can change it at any time", 0, 1);
+			PrintGlow(5, 465, "in the Badges menu on the title screen, but that doesn't affect saved games.", 0, 1);
+		}
+	}
+
+	if (IsAnyCharacterUnlocked())
+	{
+		PrintGlow(5+35, 330-30+20, "^^^", 0, 0);
+		PrintGlow(5+38, 330+60-28, "vvv", 0, 0);
+	}
 }
 
 void LoadGameDisplay(MGLDraw *mgl)
@@ -468,20 +466,24 @@ void LoadGameDisplay(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
 
+	// Workshop status
+	const char* workshopStatus = Steam()->DescribeWorkshopStatus();
+	Print(3, 3, workshopStatus, 1, 1);
+	Print(3-1, 3-1, workshopStatus, 0, 1);
 	// version #:
 	Print(560,3,VERSION_NO,1,1);
 	Print(559,2,VERSION_NO,0,1);
-	// Copyright:
-	PrintGlow(395,467,"Copyright 2004, Hamumu Software",-10,1);
 
-	PrintGlow(5,360,"Select a game to load",0,0);
-	PrintGlow(5,390,"Or press ESC to cancel",0,0);
+	PrintGlow(20-23/4, 117+320-135, "^", 0, 0);
+	PrintGlow(20-23/4, 273+320-135-(30-26)*5, "v", 0, 0);
+
+	PrintGlow(5,467,"Select a game to load or press ESC to cancel",0,1);
 	// menu options
-	x=320;
+	x=20;
 	y=320;
 	for(i=0;i<5;i++)
 	{
-		ShowSavedGame(x,y-menu[i].bright/4,saves[i],(cursor==i));
+		ShowSavedGame(x+saves[i].bright/4,y,saves[i],(cursor==i));
 		y+=26;
 	}
 }
@@ -577,7 +579,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 			MakeNormalSound(SND_MENUCLICK);
 		}
 
-		if((c&(CONTROL_B1|CONTROL_B2)) && !(oldc&(CONTROL_B1|CONTROL_B2)))
+		if(c & ~oldc & CONTROL_B1)
 		{
 			if(menu[cursor].known)
 			{
@@ -614,6 +616,18 @@ byte LoadGameUpdate(int *lastTime,MGLDraw *mgl)
 	if(*lastTime>TIME_PER_FRAME*30)
 		*lastTime=TIME_PER_FRAME*30;
 
+	byte scan = LastScanCode();
+	if (scan == SDL_SCANCODE_PAGEUP)
+	{
+		saveOffset = (saveOffset + 250 - 5) % 250;
+		GetSavesForMenu();
+	}
+	else if (scan == SDL_SCANCODE_PAGEDOWN)
+	{
+		saveOffset = (saveOffset + 5) % 250;
+		GetSavesForMenu();
+	}
+
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		for(i=0;i<5;i++)
@@ -634,23 +648,32 @@ byte LoadGameUpdate(int *lastTime,MGLDraw *mgl)
 
 		// now real updating
 		c=GetControls()|GetArrows();
+		byte taps = c & ~oldc;
 
-		if((c&CONTROL_UP) && !(oldc&CONTROL_UP))
+		if(taps & CONTROL_UP)
 		{
 			cursor--;
 			if(cursor>4)
+			{
 				cursor=4;
+				saveOffset = (saveOffset + 250 - 5) % 250;
+				GetSavesForMenu();
+			}
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if((c&CONTROL_DN) && !(oldc&CONTROL_DN))
+		if(taps & CONTROL_DN)
 		{
 			cursor++;
 			if(cursor>4)
+			{
 				cursor=0;
+				saveOffset = (saveOffset + 5) % 250;
+				GetSavesForMenu();
+			}
 			MakeNormalSound(SND_MENUCLICK);
 		}
 
-		if((c&(CONTROL_B1|CONTROL_B2)) && !(oldc&(CONTROL_B1|CONTROL_B2)))
+		if(taps & CONTROL_B1)
 		{
 			if(saves[cursor].known)
 			{
@@ -667,7 +690,7 @@ byte LoadGameUpdate(int *lastTime,MGLDraw *mgl)
 		oldc=c;
 
 		c=mgl->LastKeyPressed();
-		if(c==27)
+		if(c==27 || (taps & CONTROL_B2))
 		{
 			MakeNormalSound(SND_MENUCANCEL);
 			return 0;
@@ -690,31 +713,47 @@ byte ChooseDiffUpdate(int *lastTime,MGLDraw *mgl)
 	{
 		// now real updating
 		c=GetControls()|GetArrows();
+		byte taps = c & ~oldc;
 
-		if((c&CONTROL_LF) && !(oldc&CONTROL_LF))
+		if (IsAnyCharacterUnlocked() && (taps & (CONTROL_UP | CONTROL_DN)))
 		{
-			if(opt.difficulty>0)
-				opt.difficulty--;
-			MakeNormalSound(SND_MENUCLICK);
-		}
-		if((c&CONTROL_RT) && !(oldc&CONTROL_RT))
-		{
-			if(opt.difficulty<5)
-				opt.difficulty++;
-			MakeNormalSound(SND_MENUCLICK);
-		}
-		if ((c & CONTROL_DN) && !(oldc & CONTROL_DN) && IsAnyCharacterUnlocked())
-		{
-			NextCharacter();
-			MakeNormalSound(SND_MENUCLICK);
-		}
-		if ((c & CONTROL_UP) && !(oldc & CONTROL_UP) && IsAnyCharacterUnlocked())
-		{
-			PrevCharacter();
-			MakeNormalSound(SND_MENUCLICK);
+			cursor = !cursor;
 		}
 
-		if((c&(CONTROL_B1|CONTROL_B2)) && !(oldc&(CONTROL_B1|CONTROL_B2)))
+		if (cursor == 0)
+		{
+			if (taps & CONTROL_LF)
+			{
+				if(opt.difficulty > 0)
+					opt.difficulty--;
+				else
+					opt.difficulty = NUM_DIFFICULTY - 1;
+				MakeNormalSound(SND_MENUCLICK);
+			}
+			if(taps & CONTROL_RT)
+			{
+				if(opt.difficulty < NUM_DIFFICULTY - 1)
+					opt.difficulty++;
+				else
+					opt.difficulty = 0;
+				MakeNormalSound(SND_MENUCLICK);
+			}
+		}
+		else if (cursor == 1)
+		{
+			if (taps & CONTROL_LF)
+			{
+				PrevCharacter();
+				MakeNormalSound(SND_MENUCLICK);
+			}
+			if (taps & CONTROL_RT)
+			{
+				NextCharacter();
+				MakeNormalSound(SND_MENUCLICK);
+			}
+		}
+
+		if(taps & CONTROL_B1)
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			SaveOptions();
@@ -727,7 +766,7 @@ byte ChooseDiffUpdate(int *lastTime,MGLDraw *mgl)
 		oldc=c;
 
 		c=mgl->LastKeyPressed();
-		if(c==27)
+		if(c==27 || (taps & CONTROL_B2))
 		{
 			MakeNormalSound(SND_MENUCANCEL);
 			return 0;
@@ -771,19 +810,19 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 	menu[MENU_RANDOMIZER].known=1;
 
 	cursor=0;
-	loadingGame=0;
+	loadingGame=TitleSubmenu::MainMenu;
 	GetTaps();
 	while(b==0)
 	{
 		lastTime+=TimeLength();
 		StartClock();
 
-		if(loadingGame==0)
+		if(loadingGame==TitleSubmenu::MainMenu)
 		{
 			b=MainMenuUpdate(&lastTime,mgl);
 			MainMenuDisplay(mgl);
 		}
-		else if(loadingGame==1)
+		else if(loadingGame==TitleSubmenu::LoadGame)
 		{
 			b=LoadGameUpdate(&lastTime,mgl);
 			LoadGameDisplay(mgl);
@@ -793,7 +832,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 					menu[i].bright=-32;
 
 				cursor=1;
-				loadingGame=0;
+				loadingGame=TitleSubmenu::MainMenu;
 			}
 			else if(b==2)
 			{
@@ -802,15 +841,14 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 			}
 			b=0;
 		}
-		else
+		else if (loadingGame == TitleSubmenu::ChooseDiff)
 		{
 			b=ChooseDiffUpdate(&lastTime,mgl);
 			DiffChooseDisplay(mgl);
-			CharacterChooseDisplay(mgl);
 			if(b==0)
 			{
 				cursor=0;
-				loadingGame=0;
+				loadingGame=TitleSubmenu::MainMenu;
 			}
 			else if(b==2)
 			{
@@ -830,7 +868,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 			CO_RETURN 255;
 		}
 		EndClock();
-		if(!loadingGame && numRuns>=30*15)
+		if(loadingGame==TitleSubmenu::MainMenu && numRuns>=30*15)
 		{
 			GetTaps();
 			oldc=255;
@@ -838,25 +876,25 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 			mgl->LoadBMP("graphics/title.bmp");
 			numRuns=0;
 		}
-		if(!loadingGame && b==MENU_LOADGAME+1)
+		if(loadingGame==TitleSubmenu::MainMenu && b==MENU_LOADGAME+1)
 		{
-			loadingGame=1;
+			loadingGame=TitleSubmenu::LoadGame;
 			GetSavesForMenu();
 			cursor=0;
 			b=0;
 			oldc=255;
 		}
-		if(!loadingGame && b==MENU_ADVENTURE+1)
+		if(loadingGame==TitleSubmenu::MainMenu && b==MENU_ADVENTURE+1)
 		{
-			loadingGame=2;
+			loadingGame=TitleSubmenu::ChooseDiff;
 			choosingDiffFor=0;
 			cursor=0;
 			b=0;
 			oldc=255;
 		}
-		if(!loadingGame && b==MENU_REMIX+1)
+		if(loadingGame==TitleSubmenu::MainMenu && b==MENU_REMIX+1)
 		{
-			loadingGame=2;
+			loadingGame=TitleSubmenu::ChooseDiff;
 			choosingDiffFor=1;
 			cursor=0;
 			b=0;
@@ -868,18 +906,19 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 	CO_RETURN b;
 }
 
-void CreditsRender(int y)
+// true = continue, false = document is now offscreen
+bool CreditsRender(int y, const char* const* document)
 {
 	int i,ypos;
-	char *s;
+	const char *s;
 	char b;
 
 	i=0;
 
 	ypos=0;
-	while(credits[i][0]!='$')
+	while(document[i][0]!='$')
 	{
-		s=credits[i];
+		s=document[i];
 		if(ypos-y>-60)
 		{
 			if(ypos-y>240)
@@ -902,427 +941,93 @@ void CreditsRender(int y)
 			{
 				DrawFillBox(320-70,ypos-y+8,320+70,ypos-y+9,4*32+31+b);
 			}
+			else if(s[0]=='&')
+			{
+				CenterPrintColor(320,ypos-y,&s[1],4,b,0);
+			}
 			else
 				CenterPrintColor(320,ypos-y,s,4,b,1);
 		}
 		ypos+=20;
 		i++;
 		if(ypos-y>=480)
-			return;
+			return true;  // went off the bottom before document ended
 	}
+
+	// document ended, was it off the top?
+	return ypos-y>-60;
 }
 
-TASK(void) Credits(MGLDraw *mgl,byte init)
+static TASK(void) DoCredits(MGLDraw *mgl, const char* const* document)
 {
-	int y=-470;
-	int lastTime;
-	int wid;
-	byte* pos;
-	int i;
-	dword hangon;
+	int y = -470;
+	dword lastTime = 0;
 
-	EndClock();
-	hangon=TimeLength();
-
+	GetTaps();
 	mgl->LastKeyPressed();
 	mgl->LoadBMP("graphics/title.bmp");
-	lastTime=1;
+
+	StartClock();
+	while (true)
+	{
+		EndClock();
+		lastTime += TimeLength();
+		StartClock();
+
+		lastTime = std::min(lastTime, TIME_PER_FRAME * 30u);
+		while (lastTime >= TIME_PER_FRAME)
+		{
+			if (GetControls() & CONTROL_UP)
+				y = std::max(-470, y - 3);
+			else if (GetControls() & (CONTROL_DN | CONTROL_B1))
+				y += 3;
+			else
+				y += 1;
+			UpdatePlasma();
+			lastTime -= TIME_PER_FRAME;
+		}
+
+		memset(mgl->GetScreen(), 4*32 + 2, mgl->GetWidth() * mgl->GetHeight());
+		RenderPlasma2(mgl);
+		bool stillGoing = CreditsRender(y, document);
+		AWAIT mgl->Flip();
+
+		if(!mgl->Process() || mgl->LastKeyPressed() == SDLK_ESCAPE || (GetTaps() & CONTROL_B2) || !stillGoing)
+		{
+			break;
+		}
+	}
+	ExitPlasma();
+}
+
+TASK(void) Credits(MGLDraw *mgl, byte init)
+{
 	if(init)
 		InitPlasma(4);
 
-	hangon=0;
-	for(i=0;i<40;i++)
+	int hangon=0;
+	for(int i=0;i<40;i++)
 		if(opt.meritBadge[i])
 			hangon++;
 
 	if(hangon==40)
 		AWAIT CheatText(mgl,0);
 
-	while(1)
-	{
-		lastTime+=TimeLength();
-		StartClock();
-
-		wid=mgl->GetWidth();
-		pos=mgl->GetScreen()+0*wid;
-		for(i=0;i<480;i++)
-		{
-			memset((byte *)pos,4*32+2,640);
-			pos+=wid;
-		}
-
-		RenderPlasma2(mgl);
-		CreditsRender(y);
-
-		if(lastTime>TIME_PER_FRAME*30)
-			lastTime=TIME_PER_FRAME*30;
-
-		while(lastTime>=TIME_PER_FRAME)
-		{
-			y+=1;
-			UpdatePlasma();
-			lastTime-=TIME_PER_FRAME;
-		}
-
-		AWAIT mgl->Flip();
-		EndClock();
-
-		if(!mgl->Process())
-		{
-			ExitPlasma();
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-		if(mgl->LastKeyPressed())
-		{
-			ExitPlasma();
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-		if(y==END_OF_CREDITS)
-		{
-			ExitPlasma();
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-	}
-	ResetClock(hangon);
-}
-
-void CheatsRender(int y)
-{
-	int i,ypos;
-	char *s;
-	char b;
-
-	i=0;
-
-	ypos=0;
-	while(cheatTxt[i][0]!='$')
-	{
-		s=cheatTxt[i];
-		if(ypos-y>-60)
-		{
-			if(ypos-y>240)
-				b=-((ypos-y)-300)/10;
-			else
-				b=0;
-
-			if(b>0)
-				b=0;
-
-			if(s[0]=='@')
-			{
-				CenterPrintColor(320,ypos-y,&s[1],4,b,2);
-			}
-			else if(s[0]=='#')
-			{
-				DrawFillBox(320-200,ypos-y+8,320+200,ypos-y+11,4*32+31+b);
-			}
-			else if(s[0]=='%')
-			{
-				DrawFillBox(320-70,ypos-y+8,320+70,ypos-y+9,4*32+31+b);
-			}
-			else
-				CenterPrintColor(320,ypos-y,s,4,b,1);
-		}
-		ypos+=20;
-		i++;
-		if(ypos-y>=480)
-			return;
-	}
+	AWAIT DoCredits(mgl, credits);
 }
 
 TASK(void) CheatText(MGLDraw *mgl,byte init)
 {
-	int y=-470;
-	int lastTime;
-	int wid;
-	byte* pos;
-	int i;
-	dword hangon;
-
-	EndClock();
-	hangon=TimeLength();
-
-	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics/title.bmp");
-	lastTime=1;
 	if(init)
 		InitPlasma(4);
-	while(1)
-	{
-		lastTime+=TimeLength();
-		StartClock();
 
-		wid=mgl->GetWidth();
-		pos=mgl->GetScreen()+0*wid;
-		for(i=0;i<480;i++)
-		{
-			memset(pos,4*32+2,640);
-			pos+=wid;
-		}
-
-		RenderPlasma2(mgl);
-		CheatsRender(y);
-
-		if(lastTime>TIME_PER_FRAME*30)
-			lastTime=TIME_PER_FRAME*30;
-
-		while(lastTime>=TIME_PER_FRAME)
-		{
-			y+=1;
-			UpdatePlasma();
-			lastTime-=TIME_PER_FRAME;
-		}
-
-		AWAIT mgl->Flip();
-		EndClock();
-
-		if(!mgl->Process())
-		{
-			ExitPlasma();
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-		if(mgl->LastKeyPressed())
-		{
-			ExitPlasma();
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-		if(y==END_OF_CHEATS)
-		{
-			ExitPlasma();
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-	}
-	ResetClock(hangon);
-}
-
-void VictoryTextRender(int y)
-{
-	int i,ypos;
-	char *s;
-	char b;
-
-	i=0;
-
-	ypos=0;
-	while(victoryTxt[i][0]!='$')
-	{
-		s=victoryTxt[i];
-		if(ypos-y>-60)
-		{
-			if(ypos-y>240)
-				b=-((ypos-y)-300)/10;
-			else
-				b=0;
-
-			if(b>0)
-				b=0;
-
-			if(s[0]=='@')
-			{
-				CenterPrintColor(320,ypos-y,&s[1],4,b,2);
-			}
-			else if(s[0]=='#')
-			{
-				DrawFillBox(320-200,ypos-y+8,320+200,ypos-y+11,4*32+31+b);
-			}
-			else if(s[0]=='%')
-			{
-				DrawFillBox(320-70,ypos-y+8,320+70,ypos-y+9,4*32+31+b);
-			}
-			else
-				CenterPrintColor(320,ypos-y,s,4,b,0);
-		}
-
-		ypos+=20;
-		i++;
-		if(ypos-y>=480)
-			return;
-	}
+	AWAIT DoCredits(mgl, cheatTxt);
 }
 
 TASK(void) VictoryText(MGLDraw *mgl)
 {
-	int y=-470;
-	int lastTime;
-	int wid;
-	byte* pos;
-	int i;
-	dword hangon;
-
-	EndClock();
-	hangon=TimeLength();
-	lastTime=1;
-	mgl->LastKeyPressed();
-	mgl->LoadBMP("graphics/title.bmp");
 	InitPlasma(4);
-	while(1)
-	{
-		lastTime+=TimeLength();
-		StartClock();
-
-		wid=mgl->GetWidth();
-		pos=mgl->GetScreen()+0*wid;
-		for(i=0;i<480;i++)
-		{
-			memset(pos,4*32+2,640);
-			pos+=wid;
-		}
-
-		RenderPlasma2(mgl);
-
-		VictoryTextRender(y);
-
-		if(lastTime>TIME_PER_FRAME*30)
-			lastTime=TIME_PER_FRAME*30;
-
-		while(lastTime>=TIME_PER_FRAME)
-		{
-			y++;
-			UpdatePlasma();
-			lastTime-=TIME_PER_FRAME;
-		}
-		AWAIT mgl->Flip();
-		EndClock();
-		if(!mgl->Process())
-		{
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-		if(mgl->LastKeyPressed()==27)
-		{
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-		if(y==END_OF_VICTORY)
-		{
-			ResetClock(hangon);
-			CO_RETURN;
-		}
-	}
-	ResetClock(hangon);
-}
-
-TASK(byte) SpeedSplash(MGLDraw *mgl,const char *fname)
-{
-	int i,j,clock;
-	RGB desiredpal[256],curpal[256];
-	byte mode,done;
-	byte c,oldc;
-
-
-	for(i=0;i<256;i++)
-	{
-		curpal[i].r=0;
-		curpal[i].g=0;
-		curpal[i].b=0;
-	}
-	mgl->SetPalette(curpal);
-	mgl->RealizePalette();
-
-	mgl->LastKeyPressed();
-	oldc=GetControls()|GetArrows();
-
-	if (!mgl->LoadBMP(fname, desiredpal))
-		CO_RETURN 0;
-
-	mode=0;
-	clock=0;
-	done=0;
-	while(!done)
-	{
-		AWAIT mgl->Flip();
-		if(!mgl->Process())
-			CO_RETURN 0;
-		c=mgl->LastKeyPressed();
-
-		if(c==27)
-			CO_RETURN 0;
-		else if(c)
-			mode=2;
-
-		c=GetControls()|GetArrows();
-		if((c&(CONTROL_B1|CONTROL_B2)) && (!(oldc&(CONTROL_B1|CONTROL_B2))))
-			mode=2;
-		oldc=c;
-
-		clock++;
-		switch(mode)
-		{
-			case 0:	// fading in
-				for(j=0;j<16;j++)
-					for(i=0;i<256;i++)
-					{
-						if(curpal[i].r<desiredpal[i].r)
-							curpal[i].r++;
-						if(curpal[i].g<desiredpal[i].g)
-							curpal[i].g++;
-						if(curpal[i].b<desiredpal[i].b)
-							curpal[i].b++;
-					}
-				mgl->SetPalette(curpal);
-				mgl->RealizePalette();
-				if(clock>16)
-				{
-					mode=1;
-					clock=0;
-				}
-				break;
-			case 1:
-				// sit around
-				break;
-			case 2:	// fading out
-				clock=0;
-				for(j=0;j<16;j++)
-					for(i=0;i<256;i++)
-					{
-						if(curpal[i].r>0)
-							curpal[i].r--;
-						else
-							clock++;
-						if(curpal[i].g>0)
-							curpal[i].g--;
-						else
-							clock++;
-						if(curpal[i].b>0)
-							curpal[i].b--;
-						else
-							clock++;
-					}
-				mgl->SetPalette(curpal);
-				mgl->RealizePalette();
-				if(clock==256*3*16)
-					done=1;
-				break;
-		}
-	}
-	mgl->ClearScreen();
-	AWAIT mgl->Flip();
-	CO_RETURN 1;
-}
-
-TASK(void) HelpScreens(MGLDraw *mgl)
-{
-	int i;
-	char name[32];
-
-	for(i=0;i<5;i++)
-	{
-		sprintf(name,"docs/help%d.bmp",i+1);
-		if(!AWAIT SpeedSplash(mgl,name))
-			CO_RETURN;
-	}
-}
-
-TASK(void) DemoSplashScreens(MGLDraw *mgl)
-{
-	if(!AWAIT SpeedSplash(mgl,"graphics/advert.bmp"))
-		CO_RETURN;
+	AWAIT DoCredits(mgl, victoryTxt);
 }
 
 TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
@@ -1357,7 +1062,7 @@ TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
 		AWAIT mgl->Flip();
 		if(!mgl->Process())
 			CO_RETURN;
-		if(mgl->LastKeyPressed())
+		if(mgl->LastKeyPressed() || GetJoyButtons())
 			mode=2;
 		EndClock();
 		tick+=TimeLength();

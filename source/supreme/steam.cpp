@@ -9,12 +9,14 @@ void SteamManager::OpenURLOverlay(const char *url)
 }
 
 #ifdef HAS_STEAM_API
-#include <steam/steam_api.h>
+#include <stdlib.h>
+#include <inttypes.h>
 #include <vector>
 #include <string>
 #include <map>
-#include <inttypes.h>
 #include <sstream>
+#include <algorithm>
+#include <steam/steam_api.h>
 #include "appdata.h"
 #include "vanilla_extract.h"
 #include "game.h"
@@ -24,6 +26,7 @@ void SteamManager::OpenURLOverlay(const char *url)
 #include "theater.h"
 #include "hiscore.h"
 #include "progress.h"
+#include "string_extras.h"
 
 // Matches Unpack* in leaderboard.cpp
 static int32_t PackWorldProgress(worldData_t* worldProgress)
@@ -135,8 +138,6 @@ static std::map<std::string, int32_t> GetStats()
 class SteamManagerImpl : public SteamManager
 {
 public:
-	std::vector<PublishedFileId_t> subscribedItemIds;
-
 	~SteamManagerImpl()
 	{
 		SteamAPI_Shutdown();
@@ -222,7 +223,7 @@ public:
 
 	// ------------------------------------------------------------------------
 	// Achievements & statistics
-	const static word STATS_STORE_COOLDOWN = 2 * 60 * 30;  // 2 minutes
+	static const word STATS_STORE_COOLDOWN = 2 * 60 * 30;  // 2 minutes
 	bool steam_stats_ready = false;
 	bool game_profile_ready = false;
 	bool stats_need_store = false;
@@ -286,7 +287,7 @@ public:
 		}
 
 		char name[64];
-		sprintf(name, "goal_%d", goal);
+		ham_sprintf(name, "goal_%d", goal);
 
 		bool steamAchieved;
 		if (SteamUserStats()->GetAchievement(name, &steamAchieved) && !steamAchieved)
@@ -321,6 +322,7 @@ public:
 	// ------------------------------------------------------------------------
 	// Workshop download
 	std::string workshopStatus;
+	std::vector<PublishedFileId_t> subscribedItemIds;
 
 	const char* DescribeWorkshopStatus() override
 	{
@@ -645,7 +647,7 @@ public:
 
 	struct UploadArcadeScoreJob : public LeaderboardUploadJob
 	{
-		UploadArcadeScoreJob(int32_t score)
+		explicit UploadArcadeScoreJob(int32_t score)
 		{
 			this->score = score;
 		}
@@ -747,9 +749,19 @@ public:
 
 static std::unique_ptr<SteamManager> gSteamManager = nullptr;
 
-SteamManager* SteamManager::Init()
+SteamManager* SteamManager::Init(const char* appId)
 {
 #ifdef HAS_STEAM_API
+	if (appId && !getenv("SteamAppId"))
+	{
+		// setenv is wildly non-threadsafe, so do this before spawning threads
+#ifdef _WIN32
+		_putenv_s("SteamAppId", appId);
+#else
+		setenv("SteamAppId", appId, 0);
+#endif
+	}
+
 	if (SteamAPI_Init())
 	{
 		gSteamManager = std::make_unique<SteamManagerImpl>();

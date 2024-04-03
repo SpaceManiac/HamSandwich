@@ -54,6 +54,7 @@ static editopt_t editopt={MAP_SHOWLIGHTS|MAP_SHOWWALLS|MAP_SHOWITEMS|MAP_SHOWBAD
 byte InitEditor(void)
 {
 	JamulSoundPurge();
+	KillSong();
 	NewWorld(&world,editmgl);
 	curMap=world.map[0];
 	curMapNum=0;
@@ -1630,6 +1631,8 @@ TASK(byte) LunaticEditor(MGLDraw *mgl)
 	if(!InitEditor())
 		CO_RETURN QUITGAME;
 
+	bool gamepad = GetGamepadButtons();
+
 	exitcode=CONTINUE;
 	while(exitcode==CONTINUE)
 	{
@@ -1638,10 +1641,20 @@ TASK(byte) LunaticEditor(MGLDraw *mgl)
 		HandleKeyPresses();
 		exitcode=EditorRun(&lastTime);
 		EditorDraw();
+		if (gamepad)
+			Print(8, 8, "The editor is meant for mouse and keyboard. Press BACK on gamepad to exit.", 0, 1);
 		AWAIT editmgl->Flip();
 
-		if(lastKey==27)
+		if(lastKey==27 || (GetGamepadButtons() & (1 << SDL_CONTROLLER_BUTTON_BACK)))
 			exitcode=QUITGAME;
+
+		if (lastKey || editmgl->MouseDown())
+		{
+			gamepad = false;
+			lastKey = 0;
+		}
+		if (GetGamepadButtons())
+			gamepad = true;
 
 		if(!editmgl->Process())
 			exitcode=QUITGAME;

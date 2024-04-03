@@ -1,14 +1,14 @@
 #include "sound.h"
 #include "display.h"
 #include "options.h"
+#include "hammusic.h"
 
-const double PAN_MULTIPLIER = 0.1984375;
-
-int sndNum;
+static int sndNum;
 
 void InitSound(void)
 {
 	JamulSoundPurge();
+	KillSong();
 	sndNum=-1;
 }
 
@@ -34,24 +34,10 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 	x>>=FIXSHIFT;
 	y>>=FIXSHIFT;
 	pan=(x-cx)*2;
-	pan *= PAN_MULTIPLIER;
-	if (pan<-127){
-		pan = -127;
-	}
-	if (pan>127){
-		pan = 127;
-	}
-
 	vol=-((x-cx)*(x-cx)+(y-cy)*(y-cy))/128;
-	vol += 5000;
-	vol /= 39.0625;
-	if(vol<0)
+	if(vol<-5000)
 		return;	// too quiet to play
-	if(vol>128)
-		vol = 128;
-	vol += 5000;
-	vol /= 39.0625;
-	GoPlaySound(snd,pan * PAN_MULTIPLIER,vol,(byte)flags,priority);
+	GoPlaySound(snd, pan * 127 / 640, vol * 255 / 5000, flags, priority);
 }
 
 void MakeNormalSound(int snd)
@@ -107,13 +93,17 @@ void LoopingSound(int snd)
 	if(opt.cheats[CH_VINTAGE] && snd!=SND_ENTERMAP && snd!=SND_FILM)
 		return;
 
-	GoPlaySound(snd,0,0,SND_MAXPRIORITY|SND_CUTOFF|SND_ONE|SND_LOOPING,MAX_SNDPRIORITY);
+	if (sndNum == snd)
+		return;
+
+	char buf[32];
+	snprintf(buf, 32, "sound/snd%03d.wav", snd);
+	PlaySongFile(buf);
 	sndNum=snd;
 }
 
 void KillSong(void)
 {
-	if(sndNum!=-1)
-		JamulSoundStop(sndNum);
+	StopSong();
 	sndNum=-1;
 }

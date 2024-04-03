@@ -1,6 +1,7 @@
 #define __STDC_FORMAT_MACROS
 #include "jspfile.h"
 #include <fstream>
+#include <string>
 #include <stdint.h>
 #include <inttypes.h>
 #include "lunaticpal.h"

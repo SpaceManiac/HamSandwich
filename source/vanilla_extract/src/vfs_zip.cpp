@@ -4,7 +4,8 @@
 #include "vec_rw.h"
 #include "base_archive.h"
 
-using namespace vanilla;
+using vanilla::CaseInsensitive;
+using vanilla::Vfs;
 
 // ----------------------------------------------------------------------------
 // For Android's benefit, a wrapper from SDL_RWops to zip i/o
@@ -80,10 +81,10 @@ namespace owned
 				}
 			}
 		};
-	}
+	}  // namespace _deleter
 
 	typedef std::unique_ptr<::unzFile__, _deleter::unzFile__> unzFile;
-}
+}  // namespace owned
 
 // ----------------------------------------------------------------------------
 // Zip VFS implementation
@@ -132,7 +133,7 @@ public:
 				files.push_back(file_pos);
 
 				vanilla::Archive::Directory* current = &archive.root;
-				if (const char* last_component = vanilla::Archive::navigate(filename, current))
+				if (const char* last_component = vanilla::Archive::navigate(filename, &current))
 				{
 					current->files.insert(make_pair(std::string(last_component), location));
 				}
@@ -147,7 +148,7 @@ public:
 	}
 
 	owned::SDL_RWops open_sdl(const char* filename) override;
-	bool list_dir(const char* directory, std::set<std::string, CaseInsensitive>& output) override;
+	bool list_dir(const char* directory, std::set<std::string, CaseInsensitive>* output) override;
 };
 
 std::unique_ptr<Vfs> vanilla::open_zip(owned::SDL_RWops rw)
@@ -186,7 +187,7 @@ owned::SDL_RWops ZipVfs::open_sdl(const char* filename)
 	return vanilla::create_vec_rwops(std::move(buffer));
 }
 
-bool ZipVfs::list_dir(const char* directory_raw, std::set<std::string, CaseInsensitive>& output)
+bool ZipVfs::list_dir(const char* directory_raw, std::set<std::string, CaseInsensitive>* output)
 {
 	return archive.list_dir(directory_raw, output);
 }

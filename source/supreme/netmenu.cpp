@@ -56,7 +56,7 @@ enum class ButtonId
 	AddonPage,
 };
 
-struct profButton_t
+struct NetMenuButton
 {
 	int x,y;
 	int wid;
@@ -65,7 +65,7 @@ struct profButton_t
 	bool steamOnly = false;
 };
 
-static profButton_t btn[]={
+static const NetMenuButton btn[]={
 	{20,100,320,"More games by Hamumu", ButtonId::HamumuWebsite},
 	{20,160,320,"Get this game's source code", ButtonId::HamSandwich},
 	{20,220,320,"Join the LoonyChat on Discord", ButtonId::LoonyChat},

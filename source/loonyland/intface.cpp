@@ -111,8 +111,8 @@ void AddRadarBlip(int x,int y,byte c,Map *map)
 {
 	int rx,ry;
 
-	rx=(x*128)/map->width;
-	ry=(y*128)/map->height;
+	rx = (x*128) / (map->width * TILE_WIDTH * FIXAMT);
+	ry = (y*128) / (map->height * TILE_HEIGHT * FIXAMT);
 
 	if(rx<0 || rx>127 || ry<0 || ry>127)
 		return;

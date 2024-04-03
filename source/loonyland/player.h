@@ -9,6 +9,7 @@
 #include "bullet.h"
 #include "world.h"
 #include "intface.h"
+#include "string_extras.h"
 
 #define MAX_MONEY	250
 #define COMBO_TIME	30*2
@@ -195,7 +196,7 @@ void PoisonPlayer(byte amt);
 byte PlayerIsPoisoned(void);
 void SetTportClock(byte tp);
 byte GetTportClock(void);
-float CalcPercent(player_t *p);
+float CalcPercent(const player_t *p);
 void PlayerSetVar(int v,int val);
 void PlayerClearTempVars(void);
 void PlayerGetWeapon(byte wpn);
@@ -213,6 +214,8 @@ void CallFarley(Guy *me);
 void HandlePoison(Guy *me);
 byte WeaponCost(byte wpn,byte level);
 void PlayerFireUltraWeapon(Guy *me);
+
+void DescribeSave(span<char> dst, const player_t* player);
 
 std::string GetPlayerSeed();
 

@@ -586,7 +586,7 @@ void CreditsRender(int y)
 TASK(void) Credits(MGLDraw *mgl)
 {
 	int y=-470;
-	static byte cmd=0;
+	byte cmd=0;
 	dword lastTime;
 
 	mgl->LastKeyPressed();

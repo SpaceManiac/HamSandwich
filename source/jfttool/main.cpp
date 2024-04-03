@@ -110,7 +110,7 @@ ConversionError convertFontToPNG(string fname, char* outFolder) {
 
 		string outFullFileName = "";
 		char outfname[64];
-		sprintf(outfname, "U+%X.png", i + (int)header.firstChar);
+		snprintf(outfname, sizeof(outfname), "U+%X.png", i + (int)header.firstChar);
 		string outfnameStr = outfname;
 
 		if(!outFolderPath.empty()) {
@@ -178,7 +178,7 @@ ConversionError convertTextToFont(string fname, char* outFileName) {
 	std::vector<uint8_t> data;
 	for (int i = 0; i < header.numChars; ++i) {
 		char infname[64];
-		sprintf(infname, "U+%X.png", i + (int)header.firstChar);
+		snprintf(infname, sizeof(infname), "U+%X.png", i + (int)header.firstChar);
 		string inFileNameStr = infname;
 
 		filesystem::path filePath = fname;

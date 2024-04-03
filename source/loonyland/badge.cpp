@@ -9,6 +9,7 @@
 #include "fireworks.h"
 #include "title.h"
 #include "palettes.h"
+#include "steam.h"
 
 static byte cursor;
 static byte oldc;
@@ -16,7 +17,7 @@ static byte viewing;
 static byte cantearn;
 static char badgeKeys[17];
 
-badge_t badge[NUM_BADGES]={
+static const badge_t badge[NUM_BADGES]={
 	{"Evil Smashin'",
 	 "Earned for defeating The Evilizer in three",
 	 "minutes.",
@@ -172,7 +173,7 @@ badge_t badge[NUM_BADGES]={
 	 "",
 	 0},
 	{"Vampire Slayin'",
-	 "Earned for beating Bonkula in one minute.",
+	 "Earned for beating Bonkula in two minutes.",
 	 "",
 	 CH_BONKULA,
 	 "Play As Bonkula",
@@ -631,15 +632,15 @@ void BadgeCheatKey(char c)
 					b++;
 
 			if(b>=5)
-				opt.modes[0]=1;
+				opt.modes[MODE_SURVIVAL]=1;
 			if(b>=10)
-				opt.modes[1]=1;
+				opt.modes[MODE_BOSSBASH]=1;
 			if(b>=15)
-				opt.modes[2]=1;
+				opt.modes[MODE_LOONYBALL]=1;
 			if(b>=20)
-				opt.modes[3]=1;
+				opt.modes[MODE_BOWLING]=1;
 			if(b>0)
-				opt.modes[4]=1;
+				opt.modes[MODE_BADGES]=1;
 		}
 		else
 		{
@@ -649,15 +650,15 @@ void BadgeCheatKey(char c)
 					b++;
 
 			if(b<5)
-				opt.modes[0]=0;
+				opt.modes[MODE_SURVIVAL]=0;
 			if(b<10)
-				opt.modes[1]=0;
+				opt.modes[MODE_BOSSBASH]=0;
 			if(b<15)
-				opt.modes[2]=0;
+				opt.modes[MODE_LOONYBALL]=0;
 			if(b<20)
-				opt.modes[3]=0;
+				opt.modes[MODE_BOWLING]=0;
 			if(b==0)
-				opt.modes[4]=0;
+				opt.modes[MODE_BADGES]=0;
 		}
 
 		MakeSuperLoony();
@@ -710,7 +711,8 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 	c=mgl->LastKeyPressed();
 	c2=GetControls()|GetArrows();
 
-	if(c==27)
+	// Ctrl+Shift is still how to type cheats, but gamepad CONTROL_B2 is quit
+	if(c==27 || (GetGamepadButtons() & ((1 << SDL_CONTROLLER_BUTTON_B) | (1 << SDL_CONTROLLER_BUTTON_BACK))))
 	{
 		return 1;
 	}
@@ -758,7 +760,7 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 			cursor+=10;
 		MakeNormalSound(SND_MENUCLICK);
 	}
-	if((c2&(CONTROL_B1|CONTROL_B2|CONTROL_B3)) && (!(oldc&(CONTROL_B1|CONTROL_B2|CONTROL_B3))))
+	if((c2 & ~oldc) & (CONTROL_B1 | CONTROL_B3))
 	{
 		if(opt.meritBadge[cursor])
 		{
@@ -788,6 +790,7 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 				{
 					GreyPalette(GetDisplayMGL());
 					JamulSoundPurge();
+					KillSong();
 				}
 				else
 				{
@@ -932,9 +935,9 @@ static TASK(void) EarnBadgeTask(byte b)
 		if(opt.meritBadge[i])
 			c++;
 
-	if(c>=25 && opt.expando[0]==0)
+	if(c>=25 && opt.remixMode==0)
 	{
-		opt.expando[0]=1;
+		opt.remixMode=1;
 		AWAIT ShowGameMode(4,25);
 		SaveOptions();
 	}
@@ -942,30 +945,31 @@ static TASK(void) EarnBadgeTask(byte b)
 	if(opt.meritBadge[b])
 		CO_RETURN;
 
-	opt.modes[4]=1;	// this just indicates that badge listings should be available
+	opt.modes[MODE_BADGES]=1;	// this just indicates that badge listings should be available
 
 	MakeNormalSound(SND_BADGEGET);
 	opt.meritBadge[b]=1;
+	Steam()->CompleteGoal(b);
 	AWAIT ShowBadge(b);
 
-	if(c>=5 && opt.modes[0]==0)
+	if(c>=5 && opt.modes[MODE_SURVIVAL]==0)
 	{
-		opt.modes[0]=1;
+		opt.modes[MODE_SURVIVAL]=1;
 		AWAIT ShowGameMode(0,5);
 	}
-	if(c>=10 && opt.modes[1]==0)
+	if(c>=10 && opt.modes[MODE_BOSSBASH]==0)
 	{
-		opt.modes[1]=1;
+		opt.modes[MODE_BOSSBASH]=1;
 		AWAIT ShowGameMode(1,10);
 	}
-	if(c>=15 && opt.modes[2]==0)
+	if(c>=15 && opt.modes[MODE_LOONYBALL]==0)
 	{
-		opt.modes[2]=1;
+		opt.modes[MODE_LOONYBALL]=1;
 		AWAIT ShowGameMode(2,15);
 	}
-	if(c>=20 && opt.modes[3]==0)
+	if(c>=20 && opt.modes[MODE_BOWLING]==0)
 	{
-		opt.modes[3]=1;
+		opt.modes[MODE_BOWLING]=1;
 		AWAIT ShowGameMode(3,20);
 	}
 
@@ -1303,4 +1307,27 @@ void BadgeCheck(byte event,int value,Map *map)
 	//AddGarbageTime(then-now);
 	ResetClock(0);
 
+}
+
+auto GetCharacterDescription(PlayerCharacterType character) -> const char(*)[55]
+{
+	switch (character)
+	{
+		case PC_Bonkula:
+			return badge[BADGE_BONKULA].cheatDesc;
+		case PC_Toad:
+			return badge[BADGE_ANNOY].cheatDesc;
+		case PC_Swampdog:
+			return badge[BADGE_SNEAK].cheatDesc;
+		case PC_Witch:
+			return badge[BADGE_WITCH].cheatDesc;
+		case PC_Werewolf:
+			return badge[BADGE_WOLFDEN].cheatDesc;
+		case PC_Summon:
+			return badge[BADGE_REMIX].cheatDesc;
+		case PC_Thief:
+			return badge[BADGE_WITCHCRAFT].cheatDesc;
+		default:
+			return nullptr;
+	}
 }

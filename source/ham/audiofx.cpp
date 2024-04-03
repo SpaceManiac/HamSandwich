@@ -1,10 +1,10 @@
 #include "audiofx.h"
-#include "jamultypes.h"
 #include <stdlib.h>
 #include <memory.h>
-
+#include <utility>
 #include <SDL.h>
 #include <SDL_mixer.h>
+#include "jamultypes.h"
 
 static int SampleSize(uint16_t format)
 {

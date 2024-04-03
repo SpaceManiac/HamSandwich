@@ -1,7 +1,8 @@
 #include "hamworld.h"
+#include <string.h>
+#include <string>
 #include "log.h"
 #include "appdata.h"
-#include <string.h>
 
 namespace hamworld {
 

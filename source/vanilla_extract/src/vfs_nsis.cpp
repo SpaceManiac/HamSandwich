@@ -16,8 +16,8 @@ class NsisVfs : public vanilla::Vfs
 	owned::SDL_RWops archive_rw;
 	size_t datablock_start;
 
-	const char* navigate_nsis(const char* path, vanilla::Archive::Directory*& current);
-	bool extract_internal(const char* path, bool compressed, uint32_t size, std::vector<uint8_t>& result);
+	const char* navigate_nsis(const char* path, vanilla::Archive::Directory** current);
+	bool extract_internal(const char* path, bool compressed, uint32_t size, std::vector<uint8_t>* result);
 
 public:
 	explicit NsisVfs(owned::SDL_RWops fp);
@@ -28,7 +28,7 @@ public:
 	}
 
 	owned::SDL_RWops open_sdl(const char* filename) override;
-	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output) override;
+	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>* output) override;
 };
 
 std::unique_ptr<vanilla::Vfs> vanilla::open_nsis(owned::SDL_RWops rw)
@@ -36,7 +36,7 @@ std::unique_ptr<vanilla::Vfs> vanilla::open_nsis(owned::SDL_RWops rw)
 	return std::make_unique<NsisVfs>(std::move(rw));
 }
 
-bool NsisVfs::list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>& output)
+bool NsisVfs::list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>* output)
 {
 	return archive.list_dir(directory, output);
 }
@@ -101,7 +101,7 @@ NsisVfs::NsisVfs(owned::SDL_RWops fptr)
 			return;
 
 		std::vector<uint8_t> datablock;
-		if (!vanilla::lzma_decompress(datablock, buffer.data(), buffer.size(), 5))
+		if (!vanilla::lzma_decompress(&datablock, buffer.data(), buffer.size(), 5))
 			return;
 
 		archive_rw = vanilla::create_vec_rwops(std::move(datablock));
@@ -118,7 +118,7 @@ NsisVfs::NsisVfs(owned::SDL_RWops fptr)
 
 	// Decompress the "header block".
 	std::vector<uint8_t> header;
-	if (!extract_internal("<header block>", header_size & SIZE_COMPRESSED, header_size & ~SIZE_COMPRESSED, header))
+	if (!extract_internal("<header block>", header_size & SIZE_COMPRESSED, header_size & ~SIZE_COMPRESSED, &header))
 	{
 		archive_rw = nullptr;
 		return;
@@ -150,7 +150,7 @@ NsisVfs::NsisVfs(owned::SDL_RWops fptr)
 				if (!chdir)
 					break;
 
-				if (const char* last_component = navigate_nsis(path, working_directory); last_component && strcmp(last_component, "") && strcmp(last_component, "."))
+				if (const char* last_component = navigate_nsis(path, &working_directory); last_component && strcmp(last_component, "") && strcmp(last_component, "."))
 				{
 					working_directory = &working_directory->directories[last_component];
 				}
@@ -163,7 +163,7 @@ NsisVfs::NsisVfs(owned::SDL_RWops fptr)
 				const char* path = (const char*) &header[string_table_offset + current.offsets[1]];
 				size_t data_idx = current.offsets[2];
 
-				if (const char* last_component = navigate_nsis(path, working_directory))
+				if (const char* last_component = navigate_nsis(path, &working_directory))
 				{
 					working_directory->files.insert(std::make_pair(std::string(last_component), data_idx));
 				}
@@ -176,7 +176,7 @@ NsisVfs::NsisVfs(owned::SDL_RWops fptr)
 	// Hooray!
 }
 
-const char* NsisVfs::navigate_nsis(const char* path, vanilla::Archive::Directory*& current)
+const char* NsisVfs::navigate_nsis(const char* path, vanilla::Archive::Directory** current)
 {
 	if ((uint8_t) path[0] == NS_VAR_CODE)
 	{
@@ -185,7 +185,7 @@ const char* NsisVfs::navigate_nsis(const char* path, vanilla::Archive::Directory
 		// to usually match it.
 		if (var == 21 || var == 29 || var == 31)
 		{
-			current = &archive.root;
+			*current = &archive.root;
 		}
 		else
 			return nullptr;
@@ -230,12 +230,12 @@ owned::SDL_RWops NsisVfs::open_sdl(const char* path)
 	}
 
 	std::vector<uint8_t> result;
-	if (!extract_internal(path, size & SIZE_COMPRESSED, size & ~SIZE_COMPRESSED, result))
+	if (!extract_internal(path, size & SIZE_COMPRESSED, size & ~SIZE_COMPRESSED, &result))
 		return nullptr;
 	return vanilla::create_vec_rwops(std::move(result));
 }
 
-bool NsisVfs::extract_internal(const char* path, bool is_compressed, uint32_t size, std::vector<uint8_t>& result)
+bool NsisVfs::extract_internal(const char* path, bool is_compressed, uint32_t size, std::vector<uint8_t>* result)
 {
 	std::vector<uint8_t> compressed(size);
 	size_t got = SDL_RWread(archive_rw, compressed.data(), 1, compressed.size());
@@ -251,7 +251,7 @@ bool NsisVfs::extract_internal(const char* path, bool is_compressed, uint32_t si
 	}
 	else
 	{
-		result = std::move(compressed);
+		*result = std::move(compressed);
 		return true;
 	}
 }

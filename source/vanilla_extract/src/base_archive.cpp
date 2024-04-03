@@ -8,7 +8,7 @@ namespace vanilla {
 // ----------------------------------------------------------------------------
 // Archive directory listing
 
-const char* Archive::navigate(const char* path, Directory*& current)
+const char* Archive::navigate(const char* path, Directory** current)
 {
 	const char* last_component = path;
 	for (const char* ch = path; *ch; ++ch)
@@ -18,7 +18,7 @@ const char* Archive::navigate(const char* path, Directory*& current)
 			std::string component { last_component, (size_t)(ch - last_component) };
 			if (component != "" && component != ".")
 			{
-				current = &current->directories[component];
+				*current = &(*current)->directories[component];
 			}
 			last_component = ch + 1;
 		}
@@ -26,7 +26,7 @@ const char* Archive::navigate(const char* path, Directory*& current)
 	return last_component;
 }
 
-const char* Archive::navigate(const char* path, const Directory*& current)
+const char* Archive::navigate(const char* path, const Directory** current)
 {
 	const char* last_component = path;
 	for (const char* ch = path; *ch; ++ch)
@@ -36,10 +36,10 @@ const char* Archive::navigate(const char* path, const Directory*& current)
 			std::string component { last_component, (size_t)(ch - last_component) };
 			if (component != "" && component != ".")
 			{
-				auto iter = current->directories.find(component);
-				if (iter == current->directories.end())
+				auto iter = (*current)->directories.find(component);
+				if (iter == (*current)->directories.end())
 					return nullptr;
-				current = &iter->second;
+				*current = &iter->second;
 			}
 			last_component = ch + 1;
 		}
@@ -50,7 +50,7 @@ const char* Archive::navigate(const char* path, const Directory*& current)
 size_t Archive::get_file(const char* path) const
 {
 	const Directory* current = &root;
-	const char* last_component = navigate(path, current);
+	const char* last_component = navigate(path, &current);
 	if (!current || !last_component)
 		return SIZE_MAX;
 
@@ -64,7 +64,7 @@ size_t Archive::get_file(const char* path) const
 const Archive::Directory* Archive::get_directory(const char* path) const
 {
 	const Directory* current = &root;
-	const char* last_component = navigate(path, current);
+	const char* last_component = navigate(path, &current);
 	if (!current || !last_component)
 		return nullptr;
 
@@ -78,17 +78,17 @@ const Archive::Directory* Archive::get_directory(const char* path) const
 	return &iter->second;
 }
 
-bool Archive::list_dir(const char* path, std::set<std::string, CaseInsensitive>& output) const
+bool Archive::list_dir(const char* path, std::set<std::string, CaseInsensitive>* output) const
 {
 	const Directory* current = get_directory(path);
 	if (!current)
 		return false;
 
 	for (const auto& pair : current->files)
-		output.insert(pair.first);
+		output->insert(pair.first);
 
 	for (const auto& pair : current->directories)
-		output.insert(pair.first);
+		output->insert(pair.first);
 
 	return true;
 }

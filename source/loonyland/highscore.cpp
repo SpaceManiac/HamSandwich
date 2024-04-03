@@ -7,6 +7,7 @@
 #include "options.h"
 #include "endgame.h"
 #include "plasma.h"
+#include "steam.h"
 
 static byte position;
 static highScore_t *me;
@@ -17,7 +18,7 @@ static byte oldc;
 static byte delCursor;
 static byte deleting;
 
-char modeText[][32]={
+static const char modeText[][32]={
 	"Adventure Mode",
 	"Survival Mode",
 	"Slingshot Mode",
@@ -37,7 +38,7 @@ void InitNameEntry(void)
 	GetTaps();
 	InitFireworks();
 	txtpos=0;
-	buffer[0]='\0';
+	memset(buffer, 0, sizeof(buffer));
 	flip=0;
 	MakeNormalSound(SND_HISCORE);
 }
@@ -59,6 +60,7 @@ byte UpdateNameEntry(int *lastTime)
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		flip=1-flip;
+		byte taps = GetTaps();
 
 		UpdateFireworks();
 
@@ -76,30 +78,75 @@ byte UpdateNameEntry(int *lastTime)
 
 		c=GetDisplayMGL()->LastKeyPressed();
 
-		if(c==8) // backspace
+		// Up and down edit the last character, inserting a new one if empty.
+		// Gamepads are limited to A thru Z for ease of nagivation.
+		// B1 duplicates the last character, or finishes if full.
+		// Characters add to the end.
+		// B2 or Backspace deletes the last character.
+		// Enter finishes.
+		// ESC resets to "???" and quits.
+
+		if(c==8 || (taps & CONTROL_B2)) // backspace
 		{
 			if(txtpos>0)
 			{
 				txtpos--;
 				buffer[txtpos]='\0';
 			}
-			strcpy(me->name,buffer);
+			ham_strcpy(me->name, buffer);
 		}
-		else if(c==27)
+		else if(c==27)  // escape
 		{
-			strcpy(me->name,"???");
+			ham_strcpy(me->name, "???");
 			return 0;
 		}
-		else if(c==13)
+		else if(c==13)  // enter
 		{
-			strcpy(me->name,buffer);
+			ham_strcpy(me->name, "???");
 			return 0;
 		}
-		else if(c!=0 && txtpos<3)
+		else if(txtpos<3 && c >= ' ' && c <= '~')
 		{
 			buffer[txtpos]=c;
 			txtpos++;
 			buffer[txtpos]='\0';
+		}
+		else if (taps & CONTROL_DN)
+		{
+			if (txtpos == 0)
+			{
+				buffer[0] = 'Z';  // will be ++'d into A
+				txtpos++;
+			}
+			buffer[txtpos - 1]++;
+			if (buffer[txtpos - 1] < 'A' || buffer[txtpos - 1] > 'Z')
+				buffer[txtpos - 1] = 'A';
+		}
+		else if (taps & CONTROL_UP)
+		{
+			if (txtpos == 0)
+			{
+				buffer[0] = 'A';  // will be --'d into Z
+				txtpos++;
+			}
+			buffer[txtpos - 1]--;
+			if (buffer[txtpos - 1] < 'A' || buffer[txtpos - 1] > 'Z')
+				buffer[txtpos - 1] = 'Z';
+		}
+		else if (taps & CONTROL_B1)
+		{
+			if (txtpos >= 3)
+			{
+				// End if you ran out of space or if you just mashed A.
+				ham_strcpy(me->name, buffer);
+				return 0;
+			}
+			else if (txtpos > 0)
+			{
+				buffer[txtpos]=buffer[txtpos-1];
+				txtpos++;
+				buffer[txtpos]='\0';
+			}
 		}
 
 		*lastTime-=TIME_PER_FRAME;
@@ -200,41 +247,42 @@ byte UpdateHighScore(int *lastTime)
 	{
 		flip=1-flip;
 		c=GetControls()|GetArrows();
+		byte taps = c & ~oldc;
 
 		if(!deleting)
 		{
-			if((c&CONTROL_UP) && !(oldc&CONTROL_UP))
+			if(taps & CONTROL_UP)
 			{
 				curScore--;
 				if(curScore>14)
 					curScore=14;
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if((c&CONTROL_DN) && !(oldc&CONTROL_DN))
+			if(taps & CONTROL_DN)
 			{
 				curScore++;
 				if(curScore>14)
 					curScore=0;
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if((c&CONTROL_LF) && !(oldc&CONTROL_LF))
+			if(taps & CONTROL_LF)
 			{
 				while(1)
 				{
 					curMode--;
 					if(curMode>WORLD_REMIX)
 						curMode=WORLD_REMIX;
-					if(curMode==WORLD_REMIX && opt.expando[0])
+					if(curMode==WORLD_REMIX && opt.remixMode)
 						break;
-					if(curMode==WORLD_SURVIVAL && opt.modes[0])
+					if(curMode==WORLD_SURVIVAL && opt.modes[MODE_SURVIVAL])
 						break;
-					if(curMode==WORLD_INFSURV && opt.modes[0] && opt.meritBadge[BADGE_SURVCOMBO])
+					if(curMode==WORLD_INFSURV && opt.modes[MODE_SURVIVAL] && opt.meritBadge[BADGE_SURVCOMBO])
 						break;
-					if(curMode==WORLD_BOSSBASH && opt.modes[1])
+					if(curMode==WORLD_BOSSBASH && opt.modes[MODE_BOSSBASH])
 						break;
-					if(curMode==WORLD_LOONYBALL && opt.modes[2])
+					if(curMode==WORLD_LOONYBALL && opt.modes[MODE_LOONYBALL])
 						break;
-					if(curMode==WORLD_BOWLING && opt.modes[3])
+					if(curMode==WORLD_BOWLING && opt.modes[MODE_BOWLING])
 						break;
 					if(curMode==WORLD_NORMAL)
 						break;
@@ -242,24 +290,24 @@ byte UpdateHighScore(int *lastTime)
 				InitPlasma(colors[curMode]);
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if((c&CONTROL_RT) && !(oldc&CONTROL_RT))
+			if(taps & CONTROL_RT)
 			{
 				while(1)
 				{
 					curMode++;
 					if(curMode>WORLD_REMIX)
 						curMode=WORLD_NORMAL;
-					if(curMode==WORLD_REMIX && opt.expando[0])
+					if(curMode==WORLD_REMIX && opt.remixMode)
 						break;
-					if(curMode==WORLD_SURVIVAL && opt.modes[0])
+					if(curMode==WORLD_SURVIVAL && opt.modes[MODE_SURVIVAL])
 						break;
-					if(curMode==WORLD_INFSURV && opt.modes[0] && opt.meritBadge[BADGE_SURVCOMBO])
+					if(curMode==WORLD_INFSURV && opt.modes[MODE_SURVIVAL] && opt.meritBadge[BADGE_SURVCOMBO])
 						break;
-					if(curMode==WORLD_BOSSBASH && opt.modes[1])
+					if(curMode==WORLD_BOSSBASH && opt.modes[MODE_BOSSBASH])
 						break;
-					if(curMode==WORLD_LOONYBALL && opt.modes[2])
+					if(curMode==WORLD_LOONYBALL && opt.modes[MODE_LOONYBALL])
 						break;
-					if(curMode==WORLD_BOWLING && opt.modes[3])
+					if(curMode==WORLD_BOWLING && opt.modes[MODE_BOWLING])
 						break;
 					if(curMode==WORLD_NORMAL)
 						break;
@@ -267,7 +315,7 @@ byte UpdateHighScore(int *lastTime)
 				InitPlasma(colors[curMode]);
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if((c&(CONTROL_B1|CONTROL_B2)) && !(oldc&(CONTROL_B1|CONTROL_B2)))
+			if(taps & CONTROL_B1)
 			{
 				if(opt.score[curMode][curScore].mode==255)
 					MakeNormalSound(SND_MENUCANCEL);
@@ -281,12 +329,12 @@ byte UpdateHighScore(int *lastTime)
 		}
 		else
 		{
-			if(((c&CONTROL_UP) && !(oldc&CONTROL_UP)) || ((c&CONTROL_DN) && !(oldc&CONTROL_DN)))
+			if(taps & (CONTROL_UP | CONTROL_DN))
 			{
 				delCursor=1-delCursor;
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if((c&(CONTROL_B1|CONTROL_B2)) && !(oldc&(CONTROL_B1|CONTROL_B2)))
+			if(taps & CONTROL_B1)
 			{
 				if(delCursor==0)
 				{
@@ -311,7 +359,7 @@ byte UpdateHighScore(int *lastTime)
 		oldc=c;
 
 		c=GetDisplayMGL()->LastKeyPressed();
-		if(c==27)
+		if(c==27 || (taps & CONTROL_B2))
 		{
 			if(deleting)
 			{
@@ -351,7 +399,7 @@ void RenderHighScore(MGLDraw *mgl)
 	DrawBox(0,85,639,86,31);
 
 	// only even suggest the presence of multimodes if there are some
-	if(opt.modes[0])
+	if(opt.modes[MODE_SURVIVAL])
 	{
 		DrawBox(0,54,639,54,31);
 		CenterPrintGlow(320,56,modeText[curMode],0,0);
@@ -467,6 +515,7 @@ TASK(void) CheckForHighScore(highScore_t myScore)
 				opt.score[myScore.mode][i]=myScore;
 				position=i;
 				me=&opt.score[myScore.mode][i];
+				Steam()->UploadHighScore(me, 255);
 				AWAIT NameEntry(GetDisplayMGL());
 				CO_RETURN;
 			}
@@ -481,6 +530,7 @@ TASK(void) CheckForHighScore(highScore_t myScore)
 			opt.score[myScore.mode][i]=myScore;
 			position=i;
 			me=&opt.score[myScore.mode][i];
+			Steam()->UploadHighScore(me, player.levelNum);
 			AWAIT NameEntry(GetDisplayMGL());
 			CO_RETURN;
 		}
