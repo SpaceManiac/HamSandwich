@@ -108,7 +108,7 @@ location basic_locations[R_NUM_LOCATIONS] = {
 	{false, "Happy Stick Woods", 25, 35, 34, 0, 1, "Happy Stick Reward", [](const std::set<int>& inv) { return inv.count(VAR_TALISMAN); }},
 	{false, "The Wolf Den", 26, 2, 5, 1, 2, "Wolf Top Left", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING); }},
 	{false, "The Wolf Den", 26, 6, 14, 6, 7, "Pumpkin Door", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING) && inv.count(VAR_PUMPKINKEY); }},
-	{false, "The Wolf Den", 26, 40, 88, 3, 4, "Grow Room", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING); }},
+	{false, "The Wolf Den", 26, 40, 88, 3, 4, "Grow Room", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING) && inv.count(VAR_FERTILIZER); }},
 	{false, "Upper Creepy Cavern", 28, 88, 38, 3, 4, "The Three ombres", [](const std::set<int>& inv) { return HaveLightSource(inv) && CanEnterRockyCliffs(inv); }},
 	{false, "Under the Ravine", 29, 35, 39, 1, 2, "Left Vine", [](const std::set<int>& inv) { return HaveLightSource(inv) && CanEnterRockyCliffs(inv) && inv.count(VAR_FERTILIZER); }},
 	{false, "Under the Ravine", 29, 103, 22, 3, 4, "Right Vine", [](const std::set<int>& inv) { return HaveLightSource(inv) && CanEnterRockyCliffs(inv) && inv.count(VAR_FERTILIZER); }},
