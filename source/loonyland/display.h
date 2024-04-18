@@ -15,9 +15,6 @@
 
 #define MAX_DISPLAY_OBJS 1024
 
-#define DISPLAY_XBORDER 256
-#define DISPLAY_YBORDER 256
-
 //display object flags
 #define DISPLAY_DRAWME		1
 #define DISPLAY_SHADOW		2
