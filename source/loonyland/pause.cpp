@@ -103,13 +103,24 @@ void RenderQuests(int x,int y)
 	{
 		if(player.var[VAR_QUESTDONE+i])
 		{
+			// These quests can be completed but not turned in yet.
+			// Print them in white as soon as they're "completed", but
+			// only cross them out once you've acquired their reward.
+			bool turnedIn =
+				i == QUEST_TREES ? player.var[VAR_HEART+15] :
+				i == QUEST_CROPS ? player.var[VAR_FERTILIZER] :
+				i == QUEST_ZOMBIES ? player.var[VAR_ZOMBIEREWARD] :
+				i == QUEST_DAISY ? player.var[VAR_GAVEDAISY] :
+				i == QUEST_WOLF ? player.var[ITM_KEY4] :
+				true;
+
 			PrintColor(x,y,QuestName(i),0,0,0);
-			DrawFillBox(x,y+15,x+180,y+15,31);
+			if (turnedIn)
+				DrawFillBox(x,y+15,x+180,y+15,31);
 		}
 		else if(player.var[VAR_QUESTASSIGN+i])
 		{
-			if(!player.var[VAR_QUESTDONE+i])
-				PrintColor(x,y,QuestName(i),4,-3,0);
+			PrintColor(x,y,QuestName(i),4,-3,0);
 		}
 		else	// not done or assigned
 			PrintColor(x,y,"???????",0,-32,0);
