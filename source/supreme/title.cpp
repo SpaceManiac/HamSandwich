@@ -17,7 +17,7 @@
 // # = draw a major horizontal line
 // % = draw a minor horizontal line
 // $ = last line of the whole deal
-char credits[][32]={
+static const char credits[][32]={
 	"SPISPOPD II",
 	"@DR. LUNATIC",
 	"",
@@ -39,11 +39,7 @@ char credits[][32]={
 	"Ben Rose",
 	"%",
 	"&HamSandwich Contributors",
-	"Alex Walley",
-	"AutomaticFrenzy",
-	"CPE Gaebler",
-	"Hypexion",
-	"Sam Atkins",
+#include "../credits.inl"
 	"%",
 	"&Character Design",
 	"Jack Darby",
@@ -144,7 +140,7 @@ char credits[][32]={
 	"$"
 	};
 
-char victoryTxt[][64]={
+static const char victoryTxt[][64]={
 	"@With Dr. Lunatic vanquished, the",
 	"",
 	"",

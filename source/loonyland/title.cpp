@@ -33,6 +33,9 @@ static const char* credits[] = {
 	"Mike Hommel",
 	"Tad \"SpaceManiac\" Hardesty",
 	"%",
+	"HamSandwich Contributors",
+#include "../credits.inl"
+	"%",
 	"Character Design",
 	"Mike Hommel",
 	"%",
