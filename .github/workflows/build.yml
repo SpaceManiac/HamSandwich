@@ -77,7 +77,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: make install/strip mode=release os=emscripten
-      - uses: actions/upload-pages-artifact@v1
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: ./build/webroot
       - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
@@ -100,6 +100,6 @@ jobs:
       cancel-in-progress: true
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/configure-pages@v2
-    - uses: actions/deploy-pages@v1
+    - uses: actions/configure-pages@v5
+    - uses: actions/deploy-pages@v4
       id: deployment
