@@ -376,7 +376,7 @@ void DiffChooseDisplay(MGLDraw *mgl)
 {
 	int i;
 
-	static const char diffDesc[][128]={
+	static const char diffDesc[][3][128]={
 		// beginner
 		"Enemies never do more than 1 Heart of damage, and move slower than normal.  You",
 		"begin with 15 Hearts, and do extra damage.  Enemies drop more items than normal.",
@@ -398,10 +398,11 @@ void DiffChooseDisplay(MGLDraw *mgl)
 		"Heart, poison is twice as deadly, enemies move faster, and enemies only drop items",
 		"when Combo'd!",
 		// Hard
-		"Compared to normal, Enemies deal more damage, and item drops are slightly reduced.",
+		"Compared to normal, enemies deal more damage, and item drops are slightly reduced.",
 		"Intended difficulty for the Randomizer.",
 		"",
 	};
+	static_assert(SDL_arraysize(diffDesc) == NUM_DIFFICULTY);
 
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
@@ -419,18 +420,18 @@ void DiffChooseDisplay(MGLDraw *mgl)
 	{
 		PrintGlow(5,330,"Difficulty Level:",0,2);
 
-		if(opt.difficulty>0)
+		if(opt.difficulty != DIFF_BEGINNER)
 			PrintGlow(280,330,"<<<",0,2);
 
 		CenterPrintGlow(440,330,DifficultyName(opt.difficulty),0,2);
 		CenterPrintGlow(440-4+Random(9),330-4+Random(9),DifficultyName(opt.difficulty),-20,2);
 
-		if(opt.difficulty<4)
+		if(opt.difficulty != DIFF_LOONY)
 			PrintGlow(560,330,">>>",0,2);
 
 		for(i=0;i<3;i++)
 		{
-			PrintGlow(5,390+i*15,diffDesc[opt.difficulty*3+i],0,1);
+			PrintGlow(5,390+i*15,diffDesc[opt.difficulty][i],0,1);
 		}
 
 		PrintGlow(5,450,"The chosen difficulty applies to all game modes.  You can change it at any time",0,1);
@@ -727,18 +728,12 @@ byte ChooseDiffUpdate(int *lastTime,MGLDraw *mgl)
 		{
 			if (taps & CONTROL_LF)
 			{
-				if(opt.difficulty > 0)
-					opt.difficulty--;
-				else
-					opt.difficulty = NUM_DIFFICULTY - 1;
+				opt.difficulty = PrevDifficulty(opt.difficulty);
 				MakeNormalSound(SND_MENUCLICK);
 			}
 			if(taps & CONTROL_RT)
 			{
-				if(opt.difficulty < NUM_DIFFICULTY - 1)
-					opt.difficulty++;
-				else
-					opt.difficulty = 0;
+				opt.difficulty = NextDifficulty(opt.difficulty);
 				MakeNormalSound(SND_MENUCLICK);
 			}
 		}

@@ -582,6 +582,23 @@ const char* DifficultyName(byte difficulty)
 	return "???";
 }
 
+static const byte nextDifficulty[] = { DIFF_NORMAL, DIFF_HARD, DIFF_MAD, DIFF_LOONY, DIFF_BEGINNER, DIFF_CHALLENGE };
+static const byte prevDifficulty[] = { DIFF_LOONY, DIFF_BEGINNER, DIFF_HARD, DIFF_CHALLENGE, DIFF_MAD, DIFF_NORMAL };
+static_assert(SDL_arraysize(nextDifficulty) == NUM_DIFFICULTY);
+static_assert(SDL_arraysize(prevDifficulty) == NUM_DIFFICULTY);
+byte NextDifficulty(byte difficulty)
+{
+	if (difficulty < SDL_arraysize(nextDifficulty))
+		return nextDifficulty[difficulty];
+	return DIFF_BEGINNER;
+}
+byte PrevDifficulty(byte difficulty)
+{
+	if (difficulty < SDL_arraysize(prevDifficulty))
+		return prevDifficulty[difficulty];
+	return DIFF_BEGINNER;
+}
+
 static const char playerCharacterName[][11] = {
 	"Loony",
 	"Bonkula",

@@ -372,11 +372,7 @@ UpdateRandomizerMenu(int* lastTime, MGLDraw* mgl)
 
 				case CURSOR_DIFFICULTY: //difficulty
 					MakeNormalSound(SND_MENUSELECT);
-					opt.difficulty++;
-					if (opt.difficulty > DIFF_HARD)
-					{
-						opt.difficulty = DIFF_BEGINNER;
-					}
+					opt.difficulty = NextDifficulty(opt.difficulty);
 					break;
 
 				case CURSOR_COMPLETION: //logic toggle

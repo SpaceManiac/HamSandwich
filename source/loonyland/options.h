@@ -18,8 +18,8 @@ enum : byte
 	NUM_DIFFICULTY
 };
 const char* DifficultyName(byte difficulty);
-
-#define DIFF_HARD		5
+byte PrevDifficulty(byte difficulty);
+byte NextDifficulty(byte difficulty);
 
 // special cheats
 #define CH_LIGHT	0		// always see everything
