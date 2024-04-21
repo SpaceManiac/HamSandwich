@@ -220,30 +220,47 @@ enum class TitleSubmenu : byte
 };
 static TitleSubmenu loadingGame;
 
-typedef struct menu_t
+struct MenuItem
 {
 	char txt[64];
-	byte known;
-	char bright;
-} menu_t;
+	MainMenuResult action;
 
-static menu_t menu[MENU_CHOICES]={
-	{"New Game",1,-32},
-	{"Load Game",1,-32},
-	{"Bowling",0,-32},
-	{"Survival",0,-32},
-	{"Boss Bash",0,-32},
-	{"Loony Ball",0,-32},
-	{"Remix",0,-32},
-	{"Badges",0,-32},
-	{"Hi Scores",1,-32},
-	{"Options",1,-32},
-	{"Editor",1,-32},
-	{"Exit",1,-32},
+	bool known;
+	char bright;
 };
 
-static menu_t saves[5];
-static byte choosingDiffFor;
+static constexpr int MENU_ITEMS_PER_PAGE = 12;
+static constexpr int MENU_ITEMS_PER_ROW = 4;
+static const MenuItem mainMenu[] = {
+	{"New Game", MainMenuResult::NewGame},
+	{"Load Game", MainMenuResult::LoadGame},
+	{"Bowling", MainMenuResult::Bowling},
+	{"Survival", MainMenuResult::Survival},
+	{"Boss Bash", MainMenuResult::BossBash},
+	{"Loony Ball", MainMenuResult::Loonyball},
+	{"Remix", MainMenuResult::Remix},
+	{"Badges", MainMenuResult::Badges},
+	{"Hi Scores", MainMenuResult::HiScores},
+	{"Options", MainMenuResult::Options},
+	{"Extras...", MainMenuResult::Extras},
+	{"Exit", MainMenuResult::Exit},
+};
+static const MenuItem extrasMenu[] = {
+	{"Back...", MainMenuResult::BackToMain},
+	{"Editor", MainMenuResult::Editor},
+	{"Randomizer", MainMenuResult::Randomizer},
+};
+static std::vector<MenuItem> menu;
+
+struct SaveMenuItem
+{
+	char txt[64];
+	bool known;
+	char bright;
+};
+
+static SaveMenuItem saves[5];
+static MainMenuResult choosingDiffFor;
 
 void SetSongRestart(byte b)
 {
@@ -270,7 +287,7 @@ void GetSavesForMenu(void)
 		if(!f)
 		{
 			sprintf(saves[i].txt, "%d: Unused", saveOffset + i + 1);
-			saves[i].known=0;
+			saves[i].known = false;
 		}
 		else
 		{
@@ -278,13 +295,13 @@ void GetSavesForMenu(void)
 			fclose(f);
 
 			DescribeSave(saves[i].txt, &p);
-			saves[i].known=1;
+			saves[i].known = true;
 		}
 		saves[i].bright=-32;
 	}
 }
 
-void ShowMenuOption(int x,int y,menu_t m,byte on)
+void ShowMenuOption(int x,int y,const MenuItem &m,byte on)
 {
 	int i;
 
@@ -313,7 +330,7 @@ void ShowMenuOption(int x,int y,menu_t m,byte on)
 	}
 }
 
-void ShowSavedGame(int x,int y,menu_t m,byte on)
+void ShowSavedGame(int x,int y,const SaveMenuItem &m,byte on)
 {
 	PrintGlow(x,y,m.txt,m.bright,0);
 	if(on && m.bright>-20)
@@ -343,10 +360,9 @@ void MainMenuDisplay(MGLDraw *mgl)
 	// menu options
 	x=5;
 	y=320;
-	for(i=0;i<MENU_CHOICES;i++)
+	for(i=0;i<menu.size();i++)
 	{
-		if(menu[i].txt[0]!='!')
-			ShowMenuOption(x,y-menu[i].bright/4,menu[i],(cursor==i));
+		ShowMenuOption(x,y-menu[i].bright/4,menu[i],(cursor==i));
 		x+=160;
 		if(x>640-150)
 		{
@@ -490,7 +506,7 @@ void LoadGameDisplay(MGLDraw *mgl)
 	}
 }
 
-byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
+MainMenuResult MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 {
 	byte c;
 	static byte reptCounter=0;
@@ -501,7 +517,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 
 	while(*lastTime>=TIME_PER_FRAME)
 	{
-		for(i=0;i<MENU_CHOICES;i++)
+		for(i=0;i<menu.size();i++)
 		{
 			if(cursor==i)
 			{
@@ -522,62 +538,47 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 
 		if((c&CONTROL_UP) && !(oldc&CONTROL_UP))
 		{
-			cursor-=4;
-			if(cursor>=MENU_CHOICES)
-				cursor+=MENU_CHOICES;
-			if(menu[cursor].txt[0]=='!')
+			if (cursor >= MENU_ITEMS_PER_ROW)  // up off the first row
+				cursor -= MENU_ITEMS_PER_ROW;
+			else
 			{
-				cursor-=4;
-				if(cursor>=MENU_CHOICES)
-					cursor+=MENU_CHOICES;
+				cursor += MENU_ITEMS_PER_PAGE;
+				while (cursor >= menu.size())
+					cursor -= MENU_ITEMS_PER_ROW;
 			}
+
 			MakeNormalSound(SND_MENUCLICK);
 		}
 		if((c&CONTROL_DN) && !(oldc&CONTROL_DN))
 		{
-			cursor+=4;
-			if(cursor>=MENU_CHOICES)
-				cursor-=MENU_CHOICES;
-			if(menu[cursor].txt[0]=='!')
+			cursor += MENU_ITEMS_PER_ROW;
+			if (cursor >= menu.size())  // down off the last row (of this column)
 			{
-				cursor-=8;
-				if(cursor>=MENU_CHOICES)
-					cursor-=MENU_CHOICES;
+				cursor %= MENU_ITEMS_PER_ROW;
 			}
+
 			MakeNormalSound(SND_MENUCLICK);
 		}
 		if((c&CONTROL_LF) && !(oldc&CONTROL_LF))
 		{
-			cursor--;
-			if(cursor>=MENU_CHOICES)
-				cursor+=MENU_CHOICES;
-			if(cursor%4==3)
+			if ((cursor % MENU_ITEMS_PER_ROW) >= 1)
+				cursor -= 1;
+			else
 			{
-				cursor+=4;
-				if(cursor>=MENU_CHOICES)
-					cursor-=MENU_CHOICES;
+				cursor = std::min(cursor + MENU_ITEMS_PER_ROW - 1, (int)menu.size() - 1);
 			}
-			if(menu[cursor].txt[0]=='!')
-			{
-				cursor--;
-			}
+
 			MakeNormalSound(SND_MENUCLICK);
 		}
 		if((c&CONTROL_RT) && !(oldc&CONTROL_RT))
 		{
-			cursor++;
-			if(cursor>=MENU_CHOICES)
-				cursor-=MENU_CHOICES;
-			if(cursor%4==0)
-			{
-				cursor-=4;
-				if(cursor>=MENU_CHOICES)
-					cursor+=MENU_CHOICES;
-			}
-			if(menu[cursor].txt[0]=='!')
-			{
-				cursor-=3;
-			}
+			if (cursor == menu.size() - 1)  // right off the last item in the menu
+				cursor -= cursor % MENU_ITEMS_PER_ROW;
+			else if (cursor % MENU_ITEMS_PER_ROW == MENU_ITEMS_PER_ROW - 1)  // right off the last item in the row
+				cursor -= cursor % MENU_ITEMS_PER_ROW;
+			else
+				cursor++;
+
 			MakeNormalSound(SND_MENUCLICK);
 		}
 
@@ -586,7 +587,7 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 			if(menu[cursor].known)
 			{
 				MakeNormalSound(SND_MENUSELECT);
-				return cursor+1;
+				return menu[cursor].action;
 			}
 			else
 				MakeNormalSound(SND_MENUCANCEL);
@@ -599,15 +600,15 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 
 		c=mgl->LastKeyPressed();
 		if(c==27)
-			return MENU_EXIT+1;
+			return MainMenuResult::Exit;
 #ifndef NDEBUG
 		if(c=='e')
-			return MENU_EDITOR+1;
+			return MainMenuResult::Editor;
 #endif
 		*lastTime-=TIME_PER_FRAME;
 		numRuns++;
 	}
-	return 0;
+	return MainMenuResult::None;
 }
 
 byte LoadGameUpdate(int *lastTime,MGLDraw *mgl)
@@ -780,9 +781,40 @@ byte ChooseDiffUpdate(int *lastTime,MGLDraw *mgl)
 	return 1;
 }
 
-TASK(byte) MainMenu(MGLDraw *mgl)
+bool MenuItemKnown(MainMenuResult action)
 {
-	byte b=0;
+	switch (action)
+	{
+		case MainMenuResult::Badges:
+			return opt.modes[MODE_BADGES];
+		case MainMenuResult::Bowling:
+			return opt.modes[MODE_BOWLING];
+		case MainMenuResult::Loonyball:
+			return opt.modes[MODE_LOONYBALL];
+		case MainMenuResult::BossBash:
+			return opt.modes[MODE_BOSSBASH];
+		case MainMenuResult::Survival:
+			return opt.modes[MODE_SURVIVAL];
+		case MainMenuResult::Remix:
+			return opt.remixMode;
+		default:
+			return true;
+	}
+}
+
+void SetMenu(span<const MenuItem> newMenu)
+{
+	menu.assign(newMenu.data(), newMenu.data() + newMenu.size());
+	for (auto& item : menu)
+	{
+		item.known = MenuItemKnown(item.action);
+		item.bright = -32;
+	}
+}
+
+TASK(MainMenuResult) MainMenu(MGLDraw *mgl)
+{
+	MainMenuResult b = MainMenuResult::None;
 	int i;
 	int lastTime=1;
 
@@ -791,9 +823,6 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 		JamulSoundPurge();
 		LoopingSound(SND_HAMUMU);
 	}
-
-	for(i=0;i<MENU_CHOICES;i++)
-		menu[i].bright=-32;
 
 	mgl->LoadBMP("graphics/title.bmp");
 	if(opt.cheats[CH_VINTAGE])
@@ -808,23 +837,12 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],mgl->GetScreen()+mgl->GetWidth()*i,640);
 
-	if(opt.modes[MODE_BADGES])
-		menu[MENU_BADGES].known=1;
-	if(opt.modes[MODE_BOWLING])
-		menu[MENU_BOWLING].known=1;
-	if(opt.modes[MODE_LOONYBALL])
-		menu[MENU_LOONYBALL].known=1;
-	if(opt.modes[MODE_BOSSBASH])
-		menu[MENU_BOSSATTACK].known=1;
-	if(opt.modes[MODE_SURVIVAL])
-		menu[MENU_SURVIVAL].known=1;
-	if(opt.remixMode)
-		menu[MENU_REMIX].known=1;
+	SetMenu(mainMenu);
 
 	cursor=0;
 	loadingGame=TitleSubmenu::MainMenu;
 	GetTaps();
-	while(b==0)
+	while(b==MainMenuResult::None)
 	{
 		lastTime+=TimeLength();
 		StartClock();
@@ -836,48 +854,43 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 		}
 		else if(loadingGame==TitleSubmenu::LoadGame)
 		{
-			b=LoadGameUpdate(&lastTime,mgl);
+			byte b2=LoadGameUpdate(&lastTime,mgl);
 			LoadGameDisplay(mgl);
-			if(b==0)
+			if(b2==0)
 			{
-				for(i=0;i<MENU_CHOICES;i++)
-					menu[i].bright=-32;
+				for (auto& item : menu)
+					item.bright = -32;
 
 				cursor=1;
 				loadingGame=TitleSubmenu::MainMenu;
 			}
-			else if(b==2)
+			else if(b2==2)
 			{
 				free(backScr);
-				CO_RETURN MENU_LOADGAME+1;
+				CO_RETURN MainMenuResult::LoadGame;
 			}
-			b=0;
 		}
 		else if (loadingGame == TitleSubmenu::ChooseDiff)
 		{
-			b=ChooseDiffUpdate(&lastTime,mgl);
+			byte b2=ChooseDiffUpdate(&lastTime,mgl);
 			DiffChooseDisplay(mgl);
-			if(b==0)
+			if(b2==0)
 			{
 				cursor=0;
 				loadingGame=TitleSubmenu::MainMenu;
 			}
-			else if(b==2)
+			else if(b2==2)
 			{
 				free(backScr);
-				if(choosingDiffFor==0)
-					CO_RETURN MENU_ADVENTURE+1;
-				else
-					CO_RETURN MENU_REMIX+1;
+				CO_RETURN choosingDiffFor;
 			}
-			b=0;
 		}
 
 		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
 			free(backScr);
-			CO_RETURN 255;
+			CO_RETURN MainMenuResult::Exit;
 		}
 		EndClock();
 		if(loadingGame==TitleSubmenu::MainMenu && numRuns>=30*15)
@@ -888,29 +901,35 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 			mgl->LoadBMP("graphics/title.bmp");
 			numRuns=0;
 		}
-		if(loadingGame==TitleSubmenu::MainMenu && b==MENU_LOADGAME+1)
+		else if(loadingGame==TitleSubmenu::MainMenu && b==MainMenuResult::LoadGame)
 		{
 			loadingGame=TitleSubmenu::LoadGame;
 			GetSavesForMenu();
 			cursor=0;
-			b=0;
+			b=MainMenuResult::None;
 			oldc=255;
 		}
-		if(loadingGame==TitleSubmenu::MainMenu && b==MENU_ADVENTURE+1)
+		else if(loadingGame==TitleSubmenu::MainMenu && (b==MainMenuResult::NewGame || b == MainMenuResult::Remix))
 		{
 			loadingGame=TitleSubmenu::ChooseDiff;
-			choosingDiffFor=0;
+			choosingDiffFor=b;
 			cursor=0;
-			b=0;
+			b=MainMenuResult::None;
 			oldc=255;
 		}
-		if(loadingGame==TitleSubmenu::MainMenu && b==MENU_REMIX+1)
+		else if (b == MainMenuResult::Extras)
 		{
-			loadingGame=TitleSubmenu::ChooseDiff;
-			choosingDiffFor=1;
-			cursor=0;
-			b=0;
-			oldc=255;
+			SetMenu(extrasMenu);
+			b = MainMenuResult::None;
+			cursor = 0;
+			oldc = 255;
+		}
+		else if (b == MainMenuResult::BackToMain)
+		{
+			SetMenu(mainMenu);
+			b = MainMenuResult::None;
+			cursor = 0;
+			oldc = 255;
 		}
 	}
 	free(backScr);

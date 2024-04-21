@@ -45,57 +45,56 @@ TASK(int) main(int argc, char *argv[])
 	while (running)
 	{
 		DBG("Mainmenu");
-		switch((AWAIT MainMenu(mainmgl)) - 1)
+		switch(AWAIT MainMenu(mainmgl))
 		{
 			default:
-			case 255:	// quit
-			case MENU_EXIT:
+			case MainMenuResult::Exit:
 				running = false;
 				break;
-			case MENU_ADVENTURE:	// new game
+			case MainMenuResult::NewGame:	// new game
 				AWAIT LunaticGame(mainmgl,0,WORLD_NORMAL);
 				SetSongRestart(1);
 				break;
-			case MENU_REMIX:	// new game
+			case MainMenuResult::Remix:	// new game
 				AWAIT LunaticGame(mainmgl,0,WORLD_REMIX);
 				SetSongRestart(1);
 				break;
-			case MENU_LOADGAME:	// continue
+			case MainMenuResult::LoadGame:	// continue
 				AWAIT LunaticGame(mainmgl,WhichGameToLoad()+1,WORLD_NORMAL);
 				SetSongRestart(1);
 				break;
-			case MENU_EDITOR:	// editor
+			case MainMenuResult::Editor:	// editor
 				AWAIT LunaticEditor(mainmgl);
 				SetSongRestart(1);
 				break;
-			case MENU_SURVIVAL:	// survival
+			case MainMenuResult::Survival:	// survival
 				AWAIT LunaticGame(mainmgl,0,WORLD_SURVIVAL);
 				SetSongRestart(1);
 				break;
-			case MENU_LOONYBALL:	// Loonyball
+			case MainMenuResult::Loonyball:	// Loonyball
 				AWAIT LunaticGame(mainmgl,0,WORLD_LOONYBALL);
 				SetSongRestart(1);
 				break;
-			case MENU_BOWLING:
+			case MainMenuResult::Bowling:
 				AWAIT LunaticGame(mainmgl,0,WORLD_BOWLING);
 				SetSongRestart(1);
 				break;
-			case MENU_BOSSATTACK:	// boss bash
+			case MainMenuResult::BossBash:	// boss bash
 				AWAIT LunaticGame(mainmgl,0,WORLD_BOSSBASH);
 				break;
-			case MENU_HISCORE:
+			case MainMenuResult::HiScores:
 				AWAIT HighScore(mainmgl);
 				SetSongRestart(0);
 				break;
-			case MENU_OPTIONS:	// options
+			case MainMenuResult::Options:	// options
 				AWAIT OptionsMenu(mainmgl);
 				SetSongRestart(0);
 				break;
-			case MENU_BADGES:	// badge menu
+			case MainMenuResult::Badges:	// badge menu
 				AWAIT BadgeMenu(mainmgl);
 				SetSongRestart(0);
 				break;
-			case MENU_RANDOMIZER: //Randomizer settings
+			case MainMenuResult::Randomizer: //Randomizer settings
 				AWAIT RandomizerMenu(mainmgl);
 				SetSongRestart(0);
 				break;
