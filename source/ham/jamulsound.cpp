@@ -317,6 +317,7 @@ void GoPlaySound(int num,long pan,long vol,int flags,int priority)
 	if(!soundIsOn)
 		return;
 	JamulSoundPlay(num,pan,vol,flags,priority);
+
 }
 
 void JamulSoundVolume(int v)

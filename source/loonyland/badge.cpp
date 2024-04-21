@@ -1048,7 +1048,7 @@ byte UpdateGameMode(MGLDraw *mgl,int *lastTime)
 
 TASK(void) ShowGameMode(byte mode,byte numBadges)
 {
-	byte done=0;
+	/*byte done=0;
 	MGLDraw *mgl=GetDisplayMGL();
 	int lastTime;
 	dword hangon;
@@ -1076,7 +1076,7 @@ TASK(void) ShowGameMode(byte mode,byte numBadges)
 
 	}
 	ExitFireworks();
-	ResetClock(hangon);
+	ResetClock(hangon);*/
 }
 
 TASK(void) ShowBadge(byte b)
@@ -1116,6 +1116,9 @@ void BadgeCheck(byte event,int value,Map *map)
 {
 	dword now,then;
 	int i,have;
+	if(player.worldNum == WORLD_RANDOMIZER){
+		return;
+	}
 
 	now=timeGetTime();
 	if(event==BE_KILL)

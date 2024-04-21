@@ -1094,7 +1094,7 @@ word MonsterFlags(byte type)
 {
 	if(player.worldNum==WORLD_SLINGSHOT && type==player.monsType)
 		return monsType[type].flags|MF_NOMOVE;
-	else if(type>=MONS_WOLFMAN && type<=MONS_WOLFMAN3 && !player.var[VAR_QUESTDONE+QUEST_SILVER])
+	else if(type>=MONS_WOLFMAN && type<=MONS_WOLFMAN3 && !player.var[VAR_SILVERSLING])
 		return monsType[type].flags|MF_INVINCIBLE;
 	else
 		return monsType[type].flags;
@@ -2508,7 +2508,7 @@ void AI_EvilTree(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		}
 		if(me->seq==ANIM_DIE && me->frm==0 && me->frmTimer<64)
 		{
-			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)
+			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX|| player.worldNum==WORLD_RANDOMIZER)
 				map->map[me->mapx+me->mapy*map->width].item=ITM_TREE2;
 		}
 		return;	// can't do nothin' right now
@@ -3961,7 +3961,7 @@ void AI_HelperBat(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	BasicAI(me,SND_BATOUCH,SND_BATDIE,map,world,goodguy);
 
-	if(!player.var[VAR_HELPERBAT])
+	if(!player.var[VAR_QUESTDONE + QUEST_FARLEY])
 	{
 		if(RangeToTarget(me,goodguy)<FIXAMT*72 && me->reload==0)
 		{
@@ -4324,14 +4324,14 @@ void AI_WaterElder(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	{
 		// fire ice shards
 		MakeSound(SND_ELDERCHARGE,me->x,me->y,SND_CUTOFF,1200);
-		DoMove(me,ANIM_ATTACK,128,1,0,0);
+		DoMove(me,ANIM_ATTACK,128,1,me->dx,me->dy);
 		return;
 	}
 	if(Random(30)==0)
 	{
 		// fire bubbles
 		MakeSound(SND_ELDERSHOOT,me->x,me->y,SND_CUTOFF,1200);
-		DoMove(me,ANIM_A2,128,1,0,0);
+		DoMove(me,ANIM_A2,128,1,me->dx,me->dy);
 		return;
 	}
 
@@ -5052,7 +5052,7 @@ void AI_Larry(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		}
 		if(me->seq==ANIM_DIE)
 		{
-			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)
+			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX|| player.worldNum==WORLD_RANDOMIZER)
 			{
 				g=AddGuy(me->x,me->y,me->z,MONS_VILLAGER2);
 				BadgeCheck(BE_KILL,me->type,map);
@@ -5241,7 +5241,7 @@ void AI_HumanLarry(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		}
 		if(me->seq==ANIM_DIE)
 		{
-			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)
+			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX|| player.worldNum==WORLD_RANDOMIZER)
 			{
 				g=AddGuy(me->x,me->y,me->z,MONS_VILLAGER3);
 				BadgeCheck(BE_KILL,me->type,map);

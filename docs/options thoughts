@@ -1,0 +1,94 @@
+Bat Statues Outside Vampy
+Vampire statues outside Vampy
+Randomize Special Key Doors
+Advanced Logic (Water Walking, silverless, potionless, mud)
+completion    [100%, beatable]
+Keys on Bosses    [Original 3, All bosses, No]
+Vampy Gate open
+Doll collector {All, final, none}
+"Simple Keys" shuffle
+
+    Difficulty Options
+	BASE GAME
+Bullet Speed
+Damage taken
+Enemy damage taken
+Item Drops
+Invincibility
+Monster speed
+Starting life
+Poison Rate //might tie into invincibility
+
+Hints    [on, off, progression]
+One hit ko
+Enemy Speed {Slower, normal, faster}
+no sling until 1 of each powerup
+special weapon costs {halved, normal, double}
+Powerup Strength {halved, normal, double}
+Gate ahrd areas behind needing X powerups
+
+current difficulty changes
+BULLET SPEED
+	beginner bullets slower
+	-
+	-
+	-
+	loony bullets faster
+	
+DAMAGE taken
+	beginner everything does 1
+	normal half damage
+	-
+	-
+	loony double damage
+	
+enemy damage taken
+	beginner *2
+	normal *1.5
+	-
+	mad * 1/4
+	loony * 1/4
+	
+Combo
+	beginner	combo+4				5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+	normal		combo/2 + 3			3, 4, 4, 5, 5, 6, 6, 7, 7, 8
+	//how would combo/2 + 1 feel, encourage combo, but not as many base drops	1, 2, 2, 3, 3, 4, 4, 5, 5, 6
+	challenge	combo/4 + 1 		1, 1, 1, 2, 2, 2, 2, 3, 3, 3
+	mad			combo/4 + 1			1, 1, 1, 2, 2, 2, 2, 3, 3, 3
+	loony		combo/4				0, 0, 0, 1, 1, 1, 1, 2, 2, 2
+	
+Invincibility
+	beginner	30*3
+	normal 		30*2
+	challenge	30
+	mad			15
+	loony		0
+	
+Monster speed
+	begineer 20%? numruns--;
+	-
+	-
+	-
+	loony	20-40% faster? numruns++;
+	
+starting life
+	beginner	15
+	normal	10
+	challenge	5
+	mad		3
+	loony	1
+	
+poison rate
+	beginner	64
+	normal		32
+	challenge	32
+	mad			32
+	loony		16
+	
+drop table right now
+0-45 		none
+45-55	10	tiny heart
+55-90	35	gem
+91		1	big heart
+92-93	2	big gem
+94-100	7	all the weapons 

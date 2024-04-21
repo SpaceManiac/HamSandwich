@@ -13,10 +13,13 @@ enum : byte
 	DIFF_CHALLENGE = 2,
 	DIFF_MAD       = 3,
 	DIFF_LOONY     = 4,
+	DIFF_HARD      = 5,
 
 	NUM_DIFFICULTY
 };
 const char* DifficultyName(byte difficulty);
+
+#define DIFF_HARD		5
 
 // special cheats
 #define CH_LIGHT	0		// always see everything
@@ -99,7 +102,7 @@ typedef struct options_t
 	byte expando[8];	// room for expansion
 
 	// best scores
-	highScore_t score[8][15];	// high scores in different modes
+	highScore_t score[9][15];	// high scores in different modes
 } options_t;
 
 extern options_t opt;

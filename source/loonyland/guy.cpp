@@ -304,7 +304,7 @@ byte Guy::CanWalk(int xx,int yy,Map *map,world_t *world)
 	if(result)	// no wall collision, look for guy collision
 		for(i=0;i<maxGuys;i++)
 			if((guys[i]) && (guys[i]!=this) && (guys[i]->type) && (guys[i]->hp>0) &&
-				(player.levelNum!=0 || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX) || guys[i]->active))
+				(player.levelNum!=0 || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX && player.worldNum!=WORLD_RANDOMIZER) || guys[i]->active))
 			{
 				if(CoconutBonk(xx,yy,guys[i]))
 				{
@@ -561,14 +561,14 @@ void Guy::Update(Map *map,world_t *world)
 	if(type==player.monsType)	// special case, Loony is the player, follow him
 	{
 		UpdateCamera(x>>FIXSHIFT,y>>FIXSHIFT,facing*32,map);
-		if((map->flags&MAP_TORCHLIT) && (player.var[VAR_TORCH]==1) && (!WindingDown()))
+		if((map->flags&MAP_TORCHLIT) && (player.var[VAR_TORCH]==1 || player.var[VAR_LANTERN]==1) && (!WindingDown()))
 		{
 			b=GetPlayerGlow();
 			if(b>32)
 				map->BrightTorch(mapx,mapy,b,b/4);
 			else
 			{
-				if((player.var[VAR_QUESTDONE+QUEST_RESCUE]==0) || (player.levelNum==42 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)))
+				if((player.var[VAR_LANTERN]==0) || (player.levelNum==42 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX|| player.worldNum==WORLD_RANDOMIZER)))
 					map->TempTorch(mapx,mapy,b);
 				else
 					map->WeakTorch(mapx,mapy);	// with the lantern, you have way more light
@@ -892,6 +892,21 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 	if(type==player.monsType && (PlayerShield() || player.invinc || opt.cheats[CH_SUPERSURV]))
 		return; // invincible when shielded
 
+	/*if(player.monsType=MONS_LOONYTOAD){
+		// toad knocksback
+		
+		dx=((dx>0)-(dx<0))*FIXAMT*2 * player.fireRange;
+		dy=((dy>0)-(dy<0))*FIXAMT*2 * player.fireRange;
+		x+=dx;
+		if(dx!=0)
+			if(!CanWalk(x,y,map,world))
+				x-=dx;
+		y+=dy;
+		if(dy!=0)
+			if(!CanWalk(x,y,map,world))
+				y-=dy;
+	}*/
+
 	if((MonsterFlags(type)&MF_INVINCIBLE) && !opt.cheats[CH_DEATH])
 	{
 		if(type>=MONS_WOLFMAN && type<=MONS_WOLFMAN3 && player.var[VAR_KNOWWOLVES]==0)
@@ -1009,11 +1024,11 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 		{
 			damage*=2;
 		}
-		else if(player.difficulty==DIFF_NORMAL)
+		else if(player.difficulty==DIFF_NORMAL || player.difficulty==DIFF_HARD)
 		{
 			damage=damage*3/2;
 		}
-		else if(player.difficulty>=DIFF_MAD)
+		else if(player.difficulty==DIFF_MAD || player.difficulty==DIFF_LOONY)
 		{
 			if(damage>1)
 				damage/=4;
@@ -1162,8 +1177,9 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 		{
 			if(type!=player.monsType)
 			{
-				if(Random(70)==0 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX))
+				if(Random(70)==0 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
 				{
+					//todo hooks for randomizer maybe
 					if(type>=MONS_BAT && type<=MONS_BAT3 && player.var[VAR_DOLL]==0)
 					{
 						FireBullet(x,y,ITM_BATDOLL,BLT_ITEM);
@@ -1207,6 +1223,8 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 					v=(byte)(combo/4+1);
 				else if(player.difficulty==DIFF_LOONY)
 					v=(byte)(combo/4);
+				else if(player.difficulty==DIFF_HARD)
+					v=(byte)(combo/2+1);
 
 				for(combo=0;combo<v;combo++)
 				{
@@ -1312,7 +1330,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 	}
 	else if(type==player.monsType)
 	{
-		byte invinc[]={30*3,30*2,30,15,0};
+		byte invinc[]={30*3,30*2,30,15,0,45};
 		SetPlayerHP(hp);
 		player.invinc=invinc[player.difficulty];
 
@@ -1827,7 +1845,7 @@ void RespawnGuy(Map *map)
 	byte ok,t,tag;
 	Guy *g;
 
-	if(player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX)
+	if(player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX && player.worldNum!=WORLD_RANDOMIZER)
 	{
 		return;
 	}
@@ -1894,7 +1912,7 @@ void AddMapGuys(Map *map)
 		{
 			tag=map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag;
 			ok=1;
-			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)
+			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum == WORLD_RANDOMIZER)
 			{
 				if((map->badguy[i].type==MONS_EVILTREE || map->badguy[i].type==MONS_EVILTREE3) && player.var[VAR_QUESTDONE+QUEST_TREES] &&
 					player.levelNum==0)

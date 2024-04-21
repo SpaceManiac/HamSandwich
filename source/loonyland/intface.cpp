@@ -452,7 +452,7 @@ void RenderInterface(MGLDraw *mgl)
 
 	if(player.worldNum!=WORLD_BOSSBASH)
 	{
-		if(player.timeLimit>0 && (player.clockRunning || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX)))
+		if(player.timeLimit>0 && (player.clockRunning || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX && player.worldNum!=WORLD_RANDOMIZER)))
 		{
 			sprintf(s,"%d:%02d:%02d",player.timeLimit/(30*60),(player.timeLimit/(30))%60,((player.timeLimit*100)/30)%100);
 			Print(400,1,s,-32,0);
@@ -469,7 +469,7 @@ void RenderInterface(MGLDraw *mgl)
 	}
 
 	// display area name
-	if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)
+	if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX|| player.worldNum==WORLD_RANDOMIZER)
 	{
 		if(opt.cheats[CH_CRYSTAL])
 		{

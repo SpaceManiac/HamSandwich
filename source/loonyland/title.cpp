@@ -230,11 +230,12 @@ typedef struct menu_t
 static menu_t menu[MENU_CHOICES]={
 	{"New Game",1,-32},
 	{"Load Game",1,-32},
-	{"Bowling",0,-32},
-	{"Survival",0,-32},
-	{"Boss Bash",0,-32},
-	{"Loony Ball",0,-32},
-	{"Remix",0,-32},
+	{"Randomizer",1,-32},
+	//{"Bowling",0,-32},
+	//{"Survival",0,-32},
+	//{"Boss Bash",0,-32},
+	//{"Loony Ball",0,-32},
+	//{"Remix",0,-32},
 	{"Badges",0,-32},
 	{"Hi Scores",1,-32},
 	{"Options",1,-32},
@@ -380,7 +381,11 @@ void DiffChooseDisplay(MGLDraw *mgl)
 		// Loony
 		"For masochists.  Enemies do double damage, you do 1/4 damage, you begin with ONE",
 		"Heart, poison is twice as deadly, enemies move faster, and enemies only drop items",
-		"when Combo'd!"
+		"when Combo'd!",
+		// Hard
+		"Compared to normal, Enemies deal more damage, and item drops are slightly reduced.",
+		"Inteded difficulty for the randomizer",
+		""
 	};
 
 	for(i=0;i<480;i++)
@@ -804,18 +809,8 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],mgl->GetScreen()+mgl->GetWidth()*i,640);
 
-	if(opt.modes[MODE_BADGES])
-		menu[MENU_BADGES].known=1;
-	if(opt.modes[MODE_BOWLING])
-		menu[MENU_BOWLING].known=1;
-	if(opt.modes[MODE_LOONYBALL])
-		menu[MENU_LOONYBALL].known=1;
-	if(opt.modes[MODE_BOSSBASH])
-		menu[MENU_BOSSATTACK].known=1;
-	if(opt.modes[MODE_SURVIVAL])
-		menu[MENU_SURVIVAL].known=1;
-	if(opt.remixMode)
-		menu[MENU_REMIX].known=1;
+	menu[MENU_BADGES].known=1;
+	menu[MENU_RANDOMIZER].known=1;
 
 	cursor=0;
 	loadingGame=TitleSubmenu::MainMenu;

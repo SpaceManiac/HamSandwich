@@ -32,6 +32,7 @@ namespace
 	int offX;
 	byte oldc;
 	bool noSaving = false;
+	int warpCount = 0;
 }
 
 void RenderPowerUps(int x,int y)
@@ -141,7 +142,7 @@ void RenderInvItem(byte which,int x,int y,MGLDraw *mgl)
 	switch(which)
 	{
 		case 0: // slot #0, slingshot
-			if(player.var[VAR_QUESTDONE+QUEST_SILVER]==0)
+			if(player.var[VAR_SILVERSLING]==0)
 				RenderIntfaceSprite(x,y,9,0,mgl);
 			else
 				RenderIntfaceSprite(x,y,10,0,mgl);
@@ -155,7 +156,7 @@ void RenderInvItem(byte which,int x,int y,MGLDraw *mgl)
 				RenderIntfaceSprite(x,y,3,0,mgl);
 			break;
 		case 3:	// slot #3, stick
-			if(player.var[VAR_QUESTDONE+QUEST_RESCUE])
+			if(player.var[VAR_LANTERN])
 			{
 				RenderIntfaceSprite(x-5,y,12,0,mgl);
 			}
@@ -173,7 +174,7 @@ void RenderInvItem(byte which,int x,int y,MGLDraw *mgl)
 				Print(x+11,y+1,m,-31,0);
 				Print(x+10,y,m,0,0);
 			}
-			if(player.var[VAR_HEART+16])
+			if(player.var[VAR_WITCHREWARD])
 				RenderIntfaceSprite(x,y,3,0,mgl);
 			break;
 		case 5: // slot #5, doom daisy
@@ -340,7 +341,7 @@ void RenderPauseMenu(MGLDraw *mgl)
 		else
 			strcat(s,"Off");
 
-		if(opt.cheats[CH_SAVEANY] && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX) && !(player.cheatsOn & PC_HARDCORE))
+		if(opt.cheats[CH_SAVEANY] && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER) && !(player.cheatsOn & PC_HARDCORE))
 		{
 			PrintColor(10,295,"Cancel",4-4*(cursor==CURSOR_CANCEL),-8+8*(cursor==CURSOR_CANCEL),2);
 			PrintColor(10,330,s,4-4*(cursor==CURSOR_WPNLOCK),-8+8*(cursor==CURSOR_WPNLOCK),2);
@@ -359,7 +360,7 @@ void RenderPauseMenu(MGLDraw *mgl)
 			PrintColor(10,435,((player.cheatsOn & PC_HARDCORE) ? "Save & Quit" : "Quit"),4-4*(cursor==CURSOR_QUIT),-8+8*(cursor==CURSOR_QUIT),2);
 		}
 
-		if((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX))
+		if((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
 		{
 			RenderPowerUps(5-offX,-5);
 			RenderQuests(0+offX,-offX-5);
@@ -443,7 +444,7 @@ void GetSaves(void)
 void LoadGame(int i)
 {
 	FILE *f;
-	char txt[32];
+	char txt[128];
 
 	ham_sprintf(txt,"save%d.sav",i+1);
 	f=AppdataOpen(txt);
@@ -467,6 +468,17 @@ void LoadGame(int i)
 			LoadWorld(&curWorld,"loony.llw");
 
 			InitWorld(&curWorld,WORLD_NORMAL);
+		}
+		else if(player.worldNum==WORLD_RANDOMIZER)
+		{
+			FreeWorld(&curWorld);
+			//get seed from player data
+
+			ham_sprintf(txt, "randomizer/%s rando.llw", GetPlayerSeed().c_str());
+			LoadWorld(&curWorld,txt);
+			LoadRandoItems();
+
+			InitWorld(&curWorld,WORLD_RANDOMIZER);
 		}
 		LoadGuys(f);
 		if(!curMap)
@@ -560,6 +572,7 @@ void InitPauseMenu(void)
 	darkness=0;
 	offX=400;
 	oldc=255;
+	warpCount = 0;
 
 	GetSaves();
 }
@@ -592,7 +605,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 			cursor = (Cursor)(cursor - 1);
 			if(cursor>CURSOR_QUIT)
 				cursor=CURSOR_QUIT;
-			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX) || (player.cheatsOn & PC_HARDCORE)) && cursor==CURSOR_SAVE)
+			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX && player.worldNum!=WORLD_RANDOMIZER) || (player.cheatsOn & PC_HARDCORE)) && cursor==CURSOR_SAVE)
 				cursor=CURSOR_LOAD;
 
 		}
@@ -601,7 +614,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 			cursor = (Cursor)(cursor + 1);
 			if(cursor>CURSOR_QUIT)
 				cursor=CURSOR_CANCEL;
-			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX) || (player.cheatsOn & PC_HARDCORE)) && cursor==CURSOR_SAVE)
+			if((!opt.cheats[CH_SAVEANY] || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX && player.worldNum!=WORLD_RANDOMIZER) || (player.cheatsOn & PC_HARDCORE)) && cursor==CURSOR_SAVE)
 				cursor=CURSOR_QUIT;
 		}
 		if (tap & CONTROL_B1)
@@ -642,6 +655,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 		byte scan = LastScanCode();
 		if((c&CONTROL_UP) && (!reptCounter))
 		{
+			warpCount = 0;
 			subcursor--;
 			if(subcursor==255)
 			{
@@ -652,6 +666,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 		}
 		if((c&CONTROL_DN) && (!reptCounter))
 		{
+			warpCount = 0;
 			subcursor++;
 			if(subcursor==5)
 			{
@@ -670,6 +685,16 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 			saveOffset = (saveOffset + 5) % 250;
 			GetSaves();
 		}
+
+		if ((c & CONTROL_LF) && (!reptCounter) && player.worldNum == WORLD_RANDOMIZER)
+		{
+			warpCount++;
+			if (warpCount > 4)
+			{
+				return PauseMenuResult::WarpToLooniton;
+			}
+		}
+
 		if (tap & CONTROL_B1)
 		{
 			if(cursor==CURSOR_LOAD)	// Load

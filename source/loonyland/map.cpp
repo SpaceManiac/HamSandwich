@@ -365,7 +365,7 @@ void Map::Update(byte mode,world_t *world)
 					WeakTorch(x,y);
 				SpecialItemGetCheck(this,x,y);
 			}
-			if(map[i].item==ITM_TREE5)
+			if(map[i].item==ITM_TREE5 || map[i].item==ITM_CAT)
 			{
 				if(map[i].itemInfo>0)
 					map[i].itemInfo--;
@@ -1294,7 +1294,8 @@ byte Map::FindPowerUps(int x,int y)
 			(map[i].item>=ITM_KEY2 && map[i].item<=ITM_WHOTPANTS) ||
 			map[i].item==ITM_MYSORB || map[i].item==ITM_SHROOM || map[i].item==ITM_DAISY ||
 			map[i].item==ITM_SILVER || map[i].item==ITM_TALISMAN || map[i].item==ITM_TRIPLEFIRE ||
-			map[i].item==ITM_BUST || map[i].item==ITM_BAT || map[i].item==ITM_SUPERHEART)
+			map[i].item==ITM_BUST || map[i].item==ITM_BAT || map[i].item==ITM_SUPERHEART ||
+			(map[i].item>=ITM_CAT && map[i].item<=ITM_STICK) )
 		{
 			r=(abs(xx-x)+abs(yy-y));
 			if(r>31)
@@ -1747,7 +1748,7 @@ void SpecialTakeEffect(byte num,Map *map,special_t *spcl,Guy *victim)
 	switch(spcl->effect)
 	{
 		case SPC_GOTOMAP:
-			if(spcl->value==41 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX) &&
+			if(spcl->value==41 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER) &&
 				player.var[VAR_QUESTDONE+QUEST_HILL]==1)
 				spcl->value=44;	// go to empty rooftop instead
 			SendMessageToGame(MSG_GOTOMAP,spcl->value);

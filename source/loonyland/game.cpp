@@ -28,7 +28,6 @@ MGLDraw *gamemgl;
 Map		*curMap;
 byte gameMode=GAMEMODE_PLAY;
 byte	mapToGoTo;
-byte	worldNum;
 byte    mapNum;
 byte	curMapFlags;
 world_t curWorld;
@@ -337,8 +336,13 @@ byte LunaticRun(int *lastTime)
 					lastKey=0;
 					return WORLD_QUITGAME;	// dump out altogether
 					break;
+				case PauseMenuResult::WarpToLooniton:
+					mapToGoTo = 0;
+					lastKey = 0;
+					return LEVEL_ABORT;
+					break;
 			}
-			worldNum=player.worldNum;
+
 		}
 		else if(gameMode==GAMEMODE_PIC)	// gamemode_pic
 		{
@@ -379,7 +383,7 @@ byte LunaticRun(int *lastTime)
 		else if(msgFromOtherModules==MSG_RESET)
 		{
 			if(player.worldNum==WORLD_SURVIVAL || player.worldNum==WORLD_SLINGSHOT ||
-				((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX) && (player.cheatsOn&PC_HARDCORE)) ||
+				((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX|| player.worldNum==WORLD_RANDOMIZER) && (player.cheatsOn&PC_HARDCORE)) ||
 				player.worldNum==WORLD_LOONYBALL || player.worldNum==WORLD_BOSSBASH)
 				NewBigMessage("You were defeated!",30);
 			else if(player.worldNum!=WORLD_BOWLING)
@@ -563,8 +567,8 @@ TASK(byte) LunaticWorld(byte world,const char *worldName)
 	if(!LoadWorld(&curWorld,worldName))
 		CO_RETURN WORLD_ABORT;
 
-	worldNum=world;
-	InitWorld(&curWorld,worldNum);
+	player.worldNum=world;
+	InitWorld(&curWorld,player.worldNum);
 	if(player.worldNum==WORLD_SURVIVAL)
 		InitSurvival();
 
@@ -619,7 +623,7 @@ TASK(byte) LunaticWorld(byte world,const char *worldName)
 			else
 			{
 				mapNum=0;
-				InitPlayer(INIT_GAME,0,0);
+				InitPlayer(INIT_GAME,player.worldNum,0);
 			}
 		}
 		else if(result==LEVEL_LOADING)
@@ -634,7 +638,7 @@ TASK(byte) LunaticWorld(byte world,const char *worldName)
 		}
 		else if(result==LEVEL_WIN)
 		{
-			if((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX))
+			if((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
 			{
 				// won the game!  Go back to Luniton.
 				AWAIT ShowVictoryAnim(0);
@@ -679,6 +683,7 @@ TASK(byte) LunaticWorld(byte world,const char *worldName)
 TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 {
 	byte worldResult;
+	char buff[128];
 
 	InitPlayer(INIT_GAME,mode,0);
 
@@ -697,6 +702,13 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 				if(!loadGame)
 					AWAIT Help(gamemgl);
 				worldResult=AWAIT LunaticWorld(WORLD_REMIX,"remix.llw");
+				break;
+			case WORLD_RANDOMIZER:
+				if(!loadGame)
+					AWAIT Help(gamemgl);
+				LoadRandoItems();
+				sprintf(buff, "randomizer/%s rando.llw", GetSeed().c_str());
+				worldResult=AWAIT LunaticWorld(WORLD_RANDOMIZER,buff);
 				break;
 			case WORLD_SURVIVAL:
 				AWAIT Help(gamemgl);
@@ -718,6 +730,8 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 				AWAIT Help(gamemgl);
 				worldResult=AWAIT LunaticWorld(0,"boss.llw");
 				break;
+			default:
+				worldResult = 5;
 		}
 		if(worldResult==WORLD_QUITGAME)
 		{

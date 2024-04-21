@@ -33,6 +33,9 @@
 #define VAR_MYSORB		100 // 100-103 = have mystery orb
 #define VAR_WEAPON		104	// 104-110 = have access to weapon
 #define VAR_KEY			111	// 111-113 = have the three special keys
+#define VAR_SKULLKEY	111	// 111 = have the skull key
+#define VAR_BATKEY		112	// 112 = have the bat key
+#define VAR_PUMPKINKEY	113	// 113 = have the pumpkin key
 #define VAR_BOOTS		114	// 114 = have the rubber booties
 #define VAR_STICK		115	// 115 = have the stick
 #define VAR_TORCH		116	// 116 = the stick is lit
@@ -76,6 +79,17 @@
 #define VAR_HPSALES		214	// 214 = have talked to hot pants salesman
 #define VAR_DEALERTALK	215	// 215 = have talked to arms dealer
 #define VAR_HIPUZZLE	216	// 216 = the HI puzzle is solved in Remix mode
+
+#define VAR_WITCHREWARD	217 // 217 = Witch has given you mushroom prize
+#define VAR_LANTERN		218 // 218 = Have the lantern
+#define VAR_TREEREWARD	219 // 219 = Rewarded for tree trimming
+#define VAR_SILVERSLING	220 // 220 = Have Silver Bullets
+#define VAR_LARRYREWARD	221 // 221 = Rewarded for bringing Larry Home
+#define VAR_CROPSREWARD	222 // 222 = Rewarded for crop smash
+#define VAR_ZOMBIEGEM	223 // 223 = red 100 gem
+
+#define VAR_SEEDSTART	224 // 224 = first char of seed
+//#define VAR_SEEDEND		   234 = last char of seed
 
 	// temp variables
 #define VAR_TEMP		240	// 240-255 = temporary variables - cleared when leaving a level
@@ -202,5 +216,7 @@ byte WeaponCost(byte wpn,byte level);
 void PlayerFireUltraWeapon(Guy *me);
 
 void DescribeSave(span<char> dst, const player_t* player);
+
+std::string GetPlayerSeed();
 
 #endif

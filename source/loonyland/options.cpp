@@ -1,4 +1,5 @@
 #include "options.h"
+#include <map>
 #include "mgldraw.h"
 #include "badge.h"
 #include "control.h"
@@ -9,12 +10,12 @@
 #include "appdata.h"
 #include "steam.h"
 #include "hammusic.h"
+#include "randomizer.h"
 
-static_assert(sizeof(options_t) == 6364, "Save compatibility at risk");
+//static_assert(sizeof(options_t) == 6364, "Save compatibility at risk");
 
 options_t opt;
 
-#include <map>
 
 static byte cursor;
 static byte oldc;
@@ -135,7 +136,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 							MakeNormalSound(SND_MENUSELECT);
 							// diffy
 							opt.difficulty--;
-							if(opt.difficulty>4)
+							if(opt.difficulty>=NUM_DIFFICULTY)
 								opt.difficulty=0;
 							break;
 					}
@@ -165,8 +166,8 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 							MakeNormalSound(SND_MENUSELECT);
 							// diffy
 							opt.difficulty++;
-							if(opt.difficulty>4)
-								opt.difficulty=4;
+							if(opt.difficulty>=NUM_DIFFICULTY)
+								opt.difficulty=NUM_DIFFICULTY-1;
 							break;
 					}
 				}
@@ -195,7 +196,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 							MakeNormalSound(SND_MENUSELECT);
 							// diffy
 							opt.difficulty++;
-							if(opt.difficulty==5)
+							if(opt.difficulty==6)
 								opt.difficulty=0;
 							break;
 						case 3:
@@ -489,7 +490,7 @@ void LoadOptions(void)
 		opt.joyCtrl[0]=0;
 		opt.joyCtrl[1]=1;
 
-		opt.difficulty=0;		// default to Beginner
+		opt.difficulty=DIFF_HARD;		// default to Rando Special
 		opt.helpOn=1;
 
 		for(i=0;i<40;i++)
@@ -568,6 +569,7 @@ static const char difficultyName[][18] = {
 	"Challenge",
 	"Mad",
 	"Loony",
+	"Hard",
 };
 static_assert(SDL_arraysize(difficultyName) == NUM_DIFFICULTY);
 
@@ -719,4 +721,7 @@ void ResetCharacterCheats()
 	opt.cheats[CH_WEREWOLF] = 0;
 	opt.cheats[CH_SUMMON] = 0;
 	opt.cheats[CH_THIEF] = 0;
+
+	//invalidate randomizer seed
+	ClearSeed();
 }

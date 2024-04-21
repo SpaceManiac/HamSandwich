@@ -9,8 +9,8 @@ enum class PauseMenuResult : byte
 	Paused,
 	Continue,
 	Quit,
-	// not used...
-	GiveUp,
+	GiveUp,  // not used
+	WarpToLooniton,
 };
 
 void RenderPauseMenu(MGLDraw *mgl);

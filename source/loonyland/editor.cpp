@@ -957,7 +957,7 @@ void RenderItemPickDisplay(void)
 
 	on=0;
 	for(i=0;i<16;i++)
-		for(j=0;j<8;j++)
+		for(j=0;j<9;j++)
 		{
 			if(i+j*16<MAX_ITMS)
 			{

@@ -6,6 +6,7 @@
 #include "slingshot.h"
 #include "badge.h"
 #include "bossbash.h"
+#include "randomizer.h"
 
 // characters
 #include "ch_loony.h"
@@ -24,7 +25,7 @@ byte tportclock;
 void InitPlayer(byte initWhat,byte world,byte level)
 {
 	int i;
-	byte startLife[]={15,10,5,3,1};
+	byte startLife[]={15,10,5,3,1,5};
 
 	if(initWhat==INIT_GAME)	// initialize everything, this is to start a whole new game
 	{
@@ -102,9 +103,13 @@ void InitPlayer(byte initWhat,byte world,byte level)
 				player.var[VAR_PANTS+i]=1;
 		}
 
-		player.difficulty=opt.difficulty;
+		//if(player.worldNum==WORLD_RANDOMIZER){
+		//	player.difficulty = DIFF_HARD;
+		//}else{
+			player.difficulty=opt.difficulty;
+		//}
 
-		player.hearts=startLife[opt.difficulty];
+		player.hearts=startLife[player.difficulty];
 		player.startHearts=player.hearts;
 		player.maxHearts=player.hearts;
 		player.maxMaxHearts=player.hearts+20;
@@ -301,8 +306,11 @@ void InitPlayer(byte initWhat,byte world,byte level)
 			for(i=0;i<7;i++)
 				player.var[VAR_WEAPON+i]=1;
 			player.var[VAR_POTION]=1;
-			player.var[VAR_QUESTASSIGN+QUEST_SILVER]=1;
-			player.var[VAR_QUESTDONE+QUEST_SILVER]=1;
+			if (player.worldNum != WORLD_RANDOMIZER) {
+				player.var[VAR_QUESTASSIGN+QUEST_SILVER]=1;
+				player.var[VAR_QUESTDONE+QUEST_SILVER]=1;
+			}
+			player.var[VAR_SILVERSLING]=1;
 			player.var[VAR_HELPERBAT]=1;
 			player.var[VAR_QUESTASSIGN+QUEST_FARLEY]=1;
 			player.var[VAR_QUESTDONE+QUEST_FARLEY]=1;
@@ -366,6 +374,12 @@ void InitPlayer(byte initWhat,byte world,byte level)
 			player.fireRange=0;
 			player.fireRate=0;
 			player.monsterPoints=0;
+		}
+		if (player.worldNum == WORLD_RANDOMIZER) {
+			std::string seed = GetSeed();
+			for (int i = 0; i < MAX_SEED_LENGTH; i++) {
+				player.var[VAR_SEEDSTART + i] = seed[i];
+			}
 		}
 
 		if(player.monsType==MONS_PLYRSWAMPDOG)
@@ -675,6 +689,7 @@ void PlayerSetVar(int v,int val)
 		{
 			MakeNormalSound(SND_POWERUP);
 			NewBigMessage("Got Reflect Gem!",90);
+			player.fireFlags|=FF_REFLECT;
 		}
 	}
 	if(v>=VAR_ZOMBIE && v<=VAR_ZOMBIE+2)
@@ -1041,6 +1056,20 @@ byte PlayerGetItem(byte itm,int x,int y)
 				BadgeCheck(BE_GEMSUP,0,curMap);
 				MakeNormalSound(SND_BIGGEMGET);
 				break;
+			case ITM_ZOMBGEM:
+				if(player.money<player.maxMoney)
+				{
+					player.money+=100;
+					if(player.money>player.maxMoney)
+					{
+						player.money=player.maxMoney;
+					}
+				}
+				player.gemsGotten+=100;
+				BadgeCheck(BE_GEMSUP,0,curMap);
+				NewBigMessage("100 Gems!",90);
+				MakeNormalSound(SND_BIGGEMGET);
+				break;
 			case ITM_SUPERGEM:
 				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
 				if(player.maxMoney<MAX_MONEY)
@@ -1099,6 +1128,48 @@ byte PlayerGetItem(byte itm,int x,int y)
 			case ITM_TALISMAN:
 				PlayerSetVar(VAR_QUESTASSIGN+QUEST_WITCH,1);
 				break;
+			case ITM_CAT:
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Cat!", 90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_BOOTS:
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Mud Boots!", 90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_FERTILIZER:
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Fertilizer!", 90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_GHOSTPOTION:
+			case ITM_POTION:
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Ghost Slaying Potion!", 90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_LANTERN:
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Lantern!", 90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_REFLECTGEM:
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Reflect Gem!", 90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_SILVERSLING:
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Silver Bullets!", 90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_STICK:
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("A Stick!", 90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+
 		}
 		if(itm>=ITM_WBOMB && itm<=ITM_WHOTPANTS)
 		{
@@ -1457,6 +1528,15 @@ void PlayerFireUltraWeapon(Guy *me)
 	}
 }
 
+std::string GetPlayerSeed()
+{
+	std::string seed = "";
+	for (int i = 0; i < MAX_SEED_LENGTH; i++) {
+		seed += (char)(player.var[VAR_SEEDSTART + i]);
+	}
+	return seed;
+}
+
 byte GetTportClock(void)
 {
 	return tportclock;
@@ -1558,7 +1638,7 @@ void SetAreaName(world_t *world)
 	byte c;
 
 	// decide which location the player is for naming purposes
-	if(player.levelNum==0 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX))
+	if(player.levelNum==0 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
 	{
 		c=255;
 		// decide based on region in the map
