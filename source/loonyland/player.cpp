@@ -1530,11 +1530,7 @@ void PlayerFireUltraWeapon(Guy *me)
 
 std::string GetPlayerSeed()
 {
-	std::string seed = "";
-	for (int i = 0; i < MAX_SEED_LENGTH; i++) {
-		seed += (char)(player.var[VAR_SEEDSTART + i]);
-	}
-	return seed;
+	return std::string((const char*)&player.var[VAR_SEEDSTART], MAX_SEED_LENGTH);
 }
 
 byte GetTportClock(void)

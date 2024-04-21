@@ -9,9 +9,9 @@
 #include "ioext.h"
 #include "appdata.h"
 #include <vector>
-#include <sstream> 
+#include <sstream>
 
-rItem randoReward[11];
+RandoItem randoReward[11];
 
 char questName[NUM_QUESTS][64]={
 	"Save Halloween Hill",

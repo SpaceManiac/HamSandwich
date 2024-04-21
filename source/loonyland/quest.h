@@ -31,7 +31,7 @@
 
 char *QuestName(byte quest);
 
-extern rItem randoReward[11];
+extern RandoItem randoReward[11];
 
 typedef struct Convo
 {
