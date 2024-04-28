@@ -543,7 +543,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 void CreditsRender(int y)
 {
 	int i,ypos;
-	char *s;
+	const char *s;
 
 	i=0;
 
@@ -621,7 +621,7 @@ TASK(void) Credits(MGLDraw *mgl)
 void VictoryTextRender(int y)
 {
 	int i,ypos;
-	char *s;
+	const char *s;
 
 	i=0;
 
