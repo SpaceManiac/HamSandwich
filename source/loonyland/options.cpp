@@ -12,7 +12,7 @@
 #include "hammusic.h"
 #include "randomizer.h"
 
-//static_assert(sizeof(options_t) == 6364, "Save compatibility at risk");
+static_assert(sizeof(options_t) == 7144, "Save compatibility at risk");
 
 options_t opt;
 
@@ -135,9 +135,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 						case 2:
 							MakeNormalSound(SND_MENUSELECT);
 							// diffy
-							opt.difficulty--;
-							if(opt.difficulty>=NUM_DIFFICULTY)
-								opt.difficulty=0;
+							opt.difficulty = PrevDifficulty(opt.difficulty);
 							break;
 					}
 				}
@@ -165,9 +163,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 						case 2:
 							MakeNormalSound(SND_MENUSELECT);
 							// diffy
-							opt.difficulty++;
-							if(opt.difficulty>=NUM_DIFFICULTY)
-								opt.difficulty=NUM_DIFFICULTY-1;
+							opt.difficulty = NextDifficulty(opt.difficulty);
 							break;
 					}
 				}
@@ -195,9 +191,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 						case 2:
 							MakeNormalSound(SND_MENUSELECT);
 							// diffy
-							opt.difficulty++;
-							if(opt.difficulty==6)
-								opt.difficulty=0;
+							opt.difficulty = NextDifficulty(opt.difficulty);
 							break;
 						case 3:
 							MakeNormalSound(SND_MENUSELECT);
@@ -490,7 +484,7 @@ void LoadOptions(void)
 		opt.joyCtrl[0]=0;
 		opt.joyCtrl[1]=1;
 
-		opt.difficulty=DIFF_HARD;		// default to Rando Special
+		opt.difficulty=0;		// default to Beginner
 		opt.helpOn=1;
 
 		for(i=0;i<40;i++)
@@ -507,7 +501,7 @@ void LoadOptions(void)
 	}
 	else
 	{
-		fread(&opt,sizeof(options_t),1,f);
+		fread(&opt,1,sizeof(options_t),f);
 		fclose(f);
 
 		if (opt.sound == 1)

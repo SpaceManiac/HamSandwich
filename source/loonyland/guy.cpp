@@ -894,7 +894,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 
 	/*if(player.monsType=MONS_LOONYTOAD){
 		// toad knocksback
-		
+
 		dx=((dx>0)-(dx<0))*FIXAMT*2 * player.fireRange;
 		dy=((dy>0)-(dy<0))*FIXAMT*2 * player.fireRange;
 		x+=dx;
@@ -1330,7 +1330,8 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 	}
 	else if(type==player.monsType)
 	{
-		byte invinc[]={30*3,30*2,30,15,0,45};
+		static const byte invinc[]={30*3,30*2,30,15,0,45};
+		static_assert(SDL_arraysize(invinc) == NUM_DIFFICULTY);
 		SetPlayerHP(hp);
 		player.invinc=invinc[player.difficulty];
 

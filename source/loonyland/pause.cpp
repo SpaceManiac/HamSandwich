@@ -497,6 +497,26 @@ void LoadGame(int i)
 		}
 		if(player.invinc<60)
 			player.invinc=60;	// and make you invincible briefly
+
+		// In the Randomizer update, some checks were changed from "quest completed?"
+		// to "has item?". Most items were already set at the same time as the quest
+		// completion, but these items were new with the Randomizer, so we need to
+		// handle old saves.
+		if (player.worldNum == WORLD_NORMAL || player.worldNum == WORLD_REMIX)
+		{
+			if (player.var[VAR_HEART + 16])
+				player.var[VAR_WITCHREWARD] = 1;
+			if (player.var[VAR_QUESTDONE + QUEST_RESCUE])
+				player.var[VAR_LANTERN] = 1;
+			if (player.var[VAR_HEART + 15])
+				player.var[VAR_TREEREWARD] = 1;
+			if (player.var[VAR_QUESTDONE + QUEST_SILVER])
+				player.var[VAR_SILVERSLING] = 1;
+			if (player.var[VAR_KEY + 2])
+				player.var[VAR_LARRYREWARD] = 1;
+			if (player.var[VAR_FERTILIZER])
+				player.var[VAR_CROPSREWARD] = 1;
+		}
 	}
 	noSaving=0;
 

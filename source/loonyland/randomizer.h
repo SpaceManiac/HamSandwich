@@ -10,7 +10,7 @@
 #define MAX_SEED_LENGTH 11
 
 TASK(void) RandomizerMenu(MGLDraw *mgl);
-std::string GetSeed();
+const std::string& GetSeed();
 void ClearSeed();
 
 struct RandoItem

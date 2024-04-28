@@ -18,7 +18,6 @@
 #include "ioext.h"
 #include <charconv>
 #include <string>
-#include "uniform_int_dist.h"
 #include <sys/stat.h>
 #include "options.h"
 
@@ -304,21 +303,6 @@ static const RandoItem itemList[] = {
 	{ITM_SILVERSLING, VAR_SILVERSLING, "Silver Sling"},
 };
 static_assert(SDL_arraysize(itemList) == R_NUM_LOCATIONS);
-
-template<class RandomIt, class URBG>
-void shuffleList(RandomIt first, RandomIt last, URBG&& g)
-{
-	typedef typename std::iterator_traits<RandomIt>::difference_type diff_t;
-	typedef sure::uniform_int_distribution<diff_t> distr_t;
-	typedef typename distr_t::param_type param_t;
-
-	distr_t D;
-	diff_t n = last - first;
-	for (diff_t i = n - 1; i > 0; --i) {
-		using std::swap;
-		swap(first[i], first[D(g, param_t(0, i))]);
-	}
-}
 
 void InitRandomizerMenu(void)
 {
@@ -659,7 +643,7 @@ int RandomFill(std::vector<RandoLocation>& locs)
 	{
 		remainingItems.push_back(&itemList[i]);
 	}
-	shuffleList(remainingItems.begin(), remainingItems.end(), rng);
+	std::shuffle(remainingItems.begin(), remainingItems.end(), rng);
 
 	locs.assign(std::begin(basic_locations), std::end(basic_locations));
 	for (int i = 0; i < locs.size(); i++)
@@ -735,7 +719,7 @@ bool CheckBeatable(std::vector<RandoLocation>& locs) {
 
 }
 
-std::string GetSeed()
+const std::string& GetSeed()
 {
 	return seed;
 }

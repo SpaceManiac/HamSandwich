@@ -4324,14 +4324,14 @@ void AI_WaterElder(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	{
 		// fire ice shards
 		MakeSound(SND_ELDERCHARGE,me->x,me->y,SND_CUTOFF,1200);
-		DoMove(me,ANIM_ATTACK,128,1,me->dx,me->dy);
+		DoMove(me,ANIM_ATTACK,128,1,0,0);
 		return;
 	}
 	if(Random(30)==0)
 	{
 		// fire bubbles
 		MakeSound(SND_ELDERSHOOT,me->x,me->y,SND_CUTOFF,1200);
-		DoMove(me,ANIM_A2,128,1,me->dx,me->dy);
+		DoMove(me,ANIM_A2,128,1,0,0);
 		return;
 	}
 

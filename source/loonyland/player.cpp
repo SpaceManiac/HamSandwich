@@ -25,7 +25,8 @@ byte tportclock;
 void InitPlayer(byte initWhat,byte world,byte level)
 {
 	int i;
-	byte startLife[]={15,10,5,3,1,5};
+	static const byte startLife[]={15,10,5,3,1,5};
+	static_assert(SDL_arraysize(startLife) == NUM_DIFFICULTY);
 
 	if(initWhat==INIT_GAME)	// initialize everything, this is to start a whole new game
 	{
@@ -103,11 +104,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 				player.var[VAR_PANTS+i]=1;
 		}
 
-		//if(player.worldNum==WORLD_RANDOMIZER){
-		//	player.difficulty = DIFF_HARD;
-		//}else{
-			player.difficulty=opt.difficulty;
-		//}
+		player.difficulty=opt.difficulty;
 
 		player.hearts=startLife[player.difficulty];
 		player.startHearts=player.hearts;
@@ -376,10 +373,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 			player.monsterPoints=0;
 		}
 		if (player.worldNum == WORLD_RANDOMIZER) {
-			std::string seed = GetSeed();
-			for (int i = 0; i < MAX_SEED_LENGTH; i++) {
-				player.var[VAR_SEEDSTART + i] = seed[i];
-			}
+			memcpy(&player.var[VAR_SEEDSTART], GetSeed().data(), MAX_SEED_LENGTH);
 		}
 
 		if(player.monsType==MONS_PLYRSWAMPDOG)
