@@ -223,6 +223,12 @@ See "Also applicable to Sleepless Hollow" above.
 
 ## Loonyland: Halloween Hill
 
+### [Steam edition](https://store.steampowered.com/app/2876900/Loonyland_Halloween_Hill/) special features
+
+* Show off your Merit Badges with Steam Achievements
+* Automatically transfer your saves across devices with Steam Cloud
+* Save Halloween Hills worldwide with a native Steam Deck build
+
 ### HamSandwich (2019–present)
 
 * Allow using the arrow keys to scroll around in the editor
