@@ -1790,10 +1790,31 @@ void DescribeSave(span<char> dst, const player_t* player)
 		dst = ham_strcpy(dst, " Rando");
 	}
 	// Difficulty name, including Hardcore and Terror
+	// ...except there's no room to have both difficulty and character
+	/*
+	dst = ham_strcpy(dst, " - ");
 	if (player->cheatsOn & PC_HARDCORE)
 		dst = ham_strcpy(dst, "Hardcore+");
 	if (player->cheatsOn & PC_TERROR)
 		dst = ham_strcpy(dst, "Terror+");
 	dst = ham_sprintf(dst, "%s", DifficultyName(player->difficulty));
-	// Character name would be nice too, but there's no room!
+	*/
+	// Character name
+	if (player->cheatsOn & PC_PLAYTOAD)
+		dst = ham_sprintf(dst, " - %s", PlayerCharacterName(PC_Toad));
+	else if (player->cheatsOn & PC_PLAYBONK)
+		dst = ham_sprintf(dst, " - %s", PlayerCharacterName(PC_Bonkula));
+	else if (player->cheatsOn & PC_PLAYDOG)
+		dst = ham_sprintf(dst, " - %s", PlayerCharacterName(PC_Swampdog));
+	else if (player->cheatsOn & PC_PLAYWITCH)
+		dst = ham_sprintf(dst, " - %s", PlayerCharacterName(PC_Witch));
+	else if (player->cheatsOn & PC_PLAYWOLF)
+		dst = ham_sprintf(dst, " - %s", PlayerCharacterName(PC_Werewolf));
+	else if (player->cheatsOn & PC_PLAYSUMMON)
+		dst = ham_sprintf(dst, " - %s", PlayerCharacterName(PC_Summon));
+	else if (player->cheatsOn & PC_PLAYTHIEF)
+		dst = ham_sprintf(dst, " - %s", PlayerCharacterName(PC_Thief));
+	// Just hardcore since that's more relevant to save+load system than other difficulties
+	if (player->cheatsOn & PC_HARDCORE)
+		dst = ham_strcpy(dst, " - Hardcore");
 }
