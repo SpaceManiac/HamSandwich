@@ -1785,7 +1785,10 @@ void DescribeSave(span<char> dst, const player_t* player)
 	{
 		dst = ham_strcpy(dst, " Remix");
 	}
-	dst = ham_strcpy(dst, " - ");
+	else if (player->worldNum == WORLD_RANDOMIZER)
+	{
+		dst = ham_strcpy(dst, " Rando");
+	}
 	// Difficulty name, including Hardcore and Terror
 	if (player->cheatsOn & PC_HARDCORE)
 		dst = ham_strcpy(dst, "Hardcore+");
