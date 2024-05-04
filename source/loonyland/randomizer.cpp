@@ -363,6 +363,10 @@ UpdateRandomizerMenu(int* lastTime, MGLDraw* mgl)
 						MakeNormalSound(SND_MENUSELECT);
 						opt.difficulty = PrevDifficulty(opt.difficulty);
 						break;
+					case CURSOR_COMPLETION: //logic toggle
+						MakeNormalSound(SND_MENUSELECT);
+						allItems = !allItems;
+						break;
 					default:
 						break;
 				}
@@ -374,6 +378,10 @@ UpdateRandomizerMenu(int* lastTime, MGLDraw* mgl)
 					case CURSOR_DIFFICULTY:
 						MakeNormalSound(SND_MENUSELECT);
 						opt.difficulty = NextDifficulty(opt.difficulty);
+						break;
+					case CURSOR_COMPLETION: //logic toggle
+						MakeNormalSound(SND_MENUSELECT);
+						allItems = !allItems;
 						break;
 					default:
 						break;
@@ -566,12 +574,16 @@ void RenderRandomizerMenu(MGLDraw* mgl)
 
 	//80 instead of 60 to give a line break after exit for logic/difficulty toggles
 
+	char diffyDesc[64];
+	remaining = ham_strcpy(diffyDesc, DifficultyName(opt.difficulty));
+	if (opt.difficulty == DIFF_HARD)
+		remaining = ham_strcpy(remaining, " (recommended)");
 	PrintColor(240, 80 + CURSOR_DIFFICULTY * 20, "Difficulty: ", 7, -10, 0);
-	PrintColor(400, 80 + CURSOR_DIFFICULTY * 20, DifficultyName(opt.difficulty), 7, -10, 0);
+	PrintColor(400, 80 + CURSOR_DIFFICULTY * 20, diffyDesc, 7, -10, 0);
 	if (cursor == CURSOR_DIFFICULTY)
 	{
 		PrintColor(239, 79 + CURSOR_DIFFICULTY * 20, "Difficulty: ", 0, 0, 0);
-		PrintColor(400, 79 + CURSOR_DIFFICULTY * 20, DifficultyName(opt.difficulty), 0, 0, 0);
+		PrintColor(400, 79 + CURSOR_DIFFICULTY * 20, diffyDesc, 0, 0, 0);
 	}
 
 	PrintColor(240, 80 + CURSOR_COMPLETION * 20, "Game Completion: ", 7, -10, 0);
