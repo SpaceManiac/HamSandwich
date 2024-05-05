@@ -13,6 +13,7 @@ static const int NUM_CONTROLS = 8;
 static const int NUM_JOYBTNS = 4;
 
 static byte lastScanCode;
+static SDL_GameController *lastInputWasController = nullptr;
 
 // normal mapped controls: kbd, joystick, etc.
 static byte keyState, keyTap;
@@ -203,6 +204,11 @@ void GetLeftStick(int16_t* x, int16_t* y, byte* dpad)
 	*y = int16_t(std::clamp(yy, int32_t(INT16_MIN), int32_t(INT16_MAX)));
 }
 
+bool ShowGamepadText()
+{
+	return lastInputWasController != nullptr;
+}
+
 // Options menu support.
 void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys) {
 	nkeys = std::min(nkeys, NUM_CONTROLS);
@@ -310,19 +316,48 @@ void ControlKeyUp(byte k)
 void ControlHandleNewGamepad(int which)
 {
 	owned::SDL_GameController gamepad = owned::SDL_GameControllerOpen(which);
-	if (gamepad) {
+	if (gamepad)
+	{
 		LogDebug("Gamepad added: %s", SDL_GameControllerName(gamepad.get()));
+		lastInputWasController = gamepad.get();
 		joysticks.push_back(std::move(gamepad));
+	}
+}
+
+void ControlHandleEvent(const SDL_Event &e)
+{
+	if (e.type == SDL_KEYDOWN)
+	{
+		ControlKeyDown(e.key.keysym.scancode);
+		lastInputWasController = nullptr;
+	}
+	else if (e.type == SDL_KEYUP)
+	{
+		ControlKeyUp(e.key.keysym.scancode);
+		lastInputWasController = nullptr;
+	}
+	else if (e.type == SDL_CONTROLLERDEVICEADDED)
+	{
+		ControlHandleNewGamepad(e.cdevice.which);
+	}
+	else if (e.type == SDL_MOUSEBUTTONDOWN)
+	{
+		lastInputWasController = nullptr;
+	}
+	else if (e.type == SDL_CONTROLLERBUTTONDOWN)
+	{
+		lastInputWasController = SDL_GameControllerFromInstanceID(e.cbutton.which);
 	}
 }
 
 static byte GetJoyState(void)
 {
 	constexpr int DEADZONE = 8192;
-	byte joyState = 0;
+	byte allJoyState = 0;
 
 	for (auto iter = joysticks.begin(); iter != joysticks.end(); ++iter)
 	{
+		byte joyState = 0;
 		SDL_GameController* gamepad = iter->get();
 		SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gamepad);
 		if (!SDL_JoystickGetAttached(joystick))
@@ -395,9 +430,15 @@ static byte GetJoyState(void)
 		{
 			joyState|=CONTROL_B4;
 		}
+
+		if (joyState)
+		{
+			lastInputWasController = gamepad;
+		}
+		allJoyState |= joyState;
 	}
 
-	keyTap |= joyState & ~oldJoy;
-	oldJoy = joyState;
-	return joyState;
+	keyTap |= allJoyState & ~oldJoy;
+	oldJoy = allJoyState;
+	return allJoyState;
 }

@@ -23,9 +23,7 @@
 #endif  // __EMSCRIPTEN__
 
 // in control.cpp
-void ControlKeyDown(byte scancode);
-void ControlKeyUp(byte scancode);
-void ControlHandleNewGamepad(int which);
+void ControlHandleEvent(const SDL_Event &event);
 
 static const RGB BLACK = {0, 0, 0, 0};
 
@@ -415,10 +413,15 @@ TASK(void) MGLDraw::FinishFlip(void)
 	SDL_Event e;
 	while(SDL_PollEvent(&e))
 	{
-		if (e.type == SDL_KEYDOWN)
+		if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP)
 		{
 			TranslateKey(&e.key.keysym);
-			ControlKeyDown(e.key.keysym.scancode);
+		}
+
+		ControlHandleEvent(e);
+
+		if (e.type == SDL_KEYDOWN)
+		{
 			lastRawCode = e.key.keysym.scancode;
 			if (!(e.key.keysym.sym & ~0xff))
 			{
@@ -510,11 +513,6 @@ TASK(void) MGLDraw::FinishFlip(void)
 				lastKeyPressed = e.text.text[0];
 			}
 		}
-		else if (e.type == SDL_KEYUP)
-		{
-			TranslateKey(&e.key.keysym);
-			ControlKeyUp(e.key.keysym.scancode);
-		}
 		else if (e.type == SDL_MOUSEMOTION)
 		{
 			if (enableTouchMouse || e.motion.which != SDL_TOUCH_MOUSEID)
@@ -563,10 +561,6 @@ TASK(void) MGLDraw::FinishFlip(void)
 		else if (e.type == SDL_QUIT)
 		{
 			readyToQuit = 1;
-		}
-		else if (e.type == SDL_CONTROLLERDEVICEADDED)
-		{
-			ControlHandleNewGamepad(e.cdevice.which);
 		}
 		else if (e.type == SDL_CONTROLLERDEVICEREMOVED)
 		{

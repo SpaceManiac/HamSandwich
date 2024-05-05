@@ -496,7 +496,8 @@ void LoadGameDisplay(MGLDraw *mgl)
 	PrintGlow(20-23/4, 117+320-135, "^", 0, 0);
 	PrintGlow(20-23/4, 273+320-135-(30-26)*5, "v", 0, 0);
 
-	PrintGlow(5,467,"Select a game to load or press ESC to cancel",0,1);
+	const char* cancelText = ShowGamepadText() ? "Select a game to load or press Weapon to cancel" : "Select a game to load or press ESC to cancel";
+	PrintGlow(5,467,cancelText,0,1);
 	// menu options
 	x=20;
 	y=320;

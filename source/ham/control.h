@@ -35,6 +35,7 @@ const char *ScanCodeText(byte s);
 dword GetJoyButtons();  // Joystick-specific indexes.
 dword GetGamepadButtons();  // x & (1 << SDL_GAMECONTROLLER_BUTTON_*)
 void GetLeftStick(int16_t* x, int16_t* y, byte* dpad);
+bool ShowGamepadText();
 
 // Options menu support.
 void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys);

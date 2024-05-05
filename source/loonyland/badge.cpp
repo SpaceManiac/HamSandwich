@@ -892,8 +892,9 @@ void RenderBadgeMenu(MGLDraw *mgl)
 	{
 		Print(275,440,"Press Fire to toggle cheat On/Off",0,1);
 		Print(274,440,"Press Fire to toggle cheat On/Off",0,1);
-		Print(275,460,"Press ESC to exit",0,1);
-		Print(274,460,"Press ESC to exit",0,1);
+		const char* toExit = ShowGamepadText() ? "Press Weapon to exit" : "Press ESC to exit";
+		Print(275,460,toExit,0,1);
+		Print(274,460,toExit,0,1);
 	}
 	else
 	{

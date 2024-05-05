@@ -417,7 +417,7 @@ void RenderHighScore(MGLDraw *mgl)
 	}
 	PrintGlow(2,400,"Press up or down to move",0,0);
 	PrintGlow(2,425,"Enter to delete score",0,0);
-	PrintGlow(2,450,"ESC to exit",0,0);
+	PrintGlow(2,450,ShowGamepadText() ? "Weapon to exit" : "ESC to exit",0,0);
 	for(i=0;i<15;i++)
 	{
 		if(opt.score[curMode][i].mode==curMode)

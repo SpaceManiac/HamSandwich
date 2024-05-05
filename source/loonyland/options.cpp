@@ -19,7 +19,7 @@ options_t opt;
 
 static byte cursor;
 static byte oldc;
-static dword oldBtn;
+static dword oldBtn, oldPad;
 static byte controlX,controlY;
 static byte optMode;
 
@@ -82,6 +82,10 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 	dword btn,j;
 	int i;
 
+	dword pad = GetGamepadButtons();
+	dword padPressed = pad & ~oldPad;
+	oldPad = pad;
+
 	if(*lastTime>TIME_PER_FRAME*30)
 		*lastTime=TIME_PER_FRAME*30;
 	while(*lastTime>=TIME_PER_FRAME)
@@ -92,7 +96,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				c=mgl->LastKeyPressed();
 				c2=GetControls()|GetArrows();
 
-				if(c==27)
+				if(c==27 || (padPressed & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START))))
 				{
 					return 1;
 				}
@@ -210,7 +214,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				c=mgl->LastKeyPressed();
 				c2=GetControls()|GetArrows();
 
-				if(c==27 || (GetGamepadButtons() & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START))))
+				if(c==27 || (padPressed & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START))))
 				{
 					optMode=0;
 					controlX=10;
@@ -269,7 +273,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				break;
 			case 2: // entering a specific key
 				c2=LastScanCode();
-				if(c2==SDL_SCANCODE_ESCAPE)	// ESC key
+				if(c2==SDL_SCANCODE_ESCAPE || (padPressed & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START))))
 				{
 					optMode=1;
 					c2=255;
@@ -284,12 +288,13 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 					optMode=1;
 					mgl->LastKeyPressed();
 					MakeNormalSound(SND_MENUSELECT);
+					ApplyControlSettings();
 				}
 				c2=255;
 				break;
 			case 3: // pressing a joystick button
 				c=mgl->LastKeyPressed();
-				if(c==27)
+				if(c==27 || (padPressed & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START))))
 				{
 					optMode=1;
 					c2=255;
@@ -308,6 +313,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 						optMode=1;
 						c2=255;
 						MakeNormalSound(SND_MENUSELECT);
+						ApplyControlSettings();
 					}
 					j*=2;
 				}
@@ -376,25 +382,41 @@ void RenderControls(int x,int y)
 	}
 	if(optMode==0)
 	{
-		CenterPrintGlow(320,425,"Move with arrow keys, ENTER to select",0,0);
-		CenterPrintGlow(320,450,"ESC to return to main menu",0,0);
+		if (ShowGamepadText())
+		{
+			CenterPrintGlow(320,425,"Move with left stick, Fire to select",0,0);
+			CenterPrintGlow(320,450,"Back or Start to return to main menu",0,0);
+		}
+		else
+		{
+			CenterPrintGlow(320,425,"Move with arrow keys, ENTER to select",0,0);
+			CenterPrintGlow(320,450,"ESC to return to main menu",0,0);
+		}
 	}
 	else if(optMode==1)
 	{
-		CenterPrintGlow(320,425,"Select with arrow keys, ENTER to set new control",0,0);
-		CenterPrintGlow(320,450,"ESC to return to options",0,0);
+		if (ShowGamepadText())
+		{
+			CenterPrintGlow(320,425,"Select with left stick, Fire to set new control",0,0);
+			CenterPrintGlow(320,450,"Back or Start to return to options",0,0);
+		}
+		else
+		{
+			CenterPrintGlow(320,425,"Select with arrow keys, ENTER to set new control",0,0);
+			CenterPrintGlow(320,450,"ESC to return to options",0,0);
+		}
 	}
 	else if(optMode==2)
 	{
 		sprintf(btnTxt,"Press a key for %s",dirName[controlY]);
 		CenterPrintGlow(320,425,btnTxt,0,0);
-		CenterPrintGlow(320,450,"ESC to cancel",0,0);
+		CenterPrintGlow(320,450, ShowGamepadText() ? "Back or Start to cancel" : "ESC to cancel",0,0);
 	}
 	else if(optMode==3)
 	{
 		sprintf(btnTxt,"Press a joystick button for %s",dirName[controlY]);
 		CenterPrintGlow(320,425,btnTxt,0,0);
-		CenterPrintGlow(320,450,"ESC to cancel",0,0);
+		CenterPrintGlow(320,450, ShowGamepadText() ? "Back or Start to cancel" : "ESC to cancel",0,0);
 	}
 }
 
@@ -533,6 +555,7 @@ TASK(void) OptionsMenu(MGLDraw *mgl)
 
 	InitOptionsMenu();
 	lastTime=1;
+	oldPad = ~0;
 
 	while(!done)
 	{
