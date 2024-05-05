@@ -35,7 +35,7 @@ based on HamSandwich.
 * [Dr. Lunatic](https://hamumu.com/blog.php?entry=1318711596) (2011-08-15)
 * [Supreme With Cheese, Sleepless Hollow, Loonyland, Loonyland 2, and Kid Mystic](https://hamumu.com/blog.php?entry=1558391916) (2019-05-20)
 * [Eddie Galaxy, Spooky Castle, and Stockboy](https://hamumu.com/blog.php?entry=1653318531) (2022-05-23)
-* Amazin' SPISPOPD is believed lost.
+* Amazin' SPISPOPD's code was lost, but was reverse-engineered for inclusion in HamSandwich.
 
 ## Dr. Lunatic Supreme With Cheese
 
@@ -287,3 +287,12 @@ See "Also applicable to Sleepless Hollow" above.
 ### HamSandwich (2022–present)
 
 ### Re-release (June 2004) - [Blog](https://hamumu.com/blog.php?yr=2004&mn=6&entry=1088030171) - [Download](https://hamumu.itch.io/eddie-galaxy)
+
+## Amazin' SPISPOPD
+
+### HamSandwich (2023–present)
+
+* Add editor access by pressing <kbd>e</kbd> on the main menu
+* The HamSandwich code was reverse-engineered from the released game with Hamumu's permission
+
+### v2.0 (October 1999) - [Blog](https://web.archive.org/web/19991127183914/http://www.hamumu.com:80/journal.html) - [Download](https://hamumu.itch.io/amazin-spispopd)
