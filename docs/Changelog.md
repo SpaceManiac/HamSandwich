@@ -227,12 +227,20 @@ See "Also applicable to Sleepless Hollow" above.
 
 * Show off your Merit Badges with Steam Achievements
 * Automatically transfer your saves across devices with Steam Cloud
-* Save Halloween Hills worldwide with a native Steam Deck build
+* Save Halloween Hill wherever you are with a native Steam Deck build
 
 ### HamSandwich (2019–present)
 
 * Allow using the arrow keys to scroll around in the editor
 * Show special ID numbers in the editor
+* Allow selecting character on the New Game screen (by Hyperme, #)
+* Add Randomizer mode (by AutomaticFrenzy)
+* Add volume option
+* Fix Hardcore Mode not working correctly
+* Increase save slots from 5 to 250 and show more information in the list
+* Show invincible guys in aqua on the Radar and improve its accuracy on small maps
+* For quests that get "completed" before being turned in, indicate this status in the menu
+* Improve controller support
 
 ### Editor (2009-07-07) - [Download](https://hamumu.itch.io/loonyland-halloween-hill)
 
