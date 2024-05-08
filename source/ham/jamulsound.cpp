@@ -137,7 +137,7 @@ void JamulSoundUpdate(void)
 
 // pan: -128 (left) to 127 (right)
 // vol: -255 (silent) to 0 (no attenuation)
-bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
+bool JamulSoundPlay(int which, long pan, long vol, int playFlags, int priority)
 {
 	char s[32];
 	int i,chosen,lowpriority;
@@ -147,7 +147,7 @@ bool JamulSoundPlay(int which,long pan,long vol,int playFlags,int priority)
 
 	JamulSoundUpdate();
 
-	vol=((vol + 255) * sndVolume) / 255;
+	vol = (vol + 255) * ((playFlags & SND_MUSICVOLUME) ? (2 * Mix_VolumeMusic(-1)) : sndVolume) / 255;
 	pan += 128;
 	if (pan < 0)
 		pan = 0;
@@ -314,10 +314,7 @@ void JamulSoundPurge(void)
 
 void GoPlaySound(int num,long pan,long vol,int flags,int priority)
 {
-	if(!soundIsOn)
-		return;
-	JamulSoundPlay(num,pan,vol,flags,priority);
-
+	JamulSoundPlay(num, pan, vol, flags, priority);
 }
 
 void JamulSoundVolume(int v)

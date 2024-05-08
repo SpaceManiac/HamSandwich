@@ -124,6 +124,7 @@ void InitProfileMenu(void)
 
 	// TODO GetDisplayMGL()->SetColorblind(profile.colorblind);
 	GetDisplayMGL()->RealizePalette();
+	SetVolumes(profile.sound, profile.music);
 }
 
 void ExitProfileMenu(void)
@@ -267,6 +268,7 @@ void SwitchEmployee(byte oldG,byte newG)
 	profile=prof[newG];
 	// TODO GetDisplayMGL()->SetColorblind(profile.colorblind);
 	GetDisplayMGL()->RealizePalette();
+	SetVolumes(prof[newG].sound, prof[newG].music);
 	Music_Load(profile.songChoice[SONG_MENU]);
 	Music_Play();
 }

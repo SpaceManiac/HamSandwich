@@ -396,7 +396,7 @@ void Music_PlayNotes(dword when,byte seq)
 void Music_PlayNote(byte note,byte inst,int vol,byte sustain)
 {
 	// play it in its own sequence, so it doesn't interact with anything else
-	PlayInstrument(inst,note,vol,SND_SUSTAIN*sustain,NUM_SEQS+1);
+	PlayInstrument(inst,note,vol,(sustain ? SND_SUSTAIN : 0),NUM_SEQS+1);
 }
 
 void Music_New(void)

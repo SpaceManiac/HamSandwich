@@ -34,10 +34,7 @@ void UpdateMusic()
 void SetMusicVolume(int vol)
 {
 	musVolume = vol;
-	if (curStream)
-	{
-		Mix_VolumeMusic(musVolume / 2);
-	}
+	Mix_VolumeMusic(musVolume / 2);
 }
 
 void PlaySongFile(const char* fullname)
