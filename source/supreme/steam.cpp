@@ -398,17 +398,21 @@ public:
 	STEAM_CALLBACK(SteamManagerImpl, on_subscriptions_change, UserSubscribedItemsListChanged_t)
 	{
 		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "subscriptions changed for %u", pParam->m_nAppID);
-		// TODO: check that it's our appid?
-		MountWorkshopContent();
+		if (pParam->m_nAppID == SteamUtils()->GetAppID())
+		{
+			MountWorkshopContent();
+		}
 	}
 
 	STEAM_CALLBACK(SteamManagerImpl, on_item_downloaded, DownloadItemResult_t)
 	{
-		// TODO: check that it's our appid?
 		if (pParam->m_eResult == k_EResultOK)
 		{
 			SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu succeeded", pParam->m_nPublishedFileId);
-			MountWorkshopContent();
+			if (pParam->m_unAppID == SteamUtils()->GetAppID())
+			{
+				MountWorkshopContent();
+			}
 		}
 		else
 		{
