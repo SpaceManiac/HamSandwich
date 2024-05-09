@@ -496,8 +496,11 @@ void HandleKeyPresses(void)
 
 void PauseGame()
 {
-	InitPauseMenu();
-	gameMode = GAMEMODE_MENU;
+	if (gameMode == GAMEMODE_PLAY)
+	{
+		InitPauseMenu();
+		gameMode = GAMEMODE_MENU;
+	}
 }
 
 TASK(byte) PlayALevel(byte map)

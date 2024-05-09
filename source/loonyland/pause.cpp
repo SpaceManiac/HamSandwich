@@ -31,6 +31,7 @@ namespace
 	byte darkness;
 	int offX;
 	byte oldc;
+	dword oldGamepad;
 	bool noSaving = false;
 	int warpCount = 0;
 }
@@ -591,7 +592,8 @@ void InitPauseMenu(void)
 	cursor=CURSOR_CANCEL;
 	darkness=0;
 	offX=400;
-	oldc=255;
+	oldc = ~0;
+	oldGamepad = ~0;
 	warpCount = 0;
 
 	GetSaves();
@@ -612,11 +614,13 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 
 	byte c = GetControls()|GetArrows();
 	byte tap = c & ~oldc;
+	dword gamepadTap = GetGamepadButtons() & ~oldGamepad;
 
 	reptCounter++;
 	if((!oldc) || (reptCounter>10))
 		reptCounter=0;
 	oldc = c;
+	oldGamepad = GetGamepadButtons();
 
 	if(subMode==SubMode::None)	// not in any submenu
 	{
@@ -747,7 +751,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 	}
 
 	HandlePauseKeyPresses(mgl);
-	if(lastKey==27 || (tap & CONTROL_B2))	// hit ESC to exit pause menu
+	if(lastKey==27 || (gamepadTap & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_B)))) // hit ESC to exit pause menu
 	{
 		if (cursor == CURSOR_SAVE)
 		{
