@@ -233,14 +233,17 @@ See "Also applicable to Sleepless Hollow" above.
 
 * Allow using the arrow keys to scroll around in the editor
 * Show special ID numbers in the editor
-* Allow selecting character on the New Game screen (by Hyperme, #)
+* Allow selecting character on the New Game screen (by Hyperme, [#19])
 * Add Randomizer mode (by AutomaticFrenzy)
+* Add Hard difficulty between Normal and Challenge (by AutomaticFrenzy)
 * Add volume option
 * Fix Hardcore Mode not working correctly
 * Increase save slots from 5 to 250 and show more information in the list
 * Show invincible guys in aqua on the Radar and improve its accuracy on small maps
 * For quests that get "completed" before being turned in, indicate this status in the menu
 * Improve controller support
+
+[#19]: https://github.com/SpaceManiac/HamSandwich/pull/19
 
 ### Editor (2009-07-07) - [Download](https://hamumu.itch.io/loonyland-halloween-hill)
 
