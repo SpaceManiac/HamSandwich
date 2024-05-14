@@ -40,6 +40,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.fireFlags=0;
 		player.worldNum=world;
 		player.weapon=ITM_NONE;
+		player.wpnCost=0;
 		player.lastSave=255;
 		player.cheatsOn=0;
 
@@ -723,7 +724,7 @@ void PlayerSetVar(int v,int val)
 
 byte WeaponCost(byte wpn,byte level)
 {
-	byte wpnCost[7][3]={
+	static const byte wpnCost[7][3]={
 		{3,7,15},	// bombs
 		{1,4,8},	// lightning
 		{3,7,12},	// ice
@@ -733,7 +734,9 @@ byte WeaponCost(byte wpn,byte level)
 		{1,5,10},	// hot pants
 	};
 
-	if(level==2 && opt.cheats[CH_ULTRAWEAPON])
+	if (wpn < ITM_WBOMB || wpn > ITM_WHOTPANTS)
+		return 0;
+	else if (level==2 && opt.cheats[CH_ULTRAWEAPON])
 		return wpnCost[wpn-ITM_WBOMB][level]*3;
 	else
 		return wpnCost[wpn-ITM_WBOMB][level];
