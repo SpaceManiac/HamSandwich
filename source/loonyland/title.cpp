@@ -598,17 +598,25 @@ MainMenuResult MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		if(c)	// hitting any key prevents credits
 			numRuns=0;
 
-		oldc=c;
+		byte key=mgl->LastKeyPressed();
+		if (menu[0].action != MainMenuResult::NewGame)
+		{
+			if (key == 27 || (c & ~oldc & CONTROL_B2))
+				return MainMenuResult::BackToMain;
+		}
+		else
+		{
+			if(key==27)
+				return MainMenuResult::Exit;
+		}
 
-		c=mgl->LastKeyPressed();
-		if(c==27)
-			return MainMenuResult::Exit;
 #ifndef NDEBUG
-		if(c=='e')
+		if(key=='e')
 			return MainMenuResult::Editor;
 #endif
 		*lastTime-=TIME_PER_FRAME;
 		numRuns++;
+		oldc=c;
 	}
 	return MainMenuResult::None;
 }
