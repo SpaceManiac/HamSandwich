@@ -2335,6 +2335,7 @@ byte FindSummonToHelp(int x,int y,byte size,byte how,Map *map,world_t *world)
 	return 0;
 }
 
+// returns 1 if the item should disappear, 0 if it didn't hit anyone
 byte ItemHitPlayer(int x,int y,byte size,int dx,int dy,byte type,Map *map,world_t *world)
 {
 	int i,sizeFactor;
@@ -2344,8 +2345,7 @@ byte ItemHitPlayer(int x,int y,byte size,int dx,int dy,byte type,Map *map,world_
 
 	if(CheckHit(size,x,y,goodguy))
 	{
-		PlayerGetItem(type,x,y);
-		return 1;
+		return !PlayerGetItem(type,x,y);
 	}
 	if(player.monsType==MONS_PLYRSUMMON)
 	{
@@ -2354,8 +2354,7 @@ byte ItemHitPlayer(int x,int y,byte size,int dx,int dy,byte type,Map *map,world_
 		{
 			if(guys[i]->type==MONS_SUMBAT && CheckHit(size*sizeFactor/256,x,y,guys[i]))
 			{
-				PlayerGetItem(type,x,y);
-				return 1;
+				return !PlayerGetItem(type,x,y);
 			}
 		}
 	}

@@ -742,7 +742,8 @@ byte WeaponCost(byte wpn,byte level)
 		return wpnCost[wpn-ITM_WBOMB][level];
 }
 
-void PlayerGetWeapon(byte wpn)
+// true if the item was really gotten, false if it went through (weapon lock)
+bool PlayerGetWeapon(byte wpn)
 {
 	if(player.monsType==MONS_PLYRWITCH)
 	{
@@ -775,7 +776,7 @@ void PlayerGetWeapon(byte wpn)
 	else
 	{
 		if(player.fireFlags&FF_WPNLOCK)
-			return;		// weapon lock prevents you from switching weapons
+			return false;		// weapon lock prevents you from switching weapons
 
 		MakeNormalSound(SND_WPNGET);
 
@@ -794,6 +795,7 @@ void PlayerGetWeapon(byte wpn)
 			player.wpnCost=WeaponCost(player.weapon,player.wpnLevel);
 		}
 	}
+	return true;
 }
 
 void PlaceOrbOnStand(int x,int y)
@@ -1170,7 +1172,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 		}
 		if(itm>=ITM_WBOMB && itm<=ITM_WHOTPANTS)
 		{
-			PlayerGetWeapon(itm);
+			return !PlayerGetWeapon(itm);
 		}
 		if(itm>=ITM_BATDOLL && itm<=ITM_WOLFDOLL)
 		{

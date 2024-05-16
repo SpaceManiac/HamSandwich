@@ -199,7 +199,7 @@ byte GetTportClock(void);
 float CalcPercent(const player_t *p);
 void PlayerSetVar(int v,int val);
 void PlayerClearTempVars(void);
-void PlayerGetWeapon(byte wpn);
+bool PlayerGetWeapon(byte wpn);
 byte ShroomCount(void);
 byte OrbCount(void);
 byte BatCount(void);
