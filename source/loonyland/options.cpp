@@ -70,9 +70,16 @@ void ExitOptionsMenu(void)
 
 void ApplyControlSettings(void)
 {
-	SetKeyboardBindings(0, 6, opt.control[0]);
-	SetKeyboardBindings(1, 6, opt.control[1]);
-	SetJoystickBindings(2, opt.joyCtrl);
+	for (int i = 0; i < 2; ++i)
+	{
+		byte control[8];
+		memcpy(&control[0], &opt.control[i], 6);
+		memcpy(&control[6], &opt.moreControl[i], 2);
+		SetKeyboardBindings(i, 8, control);
+	}
+
+	byte joyControl[4] = { opt.joyCtrl[0], opt.joyCtrl[1], opt.moreJoyCtrl[0], opt.moreJoyCtrl[1] };
+	SetJoystickBindings(4, joyControl);
 }
 
 byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
@@ -229,14 +236,14 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				{
 					MakeNormalSound(SND_MENUCLICK);
 					controlY--;
-					if(controlY>5)
-						controlY=5;
+					if(controlY>6)
+						controlY=6;
 				}
 				if((c2&CONTROL_DN) && (!(oldc&CONTROL_DN)))
 				{
 					MakeNormalSound(SND_MENUCLICK);
 					controlY++;
-					if(controlY>5)
+					if(controlY>6)
 						controlY=0;
 				}
 				if((c2&CONTROL_LF) && (!(oldc&CONTROL_LF)))
@@ -333,7 +340,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 
 void RenderControls(int x,int y)
 {
-	static const char dirName[6][12]={"Up","Down","Left","Right","Fire","Weapon"};
+	static const char dirName[7][12]={"Up","Down","Left","Right","Fire","Weapon","Pick Up"};
 	char btnTxt[64];
 	int i;
 
@@ -342,42 +349,42 @@ void RenderControls(int x,int y)
 	CenterPrint(x+150,y+2,"Keyboard1",0,1);
 	CenterPrint(x+250,y+2,"Keyboard2",0,1);
 	CenterPrint(x+350,y+2,"Joystick",0,1);
-	DrawBox(x+98,y-2,x+198,y+200,16);
-	DrawBox(x+198,y-2,x+298,y+200,16);
-	DrawBox(x+298,y-2,x+398,y+200,16);
+	DrawBox(x+98,y-2,x+198,y+209,16);
+	DrawBox(x+198,y-2,x+298,y+209,16);
+	DrawBox(x+298,y-2,x+398,y+209,16);
 
-	for(i=0;i<6;i++)
+	for(i=0;i<7;i++)
 	{
 		if(controlY==i && controlX<3)
 		{
 			if(optMode==1)
-				DrawFillBox(x+99+100*controlX,y+20+1+i*30,x+198+100*controlX,y+20+29+i*30,20);
+				DrawFillBox(x+99+100*controlX,y+20+1+i*27,x+198+100*controlX,y+20+26+i*27,20);
 			else
 			{
-				DrawFillBox(x+99+100*controlX,y+20+1+i*30,x+198+100*controlX,y+20+29+i*30,31);
-				CenterPrint(x+150+controlX*100,y+27+i*30,"???",0,1);
+				DrawFillBox(x+99+100*controlX,y+20+1+i*27,x+198+100*controlX,y+20+26+i*27,31);
+				CenterPrint(x+150+controlX*100,y+27+i*27,"???",0,1);
 			}
 		}
-		DrawFillBox(x,y+20+1+i*30,x+98,y+20+29+i*30,10);
-		DrawBox(x,y+20+i*30,x+398,y+20+30+i*30,16);
+		DrawFillBox(x,y+20+1+i*27,x+98,y+20+26+i*27,10);
+		DrawBox(x,y+20+i*27,x+398,y+20+27+i*27,16);
 
-		CenterPrint(x+50,y+27+i*30,dirName[i],0,1);
+		CenterPrint(x+50,y+27+i*27,dirName[i],0,1);
 		if(optMode==1 || controlX!=0 || controlY!=i)
-			CenterPrint(x+150,y+27+i*30,ScanCodeText(opt.control[0][i]),0,1);
+			CenterPrint(x+150,y+27+i*27,ScanCodeText(i >= 6 ? opt.moreControl[0][i-6] : opt.control[0][i]),0,1);
 		if(optMode==1 || controlX!=1 || controlY!=i)
-			CenterPrint(x+250,y+27+i*30,ScanCodeText(opt.control[1][i]),0,1);
+			CenterPrint(x+250,y+27+i*27,ScanCodeText(i >= 6 ? opt.moreControl[1][i-6] : opt.control[1][i]),0,1);
 
 		if(i>3)
 		{
 			if(optMode==1 || controlX!=2 || controlY!=i)
 			{
-				sprintf(btnTxt,"Button %d",opt.joyCtrl[i-4]+1);
-				CenterPrint(x+350,y+27+i*30,btnTxt,0,1);
+				sprintf(btnTxt,"Button %d", (i >= 6 ? opt.moreJoyCtrl[i-6] : opt.joyCtrl[i-4]) + 1);
+				CenterPrint(x+350,y+27+i*27,btnTxt,0,1);
 			}
 		}
 		else
 		{
-			CenterPrint(x+350,y+27+i*30,dirName[i],16,1);
+			CenterPrint(x+350,y+27+i*27,dirName[i],16,1);
 		}
 	}
 	if(optMode==0)
@@ -516,6 +523,12 @@ void LoadOptions(void)
 		for(i=0;i<10;i++)
 			opt.bossDead[i]=0;
 		opt.remixMode=0;
+		opt.moreControl[0][0]=SDL_SCANCODE_TAB;  // wpnlock
+		opt.moreControl[0][1]=0;  // reserved
+		opt.moreControl[1][0]=0;  // wpnlock
+		opt.moreControl[1][1]=0;  // reserved
+		opt.moreJoyCtrl[0]=2;
+		opt.moreJoyCtrl[1]=3;
 		for(i=0;i<SDL_arraysize(opt.expando);i++)
 			opt.expando[i]=0;
 
@@ -530,6 +543,17 @@ void LoadOptions(void)
 		{
 			// old setting for sound=on, make that volume=50%
 			opt.sound = DEFAULT_VOLUME;
+		}
+
+		if (opt.version == 0)
+		{
+			opt.version = 1;
+			opt.moreControl[0][0]=SDL_SCANCODE_TAB;  // wpnlock
+			opt.moreControl[0][1]=0;  // reserved
+			opt.moreControl[1][0]=0;  // wpnlock
+			opt.moreControl[1][1]=0;  // reserved
+			opt.moreJoyCtrl[0]=2;
+			opt.moreJoyCtrl[1]=3;
 		}
 	}
 	ApplyControlSettings();

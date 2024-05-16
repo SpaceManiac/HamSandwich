@@ -42,4 +42,7 @@ void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys);
 void SetJoystickBindings(int nbuttons, const byte* buttons);
 void ControlSetUseJoystick(byte player, byte joystickNumber);
 
+typedef struct _SDL_GameController SDL_GameController;
+SDL_GameController* ActiveController();
+
 #endif  // HAMCONTROL_H

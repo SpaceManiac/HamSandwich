@@ -99,7 +99,10 @@ typedef struct options_t
 	byte wpnLock;
 	byte bossDead[10];	// have killed each boss
 	byte remixMode;
-	byte expando[8];	// room for expansion
+	byte moreControl[2][2];
+	byte moreJoyCtrl[2];
+	byte version;
+	byte expando[1];	// room for expansion
 
 	// best scores
 	highScore_t score[9][15];	// high scores in different modes
