@@ -103,26 +103,26 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				c=mgl->LastKeyPressed();
 				c2=GetControls()|GetArrows();
 
-				if(c==27 || (padPressed & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START))))
+				if(c==27 || (c2 & ~oldc & CONTROL_B2) || (padPressed & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START))))
 				{
 					return 1;
 				}
 
-				if((c2&CONTROL_UP) && (!(oldc&CONTROL_UP)))
+				if(c2 & ~oldc & CONTROL_UP)
 				{
 					cursor--;
 					if(cursor>4)
 						cursor=4;
 					MakeNormalSound(SND_MENUCLICK);
 				}
-				if((c2&CONTROL_DN) && (!(oldc&CONTROL_DN)))
+				if(c2 & ~oldc & CONTROL_DN)
 				{
 					cursor++;
 					if(cursor>4)
 						cursor=0;
 					MakeNormalSound(SND_MENUCLICK);
 				}
-				if((c2&CONTROL_LF) && (!(oldc&CONTROL_LF)))
+				if(c2 & ~oldc & CONTROL_LF)
 				{
 					switch(cursor)
 					{
@@ -150,7 +150,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 							break;
 					}
 				}
-				if((c2&CONTROL_RT) && (!(oldc&CONTROL_RT)))
+				if(c2 & ~oldc & CONTROL_RT)
 				{
 					switch(cursor)
 					{
@@ -178,7 +178,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 							break;
 					}
 				}
-				if((c2&(CONTROL_B1|CONTROL_B2|CONTROL_B3)) && (!(oldc&(CONTROL_B1|CONTROL_B2|CONTROL_B3))))
+				if(c2 & ~oldc & CONTROL_B1)
 				{
 					switch(cursor)
 					{
@@ -221,10 +221,11 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				c=mgl->LastKeyPressed();
 				c2=GetControls()|GetArrows();
 
-				if(c==27 || (padPressed & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START))))
+				if(c==27 || (c2 & ~oldc & CONTROL_B2) || (padPressed & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START))))
 				{
 					optMode=0;
 					controlX=10;
+					oldc = ~0;
 					ApplyControlSettings();
 					MakeNormalSound(SND_MENUCANCEL);
 					return 0;
@@ -232,35 +233,35 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				if(c==13)
 					c2|=CONTROL_B1;
 
-				if((c2&CONTROL_UP) && (!(oldc&CONTROL_UP)))
+				if(c2 & ~oldc & CONTROL_UP)
 				{
 					MakeNormalSound(SND_MENUCLICK);
 					controlY--;
 					if(controlY>6)
 						controlY=6;
 				}
-				if((c2&CONTROL_DN) && (!(oldc&CONTROL_DN)))
+				if(c2 & ~oldc & CONTROL_DN)
 				{
 					MakeNormalSound(SND_MENUCLICK);
 					controlY++;
 					if(controlY>6)
 						controlY=0;
 				}
-				if((c2&CONTROL_LF) && (!(oldc&CONTROL_LF)))
+				if(c2 & ~oldc & CONTROL_LF)
 				{
 					MakeNormalSound(SND_MENUCLICK);
 					controlX--;
 					if(controlX>2)
 						controlX=2;
 				}
-				if((c2&CONTROL_RT) && (!(oldc&CONTROL_RT)))
+				if(c2 & ~oldc & CONTROL_RT)
 				{
 					MakeNormalSound(SND_MENUCLICK);
 					controlX++;
 					if(controlX>2)
 						controlX=0;
 				}
-				if((c2&(CONTROL_B1)) && (!(oldc&(CONTROL_B1))))
+				if(c2 & ~oldc & CONTROL_B1)
 				{
 					if(controlX<2)
 					{
@@ -280,18 +281,21 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				break;
 			case 2: // entering a specific key
 				c2=LastScanCode();
-				if(c2==SDL_SCANCODE_ESCAPE || (padPressed & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START))))
+				if(c2==SDL_SCANCODE_ESCAPE || (padPressed & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START) | (1 << SDL_CONTROLLER_BUTTON_B))))
 				{
 					optMode=1;
 					c2=255;
-					oldc=255;
+					oldc=~0;
 					mgl->LastKeyPressed();
 					MakeNormalSound(SND_MENUCANCEL);
 					return 0;
 				}
 				if(c2!=0)
 				{
-					opt.control[controlX][controlY]=c2;
+					if (controlY < 6)
+						opt.control[controlX][controlY]=c2;
+					else
+						opt.moreControl[controlX][controlY-6] = c2;
 					optMode=1;
 					mgl->LastKeyPressed();
 					MakeNormalSound(SND_MENUSELECT);
@@ -316,7 +320,10 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				{
 					if((btn&j) && !(oldBtn&j))
 					{
-						opt.joyCtrl[controlY-4]=i;
+						if (controlY < 6)
+							opt.joyCtrl[controlY-4]=i;
+						else
+							opt.moreJoyCtrl[controlY-6]=i;
 						optMode=1;
 						c2=255;
 						MakeNormalSound(SND_MENUSELECT);
