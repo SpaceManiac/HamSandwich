@@ -415,7 +415,7 @@ void DiffChooseDisplay(MGLDraw *mgl)
 	Print(560,3,VERSION_NO,1,1);
 	Print(559,2,VERSION_NO,0,1);
 
-	PrintGlow(310,318,"Select with arrow keys and press Enter",0,1);
+	PrintGlow(310,318, ShowGamepadText() ? "Select with left stick and press Fire" : "Select with arrow keys and press Enter",0,1);
 	if (cursor == 0)
 	{
 		PrintGlow(5,330,"Difficulty Level:",0,2);
