@@ -109,11 +109,11 @@ void RenderQuests(int x,int y)
 			// Print them in white as soon as they're "completed", but
 			// only cross them out once you've acquired their reward.
 			bool turnedIn =
-				i == QUEST_TREES ? player.var[VAR_HEART+15] :
-				i == QUEST_CROPS ? player.var[VAR_FERTILIZER] :
+				i == QUEST_TREES ? player.var[VAR_TREEREWARD] :
+				i == QUEST_CROPS ? player.var[VAR_CROPSREWARD] :
 				i == QUEST_ZOMBIES ? player.var[VAR_ZOMBIEREWARD] :
 				i == QUEST_DAISY ? player.var[VAR_GAVEDAISY] :
-				i == QUEST_WOLF ? player.var[ITM_KEY4] :
+				i == QUEST_WOLF ? player.var[VAR_LARRYREWARD] :
 				true;
 
 			PrintColor(x,y,QuestName(i),0,0,0);
