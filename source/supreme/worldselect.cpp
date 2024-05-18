@@ -226,10 +226,10 @@ void SortWorlds(byte field,byte backwards)
 void InputWorld(const char *fname)
 {
 	worldDesc_t newItem;
-	SDL_strlcpy(newItem.fname, fname, SDL_arraysize(newItem.fname));
+	SDL_strlcpy(newItem.fname, fname, std::size(newItem.fname));
 
 	char fullname[64];
-	snprintf(fullname, SDL_arraysize(fullname), "worlds/%s", fname);
+	snprintf(fullname, std::size(fullname), "worlds/%s", fname);
 	GetWorldName(fullname, newItem.name, newItem.author);
 
 	worldData_t *w = GetWorldProgressNoCreate(newItem.fname);

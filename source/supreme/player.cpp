@@ -2018,7 +2018,7 @@ static const char wpnName[][32] = {
 	"Freeze Ray",
 	"Stopwatch",
 };
-static_assert(SDL_arraysize(wpnName) == MAX_WEAPONS, "Must give new weapon a name");
+static_assert(std::size(wpnName) == MAX_WEAPONS, "Must give new weapon a name");
 
 const char* GetWeaponName(byte weapon)
 {

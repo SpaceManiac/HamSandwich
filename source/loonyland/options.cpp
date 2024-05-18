@@ -536,7 +536,7 @@ void LoadOptions(void)
 		opt.moreControl[1][1]=0;  // reserved
 		opt.moreJoyCtrl[0]=2;
 		opt.moreJoyCtrl[1]=3;
-		for(i=0;i<SDL_arraysize(opt.expando);i++)
+		for(i=0;i<std::size(opt.expando);i++)
 			opt.expando[i]=0;
 
 		ResetHighScores();
@@ -619,11 +619,11 @@ static const char difficultyName[][18] = {
 	"Loony",
 	"Hard",
 };
-static_assert(SDL_arraysize(difficultyName) == NUM_DIFFICULTY);
+static_assert(std::size(difficultyName) == NUM_DIFFICULTY);
 
 const char* DifficultyName(byte difficulty)
 {
-	if (difficulty < SDL_arraysize(difficultyName))
+	if (difficulty < std::size(difficultyName))
 	{
 		return difficultyName[difficulty];
 	}
@@ -632,17 +632,17 @@ const char* DifficultyName(byte difficulty)
 
 static const byte nextDifficulty[] = { DIFF_NORMAL, DIFF_HARD, DIFF_MAD, DIFF_LOONY, DIFF_BEGINNER, DIFF_CHALLENGE };
 static const byte prevDifficulty[] = { DIFF_LOONY, DIFF_BEGINNER, DIFF_HARD, DIFF_CHALLENGE, DIFF_MAD, DIFF_NORMAL };
-static_assert(SDL_arraysize(nextDifficulty) == NUM_DIFFICULTY);
-static_assert(SDL_arraysize(prevDifficulty) == NUM_DIFFICULTY);
+static_assert(std::size(nextDifficulty) == NUM_DIFFICULTY);
+static_assert(std::size(prevDifficulty) == NUM_DIFFICULTY);
 byte NextDifficulty(byte difficulty)
 {
-	if (difficulty < SDL_arraysize(nextDifficulty))
+	if (difficulty < std::size(nextDifficulty))
 		return nextDifficulty[difficulty];
 	return DIFF_BEGINNER;
 }
 byte PrevDifficulty(byte difficulty)
 {
-	if (difficulty < SDL_arraysize(prevDifficulty))
+	if (difficulty < std::size(prevDifficulty))
 		return prevDifficulty[difficulty];
 	return DIFF_BEGINNER;
 }
@@ -657,11 +657,11 @@ static const char playerCharacterName[][11] = {
 	"Summony",
 	"Ninja Girl",
 };
-static_assert(SDL_arraysize(playerCharacterName) == PC_MAX);
+static_assert(std::size(playerCharacterName) == PC_MAX);
 
 const char* PlayerCharacterName(PlayerCharacterType character)
 {
-	if (character >= 0 && character < SDL_arraysize(playerCharacterName))
+	if (character >= 0 && character < std::size(playerCharacterName))
 	{
 		return playerCharacterName[character];
 	}

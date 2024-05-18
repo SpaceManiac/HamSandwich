@@ -30,9 +30,9 @@ struct FileTypeInfo {
 const char* const JSP_EXTS[] = { "*.jsp" };
 const char* const PNG_EXTS[] = { "*.png" };
 const char* const IMAGE_EXTS[] = { "*.png", "*.bmp", "*.tga", "*.pcx", "*.jpg", "*.jpeg", "*.tif", "*.tiff" };
-const FileTypeInfo JSP = { "JSP files", SDL_arraysize(JSP_EXTS), JSP_EXTS };
-const FileTypeInfo PNG = { "PNG files", SDL_arraysize(PNG_EXTS), PNG_EXTS };
-const FileTypeInfo IMAGES = { "Image files", SDL_arraysize(IMAGE_EXTS), IMAGE_EXTS };
+const FileTypeInfo JSP = { "JSP files", std::size(JSP_EXTS), JSP_EXTS };
+const FileTypeInfo PNG = { "PNG files", std::size(PNG_EXTS), PNG_EXTS };
+const FileTypeInfo IMAGES = { "Image files", std::size(IMAGE_EXTS), IMAGE_EXTS };
 
 bool open(const char* title, FileTypeInfo fileType, std::string *buf) {
 	char* chosen = tinyfd_openFileDialog(title, nullptr, fileType.numPatterns, fileType.patterns, fileType.description, false);
@@ -75,7 +75,7 @@ bool showOkCancel(const char* head, bool def) {
         window,
         "JspEdit",
         head,
-        SDL_arraysize(buttons),
+        std::size(buttons),
         buttons,
         nullptr,
     };

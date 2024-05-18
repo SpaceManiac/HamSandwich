@@ -110,7 +110,7 @@ static const byte weaponToItem[] = {
 	ITM_FREEZERAY,
 	ITM_STOPWATCH,
 };
-static_assert(SDL_arraysize(weaponToItem) == MAX_WEAPONS, "Weapons need item specified for Classic HUD display");
+static_assert(std::size(weaponToItem) == MAX_WEAPONS, "Weapons need item specified for Classic HUD display");
 
 struct intface_t
 {

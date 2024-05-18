@@ -75,7 +75,7 @@ static const NetMenuButton btn[]={
 
 #define SCORE_DOMAIN "hamumu.com"
 
-constexpr int NUM_NET_BTNS = SDL_arraysize(btn);
+constexpr int NUM_NET_BTNS = std::size(btn);
 
 static Mode mode;
 static bool webInited;

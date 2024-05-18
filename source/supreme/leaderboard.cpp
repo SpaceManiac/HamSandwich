@@ -79,7 +79,7 @@ struct LeaderboardDownload
 			{
 				LeaderboardEntry_t entry;
 				Score score;
-				SteamUserStats()->GetDownloadedLeaderboardEntry(result->m_hSteamLeaderboardEntries, i, &entry, score.details, SDL_arraysize(score.details));
+				SteamUserStats()->GetDownloadedLeaderboardEntry(result->m_hSteamLeaderboardEntries, i, &entry, score.details, std::size(score.details));
 				score.steamId = entry.m_steamIDUser;
 				score.globalRank = entry.m_nGlobalRank;
 				score.score = entry.m_nScore;
@@ -131,7 +131,7 @@ static TASK(void) ViewDetails(MGLDraw *mgl, const byte* backgd, const sprite_set
 	};
 	std::vector<Entry> entries;
 	size_t detailsIdx = 1;
-	for (int i = 0; i < world->numMaps && detailsIdx < SDL_arraysize(score.details); ++i)
+	for (int i = 0; i < world->numMaps && detailsIdx < std::size(score.details); ++i)
 	{
 		if (world->map[i]->flags & MAP_HUB)
 			continue;

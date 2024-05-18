@@ -130,7 +130,7 @@ namespace
 			}
 
 			const char* tags[] = {"World"};
-			SteamParamStringArray_t tagArray = { tags, SDL_arraysize(tags) };
+			SteamParamStringArray_t tagArray = { tags, std::size(tags) };
 			if (!SteamUGC()->SetItemTags(handle, &tagArray))
 			{
 				progress = Progress::Failed;
@@ -203,7 +203,7 @@ namespace
 			if (owned::FILE f { AppdataOpen(workshopDataFilename.c_str()) })
 			{
 				char buf[128];
-				while (fgets(buf, SDL_arraysize(buf), f.get()))
+				while (fgets(buf, std::size(buf), f.get()))
 				{
 					char* eq = strchr(buf, '=');
 					if (eq)
@@ -411,7 +411,7 @@ static std::string TempName()
 	std::string base;
 #ifdef _WIN32
 	char buf[MAX_PATH];
-	size_t len = GetTempPathA(SDL_arraysize(buf), buf);
+	size_t len = GetTempPathA(std::size(buf), buf);
 	base.assign(buf, len);
 #else
 	base = "/tmp";

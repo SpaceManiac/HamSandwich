@@ -1331,7 +1331,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 	else if(type==player.monsType)
 	{
 		static const byte invinc[]={30*3,30*2,30,15,0,45};
-		static_assert(SDL_arraysize(invinc) == NUM_DIFFICULTY);
+		static_assert(std::size(invinc) == NUM_DIFFICULTY);
 		SetPlayerHP(hp);
 		player.invinc=invinc[player.difficulty];
 

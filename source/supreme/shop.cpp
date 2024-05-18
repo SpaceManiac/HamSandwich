@@ -1718,7 +1718,7 @@ static const char charName[][16] = {
 	"LunaChick",
 	"MechaBouapha",
 };
-static_assert(SDL_arraysize(charName) == MAX_PLAYAS, "Must give new playable character a name");
+static_assert(std::size(charName) == MAX_PLAYAS, "Must give new playable character a name");
 
 const char* GetPlayableCharacterName(int playAs)
 {

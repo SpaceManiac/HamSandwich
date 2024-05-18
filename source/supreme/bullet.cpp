@@ -3003,7 +3003,7 @@ static const byte bulletFacingType[] = {
 	7,  	// BLT_LUNA	55		// lunachick's bullets
 	7,  	// BLT_LUNA2	56		// lunachick's bullets with wall-bounce power
 };
-static_assert(SDL_arraysize(bulletFacingType) == NUM_BULLETS, "Must give new bullets a facing type");
+static_assert(std::size(bulletFacingType) == NUM_BULLETS, "Must give new bullets a facing type");
 
 byte BulletFacingType(byte type)
 {
@@ -3070,7 +3070,7 @@ static const char bulletName[][20] = {
 	"Lunachick Ray",
 	"Bouncy Lunachick",
 };
-static_assert(SDL_arraysize(bulletName) == NUM_BULLETS, "Must give new bullets a name");
+static_assert(std::size(bulletName) == NUM_BULLETS, "Must give new bullets a name");
 
 const char* BulletName(int type)
 {

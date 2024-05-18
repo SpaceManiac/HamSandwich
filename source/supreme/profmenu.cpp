@@ -90,7 +90,7 @@ static const profButton_t btn[]={
 	{20,418,200,"Delete This Profile", ButtonId::DelProf},
 	{20,440,200,"Save & Exit", ButtonId::Exit},
 };
-constexpr int NUM_PROF_BTNS = SDL_arraysize(btn);
+constexpr int NUM_PROF_BTNS = std::size(btn);
 
 static profButton_t kcBtn[]={
 	{90,90,102,"", ButtonId::Keys1_0},
@@ -110,7 +110,7 @@ static profButton_t kcBtn[]={
 	{20,300,200,"Default Controls", ButtonId::KeysDefault},
 	{20,350,200,"Exit", ButtonId::KeysExit},
 };
-constexpr int NUM_KC_BTNS = SDL_arraysize(kcBtn);
+constexpr int NUM_KC_BTNS = std::size(kcBtn);
 
 static Mode mode;
 static byte kcMode,kBtnNum,canHitKeys;

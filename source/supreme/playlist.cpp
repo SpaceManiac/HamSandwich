@@ -63,7 +63,7 @@ static const playButton_t btn[]={
 	{280,300,80,"Move Dn",BTN_MOVEDN},
 	{280,380,80,"Exit",BTN_EXIT},
 };
-constexpr int NUM_PLAY_BTNS = SDL_arraysize(btn);
+constexpr int NUM_PLAY_BTNS = std::size(btn);
 
 static int listNum,listPos;
 static int msx,msy;

@@ -402,7 +402,7 @@ void DiffChooseDisplay(MGLDraw *mgl)
 		"Intended difficulty for the Randomizer.",
 		"",
 	};
-	static_assert(SDL_arraysize(diffDesc) == NUM_DIFFICULTY);
+	static_assert(std::size(diffDesc) == NUM_DIFFICULTY);
 
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);

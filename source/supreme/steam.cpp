@@ -365,7 +365,7 @@ public:
 			else if ((state & k_EItemStateInstalled) && (state & k_EItemStateSubscribed) && !(state & k_EItemStateDownloadPending))
 			{
 				char dirname[1024];
-				if (SteamUGC()->GetItemInstallInfo(fileId, nullptr, dirname, SDL_arraysize(dirname), nullptr))
+				if (SteamUGC()->GetItemInstallInfo(fileId, nullptr, dirname, std::size(dirname), nullptr))
 				{
 					SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop: %s", dirname);
 					vfs_stack.push_back(vanilla::open_stdio(dirname), "", { vanilla::VfsSourceKind::Addon, fileId });

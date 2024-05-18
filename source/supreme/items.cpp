@@ -1839,7 +1839,7 @@ static const char pwrUpName[][32] = {
 	"Hammer Enhance",
 	"Poison",
 };
-static_assert(SDL_arraysize(pwrUpName) == MAX_POWERUP, "Must give new powerups a name");
+static_assert(std::size(pwrUpName) == MAX_POWERUP, "Must give new powerups a name");
 
 const char *GetPowerupName(int powerup)
 {

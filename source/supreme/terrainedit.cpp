@@ -347,7 +347,7 @@ void TerrainSetFlags(void)
 	dword flags[]={TF_SOLID,TF_ICE,TF_MUD,TF_WATER,TF_LAVA,TF_PUSHY,TF_PUSHON,TF_ANIM,TF_STEP,
 				  TF_DESTRUCT,TF_TRANS,TF_MINECART,TF_BUNNY,TF_NOGHOST,TF_NOENEMY,TF_RUBBER,
 				  TF_SHADOWLESS};
-	constexpr int count = SDL_arraysize(flags);
+	constexpr int count = std::size(flags);
 
 	byte flagCount[count];	// count how many tiles have each flag set
 

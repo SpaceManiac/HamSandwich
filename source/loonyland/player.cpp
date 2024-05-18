@@ -26,7 +26,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 {
 	int i;
 	static const byte startLife[]={15,10,5,3,1,5};
-	static_assert(SDL_arraysize(startLife) == NUM_DIFFICULTY);
+	static_assert(std::size(startLife) == NUM_DIFFICULTY);
 
 	if(initWhat==INIT_GAME)	// initialize everything, this is to start a whole new game
 	{

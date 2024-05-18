@@ -193,7 +193,7 @@ static const RandoLocation basic_locations[] = {
 	{true, "Witch Mushrooms", 9, 0, 0, 0, 0, "Witch Mushrooms", [](const std::set<int>& inv) { return HaveAllMushrooms(inv); }},
 	{true, "Zombie Stomp", 10, 0, 0, 0, 0, "Zombie Stomp", [](const std::set<int>& inv) { return CanCleanseCrypts(inv); }},
 };
-static_assert(SDL_arraysize(basic_locations) == R_NUM_LOCATIONS);
+static_assert(std::size(basic_locations) == R_NUM_LOCATIONS);
 
 static const RandoItem itemList[] = {
 	{ITM_SUPERHEART, VAR_HEART + 0, "Heart"},
@@ -302,7 +302,7 @@ static const RandoItem itemList[] = {
 	{ITM_REFLECTGEM, VAR_REFLECT, "Reflect"},
 	{ITM_SILVERSLING, VAR_SILVERSLING, "Silver Sling"},
 };
-static_assert(SDL_arraysize(itemList) == R_NUM_LOCATIONS);
+static_assert(std::size(itemList) == R_NUM_LOCATIONS);
 
 void InitRandomizerMenu(void)
 {
@@ -637,7 +637,7 @@ void RandomizeSeed()
 	static const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 	seed = "";
 	while (seed.length() < MAX_SEED_LENGTH) {
-		seed += charset[rand() % SDL_arraysize(charset)];
+		seed += charset[rand() % std::size(charset)];
 	}
 }
 

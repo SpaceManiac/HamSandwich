@@ -571,7 +571,7 @@ static const char diffName[][16] = {
 	"Hard",
 	"Lunatic",
 };
-static_assert(SDL_arraysize(diffName) == MAX_DIFFICULTY, "Must give new difficulties a name");
+static_assert(std::size(diffName) == MAX_DIFFICULTY, "Must give new difficulties a name");
 
 const char* GetDifficultyName(int difficulty)
 {

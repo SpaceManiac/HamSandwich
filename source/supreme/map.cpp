@@ -2008,7 +2008,7 @@ static const char lvlFlagName[][16] = {
 	"Wavy",
 	"Oxygen Meter",
 };
-static_assert(SDL_arraysize(lvlFlagName) == NUM_LVL_FLAGS, "Must give new level flags a name");
+static_assert(std::size(lvlFlagName) == NUM_LVL_FLAGS, "Must give new level flags a name");
 
 const char* MapFlagName(int flagIndex)
 {
