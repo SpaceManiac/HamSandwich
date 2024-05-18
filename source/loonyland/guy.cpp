@@ -1060,6 +1060,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 	if(ice)
 	{
 		ice/=2;
+		MakeSound(SND_LIGHTSMACK, x, y, SND_CUTOFF, 400);
 		if(hp>0)
 		{
 			if(type!=player.monsType)
