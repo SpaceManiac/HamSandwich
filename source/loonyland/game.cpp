@@ -563,14 +563,13 @@ TASK(byte) PlayALevel(byte map)
 	CO_RETURN exitcode;
 }
 
-TASK(byte) LunaticWorld(byte world,const char *worldName)
+TASK(byte) LunaticWorld(const char *worldName)
 {
 	byte result;
 
 	if(!LoadWorld(&curWorld,worldName))
 		CO_RETURN WORLD_ABORT;
 
-	player.worldNum=world;
 	InitWorld(&curWorld,player.worldNum);
 	if(player.worldNum==WORLD_SURVIVAL)
 		InitSurvival();
@@ -699,42 +698,42 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 			case WORLD_NORMAL:
 				if(!loadGame)
 					AWAIT Help(gamemgl);
-				worldResult=AWAIT LunaticWorld(0,"loony.llw");
+				worldResult=AWAIT LunaticWorld("loony.llw");
 				break;
 			case WORLD_REMIX:
 				if(!loadGame)
 					AWAIT Help(gamemgl);
-				worldResult=AWAIT LunaticWorld(WORLD_REMIX,"remix.llw");
+				worldResult=AWAIT LunaticWorld("remix.llw");
 				break;
 			case WORLD_RANDOMIZER:
 				if(!loadGame)
 					AWAIT Help(gamemgl);
 				LoadRandoItems();
 				sprintf(buff, "randomizer/%s rando.llw", GetSeed().c_str());
-				worldResult=AWAIT LunaticWorld(WORLD_RANDOMIZER,buff);
+				worldResult=AWAIT LunaticWorld(buff);
 				break;
 			case WORLD_SURVIVAL:
 				AWAIT Help(gamemgl);
-				worldResult=AWAIT LunaticWorld(0,"survive.llw");
+				worldResult=AWAIT LunaticWorld("survive.llw");
 				break;
 			case WORLD_SLINGSHOT:
 				AWAIT Help(gamemgl);
-				worldResult=AWAIT LunaticWorld(0,"sling.llw");
+				worldResult=AWAIT LunaticWorld("sling.llw");
 				break;
 			case WORLD_LOONYBALL:
 				AWAIT Help(gamemgl);
-				worldResult=AWAIT LunaticWorld(0,"ball.llw");
+				worldResult=AWAIT LunaticWorld("ball.llw");
 				break;
 			case WORLD_BOWLING:
 				AWAIT Help(gamemgl);
-				worldResult=AWAIT LunaticWorld(0,"bowl.llw");
+				worldResult=AWAIT LunaticWorld("bowl.llw");
 				break;
 			case WORLD_BOSSBASH:
 				AWAIT Help(gamemgl);
-				worldResult=AWAIT LunaticWorld(0,"boss.llw");
+				worldResult=AWAIT LunaticWorld("boss.llw");
 				break;
 			default:
-				worldResult = 5;
+				worldResult = WORLD_ABORT;
 		}
 		if(worldResult==WORLD_QUITGAME)
 		{
