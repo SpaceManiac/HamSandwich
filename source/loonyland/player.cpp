@@ -1192,9 +1192,9 @@ byte PlayerGetItem(byte itm,int x,int y)
 		}
 		if(itm==ITM_BADGE)
 		{
-			if(player.worldNum==WORLD_NORMAL)
+			if (player.worldNum == WORLD_NORMAL || player.worldNum == WORLD_RANDOMIZER)
 				EarnBadge(BADGE_HIDDEN);
-			else
+			else if (player.worldNum == WORLD_REMIX)
 				EarnBadge(BADGE_HIDDEN2);
 		}
 		return 0;
