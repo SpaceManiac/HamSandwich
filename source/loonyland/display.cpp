@@ -561,7 +561,7 @@ bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,int bright,sprite
 		rect.h = spr->height;
 	}
 	// If the rect is totally offscreen, don't add it to the display list.
-	SDL_Rect screenRect = { scrx - SCRWID/2, scry - SCRHEI/2, SCRWID, SCRHEI };
+	SDL_Rect screenRect = { scrx - mgl->GetWidth()/2, scry - mgl->GetHeight()/2, mgl->GetWidth(), mgl->GetHeight() };
 	SDL_Rect intersection;
 	if (!SDL_IntersectRect(&rect, &screenRect, &intersection))
 	{

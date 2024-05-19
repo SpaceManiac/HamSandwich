@@ -164,7 +164,7 @@
 
 #define ITM_ZOMBGEM		129 //100 gems
 #define ITM_BOOTS		130 //mud boots
-#define ITM_FERTILIZER	131 
+#define ITM_FERTILIZER	131
 #define ITM_GHOSTPOTION	132
 #define ITM_LANTERN		133
 #define ITM_REFLECTGEM	134
@@ -185,12 +185,6 @@
 #define IF_NOBULLET		256	// bullets can't pass
 #define IF_DESTROY		512	// can be destroyed
 
-typedef struct item_t
-{
-	int sprset,rate,spr,spr2;
-	dword flags;
-} item_t;
-
 class Map;
 
 void InitItems(void);
@@ -203,5 +197,11 @@ void InstaRenderItem2(int x,int y,byte type,int anim,char bright,MGLDraw *mgl);
 char *WeaponName(byte w);
 byte GasCanEnter(byte face,int x,int y,Map *map);
 void RenderSumHeal(int x,int y,int z,char bright);
+
+struct ItemRenderExtents
+{
+	int left, right, up, down;
+};
+ItemRenderExtents GetItemRenderExtents();
 
 #endif
