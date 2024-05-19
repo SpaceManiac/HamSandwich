@@ -180,6 +180,11 @@ void InitItems(void)
 	itmSpr[2] = new sprite_set_t("graphics/randomizer.jsp");
 	itemAnim = 0;
 
+	// Offset pacified evil tree sprite so its shadow renders the same as the monster.
+	sprite_t* treeSprite = itmSpr[itemInfo[ITM_TREE2].sprset]->GetSprite(itemInfo[ITM_TREE2].spr);
+	treeSprite->ofsx -= 1;
+	treeSprite->ofsy -= 8;
+
 	// Calculate the union bounding box of item sprites so we know how far away
 	// to search for items to draw, with no pop-in and minimal overdraw.
 	// LL1 item rendering is a little complex so just assume every sprite is

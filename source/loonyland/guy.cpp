@@ -303,7 +303,7 @@ byte Guy::CanWalk(int xx,int yy,Map *map,world_t *world)
 
 	if(result)	// no wall collision, look for guy collision
 		for(i=0;i<maxGuys;i++)
-			if((guys[i]) && (guys[i]!=this) && (guys[i]->type) && (guys[i]->hp>0) &&
+			if((guys[i]) && (guys[i]!=this) && (guys[i]->type) && (guys[i]->hp>0 || guys[i]->type == MONS_EVILTREE || guys[i]->type == MONS_EVILTREE2 || guys[i]->type == MONS_EVILTREE3) &&
 				(player.levelNum!=0 || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX && player.worldNum!=WORLD_RANDOMIZER) || guys[i]->active))
 			{
 				if(CoconutBonk(xx,yy,guys[i]))
@@ -333,7 +333,7 @@ byte Guy::CanWalk(int xx,int yy,Map *map,world_t *world)
 	return result;
 }
 
-void Guy::SeqFinished(void)
+void Guy::SeqFinished(Map *map)
 {
 	byte t;
 
@@ -358,6 +358,10 @@ void Guy::SeqFinished(void)
 			SendMessageToGame(MSG_RESET,player.lastSave);
 		}
 
+		// Drop dead tree item exactly when the alive tree disappears.
+		if ((type == MONS_EVILTREE || type == MONS_EVILTREE2 || type == MONS_EVILTREE3) && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
+			map->map[mapx+mapy*map->width].item = ITM_TREE2;
+
 		t=type;
 		type=MONS_NONE;	// all gone
 		BadgeCheck(BE_KILL,t,curMap);
@@ -372,17 +376,13 @@ void Guy::SeqFinished(void)
 	action=ACTION_IDLE;
 }
 
-void Guy::AttackThem(void)
-{
-}
-
-void Guy::NextFrame(void)
+void Guy::NextFrame(Map *map)
 {
 	frm++;
 
 	if(MonsterAnim(type,seq)[frm]==255)
 		// this sequence is done
-		SeqFinished();
+		SeqFinished(map);
 
 	if(type==MONS_NONE)
 		return;	// seqfinished may have killed the guy
@@ -550,7 +550,7 @@ void Guy::Update(Map *map,world_t *world)
 	while(frmTimer>255)
 	{
 		frmTimer-=255;
-		NextFrame();
+		NextFrame(map);
 	}
 	if(type==MONS_NONE)
 		return;	// NextFrame may have killed you
