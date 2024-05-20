@@ -29,7 +29,7 @@
 
 #define NUM_QUESTS 20
 
-char *QuestName(byte quest);
+const char *QuestName(byte quest);
 
 extern RandoItem randoReward[11];
 

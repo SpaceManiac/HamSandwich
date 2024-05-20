@@ -13,7 +13,7 @@
 
 RandoItem randoReward[11];
 
-char questName[NUM_QUESTS][64]={
+static const char questName[NUM_QUESTS][64]={
 	"Save Halloween Hill",
 	"Tree Trimming",
 	"Scaredy Cat",
@@ -36,7 +36,7 @@ char questName[NUM_QUESTS][64]={
 	"The Collection",
 };
 
-Convo talk[]={
+static Convo talk[]={
 	// 0
 	{"It's a lovely day, eh?",
 	 "",
@@ -1265,13 +1265,13 @@ Convo talk[]={
 	  33,0},
 };
 
-byte seerTable[]={132,134,0,0,136,138,0,0,140,142,144,146,148,150,152,154,156,158,0,0};
+static const byte seerTable[]={132,134,0,0,136,138,0,0,140,142,144,146,148,150,152,154,156,158,0,0};
 
 byte curChat;
 byte curLine,curChar;
 byte noButtons;
 
-char *QuestName(byte quest)
+const char *QuestName(byte quest)
 {
 	return questName[quest];
 }
