@@ -73,7 +73,7 @@ namespace vanilla
 
 		Mount(std::unique_ptr<Vfs>&& vfs, std::string&& mountpoint = "", VfsMeta meta = {})
 			: vfs(std::move(vfs))
-			, mountpoint(mountpoint)
+			, mountpoint(std::move(mountpoint))
 			, meta(meta)
 		{
 			// Strip trailing '/' from mountpoint.
