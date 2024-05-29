@@ -142,7 +142,7 @@ public:
 		{
 			for (int goal = 0; goal < 40; ++goal)
 			{
-				if (opt.meritBadge[goal])
+				if (opt.meritBadge[goal] == MERIT_EARNED)
 				{
 					CompleteGoal(goal);
 				}

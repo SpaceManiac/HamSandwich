@@ -620,7 +620,7 @@ void BadgeCheatKey(char c)
 
 	if(!strcmp("gimme",&badgeKeys[16-strlen("gimme")]))
 	{
-		opt.meritBadge[cursor]=1-opt.meritBadge[cursor];
+		opt.meritBadge[cursor] = opt.meritBadge[cursor] ? MERIT_NO : MERIT_CHEATED;
 		if(opt.cheats[badge[cursor].cheatNum])
 			opt.cheats[badge[cursor].cheatNum]=0;
 
@@ -669,7 +669,7 @@ void BadgeCheatKey(char c)
 	{
 		for(i=0;i<NUM_BADGES;i++)
 		{
-			opt.meritBadge[i]=0;
+			opt.meritBadge[i] = MERIT_NO;
 			opt.cheats[i]=0;
 		}
 		for(i=0;i<10;i++)
@@ -685,7 +685,8 @@ void BadgeCheatKey(char c)
 	{
 		for(i=0;i<NUM_BADGES;i++)
 		{
-			opt.meritBadge[i]=1;
+			if (!opt.meritBadge[i])
+				opt.meritBadge[i] = MERIT_CHEATED;
 		}
 		for(i=0;i<5;i++)
 			opt.modes[i]=1;
@@ -929,29 +930,28 @@ TASK(void) BadgeMenu(MGLDraw *mgl)
 
 static TASK(void) EarnBadgeTask(byte b)
 {
-	int i,c;
+	// Steam has its own handling of already-completed goals.
+	Steam()->CompleteGoal(b);
 
-	c=0;
-	for(i=0;i<NUM_BADGES;i++)
-		if(opt.meritBadge[i])
-			c++;
+	bool newlyEarned = !opt.meritBadge[b];
+	// Mark as earned legit even if already cheated.
+	opt.meritBadge[b] = MERIT_EARNED;
 
-	if(c>=25 && opt.remixMode==0)
+	// If newly earned, congratulate the player. No early return so the mode
+	// logic below always runs & can thus be freely tweaked.
+	if (newlyEarned)
 	{
-		opt.remixMode=1;
-		AWAIT ShowGameMode(4,25);
-		SaveOptions();
+		MakeNormalSound(SND_BADGEGET);
+		AWAIT ShowBadge(b);
 	}
 
-	if(opt.meritBadge[b])
-		CO_RETURN;
+	// Unlock things based on the number of badges earned.
+	int c = 0;
+	for (int i = 0; i < NUM_BADGES; i++)
+		if (opt.meritBadge[i])
+			c++;
 
-	opt.modes[MODE_BADGES]=1;	// this just indicates that badge listings should be available
-
-	MakeNormalSound(SND_BADGEGET);
-	opt.meritBadge[b]=1;
-	Steam()->CompleteGoal(b);
-	AWAIT ShowBadge(b);
+	opt.modes[MODE_BADGES] = 1; // this just indicates that badge listings should be available
 
 	if(c>=5 && opt.modes[MODE_SURVIVAL]==0)
 	{
@@ -973,9 +973,14 @@ static TASK(void) EarnBadgeTask(byte b)
 		opt.modes[MODE_BOWLING]=1;
 		AWAIT ShowGameMode(3,20);
 	}
+	if(c>=25 && opt.remixMode==0)
+	{
+		opt.remixMode=1;
+		AWAIT ShowGameMode(4,25);
+	}
 
 	SaveOptions();
-	if(c==40)
+	if(newlyEarned && c==40)
 	{
 		LoopingSound(SND_ENDSONG);
 		AWAIT CheatText(GetDisplayMGL(),1);

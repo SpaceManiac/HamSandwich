@@ -86,13 +86,22 @@ enum PlayerCharacterType : int
 };
 const char* PlayerCharacterName(PlayerCharacterType character);
 
+enum MeritBadgeState : byte
+{
+	MERIT_NO = 0,
+	MERIT_EARNED = 1,
+	// The cheats set this and Steam checks it so you can still play with
+	// everything for fun, but have to actually earn the Steam achievement.
+	MERIT_CHEATED = 2,
+};
+
 typedef struct options_t
 {
 	byte control[2][6];	// key scancodes
 	byte joyCtrl[2];	// joystick 'codes' for the buttons
 	byte sound,music;
 	byte cheats[40];	// which special cheats are on
-	byte meritBadge[40];
+	MeritBadgeState meritBadge[40];
 	byte difficulty;
 	byte modes[5];
 	byte helpOn;

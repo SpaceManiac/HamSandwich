@@ -524,7 +524,7 @@ void LoadOptions(void)
 		opt.helpOn=1;
 
 		for(i=0;i<40;i++)
-			opt.meritBadge[i]=0;
+			opt.meritBadge[i] = MERIT_NO;
 		for(i=0;i<20;i++)
 			opt.cheats[i]=0;
 		for(i=0;i<10;i++)
