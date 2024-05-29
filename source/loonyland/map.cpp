@@ -6,6 +6,7 @@
 #include "options.h"
 #include "quest.h"
 #include "badge.h"
+#include "math_extras.h"
 
 #define NUM_STARS 400
 
@@ -901,14 +902,14 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 	camX-=320;
 	camY-=240;
 
-	int ofsX = camX % TILE_WIDTH;
-	int ofsY = camY % TILE_HEIGHT;
+	auto [minTileX, ofsX] = floor_div(camX, TILE_WIDTH);
+	auto [minTileY, ofsY] = floor_div(camY, TILE_HEIGHT);
 
 	int scrX = -ofsX;
-	for (int i = camX / TILE_WIDTH; i <= (camX + SCRWID) / TILE_WIDTH; i++)
+	for (int i = minTileX; i <= (camX + SCRWID) / TILE_WIDTH; i++)
 	{
 		int scrY = -ofsY;
-		for (int j = camY / TILE_HEIGHT; j <= (camY + SCRHEI) / TILE_HEIGHT + 1; j++)
+		for (int j = minTileY; j <= (camY + SCRHEI) / TILE_HEIGHT + 1; j++)
 		{
 			if(i>=0 && i<width && j>=0 && j<height)
 			{
@@ -1112,10 +1113,10 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 	{
 		ItemRenderExtents extents = GetItemRenderExtents();
 		int scrX = -ofsX - extents.left*TILE_WIDTH;
-		for (int i = camX / TILE_WIDTH - extents.left; i <= (camX + SCRWID) / TILE_WIDTH + extents.right; i++)
+		for (int i = minTileX - extents.left; i <= (camX + SCRWID) / TILE_WIDTH + extents.right; i++)
 		{
-			int scrY=-ofsY - extents.up*TILE_HEIGHT;
-			for (int j = camY / TILE_HEIGHT - extents.up; j <= (camY + SCRHEI) / TILE_HEIGHT + extents.down; j++)
+			int scrY = -ofsY - extents.up*TILE_HEIGHT;
+			for (int j = minTileY - extents.up; j <= (camY + SCRHEI) / TILE_HEIGHT + extents.down; j++)
 			{
 				if(i>=0 && i<width && j>=0 && j<height)
 				{

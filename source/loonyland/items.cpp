@@ -1,6 +1,7 @@
 #include "items.h"
 #include "display.h"
 #include "log.h"
+#include "math_extras.h"
 
 struct item_t
 {
@@ -167,12 +168,6 @@ static sprite_set_t *itmSpr[3];
 static int itemAnim;
 static ItemRenderExtents extents;
 
-constexpr int div_floor(int x, int y)
-{
-	bool quotientNegative = (y < 0) != (x < 0);
-	return x / y - (x % y != 0 && quotientNegative);
-}
-
 void InitItems(void)
 {
 	itmSpr[0] = new sprite_set_t("graphics/pickups.jsp");
@@ -219,10 +214,10 @@ void InitItems(void)
 	// Bounds are reversed here, because the further left from an item's origin
 	// it extends, the further right off the edge of the screen we need to seek
 	// items to draw. The minimums are for tile/wall rendering.
-	extents.left = div_floor(everything.x + everything.w + TILE_WIDTH/2, TILE_WIDTH);
-	extents.right = -div_floor(everything.x + TILE_WIDTH/2, TILE_WIDTH);
-	extents.up = div_floor(everything.y + everything.h + TILE_HEIGHT/2, TILE_HEIGHT);
-	extents.down = -div_floor(everything.y + TILE_HEIGHT/2, TILE_HEIGHT);
+	extents.left = floor_div(everything.x + everything.w + TILE_WIDTH/2, TILE_WIDTH).quot;
+	extents.right = -floor_div(everything.x + TILE_WIDTH/2, TILE_WIDTH).quot;
+	extents.up = floor_div(everything.y + everything.h + TILE_HEIGHT/2, TILE_HEIGHT).quot;
+	extents.down = -floor_div(everything.y + TILE_HEIGHT/2, TILE_HEIGHT).quot;
 
 #ifndef NDEBUG
 	LogDebug("Items bounding rect: x=%d y=%d w=%d h=%d", everything.x, everything.y, everything.w, everything.h);
