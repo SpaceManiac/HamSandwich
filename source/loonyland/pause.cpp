@@ -342,23 +342,26 @@ void RenderPauseMenu(MGLDraw *mgl)
 		else
 			strcat(s,"Off");
 
+		int y = 295 + (player.monsType == MONS_PLYRSWAMPDOG ? 15 : 0);
 		if(opt.cheats[CH_SAVEANY] && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER) && !(player.cheatsOn & PC_HARDCORE))
 		{
-			PrintColor(10,295,"Cancel",4-4*(cursor==CURSOR_CANCEL),-8+8*(cursor==CURSOR_CANCEL),2);
-			PrintColor(10,330,s,4-4*(cursor==CURSOR_WPNLOCK),-8+8*(cursor==CURSOR_WPNLOCK),2);
-			PrintColor(10,365,"Load Game",4-4*(cursor==CURSOR_LOAD),-8+8*(cursor==CURSOR_LOAD),2);
+			int dy = (435 - y) / 4;
+			PrintColor(10,y,"Cancel",4-4*(cursor==CURSOR_CANCEL),-8+8*(cursor==CURSOR_CANCEL),2);
+			PrintColor(10,y+=dy,s,4-4*(cursor==CURSOR_WPNLOCK),-8+8*(cursor==CURSOR_WPNLOCK),2);
+			PrintColor(10,y+=dy,"Load Game",4-4*(cursor==CURSOR_LOAD),-8+8*(cursor==CURSOR_LOAD),2);
 			if(noSaving)
-				PrintColor(10,400,"Save Game",0,-8+8*(cursor==CURSOR_SAVE),2);
+				PrintColor(10,y+=dy,"Save Game",0,-8+8*(cursor==CURSOR_SAVE),2);
 			else
-				PrintColor(10,400,"Save Game",4-4*(cursor==CURSOR_SAVE),-8+8*(cursor==CURSOR_SAVE),2);
-			PrintColor(10,435,"Quit",4-4*(cursor==CURSOR_QUIT),-8+8*(cursor==CURSOR_QUIT),2);
+				PrintColor(10,y+=dy,"Save Game",4-4*(cursor==CURSOR_SAVE),-8+8*(cursor==CURSOR_SAVE),2);
+			PrintColor(10,y+=dy,"Quit",4-4*(cursor==CURSOR_QUIT),-8+8*(cursor==CURSOR_QUIT),2);
 		}
 		else
 		{
-			PrintColor(10,295,"Cancel",4-4*(cursor==CURSOR_CANCEL),-8+8*(cursor==CURSOR_CANCEL),2);
-			PrintColor(10,342,s,4-4*(cursor==CURSOR_WPNLOCK),-8+8*(cursor==CURSOR_WPNLOCK),2);
-			PrintColor(10,388,"Load Game",4-4*(cursor==CURSOR_LOAD),-8+8*(cursor==CURSOR_LOAD),2);
-			PrintColor(10,435,((player.cheatsOn & PC_HARDCORE) ? "Save & Quit" : "Quit"),4-4*(cursor==CURSOR_QUIT),-8+8*(cursor==CURSOR_QUIT),2);
+			int dy = (435 - y) / 3;
+			PrintColor(10,y,"Cancel",4-4*(cursor==CURSOR_CANCEL),-8+8*(cursor==CURSOR_CANCEL),2);
+			PrintColor(10,y+=dy,s,4-4*(cursor==CURSOR_WPNLOCK),-8+8*(cursor==CURSOR_WPNLOCK),2);
+			PrintColor(10,y+=dy,"Load Game",4-4*(cursor==CURSOR_LOAD),-8+8*(cursor==CURSOR_LOAD),2);
+			PrintColor(10,y+=dy,((player.cheatsOn & PC_HARDCORE) ? "Save & Quit" : "Quit"),4-4*(cursor==CURSOR_QUIT),-8+8*(cursor==CURSOR_QUIT),2);
 		}
 
 		if((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
