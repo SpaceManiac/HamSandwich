@@ -775,7 +775,7 @@ bool PlayerGetWeapon(byte wpn)
 	}
 	else
 	{
-		if((bool)(player.fireFlags&FF_WPNLOCK) != (bool)(GetControls() & CONTROL_B3))
+		if((bool)(player.fireFlags&FF_WPNLOCK) != (bool)(GetControls() & CONTROL_B3) && player.var[VAR_WEAPON + wpn - ITM_WBOMB])
 			return false;		// weapon lock prevents you from switching weapons
 
 		MakeNormalSound(SND_WPNGET);
