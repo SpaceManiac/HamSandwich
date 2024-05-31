@@ -14,7 +14,7 @@ based on HamSandwich.
     * Control settings are not compatible with official releases due to this change
     * Variously replaces SciTech MGL, Allegro, DirectSound, and FMOD
 * Add global <kbd>F12</kbd> hotkey to take a `.bmp` screenshot in the native resolution of the game
-* Add global <kbd>F11</kbd> hotkey to toggle fullscreen mode, and make window resizeable
+* Add global <kbd>F11</kbd> hotkey to toggle fullscreen mode and window size
 * Add global <kbd>F10</kbd> hotkey to toggle scaling mode between nearest-neighbor and linear filtering
 * Allow games to optionally load resources directly from the official installer rather than extracting it first
 * Add a proper close curly brace `}` character to the font used in the editors
@@ -44,40 +44,86 @@ based on HamSandwich.
 * Show off your Gallery Goals and track your progress with Steam Achievements
 * Find and play over 400 new worlds on the Steam Workshop
 * Upload your own worlds to the Steam Workshop from the Editor's "Save & Export" menu
-* Compete with friends and foes on high-score Leaderboards for every world in the game
+* Compete with friends and foes on score and time Leaderboards for every world in the game
 * Automatically transfer your saves across devices with Steam Cloud
 * Smash pumpkins anywhere with a native Steam Deck build
 
-### HamSandwich (2019–present)
+### HamSandwich (since last release)
+
+* Change <kbd>F11</kbd> hotkey to cycle through resolutions, instead of just tiny and huge.
+* Fix sound pan sometimes wrapping around.
+
+### v9.3 (2024-03-05) - [Steam](https://store.steampowered.com/news/app/2547330/view/4127057666118798478?l=english)
+
+* Add bullet selection menu (by Hyperme, [#17]).
+* Increase per-world tile limit from 800 to 1000.
+* Add editor help message explaining how to enable Custom JSP for items.
+* Fix visual bugs when combining underwater/lava, handheld mode, and movies.
+* (Steam) Fix Steam Workshop uploads occasionally re-including files from previous uploads.
+* Fix Creeping Cone having an attack sound when it shouldn't.
+* Fix water splash particles sometimes flashing the wrong color (especially obvious when raining on Splatter Mode).
+* Fix a [missing text file] in Halloween Horror 2 - TG.
+* Fix Summon Bullet prompt to indicate that equations are allowed.
+* Fix Summon Bullet's facing information for Cheese Hammer (was 8, should be 255).
+
+[#17]: https://github.com/SpaceManiac/HamSandwich/pull/17
+[missing text file]: https://steamcommunity.com/app/2547330/discussions/0/4040354734347124363/
+
+### v9.2 (2023-10-17) - [Steam](https://store.steampowered.com/news/app/2547330/view/3705958414150337742)
+
+* Add new "Advanced" HUD option with a level timer and weapon lock status (by AutomaticFrenzy, [#15]).
+* Make volume multiplicative instead of subtractive, so lower volumes doesn't cause quiet sounds to be fully muted.
+* Fix issue where repeated sounds like AK-8087 fire could be [cut off too soon] and effectively silenced.
+* Fix rare possibility of Traffic [phasing through an obstacle at the very start of the level][phase].
+* Fix playable Dr. Lunatic sometimes firing one too few lightning zaps on hit.
+* Fix Bestiary in SpisMall being [inescapable on gamepad]. The Back button now quits it.
+
+[#15]: https://github.com/SpaceManiac/HamSandwich/pull/15
+[cut off too soon]: https://steamcommunity.com/app/2547330/discussions/0/3884975615298288712/
+[phase]: https://steamcommunity.com/app/2547330/discussions/0/3884975615298288712/
+[inescapable on gamepad]: https://steamcommunity.com/app/2547330/discussions/0/3884975231686597346/
+
+### v9.1 (2023-09-23) - [Steam](https://store.steampowered.com/news/app/2547330/view/3723970276367701832)
+
+* (Steam) Add new Top Time online leaderboards to complement Top Score
+* Add Record below Total Score on the level tally for comparison, like the other factors
+* Fix Classic HUD option applying incorrectly to the SpisMall
+* Fix sounds sometimes being cut off even though there are still free channels
+* Fix a Linux case-sensitivity bug
+
+### v9.0 (2023-09-18) - [Steam](https://store.steampowered.com/news/app/2547330/view/6738003788163234037)
 
 * Show HUD Stealth eye in yellow when the player is not concealed
 * Add Classic HUD option to the pause menu
 * Add full gamepad support to the menus
-* Replace contents of Internet menu with some links that actually work
-* Add <kbd>Page Up</kbd> and <kbd>Page Down</kbd> hotkeys to scroll world select
-* Speed up World Select load times, improve sorting, and fix a crash if there are zero worlds
-* Fix rare crash when using Summon/Change Bullet with Scanner Shot, Scanner Lock, or Megabeam
-* Fix "Monster Sprites" effect persisting if a monster ID is reused
 * Fix some levels missing music due to `006cavernboss.ogg` bug
 * Fix missing messages when playing some legacy Dr. Lunatic worlds
+* Replace contents of Internet menu with some links that actually work
 
 Editor features:
-* Increase per-map special limit to 250, up from 128
 * Improve rounding behavior when entering times for "Timed" and "Delayed" special triggers
 * Improve accuracy of automatic brain and candle counting in some cases
-* Add Zoom Out option (hotkey: <kbd>F2</kbd>) to View menu that increases the resolution while editing
 * Add "Save & Export" menu to create `.zip` files containing your world and all required files
     * <kbd>Shift+Q</kbd> now includes all the extra detail in `req_files.txt`
 * Fix soft-lock on pressing <kbd>F1</kbd> twice in the Item Editor
 * Fix some art errors in the default tiles for new worlds (does not affect existing worlds)
 
-Also applicable to Sleepless Hollow:
+### HamSandwich (2019–2023)
+
+* Add <kbd>Page Up</kbd> and <kbd>Page Down</kbd> hotkeys to scroll world select
+* Speed up World Select load times, improve sorting, and fix a crash if there are zero worlds
+* Fix rare crash when using Summon/Change Bullet with Scanner Shot, Scanner Lock, or Megabeam
+* Fix "Monster Sprites" effect persisting if a monster ID is reused
+* Allow cancelling profile creation, except on first run
+* Automatically pause the game if you tab out while playing
+
+Editor features:
+* Increase per-map special limit to 250, up from 128
+* Add Zoom Out option (hotkey: <kbd>F2</kbd>) to View menu that increases the resolution while editing
 * Add "Jump to" button to Goto/Win Level effects
 * Allow using the mouse wheel to scroll the File and World menus
 * Allow using the mouse wheel to scroll the Special editor
     * Color the Up/Down buttons differently if there are triggers or effects off-screen
-* Allow cancelling profile creation, except on first run
-* Automatically pause the game if you tab out while playing
 
 ### Unreleased pre-HamSandwich (2014–2018)
 
@@ -147,8 +193,14 @@ Also applicable to Sleepless Hollow:
 * Entirely replace Internet menu with Editor and make it always available
 * Update Summon Bullet effect for Sleepless Hollow's bullet set
 * In the editor's Monster tool, set the default item drop to None
+* Allow cancelling profile creation, except on first run
+* Automatically pause the game if you tab out while playing
 
-See "Also applicable to Sleepless Hollow" above.
+Editor features:
+* Add "Jump to" button to Goto/Win Level effects
+* Allow using the mouse wheel to scroll the File and World menus
+* Allow using the mouse wheel to scroll the Special editor
+    * Color the Up/Down buttons differently if there are triggers or effects off-screen
 
 ### Unreleased pre-HamSandwich (2012)
 
