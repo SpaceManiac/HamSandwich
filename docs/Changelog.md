@@ -229,19 +229,31 @@ See "Also applicable to Sleepless Hollow" above.
 * Automatically transfer your saves across devices with Steam Cloud
 * Save Halloween Hill wherever you are with a native Steam Deck build
 
-### HamSandwich (2019–present)
+### HamSandwich (since last release)
+
+Nothing!
+
+### v3.0 (2024-05-31)
+
+* Add Randomizer mode (by AutomaticFrenzy)
+* Add Hard difficulty between Normal and Challenge (by AutomaticFrenzy)
+* Allow selecting character on the New Game screen (by Hyperme, [#19])
+* Increase save slots from 5 to 250 and show more information in the list
+* While Weapon Lock is on, weapon pickups pass through you, and you can use a new third control to grab them
+* Show invincible guys in aqua on the Radar and improve its accuracy on small maps
+* For quests that get "completed" before being turned in, indicate this status in the menu
+* Improve decoration on the first floor of Haunted Tower (by Jamul)
+* Fix difficult-to-access Gangrene in A Hidey Hole (by Jamul)
+* Fix Hardcore Mode not working correctly
+* Fix Witchcraft badge to award at level 9, matching the description, instead of level 10
+* Fix Vampire Slayin' badge description to say two minutes instead of one, matching award
+* Improve controller support
+* Add volume option
+
+### HamSandwich (2019–2024)
 
 * Allow using the arrow keys to scroll around in the editor
 * Show special ID numbers in the editor
-* Allow selecting character on the New Game screen (by Hyperme, [#19])
-* Add Randomizer mode (by AutomaticFrenzy)
-* Add Hard difficulty between Normal and Challenge (by AutomaticFrenzy)
-* Add volume option
-* Fix Hardcore Mode not working correctly
-* Increase save slots from 5 to 250 and show more information in the list
-* Show invincible guys in aqua on the Radar and improve its accuracy on small maps
-* For quests that get "completed" before being turned in, indicate this status in the menu
-* Improve controller support
 
 [#19]: https://github.com/SpaceManiac/HamSandwich/pull/19
 
