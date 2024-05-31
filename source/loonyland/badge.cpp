@@ -529,7 +529,7 @@ static const badge_t badge[NUM_BADGES]={
 	 "Ultra Weapons Are Go!",
 	 "Replaces the Level III version of each",
 	 "Special Weapon with a super duper version,",
-	 "that costs more coins to fire.  These are",
+	 "that costs more gems to fire.  These are",
 	 "really overpowered!",
 	 "Only useful to characters that use Special",
 	 "Weapons.",
