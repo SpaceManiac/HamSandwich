@@ -639,6 +639,8 @@ void BadgeCheatKey(char c)
 				opt.modes[MODE_LOONYBALL]=1;
 			if(b>=20)
 				opt.modes[MODE_BOWLING]=1;
+			if(b>=25)
+				opt.remixMode=1;
 			if(b>0)
 				opt.modes[MODE_BADGES]=1;
 		}
@@ -657,6 +659,8 @@ void BadgeCheatKey(char c)
 				opt.modes[MODE_LOONYBALL]=0;
 			if(b<20)
 				opt.modes[MODE_BOWLING]=0;
+			if(b<25)
+				opt.remixMode=0;
 			if(b==0)
 				opt.modes[MODE_BADGES]=0;
 		}
@@ -676,6 +680,7 @@ void BadgeCheatKey(char c)
 			opt.bossDead[i]=0;
 		for(i=0;i<5;i++)
 			opt.modes[i]=0;
+		opt.remixMode=0;
 
 		MakeSuperLoony();
 		SaveOptions();
@@ -690,6 +695,7 @@ void BadgeCheatKey(char c)
 		}
 		for(i=0;i<5;i++)
 			opt.modes[i]=1;
+		opt.remixMode=1;
 
 		MakeSuperLoony();
 		SaveOptions();
