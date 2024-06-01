@@ -21,15 +21,25 @@ rm "build/dist/loonyland/app/loonyland.exe"
 7z x installers/loonyland_editor.exe -o"build/dist/loonyland/editor" \
 	-x'!$PLUGINSDIR' -x'!*.exe'
 
+for platform in itch-linux itch-windows; do
+	rsync --mkpath --archive build/dist/loonyland/app/ build/dist/loonyland/$platform/installers/loonyland_install.EXE/
+	rsync --mkpath --archive build/dist/loonyland/editor/ build/dist/loonyland/$platform/installers/loonyland_editor.exe/
+done
+
 # Linux executables
 echo "==== Linux build ===="
 ./container bash -c "
 	set -euo pipefail
 	cmake --preset linux-x86_64-release
 	cmake --build build/cmake-linux-x86_64-release --target loonyland
+	# Steam
 	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/loonyland/steam-linux --component generic/executables
 	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/loonyland/steam-linux --component loonyland/executables
 	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/loonyland/steam-assets --component loonyland/assets
+	# Itch
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/loonyland/itch-linux --component generic/executables
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/loonyland/itch-linux --component loonyland/executables
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/loonyland/itch-linux --component loonyland/assets
 "
 
 # Windows executables
@@ -38,6 +48,12 @@ tools/windows-cross/container bash -c "
 	set -euo pipefail
 	cmake --preset windows-i686-release -Wno-dev
 	cmake --build build/cmake-windows-i686-release --target loonyland
+	# Steam
 	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/loonyland/steam-windows --component generic/executables
 	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/loonyland/steam-windows --component loonyland/executables
+	# Linux build already installs cross-platform Steam assets
+	# Itch
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/loonyland/itch-windows --component generic/executables
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/loonyland/itch-windows --component loonyland/executables
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/loonyland/itch-windows --component loonyland/assets
 "
