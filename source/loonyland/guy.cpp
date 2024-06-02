@@ -1653,7 +1653,7 @@ void LoadGuys(FILE *f)
 	int i,num;
 
 	ExitGuys();
-	InitGuys(MAX_MAPMONS);
+	InitGuys(MAX_MAPMONS * 2);  // Leave room for Farley and summons
 
 	fread(&num,sizeof(int),1,f);
 

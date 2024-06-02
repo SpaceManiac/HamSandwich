@@ -137,7 +137,7 @@ byte InitLevel(byte map)
 		if(msgFromOtherModules!=MSG_NEWFEATURE)
 			msgFromOtherModules=0;
 
-		InitGuys(MAX_MAPMONS);
+		InitGuys(MAX_MAPMONS * 2);  // Leave room for Farley and summons
 		InitBullets();
 		InitPlayer(INIT_LEVEL,0,map);
 		InitMessage();
