@@ -1593,7 +1593,7 @@ void BeginChatting(byte tag)
 			break;
 		case 16:	// Larry after returning to human
 			if(player.var[VAR_QUESTDONE+QUEST_HILL])
-				curChat=172;
+				curChat=170;
 			else
 			{
 				if(player.levelNum!=46)
