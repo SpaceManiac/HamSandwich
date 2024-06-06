@@ -461,12 +461,12 @@ bool GuyStartWalking(byte x, byte y, Direction dir, Guy *me)
 		{
 			bVar1 = false;
 		}
-		else if (((me->flags & GuyFlags::Player) == 0) || ((g_Map[y - 1][x + 0x12].flags & TileFlags::P) == 0))
+		else if (((me->flags & GuyFlags::Player) == 0) || ((g_Map[y][x - 1].flags & TileFlags::P) == 0))
 		{
 			if ((((me->flags & GuyFlags::Pumpkin) == 0) || (me->hammerTime == 0)) ||
-			    ((g_Map[y - 1][x + 0x12].flags & TileFlags::P) != 0))
+			    ((g_Map[y][x - 1].flags & TileFlags::P) != 0))
 			{
-				if ((me->ghostTime == 0) && (g_Map[y - 1][x + 0x12].item == ItemType::IceTrail))
+				if ((me->ghostTime == 0) && (g_Map[y][x - 1].item == ItemType::IceTrail))
 				{
 					bVar1 = false;
 				}
@@ -475,7 +475,7 @@ bool GuyStartWalking(byte x, byte y, Direction dir, Guy *me)
 					g_RivalsColliding = true;
 					bVar1 = false;
 				}
-				else if (((g_Map[y - 1][x + 0x12].tile == 3) || (g_Map[y - 1][x + 0x12].tile == 10)) || (g_Map[y - 1][x + 0x12].tile == 0xd))
+				else if (((g_Map[y][x - 1].tile == 3) || (g_Map[y][x - 1].tile == 10)) || (g_Map[y][x - 1].tile == 0xd))
 				{
 					bVar1 = false;
 				}
@@ -1333,9 +1333,9 @@ static void GuyUpdatePumpkinRetreat(Guy *me)
 			me->direction = Direction::South;
 		}
 		if ((west) &&
-		    (g_Map[me->gridY - 1][me->gridX + 0x12].distanceFromPumpkinSpawn < distanceFromSpawn))
+		    (g_Map[me->gridY][me->gridX - 1].distanceFromPumpkinSpawn < distanceFromSpawn))
 		{
-			distanceFromSpawn = g_Map[me->gridY - 1][me->gridX + 0x12].distanceFromPumpkinSpawn;
+			distanceFromSpawn = g_Map[me->gridY][me->gridX - 1].distanceFromPumpkinSpawn;
 			me->direction = Direction::West;
 		}
 		if ((north) && (g_Map[me->gridY - 1][me->gridX].distanceFromPumpkinSpawn < distanceFromSpawn))
