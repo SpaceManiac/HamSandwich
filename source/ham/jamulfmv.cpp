@@ -4,6 +4,7 @@
 #include "mgldraw.h"
 #include "clock.h"
 #include "appdata.h"
+#include "control.h"
 
 // different kinds of flic chunks
 enum
@@ -282,6 +283,8 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 	int scrWidth;
 	char k;
 	dword playbackTime, currentTime;
+	dword oldGamepadButtons = ~0;
+	dword gamepadButtons = GetGamepadButtons();
 
 	owned::SDL_RWops FLI_file = AssetOpen_SDL_Owned(name);
 	if (!FLI_file)
@@ -353,7 +356,9 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 		AWAIT mgl->Flip();
 		k=mgl->LastKeyPressed();
 		// key #27 is escape
-	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27));
+		oldGamepadButtons = gamepadButtons;
+		gamepadButtons = GetGamepadButtons();
+	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27) && !(gamepadButtons & ~oldGamepadButtons & ((1 << SDL_CONTROLLER_BUTTON_START) | (1 << SDL_CONTROLLER_BUTTON_BACK))));
 
 	FLI_file.reset();
 	mgl->ResizeBuffer(oldWidth, oldHeight);
