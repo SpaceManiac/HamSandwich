@@ -9,7 +9,7 @@
 #include "steam.h"
 #include "badge.h"
 
-#define VERSION_NO         "Version 3.0"
+#define VERSION_NO         "Version 3.1"
 #define COPYRIGHT_YEARS    "2001-2024"
 #define COPYRIGHT_COMPANY  "Hamumu Games, Inc."
 

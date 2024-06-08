@@ -280,10 +280,27 @@ Editor features:
 * Show off your Merit Badges with Steam Achievements
 * Automatically transfer your saves across devices with Steam Cloud
 * Save Halloween Hill wherever you are with a native Steam Deck build
+* Compete in definitely-fair [Leaderboards on the Steam Community][llscore]
+
+[llscore]: https://steamcommunity.com/stats/2876900/leaderboards/13198878
 
 ### HamSandwich (since last release)
 
 Nothing!
+
+### v3.1 (2024-06-08)
+
+* Add Steam leaderboard support to Space Game
+* Fix Survival and Boss Bash not having silver weapons (since v3.0)
+* Fix Farley and summons not working on Castle Vampy II due to the monster limit
+* Fix Larry's postgame dialogue
+* Fix Farley vanishing if you load his area before acquiring him
+* Fix issues when turning the Sidekick badge back off, including 100% becoming impossible
+* Fix single-frame flicker in Thorns Aura animation
+* Fix soft-lock if Molecular Dispersion is used to interrupt the Last Gate animation
+* Fix Space Game being unquittable on controller
+* Fix Mystery Lake sometimes appearing when placing the 3rd orb if the 4th orb is in hand and Quick Mode is on
+* Fix overlap between Spcl and tag text in editor
 
 ### v3.0 (2024-05-31)
 
@@ -305,7 +322,7 @@ Nothing!
 ### HamSandwich (2019–2024)
 
 * Allow using the arrow keys to scroll around in the editor
-* Show special ID numbers in the editor
+* ~~Show special ID numbers in the editor~~ (removed in v3.1)
 
 [#19]: https://github.com/SpaceManiac/HamSandwich/pull/19
 
@@ -323,7 +340,7 @@ Nothing!
 * Fix player-aligned melee monsters (especially Bruisers) hitting themselves
 * Fix high-level Restoration invincibility time and healing wrapping to low again
 * Allow using the arrow keys to scroll around in the editor
-* Show special ID numbers in the editor
+* Fix overlap between Spcl and tag text in editor
 * Fix typing into the new save Name field while it's not selected
 
 ### Unknown pre-HamSandwich
