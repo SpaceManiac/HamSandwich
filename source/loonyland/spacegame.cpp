@@ -1,5 +1,11 @@
 #include "spacegame.h"
 
+// prototypes for internal whatnots
+void PutOnEdge(int i);
+void SpaceGoodguyHit(void);
+void SpaceAddBadguys(void);
+void LaunchBadguy(int x,int y,int dx);
+
 #define NUMSTARS	256
 #define NUMBULLETS	512
 #define NUMBADGUYS	128
@@ -851,7 +857,7 @@ byte SpaceUpdatePlayerShip(MGLDraw *mgl)
 	oldc=c;
 
 	c=mgl->LastKeyPressed();
-	if(c==27)
+	if(c==27 || (GetGamepadButtons() & ((1 << SDL_CONTROLLER_BUTTON_START) | (1 << SDL_CONTROLLER_BUTTON_BACK))))
 		return 1;
 
 	return 0;
@@ -1489,6 +1495,7 @@ byte UpdateGameOver(int *lastTime,MGLDraw *mgl)
 	}
 
 
+	oldc = c;
 	c=GetControls();
 
 	if(mgl->LastKeyPressed())
