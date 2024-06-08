@@ -533,6 +533,26 @@ TASK(byte) PlayALevel(byte map)
 		BumpSaveGem();
 	}
 
+	// If the player walked through walls to leave the map before the portal
+	// animation finished playing, put the portal now.
+	if (!player.var[VAR_PORTALOPEN])
+	{
+		int numVampStands = 0;
+		for (int i = VAR_VAMPSTAND; i < VAR_VAMPSTAND + 8; ++i)
+		{
+			if (player.var[i])
+			{
+				++numVampStands;
+			}
+		}
+		if (numVampStands == 8)
+		{
+			player.var[VAR_PORTALOPEN]=1;
+			PlayerSetVar(VAR_QUESTDONE+QUEST_BUSTS,1);
+			SetNoSaving(false);
+		}
+	}
+
 	tl=0;
 	while(exitcode==LEVEL_PLAYING)
 	{
