@@ -1066,7 +1066,7 @@ void Map::ShowTags(int camX,int camY,int copyX,int copyY,int copyWid,int copyHei
 				sprintf(s,"%d",m->tag);
 				if(m->tag>0)
 					Print(i*TILE_WIDTH+2-camX,
-						  j*TILE_HEIGHT+6-camY,s,0,1);
+						  j*TILE_HEIGHT+12-camY,s,0,1);
 			}
 			scrY+=TILE_HEIGHT;
 		}
