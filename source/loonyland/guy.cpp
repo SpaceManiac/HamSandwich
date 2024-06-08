@@ -1687,7 +1687,9 @@ void LoadGuys(FILE *f)
 			fseek(f, 4, SEEK_CUR);  // Skip 4 bytes of padding.
 		}
 
-		if(guys[i]->type==MONS_HELPERBAT)
+		// Delete Farley the follower so he will be freshly respawned, but
+		// permit Farley the quest-giver so he doesn't disappear mysteriously.
+		if(guys[i]->type==MONS_HELPERBAT && player.var[VAR_QUESTDONE + QUEST_FARLEY])
 			guys[i]->type=MONS_NONE;
 	}
 	player.fireFlags&=(~FF_HELPERHERE);
