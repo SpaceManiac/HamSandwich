@@ -402,6 +402,33 @@ public:
 
 		LeaderboardUploadJob::Send(buffer, std::make_unique<HighScoreUploadJob>(score));
 	}
+
+	// ------------------------------------------------------------------------
+	// Upload space game scores
+	struct SpaceGameScoreJob : public LeaderboardUploadJob
+	{
+		explicit SpaceGameScoreJob(int score)
+		{
+			this->score = score;
+		}
+	};
+	struct SpaceGameTimeJob : public LeaderboardUploadJob
+	{
+		explicit SpaceGameTimeJob(int timeInFrames)
+		{
+			// Not a speedrun. Higher survival times are better.
+			displayType = k_ELeaderboardDisplayTypeTimeMilliSeconds;  // INT_MAX is about 596:31:23.645
+
+			// score is now total time in frames - convert it to milliseconds for Steam's benefit
+			this->score = timeInFrames * 1000 / 30;
+		}
+	};
+
+	void UploadSpaceGameScore(int score, int time) override
+	{
+		LeaderboardUploadJob::Send("spacegame/score", std::make_unique<SpaceGameScoreJob>(score));
+		LeaderboardUploadJob::Send("spacegame/time", std::make_unique<SpaceGameTimeJob>(time));
+	}
 };
 
 #endif  // HAS_STEAM_API

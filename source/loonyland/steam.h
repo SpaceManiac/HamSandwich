@@ -27,6 +27,7 @@ public:
 	virtual void CompleteGoal(int goal) {}
 
 	virtual void UploadHighScore(const highScore_t* score, uint8_t subMode) {}
+	virtual void UploadSpaceGameScore(int score, int time) {}
 
 	virtual const char* DescribeWorkshopStatus() { return ""; }
 

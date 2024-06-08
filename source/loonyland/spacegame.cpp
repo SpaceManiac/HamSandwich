@@ -1,4 +1,5 @@
 #include "spacegame.h"
+#include "steam.h"
 
 // prototypes for internal whatnots
 void PutOnEdge(int i);
@@ -1006,6 +1007,7 @@ void SpaceGoodguyHit(void)
 		if(lives==0)
 		{
 			gameOver=1;
+			Steam()->UploadSpaceGameScore(score, totalTime);
 			GetDisplayMGL()->LastKeyPressed();
 			oldc=255;
 		}
@@ -1494,8 +1496,6 @@ byte UpdateGameOver(int *lastTime,MGLDraw *mgl)
 		*lastTime-=TIME_PER_FRAME;
 	}
 
-
-	oldc = c;
 	c=GetControls();
 
 	if(mgl->LastKeyPressed())
@@ -1504,6 +1504,7 @@ byte UpdateGameOver(int *lastTime,MGLDraw *mgl)
 	if((c&(CONTROL_B1|CONTROL_B2)) && !(oldc&(CONTROL_B1|CONTROL_B2)))
 		return 1;
 
+	oldc = c;
 	JamulSoundUpdate();
 	return 0;
 }
