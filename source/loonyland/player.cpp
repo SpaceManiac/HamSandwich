@@ -1581,6 +1581,14 @@ void PlayerControlMe(Guy *me,Map *map,mapTile_t *mapTile,world_t *world)
 		player.var[VAR_QUESTASSIGN+QUEST_FARLEY]=1;
 		player.var[VAR_QUESTDONE+QUEST_FARLEY]=1;
 	}
+	else if (player.var[VAR_QUESTDONE+QUEST_FARLEY] && !player.var[VAR_HELPERBAT])
+	{
+		// If you save with the Sidekick badge on then turn it off, instead of
+		// going into an inconsistent state forever, revert Farley to as if you
+		// have not completed his quest. This prevents weirdness and also makes
+		// it so using the badge once doesn't lock you out of 100% completion.
+		player.var[VAR_QUESTDONE+QUEST_FARLEY] = 0;
+	}
 
 	if(player.worldNum==WORLD_SLINGSHOT)
 	{
