@@ -827,6 +827,10 @@ void PlaceOrbOnStand(int x,int y)
 		}
 		curMap->TempTorch(x,y,32);
 		MakeNormalSound(SND_ZOMBIESDEAD);
+
+		// Instantly set the stand to filled rather than waiting on the special
+		// to do it, in case Quick Mode is on and the player bumps twice.
+		curMap->map[x+y*curMap->width].item = ITM_ORBSTAND2;
 	}
 }
 
