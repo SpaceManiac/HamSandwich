@@ -2884,7 +2884,7 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			break;
 		case BLT_AURA:
 			me->anim=0;
-			me->timer=32;
+			me->timer=33;
 			me->z=0;
 			me->dx=0;
 			me->dy=0;
