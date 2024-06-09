@@ -1635,16 +1635,16 @@ void PlayerControlMe(Guy *me,Map *map,mapTile_t *mapTile,world_t *world)
 			GirlControlMe(me,mapTile,world);
 			break;
 	}
-
-	if(opt.cheats[CH_CRYSTAL])
-	{
-		player.crystalBall=map->FindPowerUps((me->x>>FIXSHIFT)/TILE_WIDTH,(me->y>>FIXSHIFT)/TILE_HEIGHT);
-	}
 }
 
 void SetAreaName(world_t *world)
 {
 	byte c;
+
+	if(opt.cheats[CH_CRYSTAL])
+	{
+		player.crystalBall=curMap->FindPowerUps((goodguy->x>>FIXSHIFT)/TILE_WIDTH,(goodguy->y>>FIXSHIFT)/TILE_HEIGHT);
+	}
 
 	// decide which location the player is for naming purposes
 	if(player.levelNum==0 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
