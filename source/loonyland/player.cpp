@@ -181,7 +181,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 			player.var[VAR_POTION]=1;
 			player.var[VAR_QUESTASSIGN+QUEST_SILVER]=1;
 			player.var[VAR_QUESTDONE+QUEST_SILVER]=1;
-			player.var[VAR_SILVER] = 1;
+			player.var[VAR_SILVERSLING] = 1;
 			player.maxMoney=200;
 		}
 		else if(player.worldNum==WORLD_SLINGSHOT)
@@ -192,7 +192,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		{
 			player.var[VAR_QUESTASSIGN+QUEST_SILVER]=1;
 			player.var[VAR_QUESTDONE+QUEST_SILVER]=1;
-			player.var[VAR_SILVER] = 1;
+			player.var[VAR_SILVERSLING] = 1;
 			player.var[VAR_POTION]=1;
 			player.var[VAR_TORCH]=1;
 			for(i=0;i<7;i++)
