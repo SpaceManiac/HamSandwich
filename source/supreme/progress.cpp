@@ -14,9 +14,22 @@ byte modeShopNum[10];
 
 void ApplyControlSettings()
 {
-	SetKeyboardBindings(0, 6, profile.control[0]);
-	SetKeyboardBindings(1, 6, profile.control[1]);
-	SetJoystickBindings(2, profile.joyCtrl);
+	for (int i = 0; i < 2; ++i)
+	{
+		byte control[8];
+		memcpy(&control[0], &profile.control[i], 6);
+		memcpy(&control[6], &profile.progress.moreControl[i], 2);
+		SetKeyboardBindings(i, 7, control);
+	}
+
+	byte joyControl[4] = {
+		profile.joyCtrl[0],
+		profile.joyCtrl[1],
+		profile.progress.moreJoyCtrl[0],
+		profile.progress.moreJoyCtrl[1],
+	};
+	// Only 3 so the Android version doesn't show a 4th button that does nothing.
+	SetJoystickBindings(3, joyControl);
 }
 
 void InitProfile(void)
@@ -201,6 +214,16 @@ void LoadProfile(const char *name)
 	}
 	fclose(f);
 
+	if (profile.progress.moreJoyCtrl[0] == 0)
+	{
+		profile.progress.moreControl[0][0]=SDL_SCANCODE_TAB;  // wpnlock
+		profile.progress.moreControl[0][1]=0;  // reserved
+		profile.progress.moreControl[1][0]=0;  // wpnlock
+		profile.progress.moreControl[1][1]=0;  // reserved
+		profile.progress.moreJoyCtrl[0]=2;
+		profile.progress.moreJoyCtrl[1]=3;
+	}
+
 	SteamManager::Get()->ProfileReady();
 }
 
@@ -267,7 +290,7 @@ void ClearProgress(void)
 	for(i=0;i<100;i++)
 		profile.progress.goal[i]=0;
 
-	memset(profile.progress.expansion,0,EXPANSION_SIZE);	// clear the expansion bytes
+	memset(profile.progress.expansion, 0, std::size(profile.progress.expansion));	// clear the expansion bytes
 
 	profile.progress.damageDone=0;
 	profile.progress.damageTaken=0;
@@ -309,8 +332,15 @@ void DefaultControls(void)
 	profile.control[1][4]=SDL_SCANCODE_Z;
 	profile.control[1][5]=SDL_SCANCODE_X;
 
+	profile.progress.moreControl[0][0]=SDL_SCANCODE_TAB;  // wpnlock
+	profile.progress.moreControl[0][1]=0;  // reserved
+	profile.progress.moreControl[1][0]=0;  // wpnlock
+	profile.progress.moreControl[1][1]=0;  // reserved
+
 	profile.joyCtrl[0]=0;
 	profile.joyCtrl[1]=1;
+	profile.progress.moreJoyCtrl[0]=2;
+	profile.progress.moreJoyCtrl[1]=3;
 }
 
 void DefaultProfile(const char *name)

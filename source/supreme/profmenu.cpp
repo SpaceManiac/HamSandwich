@@ -54,12 +54,14 @@ namespace ButtonIdNs
 		Keys1_3,
 		Keys1_4,
 		Keys1_5,
+		Keys1_6,
 		Keys2_0,
 		Keys2_1,
 		Keys2_2,
 		Keys2_3,
 		Keys2_4,
 		Keys2_5,
+		Keys2_6,
 		KeysDefault,
 		KeysExit,
 		// Profile buttons
@@ -93,19 +95,21 @@ static const profButton_t btn[]={
 constexpr int NUM_PROF_BTNS = std::size(btn);
 
 static profButton_t kcBtn[]={
-	{90,90,102,"", ButtonId::Keys1_0},
-	{90,112,102,"",ButtonId::Keys1_1},
-	{90,134,102,"",ButtonId::Keys1_2},
-	{90,156,102,"",ButtonId::Keys1_3},
-	{90,178,102,"",ButtonId::Keys1_4},
-	{90,200,102,"",ButtonId::Keys1_5},
+	{110,90,102,"", ButtonId::Keys1_0},
+	{110,112,102,"",ButtonId::Keys1_1},
+	{110,134,102,"",ButtonId::Keys1_2},
+	{110,156,102,"",ButtonId::Keys1_3},
+	{110,178,102,"",ButtonId::Keys1_4},
+	{110,200,102,"",ButtonId::Keys1_5},
+	{110,222,102,"",ButtonId::Keys1_6},
 
-	{196,90,102,"", ButtonId::Keys2_0},
-	{196,112,102,"",ButtonId::Keys2_1},
-	{196,134,102,"",ButtonId::Keys2_2},
-	{196,156,102,"",ButtonId::Keys2_3},
-	{196,178,102,"",ButtonId::Keys2_4},
-	{196,200,102,"",ButtonId::Keys2_5},
+	{216,90,102,"", ButtonId::Keys2_0},
+	{216,112,102,"",ButtonId::Keys2_1},
+	{216,134,102,"",ButtonId::Keys2_2},
+	{216,156,102,"",ButtonId::Keys2_3},
+	{216,178,102,"",ButtonId::Keys2_4},
+	{216,200,102,"",ButtonId::Keys2_5},
+	{216,222,102,"",ButtonId::Keys2_6},
 
 	{20,300,200,"Default Controls", ButtonId::KeysDefault},
 	{20,350,200,"Exit", ButtonId::KeysExit},
@@ -230,7 +234,11 @@ void InitKeyConfig(void)
 	{
 		for(i=0;i<6;i++)
 		{
-			strcpy(kcBtn[i+j*6].txt,ScanCodeText(profile.control[j][i]));
+			strcpy(kcBtn[i+j*7].txt, ScanCodeText(profile.control[j][i]));
+		}
+		for(i=0;i<1;i++)
+		{
+			strcpy(kcBtn[6+i+j*7].txt, ScanCodeText(profile.progress.moreControl[j][i]));
 		}
 	}
 	ApplyControlSettings();
@@ -615,6 +623,9 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						case ButtonId::Keys1_5:
 							curButton = ButtonId::Keys1_4;
 							break;
+						case ButtonId::Keys1_6:
+							curButton = ButtonId::Keys1_5;
+							break;
 						case ButtonId::Keys2_1:
 							curButton = ButtonId::Keys2_0;
 							break;
@@ -630,8 +641,11 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						case ButtonId::Keys2_5:
 							curButton = ButtonId::Keys2_4;
 							break;
+						case ButtonId::Keys2_6:
+							curButton = ButtonId::Keys2_5;
+							break;
 						case ButtonId::KeysDefault:
-							curButton = ButtonId::Keys1_5;
+							curButton = ButtonId::Keys1_6;
 							break;
 						case ButtonId::KeysExit:
 							curButton = ButtonId::KeysDefault;
@@ -662,6 +676,9 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						case ButtonId::Keys1_4:
 							curButton = ButtonId::Keys1_5;
 							break;
+						case ButtonId::Keys1_5:
+							curButton = ButtonId::Keys1_6;
+							break;
 						case ButtonId::Keys2_0:
 							curButton = ButtonId::Keys2_1;
 							break;
@@ -677,8 +694,11 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						case ButtonId::Keys2_4:
 							curButton = ButtonId::Keys2_5;
 							break;
-						case ButtonId::Keys1_5:
 						case ButtonId::Keys2_5:
+							curButton = ButtonId::Keys2_6;
+							break;
+						case ButtonId::Keys1_6:
+						case ButtonId::Keys2_6:
 							curButton = ButtonId::KeysDefault;
 							break;
 						case ButtonId::KeysDefault:
@@ -713,6 +733,9 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						case ButtonId::Keys1_5:
 							curButton = ButtonId::Keys2_5;
 							break;
+						case ButtonId::Keys1_6:
+							curButton = ButtonId::Keys2_6;
+							break;
 						default: break;
 					}
 				}
@@ -742,6 +765,9 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						case ButtonId::Keys2_5:
 							curButton = ButtonId::Keys1_5;
 							break;
+						case ButtonId::Keys2_6:
+							curButton = ButtonId::Keys1_6;
+							break;
 						default: break;
 					}
 				}
@@ -759,15 +785,15 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					}
 
 					MakeNormalSound(SND_MENUSELECT);
-					if(curButton>=ButtonId::Keys1_0 && curButton<=ButtonId::Keys1_5)
+					if(curButton>=ButtonId::Keys1_0 && curButton<=ButtonId::Keys1_6)
 					{
-						kcMode=(byte)curButton-(byte)ButtonId::Keys1_0+1;
+						kcMode = curButton;
 						canHitKeys=0;
 						mgl->ClearKeys();
 					}
-					else if(curButton>=ButtonId::Keys2_0 && curButton<=ButtonId::Keys2_5)
+					else if(curButton>=ButtonId::Keys2_0 && curButton<=ButtonId::Keys2_6)
 					{
-						kcMode=(byte)curButton-(byte)ButtonId::Keys2_0+7;
+						kcMode = curButton;
 						canHitKeys=0;
 						mgl->ClearKeys();
 					}
@@ -826,10 +852,31 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						{
 							if(key[i])
 							{
-								if(kcMode<7)
-									profile.control[0][kcMode-1]=(byte)i;
-								else
-									profile.control[1][kcMode-7]=(byte)i;
+								switch (kcMode)
+								{
+									case ButtonId::Keys1_0:
+									case ButtonId::Keys1_1:
+									case ButtonId::Keys1_2:
+									case ButtonId::Keys1_3:
+									case ButtonId::Keys1_4:
+									case ButtonId::Keys1_5:
+										profile.control[0][kcMode - ButtonId::Keys1_0] = (byte)i;
+										break;
+									case ButtonId::Keys1_6:
+										profile.progress.moreControl[0][kcMode - ButtonId::Keys1_6] = (byte)i;
+										break;
+									case ButtonId::Keys2_0:
+									case ButtonId::Keys2_1:
+									case ButtonId::Keys2_2:
+									case ButtonId::Keys2_3:
+									case ButtonId::Keys2_4:
+									case ButtonId::Keys2_5:
+										profile.control[1][kcMode - ButtonId::Keys2_0] = (byte)i;
+										break;
+									case ButtonId::Keys2_6:
+										profile.progress.moreControl[1][kcMode - ButtonId::Keys2_6] = (byte)i;
+										break;
+								}
 								kcMode=0;
 								InitKeyConfig();
 							}
@@ -966,19 +1013,20 @@ void RenderKeyConfigMenu(MGLDraw *mgl)
 
 	PrintGlow(20,20,"Configure Controls",0,2);
 
-	PrintGlow(20,90,"Up",0,2);
-	PrintGlow(20,112,"Down",0,2);
-	PrintGlow(20,134,"Left",0,2);
-	PrintGlow(20,156,"Right",0,2);
-	PrintGlow(20,178,"Hammer",0,2);
-	PrintGlow(20,200,"Weapon",0,2);
+	PrintGlow(20,90+3,"Up",0,2);
+	PrintGlow(20,112+3,"Down",0,2);
+	PrintGlow(20,134+3,"Left",0,2);
+	PrintGlow(20,156+3,"Right",0,2);
+	PrintGlow(20,178+3,"Hammer",0,2);
+	PrintGlow(20,200+3,"Weapon",0,2);
+	PrintGlow(20,222+3,"Wpn Lock",0,2);
 
-	PrintGlow(90,68,"Keyboard1",0,2);
-	PrintGlow(196,68,"Keyboard2",0,2);
+	PrintGlow(110+2,68,"Keyboard 1",0,2);
+	PrintGlow(216+2,68,"Keyboard 2",0,2);
 
 	if(kcMode>0)
 	{
-		PrintGlow(20,228,"Press a key to assign, or ESC to cancel",0,2);
+		PrintGlow(20,250,"Press a key to assign, or ESC to cancel",0,2);
 	}
 
 	// mouse cursor

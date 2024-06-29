@@ -79,7 +79,8 @@ void ApplyControlSettings(void)
 	}
 
 	byte joyControl[4] = { opt.joyCtrl[0], opt.joyCtrl[1], opt.moreJoyCtrl[0], opt.moreJoyCtrl[1] };
-	SetJoystickBindings(4, joyControl);
+	// Only 3 so the Android version doesn't show a 4th button that does nothing.
+	SetJoystickBindings(3, joyControl);
 }
 
 byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)

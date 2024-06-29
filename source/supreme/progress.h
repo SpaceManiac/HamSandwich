@@ -72,8 +72,6 @@ enum class HudChoice : byte  // SERIALIZED in the player profile.
 	Advanced = 2,
 };
 
-#define EXPANSION_SIZE	(1018)
-
 // WARNING: changing this struct's contents may break save compatibility or require modifications in Load/SaveProfile.
 typedef struct progress_t
 {
@@ -110,7 +108,9 @@ typedef struct progress_t
 	dword cheats;				// how often you've cheated
 	byte wpnLock;				// weapon lock
 	HudChoice hudChoice;
-	byte expansion[EXPANSION_SIZE];		// unused space for possible future expansion
+	byte moreControl[2][2];
+	byte moreJoyCtrl[2];
+	byte expansion[1012];		// unused space for possible future expansion
 } progress_t;
 
 typedef struct playList_t

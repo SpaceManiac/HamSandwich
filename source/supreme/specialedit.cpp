@@ -629,12 +629,27 @@ static void ItemClick(int id)
 	MakeNormalSound(SND_MENUCLICK);
 }
 
+static const char* KeypressName(int value)
+{
+	switch (value)
+	{
+		case CONTROL_UP: return "Up";
+		case CONTROL_DN: return "Down";
+		case CONTROL_LF: return "Left";
+		case CONTROL_RT: return "Right";
+		case CONTROL_B1: return "Fire";
+		case CONTROL_B2: return "Special";
+		case CONTROL_B3: return "Wpn Lock";
+		default: return "???";
+	}
+}
+
 static void KeypressClick(int id)
 {
 	curTrig=trgStart + id/100-1;
 
 	spcl.trigger[curTrig].value*=2;
-	if(spcl.trigger[curTrig].value>CONTROL_B2)
+	if(spcl.trigger[curTrig].value>CONTROL_B3)
 		spcl.trigger[curTrig].value=1;
 
 	MakeNormalSound(SND_MENUCLICK);
@@ -1558,18 +1573,7 @@ static void SetupTriggerButtons(int t,int y)
 			else
 				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+4+100*t,0,120,y+17,80,14,"Is holding",LessMoreClick);
 
-			if(trigger.value==CONTROL_UP)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,80,14,"Up",KeypressClick);
-			else if(trigger.value==CONTROL_DN)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,80,14,"Down",KeypressClick);
-			else if(trigger.value==CONTROL_LF)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,80,14,"Left",KeypressClick);
-			else if(trigger.value==CONTROL_RT)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,80,14,"Right",KeypressClick);
-			else if(trigger.value==CONTROL_B1)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,80,14,"Fire",KeypressClick);
-			else if(trigger.value==CONTROL_B2)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,80,14,"Special",KeypressClick);
+			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,80,14, KeypressName(trigger.value), KeypressClick);
 			break;
 		case TRG_PLAYAS:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If player is playing as",NULL);

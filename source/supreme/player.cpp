@@ -226,7 +226,8 @@ byte PlayerGetWeapon(byte wpn,int x,int y)
 	cx<<=FIXSHIFT;
 	cy<<=FIXSHIFT;
 
-	if(player.weapon && wpn!=player.weapon && profile.progress.wpnLock)
+	bool wpnLock = bool(profile.progress.wpnLock) ^ bool(GetControls() & CONTROL_B3);
+	if(player.weapon && wpn!=player.weapon && wpnLock)
 		return 0;	// can't pick up weapons while armed!
 
 	if((player.weapon==WPN_PWRARMOR || player.weapon==WPN_MINISUB) && (wpn!=player.weapon))
