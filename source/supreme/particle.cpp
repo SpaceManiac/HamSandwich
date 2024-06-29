@@ -649,20 +649,20 @@ void RenderGlowCircleParticle(int x,int y,int radius,byte c,byte *scrn)
 	}
 }
 
-// this was going to be local to renderlightningparticle, but that would've seriously
-// chomped up the stack, since that function's recursive.
-byte ctab[]={8,3,2,3,8,
-			 3,2,1,2,3,
-			 2,1,0,1,2,
-			 3,2,1,2,3,
-			 8,3,2,3,8};
-
 void RenderLightningParticle(int x1,int y1,int x2,int y2,int range,byte bright,byte *scrn)
 {
+	static const byte ctab[]={
+		8,3,2,3,8,
+		3,2,1,2,3,
+		2,1,0,1,2,
+		3,2,1,2,3,
+		8,3,2,3,8,
+	};
+
 	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
 
 	int midx,midy;
-	byte *ctptr;
+	const byte *ctptr;
 	byte b,brt;
 
 	// base case: draw the (x1,y1) pixel
