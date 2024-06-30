@@ -1193,8 +1193,11 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 						{
 							// if the tile below this one is also a wall, don't waste the
 							// time of drawing the front of this wall
-							if(map[i+(j+1)*width].wall &&
-								(!(GetTerrain(world,map[i+(j+1)*width].floor)->flags&TF_TRANS)))
+							if (
+								map[i+(j+1)*width].wall &&
+								!(GetTerrain(world,map[i+(j+1)*width].floor)->flags&TF_TRANS) &&
+								!((flags & MAP_SHOWSELECT) && !map[i+(j+1)*width].select)
+							)
 							{
 								if(GetTerrain(world,m->floor)->flags&TF_TRANS)
 									RoofDraw(scrX+camX,scrY+camY,m->floor,lites,
@@ -1275,8 +1278,11 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 						{
 							// if there is a wall on the tile below this one, no
 							// point in rendering this floor (unless it is transparent
-							if((!map[i+(j+1)*width].wall) ||
-								(GetTerrain(world,map[i+(j+1)*width].floor)->flags&TF_TRANS))
+							if (
+								(!map[i+(j+1)*width].wall) ||
+								(GetTerrain(world,map[i+(j+1)*width].floor)->flags&TF_TRANS) ||
+								((flags & MAP_SHOWSELECT) && !map[i+(j+1)*width].select)
+							)
 							{
 								RenderFloorTileFancy(scrX,scrY,m->floor,shdw,lites);
 							}
@@ -1312,13 +1318,16 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 				{
 					m=&map[i+j*width];
 
-					RenderItem(
-						scrX+camX+(TILE_WIDTH/2),
-						scrY+camY+(TILE_HEIGHT/2)-1,
-						m->item,
-						(flags & MAP_SHOWLIGHTS) ? m->templight : 0,
-						flags
-					);
+					if (m->item && !((flags&MAP_SHOWSELECT) && !m->select))
+					{
+						RenderItem(
+							scrX+camX+(TILE_WIDTH/2),
+							scrY+camY+(TILE_HEIGHT/2)-1,
+							m->item,
+							(flags & MAP_SHOWLIGHTS) ? m->templight : 0,
+							flags
+						);
+					}
 				}
 				scrY+=TILE_HEIGHT;
 			}
