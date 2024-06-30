@@ -399,12 +399,7 @@ void RenderItAll(world_t *world,Map *map,byte flags)
 		scrx+=-2+Random(5);
 		scry+=-2+Random(5);
 	}
-	if(editing==1)
-	{
-		map->RenderEdit(world,scrx,scry,flags);
-	}
-	else
-		map->Render(world,scrx,scry,flags);
+	map->Render(world,scrx,scry,flags);
 
 	scrx -= mgl->GetWidth() / 2;
 	scry -= mgl->GetHeight() / 2;

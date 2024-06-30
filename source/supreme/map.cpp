@@ -1087,218 +1087,6 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 	int ofsX,ofsY;
 	int scrX,scrY;
 	mapTile_t *m;
-	char lite;
-	char lites[9];
-	byte shdw;
-
-	camX -= GetDisplayMGL()->GetWidth()/2;
-	camY -= GetDisplayMGL()->GetHeight()/2;
-
-	tileX=(camX/TILE_WIDTH)-1;
-	tileY=(camY/TILE_HEIGHT)-1;
-	ofsX=camX%TILE_WIDTH;
-	ofsY=camY%TILE_HEIGHT;
-
-	scrX=-ofsX-TILE_WIDTH;
-	for(i=tileX;i<tileX+(GetDisplayMGL()->GetWidth()/TILE_WIDTH+4);i++)
-	{
-		scrY=-ofsY-TILE_HEIGHT;
-		for(j=tileY;j<tileY+(GetDisplayMGL()->GetHeight()/TILE_HEIGHT+6);j++)
-		{
-			if(i>=0 && i<width && j>=0 && j<height)
-			{
-				m=&map[i+j*width];
-
-				lite=m->templight;
-
-				lites[4]=lite;
-				if(i>0 && j>0)
-					lites[0]=map[i-1+(j-1)*width].templight;
-				else
-				{
-					if(i>0)
-						lites[0]=map[i-1+(j)*width].templight;
-					else if(j>0)
-						lites[0]=map[i+(j-1)*width].templight;
-					else
-						lites[0]=lite;
-				}
-				if(j>0)
-					lites[1]=map[i+(j-1)*width].templight;
-				else
-					lites[1]=lite;
-				if(i<width-1 && j>0)
-					lites[2]=map[i+1+(j-1)*width].templight;
-				else
-				{
-					if(i<width-1)
-						lites[2]=map[i+1+(j)*width].templight;
-					else if(j>0)
-						lites[2]=map[i+(j-1)*width].templight;
-					else
-						lites[2]=lite;
-				}
-				if(i>0)
-					lites[3]=map[i-1+j*width].templight;
-				else
-					lites[3]=lite;
-				if(i<width-1)
-					lites[5]=map[i+1+(j)*width].templight;
-				else
-					lites[5]=lite;
-				if(i>0 && j<height-1)
-					lites[6]=map[i-1+(j+1)*width].templight;
-				else
-				{
-					if(i>0)
-						lites[6]=map[i-1+(j)*width].templight;
-					else if(j<height-1)
-						lites[6]=map[i+(j+1)*width].templight;
-					else
-						lites[6]=lite;
-				}
-				if(j<height-1)
-					lites[7]=map[i+(j+1)*width].templight;
-				else
-					lites[7]=lite;
-				if(i<width-1 && j<height-1)
-					lites[8]=map[i+1+(j+1)*width].templight;
-				else
-				{
-					if(i<width-1)
-						lites[8]=map[i+1+(j)*width].templight;
-					else if(j<height-1)
-						lites[8]=map[i+(j+1)*width].templight;
-					else
-						lites[8]=lite;
-				}
-
-				RenderItem(scrX+camX+(TILE_WIDTH/2),scrY+camY+(TILE_HEIGHT/2)-1,m->item,lite,flags);
-
-				if(m->wall)	// there is a wall on this tile
-				{
-					if(j<height-1)
-					{
-						// if the tile below this one is also a wall, don't waste the
-						// time of drawing the front of this wall
-						if(map[i+(j+1)*width].wall &&
-							(!(GetTerrain(world,map[i+(j+1)*width].floor)->flags&TF_TRANS)))
-						{
-							if(GetTerrain(world,m->floor)->flags&TF_TRANS)
-								RoofDraw(scrX+camX,scrY+camY,m->floor,lites,
-										DISPLAY_DRAWME|DISPLAY_ROOFTILE|DISPLAY_TRANSTILE);
-							else
-								RoofDraw(scrX+camX,scrY+camY,m->floor,lites,DISPLAY_DRAWME|DISPLAY_ROOFTILE);
-						}
-						else
-							if(GetTerrain(world,m->floor)->flags&TF_TRANS)
-								WallDraw(scrX+camX,scrY+camY,m->wall,m->floor,lites,
-									DISPLAY_DRAWME|DISPLAY_WALLTILE|DISPLAY_TRANSTILE);
-							else
-								WallDraw(scrX+camX,scrY+camY,m->wall,m->floor,lites,
-									DISPLAY_DRAWME|DISPLAY_WALLTILE);
-					}
-					// make wall tiles get drawn in sorted order unlike the floor tiles
-					else
-					{
-						if(GetTerrain(world,m->floor)->flags&TF_TRANS)
-							WallDraw(scrX+camX,scrY+camY,m->wall,m->floor,lites,
-								DISPLAY_DRAWME|DISPLAY_WALLTILE|DISPLAY_TRANSTILE);
-						else
-							WallDraw(scrX+camX,scrY+camY,m->wall,m->floor,lites,
-								DISPLAY_DRAWME|DISPLAY_WALLTILE);
-					}
-				}
-				else
-				{
-					// Shadow wall macro: used to determine both a wall is there and it's not marked shadowless
-#define SHADOW_WALL(WALL) ((WALL) && !(GetTerrain(world, (WALL))->flags&TF_SHADOWLESS))
-					if(config.shading==0)
-					{
-						if(i<width-1 && SHADOW_WALL(map[i+1+j*width].wall))
-							shdw=1;
-						else
-							shdw=0;
-					}
-					else
-					{
-						if(j<height-1 && SHADOW_WALL(map[i+(j+1)*width].wall))
-						{
-							if(i<width-1 && SHADOW_WALL(map[i+1+j*width].wall))
-							{
-								shdw=6;
-							}
-							else
-							{
-								if(i<width-1 && SHADOW_WALL(map[i+1+(j+1)*width].wall))
-									shdw=4;
-								else
-									shdw=7;
-							}
-						}
-						else
-						{
-							if(i<width-1)
-							{
-								if(SHADOW_WALL(map[i+1+(j)*width].wall))
-								{
-									if(j<height-1 && SHADOW_WALL(map[i+1+(j+1)*width].wall))
-										shdw=1;
-									else
-										shdw=2;
-								}
-								else
-								{
-									if(j<height-1 && SHADOW_WALL(map[i+1+(j+1)*width].wall))
-										shdw=3;
-									else
-										shdw=0;
-								}
-							}
-							else
-								shdw=0;
-						}
-					}
-
-					if(j<height-1)
-					{
-						// if there is a wall on the tile below this one, no
-						// point in rendering this floor (unless it is transparent
-						if((!map[i+(j+1)*width].wall) ||
-							(GetTerrain(world,map[i+(j+1)*width].floor)->flags&TF_TRANS))
-							RenderFloorTileFancy(scrX,scrY,m->floor,shdw,lites);
-					}
-					else
-					{
-						// if there's a wall to the right, draw a shadow on this tile
-						RenderFloorTileFancy(scrX,scrY,m->floor,shdw,lites);
-					}
-				}
-			}
-			else
-			{
-				// put black in empty spaces
-				DrawFillBox(scrX,scrY,scrX+TILE_WIDTH-1,scrY+TILE_HEIGHT-1,0);
-			}
-			scrY+=TILE_HEIGHT;
-		}
-		scrX+=TILE_WIDTH;
-	}
-
-	if(this->flags&MAP_STARS)
-	{
-		RenderStars(camX, camY);
-	}
-}
-
-void Map::RenderEdit(world_t *world,int camX,int camY,byte flags)
-{
-	int i,j;
-
-	int tileX,tileY;
-	int ofsX,ofsY;
-	int scrX,scrY;
-	mapTile_t *m;
 	char lite,lites[9];
 	byte shdw;
 
@@ -1416,7 +1204,6 @@ void Map::RenderEdit(world_t *world,int camX,int camY,byte flags)
 								if(GetTerrain(world,m->floor)->flags&TF_TRANS)
 									RoofDraw(scrX+camX,scrY+camY,m->floor,lites,
 											DISPLAY_DRAWME|DISPLAY_ROOFTILE|DISPLAY_TRANSTILE);
-
 								else
 									RoofDraw(scrX+camX,scrY+camY,m->floor,lites,DISPLAY_DRAWME|DISPLAY_ROOFTILE);
 							}
@@ -1441,7 +1228,8 @@ void Map::RenderEdit(world_t *world,int camX,int camY,byte flags)
 					}
 					else
 					{
-						// Macro is defined in Render above. It's kind of gross I know -SpaceManiac
+						// Shadow wall macro: used to determine both a wall is there and it's not marked shadowless
+#define SHADOW_WALL(WALL) ((WALL) && !(GetTerrain(world, (WALL))->flags&TF_SHADOWLESS))
 						if(config.shading==0)
 						{
 							if(i<width-1 && SHADOW_WALL(map[i+1+j*width].wall))
@@ -1500,6 +1288,7 @@ void Map::RenderEdit(world_t *world,int camX,int camY,byte flags)
 						}
 						else
 						{
+							// if there's a wall to the right, draw a shadow on this tile
 							RenderFloorTileFancy(scrX,scrY,m->floor,shdw,lites);
 						}
 					}
