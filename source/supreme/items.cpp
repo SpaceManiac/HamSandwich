@@ -9,9 +9,10 @@
 #include "vars.h"
 #include "goal.h"
 #include "worldstitch.h"
+#include "string_extras.h"
 #include <ctype.h>
 
-item_t baseItems[]={
+static const item_t baseItems[]={
 	{"None",0,0,0,0,0,0,0,0,0,0,0,0,"",0},
 	{"Hammer Up",-2,0,0,0,0,0,
 		0,
@@ -744,6 +745,8 @@ static word numItems;
 static item_t *items;
 static int totalRare;
 
+static char customSpriteFilename[64] = "";
+
 void InitItems(void)
 {
 	numItems=NUM_ORIGINAL_ITEMS;
@@ -757,6 +760,8 @@ void InitItems(void)
 	glowism=0;
 	SetupRandomItems();
 	rndItem=GetRandomItem();
+
+	ham_strcpy(customSpriteFilename, "");
 }
 
 void ExitItems(void)
@@ -804,8 +809,12 @@ void DeleteItem(int itm)
 	numItems--;
 }
 
-void SetCustomItemSprites(char* name)
+void SetCustomItemSprites(const char* name)
 {
+	if (!strcmp(customSpriteFilename, name))
+		return;
+	ham_strcpy(customSpriteFilename, name);
+
 	if (customItmSpr) delete customItmSpr;
 
 	customItmSpr=new sprite_set_t();
@@ -826,7 +835,7 @@ void SetCustomItemSprites(char* name)
 	}
 }
 
-void DetectCustomItemSprites(world_t *world)
+static void DetectCustomItemSprites(const world_t *world)
 {
 	// extract filename out of first special if possible
 	special_t* special = world->map[0]->special;
@@ -1169,7 +1178,7 @@ byte AppendItems(FILE *f)
 	return 1;
 }
 
-item_t *GetBaseItem(int type)
+const item_t *GetBaseItem(int type)
 {
 	if(type<0 || type>=NUM_ORIGINAL_ITEMS)
 		return NULL;

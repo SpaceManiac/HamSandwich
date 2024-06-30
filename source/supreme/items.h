@@ -286,7 +286,7 @@ void RenderItem(int x,int y,byte type,char bright,byte flags);
 void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl);
 void DrawRedX(int x,int y,byte candle,MGLDraw *mgl);
 item_t *GetItem(int type);
-item_t *GetBaseItem(int type);
+const item_t *GetBaseItem(int type);
 word NumItems(void);
 int NewItem(void);
 void UpdateItems(void);
@@ -314,8 +314,7 @@ class Map;
 struct world_t;
 
 void MoveMovableItem(int x,int y,Map *map,world_t *world);
-void SetCustomItemSprites(char* filename);
-void DetectCustomItemSprites(world_t *world);
+void SetCustomItemSprites(const char* filename);
 
 byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y);
 byte TriggerItem(Guy *me,mapTile_t *m,int x,int y);
