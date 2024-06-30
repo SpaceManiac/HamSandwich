@@ -6,6 +6,7 @@
 #include "guy.h"
 #include "config.h"
 #include "log.h"
+#include "math_extras.h"
 
 #define NUM_STARS 400
 
@@ -1081,28 +1082,25 @@ void Map::RenderStars(int camX, int camY)
 
 void Map::Render(world_t *world,int camX,int camY,byte flags)
 {
-	int i,j;
-
-	int tileX,tileY;
-	int ofsX,ofsY;
-	int scrX,scrY;
 	mapTile_t *m;
-	char lite,lites[9];
+
+	char lite;
+	char lites[9];
 	byte shdw;
 
-	camX -= GetDisplayMGL()->GetWidth()/2;
-	camY -= GetDisplayMGL()->GetHeight()/2;
+	int scrWidth = GetDisplayMGL()->GetWidth(), scrHeight = GetDisplayMGL()->GetHeight();
+	camX -= scrWidth/2;
+	camY -= scrHeight/2;
 
-	tileX=(camX/TILE_WIDTH)-1;
-	tileY=(camY/TILE_HEIGHT)-1;
-	ofsX=camX%TILE_WIDTH;
-	ofsY=camY%TILE_HEIGHT;
+	auto [minTileX, ofsX] = floor_div(camX, TILE_WIDTH);
+	auto [minTileY, ofsY] = floor_div(camY, TILE_HEIGHT);
 
-	scrX=-ofsX-TILE_WIDTH;
-	for(i=tileX;i<tileX+(GetDisplayMGL()->GetWidth()/TILE_WIDTH+4);i++)
+	int scrX = -ofsX;
+	for (int i = minTileX; i <= (camX + scrWidth) / TILE_WIDTH; ++i)
 	{
-		scrY=-ofsY-TILE_HEIGHT;
-		for(j=tileY;j<tileY+(GetDisplayMGL()->GetHeight()/TILE_HEIGHT+6);j++)
+		int scrY = -ofsY;
+		// +1 for roofs
+		for(int j = minTileY; j <= (camY + scrHeight) / TILE_HEIGHT + 1; ++j)
 		{
 			if(i>=0 && i<width && j>=0 && j<height)
 			{
@@ -1188,9 +1186,6 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 								lites[8]=lite;
 						}
 					}
-
-					RenderItem(scrX+camX+(TILE_WIDTH/2),scrY+camY+(TILE_HEIGHT/2)-1,
-						m->item,lite,flags);
 
 					if(m->wall && (flags&MAP_SHOWWALLS))	// there is a wall on this tile
 					{
@@ -1302,6 +1297,33 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 			scrY+=TILE_HEIGHT;
 		}
 		scrX+=TILE_WIDTH;
+	}
+
+	if (flags & MAP_SHOWITEMS)
+	{
+		ItemRenderExtents extents = GetItemRenderExtents();
+		int scrX = -ofsX - extents.left * TILE_WIDTH;
+		for (int i = minTileX - extents.left; i <= (camX + scrWidth) / TILE_WIDTH + extents.right; ++i)
+		{
+			int scrY = -ofsY - extents.up * TILE_HEIGHT;
+			for (int j = minTileY - extents.up; j <= (camY + scrHeight) / TILE_HEIGHT + extents.down; ++j)
+			{
+				if (i>=0 && i<width && j>=0 && j<height)
+				{
+					m=&map[i+j*width];
+
+					RenderItem(
+						scrX+camX+(TILE_WIDTH/2),
+						scrY+camY+(TILE_HEIGHT/2)-1,
+						m->item,
+						(flags & MAP_SHOWLIGHTS) ? m->templight : 0,
+						flags
+					);
+				}
+				scrY+=TILE_HEIGHT;
+			}
+			scrX+=TILE_WIDTH;
+		}
 	}
 
 	if(this->flags&MAP_STARS)
