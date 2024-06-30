@@ -473,15 +473,9 @@ DisplayList::~DisplayList(void)
 
 int DisplayList::GetOpenSlot(void)
 {
-	int i;
-
-	for(i=0;i<MAX_DISPLAY_OBJS;i++)
-	{
-		if(dispObj[i].flags==0)
-			return i;
-	}
-
-	return -1;
+	if (nextfree >= MAX_DISPLAY_OBJS)
+		return -1;
+	return nextfree++;
 }
 
 void DisplayList::HookIn(int me)
@@ -538,16 +532,41 @@ void DisplayList::HookIn(int me)
 
 bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,char bright,const sprite_t *spr,word flags)
 {
-	int i;
-
-	if (
-		(x-scrx+mgl->GetWidth()/2) < -DISPLAY_XBORDER ||
-		(x-scrx+mgl->GetWidth()/2) > mgl->GetWidth()+DISPLAY_XBORDER ||
-		(y-scry+mgl->GetHeight()/2) < -DISPLAY_YBORDER ||
-		(y-scry+mgl->GetHeight()/2) > mgl->GetHeight()+DISPLAY_YBORDER
-	)
+	SDL_Rect rect;
+	if (!spr || spr==(sprite_t*)1 || (flags&(DISPLAY_WALLTILE|DISPLAY_ROOFTILE)))
+	{
+		// Use generic boundaries: center point +/- this
+		rect.x = x - DISPLAY_XBORDER;
+		rect.y = y - DISPLAY_YBORDER;
+		rect.w = DISPLAY_XBORDER * 2;
+		rect.h = DISPLAY_YBORDER * 2;
+	}
+	else if (flags & DISPLAY_SHADOW)
+	{
+		// Use precise shadow sprite boundaries.
+		rect.x = x - spr->ofsx - spr->height/2;
+		rect.y = y - spr->ofsy/2 - std::clamp(z, -DISPLAY_YBORDER, DISPLAY_YBORDER);
+		rect.w = spr->height/2 + spr->width;
+		rect.h = spr->height/2;
+	}
+	else
+	{
+		// Use precise sprite boundaries.
+		rect.x = x - spr->ofsx;
+		rect.y = y - spr->ofsy - std::clamp(z, -DISPLAY_YBORDER, DISPLAY_YBORDER);
+		rect.w = spr->width;
+		rect.h = spr->height;
+	}
+	// If the rect is totally offscreen, don't add it to the display list.
+	SDL_Rect screenRect = { scrx - mgl->GetWidth()/2, scry - mgl->GetHeight()/2, mgl->GetWidth(), mgl->GetHeight() };
+	SDL_Rect intersection;
+	if (!SDL_IntersectRect(&rect, &screenRect, &intersection))
+	{
 		return true;
-	i=GetOpenSlot();
+	}
+
+	// Actually insert.
+	int i=GetOpenSlot();
 	if(i==-1)
 		return false;
 
