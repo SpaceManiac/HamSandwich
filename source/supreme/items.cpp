@@ -1,5 +1,7 @@
 #include "winpch.h"
 #include "items.h"
+#include <algorithm>
+#include <ctype.h>
 #include "display.h"
 #include "player.h"
 #include "repair.h"
@@ -12,7 +14,6 @@
 #include "log.h"
 #include "math_extras.h"
 #include "string_extras.h"
-#include <ctype.h>
 
 static const item_t baseItems[]={
 	{"None",0,0,0,0,0,0,0,0,0,0,0,0,"",0},
