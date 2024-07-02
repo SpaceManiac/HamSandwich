@@ -266,6 +266,9 @@
 
 #define ANIM_LENGTH	24
 
+constexpr byte FRAME_INVIS = 254;
+constexpr byte FRAME_END = 255;
+
 // flags
 #define MF_FLYING	 1
 #define MF_WATERWALK 2
@@ -345,7 +348,7 @@ const monsterType_t *GetMonsterType(dword type);
 
 void ChangeOffColor(dword type,byte from,byte to);
 byte MonsterSize(dword type);
-byte *MonsterAnim(dword type,byte anim);
+const byte *MonsterAnim(dword type,byte anim);
 word MonsterFlags(dword type,byte aiType);
 dword MonsterTheme(dword type);
 byte MonsterFrames(dword type,byte aiType);

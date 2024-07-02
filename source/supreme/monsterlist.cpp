@@ -2412,7 +2412,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 		 18,2,30,300,"!66",0,MF_NOSHADOW|MF_ONEFACE|MF_NOMOVE|MF_NOHIT|MF_INVINCIBLE|MF_ENEMYWALK|MF_FREEWALK,
 		 MT_EVIL|MT_TRAP,
 			{
-				{254,254,254,255},	// idle
+				{0,254,254,255},	// idle
 				{254,254,254,255},	// move
 				{254,254,254,255},	// attack
 				{254,255},		// die
@@ -2426,7 +2426,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 		 18,2,30,300,"!66",0,MF_NOSHADOW|MF_ONEFACE|MF_NOMOVE|MF_NOHIT|MF_INVINCIBLE|MF_ENEMYWALK|MF_FREEWALK,
 		 MT_EVIL|MT_TRAP,
 			{
-				{254,254,254,255},	// idle
+				{0,254,254,255},	// idle
 				{254,254,254,255},	// move
 				{254,254,254,255},	// attack
 				{254,255},		// die
@@ -2440,7 +2440,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 		 18,2,30,300,"!66",0,MF_NOSHADOW|MF_ONEFACE|MF_NOMOVE|MF_NOHIT|MF_INVINCIBLE|MF_ENEMYWALK|MF_FREEWALK,
 		 MT_EVIL|MT_TRAP,
 			{
-				{254,254,254,255},	// idle
+				{0,254,254,255},	// idle
 				{254,254,254,255},	// move
 				{254,254,254,255},	// attack
 				{254,255},		// die
@@ -2454,7 +2454,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 		 18,2,30,300,"!66",0,MF_NOSHADOW|MF_ONEFACE|MF_NOMOVE|MF_NOHIT|MF_INVINCIBLE|MF_ENEMYWALK|MF_FREEWALK,
 		 MT_EVIL|MT_TRAP,
 			{
-				{254,254,254,255},	// idle
+				{0,254,254,255},	// idle
 				{254,254,254,255},	// move
 				{254,254,254,255},	// attack
 				{254,255},		// die
@@ -2468,7 +2468,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 		 18,2,30,300,"!66",0,MF_NOSHADOW|MF_ONEFACE|MF_NOMOVE|MF_NOHIT|MF_INVINCIBLE|MF_ENEMYWALK|MF_FREEWALK,
 		 MT_EVIL|MT_TRAP,
 			{
-				{254,254,254,255},	// idle
+				{0,254,254,255},	// idle
 				{254,254,254,255},	// move
 				{254,254,254,255},	// attack
 				{254,255},		// die
@@ -2482,7 +2482,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 		 18,2,30,300,"!66",0,MF_NOSHADOW|MF_ONEFACE|MF_NOMOVE|MF_NOHIT|MF_INVINCIBLE|MF_ENEMYWALK|MF_FREEWALK,
 		 MT_EVIL|MT_TRAP,
 			{
-				{254,254,254,255},	// idle
+				{0,254,254,255},	// idle
 				{254,254,254,255},	// move
 				{254,254,254,255},	// attack
 				{254,255},		// die
@@ -2496,7 +2496,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 		 18,2,30,300,"!66",0,MF_NOSHADOW|MF_ONEFACE|MF_NOMOVE|MF_NOHIT|MF_INVINCIBLE|MF_ENEMYWALK|MF_FREEWALK,
 		 MT_EVIL|MT_TRAP,
 			{
-				{254,254,254,255},	// idle
+				{0,254,254,255},	// idle
 				{254,254,254,255},	// move
 				{254,254,254,255},	// attack
 				{254,255},		// die
@@ -2510,7 +2510,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 		 18,2,30,300,"!66",0,MF_NOSHADOW|MF_ONEFACE|MF_NOMOVE|MF_NOHIT|MF_INVINCIBLE|MF_ENEMYWALK|MF_FREEWALK,
 		 MT_EVIL|MT_TRAP,
 			{
-				{254,254,254,255},	// idle
+				{0,254,254,255},	// idle
 				{254,254,254,255},	// move
 				{254,254,254,255},	// attack
 				{254,255},		// die

@@ -88,7 +88,7 @@ byte MonsterSize(dword type)
 	return monsType[type].size;
 }
 
-byte *MonsterAnim(dword type,byte anim)
+const byte *MonsterAnim(dword type,byte anim)
 {
 	return monsType[type].anim[anim];
 }
@@ -199,7 +199,7 @@ const sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 
 	v=monsType[type].anim[seq][frm];
 
-	if(v==254)
+	if(v==FRAME_INVIS)
 		return NULL;	// 254 means no sprite for this frame
 
 	if(!(monsType[type].flags&MF_ONEFACE))
@@ -241,7 +241,7 @@ void MonsterDraw(
 
 	v=monsType[type].anim[seq][frm];
 
-	if(v==254 || v==255)
+	if(v==FRAME_INVIS || v==FRAME_END)
 		return;	// don't draw this frame
 
 	if(!(monsType[type].flags&MF_ONEFACE))

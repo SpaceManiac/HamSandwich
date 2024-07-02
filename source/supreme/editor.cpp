@@ -52,8 +52,6 @@ namespace
 
 byte InitEditor(void)
 {
-	int i;
-
 	NewWorld(&world,editmgl);
 	editorMap=world.map[0];
 	curMapNum=0;
@@ -92,11 +90,6 @@ byte InitEditor(void)
 	strcpy(MonsterName(MONS_DPATROLLR),"Death Patrol Horiz.");
 	strcpy(MonsterName(MONS_DPATROLUD),"Death Patrol Vert.");
 
-	for(i=MONS_SUCKER1;i<=MONS_BLOWER4;i++)
-	{
-		MonsterAnim(i,0)[0]=0;
-	}
-
 	ChangeOffColor(MONS_SHARK,2,4);
 	ChangeOffColor(MONS_SNKYSHRK2,2,4);
 
@@ -131,8 +124,6 @@ byte InitEditor(void)
 
 void ExitEditor(void)
 {
-	int i;
-
 	ExitFileDialog();
 	ToolExit();
 
@@ -162,10 +153,6 @@ void ExitEditor(void)
 	strcpy(MonsterName(MONS_DPATROLLR),"Death Patrol");
 	strcpy(MonsterName(MONS_DPATROLUD),"Death Patrol");
 
-	for(i=MONS_SUCKER1;i<=MONS_BLOWER4;i++)
-	{
-		MonsterAnim(i,0)[0]=254;
-	}
 	StopSong();
 	ExitGuys();
 	FreeWorld(&world);
