@@ -348,8 +348,6 @@ byte MonsterSize(dword type);
 byte *MonsterAnim(dword type,byte anim);
 word MonsterFlags(dword type,byte aiType);
 dword MonsterTheme(dword type);
-void SetMonsterFlags(dword type,word flags);
-byte MonsterFrames(dword type);
 byte MonsterFrames(dword type,byte aiType);
 word MonsterHP(dword type);
 word MonsterPoints(dword type);

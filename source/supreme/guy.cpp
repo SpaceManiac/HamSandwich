@@ -3564,7 +3564,7 @@ int CountMonstersInRect(int type,int x,int y,int x2,int y2)
 	return cnt;
 }
 
-void Telefrag(Guy *g)
+void Telefrag(Guy *g, bool sphinxException)
 {
 	int i,xx,yy;
 
@@ -3574,7 +3574,14 @@ void Telefrag(Guy *g)
 		if((guys[i].type) && (&guys[i]!=g) && (guys[i].hp>0) &&
 			(abs(guys[i].mapx-g->mapx)<8) && (abs(guys[i].mapy-g->mapy)<8))
 		{
-			if(g->CoconutBonk(xx,yy,&guys[i]))
+			if(
+				!(
+					sphinxException &&
+					g->type == MONS_SPHINX &&
+					(guys[i].type == MONS_SPHXARM1 || guys[i].type == MONS_SPHXARM2)
+				) &&
+				g->CoconutBonk(xx,yy,&guys[i])
+			)
 			{
 				// uh oh, somebody is in the way!
 				if(guys[i].aiType==MONS_BOUAPHA)

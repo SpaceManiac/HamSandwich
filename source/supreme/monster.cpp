@@ -143,11 +143,6 @@ char *MonsterName(short type)
 	return tmp;
 }
 
-void SetMonsterFlags(dword type,word flags)
-{
-	monsType[type].flags=flags;
-}
-
 void LoadMySprite(dword type)
 {
 	int v;

@@ -631,7 +631,7 @@ Guy *TaggedMonster(void)
 	return tagged;
 }
 
-byte TeleportGuy(Guy *victim,int x,int y,Map *map,byte noFX)
+static byte TeleportGuy(Guy *victim,int x,int y,Map *map,byte noFX, bool sphinxException = false)
 {
 	if(x<0 || y<0 || x>(map->width*TILE_WIDTH*FIXAMT) || y>(map->height*TILE_HEIGHT*FIXAMT))
 		return 0;	// invalid location
@@ -676,7 +676,7 @@ byte TeleportGuy(Guy *victim,int x,int y,Map *map,byte noFX)
 
 	victim->mapx=x;
 	victim->mapy=y;
-	Telefrag(victim);
+	Telefrag(victim, sphinxException);
 	EventOccur(EVT_STEP,0,x,y,victim);
 	return 1;
 }
@@ -1522,18 +1522,7 @@ void SpecialEffect(special_t *me,Map *map)
 
 					g->item=me->effect[i].value2;
 
-					bool isSphinx = g->aiType==MONS_SPHINX;
-					if(isSphinx)
-					{
-						SetMonsterFlags(MONS_SPHXARM1,MF_ONEFACE|MF_NOMOVE|MF_SPRITEBOX|MF_ENEMYWALK|MF_FREEWALK);
-						SetMonsterFlags(MONS_SPHXARM2,MF_ONEFACE|MF_NOMOVE|MF_SPRITEBOX|MF_ENEMYWALK|MF_FREEWALK);
-					}
-					TeleportGuy(g,me->effect[i].x,me->effect[i].y,map,(me->effect[i].flags&EF_NOFX));
-					if(isSphinx)
-					{
-						SetMonsterFlags(MONS_SPHXARM1,MF_ONEFACE|MF_NOMOVE|MF_SPRITEBOX);
-						SetMonsterFlags(MONS_SPHXARM2,MF_ONEFACE|MF_NOMOVE|MF_SPRITEBOX);
-					}
+					TeleportGuy(g,me->effect[i].x,me->effect[i].y,map,(me->effect[i].flags&EF_NOFX), true);
 				}
 				break;
 			}
