@@ -415,7 +415,7 @@ void Guy::NextFrame(void)
 
 void Guy::CalculateRect(void)
 {
-	sprite_t *spr;
+	const sprite_t *spr;
 	byte s;
 
 	if(MonsterFlags(type,aiType)&MF_SPRITEBOX)

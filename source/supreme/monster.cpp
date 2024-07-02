@@ -169,7 +169,7 @@ void LoadMySprite(dword type)
 	}
 }
 
-sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
+const sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 {
 	int v;
 
@@ -221,7 +221,7 @@ sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 
 void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byte facing,char bright,byte ouch,byte poison,byte frozen,sprite_set_t* set)
 {
-	sprite_t *curSpr;
+	const sprite_t *curSpr;
 	int v;
 	byte shld,isBouapha;
 
