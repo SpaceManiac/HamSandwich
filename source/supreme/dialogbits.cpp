@@ -61,7 +61,7 @@ byte MakeButton(ButtonType type,int id,byte on,int x,int y,int width,int height,
 			button[i].y=y;
 			button[i].width=width;
 			button[i].height=height;
-			StringDestination(button[i].text).assign(txt);
+			ham_strcpy(button[i].text, txt);
 			button[i].callback=func;
 			return i;
 		}
