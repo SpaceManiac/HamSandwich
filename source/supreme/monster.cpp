@@ -56,7 +56,7 @@ void ExitMonsters(void)
 	}
 }
 
-monsterType_t *GetMonsterType(dword type)
+const monsterType_t *GetMonsterType(dword type)
 {
 	return &monsType[type];
 }
@@ -219,36 +219,19 @@ const sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 	return monsType[type].spr->GetSprite(v);
 }
 
-void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byte facing,char bright,byte ouch,byte poison,byte frozen,sprite_set_t* set)
+void MonsterDraw(
+	int x, int y, int z,
+	dword type, bool isBouapha,
+	byte seq, byte frm, byte facing,
+	char bright,
+	byte ouch, byte poison, byte frozen,
+	byte fromCol, byte toCol, uint8_t brtChg,
+	const sprite_set_t* set
+)
 {
 	const sprite_t *curSpr;
 	int v;
-	byte shld,isBouapha;
-
-	if(aiType==MONS_BOUAPHA)
-	{
-		if(player.weapon==WPN_PWRARMOR)
-			type=MONS_PWRBOUAPHA;
-		else if(player.weapon==WPN_MINISUB)
-			type=MONS_MINISUB;
-		else if(type==MONS_BOUAPHA)
-		{
-			if(player.playAs==PLAY_LUNATIC)
-				type=MONS_DRL;
-			else if(player.playAs==PLAY_HAPPY)
-				type=MONS_STICKMAN;
-			else if(player.playAs==PLAY_MECHA)
-				type=MONS_PLAYMECHA;
-			else if(player.playAs==PLAY_SHROOM)
-				type=MONS_PLAYSHROOM;
-			else if(player.playAs==PLAY_LUNACHIK)
-				type=MONS_LUNACHICK;
-		}
-
-		isBouapha=1;
-	}
-	else
-		isBouapha=0;
+	byte shld;
 
 	// load if not loaded
 	LoadMySprite(type);
@@ -333,18 +316,23 @@ void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byt
 			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,1,bright,curSpr,DISPLAY_DRAWME);
 		else if(!(monsType[type].flags&(MF_GHOST|MF_GLOW)))
 		{
-			if(monsType[type].fromCol==255)
-				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright+monsType[type].brtChg,curSpr,DISPLAY_DRAWME);
+			if (fromCol == 255)
+			{
+				fromCol = monsType[type].fromCol;
+				toCol = monsType[type].toCol;
+			}
+			if (fromCol == 255)
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright+brtChg,curSpr,DISPLAY_DRAWME);
 			else
 			{
-				SprDrawOff(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,monsType[type].fromCol,monsType[type].toCol,
-					bright+monsType[type].brtChg,curSpr,DISPLAY_DRAWME);
+				SprDrawOff(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,fromCol,toCol,
+					bright+brtChg,curSpr,DISPLAY_DRAWME);
 			}
 		}
 		else if(monsType[type].flags&MF_GHOST)
-			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright+monsType[type].brtChg,curSpr,DISPLAY_DRAWME|DISPLAY_GHOST);
+			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright+brtChg,curSpr,DISPLAY_DRAWME|DISPLAY_GHOST);
 		else if(monsType[type].flags&MF_GLOW)
-			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright+monsType[type].brtChg,curSpr,DISPLAY_DRAWME|DISPLAY_GLOW);
+			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright+brtChg,curSpr,DISPLAY_DRAWME|DISPLAY_GLOW);
 	}
 	else
 	{

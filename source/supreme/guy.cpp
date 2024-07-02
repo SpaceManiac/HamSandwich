@@ -389,7 +389,7 @@ void Guy::AttackThem(void)
 void Guy::NextFrame(void)
 {
 	byte tp;
-	byte *anim;
+	const byte *anim;
 
 	frm++;
 
@@ -769,10 +769,6 @@ void Guy::EditorUpdate(Map *map)
 
 void Guy::Render(byte light)
 {
-	byte oldFrom,oldTo;
-	char oldBrt;
-	byte t;
-
 	if(type==MONS_NONE)
 		return;
 
@@ -788,6 +784,11 @@ void Guy::Render(byte light)
 		player.vehicle=VE_MINECART;
 	}
 
+	// For now, replicate an old bug due to a mismatch between here and
+	// MonsterDraw. Per-monster color/brightness is suppressed if either:
+	// - monsters with Type==Bouapha and AiType==Bouapha: playing as non-Bouapha
+	// - monsters where Type==Bouapha xor AiType==Bouapha: playing as non-Bouapha OR has power armor or mini-sub
+	dword t = type, t2 = type;
 	if(type==MONS_BOUAPHA)
 	{
 		if(player.playAs==PLAY_LUNATIC)
@@ -808,26 +809,38 @@ void Guy::Render(byte light)
 		if(player.weapon==WPN_MINISUB)
 			t=MONS_MINISUB;
 	}
-	else
-		t=type;
 
-	const bool recolor = fromColor!=255;
-	if(recolor)
+	bool isBouapha = aiType == MONS_BOUAPHA;
+	if(isBouapha)
 	{
-		oldFrom=GetMonsterType(t)->fromCol;
-		oldTo=GetMonsterType(t)->toCol;
-		GetMonsterType(t)->fromCol=fromColor;
-		GetMonsterType(t)->toCol=toColor;
+		if(player.weapon==WPN_PWRARMOR)
+			t2=MONS_PWRBOUAPHA;
+		else if(player.weapon==WPN_MINISUB)
+			t2=MONS_MINISUB;
+		else if(type==MONS_BOUAPHA)
+		{
+			if(player.playAs==PLAY_LUNATIC)
+				t2=MONS_DRL;
+			else if(player.playAs==PLAY_HAPPY)
+				t2=MONS_STICKMAN;
+			else if(player.playAs==PLAY_MECHA)
+				t2=MONS_PLAYMECHA;
+			else if(player.playAs==PLAY_SHROOM)
+				t2=MONS_PLAYSHROOM;
+			else if(player.playAs==PLAY_LUNACHIK)
+				t2=MONS_LUNACHICK;
+		}
 	}
-	oldBrt=GetMonsterType(t)->brtChg;
-	GetMonsterType(t)->brtChg=brtChange;
-	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen,customSpr.get());
-	if(recolor)
+
+	byte fromColor2 = fromColor, toColor2 = toColor, brtChange2 = brtChange;
+	if (t != t2)
 	{
-		GetMonsterType(t)->fromCol=oldFrom;
-		GetMonsterType(t)->toCol=oldTo;
+		fromColor2 = 255;
+		toColor2 = 255;
+		brtChange2 = 0;
 	}
-	GetMonsterType(t)->brtChg=oldBrt;
+
+	MonsterDraw(x,y,z,t2,isBouapha,seq,frm,facing,bright*(light>0),ouch,poison,frozen,fromColor2,toColor2,brtChange2,customSpr.get());
 	if(editing==1 && EditorShowMonsItems())
 	{
 		RenderItem(x>>FIXSHIFT,(y+FIXAMT*2)>>FIXSHIFT,item,bright*(light>0),MAP_SHOWITEMS);

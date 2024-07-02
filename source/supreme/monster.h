@@ -341,7 +341,7 @@ void ExitMonsters(void);
 
 void PurgeMonsterSprites(void);
 
-monsterType_t *GetMonsterType(dword type);
+const monsterType_t *GetMonsterType(dword type);
 
 void ChangeOffColor(dword type,byte from,byte to);
 byte MonsterSize(dword type);
@@ -352,7 +352,15 @@ byte MonsterFrames(dword type,byte aiType);
 word MonsterHP(dword type);
 word MonsterPoints(dword type);
 char *MonsterName(short type);
-void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byte facing,char bright,byte ouch,byte poison,byte frozen,sprite_set_t* set);
+void MonsterDraw(
+	int x, int y, int z,
+	dword type, bool isBouapha,
+	byte seq, byte frm, byte facing,
+	char bright,
+	byte ouch, byte poison, byte frozen,
+	byte fromCol, byte toCol, uint8_t brtChg,
+	const sprite_set_t* set
+);
 void InstaRenderMonster(int x,int y,dword type,char bright,MGLDraw *mgl);
 int InstaRenderScannedMonster(int x,int y,dword type,char bright,MGLDraw *mgl);
 const sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing);
