@@ -218,7 +218,7 @@ PALETTE desiredpal,curpal;
 
 void MainMenuDisplay(MGLDraw *mgl)
 {
-	byte ang[]={192+16,224+16,0+16,32+16,64+16,96+16,128+16,160+16};
+	//byte ang[]={192+16,224+16,0+16,32+16,64+16,96+16,128+16,160+16};
 	char s[32];
 	int i,x,y;
 
@@ -428,11 +428,6 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 
 	secretDir=0;
 	secretClicks=0;
-
-	if(ItemPurchased(SHOP_MAJOR,MAJOR_EDITOR))
-		strcpy(menuTxt[7],"Editor");
-	else
-		strcpy(menuTxt[7],"??????");
 
 	if(FirstTime())
 		AWAIT NameEntry(mgl,1);
