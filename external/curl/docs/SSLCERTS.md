@@ -1,3 +1,9 @@
+<!--
+Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
+
+SPDX-License-Identifier: curl
+-->
+
 SSL Certificate Verification
 ============================
 
@@ -71,11 +77,11 @@ server, do one of the following:
     certificates need to be stored as individual PEM files in this directory.
     You may need to run c_rehash after adding files there.
 
-    If neither of the two options is specified, configure will try to
-    auto-detect a setting. It's also possible to explicitly not set any
-    default store but rely on the built in default the crypto library may
-    provide instead. You can achieve that by passing both
-    `--without-ca-bundle` and `--without-ca-path` to the configure script.
+    If neither of the two options is specified, configure tries to auto-detect
+    a setting. It's also possible to explicitly not set any default store but
+    rely on the built in default the crypto library may provide instead. You
+    can achieve that by passing both `--without-ca-bundle` and
+    `--without-ca-path` to the configure script.
 
     If you use Internet Explorer, this is one way to get extract the CA cert
     for a particular server:
@@ -94,8 +100,7 @@ server, do one of the following:
 
      - `openssl s_client -showcerts -servername server -connect server:443 > cacert.pem`
      - type "quit", followed by the "ENTER" key
-     - The certificate will have "BEGIN CERTIFICATE" and "END CERTIFICATE"
-       markers.
+     - The certificate has `BEGIN CERTIFICATE` and `END CERTIFICATE` markers.
      - If you want to see the data in the certificate, you can do: `openssl
        x509 -inform PEM -in certfile -text -out certdata` where `certfile` is
        the cert you extracted from logfile. Look in `certdata`.
@@ -103,66 +108,46 @@ server, do one of the following:
        certificate store or use it stand-alone as described. Just remember that
        the security is no better than the way you obtained the certificate.
 
- 4. If you are using the curl command line tool, you can specify your own CA
-    cert file by setting the environment variable `CURL_CA_BUNDLE` to the path
-    of your choice.
+ 4. If you are using the curl command line tool and the TLS backend is not
+    Schannel then you can specify your own CA cert file by setting the
+    environment variable `CURL_CA_BUNDLE` to the path of your choice.
 
-    If you are using the curl command line tool on Windows, curl will search
-    for a CA cert file named "curl-ca-bundle.crt" in these directories and in
-    this order:
+    If you are using the curl command line tool on Windows, curl searches for
+    a CA cert file named "curl-ca-bundle.crt" in these directories and in this
+    order:
       1. application's directory
       2. current working directory
       3. Windows System directory (e.g. C:\windows\system32)
       4. Windows Directory (e.g. C:\windows)
       5. all directories along %PATH%
 
- 5. Get a better/different/newer CA cert bundle! One option is to extract the
-    one a recent Firefox browser uses by running 'make ca-bundle' in the curl
-    build tree root, or possibly download a version that was generated this
-    way for you: [CA Extract](https://curl.se/docs/caextract.html)
+ 5. Get another CA cert bundle. One option is to extract the one a recent
+    Firefox browser uses by running 'make ca-bundle' in the curl build tree
+    root, or possibly download a version that was generated this way for you:
+    [CA Extract](https://curl.se/docs/caextract.html)
 
 Neglecting to use one of the above methods when dealing with a server using a
 certificate that is not signed by one of the certificates in the installed CA
-certificate store, will cause SSL to report an error ("certificate verify
-failed") during the handshake and SSL will then refuse further communication
-with that server.
-
-Certificate Verification with NSS
----------------------------------
-
-If libcurl was built with NSS support, then depending on the OS distribution,
-it is probably required to take some additional steps to use the system-wide
-CA cert db. Red Hat ships with an additional module, libnsspem.so, which
-enables NSS to read the OpenSSL PEM CA bundle. On openSUSE you can install
-p11-kit-nss-trust which makes NSS use the system wide CA certificate
-store. NSS also has a new [database
-format](https://wiki.mozilla.org/NSS_Shared_DB).
-
-Starting with version 7.19.7, libcurl automatically adds the `sql:` prefix to
-the certificate database directory (either the set default `/etc/pki/nssdb` or
-the directory configured with the `SSL_DIR` environment variable). To check
-which certificate database format your distribution provides, examine the
-default certificate database location: `/etc/pki/nssdb`; the new certificate
-database format can be identified by the filenames `cert9.db`, `key4.db`,
-`pkcs11.txt`; filenames of older versions are `cert8.db`, `key3.db`,
-`secmod.db`.
+certificate store, causes SSL to report an error (`certificate verify failed`)
+during the handshake and SSL then refuses further communication with that
+server.
 
 Certificate Verification with Schannel and Secure Transport
 -----------------------------------------------------------
 
 If libcurl was built with Schannel (Microsoft's native TLS engine) or Secure
-Transport (Apple's native TLS engine) support, then libcurl will still perform
-peer certificate verification, but instead of using a CA cert bundle, it will
-use the certificates that are built into the OS. These are the same
-certificates that appear in the Internet Options control panel (under Windows)
-or Keychain Access application (under OS X). Any custom security rules for
-certificates will be honored.
+Transport (Apple's native TLS engine) support, then libcurl still performs
+peer certificate verification, but instead of using a CA cert bundle, it uses
+the certificates that are built into the OS. These are the same certificates
+that appear in the Internet Options control panel (under Windows) or Keychain
+Access application (under OS X). Any custom security rules for certificates
+are honored.
 
-Schannel will run CRL checks on certificates unless peer verification is
-disabled. Secure Transport on iOS will run OCSP checks on certificates unless
-peer verification is disabled. Secure Transport on OS X will run either OCSP
-or CRL checks on certificates if those features are enabled, and this behavior
-can be adjusted in the preferences of Keychain Access.
+Schannel runs CRL checks on certificates unless peer verification is disabled.
+Secure Transport on iOS runs OCSP checks on certificates unless peer
+verification is disabled. Secure Transport on OS X runs either OCSP or CRL
+checks on certificates if those features are enabled, and this behavior can be
+adjusted in the preferences of Keychain Access.
 
 HTTPS proxy
 -----------

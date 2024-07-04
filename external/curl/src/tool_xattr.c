@@ -55,7 +55,7 @@ char *stripcredentials(const char *url)
   char *nurl;
   u = curl_url();
   if(u) {
-    uc = curl_url_set(u, CURLUPART_URL, url, 0);
+    uc = curl_url_set(u, CURLUPART_URL, url, CURLU_GUESS_SCHEME);
     if(uc)
       goto error;
 
@@ -75,7 +75,7 @@ char *stripcredentials(const char *url)
 
     return nurl;
   }
-  error:
+error:
   curl_url_cleanup(u);
   return NULL;
 }
@@ -89,8 +89,8 @@ static int xattr(int fd,
 #ifdef DEBUGBUILD
     if(getenv("CURL_FAKE_XATTR")) {
       printf("%s => %s\n", attr, value);
+      return 0;
     }
-    return 0;
 #endif
 #ifdef HAVE_FSETXATTR_6
     err = fsetxattr(fd, attr, value, strlen(value), 0, 0);

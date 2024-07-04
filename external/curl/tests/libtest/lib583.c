@@ -32,13 +32,15 @@
 
 #include "memdebug.h"
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   int stillRunning;
   CURLM *multiHandle = NULL;
   CURL *curl = NULL;
   CURLcode res = CURLE_OK;
   CURLMcode mres;
+
+  assert(test_argc >= 4);
 
   global_init(CURL_GLOBAL_ALL);
 
@@ -47,8 +49,8 @@ int test(char *URL)
   easy_init(curl);
 
   easy_setopt(curl, CURLOPT_USERPWD, libtest_arg2);
-  easy_setopt(curl, CURLOPT_SSH_PUBLIC_KEYFILE, "curl_client_key.pub");
-  easy_setopt(curl, CURLOPT_SSH_PRIVATE_KEYFILE, "curl_client_key");
+  easy_setopt(curl, CURLOPT_SSH_PUBLIC_KEYFILE,  test_argv[3]);
+  easy_setopt(curl, CURLOPT_SSH_PRIVATE_KEYFILE, test_argv[4]);
 
   easy_setopt(curl, CURLOPT_UPLOAD, 1L);
   easy_setopt(curl, CURLOPT_VERBOSE, 1L);
@@ -85,5 +87,5 @@ test_cleanup:
   curl_multi_cleanup(multiHandle);
   curl_global_cleanup();
 
-  return (int)res;
+  return res;
 }

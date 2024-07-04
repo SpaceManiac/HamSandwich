@@ -71,13 +71,16 @@ sub githubactions {
                 elsif($r =~ /macos/) {
                     $os = "macos";
                 }
+                elsif($r =~ /windows/) {
+                    $os = "windows";
+                }
 
                 # commit previously counted jobs
                 $c += $j;
                 # non-matrix job
                 $j = 1;
             }
-            elsif($_ =~ /matrix:/) {
+            elsif($_ =~ /^\s*matrix:/) {
                 # switch to matrix mode
                 $m = 0;
                 $j = 0;
@@ -86,7 +89,7 @@ sub githubactions {
                 $job{'install'} = $1;
             }
             elsif($m >= 0) {
-                if($_ =~ /^        - name: (.*)/) {
+                if($_ =~ /^          - name: (.*)/) {
                     # matrix job
                     #print "name: $1\n";
                     $job{'name'} = $1;
@@ -125,7 +128,7 @@ sub githubactions {
                     push @cc, $1;
                     $m++;
                 }
-                elsif($_ =~ /steps:/) {
+                elsif($_ =~ /^\s*steps:/) {
                     # disable matrix mode
                     $m = -1;
                 }
@@ -162,7 +165,7 @@ sub azurepipelines {
     $job{'file'} = ".azure-pipelines.yml";
     $job{'service'} = "azure";
     while(<G>) {
-        if($_ =~ /^      vmImage: (.*)/) {
+        if($_ =~ /^          vmImage: (.*)/) {
             my $i = $1;
             if($i =~ /ubuntu/) {
                 $os = "linux";
@@ -171,7 +174,7 @@ sub azurepipelines {
                 $os = "windows";
             }
         }
-        elsif($_ =~ /^- stage: (.*)/) {
+        elsif($_ =~ /^  - stage: (.*)/) {
             my $topname = $1;
             if($topname !~ /(windows|linux)/) {
                 $job{'name'} = $topname;
@@ -191,7 +194,7 @@ sub azurepipelines {
             $j = 0;
         }
         elsif($m >= 0) {
-            if($_ =~ /^          name: (.*)/) {
+            if($_ =~ /^              name: (.*)/) {
                 # single matrix list entry job
                 $j++;
                 $job{'name'} = $1;
@@ -202,7 +205,7 @@ sub azurepipelines {
                 # disable matrix mode
                 $m = -1;
             }
-            elsif($_ =~ /^          configure: (.*)/) {
+            elsif($_ =~ /^              configure: (.*)/) {
                 $job{'configure'} = $1;
                 $job{'line'}=$line;
                 $job{'os'}=$os;
@@ -229,7 +232,7 @@ sub appveyor {
 
     while(<G>) {
         $line++;
-        if($_ =~ /^(      - |install)/) {
+        if($_ =~ /^(    - |install)/) {
             if($job{'image'}) {
                 $job{'os'} = "windows";
                 submit(\%job);
@@ -237,37 +240,37 @@ sub appveyor {
             }
         }
         $job{'line'} = $line;
-        if($_ =~ /^        APPVEYOR_BUILD_WORKER_IMAGE: \"(.*)\"/) {
+        if($_ =~ /^      APPVEYOR_BUILD_WORKER_IMAGE: \'(.*)\'/) {
             $job{'image'}= $1;
         }
-        elsif($_ =~ /^        BUILD_SYSTEM: (.*)/) {
+        elsif($_ =~ /^      BUILD_SYSTEM: (.*)/) {
             $job{'build'} = lc($1);
         }
-        elsif($_ =~ /^        PRJ_GEN: \"(.*)\"/) {
+        elsif($_ =~ /^      PRJ_GEN: \'(.*)\'/) {
             $job{'compiler'} = $1;
         }
-        elsif($_ =~ /^        PRJ_CFG: (.*)/) {
+        elsif($_ =~ /^      PRJ_CFG: (.*)/) {
             $job{'config'} = $1;
         }
-        elsif($_ =~ /^        OPENSSL: (.*)/) {
+        elsif($_ =~ /^      OPENSSL: \'(.*)\'/) {
             $job{'openssl'} = $1 eq "ON" ? "true": "false";
         }
-        elsif($_ =~ /^        SCHANNEL: (.*)/) {
+        elsif($_ =~ /^      SCHANNEL: \'(.*)\'/) {
             $job{'schannel'} = $1 eq "ON" ? "true": "false";
         }
-        elsif($_ =~ /^        ENABLE_UNICODE: (.*)/) {
+        elsif($_ =~ /^      ENABLE_UNICODE: \'(.*)\'/) {
             $job{'unicode'} = $1 eq "ON" ? "true": "false";
         }
-        elsif($_ =~ /^        HTTP_ONLY: (.*)/) {
+        elsif($_ =~ /^      HTTP_ONLY: \'(.*)\'/) {
             $job{'http-only'} = $1 eq "ON" ? "true": "false";
         }
-        elsif($_ =~ /^        TESTING: (.*)/) {
+        elsif($_ =~ /^      TESTING: \'(.*)\'/) {
             $job{'testing'} = $1 eq "ON" ? "true": "false";
         }
-        elsif($_ =~ /^        SHARED: (.*)/) {
+        elsif($_ =~ /^      SHARED: \'(.*)\'/) {
             $job{'shared'} = $1 eq "ON" ? "true": "false";
         }
-        elsif($_ =~ /^        TARGET: \"-A (.*)\"/) {
+        elsif($_ =~ /^      TARGET: \'-A (.*)\'/) {
             $job{'target'} = $1;
         }
     }

@@ -25,11 +25,10 @@ AUTOMAKE_OPTIONS = foreign nostdinc
 
 CMAKE_DIST = CMakeLists.txt curl_config.h.cmake
 
-EXTRA_DIST = Makefile.mk config-win32.h config-win32ce.h config-plan9.h    \
- config-riscos.h config-mac.h curl_config.h.in config-dos.h                \
- libcurl.plist libcurl.rc config-amigaos.h config-win32ce.h                \
- config-os400.h setup-os400.h $(CMAKE_DIST) setup-win32.h .checksrc \
- Makefile.soname
+EXTRA_DIST = Makefile.mk config-win32.h config-win32ce.h config-plan9.h \
+ config-riscos.h config-mac.h curl_config.h.in config-dos.h libcurl.rc  \
+ config-amigaos.h config-win32ce.h config-os400.h setup-os400.h         \
+ $(CMAKE_DIST) setup-win32.h .checksrc Makefile.soname
 
 lib_LTLIBRARIES = libcurl.la
 
@@ -110,7 +109,7 @@ libcurl_la_CFLAGS_EXTRA += $(CFLAG_CURL_SYMBOL_HIDING)
 endif
 
 libcurl_la_CPPFLAGS = $(AM_CPPFLAGS) $(libcurl_la_CPPFLAGS_EXTRA)
-libcurl_la_LDFLAGS = $(AM_LDFLAGS) $(libcurl_la_LDFLAGS_EXTRA) $(LDFLAGS) $(LIBCURL_LIBS)
+libcurl_la_LDFLAGS = $(AM_LDFLAGS) $(libcurl_la_LDFLAGS_EXTRA) $(CURL_LDFLAGS_LIB) $(LIBCURL_LIBS)
 libcurl_la_CFLAGS = $(AM_CFLAGS) $(libcurl_la_CFLAGS_EXTRA)
 
 libcurlu_la_CPPFLAGS = $(AM_CPPFLAGS) -DCURL_STATICLIB -DUNITTESTS

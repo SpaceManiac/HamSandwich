@@ -28,7 +28,7 @@
 /*
  * Test a simple OPTIONS request with a custom header
  */
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURLcode res;
   CURL *curl;
@@ -49,6 +49,7 @@ int test(char *URL)
   /* Dump data to stdout for protocol verification */
   test_setopt(curl, CURLOPT_HEADERDATA, stdout);
   test_setopt(curl, CURLOPT_WRITEDATA, stdout);
+  test_setopt(curl, CURLOPT_VERBOSE, 1L);
 
   test_setopt(curl, CURLOPT_URL, URL);
   test_setopt(curl, CURLOPT_RTSP_STREAM_URI, URL);
@@ -67,5 +68,5 @@ test_cleanup:
   curl_easy_cleanup(curl);
   curl_global_cleanup();
 
-  return (int)res;
+  return res;
 }

@@ -38,6 +38,8 @@
 
 #include "memdebug.h" /* keep this as LAST include */
 
+#define MAX_BARLENGTH 256
+
 #ifdef HAVE_TERMIOS_H
 #  include <termios.h>
 #elif defined(HAVE_TERMIO_H)
@@ -51,7 +53,7 @@
      printf "%d, ", sin($i/200 * 2 * $pi) * 500000 + 500000;
    }
 */
-static const unsigned int sinus[] = {
+static const int sinus[] = {
   515704, 531394, 547052, 562664, 578214, 593687, 609068, 624341, 639491,
   654504, 669364, 684057, 698568, 712883, 726989, 740870, 754513, 767906,
   781034, 793885, 806445, 818704, 830647, 842265, 853545, 864476, 875047,
@@ -78,11 +80,16 @@ static const unsigned int sinus[] = {
 
 static void fly(struct ProgressData *bar, bool moved)
 {
-  char buf[256];
+  char buf[MAX_BARLENGTH + 2];
   int pos;
   int check = bar->width - 2;
 
-  msnprintf(buf, sizeof(buf), "%*s\r", bar->width-1, " ");
+  /* bar->width is range checked when assigned */
+  DEBUGASSERT(bar->width <= MAX_BARLENGTH);
+  memset(buf, ' ', bar->width);
+  buf[bar->width] = '\r';
+  buf[bar->width + 1] = '\0';
+
   memcpy(&buf[bar->bar], "-=O=-", 5);
 
   pos = sinus[bar->tick%200] / (1000000 / check);
@@ -114,10 +121,8 @@ static void fly(struct ProgressData *bar, bool moved)
 ** callback for CURLOPT_XFERINFOFUNCTION
 */
 
-#define MAX_BARLENGTH 256
-
-#if (SIZEOF_CURL_OFF_T == 4)
-#  define CURL_OFF_T_MAX CURL_OFF_T_C(0x7FFFFFFF)
+#if (SIZEOF_CURL_OFF_T < 8)
+#error "too small curl_off_t"
 #else
    /* assume SIZEOF_CURL_OFF_T == 8 */
 #  define CURL_OFF_T_MAX CURL_OFF_T_C(0x7FFFFFFFFFFFFFFF)
@@ -189,7 +194,7 @@ int tool_progress_cb(void *clientp,
     double frac;
     double percent;
     int barwidth;
-    int num;
+    size_t num;
     if(point > total)
       /* we have got more than the expected total! */
       total = point;
@@ -197,13 +202,20 @@ int tool_progress_cb(void *clientp,
     frac = (double)point / (double)total;
     percent = frac * 100.0;
     barwidth = bar->width - 7;
-    num = (int) (((double)barwidth) * frac);
+    num = (size_t) (((double)barwidth) * frac);
     if(num > MAX_BARLENGTH)
       num = MAX_BARLENGTH;
     memset(line, '#', num);
     line[num] = '\0';
     msnprintf(format, sizeof(format), "\r%%-%ds %%5.1f%%%%", barwidth);
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#endif
     fprintf(bar->out, format, line, percent);
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
   }
   fflush(bar->out);
   bar->prev = point;
@@ -217,28 +229,25 @@ int tool_progress_cb(void *clientp,
   return 0;
 }
 
-void progressbarinit(struct ProgressData *bar,
-                     struct OperationConfig *config)
+/*
+ * get_terminal_columns() returns the number of columns in the current
+ * terminal. It will return 79 on failure. Also, the number can be very big.
+ */
+
+unsigned int get_terminal_columns(void)
 {
-  char *colp;
-  memset(bar, 0, sizeof(struct ProgressData));
-
-  /* pass the resume from value through to the progress function so it can
-   * display progress towards total file not just the part that's left. */
-  if(config->use_resume)
-    bar->initial_size = config->resume_from;
-
-  colp = curlx_getenv("COLUMNS");
+  unsigned int width = 0;
+  char *colp = curl_getenv("COLUMNS");
   if(colp) {
     char *endptr;
     long num = strtol(colp, &endptr, 10);
     if((endptr != colp) && (endptr == colp + strlen(colp)) && (num > 20) &&
        (num < 10000))
-      bar->width = (int)num;
+      width = (unsigned int)num;
     curl_free(colp);
   }
 
-  if(!bar->width) {
+  if(!width) {
     int cols = 0;
 
 #ifdef TIOCGSIZE
@@ -248,8 +257,8 @@ void progressbarinit(struct ProgressData *bar,
 #elif defined(TIOCGWINSZ)
     struct winsize ts;
     if(!ioctl(STDIN_FILENO, TIOCGWINSZ, &ts))
-      cols = ts.ws_col;
-#elif defined(WIN32)
+      cols = (int)ts.ws_col;
+#elif defined(_WIN32)
     {
       HANDLE  stderr_hnd = GetStdHandle(STD_ERROR_HANDLE);
       CONSOLE_SCREEN_BUFFER_INFO console_info;
@@ -265,16 +274,32 @@ void progressbarinit(struct ProgressData *bar,
       }
     }
 #endif /* TIOCGSIZE */
-    if(cols > 20)
-      bar->width = cols;
+    if(cols >= 0 && cols < 10000)
+      width = (unsigned int)cols;
   }
+  if(!width)
+    width = 79;
+  return width; /* 79 for unknown, might also be very small or very big */
+}
 
-  if(!bar->width)
-    bar->width = 79;
-  else if(bar->width > MAX_BARLENGTH)
+void progressbarinit(struct ProgressData *bar,
+                     struct OperationConfig *config)
+{
+  unsigned int cols;
+  memset(bar, 0, sizeof(struct ProgressData));
+
+  /* pass the resume from value through to the progress function so it can
+   * display progress towards total file not just the part that's left. */
+  if(config->use_resume)
+    bar->initial_size = config->resume_from;
+
+  cols = get_terminal_columns();
+  if(cols > MAX_BARLENGTH)
     bar->width = MAX_BARLENGTH;
+  else if(cols > 20)
+    bar->width = (int)cols;
 
-  bar->out = config->global->errors;
+  bar->out = tool_stderr;
   bar->tick = 150;
   bar->barmove = 1;
 }

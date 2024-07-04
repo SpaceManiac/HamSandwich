@@ -25,7 +25,7 @@
 
 #include "memdebug.h"
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURLcode res;
   CURL *curl;
@@ -49,6 +49,8 @@ int test(char *URL)
 
   /* get first page */
   res = curl_easy_perform(curl);
+  if(res)
+    goto test_cleanup;
 
   test_setopt(curl, CURLOPT_USERPWD, "anothermonster:inwardrobe");
 
@@ -60,5 +62,5 @@ test_cleanup:
   curl_easy_cleanup(curl);
   curl_global_cleanup();
 
-  return (int)res;
+  return res;
 }

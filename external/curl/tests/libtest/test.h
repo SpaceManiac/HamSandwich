@@ -42,7 +42,7 @@
 
 #include "curl_printf.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #define sleep(sec) Sleep ((sec)*1000)
 #endif
 
@@ -68,14 +68,12 @@ extern int select_wrapper(int nfds, fd_set *rd, fd_set *wr, fd_set *exc,
 
 extern void wait_ms(int ms); /* wait this many milliseconds */
 
-extern int test(char *URL); /* the actual test function provided by each
-                               individual libXXX.c file */
+extern CURLcode test(char *URL); /* the actual test function provided by each
+                                    individual libXXX.c file */
 
 extern char *hexdump(const unsigned char *buffer, size_t len);
 
-#ifdef UNITTESTS
 extern int unitfail;
-#endif
 
 /*
 ** TEST_ERR_* values must be greater than CURL_LAST CURLcode in order
@@ -442,12 +440,14 @@ extern int unitfail;
   tv_test_start = tutil_tvnow(); \
 } while(0)
 
-#define exe_test_timedout(Y,Z) do {                                    \
-  if(tutil_tvdiff(tutil_tvnow(), tv_test_start) > TEST_HANG_TIMEOUT) { \
-    fprintf(stderr, "%s:%d ABORTING TEST, since it seems "             \
-                    "that it would have run forever.\n", (Y), (Z));    \
-    res = TEST_ERR_RUNS_FOREVER;                                       \
-  }                                                                    \
+#define exe_test_timedout(Y,Z) do {                                       \
+  long timediff = tutil_tvdiff(tutil_tvnow(), tv_test_start);             \
+  if(timediff > (TEST_HANG_TIMEOUT)) {                                    \
+    fprintf(stderr, "%s:%d ABORTING TEST, since it seems "                \
+            "that it would have run forever (%ld ms > %ld ms)\n",         \
+            (Y), (Z), timediff, (long) (TEST_HANG_TIMEOUT));              \
+    res = TEST_ERR_RUNS_FOREVER;                                          \
+  }                                                                       \
 } while(0)
 
 #define res_test_timedout() \
@@ -490,11 +490,11 @@ extern int unitfail;
   chk_global_init((A), (__FILE__), (__LINE__))
 
 #define NO_SUPPORT_BUILT_IN                     \
-  int test(char *URL)                           \
+  CURLcode test(char *URL)                      \
   {                                             \
     (void)URL;                                  \
     fprintf(stderr, "Missing support\n");       \
-    return 1;                                   \
+    return (CURLcode)1;                         \
   }
 
 /* ---------------------------------------------------------------- */

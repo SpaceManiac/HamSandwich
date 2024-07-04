@@ -1,3 +1,9 @@
+<!--
+Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
+
+SPDX-License-Identifier: curl
+-->
+
 # how to install curl and libcurl
 
 ## Installing Binary Packages
@@ -24,8 +30,8 @@ or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
 ## Building from git
 
 If you get your code off a git repository instead of a release tarball, see
-the `GIT-INFO` file in the root directory for specific instructions on how to
-proceed.
+the `GIT-INFO.md` file in the root directory for specific instructions on how
+to proceed.
 
 # Unix
 
@@ -110,10 +116,10 @@ Figuring out all the dependency libraries for a given library is hard, as it
 might involve figuring out the dependencies of the dependencies and they vary
 between platforms and change between versions.
 
-When using static dependencies, the build scripts will mostly assume that you,
-the user, will provide all the necessary additional dependency libraries as
-additional arguments in the build. With configure, by setting `LIBS` or
-`LDFLAGS` on the command line.
+When using static dependencies, the build scripts mostly assume that you, the
+user, provide all the necessary additional dependency libraries as additional
+arguments in the build. With configure, by setting `LIBS` or `LDFLAGS` on the
+command line.
 
 Building statically is not for the faint of heart.
 
@@ -123,8 +129,8 @@ If you are a curl developer and use gcc, you might want to enable more debug
 options with the `--enable-debug` option.
 
 curl can be built to use a whole range of libraries to provide various useful
-services, and configure will try to auto-detect a decent default. But if you
-want to alter it, you can select how to deal with each individual library.
+services, and configure tries to auto-detect a decent default. If you want to
+alter it, you can select how to deal with each individual library.
 
 ## Select TLS backend
 
@@ -134,8 +140,7 @@ These options are provided to select the TLS backend to use.
  - BearSSL: `--with-bearssl`
  - GnuTLS: `--with-gnutls`.
  - mbedTLS: `--with-mbedtls`
- - NSS: `--with-nss`
- - OpenSSL: `--with-openssl` (also for BoringSSL, libressl and quictls)
+ - OpenSSL: `--with-openssl` (also for BoringSSL, AWS-LC, libressl, and quictls)
  - rustls: `--with-rustls`
  - Schannel: `--with-schannel`
  - Secure Transport: `--with-secure-transport`
@@ -147,9 +152,23 @@ you cannot add another OpenSSL fork (or wolfSSL) simply because they have
 conflicting identical symbol names.
 
 When you build with multiple TLS backends, you can select the active one at
-run-time when curl starts up.
+runtime when curl starts up.
+
+## configure finding libs in wrong directory
+
+When the configure script checks for third-party libraries, it adds those
+directories to the `LDFLAGS` variable and then tries linking to see if it
+works. When successful, the found directory is kept in the `LDFLAGS` variable
+when the script continues to execute and do more tests and possibly check for
+more libraries.
+
+This can make subsequent checks for libraries wrongly detect another
+installation in a directory that was previously added to `LDFLAGS` by another
+library check.
 
 # Windows
+
+Building for Windows XP is required as a minimum.
 
 ## Building Windows DLLs and C runtime (CRT) linkage issues
 
@@ -161,8 +180,8 @@ run-time when curl starts up.
  KB140584 is a must for any Windows developer. Especially important is full
  understanding if you are not going to follow the advice given above.
 
- - [How To Use the C Run-Time](https://support.microsoft.com/help/94248/how-to-use-the-c-run-time)
- - [Run-Time Library Compiler Options](https://docs.microsoft.com/cpp/build/reference/md-mt-ld-use-run-time-library)
+ - [How To Use the C Runtime](https://support.microsoft.com/help/94248/how-to-use-the-c-run-time)
+ - [Runtime Library Compiler Options](https://docs.microsoft.com/cpp/build/reference/md-mt-ld-use-run-time-library)
  - [Potential Errors Passing CRT Objects Across DLL Boundaries](https://docs.microsoft.com/cpp/c-runtime-library/potential-errors-passing-crt-objects-across-dll-boundaries)
 
 If your app is misbehaving in some strange way, or it is suffering from memory
@@ -172,59 +191,11 @@ multi-threaded dynamic C runtime.
 
  If you get linkage errors read section 5.7 of the FAQ document.
 
-## MinGW32
-
-Make sure that MinGW32's bin directory is in the search path, for example:
-
-```cmd
-set PATH=c:\mingw32\bin;%PATH%
-```
-
-then run `mingw32-make mingw32` in the root dir. There are other
-make targets available to build libcurl with more features, use:
-
- - `mingw32-make mingw32-zlib` to build with Zlib support;
- - `mingw32-make mingw32-ssl-zlib` to build with SSL and Zlib enabled;
- - `mingw32-make mingw32-ssh2-ssl-zlib` to build with SSH2, SSL, Zlib;
- - `mingw32-make mingw32-ssh2-ssl-sspi-zlib` to build with SSH2, SSL, Zlib
-   and SSPI support.
-
-If you have any problems linking libraries or finding header files, be sure
-to verify that the provided `Makefile.mk` files use the proper paths, and
-adjust as necessary. It is also possible to override these paths with
-environment variables, for example:
-
-```cmd
-set ZLIB_PATH=c:\zlib-1.2.12
-set OPENSSL_PATH=c:\openssl-3.0.5
-set LIBSSH2_PATH=c:\libssh2-1.10.0
-```
-
-It is also possible to build with other LDAP installations than MS LDAP;
-currently it is possible to build with native Win32 OpenLDAP, or with the
-*Novell CLDAP* SDK. If you want to use these you need to set these vars:
-
-```cmd
-set CPPFLAGS=-Ic:/openldap/include -DCURL_HAS_OPENLDAP_LDAPSDK
-set LDFLAGS=-Lc:/openldap/lib
-set LIBS=-lldap -llber
-```
-
-or for using the Novell SDK:
-
-```cmd
-set CPPFLAGS=-Ic:/openldapsdk/inc -DCURL_HAS_NOVELL_LDAPSDK
-set LDFLAGS=-Lc:/openldapsdk/lib/mscvc
-set LIBS=-lldapsdk -lldapssl -lldapx
-```
-
-If you want to enable LDAPS support then append `-ldaps` to the make target.
-
 ## Cygwin
 
 Almost identical to the Unix installation. Run the configure script in the
 curl source tree root with `sh configure`. Make sure you have the `sh`
-executable in `/bin/` or you will see the configure fail toward the end.
+executable in `/bin/` or you see the configure fail toward the end.
 
 Run `make`
 
@@ -235,7 +206,7 @@ Requires DJGPP in the search path and pointing to the Watt-32 stack via
 
 Run `make -f Makefile.dist djgpp` in the root curl dir.
 
-For build configuration options, please see the MinGW32 section.
+For build configuration options, please see the mingw-w64 section.
 
 Notes:
 
@@ -250,7 +221,7 @@ Notes:
 
 Run `make -f Makefile.dist amiga` in the root curl dir.
 
-For build configuration options, please see the MinGW32 section.
+For build configuration options, please see the mingw-w64 section.
 
 ## Disabling Specific Protocols in Windows builds
 
@@ -302,16 +273,16 @@ might yet need some additional adjustment.
 ## Important static libcurl usage note
 
 When building an application that uses the static libcurl library on Windows,
-you must add `-DCURL_STATICLIB` to your `CFLAGS`. Otherwise the linker will
-look for dynamic import symbols.
+you must add `-DCURL_STATICLIB` to your `CFLAGS`. Otherwise the linker looks
+for dynamic import symbols.
 
 ## Legacy Windows and SSL
 
 Schannel (from Windows SSPI), is the native SSL library in Windows. However,
-Schannel in Windows <= XP is unable to connect to servers that
-no longer support the legacy handshakes and algorithms used by those
-versions. If you will be using curl in one of those earlier versions of
-Windows you should choose another SSL backend such as OpenSSL.
+Schannel in Windows <= XP is unable to connect to servers that no longer
+support the legacy handshakes and algorithms used by those versions. If you
+are using curl in one of those earlier versions of Windows you should choose
+another SSL backend such as OpenSSL.
 
 # Apple Platforms (macOS, iOS, tvOS, watchOS, and their simulator counterparts)
 
@@ -320,10 +291,10 @@ implementation, Secure Transport, instead of OpenSSL. To build with Secure
 Transport for SSL/TLS, use the configure option `--with-secure-transport`.
 
 When Secure Transport is in use, the curl options `--cacert` and `--capath`
-and their libcurl equivalents, will be ignored, because Secure Transport uses
-the certificates stored in the Keychain to evaluate whether or not to trust
-the server. This, of course, includes the root certificates that ship with the
-OS. The `--cert` and `--engine` options, and their libcurl equivalents, are
+and their libcurl equivalents, are ignored, because Secure Transport uses the
+certificates stored in the Keychain to evaluate whether or not to trust the
+server. This, of course, includes the root certificates that ship with the OS.
+The `--cert` and `--engine` options, and their libcurl equivalents, are
 currently unimplemented in curl with Secure Transport.
 
 In general, a curl build for an Apple `ARCH/SDK/DEPLOYMENT_TARGET` combination
@@ -342,7 +313,8 @@ make -j8
 make install
 ```
 
-Above will build curl for macOS platform with `x86_64` architecture and `10.8` as deployment target.
+The above command lines build curl for macOS platform with `x86_64`
+architecture and `10.8` as deployment target.
 
 Here is an example for iOS device:
 
@@ -375,14 +347,14 @@ In all above, the built libraries and executables can be found in the
 
 # Android
 
-When building curl for Android it's recommended to use a Linux/macOS environment
-since using curl's `configure` script is the easiest way to build curl
-for Android. Before you can build curl for Android, you need to install the
-Android NDK first. This can be done using the SDK Manager that is part of
-Android Studio. Once you have installed the Android NDK, you need to figure out
-where it has been installed and then set up some environment variables before
-launching `configure`. On macOS, those variables could look like this to compile
-for `aarch64` and API level 29:
+When building curl for Android it is recommended to use a Linux/macOS
+environment since using curl's `configure` script is the easiest way to build
+curl for Android. Before you can build curl for Android, you need to install
+the Android NDK first. This can be done using the SDK Manager that is part of
+Android Studio. Once you have installed the Android NDK, you need to figure
+out where it has been installed and then set up some environment variables
+before launching `configure`. On macOS, those variables could look like this
+to compile for `aarch64` and API level 29:
 
 ```bash
 export ANDROID_NDK_HOME=~/Library/Android/sdk/ndk/25.1.8937393 # Point into your NDK.
@@ -402,16 +374,16 @@ to adjust those variables accordingly. After that you can build curl like this:
 
     ./configure --host aarch64-linux-android --with-pic --disable-shared
 
-Note that this will not give you SSL/TLS support. If you need SSL/TLS, you have
-to build curl against a SSL/TLS layer, e.g. OpenSSL, because it's impossible for
-curl to access Android's native SSL/TLS layer. To build curl for Android using
-OpenSSL, follow the OpenSSL build instructions and then install `libssl.a` and
-`libcrypto.a` to `$TOOLCHAIN/sysroot/usr/lib` and copy `include/openssl` to
-`$TOOLCHAIN/sysroot/usr/include`. Now you can build curl for Android using
-OpenSSL like this:
+Note that this does not give you SSL/TLS support. If you need SSL/TLS, you
+have to build curl with a SSL/TLS library, e.g. OpenSSL, because it is
+impossible for curl to access Android's native SSL/TLS layer. To build curl
+for Android using OpenSSL, follow the OpenSSL build instructions and then
+install `libssl.a` and `libcrypto.a` to `$TOOLCHAIN/sysroot/usr/lib` and copy
+`include/openssl` to `$TOOLCHAIN/sysroot/usr/include`. Now you can build curl
+for Android using OpenSSL like this:
 
 ```bash
-LIBS="-lssl -lcrypto -lc++" # For OpenSSL/BoringSSL. In general, you'll need to the SSL/TLS layer's transtive dependencies if you're linking statically.
+LIBS="-lssl -lcrypto -lc++" # For OpenSSL/BoringSSL. In general, you need to the SSL/TLS layer's transitive dependencies if you are linking statically.
 ./configure --host aarch64-linux-android --with-pic --disable-shared --with-openssl="$TOOLCHAIN/sysroot/usr"
 ```
 
@@ -421,22 +393,22 @@ For IBM i (formerly OS/400), you can use curl in two different ways:
 
 - Natively, running in the **ILE**. The obvious use is being able to call curl
   from ILE C or RPG applications.
-  - You will need to build this from source. See `packages/OS400/README` for
-    the ILE specific build instructions.
-- In the **PASE** environment, which runs AIX programs. curl will be built as
-  it would be on AIX.
-  - IBM provides builds of curl in their Yum repository for PASE software.
-  - To build from source, follow the Unix instructions.
+- You need to build this from source. See `packages/OS400/README` for the ILE
+  specific build instructions.
+- In the **PASE** environment, which runs AIX programs. curl is built as it
+  would be on AIX.
+- IBM provides builds of curl in their Yum repository for PASE software.
+- To build from source, follow the Unix instructions.
 
 There are some additional limitations and quirks with curl on this platform;
 they affect both environments.
 
 ## Multi-threading notes
 
-By default, jobs in IBM i will not start with threading enabled. (Exceptions
+By default, jobs in IBM i does not start with threading enabled. (Exceptions
 include interactive PASE sessions started by `QP2TERM` or SSH.) If you use
 curl in an environment without threading when options like asynchronous DNS
-were enabled, you will get messages like:
+were enabled, you get messages like:
 
 ```
 getaddrinfo() thread failed to start
@@ -481,9 +453,9 @@ export NM=ppc_405-nm
 
 You may also need to provide a parameter like `--with-random=/dev/urandom` to
 configure as it cannot detect the presence of a random number generating
-device for a target system. The `--prefix` parameter specifies where curl
-will be installed. If `configure` completes successfully, do `make` and `make
-install` as usual.
+device for a target system. The `--prefix` parameter specifies where curl gets
+installed. If `configure` completes successfully, do `make` and `make install`
+as usual.
 
 In some cases, you may be able to simplify the above commands to as little as:
 
@@ -495,10 +467,16 @@ There are a number of configure options that can be used to reduce the size of
 libcurl for embedded applications where binary size is an important factor.
 First, be sure to set the `CFLAGS` variable when configuring with any relevant
 compiler optimization flags to reduce the size of the binary. For gcc, this
-would mean at minimum the -Os option, and potentially the `-march=X`,
-`-mdynamic-no-pic` and `-flto` options as well, e.g.
+would mean at minimum the `-Os` option, and others like the following that
+may be relevant in some environments: `-march=X`, `-mthumb`, `-m32`,
+`-mdynamic-no-pic`, `-flto`, `-fdata-sections`, `-ffunction-sections`,
+`-fno-unwind-tables`, `-fno-asynchronous-unwind-tables`,
+`-fno-record-gcc-switches`, `-fsection-anchors`, `-fno-plt`,
+`-Wl,--gc-sections`, `-Wl,-Bsymbolic`, `-Wl,-s`,
 
-    ./configure CFLAGS='-Os' LDFLAGS='-Wl,-Bsymbolic'...
+For example, this is how to combine a few of these options:
+
+    ./configure CC=gcc CFLAGS='-Os -ffunction-sections' LDFLAGS='-Wl,--gc-sections'...
 
 Note that newer compilers often produce smaller code than older versions
 due to improved optimization.
@@ -506,24 +484,33 @@ due to improved optimization.
 Be sure to specify as many `--disable-` and `--without-` flags on the
 configure command-line as you can to disable all the libcurl features that you
 know your application is not going to need. Besides specifying the
-`--disable-PROTOCOL` flags for all the types of URLs your application will not
+`--disable-PROTOCOL` flags for all the types of URLs your application do not
 use, here are some other flags that can reduce the size of the library by
-disabling support for some feature:
+disabling support for some feature (run `./configure --help` to see them all):
 
  - `--disable-alt-svc` (HTTP Alt-Svc)
  - `--disable-ares` (the C-ARES DNS library)
  - `--disable-cookies` (HTTP cookies)
- - `--disable-crypto-auth` (cryptographic authentication)
+ - `--disable-basic-auth` (cryptographic authentication)
+ - `--disable-bearer-auth` (cryptographic authentication)
+ - `--disable-digest-auth` (cryptographic authentication)
+ - `--disable-kerberos-auth` (cryptographic authentication)
+ - `--disable-negotiate-auth` (cryptographic authentication)
+ - `--disable-aws` (cryptographic authentication)
  - `--disable-dateparse` (date parsing for time conditionals)
  - `--disable-dnsshuffle` (internal server load spreading)
  - `--disable-doh` (DNS-over-HTTP)
+ - `--disable-form-api` (POST form API)
  - `--disable-get-easy-options` (lookup easy options at runtime)
+ - `--disable-headers-api` (API to access headers)
  - `--disable-hsts` (HTTP Strict Transport Security)
  - `--disable-http-auth` (all HTTP authentication)
  - `--disable-ipv6` (IPv6)
  - `--disable-libcurl-option` (--libcurl C code generation support)
- - `--disable-manual` (built-in documentation)
+ - `--disable-manual` (--manual built-in documentation)
+ - `--disable-mime` (MIME API)
  - `--disable-netrc`  (.netrc file)
+ - `--disable-ntlm` (NTLM authentication)
  - `--disable-ntlm-wb` (NTLM WinBind)
  - `--disable-progress-meter` (graphical progress meter in library)
  - `--disable-proxy` (HTTP and SOCKS proxies)
@@ -545,30 +532,21 @@ disabling support for some feature:
  - `--without-ssl` (SSL/TLS)
  - `--without-zlib` (on-the-fly decompression)
 
-The GNU compiler and linker have a number of options that can reduce the
-size of the libcurl dynamic libraries on some platforms even further.
-Specify them by providing appropriate `CFLAGS` and `LDFLAGS` variables on
-the configure command-line, e.g.
-
-    CFLAGS="-Os -ffunction-sections -fdata-sections
-            -fno-unwind-tables -fno-asynchronous-unwind-tables -flto"
-    LDFLAGS="-Wl,-s -Wl,-Bsymbolic -Wl,--gc-sections"
-
 Be sure also to strip debugging symbols from your binaries after compiling
-using 'strip' (or the appropriate variant if cross-compiling). If space is
-really tight, you may be able to remove some unneeded sections of the shared
-library using the -R option to objcopy (e.g. the .comment section).
+using 'strip' or an option like `-s`. If space is really tight, you may be able
+to gain a few bytes by removing some unneeded sections of the shared library
+using the -R option to objcopy (e.g. the .comment section).
 
 Using these techniques it is possible to create a basic HTTP-only libcurl
-shared library for i386 Linux platforms that is only 133 KiB in size
-(as of libcurl version 7.80.0, using gcc 11.2.0).
+shared library for i386 Linux platforms that is only 130 KiB in size
+(as of libcurl version 8.6.0, using gcc 13.2.0).
 
-You may find that statically linking libcurl to your application will result
-in a lower total size than dynamically linking.
+You may find that statically linking libcurl to your application results in a
+lower total size than dynamically linking.
 
-Note that the curl test harness can detect the use of some, but not all, of
-the `--disable` statements suggested above. Use will cause tests relying on
-those features to fail. The test harness can be manually forced to skip the
+The curl test harness can detect the use of some, but not all, of the
+`--disable` statements suggested above. Use of these can cause tests relying
+on those features to fail. The test harness can be manually forced to skip the
 relevant tests by specifying certain key words on the `runtests.pl` command
 line. Following is a list of appropriate key words for those configure options
 that are not automatically detected:
@@ -578,29 +556,29 @@ that are not automatically detected:
  - `--disable-libcurl-option`   !`--libcurl`
  - `--disable-verbose`          !verbose\ logs
 
-# PORTS
+# Ports
 
 This is a probably incomplete list of known CPU architectures and operating
 systems that curl has been compiled for. If you know a system curl compiles
 and runs on, that is not listed, please let us know!
 
-## 92 Operating Systems
+## 101 Operating Systems
 
-    AIX, AmigaOS, Android, Aros, BeOS, Blackberry 10, Blackberry Tablet OS,
-    Cell OS, Chrome OS, Cisco IOS, Cygwin, DG/UX, Dragonfly BSD, DR DOS, eCOS,
-    FreeBSD, FreeDOS, FreeRTOS, Fuchsia, Garmin OS, Genode, Haiku, HardenedBSD,
-    HP-UX, Hurd, Illumos, Integrity, iOS, ipadOS, IRIX, Linux, Lua RTOS,
-    Mac OS 9, macOS, Mbed, Micrium, MINIX, MorphOS, MPE/iX, MS-DOS, NCR MP-RAS,
-    NetBSD, Netware, Nintendo Switch, NonStop OS, NuttX, Omni OS, OpenBSD,
-    OpenStep, Orbis OS, OS/2, OS/400, OS21, Plan 9, PlayStation Portable, QNX,
-    Qubes OS, ReactOS, Redox, RICS OS, RTEMS, Sailfish OS, SCO Unix, Serenity,
-    SINIX-Z, Solaris, SunOS, Syllable OS, Symbian, Tizen, TPF, Tru64, tvOS,
-    ucLinux, Ultrix, UNICOS, UnixWare, VMS, vxWorks, watchOS, WebOS,
-    Wii system software, Windows, Windows CE, Xbox System, Xenix, Zephyr,
-    z/OS, z/TPF, z/VM, z/VSE
+    AIX, AmigaOS, Android, ArcoOS, Aros, Atari FreeMiNT, BeOS, Blackberry 10,
+    Blackberry Tablet OS, Cell OS, CheriBSD, Chrome OS, Cisco IOS, DG/UX,
+    Dragonfly BSD, DR DOS, eCOS, FreeBSD, FreeDOS, FreeRTOS, Fuchsia, Garmin OS,
+    Genode, Haiku, HardenedBSD, HP-UX, Hurd, Illumos, Integrity, iOS, ipadOS, IRIX,
+    Linux, Lua RTOS, Mac OS 9, macOS, Mbed, Meego, Micrium, MINIX, Moblin, MorphOS,
+    MPE/iX, MS-DOS, NCR MP-RAS, NetBSD, Netware, NextStep, Nintendo Switch,
+    NonStop OS, NuttX, OpenBSD, OpenStep, Orbis OS, OS/2, OS/400, OS21, Plan 9,
+    PlayStation Portable, QNX, Qubes OS, ReactOS, Redox, RICS OS, ROS, RTEMS,
+    Sailfish OS, SCO Unix, Serenity, SINIX-Z, SkyOS, Solaris, Sortix, SunOS,
+    Syllable OS, Symbian, Tizen, TPF, Tru64, tvOS, ucLinux, Ultrix, UNICOS,
+    UnixWare, VMS, vxWorks, watchOS, Wear OS, WebOS, Wii system software, Wii U,
+    Windows, Windows CE, Xbox System, Xenix, Zephyr, z/OS, z/TPF, z/VM, z/VSE
 
-## 26 CPU Architectures
+## 28 CPU Architectures
 
-    Alpha, ARC, ARM, AVR32, CompactRISC, Elbrus, ETRAX, HP-PA, Itanium,
+    Alpha, ARC, ARM, AVR32, C-SKY, CompactRISC, Elbrus, ETRAX, HP-PA, Itanium,
     LoongArch, m68k, m88k, MicroBlaze, MIPS, Nios, OpenRISC, POWER, PowerPC,
-    RISC-V, s390, SH4, SPARC, Tilera, VAX, x86, Xtensa
+    RISC-V, s390, SH4, SPARC, Tilera, VAX, x86, Xtensa, z/arch

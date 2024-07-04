@@ -24,8 +24,8 @@ with a `testcase` tag, which encompasses the remainder of the file.
 
 When a test is to be executed, the source file is first preprocessed and
 variables are substituted by their respective contents and the output
-version of the test file is stored as `log/testNUM`. That version is what will
-be read and used by the test servers.
+version of the test file is stored as `%LOGDIR/testNUM`. That version is what
+will be read and used by the test servers.
 
 ## Base64 Encoding
 
@@ -74,6 +74,17 @@ For example, to insert the word hello 100 times:
 
     %repeat[100 x hello]%
 
+## Include file
+
+This instruction allows a test case to include another file. It is helpful to
+remember that the ordinary variables are expanded before the include happens
+so `%LOGDIR` and the others can be used in the include line.
+
+The file name cannot contain `%` as that letter is used to end the name for
+the include instruction:
+
+    %include filename%
+
 ## Conditional lines
 
 Lines in the test file can be made to appear conditionally on a specific
@@ -101,8 +112,7 @@ like:
     Accept-Encoding: nothing
     %endif
 
-**Note** that there can be no nested conditions. You can only do one
-conditional at a time and you can only check for a single feature in it.
+Nested conditions are supported.
 
 # Variables
 
@@ -134,9 +144,10 @@ Available substitute variables include:
 - `%HTTPTLS6PORT` - IPv6 port number of the HTTP TLS server
 - `%HTTPTLSPORT` - Port number of the HTTP TLS server
 - `%HTTPUNIXPATH` - Path to the Unix socket of the HTTP server
-- `%SOCKSUNIXPATH` - Absolute Path to the Unix socket of the SOCKS server
+- `%SOCKSUNIXPATH` - Path to the Unix socket of the SOCKS server
 - `%IMAP6PORT` - IPv6 port number of the IMAP server
 - `%IMAPPORT` - Port number of the IMAP server
+- `%LOGDIR` - Log directory relative to %PWD
 - `%MQTTPORT` - Port number of the MQTT server
 - `%TELNETPORT` - Port number of the telnet server
 - `%NOLISTENPORT` - Port number where no service is listening
@@ -177,7 +188,7 @@ requests curl sends
 - **client** defines how the client should behave
 
 - **verify** defines how to verify that the data stored after a command has
-been run ended up correctly
+been run ended up correct
 
 Each main section has a number of available subsections that can be specified,
 that will be checked/used if specified.
@@ -190,10 +201,23 @@ tests. Try to use already used keywords. These keywords will be used for
 statistical/informational purposes and for choosing or skipping classes of
 tests. Keywords must begin with an alphabetic character, `-`, `[` or `{` and
 may actually consist of multiple words separated by spaces which are treated
-together as a single identifier.
+together as a single identifier. Most keywords are only there to provide a way
+for users to skip certain classes of tests, if desired, but a few are treated
+specially by the test harness or build system.
 
-When using curl built with Hyper, the keywords must include HTTP or HTTPS for
-'hyper mode' to kick in and make line ending checks work for tests.
+When using curl built with Hyper, the keywords must include `HTTP` or `HTTPS`
+for 'hyper mode' to kick in and make line ending checks work for tests.
+
+When running a unit test and the keywords include `unittest`, the `<tool>`
+section can be left empty to use the standard unit test tool name `unitN` where
+`N` is the test number.
+
+The `text-ci` make target automatically skips test with the `flaky` keyword.
+
+Tests that have strict timing dependencies have the `timing-dependent` keyword.
+These are intended to eventually be treated specially on CI builds which are
+often run on overloaded machines with unpredictable timing.
+
 ## `<reply>`
 
 ### `<data [nocheck="yes"] [sendzero="yes"] [base64="yes"] [hex="yes"] [nonewline="yes"] [crlf="yes"]>`
@@ -236,7 +260,7 @@ which test file to load the list content.
 
 ### `<dataNUM [crlf="yes"]>`
 
-Send back this contents instead of the <data> one. The `NUM` is set by:
+Send back this contents instead of the `<data>` one. The `NUM` is set by:
 
  - The test number in the request line is >10000 and this is the remainder
    of [test case number]%10000.
@@ -326,6 +350,7 @@ about to issue.
 
 - `auth_required` if this is set and a POST/PUT is made without auth, the
   server will NOT wait for the full request body to get sent
+- `delay: [msecs]` - delay this amount after connection
 - `idle` - do nothing after receiving the request, just "sit idle"
 - `stream` - continuously send data to the client, never-ending
 - `writedelay: [msecs]` delay this amount between reply packets
@@ -400,7 +425,9 @@ Features testable here are:
 
 - `alt-svc`
 - `bearssl`
+- `brotli`
 - `c-ares`
+- `CharConv`
 - `cookies`
 - `crypto`
 - `debug`
@@ -409,14 +436,18 @@ Features testable here are:
 - `GnuTLS`
 - `GSS-API`
 - `h2c`
+- `headers-api`
 - `HSTS`
 - `HTTP-auth`
 - `http/2`
+- `http/3`
+- `https-proxy`
 - `hyper`
 - `idn`
 - `ipv6`
 - `Kerberos`
 - `large_file`
+- `large-time` (time_t is larger than 32 bit)
 - `ld_preload`
 - `libssh2`
 - `libssh`
@@ -426,8 +457,10 @@ Features testable here are:
 - `mbedtls`
 - `Mime`
 - `netrc`
-- `NSS`
+- `nghttpx`
+- `nghttpx-h3`
 - `NTLM`
+- `NTLM_WB`
 - `OpenSSL`
 - `parsedate`
 - `proxy`
@@ -445,6 +478,7 @@ Features testable here are:
 - `TLS-SRP`
 - `TrackMemory`
 - `typecheck`
+- `threadsafe`
 - `Unicode`
 - `unittest`
 - `unix-sockets`
@@ -454,6 +488,7 @@ Features testable here are:
 - `wolfssh`
 - `wolfssl`
 - `xattr`
+- `zstd`
 
 as well as each protocol that curl supports. A protocol only needs to be
 specified if it is different from the server (useful when the server is
@@ -487,11 +522,16 @@ Brief test case description, shown when the test runs.
 ### `<setenv>`
     variable1=contents1
     variable2=contents2
+    variable3
 
 Set the given environment variables to the specified value before the actual
-command is run. They are cleared again after the command has been run.
+command is run. They are restored back to their former values again after the
+command has been run.
 
-### `<command [option="no-output/no-include/force-output/binary-trace"] [timeout="secs"][delay="secs"][type="perl/shell"]>`
+If the variable name has no assignment, no `=`, then that variable is just
+deleted.
+
+### `<command [option="no-q/no-output/no-include/force-output/binary-trace"] [timeout="secs"][delay="secs"][type="perl/shell"]>`
 Command line to run.
 
 Note that the URL that gets passed to the server actually controls what data
@@ -522,6 +562,9 @@ otherwise written to verify stdout.
 Set `option="no-include"` to prevent the test script to slap on the
 `--include` argument.
 
+Set `option="no-q"` avoid using `-q` as the first argument in the curl command
+line.
+
 Set `option="binary-trace"` to use `--trace` instead of `--trace-ascii` for
 tracing. Suitable for binary-oriented protocols such as MQTT.
 
@@ -539,7 +582,7 @@ parameter is the not negative integer number of seconds for the delay. This
 'delay' attribute is intended for specific test cases, and normally not
 needed.
 
-### `<file name="log/filename" [nonewline="yes"]>`
+### `<file name="%LOGDIR/filename" [nonewline="yes"]>`
 This creates the named file with this content before the test case is run,
 which is useful if the test case needs a file to act on.
 
@@ -593,7 +636,7 @@ have a text/binary difference.
 If `nonewline` is set, we will cut off the trailing newline of this given data
 before comparing with the one actually received by the client
 
-### `<stdout [mode="text"] [nonewline="yes"] [crlf="yes"]>`
+### `<stdout [mode="text"] [nonewline="yes"] [crlf="yes"] [loadfile="filename"]>`
 This verifies that this data was passed to stdout.
 
 Use the mode="text" attribute if the output is in text mode on platforms that
@@ -605,7 +648,9 @@ before comparing with the one actually received by the client
 `crlf=yes` forces the newlines to become CRLF even if not written so in the
 test.
 
-### `<file name="log/filename" [mode="text"]>`
+`loadfile="filename"` makes loading the data from an external file.
+
+### `<file name="%LOGDIR/filename" [mode="text"]>`
 The file's contents must be identical to this after the test is complete. Use
 the mode="text" attribute if the output is in text mode on platforms that have
 a text/binary difference.
@@ -625,7 +670,7 @@ compared with what is stored in the test file. This is pretty
 advanced. Example: "s/^EPRT .*/EPRT stripped/"
 
 ### `<stripfile1>`
-1 to 4 can be appended to `stripfile` to strip the corresponding <fileN>
+1 to 4 can be appended to `stripfile` to strip the corresponding `<fileN>`
 content
 
 ### `<stripfile2>`

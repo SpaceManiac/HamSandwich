@@ -95,6 +95,7 @@ CURLcode add_file_name_to_url(CURL *curl, char **inurlp, const char *filename)
   CURLUcode uerr;
   CURLU *uh = curl_url();
   char *path = NULL;
+  char *query = NULL;
   if(uh) {
     char *ptr;
     uerr = curl_url_set(uh, CURLUPART_URL, *inurlp,
@@ -108,7 +109,13 @@ CURLcode add_file_name_to_url(CURL *curl, char **inurlp, const char *filename)
       result = urlerr_cvt(uerr);
       goto fail;
     }
-
+    uerr = curl_url_get(uh, CURLUPART_QUERY, &query, 0);
+    if(!uerr && query) {
+      curl_free(query);
+      curl_free(path);
+      curl_url_cleanup(uh);
+      return CURLE_OK;
+    }
     ptr = strrchr(path, '/');
     if(!ptr || !*++ptr) {
       /* The URL path has no file name part, add the local file name. In order
@@ -163,7 +170,7 @@ CURLcode add_file_name_to_url(CURL *curl, char **inurlp, const char *filename)
       /* nothing to do */
       result = CURLE_OK;
   }
-  fail:
+fail:
   curl_url_cleanup(uh);
   curl_free(path);
   return result;
@@ -208,7 +215,7 @@ CURLcode get_url_file_name(char **filename, const char *url)
       if(!*filename)
         return CURLE_OUT_OF_MEMORY;
 
-#if defined(MSDOS) || defined(WIN32)
+#if defined(_WIN32) || defined(MSDOS)
       {
         char *sanitized;
         SANITIZEcode sc = sanitize_file_name(&sanitized, *filename, 0);
@@ -220,7 +227,7 @@ CURLcode get_url_file_name(char **filename, const char *url)
         }
         *filename = sanitized;
       }
-#endif /* MSDOS || WIN32 */
+#endif /* _WIN32 || MSDOS */
 
       /* in case we built debug enabled, we allow an environment variable
        * named CURL_TESTDIR to prefix the given file name to put it into a
@@ -228,7 +235,7 @@ CURLcode get_url_file_name(char **filename, const char *url)
        */
 #ifdef DEBUGBUILD
       {
-        char *tdir = curlx_getenv("CURL_TESTDIR");
+        char *tdir = curl_getenv("CURL_TESTDIR");
         if(tdir) {
           char *alt = aprintf("%s/%s", tdir, *filename);
           Curl_safefree(*filename);

@@ -24,8 +24,8 @@
 #include "test.h"
 #include "memdebug.h"
 
-static const char *HOSTHEADER = "Host: www.host.foo.com";
-static const char *JAR = "log/jar506";
+static const char * const HOSTHEADER = "Host: www.host.foo.com";
+#define JAR libtest_arg2
 #define THREADS 2
 
 /* struct containing data of a thread */
@@ -172,9 +172,9 @@ static char *suburl(const char *base, int i)
 
 
 /* test function */
-int test(char *URL)
+CURLcode test(char *URL)
 {
-  int res;
+  CURLcode res;
   CURLSHcode scode = CURLSHE_OK;
   CURLcode code = CURLE_OK;
   char *url = NULL;
@@ -261,7 +261,7 @@ int test(char *URL)
   curl_easy_cleanup(curl);
 
 
-  res = 0;
+  res = CURLE_OK;
 
   /* start treads */
   for(i = 1; i <= THREADS; i++) {
@@ -278,7 +278,7 @@ int test(char *URL)
   }
 
 
-  /* fetch a another one and save cookies */
+  /* fetch another one and save cookies */
   printf("*** run %d\n", i);
   curl = curl_easy_init();
   if(!curl) {

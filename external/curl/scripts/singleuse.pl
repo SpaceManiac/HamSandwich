@@ -28,40 +28,27 @@
 #
 # Use it like this:
 #
-# $ ./scripts/singleuse.pl lib/.libs/libcurl.a
+# $ ./scripts/singleuse.pl [--unit] lib/.libs/libcurl.a
 #
-# Be aware that it might cause false positives due to various build options.
+# --unit : built to support unit tests
 #
+
+my $unittests;
+if($ARGV[0] eq "--unit") {
+    $unittests = "tests/unit ";
+    shift @ARGV;
+}
 
 my $file = $ARGV[0];
 
 my %wl = (
-    'Curl_none_cert_status_request' => 'multiple TLS backends',
-    'Curl_none_check_cxn' => 'multiple TLS backends',
-    'Curl_none_cleanup' => 'multiple TLS backends',
-    'Curl_none_close_all' => 'multiple TLS backends',
-    'Curl_none_data_pending' => 'multiple TLS backends',
-    'Curl_none_engines_list' => 'multiple TLS backends',
-    'Curl_none_init' => 'multiple TLS backends',
-    'Curl_none_md5sum' => 'multiple TLS backends',
-    'Curl_none_random' => 'multiple TLS backends',
-    'Curl_none_session_free' => 'multiple TLS backends',
-    'Curl_none_set_engine' => 'multiple TLS backends',
-    'Curl_none_set_engine_default' => 'multiple TLS backends',
-    'Curl_none_shutdown' => 'multiple TLS backends',
-    'Curl_multi_dump' => 'debug build only',
-    'Curl_parse_port' => 'UNITTEST',
-    'Curl_shuffle_addr' => 'UNITTEST',
-    'de_cleanup' => 'UNITTEST',
-    'doh_decode' => 'UNITTEST',
-    'doh_encode' => 'UNITTEST',
-    'Curl_auth_digest_get_pair' => 'by digest_sspi',
     'curlx_uztoso' => 'cmdline tool use',
-    'curlx_uztoul' => 'by krb5_sspi',
-    'curlx_uitous' => 'by schannel',
-    'Curl_islower' => 'by curl_fnmatch',
-    'getaddressinfo' => 'UNITTEST',
-    );
+    'Curl_xfer_write_resp' => 'internal api',
+    'Curl_creader_def_init' => 'internal api',
+    'Curl_creader_def_close' => 'internal api',
+    'Curl_creader_def_read' => 'internal api',
+    'Curl_creader_def_total_length' => 'internal api',
+);
 
 my %api = (
     'curl_easy_cleanup' => 'API',
@@ -92,6 +79,7 @@ my %api = (
     'curl_global_init' => 'API',
     'curl_global_init_mem' => 'API',
     'curl_global_sslset' => 'API',
+    'curl_global_trace' => 'API',
     'curl_maprintf' => 'API',
     'curl_mfprintf' => 'API',
     'curl_mime_addpart' => 'API',
@@ -113,6 +101,7 @@ my %api = (
     'curl_multi_assign' => 'API',
     'curl_multi_cleanup' => 'API',
     'curl_multi_fdset' => 'API',
+    'curl_multi_get_handles' => 'API',
     'curl_multi_info_read' => 'API',
     'curl_multi_init' => 'API',
     'curl_multi_perform' => 'API',
@@ -125,6 +114,7 @@ my %api = (
     'curl_multi_strerror' => 'API',
     'curl_multi_timeout' => 'API',
     'curl_multi_wait' => 'API',
+    'curl_multi_waitfds' => 'API',
     'curl_multi_wakeup' => 'API',
     'curl_mvaprintf' => 'API',
     'curl_mvfprintf' => 'API',
@@ -150,10 +140,32 @@ my %api = (
     'curl_url_strerror' => 'API',
     'curl_version' => 'API',
     'curl_version_info' => 'API',
+    'curl_easy_header' => 'API',
+    'curl_easy_nextheader' => 'API',
+    'curl_ws_meta' => 'API',
+    'curl_ws_recv' => 'API',
+    'curl_ws_send' => 'API',
 
     # the following functions are provided globally in debug builds
     'curl_easy_perform_ev' => 'debug-build',
     );
+
+sub doublecheck {
+    my ($f, $used) = @_;
+    open(F, "git grep -le '$f\\W' -- lib ${unittests}packages|");
+    my @also;
+    while(<F>) {
+        my $e = $_;
+        chomp $e;
+        if($e =~ /\.[c]$/) {
+            if($e !~ /^lib\/${used}\.c/) {
+                push @also, $e;
+            }
+        }
+    }
+    close(F);
+    return @also;
+}
 
 open(N, "nm $file|") ||
     die;
@@ -201,8 +213,15 @@ for(sort keys %exist) {
             #print "$_ is WL\n";
         }
         else {
-            printf "%s is defined in %s, but not used outside\n", $_, $exist{$_};
-            $err++;
+            my $c = $_;
+            my @also = doublecheck($c, $exist{$c});
+            if(!scalar(@also)) {
+                printf "%s in %s\n", $c, $exist{$c};
+                $err++;
+            }
+            #    foreach my $a (@also) {
+            #        print "  $a\n";
+            #    }
         }
     }
     elsif($_ =~ /^curl_/) {

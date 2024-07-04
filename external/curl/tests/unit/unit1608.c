@@ -25,6 +25,8 @@
 
 #include "hostip.h"
 
+#ifndef CURL_DISABLE_SHUFFLE_DNS
+
 CURLcode Curl_shuffle_addr(struct Curl_easy *data,
                            struct Curl_addrinfo **addr);
 
@@ -47,7 +49,7 @@ static void unit_stop(void)
 }
 
 UNITTEST_START
-{
+
   int i;
   CURLcode code;
   struct Curl_addrinfo *addrhead = addrs;
@@ -71,6 +73,17 @@ UNITTEST_START
 
   abort_unless(addrhead != addrs, "addresses are not being reordered");
 
-  return 0;
-}
 UNITTEST_STOP
+
+#else
+static CURLcode unit_setup(void)
+{
+  return CURLE_OK;
+}
+static void unit_stop(void)
+{
+}
+UNITTEST_START
+UNITTEST_STOP
+
+#endif

@@ -38,7 +38,7 @@
    3.2. set pEngine to the name of the crypto engine you use
    3.3. set pKeyName to the key identifier you want to use
    4.   if you do not use a crypto engine:
-   4.1. set pKeyName to the file name of your client key
+   4.1. set pKeyName to the filename of your client key
    4.2. if the format of the key file is DER, set pKeyType to "DER"
 
    !! verify of the server certificate is not implemented here !!
@@ -94,7 +94,7 @@ int main(void)
         if(curl_easy_setopt(curl, CURLOPT_SSLENGINE_DEFAULT, 1L) != CURLE_OK) {
           /* set the crypto engine as default */
           /* only needed for the first time you load
-             a engine in a curl object... */
+             an engine in a curl object... */
           fprintf(stderr, "cannot set crypto engine as default\n");
           break;
         }
@@ -118,13 +118,13 @@ int main(void)
       /* set the private key (file or ID in engine) */
       curl_easy_setopt(curl, CURLOPT_SSLKEY, pKeyName);
 
-      /* set the file with the certs vaildating the server */
+      /* set the file with the certs validating the server */
       curl_easy_setopt(curl, CURLOPT_CAINFO, pCACertFile);
 
       /* disconnect if we cannot validate server's cert */
       curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
 
-      /* Perform the request, res will get the return code */
+      /* Perform the request, res gets the return code */
       res = curl_easy_perform(curl);
       /* Check for errors */
       if(res != CURLE_OK)
