@@ -34,9 +34,9 @@
 
 #define NUM_HANDLES 2
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
-  int res = 0;
+  CURLcode res = CURLE_OK;
   CURL *curl[NUM_HANDLES] = {NULL, NULL};
   char *port = libtest_arg3;
   char *address = libtest_arg2;
@@ -80,8 +80,11 @@ int test(char *URL)
   easy_setopt(curl[0], CURLOPT_RESOLVE, slist);
 
   /* run NUM_HANDLES transfers */
-  for(i = 0; (i < NUM_HANDLES) && !res; i++)
+  for(i = 0; (i < NUM_HANDLES) && !res; i++) {
     res = curl_easy_perform(curl[i]);
+    if(res)
+      goto test_cleanup;
+  }
 
 test_cleanup:
 

@@ -41,9 +41,9 @@ static char *suburl(const char *base, int i)
 /*
  * Test GET_PARAMETER: PUT, HEARTBEAT, and POST
  */
-int test(char *URL)
+CURLcode test(char *URL)
 {
-  int res;
+  CURLcode res;
   CURL *curl;
   int params;
   FILE *paramsf = NULL;
@@ -78,7 +78,7 @@ int test(char *URL)
     goto test_cleanup;
   }
   test_setopt(curl, CURLOPT_RTSP_STREAM_URI, stream_uri);
-  free(stream_uri);
+  curl_free(stream_uri);
   stream_uri = NULL;
 
   test_setopt(curl, CURLOPT_RTSP_TRANSPORT, "Planes/Trains/Automobiles");
@@ -93,17 +93,17 @@ int test(char *URL)
     goto test_cleanup;
   }
   test_setopt(curl, CURLOPT_RTSP_STREAM_URI, stream_uri);
-  free(stream_uri);
+  curl_free(stream_uri);
   stream_uri = NULL;
 
   /* PUT style GET_PARAMETERS */
-  params = open("log/file572.txt", O_RDONLY);
+  params = open(libtest_arg2, O_RDONLY);
   fstat(params, &file_info);
   close(params);
 
-  paramsf = fopen("log/file572.txt", "rb");
+  paramsf = fopen(libtest_arg2, "rb");
   if(!paramsf) {
-    fprintf(stderr, "can't open log/file572.txt\n");
+    fprintf(stderr, "can't open %s\n", libtest_arg2);
     res = TEST_ERR_MAJOR_BAD;
     goto test_cleanup;
   }
@@ -128,7 +128,7 @@ int test(char *URL)
     goto test_cleanup;
   }
   test_setopt(curl, CURLOPT_RTSP_STREAM_URI, stream_uri);
-  free(stream_uri);
+  curl_free(stream_uri);
   stream_uri = NULL;
 
   res = curl_easy_perform(curl);
@@ -143,7 +143,7 @@ int test(char *URL)
     goto test_cleanup;
   }
   test_setopt(curl, CURLOPT_RTSP_STREAM_URI, stream_uri);
-  free(stream_uri);
+  curl_free(stream_uri);
   stream_uri = NULL;
 
   test_setopt(curl, CURLOPT_RTSP_REQUEST, CURL_RTSPREQ_GET_PARAMETER);
@@ -162,7 +162,7 @@ int test(char *URL)
     goto test_cleanup;
   }
   test_setopt(curl, CURLOPT_RTSP_STREAM_URI, stream_uri);
-  free(stream_uri);
+  curl_free(stream_uri);
   stream_uri = NULL;
 
   test_setopt(curl, CURLOPT_RTSP_REQUEST, CURL_RTSPREQ_OPTIONS);
@@ -173,7 +173,7 @@ test_cleanup:
   if(paramsf)
     fclose(paramsf);
 
-  free(stream_uri);
+  curl_free(stream_uri);
 
   if(custom_headers)
     curl_slist_free_all(custom_headers);

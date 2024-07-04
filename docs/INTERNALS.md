@@ -1,3 +1,9 @@
+<!--
+Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
+
+SPDX-License-Identifier: curl
+-->
+
 # curl internals
 
 The canonical libcurl internals documentation is now in the [everything
@@ -6,7 +12,7 @@ versions of libs and build tools.
 
 ## Portability
 
- We write curl and libcurl to compile with C89 compilers. On 32-bit and up
+ We write curl and libcurl to compile with C89 compilers on 32-bit and up
  machines. Most of libcurl assumes more or less POSIX compliance but that is
  not a requirement.
 
@@ -27,10 +33,8 @@ versions of libs and build tools.
  - wolfSSL      2.0.0
  - OpenLDAP     2.0
  - MIT Kerberos 1.2.4
- - GSKit        V5R3M0
- - NSS          3.14.x
  - Heimdal      ?
- - nghttp2      1.12.0
+ - nghttp2      1.15.0
  - WinSock      2.2 (on Windows 95+ and Windows CE .NET 4.1+)
 
 ## Build tools
@@ -43,9 +47,8 @@ versions of libs and build tools.
  - GNU Autoconf 2.59
  - GNU Automake 1.7
  - GNU M4       1.4
- - perl         5.004
+ - perl         5.6
  - roffit       0.5
- - nroff        any version that supports `-man [in] [out]`
  - cmake        3.7
 
 Library Symbols

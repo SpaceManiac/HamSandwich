@@ -31,11 +31,7 @@
 
 #include "memdebug.h" /* keep this as LAST include */
 
-#if defined(WIN32) && !defined(MSDOS)
-
-/* set in win32_init() */
-extern LARGE_INTEGER tool_freq;
-extern bool tool_isVistaOrGreater;
+#if defined(_WIN32)
 
 /* In case of bug fix this function has a counterpart in timeval.c */
 struct timeval tvnow(void)
@@ -163,3 +159,32 @@ int struplocompare4sort(const void *p1, const void *p2)
 {
   return struplocompare(* (char * const *) p1, * (char * const *) p2);
 }
+
+#ifdef USE_TOOL_FTRUNCATE
+
+#ifdef _WIN32_WCE
+/* 64-bit lseek-like function unavailable */
+#  undef _lseeki64
+#  define _lseeki64(hnd,ofs,whence) lseek(hnd,ofs,whence)
+#  undef _get_osfhandle
+#  define _get_osfhandle(fd) (fd)
+#endif
+
+/*
+ * Truncate a file handle at a 64-bit position 'where'.
+ */
+
+int tool_ftruncate64(int fd, curl_off_t where)
+{
+  intptr_t handle = _get_osfhandle(fd);
+
+  if(_lseeki64(fd, where, SEEK_SET) < 0)
+    return -1;
+
+  if(!SetEndOfFile((HANDLE)handle))
+    return -1;
+
+  return 0;
+}
+
+#endif /* USE_TOOL_FTRUNCATE */

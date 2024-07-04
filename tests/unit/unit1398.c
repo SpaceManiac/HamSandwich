@@ -21,6 +21,8 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
+#define CURL_NO_FMT_CHECKS
+
 #include "curlcheck.h"
 
 #include "curl/mprintf.h"
@@ -90,7 +92,7 @@ fail_unless(rc == 15, "return code should be 15");
 fail_unless(!strcmp(output, "    1234    567"), "wrong output");
 
 /* double precision */
-rc = curl_msnprintf(output, 24, "%.*1$.99d", 3, 5678);
+rc = curl_msnprintf(output, 24, "%2$.*1$.99d", 3, 5678);
 fail_unless(rc == 0, "return code should be 0");
 
 UNITTEST_STOP

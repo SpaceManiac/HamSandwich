@@ -25,7 +25,7 @@
  ***************************************************************************/
 #include "curl_setup.h"
 
-#if defined(HAVE_SIGNAL_H) && defined(HAVE_SIGACTION) &&        \
+#if defined(HAVE_SIGACTION) &&        \
   (defined(USE_OPENSSL) || defined(USE_MBEDTLS) || defined(USE_WOLFSSL))
 #include <signal.h>
 
@@ -50,7 +50,6 @@ static void sigpipe_ignore(struct Curl_easy *data,
   if(!data->set.no_signal) {
     struct sigaction action;
     /* first, extract the existing situation */
-    memset(&ig->old_pipe_act, 0, sizeof(struct sigaction));
     sigaction(SIGPIPE, NULL, &ig->old_pipe_act);
     action = ig->old_pipe_act;
     /* ignore this signal */

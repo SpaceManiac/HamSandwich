@@ -27,6 +27,8 @@
  * curl_m*printf formatting capabilities and handling of some data types.
  */
 
+#define CURL_NO_FMT_CHECKS /* disable compiler *printf format checks */
+
 #include "test.h"
 
 #include <limits.h>
@@ -1008,118 +1010,6 @@ static int test_curl_off_t_formatting(void)
   int num_cofft_tests = 0;
   int failed = 0;
 
-#if (SIZEOF_CURL_OFF_T == 2)
-
-  i = 1; co_test[i].num = MPRNT_OFF_T_C(0x7FFF); co_test[i].expected = "32767";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x7FFE); co_test[i].expected = "32766";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x7FFD); co_test[i].expected = "32765";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x7F00); co_test[i].expected = "32512";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x07F0); co_test[i].expected = "2032";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x007F); co_test[i].expected = "127";
-
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x7000); co_test[i].expected = "28672";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x0700); co_test[i].expected = "1792";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x0070); co_test[i].expected = "112";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x0007); co_test[i].expected = "7";
-
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x5000); co_test[i].expected = "20480";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x0500); co_test[i].expected = "1280";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x0050); co_test[i].expected = "80";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x0005); co_test[i].expected = "5";
-
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x0001); co_test[i].expected = "1";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x0000); co_test[i].expected = "0";
-
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x7FFF) -MPRNT_OFF_T_C(1); co_test[i].expected = "-32768";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x7FFE) -MPRNT_OFF_T_C(1); co_test[i].expected = "-32767";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x7FFD) -MPRNT_OFF_T_C(1); co_test[i].expected = "-32766";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x7F00) -MPRNT_OFF_T_C(1); co_test[i].expected = "-32513";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x07F0) -MPRNT_OFF_T_C(1); co_test[i].expected = "-2033";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x007F) -MPRNT_OFF_T_C(1); co_test[i].expected = "-128";
-
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x7000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-28673";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x0700) -MPRNT_OFF_T_C(1); co_test[i].expected = "-1793";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x0070) -MPRNT_OFF_T_C(1); co_test[i].expected = "-113";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x0007) -MPRNT_OFF_T_C(1); co_test[i].expected = "-8";
-
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x5000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-20481";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x0500) -MPRNT_OFF_T_C(1); co_test[i].expected = "-1281";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x0050) -MPRNT_OFF_T_C(1); co_test[i].expected = "-81";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x0005) -MPRNT_OFF_T_C(1); co_test[i].expected = "-6";
-
-  i++; co_test[i].num =  MPRNT_OFF_T_C(0x0000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-1";
-
-  num_cofft_tests = i;
-
-#elif (SIZEOF_CURL_OFF_T == 4)
-
-  i = 1; co_test[i].num = MPRNT_OFF_T_C(0x7FFFFFFF); co_test[i].expected = "2147483647";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x7FFFFFFE); co_test[i].expected = "2147483646";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x7FFFFFFD); co_test[i].expected = "2147483645";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x7FFF0000); co_test[i].expected = "2147418112";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x00007FFF); co_test[i].expected = "32767";
-
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x7F000000); co_test[i].expected = "2130706432";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x007F0000); co_test[i].expected = "8323072";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x00007F00); co_test[i].expected = "32512";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x0000007F); co_test[i].expected = "127";
-
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x70000000); co_test[i].expected = "1879048192";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x07000000); co_test[i].expected = "117440512";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x00700000); co_test[i].expected = "7340032";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x00070000); co_test[i].expected = "458752";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x00007000); co_test[i].expected = "28672";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x00000700); co_test[i].expected = "1792";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x00000070); co_test[i].expected = "112";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x00000007); co_test[i].expected = "7";
-
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x50000000); co_test[i].expected = "1342177280";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x05000000); co_test[i].expected = "83886080";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x00500000); co_test[i].expected = "5242880";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x00050000); co_test[i].expected = "327680";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x00005000); co_test[i].expected = "20480";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x00000500); co_test[i].expected = "1280";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x00000050); co_test[i].expected = "80";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x00000005); co_test[i].expected = "5";
-
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x00000001); co_test[i].expected = "1";
-  i++; co_test[i].num = MPRNT_OFF_T_C(0x00000000); co_test[i].expected = "0";
-
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x7FFFFFFF) -MPRNT_OFF_T_C(1); co_test[i].expected = "-2147483648";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x7FFFFFFE) -MPRNT_OFF_T_C(1); co_test[i].expected = "-2147483647";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x7FFFFFFD) -MPRNT_OFF_T_C(1); co_test[i].expected = "-2147483646";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x7FFF0000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-2147418113";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x00007FFF) -MPRNT_OFF_T_C(1); co_test[i].expected = "-32768";
-
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x7F000000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-2130706433";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x007F0000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-8323073";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x00007F00) -MPRNT_OFF_T_C(1); co_test[i].expected = "-32513";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x0000007F) -MPRNT_OFF_T_C(1); co_test[i].expected = "-128";
-
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x70000000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-1879048193";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x07000000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-117440513";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x00700000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-7340033";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x00070000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-458753";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x00007000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-28673";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x00000700) -MPRNT_OFF_T_C(1); co_test[i].expected = "-1793";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x00000070) -MPRNT_OFF_T_C(1); co_test[i].expected = "-113";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x00000007) -MPRNT_OFF_T_C(1); co_test[i].expected = "-8";
-
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x50000000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-1342177281";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x05000000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-83886081";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x00500000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-5242881";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x00050000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-327681";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x00005000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-20481";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x00000500) -MPRNT_OFF_T_C(1); co_test[i].expected = "-1281";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x00000050) -MPRNT_OFF_T_C(1); co_test[i].expected = "-81";
-  i++; co_test[i].num = -MPRNT_OFF_T_C(0x00000005) -MPRNT_OFF_T_C(1); co_test[i].expected = "-6";
-
-  i++; co_test[i].num =  MPRNT_OFF_T_C(0x00000000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-1";
-
-  num_cofft_tests = i;
-
-#elif (SIZEOF_CURL_OFF_T == 8)
-
   i = 1; co_test[i].num = MPRNT_OFF_T_C(0x7FFFFFFFFFFFFFFF); co_test[i].expected = "9223372036854775807";
   i++; co_test[i].num = MPRNT_OFF_T_C(0x7FFFFFFFFFFFFFFE); co_test[i].expected = "9223372036854775806";
   i++; co_test[i].num = MPRNT_OFF_T_C(0x7FFFFFFFFFFFFFFD); co_test[i].expected = "9223372036854775805";
@@ -1200,8 +1090,6 @@ static int test_curl_off_t_formatting(void)
   i++; co_test[i].num =  MPRNT_OFF_T_C(0x0000000000000000) -MPRNT_OFF_T_C(1); co_test[i].expected = "-1";
 
   num_cofft_tests = i;
-
-#endif
 
   for(i = 1; i <= num_cofft_tests; i++) {
 
@@ -1293,11 +1181,48 @@ static int test_string_formatting(void)
   return errors;
 }
 
+static int test_pos_arguments(void)
+{
+  int errors = 0;
+  char buf[256];
+
+  curl_msnprintf(buf, sizeof(buf), "%3$d %2$d %1$d", 500, 501, 502);
+  errors += string_check(buf, "502 501 500");
+
+  curl_msnprintf(buf, sizeof(buf), "%3$d %1$d %2$d", 500, 501, 502);
+  errors += string_check(buf, "502 500 501");
+
+  /* this is in invalid sequence but the output does not match
+     what glibc does */
+  curl_msnprintf(buf, sizeof(buf), "%3$d %d %2$d", 500, 501, 502);
+  errors += string_check(buf, "");
+
+  return errors;
+}
+
 static int test_weird_arguments(void)
 {
   int errors = 0;
   char buf[256];
   int rc;
+
+  /* verify %% */
+  rc = curl_msnprintf(buf, sizeof(buf), "%-20d%% right? %%", 500);
+  errors += string_check(buf, "500                 % right? %");
+
+  /* 100 x % */
+  rc = curl_msnprintf(buf, sizeof(buf), "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+                      "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+                      "%%%%%%%%%%%%%%%%%%%%%%");
+  /* 50 x % */
+  errors += string_check(buf, "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+                         "%%%%%%%%%%%%%%%");
+
+  rc = curl_msnprintf(buf, sizeof(buf), "%2 AA %d %K", 500, 501, 502);
+  errors += string_check(buf, "%2 AA 500 %K");
+
+  rc = curl_msnprintf(buf, sizeof(buf), "%2 %d %K", 500, 501, 502);
+  errors += string_check(buf, "%2 500 %K");
 
   /* MAX_PARAMETERS is 128, try exact 128! */
   rc = curl_msnprintf(buf, sizeof(buf),
@@ -1388,18 +1313,6 @@ static int test_weird_arguments(void)
 
   errors += string_check(buf, "");
 
-  /* Do not skip sanity checks with parameters! */
-  buf[0] = 0;
-  rc = curl_msnprintf(buf, sizeof(buf), "%d, %.*1$d", 500, 1);
-
-  if(rc != sizeof(buf) - 1) {
-    printf("curl_mprintf() returned %d and not %d!\n", rc,
-           sizeof(buf) - 1);
-    errors++;
-  }
-
-  errors += strlen_check(buf, 255);
-
   if(errors)
     printf("Some curl_mprintf() weird arguments tests failed!\n");
 
@@ -1486,9 +1399,10 @@ static int test_float_formatting(void)
                  123456789123456789123456789.2987654);
   errors += strlen_check(buf, 325);
 
-  /* check negative when used signed */
+  /* check negative width argument when used signed, is treated as positive
+     and maxes out the internal float width == 325 */
   curl_msnprintf(buf, sizeof(buf), "%*f", INT_MIN, 9.1);
-  errors += string_check(buf, "9.100000");
+  errors += string_check(buf, "9.100000                                                                                                                                                                                                                                                                                                                             ");
 
   /* curl_msnprintf() limits a single float output to 325 bytes maximum
      width */
@@ -1550,7 +1464,8 @@ static int test_return_codes(void)
 
   return 0;
 }
-int test(char *URL)
+
+CURLcode test(char *URL)
 {
   int errors = 0;
   (void)URL; /* not used */
@@ -1562,6 +1477,8 @@ int test(char *URL)
    */
   setlocale(LC_NUMERIC, "C");
 #endif
+
+  errors += test_pos_arguments();
 
   errors += test_weird_arguments();
 
@@ -1588,5 +1505,5 @@ int test(char *URL)
   if(errors)
     return TEST_ERR_MAJOR_BAD;
   else
-    return 0;
+    return CURLE_OK;
 }

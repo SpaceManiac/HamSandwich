@@ -53,7 +53,7 @@ static size_t read_callback(char *ptr, size_t size, size_t nmemb, void *userp)
   return tocopy;
 }
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURL *curl;
   CURLcode res = CURLE_OK;
@@ -61,12 +61,12 @@ int test(char *URL)
   struct WriteThis pooh;
 
   if(!strcmp(URL, "check")) {
-#if (defined(WIN32) || defined(__CYGWIN__)) && \
-    !defined(USE_RECV_BEFORE_SEND_WORKAROUND)
-    printf("test requires recv-before-send workaround on Windows\n");
-    return 1; /* skip since test will fail on Windows without workaround */
+#if (defined(_WIN32) || defined(__CYGWIN__))
+    printf("Windows TCP does not deliver response data but reports "
+           "CONNABORTED\n");
+    return (CURLcode)1; /* skip since it fails on Windows without workaround */
 #else
-    return 0; /* sure, run this! */
+    return CURLE_OK; /* sure, run this! */
 #endif
   }
 

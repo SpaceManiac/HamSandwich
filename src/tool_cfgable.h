@@ -26,7 +26,7 @@
 #include "tool_setup.h"
 #include "tool_sdecls.h"
 #include "tool_urlglob.h"
-#include "tool_formparse.h"
+#include "var.h"
 
 struct GlobalConfig;
 
@@ -37,11 +37,11 @@ struct State {
   char *outfiles;
   char *httpgetfields;
   char *uploadfile;
-  unsigned long infilenum; /* number of files to upload */
-  unsigned long up;  /* upload file counter within a single upload glob */
-  unsigned long urlnum; /* how many iterations this single URL has with ranges
+  curl_off_t infilenum; /* number of files to upload */
+  curl_off_t up;        /* upload file counter within a single upload glob */
+  curl_off_t urlnum;    /* how many iterations this single URL has with ranges
                            etc */
-  unsigned long li;
+  curl_off_t li;
 };
 
 struct OperationConfig {
@@ -68,7 +68,7 @@ struct OperationConfig {
   char *proto_default;
   curl_off_t resume_from;
   char *postfields;
-  curl_off_t postfieldsize;
+  struct curlx_dynbuf postdata;
   char *referer;
   char *query;
   long timeout_ms;
@@ -118,7 +118,7 @@ struct OperationConfig {
   bool dirlistonly;         /* only get the FTP dir list */
   bool followlocation;      /* follow http redirects */
   bool unrestricted_auth;   /* Continue to send authentication (user+password)
-                               when following ocations, even when hostname
+                               when following redirects, even when hostname
                                changed */
   bool netrc_opt;
   bool netrc;
@@ -128,6 +128,7 @@ struct OperationConfig {
   struct getout *url_get;   /* point to the node to fill in URL */
   struct getout *url_out;   /* point to the node to fill in outfile */
   struct getout *url_ul;    /* point to the node to fill in upload */
+  char *ipfs_gateway;
   char *doh_url;
   char *cipher_list;
   char *proxy_cipher_list;
@@ -260,7 +261,8 @@ struct OperationConfig {
   bool ssl_revoke_best_effort; /* ignore SSL revocation offline/missing
                                   revocation list errors */
 
-  bool native_ca_store;        /* use the native os ca store */
+  bool native_ca_store;        /* use the native OS CA store */
+  bool proxy_native_ca_store;  /* use the native OS CA store for proxy */
   bool ssl_auto_client_cert;   /* automatically locate and use a client
                                   certificate for authentication (Schannel) */
   bool proxy_ssl_auto_client_cert; /* proxy version of ssl_auto_client_cert */
@@ -278,6 +280,7 @@ struct OperationConfig {
   long happy_eyeballs_timeout_ms; /* happy eyeballs timeout in milliseconds.
                                      0 is valid. default: CURL_HET_DEFAULT. */
   bool haproxy_protocol;          /* whether to send HAProxy protocol v1 */
+  char *haproxy_clientip;         /* client IP for HAProxy protocol */
   bool disallow_username_in_url;  /* disallow usernames in URLs */
   char *aws_sigv4;
   enum {
@@ -295,6 +298,12 @@ struct OperationConfig {
   struct State state;             /* for create_transfer() */
   bool rm_partial;                /* on error, remove partially written output
                                      files */
+#ifdef USE_ECH
+  char *ech;                      /* Config set by --ech keywords */
+  char *ech_config;               /* Config set by "--ech esl:" option */
+  char *ech_public;               /* Config set by "--ech pn:" option */
+#endif
+
 };
 
 struct GlobalConfig {
@@ -302,13 +311,12 @@ struct GlobalConfig {
   bool silent;                    /* don't show messages, --silent given */
   bool noprogress;                /* don't show progress bar */
   bool isatty;                    /* Updated internally if output is a tty */
-  FILE *errors;                   /* Error stream, defaults to stderr */
-  bool errors_fopened;            /* Whether error stream isn't stderr */
   char *trace_dump;               /* file to dump the network trace to */
   FILE *trace_stream;
   bool trace_fopened;
   trace tracetype;
   bool tracetime;                 /* include timestamp? */
+  bool traceids;                  /* include xfer-/conn-id? */
   int progressmode;               /* CURL_PROGRESS_BAR / CURL_PROGRESS_STATS */
   char *libcurl;                  /* Output libcurl code to this file name */
   bool fail_early;                /* exit on first transfer error */
@@ -319,9 +327,10 @@ struct GlobalConfig {
   bool test_event_based;
 #endif
   bool parallel;
-  long parallel_max;
+  unsigned short parallel_max; /* MAX_PARALLEL is the maximum */
   bool parallel_connect;
   char *help_category;            /* The help category, if set */
+  struct var *variables;
   struct OperationConfig *first;
   struct OperationConfig *current;
   struct OperationConfig *last;   /* Always last in the struct */

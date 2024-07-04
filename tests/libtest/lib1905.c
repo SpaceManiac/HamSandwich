@@ -28,7 +28,7 @@
 #include "warnless.h"
 #include "memdebug.h"
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURLSH *sh = NULL;
   CURL *ch = NULL;
@@ -40,7 +40,7 @@ int test(char *URL)
   cm = curl_multi_init();
   if(!cm) {
     curl_global_cleanup();
-    return 1;
+    return (CURLcode)1;
   }
   sh = curl_share_init();
   if(!sh)
@@ -55,8 +55,8 @@ int test(char *URL)
 
   curl_easy_setopt(ch, CURLOPT_SHARE, sh);
   curl_easy_setopt(ch, CURLOPT_URL, URL);
-  curl_easy_setopt(ch, CURLOPT_COOKIEFILE, "log/cookies1905");
-  curl_easy_setopt(ch, CURLOPT_COOKIEJAR, "log/cookies1905");
+  curl_easy_setopt(ch, CURLOPT_COOKIEFILE, libtest_arg2);
+  curl_easy_setopt(ch, CURLOPT_COOKIEJAR, libtest_arg2);
 
   curl_multi_add_handle(cm, ch);
 
@@ -90,11 +90,11 @@ int test(char *URL)
   curl_easy_setopt(ch, CURLOPT_SHARE, NULL);
 
   curl_multi_remove_handle(cm, ch);
-  cleanup:
+cleanup:
   curl_easy_cleanup(ch);
   curl_share_cleanup(sh);
   curl_multi_cleanup(cm);
   curl_global_cleanup();
 
-  return 0;
+  return CURLE_OK;
 }

@@ -78,7 +78,7 @@ UNITTEST bool Curl_cidr6_match(const char *ipv6,
                                const char *network,
                                unsigned int bits)
 {
-#ifdef ENABLE_IPV6
+#ifdef USE_IPV6
   int bytes;
   int rest;
   unsigned char address[16];
@@ -122,6 +122,7 @@ enum nametype {
 bool Curl_check_noproxy(const char *name, const char *no_proxy,
                         bool *spacesep)
 {
+  char hostip[128];
   *spacesep = FALSE;
   /*
    * If we don't have a hostname at all, like for example with a FILE
@@ -139,7 +140,6 @@ bool Curl_check_noproxy(const char *name, const char *no_proxy,
     const char *p = no_proxy;
     size_t namelen;
     enum nametype type = TYPE_HOST;
-    char hostip[128];
     if(!strcmp("*", no_proxy))
       return TRUE;
 
@@ -216,7 +216,6 @@ bool Curl_check_noproxy(const char *name, const char *no_proxy,
           /* case C passes through, not a match */
           break;
         case TYPE_IPV4:
-          /* FALLTHROUGH */
         case TYPE_IPV6: {
           const char *check = token;
           char *slash;

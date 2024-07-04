@@ -47,7 +47,7 @@ static size_t readcallback(char  *ptr,
   }
   (*counter)++; /* bump */
 
-  if(size * nmemb > strlen(UPLOADTHIS)) {
+  if(size * nmemb >= strlen(UPLOADTHIS)) {
     fprintf(stderr, "READ!\n");
     strcpy(ptr, UPLOADTHIS);
     return strlen(UPLOADTHIS);
@@ -72,7 +72,7 @@ static curlioerr ioctlcallback(CURL *handle,
 
 #endif
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURLcode res;
   CURL *curl;
@@ -123,5 +123,5 @@ test_cleanup:
   curl_easy_cleanup(curl);
   curl_global_cleanup();
 
-  return (int)res;
+  return res;
 }

@@ -33,14 +33,14 @@
 static char const testData[] = ".abc\0xyz";
 static off_t const testDataSize = sizeof(testData) - 1;
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURL *easy;
   CURLM *multi_handle;
   int still_running; /* keep number of running handles */
   CURLMsg *msg; /* for picking up messages with the transfer status */
   int msgs_left; /* how many messages are left */
-  int res = CURLE_OK;
+  CURLcode res = CURLE_OK;
 
   start_test_timing();
 
@@ -110,7 +110,7 @@ int test(char *URL)
        curl_multi_fdset() doc. */
 
     if(maxfd == -1) {
-#if defined(WIN32) || defined(_WIN32)
+#if defined(_WIN32)
       Sleep(100);
       rc = 0;
 #else

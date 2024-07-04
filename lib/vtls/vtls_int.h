@@ -29,20 +29,56 @@
 
 #ifdef USE_SSL
 
+/* see https://www.iana.org/assignments/tls-extensiontype-values/ */
+#define ALPN_HTTP_1_1_LENGTH 8
+#define ALPN_HTTP_1_1 "http/1.1"
+#define ALPN_H2_LENGTH 2
+#define ALPN_H2 "h2"
+#define ALPN_H3_LENGTH 2
+#define ALPN_H3 "h3"
+
+/* conservative sizes on the ALPN entries and count we are handling,
+ * we can increase these if we ever feel the need or have to accommodate
+ * ALPN strings from the "outside". */
+#define ALPN_NAME_MAX     10
+#define ALPN_ENTRIES_MAX  3
+#define ALPN_PROTO_BUF_MAX   (ALPN_ENTRIES_MAX * (ALPN_NAME_MAX + 1))
+
+struct alpn_spec {
+  const char entries[ALPN_ENTRIES_MAX][ALPN_NAME_MAX];
+  size_t count; /* number of entries */
+};
+
+struct alpn_proto_buf {
+  unsigned char data[ALPN_PROTO_BUF_MAX];
+  int len;
+};
+
+CURLcode Curl_alpn_to_proto_buf(struct alpn_proto_buf *buf,
+                                const struct alpn_spec *spec);
+CURLcode Curl_alpn_to_proto_str(struct alpn_proto_buf *buf,
+                                const struct alpn_spec *spec);
+
+CURLcode Curl_alpn_set_negotiated(struct Curl_cfilter *cf,
+                                  struct Curl_easy *data,
+                                  const unsigned char *proto,
+                                  size_t proto_len);
+
 /* Information in each SSL cfilter context: cf->ctx */
 struct ssl_connect_data {
   ssl_connection_state state;
   ssl_connect_state connecting_state;
-  char *hostname;                   /* hostname for verification */
-  char *dispname;                   /* display version of hostname */
-  int port;                         /* remote port at origin */
+  struct ssl_peer peer;
   const struct alpn_spec *alpn;     /* ALPN to use or NULL for none */
-  struct ssl_backend_data *backend; /* vtls backend specific props */
+  void *backend;                    /* vtls backend specific props */
   struct cf_call_data call_data;    /* data handle used in current call */
   struct curltime handshake_done;   /* time when handshake finished */
+  BIT(use_alpn);                    /* if ALPN shall be used in handshake */
+  BIT(peer_closed);                 /* peer has closed connection */
 };
 
 
+#undef CF_CTX_CALL_DATA
 #define CF_CTX_CALL_DATA(cf)  \
   ((struct ssl_connect_data *)(cf)->ctx)->call_data
 
@@ -79,18 +115,14 @@ struct Curl_ssl {
                                   struct Curl_easy *data,
                                   bool *done);
 
-  /* If the SSL backend wants to read or write on this connection during a
-     handshake, set socks[0] to the connection's FIRSTSOCKET, and return
-     a bitmap indicating read or write with GETSOCK_WRITESOCK(0) or
-     GETSOCK_READSOCK(0). Otherwise return GETSOCK_BLANK.
-     Mandatory. */
-  int (*get_select_socks)(struct Curl_cfilter *cf, struct Curl_easy *data,
-                          curl_socket_t *socks);
-
+  /* During handshake, adjust the pollset to include the socket
+   * for POLLOUT or POLLIN as needed.
+   * Mandatory. */
+  void (*adjust_pollset)(struct Curl_cfilter *cf, struct Curl_easy *data,
+                          struct easy_pollset *ps);
   void *(*get_internals)(struct ssl_connect_data *connssl, CURLINFO info);
   void (*close)(struct Curl_cfilter *cf, struct Curl_easy *data);
   void (*close_all)(struct Curl_easy *data);
-  void (*session_free)(void *ptr);
 
   CURLcode (*set_engine)(struct Curl_easy *data, const char *engine);
   CURLcode (*set_engine_default)(struct Curl_easy *data);
@@ -130,25 +162,8 @@ CURLcode Curl_none_set_engine(struct Curl_easy *data, const char *engine);
 CURLcode Curl_none_set_engine_default(struct Curl_easy *data);
 struct curl_slist *Curl_none_engines_list(struct Curl_easy *data);
 bool Curl_none_false_start(void);
-int Curl_ssl_get_select_socks(struct Curl_cfilter *cf, struct Curl_easy *data,
-                              curl_socket_t *socks);
-
-/**
- * Get the ssl_config_data in `data` that is relevant for cfilter `cf`.
- */
-struct ssl_config_data *Curl_ssl_cf_get_config(struct Curl_cfilter *cf,
-                                               struct Curl_easy *data);
-
-/**
- * Get the primary config relevant for the filter from its connection.
- */
-struct ssl_primary_config *
-  Curl_ssl_cf_get_primary_config(struct Curl_cfilter *cf);
-
-/**
- * Get the first SSL filter in the chain starting with `cf`, or NULL.
- */
-struct Curl_cfilter *Curl_ssl_cf_get_ssl(struct Curl_cfilter *cf);
+void Curl_ssl_adjust_pollset(struct Curl_cfilter *cf, struct Curl_easy *data,
+                              struct easy_pollset *ps);
 
 /**
  * Get the SSL filter below the given one or NULL if there is none.
@@ -163,23 +178,25 @@ bool Curl_ssl_cf_is_proxy(struct Curl_cfilter *cf);
  */
 bool Curl_ssl_getsessionid(struct Curl_cfilter *cf,
                            struct Curl_easy *data,
+                           const struct ssl_peer *peer,
                            void **ssl_sessionid,
                            size_t *idsize); /* set 0 if unknown */
 /* add a new session ID
  * Sessionid mutex must be locked (see Curl_ssl_sessionid_lock).
  * Caller must ensure that it has properly shared ownership of this sessionid
  * object with cache (e.g. incrementing refcount on success)
+ * Call takes ownership of `ssl_sessionid`, using `sessionid_free_cb`
+ * to destroy it in case of failure or later removal.
  */
 CURLcode Curl_ssl_addsessionid(struct Curl_cfilter *cf,
                                struct Curl_easy *data,
+                               const struct ssl_peer *peer,
                                void *ssl_sessionid,
                                size_t idsize,
-                               bool *added);
+                               Curl_ssl_sessionid_dtor *sessionid_free_cb);
 
 #include "openssl.h"        /* OpenSSL versions */
 #include "gtls.h"           /* GnuTLS versions */
-#include "nssg.h"           /* NSS versions */
-#include "gskit.h"          /* Global Secure ToolKit versions */
 #include "wolfssl.h"        /* wolfSSL versions */
 #include "schannel.h"       /* Schannel SSPI version */
 #include "sectransp.h"      /* SecureTransport (Darwin) version */

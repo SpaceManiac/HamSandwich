@@ -25,21 +25,14 @@
 
 #include <sys/stat.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <tchar.h>
 #endif
 
-#ifdef HAVE_SIGNAL_H
 #include <signal.h>
-#endif
 
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
-#endif
-
-#ifdef USE_NSS
-#include <nspr.h>
-#include <plarenas.h>
 #endif
 
 #define ENABLE_CURLX_PRINTF
@@ -53,6 +46,7 @@
 #include "tool_vms.h"
 #include "tool_main.h"
 #include "tool_libinfo.h"
+#include "tool_stderr.h"
 
 /*
  * This is low-level hard-hacking memory leak tracking and similar. Using
@@ -77,6 +71,7 @@ int vms_show = 0;
  * when command-line argument globbing is enabled under the MSYS shell, so turn
  * it off.
  */
+extern int _CRT_glob;
 int _CRT_glob = 0;
 #endif /* __MINGW32__ */
 
@@ -113,7 +108,7 @@ static void memory_tracking_init(void)
 {
   char *env;
   /* if CURL_MEMDEBUG is set, this starts memory tracking message logging */
-  env = curlx_getenv("CURL_MEMDEBUG");
+  env = curl_getenv("CURL_MEMDEBUG");
   if(env) {
     /* use the value as file name */
     char fname[CURL_MT_LOGFNAME_BUFSIZE];
@@ -127,7 +122,7 @@ static void memory_tracking_init(void)
        without an alloc! */
   }
   /* if CURL_MEMLIMIT is set, this enables fail-on-alloc-number-N feature */
-  env = curlx_getenv("CURL_MEMLIMIT");
+  env = curl_getenv("CURL_MEMLIMIT");
   if(env) {
     char *endptr;
     long num = strtol(env, &endptr, 10);
@@ -156,7 +151,6 @@ static CURLcode main_init(struct GlobalConfig *config)
 
   /* Initialise the global config */
   config->showerror = FALSE;          /* show errors when silent */
-  config->errors = stderr;            /* Default errors to stderr */
   config->styled_output = TRUE;       /* enable detection */
   config->parallel_max = PARALLEL_DEFAULT;
 
@@ -175,17 +169,17 @@ static CURLcode main_init(struct GlobalConfig *config)
         config->first->global = config;
       }
       else {
-        errorf(config, "error retrieving curl library information\n");
+        errorf(config, "error retrieving curl library information");
         free(config->first);
       }
     }
     else {
-      errorf(config, "error initializing curl library\n");
+      errorf(config, "error initializing curl library");
       free(config->first);
     }
   }
   else {
-    errorf(config, "error initializing curl\n");
+    errorf(config, "error initializing curl");
     result = CURLE_FAILED_INIT;
   }
 
@@ -195,10 +189,6 @@ static CURLcode main_init(struct GlobalConfig *config)
 static void free_globalconfig(struct GlobalConfig *config)
 {
   Curl_safefree(config->trace_dump);
-
-  if(config->errors_fopened && config->errors)
-    fclose(config->errors);
-  config->errors = NULL;
 
   if(config->trace_fopened && config->trace_stream)
     fclose(config->trace_stream);
@@ -216,14 +206,6 @@ static void main_free(struct GlobalConfig *config)
   /* Cleanup the easy handle */
   /* Main cleanup */
   curl_global_cleanup();
-#ifdef USE_NSS
-  if(PR_Initialized()) {
-    /* prevent valgrind from reporting still reachable mem from NSPR arenas */
-    PL_ArenaFinish();
-    /* prevent valgrind from reporting possibly lost memory (fd cache, ...) */
-    PR_Cleanup();
-  }
-#endif
   free_globalconfig(config);
 
   /* Free the config structures */
@@ -236,6 +218,12 @@ static void main_free(struct GlobalConfig *config)
 ** curl tool main function.
 */
 #ifdef _UNICODE
+#if defined(__GNUC__)
+/* GCC doesn't know about wmain() */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+#pragma GCC diagnostic ignored "-Wmissing-declarations"
+#endif
 int wmain(int argc, wchar_t *argv[])
 #else
 int main(int argc, char *argv[])
@@ -245,7 +233,9 @@ int main(int argc, char *argv[])
   struct GlobalConfig global;
   memset(&global, 0, sizeof(global));
 
-#ifdef WIN32
+  tool_init_stderr();
+
+#ifdef _WIN32
   /* Undocumented diagnostic option to list the full paths of all loaded
      modules. This is purposely pre-init. */
   if(argc == 2 && !_tcscmp(argv[1], _T("--dump-module-paths"))) {
@@ -258,13 +248,13 @@ int main(int argc, char *argv[])
   /* win32_init must be called before other init routines. */
   result = win32_init();
   if(result) {
-    fprintf(stderr, "curl: (%d) Windows-specific init failed.\n", result);
-    return result;
+    errorf(&global, "(%d) Windows-specific init failed", result);
+    return (int)result;
   }
 #endif
 
   if(main_checkfds()) {
-    fprintf(stderr, "curl: out of file descriptors\n");
+    errorf(&global, "out of file descriptors");
     return CURLE_FAILED_INIT;
   }
 
@@ -286,7 +276,7 @@ int main(int argc, char *argv[])
     main_free(&global);
   }
 
-#ifdef WIN32
+#ifdef _WIN32
   /* Flush buffers of all streams opened in write or update mode */
   fflush(NULL);
 #endif
@@ -297,5 +287,11 @@ int main(int argc, char *argv[])
   return (int)result;
 #endif
 }
+
+#ifdef _UNICODE
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+#endif
 
 #endif /* ndef UNITTESTS */

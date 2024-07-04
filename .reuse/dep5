@@ -8,13 +8,8 @@ Files: tests/data/test* tests/certs/* tests/stunnel.pem tests/valgrind.supp
 Copyright: Daniel Stenberg, <daniel@haxx.se>, et al.
 License: curl
 
-# Markdown documentation in docs/
-Files: docs/*.md
-Copyright: Daniel Stenberg, <daniel@haxx.se>, et al.
-License: curl
-
 # Docs in docs/
-Files: docs/FAQ docs/INSTALL docs/INSTALL.cmake docs/KNOWN_BUGS docs/MAIL-ETIQUETTE docs/THANKS docs/TODO docs/cmdline-opts/page-footer docs/libcurl/curl_multi_socket_all.3 docs/libcurl/curl_strnequal.3 docs/libcurl/symbols-in-versions docs/options-in-versions
+Files: docs/FAQ docs/INSTALL docs/KNOWN_BUGS docs/MAIL-ETIQUETTE docs/THANKS docs/TODO docs/libcurl/symbols-in-versions docs/options-in-versions
 Copyright: Daniel Stenberg, <daniel@haxx.se>, et al.
 License: curl
 
@@ -23,12 +18,16 @@ Files: projects/Windows/*
 Copyright: Daniel Stenberg, <daniel@haxx.se>, et al.
 License: curl
 
+Files: libcurl.def
+Copyright: Daniel Stenberg, <daniel@haxx.se>, et al.
+License: curl
+
 # Single files we do not want to edit directly
 Files: CHANGES
 Copyright: Daniel Stenberg, <daniel@haxx.se>, et al.
 License: curl
 
-Files: GIT-INFO
+Files: GIT-INFO.md
 Copyright: Daniel Stenberg, <daniel@haxx.se>, et al.
 License: curl
 
@@ -37,19 +36,11 @@ Copyright: Daniel Stenberg, <daniel@haxx.se>, et al.
 License: curl
 
 # checksrc control files
-Files: lib/.checksrc docs/examples/.checksrc tests/libtest/.checksrc
-Copyright: Daniel Stenberg, <daniel@haxx.se>, et al.
-License: curl
-
-Files: lib/libcurl.plist.in
+Files: lib/.checksrc src/.checksrc docs/examples/.checksrc tests/libtest/.checksrc
 Copyright: Daniel Stenberg, <daniel@haxx.se>, et al.
 License: curl
 
 Files: lib/libcurl.vers.in
-Copyright: Daniel Stenberg, <daniel@haxx.se>, et al.
-License: curl
-
-Files: mlc_config.json
 Copyright: Daniel Stenberg, <daniel@haxx.se>, et al.
 License: curl
 
@@ -89,7 +80,7 @@ Files: README
 Copyright: Daniel Stenberg, <daniel@haxx.se>, et al.
 License: curl
 
-Files: .github/ISSUE_TEMPLATE/bug_report.md
+Files: renovate.json
 Copyright: Daniel Stenberg, <daniel@haxx.se>, et al.
 License: curl
 

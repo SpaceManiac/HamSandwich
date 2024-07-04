@@ -26,9 +26,9 @@
 #       Installation of the header files in the OS/400 library.
 #
 
-SCRIPTDIR=`dirname "${0}"`
+SCRIPTDIR=$(dirname "${0}")
 . "${SCRIPTDIR}/initscript.sh"
-cd "${TOPDIR}/include"
+cd "${TOPDIR}/include" || exit 1
 
 
 #       Create the OS/400 source program file for the header files.
@@ -38,7 +38,7 @@ SRCPF="${LIBIFSNAME}/H.FILE"
 if action_needed "${SRCPF}"
 then    CMD="CRTSRCPF FILE(${TARGETLIB}/H) RCDLEN(112)"
         CMD="${CMD} CCSID(${TGTCCSID}) TEXT('curl: Header files')"
-        system "${CMD}"
+        CLcommand "${CMD}"
 fi
 
 
@@ -71,16 +71,16 @@ copy_hfile()
 #       Copy the header files.
 
 for HFILE in curl/*.h ${SCRIPTDIR}/ccsidcurl.h
-do      case "`basename \"${HFILE}\" .h`" in
+do      case "$(basename "${HFILE}" .h)" in
         stdcheaders|typecheck-gcc)
                 continue;;
         esac
 
-        DEST="${SRCPF}/`db2_name \"${HFILE}\" nomangle`.MBR"
+        DEST="${SRCPF}/$(db2_name "${HFILE}" nomangle).MBR"
 
         if action_needed "${DEST}" "${HFILE}"
         then    copy_hfile "${DEST}" "${HFILE}"
-                IFSDEST="${IFSINCLUDE}/`basename \"${HFILE}\"`"
+                IFSDEST="${IFSINCLUDE}/$(basename "${HFILE}")"
                 rm -f "${IFSDEST}"
                 ln -s "${DEST}" "${IFSDEST}"
         fi
@@ -98,9 +98,9 @@ ln -s "${SRCPF}/CURL.INC.MBR" "${IFSINCLUDE}/curl.inc.rpgle"
 
 if action_needed "${LIBIFSNAME}/CURL.FILE"
 then    :
-else    system "DLTF FILE(${TARGETLIB}/CURL)"
+else    CLcommand "DLTF FILE(${TARGETLIB}/CURL)"
 fi
 
 CMD="CRTDUPOBJ OBJ(H) FROMLIB(${TARGETLIB}) OBJTYPE(*FILE) TOLIB(*FROMLIB)"
 CMD="${CMD} NEWOBJ(CURL) DATA(*YES)"
-system "${CMD}"
+CLcommand "${CMD}"

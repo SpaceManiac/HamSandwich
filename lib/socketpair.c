@@ -24,16 +24,36 @@
 
 #include "curl_setup.h"
 #include "socketpair.h"
+#include "urldata.h"
+#include "rand.h"
+
+#if defined(HAVE_PIPE) && defined(HAVE_FCNTL)
+#include <fcntl.h>
+
+int Curl_pipe(curl_socket_t socks[2])
+{
+  if(pipe(socks))
+    return -1;
+
+  if(fcntl(socks[0], F_SETFD, FD_CLOEXEC) ||
+     fcntl(socks[1], F_SETFD, FD_CLOEXEC) ) {
+    close(socks[0]);
+    close(socks[1]);
+    socks[0] = socks[1] = CURL_SOCKET_BAD;
+    return -1;
+  }
+
+  return 0;
+}
+#endif
+
 
 #if !defined(HAVE_SOCKETPAIR) && !defined(CURL_DISABLE_SOCKETPAIR)
-#ifdef WIN32
+#ifdef _WIN32
 /*
  * This is a socketpair() implementation for Windows.
  */
 #include <string.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <windows.h>
 #include <io.h>
 #else
 #ifdef HAVE_NETDB_H
@@ -48,7 +68,7 @@
 #ifndef INADDR_LOOPBACK
 #define INADDR_LOOPBACK 0x7f000001
 #endif /* !INADDR_LOOPBACK */
-#endif /* !WIN32 */
+#endif /* !_WIN32 */
 
 #include "nonblock.h" /* for curlx_nonblock */
 #include "timeval.h"  /* needed before select.h */
@@ -85,7 +105,7 @@ int Curl_socketpair(int domain, int type, int protocol,
 
   socks[0] = socks[1] = CURL_SOCKET_BAD;
 
-#if defined(WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(__CYGWIN__)
   /* don't set SO_REUSEADDR on Windows */
   (void)reuse;
 #ifdef SO_EXCLUSIVEADDRUSE
@@ -125,13 +145,17 @@ int Curl_socketpair(int domain, int type, int protocol,
   if(socks[1] == CURL_SOCKET_BAD)
     goto error;
   else {
-    struct curltime check;
     struct curltime start = Curl_now();
-    char *p = (char *)&check;
+    char rnd[9];
+    char check[sizeof(rnd)];
+    char *p = &check[0];
     size_t s = sizeof(check);
 
+    if(Curl_rand(NULL, (unsigned char *)rnd, sizeof(rnd)))
+      goto error;
+
     /* write data to the socket */
-    swrite(socks[0], &start, sizeof(start));
+    swrite(socks[0], rnd, sizeof(rnd));
     /* verify that we read the correct data */
     do {
       ssize_t nread;
@@ -168,7 +192,7 @@ int Curl_socketpair(int domain, int type, int protocol,
         p += nread;
         continue;
       }
-      if(memcmp(&start, &check, sizeof(check)))
+      if(memcmp(rnd, check, sizeof(check)))
         goto error;
       break;
     } while(1);
@@ -177,7 +201,7 @@ int Curl_socketpair(int domain, int type, int protocol,
   sclose(listener);
   return 0;
 
-  error:
+error:
   sclose(listener);
   sclose(socks[0]);
   sclose(socks[1]);
