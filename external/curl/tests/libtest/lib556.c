@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 #include "test.h"
@@ -35,7 +37,7 @@
   #define STDERR_FILENO 2
 #endif
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURLcode res;
   CURL *curl;
@@ -59,7 +61,7 @@ int test(char *URL)
   res = curl_easy_perform(curl);
 
   if(!res) {
-    /* we are connected, now get a HTTP document the raw way */
+    /* we are connected, now get an HTTP document the raw way */
     const char *request =
       "GET /556 HTTP/1.1\r\n"
       "Host: ninja\r\n\r\n";
@@ -85,7 +87,7 @@ int test(char *URL)
     }
 
     if(iolen)
-      res = (CURLcode)TEST_ERR_FAILURE;
+      res = TEST_ERR_FAILURE;
   }
 
 test_cleanup:
@@ -93,5 +95,5 @@ test_cleanup:
   curl_easy_cleanup(curl);
   curl_global_cleanup();
 
-  return (int)res;
+  return res;
 }

@@ -7,6 +7,7 @@
 #include "shop.h"
 #include "theater.h"
 #include "gallery.h"
+#include "steam.h"
 
 char goalDesc[][48]={
 	"Good Score","earning 5,000 points",
@@ -165,6 +166,7 @@ void CompleteGoal(byte goal)
 		return;
 
 	profile.progress.goal[goal]=1;
+	SteamManager::Get()->CompleteGoal(goal);
 	coro::launch(std::bind(ShowGoalEarned, goal));
 
 	if(shopping)

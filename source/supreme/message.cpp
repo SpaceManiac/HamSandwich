@@ -86,7 +86,7 @@ void InitMessage(void)
 void NewBigMessage(const char *txt,int time)
 {
 	SDL_strlcpy(bigMessage.msg, VariableMsg(txt), sizeof(bigMessage.msg));
-	bigMessage.x=320-GetStrLength(bigMessage.msg,0)/2;
+	bigMessage.x=GetDisplayMGL()->GetWidth()/2-GetStrLength(bigMessage.msg,0)/2;
 	bigMessage.y=-100;
 	bigMessage.dy=0;
 	bigMessage.timer=time;
@@ -100,7 +100,7 @@ void NewMessage(const char *txt,int time,byte priority)
 		return;	// can't override it
 	SDL_strlcpy(message.msg, VariableMsg(txt), sizeof(message.msg));
 	message.x=2;
-	message.y=484;
+	message.y=GetDisplayMGL()->GetHeight() + 4;
 	message.dy=-13;
 	message.timer=time;
 	message.bright=-32;
@@ -130,9 +130,9 @@ void UpdateBigMessage(void)
 	// while time still remains, don't start falling offscreen
 	if(bigMessage.timer)
 	{
-		if(bigMessage.y>200)
+		if(bigMessage.y > GetDisplayMGL()->GetHeight()/2 - 40)
 		{
-			bigMessage.y=200;
+			bigMessage.y = GetDisplayMGL()->GetHeight()/2 - 40;
 			bigMessage.dy=-bigMessage.dy/2;
 			if(bigMessage.dy>-2)
 				bigMessage.dy=0;
@@ -147,7 +147,7 @@ void UpdateBigMessage(void)
 	}
 	else	// go ahead and fall
 	{
-		if(bigMessage.y>480)
+		if(bigMessage.y>GetDisplayMGL()->GetHeight())
 		{
 			bigMessage.msg[0]='\0';
 			bigMessage.y=0;
@@ -185,7 +185,7 @@ void UpdateMessage(void)
 	}
 	else	// go ahead and fall
 	{
-		if(message.y>480)
+		if(message.y>GetDisplayMGL()->GetHeight())
 		{
 			message.msg[0]='\0';
 			message.y=0;

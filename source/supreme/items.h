@@ -245,20 +245,25 @@
 
 #define IE_MAX		29	// max # of effects
 
-// power ups
-#define PU_REVERSE	1	// reverse hammer
-#define PU_REFLECT	2	// reflect hammer
-#define PU_SHIELD	3	// energy shield
-#define PU_GARLIC	4	// garlic
-#define PU_SPEED	5	// particle accelerator effect
-#define PU_INVISO	6	// invisibility
-#define PU_AMMO		7	// infinite ammo
-#define PU_AMMO2	8	// reload current weapon
-#define PU_CHEESE	9	// supreme cheese
-#define PU_POISON	10	// poison
-#define MAX_POWERUP 11
+// Power ups. SERIALIZED in custom item definitions.
+enum : int
+{
+	PU_REVERSE  = 1,  // reverse hammer
+	PU_REFLECT  = 2,  // reflect hammer
+	PU_SHIELD   = 3,  // energy shield
+	PU_GARLIC   = 4,  // garlic
+	PU_SPEED    = 5,  // particle accelerator effect
+	PU_INVISO   = 6,  // invisibility
+	PU_AMMO     = 7,  // infinite ammo
+	PU_AMMO2    = 8,  // reload current weapon
+	PU_CHEESE   = 9,  // supreme cheese
+	PU_POISON   = 10, // poison
 
-typedef struct item_t
+	MAX_POWERUP  // End marker. Add new powerups above this.
+};
+const char* GetPowerupName(int powerup);
+
+struct item_t
 {
 	char name[32];
 	char xofs,yofs;	// draw it offset by some pixels
@@ -273,7 +278,7 @@ typedef struct item_t
 	int effectAmt;	// a modifier for the effect
 	char msg[64];	// message when effect occurs
 	word sound;		// sound when effect occurs
-} item_t;
+};
 
 void InitItems(void);
 void ExitItems(void);
@@ -281,7 +286,7 @@ void RenderItem(int x,int y,byte type,char bright,byte flags);
 void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl);
 void DrawRedX(int x,int y,byte candle,MGLDraw *mgl);
 item_t *GetItem(int type);
-item_t *GetBaseItem(int type);
+const item_t *GetBaseItem(int type);
 word NumItems(void);
 int NewItem(void);
 void UpdateItems(void);
@@ -309,8 +314,7 @@ class Map;
 struct world_t;
 
 void MoveMovableItem(int x,int y,Map *map,world_t *world);
-void SetCustomItemSprites(char* filename);
-void DetectCustomItemSprites(world_t *world);
+void SetCustomItemSprites(const char* filename);
 
 byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y);
 byte TriggerItem(Guy *me,mapTile_t *m,int x,int y);
@@ -321,5 +325,12 @@ void RepairItemToItem(int n);	// when item N is deleted, repair references to it
 void RepairItemToSound(int n);	// when sound N is deleted, repair references to it and others in
 								// all items
 void RepairItemToTile(void);	// when tiles are messed with, repair the references in items
+
+struct ItemRenderExtents
+{
+	int left, right, up, down;
+};
+ItemRenderExtents GetItemRenderExtents();
+void CalculateItemRenderExtents();
 
 #endif

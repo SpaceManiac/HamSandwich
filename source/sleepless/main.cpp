@@ -101,32 +101,11 @@ TASK(int) main(int argc, char* argv[])
 #ifndef DEMO
 				shopping=0;
 				AWAIT NetMenu(mainmgl);
-
-				if(DoWebPage()==1)
-				{
-					LunaticExit();
-					delete mainmgl;
-#ifdef _WIN32
-					ShellExecuteA(NULL,"open","http://hamumu.com/scores.php",NULL,NULL,SW_SHOWNORMAL);
-#endif
-					CO_RETURN 0;
-				}
-				else if(DoWebPage()==2)
-				{
-					LunaticExit();
-					delete mainmgl;
-#ifdef _WIN32
-					ShellExecuteA(NULL,"open","http://hamumu.com/addon.php",NULL,NULL,SW_SHOWNORMAL);
-#endif
-					CO_RETURN 0;
-				}
 #else
 				LunaticExit();
 				delete mainmgl;
 				ExitLog();
-#ifdef _WIN32
-				ShellExecute(NULL,"open","http://hamumu.com/game.php?game=HOLLOW",NULL,NULL,SW_SHOWNORMAL);
-#endif
+				SDL_OpenURL("http://hamumu.com/game.php?game=HOLLOW");
 				CO_RETURN 0;
 #endif
 				break;

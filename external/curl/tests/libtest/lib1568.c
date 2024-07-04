@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,13 +18,15 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 #include "test.h"
 
 #include "testtrace.h"
 #include "memdebug.h"
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURLcode ret;
   CURL *hnd;
@@ -38,7 +40,7 @@ int test(char *URL)
   curl_easy_setopt(hnd, CURLOPT_USERAGENT, "lib1568");
   curl_easy_setopt(hnd, CURLOPT_HTTPAUTH, (long)CURLAUTH_DIGEST);
   curl_easy_setopt(hnd, CURLOPT_MAXREDIRS, 50L);
-  curl_easy_setopt(hnd, CURLOPT_PORT, (long)atoi(libtest_arg2));
+  curl_easy_setopt(hnd, CURLOPT_PORT, strtol(libtest_arg2, NULL, 10));
 
   ret = curl_easy_perform(hnd);
 
@@ -46,6 +48,5 @@ int test(char *URL)
   hnd = NULL;
 
   curl_global_cleanup();
-  return (int)ret;
+  return ret;
 }
-

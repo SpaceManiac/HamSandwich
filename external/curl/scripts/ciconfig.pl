@@ -6,7 +6,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -18,6 +18,8 @@
 #
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
+#
+# SPDX-License-Identifier: curl
 #
 ###########################################################################
 
@@ -56,7 +58,12 @@ my %defaulton = (
     'threaded-resolver' => 1,
     'pthreads' => 1,
     'verbose' => 1,
-    'crypto-auth' => 1,
+    'basic-auth' => 1,
+    'bearer-auth' => 1,
+    'digest-auth' => 1,
+    'kerberos-auth' => 1,
+    'negotiate-auth' => 1,
+    'aws' => 1,
     'ntlm' => 1,
     'ntlm-wb' => 1,
     'tls-srp' => 1,
@@ -81,7 +88,6 @@ my %defaulton = (
     'zstd' => 1,
     'brotli' => 1,
     'random' => 1,
-    'egd-socket' => 1,
     'ca-bundle' => 1,
     'ca-path' => 1,
     'libssh2' => 1,
@@ -164,7 +170,7 @@ print "Never used configure options\n";
 for my $w (sort keys %avail) {
     if(!$used{$w}) {
         printf "  %s%s\n", $w,
-            $defaulton{$w} ? " (auto)":"";;
+            $defaulton{$w} ? " (auto)":"";
     }
 }
 

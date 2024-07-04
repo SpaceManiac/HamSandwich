@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,12 +18,12 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 #include "server_setup.h"
 
-#ifdef HAVE_SIGNAL_H
 #include <signal.h>
-#endif
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
@@ -38,9 +38,6 @@
 #include <poll.h>
 #elif defined(HAVE_SYS_POLL_H)
 #include <sys/poll.h>
-#endif
-#ifdef __MINGW32__
-#include <w32api.h>
 #endif
 
 #define ENABLE_CURLX_PRINTF
@@ -57,15 +54,6 @@
 #undef  EINVAL
 #define EINVAL  22 /* errno.h value */
 #endif
-
-/* MinGW with w32api version < 3.6 declared in6addr_any as extern,
-   but lacked the definition */
-#if defined(ENABLE_IPV6) && defined(__MINGW32__)
-#if (__W32API_MAJOR_VERSION < 3) || \
-    ((__W32API_MAJOR_VERSION == 3) && (__W32API_MINOR_VERSION < 6))
-const struct in6_addr in6addr_any = {{ IN6ADDR_ANY_INIT }};
-#endif /* w32api < 3.6 */
-#endif /* ENABLE_IPV6 && __MINGW32__*/
 
 static struct timeval tvnow(void);
 
@@ -144,26 +132,31 @@ void logmsg(const char *msg, ...)
   }
 }
 
-#ifdef WIN32
+#ifdef _WIN32
+/* use instead of strerror() on generic Windows */
+static const char *win32_strerror(int err, char *buf, size_t buflen)
+{
+  if(!FormatMessageA((FORMAT_MESSAGE_FROM_SYSTEM |
+                      FORMAT_MESSAGE_IGNORE_INSERTS), NULL, (DWORD)err,
+                     LANG_NEUTRAL, buf, (DWORD)buflen, NULL))
+    msnprintf(buf, buflen, "Unknown error %d (%#x)", err, err);
+  return buf;
+}
+
 /* use instead of perror() on generic windows */
 void win32_perror(const char *msg)
 {
   char buf[512];
-  DWORD err = SOCKERRNO;
-
-  if(!FormatMessageA((FORMAT_MESSAGE_FROM_SYSTEM |
-                      FORMAT_MESSAGE_IGNORE_INSERTS), NULL, err,
-                     LANG_NEUTRAL, buf, sizeof(buf), NULL))
-    msnprintf(buf, sizeof(buf), "Unknown error %lu (%#lx)", err, err);
+  int err = SOCKERRNO;
+  win32_strerror(err, buf, sizeof(buf));
   if(msg)
     fprintf(stderr, "%s: ", msg);
   fprintf(stderr, "%s\n", buf);
 }
-#endif  /* WIN32 */
 
-#ifdef USE_WINSOCK
 void win32_init(void)
 {
+#ifdef USE_WINSOCK
   WORD wVersionRequested;
   WSADATA wsaData;
   int err;
@@ -184,23 +177,36 @@ void win32_init(void)
     logmsg("No suitable winsock.dll found -- aborting");
     exit(1);
   }
+#endif  /* USE_WINSOCK */
 }
 
 void win32_cleanup(void)
 {
+#ifdef USE_WINSOCK
   WSACleanup();
-}
 #endif  /* USE_WINSOCK */
+
+  /* flush buffers of all streams regardless of their mode */
+  _flushall();
+}
+
+/* socket-safe strerror (works on WinSock errors, too */
+const char *sstrerror(int err)
+{
+  static char buf[512];
+  return win32_strerror(err, buf, sizeof(buf));
+}
+#endif  /* _WIN32 */
 
 /* set by the main code to point to where the test dir is */
 const char *path = ".";
 
-FILE *test2fopen(long testno)
+FILE *test2fopen(long testno, const char *logdir)
 {
   FILE *stream;
   char filename[256];
   /* first try the alternative, preprocessed, file */
-  msnprintf(filename, sizeof(filename), ALTTEST_DATA_PATH, ".", testno);
+  msnprintf(filename, sizeof(filename), ALTTEST_DATA_PATH, logdir, testno);
   stream = fopen(filename, "rb");
   if(stream)
     return stream;
@@ -241,7 +247,7 @@ int wait_ms(int timeout_ms)
 #if defined(MSDOS)
   delay(timeout_ms);
 #elif defined(USE_WINSOCK)
-  Sleep(timeout_ms);
+  Sleep((DWORD)timeout_ms);
 #else
   pending_ms = timeout_ms;
   initial_tv = tvnow();
@@ -274,7 +280,7 @@ curl_off_t our_getpid(void)
   curl_off_t pid;
 
   pid = (curl_off_t)getpid();
-#if defined(WIN32) || defined(_WIN32)
+#if defined(_WIN32) || defined(_WIN32)
   /* store pid + 65536 to avoid conflict with Cygwin/msys PIDs, see also:
    * - https://cygwin.com/git/?p=newlib-cygwin.git;a=commit; ↵
    *   h=b5e1003722cb14235c4f166be72c09acdffc62ea
@@ -360,32 +366,7 @@ void clear_advisor_read_lock(const char *filename)
 }
 
 
-/* Portable, consistent toupper (remember EBCDIC). Do not use toupper() because
-   its behavior is altered by the current locale. */
-static char raw_toupper(char in)
-{
-  if(in >= 'a' && in <= 'z')
-    return (char)('A' + in - 'a');
-  return in;
-}
-
-int strncasecompare(const char *first, const char *second, size_t max)
-{
-  while(*first && *second && max) {
-    if(raw_toupper(*first) != raw_toupper(*second)) {
-      break;
-    }
-    max--;
-    first++;
-    second++;
-  }
-  if(0 == max)
-    return 1; /* they are equal this far */
-
-  return raw_toupper(*first) == raw_toupper(*second);
-}
-
-#if defined(WIN32) && !defined(MSDOS)
+#if defined(_WIN32) && !defined(MSDOS)
 
 static struct timeval tvnow(void)
 {
@@ -400,8 +381,7 @@ static struct timeval tvnow(void)
   ** is typically in the range of 10 milliseconds to 16 milliseconds.
   */
   struct timeval now;
-#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600) && \
-    (!defined(__MINGW32__) || defined(__MINGW64_VERSION_MAJOR))
+#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
   ULONGLONG milliseconds = GetTickCount64();
 #else
   DWORD milliseconds = GetTickCount();
@@ -509,12 +489,16 @@ static SIGHANDLER_T old_sigint_handler  = SIG_ERR;
 static SIGHANDLER_T old_sigterm_handler = SIG_ERR;
 #endif
 
-#if defined(SIGBREAK) && defined(WIN32)
+#if defined(SIGBREAK) && defined(_WIN32)
 static SIGHANDLER_T old_sigbreak_handler = SIG_ERR;
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
+#ifdef _WIN32_WCE
 static DWORD thread_main_id = 0;
+#else
+static unsigned int thread_main_id = 0;
+#endif
 static HANDLE thread_main_window = NULL;
 static HWND hidden_main_window = NULL;
 #endif
@@ -525,7 +509,7 @@ volatile int got_exit_signal = 0;
 /* if next is set indicates the first signal handled in exit_signal_handler */
 volatile int exit_signal = 0;
 
-#ifdef WIN32
+#ifdef _WIN32
 /* event which if set indicates that the program should finish */
 HANDLE exit_event = NULL;
 #endif
@@ -542,7 +526,7 @@ static void exit_signal_handler(int signum)
   if(got_exit_signal == 0) {
     got_exit_signal = 1;
     exit_signal = signum;
-#ifdef WIN32
+#ifdef _WIN32
     if(exit_event)
       (void)SetEvent(exit_event);
 #endif
@@ -551,7 +535,7 @@ static void exit_signal_handler(int signum)
   errno = old_errno;
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 /* CTRL event handler for Windows Console applications to simulate
  * SIGINT, SIGTERM and SIGBREAK on CTRL events and trigger signal handler.
  *
@@ -571,7 +555,7 @@ static void exit_signal_handler(int signum)
 static BOOL WINAPI ctrl_event_handler(DWORD dwCtrlType)
 {
   int signum = 0;
-  logmsg("ctrl_event_handler: %d", dwCtrlType);
+  logmsg("ctrl_event_handler: %lu", dwCtrlType);
   switch(dwCtrlType) {
 #ifdef SIGINT
     case CTRL_C_EVENT: signum = SIGINT; break;
@@ -585,7 +569,7 @@ static BOOL WINAPI ctrl_event_handler(DWORD dwCtrlType)
     default: return FALSE;
   }
   if(signum) {
-    logmsg("ctrl_event_handler: %d -> %d", dwCtrlType, signum);
+    logmsg("ctrl_event_handler: %lu -> %d", dwCtrlType, signum);
     raise(signum);
   }
   return TRUE;
@@ -617,7 +601,12 @@ static LRESULT CALLBACK main_window_proc(HWND hwnd, UINT uMsg,
 }
 /* Window message queue loop for hidden main window, details see above.
  */
+#ifdef _WIN32_WCE
 static DWORD WINAPI main_window_loop(LPVOID lpParameter)
+#else
+#include <process.h>
+static unsigned int WINAPI main_window_loop(void *lpParameter)
+#endif
 {
   WNDCLASS wc;
   BOOL ret;
@@ -697,7 +686,13 @@ static SIGHANDLER_T set_signal(int signum, SIGHANDLER_T handler,
 
 void install_signal_handlers(bool keep_sigalrm)
 {
-#ifdef WIN32
+#ifdef _WIN32
+#ifdef _WIN32_WCE
+  typedef HANDLE curl_win_thread_handle_t;
+#else
+  typedef uintptr_t curl_win_thread_handle_t;
+#endif
+  curl_win_thread_handle_t thread;
   /* setup windows exit event before any signal can trigger */
   exit_event = CreateEvent(NULL, TRUE, FALSE, NULL);
   if(!exit_event)
@@ -737,19 +732,23 @@ void install_signal_handlers(bool keep_sigalrm)
   if(old_sigterm_handler == SIG_ERR)
     logmsg("cannot install SIGTERM handler: %s", strerror(errno));
 #endif
-#if defined(SIGBREAK) && defined(WIN32)
+#if defined(SIGBREAK) && defined(_WIN32)
   /* handle SIGBREAK signal with our exit_signal_handler */
   old_sigbreak_handler = set_signal(SIGBREAK, exit_signal_handler, TRUE);
   if(old_sigbreak_handler == SIG_ERR)
     logmsg("cannot install SIGBREAK handler: %s", strerror(errno));
 #endif
-#ifdef WIN32
+#ifdef _WIN32
   if(!SetConsoleCtrlHandler(ctrl_event_handler, TRUE))
     logmsg("cannot install CTRL event handler");
-  thread_main_window = CreateThread(NULL, 0,
-                                    &main_window_loop,
-                                    (LPVOID)GetModuleHandle(NULL),
-                                    0, &thread_main_id);
+#ifdef _WIN32_WCE
+  thread = CreateThread(NULL, 0, &main_window_loop,
+                        (LPVOID)GetModuleHandle(NULL), 0, &thread_main_id);
+#else
+  thread = _beginthreadex(NULL, 0, &main_window_loop,
+                          (void *)GetModuleHandle(NULL), 0, &thread_main_id);
+#endif
+  thread_main_window = (HANDLE)thread;
   if(!thread_main_window || !thread_main_id)
     logmsg("cannot start main window loop");
 #endif
@@ -781,11 +780,11 @@ void restore_signal_handlers(bool keep_sigalrm)
   if(SIG_ERR != old_sigterm_handler)
     (void) set_signal(SIGTERM, old_sigterm_handler, FALSE);
 #endif
-#if defined(SIGBREAK) && defined(WIN32)
+#if defined(SIGBREAK) && defined(_WIN32)
   if(SIG_ERR != old_sigbreak_handler)
     (void) set_signal(SIGBREAK, old_sigbreak_handler, FALSE);
 #endif
-#ifdef WIN32
+#ifdef _WIN32
   (void)SetConsoleCtrlHandler(ctrl_event_handler, FALSE);
   if(thread_main_window && thread_main_id) {
     if(PostThreadMessage(thread_main_id, WM_APP, 0, 0)) {
@@ -804,3 +803,64 @@ void restore_signal_handlers(bool keep_sigalrm)
   }
 #endif
 }
+
+#ifdef USE_UNIX_SOCKETS
+
+int bind_unix_socket(curl_socket_t sock, const char *unix_socket,
+        struct sockaddr_un *sau) {
+    int error;
+    int rc;
+
+    memset(sau, 0, sizeof(struct sockaddr_un));
+    sau->sun_family = AF_UNIX;
+    strncpy(sau->sun_path, unix_socket, sizeof(sau->sun_path) - 1);
+    rc = bind(sock, (struct sockaddr*)sau, sizeof(struct sockaddr_un));
+    if(0 != rc && SOCKERRNO == EADDRINUSE) {
+      struct_stat statbuf;
+      /* socket already exists. Perhaps it is stale? */
+      curl_socket_t unixfd = socket(AF_UNIX, SOCK_STREAM, 0);
+      if(CURL_SOCKET_BAD == unixfd) {
+        logmsg("Failed to create socket at %s: (%d) %s",
+               unix_socket, SOCKERRNO, sstrerror(SOCKERRNO));
+        return -1;
+      }
+      /* check whether the server is alive */
+      rc = connect(unixfd, (struct sockaddr*)sau, sizeof(struct sockaddr_un));
+      error = SOCKERRNO;
+      sclose(unixfd);
+      if(0 != rc && ECONNREFUSED != error) {
+        logmsg("Failed to connect to %s: (%d) %s",
+               unix_socket, error, sstrerror(error));
+        return rc;
+      }
+      /* socket server is not alive, now check if it was actually a socket. */
+#ifdef _WIN32
+      /* Windows does not have lstat function. */
+      rc = curlx_win32_stat(unix_socket, &statbuf);
+#else
+      rc = lstat(unix_socket, &statbuf);
+#endif
+      if(0 != rc) {
+        logmsg("Error binding socket, failed to stat %s: (%d) %s",
+               unix_socket, errno, strerror(errno));
+        return rc;
+      }
+#ifdef S_IFSOCK
+      if((statbuf.st_mode & S_IFSOCK) != S_IFSOCK) {
+        logmsg("Error binding socket, failed to stat %s", unix_socket);
+        return -1;
+      }
+#endif
+      /* dead socket, cleanup and retry bind */
+      rc = unlink(unix_socket);
+      if(0 != rc) {
+        logmsg("Error binding socket, failed to unlink %s: (%d) %s",
+               unix_socket, errno, strerror(errno));
+        return rc;
+      }
+      /* stale socket is gone, retry bind */
+      rc = bind(sock, (struct sockaddr*)sau, sizeof(struct sockaddr_un));
+    }
+    return rc;
+}
+#endif

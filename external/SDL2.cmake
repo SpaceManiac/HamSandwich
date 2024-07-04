@@ -20,10 +20,12 @@ elseif(ANDROID)
 	set(ANDROID_OBJDIR "${CMAKE_CURRENT_SOURCE_DIR}/../build/android/SDL2/intermediates/ndkBuild/${ANDROID_BUILD_TYPE}/obj/local/${ANDROID_ABI}")
 
 	target_include_directories(SDL2 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/include")
-	target_include_directories(SDL2_image INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_image")
-	target_include_directories(SDL2_mixer INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_mixer")
 	target_link_libraries(SDL2 INTERFACE "${ANDROID_OBJDIR}/libSDL2.so")
+
+	target_include_directories(SDL2_image INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_image")
 	target_link_libraries(SDL2_image INTERFACE "${ANDROID_OBJDIR}/libSDL2_image.so")
+
+	target_include_directories(SDL2_mixer INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_mixer")
 	target_link_libraries(SDL2_mixer INTERFACE "${ANDROID_OBJDIR}/libSDL2_mixer.so")
 elseif(WIN32)
 	# On MSVC, use the official prebuilt binaries.
@@ -34,15 +36,13 @@ elseif(WIN32)
 	endif()
 
 	include(FetchContent)
-	# SDL 2.0.8 is the real pinned version, but SDL 2.0.9 fixes a Windows-only bug:
-	# https://github.com/libsdl-org/SDL/commit/c04dca0dad2696d7dcd51427c8183b19ebff8a60
 	FetchContent_Declare(SDL2
-		URL https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
-		URL_HASH SHA256=ea266ef613f88433f493498f9e72e6bed5d03e4f3fde5b571a557a754ade9065
+		URL https://www.libsdl.org/release/SDL2-devel-2.0.22-VC.zip
+		URL_HASH SHA256=32adc96d8b25e5671189f1f38a4fc7deb105fbb1b3ed78ffcb23f5b8f36b3922
 	)
 	FetchContent_Declare(SDL2_image
-		URL https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.4-VC.zip
-		URL_HASH SHA256=4e15fad9de43d738b476e422eef1910432443cead60d2084b3ef01d3f4a76087
+		URL https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.5-VC.zip
+		URL_HASH SHA256=a180f9b75c4d3fbafe02af42c42463cc7bc488e763cfd1ec2ffb75678b4387ac
 	)
 	FetchContent_Declare(SDL2_mixer
 		URL https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.0.4-VC.zip
@@ -87,21 +87,21 @@ elseif(WIN32)
 		"${sdl2_ttf_SOURCE_DIR}/lib/${SDL_PLATFORM}/libfreetype-6.dll"
 		"${sdl2_ttf_SOURCE_DIR}/lib/${SDL_PLATFORM}/LICENSE.freetype.txt"
 		"${sdl2_ttf_SOURCE_DIR}/lib/${SDL_PLATFORM}/zlib1.dll"
-		TYPE BIN COMPONENT sdl2_ttf/executables)
+		TYPE BIN COMPONENT jspedit/executables)
 elseif(APPLE)
 	# Like Windows, use the official SDL2 prebuild binaries.
 	include(FetchContent)
 	FetchContent_Declare(SDL2
-		URL https://www.libsdl.org/release/SDL2-2.0.8.dmg
-		URL_HASH SHA256=74dd2cb6b18e35e8181523590115f10f1da774939c21ce27768a2a80ba57ad5f
+		URL https://www.libsdl.org/release/SDL2-2.0.22.dmg
+		URL_HASH SHA256=72974672b8359057aa2f6d467c8adae8182a6caedd660e3936e23c3c683c3801
 		DOWNLOAD_NO_EXTRACT TRUE
 		PATCH_COMMAND hdiutil mount <DOWNLOADED_FILE> -mountpoint dmg_mount
 		COMMAND cp -r dmg_mount dmg_content
 		COMMAND hdiutil unmount dmg_mount
 	)
 	FetchContent_Declare(SDL2_image
-		URL https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.4.dmg
-		URL_HASH SHA256=7efbf1733ba02d5ce278ae27b0e35baeb6d0eaf0e5f56f187e608681aec98b39
+		URL https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.5.dmg
+		URL_HASH SHA256=313b2b92544bc05cafeb7c566572d08c961f15f25877608ebf86658bd458d815
 		DOWNLOAD_NO_EXTRACT TRUE
 		PATCH_COMMAND hdiutil mount <DOWNLOADED_FILE> -mountpoint dmg_mount
 		COMMAND cp -r dmg_mount dmg_content
@@ -123,7 +123,7 @@ elseif(APPLE)
 		COMMAND cp -r dmg_mount dmg_content
 		COMMAND hdiutil unmount dmg_mount
 	)
-	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer)
+	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf)
 
 	target_include_directories(SDL2 INTERFACE "${sdl2_SOURCE_DIR}/dmg_content/SDL2.framework/Headers")
 	target_compile_options(SDL2 INTERFACE -F "${sdl2_SOURCE_DIR}/dmg_content")  # so SDL_mixer finds <SDL2/SDL.h>
@@ -138,50 +138,24 @@ elseif(APPLE)
 	target_link_libraries(SDL2_mixer INTERFACE "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework/SDL2_mixer")
 	install(DIRECTORY "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework" TYPE BIN COMPONENT generic/executables)
 	install(FILES "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework/Frameworks/Ogg.framework/Resources/LICENSE.ogg-vorbis.txt" TYPE BIN COMPONENT generic/executables)
+
+	target_include_directories(SDL2_ttf INTERFACE "${sdl2_ttf_SOURCE_DIR}/dmg_content/SDL2_ttf.framework/Headers")
+	target_link_libraries(SDL2_ttf INTERFACE "${sdl2_ttf_SOURCE_DIR}/dmg_content/SDL2_ttf.framework/SDL2_ttf")
+	install(DIRECTORY "${sdl2_ttf_SOURCE_DIR}/dmg_content/SDL2_ttf.framework" TYPE BIN COMPONENT jspedit/executables)
+	install(FILES "${sdl2_ttf_SOURCE_DIR}/dmg_content/SDL2_ttf.framework/Frameworks/FreeType.framework/Resources/LICENSE.freetype.txt" TYPE BIN COMPONENT jspedit/executables)
 else()
 	# Use system libraries.
 	find_package(SDL2 REQUIRED)
 	find_library(SDL2_image_LIBRARIES SDL2_image REQUIRED)
 	find_library(SDL2_mixer_LIBRARIES SDL2_mixer REQUIRED)
 	find_library(SDL2_ttf_LIBRARIES SDL2_ttf REQUIRED)
-	target_include_directories(SDL2 INTERFACE ${SDL2_INCLUDE_DIRS})
-	target_link_libraries(SDL2 INTERFACE ${SDL2_LIBRARIES})
+	target_link_libraries(SDL2 INTERFACE SDL2::SDL2)
 	target_link_libraries(SDL2_image INTERFACE ${SDL2_image_LIBRARIES})
 	target_link_libraries(SDL2_mixer INTERFACE ${SDL2_mixer_LIBRARIES})
 	target_link_libraries(SDL2_ttf INTERFACE ${SDL2_ttf_LIBRARIES})
-	target_compile_options(SDL2 INTERFACE ${SDL2_CFLAGS_OTHER})
-
-	# Bundle Steam runtime libraries.
-	include(FetchContent)
-	FetchContent_Declare(steam_sdl2
-		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2/libsdl2-2.0-0_2.0.22+dfsg-6~steamrt1.1+srt1_amd64.deb
-		URL_HASH SHA256=276f44504ae0b0c76045d42ba6e4d42b9577185a55843e2fa2805242cdfd79a9
-		PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
-	)
-	FetchContent_Declare(steam_sdl2_image
-		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2-image/libsdl2-image-2.0-0_2.6.0+dfsg-1~steamrt1.1+srt1_amd64.deb
-		URL_HASH SHA256=8b586dd51532e368ba35302e7b67e26988e023f5c86cf2654bab7afa2c953571
-		PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
-	)
-	FetchContent_Declare(steam_sdl2_mixer
-		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2-mixer/libsdl2-mixer-2.0-0_2.6.1+dfsg-1~steamrt1.1+srt1_amd64.deb
-		URL_HASH SHA256=cbd1f9e189c42b2228c2888d4582bc93d254bc0c3e2aaab06ed4f4625e837edd
-		PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
-	)
-	FetchContent_Declare(steam_sdl2_ttf
-		URL https://repo.steampowered.com/steamrt/pool/main/libs/libsdl2-ttf/libsdl2-ttf-2.0-0_2.20.0-0+steamrt1.1+srt1_amd64.deb
-		URL_HASH SHA256=eb9897620a94756411fedfc308424129f155d4c786a1e91b2bbd46e2543d1308
-		PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
-	)
-	FetchContent_Declare(steam_libpng
-		URL https://repo.steampowered.com/steamrt/pool/main/libp/libpng/libpng12-0_1.2.46-3ubuntu4.3+steamrt1.1+srt1_amd64.deb
-		URL_HASH SHA256=07f3e5c0873fddccdfff6cc83d9652c69685260ea7b07fc30b17bc8bb583d625
-		PATCH_COMMAND "${CMAKE_COMMAND}" -E tar xf data.tar.xz
-	)
-	FetchContent_MakeAvailable(steam_sdl2 steam_sdl2_image steam_sdl2_mixer steam_libpng)
 
 	# Patch the rpath for the SDL library so that calls to `SDL_LoadObject` can find `libpng12.so.0`.
-	set(sdl2_original "${steam_sdl2_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0.22.0")
+	find_library(sdl2_original SDL2)
 	set(sdl2_with_rpath "${CMAKE_CURRENT_BINARY_DIR}/libSDL2-2.0.so.0")
 	add_custom_command(
 		OUTPUT "${sdl2_with_rpath}"
@@ -191,11 +165,42 @@ else()
 		VERBATIM
 	)
 	set(sdl2_rpath_depends "${sdl2_with_rpath}")
+	install(FILES "${sdl2_with_rpath}" TYPE BIN COMPONENT generic/executables)
 
-	install(FILES "${sdl2_with_rpath}" RENAME "libSDL2-2.0.so.0" TYPE BIN COMPONENT generic/executables)
-	install(FILES "${steam_sdl2_image_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2_image-2.0.so.0.600.0" RENAME "libSDL2_image-2.0.so.0" TYPE BIN COMPONENT generic/executables)
-	install(FILES "${steam_sdl2_mixer_SOURCE_DIR}/usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so.0.600.1" RENAME "libSDL2_mixer-2.0.so.0" TYPE BIN COMPONENT generic/executables)
-	install(FILES "${steam_libpng_SOURCE_DIR}/lib/x86_64-linux-gnu/libpng12.so.0.46.0" RENAME "libpng12.so.0" TYPE BIN COMPONENT generic/executables)
+	# Install SDL2_image .so
+	install_as_soname(generic/executables ${SDL2_image_LIBRARIES})
+	find_library(png_LIBRARIES png REQUIRED)
+	install_as_soname(generic/executables ${png_LIBRARIES})
+	find_library(z_LIBRARIES z REQUIRED)
+	install_as_soname(generic/executables ${z_LIBRARIES})
+
+	# Install SDL2_mixer .so
+	install_as_soname(generic/executables ${SDL2_mixer_LIBRARIES})
+	find_library(ogg_LIBRARIES ogg REQUIRED)
+	find_library(vorbis_LIBRARIES vorbis REQUIRED)
+	find_library(vorbisfile_LIBRARIES vorbisfile REQUIRED)
+	install_as_soname(generic/executables ${ogg_LIBRARIES} ${vorbis_LIBRARIES} ${vorbisfile_LIBRARIES})
+	install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_mixer/external/libogg-1.3.2/COPYING" TYPE BIN COMPONENT generic/executables RENAME "LICENSE.ogg.txt")
+	install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_mixer/external/libvorbis-1.3.5/COPYING" TYPE BIN COMPONENT generic/executables RENAME "LICENSE.vorbis.txt")
+
+	# SDL2_ttf is only used by JspEdit.
+	# SDL2_ttf takes a *direct* dependency on libfreetype.so.6, so it needs RUNPATH set or else it might find the system's.
+	set(sdl2_ttf_with_rpath "${CMAKE_CURRENT_BINARY_DIR}/libSDL2_ttf-2.0.so.0")
+	add_custom_command(
+		OUTPUT "${sdl2_ttf_with_rpath}"
+		COMMAND "${CMAKE_COMMAND}" -E copy "${SDL2_ttf_LIBRARIES}" "${sdl2_ttf_with_rpath}"
+		COMMAND patchelf --set-rpath \$ORIGIN "${sdl2_ttf_with_rpath}"
+		DEPENDS "${SDL2_ttf_LIBRARIES}"
+		VERBATIM
+	)
+	list(APPEND sdl2_rpath_depends "${sdl2_ttf_with_rpath}")
+	install(FILES "${sdl2_ttf_with_rpath}" TYPE BIN COMPONENT jspedit/executables)
+
+	find_library(freetype_LIBRARIES freetype REQUIRED)
+	install_as_soname(jspedit/executables ${freetype_LIBRARIES})
+	if (EXISTS "/usr/share/doc/libfreetype6-dev/copyright")
+		install(FILES "/usr/share/doc/libfreetype6-dev/copyright" TYPE BIN COMPONENT jspedit/executables RENAME "LICENSE.freetype.txt")
+	endif()
 endif()
 
 add_custom_target(sdl2_rpath ALL DEPENDS "${sdl2_rpath_depends}")

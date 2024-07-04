@@ -1375,8 +1375,6 @@ void ShowSpecials(void)
 	if(!(editopt.displayFlags&MAP_SHOWSPECIALS))
 		return;
 
-	char spclNum[32];
-
 	GetCamera(&sx,&sy);
 	for(i=0;i<MAX_SPECIAL;i++)
 		if(curMap->special[i].trigger)
@@ -1385,18 +1383,21 @@ void ShowSpecials(void)
 				curMap->special[i].x * TILE_WIDTH + 2 - sx + 320,
 				curMap->special[i].y * TILE_HEIGHT + 1 - sy + 240,
 				"Spcl", 0, 1);
-			sprintf(spclNum, "%03d", i);
-			Print(
-				curMap->special[i].x * TILE_WIDTH + 2 - sx + 320,
-				curMap->special[i].y * TILE_HEIGHT + 12 - sy + 240,
-				spclNum, 0, 1);
 		}
+}
+
+static void ShowTags()
+{
+	if(showTags)
+	{
+		int x,y;
+		GetCamera(&x,&y);
+		curMap->ShowTags(x,y,editopt.copyX,editopt.copyY,editopt.copyWidth,editopt.copyHeight);
+	}
 }
 
 void EditorDraw(void)
 {
-	int x,y;
-
 	switch(editMode)
 	{
 		case EDITMODE_EDIT:
@@ -1405,11 +1406,7 @@ void EditorDraw(void)
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
 			ShowTarget();
-			if(showTags)
-			{
-				GetCamera(&x,&y);
-				curMap->ShowTags(x,y,editopt.copyX,editopt.copyY,editopt.copyWidth,editopt.copyHeight);
-			}
+			ShowTags();
 			RenderEditMenu();
 			break;
 		case EDITMODE_TERRAIN:
@@ -1441,6 +1438,7 @@ void EditorDraw(void)
 				RenderGuys(editopt.displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
+			ShowTags();
 			RenderEditMenu();
 			RenderFileDialog(mouseX,mouseY,editmgl);
 			break;
@@ -1449,6 +1447,7 @@ void EditorDraw(void)
 				RenderGuys(editopt.displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
+			ShowTags();
 			RenderEditMenu();
 			RenderTileDialog(mouseX,mouseY,editmgl);
 			break;
@@ -1457,6 +1456,7 @@ void EditorDraw(void)
 				RenderGuys(editopt.displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
+			ShowTags();
 			RenderEditMenu();
 			RenderMapDialog(mouseX,mouseY,editmgl);
 			break;
@@ -1465,6 +1465,7 @@ void EditorDraw(void)
 				RenderGuys(editopt.displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
+			ShowTags();
 			RenderEditMenu();
 			RenderSpclDialog(mouseX,mouseY,editmgl);
 			break;

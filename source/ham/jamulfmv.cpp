@@ -1,18 +1,23 @@
 #include "jamulfmv.h"
+#include <stdio.h>
+#include <vector>
 #include "mgldraw.h"
 #include "clock.h"
 #include "appdata.h"
-#include <stdio.h>
+#include "control.h"
 
 // different kinds of flic chunks
-#define FLI_COLOR		11
-#define FLI_LC			12
-#define FLI_BLACK		13
-#define FLI_BRUN		15
-#define FLI_COPY		16
-#define FLI_DELTA		7
-#define FLI_256_COLOR	4
-#define FLI_MINI		18
+enum
+{
+	FLI_COLOR       = 11,
+	FLI_LC          = 12,
+	FLI_BLACK       = 13,
+	FLI_BRUN        = 15,
+	FLI_COPY        = 16,
+	FLI_DELTA       = 7,
+	FLI_256_COLOR   = 4,
+	FLI_MINI        = 18,
+};
 
 struct fliheader
 {
@@ -26,7 +31,7 @@ struct fliheader
 	int32_t next,frit;  // meaning unknown
 };
 static_assert(sizeof(fliheader) == 28, "sizeof(fliheader) is incorrect for direct i/o");
-static_assert(SDL_BYTEORDER == SDL_LIL_ENDIAN, "HamSandwich currently only support big-endian processors");
+static_assert(SDL_BYTEORDER == SDL_LIL_ENDIAN, "HamSandwich currently only supports little-endian processors");
 
 struct frmheader
 {
@@ -39,7 +44,7 @@ static_assert(sizeof(frmheader) == 16, "sizeof(frmheader) is incorrect for direc
 
 // because of padding, the following 6-byte header is 8 bytes.
 // therefore use this define instead of sizeof() to read from a FLIc
-#define sizeofchunkheader 6
+constexpr int sizeofchunkheader = 6;
 
 struct chunkheader
 {
@@ -47,7 +52,6 @@ struct chunkheader
 	word kind;
 };
 
-static SDL_RWops* FLI_file;
 static RGB FLI_pal[256];
 static word	fliWidth,fliHeight;
 
@@ -211,16 +215,18 @@ static void FLI_doBRUN(byte *scrn,int scrWidth,byte *p)
 	}
 }
 
-static void FLI_nextchunk(MGLDraw *mgl,int scrWidth)
+static void FLI_nextchunk(SDL_RWops* FLI_file, MGLDraw *mgl, int scrWidth)
 {
 	chunkheader chead;
-	byte *p;
 
 	SDL_RWread(FLI_file, &chead,1,sizeofchunkheader);
 	if(chead.kind==FLI_COPY)
 		chead.size=fliWidth*fliHeight+sizeofchunkheader;	// a hack to make up for a bug in Animator?
-	p=(byte *)malloc(chead.size-sizeofchunkheader);
+
+	std::vector<byte> buffer(chead.size-sizeofchunkheader, 0);
+	byte *p = buffer.data();
 	SDL_RWread(FLI_file, p,1,chead.size-sizeofchunkheader);
+
 	switch(chead.kind)
 	{
 		case FLI_COPY:
@@ -247,10 +253,9 @@ static void FLI_nextchunk(MGLDraw *mgl,int scrWidth)
 			FLI_docolor2(p,mgl);
 			break;
 	}
-	free(p);
 }
 
-static void FLI_nextfr(MGLDraw *mgl,int scrWidth)
+static void FLI_nextfr(SDL_RWops* FLI_file, MGLDraw *mgl, int scrWidth)
 {
 	long start = SDL_RWtell(FLI_file);
 
@@ -261,7 +266,7 @@ static void FLI_nextfr(MGLDraw *mgl,int scrWidth)
 	if (fhead.magic == 0xF1FA)
 	{
 		for(int i=0; i < fhead.chunks; i++)
-			FLI_nextchunk(mgl, scrWidth);
+			FLI_nextchunk(FLI_file, mgl, scrWidth);
 	}
 	// Other possible value of "magic" is 0x00A1, indicating the FLC file's
 	// special frame, but we already skip over that with the seek in FLI_play.
@@ -277,9 +282,11 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 	fliheader FLI_hdr;
 	int scrWidth;
 	char k;
-	dword startTime,endTime;
+	dword playbackTime, currentTime;
+	dword oldGamepadButtons = ~0;
+	dword gamepadButtons = GetGamepadButtons();
 
-	FLI_file=AssetOpen_SDL(name);
+	owned::SDL_RWops FLI_file = AssetOpen_SDL_Owned(name);
 	if (!FLI_file)
 	{
 		// Asset stack printed error already
@@ -315,34 +322,45 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 
 	mgl->LastKeyPressed();	// clear key buffer
 
+	playbackTime = timeGetTime() - 1;
 	do
 	{
-		startTime=timeGetTime();
-		frmon++;
-		scrWidth=mgl->GetWidth();
-		FLI_nextfr(mgl,scrWidth);
-		if (callback && !callback(frmon))
-			break;
-		AWAIT mgl->Flip();
-		if((loop)&&(frmon==FLI_hdr.frames+1))
+		currentTime = timeGetTime();
+
+		// If vsync time is faster than FLC framerate, idle.
+		while (currentTime < playbackTime)
 		{
-			frmon=1;
-			SDL_RWseek(FLI_file, ofs1, RW_SEEK_SET);
+			SDL_Delay((playbackTime - currentTime) / 2);
+			currentTime = timeGetTime();
 		}
-		if((!loop)&&(frmon==FLI_hdr.frames))
-			frmon=FLI_hdr.frames+1;
+
+		// If the FLC's framerate is faster than vsync time, skip frames.
+		while (playbackTime < currentTime)
+		{
+			frmon++;
+			scrWidth=mgl->GetWidth();
+			FLI_nextfr(FLI_file.get(), mgl, scrWidth);
+			if (callback && !callback(frmon))
+				break;
+			if((loop)&&(frmon==FLI_hdr.frames+1))
+			{
+				frmon=1;
+				SDL_RWseek(FLI_file, ofs1, RW_SEEK_SET);
+			}
+			if((!loop)&&(frmon==FLI_hdr.frames))
+				frmon=FLI_hdr.frames+1;
+
+			playbackTime += wait;
+		}
+
+		AWAIT mgl->Flip();
 		k=mgl->LastKeyPressed();
 		// key #27 is escape
+		oldGamepadButtons = gamepadButtons;
+		gamepadButtons = GetGamepadButtons();
+	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27) && !(gamepadButtons & ~oldGamepadButtons & ((1 << SDL_CONTROLLER_BUTTON_START) | (1 << SDL_CONTROLLER_BUTTON_BACK))));
 
-		endTime=timeGetTime();
-		while((endTime-startTime)<wait)
-		{
-			SDL_Delay((startTime + wait - endTime) / 2);
-			endTime=timeGetTime();
-		}
-	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27));
-
-	SDL_RWclose(FLI_file);
+	FLI_file.reset();
 	mgl->ResizeBuffer(oldWidth, oldHeight);
 
 	CO_RETURN k != 27;

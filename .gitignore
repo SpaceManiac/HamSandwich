@@ -4,15 +4,22 @@
 Thumbs.db
 
 # top-level folders and files
+/.vagrant
 /.vscode
 /.vs
 /addons
 /appdata
 /build
 /installers
+/exports
 /CMakeUserPresets.json
 
 # Android
 /.idea
 /.gradle
 /local.properties
+
+# Proprietary Steamworks SDK.
+# Needs to be downloaded from behind the authentication and unzipped manually.
+# https://partner.steamgames.com/downloads/steamworks_sdk.zip
+/external/steamworks_sdk

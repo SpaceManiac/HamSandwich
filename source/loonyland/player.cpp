@@ -1,10 +1,12 @@
 #include "player.h"
+#include "string_extras.h"
 #include "options.h"
 #include "title.h"
 #include "quest.h"
 #include "slingshot.h"
 #include "badge.h"
 #include "bossbash.h"
+#include "randomizer.h"
 
 // characters
 #include "ch_loony.h"
@@ -23,7 +25,8 @@ byte tportclock;
 void InitPlayer(byte initWhat,byte world,byte level)
 {
 	int i;
-	byte startLife[]={15,10,5,3,1};
+	static const byte startLife[]={15,10,5,3,1,5};
+	static_assert(std::size(startLife) == NUM_DIFFICULTY);
 
 	if(initWhat==INIT_GAME)	// initialize everything, this is to start a whole new game
 	{
@@ -37,6 +40,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.fireFlags=0;
 		player.worldNum=world;
 		player.weapon=ITM_NONE;
+		player.wpnCost=0;
 		player.lastSave=255;
 		player.cheatsOn=0;
 
@@ -61,7 +65,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.crystalBall=0;
 		player.xtraByte=0;
 
-		if(opt.cheats[CH_HARDCORE])
+		if(opt.cheats[CH_HARDCORE] && (world == WORLD_NORMAL || world == WORLD_REMIX))
 			player.cheatsOn|=PC_HARDCORE;
 
 		if(opt.cheats[CH_ALLACCESS])
@@ -103,7 +107,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 
 		player.difficulty=opt.difficulty;
 
-		player.hearts=startLife[opt.difficulty];
+		player.hearts=startLife[player.difficulty];
 		player.startHearts=player.hearts;
 		player.maxHearts=player.hearts;
 		player.maxMaxHearts=player.hearts+20;
@@ -177,6 +181,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 			player.var[VAR_POTION]=1;
 			player.var[VAR_QUESTASSIGN+QUEST_SILVER]=1;
 			player.var[VAR_QUESTDONE+QUEST_SILVER]=1;
+			player.var[VAR_SILVERSLING] = 1;
 			player.maxMoney=200;
 		}
 		else if(player.worldNum==WORLD_SLINGSHOT)
@@ -187,6 +192,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		{
 			player.var[VAR_QUESTASSIGN+QUEST_SILVER]=1;
 			player.var[VAR_QUESTDONE+QUEST_SILVER]=1;
+			player.var[VAR_SILVERSLING] = 1;
 			player.var[VAR_POTION]=1;
 			player.var[VAR_TORCH]=1;
 			for(i=0;i<7;i++)
@@ -300,8 +306,11 @@ void InitPlayer(byte initWhat,byte world,byte level)
 			for(i=0;i<7;i++)
 				player.var[VAR_WEAPON+i]=1;
 			player.var[VAR_POTION]=1;
-			player.var[VAR_QUESTASSIGN+QUEST_SILVER]=1;
-			player.var[VAR_QUESTDONE+QUEST_SILVER]=1;
+			if (player.worldNum != WORLD_RANDOMIZER) {
+				player.var[VAR_QUESTASSIGN+QUEST_SILVER]=1;
+				player.var[VAR_QUESTDONE+QUEST_SILVER]=1;
+			}
+			player.var[VAR_SILVERSLING]=1;
 			player.var[VAR_HELPERBAT]=1;
 			player.var[VAR_QUESTASSIGN+QUEST_FARLEY]=1;
 			player.var[VAR_QUESTDONE+QUEST_FARLEY]=1;
@@ -366,6 +375,9 @@ void InitPlayer(byte initWhat,byte world,byte level)
 			player.fireRate=0;
 			player.monsterPoints=0;
 		}
+		if (player.worldNum == WORLD_RANDOMIZER) {
+			memcpy(&player.var[VAR_SEEDSTART], GetSeed().data(), MAX_SEED_LENGTH);
+		}
 
 		if(player.monsType==MONS_PLYRSWAMPDOG)
 			FakeLevelUp();
@@ -417,7 +429,7 @@ void PlayerClearTempVars(void)
 		player.keys[0]=0;
 }
 
-float CalcPercent(player_t *p)
+float CalcPercent(const player_t *p)
 {
 	int i,totalpoints,gotpoints;
 
@@ -674,6 +686,7 @@ void PlayerSetVar(int v,int val)
 		{
 			MakeNormalSound(SND_POWERUP);
 			NewBigMessage("Got Reflect Gem!",90);
+			player.fireFlags|=FF_REFLECT;
 		}
 	}
 	if(v>=VAR_ZOMBIE && v<=VAR_ZOMBIE+2)
@@ -713,7 +726,7 @@ void PlayerSetVar(int v,int val)
 
 byte WeaponCost(byte wpn,byte level)
 {
-	byte wpnCost[7][3]={
+	static const byte wpnCost[7][3]={
 		{3,7,15},	// bombs
 		{1,4,8},	// lightning
 		{3,7,12},	// ice
@@ -723,13 +736,16 @@ byte WeaponCost(byte wpn,byte level)
 		{1,5,10},	// hot pants
 	};
 
-	if(level==2 && opt.cheats[CH_ULTRAWEAPON])
+	if (wpn < ITM_WBOMB || wpn > ITM_WHOTPANTS)
+		return 0;
+	else if (level==2 && opt.cheats[CH_ULTRAWEAPON])
 		return wpnCost[wpn-ITM_WBOMB][level]*3;
 	else
 		return wpnCost[wpn-ITM_WBOMB][level];
 }
 
-void PlayerGetWeapon(byte wpn)
+// true if the item was really gotten, false if it went through (weapon lock)
+bool PlayerGetWeapon(byte wpn)
 {
 	if(player.monsType==MONS_PLYRWITCH)
 	{
@@ -761,8 +777,8 @@ void PlayerGetWeapon(byte wpn)
 	}
 	else
 	{
-		if(player.fireFlags&FF_WPNLOCK)
-			return;		// weapon lock prevents you from switching weapons
+		if((bool)(player.fireFlags&FF_WPNLOCK) != (bool)(GetControls() & CONTROL_B3) && player.var[VAR_WEAPON + wpn - ITM_WBOMB])
+			return false;		// weapon lock prevents you from switching weapons
 
 		MakeNormalSound(SND_WPNGET);
 
@@ -781,6 +797,7 @@ void PlayerGetWeapon(byte wpn)
 			player.wpnCost=WeaponCost(player.weapon,player.wpnLevel);
 		}
 	}
+	return true;
 }
 
 void PlaceOrbOnStand(int x,int y)
@@ -810,6 +827,10 @@ void PlaceOrbOnStand(int x,int y)
 		}
 		curMap->TempTorch(x,y,32);
 		MakeNormalSound(SND_ZOMBIESDEAD);
+
+		// Instantly set the stand to filled rather than waiting on the special
+		// to do it, in case Quick Mode is on and the player bumps twice.
+		curMap->map[x+y*curMap->width].item = ITM_ORBSTAND2;
 	}
 }
 
@@ -1040,6 +1061,20 @@ byte PlayerGetItem(byte itm,int x,int y)
 				BadgeCheck(BE_GEMSUP,0,curMap);
 				MakeNormalSound(SND_BIGGEMGET);
 				break;
+			case ITM_ZOMBGEM:
+				if(player.money<player.maxMoney)
+				{
+					player.money+=100;
+					if(player.money>player.maxMoney)
+					{
+						player.money=player.maxMoney;
+					}
+				}
+				player.gemsGotten+=100;
+				BadgeCheck(BE_GEMSUP,0,curMap);
+				NewBigMessage("100 Gems!",90);
+				MakeNormalSound(SND_BIGGEMGET);
+				break;
 			case ITM_SUPERGEM:
 				MakeRingParticle(goodguy->x,goodguy->y,0,32,100);
 				if(player.maxMoney<MAX_MONEY)
@@ -1098,10 +1133,52 @@ byte PlayerGetItem(byte itm,int x,int y)
 			case ITM_TALISMAN:
 				PlayerSetVar(VAR_QUESTASSIGN+QUEST_WITCH,1);
 				break;
+			case ITM_CAT:
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Cat!", 90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_BOOTS:
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Mud Boots!", 90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_FERTILIZER:
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Fertilizer!", 90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_GHOSTPOTION:
+			case ITM_POTION:
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Ghost Slaying Potion!", 90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_LANTERN:
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Lantern!", 90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_REFLECTGEM:
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Reflect Gem!", 90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_SILVERSLING:
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("Silver Bullets!", 90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+			case ITM_STICK:
+				MakeRingParticle(goodguy->x, goodguy->y, 0, 32, 100);
+				NewBigMessage("A Stick!", 90);
+				MakeNormalSound(SND_POWERUP);
+				break;
+
 		}
 		if(itm>=ITM_WBOMB && itm<=ITM_WHOTPANTS)
 		{
-			PlayerGetWeapon(itm);
+			return !PlayerGetWeapon(itm);
 		}
 		if(itm>=ITM_BATDOLL && itm<=ITM_WOLFDOLL)
 		{
@@ -1121,9 +1198,9 @@ byte PlayerGetItem(byte itm,int x,int y)
 		}
 		if(itm==ITM_BADGE)
 		{
-			if(player.worldNum==WORLD_NORMAL)
+			if (player.worldNum == WORLD_NORMAL || player.worldNum == WORLD_RANDOMIZER)
 				EarnBadge(BADGE_HIDDEN);
-			else
+			else if (player.worldNum == WORLD_REMIX)
 				EarnBadge(BADGE_HIDDEN2);
 		}
 		return 0;
@@ -1456,6 +1533,11 @@ void PlayerFireUltraWeapon(Guy *me)
 	}
 }
 
+std::string GetPlayerSeed()
+{
+	return std::string((const char*)&player.var[VAR_SEEDSTART], MAX_SEED_LENGTH);
+}
+
 byte GetTportClock(void)
 {
 	return tportclock;
@@ -1503,6 +1585,14 @@ void PlayerControlMe(Guy *me,Map *map,mapTile_t *mapTile,world_t *world)
 		player.var[VAR_QUESTASSIGN+QUEST_FARLEY]=1;
 		player.var[VAR_QUESTDONE+QUEST_FARLEY]=1;
 	}
+	else if (player.var[VAR_QUESTDONE+QUEST_FARLEY] && !player.var[VAR_HELPERBAT])
+	{
+		// If you save with the Sidekick badge on then turn it off, instead of
+		// going into an inconsistent state forever, revert Farley to as if you
+		// have not completed his quest. This prevents weirdness and also makes
+		// it so using the badge once doesn't lock you out of 100% completion.
+		player.var[VAR_QUESTDONE+QUEST_FARLEY] = 0;
+	}
 
 	if(player.worldNum==WORLD_SLINGSHOT)
 	{
@@ -1545,19 +1635,19 @@ void PlayerControlMe(Guy *me,Map *map,mapTile_t *mapTile,world_t *world)
 			GirlControlMe(me,mapTile,world);
 			break;
 	}
-
-	if(opt.cheats[CH_CRYSTAL])
-	{
-		player.crystalBall=map->FindPowerUps((me->x>>FIXSHIFT)/TILE_WIDTH,(me->y>>FIXSHIFT)/TILE_HEIGHT);
-	}
 }
 
 void SetAreaName(world_t *world)
 {
 	byte c;
 
+	if(opt.cheats[CH_CRYSTAL])
+	{
+		player.crystalBall=curMap->FindPowerUps((goodguy->x>>FIXSHIFT)/TILE_WIDTH,(goodguy->y>>FIXSHIFT)/TILE_HEIGHT);
+	}
+
 	// decide which location the player is for naming purposes
-	if(player.levelNum==0 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX))
+	if(player.levelNum==0 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
 	{
 		c=255;
 		// decide based on region in the map
@@ -1700,4 +1790,50 @@ void HandlePoison(Guy *me)
 		}
 		player.poison--;
 	}
+}
+
+void DescribeSave(span<char> dst, const player_t* player)
+{
+	// Slot number and area name
+	dst = ham_sprintf(dst, "%d: %s", player->lastSave + 1, player->areaName);
+	dst = ham_strcpy(dst, " - ");
+	// Percentage
+	dst = ham_sprintf(dst, "%03.1f%%", CalcPercent(player));
+	// World name (if needed)
+	if (player->worldNum == WORLD_REMIX)
+	{
+		dst = ham_strcpy(dst, " Remix");
+	}
+	else if (player->worldNum == WORLD_RANDOMIZER)
+	{
+		dst = ham_strcpy(dst, " Rando");
+	}
+	// Difficulty name, including Hardcore and Terror
+	// ...except there's no room to have both difficulty and character
+	/*
+	dst = ham_strcpy(dst, " - ");
+	if (player->cheatsOn & PC_HARDCORE)
+		dst = ham_strcpy(dst, "Hardcore+");
+	if (player->cheatsOn & PC_TERROR)
+		dst = ham_strcpy(dst, "Terror+");
+	dst = ham_sprintf(dst, "%s", DifficultyName(player->difficulty));
+	*/
+	// Character name
+	if (player->cheatsOn & PC_PLAYTOAD)
+		dst = ham_sprintf(dst, " - %s", PlayerCharacterName(PC_Toad));
+	else if (player->cheatsOn & PC_PLAYBONK)
+		dst = ham_sprintf(dst, " - %s", PlayerCharacterName(PC_Bonkula));
+	else if (player->cheatsOn & PC_PLAYDOG)
+		dst = ham_sprintf(dst, " - %s", PlayerCharacterName(PC_Swampdog));
+	else if (player->cheatsOn & PC_PLAYWITCH)
+		dst = ham_sprintf(dst, " - %s", PlayerCharacterName(PC_Witch));
+	else if (player->cheatsOn & PC_PLAYWOLF)
+		dst = ham_sprintf(dst, " - %s", PlayerCharacterName(PC_Werewolf));
+	else if (player->cheatsOn & PC_PLAYSUMMON)
+		dst = ham_sprintf(dst, " - %s", PlayerCharacterName(PC_Summon));
+	else if (player->cheatsOn & PC_PLAYTHIEF)
+		dst = ham_sprintf(dst, " - %s", PlayerCharacterName(PC_Thief));
+	// Just hardcore since that's more relevant to save+load system than other difficulties
+	if (player->cheatsOn & PC_HARDCORE)
+		dst = ham_strcpy(dst, " - Hardcore");
 }

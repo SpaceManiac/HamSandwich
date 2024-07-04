@@ -1,8 +1,10 @@
 #include "lunaticpal.h"
-#include <vector>
-#include <SDL.h>
-#include <zlib.h>
 #include <stdio.h>
+#include <vector>
+#include <utility>
+#include <SDL.h>
+#define ZLIB_CONST
+#include <zlib.h>
 
 extern const unsigned char embed_compressed_lookup_table[];
 extern const size_t embed_compressed_lookup_table_size;
@@ -35,20 +37,30 @@ static bool LoadTable()
 	z_stream zip {};
 	zip.next_out = local_table.data();
 	zip.avail_out = local_table.size();
-	zip.next_in = const_cast<uint8_t*>(embed_compressed_lookup_table);
+#ifdef z_const
+	zip.next_in = embed_compressed_lookup_table;
+#else
+	// Inefficient, but feels less scummy than const_cast.
+	std::vector<uint8_t> copy { embed_compressed_lookup_table, embed_compressed_lookup_table + embed_compressed_lookup_table_size };
+	zip.next_in = copy.data();
+#endif
 	zip.avail_in = embed_compressed_lookup_table_size;
 
-	if (inflateInit(&zip) != Z_OK)
+	if (int r = inflateInit(&zip); r != Z_OK)
 	{
-		fprintf(stderr, "lunaticpal::LoadTable: inflateInit failed\n");
+		fprintf(stderr, "lunaticpal::LoadTable: bad inflateInit: %d: %s\n", r, zip.msg);
 		return false;
 	}
-	if (inflate(&zip, Z_FINISH) != Z_STREAM_END)
+	if (int r = inflate(&zip, Z_FINISH); r != Z_STREAM_END)
 	{
-		fprintf(stderr, "lunaticpal::LoadTable: inflate failed\n");
+		fprintf(stderr, "lunaticpal::LoadTable: bad inflate: %d: %s\n", r, zip.msg);
 		return false;
 	}
-	(void)inflateEnd(&zip);
+	if (int r = inflateEnd(&zip); r != Z_OK)
+	{
+		fprintf(stderr, "lunaticpal::LoadTable: bad inflateEnd: %d: %s\n", r, zip.msg);
+		return false;
+	}
 
 	lookup_table = std::move(local_table);
 	return true;

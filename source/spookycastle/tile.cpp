@@ -1,5 +1,5 @@
 #include "tile.h"
-#include "jamulspr.h"
+#include "recolor.h"
 
 tile_t tiles[NUMTILES];
 MGLDraw *tileMGL;

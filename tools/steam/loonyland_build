@@ -1,0 +1,59 @@
+#!/bin/bash
+set -euo pipefail
+
+# Clean the installation directory just in case
+if test -d build/dist/loonyland; then
+	rm -r build/dist/loonyland
+fi
+
+# Require Steamworks SDK
+if ! test -f external/steamworks_sdk/Readme.txt; then
+	echo "ERROR: Steam release requires Steamworks SDK to be present"
+	exit 1
+fi
+
+# Pre-extract loonyland_install.EXE
+7z x installers/loonyland_install.EXE -o"build/dist/loonyland"
+innoextract build/dist/loonyland/setup.0 --output-dir "build/dist/loonyland"  # implied app/
+rm "build/dist/loonyland/app/loonyland.exe"
+# Pre-extract loonyland_editor.exe
+# shellcheck disable=SC2016
+7z x installers/loonyland_editor.exe -o"build/dist/loonyland/editor" \
+	-x'!$PLUGINSDIR' -x'!*.exe'
+
+for platform in itch-linux itch-windows; do
+	rsync --mkpath --archive build/dist/loonyland/app/ build/dist/loonyland/$platform/installers/loonyland_install.EXE/
+	rsync --mkpath --archive build/dist/loonyland/editor/ build/dist/loonyland/$platform/installers/loonyland_editor.exe/
+done
+
+# Linux executables
+echo "==== Linux build ===="
+./container bash -c "
+	set -euo pipefail
+	cmake --preset linux-x86_64-release
+	cmake --build build/cmake-linux-x86_64-release --target loonyland
+	# Steam
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/loonyland/steam-linux --component generic/executables
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/loonyland/steam-linux --component loonyland/executables
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/loonyland/steam-assets --component loonyland/assets
+	# Itch
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/loonyland/itch-linux --component generic/executables
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/loonyland/itch-linux --component loonyland/executables
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/loonyland/itch-linux --component loonyland/assets
+"
+
+# Windows executables
+echo "==== Windows build ===="
+tools/windows-cross/container bash -c "
+	set -euo pipefail
+	cmake --preset windows-i686-release -Wno-dev
+	cmake --build build/cmake-windows-i686-release --target loonyland
+	# Steam
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/loonyland/steam-windows --component generic/executables
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/loonyland/steam-windows --component loonyland/executables
+	# Linux build already installs cross-platform Steam assets
+	# Itch
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/loonyland/itch-windows --component generic/executables
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/loonyland/itch-windows --component loonyland/executables
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/loonyland/itch-windows --component loonyland/assets
+"

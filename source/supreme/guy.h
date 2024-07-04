@@ -112,7 +112,7 @@ int CountMonsters(int type);
 int CountMonstersInRect(int type,int x,int y,int x2,int y2);
 Guy *GetGuyOfType(int type);
 void RemoveGuy(Guy *g);
-void Telefrag(Guy *g);
+void Telefrag(Guy *g, bool sphinxException = false);
 byte FreezeGuy(Guy *me);
 byte TryToPushItem(int x,int y,int destx,int desty,Map *map,world_t *world);
 void ChangeMonster(byte fx,int x,int y,int type,int newtype);

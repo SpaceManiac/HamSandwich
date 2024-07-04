@@ -612,6 +612,7 @@ TASK(byte) LunaticRun(int *lastTime)
 		else if (msgFromOtherModules==MSG_SHOWANIM)
 		{
 			AWAIT ShowVictoryAnim(msgContent);
+			msgFromOtherModules=MSG_NONE;
 		}
 
 		*lastTime-=TIME_PER_FRAME;

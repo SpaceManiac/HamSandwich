@@ -25,8 +25,9 @@ void InitPlayer(byte initWhat,byte world,byte level)
 				player.keychain[i][j]=0;
 			player.totalCompletion[i]=100;
 			player.complete[i]=0;
-			player.lunacyKey[i]=0;
 		}
+		for (i = 0; i < 4; i++)
+			player.lunacyKey[i] = 0;
 	}
 	if(initWhat>=INIT_WORLD) // initialize the things that go with each world
 	{

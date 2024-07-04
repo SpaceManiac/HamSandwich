@@ -1,6 +1,7 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
+#include <string_view>
 #include "mgldraw.h"
 #include "jamulspr.h"
 #include "jamulfont.h"
@@ -13,9 +14,6 @@
    list and camera, so everything is drawn in sorted order (or not drawn). */
 
 #define MAX_DISPLAY_OBJS 1024
-
-#define DISPLAY_XBORDER 256
-#define DISPLAY_YBORDER 256
 
 //display object flags
 #define DISPLAY_DRAWME		1
@@ -77,6 +75,7 @@ void CenterPrint(int x,int y,const char *s,char bright,byte font);
 void RightPrint(int x,int y,const char *s,char bright,byte font);
 void PrintColor(int x,int y,const char *s,byte color,char bright,byte font);
 void PrintGlow(int x,int y,const char *s,char bright,byte font);
+void PrintGlowRect(int x, int y, int x2, int y2, std::string_view s, int height, char bright, byte font);
 void CenterPrintGlow(int x,int y,const char *s,char bright,byte font);
 void CenterPrintColor(int x,int y,const char *s,byte color,char bright,byte font);
 void RightPrintColor(int x,int y,const char *s,byte color,char bright,byte font);

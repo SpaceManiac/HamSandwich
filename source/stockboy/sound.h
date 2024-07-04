@@ -134,6 +134,6 @@ void LoopingSound(int snd);
 void KillSong(void);
 void SetVolumes(int sndvol,int musvol);
 
-void PlayInstrument(int ins,int note,long vol,byte flags,byte seq);
+void PlayInstrument(int ins,int note,long vol,int flags,byte seq);
 
 #endif

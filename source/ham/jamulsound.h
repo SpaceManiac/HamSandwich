@@ -14,6 +14,7 @@ enum {
 	SND_RANDOM = 128, 		// randomize pitch up or down 10%
 	SND_BACKWARDS = 256,
 	SND_DOUBLESPEED = 512,
+	SND_MUSICVOLUME = 1024, // use music volume instead of sound volume, for Stockboy
 };
 
 const int MAX_SNDPRIORITY = 65536;

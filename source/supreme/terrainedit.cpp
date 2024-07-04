@@ -51,8 +51,9 @@ void TerrainSetupButtons(void);
 
 void FlagClick(int id)
 {
-	word flags[]={TF_SOLID,TF_ICE,TF_MUD,TF_WATER,TF_LAVA,TF_PUSHY,TF_PUSHON,TF_ANIM,TF_STEP,
-				  TF_DESTRUCT,TF_TRANS,TF_MINECART,TF_BUNNY,TF_NOGHOST,TF_NOENEMY,TF_RUBBER};
+	dword flags[]={TF_SOLID,TF_ICE,TF_MUD,TF_WATER,TF_LAVA,TF_PUSHY,TF_PUSHON,TF_ANIM,TF_STEP,
+				  TF_DESTRUCT,TF_TRANS,TF_MINECART,TF_BUNNY,TF_NOGHOST,TF_NOENEMY,TF_RUBBER,
+				  TF_SHADOWLESS};
 	int i;
 	byte b;
 
@@ -290,12 +291,14 @@ void TerrainSetupButtons(void)
 	MakeButton(BTN_CHECK,8, 0,4,243+15*7 ,128,15,"Animates To Next",FlagClick);
 	MakeButton(BTN_CHECK,9, 0,4,243+15*8 ,128,15,"Animates On Step",FlagClick);
 	MakeButton(BTN_CHECK,10,0,4,243+15*9 ,128,15,"Animates When Hit",FlagClick);
-	MakeButton(BTN_CHECK,11,0,4,243+15*10,128,15,"Transparent Roof (Shadowless)",FlagClick);
+	MakeButton(BTN_CHECK,11,0,4,243+15*10,128,15,"Transparent Roof",FlagClick);
 	MakeButton(BTN_CHECK,12,0,4,243+15*11,128,15,"Mine Cart Path",FlagClick);
 	MakeButton(BTN_CHECK,13,0,4,243+15*12,128,15,"Bunny Path",FlagClick);
 	MakeButton(BTN_CHECK,14,0,4,243+15*13,128,15,"Ghost Proof",FlagClick);
 	MakeButton(BTN_CHECK,15,0,4,243+15*14,128,15,"Enemy Proof",FlagClick);
 	MakeButton(BTN_CHECK,16,0,4,243+15*15,128,15,"Bouncy",FlagClick);
+
+	MakeButton(BTN_CHECK,17,0,200,243+15*10,128,15,"Shadowless Wall",FlagClick);
 
 	// next tile button
 	MakeButton(BTN_NORMAL,20,0,200,245,TILE_WIDTH+3,TILE_HEIGHT+3,"",NextTileClick);
@@ -341,17 +344,19 @@ void SetNextTile(word n)
 void TerrainSetFlags(void)
 {
 	int i,j;
-	word flags[]={TF_SOLID,TF_ICE,TF_MUD,TF_WATER,TF_LAVA,TF_PUSHY,TF_PUSHON,TF_ANIM,TF_STEP,
-				  TF_DESTRUCT,TF_TRANS,TF_MINECART,TF_BUNNY,TF_NOGHOST,TF_NOENEMY,TF_RUBBER};
+	dword flags[]={TF_SOLID,TF_ICE,TF_MUD,TF_WATER,TF_LAVA,TF_PUSHY,TF_PUSHON,TF_ANIM,TF_STEP,
+				  TF_DESTRUCT,TF_TRANS,TF_MINECART,TF_BUNNY,TF_NOGHOST,TF_NOENEMY,TF_RUBBER,
+				  TF_SHADOWLESS};
+	constexpr int count = std::size(flags);
 
-	byte flagCount[16];	// count how many tiles have each flag set
+	byte flagCount[count];	// count how many tiles have each flag set
 
-	for(i=0;i<16;i++)
+	for(i=0;i<count;i++)
 		flagCount[i]=0;
 
 	for(i=selMin;i<=selMax;i++)
 	{
-		for(j=0;j<16;j++)
+		for(j=0;j<count;j++)
 		{
 			if(world->terrain[i].flags&flags[j])
 			{
@@ -362,7 +367,7 @@ void TerrainSetFlags(void)
 
 	i=(selMax-selMin)+1;
 
-	for(j=0;j<16;j++)
+	for(j=0;j<count;j++)
 	{
 		if(flagCount[j]==0)
 			SetButtonState(j+1,CHECK_OFF);
@@ -471,8 +476,8 @@ byte MoveTilesTo(int dest)
 	selMin=dest;
 	selMax=dest+i-1;
 
-	delete tempTerrain;
-	delete tempImg;
+	delete[] tempTerrain;
+	delete[] tempImg;
 
 	MakeNormalSound(SND_MENUSELECT);
 	return 1;
@@ -549,7 +554,7 @@ void ImportTiles(void)
 	selMax=-1;
 }
 
-void TerrainEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
+void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl)
 {
 	int n;
 
@@ -566,7 +571,6 @@ void TerrainEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 
 		nextTileShow=world->terrain[showNextFrom].next;
 	}
-
 
 	n=(mouseX/TILE_WIDTH)+(mouseY/TILE_HEIGHT)*20;
 
@@ -653,6 +657,7 @@ void TerrainEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 			}
 			break;
 		case TMODE_LOADBMP:
+			FileDialogScroll(scroll);
 			if(mgl->MouseTap())
 			{
 				n=FileDialogClick(mouseX,mouseY);
@@ -668,6 +673,7 @@ void TerrainEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 			}
 			break;
 		case TMODE_SAVEBMP:
+			FileDialogScroll(scroll);
 			if(mgl->MouseTap())
 			{
 				n=FileDialogClick(mouseX,mouseY);

@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,6 +18,8 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 #include "test.h"
 
@@ -26,10 +28,10 @@
 #include "memdebug.h"
 
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURL *curls = NULL;
-  int res = 0;
+  CURLcode res = CURLE_OK;
   curl_mimepart *field = NULL;
   curl_mime *mime = NULL;
 
@@ -59,5 +61,5 @@ test_cleanup:
   curl_mime_free(mime);
   curl_easy_cleanup(curls);
   curl_global_cleanup();
-  return (int) res; /* return the final return code */
+  return res; /* return the final return code */
 }

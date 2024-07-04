@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,7 +18,11 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
+#define CURL_NO_FMT_CHECKS
+
 #include "curlcheck.h"
 
 #include "urldata.h"
@@ -59,7 +63,7 @@ debugf_cb(CURL *handle, curl_infotype type, char *buf, size_t size,
 static CURLcode
 unit_setup(void)
 {
-  int res = 0;
+  CURLcode res = CURLE_OK;
 
   global_init(CURL_GLOBAL_ALL);
   data = curl_easy_init();
@@ -69,7 +73,7 @@ unit_setup(void)
   }
   curl_easy_setopt(data, CURLOPT_DEBUGFUNCTION, debugf_cb);
   curl_easy_setopt(data, CURLOPT_VERBOSE, 1L);
-  return CURLE_OK;
+  return res;
 }
 
 static void
@@ -103,7 +107,7 @@ fail_unless(verify(result, "Simple Test 42 testing 43\n") == 0,
 /* Variations of empty strings */
 Curl_infof(data, "");
 fail_unless(strlen(result) == 1, "Empty string");
-Curl_infof(data, "%s", NULL);
+Curl_infof(data, "%s", (char *)NULL);
 fail_unless(verify(result, "(nil)") == 0, "Passing NULL as string");
 
 /* A string just long enough to not be truncated */

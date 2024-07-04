@@ -31,6 +31,7 @@ MonsterTool::~MonsterTool(void)
 void MonsterTool::Update(int msx,int msy)
 {
 	int i;
+	MGLDraw* mgl = GetDisplayMGL();
 
 	if(pickingItem)
 	{
@@ -38,34 +39,34 @@ void MonsterTool::Update(int msx,int msy)
 		itemMode=2;
 		pickingItem=0;
 	}
-	if(msx<380 || msy<400 || msx>639 || msy>479)
+	if(msx<mgl->GetWidth()-260 || msy<mgl->GetHeight()-80 || msx>=mgl->GetWidth() || msy>=mgl->GetHeight())
 		return;
 
-	if(GetDisplayMGL()->MouseTap())
+	if(mgl->MouseTap())
 	{
 		for(i=0;i<4;i++)
-			if(PointInRect(msx,msy,496,412+i*16,496+140,412+i*16+14))
+			if(PointInRect(msx, msy, mgl->GetWidth()-144, mgl->GetHeight()-68+i*16, mgl->GetWidth()-144+140, mgl->GetHeight()-68+i*16+14))
 			{
 				active=i;
-				if(GetDisplayMGL()->RMouseDown())
+				if(mgl->RMouseDown())
 				{
 					monster[i]=MONS_NONE;
 				}
 				MakeNormalSound(SND_MENUCLICK);
 			}
-		if(PointInRect(msx,msy,382,462,382+30,462+15))
+		if(PointInRect(msx, msy, mgl->GetWidth()-258, mgl->GetHeight()-18, mgl->GetWidth()-258+30, mgl->GetHeight()-18+15))
 		{
 			plopMode++;
 			if(plopMode>=PLOP_MODES)
 				plopMode=0;
 		}
-		if(PointInRect(msx,msy,397-15,442-15,397+16,442+16))
+		if(PointInRect(msx, msy, mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16))
 		{
 			brush++;
 			if(brush>13)
 				brush=0;
 		}
-		if(PointInRect(msx,msy,462,442-15,494,442+16))
+		if(PointInRect(msx, msy, mgl->GetWidth()-178, mgl->GetHeight()-38-15, mgl->GetWidth()-178+32, mgl->GetHeight()-38+16))
 		{
 			itemMode++;
 			if(itemMode==3)
@@ -73,11 +74,11 @@ void MonsterTool::Update(int msx,int msy)
 		}
 	}
 
-	if(GetDisplayMGL()->RMouseTap())
+	if(mgl->RMouseTap())
 	{
 		for(i=0;i<4;i++)
 		{
-			if(PointInRect(msx,msy,496,412+i*16,496+140,412+i*16+14))
+			if(PointInRect(msx, msy, mgl->GetWidth()-144, mgl->GetHeight()-68+i*16, mgl->GetWidth()-144+140, mgl->GetHeight()-68+i*16+14))
 			{
 				pickingMonster=i;
 				active=i;
@@ -87,13 +88,13 @@ void MonsterTool::Update(int msx,int msy)
 				MakeNormalSound(SND_MENUCLICK);
 			}
 		}
-		if(PointInRect(msx,msy,397-15,442-15,397+16,442+16))
+		if(PointInRect(msx, msy, mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16))
 		{
 			brush--;
 			if(brush>13)
 				brush=13;
 		}
-		if(PointInRect(msx,msy,462,442-15,494,442+16))
+		if(PointInRect(msx, msy, mgl->GetWidth()-178, mgl->GetHeight()-38-15, mgl->GetWidth()-178+32, mgl->GetHeight()-38+16))
 		{
 			ItemEdit_Init(EDITMODE_EDIT,EditorGetWorld(),1);
 			SetEditMode(EDITMODE_ITEM);
@@ -107,71 +108,74 @@ void MonsterTool::Render(int msx,int msy)
 {
 	int i;
 	int minusBrush,plusBrush;
+	MGLDraw* mgl = GetDisplayMGL();
 
 	char plopText[][12]={"Normal","Random","Cycle","BigRandom","BigCycle"};
-
 
 	for(i=0;i<4;i++)
 	{
 		if(monster[i] != MONS_NONE)
 		{
 			if(active==i)
-				RenderButtonImageLit(msx,msy,496,412+i*16,140,14,MonsterName(monster[i]));
+				RenderButtonImageLit(msx,msy,mgl->GetWidth()-144,mgl->GetHeight()-68+i*16,140,14,MonsterName(monster[i]));
 			else
-				RenderButtonImage(msx,msy,496,412+i*16,140,14,MonsterName(monster[i]));
+				RenderButtonImage(msx,msy,mgl->GetWidth()-144,mgl->GetHeight()-68+i*16,140,14,MonsterName(monster[i]));
 		}
 		else
 		{
 			if(active==i)
-				RenderButtonImageLit(msx,msy,496,412+i*16,140,14,"NONE");
+				RenderButtonImageLit(msx,msy,mgl->GetWidth()-144,mgl->GetHeight()-68+i*16,140,14,"NONE");
 			else
-				RenderButtonImage(msx,msy,496,412+i*16,140,14,"NONE");
+				RenderButtonImage(msx,msy,mgl->GetWidth()-144,mgl->GetHeight()-68+i*16,140,14,"NONE");
 		}
 	}
 
 	// carrying item
-	SetSpriteConstraints(462,442-15,494,442+16);
+	SetSpriteConstraints(mgl->GetWidth()-178, mgl->GetHeight()-38-15, mgl->GetWidth()-178+32, mgl->GetHeight()-38+16);
 
-	if(PointInRect(msx,msy,462,442-15,494,442+16))
-		DrawFillBox(462,442-15,494,442+16,8+32*1);
+	if(PointInRect(msx, msy, mgl->GetWidth()-178, mgl->GetHeight()-38-15, mgl->GetWidth()-178+32, mgl->GetHeight()-38+16))
+		DrawFillBox(mgl->GetWidth()-178, mgl->GetHeight()-38-15, mgl->GetWidth()-178+32, mgl->GetHeight()-38+16, 8+32*1);
 
 	switch(itemMode)
 	{
 		case 0:
-			Print(464,442-13,"N",0,1);
-			Print(464+8,442-8,"O",0,1);
-			Print(464+16,442-2,"N",0,1);
-			Print(464+23,442+4,"E",0,1);
+			Print(mgl->GetWidth()-178+2,mgl->GetHeight()-38-13,"N",0,1);
+			Print(mgl->GetWidth()-178+2+8,mgl->GetHeight()-38-8,"O",0,1);
+			Print(mgl->GetWidth()-178+2+16,mgl->GetHeight()-38-2,"N",0,1);
+			Print(mgl->GetWidth()-178+2+23,mgl->GetHeight()-38+4,"E",0,1);
 			break;
 		case 1:
-			InstaRenderItem((494-462)/2+462,442+10,ITM_RANDOM,0,GetDisplayMGL());
+			InstaRenderItem(mgl->GetWidth()-178+32/2,mgl->GetHeight()-38+10,ITM_RANDOM,0,mgl);
 			break;
 		case 2:
-			InstaRenderItem((494-462)/2+462,442+10,specificItem,0,GetDisplayMGL());
+			InstaRenderItem(mgl->GetWidth()-178+32/2,mgl->GetHeight()-38+10,specificItem,0,mgl);
 			break;
 	}
 
-	DrawBox(462,442-15,494,442+16,31);
+	DrawBox(mgl->GetWidth()-178, mgl->GetHeight()-38-15, mgl->GetWidth()-178+32, mgl->GetHeight()-38+16, 31);
 
-	Print(462,442-26,"Item",0,1);
-	SetSpriteConstraints(0,0,639,479);
+	Print(mgl->GetWidth()-178, mgl->GetHeight()-38-26, "Item",0,1);
+	ClearSpriteConstraints();
 
 	// plop mode
-	RenderButtonImage(msx,msy,382,462,30,15,"Plop");
-	Print(416,464,plopText[plopMode],0,1);
+	RenderButtonImage(msx, msy, mgl->GetWidth()-258, mgl->GetHeight()-18, 30, 15, "Plop");
+	Print(mgl->GetWidth()-224, mgl->GetHeight()-16, plopText[plopMode], 0, 1);
 
 	// brush size
 	minusBrush=brush;
 	plusBrush=brush+1;
 
-	if(PointInRect(msx,msy,397-15,442-15,397+16,442+16))
-		DrawFillBox(397-15,442-15,397+16,442+16,8+32*1);
-	DrawBox(397-15,442-15,397+16,442+16,31);
-	DrawFillBox(397-(minusBrush),
-				442-(minusBrush),
-				397+(plusBrush),
-				442+(plusBrush),24);
-	Print(397-15,442-26,"Brush",0,1);
+	if(PointInRect(msx,msy,mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16))
+		DrawFillBox(mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16, 8+32*1);
+	DrawBox(mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16, 31);
+	DrawFillBox(
+		mgl->GetWidth()-243-(minusBrush),
+		mgl->GetHeight()-38-(minusBrush),
+		mgl->GetWidth()-243+(plusBrush),
+		mgl->GetHeight()-38+(plusBrush),
+		24
+	);
+	Print(mgl->GetWidth()-243-15, mgl->GetHeight()-38-26, "Brush", 0, 1);
 }
 
 void MonsterTool::SetInk(void)
@@ -308,11 +312,11 @@ void MonsterTool::ShowTarget(void)
 	tileX-=minusBrush;
 	tileY-=minusBrush;
 
-	x1=tileX*TILE_WIDTH-(cx-320);
-	y1=tileY*TILE_HEIGHT-(cy-240);
+	x1=tileX*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2);
+	y1=tileY*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2);
 
-	x2=tileX2*TILE_WIDTH-(cx-320)+TILE_WIDTH-1;
-	y2=tileY2*TILE_HEIGHT-(cy-240)+TILE_HEIGHT-1;
+	x2=tileX2*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2)+TILE_WIDTH-1;
+	y2=tileY2*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2)+TILE_HEIGHT-1;
 
 	DrawBox(x1,y1,x2,y1,col);
 	DrawBox(x1,y2,x2,y2,col);

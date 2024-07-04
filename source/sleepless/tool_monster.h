@@ -33,7 +33,6 @@ class MonsterTool : public Tool
 		byte active;	// which of the four is active
 		byte brush;		// brush size
 		byte plopMode;	// how it plops when clicked
-		byte lastPlop;	// for "Cycle" plop mode
 		int lastX,lastY;	// last place plopped
 		int pickingMonster;	// which of the four items you are picking for
 		byte pickingItem;	// set to 1 if you are waiting for an item to be picked

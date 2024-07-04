@@ -4,6 +4,8 @@
 #include "dialogbits.h"
 #include "goal.h"
 
+constexpr int MAX_SCAN = 16;
+
 byte scanQueue[MAX_SCAN];
 byte scanQPos,firstScan;
 byte noKeyTime;
@@ -290,7 +292,7 @@ void RenderScan(MGLDraw *mgl)
 		if(i>480+add)
 			break;
 	}
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 
 	PrintGlowRect(20,20,620,60,20,groupTxt,2);
 	PrintGlow(20,80,nameTxt,0,2);
@@ -467,7 +469,7 @@ byte UpdateBestiary(int *lastTime,MGLDraw *mgl)
 	}
 
 	mgl->GetMouse(&msx,&msy);
-	if(mgl->LastKeyPressed()==27)
+	if(mgl->LastKeyPressed()==27 || (GetGamepadButtons() & (1 << SDL_CONTROLLER_BUTTON_BACK)))
 		return 1;
 
 	c=GetTaps()|GetArrowTaps();
@@ -648,7 +650,7 @@ void RenderBestiary(MGLDraw *mgl)
 		if(i>480+add)
 			break;
 	}
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 
 	PrintGlowRect(170,208,500,453,16,MonsterNotes(curMons),2);
 
@@ -673,7 +675,7 @@ void RenderBestiary(MGLDraw *mgl)
 	if(msy2>462)
 		msy2=462;
 	bestSpr->GetSprite(0)->DrawBright(msx2,msy2,mgl,msBright/2);
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 
 	oldmsx=msx;
 	oldmsy=msy;

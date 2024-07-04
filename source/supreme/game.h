@@ -91,4 +91,6 @@ void RestoreGameplayGfx(void);
 
 byte GetGameMode(void);
 
+bool VerifyLevel(Map* map);
+
 #endif

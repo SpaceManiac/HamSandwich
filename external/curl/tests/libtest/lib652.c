@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,6 +18,8 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 #include "test.h"
 
@@ -25,7 +27,7 @@
 
 static char buffer[17000]; /* more than 16K */
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURL *curl = NULL;
   CURLcode res = CURLE_OK;
@@ -48,7 +50,7 @@ int test(char *URL)
   curl = curl_easy_init();
   if(!curl) {
     fprintf(stderr, "curl_easy_init() failed\n");
-    res = (CURLcode) TEST_ERR_MAJOR_BAD;
+    res = TEST_ERR_MAJOR_BAD;
     goto test_cleanup;
   }
 
@@ -56,13 +58,13 @@ int test(char *URL)
   mime = curl_mime_init(curl);
   if(!mime) {
     fprintf(stderr, "curl_mime_init() failed\n");
-    res = (CURLcode) TEST_ERR_MAJOR_BAD;
+    res = TEST_ERR_MAJOR_BAD;
     goto test_cleanup;
   }
   part = curl_mime_addpart(mime);
   if(!part) {
     fprintf(stderr, "curl_mime_addpart() failed\n");
-    res = (CURLcode) TEST_ERR_MAJOR_BAD;
+    res = TEST_ERR_MAJOR_BAD;
     goto test_cleanup;
   }
   res = curl_mime_filename(part, "myfile.jpg");

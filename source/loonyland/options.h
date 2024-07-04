@@ -5,11 +5,21 @@
 #include "mgldraw.h"
 #include "highscore.h"
 
-#define DIFF_BEGINNER	0
-#define DIFF_NORMAL		1
-#define DIFF_CHALLENGE	2
-#define DIFF_MAD		3
-#define DIFF_LOONY		4
+// Serialized to options and savefiles - don't reorder.
+enum : byte
+{
+	DIFF_BEGINNER  = 0,
+	DIFF_NORMAL    = 1,
+	DIFF_CHALLENGE = 2,
+	DIFF_MAD       = 3,
+	DIFF_LOONY     = 4,
+	DIFF_HARD      = 5,
+
+	NUM_DIFFICULTY
+};
+const char* DifficultyName(byte difficulty);
+byte PrevDifficulty(byte difficulty);
+byte NextDifficulty(byte difficulty);
 
 // special cheats
 #define CH_LIGHT	0		// always see everything
@@ -53,22 +63,58 @@
 #define CH_REGEN	38		// monster regeneration
 #define CH_NOFARLEY 39		// no farley
 
+enum
+{
+	MODE_SURVIVAL  = 0,
+	MODE_BOSSBASH  = 1,
+	MODE_LOONYBALL = 2,
+	MODE_BOWLING   = 3,
+	MODE_BADGES    = 4,
+};
+
+enum PlayerCharacterType : int
+{
+	PC_Loony = 0,
+	PC_Bonkula = 1,
+	PC_Toad = 2,
+	PC_Swampdog = 3,
+	PC_Witch = 4,
+	PC_Werewolf = 5,
+	PC_Summon = 6,
+	PC_Thief = 7,
+	PC_MAX
+};
+const char* PlayerCharacterName(PlayerCharacterType character);
+
+enum MeritBadgeState : byte
+{
+	MERIT_NO = 0,
+	MERIT_EARNED = 1,
+	// The cheats set this and Steam checks it so you can still play with
+	// everything for fun, but have to actually earn the Steam achievement.
+	MERIT_CHEATED = 2,
+};
+
 typedef struct options_t
 {
 	byte control[2][6];	// key scancodes
 	byte joyCtrl[2];	// joystick 'codes' for the buttons
 	byte sound,music;
 	byte cheats[40];	// which special cheats are on
-	byte meritBadge[40];
+	MeritBadgeState meritBadge[40];
 	byte difficulty;
 	byte modes[5];
 	byte helpOn;
 	byte wpnLock;
 	byte bossDead[10];	// have killed each boss
-	byte expando[9];	// room for expansion
+	byte remixMode;
+	byte moreControl[2][2];
+	byte moreJoyCtrl[2];
+	byte version;
+	byte expando[1];	// room for expansion
 
 	// best scores
-	highScore_t score[8][15];	// high scores in different modes
+	highScore_t score[9][15];	// high scores in different modes
 } options_t;
 
 extern options_t opt;
@@ -78,5 +124,11 @@ void SaveOptions(void);
 
 TASK(void) OptionsMenu(MGLDraw *mgl);
 void KilledBoss(byte boss);
+
+bool IsAnyCharacterUnlocked();
+void NextCharacter();
+void PrevCharacter();
+void ResetCharacterCheats();
+PlayerCharacterType GetCurrentPC();
 
 #endif

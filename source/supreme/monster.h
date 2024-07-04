@@ -266,6 +266,9 @@
 
 #define ANIM_LENGTH	24
 
+constexpr byte FRAME_INVIS = 254;
+constexpr byte FRAME_END = 255;
+
 // flags
 #define MF_FLYING	 1
 #define MF_WATERWALK 2
@@ -341,23 +344,29 @@ void ExitMonsters(void);
 
 void PurgeMonsterSprites(void);
 
-monsterType_t *GetMonsterType(dword type);
+const monsterType_t *GetMonsterType(dword type);
 
 void ChangeOffColor(dword type,byte from,byte to);
 byte MonsterSize(dword type);
-byte *MonsterAnim(dword type,byte anim);
+const byte *MonsterAnim(dword type,byte anim);
 word MonsterFlags(dword type,byte aiType);
 dword MonsterTheme(dword type);
-void SetMonsterFlags(dword type,word flags);
-byte MonsterFrames(dword type);
 byte MonsterFrames(dword type,byte aiType);
 word MonsterHP(dword type);
 word MonsterPoints(dword type);
 char *MonsterName(short type);
-void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byte facing,char bright,byte ouch,byte poison,byte frozen,sprite_set_t* set);
+void MonsterDraw(
+	int x, int y, int z,
+	dword type, bool isBouapha,
+	byte seq, byte frm, byte facing,
+	char bright,
+	byte ouch, byte poison, byte frozen,
+	byte fromCol, byte toCol, uint8_t brtChg,
+	const sprite_set_t* set
+);
 void InstaRenderMonster(int x,int y,dword type,char bright,MGLDraw *mgl);
 int InstaRenderScannedMonster(int x,int y,dword type,char bright,MGLDraw *mgl);
-sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing);
+const sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing);
 int RangeToTarget(Guy *me,Guy *goodguy);
 
 // ai functions for each monster type

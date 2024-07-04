@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 2017 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 
@@ -63,6 +65,17 @@ struct gss_ctx_id_t_desc_struct {
   char creds[MAX_CREDS_LENGTH];
 };
 
+/* simple implementation of strndup(), which isn't portable */
+static char *my_strndup(const char *ptr, size_t len)
+{
+  char *copy = malloc(len + 1);
+  if(!copy)
+    return NULL;
+  memcpy(copy, ptr, len);
+  copy[len] = '\0';
+  return copy;
+}
+
 OM_uint32 gss_init_sec_context(OM_uint32 *min,
             gss_const_cred_id_t initiator_cred_handle,
             gss_ctx_id_t *context_handle,
@@ -78,8 +91,8 @@ OM_uint32 gss_init_sec_context(OM_uint32 *min,
             OM_uint32 *time_rec)
 {
   /* The token will be encoded in base64 */
-  int length = APPROX_TOKEN_LEN * 3 / 4;
-  int used = 0;
+  size_t length = APPROX_TOKEN_LEN * 3 / 4;
+  size_t used = 0;
   char *token = NULL;
   const char *creds = NULL;
   gss_ctx_id_t ctx = NULL;
@@ -170,7 +183,7 @@ OM_uint32 gss_init_sec_context(OM_uint32 *min,
       return GSS_S_FAILURE;
     }
 
-    ctx = (gss_ctx_id_t) calloc(sizeof(*ctx), 1);
+    ctx = (gss_ctx_id_t) calloc(1, sizeof(*ctx));
     if(!ctx) {
       *min = GSS_NO_MEMORY;
       return GSS_S_FAILURE;
@@ -206,8 +219,8 @@ OM_uint32 gss_init_sec_context(OM_uint32 *min,
   /* Token format: creds:target:type:padding */
   /* Note: this is using the *real* snprintf() and not the curl provided
      one */
-  used = snprintf(token, length, "%s:%s:%d:", creds,
-                  (char *) target_name, ctx->sent);
+  used = (size_t) snprintf(token, length, "%s:%s:%d:", creds,
+                           (char *) target_name, ctx->sent);
 
   if(used >= length) {
     free(token);
@@ -278,7 +291,7 @@ OM_uint32 gss_import_name(OM_uint32 *min,
     return GSS_S_FAILURE;
   }
 
-  name = strndup(input_name_buffer->value, input_name_buffer->length);
+  name = my_strndup(input_name_buffer->value, input_name_buffer->length);
   if(!name) {
     *min = GSS_NO_MEMORY;
     return GSS_S_FAILURE;

@@ -17,6 +17,14 @@
 			"link": "https://hamumu.itch.io/loonyland-halloween-hill",
 			"file_id": 782965,
 			"description": "Loonyland editor templates"
+		},
+		{
+			"filename": "hamswap_loonyland.zip",
+			"kind": "zip",
+			"sha256sum": "2a3130ade2b57d5145eb93b81b2ab0fa8d55012b99508395ecf82b24d00a7445",
+			"link": "https://wombat.platymuus.com/hamsandwich/worlds/hamswap_loonyland.zip",
+			"description": "Custom boss bash and bowling, by Redbone and SpaceManiac",
+			"optional": true
 		}
 	]
 }

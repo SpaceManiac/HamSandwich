@@ -100,6 +100,7 @@ void ToadControlMe(Guy *me,Map *map,mapTile_t *mapTile,world_t *world)
 								   Sine(me->facing*32)*player.fireRange,d,map,world))
 					{
 						// nothing special to do here
+						// WHAT ABOUT KNOCKBACK JAMUL
 						player.reload=5;
 						break;
 					}

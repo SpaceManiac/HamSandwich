@@ -165,6 +165,38 @@
 					]
 				}
 			}
+		},
+		{
+			"name": "ubsan",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_C_COMPILER": "clang",
+				"CMAKE_CXX_COMPILER": "clang++",
+				"CMAKE_C_FLAGS": "-fsanitize=undefined,address",
+				"CMAKE_CXX_FLAGS": "-fsanitize=undefined,address",
+				"LINK_FLAGS": "-fsanitize=undefined,address"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Linux"
+					]
+				}
+			}
+		},
+		{
+			"name": "iwyu",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_CXX_INCLUDE_WHAT_YOU_USE": "include-what-you-use"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Linux"
+					]
+				}
+			}
 		}
 	]
 }

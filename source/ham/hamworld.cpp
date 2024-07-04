@@ -1,7 +1,8 @@
 #include "hamworld.h"
+#include <string.h>
+#include <string>
 #include "log.h"
 #include "appdata.h"
-#include <string.h>
 
 namespace hamworld {
 
@@ -9,36 +10,6 @@ static const int CODE_LENGTH = 8;
 static const char CODE[CODE_LENGTH + 1] = "HAMSWCH!";
 
 static const int VERSION = 1;
-
-char* Buffer::prepare(size_t *len)
-{
-	if (!ptr || !sz)
-	{
-		*len = 0;
-		return nullptr;
-	}
-	else if (sz == SIZE_MAX)
-	{
-		std::string* s = (std::string*) ptr;
-		s->resize(*len);
-		return &(*s)[0];
-	}
-	else
-	{
-		char* buf = (char*) ptr;
-		if (*len > sz - 1)
-			*len = sz - 1;
-		buf[*len] = '\0';
-		return buf;
-	}
-}
-
-void Buffer::assign(string_view s)
-{
-	size_t len = s.length();
-	char* ptr = prepare(&len);
-	memcpy(ptr, s.data(), len);
-}
 
 size_t size_varint(size_t id)
 {
@@ -84,16 +55,16 @@ bool read_varint(std::istream& i, size_t* id)
 	return true;
 }
 
-bool read_string(std::istream& i, Buffer buffer)
+bool read_string(std::istream& i, StringDestination buffer)
 {
-	size_t len;
-	if (!read_varint(i, &len))
+	size_t src_len;
+	if (!read_varint(i, &src_len))
 		return false;
-	size_t total = len;
-	char* buf = buffer.prepare(&len);
-	if (buf && len && !i.read(buf, len))
+	size_t dest_len = src_len;
+	char* buf = buffer.prepare(&dest_len);
+	if (buf && dest_len && !i.read(buf, dest_len))
 		return false;
-	if (total > len && !i.ignore(total - len))
+	if (src_len > dest_len && !i.ignore(src_len - dest_len))
 		return false;
 	return true;
 }
@@ -118,7 +89,7 @@ size_t Section::read_varint()
 	return result;
 }
 
-bool Section::read_string(Buffer buffer)
+bool Section::read_string(StringDestination buffer)
 {
 	return hamworld::read_string(stream, buffer);
 }
@@ -129,7 +100,8 @@ std::string Section::save()
 }
 
 Save::Save(const char* fname)
-	: output(AssetOpen_Write(fname))
+	: stream(AppdataOpen_Write_SDL(fname))
+	, output(stream.get())
 {
 }
 
@@ -160,7 +132,8 @@ void Save::section(string_view name, string_view body)
 }
 
 Load::Load(const char* fname)
-	: input(AssetOpen(fname))
+	: stream(AssetOpen_SDL_Owned(fname))
+	, input(stream.get())
 {
 }
 
@@ -168,7 +141,7 @@ Load::~Load()
 {
 }
 
-bool Load::header(Buffer author, Buffer name, Buffer app)
+bool Load::header(StringDestination author, StringDestination name, StringDestination app)
 {
 	char buf[CODE_LENGTH];
 	if (!input.read(buf, CODE_LENGTH) || strncmp(buf, CODE, CODE_LENGTH))
@@ -196,7 +169,7 @@ bool Load::section(std::string *name, Section *sec)
 
 	// read that much
 	std::string buffer(len, '\0');
-	if (!input.read(&buffer[0], len))
+	if (!input.read(buffer.data(), len))
 		return false;
 
 	sec->stream.clear();

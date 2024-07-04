@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 
@@ -30,7 +32,7 @@
 
 #include "curl_setup.h"
 
-#if defined(WIN32)
+#if defined(_WIN32)
 
 #include "curl_multibyte.h"
 
@@ -82,7 +84,7 @@ char *curlx_convert_wchar_to_UTF8(const wchar_t *str_w)
   return str_utf8;
 }
 
-#endif /* WIN32 */
+#endif /* _WIN32 */
 
 #if defined(USE_WIN32_LARGE_FILES) || defined(USE_WIN32_SMALL_FILES)
 
@@ -104,7 +106,7 @@ int curlx_win32_open(const char *filename, int oflag, ...)
 #ifdef _UNICODE
   if(filename_w) {
     result = _wopen(filename_w, oflag, pmode);
-    free(filename_w);
+    curlx_unicodefree(filename_w);
   }
   else
     errno = EINVAL;
@@ -124,8 +126,8 @@ FILE *curlx_win32_fopen(const char *filename, const char *mode)
     result = _wfopen(filename_w, mode_w);
   else
     errno = EINVAL;
-  free(filename_w);
-  free(mode_w);
+  curlx_unicodefree(filename_w);
+  curlx_unicodefree(mode_w);
   return result;
 #else
   return (fopen)(filename, mode);
@@ -143,7 +145,7 @@ int curlx_win32_stat(const char *path, struct_stat *buffer)
 #else
     result = _wstati64(path_w, buffer);
 #endif
-    free(path_w);
+    curlx_unicodefree(path_w);
   }
   else
     errno = EINVAL;
@@ -154,23 +156,6 @@ int curlx_win32_stat(const char *path, struct_stat *buffer)
 #else
   return _stati64(path, buffer);
 #endif
-#endif
-}
-
-int curlx_win32_access(const char *path, int mode)
-{
-#if defined(_UNICODE)
-  int result = -1;
-  wchar_t *path_w = curlx_convert_UTF8_to_wchar(path);
-  if(path_w) {
-    result = _waccess(path_w, mode);
-    free(path_w);
-  }
-  else
-    errno = EINVAL;
-  return result;
-#else
-  return _access(path, mode);
 #endif
 }
 

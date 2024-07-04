@@ -1,6 +1,6 @@
 #include "metadata.h"
-#include "owned.h"
 #include <string>
+#include "owned_stdio.h"
 
 bool AssetSpec::should_auto_mount() const
 {

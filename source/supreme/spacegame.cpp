@@ -1,6 +1,7 @@
 #include "winpch.h"
 #include "spacegame.h"
 #include "goal.h"
+#include "steam.h"
 
 #define NUMSTARS	256
 #define NUMBULLETS	512
@@ -1015,6 +1016,7 @@ void SpaceGoodguyHit(void)
 			oldc=255;
 			coinsEarned=score/100;
 			profile.progress.totalCoins+=coinsEarned;
+			SteamManager::Get()->UploadArcadeScore("arcade/zappo_raiders", score);
 		}
 		spcPlyr.x=320*FIXAMT;
 		spcPlyr.y=240*FIXAMT;

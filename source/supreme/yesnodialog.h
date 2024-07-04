@@ -10,7 +10,7 @@
 void InitYesNoDialog(const char *text,const char *choice1,const char *choice2);
 void ExitYesNoDialog(void);
 void RenderYesNoDialog(int msx,int msy,MGLDraw *mgl);
-void RenderYesNoDialog2(int msx,int msy,MGLDraw *mgl);
+void RenderYesNoDialog2(int msx,int msy,MGLDraw *mgl, int forceChoice = -1);
 void RenderYesNoDialog3(int msx,int msy,MGLDraw *mgl);
 byte YesNoDialogKey(char key);
 byte YesNoDialogClick(int msx,int msy);

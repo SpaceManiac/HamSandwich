@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 /* argv1 = URL
@@ -58,13 +60,13 @@ test_cleanup:
 static CURLcode send_wrong_password(CURL *curl, const char *url, int seq,
                                     long auth_scheme)
 {
-    return send_request(curl, url, seq, auth_scheme, "testuser:wrongpass");
+  return send_request(curl, url, seq, auth_scheme, "testuser:wrongpass");
 }
 
 static CURLcode send_right_password(CURL *curl, const char *url, int seq,
                                     long auth_scheme)
 {
-    return send_request(curl, url, seq, auth_scheme, "testuser:testpass");
+  return send_request(curl, url, seq, auth_scheme, "testuser:testpass");
 }
 
 static long parse_auth_name(const char *arg)
@@ -80,7 +82,7 @@ static long parse_auth_name(const char *arg)
   return CURLAUTH_NONE;
 }
 
-int test(char *url)
+CURLcode test(char *url)
 {
   CURLcode res;
   CURL *curl = NULL;
@@ -143,5 +145,5 @@ test_cleanup:
   curl_easy_cleanup(curl);
   curl_global_cleanup();
 
-  return (int)res;
+  return res;
 }

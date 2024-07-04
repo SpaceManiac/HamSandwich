@@ -15,6 +15,8 @@
 #include "log.h"
 #include "palettes.h"
 #include "appdata.h"
+#include "winpch.h"
+#include "steam.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -125,9 +127,6 @@ byte InitLevel(byte map)
 	curMap=new Map(curWorld.map[map]);
 
 	verified=VerifyLevel(curMap);
-#ifndef NDEBUG
-	verified=true;
-#endif
 
 	PrintToLog(curMap->name,0);
 
@@ -203,6 +202,15 @@ void ExitLevel(void)
 
 void RestoreGameplayGfx(void)
 {
+	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
+	{
+		gamemgl->ClearScreen();
+		GetDisplayMGL()->LoadBMP("graphics/gamepal.bmp");
+		gamemgl->BufferFlip();
+	}
+	if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE)
+		gamemgl->ClearScreen();
+
 	if(curMap)
 	{
 		if(curMap->flags&MAP_UNDERWATER)
@@ -210,15 +218,6 @@ void RestoreGameplayGfx(void)
 		else if(curMap->flags&MAP_LAVA)
 			LavaPalette(gamemgl);
 	}
-
-	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
-	{
-		gamemgl->ClearScreen();
-		GetDisplayMGL()->LoadBMP("graphics/gamepal.bmp");
-		//gamemgl->Flip();  // TODO: is this needed?
-	}
-	if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE)
-		gamemgl->ClearScreen();
 }
 
 void EnterPictureDisplay(void)
@@ -322,6 +321,11 @@ TASK(byte) LunaticRun(int *lastTime)
 		}
 		else if(gameMode==GAMEMODE_MENU)
 		{
+			// With the addition of the Advanced HUD, it's confusing to not see
+			// it slide in when you select the option, so now let the HUD
+			// animate even when the game is paused.
+			UpdateInterface(curMap);
+
 			switch(UpdatePauseMenu(gamemgl))
 			{
 				case PAUSE_PAUSED:
@@ -329,6 +333,8 @@ TASK(byte) LunaticRun(int *lastTime)
 				case PAUSE_CONTINUE:
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
+					if (!shopping && !editing)
+						SteamManager::Get()->StartPlaytimeTracking(nullptr);
 					break;
 				case PAUSE_GIVEUP:
 					SetPlayerStart(-1,-1);
@@ -338,6 +344,8 @@ TASK(byte) LunaticRun(int *lastTime)
 						mapToGoTo=255;
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
+					if (!shopping && !editing)
+						SteamManager::Get()->StartPlaytimeTracking(nullptr);
 					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_WORLDSEL:
@@ -350,6 +358,8 @@ TASK(byte) LunaticRun(int *lastTime)
 					mapToGoTo=player.levelNum;	// repeat this level
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
+					if (!shopping && !editing)
+						SteamManager::Get()->StartPlaytimeTracking(nullptr);
 					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_EXIT:
@@ -645,6 +655,7 @@ void PauseGame(void)
 		return;
 	InitPauseMenu();
 	gameMode=GAMEMODE_MENU;
+	SteamManager::Get()->StopPlaytimeTracking();
 }
 
 TASK(byte) PlayALevel(byte map)
@@ -677,10 +688,10 @@ TASK(byte) PlayALevel(byte map)
 
 		if(gameMode==GAMEMODE_PLAY && wasPaused)
 		{
-			if(!(GetJoyButtons()&4))
+			if(!(GetGamepadButtons()&(1<<SDL_CONTROLLER_BUTTON_START)))
 				wasPaused=0;
 		}
-		if((lastKey==27 || (GetJoyButtons()&4) || GetGameIdle()) && !wasPaused && gameMode==GAMEMODE_PLAY)
+		if((lastKey==27 || (GetGamepadButtons()&(1<<SDL_CONTROLLER_BUTTON_START)) || GetGameIdle()) && !wasPaused && gameMode==GAMEMODE_PLAY)
 		{
 			wasPaused=1;
 			PauseGame();
@@ -720,8 +731,23 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 	if(!LoadWorld(&curWorld,fullName))
 		CO_RETURN 1;
 
+	player.pendingLeaderboardUpload = false;
+	float oldPercentage = player.worldProg->percentage;
+	byte oldKeychains = player.worldProg->keychains;
+
 	StopSong();
 	InitWorld(&curWorld);
+
+	if (!editing)
+	{
+		if (shopping)
+			SteamManager::Get()->SetPresenceShopping();
+		else
+		{
+			SteamManager::Get()->SetPresenceWorld(curWorld.map[0]->name);
+			SteamManager::Get()->StartPlaytimeTracking(fullName);
+		}
+	}
 
 	mapNum=player.levelNum;
 	SetPlayerStart(-1,-1);
@@ -750,6 +776,13 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 	FreeWorld(&curWorld);
 	if(result==WORLD_SHOP)
 		doShop=1;
+
+	if (!editing && !shopping && (player.pendingLeaderboardUpload || player.worldProg->percentage != oldPercentage || player.worldProg->keychains != oldKeychains))
+	{
+		SteamManager::Get()->UploadWorldScore();
+	}
+
+	SteamManager::Get()->SetPresenceNone();
 	if(result==WORLD_QUITGAME || result==WORLD_SHOP)
 		CO_RETURN 0;
 	else
@@ -761,6 +794,7 @@ TASK(void) TestLevel(world_t *world,byte level)
 	byte result;
 
 	editing=2;
+	gamemgl->ResizeBuffer(SCRWID,SCRHEI);
 
 	ExitGuys();
 	ClearTestProgress();

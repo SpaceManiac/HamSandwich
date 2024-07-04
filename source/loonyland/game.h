@@ -62,6 +62,7 @@
 #define WORLD_BOSSBASH	5
 #define WORLD_INFSURV	6
 #define WORLD_REMIX		7
+#define WORLD_RANDOMIZER	8
 
 extern Map	*curMap;
 extern world_t curWorld;
@@ -95,5 +96,7 @@ void AddGarbageTime(dword t);
 byte WindingDown(void);
 
 void UndoWindDown(void);
+
+void PauseGame();
 
 #endif

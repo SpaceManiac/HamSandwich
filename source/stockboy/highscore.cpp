@@ -288,7 +288,7 @@ void RenderGhostStar(byte spr,int x,int y,char bright,MGLDraw *mgl)
 	LoadHiScoreSprites();
 
 	//hiSpr->GetSprite(spr)->DrawGhost(x,y,mgl,bright);
-	hiSpr->GetSprite(spr)->DrawGhost(x,y,mgl,bright);
+	hiSpr->GetSprite(spr)->DrawGhostBright(x,y,mgl,bright);
 }
 
 void RenderHighScore(byte mode,byte level,byte score,int x,int y,MGLDraw *mgl)

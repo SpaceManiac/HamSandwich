@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 #include "test.h"
@@ -81,16 +83,10 @@ static void addFd(struct Sockets *sockets, curl_socket_t fd, const char *what)
       return;
     sockets->max_count = 20;
   }
-  else if(sockets->count + 1 > sockets->max_count) {
-    curl_socket_t *oldptr = sockets->sockets;
-    sockets->sockets = realloc(oldptr, sizeof(curl_socket_t) *
-                               (sockets->max_count + 20));
-    if(!sockets->sockets) {
-      /* cleanup in test_cleanup */
-      sockets->sockets = oldptr;
-      return;
-    }
-    sockets->max_count += 20;
+  else if(sockets->count >= sockets->max_count) {
+    /* this can't happen in normal cases */
+    fprintf(stderr, "too many file handles error\n");
+    exit(2);
   }
   /*
    * Add file descriptor to array.
@@ -134,7 +130,7 @@ static int curlTimerCallback(CURLM *multi, long timeout_ms, void *userp)
   (void)multi; /* unused */
   if(timeout_ms != -1) {
     *timeout = tutil_tvnow();
-    timeout->tv_usec += timeout_ms * 1000;
+    timeout->tv_usec += (int)timeout_ms * 1000;
   }
   else {
     timeout->tv_sec = -1;
@@ -224,9 +220,9 @@ static void checkFdSet(CURLM *curl, struct Sockets *sockets, fd_set *fdset,
   }
 }
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
-  int res = 0;
+  CURLcode res = CURLE_OK;
   CURL *curl = NULL;
   FILE *hd_src = NULL;
   int hd;
@@ -235,6 +231,8 @@ int test(char *URL)
   struct ReadWriteSockets sockets = {{NULL, 0, 0}, {NULL, 0, 0}};
   struct timeval timeout = {-1, 0};
   int success = 0;
+
+  assert(test_argc >= 5);
 
   start_test_timing();
 
@@ -284,8 +282,8 @@ int test(char *URL)
   easy_setopt(curl, CURLOPT_READDATA, hd_src);
 
   easy_setopt(curl, CURLOPT_USERPWD, libtest_arg3);
-  easy_setopt(curl, CURLOPT_SSH_PUBLIC_KEYFILE, "curl_client_key.pub");
-  easy_setopt(curl, CURLOPT_SSH_PRIVATE_KEYFILE, "curl_client_key");
+  easy_setopt(curl, CURLOPT_SSH_PUBLIC_KEYFILE, test_argv[4]);
+  easy_setopt(curl, CURLOPT_SSH_PRIVATE_KEYFILE, test_argv[5]);
   easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
   easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)file_info.st_size);

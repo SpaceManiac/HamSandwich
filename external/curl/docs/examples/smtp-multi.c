@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,10 +18,12 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 
 /* <DESC>
- * SMTP example using the multi interface
+ * Send SMTP email with the multi interface
  * </DESC>
  */
 
@@ -45,11 +47,11 @@ static const char *payload_text =
   "Message-ID: <dcd7cb36-11db-487a-9f3a-e652a9458efd@"
   "rfcpedant.example.org>\r\n"
   "Subject: SMTP example message\r\n"
-  "\r\n" /* empty line to divide headers from body, see RFC5322 */
+  "\r\n" /* empty line to divide headers from body, see RFC 5322 */
   "The body of the message starts here.\r\n"
   "\r\n"
   "It could be a lot of lines, could be MIME encoded, whatever.\r\n"
-  "Check RFC5322.\r\n";
+  "Check RFC 5322.\r\n";
 
 struct upload_status {
   size_t bytes_read;
@@ -101,7 +103,7 @@ int main(void)
   /* This is the URL for your mailserver */
   curl_easy_setopt(curl, CURLOPT_URL, "smtp://mail.example.com");
 
-  /* Note that this option is not strictly required, omitting it will result in
+  /* Note that this option is not strictly required, omitting it results in
    * libcurl sending the MAIL FROM command with empty sender data. All
    * autoresponses should have an empty reverse-path, and should be directed
    * to the address in the reverse-path which triggered them. Otherwise, they

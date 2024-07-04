@@ -9,12 +9,13 @@
 	#define M_PI 3.1415926535897
 #endif
 
+static constexpr byte MAX_BUTTONS = 4;
 static byte numButtons = 2;
 static byte state = 0;
 static byte taps = 0;
 
 void SoftJoystickNumButtons(byte n) {
-	numButtons = std::max((byte) 1, std::min(n, (byte) 4));
+	numButtons = std::max((byte) 1, std::min(n, MAX_BUTTONS));
 }
 
 byte SoftJoystickState() {
@@ -33,26 +34,34 @@ static inline bool rect_contains(const SDL_Rect &r, int x, int y) {
 
 void Element::draw(SDL_Renderer* renderer) {
 	if (tex)
-		SDL_RenderCopy(renderer, tex, NULL, &rect);
+		SDL_RenderCopy(renderer, tex.get(), NULL, &rect);
 }
 
 SoftJoystick::SoftJoystick(MGLDraw* mgl) {
 	SDL_Renderer* renderer = mgl->renderer;
-	stick.tex = IMG_LoadTexture(renderer, "soft_stick.png");
-	trough.tex = IMG_LoadTexture(renderer, "soft_trough.png");
-	esc.tex = IMG_LoadTexture(renderer, "soft_esc.png");
-	keyboard.tex = IMG_LoadTexture(renderer, "soft_keyboard.png");
-	button[0].tex = IMG_LoadTexture(renderer, "soft_b1.png");
-	button[1].tex = IMG_LoadTexture(renderer, "soft_b2.png");
-	button[2].tex = IMG_LoadTexture(renderer, "soft_b3.png");
-	button[3].tex = IMG_LoadTexture(renderer, "soft_b4.png");
-}
-
-SoftJoystick::~SoftJoystick() {
+	stick.tex.reset(IMG_LoadTexture(renderer, "soft_stick.png"));
+	trough.tex.reset(IMG_LoadTexture(renderer, "soft_trough.png"));
+	esc.tex.reset(IMG_LoadTexture(renderer, "soft_esc.png"));
+	keyboard.tex.reset(IMG_LoadTexture(renderer, "soft_keyboard.png"));
+	button[0].tex.reset(IMG_LoadTexture(renderer, "soft_b1.png"));
+	button[1].tex.reset(IMG_LoadTexture(renderer, "soft_b2.png"));
+	button[2].tex.reset(IMG_LoadTexture(renderer, "soft_b3.png"));
+	button[3].tex.reset(IMG_LoadTexture(renderer, "soft_b4.png"));
+	mode[0].tex.reset(IMG_LoadTexture(renderer, "soft_mouse.png"));
+	mode[1].tex.reset(IMG_LoadTexture(renderer, "soft_gamepad.png"));
 }
 
 void SoftJoystick::update(MGLDraw* mgl, float scale) {
-	int spare = (int)(mgl->winWidth - mgl->xRes * scale) / 2;
+	int spare = std::clamp(
+		// Preferred: the entire width of the letterbox.
+		(int)(mgl->winWidth - mgl->xRes * scale) / 2,
+		// Minimum: buttons too small will be unclickable.
+		// Also, forbid negative values if actually there is no letterbox.
+		80,
+		// Maximum: buttons too big will overlap vertically.
+		mgl->winHeight / (2 + MAX_BUTTONS)
+	);
+
 	int right = mgl->winWidth - spare;
 	trough.rect = { 0, 0, 3 * spare, 3 * spare };
 	stick.rect = { 0, 0, 3 * spare, 3 * spare };
@@ -66,16 +75,21 @@ void SoftJoystick::update(MGLDraw* mgl, float scale) {
 	for (int i = 0; i < numButtons; ++i) {
 		button[i].rect = { right, i * spare, spare, spare };
 	}
+
+	mode[0].rect = mode[1].rect = { 0, mgl->winHeight - spare, spare, spare };
 }
 
 void SoftJoystick::render(SDL_Renderer* renderer) {
-	stick.draw(renderer);
-	trough.draw(renderer);
+	if (enableStick) {
+		stick.draw(renderer);
+		trough.draw(renderer);
+	}
 	esc.draw(renderer);
 	keyboard.draw(renderer);
 	for (int i = 0; i < numButtons; ++i) {
 		button[i].draw(renderer);
 	}
+	mode[enableStick].draw(renderer);
 }
 
 void SoftJoystick::handle_event(MGLDraw *mgl, const SDL_Event& e) {
@@ -86,6 +100,8 @@ void SoftJoystick::handle_event(MGLDraw *mgl, const SDL_Event& e) {
 			mgl->lastKeyPressed = SDLK_ESCAPE;
 		} else if (rect_contains(keyboard.rect, x, y)) {
 			SDL_StartTextInput();
+		} else if (rect_contains(mode[0].rect, x, y)) {
+			enableStick = !enableStick;
 		}
 
 		int bit = CONTROL_B1;
@@ -99,7 +115,7 @@ void SoftJoystick::handle_event(MGLDraw *mgl, const SDL_Event& e) {
 		}
 	}
 
-	if (e.type == SDL_FINGERDOWN || e.type == SDL_FINGERMOTION) {
+	if (enableStick && (e.type == SDL_FINGERDOWN || e.type == SDL_FINGERMOTION)) {
 		int x = (int)(e.tfinger.x * mgl->winWidth);
 		int y = (int)(e.tfinger.y * mgl->winHeight);
 

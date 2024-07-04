@@ -4,6 +4,7 @@
 #include "progress.h"
 #include "shop.h"
 #include "config.h"
+#include "recolor.h"
 
 tile_t tiles[NUMTILES];
 MGLDraw *tileMGL;
@@ -307,12 +308,6 @@ static inline byte PickDiscoColor(void)
 }
 
 // --- RENDERING!
-// Helper shenanigans for C stuff, see jamulspr.cpp
-extern byte SprModifyColor(byte color, byte hue);
-extern byte SprGetColor(byte color);
-extern byte SprModifyLight(byte color, char bright);
-extern byte SprModifyGhost(byte src, byte dst, char bright);
-extern byte SprModifyGlow(byte src, byte dst, char bright);
 
 byte ModifyDiscoColor(byte color, byte disco)
 {

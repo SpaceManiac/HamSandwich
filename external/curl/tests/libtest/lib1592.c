@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 /*
@@ -30,15 +32,16 @@
 /* We're willing to wait a very generous two seconds for the removal.  This is
    as low as we can go while still easily supporting SIGALRM timing for the
    non-threaded blocking resolver.  It doesn't matter that much because when
-   the test passes, we never wait this long. */
-#define TEST_HANG_TIMEOUT 2 * 1000
+   the test passes, we never wait this long. We set it much higher to avoid
+   issues when running on overloaded CI machines. */
+#define TEST_HANG_TIMEOUT 60 * 1000
 
 #include "test.h"
 #include "testutil.h"
 
 #include <sys/stat.h>
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   int stillRunning;
   CURLM *multiHandle = NULL;
@@ -100,8 +103,7 @@ int test(char *URL)
   start_test_timing();
   mres = curl_multi_remove_handle(multiHandle, curl);
   if(mres) {
-    fprintf(stderr, "curl_multi_remove_handle() failed, "
-            "with code %d\n", (int)res);
+    fprintf(stderr, "curl_multi_remove_handle() failed, with code %d\n", mres);
     res = TEST_ERR_MULTI;
     goto test_cleanup;
   }
@@ -117,5 +119,5 @@ test_cleanup:
   curl_multi_cleanup(multiHandle);
   curl_global_cleanup();
 
-  return (int)res;
+  return res;
 }

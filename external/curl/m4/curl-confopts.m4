@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
 #
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
+#
+# SPDX-License-Identifier: curl
 #
 #***************************************************************************
 
@@ -419,10 +421,8 @@ dnl Check for how to set a socket into non-blocking state.
 
 AC_DEFUN([CURL_CHECK_NONBLOCKING_SOCKET], [
   AC_REQUIRE([CURL_CHECK_FUNC_FCNTL])dnl
-  AC_REQUIRE([CURL_CHECK_FUNC_IOCTL])dnl
   AC_REQUIRE([CURL_CHECK_FUNC_IOCTLSOCKET])dnl
   AC_REQUIRE([CURL_CHECK_FUNC_IOCTLSOCKET_CAMEL])dnl
-  AC_REQUIRE([CURL_CHECK_FUNC_SETSOCKOPT])dnl
   #
   tst_method="unknown"
 
@@ -458,8 +458,7 @@ AC_DEFUN([CURL_CONFIGURE_SYMBOL_HIDING], [
   AC_MSG_CHECKING([whether hiding of library internal symbols will actually happen])
   CFLAG_CURL_SYMBOL_HIDING=""
   doing_symbol_hiding="no"
-  if test x"$curl_cv_native_windows" != "xyes" &&
-    test "$want_symbol_hiding" = "yes" &&
+  if test "$want_symbol_hiding" = "yes" &&
     test "$supports_symbol_hiding" = "yes"; then
     doing_symbol_hiding="yes"
     CFLAG_CURL_SYMBOL_HIDING="$symbol_hiding_CFLAGS"
@@ -476,9 +475,8 @@ AC_DEFUN([CURL_CONFIGURE_SYMBOL_HIDING], [
 
 dnl CURL_CHECK_LIB_ARES
 dnl -------------------------------------------------
-dnl When c-ares library support has been requested,
-dnl performs necessary checks and adjustsments needed
-dnl to enable support of this library.
+dnl When c-ares library support has been requested, performs necessary checks
+dnl and adjustments needed to enable support of this library.
 
 AC_DEFUN([CURL_CHECK_LIB_ARES], [
   #
@@ -563,12 +561,12 @@ AC_DEFUN([CURL_CHECK_LIB_ARES], [
     if test "$want_ares" = "yes"; then
       dnl finally c-ares will be used
       AC_DEFINE(USE_ARES, 1, [Define to enable c-ares support])
+      AC_DEFINE(CARES_NO_DEPRECATED, 1, [Ignore c-ares deprecation warnings])
       AC_SUBST([USE_ARES], [1])
       curl_res_msg="c-ares"
     fi
   fi
 ])
-
 
 dnl CURL_CHECK_OPTION_NTLM_WB
 dnl -------------------------------------------------
@@ -619,6 +617,9 @@ AC_DEFUN([CURL_CHECK_NTLM_WB], [
     test "x$SSL_ENABLED" = "x"; then
     want_ntlm_wb_file=""
     want_ntlm_wb="no"
+  elif test "x$ac_cv_func_fork" != "xyes"; then
+    dnl ntlm_wb requires fork
+    want_ntlm_wb="no"
   fi
   AC_MSG_RESULT([$want_ntlm_wb])
   if test "$want_ntlm_wb" = "yes"; then
@@ -628,6 +629,42 @@ AC_DEFUN([CURL_CHECK_NTLM_WB], [
       [Define absolute filename for winbind's ntlm_auth helper.])
     NTLM_WB_ENABLED=1
   fi
+])
+
+dnl CURL_CHECK_OPTION_HTTPSRR
+dnl -----------------------------------------------------
+dnl Verify whether configure has been invoked with option
+dnl --enable-httpsrr or --disable-httpsrr, and set
+dnl shell variable want_httpsrr as appropriate.
+
+AC_DEFUN([CURL_CHECK_OPTION_HTTPSRR], [
+  AC_MSG_CHECKING([whether to enable HTTPSRR support])
+  OPT_HTTPSRR="default"
+  AC_ARG_ENABLE(httpsrr,
+AS_HELP_STRING([--enable-httpsrr],[Enable HTTPSRR support])
+AS_HELP_STRING([--disable-httpsrr],[Disable HTTPSRR support]),
+  OPT_HTTPSRR=$enableval)
+  case "$OPT_HTTPSRR" in
+    no)
+      dnl --disable-httpsrr option used
+      want_httpsrr="no"
+      curl_httpsrr_msg="no      (--enable-httpsrr)"
+      AC_MSG_RESULT([no])
+      ;;
+    default)
+      dnl configure option not specified
+      want_httpsrr="no"
+      curl_httpsrr_msg="no      (--enable-httpsrr)"
+      AC_MSG_RESULT([no])
+      ;;
+    *)
+      dnl --enable-httpsrr option used
+      want_httpsrr="yes"
+      curl_httpsrr_msg="enabled (--disable-httpsrr)"
+      experimental="httpsrr"
+      AC_MSG_RESULT([yes])
+      ;;
+  esac
 ])
 
 dnl CURL_CHECK_OPTION_ECH
@@ -664,4 +701,5 @@ AS_HELP_STRING([--disable-ech],[Disable ECH support]),
       AC_MSG_RESULT([yes])
       ;;
   esac
+])
 ])

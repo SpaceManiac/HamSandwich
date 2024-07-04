@@ -1,5 +1,6 @@
 #include "tile.h"
 #include "options.h"
+#include "recolor.h"
 
 tile_t tiles[NUMTILES];
 MGLDraw *tileMGL;
@@ -45,12 +46,6 @@ void LoadTiles(FILE *f)
 }
 
 // --- RENDERING!
-// Helper shenanigans for C stuff, see jamulspr.cpp
-extern byte SprModifyColor(byte color, byte hue);
-extern byte SprGetColor(byte color);
-extern byte SprModifyLight(byte color, char bright);
-extern byte SprModifyGhost(byte src, byte dst, char bright);
-extern byte SprModifyGlow(byte src, byte dst, char bright);
 
 byte ModifyDiscoColor(byte color, byte disco)
 {

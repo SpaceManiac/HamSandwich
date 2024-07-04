@@ -54,6 +54,7 @@ static editopt_t editopt={MAP_SHOWLIGHTS|MAP_SHOWWALLS|MAP_SHOWITEMS|MAP_SHOWBAD
 byte InitEditor(void)
 {
 	JamulSoundPurge();
+	KillSong();
 	NewWorld(&world,editmgl);
 	curMap=world.map[0];
 	curMapNum=0;
@@ -956,7 +957,7 @@ void RenderItemPickDisplay(void)
 
 	on=0;
 	for(i=0;i<16;i++)
-		for(j=0;j<8;j++)
+		for(j=0;j<9;j++)
 		{
 			if(i+j*16<MAX_ITMS)
 			{
@@ -1074,8 +1075,6 @@ void ShowSpecials(void)
 	if(!(editopt.displayFlags&MAP_SHOWSPECIALS))
 		return;
 
-	char spclNum[32];
-
 	GetCamera(&sx,&sy);
 	for(i=0;i<MAX_SPECIAL;i++)
 		if(curMap->special[i].trigger)
@@ -1084,18 +1083,21 @@ void ShowSpecials(void)
 				curMap->special[i].x * TILE_WIDTH + 2 - sx + 320,
 				curMap->special[i].y * TILE_HEIGHT + 1 - sy + 240,
 				"Spcl", 0, 1);
-			sprintf(spclNum, "%03d", i);
-			Print(
-				curMap->special[i].x * TILE_WIDTH + 2 - sx + 320,
-				curMap->special[i].y * TILE_HEIGHT + 12 - sy + 240,
-				spclNum, 0, 1);
 		}
+}
+
+static void ShowTags()
+{
+	if(showTags)
+	{
+		int x,y;
+		GetCamera(&x,&y);
+		curMap->ShowTags(x,y,editopt.copyX,editopt.copyY,editopt.copyWidth,editopt.copyHeight);
+	}
 }
 
 void EditorDraw(void)
 {
-	int x,y;
-
 	switch(editMode)
 	{
 		case EDITMODE_EDIT:
@@ -1104,11 +1106,7 @@ void EditorDraw(void)
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
 			ShowTarget();
-			if(showTags)
-			{
-				GetCamera(&x,&y);
-				curMap->ShowTags(x,y,editopt.copyX,editopt.copyY,editopt.copyWidth,editopt.copyHeight);
-			}
+			ShowTags();
 			RenderEditMenu();
 			break;
 		case EDITMODE_TERRAIN:
@@ -1140,6 +1138,7 @@ void EditorDraw(void)
 				RenderGuys(editopt.displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
+			ShowTags();
 			RenderEditMenu();
 			RenderFileDialog(mouseX,mouseY,editmgl);
 			break;
@@ -1148,6 +1147,7 @@ void EditorDraw(void)
 				RenderGuys(editopt.displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
+			ShowTags();
 			RenderEditMenu();
 			RenderTileDialog(mouseX,mouseY,editmgl);
 			break;
@@ -1156,6 +1156,7 @@ void EditorDraw(void)
 				RenderGuys(editopt.displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
+			ShowTags();
 			RenderEditMenu();
 			RenderMapDialog(mouseX,mouseY,editmgl);
 			break;
@@ -1164,6 +1165,7 @@ void EditorDraw(void)
 				RenderGuys(editopt.displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
+			ShowTags();
 			RenderEditMenu();
 			RenderSpclDialog(mouseX,mouseY,editmgl);
 			break;
@@ -1630,6 +1632,8 @@ TASK(byte) LunaticEditor(MGLDraw *mgl)
 	if(!InitEditor())
 		CO_RETURN QUITGAME;
 
+	bool gamepad = GetGamepadButtons();
+
 	exitcode=CONTINUE;
 	while(exitcode==CONTINUE)
 	{
@@ -1638,10 +1642,20 @@ TASK(byte) LunaticEditor(MGLDraw *mgl)
 		HandleKeyPresses();
 		exitcode=EditorRun(&lastTime);
 		EditorDraw();
+		if (gamepad)
+			Print(8, 8, "The editor is meant for mouse and keyboard. Press BACK on gamepad to exit.", 0, 1);
 		AWAIT editmgl->Flip();
 
-		if(lastKey==27)
+		if(lastKey==27 || (GetGamepadButtons() & (1 << SDL_CONTROLLER_BUTTON_BACK)))
 			exitcode=QUITGAME;
+
+		if (lastKey || editmgl->MouseDown())
+		{
+			gamepad = false;
+			lastKey = 0;
+		}
+		if (GetGamepadButtons())
+			gamepad = true;
 
 		if(!editmgl->Process())
 			exitcode=QUITGAME;

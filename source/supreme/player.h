@@ -11,38 +11,46 @@
 #include "intface.h"
 #include "progress.h"
 
-// secondary weapon defines
-#define WPN_NONE	 0
-#define WPN_MISSILES 1
-#define WPN_AK8087	 2
-#define WPN_BOMBS	 3
-#define WPN_FLAME	 4
-#define WPN_PWRARMOR 5
-#define WPN_BIGAXE	 6
-#define WPN_LIGHTNING 7
-#define WPN_SPEAR	 8
-#define WPN_MACHETE  9
-#define WPN_MINES	 10
-#define WPN_TURRET	 11
-#define WPN_MINDCONTROL 12
-#define WPN_REFLECTOR 13
-#define WPN_JETPACK	  14
-#define WPN_SWAPGUN	  15
-#define WPN_TORCH	  16
-#define WPN_SCANNER	  17
-#define WPN_MINISUB	  18
-#define WPN_FREEZE	  19
-#define WPN_STOPWATCH 20
+// Secondary weapon defines.
+// SERIALIZED in items and in specials. Add to end, don't reorder.
+enum : byte
+{
+	WPN_NONE,
+	WPN_MISSILES,
+	WPN_AK8087,
+	WPN_BOMBS,
+	WPN_FLAME,
+	WPN_PWRARMOR,
+	WPN_BIGAXE,
+	WPN_LIGHTNING,
+	WPN_SPEAR,
+	WPN_MACHETE,
+	WPN_MINES,
+	WPN_TURRET,
+	WPN_MINDCONTROL,
+	WPN_REFLECTOR,
+	WPN_JETPACK,
+	WPN_SWAPGUN,
+	WPN_TORCH,
+	WPN_SCANNER,
+	WPN_MINISUB,
+	WPN_FREEZE,
+	WPN_STOPWATCH,
 
-#define MAX_WEAPONS	  21
+	MAX_WEAPONS
+};
+const char* GetWeaponName(byte weapon);
 
 // vehicles you could be on
-#define VE_NONE		0
-#define VE_MINECART 1
-#define VE_RAFT		2
-#define VE_YUGO		3
+enum : byte
+{
+	VE_NONE,
+	VE_MINECART,
+	VE_RAFT,
+	VE_YUGO,
+};
 
-typedef struct player_t
+struct player_t
 {
 	// per-world value
 	char worldName[32];
@@ -83,6 +91,7 @@ typedef struct player_t
 	byte torch;
 	byte cheesePower;
 	byte gotRecords;
+	bool pendingLeaderboardUpload;
 	byte spotted;
 	int oxygen;
 	int comboClock;
@@ -100,7 +109,7 @@ typedef struct player_t
 	int brainX,brainY,candleX,candleY;
 	word brainTime,candleTime;
 	byte playAs;
-} player_t;
+};
 
 extern player_t player;
 
@@ -134,7 +143,7 @@ byte StealWeapon(void);
 
 int WeaponMaxAmmo(byte wpn);
 byte PlayerGetWeapon(byte wpn,int x,int y);
-byte PlayerPowerup(char powerup);
+byte PlayerPowerup(int powerup);
 void PlayerRadioactiveFood(void);
 void PlayerChineseFood(void);
 void KeyChainAllCheck(void);

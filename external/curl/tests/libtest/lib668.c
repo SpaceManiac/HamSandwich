@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 #include "test.h"
@@ -46,13 +48,12 @@ static size_t read_callback(char *ptr, size_t size, size_t nmemb, void *userp)
   return len;
 }
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURL *easy = NULL;
   curl_mime *mime = NULL;
   curl_mimepart *part;
-  CURLcode result;
-  int res = TEST_ERR_FAILURE;
+  CURLcode res = TEST_ERR_FAILURE;
   struct WriteThis pooh1, pooh2;
 
   /*
@@ -96,16 +97,15 @@ int test(char *URL)
   curl_mime_name(part, "field3");
   /* Regular file part sources early end of data can be detected because
      the file size is known. In addition, and EOF test is performed. */
-  curl_mime_filedata(part, "log/file668.txt");
+  curl_mime_filedata(part, libtest_arg2);
 
   /* Bind mime data to its easy handle. */
   test_setopt(easy, CURLOPT_MIMEPOST, mime);
 
   /* Send data. */
-  result = curl_easy_perform(easy);
-  if(result) {
+  res = curl_easy_perform(easy);
+  if(res != CURLE_OK) {
     fprintf(stderr, "curl_easy_perform() failed\n");
-    res = (int) result;
   }
 
 test_cleanup:

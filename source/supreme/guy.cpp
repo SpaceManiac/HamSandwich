@@ -1,4 +1,5 @@
 #include "winpch.h"
+#include <memory>
 #include "guy.h"
 #include "player.h"
 #include "intface.h"
@@ -7,12 +8,15 @@
 #include "shop.h"
 #include "goal.h"
 
-Guy **guys;
+static std::unique_ptr<Guy[]> guys;
+static std::unique_ptr<bool[]> changed;
+static int maxGuys;
+
 Guy *goodguy;
-int maxGuys;
-Guy *guyHit;
-Guy *nobody;
-byte *changed;
+static Guy *guyHit;
+static Guy *nobody;
+
+static byte oldPlayAs;
 
 //------------------------------------------------------------------------
 // CLASS GUY
@@ -147,9 +151,9 @@ void TryToPush(Guy *me,int x,int y,Map *map,world_t *world)
 		xx=destx*TILE_WIDTH;
 		yy=desty*TILE_HEIGHT;
 		for(i=0;i<maxGuys;i++)
-			if((guys[i]) && (guys[i]->type) && (guys[i]->hp>0) &&
-				(abs(guys[i]->mapx-destx)<8) && (abs(guys[i]->mapy-desty)<8))
-				if(TileBonkCheck(xx,yy,guys[i]))
+			if((guys[i].type) && (guys[i].hp>0) &&
+				(abs(guys[i].mapx-destx)<8) && (abs(guys[i].mapy-desty)<8))
+				if(TileBonkCheck(xx,yy,&guys[i]))
 					return;	// the pushy block would hit the guy
 
 		// the floor is pushonable, let's do it
@@ -182,9 +186,9 @@ byte TryToPushItem(int x,int y,int destx,int desty,Map *map,world_t *world)
 		xx=destx*TILE_WIDTH;
 		yy=desty*TILE_HEIGHT;
 		for(i=0;i<maxGuys;i++)
-			if((guys[i]) && (guys[i]->type) && (guys[i]->hp>0) &&
-				(abs(guys[i]->mapx-destx)<8) && (abs(guys[i]->mapy-desty)<8))
-				if(TileBonkCheck(xx,yy,guys[i]))
+			if((guys[i].type) && (guys[i].hp>0) &&
+				(abs(guys[i].mapx-destx)<8) && (abs(guys[i].mapy-desty)<8))
+				if(TileBonkCheck(xx,yy,&guys[i]))
 					return 0;	// the pushy block would hit the guy
 
 		// the floor is pushonable, let's do it
@@ -297,17 +301,17 @@ byte Guy::CanWalk(int xx,int yy,Map *map,world_t *world)
 	}
 	if(result)	// no wall collision, look for guy collision
 		for(i=0;i<maxGuys;i++)
-			if((guys[i]) && (guys[i]!=this) && (guys[i]->type) && (guys[i]->hp>0) &&
-				(abs(guys[i]->mapx-mapx)<8) && (abs(guys[i]->mapy-mapy)<8))
+			if((&guys[i]!=this) && (guys[i].type) && (guys[i].hp>0) &&
+				(abs(guys[i].mapx-mapx)<8) && (abs(guys[i].mapy-mapy)<8))
 			{
-				if(guys[i]!=parent && guys[i]->parent!=this && CoconutBonk(xx,yy,guys[i]))
+				if(&guys[i]!=parent && guys[i].parent!=this && CoconutBonk(xx,yy,&guys[i]))
 				{
 					if(aiType==MONS_BOUAPHA && (player.vehicle==VE_MINECART || player.vehicle==VE_YUGO)
 						&& parent && ((player.vehicle==VE_MINECART && parent->mind1>20) || player.vehicle==VE_YUGO))
 					{
 						// if you hit someone while riding a minecart or yugo, they get hurt bad
-						guys[i]->GetShot(parent->dx,parent->dy,30,map,world);
-						if(guys[i]->hp==0 && !editing && !player.cheated)
+						guys[i].GetShot(parent->dx,parent->dy,30,map,world);
+						if(guys[i].hp==0 && !editing && !player.cheated)
 							profile.progress.runOver++;
 					}
 					else
@@ -385,7 +389,7 @@ void Guy::AttackThem(void)
 void Guy::NextFrame(void)
 {
 	byte tp;
-	byte *anim;
+	const byte *anim;
 
 	frm++;
 
@@ -411,7 +415,7 @@ void Guy::NextFrame(void)
 
 void Guy::CalculateRect(void)
 {
-	sprite_t *spr;
+	const sprite_t *spr;
 	byte s;
 
 	if(MonsterFlags(type,aiType)&MF_SPRITEBOX)
@@ -765,10 +769,6 @@ void Guy::EditorUpdate(Map *map)
 
 void Guy::Render(byte light)
 {
-	byte oldFrom,oldTo;
-	char oldBrt;
-	byte t;
-
 	if(type==MONS_NONE)
 		return;
 
@@ -784,6 +784,11 @@ void Guy::Render(byte light)
 		player.vehicle=VE_MINECART;
 	}
 
+	// For now, replicate an old bug due to a mismatch between here and
+	// MonsterDraw. Per-monster color/brightness is suppressed if either:
+	// - monsters with Type==Bouapha and AiType==Bouapha: playing as non-Bouapha
+	// - monsters where Type==Bouapha xor AiType==Bouapha: playing as non-Bouapha OR has power armor or mini-sub
+	dword t = type, t2 = type;
 	if(type==MONS_BOUAPHA)
 	{
 		if(player.playAs==PLAY_LUNATIC)
@@ -804,26 +809,38 @@ void Guy::Render(byte light)
 		if(player.weapon==WPN_MINISUB)
 			t=MONS_MINISUB;
 	}
-	else
-		t=type;
 
-	const bool recolor = fromColor!=255;
-	if(recolor)
+	bool isBouapha = aiType == MONS_BOUAPHA;
+	if(isBouapha)
 	{
-		oldFrom=GetMonsterType(t)->fromCol;
-		oldTo=GetMonsterType(t)->toCol;
-		GetMonsterType(t)->fromCol=fromColor;
-		GetMonsterType(t)->toCol=toColor;
+		if(player.weapon==WPN_PWRARMOR)
+			t2=MONS_PWRBOUAPHA;
+		else if(player.weapon==WPN_MINISUB)
+			t2=MONS_MINISUB;
+		else if(type==MONS_BOUAPHA)
+		{
+			if(player.playAs==PLAY_LUNATIC)
+				t2=MONS_DRL;
+			else if(player.playAs==PLAY_HAPPY)
+				t2=MONS_STICKMAN;
+			else if(player.playAs==PLAY_MECHA)
+				t2=MONS_PLAYMECHA;
+			else if(player.playAs==PLAY_SHROOM)
+				t2=MONS_PLAYSHROOM;
+			else if(player.playAs==PLAY_LUNACHIK)
+				t2=MONS_LUNACHICK;
+		}
 	}
-	oldBrt=GetMonsterType(t)->brtChg;
-	GetMonsterType(t)->brtChg=brtChange;
-	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen,customSpr.get());
-	if(recolor)
+
+	byte fromColor2 = fromColor, toColor2 = toColor, brtChange2 = brtChange;
+	if (t != t2)
 	{
-		GetMonsterType(t)->fromCol=oldFrom;
-		GetMonsterType(t)->toCol=oldTo;
+		fromColor2 = 255;
+		toColor2 = 255;
+		brtChange2 = 0;
 	}
-	GetMonsterType(t)->brtChg=oldBrt;
+
+	MonsterDraw(x,y,z,t2,isBouapha,seq,frm,facing,bright*(light>0),ouch,poison,frozen,fromColor2,toColor2,brtChange2,customSpr.get());
 	if(editing==1 && EditorShowMonsItems())
 	{
 		RenderItem(x>>FIXSHIFT,(y+FIXAMT*2)>>FIXSHIFT,item,bright*(light>0),MAP_SHOWITEMS);
@@ -881,7 +898,7 @@ void Guy::MonsterControl(Map *map,world_t *world)
 				i=LockOnGood(x>>FIXSHIFT,y>>FIXSHIFT);
 
 			if(i!=65535)
-				target=guys[i];
+				target=&guys[i];
 			else
 			{
 				target=nobody;
@@ -920,7 +937,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 	if(aiType==MONS_BOUAPHA && frozen)
 		frozen/=2;
 
-	if(profile.difficulty==0 && damage>0)
+	if(profile.difficulty==DIFFICULTY_NORMAL && damage>0)
 	{
 		if(friendly)
 			damage=damage/2;
@@ -929,7 +946,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 		if(damage==0)
 			damage=1;
 	}
-	if(profile.difficulty==2 && damage>0)
+	if(profile.difficulty==DIFFICULTY_LUNATIC && damage>0)
 	{
 		if(friendly)
 			damage=damage*2;
@@ -971,27 +988,28 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 
 	if(!editing && !player.cheated && verified)
 	{
-		if(profile.difficulty==0)
+		if(profile.difficulty==DIFFICULTY_NORMAL)
 		{
 			if(aiType==MONS_BOUAPHA)
 				profile.progress.damageTaken+=damage*2;
 			else
 				profile.progress.damageDone+=damage/2;
 		}
-		else if(profile.difficulty==1)
+		else if(profile.difficulty==DIFFICULTY_HARD)
 		{
 			if(aiType==MONS_BOUAPHA)
 				profile.progress.damageTaken+=damage;
 			else
 				profile.progress.damageDone+=damage;
 		}
-		else
+		else if (profile.difficulty==DIFFICULTY_LUNATIC)
 		{
 			if(aiType==MONS_BOUAPHA)
 				profile.progress.damageTaken+=damage/2;
 			else
 				profile.progress.damageDone+=damage*2;
 		}
+		static_assert(MAX_DIFFICULTY == 3, "Must handle new difficulty here");
 	}
 
 	newHP=hp;
@@ -1111,32 +1129,30 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 
 //-----------------------------------------------------------------------
 
-byte oldPlayAs;
-
 void InitGuys(int max)
 {
-	int i;
+	guys = std::make_unique<Guy[]>(max);
+	changed = std::make_unique<bool[]>(max);
+	maxGuys = max;
 
-	maxGuys=max;
+	goodguy = nullptr;
+	guyHit = nullptr;
+	nobody = nullptr;
 
-	changed=(byte *)malloc(sizeof(byte)*maxGuys);
-	guys=(Guy **)malloc(sizeof(Guy *)*maxGuys);
-	for(i=0;i<maxGuys;i++)
-		guys[i]=new Guy();
-	goodguy=NULL;
-	oldPlayAs=profile.playAs;
+	oldPlayAs = profile.playAs;
 }
 
 void ExitGuys(void)
 {
-	int i;
+	profile.playAs = oldPlayAs;
 
-	for(i=0;i<maxGuys;i++)
-		delete guys[i];
+	nobody = nullptr;
+	guyHit = nullptr;
+	goodguy = nullptr;
 
-	free(changed);
-	free(guys);
-	profile.playAs=oldPlayAs;
+	maxGuys = 0;
+	changed.reset();
+	guys.reset();
 }
 
 void UpdateGuys(Map *map,world_t *world)
@@ -1236,42 +1252,42 @@ void UpdateGuys(Map *map,world_t *world)
 	}
 	ShouldCheckControls(1);
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type!=MONS_NONE)
+		if(guys[i].type!=MONS_NONE)
 		{
-			if(guys[i]->aiType==MONS_BOUAPHA && player.speed>0)
+			if(guys[i].aiType==MONS_BOUAPHA && player.speed>0)
 			{
-				guys[i]->Update(map,world);
-				if(guys[i]->type)
-					guys[i]->Render(1);
-				guys[i]->Update(map,world);
+				guys[i].Update(map,world);
+				if(guys[i].type)
+					guys[i].Render(1);
+				guys[i].Update(map,world);
 				player.speed--;
 			}
 			else
 			{
-				if(!player.timeStop || guys[i]->aiType==MONS_BOUAPHA || guys[i]->hp==0 ||
-					guys[i]->aiType==MONS_MINECART || guys[i]->aiType==MONS_RAFT || guys[i]->aiType==MONS_YUGO)
+				if(!player.timeStop || guys[i].aiType==MONS_BOUAPHA || guys[i].hp==0 ||
+					guys[i].aiType==MONS_MINECART || guys[i].aiType==MONS_RAFT || guys[i].aiType==MONS_YUGO)
 				{
-					if(((speedClock&3)==0) && guys[i]->aiType!=MONS_BOUAPHA && guys[i]->aiType!=MONS_RAFT &&
-						guys[i]->aiType!=MONS_MINECART && guys[i]->aiType!=MONS_RAFT && guys[i]->aiType!=MONS_YUGO)
+					if(((speedClock&3)==0) && guys[i].aiType!=MONS_BOUAPHA && guys[i].aiType!=MONS_RAFT &&
+						guys[i].aiType!=MONS_MINECART && guys[i].aiType!=MONS_RAFT && guys[i].aiType!=MONS_YUGO)
 					{
-						if(profile.difficulty==0)
+						if(profile.difficulty==DIFFICULTY_NORMAL)
 						{
 							// skip the update!
 						}
-						else if(profile.difficulty==2)
+						else if(profile.difficulty==DIFFICULTY_LUNATIC)
 						{
 							// double update!
-							guys[i]->Update(map,world);
-							guys[i]->Update(map,world);
+							guys[i].Update(map,world);
+							guys[i].Update(map,world);
 						}
 					}
 					else
-						guys[i]->Update(map,world);
+						guys[i].Update(map,world);
 
-					if(guys[i]->aiType==MONS_WOLF2 && guys[i]->type!=0 && guys[i]->mind3)
+					if(guys[i].aiType==MONS_WOLF2 && guys[i].type!=0 && guys[i].mind3)
 					{
-						guys[i]->Render(1);
-						guys[i]->Update(map,world);
+						guys[i].Render(1);
+						guys[i].Update(map,world);
 					}
 				}
 			}
@@ -1283,8 +1299,8 @@ void EditorUpdateGuys(Map *map)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type!=MONS_NONE)
-			guys[i]->EditorUpdate(map);
+		if(guys[i].type!=MONS_NONE)
+			guys[i].EditorUpdate(map);
 }
 
 void RenderGuys(byte light)
@@ -1292,8 +1308,8 @@ void RenderGuys(byte light)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY)
-			guys[i]->Render(light);
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY)
+			guys[i].Render(light);
 }
 
 void SetupTargets(void)
@@ -1302,21 +1318,21 @@ void SetupTargets(void)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type && guys[i]->friendly==1)
+		if(guys[i].type && guys[i].friendly==1)
 		{
-			j=LockOnEvil(guys[i]->x>>FIXSHIFT,guys[i]->y>>FIXSHIFT);
+			j=LockOnEvil(guys[i].x>>FIXSHIFT,guys[i].y>>FIXSHIFT);
 			if(j!=65535)
-				guys[i]->target=guys[j];
+				guys[i].target=&guys[j];
 			else
-				guys[i]->target=NULL;
+				guys[i].target=NULL;
 		}
-		else if(guys[i]->type)
+		else if(guys[i].type)
 		{
-			j=LockOnGood(guys[i]->x>>FIXSHIFT,guys[i]->y>>FIXSHIFT);
+			j=LockOnGood(guys[i].x>>FIXSHIFT,guys[i].y>>FIXSHIFT);
 			if(j!=65535)
-				guys[i]->target=guys[j];
+				guys[i].target=&guys[j];
 			else
-				guys[i]->target=goodguy;
+				guys[i].target=goodguy;
 		}
 	}
 }
@@ -1390,11 +1406,11 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 		return NULL;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type==MONS_NONE)
+		if(guys[i].type==MONS_NONE)
 		{
 			if(type==MONS_BOUAPHA)	// special case: bouapha is the goodguy
 			{
-				goodguy=guys[i];
+				goodguy=&guys[i];
 				if(editing!=1)
 					PutCamera(x,y);
 			}
@@ -1404,16 +1420,16 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 				type==MONS_FRIENDLY2 || type==MONS_FOLLOWBUNNY || type==MONS_MINECART || type==MONS_RAFT ||
 				type==MONS_YUGO || type==MONS_PUNKBUNNY)))
 			{
-				guys[i]->friendly=1;
+				guys[i].friendly=1;
 				j=LockOnEvil(x>>FIXSHIFT,y>>FIXSHIFT);
 				if(j!=65535)
-					guys[i]->target=guys[j];
+					guys[i].target=&guys[j];
 				else
-					guys[i]->target=NULL;
+					guys[i].target=NULL;
 				if(type==MONS_FRIENDLY2)
 				{
-					guys[i]->mind1=1;
-					guys[i]->mind3=64;
+					guys[i].mind1=1;
+					guys[i].mind3=64;
 				}
 			}
 			else
@@ -1421,101 +1437,104 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 				if((MonsterFlags(type,type)&(MF_NOHIT|MF_INVINCIBLE))==0)
 					player.totalEnemies++;	// don't count invincible or unhittable guys
 
-				guys[i]->friendly=0;
+				guys[i].friendly=0;
 				j=LockOnGood(x>>FIXSHIFT,y>>FIXSHIFT);
 				if(j!=65535)
-					guys[i]->target=guys[j];
+					guys[i].target=&guys[j];
 				else
-					guys[i]->target=goodguy;
+					guys[i].target=goodguy;
 			}
-			guys[i]->mindControl=0;
-			guys[i]->poison=0;
-			guys[i]->type=type;
-			guys[i]->x=x;
-			guys[i]->y=y;
-			guys[i]->z=z;
-			guys[i]->seq=ANIM_IDLE;
-			guys[i]->frm=0;
-			guys[i]->frmTimer=0;
-			guys[i]->frmAdvance=128;
-			guys[i]->hp=MonsterHP(type);
-			guys[i]->maxHP=guys[i]->hp;
-			guys[i]->facing=2;
-			guys[i]->ouch=0;
-			guys[i]->dx=0;
-			guys[i]->dy=0;
-			guys[i]->dz=0;
-			guys[i]->bright=0;
-			guys[i]->mind=0;
-			guys[i]->mind1=0;
-			guys[i]->mind2=0;
-			guys[i]->mind3=0;
-			guys[i]->reload=0;
-			guys[i]->parent=NULL;
-			guys[i]->CalculateRect();
-			guys[i]->ID=i;
-			guys[i]->frozen=0;
-			guys[i]->mapx=(guys[i]->x>>FIXSHIFT)/TILE_WIDTH;
-			guys[i]->mapy=(guys[i]->y>>FIXSHIFT)/TILE_HEIGHT;
-			guys[i]->item=ITM_RANDOM;
-			strcpy(guys[i]->name,MonsterName(type));
-			guys[i]->fromColor=255;
-			guys[i]->aiType=guys[i]->type;
-			guys[i]->brtChange=GetMonsterType(guys[i]->type)->brtChg;
-			guys[i]->customSpr=nullptr;
+			guys[i].mindControl=0;
+			guys[i].poison=0;
+			guys[i].type=type;
+			guys[i].x=x;
+			guys[i].y=y;
+			guys[i].z=z;
+			guys[i].oldx=-1;
+			guys[i].oldy=-1;
+			guys[i].seq=ANIM_IDLE;
+			guys[i].action=ACTION_IDLE;
+			guys[i].frm=0;
+			guys[i].frmTimer=0;
+			guys[i].frmAdvance=128;
+			guys[i].hp=MonsterHP(type);
+			guys[i].maxHP=guys[i].hp;
+			guys[i].facing=2;
+			guys[i].ouch=0;
+			guys[i].dx=0;
+			guys[i].dy=0;
+			guys[i].dz=0;
+			guys[i].bright=0;
+			guys[i].mind=0;
+			guys[i].mind1=0;
+			guys[i].mind2=0;
+			guys[i].mind3=0;
+			guys[i].reload=0;
+			guys[i].parent=NULL;
+			guys[i].aiType=guys[i].type;
+			guys[i].CalculateRect();
+			guys[i].ID=i;
+			guys[i].frozen=0;
+			guys[i].mapx=(guys[i].x>>FIXSHIFT)/TILE_WIDTH;
+			guys[i].mapy=(guys[i].y>>FIXSHIFT)/TILE_HEIGHT;
+			guys[i].item=ITM_RANDOM;
+			strcpy(guys[i].name,MonsterName(type));
+			guys[i].fromColor=255;
+			guys[i].brtChange=GetMonsterType(guys[i].type)->brtChg;
+			guys[i].customSpr=nullptr;
 
 			if(type==MONS_ISOZOID && editing!=1)
 			{
-				guys[i]->seq=ANIM_A2;		// start hidden!
-				guys[i]->frm=0;
-				guys[i]->frmTimer=0;
-				guys[i]->frmAdvance=1;
+				guys[i].seq=ANIM_A2;		// start hidden!
+				guys[i].frm=0;
+				guys[i].frmTimer=0;
+				guys[i].frmAdvance=1;
 			}
 			if(type==MONS_GENERATOR1)
-				guys[i]->mind2=1;
+				guys[i].mind2=1;
 			if(type==MONS_GENERATOR2)
-				guys[i]->mind2=5;
+				guys[i].mind2=5;
 			if(type==MONS_GENERATOR3)
-				guys[i]->mind2=15;
+				guys[i].mind2=15;
 			if(type==MONS_GENERATOR4)
-				guys[i]->mind2=30;
+				guys[i].mind2=30;
 
 			if(type==MONS_MATHEAD)	// Matilda, need to add all the parts
 			{
-				guys[i]->z=32*FIXAMT;
+				guys[i].z=32*FIXAMT;
 				g=AddGuy(x,y-32*FIXAMT,0,MONS_MATBODY,friendly);
 				if(g)
-					g->parent=guys[i];
+					g->parent=&guys[i];
 				g=AddGuy(x-40*FIXAMT,y-1*FIXAMT,32*FIXAMT,MONS_MATCLAW1,friendly);
 				if(g)
-					g->parent=guys[i];
+					g->parent=&guys[i];
 				g=AddGuy(x+40*FIXAMT,y-1*FIXAMT,32*FIXAMT,MONS_MATCLAW2,friendly);
 				if(g)
-					g->parent=guys[i];
+					g->parent=&guys[i];
 				g=AddGuy(x,y-96*FIXAMT,32*FIXAMT,MONS_MATTAIL,friendly);
 				if(g)
-					g->parent=guys[i];
+					g->parent=&guys[i];
 			}
 
 			if(type==MONS_CRABPUFF || type==MONS_BEETLE)
 			{
-				guys[i]->seq=ANIM_MOVE;
-				guys[i]->frm=Random(8);
+				guys[i].seq=ANIM_MOVE;
+				guys[i].frm=Random(8);
 			}
 			if(type==MONS_MAT2HEAD)	// Matilda, need to add all the parts
 			{
-				guys[i]->z=32*FIXAMT;
+				guys[i].z=32*FIXAMT;
 				g=AddGuy(x,y-32*FIXAMT,0,MONS_MAT2BODY,friendly);
 				if(g)
-					g->parent=guys[i];
+					g->parent=&guys[i];
 
 				for(k=0;k<2;k++)
 				{
 					// lower left tentacle
 					g=AddGuy(x-40*FIXAMT,y-1*FIXAMT,32*FIXAMT,MONS_THINGTENT,friendly);
 					if(!g)
-						return guys[i];
-					g->parent=guys[i];
+						return &guys[i];
+					g->parent=&guys[i];
 					g->facing=6;
 					// mind tells them which tentacle they are (to constrain rotation)
 					g->mind=0+3*(k==1);
@@ -1526,14 +1545,14 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 						// adding them all overlapping, they'll move into place when updated
 						g=AddGuy(x-40*FIXAMT,y-1*FIXAMT,32*FIXAMT,MONS_THINGTENT,friendly);
 						if(!g)
-							return guys[i];
+							return &guys[i];
 						g->parent=g2;
 						g->facing=6;
 						g->mind=0;
 					}
 					g2=AddGuy(x-40*FIXAMT,y-1*FIXAMT,32*FIXAMT,MONS_THINGTENTTIP,friendly);
 					if(!g2)
-						return guys[i];
+						return &guys[i];
 					g2->parent=g;
 					g2->facing=6;
 					g2->mind=0;
@@ -1541,8 +1560,8 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 					// lower right tentacle
 					g=AddGuy(x+40*FIXAMT,y-1*FIXAMT,32*FIXAMT,MONS_THINGTENT,friendly);
 					if(!g)
-						return guys[i];
-					g->parent=guys[i];
+						return &guys[i];
+					g->parent=&guys[i];
 					g->facing=2;
 					g->mind=1+1*(k==1);
 					g->mind1=128;
@@ -1552,14 +1571,14 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 						// adding them all overlapping, they'll move into place when updated
 						g=AddGuy(x+40*FIXAMT,y-1*FIXAMT,32*FIXAMT,MONS_THINGTENT,friendly);
 						if(!g)
-							return guys[i];
+							return &guys[i];
 						g->parent=g2;
 						g->facing=2;
 						g->mind=1;
 					}
 					g2=AddGuy(x+40*FIXAMT,y-1*FIXAMT,32*FIXAMT,MONS_THINGTENTTIP,friendly);
 					if(!g2)
-						return guys[i];
+						return &guys[i];
 					g2->parent=g;
 					g2->facing=2;
 					g2->mind=1;
@@ -1567,7 +1586,7 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 
 				g=AddGuy(x,y-96*FIXAMT,32*FIXAMT,MONS_MAT2TAIL,friendly);
 				if(g)
-					g->parent=guys[i];
+					g->parent=&guys[i];
 			}
 
 			if(type==MONS_THING)	// The Thing needs to add tentacles
@@ -1575,8 +1594,8 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 				// lower left tentacle
 				g=AddGuy(x-64*FIXAMT,y+48*FIXAMT,12*FIXAMT,MONS_THINGTENT,friendly);
 				if(!g)
-					return guys[i];
-				g->parent=guys[i];
+					return &guys[i];
+				g->parent=&guys[i];
 				g->facing=6;
 				g->mind=0;	// mind tells them which tentacle they are (to constrain rotation)
 				g->mind1=128;
@@ -1586,22 +1605,22 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 					// adding them all overlapping, they'll move into place when updated
 					g=AddGuy(x-64*FIXAMT,y+48*FIXAMT,12*FIXAMT,MONS_THINGTENT,friendly);
 					if(!g)
-						return guys[i];
+						return &guys[i];
 					g->parent=g2;
 					g->facing=6;
 					g->mind=0;
 				}
 				g2=AddGuy(x-64*FIXAMT,y+48*FIXAMT,12*FIXAMT,MONS_THINGTENTTIP,friendly);
 				if(!g2)
-					return guys[i];
+					return &guys[i];
 				g2->parent=g;
 				g2->facing=6;
 				g2->mind=0;
 				// lower right tentacle
 				g=AddGuy(x+64*FIXAMT,y+48*FIXAMT,12*FIXAMT,MONS_THINGTENT,friendly);
 				if(!g)
-					return guys[i];
-				g->parent=guys[i];
+					return &guys[i];
+				g->parent=&guys[i];
 				g->facing=2;
 				g->mind=1;
 				g->mind1=128;
@@ -1611,22 +1630,22 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 					// adding them all overlapping, they'll move into place when updated
 					g=AddGuy(x+64*FIXAMT,y+48*FIXAMT,12*FIXAMT,MONS_THINGTENT,friendly);
 					if(!g)
-						return guys[i];
+						return &guys[i];
 					g->parent=g2;
 					g->facing=2;
 					g->mind=1;
 				}
 				g2=AddGuy(x+64*FIXAMT,y+48*FIXAMT,12*FIXAMT,MONS_THINGTENTTIP,friendly);
 				if(!g2)
-					return guys[i];
+					return &guys[i];
 				g2->parent=g;
 				g2->facing=2;
 				g2->mind=1;
 				// upper right tentacle
 				g=AddGuy(x+64*FIXAMT,y-20*FIXAMT,12*FIXAMT,MONS_THINGTENT,friendly);
 				if(!g)
-					return guys[i];
-				g->parent=guys[i];
+					return &guys[i];
+				g->parent=&guys[i];
 				g->facing=14;
 				g->mind=2;
 				g->mind1=128;
@@ -1636,22 +1655,22 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 					// adding them all overlapping, they'll move into place when updated
 					g=AddGuy(x+64*FIXAMT,y-20*FIXAMT,12*FIXAMT,MONS_THINGTENT,friendly);
 					if(!g)
-						return guys[i];
+						return &guys[i];
 					g->parent=g2;
 					g->facing=14;
 					g->mind=2;
 				}
 				g2=AddGuy(x+64*FIXAMT,y-20*FIXAMT,12*FIXAMT,MONS_THINGTENTTIP,friendly);
 				if(!g2)
-					return guys[i];
+					return &guys[i];
 				g2->parent=g;
 				g2->facing=14;
 				g2->mind=2;
 				// upper left (and last!) tentacle
 				g=AddGuy(x-64*FIXAMT,y-20*FIXAMT,12*FIXAMT,MONS_THINGTENT,friendly);
 				if(!g)
-					return guys[i];
-				g->parent=guys[i];
+					return &guys[i];
+				g->parent=&guys[i];
 				g->facing=10;
 				g->mind=3;
 				g->mind1=128;
@@ -1661,14 +1680,14 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 					// adding them all overlapping, they'll move into place when updated
 					g=AddGuy(x-64*FIXAMT,y-20*FIXAMT,12*FIXAMT,MONS_THINGTENT,friendly);
 					if(!g)
-						return guys[i];
+						return &guys[i];
 					g->parent=g2;
 					g->facing=10;
 					g->mind=3;
 				}
 				g2=AddGuy(x-64*FIXAMT,y-20*FIXAMT,12*FIXAMT,MONS_THINGTENTTIP,friendly);
 				if(!g2)
-					return guys[i];
+					return &guys[i];
 				g2->parent=g;
 				g2->facing=10;
 				g2->mind=3;
@@ -1679,26 +1698,26 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 				g=AddGuy(x-108*FIXAMT,y+22*FIXAMT,0,MONS_SPHXARM1,friendly);
 				if(!g)
 				{
-					return guys[i];
+					return &guys[i];
 				}
-				g->parent=guys[i];
+				g->parent=&guys[i];
 				// right arm
 				g=AddGuy(x+108*FIXAMT,y+22*FIXAMT,0,MONS_SPHXARM2,friendly);
 				if(!g)
 				{
-					return guys[i];
+					return &guys[i];
 				}
-				g->parent=guys[i];
+				g->parent=&guys[i];
 			}
 			if(type==MONS_CENTIHEAD)
 			{
 				// add on 15 body parts
-				g=guys[i];
+				g=&guys[i];
 				for(j=0;j<15;j++)
 				{
 					g2=AddGuy(x,y,0,MONS_CENTIBODY,friendly);
 					if(!g2)
-						return guys[i];
+						return &guys[i];
 					g2->parent=g;
 					g=g2;
 				}
@@ -1709,24 +1728,24 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 				if(g)
 				{
 					// the core is the parent of them all
-					guys[i]->parent=g;
-					g->item=guys[i]->item;
+					guys[i].parent=g;
+					g->item=guys[i].item;
 				}
 				g=AddGuy(x-87*FIXAMT,y,48*FIXAMT,MONS_LOONYGUN,friendly);
 				if(g)
 				{
-					g->parent=guys[i];
+					g->parent=&guys[i];
 					g->mind3=0;
 				}
 				g=AddGuy(x+92*FIXAMT,y,48*FIXAMT,MONS_LOONYGUN,friendly);
 				if(g)
 				{
-					g->parent=guys[i];
+					g->parent=&guys[i];
 					g->mind3=1;
 				}
 			}
 
-			return guys[i];
+			return &guys[i];
 		}
 	return NULL;
 }
@@ -1737,23 +1756,20 @@ void DeleteGuy2(Guy *g)
 
 	RemoveGuy(g);
 	for(i=0;i<maxGuys;i++)
-		if(guys[i] && guys[i]->parent==g)
+		if(guys[i].type && guys[i].parent==g)	// kill all the kids too
 		{
-			DeleteGuy2(guys[i]);
+			DeleteGuy2(&guys[i]);
 		}
 }
 
 void DeleteGuy(int x,int y,int type)
 {
-	int i,j;
+	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if((guys[i]->type==type) && (guys[i]->x==x) && (guys[i]->y==y))
+		if((guys[i].type==type) && (guys[i].x==x) && (guys[i].y==y))
 		{
-			RemoveGuy(guys[i]);
-			for(j=0;j<maxGuys;j++)
-				if(guys[j]->parent==guys[i])	// kill all the kids too
-					DeleteGuy2(guys[j]);
+			DeleteGuy2(&guys[i]);
 		}
 }
 
@@ -1767,7 +1783,7 @@ void AddMapGuys(Map *map)
 	// clear all guys
 	for(i=0;i<maxGuys;i++)
 	{
-		guys[i]->type=MONS_NONE;
+		guys[i].type=MONS_NONE;
 	}
 	goodguy=NULL;
 
@@ -1889,19 +1905,19 @@ byte FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type && guys[i]->hp && (guys[i]->friendly!=friendly))
+		if(guys[i].type && guys[i].hp && (guys[i].friendly!=friendly))
 		{
-			if(CheckHit(size,x,y,guys[i]))
+			if(CheckHit(size,x,y,&guys[i]))
 			{
 				// stained glass knight blocking will reflect hits
-				if(guys[i]->aiType==MONS_KNIGHT && guys[i]->seq==ANIM_A2 && guys[i]->frm>2)
+				if(guys[i].aiType==MONS_KNIGHT && guys[i].seq==ANIM_A2 && guys[i].frm>2)
 				{
 					MakeSound(SND_GLASSBLOCK,x<<FIXSHIFT,y<<FIXSHIFT,SND_CUTOFF,1200);
 					ReflectShot();
 				}
 				else if(damage>0)
-					guys[i]->GetShot(dx,dy,damage,map,world);
-				guyHit=guys[i];
+					guys[i].GetShot(dx,dy,damage,map,world);
+				guyHit=&guys[i];
 				return 1;
 			}
 		}
@@ -1916,12 +1932,12 @@ byte FindVictims(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_
 	byte result=0;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type && guys[i]->hp && (guys[i]->friendly!=friendly))
+		if(guys[i].type && guys[i].hp && (guys[i].friendly!=friendly))
 		{
-			if(CheckHit(size,x,y,guys[i]))
+			if(CheckHit(size,x,y,&guys[i]))
 			{
-				guys[i]->GetShot(dx,dy,damage,map,world);
-				guyHit=guys[i];
+				guys[i].GetShot(dx,dy,damage,map,world);
+				guyHit=&guys[i];
 				result=1;
 			}
 		}
@@ -1936,12 +1952,12 @@ byte FindVictims2(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world
 	byte result=0;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type && guys[i]->hp && (guys[i]->friendly!=friendly) && guys[i]->ouch==0)
+		if(guys[i].type && guys[i].hp && (guys[i].friendly!=friendly) && guys[i].ouch==0)
 		{
-			if(CheckHit(size,x,y,guys[i]))
+			if(CheckHit(size,x,y,&guys[i]))
 			{
-				guys[i]->GetShot(dx,dy,damage,map,world);
-				guyHit=guys[i];
+				guys[i].GetShot(dx,dy,damage,map,world);
+				guyHit=&guys[i];
 				result=1;
 			}
 		}
@@ -1959,10 +1975,10 @@ word LockOnEvil(int x,int y)
 	bestRange=320+240;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type && guys[i]->hp && (guys[i]->friendly==0) &&
-			(!(MonsterFlags(guys[i]->type,guys[i]->aiType)&(MF_NOHIT|MF_INVINCIBLE))))
+		if(guys[i].type && guys[i].hp && (guys[i].friendly==0) &&
+			(!(MonsterFlags(guys[i].type,guys[i].aiType)&(MF_NOHIT|MF_INVINCIBLE))))
 		{
-			range=abs(x-(guys[i]->x>>FIXSHIFT))+abs(y-(guys[i]->y>>FIXSHIFT));
+			range=abs(x-(guys[i].x>>FIXSHIFT))+abs(y-(guys[i].y>>FIXSHIFT));
 			if((range<bestRange) || (range<320+240 && Random(32)==0))
 			{
 				bestguy=i;
@@ -1981,10 +1997,10 @@ word LockOnEvil2(int x,int y)
 	for(j=0;j<128;j++)
 	{
 		i=Random(maxGuys);
-		if(guys[i]->type && guys[i]->hp && (guys[i]->friendly==0) &&
-			(!(MonsterFlags(guys[i]->type,guys[i]->aiType)&(MF_NOHIT|MF_INVINCIBLE))))
+		if(guys[i].type && guys[i].hp && (guys[i].friendly==0) &&
+			(!(MonsterFlags(guys[i].type,guys[i].aiType)&(MF_NOHIT|MF_INVINCIBLE))))
 		{
-			range=abs(x-(guys[i]->x>>FIXSHIFT))+abs(y-(guys[i]->y>>FIXSHIFT));
+			range=abs(x-(guys[i].x>>FIXSHIFT))+abs(y-(guys[i].y>>FIXSHIFT));
 			if(range<160+120)
 			{
 				return i;
@@ -2004,11 +2020,11 @@ word LockOnGood(int x,int y)
 	bestRange=320+240;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type && guys[i]->hp && (guys[i]->friendly==1) &&
-			(!(MonsterFlags(guys[i]->type,guys[i]->aiType)&(MF_NOHIT|MF_INVINCIBLE))) && (guys[i]->aiType!=MONS_BOUAPHA ||
+		if(guys[i].type && guys[i].hp && (guys[i].friendly==1) &&
+			(!(MonsterFlags(guys[i].type,guys[i].aiType)&(MF_NOHIT|MF_INVINCIBLE))) && (guys[i].aiType!=MONS_BOUAPHA ||
 			(player.invisibility==0 && player.stealthy==0)))
 		{
-			range=abs(x-(guys[i]->x>>FIXSHIFT))+abs(y-(guys[i]->y>>FIXSHIFT));
+			range=abs(x-(guys[i].x>>FIXSHIFT))+abs(y-(guys[i].y>>FIXSHIFT));
 			if((range<bestRange) || (range<320+240 && Random(32)==0))
 			{
 				bestguy=i;
@@ -2027,10 +2043,10 @@ word LockOnGood2(int x,int y)
 	for(j=0;j<128;j++)
 	{
 		i=Random(maxGuys);
-		if(guys[i]->type && guys[i]->hp && (guys[i]->friendly==1) &&
-			(!(MonsterFlags(guys[i]->type,guys[i]->aiType)&MF_NOHIT)))
+		if(guys[i].type && guys[i].hp && (guys[i].friendly==1) &&
+			(!(MonsterFlags(guys[i].type,guys[i].aiType)&MF_NOHIT)))
 		{
-			range=abs(x-(guys[i]->x>>FIXSHIFT))+abs(y-(guys[i]->y>>FIXSHIFT));
+			range=abs(x-(guys[i].x>>FIXSHIFT))+abs(y-(guys[i].y>>FIXSHIFT));
 			if(range<160+120)
 			{
 				return i;
@@ -2042,13 +2058,11 @@ word LockOnGood2(int x,int y)
 
 byte GetGuyPos(word guy,int *x,int *y)
 {
-	if(guy==65535)
-		return 0;
-	if(guys[guy]==NULL)
+	if(guy >= maxGuys)
 		return 0;
 
-	*x=guys[guy]->x;
-	*y=guys[guy]->y;
+	*x=guys[guy].x;
+	*y=guys[guy].y;
 
 	return 1;
 }
@@ -2058,8 +2072,8 @@ Guy *GetGuyOfType(int type)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type==type && guys[i]->hp>0)
-			return guys[i];
+		if(guys[i].type==type && guys[i].hp>0)
+			return &guys[i];
 
 	return NULL;
 }
@@ -2069,8 +2083,8 @@ Guy *GetGuyOfAIType(int type)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->aiType==type && guys[i]->hp>0 && guys[i]->type!=MONS_NONE)
-			return guys[i];
+		if(guys[i].aiType==type && guys[i].hp>0 && guys[i].type!=MONS_NONE)
+			return &guys[i];
 
 	return NULL;
 }
@@ -2080,7 +2094,7 @@ byte MonsterExists(int type)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type==type)
+		if(guys[i].type==type)
 			return 1;
 
 	return 0;
@@ -2088,11 +2102,9 @@ byte MonsterExists(int type)
 
 Guy *GetGuy(word w)
 {
-	if(w>=maxGuys)
-		return NULL;
-	if(!guys[w])
-		return NULL;
-	return guys[w];
+	if (w >= maxGuys)
+		return nullptr;
+	return &guys[w];
 }
 
 void HealGoodguy(byte amt)
@@ -2128,10 +2140,10 @@ byte MossCheck(int x,int y)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if((guys[i]) && ((guys[i]->aiType==MONS_MOSS) || (guys[i]->aiType==MONS_MOSSGRANDE) ||
-			(guys[i]->aiType==MONS_MOSS2))
-			&& (guys[i]->hp>0) && ((guys[i]->x>>FIXSHIFT)/TILE_WIDTH==x) &&
-				((guys[i]->y>>FIXSHIFT)/TILE_HEIGHT==y))
+		if((guys[i].type) && ((guys[i].aiType==MONS_MOSS) || (guys[i].aiType==MONS_MOSSGRANDE) ||
+			(guys[i].aiType==MONS_MOSS2))
+			&& (guys[i].hp>0) && ((guys[i].x>>FIXSHIFT)/TILE_WIDTH==x) &&
+				((guys[i].y>>FIXSHIFT)/TILE_HEIGHT==y))
 				return 1;	// moss is in the way
 	return 0;
 }
@@ -2141,19 +2153,19 @@ void KillKids(Guy *g)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i] && guys[i]->parent==g)
+		if(guys[i].type && guys[i].parent==g)
 		{
-			KillKids(guys[i]);	// kill my children too
-			if(guys[i]->hp>0)
+			KillKids(&guys[i]);	// kill my children too
+			if(guys[i].hp>0)
 			{
-				if(!guys[i]->friendly)
+				if(!guys[i].friendly)
 					player.enemiesSlain++;
-				guys[i]->hp=0;
-				guys[i]->seq=ANIM_DIE;
-				guys[i]->action=ACTION_BUSY;
-				guys[i]->frm=0;
-				guys[i]->frmTimer=0;
-				guys[i]->frmAdvance=64;
+				guys[i].hp=0;
+				guys[i].seq=ANIM_DIE;
+				guys[i].action=ACTION_BUSY;
+				guys[i].frm=0;
+				guys[i].frmTimer=0;
+				guys[i].frmAdvance=64;
 			}
 		}
 }
@@ -2166,45 +2178,45 @@ byte RaftNearby(void)
 	gy=((goodguy->y-goodguy->dy)>>FIXSHIFT)/TILE_HEIGHT;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i] && guys[i]->type && guys[i]->aiType==MONS_RAFT)
+		if(guys[i].type && guys[i].aiType==MONS_RAFT)
 		{
-			if(RangeToTarget(guys[i],goodguy)<32*FIXAMT && player.vehicle==0)
+			if(RangeToTarget(&guys[i],goodguy)<32*FIXAMT && player.vehicle==0)
 			{
-				guys[i]->mind=1;
+				guys[i].mind=1;
 				player.vehicle=VE_RAFT;
-				goodguy->parent=guys[i];
+				goodguy->parent=&guys[i];
 				goodguy->z=FIXAMT*8;
-				guys[i]->mind1=0;	// acceleration
+				guys[i].mind1=0;	// acceleration
 
-				mx=((guys[i]->x)>>FIXSHIFT)/TILE_WIDTH;
-				my=((guys[i]->y)>>FIXSHIFT)/TILE_HEIGHT;
+				mx=((guys[i].x)>>FIXSHIFT)/TILE_WIDTH;
+				my=((guys[i].y)>>FIXSHIFT)/TILE_HEIGHT;
 
 				if(gx<mx)
-					guys[i]->facing=0;
+					guys[i].facing=0;
 				else if(gy<my)
-					guys[i]->facing=1;
+					guys[i].facing=1;
 				else if(gx>mx)
-					guys[i]->facing=2;
+					guys[i].facing=2;
 				else
-					guys[i]->facing=3;
+					guys[i].facing=3;
 
-				goodguy->x=guys[i]->x;
-				goodguy->y=guys[i]->y+1;
+				goodguy->x=guys[i].x;
+				goodguy->y=guys[i].y+1;
 
 				/*
 				if(abs(goodguy->dx)>abs(goodguy->dy))
 				{
 					if(goodguy->dx<0)
-						guys[i]->facing=2;
+						guys[i].facing=2;
 					else
-						guys[i]->facing=0;
+						guys[i].facing=0;
 				}
 				else
 				{
 					if(goodguy->dy<0)
-						guys[i]->facing=3;
+						guys[i].facing=3;
 					else
-						guys[i]->facing=1;
+						guys[i].facing=1;
 				}
 				*/
 				return 1;
@@ -2227,17 +2239,17 @@ void GuySwap(int sx,int sy,int width,int height,int dx,int dy)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->x>=sx && guys[i]->y>=sy && guys[i]->x<=(sx+width) && guys[i]->y<=(sy+height))
+		if(guys[i].x>=sx && guys[i].y>=sy && guys[i].x<=(sx+width) && guys[i].y<=(sy+height))
 		{
 			// in target area, swap
-			guys[i]->x+=(-sx+dx);
-			guys[i]->y+=(-sy+dy);
+			guys[i].x+=(-sx+dx);
+			guys[i].y+=(-sy+dy);
 		}
-		else if(guys[i]->x>=dx && guys[i]->y>=dy && guys[i]->x<=(dx+width) && guys[i]->y<=(dy+height))
+		else if(guys[i].x>=dx && guys[i].y>=dy && guys[i].x<=(dx+width) && guys[i].y<=(dy+height))
 		{
 			// in other target area, swap
-			guys[i]->x+=(-dx+sx);
-			guys[i]->y+=(-dy+sy);
+			guys[i].x+=(-dx+sx);
+			guys[i].y+=(-dy+sy);
 		}
 	}
 }
@@ -2249,16 +2261,16 @@ void ShiftGuys(char dx,char dy,Map *map)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		guys[i]->x+=dx*TILE_WIDTH*FIXAMT;
-		guys[i]->y+=dy*TILE_HEIGHT*FIXAMT;
-		if(guys[i]->x<0)
-			guys[i]->x+=map->width*TILE_WIDTH*FIXAMT;
-		if(guys[i]->x>=(map->width*TILE_WIDTH*FIXAMT))
-			guys[i]->x-=map->width*TILE_WIDTH*FIXAMT;
-		if(guys[i]->y<0)
-			guys[i]->y+=map->height*TILE_HEIGHT*FIXAMT;
-		if(guys[i]->y>=(map->height*TILE_HEIGHT*FIXAMT))
-			guys[i]->y-=map->height*TILE_HEIGHT*FIXAMT;
+		guys[i].x+=dx*TILE_WIDTH*FIXAMT;
+		guys[i].y+=dy*TILE_HEIGHT*FIXAMT;
+		if(guys[i].x<0)
+			guys[i].x+=map->width*TILE_WIDTH*FIXAMT;
+		if(guys[i].x>=(map->width*TILE_WIDTH*FIXAMT))
+			guys[i].x-=map->width*TILE_WIDTH*FIXAMT;
+		if(guys[i].y<0)
+			guys[i].y+=map->height*TILE_HEIGHT*FIXAMT;
+		if(guys[i].y>=(map->height*TILE_HEIGHT*FIXAMT))
+			guys[i].y-=map->height*TILE_HEIGHT*FIXAMT;
 	}
 }
 
@@ -2352,9 +2364,9 @@ byte ControlMind2(Guy *me)
 					// off chance that you mind control one while it is holding you
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && guys[i]->parent==me)
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && guys[i].parent==me)
 		{
-			ControlMind2(guys[i]);
+			ControlMind2(&guys[i]);
 		}
 	}
 	return 1;
@@ -2392,9 +2404,9 @@ byte FreezeGuy2(Guy *me)
 					// off chance that you freeze one while it is holding you
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && guys[i]->parent==me)
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && guys[i].parent==me)
 		{
-			FreezeGuy2(guys[i]);
+			FreezeGuy2(&guys[i]);
 		}
 	}
 	return 1;
@@ -2420,96 +2432,96 @@ void KillMonster(int x,int y,int type,byte nofx)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
 			switch(type)
 			{
 				case MONS_ANYBODY:
 					break;
 				case MONS_GOODGUY:
-					if(!guys[i]->friendly)
+					if(!guys[i].friendly)
 						continue;
 					break;
 				case MONS_BADGUY:
-					if(guys[i]->friendly)
+					if(guys[i].friendly)
 						continue;
 					break;
 				case MONS_NONPLAYER:
-					if(guys[i]->aiType==MONS_BOUAPHA)
+					if(guys[i].aiType==MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_PLAYER:
-					if(guys[i]->aiType!=MONS_BOUAPHA)
+					if(guys[i].aiType!=MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_TAGGED:
-					if(guys[i]!=TaggedMonster())
+					if(&guys[i]!=TaggedMonster())
 						continue;
 					break;
 				default:
-					if(guys[i]->type!=type)
+					if(guys[i].type!=type)
 						continue;
 					break;
 			}
-			if(guys[i]->aiType==MONS_BOUAPHA)
+			if(guys[i].aiType==MONS_BOUAPHA)
 			{
 				SendMessageToGame(MSG_RESET,0);
 			}
 
-			if(guys[i]->friendly==0 && !(MonsterFlags(guys[i]->type,guys[i]->aiType)&(MF_NOHIT|MF_INVINCIBLE)))
+			if(guys[i].friendly==0 && !(MonsterFlags(guys[i].type,guys[i].aiType)&(MF_NOHIT|MF_INVINCIBLE)))
 				player.enemiesSlain++;
 
-			if(guys[i]->aiType==MONS_RAFT && guys[i]->mind!=0)
+			if(guys[i].aiType==MONS_RAFT && guys[i].mind!=0)
 			{
 				player.vehicle=VE_NONE;	// player was riding it
 				goodguy->parent=NULL;
 			}
-			if(guys[i]->aiType==MONS_MINECART && guys[i]->mind!=0)
+			if(guys[i].aiType==MONS_MINECART && guys[i].mind!=0)
 			{
 				player.vehicle=VE_NONE;	// player was riding it
 				goodguy->parent=NULL;
 			}
-			if(guys[i]->aiType==MONS_YUGO && guys[i]->mind==2)
+			if(guys[i].aiType==MONS_YUGO && guys[i].mind==2)
 			{
 				player.vehicle=VE_NONE;	// player was riding it
 				goodguy->parent=NULL;
 			}
 
-			guys[i]->type=MONS_NONE;
+			guys[i].type=MONS_NONE;
 
 			// handle item drops
-			if(guys[i]->type==MONS_ZOMBIE || guys[i]->type==MONS_MUTANT)	// zombies always drop a brain
+			if(guys[i].type==MONS_ZOMBIE || guys[i].type==MONS_MUTANT)	// zombies always drop a brain
 			{
-				if(!curMap->DropItem(guys[i]->mapx,guys[i]->mapy,ITM_BRAIN))
-					curMap->GetTile(guys[i]->mapx,guys[i]->mapy)->item=ITM_BRAIN;	// force the drop if it failed
+				if(!curMap->DropItem(guys[i].mapx,guys[i].mapy,ITM_BRAIN))
+					curMap->GetTile(guys[i].mapx,guys[i].mapy)->item=ITM_BRAIN;	// force the drop if it failed
 			}
-			else if(guys[i]->type==MONS_SUPERZOMBIE)	// super zombies always drop 2 brains
+			else if(guys[i].type==MONS_SUPERZOMBIE)	// super zombies always drop 2 brains
 			{
-				if(!curMap->DropItem(guys[i]->mapx,guys[i]->mapy,ITM_BRAIN))
-					curMap->GetTile(guys[i]->mapx,guys[i]->mapy)->item=ITM_BRAIN;	// force the drop if it failed
-				if(!curMap->DropItem(guys[i]->mapx,guys[i]->mapy+1,ITM_BRAIN) && guys[i]->mapy+1<curMap->height)
-					curMap->GetTile(guys[i]->mapx,guys[i]->mapy+1)->item=ITM_BRAIN;	// hope there's a legal coordinate and non-wall below me!
+				if(!curMap->DropItem(guys[i].mapx,guys[i].mapy,ITM_BRAIN))
+					curMap->GetTile(guys[i].mapx,guys[i].mapy)->item=ITM_BRAIN;	// force the drop if it failed
+				if(!curMap->DropItem(guys[i].mapx,guys[i].mapy+1,ITM_BRAIN) && guys[i].mapy+1<curMap->height)
+					curMap->GetTile(guys[i].mapx,guys[i].mapy+1)->item=ITM_BRAIN;	// hope there's a legal coordinate and non-wall below me!
 			}
-			if(guys[i]->aiType==MONS_GNOME)
+			if(guys[i].aiType==MONS_GNOME)
 			{
-				if(guys[i]->mind3!=0)	// drop what you stole!
-					if(!curMap->DropItem(guys[i]->mapx,guys[i]->mapy,guys[i]->mind3))
-						curMap->GetTile(guys[i]->mapx,guys[i]->mapy)->item=guys[i]->mind3;	// force the drop if it failed
+				if(guys[i].mind3!=0)	// drop what you stole!
+					if(!curMap->DropItem(guys[i].mapx,guys[i].mapy,guys[i].mind3))
+						curMap->GetTile(guys[i].mapx,guys[i].mapy)->item=guys[i].mind3;	// force the drop if it failed
 			}
 
-			if(guys[i]->item==ITM_RANDOM)
+			if(guys[i].item==ITM_RANDOM)
 			{
 				if(Random(100*FIXAMT)<curMap->itemDrops)
-					curMap->DropItem(guys[i]->mapx,guys[i]->mapy,GetRandomItem());
+					curMap->DropItem(guys[i].mapx,guys[i].mapy,GetRandomItem());
 			}
-			else if(guys[i]->item!=ITM_NONE)
+			else if(guys[i].item!=ITM_NONE)
 			{
-				if(!curMap->DropItem(guys[i]->mapx,guys[i]->mapy,guys[i]->item))
-					curMap->GetTile(guys[i]->mapx,guys[i]->mapy)->item=guys[i]->item;	// force the drop if it failed
+				if(!curMap->DropItem(guys[i].mapx,guys[i].mapy,guys[i].item))
+					curMap->GetTile(guys[i].mapx,guys[i].mapy)->item=guys[i].item;	// force the drop if it failed
 			}
 			if(!nofx)
-				BlowUpGuy((guys[i]->x>>FIXSHIFT)-32,(guys[i]->y>>FIXSHIFT)-24,
-					(guys[i]->x>>FIXSHIFT)+32,(guys[i]->y>>FIXSHIFT)+24,0,1);
+				BlowUpGuy((guys[i].x>>FIXSHIFT)-32,(guys[i].y>>FIXSHIFT)-24,
+					(guys[i].x>>FIXSHIFT)+32,(guys[i].y>>FIXSHIFT)+24,0,1);
 		}
 
 	}
@@ -2531,66 +2543,66 @@ void MonsterLife(byte fx,int x,int y,int type,int newLife)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && guys[i]->hp!=0 && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && guys[i].hp!=0 && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
 			switch(type)
 			{
 				case MONS_ANYBODY:
 					break;
 				case MONS_GOODGUY:
-					if(!guys[i]->friendly)
+					if(!guys[i].friendly)
 						continue;
 					break;
 				case MONS_BADGUY:
-					if(guys[i]->friendly)
+					if(guys[i].friendly)
 						continue;
 					break;
 				case MONS_NONPLAYER:
-					if(guys[i]->aiType==MONS_BOUAPHA)
+					if(guys[i].aiType==MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_PLAYER:
-					if(guys[i]->aiType!=MONS_BOUAPHA)
+					if(guys[i].aiType!=MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_TAGGED:
-					if(guys[i]!=TaggedMonster())
+					if(&guys[i]!=TaggedMonster())
 						continue;
 					break;
 				default:
-					if(guys[i]->type!=type)
+					if(guys[i].type!=type)
 						continue;
 					break;
 			}
 
-			if(guys[i]->aiType==MONS_BOUAPHA)
+			if(guys[i].aiType==MONS_BOUAPHA)
 			{
 				if(fx)
 				{
-					if(newLife>guys[i]->hp)
-						HealRing(1,guys[i]->x,guys[i]->y,0,16,2);
+					if(newLife>guys[i].hp)
+						HealRing(1,guys[i].x,guys[i].y,0,16,2);
 					else
 					{
-						guys[i]->ouch=4;
-						HealRing(4,guys[i]->x,guys[i]->y,0,16,2);
+						guys[i].ouch=4;
+						HealRing(4,guys[i].x,guys[i].y,0,16,2);
 					}
 				}
-				guys[i]->hp=newLife;
+				guys[i].hp=newLife;
 				SetPlayerHP(newLife);
 			}
 			else
 			{
 				if(fx)
 				{
-					if(newLife>guys[i]->hp)
-						HealRing(1,guys[i]->x,guys[i]->y,0,16,2);
+					if(newLife>guys[i].hp)
+						HealRing(1,guys[i].x,guys[i].y,0,16,2);
 					else
 					{
-						guys[i]->ouch=4;
-						HealRing(4,guys[i]->x,guys[i]->y,0,16,2);
+						guys[i].ouch=4;
+						HealRing(4,guys[i].x,guys[i].y,0,16,2);
 					}
 				}
-				guys[i]->hp=newLife;
+				guys[i].hp=newLife;
 			}
 		}
 	}
@@ -2605,48 +2617,48 @@ void MonsterMaxLife(byte fx,int x,int y,int type,int newLife)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && guys[i]->hp!=0 && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && guys[i].hp!=0 && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
 			switch(type)
 			{
 				case MONS_ANYBODY:
 					break;
 				case MONS_GOODGUY:
-					if(!guys[i]->friendly)
+					if(!guys[i].friendly)
 						continue;
 					break;
 				case MONS_BADGUY:
-					if(guys[i]->friendly)
+					if(guys[i].friendly)
 						continue;
 					break;
 				case MONS_NONPLAYER:
-					if(guys[i]->aiType==MONS_BOUAPHA)
+					if(guys[i].aiType==MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_PLAYER:
-					if(guys[i]->aiType!=MONS_BOUAPHA)
+					if(guys[i].aiType!=MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_TAGGED:
-					if(guys[i]!=TaggedMonster())
+					if(&guys[i]!=TaggedMonster())
 						continue;
 					break;
 				default:
-					if(guys[i]->type!=type)
+					if(guys[i].type!=type)
 						continue;
 					break;
 			}
 
 			if(fx)
 			{
-				if(newLife>guys[i]->maxHP)
-					HealRing(1,guys[i]->x,guys[i]->y,0,16,2);
+				if(newLife>guys[i].maxHP)
+					HealRing(1,guys[i].x,guys[i].y,0,16,2);
 				else
 				{
-					HealRing(4,guys[i]->x,guys[i]->y,0,16,2);
+					HealRing(4,guys[i].x,guys[i].y,0,16,2);
 				}
 			}
-			guys[i]->maxHP=newLife;
+			guys[i].maxHP=newLife;
 		}
 	}
 }
@@ -2657,38 +2669,38 @@ void SetMonsterName(byte fx,int x,int y,int type,char *name)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && guys[i]->hp!=0 && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && guys[i].hp!=0 && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
 			switch(type)
 			{
 				case MONS_ANYBODY:
 					break;
 				case MONS_GOODGUY:
-					if(!guys[i]->friendly)
+					if(!guys[i].friendly)
 						continue;
 					break;
 				case MONS_BADGUY:
-					if(guys[i]->friendly)
+					if(guys[i].friendly)
 						continue;
 					break;
 				case MONS_NONPLAYER:
-					if(guys[i]->aiType==MONS_BOUAPHA)
+					if(guys[i].aiType==MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_PLAYER:
-					if(guys[i]->aiType!=MONS_BOUAPHA)
+					if(guys[i].aiType!=MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_TAGGED:
-					if(guys[i]!=TaggedMonster())
+					if(&guys[i]!=TaggedMonster())
 						continue;
 					break;
 				default:
-					if(guys[i]->type!=type)
+					if(guys[i].type!=type)
 						continue;
 					break;
 			}
-			strcpy(guys[i]->name,name);
+			strcpy(guys[i].name,name);
 		}
 	}
 }
@@ -2699,34 +2711,34 @@ void SetMonsterGraphics(byte fx,int x,int y,int type,char *name)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && guys[i]->hp!=0 && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && guys[i].hp!=0 && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
 			switch(type)
 			{
 				case MONS_ANYBODY:
 					break;
 				case MONS_GOODGUY:
-					if(!guys[i]->friendly)
+					if(!guys[i].friendly)
 						continue;
 					break;
 				case MONS_BADGUY:
-					if(guys[i]->friendly)
+					if(guys[i].friendly)
 						continue;
 					break;
 				case MONS_NONPLAYER:
-					if(guys[i]->aiType==MONS_BOUAPHA)
+					if(guys[i].aiType==MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_PLAYER:
-					if(guys[i]->aiType!=MONS_BOUAPHA)
+					if(guys[i].aiType!=MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_TAGGED:
-					if(guys[i]!=TaggedMonster())
+					if(&guys[i]!=TaggedMonster())
 						continue;
 					break;
 				default:
-					if(guys[i]->type!=type)
+					if(guys[i].type!=type)
 						continue;
 					break;
 			}
@@ -2735,10 +2747,10 @@ void SetMonsterGraphics(byte fx,int x,int y,int type,char *name)
 			char buf[64];
 			sprintf(buf,"user/%s", name);
 
-			guys[i]->customSpr = std::make_unique<sprite_set_t>();
-			if (!guys[i]->customSpr->Load(buf))
+			guys[i].customSpr = std::make_unique<sprite_set_t>();
+			if (!guys[i].customSpr->Load(buf))
 			{
-				guys[i]->customSpr = nullptr;
+				guys[i].customSpr = nullptr;
 			}
 		}
 	}
@@ -2753,40 +2765,40 @@ void SetMonsterColor(byte fx,int x,int y,int type,int colCode)
 	toCol=colCode/256;
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && guys[i]->hp!=0 && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && guys[i].hp!=0 && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
 			switch(type)
 			{
 				case MONS_ANYBODY:
 					break;
 				case MONS_GOODGUY:
-					if(!guys[i]->friendly)
+					if(!guys[i].friendly)
 						continue;
 					break;
 				case MONS_BADGUY:
-					if(guys[i]->friendly)
+					if(guys[i].friendly)
 						continue;
 					break;
 				case MONS_NONPLAYER:
-					if(guys[i]->aiType==MONS_BOUAPHA)
+					if(guys[i].aiType==MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_PLAYER:
-					if(guys[i]->aiType!=MONS_BOUAPHA)
+					if(guys[i].aiType!=MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_TAGGED:
-					if(guys[i]!=TaggedMonster())
+					if(&guys[i]!=TaggedMonster())
 						continue;
 					break;
 				default:
-					if(guys[i]->type!=type)
+					if(guys[i].type!=type)
 						continue;
 					break;
 			}
 
-			guys[i]->fromColor=fromCol;
-			guys[i]->toColor=toCol;
+			guys[i].fromColor=fromCol;
+			guys[i].toColor=toCol;
 		}
 	}
 }
@@ -2797,39 +2809,39 @@ void SetMonsterBright(byte fx,int x,int y,int type,int bright)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && guys[i]->hp!=0 && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && guys[i].hp!=0 && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
 			switch(type)
 			{
 				case MONS_ANYBODY:
 					break;
 				case MONS_GOODGUY:
-					if(!guys[i]->friendly)
+					if(!guys[i].friendly)
 						continue;
 					break;
 				case MONS_BADGUY:
-					if(guys[i]->friendly)
+					if(guys[i].friendly)
 						continue;
 					break;
 				case MONS_NONPLAYER:
-					if(guys[i]->aiType==MONS_BOUAPHA)
+					if(guys[i].aiType==MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_PLAYER:
-					if(guys[i]->aiType!=MONS_BOUAPHA)
+					if(guys[i].aiType!=MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_TAGGED:
-					if(guys[i]!=TaggedMonster())
+					if(&guys[i]!=TaggedMonster())
 						continue;
 					break;
 				default:
-					if(guys[i]->type!=type)
+					if(guys[i].type!=type)
 						continue;
 					break;
 			}
 
-			guys[i]->brtChange=bright;
+			guys[i].brtChange=bright;
 		}
 	}
 }
@@ -2840,57 +2852,57 @@ void MonsterLifeAmt(byte fx,int x,int y,int type,int amt)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && guys[i]->hp!=0 && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && guys[i].hp!=0 && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
 			switch(type)
 			{
 				case MONS_ANYBODY:
 					break;
 				case MONS_GOODGUY:
-					if(!guys[i]->friendly)
+					if(!guys[i].friendly)
 						continue;
 					break;
 				case MONS_BADGUY:
-					if(guys[i]->friendly)
+					if(guys[i].friendly)
 						continue;
 					break;
 				case MONS_NONPLAYER:
-					if(guys[i]->aiType==MONS_BOUAPHA)
+					if(guys[i].aiType==MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_PLAYER:
-					if(guys[i]->aiType!=MONS_BOUAPHA)
+					if(guys[i].aiType!=MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_TAGGED:
-					if(guys[i]!=TaggedMonster())
+					if(&guys[i]!=TaggedMonster())
 						continue;
 					break;
 				default:
-					if(guys[i]->type!=type)
+					if(guys[i].type!=type)
 						continue;
 					break;
 			}
 
-			newLife=guys[i]->hp+amt;
+			newLife=guys[i].hp+amt;
 			if(newLife<0)
 				newLife=0;
-			if(newLife>guys[i]->maxHP)
-				newLife=guys[i]->maxHP;
+			if(newLife>guys[i].maxHP)
+				newLife=guys[i].maxHP;
 
-			if(guys[i]->aiType==MONS_BOUAPHA)
+			if(guys[i].aiType==MONS_BOUAPHA)
 			{
 				if(fx)
 				{
 					if(amt>0)
-						HealRing(1,guys[i]->x,guys[i]->y,0,16,2);
+						HealRing(1,guys[i].x,guys[i].y,0,16,2);
 					else
 					{
-						guys[i]->ouch=4;
-						HealRing(4,guys[i]->x,guys[i]->y,0,16,2);
+						guys[i].ouch=4;
+						HealRing(4,guys[i].x,guys[i].y,0,16,2);
 					}
 				}
-				guys[i]->hp=newLife;
+				guys[i].hp=newLife;
 				SetPlayerHP(newLife);
 			}
 			else
@@ -2898,19 +2910,19 @@ void MonsterLifeAmt(byte fx,int x,int y,int type,int amt)
 				if(fx)
 				{
 					if(amt>0)
-						HealRing(1,guys[i]->x,guys[i]->y,0,16,2);
+						HealRing(1,guys[i].x,guys[i].y,0,16,2);
 					else
 					{
-						guys[i]->ouch=4;
-						HealRing(4,guys[i]->x,guys[i]->y,0,16,2);
+						guys[i].ouch=4;
+						HealRing(4,guys[i].x,guys[i].y,0,16,2);
 					}
 				}
-				guys[i]->hp=newLife;
+				guys[i].hp=newLife;
 			}
-			if(guys[i]->hp==0)
+			if(guys[i].hp==0)
 			{
-				guys[i]->hp=1;
-				guys[i]->GetShot(0,0,255,curMap,&curWorld);
+				guys[i].hp=1;
+				guys[i].GetShot(0,0,255,curMap,&curWorld);
 			}
 		}
 	}
@@ -2922,43 +2934,43 @@ byte CheckMonsterLife(int x,int y,int type,int life,byte flags)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
 			switch(type)
 			{
 				case MONS_ANYBODY:
 					break;
 				case MONS_GOODGUY:
-					if(!guys[i]->friendly)
+					if(!guys[i].friendly)
 						continue;
 					break;
 				case MONS_BADGUY:
-					if(guys[i]->friendly)
+					if(guys[i].friendly)
 						continue;
 					break;
 				case MONS_NONPLAYER:
-					if(guys[i]->aiType==MONS_BOUAPHA)
+					if(guys[i].aiType==MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_PLAYER:
-					if(guys[i]->aiType!=MONS_BOUAPHA)
+					if(guys[i].aiType!=MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_TAGGED:
-					if(guys[i]!=TaggedMonster())
+					if(&guys[i]!=TaggedMonster())
 						continue;
 					break;
 				default:
-					if(guys[i]->type!=type)
+					if(guys[i].type!=type)
 						continue;
 					break;
 			}
 
-			if(guys[i]->hp==life)
+			if(guys[i].hp==life)
 				return 1;
-			else if((flags&TF_MORE) && (guys[i]->hp>life))
+			else if((flags&TF_MORE) && (guys[i].hp>life))
 				return 1;
-			else if((flags&TF_LESS) && (guys[i]->hp<life))
+			else if((flags&TF_LESS) && (guys[i].hp<life))
 				return 1;
 		}
 	}
@@ -2974,40 +2986,40 @@ byte CheckMonsterAwake(int x,int y,int type,byte flags)
 	awake=0;
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
 			switch(type)
 			{
 				case MONS_ANYBODY:
 					break;
 				case MONS_GOODGUY:
-					if(!guys[i]->friendly)
+					if(!guys[i].friendly)
 						continue;
 					break;
 				case MONS_BADGUY:
-					if(guys[i]->friendly)
+					if(guys[i].friendly)
 						continue;
 					break;
 				case MONS_NONPLAYER:
-					if(guys[i]->aiType==MONS_BOUAPHA)
+					if(guys[i].aiType==MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_PLAYER:
-					if(guys[i]->aiType!=MONS_BOUAPHA)
+					if(guys[i].aiType!=MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_TAGGED:
-					if(guys[i]!=TaggedMonster())
+					if(&guys[i]!=TaggedMonster())
 						continue;
 					break;
 				default:
-					if(guys[i]->type!=type)
+					if(guys[i].type!=type)
 						continue;
 					break;
 			}
 
 			count++;
-			awake+=guys[i]->IsAwake();
+			awake+=guys[i].IsAwake();
 		}
 	}
 	if(flags&TF_LESS)
@@ -3027,39 +3039,39 @@ byte CheckMonsterColor(int x,int y,int type,byte color)
 	int i;
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
 			switch(type)
 			{
 				case MONS_ANYBODY:
 					break;
 				case MONS_GOODGUY:
-					if(!guys[i]->friendly)
+					if(!guys[i].friendly)
 						continue;
 					break;
 				case MONS_BADGUY:
-					if(guys[i]->friendly)
+					if(guys[i].friendly)
 						continue;
 					break;
 				case MONS_NONPLAYER:
-					if(guys[i]->aiType==MONS_BOUAPHA)
+					if(guys[i].aiType==MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_PLAYER:
-					if(guys[i]->aiType!=MONS_BOUAPHA)
+					if(guys[i].aiType!=MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_TAGGED:
-					if(guys[i]!=TaggedMonster())
+					if(&guys[i]!=TaggedMonster())
 						continue;
 					break;
 				default:
-					if(guys[i]->type!=type)
+					if(guys[i].type!=type)
 						continue;
 					break;
 			}
 
-			if(guys[i]->toColor==color)
+			if(guys[i].toColor==color)
 				return 1;
 		}
 	}
@@ -3072,49 +3084,49 @@ void ChangeMonsItem(byte fx,int x,int y,int type,int newItem)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
 			switch(type)
 			{
 				case MONS_ANYBODY:
 					break;
 				case MONS_GOODGUY:
-					if(!guys[i]->friendly)
+					if(!guys[i].friendly)
 						continue;
 					break;
 				case MONS_BADGUY:
-					if(guys[i]->friendly)
+					if(guys[i].friendly)
 						continue;
 					break;
 				case MONS_NONPLAYER:
-					if(guys[i]->aiType==MONS_BOUAPHA)
+					if(guys[i].aiType==MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_PLAYER:
-					if(guys[i]->aiType!=MONS_BOUAPHA)
+					if(guys[i].aiType!=MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_TAGGED:
-					if(guys[i]!=TaggedMonster())
+					if(&guys[i]!=TaggedMonster())
 						continue;
 					break;
 				default:
-					if(guys[i]->type!=type)
+					if(guys[i].type!=type)
 						continue;
 					break;
 			}
 
-			if(guys[i]->aiType==MONS_BOUAPHA)
+			if(guys[i].aiType==MONS_BOUAPHA)
 			{
-				int oldItem=curMap->GetTile(guys[i]->mapx,guys[i]->mapy)->item;
-				curMap->GetTile(guys[i]->mapx,guys[i]->mapy)->item=newItem;
-				TriggerItem(guys[i],curMap->GetTile(guys[i]->mapx,guys[i]->mapy),guys[i]->mapx,guys[i]->mapy);
-				curMap->GetTile(guys[i]->mapx,guys[i]->mapy)->item=oldItem;
+				int oldItem=curMap->GetTile(guys[i].mapx,guys[i].mapy)->item;
+				curMap->GetTile(guys[i].mapx,guys[i].mapy)->item=newItem;
+				TriggerItem(&guys[i],curMap->GetTile(guys[i].mapx,guys[i].mapy),guys[i].mapx,guys[i].mapy);
+				curMap->GetTile(guys[i].mapx,guys[i].mapy)->item=oldItem;
 			}
 			else
-				guys[i]->item=newItem;
+				guys[i].item=newItem;
 			if(fx)
-				SmokeTile(guys[i]->mapx,guys[i]->mapy);
+				SmokeTile(guys[i].mapx,guys[i].mapy);
 		}
 	}
 }
@@ -3128,46 +3140,46 @@ void ChangeMonster(byte fx,int x,int y,int type,int newtype)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
 			switch(type)
 			{
 				case MONS_ANYBODY:
 					break;
 				case MONS_GOODGUY:
-					if(!guys[i]->friendly)
+					if(!guys[i].friendly)
 						continue;
 					break;
 				case MONS_BADGUY:
-					if(guys[i]->friendly)
+					if(guys[i].friendly)
 						continue;
 					break;
 				case MONS_NONPLAYER:
-					if(guys[i]->aiType==MONS_BOUAPHA)
+					if(guys[i].aiType==MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_PLAYER:
-					if(guys[i]->aiType!=MONS_BOUAPHA)
+					if(guys[i].aiType!=MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_TAGGED:
-					if(guys[i]!=TaggedMonster())
+					if(&guys[i]!=TaggedMonster())
 						continue;
 					break;
 				default:
-					if(guys[i]->type!=type)
+					if(guys[i].type!=type)
 						continue;
 					break;
 			}
 
-			f=guys[i]->friendly;
-			if(guys[i]->hp!=0 && f==0 && !(MonsterFlags(guys[i]->type,guys[i]->aiType)&(MF_NOHIT|MF_INVINCIBLE)))
+			f=guys[i].friendly;
+			if(guys[i].hp!=0 && f==0 && !(MonsterFlags(guys[i].type,guys[i].aiType)&(MF_NOHIT|MF_INVINCIBLE)))
 										// if this was a living evil guy
 				player.totalEnemies--;	// then, subtract one enemy, since AddGuy will be adding one
 
-			guys[i]->type=MONS_NONE;
-			drop=guys[i]->item;
-			g=AddGuy(guys[i]->x,guys[i]->y,guys[i]->z,newtype,f);
+			guys[i].type=MONS_NONE;
+			drop=guys[i].item;
+			g=AddGuy(guys[i].x,guys[i].y,guys[i].z,newtype,f);
 			if(g)
 			{
 				g->friendly=f;
@@ -3197,57 +3209,57 @@ void ChangeMonsterAI(byte fx,int x,int y,int type,int newtype)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
 			switch(type)
 			{
 				case MONS_ANYBODY:
 					break;
 				case MONS_GOODGUY:
-					if(!guys[i]->friendly)
+					if(!guys[i].friendly)
 						continue;
 					break;
 				case MONS_BADGUY:
-					if(guys[i]->friendly)
+					if(guys[i].friendly)
 						continue;
 					break;
 				case MONS_NONPLAYER:
-					if(guys[i]->aiType==MONS_BOUAPHA)
+					if(guys[i].aiType==MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_PLAYER:
-					if(guys[i]->aiType!=MONS_BOUAPHA)
+					if(guys[i].aiType!=MONS_BOUAPHA)
 						continue;
 					break;
 				case MONS_TAGGED:
-					if(guys[i]!=TaggedMonster())
+					if(&guys[i]!=TaggedMonster())
 						continue;
 					break;
 				default:
-					if(guys[i]->type!=type)
+					if(guys[i].type!=type)
 						continue;
 					break;
 			}
 
-			g=guys[i];
-			guys[i]->aiType=newtype;
-			guys[i]->mind=0;
-			guys[i]->mind1=0;
-			guys[i]->mind2=0;
-			guys[i]->mind3=0;
-			guys[i]->reload=0;
-			guys[i]->dx=0;
-			guys[i]->dy=0;
-			guys[i]->dz=0;
-			guys[i]->seq=ANIM_IDLE;
-			guys[i]->frm=0;
-			guys[i]->frmTimer=0;
-			guys[i]->frmAdvance=128;
-			guys[i]->facing=2;
+			g=&guys[i];
+			guys[i].aiType=newtype;
+			guys[i].mind=0;
+			guys[i].mind1=0;
+			guys[i].mind2=0;
+			guys[i].mind3=0;
+			guys[i].reload=0;
+			guys[i].dx=0;
+			guys[i].dy=0;
+			guys[i].dz=0;
+			guys[i].seq=ANIM_IDLE;
+			guys[i].frm=0;
+			guys[i].frmTimer=0;
+			guys[i].frmAdvance=128;
+			guys[i].facing=2;
 			if(newtype==MONS_FRIENDLY2)
 			{
-				guys[i]->mind1=1;
-				guys[i]->mind3=64;
+				guys[i].mind1=1;
+				guys[i].mind3=64;
 			}
 			if(fx)
 			{
@@ -3289,8 +3301,8 @@ void ReallyChangeTeam(Guy *g,byte team)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->parent==g)
-			ReallyChangeTeam(guys[i],team);	// change your kids
+		if(guys[i].parent==g)
+			ReallyChangeTeam(&guys[i],team);	// change your kids
 	}
 }
 
@@ -3304,9 +3316,9 @@ void ChangeTeam(byte fx,int x,int y,int type,byte team)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)) && !changed[i])
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)) && !changed[i])
 		{
-			g=guys[i];
+			g=&guys[i];
 			switch(type)
 			{
 				case MONS_ANYBODY:
@@ -3328,7 +3340,7 @@ void ChangeTeam(byte fx,int x,int y,int type,byte team)
 						continue;
 					break;
 				case MONS_TAGGED:
-					if(guys[i]!=TaggedMonster())
+					if(&guys[i]!=TaggedMonster())
 						continue;
 					break;
 				default:
@@ -3369,9 +3381,9 @@ Guy *FindMonster(int x,int y,int type)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY && (x==255 || (guys[i]->mapx==x && guys[i]->mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
-			g=guys[i];
+			g=&guys[i];
 			switch(type)
 			{
 				case MONS_ANYBODY:
@@ -3416,11 +3428,11 @@ void MoveKids(int dx,int dy,Guy *parent)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->parent==parent)
+		if(guys[i].parent==parent)
 		{
-			guys[i]->x+=dx;
-			guys[i]->y+=dy;
-			MoveKids(dx,dy,guys[i]);
+			guys[i].x+=dx;
+			guys[i].y+=dy;
+			MoveKids(dx,dy,&guys[i]);
 		}
 }
 
@@ -3434,10 +3446,10 @@ byte SwapMe(int x,int y,byte size,Map *map)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type && guys[i]->hp && guys[i]->aiType!=MONS_BOUAPHA)
+		if(guys[i].type && guys[i].hp && guys[i].aiType!=MONS_BOUAPHA)
 		{
-			g=guys[i];
-			if(CheckHit(size,x>>FIXSHIFT,y>>FIXSHIFT,guys[i]))
+			g=&guys[i];
+			if(CheckHit(size,x>>FIXSHIFT,y>>FIXSHIFT,&guys[i]))
 			{
 				while(g->parent)
 				{
@@ -3473,43 +3485,43 @@ int CountMonsters(int type)
 	if(type>0)	// actual monster types
 	{
 		for(i=0;i<maxGuys;i++)
-			if(guys[i]->type==type)
+			if(guys[i].type==type)
 				cnt++;
 	}
 	else if(type==MONS_ANYBODY)	// any monsters at all
 	{
 		for(i=0;i<maxGuys;i++)
-			if(guys[i]->type>0 && guys[i]->type!=MONS_NOBODY)
+			if(guys[i].type>0 && guys[i].type!=MONS_NOBODY)
 				cnt++;
 	}
 	else if(type==MONS_GOODGUY)	// goodguys
 	{
 		for(i=0;i<maxGuys;i++)
-			if(guys[i]->type>0 && guys[i]->type!=MONS_NOBODY && guys[i]->friendly)
+			if(guys[i].type>0 && guys[i].type!=MONS_NOBODY && guys[i].friendly)
 				cnt++;
 	}
 	else if(type==MONS_BADGUY)	// badguys
 	{
 		for(i=0;i<maxGuys;i++)
-			if(guys[i]->type>0 && guys[i]->type!=MONS_NOBODY && !guys[i]->friendly)
+			if(guys[i].type>0 && guys[i].type!=MONS_NOBODY && !guys[i].friendly)
 				cnt++;
 	}
 	else if(type==MONS_NONPLAYER)	// anyone but bouapha
 	{
 		for(i=0;i<maxGuys;i++)
-			if(guys[i]->type>0 && guys[i]->type!=MONS_NOBODY && guys[i]->aiType!=MONS_BOUAPHA)
+			if(guys[i].type>0 && guys[i].type!=MONS_NOBODY && guys[i].aiType!=MONS_BOUAPHA)
 				cnt++;
 	}
 	else if(type==MONS_PLAYER)	// bouapha only
 	{
 		for(i=0;i<maxGuys;i++)
-			if(guys[i]->type>0 && guys[i]->type!=MONS_NOBODY && guys[i]->aiType==MONS_BOUAPHA)
+			if(guys[i].type>0 && guys[i].type!=MONS_NOBODY && guys[i].aiType==MONS_BOUAPHA)
 				cnt++;
 	}
 	else if(type==MONS_TAGGED)	// only the tagged monster himself
 	{
 		for(i=0;i<maxGuys;i++)
-			if(guys[i]->type>0 && guys[i]==TaggedMonster())
+			if(guys[i].type>0 && &guys[i]==TaggedMonster())
 				cnt++;
 	}
 	return cnt;
@@ -3523,102 +3535,109 @@ int CountMonstersInRect(int type,int x,int y,int x2,int y2)
 	if(type>0)	// actual monster types
 	{
 		for(i=0;i<maxGuys;i++)
-			if(guys[i]->type==type && guys[i]->mapx>=x && guys[i]->mapy>=y && guys[i]->mapx<=x2 && guys[i]->mapy<=y2)
+			if(guys[i].type==type && guys[i].mapx>=x && guys[i].mapy>=y && guys[i].mapx<=x2 && guys[i].mapy<=y2)
 				cnt++;
 	}
 	else if(type==MONS_ANYBODY)	// any monsters at all
 	{
 		for(i=0;i<maxGuys;i++)
-			if(guys[i]->type>0 && guys[i]->type!=MONS_NOBODY && guys[i]->mapx>=x && guys[i]->mapy>=y && guys[i]->mapx<=x2 && guys[i]->mapy<=y2)
+			if(guys[i].type>0 && guys[i].type!=MONS_NOBODY && guys[i].mapx>=x && guys[i].mapy>=y && guys[i].mapx<=x2 && guys[i].mapy<=y2)
 				cnt++;
 	}
 	else if(type==MONS_GOODGUY)	// goodguys
 	{
 		for(i=0;i<maxGuys;i++)
-			if(guys[i]->type>0 && guys[i]->type!=MONS_NOBODY && guys[i]->friendly && guys[i]->mapx>=x && guys[i]->mapy>=y && guys[i]->mapx<=x2 && guys[i]->mapy<=y2)
+			if(guys[i].type>0 && guys[i].type!=MONS_NOBODY && guys[i].friendly && guys[i].mapx>=x && guys[i].mapy>=y && guys[i].mapx<=x2 && guys[i].mapy<=y2)
 				cnt++;
 	}
 	else if(type==MONS_BADGUY)	// badguys
 	{
 		for(i=0;i<maxGuys;i++)
-			if(guys[i]->type>0 && guys[i]->type!=MONS_NOBODY && !guys[i]->friendly && guys[i]->mapx>=x && guys[i]->mapy>=y && guys[i]->mapx<=x2 && guys[i]->mapy<=y2)
+			if(guys[i].type>0 && guys[i].type!=MONS_NOBODY && !guys[i].friendly && guys[i].mapx>=x && guys[i].mapy>=y && guys[i].mapx<=x2 && guys[i].mapy<=y2)
 				cnt++;
 	}
 	else if(type==MONS_NONPLAYER)	// anyone but bouapha
 	{
 		for(i=0;i<maxGuys;i++)
-			if(guys[i]->type>0 && guys[i]->type!=MONS_NOBODY && guys[i]->aiType!=MONS_BOUAPHA && guys[i]->mapx>=x && guys[i]->mapy>=y && guys[i]->mapx<=x2 && guys[i]->mapy<=y2)
+			if(guys[i].type>0 && guys[i].type!=MONS_NOBODY && guys[i].aiType!=MONS_BOUAPHA && guys[i].mapx>=x && guys[i].mapy>=y && guys[i].mapx<=x2 && guys[i].mapy<=y2)
 				cnt++;
 	}
 	else if(type==MONS_PLAYER)	// bouapha only
 	{
 		for(i=0;i<maxGuys;i++)
-			if(guys[i]->type>0 && guys[i]->type!=MONS_NOBODY && guys[i]->aiType==MONS_BOUAPHA && guys[i]->mapx>=x && guys[i]->mapy>=y && guys[i]->mapx<=x2 && guys[i]->mapy<=y2)
+			if(guys[i].type>0 && guys[i].type!=MONS_NOBODY && guys[i].aiType==MONS_BOUAPHA && guys[i].mapx>=x && guys[i].mapy>=y && guys[i].mapx<=x2 && guys[i].mapy<=y2)
 				cnt++;
 	}
 	else if(type==MONS_TAGGED)	// only the tagged monster's type
 	{
 		for(i=0;i<maxGuys;i++)
-			if(TaggedMonster()!=NULL && guys[i]->type==TaggedMonster()->type && guys[i]->mapx>=x && guys[i]->mapy>=y && guys[i]->mapx<=x2 && guys[i]->mapy<=y2)
+			if(TaggedMonster()!=NULL && guys[i].type==TaggedMonster()->type && guys[i].mapx>=x && guys[i].mapy>=y && guys[i].mapx<=x2 && guys[i].mapy<=y2)
 				cnt++;
 	}
 	return cnt;
 }
 
-void Telefrag(Guy *g)
+void Telefrag(Guy *g, bool sphinxException)
 {
 	int i,xx,yy;
 
 	xx=g->x>>FIXSHIFT;
 	yy=g->y>>FIXSHIFT;
 	for(i=0;i<maxGuys;i++)
-		if((guys[i]) && (guys[i]!=g) && (guys[i]->type) && (guys[i]->hp>0) &&
-			(abs(guys[i]->mapx-g->mapx)<8) && (abs(guys[i]->mapy-g->mapy)<8))
+		if((guys[i].type) && (&guys[i]!=g) && (guys[i].hp>0) &&
+			(abs(guys[i].mapx-g->mapx)<8) && (abs(guys[i].mapy-g->mapy)<8))
 		{
-			if(g->CoconutBonk(xx,yy,guys[i]))
+			if(
+				!(
+					sphinxException &&
+					g->type == MONS_SPHINX &&
+					(guys[i].type == MONS_SPHXARM1 || guys[i].type == MONS_SPHXARM2)
+				) &&
+				g->CoconutBonk(xx,yy,&guys[i])
+			)
 			{
 				// uh oh, somebody is in the way!
-				if(guys[i]->aiType==MONS_BOUAPHA)
+				if(guys[i].aiType==MONS_BOUAPHA)
 				{
 					SendMessageToGame(MSG_RESET,0);
 				}
-				if(guys[i]->friendly==0 && !(MonsterFlags(guys[i]->type,guys[i]->aiType)&(MF_NOHIT|MF_INVINCIBLE)))
+				if(guys[i].friendly==0 && !(MonsterFlags(guys[i].type,guys[i].aiType)&(MF_NOHIT|MF_INVINCIBLE)))
 					player.enemiesSlain++;
 
 				// handle item drops
-				if(guys[i]->type==MONS_ZOMBIE || guys[i]->type==MONS_MUTANT)	// zombies always drop a brain
+				if(guys[i].type==MONS_ZOMBIE || guys[i].type==MONS_MUTANT)	// zombies always drop a brain
 				{
-					if(!curMap->DropItem(guys[i]->mapx,guys[i]->mapy,ITM_BRAIN))
-						curMap->GetTile(guys[i]->mapx,guys[i]->mapy)->item=ITM_BRAIN;	// force the drop if it failed
+					if(!curMap->DropItem(guys[i].mapx,guys[i].mapy,ITM_BRAIN))
+						curMap->GetTile(guys[i].mapx,guys[i].mapy)->item=ITM_BRAIN;	// force the drop if it failed
 				}
-				else if(guys[i]->type==MONS_SUPERZOMBIE)	// super zombies always drop 2 brains
+				else if(guys[i].type==MONS_SUPERZOMBIE)	// super zombies always drop 2 brains
 				{
-					if(!curMap->DropItem(guys[i]->mapx,guys[i]->mapy,ITM_BRAIN))
-						curMap->GetTile(guys[i]->mapx,guys[i]->mapy)->item=ITM_BRAIN;	// force the drop if it failed
-					if(!curMap->DropItem(guys[i]->mapx,guys[i]->mapy+1,ITM_BRAIN) && guys[i]->mapy+1<curMap->height)
-						curMap->GetTile(guys[i]->mapx,guys[i]->mapy+1)->item=ITM_BRAIN;	// hope there's a legal coordinate and non-wall below me!
+					if(!curMap->DropItem(guys[i].mapx,guys[i].mapy,ITM_BRAIN))
+						curMap->GetTile(guys[i].mapx,guys[i].mapy)->item=ITM_BRAIN;	// force the drop if it failed
+					if(!curMap->DropItem(guys[i].mapx,guys[i].mapy+1,ITM_BRAIN) && guys[i].mapy+1<curMap->height)
+						curMap->GetTile(guys[i].mapx,guys[i].mapy+1)->item=ITM_BRAIN;	// hope there's a legal coordinate and non-wall below me!
 				}
-				if(guys[i]->aiType==MONS_GNOME)
+				if(guys[i].aiType==MONS_GNOME)
 				{
-					if(guys[i]->mind3!=0)	// drop what you stole!
-						if(!curMap->DropItem(guys[i]->mapx,guys[i]->mapy,guys[i]->mind3))
-							curMap->GetTile(guys[i]->mapx,guys[i]->mapy)->item=guys[i]->mind3;	// force the drop if it failed
+					if(guys[i].mind3!=0)	// drop what you stole!
+						if(!curMap->DropItem(guys[i].mapx,guys[i].mapy,guys[i].mind3))
+							curMap->GetTile(guys[i].mapx,guys[i].mapy)->item=guys[i].mind3;	// force the drop if it failed
 				}
-				if(guys[i]->item==ITM_RANDOM)
+				if(guys[i].item==ITM_RANDOM)
 				{
 					if(Random(100*FIXAMT)<curMap->itemDrops)
-						curMap->DropItem(guys[i]->mapx,guys[i]->mapy,GetRandomItem());
+						curMap->DropItem(guys[i].mapx,guys[i].mapy,GetRandomItem());
 				}
-				else if(guys[i]->item!=ITM_NONE)
+				else if(guys[i].item!=ITM_NONE)
 				{
-					if(!curMap->DropItem(guys[i]->mapx,guys[i]->mapy,guys[i]->item))
-						curMap->GetTile(guys[i]->mapx,guys[i]->mapy)->item=guys[i]->item;	// force the drop if it failed
+					if(!curMap->DropItem(guys[i].mapx,guys[i].mapy,guys[i].item))
+						curMap->GetTile(guys[i].mapx,guys[i].mapy)->item=guys[i].item;	// force the drop if it failed
 				}
 
-				guys[i]->type=MONS_NONE;
+				guys[i].type=MONS_NONE;
 
-				BlowUpGuy((guys[i]->x>>FIXSHIFT)-32,(guys[i]->y>>FIXSHIFT)-24,
-					(guys[i]->x>>FIXSHIFT)+32,(guys[i]->y>>FIXSHIFT)+24,0,1);
+				BlowUpGuy((guys[i].x>>FIXSHIFT)-32,(guys[i].y>>FIXSHIFT)-24,
+					(guys[i].x>>FIXSHIFT)+32,(guys[i].y>>FIXSHIFT)+24,0,1);
 			}
 		}
 }
@@ -3634,22 +3653,22 @@ void FindMonsterBrain(int myx,int myy)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type && guys[i]->hp && guys[i]->aiType!=MONS_BOUAPHA)
+		if(guys[i].type && guys[i].hp && guys[i].aiType!=MONS_BOUAPHA)
 		{
-			if(guys[i]->type==MONS_ZOMBIE || guys[i]->type==MONS_ZOMBONI || guys[i]->type==MONS_MUTANT || guys[i]->type==MONS_SUPERZOMBIE)
+			if(guys[i].type==MONS_ZOMBIE || guys[i].type==MONS_ZOMBONI || guys[i].type==MONS_MUTANT || guys[i].type==MONS_SUPERZOMBIE)
 			{
-				if((myx-guys[i]->mapx)*(myx-guys[i]->mapx)+(myy-guys[i]->mapy)*(myy-guys[i]->mapy)<j)
+				if((myx-guys[i].mapx)*(myx-guys[i].mapx)+(myy-guys[i].mapy)*(myy-guys[i].mapy)<j)
 				{
-					player.brainX=guys[i]->mapx;
-					player.brainY=guys[i]->mapy;
+					player.brainX=guys[i].mapx;
+					player.brainY=guys[i].mapy;
 					j=(myx-player.brainX)*(myx-player.brainX)+(myy-player.brainY)*(myy-player.brainY);
 				}
 			}
-			else if(guys[i]->item<ITM_RANDOM && GetItem(guys[i]->item)->effect==IE_BRAIN &&
-				GetItem(guys[i]->item)->effectAmt>0 && ((myx-guys[i]->mapx)*(myx-guys[i]->mapx)+(myy-guys[i]->mapy)*(myy-guys[i]->mapy))<j)
+			else if(guys[i].item<ITM_RANDOM && GetItem(guys[i].item)->effect==IE_BRAIN &&
+				GetItem(guys[i].item)->effectAmt>0 && ((myx-guys[i].mapx)*(myx-guys[i].mapx)+(myy-guys[i].mapy)*(myy-guys[i].mapy))<j)
 			{
-				player.brainX=guys[i]->mapx;
-				player.brainY=guys[i]->mapy;
+				player.brainX=guys[i].mapx;
+				player.brainY=guys[i].mapy;
 				j=(myx-player.brainX)*(myx-player.brainX)+(myy-player.brainY)*(myy-player.brainY);
 			}
 		}
@@ -3667,13 +3686,13 @@ void FindMonsterCandle(int myx,int myy)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type && guys[i]->hp && guys[i]->aiType!=MONS_BOUAPHA)
+		if(guys[i].type && guys[i].hp && guys[i].aiType!=MONS_BOUAPHA)
 		{
-			if(guys[i]->item<ITM_RANDOM && GetItem(guys[i]->item)->effect==IE_CANDLE &&
-				GetItem(guys[i]->item)->effectAmt>0 && ((myx-guys[i]->mapx)*(myx-guys[i]->mapx)+(myy-guys[i]->mapy)*(myy-guys[i]->mapy))<j)
+			if(guys[i].item<ITM_RANDOM && GetItem(guys[i].item)->effect==IE_CANDLE &&
+				GetItem(guys[i].item)->effectAmt>0 && ((myx-guys[i].mapx)*(myx-guys[i].mapx)+(myy-guys[i].mapy)*(myy-guys[i].mapy))<j)
 			{
-				player.candleX=guys[i]->mapx;
-				player.candleY=guys[i]->mapy;
+				player.candleX=guys[i].mapx;
+				player.candleY=guys[i].mapy;
 				j=(myx-player.candleX)*(myx-player.candleX)+(myy-player.candleY)*(myy-player.candleY);
 			}
 		}
@@ -3803,13 +3822,13 @@ byte BadguyRegions(int x,int y,int x2,int y2,int tx,int ty)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type && guys[i]->hp && guys[i]->mapx>=x && guys[i]->mapx<=x2 && guys[i]->mapy>=y && guys[i]->mapy<=y2)
+		if(guys[i].type && guys[i].hp && guys[i].mapx>=x && guys[i].mapx<=x2 && guys[i].mapy>=y && guys[i].mapy<=y2)
 		{
 			ok=0;
 			// this guy is in the first rect
 			for(j=0;j<maxGuys;j++)
 			{
-				if(j!=i && guys[j]->type==guys[i]->type && guys[j]->hp && guys[j]->mapx==guys[i]->mapx+tx-x && guys[j]->mapy==guys[i]->mapy+ty-y)
+				if(j!=i && guys[j].type==guys[i].type && guys[j].hp && guys[j].mapx==guys[i].mapx+tx-x && guys[j].mapy==guys[i].mapy+ty-y)
 				{
 					ok=1;
 					break;
@@ -3819,13 +3838,13 @@ byte BadguyRegions(int x,int y,int x2,int y2,int tx,int ty)
 				return 0;
 		}
 
-		if(guys[i]->type && guys[i]->hp && guys[i]->mapx>=tx && guys[i]->mapx<=tx+(x2-x) && guys[i]->mapy>=ty && guys[i]->mapy<=ty+(y2-y))
+		if(guys[i].type && guys[i].hp && guys[i].mapx>=tx && guys[i].mapx<=tx+(x2-x) && guys[i].mapy>=ty && guys[i].mapy<=ty+(y2-y))
 		{
 			ok=0;
 			// this guy is in the second rect
 			for(j=0;j<maxGuys;j++)
 			{
-				if(j!=i && guys[j]->type==guys[i]->type && guys[j]->hp && guys[j]->mapx==guys[i]->mapx+x-tx && guys[j]->mapy==guys[i]->mapy+y-ty)
+				if(j!=i && guys[j].type==guys[i].type && guys[j].hp && guys[j].mapx==guys[i].mapx+x-tx && guys[j].mapy==guys[i].mapy+y-ty)
 				{
 					ok=1;
 					break;

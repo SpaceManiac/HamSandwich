@@ -10,15 +10,7 @@ fi
 # Ensure that the cache exists
 mkdir -p "${Cache:?}"
 
-download_file() {  # <url> <outfile>
-	echo "Downloading: $1" >&2
-	wget "$1" -O "$2" -q
-}
-
-download_file_quiet() {  # <url> <outfile>
-	wget "$1" -O "$2" -q
-}
-
+# Determine value of OS variable
 case "$(uname)" in
 	Linux)
 		OS=Linux
@@ -27,16 +19,6 @@ case "$(uname)" in
 	Darwin)
 		OS=Darwin
 		ExeExt=
-
-		# MacOS provides curl, but not wget.
-		download_file() {  # <url> <outfile>
-			echo "Downloading: $1" >&2
-			curl -L "$1" -o "$2" -#
-		}
-
-		download_file_quiet() {  # <url> <outfile>
-			curl -L "$1" -o "$2" -s
-		}
 
 		# An equivalent to sha256sum is available under a different name.
 		sha256sum() {
@@ -54,6 +36,65 @@ case "$(uname)" in
 		exit 1
 		;;
 esac
+
+# If on Windows, add Busybox as a fallback for various items.
+# In particular, GitHub Desktop has a MSYS2 with sh.exe but without coreutils.
+if command -v powershell.exe >/dev/null 2>/dev/null; then
+	busybox_w32() {
+		"$Bootstrap/busybox.exe" "$@"
+	}
+
+	if ! command -v sha256sum >/dev/null 2>/dev/null; then
+		sha256sum() {
+			busybox_w32 sha256sum "$@"
+		}
+	fi
+
+	if ! command -v wget >/dev/null 2>/dev/null; then
+		wget() {
+			busybox_w32 wget "$@"
+		}
+	fi
+
+	if ! command -v unzip >/dev/null 2>/dev/null; then
+		unzip() {
+			busybox_w32 unzip "$@"
+		}
+	fi
+fi
+
+# download_file function
+if command -v curl >/dev/null 2>/dev/null; then
+	# curl implementation
+	download_file() {  # <url> <outfile>
+		echo "Downloading: $1" >&2
+		curl -L "$1" -o "$2" -#
+	}
+
+	download_file_quiet() {  # <url> <outfile>
+		curl -L "$1" -o "$2" -s
+	}
+elif command -v wget >/dev/null 2>/dev/null; then
+	# wget implementation
+	download_file() {  # <url> <outfile>
+		echo "Downloading: $1" >&2
+		wget "$1" -O "$2" -q
+	}
+
+	download_file_quiet() {  # <url> <outfile>
+		wget "$1" -O "$2" -q
+	}
+else
+	# lazy-erroring fallback implementation
+	download_file() {
+		echo "Cannot download files without either curl or wget" >&2
+		exit 1
+	}
+	download_file_quiet() {
+		echo "Cannot download files without either curl or wget" >&2
+		exit 1
+	}
+fi
 
 # Provide temporary file creation and cleanup
 TempDir=$(mktemp -d "$Cache/tmp.XXXXXXXX")
@@ -171,29 +212,3 @@ cd "${Bootstrap:?}/../.."
 DependenciesSh="$PWD/dependencies.sh"
 cd "$OldPWD"
 unset OldPWD
-
-# If on Windows, add Busybox as a fallback for various items.
-# In particular, GitHub Desktop has a MSYS2 with sh.exe but without coreutils.
-if command -v powershell.exe >/dev/null 2>/dev/null; then
-	busybox_w32() {
-		powershell.exe -NoLogo -ExecutionPolicy Bypass -File "$Bootstrap/busybox_.ps1" "$@"
-	}
-
-	if ! command -v sha256sum >/dev/null 2>/dev/null; then
-		sha256sum() {
-			busybox_w32 sha256sum "$@"
-		}
-	fi
-
-	if ! command -v wget >/dev/null 2>/dev/null; then
-		wget() {
-			busybox_w32 wget "$@"
-		}
-	fi
-
-	if ! command -v unzip >/dev/null 2>/dev/null; then
-		unzip() {
-			busybox_w32 unzip "$@"
-		}
-	fi
-fi

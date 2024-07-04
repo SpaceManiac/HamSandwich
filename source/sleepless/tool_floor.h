@@ -26,11 +26,12 @@ class FloorTool : public Tool
 	private:
 		void PlopOne(int x,int y);
 
-		word tile[4];
+		static const int NUM_TILES = 8;
+		static const int ROW_TILES = 4;
+		word tile[NUM_TILES];
 		byte active;	// which of the four is active
 		byte brush;		// brush size
 		byte plopMode;	// how it plops when clicked
-		byte lastPlop;	// for "Cycle" plop mode
 		int lastX,lastY;	// last place plopped
 		int pickingTile;	// which of the four tiles you are picking for
 };

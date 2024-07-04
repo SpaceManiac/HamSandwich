@@ -3,6 +3,7 @@
 #include "dialogbits.h"
 #include "spacegame.h"
 #include "racer.h"
+#include "steam.h"
 
 #include "goal.h"
 
@@ -212,6 +213,7 @@ byte CaveDie(void)
 		GetTaps();
 		coinsEarned=score/3000;
 		profile.progress.totalCoins+=coinsEarned;
+		SteamManager::Get()->UploadArcadeScore("arcade/dig_man_iv", score);
 	}
 	NewCaveLevel();
 	return 1;
@@ -1466,7 +1468,7 @@ void RenderArcade(MGLDraw *mgl)
 	if(msy2>462)
 		msy2=462;
 	plSpr->GetSprite(0)->DrawBright(msx2,msy2,mgl,msBright/2);
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 }
 
 TASK(void) Arcade(MGLDraw *mgl, byte gm)

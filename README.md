@@ -20,10 +20,25 @@ See also:
 
 ## Playing
 
+<a href="https://spacemaniac.itch.io/hamsandwich">
+<img alt="Available on itch.io" src="docs/available-on-itch.svg" height="100" align="right">
+</a>
+
 Builds of HamSandwich for Windows, Linux, MacOS, and Android can be downloaded
 from [HamSandwich on itch.io](https://spacemaniac.itch.io/hamsandwich), either
 directly or through the [itch.io app](https://itch.io/app) for auto-updates.
-Web builds of the game can be played on [GitHub Pages](https://spacemaniac.github.io/HamSandwich/).
+Web builds of the game can be played on [GitHub Pages](https://spacemaniac.github.io/HamSandwich/)
+or on itch.io.
+
+## Getting help
+
+Support is available:
+
+* In *#sourcecode* in the [LoonyChat Discord][loonychat].
+* By email at hamsandwich@platymuus.com.
+* On the GitHub issue tracker, for confirmed bugs or deficiencies.
+
+[loonychat]: https://discord.gg/DcWFMzeSXy
 
 ## Building
 
@@ -67,9 +82,11 @@ Compiling and running:
 3. *OR,* use Git to clone the code anywhere you like and "Open Folder" the "HamSandwich" folder.
 4. After the project loads for the first time, select the game you want to run:
     1. Click the down arrow next to "Select Startup Item".
-    2. Uncheck "Select All".
-    3. Check "launcher.exe (Install)", "loonyland.exe (Install)", "loonyland2.exe (Install)", "lunatic.exe (Install)", "mystic.exe (Install)", "sleepless.exe (Install)" and "supreme.exe (Install)" and click OK.
-    4. Click the down arrow again and pick the game you want to run.
+    2. Click "Show/Hide Debug Targets...".
+    3. Uncheck "Select All".
+    4. Check "launcher.exe (Install)" as well as "*gamename*.exe (Install)" for each game you care about, and click OK.
+        * If the games are missing from this list, try using the Visual Studio Installer to install "C++ CMake tools for Windows" and reopening the project.
+    5. Click the down arrow again and pick the game you want to run.
 5. Click the button to compile and run the game.
 6. To run in windowed mode, go to "Debug" > "Debug and Launch Settings for (game)" and add `, "args": ["window"]`.
 
@@ -99,7 +116,7 @@ Compiling and running:
 
 [Android Studio]: https://developer.android.com/studio/
 
-### Emscripten
+### Emscripten (web)
 
 1. If on Windows, install and use MSYS2 according to the instructions above.
 2. Use `./run os=emscripten` (and optionally a project name) to build and run the games.
@@ -190,7 +207,7 @@ will appear on-screen at the same time as other graphics.
 
 ### Editing `.jft` fonts
 
-HamSandwich includes a quick-and-dirty JFT. Use it from the command line like:
+HamSandwich includes a quick-and-dirty JFT tool. Use it from the command line like:
 
 - `./run jfttool path/to/font.jft` to extract a `.txt` and a series of `.png` files from a font
 - `./run jfttool path/to/font.txt` to re-pack a `.txt` and `.png`s into a font
@@ -198,7 +215,12 @@ HamSandwich includes a quick-and-dirty JFT. Use it from the command line like:
 ### Editing `.jsp` sprite packs
 
 HamSandwich includes JspEdit, a GUI tool for editing `.jsp` files. The
-interface is reasonably self-exaplanatory. Run it with `./run jspedit`.
+interface is reasonably self-explanatory. Run it with `./run jspedit`.
+
+### Creating `.jsp` sprite packs from 3D models
+
+We do not currently have a 3D prerendering pipeline. If you are a 3D modeller
+and could use one, please [get in touch](#getting-help).
 
 ### Creating `.flc` ([FLIC](https://en.wikipedia.org/wiki/FLIC_(file_format))) movies
 
@@ -215,9 +237,7 @@ For programmers, libraries like [Aseprite FLIC Library](https://github.com/asepr
 ## Publishing
 
 Before publishing for the first time, fork this repository on GitHub and commit
-and push your changes to your fork. If you plan to publish for Android, open
-`android-project/build.gradle` and change the `applicationId` to something
-different according to the comments in that file.
+and push your changes to your fork.
 
 To limit publishing to only the games you care about, open
 `source/CMakeLists.txt` and edit the `# Games` section according to the
@@ -233,6 +253,24 @@ comments there.
 3. Future pushes will automatically publish builds to itch.io.
 
 [API keys]: https://itch.io/user/settings/api-keys
+
+#### Publish Android builds to itch.io
+
+1. Open `android-project/build.gradle` and change the `applicationId` to
+   something different according to the comments in that file.
+2. Create a keystore file in a safe place:
+   ```sh
+   tools/bootstrap/android-sdk keytool -genkey -v -keystore ../hamsandwich.keystore -alias hamsandwich -keyalg RSA -keysize 4096 -validity 10000
+   ```
+   You will be prompted to set a password. You can leave the rest of the options blank.
+3. Base64-encode that keystore:
+   ```sh
+   base64 ../hamsandwich.keystore > ../hamsandwich.keystore.txt
+   ```
+4. In your GitHub repository's Settings > Secrets > Actions tab, add two secrets:
+    1. Name: "ANDROID_KEYSTORE_B64", value: copy and paste the contents of `hamsandwich.keystore.txt` from step 3.
+    2. Name: "ANDROID_KEYSTORE_PASSWORD", value: the password you set in step 2.
+5. Future pushes will automatically publish APKs to itch.io.
 
 ### Publish to GitHub Pages
 

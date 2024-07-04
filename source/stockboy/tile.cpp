@@ -1,6 +1,7 @@
 #include "tile.h"
 #include "profile.h"
 #include "display.h"
+#include "recolor.h"
 
 tile_t tiles[NUMTILES];
 MGLDraw *tileMGL;

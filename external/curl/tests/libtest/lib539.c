@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,12 +18,14 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 #include "test.h"
 
 #include "memdebug.h"
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
    CURLcode res;
    CURL *curl;
@@ -68,7 +70,7 @@ int test(char *URL)
 
    slist = curl_slist_append(NULL, "SYST");
    if(!slist) {
-     free(newURL);
+     curl_free(newURL);
      curl_easy_cleanup(curl);
      curl_global_cleanup();
      return TEST_ERR_MAJOR_BAD;
@@ -83,9 +85,9 @@ int test(char *URL)
 test_cleanup:
 
    curl_slist_free_all(slist);
-   free(newURL);
+   curl_free(newURL);
    curl_easy_cleanup(curl);
    curl_global_cleanup();
 
-   return (int)res;
+   return res;
 }

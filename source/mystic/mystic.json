@@ -9,6 +9,14 @@
 			"link": "https://hamumu.itch.io/kid-mystic",
 			"file_id": 704052,
 			"description": "Base assets for Kid Mystic"
+		},
+		{
+			"filename": "hamswap_mystic.zip",
+			"kind": "zip",
+			"sha256sum": "e0b550c826086ca24200b9891085d3dbf8056323113864a5cf635ba3cf637e1a",
+			"link": "https://wombat.platymuus.com/hamsandwich/worlds/hamswap_mystic.zip",
+			"description": "Three levels, by Davedude",
+			"optional": true
 		}
 	]
 }

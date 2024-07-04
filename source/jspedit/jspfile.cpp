@@ -1,7 +1,9 @@
+#define __STDC_FORMAT_MACROS
 #include "jspfile.h"
-#include <iostream>
 #include <fstream>
+#include <string>
 #include <stdint.h>
+#include <inttypes.h>
 #include "lunaticpal.h"
 
 using namespace std;
@@ -44,7 +46,7 @@ void JspFrame::upload() {
 }
 
 bool JspFile::load(string fname) {
-    cout << "JspFile::load " << fname << endl;
+    printf("JspFile::load %s\n", fname.c_str());
 
     ifstream in { fname, ios::in | ios::binary };
 
@@ -82,7 +84,7 @@ bool JspFile::load(string fname) {
         frame.ofsY = info.ofsY;
 
         if (!frame.texture || !frame.surface) {
-            cout << "could not create " << info.width << "x" << info.height << " image for frame #" << i << endl;
+            printf("could not create %" PRIu16 "x%" PRIu16 " image for frame #%" PRIu16 "\n", info.width, info.height, i);
             error = "could not create image";
             return false;
         }
@@ -131,7 +133,7 @@ bool JspFile::load(string fname) {
 }
 
 bool JspFile::save(string fname) {
-    cout << "JspFile::save " << fname << endl;
+    printf("JspFile::save %s\n", fname.c_str());
 
     ofstream out { fname, ios::out | ios::binary };
     if (!out) {

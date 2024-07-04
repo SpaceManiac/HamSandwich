@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,10 +18,12 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 
 /* <DESC>
- * IMAP example showing how to retreieve emails from a shared mailed box
+ * Retrieve emails from a shared IMAP mailbox
  * </DESC>
  */
 
@@ -45,13 +47,13 @@ int main(void)
     curl_easy_setopt(curl, CURLOPT_USERNAME, "user");
     curl_easy_setopt(curl, CURLOPT_PASSWORD, "secret");
 
-    /* Set the authorisation identity (identity to act as) */
+    /* Set the authorization identity (identity to act as) */
     curl_easy_setopt(curl, CURLOPT_SASL_AUTHZID, "shared-mailbox");
 
     /* Force PLAIN authentication */
     curl_easy_setopt(curl, CURLOPT_LOGIN_OPTIONS, "AUTH=PLAIN");
 
-    /* This will fetch message 1 from the user's inbox */
+    /* This fetches message 1 from the user's inbox */
     curl_easy_setopt(curl, CURLOPT_URL,
                      "imap://imap.example.com/INBOX/;UID=1");
 

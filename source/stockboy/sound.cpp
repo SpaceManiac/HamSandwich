@@ -1,14 +1,11 @@
 #include "sound.h"
 #include "display.h"
 #include "options.h"
-
-int sndNum;
-int musVolume;
+#include "hammusic.h"
 
 void InitSound(void)
 {
 	JamulSoundPurge();
-	sndNum=-1;
 }
 
 void ExitSound(void)
@@ -58,34 +55,18 @@ void MakeNormalSound2(int snd)
 	GoPlaySound(snd,0,0,SND_MAXPRIORITY|SND_CUTOFF,MAX_SNDPRIORITY);
 }
 
-void LoopingSound(int snd)
-{
-	if(!SoundIsAvailable())
-		return;
-
-	if(!opt.sound)
-		return;
-
-	GoPlaySound(snd,0,-1000,SND_MAXPRIORITY|SND_CUTOFF|SND_ONE|SND_LOOPING,MAX_SNDPRIORITY);
-	sndNum=snd;
-}
-
-void KillSong(void)
-{
-	if(sndNum!=-1)
-		JamulSoundStop(sndNum);
-	sndNum=-1;
-}
-
 void SetVolumes(int sndvol,int musvol)
 {
 	JamulSoundVolume(sndvol);
-	musVolume = musvol;
+	SetMusicVolume(musvol);
 }
 
-void PlayInstrument(int ins,int note,long vol,byte flags,byte seq)
+void PlayInstrument(int ins,int note,long vol,int flags,byte seq)
 {
-	GoPlaySound(200 + ins*15 + note, 0, vol, (flags & SND_SUSTAIN) ? (flags & ~SND_ONE & ~SND_CUTOFF) : flags, 0);
+	if (flags & SND_SUSTAIN)
+		flags = flags & ~SND_ONE & ~SND_CUTOFF;
+	flags |= SND_MUSICVOLUME;
+	GoPlaySound(200 + ins*15 + note, 0, vol, flags, 0);
 #if 0
 	char txt[32];
 	int i,best;

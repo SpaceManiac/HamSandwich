@@ -662,7 +662,7 @@ void DisplayList::Render(void)
 			{
 				if(dispObj[i].flags&DISPLAY_GHOST)
 				{
-					dispObj[i].spr->DrawGhost(dispObj[i].x-scrx,dispObj[i].y-scry-dispObj[i].z,mgl,
+					dispObj[i].spr->DrawGhostBright(dispObj[i].x-scrx,dispObj[i].y-scry-dispObj[i].z,mgl,
 							dispObj[i].bright);
 				}
 				else if(dispObj[i].flags&DISPLAY_GLOW)

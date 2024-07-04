@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Vijay Panghal, <vpanghal@maginatics.com>, et al.
+ * Copyright (C) Vijay Panghal, <vpanghal@maginatics.com>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 
@@ -42,11 +44,11 @@ static size_t read_callback(char *ptr, size_t size, size_t nmemb, void *stream)
   return strlen(data);
 }
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURL *curl = NULL;
   CURLcode res = CURLE_FAILED_INIT;
-  /* http and proxy header list*/
+  /* http and proxy header list */
   struct curl_slist *hhl = NULL, *phl = NULL, *tmp = NULL;
 
   if(curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK) {
@@ -99,5 +101,5 @@ test_cleanup:
 
   curl_global_cleanup();
 
-  return (int)res;
+  return res;
 }

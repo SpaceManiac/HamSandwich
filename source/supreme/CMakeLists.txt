@@ -4,7 +4,12 @@ HamSandwich_add_executable(
 	ICON lunatic.ico
 	SOURCES ${sources}
 )
+target_link_libraries(supreme steam_api minizip)
 
-if(CMAKE_COMPILER_IS_GNUCC)
-	target_compile_options(supreme PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-unused-but-set-variable)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
+	target_compile_options(supreme PRIVATE
+		# Lots of warnings, but some exclusions
+		-Wall -Wextra -Wpedantic
+		-Wno-unused-parameter -Wno-unused-but-set-variable -Wno-unknown-warning-option
+	)
 endif()

@@ -51,6 +51,7 @@ endif()
 # The order here is the order that games will appear in the launcher.
 #add_subdirectory("spookycastle")  # 1998-12, re-release 2004-05
 #add_subdirectory("eddie")  # 1999-03, re-release 2004-06
+#add_subdirectory("amazin")  # 1999-07
 #add_subdirectory("mystic")  # 1999-08, re-release 2004-10
 #add_subdirectory("lunatic" EXCLUDE_FROM_ALL)  # 2000-05
 #add_subdirectory("loonyland")  # 2001-03
@@ -58,6 +59,14 @@ endif()
 add_subdirectory("supreme")  # 2003-08
 #add_subdirectory("loonyland2")  # 2007-02
 #add_subdirectory("sleepless")  # 2007-10
+
+# -----------------------------------------------------------------------------
+# Developer Tools
+if(NOT EMSCRIPTEN AND NOT ANDROID)
+	add_subdirectory("lunaticpal" EXCLUDE_FROM_ALL)
+	add_subdirectory("jspedit")
+	add_subdirectory("jfttool" EXCLUDE_FROM_ALL)
+endif()
 
 # -----------------------------------------------------------------------------
 # Launcher
@@ -117,12 +126,4 @@ elseif(ANDROID)
 else()
 	# Launcher for desktop platforms
 	add_subdirectory("launcher")
-endif()
-
-# -----------------------------------------------------------------------------
-# Developer Tools
-if(NOT EMSCRIPTEN AND NOT ANDROID)
-	add_subdirectory("lunaticpal" EXCLUDE_FROM_ALL)
-	add_subdirectory("jspedit" EXCLUDE_FROM_ALL)
-	add_subdirectory("jfttool" EXCLUDE_FROM_ALL)
 endif()

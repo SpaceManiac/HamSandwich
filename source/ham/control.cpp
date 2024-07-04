@@ -1,28 +1,34 @@
 #include "control.h"
+#include <math.h>
+#include <vector>
+#include <algorithm>
+#include <utility>
 #include "mgldraw.h"
 #include "log.h"
 #include "softjoystick.h"
-#include <vector>
-#include <algorithm>
+#include "owned_sdl.h"
+
+static constexpr int NUM_KEYBOARDS = 4;
+static constexpr int NUM_CONTROLS = 8;
+static constexpr int NUM_JOYBTNS = 4;
 
 static byte lastScanCode;
 
 // normal mapped controls: kbd, joystick, etc.
 static byte keyState, keyTap;
+static byte keyState2[NUM_KEYBOARDS];
 // fixed arrow keys and return controls
 static byte arrowState, arrowTap;
 
 // joysticks
-static std::vector<SDL_Joystick*> joysticks;
+static std::vector<owned::SDL_GameController> joysticks;
+static SDL_GameController *activeController = nullptr;
 static byte oldJoy;
 
 // mappings
-static const int NUM_KEYBOARDS = 4;
-static const int NUM_CONTROLS = 8;
-static const int NUM_JOYBTNS = 4;
-
 static byte kb[NUM_CONTROLS][NUM_KEYBOARDS];
 static byte joyBtn[NUM_JOYBTNS];
+static byte playerUsesJoystick[NUM_KEYBOARDS] = { 3, 3, 3, 3 };
 
 static byte GetJoyState();
 
@@ -34,18 +40,47 @@ void InitControls(void)
 	arrowState=0;
 	arrowTap=0;
 	oldJoy=0;
+	memset(keyState2, 0, sizeof(keyState2));
 
+	/*
 	for (int i = 0; i < SDL_NumJoysticks(); ++i) {
-		SDL_Joystick* joystick = SDL_JoystickOpen(i);
-		if (joystick)
-			joysticks.push_back(joystick);
+		if (!SDL_IsGameController(i)) {
+			LogDebug("Skipping non-gamepad joystick: %s", SDL_JoystickNameForIndex(i));
+			continue;
+		}
+
+		owned::SDL_GameController joystick = owned::SDL_GameControllerOpen(i);
+		if (joystick) {
+			LogDebug("Gamepad init: %s", SDL_GameControllerName(joystick.get()));
+			joysticks.push_back(std::move(joystick));
+		}
 		else
-			LogError("JoystickOpen(%d, %s): %s", i, SDL_JoystickNameForIndex(i), SDL_GetError());
+			LogError("SDL_GameControllerOpen(%d, %s): %s", i, SDL_GameControllerNameForIndex(i), SDL_GetError());
 	}
+	*/
+}
+
+byte GetKeyControls() {
+	return keyState;
 }
 
 byte GetControls() {
 	return keyState | GetJoyState() | SoftJoystickState();
+}
+
+byte GetPlayerControls(byte player)
+{
+	switch (playerUsesJoystick[player])
+	{
+		case 0:  // Keyboard1
+			return keyState2[0] | SoftJoystickState();
+		case 1:  // Keyboard2
+			return keyState2[1];
+		case 2:  // Joystick
+			return GetJoyState();
+		default:  // ???
+			return GetControls();
+	}
 }
 
 byte GetTaps() {
@@ -75,11 +110,12 @@ const char *ScanCodeText(byte s) {
 	return SDL_GetKeyName(SDL_GetKeyFromScancode((SDL_Scancode) s));
 }
 
-// Options menu support.
+// Gamepad special
 dword GetJoyButtons() {
 	dword held = 0;
 
-	for (SDL_Joystick* joystick : joysticks) {
+	for (owned::SDL_GameController& gamepad : joysticks) {
+		SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gamepad.get());
 		int n = SDL_JoystickNumButtons(joystick);
 		int j = 1;
 		for (int i = 0; i < n && i < 32; ++i) {
@@ -93,6 +129,89 @@ dword GetJoyButtons() {
 	return held;
 }
 
+static_assert(SDL_CONTROLLER_BUTTON_MAX <= 8 * sizeof(dword));
+dword GetGamepadButtons() {
+	dword held = 0;
+
+	for (owned::SDL_GameController& gamepad : joysticks) {
+		for (int button = 0; button < SDL_CONTROLLER_BUTTON_MAX; ++button) {
+			if (SDL_GameControllerGetButton(gamepad.get(), static_cast<SDL_GameControllerButton>(button))) {
+				held |= (1 << button);
+			}
+		}
+	}
+
+	return held;
+}
+
+void GetLeftStick(int16_t* x, int16_t* y, byte* dpad)
+{
+	*dpad = 0;
+	int32_t xx = 0, yy = 0;
+	for (auto iter = joysticks.begin(); iter != joysticks.end(); ++iter)
+	{
+		SDL_GameController* gamepad = iter->get();
+		SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gamepad);
+		if (!SDL_JoystickGetAttached(joystick))
+		{
+			// Drop disconnected joysticks.
+			LogDebug("Gamepad removed: %s", SDL_GameControllerName(gamepad));
+			if (activeController == gamepad)
+				activeController = nullptr;
+			iter = joysticks.erase(iter);
+			if (iter == joysticks.end())
+				break;
+			continue;
+		}
+
+		xx += SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
+		yy += SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
+
+		if(SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_LEFT))
+		{
+			*dpad|=CONTROL_LF;
+		}
+		if(SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_RIGHT))
+		{
+			*dpad|=CONTROL_RT;
+		}
+
+		if(SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_UP))
+		{
+			*dpad|=CONTROL_UP;
+		}
+		if(SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_DOWN))
+		{
+			*dpad|=CONTROL_DN;
+		}
+
+		if(SDL_JoystickGetButton(joystick, joyBtn[0]))
+		{
+			*dpad|=CONTROL_B1;
+		}
+		if(SDL_JoystickGetButton(joystick, joyBtn[1]))
+		{
+			*dpad|=CONTROL_B2;
+		}
+		if(SDL_JoystickGetButton(joystick, joyBtn[2]))
+		{
+			*dpad|=CONTROL_B3;
+		}
+		if(SDL_JoystickGetButton(joystick, joyBtn[3]))
+		{
+			*dpad|=CONTROL_B4;
+		}
+	}
+	*x = int16_t(std::clamp(xx, int32_t(INT16_MIN), int32_t(INT16_MAX)));
+	*y = int16_t(std::clamp(yy, int32_t(INT16_MIN), int32_t(INT16_MAX)));
+}
+
+bool ShowGamepadText()
+{
+	return activeController != nullptr;
+}
+
+// Options menu support.
 void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys) {
 	nkeys = std::min(nkeys, NUM_CONTROLS);
 	for (int i = 0; i < nkeys; ++i) {
@@ -105,8 +224,12 @@ void SetJoystickBindings(int nbuttons, const byte* buttons) {
 	memcpy(joyBtn, buttons, std::min(nbuttons, NUM_JOYBTNS));
 }
 
+void ControlSetUseJoystick(byte player, byte joystickNumber) {
+	playerUsesJoystick[player] = joystickNumber;
+}
+
 // Called upon SDL events
-void ControlKeyDown(byte k)
+void ControlKeyDown(SDL_Scancode k)
 {
 	int i,j;
 	byte bit;
@@ -122,6 +245,7 @@ void ControlKeyDown(byte k)
 			{
 				keyState|=bit;
 				keyTap|=bit;
+				keyState2[i] |= bit;
 			}
 			bit*=2;
 		}
@@ -149,10 +273,11 @@ void ControlKeyDown(byte k)
 			arrowState |= CONTROL_B1;
 			arrowTap |= CONTROL_B1;
 			break;
+		default: break;
 	}
 }
 
-void ControlKeyUp(byte k)
+void ControlKeyUp(SDL_Scancode k)
 {
 	int i,j;
 	byte bit;
@@ -165,6 +290,7 @@ void ControlKeyUp(byte k)
 			if(k==kb[j][i])
 			{
 				keyState&=(~bit);
+				keyState2[i] &= ~bit;
 			}
 			bit*=2;
 		}
@@ -187,93 +313,143 @@ void ControlKeyUp(byte k)
 		case SDL_SCANCODE_RETURN:
 			arrowState &= ~CONTROL_B1;
 			break;
+		default: break;
+	}
+}
+
+void ControlHandleNewGamepad(int which)
+{
+	owned::SDL_GameController gamepad = owned::SDL_GameControllerOpen(which);
+	if (gamepad)
+	{
+		LogDebug("Gamepad added: %s", SDL_GameControllerName(gamepad.get()));
+		activeController = gamepad.get();
+		joysticks.push_back(std::move(gamepad));
+	}
+}
+
+void ControlHandleEvent(const SDL_Event &e)
+{
+	if (e.type == SDL_KEYDOWN)
+	{
+		ControlKeyDown(e.key.keysym.scancode);
+		activeController = nullptr;
+	}
+	else if (e.type == SDL_KEYUP)
+	{
+		ControlKeyUp(e.key.keysym.scancode);
+		activeController = nullptr;
+	}
+	else if (e.type == SDL_CONTROLLERDEVICEADDED)
+	{
+		ControlHandleNewGamepad(e.cdevice.which);
+	}
+	else if (e.type == SDL_MOUSEBUTTONDOWN)
+	{
+		activeController = nullptr;
+	}
+	else if (e.type == SDL_CONTROLLERBUTTONDOWN)
+	{
+		activeController = SDL_GameControllerFromInstanceID(e.cbutton.which);
 	}
 }
 
 static byte GetJoyState(void)
 {
-	const int DEADZONE = 8192;
-	byte joyState = 0;
+	constexpr int DEADZONE = 8192;
+	byte allJoyState = 0;
 
 	for (auto iter = joysticks.begin(); iter != joysticks.end(); ++iter)
 	{
-		SDL_Joystick* joystick = *iter;
+		byte joyState = 0;
+		SDL_GameController* gamepad = iter->get();
+		SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gamepad);
 		if (!SDL_JoystickGetAttached(joystick))
 		{
 			// Drop disconnected joysticks.
-			LogDebug("Joystick removed: %s", SDL_JoystickName(joystick));
+			LogDebug("Gamepad removed: %s", SDL_GameControllerName(gamepad));
+			if (activeController == gamepad)
+				activeController = nullptr;
 			iter = joysticks.erase(iter);
 			if (iter == joysticks.end())
 				break;
 			continue;
 		}
 
-		byte hat = SDL_HAT_CENTERED;
-		if (SDL_JoystickNumHats(joystick) > 0)
-			hat = SDL_JoystickGetHat(joystick, 0);
-
-		int numAxes = SDL_JoystickNumAxes(joystick);
-
-		if((numAxes >= 2 && SDL_JoystickGetAxis(joystick, 0) < -DEADZONE) || (hat & SDL_HAT_LEFT))
+		int leftX = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
+		int leftY = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
+		if (leftX * leftX + leftY * leftY > DEADZONE * DEADZONE)
 		{
-			if(!(oldJoy&CONTROL_LF))
-				keyTap|=CONTROL_LF;
+			double angle = atan2(leftY, leftX) * 180.0 / M_PI;
+			if (angle < 22.5 + -4*45) {
+				joyState |= CONTROL_LF;
+			} else if (angle < 22.5 + -3*45) {
+				joyState |= CONTROL_LF | CONTROL_UP;
+			} else if (angle < 22.5 + -2*45) {
+				joyState |= CONTROL_UP;
+			} else if (angle < 22.5 + -1*45) {
+				joyState |= CONTROL_UP | CONTROL_RT;
+			} else if (angle < 22.5 + 0*45) {
+				joyState |= CONTROL_RT;
+			} else if (angle < 22.5 + 1*45) {
+				joyState |= CONTROL_RT | CONTROL_DN;
+			} else if (angle < 22.5 + 2*45) {
+				joyState |= CONTROL_DN;
+			} else if (angle < 22.5 + 3*45) {
+				joyState |= CONTROL_DN | CONTROL_LF;
+			} else if (angle < 22.5 + 4*45) {
+				joyState |= CONTROL_LF;
+			}
+		}
+
+		if(SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_LEFT))
+		{
 			joyState|=CONTROL_LF;
 		}
-		else if((numAxes >= 2 && SDL_JoystickGetAxis(joystick, 0) > DEADZONE) || (hat & SDL_HAT_RIGHT))
+		else if(SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_RIGHT))
 		{
-			if(!(oldJoy&CONTROL_RT))
-				keyTap|=CONTROL_RT;
 			joyState|=CONTROL_RT;
 		}
-		if((numAxes >= 2 && SDL_JoystickGetAxis(joystick, 1) < -DEADZONE) || (hat & SDL_HAT_UP))
+
+		if(SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_UP))
 		{
-			if(!(oldJoy&CONTROL_UP))
-				keyTap|=CONTROL_UP;
 			joyState|=CONTROL_UP;
 		}
-		else if((numAxes >= 2 && SDL_JoystickGetAxis(joystick, 1) > DEADZONE) || (hat & SDL_HAT_DOWN))
+		else if(SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_DOWN))
 		{
-			if(!(oldJoy&CONTROL_DN))
-				keyTap|=CONTROL_DN;
 			joyState|=CONTROL_DN;
 		}
+
 		if(SDL_JoystickGetButton(joystick, joyBtn[0]))
 		{
-			if(!(oldJoy&CONTROL_B1))
-				keyTap|=CONTROL_B1;
 			joyState|=CONTROL_B1;
 		}
 		if(SDL_JoystickGetButton(joystick, joyBtn[1]))
 		{
-			if(!(oldJoy&CONTROL_B2))
-				keyTap|=CONTROL_B2;
 			joyState|=CONTROL_B2;
 		}
 		if(SDL_JoystickGetButton(joystick, joyBtn[2]))
 		{
-			if(!(oldJoy&CONTROL_B3))
-				keyTap|=CONTROL_B3;
 			joyState|=CONTROL_B3;
 		}
 		if(SDL_JoystickGetButton(joystick, joyBtn[3]))
 		{
-			if(!(oldJoy&CONTROL_B4))
-				keyTap|=CONTROL_B4;
 			joyState|=CONTROL_B4;
 		}
-	}
 
-	// Add newly connected joysticks.
-	for (int i = joysticks.size(); i < SDL_NumJoysticks(); ++i) {
-		SDL_Joystick* joystick = SDL_JoystickOpen(i);
-		if (joystick) {
-			LogDebug("Joystick added: %s", SDL_JoystickName(joystick));
-			joysticks.push_back(joystick);
+		if (joyState)
+		{
+			activeController = gamepad;
 		}
+		allJoyState |= joyState;
 	}
 
-	oldJoy=joyState;
+	keyTap |= allJoyState & ~oldJoy;
+	oldJoy = allJoyState;
+	return allJoyState;
+}
 
-	return joyState;
+SDL_GameController* ActiveController()
+{
+	return activeController;
 }

@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 #include "curlcheck.h"
@@ -40,7 +42,7 @@ static void unit_stop(void)
 
 }
 
-#if defined(MSDOS) || defined(WIN32)
+#if defined(_WIN32) || defined(MSDOS)
 
 static char *getflagstr(int flags)
 {
@@ -351,6 +353,6 @@ UNITTEST_START
 {
   fprintf(stderr, "Skipped test not for this platform\n");
 }
-#endif /* MSDOS || WIN32 */
+#endif /* _WIN32 || MSDOS */
 
 UNITTEST_STOP

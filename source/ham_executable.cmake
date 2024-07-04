@@ -11,18 +11,8 @@ function(HamSandwich_executable_icon target_name ico)
 		file(GENERATE OUTPUT icon.rc CONTENT "allegro_icon ICON \"${ico}\"")
 		target_sources("${target_name}" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/icon.rc")
 	else()
-		# On other platforms, embed the .png version as a document.
-		set(ico2png_py "${CMAKE_SOURCE_DIR}/tools/build/ico2png.py")
-		set(png "${CMAKE_CURRENT_BINARY_DIR}/executable_icon.png")
-		add_custom_command(
-			OUTPUT "${png}"
-			COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${ico2png_py}" "${ico}" "${png}"
-			MAIN_DEPENDENCY "${ico}"
-			DEPENDS "${ico2png_py}"
-			VERBATIM
-		)
-
-		HamSandwich_embed_file("${target_name}" "${png}" embed_game_icon)
+		# On other platforms, embed the .ico as a document.
+		HamSandwich_embed_file("${target_name}" "${ico}" embed_game_icon)
 	endif()
 endfunction()
 
@@ -55,30 +45,21 @@ function(HamSandwich_add_executable target_name)
 		set(arg_ICON "${target_name}.ico")
 	endif()
 	if(arg_ICON)
+		# Embed the .ico.
 		set(ico "${CMAKE_CURRENT_SOURCE_DIR}/${arg_ICON}")
-		# Convert the icon to .png for embedding.
-		set(ico2png_py "${CMAKE_SOURCE_DIR}/tools/build/ico2png.py")
-		set(png "${CMAKE_CURRENT_BINARY_DIR}/${arg_ICON}.png")
-		add_custom_command(
-			OUTPUT "${png}"
-			COMMAND "${CMAKE_SOURCE_DIR}/tools/bootstrap/python" "${ico2png_py}" "${ico}" "${png}"
-			MAIN_DEPENDENCY "${ico}"
-			DEPENDS "${ico2png_py}"
-			VERBATIM
-		)
 
 		if(WIN32)
 			# On Windows, generate a simple .rc file that includes the icon.
 			file(GENERATE OUTPUT icon.rc CONTENT "allegro_icon ICON \"${ico}\"")
 			target_sources("${target_name}" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/icon.rc")
 		else()
-			# On other platforms, embed the .png version as a document.
-			HamSandwich_embed_file("${target_name}" "${png}" embed_game_icon)
+			# On other platforms, embed the .ico as a document.
+			HamSandwich_embed_file("${target_name}" "${ico}" embed_game_icon)
 		endif()
 
 		set_target_properties("${target_name}" PROPERTIES HamSandwich_ico "${ico}")
 
-		# Include the .png icon in the launcher metadata.
+		# Include the icon in the launcher metadata.
 		get_property(is_excluded DIRECTORY PROPERTY EXCLUDE_FROM_ALL)
 		if(NOT "${is_excluded}")
 			get_property(launcher_icons GLOBAL PROPERTY HamSandwich_launcher_icons)
@@ -87,7 +68,7 @@ function(HamSandwich_add_executable target_name)
 			# The reason this has to be its own target created at this precise moment is:
 			# > If any dependency is an OUTPUT of another custom command in the same directory (CMakeLists.txt file), CMake automatically brings the other custom command into the target in which this command is built.
 			add_library("${target_name}_icon" STATIC)
-			HamSandwich_embed_file("${target_name}_icon" "${png}" "embed_icon_${target_name}")
+			HamSandwich_embed_file("${target_name}_icon" "${ico}" "embed_icon_${target_name}")
 		endif()
 	endif()
 
@@ -132,7 +113,7 @@ function(HamSandwich_add_executable target_name)
 	string(APPEND metadata_cpp [[
 		#include "metadata.h"
 
-		static AssetSpec default_asset_specs[] = {
+		static const AssetSpec default_asset_specs[] = {
 	]])
 
 	string(JSON len LENGTH "${json_blob}" installers)
@@ -228,7 +209,7 @@ function(HamSandwich_add_executable target_name)
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif_bold.license.txt"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif_bold.woff"
 			"${CMAKE_SOURCE_DIR}/assets/emscripten/98/ms_sans_serif_bold.woff2"
-			DESTINATION "${CMAKE_INSTALL_PREFIX}/98"
+			DESTINATION "98"
 			COMPONENT "${target_name}/web"
 		)
 		install(
@@ -239,13 +220,13 @@ function(HamSandwich_add_executable target_name)
 			"${CMAKE_CURRENT_BINARY_DIR}/${target_name}.html"
 			"${CMAKE_CURRENT_BINARY_DIR}/${target_name}.js"
 			"${CMAKE_CURRENT_BINARY_DIR}/${target_name}.wasm"
-			DESTINATION "${CMAKE_INSTALL_PREFIX}"
+			DESTINATION "."
 			COMPONENT "${target_name}/web"
 		)
 		install(
 			FILES "${ico}"
 			RENAME "${target_name}.ico"
-			DESTINATION "${CMAKE_INSTALL_PREFIX}"
+			DESTINATION "."
 			COMPONENT "${target_name}/web"
 		)
 
@@ -253,6 +234,7 @@ function(HamSandwich_add_executable target_name)
 		file(GLOB fake_sources LIST_DIRECTORIES true CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/assets/*")
 		file(GLOB_RECURSE any_files "${CMAKE_SOURCE_DIR}/assets/${target_name}/*")
 		if(any_files)
+			find_program(python NAMES python3 python REQUIRED)
 			set(data "${CMAKE_CURRENT_BINARY_DIR}/${target_name}.data")
 			set(data_js "${data}.js")
 			set(data_d "${data_js}.d")
@@ -261,7 +243,7 @@ function(HamSandwich_add_executable target_name)
 				COMMAND
 					"${CMAKE_COMMAND}" -E env
 					"EMSCRIPTEN_ROOT_PATH=${EMSCRIPTEN_ROOT_PATH}"
-					"${CMAKE_SOURCE_DIR}/tools/bootstrap/python"
+					"${python}"
 					"${CMAKE_SOURCE_DIR}/tools/emscripten/file_packager_deps.py"
 					"${data}"
 					"--js-output=${data_js}"
@@ -269,9 +251,6 @@ function(HamSandwich_add_executable target_name)
 					"--preload"
 					"${CMAKE_SOURCE_DIR}/assets/${target_name}@"
 				DEPENDS
-					"${CMAKE_SOURCE_DIR}/dependencies.sh"
-					"${CMAKE_SOURCE_DIR}/tools/bootstrap/_common.sh"
-					"${CMAKE_SOURCE_DIR}/tools/bootstrap/python"
 					"${CMAKE_SOURCE_DIR}/tools/emscripten/file_packager_deps.py"
 				DEPFILE "${data_d}"
 				VERBATIM
@@ -281,7 +260,7 @@ function(HamSandwich_add_executable target_name)
 
 			install(
 				FILES "${data}"
-				DESTINATION "${CMAKE_INSTALL_PREFIX}"
+				DESTINATION "."
 				COMPONENT "${target_name}/web"
 			)
 		endif()
@@ -292,7 +271,7 @@ function(HamSandwich_add_executable target_name)
 			DIRECTORY
 			"${CMAKE_SOURCE_DIR}/assets/${target_name}"
 			OPTIONAL
-			DESTINATION "${CMAKE_INSTALL_PREFIX}/assets"
+			DESTINATION "assets"
 			COMPONENT "${target_name}/assets"
 		)
 	endif()

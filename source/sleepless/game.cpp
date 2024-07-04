@@ -254,6 +254,7 @@ TASK(byte) LunaticRun(int *lastTime)
 			CO_RETURN LEVEL_ABORT;
 		}
 
+		SDL_SetRelativeMouseMode(gameMode == GAMEMODE_PLAY ? SDL_TRUE : SDL_FALSE);
 		if(gameMode==GAMEMODE_PLAY)
 		{
 			profile.progress.totalTime=player.clock;

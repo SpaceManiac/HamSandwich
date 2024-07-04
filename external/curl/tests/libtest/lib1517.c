@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 #include "test.h"
@@ -51,12 +53,22 @@ static size_t read_callback(char *ptr, size_t size, size_t nmemb, void *userp)
   return tocopy;
 }
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURL *curl;
   CURLcode res = CURLE_OK;
 
   struct WriteThis pooh;
+
+  if(!strcmp(URL, "check")) {
+#if (defined(_WIN32) || defined(__CYGWIN__))
+    printf("Windows TCP does not deliver response data but reports "
+           "CONNABORTED\n");
+    return (CURLcode)1; /* skip since it fails on Windows without workaround */
+#else
+    return CURLE_OK; /* sure, run this! */
+#endif
+  }
 
   pooh.readptr = data;
   pooh.sizeleft = strlen(data);

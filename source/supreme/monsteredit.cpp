@@ -271,7 +271,7 @@ void MonsterEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 
 	SetSpriteConstraints(161,130,639,479);
 	InstaRenderMonster(520,380,curMons,0,mgl);
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 
 	mgl->FillBox(161,268,470,479,32*1+4);
 	mgl->Box(160,268,470,479,32*1+16);

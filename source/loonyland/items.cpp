@@ -1,7 +1,16 @@
 #include "items.h"
 #include "display.h"
+#include "log.h"
+#include "math_extras.h"
 
-item_t itemInfo[MAX_ITMS]={
+struct item_t
+{
+	int sprset,rate,spr,spr2;
+	dword flags;
+};
+
+static const item_t itemInfo[MAX_ITMS]={
+	//{item sheet, Rate?, sprite/anim start, sprite/anim end, flags}
 	{0,0,0,0,0},
 	// pickups
 	{0,128,15,22,IF_GET|IF_GLOW|IF_SHADOW},	// tiny heart
@@ -142,22 +151,90 @@ item_t itemInfo[MAX_ITMS]={
 	{1,0,228,228,IF_GLOW},	// portal
 	{0,0,263,263,IF_GET|IF_SHADOW},	// badge
 	{0,0,264,264,IF_GET|IF_SHADOW},	// cat
-};
 
-sprite_set_t *itmSpr[2];
-static	int itemAnim;
+	//ADDED FOR RANDOMIZER
+	{2, 128, 0, 7, IF_GET | IF_SHADOW},// | IF_GLOW},	//zombie gem
+	{2, 0, 8, 8, IF_GET | IF_SHADOW},	//mud boots
+	{2, 0, 9, 9, IF_GET | IF_SHADOW},	//fertiziler
+	{2, 64, 15, 25, IF_GET | IF_SHADOW},	//ghostpotion
+	{2, 0, 11, 11, IF_GET | IF_SHADOW | IF_GLOW},	//lantern
+	{2, 0, 12, 12, IF_GET | IF_SHADOW | IF_GLOW},	//reflect gem
+	{2, 0, 13, 13, IF_GET | IF_SHADOW},	//silversling
+	{2, 0, 14, 14, IF_GET | IF_SHADOW}	//stick
+};
+static_assert(std::size(itemInfo) == MAX_ITMS);
+
+static sprite_set_t *itmSpr[3];
+static int itemAnim;
+static ItemRenderExtents extents;
 
 void InitItems(void)
 {
-	itmSpr[0]=new sprite_set_t("graphics/pickups.jsp");
-	itmSpr[1]=new sprite_set_t("graphics/items.jsp");
-	itemAnim=0;
+	itmSpr[0] = new sprite_set_t("graphics/pickups.jsp");
+	itmSpr[1] = new sprite_set_t("graphics/items.jsp");
+	itmSpr[2] = new sprite_set_t("graphics/randomizer.jsp");
+	itemAnim = 0;
+
+	// Offset pacified evil tree sprite so its shadow renders the same as the monster.
+	sprite_t* treeSprite = itmSpr[itemInfo[ITM_TREE2].sprset]->GetSprite(itemInfo[ITM_TREE2].spr);
+	treeSprite->ofsx -= 1;
+	treeSprite->ofsy -= 8;
+
+	// Calculate the union bounding box of item sprites so we know how far away
+	// to search for items to draw, with no pop-in and minimal overdraw.
+	// LL1 item rendering is a little complex so just assume every sprite is
+	// used and has a shadow.
+	SDL_Rect everything = {};
+	for (int j = 0; j < 3; ++j)
+	{
+		const sprite_set_t *set = itmSpr[j];
+		for (int i = 0; i < set->GetCount(); ++i)
+		{
+			auto spr = set->GetSprite(i);
+			SDL_Rect rect;
+
+			// Use precise sprite boundaries.
+			rect.x = 0 - spr->ofsx;
+			rect.y = 0 - spr->ofsy;// - std::clamp(z, -DISPLAY_YBORDER, DISPLAY_YBORDER);
+			rect.w = spr->width;
+			rect.h = spr->height;
+
+			SDL_UnionRect(&everything, &rect, &everything);
+
+			// Use precise shadow sprite boundaries.
+			rect.x = 0 - spr->ofsx - spr->height/2;
+			rect.y = 0 - spr->ofsy/2;// - std::clamp(z, -DISPLAY_YBORDER, DISPLAY_YBORDER);
+			rect.w = spr->height/2 + spr->width;
+			rect.h = spr->height/2;
+
+			SDL_UnionRect(&everything, &rect, &everything);
+		}
+	}
+
+	// Bounds are reversed here, because the further left from an item's origin
+	// it extends, the further right off the edge of the screen we need to seek
+	// items to draw. The minimums are for tile/wall rendering.
+	extents.left = floor_div(everything.x + everything.w + TILE_WIDTH/2, TILE_WIDTH).quot;
+	extents.right = -floor_div(everything.x + TILE_WIDTH/2, TILE_WIDTH).quot;
+	extents.up = floor_div(everything.y + everything.h + TILE_HEIGHT/2, TILE_HEIGHT).quot;
+	extents.down = -floor_div(everything.y + TILE_HEIGHT/2, TILE_HEIGHT).quot;
+
+#ifndef NDEBUG
+	LogDebug("Items bounding rect: x=%d y=%d w=%d h=%d", everything.x, everything.y, everything.w, everything.h);
+	LogDebug("Tile spread: x: %+d to %+d, y: %+d to %+d, inclusive", -extents.left, extents.right, -extents.up, extents.down);
+#endif
+}
+
+ItemRenderExtents GetItemRenderExtents()
+{
+	return extents;
 }
 
 void ExitItems(void)
 {
-	delete itmSpr[0];
+	delete itmSpr[2];
 	delete itmSpr[1];
+	delete itmSpr[0];
 }
 
 char *WeaponName(byte w)

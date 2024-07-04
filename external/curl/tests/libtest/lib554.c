@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,7 +18,10 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
+#define CURL_DISABLE_DEPRECATION  /* Using and testing the form api */
 #include "test.h"
 
 #include "memdebug.h"
@@ -57,7 +60,7 @@ static size_t read_callback(char *ptr, size_t size, size_t nmemb, void *userp)
 #endif
 }
 
-static int once(char *URL, bool oldstyle)
+static CURLcode once(char *URL, bool oldstyle)
 {
   CURL *curl;
   CURLcode res = CURLE_OK;
@@ -186,9 +189,9 @@ test_cleanup:
   return res;
 }
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
-  int res;
+  CURLcode res;
 
   if(curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK) {
     fprintf(stderr, "curl_global_init() failed\n");

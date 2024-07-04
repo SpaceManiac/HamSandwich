@@ -1,0 +1,27 @@
+#!/bin/bash
+set -euo pipefail
+
+game="$1"
+
+# Bail if working directory is dirty
+if ! test -z "$(git status -s --porcelain)"; then
+	echo "Working directory is dirty; clean or commit before publishing."
+	exit 1
+fi
+
+# Build the artifacts
+tools/steam/"$game"_build
+
+# Build and upload Steam depots
+tools/steam/upload-steam-build "$game"
+
+# Push to Itch
+case "$game" in
+	loonyland)
+		read -p 'Itch version number> ' -r itch_version
+		butler push --if-changed build/dist/loonyland/itch-windows/ hamumu/loonyland-halloween-hill:windows --userversion="$itch_version"
+		butler push --if-changed build/dist/loonyland/itch-linux/ hamumu/loonyland-halloween-hill:linux --userversion="$itch_version"
+		;;
+esac
+
+echo "==== Complete ===="

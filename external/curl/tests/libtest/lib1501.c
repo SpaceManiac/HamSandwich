@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 #include "test.h"
@@ -33,11 +35,11 @@
    to allow old and slow machines to run this test too */
 #define MAX_BLOCKED_TIME_MS 500
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURL *handle = NULL;
   CURLM *mhandle = NULL;
-  int res = 0;
+  CURLcode res = CURLE_OK;
   int still_running = 0;
 
   start_test_timing();
@@ -94,7 +96,7 @@ int test(char *URL)
     fprintf(stderr, "pong = %ld\n", e);
 
     if(e > MAX_BLOCKED_TIME_MS) {
-      res = 100;
+      res = (CURLcode) 100;
       break;
     }
   }

@@ -14,6 +14,7 @@ show_help() {
 	echo "    tool=valgrind   Run the game under valgrind memory checker (slow)."
 	echo "    tool=callgrind  Run the game under callgrind profiler (slow)."
 	echo "    tool=two        Run two instances of the game at once."
+	echo "    tool=deck       Upload to and run on a Steam Deck over SSH. Linux only."
 }
 
 # Default settings.
@@ -85,6 +86,7 @@ if test -z "$project"; then
 fi
 
 # Fallback settings. Keep this in sync with `Makefile`!
+container=
 if test -z "$preset"; then
 	if test -z "$os"; then
 		# Detect OS and architecture.
@@ -100,6 +102,7 @@ if test -z "$preset"; then
 				;;
 			"Linux x86_64")
 				os=linux
+				container=./container
 				arch=${arch:-x86_64}
 				;;
 			"Darwin x86_64")
@@ -130,17 +133,22 @@ if test -z "$tool" && test "$os" = "emscripten"; then
 	source ./tools/emscripten/install-emsdk.sh
 fi
 
+debugext=
+if test "$os" = "windows"; then
+	debugext=".exe"
+fi
+
 # Default debug configuration
 debugdir="$PWD/build/install"
 cmakedir="$PWD/build/cmake-$preset"
-debugcommand="$cmakedir/source/$project/$project"
-if test "$os" = "windows"; then
-	debugcommand="$debugcommand.exe"
-fi
+debugcommand="$debugdir/$project$debugext"
 debugargs=()
 debugenvs=()
 
 # Build and install
+cmake() {
+	tools/bootstrap/cmake "$@"
+}
 if test -z "$nobuild"; then
 	if test "$os" = "emscripten"; then
 		# Web.
@@ -159,27 +167,33 @@ if test -z "$nobuild"; then
 			launcher)
 				# Launcher: build everything that isn't excluded, because that's
 				# what will be presented in the launcher UI.
-				make preset="$preset" install
+				$container make preset="$preset" install
 				;;
 			jfttool|jspedit|lunaticpal|mini_xxd)
 				# Tool: build just that project. Don't bother installing it.
-				make preset="$preset" "$project"
-				if test "$project" = "jspedit"; then
-					cmake --install "$cmakedir" --component sdl2_ttf/executables --config Debug
-				fi
+				$container make preset="$preset" "$project" sdl2_rpath
+				$container cmake --install "$cmakedir" --component generic/executables --config Debug
+				$container cmake --install "$cmakedir" --component "$project"/executables --config Debug
 				;;
 			*)
 				# Single game project: build the launcher and that project.
 				debugargs=("window")
-				make preset="$preset" "$project" launcher sdl2_rpath
+				$container make preset="$preset" "$project" launcher sdl2_rpath
 				# Install the launcher so that it can be used to download assets.
-				cmake --install "$cmakedir" --component Unspecified --config Debug
-				cmake --install "$cmakedir" --component generic/executables --config Debug
-				cmake --install "$cmakedir" --component launcher/executables --config Debug
-				# But we don't need to install the game's executable because we're
-				# going to run it right out its build directory.
+				$container cmake --install "$cmakedir" --component Unspecified --config Debug
+				$container cmake --install "$cmakedir" --component generic/executables --config Debug
+				$container cmake --install "$cmakedir" --component launcher/executables --config Debug
+				$container cmake --install "$cmakedir" --component "$project"/executables --config Debug
 				;;
 		esac
+	fi
+fi
+
+# Handle ./run jfttool and lunaticpal which don't have CMake install scripts.
+if ! test -f "$debugcommand"; then
+	cp "$cmakedir/source/$project/$project$debugext" "$debugcommand"
+	if test "$os" = "linux"; then
+		patchelf --add-rpath "\$ORIGIN" "$debugcommand"
 	fi
 fi
 
@@ -224,6 +238,25 @@ case "$tool" in
 		echo "==== Running $project ($preset) ===="
 		"$debugcommand" "${debugargs[@]}" &
 		"$debugcommand" "${debugargs[@]}"
+		;;
+	deck)
+		# TODO: remove requirement that "SteamOS Devkit Client" has been set up
+		# TODO: allow configuring deck_addr
+		deck_addr=deck@steamdeck.local
+		deck_game=HamSandwich
+		echo "==== Uploading to $deck_addr:devkit-game/$deck_game ===="
+		deck_exe=${debugcommand##*/}
+		rsync -av --chmod=Du=rwx,Dgo=rx,Fu=rwx,Fog=rx -e "ssh -o StrictHostKeyChecking=no -i $HOME/.config/steamos-devkit/devkit_rsa" "$debugcommand" ./ "$deck_addr:/home/deck/devkit-game/$deck_game/"
+		# shellcheck disable=SC2087
+		ssh -o StrictHostKeyChecking=no -i ~/.config/steamos-devkit/devkit_rsa "$deck_addr" sh <<-EOD
+			set -eu
+			devkit-utils/steam-client-create-shortcut --parms '{"gameid": "$deck_game", "directory": "/home/deck/devkit-game/$deck_game", "argv": ["./$deck_exe"], "settings": {"steam_play": "0"}}'
+		EOD
+		# TODO: launch the game automatically
+		# data = parse ~/.local/share/Steam/userdata/$USERID/config/shortcuts.vdf
+		# appid = ((data['shortcuts']['N']['appid'] & 0xffffffff) << 32) | 0x02000000
+		# steam steam://rungameid/$appid
+		# TODO: tail -F a logfile or pipe to read console output
 		;;
 	"")
 		if test -f "$debugcommand"; then

@@ -1,6 +1,7 @@
 #include "tile.h"
 #include "water.h"
 #include "config.h"
+#include "recolor.h"
 
 tile_t tiles[NUMTILES];
 MGLDraw *tileMGL;
@@ -47,13 +48,6 @@ void LoadTiles(FILE *f)
 {
 	fread(tiles,NUMTILES,sizeof(tile_t),f);
 }
-
-// defined in jamulspr.cpp
-extern byte SprModifyColor(byte color, byte hue);
-extern byte SprGetColor(byte color);
-extern byte SprModifyLight(byte color, char bright);
-extern byte SprModifyGhost(byte src, byte dst, char bright);
-extern byte SprModifyGlow(byte src, byte dst, char bright);
 
 void RenderFloorTile(int x,int y,int t,char light)
 {

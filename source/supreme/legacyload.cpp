@@ -6,33 +6,89 @@
 #include "sound.h"
 #include "appdata.h"
 
+constexpr int OLD_MAX_MAPMONS = 128;
+constexpr int OLD_MAX_SPECIAL = 32;
+constexpr int OLD_MAX_MAPS = 24;
+
+struct old_special_t
+{
+	word trigger;
+	byte trigValue;
+	byte effect;
+	byte x,y;
+	byte effectX,effectY;
+	int value;
+	char msg[32];
+};
+
+struct old_mapTile_t
+{
+	byte floor;
+	byte wall;
+	byte item;
+	char light;
+	char templight;
+	byte opaque;
+};
+
+struct old_mapBadguy_t
+{
+	byte x,y;
+	byte type;
+};
+
+struct old_map_t
+{
+	int width,height;
+	old_mapTile_t *map;
+	char name[32];
+	byte song;
+	byte flags;
+	old_mapBadguy_t badguy[OLD_MAX_MAPMONS];
+	old_special_t   special[OLD_MAX_SPECIAL];
+};
+
+struct old_terrain_t
+{
+	word flags;
+	byte next;
+};
+
+struct old_world_t
+{
+	byte numMaps;
+	int  totalPoints;
+	old_map_t *map[OLD_MAX_MAPS];
+	old_terrain_t terrain[200];
+};
+
 static old_world_t *oldWorld;
 
-static char songTab[23][32]={
-		"",	// 1=no song
-		"002title.ogg",
-		"003worldpicker.ogg",
-		"004CavernHub.ogg",
-		"005CavernLevel.ogg",
-		"006CavernBoss.ogg",
-		"007ForestHub.ogg",
-		"008ForestLevel.ogg",
-		"009ForestBoss.ogg",
-		"010IcyHub.ogg",
-		"011IcyLevel.ogg",
-		"012IcyBoss.ogg",
-		"013DesertHub.ogg",
-		"014DesertLevel.ogg",
-		"015DesertBoss.ogg",
-		"016AsylumHub.ogg",
-		"017AsylumLevel.ogg",
-		"018AsylumBossLevel.ogg",
-		"019Victory.ogg",
-		"020Pumpkin.ogg",
-		"021SecretLevel.ogg",
-		"022EndingCreditsTheme.ogg",
-		"023AsylumBigBoss.ogg"
-	};
+static const char songTab[23][32]={
+	"",	// 1=no song
+	"002title.ogg",
+	"003worldpicker.ogg",
+	"004CavernHub.ogg",
+	"005CavernLevel.ogg",
+	"006cavesboss.ogg",
+	"007ForestHub.ogg",
+	"008forestlevel.ogg",
+	"009forestboss.ogg",
+	"010IcyHub.ogg",
+	"011IcyLevel.ogg",
+	"012icyboss.ogg",
+	"013DesertHub.ogg",
+	"014DesertLevel.ogg",
+	"015desertboss.ogg",
+	"016AsylumHub.ogg",
+	"017asylumlevel.ogg",
+	"018AsylumBossLevel.ogg",
+	"019victory.ogg",
+	"020Pumpkin.ogg",
+	"021secretlevel.ogg",
+	"022EndingCreditsTheme.ogg",
+	"023asylumbigboss.ogg"
+};
 
 
 const char *GetOriginalSongName(byte song)
@@ -354,6 +410,13 @@ void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 		if(old->trigger&trigList[i])
 			AddTrigger(trigList[i],old->trigValue,me,old->msg,(i<6));
 	}
+	if (!me->trigger[0].type)
+	{
+		// In Dr. L, triggers are negative logic such that a special with NO
+		// triggers is one that ALWAYS triggers. We need to preserve that.
+		// Example: Jubilee.dlw #05
+		me->trigger[0].type = TRG_DELAY;
+	}
 
 	me->effect[0].x=old->effectX;
 	me->effect[0].y=old->effectY;
@@ -586,25 +649,22 @@ Map::Map(old_map_t *old)
 	}
 }
 
-byte Legacy_GetWorldName(const char *fname,char *buf)
+bool Legacy_GetWorldName(const char *fname,char *buf)
 {
-	FILE *f;
-
 	if(fname[0]=='\0')
-		return 0;
+		return false;
 
-	f=AssetOpen(fname);
+	owned::SDL_RWops f = AssetOpen_SDL_Owned(fname);
 	if(!f)
-		return 0;
+		return false;
 
 	// this fseeks past:
 	//   the int totalpoints, the 400 32x24 tiles,
 	//   the 200 terrain types, the width&height of map 0, and bam there it is at the name
 	//   of map 0.
 
-	fseek(f,1+sizeof(int)+400*32*24+200*sizeof(terrain_t)+2*sizeof(int),SEEK_SET);
+	SDL_RWseek(f,1+sizeof(int)+400*32*24+200*sizeof(old_terrain_t)+2*sizeof(int),SEEK_SET);
 	// read the name
-	fread(buf,1,32,f);
-	fclose(f);
-	return 1;
+	SDL_RWread(f,buf,1,32);
+	return true;
 }

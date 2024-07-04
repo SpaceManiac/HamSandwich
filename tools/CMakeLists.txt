@@ -29,4 +29,9 @@ function (export_script scriptname)
 	file(APPEND "${custom_cmake}" "include(${CMAKE_CURRENT_SOURCE_DIR}/${scriptname})")
 endfunction()
 
+if (NOT TARGET minizip)
+	include(../external/zlib.cmake)
+endif()
+
 add_subdirectory(mini_xxd)
+add_subdirectory(lunaticpal_precompute)

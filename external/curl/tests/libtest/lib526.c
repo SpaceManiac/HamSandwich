@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 /*
@@ -50,9 +52,9 @@
 
 #define NUM_HANDLES 4
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
-  int res = 0;
+  CURLcode res = CURLE_OK;
   CURL *curl[NUM_HANDLES];
   int running;
   CURLM *m = NULL;
@@ -107,7 +109,7 @@ int test(char *URL)
         /* first remove the only handle we use */
         curl_multi_remove_handle(m, curl[0]);
 
-        /* make us re-use the same handle all the time, and try resetting
+        /* make us reuse the same handle all the time, and try resetting
            the handle first too */
         curl_easy_reset(curl[0]);
         easy_setopt(curl[0], CURLOPT_URL, URL);
@@ -161,7 +163,7 @@ test_cleanup:
      cleanup'ed yet, in this case we have to cleanup them or otherwise these
      will be leaked, let's use undocumented cleanup sequence - type UB */
 
-  if(res)
+  if(res != CURLE_OK)
     for(i = 0; i < NUM_HANDLES; i++)
       curl_easy_cleanup(curl[i]);
 

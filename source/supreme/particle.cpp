@@ -1,13 +1,16 @@
 #include "winpch.h"
 #include "particle.h"
+#include <algorithm>
+#include <memory>
 #include "bullet.h"
 #include "monster.h"
 #include "progress.h"
 #include "shop.h"
 
-Particle **particleList;
-int		maxParticles;
-static int snowCount=0;
+static std::unique_ptr<Particle[]> particleList;
+static int maxParticles;
+
+static int snowCount = 0;
 
 Particle::Particle(void)
 {
@@ -121,6 +124,12 @@ void Particle::GoRandom(byte type,int x,int y,int z,byte force)
 	this->life=Random(force)+20;
 	if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
 		size=20;
+
+	// Might be rendered before being updated, so don't leave color uninitialized.
+	if (type == PART_WATER)
+	{
+		color = 96 + std::clamp(life, 8, 31);
+	}
 }
 
 void Particle::GoRandomColor(byte color,int x,int y,int z,byte force)
@@ -389,23 +398,14 @@ bool Particle::Alive(void)
 
 void InitParticles(int max)
 {
-	int i;
-
-	maxParticles=max;
-
-	particleList=(Particle **)malloc(sizeof(Particle *)*maxParticles);
-	for(i=0;i<maxParticles;i++)
-		particleList[i]=new Particle();
+	particleList = std::make_unique<Particle[]>(max);
+	maxParticles = max;
 }
 
 void ExitParticles(void)
 {
-	int i;
-
-	for(i=0;i<maxParticles;i++)
-		delete particleList[i];
-
-	free(particleList);
+	maxParticles = 0;
+	particleList.reset();
 }
 
 void UpdateParticles(Map *map)
@@ -414,20 +414,21 @@ void UpdateParticles(Map *map)
 
 	snowCount=0;
 	for(i=0;i<maxParticles;i++)
-		particleList[i]->Update(map);
+		particleList[i].Update(map);
 }
 
 void RenderParticle(int x,int y,byte *scrn,byte color,byte size)
 {
 	byte c1,c2;
+	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
 
-	if(x<0 || x>=SCRWID || y<0 || y>=SCRHEI)
+	if(x<0 || x>=wid || y<0 || y>=hei)
 		return;
 
 	switch(size)
 	{
 		case 2:	// big particle
-			if(x<2 || x>=SCRWID-2 || y<2 || y>=SCRHEI-2)
+			if(x<2 || x>=wid-2 || y<2 || y>=hei-2)
 				return;
 
 			if((color&31)>1)
@@ -439,87 +440,91 @@ void RenderParticle(int x,int y,byte *scrn,byte color,byte size)
 			else
 				c2=c1;
 
-			scrn+=(x+(y-2)*SCRWID);
+			scrn+=(x+(y-2)*wid);
 			*scrn=c2;
-			scrn+=SCRWID-1;
+			scrn+=wid-1;
 			*scrn++=c1;
 			*scrn++=color;
 			*scrn=c1;
-			scrn+=SCRWID-3;
+			scrn+=wid-3;
 			*scrn++=c2;
 			*scrn++=c1;
 			*scrn++=color;
 			*scrn++=c1;
 			*scrn=c2;
-			scrn+=SCRWID-3;
+			scrn+=wid-3;
 			*scrn++=c1;
 			*scrn++=color;
 			*scrn=c1;
-			*(scrn+SCRWID-1)=c2;
+			*(scrn+wid-1)=c2;
 			break;
 		case 1:	// normal particle
-			if(x<1 || x>SCRWID-2 || y<1 || y>SCRHEI-2)
+			if(x<1 || x>wid-2 || y<1 || y>hei-2)
 				return;
 			if(color&31)
 				c1=color-1;	// only do this if subtracting 1 keeps it in the same color group
 			else
 				c1=color;
-			scrn+=(x+(y-1)*SCRWID);
+			scrn+=(x+(y-1)*wid);
 			*scrn=c1;
-			scrn+=SCRWID-1;
+			scrn+=wid-1;
 			*scrn++=c1;
 			*scrn++=color;
 			*scrn=c1;
-			scrn+=SCRWID-1;
+			scrn+=wid-1;
 			*scrn=c1;
 			break;
 		case 0:	// tiny particle (1 pixel)
-			scrn[x+y*SCRWID]=color;
+			scrn[x+y*wid]=color;
 			break;
 	}
 }
 
 void HLine(int x,int x2,int y,byte c,byte *scrn)
 {
+	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
+
 	if(x<0)
 		x=0;
-	if(x2>=SCRWID)
-		x2=SCRWID-1;
+	if(x2>=wid)
+		x2=wid-1;
 	if(x2<0)
 		return;
-	if(x>=SCRWID)
+	if(x>=wid)
 		return;
 	if(y<0)
 		return;
-	if(y>=SCRHEI)
+	if(y>=hei)
 		return;
 
-	scrn+=(x+y*SCRWID);
+	scrn+=(x+y*wid);
 	memset(scrn,c,x2-x+1);
 }
 
 void HLine2(int x,int x2,int y,byte c,byte *scrn)
 {
+	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
+
 	int i;
 	byte b,b3;
 	byte c1,c2;
 
 	if(x<0)
 		x=0;
-	if(x2>=SCRWID)
-		x2=SCRWID-1;
+	if(x2>=wid)
+		x2=wid-1;
 	if(x2<0)
 		return;
-	if(x>=SCRWID)
+	if(x>=wid)
 		return;
 	if(y<0)
 		return;
-	if(y>=SCRHEI)
+	if(y>=hei)
 		return;
 
 	c1=(c&31);
 	c2=(c&(~31));
-	scrn+=(x+y*SCRWID);
+	scrn+=(x+y*wid);
 	for(i=x;i<=x2;i++)
 	{
 		b=*scrn;
@@ -533,6 +538,8 @@ void HLine2(int x,int x2,int y,byte c,byte *scrn)
 
 void HLine3(int x,int x2,int y,byte c,byte less,byte *scrn)
 {
+	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
+
 	int i;
 	byte b,b3;
 	byte colRange;
@@ -543,15 +550,15 @@ void HLine3(int x,int x2,int y,byte c,byte less,byte *scrn)
 
 	if(x<0)
 		x=0;
-	if(x2>=SCRWID)
-		x2=SCRWID-1;
+	if(x2>=wid)
+		x2=wid-1;
 	if(x2<0)
 		return;
-	if(x>=SCRWID)
+	if(x>=wid)
 		return;
 	if(y<0)
 		return;
-	if(y>=SCRHEI)
+	if(y>=hei)
 		return;
 
 	if((c&31)<less)
@@ -567,7 +574,7 @@ void HLine3(int x,int x2,int y,byte c,byte less,byte *scrn)
 	dCol=(centerCol/((x2-x)/2));
 
 	colRange=(c&(~31));
-	scrn+=(x+y*SCRWID);
+	scrn+=(x+y*wid);
 	for(i=x;i<=x2;i++)
 	{
 
@@ -642,26 +649,28 @@ void RenderGlowCircleParticle(int x,int y,int radius,byte c,byte *scrn)
 	}
 }
 
-// this was going to be local to renderlightningparticle, but that would've seriously
-// chomped up the stack, since that function's recursive.
-byte ctab[]={8,3,2,3,8,
-			 3,2,1,2,3,
-			 2,1,0,1,2,
-			 3,2,1,2,3,
-			 8,3,2,3,8};
-
 void RenderLightningParticle(int x1,int y1,int x2,int y2,int range,byte bright,byte *scrn)
 {
+	static const byte ctab[]={
+		8,3,2,3,8,
+		3,2,1,2,3,
+		2,1,0,1,2,
+		3,2,1,2,3,
+		8,3,2,3,8,
+	};
+
+	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
+
 	int midx,midy;
-	byte *ctptr;
+	const byte *ctptr;
 	byte b,brt;
 
 	// base case: draw the (x1,y1) pixel
 	if((x1-x2<2 && x1-x2>-2) && (y1-y2<2 && y1-y2>-2))
 	{
-		if(x1>=0 && x1<SCRWID-5 && y1>=0 && y1<SCRHEI-5)
+		if(x1>=0 && x1<wid-5 && y1>=0 && y1<hei-5)
 		{
-			scrn+=(x1+y1*SCRWID);
+			scrn+=(x1+y1*wid);
 			ctptr=&ctab[0];
 			for(midy=y1;midy<y1+5;midy++)
 			{
@@ -676,7 +685,7 @@ void RenderLightningParticle(int x1,int y1,int x2,int y2,int range,byte bright,b
 					ctptr++;
 					scrn++;
 				}
-				scrn+=SCRWID-5;
+				scrn+=wid-5;
 			}
 		}
 	}
@@ -705,40 +714,40 @@ void RenderParticles(void)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(particleList[i]->Alive())
+		if(particleList[i].Alive())
 		{
-			if(particleList[i]->type==PART_SMOKE)
-				RenderSmoke(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-							 particleList[i]->z>>FIXSHIFT,(char)(particleList[i]->color),
-							 particleList[i]->size);
-			else if(particleList[i]->type==PART_BUBBLE)
-				RenderBubble(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-							 particleList[i]->z>>FIXSHIFT,(char)(particleList[i]->color),
-							 particleList[i]->size);
-			else if(particleList[i]->type==PART_MINDCONTROL)
-				RenderMindControl(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-							 particleList[i]->z>>FIXSHIFT,(char)(particleList[i]->color),
-							 particleList[i]->size);
-			else if(particleList[i]->type==PART_BOOM)
-				RenderBoom(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-							 particleList[i]->z>>FIXSHIFT,(char)(particleList[i]->color),
-							 particleList[i]->size);
-			else if(particleList[i]->type==PART_LIGHTNING)
-				LightningDraw(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-								particleList[i]->dx>>FIXSHIFT,particleList[i]->dy>>FIXSHIFT,
-								particleList[i]->color,(char)particleList[i]->size);
-			else if(particleList[i]->type==PART_STINKY)
-				RenderStinky(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-							 particleList[i]->z>>FIXSHIFT,(char)(particleList[i]->color),
-							 particleList[i]->size);
-			else if(particleList[i]->type==PART_COUNTESS)
-				SprDraw(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-						particleList[i]->z>>FIXSHIFT,
-						255,particleList[i]->life*4-8,
+			if(particleList[i].type==PART_SMOKE)
+				RenderSmoke(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+							 particleList[i].z>>FIXSHIFT,(char)(particleList[i].color),
+							 particleList[i].size);
+			else if(particleList[i].type==PART_BUBBLE)
+				RenderBubble(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+							 particleList[i].z>>FIXSHIFT,(char)(particleList[i].color),
+							 particleList[i].size);
+			else if(particleList[i].type==PART_MINDCONTROL)
+				RenderMindControl(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+							 particleList[i].z>>FIXSHIFT,(char)(particleList[i].color),
+							 particleList[i].size);
+			else if(particleList[i].type==PART_BOOM)
+				RenderBoom(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+							 particleList[i].z>>FIXSHIFT,(char)(particleList[i].color),
+							 particleList[i].size);
+			else if(particleList[i].type==PART_LIGHTNING)
+				LightningDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+								particleList[i].dx>>FIXSHIFT,particleList[i].dy>>FIXSHIFT,
+								particleList[i].color,(char)particleList[i].size);
+			else if(particleList[i].type==PART_STINKY)
+				RenderStinky(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+							 particleList[i].z>>FIXSHIFT,(char)(particleList[i].color),
+							 particleList[i].size);
+			else if(particleList[i].type==PART_COUNTESS)
+				SprDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+						particleList[i].z>>FIXSHIFT,
+						255,particleList[i].life*4-8,
 						GetMonsterSprite(MONS_COUNTESS,ANIM_IDLE,0,0),DISPLAY_DRAWME|DISPLAY_GLOW);
 			else
-				ParticleDraw(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-							 particleList[i]->z>>FIXSHIFT,particleList[i]->color,particleList[i]->size,
+				ParticleDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+							 particleList[i].z>>FIXSHIFT,particleList[i].color,particleList[i].size,
 							 DISPLAY_DRAWME|DISPLAY_PARTICLE);
 		}
 	}
@@ -750,18 +759,18 @@ int BlowSmoke(int x,int y,int z,int dz)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->x=x;
-			particleList[i]->y=y;
-			particleList[i]->z=z;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=dz;
-			particleList[i]->life=6*4-Random(8);
-			particleList[i]->size=6;
-			particleList[i]->color=64;
-			particleList[i]->type=PART_SMOKE;
+			particleList[i].x=x;
+			particleList[i].y=y;
+			particleList[i].z=z;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=dz;
+			particleList[i].life=6*4-Random(8);
+			particleList[i].size=6;
+			particleList[i].color=64;
+			particleList[i].type=PART_SMOKE;
 			return i;
 		}
 	}
@@ -777,8 +786,8 @@ void SmokeTile(int x,int y)
 		j=BlowSmoke((x*TILE_WIDTH+Random(TILE_WIDTH))*FIXAMT,(y*TILE_HEIGHT+Random(TILE_HEIGHT))*FIXAMT,0,FIXAMT/8);
 		if(j!=-1)
 		{
-			particleList[j]->dx=-FIXAMT*2+Random(FIXAMT*4+1);
-			particleList[j]->dy=-FIXAMT*2+Random(FIXAMT*4+1);
+			particleList[j].dx=-FIXAMT*2+Random(FIXAMT*4+1);
+			particleList[j].dy=-FIXAMT*2+Random(FIXAMT*4+1);
 		}
 	}
 }
@@ -789,18 +798,18 @@ void BlowBubble(int x,int y,int z,int dz)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->x=x;
-			particleList[i]->y=y;
-			particleList[i]->z=z;
-			particleList[i]->dx=-FIXAMT+Random(FIXAMT*2);
-			particleList[i]->dy=-FIXAMT+Random(FIXAMT*2);
-			particleList[i]->dz=dz;
-			particleList[i]->life=3*8+7-Random(8);
-			particleList[i]->size=0;
-			particleList[i]->color=64;
-			particleList[i]->type=PART_BUBBLE;
+			particleList[i].x=x;
+			particleList[i].y=y;
+			particleList[i].z=z;
+			particleList[i].dx=-FIXAMT+Random(FIXAMT*2);
+			particleList[i].dy=-FIXAMT+Random(FIXAMT*2);
+			particleList[i].dz=dz;
+			particleList[i].life=3*8+7-Random(8);
+			particleList[i].size=0;
+			particleList[i].color=64;
+			particleList[i].type=PART_BUBBLE;
 			break;
 		}
 	}
@@ -812,18 +821,18 @@ void MindControlSparks(int x,int y,int z,int dz)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->x=x;
-			particleList[i]->y=y;
-			particleList[i]->z=z;
-			particleList[i]->dx=-FIXAMT*3+Random(FIXAMT*6);
-			particleList[i]->dy=-FIXAMT*3+Random(FIXAMT*6);
-			particleList[i]->dz=dz;
-			particleList[i]->life=20+Random(20);
-			particleList[i]->size=0;
-			particleList[i]->color=64;
-			particleList[i]->type=PART_MINDCONTROL;
+			particleList[i].x=x;
+			particleList[i].y=y;
+			particleList[i].z=z;
+			particleList[i].dx=-FIXAMT*3+Random(FIXAMT*6);
+			particleList[i].dy=-FIXAMT*3+Random(FIXAMT*6);
+			particleList[i].dz=dz;
+			particleList[i].life=20+Random(20);
+			particleList[i].size=0;
+			particleList[i].color=64;
+			particleList[i].type=PART_MINDCONTROL;
 			break;
 		}
 	}
@@ -833,18 +842,18 @@ void StinkySteam(int x,int y,int z,int dz)
 	int i;
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->x=x;
-			particleList[i]->y=y;
-			particleList[i]->z=z;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=dz;
-			particleList[i]->life=6*4-Random(8);
-			particleList[i]->size=0;
-			particleList[i]->color=64;
-			particleList[i]->type=PART_STINKY;
+			particleList[i].x=x;
+			particleList[i].y=y;
+			particleList[i].z=z;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=dz;
+			particleList[i].life=6*4-Random(8);
+			particleList[i].size=0;
+			particleList[i].color=64;
+			particleList[i].type=PART_STINKY;
 			break;
 		}
 	}
@@ -855,18 +864,18 @@ void CountessGlow(int x,int y)
 	int i;
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->x=x;
-			particleList[i]->y=y;
-			particleList[i]->z=0;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=0;
-			particleList[i]->life=4;
-			particleList[i]->size=0;
-			particleList[i]->color=64;
-			particleList[i]->type=PART_COUNTESS;
+			particleList[i].x=x;
+			particleList[i].y=y;
+			particleList[i].z=0;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=0;
+			particleList[i].life=4;
+			particleList[i].size=0;
+			particleList[i].color=64;
+			particleList[i].type=PART_COUNTESS;
 			break;
 		}
 	}
@@ -878,19 +887,19 @@ void BlowUpGuy(int x,int y,int x2,int y2,int z,byte amt)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->x=(x+Random(x2-x))<<FIXSHIFT;
-			particleList[i]->y=(y+Random(y2-y))<<FIXSHIFT;
-			particleList[i]->z=z;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=0;
-			particleList[i]->life=7;
-			particleList[i]->size=0;
-			particleList[i]->color=64;
-			particleList[i]->type=PART_BOOM;
-			MakeSound(SND_BOMBBOOM,particleList[i]->x,particleList[i]->y,SND_CUTOFF,1800);
+			particleList[i].x=(x+Random(x2-x))<<FIXSHIFT;
+			particleList[i].y=(y+Random(y2-y))<<FIXSHIFT;
+			particleList[i].z=z;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=0;
+			particleList[i].life=7;
+			particleList[i].size=0;
+			particleList[i].color=64;
+			particleList[i].type=PART_BOOM;
+			MakeSound(SND_BOMBBOOM,particleList[i].x,particleList[i].y,SND_CUTOFF,1800);
 			if(!(--amt))
 				break;
 		}
@@ -903,14 +912,14 @@ void GlassShatter(int x,int y,int x2,int y2,int z,byte amt)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->x=(x+Random(x2-x))<<FIXSHIFT;
-			particleList[i]->y=(y+Random(y2-y))<<FIXSHIFT;
-			particleList[i]->z=z;
-			particleList[i]->GoRandom(PART_GLASS,(x+Random(x2-x))<<FIXSHIFT,(y+Random(y2-y))<<FIXSHIFT,
+			particleList[i].x=(x+Random(x2-x))<<FIXSHIFT;
+			particleList[i].y=(y+Random(y2-y))<<FIXSHIFT;
+			particleList[i].z=z;
+			particleList[i].GoRandom(PART_GLASS,(x+Random(x2-x))<<FIXSHIFT,(y+Random(y2-y))<<FIXSHIFT,
 					Random(10*FIXAMT),20);
-			particleList[i]->color=Random(8)*32+16;
+			particleList[i].color=Random(8)*32+16;
 			if(!(--amt))
 				break;
 		}
@@ -936,9 +945,9 @@ void SpurtParticles(byte type,bool left,int x,int y,int z,byte angle,byte force)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->SpurtGo(type,x,y,z,angle,force);
+			particleList[i].SpurtGo(type,x,y,z,angle,force);
 			if(!--amt)
 				break;
 		}
@@ -958,9 +967,9 @@ void ExplodeParticles(byte type,int x,int y,int z,byte force)
 	}
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->GoRandom(type,x,y,z,force);
+			particleList[i].GoRandom(type,x,y,z,force);
 			if(!--amt)
 				break;
 		}
@@ -982,9 +991,9 @@ void ExplodeParticles2(byte type,int x,int y,int z,byte num,byte force)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->GoRandom(type,x,y,z,force);
+			particleList[i].GoRandom(type,x,y,z,force);
 			if(!--num)
 				break;
 		}
@@ -1006,9 +1015,9 @@ void ExplodeParticlesColor(byte color,int x,int y,int z,byte num,byte force)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->GoRandomColor(color,x,y,z,force);
+			particleList[i].GoRandomColor(color,x,y,z,force);
 			if(!--num)
 				break;
 		}
@@ -1034,9 +1043,9 @@ void ColorRing(byte color,int x,int y,int z,byte num,byte force)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->GoExact(PART_COLOR,x,y,z,a,force);
+			particleList[i].GoExact(PART_COLOR,x,y,z,a,force);
 			a+=aPlus;
 			if(!--num)
 				break;
@@ -1063,18 +1072,18 @@ void HealRing(byte color,int x,int y,int z,byte num,byte force)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->GoExact(PART_FX,x,y,z,a,force);
-			particleList[i]->x+=particleList[i]->dx*20;
-			particleList[i]->y+=particleList[i]->dy*20;
-			particleList[i]->dx+=-(force/4)+Random(force/2+1);
-			particleList[i]->dy+=-(force/4)+Random(force/2+1);
-			particleList[i]->dz=FIXAMT*5-Random(FIXAMT*3);
-			particleList[i]->color=color*32+16;
-			particleList[i]->tx=x;
-			particleList[i]->life=50;
-			particleList[i]->ty=y;
+			particleList[i].GoExact(PART_FX,x,y,z,a,force);
+			particleList[i].x+=particleList[i].dx*20;
+			particleList[i].y+=particleList[i].dy*20;
+			particleList[i].dx+=-(force/4)+Random(force/2+1);
+			particleList[i].dy+=-(force/4)+Random(force/2+1);
+			particleList[i].dz=FIXAMT*5-Random(FIXAMT*3);
+			particleList[i].color=color*32+16;
+			particleList[i].tx=x;
+			particleList[i].life=50;
+			particleList[i].ty=y;
 			a+=aPlus;
 			if(!--num)
 				break;
@@ -1101,16 +1110,16 @@ void TeamChangeRing(byte color,int x,int y,int z,byte num,byte force)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->GoExact(PART_FX,x,y,z,a,force);
-			particleList[i]->x+=particleList[i]->dx*5;
-			particleList[i]->y+=particleList[i]->dy*5;
-			particleList[i]->dz=0;
-			particleList[i]->color=color*32+16;
-			particleList[i]->tx=x;
-			particleList[i]->life=40;
-			particleList[i]->ty=y;
+			particleList[i].GoExact(PART_FX,x,y,z,a,force);
+			particleList[i].x+=particleList[i].dx*5;
+			particleList[i].y+=particleList[i].dy*5;
+			particleList[i].dz=0;
+			particleList[i].color=color*32+16;
+			particleList[i].tx=x;
+			particleList[i].life=40;
+			particleList[i].ty=y;
 			a+=aPlus;
 			if(!--num)
 				break;
@@ -1124,18 +1133,18 @@ void ColorDrop(byte color,int x,int y,int z)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->type=PART_LUNA;
-			particleList[i]->color=color*32+16;
-			particleList[i]->size=50;
-			particleList[i]->life=15;
-			particleList[i]->dx=-64+Random(129);
-			particleList[i]->dy=-64+Random(129);
-			particleList[i]->dz=-64+Random(129);
-			particleList[i]->x=x;
-			particleList[i]->y=y;
-			particleList[i]->z=z;
+			particleList[i].type=PART_LUNA;
+			particleList[i].color=color*32+16;
+			particleList[i].size=50;
+			particleList[i].life=15;
+			particleList[i].dx=-64+Random(129);
+			particleList[i].dy=-64+Random(129);
+			particleList[i].dz=-64+Random(129);
+			particleList[i].x=x;
+			particleList[i].y=y;
+			particleList[i].z=z;
 			break;
 		}
 	}
@@ -1143,6 +1152,8 @@ void ColorDrop(byte color,int x,int y,int z)
 
 void MakeItSnow(Map *map)
 {
+	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
+
 	int i;
 	int cx,cy;
 
@@ -1155,19 +1166,18 @@ void MakeItSnow(Map *map)
 	cy-=240;
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-
-			particleList[i]->x=(Random(SCRWID)+cx)<<FIXSHIFT;
-			particleList[i]->y=(Random(SCRHEI)+cy)<<FIXSHIFT;
-			particleList[i]->z=(300+Random(300))<<FIXSHIFT;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=0;
-			particleList[i]->size=2;
-			particleList[i]->life=50+Random(50);
-			particleList[i]->type=PART_SNOW;
-			particleList[i]->color=31;
+			particleList[i].x=(Random(wid)+cx)<<FIXSHIFT;
+			particleList[i].y=(Random(hei)+cy)<<FIXSHIFT;
+			particleList[i].z=(300+Random(300))<<FIXSHIFT;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=0;
+			particleList[i].size=2;
+			particleList[i].life=50+Random(50);
+			particleList[i].type=PART_SNOW;
+			particleList[i].color=31;
 			break;
 		}
 	}
@@ -1175,6 +1185,8 @@ void MakeItSnow(Map *map)
 
 void MakeItRain(Map *map)
 {
+	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
+
 	int i;
 	int cx,cy;
 
@@ -1187,19 +1199,18 @@ void MakeItRain(Map *map)
 	cy-=240;
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-
-			particleList[i]->x=(Random(SCRWID)+cx)<<FIXSHIFT;
-			particleList[i]->y=(Random(SCRHEI)+cy)<<FIXSHIFT;
-			particleList[i]->z=(300+Random(300))<<FIXSHIFT;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=-FIXAMT*2;
-			particleList[i]->size=2;
-			particleList[i]->life=50+Random(50);
-			particleList[i]->type=PART_RAIN;
-			particleList[i]->color=3*32+16;
+			particleList[i].x=(Random(wid)+cx)<<FIXSHIFT;
+			particleList[i].y=(Random(hei)+cy)<<FIXSHIFT;
+			particleList[i].z=(300+Random(300))<<FIXSHIFT;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=-FIXAMT*2;
+			particleList[i].size=2;
+			particleList[i].life=50+Random(50);
+			particleList[i].type=PART_RAIN;
+			particleList[i].color=3*32+16;
 			break;
 		}
 	}
@@ -1211,18 +1222,18 @@ void SpecialSnow(int x,int y)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
 
-			particleList[i]->x=x;
-			particleList[i]->y=y;
-			particleList[i]->z=(10+Random(20))<<FIXSHIFT;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=0;
-			particleList[i]->size=2;
-			particleList[i]->life=20+Random(30);
-			particleList[i]->type=PART_SNOW;
+			particleList[i].x=x;
+			particleList[i].y=y;
+			particleList[i].z=(10+Random(20))<<FIXSHIFT;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=0;
+			particleList[i].size=2;
+			particleList[i].life=20+Random(30);
+			particleList[i].type=PART_SNOW;
 			break;
 		}
 	}
@@ -1234,9 +1245,9 @@ void LightningBolt(int x,int y,int x2,int y2)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->GoLightning(x,y,x2,y2);
+			particleList[i].GoLightning(x,y,x2,y2);
 			break;
 		}
 	}
@@ -1253,27 +1264,27 @@ void WeathermanWeather(int x,int y)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
 			a=Random(256);
 
-			particleList[i]->x=x+Cosine(a)*Random(FIXAMT*60)/FIXAMT;
-			particleList[i]->y=y+Sine(a)*Random(FIXAMT*50)/FIXAMT;
-			particleList[i]->z=(300+Random(300))<<FIXSHIFT;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=0;
-			particleList[i]->size=2;
-			particleList[i]->life=50+Random(50);
+			particleList[i].x=x+Cosine(a)*Random(FIXAMT*60)/FIXAMT;
+			particleList[i].y=y+Sine(a)*Random(FIXAMT*50)/FIXAMT;
+			particleList[i].z=(300+Random(300))<<FIXSHIFT;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=0;
+			particleList[i].size=2;
+			particleList[i].life=50+Random(50);
 			if(Random(2)==0)
 			{
-				particleList[i]->type=PART_SNOW;
-				particleList[i]->color=31;
+				particleList[i].type=PART_SNOW;
+				particleList[i].color=31;
 			}
 			else
 			{
-				particleList[i]->type=PART_RAIN;
-				particleList[i]->color=3*32+16;
+				particleList[i].type=PART_RAIN;
+				particleList[i].color=3*32+16;
 			}
 			break;
 		}
@@ -1291,20 +1302,20 @@ void JackFrostWeather(int x,int y)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
 			a=Random(256);
 
-			particleList[i]->x=x+Cosine(a)*Random(FIXAMT*60)/FIXAMT;
-			particleList[i]->y=y+Sine(a)*Random(FIXAMT*50)/FIXAMT;
-			particleList[i]->z=(10+Random(100))<<FIXSHIFT;
-			particleList[i]->dx=-FIXAMT+Random(FIXAMT*2+1);
-			particleList[i]->dy=-FIXAMT+Random(FIXAMT*2+1);
-			particleList[i]->dz=0;
-			particleList[i]->size=2;
-			particleList[i]->life=50+Random(50);
-			particleList[i]->type=PART_SNOW;
-			particleList[i]->color=31;
+			particleList[i].x=x+Cosine(a)*Random(FIXAMT*60)/FIXAMT;
+			particleList[i].y=y+Sine(a)*Random(FIXAMT*50)/FIXAMT;
+			particleList[i].z=(10+Random(100))<<FIXSHIFT;
+			particleList[i].dx=-FIXAMT+Random(FIXAMT*2+1);
+			particleList[i].dy=-FIXAMT+Random(FIXAMT*2+1);
+			particleList[i].dz=0;
+			particleList[i].size=2;
+			particleList[i].life=50+Random(50);
+			particleList[i].type=PART_SNOW;
+			particleList[i].color=31;
 			break;
 		}
 	}
@@ -1316,18 +1327,18 @@ void TrackParticle(byte color,int x,int y,int tx,int ty)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->x=x;
-			particleList[i]->y=y;
-			particleList[i]->z=10*FIXAMT;
-			particleList[i]->dx=(tx-x)/30;
-			particleList[i]->dy=(ty-y)/30;
-			particleList[i]->dz=0;
-			particleList[i]->size=10;
-			particleList[i]->life=30;
-			particleList[i]->type=PART_RADAR;
-			particleList[i]->color=color*32+16;
+			particleList[i].x=x;
+			particleList[i].y=y;
+			particleList[i].z=10*FIXAMT;
+			particleList[i].dx=(tx-x)/30;
+			particleList[i].dy=(ty-y)/30;
+			particleList[i].dz=0;
+			particleList[i].size=10;
+			particleList[i].life=30;
+			particleList[i].type=PART_RADAR;
+			particleList[i].color=color*32+16;
 			break;
 		}
 	}
@@ -1337,7 +1348,7 @@ int CountParticles()
 {
 	int i, n = 0;
 	for (i = 0; i < maxParticles; ++i)
-		if (particleList[i]->Alive())
+		if (particleList[i].Alive())
 			++n;
 	return n;
 }

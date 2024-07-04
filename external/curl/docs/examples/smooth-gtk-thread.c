@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 /* <DESC>
@@ -111,8 +113,8 @@ gboolean pulse_bar(gpointer data)
   gtk_progress_bar_pulse(GTK_PROGRESS_BAR (data));
   gdk_threads_leave();
 
-  /* Return true so the function will be called again;
-   * returning false removes this timeout function.
+  /* Return true so the function is called again; returning false removes this
+   * timeout function.
    */
   return TRUE;
 }

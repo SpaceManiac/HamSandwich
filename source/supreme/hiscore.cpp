@@ -7,6 +7,7 @@
 #include "game.h"
 #include "config.h"
 #include "appdata.h"
+#include "steam.h"
 
 #if __linux__ || __EMSCRIPTEN__
 #include <unistd.h>
@@ -14,7 +15,7 @@
 
 // ---------------- Encrypting scores into strings!
 
-static char ctab[]=
+static const char ctab[]=
 	"0123456789"	// 0-9
 	"abcdefghij"	// 10-19
 	"klmnopqrst"	// 20-29
@@ -283,9 +284,9 @@ void AddToSum(byte b)
 {
 	byte cipher;
 
-	cipher=(b^(r>>8));
-	r=(cipher+r)*c1+c2;
-	sum+=cipher;
+	cipher = (b ^ (r >> 8));
+	r = (word)((unsigned int)(cipher + r) * (unsigned int)c1 + (unsigned int)c2);
+	sum += cipher;
 }
 
 void AddToSum(word w)
@@ -294,7 +295,7 @@ void AddToSum(word w)
 	AddToSum((byte)(w&255));
 }
 
-void AddToSum(int i)
+void AddToSum(int32_t i)
 {
 	AddToSum((byte)((i>>24)&255));
 	AddToSum((byte)((i>>16)&255));
@@ -870,12 +871,13 @@ byte TryHighScore(void)
 	else
 		destructBonus=0.5f+((float)player.enemiesSlain/(float)player.totalEnemies);
 
-	if(profile.difficulty==0)
-		diffBonus=0.75f;
-	else if(profile.difficulty==1)
-		diffBonus=1.0f;
-	else
-		diffBonus=1.25f;
+	if (profile.difficulty == DIFFICULTY_NORMAL)
+		diffBonus = 0.75f;
+	else if (profile.difficulty == DIFFICULTY_HARD)
+		diffBonus = 1.0f;
+	else if (profile.difficulty == DIFFICULTY_LUNATIC)
+		diffBonus = 1.25f;
+	static_assert(MAX_DIFFICULTY == 3, "Must handle new difficulty here");
 
 	trueScore=player.score;
 	trueScore+=player.bestCombo*10;

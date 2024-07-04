@@ -28,7 +28,6 @@ MGLDraw *gamemgl;
 Map		*curMap;
 byte gameMode=GAMEMODE_PLAY;
 byte	mapToGoTo;
-byte	worldNum;
 byte    mapNum;
 byte	curMapFlags;
 world_t curWorld;
@@ -82,6 +81,7 @@ byte GetCurSong(void)
 byte InitLevel(byte map)
 {
 	JamulSoundPurge();	// each level, that should be good
+	KillSong();
 
 	if(opt.cheats[CH_VINTAGE])
 		GreyPalette(gamemgl);
@@ -137,7 +137,7 @@ byte InitLevel(byte map)
 		if(msgFromOtherModules!=MSG_NEWFEATURE)
 			msgFromOtherModules=0;
 
-		InitGuys(MAX_MAPMONS);
+		InitGuys(MAX_MAPMONS * 2);  // Leave room for Farley and summons
 		InitBullets();
 		InitPlayer(INIT_LEVEL,0,map);
 		InitMessage();
@@ -314,13 +314,16 @@ byte LunaticRun(int *lastTime)
 		{
 			switch(UpdatePauseMenu(gamemgl))
 			{
-				case 0:
+				case PauseMenuResult::Continue:
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
+					// try to prevent losing your gems if using controller (B) instead of keyboard (Esc)
+					player.reload = 20;
+					player.wpnReload = 20;
 					break;
-				case 2:
+				case PauseMenuResult::Paused:
 					break;
-				case 3:
+				case PauseMenuResult::GiveUp:
 					if(mapNum)
 						mapToGoTo=0;
 					else
@@ -328,13 +331,18 @@ byte LunaticRun(int *lastTime)
 					lastKey=0;
 					return LEVEL_ABORT;
 					break;
-				case 4:
+				case PauseMenuResult::Quit:
 					mapToGoTo=255;
 					lastKey=0;
 					return WORLD_QUITGAME;	// dump out altogether
 					break;
+				case PauseMenuResult::WarpToLooniton:
+					mapToGoTo = 0;
+					lastKey = 0;
+					return LEVEL_ABORT;
+					break;
 			}
-			worldNum=player.worldNum;
+
 		}
 		else if(gameMode==GAMEMODE_PIC)	// gamemode_pic
 		{
@@ -375,7 +383,7 @@ byte LunaticRun(int *lastTime)
 		else if(msgFromOtherModules==MSG_RESET)
 		{
 			if(player.worldNum==WORLD_SURVIVAL || player.worldNum==WORLD_SLINGSHOT ||
-				((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX) && (player.cheatsOn&PC_HARDCORE)) ||
+				((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX|| player.worldNum==WORLD_RANDOMIZER) && (player.cheatsOn&PC_HARDCORE)) ||
 				player.worldNum==WORLD_LOONYBALL || player.worldNum==WORLD_BOSSBASH)
 				NewBigMessage("You were defeated!",30);
 			else if(player.worldNum!=WORLD_BOWLING)
@@ -486,6 +494,15 @@ void HandleKeyPresses(void)
 //#endif
 }
 
+void PauseGame()
+{
+	if (gameMode == GAMEMODE_PLAY)
+	{
+		InitPauseMenu();
+		gameMode = GAMEMODE_MENU;
+	}
+}
+
 TASK(byte) PlayALevel(byte map)
 {
 	int lastTime=1;
@@ -510,6 +527,32 @@ TASK(byte) PlayALevel(byte map)
 
 	PrepGuys(curMap);
 
+	SetAreaName(&curWorld);
+	if ((player.worldNum == WORLD_NORMAL || player.worldNum == WORLD_REMIX) && (player.cheatsOn & PC_HARDCORE) && player.lastSave == 255)
+	{
+		BumpSaveGem();
+	}
+
+	// If the player walked through walls to leave the map before the portal
+	// animation finished playing, put the portal now.
+	if (!player.var[VAR_PORTALOPEN])
+	{
+		int numVampStands = 0;
+		for (int i = VAR_VAMPSTAND; i < VAR_VAMPSTAND + 8; ++i)
+		{
+			if (player.var[i])
+			{
+				++numVampStands;
+			}
+		}
+		if (numVampStands == 8)
+		{
+			player.var[VAR_PORTALOPEN]=1;
+			PlayerSetVar(VAR_QUESTDONE+QUEST_BUSTS,1);
+			SetNoSaving(false);
+		}
+	}
+
 	tl=0;
 	while(exitcode==LEVEL_PLAYING)
 	{
@@ -520,10 +563,9 @@ TASK(byte) PlayALevel(byte map)
 		LunaticDraw();
 		AWAIT gamemgl->Flip();
 
-		if(lastKey==27 && gameMode==GAMEMODE_PLAY)
+		if((lastKey==27 || (GetGamepadButtons()&(1<<SDL_CONTROLLER_BUTTON_START))) && gameMode==GAMEMODE_PLAY)
 		{
-			InitPauseMenu();
-			gameMode=GAMEMODE_MENU;
+			PauseGame();
 		}
 
 		if(!gamemgl->Process())
@@ -541,15 +583,14 @@ TASK(byte) PlayALevel(byte map)
 	CO_RETURN exitcode;
 }
 
-TASK(byte) LunaticWorld(byte world,const char *worldName)
+TASK(byte) LunaticWorld(const char *worldName)
 {
 	byte result;
 
 	if(!LoadWorld(&curWorld,worldName))
 		CO_RETURN WORLD_ABORT;
 
-	worldNum=world;
-	InitWorld(&curWorld,worldNum);
+	InitWorld(&curWorld,player.worldNum);
 	if(player.worldNum==WORLD_SURVIVAL)
 		InitSurvival();
 
@@ -604,7 +645,7 @@ TASK(byte) LunaticWorld(byte world,const char *worldName)
 			else
 			{
 				mapNum=0;
-				InitPlayer(INIT_GAME,0,0);
+				InitPlayer(INIT_GAME,player.worldNum,0);
 			}
 		}
 		else if(result==LEVEL_LOADING)
@@ -619,13 +660,14 @@ TASK(byte) LunaticWorld(byte world,const char *worldName)
 		}
 		else if(result==LEVEL_WIN)
 		{
-			if((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX))
+			if((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
 			{
 				// won the game!  Go back to Luniton.
 				AWAIT ShowVictoryAnim(0);
 				AWAIT VictoryText(gamemgl);
 				AWAIT Credits(gamemgl,0);
 				JamulSoundPurge();
+				KillSong();
 				AWAIT EndGameTally(gamemgl);
 				mapNum=0;
 			}
@@ -663,45 +705,55 @@ TASK(byte) LunaticWorld(byte world,const char *worldName)
 TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 {
 	byte worldResult;
+	char buff[128];
 
 	InitPlayer(INIT_GAME,mode,0);
 
 	while(1)
 	{
 		loadGame=load;
-		SetNoSaving(0);
+		SetNoSaving(false);
 		switch(player.worldNum)
 		{
 			case WORLD_NORMAL:
 				if(!loadGame)
 					AWAIT Help(gamemgl);
-				worldResult=AWAIT LunaticWorld(0,"loony.llw");
+				worldResult=AWAIT LunaticWorld("loony.llw");
 				break;
 			case WORLD_REMIX:
 				if(!loadGame)
 					AWAIT Help(gamemgl);
-				worldResult=AWAIT LunaticWorld(WORLD_REMIX,"remix.llw");
+				worldResult=AWAIT LunaticWorld("remix.llw");
+				break;
+			case WORLD_RANDOMIZER:
+				if(!loadGame)
+					AWAIT Help(gamemgl);
+				LoadRandoItems();
+				sprintf(buff, "randomizer/%s rando.llw", GetSeed().c_str());
+				worldResult=AWAIT LunaticWorld(buff);
 				break;
 			case WORLD_SURVIVAL:
 				AWAIT Help(gamemgl);
-				worldResult=AWAIT LunaticWorld(0,"survive.llw");
+				worldResult=AWAIT LunaticWorld("survive.llw");
 				break;
 			case WORLD_SLINGSHOT:
 				AWAIT Help(gamemgl);
-				worldResult=AWAIT LunaticWorld(0,"sling.llw");
+				worldResult=AWAIT LunaticWorld("sling.llw");
 				break;
 			case WORLD_LOONYBALL:
 				AWAIT Help(gamemgl);
-				worldResult=AWAIT LunaticWorld(0,"ball.llw");
+				worldResult=AWAIT LunaticWorld("ball.llw");
 				break;
 			case WORLD_BOWLING:
 				AWAIT Help(gamemgl);
-				worldResult=AWAIT LunaticWorld(0,"bowl.llw");
+				worldResult=AWAIT LunaticWorld("bowl.llw");
 				break;
 			case WORLD_BOSSBASH:
 				AWAIT Help(gamemgl);
-				worldResult=AWAIT LunaticWorld(0,"boss.llw");
+				worldResult=AWAIT LunaticWorld("boss.llw");
 				break;
+			default:
+				worldResult = WORLD_ABORT;
 		}
 		if(worldResult==WORLD_QUITGAME)
 		{

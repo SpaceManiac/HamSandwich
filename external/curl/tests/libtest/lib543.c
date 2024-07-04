@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,6 +18,8 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 /* Based on Alex Fishman's bug report on September 30, 2007 */
 
@@ -25,7 +27,7 @@
 
 #include "memdebug.h"
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   static const unsigned char a[] = {
       0x9c, 0x26, 0x4b, 0x3d, 0x49, 0x4, 0xa1, 0x1,
@@ -66,5 +68,5 @@ int test(char *URL)
   }
   curl_global_cleanup();
 
-  return (int)res;
+  return res;
 }

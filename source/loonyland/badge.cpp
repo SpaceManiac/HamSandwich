@@ -9,6 +9,7 @@
 #include "fireworks.h"
 #include "title.h"
 #include "palettes.h"
+#include "steam.h"
 
 static byte cursor;
 static byte oldc;
@@ -16,7 +17,7 @@ static byte viewing;
 static byte cantearn;
 static char badgeKeys[17];
 
-badge_t badge[NUM_BADGES]={
+static const badge_t badge[NUM_BADGES]={
 	{"Evil Smashin'",
 	 "Earned for defeating The Evilizer in three",
 	 "minutes.",
@@ -172,7 +173,7 @@ badge_t badge[NUM_BADGES]={
 	 "",
 	 0},
 	{"Vampire Slayin'",
-	 "Earned for beating Bonkula in one minute.",
+	 "Earned for beating Bonkula in two minutes.",
 	 "",
 	 CH_BONKULA,
 	 "Play As Bonkula",
@@ -528,7 +529,7 @@ badge_t badge[NUM_BADGES]={
 	 "Ultra Weapons Are Go!",
 	 "Replaces the Level III version of each",
 	 "Special Weapon with a super duper version,",
-	 "that costs more coins to fire.  These are",
+	 "that costs more gems to fire.  These are",
 	 "really overpowered!",
 	 "Only useful to characters that use Special",
 	 "Weapons.",
@@ -619,7 +620,7 @@ void BadgeCheatKey(char c)
 
 	if(!strcmp("gimme",&badgeKeys[16-strlen("gimme")]))
 	{
-		opt.meritBadge[cursor]=1-opt.meritBadge[cursor];
+		opt.meritBadge[cursor] = opt.meritBadge[cursor] ? MERIT_NO : MERIT_CHEATED;
 		if(opt.cheats[badge[cursor].cheatNum])
 			opt.cheats[badge[cursor].cheatNum]=0;
 
@@ -631,15 +632,17 @@ void BadgeCheatKey(char c)
 					b++;
 
 			if(b>=5)
-				opt.modes[0]=1;
+				opt.modes[MODE_SURVIVAL]=1;
 			if(b>=10)
-				opt.modes[1]=1;
+				opt.modes[MODE_BOSSBASH]=1;
 			if(b>=15)
-				opt.modes[2]=1;
+				opt.modes[MODE_LOONYBALL]=1;
 			if(b>=20)
-				opt.modes[3]=1;
+				opt.modes[MODE_BOWLING]=1;
+			if(b>=25)
+				opt.remixMode=1;
 			if(b>0)
-				opt.modes[4]=1;
+				opt.modes[MODE_BADGES]=1;
 		}
 		else
 		{
@@ -649,15 +652,17 @@ void BadgeCheatKey(char c)
 					b++;
 
 			if(b<5)
-				opt.modes[0]=0;
+				opt.modes[MODE_SURVIVAL]=0;
 			if(b<10)
-				opt.modes[1]=0;
+				opt.modes[MODE_BOSSBASH]=0;
 			if(b<15)
-				opt.modes[2]=0;
+				opt.modes[MODE_LOONYBALL]=0;
 			if(b<20)
-				opt.modes[3]=0;
+				opt.modes[MODE_BOWLING]=0;
+			if(b<25)
+				opt.remixMode=0;
 			if(b==0)
-				opt.modes[4]=0;
+				opt.modes[MODE_BADGES]=0;
 		}
 
 		MakeSuperLoony();
@@ -668,13 +673,14 @@ void BadgeCheatKey(char c)
 	{
 		for(i=0;i<NUM_BADGES;i++)
 		{
-			opt.meritBadge[i]=0;
+			opt.meritBadge[i] = MERIT_NO;
 			opt.cheats[i]=0;
 		}
 		for(i=0;i<10;i++)
 			opt.bossDead[i]=0;
 		for(i=0;i<5;i++)
 			opt.modes[i]=0;
+		opt.remixMode=0;
 
 		MakeSuperLoony();
 		SaveOptions();
@@ -684,10 +690,12 @@ void BadgeCheatKey(char c)
 	{
 		for(i=0;i<NUM_BADGES;i++)
 		{
-			opt.meritBadge[i]=1;
+			if (!opt.meritBadge[i])
+				opt.meritBadge[i] = MERIT_CHEATED;
 		}
 		for(i=0;i<5;i++)
 			opt.modes[i]=1;
+		opt.remixMode=1;
 
 		MakeSuperLoony();
 		SaveOptions();
@@ -710,7 +718,8 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 	c=mgl->LastKeyPressed();
 	c2=GetControls()|GetArrows();
 
-	if(c==27)
+	// Ctrl+Shift is still how to type cheats, but gamepad CONTROL_B2 is quit
+	if(c==27 || (GetGamepadButtons() & ((1 << SDL_CONTROLLER_BUTTON_B) | (1 << SDL_CONTROLLER_BUTTON_BACK))))
 	{
 		return 1;
 	}
@@ -758,7 +767,7 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 			cursor+=10;
 		MakeNormalSound(SND_MENUCLICK);
 	}
-	if((c2&(CONTROL_B1|CONTROL_B2|CONTROL_B3)) && (!(oldc&(CONTROL_B1|CONTROL_B2|CONTROL_B3))))
+	if((c2 & ~oldc) & (CONTROL_B1 | CONTROL_B3))
 	{
 		if(opt.meritBadge[cursor])
 		{
@@ -776,13 +785,7 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 					case CH_WEREWOLF:
 					case CH_SUMMON:
 					case CH_THIEF:
-						opt.cheats[CH_BONKULA]=0;
-						opt.cheats[CH_TOAD]=0;
-						opt.cheats[CH_WITCH]=0;
-						opt.cheats[CH_SWAMPDOG]=0;
-						opt.cheats[CH_WEREWOLF]=0;
-						opt.cheats[CH_SUMMON]=0;
-						opt.cheats[CH_THIEF]=0;
+						ResetCharacterCheats();
 						opt.cheats[badge[cursor].cheatNum]=1;
 						break;
 				}
@@ -794,6 +797,7 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 				{
 					GreyPalette(GetDisplayMGL());
 					JamulSoundPurge();
+					KillSong();
 				}
 				else
 				{
@@ -895,8 +899,9 @@ void RenderBadgeMenu(MGLDraw *mgl)
 	{
 		Print(275,440,"Press Fire to toggle cheat On/Off",0,1);
 		Print(274,440,"Press Fire to toggle cheat On/Off",0,1);
-		Print(275,460,"Press ESC to exit",0,1);
-		Print(274,460,"Press ESC to exit",0,1);
+		const char* toExit = ShowGamepadText() ? "Press Weapon to exit" : "Press ESC to exit";
+		Print(275,460,toExit,0,1);
+		Print(274,460,toExit,0,1);
 	}
 	else
 	{
@@ -931,52 +936,57 @@ TASK(void) BadgeMenu(MGLDraw *mgl)
 
 static TASK(void) EarnBadgeTask(byte b)
 {
-	int i,c;
+	// Steam has its own handling of already-completed goals.
+	Steam()->CompleteGoal(b);
 
-	c=0;
-	for(i=0;i<NUM_BADGES;i++)
-		if(opt.meritBadge[i])
+	bool newlyEarned = !opt.meritBadge[b];
+	// Mark as earned legit even if already cheated.
+	opt.meritBadge[b] = MERIT_EARNED;
+
+	// If newly earned, congratulate the player. No early return so the mode
+	// logic below always runs & can thus be freely tweaked.
+	if (newlyEarned)
+	{
+		MakeNormalSound(SND_BADGEGET);
+		AWAIT ShowBadge(b);
+	}
+
+	// Unlock things based on the number of badges earned.
+	int c = 0;
+	for (int i = 0; i < NUM_BADGES; i++)
+		if (opt.meritBadge[i])
 			c++;
 
-	if(c>=25 && opt.expando[0]==0)
+	opt.modes[MODE_BADGES] = 1; // this just indicates that badge listings should be available
+
+	if(c>=5 && opt.modes[MODE_SURVIVAL]==0)
 	{
-		opt.expando[0]=1;
-		AWAIT ShowGameMode(4,25);
-		SaveOptions();
-	}
-
-	if(opt.meritBadge[b])
-		CO_RETURN;
-
-	opt.modes[4]=1;	// this just indicates that badge listings should be available
-
-	MakeNormalSound(SND_BADGEGET);
-	opt.meritBadge[b]=1;
-	AWAIT ShowBadge(b);
-
-	if(c>=5 && opt.modes[0]==0)
-	{
-		opt.modes[0]=1;
+		opt.modes[MODE_SURVIVAL]=1;
 		AWAIT ShowGameMode(0,5);
 	}
-	if(c>=10 && opt.modes[1]==0)
+	if(c>=10 && opt.modes[MODE_BOSSBASH]==0)
 	{
-		opt.modes[1]=1;
+		opt.modes[MODE_BOSSBASH]=1;
 		AWAIT ShowGameMode(1,10);
 	}
-	if(c>=15 && opt.modes[2]==0)
+	if(c>=15 && opt.modes[MODE_LOONYBALL]==0)
 	{
-		opt.modes[2]=1;
+		opt.modes[MODE_LOONYBALL]=1;
 		AWAIT ShowGameMode(2,15);
 	}
-	if(c>=20 && opt.modes[3]==0)
+	if(c>=20 && opt.modes[MODE_BOWLING]==0)
 	{
-		opt.modes[3]=1;
+		opt.modes[MODE_BOWLING]=1;
 		AWAIT ShowGameMode(3,20);
+	}
+	if(c>=25 && opt.remixMode==0)
+	{
+		opt.remixMode=1;
+		AWAIT ShowGameMode(4,25);
 	}
 
 	SaveOptions();
-	if(c==40)
+	if(newlyEarned && c==40)
 	{
 		LoopingSound(SND_ENDSONG);
 		AWAIT CheatText(GetDisplayMGL(),1);
@@ -991,7 +1001,7 @@ void EarnBadge(byte b)
 
 void RenderGameMode(MGLDraw *mgl,byte progress,byte mode,byte numBadges)
 {
-	char s[32];
+	char s[64];
 	char modeName[5][32]={"Survival","Boss Bash","Loonyball","Bowling","Remix"};
 
 	mgl->ClearScreen();
@@ -1118,6 +1128,9 @@ void BadgeCheck(byte event,int value,Map *map)
 {
 	dword now,then;
 	int i,have;
+	if(player.worldNum == WORLD_RANDOMIZER){
+		return;
+	}
 
 	now=timeGetTime();
 	if(event==BE_KILL)
@@ -1306,4 +1319,27 @@ void BadgeCheck(byte event,int value,Map *map)
 	//AddGarbageTime(then-now);
 	ResetClock(0);
 
+}
+
+auto GetCharacterDescription(PlayerCharacterType character) -> const char(*)[55]
+{
+	switch (character)
+	{
+		case PC_Bonkula:
+			return badge[BADGE_BONKULA].cheatDesc;
+		case PC_Toad:
+			return badge[BADGE_ANNOY].cheatDesc;
+		case PC_Swampdog:
+			return badge[BADGE_SNEAK].cheatDesc;
+		case PC_Witch:
+			return badge[BADGE_WITCH].cheatDesc;
+		case PC_Werewolf:
+			return badge[BADGE_WOLFDEN].cheatDesc;
+		case PC_Summon:
+			return badge[BADGE_REMIX].cheatDesc;
+		case PC_Thief:
+			return badge[BADGE_WITCHCRAFT].cheatDesc;
+		default:
+			return nullptr;
+	}
 }

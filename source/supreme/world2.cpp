@@ -91,7 +91,7 @@ static void LoadSound(hamworld::Section *f)
 
 	soundDesc_t *desc = AddCustomSound(data, size);
 	if (desc)
-		hamworld::Buffer(desc->name).assign(name);
+		ham_strcpy(desc->name, name);
 
 	f->read_varint();  // ignore extension flags
 }
@@ -490,7 +490,7 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 			size_t start = section.read_varint();
 			if (start != NUM_ORIGINAL_ITEMS)
 			{
-				LogError("Ham_LoadWorld(%s): item definition offest NYI (expected %d, got %zu)", fname, NUM_ORIGINAL_ITEMS, start);
+				LogError("Ham_LoadWorld(%s): item definition offest NYI (expected %d, got %u)", fname, NUM_ORIGINAL_ITEMS, (unsigned int)(start));
 				return false;
 			}
 			size_t item_count = section.read_varint();
@@ -507,7 +507,7 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 			size_t start = section.read_varint();
 			if (start != CUSTOM_SND_START)
 			{
-				LogError("Ham_LoadWorld(%s): sound definition offest NYI (expected %d, got %zu)", fname, CUSTOM_SND_START, start);
+				LogError("Ham_LoadWorld(%s): sound definition offest NYI (expected %d, got %u)", fname, CUSTOM_SND_START, (unsigned int)(start));
 				return false;
 			}
 			size_t sound_count = section.read_varint();
@@ -572,15 +572,15 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 	return 1;
 }
 
-byte Ham_GetWorldName(const char *fname, char *buffer, char *authbuffer)
+bool Ham_GetWorldName(const char *fname, char *buffer, char *authbuffer)
 {
 	hamworld::Load load(fname);
 
 	std::string app;
 	if (!load.header({authbuffer, 32}, {buffer, 32}, &app))
 	{
-		return 0;
+		return false;
 	}
 
-	return 1;
+	return true;
 }

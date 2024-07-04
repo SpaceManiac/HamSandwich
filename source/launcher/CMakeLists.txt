@@ -54,7 +54,7 @@ endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_link_libraries(launcher stdc++fs)
-	target_compile_options(launcher PRIVATE -Wall -Wextra -Wno-missing-field-initializers)
+	target_compile_options(launcher PRIVATE -Wall -Wextra -Wpedantic -Wno-missing-field-initializers)
 endif()
 
 if(WIN32 AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -63,5 +63,5 @@ endif()
 
 install(TARGETS launcher COMPONENT launcher/executables)
 if(NOT APPLE)
-	install(TARGETS libcurl ARCHIVE EXCLUDE_FROM_ALL COMPONENT launcher/executables)
+	install(TARGETS libcurl_shared ARCHIVE EXCLUDE_FROM_ALL COMPONENT launcher/executables)
 endif()

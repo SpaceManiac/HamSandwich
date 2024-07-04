@@ -1,8 +1,12 @@
 #include "display.h"
+#include <algorithm>
 #include "particle.h"
 #include "jamulfmv.h"
 #include "game.h"
 #include "options.h"
+
+static constexpr int DISPLAY_XBORDER = 256;
+static constexpr int DISPLAY_YBORDER = 256;
 
 mfont_t  *gameFont[3]={NULL,NULL,NULL};
 MGLDraw  *mgl=NULL;
@@ -150,6 +154,7 @@ TASK(void) ShowVictoryAnim(byte world)
 	mgl->LoadBMP("graphics/title.bmp");
 	KillSong();
 	JamulSoundPurge();
+	KillSong();
 	MakeNormalSound(SND_ENDSONG);
 	end=timeGetTime();
 	AddGarbageTime(end-start);
@@ -302,6 +307,11 @@ void PrintColor(int x,int y,const char *s,byte color,char bright,byte font)
 void PrintGlow(int x,int y,const char *s,char bright,byte font)
 {
 	FontPrintStringGlow(x,y,s,gameFont[font],bright);
+}
+
+void PrintGlowRect(int x, int y, int x2, int y2, std::string_view s, int height, char bright, byte font)
+{
+	FontPrintStringGlowRect(x, y, x2, y2, s, height, bright, gameFont[font]);
 }
 
 void CenterPrintGlow(int x,int y,const char *s,char bright,byte font)
@@ -466,15 +476,9 @@ DisplayList::~DisplayList(void)
 
 int DisplayList::GetOpenSlot(void)
 {
-	int i;
-
-	for(i=0;i<MAX_DISPLAY_OBJS;i++)
-	{
-		if(dispObj[i].flags==0)
-			return i;
-	}
-
-	return -1;
+	if (nextfree >= MAX_DISPLAY_OBJS)
+		return -1;
+	return nextfree++;
 }
 
 void DisplayList::HookIn(int me)
@@ -531,12 +535,41 @@ void DisplayList::HookIn(int me)
 
 bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,int bright,sprite_t *spr,word flags)
 {
-	int i;
-
-	if((x-scrx+320)<-DISPLAY_XBORDER || (x-scrx+320)>640+DISPLAY_XBORDER ||
-	   (y-scry+240)<-DISPLAY_YBORDER || (y-scry+240)>480+DISPLAY_YBORDER)
+	SDL_Rect rect;
+	if (!spr || spr==(sprite_t*)1 || (flags&(DISPLAY_WALLTILE|DISPLAY_ROOFTILE)))
+	{
+		// Use generic boundaries: center point +/- 256px;
+		rect.x = x - DISPLAY_XBORDER;
+		rect.y = y - DISPLAY_YBORDER;
+		rect.w = DISPLAY_XBORDER * 2;
+		rect.h = DISPLAY_YBORDER * 2;
+	}
+	else if (flags & DISPLAY_SHADOW)
+	{
+		// Use precise shadow sprite boundaries.
+		rect.x = x - spr->ofsx - spr->height/2;
+		rect.y = y - spr->ofsy/2 - std::clamp(z, -DISPLAY_YBORDER, DISPLAY_YBORDER);
+		rect.w = spr->height/2 + spr->width;
+		rect.h = spr->height/2;
+	}
+	else
+	{
+		// Use precise sprite boundaries.
+		rect.x = x - spr->ofsx;
+		rect.y = y - spr->ofsy - std::clamp(z, -DISPLAY_YBORDER, DISPLAY_YBORDER);
+		rect.w = spr->width;
+		rect.h = spr->height;
+	}
+	// If the rect is totally offscreen, don't add it to the display list.
+	SDL_Rect screenRect = { scrx - mgl->GetWidth()/2, scry - mgl->GetHeight()/2, mgl->GetWidth(), mgl->GetHeight() };
+	SDL_Rect intersection;
+	if (!SDL_IntersectRect(&rect, &screenRect, &intersection))
+	{
 		return true;
-	i=GetOpenSlot();
+	}
+
+	// Actually insert.
+	int i=GetOpenSlot();
 	if(i==-1)
 		return false;
 
@@ -655,7 +688,7 @@ void DisplayList::Render(void)
 			{
 				if(dispObj[i].flags&DISPLAY_GHOST)
 				{
-					dispObj[i].spr->DrawGhost(dispObj[i].x-scrx,dispObj[i].y-scry-dispObj[i].z,mgl,
+					dispObj[i].spr->DrawGhostBright(dispObj[i].x-scrx,dispObj[i].y-scry-dispObj[i].z,mgl,
 							dispObj[i].bright);
 				}
 				else if(dispObj[i].flags&DISPLAY_GLOW)

@@ -1,15 +1,51 @@
-name: Linux
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
+#
+# SPDX-License-Identifier: curl
+
+name: Linux wolfSSL
 
 on:
-  # Trigger the workflow on push or pull requests, but only for the
-  # master branch
   push:
     branches:
-    - master
-    - '*/ci'
+      - master
+      - '*/ci'
+    paths-ignore:
+      - '**/*.md'
+      - '**/CMakeLists.txt'
+      - '.azure-pipelines.yml'
+      - '.circleci/**'
+      - '.cirrus.yml'
+      - 'appveyor.*'
+      - 'CMake/**'
+      - 'packages/**'
+      - 'plan9/**'
+      - 'projects/**'
+      - 'winbuild/**'
   pull_request:
     branches:
-    - master
+      - master
+    paths-ignore:
+      - '**/*.md'
+      - '**/CMakeLists.txt'
+      - '.azure-pipelines.yml'
+      - '.circleci/**'
+      - '.cirrus.yml'
+      - 'appveyor.*'
+      - 'CMake/**'
+      - 'packages/**'
+      - 'plan9/**'
+      - 'projects/**'
+      - 'winbuild/**'
+
+concurrency:
+  # Hardcoded workflow filename as workflow name above is just Linux again
+  group: wolfssl-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+permissions: {}
+
+env:
+  MAKEFLAGS: -j 3
 
 jobs:
   autotools:
@@ -20,36 +56,51 @@ jobs:
       fail-fast: false
       matrix:
         build:
-        - name: wolfssl (configured with --enable-all)
-          install:
-          wolfssl-configure: --enable-all
-          curl-configure: --with-wolfssl=$HOME/wssl --enable-debug --enable-werror
-        - name: wolfssl (configured with --enable-opensslextra)
-          install:
-          wolfssl-configure: --enable-opensslextra
-          curl-configure: --with-wolfssl=$HOME/wssl --enable-debug --enable-werror
+          - name: wolfssl (configured with --enable-all)
+            install:
+            configure: LDFLAGS="-Wl,-rpath,$HOME/wssl/lib" --with-wolfssl=$HOME/wssl --enable-debug
+            wolfssl-configure: --enable-all
+          - name: wolfssl (configured with --enable-opensslextra)
+            install: valgrind
+            configure: LDFLAGS="-Wl,-rpath,$HOME/wssl/lib" --with-wolfssl=$HOME/wssl --enable-debug
+            wolfssl-configure: --enable-opensslextra
 
     steps:
-    - run: |
-        sudo apt-get install libtool autoconf automake pkg-config stunnel4 python3-pip
-        sudo pip3 install impacket
-      name: install prereqs and impacket
+      - run: |
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+          sudo apt-get update
+          sudo apt-get install libtool autoconf automake pkg-config stunnel4 libpsl-dev ${{ matrix.build.install }}
+          sudo python3 -m pip install impacket
+        name: 'install prereqs and impacket'
 
-    - run: |
-        curl -LO https://github.com/wolfSSL/wolfssl/archive/v5.0.0-stable.tar.gz
-        tar -xzf v5.0.0-stable.tar.gz
-        cd wolfssl-5.0.0-stable
-        ./autogen.sh
-        ./configure --enable-tls13 ${{ matrix.build.wolfssl-configure }} --enable-harden --prefix=$HOME/wssl
-        make && make install
-      name: 'install wolfssl'
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
 
-    - uses: actions/checkout@v2
+      - run: |
+          source .github/scripts/VERSIONS
+          curl -LOsSf --retry 6 --retry-connrefused --max-time 999 https://github.com/wolfSSL/wolfssl/archive/v$WOLFSSL_VER-stable.tar.gz
+          tar -xzf v$WOLFSSL_VER-stable.tar.gz
+          cd wolfssl-$WOLFSSL_VER-stable
+          ./autogen.sh
+          ./configure --enable-tls13 ${{ matrix.build.wolfssl-configure }} --enable-harden --prefix=$HOME/wssl
+          make install
+        name: 'install wolfssl'
 
-    - run: ./buildconf && LDFLAGS="-Wl,-rpath,$HOME/wssl/lib" ./configure --enable-warnings --enable-werror ${{ matrix.build.curl-configure }} && make V=1
-      name: 'configure and build'
+      - run: autoreconf -fi
+        name: 'autoreconf'
 
-    - run: make V=1 test-ci
-      name: 'test'
-      env:
-        TFLAGS: "${{ matrix.build.tflags }}"
+      - run: ./configure --enable-warnings --enable-werror ${{ matrix.build.configure }}
+        name: 'configure'
+
+      - run: make V=1
+        name: 'make'
+
+      - run: make V=1 examples
+        name: 'make examples'
+
+      - run: make V=1 -C tests
+        name: 'make tests'
+
+      - run: make V=1 test-ci
+        name: 'run tests'
+        env:
+          TFLAGS: "${{ matrix.build.tflags }}"

@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,6 +18,8 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 #include "test.h"
 
@@ -28,7 +30,7 @@
 #define print_err(name, exp) \
   fprintf(stderr, "Type mismatch for CURLOPT_%s (expected %s)\n", name, exp);
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
 /* Only test if GCC typechecking is available */
   int error = 0;
@@ -37,44 +39,46 @@ int test(char *URL)
   for(o = curl_easy_option_next(NULL);
       o;
       o = curl_easy_option_next(o)) {
-    /* Test for mismatch OR missing typecheck macros */
-    if(curlcheck_long_option(o->id) !=
-        (o->type == CURLOT_LONG || o->type == CURLOT_VALUES)) {
-      print_err(o->name, "CURLOT_LONG or CURLOT_VALUES");
-      error++;
-    }
-    if(curlcheck_off_t_option(o->id) != (o->type == CURLOT_OFF_T)) {
-      print_err(o->name, "CURLOT_OFF_T");
-      error++;
-    }
-    if(curlcheck_string_option(o->id) != (o->type == CURLOT_STRING)) {
-      print_err(o->name, "CURLOT_STRING");
-      error++;
-    }
-    if(curlcheck_slist_option(o->id) != (o->type == CURLOT_SLIST)) {
-      print_err(o->name, "CURLOT_SLIST");
-      error++;
-    }
-    if(curlcheck_cb_data_option(o->id) != (o->type == CURLOT_CBPTR)) {
-      print_err(o->name, "CURLOT_CBPTR");
-      error++;
-    }
-    /* From here: only test that the type matches if macro is known */
-    if(curlcheck_write_cb_option(o->id) && (o->type != CURLOT_FUNCTION)) {
-      print_err(o->name, "CURLOT_FUNCTION");
-      error++;
-    }
-    if(curlcheck_conv_cb_option(o->id) && (o->type != CURLOT_FUNCTION)) {
-      print_err(o->name, "CURLOT_FUNCTION");
-      error++;
-    }
-    if(curlcheck_postfields_option(o->id) && (o->type != CURLOT_OBJECT)) {
-      print_err(o->name, "CURLOT_OBJECT");
-      error++;
-    }
-    /* Todo: no gcc typecheck for CURLOPTTYPE_BLOB types? */
+    CURL_IGNORE_DEPRECATION(
+      /* Test for mismatch OR missing typecheck macros */
+      if(curlcheck_long_option(o->id) !=
+          (o->type == CURLOT_LONG || o->type == CURLOT_VALUES)) {
+        print_err(o->name, "CURLOT_LONG or CURLOT_VALUES");
+        error++;
+      }
+      if(curlcheck_off_t_option(o->id) != (o->type == CURLOT_OFF_T)) {
+        print_err(o->name, "CURLOT_OFF_T");
+        error++;
+      }
+      if(curlcheck_string_option(o->id) != (o->type == CURLOT_STRING)) {
+        print_err(o->name, "CURLOT_STRING");
+        error++;
+      }
+      if(curlcheck_slist_option(o->id) != (o->type == CURLOT_SLIST)) {
+        print_err(o->name, "CURLOT_SLIST");
+        error++;
+      }
+      if(curlcheck_cb_data_option(o->id) != (o->type == CURLOT_CBPTR)) {
+        print_err(o->name, "CURLOT_CBPTR");
+        error++;
+      }
+      /* From here: only test that the type matches if macro is known */
+      if(curlcheck_write_cb_option(o->id) && (o->type != CURLOT_FUNCTION)) {
+        print_err(o->name, "CURLOT_FUNCTION");
+        error++;
+      }
+      if(curlcheck_conv_cb_option(o->id) && (o->type != CURLOT_FUNCTION)) {
+        print_err(o->name, "CURLOT_FUNCTION");
+        error++;
+      }
+      if(curlcheck_postfields_option(o->id) && (o->type != CURLOT_OBJECT)) {
+        print_err(o->name, "CURLOT_OBJECT");
+        error++;
+      }
+      /* Todo: no gcc typecheck for CURLOPTTYPE_BLOB types? */
+    )
   }
 #endif
   (void)URL;
-  return error;
+  return error == 0 ? CURLE_OK : TEST_ERR_FAILURE;
 }

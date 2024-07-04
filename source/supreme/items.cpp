@@ -1,5 +1,7 @@
 #include "winpch.h"
 #include "items.h"
+#include <algorithm>
+#include <ctype.h>
 #include "display.h"
 #include "player.h"
 #include "repair.h"
@@ -9,9 +11,11 @@
 #include "vars.h"
 #include "goal.h"
 #include "worldstitch.h"
-#include <ctype.h>
+#include "log.h"
+#include "math_extras.h"
+#include "string_extras.h"
 
-item_t baseItems[]={
+static const item_t baseItems[]={
 	{"None",0,0,0,0,0,0,0,0,0,0,0,0,"",0},
 	{"Hammer Up",-2,0,0,0,0,0,
 		0,
@@ -744,6 +748,8 @@ static word numItems;
 static item_t *items;
 static int totalRare;
 
+static char customSpriteFilename[64] = "";
+
 void InitItems(void)
 {
 	numItems=NUM_ORIGINAL_ITEMS;
@@ -757,6 +763,9 @@ void InitItems(void)
 	glowism=0;
 	SetupRandomItems();
 	rndItem=GetRandomItem();
+
+	ham_strcpy(customSpriteFilename, "");
+	CalculateItemRenderExtents();
 }
 
 void ExitItems(void)
@@ -804,8 +813,12 @@ void DeleteItem(int itm)
 	numItems--;
 }
 
-void SetCustomItemSprites(char* name)
+void SetCustomItemSprites(const char* name)
 {
+	if (!strcmp(customSpriteFilename, name))
+		return;
+	ham_strcpy(customSpriteFilename, name);
+
 	if (customItmSpr) delete customItmSpr;
 
 	customItmSpr=new sprite_set_t();
@@ -816,17 +829,12 @@ void SetCustomItemSprites(char* name)
 	{
 		// failed to load
 		delete customItmSpr;
-		customItmSpr = NULL;
-		return;
+		customItmSpr = nullptr;
 	}
-	else
-	{
-		// great success!
-		return;
-	}
+	CalculateItemRenderExtents();
 }
 
-void DetectCustomItemSprites(world_t *world)
+static void DetectCustomItemSprites(const world_t *world)
 {
 	// extract filename out of first special if possible
 	special_t* special = world->map[0]->special;
@@ -990,7 +998,10 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 
 void DrawRedX(int x,int y,byte candle,MGLDraw *mgl)
 {
-	itmSpr->GetSprite(140+candle)->Draw(x+61,y+71,mgl);
+	if (profile.progress.hudChoice == HudChoice::Classic)
+		itmSpr->GetSprite(8)->Draw(x - 5, y, mgl);
+	else
+		itmSpr->GetSprite(140+candle)->Draw(x+61,y+71,mgl);
 }
 
 item_t *GetItem(int type)
@@ -1124,6 +1135,8 @@ void LoadItems(FILE *f)
 		numItems=NUM_ORIGINAL_ITEMS;
 	else
 		numItems=curItem;
+
+	CalculateItemRenderExtents();
 }
 
 byte AppendItems(FILE *f)
@@ -1160,13 +1173,15 @@ byte AppendItems(FILE *f)
 		}
 		if(curItem>=MAX_ITEMS)
 		{
+			CalculateItemRenderExtents();
 			return 0;
 		}
 	}
+	CalculateItemRenderExtents();
 	return 1;
 }
 
-item_t *GetBaseItem(int type)
+const item_t *GetBaseItem(int type)
 {
 	if(type<0 || type>=NUM_ORIGINAL_ITEMS)
 		return NULL;
@@ -1821,4 +1836,101 @@ int FindItemByName(const char *name)
 			return i;
 	}
 	return 0;
+}
+
+static const char pwrUpName[][32] = {
+	"",
+	"Reverse Hammer",
+	"Reflect Hammer",
+	"Energy Shield",
+	"Garlic",
+	"Speed Up",
+	"Invisibility",
+	"Infinite Ammo",
+	"Reload Weapon",
+	"Hammer Enhance",
+	"Poison",
+};
+static_assert(std::size(pwrUpName) == MAX_POWERUP, "Must give new powerups a name");
+
+const char *GetPowerupName(int powerup)
+{
+	if (powerup >= 0 && powerup < MAX_POWERUP)
+		return pwrUpName[powerup];
+	return "???";
+}
+
+static ItemRenderExtents extents;
+
+void CalculateItemRenderExtents()
+{
+	// Calculate the union bounding box of item sprites so we know how far away
+	// to search for items to draw, with no pop-in and minimal overdraw.
+	SDL_Rect everything = {};
+	for (int type = 0; type < numItems; ++type)
+	{
+		SDL_Rect rect;
+		if (items[type].flags & IF_TILE)
+		{
+			rect.x = items[type].xofs;
+			rect.y = items[type].yofs+1;
+			rect.w = 32;
+			rect.h = 32;
+		}
+		else
+		{
+			sprite_t* spr;
+
+			if (items[type].flags & IF_USERJSP)
+			{
+				sprite_set_t* custom = CustomItemSprites();
+				if (custom)
+					spr = custom->GetSprite(items[type].sprNum < custom->GetCount() ? items[type].sprNum : 0);
+				else
+					spr = itmSpr->GetSprite(8); // red X indicating invalid custom JSP file
+			}
+			else
+				spr = itmSpr->GetSprite(items[type].sprNum);
+
+			if (spr)
+			{
+				// Use precise sprite boundaries.
+				rect.x = items[type].xofs - spr->ofsx;
+				rect.y = 0 - spr->ofsy - std::clamp(-items[type].yofs+1, -DISPLAY_YBORDER, DISPLAY_YBORDER);
+				rect.w = spr->width;
+				rect.h = spr->height;
+
+				SDL_UnionRect(&everything, &rect, &everything);
+
+				if(items[type].flags&IF_SHADOW)
+				{
+					// Use precise shadow sprite boundaries.
+					rect.x = items[type].xofs - spr->ofsx - spr->height/2;
+					rect.y = 0 - spr->ofsy/2 - std::clamp(-items[type].yofs+1, -DISPLAY_YBORDER, DISPLAY_YBORDER);
+					rect.w = spr->height/2 + spr->width;
+					rect.h = spr->height/2;
+
+					SDL_UnionRect(&everything, &rect, &everything);
+				}
+			}
+		}
+	}
+
+	// Bounds are reversed here, because the further left from an item's origin
+	// it extends, the further right off the edge of the screen we need to seek
+	// items to draw. The minimums are for tile/wall rendering.
+	extents.left = floor_div(everything.x + everything.w + TILE_WIDTH/2, TILE_WIDTH).quot;
+	extents.right = -floor_div(everything.x + TILE_WIDTH/2, TILE_WIDTH).quot;
+	extents.up = floor_div(everything.y + everything.h + TILE_HEIGHT/2, TILE_HEIGHT).quot;
+	extents.down = -floor_div(everything.y + TILE_HEIGHT/2, TILE_HEIGHT).quot;
+
+#ifndef NDEBUG
+	LogDebug("Items bounding rect: x=%d y=%d w=%d h=%d", everything.x, everything.y, everything.w, everything.h);
+	LogDebug("Tile spread: x: %+d to %+d, y: %+d to %+d, inclusive", -extents.left, extents.right, -extents.up, extents.down);
+#endif
+}
+
+ItemRenderExtents GetItemRenderExtents()
+{
+	return extents;
 }

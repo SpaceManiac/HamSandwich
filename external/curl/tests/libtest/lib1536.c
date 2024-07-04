@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,6 +18,8 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 #include "test.h"
 
@@ -25,11 +27,11 @@
 
 /* Test CURLINFO_SCHEME */
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURL *curl, *dupe = NULL;
   char *scheme;
-  int res = CURLE_OK;
+  CURLcode res = CURLE_OK;
 
   global_init(CURL_GLOBAL_ALL);
 
@@ -69,9 +71,9 @@ int test(char *URL)
             __FILE__, __LINE__, res, curl_easy_strerror(res));
     goto test_cleanup;
   }
-  if(!scheme || memcmp(scheme, "HTTP", 5) != 0) {
+  if(!scheme || memcmp(scheme, "http", 5) != 0) {
     fprintf(stderr, "%s:%d scheme of http resource is incorrect; "
-            "expected 'HTTP' but is %s\n",
+            "expected 'http' but is %s\n",
             __FILE__, __LINE__,
             (scheme == NULL ? "NULL" : "invalid"));
     res = CURLE_HTTP_RETURNED_ERROR;

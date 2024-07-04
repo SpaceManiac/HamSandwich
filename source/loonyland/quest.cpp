@@ -5,8 +5,15 @@
 #include "badge.h"
 #include "spacegame.h"
 #include "options.h"
+//#include "randomizer.h"
+#include "ioext.h"
+#include "appdata.h"
+#include <vector>
+#include <sstream>
 
-char questName[NUM_QUESTS][64]={
+RandoItem randoReward[11];
+
+static const char questName[NUM_QUESTS][64]={
 	"Save Halloween Hill",
 	"Tree Trimming",
 	"Scaredy Cat",
@@ -29,7 +36,7 @@ char questName[NUM_QUESTS][64]={
 	"The Collection",
 };
 
-Convo talk[]={
+static Convo talk[]={
 	// 0
 	{"It's a lovely day, eh?",
 	 "",
@@ -1258,13 +1265,13 @@ Convo talk[]={
 	  33,0},
 };
 
-byte seerTable[]={132,134,0,0,136,138,0,0,140,142,144,146,148,150,152,154,156,158,0,0};
+static const byte seerTable[]={132,134,0,0,136,138,0,0,140,142,144,146,148,150,152,154,156,158,0,0};
 
 byte curChat;
 byte curLine,curChar;
 byte noButtons;
 
-char *QuestName(byte quest)
+const char *QuestName(byte quest)
 {
 	return questName[quest];
 }
@@ -1305,7 +1312,7 @@ void BeginChatting(byte tag)
 	if(player.chatClock)
 		return;
 
-	if(player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX)
+	if(player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX && player.worldNum!=WORLD_RANDOMIZER)
 		return;
 
 	player.chatClock=30;
@@ -1327,7 +1334,7 @@ void BeginChatting(byte tag)
 			if(player.var[VAR_QUESTDONE+QUEST_TREES])
 			{
 				// if the quest is completed
-				if(player.var[VAR_HEART+15])	// he has already given you the heart
+				if(player.var[VAR_TREEREWARD])	// he has already given you the heart
 				{
 					if(player.var[VAR_QUESTDONE+QUEST_HILL])
 						curChat=168;
@@ -1444,7 +1451,7 @@ void BeginChatting(byte tag)
 					{
 						if(player.var[VAR_QUESTDONE+QUEST_DAISY]==1)
 						{
-							if(player.var[VAR_HEART+16]==0)
+							if(player.var[VAR_WITCHREWARD]==0)
 								curChat=191;
 							else if(player.var[VAR_GAVEDAISY]==0)
 								curChat=60;
@@ -1492,7 +1499,7 @@ void BeginChatting(byte tag)
 
 			break;
 		case 10: // the farmer
-			if(player.var[VAR_FERTILIZER])
+			if(player.var[VAR_CROPSREWARD])
 			{
 				if(player.var[VAR_QUESTDONE+QUEST_HILL])
 					curChat=184;
@@ -1586,7 +1593,7 @@ void BeginChatting(byte tag)
 			break;
 		case 16:	// Larry after returning to human
 			if(player.var[VAR_QUESTDONE+QUEST_HILL])
-				curChat=172;
+				curChat=170;
 			else
 			{
 				if(player.levelNum!=46)
@@ -1598,7 +1605,7 @@ void BeginChatting(byte tag)
 		case 17:	// Larry's wife
 			if(player.var[VAR_QUESTDONE+QUEST_WOLF])
 			{
-				if(player.var[VAR_KEY+2])
+				if(player.var[VAR_LARRYREWARD])
 				{
 					if(player.var[VAR_QUESTDONE+QUEST_HILL])
 						curChat=171;
@@ -1871,8 +1878,15 @@ void DoChatAction(byte a)
 			break;
 		case 2:
 			// give the super heart
-			player.var[VAR_HEART+15]=1;
-			PlayerGetItem(ITM_SUPERHEART,0,0);
+			PlayerSetVar(VAR_TREEREWARD, 1);
+			if (player.worldNum == WORLD_RANDOMIZER){
+				GiveRandoItem(8);
+			}
+			else
+			{
+				player.var[VAR_HEART+15]=1;
+				PlayerGetItem(ITM_SUPERHEART,0,0);
+			}
 			break;
 		case 3:
 			// assign Save Halloween Hill
@@ -1885,7 +1899,13 @@ void DoChatAction(byte a)
 		case 5:
 			// complete the boots quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_BOOTS,1);
-			PlayerSetVar(VAR_BOOTS,1);
+			if (player.worldNum == WORLD_RANDOMIZER){
+				GiveRandoItem(5);
+			}
+			else
+			{
+				PlayerSetVar(VAR_BOOTS,1);
+			}
 			break;
 		case 6:
 			// assign the boots quest
@@ -1902,7 +1922,13 @@ void DoChatAction(byte a)
 		case 9:
 			// complete kitty cat
 			PlayerSetVar(VAR_QUESTDONE+QUEST_CAT,1);
-			PlayerSetVar(VAR_STICK,1);
+			if (player.worldNum == WORLD_RANDOMIZER){
+				GiveRandoItem(2);
+			}
+			else
+			{
+				PlayerSetVar(VAR_STICK,1);
+			}
 			break;
 		case 10:
 			// assign shroom
@@ -1911,8 +1937,15 @@ void DoChatAction(byte a)
 		case 11:
 			// assign daisy quest and give a super heart
 			PlayerSetVar(VAR_QUESTASSIGN+QUEST_DAISY,1);
-			player.var[VAR_HEART+16]=1;
-			PlayerGetItem(ITM_SUPERHEART,0,0);
+			PlayerSetVar(VAR_WITCHREWARD, 1);
+			if (player.worldNum == WORLD_RANDOMIZER){
+				GiveRandoItem(9);
+			}
+			else
+			{
+				player.var[VAR_HEART+16]=1;
+				PlayerGetItem(ITM_SUPERHEART,0,0);
+			}
 			break;
 		case 12:
 			// get turned into a frog
@@ -1933,21 +1966,34 @@ void DoChatAction(byte a)
 			break;
 		case 16:
 			// give fertilizer
-			PlayerSetVar(VAR_FERTILIZER,1);
+			PlayerSetVar(VAR_CROPSREWARD, 1);
+			if (player.worldNum == WORLD_RANDOMIZER){
+				GiveRandoItem(4);
+			}
+			else
+			{
+				PlayerSetVar(VAR_FERTILIZER,1);
+			}
 			break;
 		case 17:
 			// assign zombie quest
 			PlayerSetVar(VAR_QUESTASSIGN+QUEST_ZOMBIES,1);
 			break;
 		case 18:
-			// reward zombie quest
 			PlayerSetVar(VAR_ZOMBIEREWARD,1);
-			player.money+=100;
-			player.gemsGotten+=100;
-			BadgeCheck(BE_GEMSUP,0,curMap);
-			if(player.money>player.maxMoney)
+			// reward zombie quest
+			if (player.worldNum == WORLD_RANDOMIZER){
+				GiveRandoItem(10);
+			}
+			else
 			{
-				player.money=player.maxMoney;
+				player.money+=100;
+				player.gemsGotten+=100;
+				BadgeCheck(BE_GEMSUP,0,curMap);
+				if(player.money>player.maxMoney)
+				{
+					player.money=player.maxMoney;
+				}
 			}
 			break;
 		case 19:
@@ -1957,7 +2003,13 @@ void DoChatAction(byte a)
 		case 20:
 			// complete ghost quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_GHOST,1);
-			PlayerSetVar(VAR_POTION,1);
+			if (player.worldNum == WORLD_RANDOMIZER){
+				GiveRandoItem(0);
+			}
+			else
+			{
+				PlayerSetVar(VAR_POTION,1);
+			}
 			break;
 		case 21:
 			// assign silver quest
@@ -1966,6 +2018,13 @@ void DoChatAction(byte a)
 		case 22:
 			// complete silver quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_SILVER,1);
+			if (player.worldNum == WORLD_RANDOMIZER){
+				GiveRandoItem(3);
+			}
+			else
+			{
+				PlayerSetVar(VAR_SILVERSLING, 1);
+			}
 			break;
 		case 23:
 			// assign rescue quest and make girl obnoxious
@@ -1977,7 +2036,14 @@ void DoChatAction(byte a)
 			// complete rescue quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_DARK,1);
 			PlayerSetVar(VAR_QUESTDONE+QUEST_RESCUE,1);
-			PlayerSetVar(VAR_TORCH,1);
+			if (player.worldNum == WORLD_RANDOMIZER){
+				GiveRandoItem(7);
+			}
+			else
+			{
+				PlayerSetVar(VAR_TORCH,1);
+				PlayerSetVar(VAR_LANTERN, 1);
+			}
 			PlayerSetVar(240,2);	// use temp var, so you can re-rescue her
 			GirlChasePlayer(0);
 			break;
@@ -1991,8 +2057,15 @@ void DoChatAction(byte a)
 			break;
 		case 27:
 			// give pumpkin key
-			PlayerGetItem(ITM_KEY4,0,0);
-			PlayerSetVar(VAR_KEY+2,1);
+			PlayerSetVar(VAR_LARRYREWARD,1);
+			if (player.worldNum == WORLD_RANDOMIZER){
+				GiveRandoItem(1);
+			}
+			else
+			{
+				PlayerGetItem(ITM_KEY4,0,0);
+				PlayerSetVar(VAR_KEY+2,1);
+			}
 			break;
 		case 28:
 			// assign doll quest
@@ -2001,8 +2074,14 @@ void DoChatAction(byte a)
 		case 29:
 			// finish doll quest
 			PlayerSetVar(VAR_QUESTDONE+QUEST_DOLLS,1);
-			PlayerSetVar(VAR_REFLECT,1);
-			player.fireFlags|=FF_REFLECT;
+			if (player.worldNum == WORLD_RANDOMIZER){
+				GiveRandoItem(6);
+			}
+			else
+			{
+				PlayerSetVar(VAR_REFLECT,1);
+				player.fireFlags|=FF_REFLECT;
+			}
 			break;
 		case 30:
 			// get the helper bat
@@ -2112,5 +2191,41 @@ void RenderChat(MGLDraw *mgl)
 		}
 	}
 }
+
+void GiveRandoItem(int index)
+{
+	if (player.var[randoReward[index].playerVarId] == 0) { //check var before giving item, incase of badges
+		PlayerSetVar(randoReward[index].playerVarId, 1);
+		PlayerGetItem(randoReward[index].itemId, 0, 0);
+	}
+}
 //--------------------------------------------
 // END CHATTING
+
+void LoadRandoItems(){
+	char buff[128];
+	sprintf(buff, "randomizer/%s quest.txt", GetPlayerSeed().c_str());
+	std::FILE* f = AppdataOpen(buff);
+	if (f == NULL)
+	{
+		return;
+	}
+	FilePtrStream stream(f);
+	std::string line;
+	std::string value;
+	while (getline(stream, line)){
+
+		std::stringstream ss(line);
+
+		getline(ss, value, '\t');
+		int questID = stoi(value);
+		getline(ss, value, '\t');
+		int varID = stoi(value);
+		getline(ss, value, '\t');
+		int itemID = stoi(value);
+
+		randoReward[questID].itemId = itemID;
+		randoReward[questID].playerVarId = varID;
+	}
+
+}

@@ -1,17 +1,19 @@
 #ifndef HAM_EXTERN_H
 #define HAM_EXTERN_H
 
-struct SDL_RWops;
+#include "owned_sdl.h"
 
 // Callbacks that games may provide to Ham.
 extern struct HamExtern
 {
+	void (*AfterFlip)();
+
 	// ---- hammusic ----
 	// Should call PlaySongFile or StopSong, or the current song will loop.
 	void (*ChooseNextSong)();
 
 	// ---- jamulsound ----
-	SDL_RWops* (*SoundLoadOverride)(int);
+	owned::SDL_RWops (*SoundLoadOverride)(int);
 } g_HamExtern;
 
 #endif  // HAM_EXTERN_H

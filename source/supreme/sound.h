@@ -1,9 +1,10 @@
 #ifndef SOUND_H
 #define SOUND_H
 
+#include <stdio.h>
 #include "jamulsound.h"
 #include "jamultypes.h"
-#include <stdio.h>
+#include "owned_sdl.h"
 
 #define SND_NONE		0
 #define SND_MENUCLICK	51
@@ -436,6 +437,6 @@ void MakeSpaceSound(int snd,int priority);
 int AppendCustomSounds(FILE *f);
 
 typedef struct SDL_RWops SDL_RWops;
-SDL_RWops* SoundLoadOverride(int num);
+owned::SDL_RWops SoundLoadOverride(int num);
 
 #endif

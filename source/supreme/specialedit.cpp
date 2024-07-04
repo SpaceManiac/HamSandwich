@@ -1,10 +1,12 @@
 #include "winpch.h"
 #include "specialedit.h"
+#include <math.h>
 #include "dialogbits.h"
 #include "filedialog.h"
 #include "items.h"
 #include "textdialog.h"
 #include "monsteredit.h"
+#include "bulletedit.h"
 #include "itemedit.h"
 #include "vars.h"
 #include "terrainedit.h"
@@ -12,6 +14,7 @@
 #include "edithelp.h"
 #include "viewdialog.h"
 #include "shop.h"
+#include "player.h"
 
 // Originally 14
 #define TRGPICKER_HEIGHT 12
@@ -44,6 +47,8 @@
 #define SMODE_PICKITEM3	24
 #define SMODE_HELP		25
 #define SMODE_PICKRECT3T 26
+#define SMODE_PICKBULLET 27
+#define SMODE_PICKBULLET1 28
 
 #define ID_EXIT		1
 #define ID_USES		2
@@ -79,7 +84,7 @@ static byte previousMap;
 static byte helpRemember;
 static byte trgStart,effStart;
 
-static char trigName[][16]={
+static const char trigName[][16]={
 	"Unused",
 	"Step On/Near",
 	"Step In Rect",
@@ -115,7 +120,7 @@ static char trigName[][16]={
 	"Bullet In Rect"
 };
 
-static char effName[][16]={
+static const char effName[][16]={
 	"Unused",
 	"Message",
 	"Sound",
@@ -156,112 +161,8 @@ static char effName[][16]={
 	"Change Bullet"
 };
 
-static char lvlFlagName[][16]={
-	"Snowing",
-	"Raining",
-	"Hub Level",
-	"Secret Level",
-	"Torch Lit",
-	"Lantern Lit",
-	"Star Background",
-	"Underwater",
-	"Underlava",
-	"Stealth",
-	"Wavy",
-	"Oxygen Meter",
-};
-
-static char wpnName[][16]={
-	"None",
-	"Missiles",
-	"AK-8087",
-	"Bombs",
-	"Toaster",
-	"Power Armor",
-	"Big Axe",
-	"Zap Wand",
-	"Spears",
-	"Machete",
-	"Mines",
-	"Turrets",
-	"Mind Control",
-	"Reflect",
-	"Jetpack",
-	"Swapgun",
-	"Torch",
-	"Scanner",
-	"Mini-Sub",
-	"Freeze Ray",
-	"Stopwatch"};
-
-static char bulletName[][20]={
-	"Anything",
-	"Hammer",
-	"Bouncy Hammer",
-	"Missile",
-	"Flame",
-	"AK-8087 Shot",
-	"Acid",
-	"Cherry Bomb",
-	"Explosion",
-	"Red Bullet",
-	"Megabeam Source",
-	"Megabeam Part",
-	"Megabeam End",
-	"Evil Flame",
-	"Spore",
-	"Mushroom",
-	"Grenade",
-	"Grenade Boom",
-	"SDZ Shockwave",
-	"Missile Boom",
-	"Snowball",
-	"Big Snowball",
-	"Ice Spike",
-	"Rock",
-	"Cactus Spine",
-	"Evil Hammer",
-	"Power Shell",
-	"Big Axe",
-	"Lightning",
-	"Spear",
-	"Machete",
-	"Landmine",
-	"Evil Spear",
-	"Orbiter",
-	"Green Bullet",
-	"Ball Lightning",
-	"Zap Wand Shock",
-	"Mind Control",
-	"Reflect Shield",
-	"Swap Gun",
-	"Water Shot",
-	"Orbit Bomber",
-	"Harpoon",
-	"Scanner",
-	"Scanner Shot",
-	"Torpedo",
-	"Dirt Spike",
-	"Paper",
-	"Scanner Lock",
-	"Bubble",
-	"Freeze Ray",
-	"Bubble Pop",
-	"Harmless Boom",
-	"Cheese Hammer",
-	"Evil Freeze",
-	"Lunachick Ray",
-	"Bouncy Lunachick"
-};
-#define MAX_BULLETS (BLT_LUNA2 + 1)
-
 static void SetupTriggerButtons(int t,int y);
 static void SetupEffectButtons(int t,int y);
-
-static char *WeaponName(byte n)
-{
-	return wpnName[n];
-}
 
 static void SpecialEditSetupButtons(void);
 static void PageClick(int id)
@@ -728,12 +629,27 @@ static void ItemClick(int id)
 	MakeNormalSound(SND_MENUCLICK);
 }
 
+static const char* KeypressName(int value)
+{
+	switch (value)
+	{
+		case CONTROL_UP: return "Up";
+		case CONTROL_DN: return "Down";
+		case CONTROL_LF: return "Left";
+		case CONTROL_RT: return "Right";
+		case CONTROL_B1: return "Fire";
+		case CONTROL_B2: return "Special";
+		case CONTROL_B3: return "Wpn Lock";
+		default: return "???";
+	}
+}
+
 static void KeypressClick(int id)
 {
 	curTrig=trgStart + id/100-1;
 
 	spcl.trigger[curTrig].value*=2;
-	if(spcl.trigger[curTrig].value>CONTROL_B2)
+	if(spcl.trigger[curTrig].value>CONTROL_B3)
 		spcl.trigger[curTrig].value=1;
 
 	MakeNormalSound(SND_MENUCLICK);
@@ -747,7 +663,7 @@ static void PlayAsClick(int id)
 		curTrig=trgStart + id/100-1;
 
 		spcl.trigger[curTrig].value++;
-		if(spcl.trigger[curTrig].value>PLAY_MECHA)
+		if(spcl.trigger[curTrig].value>=MAX_PLAYAS)
 			spcl.trigger[curTrig].value=PLAY_BOUAPHA;
 
 		MakeNormalSound(SND_MENUCLICK);
@@ -759,7 +675,7 @@ static void PlayAsClick(int id)
 		MakeNormalSound(SND_MENUCLICK);
 
 		spcl.effect[curEff].value++;
-		if(spcl.effect[curEff].value>PLAY_MECHA)
+		if(spcl.effect[curEff].value>=MAX_PLAYAS)
 			spcl.effect[curEff].value=PLAY_BOUAPHA;
 
 		SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
@@ -1256,7 +1172,15 @@ static void PicNameClick(int id)
 	curEff=effStart + (id-ID_EFF0)/100;
 
 	mode=SMODE_PICKBMP;
-	InitFileDialog("user",nullptr,FM_LOAD|FM_EXIT|FM_NOWAVS,"");
+	InitFileDialog("user",nullptr,FM_LOAD|FM_EXIT|FM_PICMOVIE,spcl.effect[curEff].text);
+}
+
+static void JspNameClick(int id)
+{
+	curEff=effStart + (id-ID_EFF0)/100;
+
+	mode=SMODE_PICKBMP;
+	InitFileDialog("user",".jsp",FM_LOAD|FM_EXIT,spcl.effect[curEff].text);
 }
 
 static void SongClick(int id)
@@ -1269,7 +1193,6 @@ static void SongClick(int id)
 	}
 	else
 	{
-
 		mode=SMODE_PICKSONG;
 		InitFileDialog("music",".ogg",FM_LOAD|FM_EXIT|FM_PLAYSONGS,spcl.effect[curEff].text);
 	}
@@ -1327,22 +1250,10 @@ static void Toggle2Click(int id)
 
 static void BulletClick(int id)
 {
-	curEff=effStart+(id-ID_EFF0)/100;
-
-	if(rightClick)
-	{
-		spcl.effect[curEff].value2--;
-		if(spcl.effect[curEff].value2<=0)
-			spcl.effect[curEff].value2=MAX_BULLETS-1;
-	}
-	else
-	{
-		spcl.effect[curEff].value2++;
-		if(spcl.effect[curEff].value2>=MAX_BULLETS)
-			spcl.effect[curEff].value2=1;
-	}
-
-	SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
+	curEff = effStart + (id - ID_EFF0) / 100;
+	mode = SMODE_PICKBULLET;
+	SetEditMode(EDITMODE_PICKBULLET);
+	BulletEdit_Init(EDITMODE_SPECIAL, false);
 }
 
 static void Bullet1Click(int id)
@@ -1351,40 +1262,16 @@ static void Bullet1Click(int id)
 	{
 		effMode=0;
 		curTrig=trgStart + id/100-1;
-
-		if(rightClick)
-		{
-			spcl.trigger[curTrig].value--;
-			if(spcl.trigger[curTrig].value<0)
-				spcl.trigger[curTrig].value=MAX_BULLETS-1;
-		}
-		else
-		{
-			spcl.trigger[curTrig].value++;
-			if(spcl.trigger[curTrig].value>=MAX_BULLETS)
-				spcl.trigger[curTrig].value=0;
-		}
-		SetupTriggerButtons(curTrig-trgStart,(curTrig-trgStart)*38+30);
 	}
 	else
 	{
 		effMode=1;
 		curEff=effStart+(id-ID_EFF0)/100;
-
-		if(rightClick)
-		{
-			spcl.effect[curEff].value--;
-			if(spcl.effect[curEff].value<0)
-				spcl.effect[curEff].value=MAX_BULLETS-1;
-		}
-		else
-		{
-			spcl.effect[curEff].value++;
-			if(spcl.effect[curEff].value>=MAX_BULLETS)
-				spcl.effect[curEff].value=0;
-		}
-		SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
 	}
+
+	mode = SMODE_PICKBULLET1;
+	SetEditMode(EDITMODE_PICKBULLET);
+	BulletEdit_Init(EDITMODE_SPECIAL, effMode);
 }
 
 static void SetupTriggerButtons(int t,int y)
@@ -1484,12 +1371,18 @@ static void SetupTriggerButtons(int t,int y)
 			sprintf(s,"%0.2f",(float)trigger.value2/30.0f);
 			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+3+100*t,0,360,y+17,60,14,s,Float3Click);
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+4+100*t,0,424,y+17,1,1,"seconds elapse",NULL);
+			sprintf(s, "%d frames", trigger.value);
+			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+5+100*t,0,190,y,1,1,s,NULL);
+			sprintf(s, "%d frames", trigger.value2);
+			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+6+100*t,0,360,y,1,1,s,NULL);
 			break;
 		case TRG_DELAY:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Trigger continuously after",NULL);
 			sprintf(s,"%0.2f",(float)trigger.value/30.0f);
 			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,250,y+17,60,14,s,FloatClick);
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+2+100*t,0,314,y+17,1,1,"seconds have passed",NULL);
+			sprintf(s, "%d frames", trigger.value);
+			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+3+100*t,0,250,y,1,1,s,NULL);
 			break;
 		case TRG_MONSTER:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If there are",NULL);
@@ -1534,7 +1427,7 @@ static void SetupTriggerButtons(int t,int y)
 			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,180,y+17,70,14,s,XYClick);
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+2+100*t,0,254,y+17,1,1,"is",NULL);
 			sprintf(s,"%c%c",(char)(trigger.value%128),(char)(trigger.value/128));
-			MakeButton(BTN_TILE,ID_TRIG0+OFS_CUSTOM+3+100*t,0,270,y+2,34,26,s,TileClick);
+			MakeButton(BTN_TILE,ID_TRIG0+OFS_CUSTOM+3+100*t,0,270,y+2,34,26,{s,2},TileClick);
 			break;
 		case TRG_RANDOM:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Random Chance:",NULL);
@@ -1547,7 +1440,7 @@ static void SetupTriggerButtons(int t,int y)
 			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,147,y+17,140,14,s,RectClick);
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+2+100*t,0,291,y+17,1,1,"is entirely",NULL);
 			sprintf(s,"%c%c",(char)(trigger.value%128),(char)(trigger.value/128));
-			MakeButton(BTN_TILE,ID_TRIG0+OFS_CUSTOM+3+100*t,0,362,y+2,34,26,s,TileClick);
+			MakeButton(BTN_TILE,ID_TRIG0+OFS_CUSTOM+3+100*t,0,362,y+2,34,26,{s,2},TileClick);
 			break;
 		case TRG_LIFE:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If",NULL);
@@ -1575,7 +1468,7 @@ static void SetupTriggerButtons(int t,int y)
 			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,55,y+17,140,14,MonsterName(trigger.value),MonsterClick);
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+2+100*t,0,200,y+17,1,1,"steps on the tile",NULL);
 			sprintf(s,"%c%c",(char)(trigger.value2%128),(char)(trigger.value2/128));
-			MakeButton(BTN_TILE,ID_TRIG0+OFS_CUSTOM+3+100*t,0,342,y+2,34,26,s,Tile2Click);
+			MakeButton(BTN_TILE,ID_TRIG0+OFS_CUSTOM+3+100*t,0,342,y+2,34,26,{s,2},Tile2Click);
 			break;
 		case TRG_GETITEM:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If player gets item at",NULL);
@@ -1663,12 +1556,7 @@ static void SetupTriggerButtons(int t,int y)
 			break;
 		case TRG_DIFFICULTY:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If difficulty is",NULL);
-			if(trigger.value==0)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,160,y+17,80,14,"Normal",DiffyClick);
-			else if(trigger.value==1)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,160,y+17,80,14,"Hard",DiffyClick);
-			else
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,160,y+17,80,14,"Lunatic",DiffyClick);
+			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,160,y+17,80,14,GetDifficultyName(trigger.value),DiffyClick);
 			if(trigger.flags&TF_LESS)
 				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+4+100*t,0,243,y+17,80,14,"Or Less",LessMoreClick);
 			else if(trigger.flags&TF_MORE)
@@ -1685,33 +1573,11 @@ static void SetupTriggerButtons(int t,int y)
 			else
 				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+4+100*t,0,120,y+17,80,14,"Is holding",LessMoreClick);
 
-			if(trigger.value==CONTROL_UP)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,80,14,"Up",KeypressClick);
-			else if(trigger.value==CONTROL_DN)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,80,14,"Down",KeypressClick);
-			else if(trigger.value==CONTROL_LF)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,80,14,"Left",KeypressClick);
-			else if(trigger.value==CONTROL_RT)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,80,14,"Right",KeypressClick);
-			else if(trigger.value==CONTROL_B1)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,80,14,"Fire",KeypressClick);
-			else if(trigger.value==CONTROL_B2)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,80,14,"Special",KeypressClick);
+			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,80,14, KeypressName(trigger.value), KeypressClick);
 			break;
 		case TRG_PLAYAS:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If player is playing as",NULL);
-			if(trigger.value==PLAY_BOUAPHA)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Bouapha",PlayAsClick);
-			else if(trigger.value==PLAY_LUNATIC)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Dr. Lunatic",PlayAsClick);
-			else if(trigger.value==PLAY_HAPPY)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Happy Stick Man",PlayAsClick);
-			else if(trigger.value==PLAY_SHROOM)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Shtupid Shroom",PlayAsClick);
-			else if(trigger.value==PLAY_LUNACHIK)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Lunachick",PlayAsClick);
-			else if(trigger.value==PLAY_MECHA)
-				MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Mechabouapha",PlayAsClick);
+			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,GetPlayableCharacterName(trigger.value),PlayAsClick);
 			break;
 		case TRG_MONSCOLOR:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If",NULL);
@@ -1759,7 +1625,7 @@ static void SetupTriggerButtons(int t,int y)
 			break;
 		case TRG_BULLETRECT:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If any",NULL);
-			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,90,y+17,140,14,bulletName[trigger.value],Bullet1Click);
+			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,90,y+17,140,14,BulletName(trigger.value),Bullet1Click);
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+2+100*t,0,235,y+17,1,1,"are in the area: ",NULL);
 			sprintf(s,"(%d,%d)-(%d,%d)",trigger.x,trigger.y,((word)trigger.value2)%256,((word)trigger.value2)/256);
 			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+3+100*t,0,370,y+17,150,14,s,RectClick);
@@ -1864,11 +1730,11 @@ static void SetupEffectButtons(int t,int y)
 
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,304,y+17,1,1,"to floor",NULL);
 			sprintf(s,"%c%c",(char)(effect.value%128),(char)(effect.value/128));
-			MakeButton(BTN_TILE,ID_EFF0+OFS_CUSTOM+5+100*t,0,366,y+2,34,26,s,TileClick);
+			MakeButton(BTN_TILE,ID_EFF0+OFS_CUSTOM+5+100*t,0,366,y+2,34,26,{s,2},TileClick);
 
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+6+100*t,0,404,y+17,1,1,"& wall",NULL);
 			sprintf(s,"%c%c",(char)(effect.value2%128),(char)(effect.value2/128));
-			MakeButton(BTN_TILE2,ID_EFF0+OFS_CUSTOM+7+100*t,0,456,y+2,34,26,s,Tile2Click);
+			MakeButton(BTN_TILE2,ID_EFF0+OFS_CUSTOM+7+100*t,0,456,y+2,34,26,{s,2},Tile2Click);
 
 			if(effect.flags&EF_NOFX)
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+8+100*t,0,520,y+17,65,14,"No FX",NoFXClick);
@@ -2069,7 +1935,7 @@ static void SetupEffectButtons(int t,int y)
 			break;
 		case EFF_LEVELFLAG:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Change level flag",NULL);
-			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,170,y+17,140,14,lvlFlagName[effect.value],LevelFlagClick);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,170,y+17,140,14,MapFlagName(effect.value),LevelFlagClick);
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,314,y+17,1,1,"to",NULL);
 			switch(effect.value2)
 			{
@@ -2092,11 +1958,11 @@ static void SetupEffectButtons(int t,int y)
 
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,304,y+17,1,1,"to floor",NULL);
 			sprintf(s,"%c%c",(char)(effect.value%128),(char)(effect.value/128));
-			MakeButton(BTN_TILE,ID_EFF0+OFS_CUSTOM+5+100*t,0,366,y+2,34,26,s,TileClick);
+			MakeButton(BTN_TILE,ID_EFF0+OFS_CUSTOM+5+100*t,0,366,y+2,34,26,{s,2},TileClick);
 
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+6+100*t,0,404,y+17,1,1,"& wall",NULL);
 			sprintf(s,"%c%c",(char)(effect.value2%128),(char)(effect.value2/128));
-			MakeButton(BTN_TILE2,ID_EFF0+OFS_CUSTOM+7+100*t,0,464,y+2,34,26,s,Tile2Click);
+			MakeButton(BTN_TILE2,ID_EFF0+OFS_CUSTOM+7+100*t,0,464,y+2,34,26,{s,2},Tile2Click);
 
 			if(effect.flags&EF_NOFX)
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+8+100*t,0,520,y+17,65,14,"No FX",NoFXClick);
@@ -2131,7 +1997,7 @@ static void SetupEffectButtons(int t,int y)
 			break;
 		case EFF_WEAPON:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Force player's weapon to",NULL);
-			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,224,y+17,140,14,WeaponName(effect.value),WeaponClick);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,224,y+17,140,14,GetWeaponName(effect.value),WeaponClick);
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,370,y+17,1,1,"and",NULL);
 
 			if(effect.value2==0)
@@ -2276,18 +2142,7 @@ static void SetupEffectButtons(int t,int y)
 			break;
 		case EFF_PLAYAS:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Force player to play as",NULL);
-			if(effect.value==PLAY_BOUAPHA)
-				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Bouapha",PlayAsClick);
-			else if(effect.value==PLAY_LUNATIC)
-				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Dr. Lunatic",PlayAsClick);
-			else if(effect.value==PLAY_HAPPY)
-				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Happy Stick Man",PlayAsClick);
-			else if(effect.value==PLAY_SHROOM)
-				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Shtupid Shroom",PlayAsClick);
-			else if(effect.value==PLAY_LUNACHIK)
-				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Lunachick",PlayAsClick);
-			else if(effect.value==PLAY_MECHA)
-				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,"Mechabouapha",PlayAsClick);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,213,y+17,140,14,GetPlayableCharacterName(effect.value),PlayAsClick);
 			break;
 		case EFF_MONSGRAPHICS:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Change",NULL);
@@ -2298,12 +2153,12 @@ static void SetupEffectButtons(int t,int y)
 			else
 				sprintf(s,"%d, %d",effect.x,effect.y);
 			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,258,y+17,70,14,s,XY3Click);
-			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,332,y+17,1,1,"to Graphics",NULL);
-			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,430,y+17,140,14,effect.text,PicNameClick);
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,332,y+17,1,1,"to graphics",NULL);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,430,y+17,140,14,effect.text,JspNameClick);
 			break;
 		case EFF_ITEMGRAPHICS:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Use custom item sprites",NULL);
-			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,240,y+17,250,14,effect.text,PicNameClick);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,240,y+17,250,14,effect.text,JspNameClick);
 			break;
 		case EFF_VARBAR:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Set",NULL);
@@ -2323,7 +2178,7 @@ static void SetupEffectButtons(int t,int y)
 			break;
 		case EFF_MAKEBULLET:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Summon",NULL);
-			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,104,y+17,140,14,bulletName[effect.value2],BulletClick);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,104,y+17,140,14,BulletName(effect.value2),BulletClick);
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,248,y+17,1,1,"at",NULL);
 			if(effect.x==255)
 				sprintf(s,"Tagged");
@@ -2331,7 +2186,7 @@ static void SetupEffectButtons(int t,int y)
 				sprintf(s,"%d, %d",effect.x,effect.y);
 			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,268,y+17,70,14,s,XY3Click);
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,342,y+17,1,1,"facing",NULL);
-			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,400,y+17,95,14,effect.text,MessageClick);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,400,y+17,95,14,effect.text,EquationClick);
 
 			if(BulletFacingType(effect.value2))
 				sprintf(s,"Uses 0-%d",BulletFacingType(effect.value2));
@@ -2346,7 +2201,7 @@ static void SetupEffectButtons(int t,int y)
 			break;
 		case EFF_CHANGEBULLET:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Change",NULL);
-			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,104,y+17,140,14,bulletName[effect.value],Bullet1Click);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,104,y+17,140,14,BulletName(effect.value),Bullet1Click);
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,248,y+17,1,1,"at",NULL);
 			if(effect.x==255)
 				strcpy(s,"Anywhere");
@@ -2354,7 +2209,7 @@ static void SetupEffectButtons(int t,int y)
 				sprintf(s,"%d, %d",effect.x,effect.y);
 			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,268,y+17,70,14,s,XY3Click);
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,342,y+17,1,1,"to",NULL);
-			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,360,y+17,140,14,bulletName[effect.value2],BulletClick);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,360,y+17,140,14,BulletName(effect.value2),BulletClick);
 
 			if(effect.flags&EF_NOFX)
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+6+100*t,0,520,y+17,65,14,"No FX",NoFXClick);
@@ -2446,6 +2301,7 @@ void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
 			break;
 		case SMODE_PICKBMP:
 		case SMODE_PICKSONG:
+			FileDialogScroll(scroll);
 			if(mgl->MouseTap())
 			{
 				FileDialogClick(mouseX,mouseY);
@@ -2513,17 +2369,17 @@ void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
 					}
 					else if(mode==SMODE_FVALUE)
 					{
-						spcl.trigger[curTrig].value=(short)(atof(GetText())*30.0f);
+						spcl.trigger[curTrig].value=(short)round(atof(GetText())*30.0f);
 						SetupTriggerButtons(curTrig-trgStart,(curTrig-trgStart)*38+30);
 					}
 					else if(mode==SMODE_FVALUE2)
 					{
-						spcl.trigger[curTrig].value=(short)(atof(GetText())*(float)FIXAMT);
+						spcl.trigger[curTrig].value=(short)round(atof(GetText())*(float)FIXAMT);
 						SetupTriggerButtons(curTrig-trgStart,(curTrig-trgStart)*38+30);
 					}
 					else if(mode==SMODE_FVALUE3)
 					{
-						spcl.trigger[curTrig].value2=(short)(atof(GetText())*30.0f);
+						spcl.trigger[curTrig].value2=(short)round(atof(GetText())*30.0f);
 						SetupTriggerButtons(curTrig-trgStart,(curTrig-trgStart)*38+30);
 					}
 					else if(mode==SMODE_USES)
@@ -2663,7 +2519,27 @@ void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
 					mode=helpRemember;
 			}
 			break;
+		case SMODE_PICKBULLET:
+			if (EditorGetLastPick() != -1)
+				spcl.effect[curEff].value2 = EditorGetLastPick();
+			mode = SMODE_NORMAL;
+			SpecialEditSetupButtons();
+			break;
+		case SMODE_PICKBULLET1:
+			if (effMode)
+			{
+				if (EditorGetLastPick() != -1)
+					spcl.effect[curEff].value = EditorGetLastPick();
+			}
+			else
+			{
+				if (EditorGetLastPick() != -1)
+					spcl.trigger[curTrig].value = EditorGetLastPick();
+			}
 
+			mode = SMODE_NORMAL;
+			SpecialEditSetupButtons();
+			break;
 	}
 }
 

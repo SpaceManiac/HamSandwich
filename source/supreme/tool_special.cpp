@@ -86,8 +86,8 @@ void SpecialTool::ShowTarget(void)
 
 	EditorGetTileXY(&tileX,&tileY);
 
-	x1=tileX*TILE_WIDTH-(cx-320);
-	y1=tileY*TILE_HEIGHT-(cy-240);
+	x1=tileX*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2);
+	y1=tileY*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2);
 
 	x2=x1+TILE_WIDTH-1;
 	y2=y1+TILE_HEIGHT-1;

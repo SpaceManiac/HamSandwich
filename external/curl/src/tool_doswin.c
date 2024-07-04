@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,16 +18,18 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 #include "tool_setup.h"
 
-#if defined(MSDOS) || defined(WIN32)
+#if defined(_WIN32) || defined(MSDOS)
 
 #if defined(HAVE_LIBGEN_H) && defined(HAVE_BASENAME)
 #  include <libgen.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #  include <stdlib.h>
 #  include <tlhelp32.h>
 #  include "tool_cfgable.h"
@@ -40,7 +42,7 @@
 #include "curlx.h"
 #include "memdebug.h" /* keep this as LAST include */
 
-#ifdef WIN32
+#ifdef _WIN32
 #  undef  PATH_MAX
 #  define PATH_MAX MAX_PATH
 #endif
@@ -53,7 +55,7 @@
 #  endif
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #  define _use_lfn(f) (1)   /* long file names always available */
 #elif !defined(__DJGPP__) || (__DJGPP__ < 2)  /* DJGPP 2.0 has _use_lfn() */
 #  define _use_lfn(f) (0)  /* long file names never available */
@@ -345,7 +347,7 @@ SANITIZEcode msdosify(char **const sanitized, const char *file_name,
   if(s[0] >= 'A' && s[0] <= 'z' && s[1] == ':') {
     *d++ = *s++;
     *d = ((flags & (SANITIZE_ALLOW_COLONS|SANITIZE_ALLOW_PATH))) ? ':' : '_';
-    ++d, ++s;
+    ++d; ++s;
   }
 
   for(idx = 0, dot_idx = -1; *s && d < dlimit; s++, d++) {
@@ -595,7 +597,7 @@ char **__crt0_glob_function(char *arg)
 
 #endif /* MSDOS && (__DJGPP__ || __GO32__) */
 
-#ifdef WIN32
+#ifdef _WIN32
 
 /*
  * Function to find CACert bundle on a Win32 platform using SearchPath.
@@ -624,8 +626,7 @@ CURLcode FindWin32CACert(struct OperationConfig *config,
    * ignored. We allow setting CA location for schannel only when explicitly
    * specified by the user via CURLOPT_CAINFO / --cacert.
    */
-  if((curlinfo->features & CURL_VERSION_SSL) &&
-     backend != CURLSSLBACKEND_SCHANNEL) {
+  if(feature_ssl && backend != CURLSSLBACKEND_SCHANNEL) {
 
     DWORD res_len;
     TCHAR buf[PATH_MAX];
@@ -635,12 +636,11 @@ CURLcode FindWin32CACert(struct OperationConfig *config,
 
     res_len = SearchPath(NULL, bundle_file, NULL, PATH_MAX, buf, &ptr);
     if(res_len > 0) {
+      char *mstr = curlx_convert_tchar_to_UTF8(buf);
       Curl_safefree(config->cacert);
-#ifdef UNICODE
-      config->cacert = curlx_convert_wchar_to_UTF8(buf);
-#else
-      config->cacert = strdup(buf);
-#endif
+      if(mstr)
+        config->cacert = strdup(mstr);
+      curlx_unicodefree(mstr);
       if(!config->cacert)
         result = CURLE_OUT_OF_MEMORY;
     }
@@ -714,6 +714,8 @@ static struct TerminalSettings {
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 #endif
 
+bool tool_term_has_bold;
+
 static void restore_terminal(void)
 {
   if(InterlockedExchange(&TerminalSettings.valid, (LONG)FALSE))
@@ -733,16 +735,23 @@ static BOOL WINAPI signal_handler(DWORD type)
 static void init_terminal(void)
 {
   TerminalSettings.hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
   /*
    * Enable VT (Virtual Terminal) output.
    * Note: VT mode flag can be set on any version of Windows, but VT
-   * processing only performed on Win10 >= Creators Update)
+   * processing only performed on Win10 >= version 1709 (OS build 16299)
+   * Creator's Update. Also, ANSI bold on/off supported since then.
    */
-  if((TerminalSettings.hStdOut != INVALID_HANDLE_VALUE) &&
-     GetConsoleMode(TerminalSettings.hStdOut,
-                    &TerminalSettings.dwOutputMode) &&
-     !(TerminalSettings.dwOutputMode &
-       ENABLE_VIRTUAL_TERMINAL_PROCESSING)) {
+  if(TerminalSettings.hStdOut == INVALID_HANDLE_VALUE ||
+     !GetConsoleMode(TerminalSettings.hStdOut,
+                     &TerminalSettings.dwOutputMode) ||
+     !curlx_verify_windows_version(10, 0, 16299, PLATFORM_WINNT,
+                                   VERSION_GREATER_THAN_EQUAL))
+    return;
+
+  if((TerminalSettings.dwOutputMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING))
+    tool_term_has_bold = true;
+  else {
     /* The signal handler is set before attempting to change the console mode
        because otherwise a signal would not be caught after the change but
        before the handler was installed. */
@@ -751,6 +760,7 @@ static void init_terminal(void)
       if(SetConsoleMode(TerminalSettings.hStdOut,
                         (TerminalSettings.dwOutputMode |
                          ENABLE_VIRTUAL_TERMINAL_PROCESSING))) {
+        tool_term_has_bold = true;
         atexit(restore_terminal);
       }
       else {
@@ -781,6 +791,6 @@ CURLcode win32_init(void)
   return CURLE_OK;
 }
 
-#endif /* WIN32 */
+#endif /* _WIN32 */
 
-#endif /* MSDOS || WIN32 */
+#endif /* _WIN32 || MSDOS */

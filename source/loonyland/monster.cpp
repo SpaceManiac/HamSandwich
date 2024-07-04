@@ -1094,7 +1094,7 @@ word MonsterFlags(byte type)
 {
 	if(player.worldNum==WORLD_SLINGSHOT && type==player.monsType)
 		return monsType[type].flags|MF_NOMOVE;
-	else if(type>=MONS_WOLFMAN && type<=MONS_WOLFMAN3 && !player.var[VAR_QUESTDONE+QUEST_SILVER])
+	else if(type>=MONS_WOLFMAN && type<=MONS_WOLFMAN3 && !player.var[VAR_SILVERSLING])
 		return monsType[type].flags|MF_INVINCIBLE;
 	else
 		return monsType[type].flags;
@@ -1207,6 +1207,14 @@ void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char 
 
 	if(!(monsType[type].flags&MF_ONEFACE))
 		v+=facing*monsType[type].framesPerDir;
+
+	if (type == MONS_EVILTREE || type == MONS_EVILTREE2 || type == MONS_EVILTREE3)
+	{
+		// Offset where the sprite is drawn so it's right in the middle of the
+		// tile, in the same place where the item will drop when it dies.
+		x += 3 << FIXSHIFT;
+		y -= 1 << FIXSHIFT;
+	}
 
 	if(isBouapha)
 	{
@@ -2506,11 +2514,7 @@ void AI_EvilTree(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				me->reload=30*3;
 			}
 		}
-		if(me->seq==ANIM_DIE && me->frm==0 && me->frmTimer<64)
-		{
-			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)
-				map->map[me->mapx+me->mapy*map->width].item=ITM_TREE2;
-		}
+		// dead tree dropping moved to Guy::SeqFinished
 		return;	// can't do nothin' right now
 	}
 
@@ -3048,7 +3052,7 @@ void AI_Ghost(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				goodguy->dx=0;
 				goodguy->dy=0;
 				player.stone=30*2;
-				MakeSound(SND_FREEZE,x*FIXAMT,y*FIXAMT,SND_CUTOFF,1200);
+				//MakeSound(SND_FREEZE,me->x,me->y,SND_CUTOFF,1200);
 			}
 		}
 		return;	// can't do nothin' right now
@@ -3961,7 +3965,7 @@ void AI_HelperBat(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	BasicAI(me,SND_BATOUCH,SND_BATDIE,map,world,goodguy);
 
-	if(!player.var[VAR_HELPERBAT])
+	if(!player.var[VAR_QUESTDONE + QUEST_FARLEY])
 	{
 		if(RangeToTarget(me,goodguy)<FIXAMT*72 && me->reload==0)
 		{
@@ -4806,9 +4810,9 @@ void AI_Evilizer(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	SetBossHP(me->hp,MonsterHP(me->type));
 
 	if(me->hp && RangeToTarget(me,goodguy)<780*FIXAMT)
-		SetNoSaving(1);
+		SetNoSaving(true);
 	if(me->hp==0)
-		SetNoSaving(0);
+		SetNoSaving(false);
 
 	if(me->ouch==4)
 		MakeSound(SND_METALSMACK,me->x,me->y,SND_CUTOFF,1200);
@@ -5052,7 +5056,7 @@ void AI_Larry(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		}
 		if(me->seq==ANIM_DIE)
 		{
-			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)
+			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX|| player.worldNum==WORLD_RANDOMIZER)
 			{
 				g=AddGuy(me->x,me->y,me->z,MONS_VILLAGER2);
 				BadgeCheck(BE_KILL,me->type,map);
@@ -5241,7 +5245,7 @@ void AI_HumanLarry(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		}
 		if(me->seq==ANIM_DIE)
 		{
-			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)
+			if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX|| player.worldNum==WORLD_RANDOMIZER)
 			{
 				g=AddGuy(me->x,me->y,me->z,MONS_VILLAGER3);
 				BadgeCheck(BE_KILL,me->type,map);
