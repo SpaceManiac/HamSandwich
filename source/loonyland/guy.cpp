@@ -1820,7 +1820,7 @@ void Frogs(Map *map,world_t *world)
 
 void RespawnGuy(Map *map)
 {
-	byte noRespawn[]={
+	static const byte noRespawn[]={
 		MONS_NONE,MONS_LOONY,MONS_LOONYTOAD,MONS_FRANKENJ,MONS_BIGGHOST,
 		MONS_LARRY,MONS_HUMANLARRY,MONS_HELPERBAT,MONS_VILLAGER,MONS_VILLAGER2,
 		MONS_VILLAGER3,MONS_VILLAGER4,MONS_VILLAGER5,MONS_VILLAGER6,
@@ -1832,12 +1832,12 @@ void RespawnGuy(Map *map)
 		MONS_BONKULA,MONS_EVILIZER,MONS_EVILPUMP,MONS_PUMPKIN,MONS_PUMPKIN2,MONS_PUMPKIN3,
 		MONS_ZOMBIE3,MONS_PLYRWOLF,MONS_LOONY2,
 		MONS_PLYRSUMMON,MONS_PLYRTHIEF,MONS_SUMBOMBIE,MONS_SUMGHOST,MONS_SUMWOLF,MONS_SUMBAT,
-		MONS_SUMMUMMY,MONS_SUMFROG,MONS_SUMDOG,255,
+		MONS_SUMMUMMY,MONS_SUMFROG,MONS_SUMDOG,
 	};
 
 	static byte tick=0;
 	int i,tries;
-	byte ok,t,tag;
+	byte ok,tag;
 	Guy *g;
 
 	if(player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX && player.worldNum!=WORLD_RANDOMIZER)
@@ -1854,16 +1854,14 @@ void RespawnGuy(Map *map)
 	{
 		i=Random(MAX_MAPMONS);
 
-		t=0;
 		ok=1;
-		while(noRespawn[t]!=255)
+		for (byte bad : noRespawn)
 		{
-			if(map->badguy[i].type==noRespawn[t])
+			if (map->badguy[i].type == bad)
 			{
 				ok=0;
 				break;
 			}
-			t++;
 		}
 		if(!ok)
 			continue;
@@ -2034,7 +2032,7 @@ void SurprisePlace(byte type,byte tag,int x,int y,Map *map,world_t *world)
 
 byte SurpriseMonster(byte origType,byte tag,int x,int y,Map *map,world_t *world)
 {
-	byte badTable[]={
+	static const byte badTable[]={
 		MONS_NONE,MONS_LOONY,MONS_LOONYTOAD,MONS_BIGGHOST,
 		MONS_LARRY,MONS_HUMANLARRY,MONS_HELPERBAT,MONS_VILLAGER,MONS_VILLAGER2,
 		MONS_VILLAGER3,MONS_VILLAGER4,MONS_VILLAGER5,MONS_VILLAGER6,
@@ -2043,26 +2041,21 @@ byte SurpriseMonster(byte origType,byte tag,int x,int y,Map *map,world_t *world)
 		MONS_LIGHTBALL2,MONS_LIGHTBALL3,MONS_LIGHTBALL4,MONS_LIGHTBALL5,
 		MONS_EVILTREE,MONS_EVILTREE2,MONS_BUBBLE,MONS_JUNK,
 		MONS_JUNK2,MONS_JUNK3,MONS_PLYRBONKULA,MONS_PLYRSWAMPDOG,MONS_PLYRWITCH,
-		MONS_BONKULA,MONS_EVILIZER,MONS_PLYRWOLF,MONS_LOONY2,
+		MONS_BONKULA,MONS_EVILIZER,MONS_EVILPUMP,MONS_PLYRWOLF,MONS_LOONY2,
 		MONS_PLYRSUMMON,MONS_PLYRTHIEF,MONS_SUMBOMBIE,MONS_SUMGHOST,MONS_SUMWOLF,MONS_SUMBAT,
-		MONS_SUMMUMMY,MONS_SUMFROG,MONS_SUMDOG,255,
+		MONS_SUMMUMMY,MONS_SUMFROG,MONS_SUMDOG,
 	};
 	int amount;
 	byte myType;
-	int i;
 
 	if(opt.cheats[CH_SURPRISE]==0 || editing || origType==player.monsType)
 		return 0;
 
 	// can't surprise some monsters
-	i=0;
-	while(1)
+	for (byte bad : badTable)
 	{
-		if(origType==badTable[i])
+		if (origType == bad)
 			return 0;
-		i++;
-		if(badTable[i]==255)
-			break;
 	}
 
 	amount=MonsterLevel(origType);
@@ -2078,17 +2071,13 @@ byte SurpriseMonster(byte origType,byte tag,int x,int y,Map *map,world_t *world)
 				continue;
 
 			// make sure it is an ok monster
-			i=0;
-			while(1)
+			for (byte bad : badTable)
 			{
-				if(myType==badTable[i])
+				if (myType == bad)
 				{
 					myType=0;
 					break;
 				}
-				i++;
-				if(badTable[i]==255)
-					break;
 			}
 			if(myType==0)
 				continue;
@@ -2104,7 +2093,7 @@ byte SurpriseMonster(byte origType,byte tag,int x,int y,Map *map,world_t *world)
 		{
 			myType=(byte)Random(NUM_MONSTERS);
 
-			i=amount*3/2;
+			int i=amount*3/2;
 			if(i<amount+2)
 				i=amount+2;
 

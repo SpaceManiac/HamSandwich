@@ -255,7 +255,7 @@ static const badge_t badge[NUM_BADGES]={
 	 "",
 	 "",
 	 "",
-	 RULE_NEWGAME},
+	 0},
 	{"Winnin'",
 	 "Earned for winning Adventure Mode.",
 	 "",
