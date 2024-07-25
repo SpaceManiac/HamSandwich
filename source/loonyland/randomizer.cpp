@@ -1,4 +1,13 @@
 #include "randomizer.h"
+#include <sys/stat.h>
+#include <set>
+#include <vector>
+#include <filesystem>
+#include <algorithm>
+#include <iostream>
+#include <random>
+#include <fstream>
+#include <string>
 #include "mgldraw.h"
 #include "control.h"
 #include "display.h"
@@ -6,19 +15,9 @@
 #include "title.h"
 #include "plasma.h"
 #include "appdata.h"
-#include <filesystem>
-//#include <bits/stdc++.h>
 #include "map.h"
-#include <set>
-#include <vector>
 #include "quest.h"
-#include <iostream>
-#include <random>
-#include <fstream>
 #include "ioext.h"
-#include <charconv>
-#include <string>
-#include <sys/stat.h>
 #include "options.h"
 
 struct RandoLocation
