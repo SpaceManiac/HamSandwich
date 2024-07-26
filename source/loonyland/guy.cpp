@@ -2101,17 +2101,13 @@ byte SurpriseMonster(byte origType,byte tag,int x,int y,Map *map,world_t *world)
 				continue;
 
 			// make sure it is an ok monster
-			i=0;
-			while(1)
+			for (byte bad : badTable)
 			{
-				if(myType==badTable[i])
+				if (myType == bad)
 				{
 					myType=0;
 					break;
 				}
-				i++;
-				if(badTable[i]==255)
-					break;
 			}
 			if(myType==0)
 				continue;
