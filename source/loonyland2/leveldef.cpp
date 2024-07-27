@@ -364,7 +364,7 @@ void LoadLevelDefs(char *name)
 	err[0]='\0';
 	ResetLevelDefs();
 	sprintf(line,"addons/lvl_%s.txt",name);
-	f=AssetOpen(line);
+	f=AppdataOpen_Stdio(line);
 	if(!f)
 		return;
 

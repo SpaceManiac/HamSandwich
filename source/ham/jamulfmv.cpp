@@ -286,7 +286,7 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 	dword oldGamepadButtons = ~0;
 	dword gamepadButtons = GetGamepadButtons();
 
-	owned::SDL_RWops FLI_file = AssetOpen_SDL_Owned(name);
+	owned::SDL_RWops FLI_file = AppdataOpen(name);
 	if (!FLI_file)
 	{
 		// Asset stack printed error already

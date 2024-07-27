@@ -9,7 +9,7 @@ void LoadOptions(void)
 	FILE *f;
 	int i;
 
-	f=AppdataOpen("stock.cfg");
+	f=AppdataOpen_Stdio("stock.cfg");
 	if(!f)
 	{
 		opt.sound=1;
@@ -52,7 +52,7 @@ void SaveOptions(void)
 {
 	FILE *f;
 
-	f=AppdataOpen_Write("stock.cfg");
+	f=AppdataOpen_Write_Stdio("stock.cfg");
 	fwrite(&opt,sizeof(options_t),1,f);
 	fclose(f);
 }

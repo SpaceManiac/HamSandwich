@@ -275,7 +275,7 @@ void SaveAddOn(void)
 	Log_Print(addOn.destFileName);
 	Log_Printnum("size: ",dataSize);
 
-	f=AppdataOpen_Write(addOn.destFileName);
+	f=AppdataOpen_Write_Stdio(addOn.destFileName);
 	fwrite(data,sizeof(byte),dataSize,f);
 	fclose(f);
 

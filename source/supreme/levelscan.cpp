@@ -500,7 +500,7 @@ byte Scan_Level(world_t *world,Map *map)
 	word itemCount[LEN];
 	int totalMons;
 
-	scanF=AppdataOpen_Write("level_scan.txt");
+	scanF=AppdataOpen_Write_Stdio("level_scan.txt");
 	if(!scanF)
 		return 0;
 
@@ -593,7 +593,7 @@ byte Scan_Vars(world_t *world)
 {
 	int i,j,k;
 
-	scanF=AppdataOpen_Write("var_scan.txt");
+	scanF=AppdataOpen_Write_Stdio("var_scan.txt");
 	if(!scanF)
 		return 0;
 

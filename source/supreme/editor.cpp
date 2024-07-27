@@ -199,10 +199,10 @@ void BackupWorld(const char *name)
 	sprintf(inName,"worlds/%s",name);
 	sprintf(outName,"worlds/backup_save.dlw");
 
-	inF=AssetOpen(inName);
+	inF=AppdataOpen_Stdio(inName);
 	if(!inF)
 		return;	// the source didn't exist, so nothing to back up
-	outF=AssetOpen_Write(outName);
+	outF=AppdataOpen_Write_Stdio(outName);
 	if(!outF)
 	{
 		fclose(inF);

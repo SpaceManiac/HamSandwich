@@ -738,9 +738,9 @@ const std::string& GetSeed()
 void PlaceItems(std::vector<RandoLocation>& locList)
 {
 	char buff[4096];
-	std::FILE* baseWorld = AppdataOpen("loony.llw");
+	std::FILE* baseWorld = AppdataOpen_Stdio("loony.llw");
 	sprintf(buff, "randomizer/%s rando.llw", seed.c_str());
-	std::FILE* newWorld = AppdataOpen_Write(buff);
+	std::FILE* newWorld = AppdataOpen_Write_Stdio(buff);
 
 	while (int n = fread(buff, 1, 4096, baseWorld))
 	{
@@ -774,7 +774,7 @@ void PlaceItems(std::vector<RandoLocation>& locList)
 
 	//questFile.open ("quest.txt");
 	sprintf(buff, "randomizer/%s quest.txt", seed.c_str());
-	std::FILE* f = AppdataOpen_Write(buff);
+	std::FILE* f = AppdataOpen_Write_Stdio(buff);
 
 	if (allItems) {
 		sprintf(buff, "randomizer/ALLITEMS %s spoiler.txt", seed.c_str());
@@ -783,7 +783,7 @@ void PlaceItems(std::vector<RandoLocation>& locList)
 		sprintf(buff, "randomizer/%s spoiler.txt", seed.c_str());
 	}
 
-	std::FILE* f2 = AppdataOpen_Write(buff);
+	std::FILE* f2 = AppdataOpen_Write_Stdio(buff);
 	{
 		FilePtrStream stream(f);
 		FilePtrStream spoilerFile(f2);

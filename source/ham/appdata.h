@@ -14,9 +14,9 @@ namespace vanilla
 	class VfsStack;
 }
 
-// Methods for accessing assets/saves 'correctly' on each platform. In some
-// situations, Appdata and Asset folders may overlap, so names should not be
-// reused. See appdata.cpp for implementation details for each platform.
+// Methods for accessing assets/saves sensibly on each platform. Writes always
+// go to the write location; reads check write location first then descend the
+// stack. See appdata.cpp for details on what the stack is on each platform.
 
 const char* EscapeBinDirectory();
 void AppdataInit(const HamSandwichMetadata* metadata);
@@ -24,21 +24,19 @@ bool AppdataIsInit();
 vanilla::VfsStack* Vfs();
 
 // Open for reading.
-FILE* AssetOpen(const char* filename);
-owned::SDL_RWops AssetOpen_SDL_Owned(const char* filename);
-// Open for writing or appending.
-FILE* AppdataOpen_Write(const char* filename);
-owned::SDL_RWops AppdataOpen_Write_SDL(const char* filename);
-//FILE* AppdataOpen_Append(const char* filename);
+owned::SDL_RWops AppdataOpen(const char* filename);
+// Open for writing.
+owned::SDL_RWops AppdataOpen_Write(const char* filename);
+// Delete
 void AppdataDelete(const char* filename);
-// On platforms that need it, ensure appdata is really saved.
-void AppdataSync();
-
 // List a directory.
 std::vector<std::string> ListDirectory(const char* directory, const char* extension = nullptr, size_t maxlen = 0);
 
-// Aliases.
-FILE* AppdataOpen(const char* filename);
-FILE* AssetOpen_Write(const char* filename);
+// On platforms that need it, ensure appdata is really saved.
+void AppdataSync();
+
+// Old FILE* functions, currently kept for compatibility.
+FILE* AppdataOpen_Stdio(const char* filename);
+FILE* AppdataOpen_Write_Stdio(const char* filename);
 
 #endif  // APPDATA_H

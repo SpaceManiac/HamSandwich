@@ -1844,7 +1844,7 @@ void ScanChests(void)
 	int i,j;
 	FILE *f;
 
-	f=AppdataOpen_Write("blah.txt");
+	f=AppdataOpen_Write_Stdio("blah.txt");
 
 	for(i=0;i<99;i++)
 		pres[i]=0;

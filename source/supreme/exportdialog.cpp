@@ -80,7 +80,7 @@ namespace
 
 		void SaveWorkshopDataFile()
 		{
-			owned::FILE f { AssetOpen_Write(workshopDataFilename.c_str()) };
+			owned::FILE f { AppdataOpen_Write_Stdio(workshopDataFilename.c_str()) };
 			fprintf(f.get(), "workshop_item_id=%" PRIu64 "\n", workshopItemId);
 		}
 
@@ -200,7 +200,7 @@ namespace
 		void LoadWorkshopDataFile(std::string source)
 		{
 			workshopDataFilename = std::move(source);
-			if (owned::FILE f { AppdataOpen(workshopDataFilename.c_str()) })
+			if (owned::FILE f { AppdataOpen_Stdio(workshopDataFilename.c_str()) })
 			{
 				char buf[128];
 				while (fgets(buf, std::size(buf), f.get()))
@@ -293,7 +293,7 @@ static bool BadCharacter(char ch)
 
 static void SaveReqFilesTxt()
 {
-	FILE *f = AppdataOpen_Write("req_files.txt");
+	FILE *f = AppdataOpen_Write_Stdio("req_files.txt");
 	fprintf(f, "# World: %s\n", title.c_str());
 	for (const auto& file : files)
 	{
@@ -363,7 +363,7 @@ static void SaveZip()
 			if (err != ZIP_OK)
 				break;
 
-			owned::SDL_RWops rw = AssetOpen_SDL_Owned(file.filename.c_str());
+			owned::SDL_RWops rw = AppdataOpen(file.filename.c_str());
 			if (!rw)
 			{
 				err = 10;
@@ -444,7 +444,7 @@ static std::string PrepareWorkshopFolder()
 				return "";
 			}
 
-			owned::SDL_RWops rw = AssetOpen_SDL_Owned(file.filename.c_str());
+			owned::SDL_RWops rw = AppdataOpen(file.filename.c_str());
 			if (!rw)
 			{
 				LogError("Workshop: Failed to open for reading: %s", file.filename.c_str());

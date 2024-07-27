@@ -283,7 +283,7 @@ void GetSavesForMenu(void)
 	for(i=0;i<5;i++)
 	{
 		ham_sprintf(txt,"save%d.sav", saveOffset + i + 1);
-		f=AppdataOpen(txt);
+		f=AppdataOpen_Stdio(txt);
 		if(!f)
 		{
 			sprintf(saves[i].txt, "%d: Unused", saveOffset + i + 1);

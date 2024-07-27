@@ -68,7 +68,7 @@ void PlayerLoadGame(byte which)
 {
 	FILE *f;
 
-	f=AppdataOpen("loony.sav");
+	f=AppdataOpen_Stdio("loony.sav");
 	if(!f)
 	{
 		InitPlayer(INIT_GAME,0,0);
@@ -87,7 +87,7 @@ void PlayerSaveGame(byte which)
 	player_t p[3];
 	int i;
 
-	f=AppdataOpen("loony.sav");
+	f=AppdataOpen_Stdio("loony.sav");
 	if(!f)
 	{
 		memset(p,0,sizeof(player_t)*3);	// make an empty player
@@ -97,15 +97,15 @@ void PlayerSaveGame(byte which)
 			p[1].totalCompletion[i]=100;
 			p[2].totalCompletion[i]=100;
 		}
-		f=AppdataOpen_Write("loony.sav");
+		f=AppdataOpen_Write_Stdio("loony.sav");
 		fwrite(p,sizeof(player_t),3,f);
 		fclose(f);
-		f=AppdataOpen("loony.sav");
+		f=AppdataOpen_Stdio("loony.sav");
 	}
 	fread(p,sizeof(player_t),3,f);
 	fclose(f);
 	memcpy(&p[which],&player,sizeof(player_t));
-	f=AppdataOpen_Write("loony.sav");
+	f=AppdataOpen_Write_Stdio("loony.sav");
 	fwrite(p,sizeof(player_t),3,f);
 	fclose(f);
 }

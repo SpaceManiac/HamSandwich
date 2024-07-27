@@ -100,7 +100,7 @@ std::string Section::save()
 }
 
 Save::Save(const char* fname)
-	: stream(AppdataOpen_Write_SDL(fname))
+	: stream(AppdataOpen_Write(fname))
 	, output(stream.get())
 {
 }
@@ -132,7 +132,7 @@ void Save::section(string_view name, string_view body)
 }
 
 Load::Load(const char* fname)
-	: stream(AssetOpen_SDL_Owned(fname))
+	: stream(AppdataOpen(fname))
 	, input(stream.get())
 {
 }

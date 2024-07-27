@@ -95,7 +95,7 @@ bool VerifyLevel(Map *map)
 	chk=ChecksumMap(map);
 
 	debugVerified = 0;
-	f=AssetOpen("worlds/levels.dat");
+	f=AppdataOpen_Stdio("worlds/levels.dat");
 	if(!f)
 		return 0;
 

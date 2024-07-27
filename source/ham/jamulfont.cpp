@@ -49,7 +49,7 @@ void FontFree(mfont_t *font)
 
 FontError FontLoad(const char *fname, mfont_t *font)
 {
-	owned::SDL_RWops f = AssetOpen_SDL_Owned(fname);
+	owned::SDL_RWops f = AppdataOpen(fname);
 	if (!f)
 		return FONT_FILENOTFOUND;
 	return FontLoad(f.get(), font);
@@ -88,7 +88,7 @@ FontError FontSave(const char *fname, const mfont_t *font)
 {
 	FILE *f;
 
-	f = AssetOpen_Write(fname);
+	f = AppdataOpen_Write_Stdio(fname);
 	if (!f)
 		return FONT_FILENOTFOUND;
 

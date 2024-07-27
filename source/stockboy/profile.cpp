@@ -41,7 +41,7 @@ byte LoadProfile(byte n)
 	char name[32];
 
 	sprintf(name,"profile%03d.pro",n);
-	f=AppdataOpen(name);
+	f=AppdataOpen_Stdio(name);
 	if(!f)
 		return 0;
 
@@ -85,7 +85,7 @@ byte SaveProfile(byte n)
 	char name[32];
 
 	sprintf(name,"profile%03d.pro",n);
-	f=AppdataOpen_Write(name);
+	f=AppdataOpen_Write_Stdio(name);
 	if(!f)
 		return 0;
 

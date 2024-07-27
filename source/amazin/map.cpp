@@ -72,7 +72,7 @@ void MapExit()
 
 void MapLoad(const char *fname)
 {
-	auto f = AssetOpen_SDL_Owned(fname);
+	auto f = AppdataOpen(fname);
 	if (!f)
 	{
 		FatalError("Can't load map!");
@@ -83,7 +83,7 @@ void MapLoad(const char *fname)
 
 void MapSave(const char *fname)
 {
-	auto f = AppdataOpen_Write_SDL(fname);
+	auto f = AppdataOpen_Write(fname);
 	SDL_RWwrite(f, g_Map, 0x10a, 8);
 }
 

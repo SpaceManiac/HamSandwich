@@ -136,7 +136,7 @@ void InitCustomWorld(void)
 	sprintf(buf, "worlds/%s", CustomWorldFname());
 	strcpy(buf+strlen(buf)-4, ".txt");
 
-	FILE* f = AssetOpen(buf);
+	FILE* f = AppdataOpen_Stdio(buf);
 	buf[0] = '\0';
 
 	if (!f)
@@ -294,7 +294,7 @@ void InitCustomWorld(void)
 
 byte VerifyHollowShw()
 {
-	FILE* f = AssetOpen("worlds/hollow.shw");
+	FILE* f = AppdataOpen_Stdio("worlds/hollow.shw");
 	byte md5buf[17];
 
 	// 18044403873A5A3DA052C871D4F76B6D
@@ -331,7 +331,7 @@ const char* CustomWorldTitle(const char* fname)
 		sprintf(buf, "worlds/%s", fname);
 		strcpy(buf+strlen(buf)-4, ".txt");
 
-		FILE* f = AssetOpen(buf);
+		FILE* f = AppdataOpen_Stdio(buf);
 		buf[0] = '\0';
 
 		if (f && fgets(buf, 32, f) != NULL)

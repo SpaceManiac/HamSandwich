@@ -1105,7 +1105,7 @@ bool MGLDraw::LoadBMP(const char *name)
 
 bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 {
-	owned::SDL_RWops rw = AssetOpen_SDL_Owned(name);
+	owned::SDL_RWops rw = AppdataOpen(name);
 	if (!rw) {
 		// Asset stack printed error already
 		return false;
@@ -1190,7 +1190,7 @@ bool MGLDraw::SaveBMP(const char *name)
 	{
 		surface->format->palette->colors[i] = { thePal[i].r, thePal[i].g, thePal[i].b, thePal[i].a };
 	}
-	SDL_SaveBMP_RW(surface, AppdataOpen_Write_SDL(name).release(), SDL_TRUE);
+	SDL_SaveBMP_RW(surface, AppdataOpen_Write(name).release(), SDL_TRUE);
 	SDL_FreeSurface(surface);
 	return true;
 }

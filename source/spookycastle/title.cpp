@@ -501,7 +501,7 @@ void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 	FILE *f;
 	player_t p;
 
-	f=AppdataOpen("loony.sav");
+	f=AppdataOpen_Stdio("loony.sav");
 	if(!f)
 	{
 		title->percent[0]=0.0;

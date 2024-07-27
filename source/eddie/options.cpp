@@ -22,7 +22,7 @@ void InitOptions(void)
 	FILE *f;
 
 	// load the hi score file if you can
-	f=AppdataOpen("options.cfg");
+	f=AppdataOpen_Stdio("options.cfg");
 	if(f)
 	{
 		fread(&options,1,sizeof(options_t),f);
@@ -56,7 +56,7 @@ void ExitOptions(void)
 {
 	FILE *f;
 
-	f=AppdataOpen_Write("options.cfg");
+	f=AppdataOpen_Write_Stdio("options.cfg");
 	if(f)
 	{
 		fwrite(&options,1,sizeof(options_t),f);

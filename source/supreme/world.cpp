@@ -72,7 +72,7 @@ static void LoadTerrain(world_t *world, const char *fname, FILE *f)
 	// specific worlds, indicated by the presence of this marker file.
 	std::string buf = fname;
 	buf.append(".shadowless");
-	if (AssetOpen_SDL_Owned(buf.c_str()))
+	if (AppdataOpen(buf.c_str()))
 	{
 		for (int i = 0; i < world->numTiles; ++i)
 		{
@@ -88,7 +88,7 @@ byte LoadWorld(world_t *world,const char *fname)
 	int i;
 	char code[32];
 
-	f=AssetOpen(fname);
+	f=AppdataOpen_Stdio(fname);
 	if(!f)
 		return 0;
 
@@ -143,7 +143,7 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 	int i;
 	char code[32];
 
-	f=AssetOpen(fname);
+	f=AppdataOpen_Stdio(fname);
 	if(!f)
 	{
 		SetStitchError("File Not Found");
@@ -338,7 +338,7 @@ byte SaveWorld(world_t *world, const char *fname)
 		if(world->map[i] && (!(world->map[i]->flags&MAP_HUB)))
 			world->totalPoints+=100;	// each level is worth 100 points except hubs which is worth nothing
 
-	f=AssetOpen_Write(fname);
+	f=AppdataOpen_Write_Stdio(fname);
 	if(!f)
 		return 0;
 
@@ -373,7 +373,7 @@ bool GetWorldName(const char *fname,char *buffer,char *authbuffer)
 {
 	char code[9];
 
-	owned::SDL_RWops f = AssetOpen_SDL_Owned(fname);
+	owned::SDL_RWops f = AppdataOpen(fname);
 	if(!f)
 		return 0;
 

@@ -30,7 +30,7 @@ byte LoadWorld(world_t *world,const char *fname)
 	FILE *f;
 	int i;
 
-	f=AssetOpen(fname);
+	f=AppdataOpen_Stdio(fname);
 	if(!f)
 		return 0;
 
@@ -65,7 +65,7 @@ byte SaveWorld(world_t *world,const char *fname)
 		if(world->map[i])
 			world->totalPoints+=100;	// each level is worth 100 points except the hub which is worth nothing
 
-	f=AssetOpen_Write(fname);
+	f=AppdataOpen_Write_Stdio(fname);
 	if(!f)
 		return 0;
 
@@ -106,7 +106,7 @@ void GetWorldName(const char *fname,char *buf)
 		return;
 
 	sprintf(fname2,"worlds/%s",fname);
-	f=AssetOpen(fname2);
+	f=AppdataOpen_Stdio(fname2);
 	if(!f)
 		return;
 
@@ -131,7 +131,7 @@ int GetWorldPoints(const char *fname)
 		return 100;
 
 	sprintf(fname2,"worlds/%s",fname);
-	f=AssetOpen(fname2);
+	f=AppdataOpen_Stdio(fname2);
 	if(!f)
 		return 100;
 

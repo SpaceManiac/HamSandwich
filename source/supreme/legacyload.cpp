@@ -144,7 +144,7 @@ byte Legacy_LoadWorld(world_t *world,const char *fname)
 
 	oldWorld=new old_world_t;
 
-	f=AssetOpen(fname);
+	f=AppdataOpen_Stdio(fname);
 	if(!f)
 		return 0;
 
@@ -654,7 +654,7 @@ bool Legacy_GetWorldName(const char *fname,char *buf)
 	if(fname[0]=='\0')
 		return false;
 
-	owned::SDL_RWops f = AssetOpen_SDL_Owned(fname);
+	owned::SDL_RWops f = AppdataOpen(fname);
 	if(!f)
 		return false;
 

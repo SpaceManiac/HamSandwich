@@ -171,7 +171,7 @@ bool JamulSoundPlay(int which, long pan, long vol, int playFlags, int priority)
 		{
 			// If not, try to load it from a file instead
 			ham_sprintf(s,"sound/snd%03d.wav",which);
-			rw = AssetOpen_SDL_Owned(s);
+			rw = AppdataOpen(s);
 			if (!rw)
 			{
 				return false;

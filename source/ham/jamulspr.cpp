@@ -1066,7 +1066,7 @@ bool sprite_set_t::Load(const char *fname)
 
 	spr.clear();
 
-	owned::SDL_RWops f = AssetOpen_SDL_Owned(fname);
+	owned::SDL_RWops f = AppdataOpen(fname);
 	if(!f) {
 		// Asset stack printed error already
 		return false;
@@ -1105,7 +1105,7 @@ bool sprite_set_t::Save(const char *fname) const
 	FILE *f;
 	word i;
 
-	f=AssetOpen_Write(fname);
+	f=AppdataOpen_Write_Stdio(fname);
 	if(!f)
 		return false;
 	// write the count

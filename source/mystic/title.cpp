@@ -443,7 +443,7 @@ void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 	player_t p;
 	int i;
 
-	f=AppdataOpen("mystic.sav");
+	f=AppdataOpen_Stdio("mystic.sav");
 	if(!f)
 	{
 		for(i=0;i<5;i++)

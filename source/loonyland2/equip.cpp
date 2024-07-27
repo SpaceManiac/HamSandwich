@@ -1663,7 +1663,7 @@ void EquipTest(void)
 	for(i=0;i<10;i++)
 		potResults[i]=0;
 
-	f=AppdataOpen_Write("text.txt");
+	f=AppdataOpen_Write_Stdio("text.txt");
 	for(i=0;i<1000;i++)
 	{
  		EquipCreateItem((i%60)+1,&type,&val1,&val2);

@@ -125,7 +125,7 @@ byte CheckForExistingName(const char *name)
 	char s[64];
 
 	sprintf(s,"profiles/%s.prf",name);
-	f=AppdataOpen(s);
+	f=AppdataOpen_Stdio(s);
 	if(f)
 	{
 		fclose(f);

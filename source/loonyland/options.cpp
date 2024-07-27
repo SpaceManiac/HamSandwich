@@ -500,7 +500,7 @@ void LoadOptions(void)
 	FILE *f;
 	int i;
 
-	f=AppdataOpen("loony.cfg");
+	f=AppdataOpen_Stdio("loony.cfg");
 	if(!f)
 	{
 		opt.sound = DEFAULT_VOLUME;
@@ -574,7 +574,7 @@ void SaveOptions(void)
 {
 	FILE *f;
 
-	f=AppdataOpen_Write("loony.cfg");
+	f=AppdataOpen_Write_Stdio("loony.cfg");
 	fwrite(&opt,sizeof(options_t),1,f);
 	fclose(f);
 	AppdataSync();

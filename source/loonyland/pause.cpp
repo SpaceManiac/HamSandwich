@@ -430,7 +430,7 @@ void GetSaves(void)
 	for(i=0;i<5;i++)
 	{
 		ham_sprintf(txt,"save%d.sav", saveOffset + i + 1);
-		f=AppdataOpen(txt);
+		f=AppdataOpen_Stdio(txt);
 		if(!f)
 		{
 			saveDesc[i][0] = '\0';
@@ -451,7 +451,7 @@ void LoadGame(int i)
 	char txt[128];
 
 	ham_sprintf(txt,"save%d.sav",i+1);
-	f=AppdataOpen(txt);
+	f=AppdataOpen_Stdio(txt);
 	if(!f)
 	{
 		InitPlayer(INIT_GAME,0,0);
@@ -534,7 +534,7 @@ void SaveGame(int i)
 	char txt[32];
 
 	ham_sprintf(txt,"save%d.sav",i+1);
-	f=AppdataOpen_Write(txt);
+	f=AppdataOpen_Write_Stdio(txt);
 	if(!f)
 	{
 		return;

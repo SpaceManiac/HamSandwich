@@ -41,7 +41,7 @@ void LogInit()
 	if (!errorLogAttempted && AppdataIsInit())
 	{
 		errorLogAttempted = true;
-		errorLog = AppdataOpen_Write("error.log");
+		errorLog = AppdataOpen_Write_Stdio("error.log");
 	}
 }
 

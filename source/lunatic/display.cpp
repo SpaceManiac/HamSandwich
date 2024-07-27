@@ -125,7 +125,7 @@ void LoadText(char *nm)
 	char line[256];
 	int y;
 
-	f = AssetOpen(nm);
+	f = AppdataOpen_Stdio(nm);
 	if (!f)
 		return;
 

@@ -40,29 +40,26 @@ using vanilla::VfsStack;
 static const HamSandwichMetadata* globalMetadata = nullptr;
 
 /*
-The interface in appdata.h currently distinguishes between AppdataOpen
-and AssetOpen, but the implementation treats them the same, instead switching
-based on whether the mode is read-only.
-
 We always first try to use the read-write ("appdata") directory. If the mode
 is read-only, we then try to use the read-only ("asset") directories in
 sequence.
 
 Emscripten
 	RW: /appdata/$GAME
-	Ro: /
+	ro: /
 		Provided by build process + JS environment
 Android
 	if external storage is writeable:
 		RW: $EXTERNAL
-		Ro: $INTERNAL
+		ro: $INTERNAL
 	else:
 		RW: $INTERNAL
-	Ro: SDL_RWFromFile, which reads from .apk
+	ro: SDL_RWFromFile, which reads from .apk
 		Tempfiles in $INTERNAL/.bundle_tmp when needed
 		Provided by build process
 Default
 	RW: $PWD
+	ro: installers according to metadata .json
 
 Pseudocode for SDL_RWFromFile(file, mode):
 	if android:
@@ -507,20 +504,20 @@ vanilla::VfsStack* Vfs() {
 	return &vfs_stack;
 }
 
-FILE* AssetOpen(const char* filename) {
-	return vfs_stack.open_stdio(filename).release();
-}
-
-owned::SDL_RWops AssetOpen_SDL_Owned(const char* filename) {
+owned::SDL_RWops AppdataOpen(const char* filename) {
 	return vfs_stack.open_sdl(filename);
 }
 
-FILE* AppdataOpen_Write(const char* filename) {
-	return vfs_stack.open_write_stdio(filename).release();
+owned::SDL_RWops AppdataOpen_Write(const char* filename) {
+	return vfs_stack.open_write_sdl(filename);
 }
 
-owned::SDL_RWops AppdataOpen_Write_SDL(const char* filename) {
-	return vfs_stack.open_write_sdl(filename);
+FILE* AppdataOpen_Stdio(const char* filename) {
+	return vfs_stack.open_stdio(filename).release();
+}
+
+FILE* AppdataOpen_Write_Stdio(const char* filename) {
+	return vfs_stack.open_write_stdio(filename).release();
 }
 
 void AppdataDelete(const char* filename) {
@@ -536,13 +533,4 @@ std::vector<std::string> ListDirectory(const char* directory, const char* extens
 	vfs_stack.list_dir(directory, &output);
 	filter_files(&output, extension, maxlen);
 	return { output.begin(), output.end() };
-}
-
-// Aliases.
-FILE* AppdataOpen(const char* filename) {
-	return AssetOpen(filename);
-}
-
-FILE* AssetOpen_Write(const char* filename) {
-	return AppdataOpen_Write(filename);
 }

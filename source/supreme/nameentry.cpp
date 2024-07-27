@@ -74,7 +74,7 @@ static bool CheckForExistingName(const char *name)
 {
 	char s[64];
 	sprintf(s,"profiles/%s.prf",name);
-	return AssetOpen_SDL_Owned(s) != nullptr;
+	return AppdataOpen(s) != nullptr;
 }
 
 byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)

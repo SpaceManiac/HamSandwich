@@ -13,7 +13,7 @@ void Log_Begin(const char *fname)
 	struct tm *newtime;
 	time_t clock;
 
-	logF=AppdataOpen_Write(fname);
+	logF=AppdataOpen_Write_Stdio(fname);
 
 	time(&clock);
 	newtime=localtime(&clock);

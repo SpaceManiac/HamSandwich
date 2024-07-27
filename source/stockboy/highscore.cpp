@@ -368,7 +368,7 @@ byte LoadAddOnScores(char *fname)
 	addOnScoreName[strlen(addOnScoreName)-2]='i';
 	addOnScoreName[strlen(addOnScoreName)-1]='g';
 
-	f=AppdataOpen(addOnScoreName);
+	f=AppdataOpen_Stdio(addOnScoreName);
 	if(!f)
 	{
 		// set up empty scores
@@ -413,7 +413,7 @@ byte SaveAddOnScores(void)
 {
 	FILE *f;
 
-	f=AppdataOpen_Write(addOnScoreName);
+	f=AppdataOpen_Write_Stdio(addOnScoreName);
 	if(!f)
 		return 0;
 

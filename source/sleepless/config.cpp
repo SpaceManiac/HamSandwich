@@ -23,7 +23,7 @@ void LoadConfig(void)
 	config.camera=1;
 	config.shading=1;
 
-	f=AppdataOpen("config.txt");
+	f=AppdataOpen_Stdio("config.txt");
 	if(!f)
 	{
 		return;

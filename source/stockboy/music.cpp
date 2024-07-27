@@ -61,7 +61,7 @@ byte Music_Load(char *fname)
 		return 0;
 
 	sprintf(fn,"music/%s",fname);
-	f=AssetOpen(fn);
+	f=AppdataOpen_Stdio(fn);
 	if(!f)
 		return 0;
 
@@ -111,7 +111,7 @@ byte Music_Save(char *fname)
 	Music_SetLengths();
 
 	sprintf(fn,"music/%s",fname);
-	f=AssetOpen_Write(fn);
+	f=AppdataOpen_Write_Stdio(fn);
 	if(!f)
 		return 0;
 
@@ -144,7 +144,7 @@ byte Music_GetSongName(char *fname,char *title,char *author)
 
 	sprintf(s,"music/%s",fname);
 
-	f=AssetOpen(s);
+	f=AppdataOpen_Stdio(s);
 	if(!f)
 		return 0;
 

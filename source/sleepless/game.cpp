@@ -437,7 +437,7 @@ TASK(byte) LunaticRun(int *lastTime)
 			// It's cheatable but that's kind of ok
 			if (!IsCustomWorld())
 			{
-				FILE* f = AppdataOpen_Write("profiles/editor.dat");
+				FILE* f = AppdataOpen_Write_Stdio("profiles/editor.dat");
 				char text[256];
 				sprintf(text,"Editor unlocked by %s, what a cool guy!\n", profile.name);
 				fwrite(text, sizeof(char), strlen(text), f);

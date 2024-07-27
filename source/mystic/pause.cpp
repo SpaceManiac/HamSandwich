@@ -151,7 +151,7 @@ void InitPauseMenu(void)
 	lastKey=0;
 	subMode=0;
 
-	f=AppdataOpen("mystic.sav");
+	f=AppdataOpen_Stdio("mystic.sav");
 	if(!f)
 	{
 		for(i=0;i<5;i++)

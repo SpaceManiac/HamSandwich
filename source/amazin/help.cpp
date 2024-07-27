@@ -272,7 +272,7 @@ static void LoadHelpDocument(byte page)
 	char line[128];
 
 	HelpClear();
-	FILE *f = AssetOpen("data/help.jhl");
+	FILE *f = AppdataOpen_Stdio("data/help.jhl");
 	if (!f)
 	{
 		FatalError("Help File Not Found!");

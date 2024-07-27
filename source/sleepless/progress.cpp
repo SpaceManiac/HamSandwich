@@ -27,7 +27,7 @@ void InitProfile(void)
 	int i;
 
 	firstTime=0;
-	f=AppdataOpen("profile.cfg");
+	f=AppdataOpen_Stdio("profile.cfg");
 	if(!f)
 	{
 		firstTime=1;	// ask the player to enter their name
@@ -81,13 +81,13 @@ void SaveProfile(void)
 	FILE *f;
 	int i,j;
 
-	f=AppdataOpen_Write("profile.cfg");
+	f=AppdataOpen_Write_Stdio("profile.cfg");
 	fprintf(f,"%s\n",profile.name);
 	fclose(f);
 
 	sprintf(prfName,"profiles/%s.prf",profile.name);
 	// also actually save the profile!
-	f=AppdataOpen_Write(prfName);
+	f=AppdataOpen_Write_Stdio(prfName);
 	// begin fwrite(&profile, sizeof(profile_t), 1, f) emulation
 	fwrite(&profile, 68, 1, f);
 	for(i = 0; i < NUM_PLAYLISTS; ++i)
@@ -150,13 +150,13 @@ void LoadProfile(const char *name)
 	sprintf(prfName,"profiles/%s.prf",profile.name);
 
 	// save this profile as the current one.
-	f=AppdataOpen_Write("profile.cfg");
+	f=AppdataOpen_Write_Stdio("profile.cfg");
 	fprintf(f,"%s\n",profile.name);
 	fclose(f);
 	AppdataSync();
 
 	// now load it
-	f=AppdataOpen(prfName);
+	f=AppdataOpen_Stdio(prfName);
 	if(!f)	// file doesn't exist
 	{
 		DefaultProfile(name);
@@ -554,7 +554,7 @@ void SaveState(void)
 		sprintf(fname,"profiles/_editing_.%03d",player.levelNum);
 	else
 		sprintf(fname,"profiles/%s.%03d",profile.name,player.levelNum);
-	f=AppdataOpen_Write(fname);
+	f=AppdataOpen_Write_Stdio(fname);
 
 	// first write out the player itself
 	fwrite(&player, offsetof(player_t, worldProg), 1, f);
@@ -597,7 +597,7 @@ byte LoadState(byte lvl,byte getPlayer)
 		sprintf(fname,"profiles/_editing_.%03d",lvl);
 	else
 		sprintf(fname,"profiles/%s.%03d",profile.name,lvl);
-	f=AppdataOpen(fname);
+	f=AppdataOpen_Stdio(fname);
 	if(f==NULL)
 		return 0;
 
