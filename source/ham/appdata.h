@@ -21,7 +21,7 @@ namespace vanilla
 const char* EscapeBinDirectory();
 void AppdataInit(const HamSandwichMetadata* metadata);
 bool AppdataIsInit();
-vanilla::VfsStack& AppdataVfs();
+vanilla::VfsStack* Vfs();
 
 // Open for reading.
 FILE* AssetOpen(const char* filename);

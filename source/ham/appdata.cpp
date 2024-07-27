@@ -503,8 +503,8 @@ bool AppdataIsInit() {
 	return !vfs_stack.empty();
 }
 
-vanilla::VfsStack& AppdataVfs() {
-	return vfs_stack;
+vanilla::VfsStack* Vfs() {
+	return &vfs_stack;
 }
 
 FILE* AssetOpen(const char* filename) {

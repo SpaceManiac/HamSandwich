@@ -195,10 +195,10 @@ public:
 
 	void MountWorkshopContent()
 	{
-		vanilla::VfsStack& vfs_stack = AppdataVfs();
+		vanilla::VfsStack* vfs_stack = Vfs();
 
 		// Unmount all existing Workshop content and remount it in the loop below.
-		erase_if(vfs_stack.mounts, [](const vanilla::Mount& mount) { return mount.meta.steamWorkshopId != 0; });
+		erase_if(vfs_stack->mounts, [](const vanilla::Mount& mount) { return mount.meta.steamWorkshopId != 0; });
 
 		uint32_t subscribedCount = SteamUGC()->GetNumSubscribedItems();
 		subscribedItemIds.resize(subscribedCount);
@@ -232,7 +232,7 @@ public:
 				if (SteamUGC()->GetItemInstallInfo(fileId, nullptr, dirname, std::size(dirname), nullptr))
 				{
 					SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop: %s", dirname);
-					vfs_stack.push_back(vanilla::open_stdio(dirname), "", { vanilla::VfsSourceKind::Addon, fileId });
+					vfs_stack->push_back(vanilla::open_stdio(dirname), "", { vanilla::VfsSourceKind::Addon, fileId });
 				}
 				else
 				{

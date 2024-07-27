@@ -373,7 +373,7 @@ static void PrepWorld()
 	level=0;
 	noScoresAtAll=0;
 	FetchScores(0);
-	AppdataVfs().query_bottom(s, &worldMeta);
+	Vfs()->query_bottom(s, &worldMeta);
 	SteamManager::Get()->PrepWorldLeaderboard(s);
 }
 

@@ -265,7 +265,7 @@ static void AddDependency(std::string_view part1, std::string_view part2)
 
 	FileKind kind = FileKind::DependencyMissing;
 	vanilla::VfsMeta meta;
-	if (AppdataVfs().query_bottom(fname.c_str(), &meta))
+	if (Vfs()->query_bottom(fname.c_str(), &meta))
 	{
 		switch (meta.kind)
 		{
