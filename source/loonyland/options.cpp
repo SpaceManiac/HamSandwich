@@ -497,10 +497,9 @@ void RenderOptionsMenu(MGLDraw *mgl)
 
 void LoadOptions(void)
 {
-	FILE *f;
 	int i;
 
-	f=AppdataOpen_Stdio("loony.cfg");
+	auto f = AppdataOpen("loony.cfg");
 	if(!f)
 	{
 		opt.sound = DEFAULT_VOLUME;
@@ -544,8 +543,8 @@ void LoadOptions(void)
 	}
 	else
 	{
-		fread(&opt,1,sizeof(options_t),f);
-		fclose(f);
+		SDL_RWread(f,&opt,1,sizeof(options_t));
+		f.reset();
 
 		if (opt.sound == 1)
 		{
@@ -572,11 +571,9 @@ void LoadOptions(void)
 
 void SaveOptions(void)
 {
-	FILE *f;
-
-	f=AppdataOpen_Write_Stdio("loony.cfg");
-	fwrite(&opt,sizeof(options_t),1,f);
-	fclose(f);
+	auto f = AppdataOpen_Write("loony.cfg");
+	SDL_RWwrite(f,&opt,sizeof(options_t),1);
+	f.reset();
 	AppdataSync();
 }
 

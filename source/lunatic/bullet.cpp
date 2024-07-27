@@ -2128,9 +2128,8 @@ void BulletTally(void)
 	{
 		if (bullet[i].type)
 		{
-			fprintf(logFile, "BUL %d: Type %d", i, bullet[i].type);
+			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "BUL %d: Type %d", i, bullet[i].type);
 		}
 	}
-	fflush(logFile);
 #endif
 }

@@ -24,51 +24,47 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 
 byte LoadWorld(world_t *world,const char *fname,MGLDraw *mgl)
 {
-	FILE *f;
 	int i;
 	char hdr[5];
 
-	f=AppdataOpen_Stdio(fname);
+	auto f = AppdataOpen(fname);
 	if(!f)
 		return 0;
 
-	fread(hdr,4,sizeof(char),f);
+	SDL_RWread(f,hdr,4,sizeof(char));
 	hdr[4]='\0';
 	if(strcmp(hdr,"STBY"))
 	{
-		fclose(f);
 		return 0;
 	}
 
-	fread(&world->version,1,sizeof(byte),f);
+	SDL_RWread(f,&world->version,1,sizeof(byte));
 	if(world->version!=WORLD_VERSION)
 	{
-		fclose(f);
 		return 0;
 	}
 
-	fread(&world->numMaps,1,1,f);
-	fread(&world->tileName,64,sizeof(char),f);
-	fread(&world->setname,WORLD_DESC_LINELEN,sizeof(char),f);
-	fread(&world->desc,WORLD_DESC_LINELEN*WORLD_DESC_LINES,sizeof(char),f);
+	SDL_RWread(f,&world->numMaps,1,1);
+	SDL_RWread(f,&world->tileName,64,sizeof(char));
+	SDL_RWread(f,&world->setname,WORLD_DESC_LINELEN,sizeof(char));
+	SDL_RWread(f,&world->desc,WORLD_DESC_LINELEN*WORLD_DESC_LINES,sizeof(char));
 
 	// legacy code, keeps it from crashing to load and save this useless data
-	fread(world->terrain,200,sizeof(terrain_t),f);
+	SDL_RWread(f,world->terrain,200,sizeof(terrain_t));
 
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
 
 	for(i=0;i<world->numMaps;i++)
 	{
-		world->map[i]=new Map(f);
+		world->map[i]=new Map(f.get());
 		if(!world->map[i])
 		{
-			fclose(f);
 			return 0;
 		}
 	}
 
-	fclose(f);
+	f.reset();
 	GetWorldTiles(world,mgl);
 
 	return 1;
@@ -76,29 +72,29 @@ byte LoadWorld(world_t *world,const char *fname,MGLDraw *mgl)
 
 byte SaveWorld(world_t *world,const char *fname)
 {
-	FILE *f;
 	int i;
 	char hdr[5]="STBY";
 
-	f=AppdataOpen_Write_Stdio(fname);
+	auto f = AppdataOpen_Write(fname);
 	if(!f)
 		return 0;
 
-	fwrite(hdr,4,sizeof(char),f);
-	fwrite(&world->version,1,sizeof(byte),f);
+	SDL_RWwrite(f,hdr,4,sizeof(char));
+	SDL_RWwrite(f,&world->version,1,sizeof(byte));
 
-	fwrite(&world->numMaps,1,1,f);
-	fwrite(&world->tileName,64,sizeof(char),f);
-	fwrite(&world->setname,WORLD_DESC_LINELEN,sizeof(char),f);
-	fwrite(&world->desc,WORLD_DESC_LINELEN*WORLD_DESC_LINES,sizeof(char),f);
+	SDL_RWwrite(f,&world->numMaps,1,1);
+	SDL_RWwrite(f,&world->tileName,64,sizeof(char));
+	SDL_RWwrite(f,&world->setname,WORLD_DESC_LINELEN,sizeof(char));
+	SDL_RWwrite(f,&world->desc,WORLD_DESC_LINELEN*WORLD_DESC_LINES,sizeof(char));
 
 	// legacy code, keeps it from crashing to load and save this useless data
-	fwrite(world->terrain,200,sizeof(terrain_t),f);
+	SDL_RWwrite(f,world->terrain,200,sizeof(terrain_t));
 
 	for(i=0;i<world->numMaps;i++)
-		world->map[i]->Save(f);
+		world->map[i]->Save(f.get());
 
-	fclose(f);
+	f.reset();
+	AppdataSync();
 	return 1;
 }
 
@@ -130,51 +126,26 @@ void InitWorld(world_t *world,byte worldNum)
 
 void GetWorldName(const char *fname,char *buf,char *auth)
 {
-	FILE *f;
 	char fname2[60];
 
 	if(fname[0]=='\0')
 		return;
 
 	sprintf(fname2,"levels/%s",fname);
-	f=AppdataOpen_Stdio(fname2);
+	auto f = AppdataOpen(fname2);
 	if(!f)
 		return;
 
 	// this fseeks past:
-	//	 1 byte=version, 64 bytes=tilesetName, 1 byte numMaps
+	//	 4 bytes='STBY', 1 byte=version, 1 byte numMaps, 64 bytes=tilesetName
 
-	fseek(f,4+2+64,SEEK_SET);
+	SDL_RWseek(f,4+1+1+64,RW_SEEK_SET);
 	// read the name
-	fread(buf,1,32,f);
+	SDL_RWread(f,buf,1,32);
 	buf[31]='\0';
 	// read author
-	fread(auth,1,32,f);
+	SDL_RWread(f,auth,1,32);
 	auth[31]='\0';
-
-	fclose(f);
-}
-
-int GetWorldPoints(const char *fname)
-{
-	FILE *f;
-	char fname2[60];
-	int i;
-
-	if(fname[0]=='\0')
-		return 100;
-
-	sprintf(fname2,"worlds/%s",fname);
-	f=AppdataOpen_Stdio(fname2);
-	if(!f)
-		return 100;
-
-	// skip over the byte
-	fread(&i,1,1,f);
-	// read the int totalPoints
-	fread(&i,1,4,f);
-	fclose(f);
-	return i;
 }
 
 void MoveLevel(world_t *world,byte num,char d)

@@ -110,7 +110,7 @@ bool sprite_t::LoadData(SDL_RWops *f)
 	return true;
 }
 
-bool sprite_t::SaveData(FILE *f) const
+bool sprite_t::SaveData(SDL_RWops *f) const
 {
 	if(size==0)
 		return true;
@@ -118,7 +118,7 @@ bool sprite_t::SaveData(FILE *f) const
 	if(data.empty())
 		return true;
 
-	if(fwrite(data.data(),1,size,f)!=size)
+	if(SDL_RWwrite(f,data.data(),1,size)!=size)
 	{
 		return false;
 	}
@@ -1102,15 +1102,14 @@ bool sprite_set_t::Load(const char *fname)
 
 bool sprite_set_t::Save(const char *fname) const
 {
-	FILE *f;
 	word i;
 
-	f=AppdataOpen_Write_Stdio(fname);
+	auto f = AppdataOpen_Write(fname);
 	if(!f)
 		return false;
 	// write the count
 	word count = spr.size();
-	fwrite(&count,2,1,f);
+	SDL_RWwrite(f,&count,2,1);
 
 	// allocate a buffer to copy sprites into
 	std::vector<byte> buffer(SPRITE_INFO_SIZE*count);
@@ -1119,22 +1118,20 @@ bool sprite_set_t::Save(const char *fname) const
 		spr[i]->GetHeader(&buffer[i*SPRITE_INFO_SIZE]);
 
 	// write the sprites out
-	if(fwrite(buffer.data(),SPRITE_INFO_SIZE,count,f)!=count)
+	if(SDL_RWwrite(f,buffer.data(),SPRITE_INFO_SIZE,count)!=count)
 	{
-		fclose(f);
 		return false;
 	}
 
 	// write the sprite data
 	for(i=0;i<count;i++)
 	{
-		if(!spr[i]->SaveData(f))
+		if(!spr[i]->SaveData(f.get()))
 		{
-			fclose(f);
 			return false;
 		}
 	}
-	fclose(f);
+	f.reset();
 	AppdataSync();
 	return true;
 }

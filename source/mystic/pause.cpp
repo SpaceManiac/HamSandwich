@@ -144,14 +144,13 @@ void SetGiveUpText(byte gu)
 
 void InitPauseMenu(void)
 {
-	FILE *f;
 	player_t p;
 	int i;
 
 	lastKey=0;
 	subMode=0;
 
-	f=AppdataOpen_Stdio("mystic.sav");
+	auto f = AppdataOpen("mystic.sav");
 	if(!f)
 	{
 		for(i=0;i<5;i++)
@@ -166,7 +165,7 @@ void InitPauseMenu(void)
 	{
 		for(i=0;i<5;i++)
 		{
-			fread(&p,sizeof(player_t),1,f);
+			SDL_RWread(f,&p,sizeof(player_t),1);
 			saveLevel[i]=p.level;
 			saveChapter[i]=p.worldNum+1;
 			saveHour[i]=(byte)(p.gameClock/(30*60*60));
@@ -177,7 +176,7 @@ void InitPauseMenu(void)
 				saveNightmare[i]=0;
 		}
 
-		fclose(f);
+		f.reset();
 	}
 	MakeNormalSound(SND_PAUSE);
 	if(cursor==4 && (!giveUp))

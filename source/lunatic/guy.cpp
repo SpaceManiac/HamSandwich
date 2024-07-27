@@ -1940,9 +1940,8 @@ void MonsterTally(void)
 	{
 		if (guys[i]->type)
 		{
-			fprintf(logFile, "GUY %d: Type %d:%s", i, guys[i]->type, MonsterName(guys[i]->type));
+			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "GUY %d: Type %d:%s", i, guys[i]->type, MonsterName(guys[i]->type));
 		}
 	}
-	fflush(logFile);
 #endif
 }

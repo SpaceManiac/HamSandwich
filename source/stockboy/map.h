@@ -54,10 +54,10 @@ class Map
 	public:
 		Map(int wid,int hei,const char *name);
 		Map(Map *m);
-		Map(FILE *f);
+		Map(SDL_RWops *f);
 		~Map(void);
 
-		byte Save(FILE *f);
+		byte Save(SDL_RWops *f);
 		void Init(world_t *wrld);
 		void Render(world_t *world,int camX,int camY,byte flags);
 		void RenderTiny(world_t *world,int x,int y);

@@ -439,11 +439,10 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 
 void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 {
-	FILE *f;
 	player_t p;
 	int i;
 
-	f=AppdataOpen_Stdio("mystic.sav");
+	auto f = AppdataOpen("mystic.sav");
 	if(!f)
 	{
 		for(i=0;i<5;i++)
@@ -459,14 +458,14 @@ void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 	{
 		for(i=0;i<5;i++)
 		{
-			fread(&p,sizeof(player_t),1,f);
+			SDL_RWread(f,&p,sizeof(player_t),1);
 			title->saveLevel[i]=p.level;
 			title->saveChapter[i]=p.worldNum+1;
 			title->saveHour[i]=(byte)(p.gameClock/(30*60*60));
 			title->saveMin[i]=(byte)((p.gameClock/(30*60))%60);
 			title->saveNightmare[i]=p.nightmare;
 		}
-		fclose(f);
+		f.reset();
 	}
 	mgl->LastKeyPressed();
 	oldc=CONTROL_B1|CONTROL_B2;

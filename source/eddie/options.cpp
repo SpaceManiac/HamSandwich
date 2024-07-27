@@ -19,14 +19,11 @@ static byte keys,oldKeys;
 
 void InitOptions(void)
 {
-	FILE *f;
-
 	// load the hi score file if you can
-	f=AppdataOpen_Stdio("options.cfg");
+	auto f = AppdataOpen("options.cfg");
 	if(f)
 	{
-		fread(&options,1,sizeof(options_t),f);
-		fclose(f);
+		SDL_RWread(f, &options,1,sizeof(options_t));
 	}
 	else
 	{
@@ -54,13 +51,10 @@ void InitOptions(void)
 
 void ExitOptions(void)
 {
-	FILE *f;
-
-	f=AppdataOpen_Write_Stdio("options.cfg");
+	auto f = AppdataOpen_Write("options.cfg");
 	if(f)
 	{
-		fwrite(&options,1,sizeof(options_t),f);
-		fclose(f);
+		SDL_RWwrite(f, &options,1,sizeof(options_t));
 	}
 }
 

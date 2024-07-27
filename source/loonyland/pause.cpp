@@ -422,7 +422,6 @@ void HandlePauseKeyPresses(MGLDraw *mgl)
 
 void GetSaves(void)
 {
-	FILE *f;
 	int i;
 	char txt[32];
 	player_t p;
@@ -430,15 +429,15 @@ void GetSaves(void)
 	for(i=0;i<5;i++)
 	{
 		ham_sprintf(txt,"save%d.sav", saveOffset + i + 1);
-		f=AppdataOpen_Stdio(txt);
+		auto f = AppdataOpen(txt);
 		if(!f)
 		{
 			saveDesc[i][0] = '\0';
 		}
 		else
 		{
-			fread(&p,sizeof(player_t),1,f);
-			fclose(f);
+			SDL_RWread(f,&p,sizeof(player_t),1);
+			f.reset();
 
 			DescribeSave(saveDesc[i], &p);
 		}
@@ -447,18 +446,17 @@ void GetSaves(void)
 
 void LoadGame(int i)
 {
-	FILE *f;
 	char txt[128];
 
 	ham_sprintf(txt,"save%d.sav",i+1);
-	f=AppdataOpen_Stdio(txt);
+	auto f = AppdataOpen(txt);
 	if(!f)
 	{
 		InitPlayer(INIT_GAME,0,0);
 	}
 	else
 	{
-		fread(&player,sizeof(player_t),1,f);
+		SDL_RWread(f, &player,sizeof(player_t),1);
 		if(player.worldNum==WORLD_REMIX)
 		{
 			FreeWorld(&curWorld);
@@ -484,11 +482,11 @@ void LoadGame(int i)
 
 			InitWorld(&curWorld,WORLD_RANDOMIZER);
 		}
-		LoadGuys(f);
+		LoadGuys(f.get());
 		if(!curMap)
 			curMap=new Map(20,20,"hi");
-		curMap->LoadFromProgress(f);
-		fclose(f);
+		curMap->LoadFromProgress(f.get());
+		f.reset();
 		player.lastSave=i;
 		ResetInterface();
 		MakeNormalSound(SND_LOADGAME);
@@ -530,11 +528,10 @@ void LoadGame(int i)
 
 void SaveGame(int i)
 {
-	FILE *f;
 	char txt[32];
 
 	ham_sprintf(txt,"save%d.sav",i+1);
-	f=AppdataOpen_Write_Stdio(txt);
+	auto f = AppdataOpen_Write(txt);
 	if(!f)
 	{
 		return;
@@ -546,12 +543,12 @@ void SaveGame(int i)
 		player.desty=goodguy->mapy;
 		if(!(player.cheatsOn&PC_HARDCORE))
 			player.numSaves++;	// saves do not count in hardcore mode
-		fwrite(&player,sizeof(player_t),1,f);
+		SDL_RWwrite(f,&player,sizeof(player_t),1);
 		player.destx=0;
 		player.desty=0;
-		SaveGuys(f);
-		curMap->SaveProgress(f);
-		fclose(f);
+		SaveGuys(f.get());
+		curMap->SaveProgress(f.get());
+		f.reset();
 		AppdataSync();
 		NewBigMessage("Game Saved",30);
 		MakeNormalSound(SND_SAVEGAME);

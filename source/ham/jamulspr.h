@@ -17,7 +17,7 @@ public:
 	explicit sprite_t(byte *info);
 
 	bool LoadData(SDL_RWops *f);
-	bool SaveData(FILE *f) const;
+	bool SaveData(SDL_RWops *f) const;
 	void GetHeader(byte *buffer) const;
 
 	void Draw(int x, int y, MGLDraw *mgl) const;

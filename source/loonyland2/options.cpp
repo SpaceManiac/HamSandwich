@@ -362,10 +362,9 @@ void ApplyControlSettingsMem(byte *data)
 
 void LoadOptions(void)
 {
-	FILE *f;
 	int i;
 
-	f=AppdataOpen_Stdio("loony.cfg");
+	auto f = AppdataOpen("loony.cfg");
 	if(!f)
 	{
 		opt.sound=127;
@@ -410,25 +409,23 @@ void LoadOptions(void)
 	}
 	else
 	{
-		if(fread(&opt,1,sizeof(options_t),f)<sizeof(options_t))
+		if(SDL_RWread(f, &opt,1,sizeof(options_t))<sizeof(options_t))
 		{
 #ifdef DIRECTORS
-		for(i=0;i<GALLERY_PIX;i++)
-			opt.galPix[i]=0;
+			for(i=0;i<GALLERY_PIX;i++)
+				opt.galPix[i]=0;
 #endif
 		}
-		fclose(f);
+		f.reset();
 	}
 	ApplyControlSettings();
 }
 
 void SaveOptions(void)
 {
-	FILE *f;
-
-	f=AppdataOpen_Write_Stdio("loony.cfg");
-	fwrite(&opt,sizeof(options_t),1,f);
-	fclose(f);
+	auto f = AppdataOpen_Write("loony.cfg");
+	SDL_RWwrite(f, &opt,sizeof(options_t),1);
+	f.reset();
 	AppdataSync();
 }
 

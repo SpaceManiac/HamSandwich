@@ -359,9 +359,7 @@ void RenderOptionsMenu(MGLDraw *mgl)
 
 void LoadOptions(void)
 {
-	FILE *f;
-
-	f = AppdataOpen_Stdio("lunatic.cfg");
+	auto f = AppdataOpen("lunatic.cfg");
 	if (!f)
 	{
 		opt.sound = 1;
@@ -390,19 +388,17 @@ void LoadOptions(void)
 	}
 	else
 	{
-		fread(&opt, sizeof (options_t), 1, f);
-		fclose(f);
+		SDL_RWread(f, &opt, sizeof (options_t), 1);
+		f.reset();
 	}
 	ApplyControlSettings();
 }
 
 void SaveOptions(void)
 {
-	FILE *f;
-
-	f = AppdataOpen_Write_Stdio("lunatic.cfg");
-	fwrite(&opt, sizeof (options_t), 1, f);
-	fclose(f);
+	auto f = AppdataOpen_Write("lunatic.cfg");
+	SDL_RWwrite(f, &opt, sizeof (options_t), 1);
+	f.reset();
 	AppdataSync();
 }
 

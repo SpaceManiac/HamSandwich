@@ -236,7 +236,7 @@ byte NotBeingDrained(int who);
 void RenderBullet(bullet_t *me);
 byte EatItem(int x,int y);
 
-void LoadBullets(FILE *f);
-void SaveBullets(FILE *f);
+void LoadBullets(SDL_RWops *f);
+void SaveBullets(SDL_RWops *f);
 
 #endif

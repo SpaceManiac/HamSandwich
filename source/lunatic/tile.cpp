@@ -35,14 +35,14 @@ void SetTiles(byte *scrn)
 	}
 }
 
-void SaveTiles(FILE *f)
+void SaveTiles(SDL_RWops *f)
 {
-	fwrite(tiles, NUMTILES, sizeof (tile_t), f);
+	SDL_RWwrite(f, tiles, NUMTILES, sizeof (tile_t));
 }
 
-void LoadTiles(FILE *f)
+void LoadTiles(SDL_RWops *f)
 {
-	fread(tiles, NUMTILES, sizeof (tile_t), f);
+	SDL_RWread(f, tiles, NUMTILES, sizeof (tile_t));
 }
 
 // --- RENDERING!

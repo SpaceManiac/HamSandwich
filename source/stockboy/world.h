@@ -56,7 +56,6 @@ void FreeWorld(world_t *world);
 
 void InitWorld(world_t *world,byte worldNum);
 void GetWorldName(const char *fname,char *buf,char *auth);
-int  GetWorldPoints(const char *fname);
 byte GetWorldTiles(world_t *world,MGLDraw *mgl);
 
 void MoveLevel(world_t *world,byte num,char d);

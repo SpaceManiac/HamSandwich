@@ -3,23 +3,17 @@
 #include <time.h>
 #include "appdata.h"
 
-#ifdef BETA
-static FILE *logF;
-#endif
-
 void Log_Begin(const char *fname)
 {
 #ifdef BETA
 	struct tm *newtime;
 	time_t clock;
 
-	logF=AppdataOpen_Write_Stdio(fname);
-
 	time(&clock);
 	newtime=localtime(&clock);
 
-	fprintf(logF,"Stockboy download test log\n");
-	fprintf(logF,"Log opened %s.\n\n",asctime(newtime));
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Stockboy download test log", asctime(newtime));
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Log opened %s.", asctime(newtime));
 #endif
 }
 
@@ -32,21 +26,20 @@ void Log_End(void)
 	time(&clock);
 	newtime=localtime(&clock);
 
-	fprintf(logF,"Log closed %s.",asctime(newtime));
-	fclose(logF);
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Log closed %s.", asctime(newtime));
 #endif
 }
 
 void Log_Print(const char *txt)
 {
 #ifdef BETA
-	fprintf(logF,"%s\n",txt);
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s", txt);
 #endif
 }
 
 void Log_Printnum(const char *txt,int num)
 {
 #ifdef BETA
-	fprintf(logF,"%s %d\n",txt,num);
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s %d", txt, num);
 #endif
 }

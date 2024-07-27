@@ -358,7 +358,6 @@ byte CheckHighScore(byte mode,byte level,int score)
 
 byte LoadAddOnScores(char *fname)
 {
-	FILE *f;
 	int i,j;
 
 	strcpy(addOnScoreName,fname);
@@ -368,7 +367,7 @@ byte LoadAddOnScores(char *fname)
 	addOnScoreName[strlen(addOnScoreName)-2]='i';
 	addOnScoreName[strlen(addOnScoreName)-1]='g';
 
-	f=AppdataOpen_Stdio(addOnScoreName);
+	auto f = AppdataOpen(addOnScoreName);
 	if(!f)
 	{
 		// set up empty scores
@@ -392,9 +391,8 @@ byte LoadAddOnScores(char *fname)
 		return 0;
 	}
 
-	fread(goldScore,MAX_MAPS*3,sizeof(int),f);
-	fread(addOnScore,MAX_MAPS*3,sizeof(highScore_t),f);
-	fclose(f);
+	SDL_RWread(f,goldScore,MAX_MAPS*3,sizeof(int));
+	SDL_RWread(f,addOnScore,MAX_MAPS*3,sizeof(highScore_t));
 
 	return 1;
 }
@@ -411,15 +409,14 @@ void SetAddOnScoreName(char *fname)
 
 byte SaveAddOnScores(void)
 {
-	FILE *f;
-
-	f=AppdataOpen_Write_Stdio(addOnScoreName);
+	auto f = AppdataOpen_Write(addOnScoreName);
 	if(!f)
 		return 0;
 
-	fwrite(goldScore,MAX_MAPS*3,sizeof(int),f);
-	fwrite(addOnScore,MAX_MAPS*3,sizeof(highScore_t),f);
-	fclose(f);
+	SDL_RWwrite(f,goldScore,MAX_MAPS*3,sizeof(int));
+	SDL_RWwrite(f,addOnScore,MAX_MAPS*3,sizeof(highScore_t));
+	f.reset();
+	AppdataSync();
 
 	return 1;
 }

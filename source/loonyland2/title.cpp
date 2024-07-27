@@ -204,7 +204,6 @@ void GetAddOns(void)
 
 void GetSavesForMenu(void)
 {
-	FILE *f;
 	int i,n,hole,j;
 	char txt[64];
 	player_t p;
@@ -215,15 +214,16 @@ void GetSavesForMenu(void)
 	for(i=0;i<MAX_CHARS;i++)
 	{
 		sprintf(txt,"profiles/char%02d.loony",i+1);
-		f=AppdataOpen_Stdio(txt);
+		auto f = AppdataOpen(txt);
 		if(!f && hole==-1)
 		{
 			hole=i;
 		}
 		else if(f)
 		{
-			fread(&p,sizeof(player_t),1,f);
-			fclose(f);
+			SDL_RWread(f, &p,sizeof(player_t),1);
+			f.reset();
+
 			save[n].percentage=CalcPercent(&p);
 			save[n].newbie=0;
 			save[n].realNum=i;

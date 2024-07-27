@@ -51,7 +51,6 @@ void Music_Exit(void)
 
 byte Music_Load(char *fname)
 {
-	FILE *f;
 	char fn[64];
 	int i,j;
 
@@ -61,7 +60,7 @@ byte Music_Load(char *fname)
 		return 0;
 
 	sprintf(fn,"music/%s",fname);
-	f=AppdataOpen_Stdio(fn);
+	auto f = AppdataOpen(fn);
 	if(!f)
 		return 0;
 
@@ -69,32 +68,30 @@ byte Music_Load(char *fname)
 		free(curSong.seq);
 
 	// read in the basic data
-	fread(&curSong,76,1,f);
+	SDL_RWread(f,&curSong,76,1);
 
 	curSong.seq=(songSeq_t *)malloc(sizeof(songSeq_t)*curSong.numSeqs);
 	if(!curSong.seq)
 	{
-		fclose(f);
 		return 0;
 	}
 
 	// load each sequence
 	for(i=0;i<curSong.numSeqs;i++)
 	{
-		fread(curSong.seq[i].name,sizeof(char),32,f);
-		fread(&curSong.seq[i].length,sizeof(word),1,f);
-		fread(&curSong.seq[i].playLength,sizeof(word),1,f);
-		fread(&curSong.seq[i].instrument,sizeof(byte),1,f);
-		fread(&curSong.seq[i].volume,sizeof(short),1,f);
-		fread(&curSong.seq[i].insFlags,sizeof(byte),1,f);
+		SDL_RWread(f,curSong.seq[i].name,sizeof(char),32);
+		SDL_RWread(f,&curSong.seq[i].length,sizeof(word),1);
+		SDL_RWread(f,&curSong.seq[i].playLength,sizeof(word),1);
+		SDL_RWread(f,&curSong.seq[i].instrument,sizeof(byte),1);
+		SDL_RWread(f,&curSong.seq[i].volume,sizeof(short),1);
+		SDL_RWread(f,&curSong.seq[i].insFlags,sizeof(byte),1);
 		memset(curSong.seq[i].note,0,SEQ_LENGTH*NUM_PITCHES);
 		memset(curSong.seq[i].play,0,SONG_LENGTH);
 		for(j=0;j<NUM_PITCHES;j++)
-			fread(curSong.seq[i].note[j],sizeof(byte),curSong.seq[i].length*SEQ_BLOCK_SIZE,f);
-		fread(curSong.seq[i].play,sizeof(byte),curSong.seq[i].playLength,f);
+			SDL_RWread(f,curSong.seq[i].note[j],sizeof(byte),curSong.seq[i].length*SEQ_BLOCK_SIZE);
+		SDL_RWread(f,curSong.seq[i].play,sizeof(byte),curSong.seq[i].playLength);
 	}
 
-	fclose(f);
 	playSeq=-1;
 	Music_Scan(0,-1);
 	songLoaded=1;
@@ -104,56 +101,53 @@ byte Music_Load(char *fname)
 
 byte Music_Save(char *fname)
 {
-	FILE *f;
 	char fn[64];
 	int i,j;
 
 	Music_SetLengths();
 
 	sprintf(fn,"music/%s",fname);
-	f=AppdataOpen_Write_Stdio(fn);
+	auto f = AppdataOpen_Write(fn);
 	if(!f)
 		return 0;
 
 	// write out the basic data
-	fwrite(&curSong,76,1,f);
+	SDL_RWwrite(f,&curSong,76,1);
 
 	// write each sequence
 	for(i=0;i<curSong.numSeqs;i++)
 	{
-		fwrite(curSong.seq[i].name,sizeof(char),32,f);
-		fwrite(&curSong.seq[i].length,sizeof(word),1,f);
-		fwrite(&curSong.seq[i].playLength,sizeof(word),1,f);
-		fwrite(&curSong.seq[i].instrument,sizeof(byte),1,f);
-		fwrite(&curSong.seq[i].volume,sizeof(short),1,f);
-		fwrite(&curSong.seq[i].insFlags,sizeof(byte),1,f);
+		SDL_RWwrite(f,curSong.seq[i].name,sizeof(char),32);
+		SDL_RWwrite(f,&curSong.seq[i].length,sizeof(word),1);
+		SDL_RWwrite(f,&curSong.seq[i].playLength,sizeof(word),1);
+		SDL_RWwrite(f,&curSong.seq[i].instrument,sizeof(byte),1);
+		SDL_RWwrite(f,&curSong.seq[i].volume,sizeof(short),1);
+		SDL_RWwrite(f,&curSong.seq[i].insFlags,sizeof(byte),1);
 		for(j=0;j<NUM_PITCHES;j++)
-			fwrite(curSong.seq[i].note[j],sizeof(byte),curSong.seq[i].length*SEQ_BLOCK_SIZE,f);
-		fwrite(curSong.seq[i].play,sizeof(byte),curSong.seq[i].playLength,f);
+			SDL_RWwrite(f,curSong.seq[i].note[j],sizeof(byte),curSong.seq[i].length*SEQ_BLOCK_SIZE);
+		SDL_RWwrite(f,curSong.seq[i].play,sizeof(byte),curSong.seq[i].playLength);
 	}
 
-	fclose(f);
+	f.reset();
+	AppdataSync();
 	return 1;
 }
 
 byte Music_GetSongName(char *fname,char *title,char *author)
 {
-	FILE *f;
 	word w;
 	char s[64];
 
 	sprintf(s,"music/%s",fname);
 
-	f=AppdataOpen_Stdio(s);
+	auto f = AppdataOpen(s);
 	if(!f)
 		return 0;
 
-	fread(&w,sizeof(word),1,f);	// skip tempo
+	SDL_RWseek(f, 4, RW_SEEK_CUR); // skip tempo
+	SDL_RWread(f, title, sizeof(char), 32);
+	SDL_RWread(f, author, sizeof(char), 32);
 
-	fread(title,sizeof(char),32,f);
-	fread(author,sizeof(char),32,f);
-
-	fclose(f);
 	return 1;
 }
 

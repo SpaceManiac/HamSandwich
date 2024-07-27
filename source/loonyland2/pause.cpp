@@ -980,19 +980,17 @@ void HandlePauseKeyPresses(MGLDraw *mgl)
 
 void LoadGame(void)
 {
-	FILE *f;
 	char txt[64];
 
-
 	sprintf(txt,"profiles/char%02d.loony",gameToLoad+1);
-	f=AppdataOpen_Stdio(txt);
+	auto f = AppdataOpen(txt);
 	if(!f)
 	{
 		InitPlayer(INIT_GAME,0,0);
 	}
 	else
 	{
-		fread(&player,sizeof(player_t),1,f);
+		SDL_RWread(f,&player,sizeof(player_t),1);
 		if(player.addonName[0]=='\0')
 		{
 			ResetLevelDefs();
@@ -1004,12 +1002,12 @@ void LoadGame(void)
 			LoadLevelDefs(player.addonName);
 			LoadWorld(&curWorld,txt);
 		}
-		LoadGuys(f);
-		LoadBullets(f);
+		LoadGuys(f.get());
+		LoadBullets(f.get());
 		if(!curMap)
 			curMap=new Map(20,20,"hi");
-		curMap->LoadFromProgress(f);
-		fclose(f);
+		curMap->LoadFromProgress(f.get());
+		f.reset();
 		ResetInterface();
 		PlayerCalcStats();
 		if(player.invinc<30)
@@ -1019,11 +1017,10 @@ void LoadGame(void)
 
 void SaveGame(void)
 {
-	FILE *f;
 	char txt[64];
 
 	sprintf(txt,"profiles/char%02d.loony",gameToLoad+1);
-	f=AppdataOpen_Write_Stdio(txt);
+	auto f = AppdataOpen_Write(txt);
 	if(!f)
 	{
 		return;
@@ -1032,13 +1029,13 @@ void SaveGame(void)
 	{
 		player.destx=goodguy->mapx;
 		player.desty=goodguy->mapy;
-		fwrite(&player,sizeof(player_t),1,f);
+		SDL_RWwrite(f,&player,sizeof(player_t),1);
 		player.destx=0;
 		player.desty=0;
-		SaveGuys(f);
-		SaveBullets(f);
-		curMap->SaveProgress(f);
-		fclose(f);
+		SaveGuys(f.get());
+		SaveBullets(f.get());
+		curMap->SaveProgress(f.get());
+		f.reset();
 		AppdataSync();
 	}
 }

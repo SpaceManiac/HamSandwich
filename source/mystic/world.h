@@ -41,6 +41,6 @@ byte SaveWorld(world_t *world,char *fname);
 void FreeWorld(world_t *world);
 
 void InitWorld(world_t *world,byte worldNum);
-void GetWorldName(char *fname,char *buf);
+void GetWorldName(const char *fname,char *buf);
 
 #endif

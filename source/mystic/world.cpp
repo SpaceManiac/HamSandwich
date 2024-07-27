@@ -29,52 +29,49 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 
 byte LoadWorld(world_t *world,char *fname)
 {
-	FILE *f;
 	int i;
 
-	f=AppdataOpen_Stdio(fname);
+	auto f = AppdataOpen(fname);
 	if(!f)
 		return 0;
 
-	fread(&world->numMaps,1,1,f);
+	SDL_RWread(f,&world->numMaps,1,1);
 
-	LoadTiles(f);
+	LoadTiles(f.get());
 
-	fread(world->terrain,200,sizeof(terrain_t),f);
+	SDL_RWread(f,world->terrain,200,sizeof(terrain_t));
 
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
 
 	for(i=0;i<world->numMaps;i++)
 	{
-		world->map[i]=new Map(f);
+		world->map[i]=new Map(f.get());
 		if(!world->map[i])
 			return 0;
 	}
 
-	fclose(f);
 	return 1;
 }
 
 byte SaveWorld(world_t *world,char *fname)
 {
-	FILE *f;
 	int i;
 
-	f=AppdataOpen_Write_Stdio(fname);
+	auto f = AppdataOpen_Write(fname);
 	if(!f)
 		return 0;
 
-	fwrite(&world->numMaps,1,1,f);
+	SDL_RWwrite(f,&world->numMaps,1,1);
 
-	SaveTiles(f);
+	SaveTiles(f.get());
 
-	fwrite(world->terrain,200,sizeof(terrain_t),f);
+	SDL_RWwrite(f,world->terrain,200,sizeof(terrain_t));
 
 	for(i=0;i<world->numMaps;i++)
-		world->map[i]->Save(f);
+		world->map[i]->Save(f.get());
 
-	fclose(f);
+	f.reset();
 	AppdataSync();
 	return 1;
 }
@@ -102,13 +99,12 @@ void InitWorld(world_t *world,byte worldNum)
 	PlayerSetWorldWorth(worldNum,complete);
 }
 
-void GetWorldName(char *fname,char *buf)
+void GetWorldName(const char *fname,char *buf)
 {
-	FILE *f;
 	char fname2[60];
 
 	sprintf(fname2,"worlds/%s",fname);
-	f=AppdataOpen_Stdio(fname2);
+	auto f = AppdataOpen(fname2);
 	if(!f)
 		return;
 
@@ -117,8 +113,7 @@ void GetWorldName(char *fname,char *buf)
 	//   the 200 terrain types, the width&height of map 0, and bam there it is at the name
 	//   of map 0.
 
-	fseek(f,1+400*32*24+200*sizeof(terrain_t)+2*sizeof(int),SEEK_SET);
+	SDL_RWseek(f,1+400*32*24+200*sizeof(terrain_t)+2*sizeof(int),RW_SEEK_SET);
 	// read the name
-	fread(buf,1,32,f);
-	fclose(f);
+	SDL_RWread(f,buf,1,32);
 }

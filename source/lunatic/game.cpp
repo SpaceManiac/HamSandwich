@@ -32,7 +32,6 @@ byte msgContent;
 word windingDown;
 byte windingUp;
 byte windDownReason;
-FILE *logFile;
 
 Map* GameCurrentMap()
 {
@@ -43,7 +42,6 @@ void LunaticInit(MGLDraw *mgl)
 {
 	gamemgl = mgl;
 
-	logFile = AppdataOpen_Write_Stdio("loonylog.txt");
 	InitCosSin();
 	InitDisplay(gamemgl);
 	InitSound();
@@ -69,7 +67,6 @@ void LunaticExit(void)
 	ExitMonsters();
 	ExitPlayer();
 	ExitInterface();
-	fclose(logFile);
 	AppdataSync();
 }
 

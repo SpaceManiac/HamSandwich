@@ -1241,9 +1241,7 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 
 void LoadChallenge(void)
 {
-	FILE *f;
-
-	f=AppdataOpen_Stdio("challenge.sav");
+	auto f = AppdataOpen("challenge.sav");
 	if(!f)
 	{
 		ResetChallengeStats();
@@ -1251,22 +1249,20 @@ void LoadChallenge(void)
 	}
 	else
 	{
-		fread(&chalData,1,sizeof(chalData_t),f);
-		fclose(f);
+		SDL_RWread(f,&chalData,1,sizeof(chalData_t));
+		f.reset();
 		memcpy(&player,&chalData.player,sizeof(player_t));
 	}
 }
 
 void SaveChallenge(void)
 {
-	FILE *f;
-
-	f=AppdataOpen_Write_Stdio("challenge.sav");
+	auto f = AppdataOpen_Write("challenge.sav");
 	if(f)
 	{
 		memcpy(&chalData.player,&player,sizeof(player_t));
-		fwrite(&chalData,1,sizeof(chalData_t),f);
-		fclose(f);
+		SDL_RWwrite(f,&chalData,1,sizeof(chalData_t));
+		f.reset();
 		AppdataSync();
 	}
 }

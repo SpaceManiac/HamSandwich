@@ -50,6 +50,5 @@ byte SaveWorld(world_t *world,const char *fname);
 void FreeWorld(world_t *world);
 
 void GetWorldName(const char *fname,char *buf);
-int  GetWorldPoints(const char *fname);
 
 #endif

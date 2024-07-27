@@ -149,18 +149,16 @@ byte PlayerHasSword(void)
 
 void PlayerLoadGame(byte which)
 {
-	FILE *f;
-
-	f=AppdataOpen_Stdio("mystic.sav");
+	auto f = AppdataOpen("mystic.sav");
 	if(!f)
 	{
 		InitPlayer(INIT_GAME,0,0);
 	}
 	else
 	{
-		fseek(f,sizeof(player_t)*which,SEEK_SET);
-		fread(&player,sizeof(player_t),1,f);
-		fclose(f);
+		SDL_RWseek(f,sizeof(player_t)*which,RW_SEEK_SET);
+		SDL_RWread(f,&player,sizeof(player_t),1);
+		f.reset();
 		VolumeSong(player.musicSettings);
 	}
 	player.prevMoney=player.money;
@@ -170,12 +168,11 @@ void PlayerLoadGame(byte which)
 
 void PlayerSaveGame(byte which)
 {
-	FILE *f;
 	player_t p[5];
 	int i;
 
 	player.prevMoney=player.money;
-	f=AppdataOpen_Stdio("mystic.sav");
+	auto f = AppdataOpen("mystic.sav");
 	if(!f)
 	{
 		memset(p,0,sizeof(player_t)*5);	// make an empty player
@@ -187,17 +184,17 @@ void PlayerSaveGame(byte which)
 			p[3].totalCompletion[i]=100;
 			p[4].totalCompletion[i]=100;
 		}
-		f=AppdataOpen_Write_Stdio("mystic.sav");
-		fwrite(p,sizeof(player_t),5,f);
-		fclose(f);
-		f=AppdataOpen_Stdio("mystic.sav");
+		f=AppdataOpen_Write("mystic.sav");
+		SDL_RWwrite(f,p,sizeof(player_t),5);
+		f.reset();
+		f=AppdataOpen("mystic.sav");
 	}
-	fread(p,sizeof(player_t),5,f);
-	fclose(f);
+	SDL_RWread(f,p,sizeof(player_t),5);
+	f.reset();
 	memcpy(&p[which],&player,sizeof(player_t));
-	f=AppdataOpen_Write_Stdio("mystic.sav");
-	fwrite(p,sizeof(player_t),5,f);
-	fclose(f);
+	f=AppdataOpen_Write("mystic.sav");
+	SDL_RWwrite(f,p,sizeof(player_t),5);
+	f.reset();
 	AppdataSync();
 }
 

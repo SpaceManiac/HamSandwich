@@ -39,16 +39,6 @@ void SetTiles(byte *scrn,byte wall)
 	}
 }
 
-void SaveTiles(FILE *f)
-{
-	fwrite(tiles,NUMTILES,sizeof(tile_t),f);
-}
-
-void LoadTiles(FILE *f)
-{
-	fread(tiles,NUMTILES,sizeof(tile_t),f);
-}
-
 void RenderFloorTile(int x,int y,int t,char light)
 {
 	byte *dst,*src;

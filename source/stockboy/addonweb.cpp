@@ -264,7 +264,6 @@ void Download_Addons(void)
 
 void SaveAddOn(void)
 {
-	FILE *f;
 	int dataSize;
 	byte *data;
 
@@ -275,9 +274,9 @@ void SaveAddOn(void)
 	Log_Print(addOn.destFileName);
 	Log_Printnum("size: ",dataSize);
 
-	f=AppdataOpen_Write_Stdio(addOn.destFileName);
-	fwrite(data,sizeof(byte),dataSize,f);
-	fclose(f);
+	auto f = AppdataOpen_Write(addOn.destFileName);
+	SDL_RWwrite(f,data,sizeof(byte),dataSize);
+	f.reset();
 
 	Web_KillSocket(fileSocket);
 	addOnsGot++;

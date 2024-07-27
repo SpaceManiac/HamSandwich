@@ -6,10 +6,9 @@ options_t opt;
 
 void LoadOptions(void)
 {
-	FILE *f;
 	int i;
 
-	f=AppdataOpen_Stdio("stock.cfg");
+	auto f = AppdataOpen("stock.cfg");
 	if(!f)
 	{
 		opt.sound=1;
@@ -42,17 +41,16 @@ void LoadOptions(void)
 	}
 	else
 	{
-		fread(&opt,sizeof(options_t),1,f);
-		fclose(f);
+		SDL_RWread(f,&opt,sizeof(options_t),1);
+		f.reset();
 	}
 	InitProfile();
 }
 
 void SaveOptions(void)
 {
-	FILE *f;
-
-	f=AppdataOpen_Write_Stdio("stock.cfg");
-	fwrite(&opt,sizeof(options_t),1,f);
-	fclose(f);
+	auto f = AppdataOpen_Write("stock.cfg");
+	SDL_RWwrite(f,&opt,sizeof(options_t),1);
+	f.reset();
+	AppdataSync();
 }

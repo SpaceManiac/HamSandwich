@@ -2205,16 +2205,16 @@ void GiveRandoItem(int index)
 void LoadRandoItems(){
 	char buff[128];
 	sprintf(buff, "randomizer/%s quest.txt", GetPlayerSeed().c_str());
-	std::FILE* f = AppdataOpen_Stdio(buff);
+	auto f = AppdataOpen(buff);
 	if (f == NULL)
 	{
 		return;
 	}
-	FilePtrStream stream(f);
+	SdlRwStream stream(f.get());
 	std::string line;
 	std::string value;
-	while (getline(stream, line)){
-
+	while (getline(stream, line))
+	{
 		std::stringstream ss(line);
 
 		getline(ss, value, '\t');
@@ -2227,5 +2227,4 @@ void LoadRandoItems(){
 		randoReward[questID].itemId = itemID;
 		randoReward[questID].playerVarId = varID;
 	}
-
 }

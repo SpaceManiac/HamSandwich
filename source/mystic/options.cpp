@@ -21,9 +21,7 @@ void ApplyControlSettings()
 
 void InitOptions(void)
 {
-	FILE *f;
-
-	f=AppdataOpen_Stdio("options.cfg");
+	auto f = AppdataOpen("options.cfg");
 	if(!f)
 	{
 		opt.challenge=0;
@@ -62,18 +60,17 @@ void InitOptions(void)
 	}
 	else
 	{
-		fread(&opt,sizeof(option_t),1,f);
-		fclose(f);
+		SDL_RWread(f,&opt,sizeof(option_t),1);
+		f.reset();
 	}
 	ApplyControlSettings();
 }
 
 void ExitOptions(void)
 {
-	FILE *f;
-	f=AppdataOpen_Write_Stdio("options.cfg");
-	fwrite(&opt,sizeof(option_t),1,f);
-	fclose(f);
+	auto f = AppdataOpen_Write("options.cfg");
+	SDL_RWwrite(f,&opt,sizeof(option_t),1);
+	f.reset();
 	AppdataSync();
 }
 

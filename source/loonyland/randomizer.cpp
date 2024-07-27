@@ -738,17 +738,17 @@ const std::string& GetSeed()
 void PlaceItems(std::vector<RandoLocation>& locList)
 {
 	char buff[4096];
-	std::FILE* baseWorld = AppdataOpen_Stdio("loony.llw");
+	auto baseWorld = AppdataOpen("loony.llw");
 	sprintf(buff, "randomizer/%s rando.llw", seed.c_str());
-	std::FILE* newWorld = AppdataOpen_Write_Stdio(buff);
+	auto newWorld = AppdataOpen_Write(buff);
 
-	while (int n = fread(buff, 1, 4096, baseWorld))
+	while (int n = SDL_RWread(baseWorld, buff, 1, 4096))
 	{
-		fwrite(buff, 1, 4096, newWorld);
+		SDL_RWwrite(newWorld, buff, 1, 4096);
 	}
 
- 	fclose(baseWorld);
-	fclose(newWorld);
+	newWorld.reset();
+	baseWorld.reset();
 
 	world_t world;
 	sprintf(buff, "randomizer/%s rando.llw", seed.c_str());
@@ -774,19 +774,21 @@ void PlaceItems(std::vector<RandoLocation>& locList)
 
 	//questFile.open ("quest.txt");
 	sprintf(buff, "randomizer/%s quest.txt", seed.c_str());
-	std::FILE* f = AppdataOpen_Write_Stdio(buff);
+	auto f = AppdataOpen_Write(buff);
 
-	if (allItems) {
+	if (allItems)
+	{
 		sprintf(buff, "randomizer/ALLITEMS %s spoiler.txt", seed.c_str());
 	}
-	else {
+	else
+	{
 		sprintf(buff, "randomizer/%s spoiler.txt", seed.c_str());
 	}
 
-	std::FILE* f2 = AppdataOpen_Write_Stdio(buff);
+	auto f2 = AppdataOpen_Write(buff);
 	{
-		FilePtrStream stream(f);
-		FilePtrStream spoilerFile(f2);
+		SdlRwStream stream(f.get());
+		SdlRwStream spoilerFile(f2.get());
 
 		for (RandoLocation loc : locList)
 		{
@@ -808,14 +810,13 @@ void PlaceItems(std::vector<RandoLocation>& locList)
 			}
 		}
 	}
-	fclose(f2);
-	fclose(f);
+	f2.reset();
+	f.reset();
 
 	sprintf(buff, "randomizer/%s rando.llw", seed.c_str());
 	SaveWorld(&world, buff);
 
 	FreeWorld(&world);
-
 }
 
 bool HaveLightSource(const std::set<int>& inv)

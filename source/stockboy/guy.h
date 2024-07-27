@@ -43,7 +43,7 @@ class Guy
 		byte mind1;
 		byte mind2;
 		byte mind3;
-		
+
 		byte reload;
 
 		int  ice;
@@ -90,8 +90,6 @@ void KillKids(Guy *g);
 void GuySwap(int sx,int sy,int width,int height,int dx,int dy);
 void ShiftGuys(char dx,char dy,Map *map);
 void CameraOnPlayer(void);
-void LoadGuys(FILE *f);
-void SaveGuys(FILE *f);
 void PrepGuys(Map *map);
 void KillAllMonsters(byte type);
 byte AnyMonsterExists(void);

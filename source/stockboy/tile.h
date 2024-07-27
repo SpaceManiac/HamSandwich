@@ -14,8 +14,6 @@ typedef byte tile_t[TILE_WIDTH*TILE_HEIGHT];
 void InitTiles(MGLDraw *mgl);
 void ExitTiles(void);
 void SetTiles(byte *scrn,byte wall);
-void LoadTiles(FILE *f);
-void SaveTiles(FILE *f);
 void RenderFloorTile(int x,int y,int t,char light);
 void RenderFloorTileTrans(int x,int y,int t,char light);
 void RenderFloorTileShadow(int x,int y,int t,char light);

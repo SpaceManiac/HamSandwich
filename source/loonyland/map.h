@@ -108,10 +108,10 @@ class Map
 	public:
 		Map(int wid,int hei,const char *name);
 		Map(Map *m);
-		Map(FILE *f);
+		Map(SDL_RWops *f);
 		~Map(void);
 
-		byte Save(FILE *f);
+		byte Save(SDL_RWops *f);
 		void Init(world_t *wrld);
 		void Render(world_t *world,int camX,int camY,byte flags);
 		void ShowTags(int camX,int camY,int copyX,int copyY,int copyWid,int copyHei);
@@ -134,8 +134,8 @@ class Map
 		void GrowNeighbors(int tag,int x,int y);
 		void GasSpray(int x,int y);
 		void GasSpray2(int x,int y);
-		void SaveProgress(FILE *f);
-		void LoadFromProgress(FILE *f);
+		void SaveProgress(SDL_RWops *f);
+		void LoadFromProgress(SDL_RWops *f);
 		byte FindPowerUps(int x,int y);
 
 		int width,height;

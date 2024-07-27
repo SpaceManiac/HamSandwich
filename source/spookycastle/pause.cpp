@@ -106,13 +106,12 @@ void SetGiveUpText(byte gu)
 
 void InitPauseMenu(void)
 {
-	FILE *f;
 	player_t p;
 
 	lastKey=0;
 	subMode=0;
 
-	f=AppdataOpen_Stdio("loony.sav");
+	auto f = AppdataOpen("loony.sav");
 	if(!f)
 	{
 		percent[0]=0.0;
@@ -121,13 +120,13 @@ void InitPauseMenu(void)
 	}
 	else
 	{
-		fread(&p,sizeof(player_t),1,f);
+		SDL_RWread(f, &p,sizeof(player_t),1);
 		percent[0]=CalcTotalPercent(&p)*100;
-		fread(&p,sizeof(player_t),1,f);
+		SDL_RWread(f, &p,sizeof(player_t),1);
 		percent[1]=CalcTotalPercent(&p)*100;
-		fread(&p,sizeof(player_t),1,f);
+		SDL_RWread(f, &p,sizeof(player_t),1);
 		percent[2]=CalcTotalPercent(&p)*100;
-		fclose(f);
+		f.reset();
 	}
 	MakeNormalSound(SND_PAUSE);
 	if(cursor==4 && (!giveUp))

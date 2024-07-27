@@ -65,7 +65,6 @@ enum {
 };
 
 extern world_t curWorld;
-extern FILE *logFile;
 
 // these are the major inits, just at the beginning and ending of a whole game
 void LunaticInit(MGLDraw *mgl);

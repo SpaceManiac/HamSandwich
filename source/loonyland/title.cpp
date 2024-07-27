@@ -274,7 +274,6 @@ byte WhichGameToLoad(void)
 
 void GetSavesForMenu(void)
 {
-	FILE *f;
 	int i;
 	char txt[64];
 	float pct;
@@ -283,7 +282,7 @@ void GetSavesForMenu(void)
 	for(i=0;i<5;i++)
 	{
 		ham_sprintf(txt,"save%d.sav", saveOffset + i + 1);
-		f=AppdataOpen_Stdio(txt);
+		auto f = AppdataOpen(txt);
 		if(!f)
 		{
 			sprintf(saves[i].txt, "%d: Unused", saveOffset + i + 1);
@@ -291,8 +290,8 @@ void GetSavesForMenu(void)
 		}
 		else
 		{
-			fread(&p,sizeof(player_t),1,f);
-			fclose(f);
+			SDL_RWread(f, &p,sizeof(player_t),1);
+			f.reset();
 
 			DescribeSave(saves[i].txt, &p);
 			saves[i].known = true;

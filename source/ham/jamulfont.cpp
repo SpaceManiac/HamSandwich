@@ -86,22 +86,20 @@ FontError FontLoad(SDL_RWops* f, mfont_t* font)
 
 FontError FontSave(const char *fname, const mfont_t *font)
 {
-	FILE *f;
-
-	f = AppdataOpen_Write_Stdio(fname);
+	auto f = AppdataOpen_Write(fname);
 	if (!f)
 		return FONT_FILENOTFOUND;
 
-	if (fwrite(font, MFONT_SIZE_READ, 1, f) != 1)
+	if (SDL_RWwrite(f, font, MFONT_SIZE_READ, 1) != 1)
 		return FONT_INVALIDFILE;
 
-	if (fseek(f, MFONT_SIZE_TOTAL, RW_SEEK_SET) != 0)
+	if (SDL_RWseek(f, MFONT_SIZE_TOTAL, RW_SEEK_SET) != 0)
 		return FONT_INVALIDFILE;
 
-	if (fwrite(font->data, font->dataSize, 1, f) != 1)
+	if (SDL_RWwrite(f, font->data, font->dataSize, 1) != 1)
 		return FONT_INVALIDFILE;
 
-	fclose(f);
+	f.reset();
 	AppdataSync();
 	return FONT_OK;
 }

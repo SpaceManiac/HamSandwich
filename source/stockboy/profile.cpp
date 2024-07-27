@@ -37,20 +37,17 @@ void InitProfile(void)
 
 byte LoadProfile(byte n)
 {
-	FILE *f;
 	char name[32];
 
 	sprintf(name,"profile%03d.pro",n);
-	f=AppdataOpen_Stdio(name);
+	auto f = AppdataOpen(name);
 	if(!f)
 		return 0;
 
-	if(fread(&profile,sizeof(profile_t),1,f)!=1)
+	if(SDL_RWread(f,&profile,sizeof(profile_t),1)!=1)
 	{
-		fclose(f);
 		return 0;
 	}
-	fclose(f);
 	SetVolumes(profile.sound,profile.music);
 	return 1;
 }
@@ -81,20 +78,18 @@ byte FindOpenProfile(void)
 
 byte SaveProfile(byte n)
 {
-	FILE *f;
 	char name[32];
 
 	sprintf(name,"profile%03d.pro",n);
-	f=AppdataOpen_Write_Stdio(name);
+	auto f = AppdataOpen_Write(name);
 	if(!f)
 		return 0;
 
-	if(fwrite(&profile,sizeof(profile_t),1,f)!=1)
+	if(SDL_RWwrite(f,&profile,sizeof(profile_t),1)!=1)
 	{
-		fclose(f);
 		return 0;
 	}
-	fclose(f);
+	AppdataSync();
 	return 1;
 }
 

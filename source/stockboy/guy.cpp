@@ -498,45 +498,6 @@ Guy *AddGuy(int x,int y,int z,byte type)
 	return NULL;
 }
 
-void SaveGuys(FILE *f)
-{
-	int i,num;
-
-	num=0;
-
-	for(i=0;i<maxGuys;i++)
-	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=player.monsType)
-		{
-			num++;
-		}
-	}
-
-	fwrite(&num,sizeof(int),1,f);
-	for(i=0;i<maxGuys;i++)
-	{
-		if(guys[i]->type!=MONS_NONE && guys[i]->type!=player.monsType)
-		{
-			fwrite(guys[i],sizeof(Guy),1,f);
-		}
-	}
-}
-
-void LoadGuys(FILE *f)
-{
-	int i,num;
-
-	ExitGuys();
-	InitGuys(MAX_MAPMONS);
-
-	fread(&num,sizeof(int),1,f);
-
-	for(i=0;i<num;i++)
-	{
-		fread(guys[i],sizeof(Guy),1,f);
-	}
-}
-
 void CameraOnPlayer(void)
 {
 	int i;

@@ -7,25 +7,25 @@
 int totalBrains;
 static world_t *world;
 
-Map::Map(FILE *f)
+Map::Map(SDL_RWops *f)
 {
 	char s[6];
 
-	fread(s,5,sizeof(char),f);
+	SDL_RWread(f,s,5,sizeof(char));
 	s[5]='\0';
 
-	fread(&width,1,sizeof(int),f);
-	fread(&height,1,sizeof(int),f);
+	SDL_RWread(f,&width,1,sizeof(int));
+	SDL_RWread(f,&height,1,sizeof(int));
 
-	fread(name,32,sizeof(char),f);
-	fread(badguy,MAX_MAPMONS,sizeof(mapBadguy_t),f);
-	fread(special,MAX_SPECIAL,sizeof(special_t),f);
-	fread(&song,1,1,f);
-	fread(&flags,1,1,f);
+	SDL_RWread(f,name,32,sizeof(char));
+	SDL_RWread(f,badguy,MAX_MAPMONS,sizeof(mapBadguy_t));
+	SDL_RWread(f,special,MAX_SPECIAL,sizeof(special_t));
+	SDL_RWread(f,&song,1,1);
+	SDL_RWread(f,&flags,1,1);
 
 	map=(mapTile_t *)calloc(sizeof(mapTile_t)*width*height,1);
 
-	fread(map,width*height,sizeof(mapTile_t),f);
+	SDL_RWread(f,map,width*height,sizeof(mapTile_t));
 }
 
 Map::Map(byte size,const char *name)
@@ -74,20 +74,20 @@ Map::~Map(void)
 	free(map);
 }
 
-byte Map::Save(FILE *f)
+byte Map::Save(SDL_RWops *f)
 {
 	char s[6]="SCW10";
 
-	fwrite(s,5,sizeof(char),f);
-	fwrite(&width,1,sizeof(int),f);
-	fwrite(&height,1,sizeof(int),f);
-	fwrite(name,32,sizeof(char),f);
-	fwrite(badguy,MAX_MAPMONS,sizeof(mapBadguy_t),f);
-	fwrite(special,MAX_SPECIAL,sizeof(special_t),f);
-	fwrite(&song,1,1,f);
-	fwrite(&flags,1,1,f);
+	SDL_RWwrite(f,s,5,sizeof(char));
+	SDL_RWwrite(f,&width,1,sizeof(int));
+	SDL_RWwrite(f,&height,1,sizeof(int));
+	SDL_RWwrite(f,name,32,sizeof(char));
+	SDL_RWwrite(f,badguy,MAX_MAPMONS,sizeof(mapBadguy_t));
+	SDL_RWwrite(f,special,MAX_SPECIAL,sizeof(special_t));
+	SDL_RWwrite(f,&song,1,1);
+	SDL_RWwrite(f,&flags,1,1);
 
-	fwrite(map,width*height,sizeof(mapTile_t),f);
+	SDL_RWwrite(f,map,width*height,sizeof(mapTile_t));
 	return 1;
 }
 

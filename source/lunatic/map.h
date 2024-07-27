@@ -121,10 +121,10 @@ class Map
 public:
 	Map(byte size, const char *name);
 	Map(Map *m);
-	Map(FILE *f);
+	Map(SDL_RWops *f);
 	~Map(void);
 
-	byte Save(FILE *f);
+	byte Save(SDL_RWops *f);
 	void Init(world_t *wrld);
 	void Render(world_t *world, int camX, int camY, byte flags);
 	byte DropItem(int x, int y, byte itm);
