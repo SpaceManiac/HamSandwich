@@ -35,8 +35,4 @@ std::vector<std::string> ListDirectory(const char* directory, const char* extens
 // On platforms that need it, ensure appdata is really saved.
 void AppdataSync();
 
-// Old FILE* functions, currently kept for compatibility.
-FILE* AppdataOpen_Stdio(const char* filename);
-FILE* AppdataOpen_Write_Stdio(const char* filename);
-
 #endif  // APPDATA_H

@@ -48,7 +48,6 @@ namespace vanilla
 		virtual ~Vfs() {}
 
 		virtual owned::SDL_RWops open_sdl(const char* filename) = 0;
-		virtual owned::FILE open_stdio(const char* filename);
 		virtual bool list_dir(const char* directory, std::set<std::string, CaseInsensitive>* output) = 0;
 	};
 
@@ -59,9 +58,9 @@ namespace vanilla
 		WriteVfs() {}
 		virtual ~WriteVfs() {}
 
-		virtual owned::FILE open_write_stdio(const char* filename) = 0;
 		virtual owned::SDL_RWops open_write_sdl(const char* filename) = 0;
 		virtual bool delete_file(const char* filename) = 0;
+		virtual bool rename(const char* from, const char* to) = 0;
 	};
 
 	// A pair of Vfs and mountpoint.
@@ -85,7 +84,6 @@ namespace vanilla
 
 		const char* matches(const char* filename) const;
 		owned::SDL_RWops open_sdl(const char* filename);
-		owned::FILE open_stdio(const char* filename);
 	};
 
 	// A full filesystem, including a list of mounts and the write (appdata) mount.
@@ -121,11 +119,11 @@ namespace vanilla
 
 		// Forward to children
 		owned::SDL_RWops open_sdl(const char* filename);
-		owned::FILE open_stdio(const char* filename);
 		void list_dir(const char* directory, std::set<std::string, CaseInsensitive>* output);
 		owned::SDL_RWops open_write_sdl(const char* filename);
-		owned::FILE open_write_stdio(const char* filename);
+
 		bool delete_file(const char* filename);
+		bool rename(const char* from, const char* to);
 
 		// Query metadata for a given path.
 		bool query_bottom(const char* filename, VfsMeta* meta);

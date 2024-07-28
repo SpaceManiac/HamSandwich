@@ -512,14 +512,6 @@ owned::SDL_RWops AppdataOpen_Write(const char* filename) {
 	return vfs_stack.open_write_sdl(filename);
 }
 
-FILE* AppdataOpen_Stdio(const char* filename) {
-	return vfs_stack.open_stdio(filename).release();
-}
-
-FILE* AppdataOpen_Write_Stdio(const char* filename) {
-	return vfs_stack.open_write_stdio(filename).release();
-}
-
 void AppdataDelete(const char* filename) {
 	vfs_stack.delete_file(filename);
 }

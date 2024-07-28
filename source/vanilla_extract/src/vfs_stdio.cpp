@@ -5,6 +5,14 @@
 #include <SDL_rwops.h>
 #include <SDL_log.h>
 
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace filesystem = std::filesystem;
+#else
+#include <experimental/filesystem>
+namespace filesystem = std::experimental::filesystem::v1;
+#endif
+
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
@@ -62,12 +70,11 @@ class StdioVfs : public vanilla::WriteVfs
 	owned::FILE open_stdio_internal(const char* filename, const char* mode, bool write);
 public:
 	explicit StdioVfs(std::string&& prefix) : prefix(prefix) {}
-	owned::FILE open_stdio(const char* filename) override;
 	owned::SDL_RWops open_sdl(const char* filename) override;
-	owned::FILE open_write_stdio(const char* filename) override;
 	owned::SDL_RWops open_write_sdl(const char* filename) override;
 	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>* output) override;
 	bool delete_file(const char* filename) override;
+	bool rename(const char* from, const char* to)  override;
 };
 
 std::unique_ptr<vanilla::WriteVfs> vanilla::open_stdio(std::string_view prefix)
@@ -116,16 +123,6 @@ owned::FILE StdioVfs::open_stdio_internal(const char* file, const char* mode, bo
 	return fp;
 }
 
-owned::FILE StdioVfs::open_write_stdio(const char* file)
-{
-	return open_stdio_internal(file, "wb", true);
-}
-
-owned::FILE StdioVfs::open_stdio(const char* file)
-{
-	return open_stdio_internal(file, "rb", false);
-}
-
 #if defined(_WIN32)
 // The public MSVC binaries of SDL2 are compiled without support for SDL_RWFromFP.
 
@@ -151,13 +148,13 @@ owned::SDL_RWops StdioVfs::open_write_sdl(const char* filename)
 
 owned::SDL_RWops StdioVfs::open_sdl(const char* filename)
 {
-	owned::FILE fp = open_stdio(filename);
+	owned::FILE fp = open_stdio_internal(filename, "rb", false);
 	return fp ? owned::SDL_RWFromFP(std::move(fp)) : nullptr;
 }
 
 owned::SDL_RWops StdioVfs::open_write_sdl(const char* filename)
 {
-	owned::FILE fp = open_write_stdio(filename);
+	owned::FILE fp = open_stdio_internal(filename, "wb", true);
 	return fp ? owned::SDL_RWFromFP(std::move(fp)) : nullptr;
 }
 
@@ -231,4 +228,23 @@ bool StdioVfs::delete_file(const char* file)
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unlink(%s): %s", buffer.c_str(), strerror(errno));
 		return false;
 	}
+}
+
+bool StdioVfs::rename(const char* from, const char* to)
+{
+	std::string from2 = prefix;
+	from2.append("/");
+	from2.append(from);
+	std::string to2 = prefix;
+	to2.append("/");
+	to2.append(to);
+
+	std::error_code fs_error;
+	filesystem::rename(from2, to2, fs_error);
+	if (fs_error)
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "rename(%s, %s): %s\n", from2.c_str(), to2.c_str(), fs_error.message().c_str());
+		return false;
+	}
+	return true;
 }
