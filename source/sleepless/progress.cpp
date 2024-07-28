@@ -28,16 +28,18 @@ void InitProfile(void)
 	int i;
 
 	firstTime=0;
-	auto f = AppdataOpen("profile.cfg");
-	if(!f)
 	{
-		firstTime=1;	// ask the player to enter their name
-		profile.sound=255;
-		profile.music=128;
-		return;
+		auto f = AppdataOpen("profile.cfg");
+		if(!f)
+		{
+			firstTime=1;	// ask the player to enter their name
+			profile.sound=255;
+			profile.music=128;
+			return;
+		}
+		SdlRwStream stream(f.get());
+		stream.getline(name, std::size(name));
 	}
-	SdlRwStream stream(f.get());
-	stream.getline(name, std::size(name));
 	LoadProfile(name);
 	ApplyControlSettings();
 
