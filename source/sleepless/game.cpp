@@ -13,6 +13,7 @@
 #include "customworld.h"
 #include "palettes.h"
 #include "appdata.h"
+#include "string_extras.h"
 #include <stdlib.h>
 #if __linux__ || __EMSCRIPTEN__
 #include <unistd.h>
@@ -437,11 +438,9 @@ TASK(byte) LunaticRun(int *lastTime)
 			// It's cheatable but that's kind of ok
 			if (!IsCustomWorld())
 			{
-				FILE* f = AppdataOpen_Write_Stdio("profiles/editor.dat");
-				char text[256];
-				sprintf(text,"Editor unlocked by %s, what a cool guy!\n", profile.name);
-				fwrite(text, sizeof(char), strlen(text), f);
-				fclose(f);
+				auto f = AppdataOpen_Write("profiles/editor.dat");
+				SDL_RWprintf(f.get(), "Editor unlocked by %s, what a cool guy!\n", profile.name);
+				f.reset();
 				AppdataSync();
 			}
 		}

@@ -138,8 +138,8 @@ void GetBulletDeltas(int *bdx,int *bdy);
 
 // SH additions
 
-void SaveBullets(FILE *f);
-void LoadBullets(FILE *f);
+void SaveBullets(SDL_RWops *f);
+void LoadBullets(SDL_RWops *f);
 
 void BurnHay(int x,int y);
 

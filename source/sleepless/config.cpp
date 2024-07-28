@@ -1,13 +1,13 @@
 #include "config.h"
-#include "appdata.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "appdata.h"
+#include "ioext.h"
 
 config_t config;
 
 void LoadConfig(void)
 {
-	FILE *f;
 	char buf[127];
 	byte p,i;
 	int n;
@@ -23,14 +23,15 @@ void LoadConfig(void)
 	config.camera=1;
 	config.shading=1;
 
-	f=AppdataOpen_Stdio("config.txt");
+	auto f = AppdataOpen("config.txt");
 	if(!f)
 	{
 		return;
 	}
 	else
 	{
-		while(fgets(buf,127,f))
+		SdlRwStream stream(f.get());
+		while(stream.getline(buf, std::size(buf)))
 		{
 			p=0;
 			for(i=0;i<strlen(buf);i++)
@@ -92,6 +93,5 @@ void LoadConfig(void)
 				config.shading=(byte)n;
 			}
 		}
-		fclose(f);
 	}
 }

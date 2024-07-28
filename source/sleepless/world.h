@@ -50,7 +50,6 @@ byte SaveWorld(world_t *world,const char *fname);
 void FreeWorld(world_t *world);
 
 void InitWorld(world_t *world);
-byte GetWorldName(const char *fname,char *buffer,char *authbuffer);
 
 void RepairTileToTile(world_t *w);
 

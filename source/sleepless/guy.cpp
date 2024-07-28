@@ -3859,50 +3859,50 @@ byte BadguyRegions(int x,int y,int x2,int y2,int tx,int ty)
 	return 1;
 }
 
-static const dword NO_SUCH_GUY = 65535;
+static constexpr dword NO_SUCH_GUY = 65535;
 
-void SaveGuys(FILE *f)
+void SaveGuys(SDL_RWops *f)
 {
 	int i;
 
-	fwrite(&maxGuys,sizeof(int),1,f);
+	SDL_RWwrite(f,&maxGuys,sizeof(int),1);
 
 	for(i=0;i<maxGuys;i++)
 	{
-		fwrite(&guys[i]->type,sizeof(byte),1,f);
+		SDL_RWwrite(f,&guys[i]->type,sizeof(byte),1);
 		if(guys[i]->type)
 		{
 			dword target = guys[i]->target ? guys[i]->target->ID : NO_SUCH_GUY;
 			dword parent = guys[i]->parent ? guys[i]->parent->ID : NO_SUCH_GUY;
 			// sizes should total to 136
-			fwrite(guys[i],offsetof(Guy, target),1,f);
-			fwrite(&target,4,1,f);
-			fwrite(&parent,4,1,f);
-			fwrite(&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1,f);
+			SDL_RWwrite(f,guys[i],offsetof(Guy, target),1);
+			SDL_RWwrite(f,&target,4,1);
+			SDL_RWwrite(f,&parent,4,1);
+			SDL_RWwrite(f,&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1);
 			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 136, "save compatibility broken; adjust this assertion if you are sure");
 		}
 	}
 }
 
-void LoadGuys(FILE *f)
+void LoadGuys(SDL_RWops *f)
 {
 	int i;
 
 	ExitGuys();
-	fread(&maxGuys,sizeof(int),1,f);
+	SDL_RWread(f,&maxGuys,sizeof(int),1);
 	InitGuys(maxGuys);
 
 	for(i=0;i<maxGuys;i++)
 	{
-		fread(&guys[i]->type,sizeof(byte),1,f);
+		SDL_RWread(f,&guys[i]->type,sizeof(byte),1);
 		if(guys[i]->type)
 		{
 			dword target, parent;
 			// sizes should total to 136
-			fread(guys[i],offsetof(Guy, target),1,f);
-			fread(&target,4,1,f);
-			fread(&parent,4,1,f);
-			fread(&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1,f);
+			SDL_RWread(f,guys[i],offsetof(Guy, target),1);
+			SDL_RWread(f,&target,4,1);
+			SDL_RWread(f,&parent,4,1);
+			SDL_RWread(f,&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1);
 			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 136, "save compatibility broken; adjust this assertion if you are sure");
 
 			if(target==NO_SUCH_GUY)

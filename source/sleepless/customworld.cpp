@@ -1,8 +1,10 @@
 #include "customworld.h"
+#include <stdlib.h>
 #include "shop.h"
 #include "md5.h"
 #include "appdata.h"
-#include <stdlib.h>
+#include "ioext.h"
+#include "string_extras.h"
 
 #define ENTRY_NONE		0
 #define ENTRY_TITLE		1
@@ -136,16 +138,21 @@ void InitCustomWorld(void)
 	sprintf(buf, "worlds/%s", CustomWorldFname());
 	strcpy(buf+strlen(buf)-4, ".txt");
 
-	FILE* f = AppdataOpen_Stdio(buf);
+	auto f = AppdataOpen(buf);
 	buf[0] = '\0';
 
 	if (!f)
 		return;
 
+	SdlRwStream stream(f.get());
 	byte entrymode = ENTRY_TITLE;
-	while (fgets(buf, 256, f) != NULL)
+	while (stream.getline(buf, std::size(buf)))
 	{
-		buf[strlen(buf)-1]='\0'; // ditch the LF
+		size_t len = strlen(buf);
+		if (buf[len - 1] == '\n')
+			buf[--len] = '\0';
+		if (buf[len - 1] == '\r')
+			buf[--len] = '\0';
 
 		if (buf[0] == '[')
 		{
@@ -287,22 +294,71 @@ void InitCustomWorld(void)
 			}
 		}
 	}
-	fclose(f);
 }
 
 // Verification
 
+/* Compute MD5 message digest for bytes read from STREAM.  The
+   resulting message digest number will be written into the 16 bytes
+   beginning at RESBLOCK.  */
+int md5_rw(SDL_RWops *stream, void *resblock)
+{
+	/* Important: BLOCKSIZE must be a multiple of 64.  */
+	constexpr int BLOCKSIZE = 4096;
+	struct md5_ctx ctx;
+	char buffer[BLOCKSIZE + 72];
+	size_t sum;
+
+	/* Initialize the computation context.  */
+	md5_init_ctx(&ctx);
+
+	/* Iterate over full file contents.  */
+	for (;;)
+	{
+		/* We read the file in blocks of BLOCKSIZE bytes.  One call of the
+	       computation function processes the whole buffer so that with the
+	       next round of the loop another block can be read.  */
+		size_t n;
+		sum = 0;
+
+		/* Read block.  Take care for partial reads.  */
+		do
+		{
+			n = SDL_RWread(stream, buffer + sum, 1, BLOCKSIZE - sum);
+
+			sum += n;
+		} while (sum < BLOCKSIZE && n != 0);
+
+		/* If end of file is reached, end the loop.  */
+		if (n == 0)
+			break;
+
+		/* Process buffer with BLOCKSIZE bytes.  Note that
+		   BLOCKSIZE % 64 == 0
+		 */
+		md5_process_block(buffer, BLOCKSIZE, &ctx);
+	}
+
+	/* Add the last bytes if necessary.  */
+	if (sum > 0)
+		md5_process_bytes(buffer, sum, &ctx);
+
+	/* Construct result in desired memory.  */
+	md5_finish_ctx(&ctx, resblock);
+	return 0;
+}
+
 byte VerifyHollowShw()
 {
-	FILE* f = AppdataOpen_Stdio("worlds/hollow.shw");
+	auto f = AppdataOpen("worlds/hollow.shw");
 	byte md5buf[17];
 
 	// 18044403873A5A3DA052C871D4F76B6D
 	// scrambled a little so it isn't so ctrl-f'able
-	byte md5ok[17] = "\x5\xf1\x31\xf0\x74\x27\x47\x2a\x8d\x3f\xb5\x5e\xc1\xe4\x58\x5a";
+	byte md5ok[17] = "\x05\xf1\x31\xf0\x74\x27\x47\x2a\x8d\x3f\xb5\x5e\xc1\xe4\x58\x5a";
 
-	md5_stream(f, md5buf);
-	fclose(f);
+	md5_rw(f.get(), md5buf);
+	f.reset();
 	md5buf[16] = '\0';
 
 	for (int i = 0; i < 16; ++i)
@@ -331,19 +387,19 @@ const char* CustomWorldTitle(const char* fname)
 		sprintf(buf, "worlds/%s", fname);
 		strcpy(buf+strlen(buf)-4, ".txt");
 
-		FILE* f = AppdataOpen_Stdio(buf);
-		buf[0] = '\0';
-
-		if (f && fgets(buf, 32, f) != NULL)
+		auto f = AppdataOpen(buf);
+		if (f)
 		{
-			strncpy(worldTitleTemp,buf,31);
+			SdlRwStream stream(f.get());
+			if (!stream.getline(worldTitleTemp, std::size(worldTitleTemp)))
+			{
+				ham_strcpy(worldTitleTemp, fname);
+			}
 		}
 		else
 		{
-			strncpy(worldTitleTemp,fname,31);
+			ham_strcpy(worldTitleTemp, fname);
 		}
-		worldTitleTemp[31]='\0';
-		if (f) fclose(f);
 
 		return worldTitleTemp;
 	}

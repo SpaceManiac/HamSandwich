@@ -4,7 +4,6 @@
 #include "tile.h"
 #include "items.h"
 #include "special.h"
-#include "legacyload.h"
 
 #define MAX_LIGHT 16
 #define MIN_LIGHT -32
@@ -81,14 +80,13 @@ class Map
 	public:
 		Map(byte size,const char *name);
 		Map(Map *m);
-		Map(FILE *f);
-		Map(old_map_t *old);
+		Map(SDL_RWops *f);
 
 		~Map(void);
 
-		byte Save(FILE *f);
-		void SaveMapData(FILE *f);
-		void LoadMapData(FILE *f);
+		byte Save(SDL_RWops *f);
+		void SaveMapData(SDL_RWops *f);
+		void LoadMapData(SDL_RWops *f);
 		void Init(world_t *wrld);
 		void Render(world_t *world,int camX,int camY,byte flags);
 		void RenderEdit(world_t *world,int camX,int camY,byte flags);

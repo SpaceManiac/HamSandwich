@@ -4,6 +4,7 @@
 #include "items.h"
 #include "worldstitch.h"
 #include "appdata.h"
+#include "string_extras.h"
 
 #define WORLDCODE "SHOLLOW!"
 
@@ -38,84 +39,77 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 
 byte LoadWorld(world_t *world,const char *fname)
 {
-	FILE *f;
 	int i;
 	char code[32];
 
-	f=AppdataOpen_Stdio(fname);
+	auto f = AppdataOpen(fname);
 	if(!f)
 		return 0;
 
-	fread(code,sizeof(char),8,f);
+	SDL_RWread(f,code,sizeof(char),8);
 	code[8]='\0';
 	if(strcmp(code,WORLDCODE))
 	{
-		fclose(f);
 		return 0;
 	}
 
-	fread(&world->author,sizeof(char),32,f);
-	fread(&code,sizeof(char),32,f);	// name of the world, not needed here
-	fread(&world->numMaps,1,1,f);
-	fread(&world->totalPoints,1,sizeof(int),f);
-	fread(&world->numTiles,1,sizeof(word),f);	// tile count
+	SDL_RWread(f,&world->author,sizeof(char),32);
+	SDL_RWread(f,&code,sizeof(char),32);	// name of the world, not needed here
+	SDL_RWread(f,&world->numMaps,1,1);
+	SDL_RWread(f,&world->totalPoints,1,sizeof(int));
+	SDL_RWread(f,&world->numTiles,1,sizeof(word));	// tile count
 	SetNumTiles(world->numTiles);
 
-	LoadTiles(f);
+	LoadTiles(f.get());
 
-	fread(world->terrain,world->numTiles,sizeof(terrain_t),f);
+	SDL_RWread(f,world->terrain,world->numTiles,sizeof(terrain_t));
 
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
 
 	for(i=0;i<world->numMaps;i++)
 	{
-		world->map[i]=new Map(f);
+		world->map[i]=new Map(f.get());
 		if(!world->map[i])
 		{
-			fclose(f);
 			return 0;
 		}
 	}
 
-	LoadItems(f);
-	LoadCustomSounds(f);
+	LoadItems(f.get());
+	LoadCustomSounds(f.get());
 	SetupRandomItems();
-	fclose(f);
 	return 1;
 }
 
 byte BeginAppendWorld(world_t *world,const char *fname)
 {
-	FILE *f;
 	int i;
 	char code[32];
 
-	f=AppdataOpen_Stdio(fname);
+	auto f = AppdataOpen(fname);
 	if(!f)
 	{
 		SetStitchError("File Not Found");
 		return 0;
 	}
 
-	fread(code,sizeof(char),8,f);
+	SDL_RWread(f,code,sizeof(char),8);
 	code[8]='\0';
 	if(strcmp(code,WORLDCODE))
 	{
-		fclose(f);
 		SetStitchError("Must be a Hollow world.");
 		return 0;
 	}
 
-	fread(&world->author,sizeof(char),32,f);
-	fread(&code,sizeof(char),32,f);	// name of the world, not needed here
-	fread(&world->numMaps,1,1,f);
-	fread(&world->totalPoints,1,sizeof(int),f);
-	fread(&world->numTiles,1,sizeof(word),f);	// tile count
+	SDL_RWread(f,&world->author,sizeof(char),32);
+	SDL_RWread(f,&code,sizeof(char),32);	// name of the world, not needed here
+	SDL_RWread(f,&world->numMaps,1,1);
+	SDL_RWread(f,&world->totalPoints,1,sizeof(int));
+	SDL_RWread(f,&world->numTiles,1,sizeof(word));	// tile count
 
 	if(world->numTiles+GetNumTiles()>NUMTILES)
 	{
-		fclose(f);
 		SetStitchError("Too many tiles!");
 		return 0;
 	}
@@ -123,19 +117,19 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 	stitchTileOffset=GetNumTiles();
 	SetNumTiles(world->numTiles+stitchTileOffset);
 
-	AppendTiles(stitchTileOffset,f);
+	AppendTiles(stitchTileOffset,f.get());
 
-	fread(world->terrain,world->numTiles,sizeof(terrain_t),f);
+	SDL_RWread(f,world->terrain,world->numTiles,sizeof(terrain_t));
 
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
 
 	for(i=0;i<world->numMaps;i++)
 	{
-		world->map[i]=new Map(f);
+		world->map[i]=new Map(f.get());
 		if(!world->map[i])
 		{
-			fclose(f);
+			f.reset();
 			SetStitchError("Unable to load a level.");
 			for(int j=0;j<i;j++)
 				delete world->map[j];
@@ -143,27 +137,23 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 		}
 	}
 
-	if(!AppendItems(f))
+	if(!AppendItems(f.get()))
 	{
-		fclose(f);
 		SetStitchError("Too many custom items!");
 		return 0;
 	}
-	stitchSoundOffset=AppendCustomSounds(f);
+	stitchSoundOffset=AppendCustomSounds(f.get());
 	if(stitchSoundOffset==-1)
 	{
-		fclose(f);
 		SetStitchError("Too many custom sounds!");
 		return 0;
 	}
 	SetupRandomItems();
-	fclose(f);
 	return 1;
 }
 
 byte SaveWorld(world_t *world,const char *fname)
 {
-	FILE *f;
 	int i;
 	char code[9]=WORLDCODE;
 
@@ -173,56 +163,29 @@ byte SaveWorld(world_t *world,const char *fname)
 		if(world->map[i] && (!(world->map[i]->flags&MAP_HUB)))
 			world->totalPoints+=100;	// each level is worth 100 points except hubs which is worth nothing
 
-	f=AppdataOpen_Write_Stdio(fname);
+	auto f = AppdataOpen_Write(fname);
 	if(!f)
 		return 0;
 
-	fwrite(code,8,sizeof(char),f);	// identifier code
-	fwrite(&world->author,sizeof(char),32,f);
-	fwrite(&world->map[0]->name,sizeof(char),32,f);
-	fwrite(&world->numMaps,1,1,f);
-	fwrite(&world->totalPoints,1,sizeof(int),f);
-	fwrite(&world->numTiles,1,sizeof(word),f);
+	SDL_RWwrite(f,code,8,sizeof(char));	// identifier code
+	SDL_RWwrite(f,&world->author,sizeof(char),32);
+	SDL_RWwrite(f,&world->map[0]->name,sizeof(char),32);
+	SDL_RWwrite(f,&world->numMaps,1,1);
+	SDL_RWwrite(f,&world->totalPoints,1,sizeof(int));
+	SDL_RWwrite(f,&world->numTiles,1,sizeof(word));
 
-	SaveTiles(f);
+	SaveTiles(f.get());
 
-	fwrite(world->terrain,world->numTiles,sizeof(terrain_t),f);
+	SDL_RWwrite(f,world->terrain,world->numTiles,sizeof(terrain_t));
 
 	for(i=0;i<world->numMaps;i++)
-		world->map[i]->Save(f);
+		world->map[i]->Save(f.get());
 
-	SaveItems(f);
-	SaveCustomSounds(f);
+	SaveItems(f.get());
+	SaveCustomSounds(f.get());
 
-	fclose(f);
+	f.reset();
 	AppdataSync();
-
-	return 1;
-}
-
-byte GetWorldName(const char *fname,char *buffer,char *authbuffer)
-{
-	FILE *f;
-	char code[9];
-
-	f=AppdataOpen_Stdio(fname);
-	if(!f)
-		return 0;
-
-	fread(code,sizeof(char),8,f);
-	code[8]='\0';
-	if(strcmp(code,WORLDCODE))
-	{
-		fclose(f);
-
-		strcpy(authbuffer,"Unknown Author");
-		return Legacy_GetWorldName(fname,buffer);
-	}
-
-	fread(authbuffer,sizeof(char),32,f);
-	fread(buffer,sizeof(char),32,f);
-
-	fclose(f);
 	return 1;
 }
 
@@ -266,10 +229,9 @@ void LocateKeychains(world_t *w)
 void LogRequirements(world_t *w)
 {
 	int i,j,k;
-	FILE *f;
 
-	f=AppdataOpen_Write_Stdio("req_files.txt");
-	fprintf(f,"World: %s\n",w->map[0]->name);
+	auto f = AppdataOpen_Write("req_files.txt");
+	SDL_RWprintf(f.get(),"World: %s\n",w->map[0]->name);
 
 	for(i=0;i<w->numMaps;i++)
 	{
@@ -282,13 +244,13 @@ void LogRequirements(world_t *w)
 					byte type = w->map[i]->special[j].effect[k].type;
 					if(type==EFF_PICTURE || type==EFF_MONSGRAPHICS || type==EFF_ITEMGRAPHICS)
 					{
-						fprintf(f,"user/%s\n",w->map[i]->special[j].effect[k].text);
+						SDL_RWprintf(f.get(),"user/%s\n",w->map[i]->special[j].effect[k].text);
 					}
 				}
 			}
 		}
 	}
-	fclose(f);
+	f.reset();
 	AppdataSync();
 }
 

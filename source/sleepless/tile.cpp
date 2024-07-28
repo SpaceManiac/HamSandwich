@@ -45,12 +45,6 @@ void SetTiles(byte *scrn)
 	}
 }
 
-void LoadOldTiles(FILE *f)
-{
-	numTiles=400;
-	fread(tiles,numTiles,sizeof(tile_t),f);
-}
-
 void SetTile(int t,int x,int y,byte *src)
 {
 	int i;
@@ -59,7 +53,7 @@ void SetTile(int t,int x,int y,byte *src)
 		memcpy(&tiles[t][i*TILE_WIDTH],&src[x+(y+i)*640],TILE_WIDTH);
 }
 
-void SaveTile(FILE *f,byte *t)
+void SaveTile(SDL_RWops *f,byte *t)
 {
 	int row,i;
 	byte size,c;
@@ -95,7 +89,7 @@ void SaveTile(FILE *f,byte *t)
 	}
 
 	// now that all 24 have been checked, "compress" contains bits for whether to RLE each one
-	fwrite(compress,3,sizeof(byte),f);
+	SDL_RWwrite(f,compress,3,sizeof(byte));
 	curComp=0;
 	curBit=1;
 	// now write out the rows themselves
@@ -115,19 +109,19 @@ void SaveTile(FILE *f,byte *t)
 				else
 				{
 					// write out the current run and start a new one
-					fwrite(&size,1,sizeof(byte),f);
-					fwrite(&c,1,sizeof(byte),f);
+					SDL_RWwrite(f,&size,1,sizeof(byte));
+					SDL_RWwrite(f,&c,1,sizeof(byte));
 					c=t[row*TILE_WIDTH+i];
 					size=1;
 				}
 			}
 			// write out the final run
-			fwrite(&size,1,sizeof(byte),f);
-			fwrite(&c,1,sizeof(byte),f);
+			SDL_RWwrite(f,&size,1,sizeof(byte));
+			SDL_RWwrite(f,&c,1,sizeof(byte));
 		}
 		else	// straight format, simple
 		{
-			fwrite(&t[row*TILE_WIDTH],32,sizeof(byte),f);	// just write the 32 bytes
+			SDL_RWwrite(f,&t[row*TILE_WIDTH],32,sizeof(byte));	// just write the 32 bytes
 		}
 
 		curBit*=2;
@@ -141,7 +135,7 @@ void SaveTile(FILE *f,byte *t)
 }
 
 
-void SaveTiles(FILE *f)
+void SaveTiles(SDL_RWops *f)
 {
 	int i;
 
@@ -203,14 +197,14 @@ void SaveTilesToBMP(const char *fname)
 	GetDisplayMGL()->ClearScreen();
 }
 
-void LoadTile(FILE *f,byte *t)
+void LoadTile(SDL_RWops *f,byte *t)
 {
 	int row,x;
 	byte size,c;
 	byte compress[3],curComp;
 	dword curBit;
 
-	fread(compress,3,sizeof(byte),f);
+	SDL_RWread(f,compress,3,sizeof(byte));
 
 	curComp=0;
 	curBit=1;
@@ -222,15 +216,15 @@ void LoadTile(FILE *f,byte *t)
 			x=0;
 			while(x<32)
 			{
-				fread(&size,1,sizeof(byte),f);
-				fread(&c,1,sizeof(byte),f);
+				SDL_RWread(f,&size,1,sizeof(byte));
+				SDL_RWread(f,&c,1,sizeof(byte));
 				memset(&t[row*TILE_WIDTH+x],c,size);
 				x+=size;
 			}
 		}
 		else	// straight format, simple
 		{
-			fread(&t[row*TILE_WIDTH],32,sizeof(byte),f);	// just write the 32 bytes
+			SDL_RWread(f,&t[row*TILE_WIDTH],32,sizeof(byte));	// just write the 32 bytes
 		}
 
 		curBit*=2;
@@ -242,7 +236,7 @@ void LoadTile(FILE *f,byte *t)
 	}
 }
 
-void LoadTiles(FILE *f)
+void LoadTiles(SDL_RWops *f)
 {
 	int i;
 
@@ -250,7 +244,7 @@ void LoadTiles(FILE *f)
 		LoadTile(f,tiles[i]);
 }
 
-void AppendTiles(int start,FILE *f)
+void AppendTiles(int start,SDL_RWops *f)
 {
 	int i;
 

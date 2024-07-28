@@ -121,17 +121,10 @@ void ExitNameEntry(void)
 
 byte CheckForExistingName(const char *name)
 {
-	FILE *f;
 	char s[64];
 
 	sprintf(s,"profiles/%s.prf",name);
-	f=AppdataOpen_Stdio(s);
-	if(f)
-	{
-		fclose(f);
-		return 1;
-	}
-	return 0;
+	return AppdataOpen(s) != nullptr;
 }
 
 byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)

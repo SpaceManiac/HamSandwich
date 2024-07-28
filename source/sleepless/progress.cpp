@@ -7,6 +7,8 @@
 #include "customworld.h"
 #include "editor.h"
 #include "appdata.h"
+#include "ioext.h"
+#include "string_extras.h"
 
 static char prfName[64];
 static byte firstTime;
@@ -22,12 +24,11 @@ void ApplyControlSettings()
 
 void InitProfile(void)
 {
-	FILE *f;
 	char name[16];
 	int i;
 
 	firstTime=0;
-	f=AppdataOpen_Stdio("profile.cfg");
+	auto f = AppdataOpen("profile.cfg");
 	if(!f)
 	{
 		firstTime=1;	// ask the player to enter their name
@@ -35,8 +36,8 @@ void InitProfile(void)
 		profile.music=128;
 		return;
 	}
-	fscanf(f,"%s\n",name);
-	fclose(f);
+	SdlRwStream stream(f.get());
+	stream.getline(name, std::size(name));
 	LoadProfile(name);
 	ApplyControlSettings();
 
@@ -64,77 +65,76 @@ void FreeProfile(void)
 	}
 }
 
-void SavePlayLists(FILE *f)
+void SavePlayLists(SDL_RWops *f)
 {
 	int i;
 
 	for(i=0;i<NUM_PLAYLISTS;i++)
 	{
-		fwrite(&profile.playList[i].numSongs,1,sizeof(byte),f);
+		SDL_RWwrite(f,&profile.playList[i].numSongs,1,sizeof(byte));
 		if(profile.playList[i].numSongs>0)
-			fwrite(profile.playList[i].song,SONGNAME_LEN,profile.playList[i].numSongs,f);
+			SDL_RWwrite(f,profile.playList[i].song,SONGNAME_LEN,profile.playList[i].numSongs);
 	}
 }
 
 void SaveProfile(void)
 {
-	FILE *f;
 	int i,j;
 
-	f=AppdataOpen_Write_Stdio("profile.cfg");
-	fprintf(f,"%s\n",profile.name);
-	fclose(f);
+	auto f = AppdataOpen_Write("profile.cfg");
+	SDL_RWprintf(f.get(),"%s\n",profile.name);
+	f.reset();
 
 	sprintf(prfName,"profiles/%s.prf",profile.name);
 	// also actually save the profile!
-	f=AppdataOpen_Write_Stdio(prfName);
+	f = AppdataOpen_Write(prfName);
 	// begin fwrite(&profile, sizeof(profile_t), 1, f) emulation
-	fwrite(&profile, 68, 1, f);
+	SDL_RWwrite(f, &profile, 68, 1);
 	for(i = 0; i < NUM_PLAYLISTS; ++i)
 	{
-		fwrite("\0\0\0\0\0\0\0\0", 8, 1, f);
+		SDL_RWwrite(f, "\0\0\0\0\0\0\0\0", 8, 1);
 	}
-	fwrite(&profile.difficulty, 8, 1, f);
+	SDL_RWwrite(f, &profile.difficulty, 8, 1);
 	// begin progress_t part
 	{
-		fwrite(&profile.progress, 112, 1, f);
-		fwrite("\0\0\0\0", 4, 1, f);  // skip worldData_t *world
-		fwrite(&profile.progress.kills, 2152 - 112 - 4, 1, f);
+		SDL_RWwrite(f, &profile.progress, 112, 1);
+		SDL_RWwrite(f, "\0\0\0\0", 4, 1);  // skip worldData_t *world
+		SDL_RWwrite(f, &profile.progress.kills, 2152 - 112 - 4, 1);
 	}
 	// end progress_t part
-	SDL_assert(ftell(f) == 2260);
+	SDL_assert(SDL_RWtell(f) == 2260);
 	// end fwrite emulation
 
-	SavePlayLists(f);
+	SavePlayLists(f.get());
 
 	// to enforce the "TEST" world being present
 	GetWorldProgress("TEST");
 	// so that we can save the word!
 	for(i=0;i<profile.progress.num_worlds;i++)
 	{
-		fwrite(&profile.progress.world[i],76,1,f);
-		fwrite("\0\0\0\0", 4, 1, f);
+		SDL_RWwrite(f, &profile.progress.world[i],76,1);
+		SDL_RWwrite(f, "\0\0\0\0", 4, 1);
 		for(j=0;j<profile.progress.world[i].levels;j++)
 		{
-			fwrite(&profile.progress.world[i].level[j],sizeof(levelData_t),1,f);
+			SDL_RWwrite(f, &profile.progress.world[i].level[j],sizeof(levelData_t),1);
 		}
 	}
-	fclose(f);
+	f.reset();
 	AppdataSync();
 	firstTime=0;
 }
 
-void LoadPlayLists(FILE *f)
+void LoadPlayLists(SDL_RWops *f)
 {
 	int i;
 
 	for(i=0;i<NUM_PLAYLISTS;i++)
 	{
-		fread(&profile.playList[i].numSongs,1,sizeof(byte),f);
+		SDL_RWread(f,&profile.playList[i].numSongs,1,sizeof(byte));
 		if(profile.playList[i].numSongs>0)
 		{
 			profile.playList[i].song=(char *)malloc(SONGNAME_LEN*profile.playList[i].numSongs);
-			fread(profile.playList[i].song,SONGNAME_LEN,profile.playList[i].numSongs,f);
+			SDL_RWread(f,profile.playList[i].song,SONGNAME_LEN,profile.playList[i].numSongs);
 		}
 		else
 			profile.playList[i].song=NULL;
@@ -143,42 +143,41 @@ void LoadPlayLists(FILE *f)
 
 void LoadProfile(const char *name)
 {
-	FILE *f;
 	int i,j;
 
 	strcpy(profile.name,name);
 	sprintf(prfName,"profiles/%s.prf",profile.name);
 
 	// save this profile as the current one.
-	f=AppdataOpen_Write_Stdio("profile.cfg");
-	fprintf(f,"%s\n",profile.name);
-	fclose(f);
+	auto f = AppdataOpen_Write("profile.cfg");
+	SDL_RWprintf(f.get(),"%s\n",profile.name);
+	f.reset();
 	AppdataSync();
 
 	// now load it
-	f=AppdataOpen_Stdio(prfName);
+	f = AppdataOpen(prfName);
 	if(!f)	// file doesn't exist
 	{
 		DefaultProfile(name);
 		return;
 	}
 	// begin fread(&profile, sizeof(profile_t), 1, f) emulation
-	fread(&profile, 68, 1, f);
+	SDL_RWread(f, &profile, 68, 1);
 	for(i = 0; i < NUM_PLAYLISTS; ++i)
 	{
-		fseek(f, 8, SEEK_CUR);
+		SDL_RWseek(f, 8, RW_SEEK_CUR);
 	}
-	fread(&profile.difficulty, 8, 1, f);
+	SDL_RWread(f, &profile.difficulty, 8, 1);
 	// begin progress_t part
 	{
-		fread(&profile.progress, 112, 1, f);
-		fseek(f, 4, SEEK_CUR);  // skip worldData_t *world
-		fread(&profile.progress.kills, 2152 - 112 - 4, 1, f);
+		SDL_RWread(f, &profile.progress, 112, 1);
+		SDL_RWseek(f, 4, RW_SEEK_CUR);  // skip worldData_t *world
+		SDL_RWread(f, &profile.progress.kills, 2152 - 112 - 4, 1);
 	}
 	// end progress_t part
-	SDL_assert(ftell(f) == 2260);
+	SDL_assert(SDL_RWtell(f) == 2260);
 	// end fread emulation
-	LoadPlayLists(f);
+	LoadPlayLists(f.get());
 	InitCustomWorld();
 
 	if(profile.progress.num_worlds==0)
@@ -188,16 +187,15 @@ void LoadProfile(const char *name)
 		profile.progress.world=(worldData_t *)malloc(sizeof(worldData_t)*profile.progress.num_worlds);
 		for(i=0;i<profile.progress.num_worlds;i++)
 		{
-			fread(&profile.progress.world[i],76,1,f);
-			fseek(f, 4, SEEK_CUR);
+			SDL_RWread(f, &profile.progress.world[i],76,1);
+			SDL_RWseek(f, 4, RW_SEEK_CUR);
 			profile.progress.world[i].level=(levelData_t *)malloc(sizeof(levelData_t)*profile.progress.world[i].levels);
 			for(j=0;j<profile.progress.world[i].levels;j++)
 			{
-				fread(&profile.progress.world[i].level[j],sizeof(levelData_t),1,f);
+				SDL_RWread(f, &profile.progress.world[i].level[j],sizeof(levelData_t),1);
 			}
 		}
 	}
-	fclose(f);
 }
 
 byte FirstTime(void)
@@ -273,19 +271,6 @@ void EmptyPlaylist(playList_t *p)
 	p->numSongs=0;
 }
 
-void OriginalPlaylist(playList_t *p)
-{
-	int i;
-
-	p->numSongs=22;
-	p->song=(char *)calloc(SONGNAME_LEN*p->numSongs,1);
-
-	for(i=0;i<22;i++)
-	{
-		strcpy(&p->song[SONGNAME_LEN*i],GetOriginalSongName(i+1));
-	}
-}
-
 void DefaultControls(void)
 {
 	profile.control[0][0]=SDL_SCANCODE_UP;
@@ -320,7 +305,7 @@ void DefaultProfile(const char *name)
 	profile.moveNShoot=0;
 	profile.nameVerified=0;
 	strcpy(profile.lastWorld, "hollow.shw");
-	OriginalPlaylist(&profile.playList[0]);
+	EmptyPlaylist(&profile.playList[0]);
 	EmptyPlaylist(&profile.playList[1]);
 	EmptyPlaylist(&profile.playList[2]);
 	EmptyPlaylist(&profile.playList[3]);
@@ -545,7 +530,6 @@ void EraseWorldProgress(char *fname)
 
 void SaveState(void)
 {
-	FILE *f;
 	char fname[64];
 	word w;
 
@@ -554,12 +538,12 @@ void SaveState(void)
 		sprintf(fname,"profiles/_editing_.%03d",player.levelNum);
 	else
 		sprintf(fname,"profiles/%s.%03d",profile.name,player.levelNum);
-	f=AppdataOpen_Write_Stdio(fname);
+	auto f = AppdataOpen_Write(fname);
 
 	// first write out the player itself
-	fwrite(&player, offsetof(player_t, worldProg), 1, f);
-	fwrite("\0\0\0\0\0\0\0\0", 8, 1, f);
-	fwrite(&player.shield, sizeof(player_t) - offsetof(player_t, shield), 1, f);
+	SDL_RWwrite(f, &player, offsetof(player_t, worldProg), 1);
+	SDL_RWwrite(f, "\0\0\0\0\0\0\0\0", 8, 1);
+	SDL_RWwrite(f, &player.shield, sizeof(player_t) - offsetof(player_t, shield), 1);
 
 	// next the ID of whoever is tagged
 	if(TaggedMonster()==NULL)
@@ -567,20 +551,20 @@ void SaveState(void)
 	else
 		w=TaggedMonster()->ID;
 
-	fwrite(&w,sizeof(word),1,f);
+	SDL_RWwrite(f,&w,sizeof(word),1);
 	// then all specials
-	SaveSpecials(f);
+	SaveSpecials(f.get());
 	// then level flags
-	fwrite(&curMap->flags,sizeof(word),1,f);
+	SDL_RWwrite(f,&curMap->flags,sizeof(word),1);
 	// then the map
-	fwrite(curMap->map,curMap->width*curMap->height,sizeof(mapTile_t),f);
+	SDL_RWwrite(f,curMap->map,curMap->width*curMap->height,sizeof(mapTile_t));
 	// then the monsters
-	SaveGuys(f);
+	SaveGuys(f.get());
 	// then the bullets
-	SaveBullets(f);
+	SaveBullets(f.get());
 
-	fclose(f);
-
+	f.reset();
+	AppdataSync();
 }
 
 // set getplayer=2 to restore the level exactly as it was left, except for the player's life/ammo/items found
@@ -589,7 +573,6 @@ void SaveState(void)
 // getPlayer=0 is for changing maps - destroys the player data, replacing it with whatever is current
 byte LoadState(byte lvl,byte getPlayer)
 {
-	FILE *f;
 	char fname[64];
 	word tagged;
 
@@ -597,39 +580,39 @@ byte LoadState(byte lvl,byte getPlayer)
 		sprintf(fname,"profiles/_editing_.%03d",lvl);
 	else
 		sprintf(fname,"profiles/%s.%03d",profile.name,lvl);
-	f=AppdataOpen_Stdio(fname);
+	auto f = AppdataOpen(fname);
 	if(f==NULL)
 		return 0;
 
 	// first read the player itself, undoing the damage to worldProg and levelProg
 	if (getPlayer == 1)
 	{
-		fread(&player, offsetof(player_t, worldProg), 1, f);
-		fseek(f, 8, SEEK_CUR);
-		fread(&player.shield, sizeof(player_t) - offsetof(player_t, shield), 1, f);
+		SDL_RWread(f, &player, offsetof(player_t, worldProg), 1);
+		SDL_RWseek(f, 8, RW_SEEK_CUR);
+		SDL_RWread(f, &player.shield, sizeof(player_t) - offsetof(player_t, shield), 1);
 	}
 	else // !getPlayer || getPlayer==2
 	{
-		fseek(f, 368, SEEK_CUR);
+		SDL_RWseek(f, 368, RW_SEEK_CUR);
 	}
 	static_assert(sizeof(player_t) - offsetof(player_t, shield) + offsetof(player_t, worldProg) + 8 == 368, "save compatibility broken; adjust this assertion if you are sure");
 
 	// next the ID of whoever is tagged
-	fread(&tagged,sizeof(word),1,f);
+	SDL_RWread(f,&tagged,sizeof(word),1);
 	// then all specials
-	LoadSpecials(f,curMap->special);
+	LoadSpecials(f.get(),curMap->special);
 	// then the flags
-	fread(&curMap->flags,sizeof(word),1,f);
+	SDL_RWread(f,&curMap->flags,sizeof(word),1);
 	// then the map
-	fread(curMap->map,curMap->width*curMap->height,sizeof(mapTile_t),f);
+	SDL_RWread(f,curMap->map,curMap->width*curMap->height,sizeof(mapTile_t));
 	// then the monsters
-	LoadGuys(f);
+	LoadGuys(f.get());
 	if(tagged==65535)
 		SetTagged(NULL);
 	else
 		SetTagged(GetGuy(tagged));
 	// then the bullets
-	LoadBullets(f);
+	LoadBullets(f.get());
 
 	if(getPlayer==2)
 	{
@@ -659,6 +642,5 @@ byte LoadState(byte lvl,byte getPlayer)
 	{
 		curMap->map[i].templight=-32;
 	}
-	fclose(f);
 	return 1;
 }

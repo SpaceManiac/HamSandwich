@@ -1059,7 +1059,7 @@ int GetTotalRarity(void)
 	return totalRare;
 }
 
-void SaveItems(FILE *f)
+void SaveItems(SDL_RWops *f)
 {
 	int i;
 	word changedItems;
@@ -1073,29 +1073,29 @@ void SaveItems(FILE *f)
 			changedItems++;
 	}
 
-	fwrite(&changedItems,1,sizeof(word),f);
+	SDL_RWwrite(f,&changedItems,1,sizeof(word));
 	for(i=0;i<NUM_ORIGINAL_ITEMS;i++)
 	{
 		if(memcmp(&items[i],&baseItems[i],sizeof(item_t)))
 		{
 			// this item is changed, write it out
 			b=(byte)i;
-			fwrite(&b,1,sizeof(byte),f);	// write the item number
-			fwrite(&items[i],1,sizeof(item_t),f);
+			SDL_RWwrite(f,&b,1,sizeof(byte));	// write the item number
+			SDL_RWwrite(f,&items[i],1,sizeof(item_t));
 		}
 	}
 	if(numItems>NUM_ORIGINAL_ITEMS)
 	{
 		b=255;	// indicating custom items are beginning here
-		fwrite(&b,1,sizeof(byte),f);
+		SDL_RWwrite(f,&b,1,sizeof(byte));
 		for(i=NUM_ORIGINAL_ITEMS;i<numItems;i++)
 		{
-			fwrite(&items[i],1,sizeof(item_t),f);
+			SDL_RWwrite(f,&items[i],1,sizeof(item_t));
 		}
 	}
 }
 
-void LoadItems(FILE *f)
+void LoadItems(SDL_RWops *f)
 {
 	int i;
 	word changedItems;
@@ -1105,7 +1105,7 @@ void LoadItems(FILE *f)
 	ExitItems();
 	InitItems();
 
-	fread(&changedItems,1,sizeof(word),f);
+	SDL_RWread(f,&changedItems,1,sizeof(word));
 
 	getNumber=1;
 	for(i=0;i<changedItems;i++)
@@ -1113,14 +1113,14 @@ void LoadItems(FILE *f)
 		if(getNumber)
 		{
 			curItem=0;
-			fread(&curItem,1,sizeof(byte),f);
+			SDL_RWread(f,&curItem,1,sizeof(byte));
 			if(curItem==255)
 			{
 				getNumber=0;
 				curItem=NUM_ORIGINAL_ITEMS;
 			}
 		}
-		fread(&items[curItem],1,sizeof(item_t),f);
+		SDL_RWread(f,&items[curItem],1,sizeof(item_t));
 		curItem++;
 	}
 
@@ -1130,7 +1130,7 @@ void LoadItems(FILE *f)
 		numItems=curItem;
 }
 
-byte AppendItems(FILE *f)
+byte AppendItems(SDL_RWops *f)
 {
 	int i;
 	word changedItems;
@@ -1140,14 +1140,14 @@ byte AppendItems(FILE *f)
 
 	stitchItemOffset=numItems;
 
-	fread(&changedItems,1,sizeof(word),f);
+	SDL_RWread(f,&changedItems,1,sizeof(word));
 
 	getNumber=1;
 	for(i=0;i<changedItems;i++)
 	{
 		if(getNumber)
 		{
-			fread(&curItem,1,sizeof(byte),f);
+			SDL_RWread(f,&curItem,1,sizeof(byte));
 			if(curItem==255)
 			{
 				getNumber=0;
@@ -1155,10 +1155,10 @@ byte AppendItems(FILE *f)
 			}
 		}
 		if(curItem<NUM_ORIGINAL_ITEMS)
-			fread(&garbage,1,sizeof(item_t),f);	// throw away any mods of regular items
+			SDL_RWread(f,&garbage,1,sizeof(item_t));	// throw away any mods of regular items
 		else
 		{
-			fread(&items[curItem],1,sizeof(item_t),f);
+			SDL_RWread(f,&items[curItem],1,sizeof(item_t));
 			curItem++;
 			numItems++;
 		}
