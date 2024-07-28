@@ -623,47 +623,47 @@ void FontPrintStringDarkAdj(int x,int y, std::string_view s,int dark,const mfont
 
 void FontPrintStringBright(int x, int y, std::string_view s, const mfont_t *font, char bright)
 {
-	for (size_t i = 0; i < s.size(); ++i)
+	for (char ch : s)
 	{
-		FontPrintCharBright(x, y, s[i], bright, font);
-		x += CharWidth(s[i], font) + font->gapSize;
+		FontPrintCharBright(x, y, ch, bright, font);
+		x += CharWidth(ch, font) + font->gapSize;
 	}
 }
 
 void FontPrintStringSolid(int x, int y, std::string_view s, const mfont_t *font, byte color)
 {
-	for (size_t i = 0; i < s.size(); ++i)
+	for (char ch : s)
 	{
-		FontPrintCharSolid(x, y, s[i], font, color);
-		x += CharWidth(s[i], font) + font->gapSize;
+		FontPrintCharSolid(x, y, ch, font, color);
+		x += CharWidth(ch, font) + font->gapSize;
 	}
 }
 
 void FontPrintStringGlow(int x, int y, std::string_view s, const mfont_t *font, char bright)
 {
-	for (size_t i = 0; i < s.size(); ++i)
+	for (char ch : s)
 	{
-		FontPrintCharGlow(x, y, s[i], bright, font);
-		x+=CharWidth(s[i],font)+font->gapSize;
+		FontPrintCharGlow(x, y, ch, bright, font);
+		x+=CharWidth(ch,font)+font->gapSize;
 	}
 }
 
 void FontPrintStringBrightGlow(int x, int y, std::string_view s, char brt, const mfont_t *font)
 {
-	for (size_t i = 0; i < s.size(); ++i)
+	for (char ch : s)
 	{
-		FontPrintCharBrightGlow(x,y,s[i],brt,font);
-		x+=CharWidth(s[i],font)+font->gapSize;
+		FontPrintCharBrightGlow(x,y,ch,brt,font);
+		x+=CharWidth(ch,font)+font->gapSize;
 	}
 }
 
 void FontPrintStringDropShadow(int x, int y, std::string_view s, const mfont_t *font, byte shadowColor, byte shadowOffset)
 {
-	for (size_t i = 0; i < s.size(); ++i)
+	for (char ch : s)
 	{
-		FontPrintCharSolid(x + shadowOffset, y + shadowOffset, s[i], font, shadowColor);
-		FontPrintChar(x, y, s[i], font);
-		x += CharWidth(s[i], font) + font->gapSize;
+		FontPrintCharSolid(x + shadowOffset, y + shadowOffset, ch, font, shadowColor);
+		FontPrintChar(x, y, ch, font);
+		x += CharWidth(ch, font) + font->gapSize;
 	}
 }
 
@@ -841,12 +841,12 @@ TASK(bool) FontInputText(std::string_view prompt, char *buffer, int len, void (*
 
 void FontPrintStringLimit(int x,int y,int maxX,std::string_view s,const mfont_t *font)
 {
-	for (size_t i = 0; i < s.size(); ++i)
+	for (char ch : s)
 	{
-		if(x+CharWidth(s[i],font)<maxX)
+		if(x+CharWidth(ch,font)<maxX)
 		{
-			FontPrintChar(x,y,s[i],font);
-			x+=CharWidth(s[i],font)+font->gapSize;
+			FontPrintChar(x,y,ch,font);
+			x+=CharWidth(ch,font)+font->gapSize;
 		}
 		else
 			break;
@@ -855,12 +855,12 @@ void FontPrintStringLimit(int x,int y,int maxX,std::string_view s,const mfont_t 
 
 void FontPrintStringSolidLimit(int x,int y,int maxX,std::string_view s,const mfont_t *font,byte color)
 {
-	for (size_t i = 0; i < s.size(); ++i)
+	for (char ch : s)
 	{
-		if(x+CharWidth(s[i],font)<maxX)
+		if(x+CharWidth(ch,font)<maxX)
 		{
-			FontPrintCharSolid(x,y,s[i],font,color);
-			x+=CharWidth(s[i],font)+font->gapSize;
+			FontPrintCharSolid(x,y,ch,font,color);
+			x+=CharWidth(ch,font)+font->gapSize;
 		}
 		else break;
 	}
@@ -868,12 +868,12 @@ void FontPrintStringSolidLimit(int x,int y,int maxX,std::string_view s,const mfo
 
 void FontPrintStringBrightLimit(int x,int y,int maxX,std::string_view s,const mfont_t *font,char bright)
 {
-	for (size_t i = 0; i < s.size(); ++i)
+	for (char ch : s)
 	{
-		if(x+CharWidth(s[i],font)<maxX)
+		if(x+CharWidth(ch,font)<maxX)
 		{
-			FontPrintCharBright(x,y,s[i],bright,font);
-			x+=CharWidth(s[i],font)+font->gapSize;
+			FontPrintCharBright(x,y,ch,bright,font);
+			x+=CharWidth(ch,font)+font->gapSize;
 		}
 		else
 			break;
@@ -970,37 +970,37 @@ void FontPrintStringGlowRect(int x,int y,int x2,int y2,std::string_view s,int he
 
 void FontPrintStringGlowLimited(int x,int y,int maxX,std::string_view s,const mfont_t *font,char bright)
 {
-	for (size_t i = 0; i < s.size(); ++i)
+	for (char ch : s)
 	{
-		FontPrintCharGlowLimited(x,y,maxX,s[i],font,bright);
-		x+=CharWidth(s[i],font)+font->gapSize;
+		FontPrintCharGlowLimited(x,y,maxX,ch,font,bright);
+		x+=CharWidth(ch,font)+font->gapSize;
 	}
 }
 
 void FontPrintStringProgressiveGlow(int x,int y,std::string_view s,const mfont_t *font,int bright)
 {
-	int br=bright+s.size()*4;
-	for (size_t i = 0; i < s.size(); ++i)
+	int br = bright + s.size() * 4;
+	for (char ch : s)
 	{
 		if(br<0)
-			FontPrintCharGlow(x,y,s[i],br,font);
+			FontPrintCharGlow(x,y,ch,br,font);
 		else if(br<20)
-			FontPrintCharGlow(x,y,s[i],br,font);
+			FontPrintCharGlow(x,y,ch,br,font);
 		else if(br<40)
-			FontPrintCharGlow(x,y,s[i],40-br,font);
+			FontPrintCharGlow(x,y,ch,40-br,font);
 		else
-			FontPrintCharGlow(x,y,s[i],0,font);
-		x+=CharWidth(s[i],font)+font->gapSize;
+			FontPrintCharGlow(x,y,ch,0,font);
+		x+=CharWidth(ch,font)+font->gapSize;
 		br-=4;
 	}
 }
 
 void FontPrintStringUnGlow(int x,int y,std::string_view s,const mfont_t *font)
 {
-	for (size_t i = 0; i < s.size(); ++i)
+	for (char ch : s)
 	{
-		FontPrintCharUnGlow(x,y,s[i],font);
-		x+=CharWidth(s[i],font)+font->gapSize;
+		FontPrintCharUnGlow(x,y,ch,font);
+		x+=CharWidth(ch,font)+font->gapSize;
 	}
 }
 
@@ -1050,31 +1050,31 @@ void FontPrintStringUnGlowRect(int x,int y,int x2,int y2,std::string_view s,int 
 
 void FontPrintStringUnGlowLimited(int x,int y,int maxX,std::string_view s,const mfont_t *font)
 {
-	for (size_t i = 0; i < s.size(); ++i)
+	for (char ch : s)
 	{
-		FontPrintCharUnGlowLimited(x,y,maxX,s[i],font);
-		x+=CharWidth(s[i],font)+font->gapSize;
+		FontPrintCharUnGlowLimited(x,y,maxX,ch,font);
+		x+=CharWidth(ch,font)+font->gapSize;
 	}
 }
 
 void FontPrintStringAngleUnGlow(int x,int y,std::string_view s,const mfont_t *font)
 {
-	for (size_t i = 0; i < s.size(); ++i)
+	for (char ch : s)
 	{
-		FontPrintCharUnGlow(x,y,s[i],font);
-		x+=CharWidth(s[i],font)+font->gapSize;
+		FontPrintCharUnGlow(x,y,ch,font);
+		x+=CharWidth(ch,font)+font->gapSize;
 		y-=2;
 	}
 }
 
 void FontPrintStringAngle2(int x,int y,std::string_view s,const mfont_t *font)
 {
-	for (size_t i = 0; i < s.size(); ++i)
+	for (char ch : s)
 	{
-		FontPrintCharUnGlow(x,y,s[i],font);
-		FontPrintCharGlow(x-2,y-2,s[i],-10,font);
-		x+=CharWidth(s[i],font)+font->gapSize;
-		y-=(CharWidth(s[i],font)+font->gapSize)/2;
+		FontPrintCharUnGlow(x,y,ch,font);
+		FontPrintCharGlow(x-2,y-2,ch,-10,font);
+		x+=CharWidth(ch,font)+font->gapSize;
+		y-=(CharWidth(ch,font)+font->gapSize)/2;
 	}
 }
 
@@ -1123,10 +1123,10 @@ void FontPrintCharUnGlowSideways(int x, int y, int minY,dword c, const mfont_t *
 
 void FontPrintStringUnGlowSideways(int x,int y,int minY,std::string_view s,const mfont_t *font)
 {
-	for (size_t i = 0; i < s.size(); ++i)
+	for (char ch : s)
 	{
-		FontPrintCharUnGlowSideways(x,y,minY,s[i],font);
-		y-=(CharWidth(s[i],font)+font->gapSize);
+		FontPrintCharUnGlowSideways(x,y,minY,ch,font);
+		y-=(CharWidth(ch,font)+font->gapSize);
 	}
 }
 
