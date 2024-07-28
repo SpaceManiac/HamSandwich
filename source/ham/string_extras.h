@@ -77,4 +77,8 @@ span<char> ham_sprintf(span<char> dst, SDL_PRINTF_FORMAT_STRING const char* form
 // sprintf-style append to a std::string.
 void string_appendf(std::string* buffer, SDL_PRINTF_FORMAT_STRING const char* format, ...) SDL_PRINTF_VARARG_FUNC(2);
 
+// fprintf-like to an SDL_RWops.
+struct SDL_RWops;
+int SDL_RWprintf(SDL_RWops* rw, SDL_PRINTF_FORMAT_STRING const char* format, ...) SDL_PRINTF_VARARG_FUNC(2);
+
 #endif

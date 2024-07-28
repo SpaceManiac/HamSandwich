@@ -9,6 +9,7 @@
 #include "gallery.h"
 #include "options.h"
 #include "appdata.h"
+#include "string_extras.h"
 
 char magicNames[MAX_EQMAGIC][16]={
 	"Normal",
@@ -1651,7 +1652,6 @@ void EquipCreateItem(byte level,byte *type,int *val1,int *val2)
 
 void EquipTest(void)
 {
-	FILE *f;
 	int i;
 	int val1,val2;
 	byte type;
@@ -1663,14 +1663,14 @@ void EquipTest(void)
 	for(i=0;i<10;i++)
 		potResults[i]=0;
 
-	f=AppdataOpen_Write_Stdio("text.txt");
+	auto f = AppdataOpen_Write("text.txt");
 	for(i=0;i<1000;i++)
 	{
  		EquipCreateItem((i%60)+1,&type,&val1,&val2);
 		PlayerGetItem(type,val1,val2);
 		if(type>=IT_LENSA && type<=IT_LENSM)
 			lensResults[type-IT_LENSA]++;
-		fprintf(f,"%02d: %s (%d/%d, %s, %s, %s)\n",(i%60)+1,EquipName(&player.items[0]),player.items[0].value,player.items[0].speed,
+		SDL_RWprintf(f.get(), "%02d: %s (%d/%d, %s, %s, %s)\n",(i%60)+1,EquipName(&player.items[0]),player.items[0].value,player.items[0].speed,
 				GetSkill(player.items[0].skill[0])->name,GetSkill(player.items[0].skill[1])->name,GetSkill(player.items[0].skill[2])->name);
 
 		player.items[0].type=IT_NONE;
@@ -1682,21 +1682,21 @@ void EquipTest(void)
 			EquipCreateItem(20,&type,&val1,&val2);
 		PlayerGetItem(type,val1,val2);
 		potResults[val1]++;
-		fprintf(f,"%02d: %s (%d/%d, %s, %s, %s)\n",(i%60)+1,EquipName(&player.items[0]),player.items[0].value,player.items[0].speed,
+		SDL_RWprintf(f.get(), "%02d: %s (%d/%d, %s, %s, %s)\n",(i%60)+1,EquipName(&player.items[0]),player.items[0].value,player.items[0].speed,
 				GetSkill(player.items[0].skill[0])->name,GetSkill(player.items[0].skill[1])->name,GetSkill(player.items[0].skill[2])->name);
 
 		player.items[0].type=IT_NONE;
 	}
 	for(i=0;i<13;i++)
 	{
-		fprintf(f,"LENS%d: %03d\n",i,lensResults[i]);
+		SDL_RWprintf(f.get(), "LENS%d: %03d\n",i,lensResults[i]);
 	}
 	for(i=0;i<10;i++)
 	{
-		fprintf(f,"POT%d: %03d\n",i,potResults[i]);
+		SDL_RWprintf(f.get(), "POT%d: %03d\n",i,potResults[i]);
 	}
 
-	fclose(f);
+	f.reset();
 	AppdataSync();
 }
 

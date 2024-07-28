@@ -13,7 +13,7 @@
 static SDL_LogOutputFunction original = nullptr;
 static void* originalUserdata = nullptr;
 static bool errorLogAttempted = false;
-static FILE* errorLog = nullptr;
+static owned::SDL_RWops errorLog = nullptr;
 
 void HamLogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message)
 {
@@ -21,8 +21,9 @@ void HamLogOutput(void *userdata, int category, SDL_LogPriority priority, const 
 	original(originalUserdata, category, priority, message);
 	if (errorLog && priority >= SDL_LOG_PRIORITY_WARN)
 	{
-		fprintf(errorLog, "%s\n", message);
-		fflush(errorLog);
+		SDL_RWwrite(errorLog, message, 1, strlen(message));
+		SDL_RWwrite(errorLog, "\n", 1, 1);
+		// We should flush here but SDL_RWflush doesn't exist in SDL2.
 		AppdataSync();
 	}
 }
@@ -41,7 +42,7 @@ void LogInit()
 	if (!errorLogAttempted && AppdataIsInit())
 	{
 		errorLogAttempted = true;
-		errorLog = AppdataOpen_Write_Stdio("error.log");
+		errorLog = AppdataOpen_Write("error.log");
 	}
 }
 

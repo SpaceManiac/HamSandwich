@@ -2,7 +2,7 @@
 #include <streambuf>
 #include <SDL_rwops.h>
 
-const int BUFSZ = 8192;
+constexpr int BUFSZ = 8192;
 
 class FilePtrBuf : public std::streambuf
 {

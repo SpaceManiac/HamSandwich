@@ -3,6 +3,7 @@
 #include "water.h"
 #include "music.h"
 #include "appdata.h"
+#include "string_extras.h"
 
 #define PLOPRATE	5
 
@@ -1842,9 +1843,8 @@ void ScanChests(void)
 {
 	byte pres[99],chest[50];
 	int i,j;
-	FILE *f;
 
-	f=AppdataOpen_Write_Stdio("blah.txt");
+	auto f = AppdataOpen_Write("blah.txt");
 
 	for(i=0;i<99;i++)
 		pres[i]=0;
@@ -1858,13 +1858,13 @@ void ScanChests(void)
 			if(world.map[i]->map[j].item==IT_PRESENT)
 			{
 				if(pres[world.map[i]->map[j].tag]!=0)
-					fprintf(f,"Present #%d in %d and %d!\n",world.map[i]->map[j].tag,pres[world.map[i]->map[j].tag]-1,i);
+					SDL_RWprintf(f.get(), "Present #%d in %d and %d!\n",world.map[i]->map[j].tag,pres[world.map[i]->map[j].tag]-1,i);
 				pres[world.map[i]->map[j].tag]=i+1;
 			}
 			if(world.map[i]->map[j].item>=IT_CHEST1 && world.map[i]->map[j].item<=IT_CHEST5)
 			{
 				if(chest[world.map[i]->map[j].tag]!=0)
-					fprintf(f,"Chest #%d in %d and %d!\n",world.map[i]->map[j].tag,chest[world.map[i]->map[j].tag]-1,i);
+					SDL_RWprintf(f.get(), "Chest #%d in %d and %d!\n",world.map[i]->map[j].tag,chest[world.map[i]->map[j].tag]-1,i);
 				chest[world.map[i]->map[j].tag]=i+1;
 			}
 		}
@@ -1872,11 +1872,11 @@ void ScanChests(void)
 	for(i=0;i<99;i++)
 	{
 		if(pres[i]==0)
-			fprintf(f,"Present #%d missing!\n",i);
+			SDL_RWprintf(f.get(), "Present #%d missing!\n",i);
 		if(i<50 && chest[i]==0)
-			fprintf(f,"Chest #%d missing!\n",i);
+			SDL_RWprintf(f.get(), "Chest #%d missing!\n",i);
 	}
-	fclose(f);
+	f.reset();
 	AppdataSync();
 }
 

@@ -4,6 +4,7 @@
 #include "game.h"
 #include "options.h"
 #include "appdata.h"
+#include "ioext.h"
 
 mfont_t *gameFont[2] = {NULL, NULL};
 MGLDraw *mgl = NULL;
@@ -121,13 +122,14 @@ TASK(void) ShowVictoryAnim(byte world)
 
 void LoadText(char *nm)
 {
-	FILE *f;
 	char line[256];
 	int y;
 
-	f = AppdataOpen_Stdio(nm);
+	auto f = AppdataOpen(nm);
 	if (!f)
 		return;
+
+	SdlRwStream stream(f.get());
 
 	GetDisplayMGL()->ClearScreen();
 	for (y = 0; y < 32; y++)
@@ -137,12 +139,11 @@ void LoadText(char *nm)
 	}
 	y = 10;
 
-	while (fgets(line, 256, f) && y < 480 - 50)
+	while (stream.getline(line, std::size(line)) && y < 480 - 50)
 	{
 		CenterPrint(320, y, line, 0, 0);
 		y += 50;
 	}
-	fclose(f);
 }
 
 TASK(void) ShowImageOrFlic(char *str)

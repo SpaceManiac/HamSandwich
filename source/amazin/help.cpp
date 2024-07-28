@@ -8,6 +8,7 @@
 #include "register.h"
 #include "title.h"
 #include "map.h"
+#include "ioext.h"
 
 enum class HelpType
 {
@@ -158,7 +159,7 @@ static bool LoadHelpHeader(char *line)
 		if (!strcmp(tok, "GO"))
 		{
 			g_Help[g_HelpNext].action = 1;
-		tok = strtok(nullptr, " ,~\n");
+			tok = strtok(nullptr, " ,~\n");
 			num = atoi(tok);
 			g_Help[g_HelpNext].destPage = num;
 		}
@@ -233,7 +234,7 @@ static bool LoadHelpHeader(char *line)
 	return true;
 }
 
-static void LoadHelpPage(FILE *f)
+static void LoadHelpPage(SdlRwStream* stream)
 {
 	size_t lineLen;
 	size_t textLen;
@@ -243,13 +244,22 @@ static void LoadHelpPage(FILE *f)
 	{
 		while (true)
 		{
-			if (fscanf(f, "%[^\r\n]\n", line) == -1)
+			if (!stream->getline(line, std::size(line) - 1))
 			{
 				return;
 			}
 			lineLen = strlen(line);
-			line[lineLen + 1] = '\0';
+
+			// Erase \r\n
+			if (line[lineLen - 1] == '\n')
+				line[--lineLen] = '\0';
+			if (line[lineLen - 1] == '\r')
+				line[--lineLen] = '\0';
+
+			// Paste \n back on
 			line[lineLen] = '\n';
+			line[++lineLen] = '\0';
+
 			if (line[0] != '~')
 				break;
 			if (!LoadHelpHeader(strtok(line + 1, "~\n")))
@@ -272,14 +282,17 @@ static void LoadHelpDocument(byte page)
 	char line[128];
 
 	HelpClear();
-	FILE *f = AppdataOpen_Stdio("data/help.jhl");
+	auto f = AppdataOpen("data/help.jhl");
 	if (!f)
 	{
 		FatalError("Help File Not Found!");
 		exit(1);
 	}
+
+	SdlRwStream stream(f.get());
+
 	bool found = false;
-	while (fscanf(f, "%[^\n]\n", line) != -1 && !found)
+	while (stream.getline(line, std::size(line)) && !found)
 	{
 		if (line[0] == '~')
 		{
@@ -291,7 +304,7 @@ static void LoadHelpDocument(byte page)
 				{
 					g_HelpLen = 0;
 					g_HelpNext = 0xff;
-					LoadHelpPage(f);
+					LoadHelpPage(&stream);
 					found = true;
 				}
 			}
@@ -303,7 +316,6 @@ static void LoadHelpDocument(byte page)
 		exit(1);
 	}
 
-	fclose(f);
 	g_HelpCursor = 0;
 	g_HelpOldHeld = 0xff;
 	g_HelpHovered = nullptr;
