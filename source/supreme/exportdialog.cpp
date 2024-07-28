@@ -16,6 +16,8 @@
 #include "guy.h"
 #include "editor.h"
 #include "winpch.h"
+#include "ioext.h"
+#include "string_extras.h"
 
 #ifdef HAS_STEAM_API
 #ifdef _WIN32
@@ -80,8 +82,8 @@ namespace
 
 		void SaveWorkshopDataFile()
 		{
-			owned::FILE f { AppdataOpen_Write_Stdio(workshopDataFilename.c_str()) };
-			fprintf(f.get(), "workshop_item_id=%" PRIu64 "\n", workshopItemId);
+			auto f = AppdataOpen_Write(workshopDataFilename.c_str());
+			SDL_RWprintf(f.get(), "workshop_item_id=%" PRIu64 "\n", workshopItemId);
 		}
 
 		void CreateCallback(CreateItemResult_t* result, bool)
@@ -200,10 +202,11 @@ namespace
 		void LoadWorkshopDataFile(std::string source)
 		{
 			workshopDataFilename = std::move(source);
-			if (owned::FILE f { AppdataOpen_Stdio(workshopDataFilename.c_str()) })
+			if (auto f = AppdataOpen(workshopDataFilename.c_str()))
 			{
+				SdlRwStream stream(f.get());
 				char buf[128];
-				while (fgets(buf, std::size(buf), f.get()))
+				while (stream.getline(buf, std::size(buf)))
 				{
 					char* eq = strchr(buf, '=');
 					if (eq)
@@ -293,30 +296,30 @@ static bool BadCharacter(char ch)
 
 static void SaveReqFilesTxt()
 {
-	FILE *f = AppdataOpen_Write_Stdio("req_files.txt");
-	fprintf(f, "# World: %s\n", title.c_str());
+	auto f = AppdataOpen_Write("req_files.txt");
+	SDL_RWprintf(f.get(), "# World: %s\n", title.c_str());
 	for (const auto& file : files)
 	{
 		switch (file.kind)
 		{
 			case FileKind::Root:
-				fprintf(f, "# Root: %s\n", file.filename.c_str());
+				SDL_RWprintf(f.get(), "# Root: %s\n", file.filename.c_str());
 				break;
 			case FileKind::DependencyMissing:
-				fprintf(f, "%s    # MISSING!\n", file.filename.c_str());
+				SDL_RWprintf(f.get(), "%s    # MISSING!\n", file.filename.c_str());
 				break;
 			case FileKind::DependencyAppdata:
 			case FileKind::DependencyOtherAddon:
-				fprintf(f, "%s\n", file.filename.c_str());
+				SDL_RWprintf(f.get(), "%s\n", file.filename.c_str());
 				break;
 			case FileKind::DependencyBaseGame:
-				fprintf(f, "# Base game: %s\n", file.filename.c_str());
+				SDL_RWprintf(f.get(), "# Base game: %s\n", file.filename.c_str());
 				break;
 			default:
 				break;
 		}
 	}
-	fclose(f);
+	f.reset();
 	AppdataSync();
 	saveTxtResult = "Saved OK!";
 }

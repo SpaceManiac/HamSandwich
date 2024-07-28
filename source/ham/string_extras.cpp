@@ -96,13 +96,13 @@ void string_appendf(std::string* buffer, const char* format, ...)
 	va_end(args);
 }
 
-int SDL_RWprintf(SDL_RWops* rw, const char* format, ...)
+size_t SDL_RWprintf(SDL_RWops* rw, const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
 
 	char* buf = nullptr;
-	int size = SDL_vasprintf(&buf, format, args);
+	size_t size = SDL_vasprintf(&buf, format, args);
 	if (!buf)
 		return size;
 	size = SDL_RWwrite(rw, buf, 1, size);

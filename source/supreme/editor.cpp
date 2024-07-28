@@ -192,40 +192,28 @@ void Delete(int x,int y)
 void BackupWorld(const char *name)
 {
 	char inName[128],outName[128];
-	FILE *inF,*outF;
 	int bytes;
-	byte *data;
 
 	sprintf(inName,"worlds/%s",name);
 	sprintf(outName,"worlds/backup_save.dlw");
 
-	inF=AppdataOpen_Stdio(inName);
+	auto inF = AppdataOpen(inName);
 	if(!inF)
 		return;	// the source didn't exist, so nothing to back up
-	outF=AppdataOpen_Write_Stdio(outName);
+	auto outF = AppdataOpen_Write(outName);
 	if(!outF)
-	{
-		fclose(inF);
 		return;	// was unable to open the file for writing for some reason
-	}
-	data=(byte *)malloc(sizeof(byte)*1024);
-	if(!data)
+
+	byte data[8 * 1024];
+	while(true)
 	{
-		fclose(inF);
-		fclose(outF);
-		return;	// couldn't allocate that lousy bit of memory!
-	}
-	while(1)
-	{
-		bytes=fread(data,sizeof(byte),1024,inF);
-		if(bytes>0)
-			fwrite(data,sizeof(byte),bytes,outF);
-		if(bytes<1024)
+		bytes = SDL_RWread(inF, data, sizeof(byte), std::size(data));
+		if (bytes <= 0)
 			break;
+		SDL_RWwrite(outF, data, sizeof(byte), bytes);
 	}
-	free(data);
-	fclose(inF);
-	fclose(outF);
+	outF.reset();
+	inF.reset();
 	AppdataSync();
 }
 

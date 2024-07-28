@@ -79,6 +79,6 @@ void string_appendf(std::string* buffer, SDL_PRINTF_FORMAT_STRING const char* fo
 
 // fprintf-like to an SDL_RWops.
 struct SDL_RWops;
-int SDL_RWprintf(SDL_RWops* rw, SDL_PRINTF_FORMAT_STRING const char* format, ...) SDL_PRINTF_VARARG_FUNC(2);
+size_t SDL_RWprintf(SDL_RWops* rw, SDL_PRINTF_FORMAT_STRING const char* format, ...) SDL_PRINTF_VARARG_FUNC(2);
 
 #endif

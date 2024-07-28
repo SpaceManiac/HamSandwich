@@ -90,28 +90,25 @@ void LunaticExit(void)
 bool VerifyLevel(Map *map)
 {
 	dword chk,cmp;
-	FILE *f;
 
 	chk=ChecksumMap(map);
 
 	debugVerified = 0;
-	f=AppdataOpen_Stdio("worlds/levels.dat");
+	auto f = AppdataOpen("worlds/levels.dat");
 	if(!f)
-		return 0;
+		return false;
 
 	dword index = 0;
-	while(fread(&cmp,sizeof(dword),1,f))
+	while(SDL_RWread(f,&cmp,sizeof(dword),1))
 	{
 		++index;
 		if(cmp==chk)
 		{
-			fclose(f);
 			debugVerified = index;
-			return 1;
+			return true;
 		}
 	}
-	fclose(f);
-	return 0;
+	return false;
 }
 
 byte InitLevel(byte map)

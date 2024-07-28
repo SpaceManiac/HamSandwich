@@ -990,12 +990,12 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				}
 			}
 
-			FILE* output = AppdataOpen_Write_Stdio("worlds/levels.dat");
+			auto output = AppdataOpen_Write("worlds/levels.dat");
 			for (dword item : ordered)
 			{
-				fwrite(&item, sizeof(dword), 1, output);
+				SDL_RWwrite(output, &item, sizeof(dword), 1);
 			}
-			fclose(output);
+			output.reset();
 
 			FetchScores(0);
 		}

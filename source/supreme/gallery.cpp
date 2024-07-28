@@ -1,9 +1,10 @@
 #include "gallery.h"
+#include <stdlib.h>
 #include "display.h"
 #include "game.h"
 #include "control.h"
 #include "appdata.h"
-#include <stdlib.h>
+#include "ioext.h"
 
 galpic_t *galpix;
 char tmp[1024];
@@ -90,25 +91,24 @@ void SetupGalPix(Map *map)
 
 void InitGallery(Map *map)
 {
-	FILE *f;
 	int pos;
 
 	galpix=new galpic_t[100];
 	pos=0;
-	f=AppdataOpen_Stdio("gallery/galpix.dat");
+	auto f = AppdataOpen("gallery/galpix.dat");
 	if(!f)
 		return;
 
-	char s[2048];
+	SdlRwStream stream(f.get());
 
-	while(fgets(s,2048,f))
+	char s[2048];
+	while(stream.getline(s, std::size(s)))
 	{
 		ScanGalleryLine(s,pos);
 		pos++;
 		if(pos==100)
 			break;
 	}
-	fclose(f);
 
 	SetupGalPix(map);
 }

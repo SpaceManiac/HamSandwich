@@ -121,39 +121,38 @@ void ConvertToNewWorld(world_t *world)
 	world->map[0]->flags|=MAP_HUB;
 }
 
-void LoadOldMap(old_map_t *map,FILE *f)
+static void LoadOldMap(old_map_t *map,SDL_RWops *f)
 {
-	fread(&map->width,1,sizeof(int),f);
-	fread(&map->height,1,sizeof(int),f);
+	SDL_RWread(f,&map->width,1,sizeof(int));
+	SDL_RWread(f,&map->height,1,sizeof(int));
 
-	fread(map->name,32,sizeof(char),f);
-	fread(map->badguy,OLD_MAX_MAPMONS,sizeof(old_mapBadguy_t),f);
-	fread(map->special,OLD_MAX_SPECIAL,sizeof(old_special_t),f);
-	fread(&map->song,1,1,f);
-	fread(&map->flags,1,1,f);
+	SDL_RWread(f,map->name,32,sizeof(char));
+	SDL_RWread(f,map->badguy,OLD_MAX_MAPMONS,sizeof(old_mapBadguy_t));
+	SDL_RWread(f,map->special,OLD_MAX_SPECIAL,sizeof(old_special_t));
+	SDL_RWread(f,&map->song,1,1);
+	SDL_RWread(f,&map->flags,1,1);
 
 	map->map=(old_mapTile_t *)calloc(sizeof(old_mapTile_t)*map->width*map->height,1);
 
-	fread(map->map,map->width*map->height,sizeof(old_mapTile_t),f);
+	SDL_RWread(f,map->map,map->width*map->height,sizeof(old_mapTile_t));
 }
 
 byte Legacy_LoadWorld(world_t *world,const char *fname)
 {
-	FILE *f;
 	int i;
 
 	oldWorld=new old_world_t;
 
-	f=AppdataOpen_Stdio(fname);
+	auto f = AppdataOpen(fname);
 	if(!f)
 		return 0;
 
-	fread(&oldWorld->numMaps,1,1,f);
-	fread(&oldWorld->totalPoints,1,4,f);
+	SDL_RWread(f,&oldWorld->numMaps,1,1);
+	SDL_RWread(f,&oldWorld->totalPoints,1,4);
 
-	LoadOldTiles(f);
+	LoadOldTiles(f.get());
 
-	fread(oldWorld->terrain,200,sizeof(old_terrain_t),f);
+	SDL_RWread(f,oldWorld->terrain,200,sizeof(old_terrain_t));
 
 	for(i=0;i<24;i++)
 		oldWorld->map[i]=NULL;
@@ -164,10 +163,10 @@ byte Legacy_LoadWorld(world_t *world,const char *fname)
 		if(!oldWorld->map[i])
 			return 0;
 		else
-			LoadOldMap(oldWorld->map[i],f);
+			LoadOldMap(oldWorld->map[i],f.get());
 	}
 
-	fclose(f);
+	f.reset();
 
 	ConvertToNewWorld(world);
 	for(i=0;i<oldWorld->numMaps;i++)

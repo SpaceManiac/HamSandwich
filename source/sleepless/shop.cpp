@@ -1158,7 +1158,7 @@ void OpenLocker(int x,int y)
 				strcat(shopTxt,"A lovely piece of artwork to view in the Mall Gallery!");
 				break;
 			case SHOP_WORLD:
-				char tmp[32],tmp2[32],tmp3[64];
+				//char tmp[32],tmp2[32],tmp3[64];
 
 				//sprintf(tmp3,"worlds/%s",worldFName[shop[x].item]);
 				//GetWorldName(tmp3,tmp,tmp2);
@@ -1205,7 +1205,7 @@ void HungerSign(void)
 TASK(void) InitShopping(int x,int y)
 {
 	int i;
-	char tmp[32],tmp2[32],tmp3[64];
+	//char tmp[32],tmp2[32],tmp3[64];
 
 	modeToToggle=0;
 
@@ -1395,7 +1395,7 @@ TASK(void) InitShopping(int x,int y)
 
 void SetObtainText(void)
 {
-	char tmp[32],tmp2[32],tmp3[64];
+	//char tmp[32],tmp2[32],tmp3[64];
 
 	switch(shop[buying].type)
 	{

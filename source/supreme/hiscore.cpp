@@ -1,13 +1,14 @@
 #include "hiscore.h"
-#include "map.h"
-#include "player.h"
 #include <time.h>
 #include <assert.h>
+#include "map.h"
+#include "player.h"
 #include "editor.h"
 #include "game.h"
 #include "config.h"
 #include "appdata.h"
 #include "steam.h"
+#include "string_extras.h"
 
 #if __linux__ || __EMSCRIPTEN__
 #include <unistd.h>
@@ -247,8 +248,6 @@ void DecryptScore(score_t *s)
 
 void CryptoTest(void)
 {
-	FILE *f;
-
 	score_t test={
 		"Bobby2",100,0,1,12,10,74,511718,124958,0};
 	score_t test2;
@@ -256,14 +255,13 @@ void CryptoTest(void)
 	memcpy(&test2,&test,sizeof(score_t));
 
 	SetupCrypto(3574,858734,298437);
-	f=AppdataOpen_Write_Stdio("test.txt");
+	auto f = AppdataOpen_Write("test.txt");
 	EncryptScore(&test);
-	fprintf(f,"Encrypted:\n%s\n\n",enc_score);
+	SDL_RWprintf(f.get(),"Encrypted:\n%s\n\n",enc_score);
 	DecryptScore(&test);
-	fprintf(f,"Decrypted:\n");
-	fprintf(f,"name: %s\nchecksum: %u\n\n",test.name,test.scoreChecksum);
-	fprintf(f,"memcmp: %d\n",memcmp(&test,&test2,sizeof(score_t)));
-	fclose(f);
+	SDL_RWprintf(f.get(),"Decrypted:\n");
+	SDL_RWprintf(f.get(),"name: %s\nchecksum: %u\n\n",test.name,test.scoreChecksum);
+	SDL_RWprintf(f.get(),"memcmp: %d\n",memcmp(&test,&test2,sizeof(score_t)));
 	ExitCrypto();
 }
 
@@ -515,7 +513,7 @@ void ExitHiScores(void)
 
 void SaveHiScoreFile(score_t *list,word num,const char *fname)
 {
-	FILE *f;
+	owned::SDL_RWops f;
 	word i;
 
 	if(!config.hiscores)
@@ -523,27 +521,27 @@ void SaveHiScoreFile(score_t *list,word num,const char *fname)
 
 	if(num==0)
 	{
-		f=AppdataOpen_Write_Stdio(fname);
+		f=AppdataOpen_Write(fname);
 		if(!f)
 			return;
-		fwrite(&num,sizeof(word),1,f);
-		fclose(f);
+		SDL_RWwrite(f,&num,sizeof(word),1);
+		f.reset();
 		AppdataSync();
 		return;
 	}
-	f=AppdataOpen_Write_Stdio(fname);
+	f=AppdataOpen_Write(fname);
 	if(!f)
 		return;
-	fwrite(&num,sizeof(word),1,f);	// write out the number of scores
+	SDL_RWwrite(f,&num,sizeof(word),1);	// write out the number of scores
 
 	SetupCrypto(3574,858734,298437);
 	for(i=0;i<num;i++)			// write out each score, encrypted
 	{
 		EncryptScore(&list[i]);
-		fwrite(enc_score,sizeof(char),scoreLen,f);
+		SDL_RWwrite(f,enc_score,sizeof(char),scoreLen);
 	}
 	ExitCrypto();
-	fclose(f);
+	f.reset();
 	AppdataSync();
 }
 
@@ -555,25 +553,21 @@ void SaveHiScores(void)
 
 void LoadHiScoresFile(void)
 {
-	FILE *f;
 	word i;
+
+	numScores=0;
+	if(hiScore)
+		free(hiScore);
+	hiScore=NULL;
 
 	if(!config.hiscores)
 		return;
 
-	f=AppdataOpen_Stdio("hiscore.dat");
+	auto f = AppdataOpen("hiscore.dat");
 	if(!f)
-	{
-		numScores=0;
-		if(hiScore)
-			free(hiScore);
-		hiScore=NULL;
 		return;
-	}
-	if(hiScore)
-		free(hiScore);
 
-	fread(&numScores,sizeof(word),1,f);	// read in the number of scores
+	SDL_RWread(f,&numScores,sizeof(word),1);	// read in the number of scores
 
 	if(numScores>0)
 	{
@@ -581,35 +575,30 @@ void LoadHiScoresFile(void)
 		SetupCrypto(3574,858734,298437);
 		for(i=0;i<numScores;i++)			// read in each score, encrypted
 		{
-			fread(enc_score,sizeof(char),scoreLen,f);
+			SDL_RWread(f,enc_score,sizeof(char),scoreLen);
 			DecryptScore(&hiScore[i]);		// and decrypt!
 		}
 		ExitCrypto();
 	}
-	fclose(f);
 }
 
 void LoadHiTimesFile(void)
 {
-	FILE *f;
 	word i;
+
+	numTimes=0;
+	if(hiTime)
+		free(hiTime);
+	hiTime=NULL;
 
 	if(!config.hiscores)
 		return;
 
-	f=AppdataOpen_Stdio("hitime.dat");
+	auto f = AppdataOpen("hitime.dat");
 	if(!f)
-	{
-		numTimes=0;
-		if(hiTime)
-			free(hiTime);
-		hiTime=NULL;
 		return;
-	}
-	if(hiTime)
-		free(hiTime);
 
-	fread(&numTimes,sizeof(word),1,f);	// read in the number of scores
+	SDL_RWread(f,&numTimes,sizeof(word),1);	// read in the number of scores
 
 	if(numTimes>0)
 	{
@@ -617,12 +606,11 @@ void LoadHiTimesFile(void)
 		SetupCrypto(3574,858734,298437);
 		for(i=0;i<numTimes;i++)			// read in each score, encrypted
 		{
-			fread(enc_score,sizeof(char),scoreLen,f);
+			SDL_RWread(f,enc_score,sizeof(char),scoreLen);
 			DecryptScore(&hiTime[i]);		// and decrypt!
 		}
 		ExitCrypto();
 	}
-	fclose(f);
 }
 
 void LoadHiScores(void)

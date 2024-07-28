@@ -1,4 +1,5 @@
 #include "moron.h"
+#include <assert.h>
 #include "mgldraw.h"
 #include "control.h"
 #include "display.h"
@@ -11,7 +12,7 @@
 #include "yesnodialog.h"
 #include "goal.h"
 #include "appdata.h"
-#include <assert.h>
+#include "ioext.h"
 
 void PickQuestion(void);
 
@@ -47,12 +48,12 @@ static word ansY[]={344,344,409,409};
 #define ANS_WID (295)
 #define ANS_HEI	(56)
 
-byte GetQuestion(question_t *q,FILE *f)
+byte GetQuestion(question_t *q,SdlRwStream *stream)
 {
 	q->right=0;
 	q->wrong=0;
 
-	while(fgets(buf,127,f))
+	while(stream->getline(buf, std::size(buf)))
 	{
 		if(buf[0]=='Q')
 		{
@@ -80,9 +81,8 @@ byte GetQuestion(question_t *q,FILE *f)
 byte GetQuestions(void)
 {
 	int i;
-	FILE *f;
 
-	f=AppdataOpen_Stdio("gallery/mrqs.bmp");
+	auto f = AppdataOpen("gallery/mrqs.bmp");
 	if(!f)
 		return 0;	// can't play without questions!
 
@@ -92,7 +92,8 @@ byte GetQuestions(void)
 		questions[i]=NULL;
 	}
 
-	while(fgets(buf,127,f))
+	SdlRwStream stream(f.get());
+	while(stream.getline(buf, std::size(buf)))
 	{
 		if(buf[0]=='L')
 		{
@@ -109,11 +110,10 @@ byte GetQuestions(void)
 			{
 				questions[i]=(question_t *)realloc(questions[i],sizeof(question_t)*numQs[i]);
 			}
-			if(!GetQuestion((question_t *)(&questions[i][(numQs[i]-1)]),f))
+			if(!GetQuestion((question_t *)(&questions[i][(numQs[i]-1)]),&stream))
 				break;	// that question was last
 		}
 	}
-	fclose(f);
 	return 1;
 }
 

@@ -49,10 +49,10 @@ void SetTiles(byte *scrn)
 	}
 }
 
-void LoadOldTiles(FILE *f)
+void LoadOldTiles(SDL_RWops *f)
 {
 	numTiles=400;
-	fread(tiles,numTiles,sizeof(tile_t),f);
+	SDL_RWread(f,tiles,numTiles,sizeof(tile_t));
 }
 
 void SetTile(int t,int x,int y,byte *src)
@@ -145,9 +145,9 @@ static void SaveTile(std::ostream& f, byte *t)
 }
 
 
-void SaveTiles(FILE *f)
+void SaveTiles(SDL_RWops *f)
 {
-	FilePtrStream stream(f);
+	SdlRwStream stream(f);
 	SaveTiles(stream);
 }
 
@@ -250,9 +250,9 @@ static void LoadTile(std::istream &f, byte *t)
 	}
 }
 
-void LoadTiles(FILE *f)
+void LoadTiles(SDL_RWops *f)
 {
-	FilePtrStream stream(f);
+	SdlRwStream stream(f);
 	LoadTiles(stream);
 }
 
@@ -262,9 +262,9 @@ void LoadTiles(std::istream &f)
 		LoadTile(f, tiles[i]);
 }
 
-void AppendTiles(int start,FILE *f)
+void AppendTiles(int start,SDL_RWops *f)
 {
-	FilePtrStream stream(f);
+	SdlRwStream stream(f);
 	for(int i=start;i<numTiles;i++)
 		LoadTile(stream, tiles[i]);
 }

@@ -94,14 +94,14 @@ class Map
 	public:
 		Map(byte size,const char *name);
 		explicit Map(Map *m);
-		explicit Map(FILE *f);
+		explicit Map(SDL_RWops *f);
 		explicit Map(old_map_t *old);
 
 		~Map(void);
 
-		byte Save(FILE *f);
-		void SaveMapData(FILE *f);
-		void LoadMapData(FILE *f);
+		byte Save(SDL_RWops *f);
+		void SaveMapData(SDL_RWops *f);
+		void LoadMapData(SDL_RWops *f);
 		void Init(world_t *wrld);
 		void Render(world_t *world,int camX,int camY,byte flags);
 		void RenderSelect(world_t *world,int camX,int camY,byte flags);

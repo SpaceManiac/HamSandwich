@@ -10,6 +10,7 @@
 #include "config.h"
 #include "message.h"
 #include "appdata.h"
+#include "ioext.h"
 
 mfont_t  *gameFont[3]={NULL,NULL,NULL};
 MGLDraw  *mgl=NULL;
@@ -85,13 +86,14 @@ void ExitDisplay(void)
 
 void LoadText(const char *nm,byte mode)
 {
-	FILE *f;
 	char line[256];
 	int y;
 
-	f=AppdataOpen_Stdio(nm);
+	auto f = AppdataOpen(nm);
 	if(!f)
 		return;
+
+	SdlRwStream stream(f.get());
 
 	switch(mode)
 	{
@@ -104,7 +106,7 @@ void LoadText(const char *nm,byte mode)
 			}
 			y=10;
 
-			while(fgets(line,256,f) && y<480-50)
+			while(stream.getline(line, std::size(line)) && y<480-50)
 			{
 				CenterPrint(320,y,VariableMsg(line),0,0);
 				y+=50;
@@ -113,7 +115,7 @@ void LoadText(const char *nm,byte mode)
 		case TEXTFILE_YERFDOG:
 			GetDisplayMGL()->LoadBMP("graphics/yerfmsg.bmp");
 			y=26;
-			while(fgets(line,256,f) && y<270-18)
+			while(stream.getline(line, std::size(line)) && y<270-18)
 			{
 				PrintUnGlow(27,y,VariableMsg(line),2);
 				y+=18;
@@ -122,15 +124,13 @@ void LoadText(const char *nm,byte mode)
 		case TEXTFILE_COMPUTER:
 			GetDisplayMGL()->LoadBMP("graphics/profmenu.bmp");
 			y=10;
-			while(fgets(line,256,f) && y<480-30)
+			while(stream.getline(line, std::size(line)) && y<480-30)
 			{
 				PrintGlow(20,y,VariableMsg(line),0,2);
 				y+=18;
 			}
 			break;
 	}
-
-	fclose(f);
 }
 
 TASK(void) ShowImageOrFlic(const char *str,byte nosnd,byte mode)

@@ -55,12 +55,12 @@ static io_terrain_t SaveOneTerrain(terrain_t terrain)
 	return r;
 }
 
-static void LoadTerrain(world_t *world, const char *fname, FILE *f)
+static void LoadTerrain(world_t *world, const char *fname, SDL_RWops *f)
 {
 	for (int i = 0; i < world->numTiles; ++i)
 	{
 		io_terrain_t io_terrain;
-		fread(&io_terrain, sizeof(io_terrain_t), 1, f);
+		SDL_RWread(f, &io_terrain, sizeof(io_terrain_t), 1);
 		world->terrain[i] = LoadOneTerrain(io_terrain);
 	}
 
@@ -84,90 +84,84 @@ static void LoadTerrain(world_t *world, const char *fname, FILE *f)
 
 byte LoadWorld(world_t *world,const char *fname)
 {
-	FILE *f;
 	int i;
 	char code[32];
 
-	f=AppdataOpen_Stdio(fname);
+	auto f = AppdataOpen(fname);
 	if(!f)
 		return 0;
 
-	fread(code,sizeof(char),8,f);
+	SDL_RWread(f,code,sizeof(char),8);
 	code[8]='\0';
 
 	if(!strcmp(code, "HAMSWCH!"))
 	{
-		fclose(f);
+		f.reset();
 		return Ham_LoadWorld(world, fname);
 	}
 	if(strcmp(code,"SUPREME!"))
 	{
-		fclose(f);
+		f.reset();
 		ClearCustomSounds();
 		return Legacy_LoadWorld(world,fname);
 	}
 
-	fread(&world->author,sizeof(char),32,f);
-	fread(&code,sizeof(char),32,f);	// name of the world, not needed here
-	fread(&world->numMaps,1,1,f);
-	fread(&world->totalPoints,1,sizeof(int),f);
-	fread(&world->numTiles,1,sizeof(word),f);	// tile count
+	SDL_RWread(f,&world->author,sizeof(char),32);
+	SDL_RWread(f,&code,sizeof(char),32);	// name of the world, not needed here
+	SDL_RWread(f,&world->numMaps,1,1);
+	SDL_RWread(f,&world->totalPoints,1,sizeof(int));
+	SDL_RWread(f,&world->numTiles,1,sizeof(word));	// tile count
 	SetNumTiles(world->numTiles);
 
-	LoadTiles(f);
-	LoadTerrain(world, fname, f);
+	LoadTiles(f.get());
+	LoadTerrain(world, fname, f.get());
 
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
 
 	for(i=0;i<world->numMaps;i++)
 	{
-		world->map[i]=new Map(f);
+		world->map[i]=new Map(f.get());
 		if(!world->map[i])
 		{
-			fclose(f);
 			return 0;
 		}
 	}
 
-	LoadItems(f);
-	LoadCustomSounds(f);
+	LoadItems(f.get());
+	LoadCustomSounds(f.get());
 	SetupRandomItems();
-	fclose(f);
 	return 1;
 }
 
 byte BeginAppendWorld(world_t *world,const char *fname)
 {
-	FILE *f;
 	int i;
 	char code[32];
 
-	f=AppdataOpen_Stdio(fname);
+	auto f = AppdataOpen(fname);
 	if(!f)
 	{
 		SetStitchError("File Not Found");
 		return 0;
 	}
 
-	fread(code,sizeof(char),8,f);
+	SDL_RWread(f,code,sizeof(char),8);
 	code[8]='\0';
 	if(strcmp(code,"SUPREME!"))
 	{
-		fclose(f);
 		SetStitchError("Must be a Supreme world.");
 		return 0;
 	}
 
-	fread(&world->author,sizeof(char),32,f);
-	fread(&code,sizeof(char),32,f);	// name of the world, not needed here
-	fread(&world->numMaps,1,1,f);
-	fread(&world->totalPoints,1,sizeof(int),f);
-	fread(&world->numTiles,1,sizeof(word),f);	// tile count
+	SDL_RWread(f,&world->author,sizeof(char),32);
+	SDL_RWread(f,&code,sizeof(char),32);	// name of the world, not needed here
+	SDL_RWread(f,&world->numMaps,1,1);
+	SDL_RWread(f,&world->totalPoints,1,sizeof(int));
+	SDL_RWread(f,&world->numTiles,1,sizeof(word));	// tile count
 
 	if(world->numTiles+GetNumTiles()>NUMTILES)
 	{
-		fclose(f);
 		SetStitchError("Too many tiles!");
 		return 0;
 	}
@@ -175,18 +169,17 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 	stitchTileOffset=GetNumTiles();
 	SetNumTiles(world->numTiles+stitchTileOffset);
 
-	AppendTiles(stitchTileOffset,f);
-	LoadTerrain(world, fname, f);
+	AppendTiles(stitchTileOffset, f.get());
+	LoadTerrain(world, fname, f.get());
 
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
 
 	for(i=0;i<world->numMaps;i++)
 	{
-		world->map[i]=new Map(f);
+		world->map[i]=new Map(f.get());
 		if(!world->map[i])
 		{
-			fclose(f);
 			SetStitchError("Unable to load a level.");
 			for(int j=0;j<i;j++)
 				delete world->map[j];
@@ -194,21 +187,18 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 		}
 	}
 
-	if(!AppendItems(f))
+	if(!AppendItems(f.get()))
 	{
-		fclose(f);
 		SetStitchError("Too many custom items!");
 		return 0;
 	}
-	stitchSoundOffset=AppendCustomSounds(f);
+	stitchSoundOffset=AppendCustomSounds(f.get());
 	if(stitchSoundOffset==-1)
 	{
-		fclose(f);
 		SetStitchError("Too many custom sounds!");
 		return 0;
 	}
 	SetupRandomItems();
-	fclose(f);
 	return 1;
 }
 
@@ -328,7 +318,6 @@ byte SaveWorld(world_t *world, const char *fname)
 	}
 	printf("Saving Supreme world: %s\n", fname);
 
-	FILE *f;
 	int i;
 	char code[9]="SUPREME!";
 
@@ -338,32 +327,32 @@ byte SaveWorld(world_t *world, const char *fname)
 		if(world->map[i] && (!(world->map[i]->flags&MAP_HUB)))
 			world->totalPoints+=100;	// each level is worth 100 points except hubs which is worth nothing
 
-	f=AppdataOpen_Write_Stdio(fname);
+	auto f = AppdataOpen_Write(fname);
 	if(!f)
 		return 0;
 
-	fwrite(code,8,sizeof(char),f);	// identifier code
-	fwrite(&world->author,sizeof(char),32,f);
-	fwrite(&world->map[0]->name,sizeof(char),32,f);
-	fwrite(&world->numMaps,1,1,f);
-	fwrite(&world->totalPoints,1,sizeof(int),f);
-	fwrite(&world->numTiles,1,sizeof(word),f);
+	SDL_RWwrite(f,code,8,sizeof(char));	// identifier code
+	SDL_RWwrite(f,&world->author,sizeof(char),32);
+	SDL_RWwrite(f,&world->map[0]->name,sizeof(char),32);
+	SDL_RWwrite(f,&world->numMaps,1,1);
+	SDL_RWwrite(f,&world->totalPoints,1,sizeof(int));
+	SDL_RWwrite(f,&world->numTiles,1,sizeof(word));
 
-	SaveTiles(f);
+	SaveTiles(f.get());
 
 	for(i = 0; i < world->numTiles; ++i)
 	{
 		io_terrain_t io_terrain = SaveOneTerrain(world->terrain[i]);
-		fwrite(&io_terrain, sizeof(io_terrain_t), 1, f);
+		SDL_RWwrite(f, &io_terrain, sizeof(io_terrain_t), 1);
 	}
 
 	for(i=0;i<world->numMaps;i++)
-		world->map[i]->Save(f);
+		world->map[i]->Save(f.get());
 
-	SaveItems(f);
-	SaveCustomSounds(f);
+	SaveItems(f.get());
+	SaveCustomSounds(f.get());
 
-	fclose(f);
+	f.reset();
 	AppdataSync();
 
 	return 1;
