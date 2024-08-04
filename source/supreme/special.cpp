@@ -107,7 +107,8 @@ void DeleteSpecial(int i)
 
 void DefaultTrigger(trigger_t *trig,int x,int y)
 {
-	trig->flags=0;
+	// clear flags like LESS and MORE, but keep NOT and AND
+	trig->flags &= (TF_NOT | TF_AND);
 	trig->x=x;
 	trig->y=y;
 	switch(trig->type)
