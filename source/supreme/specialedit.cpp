@@ -749,7 +749,7 @@ static void LevelNameClick(int id)
 			spcl.trigger[curTrig].value++;
 			if(spcl.trigger[curTrig].value>=EditorGetWorld()->numMaps)
 				spcl.trigger[curTrig].value=0;
-			SetupTriggerButtons(curTrig,curTrig*38+30);
+			SetupTriggerButtons(curTrig-trgStart,(curTrig-trgStart)*38+30);
 		}
 		else
 		{
@@ -758,7 +758,7 @@ static void LevelNameClick(int id)
 			spcl.effect[curEff].value++;
 			if(spcl.effect[curEff].value>=EditorGetWorld()->numMaps)
 				spcl.effect[curEff].value=0;
-			SetupEffectButtons(curEff,curEff*38+264);
+			SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
 		}
 	}
 	else
