@@ -50,8 +50,11 @@ based on HamSandwich.
 
 ### HamSandwich (since last release)
 
+* Add third control "Wpn Lock" that toggles the Wpn Lock setting while held. For example, if Wpn Lock is on, this acts as a "pick up" button. It's also usable in Specials. The default is <kbd>Tab</kbd>.
+* Change Special Trigger selection to keep the NOT/AND selection instead of clearing it.
 * Change <kbd>F11</kbd> hotkey to cycle through resolutions, instead of just tiny and huge.
 * Fix sound pan sometimes wrapping around.
+* Fix graphical pop-in on very large items and monsters.
 
 ### v9.3 (2024-03-05) - [Steam](https://store.steampowered.com/news/app/2547330/view/4127057666118798478?l=english)
 
@@ -286,7 +289,8 @@ Editor features:
 
 ### HamSandwich (since last release)
 
-Nothing!
+* Fix Surprise Mode making game unwinnable due to removing Steam Pumps during the Evilizer fight.
+* Fix Enemy Overload claiming to apply to new games only when it actually applies immediately.
 
 ### v3.1 (2024-06-08)
 
