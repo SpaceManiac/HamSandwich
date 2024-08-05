@@ -23,7 +23,7 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 	vol=-((x-cx)*(x-cx)+(y-cy)*(y-cy))/128;
 	if(vol<-5000)
 		return;	// too quiet to play
-	GoPlaySound(snd,pan,vol,(byte)flags,priority);
+	GoPlaySound(snd, pan * 127 / 640, vol * 255 / 5000, (byte)flags,priority);
 }
 
 void MakeNormalSound(int snd)
