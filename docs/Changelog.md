@@ -50,13 +50,17 @@ based on HamSandwich.
 
 ### HamSandwich (since last release)
 
-* Add third control "Wpn Lock" that toggles the Wpn Lock setting while held. For example, if Wpn Lock is on, this acts as a "pick up" button. It's also usable in Specials. The default is <kbd>Tab</kbd>.
-* Change Special Trigger selection to keep the NOT/AND selection instead of clearing it.
-* Change <kbd>F11</kbd> hotkey to cycle through resolutions, instead of just tiny and huge.
-* Fix sound pan sometimes wrapping around.
-* Fix graphical pop-in on very large items and monsters.
+Nothing!
 
-### v9.3 (2024-03-05) - [Steam](https://store.steampowered.com/news/app/2547330/view/4127057666118798478?l=english)
+### v9.4 (2024-08-10) - [Steam](https://store.steampowered.com/news/app/2547330/view/4370265995216804393)
+
+* Add third control "Wpn Lock" that toggles the Wpn Lock setting while held. For example, if Wpn Lock is on, this acts as a "pick up" button. It's also usable in Specials. The default is <kbd>Tab</kbd>.
+* Change Special Trigger selector to keep the NOT/AND state instead of clearing it.
+* Fix graphical pop-in on very large items and monsters.
+* Fix sounds far to one side sometimes wrapping around and coming from the other side instead.
+* Change <kbd>F11</kbd> hotkey to cycle through possible sizes, instead of just tiny and huge.
+
+### v9.3 (2024-03-05) - [Steam](https://store.steampowered.com/news/app/2547330/view/4127057666118798478)
 
 * Add bullet selection menu (by Hyperme, [#17]).
 * Increase per-world tile limit from 800 to 1000.

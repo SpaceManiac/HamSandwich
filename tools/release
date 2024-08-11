@@ -22,6 +22,11 @@ case "$game" in
 		butler push --if-changed build/dist/loonyland/itch-windows/ hamumu/loonyland-halloween-hill:windows --userversion="$itch_version"
 		butler push --if-changed build/dist/loonyland/itch-linux/ hamumu/loonyland-halloween-hill:linux --userversion="$itch_version"
 		;;
+	supreme)
+		read -p 'Itch version number> ' -r itch_version
+		butler push --if-changed build/dist/supreme/itch-windows/ hamumu/dr-lunatic-supreme-with-cheese:windows --userversion="$itch_version"
+		butler push --if-changed build/dist/supreme/itch-linux/ hamumu/dr-lunatic-supreme-with-cheese:linux --userversion="$itch_version"
+		;;
 esac
 
 echo "==== Complete ===="

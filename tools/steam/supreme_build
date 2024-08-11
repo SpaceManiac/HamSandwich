@@ -17,25 +17,45 @@ fi
 7z x installers/supreme8_install.exe -o"build/dist/supreme/supreme8" \
 	-x'!$PLUGINSDIR' -x'!*.exe' -x'!*.dll' -x'!profiles'
 
+for platform in itch-linux itch-windows; do
+	rsync --mkpath --archive build/dist/supreme/supreme8/ build/dist/supreme/$platform/installers/supreme8_install.exe/
+done
+
 # Linux executables
 echo "==== Linux build ===="
 ./container bash -c "
 	set -euo pipefail
 	cmake --preset linux-x86_64-release
+	# Steam
 	cmake --build build/cmake-linux-x86_64-release --target supreme jspedit
 	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/steam-linux --component generic/executables
 	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/steam-linux --component supreme/executables
 	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/steam-linux --component jspedit/executables
 	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/steam-assets --component supreme/assets
+	# Itch
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/itch-linux --component generic/executables
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/itch-linux --component supreme/executables
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/itch-linux --component jspedit/executables
+	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/itch-linux --component supreme/assets
 "
+cp tools/itch/supreme_linux.itch.toml build/dist/supreme/itch-linux/.itch.toml
 
 # Windows executables
 echo "==== Windows build ===="
 tools/windows-cross/container bash -c "
 	set -euo pipefail
+	# Steam
 	cmake --preset windows-i686-release -Wno-dev
 	cmake --build build/cmake-windows-i686-release --target supreme jspedit
 	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/steam-windows --component generic/executables
 	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/steam-windows --component supreme/executables
 	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/steam-windows --component jspedit/executables
+	# Linux build already installs cross-platform Steam assetsts
+	# Itch
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/itch-windows --component generic/executables
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/itch-windows --component supreme/executables
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/itch-windows --component jspedit/executables
+	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/itch-windows --component supreme/assets
+	# Itch
 "
+cp tools/itch/supreme_windows.itch.toml build/dist/supreme/itch-windows/.itch.toml
