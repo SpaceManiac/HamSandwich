@@ -6,6 +6,7 @@
 #include "music.h"
 #include "shop.h"
 #include "appdata.h"
+#include "string_extras.h"
 
 soundDesc_t soundInfo[MAX_SOUNDS]={
 	{SND_NONE,"No Sound At All!!",ST_EFFECT},
@@ -520,7 +521,15 @@ byte AddCustomSound(const char *fname)
 	SDL_RWread(f,customSound[numCustom],sizeof(byte),customLength[numCustom]);
 	f.reset();
 
-	strcpy(soundInfo[CUSTOM_SND_START+numCustom].name,"New Sound");
+	std::string_view fname2 = fname;
+	size_t slash = fname2.rfind('/');
+	if (slash != std::string_view::npos)
+		fname2 = fname2.substr(slash + 1);
+	size_t dot = fname2.rfind('.');
+	if (dot != std::string_view::npos)
+		fname2 = fname2.substr(0, dot);
+
+	ham_strcpy(soundInfo[CUSTOM_SND_START+numCustom].name, fname2);
 	soundInfo[CUSTOM_SND_START+numCustom].num=CUSTOM_SND_START+numCustom;
 	soundInfo[CUSTOM_SND_START+numCustom].theme=ST_CUSTOM;
 
