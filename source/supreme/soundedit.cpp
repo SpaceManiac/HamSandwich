@@ -434,8 +434,33 @@ void SoundEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 	{
 		case SNDMODE_NORMAL:
 		case SNDMODE_SELECT:
+		{
+			int x=163;
+			int y=6;
+			for(int i=0;i<sndsInList-sndStart;i++)
+			{
+				int num = sndList[i + sndStart];
+				if (num >= CUSTOM_SND_START && GetCustomLength(num - CUSTOM_SND_START) > 0)
+				{
+					if (GetCustomSound(num - CUSTOM_SND_START)[0] == 'O')
+					{
+						DrawFillBox(x,y,x+156,y+16,3+32*3);
+					}
+				}
+
+				y+=18;
+				if(x>640-160 && y>480-30)
+					break;
+				else if(y>480-16)
+				{
+					x+=159;
+					y=6;
+				}
+			}
+
 			RenderButtons(mouseX,mouseY,mgl);
 			break;
+		}
 		case SNDMODE_LOAD:
 		case SNDMODE_RELOAD:
 			RenderButtons(-1,-1,mgl);	// prevent buttons from lighting up!
