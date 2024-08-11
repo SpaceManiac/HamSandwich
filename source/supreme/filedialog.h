@@ -17,6 +17,7 @@ enum : word
 	FM_PICMOVIE     = 1 << 6,
 	FM_MERGE        = 1 << 7,
 	FM_SAVEPACK     = 1 << 8,
+	FM_SOUNDS       = 1 << 9,
 };
 
 void InitFileDialog(const char *dir, const char *ext, word menuItemsToShow,const char *defaultName);

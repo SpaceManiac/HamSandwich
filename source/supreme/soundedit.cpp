@@ -57,7 +57,7 @@ static void NewClick(int id)
 		return;
 
 	mode=SNDMODE_LOAD;
-	InitFileDialog("user",".wav",FM_LOAD|FM_EXIT,"");
+	InitFileDialog("user",nullptr,FM_LOAD|FM_EXIT|FM_SOUNDS,"");
 	MakeNormalSound(SND_MENUSELECT);
 }
 
@@ -78,7 +78,7 @@ static void ReloadClick(int id)
 	if(curSound>=CUSTOM_SND_START)
 	{
 		mode=SNDMODE_RELOAD;
-		InitFileDialog("user",".wav",FM_LOAD|FM_EXIT,"");
+		InitFileDialog("user",nullptr,FM_LOAD|FM_EXIT|FM_SOUNDS,"");
 		MakeNormalSound(SND_MENUSELECT);
 	}
 }

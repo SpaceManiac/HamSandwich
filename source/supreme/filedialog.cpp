@@ -1,93 +1,61 @@
 #include "filedialog.h"
+#include <string.h>
+#include <algorithm>
+#include <array>
 #include "editor.h"
 #include "dialogbits.h"
 #include "viewdialog.h"
 #include "appdata.h"
-#include <string.h>
-#include <algorithm>
+#include "string_extras.h"
 
-#define MAX_FILES 18
-#define FILE_ALLOC_AMT	64
+static constexpr int MAX_FILES = 18;
 
-static char *fnames=NULL;
 static char newfname[FNAMELEN]="";
-static int numFiles;
 static word menuItems;
-static int numAlloc;
 static int filePos;
 static byte asking,yesNo;
 static char question[64];
 static word exitCode;
 static bool hamSandwich;
 
+std::vector<std::string> fnames;
+
 static void ObtainFilenames(const char *dir, const char *ext)
 {
-	int i;
-
-	char *tmp;
-
-	if(fnames)
-	{
-		free(fnames);
-	}
-	numAlloc=FILE_ALLOC_AMT;
-	fnames=(char *)malloc(FNAMELEN*numAlloc*sizeof(char));
-	if(!fnames)
-		FatalError("Out of memory!");
-
-	for(i=0;i<FILE_ALLOC_AMT;i++)
-		fnames[i*FNAMELEN]='\0';
-
-	numFiles=0;
+	fnames.clear();
+	fnames.reserve(64);
 
 	auto files = ListDirectory(dir, ext, FNAMELEN);
 	for (const auto& str : files)
 	{
-		const char* name = str.c_str();
-
-		if((menuItems&FM_PICMOVIE) && (!strcmp(&name[strlen(name)-3],"wav") || !strcmp(&name[strlen(name)-3],"jsp")))
-			continue;	// ignore wavs and jsps
-
-		strncpy(&fnames[numFiles*FNAMELEN],name,FNAMELEN);
-		numFiles++;
-
-		if(numFiles==numAlloc)
+		const char* extension = "";
+		size_t dot = str.rfind('.');
+		if (dot != std::string::npos)
 		{
-			numAlloc+=FILE_ALLOC_AMT;
-			tmp=(char *)realloc(fnames,numAlloc*FNAMELEN*sizeof(char));
-			if(tmp==NULL)
-			{
-				free(fnames);
-				FatalError("Out of memory!");
-				return;
-			}
-			else
-				fnames=tmp;
-			for(i=numFiles;i<numAlloc;i++)
-				fnames[i*FNAMELEN]='\0';
+			extension = &str[dot];
 		}
+
+		if ((menuItems & FM_PICMOVIE) && !(!strcasecmp(extension, ".txt") || !strcasecmp(extension, ".bmp") || !strcasecmp(extension, ".flc")))
+			continue;
+		if ((menuItems & FM_SOUNDS) && !(!strcasecmp(extension, ".wav") || !strcasecmp(extension, ".ogg")))
+			continue;
+
+		fnames.push_back(str);
 	}
 }
 
 static void SortFilenames(void)
 {
-	byte flip;
-	int i;
-	char tmp[FNAMELEN];
-
-	flip=1;
-
+	bool flip = true;
 	while(flip)
 	{
-		flip=0;
-		for(i=0;i<numFiles-1;i++)
+		flip = false;
+		for(size_t i=0;i<fnames.size()-1;i++)
 		{
-			if(strcasecmp(&fnames[i*FNAMELEN],&fnames[(i+1)*FNAMELEN])>0)
+			if(strcasecmp(fnames[i].c_str(),fnames[i+1].c_str())>0)
 			{
-				SDL_strlcpy(tmp, &fnames[i*FNAMELEN], FNAMELEN);
-				SDL_strlcpy(&fnames[i*FNAMELEN], &fnames[(i+1)*FNAMELEN], FNAMELEN);
-				SDL_strlcpy(&fnames[(i+1)*FNAMELEN], tmp, FNAMELEN);
-				flip=1;
+				std::swap(fnames[i], fnames[i+1]);
+				flip = true;
 			}
 		}
 	}
@@ -115,11 +83,11 @@ void InitFileDialog(const char *dir, const char *ext, word menuItemsToShow,const
 
 void ExitFileDialog(void)
 {
-	if(fnames)
-		free(fnames);
+	fnames.clear();
+	fnames.shrink_to_fit();
+
 	if(menuItems&FM_PLAYSONGS)
 		ReturnToSong();
-	fnames=NULL;
 }
 
 void FileDialogScroll(int msz)
@@ -130,7 +98,7 @@ void FileDialogScroll(int msz)
 	}
 	else if (msz < 0)
 	{
-		filePos = std::min(filePos - msz, numFiles - 1);
+		filePos = std::min(filePos - msz, (int)(fnames.size() - 1));
 	}
 }
 
@@ -146,9 +114,9 @@ void RenderFileDialog(int msx,int msy,MGLDraw *mgl)
 	mgl->FillBox(103,83,361,339,0);
 	for(i=0;i<MAX_FILES;i++)
 	{
-		if(i+filePos<numFiles)
+		if(i+filePos < (int)fnames.size())
 		{
-			Print(107,86+i*14,&fnames[(i+filePos)*FNAMELEN],0,1);
+			Print(107,86+i*14,fnames[i+filePos],0,1);
 			if(msx>104 && msx<362 && msy>85+i*14 && msy<85+(i+1)*14)
 				mgl->Box(104,84+i*14,360,84+(i+1)*14,31);	// hilite if the cursor is on it
 		}
@@ -225,7 +193,6 @@ void FileDialogYes(void)
 
 void FindFilename(const char *str)
 {
-	int i,j;
 	int match,matchAmt;
 	int m;
 	char a,b;
@@ -238,15 +205,15 @@ void FindFilename(const char *str)
 
 	match=0;
 	matchAmt=0;
-	for(i=0;i<numFiles;i++)
+	for(size_t i=0;i<fnames.size();i++)
 	{
 		m=0;
-		for(j=0;j<(int)strlen(str);j++)
+		for(int j=0;j<(int)strlen(str);j++)
 		{
 			a=str[j];
 			if(a>='A' && a<='Z')
 				a=a+'a'-'A';
-			b=fnames[i*FNAMELEN+j];
+			b=fnames[i][0];
 			if(b>='A' && b<='Z')
 				b=b+'a'-'A';
 			if(a==b)
@@ -311,10 +278,10 @@ byte FileDialogKey(char key)
 
 void FileDialogMoreFiles(void)
 {
-	filePos+=MAX_FILES;
+	filePos += MAX_FILES;
 
-	if(filePos>=numFiles)
-		filePos=0;
+	if(filePos >= (int)fnames.size())
+		filePos = 0;
 }
 
 word FileDialogClick(int msx,int msy)
@@ -342,9 +309,9 @@ word FileDialogClick(int msx,int msy)
 	{
 		// if click on a filename, that's the current filename
 		for(i=0;i<MAX_FILES;i++)
-			if(msx>104 && msx<362 && msy>85+i*14 && msy<85+(i+1)*14 && i+filePos<numFiles)
+			if(msx>104 && msx<362 && msy>85+i*14 && msy<85+(i+1)*14 && i+filePos<(int)fnames.size())
 			{
-				strcpy(newfname,&fnames[(i+filePos)*FNAMELEN]);
+				ham_strcpy(newfname, fnames[i+filePos]);
 				if(menuItems&FM_PLAYSONGS)
 					PlaySong(newfname);
 				return 0;
