@@ -34,8 +34,6 @@ byte *GetTileData(int t);
 
 void AppendTiles(int start,SDL_RWops *f);
 
-void LoadOldTiles(SDL_RWops *f);	// for legacy loading
-
 // super shading!
 void RenderFloorTileFancy(int x,int y,int t,byte shadow,const char *light);
 void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,const char *theLight);

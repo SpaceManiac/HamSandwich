@@ -49,12 +49,6 @@ void SetTiles(byte *scrn)
 	}
 }
 
-void LoadOldTiles(SDL_RWops *f)
-{
-	numTiles=400;
-	SDL_RWread(f,tiles,numTiles,sizeof(tile_t));
-}
-
 void SetTile(int t,int x,int y,byte *src)
 {
 	int i;
