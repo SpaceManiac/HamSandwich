@@ -361,7 +361,7 @@ static void LoadMapData(hamworld::Section *f, Map *map)
 	}
 }
 
-byte Ham_SaveWorld(world_t* world, const char *fname)
+byte Ham_SaveWorld(const world_t* world, const char *fname)
 {
 	// Prepare custom item table
 	hamworld::Section item_definitions;
@@ -534,11 +534,10 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 		}
 		else if (section_name == "map")
 		{
-			Map *map = world->map[world->numMaps++] = new Map(0, "");
 			section.read_varint();  // skip uid
 			size_t w = section.read_varint();
 			size_t h = section.read_varint();
-			map->Resize(w, h);
+			Map *map = world->map[world->numMaps++] = new Map(w, h, "");
 			section.read_string(map->name);
 			section.read_string(map->song);
 			section.stream.read((char*) &map->itemDrops, 2);

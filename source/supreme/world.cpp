@@ -6,6 +6,7 @@
 #include "log.h"
 #include "appdata.h"
 #include "world_io_legacy.h"
+#include "world_io_ham1.h"
 
 byte keyChainInLevel[MAX_MAPS];
 
@@ -35,10 +36,6 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 		return 0;
 	return 1;
 }
-
-bool Ham_GetWorldName(const char *fname, char *buffer, char *authbuffer);
-byte Ham_LoadWorld(world_t *world, const char *fname);
-byte Ham_SaveWorld(world_t *world, const char *fname);
 
 struct io_terrain_t
 {
