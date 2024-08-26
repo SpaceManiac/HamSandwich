@@ -573,6 +573,11 @@ void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 	}
 }
 
+static bool ValidLunaticItem(byte item)
+{
+	return (item < 101) && !(40 <= item && item < 50) && !(item == 68);
+}
+
 Map *ConvertToNewMap(old_map_t *old)
 {
 	Map *m = new Map(old->width, old->height, old->name);
@@ -639,6 +644,15 @@ Map *ConvertToNewMap(old_map_t *old)
 		m->map[i].templight=old->map[i].templight;
 		m->map[i].opaque=0;
 		m->map[i].select=1;
+
+		// Some original Dr. L worlds have items on the floor that don't really
+		// exist in Dr. L, where they act like nothingness, but they might be
+		// obstacles or pickups in the SWC item list.
+		if (!ValidLunaticItem(old->map[i].item))
+		{
+			SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "legacyload: %s at (%d,%d): bad item %d", old->name, i % m->width, i / m->width, old->map[i].item);
+			m->map[i].item = 0;
+		}
 
 		if(BrainsGiven(m->map[i].item)>0)
 			m->numBrains+=BrainsGiven(m->map[i].item);
