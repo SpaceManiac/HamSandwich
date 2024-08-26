@@ -115,7 +115,7 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 
 	for(i=0;i<world->numMaps;i++)
 	{
-		world->map[i]=new Map(f.get());
+		world->map[i] = LoadMap(f.get());
 		if(!world->map[i])
 		{
 			SetStitchError("Unable to load a level.");

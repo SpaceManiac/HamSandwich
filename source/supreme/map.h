@@ -70,15 +70,6 @@ typedef struct mapTile_t
 } mapTile_t;
 
 // SERIALIZED.
-typedef struct saveTile_t
-{
-	word floor;
-	word wall;
-	byte item;
-	char light;
-} saveTile_t;
-
-// SERIALIZED.
 typedef struct mapBadguy_t
 {
 	byte x,y;
@@ -94,13 +85,9 @@ class Map
 		explicit Map(byte size, const char *name);
 		explicit Map(byte width, byte height, const char *name);
 		explicit Map(const Map *m);
-		explicit Map(SDL_RWops *f);
 
 		~Map(void);
 
-		byte Save(SDL_RWops *f);
-		void SaveMapData(SDL_RWops *f);
-		void LoadMapData(SDL_RWops *f);
 		void Init(world_t *wrld);
 		void Render(world_t *world,int camX,int camY,byte flags);
 		void RenderSelect(world_t *world,int camX,int camY,byte flags);
