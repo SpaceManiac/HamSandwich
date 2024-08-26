@@ -4,7 +4,6 @@
 #include "tile.h"
 #include "items.h"
 #include "special.h"
-#include "legacyload.h"
 
 constexpr int MAX_LIGHT = 16;
 constexpr int MIN_LIGHT = -32;
@@ -92,10 +91,10 @@ struct world_t;
 class Map
 {
 	public:
-		Map(byte size,const char *name);
-		explicit Map(Map *m);
+		explicit Map(byte size, const char *name);
+		explicit Map(byte width, byte height, const char *name);
+		explicit Map(const Map *m);
 		explicit Map(SDL_RWops *f);
-		explicit Map(old_map_t *old);
 
 		~Map(void);
 

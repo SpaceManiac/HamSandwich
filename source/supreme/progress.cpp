@@ -8,6 +8,7 @@
 #include "steam.h"
 #include "ioext.h"
 #include "string_extras.h"
+#include "world_io_legacy.h"
 
 static char prfName[64];
 static byte firstTime;

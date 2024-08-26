@@ -35,12 +35,6 @@ enum : dword
 	// Flag 1<<22 wouldn't leave room for 1000 tiles, so cannot be added.
 };
 
-struct io_terrain_t
-{
-	word flags;
-	word next;
-};
-
 struct terrain_t
 {
 	dword flags;

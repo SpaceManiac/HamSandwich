@@ -5,6 +5,7 @@
 #include "worldstitch.h"
 #include "log.h"
 #include "appdata.h"
+#include "world_io_legacy.h"
 
 byte keyChainInLevel[MAX_MAPS];
 
@@ -38,6 +39,12 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 bool Ham_GetWorldName(const char *fname, char *buffer, char *authbuffer);
 byte Ham_LoadWorld(world_t *world, const char *fname);
 byte Ham_SaveWorld(world_t *world, const char *fname);
+
+struct io_terrain_t
+{
+	word flags;
+	word next;
+};
 
 static terrain_t LoadOneTerrain(io_terrain_t io_terrain)
 {

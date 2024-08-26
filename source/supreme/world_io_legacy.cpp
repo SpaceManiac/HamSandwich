@@ -1,5 +1,5 @@
 #include "winpch.h"
-#include "legacyload.h"
+#include "world_io_legacy.h"
 #include "map.h"
 #include "world.h"
 #include "monster.h"
@@ -96,7 +96,9 @@ const char *GetOriginalSongName(byte song)
 	return songTab[song];
 }
 
-void ConvertToNewWorld(world_t *world)
+static Map *ConvertToNewMap(old_map_t *old);
+
+static void ConvertToNewWorld(world_t *world)
 {
 	int i;
 
@@ -116,7 +118,7 @@ void ConvertToNewWorld(world_t *world)
 
 	for(i=0;i<world->numMaps;i++)
 	{
-		world->map[i]=new Map(oldWorld->map[i]);
+		world->map[i]=ConvertToNewMap(oldWorld->map[i]);
 	}
 	world->map[0]->flags|=MAP_HUB;
 }
@@ -571,81 +573,83 @@ void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 	}
 }
 
-Map::Map(old_map_t *old)
+Map *ConvertToNewMap(old_map_t *old)
 {
+	Map *m = new Map(old->width, old->height, old->name);
+
 	int i;
 
-	width=old->width;
-	height=old->height;
-	strcpy(name,old->name);
+	m->width=old->width;
+	m->height=old->height;
+	strcpy(m->name,old->name);
 	if(old->song>=2 && old->song<=23)
-		strcpy(song,songTab[old->song-1]);
+		strcpy(m->song,songTab[old->song-1]);
 	else
-		strcpy(song,"");
+		strcpy(m->song,"");
 
-	flags=0;
+	m->flags=0;
 	if(old->flags&1)	// snowing
-		flags|=MAP_SNOWING;
+		m->flags|=MAP_SNOWING;
 	if(old->flags&2)	// many items
 	{
-		itemDrops=FIXAMT*25;	// 25%
+		m->itemDrops=FIXAMT*25;	// 25%
 	}
 	else
-		itemDrops=FIXAMT*5;		// 5% normally
+		m->itemDrops=FIXAMT*5;		// 5% normally
 
 	if(old->flags&4)	// secret level
-		flags|=MAP_SECRET;
+		m->flags|=MAP_SECRET;
 	if(old->flags&8)	// torch lit
-		flags|=MAP_TORCHLIT;
+		m->flags|=MAP_TORCHLIT;
 	if(old->flags&16)	// starry background
-		flags|=MAP_STARS;
+		m->flags|=MAP_STARS;
 
-	numBrains=0;
-	numCandles=0;
+	m->numBrains=0;
+	m->numCandles=0;
 
 	for(i=0;i<MAX_MAPMONS;i++)
-		badguy[i].type=MONS_NONE;
+		m->badguy[i].type=MONS_NONE;
 	for(i=0;i<OLD_MAX_MAPMONS;i++)
 	{
-		badguy[i].type=old->badguy[i].type;
-		if(badguy[i].type==MONS_BOUAPHA)
-			badguy[i].item=ITM_NONE;
+		m->badguy[i].type=old->badguy[i].type;
+		if(m->badguy[i].type==MONS_BOUAPHA)
+			m->badguy[i].item=ITM_NONE;
 		else
-			badguy[i].item=ITM_RANDOM;
-		badguy[i].x=old->badguy[i].x;
-		badguy[i].y=old->badguy[i].y;
-		if(badguy[i].type==MONS_ZOMBIE || badguy[i].type==MONS_ZOMBONI)
-			numBrains++;
-		if(badguy[i].type==MONS_SUPERZOMBIE)
-			numBrains+=2;
+			m->badguy[i].item=ITM_RANDOM;
+		m->badguy[i].x=old->badguy[i].x;
+		m->badguy[i].y=old->badguy[i].y;
+		if(m->badguy[i].type==MONS_ZOMBIE || m->badguy[i].type==MONS_ZOMBONI)
+			m->numBrains++;
+		if(m->badguy[i].type==MONS_SUPERZOMBIE)
+			m->numBrains+=2;
 	}
 
 	for(i=0;i<MAX_SPECIAL;i++)
-		special[i].x=255;
+		m->special[i].x=255;
 
-	map=(mapTile_t *)malloc(sizeof(mapTile_t)*width*height);
-
-	for(i=0;i<width*height;i++)
+	for(i=0;i<m->width*m->height;i++)
 	{
-		map[i].floor=old->map[i].floor;
+		m->map[i].floor=old->map[i].floor;
 		if(old->map[i].wall)
-			map[i].wall=old->map[i].wall+199;
+			m->map[i].wall=old->map[i].wall+199;
 		else
-			map[i].wall=0;
-		map[i].item=old->map[i].item;
-		map[i].light=old->map[i].light;
-		map[i].templight=old->map[i].templight;
-		map[i].opaque=0;
-		map[i].select=1;
+			m->map[i].wall=0;
+		m->map[i].item=old->map[i].item;
+		m->map[i].light=old->map[i].light;
+		m->map[i].templight=old->map[i].templight;
+		m->map[i].opaque=0;
+		m->map[i].select=1;
 
-		if(BrainsGiven(map[i].item)>0)
-			numBrains+=BrainsGiven(map[i].item);
+		if(BrainsGiven(m->map[i].item)>0)
+			m->numBrains+=BrainsGiven(m->map[i].item);
 	}
 
 	for(i=0;i<OLD_MAX_SPECIAL;i++)
 	{
-		SpecialConvert(&old->special[i],&special[i],this);
+		SpecialConvert(&old->special[i],&m->special[i],m);
 	}
+
+	return m;
 }
 
 bool Legacy_GetWorldName(const char *fname,char *buf)

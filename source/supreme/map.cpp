@@ -49,25 +49,18 @@ Map::Map(SDL_RWops *f)
 	LoadMapData(f);
 }
 
-Map::Map(byte size,const char *name)
+static const byte sizes[3] = {20, 64, 128};
+
+Map::Map(byte size, const char *name)
+	: Map(sizes[size], sizes[size], name)
+{
+}
+
+Map::Map(byte width, byte height, const char *name)
+	: width(width)
+	, height(height)
 {
 	int i;
-
-	switch(size)
-	{
-		case 0:
-			width=20;
-			height=20;
-			break;
-		case 1:
-			width=64;
-			height=64;
-			break;
-		case 2:
-			width=128;
-			height=128;
-			break;
-	}
 
 	strcpy(this->name,name);
 
@@ -85,7 +78,7 @@ Map::Map(byte size,const char *name)
 	itemDrops=5*FIXAMT;
 }
 
-Map::Map(Map *m)
+Map::Map(const Map *m)
 {
 	width=m->width;
 	height=m->height;
