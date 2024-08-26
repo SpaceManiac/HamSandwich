@@ -139,20 +139,16 @@ static void LoadOldMap(old_map_t *map,SDL_RWops *f)
 	SDL_RWread(f,map->map,map->width*map->height,sizeof(old_mapTile_t));
 }
 
-bool Legacy_LoadWorld(world_t *world, const char *fname)
+bool Legacy_LoadWorld(world_t *world, SDL_RWops *f)
 {
 	int i;
 
 	oldWorld=new old_world_t;
 
-	auto f = AppdataOpen(fname);
-	if(!f)
-		return false;
-
 	SDL_RWread(f,&oldWorld->numMaps,1,1);
 	SDL_RWread(f,&oldWorld->totalPoints,1,4);
 
-	LoadOldTiles(f.get());
+	LoadOldTiles(f);
 
 	SDL_RWread(f,oldWorld->terrain,200,sizeof(old_terrain_t));
 
@@ -165,10 +161,8 @@ bool Legacy_LoadWorld(world_t *world, const char *fname)
 		if(!oldWorld->map[i])
 			return false;
 		else
-			LoadOldMap(oldWorld->map[i],f.get());
+			LoadOldMap(oldWorld->map[i],f);
 	}
-
-	f.reset();
 
 	ConvertToNewWorld(world);
 	for(i=0;i<oldWorld->numMaps;i++)

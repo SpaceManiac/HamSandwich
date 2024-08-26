@@ -55,8 +55,8 @@ struct world_t
 extern byte keyChainInLevel[MAX_MAPS];
 
 byte NewWorld(world_t *world,MGLDraw *mgl);
-byte LoadWorld(world_t *world,const char *fname);
-byte SaveWorld(world_t *world,const char *fname);
+bool LoadWorld(world_t *world,const char *fname);
+bool SaveWorld(world_t *world,const char *fname);
 void FreeWorld(world_t *world);
 
 void InitWorld(world_t *world);

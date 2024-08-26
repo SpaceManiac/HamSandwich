@@ -7,7 +7,7 @@
 struct world_t;
 
 bool Legacy_GetWorldName(SDL_RWops *f, StringDestination name);
-bool Legacy_LoadWorld(world_t *world, const char *fname);
+bool Legacy_LoadWorld(world_t *world, SDL_RWops *fname);
 
 const char *GetOriginalSongName(byte song);
 

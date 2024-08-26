@@ -8,7 +8,9 @@ struct SDL_RWops;
 struct world_t;
 
 bool Supreme_GetWorldName(SDL_RWops *f, StringDestination name, StringDestination author);
-byte Supreme_LoadWorld(world_t *world, SDL_RWops *f);
-byte Supreme_SaveWorld(world_t *world, const char *fname);
+bool Supreme_LoadWorld(world_t *world, const char* fname, SDL_RWops *f);
+bool Supreme_SaveWorld(const world_t *world, SDL_RWops *f);
+
+void LoadTerrain(world_t *world, const char *fname, SDL_RWops *f);
 
 #endif

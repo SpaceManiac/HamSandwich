@@ -44,59 +44,16 @@ struct io_terrain_t
 	word next;
 };
 
-static terrain_t LoadOneTerrain(io_terrain_t io_terrain)
+bool LoadWorld(world_t *world,const char *fname)
 {
-	terrain_t r = { io_terrain.flags, static_cast<word>(io_terrain.next & 0x3ff) };
-	if (io_terrain.next & (1 << 15))
-		r.flags |= TF_SHADOWLESS;
-	return r;
-}
-
-static io_terrain_t SaveOneTerrain(terrain_t terrain)
-{
-	io_terrain_t r = { static_cast<word>(terrain.flags & 0xffffff), terrain.next };
-	if (terrain.flags & TF_SHADOWLESS)
-		r.next |= (1 << 15);
-	return r;
-}
-
-static void LoadTerrain(world_t *world, const char *fname, SDL_RWops *f)
-{
-	for (int i = 0; i < world->numTiles; ++i)
-	{
-		io_terrain_t io_terrain;
-		SDL_RWread(f, &io_terrain, sizeof(io_terrain_t), 1);
-		world->terrain[i] = LoadOneTerrain(io_terrain);
-	}
-
-	// In 2012, Shadowless Wall was added as an additional meaning of the
-	// Transparent Roof flag. However, only about 10 worlds since then have
-	// used the feature, while about 150 worlds from before that point are at
-	// some risk of unexpected appearance due to the change. Therefore, with
-	// the flags being split in 2023, only autofill the new flag for those
-	// specific worlds, indicated by the presence of this marker file.
-	std::string buf = fname;
-	buf.append(".shadowless");
-	if (AppdataOpen(buf.c_str()))
-	{
-		for (int i = 0; i < world->numTiles; ++i)
-		{
-			if (world->terrain[i].flags & TF_TRANS)
-				world->terrain[i].flags |= TF_SHADOWLESS;
-		}
-	}
-}
-
-byte LoadWorld(world_t *world,const char *fname)
-{
-	int i;
 	char code[32];
 
 	auto f = AppdataOpen(fname);
 	if(!f)
-		return 0;
+		return false;
 
-	SDL_RWread(f,code,sizeof(char),8);
+	SDL_RWread(f, code, sizeof(char), 8);
+	SDL_RWseek(f, 0, RW_SEEK_SET);
 	code[8]='\0';
 
 	if(!strcmp(code, "HAMSWCH!"))
@@ -104,39 +61,15 @@ byte LoadWorld(world_t *world,const char *fname)
 		f.reset();
 		return Ham_LoadWorld(world, fname);
 	}
-	if(strcmp(code,"SUPREME!"))
+	else if (!strcmp(code, "SUPREME!"))
 	{
-		f.reset();
+		return Supreme_LoadWorld(world, fname, f.get());
+	}
+	else
+	{
 		ClearCustomSounds();
-		return Legacy_LoadWorld(world,fname);
+		return Legacy_LoadWorld(world, f.get());
 	}
-
-	SDL_RWread(f,&world->author,sizeof(char),32);
-	SDL_RWread(f,&code,sizeof(char),32);	// name of the world, not needed here
-	SDL_RWread(f,&world->numMaps,1,1);
-	SDL_RWread(f,&world->totalPoints,1,sizeof(int));
-	SDL_RWread(f,&world->numTiles,1,sizeof(word));	// tile count
-	SetNumTiles(world->numTiles);
-
-	LoadTiles(f.get());
-	LoadTerrain(world, fname, f.get());
-
-	for(i=0;i<MAX_MAPS;i++)
-		world->map[i]=NULL;
-
-	for(i=0;i<world->numMaps;i++)
-	{
-		world->map[i]=new Map(f.get());
-		if(!world->map[i])
-		{
-			return 0;
-		}
-	}
-
-	LoadItems(f.get());
-	LoadCustomSounds(f.get());
-	SetupRandomItems();
-	return 1;
 }
 
 byte BeginAppendWorld(world_t *world,const char *fname)
@@ -308,8 +241,14 @@ bool MustBeHamSandwichWorld(const world_t *world)
 }
 #undef YES_IF
 
-byte SaveWorld(world_t *world, const char *fname)
+bool SaveWorld(world_t *world, const char *fname)
 {
+	world->map[0]->flags|=MAP_HUB;
+	world->totalPoints=0;
+	for(int i = 1; i < MAX_MAPS; i++)
+		if(world->map[i] && (!(world->map[i]->flags&MAP_HUB)))
+			world->totalPoints+=100;	// each level is worth 100 points except hubs which is worth nothing
+
 	std::string namebuf;
 	if (MustBeHamSandwichWorld(world))
 	{
@@ -323,44 +262,16 @@ byte SaveWorld(world_t *world, const char *fname)
 	}
 	printf("Saving Supreme world: %s\n", fname);
 
-	int i;
-	char code[9]="SUPREME!";
-
-	world->map[0]->flags|=MAP_HUB;
-	world->totalPoints=0;
-	for(i=1;i<MAX_MAPS;i++)
-		if(world->map[i] && (!(world->map[i]->flags&MAP_HUB)))
-			world->totalPoints+=100;	// each level is worth 100 points except hubs which is worth nothing
-
 	auto f = AppdataOpen_Write(fname);
 	if(!f)
-		return 0;
+		return false;
 
-	SDL_RWwrite(f,code,8,sizeof(char));	// identifier code
-	SDL_RWwrite(f,&world->author,sizeof(char),32);
-	SDL_RWwrite(f,&world->map[0]->name,sizeof(char),32);
-	SDL_RWwrite(f,&world->numMaps,1,1);
-	SDL_RWwrite(f,&world->totalPoints,1,sizeof(int));
-	SDL_RWwrite(f,&world->numTiles,1,sizeof(word));
-
-	SaveTiles(f.get());
-
-	for(i = 0; i < world->numTiles; ++i)
-	{
-		io_terrain_t io_terrain = SaveOneTerrain(world->terrain[i]);
-		SDL_RWwrite(f, &io_terrain, sizeof(io_terrain_t), 1);
-	}
-
-	for(i=0;i<world->numMaps;i++)
-		world->map[i]->Save(f.get());
-
-	SaveItems(f.get());
-	SaveCustomSounds(f.get());
+	Supreme_SaveWorld(world, f.get());
 
 	f.reset();
 	AppdataSync();
 
-	return 1;
+	return true;
 }
 
 bool GetWorldName(const char *fname, StringDestination name, StringDestination author)
