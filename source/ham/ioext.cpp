@@ -38,7 +38,7 @@ private:
 		}
 		else
 		{
-			char ch2 = ch;
+			unsigned char ch2 = ch;
 			if (SDL_RWwrite(f, &ch2, 1, 1) < 1)
 				return traits_type::eof();
 			return ch2;
