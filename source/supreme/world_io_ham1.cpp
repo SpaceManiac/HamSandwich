@@ -571,12 +571,12 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 	return 1;
 }
 
-bool Ham_GetWorldName(const char *fname, char *buffer, char *authbuffer)
+bool Ham_GetWorldName(const char *fname, StringDestination name, StringDestination author)
 {
 	hamworld::Load load(fname);
 
 	std::string app;
-	if (!load.header({authbuffer, 32}, {buffer, 32}, &app))
+	if (!load.header(author, name, &app))
 	{
 		return false;
 	}

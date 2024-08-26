@@ -3,6 +3,7 @@
 
 #include "map.h"
 #include "tile.h"
+#include "string_extras.h"
 
 constexpr int MAX_MAPS = 64;
 
@@ -59,7 +60,7 @@ byte SaveWorld(world_t *world,const char *fname);
 void FreeWorld(world_t *world);
 
 void InitWorld(world_t *world);
-bool GetWorldName(const char *fname,char *buffer,char *authbuffer);
+bool GetWorldName(const char *fname, StringDestination name, StringDestination author);
 
 void RepairTileToTile(world_t *w);
 

@@ -6,6 +6,7 @@
 #include "log.h"
 #include "appdata.h"
 #include "world_io_legacy.h"
+#include "world_io_supreme.h"
 #include "world_io_ham1.h"
 
 byte keyChainInLevel[MAX_MAPS];
@@ -362,33 +363,31 @@ byte SaveWorld(world_t *world, const char *fname)
 	return 1;
 }
 
-bool GetWorldName(const char *fname,char *buffer,char *authbuffer)
+bool GetWorldName(const char *fname, StringDestination name, StringDestination author)
 {
 	char code[9];
 
 	owned::SDL_RWops f = AppdataOpen(fname);
 	if(!f)
-		return 0;
+		return false;
 
 	SDL_RWread(f,code,sizeof(char),8);
 	code[8]='\0';
+
 	if(!strcmp(code,"HAMSWCH!"))
 	{
 		f.reset();
-		return Ham_GetWorldName(fname, buffer, authbuffer);
+		return Ham_GetWorldName(fname, name, author);
 	}
-	else if(strcmp(code,"SUPREME!"))
+	else if(!strcmp(code,"SUPREME!"))
 	{
-		f.reset();
-
-		strcpy(authbuffer,"Unknown Author");
-		return Legacy_GetWorldName(fname,buffer);
+		return Supreme_GetWorldName(f.get(), name, author);
 	}
-
-	SDL_RWread(f,authbuffer,sizeof(char),32);
-	SDL_RWread(f,buffer,sizeof(char),32);
-
-	return 1;
+	else
+	{
+		author.assign("Unknown Author");
+		return Legacy_GetWorldName(f.get(), name);
+	}
 }
 
 void FreeWorld(world_t *world)

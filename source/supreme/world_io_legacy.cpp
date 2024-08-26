@@ -139,7 +139,7 @@ static void LoadOldMap(old_map_t *map,SDL_RWops *f)
 	SDL_RWread(f,map->map,map->width*map->height,sizeof(old_mapTile_t));
 }
 
-byte Legacy_LoadWorld(world_t *world,const char *fname)
+bool Legacy_LoadWorld(world_t *world, const char *fname)
 {
 	int i;
 
@@ -147,7 +147,7 @@ byte Legacy_LoadWorld(world_t *world,const char *fname)
 
 	auto f = AppdataOpen(fname);
 	if(!f)
-		return 0;
+		return false;
 
 	SDL_RWread(f,&oldWorld->numMaps,1,1);
 	SDL_RWread(f,&oldWorld->totalPoints,1,4);
@@ -163,7 +163,7 @@ byte Legacy_LoadWorld(world_t *world,const char *fname)
 	{
 		oldWorld->map[i]=new old_map_t;
 		if(!oldWorld->map[i])
-			return 0;
+			return false;
 		else
 			LoadOldMap(oldWorld->map[i],f.get());
 	}
@@ -181,10 +181,10 @@ byte Legacy_LoadWorld(world_t *world,const char *fname)
 	delete oldWorld;
 	ExitItems();
 	InitItems();	// reset to base item list
-	return 1;
+	return true;
 }
 
-void AddTrigger(word flag,byte trigValue,special_t *me,char *msg,byte orIt)
+static void AddTrigger(word flag,byte trigValue,special_t *me,char *msg,byte orIt)
 {
 	int i;
 
@@ -300,7 +300,7 @@ void AddTrigger(word flag,byte trigValue,special_t *me,char *msg,byte orIt)
 
 }
 
-void ParseCoords(char *txt,byte *x,byte *y,byte *x2,byte *y2)
+static void ParseCoords(char *txt,byte *x,byte *y,byte *x2,byte *y2)
 {
 	byte fail;
 	char *tok;
@@ -338,7 +338,7 @@ void ParseCoords(char *txt,byte *x,byte *y,byte *x2,byte *y2)
 	}
 }
 
-int HandleLegacyCustomSound(int value)
+static int HandleLegacyCustomSound(int value)
 {
 	char name[64],shrtname[32];
 	int n;
@@ -366,7 +366,7 @@ int HandleLegacyCustomSound(int value)
 		return n;
 }
 
-void SpecialConvert(old_special_t *old,special_t *me,Map *map)
+static void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 {
 	int i;
 	byte b,c;
@@ -666,22 +666,23 @@ Map *ConvertToNewMap(old_map_t *old)
 	return m;
 }
 
-bool Legacy_GetWorldName(const char *fname,char *buf)
+bool Legacy_GetWorldName(SDL_RWops *f, StringDestination name)
 {
-	if(fname[0]=='\0')
-		return false;
-
-	owned::SDL_RWops f = AppdataOpen(fname);
-	if(!f)
-		return false;
+	char buf[32];
 
 	// this fseeks past:
 	//   the int totalpoints, the 400 32x24 tiles,
 	//   the 200 terrain types, the width&height of map 0, and bam there it is at the name
 	//   of map 0.
+	if (SDL_RWseek(f,1+sizeof(int)+400*32*24+200*sizeof(old_terrain_t)+2*sizeof(int),RW_SEEK_SET) < 0)
+		return false;
 
-	SDL_RWseek(f,1+sizeof(int)+400*32*24+200*sizeof(old_terrain_t)+2*sizeof(int),RW_SEEK_SET);
 	// read the name
-	SDL_RWread(f,buf,1,32);
+	if (SDL_RWread(f, buf, 32, 1) < 1)
+		return false;
+
+	buf[31] = 0;
+	name.assign(buf);
+
 	return true;
 }
