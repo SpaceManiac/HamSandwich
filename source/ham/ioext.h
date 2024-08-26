@@ -6,13 +6,6 @@
 
 struct SDL_RWops;
 
-class FilePtrStream : public std::iostream
-{
-	std::unique_ptr<std::streambuf> sb;
-public:
-	explicit FilePtrStream(FILE *f);
-};
-
 class SdlRwStream : public std::iostream
 {
 	std::unique_ptr<std::streambuf> sb;
