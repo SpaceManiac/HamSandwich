@@ -13,6 +13,7 @@
 #include "extern.h"
 #include "owned_mixer.h"
 #include "string_extras.h"
+#include "next_soundfile.h"
 
 struct soundList_t
 {
@@ -135,6 +136,27 @@ void JamulSoundUpdate(void)
 	}
 }
 
+static owned::Mix_Chunk LoadSoundFile(SDL_RWops *rw)
+{
+	uint8_t magic[4];
+	if (SDL_RWread(rw, magic, 4, 1) == 1)
+	{
+		SDL_RWseek(rw, -4, RW_SEEK_CUR);
+
+		if (!memcmp(magic, ".snd", 4))
+		{
+			return LoadNextSoundfile(rw);
+		}
+		else
+		{
+			return owned::Mix_LoadWAV_RW(rw);
+		}
+	}
+
+	SDL_SetError("failed to read first 4 bytes");
+	return nullptr;
+}
+
 // pan: -128 (left) to 127 (right)
 // vol: -255 (silent) to 0 (no attenuation)
 bool JamulSoundPlay(int which, long pan, long vol, int playFlags, int priority)
@@ -179,7 +201,7 @@ bool JamulSoundPlay(int which, long pan, long vol, int playFlags, int priority)
 		}
 
 		// Now try to load it
-		soundList[which].sample = owned::Mix_LoadWAV_RW(std::move(rw));
+		soundList[which].sample = LoadSoundFile(rw.get());
 		if(soundList[which].sample==NULL)
 		{
 			LogError("LoadWAV(%d): %s", which, Mix_GetError());
