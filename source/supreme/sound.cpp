@@ -8,7 +8,7 @@
 #include "appdata.h"
 #include "string_extras.h"
 
-soundDesc_t soundInfo[MAX_SOUNDS]={
+static soundDesc_t soundInfo[MAX_SOUNDS]={
 	{SND_NONE,"No Sound At All!!",ST_EFFECT},
 	{SND_MENUCLICK,"Menu Click",ST_INTFACE},
 	{SND_MENUSELECT,"Menu Select",ST_INTFACE},
@@ -430,49 +430,12 @@ void MakeNormalSound(int snd)
 
 void MakeCustomSound(int snd,int x,int y,int flags,int priority)
 {
-	long pan,vol;
-	int cx,cy;
-
-	if(snd==0)
-		return;
-
-	if(!SoundIsAvailable())
-		return;
-	if(profile.sound==0)
-		return;
-
-	GetCamera(&cx,&cy);
-	x>>=FIXSHIFT;
-	y>>=FIXSHIFT;
-	pan=(x-cx)*128/320;
-	vol=-(abs(y-cy)*128/240);
-	if(pan<-127)
-	{
-		vol+=(pan+127);
-		pan=-127;
-	}
-	if(pan>127)
-	{
-		vol-=(pan-127);
-		pan=127;
-	}
-	if(vol<-255)
-		return;
-	GoPlaySound(soundInfo[snd].num,pan,vol,flags|GlobalFlags(),priority);
+	MakeSound(soundInfo[snd].num, x, y, flags, priority);
 }
 
 void MakeNormalCustomSound(int snd)
 {
-	if(snd==0)
-		return;
-
-	if(!SoundIsAvailable())
-		return;
-
-	if(profile.sound==0)
-		return;
-
-	GoPlaySound(soundInfo[snd].num,0,0,SND_MAXPRIORITY|SND_CUTOFF|SND_ONE|GlobalFlags(),MAX_SNDPRIORITY);
+	MakeNormalSound(soundInfo[snd].num);
 }
 
 soundDesc_t *GetSoundInfo(int snd)
@@ -675,12 +638,14 @@ void MakeSpaceSound(int snd,int priority)
 
 owned::SDL_RWops SoundLoadOverride(int num)
 {
-	if (num < CUSTOM_SND_START || num > CUSTOM_SND_START+GetNumCustomSounds())
-		return nullptr;
+	if (num >= CUSTOM_SND_START && num < CUSTOM_SND_START+GetNumCustomSounds())
+	{
+		byte* buf = GetCustomSound(num - CUSTOM_SND_START);
+		if (!buf)
+			return nullptr;
 
-	byte* buf = GetCustomSound(num - CUSTOM_SND_START);
-	if (!buf)
-		return nullptr;
+		return owned::SDL_RWFromConstMem(buf, GetCustomLength(num - CUSTOM_SND_START));
+	}
 
-	return owned::SDL_RWFromConstMem(buf, GetCustomLength(num - CUSTOM_SND_START));
+	return nullptr;
 }

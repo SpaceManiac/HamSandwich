@@ -116,7 +116,7 @@ static void LoadSpecials(SDL_RWops *f, span<special_t> list)
 	SDL_RWread(f, &numSpecials, 1, sizeof(byte));	// num specials
 
 	size_t i = 0;
-	for(; i < numSpecials; i++)
+	for(; i < numSpecials && i < list.size(); i++)
 		LoadSpecial(f, &list[i]);
 	for(; i < list.size(); i++)
 		list[i].x = 255;
