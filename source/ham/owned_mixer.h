@@ -55,6 +55,16 @@ namespace owned
 	{
 		return Mix_Music { ::Mix_LoadMUS_RW(rw.release(), SDL_TRUE) };
 	}
+
+	inline Mix_Music Mix_LoadMUSType_RW(::SDL_RWops* rw, Mix_MusicType type)
+	{
+		return Mix_Music { ::Mix_LoadMUSType_RW(rw, type, SDL_FALSE) };
+	}
+
+	inline Mix_Music Mix_LoadMUSType_RW(owned::SDL_RWops rw, Mix_MusicType type)
+	{
+		return Mix_Music { ::Mix_LoadMUSType_RW(rw.release(), type, SDL_TRUE) };
+	}
 }
 
 #endif
