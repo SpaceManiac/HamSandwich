@@ -338,6 +338,10 @@ static int HandleLegacyCustomSound(int value)
 	char name[64],shrtname[32];
 	int n;
 
+	// SWC reassigned 0 from SND_MENUCLICK to SND_NONE, so remap here.
+	if (value == 0)
+		return SND_MENUCLICK;
+
 	if(value<222 || (value>255 && value<274))
 		return value;	// not a custom sound, a built in one
 

@@ -10,7 +10,6 @@
 
 static soundDesc_t soundInfo[MAX_SOUNDS]={
 	{SND_NONE,"No Sound At All!!",ST_EFFECT},
-	{SND_MENUCLICK,"Menu Click",ST_INTFACE},
 	{SND_MENUSELECT,"Menu Select",ST_INTFACE},
 	{SND_PAUSE,"Pause Game",ST_INTFACE},
 	{SND_SAVEGAME,"Save Game",ST_INTFACE|ST_VOCAL},
@@ -61,6 +60,7 @@ static soundDesc_t soundInfo[MAX_SOUNDS]={
 	{SND_ZOMBIEOUCH,"Zombie Ouch",ST_MONSTER},
 	{SND_ZOMBIEDIE,"Zombie Die",ST_MONSTER},
 	{SND_ZOMBIELEAP,"Zombie Leap",ST_MONSTER|ST_VOCAL},
+	{SND_MENUCLICK,"Menu Click",ST_INTFACE},
 	{SND_EGGSACDIE,"Egg Sac Die",ST_MONSTER},
 	{SND_EGGSACBIRTH,"Egg Sac Hatch",ST_MONSTER},
 	{SND_SPD3OUCH,"Mama Spider Ouch",ST_MONSTER},
@@ -428,14 +428,26 @@ void MakeNormalSound(int snd)
 	GoPlaySound(snd,0,0,SND_MAXPRIORITY|SND_CUTOFF|SND_ONE|GlobalFlags(),MAX_SNDPRIORITY);
 }
 
-void MakeCustomSound(int snd,int x,int y,int flags,int priority)
+int DescIndexToSound(int descIndex)
 {
-	MakeSound(soundInfo[snd].num, x, y, flags, priority);
+	// Like a hardcoded version of old soundDesc[customSound].num lookup.
+	if (descIndex == 1)
+		return 51;
+	else if (2 <= descIndex && descIndex <= 51)
+		return descIndex - 1;
+	else
+		return descIndex;
 }
 
-void MakeNormalCustomSound(int snd)
+int SoundToDescIndex(int sound)
 {
-	MakeNormalSound(soundInfo[snd].num);
+	// Reverse of DescIndexToSound.
+	if (sound == 51)
+		return 1;
+	else if (1 <= sound && sound <= 50)
+		return sound + 1;
+	else
+		return sound;
 }
 
 soundDesc_t *GetSoundInfo(int snd)

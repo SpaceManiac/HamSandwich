@@ -474,7 +474,7 @@ static const item_t baseItems[]={
 		0,
 		IF_SOLID|IF_BULLETPROOF,
 		IT_BULLETPROOF|IT_CRATE,
-		ITR_MINECART,IE_DESTROY,2,"",SND_BOMBBOOM},
+		ITR_MINECART,IE_DESTROY,2,"",SND_ENERGYBONK},
 	{"Sign 2",-1,-3,81,0,0,0,
 		0,
 		IF_SOLID|IF_BULLETPROOF|IF_SHADOW,
@@ -1088,7 +1088,9 @@ void SaveItems(SDL_RWops *f)
 			// this item is changed, write it out
 			b=(byte)i;
 			SDL_RWwrite(f,&b,1,sizeof(byte));	// write the item number
-			SDL_RWwrite(f,&items[i],1,sizeof(item_t));
+			item_t item = items[i];
+			item.sound = SoundToDescIndex(item.sound);
+			SDL_RWwrite(f,&item,1,sizeof(item_t));
 		}
 	}
 	if(numItems>NUM_ORIGINAL_ITEMS)
@@ -1097,7 +1099,9 @@ void SaveItems(SDL_RWops *f)
 		SDL_RWwrite(f,&b,1,sizeof(byte));
 		for(i=NUM_ORIGINAL_ITEMS;i<numItems;i++)
 		{
-			SDL_RWwrite(f,&items[i],1,sizeof(item_t));
+			item_t item = items[i];
+			item.sound = SoundToDescIndex(item.sound);
+			SDL_RWwrite(f,&item,1,sizeof(item_t));
 		}
 	}
 }
@@ -1128,6 +1132,7 @@ void LoadItems(SDL_RWops *f)
 			}
 		}
 		SDL_RWread(f,&items[curItem],1,sizeof(item_t));
+		items[curItem].sound = DescIndexToSound(items[curItem].sound);
 		curItem++;
 	}
 
@@ -1681,7 +1686,7 @@ void MoveMovableItem(int x,int y,Map *map,world_t *world)
 	}
 	if(yes)
 	{
-		MakeCustomSound(items[type].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
+		MakeSound(items[type].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
 		if(items[type].msg[0])
 			NewMessage(items[type].msg,75,0);
 	}
@@ -1718,7 +1723,7 @@ byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y)
 
 		if(result==1)
 		{
-			MakeCustomSound(items[type].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
+			MakeSound(items[type].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
 			if(items[type].msg[0])
 				NewMessage(items[type].msg,75,0);
 
@@ -1743,7 +1748,7 @@ byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y)
 	{
 		if(TriggerItem(me,m,x,y))
 		{
-			MakeCustomSound(items[type].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
+			MakeSound(items[type].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
 			if(items[type].msg[0])
 				NewMessage(items[type].msg,75,0);
 		}
@@ -1753,7 +1758,7 @@ byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y)
 	{
 		if(TriggerItem(me,m,x,y))
 		{
-			MakeCustomSound(items[type].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
+			MakeSound(items[type].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
 			if(items[type].msg[0])
 				NewMessage(items[type].msg,75,0);
 		}
@@ -1780,7 +1785,7 @@ byte BulletHitItem(byte bulType,mapTile_t *m,int x,int y)
 	{
 		if(TriggerItem(NULL,m,x,y))
 		{
-			MakeCustomSound(items[type].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
+			MakeSound(items[type].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
 			if(items[type].msg[0])
 				NewMessage(items[type].msg,75,0);
 		}
@@ -1794,7 +1799,7 @@ byte BulletHitItem(byte bulType,mapTile_t *m,int x,int y)
 			if(profile.progress.grassChopped>=100)
 				CompleteGoal(89);
 
-			MakeCustomSound(items[type].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
+			MakeSound(items[type].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
 			if(items[type].msg[0])
 				NewMessage(items[type].msg,75,0);
 		}
@@ -1813,7 +1818,7 @@ void UpdateItem(mapTile_t *m,int width,int offset)
 		y=offset/width;
 		if(TriggerItem(NULL,m,x,y))
 		{
-			MakeCustomSound(items[m->item].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
+			MakeSound(items[m->item].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
 			if(items[m->item].msg[0])
 				NewMessage(items[m->item].msg,75,0);
 		}

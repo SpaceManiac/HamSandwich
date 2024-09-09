@@ -108,6 +108,12 @@ static void LoadSpecial(SDL_RWops *f, special_t *s)
 		SDL_RWread(f,s->trigger,numTrig,sizeof(trigger_t));
 	if(numEff>0)
 		SDL_RWread(f,s->effect,numEff,sizeof(effect_t));
+
+	for (int i = 0; i < numEff; ++i)
+	{
+		if (s->effect[i].type == EFF_SOUND)
+			s->effect[i].value = DescIndexToSound(s->effect[i].value);
+	}
 }
 
 static void LoadSpecials(SDL_RWops *f, span<special_t> list)
@@ -264,8 +270,13 @@ static void SaveSpecial(SDL_RWops *f, const special_t *s)
 
 	if(numTrig>0)
 		SDL_RWwrite(f,s->trigger,numTrig,sizeof(trigger_t));
-	if(numEff>0)
-		SDL_RWwrite(f,s->effect,numEff,sizeof(effect_t));
+	for (int i = 0; i < numEff; ++i)
+	{
+		effect_t eff = s->effect[i];
+		if (eff.type == EFF_SOUND)
+			eff.value = SoundToDescIndex(eff.value);
+		SDL_RWwrite(f,&eff,sizeof(effect_t),1);
+	}
 }
 
 static void SaveSpecials(SDL_RWops *f, span<const special_t> list)

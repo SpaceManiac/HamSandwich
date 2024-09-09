@@ -32,7 +32,7 @@ static void SaveItem(hamworld::Section *f, const item_t *item)
 	f->write_varint(item->trigger);
 	f->write_varint(item->effect);
 	f->write_varint(item->effectAmt);
-	f->write_varint(item->sound);
+	f->write_varint(SoundToDescIndex(item->sound));
 	f->write_string(item->msg);
 	f->write_varint(0);  // no extension flags
 }
@@ -64,7 +64,7 @@ static void LoadItem(hamworld::Section *f, item_t *item)
 	item->trigger = f->read_varint();
 	item->effect = f->read_varint();
 	item->effectAmt = f->read_varint();
-	item->sound = f->read_varint();
+	item->sound = DescIndexToSound(f->read_varint());
 	f->read_string(item->msg);
 	f->read_varint();  // ignore extension flags
 }
@@ -160,7 +160,7 @@ static void SaveMapSpecial(hamworld::Section *f, const special_t *spcl)
 		f->write_varint(elem->type);
 		f->write_varint(elem->x);
 		f->write_varint(elem->y);
-		f->write_varint((uint32_t) elem->value);
+		f->write_varint((uint32_t) (elem->type == EFF_SOUND ? SoundToDescIndex(elem->value) : elem->value));
 		f->write_varint((uint32_t) elem->value2);
 		f->write_string(elem->text);
 	}
@@ -201,6 +201,8 @@ static void LoadMapSpecial(hamworld::Section *f, special_t *spcl)
 		elem->x = f->read_varint();
 		elem->y = f->read_varint();
 		elem->value = (uint32_t) f->read_varint();
+		if (elem->type == EFF_SOUND)
+			elem->value = DescIndexToSound(elem->value);
 		elem->value2 = (uint32_t) f->read_varint();
 		f->read_string(elem->text);
 	}

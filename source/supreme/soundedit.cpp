@@ -126,7 +126,7 @@ static void SoundRightClick(int id)
 	int s;
 	s=sndList[sndStart+(id-ID_SOUNDS)];
 	JamulSoundPurge();
-	MakeNormalCustomSound(s);
+	MakeNormalSound(s);
 }
 
 static void MoreSoundsClick(int id)

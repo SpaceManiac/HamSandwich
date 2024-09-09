@@ -1349,7 +1349,7 @@ void SpecialEffect(special_t *me,Map *map)
 				}
 				break;
 			case EFF_SOUND:
-				MakeNormalCustomSound(me->effect[i].value);
+				MakeNormalSound(me->effect[i].value);
 				break;
 			case EFF_SONG:
 				if(me->effect[i].text[0]=='\0')
