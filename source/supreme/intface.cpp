@@ -931,7 +931,7 @@ void UpdateInterface(Map *map)
 					intf[i].vDesired=0;
 				break;
 			case INTF_LOCK:
-				intf[i].vDesired = profile.progress.wpnLock;
+				intf[i].vDesired = bool(profile.progress.wpnLock) ^ bool(GetControls() & CONTROL_B3);
 				break;
 			case INTF_BRAINS:
 				int b;
