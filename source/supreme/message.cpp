@@ -13,9 +13,9 @@ const char *VariableMsg(const char *txt)
 	char num[16];
 
 	outpos=0;
+	out[outpos]='\0';
 	for(i=0;i<(int)strlen(txt);i++)
 	{
-		out[outpos]='\0';
 		if(txt[i]!='%')
 		{
 			out[outpos++]=txt[i];
@@ -70,8 +70,8 @@ const char *VariableMsg(const char *txt)
 			{
 				out[outpos++]='%';
 			}
-			out[outpos]='\0';
 		}
+		out[outpos]='\0';
 		if(outpos>=255)
 			break;
 	}
