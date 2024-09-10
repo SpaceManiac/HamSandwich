@@ -1140,8 +1140,6 @@ void LoadItems(SDL_RWops *f)
 		numItems=NUM_ORIGINAL_ITEMS;
 	else
 		numItems=curItem;
-
-	CalculateItemRenderExtents();
 }
 
 byte AppendItems(SDL_RWops *f)
