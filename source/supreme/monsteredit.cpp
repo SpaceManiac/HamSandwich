@@ -31,14 +31,14 @@ static const dword themes[]={
 	MT_BITS
 };
 static constexpr int NUM_THEMES = std::size(themes);
-static dword curTheme;
+static dword curTheme = MT_GOOD;
 
 static std::vector<dword> monsList;
 static word monsInList,monsStart,monsShown;
 static constexpr int MONSTERS_PER_PAGE = 18;
 static byte realClick;
 
-static dword saveCurMons=1,saveCurTheme=0;
+static dword saveCurMons=1,saveCurTheme=MT_GOOD;
 
 static void SetupMonsterDisplay(void);
 static void MakeMonsterList(void);

@@ -275,7 +275,7 @@ void SoundEdit_Init(world_t *wrld)
 	world=wrld;
 	mode=SNDMODE_NORMAL;
 	curSound=0;
-	curTheme=0;
+	curTheme=ST_INTFACE;
 	rememberMode=EDITMODE_EDIT;
 	SoundEditSetupButtons();
 	SetThemeRadio();
@@ -289,7 +289,7 @@ void SoundEdit_InitPicker(byte modeFrom,world_t *wrld)
 	world=wrld;
 	mode=SNDMODE_SELECT;
 	curSound=0;
-	curTheme=0;
+	curTheme=ST_INTFACE;
 	SoundEditSetupButtons();
 	SetThemeRadio();
 	MakeSoundList();
