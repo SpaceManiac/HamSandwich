@@ -12,7 +12,7 @@ fi
 if test -L external/steamworks_sdk; then
 	steamopts=(--volume "$(readlink -f external/steamworks_sdk):$(readlink external/steamworks_sdk)")
 fi
-id="$(podman build --format=docker --quiet tools/windows-cross)"
+id="$(podman build --format=docker --quiet "$(dirname "$0")")"
 exec podman run \
 	--rm \
 	--volume "$PWD":"$PWD" \
