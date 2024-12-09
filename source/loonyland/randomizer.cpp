@@ -19,6 +19,7 @@
 #include "quest.h"
 #include "ioext.h"
 #include "options.h"
+#include "../../external/APCpp/Archipelago.h"
 
 struct RandoLocation
 {
@@ -179,7 +180,7 @@ static const RandoLocation basic_locations[] = {
 	{false, "A Hidey Hole", 43, 5, 22, 1, 2, "Bat Door", [](const std::set<int>& inv) { return inv.count(VAR_BATKEY); }},
 	{false, "A Hidey Hole", 43, 18, 22, 4, 5, "Pebbles", [](const std::set<int>& inv) { return true; }},
 	{false, "Swampdog Lair", 45, 55, 49, 0, 1, "Entrance", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
-	{false, "Swampdog Lair", 45, 55, 36, 5, 6, "End", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_FERTILIZER); }},
+	{false, "Swampdog Lair", 45, 55, 36, 5, 6, "End", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS) && HaveLightSource(inv) && inv.count(VAR_FERTILIZER); }},
 	{true, "Ghostbusting", 0, 0, 0, 0, 0, "Ghostbusting", [](const std::set<int>& inv) { return HaveAnyBigGem(inv) && inv.count(VAR_DAISY) && HaveAllMushrooms(inv); }},
 	{true, "Hairy Larry", 1, 0, 0, 0, 0, "Hairy Larry", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING) && inv.count(VAR_BOOTS);  }},
 	{true, "Scaredy Cat", 2, 0, 0, 0, 0, "Scaredy Cat", [](const std::set<int>& inv) { return inv.count(VAR_CAT); }},
@@ -309,6 +310,7 @@ void InitRandomizerMenu(void)
 	cursor = CURSOR_START;
 	std::srand(std::time(nullptr)); //used in random seed generator, not item logic
 	InitPlasma(7);
+	AP_Init("Archipelago.gg:0000", "Loonyland", "AutoFrenzy", "");
 }
 
 void ExitRandomizerMenu(void)
@@ -753,6 +755,19 @@ void PlaceItems(std::vector<RandoLocation>& locList)
 	world_t world;
 	sprintf(buff, "randomizer/%s rando.llw", seed.c_str());
 	LoadWorld(&world, buff);
+
+	for (int i = 0; i < world.numMaps; i++)
+	{
+		for (int s = 0; s < 256; s++)
+		{
+			if (world.map[i]->special[s].effect == SPC_GOTOMAP)
+			{
+				std::cout << "map: " << world.map[i]->name << " dest: " << world.map[world.map[i]->special[s].value]->name << " loc: "
+					<< world.map[i]->special[s].trigX << " " << world.map[i]->special[s].trigY << "\n";
+			}
+		}
+		std::cout << "\n";
+	}
 
 	//add some hearts to loonyton
 	world.map[0]->map[91 + 90 * world.map[0]->width].item = 2;
