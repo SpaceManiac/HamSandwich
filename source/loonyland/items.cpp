@@ -160,7 +160,8 @@ static const item_t itemInfo[MAX_ITMS]={
 	{2, 0, 11, 11, IF_GET | IF_SHADOW | IF_GLOW},	//lantern
 	{2, 0, 12, 12, IF_GET | IF_SHADOW | IF_GLOW},	//reflect gem
 	{2, 0, 13, 13, IF_GET | IF_SHADOW},	//silversling
-	{2, 0, 14, 14, IF_GET | IF_SHADOW}	//stick
+	{2, 0, 14, 14, IF_GET | IF_SHADOW},	//stick
+	{2, 128, 28, 35, IF_GET | IF_SHADOW }	//archipelago
 };
 static_assert(std::size(itemInfo) == MAX_ITMS);
 

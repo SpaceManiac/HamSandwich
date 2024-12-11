@@ -170,8 +170,9 @@
 #define ITM_REFLECTGEM	134
 #define ITM_SILVERSLING	135
 #define ITM_STICK		136
+#define ITM_ARCHIPELAGO 137
 
-#define MAX_ITMS		137
+#define MAX_ITMS		138
 
 // item flags
 #define IF_GET			1	// can be picked up by player
