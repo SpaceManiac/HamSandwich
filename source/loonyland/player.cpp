@@ -7,6 +7,7 @@
 #include "badge.h"
 #include "bossbash.h"
 #include "randomizer.h"
+#include "loonyArchipelago.h"
 
 // characters
 #include "ch_loony.h"
@@ -27,6 +28,15 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	int i;
 	static const byte startLife[]={15,10,5,3,1,5};
 	static_assert(std::size(startLife) == NUM_DIFFICULTY);
+
+	if (ArchipelagoMode && initWhat == INIT_GAME)
+	{
+		return;
+	}
+	if (initWhat == INIT_ARCHIPELAGO)
+	{
+		initWhat = INIT_GAME;
+	}
 
 	if(initWhat==INIT_GAME)	// initialize everything, this is to start a whole new game
 	{
@@ -570,6 +580,11 @@ void PlayerSetVar(int v,int val)
 	{
 		if(oldval==0 && val)
 		{
+			if (ArchipelagoMode)
+			{
+				SendCheckedLocQuest(v - VAR_QUESTDONE);
+			}
+
 			// didn't previously complete it
 			sprintf(m,"%s Complete!",QuestName(v-VAR_QUESTDONE));
 			NewBigMessage(m,90);
@@ -915,6 +930,18 @@ byte PlayerGetItem(byte itm,int x,int y)
 	}
 	if(ItemFlags(itm)&IF_GET)
 	{
+		if (ArchipelagoMode && ItemFlags(itm) & IF_ARCHIPELAGO) {
+			if (itm < ITM_WBOMB || itm > ITM_WHOTPANTS)
+			{
+				SendCheckedLocPickup(curMap->name, x, y);
+				return 0;
+			}
+			if (player.var[itm - ITM_WBOMB + VAR_WEAPON] == 0)
+			{
+				SendCheckedLocPickup(curMap->name, x, y);
+				return 0;
+			}
+		}
 		if(player.hearts==0)
 			return 1;
 

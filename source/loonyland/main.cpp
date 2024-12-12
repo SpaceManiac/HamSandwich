@@ -13,9 +13,11 @@
 #include "options.h"
 #include "badge.h"
 #include "randomizer.h"
+#include "loonyArchipelagoMenu.h"
 #include "log.h"
 #include "appdata.h"
 #include "steam.h"
+#include "loonyArchipelago.h"
 
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
@@ -95,7 +97,8 @@ TASK(int) main(int argc, char *argv[])
 				SetSongRestart(0);
 				break;
 			case MainMenuResult::Randomizer: //Randomizer settings
-				AWAIT RandomizerMenu(mainmgl);
+				DaveTest();
+				AWAIT ArchipelagoMenu(mainmgl);
 				SetSongRestart(0);
 				break;
 

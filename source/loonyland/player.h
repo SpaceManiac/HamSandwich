@@ -15,6 +15,7 @@
 #define COMBO_TIME	30*2
 
 // initializing constants (pass to InitPlayer)
+#define INIT_ARCHIPELAGO 3
 #define INIT_GAME  2
 #define INIT_WORLD 1
 #define INIT_LEVEL 0

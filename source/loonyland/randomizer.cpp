@@ -322,7 +322,7 @@ TASK(byte)
 UpdateRandomizerMenu(int* lastTime, MGLDraw* mgl)
 {
 	char c;
-	byte c2;
+	byte c2 = 255;
 	dword btn, j;
 	int i;
 

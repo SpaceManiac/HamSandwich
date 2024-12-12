@@ -3,4 +3,4 @@ HamSandwich_add_executable(
 	loonyland
 	SOURCES ${sources}
 )
-target_link_libraries(loonyland steam_api APCpp)
+target_link_libraries(loonyland steam_api APCpp nlohmann_json)

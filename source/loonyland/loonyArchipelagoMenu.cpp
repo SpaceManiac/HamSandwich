@@ -2,6 +2,7 @@
 #include "plasma.h"
 #include "mgldraw.h"
 #include <control.h>
+#include "loonyArchipelago.h"
 
 static std::string IPAddress = "";
 static std::string SlotName = "";
@@ -20,24 +21,13 @@ static byte optMode;
 #define CURSOR_END		3
 
 
-int ArchipelagoConnect(void) {
-	AP_Init(IPAddress, SlotName, Password);
-	AP_SetItemClearCallback(void (*f_itemclr)());
-	AP_SetItemRecvCallback(void (*f_itemrecv)(int, bool));
-	AP_SetLocationCheckedCallback(void (*f_locrecv)(int));
-	AP_SetDeathLinkSupported(bool);
-	AP_SetDeathLinkRecvCallback(void (*f_deathrecv)());
-
-	AP_Start();
-}
-
 
 void InitArchipelagoMenu(void)
 {
 	oldc = 255;
 	cursor = CURSOR_START;
 	InitPlasma(7);
-	IPAddress = "Archipelago.gg:0000";
+	IPAddress = "Archipelago.gg:00000";
 	//AP_Init("Archipelago.gg:0000", "Loonyland", "AutoFrenzy", "");
 }
 
@@ -163,7 +153,8 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 			c2 = 255;
 			break;
 		case 2: //connecting
-			AP_Init("Archipelago.gg:0000", "Loonyland", "AutoFrenzy", "");
+			ArchipelagoConnect(IPAddress, SlotName, Password);
+			optMode = 0;
 			break;
 		}
 

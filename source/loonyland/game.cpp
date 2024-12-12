@@ -12,6 +12,7 @@
 #include "ch_summon.h"
 #include "log.h"
 #include "palettes.h"
+#include "loonyArchipelago.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -287,6 +288,8 @@ byte LunaticRun(int *lastTime)
 				curMap->Update(UPDATE_FADE,&curWorld);
 				EditorUpdateGuys(curMap);
 			}
+			UpdateArchipelago();
+
 			UpdateParticles(curMap);
 			UpdateMessage();
 
@@ -553,6 +556,16 @@ TASK(byte) PlayALevel(byte map)
 		}
 	}
 
+	//clear items at archipelago checked locations
+	if ((player.worldNum == WORLD_NORMAL) && ArchipelagoMode) {
+		for (locationData loc : basic_locations)
+		{
+			if (loc.Map == curMap->name && locsFound[loc.ID]) {
+				curMap->map[loc.Xcoord + loc.Ycoord * curMap->width].item = ITM_NONE;
+			}
+		}
+	}
+
 	tl=0;
 	while(exitcode==LEVEL_PLAYING)
 	{
@@ -716,10 +729,18 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 		switch(player.worldNum)
 		{
 			case WORLD_NORMAL:
-				if(!loadGame)
-					AWAIT Help(gamemgl);
-				worldResult=AWAIT LunaticWorld("loony.llw");
-				break;
+				if (ArchipelagoMode)
+				{
+					worldResult = AWAIT LunaticWorld("ap.llw");
+					break;
+				}
+				else
+				{
+					if (!loadGame)
+						AWAIT Help(gamemgl);
+					worldResult = AWAIT LunaticWorld("loony.llw");
+					break;
+				}
 			case WORLD_REMIX:
 				if(!loadGame)
 					AWAIT Help(gamemgl);
