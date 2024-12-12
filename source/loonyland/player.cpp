@@ -704,6 +704,10 @@ void PlayerSetVar(int v,int val)
 			player.fireFlags|=FF_REFLECT;
 		}
 	}
+	if (v == VAR_TRIPLEFIRE && oldval == 0)
+	{
+		player.fireFlags |= FF_TRIPLE;
+	}
 	if(v>=VAR_ZOMBIE && v<=VAR_ZOMBIE+2)
 	{
 		if(oldval==0 && val)
@@ -735,6 +739,18 @@ void PlayerSetVar(int v,int val)
 	{
 		MakeNormalSound(SND_KEYGET);
 		NewBigMessage("Got a bar of silver!",90);
+	}
+	if (v == VAR_SKULLKEY && oldval == 0)
+	{
+		player.keys[1] = 1;
+	}
+	if (v == VAR_BATKEY && oldval == 0)
+	{
+		player.keys[2] = 1;
+	}
+	if (v == VAR_PUMPKINKEY && oldval == 0)
+	{
+		player.keys[3] = 1;
 	}
 	BadgeCheck(BE_VARSET,0,curMap);
 }
@@ -933,12 +949,12 @@ byte PlayerGetItem(byte itm,int x,int y)
 		if (ArchipelagoMode && ItemFlags(itm) & IF_ARCHIPELAGO) {
 			if (itm < ITM_WBOMB || itm > ITM_WHOTPANTS)
 			{
-				SendCheckedLocPickup(curMap->name, x, y);
+				SendCheckedLocPickup(curMap->name, player.levelNum, x, y);
 				return 0;
 			}
 			if (player.var[itm - ITM_WBOMB + VAR_WEAPON] == 0)
 			{
-				SendCheckedLocPickup(curMap->name, x, y);
+				SendCheckedLocPickup(curMap->name, player.levelNum, x, y);
 				return 0;
 			}
 		}
@@ -1816,6 +1832,50 @@ void HandlePoison(Guy *me)
 			}
 		}
 		player.poison--;
+	}
+}
+
+void PlayerCalcStats()
+{
+	for (int i = 0; i < 20; i++)
+	{
+		if (player.var[VAR_HEART + i] == 0)
+		{
+			player.maxHearts = player.startHearts + i;
+			break;
+		}
+	}
+	for (int i = 0; i < 10; i++)
+	{
+		if (player.var[VAR_LIGHTNING + i] == 0)
+		{
+			player.firePower = i;
+			break;
+		}
+	}
+	for (int i = 0; i < 10; i++)
+	{
+		if (player.var[VAR_ARROW + i] == 0)
+		{
+			player.fireRange = i;
+			break;
+		}
+	}
+	for (int i = 0; i < 10; i++)
+	{
+		if (player.var[VAR_PANTS + i] == 0)
+		{
+			player.fireRate = i;
+			break;
+		}
+	}
+	for (int i = 0; i < 6; i++)
+	{
+		if (player.var[VAR_GEM + i] == 0)
+		{
+			player.maxMoney = 50 + i*25;
+			break;
+		}
 	}
 }
 

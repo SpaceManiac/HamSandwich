@@ -560,7 +560,9 @@ TASK(byte) PlayALevel(byte map)
 	if ((player.worldNum == WORLD_NORMAL) && ArchipelagoMode) {
 		for (locationData loc : basic_locations)
 		{
-			if (loc.Map == curMap->name && locsFound[loc.ID]) {
+			if (loc.Map == curMap->name &&
+				loc.MapID == mapNum && 
+				locsFound[loc.ID]) {
 				curMap->map[loc.Xcoord + loc.Ycoord * curMap->width].item = ITM_NONE;
 			}
 		}

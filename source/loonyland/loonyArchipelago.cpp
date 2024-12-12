@@ -124,6 +124,13 @@ void ItemReceived(int64_t  item_id, bool notif)
 			PlayerSetVar(item_id+(count-1), 1);
 		}
 	}
+	if ((item_id >= VAR_HEART && item_id <= VAR_PANTS)
+		|| item_id == VAR_GEM
+		|| item_id == VAR_TRIPLEFIRE
+		|| item_id >= (VAR_KEY && item_id <= VAR_KEY+2))
+	{
+		PlayerCalcStats();
+	}
 }
 
 void GetLocationScouts(std::vector<AP_NetworkItem> vec_NetworkItems)
@@ -155,11 +162,11 @@ void GetLocationScouts(std::vector<AP_NetworkItem> vec_NetworkItems)
 	locationWait = false;
 }
 
-void SendCheckedLocPickup(std::string mapName, int x, int y)
+void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y)
 {
 	for (locationData loc : basic_locations)
 	{
-		if (loc.Map == mapName && loc.Xcoord == x && loc.Ycoord == y)
+		if (loc.MapID == mapNum && loc.Map == mapName && loc.Xcoord == x && loc.Ycoord == y)
 		{
 			SendCheckedItem(loc.ID);
 			return;
@@ -248,11 +255,13 @@ void UpdateArchipelago()
 	if (AP_IsMessagePending() && messageCooldown == 0)
 	{
 		AP_Message *message = AP_GetLatestMessage();
-		if (message->type == AP_MessageType::ItemRecv) {
+		if (message->type == AP_MessageType::ItemRecv ||
+			message->type == AP_MessageType::ItemSend) {
 			//NewBigMessage(message->text.c_str(), 30 * 5);
 			NewMessage(message->text.c_str(), 30 * 5);
 			messageCooldown = 30 * 5;
 		}
+
 		AP_ClearLatestMessage();
 	}
 

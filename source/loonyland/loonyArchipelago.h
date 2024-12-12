@@ -7,7 +7,7 @@
 void DaveTest();
 
 int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password);
-void SendCheckedLocPickup(std::string mapName, int x, int y);
+void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y);
 void SendCheckedLocQuest(int questVar);
 void UpdateArchipelago();
 
@@ -111,7 +111,7 @@ static locationData basic_locations[] = {
 {"Wolf Den: Top Left","Pickup",57,"The Wolf Den",26,2,5,1,2,"The Wolf Den"},
 {"Wolf Den: Pumpkin Door","Pickup",58,"The Wolf Den",26,6,14,6,7,"The Wolf Den"},
 {"Wolf Den: Vine","Pickup",59,"The Wolf Den",26,40,88,3,4,"The Wolf Den"},
-{"Upper Cavern: Three Gold Skeletons","Pickup",60,"Upper Creepy Cavern",28,88,38,3,4,"Upper Creepy Caverns"},
+{"Upper Cavern: Three Gold Skeletons","Pickup",60,"Upper Creepy Caverns",28,88,38,3,4,"Upper Creepy Caverns"},
 {"Under The Ravine: Left Vine","Pickup",61,"Under The Ravine",29,35,39,1,2,"Under The Ravine"},
 {"Under The Ravine: Right Vine","Pickup",62,"Under The Ravine",29,103,22,3,4,"Under The Ravine"},
 {"Creepy Caverns M: Pharaoh Bat Door","Pickup",63,"Creepy Caverns",30,117,76,3,4,"Creepy Caverns Middle"},

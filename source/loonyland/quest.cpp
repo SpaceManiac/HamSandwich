@@ -10,6 +10,7 @@
 #include "appdata.h"
 #include <vector>
 #include <sstream>
+#include "loonyArchipelago.h"
 
 RandoItem randoReward[11];
 
@@ -1882,6 +1883,10 @@ void DoChatAction(byte a)
 			if (player.worldNum == WORLD_RANDOMIZER){
 				GiveRandoItem(8);
 			}
+			else if (ArchipelagoMode)
+			{
+				break;
+			}
 			else
 			{
 				player.var[VAR_HEART+15]=1;
@@ -1901,6 +1906,10 @@ void DoChatAction(byte a)
 			PlayerSetVar(VAR_QUESTDONE+QUEST_BOOTS,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
 				GiveRandoItem(5);
+			}
+			else if (ArchipelagoMode)
+			{
+				break;
 			}
 			else
 			{
@@ -1925,6 +1934,10 @@ void DoChatAction(byte a)
 			if (player.worldNum == WORLD_RANDOMIZER){
 				GiveRandoItem(2);
 			}
+			else if (ArchipelagoMode)
+			{
+				break;
+			}
 			else
 			{
 				PlayerSetVar(VAR_STICK,1);
@@ -1940,6 +1953,10 @@ void DoChatAction(byte a)
 			PlayerSetVar(VAR_WITCHREWARD, 1);
 			if (player.worldNum == WORLD_RANDOMIZER){
 				GiveRandoItem(9);
+			}
+			else if (ArchipelagoMode)
+			{
+				break;
 			}
 			else
 			{
@@ -1970,6 +1987,10 @@ void DoChatAction(byte a)
 			if (player.worldNum == WORLD_RANDOMIZER){
 				GiveRandoItem(4);
 			}
+			else if (ArchipelagoMode)
+			{
+				break;
+			}
 			else
 			{
 				PlayerSetVar(VAR_FERTILIZER,1);
@@ -1984,6 +2005,10 @@ void DoChatAction(byte a)
 			// reward zombie quest
 			if (player.worldNum == WORLD_RANDOMIZER){
 				GiveRandoItem(10);
+			}
+			else if (ArchipelagoMode)
+			{
+				break;
 			}
 			else
 			{
@@ -2006,6 +2031,10 @@ void DoChatAction(byte a)
 			if (player.worldNum == WORLD_RANDOMIZER){
 				GiveRandoItem(0);
 			}
+			else if (ArchipelagoMode)
+			{
+				break;
+			}
 			else
 			{
 				PlayerSetVar(VAR_POTION,1);
@@ -2020,6 +2049,10 @@ void DoChatAction(byte a)
 			PlayerSetVar(VAR_QUESTDONE+QUEST_SILVER,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
 				GiveRandoItem(3);
+			}
+			else if (ArchipelagoMode)
+			{
+				break;
 			}
 			else
 			{
@@ -2038,6 +2071,10 @@ void DoChatAction(byte a)
 			PlayerSetVar(VAR_QUESTDONE+QUEST_RESCUE,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
 				GiveRandoItem(7);
+			}
+			else if (ArchipelagoMode)
+			{
+				break;
 			}
 			else
 			{
@@ -2061,6 +2098,10 @@ void DoChatAction(byte a)
 			if (player.worldNum == WORLD_RANDOMIZER){
 				GiveRandoItem(1);
 			}
+			else if (ArchipelagoMode)
+			{
+				break;
+			}
 			else
 			{
 				PlayerGetItem(ITM_KEY4,0,0);
@@ -2076,6 +2117,10 @@ void DoChatAction(byte a)
 			PlayerSetVar(VAR_QUESTDONE+QUEST_DOLLS,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
 				GiveRandoItem(6);
+			}
+			else if (ArchipelagoMode)
+			{
+				break;
 			}
 			else
 			{
