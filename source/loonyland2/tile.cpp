@@ -41,11 +41,13 @@ void SetTiles(byte *scrn,byte wall)
 
 void SaveTiles(SDL_RWops *f)
 {
+	static_assert(sizeof(tile_t) == 768);
 	SDL_RWwrite(f,tiles,NUMTILES,sizeof(tile_t));
 }
 
 void LoadTiles(SDL_RWops *f)
 {
+	static_assert(sizeof(tile_t) == 768);
 	SDL_RWread(f,tiles,NUMTILES,sizeof(tile_t));
 }
 

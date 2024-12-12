@@ -163,7 +163,6 @@
 
 typedef void AIFunc(Guy *me,Map *map,world_t *world,Guy *goodguy);
 
-#pragma pack(push, 1)
 typedef struct monsterType_t
 {
 	char name[32];
@@ -183,7 +182,6 @@ typedef struct monsterType_t
 	AIFunc *aiFunc;
 	byte anim[NUM_ANIMS][ANIM_LENGTH];
 } monsterType_t;
-#pragma pack(pop)
 
 extern monsterType_t monsType[NUM_MONSTERS];
 

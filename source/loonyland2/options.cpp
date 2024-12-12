@@ -409,6 +409,7 @@ void LoadOptions(void)
 	}
 	else
 	{
+		static_assert(sizeof(options_t) == 165);
 		if(SDL_RWread(f, &opt,1,sizeof(options_t))<sizeof(options_t))
 		{
 #ifdef DIRECTORS

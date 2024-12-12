@@ -111,7 +111,6 @@
 #define MAX_EQMAGIC	 (79)
 #endif
 
-#pragma pack(push, 1)
 typedef struct equip_t
 {
 	byte count;	// how many of this same one do you have?
@@ -122,7 +121,6 @@ typedef struct equip_t
 	byte speed;
 	byte skill[3];	// which skills it boosts
 } equip_t;
-#pragma pack(pop)
 
 extern byte bossDrop;
 
