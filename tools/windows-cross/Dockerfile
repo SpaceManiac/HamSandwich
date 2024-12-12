@@ -10,7 +10,7 @@ COPY manifest_17.json manifest.json
 RUN set -euo pipefail; \
 	xwin_version="0.5.0"; \
 	xwin_prefix="xwin-$xwin_version-x86_64-unknown-linux-musl"; \
-	wget "https://github.com/Jake-Shadle/xwin/releases/download/$xwin_version/$xwin_prefix.tar.gz" -O xwin.tar.gz; \
+	wget -nv "https://github.com/Jake-Shadle/xwin/releases/download/$xwin_version/$xwin_prefix.tar.gz" -O xwin.tar.gz; \
 	sha256sum -c <<<'a9b9d2996d0e1050ac837baaec5b05eb42ad9815630f66abf0e5382055e04378 *xwin.tar.gz'; \
 	tar xf xwin.tar.gz -C /usr/local/bin --strip-components=1 "$xwin_prefix/xwin"; \
 	xwin --manifest manifest.json --arch x86 --accept-license splat --output /xwin --include-debug-libs; \
