@@ -19,7 +19,6 @@
 #include "quest.h"
 #include "ioext.h"
 #include "options.h"
-#include "../../external/APCpp/Archipelago.h"
 
 struct RandoLocation
 {
@@ -310,7 +309,6 @@ void InitRandomizerMenu(void)
 	cursor = CURSOR_START;
 	std::srand(std::time(nullptr)); //used in random seed generator, not item logic
 	InitPlasma(7);
-	AP_Init("Archipelago.gg:0000", "Loonyland", "AutoFrenzy", "");
 }
 
 void ExitRandomizerMenu(void)
@@ -755,19 +753,6 @@ void PlaceItems(std::vector<RandoLocation>& locList)
 	world_t world;
 	sprintf(buff, "randomizer/%s rando.llw", seed.c_str());
 	LoadWorld(&world, buff);
-
-	for (int i = 0; i < world.numMaps; i++)
-	{
-		for (int s = 0; s < 256; s++)
-		{
-			if (world.map[i]->special[s].effect == SPC_GOTOMAP)
-			{
-				std::cout << "map: " << world.map[i]->name << " dest: " << world.map[world.map[i]->special[s].value]->name << " loc: "
-					<< world.map[i]->special[s].trigX << " " << world.map[i]->special[s].trigY << "\n";
-			}
-		}
-		std::cout << "\n";
-	}
 
 	//add some hearts to loonyton
 	world.map[0]->map[91 + 90 * world.map[0]->width].item = 2;
