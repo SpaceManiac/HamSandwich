@@ -157,8 +157,19 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 			break;
 		case 2: //connecting
 			ArchipelagoConnect(IPAddress, SlotName, Password);
-			optMode = 0;
-			CO_RETURN 1;
+			optMode = 3;
+			break;
+		case 3: //waiting on status
+			if (ConnectionStatus() == "Authenticated")
+			{
+				GetInfoFromAP();
+				optMode = 4;
+			}
+			break;
+		case 4: //waiting on status
+			if (!locationWait) {
+				CO_RETURN 1;
+			}
 			break;
 		}
 
@@ -246,6 +257,19 @@ void RenderArchipelagoMenu(MGLDraw* mgl)
 	PrintColor(160, 60 + CURSOR_CONNECT * 30 + 20, "Connect!", 7, -10, 0);
 	if (cursor == CURSOR_CONNECT)
 		PrintColor(159, 59 + CURSOR_CONNECT * 30 + 20, "Connect!", 0, 0, 0);
+
+	PrintColor(160, 60 + 5 * 30 + 20, "Connection Status:", 7, -10, 0);
+	PrintColor(350, 60 + 5 * 30 + 20, ConnectionStatus().c_str(), 7, -10, 0);
+
+	PrintColor(160, 60 + 6 * 30 + 20, "Scout status:", 7, -10, 0);
+	if (!locationWait)
+	{
+		PrintColor(350, 60 + 6 * 30 + 20, "Waiting", 7, -10, 0);
+	}
+	else
+	{
+		PrintColor(350, 60 + 6 * 30 + 20, "Received", 7, -10, 0);
+	}
 
 }
 

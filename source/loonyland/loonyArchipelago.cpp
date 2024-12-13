@@ -23,7 +23,10 @@ void ItemsClear();
 void ItemReceived(int64_t  item_id, bool notif);
 void SetLocationChecked(int64_t  loc_id);
 void DeathLinkReceived();
+void GetInfoFromAP();
 void SetupWorld();
+std::string ConnectionStatus();
+
 
 
 std::unordered_map<int, bool> locsFound;
@@ -69,38 +72,13 @@ int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string 
 	AP_SetLocationCheckedCallback(SetLocationChecked);
 	AP_SetDeathLinkSupported(false);
 	AP_SetDeathLinkRecvCallback(DeathLinkReceived);
+	AP_SetLocationInfoCallback(GetLocationScouts);
 
 	SetupWorld();
 
 	//GetDataPackage?
 
 	AP_Start();
-
-	while (AP_GetConnectionStatus() != AP_ConnectionStatus::Authenticated)
-	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-	}
-
-	player_id = AP_GetPlayerID();
-
-	AP_SetLocationInfoCallback(GetLocationScouts);
-
-	std::set<int64_t> locationScouts;
-	for (auto loc : basic_locations)
-	{
-		if (loc.Name != "Q: Save Halloween Hill")
-		{
-			locationScouts.insert(loc.ID + loonyland_base_id);
-		}
-	}
-	locationWait = true;
-	AP_SendLocationScouts(locationScouts, false);
-
-	while (locationWait)
-	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-	}
-	
 	return 0;
 }
 
@@ -211,6 +189,42 @@ void DeathLinkReceived()
 {
 	//we kill the loony
 	player.hearts = 0;
+}
+
+std::string ConnectionStatus()
+{
+	AP_ConnectionStatus status = AP_GetConnectionStatus();
+	switch (status) {
+	case AP_ConnectionStatus::Disconnected:
+		return "Disconnected";
+		break;
+	case AP_ConnectionStatus::Connected:
+		return "Connected";
+		break;
+	case AP_ConnectionStatus::Authenticated:
+		return "Authenticated";
+			break;
+	case AP_ConnectionStatus::ConnectionRefused:
+		return "ConnectionRefused";
+			break;
+	}
+}
+
+
+void GetInfoFromAP()
+{
+	player_id = AP_GetPlayerID();
+
+	std::set<int64_t> locationScouts;
+	for (auto loc : basic_locations)
+	{
+		if (loc.Name != "Q: Save Halloween Hill")
+		{
+			locationScouts.insert(loc.ID + loonyland_base_id);
+		}
+	}
+	locationWait = true;
+	AP_SendLocationScouts(locationScouts, false);
 }
 
 void SetupWorld()

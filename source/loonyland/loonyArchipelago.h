@@ -10,10 +10,14 @@ int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string 
 void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y);
 void SendCheckedLocQuest(int questVar);
 void UpdateArchipelago();
+std::string ConnectionStatus();
+
+void GetInfoFromAP();
 
 extern  std::unordered_map<int, bool> locsFound;
 extern std::unordered_map<int, int> itemsFound;
 extern bool ArchipelagoMode;
+extern bool locationWait;
 
 
 const std::unordered_map<int, int> item_frequencies = {
