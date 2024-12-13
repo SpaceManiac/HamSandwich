@@ -255,8 +255,16 @@ void UpdateArchipelago()
 	if (AP_IsMessagePending() && messageCooldown == 0)
 	{
 		AP_Message *message = AP_GetLatestMessage();
-		if (message->type == AP_MessageType::ItemRecv ||
-			message->type == AP_MessageType::ItemSend) {
+		if (message->type == AP_MessageType::ItemRecv)
+		{
+			std::string str_message = message->text;
+			//NewBigMessage(message->text.c_str(), 30 * 5);
+			str_message.replace(0, 8, "Got");
+			NewMessage(str_message.c_str(), 30 * 5);
+			messageCooldown = 30 * 5;
+		}
+		if (message->type == AP_MessageType::ItemSend)
+		{
 			//NewBigMessage(message->text.c_str(), 30 * 5);
 			NewMessage(message->text.c_str(), 30 * 5);
 			messageCooldown = 30 * 5;
