@@ -63,6 +63,13 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 				CO_RETURN 1;
 			}
 
+			if (c == SDLK_j)
+			{
+				InitPlayer(INIT_ARCHIPELAGO, 0, 0);
+				quit = false;
+				CO_RETURN 1;
+			}
+
 			if (c2 & ~oldc & CONTROL_UP)
 			{
 				cursor--;
