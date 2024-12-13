@@ -42,8 +42,16 @@ TASK(int) main(int argc, char *argv[])
 	LoopingSound(SND_HAMUMU);
 	SetSongRestart(0);
 	AWAIT SplashScreen(mainmgl,"graphics/hamumu.bmp",128,2);
-
 	bool running = true;
+
+	if (ArchipelagoMode)
+	{
+		if (AWAIT ArchipelagoMenu(mainmgl))
+		{
+			running = false;
+		}
+		
+	}
 	while (running)
 	{
 		DBG("Mainmenu");
@@ -97,8 +105,7 @@ TASK(int) main(int argc, char *argv[])
 				SetSongRestart(0);
 				break;
 			case MainMenuResult::Randomizer: //Randomizer settings
-				DaveTest();
-				AWAIT ArchipelagoMenu(mainmgl);
+				AWAIT RandomizerMenu(mainmgl);
 				SetSongRestart(0);
 				break;
 

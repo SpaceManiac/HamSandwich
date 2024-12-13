@@ -11,6 +11,7 @@ static std::string Password = "";
 static byte cursor;
 static byte oldc;
 static byte optMode;
+static bool quit = false;
 
 #define CURSOR_IPADDRESS	0
 #define CURSOR_SLOTNAME		1
@@ -58,6 +59,7 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 
 			if (c == 27)
 			{
+				quit = true;
 				CO_RETURN 1;
 			}
 
@@ -132,6 +134,7 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 				oldc = 255;
 				mgl->LastKeyPressed();
 				MakeNormalSound(SND_MENUSELECT);
+				quit = false;
 				CO_RETURN 0;
 			}
 			else if (c == SDLK_BACKSPACE && activeString->length() > 0)
@@ -155,6 +158,7 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 		case 2: //connecting
 			ArchipelagoConnect(IPAddress, SlotName, Password);
 			optMode = 0;
+			CO_RETURN 1;
 			break;
 		}
 
@@ -247,11 +251,13 @@ void RenderArchipelagoMenu(MGLDraw* mgl)
 
 //----------------
 
-TASK(void)
+TASK(bool)
 ArchipelagoMenu(MGLDraw* mgl)
 {
 	byte done = 0;
 	int lastTime;
+
+	mgl->LoadBMP("graphics/title.bmp");
 
 	InitArchipelagoMenu();
 	lastTime = 1;
@@ -270,4 +276,5 @@ ArchipelagoMenu(MGLDraw* mgl)
 	}
 
 	ExitArchipelagoMenu();
+	return quit;
 }

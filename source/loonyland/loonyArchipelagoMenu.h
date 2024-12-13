@@ -7,7 +7,7 @@
 #include <string>
 #include <set>
 
-TASK(void) ArchipelagoMenu(MGLDraw* mgl);
+TASK(bool) ArchipelagoMenu(MGLDraw* mgl);
 
 
 #endif
