@@ -119,24 +119,6 @@ class CSVProcessor:
             # Remove the quotes and format as function call
         return f"{condition}(state, player)"
 
-    @staticmethod
-    def parse_condition(condition):
-        """Process a single condition, handling cases where there are function calls or quantity values."""
-
-        # Check for a number after the condition (like "Mushroom"10)
-        if condition[-1].isdigit():  # If it ends with a number
-            match = re.search(r"\"([^\"]+)\"(\d+)$", condition)  # Match the condition and the number at the end
-            if match:
-                name = match.group(1)  # Condition name (like "Mushroom")
-                quantity = int(match.group(2))  # Quantity value
-                return f"state.has(\"{name}\", player, {quantity})"
-
-        # Check if the condition corresponds to an item or a function call (e.g., have_bombs())
-        if condition[0] == "\"":  # We check if it starts with "
-            return f"state.has({condition}, player)"
-            # Remove the quotes and format as function call
-        return f"{condition}(state, player)"
-
 
     def process_locations(self):
         try:
@@ -180,14 +162,15 @@ class CSVProcessor:
 
                     python_file.write(location_line)
 
+                    conditions_str_tracker = ""
                     # python logic file - Rules generation
                     if location_logic:  # Check if there are any specific rules for the location
                         rules_line = f"        \"{location_name}\": lambda state: "
                         conditions = location_logic.split(" and ")
                         conditions_str = " and ".join([
                             self.parse_condition(cond.strip()) for cond in conditions])
-                        conditions_str_tracker = ",".join([
-                            self.parse_condition_tracker(cond.strip()) for cond in conditions])
+                        conditions_str_tracker = ', '.join(f"${part}" if part.isidentifier() else part.strip('"').replace('"', '') if part.startswith('"') else f"{part.rstrip('0123456789').strip('"')}:{part[len(part.rstrip('0123456789')):]}" for part in location_logic.split(' and '))
+
                         rules_line += conditions_str
                         rules_line += ",\n"
                         python_file_rules.write(rules_line)
@@ -248,7 +231,7 @@ class CSVProcessor:
                         region_entry["map_locations"].extend(entry["map_locations"])
 
                     region_entry["sections"].append({"name": location_name,
-                                                     #"access rules": condition_str_tracker
+                                                     "access_rules": conditions_str_tracker
                                                      })
 
                 json_output.append(overworld)
