@@ -23,7 +23,8 @@
 constexpr int AP_OFFLINE_SLOT = 1404;
 #define AP_OFFLINE_NAME "You"
 
-const int MAX_RETRIES = 1;
+const int SSL_RETRIES = 3;
+const int MAX_RETRIES = SSL_RETRIES * 2;
 
 //Setup Stuff
 bool init = false;
@@ -112,7 +113,7 @@ AP_NetworkPlayer getPlayer(int team, int slot);
 // PRIV Func Declarations End
 
 void AP_Init(const char* ip, const char* game, const char* player_name, const char* passwd) {
-    multiworld = true;
+	multiworld = true;
     
     uint64_t milliseconds_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     rando = std::mt19937(milliseconds_since_epoch);
@@ -129,7 +130,6 @@ void AP_Init(const char* ip, const char* game, const char* player_name, const ch
     ap_passwd = passwd;
 
     printf("AP: Initializing...\n");
-
     //Connect to server
     ix::initNetSystem();
     webSocket.setUrl("wss://" + ap_ip);
@@ -154,15 +154,14 @@ void AP_Init(const char* ip, const char* game, const char* player_name, const ch
                     map_server_data.erase(itr.first);
                 }
                 printf("AP: Error connecting to Archipelago. Retries: %d\n", msg->errorInfo.retries-1);
-                if (msg->errorInfo.retries-1 >= 2 && isSSL && !ssl_success) {
+                if (msg->errorInfo.retries > SSL_RETRIES && isSSL && !ssl_success) {
                     printf("AP: SSL connection failed. Attempting unencrypted...\n");
                     webSocket.setUrl("ws://" + ap_ip);
                     isSSL = false;
                 }
-				if (msg->errorInfo.retries >= MAX_RETRIES) {
-					printf("AP: Max connection retries reached.");
-					webSocket.close();
-					failed = true;
+				if (msg->errorInfo.retries > MAX_RETRIES) {
+					printf("AP: Max connection retries reached.\n");
+					AP_Stop(AP_ConnectionStatus::Failed);
 				}
             }
         }
@@ -193,6 +192,35 @@ void AP_Init(const char* filename) {
     WriteFileJSON(sp_save_root, sp_save_path);
     ap_player_name = AP_OFFLINE_NAME;
     AP_Init_Generic();
+}
+
+void AP_Stop(const AP_ConnectionStatus status) {
+	failed = status == AP_ConnectionStatus::Failed;
+	refused = status == AP_ConnectionStatus::ConnectionRefused;
+
+	//This as an alternative appears to crash the program
+	//webSocket.stop();
+	// 
+	//Currently this does not work to actually stop it from doing things
+	webSocket.close();
+
+	//Attempt to stop it from acting
+	webSocket.setUrl("");
+
+	//To make this issue not hidden
+	webSocket.setOnMessageCallback([](const ix::WebSocketMessagePtr& msg) {
+		printf("DEBUG INFO: The websocket is continuing to respond with messages despite being disconnected, type: %d\n", msg->type);
+	});
+
+	//Last ditch effort to stop it (doesn't work
+	ix::uninitNetSystem();
+
+	try {
+		webSocket.stop();
+	}
+	catch(int e) {
+		return;
+	}
 }
 
 void AP_Start() {

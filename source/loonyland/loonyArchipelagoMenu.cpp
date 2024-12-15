@@ -24,8 +24,6 @@ static std::string oldStatus = "";
 #define CURSOR_START	0
 #define CURSOR_END		3
 
-
-
 void InitArchipelagoMenu(void)
 {
 	oldc = 255;
@@ -60,7 +58,7 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 			c = mgl->LastKeyPressed();
 			c2 = GetControls() | GetArrows();
 
-			if (c == 27)
+			if (c == SDLK_ESCAPE)
 			{
 				quit = true;
 				CO_RETURN 1;
@@ -170,6 +168,13 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 			optMode = 3;
 			break;
 		case 3: //waiting on status
+			if (mgl->LastKeyPressed() == SDLK_ESCAPE)
+			{
+				optMode = 0;
+				Disconnect();
+				break;
+			}
+
 			status = ConnectionStatus();
 			if (status != oldStatus) {
 				oldStatus = status;
@@ -184,7 +189,7 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 			else if (status == "Failed")
 			{
 				optMode = 0;
-				MakeNormalSound(SND_BONKHIT);				
+				MakeNormalSound(SND_BONKOUCH);				
 			}
 			break;
 		case 4: //waiting on status
