@@ -194,7 +194,7 @@ void DeathLinkReceived()
 
 void Disconnect()
 {	
-	AP_Stop(AP_ConnectionStatus::Disconnected);
+	AP_Shutdown();
 }
 
 std::string ConnectionStatus()
