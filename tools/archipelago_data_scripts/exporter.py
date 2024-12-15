@@ -119,16 +119,51 @@ class CSVProcessor:
             # Remove the quotes and format as function call
         return f"{condition}(state, player)"
 
+    @staticmethod
+    def parse_condition(condition):
+        """Process a single condition, handling cases where there are function calls or quantity values."""
+
+        # Check for a number after the condition (like "Mushroom"10)
+        if condition[-1].isdigit():  # If it ends with a number
+            match = re.search(r"\"([^\"]+)\"(\d+)$", condition)  # Match the condition and the number at the end
+            if match:
+                name = match.group(1)  # Condition name (like "Mushroom")
+                quantity = int(match.group(2))  # Quantity value
+                return f"state.has(\"{name}\", player, {quantity})"
+
+        # Check if the condition corresponds to an item or a function call (e.g., have_bombs())
+        if condition[0] == "\"":  # We check if it starts with "
+            return f"state.has({condition}, player)"
+            # Remove the quotes and format as function call
+        return f"{condition}(state, player)"
+
 
     def process_locations(self):
         try:
             with open(INPUT_LOCATIONS, 'r') as input_file, \
+                    open(INPUT_LOCATIONS_TRACKER, 'r') as input_file_tracker, \
                     open(PYTHON_LOCATIONS, 'w') as python_file, \
-                open(PYTHON_RULES, 'w') as python_file_rules:
+                    open(PYTHON_RULES, 'w') as python_file_rules, \
+                    open(TRACKER_LOCATIONS, 'w') as tracker_file:
+
+                tracker_dict = {}
+                data_lines = input_file_tracker.readlines()[2:]
+                # Process each line
+                for line in data_lines:
+                    # Split the line into components (name, x, y)
+                    name, x, y = line.strip().split(',')
+                    # Add to the dictionary with x and y converted to integers
+                    tracker_dict[name] = (int(x) + 1, int(y) + 1)
 
                 self.open_reader(input_file)
                 python_file.write(pyLocationHeader + "\n")
                 python_file_rules.write(pyRulesHeader + "\n")
+
+                json_output = []
+                overworld = {
+                    "name": "Overworld",
+                    "children": []
+                }
 
                 for row in self.csv_reader:
                     self.row_data = row
@@ -151,9 +186,76 @@ class CSVProcessor:
                         conditions = location_logic.split(" and ")
                         conditions_str = " and ".join([
                             self.parse_condition(cond.strip()) for cond in conditions])
+                        conditions_str_tracker = ",".join([
+                            self.parse_condition_tracker(cond.strip()) for cond in conditions])
                         rules_line += conditions_str
                         rules_line += ",\n"
                         python_file_rules.write(rules_line)
+
+                    # Tracker locations - JSON creation
+                    entry = {
+                        "name": location_name,
+                        "access_rules": [],
+                        "sections": [
+                            {"name": location_name}
+                        ],
+                        "map_locations": []
+                    }
+
+                    region_name = ""
+
+                    if (row[LOC_TYPE]=="Pickup" and row[LOC_MAP]=="Halloween Hill") or (
+                            row[LOC_TYPE]=="Quest" and not row[LOC_OVERRIDE]):
+                        entry["map_locations"].append({
+                            "map": "Overworld",
+                            "x": (int(row[LOC_XCOORD]) + 1) * TILE_XSIZE,
+                            "y": (int(row[LOC_YCOORD]) + 1) * TILE_YSIZE
+                        })
+                        region_name = row[LOC_NAME]
+                    elif not row[LOC_OVERRIDE]:
+                        key = row[LOC_MAP]
+                        region_name = key
+                        if key in tracker_dict:
+                            x, y = tracker_dict[key]
+                            entry["map_locations"].append({
+                                "map": "Overworld",
+                                "x": (int(x))*TILE_XSIZE,
+                                "y": (int(y))*TILE_YSIZE
+                            })
+                    else:
+                        key = row[LOC_OVERRIDE]
+                        region_name = key
+                        if key in tracker_dict:
+                            x, y = tracker_dict[key]
+                            entry["map_locations"].append({
+                                "map": "Overworld",
+                                "x": (int(x))*TILE_XSIZE,
+                                "y": (int(y))*TILE_YSIZE
+                            })
+
+
+                    # Append entry to the corresponding region in the JSON
+                    region_entry = next((child for child in overworld["children"] if
+                                         child["name"]==region_name), None)
+                    if not region_entry:
+                        region_entry = {
+                            "name": region_name,
+                            "access_rules": [],
+                            "sections": [],
+                            "map_locations": []
+                        }
+                        overworld["children"].append(region_entry)
+                        region_entry["map_locations"].extend(entry["map_locations"])
+
+                    region_entry["sections"].append({"name": location_name,
+                                                     #"access rules": condition_str_tracker
+                                                     })
+
+                json_output.append(overworld)
+
+                # Write the JSON file
+                with open(TRACKER_LOCATIONS, 'w') as tracker_json_file:
+                    json.dump(json_output, tracker_json_file, indent=2)
 
                 python_file.write("}")
                 python_file_rules.write("    }\n")
