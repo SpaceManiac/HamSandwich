@@ -23,11 +23,14 @@
 constexpr int AP_OFFLINE_SLOT = 1404;
 #define AP_OFFLINE_NAME "You"
 
+const int MAX_RETRIES = 1;
+
 //Setup Stuff
 bool init = false;
 bool auth = false;
 bool refused = false;
 bool multiworld = true;
+bool failed = false;
 bool isSSL = true;
 bool ssl_success = false;
 int ap_player_id;
@@ -156,6 +159,11 @@ void AP_Init(const char* ip, const char* game, const char* player_name, const ch
                     webSocket.setUrl("ws://" + ap_ip);
                     isSSL = false;
                 }
+				if (msg->errorInfo.retries >= MAX_RETRIES) {
+					printf("AP: Max connection retries reached.");
+					webSocket.close();
+					failed = true;
+				}
             }
         }
     );
@@ -477,6 +485,9 @@ AP_ConnectionStatus AP_GetConnectionStatus() {
     if (refused) {
         return AP_ConnectionStatus::ConnectionRefused;
     }
+	if (failed) {
+		return AP_ConnectionStatus::Failed;
+	}
     if (webSocket.getReadyState() == ix::ReadyState::Open) {
         if (auth) {
             return AP_ConnectionStatus::Authenticated;

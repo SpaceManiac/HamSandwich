@@ -13,6 +13,9 @@ static byte oldc;
 static byte optMode;
 static bool quit = false;
 
+static std::string status;
+static std::string oldStatus = "";
+
 #define CURSOR_IPADDRESS	0
 #define CURSOR_SLOTNAME		1
 #define CURSOR_PASSWORD		2
@@ -167,10 +170,21 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 			optMode = 3;
 			break;
 		case 3: //waiting on status
-			if (ConnectionStatus() == "Authenticated")
+			status = ConnectionStatus();
+			if (status != oldStatus) {
+				oldStatus = status;
+				printf("DEBUG: Status: %s\n", status.c_str());
+			}
+			
+			if (status == "Authenticated")
 			{
 				GetInfoFromAP();
 				optMode = 4;
+			}
+			else if (status == "Failed")
+			{
+				optMode = 0;
+				MakeNormalSound(SND_BONKHIT);				
 			}
 			break;
 		case 4: //waiting on status

@@ -131,7 +131,7 @@ void AP_Say(std::string);
 /* Connection Information Types */
 
 enum struct AP_ConnectionStatus {
-    Disconnected, Connected, Authenticated, ConnectionRefused
+    Disconnected, Connected, Authenticated, ConnectionRefused, Failed
 };
 
 #define AP_PERMISSION_DISABLED 0b000

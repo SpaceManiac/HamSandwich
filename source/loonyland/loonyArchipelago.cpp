@@ -207,6 +207,10 @@ std::string ConnectionStatus()
 	case AP_ConnectionStatus::ConnectionRefused:
 		return "ConnectionRefused";
 			break;
+	case AP_ConnectionStatus::Failed:
+		return "Failed"; break;
+	default:
+		return "Undefined Status";
 	}
 }
 
@@ -247,8 +251,6 @@ void SetupWorld()
 	//add some hearts to loonyton
 	world.map[0]->map[91 + 90 * world.map[0]->width].item = 2;
 	world.map[0]->map[92 + 90 * world.map[0]->width].item = 2;
-
-	world.map[23]->special[5].trigger = 0;
 
 	//DELETE ALL THE ITEM SPECIALS
 	for (auto loc : basic_locations)
