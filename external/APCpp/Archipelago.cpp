@@ -162,8 +162,6 @@ void AP_Init(const char* ip, const char* game, const char* player_name, const ch
                 }
 
 				if (msg->errorInfo.retries > MAX_RETRIES) {
-					if (!DISCONNECT_FEATURE_FLAG) return;
-
 					printf("AP: Max connection retries reached.\n");
 					AP_Shutdown();
 				}				
