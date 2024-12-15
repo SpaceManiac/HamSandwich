@@ -134,8 +134,6 @@ enum struct AP_ConnectionStatus {
     Disconnected, Connected, Authenticated, ConnectionRefused, Failed
 };
 
-void AP_Stop(enum AP_ConnectionStatus);
-
 #define AP_PERMISSION_DISABLED 0b000
 #define AP_PERMISSION_ENABLED 0b001
 #define AP_PERMISSION_GOAL 0b010

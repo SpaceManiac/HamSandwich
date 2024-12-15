@@ -25,6 +25,7 @@ constexpr int AP_OFFLINE_SLOT = 1404;
 
 const int SSL_RETRIES = 3;
 const int MAX_RETRIES = SSL_RETRIES * 2;
+#define DISCONNECT_FEATURE_FLAG false
 
 //Setup Stuff
 bool init = false;
@@ -154,15 +155,18 @@ void AP_Init(const char* ip, const char* game, const char* player_name, const ch
                     map_server_data.erase(itr.first);
                 }
                 printf("AP: Error connecting to Archipelago. Retries: %d\n", msg->errorInfo.retries-1);
-                if (msg->errorInfo.retries > SSL_RETRIES && isSSL && !ssl_success) {
+                if (msg->errorInfo.retries >= SSL_RETRIES && isSSL && !ssl_success) {
                     printf("AP: SSL connection failed. Attempting unencrypted...\n");
                     webSocket.setUrl("ws://" + ap_ip);
                     isSSL = false;
                 }
+
 				if (msg->errorInfo.retries > MAX_RETRIES) {
+					if (!DISCONNECT_FEATURE_FLAG) return;
+
 					printf("AP: Max connection retries reached.\n");
-					AP_Stop(AP_ConnectionStatus::Failed);
-				}
+					AP_Shutdown();
+				}				
             }
         }
     );
@@ -192,35 +196,6 @@ void AP_Init(const char* filename) {
     WriteFileJSON(sp_save_root, sp_save_path);
     ap_player_name = AP_OFFLINE_NAME;
     AP_Init_Generic();
-}
-
-void AP_Stop(const AP_ConnectionStatus status) {
-	failed = status == AP_ConnectionStatus::Failed;
-	refused = status == AP_ConnectionStatus::ConnectionRefused;
-
-	//This as an alternative appears to crash the program
-	//webSocket.stop();
-	// 
-	//Currently this does not work to actually stop it from doing things
-	webSocket.close();
-
-	//Attempt to stop it from acting
-	webSocket.setUrl("");
-
-	//To make this issue not hidden
-	webSocket.setOnMessageCallback([](const ix::WebSocketMessagePtr& msg) {
-		printf("DEBUG INFO: The websocket is continuing to respond with messages despite being disconnected, type: %d\n", msg->type);
-	});
-
-	//Last ditch effort to stop it (doesn't work
-	ix::uninitNetSystem();
-
-	try {
-		webSocket.stop();
-	}
-	catch(int e) {
-		return;
-	}
 }
 
 void AP_Start() {
@@ -268,8 +243,9 @@ void AP_Start() {
 }
 
 void AP_Shutdown() {
-    if (multiworld)
-        webSocket.stop();
+	if (multiworld) {
+		if (DISCONNECT_FEATURE_FLAG) webSocket.stop();
+	}
 
     // Reset all states
     init = false;
