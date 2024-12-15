@@ -12,6 +12,7 @@ void SendCheckedLocQuest(int questVar);
 void UpdateArchipelago();
 std::string ConnectionStatus();
 
+void Disconnect();
 void GetInfoFromAP();
 
 extern  std::unordered_map<int, bool> locsFound;

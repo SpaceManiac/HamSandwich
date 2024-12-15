@@ -25,6 +25,7 @@ void SetLocationChecked(int64_t  loc_id);
 void DeathLinkReceived();
 void GetInfoFromAP();
 void SetupWorld();
+void Disconnect();
 std::string ConnectionStatus();
 
 
@@ -189,6 +190,11 @@ void DeathLinkReceived()
 {
 	//we kill the loony
 	player.hearts = 0;
+}
+
+void Disconnect()
+{	
+	AP_Stop(AP_ConnectionStatus::Disconnected);
 }
 
 std::string ConnectionStatus()
