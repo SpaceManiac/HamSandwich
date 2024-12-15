@@ -252,6 +252,8 @@ void SetupWorld()
 	world.map[0]->map[91 + 90 * world.map[0]->width].item = 2;
 	world.map[0]->map[92 + 90 * world.map[0]->width].item = 2;
 
+	world.map[23]->special[5].trigger = 0;
+
 	//DELETE ALL THE ITEM SPECIALS
 	for (auto loc : basic_locations)
 	{
