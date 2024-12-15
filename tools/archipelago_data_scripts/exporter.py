@@ -83,18 +83,45 @@ class CSVProcessor:
     def process_regions(self):
         try:
             with open(INPUT_REGIONS, 'r') as input_file, \
-                    open(PYTHON_REGIONS, 'w') as python_file:
+                    open(PYTHON_REGIONS, 'w') as python_file, \
+                    open(TRACKER_LOCATIONS, 'w') as tracker_file:
                 self.open_reader(input_file)
                 python_file.write(pyRegionHeader + "\n")
+                json_output = []
+                overworld = {
+                    "name": "Overworld",
+                    "children": []
+                }
+
                 for row in self.csv_reader:  # type: ignore
                     self.row_data = row
                     print(row)
+                    #python
                     region_line = f"    \"{row[REG_NAME]}\": LLRegion({row[REG_REAL]}"
                     if row[REG_MAP]:
                         region_line += f', \"{row[REG_MAP]}\"'
                     region_line += "),\n"
                     python_file.write(region_line)
 
+                    #tracker
+                    region_entry = {
+                        "name": row[REG_NAME],
+                        "access_rules": [],
+                        "sections": [],
+                        "map_locations": []
+                    }
+                    if row[REG_XCOORD]:  # Only add map location if map is real
+                        map_location = {
+                            "map": "Overworld",
+                            "x": (int(row[REG_XCOORD]) + 1) * TILE_XSIZE,
+                            "y": (int(row[REG_YCOORD]) + 1) * TILE_YSIZE
+                        }
+                        region_entry["map_locations"].append(map_location)
+
+                    overworld["children"].append(region_entry)
+
+                json_output.append(overworld)
+                json.dump(json_output, tracker_file, indent=2)
 
                 python_file.write("}")
 
@@ -119,33 +146,47 @@ class CSVProcessor:
             # Remove the quotes and format as function call
         return f"{condition}(state, player)"
 
+    @staticmethod
+    def tracker_parse_conditions(conditions):
+        if not conditions:
+            return ""
+        # Split the condition by 'and'
+        parts = conditions.split(" and ")
+
+        # Process each part
+        formatted_parts = []
+        for part in parts:
+            part = part.strip()  # Remove any extra spaces
+
+            # If the part ends with a number, handle it as a value (e.g., Mushroom10 becomes Mushroom:10)
+            if part[-1].isdigit():
+                name = part.rstrip('0123456789')  # Remove digits
+                number = part[len(name):]  # Get the number
+                name = name.strip('"')
+                formatted_parts.append((f"{name}:{number}"))  # Format as name:number
+            elif part.startswith('"') and part.endswith('"'):
+                # If the part starts and ends with quotes, keep it as is
+                formatted_parts.append(part.strip('"'))  # Remove the quotes around the item
+            else:
+                # If it's a regular part, assume it's an identifier
+                formatted_parts.append(f"${part}")  # Add dollar sign for variables
+
+        # Join the formatted parts with commas
+        return ", ".join(formatted_parts)
+
 
     def process_locations(self):
         try:
             with open(INPUT_LOCATIONS, 'r') as input_file, \
-                    open(INPUT_LOCATIONS_TRACKER, 'r') as input_file_tracker, \
+                    open(TRACKER_LOCATIONS, 'r+') as tracker_file_locs, \
                     open(PYTHON_LOCATIONS, 'w') as python_file, \
-                    open(PYTHON_RULES, 'w') as python_file_rules, \
-                    open(TRACKER_LOCATIONS, 'w') as tracker_file:
+                    open(PYTHON_RULES, 'w') as python_file_rules:
 
-                tracker_dict = {}
-                data_lines = input_file_tracker.readlines()[2:]
-                # Process each line
-                for line in data_lines:
-                    # Split the line into components (name, x, y)
-                    name, x, y = line.strip().split(',')
-                    # Add to the dictionary with x and y converted to integers
-                    tracker_dict[name] = (int(x) + 1, int(y) + 1)
+                data = json.load(tracker_file_locs)
 
                 self.open_reader(input_file)
                 python_file.write(pyLocationHeader + "\n")
                 python_file_rules.write(pyRulesHeader + "\n")
-
-                json_output = []
-                overworld = {
-                    "name": "Overworld",
-                    "children": []
-                }
 
                 for row in self.csv_reader:
                     self.row_data = row
@@ -153,16 +194,18 @@ class CSVProcessor:
                     # python location file
                     location_name = row[LOC_NAME]
                     location_id = row[LOC_ID]
+                    location_map = row[LOC_MAP]
                     location_type = row[LOC_TYPE].upper()  # Assuming Type is mapped to an enum
                     location_region = row[LOC_REGION]
                     location_logic = row[LOC_LOGIC]
+                    location_override = row[LOC_OVERRIDE]
 
                     location_line = f"    \"{location_name}\": LL_Location(" \
                                     f"{location_id}, LL_LocCat.{location_type}, \"{location_region}\"),\n"
 
                     python_file.write(location_line)
-
                     conditions_str_tracker = ""
+
                     # python logic file - Rules generation
                     if location_logic:  # Check if there are any specific rules for the location
                         rules_line = f"        \"{location_name}\": lambda state: "
@@ -175,71 +218,19 @@ class CSVProcessor:
                         rules_line += ",\n"
                         python_file_rules.write(rules_line)
 
-                    # Tracker locations - JSON creation
-                    entry = {
-                        "name": location_name,
-                        "access_rules": [],
-                        "sections": [
-                            {"name": location_name}
-                        ],
-                        "map_locations": []
-                    }
+                    #find location_map in children
+                    for child in data[0]['children']:
+                        if child['name'] == (location_override if location_override else location_map):
+                            #child['access_rules'].append( f"@{location_region}")
+                            child['sections'].append({
+                                "name": location_name,
+                                "access_rules": [f"@{location_region}",self.tracker_parse_conditions(location_logic)],
+                                })
+                            #add to sections[] with logic
 
-                    region_name = ""
-
-                    if (row[LOC_TYPE]=="Pickup" and row[LOC_MAP]=="Halloween Hill") or (
-                            row[LOC_TYPE]=="Quest" and not row[LOC_OVERRIDE]):
-                        entry["map_locations"].append({
-                            "map": "Overworld",
-                            "x": (int(row[LOC_XCOORD]) + 1) * TILE_XSIZE,
-                            "y": (int(row[LOC_YCOORD]) + 1) * TILE_YSIZE
-                        })
-                        region_name = row[LOC_NAME]
-                    elif not row[LOC_OVERRIDE]:
-                        key = row[LOC_MAP]
-                        region_name = key
-                        if key in tracker_dict:
-                            x, y = tracker_dict[key]
-                            entry["map_locations"].append({
-                                "map": "Overworld",
-                                "x": (int(x))*TILE_XSIZE,
-                                "y": (int(y))*TILE_YSIZE
-                            })
-                    else:
-                        key = row[LOC_OVERRIDE]
-                        region_name = key
-                        if key in tracker_dict:
-                            x, y = tracker_dict[key]
-                            entry["map_locations"].append({
-                                "map": "Overworld",
-                                "x": (int(x))*TILE_XSIZE,
-                                "y": (int(y))*TILE_YSIZE
-                            })
-
-
-                    # Append entry to the corresponding region in the JSON
-                    region_entry = next((child for child in overworld["children"] if
-                                         child["name"]==region_name), None)
-                    if not region_entry:
-                        region_entry = {
-                            "name": region_name,
-                            "access_rules": [],
-                            "sections": [],
-                            "map_locations": []
-                        }
-                        overworld["children"].append(region_entry)
-                        region_entry["map_locations"].extend(entry["map_locations"])
-
-                    region_entry["sections"].append({"name": location_name,
-                                                     "access_rules": conditions_str_tracker
-                                                     })
-
-                json_output.append(overworld)
-
-                # Write the JSON file
-                with open(TRACKER_LOCATIONS, 'w') as tracker_json_file:
-                    json.dump(json_output, tracker_json_file, indent=2)
-
+                tracker_file_locs.truncate(0)
+                tracker_file_locs.seek(0)
+                json.dump(data, tracker_file_locs, indent=2)
                 python_file.write("}")
                 python_file_rules.write("    }\n")
                 python_file_rules.write(pyRulesFooter)
