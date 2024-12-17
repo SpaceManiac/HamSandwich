@@ -13,7 +13,7 @@
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_opengl2.h>
-#include <json.hpp>
+#include <json.h>
 #include <curl/curl.h>
 #include "jamulfont.h"
 #include "appdata.h"
@@ -180,15 +180,15 @@ struct Asset
 	curl_off_t content_total_size;
 	curl_off_t content_finished_size;
 
-	explicit Asset(nlohmann::json installer)
-		: mountpoint(installer.contains("mountpoint") ? installer["mountpoint"] : "")
-		, kind(installer["kind"])
-		, filename(installer["filename"])
-		, sha256sum(installer.contains("sha256sum") ? installer["sha256sum"] : "")
-		, link(installer["link"])
-		, file_id(installer.contains("file_id") ? static_cast<long>(installer["file_id"]) : 0)
-		, description(installer["description"])
-		, required(!installer.contains("optional") || !installer["optional"])
+	explicit Asset(jt::Json installer)
+		: mountpoint(installer.contains("mountpoint") ? installer["mountpoint"].getString() : "")
+		, kind(installer["kind"].getString())
+		, filename(installer["filename"].getString())
+		, sha256sum(installer.contains("sha256sum") ? installer["sha256sum"].getString() : "")
+		, link(installer["link"].getString())
+		, file_id(installer.contains("file_id") && installer["file_id"].isLong() ? installer["file_id"].getLong() : 0)
+		, description(installer["description"].getString())
+		, required(!installer.contains("optional") || !installer["optional"].getBool())
 		, enabled(is_enabled(filename))
 	{
 	}
@@ -287,8 +287,13 @@ struct Asset
 				return 0;
 			}
 
-			auto message = nlohmann::json::parse(metadata_progress);
-			std::string url = message["url"];
+			auto [status, message] = jt::Json::parse(metadata_progress);
+			if (status != jt::Json::success)
+			{
+				fprintf(stderr, "Error parsing itch metadata: %s\n", jt::Json::StatusToString(status));
+				return 0;
+			}
+			std::string url = message["url"].getString();
 
 			curl_easy_reset(transfer);
 			content_download = transfer;
@@ -424,18 +429,21 @@ struct Game
 	const Icon* icon = nullptr;
 	LoadedIcon loaded_icon;
 
-	Game(std::string_view id, nlohmann::json manifest)
+	Game(std::string_view id, jt::Json manifest)
 		: id(id)
-		, title(manifest["title"])
-		, excluded(manifest.contains("excluded") && manifest["excluded"])
-		, appdata_folder_name(manifest.contains("appdataName") ? static_cast<std::string>(manifest["appdataName"]) : id)
-		, retail_profile(manifest.contains("registry_key") ? static_cast<std::string>(manifest["registry_key"]) : "")
+		, title(manifest["title"].getString())
+		, excluded(manifest.contains("excluded") && manifest["excluded"].isBool() && manifest["excluded"].getBool())
+		, appdata_folder_name(manifest.contains("appdataName") ? manifest["appdataName"].getString() : id)
+		, retail_profile(manifest.contains("registry_key") ? manifest["registry_key"].getString() : "")
 		, addons_folder("addons/")
 	{
 		addons_folder.append(appdata_folder_name);
-		for (const auto& installer : manifest["installers"])
+		if (manifest.contains("installers") && manifest["installers"].isArray())
 		{
-			assets.emplace_back(installer);
+			for (const auto& installer : manifest["installers"].getArray())
+			{
+				assets.emplace_back(installer);
+			}
 		}
 	}
 
@@ -518,12 +526,13 @@ struct Launcher
 
 		// Load non-excluded games in order.
 		size_t idx = 0;
-		nlohmann::json launcher_metadata = nlohmann::json::parse(embed_launcher_json, embed_launcher_json + embed_launcher_json_size);
-		games.reserve(launcher_metadata["project_list"].size() + launcher_metadata["project_metadata"].size());
-		for (std::string id : launcher_metadata["project_list"])
+		auto [status, launcher_metadata] = jt::Json::parse({embed_launcher_json, embed_launcher_json + embed_launcher_json_size});
+		games.reserve(launcher_metadata["project_list"].getArray().size() + launcher_metadata["project_metadata"].getObject().size());
+		for (auto& idJ : launcher_metadata["project_list"].getArray())
 		{
+			auto id = idJ.getString();
 			auto value = launcher_metadata["project_metadata"][id];
-			launcher_metadata["project_metadata"].erase(id);
+			launcher_metadata["project_metadata"].getObject().erase(id);
 			games.emplace_back(id, value);
 			games.back().icon = icons_by_id[id];
 
@@ -533,10 +542,10 @@ struct Launcher
 
 		// Load excluded games. The launcher knows how to download their assets,
 		// but not everything else.
-		for (const auto& game : launcher_metadata["project_metadata"].items())
+		for (const auto& game : launcher_metadata["project_metadata"].getObject())
 		{
-			games.emplace_back(game.key(), game.value());
-			games.back().icon = icons_by_id[game.key()];
+			games.emplace_back(game.first, game.second);
+			games.back().icon = icons_by_id[game.first];
 		}
 
 		if (idx < games.size())

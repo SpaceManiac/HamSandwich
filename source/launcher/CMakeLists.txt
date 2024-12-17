@@ -1,7 +1,7 @@
 # Launcher executable.
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 add_executable(launcher ${sources})
-target_link_libraries(launcher ham SDL2 SDL2_image imgui libcurl nlohmann_json)
+target_link_libraries(launcher ham SDL2 SDL2_image imgui libcurl jtjson)
 
 # Embed the font.
 HamSandwich_embed_file(launcher "${CMAKE_SOURCE_DIR}/assets/launcher/verdana.jft" embed_verdana)

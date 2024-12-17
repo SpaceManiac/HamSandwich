@@ -25,7 +25,7 @@ add_subdirectory("nsis_exehead" EXCLUDE_FROM_ALL)
 
 if(NOT EMSCRIPTEN AND NOT ANDROID)
 	# Launcher and dev tools dependencies.
-	add_subdirectory("nlohmann_json")
+	include("jtjson.cmake")
 	add_subdirectory("tinyfiledialogs")
 	include("imgui.cmake")
 	include("curl.cmake")
