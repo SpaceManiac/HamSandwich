@@ -514,6 +514,17 @@ Json::getString()
     }
 }
 
+const std::string&
+Json::getString() const
+{
+    switch (type_) {
+        case String:
+            return string_value;
+        default:
+            abort();
+    }
+}
+
 std::vector<Json>&
 Json::getArray()
 {
@@ -525,8 +536,30 @@ Json::getArray()
     }
 }
 
+const std::vector<Json>&
+Json::getArray() const
+{
+    switch (type_) {
+        case Array:
+            return array_value;
+        default:
+            abort();
+    }
+}
+
 std::map<std::string, Json, std::less<>>&
 Json::getObject()
+{
+    switch (type_) {
+        case Object:
+            return object_value;
+        default:
+            abort();
+    }
+}
+
+const std::map<std::string, Json, std::less<>>&
+Json::getObject() const
 {
     switch (type_) {
         case Object:
@@ -573,6 +606,17 @@ Json::operator[](size_t index)
     return array_value[index];
 }
 
+const Json&
+Json::operator[](size_t index) const
+{
+    if (!isArray())
+        abort();
+    if (index >= array_value.size()) {
+        abort();
+    }
+    return array_value[index];
+}
+
 Json&
 Json::operator[](std::string_view key)
 {
@@ -585,6 +629,19 @@ Json::operator[](std::string_view key)
 
     auto [iter2, _] = object_value.insert({ std::string(key), Json{} });
     return iter2->second;
+}
+
+const Json&
+Json::operator[](std::string_view key) const
+{
+    if (!isObject())
+        abort();
+
+    auto iter = object_value.find(key);
+    if (iter != object_value.end())
+        return iter->second;
+
+    abort();
 }
 
 std::string

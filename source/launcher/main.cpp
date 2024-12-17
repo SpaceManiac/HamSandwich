@@ -180,7 +180,7 @@ struct Asset
 	curl_off_t content_total_size;
 	curl_off_t content_finished_size;
 
-	explicit Asset(jt::Json installer)
+	explicit Asset(const jt::Json& installer)
 		: mountpoint(installer.contains("mountpoint") ? installer["mountpoint"].getString() : "")
 		, kind(installer["kind"].getString())
 		, filename(installer["filename"].getString())
@@ -429,7 +429,7 @@ struct Game
 	const Icon* icon = nullptr;
 	LoadedIcon loaded_icon;
 
-	Game(std::string_view id, jt::Json manifest)
+	Game(std::string_view id, const jt::Json& manifest)
 		: id(id)
 		, title(manifest["title"].getString())
 		, excluded(manifest.contains("excluded") && manifest["excluded"].isBool() && manifest["excluded"].getBool())
@@ -528,7 +528,7 @@ struct Launcher
 		size_t idx = 0;
 		auto [status, launcher_metadata] = jt::Json::parse({(const char*)embed_launcher_json, embed_launcher_json_size});
 		games.reserve(launcher_metadata["project_list"].getArray().size() + launcher_metadata["project_metadata"].getObject().size());
-		for (auto& idJ : launcher_metadata["project_list"].getArray())
+		for (const auto& idJ : launcher_metadata["project_list"].getArray())
 		{
 			auto id = idJ.getString();
 			auto value = launcher_metadata["project_metadata"][id];
