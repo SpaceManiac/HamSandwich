@@ -208,11 +208,6 @@ class Json
     Json& operator[](size_t);
     Json& operator[](const std::string&);
 
-    operator std::string() const
-    {
-        return toString();
-    }
-
   private:
     void clear();
     void marshal(std::string&, bool, int) const;
