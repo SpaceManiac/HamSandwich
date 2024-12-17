@@ -19,6 +19,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <string_view>
 
 namespace jt {
 
@@ -84,19 +85,19 @@ class Json
         long long long_value;
         std::string string_value;
         std::vector<Json> array_value;
-        std::map<std::string, Json> object_value;
+        std::map<std::string, Json, std::less<>> object_value;
     };
 
   public:
     static const char* StatusToString(Status);
-    static std::pair<Status, Json> parse(const std::string&);
+    static std::pair<Status, Json> parse(std::string_view);
 
     Json(const Json&);
     Json(Json&&) noexcept;
     Json(unsigned long);
     Json(unsigned long long);
     Json(const char*);
-    Json(const std::string&);
+    Json(std::string_view);
     ~Json();
 
     Json(const std::nullptr_t = nullptr) : type_(Null)
@@ -192,9 +193,9 @@ class Json
     long long getLong() const;
     std::string& getString();
     std::vector<Json>& getArray();
-    std::map<std::string, Json>& getObject();
+    std::map<std::string, Json, std::less<>>& getObject();
 
-    bool contains(const std::string&) const;
+    bool contains(std::string_view) const;
 
     void setArray();
     void setObject();
@@ -206,13 +207,13 @@ class Json
     Json& operator=(Json&&) noexcept;
 
     Json& operator[](size_t);
-    Json& operator[](const std::string&);
+    Json& operator[](std::string_view);
 
   private:
     void clear();
     void marshal(std::string&, bool, int) const;
-    static void stringify(std::string&, const std::string&);
-    static void serialize(std::string&, const std::string&);
+    static void stringify(std::string&, std::string_view);
+    static void serialize(std::string&, std::string_view);
     static Status parse(Json&, const char*&, const char*, int, int);
 };
 

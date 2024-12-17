@@ -526,7 +526,7 @@ struct Launcher
 
 		// Load non-excluded games in order.
 		size_t idx = 0;
-		auto [status, launcher_metadata] = jt::Json::parse({embed_launcher_json, embed_launcher_json + embed_launcher_json_size});
+		auto [status, launcher_metadata] = jt::Json::parse({(const char*)embed_launcher_json, embed_launcher_json_size});
 		games.reserve(launcher_metadata["project_list"].getArray().size() + launcher_metadata["project_metadata"].getObject().size());
 		for (auto& idJ : launcher_metadata["project_list"].getArray())
 		{

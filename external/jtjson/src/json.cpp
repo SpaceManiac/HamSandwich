@@ -267,7 +267,7 @@ Json::Json(const char* value)
     }
 }
 
-Json::Json(const std::string& value) : type_(String), string_value(value)
+Json::Json(std::string_view value) : type_(String), string_value(value)
 {
 }
 
@@ -320,7 +320,7 @@ Json::Json(const Json& other) : type_(other.type_)
             new (&array_value) std::vector<Json>(other.array_value);
             break;
         case Object:
-            new (&object_value) std::map<std::string, Json>(other.object_value);
+            new (&object_value) std::map<std::string, Json, std::less<>>(other.object_value);
             break;
         default:
             abort();
@@ -357,7 +357,7 @@ Json::operator=(const Json& other)
                 break;
             case Object:
                 new (&object_value)
-                  std::map<std::string, Json>(other.object_value);
+                  std::map<std::string, Json, std::less<>>(other.object_value);
                 break;
             default:
                 abort();
@@ -391,7 +391,7 @@ Json::Json(Json&& other) noexcept : type_(other.type_)
             break;
         case Object:
             new (&object_value)
-              std::map<std::string, Json>(std::move(other.object_value));
+              std::map<std::string, Json, std::less<>>(std::move(other.object_value));
             break;
         default:
             abort();
@@ -430,7 +430,7 @@ Json::operator=(Json&& other) noexcept
                 break;
             case Object:
                 new (&object_value)
-                  std::map<std::string, Json>(std::move(other.object_value));
+                  std::map<std::string, Json, std::less<>>(std::move(other.object_value));
                 break;
             default:
                 abort();
@@ -525,7 +525,7 @@ Json::getArray()
     }
 }
 
-std::map<std::string, Json>&
+std::map<std::string, Json, std::less<>>&
 Json::getObject()
 {
     switch (type_) {
@@ -555,7 +555,7 @@ Json::setObject()
 }
 
 bool
-Json::contains(const std::string& key) const
+Json::contains(std::string_view key) const
 {
     if (!isObject())
         return false;
@@ -574,11 +574,17 @@ Json::operator[](size_t index)
 }
 
 Json&
-Json::operator[](const std::string& key)
+Json::operator[](std::string_view key)
 {
     if (!isObject())
         setObject();
-    return object_value[key];
+
+    auto iter = object_value.find(key);
+    if (iter != object_value.end())
+        return iter->second;
+
+    auto [iter2, _] = object_value.insert({ std::string(key), Json{} });
+    return iter2->second;
 }
 
 std::string
@@ -685,7 +691,7 @@ Json::marshal(std::string& b, bool pretty, int indent) const
 }
 
 void
-Json::stringify(std::string& b, const std::string& s)
+Json::stringify(std::string& b, std::string_view s)
 {
     b += '"';
     serialize(b, s);
@@ -693,7 +699,7 @@ Json::stringify(std::string& b, const std::string& s)
 }
 
 void
-Json::serialize(std::string& sb, const std::string& s)
+Json::serialize(std::string& sb, std::string_view s)
 {
     size_t i, j, m;
     wint_t x, a, b;
@@ -1215,7 +1221,7 @@ Json::parse(Json& json, const char*& p, const char* e, int context, int depth)
 }
 
 std::pair<Json::Status, Json>
-Json::parse(const std::string& s)
+Json::parse(std::string_view s)
 {
     Json::Status s2;
     std::pair<Json::Status, Json> res;
