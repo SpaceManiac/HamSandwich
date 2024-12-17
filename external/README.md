@@ -3,6 +3,7 @@ Prefix | Strategy | Remote | Revision
 ------ | -------- | ------ | --------
 external/curl | git-subtree | https://github.com/curl/curl | curl-8_8_0
 external/imgui | git-subtree | https://github.com/ocornut/imgui | v1.87
+external/jtjson | manual | https://github.com/jart/json.cpp | 93d4d76181
 external/lzma1900 | manual | https://7-zip.org/sdk.html | 19.00
 external/nlohmann_json | manual | https://github.com/nlohmann/json | v3.10.5
 external/nsis_exehead | manual | https://sourceforge.net/projects/nsis/ | v2.25
