@@ -282,7 +282,8 @@ loonyland_location_table = {\n""")
                     if location_map == "Halloween Hill":
                         data[0]['children'].append({
                             "name": location_name,
-                            "sections": [{"ref": f"Overworld/{location_region}/{location_name}"},],
+                            "sections": [{"ref": f"Overworld/{location_region}/{location_name}",
+                                         "name": f"{location_name}"}],
                             "map_locations": [{
                             "map": "Overworld",
                             "x": (int(row[LOC_XCOORD]) + 1) * TILE_XSIZE,
@@ -300,7 +301,8 @@ loonyland_location_table = {\n""")
 
                         elif child['name'] == location_override:
                             child['sections'].append({
-                                "ref": f"Overworld/{location_region}/{location_name}"
+                                "ref": f"Overworld/{location_region}/{location_name}",
+                                "name": f"{location_name}"
                             })
 
                     #tracker mapping
