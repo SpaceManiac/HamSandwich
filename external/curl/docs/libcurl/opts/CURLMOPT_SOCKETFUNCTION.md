@@ -10,6 +10,7 @@ See-also:
   - curl_multi_socket_action (3)
 Protocol:
   - All
+Added-in: 7.15.4
 ---
 
 # NAME
@@ -49,6 +50,9 @@ libcurl by calling curl_multi_socket_action(3).
 # CALLBACK ARGUMENTS
 
 *easy* identifies the specific transfer for which this update is related.
+Since this callback manages a whole multi handle, an application should not
+make assumptions about which particular handle that is passed here. It might
+even be an internal easy handle that the application did not add itself.
 
 *s* is the specific socket this function invocation concerns. If the
 **what** argument is not CURL_POLL_REMOVE then it holds information about
@@ -89,6 +93,8 @@ active transfer. It might soon be added again.
 
 NULL (no callback)
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -124,9 +130,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.15.4
+# %AVAILABILITY%
 
 # RETURN VALUE
 

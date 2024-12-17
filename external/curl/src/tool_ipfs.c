@@ -23,8 +23,7 @@
  ***************************************************************************/
 #include "tool_setup.h"
 
-#define ENABLE_CURLX_PRINTF
-/* use our own printf() functions */
+#ifndef CURL_DISABLE_IPFS
 #include "curlx.h"
 #include "dynbuf.h"
 
@@ -81,7 +80,7 @@ static char *ipfs_gateway(void)
     char *home = getenv("HOME");
     if(home && *home)
       ipfs_path = aprintf("%s/.ipfs/", home);
-    /* fallback to "~/.ipfs", as that's the default location. */
+    /* fallback to "~/.ipfs", as that is the default location. */
   }
 
   if(!ipfs_path || ensure_trailing_slash(&ipfs_path))
@@ -132,7 +131,7 @@ fail:
 }
 
 /*
- * Rewrite ipfs://<cid> and ipns://<cid> to a HTTP(S)
+ * Rewrite ipfs://<cid> and ipns://<cid> to an HTTP(S)
  * URL that can be handled by an IPFS gateway.
  */
 CURLcode ipfs_url_rewrite(CURLU *uh, const char *protocol, char **url,
@@ -162,7 +161,7 @@ CURLcode ipfs_url_rewrite(CURLU *uh, const char *protocol, char **url,
     goto clean;
 
   /* We might have a --ipfs-gateway argument. Check it first and use it. Error
-   * if we do have something but if it's an invalid url.
+   * if we do have something but if it is an invalid url.
    */
   if(config->ipfs_gateway) {
     /* ensure the gateway ends in a trailing / */
@@ -289,3 +288,4 @@ clean:
   }
   return result;
 }
+#endif /* !CURL_DISABLE_IPFS */

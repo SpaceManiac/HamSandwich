@@ -16,6 +16,7 @@ TLS-backend:
   - GnuTLS
   - mbedTLS
   - wolfSSL
+Added-in: 7.9.8
 ---
 
 # NAME
@@ -44,11 +45,16 @@ to some limitation in OpenSSL.
 The application does not have to keep the string around after setting this
 option.
 
+Using this option multiple times makes the last set string override the
+previous ones. Set it to NULL to disable its use again.
+
 The default value for this can be figured out with CURLINFO_CAPATH(3).
 
 # DEFAULT
 
-A default path detected at build time.
+A path detected at build time.
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -66,9 +72,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-This option is supported by the OpenSSL, GnuTLS, mbedTLS and wolfSSL backends.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

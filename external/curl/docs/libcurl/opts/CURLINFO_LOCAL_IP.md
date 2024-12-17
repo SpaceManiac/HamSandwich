@@ -10,7 +10,9 @@ See-also:
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
 Protocol:
-  - All
+  - TCP
+  - QUIC
+Added-in: 7.21.0
 ---
 
 # NAME
@@ -29,13 +31,15 @@ CURLcode curl_easy_getinfo(CURL *handle, CURLINFO_LOCAL_IP, char **ip);
 
 Pass a pointer to a char pointer to receive the pointer to a null-terminated
 string holding the IP address of the local end of most recent connection done
-with this **curl** handle. This string may be IPv6 when that is
-enabled. Note that you get a pointer to a memory area that is reused at next
-request so you need to copy the string if you want to keep the information.
+with this **curl** handle. This string may be IPv6 when that is enabled. Note
+that you get a pointer to a memory area that is reused at next request so you
+need to copy the string if you want to keep the information.
 
-The **ip** pointer is NULL or points to private memory. You MUST NOT free -
-it gets freed when you call curl_easy_cleanup(3) on the corresponding
-CURL handle.
+The **ip** pointer is NULL or points to private memory. You MUST NOT free - it
+gets freed when you call curl_easy_cleanup(3) on the corresponding CURL
+handle.
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -61,9 +65,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.21.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

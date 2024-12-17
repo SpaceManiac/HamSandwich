@@ -9,6 +9,7 @@ Protocol:
 See-also:
   - CURLOPT_HTTPHEADER (3)
   - CURLOPT_PROXYHEADER (3)
+Added-in: 7.37.0
 ---
 
 # NAME
@@ -44,6 +45,8 @@ proxy and then CURLOPT_HTTPHEADER(3) headers only to the server.
 
 CURLHEADER_SEPARATE (changed in 7.42.1, used CURLHEADER_UNIFIED before then)
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -61,7 +64,7 @@ int main(void)
 
     /* HTTPS over a proxy makes a separate CONNECT to the proxy, so tell
        libcurl to not send the custom headers to the proxy. Keep them
-       separate! */
+       separate. */
     curl_easy_setopt(curl, CURLOPT_HEADEROPT, CURLHEADER_SEPARATE);
     ret = curl_easy_perform(curl);
     curl_slist_free_all(list);
@@ -70,9 +73,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.37.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

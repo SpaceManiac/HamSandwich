@@ -56,24 +56,23 @@
 #endif
 
 #ifdef _WIN32
-#  define _use_lfn(f) (1)   /* long file names always available */
+#  define _use_lfn(f) (1)   /* long filenames always available */
 #elif !defined(__DJGPP__) || (__DJGPP__ < 2)  /* DJGPP 2.0 has _use_lfn() */
-#  define _use_lfn(f) (0)  /* long file names never available */
+#  define _use_lfn(f) (0)  /* long filenames never available */
 #elif defined(__DJGPP__)
 #  include <fcntl.h>                /* _use_lfn(f) prototype */
 #endif
 
-#ifndef UNITTESTS
+#ifdef MSDOS
+/* only used by msdosify() */
 static SANITIZEcode truncate_dryrun(const char *path,
                                     const size_t truncate_pos);
-#ifdef MSDOS
 static SANITIZEcode msdosify(char **const sanitized, const char *file_name,
                              int flags);
 #endif
-static SANITIZEcode rename_if_reserved_dos_device_name(char **const sanitized,
-                                                       const char *file_name,
-                                                       int flags);
-#endif /* !UNITTESTS (static declarations used if no unit tests) */
+static SANITIZEcode rename_if_reserved_dos(char **const sanitized,
+                                           const char *file_name,
+                                           int flags);
 
 
 /*
@@ -91,21 +90,12 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247.aspx
 
 Flags
 -----
-SANITIZE_ALLOW_COLONS:     Allow colons.
-Without this flag colons are sanitized.
-
 SANITIZE_ALLOW_PATH:       Allow path separators and colons.
 Without this flag path separators and colons are sanitized.
 
 SANITIZE_ALLOW_RESERVED:   Allow reserved device names.
-Without this flag a reserved device name is renamed (COM1 => _COM1) unless it's
-in a UNC prefixed path.
-
-SANITIZE_ALLOW_TRUNCATE:   Allow truncating a long filename.
-Without this flag if the sanitized filename or path will be too long an error
-occurs. With this flag the filename --and not any other parts of the path-- may
-be truncated to at least a single character. A filename followed by an
-alternate data stream (ADS) cannot be truncated in any case.
+Without this flag a reserved device name is renamed (COM1 => _COM1) unless it
+is in a UNC prefixed path.
 
 Success: (SANITIZE_ERR_OK) *sanitized points to a sanitized copy of file_name.
 Failure: (!= SANITIZE_ERR_OK) *sanitized is NULL.
@@ -126,7 +116,7 @@ SANITIZEcode sanitize_file_name(char **const sanitized, const char *file_name,
   if(!file_name)
     return SANITIZE_ERR_BAD_ARGUMENT;
 
-  if((flags & SANITIZE_ALLOW_PATH)) {
+  if(flags & SANITIZE_ALLOW_PATH) {
 #ifndef MSDOS
     if(file_name[0] == '\\' && file_name[1] == '\\')
       /* UNC prefixed path \\ (eg \\?\C:\foo) */
@@ -136,26 +126,18 @@ SANITIZEcode sanitize_file_name(char **const sanitized, const char *file_name,
       max_sanitized_len = PATH_MAX-1;
   }
   else
-    /* The maximum length of a filename.
-       FILENAME_MAX is often the same as PATH_MAX, in other words it is 260 and
-       does not discount the path information therefore we shouldn't use it. */
+    /* The maximum length of a filename. FILENAME_MAX is often the same as
+       PATH_MAX, in other words it is 260 and does not discount the path
+       information therefore we should not use it. */
     max_sanitized_len = (PATH_MAX-1 > 255) ? 255 : PATH_MAX-1;
 
   len = strlen(file_name);
-  if(len > max_sanitized_len) {
-    if(!(flags & SANITIZE_ALLOW_TRUNCATE) ||
-       truncate_dryrun(file_name, max_sanitized_len))
-      return SANITIZE_ERR_INVALID_PATH;
+  if(len > max_sanitized_len)
+    return SANITIZE_ERR_INVALID_PATH;
 
-    len = max_sanitized_len;
-  }
-
-  target = malloc(len + 1);
+  target = strdup(file_name);
   if(!target)
     return SANITIZE_ERR_OUT_OF_MEMORY;
-
-  strncpy(target, file_name, len);
-  target[len] = '\0';
 
 #ifndef MSDOS
   if((flags & SANITIZE_ALLOW_PATH) && !strncmp(target, "\\\\?\\", 4))
@@ -170,7 +152,7 @@ SANITIZEcode sanitize_file_name(char **const sanitized, const char *file_name,
     const char *banned;
 
     if((1 <= *p && *p <= 31) ||
-       (!(flags & (SANITIZE_ALLOW_COLONS|SANITIZE_ALLOW_PATH)) && *p == ':') ||
+       (!(flags & SANITIZE_ALLOW_PATH) && *p == ':') ||
        (!(flags & SANITIZE_ALLOW_PATH) && (*p == '/' || *p == '\\'))) {
       *p = '_';
       continue;
@@ -217,7 +199,7 @@ SANITIZEcode sanitize_file_name(char **const sanitized, const char *file_name,
 #endif
 
   if(!(flags & SANITIZE_ALLOW_RESERVED)) {
-    sc = rename_if_reserved_dos_device_name(&p, target, flags);
+    sc = rename_if_reserved_dos(&p, target, flags);
     free(target);
     if(sc)
       return sc;
@@ -234,10 +216,10 @@ SANITIZEcode sanitize_file_name(char **const sanitized, const char *file_name,
   return SANITIZE_ERR_OK;
 }
 
-
+#if defined(MSDOS)
 /*
 Test if truncating a path to a file will leave at least a single character in
-the filename. Filenames suffixed by an alternate data stream can't be
+the filename. Filenames suffixed by an alternate data stream cannot be
 truncated. This performs a dry run, nothing is modified.
 
 Good truncate_pos 9:    C:\foo\bar  =>  C:\foo\ba
@@ -253,7 +235,7 @@ Error truncate_pos 7:   C:\foo      =>  (pos out of range)
 Bad truncate_pos 1:     C:\foo\     =>  C
 
 * C:foo is ambiguous, C could end up being a drive or file therefore something
-  like C:superlongfilename can't be truncated.
+  like C:superlongfilename cannot be truncated.
 
 Returns
 SANITIZE_ERR_OK: Good -- 'path' can be truncated
@@ -278,7 +260,7 @@ SANITIZEcode truncate_dryrun(const char *path, const size_t truncate_pos)
   if(strpbrk(&path[truncate_pos - 1], "\\/:"))
     return SANITIZE_ERR_INVALID_PATH;
 
-  /* C:\foo can be truncated but C:\foo:ads can't */
+  /* C:\foo can be truncated but C:\foo:ads cannot */
   if(truncate_pos > 1) {
     const char *p = &path[truncate_pos - 1];
     do {
@@ -297,11 +279,11 @@ SANITIZEcode truncate_dryrun(const char *path, const size_t truncate_pos)
  */
 
 /*
-Extra sanitization MSDOS for file_name.
+Extra sanitization MS-DOS for file_name.
 
 This is a supporting function for sanitize_file_name.
 
-Warning: This is an MSDOS legacy function and was purposely written in a way
+Warning: This is an MS-DOS legacy function and was purposely written in a way
 that some path information may pass through. For example drive letter names
 (C:, D:, etc) are allowed to pass through. For sanitizing a filename use
 sanitize_file_name.
@@ -309,7 +291,6 @@ sanitize_file_name.
 Success: (SANITIZE_ERR_OK) *sanitized points to a sanitized copy of file_name.
 Failure: (!= SANITIZE_ERR_OK) *sanitized is NULL.
 */
-#if defined(MSDOS) || defined(UNITTESTS)
 SANITIZEcode msdosify(char **const sanitized, const char *file_name,
                       int flags)
 {
@@ -332,9 +313,7 @@ SANITIZEcode msdosify(char **const sanitized, const char *file_name,
   if(!file_name)
     return SANITIZE_ERR_BAD_ARGUMENT;
 
-  if(strlen(file_name) > PATH_MAX-1 &&
-     (!(flags & SANITIZE_ALLOW_TRUNCATE) ||
-      truncate_dryrun(file_name, PATH_MAX-1)))
+  if(strlen(file_name) > PATH_MAX-1)
     return SANITIZE_ERR_INVALID_PATH;
 
   /* Support for Windows 9X VFAT systems, when available. */
@@ -346,19 +325,19 @@ SANITIZEcode msdosify(char **const sanitized, const char *file_name,
   /* Get past the drive letter, if any. */
   if(s[0] >= 'A' && s[0] <= 'z' && s[1] == ':') {
     *d++ = *s++;
-    *d = ((flags & (SANITIZE_ALLOW_COLONS|SANITIZE_ALLOW_PATH))) ? ':' : '_';
+    *d = ((flags & SANITIZE_ALLOW_PATH)) ? ':' : '_';
     ++d; ++s;
   }
 
   for(idx = 0, dot_idx = -1; *s && d < dlimit; s++, d++) {
     if(memchr(illegal_aliens, *s, len)) {
 
-      if((flags & (SANITIZE_ALLOW_COLONS|SANITIZE_ALLOW_PATH)) && *s == ':')
+      if((flags & SANITIZE_ALLOW_PATH) && *s == ':')
         *d = ':';
       else if((flags & SANITIZE_ALLOW_PATH) && (*s == '/' || *s == '\\'))
         *d = *s;
-      /* Dots are special: DOS doesn't allow them as the leading character,
-         and a file name cannot have more than a single dot.  We leave the
+      /* Dots are special: DOS does not allow them as the leading character,
+         and a filename cannot have more than a single dot. We leave the
          first non-leading dot alone, unless it comes too close to the
          beginning of the name: we want sh.lex.c to become sh_lex.c, not
          sh.lex-c.  */
@@ -434,22 +413,21 @@ SANITIZEcode msdosify(char **const sanitized, const char *file_name,
     /* dos_name is truncated, check that truncation requirements are met,
        specifically truncating a filename suffixed by an alternate data stream
        or truncating the entire filename is not allowed. */
-    if(!(flags & SANITIZE_ALLOW_TRUNCATE) || strpbrk(s, "\\/:") ||
-       truncate_dryrun(dos_name, d - dos_name))
+    if(strpbrk(s, "\\/:") || truncate_dryrun(dos_name, d - dos_name))
       return SANITIZE_ERR_INVALID_PATH;
   }
 
   *sanitized = strdup(dos_name);
   return (*sanitized ? SANITIZE_ERR_OK : SANITIZE_ERR_OUT_OF_MEMORY);
 }
-#endif /* MSDOS || UNITTESTS */
+#endif /* MSDOS */
 
 /*
-Rename file_name if it's a reserved dos device name.
+Rename file_name if it is a reserved dos device name.
 
 This is a supporting function for sanitize_file_name.
 
-Warning: This is an MSDOS legacy function and was purposely written in a way
+Warning: This is an MS-DOS legacy function and was purposely written in a way
 that some path information may pass through. For example drive letter names
 (C:, D:, etc) are allowed to pass through. For sanitizing a filename use
 sanitize_file_name.
@@ -457,47 +435,42 @@ sanitize_file_name.
 Success: (SANITIZE_ERR_OK) *sanitized points to a sanitized copy of file_name.
 Failure: (!= SANITIZE_ERR_OK) *sanitized is NULL.
 */
-SANITIZEcode rename_if_reserved_dos_device_name(char **const sanitized,
-                                                const char *file_name,
-                                                int flags)
+static SANITIZEcode rename_if_reserved_dos(char **const sanitized,
+                                           const char *file_name,
+                                           int flags)
 {
-  /* We could have a file whose name is a device on MS-DOS.  Trying to
-   * retrieve such a file would fail at best and wedge us at worst.  We need
+  /* We could have a file whose name is a device on MS-DOS. Trying to
+   * retrieve such a file would fail at best and wedge us at worst. We need
    * to rename such files. */
   char *p, *base;
   char fname[PATH_MAX];
 #ifdef MSDOS
   struct_stat st_buf;
 #endif
+  size_t len;
 
-  if(!sanitized)
+  if(!sanitized || !file_name)
     return SANITIZE_ERR_BAD_ARGUMENT;
 
   *sanitized = NULL;
-
-  if(!file_name)
-    return SANITIZE_ERR_BAD_ARGUMENT;
+  len = strlen(file_name);
 
   /* Ignore UNC prefixed paths, they are allowed to contain a reserved name. */
 #ifndef MSDOS
   if((flags & SANITIZE_ALLOW_PATH) &&
      file_name[0] == '\\' && file_name[1] == '\\') {
-    size_t len = strlen(file_name);
-    *sanitized = malloc(len + 1);
+    *sanitized = strdup(file_name);
     if(!*sanitized)
       return SANITIZE_ERR_OUT_OF_MEMORY;
-    strncpy(*sanitized, file_name, len + 1);
     return SANITIZE_ERR_OK;
   }
 #endif
 
-  if(strlen(file_name) > PATH_MAX-1 &&
-     (!(flags & SANITIZE_ALLOW_TRUNCATE) ||
-      truncate_dryrun(file_name, PATH_MAX-1)))
+  if(len > PATH_MAX-1)
     return SANITIZE_ERR_INVALID_PATH;
 
-  strncpy(fname, file_name, PATH_MAX-1);
-  fname[PATH_MAX-1] = '\0';
+  memcpy(fname, file_name, len);
+  fname[len] = '\0';
   base = basename(fname);
 
   /* Rename reserved device names that are known to be accessible without \\.\
@@ -529,7 +502,7 @@ SANITIZEcode rename_if_reserved_dos_device_name(char **const sanitized,
       continue;
     }
     else if(p[x] == ':') {
-      if(!(flags & (SANITIZE_ALLOW_COLONS|SANITIZE_ALLOW_PATH))) {
+      if(!(flags & SANITIZE_ALLOW_PATH)) {
         p[x] = '_';
         continue;
       }
@@ -542,12 +515,8 @@ SANITIZEcode rename_if_reserved_dos_device_name(char **const sanitized,
     p_len = strlen(p);
 
     /* Prepend a '_' */
-    if(strlen(fname) == PATH_MAX-1) {
-      --p_len;
-      if(!(flags & SANITIZE_ALLOW_TRUNCATE) || truncate_dryrun(p, p_len))
-        return SANITIZE_ERR_INVALID_PATH;
-      p[p_len] = '\0';
-    }
+    if(strlen(fname) == PATH_MAX-1)
+      return SANITIZE_ERR_INVALID_PATH;
     memmove(p + 1, p, p_len + 1);
     p[0] = '_';
     ++p_len;
@@ -558,22 +527,19 @@ SANITIZEcode rename_if_reserved_dos_device_name(char **const sanitized,
   }
 
   /* This is the legacy portion from rename_if_dos_device_name that checks for
-     reserved device names. It only works on MSDOS. On Windows XP the stat
+     reserved device names. It only works on MS-DOS. On Windows XP the stat
      check errors with EINVAL if the device name is reserved. On Windows
-     Vista/7/8 it sets mode S_IFREG (regular file or device). According to MSDN
-     stat doc the latter behavior is correct, but that doesn't help us identify
-     whether it's a reserved device name and not a regular file name. */
+     Vista/7/8 it sets mode S_IFREG (regular file or device). According to
+     MSDN stat doc the latter behavior is correct, but that does not help us
+     identify whether it is a reserved device name and not a regular
+     filename. */
 #ifdef MSDOS
   if(base && ((stat(base, &st_buf)) == 0) && (S_ISCHR(st_buf.st_mode))) {
     /* Prepend a '_' */
     size_t blen = strlen(base);
     if(blen) {
-      if(strlen(fname) == PATH_MAX-1) {
-        --blen;
-        if(!(flags & SANITIZE_ALLOW_TRUNCATE) || truncate_dryrun(base, blen))
-          return SANITIZE_ERR_INVALID_PATH;
-        base[blen] = '\0';
-      }
+      if(strlen(fname) >= PATH_MAX-1)
+        return SANITIZE_ERR_INVALID_PATH;
       memmove(base + 1, base, blen + 1);
       base[0] = '_';
     }
@@ -599,65 +565,61 @@ char **__crt0_glob_function(char *arg)
 
 #ifdef _WIN32
 
-/*
+#if !defined(CURL_WINDOWS_UWP) && \
+  !defined(CURL_DISABLE_CA_SEARCH) && !defined(CURL_CA_SEARCH_SAFE)
+/* Search and set the CA cert file for Windows.
+ *
+ * Do not call this function if Schannel is the selected SSL backend. We allow
+ * setting CA location for Schannel only when explicitly specified by the user
+ * via CURLOPT_CAINFO / --cacert.
+ *
  * Function to find CACert bundle on a Win32 platform using SearchPath.
  * (SearchPath is already declared via inclusions done in setup header file)
- * (Use the ASCII version instead of the unicode one!)
+ * (Use the ASCII version instead of the Unicode one!)
  * The order of the directories it searches is:
  *  1. application's directory
  *  2. current working directory
- *  3. Windows System directory (e.g. C:\windows\system32)
- *  4. Windows Directory (e.g. C:\windows)
+ *  3. Windows System directory (e.g. C:\Windows\System32)
+ *  4. Windows Directory (e.g. C:\Windows)
  *  5. all directories along %PATH%
  *
  * For WinXP and later search order actually depends on registry value:
  * HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\SafeProcessSearchMode
  */
-
 CURLcode FindWin32CACert(struct OperationConfig *config,
-                         curl_sslbackend backend,
                          const TCHAR *bundle_file)
 {
   CURLcode result = CURLE_OK;
+  DWORD res_len;
+  TCHAR buf[PATH_MAX];
+  TCHAR *ptr = NULL;
 
-  /* Search and set cert file only if libcurl supports SSL.
-   *
-   * If Schannel is the selected SSL backend then these locations are
-   * ignored. We allow setting CA location for schannel only when explicitly
-   * specified by the user via CURLOPT_CAINFO / --cacert.
-   */
-  if(feature_ssl && backend != CURLSSLBACKEND_SCHANNEL) {
+  buf[0] = TEXT('\0');
 
-    DWORD res_len;
-    TCHAR buf[PATH_MAX];
-    TCHAR *ptr = NULL;
-
-    buf[0] = TEXT('\0');
-
-    res_len = SearchPath(NULL, bundle_file, NULL, PATH_MAX, buf, &ptr);
-    if(res_len > 0) {
-      char *mstr = curlx_convert_tchar_to_UTF8(buf);
-      Curl_safefree(config->cacert);
-      if(mstr)
-        config->cacert = strdup(mstr);
-      curlx_unicodefree(mstr);
-      if(!config->cacert)
-        result = CURLE_OUT_OF_MEMORY;
-    }
+  res_len = SearchPath(NULL, bundle_file, NULL, PATH_MAX, buf, &ptr);
+  if(res_len > 0) {
+    char *mstr = curlx_convert_tchar_to_UTF8(buf);
+    Curl_safefree(config->cacert);
+    if(mstr)
+      config->cacert = strdup(mstr);
+    curlx_unicodefree(mstr);
+    if(!config->cacert)
+      result = CURLE_OUT_OF_MEMORY;
   }
 
   return result;
 }
-
+#endif
 
 /* Get a list of all loaded modules with full paths.
  * Returns slist on success or NULL on error.
  */
 struct curl_slist *GetLoadedModulePaths(void)
 {
+  struct curl_slist *slist = NULL;
+#if !defined(CURL_WINDOWS_UWP)
   HANDLE hnd = INVALID_HANDLE_VALUE;
   MODULEENTRY32 mod = {0};
-  struct curl_slist *slist = NULL;
 
   mod.dwSize = sizeof(MODULEENTRY32);
 
@@ -677,7 +639,7 @@ struct curl_slist *GetLoadedModulePaths(void)
 
 #ifdef UNICODE
     /* sizeof(mod.szExePath) is the max total bytes of wchars. the max total
-       bytes of multibyte chars won't be more than twice that. */
+       bytes of multibyte chars will not be more than twice that. */
     char buffer[sizeof(mod.szExePath) * 2];
     if(!WideCharToMultiByte(CP_ACP, 0, mod.szExePath, -1,
                             buffer, sizeof(buffer), NULL, NULL))
@@ -700,9 +662,13 @@ error:
 cleanup:
   if(hnd != INVALID_HANDLE_VALUE)
     CloseHandle(hnd);
+#endif
   return slist;
 }
 
+bool tool_term_has_bold;
+
+#ifndef CURL_WINDOWS_UWP
 /* The terminal settings to restore on exit */
 static struct TerminalSettings {
   HANDLE hStdOut;
@@ -713,8 +679,6 @@ static struct TerminalSettings {
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 #endif
-
-bool tool_term_has_bold;
 
 static void restore_terminal(void)
 {
@@ -770,6 +734,7 @@ static void init_terminal(void)
     }
   }
 }
+#endif
 
 LARGE_INTEGER tool_freq;
 bool tool_isVistaOrGreater;
@@ -786,7 +751,9 @@ CURLcode win32_init(void)
 
   QueryPerformanceFrequency(&tool_freq);
 
+#ifndef CURL_WINDOWS_UWP
   init_terminal();
+#endif
 
   return CURLE_OK;
 }
