@@ -14,6 +14,7 @@ TLS-backend:
   - OpenSSL
   - BearSSL
   - wolfSSL
+Added-in: 7.9.3
 ---
 
 # NAME
@@ -41,9 +42,14 @@ currently does not work because of a bug in OpenSSL.
 The application does not have to keep the string around after setting this
 option.
 
+Using this option multiple times makes the last set string override the
+previous ones. Set it to NULL to restore to internal default.
+
 # DEFAULT
 
 "PEM"
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -64,9 +70,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-If built TLS enabled.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

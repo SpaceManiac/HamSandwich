@@ -32,14 +32,15 @@ man_MANS =                                      \
   CURLINFO_CERTINFO.3                           \
   CURLINFO_CONDITION_UNMET.3                    \
   CURLINFO_CONNECT_TIME.3                       \
-  CURLINFO_CONNECT_TIME_T.3                     \
   CURLINFO_CONN_ID.3                            \
+  CURLINFO_CONNECT_TIME_T.3                     \
   CURLINFO_CONTENT_LENGTH_DOWNLOAD.3            \
   CURLINFO_CONTENT_LENGTH_DOWNLOAD_T.3          \
   CURLINFO_CONTENT_LENGTH_UPLOAD.3              \
   CURLINFO_CONTENT_LENGTH_UPLOAD_T.3            \
   CURLINFO_CONTENT_TYPE.3                       \
   CURLINFO_COOKIELIST.3                         \
+  CURLINFO_EARLYDATA_SENT_T.3                   \
   CURLINFO_EFFECTIVE_METHOD.3                   \
   CURLINFO_EFFECTIVE_URL.3                      \
   CURLINFO_FILETIME.3                           \
@@ -58,6 +59,7 @@ man_MANS =                                      \
   CURLINFO_OS_ERRNO.3                           \
   CURLINFO_PRETRANSFER_TIME.3                   \
   CURLINFO_PRETRANSFER_TIME_T.3                 \
+  CURLINFO_POSTTRANSFER_TIME_T.3                \
   CURLINFO_PRIMARY_IP.3                         \
   CURLINFO_PRIMARY_PORT.3                       \
   CURLINFO_PRIVATE.3                            \
@@ -384,6 +386,7 @@ man_MANS =                                      \
   CURLOPT_TCP_KEEPALIVE.3                       \
   CURLOPT_TCP_KEEPIDLE.3                        \
   CURLOPT_TCP_KEEPINTVL.3                       \
+  CURLOPT_TCP_KEEPCNT.3                         \
   CURLOPT_TCP_NODELAY.3                         \
   CURLOPT_TELNETOPTIONS.3                       \
   CURLOPT_TFTP_BLKSIZE.3                        \

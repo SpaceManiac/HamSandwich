@@ -42,7 +42,7 @@ Get a file off an FTPS server:
 
 or use the more appropriate FTPS way to get the same file:
 
-    curl --ftp-ssl ftp://files.are.example.com/secrets.txt
+    curl --ssl-reqd ftp://files.are.example.com/secrets.txt
 
 Get a file from an SSH server using SFTP:
 
@@ -274,7 +274,7 @@ To get even more details and information on what curl does, try using the
 `--trace` or `--trace-ascii` options with a given filename to log to, like
 this:
 
-    curl --trace trace.txt www.haxx.se
+    curl --trace my-trace.txt www.haxx.se
 
 
 ## Detailed Information
@@ -309,7 +309,8 @@ Post a simple `name` and `phone` guestbook.
 
 Or automatically [URL encode the data](https://everything.curl.dev/http/post/url-encode).
 
-    curl --data-urlencode "name=Rafael Sagula&phone=3320780" http://www.example.com/guest.cgi
+    curl --data-urlencode "name=Rafael Sagula&phone=3320780"
+      http://www.example.com/guest.cgi
 
 How to post a form with curl, lesson #1:
 
@@ -343,7 +344,8 @@ We want to enter user `foobar` with password `12345`.
 
 To post to this, you would enter a curl command line like:
 
-    curl -d "user=foobar&pass=12345&id=blablabla&ding=submit" http://example.com/post.cgi
+    curl -d "user=foobar&pass=12345&id=blablabla&ding=submit"
+      http://example.com/post.cgi
 
 While `-d` uses the application/x-www-form-urlencoded mime-type, generally
 understood by CGI's and similar, curl also supports the more capable

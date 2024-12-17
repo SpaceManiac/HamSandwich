@@ -28,7 +28,7 @@ Unix domain sockets are supported for socks proxy. Set localhost for the host
 part. e.g. socks5h://localhost/path/to/socket.sock
 
 HTTPS proxy support works set with the https:// protocol prefix for OpenSSL
-and GnuTLS (added in 7.52.0). It also works for BearSSL, mbedTLS, rustls,
+and GnuTLS (added in 7.52.0). It also works for BearSSL, mbedTLS, Rustls,
 Schannel, Secure Transport and wolfSSL (added in 7.87.0).
 
 Unrecognized and unsupported proxy protocols cause an error (added in 7.52.0).
@@ -56,3 +56,7 @@ password.
 
 When a proxy is used, the active FTP mode as set with --ftp-port, cannot be
 used.
+
+Doing FTP over an HTTP proxy without --proxytunnel makes curl do HTTP with an
+FTP URL over the proxy. For such transfers, common FTP specific options do not
+work, including --ftp-ssl-reqd and --ftp-ssl-control.

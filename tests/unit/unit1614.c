@@ -46,7 +46,6 @@ struct noproxy {
   const char *a;
   const char *n;
   bool match;
-  bool space; /* space separated */
 };
 
 UNITTEST_START
@@ -69,6 +68,7 @@ UNITTEST_START
     { "192.160.0.1", "10.0.0.1", 0, FALSE},
     { NULL, NULL, 0, FALSE} /* end marker */
   };
+#ifdef USE_IPV6
   struct check list6[]= {
     { "::1", "::1", 0, TRUE},
     { "::1", "::1", 128, TRUE},
@@ -77,53 +77,59 @@ UNITTEST_START
     { "fe80::ab47:4396:55c9:8474", "fe80::ab47:4396:55c9:8474", 64, TRUE},
     { NULL, NULL, 0, FALSE} /* end marker */
   };
+#endif
   struct noproxy list[]= {
-    { "www.example.com", "localhost .example.com .example.de", TRUE, TRUE},
-    { "www.example.com", "localhost,.example.com,.example.de", TRUE, FALSE},
-    { "www.example.com.", "localhost,.example.com,.example.de", TRUE, FALSE},
-    { "example.com", "localhost,.example.com,.example.de", TRUE, FALSE},
-    { "example.com.", "localhost,.example.com,.example.de", TRUE, FALSE},
-    { "www.example.com", "localhost,.example.com.,.example.de", TRUE, FALSE},
-    { "www.example.com", "localhost,www.example.com.,.example.de",
-      TRUE, FALSE},
-    { "example.com", "localhost,example.com,.example.de", TRUE, FALSE},
-    { "example.com.", "localhost,example.com,.example.de", TRUE, FALSE},
-    { "nexample.com", "localhost,example.com,.example.de", FALSE, FALSE},
-    { "www.example.com", "localhost,example.com,.example.de", TRUE, FALSE},
-    { "127.0.0.1", "127.0.0.1,localhost", TRUE, FALSE},
-    { "127.0.0.1", "127.0.0.1,localhost,", TRUE, FALSE},
-    { "127.0.0.1", "127.0.0.1/8,localhost,", TRUE, FALSE},
-    { "127.0.0.1", "127.0.0.1/28,localhost,", TRUE, FALSE},
-    { "127.0.0.1", "127.0.0.1/31,localhost,", TRUE, FALSE},
-    { "127.0.0.1", "localhost,127.0.0.1", TRUE, FALSE},
+    { "www.example.com", "localhost .example.com .example.de", FALSE},
+    { "www.example.com", "localhost,.example.com,.example.de", TRUE},
+    { "www.example.com.", "localhost,.example.com,.example.de", TRUE},
+    { "example.com", "localhost,.example.com,.example.de", TRUE},
+    { "example.com.", "localhost,.example.com,.example.de", TRUE},
+    { "www.example.com", "localhost,.example.com.,.example.de", TRUE},
+    { "www.example.com", "localhost,www.example.com.,.example.de", TRUE},
+    { "example.com", "localhost,example.com,.example.de", TRUE},
+    { "example.com.", "localhost,example.com,.example.de", TRUE},
+    { "nexample.com", "localhost,example.com,.example.de", FALSE},
+    { "www.example.com", "localhost,example.com,.example.de", TRUE},
+    { "127.0.0.1", "127.0.0.1,localhost", TRUE},
+    { "127.0.0.1", "127.0.0.1,localhost,", TRUE},
+    { "127.0.0.1", "127.0.0.1/8,localhost,", TRUE},
+    { "127.0.0.1", "127.0.0.1/28,localhost,", TRUE},
+    { "127.0.0.1", "127.0.0.1/31,localhost,", TRUE},
+    { "127.0.0.1", "localhost,127.0.0.1", TRUE},
     { "127.0.0.1", "localhost,127.0.0.1.127.0.0.1.127.0.0.1.127.0.0.1."
       "127.0.0.1.127.0.0.1.127.0.0.1.127.0.0.1.127.0.0.1.127.0.0.1.127."
-      "0.0.1.127.0.0.1.127.0.0." /* 128 bytes "address" */, FALSE, FALSE},
+      "0.0.1.127.0.0.1.127.0.0." /* 128 bytes "address" */, FALSE},
     { "127.0.0.1", "localhost,127.0.0.1.127.0.0.1.127.0.0.1.127.0.0.1."
       "127.0.0.1.127.0.0.1.127.0.0.1.127.0.0.1.127.0.0.1.127.0.0.1.127."
-      "0.0.1.127.0.0.1.127.0.0" /* 127 bytes "address" */, FALSE, FALSE},
-    { "localhost", "localhost,127.0.0.1", TRUE, FALSE},
-    { "localhost", "127.0.0.1,localhost", TRUE, FALSE},
-    { "foobar", "barfoo", FALSE, FALSE},
-    { "foobar", "foobar", TRUE, FALSE},
-    { "192.168.0.1", "foobar", FALSE, FALSE},
-    { "192.168.0.1", "192.168.0.0/16", TRUE, FALSE},
-    { "192.168.0.1", "192.168.0.0/24", TRUE, FALSE},
-    { "192.168.0.1", "192.168.0.0/32", FALSE, FALSE},
-    { "192.168.0.1", "192.168.0.0", FALSE, FALSE},
-    { "192.168.1.1", "192.168.0.0/24", FALSE, FALSE},
-    { "192.168.1.1", "foo, bar, 192.168.0.0/24", FALSE, FALSE},
-    { "192.168.1.1", "foo, bar, 192.168.0.0/16", TRUE, FALSE},
-    { "[::1]", "foo, bar, 192.168.0.0/16", FALSE, FALSE},
-    { "[::1]", "foo, bar, ::1/64", TRUE, FALSE},
-    { "bar", "foo, bar, ::1/64", TRUE, FALSE},
-    { "BAr", "foo, bar, ::1/64", TRUE, FALSE},
-    { "BAr", "foo,,,,,              bar, ::1/64", TRUE, FALSE},
-    { "www.example.com", "foo, .example.com", TRUE, FALSE},
-    { "www.example.com", "www2.example.com, .example.net", FALSE, FALSE},
-    { "example.com", ".example.com, .example.net", TRUE, FALSE},
-    { "nonexample.com", ".example.com, .example.net", FALSE, FALSE},
-    { NULL, NULL, FALSE, FALSE}
+      "0.0.1.127.0.0.1.127.0.0" /* 127 bytes "address" */, FALSE},
+    { "localhost", "localhost,127.0.0.1", TRUE},
+    { "localhost", "127.0.0.1,localhost", TRUE},
+    { "foobar", "barfoo", FALSE},
+    { "foobar", "foobar", TRUE},
+    { "192.168.0.1", "foobar", FALSE},
+    { "192.168.0.1", "192.168.0.0/16", TRUE},
+    { "192.168.0.1", "192.168.0.0/24", TRUE},
+    { "192.168.0.1", "192.168.0.0/32", FALSE},
+    { "192.168.0.1", "192.168.0.0", FALSE},
+    { "192.168.1.1", "192.168.0.0/24", FALSE},
+    { "192.168.1.1", "192.168.0.0/33", FALSE},
+    { "192.168.1.1", "foo, bar, 192.168.0.0/24", FALSE},
+    { "192.168.1.1", "foo, bar, 192.168.0.0/16", TRUE},
+#ifdef USE_IPV6
+    { "[::1]", "foo, bar, 192.168.0.0/16", FALSE},
+    { "[::1]", "foo, bar, ::1/64", TRUE},
+    { "[::1]", "::1/64", TRUE},
+    { "[::1]", "::1/96", TRUE},
+    { "[::1]", "::1/129", FALSE},
+    { "bar", "foo, bar, ::1/64", TRUE},
+    { "BAr", "foo, bar, ::1/64", TRUE},
+    { "BAr", "foo,,,,,              bar, ::1/64", TRUE},
+#endif
+    { "www.example.com", "foo, .example.com", TRUE},
+    { "www.example.com", "www2.example.com, .example.net", FALSE},
+    { "example.com", ".example.com, .example.net", TRUE},
+    { "nonexample.com", ".example.com, .example.net", FALSE},
+    { NULL, NULL, FALSE}
   };
   for(i = 0; list4[i].a; i++) {
     bool match = Curl_cidr4_match(list4[i].a, list4[i].n, list4[i].bits);
@@ -134,6 +140,7 @@ UNITTEST_START
       err++;
     }
   }
+#ifdef USE_IPV6
   for(i = 0; list6[i].a; i++) {
     bool match = Curl_cidr6_match(list6[i].a, list6[i].n, list6[i].bits);
     if(match != list6[i].match) {
@@ -143,18 +150,13 @@ UNITTEST_START
       err++;
     }
   }
+#endif
   for(i = 0; list[i].a; i++) {
-    bool spacesep = FALSE;
-    bool match = Curl_check_noproxy(list[i].a, list[i].n, &spacesep);
+    bool match = Curl_check_noproxy(list[i].a, list[i].n);
     if(match != list[i].match) {
       fprintf(stderr, "%s in %s should %smatch\n",
               list[i].a, list[i].n,
               list[i].match ? "": "not ");
-      err++;
-    }
-    if(spacesep != list[i].space) {
-      fprintf(stderr, "%s is claimed to be %sspace separated\n",
-              list[i].n, list[i].space?"":"NOT ");
       err++;
     }
   }

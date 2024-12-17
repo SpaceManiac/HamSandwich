@@ -15,6 +15,7 @@ See-also:
   - CURLOPT_MIMEPOST (3)
   - CURLOPT_PROXYHEADER (3)
   - curl_mime_init (3)
+Added-in: 7.1
 ---
 
 # NAME
@@ -34,23 +35,22 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_HTTPHEADER,
 
 Pass a pointer to a linked list of HTTP headers to pass to the server and/or
 proxy in your HTTP request. The same list can be used for both host and proxy
-requests!
+requests.
 
 When used within an IMAP or SMTP request to upload a MIME mail, the given
 header list establishes the document-level MIME headers to prepend to the
-uploaded document described by CURLOPT_MIMEPOST(3). This does not affect
-raw mail uploads.
+uploaded document described by CURLOPT_MIMEPOST(3). This does not affect raw
+mail uploads.
 
-The linked list should be a fully valid list of **struct curl_slist**
-structs properly filled in. Use curl_slist_append(3) to create the list
-and curl_slist_free_all(3) to clean up an entire list. If you add a
-header that is otherwise generated and used by libcurl internally, your added
-header is used instead. If you add a header with no content as in 'Accept:'
-(no data on the right side of the colon), the internally used header is
-disabled/removed. With this option you can add new headers, replace internal
-headers and remove internal headers. To add a header with no content (nothing
-to the right side of the colon), use the form 'name;' (note the ending
-semicolon).
+The linked list should be a fully valid list of **struct curl_slist** structs
+properly filled in. Use curl_slist_append(3) to create the list and
+curl_slist_free_all(3) to clean up an entire list. If you add a header that is
+otherwise generated and used by libcurl internally, your added header is used
+instead. If you add a header with no content as in 'Accept:' (no data on the
+right side of the colon), the internally used header is disabled/removed. With
+this option you can add new headers, replace internal headers and remove
+internal headers. To add a header with no content (nothing to the right side
+of the colon), use the form 'name;' (note the ending semicolon).
 
 The headers included in the linked list **must not** be CRLF-terminated,
 because libcurl adds CRLF after each header item itself. Failure to comply
@@ -64,16 +64,16 @@ following the request-line are headers. Adding this method line in this list
 of headers only causes your request to send an invalid header. Use
 CURLOPT_CUSTOMREQUEST(3) to change the method.
 
-When this option is passed to curl_easy_setopt(3), libcurl does not copy
-the entire list so you **must** keep it around until you no longer use this
-*handle* for a transfer before you call curl_slist_free_all(3) on
-the list.
+When this option is passed to curl_easy_setopt(3), libcurl does not copy the
+entire list so you **must** keep it around until you no longer use this
+*handle* for a transfer before you call curl_slist_free_all(3) on the list.
 
-Pass a NULL to this option to reset back to no custom headers.
+Using this option multiple times makes the last set list override the previous
+ones. Set it to NULL to disable its use again.
 
 The most commonly replaced HTTP headers have "shortcuts" in the options
-CURLOPT_COOKIE(3), CURLOPT_USERAGENT(3) and
-CURLOPT_REFERER(3). We recommend using those.
+CURLOPT_COOKIE(3), CURLOPT_USERAGENT(3) and CURLOPT_REFERER(3). We recommend
+using those.
 
 There is an alternative option that sets or replaces headers only for requests
 that are sent with CONNECT to a proxy: CURLOPT_PROXYHEADER(3). Use
@@ -114,9 +114,11 @@ MIME mail is only composed of alternative representations of the same data
 In all cases the value must be of the form "multipart/*" to respect the
 document structure and may not include the "boundary=" parameter.
 
+##
+
 Other specific headers that do not have a libcurl default value but are
 strongly desired by mail delivery and user agents should also be included.
-These are "From:", "To:", "Date:" and "Subject:" among others and their
+These are `From:`, `To:`, `Date:` and `Subject:` among others and their
 presence and value is generally checked by anti-spam utilities.
 
 # SECURITY CONCERNS
@@ -148,6 +150,8 @@ with the CURLOPT_UNRESTRICTED_AUTH(3) option.
 
 NULL
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -172,9 +176,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# HISTORY
 
-As long as HTTP is enabled. Use in MIME mail added in 7.56.0.
+Use for MIME mail added in 7.56.0.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

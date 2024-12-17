@@ -25,8 +25,6 @@
 
 #include "strcase.h"
 
-#define ENABLE_CURLX_PRINTF
-/* use our own printf() functions */
 #include "curlx.h"
 
 #include "tool_cfgable.h"
@@ -471,8 +469,6 @@ static int get_param_part(struct OperationConfig *config, char endchar,
   char *endpos;
   char *tp;
   char sep;
-  char type_major[128] = "";
-  char type_minor[128] = "";
   char *endct = NULL;
   struct curl_slist *headers = NULL;
 
@@ -504,18 +500,10 @@ static int get_param_part(struct OperationConfig *config, char endchar,
       /* set type pointer */
       type = p;
 
-      /* verify that this is a fine type specifier */
-      if(2 != sscanf(type, "%127[^/ ]/%127[^;, \n]", type_major, type_minor)) {
-        warnf(config->global, "Illegally formatted content-type field");
-        curl_slist_free_all(headers);
-        return -1; /* illegal content-type syntax! */
-      }
-
-      /* now point beyond the content-type specifier */
-      p = type + strlen(type_major) + strlen(type_minor) + 1;
-      for(endct = p; *p && *p != ';' && *p != endchar; p++)
-        if(!ISSPACE(*p))
-          endct = p + 1;
+      /* find end of content-type */
+      while(*p && (ISALPHA(*p) || (*p == '/') || (*p == '-')))
+        p++;
+      endct = p;
       sep = *p;
     }
     else if(checkprefix("filename=", p)) {
@@ -637,7 +625,7 @@ static int get_param_part(struct OperationConfig *config, char endchar,
     *pfilename = filename;
   else if(filename)
     warnf(config->global,
-          "Field file name not allowed here: %s", filename);
+          "Field filename not allowed here: %s", filename);
 
   if(pencoder)
     *pencoder = encoder;
@@ -693,7 +681,7 @@ static int get_param_part(struct OperationConfig *config, char endchar,
  * 'name=foo;headers=@headerfile' or why not
  * 'name=@filemame;headers=@headerfile'
  *
- * To upload a file, but to fake the file name that will be included in the
+ * To upload a file, but to fake the filename that will be included in the
  * formpost, do like this:
  *
  * 'name=@filename;filename=/dev/null' or quote the faked filename like:
@@ -720,7 +708,7 @@ int formparse(struct OperationConfig *config,
               struct tool_mime **mimecurrent,
               bool literal_value)
 {
-  /* input MUST be a string in the format 'name=contents' and we'll
+  /* input MUST be a string in the format 'name=contents' and we will
      build a linked list with the info */
   char *name = NULL;
   char *contents = NULL;
@@ -779,7 +767,7 @@ int formparse(struct OperationConfig *config,
     }
     else if('@' == contp[0] && !literal_value) {
 
-      /* we use the @-letter to indicate file name(s) */
+      /* we use the @-letter to indicate filename(s) */
 
       struct tool_mime *subparts = NULL;
 
@@ -831,7 +819,7 @@ int formparse(struct OperationConfig *config,
         SET_TOOL_MIME_PTR(part, encoder);
 
         /* *contp could be '\0', so we just check with the delimiter */
-      } while(sep); /* loop if there's another file name */
+      } while(sep); /* loop if there is another filename */
       part = (*mimecurrent)->subparts;  /* Set name on group. */
     }
     else {
