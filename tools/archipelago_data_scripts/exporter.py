@@ -39,10 +39,12 @@ class CSVProcessor:
         try:
             with open(INPUT_ITEMS, 'r') as input_file, \
                     open(PYTHON_ITEMS, 'w') as python_file, \
+                    open(TRACKER_ITEM_MAPPING, 'w') as tracker_map_file, \
                     open(TRACKER_ITEMS, 'w') as tracker_file:
 
                 self.open_reader(input_file)
                 python_file.write(pyItemHeader + "\n")
+                tracker_map_file.write("ITEM_MAPPING = { \n")
 
                 json_list = []
 
@@ -51,7 +53,7 @@ class CSVProcessor:
                     # python
                     item_line = (f"    \"{row[ITM_NAME]}\" "
                                  f": LL_Item(ll_base_id + {row[ITM_ID]}"
-                                 f", LL_ItemCat.{row[ITM_CAT]}"
+                                 f", LL_ItemCat.{row[ITM_CATEGORY]}"
                                  f", IC.{row[ITM_IC]}")
                     if row[ITM_FREQ]:
                         item_line += f", {row[ITM_FREQ]}"
@@ -73,7 +75,12 @@ class CSVProcessor:
                         del item_json["max_quantity"]
                     json_list.append(item_json)# to JSON list
 
+                    #tracker mappings
+                    tracker_map_file.write(f"    [{LOONYLAND_BASE_ID + globals()[row[ITM_ID]]}] = {{{{\"{row[ITM_NAME]}\", \"{row[ITM_TRACKERTYPE]}\"}}}},\n")
+
+
                 python_file.write("}")
+                tracker_map_file.write("}")
                 json.dump(json_list, tracker_file, indent=4)
         except (FileNotFoundError, ValueError) as e:
             print(f"Error processing items: {e}")
@@ -84,9 +91,11 @@ class CSVProcessor:
         try:
             with open(INPUT_REGIONS, 'r') as input_file, \
                     open(PYTHON_REGIONS, 'w') as python_file, \
-                    open(TRACKER_LOCATIONS, 'w') as tracker_file:
+                    open(TRACKER_REGIONS, 'w') as tracker_reg_file, \
+                    open(TRACKER_LOCATIONS, 'w') as tracker_loc_file:
                 self.open_reader(input_file)
                 python_file.write(pyRegionHeader + "\n")
+                tracker_reg_file.write("loonyland_region_table = {\n")
                 json_output = []
                 overworld = {
                     "name": "Overworld",
@@ -103,10 +112,18 @@ class CSVProcessor:
                     region_line += "),\n"
                     python_file.write(region_line)
 
-                    #tracker
+                    #tracker region data
+                    region_line = f"    [\"{row[REG_NAME]}\"] = {{real={row[REG_REAL]}"
+                    if row[REG_MAP]:
+                        region_line += f', map=\"{row[REG_MAP]}\"'
+                    region_line += f"}},\n"
+                    tracker_reg_file.write(region_line)
+
+                    #tracker locations setup
                     region_entry = {
                         "name": row[REG_NAME],
-                        "access_rules": [],
+                        "access_rules": [ #f"$can_glitch|{row[REG_NAME]}",
+                                            f"$can_reach|{row[REG_NAME]}" ],
                         "sections": [],
                         "map_locations": []
                     }
@@ -121,13 +138,13 @@ class CSVProcessor:
                     overworld["children"].append(region_entry)
 
                 json_output.append(overworld)
-                json.dump(json_output, tracker_file, indent=2)
+                json.dump(json_output, tracker_loc_file, indent=2)
 
                 python_file.write("}")
+                tracker_reg_file.write("}")
 
         except (FileNotFoundError, ValueError) as e:
             print(f"Error processing regions: {e}")
-
     @staticmethod
     def parse_condition(condition):
         """Process a single condition, handling cases where there are function calls or quantity values."""
@@ -145,6 +162,25 @@ class CSVProcessor:
             return f"state.has({condition}, player)"
             # Remove the quotes and format as function call
         return f"{condition}(state, player)"
+
+
+    @staticmethod
+    def parse_condition_lua(condition):
+        """Process a single condition, handling cases where there are function calls or quantity values."""
+
+        # Check for a number after the condition (like "Mushroom"10)
+        if condition[-1].isdigit():  # If it ends with a number
+            match = re.search(r"\"([^\"]+)\"(\d+)$", condition)  # Match the condition and the number at the end
+            if match:
+                name = match.group(1)  # Condition name (like "Mushroom")
+                quantity = int(match.group(2))  # Quantity value
+                return f"state:has(\"{name}\", {quantity})"
+
+        # Check if the condition corresponds to an item or a function call (e.g., have_bombs())
+        if condition[0] == "\"":  # We check if it starts with "
+            return f"state:has({condition})"
+            # Remove the quotes and format as function call
+        return f"{condition}(state)"
 
     @staticmethod
     def tracker_parse_conditions(conditions):
@@ -179,6 +215,9 @@ class CSVProcessor:
         try:
             with open(INPUT_LOCATIONS, 'r') as input_file, \
                     open(TRACKER_LOCATIONS, 'r+') as tracker_file_locs, \
+                    open(TRACKER_LOCATIONS_DATA, 'w') as tracker_file_locs_data, \
+                    open(TRACKER_RULES, 'w') as tracker_file_rules, \
+                    open(TRACKER_LOCATION_MAPPING, 'w') as tracker_file_mapping, \
                     open(PYTHON_LOCATIONS, 'w') as python_file, \
                     open(PYTHON_RULES, 'w') as python_file_rules:
 
@@ -187,6 +226,10 @@ class CSVProcessor:
                 self.open_reader(input_file)
                 python_file.write(pyLocationHeader + "\n")
                 python_file_rules.write(pyRulesHeader + "\n")
+                tracker_file_locs_data.write("""local PICKUP <const> = 0
+loonyland_location_table = {\n""")
+                tracker_file_rules.write("access_rules = {\n")
+                tracker_file_mapping.write("LOCATION_MAPPING = { \n")
 
                 for row in self.csv_reader:
                     self.row_data = row
@@ -204,10 +247,14 @@ class CSVProcessor:
                                     f"{location_id}, LL_LocCat.{location_type}, \"{location_region}\"),\n"
 
                     python_file.write(location_line)
+
+                    location_line = f"    [\"{location_name}\"]  = {{id={location_id}, type={location_type}, region=\"{location_region}\"}},\n"
+                    tracker_file_locs_data.write(location_line)
                     conditions_str_tracker = ""
 
                     # python logic file - Rules generation
                     if location_logic:  # Check if there are any specific rules for the location
+                        # python logic file - Rules generation
                         rules_line = f"        \"{location_name}\": lambda state: "
                         conditions = location_logic.split(" and ")
                         conditions_str = " and ".join([
@@ -218,19 +265,54 @@ class CSVProcessor:
                         rules_line += ",\n"
                         python_file_rules.write(rules_line)
 
+                        #tracker
+                        rules_line = f"        [\"{location_name}\"] = function(state) return "
+                        conditions = location_logic.split(" and ")
+                        conditions_str = " and ".join([
+                            self.parse_condition_lua(cond.strip()) for cond in conditions])
+
+                        rules_line += conditions_str
+                        rules_line += " end,\n"
+                        tracker_file_rules.write(rules_line)
+
+
+
+
                     #find location_map in children
+                    if location_map == "Halloween Hill":
+                        data[0]['children'].append({
+                            "name": location_name,
+                            "sections": [{"ref": f"Overworld/{location_region}/{location_name}"},],
+                            "map_locations": [{
+                            "map": "Overworld",
+                            "x": (int(row[LOC_XCOORD]) + 1) * TILE_XSIZE,
+                            "y": (int(row[LOC_YCOORD]) + 1) * TILE_YSIZE
+                        }]
+                        })
                     for child in data[0]['children']:
-                        if child['name'] == (location_override if location_override else location_map):
+                        if child['name'] == location_region:
                             #child['access_rules'].append( f"@{location_region}")
                             child['sections'].append({
                                 "name": location_name,
-                                "access_rules": [f"@{location_region}",self.tracker_parse_conditions(location_logic)],
+                                "access_rules": [f"{self.tracker_parse_conditions(location_logic)}"],
                                 })
                             #add to sections[] with logic
+
+                        elif child['name'] == location_override:
+                            child['sections'].append({
+                                "ref": f"Overworld/{location_region}/{location_name}"
+                            })
+
+                    #tracker mapping
+                    tracker_file_mapping.write(f"    [{LOONYLAND_BASE_ID + int(location_id)}] = {{{{\"@Overworld/{row[LOC_REGION]}/{row[LOC_NAME]}\"}}}},\n")
 
                 tracker_file_locs.truncate(0)
                 tracker_file_locs.seek(0)
                 json.dump(data, tracker_file_locs, indent=2)
+
+                tracker_file_locs_data.write("}")
+                tracker_file_rules.write("}")
+                tracker_file_mapping.write("}")
                 python_file.write("}")
                 python_file_rules.write("    }\n")
                 python_file_rules.write(pyRulesFooter)
@@ -241,15 +323,16 @@ class CSVProcessor:
     def process_entrances(self):
         try:
             with open(INPUT_ENTRANCES, 'r') as input_file, \
-                    open(PYTHON_ENTRANCES, 'w') as python_file:
+                    open(PYTHON_ENTRANCES, 'w') as python_file, \
+                    open(TRACKER_ENTRANCES, 'w') as tracker_file:
 
                 self.open_reader(input_file)
                 python_file.write(pyEntranceHeader + "\n")
+                tracker_file.write("loonyland_entrance_table = {\n")
 
                 for row in self.csv_reader:
                     self.row_data = row
 
-                    # python entrance file
                     entrance_disable = row[ENT_DISABLE]
                     entrance_source = row[ENT_SOURCE]
 
@@ -265,14 +348,13 @@ class CSVProcessor:
                     #         EntranceData("Swamp Gas Cavern Front", "Swamp Gas Cavern Back", False,
                     #                      lambda state: state.has("Boots", player)),  # one way
 
+                    # python entrance file
                     entrance_line = f"        LL_Entrance(\"{entrance_source}\", \"{entrance_end}\""
-
                     if entrance_load:
                         entrance_line += f", True, "
                     else:
                         entrance_line += f", False, "
                     entrance_line += "lambda state: "
-
                     if entrance_logic:
                         conditions = entrance_logic.split(" and ")
                         conditions_str = " and ".join([
@@ -283,7 +365,25 @@ class CSVProcessor:
                     entrance_line += "),\n"
                     python_file.write(entrance_line)
 
+                    entrance_line = f"        {{source = \"{entrance_source}\", dest = \"{entrance_end}\", "
+                    #if entrance_load:
+                    #    entrance_line += f", True, "
+                    # else:
+                    #    entrance_line += f", False, "
+                    entrance_line += "rule = function(state) return "
+                    if entrance_logic:
+                        conditions = entrance_logic.split(" and ")
+                        conditions_str = " and ".join([
+                            self.parse_condition_lua(cond.strip()) for cond in conditions])
+                        entrance_line += conditions_str
+                    else:
+                        entrance_line += "true"
+                    entrance_line += " end},\n"
+                    tracker_file.write(entrance_line)
+
+
                 python_file.write("]\n")
+                tracker_file.write("}")
                 python_file.write(pyEntranceFooter)
 
         except (FileNotFoundError, ValueError) as e:

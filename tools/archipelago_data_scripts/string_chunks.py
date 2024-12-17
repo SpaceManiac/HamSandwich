@@ -4,7 +4,7 @@ pyItemHeader = """from typing import Dict
 
 from BaseClasses import ItemClassification as IC
 from worlds.loonyland import loonyland_base_id as ll_base_id
-from worlds.loonyland.Defines import *
+from worlds.loonyland.Data.Defines import *
 from worlds.loonyland.Items import LL_Item, LL_ItemCat
 
 loony_item_table: Dict[str, LL_Item] = {"""
@@ -14,6 +14,7 @@ from worlds.loonyland.Regions import LLRegion
 
 loonyland_region_table: Dict[str, LLRegion] = {"""
 
+
 pyLocationHeader = """from typing import Dict
 from worlds.loonyland.Locations import LL_Location, LL_LocCat
 
@@ -22,7 +23,8 @@ loonyland_location_table: Dict[str, LL_Location] = {"""
 pyRulesHeader = """from typing import Dict
 from worlds.generic.Rules import CollectionRule
 from worlds.loonyland.Rules import *
-def set_rules(multiworld, world, player):"""
+def set_rules(multiworld, world, player):
+    access_rules: Dict[str, CollectionRule] = {"""
 
 pyRulesFooter = """    for loc in multiworld.get_locations(player):
         if loc.name in access_rules:
