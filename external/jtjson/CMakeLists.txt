@@ -15,33 +15,11 @@ add_library(double-conversion STATIC
     double-conversion/string-to-double.cc
     double-conversion/strtod.cc
 )
-target_include_directories(double-conversion PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(double-conversion PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Main JSON library
-add_library(json STATIC
-    json.cpp
+add_library(jtjson STATIC
+    src/json.cpp
 )
-target_link_libraries(json PRIVATE double-conversion)
-
-# Tests
-add_executable(json_test json_test.cpp)
-target_link_libraries(json_test PRIVATE json)
-
-add_executable(jsontestsuite_test jsontestsuite_test.cpp)
-target_link_libraries(jsontestsuite_test PRIVATE json)
-
-# Copy test data to build directory
-add_custom_command(
-    TARGET jsontestsuite_test POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/JSONTestSuite
-        ${CMAKE_CURRENT_BINARY_DIR}/JSONTestSuite
-)
-
-enable_testing()
-add_test(NAME json_test COMMAND json_test)
-add_test(
-    NAME jsontestsuite_test 
-    COMMAND jsontestsuite_test
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-)
+target_link_libraries(jtjson PRIVATE double-conversion)
+target_include_directories(jtjson PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
