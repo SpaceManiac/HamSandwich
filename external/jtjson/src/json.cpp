@@ -78,6 +78,8 @@
 
 namespace jt {
 
+static const Json kNull;
+
 static const char kJsonStr[256] = {
     1,  1,  1,  1,  1,  1,  1,  1, // 0000 ascii (0)
     1,  1,  1,  1,  1,  1,  1,  1, // 0010
@@ -610,9 +612,9 @@ const Json&
 Json::operator[](size_t index) const
 {
     if (!isArray())
-        abort();
+        return kNull;
     if (index >= array_value.size()) {
-        abort();
+        return kNull;
     }
     return array_value[index];
 }
@@ -635,13 +637,13 @@ const Json&
 Json::operator[](std::string_view key) const
 {
     if (!isObject())
-        abort();
+        return kNull;
 
     auto iter = object_value.find(key);
     if (iter != object_value.end())
         return iter->second;
 
-    abort();
+    return kNull;
 }
 
 std::string
