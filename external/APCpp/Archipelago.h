@@ -126,6 +126,7 @@ bool AP_IsMessagePending();
 void AP_ClearLatestMessage();
 AP_Message* AP_GetLatestMessage();
 
+
 void AP_Say(std::string);
 
 /* Connection Information Types */
@@ -156,6 +157,7 @@ struct AP_RoomInfo {
 
 int AP_GetRoomInfo(AP_RoomInfo*);
 AP_ConnectionStatus AP_GetConnectionStatus();
+int AP_GetRetryCount();
 int AP_GetUUID();
 int AP_GetPlayerID();
 

@@ -31,6 +31,7 @@ bool multiworld = true;
 bool isSSL = true;
 bool ssl_success = false;
 int ap_player_id;
+int ap_retry_count = -1;
 std::string ap_player_name;
 size_t ap_player_name_hash;
 std::string ap_ip;
@@ -124,6 +125,7 @@ void AP_Init(const char* ip, const char* game, const char* player_name, const ch
     ap_game = game;
     ap_player_name = player_name;
     ap_passwd = passwd;
+    ap_retry_count = 0;
 
     printf("AP: Initializing...\n");
 
@@ -151,6 +153,7 @@ void AP_Init(const char* ip, const char* game, const char* player_name, const ch
                     map_server_data.erase(itr.first);
                 }
                 printf("AP: Error connecting to Archipelago. Retries: %d\n", msg->errorInfo.retries-1);
+                ap_retry_count = msg->errorInfo.retries - 1;
                 if (msg->errorInfo.retries-1 >= 2 && isSSL && !ssl_success) {
                     printf("AP: SSL connection failed. Attempting unencrypted...\n");
                     webSocket.setUrl("ws://" + ap_ip);
@@ -276,6 +279,7 @@ void AP_Shutdown() {
     slotdata_strings.clear();
     datapkg_cache = Json::objectValue;
     sp_ap_root = Json::objectValue;
+    ap_retry_count = -1;
 }
 
 bool AP_IsInit() {
@@ -485,6 +489,10 @@ AP_ConnectionStatus AP_GetConnectionStatus() {
         }
     }
     return AP_ConnectionStatus::Disconnected;
+}
+
+int AP_GetRetryCount() {
+    return ap_retry_count;
 }
 
 int AP_GetUUID() {
