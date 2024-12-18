@@ -77,16 +77,14 @@ struct EmscriptenWebSocket : public WebSocket
 		}
 
 		emscripten_websocket_set_onmessage_callback(socket.get(), this, onmessage);
-	}
-
-	std::string_view error_message()
-	{
-		return error;
+		emscripten_websocket_set_onerror_callback(socket.get(), this, onerror);
+		emscripten_websocket_set_onclose_callback(socket.get(), this, onclose);
 	}
 
 	static EM_BOOL onmessage(int eventType, const EmscriptenWebSocketMessageEvent *websocketEvent, void *userData)
 	{
 		(void)eventType;
+
 		auto self = static_cast<EmscriptenWebSocket*>(userData);
 		self->queue.push(Message
 		{
@@ -94,6 +92,34 @@ struct EmscriptenWebSocket : public WebSocket
 			{ websocketEvent->data, websocketEvent->data + websocketEvent->numBytes }
 		});
 		return EM_TRUE; // has no effect
+	}
+
+	static EM_BOOL onerror(int eventType, const EmscriptenWebSocketErrorEvent *websocketEvent, void *userData)
+	{
+		(void)eventType;
+		(void)websocketEvent;
+
+		auto self = static_cast<EmscriptenWebSocket*>(userData);
+		self->error = "communication error";
+		return EM_TRUE; // has no effect
+	}
+
+	static EM_BOOL onclose(int eventType, const EmscriptenWebSocketCloseEvent *websocketEvent, void *userData)
+	{
+		(void)eventType;
+
+		auto self = static_cast<EmscriptenWebSocket*>(userData);
+		self->queue.push(Message
+		{
+			Close,
+			websocketEvent->reason
+		});
+		return EM_TRUE; // has no effect
+	}
+
+	std::string_view error_message()
+	{
+		return error;
 	}
 
 	const Message* recv()
