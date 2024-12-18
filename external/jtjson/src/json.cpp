@@ -571,22 +571,24 @@ Json::getObject() const
     }
 }
 
-void
+std::vector<Json>&
 Json::setArray()
 {
     if (type_ >= String)
         clear();
     type_ = Array;
     new (&array_value) std::vector<Json>();
+    return array_value;
 }
 
-void
+std::map<std::string, Json, std::less<>>&
 Json::setObject()
 {
     if (type_ >= String)
         clear();
     type_ = Object;
     new (&object_value) std::map<std::string, Json>();
+    return object_value;
 }
 
 bool

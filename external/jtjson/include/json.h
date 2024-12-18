@@ -200,8 +200,8 @@ class Json
 
     bool contains(std::string_view) const;
 
-    void setArray();
-    void setObject();
+    std::vector<Json>& setArray();
+    std::map<std::string, Json, std::less<>>& setObject();
 
     std::string toString() const;
     std::string toStringPretty() const;
