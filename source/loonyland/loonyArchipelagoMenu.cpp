@@ -176,6 +176,7 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 			}
 
 			status = ConnectionStatus();
+
 			if (status != oldStatus) {
 				oldStatus = status;
 				printf("DEBUG: Status: %s\n", status.c_str());
@@ -189,6 +190,7 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 			else if (status == "Failed")
 			{
 				optMode = 0;
+				Disconnect();
 				MakeNormalSound(SND_BONKOUCH);				
 			}
 			break;
