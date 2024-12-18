@@ -9,15 +9,23 @@ namespace
 
 struct CurlWebSocket : public WebSocket
 {
+	owned::CURLM curlm;
 	owned::CURL curl;
+	bool connect_done = false;
 	Message buffer;
 	size_t buffer_offset = 0;
 	std::string error;
 
 	CurlWebSocket(const char* url)
-		: curl(owned::curl_easy_init())
+		: curlm(owned::curl_multi_init())
+		, curl(owned::curl_easy_init())
 	{
-		if (!curl)
+		if (!curlm)
+		{
+			error = "curl_multi_init failed";
+			return;
+		}
+		else if (!curl)
 		{
 			error = "curl_easy_init failed";
 			return;
@@ -25,10 +33,10 @@ struct CurlWebSocket : public WebSocket
 
 		curl_easy_setopt(curl.get(), CURLOPT_URL, url);
 		curl_easy_setopt(curl.get(), CURLOPT_CONNECT_ONLY, 2L);
-		CURLcode ret = curl_easy_perform(curl.get());
-		if (ret != CURLE_OK)
+		CURLMcode mret = curl_multi_add_handle(curlm.get(), curl.get());
+		if (mret != CURLM_OK)
 		{
-			error = curl_easy_strerror(ret);
+			error = curl_multi_strerror(mret);
 			return;
 		}
 	}
@@ -40,6 +48,32 @@ struct CurlWebSocket : public WebSocket
 
 	const Message* recv()
 	{
+		CURLMcode mret = curl_multi_perform(curlm.get(), nullptr);
+		if (mret != CURLM_OK)
+		{
+			error = curl_multi_strerror(mret);
+			return nullptr;
+		}
+
+		int queued;
+		while (CURLMsg* msg = curl_multi_info_read(curlm.get(), &queued))
+		{
+			if (msg->msg == CURLMSG_DONE && msg->easy_handle == curl.get())
+			{
+				if (msg->data.result != CURLE_OK)
+				{
+					error = curl_easy_strerror(msg->data.result);
+					return nullptr;
+				}
+				connect_done = true;
+			}
+		}
+
+		if (!connect_done)
+		{
+			return nullptr;
+		}
+
 		size_t got = 0;
 		const curl_ws_frame* meta = nullptr;
 		do
