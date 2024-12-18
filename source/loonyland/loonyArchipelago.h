@@ -3,6 +3,7 @@
 
 #include <string>
 #include "player.h"
+#include <set>
 
 void DaveTest();
 
@@ -10,6 +11,7 @@ int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string 
 void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y);
 void SendCheckedLocQuest(int questVar);
 void UpdateArchipelago();
+void SendArchipelagoPlayerVar(int v, int val);
 std::string ConnectionStatus();
 
 void Disconnect();
@@ -54,6 +56,9 @@ struct itemData {
 	
 };
 
+const std::set<int> DataStorageVars = { VAR_ORBSTAND, VAR_BOOTSALES, VAR_WITCHTALK, VAR_BRIDGEOPEN, VAR_ZOMBIE, VAR_ZOMBIEREWARD, VAR_VAMPYWALL, VAR_BATSTAND, VAR_VAMPSTAND,
+VAR_KNOWWOLVES, VAR_DOLL, VAR_DOLLGIVEN, VAR_TOWNOPEN, VAR_HELPERBAT, VAR_TALKBAT, VAR_TALKBRIDGE, VAR_PAIDBRIDGE, VAR_PORTALOPEN, VAR_DEADELDER, VAR_GATEOUT, VAR_DEADBONK,
+VAR_SEERTALK, VAR_MINERTALK,VAR_WITCHREWARD, VAR_LANTERN, VAR_TREEREWARD, VAR_SILVERSLING, VAR_LARRYREWARD, VAR_CROPSREWARD };
 
 static locationData basic_locations[] = {
 {"Swamp: Mud Path","Pickup",0,"Halloween Hill",0,194,5,24,25,"Slurpy Swamp Mud"},
@@ -155,13 +160,13 @@ static locationData basic_locations[] = {
 {"Q: Scaredy Cat","Quest",96,"Scaredy Cat",2,0,0,0,0,"Halloween Hill"},
 {"Q: Sticky Shoes","Quest",97,"Sticky Shoes",3,0,0,0,0,"Halloween Hill"},
 {"Q: Mushroom Hunt","Quest",98,"Witch Mushrooms",4,0,0,0,0,"The Witch's Cabin Front"},
-{"Q: Zombie Stomp","Quest",99,"Zombie Stomp",7,0,0,0,0,"Zombiton"},
-{"Q: Smashing Pumpkins","Quest",100,"Smashing Pumpkins",8,0,0,0,0,"Halloween Hill"},
-{"Q: Silver Bullet","Quest",101,"Silver Bullet",13,0,0,0,0,"Halloween Hill"},
-{"Q: Hairy Larry","Quest",102,"Hairy Larry",14,0,0,0,0,"A Cabin Larry"},
-{"Q: Ghostbusting","Quest",103,"Ghostbusting",15,0,0,0,0,"The Witch's Cabin Front"},
-{"Q: The Rescue","Quest",104,"The Rescue",18,0,0,0,0,"A Gloomy Cavern"},
-{"Q: The Collection","Quest",105,"The Collection",19,0,0,0,0,"A Cabin Collector"}
+{"Q: Zombie Stomp","Quest",99,"Zombie Stomp",8,0,0,0,0,"Zombiton"},
+{"Q: Smashing Pumpkins","Quest",100,"Smashing Pumpkins",9,0,0,0,0,"Halloween Hill"},
+{"Q: Silver Bullet","Quest",101,"Silver Bullet",14,0,0,0,0,"Halloween Hill"},
+{"Q: Hairy Larry","Quest",102,"Hairy Larry",15,0,0,0,0,"A Cabin Larry"},
+{"Q: Ghostbusting","Quest",103,"Ghostbusting",16,0,0,0,0,"The Witch's Cabin Front"},
+{"Q: The Rescue","Quest",104,"The Rescue",19,0,0,0,0,"A Gloomy Cavern"},
+{"Q: The Collection","Quest",105,"The Collection",20,0,0,0,0,"A Cabin Collector"}
 };
 
 const std::unordered_map<int, int> basic_items = {

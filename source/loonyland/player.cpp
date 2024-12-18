@@ -31,6 +31,8 @@ void InitPlayer(byte initWhat,byte world,byte level)
 
 	if (ArchipelagoMode && initWhat == INIT_GAME)
 	{
+		if (player.hearts < 1)
+			player.hearts = 1;
 		return;
 	}
 	if (initWhat == INIT_ARCHIPELAGO)
@@ -575,6 +577,11 @@ void PlayerSetVar(int v,int val)
 	oldval=player.var[v];
 	player.var[v]=val;
 
+	if (DataStorageVars.find(v) != DataStorageVars.end())
+	{
+		SendArchipelagoPlayerVar(v, val);
+	}
+
 	// this is a quest completion variable
 	if(v>=VAR_QUESTDONE && v<VAR_QUESTDONE+NUM_QUESTS)
 	{
@@ -724,7 +731,10 @@ void PlayerSetVar(int v,int val)
 	}
 	if(v==VAR_DAISY)
 	{
-		PlayerSetVar(VAR_QUESTDONE+QUEST_DAISY,1);
+		if (!ArchipelagoMode)
+		{
+			PlayerSetVar(VAR_QUESTDONE + QUEST_DAISY, 1);
+		}	
 	}
 	if(v==VAR_TOWNOPEN && oldval==0)
 	{

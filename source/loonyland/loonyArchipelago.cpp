@@ -9,6 +9,7 @@
 #include "player.h"
 #include <chrono>
 #include <thread>
+#include <queue>
 
 
 const int MAX_RETRIES = 5;
@@ -17,6 +18,7 @@ using json = nlohmann::json;
 
 int loonyland_base_id = 2876900;
 bool locationWait = false;
+bool varsWait = false;
 int player_id = 255;
 
 void SendCheckedItem(int loc_id);
@@ -28,8 +30,10 @@ void DeathLinkReceived();
 void GetInfoFromAP();
 void SetupWorld();
 void Disconnect();
+void GetArchipelagoPlayerVar(int var);
 std::string ConnectionStatus();
 
+std::deque<AP_GetServerDataRequest*> GetVarRequests;
 
 
 std::unordered_map<int, bool> locsFound;
@@ -77,6 +81,7 @@ int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string 
 	AP_SetDeathLinkRecvCallback(DeathLinkReceived);
 	AP_SetLocationInfoCallback(GetLocationScouts);
 
+
 	SetupWorld();
 
 	//GetDataPackage?
@@ -92,16 +97,19 @@ void ItemsClear()
 }
 void ItemReceived(int64_t  item_id, bool notif)
 {
+	//add to queue instead
 	item_id -= loonyland_base_id;
 	int count = ++itemsFound[item_id];
 	if (item_frequencies.count(item_id) == 0)
 	{
+		//player.var[item_id] = 1;
 		PlayerSetVar(item_id, 1);
 	}
 	else
 	{
 		if (count <= item_frequencies.at(item_id))
 		{
+			//player.var[item_id + (count - 1)] = 1;
 			PlayerSetVar(item_id+(count-1), 1);
 		}
 	}
@@ -184,7 +192,13 @@ void SendCheckedItem(int loc_id)
 void SetLocationChecked(int64_t  loc_id)
 {
 	loc_id -= loonyland_base_id;
+	if (loc_id > 93)
+	{
+		player.var[basic_locations[loc_id].MapID + VAR_QUESTASSIGN] = 1;
+		player.var[basic_locations[loc_id].MapID + VAR_QUESTDONE] = 1;
+	}
 	locsFound[loc_id] = true;
+
 	//mark ap at that location
 }
 
@@ -195,8 +209,45 @@ void DeathLinkReceived()
 }
 
 void Disconnect()
-{	
+{
+
 	AP_Shutdown();
+}
+
+void SendArchipelagoPlayerVar(int v, int val)
+{
+	AP_SetServerDataRequest setRequest;
+	setRequest.key = AP_GetPrivateServerDataPrefix() + "PLAYER_VAR_" + std::to_string(v);
+	AP_DataStorageOperation replac;
+	replac.operation = "replace";
+	replac.value = &val;
+	std::vector<AP_DataStorageOperation> operations;
+	operations.push_back(replac);
+	setRequest.operations = operations;
+	setRequest.default_value = 0;
+	setRequest.type = AP_DataType::Int;
+	setRequest.want_reply = false;
+	AP_SetServerData(&setRequest);
+}
+
+void GetArchipelagoPlayerVars()
+{
+	for (int var : DataStorageVars)
+	{
+		GetArchipelagoPlayerVar(var);
+	}
+}
+
+void GetArchipelagoPlayerVar(int var)
+{
+	AP_GetServerDataRequest* getRequest = new AP_GetServerDataRequest;
+	getRequest->key = AP_GetPrivateServerDataPrefix() + "PLAYER_VAR_" + std::to_string(var);
+	getRequest->value = new int; //?????????
+	getRequest->type = AP_DataType::Int;
+	AP_GetServerData(getRequest);
+
+	//add to queue, delete and pop in updateArchipelago
+	GetVarRequests.push_front(getRequest);
 }
 
 std::string ConnectionStatus()
@@ -248,6 +299,8 @@ void GetInfoFromAP()
 	}
 	locationWait = true;
 	AP_SendLocationScouts(locationScouts, false);
+
+	GetArchipelagoPlayerVars();
 }
 
 void SetupWorld()
@@ -310,6 +363,26 @@ void UpdateArchipelago()
 		}
 
 		AP_ClearLatestMessage();
+	}
+	for (std::deque<AP_GetServerDataRequest*>::iterator itr = GetVarRequests.begin(); itr != GetVarRequests.end();) {
+		if ((*itr)->status == AP_RequestStatus::Done)
+		{
+			//itr->type yada yada
+			//(*itr)->key
+			std::string key = (*itr)->key.substr((*itr)->key.find("PLAYER_VAR_") + 11);
+			(*itr)->key.erase(0, AP_GetPrivateServerDataPrefix().length() + strlen("PLAYER_VAR_"));
+			if ((int*)(*itr)->value != NULL)
+			{
+				player.var[std::stoi(key)] = *(int*)(*itr)->value;
+			}
+			delete (*itr)->value;
+			delete (*itr);
+			itr = GetVarRequests.erase(itr);
+		}
+		else
+		{
+			itr++;
+		}
 	}
 
 	if (messageCooldown > 0)

@@ -5,13 +5,15 @@
 #include "badge.h"
 #include "title.h"
 
-#define NUM_CHEATS 4
+#define NUM_CHEATS 6
 
 char cheatCode[NUM_CHEATS][16]={
 	"superboom",	// kablooie
 	"getalife",		// 100% health
 	"bangzoom",		// invincibility for a while
 	"gogogo",		// super speed
+	"deathlink",	//kill the player
+	"apdebug",		//run a command
 	};
 
 char lastKeys[17];	// the last 16 letter keys pressed
