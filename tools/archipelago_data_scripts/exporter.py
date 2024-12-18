@@ -1,6 +1,7 @@
 import csv
 import json
 import re
+from pathlib import Path
 from typing import TextIO, List
 
 from constants import *
@@ -393,6 +394,8 @@ loonyland_location_table = {\n""")
 
 
 def main():
+    #Path("/my/directory").mkdir(parents=True, exist_ok=True)
+
     processor = CSVProcessor()
     processor.process_defines()
     processor.process_items()
