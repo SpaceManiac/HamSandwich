@@ -11,6 +11,8 @@
 #include <thread>
 
 
+const int MAX_RETRIES = 5;
+
 using json = nlohmann::json;
 
 int loonyland_base_id = 2876900;
@@ -199,10 +201,23 @@ void Disconnect()
 
 std::string ConnectionStatus()
 {
+	int retries = AP_GetRetryCount();
+	if (retries >= MAX_RETRIES)
+	{
+		return "Failed";
+	}
+
 	AP_ConnectionStatus status = AP_GetConnectionStatus();
 	switch (status) {
 	case AP_ConnectionStatus::Disconnected:
-		return "Disconnected";
+		if (retries < 0)
+		{
+			return "Disconnected";
+		}
+		else
+		{
+			return "Connecting...";
+		}
 		break;
 	case AP_ConnectionStatus::Connected:
 		return "Connected";
@@ -213,8 +228,6 @@ std::string ConnectionStatus()
 	case AP_ConnectionStatus::ConnectionRefused:
 		return "ConnectionRefused";
 			break;
-	case AP_ConnectionStatus::Failed:
-		return "Failed"; break;
 	default:
 		return "Undefined Status";
 	}

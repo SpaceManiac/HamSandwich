@@ -23,19 +23,15 @@
 constexpr int AP_OFFLINE_SLOT = 1404;
 #define AP_OFFLINE_NAME "You"
 
-const int SSL_RETRIES = 3;
-const int MAX_RETRIES = SSL_RETRIES * 2;
-#define DISCONNECT_FEATURE_FLAG false
-
 //Setup Stuff
 bool init = false;
 bool auth = false;
 bool refused = false;
 bool multiworld = true;
-bool failed = false;
 bool isSSL = true;
 bool ssl_success = false;
 int ap_player_id;
+int ap_retry_count = -1;
 std::string ap_player_name;
 size_t ap_player_name_hash;
 std::string ap_ip;
@@ -114,7 +110,7 @@ AP_NetworkPlayer getPlayer(int team, int slot);
 // PRIV Func Declarations End
 
 void AP_Init(const char* ip, const char* game, const char* player_name, const char* passwd) {
-	multiworld = true;
+    multiworld = true;
     
     uint64_t milliseconds_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     rando = std::mt19937(milliseconds_since_epoch);
@@ -129,8 +125,10 @@ void AP_Init(const char* ip, const char* game, const char* player_name, const ch
     ap_game = game;
     ap_player_name = player_name;
     ap_passwd = passwd;
+    ap_retry_count = 0;
 
     printf("AP: Initializing...\n");
+
     //Connect to server
     ix::initNetSystem();
     webSocket.setUrl("wss://" + ap_ip);
@@ -155,16 +153,12 @@ void AP_Init(const char* ip, const char* game, const char* player_name, const ch
                     map_server_data.erase(itr.first);
                 }
                 printf("AP: Error connecting to Archipelago. Retries: %d\n", msg->errorInfo.retries-1);
-                if (msg->errorInfo.retries >= SSL_RETRIES && isSSL && !ssl_success) {
+                ap_retry_count = msg->errorInfo.retries - 1;
+                if (msg->errorInfo.retries-1 >= 2 && isSSL && !ssl_success) {
                     printf("AP: SSL connection failed. Attempting unencrypted...\n");
                     webSocket.setUrl("ws://" + ap_ip);
                     isSSL = false;
                 }
-
-				if (msg->errorInfo.retries > MAX_RETRIES) {
-					printf("AP: Max connection retries reached.\n");
-					AP_Shutdown();
-				}				
             }
         }
     );
@@ -241,9 +235,8 @@ void AP_Start() {
 }
 
 void AP_Shutdown() {
-	if (multiworld) {
-		if (DISCONNECT_FEATURE_FLAG) webSocket.stop();
-	}
+    if (multiworld)
+        webSocket.stop();
 
     // Reset all states
     init = false;
@@ -286,6 +279,7 @@ void AP_Shutdown() {
     slotdata_strings.clear();
     datapkg_cache = Json::objectValue;
     sp_ap_root = Json::objectValue;
+    ap_retry_count = -1;
 }
 
 bool AP_IsInit() {
@@ -487,9 +481,6 @@ AP_ConnectionStatus AP_GetConnectionStatus() {
     if (refused) {
         return AP_ConnectionStatus::ConnectionRefused;
     }
-	if (failed) {
-		return AP_ConnectionStatus::Failed;
-	}
     if (webSocket.getReadyState() == ix::ReadyState::Open) {
         if (auth) {
             return AP_ConnectionStatus::Authenticated;
@@ -498,6 +489,10 @@ AP_ConnectionStatus AP_GetConnectionStatus() {
         }
     }
     return AP_ConnectionStatus::Disconnected;
+}
+
+int AP_GetRetryCount() {
+    return ap_retry_count;
 }
 
 int AP_GetUUID() {
