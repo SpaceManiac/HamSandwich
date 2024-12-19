@@ -4,6 +4,8 @@
 #include "jamulfmv.h"
 #include "game.h"
 #include "options.h"
+#include <vector>
+#include <sstream>
 
 static constexpr int DISPLAY_XBORDER = 256;
 static constexpr int DISPLAY_YBORDER = 256;
@@ -821,4 +823,39 @@ void DrawLine(int x,int y,int x2,int y2,byte col)
 			i--;
 		}
 	}
+}
+
+std::vector<std::string> splitStringByFontSize(const std::string& input, int maxFontSize, int maxStringLength) {
+	std::vector<std::string> result;
+	std::istringstream iss(input);
+	std::string word;
+	std::string currentLine;
+
+	while (iss >> word) {
+		// Simulate adding the word and checking the size
+		std::string tempLine = currentLine.empty() ? word : currentLine + " " + word;
+		int tempSize = FontStrLen(tempLine, gameFont[0]);
+
+		// If the size exceeds the max font size
+		if (tempSize > maxFontSize || tempLine.size() > maxStringLength){
+			if (!currentLine.empty()) {
+				result.push_back(currentLine); // Save the current line
+				currentLine.clear();
+			}
+			currentLine = word; // Start a new line with the current word
+		}
+		else {
+			if (!currentLine.empty()) {
+				currentLine += " "; // Add a space before adding the word
+			}
+			currentLine += word;
+		}
+	}
+
+	// Add the last line if not empty
+	if (!currentLine.empty()) {
+		result.push_back(currentLine);
+	}
+
+	return result;
 }

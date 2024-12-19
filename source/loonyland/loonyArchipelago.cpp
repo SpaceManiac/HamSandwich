@@ -42,36 +42,40 @@ bool ArchipelagoMode = true;
 bool ExpectingDeath = false;
 
 
-void to_json(json& j, const locationData& loc) {
-	j = json{
-		{"Name", loc.Name},
-		{"Type", loc.Type},
-		{"ID", loc.ID},
-		{"Map", loc.Map},
-		{"MapID", loc.MapID},
-		{"Xcoord", loc.Xcoord},
-		{"Ycoord", loc.Ycoord},
-		{"Spec1ID", loc.Spec1ID},
-		{"Spec2ID", loc.Spec2ID}
-	};
-}
+std::unordered_map<int, chatData> chat_table = {
+	{2, { "Super Heart", ""}}, //trees
+	{8, { "rubber booties", ""}}, //biff
+	{9, { "boots", ""}}, //biff2
+	{10, { "boots", ""}}, //biff3
+	{14, { "cactus", ""}}, //bonita
+	{15, { "cactus", ""}}, //bonita2
+	{26, { "this stick", ""}}, //cat lady
+	{27, { "the stick", ""}}, //cat lady
+	{29, { "potion", ""}}, //zizwalda
+	{31, { "Super Heart", ""}}, //zizwalda2
+	{42, { "super growth", ""}}, //farmer
+	{43, { "fertilizer", ""}}, //farmer2
+	{56, { "100 Gem reward", ""}}, //mayor
+	{60, { "A Ghost Slaying Potion", ""}}, //zizwalda potion
+	{61, { "Ghost Slaying Potion", ""}}, //zizwalda potion
+	{62, { "a Ghost Slaying Potion", ""}}, //zizwalda potion
+	{68, { "Bat Key", ""}}, //doofy little twerp
+	{70, { "coat your slingshot in silver", "make "}}, //silver man
+	{75, { "Your slingshot is silver coated now", "I made "}}, //silver man2
+	{79, { "lantern", ""}}, //lost girl
+	{85, { "key", ""}}, //larry wife
+	{92, { "toy", ""}}, //collection
+	{96, { "Reflect Gem", ""}}, //collection
+	{130, { "crystal ball", ""}}, //seer
+	{164, { "ghost potion", ""}}, //zizwalda
+	{167, { "muck walking boots", ""}}, //boots guy
+	{191, { "Super Heart", ""}} //zizwalda
+	//{192, { "Hot Pants", ""}}, //remix hot pants guy
+	//{193, { "Hot Pants", ""}}, //remix hot pants guy
+	//{194, { "hot pants", ""}}, //remix hot pants guy
+	//{198, { "Vampire Bust", ""}}, //arms dealer
+};
 
-void from_json(const json& j, locationData& loc) {
-	j.at("Name").get_to(loc.Name);
-	j.at("Type").get_to(loc.Type);
-	j.at("ID").get_to(loc.ID);
-	j.at("Map").get_to(loc.Map);
-	j.at("MapID").get_to(loc.MapID);
-	j.at("Xcoord").get_to(loc.Xcoord);
-	j.at("Ycoord").get_to(loc.Ycoord);
-	j.at("Spec1ID").get_to(loc.Spec1ID);
-	j.at("Spec2ID").get_to(loc.Spec2ID);
-}
-
-void DaveTest() {
-	SetupWorld();
-	
-}
 
 int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password) {
 	AP_Init(IPAddress.c_str(), "Loonyland", SlotName.c_str(), Password.c_str());
@@ -117,7 +121,7 @@ void ItemReceived(int64_t  item_id, bool notif)
 	if ((item_id >= VAR_HEART && item_id <= VAR_PANTS)
 		|| item_id == VAR_GEM
 		|| item_id == VAR_TRIPLEFIRE
-		|| item_id >= (VAR_KEY && item_id <= VAR_KEY+2))
+		|| (item_id >= VAR_KEY && item_id <= VAR_KEY+2))
 	{
 		PlayerCalcStats();
 	}
@@ -151,6 +155,9 @@ void GetLocationScouts(std::vector<AP_NetworkItem> vec_NetworkItems)
 				item_id = ITM_ARCHIPELAGO;
 			}
 			tempMap->map[loc.Xcoord + loc.Ycoord * tempMap->width].item = item_id; //from var to placeable item
+		}
+		for (auto const& i : loc.chatCodes) {
+			chat_table[i].updated = item.itemName;
 		}
 	}
 

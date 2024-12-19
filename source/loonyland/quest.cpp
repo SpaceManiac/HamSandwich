@@ -12,6 +12,7 @@
 #include <sstream>
 #include "loonyArchipelago.h"
 
+const int LINE_MAX_CHAR = 64;
 RandoItem randoReward[11];
 
 static const char questName[NUM_QUESTS][64]={
@@ -36,6 +37,8 @@ static const char questName[NUM_QUESTS][64]={
 	"The Rescue",
 	"The Collection",
 };
+
+std::vector<std::string> lines;
 
 static Convo talk[]={
 	// 0
@@ -2165,6 +2168,28 @@ void DoChatAction(byte a)
 void UpdateChat(void)
 {
 	byte c;
+	static byte oldCurChat;
+
+	if (ArchipelagoMode && curChat != oldCurChat)
+	{
+		std::string text = talk[curChat].line[0];
+		text = text + " " + talk[curChat].line[1];
+		text = text + " " + talk[curChat].line[2];
+		text = text + " " + talk[curChat].line[3];
+		//send string to archipelago to be updated
+		if (chat_table.find(curChat) != chat_table.end())
+		{
+			size_t pos = 0;
+			std::string orig, updated;
+			orig = chat_table.at(curChat).orig;
+			updated = chat_table.at(curChat).updated;
+			while ((pos = text.find(orig, pos)) != std::string::npos) {
+				text.replace(pos, orig.length(), updated);
+				pos += updated.length();
+			}
+		}
+		lines = splitStringByFontSize(text, 500, LINE_MAX_CHAR);
+	}
 
 	if(noButtons)
 	{
@@ -2180,15 +2205,23 @@ void UpdateChat(void)
 		curLine=4;
 	}
 
-	if(curChar<48)
+	if(curChar< LINE_MAX_CHAR)
 	{
 		curChar++;
-		if(talk[curChat].line[curLine][curChar]=='\0')
+		if (ArchipelagoMode)
 		{
-			curChar=48;
+			//stop it from skipping, but detect end of line
+			if (curLine < lines.size() && lines[curLine].length() <= curChar)
+			{
+				curChar = LINE_MAX_CHAR;
+			}
+		}
+		else if(talk[curChat].line[curLine][curChar]=='\0')
+		{
+			curChar= LINE_MAX_CHAR;
 		}
 	}
-	if(curChar>=48)
+	if(curChar>= LINE_MAX_CHAR)
 	{
 		if(curLine<4)
 			curLine++;
@@ -2219,22 +2252,40 @@ void UpdateChat(void)
 void RenderChat(MGLDraw *mgl)
 {
 	int i;
-	char s[50];
+	char s[LINE_MAX_CHAR];
 
 	DrawFillBox(65,35,639-65,35+10+4*22,4);
 	DrawBox(65,35,639-65,35+10+4*22,31);
-
-	for(i=0;i<4;i++)
+	if (ArchipelagoMode)
 	{
-		if(curLine>i)
-			Print(70,37+i*22,talk[curChat].line[i],0,0);
-		else if(curLine==i)
+		for (i = 0; i < lines.size(); i++)
 		{
-			strncpy(s,talk[curChat].line[i],curChar);
-			s[curChar]='\0';
-			Print(70,37+i*22,s,0,0);
+			if (curLine > i)
+				Print(70, 37 + i * 22, lines[i].c_str(), 0, 0);
+			else if (curLine == i)
+			{
+				strncpy(s, lines[i].c_str(), curChar);
+				s[curChar] = '\0';
+				Print(70, 37 + i * 22, s, 0, 0);
+			}
+		}
+
+	}
+	else
+	{
+		for (i = 0; i < 4; i++)
+		{
+			if (curLine > i)
+				Print(70, 37 + i * 22, talk[curChat].line[i], 0, 0);
+			else if (curLine == i)
+			{
+				strncpy(s, talk[curChat].line[i], curChar);
+				s[curChar] = '\0';
+				Print(70, 37 + i * 22, s, 0, 0);
+			}
 		}
 	}
+
 }
 
 void GiveRandoItem(int index)
