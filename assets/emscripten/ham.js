@@ -54,6 +54,12 @@ var HamSandwich = (function () {
 	}
 
 	function fsInit() {
+		// At preRun, after HEAP8 has been initialized, push more dependencies:
+		InstallerUpload.preInit();
+
+		// Init FS after HEAP8 exists but before doing anything w/ FS, else
+		// stdin/stdout/stderr will get the wrong file descriptors.
+		FS.init();
 		FS.mkdir('/appdata');
 		appdataMount = FS.mount(IDBFS, {}, '/appdata').mount;
 		FS.mkdir('/installers');
@@ -399,7 +405,9 @@ var Module = (function() {
 					});
 				};
 			},
-			InstallerUpload.preInit,
+		],
+
+		preRun: [
 			HamSandwich.fsInit,
 		],
 
