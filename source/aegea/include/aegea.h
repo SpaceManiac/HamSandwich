@@ -1,11 +1,15 @@
 #ifndef AEGEA_H
 #define AEGEA_H
 
+#include <initializer_list>
 #include <map>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
+
+// Forward declarations are used here so games only need to #include <json.h>
+// if they are actually using the arbitrary-value storage system.
 
 namespace jt
 {
@@ -27,10 +31,10 @@ class ArchipelagoClient
 	std::string error;
 	std::unique_ptr<WebSocket> socket;
 	std::vector<jt::Json> outgoing;
-
-	std::map<std::string, jt::Json> storage;
-	std::map<std::string, jt::Json> storageChanges;
 public:
+	// ------------------------------------------------------------------------
+	// Basics
+
 	ArchipelagoClient(std::string_view game, std::string_view address, std::string_view slot, std::string_view password);
 	~ArchipelagoClient();
 
@@ -41,7 +45,21 @@ public:
 	// Call this on a regular basis (ex: once per frame) to handle networking.
 	void update();
 
+	// ------------------------------------------------------------------------
+	// Storage system
+
+	// Contains known storage values.
+	std::map<std::string, jt::Json> storage;
+	// Contains previous values for storage keys that have changed.
+	// The new values are already in `storage`.
+	// Clear it manually once you've processed it.
+	std::map<std::string, jt::Json> storage_changes;
+
+	void storage_get(std::initializer_list<std::string_view> keys);
+	void storage_get(std::string_view key);
 	void storage_set(std::string_view key, jt::Json value, bool want_reply = true);
+	void storage_set_notify(std::initializer_list<std::string_view> keys);
+	void storage_set_notify(std::string_view key);
 };
 
 #endif

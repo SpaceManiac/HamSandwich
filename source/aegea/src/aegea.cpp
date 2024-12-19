@@ -62,7 +62,7 @@ std::string_view ArchipelagoClient::connection_status() const
 
 bool ArchipelagoClient::is_active() const
 {
-	return status == Active;
+	return socket && socket->is_connected() && status == Active;
 }
 
 void ArchipelagoClient::update()
@@ -109,11 +109,14 @@ void ArchipelagoClient::update()
 			}
 			const auto& cmd = cmdJ.getString();
 			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Archipelago: Handling %s", cmd.c_str());
+
+			// https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#server---client
 			if (cmd == "RoomInfo")
 			{
-				jt::Json connect;
+				// Bypass outgoing queue during connection setup.
+				jt::Json outgoingJ;
+				jt::Json& connect = outgoingJ.setArray().emplace_back();
 				connect["cmd"] = "Connect";
-				// mandatory
 				connect["password"] = std::string(password);
 				connect["game"] = std::string(game);
 				connect["name"] = std::string(slot);
@@ -124,7 +127,7 @@ void ArchipelagoClient::update()
 				connect["version"]["build"] = 1;
 				connect["items_handling"] = ItemsHandling::All;
 				connect["tags"][0] = "TextOnly";
-				outgoing.push_back(connect);
+				socket->send_text(outgoingJ.toString().c_str());
 				status = WaitingForConnected;
 			}
 			else if (cmd == "ConnectionRefused")
@@ -164,6 +167,15 @@ void ArchipelagoClient::update()
 				if (packet["keys"].isObject())
 				{
 					const auto& object = packet["keys"].getObject();
+					for (const auto& pair : object)
+					{
+						// Let storage_changes monitor all of Get, Set, and SetNotify.
+						if (storage_changes.find(pair.first) == storage_changes.end())
+						{
+							storage_changes[pair.first] = std::move(storage[pair.first]);
+						}
+						storage[pair.first] = std::move(pair.second);
+					}
 					storage.insert(object.begin(), object.end());
 				}
 			}
@@ -172,11 +184,11 @@ void ArchipelagoClient::update()
 				if (packet["key"].isString())
 				{
 					const std::string& key = packet["key"].getString();
-					storage[key] = packet["value"];
+					storage[key] = std::move(packet["value"]);
 					// If we don't already know an old value, save one now.
-					if (storageChanges.find(key) == storageChanges.end())
+					if (storage_changes.find(key) == storage_changes.end())
 					{
-						storageChanges[key] = packet["original_value"];
+						storage_changes[key] = std::move(packet["original_value"]);
 					}
 				}
 			}
@@ -187,7 +199,7 @@ void ArchipelagoClient::update()
 		}
 	}
 
-	if (socket && socket->is_connected() && !outgoing.empty())
+	if (is_active() && !outgoing.empty())
 	{
 #ifndef NDEBUG
 		for (const auto& packet : outgoing)
@@ -205,6 +217,24 @@ void ArchipelagoClient::update()
 	}
 }
 
+// https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#client---server
+
+void ArchipelagoClient::storage_get(std::initializer_list<std::string_view> keys)
+{
+	jt::Json& packet = outgoing.emplace_back();
+	packet["cmd"] = "Get";
+	auto& keysJ = packet["keys"].setArray();
+	for (auto key : keys)
+	{
+		keysJ.emplace_back(key);
+	}
+}
+
+void ArchipelagoClient::storage_get(std::string_view key)
+{
+	storage_get({ key });
+}
+
 void ArchipelagoClient::storage_set(std::string_view key, jt::Json value, bool want_reply)
 {
 	jt::Json& packet = outgoing.emplace_back();
@@ -216,4 +246,20 @@ void ArchipelagoClient::storage_set(std::string_view key, jt::Json value, bool w
 	{
 		packet["want_reply"] = want_reply;
 	}
+}
+
+void ArchipelagoClient::storage_set_notify(std::initializer_list<std::string_view> keys)
+{
+	jt::Json& packet = outgoing.emplace_back();
+	packet["cmd"] = "SetNotify";
+	auto& keysJ = packet["keys"].setArray();
+	for (auto key : keys)
+	{
+		keysJ.emplace_back(key);
+	}
+}
+
+void ArchipelagoClient::storage_set_notify(std::string_view key)
+{
+	storage_set_notify({ key });
 }
