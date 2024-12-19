@@ -197,6 +197,12 @@ void ArchipelagoClient::update()
 					socket->send_text(outgoingJ.toString().c_str());
 					status = WaitingForDataPackage;
 				}
+
+				room_info.clear();
+				for (auto& pair : packet.getObject())
+				{
+					room_info.insert(std::move(pair));
+				}
 			}
 			else if (cmd == "DataPackage")
 			{
@@ -213,6 +219,12 @@ void ArchipelagoClient::update()
 			}
 			else if (cmd == "Connected")
 			{
+				// Just dump both RoomInfo and Connected into the same object.
+				// There are no specified overlapping fields.
+				for (auto& pair : packet.getObject())
+				{
+					room_info.insert(std::move(pair));
+				}
 				status = Active;
 			}
 			else if (cmd == "ReceivedItems")
@@ -223,6 +235,34 @@ void ArchipelagoClient::update()
 			}
 			else if (cmd == "RoomUpdate")
 			{
+				// Can update anything, but stock server sends:
+				// - From RoomInfo: permissions, hint_cost, location_check_points
+				// - From Connected: hint_points, players, checked_locations
+				for (auto& pair : packet.getObject())
+				{
+					if (pair.first == "checked_locations" && pair.second.isArray())
+					{
+						// checked_locations is special in that it includes only
+						// new locations and must be merged in.
+						auto iter = room_info.find("checked_locations");
+						if (iter != room_info.end())
+						{
+							auto& array = iter->second.isArray() ? iter->second.getArray() : iter->second.setArray();
+							for (auto& element : pair.second.getArray())
+							{
+								array.emplace_back(std::move(element));
+							}
+						}
+						else
+						{
+							room_info.insert(std::move(pair));
+						}
+					}
+					else
+					{
+						room_info.insert(std::move(pair));
+					}
+				}
 			}
 			else if (cmd == "PrintJSON")
 			{
@@ -373,7 +413,7 @@ void ArchipelagoClient::storage_set(std::string_view key, jt::Json value, bool w
 	packet["cmd"] = "Set";
 	packet["key"] = key;
 	packet["operations"][0]["operation"] = "replace";
-	packet["operations"][0]["value"] = value;
+	packet["operations"][0]["value"] = std::move(value);
 	if (!want_reply) // True is the server-side default.
 	{
 		packet["want_reply"] = want_reply;

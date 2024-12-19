@@ -35,6 +35,7 @@ class ArchipelagoClient
 	std::unique_ptr<WebSocket> socket;
 	std::vector<jt::Json> outgoing;
 
+	std::map<std::string, jt::Json, std::less<>> room_info;
 	std::map<std::string, jt::Json, std::less<>> data_packages;
 
 	bool death_link_pending;
