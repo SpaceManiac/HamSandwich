@@ -41,7 +41,12 @@ struct CurlWebSocket : public WebSocket
 		}
 	}
 
-	std::string_view error_message()
+	bool is_connected() const
+	{
+		return connect_done;
+	}
+
+	std::string_view error_message() const
 	{
 		return error;
 	}

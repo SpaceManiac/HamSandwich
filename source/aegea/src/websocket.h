@@ -25,8 +25,9 @@ public:
 	static std::unique_ptr<WebSocket> connect(const char* url);
 	virtual ~WebSocket() {}
 
+	virtual bool is_connected() const = 0;
 	// Empty string means no error yet.
-	virtual std::string_view error_message() = 0;
+	virtual std::string_view error_message() const = 0;
 	// nullptr means call again later.
 	// Return value valid until next call to recv().
 	virtual const Message* recv() = 0;

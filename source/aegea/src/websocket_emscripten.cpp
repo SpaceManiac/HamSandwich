@@ -64,6 +64,7 @@ struct EmscriptenWebSocket : public WebSocket
 	std::queue<Message> queue;
 	Message buffer;
 	std::string error;
+	bool opened = false;
 
 	EmscriptenWebSocket(const char* url)
 	{
@@ -76,9 +77,20 @@ struct EmscriptenWebSocket : public WebSocket
 			return;
 		}
 
+		emscripten_websocket_set_onopen_callback(socket.get(), this, onopen);
 		emscripten_websocket_set_onmessage_callback(socket.get(), this, onmessage);
 		emscripten_websocket_set_onerror_callback(socket.get(), this, onerror);
 		emscripten_websocket_set_onclose_callback(socket.get(), this, onclose);
+	}
+
+	static EM_BOOL onopen(int eventType, const EmscriptenWebSocketOpenEvent *websocketEvent, void *userData)
+	{
+		(void)eventType;
+		(void)websocketEvent;
+
+		auto self = static_cast<EmscriptenWebSocket*>(userData);
+		self->opened = true;
+		return EM_TRUE; // has no effect
 	}
 
 	static EM_BOOL onmessage(int eventType, const EmscriptenWebSocketMessageEvent *websocketEvent, void *userData)
@@ -117,7 +129,12 @@ struct EmscriptenWebSocket : public WebSocket
 		return EM_TRUE; // has no effect
 	}
 
-	std::string_view error_message()
+	bool is_connected() const
+	{
+		return opened;
+	}
+
+	std::string_view error_message() const
 	{
 		return error;
 	}
