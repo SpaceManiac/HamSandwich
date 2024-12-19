@@ -1,7 +1,7 @@
 # Constants
 ITM_NAME = 0
 ITM_ID = 1
-ITM_IDEND = 2
+ITM_OBJ = 2
 ITM_CATEGORY = 3
 ITM_IC = 4
 ITM_FREQ = 5
@@ -26,7 +26,10 @@ LOC_SPEC2ID = 8
 LOC_REGION = 9
 LOC_COMMENT = 10
 LOC_LOGIC = 11
-LOC_OVERRIDE = 12
+LOC_GLITCH_LOGIC = 12
+LOC_PEEK_LOGIC = 13
+LOC_OVERRIDE = 14
+LOC_CHATCODES = 15
 
 ENT_DISABLE = 0
 ENT_SOURCE = 1
@@ -65,6 +68,7 @@ TRACKER_ITEM_MAPPING = "Poptracker/scripts/data/item_mapping.lua"
 TRACKER_LOCATION_MAPPING = "Poptracker/scripts/data/location_mapping.lua"
 
 CLIENT_LOCATIONS = "HamSandwich/AP_Locations.h"
+CLIENT_DATA = "Hamsandwich/loonyArchipelagoData.h"
 
 LOONYLAND_BASE_ID:int = 2876900
 

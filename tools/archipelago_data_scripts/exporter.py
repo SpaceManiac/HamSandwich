@@ -41,11 +41,14 @@ class CSVProcessor:
             with open(INPUT_ITEMS, 'r') as input_file, \
                     open(PYTHON_ITEMS, 'w') as python_file, \
                     open(TRACKER_ITEM_MAPPING, 'w') as tracker_map_file, \
-                    open(TRACKER_ITEMS, 'w') as tracker_file:
+                    open(TRACKER_ITEMS, 'w') as tracker_file, \
+                    open(CLIENT_DATA, 'w') as client_file:
 
                 self.open_reader(input_file)
                 python_file.write(pyItemHeader + "\n")
                 tracker_map_file.write("ITEM_MAPPING = { \n")
+                client_file.write("const std::unordered_map<int, int> item_frequencies = {\n")
+                basic_items = "const std::unordered_map<int, int> basic_items = {\n"
 
                 json_list = []
 
@@ -79,9 +82,18 @@ class CSVProcessor:
                     #tracker mappings
                     tracker_map_file.write(f"    [{LOONYLAND_BASE_ID + globals()[row[ITM_ID]]}] = {{{{\"{row[ITM_NAME]}\", \"{row[ITM_TRACKERTYPE]}\"}}}},\n")
 
+                    #client hamsandwich
+                    if row[ITM_FREQ]:
+                        client_file.write(f"{{{row[ITM_ID]}, {row[ITM_FREQ]}}},\n")
+
+                    basic_items += f"{{ {row[ITM_ID]} , {row[ITM_OBJ]}}},\n"
+
 
                 python_file.write("}")
                 tracker_map_file.write("}")
+                client_file.write("};\n\n")
+                basic_items += "};\n\n"
+                client_file.write(basic_items)
                 json.dump(json_list, tracker_file, indent=4)
         except (FileNotFoundError, ValueError) as e:
             print(f"Error processing items: {e}")
@@ -97,6 +109,8 @@ class CSVProcessor:
                 self.open_reader(input_file)
                 python_file.write(pyRegionHeader + "\n")
                 tracker_reg_file.write("loonyland_region_table = {\n")
+
+
                 json_output = []
                 overworld = {
                     "name": "Overworld",
@@ -220,7 +234,8 @@ class CSVProcessor:
                     open(TRACKER_RULES, 'w') as tracker_file_rules, \
                     open(TRACKER_LOCATION_MAPPING, 'w') as tracker_file_mapping, \
                     open(PYTHON_LOCATIONS, 'w') as python_file, \
-                    open(PYTHON_RULES, 'w') as python_file_rules:
+                    open(PYTHON_RULES, 'w') as python_file_rules, \
+                    open(CLIENT_DATA, 'a') as client_data:
 
                 data = json.load(tracker_file_locs)
 
@@ -231,6 +246,7 @@ class CSVProcessor:
 loonyland_location_table = {\n""")
                 tracker_file_rules.write("access_rules = {\n")
                 tracker_file_mapping.write("LOCATION_MAPPING = { \n")
+                client_data.write("static locationData basic_locations[] = {")
 
                 for row in self.csv_reader:
                     self.row_data = row
@@ -239,10 +255,17 @@ loonyland_location_table = {\n""")
                     location_name = row[LOC_NAME]
                     location_id = row[LOC_ID]
                     location_map = row[LOC_MAP]
+                    location_map_id = row[LOC_MAPID]
+                    location_xcoord = row[LOC_XCOORD]
+                    location_ycoord = row[LOC_YCOORD]
+                    location_spec1 = row[LOC_SPEC1ID]
+                    location_spec2 = row[LOC_SPEC2ID]
+                    location_type_normal = row[LOC_TYPE]
                     location_type = row[LOC_TYPE].upper()  # Assuming Type is mapped to an enum
                     location_region = row[LOC_REGION]
                     location_logic = row[LOC_LOGIC]
                     location_override = row[LOC_OVERRIDE]
+                    location_chat_codes = row[LOC_CHATCODES]
 
                     location_line = f"    \"{location_name}\": LL_Location(" \
                                     f"{location_id}, LL_LocCat.{location_type}, \"{location_region}\"),\n"
@@ -309,6 +332,10 @@ loonyland_location_table = {\n""")
                     #tracker mapping
                     tracker_file_mapping.write(f"    [{LOONYLAND_BASE_ID + int(location_id)}] = {{{{\"@Overworld/{row[LOC_REGION]}/{row[LOC_NAME]}\"}}}},\n")
 
+                    #client data hamsandwich
+                    client_data.write(f"{{\"{location_name}\",\"{location_type_normal}\",{location_id},\"{location_map}\",{location_map_id},")
+                    client_data.write(f"{location_xcoord},{location_ycoord},{location_spec1},{location_spec2},\"{location_region}\",{{{location_chat_codes}}}}},\n")
+
                 tracker_file_locs.truncate(0)
                 tracker_file_locs.seek(0)
                 json.dump(data, tracker_file_locs, indent=2)
@@ -319,6 +346,8 @@ loonyland_location_table = {\n""")
                 python_file.write("}")
                 python_file_rules.write("    }\n")
                 python_file_rules.write(pyRulesFooter)
+
+                client_data.write("};\n\n")
 
         except (FileNotFoundError, ValueError) as e:
             print(f"Error processing locations: {e}")
@@ -394,7 +423,9 @@ loonyland_location_table = {\n""")
 
 
 def main():
-    #Path("/my/directory").mkdir(parents=True, exist_ok=True)
+    Path("./HamSandwich").mkdir(parents=True, exist_ok=True)
+    Path("./Poptracker").mkdir(parents=True, exist_ok=True)
+    Path("./Python").mkdir(parents=True, exist_ok=True)
 
     processor = CSVProcessor()
     processor.process_defines()
