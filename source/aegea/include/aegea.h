@@ -21,16 +21,21 @@ class WebSocket;
 class ArchipelagoClient
 {
 	enum {
+		Connecting,
 		WaitingForRoomInfo,
 		WaitingForDataPackage,
 		WaitingForConnected,
 		Active,
-	} status = WaitingForRoomInfo;
+	} status = Connecting;
 
 	std::string game, address, slot, password;
 	std::string error;
 	std::unique_ptr<WebSocket> socket;
 	std::vector<jt::Json> outgoing;
+
+	std::map<std::string, jt::Json, std::less<>> data_packages;
+
+	void send_connect();
 public:
 	// ------------------------------------------------------------------------
 	// Basics
@@ -44,6 +49,11 @@ public:
 
 	// Call this on a regular basis (ex: once per frame) to handle networking.
 	void update();
+
+	// ------------------------------------------------------------------------
+	// Data packages
+
+	const jt::Json& get_data_package(std::string_view game);
 
 	// ------------------------------------------------------------------------
 	// Storage system

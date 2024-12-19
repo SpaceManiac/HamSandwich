@@ -3,9 +3,14 @@
 #include "websocket.h"
 #include <SDL2/SDL_log.h>
 
+namespace
+{
+	const jt::Json null;
+}
+
+// https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#items_handling-flags
 namespace ItemsHandling
 {
-	// https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#items_handling-flags
 	constexpr int None = 0;
 	constexpr int OtherWorlds = 0b001;
 	constexpr int OwnWorld = 0b010 | OtherWorlds;
@@ -65,11 +70,39 @@ bool ArchipelagoClient::is_active() const
 	return socket && socket->is_connected() && status == Active;
 }
 
+void ArchipelagoClient::send_connect()
+{
+	jt::Json outgoingJ;
+	jt::Json& connect = outgoingJ.setArray().emplace_back();
+	connect["cmd"] = "Connect";
+	connect["password"] = std::string(password);
+	connect["game"] = std::string(game);
+	connect["name"] = std::string(slot);
+	connect["uuid"] = ""; // mandatory, but not actually used
+	connect["version"]["class"] = "Version";
+	connect["version"]["major"] = 0;
+	connect["version"]["minor"] = 5;
+	connect["version"]["build"] = 1;
+	connect["items_handling"] = ItemsHandling::All;
+	connect["tags"].setArray();
+	// Bypass outgoing queue during connection setup.
+#ifndef NDEBUG
+	fprintf(stderr, "--> %s\n", connect.toString().c_str());
+#endif
+	socket->send_text(outgoingJ.toString().c_str());
+	status = WaitingForConnected;
+}
+
 void ArchipelagoClient::update()
 {
 	if (!socket || !socket->error_message().empty())
 	{
 		return;
+	}
+
+	if (socket->is_connected() && status == Connecting)
+	{
+		status = WaitingForRoomInfo;
 	}
 
 	while (const WebSocket::Message* message = socket->recv())
@@ -95,7 +128,7 @@ void ArchipelagoClient::update()
 			continue;
 		}
 
-		for (const auto& packet : body.getArray())
+		for (auto& packet : body.getArray())
 		{
 #ifndef NDEBUG
 			fprintf(stderr, "<-- %s\n", packet.toString().c_str());
@@ -113,22 +146,37 @@ void ArchipelagoClient::update()
 			// https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#server---client
 			if (cmd == "RoomInfo")
 			{
-				// Bypass outgoing queue during connection setup.
 				jt::Json outgoingJ;
-				jt::Json& connect = outgoingJ.setArray().emplace_back();
-				connect["cmd"] = "Connect";
-				connect["password"] = std::string(password);
-				connect["game"] = std::string(game);
-				connect["name"] = std::string(slot);
-				connect["uuid"] = ""; // mandatory, but not actually used
-				connect["version"]["class"] = "Version";
-				connect["version"]["major"] = 0;
-				connect["version"]["minor"] = 5;
-				connect["version"]["build"] = 1;
-				connect["items_handling"] = ItemsHandling::All;
-				connect["tags"][0] = "TextOnly";
-				socket->send_text(outgoingJ.toString().c_str());
-				status = WaitingForConnected;
+				jt::Json& getDataPackage = outgoingJ.setArray().emplace_back();
+				getDataPackage["cmd"] = "GetDataPackage";
+				auto& games = getDataPackage["games"].setArray();
+				for (const auto& pair : packet["datapackage_checksums"].getObject())
+				{
+					// TODO: Check for cache validitity here.
+					games.emplace_back(pair.first);
+				}
+
+				if (games.empty())
+				{
+					send_connect();
+				}
+				else
+				{
+					// Bypass outgoing queue during connection setup.
+#ifndef NDEBUG
+					fprintf(stderr, "--> %s\n", getDataPackage.toString().c_str());
+#endif
+					socket->send_text(outgoingJ.toString().c_str());
+					status = WaitingForDataPackage;
+				}
+			}
+			else if (cmd == "DataPackage")
+			{
+				for (auto& pair : packet["data"]["games"].getObject())
+				{
+					data_packages[pair.first] = std::move(pair.second);
+				}
+				send_connect();
 			}
 			else if (cmd == "ConnectionRefused")
 			{
@@ -151,9 +199,6 @@ void ArchipelagoClient::update()
 			else if (cmd == "PrintJSON")
 			{
 			}
-			else if (cmd == "DataPackage")
-			{
-			}
 			else if (cmd == "Bounced")
 			{
 			}
@@ -166,8 +211,8 @@ void ArchipelagoClient::update()
 			{
 				if (packet["keys"].isObject())
 				{
-					const auto& object = packet["keys"].getObject();
-					for (const auto& pair : object)
+					auto& object = packet["keys"].getObject();
+					for (auto& pair : object)
 					{
 						// Let storage_changes monitor all of Get, Set, and SetNotify.
 						if (storage_changes.find(pair.first) == storage_changes.end())
@@ -215,6 +260,16 @@ void ArchipelagoClient::update()
 		outgoing = std::move(array);
 		outgoing.clear();
 	}
+}
+
+const jt::Json& ArchipelagoClient::get_data_package(std::string_view game)
+{
+	auto iter = data_packages.find(game);
+	if (iter == data_packages.end())
+	{
+		return null;
+	}
+	return iter->second;
 }
 
 // https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#client---server
