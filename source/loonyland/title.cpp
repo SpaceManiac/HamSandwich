@@ -8,6 +8,7 @@
 #include "appdata.h"
 #include "steam.h"
 #include "badge.h"
+#include "loonyArchipelago.h"
 
 #define VERSION_NO         "Version 3.1"
 #define COPYRIGHT_YEARS    "2001-2024"
@@ -857,6 +858,10 @@ TASK(MainMenuResult) MainMenu(MGLDraw *mgl)
 		}
 		else if(loadingGame==TitleSubmenu::LoadGame)
 		{
+			if (ArchipelagoMode)
+			{
+				CO_RETURN MainMenuResult::LoadGame;
+			}
 			byte b2=LoadGameUpdate(&lastTime,mgl);
 			LoadGameDisplay(mgl);
 			if(b2==0)
@@ -914,11 +919,18 @@ TASK(MainMenuResult) MainMenu(MGLDraw *mgl)
 		}
 		else if(loadingGame==TitleSubmenu::MainMenu && (b==MainMenuResult::NewGame || b == MainMenuResult::Remix))
 		{
-			loadingGame=TitleSubmenu::ChooseDiff;
-			choosingDiffFor=b;
-			cursor=0;
-			b=MainMenuResult::None;
-			oldc=255;
+			if (ArchipelagoMode)
+			{
+				CO_RETURN b;
+			}
+			else
+			{
+				loadingGame = TitleSubmenu::ChooseDiff;
+				choosingDiffFor = b;
+				cursor = 0;
+				b = MainMenuResult::None;
+				oldc = 255;
+			}
 		}
 		else if (b == MainMenuResult::Extras)
 		{

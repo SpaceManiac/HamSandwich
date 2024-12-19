@@ -89,7 +89,14 @@ byte InitLevel(byte map)
 
 	if(loadGame)
 	{
-		LoadGame(loadGame-1);
+		if (ArchipelagoMode)
+		{
+			LoadGame(0);
+		}
+		else
+		{
+			LoadGame(loadGame - 1);
+		}
 		loadGame=0;
 		map=player.levelNum;
 
@@ -120,6 +127,10 @@ byte InitLevel(byte map)
 	}
 	else
 	{
+		if (ArchipelagoMode && player.worldNum == WORLD_NORMAL)
+		{
+			map = 0;
+		}
 		if(curWorld.numMaps<=map)
 			return 0;	// can't go to illegal map
 

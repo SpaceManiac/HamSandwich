@@ -5,8 +5,6 @@
 #include "player.h"
 #include <set>
 
-void DaveTest();
-
 int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password);
 void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y);
 void SendCheckedLocQuest(int questVar);

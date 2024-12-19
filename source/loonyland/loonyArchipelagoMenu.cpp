@@ -3,6 +3,8 @@
 #include "mgldraw.h"
 #include <control.h>
 #include "loonyArchipelago.h"
+#include "badge.h"
+#include "options.h"
 
 static std::string IPAddress = "";
 static std::string SlotName = "";
@@ -26,6 +28,10 @@ static std::string oldStatus = "";
 
 void InitArchipelagoMenu(void)
 {
+	for (int i = 0; i < NUM_BADGES; i++)
+	{
+		opt.cheats[i] = 0;
+	}
 	oldc = 255;
 	cursor = CURSOR_START;
 	InitPlasma(7);
