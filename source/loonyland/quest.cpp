@@ -1274,6 +1274,7 @@ static const byte seerTable[]={132,134,0,0,136,138,0,0,140,142,144,146,148,150,1
 byte curChat;
 byte curLine,curChar;
 byte noButtons;
+bool chatUpdated;
 
 const char *QuestName(byte quest)
 {
@@ -1323,6 +1324,7 @@ void BeginChatting(byte tag)
 	EnterChatMode();
 	curChar=0;
 	curLine=0;
+	chatUpdated = false;
 	noButtons=30;	// for one second, you can't skip anything in chat, to avoid
 					// blowing over Silver Bullet and other such messages
 
@@ -1869,6 +1871,7 @@ void BeginChatting(byte tag)
 			// talking to yourself about mud
 			curChat=13;
 			break;
+
 	}
 }
 
@@ -2169,7 +2172,8 @@ void UpdateChat(void)
 {
 	byte c;
 	static byte oldCurChat;
-
+	byte maxLines = 4;
+	chatUpdated = true;
 	if (ArchipelagoMode && curChat != oldCurChat)
 	{
 		std::string text = talk[curChat].line[0];
@@ -2200,7 +2204,11 @@ void UpdateChat(void)
 	else
 		c=GetTaps();
 
-	if(curLine<4 && talk[curChat].line[curLine][0]=='\0')
+	if (ArchipelagoMode)
+	{
+		maxLines = lines.size();
+	}
+	else if(curLine<maxLines && talk[curChat].line[curLine][0]=='\0')
 	{
 		curLine=4;
 	}
@@ -2223,14 +2231,14 @@ void UpdateChat(void)
 	}
 	if(curChar>= LINE_MAX_CHAR)
 	{
-		if(curLine<4)
+		if(curLine<maxLines)
 			curLine++;
 		curChar=0;
 	}
 	if(c&CONTROL_B1)
 	{
-		if(curLine<4)
-			curLine=4;
+		if(curLine< maxLines)
+			curLine= maxLines;
 		else
 		{
 			if(talk[curChat].action)
@@ -2253,9 +2261,14 @@ void RenderChat(MGLDraw *mgl)
 {
 	int i;
 	char s[LINE_MAX_CHAR];
+	if (ArchipelagoMode && !chatUpdated)
+	{
+		return;
+	}
+	int numLines = (ArchipelagoMode && lines.size() > 4 ? lines.size() : 4);
 
-	DrawFillBox(65,35,639-65,35+10+4*22,4);
-	DrawBox(65,35,639-65,35+10+4*22,31);
+	DrawFillBox(65,35,639-65,35+10+numLines*22,4);
+	DrawBox(65,35,639-65,35+10+numLines*22,31);
 	if (ArchipelagoMode)
 	{
 		for (i = 0; i < lines.size(); i++)
