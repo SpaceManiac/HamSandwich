@@ -157,7 +157,7 @@ void GetLocationScouts(std::vector<AP_NetworkItem> vec_NetworkItems)
 			tempMap->map[loc.Xcoord + loc.Ycoord * tempMap->width].item = item_id; //from var to placeable item
 		}
 		for (auto const& i : loc.chatCodes) {
-			chat_table[i].updated = item.itemName;
+			chat_table[i].updated += item.itemName;
 		}
 	}
 
