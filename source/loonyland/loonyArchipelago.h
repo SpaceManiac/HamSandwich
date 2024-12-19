@@ -10,6 +10,7 @@ void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y);
 void SendCheckedLocQuest(int questVar);
 void UpdateArchipelago();
 void SendArchipelagoPlayerVar(int v, int val);
+void SendDeathLink();
 std::string ConnectionStatus();
 
 void Disconnect();

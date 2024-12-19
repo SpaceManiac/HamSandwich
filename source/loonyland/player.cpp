@@ -32,7 +32,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	if (ArchipelagoMode && initWhat == INIT_GAME)
 	{
 		if (player.hearts < 1)
-			player.hearts = 1;
+			player.hearts = player.maxHearts;
 		return;
 	}
 	if (initWhat == INIT_ARCHIPELAGO)

@@ -39,6 +39,7 @@ std::deque<AP_GetServerDataRequest*> GetVarRequests;
 std::unordered_map<int, bool> locsFound;
 std::unordered_map<int, int> itemsFound;
 bool ArchipelagoMode = true;
+bool ExpectingDeath = false;
 
 
 void to_json(json& j, const locationData& loc) {
@@ -77,7 +78,7 @@ int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string 
 	AP_SetItemClearCallback(ItemsClear);
 	AP_SetItemRecvCallback(ItemReceived);
 	AP_SetLocationCheckedCallback(SetLocationChecked);
-	AP_SetDeathLinkSupported(false);
+	AP_SetDeathLinkSupported(true);
 	AP_SetDeathLinkRecvCallback(DeathLinkReceived);
 	AP_SetLocationInfoCallback(GetLocationScouts);
 
@@ -205,7 +206,22 @@ void SetLocationChecked(int64_t  loc_id)
 void DeathLinkReceived()
 {
 	//we kill the loony
+	ExpectingDeath = true;
 	player.hearts = 0;
+	if (goodguy != NULL)
+	{
+		goodguy->hp = 0;
+		goodguy->ouch = 4;
+	}
+}
+
+void SendDeathLink()
+{
+	if (!ExpectingDeath)
+	{
+		AP_DeathLinkSend();
+	}
+	ExpectingDeath = false;
 }
 
 void Disconnect()
@@ -361,6 +377,11 @@ void UpdateArchipelago()
 			NewMessage(message->text.c_str(), 30 * 5);
 			messageCooldown = 30 * 5;
 		}
+		/*if (message->type == AP_MessageType::Plaintext)
+		{
+			NewMessage(message->text.c_str(), 30 * 5);
+			messageCooldown = 30 * 5;
+		}*/
 
 		AP_ClearLatestMessage();
 	}
