@@ -127,10 +127,6 @@ byte InitLevel(byte map)
 	}
 	else
 	{
-		if (ArchipelagoMode && player.worldNum == WORLD_NORMAL)
-		{
-			map = 0;
-		}
 		if(curWorld.numMaps<=map)
 			return 0;	// can't go to illegal map
 
@@ -744,6 +740,7 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 			case WORLD_NORMAL:
 				if (ArchipelagoMode)
 				{
+					player.levelNum = 0;
 					worldResult = AWAIT LunaticWorld("ap.llw");
 					break;
 				}

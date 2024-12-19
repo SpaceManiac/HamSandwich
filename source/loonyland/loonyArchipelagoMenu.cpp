@@ -35,7 +35,7 @@ void InitArchipelagoMenu(void)
 	oldc = 255;
 	cursor = CURSOR_START;
 	InitPlasma(7);
-	IPAddress = "Archipelago.gg:00000";
+	IPAddress = "Archipelago.gg:";
 	//AP_Init("Archipelago.gg:0000", "Loonyland", "AutoFrenzy", "");
 }
 
@@ -193,7 +193,7 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 				GetInfoFromAP();
 				optMode = 4;
 			}
-			else if (status == "Failed")
+			else if (status == "Failed"|| status == "ConnectionRefused")
 			{
 				optMode = 0;
 				Disconnect();
