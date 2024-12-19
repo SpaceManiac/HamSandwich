@@ -6,16 +6,48 @@
 namespace
 {
 	const jt::Json null;
-}
 
-// https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#items_handling-flags
-namespace ItemsHandling
-{
-	constexpr int None = 0;
-	constexpr int OtherWorlds = 0b001;
-	constexpr int OwnWorld = 0b010 | OtherWorlds;
-	constexpr int StartingInventory = 0b110 | OtherWorlds;
-	constexpr int All = OtherWorlds | OwnWorld | StartingInventory;
+	namespace IncomingCmd
+	{
+		constexpr std::string_view RoomInfo = "RoomInfo";
+		constexpr std::string_view ConnectionRefused = "ConnectionRefused";
+		constexpr std::string_view Connected = "Connected";
+		constexpr std::string_view ReceivedItems = "ReceivedItems";
+		constexpr std::string_view LocationInfo = "LocationInfo";
+		constexpr std::string_view RoomUpdate = "RoomUpdate";
+		constexpr std::string_view PrintJSON = "PrintJSON";
+		constexpr std::string_view DataPackage = "DataPackage";
+		constexpr std::string_view Bounced = "Bounced";
+		constexpr std::string_view InvalidPacket = "InvalidPacket";
+		constexpr std::string_view Retrieved = "Retrieved";
+		constexpr std::string_view SetReply = "SetReply";
+	}
+
+	namespace OutgoingCmd
+	{
+		constexpr std::string_view Connect = "Connect";
+		constexpr std::string_view ConnectUpdate = "ConnectUpdate";
+		constexpr std::string_view Sync = "Sync";
+		constexpr std::string_view LocationChecks = "LocationChecks";
+		constexpr std::string_view LocationScouts = "LocationScouts";
+		constexpr std::string_view UpdateHint = "UpdateHint";
+		constexpr std::string_view StatusUpdate = "StatusUpdate";
+		constexpr std::string_view Say = "Say";
+		constexpr std::string_view GetDataPackage = "GetDataPackage";
+		constexpr std::string_view Bounce = "Bounce";
+		constexpr std::string_view Get = "Get";
+		constexpr std::string_view Set = "Set";
+		constexpr std::string_view SetNotify = "SetNotify";
+	}
+
+	// https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#items_handling-flags
+	namespace ItemsHandling
+	{
+		constexpr int OtherWorlds = 0b001;
+		constexpr int OwnWorld = 0b010 | OtherWorlds;
+		constexpr int StartingInventory = 0b110 | OtherWorlds;
+		constexpr int All = OtherWorlds | OwnWorld | StartingInventory;
+	}
 }
 
 ArchipelagoClient::ArchipelagoClient(std::string_view game, std::string_view address, std::string_view slot, std::string_view password)
@@ -85,7 +117,7 @@ void ArchipelagoClient::set_tag(std::string_view tag, bool present)
 	if (status >= WaitingForConnected)
 	{
 		jt::Json& packet = outgoing.emplace_back();
-		packet["cmd"] = "ConnectUpdate";
+		packet["cmd"] = OutgoingCmd::ConnectUpdate;
 		auto& tagsJ = packet["tags"].setArray();
 		for (const auto& tag : tags)
 		{
@@ -98,7 +130,7 @@ void ArchipelagoClient::send_connect()
 {
 	jt::Json outgoingJ;
 	jt::Json& connect = outgoingJ.setArray().emplace_back();
-	connect["cmd"] = "Connect";
+	connect["cmd"] = OutgoingCmd::Connect;
 	connect["password"] = std::string(password);
 	connect["game"] = std::string(game);
 	connect["name"] = std::string(slot);
@@ -172,11 +204,11 @@ void ArchipelagoClient::update()
 			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Archipelago: Handling %s", cmd.c_str());
 
 			// https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#server---client
-			if (cmd == "RoomInfo")
+			if (cmd == IncomingCmd::RoomInfo)
 			{
 				jt::Json outgoingJ;
 				jt::Json& getDataPackage = outgoingJ.setArray().emplace_back();
-				getDataPackage["cmd"] = "GetDataPackage";
+				getDataPackage["cmd"] = OutgoingCmd::GetDataPackage;
 				auto& games = getDataPackage["games"].setArray();
 				for (const auto& pair : packet["datapackage_checksums"].getObject())
 				{
@@ -204,7 +236,7 @@ void ArchipelagoClient::update()
 					room_info.insert(std::move(pair));
 				}
 			}
-			else if (cmd == "DataPackage")
+			else if (cmd == IncomingCmd::DataPackage)
 			{
 				for (auto& pair : packet["data"]["games"].getObject())
 				{
@@ -212,12 +244,12 @@ void ArchipelagoClient::update()
 				}
 				send_connect();
 			}
-			else if (cmd == "ConnectionRefused")
+			else if (cmd == IncomingCmd::ConnectionRefused)
 			{
 				error = "Server refused connection: ";
 				error += packet["errors"].toString();
 			}
-			else if (cmd == "Connected")
+			else if (cmd == IncomingCmd::Connected)
 			{
 				// Just dump both RoomInfo and Connected into the same object.
 				// There are no specified overlapping fields.
@@ -227,13 +259,13 @@ void ArchipelagoClient::update()
 				}
 				status = Active;
 			}
-			else if (cmd == "ReceivedItems")
+			else if (cmd == IncomingCmd::ReceivedItems)
 			{
 			}
-			else if (cmd == "LocationInfo")
+			else if (cmd == IncomingCmd::LocationInfo)
 			{
 			}
-			else if (cmd == "RoomUpdate")
+			else if (cmd == IncomingCmd::RoomUpdate)
 			{
 				// Can update anything, but stock server sends:
 				// - From RoomInfo: permissions, hint_cost, location_check_points
@@ -264,10 +296,10 @@ void ArchipelagoClient::update()
 					}
 				}
 			}
-			else if (cmd == "PrintJSON")
+			else if (cmd == IncomingCmd::PrintJSON)
 			{
 			}
-			else if (cmd == "Bounced")
+			else if (cmd == IncomingCmd::Bounced)
 			{
 				if (packet["tags"].isArray())
 				{
@@ -280,12 +312,12 @@ void ArchipelagoClient::update()
 					}
 				}
 			}
-			else if (cmd == "InvalidPacket")
+			else if (cmd == IncomingCmd::InvalidPacket)
 			{
 				error = "Server rejected packet: ";
 				error += packet["text"].isString() ? packet["text"].getString() : packet.toString();
 			}
-			else if (cmd == "Retrieved")
+			else if (cmd == IncomingCmd::Retrieved)
 			{
 				if (packet["keys"].isObject())
 				{
@@ -302,7 +334,7 @@ void ArchipelagoClient::update()
 					storage.insert(object.begin(), object.end());
 				}
 			}
-			else if (cmd == "SetReply")
+			else if (cmd == IncomingCmd::SetReply)
 			{
 				if (packet["key"].isString())
 				{
@@ -364,7 +396,7 @@ void ArchipelagoClient::death_link_enable(bool enable)
 void ArchipelagoClient::death_link_send(std::string_view cause, std::string_view source)
 {
 	jt::Json& packet = outgoing.emplace_back();
-	packet["cmd"] = "Bounce";
+	packet["cmd"] = OutgoingCmd::Bounce;
 	packet["tags"][0] = "DeathLink";
 	packet["data"]["time"] = static_cast<long long>(time(nullptr));
 	if (!cause.empty())
@@ -394,7 +426,7 @@ bool ArchipelagoClient::is_death_link_pending()
 void ArchipelagoClient::storage_get(std::initializer_list<std::string_view> keys)
 {
 	jt::Json& packet = outgoing.emplace_back();
-	packet["cmd"] = "Get";
+	packet["cmd"] = OutgoingCmd::Get;
 	auto& keysJ = packet["keys"].setArray();
 	for (auto key : keys)
 	{
@@ -410,7 +442,7 @@ void ArchipelagoClient::storage_get(std::string_view key)
 void ArchipelagoClient::storage_set(std::string_view key, jt::Json value, bool want_reply)
 {
 	jt::Json& packet = outgoing.emplace_back();
-	packet["cmd"] = "Set";
+	packet["cmd"] = OutgoingCmd::Set;
 	packet["key"] = key;
 	packet["operations"][0]["operation"] = "replace";
 	packet["operations"][0]["value"] = std::move(value);
@@ -423,7 +455,7 @@ void ArchipelagoClient::storage_set(std::string_view key, jt::Json value, bool w
 void ArchipelagoClient::storage_set_notify(std::initializer_list<std::string_view> keys)
 {
 	jt::Json& packet = outgoing.emplace_back();
-	packet["cmd"] = "SetNotify";
+	packet["cmd"] = OutgoingCmd::SetNotify;
 	auto& keysJ = packet["keys"].setArray();
 	for (auto key : keys)
 	{
