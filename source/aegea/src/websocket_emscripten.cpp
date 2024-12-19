@@ -101,7 +101,8 @@ struct EmscriptenWebSocket : public WebSocket
 		self->queue.push(Message
 		{
 			websocketEvent->isText ? Text : Binary,
-			{ websocketEvent->data, websocketEvent->data + websocketEvent->numBytes }
+			// if isText, Emscripten includes a trailing \0 that we need to omit
+			{ websocketEvent->data, websocketEvent->data + websocketEvent->numBytes - (websocketEvent->isText ? 1 : 0) }
 		});
 		return EM_TRUE; // has no effect
 	}
