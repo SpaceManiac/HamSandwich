@@ -449,7 +449,14 @@ void LoadGame(int i)
 {
 	char txt[128];
 
-	ham_sprintf(txt,"save%d.sav",i+1);
+	if (ArchipelagoMode)
+	{
+		ham_sprintf(txt, "AP_save%d.sav", i + 1);
+	}
+	else
+	{
+		ham_sprintf(txt, "save%d.sav", i + 1);
+	}
 	auto f = AppdataOpen(txt);
 	if(!f)
 	{
@@ -559,8 +566,14 @@ void LoadGame(int i)
 void SaveGame(int i)
 {
 	char txt[32];
-
-	ham_sprintf(txt,"save%d.sav",i+1);
+	if (ArchipelagoMode)
+	{
+		ham_sprintf(txt, "AP_save%d.sav", i + 1);
+	}
+	else
+	{
+		ham_sprintf(txt, "save%d.sav", i + 1);
+	}
 	auto f = AppdataOpen_Write(txt);
 	if(!f)
 	{
@@ -601,12 +614,19 @@ void BumpSaveGem(void)
 
 	if(noSaving)
 		return;	// can't save when the portal is opening
-
-	EnterStatusScreen();
-	InitPauseMenu();
-	subMode=SubMode::SlotPick;
-	cursor=CURSOR_SAVE;
-	player.saveClock=20;
+	if (ArchipelagoMode)
+	{
+		SaveGame(0);
+		player.saveClock = 30;
+	}
+	else
+	{
+		EnterStatusScreen();
+		InitPauseMenu();
+		subMode = SubMode::SlotPick;
+		cursor = CURSOR_SAVE;
+		player.saveClock = 20;
+	}
 }
 
 void SetNoSaving(bool on)
@@ -682,14 +702,35 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 					player.fireFlags^=FF_WPNLOCK;
 					break;
 				case 2:	// Load
-					subMode=SubMode::SlotPick;
+					if (ArchipelagoMode)
+					{
+						LoadGame(0);
+						CameraOnPlayer(0);
+						ExitBullets();
+						InitBullets();
+						NewBigMessage("Game Loaded!", 30);
+						UndoWindDown();
+						return PauseMenuResult::Continue;
+					}
+					else
+					{
+						subMode = SubMode::SlotPick;
+					}
 					break;
 				case 3:	// Save
 					if(!noSaving)
-						subMode=SubMode::SlotPick;
+						if (ArchipelagoMode)
+						{
+							SaveGame(0);
+							return PauseMenuResult::Continue;
+						}
+						else
+						{
+							subMode = SubMode::SlotPick;
+						}
 					break;
 				case 4: // quit game
-					if(player.cheatsOn&PC_HARDCORE)
+					if(player.cheatsOn&PC_HARDCORE && !ArchipelagoMode)
 					{
 						if (player.lastSave != 255)
 						{
