@@ -121,6 +121,14 @@ void ItemReceived(int64_t  item_id, bool notif)
 	{
 		PlayerCalcStats();
 	}
+
+	if (item_id >= VAR_HEART && item_id <= VAR_PANTS)
+	{
+		if (goodguy != NULL)
+		{
+			HealGoodguy(1);
+		}
+	}
 }
 
 void GetLocationScouts(std::vector<AP_NetworkItem> vec_NetworkItems)
@@ -201,6 +209,11 @@ void SetLocationChecked(int64_t  loc_id)
 	locsFound[loc_id] = true;
 
 	//mark ap at that location
+}
+
+void WinArchipelago()
+{
+	AP_StoryComplete();
 }
 
 void DeathLinkReceived()

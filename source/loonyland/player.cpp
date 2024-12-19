@@ -607,6 +607,10 @@ void PlayerSetVar(int v,int val)
 			}
 			if(v==VAR_QUESTDONE+QUEST_HILL)
 			{
+				if (ArchipelagoMode)
+				{
+					WinArchipelago();
+				}
 				SendMessageToGame(MSG_WINGAME,0);
 			}
 		}
