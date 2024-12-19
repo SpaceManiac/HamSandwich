@@ -8,6 +8,7 @@
 #include "cossin.h"
 #include "map.h"
 #include "tile.h"
+#include <vector>
 
 /* This file handles all screen displaying.  It's a go-between so that you
    don't have to pass the mgldraw object everywhere, and also handles the display
@@ -105,5 +106,7 @@ byte GetGamma(void);
 void SetGamma(byte g);
 void DarkenScreen(byte dark);
 void DrawLine(int x,int y,int x2,int y2,byte col);
+
+std::vector<std::string> splitStringByFontSize(const std::string& input, int maxFontSize, int maxStringLength);
 
 #endif
