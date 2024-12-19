@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -29,12 +30,16 @@ class ArchipelagoClient
 	} status = Connecting;
 
 	std::string game, address, slot, password;
+	std::set<std::string, std::less<>> tags;
 	std::string error;
 	std::unique_ptr<WebSocket> socket;
 	std::vector<jt::Json> outgoing;
 
 	std::map<std::string, jt::Json, std::less<>> data_packages;
 
+	bool death_link_pending;
+
+	void set_tag(std::string_view tag, bool present);
 	void send_connect();
 public:
 	// ------------------------------------------------------------------------
@@ -54,6 +59,16 @@ public:
 	// Data packages
 
 	const jt::Json& get_data_package(std::string_view game);
+
+	// ------------------------------------------------------------------------
+	// DeathLink
+
+	// Enable this client to send and receive DeathLink.
+	void death_link_enable(bool enable = true);
+	// Send a DeathLink to connected games.
+	void death_link_send(std::string_view cause = {}, std::string_view player = {});
+	// If a DeathLink is pending, returns true and clears the pending status.
+	bool is_death_link_pending();
 
 	// ------------------------------------------------------------------------
 	// Storage system

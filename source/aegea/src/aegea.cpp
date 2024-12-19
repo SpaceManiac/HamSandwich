@@ -70,6 +70,30 @@ bool ArchipelagoClient::is_active() const
 	return socket && socket->is_connected() && status == Active;
 }
 
+void ArchipelagoClient::set_tag(std::string_view tag, bool present)
+{
+	if (present)
+	{
+		tags.emplace(tag);
+	}
+	else if (auto iter = tags.find(tag); iter != tags.end())
+	{
+		tags.erase(iter);
+	}
+
+	// If we've already sent tags, update tags now.
+	if (status >= WaitingForConnected)
+	{
+		jt::Json& packet = outgoing.emplace_back();
+		packet["cmd"] = "ConnectUpdate";
+		auto& tagsJ = packet["tags"].setArray();
+		for (const auto& tag : tags)
+		{
+			tagsJ.emplace_back(tag);
+		}
+	}
+}
+
 void ArchipelagoClient::send_connect()
 {
 	jt::Json outgoingJ;
@@ -84,7 +108,11 @@ void ArchipelagoClient::send_connect()
 	connect["version"]["minor"] = 5;
 	connect["version"]["build"] = 1;
 	connect["items_handling"] = ItemsHandling::All;
-	connect["tags"].setArray();
+	auto& tagsJ = connect["tags"].setArray();
+	for (const auto& tag : tags)
+	{
+		tagsJ.emplace_back(tag);
+	}
 	// Bypass outgoing queue during connection setup.
 #ifndef NDEBUG
 	fprintf(stderr, "--> %s\n", connect.toString().c_str());
@@ -201,6 +229,16 @@ void ArchipelagoClient::update()
 			}
 			else if (cmd == "Bounced")
 			{
+				if (packet["tags"].isArray())
+				{
+					for (const auto& tag : packet["tags"].getArray())
+					{
+						if (tag.isString() && tag.getString() == "DeathLink")
+						{
+							death_link_pending = true;
+						}
+					}
+				}
 			}
 			else if (cmd == "InvalidPacket")
 			{
@@ -262,6 +300,9 @@ void ArchipelagoClient::update()
 	}
 }
 
+// ------------------------------------------------------------------------
+// Data packages
+
 const jt::Json& ArchipelagoClient::get_data_package(std::string_view game)
 {
 	auto iter = data_packages.find(game);
@@ -272,7 +313,43 @@ const jt::Json& ArchipelagoClient::get_data_package(std::string_view game)
 	return iter->second;
 }
 
-// https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#client---server
+// ------------------------------------------------------------------------
+// DeathLink
+
+void ArchipelagoClient::death_link_enable(bool enable)
+{
+	set_tag("DeathLink", enable);
+}
+
+void ArchipelagoClient::death_link_send(std::string_view cause, std::string_view source)
+{
+	jt::Json& packet = outgoing.emplace_back();
+	packet["cmd"] = "Bounce";
+	packet["tags"][0] = "DeathLink";
+	packet["data"]["time"] = static_cast<long long>(time(nullptr));
+	if (!cause.empty())
+	{
+		packet["data"]["cause"] = cause;
+	}
+	if (!source.empty())
+	{
+		packet["data"]["source"] = source;
+	}
+}
+
+// If a DeathLink is pending, returns true and clears the pending status.
+bool ArchipelagoClient::is_death_link_pending()
+{
+	if (death_link_pending)
+	{
+		death_link_pending = false;
+		return true;
+	}
+	return false;
+}
+
+// ------------------------------------------------------------------------
+// Storage system
 
 void ArchipelagoClient::storage_get(std::initializer_list<std::string_view> keys)
 {
