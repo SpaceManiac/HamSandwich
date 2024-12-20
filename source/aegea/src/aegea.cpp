@@ -153,6 +153,14 @@ void ArchipelagoClient::send_connect()
 	status = WaitingForConnected;
 }
 
+static void decode(ArchipelagoClient::Item* item, const jt::Json& json)
+{
+	item->item = json["item"].isLong() ? json["item"].getLong() : 0;
+	item->location = json["location"].isLong() ? json["location"].getLong() : 0;
+	item->player = json["player"].isLong() ? static_cast<int>(json["player"].getLong()) : 0;
+	item->flags = json["flags"].isLong() ? static_cast<int>(json["flags"].getLong()) : 0;
+}
+
 void ArchipelagoClient::update()
 {
 	if (!socket || !socket->error_message().empty())
@@ -298,6 +306,73 @@ void ArchipelagoClient::update()
 			}
 			else if (cmd == IncomingCmd::PrintJSON)
 			{
+				Message& message = messages_pending.emplace();
+				if (packet["data"].isArray())
+				{
+					for (auto& partJ : packet["data"].getArray())
+					{
+						MessagePart& part = message.data.emplace_back();
+						if (partJ["type"].isString())
+						{
+							part.type = std::move(partJ["type"].getString());
+						}
+						if (partJ["text"].isString())
+						{
+							part.text = std::move(partJ["text"].getString());
+						}
+						if (partJ["color"].isString())
+						{
+							part.color = std::move(partJ["color"].getString());
+						}
+						if (partJ["flags"].isLong())
+						{
+							part.flags = static_cast<int>(partJ["flags"].getLong());
+						}
+						if (partJ["player"].isLong())
+						{
+							part.player = static_cast<int>(partJ["player"].getLong());
+						}
+					}
+				}
+				if (packet["type"].isString())
+				{
+					message.type = std::move(packet["type"].getString());
+				}
+				if (packet["receiving"].isLong())
+				{
+					message.receiving = static_cast<int>(packet["receiving"].getLong());
+				}
+				decode(&message.item, packet["item"]);
+				if (packet["found"].isBool())
+				{
+					message.found = packet["found"].getBool();
+				}
+				if (packet["team"].isLong())
+				{
+					message.team = static_cast<int>(packet["team"].getLong());
+				}
+				if (packet["slot"].isLong())
+				{
+					message.slot = static_cast<int>(packet["slot"].getLong());
+				}
+				if (packet["message"].isString())
+				{
+					message.message = std::move(packet["message"].getString());
+				}
+				if (packet["tags"].isArray())
+				{
+					for (auto& tagJ : packet["tags"].getArray())
+					{
+						if (tagJ.isString())
+						{
+							message.tags.emplace_back(std::move(tagJ.getString()));
+						}
+					}
+				}
+				if (packet["countdown"].isLong())
+				{
+					message.countdown = static_cast<int>(packet["countdown"].getLong());
+				}
 			}
 			else if (cmd == IncomingCmd::Bounced)
 			{
@@ -383,6 +458,20 @@ const jt::Json& ArchipelagoClient::get_data_package(std::string_view game)
 		return null;
 	}
 	return iter->second;
+}
+
+// ------------------------------------------------------------------------
+// Messages
+
+bool ArchipelagoClient::pop_message(Message* message)
+{
+	if (!messages_pending.empty())
+	{
+		*message = std::move(messages_pending.front());
+		messages_pending.pop();
+		return true;
+	}
+	return false;
 }
 
 // ------------------------------------------------------------------------

@@ -38,6 +38,11 @@ public:
 	void update();
 
 	// ------------------------------------------------------------------------
+	// Data packages
+
+	const jt::Json& get_data_package(std::string_view game);
+
+	// ------------------------------------------------------------------------
 	// Receiving items
 
 	// https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#NetworkItem
@@ -135,10 +140,8 @@ public:
 		static constexpr std::string_view Countdown = "Countdown";
 	};
 
-	// ------------------------------------------------------------------------
-	// Data packages
-
-	const jt::Json& get_data_package(std::string_view game);
+	// Pop from this queue when you have time to display a message.
+	bool pop_message(Message* message);
 
 	// ------------------------------------------------------------------------
 	// DeathLink
@@ -186,6 +189,7 @@ private:
 	std::map<std::string, jt::Json, std::less<>> data_packages;
 
 	bool death_link_pending;
+	std::queue<Message> messages_pending;
 
 	void set_tag(std::string_view tag, bool present);
 	void send_connect();
