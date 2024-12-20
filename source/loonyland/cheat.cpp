@@ -4,14 +4,17 @@
 #include "ch_swampdog.h"
 #include "badge.h"
 #include "title.h"
+#include "loonyArchipelago.h"
 
-#define NUM_CHEATS 4
+#define NUM_CHEATS 6
 
 char cheatCode[NUM_CHEATS][16]={
 	"superboom",	// kablooie
 	"getalife",		// 100% health
 	"bangzoom",		// invincibility for a while
 	"gogogo",		// super speed
+	"deathlink",	//kill the player
+	"apdebug",		//run a command
 	};
 
 char lastKeys[17];	// the last 16 letter keys pressed
@@ -70,5 +73,7 @@ void DoCheat(byte w)
 		case 3:	// super speed
 			player.speed=255;
 			break;
+		case 5: //app debug
+			DebugAPCommand();
 	}
 }

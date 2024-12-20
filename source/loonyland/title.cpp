@@ -8,6 +8,7 @@
 #include "appdata.h"
 #include "steam.h"
 #include "badge.h"
+#include "loonyArchipelago.h"
 
 #define VERSION_NO         "Version 3.1"
 #define COPYRIGHT_YEARS    "2001-2024"
@@ -275,13 +276,20 @@ byte WhichGameToLoad(void)
 void GetSavesForMenu(void)
 {
 	int i;
-	char txt[64];
+	char txt[128];
 	float pct;
 	player_t p;
 
 	for(i=0;i<5;i++)
 	{
-		ham_sprintf(txt,"save%d.sav", saveOffset + i + 1);
+		if (ArchipelagoMode)
+		{
+			ham_sprintf(txt, "Archipelago/%s/save%d.sav", ArchipelagoSeed.c_str(), saveOffset + i + 1);
+		}
+		else
+		{
+			ham_sprintf(txt, "save%d.sav", saveOffset + i + 1);
+		}
 		auto f = AppdataOpen(txt);
 		if(!f)
 		{

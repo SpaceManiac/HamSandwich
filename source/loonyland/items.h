@@ -170,8 +170,9 @@
 #define ITM_REFLECTGEM	134
 #define ITM_SILVERSLING	135
 #define ITM_STICK		136
+#define ITM_ARCHIPELAGO 137
 
-#define MAX_ITMS		137
+#define MAX_ITMS		138
 
 // item flags
 #define IF_GET			1	// can be picked up by player
@@ -184,6 +185,7 @@
 #define IF_LIGHTOK		128	// if it's a tall item, light goes through it anyway
 #define IF_NOBULLET		256	// bullets can't pass
 #define IF_DESTROY		512	// can be destroyed
+#define IF_ARCHIPELAGO  1024 //suppress pickup in Ap, send to server
 
 class Map;
 

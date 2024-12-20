@@ -179,7 +179,7 @@ static const RandoLocation basic_locations[] = {
 	{false, "A Hidey Hole", 43, 5, 22, 1, 2, "Bat Door", [](const std::set<int>& inv) { return inv.count(VAR_BATKEY); }},
 	{false, "A Hidey Hole", 43, 18, 22, 4, 5, "Pebbles", [](const std::set<int>& inv) { return true; }},
 	{false, "Swampdog Lair", 45, 55, 49, 0, 1, "Entrance", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS); }},
-	{false, "Swampdog Lair", 45, 55, 36, 5, 6, "End", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_FERTILIZER); }},
+	{false, "Swampdog Lair", 45, 55, 36, 5, 6, "End", [](const std::set<int>& inv) { return inv.count(VAR_BOOTS) && HaveLightSource(inv) && inv.count(VAR_FERTILIZER); }},
 	{true, "Ghostbusting", 0, 0, 0, 0, 0, "Ghostbusting", [](const std::set<int>& inv) { return HaveAnyBigGem(inv) && inv.count(VAR_DAISY) && HaveAllMushrooms(inv); }},
 	{true, "Hairy Larry", 1, 0, 0, 0, 0, "Hairy Larry", [](const std::set<int>& inv) { return HaveLightSource(inv) && inv.count(VAR_SILVERSLING) && inv.count(VAR_BOOTS);  }},
 	{true, "Scaredy Cat", 2, 0, 0, 0, 0, "Scaredy Cat", [](const std::set<int>& inv) { return inv.count(VAR_CAT); }},
@@ -320,7 +320,7 @@ TASK(byte)
 UpdateRandomizerMenu(int* lastTime, MGLDraw* mgl)
 {
 	char c;
-	byte c2;
+	byte c2 = 255;
 	dword btn, j;
 	int i;
 

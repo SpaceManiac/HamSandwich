@@ -13,9 +13,11 @@
 #include "options.h"
 #include "badge.h"
 #include "randomizer.h"
+#include "loonyArchipelagoMenu.h"
 #include "log.h"
 #include "appdata.h"
 #include "steam.h"
+#include "loonyArchipelago.h"
 
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
@@ -40,8 +42,16 @@ TASK(int) main(int argc, char *argv[])
 	LoopingSound(SND_HAMUMU);
 	SetSongRestart(0);
 	AWAIT SplashScreen(mainmgl,"graphics/hamumu.bmp",128,2);
-
 	bool running = true;
+
+	if (ArchipelagoMode)
+	{
+		if (AWAIT ArchipelagoMenu(mainmgl))
+		{
+			running = false;
+		}
+		
+	}
 	while (running)
 	{
 		DBG("Mainmenu");

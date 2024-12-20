@@ -4,6 +4,7 @@
 #include "quest.h"
 #include "ch_summon.h"
 #include "appdata.h"
+#include "loonyArchipelago.h"
 
 namespace
 {
@@ -168,7 +169,7 @@ void RenderInvItem(byte which,int x,int y,MGLDraw *mgl)
 			break;
 		case 4:	// slot #4, shrooms
 			InstaRenderItem(x,y+20,ITM_SHROOM,-32+32*(ShroomCount()>0),mgl);
-			if(ShroomCount()>0 && player.var[VAR_QUESTDONE+QUEST_SHROOM]==0)
+			if(ShroomCount()>0 && (player.var[VAR_QUESTDONE+QUEST_SHROOM]==0 || ArchipelagoMode))
 			{
 				sprintf(m,"%d",ShroomCount());
 				Print(x+9,y-1,m,-31,0);
@@ -423,12 +424,19 @@ void HandlePauseKeyPresses(MGLDraw *mgl)
 void GetSaves(void)
 {
 	int i;
-	char txt[32];
+	char txt[128];
 	player_t p;
 
 	for(i=0;i<5;i++)
 	{
-		ham_sprintf(txt,"save%d.sav", saveOffset + i + 1);
+		if (ArchipelagoMode)
+		{
+			ham_sprintf(txt,"Archipelago/%s/save%d.sav", ArchipelagoSeed.c_str(), saveOffset + i + 1);
+		}
+		else
+		{
+			ham_sprintf(txt, "save%d.sav", saveOffset + i + 1);
+		}
 		auto f = AppdataOpen(txt);
 		if(!f)
 		{
@@ -448,7 +456,14 @@ void LoadGame(int i)
 {
 	char txt[128];
 
-	ham_sprintf(txt,"save%d.sav",i+1);
+	if (ArchipelagoMode)
+	{
+		ham_sprintf(txt, "Archipelago/%s/save%d.sav", ArchipelagoSeed.c_str(), i + 1);
+	}
+	else
+	{
+		ham_sprintf(txt, "save%d.sav", i + 1);
+	}
 	auto f = AppdataOpen(txt);
 	if(!f)
 	{
@@ -456,7 +471,11 @@ void LoadGame(int i)
 	}
 	else
 	{
-		SDL_RWread(f, &player,sizeof(player_t),1);
+		SDL_RWread(f, &player, sizeof(player_t), 1);
+		if (ArchipelagoMode)
+		{
+			ArchipelagoLoadPlayer();
+		}
 		if(player.worldNum==WORLD_REMIX)
 		{
 			FreeWorld(&curWorld);
@@ -466,10 +485,20 @@ void LoadGame(int i)
 		}
 		else if(player.worldNum==WORLD_NORMAL)
 		{
-			FreeWorld(&curWorld);
-			LoadWorld(&curWorld,"loony.llw");
+			if (ArchipelagoMode) {
+				FreeWorld(&curWorld);
+				LoadWorld(&curWorld, "ap.llw");
 
-			InitWorld(&curWorld,WORLD_NORMAL);
+				InitWorld(&curWorld, WORLD_NORMAL);
+			}
+			else
+			{
+				FreeWorld(&curWorld);
+				LoadWorld(&curWorld, "loony.llw");
+
+				InitWorld(&curWorld, WORLD_NORMAL);
+
+			}
 		}
 		else if(player.worldNum==WORLD_RANDOMIZER)
 		{
@@ -486,6 +515,7 @@ void LoadGame(int i)
 		if(!curMap)
 			curMap=new Map(20,20,"hi");
 		curMap->LoadFromProgress(f.get());
+		ham_strcpy(curMap->name, player.areaName);
 		f.reset();
 		player.lastSave=i;
 		ResetInterface();
@@ -504,7 +534,7 @@ void LoadGame(int i)
 		// to "has item?". Most items were already set at the same time as the quest
 		// completion, but these items were new with the Randomizer, so we need to
 		// handle old saves.
-		if (player.worldNum == WORLD_NORMAL || player.worldNum == WORLD_REMIX)
+		if ((player.worldNum == WORLD_NORMAL || player.worldNum == WORLD_REMIX) && ArchipelagoMode == false)
 		{
 			if (player.var[VAR_HEART + 16])
 				player.var[VAR_WITCHREWARD] = 1;
@@ -528,9 +558,15 @@ void LoadGame(int i)
 
 void SaveGame(int i)
 {
-	char txt[32];
-
-	ham_sprintf(txt,"save%d.sav",i+1);
+	char txt[128];
+	if (ArchipelagoMode)
+	{
+		ham_sprintf(txt, "Archipelago/%s/save%d.sav", ArchipelagoSeed.c_str(), i + 1);
+	}
+	else
+	{
+		ham_sprintf(txt, "save%d.sav", i + 1);
+	}
 	auto f = AppdataOpen_Write(txt);
 	if(!f)
 	{
@@ -557,9 +593,16 @@ void SaveGame(int i)
 
 void DeleteSave(int i)
 {
-	char txt[32];
+	char txt[128];
 
-	ham_sprintf(txt,"save%d.sav",i);
+	if (ArchipelagoMode)
+	{
+		ham_sprintf(txt, "Archipelago/%s/save%d.sav", ArchipelagoSeed.c_str(), i);
+	}
+	else
+	{
+		ham_sprintf(txt, "save%d.sav", i);
+	}
 	AppdataDelete(txt);
 }
 
