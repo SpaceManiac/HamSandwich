@@ -60,6 +60,11 @@ public:
 		static constexpr int Trap = 0b100;
 	};
 
+	// Return the next unprocessed item, or nullptr if everything has been processed.
+	const Item* pop_received_item();
+	// Return all received items regardless of processed status.
+	const std::vector<Item>& all_received_items() const;
+
 	// ------------------------------------------------------------------------
 	// Sending locations
 
@@ -188,8 +193,11 @@ private:
 	std::map<std::string, jt::Json, std::less<>> room_info;
 	std::map<std::string, jt::Json, std::less<>> data_packages;
 
-	bool death_link_pending;
+	bool death_link_pending = false;
 	std::queue<Message> messages_pending;
+	size_t handled_received_items = 0;
+	std::vector<Item> received_items;
+	std::set<int64_t> checked_locations;
 
 	void set_tag(std::string_view tag, bool present);
 	void send_connect();

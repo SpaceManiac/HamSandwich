@@ -269,6 +269,44 @@ void ArchipelagoClient::update()
 			}
 			else if (cmd == IncomingCmd::ReceivedItems)
 			{
+				int index = packet["index"].getLong();
+
+				if (index == 0)
+				{
+					// Server is overwriting our entire items list, e.g. due to a Sync.
+					handled_received_items = 0;
+					received_items.clear();
+				}
+
+				if (static_cast<size_t>(index) == received_items.size())
+				{
+					// Either because index was 0 or because it was correct.
+					for (const auto& item : packet["items"].getArray())
+					{
+						decode(&received_items.emplace_back(), item);
+					}
+				}
+				else
+				{
+					SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+						"Archipelago: ReceivedItems expected index=%u, got index=%d",
+						static_cast<unsigned int>(received_items.size()),
+						index
+					);
+
+					// We're confused. Ask for a full Sync.
+					jt::Json& sync = outgoing.emplace_back();
+					sync["cmd"] = OutgoingCmd::Sync;
+
+					// And send all our checked locations while we're at it.
+					jt::Json& locations = outgoing.emplace_back();
+					locations["cmd"] = OutgoingCmd::LocationChecks;
+					auto& array = locations["locations"].setArray();
+					for (int64_t location : checked_locations)
+					{
+						array.emplace_back(location);
+					}
+				}
 			}
 			else if (cmd == IncomingCmd::LocationInfo)
 			{
@@ -458,6 +496,23 @@ const jt::Json& ArchipelagoClient::get_data_package(std::string_view game)
 		return null;
 	}
 	return iter->second;
+}
+
+// ------------------------------------------------------------------------
+// Receiving items
+
+const ArchipelagoClient::Item* ArchipelagoClient::pop_received_item()
+{
+	if (handled_received_items < received_items.size())
+	{
+		return &received_items[handled_received_items++];
+	}
+	return nullptr;
+}
+
+const std::vector<ArchipelagoClient::Item>& ArchipelagoClient::all_received_items() const
+{
+	return received_items;
 }
 
 // ------------------------------------------------------------------------
