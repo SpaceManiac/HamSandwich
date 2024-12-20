@@ -285,7 +285,7 @@ void ArchipelagoClient::update()
 					{
 						if (loc.isLong())
 						{
-							checked_locations.insert(loc.getLong());
+							checked_locations_.insert(loc.getLong());
 						}
 					}
 				}
@@ -336,7 +336,7 @@ void ArchipelagoClient::update()
 					jt::Json& locations = outgoing.emplace_back();
 					locations["cmd"] = OutgoingCmd::LocationChecks;
 					auto& array = locations["locations"].setArray();
-					for (int64_t location : checked_locations)
+					for (int64_t location : checked_locations_)
 					{
 						array.emplace_back(location);
 					}
@@ -369,7 +369,7 @@ void ArchipelagoClient::update()
 						{
 							if (loc.isLong())
 							{
-								checked_locations.insert(loc.getLong());
+								checked_locations_.insert(loc.getLong());
 							}
 						}
 					}
@@ -616,9 +616,14 @@ const std::vector<ArchipelagoClient::Item>& ArchipelagoClient::all_received_item
 // ------------------------------------------------------------------------
 // Locations
 
+const std::set<int64_t>& ArchipelagoClient::checked_locations() const
+{
+	return checked_locations_;
+}
+
 void ArchipelagoClient::check_location(int64_t location)
 {
-	auto [iter, inserted] = checked_locations.insert(location);
+	auto [iter, inserted] = checked_locations_.insert(location);
 	if (inserted)
 	{
 		jt::Json& packet = outgoing.emplace_back();

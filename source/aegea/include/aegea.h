@@ -109,6 +109,8 @@ public:
 	// ------------------------------------------------------------------------
 	// Locations
 
+	const std::set<int64_t>& checked_locations() const;
+
 	// Call when a location is checked (picked up, completed, achieved).
 	void check_location(int64_t location);
 	// Call when the game's goal is completed.
@@ -258,7 +260,7 @@ private:
 	std::vector<Message> messages_pending;
 	size_t handled_received_items = 0;
 	std::vector<Item> received_items;
-	std::set<int64_t> checked_locations;
+	std::set<int64_t> checked_locations_;
 	std::map<int64_t, Item> scouted_locations;
 
 	int player_id_ = -1;
