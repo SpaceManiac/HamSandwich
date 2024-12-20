@@ -269,8 +269,13 @@ void ArchipelagoClient::update()
 			}
 			else if (cmd == IncomingCmd::Connected)
 			{
-				// Just dump both RoomInfo and Connected into the same object.
-				// There are no specified overlapping fields.
+				player_id_ = packet["slot"].getLong();
+				storage_private_prefix = "aegea_";
+				storage_private_prefix += std::to_string(player_id_);
+				storage_private_prefix += "_";
+				storage_private_prefix += std::to_string(std::hash<std::string>{}(slot));
+				storage_private_prefix += "_";
+
 				if (packet["checked_locations"].isArray())
 				{
 					for (const auto& loc : packet["checked_locations"].getArray())
@@ -281,6 +286,9 @@ void ArchipelagoClient::update()
 						}
 					}
 				}
+
+				// Just dump both RoomInfo and Connected into the same object.
+				// There are no specified overlapping fields.
 				for (auto& pair : packet.getObject())
 				{
 					if (pair.first != "checked_locations" && pair.first != "missing_locations")
@@ -514,6 +522,11 @@ void ArchipelagoClient::update()
 // ------------------------------------------------------------------------
 // Data packages
 
+int ArchipelagoClient::player_id() const
+{
+	return player_id_;
+}
+
 void ArchipelagoClient::load_data_package(std::string game, jt::Json value)
 {
 	// From name->id maps, create inverted id->name maps.
@@ -717,4 +730,16 @@ void ArchipelagoClient::storage_set_notify(std::initializer_list<std::string_vie
 void ArchipelagoClient::storage_set_notify(std::string_view key)
 {
 	storage_set_notify({ key });
+}
+
+std::string_view ArchipelagoClient::storage_private()
+{
+	return storage_private_prefix;
+}
+
+std::string ArchipelagoClient::storage_private(std::string_view key)
+{
+	std::string copy = storage_private_prefix;
+	copy += key;
+	return copy;
 }

@@ -40,6 +40,9 @@ public:
 	// ------------------------------------------------------------------------
 	// Data packages
 
+	// Get our numeric player ID.
+	int player_id() const;
+	// Get the arbitrary JSON data package for the given game.
 	const jt::Json& get_data_package(std::string_view game);
 
 	// ------------------------------------------------------------------------
@@ -190,6 +193,11 @@ public:
 	void storage_set_notify(std::initializer_list<std::string_view> keys);
 	void storage_set_notify(std::string_view key);
 
+	// Return a storage prefix unique to this slot to avoid conflicts.
+	std::string_view storage_private();
+	// Return storage_private() + key.
+	std::string storage_private(std::string_view key);
+
 private:
 	enum
 	{
@@ -217,6 +225,9 @@ private:
 	std::vector<Item> received_items;
 	std::set<int64_t> checked_locations;
 	std::map<int64_t, Item> scouted_locations;
+
+	int player_id_ = -1;
+	std::string storage_private_prefix;
 
 	void set_tag(std::string_view tag, bool present);
 	void send_connect();
