@@ -18,13 +18,15 @@ class CSVProcessor:
 
     def process_defines(self):
         try:
-            with open(INPUT_DEFINES, 'r') as input_file, \
-                    open(PYTHON_DEFINES, 'w') as python_file:
+            with open(INPUT_DEFINES, 'r') as input_file:
                 self.open_reader(input_file)
+                python_lines = ""
                 for row in self.csv_reader:
                     if row[LINE_DISABLED]:
                         continue
-                    python_file.write(f"{row[DEF_NAME]} = {row[DEF_ID]}\n")
+                    python_lines += f"{row[DEF_NAME]} = {row[DEF_ID]}\n"
+                with open(PYTHON_DATA, 'a') as python_file:
+                    python_file.write(python_lines)
             print("Processed Defines")
         except (FileNotFoundError, ValueError) as e:
             print(f"Error processing defines: {e}")
@@ -85,20 +87,20 @@ class CSVProcessor:
                     basic_items += f"{{ {itm_id} , {itm_obj}}},\n"
 
 
-                python_lines += "}"
-                with open(PYTHON_ITEMS, 'w') as python_file:
+                python_lines += "}\n"
+                with open(PYTHON_DATA, 'a') as python_file:
                     python_file.write(python_lines)
 
 
-                tracker_lines += "}"
+                tracker_lines += "}\n"
                 with open(TRACKER_ITEMS, 'w') as tracker_file:
                     json.dump(json_list, tracker_file, indent=4)
-                with open(TRACKER_ITEM_MAPPING, 'w') as tracker_map_file:
-                    tracker_map_file.write(tracker_lines)
+                with open(TRACKER_SCRIPTS_DATA, 'a') as tracker_file:
+                    tracker_file.write(tracker_lines)
 
                 client_lines += "};\n\n"
                 basic_items += "};\n\n"
-                with open(CLIENT_DATA, 'w') as client_file:
+                with open(CLIENT_DATA, 'a') as client_file:
                     client_file.write(client_lines)
                     client_file.write(basic_items)
 
@@ -163,13 +165,13 @@ class CSVProcessor:
 
                     overworld["children"].append(region_entry)
 
-                python_region_lines += "}"
-                with open(PYTHON_REGIONS, 'w') as python_file:
+                python_region_lines += "}\n"
+                with open(PYTHON_DATA, 'a') as python_file:
                     python_file.write(python_region_lines)
 
-                tracker_region_lines += "}"
-                with open(TRACKER_REGIONS, 'w') as tracker_reg_file:
-                    tracker_reg_file.write(tracker_region_lines)
+                tracker_region_lines += "}\n"
+                with open(TRACKER_SCRIPTS_DATA, 'a') as tracker_lua_file:
+                    tracker_lua_file.write(tracker_region_lines)
 
                 json_output.append(overworld)
                 with open(TRACKER_LOCATIONS, 'w') as tracker_loc_file:
@@ -206,9 +208,9 @@ class CSVProcessor:
                 return f'{function_name}({arguments})'
             if function_name=="can_reach":
                 if input_format == "python":
-                    return f'state.can_reach_region(\"{arguments}\")'
+                    return f'state.can_reach_region(\"{arguments}\", player)'
                 if input_format == "lua":
-                    return f"{function_name}|{arguments}"
+                    return f"{function_name}(\"{arguments}\")"
             if input_format == "python":
                 return f'{function_name}(state, player)'
             if input_format == "lua":
@@ -227,24 +229,19 @@ class CSVProcessor:
     def process_locations(self):
         try:
             with open(INPUT_LOCATIONS, 'r') as input_file, \
-                    open(TRACKER_LOCATIONS, 'r+') as tracker_file_locs, \
-                    open(TRACKER_LOCATIONS_DATA, 'w') as tracker_file_locs_data, \
-                    open(TRACKER_RULES, 'w') as tracker_file_rules, \
-                    open(TRACKER_LOCATION_MAPPING, 'w') as tracker_file_mapping, \
-                    open(PYTHON_LOCATIONS, 'w') as python_file, \
-                    open(PYTHON_RULES, 'w') as python_file_rules, \
-                    open(CLIENT_DATA, 'a') as client_data:
+                    open(TRACKER_LOCATIONS, 'r+') as tracker_file_locs:
 
                 data = json.load(tracker_file_locs)
 
                 self.open_reader(input_file)
-                python_file.write(pyLocationHeader + "\n")
-                python_file_rules.write(pyRulesHeader + "\n")
-                tracker_file_locs_data.write("""local PICKUP <const> = 0
-loonyland_location_table = {\n""")
-                tracker_file_rules.write("access_rules = {\n")
-                tracker_file_mapping.write("LOCATION_MAPPING = { \n")
-                client_data.write("static locationData basic_locations[] = {")
+                python_loc_lines = pyLocationHeader + "\n"
+                python_rules_lines = pyRulesHeader + "\n"
+                tracker_loc_json = ""
+                tracker_loc_lines = """local PICKUP <const> = 0
+loonyland_location_table = {\n"""
+                tracker_rules_lines = "access_rules = {\n"
+                tracker_mapping_lines = "LOCATION_MAPPING = { \n"
+                hamsandwich_lines = "static locationData basic_locations[] = {"
 
                 for row in self.csv_reader:
                     if row[LINE_DISABLED]:
@@ -253,6 +250,8 @@ loonyland_location_table = {\n""")
                     # python location file
                     location_name = row[LOC_NAME]
                     location_name_no_colon = location_name.replace(":", "")
+                    location_type_normal = row[LOC_TYPE]
+                    location_type = row[LOC_TYPE].upper()  # Assuming Type is mapped to an enum
                     location_id = row[LOC_ID]
                     location_map = row[LOC_MAP]
                     location_map_id = row[LOC_MAPID]
@@ -260,44 +259,31 @@ loonyland_location_table = {\n""")
                     location_ycoord = row[LOC_YCOORD]
                     location_spec1 = row[LOC_SPEC1ID]
                     location_spec2 = row[LOC_SPEC2ID]
-                    location_type_normal = row[LOC_TYPE]
-                    location_type = row[LOC_TYPE].upper()  # Assuming Type is mapped to an enum
                     location_region = row[LOC_REGION]
+                    location_comment = row[LOC_COMMENT]
                     location_logic = row[LOC_LOGIC]
+                    location_glitch_logic = row[LOC_GLITCH_LOGIC]
+                    location_peek_logic = row[LOC_PEEK_LOGIC]
                     location_override = row[LOC_OVERRIDE]
                     location_chat_codes = row[LOC_CHATCODES]
 
-                    location_line = f"    \"{location_name}\": LL_Location(" \
+                    python_loc_lines += f"    \"{location_name}\": LL_Location(" \
                                     f"{location_id}, LL_LocCat.{location_type}, \"{location_region}\"),\n"
 
-                    python_file.write(location_line)
+                    tracker_loc_lines += f"    [\"{location_name_no_colon}\"]  = {{id={location_id}, type={location_type}, region=\"{location_region}\"}},\n"
 
-                    location_line = f"    [\"{location_name_no_colon}\"]  = {{id={location_id}, type={location_type}, region=\"{location_region}\"}},\n"
-                    tracker_file_locs_data.write(location_line)
-                    conditions_str_tracker = ""
-
-                    # python logic file - Rules generation
                     if location_logic:  # Check if there are any specific rules for the location
                         # python logic file - Rules generation
                         rules_line = f"        \"{location_name}\": lambda state: "
-                        conditions_str = self.parse_conditions(location_logic, "python")
-
-                        rules_line += conditions_str
+                        rules_line += self.parse_conditions(location_logic, "python")
                         rules_line += ",\n"
-                        python_file_rules.write(rules_line)
+                        python_rules_lines += rules_line
 
                         #tracker
                         rules_line = f"        [\"{location_name_no_colon}\"] = function(state) return "
-                        conditions = location_logic.split(" and ")
-                        #conditions_str = " and ".join([
-                            #self.parse_condition_lua(cond.strip()) for cond in conditions])
-
                         rules_line +=  self.parse_conditions(location_logic, "lua")
                         rules_line += " end,\n"
-                        tracker_file_rules.write(rules_line)
-
-
-
+                        tracker_rules_lines += rules_line
 
                     #find location_map in children
                     if location_map == "Halloween Hill":
@@ -313,7 +299,6 @@ loonyland_location_table = {\n""")
                         })
                     for child in data[0]['children']:
                         if child['name'] == location_region:
-                            #child['access_rules'].append( f"@{location_region}")
                             child['sections'].append({
                                 "name": location_name_no_colon,
                                 "access_rules": [[f"[$access|{location_name_no_colon}]",
@@ -321,7 +306,6 @@ loonyland_location_table = {\n""")
                                 f"{{$peek|{location_name_no_colon}}}"
                                 ]
                                 })
-                            #add to sections[] with logic
 
                         elif child['name'] == location_override:
                             child['sections'].append({
@@ -330,24 +314,33 @@ loonyland_location_table = {\n""")
                             })
 
                     #tracker mapping
-                    tracker_file_mapping.write(f"    [{LOONYLAND_BASE_ID + int(location_id)}] = {{{{\"@Overworld/{row[LOC_REGION]}/{location_name_no_colon}\"}}}},\n")
+                    tracker_mapping_lines +=f"    [{LOONYLAND_BASE_ID + int(location_id)}] = {{{{\"@Overworld/{row[LOC_REGION]}/{location_name_no_colon}\"}}}},\n"
 
                     #client data hamsandwich
-                    client_data.write(f"{{\"{location_name}\",\"{location_type_normal}\",{location_id},\"{location_map}\",{location_map_id},")
-                    client_data.write(f"{location_xcoord},{location_ycoord},{location_spec1},{location_spec2},\"{location_region}\",{{{location_chat_codes}}}}},\n")
+                    hamsandwich_lines += f"{{\"{location_name}\",\"{location_type_normal}\",{location_id},\"{location_map}\",{location_map_id},"
+                    hamsandwich_lines += f"{location_xcoord},{location_ycoord},{location_spec1},{location_spec2},\"{location_region}\",{{{location_chat_codes}}}}},\n"
 
                 tracker_file_locs.truncate(0)
                 tracker_file_locs.seek(0)
                 json.dump(data, tracker_file_locs, indent=2)
 
-                tracker_file_locs_data.write("}")
-                tracker_file_rules.write("}")
-                tracker_file_mapping.write("}")
-                python_file.write("}")
-                python_file_rules.write("    }\n")
-                python_file_rules.write(pyRulesFooter)
+                tracker_loc_lines += "}\n"
+                tracker_rules_lines += "}\n"
+                tracker_mapping_lines += "}\n"
+                with open(TRACKER_SCRIPTS_DATA, 'a') as tracker_lua:
+                    tracker_lua.write(tracker_loc_lines + tracker_rules_lines + tracker_mapping_lines)
 
-                client_data.write("};\n\n")
+                python_loc_lines += "}\n"
+                python_rules_lines += "    }\n"
+                python_rules_lines += pyRulesFooter + "\n"
+                with open(PYTHON_DATA, 'a') as python_file:
+                    python_file.write(python_loc_lines)
+                    python_file.write(python_rules_lines)
+
+
+                hamsandwich_lines += "};\n\n"
+                with open(CLIENT_DATA, 'a') as client_data:
+                    client_data.write(hamsandwich_lines)
 
             print("Processed Locations")
         except (FileNotFoundError, ValueError) as e:
@@ -385,34 +378,23 @@ loonyland_location_table = {\n""")
                     if entrance_logic:
                         python_ent_lines += ", lambda state: "
                         python_ent_lines += self.parse_conditions(entrance_logic, "python")
-                        #conditions = entrance_logic.split(" and ")
-                        #conditions_str = " and ".join([
-                        #    self.parse_condition(cond.strip()) for cond in conditions])
-                        #python_ent_lines += conditions_str
-
                     python_ent_lines += "),\n"
 
                     # 2: Tracker entrances
                     tracker_ent_lines += f"        ent_valid{{source = \"{entrance_source}\", dest = \"{entrance_end}\""
-
                     if entrance_logic:
                         tracker_ent_lines += ", rule = function(state) return "
                         tracker_ent_lines += self.parse_conditions(entrance_logic, "lua")
-                        #conditions = entrance_logic.split(" and ")
-                        #conditions_str = " and ".join([
-                        #    self.parse_condition_lua(cond.strip()) for cond in conditions])
-                        #tracker_ent_lines += conditions_str
                         tracker_ent_lines += " end"
                     tracker_ent_lines += "},\n"
 
                 python_ent_lines += "]\n"
-                python_ent_lines += pyEntranceFooter
-                with open(PYTHON_ENTRANCES, 'w') as python_file:
+                python_ent_lines += pyEntranceFooter + "\n"
+                with open(PYTHON_DATA, 'a') as python_file:
                     python_file.write(python_ent_lines)
 
-
-                tracker_ent_lines += "}"
-                with open(TRACKER_ENTRANCES, 'w') as tracker_file:
+                tracker_ent_lines += "}\n"
+                with open(TRACKER_SCRIPTS_DATA, 'a') as tracker_file:
                     tracker_file.write(tracker_ent_lines)
 
             print("Processed Entrances")
@@ -425,12 +407,23 @@ def main():
     Path("./Poptracker").mkdir(parents=True, exist_ok=True)
     Path("./Python").mkdir(parents=True, exist_ok=True)
 
+    with open(PYTHON_DATA, 'w') as python_file:
+        python_file.write("#" + genericHeader + pyMainHeader)
+
+    with open(TRACKER_SCRIPTS_DATA, 'w') as tracker_file:
+        tracker_file.write("--"+genericHeader)
+
+    with open(CLIENT_DATA, 'w') as client_file:
+        client_file.write("//"+genericHeader)
+
     processor = CSVProcessor()
     processor.process_defines()
     processor.process_items()
     processor.process_regions()
     processor.process_locations()
     processor.process_entrances()
+
+
 
 
 
