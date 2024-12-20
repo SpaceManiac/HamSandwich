@@ -4,6 +4,7 @@
 #include "ch_swampdog.h"
 #include "badge.h"
 #include "title.h"
+#include "loonyArchipelago.h"
 
 #define NUM_CHEATS 6
 
@@ -72,5 +73,7 @@ void DoCheat(byte w)
 		case 3:	// super speed
 			player.speed=255;
 			break;
+		case 5: //app debug
+			DebugAPCommand();
 	}
 }

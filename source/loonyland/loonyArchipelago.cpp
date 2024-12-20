@@ -47,24 +47,24 @@ bool ExpectingDeath = false;
 
 std::unordered_map<int, chatData> chat_table = {
 	{2, { "Super Heart", ""}}, //trees
-	{8, { "rubber booties", ""}}, //biff
+	{8, { "booties", ""}}, //biff
 	{9, { "boots", ""}}, //biff2
 	{10, { "boots", ""}}, //biff3
 	{14, { "cactus", ""}}, //bonita
 	{15, { "cactus", ""}}, //bonita2
-	{26, { "this stick", ""}}, //cat lady
-	{27, { "the stick", ""}}, //cat lady
+	{26, { "stick", ""}}, //cat lady
+	{27, { "stick", ""}}, //cat lady
 	{29, { "potion", ""}}, //zizwalda
 	{31, { "Super Heart", ""}}, //zizwalda2
 	{42, { "super growth", ""}}, //farmer
 	{43, { "fertilizer", ""}}, //farmer2
-	{56, { "100 Gem reward", ""}}, //mayor
-	{60, { "A Ghost Slaying Potion", ""}}, //zizwalda potion
+	{56, { "100 Gem", ""}}, //mayor
+	{60, { "Ghost Slaying Potion", ""}}, //zizwalda potion
 	{61, { "Ghost Slaying Potion", ""}}, //zizwalda potion
-	{62, { "a Ghost Slaying Potion", ""}}, //zizwalda potion
+	{62, { "Ghost Slaying Potion", ""}}, //zizwalda potion
 	{68, { "Bat Key", ""}}, //doofy little twerp
-	{70, { "coat your slingshot in silver", "make "}}, //silver man
-	{75, { "Your slingshot is silver coated now", "I made "}}, //silver man2
+	{70, { "slingshot", ""}}, //silver man
+	{75, { "slingshot", ""}}, //silver man2
 	{79, { "lantern", ""}}, //lost girl
 	{85, { "key", ""}}, //larry wife
 	{92, { "toy", ""}}, //collection
@@ -480,6 +480,7 @@ void UpdateArchipelago()
 			{
 				player.var[std::stoi(key)] = *(int*)(*itr)->value;
 			}
+			std::cout << "nice!34";
 			delete (*itr)->value;
 			delete (*itr);
 			itr = GetVarRequests.erase(itr);
@@ -497,3 +498,8 @@ void UpdateArchipelago()
 
 }
 
+void DebugAPCommand() {
+	std::cout << "Do stuff";
+
+
+}
