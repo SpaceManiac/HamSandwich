@@ -324,6 +324,14 @@ void ArchipelagoClient::update()
 			}
 			else if (cmd == IncomingCmd::LocationInfo)
 			{
+				if (packet["locations"].isArray())
+				{
+					for (const auto& item : packet["locations"].getArray())
+					{
+						int64_t location = item["location"].getLong();
+						decode(&scouted_locations[location], item);
+					}
+				}
 			}
 			else if (cmd == IncomingCmd::RoomUpdate)
 			{
@@ -525,7 +533,7 @@ const std::vector<ArchipelagoClient::Item>& ArchipelagoClient::all_received_item
 }
 
 // ------------------------------------------------------------------------
-// Sending locations
+// Locations
 
 void ArchipelagoClient::check_location(int64_t location)
 {
@@ -536,6 +544,28 @@ void ArchipelagoClient::check_location(int64_t location)
 		packet["cmd"] = OutgoingCmd::LocationChecks;
 		packet["locations"][0] = location;
 	}
+}
+
+void ArchipelagoClient::scout_locations(std::initializer_list<int64_t> locations, bool create_as_hint)
+{
+	jt::Json& packet = outgoing.emplace_back();
+	packet["cmd"] = OutgoingCmd::LocationScouts;
+	auto& array = packet["locations"].setArray();
+	for (int64_t location : locations)
+	{
+		array.emplace_back(location);
+	}
+	packet["create_as_hint"] = create_as_hint ? 2 : 0;
+}
+
+const ArchipelagoClient::Item* ArchipelagoClient::item_at_location(int64_t location)
+{
+	auto iter = scouted_locations.find(location);
+	if (iter != scouted_locations.end())
+	{
+		return &iter->second;
+	}
+	return nullptr;
 }
 
 // ------------------------------------------------------------------------

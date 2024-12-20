@@ -66,10 +66,15 @@ public:
 	const std::vector<Item>& all_received_items() const;
 
 	// ------------------------------------------------------------------------
-	// Sending locations
+	// Locations
 
 	// Call when a location is checked (picked up, completed, achieved).
 	void check_location(int64_t location);
+
+	// Call to scout locations.
+	void scout_locations(std::initializer_list<int64_t> locations, bool create_as_hint = false);
+	// Return the item scouted at a particular location. Requires calling scout_locations first.
+	const Item* item_at_location(int64_t location);
 
 	// ------------------------------------------------------------------------
 	// Messages
@@ -201,6 +206,7 @@ private:
 	size_t handled_received_items = 0;
 	std::vector<Item> received_items;
 	std::set<int64_t> checked_locations;
+	std::map<int64_t, Item> scouted_locations;
 
 	void set_tag(std::string_view tag, bool present);
 	void send_connect();
