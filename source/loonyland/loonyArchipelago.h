@@ -12,6 +12,7 @@ void UpdateArchipelago();
 void SendArchipelagoPlayerVar(int v, int val);
 void SendDeathLink();
 void WinArchipelago();
+void ArchipelagoLoadPlayer();
 std::string ConnectionStatus();
 
 void Disconnect();
@@ -50,6 +51,7 @@ extern std::unordered_map<int, int> itemsFound;
 extern bool ArchipelagoMode;
 extern bool locationWait;
 extern std::unordered_map<int, chatData> chat_table;
+extern std::string ArchipelagoSeed;
 
 const std::set<int> DataStorageVars = { VAR_ORBSTAND, VAR_BOOTSALES, VAR_WITCHTALK, VAR_BRIDGEOPEN, VAR_ZOMBIE, VAR_ZOMBIEREWARD, VAR_VAMPYWALL, VAR_BATSTAND, VAR_VAMPSTAND,
 VAR_KNOWWOLVES, VAR_DOLL, VAR_DOLLGIVEN, VAR_TOWNOPEN, VAR_HELPERBAT, VAR_TALKBAT, VAR_TALKBRIDGE, VAR_PAIDBRIDGE, VAR_PORTALOPEN, VAR_DEADELDER, VAR_GATEOUT, VAR_DEADBONK,

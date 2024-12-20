@@ -424,12 +424,19 @@ void HandlePauseKeyPresses(MGLDraw *mgl)
 void GetSaves(void)
 {
 	int i;
-	char txt[32];
+	char txt[128];
 	player_t p;
 
 	for(i=0;i<5;i++)
 	{
-		ham_sprintf(txt,"save%d.sav", saveOffset + i + 1);
+		if (ArchipelagoMode)
+		{
+			ham_sprintf(txt,"Archipelago/%s/save%d.sav", ArchipelagoSeed.c_str(), saveOffset + i + 1);
+		}
+		else
+		{
+			ham_sprintf(txt, "save%d.sav", saveOffset + i + 1);
+		}
 		auto f = AppdataOpen(txt);
 		if(!f)
 		{
@@ -451,7 +458,7 @@ void LoadGame(int i)
 
 	if (ArchipelagoMode)
 	{
-		ham_sprintf(txt, "AP_save%d.sav", i + 1);
+		ham_sprintf(txt, "Archipelago/%s/save%d.sav", ArchipelagoSeed.c_str(), i + 1);
 	}
 	else
 	{
@@ -464,24 +471,10 @@ void LoadGame(int i)
 	}
 	else
 	{
+		SDL_RWread(f, &player, sizeof(player_t), 1);
 		if (ArchipelagoMode)
 		{
-			player_t p_load;
-			SDL_RWread(f, &p_load, sizeof(player_t), 1);
-			//player.areaName = p_load.areaName;
-			player.money = p_load.money;
-			player.worldNum = p_load.worldNum;
-			player.levelNum = p_load.levelNum;
-			player.keys[0] = p_load.keys[0];
-			player.hearts = p_load.hearts;
-			player.weapon = p_load.weapon;
-			player.wpnLevel = p_load.wpnLevel;
-			player.destx = p_load.destx;
-			player.desty = p_load.desty;
-		}
-		else
-		{
-			SDL_RWread(f, &player, sizeof(player_t), 1);
+			ArchipelagoLoadPlayer();
 		}
 		if(player.worldNum==WORLD_REMIX)
 		{
@@ -565,10 +558,10 @@ void LoadGame(int i)
 
 void SaveGame(int i)
 {
-	char txt[32];
+	char txt[128];
 	if (ArchipelagoMode)
 	{
-		ham_sprintf(txt, "AP_save%d.sav", i + 1);
+		ham_sprintf(txt, "Archipelago/%s/save%d.sav", ArchipelagoSeed.c_str(), i + 1);
 	}
 	else
 	{
@@ -600,9 +593,16 @@ void SaveGame(int i)
 
 void DeleteSave(int i)
 {
-	char txt[32];
+	char txt[128];
 
-	ham_sprintf(txt,"save%d.sav",i);
+	if (ArchipelagoMode)
+	{
+		ham_sprintf(txt, "Archipelago/%s/save%d.sav", ArchipelagoSeed.c_str(), i);
+	}
+	else
+	{
+		ham_sprintf(txt, "save%d.sav", i);
+	}
 	AppdataDelete(txt);
 }
 
@@ -614,19 +614,12 @@ void BumpSaveGem(void)
 
 	if(noSaving)
 		return;	// can't save when the portal is opening
-	if (ArchipelagoMode)
-	{
-		SaveGame(0);
-		player.saveClock = 30;
-	}
-	else
-	{
-		EnterStatusScreen();
-		InitPauseMenu();
-		subMode = SubMode::SlotPick;
-		cursor = CURSOR_SAVE;
-		player.saveClock = 20;
-	}
+
+	EnterStatusScreen();
+	InitPauseMenu();
+	subMode=SubMode::SlotPick;
+	cursor=CURSOR_SAVE;
+	player.saveClock=20;
 }
 
 void SetNoSaving(bool on)
@@ -702,35 +695,14 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 					player.fireFlags^=FF_WPNLOCK;
 					break;
 				case 2:	// Load
-					if (ArchipelagoMode)
-					{
-						LoadGame(0);
-						CameraOnPlayer(0);
-						ExitBullets();
-						InitBullets();
-						NewBigMessage("Game Loaded!", 30);
-						UndoWindDown();
-						return PauseMenuResult::Continue;
-					}
-					else
-					{
-						subMode = SubMode::SlotPick;
-					}
+					subMode=SubMode::SlotPick;
 					break;
 				case 3:	// Save
 					if(!noSaving)
-						if (ArchipelagoMode)
-						{
-							SaveGame(0);
-							return PauseMenuResult::Continue;
-						}
-						else
-						{
-							subMode = SubMode::SlotPick;
-						}
+						subMode=SubMode::SlotPick;
 					break;
 				case 4: // quit game
-					if(player.cheatsOn&PC_HARDCORE && !ArchipelagoMode)
+					if(player.cheatsOn&PC_HARDCORE)
 					{
 						if (player.lastSave != 255)
 						{

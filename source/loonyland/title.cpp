@@ -276,13 +276,20 @@ byte WhichGameToLoad(void)
 void GetSavesForMenu(void)
 {
 	int i;
-	char txt[64];
+	char txt[128];
 	float pct;
 	player_t p;
 
 	for(i=0;i<5;i++)
 	{
-		ham_sprintf(txt,"save%d.sav", saveOffset + i + 1);
+		if (ArchipelagoMode)
+		{
+			ham_sprintf(txt, "Archipelago/%s/save%d.sav", ArchipelagoSeed.c_str(), saveOffset + i + 1);
+		}
+		else
+		{
+			ham_sprintf(txt, "save%d.sav", saveOffset + i + 1);
+		}
 		auto f = AppdataOpen(txt);
 		if(!f)
 		{
@@ -858,10 +865,6 @@ TASK(MainMenuResult) MainMenu(MGLDraw *mgl)
 		}
 		else if(loadingGame==TitleSubmenu::LoadGame)
 		{
-			if (ArchipelagoMode)
-			{
-				CO_RETURN MainMenuResult::LoadGame;
-			}
 			byte b2=LoadGameUpdate(&lastTime,mgl);
 			LoadGameDisplay(mgl);
 			if(b2==0)
@@ -919,18 +922,11 @@ TASK(MainMenuResult) MainMenu(MGLDraw *mgl)
 		}
 		else if(loadingGame==TitleSubmenu::MainMenu && (b==MainMenuResult::NewGame || b == MainMenuResult::Remix))
 		{
-			if (ArchipelagoMode)
-			{
-				CO_RETURN b;
-			}
-			else
-			{
-				loadingGame = TitleSubmenu::ChooseDiff;
-				choosingDiffFor = b;
-				cursor = 0;
-				b = MainMenuResult::None;
-				oldc = 255;
-			}
+			loadingGame=TitleSubmenu::ChooseDiff;
+			choosingDiffFor=b;
+			cursor=0;
+			b=MainMenuResult::None;
+			oldc=255;
 		}
 		else if (b == MainMenuResult::Extras)
 		{
