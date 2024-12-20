@@ -5,7 +5,6 @@
 #include <initializer_list>
 #include <map>
 #include <memory>
-#include <queue>
 #include <set>
 #include <string>
 #include <string_view>
@@ -38,12 +37,23 @@ public:
 	void update();
 
 	// ------------------------------------------------------------------------
-	// Data packages
+	// Room info and data packages
 
 	// Get our numeric player ID.
 	int player_id() const;
+	// Get Archipelago's unique ID for this generated world.
+	std::string_view seed_name() const;
+
+	std::string_view slot_game_name(int id);
+	std::string_view slot_player_alias(int id);
+	std::string_view item_name(int64_t item);
+	std::string_view location_name(int64_t item);
+
+	// Get the combined RoomInfo, Connected, and RoomUpdate data, except for
+	// checked_locations and missing_locations.
+	const std::map<std::string, jt::Json, std::less<>>& room_info() const;
 	// Get the arbitrary JSON data package for the given game.
-	const jt::Json& get_data_package(std::string_view game);
+	const jt::Json& data_package(std::string_view game) const;
 
 	// ------------------------------------------------------------------------
 	// Receiving items
@@ -64,11 +74,11 @@ public:
 	};
 
 	// Return the next unprocessed item, or nullptr if everything has been processed.
+	// Pointer is invalidated on next call to pop_received_item or update.
 	const Item* pop_received_item();
 	// Return all received items regardless of processed status.
 	const std::vector<Item>& all_received_items() const;
 
-	std::string_view item_name(int64_t item);
 
 	// ------------------------------------------------------------------------
 	// Locations
@@ -81,9 +91,7 @@ public:
 	// Call to scout locations.
 	void scout_locations(std::initializer_list<int64_t> locations, bool create_as_hint = false);
 	// Return the item scouted at a particular location. Requires calling scout_locations first.
-	const Item* item_at_location(int64_t location);
-
-	std::string_view location_name(int64_t item);
+	const Item* item_at_location(int64_t location) const;
 
 	// ------------------------------------------------------------------------
 	// Messages
@@ -163,7 +171,8 @@ public:
 	};
 
 	// Pop from this queue when you have time to display a message.
-	bool pop_message(Message* message);
+	// Pointer is invalidated on next call to pop_message or update.
+	Message* pop_message();
 
 	void say(std::string_view text);
 
@@ -175,7 +184,7 @@ public:
 	// Send a DeathLink to connected games.
 	void death_link_send(std::string_view cause = {}, std::string_view player = {});
 	// If a DeathLink is pending, returns true and clears the pending status.
-	bool is_death_link_pending();
+	bool pop_death_link();
 
 	// ------------------------------------------------------------------------
 	// Storage system
@@ -214,13 +223,14 @@ private:
 	std::unique_ptr<WebSocket> socket;
 	std::vector<jt::Json> outgoing;
 
-	std::map<std::string, jt::Json, std::less<>> room_info;
+	std::map<std::string, jt::Json, std::less<>> room_info_;
 	std::map<std::string, jt::Json, std::less<>> data_packages;
 	std::map<int64_t, std::string> item_names;
 	std::map<int64_t, std::string> location_names;
 
 	bool death_link_pending = false;
-	std::queue<Message> messages_pending;
+	size_t handled_messages = 0;
+	std::vector<Message> messages_pending;
 	size_t handled_received_items = 0;
 	std::vector<Item> received_items;
 	std::set<int64_t> checked_locations;

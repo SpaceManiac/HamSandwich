@@ -247,10 +247,13 @@ void ArchipelagoClient::update()
 					status = WaitingForDataPackage;
 				}
 
-				room_info.clear();
+				room_info_.clear();
 				for (auto& pair : packet.getObject())
 				{
-					room_info.insert(std::move(pair));
+					if (pair.first != "cmd")
+					{
+						room_info_.insert(std::move(pair));
+					}
 				}
 			}
 			else if (cmd == IncomingCmd::DataPackage)
@@ -291,9 +294,9 @@ void ArchipelagoClient::update()
 				// There are no specified overlapping fields.
 				for (auto& pair : packet.getObject())
 				{
-					if (pair.first != "checked_locations" && pair.first != "missing_locations")
+					if (pair.first != "cmd" && pair.first != "checked_locations" && pair.first != "missing_locations")
 					{
-						room_info.insert(std::move(pair));
+						room_info_.insert(std::move(pair));
 					}
 				}
 				status = Active;
@@ -372,13 +375,13 @@ void ArchipelagoClient::update()
 					}
 					else
 					{
-						room_info.insert(std::move(pair));
+						room_info_.insert(std::move(pair));
 					}
 				}
 			}
 			else if (cmd == IncomingCmd::PrintJSON)
 			{
-				Message& message = messages_pending.emplace();
+				Message& message = messages_pending.emplace_back();
 				if (packet["data"].isArray())
 				{
 					for (auto& partJ : packet["data"].getArray())
@@ -520,11 +523,46 @@ void ArchipelagoClient::update()
 }
 
 // ------------------------------------------------------------------------
-// Data packages
+// Room info and data packages
 
 int ArchipelagoClient::player_id() const
 {
 	return player_id_;
+}
+
+std::string_view ArchipelagoClient::seed_name() const
+{
+	auto iter = room_info_.find("seed_name");
+	if (iter != room_info_.end() && iter->second.isString())
+	{
+		return iter->second.getString();
+	}
+	return "";
+}
+
+std::string_view ArchipelagoClient::slot_game_name(int id)
+{
+	return room_info_["games"][id].getString();
+}
+
+std::string_view ArchipelagoClient::slot_player_alias(int id)
+{
+	return room_info_["players"][id]["alias"].getString();
+}
+
+std::string_view ArchipelagoClient::item_name(int64_t item)
+{
+	return item_names[item];
+}
+
+std::string_view ArchipelagoClient::location_name(int64_t item)
+{
+	return location_names[item];
+}
+
+const std::map<std::string, jt::Json, std::less<>>& ArchipelagoClient::room_info() const
+{
+	return room_info_;
 }
 
 void ArchipelagoClient::load_data_package(std::string game, jt::Json value)
@@ -548,7 +586,7 @@ void ArchipelagoClient::load_data_package(std::string game, jt::Json value)
 	data_packages[std::move(game)] = std::move(value);
 }
 
-const jt::Json& ArchipelagoClient::get_data_package(std::string_view game)
+const jt::Json& ArchipelagoClient::data_package(std::string_view game) const
 {
 	auto iter = data_packages.find(game);
 	if (iter == data_packages.end())
@@ -573,11 +611,6 @@ const ArchipelagoClient::Item* ArchipelagoClient::pop_received_item()
 const std::vector<ArchipelagoClient::Item>& ArchipelagoClient::all_received_items() const
 {
 	return received_items;
-}
-
-std::string_view ArchipelagoClient::item_name(int64_t item)
-{
-	return item_names[item];
 }
 
 // ------------------------------------------------------------------------
@@ -613,7 +646,7 @@ void ArchipelagoClient::scout_locations(std::initializer_list<int64_t> locations
 	packet["create_as_hint"] = create_as_hint ? 2 : 0;
 }
 
-const ArchipelagoClient::Item* ArchipelagoClient::item_at_location(int64_t location)
+const ArchipelagoClient::Item* ArchipelagoClient::item_at_location(int64_t location) const
 {
 	auto iter = scouted_locations.find(location);
 	if (iter != scouted_locations.end())
@@ -623,23 +656,18 @@ const ArchipelagoClient::Item* ArchipelagoClient::item_at_location(int64_t locat
 	return nullptr;
 }
 
-std::string_view ArchipelagoClient::location_name(int64_t item)
-{
-	return location_names[item];
-}
-
 // ------------------------------------------------------------------------
 // Messages
 
-bool ArchipelagoClient::pop_message(Message* message)
+// Non-const so that the user can std::move() the strings out if desired.
+ArchipelagoClient::Message* ArchipelagoClient::pop_message()
 {
-	if (!messages_pending.empty())
+	if (handled_messages < messages_pending.size())
 	{
-		*message = std::move(messages_pending.front());
-		messages_pending.pop();
-		return true;
+		return &messages_pending[handled_messages++];
 	}
-	return false;
+	messages_pending.clear();
+	return nullptr;
 }
 
 void ArchipelagoClient::say(std::string_view text)
@@ -674,7 +702,7 @@ void ArchipelagoClient::death_link_send(std::string_view cause, std::string_view
 }
 
 // If a DeathLink is pending, returns true and clears the pending status.
-bool ArchipelagoClient::is_death_link_pending()
+bool ArchipelagoClient::pop_death_link()
 {
 	if (death_link_pending)
 	{
