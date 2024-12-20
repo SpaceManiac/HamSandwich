@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <sstream>
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <SDL_image.h>
