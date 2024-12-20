@@ -14,6 +14,7 @@ void SendDeathLink();
 void WinArchipelago();
 void ArchipelagoLoadPlayer();
 std::string ConnectionStatus();
+void DebugAPCommand();
 
 void Disconnect();
 void GetInfoFromAP();
