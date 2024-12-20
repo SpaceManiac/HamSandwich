@@ -65,6 +65,8 @@ public:
 	// Return all received items regardless of processed status.
 	const std::vector<Item>& all_received_items() const;
 
+	std::string_view item_name(int64_t item);
+
 	// ------------------------------------------------------------------------
 	// Locations
 
@@ -75,6 +77,8 @@ public:
 	void scout_locations(std::initializer_list<int64_t> locations, bool create_as_hint = false);
 	// Return the item scouted at a particular location. Requires calling scout_locations first.
 	const Item* item_at_location(int64_t location);
+
+	std::string_view location_name(int64_t item);
 
 	// ------------------------------------------------------------------------
 	// Messages
@@ -200,6 +204,8 @@ private:
 
 	std::map<std::string, jt::Json, std::less<>> room_info;
 	std::map<std::string, jt::Json, std::less<>> data_packages;
+	std::map<int64_t, std::string> item_names;
+	std::map<int64_t, std::string> location_names;
 
 	bool death_link_pending = false;
 	std::queue<Message> messages_pending;
@@ -210,6 +216,7 @@ private:
 
 	void set_tag(std::string_view tag, bool present);
 	void send_connect();
+	void load_data_package(std::string game, jt::Json value);
 };
 
 #endif

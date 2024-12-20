@@ -249,7 +249,8 @@ void ArchipelagoClient::update()
 			{
 				for (auto& pair : packet["data"]["games"].getObject())
 				{
-					data_packages[pair.first] = std::move(pair.second);
+					load_data_package(std::move(pair.first), std::move(pair.second));
+					// TODO: Store to cache.
 				}
 				send_connect();
 			}
@@ -505,6 +506,27 @@ void ArchipelagoClient::update()
 // ------------------------------------------------------------------------
 // Data packages
 
+void ArchipelagoClient::load_data_package(std::string game, jt::Json value)
+{
+	// From name->id maps, create inverted id->name maps.
+	if (value["item_name_to_id"].isObject())
+	{
+		for (const auto& pair : value["item_name_to_id"].getObject())
+		{
+			item_names[pair.second.getLong()] = pair.first;
+		}
+	}
+	if (value["location_name_to_id"].isObject())
+	{
+		for (const auto& pair : value["location_name_to_id"].getObject())
+		{
+			location_names[pair.second.getLong()] = pair.first;
+		}
+	}
+	// Store original maps plus anything extra.
+	data_packages[std::move(game)] = std::move(value);
+}
+
 const jt::Json& ArchipelagoClient::get_data_package(std::string_view game)
 {
 	auto iter = data_packages.find(game);
@@ -530,6 +552,11 @@ const ArchipelagoClient::Item* ArchipelagoClient::pop_received_item()
 const std::vector<ArchipelagoClient::Item>& ArchipelagoClient::all_received_items() const
 {
 	return received_items;
+}
+
+std::string_view ArchipelagoClient::item_name(int64_t item)
+{
+	return item_names[item];
 }
 
 // ------------------------------------------------------------------------
@@ -566,6 +593,11 @@ const ArchipelagoClient::Item* ArchipelagoClient::item_at_location(int64_t locat
 		return &iter->second;
 	}
 	return nullptr;
+}
+
+std::string_view ArchipelagoClient::location_name(int64_t item)
+{
+	return location_names[item];
 }
 
 // ------------------------------------------------------------------------
