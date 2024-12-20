@@ -2,8 +2,10 @@
 #define Archipelago_H
 
 #include <string>
-#include "player.h"
 #include <set>
+#include <vector>
+#include <unordered_map>
+#include "player.h"
 
 int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password);
 void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y);
@@ -30,7 +32,7 @@ struct locationData {
 	int Spec1ID;
 	int Spec2ID;
 	std::string Region;
-	std::list<int> chatCodes;
+	std::vector<int> chatCodes;
 };
 
 struct itemData {

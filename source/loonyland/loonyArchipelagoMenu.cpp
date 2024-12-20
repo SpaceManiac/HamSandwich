@@ -187,7 +187,7 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 				oldStatus = status;
 				printf("DEBUG: Status: %s\n", status.c_str());
 			}
-			
+
 			if (status == "Authenticated")
 			{
 				GetInfoFromAP();
@@ -197,7 +197,7 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 			{
 				optMode = 0;
 				Disconnect();
-				MakeNormalSound(SND_BONKOUCH);				
+				MakeNormalSound(SND_BONKOUCH);
 			}
 			break;
 		case 4: //waiting on status
@@ -334,5 +334,5 @@ ArchipelagoMenu(MGLDraw* mgl)
 	}
 
 	ExitArchipelagoMenu();
-	return quit;
+	CO_RETURN quit;
 }
