@@ -1,8 +1,13 @@
 #include "aegea.h"
 #include <time.h>
 #include <json.h>
-#include <SDL2/SDL_log.h>
 #include "websocket.h"
+
+#ifdef NDEBUG
+#define debug_printf(...)
+#else
+#define debug_printf(...) fprintf(stderr, "[AP]" __VA_ARGS__)
+#endif
 
 namespace
 {
@@ -157,9 +162,7 @@ void ArchipelagoClient::send_connect()
 		tagsJ.emplace_back(tag);
 	}
 	// Bypass outgoing queue during connection setup.
-#ifndef NDEBUG
-	fprintf(stderr, "--> %s\n", connect.toString().c_str());
-#endif
+	debug_printf("--> %s\n", connect.toString().c_str());
 	socket->send_text(outgoingJ.toString().c_str());
 	status = WaitingForConnected;
 }
@@ -197,21 +200,19 @@ void ArchipelagoClient::update()
 		{
 			error = "Server sent invalid JSON: ";
 			error += jt::Json::StatusToString(parseStatus);
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Server sent invalid JSON: %s in %s", jt::Json::StatusToString(parseStatus), message->data.c_str());
+			debug_printf("Server sent invalid JSON: %s in %s\n", jt::Json::StatusToString(parseStatus), message->data.c_str());
 			continue;
 		}
 		if (!body.isArray())
 		{
 			error = "Server sent non-array JSON";
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Server sent non-array JSON: %s", message->data.c_str());
+			debug_printf("Server sent non-array JSON: %s\n", message->data.c_str());
 			continue;
 		}
 
 		for (auto& packet : body.getArray())
 		{
-#ifndef NDEBUG
-			fprintf(stderr, "<-- %s\n", packet.toString().c_str());
-#endif
+			debug_printf("<-- %s\n", packet.toString().c_str());
 
 			const auto& cmdJ = packet["cmd"];
 			if (!cmdJ.isString())
@@ -220,7 +221,6 @@ void ArchipelagoClient::update()
 				continue;
 			}
 			const auto& cmd = cmdJ.getString();
-			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Archipelago: Handling %s", cmd.c_str());
 
 			// https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#server---client
 			if (cmd == IncomingCmd::RoomInfo)
@@ -242,9 +242,7 @@ void ArchipelagoClient::update()
 				else
 				{
 					// Bypass outgoing queue during connection setup.
-#ifndef NDEBUG
-					fprintf(stderr, "--> %s\n", getDataPackage.toString().c_str());
-#endif
+					debug_printf("--> %s\n", getDataPackage.toString().c_str());
 					socket->send_text(outgoingJ.toString().c_str());
 					status = WaitingForDataPackage;
 				}
@@ -313,8 +311,8 @@ void ArchipelagoClient::update()
 				}
 				else
 				{
-					SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
-						"Archipelago: ReceivedItems expected index=%u, got index=%d",
+					debug_printf(
+						"ReceivedItems expected index=%u, got index=%d\n",
 						static_cast<unsigned int>(received_items.size()),
 						index
 					);
@@ -490,7 +488,7 @@ void ArchipelagoClient::update()
 			}
 			else
 			{
-				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Archipelago: Server sent unknown \"cmd\": %s", cmd.c_str());
+				debug_printf("Server sent unknown \"cmd\": %s\n", cmd.c_str());
 			}
 		}
 	}
@@ -500,7 +498,7 @@ void ArchipelagoClient::update()
 #ifndef NDEBUG
 		for (const auto& packet : outgoing)
 		{
-			fprintf(stderr, "--> %s\n", packet.toString().c_str());
+			debug_printf("--> %s\n", packet.toString().c_str());
 		}
 #endif
 
