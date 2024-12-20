@@ -631,6 +631,13 @@ bool ArchipelagoClient::pop_message(Message* message)
 	return false;
 }
 
+void ArchipelagoClient::say(std::string_view text)
+{
+	jt::Json& packet = outgoing.emplace_back();
+	packet["cmd"] = OutgoingCmd::Say;
+	packet["text"] = text;
+}
+
 // ------------------------------------------------------------------------
 // DeathLink
 

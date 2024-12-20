@@ -162,6 +162,8 @@ public:
 	// Pop from this queue when you have time to display a message.
 	bool pop_message(Message* message);
 
+	void say(std::string_view text);
+
 	// ------------------------------------------------------------------------
 	// DeathLink
 
