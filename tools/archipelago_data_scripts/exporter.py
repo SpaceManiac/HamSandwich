@@ -9,21 +9,12 @@ from string_chunks import *
 
 class CSVProcessor:
     def __init__(self):
-        self.value_lens: List[str] = []
-        self.row_data: List[str] = []
         self.csv_reader: csv.reader = None
 
-    def print_spaces(self, index: int) -> str:
-        """Calculate spaces based on value_lens and row_data."""
-        return ' ' * (int(self.value_lens[index]) - len(self.row_data[index]))
-
     def open_reader(self, textio: TextIO):
-        """
-        Open a CSV reader, skip header, and extract value_lens from the second row.
-        """
+        #Open a CSV reader, skip header
         self.csv_reader = csv.reader(textio)
         next(self.csv_reader)  # Skip the headers
-        self.value_lens = next(self.csv_reader)
 
     def process_defines(self):
         try:
@@ -31,70 +22,87 @@ class CSVProcessor:
                     open(PYTHON_DEFINES, 'w') as python_file:
                 self.open_reader(input_file)
                 for row in self.csv_reader:
-                    self.row_data = row
-                    python_file.write(f"{row[0]}{self.print_spaces(0)}= {row[1]}\n")
+                    if row[LINE_DISABLED]:
+                        continue
+                    python_file.write(f"{row[DEF_NAME]} = {row[DEF_ID]}\n")
+            print("Processed Defines")
         except (FileNotFoundError, ValueError) as e:
             print(f"Error processing defines: {e}")
 
     def process_items(self):
         try:
-            with open(INPUT_ITEMS, 'r') as input_file, \
-                    open(PYTHON_ITEMS, 'w') as python_file, \
-                    open(TRACKER_ITEM_MAPPING, 'w') as tracker_map_file, \
-                    open(TRACKER_ITEMS, 'w') as tracker_file, \
-                    open(CLIENT_DATA, 'w') as client_file:
+            with open(INPUT_ITEMS, 'r') as input_file:
 
                 self.open_reader(input_file)
-                python_file.write(pyItemHeader + "\n")
-                tracker_map_file.write("ITEM_MAPPING = { \n")
-                client_file.write("const std::unordered_map<int, int> item_frequencies = {\n")
-                basic_items = "const std::unordered_map<int, int> basic_items = {\n"
 
+                python_lines = pyItemHeader + "\n"
+                tracker_lines = "ITEM_MAPPING = { \n"
+                client_lines = "const std::unordered_map<int, int> item_frequencies = {\n"
+                basic_items = "const std::unordered_map<int, int> basic_items = {\n"
                 json_list = []
 
                 for row in self.csv_reader:
-                    self.row_data = row
-                    # python
-                    item_line = (f"    \"{row[ITM_NAME]}\" "
-                                 f": LL_Item(ll_base_id + {row[ITM_ID]}"
-                                 f", LL_ItemCat.{row[ITM_CATEGORY]}"
-                                 f", IC.{row[ITM_IC]}")
-                    if row[ITM_FREQ]:
-                        item_line += f", {row[ITM_FREQ]}"
-                    item_line += "),\n"
-                    python_file.write(item_line)
+                    if row[LINE_DISABLED]:
+                        continue
+                    itm_name = row[ITM_NAME]
+                    itm_id = row[ITM_ID]
+                    itm_obj = row[ITM_OBJ]
+                    itm_category = row[ITM_CATEGORY]
+                    itm_ic = row[ITM_IC]
+                    itm_freq = row[ITM_FREQ]
+                    itm_trackertype = row[ITM_TRACKERTYPE]
 
-                    # tracker
-                    # TODO tracker
+                    # 1: python ***********
+                    python_lines += (f"    \"{itm_name}\" "
+                                 f": LL_Item(ll_base_id + {itm_id}"
+                                 f", LL_ItemCat.{itm_category}"
+                                 f", IC.{itm_ic}")
+                    if itm_freq:
+                        python_lines += f", {itm_freq}"
+                    python_lines += "),\n"
+
+                    # 2: tracker items ***********
                     # Convert CSV row to JSON object
                     item_json = {
-                        "name": row[ITM_NAME],
-                        "type": "consumable" if row[ITM_FREQ] else "toggle",
-                        "max_quantity": int(row[ITM_FREQ]) if row[ITM_FREQ] else None,
-                        "img": f"images/items/game items/itm_{row[ITM_NAME].lower()}.png".replace(" ", "_"),
-                        "codes": row[ITM_NAME]
+                        "name": itm_name,
+                        "type": itm_trackertype,
+                        "max_quantity": int(itm_freq) if itm_freq else None,
+                        "img": f"images/items/game items/itm_{itm_name.lower()}.png".replace(" ", "_"),
+                        "codes": itm_name
                     }
                     # Remove "max_quantity" if None (for "toggle" type)
                     if item_json["max_quantity"] is None:
                         del item_json["max_quantity"]
                     json_list.append(item_json)# to JSON list
 
-                    #tracker mappings
-                    tracker_map_file.write(f"    [{LOONYLAND_BASE_ID + globals()[row[ITM_ID]]}] = {{{{\"{row[ITM_NAME]}\", \"{row[ITM_TRACKERTYPE]}\"}}}},\n")
+                    # 3: tracker mappings ***********
+                    tracker_lines += f"    [{LOONYLAND_BASE_ID + globals()[itm_id]}] = {{{{\"{itm_name}\", \"{itm_trackertype}\"}}}},\n"
 
-                    #client hamsandwich
-                    if row[ITM_FREQ]:
-                        client_file.write(f"{{{row[ITM_ID]}, {row[ITM_FREQ]}}},\n")
+                    # 4: client hamsandwich ***********
+                    if itm_freq:
+                        client_lines += f"{{{itm_id}, {itm_freq}}},\n"
 
-                    basic_items += f"{{ {row[ITM_ID]} , {row[ITM_OBJ]}}},\n"
+                    basic_items += f"{{ {itm_id} , {itm_obj}}},\n"
 
 
-                python_file.write("}")
-                tracker_map_file.write("}")
-                client_file.write("};\n\n")
+                python_lines += "}"
+                with open(PYTHON_ITEMS, 'w') as python_file:
+                    python_file.write(python_lines)
+
+
+                tracker_lines += "}"
+                with open(TRACKER_ITEMS, 'w') as tracker_file:
+                    json.dump(json_list, tracker_file, indent=4)
+                with open(TRACKER_ITEM_MAPPING, 'w') as tracker_map_file:
+                    tracker_map_file.write(tracker_lines)
+
+                client_lines += "};\n\n"
                 basic_items += "};\n\n"
-                client_file.write(basic_items)
-                json.dump(json_list, tracker_file, indent=4)
+                with open(CLIENT_DATA, 'w') as client_file:
+                    client_file.write(client_lines)
+                    client_file.write(basic_items)
+
+            print("Processed Items")
         except (FileNotFoundError, ValueError) as e:
             print(f"Error processing items: {e}")
 
@@ -102,13 +110,11 @@ class CSVProcessor:
 
     def process_regions(self):
         try:
-            with open(INPUT_REGIONS, 'r') as input_file, \
-                    open(PYTHON_REGIONS, 'w') as python_file, \
-                    open(TRACKER_REGIONS, 'w') as tracker_reg_file, \
-                    open(TRACKER_LOCATIONS, 'w') as tracker_loc_file:
+            with open(INPUT_REGIONS, 'r') as input_file:
                 self.open_reader(input_file)
-                python_file.write(pyRegionHeader + "\n")
-                tracker_reg_file.write("loonyland_region_table = {\n")
+
+                python_region_lines = pyRegionHeader + "\n"
+                tracker_region_lines = "loonyland_region_table = {\n"
 
 
                 json_output = []
@@ -118,113 +124,105 @@ class CSVProcessor:
                 }
 
                 for row in self.csv_reader:  # type: ignore
-                    self.row_data = row
-                    print(row)
-                    #python
-                    region_line = f"    \"{row[REG_NAME]}\": LLRegion({row[REG_REAL]}"
-                    if row[REG_MAP]:
-                        region_line += f', \"{row[REG_MAP]}\"'
-                    region_line += "),\n"
-                    python_file.write(region_line)
+                    if row[LINE_DISABLED]:
+                        continue
 
-                    #tracker region data
-                    region_line = f"    [\"{row[REG_NAME]}\"] = {{real={row[REG_REAL]}"
-                    if row[REG_MAP]:
-                        region_line += f', map=\"{row[REG_MAP]}\"'
-                    region_line += f"}},\n"
-                    tracker_reg_file.write(region_line)
+                    reg_name = row[REG_NAME]
+                    reg_real = row[REG_REAL]
+                    reg_map = row[REG_MAP]
+                    reg_map_id = row[REG_MAPID]
+                    reg_x = row[REG_XCOORD]
+                    reg_y = row[REG_YCOORD]
 
-                    #tracker locations setup
+                    # 1: python
+                    python_region_lines += f"    \"{reg_name}\": LLRegion({reg_real}"
+                    if reg_map:
+                        python_region_lines += f', \"{reg_map}\"'
+                    python_region_lines += "),\n"
+
+                    # 2: tracker region data
+                    tracker_region_lines += f"    [\"{reg_name}\"] = {{real={reg_real}"
+                    if reg_map:
+                        tracker_region_lines += f', map=\"{reg_map}\"'
+                    tracker_region_lines += f"}},\n"
+
+                    # 3: tracker locations setup
                     region_entry = {
-                        "name": row[REG_NAME],
-                        "access_rules": [ #f"$can_glitch|{row[REG_NAME]}",
-                                            f"$can_reach|{row[REG_NAME]}" ],
+                        "name": reg_name,
+                        #"access_rules": [ f"$can_reach|{reg_name}" ],
                         "sections": [],
                         "map_locations": []
                     }
-                    if row[REG_XCOORD]:  # Only add map location if map is real
+                    if reg_x:  # Only add map location if map is real
                         map_location = {
                             "map": "Overworld",
-                            "x": (int(row[REG_XCOORD]) + 1) * TILE_XSIZE,
-                            "y": (int(row[REG_YCOORD]) + 1) * TILE_YSIZE
+                            "x": (int(reg_x) + 1) * TILE_XSIZE,
+                            "y": (int(reg_y) + 1) * TILE_YSIZE
                         }
                         region_entry["map_locations"].append(map_location)
 
                     overworld["children"].append(region_entry)
 
+                python_region_lines += "}"
+                with open(PYTHON_REGIONS, 'w') as python_file:
+                    python_file.write(python_region_lines)
+
+                tracker_region_lines += "}"
+                with open(TRACKER_REGIONS, 'w') as tracker_reg_file:
+                    tracker_reg_file.write(tracker_region_lines)
+
                 json_output.append(overworld)
-                json.dump(json_output, tracker_loc_file, indent=2)
+                with open(TRACKER_LOCATIONS, 'w') as tracker_loc_file:
+                    json.dump(json_output, tracker_loc_file, indent=2)
 
-                python_file.write("}")
-                tracker_reg_file.write("}")
-
+            print("Processed Regions")
         except (FileNotFoundError, ValueError) as e:
             print(f"Error processing regions: {e}")
-    @staticmethod
-    def parse_condition(condition):
-        """Process a single condition, handling cases where there are function calls or quantity values."""
-
-        # Check for a number after the condition (like "Mushroom"10)
-        if condition[-1].isdigit():  # If it ends with a number
-            match = re.search(r"\"([^\"]+)\"(\d+)$", condition)  # Match the condition and the number at the end
-            if match:
-                name = match.group(1)  # Condition name (like "Mushroom")
-                quantity = int(match.group(2))  # Quantity value
-                return f"state.has(\"{name}\", player, {quantity})"
-
-        # Check if the condition corresponds to an item or a function call (e.g., have_bombs())
-        if condition[0] == "\"":  # We check if it starts with "
-            return f"state.has({condition}, player)"
-            # Remove the quotes and format as function call
-        return f"{condition}(state, player)"
-
 
     @staticmethod
-    def parse_condition_lua(condition):
-        """Process a single condition, handling cases where there are function calls or quantity values."""
-
-        # Check for a number after the condition (like "Mushroom"10)
-        if condition[-1].isdigit():  # If it ends with a number
-            match = re.search(r"\"([^\"]+)\"(\d+)$", condition)  # Match the condition and the number at the end
-            if match:
-                name = match.group(1)  # Condition name (like "Mushroom")
-                quantity = int(match.group(2))  # Quantity value
-                return f"state:has(\"{name}\", {quantity})"
-
-        # Check if the condition corresponds to an item or a function call (e.g., have_bombs())
-        if condition[0] == "\"":  # We check if it starts with "
-            return f"state:has({condition})"
-            # Remove the quotes and format as function call
-        return f"{condition}(state)"
-
-    @staticmethod
-    def tracker_parse_conditions(conditions):
-        if not conditions:
+    def parse_conditions(input_string, input_format):
+        if not input_string:
             return ""
-        # Split the condition by 'and'
-        parts = conditions.split(" and ")
 
-        # Process each part
-        formatted_parts = []
-        for part in parts:
-            part = part.strip()  # Remove any extra spaces
+        def replace_item(match):
+            """Helper to replace individual items with their desired format."""
+            item = match.group(1)
+            quantity = match.group(2)
+            if quantity:
+                if input_format == "python" :
+                    return f'state.has("{item}", player, {quantity})'
+                if input_format == "lua":
+                    return f'state:has("{item}", {quantity})'
+            if input_format == "python":
+                return f'state.has("{item}", player)'
+            if input_format == "lua":
+                return f'state:has("{item}")'
 
-            # If the part ends with a number, handle it as a value (e.g., Mushroom10 becomes Mushroom:10)
-            if part[-1].isdigit():
-                name = part.rstrip('0123456789')  # Remove digits
-                number = part[len(name):]  # Get the number
-                name = name.strip('"')
-                formatted_parts.append((f"{name}:{number}"))  # Format as name:number
-            elif part.startswith('"') and part.endswith('"'):
-                # If the part starts and ends with quotes, keep it as is
-                formatted_parts.append(part.strip('"'))  # Remove the quotes around the item
-            else:
-                # If it's a regular part, assume it's an identifier
-                formatted_parts.append(f"${part}")  # Add dollar sign for variables
+        def replace_function(match):
+            """Helper to replace functions like can_reach."""
+            function_name = match.group(1)
+            arguments = match.group(2)
+            if function_name=="has":
+                return f'{function_name}({arguments})'
+            if function_name=="can_reach":
+                if input_format == "python":
+                    return f'state.can_reach_region(\"{arguments}\")'
+                if input_format == "lua":
+                    return f"{function_name}|{arguments}"
+            if input_format == "python":
+                return f'{function_name}(state, player)'
+            if input_format == "lua":
+                return f"{function_name}(state)"
 
-        # Join the formatted parts with commas
-        return ", ".join(formatted_parts)
+        # Replace items like "Hose"10 or "Fertilizer"
+        item_pattern = r'"(.*?)"(\d*)'
+        input_string = re.sub(item_pattern, replace_item, input_string)
 
+        function_pattern = r'(\w+)\((.*?)\)'
+        input_string = re.sub(function_pattern, replace_function, input_string)
+
+
+        return input_string
 
     def process_locations(self):
         try:
@@ -249,10 +247,12 @@ loonyland_location_table = {\n""")
                 client_data.write("static locationData basic_locations[] = {")
 
                 for row in self.csv_reader:
-                    self.row_data = row
+                    if row[LINE_DISABLED]:
+                        continue
 
                     # python location file
                     location_name = row[LOC_NAME]
+                    location_name_no_colon = location_name.replace(":", "")
                     location_id = row[LOC_ID]
                     location_map = row[LOC_MAP]
                     location_map_id = row[LOC_MAPID]
@@ -272,7 +272,7 @@ loonyland_location_table = {\n""")
 
                     python_file.write(location_line)
 
-                    location_line = f"    [\"{location_name}\"]  = {{id={location_id}, type={location_type}, region=\"{location_region}\"}},\n"
+                    location_line = f"    [\"{location_name_no_colon}\"]  = {{id={location_id}, type={location_type}, region=\"{location_region}\"}},\n"
                     tracker_file_locs_data.write(location_line)
                     conditions_str_tracker = ""
 
@@ -280,22 +280,19 @@ loonyland_location_table = {\n""")
                     if location_logic:  # Check if there are any specific rules for the location
                         # python logic file - Rules generation
                         rules_line = f"        \"{location_name}\": lambda state: "
-                        conditions = location_logic.split(" and ")
-                        conditions_str = " and ".join([
-                            self.parse_condition(cond.strip()) for cond in conditions])
-                        conditions_str_tracker = ', '.join(f"${part}" if part.isidentifier() else part.strip('"').replace('"', '') if part.startswith('"') else f"{part.rstrip('0123456789').strip('"')}:{part[len(part.rstrip('0123456789')):]}" for part in location_logic.split(' and '))
+                        conditions_str = self.parse_conditions(location_logic, "python")
 
                         rules_line += conditions_str
                         rules_line += ",\n"
                         python_file_rules.write(rules_line)
 
                         #tracker
-                        rules_line = f"        [\"{location_name}\"] = function(state) return "
+                        rules_line = f"        [\"{location_name_no_colon}\"] = function(state) return "
                         conditions = location_logic.split(" and ")
-                        conditions_str = " and ".join([
-                            self.parse_condition_lua(cond.strip()) for cond in conditions])
+                        #conditions_str = " and ".join([
+                            #self.parse_condition_lua(cond.strip()) for cond in conditions])
 
-                        rules_line += conditions_str
+                        rules_line +=  self.parse_conditions(location_logic, "lua")
                         rules_line += " end,\n"
                         tracker_file_rules.write(rules_line)
 
@@ -305,9 +302,9 @@ loonyland_location_table = {\n""")
                     #find location_map in children
                     if location_map == "Halloween Hill":
                         data[0]['children'].append({
-                            "name": location_name,
-                            "sections": [{"ref": f"Overworld/{location_region}/{location_name}",
-                                         "name": f"{location_name}"}],
+                            "name": location_name_no_colon,
+                            "sections": [{"ref": f"Overworld/{location_region}/{location_name_no_colon}",
+                                         "name": f"{location_name_no_colon}"}],
                             "map_locations": [{
                             "map": "Overworld",
                             "x": (int(row[LOC_XCOORD]) + 1) * TILE_XSIZE,
@@ -318,19 +315,22 @@ loonyland_location_table = {\n""")
                         if child['name'] == location_region:
                             #child['access_rules'].append( f"@{location_region}")
                             child['sections'].append({
-                                "name": location_name,
-                                "access_rules": [f"{self.tracker_parse_conditions(location_logic)}"],
+                                "name": location_name_no_colon,
+                                "access_rules": [[f"[$access|{location_name_no_colon}]",
+                                f"$sequence_break|{location_name_no_colon}"],
+                                f"{{$peek|{location_name_no_colon}}}"
+                                ]
                                 })
                             #add to sections[] with logic
 
                         elif child['name'] == location_override:
                             child['sections'].append({
-                                "ref": f"Overworld/{location_region}/{location_name}",
-                                "name": f"{location_name}"
+                                "ref": f"Overworld/{location_region}/{location_name_no_colon}",
+                                "name": f"{location_name_no_colon}"
                             })
 
                     #tracker mapping
-                    tracker_file_mapping.write(f"    [{LOONYLAND_BASE_ID + int(location_id)}] = {{{{\"@Overworld/{row[LOC_REGION]}/{row[LOC_NAME]}\"}}}},\n")
+                    tracker_file_mapping.write(f"    [{LOONYLAND_BASE_ID + int(location_id)}] = {{{{\"@Overworld/{row[LOC_REGION]}/{location_name_no_colon}\"}}}},\n")
 
                     #client data hamsandwich
                     client_data.write(f"{{\"{location_name}\",\"{location_type_normal}\",{location_id},\"{location_map}\",{location_map_id},")
@@ -349,75 +349,73 @@ loonyland_location_table = {\n""")
 
                 client_data.write("};\n\n")
 
+            print("Processed Locations")
         except (FileNotFoundError, ValueError) as e:
             print(f"Error processing locations: {e}")
 
     def process_entrances(self):
         try:
-            with open(INPUT_ENTRANCES, 'r') as input_file, \
-                    open(PYTHON_ENTRANCES, 'w') as python_file, \
-                    open(TRACKER_ENTRANCES, 'w') as tracker_file:
+            with open(INPUT_ENTRANCES, 'r') as input_file:
 
                 self.open_reader(input_file)
-                python_file.write(pyEntranceHeader + "\n")
-                tracker_file.write("loonyland_entrance_table = {\n")
+                python_ent_lines = pyEntranceHeader + "\n"
+                tracker_ent_lines = luaEntranceHeader + "\n"
+                tracker_ent_lines += "loonyland_entrance_table = {\n"
 
                 for row in self.csv_reader:
-                    self.row_data = row
-
-                    entrance_disable = row[ENT_DISABLE]
-                    entrance_source = row[ENT_SOURCE]
-
-                    if entrance_disable == "#" or entrance_source == "":
+                    if row[LINE_DISABLED]:
                         continue
 
                     entrance_source = row[ENT_SOURCE]
+                    if entrance_source == "":
+                        continue
+
                     entrance_sourceX = row[ENT_SOURCEX]
                     entrance_sourceY = row[ENT_SOURCEY]
                     entrance_end = row[ENT_END]
                     entrance_load = row[ENT_LOAD]
                     entrance_logic = row[ENT_LOGIC]
-                    #         EntranceData("Swamp Gas Cavern Front", "Swamp Gas Cavern Back", False,
-                    #                      lambda state: state.has("Boots", player)),  # one way
 
                     # python entrance file
-                    entrance_line = f"        LL_Entrance(\"{entrance_source}\", \"{entrance_end}\""
+                    python_ent_lines += f"        LL_Entrance(\"{entrance_source}\", \"{entrance_end}\""
                     if entrance_load:
-                        entrance_line += f", True, "
+                        python_ent_lines += f", True"
                     else:
-                        entrance_line += f", False, "
-                    entrance_line += "lambda state: "
+                        python_ent_lines += f", False"
                     if entrance_logic:
-                        conditions = entrance_logic.split(" and ")
-                        conditions_str = " and ".join([
-                            self.parse_condition(cond.strip()) for cond in conditions])
-                        entrance_line += conditions_str
-                    else:
-                        entrance_line += "True"
-                    entrance_line += "),\n"
-                    python_file.write(entrance_line)
+                        python_ent_lines += ", lambda state: "
+                        python_ent_lines += self.parse_conditions(entrance_logic, "python")
+                        #conditions = entrance_logic.split(" and ")
+                        #conditions_str = " and ".join([
+                        #    self.parse_condition(cond.strip()) for cond in conditions])
+                        #python_ent_lines += conditions_str
 
-                    entrance_line = f"        {{source = \"{entrance_source}\", dest = \"{entrance_end}\", "
-                    #if entrance_load:
-                    #    entrance_line += f", True, "
-                    # else:
-                    #    entrance_line += f", False, "
-                    entrance_line += "rule = function(state) return "
+                    python_ent_lines += "),\n"
+
+                    # 2: Tracker entrances
+                    tracker_ent_lines += f"        ent_valid{{source = \"{entrance_source}\", dest = \"{entrance_end}\""
+
                     if entrance_logic:
-                        conditions = entrance_logic.split(" and ")
-                        conditions_str = " and ".join([
-                            self.parse_condition_lua(cond.strip()) for cond in conditions])
-                        entrance_line += conditions_str
-                    else:
-                        entrance_line += "true"
-                    entrance_line += " end},\n"
-                    tracker_file.write(entrance_line)
+                        tracker_ent_lines += ", rule = function(state) return "
+                        tracker_ent_lines += self.parse_conditions(entrance_logic, "lua")
+                        #conditions = entrance_logic.split(" and ")
+                        #conditions_str = " and ".join([
+                        #    self.parse_condition_lua(cond.strip()) for cond in conditions])
+                        #tracker_ent_lines += conditions_str
+                        tracker_ent_lines += " end"
+                    tracker_ent_lines += "},\n"
+
+                python_ent_lines += "]\n"
+                python_ent_lines += pyEntranceFooter
+                with open(PYTHON_ENTRANCES, 'w') as python_file:
+                    python_file.write(python_ent_lines)
 
 
-                python_file.write("]\n")
-                tracker_file.write("}")
-                python_file.write(pyEntranceFooter)
+                tracker_ent_lines += "}"
+                with open(TRACKER_ENTRANCES, 'w') as tracker_file:
+                    tracker_file.write(tracker_ent_lines)
 
+            print("Processed Entrances")
         except (FileNotFoundError, ValueError) as e:
             print(f"Error processing locations: {e}")
 
@@ -433,6 +431,8 @@ def main():
     processor.process_regions()
     processor.process_locations()
     processor.process_entrances()
+
+
 
 
 if __name__=="__main__":

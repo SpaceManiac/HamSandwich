@@ -10,6 +10,7 @@
 #include <chrono>
 #include <thread>
 #include <queue>
+#include "quest.h"
 
 
 const int MAX_RETRIES = 5;
@@ -20,6 +21,7 @@ int loonyland_base_id = 2876900;
 bool locationWait = false;
 bool varsWait = false;
 int player_id = 255;
+std::string ArchipelagoSeed = "";
 
 void SendCheckedItem(int loc_id);
 void GetLocationScouts(std::vector<AP_NetworkItem>);
@@ -31,6 +33,7 @@ void GetInfoFromAP();
 void SetupWorld();
 void Disconnect();
 void GetArchipelagoPlayerVar(int var);
+void GivePlayerItem(int64_t item_id, bool loud);
 std::string ConnectionStatus();
 
 std::deque<AP_GetServerDataRequest*> GetVarRequests;
@@ -92,48 +95,104 @@ int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string 
 	//GetDataPackage?
 
 	AP_Start();
+
+	AP_RoomInfo info;
+	while (AP_GetRoomInfo(&info)) {}
+	ArchipelagoSeed = info.seed_name;
 	return 0;
 }
 
 void ItemsClear()
 {
-	InitPlayer(INIT_ARCHIPELAGO, 0, 0);
+	//InitPlayer(INIT_ARCHIPELAGO, 0, 0);
 	itemsFound.clear();
 }
 void ItemReceived(int64_t  item_id, bool notif)
 {
-	//add to queue instead
 	item_id -= loonyland_base_id;
-	int count = ++itemsFound[item_id];
+	++itemsFound[item_id];
+	GivePlayerItem(item_id, true);
+}
+
+void ArchipelagoLoadPlayer()
+{
+	for (const auto& [item_id, count] : itemsFound)
+	{
+		GivePlayerItem(item_id, false);
+	}
+}
+
+void GivePlayerItem(int64_t item_id, bool loud)
+{
+	int count = itemsFound[item_id];
 	if (item_frequencies.count(item_id) == 0)
 	{
-		//player.var[item_id] = 1;
-		PlayerSetVar(item_id, 1);
+		player.var[item_id] = 1;
+		//PlayerSetVar(item_id, 1);
 	}
 	else
 	{
 		if (count <= item_frequencies.at(item_id))
 		{
-			//player.var[item_id + (count - 1)] = 1;
-			PlayerSetVar(item_id+(count-1), 1);
+			player.var[item_id + (count - 1)] = 1;
 		}
+	}
+
+	if (item_id >= VAR_MUSHROOM && item_id < VAR_MUSHROOM + 10) //update quest
+	{
+		if (ShroomCount() == 10)
+		{
+			PlayerSetVar(VAR_QUESTDONE + QUEST_SHROOM, 1);
+		}
+	}
+	if (item_id == VAR_CAT)
+	{
+		PlayerSetVar(item_id + (count - 1), 1);
 	}
 	if ((item_id >= VAR_HEART && item_id <= VAR_PANTS)
 		|| item_id == VAR_GEM
+		|| item_id == VAR_REFLECT
 		|| item_id == VAR_TRIPLEFIRE
-		|| (item_id >= VAR_KEY && item_id <= VAR_KEY+2))
+		|| (item_id >= VAR_KEY && item_id <= VAR_KEY + 2))
 	{
 		PlayerCalcStats();
 	}
 
-	if (item_id >= VAR_HEART && item_id <= VAR_PANTS)
+	if (item_id >= VAR_HEART && item_id < VAR_HEART+20)
 	{
 		if (goodguy != NULL)
 		{
-			HealGoodguy(1);
+			if (player.maxHearts < player.maxMaxHearts)
+			{
+				player.maxHearts++;
+			}
+			player.hearts = player.maxHearts;
+			goodguy->hp = player.hearts;
+		}
+	}
+	if (item_id >= VAR_GEM && item_id < VAR_GEM + 6)
+	{
+		if (player.maxMoney < MAX_MONEY)
+		{
+			player.maxMoney += 25;
+			player.money += 25;
+			player.gemsGotten += 25;
+		}
+		else
+		{
+			if (player.money < player.maxMoney)
+			{
+				player.money += 50;
+				if (player.money > player.maxMoney)
+				{
+					player.money = player.maxMoney;
+				}
+			}
+			player.gemsGotten += 50;
 		}
 	}
 }
+
 
 void GetLocationScouts(std::vector<AP_NetworkItem> vec_NetworkItems)
 {
@@ -191,6 +250,11 @@ void SendCheckedLocQuest(int questVar)
 		}
 	}
 	std::cout << "AP QUEST MISS: " << questVar;
+}
+
+void SendCheckedTalkReward(int talkVar)
+{
+
 }
 
 void SendCheckedItem(int loc_id)

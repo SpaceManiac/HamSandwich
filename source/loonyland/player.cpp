@@ -29,17 +29,6 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	static const byte startLife[]={15,10,5,3,1,5};
 	static_assert(std::size(startLife) == NUM_DIFFICULTY);
 
-	if (ArchipelagoMode && initWhat == INIT_GAME)
-	{
-		if (player.hearts < 1)
-			player.hearts = player.maxHearts;
-		return;
-	}
-	if (initWhat == INIT_ARCHIPELAGO)
-	{
-		initWhat = INIT_GAME;
-	}
-
 	if(initWhat==INIT_GAME)	// initialize everything, this is to start a whole new game
 	{
 		player.destx=0;
@@ -423,6 +412,10 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	else
 		player.fireFlags&=(~FF_GUIDED);
 	player.areaName[0]='\0';
+	
+	if(ArchipelagoMode){
+		ArchipelagoLoadPlayer();
+	}
 }
 
 void ExitPlayer(void)
@@ -579,7 +572,7 @@ void PlayerSetVar(int v,int val)
 
 	if (DataStorageVars.find(v) != DataStorageVars.end())
 	{
-		SendArchipelagoPlayerVar(v, val);
+		//SendArchipelagoPlayerVar(v, val);
 	}
 
 	// this is a quest completion variable

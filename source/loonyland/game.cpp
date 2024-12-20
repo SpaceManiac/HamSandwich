@@ -89,14 +89,7 @@ byte InitLevel(byte map)
 
 	if(loadGame)
 	{
-		if (ArchipelagoMode)
-		{
-			LoadGame(0);
-		}
-		else
-		{
-			LoadGame(loadGame - 1);
-		}
+		LoadGame(loadGame-1);
 		loadGame=0;
 		map=player.levelNum;
 
@@ -740,7 +733,6 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 			case WORLD_NORMAL:
 				if (ArchipelagoMode)
 				{
-					player.levelNum = 0;
 					worldResult = AWAIT LunaticWorld("ap.llw");
 					break;
 				}

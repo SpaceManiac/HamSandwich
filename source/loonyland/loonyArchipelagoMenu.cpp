@@ -72,7 +72,7 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 
 			if (c == SDLK_j)
 			{
-				InitPlayer(INIT_ARCHIPELAGO, 0, 0);
+				//InitPlayer(INIT_ARCHIPELAGO, 0, 0);
 				quit = false;
 				CO_RETURN 1;
 			}

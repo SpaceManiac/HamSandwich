@@ -40,3 +40,11 @@ pyEntranceFooter = """    for region in multiworld.get_regions(player):
         for entry in loonyland_entrance_table:
             if entry.source_region == region.name:
                 region.connect(connecting_region=world.get_region(entry.target_region), rule=entry.rule)"""
+
+luaEntranceHeader = """function ent_valid(entry)
+        if not entry.rule then
+                entry.rule = function(state) return true end
+        end
+        return entry
+end
+"""
