@@ -72,6 +72,8 @@ public:
 
 	// Call when a location is checked (picked up, completed, achieved).
 	void check_location(int64_t location);
+	// Call when the game's goal is completed.
+	void check_goal();
 
 	// Call to scout locations.
 	void scout_locations(std::initializer_list<int64_t> locations, bool create_as_hint = false);

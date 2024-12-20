@@ -49,6 +49,16 @@ namespace
 		constexpr int StartingInventory = 0b110 | OtherWorlds;
 		constexpr int All = OtherWorlds | OwnWorld | StartingInventory;
 	}
+
+	// https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#clientstatus
+	namespace ClientStatus
+	{
+		constexpr int Unknown = 0;
+		constexpr int Connected = 5;
+		constexpr int Ready = 10;
+		constexpr int Playing = 20;
+		constexpr int Goal = 30;
+	}
 }
 
 ArchipelagoClient::ArchipelagoClient(std::string_view game, std::string_view address, std::string_view slot, std::string_view password)
@@ -571,6 +581,13 @@ void ArchipelagoClient::check_location(int64_t location)
 		packet["cmd"] = OutgoingCmd::LocationChecks;
 		packet["locations"][0] = location;
 	}
+}
+
+void ArchipelagoClient::check_goal()
+{
+	jt::Json& packet = outgoing.emplace_back();
+	packet["cmd"] = OutgoingCmd::StatusUpdate;
+	packet["status"] = ClientStatus::Goal;
 }
 
 void ArchipelagoClient::scout_locations(std::initializer_list<int64_t> locations, bool create_as_hint)
