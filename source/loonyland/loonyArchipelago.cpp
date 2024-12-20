@@ -1,7 +1,5 @@
 #include "loonyArchipelago.h"
-#include "../../external/APCpp/Archipelago.h"
 #include <unordered_map>
-#include <json.hpp>
 #include <fstream>
 #include <iostream>
 #include <appdata.h>
@@ -10,21 +8,18 @@
 #include <chrono>
 #include <thread>
 #include <queue>
+#include <aegea.h>
+#include <json.h>
 #include "quest.h"
 
+static std::unique_ptr<ArchipelagoClient> ap;
 
-const int MAX_RETRIES = 5;
+constexpr int loonyland_base_id = 2876900;
 
-using json = nlohmann::json;
-
-int loonyland_base_id = 2876900;
 bool locationWait = false;
-bool varsWait = false;
-int player_id = 255;
 std::string ArchipelagoSeed = "";
 
 void SendCheckedItem(int loc_id);
-void GetLocationScouts(std::vector<AP_NetworkItem>);
 void ItemsClear();
 void ItemReceived(int64_t  item_id, bool notif);
 void SetLocationChecked(int64_t  loc_id);
@@ -35,8 +30,6 @@ void Disconnect();
 void GetArchipelagoPlayerVar(int var);
 void GivePlayerItem(int64_t item_id, bool loud);
 std::string ConnectionStatus();
-
-std::deque<AP_GetServerDataRequest*> GetVarRequests;
 
 
 std::unordered_map<int, bool> locsFound;
@@ -81,24 +74,15 @@ std::unordered_map<int, chatData> chat_table = {
 
 
 int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password) {
-	AP_Init(IPAddress.c_str(), "Loonyland", SlotName.c_str(), Password.c_str());
-	AP_SetItemClearCallback(ItemsClear);
-	AP_SetItemRecvCallback(ItemReceived);
-	AP_SetLocationCheckedCallback(SetLocationChecked);
-	AP_SetDeathLinkSupported(true);
-	AP_SetDeathLinkRecvCallback(DeathLinkReceived);
-	AP_SetLocationInfoCallback(GetLocationScouts);
-
+	ap = std::make_unique<ArchipelagoClient>("Loonyland", IPAddress, SlotName, Password);
+	//AP_SetLocationCheckedCallback(SetLocationChecked);
+	ap->death_link_enable();
 
 	SetupWorld();
+	ItemsClear();
+	GetInfoFromAP();
 
-	//GetDataPackage?
-
-	AP_Start();
-
-	AP_RoomInfo info;
-	while (AP_GetRoomInfo(&info)) {}
-	ArchipelagoSeed = info.seed_name;
+	ArchipelagoSeed = "";
 	return 0;
 }
 
@@ -193,8 +177,7 @@ void GivePlayerItem(int64_t item_id, bool loud)
 	}
 }
 
-
-void GetLocationScouts(std::vector<AP_NetworkItem> vec_NetworkItems)
+void GetLocationScouts(std::vector<ArchipelagoClient::Item> vec_NetworkItems)
 {
 	world_t world;
 	LoadWorld(&world, "ap.llw");
@@ -202,10 +185,11 @@ void GetLocationScouts(std::vector<AP_NetworkItem> vec_NetworkItems)
 	for (auto item : vec_NetworkItems)
 	{
 		locationData loc = basic_locations[item.location - loonyland_base_id];
-		if (loc.Type == "Pickup") {
+		if (loc.Type == "Pickup")
+		{
 			Map* tempMap = world.map[loc.MapID];
 			int item_id = item.item - loonyland_base_id;
-			if (player_id == item.player)
+			if (item.player == ap->player_id())
 			{
 				item_id = basic_items.at(item_id);
 			}
@@ -215,8 +199,9 @@ void GetLocationScouts(std::vector<AP_NetworkItem> vec_NetworkItems)
 			}
 			tempMap->map[loc.Xcoord + loc.Ycoord * tempMap->width].item = item_id; //from var to placeable item
 		}
-		for (auto const& i : loc.chatCodes) {
-			chat_table[i].updated += item.itemName;
+		for (auto const& i : loc.chatCodes)
+		{
+			chat_table[i].updated += ap->item_name(item.item);
 		}
 	}
 
@@ -264,9 +249,7 @@ void SendCheckedItem(int loc_id)
 	//going to overwrite item pickup code, and jump out of PlayerSetVar for quests
 	locsFound[loc_id] = true;
 
-	std::set<int64_t> locs;
-	locs.insert(loc_id + loonyland_base_id);
-	AP_SendItem(locs);
+	ap->check_location(loc_id + loonyland_base_id);
 }
 
 void SetLocationChecked(int64_t  loc_id)
@@ -284,7 +267,7 @@ void SetLocationChecked(int64_t  loc_id)
 
 void WinArchipelago()
 {
-	AP_StoryComplete();
+	ap->check_goal();
 }
 
 void DeathLinkReceived()
@@ -303,31 +286,19 @@ void SendDeathLink()
 {
 	if (!ExpectingDeath)
 	{
-		AP_DeathLinkSend();
+		ap->death_link_send();
 	}
 	ExpectingDeath = false;
 }
 
 void Disconnect()
 {
-
-	AP_Shutdown();
+	ap.reset();
 }
 
 void SendArchipelagoPlayerVar(int v, int val)
 {
-	AP_SetServerDataRequest setRequest;
-	setRequest.key = AP_GetPrivateServerDataPrefix() + "PLAYER_VAR_" + std::to_string(v);
-	AP_DataStorageOperation replac;
-	replac.operation = "replace";
-	replac.value = &val;
-	std::vector<AP_DataStorageOperation> operations;
-	operations.push_back(replac);
-	setRequest.operations = operations;
-	setRequest.default_value = 0;
-	setRequest.type = AP_DataType::Int;
-	setRequest.want_reply = false;
-	AP_SetServerData(&setRequest);
+	ap->storage_set(ap->storage_private("PLAYER_VAR_") += std::to_string(v), val, false);
 }
 
 void GetArchipelagoPlayerVars()
@@ -340,65 +311,27 @@ void GetArchipelagoPlayerVars()
 
 void GetArchipelagoPlayerVar(int var)
 {
-	AP_GetServerDataRequest* getRequest = new AP_GetServerDataRequest;
-	getRequest->key = AP_GetPrivateServerDataPrefix() + "PLAYER_VAR_" + std::to_string(var);
-	getRequest->value = new int; //?????????
-	getRequest->type = AP_DataType::Int;
-	AP_GetServerData(getRequest);
-
-	//add to queue, delete and pop in updateArchipelago
-	GetVarRequests.push_front(getRequest);
+	ap->storage_get({ ap->storage_private("PLAYER_VAR_") += std::to_string(var) });
 }
 
 std::string ConnectionStatus()
 {
-	int retries = AP_GetRetryCount();
-	if (retries >= MAX_RETRIES)
-	{
-		return "Failed";
-	}
-
-	AP_ConnectionStatus status = AP_GetConnectionStatus();
-	switch (status) {
-	case AP_ConnectionStatus::Disconnected:
-		if (retries < 0)
-		{
-			return "Disconnected";
-		}
-		else
-		{
-			return "Connecting...";
-		}
-		break;
-	case AP_ConnectionStatus::Connected:
-		return "Connected";
-		break;
-	case AP_ConnectionStatus::Authenticated:
-		return "Authenticated";
-			break;
-	case AP_ConnectionStatus::ConnectionRefused:
-		return "ConnectionRefused";
-			break;
-	default:
-		return "Undefined Status";
-	}
+	return ap ? std::string(ap->connection_status()) : std::string("Not connected");
 }
 
 
 void GetInfoFromAP()
 {
-	player_id = AP_GetPlayerID();
-
-	std::set<int64_t> locationScouts;
+	std::vector<int64_t> locationScouts;
 	for (auto loc : basic_locations)
 	{
 		if (loc.Name != "Q: Save Halloween Hill")
 		{
-			locationScouts.insert(loc.ID + loonyland_base_id);
+			locationScouts.push_back(loc.ID + loonyland_base_id);
 		}
 	}
 	locationWait = true;
-	AP_SendLocationScouts(locationScouts, false);
+	ap->scout_locations(locationScouts);
 
 	GetArchipelagoPlayerVars();
 }
@@ -442,60 +375,92 @@ void SetupWorld()
 
 void UpdateArchipelago()
 {
-	static int messageCooldown = 30 * 5;
-
-	if (AP_IsMessagePending() && messageCooldown == 0)
+	if (!ap)
 	{
-		AP_Message *message = AP_GetLatestMessage();
-		if (message->type == AP_MessageType::ItemRecv)
-		{
-			std::string str_message = message->text;
-			//NewBigMessage(message->text.c_str(), 30 * 5);
-			str_message.replace(0, 8, "Got");
-			NewMessage(str_message.c_str(), 30 * 5);
-			messageCooldown = 30 * 5;
-		}
-		if (message->type == AP_MessageType::ItemSend)
-		{
-			//NewBigMessage(message->text.c_str(), 30 * 5);
-			NewMessage(message->text.c_str(), 30 * 5);
-			messageCooldown = 30 * 5;
-		}
-		/*if (message->type == AP_MessageType::Plaintext)
-		{
-			NewMessage(message->text.c_str(), 30 * 5);
-			messageCooldown = 30 * 5;
-		}*/
-
-		AP_ClearLatestMessage();
+		return;
 	}
-	for (std::deque<AP_GetServerDataRequest*>::iterator itr = GetVarRequests.begin(); itr != GetVarRequests.end();) {
-		if ((*itr)->status == AP_RequestStatus::Done)
+
+	constexpr int MESSAGE_TIME = 30 * 5;
+	static int messageCooldown = MESSAGE_TIME;
+
+	ap->update();
+
+	// TODO: on re-connection call GetInfoFromAP and ItemsClear
+
+	// Items
+	while (auto item = ap->pop_received_item())
+	{
+		ItemReceived(item->item, true);
+	}
+
+	// Location checks
+	// TODO: track already-checked locations better
+	for (int64_t loc : ap->checked_locations())
+	{
+		if (!locsFound[loc])
 		{
-			//itr->type yada yada
-			//(*itr)->key
-			std::string key = (*itr)->key.substr((*itr)->key.find("PLAYER_VAR_") + 11);
-			(*itr)->key.erase(0, AP_GetPrivateServerDataPrefix().length() + strlen("PLAYER_VAR_"));
-			if ((int*)(*itr)->value != NULL)
-			{
-				player.var[std::stoi(key)] = *(int*)(*itr)->value;
-			}
-			std::cout << "nice!34";
-			delete (*itr)->value;
-			delete (*itr);
-			itr = GetVarRequests.erase(itr);
+			SetLocationChecked(loc);
 		}
-		else
-		{
-			itr++;
-		}
+	}
+
+	// Location scouts
+	// TODO: call GetLocationScouts with result
+
+	// DeathLink
+	if (ap->pop_death_link())
+	{
+		DeathLinkReceived();
+	}
+
+	// Messages
+	if (ArchipelagoSeed.empty())
+	{
+		ArchipelagoSeed = ap->seed_name();
 	}
 
 	if (messageCooldown > 0)
 	{
 		messageCooldown--;
 	}
+	ArchipelagoClient::Message* message;
+	if (messageCooldown == 0 && (message = ap->pop_message()))
+	{
+		if (message->type == ArchipelagoClient::Message::ItemSend)
+		{
+			if (message->receiving == ap->player_id())
+			{
+				// Got [item] from [player].
+				std::string text = "Got ";
+				text += ap->item_name(message->item.item);
+				text += " from ";
+				text += ap->slot_player_alias(message->slot);
+				NewMessage(text.c_str(), MESSAGE_TIME);
+				messageCooldown = MESSAGE_TIME;
+			}
+			else if (message->slot == ap->player_id())
+			{
+				// Sent [item] to [player].
+				std::string text = "Sent ";
+				text += ap->item_name(message->item.item);
+				text += " to ";
+				text += ap->slot_player_alias(message->receiving);
+				NewMessage(text.c_str(), MESSAGE_TIME);
+				messageCooldown = MESSAGE_TIME;
+			}
+		}
+	}
 
+	// Storage
+	std::string prefix = ap->storage_private("PLAYER_VAR_");
+	for (auto [key, _] : ap->storage_changes)
+	{
+		auto value = ap->storage[key];
+		if (value.isLong() && key.size() > prefix.size() && std::string_view(key).substr(0, prefix.size()) == prefix)
+		{
+			int var = std::stoi(key.substr(prefix.size()));
+			player.var[var] = value.getLong();
+		}
+	}
 }
 
 void DebugAPCommand() {

@@ -3,6 +3,8 @@ HamSandwich_add_executable(
 	loonyland
 	SOURCES ${sources}
 )
-target_link_options(loonyland PRIVATE /ZI /INCREMENTAL)
-set(CMAKE_CXX_FLAGS_DEBUG  "/ZI")
-target_link_libraries(loonyland steam_api APCpp nlohmann_json)
+if (MSVC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+	target_link_options(loonyland PRIVATE /ZI /INCREMENTAL)
+	target_compile_options(loonyland PRIVATE /ZI)
+endif()
+target_link_libraries(loonyland steam_api aegea jtjson)
