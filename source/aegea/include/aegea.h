@@ -22,12 +22,39 @@ class WebSocket;
 
 class ArchipelagoClient
 {
+	// A convenience for passing vectors, initializer lists, or other containers.
+	// Should only be used for temporaries.
+	template <typename T>
+	class Slice
+	{
+		const T* begin_;
+		const T* end_;
+	public:
+		Slice(const Slice&) = delete;
+		Slice(Slice&&) = delete;
+		void operator=(const Slice&) = delete;
+		void operator=(Slice&&) = delete;
+
+		Slice(const T* begin, const T* end) : begin_(begin), end_(end) {}
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winit-list-lifetime"
+		Slice(std::initializer_list<T> init) : begin_(init.begin()), end_(init.end()) {}
+#pragma GCC diagnostic pop
+
+		template <typename C>
+		Slice(const C& container) : begin_(&*std::begin(container)), end_(&*std::end(container)) {}
+
+		const T* begin() { return begin_; }
+		const T* end() { return end_; }
+	};
+
 public:
 	// ------------------------------------------------------------------------
 	// Basics
 
-	ArchipelagoClient(std::string_view game, std::string_view address, std::string_view slot, std::string_view password);
 	~ArchipelagoClient();
+	ArchipelagoClient(std::string_view game, std::string_view address, std::string_view slot, std::string_view password);
 
 	std::string_view error_message() const;
 	std::string_view connection_status() const;
@@ -79,7 +106,6 @@ public:
 	// Return all received items regardless of processed status.
 	const std::vector<Item>& all_received_items() const;
 
-
 	// ------------------------------------------------------------------------
 	// Locations
 
@@ -89,7 +115,7 @@ public:
 	void check_goal();
 
 	// Call to scout locations.
-	void scout_locations(std::initializer_list<int64_t> locations, bool create_as_hint = false);
+	void scout_locations(Slice<int64_t> locations, bool create_as_hint = false);
 	// Return the item scouted at a particular location. Requires calling scout_locations first.
 	const Item* item_at_location(int64_t location) const;
 
@@ -196,17 +222,16 @@ public:
 	// Clear it manually once you've processed it.
 	std::map<std::string, jt::Json> storage_changes;
 
-	void storage_get(std::initializer_list<std::string_view> keys);
-	void storage_get(std::string_view key);
+	void storage_get(Slice<std::string_view> keys);
 	void storage_set(std::string_view key, jt::Json value, bool want_reply = true);
-	void storage_set_notify(std::initializer_list<std::string_view> keys);
-	void storage_set_notify(std::string_view key);
+	void storage_set_notify(Slice<std::string_view> keys);
 
 	// Return a storage prefix unique to this slot to avoid conflicts.
 	std::string_view storage_private();
 	// Return storage_private() + key.
 	std::string storage_private(std::string_view key);
 
+	// ------------------------------------------------------------------------
 private:
 	enum
 	{

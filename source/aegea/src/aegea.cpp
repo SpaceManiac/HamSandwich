@@ -634,7 +634,7 @@ void ArchipelagoClient::check_goal()
 	packet["status"] = ClientStatus::Goal;
 }
 
-void ArchipelagoClient::scout_locations(std::initializer_list<int64_t> locations, bool create_as_hint)
+void ArchipelagoClient::scout_locations(Slice<int64_t> locations, bool create_as_hint)
 {
 	jt::Json& packet = outgoing.emplace_back();
 	packet["cmd"] = OutgoingCmd::LocationScouts;
@@ -715,7 +715,7 @@ bool ArchipelagoClient::pop_death_link()
 // ------------------------------------------------------------------------
 // Storage system
 
-void ArchipelagoClient::storage_get(std::initializer_list<std::string_view> keys)
+void ArchipelagoClient::storage_get(Slice<std::string_view> keys)
 {
 	jt::Json& packet = outgoing.emplace_back();
 	packet["cmd"] = OutgoingCmd::Get;
@@ -724,11 +724,6 @@ void ArchipelagoClient::storage_get(std::initializer_list<std::string_view> keys
 	{
 		keysJ.emplace_back(key);
 	}
-}
-
-void ArchipelagoClient::storage_get(std::string_view key)
-{
-	storage_get({ key });
 }
 
 void ArchipelagoClient::storage_set(std::string_view key, jt::Json value, bool want_reply)
@@ -744,7 +739,7 @@ void ArchipelagoClient::storage_set(std::string_view key, jt::Json value, bool w
 	}
 }
 
-void ArchipelagoClient::storage_set_notify(std::initializer_list<std::string_view> keys)
+void ArchipelagoClient::storage_set_notify(Slice<std::string_view> keys)
 {
 	jt::Json& packet = outgoing.emplace_back();
 	packet["cmd"] = OutgoingCmd::SetNotify;
@@ -753,11 +748,6 @@ void ArchipelagoClient::storage_set_notify(std::initializer_list<std::string_vie
 	{
 		keysJ.emplace_back(key);
 	}
-}
-
-void ArchipelagoClient::storage_set_notify(std::string_view key)
-{
-	storage_set_notify({ key });
 }
 
 std::string_view ArchipelagoClient::storage_private()
