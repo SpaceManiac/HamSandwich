@@ -68,6 +68,9 @@ public:
 	// ------------------------------------------------------------------------
 	// Sending locations
 
+	// Call when a location is checked (picked up, completed, achieved).
+	void check_location(int64_t location);
+
 	// ------------------------------------------------------------------------
 	// Messages
 

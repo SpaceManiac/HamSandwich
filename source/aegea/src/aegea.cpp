@@ -1,7 +1,8 @@
 #include "aegea.h"
+#include <time.h>
 #include <json.h>
-#include "websocket.h"
 #include <SDL2/SDL_log.h>
+#include "websocket.h"
 
 namespace
 {
@@ -261,9 +262,22 @@ void ArchipelagoClient::update()
 			{
 				// Just dump both RoomInfo and Connected into the same object.
 				// There are no specified overlapping fields.
+				if (packet["checked_locations"].isArray())
+				{
+					for (const auto& loc : packet["checked_locations"].getArray())
+					{
+						if (loc.isLong())
+						{
+							checked_locations.insert(loc.getLong());
+						}
+					}
+				}
 				for (auto& pair : packet.getObject())
 				{
-					room_info.insert(std::move(pair));
+					if (pair.first != "checked_locations" && pair.first != "missing_locations")
+					{
+						room_info.insert(std::move(pair));
+					}
 				}
 				status = Active;
 			}
@@ -320,20 +334,15 @@ void ArchipelagoClient::update()
 				{
 					if (pair.first == "checked_locations" && pair.second.isArray())
 					{
-						// checked_locations is special in that it includes only
-						// new locations and must be merged in.
-						auto iter = room_info.find("checked_locations");
-						if (iter != room_info.end())
+						// checked_locations is special.
+						// The server only sends new locations in this packet.
+						// We also store checked locations separately.
+						for (const auto& loc : pair.second.getArray())
 						{
-							auto& array = iter->second.isArray() ? iter->second.getArray() : iter->second.setArray();
-							for (auto& element : pair.second.getArray())
+							if (loc.isLong())
 							{
-								array.emplace_back(std::move(element));
+								checked_locations.insert(loc.getLong());
 							}
-						}
-						else
-						{
-							room_info.insert(std::move(pair));
 						}
 					}
 					else
@@ -513,6 +522,20 @@ const ArchipelagoClient::Item* ArchipelagoClient::pop_received_item()
 const std::vector<ArchipelagoClient::Item>& ArchipelagoClient::all_received_items() const
 {
 	return received_items;
+}
+
+// ------------------------------------------------------------------------
+// Sending locations
+
+void ArchipelagoClient::check_location(int64_t location)
+{
+	auto [iter, inserted] = checked_locations.insert(location);
+	if (inserted)
+	{
+		jt::Json& packet = outgoing.emplace_back();
+		packet["cmd"] = OutgoingCmd::LocationChecks;
+		packet["locations"][0] = location;
+	}
 }
 
 // ------------------------------------------------------------------------
