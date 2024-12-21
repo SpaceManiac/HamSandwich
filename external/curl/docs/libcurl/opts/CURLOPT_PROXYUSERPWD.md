@@ -11,6 +11,7 @@ See-also:
   - CURLOPT_PROXYUSERNAME (3)
 Protocol:
   - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -38,9 +39,14 @@ Use CURLOPT_PROXYAUTH(3) to specify the authentication method.
 The application does not have to keep the string around after setting this
 option.
 
+Using this option multiple times makes the last set string override the
+previous ones. Set it to NULL to disable its use again.
+
 # DEFAULT
 
-This is NULL by default.
+NULL
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -59,9 +65,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -81,9 +81,6 @@
 
 #include <ctype.h>
 
-#define ENABLE_CURLX_PRINTF
-/* make the curlx header define all printf() functions to use the curlx_*
-   versions instead */
 #include "curlx.h" /* from the private lib dir */
 #include "getpart.h"
 #include "util.h"
@@ -343,7 +340,7 @@ static struct tftphdr *r_init(void)
    Free it and return next buffer filled with data.
  */
 static int readit(struct testcase *test, struct tftphdr **dpp,
-                  int convert /* if true, convert to ascii */)
+                  int convert /* if true, convert to ASCII */)
 {
   struct bf *b;
 
@@ -359,11 +356,11 @@ static int readit(struct testcase *test, struct tftphdr **dpp,
 }
 
 /*
- * fill the input buffer, doing ascii conversions if requested
+ * fill the input buffer, doing ASCII conversions if requested
  * conversions are  lf -> cr, lf  and cr -> cr, nul
  */
 static void read_ahead(struct testcase *test,
-                       int convert /* if true, convert to ascii */)
+                       int convert /* if true, convert to ASCII */)
 {
   int i;
   char *p;
@@ -567,7 +564,7 @@ int main(int argc, char **argv)
 
   memset(&test, 0, sizeof(test));
 
-  while(argc>arg) {
+  while(argc > arg) {
     if(!strcmp("--version", argv[arg])) {
       printf("tftpd IPv4%s\n",
 #ifdef USE_IPV6
@@ -580,22 +577,22 @@ int main(int argc, char **argv)
     }
     else if(!strcmp("--pidfile", argv[arg])) {
       arg++;
-      if(argc>arg)
+      if(argc > arg)
         pidname = argv[arg++];
     }
     else if(!strcmp("--portfile", argv[arg])) {
       arg++;
-      if(argc>arg)
+      if(argc > arg)
         portname = argv[arg++];
     }
     else if(!strcmp("--logfile", argv[arg])) {
       arg++;
-      if(argc>arg)
+      if(argc > arg)
         serverlogfile = argv[arg++];
     }
     else if(!strcmp("--logdir", argv[arg])) {
       arg++;
-      if(argc>arg)
+      if(argc > arg)
         logdir = argv[arg++];
     }
     else if(!strcmp("--ipv4", argv[arg])) {
@@ -614,7 +611,7 @@ int main(int argc, char **argv)
     }
     else if(!strcmp("--port", argv[arg])) {
       arg++;
-      if(argc>arg) {
+      if(argc > arg) {
         char *endptr;
         unsigned long ulnum = strtoul(argv[arg], &endptr, 10);
         port = curlx_ultous(ulnum);
@@ -623,7 +620,7 @@ int main(int argc, char **argv)
     }
     else if(!strcmp("--srcdir", argv[arg])) {
       arg++;
-      if(argc>arg) {
+      if(argc > arg) {
         path = argv[arg];
         arg++;
       }
@@ -874,7 +871,7 @@ tftpd_cleanup:
 
   if(got_exit_signal) {
     logmsg("========> %s tftpd (port: %d pid: %ld) exits with signal (%d)",
-           ipv_inuse, (int)port, (long)getpid(), exit_signal);
+           ipv_inuse, (int)port, (long)Curl_getpid(), exit_signal);
     /*
      * To properly set the return status of the process we
      * must raise the same signal SIGINT or SIGTERM that we

@@ -24,16 +24,12 @@
 #
 ###########################################################################
 #
-import pytest
-import json
 import logging
 import os
-import re
 import shutil
 import subprocess
-from datetime import timedelta, datetime
-from typing import List, Optional, Dict, Union
-from urllib.parse import urlparse
+from datetime import datetime
+from typing import Optional, Dict
 
 from . import ExecResult
 from .env import Env
@@ -48,9 +44,9 @@ class LocalClient:
                  timeout: Optional[float] = None,
                  run_env: Optional[Dict[str,str]] = None):
         self.name = name
-        self.path = os.path.join(env.project_dir, f'tests/http/clients/{name}')
+        self.path = os.path.join(env.build_dir, f'tests/http/clients/{name}')
         self.env = env
-        self._run_env= run_env
+        self._run_env = run_env
         self._timeout = timeout if timeout else env.test_timeout
         self._curl = os.environ['CURL'] if 'CURL' in os.environ else env.curl
         self._run_dir = run_dir if run_dir else os.path.join(env.gen_dir, name)
@@ -92,14 +88,19 @@ class LocalClient:
         exception = None
         myargs = [self.path]
         myargs.extend(args)
+        run_env = None
+        if self._run_env:
+            run_env = self._run_env.copy()
+            for key in ['CURL_DEBUG']:
+                if key in os.environ and key not in run_env:
+                    run_env[key] = os.environ[key]
         try:
-            with open(self._stdoutfile, 'w') as cout:
-                with open(self._stderrfile, 'w') as cerr:
-                    p = subprocess.run(myargs, stderr=cerr, stdout=cout,
-                                       cwd=self._run_dir, shell=False,
-                                       input=None, env=self._run_env,
-                                       timeout=self._timeout)
-                    exitcode = p.returncode
+            with open(self._stdoutfile, 'w') as cout, open(self._stderrfile, 'w') as cerr:
+                p = subprocess.run(myargs, stderr=cerr, stdout=cout,
+                                   cwd=self._run_dir, shell=False,
+                                   input=None, env=run_env,
+                                   timeout=self._timeout)
+                exitcode = p.returncode
         except subprocess.TimeoutExpired:
             log.warning(f'Timeout after {self._timeout}s: {args}')
             exitcode = -1

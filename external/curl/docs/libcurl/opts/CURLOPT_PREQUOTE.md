@@ -9,6 +9,7 @@ See-also:
   - CURLOPT_QUOTE (3)
 Protocol:
   - FTP
+Added-in: 7.9.5
 ---
 
 # NAME
@@ -29,8 +30,13 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_PREQUOTE,
 Pass a pointer to a linked list of FTP commands to pass to the server after
 the transfer type is set. The linked list should be a fully valid list of
 struct curl_slist structs properly filled in as described for
-CURLOPT_QUOTE(3). Disable this operation again by setting a NULL to this
-option.
+CURLOPT_QUOTE(3).
+
+Using this option multiple times makes the last set string override the
+previous ones. Set it to NULL to disable its use again.
+
+libcurl does not copy the list, it needs to be kept around until after the
+transfer has completed.
 
 These commands are not performed when a directory listing is performed, only
 for file transfers.
@@ -41,6 +47,8 @@ this option does not.
 # DEFAULT
 
 NULL
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -62,12 +70,11 @@ int main(void)
 
     curl_easy_cleanup(curl);
   }
+  curl_slist_free_all(cmdlist);
 }
 ~~~
 
-# AVAILABILITY
-
-Along with the protocol support
+# %AVAILABILITY%
 
 # RETURN VALUE
 

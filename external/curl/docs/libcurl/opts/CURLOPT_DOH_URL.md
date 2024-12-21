@@ -10,6 +10,7 @@ See-also:
   - CURLOPT_VERBOSE (3)
 Protocol:
   - All
+Added-in: 7.62.0
 ---
 
 # NAME
@@ -40,7 +41,11 @@ To find the DoH server itself, which might be specified using a name, libcurl
 uses the default name lookup function. You can bootstrap that by providing the
 address for the DoH server with CURLOPT_RESOLVE(3).
 
-Disable DoH use again by setting this option to NULL.
+The application does not have to keep the string around after setting this
+option.
+
+Using this option multiple times makes the last set string override the
+previous ones. Set it to NULL to disable its use again.
 
 # INHERIT OPTIONS
 
@@ -63,8 +68,9 @@ CURLOPT_FTPPORT(3), a proxy type set to **CURLPROXY_SOCKS4** or
 
 # DEFAULT
 
-NULL - there is no default DoH URL. If this option is not set, libcurl uses
-the default name resolver.
+NULL
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -80,9 +86,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.62.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

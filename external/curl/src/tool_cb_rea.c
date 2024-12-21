@@ -27,8 +27,6 @@
 #include <sys/select.h>
 #endif
 
-#define ENABLE_CURLX_PRINTF
-/* use our own printf() functions */
 #include "curlx.h"
 
 #include "tool_cfgable.h"
@@ -90,7 +88,7 @@ size_t tool_read_cb(char *buffer, size_t sz, size_t nmemb, void *userdata)
       config->readbusy = TRUE;
       return CURL_READFUNC_PAUSE;
     }
-    /* since size_t is unsigned we can't return negative values fine */
+    /* since size_t is unsigned we cannot return negative values fine */
     rc = 0;
   }
   if((per->uploadfilesize != -1) &&
@@ -154,5 +152,5 @@ int tool_readbusy_cb(void *clientp,
       tool_go_sleep(25);
   }
 
-  return per->noprogress? 0 : CURL_PROGRESSFUNC_CONTINUE;
+  return per->noprogress ? 0 : CURL_PROGRESSFUNC_CONTINUE;
 }

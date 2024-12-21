@@ -23,12 +23,19 @@
 ###########################################################################
 @PACKAGE_INIT@
 
-include(CMakeFindDependencyMacro)
-if(@USE_OPENSSL@)
-  find_dependency(OpenSSL @OPENSSL_VERSION_MAJOR@)
+if(UNIX OR VCPKG_TOOLCHAIN OR (MINGW AND NOT CMAKE_CROSSCOMPILING))  # Keep in sync with root CMakeLists.txt
+  set(_curl_use_pkgconfig_default ON)
+else()
+  set(_curl_use_pkgconfig_default OFF)
 endif()
-if(@USE_ZLIB@)
-  find_dependency(ZLIB @ZLIB_VERSION_MAJOR@)
+option(CURL_USE_PKGCONFIG "Enable pkg-config to detect @PROJECT_NAME@ dependencies" ${_curl_use_pkgconfig_default})
+
+include(CMakeFindDependencyMacro)
+if("@USE_OPENSSL@")
+  find_dependency(OpenSSL "@OPENSSL_VERSION_MAJOR@")
+endif()
+if("@HAVE_LIBZ@")
+  find_dependency(ZLIB "@ZLIB_VERSION_MAJOR@")
 endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/@TARGETS_EXPORT_NAME@.cmake")
@@ -38,3 +45,7 @@ check_required_components("@PROJECT_NAME@")
 if(NOT TARGET @PROJECT_NAME@::libcurl)
   add_library(@PROJECT_NAME@::libcurl ALIAS @PROJECT_NAME@::@LIB_SELECTED@)
 endif()
+
+# For compatibility with CMake's FindCURL.cmake
+set(CURL_LIBRARIES @PROJECT_NAME@::libcurl)
+set_and_check(CURL_INCLUDE_DIRS "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")

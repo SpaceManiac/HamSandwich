@@ -13,7 +13,7 @@ This is an additional test suite using a combination of Apache httpd and nghttpx
 The test cases and necessary files are in `tests/http`. You can invoke `pytest` from there or from the top level curl checkout and it will find all tests.
 
 ```
-curl> pytest
+curl> pytest test/http
 platform darwin -- Python 3.9.15, pytest-6.2.0, py-1.10.0, pluggy-0.13.1
 rootdir: /Users/sei/projects/curl
 collected 5 items
@@ -24,7 +24,7 @@ tests/http/test_01_basic.py .....
 Pytest takes arguments. `-v` increases its verbosity and can be used several times. `-k <expr>` can be used to run only matching test cases. The `expr` can be something resembling a python test or just a string that needs to match test cases in their names.
 
 ```
-curl> pytest -vv -k test_01_02
+curl/tests/http> pytest -vv -k test_01_02
 ```
 
 runs all test cases that have `test_01_02` in their name. This does not have to be the start of the name.
@@ -54,10 +54,10 @@ Via curl's `configure` script you may specify:
 Several test cases are parameterized, for example with the HTTP version to use. If you want to run a test with a particular protocol only, use a command line like:
 
 ```
-curl> pytest -k "test_02_06 and h2"
+curl/tests/http> pytest -k "test_02_06 and h2"
 ```
 
-Several test cases can be repeated, they all have the `repeat` parameter (install `pytest-repeat` module). To make this work, you have to start `pytest` in the test directory itself (for some unknown reason). Like in:
+Test cases can be repeated, with the `pytest-repeat` module (`pip install pytest-repeat`). Like in:
 
 ```
 curl/tests/http> pytest -k "test_02_06 and h2" --count=100
@@ -85,7 +85,7 @@ There is a lot of [`pytest` documentation](https://docs.pytest.org/) with exampl
 
 In `conftest.py` 3 "fixtures" are defined that are used by all test cases:
 
-1. `env`: the test environment. It is an instance of class `testenv/env.py:Env`. It holds all information about paths, availability of features (HTTP/3!), port numbers to use, domains and SSL certificates for those.
+1. `env`: the test environment. It is an instance of class `testenv/env.py:Env`. It holds all information about paths, availability of features (HTTP/3), port numbers to use, domains and SSL certificates for those.
 2. `httpd`: the Apache httpd instance, configured and started, then stopped at the end of the test suite. It has sites configured for the domains from `env`. It also loads a local module `mod_curltest?` and makes it available in certain locations. (more on mod_curltest below).
 3. `nghttpx`: an instance of nghttpx that provides HTTP/3 support. `nghttpx` proxies those requests to the `httpd` server. In a direct mapping, so you may access all the resources under the same path as with HTTP/2. Only the port number used for HTTP/3 requests will be different.
 

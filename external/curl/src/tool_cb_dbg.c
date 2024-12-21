@@ -23,8 +23,6 @@
  ***************************************************************************/
 #include "tool_setup.h"
 
-#define ENABLE_CURLX_PRINTF
-/* use our own printf() functions */
 #include "curlx.h"
 
 #include "tool_cfgable.h"
@@ -46,20 +44,10 @@ static const char *hms_for_sec(time_t tv_sec)
 {
   static time_t cached_tv_sec;
   static char hms_buf[12];
-  static time_t epoch_offset;
-  static int known_epoch;
 
   if(tv_sec != cached_tv_sec) {
-    struct tm *now;
-    time_t secs;
-    /* recalculate */
-    if(!known_epoch) {
-      epoch_offset = time(NULL) - tv_sec;
-      known_epoch = 1;
-    }
-    secs = epoch_offset + tv_sec;
     /* !checksrc! disable BANNEDFUNC 1 */
-    now = localtime(&secs);  /* not thread safe but we don't care */
+    struct tm *now = localtime(&tv_sec);  /* not thread safe either */
     msnprintf(hms_buf, sizeof(hms_buf), "%02d:%02d:%02d",
               now->tm_hour, now->tm_min, now->tm_sec);
     cached_tv_sec = tv_sec;
@@ -99,7 +87,7 @@ int tool_debug_cb(CURL *handle, curl_infotype type,
   const char *text;
   struct timeval tv;
   char timebuf[20];
-  /* largest signed 64bit is: 9,223,372,036,854,775,807
+  /* largest signed 64-bit is: 9,223,372,036,854,775,807
    * max length in decimal: 1 + (6*3) = 19
    * formatted via TRC_IDS_FORMAT_IDS_2 this becomes 2 + 19 + 1 + 19 + 2 = 43
    * negative xfer-id are not printed, negative conn-ids use TRC_IDS_FORMAT_1
@@ -110,7 +98,7 @@ int tool_debug_cb(CURL *handle, curl_infotype type,
   (void)handle; /* not used */
 
   if(config->tracetime) {
-    tv = tvnow();
+    tv = tvrealnow();
     msnprintf(timebuf, sizeof(timebuf), "%s.%06ld ",
               hms_for_sec(tv.tv_sec), (long)tv.tv_usec);
   }
@@ -175,7 +163,7 @@ int tool_debug_cb(CURL *handle, curl_infotype type,
           log_line_start(output, timebuf, idsbuf, type);
         (void)fwrite(data + st, i - st + 1, 1, output);
       }
-      newl = (size && (data[size - 1] != '\n')) ? TRUE : FALSE;
+      newl = (size && (data[size - 1] != '\n'));
       traced_data = FALSE;
       break;
     case CURLINFO_TEXT:
@@ -183,7 +171,7 @@ int tool_debug_cb(CURL *handle, curl_infotype type,
       if(!newl)
         log_line_start(output, timebuf, idsbuf, type);
       (void)fwrite(data, size, 1, output);
-      newl = (size && (data[size - 1] != '\n')) ? TRUE : FALSE;
+      newl = (size && (data[size - 1] != '\n'));
       traced_data = FALSE;
       break;
     case CURLINFO_DATA_OUT:
@@ -191,8 +179,8 @@ int tool_debug_cb(CURL *handle, curl_infotype type,
     case CURLINFO_SSL_DATA_IN:
     case CURLINFO_SSL_DATA_OUT:
       if(!traced_data) {
-        /* if the data is output to a tty and we're sending this debug trace
-           to stderr or stdout, we don't display the alert about the data not
+        /* if the data is output to a tty and we are sending this debug trace
+           to stderr or stdout, we do not display the alert about the data not
            being shown as the data _is_ shown then just not via this
            function */
         if(!config->isatty ||
@@ -286,7 +274,7 @@ static void dump(const char *timebuf, const char *idsbuf, const char *text,
       (void)infotype;
       fprintf(stream, "%c", ((ptr[i + c] >= 0x20) && (ptr[i + c] < 0x7F)) ?
               ptr[i + c] : UNPRINTABLE_CHAR);
-      /* check again for 0D0A, to avoid an extra \n if it's at width */
+      /* check again for 0D0A, to avoid an extra \n if it is at width */
       if((tracetype == TRACE_ASCII) &&
          (i + c + 2 < size) && (ptr[i + c + 1] == 0x0D) &&
          (ptr[i + c + 2] == 0x0A)) {

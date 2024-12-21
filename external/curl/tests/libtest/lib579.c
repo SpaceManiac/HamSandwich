@@ -25,7 +25,7 @@
 
 #include "memdebug.h"
 
-static const char * const post[]={
+static const char * const testpost[]={
   "one",
   "two",
   "three",
@@ -38,31 +38,38 @@ struct WriteThis {
   int counter;
 };
 
+static bool started = FALSE;
+static size_t last_ul = 0;
+static size_t last_ul_total = 0;
+
+static void progress_final_report(void)
+{
+  FILE *moo = fopen(libtest_arg2, "ab");
+  fprintf(moo, "Progress: end UL %zu/%zu\n", last_ul, last_ul_total);
+  started = FALSE;
+  fclose(moo);
+}
+
 static int progress_callback(void *clientp, double dltotal, double dlnow,
                              double ultotal, double ulnow)
 {
-  static int prev_ultotal = -1;
-  static int prev_ulnow = -1;
   (void)clientp; /* UNUSED */
   (void)dltotal; /* UNUSED */
   (void)dlnow; /* UNUSED */
 
-  /* to avoid depending on timing, which will cause this progress function to
-     get called a different number of times depending on circumstances, we
-     only log these lines if the numbers are different from the previous
-     invoke */
-  if((prev_ultotal != (int)ultotal) ||
-     (prev_ulnow != (int)ulnow)) {
-
-    FILE *moo = fopen(libtest_arg2, "ab");
-    if(moo) {
-      fprintf(moo, "Progress callback called with UL %d out of %d\n",
-              (int)ulnow, (int)ultotal);
-      fclose(moo);
-    }
-    prev_ulnow = (int) ulnow;
-    prev_ultotal = (int) ultotal;
+  if(started && ulnow <= 0.0 && last_ul) {
+    progress_final_report();
   }
+
+  last_ul = (size_t)ulnow;
+  last_ul_total = (size_t)ultotal;
+  if(!started) {
+    FILE *moo = fopen(libtest_arg2, "ab");
+    fprintf(moo, "Progress: start UL %zu/%zu\n", last_ul, last_ul_total);
+    started = TRUE;
+    fclose(moo);
+  }
+
   return 0;
 }
 
@@ -74,7 +81,7 @@ static size_t read_callback(char *ptr, size_t size, size_t nmemb, void *userp)
   if(size*nmemb < 1)
     return 0;
 
-  data = post[pooh->counter];
+  data = testpost[pooh->counter];
 
   if(data) {
     size_t len = strlen(data);
@@ -145,6 +152,8 @@ CURLcode test(char *URL)
 
   /* Perform the request, res will get the return code */
   res = curl_easy_perform(curl);
+
+  progress_final_report();
 
 test_cleanup:
 

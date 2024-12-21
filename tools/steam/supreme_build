@@ -27,7 +27,7 @@ echo "==== Linux build ===="
 	set -euo pipefail
 	cmake --preset linux-x86_64-release
 	# Steam
-	cmake --build build/cmake-linux-x86_64-release --target supreme jspedit
+	cmake --build build/cmake-linux-x86_64-release --target supreme jspedit sdl2_rpath
 	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/steam-linux --component generic/executables
 	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/steam-linux --component supreme/executables
 	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/steam-linux --component jspedit/executables

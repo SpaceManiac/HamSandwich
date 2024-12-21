@@ -36,6 +36,7 @@ include("ham_executable.cmake")
 #add_subdirectory("mini_xxd")
 add_subdirectory("vanilla_extract")
 add_subdirectory("ham")
+add_subdirectory("aegea")
 
 # For games only, use -no-pie so that the executables are double-clickable in Thunar.
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")

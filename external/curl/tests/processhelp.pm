@@ -48,7 +48,7 @@ BEGIN {
         no warnings "all";
         require Time::HiRes;
     };
-    # portable sleeping falls back to native Sleep on Win32
+    # portable sleeping falls back to native Sleep on Windows
     eval {
         no warnings "all";
         require Win32;
@@ -59,6 +59,7 @@ use serverhelp qw(
     servername_id
     mainsockf_pidfilename
     datasockf_pidfilename
+    logmsg
     );
 
 use pathhelp qw(
@@ -105,6 +106,22 @@ sub pidfromfile {
 }
 
 #######################################################################
+# return Cygwin pid from virtual pid
+#
+sub winpid_to_pid {
+    my $vpid = $_[0];
+    if(($^O eq 'cygwin' || $^O eq 'msys') && $vpid > 65536) {
+        my $pid = Cygwin::winpid_to_pid($vpid - 65536);
+        if($pid) {
+            return $pid;
+        } else {
+            return $vpid
+        }
+    }
+    return $vpid;
+}
+
+#######################################################################
 # pidexists checks if a process with a given pid exists and is alive.
 # This will return the positive pid if the process exists and is alive.
 # This will return the negative pid if the process exists differently.
@@ -115,10 +132,12 @@ sub pidexists {
 
     if($pid > 0) {
         # verify if currently existing Windows process
+        $pid = winpid_to_pid($pid);
         if ($pid > 65536 && os_is_win()) {
             $pid -= 65536;
             if($^O ne 'MSWin32') {
                 my $filter = "PID eq $pid";
+                # https://ss64.com/nt/tasklist.html
                 my $result = `tasklist -fi \"$filter\" 2>nul`;
                 if(index($result, "$pid") != -1) {
                     return -$pid;
@@ -144,14 +163,14 @@ sub pidterm {
 
     if($pid > 0) {
         # request the process to quit
+        $pid = winpid_to_pid($pid);
         if ($pid > 65536 && os_is_win()) {
             $pid -= 65536;
             if($^O ne 'MSWin32') {
-                my $filter = "PID eq $pid";
-                my $result = `tasklist -fi \"$filter\" 2>nul`;
-                if(index($result, "$pid") != -1) {
-                    system("taskkill -fi \"$filter\" >nul 2>&1");
-                }
+                # https://ss64.com/nt/taskkill.html
+                my $cmd = "taskkill -t -pid $pid >nul 2>&1";
+                logmsg "Executing: '$cmd'\n";
+                system($cmd);
                 return;
             }
         }
@@ -169,16 +188,14 @@ sub pidkill {
 
     if($pid > 0) {
         # request the process to quit
+        $pid = winpid_to_pid($pid);
         if ($pid > 65536 && os_is_win()) {
             $pid -= 65536;
             if($^O ne 'MSWin32') {
-                my $filter = "PID eq $pid";
-                my $result = `tasklist -fi \"$filter\" 2>nul`;
-                if(index($result, "$pid") != -1) {
-                    system("taskkill -f -fi \"$filter\" >nul 2>&1");
-                    # Windows XP Home compatibility
-                    system("tskill $pid >nul 2>&1");
-                }
+                # https://ss64.com/nt/taskkill.html
+                my $cmd = "taskkill -f -t -pid $pid >nul 2>&1";
+                logmsg "Executing: '$cmd'\n";
+                system($cmd);
                 return;
             }
         }
@@ -195,6 +212,7 @@ sub pidwait {
     my $pid = $_[0];
     my $flags = $_[1];
 
+    $pid = winpid_to_pid($pid);
     # check if the process exists
     if ($pid > 65536 && os_is_win()) {
         if($flags == &WNOHANG) {
@@ -307,6 +325,8 @@ sub killpid {
                 }
             }
             last if(not scalar(@signalled));
+            # give any zombies of us a chance to move on to the afterlife
+            pidwait(0, &WNOHANG);
             portable_sleep(0.05);
         }
     }

@@ -11,6 +11,7 @@ See-also:
   - CURLOPT_INTERFACE (3)
 Protocol:
   - All
+Added-in: 7.33.0
 ---
 
 # NAME
@@ -35,9 +36,14 @@ specific interface).
 The application does not have to keep the string around after setting this
 option.
 
+Using this option multiple times makes the last set string override the
+previous ones. Set it to NULL to disable its use again.
+
 # DEFAULT
 
 NULL
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -55,11 +61,12 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# NOTES
 
-Added in 7.33.0. This option also requires that libcurl was built with a
-resolver backend that supports this operation. The c-ares backend is the only
-such one.
+This option requires that libcurl was built with a resolver backend that
+supports this operation. The c-ares backend is the only such one.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -23,8 +23,6 @@
  ***************************************************************************/
 #include "tool_setup.h"
 
-#define ENABLE_CURLX_PRINTF
-/* use our own printf() functions */
 #include "curlx.h"
 
 #include "tool_cfgable.h"
@@ -33,6 +31,7 @@
 #include "tool_findfile.h"
 #include "tool_msgs.h"
 #include "tool_parsecfg.h"
+#include "tool_util.h"
 #include "dynbuf.h"
 
 #include "memdebug.h" /* keep this as LAST include */
@@ -45,37 +44,6 @@ static const char *unslashquote(const char *line, char *param);
 
 #define MAX_CONFIG_LINE_LENGTH (10*1024*1024)
 static bool my_get_line(FILE *fp, struct curlx_dynbuf *, bool *error);
-
-#ifdef _WIN32
-static FILE *execpath(const char *filename, char **pathp)
-{
-  static char filebuffer[512];
-  /* Get the filename of our executable. GetModuleFileName is already declared
-   * via inclusions done in setup header file.  We assume that we are using
-   * the ASCII version here.
-   */
-  unsigned long len = GetModuleFileNameA(0, filebuffer, sizeof(filebuffer));
-  if(len > 0 && len < sizeof(filebuffer)) {
-    /* We got a valid filename - get the directory part */
-    char *lastdirchar = strrchr(filebuffer, '\\');
-    if(lastdirchar) {
-      size_t remaining;
-      *lastdirchar = 0;
-      /* If we have enough space, build the RC filename */
-      remaining = sizeof(filebuffer) - strlen(filebuffer);
-      if(strlen(filename) < remaining - 1) {
-        FILE *f;
-        msnprintf(lastdirchar, remaining, "%s%s", DIR_CHAR, filename);
-        *pathp = filebuffer;
-        f = fopen(filebuffer, FOPEN_READTEXT);
-        return f;
-      }
-    }
-  }
-
-  return NULL;
-}
-#endif
 
 
 /* return 0 on everything-is-fine, and non-zero otherwise */
@@ -102,9 +70,9 @@ int parseconfig(const char *filename, struct GlobalConfig *global)
     else {
       char *fullp;
       /* check for .curlrc then _curlrc in the dir of the executable */
-      file = execpath(".curlrc", &fullp);
+      file = Curl_execpath(".curlrc", &fullp);
       if(!file)
-        file = execpath("_curlrc", &fullp);
+        file = Curl_execpath("_curlrc", &fullp);
       if(file)
         /* this is the filename we read from */
         filename = fullp;
@@ -158,7 +126,7 @@ int parseconfig(const char *filename, struct GlobalConfig *global)
       option = line;
 
       /* the option starts with a dash? */
-      dashed_option = option[0]=='-'?TRUE:FALSE;
+      dashed_option = (option[0] == '-');
 
       while(*line && !ISSPACE(*line) && !ISSEP(*line, dashed_option))
         line++;
@@ -196,7 +164,7 @@ int parseconfig(const char *filename, struct GlobalConfig *global)
         if(*line) {
           *line = '\0'; /* null-terminate */
 
-          /* to detect mistakes better, see if there's data following */
+          /* to detect mistakes better, see if there is data following */
           line++;
           /* pass all spaces */
           while(*line && ISSPACE(*line))
@@ -217,7 +185,7 @@ int parseconfig(const char *filename, struct GlobalConfig *global)
         }
         if(!*param)
           /* do this so getparameter can check for required parameters.
-             Otherwise it always thinks there's a parameter. */
+             Otherwise it always thinks there is a parameter. */
           param = NULL;
       }
 
@@ -228,7 +196,7 @@ int parseconfig(const char *filename, struct GlobalConfig *global)
       operation = global->last;
 
       if(!res && param && *param && !usedarg)
-        /* we passed in a parameter that wasn't used! */
+        /* we passed in a parameter that was not used! */
         res = PARAM_GOT_EXTRA_PARAMETER;
 
       if(res == PARAM_NEXT_OPERATION) {
@@ -255,14 +223,15 @@ int parseconfig(const char *filename, struct GlobalConfig *global)
       }
 
       if(res != PARAM_OK && res != PARAM_NEXT_OPERATION) {
-        /* the help request isn't really an error */
+        /* the help request is not really an error */
         if(!strcmp(filename, "-")) {
           filename = "<stdin>";
         }
         if(res != PARAM_HELP_REQUESTED &&
            res != PARAM_MANUAL_REQUESTED &&
            res != PARAM_VERSION_INFO_REQUESTED &&
-           res != PARAM_ENGINES_REQUESTED) {
+           res != PARAM_ENGINES_REQUESTED &&
+           res != PARAM_CA_EMBED_REQUESTED) {
           const char *reason = param2text(res);
           errorf(operation->global, "%s:%d: '%s' %s",
                  filename, lineno, option, reason);
@@ -282,7 +251,7 @@ int parseconfig(const char *filename, struct GlobalConfig *global)
       rc = 1;
   }
   else
-    rc = 1; /* couldn't open the file */
+    rc = 1; /* could not open the file */
 
   free(pathalloc);
   return rc;
@@ -293,7 +262,7 @@ int parseconfig(const char *filename, struct GlobalConfig *global)
  * backslash-quoted characters and NUL-terminating the output string.
  * Stops at the first non-backslash-quoted double quote character or the
  * end of the input string. param must be at least as long as the input
- * string.  Returns the pointer after the last handled input character.
+ * string. Returns the pointer after the last handled input character.
  */
 static const char *unslashquote(const char *line, char *param)
 {
@@ -341,8 +310,8 @@ static bool my_get_line(FILE *fp, struct curlx_dynbuf *db,
     /* fgets() returns s on success, and NULL on error or when end of file
        occurs while no characters have been read. */
     if(!fgets(buf, sizeof(buf), fp))
-      /* only if there's data in the line, return TRUE */
-      return curlx_dyn_len(db) ? TRUE : FALSE;
+      /* only if there is data in the line, return TRUE */
+      return curlx_dyn_len(db);
     if(curlx_dyn_add(db, buf)) {
       *error = TRUE; /* error */
       return FALSE; /* stop reading */

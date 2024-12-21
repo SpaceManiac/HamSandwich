@@ -31,7 +31,7 @@ echo "==== Linux build ===="
 ./container bash -c "
 	set -euo pipefail
 	cmake --preset linux-x86_64-release
-	cmake --build build/cmake-linux-x86_64-release --target loonyland
+	cmake --build build/cmake-linux-x86_64-release --target loonyland sdl2_rpath
 	# Steam
 	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/loonyland/steam-linux --component generic/executables
 	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/loonyland/steam-linux --component loonyland/executables

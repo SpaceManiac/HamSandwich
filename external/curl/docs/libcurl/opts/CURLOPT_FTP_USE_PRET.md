@@ -9,6 +9,7 @@ See-also:
   - CURLOPT_FTP_USE_EPSV (3)
 Protocol:
   - FTP
+Added-in: 7.20.0
 ---
 
 # NAME
@@ -34,6 +35,8 @@ no effect when using the active FTP transfers mode.
 
 0
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -45,7 +48,7 @@ int main(void)
     curl_easy_setopt(curl, CURLOPT_URL,
                      "ftp://example.com/old-server/file.txt");
 
-    /* a drftpd server, do it! */
+    /* a drftpd server, do it */
     curl_easy_setopt(curl, CURLOPT_FTP_USE_PRET, 1L);
 
     res = curl_easy_perform(curl);
@@ -55,9 +58,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.20.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

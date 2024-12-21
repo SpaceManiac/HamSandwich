@@ -9,7 +9,7 @@
 # Debian stretch is chosen as it closely matches some of the oldest major
 # versions we support (especially cmake); see docs/INTERNALS.md and it
 # is still supported (as of this writing).
-# stretch has ELTS support from Feexian until 2027-06-30
+# stretch has ELTS support from Freexian until 2027-06-30
 # For ELTS info see https://www.freexian.com/lts/extended/docs/how-to-use-extended-lts/
 # The Debian key will expire 2025-05-20, after which package signature
 # verification may need to be disabled.
@@ -18,16 +18,14 @@
 
 name: Old Linux
 
-on:
+'on':
   push:
     branches:
       - master
       - '*/ci'
     paths-ignore:
       - '**/*.md'
-      - '.azure-pipelines.yml'
       - '.circleci/**'
-      - '.cirrus.yml'
       - 'appveyor.*'
       - 'packages/**'
       - 'plan9/**'
@@ -38,9 +36,7 @@ on:
       - master
     paths-ignore:
       - '**/*.md'
-      - '.azure-pipelines.yml'
       - '.circleci/**'
-      - '.cirrus.yml'
       - 'appveyor.*'
       - 'packages/**'
       - 'plan9/**'
@@ -50,12 +46,12 @@ on:
 permissions: {}
 
 env:
-  MAKEFLAGS: -j 3
+  MAKEFLAGS: -j 5
   DEBIAN_FRONTEND: noninteractive
 
 jobs:
   cmake:
-    name: linux (cmake)
+    name: linux (cmake & autoconf)
     runs-on: 'ubuntu-latest'
     container: 'debian:stretch'
 
@@ -71,36 +67,78 @@ jobs:
           dpkg -i freexian-archive-keyring_2022.06.08_all.deb
           echo 'deb http://deb.freexian.com/extended-lts stretch-lts main contrib non-free' | tee /etc/apt/sources.list.d/extended-lts.list
           apt-get update
-          apt-get install -y --no-install-suggests --no-install-recommends cmake make gcc pkg-config libpsl-dev libzstd-dev zlib1g-dev libssl1.0-dev libssh-dev libssh2-1-dev libc-ares-dev heimdal-dev libldap2-dev stunnel4 groff
+          apt-get install -y --no-install-suggests --no-install-recommends cmake make automake autoconf libtool gcc pkg-config libpsl-dev libzstd-dev zlib1g-dev libssl1.0-dev libssh-dev libssh2-1-dev libc-ares-dev heimdal-dev libldap2-dev librtmp-dev stunnel4 groff
           # GitHub's actions/checkout needs a newer glibc. This one is the
           # latest available for buster, the next stable release after stretch.
-          httrack --get https://security.debian.org/debian-security/pool/updates/main/g/glibc/libc6_2.28-10+deb10u3_amd64.deb
-          dpkg -i libc6_2.28-10+deb10u3_amd64.deb
+          httrack --get https://security.debian.org/debian-security/pool/updates/main/g/glibc/libc6_2.28-10+deb10u4_amd64.deb
+          dpkg -i libc6_*_amd64.deb
 
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: 'cmake build-only (out-of-tree, libssh2)'
         run: |
           mkdir bld-1
           cd bld-1
-          cmake .. -DCMAKE_UNITY_BUILD=ON -DCURL_WERROR=ON -DBUILD_SHARED_LIBS=ON -DENABLE_ARES=OFF -DCURL_ZSTD=OFF -DCURL_USE_GSSAPI=OFF -DCURL_USE_LIBSSH2=ON -DCURL_USE_LIBSSH=OFF
+          cmake .. -DCMAKE_UNITY_BUILD=ON -DCURL_TEST_BUNDLES=ON -DCURL_WERROR=ON -DBUILD_SHARED_LIBS=ON \
+            -DENABLE_ARES=OFF -DCURL_ZSTD=OFF -DCURL_USE_GSSAPI=OFF -DCURL_USE_LIBSSH2=ON -DCURL_USE_LIBSSH=OFF -DUSE_LIBRTMP=ON
           make install
           src/curl --disable --version
+
+      - name: 'cmake build-only curl_config.h'
+        run: |
+          echo '::group::raw'; cat bld-1/lib/curl_config.h || true; echo '::endgroup::'
+          grep -F '#define' bld-1/lib/curl_config.h | sort || true
 
       - name: 'cmake generate (out-of-tree, c-ares, libssh, zstd, gssapi)'
         run: |
           mkdir bld-cares
           cd bld-cares
-          cmake .. -DCMAKE_UNITY_BUILD=ON -DCURL_WERROR=ON -DBUILD_SHARED_LIBS=ON -DENABLE_ARES=ON -DCURL_ZSTD=ON -DCURL_USE_GSSAPI=ON -DCURL_USE_LIBSSH2=OFF \
-            -DUSE_LIBSSH=ON '-DCMAKE_C_FLAGS=-I/usr/include -L/usr/lib -lssh'
+          cmake .. -DCMAKE_UNITY_BUILD=ON -DCURL_TEST_BUNDLES=ON -DCURL_WERROR=ON -DBUILD_SHARED_LIBS=ON \
+            -DENABLE_ARES=ON -DCURL_ZSTD=ON -DCURL_USE_GSSAPI=ON -DCURL_USE_LIBSSH2=OFF -DCURL_USE_LIBSSH=ON -DUSE_LIBRTMP=ON \
+            -DCURL_LIBCURL_VERSIONED_SYMBOLS=ON
 
-      - name: 'build'
+      - name: 'cmake curl_config.h'
+        run: |
+          echo '::group::raw'; cat bld-cares/lib/curl_config.h || true; echo '::endgroup::'
+          grep -F '#define' bld-cares/lib/curl_config.h | sort || true
+
+      - name: 'cmake build'
         run: |
           make -C bld-cares
           bld-cares/src/curl --disable --version
 
-      - name: 'install'
+      - name: 'cmake install'
         run: make -C bld-cares install
 
-      - name: 'tests'
+      - name: 'cmake build tests'
+        run: make -C bld-cares testdeps
+
+      - name: 'cmake run tests'
         run: make -C bld-cares test-ci
+
+      - name: 'autoreconf'
+        run: autoreconf -if
+
+      - name: 'configure (out-of-tree, c-ares, libssh, zstd, gssapi)'
+        run: |
+          mkdir bld-am
+          cd bld-am
+          ../configure --disable-dependency-tracking --enable-unity --enable-test-bundles --enable-warnings --enable-werror \
+            --with-openssl --enable-ares --with-libssh --with-zstd --with-gssapi --with-librtmp \
+            --prefix="$PWD"/../install-am
+
+      - name: 'autoconf curl_config.h'
+        run: |
+          echo '::group::raw'; cat bld-am/lib/curl_config.h || true; echo '::endgroup::'
+          grep -F '#define' bld-am/lib/curl_config.h | sort || true
+
+      - name: 'autoconf build'
+        run: |
+          make -C bld-am
+          bld-am/src/curl --disable --version
+
+      - name: 'autoconf install'
+        run: make -C bld-am install
+
+      - name: 'autoconf build tests'
+        run: make -C bld-am/tests all

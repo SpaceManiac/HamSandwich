@@ -12,6 +12,7 @@ Protocol:
 TLS-backend:
   - OpenSSL
   - GnuTLS
+Added-in: 7.21.4
 ---
 
 # NAME
@@ -30,17 +31,22 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_TLSAUTH_USERNAME, char *user);
 
 Pass a char pointer as parameter, which should point to the null-terminated
 username to use for the TLS authentication method specified with the
-CURLOPT_TLSAUTH_TYPE(3) option. Requires that the
-CURLOPT_TLSAUTH_PASSWORD(3) option also be set.
+CURLOPT_TLSAUTH_TYPE(3) option. Requires that the CURLOPT_TLSAUTH_PASSWORD(3)
+option also be set.
 
 The application does not have to keep the string around after setting this
 option.
 
-This feature relies in TLS SRP which does not work with TLS 1.3.
+Using this option multiple times makes the last set string override the
+previous ones. Set it to NULL to disable its use again.
+
+This feature relies on TLS SRP which does not work with TLS 1.3.
 
 # DEFAULT
 
 NULL
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -60,9 +66,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.21.4, with the OpenSSL and GnuTLS backends only
+# %AVAILABILITY%
 
 # RETURN VALUE
 

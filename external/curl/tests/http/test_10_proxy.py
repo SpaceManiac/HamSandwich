@@ -51,8 +51,8 @@ class TestProxy:
         httpd.reload()
 
     def get_tunnel_proto_used(self, r: ExecResult):
-        for l in r.trace_lines:
-            m = re.match(r'.* CONNECT tunnel: (\S+) negotiated$', l)
+        for line in r.trace_lines:
+            m = re.match(r'.* CONNECT tunnel: (\S+) negotiated$', line)
             if m:
                 return m.group(1)
         assert False, f'tunnel protocol not found in:\n{"".join(r.trace_lines)}'
@@ -82,7 +82,7 @@ class TestProxy:
                          protocol='HTTP/2' if proto == 'h2' else 'HTTP/1.1')
 
     # upload via https: with proto (no tunnel)
-    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason=f"curl without SSL")
+    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason="curl without SSL")
     @pytest.mark.parametrize("proto", ['http/1.1', 'h2'])
     @pytest.mark.parametrize("fname, fcount", [
         ['data.json', 5],
@@ -132,7 +132,7 @@ class TestProxy:
 
     # download https: with proto via http: proxytunnel
     @pytest.mark.parametrize("proto", ['http/1.1', 'h2'])
-    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason=f"curl without SSL")
+    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason="curl without SSL")
     def test_10_05_proxytunnel_http(self, env: Env, httpd, proto, repeat):
         curl = CurlClient(env=env)
         url = f'https://localhost:{env.https_port}/data.json'
@@ -165,7 +165,7 @@ class TestProxy:
         assert filecmp.cmp(srcfile, dfile, shallow=False)
 
     # download many https: with proto via https: proxytunnel
-    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason=f"curl without SSL")
+    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason="curl without SSL")
     @pytest.mark.parametrize("proto", ['http/1.1', 'h2'])
     @pytest.mark.parametrize("tunnel", ['http/1.1', 'h2'])
     @pytest.mark.parametrize("fname, fcount", [
@@ -195,7 +195,7 @@ class TestProxy:
         assert r.total_connects == 1, r.dump_logs()
 
     # upload many https: with proto via https: proxytunnel
-    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason=f"curl without SSL")
+    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason="curl without SSL")
     @pytest.mark.parametrize("proto", ['http/1.1', 'h2'])
     @pytest.mark.parametrize("tunnel", ['http/1.1', 'h2'])
     @pytest.mark.parametrize("fname, fcount", [
@@ -221,10 +221,10 @@ class TestProxy:
         indata = open(srcfile).readlines()
         for i in range(count):
             respdata = open(curl.response_file(i)).readlines()
-            assert respdata == indata
+            assert respdata == indata, f'resonse {i} differs'
         assert r.total_connects == 1, r.dump_logs()
 
-    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason=f"curl without SSL")
+    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason="curl without SSL")
     @pytest.mark.parametrize("tunnel", ['http/1.1', 'h2'])
     @pytest.mark.skipif(condition=not Env.have_nghttpx(), reason="no nghttpx available")
     def test_10_09_reuse_ser(self, env: Env, httpd, nghttpx_fwd, tunnel, repeat):
@@ -247,7 +247,7 @@ class TestProxy:
         else:
             assert r.total_connects == 2
 
-    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason=f"curl without SSL")
+    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason="curl without SSL")
     @pytest.mark.parametrize("tunnel", ['http/1.1', 'h2'])
     @pytest.mark.skipif(condition=not Env.have_nghttpx(), reason="no nghttpx available")
     def test_10_10_reuse_proxy(self, env: Env, httpd, nghttpx_fwd, tunnel, repeat):
@@ -271,7 +271,7 @@ class TestProxy:
         r2.check_response(count=2, http_status=200)
         assert r2.total_connects == 1
 
-    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason=f"curl without SSL")
+    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason="curl without SSL")
     @pytest.mark.parametrize("tunnel", ['http/1.1', 'h2'])
     @pytest.mark.skipif(condition=not Env.have_nghttpx(), reason="no nghttpx available")
     @pytest.mark.skipif(condition=not Env.curl_uses_lib('openssl'), reason="tls13-ciphers not supported")
@@ -291,13 +291,13 @@ class TestProxy:
         x2_args = r1.args[1:]
         x2_args.append('--next')
         x2_args.extend(proxy_args)
-        x2_args.extend(['--proxy-tls13-ciphers', 'TLS_AES_128_GCM_SHA256'])
+        x2_args.extend(['--proxy-tls13-ciphers', 'TLS_AES_256_GCM_SHA384'])
         r2 = curl.http_download(urls=[url], alpn_proto='http/1.1', with_stats=True,
                                extra_args=x2_args)
         r2.check_response(count=2, http_status=200)
         assert r2.total_connects == 2
 
-    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason=f"curl without SSL")
+    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason="curl without SSL")
     @pytest.mark.parametrize("tunnel", ['http/1.1', 'h2'])
     @pytest.mark.skipif(condition=not Env.have_nghttpx(), reason="no nghttpx available")
     @pytest.mark.skipif(condition=not Env.curl_uses_lib('openssl'), reason="tls13-ciphers not supported")
@@ -317,13 +317,13 @@ class TestProxy:
         x2_args = r1.args[1:]
         x2_args.append('--next')
         x2_args.extend(proxy_args)
-        x2_args.extend(['--proxy-tls13-ciphers', 'TLS_AES_128_GCM_SHA256'])
+        x2_args.extend(['--proxy-tls13-ciphers', 'TLS_AES_256_GCM_SHA384'])
         r2 = curl.http_download(urls=[url], alpn_proto='http/1.1', with_stats=True,
                                extra_args=x2_args)
         r2.check_response(count=2, http_status=200)
         assert r2.total_connects == 2
 
-    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason=f"curl without SSL")
+    @pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason="curl without SSL")
     @pytest.mark.parametrize("tunnel", ['http/1.1', 'h2'])
     @pytest.mark.skipif(condition=not Env.have_nghttpx(), reason="no nghttpx available")
     @pytest.mark.skipif(condition=not Env.curl_uses_lib('openssl'), reason="tls13-ciphers not supported")
@@ -343,7 +343,7 @@ class TestProxy:
         x2_args = r1.args[1:]
         x2_args.append('--next')
         x2_args.extend(proxy_args)
-        x2_args.extend(['--tls13-ciphers', 'TLS_AES_128_GCM_SHA256'])
+        x2_args.extend(['--tls13-ciphers', 'TLS_AES_256_GCM_SHA384'])
         r2 = curl.http_download(urls=[url], alpn_proto='http/1.1', with_stats=True,
                                extra_args=x2_args)
         r2.check_response(count=2, http_status=200)

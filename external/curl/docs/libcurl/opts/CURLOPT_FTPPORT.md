@@ -9,6 +9,7 @@ Protocol:
 See-also:
   - CURLOPT_FTP_USE_EPRT (3)
   - CURLOPT_FTP_USE_EPSV (3)
+Added-in: 7.1
 ---
 
 # NAME
@@ -45,12 +46,10 @@ specifier can be in brackets.
 
 Examples with specified ports:
 
-~~~c
-  eth0:0
-  192.168.1.2:32000-33000
-  curl.se:32123
-  [::1]:1234-4567
-~~~
+    eth0:0
+    192.168.1.2:32000-33000
+    curl.se:32123
+    [::1]:1234-4567
 
 We strongly advise against specifying the address with a name, as it causes
 libcurl to do a blocking name resolve call to retrieve the IP address. That
@@ -60,15 +59,18 @@ CURLOPT_DOH_URL(3) is set.
 Using anything else than "-" for this option should typically only be done if
 you have special knowledge and confirmation that it works.
 
-You disable PORT again and go back to using the passive version by setting
-this option to NULL.
-
 The application does not have to keep the string around after setting this
 option.
+
+Using this option multiple times makes the last set string override the
+previous ones. You disable PORT again and go back to using the passive version
+by setting this option to NULL.
 
 # DEFAULT
 
 NULL
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -87,9 +89,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Port range support was added in 7.19.5
+# %AVAILABILITY%
 
 # RETURN VALUE
 

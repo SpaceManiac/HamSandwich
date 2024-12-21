@@ -27,8 +27,8 @@ Funny-head: yesyes
 # Client-side
 <client>
 <features>
-debug
-h2c
+Debug
+http/2
 SSL
 </features>
 <server>
@@ -36,7 +36,7 @@ http
 http/2
 </server>
 <name>
-HTTP/2 GET
+HTTP/2 GET over HTTPS
 </name>
 <setenv>
 </setenv>

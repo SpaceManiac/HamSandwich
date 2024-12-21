@@ -10,6 +10,7 @@ See-also:
   - CURLOPT_COOKIESESSION (3)
 Protocol:
   - HTTP
+Added-in: 7.1
 ---
 
 # NAME
@@ -47,14 +48,12 @@ domain cannot match the target URL's. To address this, set a domain in
 Set-Cookie line (doing that includes subdomains) or preferably: use the
 Netscape format.
 
-If you use this option multiple times, you add more files to read cookies
-from.
-
 The application does not have to keep the string around after setting this
 option.
 
-Setting this option to NULL (since 7.77.0) explicitly disables the cookie
-engine and clears the list of files to read cookies from.
+If you use this option multiple times, you add more files to read cookies
+from. Setting this option to NULL disables the cookie engine and clears the
+list of files to read cookies from.
 
 # SECURITY
 
@@ -66,6 +65,8 @@ run.
 # DEFAULT
 
 NULL
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -92,9 +93,7 @@ int main(void)
 The cookie file format and general cookie concepts in curl are described
 online here: https://curl.se/docs/http-cookies.html
 
-# AVAILABILITY
-
-As long as HTTP is supported
+# %AVAILABILITY%
 
 # RETURN VALUE
 

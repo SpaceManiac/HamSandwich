@@ -7,13 +7,14 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <sstream>
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <SDL_image.h>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_opengl2.h>
-#include <json.hpp>
+#include <json.h>
 #include <curl/curl.h>
 #include "jamulfont.h"
 #include "appdata.h"
@@ -21,6 +22,8 @@
 #include "vanilla_extract.h"
 #include "metadata.h"
 #include "ico.h"
+#include "owned_stdio.h"
+#include "owned_curl.h"
 
 #if __has_include(<filesystem>)
 #include <filesystem>
@@ -172,23 +175,23 @@ struct Asset
 	bool required;
 	bool enabled;
 
-	CURL* metadata_download = nullptr;
+	owned::CURL metadata_download;
 	std::string metadata_progress;
-	CURL* content_download = nullptr;
-	FILE* content_progress = nullptr;
+	owned::CURL content_download;
+	owned::FILE content_progress;
 	my_sha256_ctx content_hash;
 	curl_off_t content_total_size;
 	curl_off_t content_finished_size;
 
-	explicit Asset(nlohmann::json installer)
-		: mountpoint(installer.contains("mountpoint") ? installer["mountpoint"] : "")
-		, kind(installer["kind"])
-		, filename(installer["filename"])
-		, sha256sum(installer.contains("sha256sum") ? installer["sha256sum"] : "")
-		, link(installer["link"])
-		, file_id(installer.contains("file_id") ? static_cast<long>(installer["file_id"]) : 0)
-		, description(installer["description"])
-		, required(!installer.contains("optional") || !installer["optional"])
+	explicit Asset(const jt::Json& installer)
+		: mountpoint(installer.contains("mountpoint") ? installer["mountpoint"].getString() : "")
+		, kind(installer["kind"].getString())
+		, filename(installer["filename"].getString())
+		, sha256sum(installer.contains("sha256sum") ? installer["sha256sum"].getString() : "")
+		, link(installer["link"].getString())
+		, file_id(installer.contains("file_id") && installer["file_id"].isLong() ? installer["file_id"].getLong() : 0)
+		, description(installer["description"].getString())
+		, required(!installer.contains("optional") || !installer["optional"].getBool())
 		, enabled(is_enabled(filename))
 	{
 	}
@@ -234,14 +237,14 @@ struct Asset
 			full_url << link << "/file/" << file_id;
 
 			metadata_progress = "";
-			metadata_download = curl_easy_init();
-			curl_easy_setopt(metadata_download, CURLOPT_URL, full_url.str().c_str());
-			curl_easy_setopt(metadata_download, CURLOPT_POST, true);
-			curl_easy_setopt(metadata_download, CURLOPT_POSTFIELDSIZE, 0);
-			curl_easy_setopt(metadata_download, CURLOPT_WRITEFUNCTION, Asset::metadata_write_callback);
-			curl_easy_setopt(metadata_download, CURLOPT_WRITEDATA, this);
-			curl_easy_setopt(metadata_download, CURLOPT_FAILONERROR, true);
-			curl_multi_add_handle(downloads, metadata_download);
+			metadata_download = owned::curl_easy_init();
+			curl_easy_setopt(metadata_download.get(), CURLOPT_URL, full_url.str().c_str());
+			curl_easy_setopt(metadata_download.get(), CURLOPT_POST, true);
+			curl_easy_setopt(metadata_download.get(), CURLOPT_POSTFIELDSIZE, 0);
+			curl_easy_setopt(metadata_download.get(), CURLOPT_WRITEFUNCTION, Asset::metadata_write_callback);
+			curl_easy_setopt(metadata_download.get(), CURLOPT_WRITEDATA, this);
+			curl_easy_setopt(metadata_download.get(), CURLOPT_FAILONERROR, true);
+			curl_multi_add_handle(downloads, metadata_download.get());
 		}
 		else
 		{
@@ -252,32 +255,31 @@ struct Asset
 
 	void start_content_download(CURLM* downloads, const std::string& url)
 	{
-
 		std::string full_path = "installers/";
 		full_path.append(filename);
 		full_path.append(".part");
-		content_progress = fopen(full_path.c_str(), "wb");  // TODO: error handling
+		content_progress = owned::fopen(full_path.c_str(), "wb");  // TODO: error handling
 		my_sha256_init(&content_hash);
 
 		if (!content_download)
-			content_download = curl_easy_init();
+			content_download = owned::curl_easy_init();
 
-		curl_easy_setopt(content_download, CURLOPT_URL, url.c_str());
-		//curl_easy_setopt(content_download, CURLOPT_BUFFERSIZE, 102400L);
-		//curl_easy_setopt(content_download, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
-		curl_easy_setopt(content_download, CURLOPT_WRITEFUNCTION, Asset::content_write_callback);
-		curl_easy_setopt(content_download, CURLOPT_WRITEDATA, this);
-		curl_easy_setopt(content_download, CURLOPT_NOPROGRESS, 0);
-		curl_easy_setopt(content_download, CURLOPT_XFERINFOFUNCTION, Asset::content_progress_callback);
-		curl_easy_setopt(content_download, CURLOPT_XFERINFODATA, this);
-		curl_easy_setopt(content_download, CURLOPT_FAILONERROR, true);
+		curl_easy_setopt(content_download.get(), CURLOPT_URL, url.c_str());
+		//curl_easy_setopt(content_download,.get() CURLOPT_BUFFERSIZE, 102400L);
+		//curl_easy_setopt(content_download,.get() CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
+		curl_easy_setopt(content_download.get(), CURLOPT_WRITEFUNCTION, Asset::content_write_callback);
+		curl_easy_setopt(content_download.get(), CURLOPT_WRITEDATA, this);
+		curl_easy_setopt(content_download.get(), CURLOPT_NOPROGRESS, 0);
+		curl_easy_setopt(content_download.get(), CURLOPT_XFERINFOFUNCTION, Asset::content_progress_callback);
+		curl_easy_setopt(content_download.get(), CURLOPT_XFERINFODATA, this);
+		curl_easy_setopt(content_download.get(), CURLOPT_FAILONERROR, true);
 
-		curl_multi_add_handle(downloads, content_download);
+		curl_multi_add_handle(downloads, content_download.get());
 	}
 
 	int transfer_completed(CURLM* downloads, CURL* transfer, CURLcode result)
 	{
-		if (transfer == metadata_download)
+		if (transfer == metadata_download.get())
 		{
 			metadata_download = nullptr;
 
@@ -287,19 +289,22 @@ struct Asset
 				return 0;
 			}
 
-			auto message = nlohmann::json::parse(metadata_progress);
-			std::string url = message["url"];
+			auto [status, message] = jt::Json::parse(metadata_progress);
+			if (status != jt::Json::success)
+			{
+				fprintf(stderr, "Error parsing itch metadata: %s\n", jt::Json::StatusToString(status));
+				return 0;
+			}
+			std::string url = message["url"].getString();
 
-			curl_easy_reset(transfer);
-			content_download = transfer;
+			content_download = std::move(metadata_download);
 			start_content_download(downloads, url);
 			return 1;
 		}
-		else if (transfer == content_download)
+		else if (transfer == content_download.get())
 		{
-			fclose(content_progress);
-			content_progress = nullptr;
-			content_download = nullptr;
+			content_progress.reset();
+			content_download.reset();
 
 			if (result != CURLE_OK)
 			{
@@ -424,18 +429,21 @@ struct Game
 	const Icon* icon = nullptr;
 	LoadedIcon loaded_icon;
 
-	Game(std::string_view id, nlohmann::json manifest)
+	Game(std::string_view id, const jt::Json& manifest)
 		: id(id)
-		, title(manifest["title"])
-		, excluded(manifest.contains("excluded") && manifest["excluded"])
-		, appdata_folder_name(manifest.contains("appdataName") ? static_cast<std::string>(manifest["appdataName"]) : id)
-		, retail_profile(manifest.contains("registry_key") ? static_cast<std::string>(manifest["registry_key"]) : "")
+		, title(manifest["title"].getString())
+		, excluded(manifest.contains("excluded") && manifest["excluded"].isBool() && manifest["excluded"].getBool())
+		, appdata_folder_name(manifest.contains("appdataName") ? manifest["appdataName"].getString() : id)
+		, retail_profile(manifest.contains("registry_key") ? manifest["registry_key"].getString() : "")
 		, addons_folder("addons/")
 	{
 		addons_folder.append(appdata_folder_name);
-		for (const auto& installer : manifest["installers"])
+		if (manifest.contains("installers") && manifest["installers"].isArray())
 		{
-			assets.emplace_back(installer);
+			for (const auto& installer : manifest["installers"].getArray())
+			{
+				assets.emplace_back(installer);
+			}
 		}
 	}
 
@@ -479,22 +487,6 @@ struct Game
 	}
 };
 
-namespace owned
-{
-	template<typename T, typename Deleter>
-	struct convertible_unique_ptr : public std::unique_ptr<T, Deleter>
-	{
-		operator T*() { return this->get(); }
-	};
-
-	struct deleter_CURLM
-	{
-		void operator()(CURLM* ptr) { curl_multi_cleanup(ptr); }
-	};
-
-	typedef convertible_unique_ptr<::CURLM, deleter_CURLM> CURLM;
-}
-
 struct Launcher
 {
 	std::map<std::string, const Icon*> icons_by_id;
@@ -507,7 +499,7 @@ struct Launcher
 
 	Launcher()
 	{
-		downloads.reset(curl_multi_init());
+		downloads = owned::curl_multi_init();
 
 		const Icon* current = embed_icons;
 		while (current->name)
@@ -518,12 +510,13 @@ struct Launcher
 
 		// Load non-excluded games in order.
 		size_t idx = 0;
-		nlohmann::json launcher_metadata = nlohmann::json::parse(embed_launcher_json, embed_launcher_json + embed_launcher_json_size);
-		games.reserve(launcher_metadata["project_list"].size() + launcher_metadata["project_metadata"].size());
-		for (std::string id : launcher_metadata["project_list"])
+		auto [status, launcher_metadata] = jt::Json::parse({(const char*)embed_launcher_json, embed_launcher_json_size});
+		games.reserve(launcher_metadata["project_list"].getArray().size() + launcher_metadata["project_metadata"].getObject().size());
+		for (const auto& idJ : launcher_metadata["project_list"].getArray())
 		{
+			auto id = idJ.getString();
 			auto value = launcher_metadata["project_metadata"][id];
-			launcher_metadata["project_metadata"].erase(id);
+			launcher_metadata["project_metadata"].getObject().erase(id);
 			games.emplace_back(id, value);
 			games.back().icon = icons_by_id[id];
 
@@ -533,10 +526,10 @@ struct Launcher
 
 		// Load excluded games. The launcher knows how to download their assets,
 		// but not everything else.
-		for (const auto& game : launcher_metadata["project_metadata"].items())
+		for (const auto& game : launcher_metadata["project_metadata"].getObject())
 		{
-			games.emplace_back(game.key(), game.value());
-			games.back().icon = icons_by_id[game.key()];
+			games.emplace_back(game.first, game.second);
+			games.back().icon = icons_by_id[game.first];
 		}
 
 		if (idx < games.size())
@@ -547,23 +540,23 @@ struct Launcher
 	int update_transfers()
 	{
 		int running_downloads;
-		CURLMcode mc = curl_multi_perform(downloads, &running_downloads);
+		CURLMcode mc = curl_multi_perform(downloads.get(), &running_downloads);
 		if (mc == CURLM_OK)
 		{
 			int queued;
-			while (CURLMsg* msg = curl_multi_info_read(downloads, &queued))
+			while (CURLMsg* msg = curl_multi_info_read(downloads.get(), &queued))
 			{
 				if (msg->msg == CURLMSG_DONE)
 				{
 					CURL* transfer = msg->easy_handle;
 					CURLcode result = msg->data.result;
-					curl_multi_remove_handle(downloads, transfer);
+					curl_multi_remove_handle(downloads.get(), transfer);
 
 					for (auto& game : games)
 					{
 						for (auto& asset : game.assets)
 						{
-							running_downloads += asset.transfer_completed(downloads, transfer, result);
+							running_downloads += asset.transfer_completed(downloads.get(), transfer, result);
 						}
 					}
 				}
@@ -921,7 +914,7 @@ int main(int argc, char** argv)
 			return 1;
 		}
 
-		if (!launcher.current_game->start_missing_downloads(launcher.downloads))
+		if (!launcher.current_game->start_missing_downloads(launcher.downloads.get()))
 		{
 			return 0;
 		}
@@ -1101,7 +1094,7 @@ int main(int argc, char** argv)
 					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 					{
 						launcher.wants_to_play = true;
-						game.start_missing_downloads(launcher.downloads);
+						game.start_missing_downloads(launcher.downloads.get());
 					}
 
 					// On click, save the selection.
@@ -1181,7 +1174,7 @@ int main(int argc, char** argv)
 			{
 				launcher.wants_to_play = !launcher.wants_to_play;
 				if (launcher.wants_to_play)
-					launcher.current_game->start_missing_downloads(launcher.downloads);
+					launcher.current_game->start_missing_downloads(launcher.downloads.get());
 			}
 			ImGui::PopStyleColor(3);
 			ImGui::SameLine();
@@ -1311,22 +1304,20 @@ int main(int argc, char** argv)
 						{
 							if (asset.metadata_download)
 							{
-								curl_multi_remove_handle(launcher.downloads, asset.metadata_download);
-								curl_easy_cleanup(asset.metadata_download);
-								asset.metadata_download = nullptr;
+								curl_multi_remove_handle(launcher.downloads.get(), asset.metadata_download.get());
+								asset.metadata_download.reset();
 							}
 							if (asset.content_download)
 							{
-								curl_multi_remove_handle(launcher.downloads, asset.content_download);
-								curl_easy_cleanup(asset.content_download);
-								asset.content_download = nullptr;
+								curl_multi_remove_handle(launcher.downloads.get(), asset.content_download.get());
+								asset.content_download.reset();
 							}
 						}
 					}
 					else
 					{
 						if (ImGui::Button("Download###asset_download", { 128, 0 }))
-							asset.start_download(launcher.downloads);
+							asset.start_download(launcher.downloads.get());
 					}
 				}
 				ImGui::PopID();

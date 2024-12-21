@@ -21,68 +21,66 @@
 # SPDX-License-Identifier: curl
 #
 ###########################################################################
-set(TARGET_LABEL_PREFIX "Test ")
 
-function(setup_test TEST_NAME)          # ARGN are the files in the test
-
-  if(LIB_SELECTED STREQUAL LIB_STATIC)
-    # These are part of the libcurl static lib. Do not compile/link them again.
-    list(REMOVE_ITEM ARGN ${WARNLESS} ${MULTIBYTE} ${TIMEDIFF})
-  endif()
-
-  add_executable(${TEST_NAME} EXCLUDE_FROM_ALL ${ARGN})
-  add_dependencies(testdeps ${TEST_NAME})
-  string(TOUPPER ${TEST_NAME} UPPER_TEST_NAME)
-
-  include_directories(
-    ${CURL_SOURCE_DIR}/lib          # To be able to reach "curl_setup_once.h"
-    ${CURL_BINARY_DIR}/lib          # To be able to reach "curl_config.h"
-    ${CURL_BINARY_DIR}/include      # To be able to reach "curl/curl.h"
-    ${CURL_SOURCE_DIR}/tests/libtest # To be able to build generated tests
-    )
-  if(USE_ARES)
-    include_directories(${CARES_INCLUDE_DIR})
-  endif()
-
-  target_link_libraries(${TEST_NAME} ${LIB_SELECTED} ${CURL_LIBS})
-
-  set_target_properties(${TEST_NAME}
-    PROPERTIES COMPILE_DEFINITIONS ${UPPER_TEST_NAME})
-  set_target_properties(${TEST_NAME}
-    PROPERTIES PROJECT_LABEL "${TARGET_LABEL_PREFIX}${TEST_NAME}")
-endfunction()
-
-
+# Get 'LIBTESTPROGS', '*_SOURCES', 'TESTUTIL', 'TSTTRACE', 'WARNLESS', 'MULTIBYTE', 'TIMEDIFF', 'THREADS', 'FIRSTFILES' variables
 transform_makefile_inc("Makefile.inc" "${CMAKE_CURRENT_BINARY_DIR}/Makefile.inc.cmake")
-include(${CMAKE_CURRENT_BINARY_DIR}/Makefile.inc.cmake)
+include("${CMAKE_CURRENT_BINARY_DIR}/Makefile.inc.cmake")
 
-foreach(TEST_NAME ${noinst_PROGRAMS})
-  if(DEFINED ${TEST_NAME}_SOURCES)
-    setup_test(${TEST_NAME} ${${TEST_NAME}_SOURCES})
-  else()
-    setup_test(${TEST_NAME} ${nodist_${TEST_NAME}_SOURCES})
-  endif()
-endforeach()
+set_source_files_properties("../../lib/curl_multibyte.c" PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 
-# Allows for hostname override to make tests machine independent.
-# TODO this cmake build assumes a shared build, detect static linking here!
-if(NOT WIN32)
-  add_library(hostname MODULE EXCLUDE_FROM_ALL sethostname.c)
-  add_dependencies(testdeps hostname)
-  # Output to .libs for compatibility with autotools, the test data expects a
-  # library at (tests)/libtest/.libs/libhostname.so
-  set_target_properties(hostname PROPERTIES
-      LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/.libs)
-  if(HIDES_CURL_PRIVATE_SYMBOLS)
-    set_property(TARGET hostname APPEND PROPERTY COMPILE_DEFINITIONS "CURL_HIDDEN_SYMBOLS")
-    set_property(TARGET hostname APPEND PROPERTY COMPILE_FLAGS ${CURL_CFLAG_SYMBOLS_HIDE})
+add_custom_command(
+  OUTPUT "lib1521.c"
+  COMMAND ${PERL_EXECUTABLE} "${CMAKE_CURRENT_SOURCE_DIR}/mk-lib1521.pl" < "${PROJECT_SOURCE_DIR}/include/curl/curl.h" "lib1521.c"
+  DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/mk-lib1521.pl"
+    "${PROJECT_SOURCE_DIR}/include/curl/curl.h"
+  VERBATIM)
+
+if(CURL_TEST_BUNDLES)
+  add_custom_command(
+    OUTPUT "libtest_bundle.c"
+    COMMAND ${PERL_EXECUTABLE} "${PROJECT_SOURCE_DIR}/tests/mk-bundle.pl" "${CMAKE_CURRENT_SOURCE_DIR}" > "libtest_bundle.c"
+    DEPENDS
+      "${PROJECT_SOURCE_DIR}/tests/mk-bundle.pl" ${FIRSTFILES} "lib1521.c"
+      "${CMAKE_CURRENT_SOURCE_DIR}/Makefile.inc"
+    VERBATIM)
+
+  set(LIBTESTPROGS "libtests")
+  set(libtests_SOURCES "libtest_bundle.c")
+  list(APPEND libtests_SOURCES ${TESTUTIL} ${TSTTRACE})
+  if(LIB_SELECTED STREQUAL LIB_SHARED)
+    # These are part of the libcurl static lib. Add them here when linking shared.
+    list(APPEND libtests_SOURCES ${WARNLESS} ${MULTIBYTE} ${TIMEDIFF} ${THREADS})
   endif()
 endif()
 
-add_custom_command(
-  OUTPUT lib1521.c
-  COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/mk-lib1521.pl < ${CURL_SOURCE_DIR}/include/curl/curl.h > lib1521.c
-  DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/mk-lib1521.pl"
-    "${CURL_SOURCE_DIR}/include/curl/curl.h"
-  VERBATIM)
+foreach(_target IN LISTS LIBTESTPROGS)
+  if(DEFINED ${_target}_SOURCES)
+    set(_sources ${${_target}_SOURCES})
+  else()
+    set(_sources ${nodist_${_target}_SOURCES})
+  endif()
+
+  if(LIB_SELECTED STREQUAL LIB_STATIC)
+    # These are part of the libcurl static lib. Do not compile/link them again.
+    list(REMOVE_ITEM _sources ${WARNLESS} ${MULTIBYTE} ${TIMEDIFF} ${THREADS})
+  endif()
+
+  string(TOUPPER ${_target} _upper_target)
+  set(_target_name "${_target}")
+  add_executable(${_target_name} EXCLUDE_FROM_ALL ${_sources})
+  add_dependencies(testdeps ${_target_name})
+  target_link_libraries(${_target_name} ${LIB_SELECTED} ${CURL_LIBS})
+  target_include_directories(${_target_name} PRIVATE
+    "${PROJECT_BINARY_DIR}/lib"            # for "curl_config.h"
+    "${PROJECT_SOURCE_DIR}/lib"            # for "curl_setup.h"
+    "${PROJECT_SOURCE_DIR}/tests/libtest"  # to be able to build generated tests
+  )
+  if(NOT CURL_TEST_BUNDLES)
+    set_property(TARGET ${_target_name} APPEND PROPERTY COMPILE_DEFINITIONS ${_upper_target})
+  endif()
+  set_property(TARGET ${_target_name} APPEND PROPERTY COMPILE_DEFINITIONS "CURL_NO_GETADDRINFO_OVERRIDE")
+  set_target_properties(${_target_name} PROPERTIES
+    OUTPUT_NAME "${_target}"
+    PROJECT_LABEL "Test libtest ${_target}")
+endforeach()

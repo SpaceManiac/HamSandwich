@@ -13,6 +13,7 @@ See-also:
   - CURLOPT_WRITEFUNCTION (3)
 Protocol:
   - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -72,7 +73,9 @@ and it allows for better error checking.
 
 # DEFAULT
 
-The default internal read callback is fread().
+fread(3)
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -83,7 +86,7 @@ size_t read_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
   curl_off_t nread;
 
   /* copy as much data as possible into the 'ptr' buffer, but no more than
-     'size' * 'nmemb' bytes! */
+     'size' * 'nmemb' bytes. */
   size_t retcode = fread(ptr, size, nmemb, readhere);
 
   nread = (curl_off_t)retcode;
@@ -111,10 +114,12 @@ int main(int argc, char **argv)
 }
 ~~~
 
-# AVAILABILITY
+# HISTORY
 
 CURL_READFUNC_PAUSE return code was added in 7.18.0 and CURL_READFUNC_ABORT
 was added in 7.12.1.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

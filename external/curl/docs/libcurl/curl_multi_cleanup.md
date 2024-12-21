@@ -11,6 +11,7 @@ See-also:
   - curl_multi_init (3)
 Protocol:
   - All
+Added-in: 7.9.6
 ---
 
 # NAME
@@ -27,10 +28,10 @@ CURLMcode curl_multi_cleanup(CURLM *multi_handle);
 
 # DESCRIPTION
 
-Cleans up and removes a whole multi stack. It does not free or touch any
-individual easy handles in any way - they still need to be closed
-individually, using the usual curl_easy_cleanup(3) way. The order of
-cleaning up should be:
+This function is the opposite of curl_multi_init(3). Cleans up and removes a
+whole multi stack. It does not free or touch any individual easy handles in
+any way - they still need to be closed individually, using the usual
+curl_easy_cleanup(3) way. The order of cleaning up should be:
 
 1 - curl_multi_remove_handle(3) before any easy handles are cleaned up
 
@@ -40,8 +41,16 @@ handle is no longer connected to the multi handle
 3 - curl_multi_cleanup(3) should be called when all easy handles are
 removed
 
+When this function is called, remaining entries in the connection pool held by
+the multi handle are shut down, which might trigger calls to the
+CURLMOPT_SOCKETFUNCTION(3) callback.
+
 Passing in a NULL pointer in *multi_handle* makes this function return
 CURLM_BAD_HANDLE immediately with no other action.
+
+Any use of the **multi_handle** after this function has been called and have
+returned, is illegal.
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -57,9 +66,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.9.6
+# %AVAILABILITY%
 
 # RETURN VALUE
 

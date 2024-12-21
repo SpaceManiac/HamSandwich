@@ -14,11 +14,12 @@ distro. Those marked *Rolling Release* typically run the latest version of curl
 and are therefore less likely to have back-ported patches to older versions.
 
 We discuss curl distro issues, patches and collaboration on the [curl-distros
-mailing list](https://lists.haxx.se/listinfo/curl-distros).
+mailing list](https://lists.haxx.se/listinfo/curl-distros) ([list
+archives](https://curl.se/mail/list.cgi?list=curl-distros)).
 
 ## AlmaLinux
 
-- curl package source and patches: curl package source and patches
+- curl package source and patches: https://git.almalinux.org/rpms/curl/
 - curl issues: https://bugs.almalinux.org/view_all_bug_page.php click Category and choose curl
 - curl security: https://errata.almalinux.org/ search for curl
 
@@ -32,8 +33,8 @@ mailing list](https://lists.haxx.se/listinfo/curl-distros).
 ## Alt Linux
 
 - curl: http://www.sisyphus.ru/srpm/Sisyphus/curl
-- curl patches: http://www.sisyphus.ru/ru/srpm/Sisyphus/curl/patches
-- curl issues: http://www.sisyphus.ru/ru/srpm/Sisyphus/curl/bugs
+- curl issues: https://packages.altlinux.org/en/sisyphus/srpms/curl/issues/
+- curl patches: https://git.altlinux.org/gears/c/curl.git?p=curl.git;a=tree;f=.gear
 
 ## Arch Linux
 
@@ -143,7 +144,7 @@ Issues and patches for this are managed in the main curl project.
 - curl: https://formulae.brew.sh/formula/curl
 
 Homebrew's policy is that all patches and issues should be submitted upstream
-unless it is very specific to Homebrew's way of packaging software.
+unless it is specific to Homebrew's way of packaging software.
 
 ## MacPorts
 
@@ -162,6 +163,14 @@ unless it is very specific to Homebrew's way of packaging software.
 - curl security: https://advisories.mageia.org/src_curl.html
 
 ## MSYS2
+
+*Rolling Release*
+
+- curl: https://github.com/msys2/MSYS2-packages/tree/master/curl
+- curl issues: https://github.com/msys2/MSYS2-packages/issues
+- curl patches: https://github.com/msys2/MSYS2-packages/tree/master/curl (`*.patch`)
+
+## MSYS2 (mingw-w64)
 
 *Rolling Release*
 

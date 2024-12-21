@@ -25,13 +25,52 @@
 import logging
 import os
 import sys
-from typing import Optional
+import platform
+from typing import Generator
 
 import pytest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 
 from testenv import Env, Nghttpx, Httpd, NghttpxQuic, NghttpxFwd
+
+def pytest_report_header(config):
+    # Env inits its base properties only once, we can report them here
+    env = Env()
+    report = [
+        f'Testing curl {env.curl_version()}',
+        f'  platform: {platform.platform()}',
+        f'  curl: Version: {env.curl_version_string()}',
+        f'  curl: Features: {env.curl_features_string()}',
+        f'  curl: Protocols: {env.curl_protocols_string()}',
+        f'  httpd: {env.httpd_version()}, http:{env.http_port} https:{env.https_port}',
+        f'  httpd-proxy: {env.httpd_version()}, http:{env.proxy_port} https:{env.proxys_port}'
+    ]
+    if env.have_h3():
+        report.extend([
+            f'  nghttpx: {env.nghttpx_version()}, h3:{env.https_port}'
+        ])
+    if env.has_caddy():
+        report.extend([
+            f'  Caddy: {env.caddy_version()}, http:{env.caddy_http_port} https:{env.caddy_https_port}'
+        ])
+    if env.has_vsftpd():
+        report.extend([
+            f'  VsFTPD: {env.vsftpd_version()}, ftp:{env.ftp_port}, ftps:{env.ftps_port}'
+        ])
+    buildinfo_fn = os.path.join(env.build_dir, 'buildinfo.txt')
+    if os.path.exists(buildinfo_fn):
+        with open(buildinfo_fn, 'r') as file_in:
+            for line in file_in:
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    report.extend([line])
+    return '\n'.join(report)
+
+# TODO: remove this and repeat argument everywhere, pytest-repeat can be used to repeat tests
+def pytest_generate_tests(metafunc):
+    if "repeat" in metafunc.fixturenames:
+        metafunc.parametrize('repeat', [0])
 
 @pytest.fixture(scope="package")
 def env(pytestconfig) -> Env:
@@ -46,8 +85,6 @@ def env(pytestconfig) -> Env:
         pytest.skip(env.incomplete_reason())
 
     env.setup()
-    if not env.make_clients():
-        pytest.exit(1)
     return env
 
 @pytest.fixture(scope="package", autouse=True)
@@ -56,7 +93,7 @@ def log_global_env_facts(record_testsuite_property, env):
 
 
 @pytest.fixture(scope='package')
-def httpd(env) -> Httpd:
+def httpd(env) -> Generator[Httpd, None, None]:
     httpd = Httpd(env=env)
     if not httpd.exists():
         pytest.skip(f'httpd not found: {env.httpd}')
@@ -68,18 +105,18 @@ def httpd(env) -> Httpd:
 
 
 @pytest.fixture(scope='package')
-def nghttpx(env, httpd) -> Optional[Nghttpx]:
+def nghttpx(env, httpd) -> Generator[Nghttpx, None, None]:
     nghttpx = NghttpxQuic(env=env)
-    if env.have_h3():
+    if nghttpx.exists() and (env.have_h3() or nghttpx.https_port > 0):
         nghttpx.clear_logs()
         assert nghttpx.start()
     yield nghttpx
     nghttpx.stop()
 
 @pytest.fixture(scope='package')
-def nghttpx_fwd(env, httpd) -> Optional[Nghttpx]:
+def nghttpx_fwd(env, httpd) -> Generator[Nghttpx, None, None]:
     nghttpx = NghttpxFwd(env=env)
-    if env.have_h3():
+    if nghttpx.exists() and (env.have_h3() or nghttpx.https_port > 0):
         nghttpx.clear_logs()
         assert nghttpx.start()
     yield nghttpx

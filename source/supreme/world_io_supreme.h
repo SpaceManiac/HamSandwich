@@ -6,7 +6,7 @@
 
 struct SDL_RWops;
 struct world_t;
-struct Map;
+class Map;
 
 bool Supreme_GetWorldName(SDL_RWops *f, StringDestination name, StringDestination author);
 bool Supreme_LoadWorld(world_t *world, const char* fname, SDL_RWops *f);

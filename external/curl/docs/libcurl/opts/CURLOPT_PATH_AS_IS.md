@@ -11,11 +11,12 @@ See-also:
   - curl_url_set (3)
 Protocol:
   - All
+Added-in: 7.42.0
 ---
 
 # NAME
 
-CURLOPT_PATH_AS_IS - do not handle dot dot sequences
+CURLOPT_PATH_AS_IS - do not handle dot-dot sequences
 
 # SYNOPSIS
 
@@ -34,7 +35,7 @@ This instructs libcurl to NOT squash sequences of "/../" or "/./" that may
 exist in the URL's path part and that is supposed to be removed according to
 RFC 3986 section 5.2.4.
 
-Some server implementations are known to (erroneously) require the dot dot
+Some server implementations are known to (erroneously) require the dot-dot
 sequences to remain in the path and some clients want to pass these on in
 order to try out server implementations.
 
@@ -46,6 +47,8 @@ The corresponding flag for the curl_url_set(3) function is called
 # DEFAULT
 
 0
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -64,9 +67,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.42.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

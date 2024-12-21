@@ -11,6 +11,7 @@ See-also:
   - CURLOPT_RESOLVE (3)
 Protocol:
   - HTTP
+Added-in: 7.64.1
 ---
 <!-- markdown-link-check-disable -->
 # NAME
@@ -34,9 +35,17 @@ CURLOPT_ALTSVC_CTRL(3).
 
 Specify a blank filename ("") to make libcurl not load from a file at all.
 
+The application does not have to keep the string around after setting this
+option.
+
+Using this option multiple times makes the last set string override the
+previous ones. Set it to NULL to disable its use again.
+
 # DEFAULT
 
 NULL. The alt-svc cache is not read nor written to file.
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -100,9 +109,7 @@ Boolean (1 or 0) if "persist" was set for this entry
 
 Integer priority value (not currently used)
 
-# AVAILABILITY
-
-Added in 7.64.1
+# %AVAILABILITY%
 
 # RETURN VALUE
 

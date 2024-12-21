@@ -28,7 +28,7 @@
 #include <netinet/in.h>
 #endif
 #ifdef _XOPEN_SOURCE_EXTENDED
-/* This define is "almost" required to build on HPUX 11 */
+/* This define is "almost" required to build on HP-UX 11 */
 #include <arpa/inet.h>
 #endif
 #ifdef HAVE_NETDB_H
@@ -40,9 +40,6 @@
 #include <sys/poll.h>
 #endif
 
-#define ENABLE_CURLX_PRINTF
-/* make the curlx header define all printf() functions to use the curlx_*
-   versions instead */
 #include "curlx.h" /* from the private lib dir */
 #include "getpart.h"
 #include "util.h"
@@ -118,7 +115,9 @@ void logmsg(const char *msg, ...)
   mvsnprintf(buffer, sizeof(buffer), msg, ap);
   va_end(ap);
 
-  logfp = fopen(serverlogfile, "ab");
+  do {
+    logfp = fopen(serverlogfile, "ab");
+  } while(!logfp && (errno == EINTR));
   if(logfp) {
     fprintf(logfp, "%s %s\n", timebuf, buffer);
     fclose(logfp);
@@ -143,7 +142,7 @@ static const char *win32_strerror(int err, char *buf, size_t buflen)
   return buf;
 }
 
-/* use instead of perror() on generic windows */
+/* use instead of perror() on generic Windows */
 void win32_perror(const char *msg)
 {
   char buf[512];
@@ -166,7 +165,7 @@ void win32_init(void)
 
   if(err) {
     perror("Winsock init failed");
-    logmsg("Error initialising winsock -- aborting");
+    logmsg("Error initialising Winsock -- aborting");
     exit(1);
   }
 
@@ -190,7 +189,7 @@ void win32_cleanup(void)
   _flushall();
 }
 
-/* socket-safe strerror (works on WinSock errors, too */
+/* socket-safe strerror (works on Winsock errors, too */
 const char *sstrerror(int err)
 {
   static char buf[512];
@@ -230,7 +229,7 @@ FILE *test2fopen(long testno, const char *logdir)
 int wait_ms(int timeout_ms)
 {
 #if !defined(MSDOS) && !defined(USE_WINSOCK)
-#ifndef HAVE_POLL_FINE
+#ifndef HAVE_POLL
   struct timeval pending_tv;
 #endif
   struct timeval initial_tv;
@@ -253,13 +252,13 @@ int wait_ms(int timeout_ms)
   initial_tv = tvnow();
   do {
     int error;
-#if defined(HAVE_POLL_FINE)
+#ifdef HAVE_POLL
     r = poll(NULL, 0, pending_ms);
 #else
     pending_tv.tv_sec = pending_ms / 1000;
     pending_tv.tv_usec = (pending_ms % 1000) * 1000;
     r = select(0, NULL, NULL, NULL, &pending_tv);
-#endif /* HAVE_POLL_FINE */
+#endif /* HAVE_POLL */
     if(r != -1)
       break;
     error = errno;
@@ -279,8 +278,8 @@ curl_off_t our_getpid(void)
 {
   curl_off_t pid;
 
-  pid = (curl_off_t)getpid();
-#if defined(_WIN32) || defined(_WIN32)
+  pid = (curl_off_t)Curl_getpid();
+#if defined(_WIN32)
   /* store pid + 65536 to avoid conflict with Cygwin/msys PIDs, see also:
    * - https://cygwin.com/git/?p=newlib-cygwin.git;a=commit; ↵
    *   h=b5e1003722cb14235c4f166be72c09acdffc62ea
@@ -366,7 +365,7 @@ void clear_advisor_read_lock(const char *filename)
 }
 
 
-#if defined(_WIN32) && !defined(MSDOS)
+#if defined(_WIN32)
 
 static struct timeval tvnow(void)
 {
@@ -469,6 +468,13 @@ long timediff(struct timeval newer, struct timeval older)
 
 typedef void (*SIGHANDLER_T)(int);
 
+#if defined(_MSC_VER) && _MSC_VER == 1600
+/* Workaround for warning C4306:
+   'type cast' : conversion from 'int' to 'void (__cdecl *)(int)' */
+#undef SIG_ERR
+#define SIG_ERR  ((SIGHANDLER_T)(size_t)-1)
+#endif
+
 #ifdef SIGHUP
 static SIGHANDLER_T old_sighup_handler  = SIG_ERR;
 #endif
@@ -493,7 +499,7 @@ static SIGHANDLER_T old_sigterm_handler = SIG_ERR;
 static SIGHANDLER_T old_sigbreak_handler = SIG_ERR;
 #endif
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(CURL_WINDOWS_UWP)
 #ifdef _WIN32_WCE
 static DWORD thread_main_id = 0;
 #else
@@ -550,7 +556,7 @@ static void exit_signal_handler(int signum)
  * They are included for ANSI compatibility. Therefore, you can set
  * signal handlers for these signals by using signal, and you can also
  * explicitly generate these signals by calling raise. Source:
- * https://docs.microsoft.com/de-de/cpp/c-runtime-library/reference/signal
+ * https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/signal
  */
 static BOOL WINAPI ctrl_event_handler(DWORD dwCtrlType)
 {
@@ -558,15 +564,22 @@ static BOOL WINAPI ctrl_event_handler(DWORD dwCtrlType)
   logmsg("ctrl_event_handler: %lu", dwCtrlType);
   switch(dwCtrlType) {
 #ifdef SIGINT
-    case CTRL_C_EVENT: signum = SIGINT; break;
+  case CTRL_C_EVENT:
+    signum = SIGINT;
+    break;
 #endif
 #ifdef SIGTERM
-    case CTRL_CLOSE_EVENT: signum = SIGTERM; break;
+  case CTRL_CLOSE_EVENT:
+    signum = SIGTERM;
+    break;
 #endif
 #ifdef SIGBREAK
-    case CTRL_BREAK_EVENT: signum = SIGBREAK; break;
+  case CTRL_BREAK_EVENT:
+    signum = SIGBREAK;
+    break;
 #endif
-    default: return FALSE;
+  default:
+    return FALSE;
   }
   if(signum) {
     logmsg("ctrl_event_handler: %lu -> %d", dwCtrlType, signum);
@@ -574,6 +587,9 @@ static BOOL WINAPI ctrl_event_handler(DWORD dwCtrlType)
   }
   return TRUE;
 }
+#endif
+
+#if defined(_WIN32) && !defined(CURL_WINDOWS_UWP)
 /* Window message handler for Windows applications to add support
  * for graceful process termination via taskkill (without /f) which
  * sends WM_CLOSE to all Windows of a process (even hidden ones).
@@ -588,9 +604,13 @@ static LRESULT CALLBACK main_window_proc(HWND hwnd, UINT uMsg,
   if(hwnd == hidden_main_window) {
     switch(uMsg) {
 #ifdef SIGTERM
-      case WM_CLOSE: signum = SIGTERM; break;
+      case WM_CLOSE:
+        signum = SIGTERM;
+        break;
 #endif
-      case WM_DESTROY: PostQuitMessage(0); break;
+    case WM_DESTROY:
+      PostQuitMessage(0);
+      break;
     }
     if(signum) {
       logmsg("main_window_proc: %d -> %d", uMsg, signum);
@@ -664,7 +684,7 @@ static SIGHANDLER_T set_signal(int signum, SIGHANDLER_T handler,
   sa.sa_handler = handler;
   sigemptyset(&sa.sa_mask);
   sigaddset(&sa.sa_mask, signum);
-  sa.sa_flags = restartable? SA_RESTART: 0;
+  sa.sa_flags = restartable ? SA_RESTART : 0;
 
   if(sigaction(signum, &sa, &oldsa))
     return SIG_ERR;
@@ -687,13 +707,7 @@ static SIGHANDLER_T set_signal(int signum, SIGHANDLER_T handler,
 void install_signal_handlers(bool keep_sigalrm)
 {
 #ifdef _WIN32
-#ifdef _WIN32_WCE
-  typedef HANDLE curl_win_thread_handle_t;
-#else
-  typedef uintptr_t curl_win_thread_handle_t;
-#endif
-  curl_win_thread_handle_t thread;
-  /* setup windows exit event before any signal can trigger */
+  /* setup Windows exit event before any signal can trigger */
   exit_event = CreateEvent(NULL, TRUE, FALSE, NULL);
   if(!exit_event)
     logmsg("cannot create exit event");
@@ -741,16 +755,27 @@ void install_signal_handlers(bool keep_sigalrm)
 #ifdef _WIN32
   if(!SetConsoleCtrlHandler(ctrl_event_handler, TRUE))
     logmsg("cannot install CTRL event handler");
+
+#ifndef CURL_WINDOWS_UWP
+  {
 #ifdef _WIN32_WCE
-  thread = CreateThread(NULL, 0, &main_window_loop,
-                        (LPVOID)GetModuleHandle(NULL), 0, &thread_main_id);
+    typedef HANDLE curl_win_thread_handle_t;
 #else
-  thread = _beginthreadex(NULL, 0, &main_window_loop,
-                          (void *)GetModuleHandle(NULL), 0, &thread_main_id);
+    typedef uintptr_t curl_win_thread_handle_t;
 #endif
-  thread_main_window = (HANDLE)thread;
-  if(!thread_main_window || !thread_main_id)
-    logmsg("cannot start main window loop");
+    curl_win_thread_handle_t thread;
+#ifdef _WIN32_WCE
+    thread = CreateThread(NULL, 0, &main_window_loop,
+                          (LPVOID)GetModuleHandle(NULL), 0, &thread_main_id);
+#else
+    thread = _beginthreadex(NULL, 0, &main_window_loop,
+                            (void *)GetModuleHandle(NULL), 0, &thread_main_id);
+#endif
+    thread_main_window = (HANDLE)thread;
+    if(!thread_main_window || !thread_main_id)
+      logmsg("cannot start main window loop");
+  }
+#endif
 #endif
 }
 
@@ -786,6 +811,7 @@ void restore_signal_handlers(bool keep_sigalrm)
 #endif
 #ifdef _WIN32
   (void)SetConsoleCtrlHandler(ctrl_event_handler, FALSE);
+#ifndef CURL_WINDOWS_UWP
   if(thread_main_window && thread_main_id) {
     if(PostThreadMessage(thread_main_id, WM_APP, 0, 0)) {
       if(WaitForSingleObjectEx(thread_main_window, INFINITE, TRUE)) {
@@ -802,65 +828,72 @@ void restore_signal_handlers(bool keep_sigalrm)
     }
   }
 #endif
+#endif
 }
 
 #ifdef USE_UNIX_SOCKETS
 
 int bind_unix_socket(curl_socket_t sock, const char *unix_socket,
-        struct sockaddr_un *sau) {
-    int error;
-    int rc;
+                     struct sockaddr_un *sau)
+{
+  int error;
+  int rc;
+  size_t len = strlen(unix_socket);
 
-    memset(sau, 0, sizeof(struct sockaddr_un));
-    sau->sun_family = AF_UNIX;
-    strncpy(sau->sun_path, unix_socket, sizeof(sau->sun_path) - 1);
-    rc = bind(sock, (struct sockaddr*)sau, sizeof(struct sockaddr_un));
-    if(0 != rc && SOCKERRNO == EADDRINUSE) {
-      struct_stat statbuf;
-      /* socket already exists. Perhaps it is stale? */
-      curl_socket_t unixfd = socket(AF_UNIX, SOCK_STREAM, 0);
-      if(CURL_SOCKET_BAD == unixfd) {
-        logmsg("Failed to create socket at %s: (%d) %s",
-               unix_socket, SOCKERRNO, sstrerror(SOCKERRNO));
-        return -1;
-      }
-      /* check whether the server is alive */
-      rc = connect(unixfd, (struct sockaddr*)sau, sizeof(struct sockaddr_un));
-      error = SOCKERRNO;
-      sclose(unixfd);
-      if(0 != rc && ECONNREFUSED != error) {
-        logmsg("Failed to connect to %s: (%d) %s",
-               unix_socket, error, sstrerror(error));
-        return rc;
-      }
-      /* socket server is not alive, now check if it was actually a socket. */
-#ifdef _WIN32
-      /* Windows does not have lstat function. */
-      rc = curlx_win32_stat(unix_socket, &statbuf);
-#else
-      rc = lstat(unix_socket, &statbuf);
-#endif
-      if(0 != rc) {
-        logmsg("Error binding socket, failed to stat %s: (%d) %s",
-               unix_socket, errno, strerror(errno));
-        return rc;
-      }
-#ifdef S_IFSOCK
-      if((statbuf.st_mode & S_IFSOCK) != S_IFSOCK) {
-        logmsg("Error binding socket, failed to stat %s", unix_socket);
-        return -1;
-      }
-#endif
-      /* dead socket, cleanup and retry bind */
-      rc = unlink(unix_socket);
-      if(0 != rc) {
-        logmsg("Error binding socket, failed to unlink %s: (%d) %s",
-               unix_socket, errno, strerror(errno));
-        return rc;
-      }
-      /* stale socket is gone, retry bind */
-      rc = bind(sock, (struct sockaddr*)sau, sizeof(struct sockaddr_un));
+  memset(sau, 0, sizeof(struct sockaddr_un));
+  sau->sun_family = AF_UNIX;
+  if(len >= sizeof(sau->sun_path) - 1) {
+    logmsg("Too long unix socket domain path (%zd)", len);
+    return -1;
+  }
+  strcpy(sau->sun_path, unix_socket);
+  rc = bind(sock, (struct sockaddr*)sau, sizeof(struct sockaddr_un));
+  if(0 != rc && SOCKERRNO == EADDRINUSE) {
+    struct_stat statbuf;
+    /* socket already exists. Perhaps it is stale? */
+    curl_socket_t unixfd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if(CURL_SOCKET_BAD == unixfd) {
+      logmsg("Failed to create socket at %s: (%d) %s",
+             unix_socket, SOCKERRNO, sstrerror(SOCKERRNO));
+      return -1;
     }
-    return rc;
+    /* check whether the server is alive */
+    rc = connect(unixfd, (struct sockaddr*)sau, sizeof(struct sockaddr_un));
+    error = SOCKERRNO;
+    sclose(unixfd);
+    if(0 != rc && ECONNREFUSED != error) {
+      logmsg("Failed to connect to %s: (%d) %s",
+             unix_socket, error, sstrerror(error));
+      return rc;
+    }
+    /* socket server is not alive, now check if it was actually a socket. */
+#ifdef _WIN32
+    /* Windows does not have lstat function. */
+    rc = curlx_win32_stat(unix_socket, &statbuf);
+#else
+    rc = lstat(unix_socket, &statbuf);
+#endif
+    if(0 != rc) {
+      logmsg("Error binding socket, failed to stat %s: (%d) %s",
+             unix_socket, errno, strerror(errno));
+      return rc;
+    }
+#ifdef S_IFSOCK
+    if((statbuf.st_mode & S_IFSOCK) != S_IFSOCK) {
+      logmsg("Error binding socket, failed to stat %s", unix_socket);
+      return -1;
+    }
+#endif
+    /* dead socket, cleanup and retry bind */
+    rc = unlink(unix_socket);
+    if(0 != rc) {
+      logmsg("Error binding socket, failed to unlink %s: (%d) %s",
+             unix_socket, errno, strerror(errno));
+      return rc;
+    }
+    /* stale socket is gone, retry bind */
+    rc = bind(sock, (struct sockaddr*)sau, sizeof(struct sockaddr_un));
+  }
+  return rc;
 }
 #endif

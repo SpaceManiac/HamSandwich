@@ -14,6 +14,7 @@ TLS-backend:
   - OpenSSL
   - BearSSL
   - wolfSSL
+Added-in: 7.52.0
 ---
 
 # NAME
@@ -38,6 +39,11 @@ the format of your private key. Supported formats are "PEM", "DER" and "ENG".
 The application does not have to keep the string around after setting this
 option.
 
+Using this option multiple times makes the last set string override the
+previous ones. Set it to NULL to disable its use again.
+
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -58,9 +64,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.52.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

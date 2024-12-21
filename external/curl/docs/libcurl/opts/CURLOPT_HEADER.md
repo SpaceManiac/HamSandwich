@@ -13,6 +13,7 @@ Protocol:
 See-also:
   - CURLOPT_HEADERFUNCTION (3)
   - CURLOPT_HTTPHEADER (3)
+Added-in: 7.1
 ---
 
 # NAME
@@ -47,11 +48,13 @@ It is often better to use CURLOPT_HEADERFUNCTION(3) to get the header
 data separately.
 
 While named confusingly similar, CURLOPT_HTTPHEADER(3) is used to set
-custom HTTP headers!
+custom HTTP headers.
 
 # DEFAULT
 
 0
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -69,9 +72,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Provided in all libcurl versions.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

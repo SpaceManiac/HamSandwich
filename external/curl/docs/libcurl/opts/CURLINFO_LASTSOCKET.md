@@ -11,6 +11,7 @@ See-also:
   - curl_easy_setopt (3)
 Protocol:
   - All
+Added-in: 7.15.2
 ---
 
 # NAME
@@ -40,6 +41,8 @@ NOTE: this API is deprecated since it is not working on win64 where the SOCKET
 type is 64 bits large while its 'long' is 32 bits. Use the
 CURLINFO_ACTIVESOCKET(3) instead, if possible.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -48,7 +51,7 @@ int main(void)
   CURL *curl = curl_easy_init();
   if(curl) {
     CURLcode res;
-    long sockfd; /* does not work on win64! */
+    long sockfd; /* does not work on win64 */
     curl_easy_setopt(curl, CURLOPT_URL, "https://example.com");
 
     /* Do not do the transfer - only connect to host */
@@ -71,9 +74,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.15.2
+# %AVAILABILITY%
 
 # RETURN VALUE
 

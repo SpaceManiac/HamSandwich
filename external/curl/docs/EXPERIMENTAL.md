@@ -40,6 +40,8 @@ Graduation requirements:
 
 - HTTP/1 and HTTP/2 support, including multiplexing
 
+(Hyper is marked for deprecation. It cannot graduate.)
+
 ###  HTTP/3 support (non-ngtcp2 backends)
 
 Graduation requirements:
@@ -49,20 +51,11 @@ Graduation requirements:
 
 - Using HTTP/3 with the given build should perform without risking busy-loops
 
-### The rustls backend
+### The Rustls backend
 
 Graduation requirements:
 
 - a reasonable expectation of a stable API going forward.
-
-### WebSocket
-
-Graduation requirements:
-
-- feedback from users saying that the API works for their specific use cases
-
-- unless the above happens, we consider WebSocket silently working by
-  September 2024 when it has been stewing as EXPERIMENTAL for two years.
 
 ## ECH
 

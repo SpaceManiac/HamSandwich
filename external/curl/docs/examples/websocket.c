@@ -27,7 +27,14 @@
  */
 #include <stdio.h>
 #include <string.h>
+#ifdef _WIN32
+#include <winsock2.h>
+#include <windows.h>
+#define sleep(s) Sleep((DWORD)(s))
+#else
 #include <unistd.h>
+#endif
+
 #include <curl/curl.h>
 
 static int ping(CURL *curl, const char *send_payload)

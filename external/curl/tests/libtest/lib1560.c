@@ -151,6 +151,9 @@ struct clearurlcase {
 };
 
 static const struct testcase get_parts_list[] ={
+  {"curl.se",
+   "[10] | [11] | [12] | [13] | curl.se | [15] | / | [16] | [17]",
+   CURLU_GUESS_SCHEME, CURLU_NO_GUESS_SCHEME, CURLUE_OK},
   {"https://curl.se:0/#",
    "https | [11] | [12] | [13] | curl.se | 0 | / | [16] | ",
    0, CURLU_GET_EMPTY, CURLUE_OK},
@@ -271,7 +274,7 @@ static const struct testcase get_parts_list[] ={
   {"https://user@example.net",
    "https | user | [12] | [13] | example.net | [15] | / | [16] | [17]",
    0, 0, CURLUE_OK},
-#ifdef USE_WEBSOCKETS
+#ifndef CURL_DISABLE_WEBSOCKETS
   {"ws://example.com/color/?green",
    "ws | [11] | [12] | [13] | example.com | [15] | /color/ | green |"
    " [17]",
@@ -526,6 +529,9 @@ static const struct testcase get_parts_list[] ={
 };
 
 static const struct urltestcase get_url_list[] = {
+  {"example.com",
+   "example.com/",
+   CURLU_GUESS_SCHEME, CURLU_NO_GUESS_SCHEME, CURLUE_OK},
   {"http://user@example.com?#",
    "http://user@example.com/?#",
    0, CURLU_GET_EMPTY, CURLUE_OK},
@@ -558,6 +564,10 @@ static const struct urltestcase get_url_list[] = {
    0, 0, CURLUE_OK},
   {"https://[fe80:0:0:0:409b::]:80/moo",
    "https://[fe80::409b:0:0:0]:80/moo",
+   0, 0, CURLUE_OK},
+  /* normalize to lower case */
+  {"https://[FE80:0:A:0:409B:0:0:0]:80/moo",
+   "https://[fe80:0:a:0:409b::]:80/moo",
    0, 0, CURLUE_OK},
   {"https://[::%25fakeit];80/moo",
    "",
@@ -832,6 +842,14 @@ static const struct setgetcase setget_parts_list[] = {
 
 /* !checksrc! disable SPACEBEFORECOMMA 1 */
 static const struct setcase set_parts_list[] = {
+  {"https://example.com/",
+   "host=%43url.se,",
+   "https://%43url.se/",
+   0, 0, CURLUE_OK, CURLUE_OK},
+  {"https://example.com/",
+   "host=%25url.se,",
+   "",
+   0, 0, CURLUE_OK, CURLUE_BAD_HOSTNAME},
   {"https://example.com/?param=value",
    "query=\"\",",
    "https://example.com/",
@@ -1755,13 +1773,13 @@ static int huge(void)
     char *partp;
     msnprintf(total, sizeof(total),
               "%s://%s:%s@%s/%s?%s#%s",
-              (i == 0)? &bigpart[1] : smallpart,
-              (i == 1)? &bigpart[1] : smallpart,
-              (i == 2)? &bigpart[1] : smallpart,
-              (i == 3)? &bigpart[1] : smallpart,
-              (i == 4)? &bigpart[1] : smallpart,
-              (i == 5)? &bigpart[1] : smallpart,
-              (i == 6)? &bigpart[1] : smallpart);
+              (i == 0) ? &bigpart[1] : smallpart,
+              (i == 1) ? &bigpart[1] : smallpart,
+              (i == 2) ? &bigpart[1] : smallpart,
+              (i == 3) ? &bigpart[1] : smallpart,
+              (i == 4) ? &bigpart[1] : smallpart,
+              (i == 5) ? &bigpart[1] : smallpart,
+              (i == 6) ? &bigpart[1] : smallpart);
     rc = curl_url_set(urlp, CURLUPART_URL, total, CURLU_NON_SUPPORT_SCHEME);
     if((!i && (rc != CURLUE_BAD_SCHEME)) ||
        (i && rc)) {

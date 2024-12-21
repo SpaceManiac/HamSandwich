@@ -10,6 +10,7 @@ See-also:
   - curl_easy_setopt (3)
 Protocol:
   - All
+Added-in: 7.52.0
 ---
 
 # NAME
@@ -28,7 +29,7 @@ CURLcode curl_easy_getinfo(CURL *handle, CURLINFO_PROTOCOL, long *p);
 
 This option is deprecated. We strongly recommend using
 CURLINFO_SCHEME(3) instead, because this option cannot return all
-possible protocols!
+possible protocols.
 
 Pass a pointer to a long to receive the version used in the last http
 connection. The returned value is set to one of the CURLPROTO_* values:
@@ -42,6 +43,8 @@ CURLPROTO_RTMPT, CURLPROTO_RTMPTE, CURLPROTO_RTMPTS, CURLPROTO_RTSP,
 CURLPROTO_SCP, CURLPROTO_SFTP, CURLPROTO_SMB, CURLPROTO_SMBS, CURLPROTO_SMTP,
 CURLPROTO_SMTPS, CURLPROTO_TELNET, CURLPROTO_TFTP, CURLPROTO_MQTT
 ~~~
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -62,9 +65,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# DEPRECATED
 
-Added in 7.52.0. Deprecated since 7.85.0.
+Deprecated since 7.85.0.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

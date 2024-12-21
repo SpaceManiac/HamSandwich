@@ -5,7 +5,7 @@ Long: libcurl
 Arg: <file>
 Help: Generate libcurl code for this command line
 Added: 7.16.1
-Category: curl
+Category: curl global
 Multi: single
 Scope: global
 See-also:
@@ -18,4 +18,4 @@ Example:
 
 Append this option to any ordinary curl command line, and you get
 libcurl-using C source code written to the file that does the equivalent of
-what your command-line operation does!
+what your command-line operation does.

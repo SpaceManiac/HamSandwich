@@ -22,11 +22,12 @@ include("SDL2.cmake")
 include("steamworks_sdk.cmake")
 add_subdirectory("lzma1900" EXCLUDE_FROM_ALL)
 add_subdirectory("nsis_exehead" EXCLUDE_FROM_ALL)
-add_subdirectory("APCpp")
+#add_subdirectory("APCpp")
+
+include("jtjson.cmake")
 
 if(NOT EMSCRIPTEN AND NOT ANDROID)
 	# Launcher and dev tools dependencies.
-	add_subdirectory("nlohmann_json")
 	add_subdirectory("tinyfiledialogs")
 	include("imgui.cmake")
 	include("curl.cmake")
