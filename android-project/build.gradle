@@ -55,6 +55,8 @@ android {
 		assets.srcDir "../assets/android"
 		// Our CMake build puts assets to embed in the .apk here at build time.
 		assets.srcDir "${buildDir}/intermediates/cxx/hamsandwich-assets"
+		// Add Aegea code.
+		java.srcDir "../source/aegea/src"
 	}
 
 	// Self-sign release APKs.
