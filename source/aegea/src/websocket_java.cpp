@@ -15,6 +15,7 @@
 #define logf(fmt, ...) fprintf(stderr, "[Aegea] " fmt "\n", __VA_ARGS__)
 #endif
 
+static_assert(sizeof(jbyte) == sizeof(char));
 static_assert(sizeof(uintptr_t) <= sizeof(jlong));
 
 namespace
@@ -146,6 +147,34 @@ struct JavaWebSocket : public WebSocket
 
 	void send_text(const char* text)
 	{
+		LocalFrame refs;
+		if (!refs.init(env))
+		{
+			error = "JNI stack is full";
+			return;
+		}
+
+
+		size_t len = strlen(text);
+		jbyteArray array = env->NewByteArray(len);
+		if (!array)
+		{
+			error = "Failed to allocate byte[]";
+			return;
+		}
+
+		env->SetByteArrayRegion(array, 0, len, reinterpret_cast<const jbyte*>(text));
+		if (refs.exception_occurred(&error))
+		{
+			return;
+		}
+
+		jboolean is_text = true;
+		env->CallVoidMethod(client, jm_send, is_text, array);
+		if (refs.exception_occurred(&error))
+		{
+			return;
+		}
 	}
 };
 
@@ -170,7 +199,22 @@ void onMessage(JNIEnv* env, jclass _class, jlong handle, jboolean text, jbyteArr
 	}
 	auto self = reinterpret_cast<JavaWebSocket*>(static_cast<uintptr_t>(handle));
 
-	// TODO
+	LocalFrame refs;
+	if (!refs.init(env))
+	{
+		self->error = "JNI stack is full";
+		return;
+	}
+
+	WebSocket::Message& message = self->queue.emplace();
+	message.type = text ? WebSocket::Text : WebSocket::Binary;
+	message.data.resize(len);
+
+	env->GetByteArrayRegion(bytes, offset, len, reinterpret_cast<jbyte*>(message.data.data()));
+	if (refs.exception_occurred(&self->error))
+	{
+		return;
+	}
 }
 
 void onError(JNIEnv* env, jclass _class, jlong handle, jstring error)
@@ -184,7 +228,7 @@ void onError(JNIEnv* env, jclass _class, jlong handle, jstring error)
 
 	const char* error_mutf8 = env->GetStringUTFChars(error, nullptr);
 	logf("  %s", error_mutf8);
-	self->error = error_mutf8;
+	self->error = error_mutf8 ? error_mutf8 : "Error getting error message in onError";
 	env->ReleaseStringUTFChars(error, error_mutf8);
 }
 
@@ -227,7 +271,10 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
 	jclass class_WebSocket = env->FindClass("com/platymuus/aegea/WebSocket");
 	if (!class_WebSocket)
+	{
+		log("Failed to find WebSocket class");
 		return JNI_ERR;
+	}
 
 	static const JNINativeMethod methods[] =
 	{
@@ -238,7 +285,10 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 	};
 	int rc = env->RegisterNatives(class_WebSocket, methods, sizeof(methods) / sizeof(JNINativeMethod));
 	if (rc != JNI_OK)
+	{
+		log("RegisterNatives failed");
 		return rc;
+	}
 
 	return JNI_VERSION_1_4;
 }
