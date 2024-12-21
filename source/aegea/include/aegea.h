@@ -42,8 +42,7 @@ class ArchipelagoClient
 		Slice(std::initializer_list<T> init) : begin_(init.begin()), end_(init.end()) {}
 #pragma GCC diagnostic pop
 
-		template <typename C>
-		Slice(const C& container) : begin_(&*std::begin(container)), end_(&*std::end(container)) {}
+		Slice(const std::vector<T>& container) : begin_(container.data()), end_(container.data() + container.size()) {}
 
 		const T* begin() { return begin_; }
 		const T* end() { return end_; }
