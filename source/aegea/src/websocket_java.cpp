@@ -4,6 +4,16 @@
 #include <stdint.h>
 #include <queue>
 #include <jni.h>
+#include "compat_jni.h"
+
+#ifdef ANDROID
+#include <android/log.h>
+#define log(fmt) __android_log_print(ANDROID_LOG_INFO, "Aegea", "%s", fmt)
+#define logf(fmt, ...) __android_log_print(ANDROID_LOG_INFO, "Aegea", fmt, ...)
+#else
+#define log(msg) fprintf(stderr, "[Aegea] %s\n", msg)
+#define logf(fmt, ...) fprintf(stderr, "[Aegea] " fmt "\n", __VA_ARGS__)
+#endif
 
 namespace
 {
@@ -17,23 +27,59 @@ struct JavaWebSocket : public WebSocket
 	std::string error;
 	bool opened = false;
 
-	jclass class_WebSocket;
-	jobject client;
+	jclass class_WebSocket = nullptr;
+	jobject client = nullptr;
 
 	~JavaWebSocket()
 	{
+	}
 
+	JavaWebSocket(const char* url)
+	{
+		// TODO: We don't do any manual attaching to threads, so probably this
+		// requires that JavaWebSocket stay on the main thread.
+		JNIEnv* env;
+		if (javaVM->GetEnv((void **)&env, JNI_VERSION_1_4) != JNI_OK)
+		{
+			error = "Failed to get JNI environment";
+			return;
+		}
+
+		LocalFrame refs;
+		if (!refs.init(env))
+		{
+			error = "JNI stack is full";
+			return;
+		}
+
+		class_WebSocket = env->FindClass("com/platymuus/aegea/WebSocket");
+		if (!class_WebSocket)
+		{
+			error = "Failed to find WebSocket class";
+			return;
+		}
+
+		jlong handle = static_cast<jlong>(reinterpret_cast<uintptr_t>(this));
+
+		jstring jniUrl = env->NewStringUTF(url);
+		if (refs.exception_occurred(&error))
+		{
+			return;
+		}
+
+		jmethodID constructor = env->GetMethodID(class_WebSocket, "<init>", "(JLjava/lang/String;)V");
+		client = env->NewObject(class_WebSocket, constructor, handle, jniUrl);
+		if (refs.exception_occurred(&error))
+		{
+			client = nullptr;
+			return;
+		}
 	}
 
 	JavaWebSocket(const JavaWebSocket&) = delete;
 	JavaWebSocket(JavaWebSocket&&) = delete;
 	void operator=(const JavaWebSocket&) = delete;
 	void operator=(JavaWebSocket&&) = delete;
-
-	JavaWebSocket(const char* url)
-	{
-
-	}
 
 	bool is_connected() const
 	{
@@ -64,6 +110,7 @@ struct JavaWebSocket : public WebSocket
 void onConnect(JNIEnv* env, jclass _class, jlong handle)
 {
 	auto self = reinterpret_cast<JavaWebSocket*>(static_cast<uintptr_t>(handle));
+	log("onConnect received");
 }
 
 void onMessage(JNIEnv* env, jclass _class, jlong handle, jboolean text, jbyteArray bytes, jint offset, jint len)
@@ -95,9 +142,9 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 	javaVM = vm;
 	JNIEnv *env = NULL;
 
-	if (vm->GetEnv((void **)&env, JNI_VERSION_1_4) != JNI_OK)
+	if (javaVM->GetEnv((void **)&env, JNI_VERSION_1_4) != JNI_OK)
 	{
-		fprintf(stderr, "Failed to get JNI Env\n");
+		log("Failed to get JNI Env");
 		return JNI_VERSION_1_4;
 	}
 

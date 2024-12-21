@@ -14,6 +14,7 @@ public class WebSocket {
 
     public WebSocket(long handle, String url) {
         this.handle = handle;
+        onConnect(handle);
     }
 
     public void dispose() {

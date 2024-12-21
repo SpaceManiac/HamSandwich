@@ -6,7 +6,7 @@
 #ifdef NDEBUG
 #define debug_printf(...)
 #else
-#define debug_printf(...) fprintf(stderr, "[AP]" __VA_ARGS__)
+#define debug_printf(...) fprintf(stderr, "[AP] " __VA_ARGS__)
 #endif
 
 namespace
