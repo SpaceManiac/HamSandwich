@@ -1128,7 +1128,8 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 						0,
 						m->item,
 						m->itemInfo,
-						(flags & MAP_SHOWLIGHTS) ? m->templight : 0
+						(flags & MAP_SHOWLIGHTS) ? m->templight : 0,
+						m->tag
 					);
 				}
 				scrY+=TILE_HEIGHT;

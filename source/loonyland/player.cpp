@@ -385,6 +385,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	}
 	if(initWhat>=INIT_WORLD) // initialize the things that go with each world
 	{
+		ArchipelagoLoadPlayer();
 	}
 
 	player.levelNum=level;
@@ -413,9 +414,6 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.fireFlags&=(~FF_GUIDED);
 	player.areaName[0]='\0';
 	
-	if(ArchipelagoMode){
-		ArchipelagoLoadPlayer();
-	}
 }
 
 void ExitPlayer(void)
@@ -1882,6 +1880,13 @@ void PlayerCalcStats()
 		{
 			player.maxMoney = 50 + i*25;
 			break;
+		}
+	}
+	for (int i = 0; i < 3; i++)
+	{
+		if (player.var[VAR_KEY + i] == 1) {
+
+			player.keys[i + 1] = 1;
 		}
 	}
 }

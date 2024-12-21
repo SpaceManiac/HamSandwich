@@ -132,10 +132,17 @@ void GivePlayerItem(int64_t item_id, bool loud)
 	}
 	else
 	{
-		if (count <= item_frequencies.at(item_id))
+		for (int i = 0; i < count; i++)
 		{
-			player.var[item_id + (count - 1)] = 1;
+			if (i+1 <= item_frequencies.at(item_id))
+			{
+				player.var[item_id + (i)] = 1;
+			}
 		}
+	}
+	if (item_id == VAR_DAISY)
+	{
+		PlayerSetVar(VAR_QUESTDONE + QUEST_DAISY, 1);
 	}
 
 	if (item_id >= VAR_MUSHROOM && item_id < VAR_MUSHROOM + 10) //update quest
@@ -191,6 +198,10 @@ void GivePlayerItem(int64_t item_id, bool loud)
 			player.gemsGotten += 50;
 		}
 	}
+	if (loud && goodguy != NULL)
+	{
+		MakeNormalSound(basic_items.at(item_id).sound_ID);
+	}
 }
 
 
@@ -207,7 +218,7 @@ void GetLocationScouts(std::vector<AP_NetworkItem> vec_NetworkItems)
 			int item_id = item.item - loonyland_base_id;
 			if (player_id == item.player)
 			{
-				item_id = basic_items.at(item_id);
+				item_id = basic_items.at(item_id).ingame_ID;
 			}
 			else
 			{
@@ -228,6 +239,8 @@ void GetLocationScouts(std::vector<AP_NetworkItem> vec_NetworkItems)
 
 void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y)
 {
+	//haunted tower 2 strip comma from mapName
+	mapName.erase(std::remove(mapName.begin(), mapName.end(), ','), mapName.end());
 	for (locationData loc : basic_locations)
 	{
 		if (loc.MapID == mapNum && loc.Map == mapName && loc.Xcoord == x && loc.Ycoord == y)
@@ -480,7 +493,6 @@ void UpdateArchipelago()
 			{
 				player.var[std::stoi(key)] = *(int*)(*itr)->value;
 			}
-			std::cout << "nice!34";
 			delete (*itr)->value;
 			delete (*itr);
 			itr = GetVarRequests.erase(itr);

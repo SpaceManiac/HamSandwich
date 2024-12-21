@@ -194,6 +194,7 @@ void ExitItems(void);
 void UpdateItems(void);
 dword ItemFlags(int type);
 void RenderItem(int x,int y,int z,byte type,byte info,char bright);
+void RenderItem(int x,int y,int z,byte type,byte info,char bright, int tag);
 void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl);
 void InstaRenderItem2(int x,int y,byte type,int anim,char bright,MGLDraw *mgl);
 char *WeaponName(byte w);
