@@ -177,19 +177,32 @@ void GivePlayerItem(int64_t item_id, bool loud)
 	}
 }
 
-void GetLocationScouts(std::vector<ArchipelagoClient::Item> vec_NetworkItems)
+void GetLocationScouts()
 {
 	world_t world;
 	LoadWorld(&world, "ap.llw");
 
-	for (auto item : vec_NetworkItems)
+	bool allGood = true;
+
+	for (auto loc : basic_locations)
 	{
-		locationData loc = basic_locations[item.location - loonyland_base_id];
+		if (loc.Name == "Q: Save Halloween Hill")
+		{
+			continue;
+		}
+
+		const ArchipelagoClient::Item* item = ap->item_at_location(loc.ID + loonyland_base_id);
+		if (item == nullptr)
+		{
+			allGood = false;
+			continue;
+		}
+
 		if (loc.Type == "Pickup")
 		{
 			Map* tempMap = world.map[loc.MapID];
-			int item_id = item.item - loonyland_base_id;
-			if (item.player == ap->player_id())
+			int item_id = item->item - loonyland_base_id;
+			if (item->player == ap->player_id())
 			{
 				item_id = basic_items.at(item_id);
 			}
@@ -201,14 +214,17 @@ void GetLocationScouts(std::vector<ArchipelagoClient::Item> vec_NetworkItems)
 		}
 		for (auto const& i : loc.chatCodes)
 		{
-			chat_table[i].updated += ap->item_name(item.item);
+			chat_table[i].updated += ap->item_name(item->item);
 		}
 	}
 
-	SaveWorld(&world, "ap.llw");
-	FreeWorld(&world);
+	if (allGood)
+	{
+		locationWait = false;
+		SaveWorld(&world, "ap.llw");
+	}
 
-	locationWait = false;
+	FreeWorld(&world);
 }
 
 void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y)
@@ -221,7 +237,7 @@ void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y)
 			return;
 		}
 	}
-	std::cout << "AP ITEM MISS: " << mapName << " " << x << " " << y;
+	std::cout << "AP ITEM MISS: " << mapName << " " << x << " " << y << std::endl;
 
 }
 void SendCheckedLocQuest(int questVar)
@@ -234,7 +250,7 @@ void SendCheckedLocQuest(int questVar)
 			return;
 		}
 	}
-	std::cout << "AP QUEST MISS: " << questVar;
+	std::cout << "AP QUEST MISS: " << questVar << std::endl;
 }
 
 void SendCheckedTalkReward(int talkVar)
@@ -404,7 +420,10 @@ void UpdateArchipelago()
 	}
 
 	// Location scouts
-	// TODO: call GetLocationScouts with result
+	if (locationWait)
+	{
+		GetLocationScouts();
+	}
 
 	// DeathLink
 	if (ap->pop_death_link())
