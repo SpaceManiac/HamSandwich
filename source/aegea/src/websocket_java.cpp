@@ -9,11 +9,13 @@
 #ifdef ANDROID
 #include <android/log.h>
 #define log(fmt) __android_log_print(ANDROID_LOG_INFO, "Aegea", "%s", fmt)
-#define logf(fmt, ...) __android_log_print(ANDROID_LOG_INFO, "Aegea", fmt, ...)
+#define logf(fmt, ...) __android_log_print(ANDROID_LOG_INFO, "Aegea", fmt, __VA_ARGS__)
 #else
 #define log(msg) fprintf(stderr, "[Aegea] %s\n", msg)
 #define logf(fmt, ...) fprintf(stderr, "[Aegea] " fmt "\n", __VA_ARGS__)
 #endif
+
+static_assert(sizeof(uintptr_t) <= sizeof(jlong));
 
 namespace
 {
@@ -27,18 +29,26 @@ struct JavaWebSocket : public WebSocket
 	std::string error;
 	bool opened = false;
 
-	jclass class_WebSocket = nullptr;
+	JNIEnv* env;
+	jmethodID jm_dispose;
+	jmethodID jm_recv;
+	jmethodID jm_send;
 	jobject client = nullptr;
 
 	~JavaWebSocket()
 	{
+		if (client)
+		{
+			env->CallVoidMethod(client, jm_dispose);
+			env->ExceptionClear();
+			env->DeleteGlobalRef(client);
+		}
 	}
 
 	JavaWebSocket(const char* url)
 	{
 		// TODO: We don't do any manual attaching to threads, so probably this
 		// requires that JavaWebSocket stay on the main thread.
-		JNIEnv* env;
 		if (javaVM->GetEnv((void **)&env, JNI_VERSION_1_4) != JNI_OK)
 		{
 			error = "Failed to get JNI environment";
@@ -52,10 +62,20 @@ struct JavaWebSocket : public WebSocket
 			return;
 		}
 
-		class_WebSocket = env->FindClass("com/platymuus/aegea/WebSocket");
+		jclass class_WebSocket = env->FindClass("com/platymuus/aegea/WebSocket");
 		if (!class_WebSocket)
 		{
 			error = "Failed to find WebSocket class";
+			return;
+		}
+
+		jmethodID constructor = env->GetMethodID(class_WebSocket, "<init>", "(JLjava/lang/String;)V");
+		jm_dispose = env->GetMethodID(class_WebSocket, "dispose", "()V");
+		jm_recv = env->GetMethodID(class_WebSocket, "recv", "()V");
+		jm_send = env->GetMethodID(class_WebSocket, "send", "(Z[B)V");
+		if (!constructor || !jm_dispose || !jm_recv || !jm_send)
+		{
+			error = "WebSocket class missing a method";
 			return;
 		}
 
@@ -67,11 +87,17 @@ struct JavaWebSocket : public WebSocket
 			return;
 		}
 
-		jmethodID constructor = env->GetMethodID(class_WebSocket, "<init>", "(JLjava/lang/String;)V");
-		client = env->NewObject(class_WebSocket, constructor, handle, jniUrl);
+		jobject clientLocal = env->NewObject(class_WebSocket, constructor, handle, jniUrl);
 		if (refs.exception_occurred(&error))
 		{
-			client = nullptr;
+			clientLocal = nullptr;
+			return;
+		}
+
+		client = env->NewGlobalRef(clientLocal);
+		if (!client)
+		{
+			error = "NewGlobalRef failed";
 			return;
 		}
 	}
@@ -93,7 +119,23 @@ struct JavaWebSocket : public WebSocket
 
 	const Message* recv()
 	{
-		if (queue.empty())
+		if (queue.empty() && error.empty())
+		{
+			LocalFrame refs;
+			if (!refs.init(env))
+			{
+				error = "JNI stack is full";
+				return nullptr;
+			}
+
+			// Re-entrantly calls onX below which fill the queue.
+			env->CallVoidMethod(client, jm_recv);
+			if (refs.exception_occurred(&error))
+			{
+				return nullptr;
+			}
+		}
+		if (queue.empty() || !error.empty())
 		{
 			return nullptr;
 		}
@@ -109,20 +151,55 @@ struct JavaWebSocket : public WebSocket
 
 void onConnect(JNIEnv* env, jclass _class, jlong handle)
 {
+	logf("onConnect(%lx)", (long)handle);
+	if (handle == 0)
+	{
+		return;
+	}
 	auto self = reinterpret_cast<JavaWebSocket*>(static_cast<uintptr_t>(handle));
-	log("onConnect received");
+
+	self->opened = true;
 }
 
 void onMessage(JNIEnv* env, jclass _class, jlong handle, jboolean text, jbyteArray bytes, jint offset, jint len)
 {
+	logf("onMessage(%lx, %s, %d)", (long)handle, text ? "true" : "false", len);
+	if (handle == 0)
+	{
+		return;
+	}
+	auto self = reinterpret_cast<JavaWebSocket*>(static_cast<uintptr_t>(handle));
+
+	// TODO
 }
 
 void onError(JNIEnv* env, jclass _class, jlong handle, jstring error)
 {
+	logf("onError(%lx)", (long)handle);
+	if (handle == 0)
+	{
+		return;
+	}
+	auto self = reinterpret_cast<JavaWebSocket*>(static_cast<uintptr_t>(handle));
+
+	const char* error_mutf8 = env->GetStringUTFChars(error, nullptr);
+	logf("  %s", error_mutf8);
+	self->error = error_mutf8;
+	env->ReleaseStringUTFChars(error, error_mutf8);
 }
 
 void onClose(JNIEnv* env, jclass _class, jlong handle, jint reason)
 {
+	logf("onClose(%lx, %d)", (long)handle, reason);
+	if (handle == 0)
+	{
+		return;
+	}
+	auto self = reinterpret_cast<JavaWebSocket*>(static_cast<uintptr_t>(handle));
+
+	self->error = "WebSocket closed (";
+	self->error += std::to_string(reason);
+	self->error += ")";
 }
 
 }
