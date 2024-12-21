@@ -10,7 +10,7 @@ public class WebSocket {
 
     private static native void onClose(long handle, int reason);
 
-    private final long handle;
+    private long handle;
 
     public WebSocket(long handle, String url) {
         this.handle = handle;
@@ -18,12 +18,13 @@ public class WebSocket {
     }
 
     public void dispose() {
+        handle = 0;
     }
 
     public void recv() {
         onError(handle, "Big Meme");
     }
 
-    public void sendText(byte[] data, int offset, int len) {
+    public void send(boolean text, byte[] data) {
     }
 }
