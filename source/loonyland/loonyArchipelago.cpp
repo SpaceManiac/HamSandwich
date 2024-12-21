@@ -43,6 +43,8 @@ std::unordered_map<int, bool> locsFound;
 std::unordered_map<int, int> itemsFound;
 bool ArchipelagoMode = true;
 bool ExpectingDeath = false;
+byte ap_cheatsAvail[40] = { 0 };
+byte ap_modesAvail[6] = { 0 };
 
 
 std::unordered_map<int, chatData> chat_table = {
@@ -124,19 +126,29 @@ void ArchipelagoLoadPlayer()
 
 void GivePlayerItem(int64_t item_id, bool loud)
 {
-	int count = itemsFound[item_id];
-	if (item_frequencies.count(item_id) == 0)
+	if (item_id >= MODE_BOWLING + AP_MODEMOD && item_id <= MODE_REMIX)
 	{
-		player.var[item_id] = 1;
-		//PlayerSetVar(item_id, 1);
+		ap_modesAvail[item_id] = 1;
+	}
+	else if (item_id >= CH_LIGHT+ AP_BADGEMOD && item_id <= CH_NOFARLEY + AP_BADGEMOD)
+	{
+		ap_cheatsAvail[item_id] = 1;
 	}
 	else
 	{
-		for (int i = 0; i < count; i++)
+		int count = itemsFound[item_id];
+		if (item_frequencies.count(item_id) == 0)
 		{
-			if (i+1 <= item_frequencies.at(item_id))
+			player.var[item_id] = 1;
+		}
+		else
+		{
+			for (int i = 0; i < count; i++)
 			{
-				player.var[item_id + (i)] = 1;
+				if (i + 1 <= item_frequencies.at(item_id))
+				{
+					player.var[item_id + (i)] = 1;
+				}
 			}
 		}
 	}
@@ -154,7 +166,7 @@ void GivePlayerItem(int64_t item_id, bool loud)
 	}
 	if (item_id == VAR_CAT)
 	{
-		PlayerSetVar(item_id + (count - 1), 1);
+		PlayerSetVar(VAR_QUESTASSIGN + QUEST_CAT, 1);
 	}
 	if ((item_id >= VAR_HEART && item_id <= VAR_PANTS)
 		|| item_id == VAR_GEM

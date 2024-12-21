@@ -14,7 +14,7 @@ from worlds.loonyland.rules import (
     have_light_source,
     have_special_weapon_bullet,
     have_special_weapon_damage,
-    hundred_percent,
+    hundred_percent, 
 )
 
 ll_base_id: int = 2876900

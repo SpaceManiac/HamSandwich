@@ -10,10 +10,12 @@
 #include "title.h"
 #include "palettes.h"
 #include "steam.h"
+#include "loonyArchipelago.h"
 
 static byte cursor;
 static byte oldc;
 static byte viewing;
+static byte apTabMode;
 static byte cantearn;
 static char badgeKeys[17];
 
@@ -587,6 +589,7 @@ void InitBadgeMenu(void)
 {
 	oldc=255;
 	cursor=0;
+	apTabMode = 0;
 }
 
 void ExitBadgeMenu(void)
@@ -727,6 +730,11 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 	if((c2&CONTROL_B1) && (c2&CONTROL_B2) && c!=0)
 		BadgeCheatKey(c);
 
+	if (ArchipelagoMode && (c2 & CONTROL_B3) && c != 0)
+	{
+		apTabMode = apTabMode ^ 1;
+	}
+
 	if((c2&CONTROL_UP) && (!(oldc&CONTROL_UP)))
 	{
 		if(cursor%10==0)
@@ -767,9 +775,9 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 			cursor+=10;
 		MakeNormalSound(SND_MENUCLICK);
 	}
-	if((c2 & ~oldc) & (CONTROL_B1 | CONTROL_B3))
+	if((c2 & ~oldc) & (CONTROL_B1 | CONTROL_B3) && apTabMode == 0)
 	{
-		if(opt.meritBadge[cursor])
+		if(!ArchipelagoMode && opt.meritBadge[cursor] || ArchipelagoMode && ap_cheatsAvail[cursor])
 		{
 			// toggle the cheat
 			opt.cheats[badge[cursor].cheatNum]=1-opt.cheats[badge[cursor].cheatNum];
@@ -823,8 +831,10 @@ void RenderBadgeMenu(MGLDraw *mgl)
 	char b;
 
 	mgl->ClearScreen();
-
-	CenterPrint(450,2,"Merit Badges",0,2);
+	if(ArchipelagoMode && apTabMode == 0)
+		CenterPrint(450, 2, "Cheats", 0, 2);
+	else
+		CenterPrint(450,2,"Merit Badges",0,2);
 	DrawBox(270,55,639,56,31);
 	DrawBox(270,0,271,479,31);
 	x=2;
@@ -834,14 +844,30 @@ void RenderBadgeMenu(MGLDraw *mgl)
 		b=0;
 		if(cursor==i)
 			b=16;
-		if(opt.meritBadge[i])
-		{
-			RenderIntfaceSprite(x,y,26+i,b,mgl);
-			if(opt.cheats[badge[i].cheatNum])
-				RenderIntfaceSprite(x,y,25,b,mgl);
+		if (ArchipelagoMode) {
+			if (apTabMode == 0 && ap_cheatsAvail[i]) {
+				RenderIntfaceSprite(x, y, 26 + i, b, mgl);
+				if (opt.cheats[badge[i].cheatNum])
+					RenderIntfaceSprite(x, y, 25, b, mgl);
+			}
+			if (apTabMode == 1 && opt.meritBadge[i])
+			{
+				RenderIntfaceSprite(x, y, 26 + i, b, mgl); //replace with item sent
+			}
+			else
+				RenderIntfaceSprite(x, y, 24, b, mgl);
 		}
 		else
-			RenderIntfaceSprite(x,y,24,b,mgl);
+		{
+			if (opt.meritBadge[i])
+			{
+				RenderIntfaceSprite(x, y, 26 + i, b, mgl);
+				if (opt.cheats[badge[i].cheatNum])
+					RenderIntfaceSprite(x, y, 25, b, mgl);
+			}
+			else
+				RenderIntfaceSprite(x, y, 24, b, mgl);
+		}
 		y+=46;
 		if(y>480-46)
 		{
@@ -851,42 +877,55 @@ void RenderBadgeMenu(MGLDraw *mgl)
 	}
 
 	// display info on current badge
-	if(opt.meritBadge[cursor])
+	if ((!ArchipelagoMode && opt.meritBadge[cursor])
+		|| (apTabMode == 1 && opt.meritBadge[cursor])
+		|| (apTabMode == 0 && ap_cheatsAvail[cursor]))
 	{
+
 		RenderIntfaceSprite(274,60,26+cursor,0,mgl);
-		Print(350,70,badge[cursor].name,0,0);
-		if(opt.cheats[badge[cursor].cheatNum])
+		if(opt.cheats[badge[cursor].cheatNum] && apTabMode == 0)
 			RenderIntfaceSprite(274,60,25,b,mgl);
 
-		DrawBox(270,108,639,108,31);
-
-		for(i=0;i<2;i++)
+		if (!ArchipelagoMode || apTabMode == 1)
 		{
-			Print(274,112+i*16,badge[cursor].howGet[i],0,1);
-		}
-		DrawBox(270,164,639,164,31);
-		Print(274,168,"For getting this badge, you are awarded:",0,1);
-		Print(274,190,badge[cursor].cheatName,0,0);
-		for(i=0;i<8;i++)
-		{
-			Print(274,220+i*16,badge[cursor].cheatDesc[i],0,1);
+			Print(350, 70, badge[cursor].name, 0, 0);
 		}
 
-		y=370;
-		if(badge[cursor].rules&RULE_NEWGAME)
+		if (!ArchipelagoMode || apTabMode == 1)
 		{
-			Print(274,y,"* Takes effect when you start a new game",0,1);
-			y+=20;
+			DrawBox(270, 108, 639, 108, 31);
+			for (i = 0; i < 2; i++)
+			{
+
+				Print(274, 112 + i * 16, badge[cursor].howGet[i], 0, 1);
+			}
 		}
-		if(badge[cursor].rules&RULE_PLAYAS)
+		if (apTabMode == 0)
 		{
-			Print(274,y,"* Only one 'Play As' cheat works at a time",0,1);
-			y+=20;
-		}
-		if(badge[cursor].rules&RULE_ADVENTURE)
-		{
-			Print(274,y,"* Only affects adventure mode",0,1);
-			y+=20;
+			DrawBox(270, 164, 639, 164, 31);
+			Print(274, 168, "For getting this badge, you are awarded:", 0, 1);
+			Print(274, 190, badge[cursor].cheatName, 0, 0);
+			for (i = 0; i < 8; i++)
+			{
+				Print(274, 220 + i * 16, badge[cursor].cheatDesc[i], 0, 1);
+			}
+
+			y = 370;
+			if (badge[cursor].rules & RULE_NEWGAME)
+			{
+				Print(274, y, "* Takes effect when you start a new game", 0, 1);
+				y += 20;
+			}
+			if (badge[cursor].rules & RULE_PLAYAS)
+			{
+				Print(274, y, "* Only one 'Play As' cheat works at a time", 0, 1);
+				y += 20;
+			}
+			if (badge[cursor].rules & RULE_ADVENTURE)
+			{
+				Print(274, y, "* Only affects adventure mode", 0, 1);
+				y += 20;
+			}
 		}
 	}
 	else	// badge is unknown
@@ -894,6 +933,9 @@ void RenderBadgeMenu(MGLDraw *mgl)
 		RenderIntfaceSprite(274,60,24,0,mgl);
 		Print(350,70,"Unknown!",0,0);
 	}
+
+	Print(275, 420, "Press Tab to toggle Cheat and Badge menus", 0, 1);
+	Print(274, 420, "Press Tab to toggle Cheat and Badge menus", 0, 1);
 
 	if(viewing==0)
 	{

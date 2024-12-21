@@ -1,7 +1,8 @@
 #ifndef Archipelago_H
 #define Archipelago_H
 
-#define AP_BADGEMOD = 1000;
+const int AP_BADGEMOD = 1000;
+const int AP_MODEMOD = 1000;
 
 #include <string>
 #include "player.h"
@@ -49,7 +50,8 @@ struct chatData {
 };
 
 
-
+extern byte ap_cheatsAvail[40];
+extern byte ap_modesAvail[5];
 extern  std::unordered_map<int, bool> locsFound;
 extern std::unordered_map<int, int> itemsFound;
 extern bool ArchipelagoMode;

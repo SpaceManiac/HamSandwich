@@ -70,6 +70,7 @@ enum
 	MODE_LOONYBALL = 2,
 	MODE_BOWLING   = 3,
 	MODE_BADGES    = 4,
+	MODE_REMIX	   = 5,
 };
 
 enum PlayerCharacterType : int
