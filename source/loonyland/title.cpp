@@ -855,6 +855,7 @@ TASK(MainMenuResult) MainMenu(MGLDraw *mgl)
 	GetTaps();
 	while(b==MainMenuResult::None)
 	{
+		UpdateArchipelago();
 		lastTime+=TimeLength();
 		StartClock();
 

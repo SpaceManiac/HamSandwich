@@ -9,7 +9,7 @@ from string_chunks import *
 
 class CSVProcessor:
     def __init__(self):
-        self.csv_reader: csv.reader = None
+        self.csv_reader = None
 
     def open_reader(self, textio: TextIO):
         #Open a CSV reader, skip header
@@ -40,25 +40,32 @@ class CSVProcessor:
                 python_lines = pyItemHeader + "\n"
                 tracker_lines = "ITEM_MAPPING = { \n"
                 client_lines = "const std::unordered_map<int, int> item_frequencies = {\n"
-                basic_items = "const std::unordered_map<int, int> basic_items = {\n"
+                basic_items = "const std::unordered_map<int, itemData> basic_items = {\n"
                 json_list = []
 
                 for row in self.csv_reader:
                     if row[LINE_DISABLED]:
                         continue
                     itm_name = row[ITM_NAME]
-                    itm_id = row[ITM_ID]
+                    itm_var = row[ITM_VAR]
+                    itm_id = LOONYLAND_BASE_ID + globals()[itm_var]
                     itm_obj = row[ITM_OBJ]
-                    itm_category = row[ITM_CATEGORY]
+                    itm_type = row[ITM_TYPE]
                     itm_ic = row[ITM_IC]
                     itm_freq = row[ITM_FREQ]
                     itm_trackertype = row[ITM_TRACKERTYPE]
+                    itm_sound = row[ITM_SOUND]
+                    if itm_type == "BADGE":
+                        itm_id += AP_BADGEMOD
+
 
                     # 1: python ***********
-                    python_lines += (f"    \"{itm_name}\" "
-                                 f": LL_Item(ll_base_id + {itm_id}"
-                                 f", LL_ItemCat.{itm_category}"
-                                 f", IC.{itm_ic}")
+                    python_lines += (f"    \"{itm_name}\" "            
+                                 f": LLItem(ll_base_id + {itm_var}")
+                    if itm_type == "BADGE":
+                        python_lines += f" + AP_BADGEMOD"
+                    python_lines += (f", LLItemCat.{itm_type}"
+                                 f", ItemClassification.{itm_ic}")
                     if itm_freq:
                         python_lines += f", {itm_freq}"
                     python_lines += "),\n"
@@ -78,13 +85,16 @@ class CSVProcessor:
                     json_list.append(item_json)# to JSON list
 
                     # 3: tracker mappings ***********
-                    tracker_lines += f"    [{LOONYLAND_BASE_ID + globals()[itm_id]}] = {{{{\"{itm_name}\", \"{itm_trackertype}\"}}}},\n"
+                    tracker_lines += f"    [{itm_id}] = {{{{\"{itm_name}\", \"{itm_trackertype}\"}}}},\n"
 
                     # 4: client hamsandwich ***********
                     if itm_freq:
-                        client_lines += f"{{{itm_id}, {itm_freq}}},\n"
+                        client_lines += f"{{{itm_var}, {itm_freq}}},\n"
 
-                    basic_items += f"{{ {itm_id} , {itm_obj}}},\n"
+                    basic_items += f"{{ {itm_var} "
+                    if itm_type == "BADGE":
+                        basic_items += f" + AP_BADGEMOD"
+                    basic_items += f", {{\"{itm_name}\", {itm_obj}, {itm_sound}}}}},\n"
 
 
                 python_lines += "}\n"
@@ -267,8 +277,8 @@ loonyland_location_table = {\n"""
                     location_override = row[LOC_OVERRIDE]
                     location_chat_codes = row[LOC_CHATCODES]
 
-                    python_loc_lines += f"    \"{location_name}\": LL_Location(" \
-                                    f"{location_id}, LL_LocCat.{location_type}, \"{location_region}\"),\n"
+                    python_loc_lines += f"    \"{location_name}\": LLLocation(" \
+                                    f"{location_id}, LLLocCat.{location_type}, \"{location_region}\"),\n"
 
                     tracker_loc_lines += f"    [\"{location_name_no_colon}\"]  = {{id={location_id}, type={location_type}, region=\"{location_region}\"}},\n"
 
@@ -317,8 +327,19 @@ loonyland_location_table = {\n"""
                     tracker_mapping_lines +=f"    [{LOONYLAND_BASE_ID + int(location_id)}] = {{{{\"@Overworld/{row[LOC_REGION]}/{location_name_no_colon}\"}}}},\n"
 
                     #client data hamsandwich
+                    if location_type_normal == "Quest" or location_type_normal == "Badge":
+                        location_xcoord_c = 0
+                        location_ycoord_c = 0
+                        location_spec1_c = 0
+                        location_spec2_c = 0
+                    else:
+                        location_xcoord_c = location_xcoord
+                        location_ycoord_c = location_ycoord
+                        location_spec1_c = location_spec1
+                        location_spec2_c = location_spec2
+
                     hamsandwich_lines += f"{{\"{location_name}\",\"{location_type_normal}\",{location_id},\"{location_map}\",{location_map_id},"
-                    hamsandwich_lines += f"{location_xcoord},{location_ycoord},{location_spec1},{location_spec2},\"{location_region}\",{{{location_chat_codes}}}}},\n"
+                    hamsandwich_lines += f"{location_xcoord_c},{location_ycoord_c},{location_spec1_c},{location_spec2_c},\"{location_region}\",{{{location_chat_codes}}}}},\n"
 
                 tracker_file_locs.truncate(0)
                 tracker_file_locs.seek(0)
@@ -370,7 +391,7 @@ loonyland_location_table = {\n"""
                     entrance_logic = row[ENT_LOGIC]
 
                     # python entrance file
-                    python_ent_lines += f"        LL_Entrance(\"{entrance_source}\", \"{entrance_end}\""
+                    python_ent_lines += f"        LLEntrance(\"{entrance_source}\", \"{entrance_end}\""
                     if entrance_load:
                         python_ent_lines += f", True"
                     else:

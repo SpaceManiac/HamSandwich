@@ -1,9 +1,12 @@
 #ifndef Archipelago_H
 #define Archipelago_H
 
+#define AP_BADGEMOD = 1000;
+
 #include <string>
 #include "player.h"
 #include <set>
+#include "options.h"
 
 int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password);
 void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y);
@@ -33,11 +36,11 @@ struct locationData {
 	std::list<int> chatCodes;
 };
 
-struct itemData {
-
-	int item_ID;
+struct itemData
+{
 	std::string Name;
 	int ingame_ID;
+	int sound_ID;
 };
 
 struct chatData {
