@@ -10,6 +10,9 @@ endif()
 if(EMSCRIPTEN)
 	target_compile_definitions(aegea PRIVATE AEGEA_WEBSOCKET_EMSCRIPTEN)
 	target_link_libraries(aegea PRIVATE websocket.js)
+elseif(ANDROID)
+	# For now, library users must manually add aegea/src/ to their sourceSets.main.java.srcDir
+	target_compile_definitions(aegea PRIVATE AEGEA_WEBSOCKET_JAVA)
 else()
 	target_compile_definitions(aegea PRIVATE AEGEA_WEBSOCKET_CURL)
 	target_link_libraries(aegea PRIVATE libcurl ham) # ham for owned_curl
