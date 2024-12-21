@@ -671,6 +671,7 @@ ArchipelagoClient::Message* ArchipelagoClient::pop_message()
 	{
 		return &messages_pending[handled_messages++];
 	}
+	handled_messages = 0;
 	messages_pending.clear();
 	return nullptr;
 }
