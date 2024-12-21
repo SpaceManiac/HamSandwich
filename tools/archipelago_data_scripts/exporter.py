@@ -57,13 +57,16 @@ class CSVProcessor:
                     itm_sound = row[ITM_SOUND]
                     if itm_type == "BADGE":
                         itm_id += AP_BADGEMOD
-
+                    if itm_type == "ACCESS":
+                        itm_id += AP_ACCESSMOD
 
                     # 1: python ***********
                     python_lines += (f"    \"{itm_name}\" "            
                                  f": LLItem(ll_base_id + {itm_var}")
                     if itm_type == "BADGE":
                         python_lines += f" + AP_BADGEMOD"
+                    if itm_type=="ACCESS":
+                        python_lines += f" + AP_ACCESSMOD"
                     python_lines += (f", LLItemCat.{itm_type}"
                                  f", ItemClassification.{itm_ic}")
                     if itm_freq:
@@ -94,6 +97,8 @@ class CSVProcessor:
                     basic_items += f"{{ {itm_var} "
                     if itm_type == "BADGE":
                         basic_items += f" + AP_BADGEMOD"
+                    if itm_type=="ACCESS":
+                        basic_items += f" + AP_ACCESSMOD"
                     basic_items += f", {{\"{itm_name}\", {itm_obj}, {itm_sound}}}}},\n"
 
 
@@ -222,6 +227,8 @@ class CSVProcessor:
                 if input_format == "lua":
                     return f"{function_name}(\"{arguments}\")"
             if input_format == "python":
+                if arguments:
+                    return f'{function_name}(state, player, {arguments})'
                 return f'{function_name}(state, player)'
             if input_format == "lua":
                 return f"{function_name}(state)"

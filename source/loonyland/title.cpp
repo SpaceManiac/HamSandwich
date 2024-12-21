@@ -794,8 +794,30 @@ byte ChooseDiffUpdate(int *lastTime,MGLDraw *mgl)
 
 bool MenuItemKnown(MainMenuResult action)
 {
-	switch (action)
+	if (ArchipelagoMode)
 	{
+		switch (action)
+		{
+		case MainMenuResult::Badges:
+			return true;
+		case MainMenuResult::Bowling:
+			return ap_modesAvail[MODE_BOWLING];
+		case MainMenuResult::Loonyball:
+			return ap_modesAvail[MODE_LOONYBALL];
+		case MainMenuResult::BossBash:
+			return ap_modesAvail[MODE_BOSSBASH];
+		case MainMenuResult::Survival:
+			return ap_modesAvail[MODE_SURVIVAL];
+		case MainMenuResult::Remix:
+			return ap_modesAvail[MODE_REMIX];
+		default:
+			return true;
+		}
+	}
+	else
+	{
+		switch (action)
+		{
 		case MainMenuResult::Badges:
 			return opt.modes[MODE_BADGES];
 		case MainMenuResult::Bowling:
@@ -810,6 +832,7 @@ bool MenuItemKnown(MainMenuResult action)
 			return opt.remixMode;
 		default:
 			return true;
+		}
 	}
 }
 
