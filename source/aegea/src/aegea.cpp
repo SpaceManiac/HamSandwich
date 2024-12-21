@@ -72,10 +72,20 @@ ArchipelagoClient::ArchipelagoClient(std::string_view game, std::string_view add
 	, slot(slot)
 	, password(password)
 {
-	// TODO: if address has no protocol, first try wss:// then fall back to ws://
-	std::string fullAddress = "ws://";
-	fullAddress += address;
-	socket = WebSocket::connect(fullAddress.c_str());
+	if (address.find("://") == std::string_view::npos)
+	{
+		// Address has no protocol. First try wss:// then fall back to ws://
+		std::string fullAddress = "wss://";
+		fullAddress += address;
+		socket = WebSocket::connect(fullAddress.c_str());
+		status = ConnectingAutoWss;
+	}
+	else
+	{
+		std::string fullAddress { address };
+		socket = WebSocket::connect(fullAddress.c_str());
+		status = ConnectingExact;
+	}
 }
 
 ArchipelagoClient::~ArchipelagoClient()
@@ -177,12 +187,27 @@ static void decode(ArchipelagoClient::Item* item, const jt::Json& json)
 
 void ArchipelagoClient::update()
 {
-	if (!socket || !socket->error_message().empty())
+	if (!socket)
 	{
 		return;
 	}
+	if (!socket->error_message().empty())
+	{
+		if (status == ConnectingAutoWss)
+		{
+			debug_printf("Auto-TLS failed, trying insecure: %.*s\n", (int)socket->error_message().size(), socket->error_message().data());
+			// wss://X failed, try ws://X
+			std::string fullAddress = "ws://" + address;
+			socket = WebSocket::connect(fullAddress.c_str());
+			status = ConnectingExact;  // Nothing left to try
+		}
+		else
+		{
+			return;
+		}
+	}
 
-	if (socket->is_connected() && status == Connecting)
+	if (socket->is_connected() && (status == ConnectingAutoWss || status == ConnectingExact))
 	{
 		status = WaitingForRoomInfo;
 	}

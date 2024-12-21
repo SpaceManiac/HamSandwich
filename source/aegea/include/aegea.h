@@ -236,12 +236,14 @@ public:
 private:
 	enum
 	{
-		Connecting,
+		Idle,
+		ConnectingExact,
+		ConnectingAutoWss,
 		WaitingForRoomInfo,
 		WaitingForDataPackage,
 		WaitingForConnected,
 		Active,
-	} status = Connecting;
+	} status = Idle;
 
 	std::string game, address, slot, password;
 	std::set<std::string, std::less<>> tags;
