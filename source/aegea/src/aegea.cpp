@@ -777,6 +777,35 @@ const jt::Json& ArchipelagoClient::storage(std::string_view key) const
 	return json_null;
 }
 
+const ArchipelagoClient::StorageChange* ArchipelagoClient::pop_storage_change()
+{
+	// TODO: this is a little unwieldy. Should it just be a vector internally?
+	auto iter_change = storage_changes.begin();
+	if (iter_change != storage_changes.end())
+	{
+		auto iter_value = storage_.find(iter_change->first);
+		if (iter_value != storage_.end())
+		{
+			storage_change.key = iter_value->first;
+			storage_change.new_value = &iter_value->second;
+			if (!storage_old_value)
+			{
+				storage_old_value = std::make_unique<jt::Json>();
+			}
+			*storage_old_value = std::move(iter_change->second);
+			storage_change.old_value = storage_old_value.get();
+			storage_changes.erase(iter_change);
+			return &storage_change;
+		}
+		else
+		{
+			// Shouldn't happen, but just in case.
+			storage_changes.erase(iter_change);
+		}
+	}
+	return nullptr;
+}
+
 void ArchipelagoClient::storage_get(Slice<std::string_view> keys)
 {
 	jt::Json& packet = outgoing.emplace_back();

@@ -230,13 +230,20 @@ public:
 	// ------------------------------------------------------------------------
 	// Storage system
 
+	struct StorageChange
+	{
+		std::string_view key;
+		const jt::Json* new_value;
+		const jt::Json* old_value;
+	};
+
 	// Get cached storage value. Returns null if absent.
 	const jt::Json& storage(std::string_view key) const;
 
-	// Contains previous values for storage keys that have changed.
-	// The new values are available with `storage_value`.
-	// Clear it manually once you've processed it.
-	std::map<std::string, jt::Json> storage_changes;
+	// Pop unobserved storage change.
+	// Returns `nullptr` if queue is empty.
+	// Pointer is invalidated on next call to `pop_storage_change` or `update`.
+	const StorageChange* pop_storage_change();
 
 	// Request storage values. They will appear in `storage` and `storage_changes` later.
 	void storage_get(Slice<std::string_view> keys);
@@ -286,6 +293,9 @@ private:
 
 	std::string storage_private_prefix;
 	std::map<std::string, jt::Json, std::less<>> storage_;
+	std::map<std::string, jt::Json> storage_changes;
+	std::unique_ptr<jt::Json> storage_old_value;
+	StorageChange storage_change;
 
 	void set_tag(std::string_view tag, bool present);
 	void send_connect();
