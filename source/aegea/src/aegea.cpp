@@ -36,7 +36,7 @@ namespace
 		constexpr std::string_view Sync = "Sync";
 		constexpr std::string_view LocationChecks = "LocationChecks";
 		constexpr std::string_view LocationScouts = "LocationScouts";
-		constexpr std::string_view UpdateHint = "UpdateHint";
+		//constexpr std::string_view UpdateHint = "UpdateHint";
 		constexpr std::string_view StatusUpdate = "StatusUpdate";
 		constexpr std::string_view Say = "Say";
 		constexpr std::string_view GetDataPackage = "GetDataPackage";
@@ -58,10 +58,10 @@ namespace
 	// https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#clientstatus
 	namespace ClientStatus
 	{
-		constexpr int Unknown = 0;
-		constexpr int Connected = 5;
-		constexpr int Ready = 10;
-		constexpr int Playing = 20;
+		//constexpr int Unknown = 0;
+		//constexpr int Connected = 5;
+		//constexpr int Ready = 10;
+		//constexpr int Playing = 20;
 		constexpr int Goal = 30;
 	}
 }
