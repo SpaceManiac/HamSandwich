@@ -332,7 +332,9 @@ void GetArchipelagoPlayerVar(int var)
 
 std::string ConnectionStatus()
 {
-	return ap ? std::string(ap->connection_status()) : std::string("Not connected");
+	return !ap ? std::string("Not connected") :
+		!ap->error_message().empty() ? std::string(ap->error_message()) :
+		std::string(ap->connection_status());
 }
 
 
