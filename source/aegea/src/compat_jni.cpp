@@ -47,16 +47,14 @@ bool LocalFrame::exception_occurred(std::string* error) const
 			if (exceptionMessage)
 			{
 				const char* exceptionMessageUTF8 = m_env->GetStringUTFChars(exceptionMessage, nullptr);
-				*error = "JNI: ";
-				*error += exceptionNameUTF8;
+				*error = exceptionNameUTF8;
 				*error += ": ";
 				*error += exceptionMessageUTF8;
 				m_env->ReleaseStringUTFChars(exceptionMessage, exceptionMessageUTF8);
 			}
 			else
 			{
-				*error = "JNI: ";
-				*error += exceptionNameUTF8;
+				*error = exceptionNameUTF8;
 			}
 
 			m_env->ReleaseStringUTFChars(exceptionName, exceptionNameUTF8);

@@ -85,13 +85,14 @@ struct JavaWebSocket : public WebSocket
 		jstring jniUrl = env->NewStringUTF(url);
 		if (refs.exception_occurred(&error))
 		{
+			logf("%s", error.c_str());
 			return;
 		}
 
 		jobject clientLocal = env->NewObject(class_WebSocket, constructor, handle, jniUrl);
 		if (refs.exception_occurred(&error))
 		{
-			clientLocal = nullptr;
+			logf("%s", error.c_str());
 			return;
 		}
 
@@ -133,6 +134,7 @@ struct JavaWebSocket : public WebSocket
 			env->CallVoidMethod(client, jm_recv);
 			if (refs.exception_occurred(&error))
 			{
+				logf("%s", error.c_str());
 				return nullptr;
 			}
 		}
@@ -166,6 +168,7 @@ struct JavaWebSocket : public WebSocket
 		env->SetByteArrayRegion(array, 0, len, reinterpret_cast<const jbyte*>(text));
 		if (refs.exception_occurred(&error))
 		{
+			logf("%s", error.c_str());
 			return;
 		}
 
@@ -173,6 +176,7 @@ struct JavaWebSocket : public WebSocket
 		env->CallVoidMethod(client, jm_send, is_text, array);
 		if (refs.exception_occurred(&error))
 		{
+			logf("%s", error.c_str());
 			return;
 		}
 	}
@@ -213,6 +217,7 @@ void onMessage(JNIEnv* env, jclass _class, jlong handle, jboolean text, jbyteArr
 	env->GetByteArrayRegion(bytes, offset, len, reinterpret_cast<jbyte*>(message.data.data()));
 	if (refs.exception_occurred(&self->error))
 	{
+		logf("%s", self->error.c_str());
 		return;
 	}
 }
