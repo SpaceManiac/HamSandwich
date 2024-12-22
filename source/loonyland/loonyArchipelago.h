@@ -2,6 +2,7 @@
 #define Archipelago_H
 
 #include <string>
+#include <string_view>
 #include <set>
 #include <vector>
 #include <unordered_map>
@@ -15,7 +16,7 @@ void SendArchipelagoPlayerVar(int v, int val);
 void SendDeathLink();
 void WinArchipelago();
 void ArchipelagoLoadPlayer();
-std::string ConnectionStatus();
+std::string_view ConnectionStatus();
 void DebugAPCommand();
 
 void Disconnect();
@@ -48,8 +49,7 @@ struct chatData {
 
 
 
-extern  std::unordered_map<int, bool> locsFound;
-extern std::unordered_map<int, int> itemsFound;
+extern std::unordered_map<int, bool> locsFound;
 extern bool ArchipelagoMode;
 extern bool locationWait;
 extern std::unordered_map<int, chatData> chat_table;
