@@ -182,8 +182,11 @@ struct JavaWebSocket : public WebSocket
 	}
 };
 
-void onConnect(JNIEnv* env, jclass _class, jlong handle)
+void onConnect(JNIEnv* env, jclass class_, jlong handle)
 {
+	(void)env;
+	(void)class_;
+
 	logf("onConnect(%lx)", (long)handle);
 	if (handle == 0)
 	{
@@ -194,8 +197,10 @@ void onConnect(JNIEnv* env, jclass _class, jlong handle)
 	self->opened = true;
 }
 
-void onMessage(JNIEnv* env, jclass _class, jlong handle, jboolean text, jbyteArray bytes, jint offset, jint len)
+void onMessage(JNIEnv* env, jclass class_, jlong handle, jboolean text, jbyteArray bytes, jint offset, jint len)
 {
+	(void)class_;
+
 	logf("onMessage(%lx, %s, %d)", (long)handle, text ? "true" : "false", len);
 	if (handle == 0)
 	{
@@ -222,8 +227,10 @@ void onMessage(JNIEnv* env, jclass _class, jlong handle, jboolean text, jbyteArr
 	}
 }
 
-void onError(JNIEnv* env, jclass _class, jlong handle, jstring error)
+void onError(JNIEnv* env, jclass class_, jlong handle, jstring error)
 {
+	(void)class_;
+
 	logf("onError(%lx)", (long)handle);
 	if (handle == 0)
 	{
@@ -237,8 +244,11 @@ void onError(JNIEnv* env, jclass _class, jlong handle, jstring error)
 	env->ReleaseStringUTFChars(error, error_mutf8);
 }
 
-void onClose(JNIEnv* env, jclass _class, jlong handle, jint reason)
+void onClose(JNIEnv* env, jclass class_, jlong handle, jint reason)
 {
+	(void)env;
+	(void)class_;
+
 	logf("onClose(%lx, %d)", (long)handle, reason);
 	if (handle == 0)
 	{
@@ -265,6 +275,8 @@ std::unique_ptr<WebSocket> WebSocket::connect(const char* url)
 
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
+	(void)reserved;
+
 	javaVM = vm;
 	JNIEnv *env = NULL;
 
