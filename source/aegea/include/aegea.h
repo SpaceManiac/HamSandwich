@@ -37,10 +37,16 @@ class ArchipelagoClient
 
 		Slice(const T* begin, const T* end) : begin_(begin), end_(end) {}
 
+#ifdef __GNUC__
 #pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Winit-list-lifetime"
+#endif
 		Slice(std::initializer_list<T> init) : begin_(init.begin()), end_(init.end()) {}
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 
 		Slice(const std::vector<T>& container) : begin_(container.data()), end_(container.data() + container.size()) {}
 
