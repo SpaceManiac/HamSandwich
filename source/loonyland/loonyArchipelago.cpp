@@ -24,7 +24,6 @@ void ItemsClear();
 void ItemReceived(int64_t  item_id, bool notif);
 void SetLocationChecked(int64_t  loc_id);
 void DeathLinkReceived();
-void GetInfoFromAP();
 void SetupWorld();
 void Disconnect();
 void GetArchipelagoPlayerVar(int var);
@@ -79,8 +78,6 @@ int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string 
 	ap->death_link_enable();
 
 	SetupWorld();
-	ItemsClear();
-	GetInfoFromAP();
 
 	ArchipelagoSeed = "";
 	return 0;
@@ -356,20 +353,8 @@ void GetInfoFromAP()
 
 void SetupWorld()
 {
-	char buff[4096];
-	auto baseWorld = AppdataOpen("loony.llw");
-	auto newWorld = AppdataOpen_Write("ap.llw");
-
-	while (int n = SDL_RWread(baseWorld, buff, 1, 4096))
-	{
-		SDL_RWwrite(newWorld, buff, 1, 4096);
-	}
-
-	newWorld.reset();
-	baseWorld.reset();
-
 	world_t world;
-	LoadWorld(&world, "ap.llw");
+	LoadWorld(&world, "loony.llw");
 
 	//add some hearts to loonyton
 	world.map[0]->map[91 + 90 * world.map[0]->width].item = 2;
@@ -403,7 +388,13 @@ void UpdateArchipelago()
 
 	ap->update();
 
-	// TODO: on re-connection call GetInfoFromAP and ItemsClear
+	// Handle reconnection by refreshing stuff.
+	if (ap->pop_connected())
+	{
+		ItemsClear();
+		GetInfoFromAP();
+		ArchipelagoSeed = ap->seed_name();
+	}
 
 	// Items
 	while (auto item = ap->pop_received_item())
@@ -434,17 +425,11 @@ void UpdateArchipelago()
 	}
 
 	// Messages
-	if (ArchipelagoSeed.empty())
-	{
-		ArchipelagoSeed = ap->seed_name();
-	}
-
 	if (messageCooldown > 0)
 	{
 		messageCooldown--;
 	}
-	ArchipelagoClient::Message* message;
-	if (messageCooldown == 0 && (message = ap->pop_message()))
+	else if (auto message = ap->pop_message())
 	{
 		if (message->type == ArchipelagoClient::Message::ItemSend)
 		{
@@ -475,13 +460,14 @@ void UpdateArchipelago()
 	std::string prefix = ap->storage_private("PLAYER_VAR_");
 	for (auto [key, _] : ap->storage_changes)
 	{
-		auto value = ap->storage[key];
+		auto value = ap->storage(key);
 		if (value.isLong() && key.size() > prefix.size() && std::string_view(key).substr(0, prefix.size()) == prefix)
 		{
 			int var = std::stoi(key.substr(prefix.size()));
 			player.var[var] = value.getLong();
 		}
 	}
+	ap->storage_changes.clear();
 }
 
 void DebugAPCommand() {

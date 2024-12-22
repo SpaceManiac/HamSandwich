@@ -68,6 +68,9 @@ public:
 	// Call this on a regular basis (ex: once per frame) to handle networking.
 	void update();
 
+	// If a reconnect has occurred, returns true and clears the pending status.
+	bool pop_connected();
+
 	// ------------------------------------------------------------------------
 	// Room info and data packages
 
@@ -76,14 +79,16 @@ public:
 	// Get Archipelago's unique ID for this generated world.
 	std::string_view seed_name() const;
 
-	std::string_view slot_game_name(int id);
-	std::string_view slot_player_alias(int id);
+	std::string_view slot_game_name(int slot);
+	std::string_view slot_player_alias(int slot);
 	std::string_view item_name(int64_t item);
-	std::string_view location_name(int64_t item);
+	std::string_view location_name(int64_t location);
 
 	// Get the combined RoomInfo, Connected, and RoomUpdate data, except for
 	// checked_locations and missing_locations.
 	const std::map<std::string, jt::Json, std::less<>>& room_info() const;
+	// Get a piece of room info by key, or null if absent.
+	const jt::Json& room_info(std::string_view key) const;
 	// Get the arbitrary JSON data package for the given game.
 	const jt::Json& data_package(std::string_view game) const;
 
@@ -105,15 +110,17 @@ public:
 		static constexpr int Trap = 0b100;
 	};
 
-	// Return the next unprocessed item, or nullptr if everything has been processed.
-	// Pointer is invalidated on next call to pop_received_item or update.
+	// Pop unobserved received item.
+	// Returns `nullptr` if queue is empty.
+	// Pointer is invalidated on next call to `pop_received_item` or `update`.
 	const Item* pop_received_item();
-	// Return all received items regardless of processed status.
+	// Get all items ever received, even already-observed items.
 	const std::vector<Item>& all_received_items() const;
 
 	// ------------------------------------------------------------------------
 	// Locations
 
+	// Get observed received items.
 	const std::set<int64_t>& checked_locations() const;
 
 	// Call when a location is checked (picked up, completed, achieved).
@@ -203,8 +210,9 @@ public:
 		static constexpr std::string_view Countdown = "Countdown";
 	};
 
-	// Pop from this queue when you have time to display a message.
-	// Pointer is invalidated on next call to pop_message or update.
+	// Pop unobserved chat message, including sending/receiving items.
+	// Returns `nullptr` if queue is empty.
+	// Pointer is invalidated on next call to `pop_message` or `update`.
 	Message* pop_message();
 
 	void say(std::string_view text);
@@ -222,15 +230,19 @@ public:
 	// ------------------------------------------------------------------------
 	// Storage system
 
-	// Contains known storage values.
-	std::map<std::string, jt::Json> storage;
+	// Get cached storage value. Returns null if absent.
+	const jt::Json& storage(std::string_view key) const;
+
 	// Contains previous values for storage keys that have changed.
-	// The new values are already in `storage`.
+	// The new values are available with `storage_value`.
 	// Clear it manually once you've processed it.
 	std::map<std::string, jt::Json> storage_changes;
 
+	// Request storage values. They will appear in `storage` and `storage_changes` later.
 	void storage_get(Slice<std::string_view> keys);
+	// Set a storage value. If want_reply is true, it will appear in `storage` and `storage_changes` later.
 	void storage_set(std::string_view key, jt::Json value, bool want_reply = true);
+	// Request notification for future changes to storage values. They will appear in `storage` and `storage_changes` later.
 	void storage_set_notify(Slice<std::string_view> keys);
 
 	// Return a storage prefix unique to this slot to avoid conflicts.
@@ -257,11 +269,13 @@ private:
 	std::unique_ptr<WebSocket> socket;
 	std::vector<jt::Json> outgoing;
 
+	int player_id_ = -1;
 	std::map<std::string, jt::Json, std::less<>> room_info_;
 	std::map<std::string, jt::Json, std::less<>> data_packages;
 	std::map<int64_t, std::string> item_names;
 	std::map<int64_t, std::string> location_names;
 
+	bool connected_pending = false;
 	bool death_link_pending = false;
 	size_t handled_messages = 0;
 	std::vector<Message> messages_pending;
@@ -270,8 +284,8 @@ private:
 	std::set<int64_t> checked_locations_;
 	std::map<int64_t, Item> scouted_locations;
 
-	int player_id_ = -1;
 	std::string storage_private_prefix;
+	std::map<std::string, jt::Json, std::less<>> storage_;
 
 	void set_tag(std::string_view tag, bool present);
 	void send_connect();
