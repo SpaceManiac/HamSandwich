@@ -55,18 +55,18 @@ class CSVProcessor:
                     itm_freq = row[ITM_FREQ]
                     itm_trackertype = row[ITM_TRACKERTYPE]
                     itm_sound = row[ITM_SOUND]
-                    if itm_type == "BADGE":
+                    if itm_type == "CHEAT":
                         itm_id += AP_BADGEMOD
                     if itm_type == "ACCESS":
-                        itm_id += AP_ACCESSMOD
+                        itm_id += AP_MODEMOD
 
                     # 1: python ***********
-                    python_lines += (f"    \"{itm_name}\" "            
+                    python_lines += (f"    \"{itm_name}\""            
                                  f": LLItem(ll_base_id + {itm_var}")
-                    if itm_type == "BADGE":
+                    if itm_type == "CHEAT":
                         python_lines += f" + AP_BADGEMOD"
-                    if itm_type=="ACCESS":
-                        python_lines += f" + AP_ACCESSMOD"
+                    if itm_type== "ACCESS":
+                        python_lines += f" + AP_MODEMOD"
                     python_lines += (f", LLItemCat.{itm_type}"
                                  f", ItemClassification.{itm_ic}")
                     if itm_freq:
@@ -95,10 +95,10 @@ class CSVProcessor:
                         client_lines += f"{{{itm_var}, {itm_freq}}},\n"
 
                     basic_items += f"{{ {itm_var} "
-                    if itm_type == "BADGE":
+                    if itm_type == "CHEAT":
                         basic_items += f" + AP_BADGEMOD"
                     if itm_type=="ACCESS":
-                        basic_items += f" + AP_ACCESSMOD"
+                        basic_items += f" + AP_MODEMOD"
                     basic_items += f", {{\"{itm_name}\", {itm_obj}, {itm_sound}}}}},\n"
 
 
@@ -303,15 +303,15 @@ loonyland_location_table = {\n"""
                         tracker_rules_lines += rules_line
 
                     #find location_map in children
-                    if location_map == "Halloween Hill":
+                    if location_map == "Halloween Hill" or (location_type_normal == "Quest" and location_xcoord):
                         data[0]['children'].append({
                             "name": location_name_no_colon,
                             "sections": [{"ref": f"Overworld/{location_region}/{location_name_no_colon}",
                                          "name": f"{location_name_no_colon}"}],
                             "map_locations": [{
                             "map": "Overworld",
-                            "x": (int(row[LOC_XCOORD]) + 1) * TILE_XSIZE,
-                            "y": (int(row[LOC_YCOORD]) + 1) * TILE_YSIZE
+                            "x": (int(location_xcoord) + 1) * TILE_XSIZE,
+                            "y": (int(location_ycoord) + 1) * TILE_YSIZE
                         }]
                         })
                     for child in data[0]['children']:
@@ -416,7 +416,7 @@ loonyland_location_table = {\n"""
                         tracker_ent_lines += " end"
                     tracker_ent_lines += "},\n"
 
-                python_ent_lines += "]\n"
+                python_ent_lines += "    ]\n"
                 python_ent_lines += pyEntranceFooter + "\n"
                 with open(PYTHON_DATA, 'a') as python_file:
                     python_file.write(python_ent_lines)

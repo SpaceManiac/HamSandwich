@@ -11,6 +11,7 @@
 #include <aegea.h>
 #include <json.h>
 #include "quest.h"
+#include "badge.h"
 
 static std::unique_ptr<ArchipelagoClient> ap;
 
@@ -39,30 +40,39 @@ bool ExpectingDeath = false;
 byte ap_cheatsAvail[40] = { 0 };
 byte ap_modesAvail[6] = { 0 };
 
+byte cheat_to_badge[NUM_BADGES] = {
+	BADGE_DARKNESS, BADGE_BOWLING, BADGE_HUNDREDPCT, BADGE_LOONYBALL, BADGE_EVILIZER, BADGE_GEMS,
+	BADGE_MONSTERPTS2, BADGE_POLTERGUY, BADGE_BESTRANK, BADGE_GRAVES, BADGE_BONKULA, BADGE_ANNOY,
+	BADGE_WINGAME, BADGE_COMBO, BADGE_ROCKS, BADGE_HIDDEN, BADGE_TERRORSRV, BADGE_KILLALL,
+	BADGE_SNEAK, BADGE_MONSTERPTS, BADGE_SURVIVAL, BADGE_LARRY, BADGE_FRANKENJ, BADGE_BOSSBASH,
+	BADGE_CATTAILS, BADGE_WITCH, BADGE_WOLFDEN, BADGE_RESCUE, BADGE_TERROR, BADGE_SURVCOMBO,
+	BADGE_REMIX, BADGE_WITCHCRAFT, BADGE_THIEF, BADGE_SURV100, BADGE_RIOT, BADGE_SWAMPDOG,
+	BADGE_SCORE, BADGE_BRAWL, BADGE_HIDDEN2, BADGE_MASTER,
+};
 
 std::unordered_map<int, chatData> chat_table = {
 	{2, { "Super Heart", ""}}, //trees
-	{8, { "booties", ""}}, //biff
+	{8, { "booties", "", true}}, //biff
 	{9, { "boots", ""}}, //biff2
 	{10, { "boots", ""}}, //biff3
-	{14, { "cactus", ""}}, //bonita
+	{14, { "cactus", "", true}}, //bonita
 	{15, { "cactus", ""}}, //bonita2
-	{26, { "stick", ""}}, //cat lady
-	{27, { "stick", ""}}, //cat lady
-	{29, { "potion", ""}}, //zizwalda
+	{26, { "stick", "",}}, //cat lady
+	{27, { "stick", "",}}, //cat lady
+	{29, { "potion", "", true}}, //zizwalda
 	{31, { "Super Heart", ""}}, //zizwalda2
 	{42, { "super growth", ""}}, //farmer
 	{43, { "fertilizer", ""}}, //farmer2
 	{56, { "100 Gem", ""}}, //mayor
-	{60, { "Ghost Slaying Potion", ""}}, //zizwalda potion
+	{60, { "Ghost Slaying Potion", "", true}}, //zizwalda potion
 	{61, { "Ghost Slaying Potion", ""}}, //zizwalda potion
 	{62, { "Ghost Slaying Potion", ""}}, //zizwalda potion
 	{68, { "Bat Key", ""}}, //doofy little twerp
-	{70, { "slingshot", ""}}, //silver man
+	{70, { "slingshot", "", true}}, //silver man
 	{75, { "slingshot", ""}}, //silver man2
 	{79, { "lantern", ""}}, //lost girl
 	{85, { "key", ""}}, //larry wife
-	{92, { "toy", ""}}, //collection
+	{92, { "toy", "", true}}, //collection
 	{96, { "Reflect Gem", ""}}, //collection
 	{130, { "crystal ball", ""}}, //seer
 	{164, { "ghost potion", ""}}, //zizwalda
@@ -76,6 +86,9 @@ std::unordered_map<int, chatData> chat_table = {
 
 
 int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password) {
+	for (int i = 0; i < 40; i++) {
+		opt.meritBadge[i] = MERIT_NO;
+	}
 	ap = std::make_unique<ArchipelagoClient>("Loonyland", IPAddress, SlotName, Password);
 	//AP_SetLocationCheckedCallback(SetLocationChecked);
 	ap->death_link_enable();
@@ -97,7 +110,9 @@ void ItemReceived(int64_t  item_id, bool notif)
 {
 	item_id -= loonyland_base_id;
 	++itemsFound[item_id];
-	GivePlayerItem(item_id, true);
+	if (item_id != 3000) {
+		GivePlayerItem(item_id, true);
+	}
 }
 
 void ArchipelagoLoadPlayer()
@@ -110,13 +125,13 @@ void ArchipelagoLoadPlayer()
 
 void GivePlayerItem(int64_t item_id, bool loud)
 {
-	if (item_id >= MODE_BOWLING + AP_MODEMOD && item_id <= MODE_REMIX)
+	if (item_id >= MODE_SURVIVAL + AP_MODEMOD && item_id <= MODE_REMIX + AP_MODEMOD)
 	{
-		ap_modesAvail[item_id] = 1;
+		ap_modesAvail[item_id - AP_MODEMOD] = 1;
 	}
 	else if (item_id >= CH_LIGHT+ AP_BADGEMOD && item_id <= CH_NOFARLEY + AP_BADGEMOD)
 	{
-		ap_cheatsAvail[item_id] = 1;
+		ap_cheatsAvail[cheat_to_badge[item_id - AP_BADGEMOD]] = 1;
 	}
 	else
 	{
@@ -138,19 +153,21 @@ void GivePlayerItem(int64_t item_id, bool loud)
 	}
 	if (item_id == VAR_DAISY)
 	{
-		PlayerSetVar(VAR_QUESTDONE + QUEST_DAISY, 1);
+		player.var[VAR_QUESTASSIGN + QUEST_DAISY] = 1;
+		player.var[VAR_QUESTDONE + QUEST_DAISY] = 1;
 	}
 
 	if (item_id >= VAR_MUSHROOM && item_id < VAR_MUSHROOM + 10) //update quest
 	{
 		if (ShroomCount() == 10)
 		{
-			PlayerSetVar(VAR_QUESTDONE + QUEST_SHROOM, 1);
+			player.var[VAR_QUESTASSIGN + QUEST_SHROOM] = 1;
+			player.var[VAR_QUESTDONE + QUEST_SHROOM] = 1;
 		}
 	}
 	if (item_id == VAR_CAT)
 	{
-		PlayerSetVar(VAR_QUESTASSIGN + QUEST_CAT, 1);
+		player.var[VAR_QUESTASSIGN + QUEST_CAT] = 1;
 	}
 	if ((item_id >= VAR_HEART && item_id <= VAR_PANTS)
 		|| item_id == VAR_GEM
@@ -215,6 +232,7 @@ void GetLocationScouts()
 		}
 
 		const ArchipelagoClient::Item* item = ap->item_at_location(loc.ID + loonyland_base_id);
+
 		if (item == nullptr)
 		{
 			allGood = false;
@@ -225,19 +243,30 @@ void GetLocationScouts()
 		{
 			Map* tempMap = world.map[loc.MapID];
 			int item_id = item->item - loonyland_base_id;
-			if (item->player == ap->player_id())
+			int game_id = 0;
+			if (item_id != 3000)
 			{
-				item_id = basic_items.at(item_id).ingame_ID;
+				if (item->player == ap->player_id())
+				{
+					game_id = basic_items.at(item_id).ingame_ID;
+				}
+				else
+				{
+					game_id = ITM_ARCHIPELAGO;
+				}
+				tempMap->map[loc.Xcoord + loc.Ycoord * tempMap->width].item = game_id; //from var to placeable item
+				if (game_id == ITM_BADGE)
+				{
+					tempMap->map[loc.Xcoord + loc.Ycoord * tempMap->width].tag = cheat_to_badge[item_id - AP_BADGEMOD] + 1;
+				}
 			}
 			else
-			{
-				item_id = ITM_ARCHIPELAGO;
-			}
-			tempMap->map[loc.Xcoord + loc.Ycoord * tempMap->width].item = item_id; //from var to placeable item
+				tempMap->map[loc.Xcoord + loc.Ycoord * tempMap->width].item = ITM_BARREL; //from var to placeable item
 		}
 		for (auto const& i : loc.chatCodes)
 		{
 			chat_table[i].updated += ap->item_name(item->item);
+			chat_table[i].location_id = loc.ID;
 		}
 	}
 
@@ -248,6 +277,12 @@ void GetLocationScouts()
 	}
 
 	FreeWorld(&world);
+}
+
+void SendLocationScout(int locId, bool createHint)
+{
+	
+	ap->scout_locations({ locId+loonyland_base_id }, createHint);
 }
 
 void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y)
@@ -278,6 +313,19 @@ void SendCheckedLocQuest(int questVar)
 	std::cout << "AP QUEST MISS: " << questVar << std::endl;
 }
 
+void SendCheckedLocBadge(int badgeID)
+{
+	for (locationData loc : basic_locations)
+	{
+		if (loc.Type == "Badge" && loc.MapID == badgeID) //map ids are where the quest var is stored for those locations
+		{
+			SendCheckedItem(loc.ID);
+			return;
+		}
+	}
+	std::cout << "AP BADGE MISS: " << badgeID << std::endl;
+}
+
 void SendCheckedTalkReward(int talkVar)
 {
 
@@ -295,11 +343,15 @@ void SendCheckedItem(int loc_id)
 
 void SetLocationChecked(int64_t  loc_id)
 {
-	loc_id -= loonyland_base_id;
-	if (loc_id > 93)
+	if (basic_locations[loc_id].Type == "Quest")
 	{
 		player.var[basic_locations[loc_id].MapID + VAR_QUESTASSIGN] = 1;
 		player.var[basic_locations[loc_id].MapID + VAR_QUESTDONE] = 1;
+	}
+	else if (basic_locations[loc_id].Type == "Badge")
+	{
+		opt.meritBadge[basic_locations[loc_id].MapID] = MERIT_EARNED;
+		//EarnBadge(basic_locations[loc_id].MapID);
 	}
 	locsFound[loc_id] = true;
 
@@ -346,7 +398,7 @@ void GetArchipelagoPlayerVars()
 {
 	for (int var : DataStorageVars)
 	{
-		GetArchipelagoPlayerVar(var);
+		//GetArchipelagoPlayerVar(var);
 	}
 }
 
@@ -398,6 +450,8 @@ void SetupWorld()
 	world.map[0]->map[91 + 90 * world.map[0]->width].item = 2;
 	world.map[0]->map[92 + 90 * world.map[0]->width].item = 2;
 
+	world.map[0]->map[83 + 146 * world.map[0]->width].item = 0; //remove tree blocking vision of small items in terror glade
+
 	world.map[23]->special[5].trigger = 0;
 
 	//DELETE ALL THE ITEM SPECIALS
@@ -438,6 +492,7 @@ void UpdateArchipelago()
 	// TODO: track already-checked locations better
 	for (int64_t loc : ap->checked_locations())
 	{
+		loc -= loonyland_base_id;
 		if (!locsFound[loc])
 		{
 			SetLocationChecked(loc);

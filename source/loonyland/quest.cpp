@@ -2176,6 +2176,13 @@ void UpdateChat(void)
 	chatUpdated = true;
 	if (ArchipelagoMode && curChat != oldCurChat)
 	{
+		if (chat_table.find(curChat) != chat_table.end())
+		{
+			if (chat_table[curChat].hint)
+			{
+				SendLocationScout(chat_table[curChat].location_id, true);
+			}
+		}
 		std::string text = talk[curChat].line[0];
 		text = text + " " + talk[curChat].line[1];
 		text = text + " " + talk[curChat].line[2];

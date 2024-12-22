@@ -2,7 +2,7 @@
 #define Archipelago_H
 
 const int AP_BADGEMOD = 1000;
-const int AP_MODEMOD = 1000;
+const int AP_MODEMOD = 2000;
 
 #include <string>
 #include <set>
@@ -14,6 +14,8 @@ const int AP_MODEMOD = 1000;
 int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password);
 void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y);
 void SendCheckedLocQuest(int questVar);
+void SendCheckedLocBadge(int badgeID);
+void SendLocationScout(int locId, bool createHint);
 void UpdateArchipelago();
 void SendArchipelagoPlayerVar(int v, int val);
 void SendDeathLink();
@@ -21,6 +23,7 @@ void WinArchipelago();
 void ArchipelagoLoadPlayer();
 std::string ConnectionStatus();
 void DebugAPCommand();
+
 
 void Disconnect();
 void GetInfoFromAP();
@@ -49,11 +52,14 @@ struct itemData
 struct chatData {
 	std::string orig;
 	std::string updated;
+	bool hint = false;
+	int location_id = 0;
 };
 
 
+
 extern byte ap_cheatsAvail[40];
-extern byte ap_modesAvail[5];
+extern byte ap_modesAvail[6];
 extern  std::unordered_map<int, bool> locsFound;
 extern std::unordered_map<int, int> itemsFound;
 extern bool ArchipelagoMode;

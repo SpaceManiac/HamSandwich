@@ -623,9 +623,23 @@ void BadgeCheatKey(char c)
 
 	if(!strcmp("gimme",&badgeKeys[16-strlen("gimme")]))
 	{
-		opt.meritBadge[cursor] = opt.meritBadge[cursor] ? MERIT_NO : MERIT_CHEATED;
-		if(opt.cheats[badge[cursor].cheatNum])
-			opt.cheats[badge[cursor].cheatNum]=0;
+		if (ArchipelagoMode)
+		{
+			if (apTabMode == 0)
+			{
+				ap_cheatsAvail[cursor] = ap_cheatsAvail[cursor] ^ 1;
+			}
+			else if (apTabMode == 1)
+			{
+				opt.meritBadge[cursor] = opt.meritBadge[cursor] ? MERIT_NO : MERIT_CHEATED;
+			}
+		}
+		else
+		{
+			opt.meritBadge[cursor] = opt.meritBadge[cursor] ? MERIT_NO : MERIT_CHEATED;
+		}
+		if (opt.cheats[badge[cursor].cheatNum])
+			opt.cheats[badge[cursor].cheatNum] = 0;
 
 		if(opt.meritBadge[cursor])
 		{
@@ -775,7 +789,7 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 			cursor+=10;
 		MakeNormalSound(SND_MENUCLICK);
 	}
-	if((c2 & ~oldc) & (CONTROL_B1 | CONTROL_B3) && apTabMode == 0)
+	if((c2 & ~oldc) & (CONTROL_B1) && apTabMode == 0)
 	{
 		if(!ArchipelagoMode && opt.meritBadge[cursor] || ArchipelagoMode && ap_cheatsAvail[cursor])
 		{
@@ -850,7 +864,7 @@ void RenderBadgeMenu(MGLDraw *mgl)
 				if (opt.cheats[badge[i].cheatNum])
 					RenderIntfaceSprite(x, y, 25, b, mgl);
 			}
-			if (apTabMode == 1 && opt.meritBadge[i])
+			else if (apTabMode == 1 && opt.meritBadge[i])
 			{
 				RenderIntfaceSprite(x, y, 26 + i, b, mgl); //replace with item sent
 			}
@@ -984,6 +998,8 @@ static TASK(void) EarnBadgeTask(byte b)
 	bool newlyEarned = !opt.meritBadge[b];
 	// Mark as earned legit even if already cheated.
 	opt.meritBadge[b] = MERIT_EARNED;
+
+	SendCheckedLocBadge(b);
 
 	// If newly earned, congratulate the player. No early return so the mode
 	// logic below always runs & can thus be freely tweaked.
@@ -1145,6 +1161,11 @@ TASK(void) ShowBadge(byte b)
 
 	GetTaps();
 	cursor=b;
+
+	if (ArchipelagoMode)
+	{
+		apTabMode = 1;
+	}
 
 	while(!done)
 	{

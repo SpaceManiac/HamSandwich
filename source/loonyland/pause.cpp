@@ -515,7 +515,8 @@ void LoadGame(int i)
 		if(!curMap)
 			curMap=new Map(20,20,"hi");
 		curMap->LoadFromProgress(f.get());
-		ham_strcpy(curMap->name, player.areaName);
+
+		ham_strcpy(curMap->name, curWorld.map[player.levelNum]->name);
 		f.reset();
 		player.lastSave=i;
 		ResetInterface();

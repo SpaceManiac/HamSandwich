@@ -5,6 +5,7 @@
 #include "quest.h"
 #include "badge.h"
 #include "bossbash.h"
+#include "loonyArchipelago.h"
 
 monsterType_t monsType[NUM_MONSTERS]=
 	{
@@ -1065,19 +1066,20 @@ void PurgeMonsterSprites(void)
 void TurnLoonyIntoToad(void)
 {
 	EarnBadge(BADGE_ANNOY);
+	if (!ArchipelagoMode) {
+		player.monsType = MONS_LOONYTOAD;
+		goodguy->type = MONS_LOONYTOAD;
 
-	player.monsType=MONS_LOONYTOAD;
-	goodguy->type=MONS_LOONYTOAD;
-
-	player.cheatsOn&=(PC_PLAYBONK|PC_PLAYWITCH|PC_PLAYDOG|PC_PLAYWOLF|PC_PLAYSUMMON|PC_PLAYTHIEF);
-	player.cheatsOn|=(PC_PLAYTOAD);
-	opt.cheats[CH_BONKULA]=0;
-	opt.cheats[CH_WITCH]=0;
-	opt.cheats[CH_SWAMPDOG]=0;
-	opt.cheats[CH_WEREWOLF]=0;
-	opt.cheats[CH_SUMMON]=0;
-	opt.cheats[CH_THIEF]=0;
-	opt.cheats[CH_TOAD]=1;
+		player.cheatsOn &= (PC_PLAYBONK | PC_PLAYWITCH | PC_PLAYDOG | PC_PLAYWOLF | PC_PLAYSUMMON | PC_PLAYTHIEF);
+		player.cheatsOn |= (PC_PLAYTOAD);
+		opt.cheats[CH_BONKULA] = 0;
+		opt.cheats[CH_WITCH] = 0;
+		opt.cheats[CH_SWAMPDOG] = 0;
+		opt.cheats[CH_WEREWOLF] = 0;
+		opt.cheats[CH_SUMMON] = 0;
+		opt.cheats[CH_THIEF] = 0;
+		opt.cheats[CH_TOAD] = 1;
+	}
 }
 
 byte MonsterSize(byte type)
