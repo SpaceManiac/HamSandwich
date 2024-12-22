@@ -287,8 +287,6 @@ void SendLocationScout(int locId, bool createHint)
 
 void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y)
 {
-	//haunted tower 2 strip comma from mapName
-	mapName.erase(std::remove(mapName.begin(), mapName.end(), ','), mapName.end());
 	for (locationData loc : basic_locations)
 	{
 		if (loc.MapID == mapNum && loc.Map == mapName && loc.Xcoord == x && loc.Ycoord == y)
@@ -451,6 +449,9 @@ void SetupWorld()
 	world.map[0]->map[92 + 90 * world.map[0]->width].item = 2;
 
 	world.map[0]->map[83 + 146 * world.map[0]->width].item = 0; //remove tree blocking vision of small items in terror glade
+
+	ham_sprintf(world.map[18]->name, "Haunted Tower Floor 2");
+	ham_sprintf(world.map[19]->name, "Haunted Tower Floor 3");
 
 	world.map[23]->special[5].trigger = 0;
 
