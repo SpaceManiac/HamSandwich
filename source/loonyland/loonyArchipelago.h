@@ -19,7 +19,6 @@ std::string ConnectionStatus();
 void DebugAPCommand();
 
 void Disconnect();
-void GetInfoFromAP();
 
 struct locationData {
 	std::string Name;

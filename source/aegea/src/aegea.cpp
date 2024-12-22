@@ -11,7 +11,7 @@
 
 namespace
 {
-	const jt::Json null;
+	const jt::Json json_null;
 
 	namespace IncomingCmd
 	{
@@ -324,6 +324,7 @@ void ArchipelagoClient::update()
 						room_info_.insert(std::move(pair));
 					}
 				}
+				connected_pending = true;
 				status = Active;
 			}
 			else if (cmd == IncomingCmd::ReceivedItems)
@@ -502,11 +503,11 @@ void ArchipelagoClient::update()
 						// Let storage_changes monitor all of Get, Set, and SetNotify.
 						if (storage_changes.find(pair.first) == storage_changes.end())
 						{
-							storage_changes[pair.first] = std::move(storage[pair.first]);
+							storage_changes[pair.first] = std::move(storage_[pair.first]);
 						}
-						storage[pair.first] = std::move(pair.second);
+						storage_[pair.first] = std::move(pair.second);
 					}
-					storage.insert(object.begin(), object.end());
+					storage_.insert(object.begin(), object.end());
 				}
 			}
 			else if (cmd == IncomingCmd::SetReply)
@@ -514,7 +515,7 @@ void ArchipelagoClient::update()
 				if (packet["key"].isString())
 				{
 					const std::string& key = packet["key"].getString();
-					storage[key] = std::move(packet["value"]);
+					storage_[key] = std::move(packet["value"]);
 					// If we don't already know an old value, save one now.
 					if (storage_changes.find(key) == storage_changes.end())
 					{
@@ -547,6 +548,16 @@ void ArchipelagoClient::update()
 	}
 }
 
+bool ArchipelagoClient::pop_connected()
+{
+	if (connected_pending)
+	{
+		connected_pending = false;
+		return true;
+	}
+	return false;
+}
+
 // ------------------------------------------------------------------------
 // Room info and data packages
 
@@ -565,14 +576,14 @@ std::string_view ArchipelagoClient::seed_name() const
 	return "";
 }
 
-std::string_view ArchipelagoClient::slot_game_name(int id)
+std::string_view ArchipelagoClient::slot_game_name(int slot)
 {
-	return room_info_["games"][id].getString();
+	return room_info_["games"][slot].getString();
 }
 
-std::string_view ArchipelagoClient::slot_player_alias(int id)
+std::string_view ArchipelagoClient::slot_player_alias(int slot)
 {
-	return room_info_["players"][id]["alias"].getString();
+	return room_info_["players"][slot]["alias"].getString();
 }
 
 std::string_view ArchipelagoClient::item_name(int64_t item)
@@ -580,14 +591,24 @@ std::string_view ArchipelagoClient::item_name(int64_t item)
 	return item_names[item];
 }
 
-std::string_view ArchipelagoClient::location_name(int64_t item)
+std::string_view ArchipelagoClient::location_name(int64_t location)
 {
-	return location_names[item];
+	return location_names[location];
 }
 
 const std::map<std::string, jt::Json, std::less<>>& ArchipelagoClient::room_info() const
 {
 	return room_info_;
+}
+
+const jt::Json& ArchipelagoClient::room_info(std::string_view key) const
+{
+	auto iter = room_info_.find(key);
+	if (iter != room_info_.end())
+	{
+		return iter->second;
+	}
+	return json_null;
 }
 
 void ArchipelagoClient::load_data_package(std::string game, jt::Json value)
@@ -614,11 +635,11 @@ void ArchipelagoClient::load_data_package(std::string game, jt::Json value)
 const jt::Json& ArchipelagoClient::data_package(std::string_view game) const
 {
 	auto iter = data_packages.find(game);
-	if (iter == data_packages.end())
+	if (iter != data_packages.end())
 	{
-		return null;
+		return iter->second;
 	}
-	return iter->second;
+	return json_null;
 }
 
 // ------------------------------------------------------------------------
@@ -745,6 +766,16 @@ bool ArchipelagoClient::pop_death_link()
 
 // ------------------------------------------------------------------------
 // Storage system
+
+const jt::Json& ArchipelagoClient::storage(std::string_view key) const
+{
+	auto iter = storage_.find(key);
+	if (iter != storage_.end())
+	{
+		return iter->second;
+	}
+	return json_null;
+}
 
 void ArchipelagoClient::storage_get(Slice<std::string_view> keys)
 {

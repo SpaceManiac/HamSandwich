@@ -191,7 +191,6 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 
 			if (status == "Active")
 			{
-				GetInfoFromAP();
 				optMode = 4;
 			}
 			else if (status == "Failed"|| status == "ConnectionRefused")
