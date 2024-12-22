@@ -346,6 +346,28 @@ void ShowSavedGame(int x,int y,const SaveMenuItem &m,byte on)
 	}
 }
 
+void ScreenTopDisplay()
+{
+	if (ArchipelagoMode)
+	{
+		std::string apStatus = "Archipelago: ";
+		apStatus += ConnectionStatus();
+		Print(3, 3, apStatus, 1, 1);
+		Print(3-1, 3-1, apStatus, 0, 1);
+	}
+	else
+	{
+		// Workshop status
+		const char* workshopStatus = Steam()->DescribeWorkshopStatus();
+		Print(3, 3, workshopStatus, 1, 1);
+		Print(3-1, 3-1, workshopStatus, 0, 1);
+	}
+
+	// version #:
+	Print(560,3,VERSION_NO,1,1);
+	Print(559,2,VERSION_NO,0,1);
+}
+
 void MainMenuDisplay(MGLDraw *mgl)
 {
 	int i;
@@ -354,13 +376,7 @@ void MainMenuDisplay(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
 
-	// Workshop status
-	const char* workshopStatus = Steam()->DescribeWorkshopStatus();
-	Print(3, 3, workshopStatus, 1, 1);
-	Print(3-1, 3-1, workshopStatus, 0, 1);
-	// version #:
-	Print(560,3,VERSION_NO,1,1);
-	Print(559,2,VERSION_NO,0,1);
+	ScreenTopDisplay();
 	// Copyright:
 	RightPrintGlow(641, 467, "Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY, -10, 1);
 
@@ -414,13 +430,7 @@ void DiffChooseDisplay(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
 
-	// Workshop status
-	const char* workshopStatus = Steam()->DescribeWorkshopStatus();
-	Print(3, 3, workshopStatus, 1, 1);
-	Print(3-1, 3-1, workshopStatus, 0, 1);
-	// version #:
-	Print(560,3,VERSION_NO,1,1);
-	Print(559,2,VERSION_NO,0,1);
+	ScreenTopDisplay();
 
 	PrintGlow(310,318, ShowGamepadText() ? "Select with left stick and press Fire" : "Select with arrow keys and press Enter",0,1);
 	if (cursor == 0)
@@ -492,13 +502,7 @@ void LoadGameDisplay(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(mgl->GetScreen()+mgl->GetWidth()*i,&backScr[i*640],640);
 
-	// Workshop status
-	const char* workshopStatus = Steam()->DescribeWorkshopStatus();
-	Print(3, 3, workshopStatus, 1, 1);
-	Print(3-1, 3-1, workshopStatus, 0, 1);
-	// version #:
-	Print(560,3,VERSION_NO,1,1);
-	Print(559,2,VERSION_NO,0,1);
+	ScreenTopDisplay();
 
 	PrintGlow(20-23/4, 117+320-135, "^", 0, 0);
 	PrintGlow(20-23/4, 273+320-135-(30-26)*5, "v", 0, 0);

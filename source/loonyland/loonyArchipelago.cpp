@@ -26,9 +26,7 @@ void SetLocationChecked(int64_t  loc_id);
 void DeathLinkReceived();
 void SetupWorld();
 void Disconnect();
-void GetArchipelagoPlayerVar(int var);
 void GivePlayerItem(int64_t item_id, bool loud);
-std::string ConnectionStatus();
 
 
 std::unordered_map<int, bool> locsFound;
@@ -316,24 +314,26 @@ void SendArchipelagoPlayerVar(int v, int val)
 
 void GetArchipelagoPlayerVars()
 {
+	std::vector<std::string> strings;
+	std::vector<std::string_view> views;
 	for (int var : DataStorageVars)
 	{
-		GetArchipelagoPlayerVar(var);
+		std::string& string = strings.emplace_back(ap->storage_private("PLAYER_VAR_"));
+		string += std::to_string(var);
+		views.push_back(string);
 	}
+	ap->storage_get(views);
 }
 
-void GetArchipelagoPlayerVar(int var)
+std::string_view ConnectionStatus()
 {
-	ap->storage_get({ ap->storage_private("PLAYER_VAR_") += std::to_string(var) });
+	return
+		!ap ? "Not connected" :
+		!ap->error_message().empty() ? ap->error_message() :
+		!ap->is_active() ? ap->connection_status() :
+		locationWait ? "Scouting locations..." :
+		"Active";
 }
-
-std::string ConnectionStatus()
-{
-	return !ap ? std::string("Not connected") :
-		!ap->error_message().empty() ? std::string(ap->error_message()) :
-		std::string(ap->connection_status());
-}
-
 
 void GetInfoFromAP()
 {

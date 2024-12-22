@@ -288,7 +288,7 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 	scry=(rscry>>FIXSHIFT);
 }
 
-void Print(int x,int y,const char *s,char bright,byte font)
+void Print(int x,int y,std::string_view s,char bright,byte font)
 {
 	if(font!=1)
 		FontPrintStringBright(x,y,s,gameFont[font],bright);
@@ -301,7 +301,7 @@ void Print(int x,int y,const char *s,char bright,byte font)
 	}
 }
 
-void PrintColor(int x,int y,const char *s,byte color,char bright,byte font)
+void PrintColor(int x,int y,std::string_view s,byte color,char bright,byte font)
 {
 	FontPrintStringColor(x,y,s,gameFont[font],color,bright);
 }
