@@ -596,7 +596,13 @@ std::string_view ArchipelagoClient::slot_game_name(int slot)
 
 std::string_view ArchipelagoClient::slot_player_alias(int slot)
 {
-	return room_info_["players"][slot]["alias"].getString();
+	if (slot == 0)
+	{
+		// Slot 0 is Archipelago regardless of team.
+		return "Archipelago";
+	}
+	// For now, assume AP teams feature is not in use and slot N is player N.
+	return room_info_["players"][slot - 1]["alias"].getString();
 }
 
 std::string_view ArchipelagoClient::item_name(int64_t item)

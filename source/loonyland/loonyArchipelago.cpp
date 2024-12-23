@@ -439,11 +439,11 @@ void UpdateArchipelago()
 				std::string text = "Got ";
 				text += ap->item_name(message->item.item);
 				text += " from ";
-				text += ap->slot_player_alias(message->slot);
+				text += ap->slot_player_alias(message->item.player);
 				NewMessage(text.c_str(), MESSAGE_TIME);
 				messageCooldown = MESSAGE_TIME;
 			}
-			else if (message->slot == ap->player_id())
+			else if (message->item.player == ap->player_id())
 			{
 				// Sent [item] to [player].
 				std::string text = "Sent ";
