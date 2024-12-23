@@ -1193,37 +1193,102 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 				if(Random(70)==0 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
 				{
 					//todo hooks for randomizer maybe
-					if(type>=MONS_BAT && type<=MONS_BAT3 && player.var[VAR_DOLL]==0)
+					if (ArchipelagoMode && (sizeof(basic_locations) / sizeof(locationData) > 158) && false)
 					{
-						FireBullet(x,y,ITM_BATDOLL,BLT_ITEM);
+						int val = -1;
+						switch (type)
+						{
+						case MONS_BAT:
+						case MONS_BAT2:
+						case MONS_BAT3:
+						//case MONS_BAT4:
+							val = 0;
+							break;
+						case MONS_BONEHEAD:
+						case MONS_BONEHEAD2:
+						case MONS_BONEHEAD3:
+						case MONS_BONEHEAD4:
+							val = 1;
+							break;
+						case MONS_FROG:
+						case MONS_FROG2:
+						case MONS_FROG3:
+							val = 2;
+							break;
+						case MONS_GHOST:
+						case MONS_GHOST2:
+						case MONS_GHOST3:
+							val = 3;
+							break;
+						case MONS_MUMMY:
+						case MONS_MUMMY2:
+						case MONS_MUMMY3:
+						case MONS_MUMMY4:
+							val = 4;
+							break;
+						case MONS_SWAMPDOG:
+						case MONS_SWAMPDOG2:
+						case MONS_SWAMPDOG3:
+							val = 5;
+							break;
+						case MONS_VAMPIRE:
+						case MONS_VAMPIRE2:
+						case MONS_VAMPIRE3:
+						case MONS_VAMPIRE4:
+							val = 6;
+							break;
+						case MONS_WOLFMAN:
+						case MONS_WOLFMAN2:
+						case MONS_WOLFMAN3:
+							val = 7;
+							break;
+						}
+						locationData loc = basic_locations[158 + val];
+						if (val != -1 && !(locsFound.find(loc.ID) != locsFound.end()))
+						{
+							int item_id = basic_locations[158 + val].scouted_item;
+							if (item_id == ITM_ARCHIPELAGO)
+								FireBullet(x, y, ITM_ARCHIPELAGO, BLT_ITEM);
+							else {
+
+								FireBullet(x, y, basic_items.at(item_id).ingame_ID, BLT_ITEM);
+							}
+						}
 					}
-					else if(type>=MONS_BONEHEAD && type<=MONS_BONEHEAD4 && player.var[VAR_DOLL+1]==0)
+					else
 					{
-						FireBullet(x,y,ITM_SKELDOLL,BLT_ITEM);
-					}
-					else if(type>=MONS_FROG && type<=MONS_FROG3 && player.var[VAR_DOLL+2]==0)
-					{
-						FireBullet(x,y,ITM_FROGDOLL,BLT_ITEM);
-					}
-					else if(type>=MONS_GHOST && type<=MONS_GHOST3 && player.var[VAR_DOLL+3]==0)
-					{
-						FireBullet(x,y,ITM_GHOSTDOLL,BLT_ITEM);
-					}
-					else if(type>=MONS_MUMMY && type<=MONS_MUMMY4 && player.var[VAR_DOLL+4]==0)
-					{
-						FireBullet(x,y,ITM_MUMMYDOLL,BLT_ITEM);
-					}
-					else if(type>=MONS_SWAMPDOG && type<=MONS_SWAMPDOG3 && player.var[VAR_DOLL+5]==0)
-					{
-						FireBullet(x,y,ITM_SWAMPDOLL,BLT_ITEM);
-					}
-					else if(type>=MONS_VAMPIRE && type<=MONS_VAMPIRE4 && player.var[VAR_DOLL+6]==0)
-					{
-						FireBullet(x,y,ITM_VAMPDOLL,BLT_ITEM);
-					}
-					else if(type>=MONS_WOLFMAN && type<=MONS_WOLFMAN3 && player.var[VAR_DOLL+7]==0)
-					{
-						FireBullet(x,y,ITM_WOLFDOLL,BLT_ITEM);
+						if (type >= MONS_BAT && type <= MONS_BAT3 && player.var[VAR_DOLL] == 0)
+						{
+							FireBullet(x, y, ITM_BATDOLL, BLT_ITEM);
+						}
+						else if (type >= MONS_BONEHEAD && type <= MONS_BONEHEAD4 && player.var[VAR_DOLL + 1] == 0)
+						{
+							FireBullet(x, y, ITM_SKELDOLL, BLT_ITEM);
+						}
+						else if (type >= MONS_FROG && type <= MONS_FROG3 && player.var[VAR_DOLL + 2] == 0)
+						{
+							FireBullet(x, y, ITM_FROGDOLL, BLT_ITEM);
+						}
+						else if (type >= MONS_GHOST && type <= MONS_GHOST3 && player.var[VAR_DOLL + 3] == 0)
+						{
+							FireBullet(x, y, ITM_GHOSTDOLL, BLT_ITEM);
+						}
+						else if (type >= MONS_MUMMY && type <= MONS_MUMMY4 && player.var[VAR_DOLL + 4] == 0)
+						{
+							FireBullet(x, y, ITM_MUMMYDOLL, BLT_ITEM);
+						}
+						else if (type >= MONS_SWAMPDOG && type <= MONS_SWAMPDOG3 && player.var[VAR_DOLL + 5] == 0)
+						{
+							FireBullet(x, y, ITM_SWAMPDOLL, BLT_ITEM);
+						}
+						else if (type >= MONS_VAMPIRE && type <= MONS_VAMPIRE4 && player.var[VAR_DOLL + 6] == 0)
+						{
+							FireBullet(x, y, ITM_VAMPDOLL, BLT_ITEM);
+						}
+						else if (type >= MONS_WOLFMAN && type <= MONS_WOLFMAN3 && player.var[VAR_DOLL + 7] == 0)
+						{
+							FireBullet(x, y, ITM_WOLFDOLL, BLT_ITEM);
+						}
 					}
 				}
 

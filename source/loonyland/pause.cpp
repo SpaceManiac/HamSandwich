@@ -754,7 +754,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 			GetSaves();
 		}
 
-		if ((c & CONTROL_LF) && (!reptCounter) && player.worldNum == WORLD_RANDOMIZER)
+		if ((c & CONTROL_LF) && (!reptCounter) && (player.worldNum == WORLD_RANDOMIZER || ArchipelagoMode))
 		{
 			warpCount++;
 			if (warpCount > 4)

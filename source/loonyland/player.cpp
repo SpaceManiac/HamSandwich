@@ -73,32 +73,36 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		{
 			player.cheatsOn|=PC_ALLACCESS;
 			player.var[VAR_VAMPYWALL]=1;
-			player.var[VAR_KEY]=1;
-			player.var[VAR_KEY+1]=1;
-			player.var[VAR_KEY+2]=1;
-			player.var[VAR_FERTILIZER]=1;
-			player.var[VAR_STICK]=1;
-			player.var[VAR_TORCH]=1;
-			for(i=0;i<4;i++)
+			player.var[VAR_TOWNOPEN] = 1;
+			player.var[VAR_PAIDBRIDGE] = 1;
+			player.var[VAR_BRIDGEOPEN] = 1;
+			player.var[VAR_GATEOUT] = 1;
+			player.keys[0] = 9;
+
+			if (!ArchipelagoMode)
 			{
-				player.var[VAR_MYSORB+i]=1;
-				player.var[VAR_BATSTATUE+i]=1;
+				player.var[VAR_KEY] = 1;
+				player.var[VAR_KEY + 1] = 1;
+				player.var[VAR_KEY + 2] = 1;
+				player.var[VAR_FERTILIZER] = 1;
+				player.var[VAR_STICK] = 1;
+				player.var[VAR_TORCH] = 1;
+				for (i = 0; i < 4; i++)
+				{
+					player.var[VAR_MYSORB + i] = 1;
+					player.var[VAR_BATSTATUE + i] = 1;
+				}
+				for (i = 0; i < 8; i++)
+					player.var[VAR_VAMPBUST + i] = 1;
+				player.var[VAR_TALISMAN] = 1;
+				player.var[VAR_BOOTS] = 1;
+				player.var[VAR_WEAPON + 0] = 1;	// bombs, need those to get in places
+				player.keys[1] = 1;
+				player.keys[2] = 1;
+				player.keys[3] = 1;
 			}
-			for(i=0;i<8;i++)
-				player.var[VAR_VAMPBUST+i]=1;
-			player.var[VAR_TOWNOPEN]=1;
-			player.var[VAR_PAIDBRIDGE]=1;
-			player.var[VAR_TALISMAN]=1;
-			player.var[VAR_BOOTS]=1;
-			player.var[VAR_BRIDGEOPEN]=1;
-			player.var[VAR_GATEOUT]=1;
-			player.var[VAR_WEAPON+0]=1;	// bombs, need those to get in places
-			player.keys[0]=9;
-			player.keys[1]=1;
-			player.keys[2]=1;
-			player.keys[3]=1;
 		}
-		if(opt.cheats[CH_RAPIDFIRE])
+		if(opt.cheats[CH_RAPIDFIRE] && !ArchipelagoMode) //todo figure out what to do here
 		{
 			// start with all arrows
 			player.fireRate=10;
@@ -294,42 +298,49 @@ void InitPlayer(byte initWhat,byte world,byte level)
 
 		if(opt.cheats[CH_MAXPOWER])
 		{
-			player.cheatsOn|=PC_MAXPOWER;
-			// crank it up
-			for(i=0;i<10;i++)
+			if (ArchipelagoMode)
 			{
-				player.var[VAR_LIGHTNING+i]=1;
-				player.var[VAR_ARROW+i]=1;
-				player.var[VAR_PANTS+i]=1;
+				//todo figure out what to do here
 			}
-			player.var[VAR_REFLECT]=1;
-			player.var[VAR_TRIPLEFIRE]=1;
-			for(i=0;i<7;i++)
-				player.var[VAR_WEAPON+i]=1;
-			player.var[VAR_POTION]=1;
-			if (player.worldNum != WORLD_RANDOMIZER) {
-				player.var[VAR_QUESTASSIGN+QUEST_SILVER]=1;
-				player.var[VAR_QUESTDONE+QUEST_SILVER]=1;
-			}
-			player.var[VAR_SILVERSLING]=1;
-			player.var[VAR_HELPERBAT]=1;
-			player.var[VAR_QUESTASSIGN+QUEST_FARLEY]=1;
-			player.var[VAR_QUESTDONE+QUEST_FARLEY]=1;
-			player.batLevel=255;
-			player.firePower=10;
-			player.fireRate=10;
-			player.fireRange=10;
-			player.fireFlags|=FF_REFLECT|FF_TRIPLE|FF_HELPER;
+			else
+			{
+				player.cheatsOn |= PC_MAXPOWER;
+				// crank it up
+				for (i = 0; i < 10; i++)
+				{
+					player.var[VAR_LIGHTNING + i] = 1;
+					player.var[VAR_ARROW + i] = 1;
+					player.var[VAR_PANTS + i] = 1;
+				}
+				player.var[VAR_REFLECT] = 1;
+				player.var[VAR_TRIPLEFIRE] = 1;
+				for (i = 0; i < 7; i++)
+					player.var[VAR_WEAPON + i] = 1;
+				player.var[VAR_POTION] = 1;
+				if (player.worldNum != WORLD_RANDOMIZER) {
+					player.var[VAR_QUESTASSIGN + QUEST_SILVER] = 1;
+					player.var[VAR_QUESTDONE + QUEST_SILVER] = 1;
+				}
+				player.var[VAR_SILVERSLING] = 1;
+				player.var[VAR_HELPERBAT] = 1;
+				player.var[VAR_QUESTASSIGN + QUEST_FARLEY] = 1;
+				player.var[VAR_QUESTDONE + QUEST_FARLEY] = 1;
+				player.batLevel = 255;
+				player.firePower = 10;
+				player.fireRate = 10;
+				player.fireRange = 10;
+				player.fireFlags |= FF_REFLECT | FF_TRIPLE | FF_HELPER;
 
-			if(player.monsType==MONS_PLYRSWAMPDOG)
-			{
-				player.xtraByte=50;
-				player.xtraVar=SD_LEVELUP*50;
-			}
-			if(player.monsType==MONS_PLYRWITCH)
-			{
-				for(i=0;i<8;i++)
-					player.spellXP[i]=30000;
+				if (player.monsType == MONS_PLYRSWAMPDOG)
+				{
+					player.xtraByte = 50;
+					player.xtraVar = SD_LEVELUP * 50;
+				}
+				if (player.monsType == MONS_PLYRWITCH)
+				{
+					for (i = 0; i < 8; i++)
+						player.spellXP[i] = 30000;
+				}
 			}
 		}
 
@@ -346,17 +357,23 @@ void InitPlayer(byte initWhat,byte world,byte level)
 			}
 			else
 				player.xtraByte=20;
+			if (ArchipelagoMode)
+			{
 
-			player.var[VAR_REFLECT]=1;
-			player.var[VAR_TRIPLEFIRE]=1;
-			player.var[VAR_HELPERBAT]=1;
-			player.var[VAR_QUESTASSIGN+QUEST_FARLEY]=1;
-			player.var[VAR_QUESTDONE+QUEST_FARLEY]=1;
-			player.batLevel=255;
-			player.firePower=10;
-			player.fireRate=10;
-			player.fireRange=10;
-			player.fireFlags|=FF_REFLECT|FF_TRIPLE|FF_HELPER;
+			}
+			else
+			{
+				player.var[VAR_REFLECT] = 1;
+				player.var[VAR_TRIPLEFIRE] = 1;
+				player.var[VAR_HELPERBAT] = 1;
+				player.var[VAR_QUESTASSIGN + QUEST_FARLEY] = 1;
+				player.var[VAR_QUESTDONE + QUEST_FARLEY] = 1;
+				player.batLevel = 255;
+				player.firePower = 10;
+				player.fireRate = 10;
+				player.fireRange = 10;
+				player.fireFlags |= FF_REFLECT | FF_TRIPLE | FF_HELPER;
+			}
 
 			if(player.monsType==MONS_PLYRSWAMPDOG)
 			{
@@ -1888,6 +1905,14 @@ void PlayerCalcStats()
 
 			player.keys[i + 1] = 1;
 		}
+	}
+	if (player.var[VAR_TRIPLEFIRE])
+	{
+		player.fireFlags |= FF_TRIPLE;
+	}
+	if (player.var[VAR_REFLECT])
+	{
+		player.fireFlags |= FF_REFLECT;
 	}
 }
 
