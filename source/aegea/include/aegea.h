@@ -122,6 +122,7 @@ public:
 
 	// Get observed received items.
 	const std::set<int64_t>& checked_locations() const;
+	const std::set<int64_t>& missing_locations() const;
 
 	// Call when a location is checked (picked up, completed, achieved).
 	void check_location(int64_t location);
@@ -289,6 +290,7 @@ private:
 	size_t handled_received_items = 0;
 	std::vector<Item> received_items;
 	std::set<int64_t> checked_locations_;
+	std::set<int64_t> missing_locations_;
 	std::map<int64_t, Item> scouted_locations;
 
 	std::string storage_private_prefix;

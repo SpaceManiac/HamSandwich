@@ -304,6 +304,8 @@ void ArchipelagoClient::update()
 				storage_private_prefix += std::to_string(std::hash<std::string>{}(slot));
 				storage_private_prefix += "_";
 
+				checked_locations_.clear();
+				missing_locations_.clear();
 				if (packet["checked_locations"].isArray())
 				{
 					for (const auto& loc : packet["checked_locations"].getArray())
@@ -311,6 +313,16 @@ void ArchipelagoClient::update()
 						if (loc.isLong())
 						{
 							checked_locations_.insert(loc.getLong());
+						}
+					}
+				}
+				if (packet["missing_locations"].isArray())
+				{
+					for (const auto& loc : packet["missing_locations"].getArray())
+					{
+						if (loc.isLong())
+						{
+							missing_locations_.insert(loc.getLong());
 						}
 					}
 				}
@@ -396,6 +408,7 @@ void ArchipelagoClient::update()
 							if (loc.isLong())
 							{
 								checked_locations_.insert(loc.getLong());
+								missing_locations_.erase(loc.getLong());
 							}
 						}
 					}
