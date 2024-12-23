@@ -19,7 +19,7 @@ add_library(minizip STATIC
 target_compile_definitions(minizip PUBLIC NOCRYPT)
 target_include_directories(minizip PUBLIC "${zlib}/contrib/minizip")
 target_link_libraries(minizip PUBLIC z)
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
 	target_compile_options(minizip PRIVATE -fPIC)
 endif()
 if(ANDROID)

@@ -6,12 +6,12 @@
 #ifdef NDEBUG
 #define debug_printf(...)
 #else
-#define debug_printf(...) fprintf(stderr, "[AP]" __VA_ARGS__)
+#define debug_printf(...) fprintf(stderr, "[AP] " __VA_ARGS__)
 #endif
 
 namespace
 {
-	const jt::Json null;
+	const jt::Json json_null;
 
 	namespace IncomingCmd
 	{
@@ -36,7 +36,7 @@ namespace
 		constexpr std::string_view Sync = "Sync";
 		constexpr std::string_view LocationChecks = "LocationChecks";
 		constexpr std::string_view LocationScouts = "LocationScouts";
-		constexpr std::string_view UpdateHint = "UpdateHint";
+		//constexpr std::string_view UpdateHint = "UpdateHint";
 		constexpr std::string_view StatusUpdate = "StatusUpdate";
 		constexpr std::string_view Say = "Say";
 		constexpr std::string_view GetDataPackage = "GetDataPackage";
@@ -58,10 +58,10 @@ namespace
 	// https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#clientstatus
 	namespace ClientStatus
 	{
-		constexpr int Unknown = 0;
-		constexpr int Connected = 5;
-		constexpr int Ready = 10;
-		constexpr int Playing = 20;
+		//constexpr int Unknown = 0;
+		//constexpr int Connected = 5;
+		//constexpr int Ready = 10;
+		//constexpr int Playing = 20;
 		constexpr int Goal = 30;
 	}
 }
@@ -304,6 +304,8 @@ void ArchipelagoClient::update()
 				storage_private_prefix += std::to_string(std::hash<std::string>{}(slot));
 				storage_private_prefix += "_";
 
+				checked_locations_.clear();
+				missing_locations_.clear();
 				if (packet["checked_locations"].isArray())
 				{
 					for (const auto& loc : packet["checked_locations"].getArray())
@@ -311,6 +313,16 @@ void ArchipelagoClient::update()
 						if (loc.isLong())
 						{
 							checked_locations_.insert(loc.getLong());
+						}
+					}
+				}
+				if (packet["missing_locations"].isArray())
+				{
+					for (const auto& loc : packet["missing_locations"].getArray())
+					{
+						if (loc.isLong())
+						{
+							missing_locations_.insert(loc.getLong());
 						}
 					}
 				}
@@ -324,6 +336,7 @@ void ArchipelagoClient::update()
 						room_info_.insert(std::move(pair));
 					}
 				}
+				connected_pending = true;
 				status = Active;
 			}
 			else if (cmd == IncomingCmd::ReceivedItems)
@@ -395,6 +408,7 @@ void ArchipelagoClient::update()
 							if (loc.isLong())
 							{
 								checked_locations_.insert(loc.getLong());
+								missing_locations_.erase(loc.getLong());
 							}
 						}
 					}
@@ -502,11 +516,11 @@ void ArchipelagoClient::update()
 						// Let storage_changes monitor all of Get, Set, and SetNotify.
 						if (storage_changes.find(pair.first) == storage_changes.end())
 						{
-							storage_changes[pair.first] = std::move(storage[pair.first]);
+							storage_changes[pair.first] = std::move(storage_[pair.first]);
 						}
-						storage[pair.first] = std::move(pair.second);
+						storage_[pair.first] = std::move(pair.second);
 					}
-					storage.insert(object.begin(), object.end());
+					storage_.insert(object.begin(), object.end());
 				}
 			}
 			else if (cmd == IncomingCmd::SetReply)
@@ -514,7 +528,7 @@ void ArchipelagoClient::update()
 				if (packet["key"].isString())
 				{
 					const std::string& key = packet["key"].getString();
-					storage[key] = std::move(packet["value"]);
+					storage_[key] = std::move(packet["value"]);
 					// If we don't already know an old value, save one now.
 					if (storage_changes.find(key) == storage_changes.end())
 					{
@@ -547,6 +561,16 @@ void ArchipelagoClient::update()
 	}
 }
 
+bool ArchipelagoClient::pop_connected()
+{
+	if (connected_pending)
+	{
+		connected_pending = false;
+		return true;
+	}
+	return false;
+}
+
 // ------------------------------------------------------------------------
 // Room info and data packages
 
@@ -565,14 +589,20 @@ std::string_view ArchipelagoClient::seed_name() const
 	return "";
 }
 
-std::string_view ArchipelagoClient::slot_game_name(int id)
+std::string_view ArchipelagoClient::slot_game_name(int slot)
 {
-	return room_info_["games"][id].getString();
+	return room_info_["games"][slot].getString();
 }
 
-std::string_view ArchipelagoClient::slot_player_alias(int id)
+std::string_view ArchipelagoClient::slot_player_alias(int slot)
 {
-	return room_info_["players"][id]["alias"].getString();
+	if (slot == 0)
+	{
+		// Slot 0 is Archipelago regardless of team.
+		return "Archipelago";
+	}
+	// For now, assume AP teams feature is not in use and slot N is player N.
+	return room_info_["players"][slot - 1]["alias"].getString();
 }
 
 std::string_view ArchipelagoClient::item_name(int64_t item)
@@ -580,14 +610,24 @@ std::string_view ArchipelagoClient::item_name(int64_t item)
 	return item_names[item];
 }
 
-std::string_view ArchipelagoClient::location_name(int64_t item)
+std::string_view ArchipelagoClient::location_name(int64_t location)
 {
-	return location_names[item];
+	return location_names[location];
 }
 
 const std::map<std::string, jt::Json, std::less<>>& ArchipelagoClient::room_info() const
 {
 	return room_info_;
+}
+
+const jt::Json& ArchipelagoClient::room_info(std::string_view key) const
+{
+	auto iter = room_info_.find(key);
+	if (iter != room_info_.end())
+	{
+		return iter->second;
+	}
+	return json_null;
 }
 
 void ArchipelagoClient::load_data_package(std::string game, jt::Json value)
@@ -614,11 +654,11 @@ void ArchipelagoClient::load_data_package(std::string game, jt::Json value)
 const jt::Json& ArchipelagoClient::data_package(std::string_view game) const
 {
 	auto iter = data_packages.find(game);
-	if (iter == data_packages.end())
+	if (iter != data_packages.end())
 	{
-		return null;
+		return iter->second;
 	}
-	return iter->second;
+	return json_null;
 }
 
 // ------------------------------------------------------------------------
@@ -745,6 +785,45 @@ bool ArchipelagoClient::pop_death_link()
 
 // ------------------------------------------------------------------------
 // Storage system
+
+const jt::Json& ArchipelagoClient::storage(std::string_view key) const
+{
+	auto iter = storage_.find(key);
+	if (iter != storage_.end())
+	{
+		return iter->second;
+	}
+	return json_null;
+}
+
+const ArchipelagoClient::StorageChange* ArchipelagoClient::pop_storage_change()
+{
+	// TODO: this is a little unwieldy. Should it just be a vector internally?
+	auto iter_change = storage_changes.begin();
+	if (iter_change != storage_changes.end())
+	{
+		auto iter_value = storage_.find(iter_change->first);
+		if (iter_value != storage_.end())
+		{
+			storage_change.key = iter_value->first;
+			storage_change.new_value = &iter_value->second;
+			if (!storage_old_value)
+			{
+				storage_old_value = std::make_unique<jt::Json>();
+			}
+			*storage_old_value = std::move(iter_change->second);
+			storage_change.old_value = storage_old_value.get();
+			storage_changes.erase(iter_change);
+			return &storage_change;
+		}
+		else
+		{
+			// Shouldn't happen, but just in case.
+			storage_changes.erase(iter_change);
+		}
+	}
+	return nullptr;
+}
 
 void ArchipelagoClient::storage_get(Slice<std::string_view> keys)
 {

@@ -5,6 +5,7 @@ const int AP_BADGEMOD = 1000;
 const int AP_MODEMOD = 2000;
 
 #include <string>
+#include <string_view>
 #include <set>
 #include "options.h"
 #include <vector>
@@ -22,12 +23,11 @@ void SendArchipelagoPlayerVar(int v, int val);
 void SendDeathLink();
 void WinArchipelago();
 void ArchipelagoLoadPlayer();
-std::string ConnectionStatus();
+std::string_view ConnectionStatus();
 void DebugAPCommand();
 
 
 void Disconnect();
-void GetInfoFromAP();
 
 struct locationData {
 	std::string Name;
@@ -62,8 +62,7 @@ struct chatData {
 
 extern byte ap_cheatsAvail[40];
 extern byte ap_modesAvail[6];
-extern  std::unordered_map<int, bool> locsFound;
-extern std::unordered_map<int, int> itemsFound;
+extern std::unordered_map<int, bool> locsFound;
 extern bool ArchipelagoMode;
 extern bool locationWait;
 extern std::unordered_map<int, chatData> chat_table;
