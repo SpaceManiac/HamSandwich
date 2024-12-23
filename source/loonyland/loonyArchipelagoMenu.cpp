@@ -28,10 +28,7 @@ static std::string oldStatus = "";
 
 void InitArchipelagoMenu(void)
 {
-	for (int i = 0; i < NUM_BADGES; i++)
-	{
-		opt.cheats[i] = 0;
-	}
+
 	oldc = 255;
 	cursor = CURSOR_START;
 	InitPlasma(7);

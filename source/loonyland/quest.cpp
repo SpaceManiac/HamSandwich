@@ -1891,6 +1891,7 @@ void DoChatAction(byte a)
 			}
 			else if (ArchipelagoMode)
 			{
+				SendCheckedLocReward(VAR_TREEREWARD);
 				break;
 			}
 			else
@@ -1995,6 +1996,7 @@ void DoChatAction(byte a)
 			}
 			else if (ArchipelagoMode)
 			{
+				SendCheckedLocReward(VAR_CROPSREWARD);
 				break;
 			}
 			else
@@ -2014,6 +2016,7 @@ void DoChatAction(byte a)
 			}
 			else if (ArchipelagoMode)
 			{
+				SendCheckedLocReward(VAR_ZOMBIEREWARD);
 				break;
 			}
 			else
@@ -2106,6 +2109,7 @@ void DoChatAction(byte a)
 			}
 			else if (ArchipelagoMode)
 			{
+				SendCheckedLocReward(VAR_LARRYREWARD);
 				break;
 			}
 			else

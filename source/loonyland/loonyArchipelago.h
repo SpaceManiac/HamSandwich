@@ -15,6 +15,7 @@ int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string 
 void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y);
 void SendCheckedLocQuest(int questVar);
 void SendCheckedLocBadge(int badgeID);
+void SendCheckedLocReward(int badgeID);
 void SendLocationScout(int locId, bool createHint);
 void UpdateArchipelago();
 void SendArchipelagoPlayerVar(int v, int val);
@@ -40,6 +41,7 @@ struct locationData {
 	int Spec2ID;
 	std::string Region;
 	std::vector<int> chatCodes;
+	int scouted_item = -1;
 };
 
 struct itemData
@@ -66,6 +68,7 @@ extern bool ArchipelagoMode;
 extern bool locationWait;
 extern std::unordered_map<int, chatData> chat_table;
 extern std::string ArchipelagoSeed;
+extern locationData basic_locations[166];
 
 const std::set<int> DataStorageVars = { VAR_ORBSTAND, VAR_BOOTSALES, VAR_WITCHTALK, VAR_BRIDGEOPEN, VAR_ZOMBIE, VAR_ZOMBIEREWARD, VAR_VAMPYWALL, VAR_BATSTAND, VAR_VAMPSTAND,
 VAR_KNOWWOLVES, VAR_DOLL, VAR_DOLLGIVEN, VAR_TOWNOPEN, VAR_HELPERBAT, VAR_TALKBAT, VAR_TALKBRIDGE, VAR_PAIDBRIDGE, VAR_PORTALOPEN, VAR_DEADELDER, VAR_GATEOUT, VAR_DEADBONK,

@@ -303,7 +303,40 @@ loonyland_location_table = {\n"""
                         tracker_rules_lines += rules_line
 
                     #find location_map in children
-                    if location_map == "Halloween Hill" or (location_type_normal == "Quest" and location_xcoord):
+                    if location_type_normal == "Quest":
+                        data[0]['children'].append({
+                            "name": location_name_no_colon,
+                            "sections": [{"ref": f"Overworld/{location_region}/{location_name_no_colon}",
+                                         "name": f"{location_name_no_colon}"}],
+                            "map_locations": [{
+                            "map": "Quests",
+                            "x": (int)((int(location_map_id) / 10)) * 200 + 90,
+                            "y": ((int(location_map_id) % 10)) * 24  + 48,
+                            }]
+                        })
+                    elif location_type_normal == "Badge":
+                        data[0]['children'].append({
+                            "name": location_name_no_colon,
+                            "sections": [{"ref": f"Overworld/{location_region}/{location_name_no_colon}",
+                                         "name": f"{location_name_no_colon}"}],
+                            "map_locations": [{
+                            "map": "Badges",
+                            "x": (int)((int(location_map_id) / 10)) * 100 + 18,
+                            "y": ((int(location_map_id) % 10))  * 48   + 28,
+                            }]
+                        })
+                    elif location_type_normal == "Doll":
+                        data[0]['children'].append({
+                            "name": location_name_no_colon,
+                            "sections": [{"ref": f"Overworld/{location_region}/{location_name_no_colon}",
+                                         "name": f"{location_name_no_colon}"}],
+                            "map_locations": [{
+                            "map": "Dolls",
+                            "x": int(location_map_id) * 26 + 22,
+                            "y": 68,
+                            }]
+                        })
+                    elif location_map == "Halloween Hill":
                         data[0]['children'].append({
                             "name": location_name_no_colon,
                             "sections": [{"ref": f"Overworld/{location_region}/{location_name_no_colon}",
@@ -334,7 +367,7 @@ loonyland_location_table = {\n"""
                     tracker_mapping_lines +=f"    [{LOONYLAND_BASE_ID + int(location_id)}] = {{{{\"@Overworld/{row[LOC_REGION]}/{location_name_no_colon}\"}}}},\n"
 
                     #client data hamsandwich
-                    if location_type_normal == "Quest" or location_type_normal == "Badge":
+                    if location_type_normal == "Quest" or location_type_normal == "Badge" or location_type_normal == "Reward" or location_type_normal == "Doll":
                         location_xcoord_c = 0
                         location_ycoord_c = 0
                         location_spec1_c = 0

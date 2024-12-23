@@ -686,18 +686,39 @@ void BadgeCheatKey(char c)
 		SaveOptions();
 		MakeNormalSound(SND_ENTERMAP);
 	}
-	if(!strcmp("clear",&badgeKeys[16-strlen("clear")]))
+	if (!strcmp("clear", &badgeKeys[16 - strlen("clear")]))
 	{
-		for(i=0;i<NUM_BADGES;i++)
+		if (ArchipelagoMode)
 		{
-			opt.meritBadge[i] = MERIT_NO;
-			opt.cheats[i]=0;
+			if (apTabMode == 0)
+			{
+				for (i = 0; i < NUM_BADGES; i++)
+				{
+					ap_cheatsAvail[i] = 0;
+					opt.cheats[i] = 0;
+				}
+			}
+			else if (apTabMode == 1)
+			{
+				for (i = 0; i < NUM_BADGES; i++)
+				{
+					opt.meritBadge[i] = MERIT_NO;
+				}
+			}
 		}
-		for(i=0;i<10;i++)
-			opt.bossDead[i]=0;
-		for(i=0;i<5;i++)
-			opt.modes[i]=0;
-		opt.remixMode=0;
+		else
+		{
+			for (i = 0; i < NUM_BADGES; i++)
+			{
+				opt.meritBadge[i] = MERIT_NO;
+				opt.cheats[i] = 0;
+			}
+		}
+		for (i = 0; i < 10; i++)
+			opt.bossDead[i] = 0;
+		for (i = 0; i < 5; i++)
+			opt.modes[i] = 0;
+		opt.remixMode = 0;
 
 		MakeSuperLoony();
 		SaveOptions();
@@ -705,10 +726,30 @@ void BadgeCheatKey(char c)
 	}
 	if(!strcmp("giveall",&badgeKeys[16-strlen("giveall")]))
 	{
-		for(i=0;i<NUM_BADGES;i++)
+		if (ArchipelagoMode)
 		{
-			if (!opt.meritBadge[i])
-				opt.meritBadge[i] = MERIT_CHEATED;
+			if (apTabMode == 0)
+			{
+				for (i = 0; i < NUM_BADGES; i++)
+				{
+					ap_cheatsAvail[i] = 1;
+				}
+			}
+			else if (apTabMode == 1)
+			{
+				for (i = 0; i < NUM_BADGES; i++)
+				{
+					opt.meritBadge[i] = MERIT_CHEATED;
+					
+				}
+			}
+		}
+		else {
+			for (i = 0; i < NUM_BADGES; i++)
+			{
+				if (!opt.meritBadge[i])
+					opt.meritBadge[i] = MERIT_CHEATED;
+			}
 		}
 		for(i=0;i<5;i++)
 			opt.modes[i]=1;
