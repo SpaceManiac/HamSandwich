@@ -776,6 +776,8 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 	c=mgl->LastKeyPressed();
 	c2=GetControls()|GetArrows();
 
+	UpdateArchipelago();
+
 	// Ctrl+Shift is still how to type cheats, but gamepad CONTROL_B2 is quit
 	if(c==27 || (GetGamepadButtons() & ((1 << SDL_CONTROLLER_BUTTON_B) | (1 << SDL_CONTROLLER_BUTTON_BACK))))
 	{

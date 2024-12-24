@@ -55,6 +55,7 @@ class CSVProcessor:
                     itm_freq = row[ITM_FREQ]
                     itm_trackertype = row[ITM_TRACKERTYPE]
                     itm_sound = row[ITM_SOUND]
+                    itm_flags = row[ITM_FLAGS]
                     if itm_type == "CHEAT":
                         itm_id += AP_BADGEMOD
                     if itm_type == "ACCESS":
@@ -71,6 +72,8 @@ class CSVProcessor:
                                  f", ItemClassification.{itm_ic}")
                     if itm_freq:
                         python_lines += f", {itm_freq}"
+                    if itm_flags:
+                        python_lines += f", flags=[{itm_flags}]"
                     python_lines += "),\n"
 
                     # 2: tracker items ***********
@@ -82,6 +85,8 @@ class CSVProcessor:
                         "img": f"images/items/game items/itm_{itm_name.lower()}.png".replace(" ", "_"),
                         "codes": itm_name
                     }
+                    if(itm_type == "CHEAT"):
+                        item_json["img"] = f"images/items/badges/badge_{cheat_to_badge[globals()[itm_var]]}.png"
                     # Remove "max_quantity" if None (for "toggle" type)
                     if item_json["max_quantity"] is None:
                         del item_json["max_quantity"]
@@ -283,9 +288,16 @@ loonyland_location_table = {\n"""
                     location_peek_logic = row[LOC_PEEK_LOGIC]
                     location_override = row[LOC_OVERRIDE]
                     location_chat_codes = row[LOC_CHATCODES]
+                    location_flags = row[LOC_FLAGS]
+                    location_base_item = row[LOC_BASEITEM]
 
                     python_loc_lines += f"    \"{location_name}\": LLLocation(" \
-                                    f"{location_id}, LLLocCat.{location_type}, \"{location_region}\"),\n"
+                                    f"{location_id}, LLLocCat.{location_type}, {location_map_id}, \"{location_region}\""
+                    if location_flags:
+                        python_loc_lines += f", flags=[{location_flags}]"
+                    if location_base_item:
+                       python_loc_lines +=  f", base_item=\"{location_base_item}\""
+                    python_loc_lines += f"),\n"
 
                     tracker_loc_lines += f"    [\"{location_name_no_colon}\"]  = {{id={location_id}, type={location_type}, region=\"{location_region}\"}},\n"
 
@@ -303,17 +315,42 @@ loonyland_location_table = {\n"""
                         tracker_rules_lines += rules_line
 
                     #find location_map in children
-                    if location_type_normal == "Quest":
-                        data[0]['children'].append({
+                    if location_type_normal == "Reward":
+                        entry = {
+                            "name": location_name_no_colon,
+                            "sections": [{"ref": f"Overworld/{location_region}/{location_name_no_colon}",
+                                         "name": f"{location_name_no_colon}"}],
+                            "map_locations": [{
+                                "map": "Quests",
+                                "x": (int)((int(location_spec1) / 10)) * 238 + 49,
+                                "y": ((int(location_spec1) % 10)) * 24  + 44,
+                            }]
+                        }
+                        if location_map == "Halloween Hill":
+                            entry['map_locations'].append({
+                                "map": "Overworld",
+                                "x": (int(location_xcoord) + 1) * TILE_XSIZE,
+                                "y": (int(location_ycoord) + 1) * TILE_YSIZE
+                            })
+                        data[0]['children'].append(entry)
+                    elif location_type_normal == "Quest":
+                        entry = {
                             "name": location_name_no_colon,
                             "sections": [{"ref": f"Overworld/{location_region}/{location_name_no_colon}",
                                          "name": f"{location_name_no_colon}"}],
                             "map_locations": [{
                             "map": "Quests",
-                            "x": (int)((int(location_map_id) / 10)) * 200 + 90,
-                            "y": ((int(location_map_id) % 10)) * 24  + 48,
+                            "x": (int)((int(location_map_id) / 10)) * 238 + 25,
+                            "y": ((int(location_map_id) % 10)) * 24  + 44,
                             }]
-                        })
+                        }
+                        if location_map == "Halloween Hill":
+                            entry['map_locations'].append({
+                                "map": "Overworld",
+                                "x": (int(location_xcoord) + 1) * TILE_XSIZE,
+                                "y": (int(location_ycoord) + 1) * TILE_YSIZE
+                            })
+                        data[0]['children'].append(entry)
                     elif location_type_normal == "Badge":
                         data[0]['children'].append({
                             "name": location_name_no_colon,
@@ -321,8 +358,8 @@ loonyland_location_table = {\n"""
                                          "name": f"{location_name_no_colon}"}],
                             "map_locations": [{
                             "map": "Badges",
-                            "x": (int)((int(location_map_id) / 10)) * 100 + 18,
-                            "y": ((int(location_map_id) % 10))  * 48   + 28,
+                            "x": (int)((int(location_map_id) / 10)) * 96 + 19,
+                            "y": ((int(location_map_id) % 10))  * 46   + 29,
                             }]
                         })
                     elif location_type_normal == "Doll":
@@ -332,8 +369,8 @@ loonyland_location_table = {\n"""
                                          "name": f"{location_name_no_colon}"}],
                             "map_locations": [{
                             "map": "Dolls",
-                            "x": int(location_map_id) * 26 + 22,
-                            "y": 68,
+                            "x": int(location_map_id) * 40 + 29,
+                            "y": 56,
                             }]
                         })
                     elif location_map == "Halloween Hill":

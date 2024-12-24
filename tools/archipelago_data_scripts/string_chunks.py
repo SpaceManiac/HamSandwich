@@ -8,22 +8,23 @@ from worlds.loonyland.locations import LLLocation, LLLocCat
 from worlds.loonyland.regions import LLRegion
 from worlds.loonyland.rules import (
     can_cleanse_crypts,
+    can_kill_werewolves,
+    can_reach_bats,
+    can_reach_frog,
+    can_reach_ghost,
+    can_reach_mummy,
+    can_reach_skeleton,
+    can_reach_swampdog,
+    can_reach_vampire,
+    can_reach_wolves,
     have_39_badges,
     have_all_weapons,
     have_bombs,
     have_light_source,
+    have_many_bombs,
     have_special_weapon_bullet,
     have_special_weapon_damage,
     hundred_percent,
-    can_kill_werewolves,
-    can_reach_bats,
-    can_reach_skeleton,
-    can_reach_frog,
-    can_reach_ghost,
-    can_reach_mummy,
-    can_reach_swampdog,
-    can_reach_vampire,
-    can_reach_wolves,
 )
 
 ll_base_id: int = 2876900

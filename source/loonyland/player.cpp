@@ -1887,7 +1887,7 @@ void PlayerCalcStats()
 	{
 		if (player.var[VAR_PANTS + i] == 0)
 		{
-			player.fireRate = i;
+			player.fireRate = i + (opt.cheats[CH_RAPIDFIRE] * 2);
 			break;
 		}
 	}

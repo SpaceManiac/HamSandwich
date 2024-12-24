@@ -460,9 +460,20 @@ void SendLocationScout(int locId, bool createHint)
 
 void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y)
 {
+
 	if (mapName == "The Wolf Den" && x == 35 && y == 26)
 	{
 		EarnBadge(BADGE_HIDDEN);
+		return;
+	}
+	if (mapName == "Abandoned Mines" && x == 14 && y == 18)
+	{
+		EarnBadge(BADGE_REMIX);
+		return;
+	}
+	//skip survival for now
+	if (mapName == "Survival!")
+	{
 		return;
 	}
 	for (locationData loc : basic_locations)
