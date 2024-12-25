@@ -9,22 +9,28 @@
 
 namespace
 {
-	ArchipelagoManager gArchipelagoManager;
+	class Archipelago gArchipelagoManager;
 	std::unique_ptr<ArchipelagoClient> ap;
 
 	std::string serverAddress = "localhost:38281"; //"archipelago.gg:";
 	std::string slotName = "Spac";
 	std::string password;
+
+	constexpr int BASE_ID = 1234;  // TODO
+
+	constexpr int MESSAGE_TIME = 30 * 5;
+	int messageCooldown = MESSAGE_TIME;
+	bool countdownDone = false;
 }
 
 // ----------------------------------------------------------------------------
 
-ArchipelagoManager* Archipelago()
+class Archipelago* Archipelago()
 {
 	return ap ? &gArchipelagoManager : nullptr;
 }
 
-std::string_view ArchipelagoManager::Status()
+std::string_view Archipelago::Status()
 {
 	return
 		!ap ? "Not connected" :
@@ -32,6 +38,124 @@ std::string_view ArchipelagoManager::Status()
 		!ap->is_active() ? ap->connection_status() :
 		//locationWait ? "Scouting locations..." :
 		"Active";
+}
+
+byte Archipelago::MysticItemAtLocation(int chapter, int levelNum)
+{
+	int64_t location_id = BASE_ID + chapter * 50 + levelNum;
+	if (ap->checked_locations().find(location_id) != ap->checked_locations().end())
+	{
+		// It's been collected.
+		return ITM_NONE;
+	}
+
+	if (auto item = ap->item_at_location(location_id))
+	{
+		int64_t km_item_id = item->item - BASE_ID;
+		// TODO: check that km_item_id is in range
+	}
+	// Problem with the scouting.
+	return ITM_ARCHIPELAGO;
+}
+
+std::string_view Archipelago::ItemNameAtLocation(int chapter, int levelNum)
+{
+	int64_t location_id = BASE_ID + chapter * 50 + levelNum;
+	if (auto item = ap->item_at_location(location_id))
+	{
+		return ap->item_name(item->item);
+	}
+	// Problem with the scouting.
+	return "Unknown";
+}
+
+void Archipelago::PickupItem(int chapter, int levelNum)
+{
+	int id = BASE_ID + chapter * 50 + levelNum;
+	ap->check_location(id);
+}
+
+void Archipelago::CompleteChapter(int chapter)
+{
+	if (chapter == 3)
+	{
+		ap->check_goal();
+	}
+}
+
+void Archipelago::Update()
+{
+	if (!ap)
+	{
+		return;
+	}
+
+	ap->update();
+
+	// Handle reconnection by refreshing stuff.
+	if (ap->pop_connected())
+	{
+		std::vector<int64_t> all_locations;
+		all_locations.insert(all_locations.end(), ap->checked_locations().begin(), ap->checked_locations().end());
+		all_locations.insert(all_locations.end(), ap->missing_locations().begin(), ap->missing_locations().end());
+		ap->scout_locations(all_locations);
+	}
+
+	// Items
+	while (auto item = ap->pop_received_item())
+	{
+		//ItemReceived(item->item, true);
+	}
+
+	// Location checks
+	// TODO: track already-checked locations better
+	for (int64_t loc : ap->checked_locations())
+	{
+		loc -= BASE_ID;
+		/*if (!locsFound[loc])
+		{
+			SetLocationChecked(loc);
+		}*/
+	}
+
+	// Messages
+	if (messageCooldown > 0)
+	{
+		messageCooldown--;
+	}
+	else if (auto message = ap->pop_message())
+	{
+		if (message->type == ArchipelagoClient::Message::ItemSend)
+		{
+			if (message->receiving == ap->player_id())
+			{
+				// Got [item] from [player].
+				std::string text = "Got ";
+				text += ap->item_name(message->item.item);
+				text += " from ";
+				text += ap->slot_player_alias(message->item.player);
+				NewMessage(text.c_str(), MESSAGE_TIME);
+				messageCooldown = MESSAGE_TIME;
+			}
+			else if (message->item.player == ap->player_id())
+			{
+				// Sent [item] to [player].
+				std::string text = "Sent ";
+				text += ap->item_name(message->item.item);
+				text += " to ";
+				text += ap->slot_player_alias(message->receiving);
+				NewMessage(text.c_str(), MESSAGE_TIME);
+				messageCooldown = MESSAGE_TIME;
+			}
+		}
+		else if (message->type == ArchipelagoClient::Message::Countdown)
+		{
+			if (message->countdown == 0)
+			{
+				countdownDone = true;
+			}
+		}
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -51,12 +175,13 @@ ArchipelagoMenu(MGLDraw* mgl)
 
 	// ------------------------------------------------------------------------
 	// Init
+	InitPlayer(INIT_GAME, 0, 0);
 
 	while (running)
 	{
 		// --------------------------------------------------------------------
 		// Update
-		byte chapterLimit = ap && ap->is_active() ? 1 : 0;
+		byte chapterLimit = ap && ap->is_active() ? 4 : 0;
 		int typingY = -1;
 
 		byte c = GetControls() | GetArrows();
@@ -99,8 +224,12 @@ ArchipelagoMenu(MGLDraw* mgl)
 				}
 				else if (cursor == 5 || cursor == 6 || cursor == 7 || cursor == 8)
 				{
-					// TODO: warp to the desired chapter
-					AWAIT LunaticGame(mgl, 0);
+					player.worldNum = cursor - 5;
+					player.overworldX = -2000;
+					AWAIT ShowVictoryAnim(player.worldNum);
+					AWAIT LunaticGame(mgl, 1);
+					oldc = ~0;
+					continue;
 				}
 			}
 			if (k == SDLK_ESCAPE)
@@ -145,8 +274,17 @@ ArchipelagoMenu(MGLDraw* mgl)
 		}
 		oldc = c;
 
-		if (ap)
-			ap->update();
+		countdownDone = false;
+		gArchipelagoManager.Update();
+		if (countdownDone && chapterLimit == 1)
+		{
+			player.worldNum = 0;
+			player.overworldX = -2000;
+			AWAIT ShowVictoryAnim(0);
+			AWAIT LunaticGame(mgl, 1);
+			oldc = ~0;
+			continue;
+		}
 
 		// --------------------------------------------------------------------
 		// Render
@@ -164,7 +302,9 @@ ArchipelagoMenu(MGLDraw* mgl)
 		RightPrint(320,6*20,"Password: ",0,1);
 		Print(320,6*20,std::string(password.size(), '*'),0,1);
 		if (typing && typingY >= 0)
+		{
 			Print(320 + typingY, (cursor + 3)*20, "_", 0, 1);
+		}
 
 		CenterPrint(320,7*20,"Connect",0,1);
 

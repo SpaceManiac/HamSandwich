@@ -5,6 +5,7 @@
 #include "options.h"
 #include "water.h"
 #include "appdata.h"
+#include "archipelago.h"
 
 #define PLYR_ACCEL	(FIXAMT)
 #define PLYR_DECEL	(FIXAMT*3/4)
@@ -873,6 +874,13 @@ byte PlayerGetItem(byte itm,int x,int y)
 				FloaterParticles(x,y,0,20,0,32);
 				FloaterParticles(x,y,0,40,0,32);
 				return 1;
+			}
+			break;
+		case ITM_ARCHIPELAGO:
+			if (auto ap = Archipelago())
+			{
+				ap->PickupItem(player.worldNum, player.levelNum);
+				return 0;
 			}
 			break;
 	}

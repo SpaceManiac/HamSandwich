@@ -5,18 +5,25 @@
 #include <string_view>
 
 // The interface from the rest of the game to the Archipelago module.
-class ArchipelagoManager
+class Archipelago
 {
-	ArchipelagoManager(const ArchipelagoManager&) = delete;
-	ArchipelagoManager(ArchipelagoManager&&) = delete;
-	ArchipelagoManager& operator=(const ArchipelagoManager&) = delete;
-	ArchipelagoManager& operator=(ArchipelagoManager&&) = delete;
+	Archipelago(const Archipelago&) = delete;
+	Archipelago(Archipelago&&) = delete;
+	Archipelago& operator=(const Archipelago&) = delete;
+	Archipelago& operator=(Archipelago&&) = delete;
 public:
-	ArchipelagoManager() {}
+	Archipelago() {}
 
 	std::string_view Status();
+	void Update();
+
+	byte MysticItemAtLocation(int chapter, int levelNum);
+	std::string_view ItemNameAtLocation(int chapter, int levelNum);
+
+	void PickupItem(int chapter, int levelNum);
+	void CompleteChapter(int chapter);
 };
-ArchipelagoManager* Archipelago();
+class Archipelago* Archipelago();
 
 TASK(void) ArchipelagoMenu(MGLDraw* mgl);
 
