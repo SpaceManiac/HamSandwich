@@ -1,4 +1,5 @@
 #include "archipelago.h"
+#include <map>
 #include <memory>
 #include <string>
 #include <aegea.h>
@@ -21,6 +22,71 @@ namespace
 	constexpr int MESSAGE_TIME = 30 * 5;
 	int messageCooldown = MESSAGE_TIME;
 	bool countdownDone = false;
+
+	std::map<int64_t, byte> appearance_map = {
+		{BASE_ID + 0 * 50 + 5, ITM_KEYCH1},
+		{BASE_ID + 1 * 50 + 4, ITM_KEYCH2},
+		{BASE_ID + 2 * 50 + 7, ITM_KEYCH3},
+		{BASE_ID + 3 * 50 + 8, ITM_KEYCH4},
+		{BASE_ID + 0 * 50 + 11, ITM_SPELLBOOK},
+		{BASE_ID + 0 * 50 + 2, ITM_SPELLBOOK},
+		{BASE_ID + 0 * 50 + 3, ITM_SPELLBOOK},
+		{BASE_ID + 0 * 50 + 4, ITM_SPELLBOOK},
+		{BASE_ID + 1 * 50 + 2, ITM_SPELLBOOK},
+		{BASE_ID + 1 * 50 + 6, ITM_SPELLBOOK},
+		{BASE_ID + 1 * 50 + 11, ITM_SPELLBOOK},
+		{BASE_ID + 1 * 50 + 5, ITM_SPELLBOOK},
+		{BASE_ID + 1 * 50 + 3, ITM_SPELLBOOK},
+		{BASE_ID + 2 * 50 + 11, ITM_SPELLBOOK},
+		{BASE_ID + 2 * 50 + 6, ITM_SPELLBOOK},
+		{BASE_ID + 2 * 50 + 13, ITM_SPELLBOOK},
+		{BASE_ID + 2 * 50 + 16, ITM_SPELLBOOK},
+		{BASE_ID + 2 * 50 + 9, ITM_SPELLBOOK},
+		{BASE_ID + 3 * 50 + 6, ITM_SPELLBOOK},
+		{BASE_ID + 3 * 50 + 7, ITM_SPELLBOOK},
+		{BASE_ID + 3 * 50 + 9, ITM_SPELLBOOK},
+		{BASE_ID + 3 * 50 + 10, ITM_SPELLBOOK},
+		{BASE_ID + 0 * 50 + 12, ITM_FAIRYBELL},
+		{BASE_ID + 0 * 50 + 15, ITM_FAIRYBELL},
+		{BASE_ID + 0 * 50 + 16, ITM_FAIRYBELL},
+		{BASE_ID + 0 * 50 + 17, ITM_FAIRYBELL},
+		{BASE_ID + 1 * 50 + 13, ITM_FAIRYBELL},
+		{BASE_ID + 1 * 50 + 14, ITM_FAIRYBELL},
+		{BASE_ID + 1 * 50 + 15, ITM_FAIRYBELL},
+		{BASE_ID + 1 * 50 + 16, ITM_FAIRYBELL},
+		{BASE_ID + 2 * 50 + 17, ITM_FAIRYBELL},
+		{BASE_ID + 2 * 50 + 18, ITM_FAIRYBELL},
+		{BASE_ID + 2 * 50 + 19, ITM_FAIRYBELL},
+		{BASE_ID + 2 * 50 + 20, ITM_FAIRYBELL},
+		{BASE_ID + 3 * 50 + 12, ITM_FAIRYBELL},
+		{BASE_ID + 3 * 50 + 13, ITM_FAIRYBELL},
+		{BASE_ID + 3 * 50 + 14, ITM_FAIRYBELL},
+		{BASE_ID + 3 * 50 + 15, ITM_FAIRYBELL},
+		{BASE_ID + 4 * 50 + 0, 128 + 14},
+		{BASE_ID + 4 * 50 + 1, 128 + 14},
+		{BASE_ID + 4 * 50 + 2, 128 + 14},
+		{BASE_ID + 4 * 50 + 3, 128 + 14},
+		{BASE_ID + 4 * 50 + 4, 128 + 32},
+		{BASE_ID + 4 * 50 + 5, 128 + 4},
+		{BASE_ID + 4 * 50 + 6, 128 + 4},
+		{BASE_ID + 4 * 50 + 7, 128 + 4},
+		{BASE_ID + 4 * 50 + 8, 128 + 4},
+		{BASE_ID + 4 * 50 + 9, 128 + 27},
+		{BASE_ID + 4 * 50 + 10, 128 + 9},
+		{BASE_ID + 4 * 50 + 11, 128 + 9},
+		{BASE_ID + 4 * 50 + 12, 128 + 9},
+		{BASE_ID + 4 * 50 + 13, 128 + 9},
+		{BASE_ID + 4 * 50 + 14, 128 + 29},
+		{BASE_ID + 4 * 50 + 15, 128 + 18},
+		{BASE_ID + 4 * 50 + 16, 128 + 19},
+		{BASE_ID + 4 * 50 + 17, 128 + 20},
+		{BASE_ID + 4 * 50 + 18, 128 + 28},
+		{BASE_ID + 4 * 50 + 19, 128 + 30},
+		{BASE_ID + 4 * 50 + 20, 128 + 25},
+		{BASE_ID + 4 * 50 + 21, 128 + 23},
+		{BASE_ID + 4 * 50 + 22, 128 + 21},
+		{BASE_ID + 4 * 50 + 23, 128 + 31},
+	};
 }
 
 // ----------------------------------------------------------------------------
@@ -40,22 +106,133 @@ std::string_view Archipelago::Status()
 		"Active";
 }
 
+bool Archipelago::HasCheckedLocation(int chapter, int levelNum)
+{
+	int64_t location_id = BASE_ID + chapter * 50 + levelNum;
+	return ap->checked_locations().find(location_id) != ap->checked_locations().end();
+}
+
 byte Archipelago::MysticItemAtLocation(int chapter, int levelNum)
 {
 	int64_t location_id = BASE_ID + chapter * 50 + levelNum;
-	if (ap->checked_locations().find(location_id) != ap->checked_locations().end())
-	{
-		// It's been collected.
-		return ITM_NONE;
-	}
-
 	if (auto item = ap->item_at_location(location_id))
 	{
-		int64_t km_item_id = item->item - BASE_ID;
-		// TODO: check that km_item_id is in range
+		byte appearance = appearance_map[item->item];
+		if (appearance == 128 + 14)
+		{
+			return appearance + std::min(player.hat, (byte)3);
+		}
+		else if (appearance == 128 + 4)
+		{
+			return appearance + std::min(player.staff, (byte)3);
+		}
+		else if (appearance == 128 + 9)
+		{
+			return appearance + std::min(player.boots, (byte)3);
+		}
+		else if (appearance != 0)
+		{
+			return appearance;
+		}
 	}
-	// Problem with the scouting.
+	// Problem with the scouting, or it belongs to another world.
 	return ITM_ARCHIPELAGO;
+}
+
+static std::string_view ItemName(const ArchipelagoClient::Item& item)
+{
+	auto name = ap->item_name(item.item);
+	if (item.player == ap->player_id())
+	{
+		if (name == "Hat Upgrade")
+		{
+			name =
+				player.hat == 0 ? "Felt Hat" :
+				player.hat == 1 ? "Moon Hat" :
+				player.hat == 2 ? "Checkered Hat" :
+				"Steel Hat";
+		}
+		else if (name == "Staff Upgrade")
+		{
+			name =
+				player.hat == 0 ? "Pine Staff" :
+				player.hat == 1 ? "Oak Staff" :
+				player.hat == 2 ? "Ironwood Staff" :
+				"Mystical Staff";
+		}
+		else if (name == "Boots Upgrade")
+		{
+			name =
+				player.hat == 0 ? "Leather Boots" :
+				player.hat == 1 ? "Doc Merlins" :
+				player.hat == 2 ? "Lucky Boots" :
+				"Air Lancelots";
+		}
+		else if (name == "Energy Barrage")
+		{
+			if (player.spell[0])
+			{
+				name = "Energy Storm";
+			}
+		}
+		else if (name == "Dragon's Flame")
+		{
+			if (player.spell[1])
+			{
+				name = "Liquify";
+			}
+		}
+		else if (name == "Seeker Bolt")
+		{
+			if (player.spell[2])
+			{
+				name = "Seeker Swarm";
+			}
+		}
+		else if (name == "Ice Blast")
+		{
+			if (player.spell[3])
+			{
+				name = "Ice Beam";
+			}
+		}
+		else if (name == "Inferno")
+		{
+			if (player.spell[4])
+			{
+				name = "Hyper Inferno";
+			}
+		}
+		else if (name == "Summon Ptero")
+		{
+			if (player.spell[5])
+			{
+				name = "Summon Golem";
+			}
+		}
+		else if (name == "Stoneskin")
+		{
+			if (player.spell[6])
+			{
+				name = "Steelskin";
+			}
+		}
+		else if (name == "Berserk")
+		{
+			if (player.spell[7])
+			{
+				name = "Insane Rage";
+			}
+		}
+		else if (name == "Healing")
+		{
+			if (player.spell[8])
+			{
+				name = "Life";
+			}
+		}
+	}
+	return name;
 }
 
 std::string_view Archipelago::ItemNameAtLocation(int chapter, int levelNum)
@@ -63,7 +240,7 @@ std::string_view Archipelago::ItemNameAtLocation(int chapter, int levelNum)
 	int64_t location_id = BASE_ID + chapter * 50 + levelNum;
 	if (auto item = ap->item_at_location(location_id))
 	{
-		return ap->item_name(item->item);
+		return ItemName(*item);
 	}
 	// Problem with the scouting.
 	return "Unknown";
@@ -99,23 +276,14 @@ void Archipelago::Update()
 		all_locations.insert(all_locations.end(), ap->checked_locations().begin(), ap->checked_locations().end());
 		all_locations.insert(all_locations.end(), ap->missing_locations().begin(), ap->missing_locations().end());
 		ap->scout_locations(all_locations);
+
+		// TODO: refetch player state and resync items?
 	}
 
 	// Items
 	while (auto item = ap->pop_received_item())
 	{
-		//ItemReceived(item->item, true);
-	}
-
-	// Location checks
-	// TODO: track already-checked locations better
-	for (int64_t loc : ap->checked_locations())
-	{
-		loc -= BASE_ID;
-		/*if (!locsFound[loc])
-		{
-			SetLocationChecked(loc);
-		}*/
+		// TODO
 	}
 
 	// Messages
@@ -131,10 +299,11 @@ void Archipelago::Update()
 			{
 				// Got [item] from [player].
 				std::string text = "Got ";
-				text += ap->item_name(message->item.item);
+				text += ItemName(message->item);
 				text += " from ";
 				text += ap->slot_player_alias(message->item.player);
 				NewMessage(text.c_str(), MESSAGE_TIME);
+				MakeNormalSound(SND_MESSAGE);
 				messageCooldown = MESSAGE_TIME;
 			}
 			else if (message->item.player == ap->player_id())
@@ -145,6 +314,7 @@ void Archipelago::Update()
 				text += " to ";
 				text += ap->slot_player_alias(message->receiving);
 				NewMessage(text.c_str(), MESSAGE_TIME);
+				MakeNormalSound(SND_MESSAGE);
 				messageCooldown = MESSAGE_TIME;
 			}
 		}

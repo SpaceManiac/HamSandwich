@@ -176,7 +176,7 @@ byte InitLevel(byte map)
 					|| item==ITM_FAIRYBELL || item==ITM_SPELLBOOK)
 				{
 					// ^ Each map is presumed to have exactly one of these.
-					curMap->map[i].item = ap->MysticItemAtLocation(player.worldNum, player.levelNum) == ITM_NONE ? ITM_NONE : ITM_ARCHIPELAGO;
+					curMap->map[i].item = ap->HasCheckedLocation(player.worldNum, player.levelNum) ? ITM_NONE : ITM_ARCHIPELAGO;
 				}
 			}
 		}
