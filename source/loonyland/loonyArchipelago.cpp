@@ -461,10 +461,10 @@ void UpdateArchipelago()
 	while (auto change = ap->pop_storage_change())
 	{
 		auto [key, value, _] = *change;
-		if (value->isLong() && key.size() > prefix.size() && key.substr(0, prefix.size()) == prefix)
+		auto var = ap->starts_with_storage_private(key, "PLAYER_VAR_");
+		if (value->isLong() && !var.empty())
 		{
-			int var = std::stoi(std::string(key.substr(prefix.size())));
-			player.var[var] = value->getLong();
+			player.var[std::stoi(std::string(var))] = value->getLong();
 		}
 	}
 }

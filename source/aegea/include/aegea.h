@@ -256,9 +256,14 @@ public:
 	void storage_set_notify(Slice<std::string_view> keys);
 
 	// Return a storage prefix unique to this slot to avoid conflicts.
-	std::string_view storage_private();
+	std::string_view storage_private() const;
 	// Return storage_private() + key.
-	std::string storage_private(std::string_view key);
+	std::string storage_private(std::string_view key) const;
+	// Checks whether `full_key` starts with `storage_private(prefix)`.
+	// Returns the remainder of the string.
+	std::string_view starts_with_storage_private(std::string_view full_key, std::string_view prefix = {}) const;
+	// Checks whether `full_key` is equal to `storage_private(key)`.
+	bool is_storage_private(std::string_view full_key, std::string_view key) const;
 
 	// ------------------------------------------------------------------------
 private:

@@ -881,14 +881,32 @@ void ArchipelagoClient::storage_set_notify(Slice<std::string_view> keys)
 	}
 }
 
-std::string_view ArchipelagoClient::storage_private()
+std::string_view ArchipelagoClient::storage_private() const
 {
 	return storage_private_prefix;
 }
 
-std::string ArchipelagoClient::storage_private(std::string_view key)
+std::string ArchipelagoClient::storage_private(std::string_view key) const
 {
 	std::string copy = storage_private_prefix;
 	copy += key;
 	return copy;
+}
+
+std::string_view ArchipelagoClient::starts_with_storage_private(std::string_view full_key, std::string_view prefix) const
+{
+	if (full_key.size() >= storage_private_prefix.size() + prefix.size()
+		&& full_key.substr(0, storage_private_prefix.size()) == storage_private_prefix
+		&& full_key.substr(storage_private_prefix.size(), prefix.size()) == prefix)
+	{
+		return full_key.substr(storage_private_prefix.size() + prefix.size());
+	}
+	return {};
+}
+
+bool ArchipelagoClient::is_storage_private(std::string_view full_key, std::string_view key) const
+{
+	return full_key.size() == storage_private_prefix.size() + key.size()
+		&& full_key.substr(0, storage_private_prefix.size()) == storage_private_prefix
+		&& full_key.substr(storage_private_prefix.size(), key.size()) == key;
 }
