@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <aegea.h>
+#include <json.h>
 #include "sound.h"
 #include "display.h"
 #include "control.h"
@@ -275,6 +276,7 @@ void Archipelago::Update()
 	if (ap->pop_connected())
 	{
 		ap->scout_locations();
+		ap->storage_get({ ap->storage_private("xp"), ap->storage_private("money") });
 		// Server will send ReceivedItems soon, so we need to reset progression.
 		memset(player.spell, 0, 9);
 		player.hat = player.staff = player.boots = 0;
@@ -418,6 +420,37 @@ void Archipelago::Update()
 			}
 		}
 	}
+
+	while (auto change = ap->pop_storage_change())
+	{
+		if (ap->is_storage_private(change->key, "xp"))
+		{
+			if (change->new_value->isLong())
+			{
+				player.prevScore = player.score = change->new_value->getLong();
+			}
+		}
+		else if (ap->is_storage_private(change->key, "money"))
+		{
+			if (change->new_value->isLong())
+			{
+				player.prevMoney = player.money = std::min(change->new_value->getLong(), (long long)UINT16_MAX);
+			}
+		}
+	}
+
+	// Re-use prevScore and prevMoney since we're not resetting them on death.
+	if (player.score != player.prevScore)
+	{
+		player.prevScore = player.score;
+		ap->storage_set(ap->storage_private("xp"), player.score, false);
+	}
+
+	if (player.money != player.prevMoney)
+	{
+		player.prevMoney = player.money;
+		ap->storage_set(ap->storage_private("money"), player.money, false);
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -443,7 +476,7 @@ ArchipelagoMenu(MGLDraw* mgl)
 	{
 		// --------------------------------------------------------------------
 		// Update
-		byte chapterLimit = ap && ap->is_active() ? 4 : 0;
+		bool chapters[4] = { ap && ap->is_active(), false, false, false };
 		int typingY = -1;
 
 		byte c = GetControls() | GetArrows();
@@ -454,9 +487,13 @@ ArchipelagoMenu(MGLDraw* mgl)
 			{
 				if (cursor == 0)
 				{
-					cursor = 4 + chapterLimit;
+					cursor = 8;
 				}
 				else
+				{
+					--cursor;
+				}
+				while (cursor >= 5 && cursor < 9 && !chapters[cursor - 5])
 				{
 					--cursor;
 				}
@@ -464,7 +501,11 @@ ArchipelagoMenu(MGLDraw* mgl)
 			if (c & ~oldc & CONTROL_DN)
 			{
 				++cursor;
-				if (cursor > 4 + chapterLimit)
+				while (cursor >= 5 && cursor < 9 && !chapters[cursor - 5])
+				{
+					++cursor;
+				}
+				if (cursor > 8)
 				{
 					cursor = 0;
 				}
@@ -538,7 +579,7 @@ ArchipelagoMenu(MGLDraw* mgl)
 
 		countdownDone = false;
 		gArchipelagoManager.Update();
-		if (countdownDone && chapterLimit == 1)
+		if (countdownDone && !chapters[1] && !chapters[2] && !chapters[3])
 		{
 			player.worldNum = 0;
 			player.overworldX = -2000;
@@ -570,10 +611,10 @@ ArchipelagoMenu(MGLDraw* mgl)
 
 		CenterPrint(320,7*20,"Connect",0,1);
 
-		if (chapterLimit >= 1) CenterPrint(320,9*20,"Chapter 1",0,1);
-		if (chapterLimit >= 2) CenterPrint(320,10*20,"Chapter 2",0,1);
-		if (chapterLimit >= 3) CenterPrint(320,11*20,"Chapter 3",0,1);
-		if (chapterLimit >= 4) CenterPrint(320,12*20,"Chapter 4",0,1);
+		if (chapters[0]) CenterPrint(320,9*20,"Chapter 1",0,1);
+		if (chapters[1]) CenterPrint(320,10*20,"Chapter 2",0,1);
+		if (chapters[2]) CenterPrint(320,11*20,"Chapter 3",0,1);
+		if (chapters[3]) CenterPrint(320,12*20,"Chapter 4",0,1);
 
 		CenterPrint(320, 14*20, gArchipelagoManager.Status(), 0, 1);
 

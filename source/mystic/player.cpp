@@ -344,7 +344,7 @@ void PoisonPlayer(byte amt)
 
 void PlayerResetScore(void)
 {
-	if(!Challenging())
+	if(!Challenging() && !Archipelago())
 	{
 		player.score=player.prevScore;
 		player.level=player.prevLevel;
@@ -754,7 +754,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 				MakeNormalSound(SND_KOOLKAT);
 				playerGlow=127;
 			}
-			player.score+=25;
+			//player.score+=25;
 			FloaterParticles(x,y,1,24,0,8);
 			FloaterParticles(x,y,1,1,3,8);
 			return 0;

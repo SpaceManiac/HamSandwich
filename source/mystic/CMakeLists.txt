@@ -3,4 +3,4 @@ HamSandwich_add_executable(
 	mystic
 	SOURCES ${sources}
 )
-target_link_libraries(mystic aegea)
+target_link_libraries(mystic aegea jtjson)
