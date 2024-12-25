@@ -21,6 +21,7 @@
 #include "options.h"
 #include "nag.h"
 #include "appdata.h"
+#include "archipelago.h"
 
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
@@ -123,6 +124,9 @@ TASK(int) main(int argc, char* argv[])
 #ifndef DEMO
 				AWAIT LunaticEditor(mainmgl);
 #endif
+				break;
+			case 6:
+				AWAIT ArchipelagoMenu(mainmgl);
 				break;
 		}
 	}

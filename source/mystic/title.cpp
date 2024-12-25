@@ -257,6 +257,11 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			return 1;
 		}
 //#endif
+		if(c==SDLK_p)
+		{
+			title->cursor=6;
+			return 1;
+		}
 		*lastTime-=TIME_PER_FRAME;
 	}
 
