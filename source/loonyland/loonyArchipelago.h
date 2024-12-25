@@ -13,10 +13,11 @@ const int AP_MODEMOD = 2000;
 #include "player.h"
 
 int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password);
-void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y);
+void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y, int itm_id);
 void SendCheckedLocQuest(int questVar);
 void SendCheckedLocBadge(int badgeID);
 void SendCheckedLocReward(int badgeID);
+void SendCheckedLocDoll(int dollId);
 void SendLocationScout(int locId, bool createHint);
 void UpdateArchipelago();
 void SendArchipelagoPlayerVar(int v, int val);

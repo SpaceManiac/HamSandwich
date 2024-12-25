@@ -247,7 +247,6 @@ int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string 
 		opt.meritBadge[i] = MERIT_NO;
 	}
 	ap = std::make_unique<ArchipelagoClient>("Loonyland", IPAddress, SlotName, Password);
-	//AP_SetLocationCheckedCallback(SetLocationChecked);
 	ap->death_link_enable();
 
 	SetupWorld();
@@ -458,7 +457,7 @@ void SendLocationScout(int locId, bool createHint)
 	ap->scout_locations({ locId+loonyland_base_id }, createHint);
 }
 
-void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y)
+void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y, int item_id)
 {
 
 	if (mapName == "The Wolf Den" && x == 35 && y == 26)
@@ -489,6 +488,17 @@ void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y)
 		}
 	}
 	std::cout << "AP ITEM MISS: " << mapName << " " << x << " " << y << std::endl;
+	//give player the raw item
+	for (auto item_data : basic_items)
+	{
+		if (item_data.second.ingame_ID == item_id)
+		{
+			GivePlayerItem(item_data.first, true);
+			return;
+		}
+	}
+
+
 
 }
 void SendCheckedLocQuest(int questVar)
@@ -515,6 +525,7 @@ void SendCheckedLocBadge(int badgeID)
 		}
 	}
 	std::cout << "AP BADGE MISS: " << badgeID << std::endl;
+	EarnBadge(badgeID);
 }
 
 void SendCheckedLocReward(int rewardID)
@@ -530,16 +541,20 @@ void SendCheckedLocReward(int rewardID)
 	std::cout << "AP REWARD MISS: " << rewardID << std::endl;
 }
 
-void SendCheckedLocDoll(int locID)
+void SendCheckedLocDoll(int dollId)
 {
-
+	for (locationData loc : basic_locations)
+	{
+		if (loc.Type == "Doll" && loc.MapID == dollId) //map ids are where the quest var is stored for those locations
+		{
+			SendCheckedItem(loc.ID);
+			return;
+		}
+	}
+	std::cout << "AP DOLL MISS: " << dollId << std::endl;
+	GivePlayerItem(VAR_BATDOLL + dollId, true);
 }
 
-
-void SendCheckedTalkReward(int talkVar)
-{
-
-}
 
 void SendCheckedItem(int loc_id)
 {

@@ -83,9 +83,12 @@ class CSVProcessor:
                         "type": itm_trackertype,
                         "max_quantity": int(itm_freq) if itm_freq else None,
                         "img": f"images/items/game items/itm_{itm_name.lower()}.png".replace(" ", "_"),
-                        "codes": itm_name
+                        "codes": f"{itm_name}, {itm_type}"
                     }
-                    if(itm_type == "CHEAT"):
+                    if itm_flags:
+                        flags_lua = itm_flags.replace("\"", "")
+                        item_json["codes"] += f", {flags_lua}"
+                    if itm_type == "CHEAT":
                         item_json["img"] = f"images/items/badges/badge_{cheat_to_badge[globals()[itm_var]]}.png"
                     # Remove "max_quantity" if None (for "toggle" type)
                     if item_json["max_quantity"] is None:
@@ -212,11 +215,11 @@ class CSVProcessor:
             quantity = match.group(2)
             if quantity:
                 if input_format == "python" :
-                    return f'state.has("{item}", player, {quantity})'
+                    return f'state.has("{item}", world.player, {quantity})'
                 if input_format == "lua":
                     return f'state:has("{item}", {quantity})'
             if input_format == "python":
-                return f'state.has("{item}", player)'
+                return f'state.has("{item}", world.player)'
             if input_format == "lua":
                 return f'state:has("{item}")'
 
@@ -228,14 +231,16 @@ class CSVProcessor:
                 return f'{function_name}({arguments})'
             if function_name=="can_reach":
                 if input_format == "python":
-                    return f'state.can_reach_region(\"{arguments}\", player)'
+                    return f'state.can_reach_region(\"{arguments}\", world.player)'
                 if input_format == "lua":
                     return f"{function_name}(\"{arguments}\")"
             if input_format == "python":
                 if arguments:
-                    return f'{function_name}(state, player, {arguments})'
-                return f'{function_name}(state, player)'
+                    return f'{function_name}(state, world, {arguments})'
+                return f'{function_name}(state, world)'
             if input_format == "lua":
+                if arguments:
+                    return f"{function_name}(state, {arguments})"
                 return f"{function_name}(state)"
 
         # Replace items like "Hose"10 or "Fertilizer"

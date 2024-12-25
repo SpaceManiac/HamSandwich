@@ -969,14 +969,21 @@ byte PlayerGetItem(byte itm,int x,int y)
 	if(ItemFlags(itm)&IF_GET)
 	{
 		if (ArchipelagoMode && ItemFlags(itm) & IF_ARCHIPELAGO) {
-			if (itm < ITM_WBOMB || itm > ITM_WHOTPANTS)
+			if (itm < ITM_WBOMB || itm > ITM_WHOTPANTS) //weapons
 			{
-				SendCheckedLocPickup(curMap->name, player.levelNum, x, y);
-				return 0;
+				if (player.var[itm - ITM_WBOMB + VAR_WEAPON] == 0) //let it process normally if its not your first
+				{
+					SendCheckedLocPickup(curMap->name, player.levelNum, x, y, itm);
+					return 0;
+				}
 			}
-			if (player.var[itm - ITM_WBOMB + VAR_WEAPON] == 0)
+			else if (itm > ITM_BATDOLL && itm <= ITM_WOLFDOLL) //dolls
 			{
-				SendCheckedLocPickup(curMap->name, player.levelNum, x, y);
+				SendCheckedLocDoll(itm - ITM_BATDOLL);
+			}
+			else //other ap
+			{
+				SendCheckedLocPickup(curMap->name, player.levelNum, x, y, itm);
 				return 0;
 			}
 		}
@@ -1645,7 +1652,7 @@ void PlayerControlMe(Guy *me,Map *map,mapTile_t *mapTile,world_t *world)
 	if(tportclock)
 		tportclock--;
 
-	if(opt.cheats[CH_SIDEKICK])
+	if(opt.cheats[CH_SIDEKICK] && !ArchipelagoMode)
 	{
 		player.var[VAR_QUESTASSIGN+QUEST_FARLEY]=1;
 		player.var[VAR_QUESTDONE+QUEST_FARLEY]=1;
@@ -1803,7 +1810,7 @@ void CallFarley(Guy *me)
 	if(opt.cheats[CH_NOFARLEY])
 		return;
 
-	if((opt.cheats[CH_SIDEKICK] ||
+	if((opt.cheats[CH_SIDEKICK]  && !ArchipelagoMode ||
 		(player.hearts==player.maxHearts && (player.fireFlags&FF_HELPER))) &&
 		!(player.fireFlags&FF_HELPERHERE) && (!MonsterExists(MONS_HELPERBAT)))
 	{

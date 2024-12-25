@@ -8,6 +8,7 @@ from worlds.loonyland.locations import LLLocation, LLLocCat
 from worlds.loonyland.regions import LLRegion
 from worlds.loonyland.rules import (
     can_cleanse_crypts,
+    can_do_collection,
     can_kill_werewolves,
     can_reach_bats,
     can_reach_frog,
@@ -25,6 +26,7 @@ from worlds.loonyland.rules import (
     have_special_weapon_bullet,
     have_special_weapon_damage,
     hundred_percent,
+    power_level
 )
 
 ll_base_id: int = 2876900
@@ -37,17 +39,17 @@ pyRegionHeader = """loonyland_region_table: dict[str, LLRegion] = {"""
 
 pyLocationHeader = """loonyland_location_table: dict[str, LLLocation] = {"""
 
-pyRulesHeader = """def set_rules(multiworld, world, player):
+pyRulesHeader = """def set_rules(multiworld, world):
     access_rules: dict[str, CollectionRule] = {"""
 
-pyRulesFooter = """    for loc in multiworld.get_locations(player):
+pyRulesFooter = """    for loc in multiworld.get_locations(world.player):
         if loc.name in access_rules:
             add_rule(loc, access_rules[loc.name])"""
 
-pyEntranceHeader = """def set_entrance_rules(multiworld, world, player):
+pyEntranceHeader = """def set_entrance_rules(multiworld, world):
     loonyland_entrance_table: list[LLEntrance] = ["""
 
-pyEntranceFooter = """    for region in multiworld.get_regions(player):
+pyEntranceFooter = """    for region in multiworld.get_regions(world.player):
         for entry in loonyland_entrance_table:
             if entry.source_region == region.name:
                 region.connect(connecting_region=world.get_region(entry.target_region), rule=entry.rule)"""
