@@ -721,6 +721,22 @@ void ArchipelagoClient::scout_locations(Slice<int64_t> locations, bool create_as
 	packet["create_as_hint"] = create_as_hint ? 2 : 0;
 }
 
+void ArchipelagoClient::scout_locations()
+{
+	jt::Json& packet = outgoing.emplace_back();
+	packet["cmd"] = OutgoingCmd::LocationScouts;
+	auto& array = packet["locations"].setArray();
+	array.reserve(checked_locations_.size() + missing_locations_.size());
+	for (int64_t location : checked_locations_)
+	{
+		array.emplace_back(location);
+	}
+	for (int64_t location : missing_locations_)
+	{
+		array.emplace_back(location);
+	}
+}
+
 const ArchipelagoClient::Item* ArchipelagoClient::item_at_location(int64_t location) const
 {
 	auto iter = scouted_locations.find(location);

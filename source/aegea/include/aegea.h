@@ -129,8 +129,10 @@ public:
 	// Call when the game's goal is completed.
 	void check_goal();
 
-	// Call to scout locations.
+	// Call to scout specific locations. Can optionally mark them as hinted.
 	void scout_locations(Slice<int64_t> locations, bool create_as_hint = false);
+	// Call to scout all of this game's locations, without creating hints.
+	void scout_locations();
 	// Return the item scouted at a particular location. Requires calling scout_locations first.
 	const Item* item_at_location(int64_t location) const;
 
