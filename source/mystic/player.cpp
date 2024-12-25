@@ -459,12 +459,12 @@ byte PlayerHasSpell(void)
 	return 0;
 }
 
-byte SpellBookForThisLevel(byte level,byte chapter)
+byte SpellBookForThisLevel(word lvl)
 {
 	byte i;
 
 	i=255;
-	switch(player.worldNum*50+player.levelNum)
+	switch(lvl)
 	{
 		case 11:
 		case 111:
@@ -679,7 +679,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 			break;
 		case ITM_SPELLBOOK:
 			MakeNormalSound(SND_WEAPON);
-			i=SpellBookForThisLevel(player.levelNum,player.worldNum);
+			i=SpellBookForThisLevel(player.worldNum*50+player.levelNum);
 			if(i==255)
 				return 0;	// no spellbook should BE in this level!
 			if(player.spell[i]==1)
