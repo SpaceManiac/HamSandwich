@@ -163,7 +163,7 @@ byte PlayerHasSpell(void);
 void BeginArmageddon(void);
 void ArmageddonUpdate(Map *map);
 byte KeyChainAllCheck(void);
-byte SpellBookForThisLevel(byte level,byte chapter);
+byte SpellBookForThisLevel(word lvl);
 byte FairyForThisLevel(word lvl);
 byte GetVampyClock(void);
 void ResetPlayerLevels(void);

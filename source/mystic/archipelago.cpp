@@ -7,6 +7,8 @@
 #include "display.h"
 #include "control.h"
 #include "game.h"
+#include "spell.h"
+#include "shop.h"
 
 namespace
 {
@@ -139,7 +141,7 @@ byte Archipelago::MysticItemAtLocation(int chapter, int levelNum)
 	return ITM_ARCHIPELAGO;
 }
 
-static std::string_view ItemName(const ArchipelagoClient::Item& item)
+static std::string_view ItemName(const ArchipelagoClient::Item& item, int offset)
 {
 	auto name = ap->item_name(item.item);
 	if (item.player == ap->player_id())
@@ -147,25 +149,25 @@ static std::string_view ItemName(const ArchipelagoClient::Item& item)
 		if (name == "Hat Upgrade")
 		{
 			name =
-				player.hat == 0 ? "Felt Hat" :
-				player.hat == 1 ? "Moon Hat" :
-				player.hat == 2 ? "Checkered Hat" :
+				(player.hat + offset) == 0 ? "Felt Hat" :
+				(player.hat + offset) == 1 ? "Moon Hat" :
+				(player.hat + offset) == 2 ? "Checkered Hat" :
 				"Steel Hat";
 		}
 		else if (name == "Staff Upgrade")
 		{
 			name =
-				player.hat == 0 ? "Pine Staff" :
-				player.hat == 1 ? "Oak Staff" :
-				player.hat == 2 ? "Ironwood Staff" :
+				(player.staff + offset) == 0 ? "Pine Staff" :
+				(player.staff + offset) == 1 ? "Oak Staff" :
+				(player.staff + offset) == 2 ? "Ironwood Staff" :
 				"Mystical Staff";
 		}
 		else if (name == "Boots Upgrade")
 		{
 			name =
-				player.hat == 0 ? "Leather Boots" :
-				player.hat == 1 ? "Doc Merlins" :
-				player.hat == 2 ? "Lucky Boots" :
+				(player.boots + offset) == 0 ? "Leather Boots" :
+				(player.boots + offset) == 1 ? "Doc Merlins" :
+				(player.boots + offset) == 2 ? "Lucky Boots" :
 				"Air Lancelots";
 		}
 		else if (name == "Energy Barrage")
@@ -240,7 +242,7 @@ std::string_view Archipelago::ItemNameAtLocation(int chapter, int levelNum)
 	int64_t location_id = BASE_ID + chapter * 50 + levelNum;
 	if (auto item = ap->item_at_location(location_id))
 	{
-		return ItemName(*item);
+		return ItemName(*item, 0);
 	}
 	// Problem with the scouting.
 	return "Unknown";
@@ -272,18 +274,105 @@ void Archipelago::Update()
 	// Handle reconnection by refreshing stuff.
 	if (ap->pop_connected())
 	{
-		std::vector<int64_t> all_locations;
-		all_locations.insert(all_locations.end(), ap->checked_locations().begin(), ap->checked_locations().end());
-		all_locations.insert(all_locations.end(), ap->missing_locations().begin(), ap->missing_locations().end());
-		ap->scout_locations(all_locations);
-
-		// TODO: refetch player state and resync items?
+		ap->scout_locations();
+		// Server will send ReceivedItems soon, so we need to reset progression.
+		memset(player.spell, 0, 9);
+		player.hat = player.staff = player.boots = 0;
 	}
 
 	// Items
 	while (auto item = ap->pop_received_item())
 	{
-		// TODO
+		int64_t item_id = item->item - BASE_ID;
+		// TODO: messages and effects should be in pop_message block, not here.
+
+		// Armageddon Sword pieces
+		Guy *me = GetGoodguy();
+		int x = me ? me->x : 0, y = me ? me->y : 0;
+		if (item_id == 0*50+5 && !player.keychain[0])
+		{
+			player.keychain[0] = 1;
+			FloaterParticles(x,y,5,32,-1,16);
+			FloaterParticles(x,y,5,10,2,16);
+			FloaterParticles(x,y,5,64,-3,16);
+			FloaterParticles(x,y,5,1,4,16);
+		}
+		else if (item_id == 1*50+4 && !player.keychain[1])
+		{
+			player.keychain[1] = 1;
+			FloaterParticles(x,y,5,32,-1,16);
+			FloaterParticles(x,y,5,10,2,16);
+			FloaterParticles(x,y,5,64,-3,16);
+			FloaterParticles(x,y,5,1,4,16);
+		}
+		else if (item_id == 2*50+7 && !player.keychain[2])
+		{
+			player.keychain[2] = 1;
+			FloaterParticles(x,y,5,32,-1,16);
+			FloaterParticles(x,y,5,10,2,16);
+			FloaterParticles(x,y,5,64,-3,16);
+			FloaterParticles(x,y,5,1,4,16);
+		}
+		else if (item_id == 3*50+8 && !player.keychain[3])
+		{
+			player.keychain[3] = 1;
+			FloaterParticles(x,y,5,32,-1,16);
+			FloaterParticles(x,y,5,10,2,16);
+			FloaterParticles(x,y,5,64,-3,16);
+			FloaterParticles(x,y,5,1,4,16);
+		}
+		if (player.keychain[0] && player.keychain[1] && player.keychain[2] && player.keychain[3] && !player.spell[9])
+		{
+			// Unlike vanilla, does not max out staff
+			player.spell[9] = 1;
+			NewBigMessage("The sword is complete!",30);
+			SendMessageToGame(MSG_SHOWANIM, 10);
+			SetKidSprite(1);
+		}
+
+		// Spellbooks
+		byte spellbook = SpellBookForThisLevel(item_id);
+		if (spellbook != 255)
+		{
+			if(player.spell[spellbook]==1)
+			{
+				NewBigMessage(spellName[spellbook*2+1],75);
+				player.spell[spellbook]=2;
+			}
+			else if(player.spell[spellbook]==0)
+			{
+				NewBigMessage(spellName[spellbook*2],75);
+				player.spell[spellbook]=1;
+			}
+			// Unlike vanilla, does not set curSpell
+		}
+
+		// Fairies
+		byte fairy = FairyForThisLevel(item_id);
+		if (fairy != 0)
+		{
+			// TODO: set chaseFairy instead?
+			player.haveFairy |= (1 << (fairy - 1));
+		}
+
+		// Progressive hat, staff, and boots
+		if (item_id == 4 * 50 + 3)
+		{
+			player.hat++;
+		}
+		else if (item_id == 4 * 50 + 8)
+		{
+			player.staff++;
+		}
+		else if (item_id == 4 * 50 + 13)
+		{
+			player.boots++;
+		}
+		// Other shop upgrades
+		else if (item_id / 50 == 4)
+		{
+			BuyGear(item_id - 4 * 50);
+		}
 	}
 
 	// Messages
@@ -299,9 +388,12 @@ void Archipelago::Update()
 			{
 				// Got [item] from [player].
 				std::string text = "Got ";
-				text += ItemName(message->item);
-				text += " from ";
-				text += ap->slot_player_alias(message->item.player);
+				text += ItemName(message->item, -1);
+				if (message->item.player != ap->player_id())
+				{
+					text += " from ";
+					text += ap->slot_player_alias(message->item.player);
+				}
 				NewMessage(text.c_str(), MESSAGE_TIME);
 				MakeNormalSound(SND_MESSAGE);
 				messageCooldown = MESSAGE_TIME;

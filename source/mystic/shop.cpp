@@ -716,8 +716,9 @@ void RenderShop(void)
 	PrintBrightGlow(5,110+60+5*56,itemDesc[i+3],-4,2);
 }
 
-void BuyGear(dword w)
+void BuyGear(byte which)
 {
+	dword w = gearTag[which];
 	player.gear|=w;
 	switch(w)
 	{
@@ -829,7 +830,7 @@ void Buy(byte which)
 		if((player.gear&gearTag[which])==0)
 		{
 			player.money-=prc;
-			BuyGear(gearTag[which]);
+			BuyGear(which);
 			MakeNormalSound(SND_PURCHASE);
 			return;
 		}

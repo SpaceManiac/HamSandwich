@@ -151,7 +151,7 @@ void Map::Init(world_t *wrld)
 
 		if(map[i].item==ITM_SPELLBOOK)
 		{
-			s=SpellBookForThisLevel(player.levelNum,player.worldNum);
+			s=SpellBookForThisLevel(player.worldNum*50+player.levelNum);
 			if(player.gotSpell[s+(player.worldNum>1)*10])
 				map[i].item=0;
 			if(player.worldNum==2 && player.levelNum==16 && player.vaultOpened && !Challenging())

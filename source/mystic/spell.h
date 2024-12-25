@@ -4,7 +4,7 @@
 #include "jamultypes.h"
 #include "guy.h"
 
-static char spellName[20][32]={
+static const char spellName[20][32]={
 	"Energy Barrage",
 	"Energy Storm",
 	"Dragon's Flame",
