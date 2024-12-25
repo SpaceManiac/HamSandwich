@@ -2,6 +2,8 @@
 #include "display.h"
 #include "particle.h"
 #include "challenge.h"
+#include "archipelago.h"
+#include "shop.h"
 
 sprite_set_t *itmSpr;
 static byte glowism;
@@ -30,6 +32,19 @@ sprite_t *GetItemSprite(word spr)
 void RenderItem(int x,int y,byte type,char bright)
 {
 	byte b;
+
+	if (type == ITM_ARCHIPELAGO)
+	{
+		if (auto ap = Archipelago())
+		{
+			type = ap->MysticItemAtLocation(player.worldNum, player.levelNum);
+			if (type > 128)
+			{
+				SprDraw(x - 26, y - 42, 0, 255, bright, GetShopSpr(type - 128), DISPLAY_DRAWME);
+				return;
+			}
+		}
+	}
 
 	switch(type)
 	{
@@ -214,6 +229,7 @@ void RenderItem(int x,int y,byte type,char bright)
 			// don't render at all if this letter is already gotten
 			break;
 		case ITM_CHLGCRYSTAL:
+		case ITM_ARCHIPELAGO:
 			SprDraw(x,y,8,1,bright+(glowism&3),itmSpr->GetSprite(59+(glowism&7)),DISPLAY_DRAWME);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(59+(glowism&7)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;

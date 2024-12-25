@@ -8,6 +8,7 @@
 #include "options.h"
 #include "trivia.h"
 #include "palettes.h"
+#include "archipelago.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -164,6 +165,20 @@ byte InitLevel(byte map)
 		{
 			// you've passed this level before, clean out incriminating prizes
 			GetRidOfGoodStuff(curMap);
+		}
+
+		if (auto ap = Archipelago())
+		{
+			for(i=0;i<curMap->width*curMap->height;i++)
+			{
+				byte item = curMap->map[i].item;
+				if (item==ITM_KEYCH1 || item==ITM_KEYCH2 || item==ITM_KEYCH3 || item==ITM_KEYCH4
+					|| item==ITM_FAIRYBELL || item==ITM_SPELLBOOK)
+				{
+					// ^ Each map is presumed to have exactly one of these.
+					curMap->map[i].item = ap->MysticItemAtLocation(player.worldNum, player.levelNum) == ITM_NONE ? ITM_NONE : ITM_ARCHIPELAGO;
+				}
+			}
 		}
 	}
 	battleIsWon=0;
@@ -623,6 +638,9 @@ TASK(byte) LunaticRun(int *lastTime)
 	CDMessingTime+=garbageTime;	// time wasted with such things as playing animations
 	garbageTime=0;
 	JamulSoundUpdate();
+
+	if (auto ap = Archipelago())
+		ap->Update();
 
 	CO_RETURN LEVEL_PLAYING;
 }
