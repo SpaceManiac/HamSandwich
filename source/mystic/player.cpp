@@ -355,6 +355,10 @@ void PlayerResetScore(void)
 
 byte PlayerPassedLevel(byte world,byte map)
 {
+	if (auto ap = Archipelago())
+	{
+		return ap->LevelPassed(world, map);
+	}
 	return player.levelPassed[world][map];
 }
 
@@ -367,6 +371,11 @@ void PlayerWinLevel(byte w,byte l,byte isSecret)
 			player.levelsPassed++;	// secret levels aren't counted in this (it's for triggering specials)
 	}
 	player.levelPassed[w][l]=1;
+
+	if (auto ap = Archipelago())
+	{
+		ap->PassLevel(w, l);
+	}
 }
 
 byte GetPlayerWorld(void)
@@ -381,6 +390,10 @@ void SetPlayerHP(int hp)
 
 byte PlayerLevelsPassed(void)
 {
+	if (auto ap = Archipelago())
+	{
+		return ap->LevelsPassed(player.worldNum);
+	}
 	return player.levelsPassed;
 }
 
