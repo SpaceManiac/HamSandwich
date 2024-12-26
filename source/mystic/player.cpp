@@ -946,7 +946,20 @@ void PlayerGetPoints(int amt)
 
 	ChallengeEvent(CE_POINTS,amt);
 	player.score+=amt;
-	if(player.level<50)// && player.levelPassed[player.worldNum][player.levelNum]==0)
+	if (auto ap = Archipelago())
+	{
+		int lvl = 0, target = 0, lastTarget = 0;
+		while (lvl < 50 && player.score >= target)
+		{
+			ap->PickupItem(5, lvl);
+			++lvl;
+			lastTarget = target;
+			target += lvl * (lvl + 1) * 10;
+		}
+		player.experience = player.score - lastTarget;
+		player.needExp = target - lastTarget;
+	}
+	else if(player.level<50)// && player.levelPassed[player.worldNum][player.levelNum]==0)
 	{
 		player.experience+=amt;
 		y=0;

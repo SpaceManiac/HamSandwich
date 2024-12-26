@@ -89,6 +89,7 @@ namespace
 		{BASE_ID + 4 * 50 + 21, 128 + 23},
 		{BASE_ID + 4 * 50 + 22, 128 + 21},
 		{BASE_ID + 4 * 50 + 23, 128 + 31},
+		{BASE_ID + 5 * 50 + 49, ITM_LETTERM},
 	};
 }
 
@@ -280,6 +281,7 @@ void Archipelago::Update()
 		// Server will send ReceivedItems soon, so we need to reset progression.
 		memset(player.spell, 0, 9);
 		player.hat = player.staff = player.boots = 0;
+		player.level = 0;
 	}
 
 	// Items
@@ -375,6 +377,17 @@ void Archipelago::Update()
 		{
 			BuyGear(item_id - 4 * 50);
 		}
+		// Progressive level-ups
+		else if (item_id / 50 == 5)
+		{
+			player.level++;
+			player.maxLife=14+player.level;
+			if(player.gear&GEAR_HEART)
+				player.maxLife*=2;
+			player.maxMana=14+player.level;
+			if(player.gear&GEAR_MOON)
+				player.maxMana*=2;
+		}
 	}
 
 	// Messages
@@ -451,6 +464,8 @@ void Archipelago::Update()
 		player.prevMoney = player.money;
 		ap->storage_set(ap->storage_private("money"), player.money, false);
 	}
+
+	// TODO: store selected fairy and spell
 }
 
 // ----------------------------------------------------------------------------
@@ -476,7 +491,29 @@ ArchipelagoMenu(MGLDraw* mgl)
 	{
 		// --------------------------------------------------------------------
 		// Update
-		bool chapters[4] = { ap && ap->is_active(), false, false, false };
+		bool chapters[4] = { false, false, false, false };
+		if (ap && ap->is_active())
+		{
+			for (const auto& item : ap->all_received_items())
+			{
+				if (item.item == BASE_ID + 5 * 50 + 0)
+				{
+					chapters[0] = true;
+				}
+				else if (item.item == BASE_ID + 0 * 50 + 20 + 14)
+				{
+					chapters[1] = true;
+				}
+				else if (item.item == BASE_ID + 1 * 50 + 20 + 12)
+				{
+					chapters[2] = true;
+				}
+				else if (item.item == BASE_ID + 2 * 50 + 20 + 15)
+				{
+					chapters[3] = true;
+				}
+			}
+		}
 		int typingY = -1;
 
 		byte c = GetControls() | GetArrows();
