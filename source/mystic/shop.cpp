@@ -648,8 +648,10 @@ void RenderShop(void)
 	RenderPlayerGear(450,armaBrt);
 	Print(2,2,"ITEM SHOP",0,0);
 
+	bool owned = Owned(shopCursor);
 	if (auto ap = Archipelago(); ap && shopCursor != 24)
 	{
+		owned = ap->HasCheckedLocation(4, shopCursor);
 		Print(5,100+5*56-20,ap->ItemNameAtLocation(4, shopCursor),0,2);
 	}
 	else if(player.nightmare)
@@ -667,7 +669,7 @@ void RenderShop(void)
 		Print(5,100+5*56-20,shopName[(shopCursor)],0,2);
 	if(shopCursor<24)
 	{
-		if(Owned(shopCursor))
+		if(owned)
 			sprintf(s,"N/A");
 		else
 		{
