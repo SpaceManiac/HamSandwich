@@ -4,7 +4,7 @@
 #include "challenge.h"
 
 sprite_set_t *itmSpr;
-static byte glowism;
+static dword glowism = 0;
 
 void InitItems(void)
 {
@@ -39,12 +39,12 @@ void RenderItem(int x,int y,byte type,char bright)
 		{
 			b = (glowism % 8)/2;
 			if (b==3) b = 1;
-			SprDraw(x, y, 0, 255, bright + abs((glowism & 7) - 3), itmSpr->GetSprite(281+b), DISPLAY_DRAWME);
+			SprDraw(x, y, 0, 255, bright + abs(int(glowism & 7) - 3), itmSpr->GetSprite(281+b), DISPLAY_DRAWME);
 			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(281+b), DISPLAY_DRAWME | DISPLAY_SHADOW);
 		}
 			break;
 		case ITM_HAMMERUP:
-			SprDraw(x,y,0,255,bright+abs((glowism&7)-3),itmSpr->GetSprite(0),DISPLAY_DRAWME|DISPLAY_GLOW);
+			SprDraw(x,y,0,255,bright+abs(int(glowism&7)-3),itmSpr->GetSprite(0),DISPLAY_DRAWME|DISPLAY_GLOW);
 			break;
 		case ITM_PANTS:
 			SprDraw(x,y,8,255,bright,itmSpr->GetSprite(59+(glowism&7)),DISPLAY_DRAWME|DISPLAY_GLOW);
@@ -66,7 +66,7 @@ void RenderItem(int x,int y,byte type,char bright)
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(43+((glowism/2)&15)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
 		case ITM_BRAIN:
-			SprDraw(x,y,6,255,bright-6+abs((glowism&7)-3),itmSpr->GetSprite(7),DISPLAY_DRAWME|DISPLAY_GLOW);
+			SprDraw(x,y,6,255,bright-6+abs(int(glowism&7)-3),itmSpr->GetSprite(7),DISPLAY_DRAWME|DISPLAY_GLOW);
 			break;
 		case ITM_BOX:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(1),DISPLAY_DRAWME);
@@ -101,19 +101,19 @@ void RenderItem(int x,int y,byte type,char bright)
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(34),DISPLAY_DRAWME);
 			break;
 		case ITM_KEYCH1:
-			SprDraw(x,y,8,255,bright-4+abs((glowism&7)-3),itmSpr->GetSprite(83+(glowism&15)),DISPLAY_DRAWME);
+			SprDraw(x,y,8,255,bright-4+abs(int(glowism&7)-3),itmSpr->GetSprite(83+(glowism&15)),DISPLAY_DRAWME);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(83+(glowism&15)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
 		case ITM_KEYCH2:
-			SprDraw(x,y,8,255,bright-4+abs((glowism&7)-3),itmSpr->GetSprite(99+(glowism&15)),DISPLAY_DRAWME);
+			SprDraw(x,y,8,255,bright-4+abs(int(glowism&7)-3),itmSpr->GetSprite(99+(glowism&15)),DISPLAY_DRAWME);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(99+(glowism&15)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
 		case ITM_KEYCH3:
-			SprDraw(x,y,8,255,bright-4+abs((glowism&7)-3),itmSpr->GetSprite(115+(glowism&15)),DISPLAY_DRAWME);
+			SprDraw(x,y,8,255,bright-4+abs(int(glowism&7)-3),itmSpr->GetSprite(115+(glowism&15)),DISPLAY_DRAWME);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(115+(glowism&15)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
 		case ITM_KEYCH4:
-			SprDraw(x,y,8,255,bright-4+abs((glowism&7)-3),itmSpr->GetSprite(131+(glowism&15)),DISPLAY_DRAWME);
+			SprDraw(x,y,8,255,bright-4+abs(int(glowism&7)-3),itmSpr->GetSprite(131+(glowism&15)),DISPLAY_DRAWME);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(131+(glowism&15)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
 		case ITM_KEY:
@@ -129,8 +129,8 @@ void RenderItem(int x,int y,byte type,char bright)
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(20),DISPLAY_DRAWME);
 			break;
 		case ITM_LOONYKEY:
-			b=abs(16-(glowism&31));
-			SprDraw(x,y,0,glowism/32,bright+b,itmSpr->GetSprite(25),DISPLAY_DRAWME);
+			b=abs(16-int(glowism&31));
+			SprDraw(x,y,0,(glowism/32)&7,bright+b,itmSpr->GetSprite(25),DISPLAY_DRAWME);
 			break;
 		case ITM_SMLROCKS:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(32),DISPLAY_DRAWME);
