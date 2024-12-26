@@ -22,7 +22,9 @@ public:
 	std::string_view ItemNameAtLocation(int chapter, int levelNum);
 
 	void PickupItem(int chapter, int levelNum);
-	void CompleteChapter(int chapter);
+	void PassLevel(int chapter, int levelNum);
+	bool LevelPassed(int chapter, int levelNum);
+	int LevelsPassed(int chapter);
 };
 class Archipelago* Archipelago();
 

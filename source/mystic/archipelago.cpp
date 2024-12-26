@@ -26,7 +26,9 @@ namespace
 	int messageCooldown = MESSAGE_TIME;
 	bool countdownDone = false;
 
-	std::map<int64_t, byte> appearance_map = {
+	byte levelsPassed[4];
+
+	const std::map<int64_t, byte> appearance_map = {
 		{BASE_ID + 0 * 50 + 5, ITM_KEYCH1},
 		{BASE_ID + 1 * 50 + 4, ITM_KEYCH2},
 		{BASE_ID + 2 * 50 + 7, ITM_KEYCH3},
@@ -121,22 +123,26 @@ byte Archipelago::MysticItemAtLocation(int chapter, int levelNum)
 	int64_t location_id = BASE_ID + chapter * 50 + levelNum;
 	if (auto item = ap->item_at_location(location_id))
 	{
-		byte appearance = appearance_map[item->item];
-		if (appearance == 128 + 14)
+		auto iter = appearance_map.find(item->item);
+		if (iter != appearance_map.end())
 		{
-			return appearance + std::min(player.hat, (byte)3);
-		}
-		else if (appearance == 128 + 4)
-		{
-			return appearance + std::min(player.staff, (byte)3);
-		}
-		else if (appearance == 128 + 9)
-		{
-			return appearance + std::min(player.boots, (byte)3);
-		}
-		else if (appearance != 0)
-		{
-			return appearance;
+			byte appearance = iter->second;
+			if (appearance == 128 + 14)
+			{
+				return appearance + std::min(player.hat, (byte)3);
+			}
+			else if (appearance == 128 + 4)
+			{
+				return appearance + std::min(player.staff, (byte)3);
+			}
+			else if (appearance == 128 + 9)
+			{
+				return appearance + std::min(player.boots, (byte)3);
+			}
+			else if (appearance != 0)
+			{
+				return appearance;
+			}
 		}
 	}
 	// Problem with the scouting, or it belongs to another world.
@@ -252,16 +258,23 @@ std::string_view Archipelago::ItemNameAtLocation(int chapter, int levelNum)
 
 void Archipelago::PickupItem(int chapter, int levelNum)
 {
-	int id = BASE_ID + chapter * 50 + levelNum;
-	ap->check_location(id);
+	ap->check_location(BASE_ID + chapter * 50 + levelNum);
 }
 
-void Archipelago::CompleteChapter(int chapter)
+void Archipelago::PassLevel(int chapter, int levelNum)
 {
-	if (chapter == 3)
-	{
-		ap->check_goal();
-	}
+	ap->check_location(BASE_ID + chapter * 50 + 20 + levelNum);
+}
+
+bool Archipelago::LevelPassed(int chapter, int levelNum)
+{
+	int64_t location_id = BASE_ID + chapter * 50 + 20 + levelNum;
+	return ap->checked_locations().find(location_id) != ap->checked_locations().end();
+}
+
+int Archipelago::LevelsPassed(int chapter)
+{
+	return levelsPassed[chapter];
 }
 
 void Archipelago::Update()
@@ -279,6 +292,7 @@ void Archipelago::Update()
 		ap->scout_locations();
 		ap->storage_get({ ap->storage_private("xp"), ap->storage_private("money") });
 		// Server will send ReceivedItems soon, so we need to reset progression.
+		memset(levelsPassed, 0, 4);
 		memset(player.spell, 0, 9);
 		player.hat = player.staff = player.boots = 0;
 		player.level = 0;
@@ -387,6 +401,23 @@ void Archipelago::Update()
 			player.maxMana=14+player.level;
 			if(player.gear&GEAR_MOON)
 				player.maxMana*=2;
+		}
+		// Chapter progression
+		else if (item_id == 0 * 50 + 37)
+		{
+			levelsPassed[0]++;
+		}
+		else if (item_id == 1 * 50 + 36)
+		{
+			levelsPassed[1]++;
+		}
+		else if (item_id == 2 * 50 + 40)
+		{
+			levelsPassed[2]++;
+		}
+		else if (item_id == 3 * 50 + 35)
+		{
+			levelsPassed[3]++;
 		}
 	}
 
