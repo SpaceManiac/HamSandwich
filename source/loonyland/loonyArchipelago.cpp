@@ -36,6 +36,7 @@ bool ArchipelagoMode = true;
 bool ExpectingDeath = false;
 byte ap_cheatsAvail[40] = { 0 };
 byte ap_modesAvail[6] = { 0 };
+SlotData apSlotData = { 0 };
 
 byte cheat_to_badge[NUM_BADGES] = {
 	BADGE_DARKNESS, BADGE_BOWLING, BADGE_HUNDREDPCT, BADGE_LOONYBALL, BADGE_EVILIZER, BADGE_GEMS,
@@ -807,4 +808,13 @@ void DebugAPCommand() {
 	std::cout << "Do stuff";
 
 
+}
+
+void GetRoomInfo() {
+	apSlotData.difficulty = ap->room_info("slot_data")["Difficulty"].getNumber();
+	apSlotData.long_checks = ap->room_info("slot_data")["LongChecks"].getNumber();
+	apSlotData.remix = ap->room_info("slot_data")["Remix"].getNumber();
+	apSlotData.badges = ap->room_info("slot_data")["Badges"].getNumber();
+	apSlotData.dolls = ap->room_info("slot_data")["Dolls"].getNumber();
+	apSlotData.deathlink = ap->room_info("slot_data")["DeathLink"].getNumber();
 }

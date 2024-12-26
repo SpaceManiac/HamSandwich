@@ -26,9 +26,26 @@ void WinArchipelago();
 void ArchipelagoLoadPlayer();
 std::string_view ConnectionStatus();
 void DebugAPCommand();
+void GetRoomInfo();
 
 
 void Disconnect();
+
+struct SlotData {
+	int difficulty;
+	int long_checks;
+	int remix;
+	int badges;
+	int dolls;
+	int deathlink;
+};
+
+#define AP_OP_DISABLED = 0
+#define AP_OP_ENABLED = 1
+
+#define AP_OP_FULL = 0
+#define AP_OP_VANILLA = 1
+#define AP_OP_NONE = 2
 
 struct locationData {
 	std::string Name;
@@ -69,6 +86,7 @@ extern bool locationWait;
 extern std::unordered_map<int, chatData> chat_table;
 extern std::string ArchipelagoSeed;
 extern locationData basic_locations[166];
+extern SlotData apSlotData;
 
 const std::set<int> DataStorageVars = { VAR_ORBSTAND, VAR_BOOTSALES, VAR_WITCHTALK, VAR_BRIDGEOPEN, VAR_ZOMBIE, VAR_ZOMBIEREWARD, VAR_VAMPYWALL, VAR_BATSTAND, VAR_VAMPSTAND,
 VAR_KNOWWOLVES, VAR_DOLL, VAR_DOLLGIVEN, VAR_TOWNOPEN, VAR_HELPERBAT, VAR_TALKBAT, VAR_TALKBRIDGE, VAR_PAIDBRIDGE, VAR_PORTALOPEN, VAR_DEADELDER, VAR_GATEOUT, VAR_DEADBONK,
