@@ -87,7 +87,6 @@ extern bool ArchipelagoMode;
 extern bool locationWait;
 extern std::unordered_map<int, chatData> chat_table;
 extern std::string ArchipelagoSeed;
-extern locationData basic_locations[166];
 extern SlotData apSlotData;
 extern std::map<std::string, int> scouted_items;
 
