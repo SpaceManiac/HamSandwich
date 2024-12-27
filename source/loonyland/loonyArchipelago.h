@@ -11,6 +11,7 @@ const int AP_MODEMOD = 2000;
 #include <vector>
 #include <unordered_map>
 #include "player.h"
+#include <map>
 
 int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password);
 void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y, int itm_id);
@@ -34,18 +35,19 @@ void Disconnect();
 struct SlotData {
 	int difficulty;
 	int long_checks;
+	int multi_save;
 	int remix;
 	int badges;
 	int dolls;
 	int deathlink;
 };
 
-#define AP_OP_DISABLED = 0
-#define AP_OP_ENABLED = 1
+#define AP_OP_DISABLED 0
+#define AP_OP_ENABLED 1
 
-#define AP_OP_FULL = 0
-#define AP_OP_VANILLA = 1
-#define AP_OP_NONE = 2
+#define AP_OP_FULL 0
+#define AP_OP_VANILLA 1
+#define AP_OP_NONE 2
 
 struct locationData {
 	std::string Name;
@@ -59,7 +61,7 @@ struct locationData {
 	int Spec2ID;
 	std::string Region;
 	std::vector<int> chatCodes;
-	int scouted_item = -1;
+	std::set<std::string> flags;
 };
 
 struct itemData
@@ -87,6 +89,7 @@ extern std::unordered_map<int, chatData> chat_table;
 extern std::string ArchipelagoSeed;
 extern locationData basic_locations[166];
 extern SlotData apSlotData;
+extern std::map<std::string, int> scouted_items;
 
 const std::set<int> DataStorageVars = { VAR_ORBSTAND, VAR_BOOTSALES, VAR_WITCHTALK, VAR_BRIDGEOPEN, VAR_ZOMBIE, VAR_ZOMBIEREWARD, VAR_VAMPYWALL, VAR_BATSTAND, VAR_VAMPSTAND,
 VAR_KNOWWOLVES, VAR_DOLL, VAR_DOLLGIVEN, VAR_TOWNOPEN, VAR_HELPERBAT, VAR_TALKBAT, VAR_TALKBRIDGE, VAR_PAIDBRIDGE, VAR_PORTALOPEN, VAR_DEADELDER, VAR_GATEOUT, VAR_DEADBONK,

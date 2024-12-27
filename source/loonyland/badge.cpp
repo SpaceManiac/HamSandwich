@@ -623,7 +623,7 @@ void BadgeCheatKey(char c)
 
 	if(!strcmp("gimme",&badgeKeys[16-strlen("gimme")]))
 	{
-		if (ArchipelagoMode)
+		if (apSlotData.badges == AP_OP_FULL)
 		{
 			if (apTabMode == 0)
 			{
@@ -688,7 +688,7 @@ void BadgeCheatKey(char c)
 	}
 	if (!strcmp("clear", &badgeKeys[16 - strlen("clear")]))
 	{
-		if (ArchipelagoMode)
+		if (apSlotData.badges == AP_OP_FULL)
 		{
 			if (apTabMode == 0)
 			{
@@ -726,7 +726,7 @@ void BadgeCheatKey(char c)
 	}
 	if(!strcmp("giveall",&badgeKeys[16-strlen("giveall")]))
 	{
-		if (ArchipelagoMode)
+		if (apSlotData.badges == AP_OP_FULL)
 		{
 			if (apTabMode == 0)
 			{
@@ -787,7 +787,7 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 	if((c2&CONTROL_B1) && (c2&CONTROL_B2) && c!=0)
 		BadgeCheatKey(c);
 
-	if (ArchipelagoMode && (c2 & CONTROL_B3) && c != 0)
+	if (apSlotData.badges == AP_OP_FULL && (c2 & CONTROL_B3) && c != 0)
 	{
 		apTabMode = apTabMode ^ 1;
 	}
@@ -834,7 +834,7 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 	}
 	if((c2 & ~oldc) & (CONTROL_B1) && apTabMode == 0)
 	{
-		if(!ArchipelagoMode && opt.meritBadge[cursor] || ArchipelagoMode && ap_cheatsAvail[cursor])
+		if(!(apSlotData.badges == AP_OP_FULL) && opt.meritBadge[cursor] || apSlotData.badges == AP_OP_FULL && ap_cheatsAvail[cursor])
 		{
 			// toggle the cheat
 			opt.cheats[badge[cursor].cheatNum]=1-opt.cheats[badge[cursor].cheatNum];
@@ -888,7 +888,7 @@ void RenderBadgeMenu(MGLDraw *mgl)
 	char b;
 
 	mgl->ClearScreen();
-	if(ArchipelagoMode && apTabMode == 0)
+	if(apSlotData.badges == AP_OP_FULL && apTabMode == 0)
 		CenterPrint(450, 2, "Cheats", 0, 2);
 	else
 		CenterPrint(450,2,"Merit Badges",0,2);
@@ -901,7 +901,7 @@ void RenderBadgeMenu(MGLDraw *mgl)
 		b=0;
 		if(cursor==i)
 			b=16;
-		if (ArchipelagoMode) {
+		if (apSlotData.badges == AP_OP_FULL) {
 			if (apTabMode == 0 && ap_cheatsAvail[i]) {
 				RenderIntfaceSprite(x, y, 26 + i, b, mgl);
 				if (opt.cheats[badge[i].cheatNum])
@@ -934,7 +934,7 @@ void RenderBadgeMenu(MGLDraw *mgl)
 	}
 
 	// display info on current badge
-	if ((!ArchipelagoMode && opt.meritBadge[cursor])
+	if ((!(apSlotData.badges == AP_OP_FULL) && opt.meritBadge[cursor])
 		|| (apTabMode == 1 && opt.meritBadge[cursor])
 		|| (apTabMode == 0 && ap_cheatsAvail[cursor]))
 	{
@@ -943,12 +943,12 @@ void RenderBadgeMenu(MGLDraw *mgl)
 		if(opt.cheats[badge[cursor].cheatNum] && apTabMode == 0)
 			RenderIntfaceSprite(274,60,25,b,mgl);
 
-		if (!ArchipelagoMode || apTabMode == 1)
+		if (!(apSlotData.badges == AP_OP_FULL) || apTabMode == 1)
 		{
 			Print(350, 70, badge[cursor].name, 0, 0);
 		}
 
-		if (!ArchipelagoMode || apTabMode == 1)
+		if (!(apSlotData.badges == AP_OP_FULL) || apTabMode == 1)
 		{
 			DrawBox(270, 108, 639, 108, 31);
 			for (i = 0; i < 2; i++)
@@ -1205,7 +1205,7 @@ TASK(void) ShowBadge(byte b)
 	GetTaps();
 	cursor=b;
 
-	if (ArchipelagoMode)
+	if (apSlotData.badges == AP_OP_FULL)
 	{
 		apTabMode = 1;
 	}

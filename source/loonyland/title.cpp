@@ -1040,6 +1040,7 @@ static TASK(void) DoCredits(MGLDraw *mgl, const char* const* document)
 	StartClock();
 	while (true)
 	{
+		UpdateArchipelago();
 		EndClock();
 		lastTime += TimeLength();
 		StartClock();

@@ -199,7 +199,6 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 			break;
 		case 4: //waiting on status
 			if (!locationWait) {
-				GetRoomInfo();
 				CO_RETURN 1;
 			}
 			break;

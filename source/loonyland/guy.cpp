@@ -1246,7 +1246,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 						locationData loc = basic_locations[158 + val];
 						if (val != -1 && !(locsFound.find(loc.ID) != locsFound.end()))
 						{
-							int item_id = basic_locations[158 + val].scouted_item;
+							int item_id = scouted_items[loc.Name];
 							if (item_id == ITM_ARCHIPELAGO)
 								FireBullet(x, y, ITM_ARCHIPELAGO, BLT_ITEM);
 							else {
@@ -2022,12 +2022,12 @@ void AddMapGuys(Map *map)
 				}
 				else if(map->badguy[i].type==MONS_FRANKENJ)
 				{
-					if(player.var[VAR_QUESTDONE+QUEST_FRANK])
+					if(player.var[VAR_QUESTDONE+QUEST_FRANK] && (!ArchipelagoMode || opt.meritBadge[BADGE_FRANKENJ] == 1))
 						ok=0;
 				}
 				else if(map->badguy[i].type==MONS_BIGGHOST)
 				{
-					if(player.var[VAR_QUESTDONE+QUEST_TOWER])
+					if(player.var[VAR_QUESTDONE+QUEST_TOWER] && (!ArchipelagoMode || opt.meritBadge[BADGE_POLTERGUY] == 1))
 						ok=0;
 				}
 				else if(map->badguy[i].type==MONS_ELDER)
@@ -2052,7 +2052,7 @@ void AddMapGuys(Map *map)
 				}
 				else if(map->badguy[i].type==MONS_BONKULA || map->badguy[i].type==MONS_MECHABONK)
 				{
-					if(player.var[VAR_DEADBONK])
+					if(player.var[VAR_DEADBONK] && (!ArchipelagoMode || opt.meritBadge[BADGE_BONKULA] == 1))
 						ok=0;
 				}
 			}

@@ -158,11 +158,14 @@ class CSVProcessor:
                     reg_map_id = row[REG_MAPID]
                     reg_x = row[REG_XCOORD]
                     reg_y = row[REG_YCOORD]
+                    reg_flags = row[REG_FLAGS]
 
                     # 1: python
                     python_region_lines += f"    \"{reg_name}\": LLRegion({reg_real}"
                     if reg_map:
                         python_region_lines += f', \"{reg_map}\"'
+                    if reg_flags:
+                            python_region_lines += f", flags=[{reg_flags}]"
                     python_region_lines += "),\n"
 
                     # 2: tracker region data
@@ -421,7 +424,7 @@ loonyland_location_table = {\n"""
                         location_spec2_c = location_spec2
 
                     hamsandwich_lines += f"{{\"{location_name}\",\"{location_type_normal}\",{location_id},\"{location_map}\",{location_map_id},"
-                    hamsandwich_lines += f"{location_xcoord_c},{location_ycoord_c},{location_spec1_c},{location_spec2_c},\"{location_region}\",{{{location_chat_codes}}}}},\n"
+                    hamsandwich_lines += f"{location_xcoord_c},{location_ycoord_c},{location_spec1_c},{location_spec2_c},\"{location_region}\",{{{location_chat_codes}}}, {{{location_flags}}}}},\n"
 
                 tracker_file_locs.truncate(0)
                 tracker_file_locs.seek(0)
@@ -471,6 +474,7 @@ loonyland_location_table = {\n"""
                     entrance_end = row[ENT_END]
                     entrance_load = row[ENT_LOAD]
                     entrance_logic = row[ENT_LOGIC]
+                    entrance_flags = row[ENT_FLAGS]
 
                     # python entrance file
                     python_ent_lines += f"        LLEntrance(\"{entrance_source}\", \"{entrance_end}\""
@@ -481,6 +485,8 @@ loonyland_location_table = {\n"""
                     if entrance_logic:
                         python_ent_lines += ", lambda state: "
                         python_ent_lines += self.parse_conditions(entrance_logic, "python")
+                    if entrance_flags:
+                            python_ent_lines += f", flags=[{entrance_flags}]"
                     python_ent_lines += "),\n"
 
                     # 2: Tracker entrances

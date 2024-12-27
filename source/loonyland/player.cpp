@@ -969,7 +969,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 	if(ItemFlags(itm)&IF_GET)
 	{
 		if (ArchipelagoMode && ItemFlags(itm) & IF_ARCHIPELAGO) {
-			if (itm < ITM_WBOMB || itm > ITM_WHOTPANTS) //weapons
+			if (itm >= ITM_WBOMB && itm <= ITM_WHOTPANTS) //weapons
 			{
 				if (player.var[itm - ITM_WBOMB + VAR_WEAPON] == 0) //let it process normally if its not your first
 				{
@@ -977,7 +977,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 					return 0;
 				}
 			}
-			else if (itm > ITM_BATDOLL && itm <= ITM_WOLFDOLL) //dolls
+			else if (itm >= ITM_BATDOLL && itm <= ITM_WOLFDOLL) //dolls
 			{
 				SendCheckedLocDoll(itm - ITM_BATDOLL);
 			}

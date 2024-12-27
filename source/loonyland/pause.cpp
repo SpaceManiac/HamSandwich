@@ -656,6 +656,8 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 			offX=0;
 	}
 
+	UpdateArchipelago();
+
 	byte c = GetControls()|GetArrows();
 	byte tap = c & ~oldc;
 	dword gamepadTap = GetGamepadButtons() & ~oldGamepad;

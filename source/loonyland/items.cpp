@@ -140,14 +140,14 @@ static const item_t itemInfo[MAX_ITMS]={
 	{1,0,225,225,IF_OBSTACLE|IF_TALL|IF_SHADOW},	// batstand
 	{0,128,239,254,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// bat
 	{1,0,227,227,IF_OBSTACLE|IF_TALL|IF_SHADOW},	// batonstand
-	{0,0,255,255,IF_GET|IF_SHADOW},	// batdoll
-	{0,0,256,256,IF_GET|IF_SHADOW},	// skeldoll
-	{0,0,257,257,IF_GET|IF_SHADOW},	// frogdoll
-	{0,0,258,258,IF_GET|IF_SHADOW},	// ghostdoll
-	{0,0,259,259,IF_GET|IF_SHADOW},	// mummydoll
-	{0,0,260,260,IF_GET|IF_SHADOW},	// swampdoll
-	{0,0,261,261,IF_GET|IF_SHADOW},	// vampdoll
-	{0,0,262,262,IF_GET|IF_SHADOW},	// wolfdoll
+	{0,0,255,255,IF_GET|IF_SHADOW | IF_ARCHIPELAGO},	// batdoll
+	{0,0,256,256,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// skeldoll
+	{0,0,257,257,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// frogdoll
+	{0,0,258,258,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// ghostdoll
+	{0,0,259,259,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// mummydoll
+	{0,0,260,260,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// swampdoll
+	{0,0,261,261,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// vampdoll
+	{0,0,262,262,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// wolfdoll
 	{1,0,228,228,IF_GLOW},	// portal
 	{0,0,263,263,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// badge
 	{0,0,264,264,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// cat
