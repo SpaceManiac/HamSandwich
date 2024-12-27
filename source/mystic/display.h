@@ -96,4 +96,8 @@ void SetGamma(byte g);
 
 void EndingMovie(int frm);
 
+extern mfont_t* ListiumBig;
+extern mfont_t* Verdana;
+extern mfont_t* Listium;
+
 #endif

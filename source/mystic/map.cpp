@@ -5,6 +5,7 @@
 #include "guy.h"
 #include "water.h"
 #include "challenge.h"
+#include "archipelago.h"
 
 int totalBrains;
 static world_t *world;
@@ -154,7 +155,7 @@ void Map::Init(world_t *wrld)
 			s=SpellBookForThisLevel(player.worldNum*50+player.levelNum);
 			if(player.gotSpell[s+(player.worldNum>1)*10])
 				map[i].item=0;
-			if(player.worldNum==2 && player.levelNum==16 && player.vaultOpened && !Challenging())
+			if(player.worldNum==2 && player.levelNum==16 && player.vaultOpened && !Challenging() && !Archipelago())
 				map[i].item=0;	// take it away if you've opened the vault before
 			/*
 			if(player.spell[s]==1 && player.worldNum<2)
