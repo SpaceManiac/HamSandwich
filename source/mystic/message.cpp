@@ -3,6 +3,7 @@
 #include "game.h"
 #include "intface.h"
 #include "string_extras.h"
+#include "archipelago.h"
 
 char speech[26*4][64]={
 	// 0
@@ -308,6 +309,17 @@ void InitSpeech(byte spc)
 		// check to see if the player has won the Dance-a-thon yet
 		if(!MonsterExists(255))
 			spc=11;
+	}
+	if(spc==12)
+	{
+		if (auto ap = Archipelago())
+		{
+			ham_strcpy(speech[12 * 4 + 3], ap->ItemNameAtLocation(2, 16));
+		}
+		else
+		{
+			ham_strcpy(speech[12 * 4 + 3], "");
+		}
 	}
 	curSpeech=spc;
 	speechX=0;

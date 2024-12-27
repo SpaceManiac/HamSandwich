@@ -136,7 +136,6 @@ byte offsetdir;
 byte curCustom;
 
 static byte oldc=0;
-mfont_t pickerFont;
 char customName[MAX_CUSTOM][32];
 char customFname[MAX_CUSTOM][32];
 static byte creditsOrIntro;

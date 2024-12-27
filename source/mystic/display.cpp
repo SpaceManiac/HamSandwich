@@ -4,8 +4,11 @@
 #include "game.h"
 #include "title.h"
 
-mfont_t  *gameFont[3]={NULL,NULL,NULL};
-MGLDraw  *mgl=NULL;
+mfont_t *ListiumBig;
+mfont_t *Verdana;
+mfont_t *Listium;
+static mfont_t *gameFont[3]={NULL,NULL,NULL};
+static MGLDraw *mgl=NULL;
 
 int scrx=320,scry=240,scrdx=0,scrdy=0;
 int rscrx=320<<FIXSHIFT,rscry=240<<FIXSHIFT;
@@ -27,14 +30,14 @@ bool InitDisplay(MGLDraw *mainmgl)
 	mgl=mainmgl;
 	if(!mgl)
 		return false;
-	gameFont[0]=(mfont_t *)malloc(sizeof(mfont_t));
+	ListiumBig = gameFont[0]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[0])
 		return false;
 	FontInit(mgl);
 	if(FontLoad("graphics/listiumbig.jft",gameFont[0])!=FONT_OK)
 		return false;
 
-	gameFont[1]=(mfont_t *)malloc(sizeof(mfont_t));
+	Verdana = gameFont[1]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[1])
 		return false;
 
@@ -42,7 +45,7 @@ bool InitDisplay(MGLDraw *mainmgl)
 		return false;
 	cursor[0] = RightBraceHack(gameFont[1]);
 
-	gameFont[2]=(mfont_t *)malloc(sizeof(mfont_t));
+	Listium = gameFont[2]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[2])
 		return false;
 

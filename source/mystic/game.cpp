@@ -161,7 +161,7 @@ byte InitLevel(byte map)
 		UpdateGuys(curMap,&curWorld);
 		SetGiveUpText(1+battle);
 
-		if(!battle && player.levelPassed[player.worldNum][player.levelNum]==1)
+		if(!battle && PlayerPassedLevel(player.worldNum, player.levelNum))
 		{
 			// you've passed this level before, clean out incriminating prizes
 			GetRidOfGoodStuff(curMap);
