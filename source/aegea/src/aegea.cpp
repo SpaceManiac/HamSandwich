@@ -1,5 +1,7 @@
 #include "aegea.h"
 #include <time.h>
+#include <fstream>
+#include <filesystem>
 #include <json.h>
 #include "websocket.h"
 
@@ -66,8 +68,74 @@ namespace
 	}
 }
 
+// ------------------------------------------------------------------------
+
+namespace
+{
+	class DefaultArchipelagoCache : public ArchipelagoCache
+	{
+	public:
+		std::string read(std::string_view key);
+		void write(std::string_view key, std::string_view data);
+	};
+
+	DefaultArchipelagoCache default_cache;
+}
+
+std::string DefaultArchipelagoCache::read(std::string_view key)
+{
+	std::string filename = "archipelago/";
+	filename.append(key);
+	filename.append(".cache");
+
+	std::ifstream ifs(filename, std::ios::in | std::ios::binary | std::ios::ate);
+	if (!ifs)
+	{
+		return "";
+	}
+
+	auto size = ifs.tellg();
+	ifs.seekg(0, std::ios::beg);
+	std::string buffer(size, '\0');
+	ifs.read(buffer.data(), size);
+	return buffer;
+}
+
+void DefaultArchipelagoCache::write(std::string_view key, std::string_view data)
+{
+	std::error_code ec;
+	std::filesystem::create_directories("archipelago/", ec);
+
+	std::string filename = "archipelago/";
+	filename.append(key);
+	filename.append(".cache");
+
+	std::string tempFilename = filename;
+	for (int i = 0; i < 10; ++i)
+	{
+		tempFilename += "0123456789"[rand() % 10];
+	}
+
+	std::ofstream ofs(tempFilename, std::ios::out | std::ios::binary);
+	if (ofs)
+	{
+		ofs.write(data.data(), data.size());
+		ofs.close();
+		std::filesystem::rename(tempFilename, filename);
+	}
+}
+
+// ------------------------------------------------------------------------
+
+ArchipelagoClient::~ArchipelagoClient()
+{
+	// Declaring and defining this lets those who `#include` the .h file not
+	// have to autogenerate it independently.
+}
+
 ArchipelagoClient::ArchipelagoClient(std::string_view game, std::string_view address, std::string_view slot, std::string_view password)
-	: game(game)
+	: cache(&default_cache)
+	, game(game)
 	, address(address)
 	, slot(slot)
 	, password(password)
@@ -88,9 +156,9 @@ ArchipelagoClient::ArchipelagoClient(std::string_view game, std::string_view add
 	}
 }
 
-ArchipelagoClient::~ArchipelagoClient()
+void ArchipelagoClient::use_cache(ArchipelagoCache *cache)
 {
-	// Declaring and defining this lets good things happen.
+	this->cache = cache;
 }
 
 std::string_view ArchipelagoClient::error_message() const
@@ -256,7 +324,22 @@ void ArchipelagoClient::update()
 				auto& games = getDataPackage["games"].setArray();
 				for (const auto& pair : packet["datapackage_checksums"].getObject())
 				{
-					// TODO: Check for cache validitity here.
+					if (cache)
+					{
+						std::string cachedStr = cache->read(pair.first);
+						if (!cachedStr.empty())
+						{
+							auto [status, json] = jt::Json::parse(cachedStr);
+							if (status == jt::Json::success && json.isObject())
+							{
+								if (json["checksum"].isString() && pair.second.isString() && json["checksum"].getString() == pair.second.getString())
+								{
+									load_data_package(pair.first, std::move(json));
+									continue;
+								}
+							}
+						}
+					}
 					games.emplace_back(pair.first);
 				}
 
@@ -285,8 +368,11 @@ void ArchipelagoClient::update()
 			{
 				for (auto& pair : packet["data"]["games"].getObject())
 				{
+					if (cache)
+					{
+						cache->write(pair.first, pair.second.toString());
+					}
 					load_data_package(std::move(pair.first), std::move(pair.second));
-					// TODO: Store to cache.
 				}
 				send_connect();
 			}

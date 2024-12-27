@@ -20,6 +20,15 @@ namespace jt
 
 class WebSocket;
 
+class ArchipelagoCache
+{
+public:
+	// Read contents from a cache key, or an empty string if absent.
+	virtual std::string read(std::string_view key) = 0;
+	// Write contents to a cache key.
+	virtual void write(std::string_view key, std::string_view data) = 0;
+};
+
 class ArchipelagoClient
 {
 	// A convenience for passing vectors, initializer lists, or other containers.
@@ -64,6 +73,10 @@ public:
 	std::string_view error_message() const;
 	std::string_view connection_status() const;
 	bool is_active() const;
+
+	// Use the given cache for data packages. It should outlive this ArchipelagoCLient.
+	// By default a simple filesystem cache is used. Set nullptr to disable cache.
+	void use_cache(ArchipelagoCache* cache);
 
 	// Call this on a regular basis (ex: once per frame) to handle networking.
 	void update();
@@ -278,6 +291,7 @@ private:
 		Active,
 	} status = Idle;
 
+	ArchipelagoCache *cache;
 	std::string game, address, slot, password;
 	std::set<std::string, std::less<>> tags;
 	std::string error;
