@@ -232,7 +232,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			subX-=25;
 	}
 
-	c=GetControls();
+	c=GetControls() | GetArrows();
 
 	reptCounter++;
 	if((!oldc) || (reptCounter>10))

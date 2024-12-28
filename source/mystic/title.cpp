@@ -207,7 +207,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 		}
 
 		// now real updating
-		c=GetControls();
+		c=GetControls() | GetArrows();
 
 		reptCounter++;
 		if((!oldc) || (reptCounter>10))
