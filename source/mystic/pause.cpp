@@ -185,9 +185,10 @@ void InitPauseMenu(void)
 		f.reset();
 	}
 	MakeNormalSound(SND_PAUSE);
-	if(cursor==4 && (!giveUp))
+
+	if((Challenging() || Archipelago()) && cursor==1)
 		cursor=0;
-	if(cursor==2 && (giveUp))
+	if(Archipelago() && cursor==2 && giveUp==0)
 		cursor=0;
 
 	pauseX=-250;

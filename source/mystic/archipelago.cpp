@@ -27,6 +27,8 @@ namespace
 	bool countdownDone = false;
 
 	byte levelsPassed[4];
+	byte spell = 255;
+	dword fairy = 0;
 
 	const std::map<int64_t, byte> appearance_map = {
 		{BASE_ID + 0 * 50 + 5, ITM_KEYCH1},
@@ -112,6 +114,16 @@ std::string_view Archipelago::Status()
 		"Active";
 }
 
+void Archipelago::HintShop()
+{
+	std::vector<int64_t> items;
+	for (int i = 0; i < 24; ++i)
+	{
+		items.push_back(BASE_ID + 4 * 50 + i);
+	}
+	ap->scout_locations(items, true);
+}
+
 bool Archipelago::HasCheckedLocation(int chapter, int levelNum)
 {
 	int64_t location_id = BASE_ID + chapter * 50 + levelNum;
@@ -157,86 +169,86 @@ static std::string_view ItemName(const ArchipelagoClient::Item& item, int offset
 		if (name == "Hat Upgrade")
 		{
 			name =
-				(player.hat + offset) == 0 ? "Felt Hat" :
-				(player.hat + offset) == 1 ? "Moon Hat" :
-				(player.hat + offset) == 2 ? "Checkered Hat" :
+				(player.hat - offset) == 0 ? "Felt Hat" :
+				(player.hat - offset) == 1 ? "Moon Hat" :
+				(player.hat - offset) == 2 ? "Checkered Hat" :
 				"Steel Hat";
 		}
 		else if (name == "Staff Upgrade")
 		{
 			name =
-				(player.staff + offset) == 0 ? "Pine Staff" :
-				(player.staff + offset) == 1 ? "Oak Staff" :
-				(player.staff + offset) == 2 ? "Ironwood Staff" :
+				(player.staff - offset) == 0 ? "Pine Staff" :
+				(player.staff - offset) == 1 ? "Oak Staff" :
+				(player.staff - offset) == 2 ? "Ironwood Staff" :
 				"Mystical Staff";
 		}
 		else if (name == "Boots Upgrade")
 		{
 			name =
-				(player.boots + offset) == 0 ? "Leather Boots" :
-				(player.boots + offset) == 1 ? "Doc Merlins" :
-				(player.boots + offset) == 2 ? "Lucky Boots" :
+				(player.boots - offset) == 0 ? "Leather Boots" :
+				(player.boots - offset) == 1 ? "Doc Merlins" :
+				(player.boots - offset) == 2 ? "Lucky Boots" :
 				"Air Lancelots";
 		}
 		else if (name == "Energy Barrage")
 		{
-			if (player.spell[0])
+			if (player.spell[0] > offset)
 			{
 				name = "Energy Storm";
 			}
 		}
 		else if (name == "Dragon's Flame")
 		{
-			if (player.spell[1])
+			if (player.spell[1] > offset)
 			{
 				name = "Liquify";
 			}
 		}
 		else if (name == "Seeker Bolt")
 		{
-			if (player.spell[2])
+			if (player.spell[2] > offset)
 			{
 				name = "Seeker Swarm";
 			}
 		}
 		else if (name == "Ice Blast")
 		{
-			if (player.spell[3])
+			if (player.spell[3] > offset)
 			{
 				name = "Ice Beam";
 			}
 		}
 		else if (name == "Inferno")
 		{
-			if (player.spell[4])
+			if (player.spell[4] > offset)
 			{
 				name = "Hyper Inferno";
 			}
 		}
 		else if (name == "Summon Ptero")
 		{
-			if (player.spell[5])
+			if (player.spell[5] > offset)
 			{
 				name = "Summon Golem";
 			}
 		}
 		else if (name == "Stoneskin")
 		{
-			if (player.spell[6])
+			if (player.spell[6] > offset)
 			{
 				name = "Steelskin";
 			}
 		}
 		else if (name == "Berserk")
 		{
-			if (player.spell[7])
+			if (player.spell[7] > offset)
 			{
 				name = "Insane Rage";
 			}
 		}
 		else if (name == "Healing")
 		{
-			if (player.spell[8])
+			if (player.spell[8] > offset)
 			{
 				name = "Life";
 			}
@@ -263,7 +275,16 @@ void Archipelago::PickupItem(int chapter, int levelNum)
 
 void Archipelago::PassLevel(int chapter, int levelNum)
 {
-	ap->check_location(BASE_ID + chapter * 50 + 20 + levelNum);
+	if (chapter == 3 && levelNum == 11)
+	{
+		ap->check_goal();
+	}
+	else
+	{
+		ap->check_location(BASE_ID + chapter * 50 + 20 + levelNum);
+	}
+	// Fast update in case we go right into a movie.
+	ap->update();
 }
 
 bool Archipelago::LevelPassed(int chapter, int levelNum)
@@ -290,7 +311,12 @@ void Archipelago::Update()
 	if (ap->pop_connected())
 	{
 		ap->scout_locations();
-		ap->storage_get({ ap->storage_private("xp"), ap->storage_private("money") });
+		ap->storage_get({
+			ap->storage_private("xp"),
+			ap->storage_private("money"),
+			ap->storage_private("spell"),
+			ap->storage_private("fairy"),
+		});
 		// Server will send ReceivedItems soon, so we need to reset progression.
 		memset(levelsPassed, 0, 4);
 		memset(player.spell, 0, 9);
@@ -302,49 +328,28 @@ void Archipelago::Update()
 	while (auto item = ap->pop_received_item())
 	{
 		int64_t item_id = item->item - BASE_ID;
-		// TODO: messages and effects should be in pop_message block, not here.
 
 		// Armageddon Sword pieces
-		Guy *me = GetGoodguy();
-		int x = me ? me->x : 0, y = me ? me->y : 0;
 		if (item_id == 0*50+5 && !player.keychain[0])
 		{
 			player.keychain[0] = 1;
-			FloaterParticles(x,y,5,32,-1,16);
-			FloaterParticles(x,y,5,10,2,16);
-			FloaterParticles(x,y,5,64,-3,16);
-			FloaterParticles(x,y,5,1,4,16);
 		}
 		else if (item_id == 1*50+4 && !player.keychain[1])
 		{
 			player.keychain[1] = 1;
-			FloaterParticles(x,y,5,32,-1,16);
-			FloaterParticles(x,y,5,10,2,16);
-			FloaterParticles(x,y,5,64,-3,16);
-			FloaterParticles(x,y,5,1,4,16);
 		}
 		else if (item_id == 2*50+7 && !player.keychain[2])
 		{
 			player.keychain[2] = 1;
-			FloaterParticles(x,y,5,32,-1,16);
-			FloaterParticles(x,y,5,10,2,16);
-			FloaterParticles(x,y,5,64,-3,16);
-			FloaterParticles(x,y,5,1,4,16);
 		}
 		else if (item_id == 3*50+8 && !player.keychain[3])
 		{
 			player.keychain[3] = 1;
-			FloaterParticles(x,y,5,32,-1,16);
-			FloaterParticles(x,y,5,10,2,16);
-			FloaterParticles(x,y,5,64,-3,16);
-			FloaterParticles(x,y,5,1,4,16);
 		}
 		if (player.keychain[0] && player.keychain[1] && player.keychain[2] && player.keychain[3] && !player.spell[9])
 		{
 			// Unlike vanilla, does not max out staff
 			player.spell[9] = 1;
-			NewBigMessage("The sword is complete!",30);
-			SendMessageToGame(MSG_SHOWANIM, 10);
 			SetKidSprite(1);
 		}
 
@@ -422,45 +427,89 @@ void Archipelago::Update()
 	}
 
 	// Messages
-	if (messageCooldown > 0)
+	if (GetGameMode() == GAMEMODE_PLAY)
 	{
-		messageCooldown--;
-	}
-	else if (auto message = ap->pop_message())
-	{
-		if (message->type == ArchipelagoClient::Message::ItemSend)
+		if (messageCooldown > 0)
 		{
-			if (message->receiving == ap->player_id())
-			{
-				// Got [item] from [player].
-				std::string text = "Got ";
-				text += ItemName(message->item, -1);
-				if (message->item.player != ap->player_id())
-				{
-					text += " from ";
-					text += ap->slot_player_alias(message->item.player);
-				}
-				NewMessage(text.c_str(), MESSAGE_TIME);
-				MakeNormalSound(SND_MESSAGE);
-				messageCooldown = MESSAGE_TIME;
-			}
-			else if (message->item.player == ap->player_id())
-			{
-				// Sent [item] to [player].
-				std::string text = "Sent ";
-				text += ap->item_name(message->item.item);
-				text += " to ";
-				text += ap->slot_player_alias(message->receiving);
-				NewMessage(text.c_str(), MESSAGE_TIME);
-				MakeNormalSound(SND_MESSAGE);
-				messageCooldown = MESSAGE_TIME;
-			}
+			messageCooldown--;
 		}
-		else if (message->type == ArchipelagoClient::Message::Countdown)
+		else if (auto message = ap->pop_message())
 		{
-			if (message->countdown == 0)
+			if (message->type == ArchipelagoClient::Message::ItemSend)
 			{
-				countdownDone = true;
+				if (message->receiving == ap->player_id())
+				{
+					// Got [item] from [player].
+					int64_t item_id = message->item.item - BASE_ID;
+
+					std::string text = "Got ";
+					text += ItemName(message->item, 1);
+					if (message->item.player != ap->player_id())
+					{
+						text += " from ";
+						text += ap->slot_player_alias(message->item.player);
+					}
+
+					// Don't show Nothing or Chapter X Progress items.
+					if (!(item_id == 0 * 50 + 37
+						|| item_id == 1 * 50 + 36
+						|| item_id == 2 * 50 + 40
+						|| item_id == 3 * 50 + 35
+						|| item_id == 3 * 50 + 28))
+					{
+						NewMessage(text.c_str(), MESSAGE_TIME);
+						MakeNormalSound(SND_MESSAGE);
+						messageCooldown = MESSAGE_TIME;
+					}
+
+					Guy *me = GetGoodguy();
+					int x = me ? me->x : 0, y = me ? me->y : 0;
+					// Armageddon sword pieces
+					if (item_id == 0*50+5 || item_id == 1*50+4 || item_id == 2*50+7 || item_id == 3*50+8)
+					{
+						FloaterParticles(x,y,5,32,-1,16);
+						FloaterParticles(x,y,5,10,2,16);
+						FloaterParticles(x,y,5,64,-3,16);
+						FloaterParticles(x,y,5,1,4,16);
+						if (player.spell[9])
+						{
+							NewBigMessage("The sword is complete!",30);
+							SendMessageToGame(MSG_SHOWANIM, 10);
+						}
+					}
+
+					// Spellbooks
+					byte spellbook = SpellBookForThisLevel(item_id);
+					if (spellbook != 255)
+					{
+						if(player.spell[spellbook]==2)
+						{
+							NewBigMessage(spellName[spellbook*2+1],75);
+						}
+						else if(player.spell[spellbook]==1)
+						{
+							NewBigMessage(spellName[spellbook*2],75);
+						}
+					}
+				}
+				else if (message->item.player == ap->player_id())
+				{
+					// Sent [item] to [player].
+					std::string text = "Sent ";
+					text += ap->item_name(message->item.item);
+					text += " to ";
+					text += ap->slot_player_alias(message->receiving);
+					NewMessage(text.c_str(), MESSAGE_TIME);
+					MakeNormalSound(SND_MESSAGE);
+					messageCooldown = MESSAGE_TIME;
+				}
+			}
+			else if (message->type == ArchipelagoClient::Message::Countdown)
+			{
+				if (message->countdown == 0)
+				{
+					countdownDone = true;
+				}
 			}
 		}
 	}
@@ -481,6 +530,20 @@ void Archipelago::Update()
 				player.prevMoney = player.money = std::min(change->new_value->getLong(), (long long)UINT16_MAX);
 			}
 		}
+		else if (ap->is_storage_private(change->key, "spell"))
+		{
+			if (change->new_value->isLong())
+			{
+				spell = player.curSpell = change->new_value->getLong();
+			}
+		}
+		else if (ap->is_storage_private(change->key, "fairy"))
+		{
+			if (change->new_value->isLong())
+			{
+				fairy = player.fairyOn = change->new_value->getLong();
+			}
+		}
 	}
 
 	// Re-use prevScore and prevMoney since we're not resetting them on death.
@@ -496,7 +559,17 @@ void Archipelago::Update()
 		ap->storage_set(ap->storage_private("money"), player.money, false);
 	}
 
-	// TODO: store selected fairy and spell
+	if (player.curSpell != spell)
+	{
+		spell = player.curSpell;
+		ap->storage_set(ap->storage_private("spell"), player.curSpell, false);
+	}
+
+	if (player.fairyOn != fairy)
+	{
+		fairy = player.fairyOn;
+		ap->storage_set(ap->storage_private("fairy"), player.fairyOn, false);
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -517,6 +590,7 @@ ArchipelagoMenu(MGLDraw* mgl)
 	// ------------------------------------------------------------------------
 	// Init
 	InitPlayer(INIT_GAME, 0, 0);
+	InitMessage();
 
 	while (running)
 	{

@@ -3,7 +3,6 @@
 #include "game.h"
 #include "intface.h"
 #include "string_extras.h"
-#include "archipelago.h"
 
 char speech[26*4][64]={
 	// 0
@@ -287,12 +286,12 @@ void InitSpeech(byte spc)
 	if(spc==5)
 	{
 		// this guy tells you how many levels remain to clear.
-		if(player.levelsPassed==9)
+		if(PlayerLevelsPassed()==9)
 			spc=6;
 		else
 		{
-			speech[23][22]='9'-player.levelsPassed;
-			if(player.levelsPassed==8)
+			speech[23][22]='9'-PlayerLevelsPassed();
+			if(PlayerLevelsPassed()==8)
 			{
 				speech[23][34]='.';
 				speech[23][35]=' ';
@@ -309,17 +308,6 @@ void InitSpeech(byte spc)
 		// check to see if the player has won the Dance-a-thon yet
 		if(!MonsterExists(255))
 			spc=11;
-	}
-	if(spc==12)
-	{
-		if (auto ap = Archipelago())
-		{
-			ham_strcpy(speech[12 * 4 + 3], ap->ItemNameAtLocation(2, 16));
-		}
-		else
-		{
-			ham_strcpy(speech[12 * 4 + 3], "");
-		}
 	}
 	curSpeech=spc;
 	speechX=0;

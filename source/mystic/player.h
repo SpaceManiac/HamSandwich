@@ -141,6 +141,7 @@ void PlayerSaveGame(byte which);
 byte GetPlayerWorld(void);
 byte PlayerShield(void);
 void PlayerGetPoints(int amt);
+void PlayerLosePoints(int amt);
 void PlayerResetScore(void);
 byte PlayerGetMusicSettings(void);
 void PlayerSetMusicSettings(byte m);

@@ -332,10 +332,7 @@ void Guy::SeqFinished(void)
 				hp=player.life;
 				player.shield=30*2;
 				beenReborn=1;
-				if(player.experience>player.needExp/4)	// lose 25% of the XP needed for next level
-					player.experience-=player.needExp/4;
-				else
-					player.experience=0;
+				PlayerLosePoints(player.needExp / 4);  // lose 25% of the XP needed for next level
 
 				x=lastSafeX;
 				y=lastSafeY;

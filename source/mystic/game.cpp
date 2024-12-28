@@ -26,7 +26,7 @@ char lastKey=0;
 
 MGLDraw *gamemgl;
 static Map		*curMap;
-byte gameMode=GAMEMODE_PLAY;
+byte gameMode=GAMEMODE_NONE;
 byte	mapToGoTo;
 byte	worldNum;
 byte    mapNum;
@@ -130,7 +130,8 @@ byte InitLevel(byte map)
 	InitGuys(128);
 	InitBullets();
 	InitPlayer(INIT_LEVEL,0,map);
-	InitMessage();
+	if (!Archipelago())
+		InitMessage();
 	NewBigMessage(curMap->name,100);
 	InitParticles(256);
 	lastKey=0;
@@ -165,20 +166,6 @@ byte InitLevel(byte map)
 		{
 			// you've passed this level before, clean out incriminating prizes
 			GetRidOfGoodStuff(curMap);
-		}
-
-		if (auto ap = Archipelago())
-		{
-			for(i=0;i<curMap->width*curMap->height;i++)
-			{
-				byte item = curMap->map[i].item;
-				if (item==ITM_KEYCH1 || item==ITM_KEYCH2 || item==ITM_KEYCH3 || item==ITM_KEYCH4
-					|| item==ITM_FAIRYBELL || item==ITM_SPELLBOOK)
-				{
-					// ^ Each map is presumed to have exactly one of these.
-					curMap->map[i].item = ap->HasCheckedLocation(player.worldNum, player.levelNum) ? ITM_NONE : ITM_ARCHIPELAGO;
-				}
-			}
 		}
 	}
 	battleIsWon=0;
@@ -366,6 +353,11 @@ TASK(byte) LunaticRun(int *lastTime)
 					if(windDownReason==LEVEL_SHOP)
 					{
 						gameMode=GAMEMODE_SHOP;
+						if (auto ap = Archipelago())
+						{
+							// When you visit the shop, you get free hints.
+							ap->HintShop();
+						}
 					}
 					else if(windDownReason==LEVEL_FAIRY)
 					{
@@ -923,7 +915,7 @@ TASK(byte) LunaticWorld(byte world)
 		}
 		else if(result==LEVEL_WIN)
 		{
-			 mapNum=player.levelNum;
+			mapNum=player.levelNum;
 			PlayerWinLevel(world,mapNum,curMapFlags&MAP_SECRET);
 			if((player.worldNum==0 && mapNum==14) ||
 				(player.worldNum==1 && mapNum==12) ||
@@ -966,7 +958,8 @@ TASK(byte) LunaticWorld(byte world)
 				else
 				{
 					player.worldNum=0;
-					player.nightmare=1;
+					if (!Archipelago())
+						player.nightmare=1;
 					FreeWorld(&curWorld);
 					if(!LoadWorld(&curWorld,worldName[player.worldNum]))
 						CO_RETURN WORLD_ABORT;
@@ -1034,10 +1027,12 @@ TASK(byte) LunaticGame(MGLDraw *mgl,byte load)
 		}
 		if(worldResult==WORLD_NAG)
 		{
+			gameMode = GAMEMODE_NONE;
 			ExitPlayer();
 			CO_RETURN 1;
 		}
 	}
+	gameMode = GAMEMODE_NONE;
 	ExitPlayer();
 	CO_RETURN 0;
 }

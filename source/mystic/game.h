@@ -29,6 +29,7 @@
 #define GAMEMODE_SHOP  3
 #define GAMEMODE_SPEECH 4
 #define GAMEMODE_FAIRY	5
+#define GAMEMODE_NONE   6  // title screen or similar
 
 // these are the messages you can send to the game
 #define MSG_NONE	  0
