@@ -27,7 +27,7 @@ byte EnoughMana(void)
 {
 	byte cost;
 
-	if(player.curSpell==0)
+	if(!player.spell[player.curSpell])
 		return 1;
 	else
 	{
