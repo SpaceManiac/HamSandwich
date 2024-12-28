@@ -17,6 +17,7 @@ public:
 	std::string_view Status();
 	void Update();
 
+	void HintShop();
 	bool HasCheckedLocation(int chapter, int levelNum);
 	byte MysticItemAtLocation(int chapter, int levelNum);
 	std::string_view ItemNameAtLocation(int chapter, int levelNum);

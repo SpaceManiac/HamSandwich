@@ -229,11 +229,19 @@ void RenderItem(int x,int y,byte type,char bright)
 			// don't render at all if this letter is already gotten
 			break;
 		case ITM_CHLGCRYSTAL:
-		case ITM_ARCHIPELAGO:
 			SprDraw(x,y,8,1,bright+(glowism&3),itmSpr->GetSprite(59+(glowism&7)),DISPLAY_DRAWME);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(59+(glowism&7)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
-
+		case ITM_ARCHIPELAGO:
+			for (int i = 0; i < 6; ++i)
+			{
+				static const int AP_GEM_COLOR[6] = { 4, 5, 3, 2, 6, 1 };
+				int angle = (glowism + i * 256 / 6) & 255;
+				int sz = 15;
+				SprDraw(x+Cosine(angle)*sz/FIXAMT,y+Sine(angle)*sz/FIXAMT,8,AP_GEM_COLOR[i],bright,itmSpr->GetSprite(59+7-((glowism/2)&7)),DISPLAY_DRAWME);
+				SprDraw(x+Cosine(angle)*sz/FIXAMT,y+Sine(angle)*sz/FIXAMT,0,255,bright,itmSpr->GetSprite(59+7-((glowism/2)&7)),DISPLAY_DRAWME|DISPLAY_SHADOW);
+			}
+			break;
 	}
 }
 
@@ -390,6 +398,7 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 			itmSpr->GetSprite(183+((type-ITM_LETTERM)*16))->DrawBright(x-18,y,mgl,bright);
 			break;
 		case ITM_CHLGCRYSTAL:
+		case ITM_ARCHIPELAGO:
 			itmSpr->GetSprite(59)->DrawColored(x,y,mgl,1,bright);
 			break;
 	}

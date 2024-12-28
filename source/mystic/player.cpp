@@ -20,6 +20,20 @@ byte beenReborn;
 static byte fairyReload;
 static int chlgCrystals;
 
+static void ArchipelagoXp(class Archipelago* ap)
+{
+	int lvl = 0, target = 0, lastTarget = 0;
+	while (lvl < 50 && player.score >= target)
+	{
+		ap->PickupItem(5, lvl);
+		++lvl;
+		lastTarget = target;
+		target += lvl * (lvl + 1) * 10;
+	}
+	player.experience = player.score - lastTarget;
+	player.needExp = target - lastTarget;
+}
+
 void InitPlayer(byte initWhat,byte world,byte level)
 {
 	int i,j;
@@ -111,7 +125,10 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	playerGlow=0;
 	player.pushPower=0;
 	player.poison=0;
-	player.needExp=player.level*player.level*10+player.level*10;
+	if (auto ap = Archipelago())
+		ArchipelagoXp(ap);
+	else
+		player.needExp=player.level*player.level*10+player.level*10;
 	player.stoneskin=0;
 	player.berserk=0;
 	SetPlayerSpeed();
@@ -893,6 +910,8 @@ byte PlayerGetItem(byte itm,int x,int y)
 			if (auto ap = Archipelago())
 			{
 				ap->PickupItem(player.worldNum, player.levelNum);
+				FloaterParticles(x,y,1,32,-1,8);
+				FloaterParticles(x,y,1,10,1,8);
 				return 0;
 			}
 			break;
@@ -961,16 +980,7 @@ void PlayerGetPoints(int amt)
 	player.score+=amt;
 	if (auto ap = Archipelago())
 	{
-		int lvl = 0, target = 0, lastTarget = 0;
-		while (lvl < 50 && player.score >= target)
-		{
-			ap->PickupItem(5, lvl);
-			++lvl;
-			lastTarget = target;
-			target += lvl * (lvl + 1) * 10;
-		}
-		player.experience = player.score - lastTarget;
-		player.needExp = target - lastTarget;
+		ArchipelagoXp(ap);
 	}
 	else if(player.level<50)// && player.levelPassed[player.worldNum][player.levelNum]==0)
 	{
@@ -1007,6 +1017,33 @@ void PlayerGetPoints(int amt)
 			player.money+=amt;	// get money!
 		else
 			player.money=50000;
+	}
+}
+
+void PlayerLosePoints(int amt)
+{
+	if (auto ap = Archipelago())
+	{
+		if (player.score > amt)
+		{
+			player.score -= amt;
+		}
+		else
+		{
+			player.score = 0;
+		}
+		ArchipelagoXp(ap);
+	}
+	else
+	{
+		if (player.experience > amt)
+		{
+			player.experience -= amt;
+		}
+		else
+		{
+			player.experience = 0;
+		}
 	}
 }
 
@@ -1166,10 +1203,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	if(vampyClock>30*3 && player.fairyOn==FAIRY_RICHEY && player.levelNum!=1)	// not on the hub level
 	{
 		vampyClock=0;
-		if(player.experience>0)
-		{
-			player.experience--;
-		}
+		PlayerLosePoints(1);
 	}
 	if(vampyClock>30*1+15 && player.fairyOn==FAIRY_MIGHTY && player.levelNum!=1)	// not on the hub level
 	{
