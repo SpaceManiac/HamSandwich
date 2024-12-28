@@ -4,6 +4,7 @@
 #include "sound.h"
 #include "fairy.h"
 #include "archipelago.h"
+#include <string>
 
 #define SHOPX 10
 #define SHOPY 40
