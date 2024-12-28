@@ -139,7 +139,8 @@ public:
 	const std::set<int64_t>& missing_locations() const;
 
 	// Call when a location is checked (picked up, completed, achieved).
-	void check_location(int64_t location);
+	// Returns true if it was actually new.
+	bool check_location(int64_t location);
 	// Call when the game's goal is completed.
 	void check_goal();
 

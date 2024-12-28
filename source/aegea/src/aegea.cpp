@@ -806,7 +806,7 @@ const std::set<int64_t>& ArchipelagoClient::missing_locations() const
 	return missing_locations_;
 }
 
-void ArchipelagoClient::check_location(int64_t location)
+bool ArchipelagoClient::check_location(int64_t location)
 {
 	auto [iter, inserted] = checked_locations_.insert(location);
 	if (inserted)
@@ -815,6 +815,7 @@ void ArchipelagoClient::check_location(int64_t location)
 		packet["cmd"] = OutgoingCmd::LocationChecks;
 		packet["locations"][0] = location;
 	}
+	return inserted;
 }
 
 void ArchipelagoClient::check_goal()
