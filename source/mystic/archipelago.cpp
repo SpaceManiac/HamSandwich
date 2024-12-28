@@ -257,20 +257,26 @@ static std::string_view ItemName(const ArchipelagoClient::Item& item, int offset
 	return name;
 }
 
-std::string_view Archipelago::ItemNameAtLocation(int chapter, int levelNum)
+std::string Archipelago::ItemNameAtLocation(int chapter, int levelNum)
 {
 	int64_t location_id = BASE_ID + chapter * 50 + levelNum;
 	if (auto item = ap->item_at_location(location_id))
 	{
-		return ItemName(*item, 0);
+		std::string result { ItemName(*item, 0) };
+		if (item->player != ap->player_id())
+		{
+			result += " ^ ^ For: ";
+			result += ap->slot_player_alias(item->player);
+		}
+		return result;
 	}
 	// Problem with the scouting.
 	return "Unknown";
 }
 
-void Archipelago::PickupItem(int chapter, int levelNum)
+bool Archipelago::PickupItem(int chapter, int levelNum)
 {
-	ap->check_location(BASE_ID + chapter * 50 + levelNum);
+	return ap->check_location(BASE_ID + chapter * 50 + levelNum);
 }
 
 void Archipelago::PassLevel(int chapter, int levelNum)
@@ -491,6 +497,13 @@ void Archipelago::Update()
 							NewBigMessage(spellName[spellbook*2],75);
 						}
 					}
+
+					// Level-ups
+					if (item_id / 50 == 5)
+					{
+						// Particle is for getting enough XP, sound is for getting a level.
+						MakeNormalSound(SND_LEVELUP);
+					}
 				}
 				else if (message->item.player == ap->player_id())
 				{
@@ -597,7 +610,7 @@ ArchipelagoMenu(MGLDraw* mgl)
 		// --------------------------------------------------------------------
 		// Update
 		bool chapters[4] = { false, false, false, false };
-		if (ap && ap->is_active())
+		if (ap && ap->is_active() && ap->error_message().empty())
 		{
 			for (const auto& item : ap->all_received_items())
 			{
@@ -618,6 +631,11 @@ ArchipelagoMenu(MGLDraw* mgl)
 					chapters[3] = true;
 				}
 			}
+		}
+		// Handle disconnects by bumping cursor back up.
+		while (cursor >= 5 && cursor < 9 && !chapters[cursor - 5])
+		{
+			--cursor;
 		}
 		int typingY = -1;
 
