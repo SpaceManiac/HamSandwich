@@ -22,10 +22,15 @@ static int chlgCrystals;
 
 static void ArchipelagoXp(class Archipelago* ap)
 {
-	int lvl = 0, target = 0, lastTarget = 0;
+	int lvl = 1, target = 20, lastTarget = 0, y = 0;
 	while (lvl < 50 && player.score >= target)
 	{
-		ap->PickupItem(5, lvl);
+		if (ap->PickupItem(5, lvl))
+		{
+			// Particle is for getting enough XP, sound is for getting a level.
+			AddParticle(GetGoodguy()->x,GetGoodguy()->y,FIXAMT*20+y*FIXAMT*10,0,0,0,60,PART_LVLUP,0);
+			++y;
+		}
 		++lvl;
 		lastTarget = target;
 		target += lvl * (lvl + 1) * 10;

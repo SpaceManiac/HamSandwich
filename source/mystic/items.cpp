@@ -235,7 +235,7 @@ void RenderItem(int x,int y,byte type,char bright)
 		case ITM_ARCHIPELAGO:
 			for (int i = 0; i < 6; ++i)
 			{
-				static const int AP_GEM_COLOR[6] = { 4, 5, 3, 2, 6, 1 };
+				static const int AP_GEM_COLOR[6] = { 1, 6, 2, 3, 5, 4 };
 				int angle = (glowism + i * 256 / 6) & 255;
 				int sz = 15;
 				SprDraw(x+Cosine(angle)*sz/FIXAMT,y+Sine(angle)*sz/FIXAMT,8,AP_GEM_COLOR[i],bright,itmSpr->GetSprite(59+7-((glowism/2)&7)),DISPLAY_DRAWME);

@@ -652,7 +652,7 @@ void RenderShop(void)
 	if (auto ap = Archipelago(); ap && shopCursor != 24)
 	{
 		owned = ap->HasCheckedLocation(4, shopCursor);
-		FontPrintStringRect(5, 100+5*56-20, 280, SCRHEI, ap->ItemNameAtLocation(4, shopCursor), 20, Listium);
+		FontPrintStringRect(5-2, 100+5*56-20-2, 280, SCRHEI, ap->ItemNameAtLocation(4, shopCursor), 20, Listium);
 	}
 	else if(player.nightmare)
 	{

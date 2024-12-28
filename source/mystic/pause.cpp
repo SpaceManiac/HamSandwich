@@ -68,6 +68,14 @@ void RenderPauseMenu(void)
 		PrintBrightGlow(pauseX+10+160,360,"III",-16+(cursor==4)*16,0);
 	PrintBrightGlow(pauseX+10,400,"Quit Game",-16+(cursor==5)*16,0);
 	RenderSlotPickMenu();
+
+	if (auto ap = Archipelago())
+	{
+		std::string s = "AP: ";
+		s += ap->Status();
+		Print(pauseX+10,SCRHEI-26+2,s,1,2);
+		Print(pauseX+10,SCRHEI-26,s,0,2);
+	}
 }
 
 void RenderSlotPickMenu(void)
