@@ -26,6 +26,7 @@ namespace
 	int messageCooldown = MESSAGE_TIME;
 	bool countdownDone = false;
 
+	bool chapters[4];
 	byte levelsPassed[4];
 	byte spell = 255;
 	dword fairy = 0;
@@ -324,6 +325,7 @@ void Archipelago::Update()
 			ap->storage_private("fairy"),
 		});
 		// Server will send ReceivedItems soon, so we need to reset progression.
+		memset(chapters, 0, 4);
 		memset(levelsPassed, 0, 4);
 		memset(player.spell, 0, 9);
 		player.hat = player.staff = player.boots = 0;
@@ -401,6 +403,23 @@ void Archipelago::Update()
 		else if (item_id / 50 == 4)
 		{
 			BuyGear(item_id - 4 * 50);
+		}
+		// Chapter unlocks
+		else if (item_id == 5 * 50 + 0)
+		{
+			chapters[0] = true;
+		}
+		else if (item_id == 0 * 50 + 20 + 14)
+		{
+			chapters[1] = true;
+		}
+		else if (item_id == 1 * 50 + 20 + 12)
+		{
+			chapters[2] = true;
+		}
+		else if (item_id == 2 * 50 + 20 + 15)
+		{
+			chapters[3] = true;
 		}
 		// Progressive level-ups
 		else if (item_id / 50 == 5)
@@ -609,31 +628,9 @@ ArchipelagoMenu(MGLDraw* mgl)
 	{
 		// --------------------------------------------------------------------
 		// Update
-		bool chapters[4] = { false, false, false, false };
-		if (ap && ap->is_active() && ap->error_message().empty())
-		{
-			for (const auto& item : ap->all_received_items())
-			{
-				if (item.item == BASE_ID + 5 * 50 + 0)
-				{
-					chapters[0] = true;
-				}
-				else if (item.item == BASE_ID + 0 * 50 + 20 + 14)
-				{
-					chapters[1] = true;
-				}
-				else if (item.item == BASE_ID + 1 * 50 + 20 + 12)
-				{
-					chapters[2] = true;
-				}
-				else if (item.item == BASE_ID + 2 * 50 + 20 + 15)
-				{
-					chapters[3] = true;
-				}
-			}
-		}
+		bool chaptersOk = ap && ap->is_active() && ap->error_message().empty();
 		// Handle disconnects by bumping cursor back up.
-		while (cursor >= 5 && cursor < 9 && !chapters[cursor - 5])
+		while (cursor >= 5 && cursor < 9 && (!chaptersOk || !chapters[cursor - 5]))
 		{
 			--cursor;
 		}
@@ -653,7 +650,7 @@ ArchipelagoMenu(MGLDraw* mgl)
 				{
 					--cursor;
 				}
-				while (cursor >= 5 && cursor < 9 && !chapters[cursor - 5])
+				while (cursor >= 5 && cursor < 9 && (!chaptersOk || !chapters[cursor - 5]))
 				{
 					--cursor;
 				}
@@ -661,7 +658,7 @@ ArchipelagoMenu(MGLDraw* mgl)
 			if (c & ~oldc & CONTROL_DN)
 			{
 				++cursor;
-				while (cursor >= 5 && cursor < 9 && !chapters[cursor - 5])
+				while (cursor >= 5 && cursor < 9 && (!chaptersOk || !chapters[cursor - 5]))
 				{
 					++cursor;
 				}
