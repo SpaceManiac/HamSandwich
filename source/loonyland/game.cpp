@@ -733,7 +733,7 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 			case WORLD_NORMAL:
 				if (ArchipelagoMode)
 				{
-					worldResult = AWAIT LunaticWorld("ap.llw");
+					worldResult = AWAIT LunaticWorld(("Archipelago/" + ArchipelagoSeed + "_" + std::to_string(ArchipelagoSlotNum) + "/ap.llw").c_str());
 					break;
 				}
 				else

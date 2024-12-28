@@ -1193,7 +1193,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 				if(Random(70)==0 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER))
 				{
 					//todo hooks for randomizer maybe
-					if (ArchipelagoMode && (sizeof(basic_locations) / sizeof(locationData) > 158) && false)
+					if (ArchipelagoMode && (apSlotData.dolls == AP_OP_FULL))
 					{
 						int val = -1;
 						switch (type)
@@ -1248,10 +1248,15 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 						{
 							int item_id = scouted_items[loc.Name];
 							if (item_id == ITM_ARCHIPELAGO)
-								FireBullet(x, y, ITM_ARCHIPELAGO, BLT_ITEM);
-							else {
+							{
+								bullet_t* bullet = FireBullet(x, y, ITM_BATDOLL + val, BLT_ITEM);
+								//bullet->anim == ITM_ARCHIPELAGO;
+							}
 
-								FireBullet(x, y, basic_items.at(item_id).ingame_ID, BLT_ITEM);
+							else
+							{
+								bullet_t* bullet = FireBullet(x, y, ITM_BATDOLL + val, BLT_ITEM);
+								//bullet->anim = basic_items.at(item_id).ingame_ID;
 							}
 						}
 					}
@@ -2398,6 +2403,10 @@ byte ItemHitPlayer(int x,int y,byte size,int dx,int dy,byte type,Map *map,world_
 
 	if(CheckHit(size,x,y,goodguy))
 	{
+		if (type >= ITM_BATDOLL && type <= ITM_WOLFDOLL)
+		{
+			SendCheckedLocDoll(type - ITM_BATDOLL);
+		}
 		return !PlayerGetItem(type,x,y);
 	}
 	if(player.monsType==MONS_PLYRSUMMON)
@@ -2407,6 +2416,10 @@ byte ItemHitPlayer(int x,int y,byte size,int dx,int dy,byte type,Map *map,world_
 		{
 			if(guys[i].type==MONS_SUMBAT && CheckHit(size*sizeFactor/256,x,y,&guys[i]))
 			{
+				if (type >= ITM_BATDOLL && type <= ITM_WOLFDOLL)
+				{
+					SendCheckedLocDoll(type - ITM_BATDOLL);
+				}
 				return !PlayerGetItem(type,x,y);
 			}
 		}

@@ -19,6 +19,7 @@ constexpr int loonyland_base_id = 2876900;
 
 bool locationWait = false;
 std::string ArchipelagoSeed = "";
+int ArchipelagoSlotNum = -1;
 
 void SendCheckedItem(int loc_id);
 void ItemsClear();
@@ -86,15 +87,16 @@ std::unordered_map<int, chatData> chat_table = {
 
 
 int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password) {
-	for (int i = 0; i < 40; i++) {
-		opt.meritBadge[i] = MERIT_NO;
-	}
+	//for (int i = 0; i < 40; i++) {
+	//	opt.meritBadge[i] = MERIT_NO;
+	//}
+
 	ap = std::make_unique<ArchipelagoClient>("Loonyland", IPAddress, SlotName, Password);
 	ap->death_link_enable();
 
-	SetupWorld();
 
 	ArchipelagoSeed = "";
+	ArchipelagoSlotNum = -1;
 	return 0;
 }
 
@@ -156,6 +158,7 @@ void GivePlayerItem(int64_t item_id, bool loud)
 	{
 		player.var[VAR_QUESTASSIGN + QUEST_DAISY] = 1;
 		player.var[VAR_QUESTDONE + QUEST_DAISY] = 1;
+		SendCheckedLocQuest(QUEST_DAISY);
 	}
 
 	if (item_id >= VAR_MUSHROOM && item_id < VAR_MUSHROOM + 10) //update quest
@@ -164,6 +167,7 @@ void GivePlayerItem(int64_t item_id, bool loud)
 		{
 			player.var[VAR_QUESTASSIGN + QUEST_SHROOM] = 1;
 			player.var[VAR_QUESTDONE + QUEST_SHROOM] = 1;
+			SendCheckedLocQuest(QUEST_SHROOM);
 		}
 	}
 	if (item_id == VAR_CAT)
@@ -193,15 +197,18 @@ void GivePlayerItem(int64_t item_id, bool loud)
 	}
 	if (item_id >= VAR_GEM && item_id < VAR_GEM + 6)
 	{
-		if (player.maxMoney < MAX_MONEY)
+		if (goodguy != NULL && player.maxMoney < MAX_MONEY)
 		{
 			player.maxMoney += 25;
-			player.money += 25;
-			player.gemsGotten += 25;
+			if (loud)
+			{
+				player.money += 25;
+				player.gemsGotten += 25;
+			}
 		}
 		else
 		{
-			if (player.money < player.maxMoney)
+			if (loud && player.money < player.maxMoney)
 			{
 				player.money += 50;
 				if (player.money > player.maxMoney)
@@ -221,7 +228,7 @@ void GivePlayerItem(int64_t item_id, bool loud)
 void GetLocationScouts()
 {
 	world_t world;
-	LoadWorld(&world, "ap.llw");
+	LoadWorld(&world, ("Archipelago/" + ArchipelagoSeed + "_" + std::to_string(ArchipelagoSlotNum) + "/ap.llw").c_str());
 
 	bool allGood = true;
 
@@ -292,9 +299,9 @@ void GetLocationScouts()
 	if (allGood)
 	{
 		locationWait = false;
-		SaveWorld(&world, "ap.llw");
+		SaveWorld(&world, ("Archipelago/" + ArchipelagoSeed + "_" + std::to_string(ArchipelagoSlotNum) + "/ap.llw").c_str());
+		
 	}
-
 	FreeWorld(&world);
 }
 
@@ -393,9 +400,9 @@ void SendCheckedLocDoll(int dollId)
 {
 	for (locationData* loc : in_logic_locs)
 	{
-		if (loc->Type == "Doll" && loc->MapID == dollId) //map ids are where the quest var is stored for those locations
+		if (loc->Name == "Bat Drop")
 		{
-			SendCheckedItem(loc->ID);
+			SendCheckedItem(loc->ID + dollId);
 			return;
 		}
 	}
@@ -540,6 +547,9 @@ void GetInfoFromAP()
 
 		locationScouts.push_back(loc.ID + loonyland_base_id);
 		in_logic_locs.insert(&loc);
+		if (loc.Type == "BADGE") {
+			opt.meritBadge[loc.MapID] = MERIT_NO;
+		}
 	}
 	locationWait = true;
 	ap->scout_locations(locationScouts);
@@ -576,13 +586,14 @@ void SetupWorld()
 		}
 	}
 
-	SaveWorld(&world, "ap.llw");
+	SaveWorld(&world, ("Archipelago/" + ArchipelagoSeed + "_" + std::to_string(ArchipelagoSlotNum) + "/ap.llw").c_str());
 	FreeWorld(&world);
 }
 
 void UpdateArchipelago()
 {
 	static bool gottenAnything = false;
+	bool reconnected = false;
 	if (!ap)
 	{
 		return;
@@ -600,10 +611,14 @@ void UpdateArchipelago()
 		GetRoomInfo();
 		GetInfoFromAP();
 		ArchipelagoSeed = ap->seed_name();
-		for (int i = 0; i < NUM_BADGES; i++)
+		ArchipelagoSlotNum = ap->player_id();
+		SetupWorld();
+		reconnected = true;
+
+		/*for (int i = 0; i < NUM_BADGES; i++)
 		{
 			opt.cheats[i] &= ap_cheatsAvail[cheat_to_badge[i]];
-		}
+		}*/
 	}
 
 	// Items
@@ -612,8 +627,12 @@ void UpdateArchipelago()
 		ItemReceived(item->item, true);
 		gottenAnything = true;
 	}
-	if (gottenAnything)
+	if (reconnected)
 	{
+		for (int i = 0; i < NUM_BADGES; i++)
+		{
+			opt.cheats[i] &= ap_cheatsAvail[cheat_to_badge[i]];
+		}
 	}
 
 	// Location checks

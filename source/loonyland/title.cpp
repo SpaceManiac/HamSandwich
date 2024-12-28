@@ -284,7 +284,7 @@ void GetSavesForMenu(void)
 	{
 		if (ArchipelagoMode)
 		{
-			ham_sprintf(txt, "Archipelago/%s/save%d.sav", ArchipelagoSeed.c_str(), saveOffset + i + 1);
+			ham_sprintf(txt, "Archipelago/%s_%d/save%d.sav", ArchipelagoSeed.c_str(), ArchipelagoSlotNum, saveOffset + i + 1);
 		}
 		else
 		{

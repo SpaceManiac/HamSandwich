@@ -2076,7 +2076,10 @@ void DoChatAction(byte a)
 			break;
 		case 24:
 			// complete rescue quest
-			PlayerSetVar(VAR_QUESTDONE+QUEST_DARK,1);
+			if (!ArchipelagoMode)
+			{
+				PlayerSetVar(VAR_QUESTDONE + QUEST_DARK, 1);
+			}
 			PlayerSetVar(VAR_QUESTDONE+QUEST_RESCUE,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
 				GiveRandoItem(7);
