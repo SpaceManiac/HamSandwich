@@ -15,6 +15,8 @@ namespace
 {
 	const jt::Json json_null;
 
+	ArchipelagoCache::FileSystem default_cache { "archipelago/" };
+
 	namespace IncomingCmd
 	{
 		constexpr std::string_view RoomInfo = "RoomInfo";
@@ -70,21 +72,10 @@ namespace
 
 // ------------------------------------------------------------------------
 
-namespace
+std::string ArchipelagoCache::FileSystem::read(std::string_view key)
 {
-	class DefaultArchipelagoCache : public ArchipelagoCache
-	{
-	public:
-		std::string read(std::string_view key);
-		void write(std::string_view key, std::string_view data);
-	};
-
-	DefaultArchipelagoCache default_cache;
-}
-
-std::string DefaultArchipelagoCache::read(std::string_view key)
-{
-	std::string filename = "archipelago/";
+	std::string filename { prefix };
+	filename.append("/");
 	filename.append(key);
 	filename.append(".cache");
 
@@ -101,12 +92,13 @@ std::string DefaultArchipelagoCache::read(std::string_view key)
 	return buffer;
 }
 
-void DefaultArchipelagoCache::write(std::string_view key, std::string_view data)
+void ArchipelagoCache::FileSystem::write(std::string_view key, std::string_view data)
 {
 	std::error_code ec;
-	std::filesystem::create_directories("archipelago/", ec);
+	std::filesystem::create_directories(prefix, ec);
 
-	std::string filename = "archipelago/";
+	std::string filename { prefix };
+	filename.append("/");
 	filename.append(key);
 	filename.append(".cache");
 

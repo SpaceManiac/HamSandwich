@@ -70,8 +70,14 @@ std::unordered_map<int, chatData> chat_table = {
 };
 
 
-int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password) {
+int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password)
+{
+	static ArchipelagoCache::FileSystem cache { "appdata/archipelago/" };
+	for (int i = 0; i < 40; i++) {
+		opt.meritBadge[i] = MERIT_NO;
+	}
 	ap = std::make_unique<ArchipelagoClient>("Loonyland", IPAddress, SlotName, Password);
+	ap->use_cache(&cache);
 	//AP_SetLocationCheckedCallback(SetLocationChecked);
 	ap->death_link_enable();
 
