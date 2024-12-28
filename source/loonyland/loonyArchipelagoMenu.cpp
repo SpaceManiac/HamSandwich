@@ -72,6 +72,12 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 			{
 				//InitPlayer(INIT_ARCHIPELAGO, 0, 0);
 				quit = false;
+				ap_modesAvail[0] = 1;
+				ap_modesAvail[1] = 1;
+				ap_modesAvail[2] = 1;
+				ap_modesAvail[3] = 1;
+				ap_modesAvail[4] = 1;
+				ap_modesAvail[5] = 1;
 				CO_RETURN 1;
 			}
 

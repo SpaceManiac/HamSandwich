@@ -1285,9 +1285,9 @@ void BadgeCheck(byte event,int value,Map *map)
 			EarnBadge(BADGE_BRAWL);
 		}
 
-		if(player.monsterPoints>30000)
+		if(player.monsterPoints>30000 && !opt.meritBadge[BADGE_MONSTERPTS])
 			EarnBadge(BADGE_MONSTERPTS);
-		if(player.monsterPoints>10000)
+		if(player.monsterPoints>10000 && !opt.meritBadge[BADGE_MONSTERPTS2])
 			EarnBadge(BADGE_MONSTERPTS2);
 
 		if((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX) && player.levelNum==24 && !AnyMonsterExists() &&
@@ -1417,8 +1417,15 @@ void BadgeCheck(byte event,int value,Map *map)
 		if(opt.meritBadge[i])
 			have++;
 	}
-	if(have==39 && !opt.meritBadge[BADGE_MASTER])
+	if (have == 39 && !opt.meritBadge[BADGE_MASTER])
+	{
 		EarnBadge(BADGE_MASTER);
+		have++;
+	}
+	if (ArchipelagoMode && apSlotData.win_condition == AP_WIN_BADGES && have >= apSlotData.badges_required)
+	{
+		WinArchipelago();
+	}
 
 	then=timeGetTime();
 

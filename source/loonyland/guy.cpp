@@ -1243,7 +1243,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 							val = 7;
 							break;
 						}
-						locationData loc = basic_locations[158 + val];
+						locationData loc = basic_locations[AP_DOLLLOCSTART + val];
 						if (val != -1 && !(locsFound.find(loc.ID) != locsFound.end()))
 						{
 							int item_id = scouted_items[loc.Name];

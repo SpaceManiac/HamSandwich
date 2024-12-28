@@ -4,6 +4,8 @@
 const int AP_BADGEMOD = 1000;
 const int AP_MODEMOD = 2000;
 
+const int AP_DOLLLOCSTART = 159;
+
 #include <string>
 #include <string_view>
 #include <set>
@@ -33,10 +35,13 @@ void GetRoomInfo();
 void Disconnect();
 
 struct SlotData {
+	int win_condition;
+	int badges_required;
 	int difficulty;
 	int long_checks;
 	int multi_save;
 	int remix;
+	int overpowered_cheats;
 	int badges;
 	int dolls;
 	int deathlink;
@@ -45,9 +50,12 @@ struct SlotData {
 #define AP_OP_DISABLED 0
 #define AP_OP_ENABLED 1
 
-#define AP_OP_FULL 0
+#define AP_OP_NONE 0
 #define AP_OP_VANILLA 1
-#define AP_OP_NONE 2
+#define AP_OP_FULL 2
+
+#define AP_WIN_EVILIZER 0
+#define AP_WIN_BADGES 1
 
 struct locationData {
 	std::string Name;

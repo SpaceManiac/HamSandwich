@@ -51,7 +51,7 @@ pyEntranceHeader = """def set_entrance_rules(multiworld, world):
 
 pyEntranceFooter = """    for region in multiworld.get_regions(world.player):
         for entry in loonyland_entrance_table:
-            if entry.source_region == region.name:
+            if entry.source_region == region.name and entry.can_create(world.options):
                 region.connect(connecting_region=world.get_region(entry.target_region), rule=entry.rule)"""
 
 luaEntranceHeader = """function ent_valid(entry)

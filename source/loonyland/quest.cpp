@@ -1963,6 +1963,7 @@ void DoChatAction(byte a)
 			}
 			else if (ArchipelagoMode)
 			{
+				SendCheckedLocReward(VAR_WITCHREWARD);
 				break;
 			}
 			else

@@ -515,7 +515,7 @@ void GetInfoFromAP()
 	std::vector<int64_t> locationScouts;
 	for (auto &loc : basic_locations)
 	{
-		if (loc.Name == "Q: Save Halloween Hill")
+		if (loc.Name == "Q: Save Halloween Hill" && apSlotData.win_condition == AP_WIN_EVILIZER)
 		{
 			continue;
 		}
@@ -541,6 +541,14 @@ void GetInfoFromAP()
 			continue;
 		}
 		if (apSlotData.multi_save == AP_OP_DISABLED && loc.flags.count("MULTISAVE"))
+		{
+			continue;
+		}
+		if (apSlotData.win_condition == AP_WIN_EVILIZER && loc.flags.count("POSTGAME"))
+		{
+			continue;
+		}
+		if (apSlotData.overpowered_cheats == AP_OP_DISABLED && loc.flags.count("OP"))
 		{
 			continue;
 		}
@@ -710,10 +718,13 @@ void DebugAPCommand() {
 }
 
 void GetRoomInfo() {
+	apSlotData.win_condition = ap->room_info("slot_data")["WinCondition"].getNumber();
+	apSlotData.badges_required = ap->room_info("slot_data")["BadgesRequired"].getNumber();
 	apSlotData.difficulty = ap->room_info("slot_data")["Difficulty"].getNumber();
 	apSlotData.long_checks = ap->room_info("slot_data")["LongChecks"].getNumber();
 	apSlotData.multi_save = ap->room_info("slot_data")["MultipleSaves"].getNumber();
 	apSlotData.remix = ap->room_info("slot_data")["Remix"].getNumber();
+	apSlotData.overpowered_cheats = ap->room_info("slot_data")["OverpoweredCheats"].getNumber();
 	apSlotData.badges = ap->room_info("slot_data")["Badges"].getNumber();
 	apSlotData.dolls = ap->room_info("slot_data")["Dolls"].getNumber();
 	apSlotData.deathlink = ap->room_info("slot_data")["DeathLink"].getNumber();
