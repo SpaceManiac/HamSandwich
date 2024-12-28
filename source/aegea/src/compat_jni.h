@@ -18,8 +18,8 @@ public:
 	LocalFrame() : m_env(nullptr) {}
 	bool init(JNIEnv* env, int capacity = 16);
 
-	// Test for an exception and print its detail if one occurs.
-	// If the parameter silent is truthy then printing will not be called.
+	// Test for an exception and return its detail if one occurs.
+	// `error` may be null in which case the message is discarded.
 	[[nodiscard]]
 	bool exception_occurred(std::string* error) const;
 };

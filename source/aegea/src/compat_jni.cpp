@@ -18,15 +18,12 @@ bool LocalFrame::init(JNIEnv* env, int capacity)
 {
 	if (env->PushLocalFrame(capacity) < 0)
 	{
-		fprintf(stderr, "Failed to allocate enough JVM local references\n");
 		return false;
 	}
 	m_env = env;
 	return true;
 }
 
-// Test for an exception and print its detail if one occurs.
-// If the parameter silent is truthy then printing will not be called.
 [[nodiscard]]
 bool LocalFrame::exception_occurred(std::string* error) const
 {

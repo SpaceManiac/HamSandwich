@@ -6,9 +6,9 @@
 #include "websocket.h"
 
 #ifdef NDEBUG
-#define debug_printf(...)
+#define debug_log(...)
 #else
-#define debug_printf(...) fprintf(stderr, "[AP] " __VA_ARGS__)
+#define debug_log(fmt, ...) fprintf(stderr, "[Aegea] " fmt "\n", __VA_ARGS__)
 #endif
 
 namespace
@@ -240,7 +240,7 @@ void ArchipelagoClient::send_connect()
 		tagsJ.emplace_back(tag);
 	}
 	// Bypass outgoing queue during connection setup.
-	debug_printf("--> %s\n", connect.toString().c_str());
+	debug_log("--> %s", connect.toString().c_str());
 	socket->send_text(outgoingJ.toString().c_str());
 	status = WaitingForConnected;
 }
@@ -263,7 +263,7 @@ void ArchipelagoClient::update()
 	{
 		if (status == ConnectingAutoWss)
 		{
-			debug_printf("Auto-TLS failed, trying insecure: %.*s\n", (int)socket->error_message().size(), socket->error_message().data());
+			debug_log("Auto-TLS failed, trying insecure: %.*s", (int)socket->error_message().size(), socket->error_message().data());
 			// wss://X failed, try ws://X
 			std::string fullAddress = "ws://" + address;
 			socket = WebSocket::connect(fullAddress.c_str());
@@ -293,19 +293,19 @@ void ArchipelagoClient::update()
 		{
 			error = "Server sent invalid JSON: ";
 			error += jt::Json::StatusToString(parseStatus);
-			debug_printf("Server sent invalid JSON: %s in %s\n", jt::Json::StatusToString(parseStatus), message->data.c_str());
+			debug_log("Server sent invalid JSON: %s in %s", jt::Json::StatusToString(parseStatus), message->data.c_str());
 			continue;
 		}
 		if (!body.isArray())
 		{
 			error = "Server sent non-array JSON";
-			debug_printf("Server sent non-array JSON: %s\n", message->data.c_str());
+			debug_log("Server sent non-array JSON: %s", message->data.c_str());
 			continue;
 		}
 
 		for (auto& packet : body.getArray())
 		{
-			debug_printf("<-- %s\n", packet.toString().c_str());
+			debug_log("<-- %s", packet.toString().c_str());
 
 			const auto& cmdJ = packet["cmd"];
 			if (!cmdJ.isString())
@@ -350,7 +350,7 @@ void ArchipelagoClient::update()
 				else
 				{
 					// Bypass outgoing queue during connection setup.
-					debug_printf("--> %s\n", getDataPackage.toString().c_str());
+					debug_log("--> %s", getDataPackage.toString().c_str());
 					socket->send_text(outgoingJ.toString().c_str());
 					status = WaitingForDataPackage;
 				}
@@ -446,8 +446,8 @@ void ArchipelagoClient::update()
 				}
 				else
 				{
-					debug_printf(
-						"ReceivedItems expected index=%u, got index=%d\n",
+					debug_log(
+						"ReceivedItems expected index=%u, got index=%d",
 						static_cast<unsigned int>(received_items.size()),
 						index
 					);
@@ -624,7 +624,7 @@ void ArchipelagoClient::update()
 			}
 			else
 			{
-				debug_printf("Server sent unknown \"cmd\": %s\n", cmd.c_str());
+				debug_log("Server sent unknown \"cmd\": %s", cmd.c_str());
 			}
 		}
 	}
@@ -634,7 +634,7 @@ void ArchipelagoClient::update()
 #ifndef NDEBUG
 		for (const auto& packet : outgoing)
 		{
-			debug_printf("--> %s\n", packet.toString().c_str());
+			debug_log("--> %s", packet.toString().c_str());
 		}
 #endif
 
