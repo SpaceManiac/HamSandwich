@@ -446,9 +446,9 @@ loonyland_location_table = {\n"""
                 with open(TRACKER_SCRIPTS_DATA, 'a') as tracker_lua:
                     tracker_lua.write(tracker_loc_lines + tracker_rules_lines + tracker_mapping_lines)
 
-                python_loc_lines += "}\n"
+                python_loc_lines += "}\n\n\n"
                 python_rules_lines += "    }\n"
-                python_rules_lines += pyRulesFooter + "\n"
+                python_rules_lines += pyRulesFooter + "\n\n\n"
                 with open(PYTHON_DATA, 'a') as python_file:
                     python_file.write(python_loc_lines)
                     python_file.write(python_rules_lines)
