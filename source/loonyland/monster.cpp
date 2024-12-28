@@ -1677,7 +1677,9 @@ void DoMove(Guy *me,int move,int frmAdv,byte busy,int dx,int dy)
 
 void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
-	int x,y,i;
+	int x = 0;
+	int y = 0;
+	int i = 0;
 
 	// Gangrenes glow
 	if(me->type==MONS_BONEHEAD3)
@@ -1700,6 +1702,7 @@ void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			me->dx+=Cosine(me->facing*32)*2;
 			me->dy+=Sine(me->facing*32)*2;
+
 			if(me->AttackCheck(24,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
 				goodguy->GetShot(Cosine(me->facing*32)*4,Sine(me->facing*32)*4,monsType[me->type].damage,map,world);
 		}
