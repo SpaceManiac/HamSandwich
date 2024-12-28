@@ -6,13 +6,13 @@
 #include <jni.h>
 #include "compat_jni.h"
 
-#ifdef ANDROID
+#ifdef NDEBUG
+#define debug_log(...)
+#elif defined(ANDROID)
 #include <android/log.h>
-#define log(fmt) __android_log_print(ANDROID_LOG_INFO, "Aegea", "%s", fmt)
-#define logf(fmt, ...) __android_log_print(ANDROID_LOG_INFO, "Aegea", fmt, __VA_ARGS__)
+#define debug_log(fmt, ...) __android_log_print(ANDROID_LOG_INFO, "Aegea", fmt, __VA_ARGS__)
 #else
-#define log(msg) fprintf(stderr, "[Aegea] %s\n", msg)
-#define logf(fmt, ...) fprintf(stderr, "[Aegea] " fmt "\n", __VA_ARGS__)
+#define debug_log(fmt, ...) fprintf(stderr, "[Aegea] " fmt "\n", __VA_ARGS__)
 #endif
 
 static_assert(sizeof(jbyte) == sizeof(char));
@@ -85,14 +85,14 @@ struct JavaWebSocket : public WebSocket
 		jstring jniUrl = env->NewStringUTF(url);
 		if (refs.exception_occurred(&error))
 		{
-			logf("%s", error.c_str());
+			debug_log("%s", error.c_str());
 			return;
 		}
 
 		jobject clientLocal = env->NewObject(class_WebSocket, constructor, handle, jniUrl);
 		if (refs.exception_occurred(&error))
 		{
-			logf("%s", error.c_str());
+			debug_log("%s", error.c_str());
 			return;
 		}
 
@@ -134,7 +134,7 @@ struct JavaWebSocket : public WebSocket
 			env->CallVoidMethod(client, jm_recv);
 			if (refs.exception_occurred(&error))
 			{
-				logf("%s", error.c_str());
+				debug_log("%s", error.c_str());
 				return nullptr;
 			}
 		}
@@ -168,7 +168,7 @@ struct JavaWebSocket : public WebSocket
 		env->SetByteArrayRegion(array, 0, len, reinterpret_cast<const jbyte*>(text));
 		if (refs.exception_occurred(&error))
 		{
-			logf("%s", error.c_str());
+			debug_log("%s", error.c_str());
 			return;
 		}
 
@@ -176,7 +176,7 @@ struct JavaWebSocket : public WebSocket
 		env->CallVoidMethod(client, jm_send, is_text, array);
 		if (refs.exception_occurred(&error))
 		{
-			logf("%s", error.c_str());
+			debug_log("%s", error.c_str());
 			return;
 		}
 	}
@@ -187,7 +187,7 @@ void onConnect(JNIEnv* env, jclass class_, jlong handle)
 	(void)env;
 	(void)class_;
 
-	logf("onConnect(%lx)", (long)handle);
+	debug_log("onConnect(%lx)", (long)handle);
 	if (handle == 0)
 	{
 		return;
@@ -201,7 +201,7 @@ void onMessage(JNIEnv* env, jclass class_, jlong handle, jboolean text, jbyteArr
 {
 	(void)class_;
 
-	logf("onMessage(%lx, %s, %d)", (long)handle, text ? "true" : "false", len);
+	debug_log("onMessage(%lx, %s, %d)", (long)handle, text ? "true" : "false", len);
 	if (handle == 0)
 	{
 		return;
@@ -222,7 +222,7 @@ void onMessage(JNIEnv* env, jclass class_, jlong handle, jboolean text, jbyteArr
 	env->GetByteArrayRegion(bytes, offset, len, reinterpret_cast<jbyte*>(message.data.data()));
 	if (refs.exception_occurred(&self->error))
 	{
-		logf("%s", self->error.c_str());
+		debug_log("%s", self->error.c_str());
 		return;
 	}
 }
@@ -231,7 +231,7 @@ void onError(JNIEnv* env, jclass class_, jlong handle, jstring error)
 {
 	(void)class_;
 
-	logf("onError(%lx)", (long)handle);
+	debug_log("onError(%lx)", (long)handle);
 	if (handle == 0)
 	{
 		return;
@@ -239,7 +239,7 @@ void onError(JNIEnv* env, jclass class_, jlong handle, jstring error)
 	auto self = reinterpret_cast<JavaWebSocket*>(static_cast<uintptr_t>(handle));
 
 	const char* error_mutf8 = env->GetStringUTFChars(error, nullptr);
-	logf("  %s", error_mutf8);
+	debug_log("  %s", error_mutf8);
 	self->error = error_mutf8 ? error_mutf8 : "Error getting error message in onError";
 	env->ReleaseStringUTFChars(error, error_mutf8);
 }
@@ -249,7 +249,7 @@ void onClose(JNIEnv* env, jclass class_, jlong handle, jint reason)
 	(void)env;
 	(void)class_;
 
-	logf("onClose(%lx, %d)", (long)handle, reason);
+	debug_log("onClose(%lx, %d)", (long)handle, reason);
 	if (handle == 0)
 	{
 		return;
@@ -282,14 +282,14 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
 	if (javaVM->GetEnv((void **)&env, JNI_VERSION_1_4) != JNI_OK)
 	{
-		log("Failed to get JNI Env");
+		debug_log("%s", "Failed to get JNI Env");
 		return JNI_VERSION_1_4;
 	}
 
 	jclass class_WebSocket = env->FindClass("com/platymuus/aegea/WebSocket");
 	if (!class_WebSocket)
 	{
-		log("Failed to find WebSocket class");
+		debug_log("%s", "Failed to find WebSocket class");
 		return JNI_ERR;
 	}
 
@@ -303,7 +303,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 	int rc = env->RegisterNatives(class_WebSocket, methods, sizeof(methods) / sizeof(JNINativeMethod));
 	if (rc != JNI_OK)
 	{
-		log("RegisterNatives failed");
+		debug_log("%s", "RegisterNatives failed");
 		return rc;
 	}
 
