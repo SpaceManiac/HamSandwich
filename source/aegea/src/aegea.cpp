@@ -127,11 +127,8 @@ void DefaultArchipelagoCache::write(std::string_view key, std::string_view data)
 
 // ------------------------------------------------------------------------
 
-ArchipelagoClient::~ArchipelagoClient()
-{
-	// Declaring and defining this lets those who `#include` the .h file not
-	// have to autogenerate it independently.
-}
+// Declaring and defining this lets `#include`rs not need Json's definition.
+ArchipelagoClient::~ArchipelagoClient() = default;
 
 ArchipelagoClient::ArchipelagoClient(std::string_view game, std::string_view address, std::string_view slot, std::string_view password)
 	: cache(&default_cache)
@@ -150,8 +147,7 @@ ArchipelagoClient::ArchipelagoClient(std::string_view game, std::string_view add
 	}
 	else
 	{
-		std::string fullAddress { address };
-		socket = WebSocket::connect(fullAddress.c_str());
+		socket = WebSocket::connect(this->address.c_str());
 		status = ConnectingExact;
 	}
 }
@@ -163,7 +159,9 @@ void ArchipelagoClient::use_cache(ArchipelagoCache *cache)
 
 std::string_view ArchipelagoClient::error_message() const
 {
-	return !error.empty() ? error : socket ? socket->error_message() : "no socket";
+	return !error.empty() ? error :
+		!socket ? "Not connected" :
+		socket->error_message();
 }
 
 std::string_view ArchipelagoClient::connection_status() const
@@ -178,6 +176,7 @@ std::string_view ArchipelagoClient::connection_status() const
 	}
 	else if (status == WaitingForRoomInfo)
 	{
+		// Won't be seen normally as this is the first message we recv().
 		return "Waiting for room info...";
 	}
 	else if (status == WaitingForDataPackage)
@@ -267,21 +266,51 @@ void ArchipelagoClient::update()
 			// wss://X failed, try ws://X
 			std::string fullAddress = "ws://" + address;
 			socket = WebSocket::connect(fullAddress.c_str());
-			status = ConnectingExact;  // Nothing left to try
+			status = ConnectingAutoWs;
+		}
+		else if (status == Active || status == Reconnecting)
+		{
+			auto now = std::chrono::steady_clock::now();
+			if (now > reconnect_after)
+			{
+				debug_log("Lost connection, retrying: %.*s", (int)socket->error_message().size(), socket->error_message().data());
+				// We had a connection, but it died, so try to re-establish it.
+				socket = WebSocket::connect(address.c_str());
+				status = Reconnecting;
+				reconnect_after = now + std::chrono::seconds(10);
+			}
+			else
+			{
+				// Last reconnect failed, so waiting to try again.
+				return;
+			}
 		}
 		else
 		{
+			// We never had a connection. Maybe the address was wrong or the 'net is out.
 			return;
 		}
 	}
 
-	if (socket->is_connected() && (status == ConnectingAutoWss || status == ConnectingExact))
-	{
-		status = WaitingForRoomInfo;
-	}
-
 	while (const WebSocket::Message* message = socket->recv())
 	{
+		// Has to be in the loop so it's after the recv() call, otherwise we
+		// might fail to commit the final address and reconnects will die.
+		if (socket->is_connected() && (status == ConnectingAutoWss || status == ConnectingAutoWs || status == ConnectingExact))
+		{
+			// Commit whichever of wss:// or ws:// succeeded to the address field for later use.
+			if (status == ConnectingAutoWss)
+			{
+				address.insert(0, "wss://");
+			}
+			else if (status == ConnectingAutoWs)
+			{
+				address.insert(0, "ws://");
+			}
+			// This will probably be overwritten immediately.
+			status = WaitingForRoomInfo;
+		}
+
 		if (message->type == WebSocket::Close)
 		{
 			error = "Server closed WebSocket connection";

@@ -9,6 +9,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <chrono>
 
 // Forward declarations are used here so games only need to #include <json.h>
 // if they are actually using the arbitrary-value storage system.
@@ -285,6 +286,8 @@ private:
 		Idle,
 		ConnectingExact,
 		ConnectingAutoWss,
+		ConnectingAutoWs,
+		Reconnecting,
 		WaitingForRoomInfo,
 		WaitingForDataPackage,
 		WaitingForConnected,
@@ -296,6 +299,7 @@ private:
 	std::set<std::string, std::less<>> tags;
 	std::string error;
 	std::unique_ptr<WebSocket> socket;
+	std::chrono::steady_clock::time_point reconnect_after;
 	std::vector<jt::Json> outgoing;
 
 	int player_id_ = -1;
