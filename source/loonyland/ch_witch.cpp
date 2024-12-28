@@ -3,6 +3,7 @@
 #include "options.h"
 #include "bowling.h"
 #include "badge.h"
+#include "loonyArchipelago.h"
 
 #define PLYR_ACCEL	(FIXAMT)
 #define PLYR_DECEL	(FIXAMT*3/4)
@@ -121,6 +122,10 @@ void WitchFire(Guy *me)
 			{
 				FireBullet(me->x,me->y,((me->facing+2)*32)&255,BLT_WITCHBLAST);
 				FireBullet(me->x,me->y,((me->facing+6)*32)&255,BLT_WITCHBLAST);
+			}
+			if (ArchipelagoMode && opt.cheats[CH_MAXPOWER])
+			{
+				FireBullet(me->x, me->y, ((me->facing + 4) * 32) & 255, BLT_WITCHBLAST);
 			}
 			if(!opt.cheats[CH_HEAVYHIT])
 			{

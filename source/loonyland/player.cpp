@@ -300,7 +300,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		{
 			if (ArchipelagoMode)
 			{
-				//todo figure out what to do here
+				//handled in ch_ files, backwards shot
 			}
 			else
 			{
@@ -615,7 +615,7 @@ void PlayerSetVar(int v,int val)
 			}
 			if(v==VAR_QUESTDONE+QUEST_HILL)
 			{
-				if (ArchipelagoMode)
+				if (ArchipelagoMode && apSlotData.win_condition == AP_WIN_EVILIZER)
 				{
 					WinArchipelago();
 				}

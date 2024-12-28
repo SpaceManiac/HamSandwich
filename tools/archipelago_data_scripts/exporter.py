@@ -307,7 +307,12 @@ loonyland_location_table = {\n"""
                        python_loc_lines +=  f", base_item=\"{location_base_item}\""
                     python_loc_lines += f"),\n"
 
-                    tracker_loc_lines += f"    [\"{location_name_no_colon}\"]  = {{id={location_id}, type={location_type}, region=\"{location_region}\"}},\n"
+                    tracker_loc_lines += f"    [\"{location_name_no_colon}\"]  = {{id={location_id}, type=\"{location_type}\", region=\"{location_region}\""
+                    if location_flags:
+                        flags = [flag.strip().strip('"') for flag in location_flags.split(",")]
+                        flag_dict = ", ".join([f"{flag}=true" for flag in flags])
+                        tracker_loc_lines += f", flags={{ {flag_dict} }}"
+                    tracker_loc_lines += f"}},\n"
 
                     if location_logic:  # Check if there are any specific rules for the location
                         # python logic file - Rules generation
@@ -346,6 +351,7 @@ loonyland_location_table = {\n"""
                             "name": location_name_no_colon,
                             "sections": [{"ref": f"Overworld/{location_region}/{location_name_no_colon}",
                                          "name": f"{location_name_no_colon}"}],
+                            "visibility_rules": [f"$enabled_in_settings|{location_name_no_colon}", ],
                             "map_locations": [{
                             "map": "Quests",
                             "x": (int)((int(location_map_id) / 10)) * 238 + 25,
@@ -364,6 +370,7 @@ loonyland_location_table = {\n"""
                             "name": location_name_no_colon,
                             "sections": [{"ref": f"Overworld/{location_region}/{location_name_no_colon}",
                                          "name": f"{location_name_no_colon}"}],
+                            "visibility_rules": [f"$enabled_in_settings|{location_name_no_colon}", ],
                             "map_locations": [{
                             "map": "Badges",
                             "x": (int)((int(location_map_id) / 10)) * 96 + 19,
@@ -375,6 +382,7 @@ loonyland_location_table = {\n"""
                             "name": location_name_no_colon,
                             "sections": [{"ref": f"Overworld/{location_region}/{location_name_no_colon}",
                                          "name": f"{location_name_no_colon}"}],
+                            "visibility_rules": [f"$enabled_in_settings|{location_name_no_colon}", ],
                             "map_locations": [{
                             "map": "Dolls",
                             "x": int(location_map_id) * 40 + 29,
@@ -389,7 +397,7 @@ loonyland_location_table = {\n"""
                             "map_locations": [{
                             "map": "Overworld",
                             "x": (int(location_xcoord) + 1) * TILE_XSIZE,
-                            "y": (int(location_ycoord) + 1) * TILE_YSIZE
+                            "y": (int(location_ycoord) + 1) * TILE_YSIZE,
                         }]
                         })
                     for child in data[0]['children']:
@@ -399,17 +407,19 @@ loonyland_location_table = {\n"""
                                 "access_rules": [[f"[$access|{location_name_no_colon}]",
                                 f"$sequence_break|{location_name_no_colon}"],
                                 f"{{$peek|{location_name_no_colon}}}"
-                                ]
+                                ],
+                                "visibility_rules": [f"$enabled_in_settings|{location_name_no_colon}",],
                                 })
 
                         elif child['name'] == location_override:
                             child['sections'].append({
                                 "ref": f"Overworld/{location_region}/{location_name_no_colon}",
-                                "name": f"{location_name_no_colon}"
+                                "name": f"{location_name_no_colon}",
                             })
 
                     #tracker mapping
-                    tracker_mapping_lines +=f"    [{LOONYLAND_BASE_ID + int(location_id)}] = {{{{\"@Overworld/{row[LOC_REGION]}/{location_name_no_colon}\"}}}},\n"
+                    tracker_mapping_lines +=f"    [{LOONYLAND_BASE_ID + int(location_id)}] = {{{{\"@Overworld/{row[LOC_REGION]}/{location_name_no_colon}\"}}"
+                    tracker_mapping_lines +=f"}},\n"
 
                     #client data hamsandwich
                     if location_type_normal == "Quest" or location_type_normal == "Badge" or location_type_normal == "Reward" or location_type_normal == "Doll":

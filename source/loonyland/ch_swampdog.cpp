@@ -31,6 +31,11 @@ void SwampdogFire(Guy *me)
 			FireBullet(me->x,me->y,((me->facing+6)*32+ang+i*6)&255,BLT_PSDSHOT);
 		}
 	}
+	if (ArchipelagoMode && opt.cheats[CH_MAXPOWER])
+	{
+		for (i = 0; i <= num; i++)
+			FireBullet(me->x, me->y, ((me->facing + 4) * 32 + ang + i * 6) & 255, BLT_PSDSHOT);
+	}
 	if(!opt.cheats[CH_HEAVYHIT])
 	{
 		if(player.fireRate<5)
