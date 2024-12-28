@@ -683,7 +683,9 @@ ArchipelagoMenu(MGLDraw* mgl)
 				}
 				else if (cursor == 4)
 				{
+					static ArchipelagoCache::FileSystem cache { "appdata/archipelago/" };
 					ap = std::make_unique<ArchipelagoClient>("Kid Mystic", serverAddress, slotName, password);
+					ap->use_cache(&cache);
 				}
 				else if (cursor == 5 || cursor == 6 || cursor == 7 || cursor == 8)
 				{

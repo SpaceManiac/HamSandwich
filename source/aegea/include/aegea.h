@@ -28,6 +28,18 @@ public:
 	virtual std::string read(std::string_view key) = 0;
 	// Write contents to a cache key.
 	virtual void write(std::string_view key, std::string_view data) = 0;
+
+	class FileSystem;
+};
+
+class ArchipelagoCache::FileSystem : public ArchipelagoCache
+{
+	std::string_view prefix;
+public:
+	explicit FileSystem(std::string_view prefix) : prefix(prefix) {}
+
+	std::string read(std::string_view key);
+	void write(std::string_view key, std::string_view data);
 };
 
 class ArchipelagoClient
