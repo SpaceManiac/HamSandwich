@@ -9,8 +9,8 @@
 #include "appdata.h"
 #include "ioext.h"
 #include "string_extras.h"
+#include "archipelago.h"
 
-static char prfName[64];
 static byte firstTime;
 profile_t profile;
 byte modeShopNum[10];
@@ -83,13 +83,24 @@ void SaveProfile(void)
 {
 	int i,j;
 
-	auto f = AppdataOpen_Write("profile.cfg");
-	SDL_RWprintf(f.get(),"%s\n",profile.name);
-	f.reset();
+	char prfName[128];
 
-	sprintf(prfName,"profiles/%s.prf",profile.name);
+	if (auto ap = Archipelago())
+	{
+		ham_sprintf(prfName, "profiles/archipelago/%s.prf", ap->SaveName());
+	}
+	else
+	{
+		ham_sprintf(prfName,"profiles/%s.prf",profile.name);
+
+		// save this profile as the current one.
+		auto f = AppdataOpen_Write("profile.cfg");
+		SDL_RWprintf(f.get(),"%s\n",profile.name);
+		f.reset();
+	}
+
 	// also actually save the profile!
-	f = AppdataOpen_Write(prfName);
+	auto f = AppdataOpen_Write(prfName);
 	// begin fwrite(&profile, sizeof(profile_t), 1, f) emulation
 	SDL_RWwrite(f, &profile, 68, 1);
 	for(i = 0; i < NUM_PLAYLISTS; ++i)
@@ -147,17 +158,24 @@ void LoadProfile(const char *name)
 {
 	int i,j;
 
-	strcpy(profile.name,name);
-	sprintf(prfName,"profiles/%s.prf",profile.name);
+	char prfName[128];
+	if (auto ap = Archipelago())
+	{
+		ham_sprintf(prfName, "profiles/archipelago/%s.prf", ap->SaveName());
+	}
+	else
+	{
+		ham_sprintf(prfName,"profiles/%s.prf",name);
 
-	// save this profile as the current one.
-	auto f = AppdataOpen_Write("profile.cfg");
-	SDL_RWprintf(f.get(),"%s\n",profile.name);
-	f.reset();
-	AppdataSync();
+		// save this profile as the current one.
+		auto f = AppdataOpen_Write("profile.cfg");
+		SDL_RWprintf(f.get(),"%s\n",name);
+		f.reset();
+		AppdataSync();
+	}
 
 	// now load it
-	f = AppdataOpen(prfName);
+	auto f = AppdataOpen(prfName);
 	if(!f)	// file doesn't exist
 	{
 		DefaultProfile(name);
@@ -532,14 +550,22 @@ void EraseWorldProgress(char *fname)
 
 void SaveState(void)
 {
-	char fname[64];
+	char fname[128];
 	word w;
 
 	player.journal[50]=0;
-	if (editing)
-		sprintf(fname,"profiles/_editing_.%03d",player.levelNum);
+	if (auto ap = Archipelago())
+	{
+		ham_sprintf(fname, "profiles/archipelago/%s.%03d", ap->SaveName(), player.levelNum);
+	}
+	else if (editing)
+	{
+		ham_sprintf(fname,"profiles/_editing_.%03d",player.levelNum);
+	}
 	else
-		sprintf(fname,"profiles/%s.%03d",profile.name,player.levelNum);
+	{
+		ham_sprintf(fname,"profiles/%s.%03d",profile.name,player.levelNum);
+	}
 	auto f = AppdataOpen_Write(fname);
 
 	// first write out the player itself
@@ -575,13 +601,21 @@ void SaveState(void)
 // getPlayer=0 is for changing maps - destroys the player data, replacing it with whatever is current
 byte LoadState(byte lvl,byte getPlayer)
 {
-	char fname[64];
+	char fname[128];
 	word tagged;
 
-	if (editing)
-		sprintf(fname,"profiles/_editing_.%03d",lvl);
+	if (auto ap = Archipelago())
+	{
+		ham_sprintf(fname, "profiles/archipelago/%s.%03d", ap->SaveName(), lvl);
+	}
+	else if (editing)
+	{
+		ham_sprintf(fname,"profiles/_editing_.%03d",lvl);
+	}
 	else
-		sprintf(fname,"profiles/%s.%03d",profile.name,lvl);
+	{
+		ham_sprintf(fname,"profiles/%s.%03d",profile.name,lvl);
+	}
 	auto f = AppdataOpen(fname);
 	if(f==NULL)
 		return 0;

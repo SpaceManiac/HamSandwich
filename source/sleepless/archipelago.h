@@ -17,7 +17,7 @@ public:
 	std::string_view Status();
 	void Update();
 
-	std::string_view SaveName();
+	const char* SaveName();
 };
 class Archipelago* Archipelago();
 

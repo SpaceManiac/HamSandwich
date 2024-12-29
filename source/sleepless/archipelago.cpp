@@ -2,6 +2,7 @@
 #include <aegea.h>
 #include "game.h"
 #include "player.h"
+#include "string_extras.h"
 
 namespace
 {
@@ -38,9 +39,9 @@ std::string_view Archipelago::Status()
 		"Active";
 }
 
-std::string_view Archipelago::SaveName()
+const char* Archipelago::SaveName()
 {
-	return saveName;
+	return saveName.c_str();
 }
 
 void Archipelago::Update()
@@ -56,6 +57,36 @@ void Archipelago::Update()
 	if (ap->pop_connected())
 	{
 		ap->scout_locations();
+
+		std::string newSaveName = "";
+		newSaveName += ap->seed_name();
+		newSaveName += "_";
+		newSaveName += std::to_string(ap->player_id());
+		if (saveName != newSaveName)
+		{
+			saveName = newSaveName;
+
+			// Copy control and sound settings to avoid interruptions.
+			// Controls are not even configurable from within AP.
+			byte control[2][6];
+			byte joyCtrl[2];
+			byte sound;
+			byte music;
+			memcpy(control, profile.control, 2 * 6);
+			memcpy(joyCtrl, profile.joyCtrl, 2);
+			sound = profile.sound;
+			music = profile.music;
+
+			LoadProfile("Archipelago");
+
+			memcpy(profile.control, control, 2 * 6);
+			memcpy(profile.joyCtrl, joyCtrl, 2);
+			profile.sound = sound;
+			profile.music = music;
+			ApplyControlSettings();
+			JamulSoundVolume(profile.sound);
+			SetMusicVolume(profile.music);
+		}
 	}
 
 	// Items
@@ -125,6 +156,8 @@ ArchipelagoMenu(MGLDraw* mgl)
 
 	// ------------------------------------------------------------------------
 	// Init
+	std::string oldProfile = profile.name;
+	saveName = "error";
 	InitMessage();
 
 	while (running)
@@ -282,4 +315,5 @@ ArchipelagoMenu(MGLDraw* mgl)
 	// ------------------------------------------------------------------------
 	// Exit
 	ap.reset();
+	LoadProfile(oldProfile.c_str());
 }

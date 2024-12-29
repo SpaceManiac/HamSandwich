@@ -7,6 +7,7 @@
 #include "dialogbits.h"
 #include "journal.h"
 #include "customworld.h"
+#include "archipelago.h"
 
 #define PE_CONTINUE	0	// back to gameplay
 #define PE_RETRY	1	// retry this level
@@ -393,6 +394,13 @@ void RenderPauseMenu(void)
 	}
 	if(player.ability[ABIL_FISH])
 		PrintPauseVal("Fishing",player.journal[55],100,2,265);
+
+	if (auto ap = Archipelago())
+	{
+		std::string status = "AP: ";
+		status += ap->Status();
+		PrintUnGlow(pauseX + 2, pauseY + 480 - 16, status.c_str(), 1);
+	}
 
 	// mouse cursor
 
