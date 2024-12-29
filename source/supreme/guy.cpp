@@ -3590,7 +3590,7 @@ void Telefrag(Guy *g, bool sphinxException)
 			if(
 				!(
 					sphinxException &&
-					g->type == MONS_SPHINX &&
+					g->aiType == MONS_SPHINX &&
 					(guys[i].type == MONS_SPHXARM1 || guys[i].type == MONS_SPHXARM2)
 				) &&
 				g->CoconutBonk(xx,yy,&guys[i])
