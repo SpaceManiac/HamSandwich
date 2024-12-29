@@ -38,7 +38,7 @@ static const dword themes[] = {
 	ST_VOCAL,
 	ST_CUSTOM,
 };
-static const char *themeNames[] = {
+static const char * const themeNames[] = {
 	"All Sounds",
 	"Interface Sounds",
 	"Player Sounds",
@@ -160,7 +160,7 @@ static void MoreSoundsClick(int id)
 
 	ClearButtons(ID_MORESNDS,ID_MORESNDS);
 	char buf[32];
-	ham_sprintf(buf, "More Sounds (%d/%d)", sndStart / SOUNDS_PER_PAGE + 1, (sndsInList - 1) / SOUNDS_PER_PAGE + 1);
+	ham_sprintf(buf, "More Sounds %d/%d", sndStart / SOUNDS_PER_PAGE + 1, (sndsInList - 1) / SOUNDS_PER_PAGE + 1);
 	MakeButton(BTN_NORMAL,ID_MORESNDS,0,481,456,156,16,buf,MoreSoundsClick);
 }
 
@@ -213,7 +213,7 @@ static void MakeSoundList(void)
 		if(x>640-160 && y>480-30)
 		{
 			char buf[32];
-			ham_sprintf(buf, "More Sounds (%d/%d)", sndStart / SOUNDS_PER_PAGE + 1, (sndsInList - 1) / SOUNDS_PER_PAGE + 1);
+			ham_sprintf(buf, "More Sounds %d/%d", sndStart / SOUNDS_PER_PAGE + 1, (sndsInList - 1) / SOUNDS_PER_PAGE + 1);
 			MakeButton(BTN_NORMAL,ID_MORESNDS,0,481,456,156,16,buf,MoreSoundsClick);
 			break;
 		}
