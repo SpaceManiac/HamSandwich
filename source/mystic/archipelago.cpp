@@ -17,7 +17,7 @@ namespace
 	std::unique_ptr<ArchipelagoClient> ap;
 
 	std::string serverAddress = "localhost:38281"; //"archipelago.gg:";
-	std::string slotName = "Spac";
+	std::string slotName = "SpaceManiac"; //"";
 	std::string password;
 
 	constexpr int BASE_ID = 1234;  // TODO

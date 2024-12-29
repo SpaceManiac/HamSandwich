@@ -1554,6 +1554,7 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 				else
 					guys[i]->target=goodguy;
 			}
+			guys[i]->spawnNum=0;
 			guys[i]->ignited=0;
 			guys[i]->mindControl=0;
 			guys[i]->poison=0;

@@ -17,15 +17,7 @@ public:
 	std::string_view Status();
 	void Update();
 
-	void HintShop();
-	bool HasCheckedLocation(int chapter, int levelNum);
-	byte MysticItemAtLocation(int chapter, int levelNum);
-	std::string ItemNameAtLocation(int chapter, int levelNum);
-
-	bool PickupItem(int chapter, int levelNum);
-	void PassLevel(int chapter, int levelNum);
-	bool LevelPassed(int chapter, int levelNum);
-	int LevelsPassed(int chapter);
+	std::string_view SaveName();
 };
 class Archipelago* Archipelago();
 

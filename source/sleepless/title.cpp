@@ -268,10 +268,15 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 	oldc=c;
 
 	c=mgl->LastKeyPressed();
-	if(c==27)
+	if (c == SDLK_ESCAPE)
 	{
 		MakeNormalSound(SND_MENUSELECT);
 		cursor=3;
+		return 1;
+	}
+	else if (c == SDLK_p)
+	{
+		cursor=6;
 		return 1;
 	}
 
@@ -303,6 +308,11 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 	oldc=CONTROL_B1|CONTROL_B2;
 
 	PlaySongForce("unspeakable.ogg");
+
+	if (cursor > 3)
+	{
+		cursor = 0;
+	}
 
 	cmd=0;
 	while(cmd==0)

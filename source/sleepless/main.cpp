@@ -26,6 +26,8 @@
 #include "netmenu.h"
 #include "internet.h"
 #include "appdata.h"
+#include "archipelago.h"
+
 #ifdef DEMO
 #include "nag.h"
 #endif
@@ -112,6 +114,10 @@ TASK(int) main(int argc, char* argv[])
 			case 5:	// editor
 				shopping=0;
 				AWAIT LunaticEditor(mainmgl);
+				break;
+			case 6: // archipelago
+				shopping=0;
+				AWAIT ArchipelagoMenu(mainmgl);
 				break;
 		}
 	}

@@ -282,7 +282,7 @@ void UpdateCamera(int x,int y,int dx,int dy,Map *map)
 	scry=(rscry>>FIXSHIFT);
 }
 
-void Print(int x,int y,const char *s,char bright,byte font)
+void Print(int x,int y,std::string_view s,char bright,byte font)
 {
 	if(font==0)
 		FontPrintStringBright(x,y,s,gameFont[0],bright);
@@ -344,7 +344,7 @@ void PrintLimited(int x,int y,int maxX,const char *s,char bright,byte font)
 }
 
 
-void CenterPrint(int x,int y,const char *s,char bright,byte font)
+void CenterPrint(int x,int y,std::string_view s,char bright,byte font)
 {
 	if(font==0)
 	{
@@ -363,7 +363,12 @@ void CenterPrint(int x,int y,const char *s,char bright,byte font)
 	}
 }
 
-int GetStrLength(const char *s,byte font)
+void RightPrint(int x, int y, std::string_view s, char bright, byte font)
+{
+	Print(x - FontStrLen(s, gameFont[font]), y, s, bright, font);
+}
+
+int GetStrLength(std::string_view s,byte font)
 {
 	return FontStrLen(s,gameFont[font]);
 }

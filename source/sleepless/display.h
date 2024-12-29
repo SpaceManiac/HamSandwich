@@ -78,7 +78,7 @@ void PutCamera(int x,int y);
 void GetCamera(int *x,int *y);
 // call this once per gameloop, with the X and Y of the object you want the camera to track
 void UpdateCamera(int x,int y,int dx,int dy,Map *map);
-void Print(int x,int y,const char *s,char bright,byte font);
+void Print(int x,int y,std::string_view s,char bright,byte font);
 void PrintGlow(int x,int y,const char *s,char bright,byte font);
 void PrintUnGlow(int x,int y,const char *s,byte font);
 void PrintProgressiveGlow(int x,int y,const char *s,int bright,byte font);
@@ -88,9 +88,10 @@ void PrintGlowRectBright(int x,int y,int x2,int y2,int height,const char *s,char
 void PrintUnGlowRect(int x,int y,int x2,int y2,int height,const char *s,byte font);
 void PrintLimited(int x,int y,int maxX,const char *s,char bright,byte font);
 void PrintGlowLimited(int x,int y,int maxX,const char *s,char bright,byte font);
-void CenterPrint(int x,int y,const char *s,char bright,byte font);
+void CenterPrint(int x,int y,std::string_view s,char bright,byte font);
+void RightPrint(int x,int y,std::string_view s,char bright,byte font);
 void RenderItAll(world_t *world,Map *map,byte flags);
-int GetStrLength(const char *s,byte font);
+int GetStrLength(std::string_view s,byte font);
 
 void SprDraw(int x,int y,int z,byte hue,char bright,sprite_t *spr,word flags);
 void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,sprite_t *spr,word flags);
