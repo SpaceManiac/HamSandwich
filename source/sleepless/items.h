@@ -329,4 +329,11 @@ void RepairItemToSound(int n);	// when sound N is deleted, repair references to 
 								// all items
 void RepairItemToTile(void);	// when tiles are messed with, repair the references in items
 
+struct ItemRenderExtents
+{
+	int left, right, up, down;
+};
+ItemRenderExtents GetItemRenderExtents();
+void CalculateItemRenderExtents();
+
 #endif

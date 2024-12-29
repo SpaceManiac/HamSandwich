@@ -11,6 +11,8 @@
 #include "journal.h"
 #include "customworld.h"
 #include <ctype.h>
+#include "math_extras.h"
+#include "log.h"
 
 item_t baseItems[]={
 	{"None",0,0,0,0,0,0,0,0,0,0,0,0,"",0},
@@ -758,6 +760,7 @@ void InitItems(void)
 	glowism=0;
 	SetupRandomItems();
 	rndItem=GetRandomItem();
+	CalculateItemRenderExtents();
 }
 
 void ExitItems(void)
@@ -1808,4 +1811,80 @@ int FindItemByName(const char *name)
 			return i;
 	}
 	return 0;
+}
+
+static ItemRenderExtents extents;
+
+void CalculateItemRenderExtents()
+{
+	// Calculate the union bounding box of item sprites so we know how far away
+	// to search for items to draw, with no pop-in and minimal overdraw.
+	SDL_Rect everything = {};
+	for (int type = 0; type < numItems; ++type)
+	{
+		SDL_Rect rect;
+		if (items[type].flags & IF_TILE)
+		{
+			rect.x = items[type].xofs;
+			rect.y = items[type].yofs+1;
+			rect.w = 32;
+			rect.h = 32;
+		}
+		else
+		{
+			sprite_t* spr;
+
+			if (items[type].flags & IF_USERJSP)
+			{
+				sprite_set_t* custom = CustomItemSprites();
+				if (custom)
+					spr = custom->GetSprite(items[type].sprNum < custom->GetCount() ? items[type].sprNum : 0);
+				else
+					spr = itmSpr->GetSprite(8); // red X indicating invalid custom JSP file
+			}
+			else
+				spr = itmSpr->GetSprite(items[type].sprNum);
+
+			if (spr)
+			{
+				// Use precise sprite boundaries.
+				rect.x = items[type].xofs - spr->ofsx;
+				rect.y = 0 - spr->ofsy - std::clamp(-items[type].yofs+1, -DISPLAY_YBORDER, DISPLAY_YBORDER);
+				rect.w = spr->width;
+				rect.h = spr->height;
+
+				SDL_UnionRect(&everything, &rect, &everything);
+
+				if(items[type].flags&IF_SHADOW)
+				{
+					// Use precise shadow sprite boundaries.
+					rect.x = items[type].xofs - spr->ofsx - spr->height/2;
+					rect.y = 0 - spr->ofsy/2 - std::clamp(-items[type].yofs+1, -DISPLAY_YBORDER, DISPLAY_YBORDER);
+					rect.w = spr->height/2 + spr->width;
+					rect.h = spr->height/2;
+
+					SDL_UnionRect(&everything, &rect, &everything);
+				}
+			}
+		}
+	}
+
+	// Bounds are reversed here, because the further left from an item's origin
+	// it extends, the further right off the edge of the screen we need to seek
+	// items to draw. The minimums are for tile/wall rendering.
+	extents.left = floor_div(everything.x + everything.w + TILE_WIDTH/2, TILE_WIDTH).quot;
+	extents.right = -floor_div(everything.x + TILE_WIDTH/2, TILE_WIDTH).quot;
+	extents.up = floor_div(everything.y + everything.h + TILE_HEIGHT/2, TILE_HEIGHT).quot;
+	extents.down = -floor_div(everything.y + TILE_HEIGHT/2, TILE_HEIGHT).quot;
+
+#ifndef NDEBUG
+	LogDebug("item bounds: (x: %d, y: %d, w: %d, h: %d) tile spread: (x: %+d to %+d, y: %+d to %+d), inclusive",
+		everything.x, everything.y, everything.w, everything.h,
+		-extents.left, extents.right, -extents.up, extents.down);
+#endif
+}
+
+ItemRenderExtents GetItemRenderExtents()
+{
+	return extents;
 }

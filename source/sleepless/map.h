@@ -89,7 +89,6 @@ class Map
 		void LoadMapData(SDL_RWops *f);
 		void Init(world_t *wrld);
 		void Render(world_t *world,int camX,int camY,byte flags);
-		void RenderEdit(world_t *world,int camX,int camY,byte flags);
 		void RenderSelect(world_t *world,int camX,int camY,byte flags);
 
 		byte DropItem(int x,int y,byte itm);

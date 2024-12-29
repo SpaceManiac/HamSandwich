@@ -1045,6 +1045,8 @@ static TASK(void) HandleKeyPresses(void)
 
 void SetEditMode(byte m)
 {
+	if (editMode == EDITMODE_ITEM && m == EDITMODE_EDIT)
+		CalculateItemRenderExtents();
 	editMode=m;
 	if(editMode==EDITMODE_EDIT && viewMenu)
 		InitViewDialog();

@@ -753,6 +753,7 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 		// maybe be mean later
 		CO_RETURN 1;
 	}
+	CalculateItemRenderExtents();
 
 	mapNum=player.levelNum;
 	while(1)
