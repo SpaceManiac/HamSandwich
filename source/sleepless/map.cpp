@@ -6,6 +6,7 @@
 #include "guy.h"
 #include "config.h"
 #include "math_extras.h"
+#include "archipelago.h"
 
 #define NUM_STARS 400
 
@@ -700,8 +701,16 @@ byte PlaceItemCallback(int x,int y,int cx,int cy,int value,Map *map)
 	if(GetTerrain(world,map->GetTile(x,y)->floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))
 		return 1;
 
-	map->GetTile(x,y)->item=(byte)value;
-	if(value!=ITM_BRAIN && (GetItem(value)->flags&IF_PICKUP))
+	byte item = (byte)(value & 0xff);
+	byte select = (byte)((value & 0xff00) >> 8);
+
+	if (Archipelago())
+	{
+		map->GetTile(x,y)->select=select;
+	}
+
+	map->GetTile(x,y)->item=item;
+	if(item!=ITM_BRAIN && (GetItem(item)->flags&IF_PICKUP))
 		MakeSound(SND_ITEMDROP,(x*TILE_WIDTH)<<FIXSHIFT,(y*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,500);
 	return 0;	// all done, you placed the item
 }
@@ -906,9 +915,17 @@ byte GlowCursorCallback(int x,int y,int cx,int cy,int value,Map *map)
 	return 1;
 }
 
-byte Map::DropItem(int x,int y,byte itm)
+void Map::DropItem(int x,int y,byte itm,byte select)
 {
-	return LOS(x,y,10,itm,PlaceItemCallback);
+	if (!LOS(x,y,10,(select << 8) | itm,PlaceItemCallback))
+	{
+		// force the drop if it failed
+		GetTile(x,y)->item=itm;
+		if (Archipelago())
+		{
+			GetTile(x,y)->select=select;
+		}
+	}
 }
 
 void Map::PermaTorch(int x,int y,char brt)
@@ -1292,6 +1309,12 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 						}
 					}
 				}
+#ifndef NDEBUG
+				if (Archipelago() && m->select != 1)
+				{
+					Print(scrX, scrY, std::to_string(m->select), 0, 1);
+				}
+#endif
 			}
 			else
 			{
@@ -1318,10 +1341,16 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 
 					if (m->item && !((flags&MAP_SHOWSELECT) && !m->select))
 					{
+						byte item = m->item;
+						if (auto ap = Archipelago())
+						{
+							item = ap->ReplaceItemAppearance(item, player.levelNum, i, j, m->select);
+						}
+
 						RenderItem(
 							scrX+camX+(TILE_WIDTH/2),
 							scrY+camY+(TILE_HEIGHT/2)-1,
-							m->item,
+							item,
 							(flags & MAP_SHOWLIGHTS) ? m->templight : 0,
 							flags
 						);

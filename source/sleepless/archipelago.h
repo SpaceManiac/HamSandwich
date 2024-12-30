@@ -18,6 +18,8 @@ public:
 	void Update();
 
 	const char* SaveName();
+
+	byte ReplaceItemAppearance(byte item, byte map, byte x, byte y, byte select);
 };
 class Archipelago* Archipelago();
 

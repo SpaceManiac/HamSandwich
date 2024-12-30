@@ -7,6 +7,7 @@
 #include "goal.h"
 #include "dialogbits.h"
 #include "customworld.h"
+#include "archipelago.h"
 
 Guy **guys;
 Guy *goodguy;
@@ -1212,8 +1213,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 		{
 			if(item!=ITM_NONE && item!=ITM_RANDOM)
 			{
-				if(!map->DropItem(mapx,mapy,item))
-					map->GetTile(mapx,mapy)->item=item;	// force the drop if it failed
+				map->DropItem(mapx,mapy,item,spawnNum);
 			}
 		}
 
@@ -1435,6 +1435,27 @@ void RenderGuys(byte light)
 			guys[i]->Render(light);
 }
 
+void RenderGuysDebug()
+{
+	int i;
+	int cx, cy;
+	GetCamera(&cx, &cy);
+
+	for(i=0;i<maxGuys;i++)
+	{
+		if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY)
+		{
+			for(int i=0;i<256;i++)
+			{
+				if(guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_NOBODY)
+				{
+					Print((guys[i]->x>>FIXSHIFT) - cx + SCRWID/2, (guys[i]->y>>FIXSHIFT) - cy + SCRHEI/2, std::to_string(guys[i]->spawnNum), 0, 1);
+				}
+			}
+		}
+	}
+}
+
 void SetupTargets(void)
 {
 	int i,j;
@@ -1554,7 +1575,7 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 				else
 					guys[i]->target=goodguy;
 			}
-			guys[i]->spawnNum=0;
+			guys[i]->spawnNum=255;
 			guys[i]->ignited=0;
 			guys[i]->mindControl=0;
 			guys[i]->poison=0;
@@ -2475,8 +2496,7 @@ void KillMonster(int x,int y,int type,byte nofx)
 
 			if(guys[i]->item!=ITM_NONE && guys[i]->item!=ITM_RANDOM)
 			{
-				if(!curMap->DropItem(guys[i]->mapx,guys[i]->mapy,guys[i]->item))
-					curMap->GetTile(guys[i]->mapx,guys[i]->mapy)->item=guys[i]->item;	// force the drop if it failed
+				curMap->DropItem(guys[i]->mapx,guys[i]->mapy,guys[i]->item,guys[i]->spawnNum);
 			}
 			if(!nofx)
 				BlowUpGuy((guys[i]->x>>FIXSHIFT)-32,(guys[i]->y>>FIXSHIFT)-24,
@@ -2556,8 +2576,7 @@ void KillMonsterRect(int x,int y,int x2,int y2,int type,byte nofx)
 
 			if(guys[i]->item!=ITM_NONE && guys[i]->item!=ITM_RANDOM)
 			{
-				if(!curMap->DropItem(guys[i]->mapx,guys[i]->mapy,guys[i]->item))
-					curMap->GetTile(guys[i]->mapx,guys[i]->mapy)->item=guys[i]->item;	// force the drop if it failed
+				curMap->DropItem(guys[i]->mapx,guys[i]->mapy,guys[i]->item,guys[i]->spawnNum);
 			}
 			if(!nofx)
 				BlowUpGuy((guys[i]->x>>FIXSHIFT)-32,(guys[i]->y>>FIXSHIFT)-24,
@@ -3658,8 +3677,7 @@ void Telefrag(Guy *g)
 				// handle item drops
 				if(guys[i]->item!=ITM_NONE)
 				{
-					if(!curMap->DropItem(guys[i]->mapx,guys[i]->mapy,guys[i]->item))
-						curMap->GetTile(guys[i]->mapx,guys[i]->mapy)->item=guys[i]->item;	// force the drop if it failed
+					curMap->DropItem(guys[i]->mapx,guys[i]->mapy,guys[i]->item,guys[i]->spawnNum);
 				}
 
 				guys[i]->type=MONS_NONE;

@@ -1,4 +1,5 @@
 #include "archipelago.h"
+#include <set>
 #include <aegea.h>
 #include "game.h"
 #include "player.h"
@@ -20,6 +21,40 @@ namespace
 	bool countdownDone = false;
 
 	std::string saveName;
+
+	constexpr byte ITM_JOURNAL = 150;
+	constexpr byte ITM_FLAMEBRINGER = 153;
+	constexpr byte ITM_LIGHTREAVER = 162;
+	constexpr byte ITM_PLANETSMASHER = 163;
+	constexpr byte ITM_SPARKTHROWER = 169;
+	constexpr byte ITM_EARSPLITTER = 170;
+	constexpr byte ITM_BONECRUSHER = 171;
+	constexpr byte ITM_BRAIN_DETECTOR = 173;
+	constexpr byte ITM_SOLAR_COLLECTOR = 174;
+	constexpr byte ITM_FIRST_AID_KIT = 175;
+	constexpr byte ITM_SOLID_SHIELD = 176;
+	constexpr byte ITM_BLASTING_CAP = 177;
+	constexpr byte ITM_BIONIC_ARM = 178;
+	constexpr byte ITM_TRAINING_GUIDE = 180;
+	constexpr byte ITM_ELECTROREEL = 186;
+
+	const std::set<byte> replaceItems = {
+		ITM_PANTS, ITM_HAMMERUP, ITM_REVERSE, ITM_REFLECT,
+		ITM_BRAIN, ITM_CANDLE, ITM_KEY, ITM_KEYR, ITM_KEYG, ITM_KEYB,
+		ITM_FLAMEBRINGER, ITM_LIGHTREAVER, ITM_PLANETSMASHER,
+		ITM_SPARKTHROWER, ITM_EARSPLITTER, ITM_BONECRUSHER,
+		ITM_BRAIN_DETECTOR, ITM_SOLAR_COLLECTOR, ITM_FIRST_AID_KIT,
+		ITM_SOLID_SHIELD, ITM_BLASTING_CAP, ITM_BIONIC_ARM, ITM_TRAINING_GUIDE,
+		ITM_JOURNAL, ITM_ELECTROREEL,
+	};
+
+	struct LocationRow
+	{
+		int64_t id;
+		byte map, idx, x, y;
+	};
+
+	#include "archipelago_data.inl"
 }
 
 // ----------------------------------------------------------------------------
@@ -42,6 +77,49 @@ std::string_view Archipelago::Status()
 const char* Archipelago::SaveName()
 {
 	return saveName.c_str();
+}
+
+byte Archipelago::ReplaceItemAppearance(byte item, byte map, byte x, byte y, byte select)
+{
+	if (replaceItems.find(item) == replaceItems.end())
+	{
+		return item;
+	}
+
+	// Handle the Sleepless Hollow well preview spot
+	if (map == 1 && x == 41 && y == 61)
+	{
+		x = 60;
+		y = 74;
+	}
+
+	int64_t location = 0;
+	for (auto row : locations)
+	{
+		if (map == row.map && (select != 1 ? select == row.idx : x == row.x && y == row.y))
+		{
+			location = BASE_ID + row.id;
+			break;
+		}
+	}
+	if (location == 0)
+	{
+		return ITM_BADCHINESE;  // Oh no
+	}
+
+	if (ap->location_is_checked(location))
+	{
+		// It got "picked up" externally to the game save, go invis.
+		return ITM_NONE;
+	}
+
+	/* TODO
+	if (auto item = ap->item_at_location(location))
+	{
+	}
+	*/
+
+	return ITM_LOONYKEY;
 }
 
 void Archipelago::Update()

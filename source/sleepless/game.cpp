@@ -500,6 +500,15 @@ TASK(void) LunaticDraw(void)
 		RenderItAll(&curWorld,curMap,MAP_SHOWLIGHTS|MAP_SHOWPICKUPS|MAP_SHOWOTHERITEMS|MAP_SHOWWALLS);
 		RenderMessage();
 		PlayerRenderInterface(gamemgl);
+
+#ifndef NDEBUG
+		if (Archipelago())
+		{
+			extern void RenderGuysDebug();
+			RenderGuysDebug();
+		}
+#endif
+
 		if(gameMode==GAMEMODE_MENU)
 			RenderPauseMenu();
 		else

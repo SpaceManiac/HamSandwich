@@ -91,7 +91,7 @@ class Map
 		void Render(world_t *world,int camX,int camY,byte flags);
 		void RenderSelect(world_t *world,int camX,int camY,byte flags);
 
-		byte DropItem(int x,int y,byte itm);
+		void DropItem(int x,int y,byte itm,byte select);
 		void PermaTorch(int x,int y,char brt);
 		void TempTorch(int x,int y,char brt);
 		void BrightTorch(int x,int y,char brt,byte size);

@@ -14,6 +14,7 @@
 #include "goal.h"
 #include "ledger.h"
 #include "palettes.h"
+#include "archipelago.h"
 
 static special_t *spcl;
 static byte numSpecials;
@@ -1508,6 +1509,10 @@ void SpecialEffect(special_t *me,Map *map)
 						g->z = 0 * FIXAMT;
 
 					g->item=me->effect[i].value2;
+					if (Archipelago())
+					{
+						g->spawnNum = 128 + (me - spcl);
+					}
 
 					bool isSphinx = g->aiType==MONS_SPHINX;
 					if(isSphinx)
