@@ -146,9 +146,10 @@ public:
 	// ------------------------------------------------------------------------
 	// Locations
 
-	// Get observed received items.
+	// Get lists of checked and missing locations according to the server.
 	const std::set<int64_t>& checked_locations() const;
 	const std::set<int64_t>& missing_locations() const;
+	bool location_is_checked(int64_t location) const;
 
 	// Call when a location is checked (picked up, completed, achieved).
 	// Returns true if it was actually new.

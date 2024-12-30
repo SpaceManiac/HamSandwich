@@ -798,6 +798,11 @@ const std::set<int64_t>& ArchipelagoClient::missing_locations() const
 	return missing_locations_;
 }
 
+bool ArchipelagoClient::location_is_checked(int64_t location) const
+{
+	return checked_locations_.find(location) != checked_locations_.end();
+}
+
 bool ArchipelagoClient::check_location(int64_t location)
 {
 	auto [iter, inserted] = checked_locations_.insert(location);

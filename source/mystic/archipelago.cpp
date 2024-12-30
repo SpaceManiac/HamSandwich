@@ -127,8 +127,7 @@ void Archipelago::HintShop()
 
 bool Archipelago::HasCheckedLocation(int chapter, int levelNum)
 {
-	int64_t location_id = BASE_ID + chapter * 50 + levelNum;
-	return ap->checked_locations().find(location_id) != ap->checked_locations().end();
+	return ap->location_is_checked(BASE_ID + chapter * 50 + levelNum);
 }
 
 byte Archipelago::MysticItemAtLocation(int chapter, int levelNum)
@@ -296,8 +295,7 @@ void Archipelago::PassLevel(int chapter, int levelNum)
 
 bool Archipelago::LevelPassed(int chapter, int levelNum)
 {
-	int64_t location_id = BASE_ID + chapter * 50 + 20 + levelNum;
-	return ap->checked_locations().find(location_id) != ap->checked_locations().end();
+	return ap->location_is_checked(BASE_ID + chapter * 50 + 20 + levelNum);
 }
 
 int Archipelago::LevelsPassed(int chapter)
