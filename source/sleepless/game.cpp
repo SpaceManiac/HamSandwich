@@ -15,6 +15,8 @@
 #include "appdata.h"
 #include "string_extras.h"
 #include <stdlib.h>
+#include "archipelago.h"
+
 #if __linux__ || __EMSCRIPTEN__
 #include <unistd.h>
 #endif
@@ -477,6 +479,9 @@ TASK(byte) LunaticRun(int *lastTime)
 		numRunsToMakeUp++;
 		updFrameCount++;
 	}
+
+	if (auto ap = Archipelago())
+		ap->Update();
 
 	CO_RETURN LEVEL_PLAYING;
 }

@@ -77,7 +77,7 @@ void PlaySong(const char *fname)
 	if(!config.music)
 		return;
 
-	if(!strcmp(curSongName, fname) && fname[0])
+	if(!strcmp(curSongName, fname) && fname[0] && IsSongPlaying())
 		return; // no need!
 
 	if((profile.musicMode&MUSIC_LISTBITS)!=MUSIC_OFFICIAL && !editing)
