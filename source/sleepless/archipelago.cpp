@@ -52,12 +52,6 @@ namespace
 		ITM_JOURNAL, ITM_ELECTROREEL,
 	};
 
-	struct LocationRow
-	{
-		int64_t id;
-		byte map, idx, x, y;
-	};
-
 	#include "archipelago_data.inl"
 }
 
@@ -74,7 +68,6 @@ std::string_view Archipelago::Status()
 		!ap ? "Not connected" :
 		!ap->error_message().empty() ? ap->error_message() :
 		!ap->is_active() ? ap->connection_status() :
-		//locationWait ? "Scouting locations..." :
 		"Active";
 }
 
@@ -97,19 +90,12 @@ byte Archipelago::ReplaceItemAppearance(byte item, byte map, byte x, byte y, byt
 		y = 74;
 	}
 
-	int64_t location = 0;
-	for (auto row : locations)
-	{
-		if (map == row.map && (select != 1 ? select == row.idx : x == row.x && y == row.y))
-		{
-			location = BASE_ID + row.id;
-			break;
-		}
-	}
-	if (location == 0)
+	auto iter = locations.find(std::make_tuple(map, select != 1 ? 255 : x, select != 1 ? select : y));
+	if (iter == locations.end())
 	{
 		return ITM_BADCHINESE;  // Oh no
 	}
+	int64_t location = BASE_ID + iter->second;
 
 	if (ap->location_is_checked(location))
 	{
@@ -117,11 +103,17 @@ byte Archipelago::ReplaceItemAppearance(byte item, byte map, byte x, byte y, byt
 		return ITM_NONE;
 	}
 
-	/* TODO
 	if (auto item = ap->item_at_location(location))
 	{
+		if (item->player == ap->player_id())
+		{
+			auto iter = items.find(item->item - BASE_ID);
+			if (iter != items.end())
+			{
+				return iter->second;
+			}
+		}
 	}
-	*/
 
 	return ITM_LOONYKEY;
 }
@@ -139,19 +131,12 @@ bool Archipelago::ReplaceItemEffect(byte item, byte map, byte x, byte y, byte se
 		return true;
 	}
 
-	int64_t location = 0;
-	for (auto row : locations)
+	auto iter = locations.find(std::make_tuple(map, select != 1 ? 255 : x, select != 1 ? select : y));
+	if (iter == locations.end())
 	{
-		if (map == row.map && (select != 1 ? select == row.idx : x == row.x && y == row.y))
-		{
-			location = BASE_ID + row.id;
-			break;
-		}
+		return ITM_BADCHINESE;  // Oh no
 	}
-	if (location == 0)
-	{
-		return true;  // Oh no
-	}
+	int64_t location = BASE_ID + iter->second;
 
 	if (ap->check_location(location))
 	{
@@ -223,69 +208,108 @@ void Archipelago::Update()
 		player.hamSpeed = 16;
 		player.brains = 0;
 		player.candles = 0;
-		player.keys[0] = 0;
+		player.keys[0] = (byte)(256 - player.coins);
 	}
 
 	// Items
 	while (auto item = ap->pop_received_item())
 	{
 		int64_t item_id = item->item - BASE_ID;
-		switch (item_id)
+		auto iter = items.find(item->item - BASE_ID);
+		if (iter == items.end())
 		{
-			case 2:
+			// Don't know how to handle this.
+			continue;
+		}
+		switch (iter->second)
+		{
+			case ITM_PANTS:
 				if(player.hamSpeed>4)
 					player.hamSpeed-=2;
 				else if(player.hamSpeed>0)
 					player.hamSpeed--;
 				break;
-			case 3:
+			case ITM_HAMMERUP:
 				player.hammers++;
 				break;
-			case 4:
+			case ITM_FLAMEBRINGER:
 				if (!player.weaponLvl[WPN_FLAME-1])
 					player.weaponLvl[WPN_FLAME-1] = 1;
 				break;
-			case 5:
+			case ITM_LIGHTREAVER:
 				if (!player.weaponLvl[WPN_REFLECT-1])
 					player.weaponLvl[WPN_REFLECT-1] = 1;
 				break;
-			case 6:
+			case ITM_PLANETSMASHER:
 				if (!player.weaponLvl[WPN_PORTAL-1])
 					player.weaponLvl[WPN_PORTAL-1] = 1;
 				break;
-			case 7:
+			case ITM_SPARKTHROWER:
 				if (!player.weaponLvl[WPN_SPARKS-1])
 					player.weaponLvl[WPN_SPARKS-1] = 1;
 				break;
-			case 8:
+			case ITM_EARSPLITTER:
 				if (!player.weaponLvl[WPN_SONIC-1])
 					player.weaponLvl[WPN_SONIC-1] = 1;
 				break;
-			case 9:
+			case ITM_BONECRUSHER:
 				if (!player.weaponLvl[WPN_BONEHEAD-1])
 					player.weaponLvl[WPN_BONEHEAD-1] = 1;
 				break;
-			case 10:
+			case ITM_BRAIN:
 				player.brains++;
 				break;
-			case 11:
+			case ITM_CANDLE:
 				player.candles++;
 				break;
-			case 21:
+			case ITM_BIONIC_ARM:
+				PlayerPowerup(PU_BIONIC);
+				break;
+			case ITM_BLASTING_CAP:
+				PlayerPowerup(PU_BLASTING);
+				break;
+			case ITM_REVERSE:
+				PlayerPowerup(PU_REVERSE);
+				break;
+			case ITM_REFLECT:
+				PlayerPowerup(PU_REFLECT);
+				break;
+			case ITM_SOLID_SHIELD:
+				PlayerPowerup(PU_SHIELD);
+				break;
+			case ITM_TRAINING_GUIDE:
+				PlayerPowerup(PU_TRAINING);
+				break;
+			case ITM_SOLAR_COLLECTOR:
+				PlayerPowerup(PU_SOLAR);
+				break;
+			case ITM_FIRST_AID_KIT:
+				PlayerPowerup(PU_FIRSTAID);
+				break;
+			case ITM_BRAIN_DETECTOR:
+				PlayerPowerup(PU_BRAIN);
+				break;
+			case ITM_KEYR:
 				player.keys[1] = 1;
 				break;
-			case 22:
+			case ITM_KEYG:
 				player.keys[2] = 1;
 				break;
-			case 23:
+			case ITM_KEYB:
 				player.keys[3] = 1;
 				break;
-			case 24:
+			case ITM_KEY:
 				player.keys[0]++;
 				break;
-			case 25:
+			case ITM_ELECTROREEL:
 				player.ability[ABIL_FISH] = 1;
 				player.journal[20] = 1;
+				break;
+			case ITM_JOURNAL:
+				if (26 <= item_id && item_id <= 44)
+				{
+					player.journal[item_id - 25] = 1;
+				}
 				break;
 		}
 	}

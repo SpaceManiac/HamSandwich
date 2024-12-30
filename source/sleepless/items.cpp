@@ -1472,7 +1472,14 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 			{
 				//DoorOpenEffect();
 				if(items[m->item].effectAmt==0)	// yellow keys get used up
+				{
 					player.keys[items[m->item].effectAmt]--;
+					if (Archipelago())
+					{
+						// In AP, we use coins to store number of yellow doors opened.
+						player.coins++;
+					}
+				}
 				m->item=ITM_NONE;
 				if(!editing && !player.cheated && verified)
 				{

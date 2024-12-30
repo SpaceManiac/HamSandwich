@@ -223,9 +223,8 @@ void WhiteOutlineItem(byte item,int x,int y)
 	InstaRenderItem(x+1,y+1,item,32,GetDisplayMGL());
 }
 
-void InvItem(byte item,int x,int y,int amt,int max,char brAdjust,char *name,char *desc)
+void InvItem(byte item,int x,int y,int amt,int max,char brAdjust,const char *name,const char *desc, bool *hovered)
 {
-
 	if(amt>0)
 	{
 		BlackOutlineItem(item,x,y);
@@ -238,6 +237,7 @@ void InvItem(byte item,int x,int y,int amt,int max,char brAdjust,char *name,char
 		if(msx>=x-15 && msx<=x+15 && msy>=y-20 && msy<y+10)
 		{
 			// this item is hovered
+			*hovered = true;
 			PrintUnGlow(5,440,name,1);
 			PrintUnGlow(5,460,desc,1);
 		}
@@ -324,6 +324,7 @@ void RenderPauseMenu(void)
 	InvItem(ITM_KEY,24+38*7,pauseY+INV_Y+50*2,player.keys[0],3,0,"Yellow Key","Opens yellow doors. Breaks when used.");
 	InvItem(186,24+38*7,pauseY+INV_Y+50*3-8,(player.ability[ABIL_FISH]>0),0,0,"Electroreel","Electrofish with the Classic Red Hammer.");
 	*/
+	bool hovered = false;
 	invItem_t* items = IsCustomWorld() && CustomInventory() ? CustomInventory() : inventory;
 	for(i=0; items[i].position!=255 && i<64; ++i)
 	{
@@ -373,7 +374,7 @@ void RenderPauseMenu(void)
 				break;
 		}
 
-		InvItem(items[i].item, x, y, amount, items[i].max, bright, items[i].name, items[i].desc);
+		InvItem(items[i].item, x, y, amount, items[i].max, bright, items[i].name, items[i].desc, &hovered);
 	}
 
 	if(player.level==20)
@@ -395,11 +396,14 @@ void RenderPauseMenu(void)
 	if(player.ability[ABIL_FISH])
 		PrintPauseVal("Fishing",player.journal[55],100,2,265);
 
-	if (auto ap = Archipelago())
+	if (!hovered)
 	{
-		std::string status = "AP: ";
-		status += ap->Status();
-		PrintUnGlow(pauseX + 2, pauseY + 480 - 16, status.c_str(), 1);
+		if (auto ap = Archipelago())
+		{
+			std::string status = "AP: ";
+			status += ap->Status();
+			PrintUnGlow(pauseX + 2, pauseY + 480 - 16, status.c_str(), 1);
+		}
 	}
 
 	// mouse cursor
