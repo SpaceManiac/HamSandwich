@@ -11,6 +11,7 @@
 #include <aegea.h>
 #include <json.h>
 #include "quest.h"
+#include "options.h"
 
 static std::unique_ptr<ArchipelagoClient> ap;
 
@@ -215,7 +216,7 @@ void GetLocationScouts()
 		}
 		for (auto const& i : loc.chatCodes)
 		{
-			chat_table[i].updated += ap->item_name(item->item);
+			chat_table[i].updated += ap->item_name(*item);
 		}
 	}
 
@@ -443,7 +444,7 @@ void UpdateArchipelago()
 			{
 				// Got [item] from [player].
 				std::string text = "Got ";
-				text += ap->item_name(message->item.item);
+				text += ap->item_name(message->item);
 				text += " from ";
 				text += ap->slot_player_alias(message->item.player);
 				NewMessage(text.c_str(), MESSAGE_TIME);
@@ -453,7 +454,7 @@ void UpdateArchipelago()
 			{
 				// Sent [item] to [player].
 				std::string text = "Sent ";
-				text += ap->item_name(message->item.item);
+				text += ap->item_name(message->item);
 				text += " to ";
 				text += ap->slot_player_alias(message->receiving);
 				NewMessage(text.c_str(), MESSAGE_TIME);

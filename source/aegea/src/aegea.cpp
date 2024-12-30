@@ -698,7 +698,8 @@ std::string_view ArchipelagoClient::seed_name() const
 
 std::string_view ArchipelagoClient::slot_game_name(int slot)
 {
-	return room_info_["games"][slot].getString();
+	const auto& val = room_info_["games"][slot];
+	return val.isString() ? val.getString() : "Unknown";
 }
 
 std::string_view ArchipelagoClient::slot_player_alias(int slot)
@@ -709,12 +710,19 @@ std::string_view ArchipelagoClient::slot_player_alias(int slot)
 		return "Archipelago";
 	}
 	// For now, assume AP teams feature is not in use and slot N is player N.
-	return room_info_["players"][slot - 1]["alias"].getString();
+	const jt::Json& val = room_info_["players"][slot - 1]["alias"];
+	return val.isString() ? val.getString() : "Unknown";
 }
 
 std::string_view ArchipelagoClient::item_name(int64_t item)
 {
 	return item_names[item];
+}
+
+std::string_view ArchipelagoClient::item_name(const Item& item)
+{
+	// TODO: Disambiguate between games based on `item.player` here.
+	return item_names[item.item];
 }
 
 std::string_view ArchipelagoClient::location_name(int64_t location)

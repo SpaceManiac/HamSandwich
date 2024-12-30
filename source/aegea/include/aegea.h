@@ -77,6 +77,7 @@ class ArchipelagoClient
 	};
 
 public:
+	struct Item;
 	// ------------------------------------------------------------------------
 	// Basics
 
@@ -108,6 +109,7 @@ public:
 	std::string_view slot_game_name(int slot);
 	std::string_view slot_player_alias(int slot);
 	std::string_view item_name(int64_t item);
+	std::string_view item_name(const Item& item);
 	std::string_view location_name(int64_t location);
 
 	// Get the combined RoomInfo, Connected, and RoomUpdate data, except for

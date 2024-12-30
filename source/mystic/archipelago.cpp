@@ -163,7 +163,7 @@ byte Archipelago::MysticItemAtLocation(int chapter, int levelNum)
 
 static std::string_view ItemName(const ArchipelagoClient::Item& item, int offset)
 {
-	auto name = ap->item_name(item.item);
+	auto name = ap->item_name(item);
 	if (item.player == ap->player_id())
 	{
 		if (name == "Hat Upgrade")
@@ -526,7 +526,7 @@ void Archipelago::Update()
 				{
 					// Sent [item] to [player].
 					std::string text = "Sent ";
-					text += ap->item_name(message->item.item);
+					text += ap->item_name(message->item);
 					text += " to ";
 					text += ap->slot_player_alias(message->receiving);
 					NewMessage(text.c_str(), MESSAGE_TIME);
