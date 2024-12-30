@@ -20,6 +20,9 @@ public:
 	const char* SaveName();
 
 	byte ReplaceItemAppearance(byte item, byte map, byte x, byte y, byte select);
+	bool ReplaceItemEffect(byte item, byte map, byte x, byte y, byte select);
+
+	void GetGlarch();
 };
 class Archipelago* Archipelago();
 

@@ -1,9 +1,12 @@
 #include "archipelago.h"
+#include "winpch.h"
 #include <set>
 #include <aegea.h>
 #include "game.h"
 #include "player.h"
 #include "string_extras.h"
+#include "particle.h"
+#include "shop.h"
 
 namespace
 {
@@ -14,7 +17,8 @@ namespace
 	std::string slotName = "SpaceManiac"; //"";
 	std::string password;
 
-	constexpr int BASE_ID = 10000;  // TODO
+	constexpr int64_t BASE_ID = 10000;  // TODO
+	constexpr int64_t GLARCH = BASE_ID + 4;
 
 	constexpr int MESSAGE_TIME = 30 * 5;
 	int messageCooldown = MESSAGE_TIME;
@@ -122,6 +126,50 @@ byte Archipelago::ReplaceItemAppearance(byte item, byte map, byte x, byte y, byt
 	return ITM_LOONYKEY;
 }
 
+bool Archipelago::ReplaceItemEffect(byte item, byte map, byte x, byte y, byte select)
+{
+	if (replaceItems.find(item) == replaceItems.end())
+	{
+		return false;
+	}
+
+	// Handle the Sleepless Hollow well preview spot
+	if (map == 1 && x == 41 && y == 61)
+	{
+		return true;
+	}
+
+	int64_t location = 0;
+	for (auto row : locations)
+	{
+		if (map == row.map && (select != 1 ? select == row.idx : x == row.x && y == row.y))
+		{
+			location = BASE_ID + row.id;
+			break;
+		}
+	}
+	if (location == 0)
+	{
+		return true;  // Oh no
+	}
+
+	if (ap->check_location(location))
+	{
+		ColorRing(8,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,
+					(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,FIXAMT*5,16,4);
+	}
+	return true;
+}
+
+void Archipelago::GetGlarch()
+{
+	if (ap->check_location(GLARCH))
+	{
+		ColorRing(8,(goodguy->mapx*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,
+					(goodguy->mapy*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,FIXAMT*5,16,4);
+	}
+}
+
 void Archipelago::Update()
 {
 	if (!ap)
@@ -164,13 +212,82 @@ void Archipelago::Update()
 			ApplyControlSettings();
 			JamulSoundVolume(profile.sound);
 			SetMusicVolume(profile.music);
+
+			byte map = GetWorldProgress("hollow.shw")->levelOn;
+			InitPlayer(map, "hollow.shw");
+			LoadState(map, 3);
 		}
+
+		// Reset progressive hammers, pants, brains, candles, and yellow keys
+		player.hammers = 0;
+		player.hamSpeed = 16;
+		player.brains = 0;
+		player.candles = 0;
+		player.keys[0] = 0;
 	}
 
 	// Items
 	while (auto item = ap->pop_received_item())
 	{
-		//int64_t item_id = item->item - BASE_ID;
+		int64_t item_id = item->item - BASE_ID;
+		switch (item_id)
+		{
+			case 2:
+				if(player.hamSpeed>4)
+					player.hamSpeed-=2;
+				else if(player.hamSpeed>0)
+					player.hamSpeed--;
+				break;
+			case 3:
+				player.hammers++;
+				break;
+			case 4:
+				if (!player.weaponLvl[WPN_FLAME-1])
+					player.weaponLvl[WPN_FLAME-1] = 1;
+				break;
+			case 5:
+				if (!player.weaponLvl[WPN_REFLECT-1])
+					player.weaponLvl[WPN_REFLECT-1] = 1;
+				break;
+			case 6:
+				if (!player.weaponLvl[WPN_PORTAL-1])
+					player.weaponLvl[WPN_PORTAL-1] = 1;
+				break;
+			case 7:
+				if (!player.weaponLvl[WPN_SPARKS-1])
+					player.weaponLvl[WPN_SPARKS-1] = 1;
+				break;
+			case 8:
+				if (!player.weaponLvl[WPN_SONIC-1])
+					player.weaponLvl[WPN_SONIC-1] = 1;
+				break;
+			case 9:
+				if (!player.weaponLvl[WPN_BONEHEAD-1])
+					player.weaponLvl[WPN_BONEHEAD-1] = 1;
+				break;
+			case 10:
+				player.brains++;
+				break;
+			case 11:
+				player.candles++;
+				break;
+			case 21:
+				player.keys[1] = 1;
+				break;
+			case 22:
+				player.keys[2] = 1;
+				break;
+			case 23:
+				player.keys[3] = 1;
+				break;
+			case 24:
+				player.keys[0]++;
+				break;
+			case 25:
+				player.ability[ABIL_FISH] = 1;
+				player.journal[20] = 1;
+				break;
+		}
 	}
 
 	// Messages
@@ -184,29 +301,53 @@ void Archipelago::Update()
 		{
 			if (message->type == ArchipelagoClient::Message::ItemSend)
 			{
-				if (message->receiving == ap->player_id())
+				if (message->item.player == ap->player_id() && message->item.location == GLARCH)
 				{
-					// Got [item] from [player].
-					//int64_t item_id = message->item.item - BASE_ID;
-
-					std::string text = "Got ";
-					text += ap->item_name(message->item.item);
-					if (message->item.player != ap->player_id())
-					{
-						text += " from ";
-						text += ap->slot_player_alias(message->item.player);
-					}
-				}
-				else if (message->item.player == ap->player_id())
-				{
-					// Sent [item] to [player].
-					std::string text = "Sent ";
-					text += ap->item_name(message->item.item);
-					text += " to ";
-					text += ap->slot_player_alias(message->receiving);
-					NewMessage(text.c_str(), MESSAGE_TIME, 1);
-					MakeNormalSound(SND_MESSAGE);
+					// Glarch gets a unique message.
+					std::string msg = "It had swallowed a ";
+					msg += ap->item_name(message->item);
+					msg += "!";
+					NewMessage(msg.c_str(),90,1);
 					messageCooldown = MESSAGE_TIME;
+				}
+				else
+				{
+					if (message->receiving == ap->player_id())
+					{
+						// Got [item] from [player].
+						//int64_t item_id = message->item.item - BASE_ID;
+
+						if (message->item.player == ap->player_id())
+						{
+							// TODO: Try to show vanilla message instead.
+							std::string text = "Got ";
+							text += ap->item_name(message->item);
+							NewMessage(text.c_str(), MESSAGE_TIME, 1);
+							MakeNormalSound(SND_MESSAGE);
+							messageCooldown = MESSAGE_TIME;
+						}
+						else
+						{
+							std::string text = "Got ";
+							text += ap->item_name(message->item);
+							text += " from ";
+							text += ap->slot_player_alias(message->item.player);
+							NewMessage(text.c_str(), MESSAGE_TIME, 1);
+							MakeNormalSound(SND_MESSAGE);
+							messageCooldown = MESSAGE_TIME;
+						}
+					}
+					else if (message->item.player == ap->player_id())
+					{
+						// Sent [item] to [player].
+						std::string text = "Sent ";
+						text += ap->item_name(message->item);
+						text += " to ";
+						text += ap->slot_player_alias(message->receiving);
+						NewMessage(text.c_str(), MESSAGE_TIME, 1);
+						MakeNormalSound(SND_MESSAGE);
+						messageCooldown = MESSAGE_TIME;
+					}
 				}
 			}
 			else if (message->type == ArchipelagoClient::Message::Countdown)

@@ -2,6 +2,7 @@
 #include "sound.h"
 #include "vars.h"
 #include "progress.h"
+#include "string_extras.h"
 
 message_t bigMessage;
 message_t message;
@@ -85,7 +86,7 @@ void InitMessage(void)
 
 void NewBigMessage(const char *txt,int time)
 {
-	SDL_strlcpy(bigMessage.msg,VariableMsg(txt),sizeof(bigMessage.msg));
+	ham_strcpy(bigMessage.msg,VariableMsg(txt));
 	bigMessage.x=320-GetStrLength(bigMessage.msg,0)/2;
 	bigMessage.y=-100;
 	bigMessage.dy=0;
@@ -98,7 +99,7 @@ void NewMessage(const char *txt,int time,byte priority)
 {
 	if(message.priority==1 && priority==0)
 		return;	// can't override it
-	SDL_strlcpy(message.msg,VariableMsg(txt),sizeof(message.msg));
+	ham_strcpy(message.msg,VariableMsg(txt));
 	message.x=2;
 	message.y=484;
 	message.dy=-13;

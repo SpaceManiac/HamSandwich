@@ -5,6 +5,7 @@
 #include "guy.h"
 #include "goal.h"
 #include "customworld.h"
+#include "archipelago.h"
 
 static char fishName[10][20]={
 		"Bonefish", // caught in graveyard, gives energy
@@ -232,8 +233,15 @@ void CatchFish(int mapx,int mapy,Map *map,world_t *world)
 			case 3:
 				if(player.journal[30+3]==1)	// your first glarch!
 				{
-					map->map[goodguy->mapx+goodguy->mapy*map->width].item=ITM_CANDLE;
-					NewMessage("It had swallowed a candle!",90,1);
+					if (auto ap = Archipelago())
+					{
+						ap->GetGlarch();
+					}
+					else
+					{
+						map->map[goodguy->mapx+goodguy->mapy*map->width].item=ITM_CANDLE;
+						NewMessage("It had swallowed a candle!",90,1);
+					}
 				}
 				else
 					FireBullet(goodguy->x,goodguy->y,0,BLT_BADSITFLAME,0);

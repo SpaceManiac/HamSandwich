@@ -10,7 +10,7 @@ typedef struct message_t
 	int timer;
 	int bright;
 	char brightDir;
-	char msg[32];
+	char msg[64];
 	byte priority;
 } message_t;
 

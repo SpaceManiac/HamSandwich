@@ -13,6 +13,7 @@
 #include <ctype.h>
 #include "math_extras.h"
 #include "log.h"
+#include "archipelago.h"
 
 item_t baseItems[]={
 	{"None",0,0,0,0,0,0,0,0,0,0,0,0,"",0},
@@ -1673,7 +1674,17 @@ byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y)
 	{
 		result=1;
 		if(items[type].trigger&ITR_GET)
+		{
+			if (auto ap = Archipelago())
+			{
+				if (ap->ReplaceItemEffect(type, player.levelNum, x, y, m->select))
+				{
+					return 1;
+				}
+			}
+
 			result=TriggerItem(me,m,x,y);	// returns 0 if you can't pick it up
+		}
 
 		if(result==1)
 		{

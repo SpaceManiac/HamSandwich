@@ -185,7 +185,7 @@ byte InitLevel(byte map)
 	}
 	gamemgl->SetMouse(320,240);
 
-	if(player.levelNum==6 && player.ability[ABIL_FISH]==0)
+	if(player.levelNum==6 && (player.ability[ABIL_FISH]==0 || Archipelago()))
 	{
 		curMap->map[53+32*curMap->width].item=186;	// place the reel!
 	}
@@ -751,11 +751,20 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 	byte result;
 
 	tutorial=0;
-	loadingUp=1;
 
 	sprintf(fullName,"worlds/%s",fname);
 
-	InitPlayer(GetWorldProgress(fname)->levelOn,fname);
+	if (Archipelago())
+	{
+		// AP seed change handles InitPlayer and LoadState
+		loadingUp = 0;
+	}
+	else
+	{
+		loadingUp=1;
+		InitPlayer(GetWorldProgress(fname)->levelOn,fname);
+	}
+
 	if(!LoadWorld(&curWorld,fullName))
 		CO_RETURN 1;
 

@@ -599,6 +599,7 @@ void SaveState(void)
 // (this is used for bouncing back out of the Dumb Side)
 // getPlayer=1 is for a load - copies the player data from save
 // getPlayer=0 is for changing maps - destroys the player data, replacing it with whatever is current
+// getPlayer=3 is for Archipelago load - load the player then bail w/o loading the map contents
 byte LoadState(byte lvl,byte getPlayer)
 {
 	char fname[128];
@@ -632,6 +633,11 @@ byte LoadState(byte lvl,byte getPlayer)
 		SDL_RWseek(f, 368, RW_SEEK_CUR);
 	}
 	static_assert(sizeof(player_t) - offsetof(player_t, shield) + offsetof(player_t, worldProg) + 8 == 368, "save compatibility broken; adjust this assertion if you are sure");
+
+	if (getPlayer == 3)
+	{
+		return 1;
+	}
 
 	// next the ID of whoever is tagged
 	SDL_RWread(f,&tagged,sizeof(word),1);
