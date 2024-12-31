@@ -403,6 +403,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	if(initWhat>=INIT_WORLD) // initialize the things that go with each world
 	{
 		ArchipelagoLoadPlayer();
+		player.hearts = player.maxHearts;
 	}
 
 	player.levelNum=level;
@@ -1868,41 +1869,41 @@ void HandlePoison(Guy *me)
 
 void PlayerCalcStats()
 {
-	for (int i = 0; i < 20; i++)
+	for (int i = 0; i <= 20; i++)
 	{
-		if (player.var[VAR_HEART + i] == 0)
+		if (i == 20 || player.var[VAR_HEART + i] == 0)
 		{
 			player.maxHearts = player.startHearts + i;
 			break;
 		}
 	}
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i <= 10; i++)
 	{
-		if (player.var[VAR_LIGHTNING + i] == 0)
+		if (i == 10 || player.var[VAR_LIGHTNING + i] == 0)
 		{
 			player.firePower = i;
 			break;
 		}
 	}
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i <= 10; i++)
 	{
-		if (player.var[VAR_ARROW + i] == 0)
+		if (i == 10 || player.var[VAR_ARROW + i] == 0)
 		{
 			player.fireRange = i;
 			break;
 		}
 	}
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i <= 10; i++)
 	{
-		if (player.var[VAR_PANTS + i] == 0)
+		if (i == 10 || player.var[VAR_PANTS + i] == 0)
 		{
 			player.fireRate = i + (opt.cheats[CH_RAPIDFIRE] * 2);
 			break;
 		}
 	}
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i <= 6; i++)
 	{
-		if (player.var[VAR_GEM + i] == 0)
+		if (i == 6 || player.var[VAR_GEM + i] == 0)
 		{
 			player.maxMoney = 50 + i*25;
 			break;

@@ -1198,6 +1198,8 @@ TASK(void) ShowBadge(byte b)
 	dword wait;
 	MGLDraw *mgl=GetDisplayMGL();
 
+	UpdateArchipelago();
+
 	viewing=1;
 	wait=timeGetTime();
 	InitBadgeMenu();

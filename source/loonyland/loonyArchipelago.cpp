@@ -116,9 +116,14 @@ void ItemReceived(int64_t  item_id, bool notif)
 
 void ArchipelagoLoadPlayer()
 {
+	player.maxMoney = 50;
 	for (const auto& [item_id, count] : itemsFound)
 	{
 		GivePlayerItem(item_id, false);
+	}
+	for (const auto& [loc_id, data] : locsFound)
+	{
+		SetLocationChecked(loc_id);
 	}
 }
 
@@ -287,7 +292,7 @@ void GetLocationScouts()
 				}
 			}
 			else
-				tempMap->map[loc->Xcoord + loc->Ycoord * tempMap->width].item = ITM_BARREL; //from var to placeable item
+				tempMap->map[loc->Xcoord + loc->Ycoord * tempMap->width].item = ITM_ARCHIPELAGO; //from var to placeable item
 		}
 		for (auto const& i : loc->chatCodes)
 		{
@@ -434,17 +439,13 @@ void SetLocationChecked(int64_t  loc_id)
 	else if (basic_locations[loc_id].Type == "Badge")
 	{
 		opt.meritBadge[basic_locations[loc_id].MapID] = MERIT_EARNED;
-		//EarnBadge(basic_locations[loc_id].MapID);
 	}
 	else if (basic_locations[loc_id].Type == "Reward")
 	{
-		opt.meritBadge[basic_locations[loc_id].MapID] = MERIT_EARNED;
-		//EarnBadge(basic_locations[loc_id].MapID);
+		player.var[basic_locations[loc_id].MapID] = 1;
 	}
 	else if (basic_locations[loc_id].Type == "Drop")
 	{
-		opt.meritBadge[basic_locations[loc_id].MapID] = MERIT_EARNED;
-		//EarnBadge(basic_locations[loc_id].MapID);
 	}
 	locsFound[loc_id] = true;
 
