@@ -7,6 +7,7 @@
 #include "string_extras.h"
 #include "particle.h"
 #include "shop.h"
+#include "goal.h"
 
 namespace
 {
@@ -18,7 +19,8 @@ namespace
 	std::string password;
 
 	constexpr int64_t BASE_ID = 10000;  // TODO
-	constexpr int64_t GLARCH = BASE_ID + 4;
+	constexpr int64_t AP_LOC_GLARCH = 4;
+	constexpr int64_t AP_ITM_JOURNAL = 26;
 
 	constexpr int MESSAGE_TIME = 30 * 5;
 	int messageCooldown = MESSAGE_TIME;
@@ -118,6 +120,87 @@ byte Archipelago::ReplaceItemAppearance(byte item, byte map, byte x, byte y, byt
 	return ITM_LOONYKEY;
 }
 
+extern byte AllJournals(); // items.cpp
+extern byte playerGlow; // player.cpp
+
+// sideEffects=false means play sounds and particles only
+// sideEffects=true means also show message and swap current selected hammer
+static void VanillaGetItemFx(int64_t item_id, bool sideEffects, int x, int y)
+{
+	item_id -= BASE_ID;
+	auto iter = items.find(item_id);
+	if (iter == items.end())
+	{
+		// Don't know how to handle this. Probably bad.
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "archipelago VanillaGetItemFx(%lld) not in list", (long long)item_id);
+		return;
+	}
+
+	MakeCustomSound(GetItem(iter->second)->sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
+	if(sideEffects && GetItem(iter->second)->msg[0])
+		NewMessage(GetItem(iter->second)->msg,75,0);
+
+	switch (iter->second)
+	{
+		case ITM_FLAMEBRINGER:
+		case ITM_LIGHTREAVER:
+		case ITM_PLANETSMASHER:
+		case ITM_SPARKTHROWER:
+		case ITM_EARSPLITTER:
+		case ITM_BONECRUSHER:
+			if (sideEffects)
+			{
+				// Sets weaponLvl=1 immediately... think of it as network prediction.
+				PlayerGetWeapon(GetItem(iter->second)->effectAmt, goodguy->mapx, goodguy->mapy);
+			}
+			else
+			{
+				playerGlow=127;
+				HealRing(7,goodguy->x,goodguy->y,FIXAMT*20,255,5);
+			}
+			break;
+		case ITM_ELECTROREEL:
+			if (sideEffects)
+			{
+				player.journal[20] = 1; // prediction
+				player.jpage = 20;
+				if(AllJournals())
+					CompleteGoal(17);
+				PauseGame();
+			}
+			break;
+		case ITM_JOURNAL:
+			if (sideEffects && AP_ITM_JOURNAL <= item_id && item_id <= AP_ITM_JOURNAL + 19)
+			{
+				player.journal[item_id - AP_ITM_JOURNAL + 1] = 1; // prediction
+				player.jpage = item_id - AP_ITM_JOURNAL+ 1;
+				if(AllJournals())
+					CompleteGoal(17);
+				PauseGame();
+			}
+			break;
+		default:
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "archipelago VanillaGetItemFx(%lld) -> %d not in switch", (long long)item_id, (int)iter->second);
+			break;
+		// Everything else just needs sound + message.
+	}
+}
+
+static void VanillaGetLocationFx(int64_t location, int x, int y)
+{
+	ColorRing(8,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,
+				(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,FIXAMT*5,16,4);
+
+	auto item = ap->item_at_location(location);
+	if (!item || item->player != ap->player_id())
+	{
+		// It's for someone else, don't play any prediction fx.
+		return;
+	}
+
+	VanillaGetItemFx(item->item, true, x, y);
+}
+
 bool Archipelago::ReplaceItemEffect(byte item, byte map, byte x, byte y, byte select)
 {
 	if (replaceItems.find(item) == replaceItems.end())
@@ -140,18 +223,16 @@ bool Archipelago::ReplaceItemEffect(byte item, byte map, byte x, byte y, byte se
 
 	if (ap->check_location(location))
 	{
-		ColorRing(8,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,
-					(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,FIXAMT*5,16,4);
+		VanillaGetLocationFx(location, x, y);
 	}
 	return true;
 }
 
 void Archipelago::GetGlarch()
 {
-	if (ap->check_location(GLARCH))
+	if (ap->check_location(BASE_ID + AP_LOC_GLARCH))
 	{
-		ColorRing(8,(goodguy->mapx*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,
-					(goodguy->mapy*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,FIXAMT*5,16,4);
+		VanillaGetLocationFx(BASE_ID + AP_LOC_GLARCH, goodguy->mapx, goodguy->mapy);
 	}
 }
 
@@ -199,6 +280,8 @@ void Archipelago::Update()
 			SetMusicVolume(profile.music);
 
 			byte map = GetWorldProgress("hollow.shw")->levelOn;
+			LoadWorld(&curWorld, "worlds/hollow.shw");
+			FreeWorld(&curWorld);  // Load+Free leaves items intact for GetItem
 			InitPlayer(map, "hollow.shw");
 			LoadState(map, 3);
 		}
@@ -215,7 +298,7 @@ void Archipelago::Update()
 	while (auto item = ap->pop_received_item())
 	{
 		int64_t item_id = item->item - BASE_ID;
-		auto iter = items.find(item->item - BASE_ID);
+		auto iter = items.find(item_id);
 		if (iter == items.end())
 		{
 			// Don't know how to handle this.
@@ -233,29 +316,16 @@ void Archipelago::Update()
 				player.hammers++;
 				break;
 			case ITM_FLAMEBRINGER:
-				if (!player.weaponLvl[WPN_FLAME-1])
-					player.weaponLvl[WPN_FLAME-1] = 1;
-				break;
 			case ITM_LIGHTREAVER:
-				if (!player.weaponLvl[WPN_REFLECT-1])
-					player.weaponLvl[WPN_REFLECT-1] = 1;
-				break;
 			case ITM_PLANETSMASHER:
-				if (!player.weaponLvl[WPN_PORTAL-1])
-					player.weaponLvl[WPN_PORTAL-1] = 1;
-				break;
 			case ITM_SPARKTHROWER:
-				if (!player.weaponLvl[WPN_SPARKS-1])
-					player.weaponLvl[WPN_SPARKS-1] = 1;
-				break;
 			case ITM_EARSPLITTER:
-				if (!player.weaponLvl[WPN_SONIC-1])
-					player.weaponLvl[WPN_SONIC-1] = 1;
+			case ITM_BONECRUSHER: {
+				byte wpn = GetItem(iter->second)->effectAmt;
+				if (!player.weaponLvl[wpn-1])
+					player.weaponLvl[wpn-1] = 1;
 				break;
-			case ITM_BONECRUSHER:
-				if (!player.weaponLvl[WPN_BONEHEAD-1])
-					player.weaponLvl[WPN_BONEHEAD-1] = 1;
-				break;
+			}
 			case ITM_BRAIN:
 				player.brains++;
 				break;
@@ -304,11 +374,15 @@ void Archipelago::Update()
 			case ITM_ELECTROREEL:
 				player.ability[ABIL_FISH] = 1;
 				player.journal[20] = 1;
+				if(AllJournals())
+					CompleteGoal(17);
 				break;
 			case ITM_JOURNAL:
-				if (26 <= item_id && item_id <= 44)
+				if (AP_ITM_JOURNAL <= item_id && item_id <= AP_ITM_JOURNAL + 19)
 				{
-					player.journal[item_id - 25] = 1;
+					player.journal[item_id - AP_ITM_JOURNAL + 1] = 1;
+					if(AllJournals())
+						CompleteGoal(17);
 				}
 				break;
 		}
@@ -325,7 +399,7 @@ void Archipelago::Update()
 		{
 			if (message->type == ArchipelagoClient::Message::ItemSend)
 			{
-				if (message->item.player == ap->player_id() && message->item.location == GLARCH)
+				if (message->item.player == ap->player_id() && message->item.location == BASE_ID + AP_LOC_GLARCH)
 				{
 					// Glarch gets a unique message.
 					std::string msg = "It had swallowed a ";
@@ -338,28 +412,21 @@ void Archipelago::Update()
 				{
 					if (message->receiving == ap->player_id())
 					{
-						// Got [item] from [player].
-						//int64_t item_id = message->item.item - BASE_ID;
-
-						if (message->item.player == ap->player_id())
+						if (message->item.player != ap->player_id())
 						{
-							// TODO: Try to show vanilla message instead.
-							std::string text = "Got ";
-							text += ap->item_name(message->item);
-							NewMessage(text.c_str(), MESSAGE_TIME, 1);
-							MakeNormalSound(SND_MESSAGE);
-							messageCooldown = MESSAGE_TIME;
-						}
-						else
-						{
+							// Got [item] from [player].
 							std::string text = "Got ";
 							text += ap->item_name(message->item);
 							text += " from ";
 							text += ap->slot_player_alias(message->item.player);
 							NewMessage(text.c_str(), MESSAGE_TIME, 1);
-							MakeNormalSound(SND_MESSAGE);
 							messageCooldown = MESSAGE_TIME;
+
+							// Play sound/particle FX based on item, but override the message.
+							VanillaGetItemFx(message->item.item, false, goodguy->mapx, goodguy->mapy);
 						}
+						// If player == us, we showed a vanilla message already
+						// as we check_location'd.
 					}
 					else if (message->item.player == ap->player_id())
 					{
