@@ -269,6 +269,7 @@ void ArchipelagoClient::update()
 				// We had a connection, but it died, so try to re-establish it.
 				socket = WebSocket::connect(address.c_str());
 				status = Reconnecting;
+				error = "";  // Clear possible "Server closed WebSocket connection".
 				reconnect_after = now + std::chrono::seconds(10);
 			}
 			else
