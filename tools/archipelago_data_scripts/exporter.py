@@ -406,7 +406,7 @@ loonyland_location_table = {\n"""
                                 "name": location_name_no_colon,
                                 "access_rules": [[f"[$access|{location_name_no_colon}]",
                                 f"$sequence_break|{location_name_no_colon}"],
-                                f"{{$peek|{location_name_no_colon}}}"
+                                [f"{{$peek|{location_name_no_colon}}}"]
                                 ],
                                 "visibility_rules": [f"$enabled_in_settings|{location_name_no_colon}",],
                                 })

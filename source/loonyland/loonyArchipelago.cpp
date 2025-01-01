@@ -290,6 +290,29 @@ void GetLocationScouts()
 				{
 					tempMap->map[loc->Xcoord + loc->Ycoord * tempMap->width].tag = cheat_to_badge[item_id - AP_BADGEMOD] + 1;
 				}
+				if (game_id == ITM_KEY)
+				{
+					int tag = 0;
+					switch (item_id)
+					{
+					case MODE_BOWLING:
+						tag = 5;
+						break;
+					case MODE_SURVIVAL:
+						tag = 2;
+						break;
+					case MODE_BOSSBASH:
+						tag = 7;
+						break;
+					case MODE_LOONYBALL:
+						tag = 4;
+						break;
+					case MODE_REMIX:
+						tag = 8;
+						break;
+					}
+					tempMap->map[loc->Xcoord + loc->Ycoord * tempMap->width].tag = tag;
+				}
 			}
 			else
 				tempMap->map[loc->Xcoord + loc->Ycoord * tempMap->width].item = ITM_ARCHIPELAGO; //from var to placeable item

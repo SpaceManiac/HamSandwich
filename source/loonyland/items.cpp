@@ -158,7 +158,7 @@ static const item_t itemInfo[MAX_ITMS]={
 	{2, 0, 9, 9, IF_GET | IF_SHADOW | IF_ARCHIPELAGO },	//fertiziler
 	{2, 64, 15, 25, IF_GET | IF_SHADOW | IF_ARCHIPELAGO },	//ghostpotion
 	{2, 0, 11, 11, IF_GET | IF_SHADOW | IF_GLOW | IF_ARCHIPELAGO },	//lantern
-	{2, 0, 12, 12, IF_GET | IF_SHADOW | IF_GLOW | IF_ARCHIPELAGO },	//reflect gem
+	{2, 72, 36, 43, IF_GET | IF_SHADOW | IF_GLOW | IF_ARCHIPELAGO },	//reflect gem
 	{2, 0, 13, 13, IF_GET | IF_SHADOW | IF_ARCHIPELAGO },	//silversling
 	{2, 0, 14, 14, IF_GET | IF_SHADOW | IF_ARCHIPELAGO },	//stick
 	{2, 128, 28, 35, IF_GET | IF_SHADOW | IF_ARCHIPELAGO }	//archipelago
@@ -265,6 +265,7 @@ void UpdateItems(void)
 void RenderItem(int x, int y, int z, byte type, byte info, char bright, int tag)
 {
 	int frm;
+	int hue = 255;
 
 	if (type == 0 || type >= MAX_ITMS)
 		return;
@@ -328,12 +329,19 @@ void RenderItem(int x, int y, int z, byte type, byte info, char bright, int tag)
 		sprite = itmSpr[3]->GetSprite(tag-1);
 	}
 
+	if (type == ITM_KEY && tag >= 1 && tag <= 8)
+	{
+		hue = tag - 1;
+	}
+
+
 	if (itemInfo[type].flags & IF_GLOW)
-		SprDraw(x, y, z, 255, bright, sprite, DISPLAY_DRAWME | DISPLAY_GLOW);
+		SprDraw(x, y, z, hue, bright, sprite, DISPLAY_DRAWME | DISPLAY_GLOW);
 	else
-		SprDraw(x, y, z, 255, bright, sprite, DISPLAY_DRAWME);
+		SprDraw(x, y, z, hue, bright, sprite, DISPLAY_DRAWME);
 	if (itemInfo[type].flags & IF_SHADOW)
-		SprDraw(x, y, 0, 255, bright, sprite, DISPLAY_DRAWME | DISPLAY_SHADOW);
+		SprDraw(x, y, 0, hue, bright, sprite, DISPLAY_DRAWME | DISPLAY_SHADOW);
+
 }
 
 void RenderItem(int x,int y,int z,byte type,byte info,char bright)
