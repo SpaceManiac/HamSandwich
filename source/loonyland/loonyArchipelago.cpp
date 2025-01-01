@@ -752,4 +752,6 @@ void GetRoomInfo() {
 	apSlotData.badges = ap->room_info("slot_data")["Badges"].getNumber();
 	apSlotData.dolls = ap->room_info("slot_data")["Dolls"].getNumber();
 	apSlotData.deathlink = ap->room_info("slot_data")["DeathLink"].getNumber();
+
+	opt.difficulty = apSlotData.difficulty;
 }
