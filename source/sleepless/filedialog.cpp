@@ -173,7 +173,7 @@ void RenderFileDialog(int msx,int msy,MGLDraw *mgl)
 		else
 			Print(372,182,"Load",0,1);
 	}
-	if(menuItems&FM_SAVE)
+	if((menuItems&FM_SAVE) && strcasecmp(newfname, "hollow.shw"))
 	{
 		if(msx>=370 && msx<=420 && msy>=270 && msy<=270+14)
 			mgl->FillBox(370,270,420,270+14,8+32*1);
@@ -371,13 +371,11 @@ byte FileDialogClick(int msx,int msy)
 			{
 				if(menuItems&FM_SAVE)
 				{
-					if(!strcasecmp(newfname, "hollow.shw"))
+					if(strcasecmp(newfname, "hollow.shw"))
 					{
-						exitCode=FM_FOILEDAGAIN;
-						return FM_FOILEDAGAIN;
+						exitCode=FM_SAVE;
+						return FM_SAVE;
 					}
-					exitCode=FM_SAVE;
-					return FM_SAVE;
 				}
 			}
 		}

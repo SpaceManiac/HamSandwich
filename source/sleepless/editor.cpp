@@ -46,7 +46,11 @@ byte InitEditor(void)
 {
 	int i;
 
-	NewWorld(&world,editmgl);
+	if (!LoadWorld(&world, "worlds/hollow.shw"))
+	{
+		NewWorld(&world, editmgl);
+	}
+
 	editorMap=world.map[0];
 	curMapNum=0;
 
@@ -111,9 +115,10 @@ byte InitEditor(void)
 	displayFlags=MAP_SHOWWALLS|MAP_SHOWLIGHTS|MAP_SHOWBADGUYS|
 			MAP_SHOWSPECIALS|MAP_SHOWPICKUPS|MAP_SHOWOTHERITEMS;
 
-	InitSpecials(world.map[0]->special);
+	EditorSelectMap(0);
 	StopSong();
 	SetPlayerStart(-1,-1);
+
 	return 1;
 }
 
@@ -387,11 +392,6 @@ TASK(void) UpdateMouse(void)
 					break;
 				case FM_EXIT:
 					editMode=EDITMODE_EDIT;
-					break;
-				case FM_FOILEDAGAIN:
-					SetStitchError("Unable to save over hollow.shw.");
-					InitEditHelp(HELP_WORLDSTITCH);
-					editMode=EDITMODE_HELP;
 					break;
 			}
 			break;
