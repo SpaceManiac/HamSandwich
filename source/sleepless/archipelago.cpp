@@ -462,7 +462,7 @@ ArchipelagoMenu(MGLDraw* mgl)
 	mgl->LastKeyPressed();
 	byte oldc = ~0;
 	byte cursor = 1;
-	bool typing = false;
+	std::string* typing = nullptr;
 
 	// ------------------------------------------------------------------------
 	// Init
@@ -519,9 +519,19 @@ ArchipelagoMenu(MGLDraw* mgl)
 				{
 					running = false;
 				}
-				else if (cursor == 1 || cursor == 2 || cursor == 3)
+				else if (cursor == 1)
 				{
-					typing = true;
+					typing = &serverAddress;
+					MakeNormalSound(SND_MENUSELECT);
+				}
+				else if (cursor == 2)
+				{
+					typing = &slotName;
+					MakeNormalSound(SND_MENUSELECT);
+				}
+				else if (cursor == 3)
+				{
+					typing = &password;
 					MakeNormalSound(SND_MENUSELECT);
 				}
 				else if (cursor == 4)
@@ -544,38 +554,24 @@ ArchipelagoMenu(MGLDraw* mgl)
 		}
 		else
 		{
-			std::string* activeString;
-			switch (cursor)
-			{
-			case 1:
-				activeString = &serverAddress;
-				break;
-			case 2:
-				activeString = &slotName;
-				break;
-			case 3:
-				activeString = &password;
-				break;
-			}
-
 			if (k == SDLK_ESCAPE || k == SDLK_RETURN) // ESC key
 			{
 				k = 0;
-				typing = false;
+				typing = nullptr;
 				oldc = ~0;
 				mgl->LastKeyPressed();
 				MakeNormalSound(SND_MENUSELECT);
 			}
-			else if (k == SDLK_BACKSPACE && !activeString->empty())
+			else if (k == SDLK_BACKSPACE && !typing->empty())
 			{
-				activeString->pop_back();
+				typing->pop_back();
 			}
 			else if (k >= ' ' && k <= '~')
 			{
-				*activeString += k;
+				*typing += k;
 			}
 
-			typingY = GetStrLength(activeString == &password ? std::string(password.size(), '*') : *activeString, 1);
+			typingY = GetStrLength(typing == &password ? std::string(password.size(), '*') : *typing, 1);
 		}
 		oldc = c;
 

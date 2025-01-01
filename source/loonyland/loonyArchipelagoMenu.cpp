@@ -126,7 +126,8 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 			}
 			break;
 		case 1: // Typing in something
-			std::string * activeString;
+		{
+			std::string * activeString = &IPAddress;
 			switch (cursor)
 			{
 			case CURSOR_IPADDRESS: //address
@@ -154,7 +155,6 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 			}
 			else if (c == SDLK_BACKSPACE && activeString->length() > 0)
 			{
-
 				activeString->pop_back();
 				MakeNormalSound(SND_MENUSELECT);
 			}
@@ -170,6 +170,7 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 
 			c2 = 255;
 			break;
+		}
 		case 2: //connecting
 			ArchipelagoConnect(IPAddress, SlotName, Password);
 			optMode = 3;
