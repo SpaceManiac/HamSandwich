@@ -3,6 +3,7 @@
 
 const int AP_BADGEMOD = 1000;
 const int AP_MODEMOD = 2000;
+const int AP_FILLERMOD = 3000;
 
 const int AP_DOLLLOCSTART = 159;
 

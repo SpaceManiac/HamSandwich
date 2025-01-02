@@ -102,16 +102,15 @@ int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string 
 
 void ItemsClear()
 {
-	//InitPlayer(INIT_ARCHIPELAGO, 0, 0);
 	itemsFound.clear();
 }
 void ItemReceived(int64_t  item_id, bool notif)
 {
 	item_id -= loonyland_base_id;
 	++itemsFound[item_id];
-	if (item_id != 3000) {
+	//if (item_id != 3000) {
 		GivePlayerItem(item_id, true);
-	}
+	//}
 }
 
 void ArchipelagoLoadPlayer()
@@ -129,6 +128,15 @@ void ArchipelagoLoadPlayer()
 
 void GivePlayerItem(int64_t item_id, bool loud)
 {
+	if (item_id == AP_FILLERMOD && loud && goodguy != NULL)
+	{
+		NewBigMessage("MAX LIFE & GEMS!", 90);
+		player.hearts = player.maxHearts;
+		player.money = player.maxMoney;
+		goodguy->hp = player.hearts;
+		MakeNormalSound(SND_POWERUP);
+		return;
+	}
 	if (item_id >= MODE_SURVIVAL + AP_MODEMOD && item_id <= MODE_REMIX + AP_MODEMOD)
 	{
 		ap_modesAvail[item_id - AP_MODEMOD] = 1;
@@ -159,6 +167,18 @@ void GivePlayerItem(int64_t item_id, bool loud)
 			}
 		}
 	}
+	if (item_id == VAR_ZOMBIEGEM)
+	{
+		if (player.money < player.maxMoney)
+		{
+			player.money += 100;
+			if (player.money > player.maxMoney)
+			{
+				player.money = player.maxMoney;
+			}
+		}
+	}
+	player.gemsGotten += 100;
 	if (item_id == VAR_DAISY)
 	{
 		player.var[VAR_QUESTASSIGN + QUEST_DAISY] = 1;
@@ -179,27 +199,7 @@ void GivePlayerItem(int64_t item_id, bool loud)
 	{
 		player.var[VAR_QUESTASSIGN + QUEST_CAT] = 1;
 	}
-	if ((item_id >= VAR_HEART && item_id <= VAR_PANTS)
-		|| item_id == VAR_GEM
-		|| item_id == VAR_REFLECT
-		|| item_id == VAR_TRIPLEFIRE
-		|| (item_id >= VAR_KEY && item_id <= VAR_KEY + 2))
-	{
-		PlayerCalcStats();
-	}
 
-	if (item_id >= VAR_HEART && item_id < VAR_HEART+20)
-	{
-		if (goodguy != NULL)
-		{
-			if (player.maxHearts < player.maxMaxHearts)
-			{
-				player.maxHearts++;
-			}
-			player.hearts = player.maxHearts;
-			goodguy->hp = player.hearts;
-		}
-	}
 	if (item_id >= VAR_GEM && item_id < VAR_GEM + 6)
 	{
 		if (goodguy != NULL && player.maxMoney < MAX_MONEY)
@@ -211,17 +211,23 @@ void GivePlayerItem(int64_t item_id, bool loud)
 				player.gemsGotten += 25;
 			}
 		}
-		else
+	}
+
+	if ((item_id >= VAR_HEART && item_id <= VAR_PANTS)
+		|| item_id == VAR_GEM
+		|| item_id == VAR_REFLECT
+		|| item_id == VAR_TRIPLEFIRE
+		|| (item_id >= VAR_KEY && item_id <= VAR_KEY + 2))
+	{
+		PlayerCalcStats();
+	}
+
+	if (item_id >= VAR_HEART && item_id < VAR_HEART+20)
+	{
+		if (goodguy != NULL && loud)
 		{
-			if (loud && player.money < player.maxMoney)
-			{
-				player.money += 50;
-				if (player.money > player.maxMoney)
-				{
-					player.money = player.maxMoney;
-				}
-			}
-			player.gemsGotten += 50;
+			player.hearts = player.maxHearts;
+			goodguy->hp = player.hearts;
 		}
 	}
 	if (loud && goodguy != NULL)
@@ -737,8 +743,6 @@ void UpdateArchipelago()
 
 void DebugAPCommand() {
 	std::cout << "Do stuff";
-
-
 }
 
 void GetRoomInfo() {
@@ -754,4 +758,6 @@ void GetRoomInfo() {
 	apSlotData.deathlink = ap->room_info("slot_data")["DeathLink"].getNumber();
 
 	opt.difficulty = apSlotData.difficulty;
+
+	//if dolls none, update scout text, and make it not hint for the collection
 }

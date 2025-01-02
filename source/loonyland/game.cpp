@@ -562,7 +562,7 @@ TASK(byte) PlayALevel(byte map)
 		{
 			if (loc.Map == curMap->name &&
 				loc.MapID == mapNum && 
-				locsFound[loc.ID]) {
+				locsFound.count(loc.ID) > 0) {
 				curMap->map[loc.Xcoord + loc.Ycoord * curMap->width].item = ITM_NONE;
 			}
 		}

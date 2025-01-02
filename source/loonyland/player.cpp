@@ -400,7 +400,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		if(player.monsType==MONS_PLYRSWAMPDOG)
 			FakeLevelUp();
 	}
-	if(initWhat>=INIT_WORLD) // initialize the things that go with each world
+	if(ArchipelagoMode && initWhat == INIT_GAME) // initialize the things that go with each world
 	{
 		ArchipelagoLoadPlayer();
 		player.hearts = player.maxHearts;
@@ -984,8 +984,12 @@ byte PlayerGetItem(byte itm,int x,int y)
 			//{
 			//	SendCheckedLocDoll(itm - ITM_BATDOLL);
 			//}
-			else //other ap
+			else
 			{
+				if (itm == ITM_ARCHIPELAGO)//other persons ap
+				{
+					MakeNormalSound(SND_KEYGET);
+				}
 				SendCheckedLocPickup(curMap->name, player.levelNum, x, y, itm);
 				return 0;
 			}
@@ -1906,6 +1910,10 @@ void PlayerCalcStats()
 		if (i == 6 || player.var[VAR_GEM + i] == 0)
 		{
 			player.maxMoney = 50 + i*25;
+			if (player.money > player.maxMoney)
+			{
+				player.money = player.maxMoney;
+			}
 			break;
 		}
 	}
