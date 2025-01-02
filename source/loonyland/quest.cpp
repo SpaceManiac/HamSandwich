@@ -1627,6 +1627,8 @@ void BeginChatting(byte tag)
 				curChat=83;
 			break;
 		case 18:	// doll collector
+			if(ArchipelagoMode && apSlotData.dolls == AP_OP_NONE)
+				curChat = 97;
 			if(player.var[VAR_QUESTASSIGN+QUEST_DOLLS]==0)
 				curChat=90;
 			else
