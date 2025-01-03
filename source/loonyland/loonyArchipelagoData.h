@@ -97,6 +97,7 @@ const std::unordered_map<int, itemData> basic_items = {
 { VAR_SWAMPDOLL , {"Swampdog Doll", ITM_SWAMPDOLL, SND_POWERUP}},
 { VAR_VAMPDOLL , {"Vampire Doll", ITM_VAMPDOLL, SND_POWERUP}},
 { VAR_WOLFDOLL , {"Wolfman Doll", ITM_WOLFDOLL, SND_POWERUP}},
+{ VAR_TORCH , {"Torch", ITM_STICK, SND_POWERUP}},
 };
 
 static locationData basic_locations[] = { {"Swamp: Mud Path","Pickup",0,"Halloween Hill",0,194,5,24,25,"Slurpy Swamp Mud",{}, {}},
@@ -234,7 +235,7 @@ static locationData basic_locations[] = { {"Swamp: Mud Path","Pickup",0,"Hallowe
 {"Combo Plate","Badge",132,"",18,0,0,0,0,"Menu",{}, {}},
 {"Cleanin' Up","Badge",133,"",19,0,0,0,0,"Rocky Cliffs",{}, {}},
 {"Findin'","Badge",134,"",20,0,0,0,0,"The Wolf Den",{}, {}},
-{"Extreme Survivin'","Badge",135,"",21,0,0,0,0,"Survival",{}, {"LONG_VANILLA_BADGES"}},
+{"Extreme Survivin'","Badge",135,"",21,0,0,0,0,"Survival",{}, {"LONG_VANILLA_BADGES", "VANILLA_POSTGAME"}},
 {"Huntin'","Badge",136,"",22,0,0,0,0,"Halloween Hill",{}, {}},
 {"Advanced Winnin'","Badge",137,"",23,0,0,0,0,"Menu",{}, {"LONG", "POSTGAME"}},
 {"Survivin'","Badge",138,"",24,0,0,0,0,"Survival",{}, {}},
@@ -250,7 +251,7 @@ static locationData basic_locations[] = { {"Swamp: Mud Path","Pickup",0,"Hallowe
 {"Hooliganin'","Badge",148,"",34,0,0,0,0,"Loony Ball",{}, {}},
 {"Swampdoggin'","Badge",149,"",35,0,0,0,0,"Menu",{}, {"LONG", "MULTISAVE"}},
 {"Scorin'","Badge",150,"",36,0,0,0,0,"The Evilizer",{}, {"LONG"}},
-{"Brawlin'","Badge",151,"",37,0,0,0,0,"Benny's Cocktails",{}, {"LONG_VANILLA_BADGES", "OP"}},
+{"Brawlin'","Badge",151,"",37,0,0,0,0,"Benny's Cocktails",{}, {"LONG_VANILLA_BADGES", "OP", "VANILLA_POSTGAME"}},
 {"Minin' For Treasure","Badge",152,"",38,0,0,0,0,"Menu",{}, {"REMIX"}},
 {"Digitally Masterin'","Badge",153,"",39,0,0,0,0,"Menu",{}, {"LONG", "REMIX", "MULTISAVE", "POSTGAME", "LONG_VANILLA_BADGES"}},
 {"Tree Trimming Reward","Reward",154,"A Cabin",VAR_TREEREWARD,0,0,0,0,"A Cabin Trees",{2}, {}},

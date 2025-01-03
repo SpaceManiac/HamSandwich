@@ -574,7 +574,7 @@ void GetInfoFromAP()
 		{
 			continue;
 		}
-		if (apSlotData.win_condition == AP_WIN_EVILIZER && loc.flags.count("POSTGAME"))
+		if (apSlotData.win_condition == AP_WIN_EVILIZER && (loc.flags.count("POSTGAME") || (loc.flags.count("VANILLA_POSTGAME") && apSlotData.badges == AP_OP_VANILLA)))
 		{
 			continue;
 		}
