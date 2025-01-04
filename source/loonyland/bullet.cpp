@@ -2525,7 +2525,14 @@ void RenderBullet(bullet_t *me)
 				if (apSlotData.dolls == AP_OP_FULL &&  ArchipelagoMode && me->anim >= ITM_BATDOLL && me->anim <= ITM_WOLFDOLL)
 				{
 					int item_id = scouted_items[basic_locations[AP_DOLLLOCSTART + me->anim - ITM_BATDOLL].Name];
-					RenderItem(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, basic_items.at(item_id).ingame_ID, 0, me->bright);
+					if (item_id == ITM_ARCHIPELAGO)
+					{
+						RenderItem(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, ITM_ARCHIPELAGO, 0, me->bright);
+					}
+					else
+					{
+						RenderItem(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, basic_items.at(item_id).ingame_ID, 0, me->bright);
+					}
 				}
 				else
 				{
