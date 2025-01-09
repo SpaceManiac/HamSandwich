@@ -403,7 +403,7 @@ void Archipelago::Update()
 				{
 					// Glarch gets a unique message.
 					std::string msg = "It had swallowed a ";
-					msg += ap->item_name(message->item);
+					msg += ap->item_name(*message);
 					msg += "!";
 					NewMessage(msg.c_str(),90,1);
 					messageCooldown = MESSAGE_TIME;
@@ -416,7 +416,7 @@ void Archipelago::Update()
 						{
 							// Got [item] from [player].
 							std::string text = "Got ";
-							text += ap->item_name(message->item);
+							text += ap->item_name(*message);
 							text += " from ";
 							text += ap->slot_player_alias(message->item.player);
 							NewMessage(text.c_str(), MESSAGE_TIME, 1);
@@ -432,7 +432,7 @@ void Archipelago::Update()
 					{
 						// Sent [item] to [player].
 						std::string text = "Sent ";
-						text += ap->item_name(message->item);
+						text += ap->item_name(*message);
 						text += " to ";
 						text += ap->slot_player_alias(message->receiving);
 						NewMessage(text.c_str(), MESSAGE_TIME, 1);

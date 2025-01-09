@@ -77,7 +77,12 @@ class ArchipelagoClient
 	};
 
 public:
+	struct ItemBase;
 	struct Item;
+	struct ScoutedItem;
+	struct MessagePart;
+	struct Message;
+
 	// ------------------------------------------------------------------------
 	// Basics
 
@@ -108,9 +113,16 @@ public:
 
 	std::string_view slot_game_name(int slot);
 	std::string_view slot_player_alias(int slot);
-	std::string_view item_name(int64_t item);
-	std::string_view item_name(const Item& item);
-	std::string_view location_name(int64_t location);
+	std::string_view item_name(std::string_view game, int64_t item);
+	std::string_view item_name(int player, int64_t item);
+	std::string_view item_name(const ScoutedItem& item);
+	std::string_view item_name(const MessagePart& part); // If type == item_id.
+	std::string_view item_name(const Message& message); // If type in ItemSend, ItemCheat, Hint.
+	std::string_view location_name(std::string_view game, int64_t location);
+	std::string_view location_name(int player, int64_t location);
+	std::string_view location_name(const Item& item);
+	std::string_view location_name(const MessagePart& part); // If type == location_id.
+	std::string_view location_name(const Message& message); // If type in ItemSend, ItemCheat, Hint.
 
 	// Get the combined RoomInfo, Connected, and RoomUpdate data, except for
 	// checked_locations and missing_locations.
@@ -124,11 +136,10 @@ public:
 	// Receiving items
 
 	// https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#NetworkItem
-	struct Item
+	struct ItemBase
 	{
 		int64_t item;
 		int64_t location;
-		int player;
 		int flags;
 
 		// flags
@@ -136,6 +147,16 @@ public:
 		static constexpr int Advancement = 0b001;
 		static constexpr int Important = 0b010;
 		static constexpr int Trap = 0b100;
+	};
+	struct Item : public ItemBase
+	{
+		// The slot number corresponding to the `location`.
+		int player;
+	};
+	struct ScoutedItem : public ItemBase
+	{
+		// The slot number corresponding to the `item`.
+		int player;
 	};
 
 	// Pop unobserved received item.
@@ -163,8 +184,9 @@ public:
 	void scout_locations(Slice<int64_t> locations, bool create_as_hint = false);
 	// Call to scout all of this game's locations, without creating hints.
 	void scout_locations();
-	// Return the item scouted at a particular location. Requires calling scout_locations first.
-	const Item* item_at_location(int64_t location) const;
+	// Return the item scouted at a particular location if known.
+	// Requires calling `scout_locations` first.
+	const ScoutedItem* item_at_location(int64_t location) const;
 
 	// ------------------------------------------------------------------------
 	// Messages
@@ -321,8 +343,8 @@ private:
 	int player_id_ = -1;
 	std::map<std::string, jt::Json, std::less<>> room_info_;
 	std::map<std::string, jt::Json, std::less<>> data_packages;
-	std::map<int64_t, std::string> item_names;
-	std::map<int64_t, std::string> location_names;
+	std::map<std::pair<std::string_view, int64_t>, std::string> item_names;
+	std::map<std::pair<std::string_view, int64_t>, std::string> location_names;
 
 	bool connected_pending = false;
 	bool death_link_pending = false;
@@ -332,7 +354,7 @@ private:
 	std::vector<Item> received_items;
 	std::set<int64_t> checked_locations_;
 	std::set<int64_t> missing_locations_;
-	std::map<int64_t, Item> scouted_locations;
+	std::map<int64_t, ScoutedItem> scouted_locations;
 
 	std::string storage_private_prefix;
 	std::map<std::string, jt::Json, std::less<>> storage_;

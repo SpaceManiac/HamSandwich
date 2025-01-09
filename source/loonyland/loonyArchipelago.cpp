@@ -193,7 +193,8 @@ void GetLocationScouts()
 			continue;
 		}
 
-		const ArchipelagoClient::Item* item = ap->item_at_location(loc.ID + loonyland_base_id);
+		const ArchipelagoClient::ScoutedItem* item = ap->item_at_location(loc.ID + loonyland_base_id);
+
 		if (item == nullptr)
 		{
 			allGood = false;
@@ -444,7 +445,7 @@ void UpdateArchipelago()
 			{
 				// Got [item] from [player].
 				std::string text = "Got ";
-				text += ap->item_name(message->item);
+				text += ap->item_name(*message);
 				text += " from ";
 				text += ap->slot_player_alias(message->item.player);
 				NewMessage(text.c_str(), MESSAGE_TIME);
@@ -454,7 +455,7 @@ void UpdateArchipelago()
 			{
 				// Sent [item] to [player].
 				std::string text = "Sent ";
-				text += ap->item_name(message->item);
+				text += ap->item_name(*message);
 				text += " to ";
 				text += ap->slot_player_alias(message->receiving);
 				NewMessage(text.c_str(), MESSAGE_TIME);

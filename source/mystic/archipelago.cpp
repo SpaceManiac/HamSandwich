@@ -161,10 +161,10 @@ byte Archipelago::MysticItemAtLocation(int chapter, int levelNum)
 	return ITM_ARCHIPELAGO;
 }
 
-static std::string_view ItemName(const ArchipelagoClient::Item& item, int offset)
+static std::string_view ItemName(int slot, int64_t item, int offset)
 {
-	auto name = ap->item_name(item);
-	if (item.player == ap->player_id())
+	auto name = ap->item_name(ap->slot_game_name(slot), item);
+	if (slot == ap->player_id())
 	{
 		if (name == "Hat Upgrade")
 		{
@@ -262,7 +262,7 @@ std::string Archipelago::ItemNameAtLocation(int chapter, int levelNum)
 	int64_t location_id = BASE_ID + chapter * 50 + levelNum;
 	if (auto item = ap->item_at_location(location_id))
 	{
-		std::string result { ItemName(*item, 0) };
+		std::string result { ItemName(item->player, item->item, 0) };
 		if (item->player != ap->player_id())
 		{
 			result += " ^ ^ For: ";
@@ -466,7 +466,7 @@ void Archipelago::Update()
 					int64_t item_id = message->item.item - BASE_ID;
 
 					std::string text = "Got ";
-					text += ItemName(message->item, 1);
+					text += ItemName(message->receiving, message->item.item, 1);
 					if (message->item.player != ap->player_id())
 					{
 						text += " from ";
@@ -526,7 +526,7 @@ void Archipelago::Update()
 				{
 					// Sent [item] to [player].
 					std::string text = "Sent ";
-					text += ap->item_name(message->item);
+					text += ap->item_name(*message);
 					text += " to ";
 					text += ap->slot_player_alias(message->receiving);
 					NewMessage(text.c_str(), MESSAGE_TIME);

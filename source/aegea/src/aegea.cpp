@@ -1,5 +1,6 @@
 #include "aegea.h"
 #include <time.h>
+#include <stdlib.h>
 #include <fstream>
 #include <filesystem>
 #include <json.h>
@@ -237,6 +238,14 @@ void ArchipelagoClient::send_connect()
 }
 
 static void decode(ArchipelagoClient::Item* item, const jt::Json& json)
+{
+	item->item = json["item"].isLong() ? json["item"].getLong() : 0;
+	item->location = json["location"].isLong() ? json["location"].getLong() : 0;
+	item->player = json["player"].isLong() ? static_cast<int>(json["player"].getLong()) : 0;
+	item->flags = json["flags"].isLong() ? static_cast<int>(json["flags"].getLong()) : 0;
+}
+
+static void decode(ArchipelagoClient::ScoutedItem* item, const jt::Json& json)
 {
 	item->item = json["item"].isLong() ? json["item"].getLong() : 0;
 	item->location = json["location"].isLong() ? json["location"].getLong() : 0;
@@ -715,20 +724,54 @@ std::string_view ArchipelagoClient::slot_player_alias(int slot)
 	return val.isString() ? val.getString() : "Unknown";
 }
 
-std::string_view ArchipelagoClient::item_name(int64_t item)
+std::string_view ArchipelagoClient::item_name(std::string_view game, int64_t item)
 {
-	return item_names[item];
+	return item_names[std::make_pair(game, item)];
 }
 
-std::string_view ArchipelagoClient::item_name(const Item& item)
+std::string_view ArchipelagoClient::item_name(int player, int64_t item)
 {
-	// TODO: Disambiguate between games based on `item.player` here.
-	return item_names[item.item];
+	return item_name(slot_game_name(player), item);
 }
 
-std::string_view ArchipelagoClient::location_name(int64_t location)
+std::string_view ArchipelagoClient::item_name(const ScoutedItem& item)
 {
-	return location_names[location];
+	return item_name(item.player, item.item);
+}
+
+std::string_view ArchipelagoClient::item_name(const MessagePart& part)
+{
+	return item_name(part.player, atoi(part.text.c_str()));
+}
+
+std::string_view ArchipelagoClient::item_name(const Message& message)
+{
+	return item_name(message.receiving, message.item.item);
+}
+
+std::string_view ArchipelagoClient::location_name(std::string_view game, int64_t location)
+{
+	return location_names[std::make_pair(game, location)];
+}
+
+std::string_view ArchipelagoClient::location_name(int player, int64_t item)
+{
+	return location_name(slot_game_name(player), item);
+}
+
+std::string_view ArchipelagoClient::location_name(const Item& item)
+{
+	return location_name(item.player, item.location);
+}
+
+std::string_view ArchipelagoClient::location_name(const MessagePart& part)
+{
+	return location_name(part.player, atoi(part.text.c_str()));
+}
+
+std::string_view ArchipelagoClient::location_name(const Message& message)
+{
+	return location_name(message.item);
 }
 
 const std::map<std::string, jt::Json, std::less<>>& ArchipelagoClient::room_info() const
@@ -748,23 +791,25 @@ const jt::Json& ArchipelagoClient::room_info(std::string_view key) const
 
 void ArchipelagoClient::load_data_package(std::string game, jt::Json value)
 {
-	// From name->id maps, create inverted id->name maps.
-	if (value["item_name_to_id"].isObject())
-	{
-		for (const auto& pair : value["item_name_to_id"].getObject())
-		{
-			item_names[pair.second.getLong()] = pair.first;
-		}
-	}
-	if (value["location_name_to_id"].isObject())
-	{
-		for (const auto& pair : value["location_name_to_id"].getObject())
-		{
-			location_names[pair.second.getLong()] = pair.first;
-		}
-	}
 	// Store original maps plus anything extra.
-	data_packages[std::move(game)] = std::move(value);
+	auto [iter, _] = data_packages.emplace(std::move(game), std::move(value));
+	const auto& [key, value2] = *iter;
+
+	// From name->id maps, create inverted id->name maps.
+	if (value2["item_name_to_id"].isObject())
+	{
+		for (const auto& pair : value2["item_name_to_id"].getObject())
+		{
+			item_names[std::make_pair(key, pair.second.getLong())] = pair.first;
+		}
+	}
+	if (value2["location_name_to_id"].isObject())
+	{
+		for (const auto& pair : value2["location_name_to_id"].getObject())
+		{
+			location_names[std::make_pair(key, pair.second.getLong())] = pair.first;
+		}
+	}
 }
 
 const jt::Json& ArchipelagoClient::data_package(std::string_view game) const
@@ -859,7 +904,7 @@ void ArchipelagoClient::scout_locations()
 	}
 }
 
-const ArchipelagoClient::Item* ArchipelagoClient::item_at_location(int64_t location) const
+const ArchipelagoClient::ScoutedItem* ArchipelagoClient::item_at_location(int64_t location) const
 {
 	auto iter = scouted_locations.find(location);
 	if (iter != scouted_locations.end())
