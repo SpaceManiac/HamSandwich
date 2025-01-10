@@ -104,7 +104,13 @@ public:
 	bool pop_connected();
 
 	// ------------------------------------------------------------------------
-	// Room info and data packages
+	// Room info
+
+	// Get the combined RoomInfo, Connected, and RoomUpdate data, except for
+	// checked_locations and missing_locations.
+	const std::map<std::string, jt::Json, std::less<>>& room_info() const;
+	// Get a piece of room info by key, or null if absent.
+	const jt::Json& room_info(std::string_view key) const;
 
 	// Get our numeric player ID.
 	int player_id() const;
@@ -113,6 +119,13 @@ public:
 
 	std::string_view slot_game_name(int slot);
 	std::string_view slot_player_alias(int slot);
+
+	// ------------------------------------------------------------------------
+	// Data packages
+
+	// Get the full JSON data package for the given game.
+	const jt::Json& data_package(std::string_view game) const;
+
 	std::string_view item_name(std::string_view game, int64_t item);
 	std::string_view item_name(int player, int64_t item);
 	std::string_view item_name(const ScoutedItem& item);
@@ -123,14 +136,6 @@ public:
 	std::string_view location_name(const Item& item);
 	std::string_view location_name(const MessagePart& part); // If type == location_id.
 	std::string_view location_name(const Message& message); // If type in ItemSend, ItemCheat, Hint.
-
-	// Get the combined RoomInfo, Connected, and RoomUpdate data, except for
-	// checked_locations and missing_locations.
-	const std::map<std::string, jt::Json, std::less<>>& room_info() const;
-	// Get a piece of room info by key, or null if absent.
-	const jt::Json& room_info(std::string_view key) const;
-	// Get the arbitrary JSON data package for the given game.
-	const jt::Json& data_package(std::string_view game) const;
 
 	// ------------------------------------------------------------------------
 	// Receiving items

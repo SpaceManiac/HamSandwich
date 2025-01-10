@@ -689,7 +689,22 @@ bool ArchipelagoClient::pop_connected()
 }
 
 // ------------------------------------------------------------------------
-// Room info and data packages
+// Room info
+
+const std::map<std::string, jt::Json, std::less<>>& ArchipelagoClient::room_info() const
+{
+	return room_info_;
+}
+
+const jt::Json& ArchipelagoClient::room_info(std::string_view key) const
+{
+	auto iter = room_info_.find(key);
+	if (iter != room_info_.end())
+	{
+		return iter->second;
+	}
+	return json_null;
+}
 
 int ArchipelagoClient::player_id() const
 {
@@ -708,7 +723,12 @@ std::string_view ArchipelagoClient::seed_name() const
 
 std::string_view ArchipelagoClient::slot_game_name(int slot)
 {
-	const auto& val = room_info_["games"][slot];
+	if (slot == 0)
+	{
+		// Slot 0 is Archipelago regardless of team.
+		return "Archipelago";
+	}
+	const auto& val = room_info_["slot_info"][std::to_string(slot)]["game"];
 	return val.isString() ? val.getString() : "Unknown";
 }
 
@@ -722,6 +742,42 @@ std::string_view ArchipelagoClient::slot_player_alias(int slot)
 	// For now, assume AP teams feature is not in use and slot N is player N.
 	const jt::Json& val = room_info_["players"][slot - 1]["alias"];
 	return val.isString() ? val.getString() : "Unknown";
+}
+
+// ------------------------------------------------------------------------
+// Data packages
+
+void ArchipelagoClient::load_data_package(std::string game, jt::Json value)
+{
+	// Store original maps plus anything extra.
+	auto [iter, _] = data_packages.emplace(std::move(game), std::move(value));
+	const auto& [key, value2] = *iter;
+
+	// From name->id maps, create inverted id->name maps.
+	if (value2["item_name_to_id"].isObject())
+	{
+		for (const auto& pair : value2["item_name_to_id"].getObject())
+		{
+			item_names[std::make_pair(key, pair.second.getLong())] = pair.first;
+		}
+	}
+	if (value2["location_name_to_id"].isObject())
+	{
+		for (const auto& pair : value2["location_name_to_id"].getObject())
+		{
+			location_names[std::make_pair(key, pair.second.getLong())] = pair.first;
+		}
+	}
+}
+
+const jt::Json& ArchipelagoClient::data_package(std::string_view game) const
+{
+	auto iter = data_packages.find(game);
+	if (iter != data_packages.end())
+	{
+		return iter->second;
+	}
+	return json_null;
 }
 
 std::string_view ArchipelagoClient::item_name(std::string_view game, int64_t item)
@@ -772,54 +828,6 @@ std::string_view ArchipelagoClient::location_name(const MessagePart& part)
 std::string_view ArchipelagoClient::location_name(const Message& message)
 {
 	return location_name(message.item);
-}
-
-const std::map<std::string, jt::Json, std::less<>>& ArchipelagoClient::room_info() const
-{
-	return room_info_;
-}
-
-const jt::Json& ArchipelagoClient::room_info(std::string_view key) const
-{
-	auto iter = room_info_.find(key);
-	if (iter != room_info_.end())
-	{
-		return iter->second;
-	}
-	return json_null;
-}
-
-void ArchipelagoClient::load_data_package(std::string game, jt::Json value)
-{
-	// Store original maps plus anything extra.
-	auto [iter, _] = data_packages.emplace(std::move(game), std::move(value));
-	const auto& [key, value2] = *iter;
-
-	// From name->id maps, create inverted id->name maps.
-	if (value2["item_name_to_id"].isObject())
-	{
-		for (const auto& pair : value2["item_name_to_id"].getObject())
-		{
-			item_names[std::make_pair(key, pair.second.getLong())] = pair.first;
-		}
-	}
-	if (value2["location_name_to_id"].isObject())
-	{
-		for (const auto& pair : value2["location_name_to_id"].getObject())
-		{
-			location_names[std::make_pair(key, pair.second.getLong())] = pair.first;
-		}
-	}
-}
-
-const jt::Json& ArchipelagoClient::data_package(std::string_view game) const
-{
-	auto iter = data_packages.find(game);
-	if (iter != data_packages.end())
-	{
-		return iter->second;
-	}
-	return json_null;
 }
 
 // ------------------------------------------------------------------------
