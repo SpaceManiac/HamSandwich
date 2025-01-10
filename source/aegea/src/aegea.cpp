@@ -698,8 +698,7 @@ const std::map<std::string, jt::Json, std::less<>>& ArchipelagoClient::room_info
 
 const jt::Json& ArchipelagoClient::room_info(std::string_view key) const
 {
-	auto iter = room_info_.find(key);
-	if (iter != room_info_.end())
+	if (auto iter = room_info_.find(key); iter != room_info_.end())
 	{
 		return iter->second;
 	}
@@ -713,26 +712,25 @@ int ArchipelagoClient::player_id() const
 
 std::string_view ArchipelagoClient::seed_name() const
 {
-	auto iter = room_info_.find("seed_name");
-	if (iter != room_info_.end() && iter->second.isString())
+	if (auto iter = room_info_.find("seed_name"); iter != room_info_.end() && iter->second.isString())
 	{
 		return iter->second.getString();
 	}
 	return "";
 }
 
-std::string_view ArchipelagoClient::slot_game_name(int slot)
+std::string_view ArchipelagoClient::slot_game_name(int slot) const
 {
 	if (slot == 0)
 	{
 		// Slot 0 is Archipelago regardless of team.
 		return "Archipelago";
 	}
-	const auto& val = room_info_["slot_info"][std::to_string(slot)]["game"];
-	return val.isString() ? val.getString() : "Unknown";
+	const auto& val = room_info("slot_info")[std::to_string(slot)]["game"];
+	return val.isString() ? val.getString() : "";
 }
 
-std::string_view ArchipelagoClient::slot_player_alias(int slot)
+std::string_view ArchipelagoClient::slot_player_alias(int slot) const
 {
 	if (slot == 0)
 	{
@@ -740,94 +738,143 @@ std::string_view ArchipelagoClient::slot_player_alias(int slot)
 		return "Archipelago";
 	}
 	// For now, assume AP teams feature is not in use and slot N is player N.
-	const jt::Json& val = room_info_["players"][slot - 1]["alias"];
-	return val.isString() ? val.getString() : "Unknown";
+	const jt::Json& val = room_info("players")[slot - 1]["alias"];
+	return val.isString() ? val.getString() : "";
 }
 
 // ------------------------------------------------------------------------
 // Data packages
 
+struct ArchipelagoClient::DataPackage
+{
+	jt::Json raw;
+	std::map<int64_t, std::string_view> item_names;
+	std::map<int64_t, std::string_view> location_names;
+
+	DataPackage(DataPackage&&) = delete;
+	DataPackage(const DataPackage&) = delete;
+	void operator=(DataPackage&&) = delete;
+	void operator=(const DataPackage&) = delete;
+
+	DataPackage(jt::Json input) : raw(std::move(input))
+	{
+		if (raw["item_name_to_id"].isObject())
+		{
+			for (const auto& pair : raw["item_name_to_id"].getObject())
+			{
+				item_names[pair.second.getLong()] = pair.first;
+			}
+		}
+		if (raw["location_name_to_id"].isObject())
+		{
+			for (const auto& pair : raw["location_name_to_id"].getObject())
+			{
+				location_names[pair.second.getLong()] = pair.first;
+			}
+		}
+	}
+};
+
 void ArchipelagoClient::load_data_package(std::string game, jt::Json value)
 {
-	// Store original maps plus anything extra.
-	auto [iter, _] = data_packages.emplace(std::move(game), std::move(value));
-	const auto& [key, value2] = *iter;
-
-	// From name->id maps, create inverted id->name maps.
-	if (value2["item_name_to_id"].isObject())
-	{
-		for (const auto& pair : value2["item_name_to_id"].getObject())
-		{
-			item_names[std::make_pair(key, pair.second.getLong())] = pair.first;
-		}
-	}
-	if (value2["location_name_to_id"].isObject())
-	{
-		for (const auto& pair : value2["location_name_to_id"].getObject())
-		{
-			location_names[std::make_pair(key, pair.second.getLong())] = pair.first;
-		}
-	}
+	data_packages.emplace(std::move(game), std::move(value));
 }
 
 const jt::Json& ArchipelagoClient::data_package(std::string_view game) const
 {
-	auto iter = data_packages.find(game);
-	if (iter != data_packages.end())
+	if (auto iter = data_packages.find(game); iter != data_packages.end())
 	{
-		return iter->second;
+		return iter->second.raw;
 	}
 	return json_null;
 }
 
-std::string_view ArchipelagoClient::item_name(std::string_view game, int64_t item)
+std::string_view ArchipelagoClient::item_name(std::string_view game, int64_t item) const
 {
-	return item_names[std::make_pair(game, item)];
+	if (auto iter = data_packages.find(game); iter != data_packages.end())
+	{
+		if (auto iter2 = iter->second.item_names.find(item); iter2 != iter->second.item_names.end())
+		{
+			return iter2->second;
+		}
+	}
+	return "";
 }
 
-std::string_view ArchipelagoClient::item_name(int player, int64_t item)
+std::string_view ArchipelagoClient::item_name(int player, int64_t item) const
 {
 	return item_name(slot_game_name(player), item);
 }
 
-std::string_view ArchipelagoClient::item_name(const ScoutedItem& item)
+std::string_view ArchipelagoClient::item_name(const ScoutedItem& item) const
 {
 	return item_name(item.player, item.item);
 }
 
-std::string_view ArchipelagoClient::item_name(const MessagePart& part)
+std::string_view ArchipelagoClient::item_name(const MessagePart& part) const
 {
-	return item_name(part.player, atoi(part.text.c_str()));
+	if (part.type == MessagePart::ItemId)
+	{
+		return item_name(part.player, atoi(part.text.c_str()));
+	}
+	else if (part.type == MessagePart::ItemName)
+	{
+		return part.text;
+	}
+	return "";
 }
 
-std::string_view ArchipelagoClient::item_name(const Message& message)
+std::string_view ArchipelagoClient::item_name(const Message& message) const
 {
-	return item_name(message.receiving, message.item.item);
+	if (message.type == Message::ItemSend || message.type == Message::ItemCheat || message.type == Message::Hint)
+	{
+		return item_name(message.receiving, message.item.item);
+	}
+	return "";
 }
 
-std::string_view ArchipelagoClient::location_name(std::string_view game, int64_t location)
+std::string_view ArchipelagoClient::location_name(std::string_view game, int64_t location) const
 {
-	return location_names[std::make_pair(game, location)];
+	if (auto iter = data_packages.find(game); iter != data_packages.end())
+	{
+		if (auto iter2 = iter->second.location_names.find(location); iter2 != iter->second.location_names.end())
+		{
+			return iter2->second;
+		}
+	}
+	return "";
 }
 
-std::string_view ArchipelagoClient::location_name(int player, int64_t item)
+std::string_view ArchipelagoClient::location_name(int player, int64_t item) const
 {
 	return location_name(slot_game_name(player), item);
 }
 
-std::string_view ArchipelagoClient::location_name(const Item& item)
+std::string_view ArchipelagoClient::location_name(const Item& item) const
 {
 	return location_name(item.player, item.location);
 }
 
-std::string_view ArchipelagoClient::location_name(const MessagePart& part)
+std::string_view ArchipelagoClient::location_name(const MessagePart& part) const
 {
-	return location_name(part.player, atoi(part.text.c_str()));
+	if (part.type == MessagePart::LocationId)
+	{
+		return location_name(part.player, atoi(part.text.c_str()));
+	}
+	else if (part.type == MessagePart::LocationName)
+	{
+		return part.text;
+	}
+	return "";
 }
 
-std::string_view ArchipelagoClient::location_name(const Message& message)
+std::string_view ArchipelagoClient::location_name(const Message& message) const
 {
-	return location_name(message.item);
+	if (message.type == Message::ItemSend || message.type == Message::ItemCheat || message.type == Message::Hint)
+	{
+		return location_name(message.item);
+	}
+	return "";
 }
 
 // ------------------------------------------------------------------------
@@ -914,8 +961,7 @@ void ArchipelagoClient::scout_locations()
 
 const ArchipelagoClient::ScoutedItem* ArchipelagoClient::item_at_location(int64_t location) const
 {
-	auto iter = scouted_locations.find(location);
-	if (iter != scouted_locations.end())
+	if (auto iter = scouted_locations.find(location); iter != scouted_locations.end())
 	{
 		return &iter->second;
 	}
@@ -984,8 +1030,7 @@ bool ArchipelagoClient::pop_death_link()
 
 const jt::Json& ArchipelagoClient::storage(std::string_view key) const
 {
-	auto iter = storage_.find(key);
-	if (iter != storage_.end())
+	if (auto iter = storage_.find(key); iter != storage_.end())
 	{
 		return iter->second;
 	}
@@ -995,11 +1040,9 @@ const jt::Json& ArchipelagoClient::storage(std::string_view key) const
 const ArchipelagoClient::StorageChange* ArchipelagoClient::pop_storage_change()
 {
 	// TODO: this is a little unwieldy. Should it just be a vector internally?
-	auto iter_change = storage_changes.begin();
-	if (iter_change != storage_changes.end())
+	if (auto iter_change = storage_changes.begin(); iter_change != storage_changes.end())
 	{
-		auto iter_value = storage_.find(iter_change->first);
-		if (iter_value != storage_.end())
+		if (auto iter_value = storage_.find(iter_change->first); iter_value != storage_.end())
 		{
 			storage_change.key = iter_value->first;
 			storage_change.new_value = &iter_value->second;

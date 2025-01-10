@@ -117,8 +117,8 @@ public:
 	// Get Archipelago's unique ID for this generated world.
 	std::string_view seed_name() const;
 
-	std::string_view slot_game_name(int slot);
-	std::string_view slot_player_alias(int slot);
+	std::string_view slot_game_name(int slot) const;
+	std::string_view slot_player_alias(int slot) const;
 
 	// ------------------------------------------------------------------------
 	// Data packages
@@ -126,16 +126,16 @@ public:
 	// Get the full JSON data package for the given game.
 	const jt::Json& data_package(std::string_view game) const;
 
-	std::string_view item_name(std::string_view game, int64_t item);
-	std::string_view item_name(int player, int64_t item);
-	std::string_view item_name(const ScoutedItem& item);
-	std::string_view item_name(const MessagePart& part); // If type == item_id.
-	std::string_view item_name(const Message& message); // If type in ItemSend, ItemCheat, Hint.
-	std::string_view location_name(std::string_view game, int64_t location);
-	std::string_view location_name(int player, int64_t location);
-	std::string_view location_name(const Item& item);
-	std::string_view location_name(const MessagePart& part); // If type == location_id.
-	std::string_view location_name(const Message& message); // If type in ItemSend, ItemCheat, Hint.
+	std::string_view item_name(std::string_view game, int64_t item) const;
+	std::string_view item_name(int player, int64_t item) const;
+	std::string_view item_name(const ScoutedItem& item) const;
+	std::string_view item_name(const MessagePart& part) const; // if item_id, item_name
+	std::string_view item_name(const Message& message) const; // if ItemSend, ItemCheat, Hint
+	std::string_view location_name(std::string_view game, int64_t location) const;
+	std::string_view location_name(int player, int64_t location) const;
+	std::string_view location_name(const Item& item) const;
+	std::string_view location_name(const MessagePart& part) const; // if location_id, location_name
+	std::string_view location_name(const Message& message) const; // if ItemSend, ItemCheat, Hint
 
 	// ------------------------------------------------------------------------
 	// Receiving items
@@ -336,6 +336,7 @@ private:
 		WaitingForConnected,
 		Active,
 	} status = Idle;
+	struct DataPackage;
 
 	ArchipelagoCache *cache;
 	std::string game, address, slot, password;
@@ -347,9 +348,7 @@ private:
 
 	int player_id_ = -1;
 	std::map<std::string, jt::Json, std::less<>> room_info_;
-	std::map<std::string, jt::Json, std::less<>> data_packages;
-	std::map<std::pair<std::string_view, int64_t>, std::string> item_names;
-	std::map<std::pair<std::string_view, int64_t>, std::string> location_names;
+	std::map<std::string, DataPackage, std::less<>> data_packages;
 
 	bool connected_pending = false;
 	bool death_link_pending = false;
