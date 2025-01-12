@@ -387,15 +387,27 @@ void Archipelago::Update()
 		// Progressive hat, staff, and boots
 		if (item_id == 4 * 50 + 3)
 		{
-			player.hat++;
+			if (player.hat < 255)
+			{
+				player.hat++;
+				SetPlayerDefense();
+			}
 		}
 		else if (item_id == 4 * 50 + 8)
 		{
-			player.staff++;
+			if (player.staff < 255)
+			{
+				player.staff++;
+				SetPlayerDamage();
+			}
 		}
 		else if (item_id == 4 * 50 + 13)
 		{
-			player.boots++;
+			if (player.boots < 255)
+			{
+				player.boots++;
+				SetPlayerSpeed();
+			}
 		}
 		// Other shop upgrades
 		else if (item_id / 50 == 4)
@@ -422,30 +434,51 @@ void Archipelago::Update()
 		// Progressive level-ups
 		else if (item_id / 50 == 5)
 		{
-			player.level++;
-			player.maxLife=14+player.level;
-			if(player.gear&GEAR_HEART)
-				player.maxLife*=2;
-			player.maxMana=14+player.level;
-			if(player.gear&GEAR_MOON)
-				player.maxMana*=2;
+			// Level cap increased from 50 to 99.
+			// 51+ with amulets: HP & mana exceed bar.
+			// 100+: level number starts displaying oddly.
+			// 114+ without amulets, HP & mana exceed bar.
+			// 114+ with amulets, HP & mana wrap to 0.
+			// 242+ without amulets, HP & mana wrap to 0.
+			if (player.level < 99)
+			{
+				player.level++;
+				player.maxLife=14+player.level;
+				if(player.gear&GEAR_HEART)
+					player.maxLife*=2;
+				player.maxMana=14+player.level;
+				if(player.gear&GEAR_MOON)
+					player.maxMana*=2;
+			}
 		}
 		// Chapter progression
 		else if (item_id == 0 * 50 + 37)
 		{
-			levelsPassed[0]++;
+			if (levelsPassed[0] < 255)
+			{
+				levelsPassed[0]++;
+			}
 		}
 		else if (item_id == 1 * 50 + 36)
 		{
-			levelsPassed[1]++;
+			if (levelsPassed[1] < 255)
+			{
+				levelsPassed[1]++;
+			}
 		}
 		else if (item_id == 2 * 50 + 40)
 		{
-			levelsPassed[2]++;
+			if (levelsPassed[2] < 255)
+			{
+				levelsPassed[2]++;
+			}
 		}
 		else if (item_id == 3 * 50 + 35)
 		{
-			levelsPassed[3]++;
+			if (levelsPassed[3] < 255)
+			{
+				levelsPassed[3]++;
+			}
 		}
 	}
 

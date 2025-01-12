@@ -240,6 +240,10 @@ void SetPlayerSpeed(void)
 		case 4:
 			player.maxSpeed=FIXAMT*8;
 			break;
+		default:
+			// Eventually lets you warp through walls, and other oddness.
+			player.maxSpeed = FIXAMT * (4 + player.boots);
+			break;
 	}
 }
 
@@ -262,6 +266,10 @@ void SetPlayerDamage(void)
 		case 4:
 			player.damage=10;
 			break;
+		default:
+			// 223 staves is enough to kill Bobby Khan in 3 hits.
+			player.damage = player.staff * 3 - 2;
+			break;
 	}
 }
 
@@ -283,6 +291,10 @@ void SetPlayerDefense(void)
 			break;
 		case 4:
 			player.defense=8;
+			break;
+		default:
+			// 27 hats is enough to put Bobby Khan's attacks at 1 damage each.
+			player.defense = 4 + player.hat;
 			break;
 	}
 }
