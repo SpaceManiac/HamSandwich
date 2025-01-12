@@ -1020,7 +1020,7 @@ TASK(byte) LunaticGame(MGLDraw *mgl,byte load)
 
 		worldResult=AWAIT LunaticWorld(b);
 
-		if(worldResult==WORLD_QUITGAME)
+		if(worldResult==WORLD_QUITGAME || worldResult == WORLD_ABORT)
 		{
 			mgl->LastKeyPressed();	// just to clear key buffer
 			break;
