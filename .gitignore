@@ -2,6 +2,7 @@
 *.pyc
 ~$*.*
 Thumbs.db
+*.AssemblyReference.cache
 
 # top-level folders and files
 /.vagrant
@@ -23,9 +24,3 @@ Thumbs.db
 # Needs to be downloaded from behind the authentication and unzipped manually.
 # https://partner.steamgames.com/downloads/steamworks_sdk.zip
 /external/steamworks_sdk
-/external/SDL2_mixer/external/mpg123-1.25.6/ports/MSVC++/2008clr/examples/feedseekclr/obj/Debug/feedseekclr.csproj.AssemblyReference.cache
-/external/SDL2_mixer/external/mpg123-1.25.6/ports/MSVC++/2008clr/examples/feedseekclr/obj/Release/feedseekclr.csproj.AssemblyReference.cache
-/external/SDL2_mixer/external/mpg123-1.25.6/ports/MSVC++/2008clr/examples/ReplaceReaderclr/obj/Debug/ReplaceReaderclr.csproj.AssemblyReference.cache
-/external/SDL2_mixer/external/mpg123-1.25.6/ports/MSVC++/2008clr/examples/ReplaceReaderclr/obj/Release/ReplaceReaderclr.csproj.AssemblyReference.cache
-/external/SDL2_mixer/external/mpg123-1.25.6/ports/MSVC++/2008clr/examples/scanclr/obj/Debug/scanclr.csproj.AssemblyReference.cache
-/external/SDL2_mixer/external/mpg123-1.25.6/ports/MSVC++/2008clr/examples/scanclr/obj/Release/scanclr.csproj.AssemblyReference.cache

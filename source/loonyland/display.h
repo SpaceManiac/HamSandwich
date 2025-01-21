@@ -71,10 +71,10 @@ void PutCamera(int x,int y);
 void GetCamera(int *x,int *y);
 // call this once per gameloop, with the X and Y of the object you want the camera to track
 void UpdateCamera(int x,int y,byte facing,Map *map);
-void Print(int x,int y,const char *s,char bright,byte font);
+void Print(int x,int y,std::string_view s,char bright,byte font);
 void CenterPrint(int x,int y,const char *s,char bright,byte font);
 void RightPrint(int x,int y,const char *s,char bright,byte font);
-void PrintColor(int x,int y,const char *s,byte color,char bright,byte font);
+void PrintColor(int x,int y,std::string_view s,byte color,char bright,byte font);
 void PrintGlow(int x,int y,const char *s,char bright,byte font);
 void PrintGlowRect(int x, int y, int x2, int y2, std::string_view s, int height, char bright, byte font);
 void CenterPrintGlow(int x,int y,const char *s,char bright,byte font);

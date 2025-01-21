@@ -188,7 +188,6 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 
 			if (status == "Active")
 			{
-				//GetInfoFromAP();
 				optMode = 4;
 			}
 			else if (status == "Failed"|| status == "ConnectionRefused")
@@ -290,19 +289,7 @@ void RenderArchipelagoMenu(MGLDraw* mgl)
 	if (cursor == CURSOR_CONNECT)
 		PrintColor(159, 59 + CURSOR_CONNECT * 30 + 20, "Connect!", 0, 0, 0);
 
-	PrintColor(160, 60 + 5 * 30 + 20, "Connection Status:", 7, -10, 0);
-	PrintColor(350, 60 + 5 * 30 + 20, ConnectionStatus().c_str(), 7, -10, 0);
-
-	PrintColor(160, 60 + 6 * 30 + 20, "Scout status:", 7, -10, 0);
-	if (locationWait)
-	{
-		PrintColor(350, 60 + 6 * 30 + 20, "Waiting", 7, -10, 0);
-	}
-	else
-	{
-		PrintColor(350, 60 + 6 * 30 + 20, "Received", 7, -10, 0);
-	}
-
+	PrintGlowRect(160 - 2, 60 + 5 * 30 + 20, SCRWID - 160 + 2, SCRHEI, ConnectionStatus(), 30, -12, 0);
 }
 
 //----------------
