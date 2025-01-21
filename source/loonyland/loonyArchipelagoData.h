@@ -139,7 +139,7 @@ static locationData basic_locations[] = { {"Swamp: Mud Path","Pickup",0,"Hallowe
 {"PolterGuy's Reward","Pickup",50,"Haunted Tower Roof",20,13,37,1,2,"Haunted Tower Roof",{68}},
 {"Tower Basement: DoorDoorDoorDoorDoorDoor","Pickup",51,"Haunted Basement",21,20,13,1,2,"Haunted Basement",{}},
 {"Abandoned Mine: Shaft","Pickup",52,"Abandoned Mines",22,39,2,1,2,"Abandoned Mines",{}},
-{"Shrine of Bombulus: Prize","Pickup",53,"The Shrine of Bombulus",23,12,3,2,3,"The Shrine Of Bombulus",{}},
+{"Shrine of Bombulus: Prize","Pickup",53,"The Shrine Of Bombulus",23,12,3,2,3,"The Shrine Of Bombulus",{}},
 {"Gloomy Cavern: Lockpick","Pickup",54,"A Gloomy Cavern",24,50,44,2,3,"A Gloomy Cavern",{}},
 {"Happy Stick: Hidden","Pickup",55,"Happy Stick Woods",25,61,2,5,6,"Happy Stick Woods",{}},
 {"Happy Stick: Reward","Pickup",56,"Happy Stick Woods",25,35,34,0,1,"Happy Stick Woods",{}},

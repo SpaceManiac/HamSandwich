@@ -53,6 +53,7 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 	dword btn, j;
 	int i;
 
+	UpdateArchipelago();
 
 	if (*lastTime > TIME_PER_FRAME * 30)
 		*lastTime = TIME_PER_FRAME * 30;
@@ -187,8 +188,8 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 				oldStatus = status;
 				printf("DEBUG: Status: %s\n", status.c_str());
 			}
-			
-			if (status == "Authenticated")
+
+			if (status == "Active")
 			{
 				GetInfoFromAP();
 				optMode = 4;
@@ -197,7 +198,7 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 			{
 				optMode = 0;
 				Disconnect();
-				MakeNormalSound(SND_BONKOUCH);				
+				MakeNormalSound(SND_BONKOUCH);
 			}
 			break;
 		case 4: //waiting on status
@@ -296,7 +297,7 @@ void RenderArchipelagoMenu(MGLDraw* mgl)
 	PrintColor(350, 60 + 5 * 30 + 20, ConnectionStatus().c_str(), 7, -10, 0);
 
 	PrintColor(160, 60 + 6 * 30 + 20, "Scout status:", 7, -10, 0);
-	if (!locationWait)
+	if (locationWait)
 	{
 		PrintColor(350, 60 + 6 * 30 + 20, "Waiting", 7, -10, 0);
 	}
@@ -334,5 +335,5 @@ ArchipelagoMenu(MGLDraw* mgl)
 	}
 
 	ExitArchipelagoMenu();
-	return quit;
+	CO_RETURN quit;
 }

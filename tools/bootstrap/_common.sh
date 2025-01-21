@@ -68,7 +68,7 @@ if command -v curl >/dev/null 2>/dev/null; then
 	# curl implementation
 	download_file() {  # <url> <outfile>
 		echo "Downloading: $1" >&2
-		curl -L "$1" -o "$2" -#
+		curl -L "$1" -o "$2" -s
 	}
 
 	download_file_quiet() {  # <url> <outfile>

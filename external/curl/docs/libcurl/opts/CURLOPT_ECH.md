@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_ECH
 Section: 3
@@ -11,6 +11,7 @@ Protocol:
 TLS-backend:
   - OpenSSL
   - wolfSSL
+Added-in: 8.8.0
 ---
 
 # NAME
@@ -55,7 +56,7 @@ ECH is not possible.
 
 ## hard
 
-Instructs client to attempt ECH and fail if if attempting ECH is not possible.
+Instructs client to attempt ECH and fail if attempting ECH is not possible.
 
 ## ecl:\<base64-value\>
 
@@ -69,24 +70,37 @@ If the string starts with `pn:` then the remainder of the string should be a
 DNS/hostname that is used to over-ride the public_name field of the
 ECHConfigList that is used for ECH.
 
+##
+
+The application does not have to keep the string around after setting this
+option.
+
+Using this option multiple times makes the last set string override the
+previous ones. Set it to NULL or "false" to disable its use again.
+
 # DEFAULT
 
 NULL, meaning ECH is disabled.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
-CURL *curl = curl_easy_init();
+int main(void)
+{
+  CURL *curl = curl_easy_init();
 
-const char *config ="ecl:AED+DQA87wAgACB/RuzUCsW3uBbSFI7mzD63TUXpI8sGDTnFTbFCDpa+CAAEAAEAAQANY292ZXIuZGVmby5pZQAA";
-if(curl) {
-  curl_easy_setopt(curl, CURLOPT_ECH, config);
-  curl_easy_perform(curl);
+  const char *config = \
+    "ecl:AED+DQA87wAgACB/RuzUCsW3uBbSFI7mzD63TUXpI8sGDTnFTbFCDpa+" \
+    "CAAEAAEAAQANY292ZXIuZGVmby5pZQAA";
+  if(curl) {
+    curl_easy_setopt(curl, CURLOPT_ECH, config);
+    curl_easy_perform(curl);
+  }
 }
 ~~~
-# AVAILABILITY
-
-Added in 8.8.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

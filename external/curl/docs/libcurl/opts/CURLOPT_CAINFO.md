@@ -15,6 +15,7 @@ Protocol:
   - TLS
 TLS-backend:
   - All
+Added-in: 7.4.2
 ---
 
 # NAME
@@ -53,12 +54,17 @@ store of root certificates (the default for Schannel).
 The application does not have to keep the string around after setting this
 option.
 
+Using this option multiple times makes the last set string override the
+previous ones. Set it to NULL to disable its use again.
+
 The default value for this can be figured out with CURLINFO_CAINFO(3).
 
 # DEFAULT
 
 Built-in system specific. When curl is built with Secure Transport or
 Schannel, this option is not set by default.
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -75,9 +81,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# HISTORY
 
 Schannel support added in libcurl 7.60.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

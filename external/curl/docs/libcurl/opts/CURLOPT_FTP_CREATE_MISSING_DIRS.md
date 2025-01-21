@@ -9,6 +9,7 @@ Protocol:
 See-also:
   - CURLOPT_FTP_FILEMETHOD (3)
   - CURLOPT_FTP_USE_EPSV (3)
+Added-in: 7.10.7
 ---
 
 # NAME
@@ -49,11 +50,13 @@ retry the CWD command again if the subsequent **MKD** command fails. This is
 especially useful if you are doing many simultaneous connections against the
 same server and they all have this option enabled, as then CWD may first fail
 but then another connection does **MKD** before this connection and thus
-**MKD** fails but trying CWD works!
+**MKD** fails but trying CWD works.
 
 # DEFAULT
 
 CURLFTP_CREATE_DIR_NONE (0)
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -75,10 +78,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.10.7. SFTP support added in 7.16.3. The retry option was added in
-7.19.4.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -24,18 +24,21 @@
 #
 ###########################################################################
 #
+import difflib
+import filecmp
 import logging
 import os
+import re
 import pytest
 
-from testenv import Env, CurlClient, Caddy
+from testenv import Env, CurlClient, Caddy, LocalClient
 
 
 log = logging.getLogger(__name__)
 
 
-@pytest.mark.skipif(condition=not Env.has_caddy(), reason=f"missing caddy")
-@pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason=f"curl without SSL")
+@pytest.mark.skipif(condition=not Env.has_caddy(), reason="missing caddy")
+@pytest.mark.skipif(condition=not Env.have_ssl_curl(), reason="curl without SSL")
 class TestCaddy:
 
     @pytest.fixture(autouse=True, scope='class')
@@ -57,10 +60,12 @@ class TestCaddy:
 
     @pytest.fixture(autouse=True, scope='class')
     def _class_scope(self, env, caddy):
+        self._make_docs_file(docs_dir=caddy.docs_dir, fname='data10k.data', fsize=10*1024)
         self._make_docs_file(docs_dir=caddy.docs_dir, fname='data1.data', fsize=1024*1024)
         self._make_docs_file(docs_dir=caddy.docs_dir, fname='data5.data', fsize=5*1024*1024)
         self._make_docs_file(docs_dir=caddy.docs_dir, fname='data10.data', fsize=10*1024*1024)
         self._make_docs_file(docs_dir=caddy.docs_dir, fname='data100.data', fsize=100*1024*1024)
+        env.make_data_file(indir=env.gen_dir, fname="data-10m", fsize=10*1024*1024)
 
     # download 1 file
     @pytest.mark.parametrize("proto", ['http/1.1', 'h2', 'h3'])
@@ -151,6 +156,9 @@ class TestCaddy:
             pytest.skip("h3 not supported in curl")
         if proto == 'h3' and env.curl_uses_lib('msh3'):
             pytest.skip("msh3 itself crashes")
+        if proto == 'http/1.1' and env.curl_uses_lib('mbedtls'):
+            pytest.skip("mbedtls 3.6.0 fails on 50 connections with: "\
+                "ssl_handshake returned: (-0x7F00) SSL - Memory allocation failed")
         count = 50
         curl = CurlClient(env=env)
         urln = f'https://{env.domain1}:{caddy.port}/data10.data?[0-{count-1}]'
@@ -164,10 +172,9 @@ class TestCaddy:
         else:
             assert r.total_connects == 1, r.dump_logs()
 
-    # upload data parallel, check that they were echoed
-    @pytest.mark.skipif(condition=Env().ci_run, reason="not suitable for CI runs")
-    @pytest.mark.parametrize("proto", ['h2', 'h3'])
-    def test_08_06_upload_parallel(self, env: Env, caddy, repeat, proto):
+    # post data parallel, check that they were echoed
+    @pytest.mark.parametrize("proto", ['http/1.1', 'h2', 'h3'])
+    def test_08_06_post_parallel(self, env: Env, httpd, caddy, repeat, proto):
         if proto == 'h3' and not env.have_h3():
             pytest.skip("h3 not supported")
         if proto == 'h3' and env.curl_uses_lib('msh3'):
@@ -176,8 +183,69 @@ class TestCaddy:
         count = 20
         data = '0123456789'
         curl = CurlClient(env=env)
-        url = f'https://{env.domain1}:{caddy.port}/data10.data?[0-{count-1}]'
+        url = f'https://{env.domain2}:{caddy.port}/curltest/echo?id=[0-{count-1}]'
         r = curl.http_upload(urls=[url], data=data, alpn_proto=proto,
                              extra_args=['--parallel'])
-        exp_status = 405 if env.caddy_is_at_least('2.7.0') else 200
-        r.check_stats(count=count, http_status=exp_status, exitcode=0)
+        r.check_stats(count=count, http_status=200, exitcode=0)
+        for i in range(count):
+            respdata = open(curl.response_file(i)).readlines()
+            assert respdata == [data]
+
+    # put large file, check that they length were echoed
+    @pytest.mark.parametrize("proto", ['http/1.1', 'h2', 'h3'])
+    def test_08_07_put_large(self, env: Env, httpd, caddy, repeat, proto):
+        if proto == 'h3' and not env.have_h3():
+            pytest.skip("h3 not supported")
+        if proto == 'h3' and env.curl_uses_lib('msh3'):
+            pytest.skip("msh3 stalls here")
+        # limit since we use a separate connection in h1<
+        count = 1
+        fdata = os.path.join(env.gen_dir, 'data-10m')
+        curl = CurlClient(env=env)
+        url = f'https://{env.domain2}:{caddy.port}/curltest/put?id=[0-{count-1}]'
+        r = curl.http_put(urls=[url], fdata=fdata, alpn_proto=proto)
+        exp_data = [f'{os.path.getsize(fdata)}']
+        r.check_response(count=count, http_status=200)
+        for i in range(count):
+            respdata = open(curl.response_file(i)).readlines()
+            assert respdata == exp_data
+
+    @pytest.mark.parametrize("proto", ['http/1.1', 'h2'])
+    def test_08_08_earlydata(self, env: Env, httpd, caddy, proto):
+        count = 2
+        docname = 'data10k.data'
+        url = f'https://{env.domain1}:{caddy.port}/{docname}'
+        client = LocalClient(name='hx-download', env=env)
+        if not client.exists():
+            pytest.skip(f'example client not built: {client.name}')
+        r = client.run(args=[
+             '-n', f'{count}',
+             '-e',  # use TLS earlydata
+             '-f',  # forbid reuse of connections
+             '-r', f'{env.domain1}:{caddy.port}:127.0.0.1',
+             '-V', proto, url
+        ])
+        r.check_exit_code(0)
+        srcfile = os.path.join(caddy.docs_dir, docname)
+        self.check_downloads(client, srcfile, count)
+        earlydata = {}
+        for line in r.trace_lines:
+            m = re.match(r'^\[t-(\d+)] EarlyData: (\d+)', line)
+            if m:
+                earlydata[int(m.group(1))] = int(m.group(2))
+        # Caddy does not support early data
+        assert earlydata[0] == 0, f'{earlydata}'
+        assert earlydata[1] == 0, f'{earlydata}'
+
+    def check_downloads(self, client, srcfile: str, count: int,
+                        complete: bool = True):
+        for i in range(count):
+            dfile = client.download_file(i)
+            assert os.path.exists(dfile)
+            if complete and not filecmp.cmp(srcfile, dfile, shallow=False):
+                diff = "".join(difflib.unified_diff(a=open(srcfile).readlines(),
+                                                    b=open(dfile).readlines(),
+                                                    fromfile=srcfile,
+                                                    tofile=dfile,
+                                                    n=1))
+                assert False, f'download {dfile} differs:\n{diff}'

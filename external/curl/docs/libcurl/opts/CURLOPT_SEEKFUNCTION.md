@@ -11,6 +11,7 @@ See-also:
   - CURLOPT_STDERR (3)
 Protocol:
   - All
+Added-in: 7.18.0
 ---
 
 # NAME
@@ -59,11 +60,13 @@ done by instead reading from the input or similar.
 
 If you forward the input arguments directly to fseek(3) or lseek(3), note that
 the data type for *offset* is not the same as defined for curl_off_t on
-many systems!
+many systems.
 
 # DEFAULT
 
-By default, this is NULL and unused.
+NULL
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -91,9 +94,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.18.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -26,8 +26,9 @@ Alt-Svc: h1="[ffff::1]:8181"
 # Client-side
 <client>
 <features>
-debug
+Debug
 alt-svc
+IPv6
 </features>
 <server>
 http

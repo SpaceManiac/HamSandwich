@@ -10,6 +10,7 @@ See-also:
 Protocol:
   - SFTP
   - SCP
+Added-in: 7.19.6
 ---
 
 # NAME
@@ -33,7 +34,7 @@ enum curl_khstat {
 
 enum curl_khmatch {
   CURLKHMATCH_OK,       /* match */
-  CURLKHMATCH_MISMATCH, /* host found, key mismatch! */
+  CURLKHMATCH_MISMATCH, /* host found, key mismatch */
   CURLKHMATCH_MISSING,  /* no matching host/key found */
 };
 
@@ -109,6 +110,8 @@ up from scratch again.
 
 NULL
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -142,9 +145,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.19.6
+# %AVAILABILITY%
 
 # RETURN VALUE
 

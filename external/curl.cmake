@@ -10,6 +10,7 @@ else()
 	set(BUILD_SHARED_LIBS ON)
 	set(BUILD_LIBCURL_DOCS OFF)
 	set(ENABLE_CURL_MANUAL OFF)
+	set(CURL_USE_LIBPSL OFF) # Not included in Steam Runtime SDK.
 
 	if(WIN32)
 		set(CURL_USE_SCHANNEL ON)

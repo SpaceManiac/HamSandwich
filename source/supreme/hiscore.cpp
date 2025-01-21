@@ -847,7 +847,7 @@ byte TryHighScore(void)
 {
 	byte gotRecords;
 	dword trueScore;
-	float destructBonus,diffBonus;
+	float destructBonus, diffBonus = 1.0f;
 
 	if(!config.hiscores)
 		return 0;

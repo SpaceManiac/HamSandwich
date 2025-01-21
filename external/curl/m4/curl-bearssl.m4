@@ -30,6 +30,7 @@ dnl ----------------------------------------------------
 if test "x$OPT_BEARSSL" != xno; then
   _cppflags=$CPPFLAGS
   _ldflags=$LDFLAGS
+  _ldflagspc=$LDFLAGSPC
   ssl_msg=
 
   if test X"$OPT_BEARSSL" != Xno; then
@@ -43,14 +44,14 @@ if test "x$OPT_BEARSSL" != xno; then
 
       AC_CHECK_LIB(bearssl, br_ssl_client_init_full,
       dnl libbearssl found, set the variable
-       [
-         AC_DEFINE(USE_BEARSSL, 1, [if BearSSL is enabled])
-         AC_SUBST(USE_BEARSSL, [1])
-         BEARSSL_ENABLED=1
-         USE_BEARSSL="yes"
-         ssl_msg="BearSSL"
-         test bearssl != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
-        ], [], -lbearssl)
+      [
+        AC_DEFINE(USE_BEARSSL, 1, [if BearSSL is enabled])
+        AC_SUBST(USE_BEARSSL, [1])
+        BEARSSL_ENABLED=1
+        USE_BEARSSL="yes"
+        ssl_msg="BearSSL"
+        test bearssl != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
+      ], [], -lbearssl)
     fi
 
     addld=""
@@ -65,23 +66,25 @@ if test "x$OPT_BEARSSL" != xno; then
       bearssllib=$OPT_BEARSSL/lib$libsuff
 
       LDFLAGS="$LDFLAGS $addld"
+      LDFLAGSPC="$LDFLAGSPC $addld"
       if test "$addcflags" != "-I/usr/include"; then
-         CPPFLAGS="$CPPFLAGS $addcflags"
+        CPPFLAGS="$CPPFLAGS $addcflags"
       fi
 
       AC_CHECK_LIB(bearssl, br_ssl_client_init_full,
-       [
-       AC_DEFINE(USE_BEARSSL, 1, [if BearSSL is enabled])
-       AC_SUBST(USE_BEARSSL, [1])
-       BEARSSL_ENABLED=1
-       USE_BEARSSL="yes"
-       ssl_msg="BearSSL"
-       test bearssl != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
-       ],
-       [
-         CPPFLAGS=$_cppflags
-         LDFLAGS=$_ldflags
-       ], -lbearssl)
+        [
+        AC_DEFINE(USE_BEARSSL, 1, [if BearSSL is enabled])
+        AC_SUBST(USE_BEARSSL, [1])
+        BEARSSL_ENABLED=1
+        USE_BEARSSL="yes"
+        ssl_msg="BearSSL"
+        test bearssl != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
+        ],
+        [
+          CPPFLAGS=$_cppflags
+          LDFLAGS=$_ldflags
+          LDFLAGSPC=$_ldflagspc
+        ], -lbearssl)
     fi
 
     if test "x$USE_BEARSSL" = "xyes"; then

@@ -2,7 +2,7 @@
 # install-emsdk.sh - bootstrap and install a private copy of emsdk
 set -euo pipefail
 
-TAG=2.0.7
+TAG=2.0.11
 
 mkdir -p "build"
 

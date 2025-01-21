@@ -9,6 +9,7 @@ See-also:
   - CURLOPT_SHARE (3)
 Protocol:
   - All
+Added-in: 7.9.3
 ---
 
 # NAME
@@ -26,7 +27,7 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_DNS_USE_GLOBAL_CACHE,
 
 # DESCRIPTION
 
-Has no function since 7.62.0. Do not use!
+Has no function since 7.62.0. Do not use.
 
 Pass a long. If the *enable* value is 1, it tells curl to use a global DNS
 cache that survives between easy handle creations and deletions. This is not
@@ -38,6 +39,8 @@ cache between transfers.
 # DEFAULT
 
 0
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -57,9 +60,11 @@ int main(void)
 
 ~~~
 
-# AVAILABILITY
+# DEPRECATED
 
-Deprecated since 7.11.1. Function removed in 7.62.0.
+Deprecated since 7.11.1. Functionality removed in 7.62.0.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 
