@@ -15,25 +15,25 @@ static const item_t itemInfo[MAX_ITMS]={
 	// pickups
 	{0,128,15,22,IF_GET|IF_GLOW|IF_SHADOW},	// tiny heart
 	{0,128,7,14,IF_GET|IF_GLOW|IF_SHADOW},	// big heart
-	{0,64,0,6,IF_GET|IF_GLOW},	// super heart
+	{0,64,0,6,IF_GET|IF_GLOW|IF_ARCHIPELAGO},	// super heart
 	{0,128,23,30,IF_GET|IF_SHADOW},	// little gem
 	{0,128,31,38,IF_GET|IF_SHADOW},	// big gem
-	{0,128,39,46,IF_GET|IF_GLOW},	// huge gem
-	{0,128,47,62,IF_GET|IF_GLOW},	// fire power up
-	{0,128,63,70,IF_GET|IF_GLOW},	// range up
-	{0,128,103,114,IF_GET|IF_GLOW},	// fire rate up
+	{0,128,39,46,IF_GET|IF_GLOW|IF_ARCHIPELAGO},	// huge gem
+	{0,128,47,62,IF_GET|IF_GLOW|IF_ARCHIPELAGO},	// fire power up
+	{0,128,63,70,IF_GET|IF_GLOW | IF_ARCHIPELAGO},	// range up
+	{0,128,103,114,IF_GET|IF_GLOW | IF_ARCHIPELAGO},	// fire rate up
 	{0,128,71,77,IF_GET|IF_SHADOW},	// key
-	{0,64,79,86,IF_GET|IF_SHADOW},	// key2
-	{0,64,87,94,IF_GET|IF_SHADOW},	// key3
-	{0,64,95,102,IF_GET|IF_SHADOW},	// key4
-	{0,256,115,124,IF_GET|IF_SHADOW},	// weapon bomb
-	{0,256,125,134,IF_GET|IF_SHADOW},	// weapon lightning
-	{0,256,135,144,IF_GET|IF_SHADOW},	// weapon ice
-	{0,256,145,154,IF_GET|IF_SHADOW},	// weapon cactus
-	{0,256,155,164,IF_GET|IF_SHADOW},	// weapon boomerang
-	{0,256,165,174,IF_GET|IF_SHADOW},	// weapon whoopee
-	{0,256,175,184,IF_GET|IF_SHADOW},	// weapon hot pants
-	{0,128,185,195,IF_GET|IF_SHADOW},	// potion
+	{0,64,79,86,IF_GET|IF_SHADOW | IF_ARCHIPELAGO},	// key2
+	{0,64,87,94,IF_GET|IF_SHADOW | IF_ARCHIPELAGO},	// key3
+	{0,64,95,102,IF_GET|IF_SHADOW | IF_ARCHIPELAGO},	// key4
+	{0,256,115,124,IF_GET|IF_SHADOW | IF_ARCHIPELAGO},	// weapon bomb
+	{0,256,125,134,IF_GET|IF_SHADOW | IF_ARCHIPELAGO},	// weapon lightning
+	{0,256,135,144,IF_GET|IF_SHADOW | IF_ARCHIPELAGO},	// weapon ice
+	{0,256,145,154,IF_GET|IF_SHADOW | IF_ARCHIPELAGO},	// weapon cactus
+	{0,256,155,164,IF_GET|IF_SHADOW | IF_ARCHIPELAGO},	// weapon boomerang
+	{0,256,165,174,IF_GET|IF_SHADOW | IF_ARCHIPELAGO},	// weapon whoopee
+	{0,256,175,184,IF_GET|IF_SHADOW | IF_ARCHIPELAGO},	// weapon hot pants
+	{0,128,185,195,IF_GET|IF_SHADOW | IF_ARCHIPELAGO},	// potion
 	// doors
 	{1,0,0,0,IF_OBSTACLE|IF_TALL},	// door
 	{1,0,4,4,IF_OBSTACLE|IF_TALL},	// skull door
@@ -62,7 +62,7 @@ static const item_t itemInfo[MAX_ITMS]={
 	{1,0,80,80,IF_OBSTACLE|IF_TALL|IF_SHADOW},	// bigchair3
 	{1,0,81,81,IF_OBSTACLE|IF_TALL|IF_SHADOW},	// bigchair4
 	// mystery orb
-	{1,64,55,70,IF_GET|IF_GLOW|IF_SHADOW},	// mystery orb
+	{1,64,55,70,IF_GET|IF_GLOW|IF_SHADOW | IF_ARCHIPELAGO},	// mystery orb
 	{1,0,38,38,IF_OBSTACLE|IF_TALL|IF_SHADOW},	// orb stand
 	{1,64,39,54,IF_OBSTACLE|IF_TALL|IF_SHADOW},	// orb stand with orb
 	// save gem
@@ -103,10 +103,10 @@ static const item_t itemInfo[MAX_ITMS]={
 	{1,16,137,140,IF_OBSTACLE|IF_TALL|IF_SHADOW},	// tree5
 	{1,0,162,162,IF_OBSTACLE|IF_TALL|IF_SHADOW},	// tree6
 	{1,0,163,163,IF_OBSTACLE|IF_TALL|IF_SHADOW},	// tree7
-	{0,96,265,276,IF_GET|IF_SHADOW},	// shroom
-	{0,0,197,197,IF_GET|IF_SHADOW},	// daisy
-	{0,72,198,209,IF_GET},			// silver
-	{1,48,141,144,IF_SHADOW},		// magicplant
+	{0,96,265,276,IF_GET|IF_SHADOW | IF_ARCHIPELAGO},	// shroom
+	{0,0,197,197,IF_GET|IF_SHADOW | IF_ARCHIPELAGO},	// daisy
+	{0,72,198,209,IF_GET | IF_ARCHIPELAGO},			// silver
+	{1,48,141,144,IF_SHADOW|IF_ARCHIPELAGO},		// magicplant
 	{1,0,149,149,IF_WALK|IF_SHADOW},	// walkplant
 	{1,0,150,150,IF_OBSTACLE|IF_SHADOW},	// switch1on
 	{1,0,157,157,IF_OBSTACLE|IF_SHADOW},	// switch1off
@@ -132,13 +132,13 @@ static const item_t itemInfo[MAX_ITMS]={
 	{1,0,217,217,IF_OBSTACLE|IF_SHADOW},	// table2
 	{1,64,218,220,IF_SHADOW|IF_NOBULLET},	// autodoor
 	{1,0,218,218,IF_OBSTACLE|IF_TALL|IF_SHADOW},	// autodoor (inactive)
-	{0,48,210,214,IF_GET|IF_SHADOW},	// talisman
-	{0,72,215,222,IF_GET|IF_GLOW},	// triplefire
+	{0,48,210,214,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// talisman
+	{0,72,215,222,IF_GET|IF_GLOW | IF_ARCHIPELAGO },	// triplefire
 	{1,0,225,225,IF_OBSTACLE|IF_TALL|IF_SHADOW|IF_LIGHTOK},	// buststand
-	{0,128,223,238,IF_GET|IF_SHADOW},	// bust
+	{0,128,223,238,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// bust
 	{1,0,226,226,IF_OBSTACLE|IF_TALL|IF_SHADOW|IF_LIGHTOK},	// bustonstand
 	{1,0,225,225,IF_OBSTACLE|IF_TALL|IF_SHADOW},	// batstand
-	{0,128,239,254,IF_GET|IF_SHADOW},	// bat
+	{0,128,239,254,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// bat
 	{1,0,227,227,IF_OBSTACLE|IF_TALL|IF_SHADOW},	// batonstand
 	{0,0,255,255,IF_GET|IF_SHADOW},	// batdoll
 	{0,0,256,256,IF_GET|IF_SHADOW},	// skeldoll
@@ -149,18 +149,19 @@ static const item_t itemInfo[MAX_ITMS]={
 	{0,0,261,261,IF_GET|IF_SHADOW},	// vampdoll
 	{0,0,262,262,IF_GET|IF_SHADOW},	// wolfdoll
 	{1,0,228,228,IF_GLOW},	// portal
-	{0,0,263,263,IF_GET|IF_SHADOW},	// badge
-	{0,0,264,264,IF_GET|IF_SHADOW},	// cat
+	{0,0,263,263,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// badge
+	{0,0,264,264,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// cat
 
 	//ADDED FOR RANDOMIZER
-	{2, 128, 0, 7, IF_GET | IF_SHADOW},// | IF_GLOW},	//zombie gem
-	{2, 0, 8, 8, IF_GET | IF_SHADOW},	//mud boots
-	{2, 0, 9, 9, IF_GET | IF_SHADOW},	//fertiziler
-	{2, 64, 15, 25, IF_GET | IF_SHADOW},	//ghostpotion
-	{2, 0, 11, 11, IF_GET | IF_SHADOW | IF_GLOW},	//lantern
-	{2, 0, 12, 12, IF_GET | IF_SHADOW | IF_GLOW},	//reflect gem
-	{2, 0, 13, 13, IF_GET | IF_SHADOW},	//silversling
-	{2, 0, 14, 14, IF_GET | IF_SHADOW}	//stick
+	{2, 128, 0, 7, IF_GET | IF_SHADOW | IF_ARCHIPELAGO },// | IF_GLOW},	//zombie gem
+	{2, 0, 8, 8, IF_GET | IF_SHADOW | IF_ARCHIPELAGO },	//mud boots
+	{2, 0, 9, 9, IF_GET | IF_SHADOW | IF_ARCHIPELAGO },	//fertiziler
+	{2, 64, 15, 25, IF_GET | IF_SHADOW | IF_ARCHIPELAGO },	//ghostpotion
+	{2, 0, 11, 11, IF_GET | IF_SHADOW | IF_GLOW | IF_ARCHIPELAGO },	//lantern
+	{2, 0, 12, 12, IF_GET | IF_SHADOW | IF_GLOW | IF_ARCHIPELAGO },	//reflect gem
+	{2, 0, 13, 13, IF_GET | IF_SHADOW | IF_ARCHIPELAGO },	//silversling
+	{2, 0, 14, 14, IF_GET | IF_SHADOW | IF_ARCHIPELAGO },	//stick
+	{2, 128, 28, 35, IF_GET | IF_SHADOW | IF_ARCHIPELAGO }	//archipelago
 };
 static_assert(std::size(itemInfo) == MAX_ITMS);
 

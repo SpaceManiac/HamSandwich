@@ -11,6 +11,7 @@
 #include "ch_witch.h"
 #include "bossbash.h"
 #include "ch_summon.h"
+#include "loonyArchipelago.h"
 
 static std::unique_ptr<Guy[]> guys;
 static int maxGuys;
@@ -357,6 +358,7 @@ void Guy::SeqFinished(Map *map)
 		if(type==player.monsType)
 		{
 			// restart current level
+			//SendDeathLink();
 			SendMessageToGame(MSG_RESET,player.lastSave);
 		}
 
@@ -478,6 +480,10 @@ void Guy::Update(Map *map,world_t *world)
 		frmTimer=0;
 		frmAdvance=64;
 		action=ACTION_BUSY;
+		if (type == player.monsType)	// special case, player controls Loony
+		{
+			SendDeathLink();
+		}
 	}
 
 	if(type==player.monsType)	// special case, player controls Loony
@@ -1136,6 +1142,10 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 
 		hp=0;
 		seq=ANIM_DIE;
+		if (type == player.monsType)
+		{
+			SendDeathLink();
+		}
 		if(player.worldNum!=WORLD_BOWLING)
 		{
 			this->dx=0;

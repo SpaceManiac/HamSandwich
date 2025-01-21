@@ -7,6 +7,7 @@
 #include "badge.h"
 #include "bossbash.h"
 #include "randomizer.h"
+#include "loonyArchipelago.h"
 
 // characters
 #include "ch_loony.h"
@@ -411,6 +412,10 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	else
 		player.fireFlags&=(~FF_GUIDED);
 	player.areaName[0]='\0';
+	
+	if(ArchipelagoMode){
+		ArchipelagoLoadPlayer();
+	}
 }
 
 void ExitPlayer(void)
@@ -565,11 +570,21 @@ void PlayerSetVar(int v,int val)
 	oldval=player.var[v];
 	player.var[v]=val;
 
+	if (DataStorageVars.find(v) != DataStorageVars.end())
+	{
+		//SendArchipelagoPlayerVar(v, val);
+	}
+
 	// this is a quest completion variable
 	if(v>=VAR_QUESTDONE && v<VAR_QUESTDONE+NUM_QUESTS)
 	{
 		if(oldval==0 && val)
 		{
+			if (ArchipelagoMode)
+			{
+				SendCheckedLocQuest(v - VAR_QUESTDONE);
+			}
+
 			// didn't previously complete it
 			sprintf(m,"%s Complete!",QuestName(v-VAR_QUESTDONE));
 			NewBigMessage(m,90);
@@ -585,6 +600,10 @@ void PlayerSetVar(int v,int val)
 			}
 			if(v==VAR_QUESTDONE+QUEST_HILL)
 			{
+				if (ArchipelagoMode)
+				{
+					WinArchipelago();
+				}
 				SendMessageToGame(MSG_WINGAME,0);
 			}
 		}
@@ -689,6 +708,10 @@ void PlayerSetVar(int v,int val)
 			player.fireFlags|=FF_REFLECT;
 		}
 	}
+	if (v == VAR_TRIPLEFIRE && oldval == 0)
+	{
+		player.fireFlags |= FF_TRIPLE;
+	}
 	if(v>=VAR_ZOMBIE && v<=VAR_ZOMBIE+2)
 	{
 		if(oldval==0 && val)
@@ -705,7 +728,10 @@ void PlayerSetVar(int v,int val)
 	}
 	if(v==VAR_DAISY)
 	{
-		PlayerSetVar(VAR_QUESTDONE+QUEST_DAISY,1);
+		if (!ArchipelagoMode)
+		{
+			PlayerSetVar(VAR_QUESTDONE + QUEST_DAISY, 1);
+		}	
 	}
 	if(v==VAR_TOWNOPEN && oldval==0)
 	{
@@ -720,6 +746,18 @@ void PlayerSetVar(int v,int val)
 	{
 		MakeNormalSound(SND_KEYGET);
 		NewBigMessage("Got a bar of silver!",90);
+	}
+	if (v == VAR_SKULLKEY && oldval == 0)
+	{
+		player.keys[1] = 1;
+	}
+	if (v == VAR_BATKEY && oldval == 0)
+	{
+		player.keys[2] = 1;
+	}
+	if (v == VAR_PUMPKINKEY && oldval == 0)
+	{
+		player.keys[3] = 1;
 	}
 	BadgeCheck(BE_VARSET,0,curMap);
 }
@@ -915,6 +953,18 @@ byte PlayerGetItem(byte itm,int x,int y)
 	}
 	if(ItemFlags(itm)&IF_GET)
 	{
+		if (ArchipelagoMode && ItemFlags(itm) & IF_ARCHIPELAGO) {
+			if (itm < ITM_WBOMB || itm > ITM_WHOTPANTS)
+			{
+				SendCheckedLocPickup(curMap->name, player.levelNum, x, y);
+				return 0;
+			}
+			if (player.var[itm - ITM_WBOMB + VAR_WEAPON] == 0)
+			{
+				SendCheckedLocPickup(curMap->name, player.levelNum, x, y);
+				return 0;
+			}
+		}
 		if(player.hearts==0)
 			return 1;
 
@@ -1789,6 +1839,50 @@ void HandlePoison(Guy *me)
 			}
 		}
 		player.poison--;
+	}
+}
+
+void PlayerCalcStats()
+{
+	for (int i = 0; i < 20; i++)
+	{
+		if (player.var[VAR_HEART + i] == 0)
+		{
+			player.maxHearts = player.startHearts + i;
+			break;
+		}
+	}
+	for (int i = 0; i < 10; i++)
+	{
+		if (player.var[VAR_LIGHTNING + i] == 0)
+		{
+			player.firePower = i;
+			break;
+		}
+	}
+	for (int i = 0; i < 10; i++)
+	{
+		if (player.var[VAR_ARROW + i] == 0)
+		{
+			player.fireRange = i;
+			break;
+		}
+	}
+	for (int i = 0; i < 10; i++)
+	{
+		if (player.var[VAR_PANTS + i] == 0)
+		{
+			player.fireRate = i;
+			break;
+		}
+	}
+	for (int i = 0; i < 6; i++)
+	{
+		if (player.var[VAR_GEM + i] == 0)
+		{
+			player.maxMoney = 50 + i*25;
+			break;
+		}
 	}
 }
 

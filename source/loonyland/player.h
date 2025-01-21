@@ -15,6 +15,7 @@
 #define COMBO_TIME	30*2
 
 // initializing constants (pass to InitPlayer)
+#define INIT_ARCHIPELAGO 3
 #define INIT_GAME  2
 #define INIT_WORLD 1
 #define INIT_LEVEL 0
@@ -32,6 +33,13 @@
 #define VAR_MUSHROOM	90	// 90-99 = mushrooms
 #define VAR_MYSORB		100 // 100-103 = have mystery orb
 #define VAR_WEAPON		104	// 104-110 = have access to weapon
+#define VAR_WBOMBS		104
+#define VAR_WLIGHTNING	105
+#define VAR_WICE		106
+#define VAR_WCACTUS		107
+#define VAR_WBOOMERANG	108
+#define VAR_WWHOOPEE	109
+#define VAR_WHOTPANTS	110
 #define VAR_KEY			111	// 111-113 = have the three special keys
 #define VAR_SKULLKEY	111	// 111 = have the skull key
 #define VAR_BATKEY		112	// 112 = have the bat key
@@ -214,6 +222,7 @@ void CallFarley(Guy *me);
 void HandlePoison(Guy *me);
 byte WeaponCost(byte wpn,byte level);
 void PlayerFireUltraWeapon(Guy *me);
+void PlayerCalcStats();
 
 void DescribeSave(span<char> dst, const player_t* player);
 
