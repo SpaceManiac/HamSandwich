@@ -70,7 +70,6 @@
 
 char *QuestName(byte quest);
 
-#pragma pack(push, 1)
 typedef struct Convo
 {
 	public:
@@ -78,7 +77,6 @@ typedef struct Convo
 		byte action;
 		word next;
 } Convo;
-#pragma pack(pop)
 
 void BeginChatting(byte tag);
 void UpdateChat(byte inShop);

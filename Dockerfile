@@ -14,13 +14,13 @@ SHELL ["/bin/bash", "-c"]
 RUN apt-get install -y imagemagick unzip
 
 # Install a newer version of CMake from their binary releases.
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.21.2/cmake-3.21.2-linux-x86_64.tar.gz -O cmake.tar.gz && \
+RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.21.2/cmake-3.21.2-linux-x86_64.tar.gz -O cmake.tar.gz && \
 	sha256sum -c <<<'d5517d949eaa8f10a149ca250e811e1473ee3f6f10935f1f69596a1e184eafc1 *cmake.tar.gz' && \
 	tar xf cmake.tar.gz -C /usr/local --strip-components=1 && \
 	rm cmake.tar.gz
 
 # Install patchelf for setting SDL2's RPATH to '$ORIGIN' so PNG loading works.
-RUN wget https://github.com/NixOS/patchelf/releases/download/0.14.5/patchelf-0.14.5-x86_64.tar.gz -O patchelf.tar.gz && \
+RUN wget -nv https://github.com/NixOS/patchelf/releases/download/0.14.5/patchelf-0.14.5-x86_64.tar.gz -O patchelf.tar.gz && \
 	sha256sum -c <<<'514bb05d8f0e41ea0a6cb999041acb6aa386662e9ccdbdfbbfca469fb22d44fa *patchelf.tar.gz' && \
 	tar xf patchelf.tar.gz -C /usr/local && \
 	rm patchelf.tar.gz

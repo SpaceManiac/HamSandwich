@@ -70,7 +70,6 @@
 #define UPDATE_FADE		2
 #define UPDATE_FADEIN	3
 
-#pragma pack(push, 4)
 typedef struct special_t
 {
 	dword trigger;
@@ -147,7 +146,6 @@ class Map
 	private:
 		void LOSPoints(int x,int y,int curx,int cury,int *p1x,int *p1y,int *p2x,int *p2y);
 };
-#pragma pack(pop)
 
 byte PlaceItemCallback(int x,int y,int cx,int cy,int value,Map *map);
 byte TorchCallback(int x,int y,int cx,int cy,int value,Map *map);

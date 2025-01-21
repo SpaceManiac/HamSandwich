@@ -59,7 +59,6 @@
 static_assert(SC_MODIFIER_2 == SC_MODIFIER_1 + 1);
 static_assert(SC_MODIFIER_3 == SC_MODIFIER_1 + 2);
 
-#pragma pack(push, 1)
 typedef struct save_t
 {
 	char name[16];
@@ -72,8 +71,6 @@ typedef struct save_t
 	byte mod[3];
 	char campName[64];
 } save_t;
-static_assert(sizeof(save_t) == 95);
-#pragma pack(pop)
 
 static byte oldc=0;
 static byte saveMod[3];
@@ -222,6 +219,7 @@ void GetSavesForMenu(void)
 		}
 		else if(f)
 		{
+			static_assert(sizeof(player_t) == 6118);
 			SDL_RWread(f, &p,sizeof(player_t),1);
 			f.reset();
 

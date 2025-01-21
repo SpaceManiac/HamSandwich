@@ -38,6 +38,7 @@ byte LoadWorld(world_t *world,const char *fname)
 
 	LoadTiles(f.get());
 
+	static_assert(sizeof(terrain_t) == 8);
 	SDL_RWread(f, world->terrain,NUMTILES,sizeof(terrain_t));
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
@@ -70,6 +71,7 @@ byte SaveWorld(world_t *world,const char *fname)
 
 	SaveTiles(f.get());
 
+	static_assert(sizeof(terrain_t) == 8);
 	SDL_RWwrite(f,world->terrain,NUMTILES,sizeof(terrain_t));
 
 	for(i=0;i<world->numMaps;i++)

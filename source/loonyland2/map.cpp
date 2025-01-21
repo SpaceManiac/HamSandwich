@@ -28,14 +28,17 @@ Map::Map(SDL_RWops *f)
 	SDL_RWread(f,&height,1,sizeof(int));
 
 	SDL_RWread(f,name,32,sizeof(char));
+	static_assert(sizeof(mapBadguy_t) == 3);
 	SDL_RWread(f,badguy,MAX_MAPMONS,sizeof(mapBadguy_t));
 	//memset(special,0,sizeof(special_t)*MAX_SPECIAL);
+	static_assert(sizeof(special_t) == 80);
 	SDL_RWread(f,special,MAX_SPECIAL,sizeof(special_t));
 	SDL_RWread(f,&song,1,1);
 	SDL_RWread(f,&flags,1,1);
 
 	map=(mapTile_t *)calloc(sizeof(mapTile_t)*width*height,1);
 
+	static_assert(sizeof(mapTile_t) == 10);
 	SDL_RWread(f,map,width*height,sizeof(mapTile_t));
 }
 
@@ -77,11 +80,14 @@ byte Map::Save(SDL_RWops *f)
 	SDL_RWwrite(f,&width,1,sizeof(int));
 	SDL_RWwrite(f,&height,1,sizeof(int));
 	SDL_RWwrite(f,name,32,sizeof(char));
+	static_assert(sizeof(mapBadguy_t) == 3);
 	SDL_RWwrite(f,badguy,MAX_MAPMONS,sizeof(mapBadguy_t));
+	static_assert(sizeof(special_t) == 80);
 	SDL_RWwrite(f,special,MAX_SPECIAL,sizeof(special_t));
 	SDL_RWwrite(f,&song,1,1);
 	SDL_RWwrite(f,&flags,1,1);
 
+	static_assert(sizeof(mapTile_t) == 10);
 	SDL_RWwrite(f,map,width*height,sizeof(mapTile_t));
 	return 1;
 }

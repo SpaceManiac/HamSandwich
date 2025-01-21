@@ -990,6 +990,7 @@ void LoadGame(void)
 	}
 	else
 	{
+		static_assert(sizeof(player_t) == 6118);
 		SDL_RWread(f,&player,sizeof(player_t),1);
 		if(player.addonName[0]=='\0')
 		{
@@ -1029,6 +1030,7 @@ void SaveGame(void)
 	{
 		player.destx=goodguy->mapx;
 		player.desty=goodguy->mapy;
+		static_assert(sizeof(player_t) == 6118);
 		SDL_RWwrite(f,&player,sizeof(player_t),1);
 		player.destx=0;
 		player.desty=0;

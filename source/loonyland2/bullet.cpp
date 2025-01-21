@@ -2523,6 +2523,7 @@ void SaveBullets(SDL_RWops *f)
 	SDL_RWwrite(f,&b,sizeof(word),1);
 	for(i=0;i<MAX_BULLETS;i++)
 	{
+		static_assert(sizeof(bullet_t) == 57);
 		if(bullet[i].type)
 			SDL_RWwrite(f,&bullet[i],sizeof(bullet_t),1);
 	}
@@ -2543,6 +2544,7 @@ void LoadBullets(SDL_RWops *f)
 	SDL_RWread(f,&b,sizeof(word),1);
 	for(i=0;i<b;i++)
 	{
+		static_assert(sizeof(bullet_t) == 57);
 		SDL_RWread(f,&bullet[i],sizeof(bullet_t),1);
 	}
 }

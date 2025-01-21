@@ -44,7 +44,6 @@
 #define BS_RADIUS	(4)	// randomly scattered over your hit radius
 #define BS_CIRCLE	(5)	// in a ring, evenly spaced around you
 
-#pragma pack(push, 1)
 typedef struct bulletDef_t
 {
 	dword flags;
@@ -97,8 +96,6 @@ typedef struct bulletDef_t
 	byte partType;
 	byte partRate;	// same features as spawning, but the type is an explosion type, covering how many and what direction by itself
 } bulletDef_t;
-static_assert(sizeof(bulletDef_t) == 55);
-#pragma pack(pop)
 
 #define BLT_NONE    0
 #define BLT_AXE		1
