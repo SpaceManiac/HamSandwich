@@ -1,5 +1,6 @@
 #include "winpch.h"
 #include "display.h"
+#include <algorithm>
 #include "particle.h"
 #include "jamulfmv.h"
 #include "game.h"

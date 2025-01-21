@@ -1,4 +1,5 @@
 #include "pause.h"
+#include <string>
 #include "player.h"
 #include "progress.h"
 #include "editor.h"

@@ -1,5 +1,7 @@
 #include "winpch.h"
 #include "items.h"
+#include <ctype.h>
+#include <algorithm>
 #include "display.h"
 #include "player.h"
 #include "repair.h"
@@ -10,7 +12,6 @@
 #include "worldstitch.h"
 #include "journal.h"
 #include "customworld.h"
-#include <ctype.h>
 #include "math_extras.h"
 #include "log.h"
 #include "archipelago.h"

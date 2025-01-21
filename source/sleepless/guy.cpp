@@ -1,5 +1,6 @@
 #include "winpch.h"
 #include "guy.h"
+#include <string>
 #include "player.h"
 #include "intface.h"
 #include "editor.h"

@@ -1,5 +1,6 @@
 #include "winpch.h"
 #include "map.h"
+#include <string>
 #include "display.h"
 #include "world.h"
 #include "game.h"
