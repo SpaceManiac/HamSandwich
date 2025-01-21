@@ -50,7 +50,9 @@ based on HamSandwich.
 
 ### HamSandwich (since last release)
 
-Nothing!
+* Fix SWC-only items appearing by mistake in some imported Dr. L worlds.
+* Add page numbers and multi-filtering (right-click category) to Monster, Sound, and Item lists.
+* Allow loading `.ogg` files as custom sounds.
 
 ### v9.4 (2024-08-10) - [Steam](https://store.steampowered.com/news/app/2547330/view/4370265995216804393)
 

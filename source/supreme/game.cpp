@@ -727,6 +727,7 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 	InitPlayer(GetWorldProgress(fname)->levelOn,fname);
 	if(!LoadWorld(&curWorld,fullName))
 		CO_RETURN 1;
+	CalculateItemRenderExtents();
 
 	player.pendingLeaderboardUpload = false;
 	float oldPercentage = player.worldProg->percentage;

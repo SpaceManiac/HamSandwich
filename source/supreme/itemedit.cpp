@@ -51,12 +51,36 @@
 #define ID_RARITY	607
 #define ID_PICKSPR	608
 
-static word flags[]={IF_SHADOW,IF_GLOW,IF_SOLID,IF_BULLETPROOF,IF_PICKUP,IF_LOONYCOLOR,IF_TILE,IF_USERJSP,IF_BUBBLES};
-static dword themes[]={IT_PICKUP,IT_DECOR,IT_OBSTACLE,IT_BULLETPROOF,IT_DOOR,IT_TREE,IT_ROCK,
-				  IT_CRATE,IT_SIGN,IT_WEAPON,IT_POWERUP,IT_KEY,IT_COLLECT,IT_FOOD,IT_ENTRANCE,
-				  IT_CHAIR,IT_CUSTOM};
-static word trigs[]={ITR_GET,ITR_SHOOT,ITR_PLAYERBUMP,ITR_ENEMYBUMP,ITR_FRIENDBUMP,ITR_CHOP,
+static const dword themes[]={
+	IT_PICKUP,IT_DECOR,IT_OBSTACLE,IT_BULLETPROOF,IT_DOOR,IT_TREE,IT_ROCK,
+	IT_CRATE,IT_SIGN,IT_WEAPON,IT_POWERUP,IT_KEY,IT_COLLECT,IT_FOOD,IT_ENTRANCE,
+	IT_CHAIR,IT_CUSTOM};
+static const char * const themeNames[] = {
+	"Pick-Ups",
+	"Decorations",
+	"Obstacles",
+	"Bulletproof",
+	"Doors",
+	"Vegetation",
+	"Rocks",
+	"Crates, Etc.",
+	"Signs",
+	"Weapons",
+	"Power-Ups",
+	"Keys",
+	"Collectibles",
+	"Food",
+	"Entrances",
+	"Chairs",
+	"Extras",
+};
+static constexpr int NUM_THEMES = std::min(std::size(themes), std::size(themeNames));
+
+static const word flags[]={IF_SHADOW,IF_GLOW,IF_SOLID,IF_BULLETPROOF,IF_PICKUP,IF_LOONYCOLOR,IF_TILE,IF_USERJSP,IF_BUBBLES};
+static const word trigs[]={ITR_GET,ITR_SHOOT,ITR_PLAYERBUMP,ITR_ENEMYBUMP,ITR_FRIENDBUMP,ITR_CHOP,
 				  ITR_MINECART,ITR_ALWAYS};
+
+static constexpr int ITEMS_PER_PAGE = 20;
 
 #define IEBTN_NONE	0
 #define IEBTN_NUM	1	// numerical
@@ -147,13 +171,15 @@ static const char directionName[4][16]={
 static byte itemList[256];
 static word itemsInList,itemStart=0,itemsShown;
 static byte justPicking;
-static byte mode,curTheme;
+static byte mode;
+static dword curTheme = IT_PICKUP;
 static world_t *world;
 static byte curItem;
 static byte backColor;
 static byte realClick;
 
-static byte saveCurTheme=0,saveCurItem=1,rememberMode,helpRemember;
+static dword saveCurTheme = IT_PICKUP;
+static byte saveCurItem=1,rememberMode,helpRemember;
 static word saveItemStart=0;
 
 static byte canDrag=1;
@@ -272,7 +298,7 @@ static void NewClick(int id)
 	{
 		MakeNormalSound(SND_MENUSELECT);
 		curItem=i;
-		curTheme=16;
+		curTheme=IT_CUSTOM;
 		MakeItemList();
 		ItemSetFlags();
 	}
@@ -295,7 +321,7 @@ static void CopyClick(int id)
 		sprintf(s,"Copy of %s",GetItem(curItem)->name);
 		SDL_strlcpy(GetItem(i)->name, s, sizeof(GetItem(i)->name));
 		curItem=i;
-		curTheme=16;
+		curTheme=IT_CUSTOM;
 		MakeItemList();
 		ItemSetFlags();
 	}
@@ -367,7 +393,6 @@ static void MoreItemsClick(int id)
 		itemStart=0;
 
 	ClearButtons(ID_PICKITEM,ID_PICKITEM+50);
-	ClearButtons(ID_MOREITEMS,ID_MOREITEMS);
 
 	// now make buttons for the first N, which is however many fit on the screen
 	pos=100;
@@ -380,7 +405,11 @@ static void MoreItemsClick(int id)
 		if(pos>480-30)
 			break;
 	}
-	MakeButton(BTN_NORMAL,ID_MOREITEMS,0,2,pos,156,16,"More Items...",MoreItemsClick);
+
+	ClearButtons(ID_MOREITEMS, ID_MOREITEMS);
+	char buf[32];
+	ham_sprintf(buf, "More Items %d/%d", itemStart / ITEMS_PER_PAGE + 1, (itemsInList - 1) / ITEMS_PER_PAGE + 1);
+	MakeButton(BTN_NORMAL,ID_MOREITEMS,0,2,100 + 18 * ITEMS_PER_PAGE,156,16,buf,MoreItemsClick);
 }
 
 static void MakeItemList(void)
@@ -396,7 +425,7 @@ static void MakeItemList(void)
 	// get all items which match this theme
 	for(i=0;i<NumItems();i++)
 	{
-		if(GetItem(i)->theme&themes[curTheme])
+		if(GetItem(i)->theme && (GetItem(i)->theme & curTheme) == curTheme)
 		{
 			itemList[pos]=i;
 			itemsInList=pos+1;
@@ -435,15 +464,33 @@ static void MakeItemList(void)
 			break;
 	}
 	if(itemStart>0 || pos>480-30)
-		MakeButton(BTN_NORMAL,ID_MOREITEMS,0,2,pos,156,16,"More Items...",MoreItemsClick);
+	{
+		char buf[32];
+		ham_sprintf(buf, "More Items %d/%d", itemStart / ITEMS_PER_PAGE + 1, (itemsInList - 1) / ITEMS_PER_PAGE + 1);
+		MakeButton(BTN_NORMAL,ID_MOREITEMS,0,2,100+18*ITEMS_PER_PAGE,156,16,buf,MoreItemsClick);
+	}
+}
+
+static void SetThemeRadio()
+{
+	for (int i = 0; i < NUM_THEMES; ++i)
+		SetButtonState(ID_PICKTHEME + i, (themes[i] == 0 ? curTheme == 0 : (curTheme & themes[i])) ? CHECK_ON : CHECK_OFF);
 }
 
 static void PickThemeClick(int id)
 {
-	RadioOn(id,ID_PICKTHEME,ID_PICKTHEME+50);
-	curTheme=id-ID_PICKTHEME;
-	itemStart=0;
+	curTheme = themes[id-ID_PICKTHEME];
+	itemStart = 0;
 	MakeItemList();
+	SetThemeRadio();
+}
+
+static void PickThemeRightClick(int id)
+{
+	curTheme ^= themes[id-ID_PICKTHEME];
+	itemStart = 0;
+	MakeItemList();
+	SetThemeRadio();
 }
 
 static void NameClick(int id)
@@ -530,7 +577,7 @@ static void ItemEditSetupButtons(void)
 	else
 		MakeButton(BTN_NORMAL,ID_EXIT,0,480,460,158,14,"Exit Item Editor",ExitClick);
 
-	RadioOn(ID_PICKTHEME+curTheme,ID_PICKTHEME,ID_PICKTHEME+50);
+	SetThemeRadio();
 }
 
 static void EffectClick(int id)
@@ -921,6 +968,9 @@ void ItemEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 				CheckButtonCallback(mouseX,mouseY,ID_ITEMEFFMOD,EffModRightClick);
 				if(!(GetItem(curItem)->flags&IF_TILE))
 					CheckButtonCallback(mouseX,mouseY,ID_PICKSPR,SpriteRightClick);
+
+				for(i = 0; i < NUM_THEMES; ++i)
+					CheckButtonCallback(mouseX, mouseY, ID_PICKTHEME + i, PickThemeRightClick);
 			}
 
 			wasInRect=0;
@@ -968,7 +1018,12 @@ void ItemEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 				}
 				CheckButton(mouseX,mouseY,ID_EXIT);
 				CheckButton(mouseX,mouseY,ID_MOREITEMS);
+			}
 
+			if (mgl->RMouseTap())
+			{
+				for(i = 0; i < NUM_THEMES; ++i)
+					CheckButtonCallback(mouseX, mouseY, ID_PICKTHEME + i, PickThemeRightClick);
 			}
 			break;
 		case IMODE_NAME:

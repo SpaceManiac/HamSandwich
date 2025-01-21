@@ -7,6 +7,7 @@ set(CMAKE_C_COMPILER_TARGET i686-pc-windows-msvc)
 set(CMAKE_CXX_COMPILER_TARGET ${CMAKE_C_COMPILER_TARGET})
 set(CMAKE_C_FLAGS_INIT "-fms-compatibility /imsvc/xwin/crt/include /imsvc/xwin/sdk/include/ucrt /imsvc/xwin/sdk/include/um /imsvc/xwin/sdk/include/shared")
 set(CMAKE_CXX_FLAGS_INIT ${CMAKE_C_FLAGS_INIT})
+set(CMAKE_RC_FLAGS_INIT ${CMAKE_C_FLAGS_INIT})
 set(CMAKE_LINKER lld-link)
 set(CMAKE_MT llvm-mt)  # CMake can find rc=llvm-rc all by itself, but needs to be told mt=llvm-mt
 set(CMAKE_RC_FLAGS_INIT "-I/xwin/crt/include -I/xwin/sdk/include/ucrt -I/xwin/sdk/include/um -I/xwin/sdk/include/shared")

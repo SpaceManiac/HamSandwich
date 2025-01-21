@@ -241,6 +241,10 @@ void MonsterDraw(
 
 	v=monsType[type].anim[seq][frm];
 
+	// Suckers and Blowers are visible in the editor.
+	if (type >= MONS_SUCKER1 && type <= MONS_BLOWER4 && editing && seq == ANIM_IDLE && frm == 0)
+		v = 0;
+
 	if(v==FRAME_INVIS || v==FRAME_END)
 		return;	// don't draw this frame
 
@@ -357,6 +361,10 @@ void InstaRenderMonster(int x,int y,dword type,char bright,MGLDraw *mgl)
 	v=monsType[type].anim[ANIM_IDLE][0];
 	if(!(monsType[type].flags&MF_ONEFACE))
 		v+=2*monsType[type].framesPerDir;
+
+	// Suckers and Blowers are visible in the editor.
+	if (type >= MONS_SUCKER1 && type <= MONS_BLOWER4 && editing /* seq == ANIM_IDLE && frame == 0 are implied */)
+		v = 0;
 
 	curSpr=monsType[type].spr->GetSprite(v);
 	if(!curSpr)
