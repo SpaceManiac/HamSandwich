@@ -256,11 +256,13 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			return 1;
 		}
 //#endif
+#ifndef NDEBUG
 		if(c==SDLK_p)
 		{
 			title->cursor=6;
 			return 1;
 		}
+#endif
 		*lastTime-=TIME_PER_FRAME;
 	}
 

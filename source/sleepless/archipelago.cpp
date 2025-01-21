@@ -14,8 +14,12 @@ namespace
 	class Archipelago gArchipelagoManager;
 	std::unique_ptr<ArchipelagoClient> ap;
 
-	std::string serverAddress = "localhost:38281"; //"archipelago.gg:";
-	std::string slotName = "SpaceManiac"; //"";
+#ifndef NDEBUG
+	std::string serverAddress = "localhost:38281";
+#else
+	std::string serverAddress = "archipelago.gg:";
+#endif
+	std::string slotName;
 	std::string password;
 
 	constexpr int64_t BASE_ID = 10000;  // TODO
@@ -571,7 +575,7 @@ ArchipelagoMenu(MGLDraw* mgl)
 				*typing += k;
 			}
 
-			typingY = GetStrLength(typing == &password ? std::string(password.size(), '*') : *typing, 1);
+			typingY = typing ? GetStrLength(typing == &password ? std::string(password.size(), '*') : *typing, 1) : 0;
 		}
 		oldc = c;
 

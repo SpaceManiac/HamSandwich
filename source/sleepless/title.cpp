@@ -274,11 +274,13 @@ byte MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		cursor=3;
 		return 1;
 	}
+#ifndef NDEBUG
 	else if (c == SDLK_p)
 	{
 		cursor=6;
 		return 1;
 	}
+#endif
 	else if (c == SDLK_e)
 	{
 		cursor=5;
