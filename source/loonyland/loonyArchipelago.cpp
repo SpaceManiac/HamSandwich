@@ -35,7 +35,7 @@ void GivePlayerItem(int64_t item_id, bool loud);
 std::unordered_map<int, bool> locsFound;
 std::unordered_map<int, int> itemsFound;
 std::map<std::string, int> scouted_items;
-bool ArchipelagoMode = true;
+bool ArchipelagoMode = false;
 bool ExpectingDeath = false;
 byte ap_cheatsAvail[40] = { 0 };
 byte ap_modesAvail[6] = { 0 };
@@ -86,6 +86,11 @@ std::unordered_map<int, chatData> chat_table = {
 	//{198, { "Vampire Bust", ""}}, //arms dealer
 };
 
+void ArchipelagoDisconnect()
+{
+	ArchipelagoMode = false;
+	ap.reset();
+}
 
 int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password)
 {
@@ -95,7 +100,7 @@ int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string 
 	//AP_SetLocationCheckedCallback(SetLocationChecked);
 	ap->death_link_enable();
 
-
+	ArchipelagoMode = true;
 	ArchipelagoSeed = "";
 	ArchipelagoSlotNum = -1;
 	return 0;

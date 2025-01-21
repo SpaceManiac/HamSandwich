@@ -19,6 +19,7 @@ enum class MainMenuResult
 	Options,
 	Editor,
 	Randomizer,
+	Archipelago,
 	Exit,
 	Extras,
 	BackToMain,

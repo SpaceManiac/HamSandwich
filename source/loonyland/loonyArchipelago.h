@@ -16,6 +16,7 @@ const int AP_DOLLLOCSTART = 159;
 #include "player.h"
 #include <map>
 
+void ArchipelagoDisconnect();
 int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password);
 void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y, int itm_id);
 void SendCheckedLocQuest(int questVar);

@@ -246,10 +246,25 @@ static const MenuItem mainMenu[] = {
 	{"Extras...", MainMenuResult::Extras},
 	{"Exit", MainMenuResult::Exit},
 };
+static const MenuItem apMenu[] = {
+	{"New Game", MainMenuResult::NewGame},
+	{"Load Game", MainMenuResult::LoadGame},
+	{"Bowling", MainMenuResult::Bowling},
+	{"Survival", MainMenuResult::Survival},
+	{"Boss Bash", MainMenuResult::BossBash},
+	{"Loony Ball", MainMenuResult::Loonyball},
+	{"Remix", MainMenuResult::Remix},
+	{"Badges", MainMenuResult::Badges},
+	{"Hi Scores", MainMenuResult::HiScores},
+	{"Options", MainMenuResult::Options},
+	{"Quit AP", MainMenuResult::Archipelago},
+	{"Exit", MainMenuResult::Exit},
+};
 static const MenuItem extrasMenu[] = {
 	{"Back...", MainMenuResult::BackToMain},
 	{"Editor", MainMenuResult::Editor},
 	{"Randomizer", MainMenuResult::Randomizer},
+	{"AP Rando", MainMenuResult::Archipelago},
 };
 static std::vector<MenuItem> menu;
 
@@ -622,8 +637,10 @@ MainMenuResult MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		}
 
 #ifndef NDEBUG
-		if(key=='e')
+		if (key == 'e')
 			return MainMenuResult::Editor;
+		if (key == 'p')
+			return MainMenuResult::Archipelago;
 #endif
 		*lastTime-=TIME_PER_FRAME;
 		numRuns++;
@@ -875,7 +892,7 @@ TASK(MainMenuResult) MainMenu(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],mgl->GetScreen()+mgl->GetWidth()*i,640);
 
-	SetMenu(mainMenu);
+	SetMenu(ArchipelagoMode ? apMenu : mainMenu);
 
 	cursor=0;
 	loadingGame=TitleSubmenu::MainMenu;
@@ -965,7 +982,7 @@ TASK(MainMenuResult) MainMenu(MGLDraw *mgl)
 		}
 		else if (b == MainMenuResult::BackToMain)
 		{
-			SetMenu(mainMenu);
+			SetMenu(ArchipelagoMode ? apMenu : mainMenu);
 			b = MainMenuResult::None;
 			cursor = 0;
 			oldc = 255;

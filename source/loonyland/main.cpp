@@ -44,14 +44,6 @@ TASK(int) main(int argc, char *argv[])
 	AWAIT SplashScreen(mainmgl,"graphics/hamumu.bmp",128,2);
 	bool running = true;
 
-	if (ArchipelagoMode)
-	{
-		if (AWAIT ArchipelagoMenu(mainmgl))
-		{
-			running = false;
-		}
-		
-	}
 	while (running)
 	{
 		DBG("Mainmenu");
@@ -108,7 +100,10 @@ TASK(int) main(int argc, char *argv[])
 				AWAIT RandomizerMenu(mainmgl);
 				SetSongRestart(0);
 				break;
-
+			case MainMenuResult::Archipelago:
+				AWAIT ArchipelagoMenu(mainmgl);
+				SetSongRestart(1);
+				break;
 		}
 	}
 

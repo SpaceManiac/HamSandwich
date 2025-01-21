@@ -6,14 +6,13 @@
 #include "badge.h"
 #include "options.h"
 
-static std::string IPAddress = "";
+static std::string IPAddress = "archipelago.gg:";
 static std::string SlotName = "";
 static std::string Password = "";
 
 static byte cursor;
 static byte oldc;
 static byte optMode;
-static bool quit = false;
 
 static std::string status;
 static std::string oldStatus = "";
@@ -28,14 +27,12 @@ static std::string oldStatus = "";
 
 void InitArchipelagoMenu(void)
 {
-
 	oldc = 255;
 	cursor = CURSOR_START;
+	optMode = 0;
 	InitPlasma(7);
-	IPAddress = "Archipelago.gg:";
-	//AP_Init("Archipelago.gg:0000", "Loonyland", "AutoFrenzy", "");
+	ArchipelagoDisconnect();
 }
-
 
 void ExitArchipelagoMenu(void)
 {
@@ -64,13 +61,13 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 
 			if (c == SDLK_ESCAPE)
 			{
-				quit = true;
+				ArchipelagoMode = false;
 				CO_RETURN 1;
 			}
 
 			if (c == SDLK_j)
 			{
-				quit = false;
+				ArchipelagoMode = true;
 				ap_modesAvail[0] = 1;
 				ap_modesAvail[1] = 1;
 				ap_modesAvail[2] = 1;
@@ -152,7 +149,6 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 				oldc = 255;
 				mgl->LastKeyPressed();
 				MakeNormalSound(SND_MENUSELECT);
-				quit = false;
 				CO_RETURN 0;
 			}
 			else if (c == SDLK_BACKSPACE && activeString->length() > 0)
@@ -166,7 +162,6 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 				{
 					*activeString += c;
 					MakeNormalSound(SND_MENUSELECT);
-
 				}
 			}
 
@@ -205,6 +200,7 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 			break;
 		case 4: //waiting on status
 			if (!locationWait) {
+				ArchipelagoMode = true;
 				CO_RETURN 1;
 			}
 			break;
@@ -238,7 +234,7 @@ void RenderArchipelagoMenu(MGLDraw* mgl)
 	RenderPlasma(mgl, 1);
 	RenderPlasma(mgl, 0);
 
-	CenterPrintGlow(320, 2, "Archipelago", 0, 2);
+	CenterPrintGlow(320, 2, "Archipelago Randomizer", 0, 2);
 
 	PrintColor(160, 60 + CURSOR_IPADDRESS * 30, "IP Address: ", 7, -10, 0);
 	PrintColor(310, 60 + CURSOR_IPADDRESS * 30, IPAddress.c_str(), 7, -10, 0);
@@ -300,7 +296,7 @@ void RenderArchipelagoMenu(MGLDraw* mgl)
 
 //----------------
 
-TASK(bool)
+TASK(void)
 ArchipelagoMenu(MGLDraw* mgl)
 {
 	byte done = 0;
@@ -325,5 +321,5 @@ ArchipelagoMenu(MGLDraw* mgl)
 	}
 
 	ExitArchipelagoMenu();
-	CO_RETURN quit;
+	CO_RETURN;
 }
