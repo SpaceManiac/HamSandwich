@@ -284,7 +284,7 @@ void GetSavesForMenu(void)
 	{
 		if (ArchipelagoMode)
 		{
-			ham_sprintf(txt, "Archipelago/%s/save%d.sav", ArchipelagoSeed.c_str(), saveOffset + i + 1);
+			ham_sprintf(txt, "Archipelago/%s_%d/save%d.sav", ArchipelagoSeed.c_str(), ArchipelagoSlotNum, saveOffset + i + 1);
 		}
 		else
 		{
@@ -798,8 +798,30 @@ byte ChooseDiffUpdate(int *lastTime,MGLDraw *mgl)
 
 bool MenuItemKnown(MainMenuResult action)
 {
-	switch (action)
+	if (ArchipelagoMode)
 	{
+		switch (action)
+		{
+		case MainMenuResult::Badges:
+			return true;
+		case MainMenuResult::Bowling:
+			return ap_modesAvail[MODE_BOWLING];
+		case MainMenuResult::Loonyball:
+			return ap_modesAvail[MODE_LOONYBALL];
+		case MainMenuResult::BossBash:
+			return ap_modesAvail[MODE_BOSSBASH];
+		case MainMenuResult::Survival:
+			return ap_modesAvail[MODE_SURVIVAL];
+		case MainMenuResult::Remix:
+			return ap_modesAvail[MODE_REMIX];
+		default:
+			return true;
+		}
+	}
+	else
+	{
+		switch (action)
+		{
 		case MainMenuResult::Badges:
 			return opt.modes[MODE_BADGES];
 		case MainMenuResult::Bowling:
@@ -814,6 +836,7 @@ bool MenuItemKnown(MainMenuResult action)
 			return opt.remixMode;
 		default:
 			return true;
+		}
 	}
 }
 
@@ -859,6 +882,7 @@ TASK(MainMenuResult) MainMenu(MGLDraw *mgl)
 	GetTaps();
 	while(b==MainMenuResult::None)
 	{
+		UpdateArchipelago();
 		lastTime+=TimeLength();
 		StartClock();
 
@@ -1016,6 +1040,7 @@ static TASK(void) DoCredits(MGLDraw *mgl, const char* const* document)
 	StartClock();
 	while (true)
 	{
+		UpdateArchipelago();
 		EndClock();
 		lastTime += TimeLength();
 		StartClock();

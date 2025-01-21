@@ -15,7 +15,6 @@
 #define COMBO_TIME	30*2
 
 // initializing constants (pass to InitPlayer)
-#define INIT_ARCHIPELAGO 3
 #define INIT_GAME  2
 #define INIT_WORLD 1
 #define INIT_LEVEL 0
@@ -69,6 +68,14 @@
 #define VAR_VAMPSTAND	172 // 172-179 = vamp bust is on stand
 #define VAR_KNOWWOLVES	180	// 180 = have already talked to self about werewolves
 #define VAR_DOLL		181	// 181-188 = have doll
+#define VAR_BATDOLL		181
+#define VAR_SKELDOLL	182
+#define VAR_FROGDOLL	183
+#define VAR_GHOSTDOLL	184
+#define VAR_MUMMYDOLL	185
+#define VAR_SWAMPDOLL	186
+#define VAR_VAMPDOLL	187
+#define VAR_WOLFDOLL	188
 #define VAR_REFLECT		189	// 189 = have reflect gem
 #define VAR_DOLLGIVEN	190	// 190-197 = have given doll to girl
 #define VAR_TOWNOPEN	198 // 198 = have opened zombiton

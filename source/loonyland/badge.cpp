@@ -10,10 +10,12 @@
 #include "title.h"
 #include "palettes.h"
 #include "steam.h"
+#include "loonyArchipelago.h"
 
 static byte cursor;
 static byte oldc;
 static byte viewing;
+static byte apTabMode;
 static byte cantearn;
 static char badgeKeys[17];
 
@@ -587,6 +589,7 @@ void InitBadgeMenu(void)
 {
 	oldc=255;
 	cursor=0;
+	apTabMode = 0;
 }
 
 void ExitBadgeMenu(void)
@@ -620,9 +623,23 @@ void BadgeCheatKey(char c)
 
 	if(!strcmp("gimme",&badgeKeys[16-strlen("gimme")]))
 	{
-		opt.meritBadge[cursor] = opt.meritBadge[cursor] ? MERIT_NO : MERIT_CHEATED;
-		if(opt.cheats[badge[cursor].cheatNum])
-			opt.cheats[badge[cursor].cheatNum]=0;
+		if (apSlotData.badges == AP_OP_FULL)
+		{
+			if (apTabMode == 0)
+			{
+				ap_cheatsAvail[cursor] = ap_cheatsAvail[cursor] ^ 1;
+			}
+			else if (apTabMode == 1)
+			{
+				opt.meritBadge[cursor] = opt.meritBadge[cursor] ? MERIT_NO : MERIT_CHEATED;
+			}
+		}
+		else
+		{
+			opt.meritBadge[cursor] = opt.meritBadge[cursor] ? MERIT_NO : MERIT_CHEATED;
+		}
+		if (opt.cheats[badge[cursor].cheatNum])
+			opt.cheats[badge[cursor].cheatNum] = 0;
 
 		if(opt.meritBadge[cursor])
 		{
@@ -669,18 +686,39 @@ void BadgeCheatKey(char c)
 		SaveOptions();
 		MakeNormalSound(SND_ENTERMAP);
 	}
-	if(!strcmp("clear",&badgeKeys[16-strlen("clear")]))
+	if (!strcmp("clear", &badgeKeys[16 - strlen("clear")]))
 	{
-		for(i=0;i<NUM_BADGES;i++)
+		if (apSlotData.badges == AP_OP_FULL)
 		{
-			opt.meritBadge[i] = MERIT_NO;
-			opt.cheats[i]=0;
+			if (apTabMode == 0)
+			{
+				for (i = 0; i < NUM_BADGES; i++)
+				{
+					ap_cheatsAvail[i] = 0;
+					opt.cheats[i] = 0;
+				}
+			}
+			else if (apTabMode == 1)
+			{
+				for (i = 0; i < NUM_BADGES; i++)
+				{
+					opt.meritBadge[i] = MERIT_NO;
+				}
+			}
 		}
-		for(i=0;i<10;i++)
-			opt.bossDead[i]=0;
-		for(i=0;i<5;i++)
-			opt.modes[i]=0;
-		opt.remixMode=0;
+		else
+		{
+			for (i = 0; i < NUM_BADGES; i++)
+			{
+				opt.meritBadge[i] = MERIT_NO;
+				opt.cheats[i] = 0;
+			}
+		}
+		for (i = 0; i < 10; i++)
+			opt.bossDead[i] = 0;
+		for (i = 0; i < 5; i++)
+			opt.modes[i] = 0;
+		opt.remixMode = 0;
 
 		MakeSuperLoony();
 		SaveOptions();
@@ -688,10 +726,30 @@ void BadgeCheatKey(char c)
 	}
 	if(!strcmp("giveall",&badgeKeys[16-strlen("giveall")]))
 	{
-		for(i=0;i<NUM_BADGES;i++)
+		if (apSlotData.badges == AP_OP_FULL)
 		{
-			if (!opt.meritBadge[i])
-				opt.meritBadge[i] = MERIT_CHEATED;
+			if (apTabMode == 0)
+			{
+				for (i = 0; i < NUM_BADGES; i++)
+				{
+					ap_cheatsAvail[i] = 1;
+				}
+			}
+			else if (apTabMode == 1)
+			{
+				for (i = 0; i < NUM_BADGES; i++)
+				{
+					opt.meritBadge[i] = MERIT_CHEATED;
+					
+				}
+			}
+		}
+		else {
+			for (i = 0; i < NUM_BADGES; i++)
+			{
+				if (!opt.meritBadge[i])
+					opt.meritBadge[i] = MERIT_CHEATED;
+			}
 		}
 		for(i=0;i<5;i++)
 			opt.modes[i]=1;
@@ -718,6 +776,8 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 	c=mgl->LastKeyPressed();
 	c2=GetControls()|GetArrows();
 
+	UpdateArchipelago();
+
 	// Ctrl+Shift is still how to type cheats, but gamepad CONTROL_B2 is quit
 	if(c==27 || (GetGamepadButtons() & ((1 << SDL_CONTROLLER_BUTTON_B) | (1 << SDL_CONTROLLER_BUTTON_BACK))))
 	{
@@ -726,6 +786,11 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 
 	if((c2&CONTROL_B1) && (c2&CONTROL_B2) && c!=0)
 		BadgeCheatKey(c);
+
+	if (apSlotData.badges == AP_OP_FULL && (c2 & CONTROL_B3) && c != 0)
+	{
+		apTabMode = apTabMode ^ 1;
+	}
 
 	if((c2&CONTROL_UP) && (!(oldc&CONTROL_UP)))
 	{
@@ -767,9 +832,9 @@ byte UpdateBadgeMenu(MGLDraw *mgl)
 			cursor+=10;
 		MakeNormalSound(SND_MENUCLICK);
 	}
-	if((c2 & ~oldc) & (CONTROL_B1 | CONTROL_B3))
+	if((c2 & ~oldc) & (CONTROL_B1) && apTabMode == 0)
 	{
-		if(opt.meritBadge[cursor])
+		if(!(apSlotData.badges == AP_OP_FULL) && opt.meritBadge[cursor] || apSlotData.badges == AP_OP_FULL && ap_cheatsAvail[cursor])
 		{
 			// toggle the cheat
 			opt.cheats[badge[cursor].cheatNum]=1-opt.cheats[badge[cursor].cheatNum];
@@ -823,8 +888,10 @@ void RenderBadgeMenu(MGLDraw *mgl)
 	char b;
 
 	mgl->ClearScreen();
-
-	CenterPrint(450,2,"Merit Badges",0,2);
+	if(apSlotData.badges == AP_OP_FULL && apTabMode == 0)
+		CenterPrint(450, 2, "Cheats", 0, 2);
+	else
+		CenterPrint(450,2,"Merit Badges",0,2);
 	DrawBox(270,55,639,56,31);
 	DrawBox(270,0,271,479,31);
 	x=2;
@@ -834,14 +901,30 @@ void RenderBadgeMenu(MGLDraw *mgl)
 		b=0;
 		if(cursor==i)
 			b=16;
-		if(opt.meritBadge[i])
-		{
-			RenderIntfaceSprite(x,y,26+i,b,mgl);
-			if(opt.cheats[badge[i].cheatNum])
-				RenderIntfaceSprite(x,y,25,b,mgl);
+		if (apSlotData.badges == AP_OP_FULL) {
+			if (apTabMode == 0 && ap_cheatsAvail[i]) {
+				RenderIntfaceSprite(x, y, 26 + i, b, mgl);
+				if (opt.cheats[badge[i].cheatNum])
+					RenderIntfaceSprite(x, y, 25, b, mgl);
+			}
+			else if (apTabMode == 1 && opt.meritBadge[i])
+			{
+				RenderIntfaceSprite(x, y, 26 + i, b, mgl); //replace with item sent
+			}
+			else
+				RenderIntfaceSprite(x, y, 24, b, mgl);
 		}
 		else
-			RenderIntfaceSprite(x,y,24,b,mgl);
+		{
+			if (opt.meritBadge[i])
+			{
+				RenderIntfaceSprite(x, y, 26 + i, b, mgl);
+				if (opt.cheats[badge[i].cheatNum])
+					RenderIntfaceSprite(x, y, 25, b, mgl);
+			}
+			else
+				RenderIntfaceSprite(x, y, 24, b, mgl);
+		}
 		y+=46;
 		if(y>480-46)
 		{
@@ -851,42 +934,55 @@ void RenderBadgeMenu(MGLDraw *mgl)
 	}
 
 	// display info on current badge
-	if(opt.meritBadge[cursor])
+	if ((!(apSlotData.badges == AP_OP_FULL) && opt.meritBadge[cursor])
+		|| (apTabMode == 1 && opt.meritBadge[cursor])
+		|| (apTabMode == 0 && ap_cheatsAvail[cursor]))
 	{
+
 		RenderIntfaceSprite(274,60,26+cursor,0,mgl);
-		Print(350,70,badge[cursor].name,0,0);
-		if(opt.cheats[badge[cursor].cheatNum])
+		if(opt.cheats[badge[cursor].cheatNum] && apTabMode == 0)
 			RenderIntfaceSprite(274,60,25,b,mgl);
 
-		DrawBox(270,108,639,108,31);
-
-		for(i=0;i<2;i++)
+		if (!(apSlotData.badges == AP_OP_FULL) || apTabMode == 1)
 		{
-			Print(274,112+i*16,badge[cursor].howGet[i],0,1);
-		}
-		DrawBox(270,164,639,164,31);
-		Print(274,168,"For getting this badge, you are awarded:",0,1);
-		Print(274,190,badge[cursor].cheatName,0,0);
-		for(i=0;i<8;i++)
-		{
-			Print(274,220+i*16,badge[cursor].cheatDesc[i],0,1);
+			Print(350, 70, badge[cursor].name, 0, 0);
 		}
 
-		y=370;
-		if(badge[cursor].rules&RULE_NEWGAME)
+		if (!(apSlotData.badges == AP_OP_FULL) || apTabMode == 1)
 		{
-			Print(274,y,"* Takes effect when you start a new game",0,1);
-			y+=20;
+			DrawBox(270, 108, 639, 108, 31);
+			for (i = 0; i < 2; i++)
+			{
+
+				Print(274, 112 + i * 16, badge[cursor].howGet[i], 0, 1);
+			}
 		}
-		if(badge[cursor].rules&RULE_PLAYAS)
+		if (apTabMode == 0)
 		{
-			Print(274,y,"* Only one 'Play As' cheat works at a time",0,1);
-			y+=20;
-		}
-		if(badge[cursor].rules&RULE_ADVENTURE)
-		{
-			Print(274,y,"* Only affects adventure mode",0,1);
-			y+=20;
+			DrawBox(270, 164, 639, 164, 31);
+			Print(274, 168, "For getting this badge, you are awarded:", 0, 1);
+			Print(274, 190, badge[cursor].cheatName, 0, 0);
+			for (i = 0; i < 8; i++)
+			{
+				Print(274, 220 + i * 16, badge[cursor].cheatDesc[i], 0, 1);
+			}
+
+			y = 370;
+			if (badge[cursor].rules & RULE_NEWGAME)
+			{
+				Print(274, y, "* Takes effect when you start a new game", 0, 1);
+				y += 20;
+			}
+			if (badge[cursor].rules & RULE_PLAYAS)
+			{
+				Print(274, y, "* Only one 'Play As' cheat works at a time", 0, 1);
+				y += 20;
+			}
+			if (badge[cursor].rules & RULE_ADVENTURE)
+			{
+				Print(274, y, "* Only affects adventure mode", 0, 1);
+				y += 20;
+			}
 		}
 	}
 	else	// badge is unknown
@@ -894,6 +990,9 @@ void RenderBadgeMenu(MGLDraw *mgl)
 		RenderIntfaceSprite(274,60,24,0,mgl);
 		Print(350,70,"Unknown!",0,0);
 	}
+
+	Print(275, 420, "Press Tab to toggle Cheat and Badge menus", 0, 1);
+	Print(274, 420, "Press Tab to toggle Cheat and Badge menus", 0, 1);
 
 	if(viewing==0)
 	{
@@ -942,6 +1041,8 @@ static TASK(void) EarnBadgeTask(byte b)
 	bool newlyEarned = !opt.meritBadge[b];
 	// Mark as earned legit even if already cheated.
 	opt.meritBadge[b] = MERIT_EARNED;
+
+	SendCheckedLocBadge(b);
 
 	// If newly earned, congratulate the player. No early return so the mode
 	// logic below always runs & can thus be freely tweaked.
@@ -1097,12 +1198,19 @@ TASK(void) ShowBadge(byte b)
 	dword wait;
 	MGLDraw *mgl=GetDisplayMGL();
 
+	UpdateArchipelago();
+
 	viewing=1;
 	wait=timeGetTime();
 	InitBadgeMenu();
 
 	GetTaps();
 	cursor=b;
+
+	if (apSlotData.badges == AP_OP_FULL)
+	{
+		apTabMode = 1;
+	}
 
 	while(!done)
 	{
@@ -1179,9 +1287,9 @@ void BadgeCheck(byte event,int value,Map *map)
 			EarnBadge(BADGE_BRAWL);
 		}
 
-		if(player.monsterPoints>30000)
+		if(player.monsterPoints>30000 && !opt.meritBadge[BADGE_MONSTERPTS])
 			EarnBadge(BADGE_MONSTERPTS);
-		if(player.monsterPoints>10000)
+		if(player.monsterPoints>10000 && !opt.meritBadge[BADGE_MONSTERPTS2])
 			EarnBadge(BADGE_MONSTERPTS2);
 
 		if((player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX) && player.levelNum==24 && !AnyMonsterExists() &&
@@ -1311,8 +1419,15 @@ void BadgeCheck(byte event,int value,Map *map)
 		if(opt.meritBadge[i])
 			have++;
 	}
-	if(have==39 && !opt.meritBadge[BADGE_MASTER])
+	if (have == 39 && !opt.meritBadge[BADGE_MASTER])
+	{
 		EarnBadge(BADGE_MASTER);
+		have++;
+	}
+	if (ArchipelagoMode && apSlotData.win_condition == AP_WIN_BADGES && have >= apSlotData.badges_required)
+	{
+		WinArchipelago();
+	}
 
 	then=timeGetTime();
 

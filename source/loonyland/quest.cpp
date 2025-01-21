@@ -1627,6 +1627,8 @@ void BeginChatting(byte tag)
 				curChat=83;
 			break;
 		case 18:	// doll collector
+			if(ArchipelagoMode && apSlotData.dolls == AP_OP_NONE)
+				curChat = 97;
 			if(player.var[VAR_QUESTASSIGN+QUEST_DOLLS]==0)
 				curChat=90;
 			else
@@ -1891,6 +1893,7 @@ void DoChatAction(byte a)
 			}
 			else if (ArchipelagoMode)
 			{
+				SendCheckedLocReward(VAR_TREEREWARD);
 				break;
 			}
 			else
@@ -1962,6 +1965,7 @@ void DoChatAction(byte a)
 			}
 			else if (ArchipelagoMode)
 			{
+				SendCheckedLocReward(VAR_WITCHREWARD);
 				break;
 			}
 			else
@@ -1995,6 +1999,7 @@ void DoChatAction(byte a)
 			}
 			else if (ArchipelagoMode)
 			{
+				SendCheckedLocReward(VAR_CROPSREWARD);
 				break;
 			}
 			else
@@ -2014,6 +2019,7 @@ void DoChatAction(byte a)
 			}
 			else if (ArchipelagoMode)
 			{
+				SendCheckedLocReward(VAR_ZOMBIEREWARD);
 				break;
 			}
 			else
@@ -2073,7 +2079,10 @@ void DoChatAction(byte a)
 			break;
 		case 24:
 			// complete rescue quest
-			PlayerSetVar(VAR_QUESTDONE+QUEST_DARK,1);
+			if (!ArchipelagoMode)
+			{
+				PlayerSetVar(VAR_QUESTDONE + QUEST_DARK, 1);
+			}
 			PlayerSetVar(VAR_QUESTDONE+QUEST_RESCUE,1);
 			if (player.worldNum == WORLD_RANDOMIZER){
 				GiveRandoItem(7);
@@ -2106,6 +2115,7 @@ void DoChatAction(byte a)
 			}
 			else if (ArchipelagoMode)
 			{
+				SendCheckedLocReward(VAR_LARRYREWARD);
 				break;
 			}
 			else
@@ -2176,6 +2186,13 @@ void UpdateChat(void)
 	chatUpdated = true;
 	if (ArchipelagoMode && curChat != oldCurChat)
 	{
+		if (chat_table.find(curChat) != chat_table.end())
+		{
+			if (chat_table[curChat].hint)
+			{
+				SendLocationScout(chat_table[curChat].location_id, true);
+			}
+		}
 		std::string text = talk[curChat].line[0];
 		text = text + " " + talk[curChat].line[1];
 		text = text + " " + talk[curChat].line[2];

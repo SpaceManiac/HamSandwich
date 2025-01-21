@@ -562,7 +562,7 @@ TASK(byte) PlayALevel(byte map)
 		{
 			if (loc.Map == curMap->name &&
 				loc.MapID == mapNum && 
-				locsFound[loc.ID]) {
+				locsFound.count(loc.ID) > 0) {
 				curMap->map[loc.Xcoord + loc.Ycoord * curMap->width].item = ITM_NONE;
 			}
 		}
@@ -733,7 +733,7 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 			case WORLD_NORMAL:
 				if (ArchipelagoMode)
 				{
-					worldResult = AWAIT LunaticWorld("ap.llw");
+					worldResult = AWAIT LunaticWorld(("Archipelago/" + ArchipelagoSeed + "_" + std::to_string(ArchipelagoSlotNum) + "/ap.llw").c_str());
 					break;
 				}
 				else

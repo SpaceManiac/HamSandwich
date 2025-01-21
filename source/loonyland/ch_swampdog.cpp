@@ -3,6 +3,7 @@
 #include "options.h"
 #include "bowling.h"
 #include "badge.h"
+#include "loonyArchipelago.h"
 
 #define PLYR_ACCEL	(FIXAMT)
 #define PLYR_DECEL	(FIXAMT*3/4)
@@ -29,6 +30,11 @@ void SwampdogFire(Guy *me)
 			FireBullet(me->x,me->y,((me->facing+2)*32+ang+i*6)&255,BLT_PSDSHOT);
 			FireBullet(me->x,me->y,((me->facing+6)*32+ang+i*6)&255,BLT_PSDSHOT);
 		}
+	}
+	if (ArchipelagoMode && opt.cheats[CH_MAXPOWER])
+	{
+		for (i = 0; i <= num; i++)
+			FireBullet(me->x, me->y, ((me->facing + 4) * 32 + ang + i * 6) & 255, BLT_PSDSHOT);
 	}
 	if(!opt.cheats[CH_HEAVYHIT])
 	{
@@ -59,6 +65,7 @@ void GainLevel(void)
 	NewBigMessage("Level Up!!",90);
 	MakeNormalSound(SND_POWERUP);
 
+
 	// xtraByte=level
 	player.xtraByte++;
 
@@ -67,6 +74,17 @@ void GainLevel(void)
 
 	// and it costs SD_LEVELUP more points per level
 	player.xtraVar+=SD_LEVELUP*player.xtraByte;
+
+	if (ArchipelagoMode)
+	{
+		NewBigMessage("Level Up! Max Life and Gems!", 90);
+		player.hearts = player.maxHearts;
+		player.money = player.maxMoney;
+		goodguy->hp = player.hearts;
+		return;
+	}
+
+	NewBigMessage("Level Up!!", 90);
 
 	while(cnt++<2000)
 	{

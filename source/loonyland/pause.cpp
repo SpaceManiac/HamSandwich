@@ -343,6 +343,14 @@ void RenderPauseMenu(MGLDraw *mgl)
 		else
 			strcat(s,"Off");
 
+		if (ArchipelagoMode)
+		{
+			std::string apStatus = "Archipelago: ";
+			apStatus += ConnectionStatus();
+			Print(3, 3, apStatus, 1, 1);
+			Print(3 - 1, 3 - 1, apStatus, 0, 1);
+		}
+
 		int y = 295 + (player.monsType == MONS_PLYRSWAMPDOG ? 15 : 0);
 		if(opt.cheats[CH_SAVEANY] && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER) && !(player.cheatsOn & PC_HARDCORE))
 		{
@@ -431,7 +439,7 @@ void GetSaves(void)
 	{
 		if (ArchipelagoMode)
 		{
-			ham_sprintf(txt,"Archipelago/%s/save%d.sav", ArchipelagoSeed.c_str(), saveOffset + i + 1);
+			ham_sprintf(txt,"Archipelago/%s_%d/save%d.sav", ArchipelagoSeed.c_str(), ArchipelagoSlotNum, saveOffset + i + 1);
 		}
 		else
 		{
@@ -458,7 +466,7 @@ void LoadGame(int i)
 
 	if (ArchipelagoMode)
 	{
-		ham_sprintf(txt, "Archipelago/%s/save%d.sav", ArchipelagoSeed.c_str(), i + 1);
+		ham_sprintf(txt, "Archipelago/%s_%d/save%d.sav", ArchipelagoSeed.c_str(), ArchipelagoSlotNum, i + 1);
 	}
 	else
 	{
@@ -487,7 +495,7 @@ void LoadGame(int i)
 		{
 			if (ArchipelagoMode) {
 				FreeWorld(&curWorld);
-				LoadWorld(&curWorld, "ap.llw");
+				LoadWorld(&curWorld, ("Archipelago/" + ArchipelagoSeed + "_" + std::to_string(ArchipelagoSlotNum) + "/ap.llw").c_str());
 
 				InitWorld(&curWorld, WORLD_NORMAL);
 			}
@@ -515,7 +523,8 @@ void LoadGame(int i)
 		if(!curMap)
 			curMap=new Map(20,20,"hi");
 		curMap->LoadFromProgress(f.get());
-		ham_strcpy(curMap->name, player.areaName);
+
+		ham_strcpy(curMap->name, curWorld.map[player.levelNum]->name);
 		f.reset();
 		player.lastSave=i;
 		ResetInterface();
@@ -561,7 +570,7 @@ void SaveGame(int i)
 	char txt[128];
 	if (ArchipelagoMode)
 	{
-		ham_sprintf(txt, "Archipelago/%s/save%d.sav", ArchipelagoSeed.c_str(), i + 1);
+		ham_sprintf(txt, "Archipelago/%s_%d/save%d.sav", ArchipelagoSeed.c_str(), ArchipelagoSlotNum, i + 1);
 	}
 	else
 	{
@@ -597,7 +606,7 @@ void DeleteSave(int i)
 
 	if (ArchipelagoMode)
 	{
-		ham_sprintf(txt, "Archipelago/%s/save%d.sav", ArchipelagoSeed.c_str(), i);
+		ham_sprintf(txt, "Archipelago/%s_%d/save%d.sav", ArchipelagoSeed.c_str(), ArchipelagoSlotNum, i);
 	}
 	else
 	{
@@ -654,6 +663,8 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 		if(offX<0)
 			offX=0;
 	}
+
+	UpdateArchipelago();
 
 	byte c = GetControls()|GetArrows();
 	byte tap = c & ~oldc;
@@ -753,7 +764,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 			GetSaves();
 		}
 
-		if ((c & CONTROL_LF) && (!reptCounter) && player.worldNum == WORLD_RANDOMIZER)
+		if ((c & CONTROL_LF) && (!reptCounter) && (player.worldNum == WORLD_RANDOMIZER || ArchipelagoMode))
 		{
 			warpCount++;
 			if (warpCount > 4)

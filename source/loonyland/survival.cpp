@@ -5,6 +5,7 @@
 #include "items.h"
 #include "badge.h"
 #include "log.h"
+#include "loonyArchipelago.h"
 
 #define  SURV_LEVELS 25
 
@@ -245,6 +246,10 @@ byte SurvivalPlaceItem(Map *map,int x,byte otr)
 {
 	byte itm;
 	int cnt=0;
+	if (ArchipelagoMode && survLevel > 10) //let them get special weapons easilly for the first rounds, then speed it up
+	{
+		return 255;
+	}
 
 	while(cnt++<2000)
 	{

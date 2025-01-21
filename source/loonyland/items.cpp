@@ -140,14 +140,14 @@ static const item_t itemInfo[MAX_ITMS]={
 	{1,0,225,225,IF_OBSTACLE|IF_TALL|IF_SHADOW},	// batstand
 	{0,128,239,254,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// bat
 	{1,0,227,227,IF_OBSTACLE|IF_TALL|IF_SHADOW},	// batonstand
-	{0,0,255,255,IF_GET|IF_SHADOW},	// batdoll
-	{0,0,256,256,IF_GET|IF_SHADOW},	// skeldoll
-	{0,0,257,257,IF_GET|IF_SHADOW},	// frogdoll
-	{0,0,258,258,IF_GET|IF_SHADOW},	// ghostdoll
-	{0,0,259,259,IF_GET|IF_SHADOW},	// mummydoll
-	{0,0,260,260,IF_GET|IF_SHADOW},	// swampdoll
-	{0,0,261,261,IF_GET|IF_SHADOW},	// vampdoll
-	{0,0,262,262,IF_GET|IF_SHADOW},	// wolfdoll
+	{0,0,255,255,IF_GET|IF_SHADOW | IF_ARCHIPELAGO},	// batdoll
+	{0,0,256,256,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// skeldoll
+	{0,0,257,257,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// frogdoll
+	{0,0,258,258,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// ghostdoll
+	{0,0,259,259,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// mummydoll
+	{0,0,260,260,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// swampdoll
+	{0,0,261,261,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// vampdoll
+	{0,0,262,262,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// wolfdoll
 	{1,0,228,228,IF_GLOW},	// portal
 	{0,0,263,263,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// badge
 	{0,0,264,264,IF_GET|IF_SHADOW | IF_ARCHIPELAGO },	// cat
@@ -158,14 +158,15 @@ static const item_t itemInfo[MAX_ITMS]={
 	{2, 0, 9, 9, IF_GET | IF_SHADOW | IF_ARCHIPELAGO },	//fertiziler
 	{2, 64, 15, 25, IF_GET | IF_SHADOW | IF_ARCHIPELAGO },	//ghostpotion
 	{2, 0, 11, 11, IF_GET | IF_SHADOW | IF_GLOW | IF_ARCHIPELAGO },	//lantern
-	{2, 0, 12, 12, IF_GET | IF_SHADOW | IF_GLOW | IF_ARCHIPELAGO },	//reflect gem
+	{2, 72, 36, 43, IF_GET | IF_SHADOW | IF_GLOW | IF_ARCHIPELAGO },	//reflect gem
 	{2, 0, 13, 13, IF_GET | IF_SHADOW | IF_ARCHIPELAGO },	//silversling
 	{2, 0, 14, 14, IF_GET | IF_SHADOW | IF_ARCHIPELAGO },	//stick
 	{2, 128, 28, 35, IF_GET | IF_SHADOW | IF_ARCHIPELAGO }	//archipelago
+
 };
 static_assert(std::size(itemInfo) == MAX_ITMS);
 
-static sprite_set_t *itmSpr[3];
+static sprite_set_t *itmSpr[4];
 static int itemAnim;
 static ItemRenderExtents extents;
 
@@ -174,6 +175,7 @@ void InitItems(void)
 	itmSpr[0] = new sprite_set_t("graphics/pickups.jsp");
 	itmSpr[1] = new sprite_set_t("graphics/items.jsp");
 	itmSpr[2] = new sprite_set_t("graphics/randomizer.jsp");
+	itmSpr[3] = new sprite_set_t("graphics/ap_badges.jsp");
 	itemAnim = 0;
 
 	// Offset pacified evil tree sprite so its shadow renders the same as the monster.
@@ -260,72 +262,91 @@ void UpdateItems(void)
 		itemAnim=0;
 }
 
-void RenderItem(int x,int y,int z,byte type,byte info,char bright)
+void RenderItem(int x, int y, int z, byte type, byte info, char bright, int tag)
 {
 	int frm;
+	int hue = 255;
 
-	if(type==0 || type>=MAX_ITMS)
+	if (type == 0 || type >= MAX_ITMS)
 		return;
 
-	if(itemInfo[type].rate>0)
-		frm=(itemAnim*itemInfo[type].rate/256)%(itemInfo[type].spr2-itemInfo[type].spr+1);
+	if (itemInfo[type].rate > 0)
+		frm = (itemAnim * itemInfo[type].rate / 256) % (itemInfo[type].spr2 - itemInfo[type].spr + 1);
 	else
-		frm=0;
+		frm = 0;
 
-	if(type>=ITM_DOOR && type<ITM_DOOR2)
-		frm+=info/2;
-	if(type==ITM_LAKECAVE)
-		frm+=info;
-	if(type==ITM_SWITCH1ON && info>0)
+	if (type >= ITM_DOOR && type < ITM_DOOR2)
+		frm += info / 2;
+	if (type == ITM_LAKECAVE)
+		frm += info;
+	if (type == ITM_SWITCH1ON && info > 0)
 	{
-		frm=info/2;
+		frm = info / 2;
 	}
-	if(type==ITM_SWITCH1OFF && info>0)
+	if (type == ITM_SWITCH1OFF && info > 0)
 	{
-		frm=-info/2;
+		frm = -info / 2;
 	}
-	if(type==ITM_SWITCH2 && info>0)
+	if (type == ITM_SWITCH2 && info > 0)
 	{
-		frm=info/2;
+		frm = info / 2;
 	}
-	if(type==ITM_MAGICPLANT && info>0)
+	if (type == ITM_MAGICPLANT && info > 0)
 	{
-		frm=info;
-	}
-
-	if(type==ITM_AUTODOOR && info>0)
-	{
-		frm=info;
+		frm = info;
 	}
 
-	if(type==ITM_PORTAL)
+	if (type == ITM_AUTODOOR && info > 0)
 	{
-		if(info<16)
-			frm=info/4;
+		frm = info;
+	}
+
+	if (type == ITM_PORTAL)
+	{
+		if (info < 16)
+			frm = info / 4;
 		else
-			frm=info-16+3;
+			frm = info - 16 + 3;
 	}
 
-	if(type>=ITM_GASPIPELR && type<=ITM_GASPIPEUL)
+	if (type >= ITM_GASPIPELR && type <= ITM_GASPIPEUL)
 	{
-		frm+=info/2;
-		if(info>0)
+		frm += info / 2;
+		if (info > 0)
 		{
-			if(info<4)
-				z+=Random(info*2);
+			if (info < 4)
+				z += Random(info * 2);
 			else
-				z+=Random((8-info)*2);
+				z += Random((8 - info) * 2);
 		}
 	}
 
-	frm+=itemInfo[type].spr;
+	frm += itemInfo[type].spr;
 
-	if(itemInfo[type].flags&IF_GLOW)
-		SprDraw(x,y,z,255,bright,itmSpr[itemInfo[type].sprset]->GetSprite(frm),DISPLAY_DRAWME|DISPLAY_GLOW);
+	sprite_t* sprite = itmSpr[itemInfo[type].sprset]->GetSprite(frm);
+	if (type == ITM_BADGE && tag >= 1 && tag <=40)
+	{
+		sprite = itmSpr[3]->GetSprite(tag-1);
+	}
+
+	if (type == ITM_KEY && tag >= 1 && tag <= 8)
+	{
+		hue = tag - 1;
+	}
+
+
+	if (itemInfo[type].flags & IF_GLOW)
+		SprDraw(x, y, z, hue, bright, sprite, DISPLAY_DRAWME | DISPLAY_GLOW);
 	else
-		SprDraw(x,y,z,255,bright,itmSpr[itemInfo[type].sprset]->GetSprite(frm),DISPLAY_DRAWME);
-	if(itemInfo[type].flags&IF_SHADOW)
-		SprDraw(x,y,0,255,bright,itmSpr[itemInfo[type].sprset]->GetSprite(frm),DISPLAY_DRAWME|DISPLAY_SHADOW);
+		SprDraw(x, y, z, hue, bright, sprite, DISPLAY_DRAWME);
+	if (itemInfo[type].flags & IF_SHADOW)
+		SprDraw(x, y, 0, hue, bright, sprite, DISPLAY_DRAWME | DISPLAY_SHADOW);
+
+}
+
+void RenderItem(int x,int y,int z,byte type,byte info,char bright)
+{
+	RenderItem(x, y, z, type, info, bright, 0);
 }
 
 

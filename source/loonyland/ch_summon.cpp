@@ -3,6 +3,7 @@
 #include "options.h"
 #include "bowling.h"
 #include "display.h"
+#include "loonyArchipelago.h"
 
 #define PLYR_ACCEL	(FIXAMT)
 #define PLYR_DECEL	(FIXAMT*3/4)
@@ -170,6 +171,10 @@ void SummonFire(Guy *me)
 	{
 		FireBullet(me->x,me->y,((me->facing+2)*32)&255,BLT_DEVILDOLL);
 		FireBullet(me->x,me->y,((me->facing+6)*32)&255,BLT_DEVILDOLL);
+	}
+	if (ArchipelagoMode && opt.cheats[CH_MAXPOWER])
+	{
+		FireBullet(me->x, me->y, ((me->facing + 4) * 32) & 255, BLT_DEVILDOLL);
 	}
 	player.reload=15;
 

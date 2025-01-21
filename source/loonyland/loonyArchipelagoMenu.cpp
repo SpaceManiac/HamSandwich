@@ -28,10 +28,7 @@ static std::string oldStatus = "";
 
 void InitArchipelagoMenu(void)
 {
-	for (int i = 0; i < NUM_BADGES; i++)
-	{
-		opt.cheats[i] = 0;
-	}
+
 	oldc = 255;
 	cursor = CURSOR_START;
 	InitPlasma(7);
@@ -73,8 +70,13 @@ UpdateArchipelagoMenu(int* lastTime, MGLDraw* mgl)
 
 			if (c == SDLK_j)
 			{
-				//InitPlayer(INIT_ARCHIPELAGO, 0, 0);
 				quit = false;
+				ap_modesAvail[0] = 1;
+				ap_modesAvail[1] = 1;
+				ap_modesAvail[2] = 1;
+				ap_modesAvail[3] = 1;
+				ap_modesAvail[4] = 1;
+				ap_modesAvail[5] = 1;
 				CO_RETURN 1;
 			}
 
