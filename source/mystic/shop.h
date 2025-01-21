@@ -15,4 +15,6 @@ void RenderShop(void);
 void EnterShop(void);
 void LeaveShop(void);
 
+void BuyGear(byte which);
+
 #endif

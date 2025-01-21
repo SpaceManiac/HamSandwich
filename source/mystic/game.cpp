@@ -8,6 +8,7 @@
 #include "options.h"
 #include "trivia.h"
 #include "palettes.h"
+#include "archipelago.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -25,7 +26,7 @@ char lastKey=0;
 
 MGLDraw *gamemgl;
 static Map		*curMap;
-byte gameMode=GAMEMODE_PLAY;
+byte gameMode=GAMEMODE_NONE;
 byte	mapToGoTo;
 byte	worldNum;
 byte    mapNum;
@@ -129,7 +130,8 @@ byte InitLevel(byte map)
 	InitGuys(128);
 	InitBullets();
 	InitPlayer(INIT_LEVEL,0,map);
-	InitMessage();
+	if (!Archipelago())
+		InitMessage();
 	NewBigMessage(curMap->name,100);
 	InitParticles(256);
 	lastKey=0;
@@ -160,7 +162,7 @@ byte InitLevel(byte map)
 		UpdateGuys(curMap,&curWorld);
 		SetGiveUpText(1+battle);
 
-		if(!battle && player.levelPassed[player.worldNum][player.levelNum]==1)
+		if(!battle && PlayerPassedLevel(player.worldNum, player.levelNum))
 		{
 			// you've passed this level before, clean out incriminating prizes
 			GetRidOfGoodStuff(curMap);
@@ -351,6 +353,11 @@ TASK(byte) LunaticRun(int *lastTime)
 					if(windDownReason==LEVEL_SHOP)
 					{
 						gameMode=GAMEMODE_SHOP;
+						if (auto ap = Archipelago())
+						{
+							// When you visit the shop, you get free hints.
+							ap->HintShop();
+						}
 					}
 					else if(windDownReason==LEVEL_FAIRY)
 					{
@@ -623,6 +630,9 @@ TASK(byte) LunaticRun(int *lastTime)
 	CDMessingTime+=garbageTime;	// time wasted with such things as playing animations
 	garbageTime=0;
 	JamulSoundUpdate();
+
+	if (auto ap = Archipelago())
+		ap->Update();
 
 	CO_RETURN LEVEL_PLAYING;
 }
@@ -905,7 +915,7 @@ TASK(byte) LunaticWorld(byte world)
 		}
 		else if(result==LEVEL_WIN)
 		{
-			 mapNum=player.levelNum;
+			mapNum=player.levelNum;
 			PlayerWinLevel(world,mapNum,curMapFlags&MAP_SECRET);
 			if((player.worldNum==0 && mapNum==14) ||
 				(player.worldNum==1 && mapNum==12) ||
@@ -948,7 +958,8 @@ TASK(byte) LunaticWorld(byte world)
 				else
 				{
 					player.worldNum=0;
-					player.nightmare=1;
+					if (!Archipelago())
+						player.nightmare=1;
 					FreeWorld(&curWorld);
 					if(!LoadWorld(&curWorld,worldName[player.worldNum]))
 						CO_RETURN WORLD_ABORT;
@@ -1016,10 +1027,12 @@ TASK(byte) LunaticGame(MGLDraw *mgl,byte load)
 		}
 		if(worldResult==WORLD_NAG)
 		{
+			gameMode = GAMEMODE_NONE;
 			ExitPlayer();
 			CO_RETURN 1;
 		}
 	}
+	gameMode = GAMEMODE_NONE;
 	ExitPlayer();
 	CO_RETURN 0;
 }

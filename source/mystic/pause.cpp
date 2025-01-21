@@ -4,6 +4,7 @@
 #include "options.h"
 #include "challenge.h"
 #include "appdata.h"
+#include "archipelago.h"
 
 #define SUBMODE_NONE	 0
 #define SUBMODE_SLOTPICK 1
@@ -40,12 +41,17 @@ void RenderPauseMenu(void)
 
 	GetShopSpr(34)->Draw(pauseX,230,GetDisplayMGL());
 	PrintBrightGlow(pauseX+10,240,"Cancel",-16+(cursor==0)*16,0);
-	if(!Challenging())
+	if(!Challenging() && !Archipelago())
 	{
 		PrintBrightGlow(pauseX+10,280,"Load",-16+(cursor==1)*16,0);
 	}
 	if(giveUp==0)
-		PrintBrightGlow(pauseX+10,320,"Save",-16+(cursor==2)*16,0);
+	{
+		if (!Archipelago())
+		{
+			PrintBrightGlow(pauseX+10,320,"Save",-16+(cursor==2)*16,0);
+		}
+	}
 	else if(giveUp==2)	// random battle
 		PrintBrightGlow(pauseX+10,320,"Run Away",-16+(cursor==2)*16,0);
 	else 	// regular level
@@ -62,6 +68,14 @@ void RenderPauseMenu(void)
 		PrintBrightGlow(pauseX+10+160,360,"III",-16+(cursor==4)*16,0);
 	PrintBrightGlow(pauseX+10,400,"Quit Game",-16+(cursor==5)*16,0);
 	RenderSlotPickMenu();
+
+	if (auto ap = Archipelago())
+	{
+		std::string s = "AP: ";
+		s += ap->Status();
+		Print(pauseX+10,SCRHEI-26+2,s,1,2);
+		Print(pauseX+10,SCRHEI-26,s,0,2);
+	}
 }
 
 void RenderSlotPickMenu(void)
@@ -179,9 +193,10 @@ void InitPauseMenu(void)
 		f.reset();
 	}
 	MakeNormalSound(SND_PAUSE);
-	if(cursor==4 && (!giveUp))
+
+	if((Challenging() || Archipelago()) && cursor==1)
 		cursor=0;
-	if(cursor==2 && (giveUp))
+	if(Archipelago() && cursor==2 && giveUp==0)
 		cursor=0;
 
 	pauseX=-250;
@@ -217,7 +232,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			subX-=25;
 	}
 
-	c=GetControls();
+	c=GetControls() | GetArrows();
 
 	reptCounter++;
 	if((!oldc) || (reptCounter>10))
@@ -232,7 +247,9 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 				cursor=5;
 			if(cursor==3)
 				cursor=2;
-			if(Challenging() && cursor==1)
+			if(Archipelago() && cursor==2 && giveUp==0)
+				cursor=1;
+			if((Challenging() || Archipelago()) && cursor==1)
 				cursor=0;
 
 			MakeNormalSound(SND_MENUCLICK);
@@ -242,10 +259,12 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			cursor++;
 			if(cursor==6)
 				cursor=0;
+			if((Challenging() || Archipelago()) && cursor==1)
+				cursor=2;
+			if(Archipelago() && cursor==2 && giveUp==0)
+				cursor=3;
 			if(cursor==3)
 				cursor=4;
-			if(Challenging() && cursor==1)
-				cursor=2;
 
 			MakeNormalSound(SND_MENUCLICK);
 		}

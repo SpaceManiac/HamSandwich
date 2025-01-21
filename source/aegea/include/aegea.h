@@ -9,6 +9,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <chrono>
 
 // Forward declarations are used here so games only need to #include <json.h>
 // if they are actually using the arbitrary-value storage system.
@@ -19,6 +20,27 @@ namespace jt
 }
 
 class WebSocket;
+
+class ArchipelagoCache
+{
+public:
+	// Read contents from a cache key, or an empty string if absent.
+	virtual std::string read(std::string_view key) = 0;
+	// Write contents to a cache key.
+	virtual void write(std::string_view key, std::string_view data) = 0;
+
+	class FileSystem;
+};
+
+class ArchipelagoCache::FileSystem : public ArchipelagoCache
+{
+	std::string_view prefix;
+public:
+	explicit FileSystem(std::string_view prefix) : prefix(prefix) {}
+
+	std::string read(std::string_view key);
+	void write(std::string_view key, std::string_view data);
+};
 
 class ArchipelagoClient
 {
@@ -64,6 +86,10 @@ public:
 	std::string_view error_message() const;
 	std::string_view connection_status() const;
 	bool is_active() const;
+
+	// Use the given cache for data packages. It should outlive this ArchipelagoCLient.
+	// By default a simple filesystem cache is used. Set nullptr to disable cache.
+	void use_cache(ArchipelagoCache* cache);
 
 	// Call this on a regular basis (ex: once per frame) to handle networking.
 	void update();
@@ -125,12 +151,15 @@ public:
 	const std::set<int64_t>& missing_locations() const;
 
 	// Call when a location is checked (picked up, completed, achieved).
-	void check_location(int64_t location);
+	// Returns true if it was actually new.
+	bool check_location(int64_t location);
 	// Call when the game's goal is completed.
 	void check_goal();
 
-	// Call to scout locations.
+	// Call to scout specific locations. Can optionally mark them as hinted.
 	void scout_locations(Slice<int64_t> locations, bool create_as_hint = false);
+	// Call to scout all of this game's locations, without creating hints.
+	void scout_locations();
 	// Return the item scouted at a particular location. Requires calling scout_locations first.
 	const Item* item_at_location(int64_t location) const;
 
@@ -254,9 +283,14 @@ public:
 	void storage_set_notify(Slice<std::string_view> keys);
 
 	// Return a storage prefix unique to this slot to avoid conflicts.
-	std::string_view storage_private();
+	std::string_view storage_private() const;
 	// Return storage_private() + key.
-	std::string storage_private(std::string_view key);
+	std::string storage_private(std::string_view key) const;
+	// Checks whether `full_key` starts with `storage_private(prefix)`.
+	// Returns the remainder of the string.
+	std::string_view starts_with_storage_private(std::string_view full_key, std::string_view prefix = {}) const;
+	// Checks whether `full_key` is equal to `storage_private(key)`.
+	bool is_storage_private(std::string_view full_key, std::string_view key) const;
 
 	// ------------------------------------------------------------------------
 private:
@@ -265,16 +299,20 @@ private:
 		Idle,
 		ConnectingExact,
 		ConnectingAutoWss,
+		ConnectingAutoWs,
+		Reconnecting,
 		WaitingForRoomInfo,
 		WaitingForDataPackage,
 		WaitingForConnected,
 		Active,
 	} status = Idle;
 
+	ArchipelagoCache *cache;
 	std::string game, address, slot, password;
 	std::set<std::string, std::less<>> tags;
 	std::string error;
 	std::unique_ptr<WebSocket> socket;
+	std::chrono::steady_clock::time_point reconnect_after;
 	std::vector<jt::Json> outgoing;
 
 	int player_id_ = -1;

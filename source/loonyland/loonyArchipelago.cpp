@@ -86,12 +86,12 @@ std::unordered_map<int, chatData> chat_table = {
 };
 
 
-int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password) {
-	//for (int i = 0; i < 40; i++) {
-	//	opt.meritBadge[i] = MERIT_NO;
-	//}
-
+int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string Password)
+{
+	static ArchipelagoCache::FileSystem cache { "appdata/archipelago/" };
 	ap = std::make_unique<ArchipelagoClient>("Loonyland", IPAddress, SlotName, Password);
+	ap->use_cache(&cache);
+	//AP_SetLocationCheckedCallback(SetLocationChecked);
 	ap->death_link_enable();
 
 
@@ -703,10 +703,10 @@ void UpdateArchipelago()
 	while (auto change = ap->pop_storage_change())
 	{
 		auto [key, value, _] = *change;
-		if (value->isLong() && key.size() > prefix.size() && key.substr(0, prefix.size()) == prefix)
+		auto var = ap->starts_with_storage_private(key, "PLAYER_VAR_");
+		if (value->isLong() && !var.empty())
 		{
-			int var = std::stoi(std::string(key.substr(prefix.size())));
-			player.var[var] = value->getLong();
+			player.var[std::stoi(std::string(var))] = value->getLong();
 		}
 	}
 }

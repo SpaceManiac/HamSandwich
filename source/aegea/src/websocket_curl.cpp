@@ -65,7 +65,15 @@ struct CurlWebSocket : public WebSocket
 		{
 			if (msg->msg == CURLMSG_DONE && msg->easy_handle == curl.get())
 			{
-				if (msg->data.result != CURLE_OK)
+				if (msg->data.result == CURLE_HTTP_RETURNED_ERROR)
+				{
+					error = "HTTP ";
+					long http_code = 0;
+					curl_easy_getinfo(curl.get(), CURLINFO_RESPONSE_CODE, &http_code);
+					error += std::to_string(http_code);
+					return nullptr;
+				}
+				else if (msg->data.result != CURLE_OK)
 				{
 					error = curl_easy_strerror(msg->data.result);
 					return nullptr;

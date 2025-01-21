@@ -136,7 +136,6 @@ byte offsetdir;
 byte curCustom;
 
 static byte oldc=0;
-mfont_t pickerFont;
 char customName[MAX_CUSTOM][32];
 char customFname[MAX_CUSTOM][32];
 static byte creditsOrIntro;
@@ -208,7 +207,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 		}
 
 		// now real updating
-		c=GetControls();
+		c=GetControls() | GetArrows();
 
 		reptCounter++;
 		if((!oldc) || (reptCounter>10))
@@ -257,6 +256,11 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			return 1;
 		}
 //#endif
+		if(c==SDLK_p)
+		{
+			title->cursor=6;
+			return 1;
+		}
 		*lastTime-=TIME_PER_FRAME;
 	}
 

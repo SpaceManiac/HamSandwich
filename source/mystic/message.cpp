@@ -2,6 +2,7 @@
 #include "sound.h"
 #include "game.h"
 #include "intface.h"
+#include "string_extras.h"
 
 char speech[26*4][64]={
 	// 0
@@ -138,6 +139,16 @@ char speech[26*4][64]={
 
 byte speechX,speechY,curSpeech;
 
+struct message_t
+{
+	int x,y;
+	int dy;
+	int timer;
+	int bright;
+	char brightDir;
+	char msg[64];
+};
+
 message_t bigMessage;
 message_t message;
 static byte oldc;
@@ -149,7 +160,7 @@ void InitMessage(void)
 
 void NewBigMessage(const char *txt,int time)
 {
-	strncpy(bigMessage.msg,txt,32);
+	ham_strcpy(bigMessage.msg,txt);
 	bigMessage.x=320-GetStrLength(bigMessage.msg,0)/2;
 	bigMessage.y=-100;
 	bigMessage.dy=0;
@@ -160,7 +171,7 @@ void NewBigMessage(const char *txt,int time)
 
 void NewMessage(const char *txt,int time)
 {
-	strncpy(message.msg,txt,32);
+	ham_strcpy(message.msg,txt);
 	message.x=320-GetStrLength(message.msg,2)/2;
 	message.y=484;
 	message.dy=-8;
@@ -275,12 +286,12 @@ void InitSpeech(byte spc)
 	if(spc==5)
 	{
 		// this guy tells you how many levels remain to clear.
-		if(player.levelsPassed==9)
+		if(PlayerLevelsPassed()==9)
 			spc=6;
 		else
 		{
-			speech[23][22]='9'-player.levelsPassed;
-			if(player.levelsPassed==8)
+			speech[23][22]='9'-PlayerLevelsPassed();
+			if(PlayerLevelsPassed()==8)
 			{
 				speech[23][34]='.';
 				speech[23][35]=' ';

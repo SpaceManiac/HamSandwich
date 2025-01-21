@@ -4,8 +4,11 @@
 #include "game.h"
 #include "title.h"
 
-mfont_t  *gameFont[3]={NULL,NULL,NULL};
-MGLDraw  *mgl=NULL;
+mfont_t *ListiumBig;
+mfont_t *Verdana;
+mfont_t *Listium;
+static mfont_t *gameFont[3]={NULL,NULL,NULL};
+static MGLDraw *mgl=NULL;
 
 int scrx=320,scry=240,scrdx=0,scrdy=0;
 int rscrx=320<<FIXSHIFT,rscry=240<<FIXSHIFT;
@@ -27,14 +30,14 @@ bool InitDisplay(MGLDraw *mainmgl)
 	mgl=mainmgl;
 	if(!mgl)
 		return false;
-	gameFont[0]=(mfont_t *)malloc(sizeof(mfont_t));
+	ListiumBig = gameFont[0]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[0])
 		return false;
 	FontInit(mgl);
 	if(FontLoad("graphics/listiumbig.jft",gameFont[0])!=FONT_OK)
 		return false;
 
-	gameFont[1]=(mfont_t *)malloc(sizeof(mfont_t));
+	Verdana = gameFont[1]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[1])
 		return false;
 
@@ -42,7 +45,7 @@ bool InitDisplay(MGLDraw *mainmgl)
 		return false;
 	cursor[0] = RightBraceHack(gameFont[1]);
 
-	gameFont[2]=(mfont_t *)malloc(sizeof(mfont_t));
+	Listium = gameFont[2]=(mfont_t *)malloc(sizeof(mfont_t));
 	if(!gameFont[2])
 		return false;
 
@@ -212,7 +215,7 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 	scry=(rscry>>FIXSHIFT);
 }
 
-void Print(int x,int y,const char *s,char bright,byte font)
+void Print(int x,int y,std::string_view s,char bright,byte font)
 {
 	if(font==0)
 		FontPrintStringBright(x,y,s,gameFont[0],bright);
@@ -223,6 +226,11 @@ void Print(int x,int y,const char *s,char bright,byte font)
 		else
 			FontPrintStringSolid(x,y,s,gameFont[font],0);
 	}
+}
+
+void RightPrint(int x, int y, std::string_view s, char bright, byte font)
+{
+	Print(x - FontStrLen(s, gameFont[font]), y, s, bright, font);
 }
 
 void PrintBright(int x,int y,const char *s,char bright,byte font)
@@ -245,7 +253,7 @@ void PrintBrightGlow(int x,int y,const char *s,char brt,byte font)
 	FontPrintStringBrightGlow(x,y,s,brt,gameFont[font]);
 }
 
-void CenterPrint(int midx,int y,const char *s,char bright,byte font)
+void CenterPrint(int midx,int y,std::string_view s,char bright,byte font)
 {
 	int x;
 
@@ -272,7 +280,7 @@ void CenterPrintGlow(int y,const char *s,byte font)
 	FontPrintStringGlow(x,y,s,gameFont[font]);
 }
 
-int GetStrLength(const char *s,byte fnt)
+int GetStrLength(std::string_view s,byte fnt)
 {
 	return FontStrLen(s,gameFont[fnt]);
 }

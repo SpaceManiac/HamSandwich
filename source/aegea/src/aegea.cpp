@@ -1,17 +1,21 @@
 #include "aegea.h"
 #include <time.h>
+#include <fstream>
+#include <filesystem>
 #include <json.h>
 #include "websocket.h"
 
 #ifdef NDEBUG
-#define debug_printf(...)
+#define debug_log(...)
 #else
-#define debug_printf(...) fprintf(stderr, "[AP] " __VA_ARGS__)
+#define debug_log(fmt, ...) fprintf(stderr, "[Aegea] " fmt "\n", __VA_ARGS__)
 #endif
 
 namespace
 {
 	const jt::Json json_null;
+
+	ArchipelagoCache::FileSystem default_cache { "archipelago/" };
 
 	namespace IncomingCmd
 	{
@@ -66,8 +70,61 @@ namespace
 	}
 }
 
+// ------------------------------------------------------------------------
+
+std::string ArchipelagoCache::FileSystem::read(std::string_view key)
+{
+	std::string filename { prefix };
+	filename.append("/");
+	filename.append(key);
+	filename.append(".cache");
+
+	std::ifstream ifs(filename, std::ios::in | std::ios::binary | std::ios::ate);
+	if (!ifs)
+	{
+		return "";
+	}
+
+	auto size = ifs.tellg();
+	ifs.seekg(0, std::ios::beg);
+	std::string buffer(size, '\0');
+	ifs.read(buffer.data(), size);
+	return buffer;
+}
+
+void ArchipelagoCache::FileSystem::write(std::string_view key, std::string_view data)
+{
+	std::error_code ec;
+	std::filesystem::create_directories(prefix, ec);
+
+	std::string filename { prefix };
+	filename.append("/");
+	filename.append(key);
+	filename.append(".cache");
+
+	std::string tempFilename = filename;
+	for (int i = 0; i < 10; ++i)
+	{
+		tempFilename += "0123456789"[rand() % 10];
+	}
+
+	std::ofstream ofs(tempFilename, std::ios::out | std::ios::binary);
+	if (ofs)
+	{
+		ofs.write(data.data(), data.size());
+		ofs.close();
+		std::filesystem::rename(tempFilename, filename);
+	}
+}
+
+// ------------------------------------------------------------------------
+
+// Declaring and defining this lets `#include`rs not need Json's definition.
+ArchipelagoClient::~ArchipelagoClient() = default;
+
 ArchipelagoClient::ArchipelagoClient(std::string_view game, std::string_view address, std::string_view slot, std::string_view password)
-	: game(game)
+	: cache(&default_cache)
+	, game(game)
 	, address(address)
 	, slot(slot)
 	, password(password)
@@ -82,20 +139,21 @@ ArchipelagoClient::ArchipelagoClient(std::string_view game, std::string_view add
 	}
 	else
 	{
-		std::string fullAddress { address };
-		socket = WebSocket::connect(fullAddress.c_str());
+		socket = WebSocket::connect(this->address.c_str());
 		status = ConnectingExact;
 	}
 }
 
-ArchipelagoClient::~ArchipelagoClient()
+void ArchipelagoClient::use_cache(ArchipelagoCache *cache)
 {
-	// Declaring and defining this lets good things happen.
+	this->cache = cache;
 }
 
 std::string_view ArchipelagoClient::error_message() const
 {
-	return !error.empty() ? error : socket ? socket->error_message() : "no socket";
+	return !error.empty() ? error :
+		!socket ? "Not connected" :
+		socket->error_message();
 }
 
 std::string_view ArchipelagoClient::connection_status() const
@@ -110,6 +168,7 @@ std::string_view ArchipelagoClient::connection_status() const
 	}
 	else if (status == WaitingForRoomInfo)
 	{
+		// Won't be seen normally as this is the first message we recv().
 		return "Waiting for room info...";
 	}
 	else if (status == WaitingForDataPackage)
@@ -172,7 +231,7 @@ void ArchipelagoClient::send_connect()
 		tagsJ.emplace_back(tag);
 	}
 	// Bypass outgoing queue during connection setup.
-	debug_printf("--> %s\n", connect.toString().c_str());
+	debug_log("--> %s", connect.toString().c_str());
 	socket->send_text(outgoingJ.toString().c_str());
 	status = WaitingForConnected;
 }
@@ -195,25 +254,55 @@ void ArchipelagoClient::update()
 	{
 		if (status == ConnectingAutoWss)
 		{
-			debug_printf("Auto-TLS failed, trying insecure: %.*s\n", (int)socket->error_message().size(), socket->error_message().data());
+			debug_log("Auto-TLS failed, trying insecure: %.*s", (int)socket->error_message().size(), socket->error_message().data());
 			// wss://X failed, try ws://X
 			std::string fullAddress = "ws://" + address;
 			socket = WebSocket::connect(fullAddress.c_str());
-			status = ConnectingExact;  // Nothing left to try
+			status = ConnectingAutoWs;
+		}
+		else if (status == Active || status == Reconnecting)
+		{
+			auto now = std::chrono::steady_clock::now();
+			if (now > reconnect_after)
+			{
+				debug_log("Lost connection, retrying: %.*s", (int)socket->error_message().size(), socket->error_message().data());
+				// We had a connection, but it died, so try to re-establish it.
+				socket = WebSocket::connect(address.c_str());
+				status = Reconnecting;
+				reconnect_after = now + std::chrono::seconds(10);
+			}
+			else
+			{
+				// Last reconnect failed, so waiting to try again.
+				return;
+			}
 		}
 		else
 		{
+			// We never had a connection. Maybe the address was wrong or the 'net is out.
 			return;
 		}
 	}
 
-	if (socket->is_connected() && (status == ConnectingAutoWss || status == ConnectingExact))
-	{
-		status = WaitingForRoomInfo;
-	}
-
 	while (const WebSocket::Message* message = socket->recv())
 	{
+		// Has to be in the loop so it's after the recv() call, otherwise we
+		// might fail to commit the final address and reconnects will die.
+		if (socket->is_connected() && (status == ConnectingAutoWss || status == ConnectingAutoWs || status == ConnectingExact))
+		{
+			// Commit whichever of wss:// or ws:// succeeded to the address field for later use.
+			if (status == ConnectingAutoWss)
+			{
+				address.insert(0, "wss://");
+			}
+			else if (status == ConnectingAutoWs)
+			{
+				address.insert(0, "ws://");
+			}
+			// This will probably be overwritten immediately.
+			status = WaitingForRoomInfo;
+		}
+
 		if (message->type == WebSocket::Close)
 		{
 			error = "Server closed WebSocket connection";
@@ -225,19 +314,19 @@ void ArchipelagoClient::update()
 		{
 			error = "Server sent invalid JSON: ";
 			error += jt::Json::StatusToString(parseStatus);
-			debug_printf("Server sent invalid JSON: %s in %s\n", jt::Json::StatusToString(parseStatus), message->data.c_str());
+			debug_log("Server sent invalid JSON: %s in %s", jt::Json::StatusToString(parseStatus), message->data.c_str());
 			continue;
 		}
 		if (!body.isArray())
 		{
 			error = "Server sent non-array JSON";
-			debug_printf("Server sent non-array JSON: %s\n", message->data.c_str());
+			debug_log("Server sent non-array JSON: %s", message->data.c_str());
 			continue;
 		}
 
 		for (auto& packet : body.getArray())
 		{
-			debug_printf("<-- %s\n", packet.toString().c_str());
+			debug_log("<-- %s", packet.toString().c_str());
 
 			const auto& cmdJ = packet["cmd"];
 			if (!cmdJ.isString())
@@ -256,7 +345,22 @@ void ArchipelagoClient::update()
 				auto& games = getDataPackage["games"].setArray();
 				for (const auto& pair : packet["datapackage_checksums"].getObject())
 				{
-					// TODO: Check for cache validitity here.
+					if (cache)
+					{
+						std::string cachedStr = cache->read(pair.first);
+						if (!cachedStr.empty())
+						{
+							auto [status, json] = jt::Json::parse(cachedStr);
+							if (status == jt::Json::success && json.isObject())
+							{
+								if (json["checksum"].isString() && pair.second.isString() && json["checksum"].getString() == pair.second.getString())
+								{
+									load_data_package(pair.first, std::move(json));
+									continue;
+								}
+							}
+						}
+					}
 					games.emplace_back(pair.first);
 				}
 
@@ -267,7 +371,7 @@ void ArchipelagoClient::update()
 				else
 				{
 					// Bypass outgoing queue during connection setup.
-					debug_printf("--> %s\n", getDataPackage.toString().c_str());
+					debug_log("--> %s", getDataPackage.toString().c_str());
 					socket->send_text(outgoingJ.toString().c_str());
 					status = WaitingForDataPackage;
 				}
@@ -285,8 +389,11 @@ void ArchipelagoClient::update()
 			{
 				for (auto& pair : packet["data"]["games"].getObject())
 				{
+					if (cache)
+					{
+						cache->write(pair.first, pair.second.toString());
+					}
 					load_data_package(std::move(pair.first), std::move(pair.second));
-					// TODO: Store to cache.
 				}
 				send_connect();
 			}
@@ -360,8 +467,8 @@ void ArchipelagoClient::update()
 				}
 				else
 				{
-					debug_printf(
-						"ReceivedItems expected index=%u, got index=%d\n",
+					debug_log(
+						"ReceivedItems expected index=%u, got index=%d",
 						static_cast<unsigned int>(received_items.size()),
 						index
 					);
@@ -538,7 +645,7 @@ void ArchipelagoClient::update()
 			}
 			else
 			{
-				debug_printf("Server sent unknown \"cmd\": %s\n", cmd.c_str());
+				debug_log("Server sent unknown \"cmd\": %s", cmd.c_str());
 			}
 		}
 	}
@@ -548,7 +655,7 @@ void ArchipelagoClient::update()
 #ifndef NDEBUG
 		for (const auto& packet : outgoing)
 		{
-			debug_printf("--> %s\n", packet.toString().c_str());
+			debug_log("--> %s", packet.toString().c_str());
 		}
 #endif
 
@@ -686,7 +793,12 @@ const std::set<int64_t>& ArchipelagoClient::checked_locations() const
 	return checked_locations_;
 }
 
-void ArchipelagoClient::check_location(int64_t location)
+const std::set<int64_t>& ArchipelagoClient::missing_locations() const
+{
+	return missing_locations_;
+}
+
+bool ArchipelagoClient::check_location(int64_t location)
 {
 	auto [iter, inserted] = checked_locations_.insert(location);
 	if (inserted)
@@ -695,6 +807,7 @@ void ArchipelagoClient::check_location(int64_t location)
 		packet["cmd"] = OutgoingCmd::LocationChecks;
 		packet["locations"][0] = location;
 	}
+	return inserted;
 }
 
 void ArchipelagoClient::check_goal()
@@ -714,6 +827,22 @@ void ArchipelagoClient::scout_locations(Slice<int64_t> locations, bool create_as
 		array.emplace_back(location);
 	}
 	packet["create_as_hint"] = create_as_hint ? 2 : 0;
+}
+
+void ArchipelagoClient::scout_locations()
+{
+	jt::Json& packet = outgoing.emplace_back();
+	packet["cmd"] = OutgoingCmd::LocationScouts;
+	auto& array = packet["locations"].setArray();
+	array.reserve(checked_locations_.size() + missing_locations_.size());
+	for (int64_t location : checked_locations_)
+	{
+		array.emplace_back(location);
+	}
+	for (int64_t location : missing_locations_)
+	{
+		array.emplace_back(location);
+	}
 }
 
 const ArchipelagoClient::Item* ArchipelagoClient::item_at_location(int64_t location) const
@@ -860,14 +989,32 @@ void ArchipelagoClient::storage_set_notify(Slice<std::string_view> keys)
 	}
 }
 
-std::string_view ArchipelagoClient::storage_private()
+std::string_view ArchipelagoClient::storage_private() const
 {
 	return storage_private_prefix;
 }
 
-std::string ArchipelagoClient::storage_private(std::string_view key)
+std::string ArchipelagoClient::storage_private(std::string_view key) const
 {
 	std::string copy = storage_private_prefix;
 	copy += key;
 	return copy;
+}
+
+std::string_view ArchipelagoClient::starts_with_storage_private(std::string_view full_key, std::string_view prefix) const
+{
+	if (full_key.size() >= storage_private_prefix.size() + prefix.size()
+		&& full_key.substr(0, storage_private_prefix.size()) == storage_private_prefix
+		&& full_key.substr(storage_private_prefix.size(), prefix.size()) == prefix)
+	{
+		return full_key.substr(storage_private_prefix.size() + prefix.size());
+	}
+	return {};
+}
+
+bool ArchipelagoClient::is_storage_private(std::string_view full_key, std::string_view key) const
+{
+	return full_key.size() == storage_private_prefix.size() + key.size()
+		&& full_key.substr(0, storage_private_prefix.size()) == storage_private_prefix
+		&& full_key.substr(storage_private_prefix.size(), key.size()) == key;
 }

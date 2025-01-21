@@ -2,9 +2,11 @@
 #include "display.h"
 #include "particle.h"
 #include "challenge.h"
+#include "archipelago.h"
+#include "shop.h"
 
 sprite_set_t *itmSpr;
-static byte glowism;
+static dword glowism = 0;
 
 void InitItems(void)
 {
@@ -31,12 +33,25 @@ void RenderItem(int x,int y,byte type,char bright)
 {
 	byte b;
 
+	if (type == ITM_ARCHIPELAGO)
+	{
+		if (auto ap = Archipelago())
+		{
+			type = ap->MysticItemAtLocation(player.worldNum, player.levelNum);
+			if (type > 128)
+			{
+				SprDraw(x - 26, y - 42, 0, 255, bright, GetShopSpr(type - 128), DISPLAY_DRAWME);
+				return;
+			}
+		}
+	}
+
 	switch(type)
 	{
 		case ITM_NONE:
 			break;
 		case ITM_HAMMERUP:
-			SprDraw(x,y,0,255,bright+abs((glowism&7)-3),itmSpr->GetSprite(0),DISPLAY_DRAWME|DISPLAY_GLOW);
+			SprDraw(x,y,0,255,bright+abs(int(glowism&7)-3),itmSpr->GetSprite(0),DISPLAY_DRAWME|DISPLAY_GLOW);
 			break;
 		case ITM_PANTS:
 			SprDraw(x,y,8,255,bright,itmSpr->GetSprite(59+(glowism&7)),DISPLAY_DRAWME|DISPLAY_GLOW);
@@ -58,7 +73,7 @@ void RenderItem(int x,int y,byte type,char bright)
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(43+((glowism/2)&15)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
 		case ITM_BRAIN:
-			SprDraw(x,y,6,255,bright-6+abs((glowism&7)-3),itmSpr->GetSprite(7),DISPLAY_DRAWME|DISPLAY_GLOW);
+			SprDraw(x,y,6,255,bright-6+abs(int(glowism&7)-3),itmSpr->GetSprite(7),DISPLAY_DRAWME|DISPLAY_GLOW);
 			break;
 		case ITM_BOX:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(1),DISPLAY_DRAWME);
@@ -93,19 +108,19 @@ void RenderItem(int x,int y,byte type,char bright)
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(34),DISPLAY_DRAWME);
 			break;
 		case ITM_KEYCH1:
-			SprDraw(x,y,8,255,bright-4+abs((glowism&7)-3),itmSpr->GetSprite(83+(glowism&15)),DISPLAY_DRAWME);
+			SprDraw(x,y,8,255,bright-4+abs(int(glowism&7)-3),itmSpr->GetSprite(83+(glowism&15)),DISPLAY_DRAWME);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(83+(glowism&15)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
 		case ITM_KEYCH2:
-			SprDraw(x,y,8,255,bright-4+abs((glowism&7)-3),itmSpr->GetSprite(99+(glowism&15)),DISPLAY_DRAWME);
+			SprDraw(x,y,8,255,bright-4+abs(int(glowism&7)-3),itmSpr->GetSprite(99+(glowism&15)),DISPLAY_DRAWME);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(99+(glowism&15)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
 		case ITM_KEYCH3:
-			SprDraw(x,y,8,255,bright-4+abs((glowism&7)-3),itmSpr->GetSprite(115+(glowism&15)),DISPLAY_DRAWME);
+			SprDraw(x,y,8,255,bright-4+abs(int(glowism&7)-3),itmSpr->GetSprite(115+(glowism&15)),DISPLAY_DRAWME);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(115+(glowism&15)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
 		case ITM_KEYCH4:
-			SprDraw(x,y,8,255,bright-4+abs((glowism&7)-3),itmSpr->GetSprite(131+(glowism&15)),DISPLAY_DRAWME);
+			SprDraw(x,y,8,255,bright-4+abs(int(glowism&7)-3),itmSpr->GetSprite(131+(glowism&15)),DISPLAY_DRAWME);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(131+(glowism&15)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
 		case ITM_KEY:
@@ -121,8 +136,8 @@ void RenderItem(int x,int y,byte type,char bright)
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(20),DISPLAY_DRAWME);
 			break;
 		case ITM_LOONYKEY:
-			b=abs(16-(glowism&31));
-			SprDraw(x,y,0,glowism/32,bright+b,itmSpr->GetSprite(25),DISPLAY_DRAWME);
+			b=abs(16-int(glowism&31));
+			SprDraw(x,y,0,(glowism/32)&7,bright+b,itmSpr->GetSprite(25),DISPLAY_DRAWME);
 			break;
 		case ITM_SMLROCKS:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(32),DISPLAY_DRAWME);
@@ -217,7 +232,16 @@ void RenderItem(int x,int y,byte type,char bright)
 			SprDraw(x,y,8,1,bright+(glowism&3),itmSpr->GetSprite(59+(glowism&7)),DISPLAY_DRAWME);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(59+(glowism&7)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
-
+		case ITM_ARCHIPELAGO:
+			for (int i = 0; i < 6; ++i)
+			{
+				static const int AP_GEM_COLOR[6] = { 1, 6, 2, 3, 5, 4 };
+				int angle = (glowism + i * 256 / 6) & 255;
+				int sz = 15;
+				SprDraw(x+Cosine(angle)*sz/FIXAMT,y+Sine(angle)*sz/FIXAMT,8,AP_GEM_COLOR[i],bright,itmSpr->GetSprite(59+7-((glowism/2)&7)),DISPLAY_DRAWME);
+				SprDraw(x+Cosine(angle)*sz/FIXAMT,y+Sine(angle)*sz/FIXAMT,0,255,bright,itmSpr->GetSprite(59+7-((glowism/2)&7)),DISPLAY_DRAWME|DISPLAY_SHADOW);
+			}
+			break;
 	}
 }
 
@@ -374,6 +398,7 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 			itmSpr->GetSprite(183+((type-ITM_LETTERM)*16))->DrawBright(x-18,y,mgl,bright);
 			break;
 		case ITM_CHLGCRYSTAL:
+		case ITM_ARCHIPELAGO:
 			itmSpr->GetSprite(59)->DrawColored(x,y,mgl,1,bright);
 			break;
 	}

@@ -3,6 +3,8 @@
 #include "player.h"
 #include "sound.h"
 #include "fairy.h"
+#include "archipelago.h"
+#include <string>
 
 #define SHOPX 10
 #define SHOPY 40
@@ -568,6 +570,9 @@ byte Owned(byte w)
 	return 0;
 }
 
+extern int scrx, scry;
+extern DisplayList *dispList;
+
 void RenderShop(void)
 {
 	int i;
@@ -579,10 +584,34 @@ void RenderShop(void)
 
 	memcpy(mgl->GetScreen(),shopScr,640*480);
 
+	int oldx = scrx, oldy = scry;
+	scrx = 0;
+	scry = 0;
+	dispList->ClearList();
 	for(i=0;i<5;i++)
 		for(j=0;j<5;j++)
 		{
-			if(player.nightmare)
+			if (i == 4 && j == 4)
+			{
+				// exit
+				shopSpr->GetSprite(0)->Draw((i)*SHOPDX+SHOPX,SHOPY+j*SHOPDY,mgl);
+				PrintGlow(SHOPDX*i+SHOPX+8,SHOPY+SHOPDY*j+18,"Exit",2);
+			}
+			else if (auto ap = Archipelago())
+			{
+				bool owned = ap->HasCheckedLocation(4, i+j*5);
+				byte item = ap->MysticItemAtLocation(4, i+j*5);
+				shopSpr->GetSprite(owned)->Draw((i)*SHOPDX+SHOPX,SHOPY+j*SHOPDY,mgl);
+				if (item >= 128)
+				{
+					shopSpr->GetSprite(item - 128)->Draw((i)*SHOPDX+SHOPX,SHOPY+j*SHOPDY,mgl);
+				}
+				else
+				{
+					RenderItem((i)*SHOPDX+SHOPX + 26, SHOPY+j*SHOPDY + 42, item, 0);
+				}
+			}
+			else if(player.nightmare)
 			{
 				shopSpr->GetSprite(0+Owned(i+j*5))->Draw((i)*SHOPDX+SHOPX,SHOPY+j*SHOPDY,mgl);
 				if(i==0 && j==0)	// shield stone
@@ -601,8 +630,6 @@ void RenderShop(void)
 				{
 					if(shopPic[i+j*5]!=0)
 						shopSpr->GetSprite(shopPic[i+j*5])->Draw((i)*SHOPDX+SHOPX,SHOPY+j*SHOPDY,mgl);
-					else // exit
-						PrintGlow(SHOPDX*i+SHOPX+8,SHOPY+SHOPDY*j+18,"Exit",2);
 				}
 			}
 			else
@@ -610,10 +637,11 @@ void RenderShop(void)
 				shopSpr->GetSprite(0+Owned(i+j*5))->Draw((i)*SHOPDX+SHOPX,SHOPY+j*SHOPDY,mgl);
 				if(shopPic[i+j*5]!=0)
 					shopSpr->GetSprite(shopPic[i+j*5])->Draw((i)*SHOPDX+SHOPX,SHOPY+j*SHOPDY,mgl);
-				else // exit
-					PrintGlow(SHOPDX*i+SHOPX+8,SHOPY+SHOPDY*j+18,"Exit",2);
 			}
 		}
+	dispList->Render();
+	scrx = oldx;
+	scry = oldy;
 
 	// cursor
 	shopSpr->GetSprite(2)->Draw((shopCursor-(shopCursor/5*5))*SHOPDX+SHOPX,(shopCursor/5)*SHOPDY+SHOPY,mgl);
@@ -621,7 +649,13 @@ void RenderShop(void)
 	RenderPlayerGear(450,armaBrt);
 	Print(2,2,"ITEM SHOP",0,0);
 
-	if(player.nightmare)
+	bool owned = Owned(shopCursor);
+	if (auto ap = Archipelago(); ap && shopCursor != 24)
+	{
+		owned = ap->HasCheckedLocation(4, shopCursor);
+		FontPrintStringRect(5-2, 100+5*56-20-2, 280, SCRHEI, ap->ItemNameAtLocation(4, shopCursor), 20, Listium);
+	}
+	else if(player.nightmare)
 	{
 		if(shopCursor==0)
 			Print(5,100+5*56-20,"Shield Stone",0,2);
@@ -636,7 +670,7 @@ void RenderShop(void)
 		Print(5,100+5*56-20,shopName[(shopCursor)],0,2);
 	if(shopCursor<24)
 	{
-		if(Owned(shopCursor))
+		if(owned)
 			sprintf(s,"N/A");
 		else
 		{
@@ -658,7 +692,15 @@ void RenderShop(void)
 		RightPrintGlow(10+345,100+5*56-20,s,2);
 	}
 
-	if(player.nightmare)
+	if (auto ap = Archipelago(); ap && shopCursor != 24)
+	{
+		// TODO: Show one of:
+		// - Base shop item description
+		// - Fairy description
+		// - Info on whose world it belongs to
+		return;
+	}
+	else if(player.nightmare)
 	{
 		if(shopCursor==0)
 			i=25*4;
@@ -677,8 +719,9 @@ void RenderShop(void)
 	PrintBrightGlow(5,110+60+5*56,itemDesc[i+3],-4,2);
 }
 
-void BuyGear(dword w)
+void BuyGear(byte which)
 {
+	dword w = gearTag[which];
 	player.gear|=w;
 	switch(w)
 	{
@@ -790,7 +833,7 @@ void Buy(byte which)
 		if((player.gear&gearTag[which])==0)
 		{
 			player.money-=prc;
-			BuyGear(gearTag[which]);
+			BuyGear(which);
 			MakeNormalSound(SND_PURCHASE);
 			return;
 		}
@@ -803,6 +846,12 @@ byte UpdateShop(MGLDraw *mgl)
 {
 	byte c;
 	int prc;
+
+	if (Archipelago())
+	{
+		// Play item animations
+		UpdateItems();
+	}
 
 	armaBrt++;
 	c=GetControls();
@@ -861,7 +910,19 @@ byte UpdateShop(MGLDraw *mgl)
 
 		if(player.money>=prc)
 		{
-			Buy(shopCursor);
+			if (auto ap = Archipelago())
+			{
+				if (!ap->HasCheckedLocation(4, shopCursor))
+				{
+					ap->PickupItem(4, shopCursor);
+					player.money -= prc;
+					MakeNormalSound(SND_PURCHASE);
+				}
+			}
+			else
+			{
+				Buy(shopCursor);
+			}
 		}
 		else
 			MakeNormalSound(SND_UNAVAILABLE);

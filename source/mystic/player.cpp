@@ -5,6 +5,7 @@
 #include "options.h"
 #include "water.h"
 #include "appdata.h"
+#include "archipelago.h"
 
 #define PLYR_ACCEL	(FIXAMT)
 #define PLYR_DECEL	(FIXAMT*3/4)
@@ -18,6 +19,25 @@ static byte vampyClock,compassClock;
 byte beenReborn;
 static byte fairyReload;
 static int chlgCrystals;
+
+static void ArchipelagoXp(class Archipelago* ap)
+{
+	int lvl = 1, target = 20, lastTarget = 0, y = 0;
+	while (lvl < 50 && player.score >= target)
+	{
+		if (ap->PickupItem(5, lvl))
+		{
+			// Particle is for getting enough XP, sound is for getting a level.
+			AddParticle(GetGoodguy()->x,GetGoodguy()->y,FIXAMT*20+y*FIXAMT*10,0,0,0,60,PART_LVLUP,0);
+			++y;
+		}
+		++lvl;
+		lastTarget = target;
+		target += lvl * (lvl + 1) * 10;
+	}
+	player.experience = player.score - lastTarget;
+	player.needExp = target - lastTarget;
+}
 
 void InitPlayer(byte initWhat,byte world,byte level)
 {
@@ -110,7 +130,10 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	playerGlow=0;
 	player.pushPower=0;
 	player.poison=0;
-	player.needExp=player.level*player.level*10+player.level*10;
+	if (auto ap = Archipelago())
+		ArchipelagoXp(ap);
+	else
+		player.needExp=player.level*player.level*10+player.level*10;
 	player.stoneskin=0;
 	player.berserk=0;
 	SetPlayerSpeed();
@@ -343,7 +366,7 @@ void PoisonPlayer(byte amt)
 
 void PlayerResetScore(void)
 {
-	if(!Challenging())
+	if(!Challenging() && !Archipelago())
 	{
 		player.score=player.prevScore;
 		player.level=player.prevLevel;
@@ -354,6 +377,10 @@ void PlayerResetScore(void)
 
 byte PlayerPassedLevel(byte world,byte map)
 {
+	if (auto ap = Archipelago())
+	{
+		return ap->LevelPassed(world, map);
+	}
 	return player.levelPassed[world][map];
 }
 
@@ -366,6 +393,11 @@ void PlayerWinLevel(byte w,byte l,byte isSecret)
 			player.levelsPassed++;	// secret levels aren't counted in this (it's for triggering specials)
 	}
 	player.levelPassed[w][l]=1;
+
+	if (auto ap = Archipelago())
+	{
+		ap->PassLevel(w, l);
+	}
 }
 
 byte GetPlayerWorld(void)
@@ -380,6 +412,10 @@ void SetPlayerHP(int hp)
 
 byte PlayerLevelsPassed(void)
 {
+	if (auto ap = Archipelago())
+	{
+		return ap->LevelsPassed(player.worldNum);
+	}
 	return player.levelsPassed;
 }
 
@@ -458,12 +494,12 @@ byte PlayerHasSpell(void)
 	return 0;
 }
 
-byte SpellBookForThisLevel(byte level,byte chapter)
+byte SpellBookForThisLevel(word lvl)
 {
 	byte i;
 
 	i=255;
-	switch(player.worldNum*50+player.levelNum)
+	switch(lvl)
 	{
 		case 11:
 		case 111:
@@ -678,7 +714,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 			break;
 		case ITM_SPELLBOOK:
 			MakeNormalSound(SND_WEAPON);
-			i=SpellBookForThisLevel(player.levelNum,player.worldNum);
+			i=SpellBookForThisLevel(player.worldNum*50+player.levelNum);
 			if(i==255)
 				return 0;	// no spellbook should BE in this level!
 			if(player.spell[i]==1)
@@ -753,7 +789,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 				MakeNormalSound(SND_KOOLKAT);
 				playerGlow=127;
 			}
-			player.score+=25;
+			//player.score+=25;
 			FloaterParticles(x,y,1,24,0,8);
 			FloaterParticles(x,y,1,1,3,8);
 			return 0;
@@ -875,6 +911,15 @@ byte PlayerGetItem(byte itm,int x,int y)
 				return 1;
 			}
 			break;
+		case ITM_ARCHIPELAGO:
+			if (auto ap = Archipelago())
+			{
+				ap->PickupItem(player.worldNum, player.levelNum);
+				FloaterParticles(x,y,1,32,-1,8);
+				FloaterParticles(x,y,1,10,1,8);
+				return 0;
+			}
+			break;
 	}
 	return 1;
 }
@@ -938,7 +983,11 @@ void PlayerGetPoints(int amt)
 
 	ChallengeEvent(CE_POINTS,amt);
 	player.score+=amt;
-	if(player.level<50)// && player.levelPassed[player.worldNum][player.levelNum]==0)
+	if (auto ap = Archipelago())
+	{
+		ArchipelagoXp(ap);
+	}
+	else if(player.level<50)// && player.levelPassed[player.worldNum][player.levelNum]==0)
 	{
 		player.experience+=amt;
 		y=0;
@@ -973,6 +1022,33 @@ void PlayerGetPoints(int amt)
 			player.money+=amt;	// get money!
 		else
 			player.money=50000;
+	}
+}
+
+void PlayerLosePoints(int amt)
+{
+	if (auto ap = Archipelago())
+	{
+		if (player.score > amt)
+		{
+			player.score -= amt;
+		}
+		else
+		{
+			player.score = 0;
+		}
+		ArchipelagoXp(ap);
+	}
+	else
+	{
+		if (player.experience > amt)
+		{
+			player.experience -= amt;
+		}
+		else
+		{
+			player.experience = 0;
+		}
 	}
 }
 
@@ -1132,10 +1208,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	if(vampyClock>30*3 && player.fairyOn==FAIRY_RICHEY && player.levelNum!=1)	// not on the hub level
 	{
 		vampyClock=0;
-		if(player.experience>0)
-		{
-			player.experience--;
-		}
+		PlayerLosePoints(1);
 	}
 	if(vampyClock>30*1+15 && player.fairyOn==FAIRY_MIGHTY && player.levelNum!=1)	// not on the hub level
 	{

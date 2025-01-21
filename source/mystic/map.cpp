@@ -5,6 +5,7 @@
 #include "guy.h"
 #include "water.h"
 #include "challenge.h"
+#include "archipelago.h"
 
 int totalBrains;
 static world_t *world;
@@ -130,6 +131,20 @@ void Map::Init(world_t *wrld)
 	totalBrains=0;
 	SetChallengeCrystals(0);
 
+	if (auto ap = Archipelago())
+	{
+		for(i=0;i<width*height;i++)
+		{
+			byte item = map[i].item;
+			if (item==ITM_KEYCH1 || item==ITM_KEYCH2 || item==ITM_KEYCH3 || item==ITM_KEYCH4
+				|| item==ITM_FAIRYBELL || item==ITM_SPELLBOOK)
+			{
+				// ^ Each map is presumed to have exactly one of these.
+				map[i].item = ap->HasCheckedLocation(player.worldNum, player.levelNum) ? ITM_NONE : ITM_ARCHIPELAGO;
+			}
+		}
+	}
+
 	for(i=0;i<width*height;i++)
 	{
 		if(map[i].item==ITM_BRAIN)
@@ -146,15 +161,15 @@ void Map::Init(world_t *wrld)
 			map[i].item=0;
 
 		map[i].templight=-32;	// make it all black so it'll fade in
-		if(map[i].item==ITM_SKLDOOR && player.worldNum==2 && player.levelPassed[2][6]==1)
+		if(map[i].item==ITM_SKLDOOR && player.worldNum==2 && PlayerPassedLevel(2, 6))
 			map[i].item=ITM_SKLDOOR2;
 
 		if(map[i].item==ITM_SPELLBOOK)
 		{
-			s=SpellBookForThisLevel(player.levelNum,player.worldNum);
+			s=SpellBookForThisLevel(player.worldNum*50+player.levelNum);
 			if(player.gotSpell[s+(player.worldNum>1)*10])
 				map[i].item=0;
-			if(player.worldNum==2 && player.levelNum==16 && player.vaultOpened && !Challenging())
+			if(player.worldNum==2 && player.levelNum==16 && player.vaultOpened && !Challenging() && !Archipelago())
 				map[i].item=0;	// take it away if you've opened the vault before
 			/*
 			if(player.spell[s]==1 && player.worldNum<2)
@@ -193,7 +208,7 @@ void Map::Init(world_t *wrld)
 	{
 		for(i=0;i<MAX_SPECIAL;i++)
 			if(special[i].effect==SPC_GOTOMAP && (special[i].value==8 || special[i].value==10 ||
-				special[i].value==12 || special[i].value==14) && player.levelPassed[2][special[i].value])
+				special[i].value==12 || special[i].value==14) && PlayerPassedLevel(2, special[i].value))
 			{
 				special[i].effect=0;	// disable this special
 			}
@@ -1004,7 +1019,7 @@ void SpecialAnytimeCheck(Map *map)
 		{
 			SpecialTakeEffect(map,&map->special[i],NULL);
 		}
-	if(player.worldNum==3 && player.levelNum==1 && player.levelsPassed>=8)
+	if(player.worldNum==3 && player.levelNum==1 && PlayerLevelsPassed()>=8)
 	{
 		if(player.lunacyKey[3]==0)
 		{
@@ -1034,7 +1049,7 @@ void RenderSpecialXes(MGLDraw *mgl,Map *map,byte world)
 	camx-=320;
 	camy-=240;
 	for(i=0;i<MAX_SPECIAL;i++)
-		if(map->special[i].effect==SPC_GOTOMAP && PlayerPassedLevel(world,map->special[i].value))
+		if(map->special[i].effect==SPC_GOTOMAP && map->special[i].value != 50 && PlayerPassedLevel(world,map->special[i].value))
 			DrawRedX(map->special[i].x*TILE_WIDTH-camx+TILE_WIDTH/2,
 					map->special[i].y*TILE_HEIGHT-camy+TILE_HEIGHT/2,mgl);
 }
