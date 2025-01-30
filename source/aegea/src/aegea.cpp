@@ -726,8 +726,8 @@ std::string_view ArchipelagoClient::slot_game_name(int slot) const
 		// Slot 0 is Archipelago regardless of team.
 		return "Archipelago";
 	}
-	const auto& val = room_info("slot_info")[std::to_string(slot)]["game"];
-	return val.isString() ? val.getString() : "";
+	const jt::Json& val = room_info("slot_info")[std::to_string(slot)]["game"];
+	return val.isString() ? std::string_view(val.getString()) : "";
 }
 
 std::string_view ArchipelagoClient::slot_player_alias(int slot) const
@@ -739,7 +739,7 @@ std::string_view ArchipelagoClient::slot_player_alias(int slot) const
 	}
 	// For now, assume AP teams feature is not in use and slot N is player N.
 	const jt::Json& val = room_info("players")[slot - 1]["alias"];
-	return val.isString() ? val.getString() : "";
+	return val.isString() ? std::string_view(val.getString()) : "";
 }
 
 // ------------------------------------------------------------------------
