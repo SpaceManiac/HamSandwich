@@ -11,7 +11,7 @@
 // # = draw a major horizontal line
 // % = draw a minor horizontal line
 // $ = last line of the whole deal
-char credits[][32]={
+static const char credits[][64]={
 	"The Adventures Of",
 	"@KID MYSTIC",
 	"",
@@ -21,7 +21,7 @@ char credits[][32]={
 	"#",
 	"Programming",
 	"Mike Hommel",
-	"Tad Hardesty",
+	"Tad \"SpaceManiac\" Hardesty",
 	"%",
 	"Art",
 	"Mike Hommel",
@@ -37,6 +37,9 @@ char credits[][32]={
 	"Brent Christian",
 	"Mike Hommel",
 	"%",
+	"HamSandwich Contributors",
+#include "../credits.inl"
+	"%",
 	"Testers",
 	"Corey 'Coolguy' Connolly",
 	"Micah Green",
@@ -47,8 +50,7 @@ char credits[][32]={
 	"TD Miller",
 	"Barry Pennington",
 	"Betty Scherber",
-	"Thousands of people over",
-	"the years"
+	"Thousands of people over the years",
 	"#",
 	"Thanks for playing!",
 	"Visit us at www.hamumu.com!",
@@ -57,7 +59,7 @@ char credits[][32]={
 	"$"
 	};
 
-char victoryTxt[][64]={
+static const char victoryTxt[][64]={
 	"With the shield restored,",
 	"the people of Tulipton could",
 	"return to their peaceful,",
@@ -86,7 +88,7 @@ char victoryTxt[][64]={
 	"$"
 	};
 
-char madcapWinTxt[][64]={
+static const char madcapWinTxt[][64]={
 	"Wow!  You actually completed",
 	"Madcap Mode!  That's almost",
 	"disturbing.  Congratulations,",
@@ -96,7 +98,7 @@ char madcapWinTxt[][64]={
 	"$"
 };
 
-char demoWinTxt[][64]={
+static const char demoWinTxt[][64]={
 	"Having defeated the Optimum",
 	"Octon, Kid Mystic is well",
 	"on his way to the fearsome",
@@ -317,14 +319,14 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 		{
 			if (!AWAIT DifficultyPicker(mgl, &title))	// pressed ESC on the slot picker
 				b = 0;
-			
+
 			startTime = timeGetTime();
 		}
 		if(b==1 && title.cursor==1)	// selected Continue
 		{
 			if(!AWAIT GameSlotPicker(mgl,&title))	// pressed ESC on the slot picker
 				b=0;
-			
+
 			startTime = timeGetTime();
 		}
 		now=timeGetTime();
@@ -672,7 +674,7 @@ TASK(byte) DifficultyPicker(MGLDraw* mgl, title_t* title)
 void CreditsRender(int y,byte mode)
 {
 	int i,ypos;
-	char *s;
+	const char *s;
 
 	i=0;
 
@@ -746,7 +748,7 @@ TASK(void) Credits(MGLDraw *mgl,byte mode)
 void VictoryTextRender(int y,byte type)
 {
 	int i,ypos;
-	char *s;
+	const char *s;
 
 	i=0;
 

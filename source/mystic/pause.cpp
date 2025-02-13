@@ -70,7 +70,7 @@ void RenderPauseMenu(void)
 		PrintBrightGlow(pauseX + 10, 240+26*1, "Skills", -16 + (cursor == 1) * 16, 2);
 		if (!Challenging())
 			PrintBrightGlow(pauseX + 10, 240+26*2, "Load", -16 + (cursor == 2) * 16, 2);
-		
+
 		if (giveUp == 0)
 			PrintBrightGlow(pauseX + 10, 240+26*3, "Save", -16 + (cursor == 3) * 16, 2);
 		else if (giveUp == 2)	// random battle
@@ -80,7 +80,7 @@ void RenderPauseMenu(void)
 
 		PrintBrightGlow(pauseX + 10, 240+26*4, "Sound:", -16 + (cursor == 4) * 16, 2);
 		PrintBrightGlow(pauseX + 10 + 90, 240+26*4, onoff[opt.soundVol], -16 + (cursor == 4) * 16, 2);
-		
+
 		PrintBrightGlow(pauseX + 10, 240+26*5, "Music:", -16 + (cursor == 5) * 16, 2);
 		PrintBrightGlow(pauseX + 10 + 90, 240+26*5, onoff[opt.musicVol], -16 + (cursor == 5) * 16, 2);
 		PrintBrightGlow(pauseX + 10, 240 + 26 * 6, "Weird Settings", -16 + (cursor == 6) * 16, 2);
@@ -179,7 +179,7 @@ void RenderSkillMenu(void)
 	int spacing = 60;
 	x = SCRWID / 2 + SCRWID / 4 - spacing*5/2+5;
 	y = 75;
-	
+
 	for (int j = 0; j < 5; j++)
 	{
 		for (int i = 0; i < 5; i++)
@@ -196,7 +196,7 @@ void RenderSkillMenu(void)
 				RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 16, 32 * 5 + 6);
 				GetSkillSpr(0)->DrawColored(x + 20, y + 20, GetDisplayMGL(), 32 * 2 + 10, 0);
 			}
-			
+
 			x += spacing;
 		}
 		x = SCRWID / 2 + SCRWID / 4 - spacing * 5 / 2+5;
@@ -224,7 +224,7 @@ void RenderSkillMenu(void)
 	PrintBrightGlow(SCRWID - 80 + 4+12, SCRHEI - 30 - 35, "Exit", (subcursor == 26) * 31, 2);
 }
 
-void RenderWeirdOption(int x, int y, char* txt, bool on, byte cursorOn,bool active)
+void RenderWeirdOption(int x, int y, const char* txt, bool on, byte cursorOn,bool active)
 {
 	if (!active)
 	{
@@ -457,7 +457,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
 		{
 			MakeNormalSound(SND_MENUSELECT);
-			
+
 			switch(effCursor)
 			{
 				case 0: // cancel
