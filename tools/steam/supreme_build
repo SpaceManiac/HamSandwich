@@ -26,8 +26,8 @@ echo "==== Linux build ===="
 ./container bash -c "
 	set -euo pipefail
 	cmake --preset linux-x86_64-release
-	# Steam
 	cmake --build build/cmake-linux-x86_64-release --target supreme jspedit sdl2_rpath
+	# Steam
 	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/steam-linux --component generic/executables
 	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/steam-linux --component supreme/executables
 	cmake --install build/cmake-linux-x86_64-release --strip --prefix build/dist/supreme/steam-linux --component jspedit/executables
@@ -44,18 +44,17 @@ cp tools/itch/supreme_linux.itch.toml build/dist/supreme/itch-linux/.itch.toml
 echo "==== Windows build ===="
 tools/windows-cross/container bash -c "
 	set -euo pipefail
-	# Steam
 	cmake --preset windows-i686-release -Wno-dev
 	cmake --build build/cmake-windows-i686-release --target supreme jspedit
+	# Steam
 	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/steam-windows --component generic/executables
 	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/steam-windows --component supreme/executables
 	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/steam-windows --component jspedit/executables
-	# Linux build already installs cross-platform Steam assetsts
+	# Linux build already installs cross-platform Steam assets
 	# Itch
 	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/itch-windows --component generic/executables
 	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/itch-windows --component supreme/executables
 	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/itch-windows --component jspedit/executables
 	cmake --install build/cmake-windows-i686-release --strip --prefix build/dist/supreme/itch-windows --component supreme/assets
-	# Itch
 "
 cp tools/itch/supreme_windows.itch.toml build/dist/supreme/itch-windows/.itch.toml
