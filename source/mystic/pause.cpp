@@ -679,6 +679,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					player.skill[subcursor]++;
 					player.skillPts--;
 					PlayerUpdateLife();
+					// test comment
 				}
 			}
 		}
