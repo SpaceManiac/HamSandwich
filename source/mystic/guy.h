@@ -12,6 +12,8 @@
 
 #define NIGHTMAREHP	(20)
 #define NIGHTMAREDMG (10)
+#define BRUTALDMG (5)
+#define BRUTALHP (5)
 
 class Guy
 {

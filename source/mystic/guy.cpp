@@ -332,11 +332,11 @@ void Guy::SeqFinished(void)
 				hp=player.life;
 				player.shield=30*2;
 				beenReborn=1;
-				if(player.experience>player.needExp/4)	// lose 25% of the XP needed for next level
-					player.experience-=player.needExp/4;
+				if (player.experience > player.needExp / 4)	// lose 25% of the XP needed for next level
+					player.experience -= player.needExp / 4;
 				else
-					player.experience=0;
-
+					player.experience = 0;
+				
 				x=lastSafeX;
 				y=lastSafeY;
 				// make resurrect sound
@@ -1033,8 +1033,12 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 				i=damage*NIGHTMAREDMG;
 		}
 		else
-			i=damage;
-
+		{
+			if (BrutalMode())
+				i = damage * BRUTALDMG;
+			else
+				i = damage;
+		}
 		i-=player.defense;
 
 		if(player.fairyOn==FAIRY_RUNNY)
@@ -1056,7 +1060,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		}
 
 		damage=i;
-		if(player.gear&GEAR_POINTY)
+		if((player.gear&GEAR_POINTY) && !player.disableThorns)
 		{
 			for(i=0;i<3;i++)
 				FireBullet(x,y,(byte)MGL_random(256),BLT_MINIFBALL);
@@ -1107,6 +1111,8 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 	{
 		if(player.nightmare)
 			i=SpellLevel()*20-MonsterHP(type)/NIGHTMAREHP;	// the more hp, the harder to freeze
+		else if(BrutalMode())
+			i = SpellLevel() * 20 - MonsterHP(type) / BRUTALHP;	// the more hp, the harder to freeze
 		else
 			i=SpellLevel()*20-MonsterHP(type);	// the more hp, the harder to freeze
 		if(type!=MONS_BOUAPHA)
@@ -1853,14 +1859,14 @@ word LockOnEvil(Map *map,int x,int y)
 	word bestguy;
 
 	bestguy=65535;
-	bestRange=320+240;
+	bestRange=HALFWID+HALFHEI;
 
 	for(i=0;i<maxGuys;i++)
 		if(guys[i]->type && guys[i]->hp && ((MonsterFlags(guys[i]->type)&(MF_GOODGUY|MF_NOHIT|MF_INVINCIBLE))==0) &&
 			guys[i]->type!=MONS_FRIENDLY)
 		{
 			range=abs(x-(guys[i]->x>>FIXSHIFT))+abs(y-(guys[i]->y>>FIXSHIFT));
-			if((range<bestRange) || (range<320+240 && MGL_random(32)==0))
+			if((range<bestRange) || (range<HALFWID+HALFHEI && MGL_random(32)==0))
 			{
 				if(map->FindGuy2((x/TILE_WIDTH),(y/TILE_HEIGHT),15,guys[i]))
 				{
@@ -1880,7 +1886,7 @@ Guy *FindNearestOfType(int x,int y,byte type)
 	Guy *him;
 
 	him=NULL;
-	bestRange=320+240;
+	bestRange=HALFWID+HALFHEI;
 
 	for(i=0;i<maxGuys;i++)
 		if(guys[i]->type==type && guys[i]->hp)

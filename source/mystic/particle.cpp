@@ -330,13 +330,13 @@ void RenderParticle(int x,int y,byte *scrn,byte color,byte size)
 {
 	byte c1,c2;
 
-	if(x<0 || x>639 || y<0 || y>479)
+	if(x<0 || x>SCRWID-1 || y<0 || y>SCRHEI-1)
 		return;
 
 	switch(size)
 	{
 		case 2:	// big particle
-			if(x<2 || x>637 || y<2 || y>477)
+			if(x<2 || x>SCRWID-3 || y<2 || y>SCRHEI-3)
 				return;
 
 			if((color&31)>1)
@@ -348,42 +348,42 @@ void RenderParticle(int x,int y,byte *scrn,byte color,byte size)
 			else
 				c2=c1;
 
-			scrn+=(x+(y-2)*640);
+			scrn+=(x+(y-2)*SCRWID);
 			*scrn=c2;
-			scrn+=639;
+			scrn+=SCRWID-1;
 			*scrn++=c1;
 			*scrn++=color;
 			*scrn=c1;
-			scrn+=637;
+			scrn+=SCRWID-3;
 			*scrn++=c2;
 			*scrn++=c1;
 			*scrn++=color;
 			*scrn++=c1;
 			*scrn=c2;
-			scrn+=637;
+			scrn+=SCRWID-3;
 			*scrn++=c1;
 			*scrn++=color;
 			*scrn=c1;
-			*(scrn+639)=c2;
+			*(scrn+SCRWID-1)=c2;
 			break;
 		case 1:	// normal particle
-			if(x<1 || x>638 || y<1 || y>478)
+			if(x<1 || x>SCRWID-2 || y<1 || y>SCRHEI-2)
 				return;
 			if(color&31)
 				c1=color-1;	// only do this if subtracting 1 keeps it in the same color group
 			else
 				c1=color;
-			scrn+=(x+(y-1)*640);
+			scrn+=(x+(y-1)*SCRWID);
 			*scrn=c1;
-			scrn+=639;
+			scrn+=SCRWID-1;
 			*scrn++=c1;
 			*scrn++=color;
 			*scrn=c1;
-			scrn+=639;
+			scrn+=SCRWID-1;
 			*scrn=c1;
 			break;
 		case 0:	// tiny particle (1 pixel)
-			scrn[x+y*640]=color;
+			scrn[x+y*SCRWID]=color;
 			break;
 	}
 }
@@ -632,15 +632,15 @@ void MakeItSnow(Map *map)
 		return;
 
 	GetCamera(&cx,&cy);
-	cx-=320;
-	cy-=240;
+	cx-=HALFWID;
+	cy-=HALFHEI;
 	for(i=0;i<maxParticles;i++)
 	{
 		if(!particleList[i]->Alive())
 		{
 
-			particleList[i]->x=(MGL_random(640)+cx)<<FIXSHIFT;
-			particleList[i]->y=(MGL_random(480)+cy)<<FIXSHIFT;
+			particleList[i]->x=(MGL_random(SCRWID)+cx)<<FIXSHIFT;
+			particleList[i]->y=(MGL_random(SCRHEI)+cy)<<FIXSHIFT;
 			particleList[i]->z=(300+MGL_random(300))<<FIXSHIFT;
 			particleList[i]->dx=0;
 			particleList[i]->dy=0;

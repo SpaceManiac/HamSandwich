@@ -128,21 +128,21 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 				switch(cursor)
 				{
 					case 0:
-						opt.soundVol++;
-						if(opt.soundVol>3)
-							opt.soundVol=0;
+						opt.soundVol--;
+						if(opt.soundVol>5)
+							opt.soundVol=5;
 						VolumeSound(opt.soundVol);
 						MakeNormalSound(SND_GOATSHOOT);
 						break;
 					case 1:
-						opt.musicVol++;
-						if(opt.musicVol>3)
-							opt.musicVol=0;
+						opt.musicVol--;
+						if(opt.musicVol>5)
+							opt.musicVol=5;
 						if(opt.musicVol==0)
 							StopSong();
 						else
 							VolumeSong(opt.musicVol);
-						if(opt.musicVol==1)
+						if(opt.musicVol==5)
 							ReplaySong();
 						break;
 					case 2:
@@ -341,30 +341,30 @@ void RenderControls(int x,int y,MGLDraw *mgl)
 
 void RenderOptionsMenu(MGLDraw *mgl)
 {
-	char onoff[4][8]={"Off","I","II","III"};
+	char onoff[6][8]={"Off","I","II","III","IV","V"};
 	char fxonoff[2][8]={"Off","On"};
 
 	mgl->ClearScreen();
-	CenterPrint(320,2,"Game Options",0,0);
+	CenterPrint(HALFWID,2,"Game Options",0,0);
 
 	DrawFillBox(250,40-1+20*cursor,390,40+17+20*cursor,10);
 
-	CenterPrint(320,40,"Sound",0,1);
+	CenterPrint(HALFWID,40,"Sound",0,1);
 	Print(392,40,onoff[opt.soundVol],0,1);
-	CenterPrint(320,60,"Music",0,1);
+	CenterPrint(HALFWID,60,"Music",0,1);
 	Print(392,60,onoff[opt.musicVol],0,1);
-	CenterPrint(320,80,"Fancy Water:",0,1);
+	CenterPrint(HALFWID,80,"Fancy Water:",0,1);
 	Print(392,80,fxonoff[opt.waterFX],0,1);
 
-	CenterPrint(320,100,"Fancy Lighting:",0,1);
+	CenterPrint(HALFWID,100,"Fancy Lighting:",0,1);
 	Print(392,100,fxonoff[opt.lightFX],0,1);
 
 	//Print(500,120,"(You can turn these settings off",0,1);
 	//Print(500,135," if the game is slow or jerky, to",0,1);
 	//Print(500,150," get better performance)",0,1);
 
-	CenterPrint(320,120,"Configure Controls",0,1);
-	CenterPrint(320,140,"Exit To Main Menu",0,1);
+	CenterPrint(HALFWID,120,"Configure Controls",0,1);
+	CenterPrint(HALFWID,140,"Exit To Main Menu",0,1);
 
 	RenderControls(120,170,mgl);
 }

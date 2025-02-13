@@ -673,6 +673,20 @@ word MonsterHP(byte type)
 				return monsType[type].hp*NIGHTMAREHP;
 		}
 	}
+	else if (BrutalMode())
+	{
+		if (monsType[type].flags & MF_GOODGUY)
+		{
+			return monsType[type].hp * (100 + player.spellStones * 10) / 100;
+		}
+		else
+		{
+			if (type == MONS_BOBBY)
+				return monsType[type].hp * (BRUTALHP * 3 / 4);
+			else
+				return monsType[type].hp * BRUTALHP;
+		}
+	}
 	else
 		return monsType[type].hp;
 }
@@ -1500,6 +1514,7 @@ void AI_Spider(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 
+	int spd = 4 + 4 * ClassicMode();
 	if(me->reload)
 		me->reload--;
 
@@ -1513,8 +1528,8 @@ void AI_Spider(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	{
 		if(me->seq==ANIM_ATTACK && me->frm==2 && me->reload==0 && goodguy)
 		{
-			x=me->x+Cosine(me->facing*32)*8;
-			y=me->y+Sine(me->facing*32)*8;
+			x=me->x+Cosine(me->facing*32)*spd;
+			y=me->y+Sine(me->facing*32)*spd;
 			if(me->AttackCheck(16,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
 				goodguy->GetShot(Cosine(me->facing*32)*2,Sine(me->facing*32)*2,1,map,world);
 			me->reload=2;
@@ -1554,9 +1569,9 @@ void AI_Spider(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->facing=(byte)MGL_random(8);
 		me->mind=MGL_random(40)+1;
 	}
-
-	me->dx=Cosine(me->facing*32)*8;
-	me->dy=Sine(me->facing*32)*8;
+	
+	me->dx=Cosine(me->facing*32)*spd;
+	me->dy=Sine(me->facing*32)*spd;
 	if(me->seq!=ANIM_MOVE)
 	{
 		me->seq=ANIM_MOVE;

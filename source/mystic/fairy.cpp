@@ -201,11 +201,11 @@ void EnterFairyBox(void)
 	InitFairyBox();
 	oldc=255;
 	PlaySong(SONG_SHOP);
-	shopScr=(byte *)malloc(640*480);
+	shopScr=(byte *)malloc(SCRWID*SCRHEI);
 	if(!shopScr)
 		FatalError("Out of memory!!");
 	shopSpr->GetSprite(36)->Draw(278,200,GetDisplayMGL());
-	memcpy(shopScr,GetDisplayMGL()->GetScreen(),640*480);
+	memcpy(shopScr,GetDisplayMGL()->GetScreen(),SCRWID*SCRHEI);
 }
 
 void LeaveFairyBox(void)
@@ -231,7 +231,7 @@ void RenderFairyBox(void)
 
 	mgl=GetDisplayMGL();
 
-	memcpy(mgl->GetScreen(),shopScr,640*480);
+	memcpy(mgl->GetScreen(),shopScr,SCRWID*SCRHEI);
 
 	w=1;
 	for(j=0;j<4;j++)
@@ -257,7 +257,7 @@ void RenderFairyBox(void)
 
 	if(player.haveFairy&w)
 	{
-		CenterPrint(320,318,fairyName[(shopCursor)],0,2);
+		CenterPrint(HALFWID,318,fairyName[(shopCursor)],0,2);
 
 		CenterPrintGlow(343,fairyDesc[shopCursor*5],2);
 		CenterPrintGlow(343+18,fairyDesc[shopCursor*5+1],2);
@@ -273,9 +273,9 @@ void RenderFairyBox(void)
 	}
 	else
 	{
-		CenterPrint(320,318,"???",0,2);
+		CenterPrint(HALFWID,318,"???",0,2);
 	}
-	CenterPrint(320,23,"Fairy Box",0,0);
+	CenterPrint(HALFWID,23,"Fairy Box",0,0);
 }
 
 byte UpdateFairyBox(MGLDraw *mgl)

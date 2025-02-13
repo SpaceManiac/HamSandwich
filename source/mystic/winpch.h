@@ -15,8 +15,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define CHEAT
+
 const int SCRWID = 640;
 const int SCRHEI = 480;
+const int HALFWID = (SCRWID / 2);
+const int HALFHEI = (SCRHEI / 2);
 const int FIXSHIFT = 16;
 const int FIXAMT = 65536;
 

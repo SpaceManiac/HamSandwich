@@ -2008,8 +2008,8 @@ void TryToActivate(int t)
 		if(visTriv[i].timer==0 && visTriv[i].size==0)
 		{
 			MakeNormalSound(SND_TRIVIA);
-			visTriv[i].x=MGL_random(640-240)+120;
-			visTriv[i].y=MGL_random(480-120)+60;
+			visTriv[i].x=MGL_random(SCRWID-240)+120;
+			visTriv[i].y=MGL_random(SCRHEI-120)+60;
 			if(t==NUM_TRIVIA-1)
 				visTriv[i].timer=30*2;
 			else

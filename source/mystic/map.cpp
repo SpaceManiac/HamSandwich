@@ -676,8 +676,8 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 	char lites[9];
 	byte shdw;
 
-	camX-=320;
-	camY-=240;
+	camX-=HALFWID;
+	camY-=HALFHEI;
 
 	tileX=(camX/TILE_WIDTH)-1;
 	tileY=(camY/TILE_HEIGHT)-1;
@@ -1031,8 +1031,8 @@ void RenderSpecialXes(MGLDraw *mgl,Map *map,byte world)
 	int camx,camy;
 
 	GetCamera(&camx,&camy);
-	camx-=320;
-	camy-=240;
+	camx-=HALFWID;
+	camy-=HALFHEI;
 	for(i=0;i<MAX_SPECIAL;i++)
 		if(map->special[i].effect==SPC_GOTOMAP && PlayerPassedLevel(world,map->special[i].value))
 			DrawRedX(map->special[i].x*TILE_WIDTH-camx+TILE_WIDTH/2,

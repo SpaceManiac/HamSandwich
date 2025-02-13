@@ -61,7 +61,7 @@ byte Bulletable(Map *map,int x,int y)
 
 byte BulletCanGo(int xx,int yy,Map *map,byte size)
 {
-	byte result;
+	bool result;
 	int mapx,mapy,mapx1,mapx2,mapy1,mapy2;
 
 	xx>>=FIXSHIFT;
@@ -88,7 +88,7 @@ byte BulletCanGo(int xx,int yy,Map *map,byte size)
 	if(!result)
 		SpecialShootCheck(map,mapx,mapy);
 
-	return result;
+	return (byte)result;
 }
 
 void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
@@ -1011,6 +1011,48 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			// nothin
 			break;
 		case BLT_FLAME:
+		{
+			if (ClassicMode())
+			{
+				if (me->timer & 1)	// every other frame
+					HitBadguys(me, map, world);
+				map->BrightTorch((me->x / TILE_WIDTH) >> FIXSHIFT,
+					(me->y / TILE_HEIGHT) >> FIXSHIFT, 8, 4);
+				me->dz += MGL_random(FIXAMT / 8);		//anti gravity
+				me->dx += MGL_random(65535) - FIXAMT / 2;
+				me->dy += MGL_random(65535) - FIXAMT / 2;
+				Dampen(&me->dx, FIXAMT / 4);
+				Dampen(&me->dy, FIXAMT / 4);
+				Clamp(&me->dx, FIXAMT * 10);
+				Clamp(&me->dy, FIXAMT * 10);
+				me->anim = ((32 - me->timer) / 8) + 1;
+				if (me->anim > 4)
+					me->anim = 4;
+			}
+			else
+			{
+				int time = (6 - SpellLevel() / 8) + 2;
+				if ((me->timer % time) == 0)	// damage ticks happen faster as it levels up
+				{
+					HitBadguys(me, map, world);
+				}
+				map->BrightTorch((me->x / TILE_WIDTH) >> FIXSHIFT,
+					(me->y / TILE_HEIGHT) >> FIXSHIFT, 8, 4);
+				me->dz += MGL_random(FIXAMT / 8);		//anti gravity
+				me->dx += MGL_random(65535) - FIXAMT / 2;
+				me->dy += MGL_random(65535) - FIXAMT / 2;
+				Dampen(&me->dx, FIXAMT / 4);
+				Dampen(&me->dy, FIXAMT / 4);
+				Clamp(&me->dx, FIXAMT * 10);
+				Clamp(&me->dy, FIXAMT * 10);
+				me->anim = ((32 - me->timer) / 8) + 1;
+				byte maxFrame = (SpellLevel() / 10) + 1;
+				if (maxFrame > 4) maxFrame = 4;
+				if (me->anim > maxFrame)
+					me->anim = maxFrame;
+			}
+		}
+			break;
 		case BLT_FLAME2:
 			if(me->timer&1)	// every other frame
 				HitBadguys(me,map,world);
@@ -1597,7 +1639,10 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			break;
 		case BLT_FLAME:
 			me->anim=0;
-			me->timer=(SpellLevel()/2)+10-MGL_random(4);
+			if (ClassicMode())
+				me->timer = (SpellLevel() / 2) + 10 - MGL_random(4);
+			else
+				me->timer = (SpellLevel() / 3) + 20 - MGL_random(4);
 			me->z=FIXAMT*20;
 			me->x+=((MGL_random(3)-1)<<FIXSHIFT)+Cosine(me->facing*32)*5;
 			me->y+=((MGL_random(3)-1)<<FIXSHIFT)+Sine(me->facing*32)*5;
@@ -1829,59 +1874,84 @@ void FireExactBullet(int x,int y,int z,int dx,int dy,int dz,byte anim,byte timer
 		}
 }
 
-void HammerLaunch(int x,int y,byte facing,byte count,byte flags)
+void HammerLaunch(int x,int y,byte facing,byte count,byte flags,bool reverse)
 {
 	byte angle,newfacing;
+	int msx, msy;
 
+	GetDisplayMGL()->GetMouse(&msx, &msy);
+	int camX, camY;
+	
+	GetCamera(&camX, &camY);
+	msx -= camX-HALFWID;
+	msy -= camY-HALFHEI;
+
+	msx <<= FIXSHIFT;
+	msy <<= FIXSHIFT;
+
+	if (0)
+	{
+		Guy* g = GetGoodguy();
+		float a = atan2f(msy - g->y, msx - g->x) * 128.0f / 3.14159f;
+
+		angle = (byte)a;
+	}
+	else
+		angle = facing*32;
+
+	if (reverse)
+		angle += 128;
+	byte visAngle = (byte)(angle + 15) / 32;
 	MakeSound(SND_HAMMERTOSS,x,y,SND_CUTOFF,1200);
 	if(count==1 || count==3 || count==5)	// 1,3,5 have direct forward fire
 	{
-		angle=facing*32;
 		FireExactBullet(x,y,FIXAMT*20,
 						Cosine(angle)*12,Sine(angle)*12,0,//FIXAMT*6,
-						0,30,facing,BLT_HAMMER+((flags&HMR_REFLECT)>0));
+						0,30,visAngle,BLT_HAMMER+((flags&HMR_REFLECT)>0));
 	}
 	if(count==2 || count==4)	// these have slight off-angle double forward fire
 	{
-		angle=facing*32-8;
+		angle-=8;
+		visAngle = (byte)(angle + 15) / 32;
 		FireExactBullet(x,y,FIXAMT*20,
 						Cosine(angle)*12,Sine(angle)*12,0,//FIXAMT*6,
-						0,30,facing,BLT_HAMMER+((flags&HMR_REFLECT)>0));
-		angle=facing*32+8;
+						0,30,visAngle,BLT_HAMMER+((flags&HMR_REFLECT)>0));
+		angle += 16;
+		visAngle = (byte)(angle + 15) / 32;
 		FireExactBullet(x,y,FIXAMT*20,
 						Cosine(angle)*12,Sine(angle)*12,0,//FIXAMT*6,
-						0,30,facing,BLT_HAMMER+((flags&HMR_REFLECT)>0));
+						0,30,visAngle,BLT_HAMMER+((flags&HMR_REFLECT)>0));
 	}
 	if(count==3 || count==5)	// these have 45 degree angle fire
 	{
-		angle=facing*32-32;
-		newfacing=((byte)(facing-1))%8;
+		angle -= 32;
+		visAngle = (byte)(angle + 15) / 32;
 		FireExactBullet(x,y,FIXAMT*20,
 						Cosine(angle)*12,Sine(angle)*12,0,//FIXAMT*6,
-						0,30,newfacing,BLT_HAMMER+((flags&HMR_REFLECT)>0));
-		angle=facing*32+32;
-		newfacing=(facing+1)%8;
+						0,30,visAngle,BLT_HAMMER+((flags&HMR_REFLECT)>0));
+		angle += 64;
+		visAngle = (byte)(angle + 15) / 32;
 		FireExactBullet(x,y,FIXAMT*20,
 						Cosine(angle)*12,Sine(angle)*12,0,//FIXAMT*6,
-						0,30,newfacing,BLT_HAMMER+((flags&HMR_REFLECT)>0));
+						0,30,visAngle,BLT_HAMMER+((flags&HMR_REFLECT)>0));
 	}
 	if(count==4 || count==5)	// these add almost 90 degree off fire
 	{
-		angle=facing*32-56;
-		newfacing=((byte)(facing-2))%8;
+		angle-=56;
+		visAngle = (byte)(angle + 15) / 32;
 		FireExactBullet(x,y,FIXAMT*20,
 						Cosine(angle)*12,Sine(angle)*12,0,//FIXAMT*6,
-						0,30,newfacing,BLT_HAMMER+((flags&HMR_REFLECT)>0));
-		angle=facing*32+56;
-		newfacing=(facing+2)%8;
+						0,30,visAngle,BLT_HAMMER+((flags&HMR_REFLECT)>0));
+		angle+=56;
+		visAngle = (byte)(angle + 15) / 32;
 		FireExactBullet(x,y,FIXAMT*20,
 						Cosine(angle)*12,Sine(angle)*12,0,//FIXAMT*6,
-						0,30,newfacing,BLT_HAMMER+((flags&HMR_REFLECT)>0));
+						0,30,visAngle,BLT_HAMMER+((flags&HMR_REFLECT)>0));
 	}
 	if(flags&HMR_REVERSE)
 	{
 		newfacing=((byte)(facing-4))%8;
-		HammerLaunch(x,y,newfacing,count,flags&(~HMR_REVERSE));
+		HammerLaunch(x,y,newfacing,count,flags&(~HMR_REVERSE),true);
 	}
 }
 

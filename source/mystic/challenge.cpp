@@ -657,7 +657,7 @@ void RenderQuestionBox(MGLDraw *mgl)
 		if(question[i][0]=='^')
 		{
 			CenterPrintGlow(152+i*20,&question[i][1],2);
-			mgl->FillBox(320-200,152+i*20+10,320+200,152+i*20+10,31);
+			mgl->FillBox(HALFWID-200,152+i*20+10,HALFWID+200,152+i*20+10,31);
 		}
 		else
 			CenterPrintGlow(152+i*20,question[i],2);
@@ -732,7 +732,7 @@ void ChallengeMenuRender(MGLDraw *mgl)
 	}
 	else
 	{
-		memcpy(mgl->GetScreen(),backgd,640*480);
+		memcpy(mgl->GetScreen(),backgd,SCRWID*SCRHEI);
 		RenderPlayerGear(450,0);
 
 		sprintf(s,"%d",chalData.stars);
@@ -752,7 +752,7 @@ void ChallengeMenuRender(MGLDraw *mgl)
 
 		for(i=chalCursor-4;i<=chalCursor+4;i++)
 		{
-			x=35-(abs(y-240)*abs(y-240))/128;
+			x=35-(abs(y-HALFHEI)*abs(y-HALFHEI))/128;
 			if(j==chalCursor)
 			{
 				//chalSpr->GetSprite(1)->Draw(x,15+y,mgl);
@@ -1272,10 +1272,10 @@ void InitChallengeMenu(MGLDraw *mgl)
 	int i;
 
 	GetDisplayMGL()->LoadBMP("graphics/shop.bmp");
-	backgd=(byte *)malloc(640*480);
+	backgd=(byte *)malloc(SCRWID*SCRHEI);
 	if(!backgd)
 		FatalError("Out of memory!!");
-	memcpy(backgd,GetDisplayMGL()->GetScreen(),640*480);
+	memcpy(backgd,GetDisplayMGL()->GetScreen(),SCRWID*SCRHEI);
 
 	chalSpr=new sprite_set_t("graphics/chal.jsp");
 	i=0;
@@ -1416,10 +1416,10 @@ void ChallengeEvent(byte type,int n)
 				attempt.goalOk[g]=0;	// if you killed a forbidden guy, you are screwed
 			if(GoalNumber(GOAL_KILL)!=255 && !MonsterExists(255))
 			{
-				FloaterParticles(GetGoodguy()->x,GetGoodguy()->y,7,320,-8,64);
-				FloaterParticles(GetGoodguy()->x,GetGoodguy()->y,7,160,-4,64);
-				FloaterParticles(GetGoodguy()->x,GetGoodguy()->y,7,80,-2,64);
-				FloaterParticles(GetGoodguy()->x,GetGoodguy()->y,7,40,-1,64);
+				FloaterParticles(GetGoodguy()->x,GetGoodguy()->y,7,HALFWID,-8,64);
+				FloaterParticles(GetGoodguy()->x,GetGoodguy()->y,7,HALFWID/2,-4,64);
+				FloaterParticles(GetGoodguy()->x,GetGoodguy()->y,7,HALFWID/4,-2,64);
+				FloaterParticles(GetGoodguy()->x,GetGoodguy()->y,7,HALFWID/8,-1,64);
 				NewMessage("Monsters cleared!",60);
 			}
 			break;
@@ -1655,7 +1655,7 @@ void ChallengeTallyRender(MGLDraw *mgl)
 
 	RenderPlayerGear(450,0);
 	i=0;
-	CenterPrint(320,2,"Challenge Results",0,0);
+	CenterPrint(HALFWID,2,"Challenge Results",0,0);
 
 	sprintf(s,"Time Left: %d:%02d",(attempt.time/(30*60)),(attempt.time/30)%60);
 	Print(5,50,s,0,2);

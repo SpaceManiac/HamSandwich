@@ -31,7 +31,7 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 	vol=-((x-cx)*(x-cx)+(y-cy)*(y-cy))/128;
 	if(vol<-5000)
 		return;	// too quiet to play
-	GoPlaySound(snd,pan * 127 / 640,vol * 255 / 5000,(byte)flags,priority);
+	GoPlaySound(snd,pan * 127 / SCRWID,vol * 255 / 5000,(byte)flags,priority);
 }
 
 void MakeNormalSound(int snd)
@@ -75,12 +75,18 @@ void VolumeSong(byte hi)
 			StopSong();
 			break;
 		case 1:
-			SetMusicVolume(85);
+			SetMusicVolume(16);
 			break;
 		case 2:
-			SetMusicVolume(170);
+			SetMusicVolume(64);
 			break;
 		case 3:
+			SetMusicVolume(128);
+			break;
+		case 4:
+			SetMusicVolume(192);
+			break;
+		case 5:
 			SetMusicVolume(255);
 			break;
 	}
@@ -97,12 +103,18 @@ void VolumeSound(byte hi)
 			JamulSoundVolume(0);
 			break;
 		case 1:
-			JamulSoundVolume(85);
+			JamulSoundVolume(16);
 			break;
 		case 2:
-			JamulSoundVolume(170);
+			JamulSoundVolume(64);
 			break;
 		case 3:
+			JamulSoundVolume(128);
+			break;
+		case 4:
+			JamulSoundVolume(192);
+			break;
+		case 5:
 			JamulSoundVolume(255);
 			break;
 	}

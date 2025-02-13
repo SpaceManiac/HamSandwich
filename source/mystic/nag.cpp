@@ -21,7 +21,7 @@ void NagDisplay(MGLDraw *mgl)
 	n=scrY;
 	for(i=0;i<3;i++)
 	{
-		nagSpr->GetSprite(5+n)->Draw(0,0+i*240-scrOffY,mgl);
+		nagSpr->GetSprite(5+n)->Draw(0,0+i*HALFHEI-scrOffY,mgl);
 		n++;
 		if(n>5)
 			n=0;
@@ -40,9 +40,9 @@ byte NagUpdate(MGLDraw *mgl,int *lastTime)
 	{
 		// update graphics
 		scrOffY++;
-		if(scrOffY>=240)
+		if(scrOffY>=HALFHEI)
 		{
-			scrOffY-=240;
+			scrOffY-=HALFHEI;
 			scrY++;
 			if(scrY==6)
 				scrY=0;
@@ -95,7 +95,7 @@ TASK(byte) Nag(MGLDraw *mgl)
 	cursor=1;
 
 	scrY=MGL_random(6);
-	scrOffY=MGL_random(240);
+	scrOffY=MGL_random(HALFHEI);
 	StartClock();
 	PlaySong(SONG_CHAP12FIGHT);
 	while(b==0)

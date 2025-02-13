@@ -50,7 +50,7 @@ void ResetInterface(void)
 	curMana=0;
 	monsTimer=0;
 	curBrains=0;
-	orbX=680;
+	orbX=SCRWID+40;
 	for(i=0;i<10;i++)
 		bookSlide[i]=0;
 }
@@ -227,12 +227,12 @@ void UpdateInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 	// the orbometer
 	if(curBrains>0)
 	{
-		if(orbX>640)
+		if(orbX>SCRWID)
 			orbX--;
 	}
 	else
 	{
-		if(orbX<680)
+		if(orbX<SCRWID+40)
 			orbX++;
 	}
 
@@ -339,28 +339,28 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 	intfaceSpr->GetSprite(53+player.level-((player.level/10)*10))->Draw(0,31,mgl);
 
 	// books
-	intfaceSpr->GetSprite(42)->Draw(443,-1,mgl);
+	intfaceSpr->GetSprite(42)->Draw(SCRWID-197,-1,mgl);
 	for(i=9;i>=0;i--)
 	{
 		if(player.spell[i])
 		{
 			intfaceSpr->GetSprite(11+i*2+(player.spell[i]==2))->
-				Draw(620-9*12+bookSlide[i]+i*12,22+bookSlide[i],mgl);
+				Draw(SCRWID-20-9*12+bookSlide[i]+i*12,22+bookSlide[i],mgl);
 			if(player.curSpell==i)
 			{
-				RightPrintGlow(638,-1,spellName[i*2+player.spell[i]-1],2);
+				RightPrintGlow(SCRWID-2,-1,spellName[i*2+player.spell[i]-1],2);
 			}
 		}
 	}
 
 	// cash
 	sprintf(s,"$%05d",player.money);
-	PrintGlow(320,-1,s,2);
+	PrintGlow(HALFWID,-1,s,2);
 
-	intfaceSpr->GetSprite(SPR_BRAINOMETER)->Draw(orbX,479,mgl);
+	intfaceSpr->GetSprite(SPR_BRAINOMETER)->Draw(orbX,SCRHEI-1,mgl);
 	if(curBrains)
-		DrawFillBox(orbX-19,349+127-(curBrains-1),orbX-4,349+127,96+13+(curBrains/8));
-	intfaceSpr->GetSprite(SPR_BRAINOMETER+1)->Draw(orbX,479,mgl);
+		DrawFillBox(orbX-19,SCRHEI-131+127-(curBrains-1),orbX-4,SCRHEI-131+127,96+13+(curBrains/8));
+	intfaceSpr->GetSprite(SPR_BRAINOMETER+1)->Draw(orbX,SCRHEI-1,mgl);
 
 	if(player.levelNum==19 && player.worldNum==2)
 		WhackazoidDisplay();

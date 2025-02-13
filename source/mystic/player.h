@@ -9,6 +9,7 @@
 #include "bullet.h"
 #include "world.h"
 #include "intface.h"
+#include "skills.h"
 
 // secondary weapon defines
 #define WPN_NONE     0
@@ -17,8 +18,20 @@
 #define WPN_BOMBS	 3
 #define WPN_FLAME	 4
 
+enum class Difficulty :byte
+{
+	CLASSIC,
+	MODERN,
+	BRUTAL_CLASSIC,
+	BRUTAL_MODERN,
+	// ironman?
+	UNUSED,	// for a save slot that isn't used
+};
+
 #define HAMMER_UP_AMOUNT 3
 #define HAMMER_MIN_SPEED 12
+
+#define MAX_PLAYERLEVEL (50)
 
 // initializing constants (pass to InitPlayer)
 #define INIT_GAME  2
@@ -109,7 +122,14 @@ typedef struct player_t
 	byte shieldStones;
 	byte spellStones;
 	byte vaultOpened;
-	byte expando[252];	// just in case!
+	Difficulty difficulty;
+	byte skillPts;
+	byte skill[MAX_SKILLS];
+	byte downgradeSpell[9];
+	byte disableSword;
+	byte disableThorns;
+	byte disableMoveNShoot;
+	byte expando[238-MAX_SKILLS];	// just in case!
 } player_t;
 
 extern player_t player;
@@ -117,6 +137,7 @@ extern byte beenReborn;
 
 void InitPlayer(byte initWhat,byte world,byte level);
 void ExitPlayer(void);
+bool PlayerHasTier2Spell(void);
 void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world);
 byte PlayerHasHammer(void);
 byte PlayerGetItem(byte itm,int x,int y);
@@ -158,7 +179,7 @@ void SetPlayerDefense(void);
 void SetPlayerDamage(void);
 void SetPlayerSpeed(void);
 byte PlayerHasSword(void);
-
+void PlayerUpdateLife(void);
 byte PlayerHasSpell(void);
 void BeginArmageddon(void);
 void ArmageddonUpdate(Map *map);
@@ -171,5 +192,8 @@ void CheckForAllSecrets(void);
 byte PlayerHasAllSecrets(byte chapter);
 void SetChallengeCrystals(int amt);
 int GetChallengeCrystals(void);
+
+bool BrutalMode(void);
+bool ClassicMode(void);
 
 #endif

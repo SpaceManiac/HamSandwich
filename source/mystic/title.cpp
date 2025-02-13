@@ -21,9 +21,11 @@ char credits[][32]={
 	"#",
 	"Programming",
 	"Mike Hommel",
+	"Tad Hardesty",
 	"%",
 	"Art",
 	"Mike Hommel",
+	"Ben Rose",
 	"%",
 	"Music",
 	"Brent Christian",
@@ -45,6 +47,8 @@ char credits[][32]={
 	"TD Miller",
 	"Barry Pennington",
 	"Betty Scherber",
+	"Thousands of people over",
+	"the years"
 	"#",
 	"Thanks for playing!",
 	"Visit us at www.hamumu.com!",
@@ -125,7 +129,8 @@ typedef struct title_t
 	int optionsX;
 	byte cursor;
 	byte savecursor;
-	byte saveChapter[5],saveHour[5],saveMin[5],saveLevel[5],saveNightmare[5];
+	byte saveChapter[5], saveHour[5], saveMin[5], saveLevel[5], saveNightmare[5];
+	Difficulty saveDiff[5];
 } title_t;
 
 sprite_set_t *planetSpr;
@@ -153,10 +158,10 @@ void MainMenuDisplay(MGLDraw *mgl,title_t title)
 	int i;
 	int orbY[]={217,268,319,364,419};
 
-	memcpy(mgl->GetScreen(),backgd,640*480);
+	memcpy(mgl->GetScreen(),backgd,SCRWID*SCRHEI);
 
-	Print(388,462,"Copyright 2004, Hamumu Software",0,1);
-	Print(2,462,VERSION_NO,0,1);
+	Print(SCRWID-285,468,"Copyright 2004-2025, Hamumu Software",0,1);
+	Print(2,468,VERSION_NO,0,1);
 
 	for(i=0;i<5;i++)
 	{
@@ -173,11 +178,11 @@ void MainMenuDisplay(MGLDraw *mgl,title_t title)
 	}
 
 #ifdef BETA
-	CenterPrint(320,40,"*BETA VERSION*",MGL_random(48)-24,0);
-	CenterPrint(320,80,"DO NOT DISTRIBUTE!",0,1);
+	CenterPrint(HALFWID,40,"*BETA VERSION*",MGL_random(48)-24,0);
+	CenterPrint(HALFWID,80,"DO NOT DISTRIBUTE!",0,1);
 #endif
 #ifdef CHEAT
-	CenterPrint(320,80,"*CHEAT EDITION*",MGL_random(48)-24,0);
+	CenterPrint(HALFWID,80,"*CHEAT EDITION*",MGL_random(48)-24,0);
 #endif
 #ifdef DEMO
 	CenterPrint(400,140,"DEMO VERSION",title.titleBright,0);
@@ -274,23 +279,23 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 
 	creditsOrIntro=0;
 	mgl->LoadBMP("graphics/title.bmp");
-	backgd=(byte *)malloc(640*480);
+	backgd=(byte *)malloc(SCRWID*SCRHEI);
 	if(!backgd)
 		FatalError("Out of memory!!");
-	memcpy(backgd,mgl->GetScreen(),640*480);
+	memcpy(backgd,mgl->GetScreen(),SCRWID*SCRHEI);
 
 	mgl->LastKeyPressed();
 	mgl->ClearScreen();
 	oldc=CONTROL_B1|CONTROL_B2;
 	planetSpr=new sprite_set_t("graphics/title.jsp");
 
-	title.bouaphaX=640;
+	title.bouaphaX=SCRWID;
 	title.optionsX=-300;
 	title.titleBright=-32;
 	title.titleDir=4;
 	title.cursor=0;
 	title.blueY=1;
-	title.moonY=480;
+	title.moonY=SCRHEI;
 	startTime=timeGetTime();
 	StartClock();
 	if(CurrentSong()!=SONG_SHOP && CurrentSong()!=SONG_INTRO)
@@ -308,13 +313,19 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 			free(backgd);
 			CO_RETURN 255;
 		}
+		if (b == 1 && title.cursor == 0)	// selected New Game
+		{
+			if (!AWAIT DifficultyPicker(mgl, &title))	// pressed ESC on the slot picker
+				b = 0;
+			
+			startTime = timeGetTime();
+		}
 		if(b==1 && title.cursor==1)	// selected Continue
 		{
 			if(!AWAIT GameSlotPicker(mgl,&title))	// pressed ESC on the slot picker
-			{
 				b=0;
-				startTime=timeGetTime();
-			}
+			
+			startTime = timeGetTime();
 		}
 		now=timeGetTime();
 		if(now-startTime>1000*10)
@@ -354,9 +365,9 @@ void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 	{
 		sprintf(s,"%d",i+1);
 		PrintBrightGlow(380,200+i*50,s,-16+(title.savecursor==i)*16,0);
-		if(title.saveChapter[i]==0 || title.saveLevel[i]==0)
+		if(title.saveChapter[i]==0 || title.saveLevel[i]==0 || title.saveDiff[i]==Difficulty::UNUSED)
 		{
-			PrintBrightGlow(450,200+i*50,"Unused",-16+(title.savecursor==i)*16,2);
+			PrintBrightGlow(430,200+i*50,"Unused",-16+(title.savecursor==i)*16,2);
 		}
 		else
 		{
@@ -364,9 +375,17 @@ void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 				sprintf(s,"Chapter %d!!!",title.saveChapter[i]);
 			else
 				sprintf(s,"Chapter %d",title.saveChapter[i]);
-			PrintBrightGlow(450,200+i*50,s,-16+(title.savecursor==i)*16,2);
+			if (title.saveDiff[i] == Difficulty::CLASSIC)
+				strcat(s, " [C]");
+			else if (title.saveDiff[i] == Difficulty::MODERN)
+				strcat(s, " [M]");
+			else if (title.saveDiff[i] == Difficulty::BRUTAL_CLASSIC)
+				strcat(s, " [BC]");
+			else if (title.saveDiff[i] == Difficulty::BRUTAL_MODERN)
+				strcat(s, " [BM]");
+			PrintBrightGlow(430,200+i*50,s,-16+(title.savecursor==i)*16,2);
 			sprintf(s,"%02d:%02d  Lvl: %02d",title.saveHour[i],title.saveMin[i],title.saveLevel[i]);
-			PrintBrightGlow(450,200+i*50+20,s,-16+(title.savecursor==i)*16,2);
+			PrintBrightGlow(430,200+i*50+20,s,-16+(title.savecursor==i)*16,2);
 		}
 	}
 }
@@ -452,6 +471,7 @@ void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 			title->saveHour[i]=0;
 			title->saveMin[i]=0;
 			title->saveNightmare[i]=0;
+			title->saveDiff[i] = Difficulty::UNUSED;	// unused
 		}
 	}
 	else
@@ -464,6 +484,7 @@ void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 			title->saveHour[i]=(byte)(p.gameClock/(30*60*60));
 			title->saveMin[i]=(byte)((p.gameClock/(30*60))%60);
 			title->saveNightmare[i]=p.nightmare;
+			title->saveDiff[i] = p.difficulty;
 		}
 		f.reset();
 	}
@@ -502,6 +523,152 @@ TASK(byte) GameSlotPicker(MGLDraw *mgl,title_t *title)
 		CO_RETURN 0;
 }
 
+void DifficultyPickerDisplay(MGLDraw* mgl, title_t title)
+{
+	int i;
+	char diffName[][16] = {
+		"Classic",
+		"Modern",
+		"Brutal Classic",
+		"Brutal Modern",
+	};
+	char s[32];
+
+	MainMenuDisplay(mgl, title);
+	RenderSkillBox(380, 144, 636, 460, 31, 3);
+	PrintBrightGlow(400, 150, "Difficulty", 0, 0);
+
+	for (i = 0; i < 4; i++)
+	{
+		PrintBrightGlow(400, 200 + i * 30, diffName[i], -16 + (title.savecursor == i) * 16, 2);
+	}
+	switch (title.savecursor)
+	{
+		case 0:
+			PrintBrightGlow(385, 200 + 4 * 30, "The original game from 20 years", 0, 1);
+			PrintBrightGlow(385, 200 + 4 * 30 + 14, "ago! Or rather the first remake", 0, 1);
+			PrintBrightGlow(385, 200 + 4 * 30 + 14*2, "from that time. Don't worry about", 0, 1);
+			PrintBrightGlow(385, 200 + 4 * 30 + 14*3, "the original.", 0, 1);
+			break;
+		case 1:
+			PrintBrightGlow(385, 200 + 4 * 30, "It's 2025, can there be a game", 0, 1);
+			PrintBrightGlow(385, 200 + 4 * 30 + 14, "with no skill tree? Let's not find", 0, 1);
+			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 2, "out. This adds many tweaks to", 0, 1);
+			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 3, "spells and enemies and a skill", 0, 1);
+			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 4, "tree. It's probably easier, and", 0, 1);
+			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 5, "definitely smoother.", 0, 1);
+			break;
+		case 2:
+		case 3:
+			PrintBrightGlow(385, 200 + 4 * 30, "Brutal mode starts you in Madcap", 0, 1);
+			PrintBrightGlow(385, 200 + 4 * 30 + 14, "Mode, though it's not as hard", 0, 1);
+			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 2, "as the normal Madcap mode.", 0, 1);
+			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 3, "But you can still buy Madcap", 0, 1);
+			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 4, "Crystals, and you start with", 0, 1);
+			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 5, "the first Boots, Hat, and Staff.", 0, 1);
+			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 6, "Available in both Classic and", 0, 1);
+			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 7, "Modern flavors.", 0, 1);
+			break;
+	}
+}
+
+byte DifficultyPickerUpdate(MGLDraw* mgl, title_t* title, int* lastTime)
+{
+	byte c;
+	static byte reptCounter = 0;
+
+	while (*lastTime >= TIME_PER_FRAME)
+	{
+		// update graphics
+		title->titleBright += title->titleDir;
+		if (title->titleBright > 8)
+		{
+			title->titleDir = -2;
+			title->titleBright = 8;
+		}
+		if (title->titleBright < -8)
+		{
+			title->titleDir = 2;
+			title->titleBright = -8;
+		}
+
+		// now real updating
+		c = GetControls();
+
+		reptCounter++;
+		if ((!oldc) || (reptCounter > 10))
+			reptCounter = 0;
+
+		if ((c & CONTROL_UP) && (!reptCounter))
+		{
+			(title->savecursor)--;
+			if (title->savecursor == 255)
+				title->savecursor = 3;
+			MakeNormalSound(SND_MENUCLICK);
+		}
+		if ((c & CONTROL_DN) && (!reptCounter))
+		{
+			(title->savecursor)++;
+			if (title->savecursor == 4)
+				title->savecursor = 0;
+			MakeNormalSound(SND_MENUCLICK);
+		}
+		if (((c & CONTROL_B1) && (!(oldc & CONTROL_B1))) ||
+			((c & CONTROL_B2) && (!(oldc & CONTROL_B2))))
+		{
+			player.difficulty = (Difficulty)title->savecursor;
+			MakeNormalSound(SND_MENUSELECT);
+			return 1;
+		}
+		oldc = c;
+		*lastTime -= TIME_PER_FRAME;
+	}
+
+	if (mgl->LastKeyPressed() == 27)
+	{
+		MakeNormalSound(SND_MENUSELECT);
+		return 2;
+	}
+
+	JamulSoundUpdate();
+	return 0;
+}
+
+void InitDifficultyPicker(MGLDraw* mgl, title_t* title)
+{
+	title->savecursor = 0;
+	mgl->LastKeyPressed();
+	oldc = CONTROL_B1 | CONTROL_B2;
+}
+
+TASK(byte) DifficultyPicker(MGLDraw* mgl, title_t* title)
+{
+	byte b = 0;
+	int lastTime = 1;
+
+	title->savecursor = 0;
+	InitDifficultyPicker(mgl, title);
+
+	while (b == 0)
+	{
+		lastTime += TimeLength();
+		StartClock();
+		b = DifficultyPickerUpdate(mgl, title, &lastTime);
+		DifficultyPickerDisplay(mgl, *title);
+		AWAIT mgl->Flip();
+		if (!mgl->Process())
+			CO_RETURN 0;
+		EndClock();
+	}
+	if (b == 1)	// something was selected
+	{
+		InitPlayer(INIT_GAME, 0, 0);
+		CO_RETURN 1;
+	}
+	else
+		CO_RETURN 0;
+}
+
 void CreditsRender(int y,byte mode)
 {
 	int i,ypos;
@@ -518,22 +685,22 @@ void CreditsRender(int y,byte mode)
 			if(s[0]=='@')
 			{
 				if(s[1]!='T' || mode!=0)
-					CenterPrint(320,ypos-y,&s[1],0,0);
+					CenterPrint(HALFWID,ypos-y,&s[1],0,0);
 			}
 			else if(s[0]=='#')
 			{
-				DrawFillBox(320-200,ypos-y+8,320+200,ypos-y+11,255);
+				DrawFillBox(HALFWID-200,ypos-y+8,HALFWID+200,ypos-y+11,255);
 			}
 			else if(s[0]=='%')
 			{
-				DrawFillBox(320-70,ypos-y+8,320+70,ypos-y+9,255);
+				DrawFillBox(HALFWID-70,ypos-y+8,HALFWID+70,ypos-y+9,255);
 			}
 			else
-				CenterPrint(320,ypos-y,s,0,2);
+				CenterPrint(HALFWID,ypos-y,s,0,2);
 		}
 		ypos+=20;
 		i++;
-		if(ypos-y>=480)
+		if(ypos-y>=SCRHEI)
 			return;
 	}
 }
@@ -557,7 +724,7 @@ TASK(void) Credits(MGLDraw *mgl,byte mode)
 		if(scroll)
 			y+=1;
 
-		if(y==END_OF_CREDITS-320 && mode==1)
+		if(y==END_OF_CREDITS-HALFHEI*3/2 && mode==1)
 			scroll=0;
 
 		AWAIT mgl->Flip();
@@ -565,7 +732,7 @@ TASK(void) Credits(MGLDraw *mgl,byte mode)
 			CO_RETURN;
 		if(mgl->LastKeyPressed())
 			CO_RETURN;
-		if(y==END_OF_CREDITS-320 && mode==0)
+		if(y==END_OF_CREDITS-HALFHEI*3/2 && mode==0)
 			CO_RETURN;
 
 		JamulSoundUpdate();
@@ -609,11 +776,11 @@ void VictoryTextRender(int y,byte type)
 			}
 			else if(s[0]=='#')
 			{
-				DrawFillBox(320-200,ypos-y+8,320+200,ypos-y+11,255);
+				DrawFillBox(HALFWID-200,ypos-y+8,HALFWID+200,ypos-y+11,255);
 			}
 			else if(s[0]=='%')
 			{
-				DrawFillBox(320-70,ypos-y+8,320+70,ypos-y+9,255);
+				DrawFillBox(HALFWID-70,ypos-y+8,HALFWID+70,ypos-y+9,255);
 			}
 			else
 				CenterPrintGlow(ypos-y,s,2);
@@ -621,7 +788,7 @@ void VictoryTextRender(int y,byte type)
 
 		ypos+=20;
 		i++;
-		if(ypos-y>=480)
+		if(ypos-y>=SCRHEI)
 			return;
 	}
 }
@@ -635,7 +802,7 @@ TASK(void) VictoryText(MGLDraw *mgl,byte victoryType)
 	byte flip=0;
 	int length;
 
-	scr=(byte *)malloc(640*480);
+	scr=(byte *)malloc(SCRWID*SCRHEI);
 	if(!scr)
 		CO_RETURN;
 
@@ -656,12 +823,12 @@ TASK(void) VictoryText(MGLDraw *mgl,byte victoryType)
 	}
 
 	mgl->LastKeyPressed();
-	memcpy(scr,mgl->GetScreen(),640*480);
+	memcpy(scr,mgl->GetScreen(),SCRWID*SCRHEI);
 	darkY=0;
 	while(1)
 	{
 		startTime=timeGetTime();
-		memcpy(mgl->GetScreen(),scr,640*480);
+		memcpy(mgl->GetScreen(),scr,SCRWID*SCRHEI);
 		VictoryTextRender(y,victoryType);
 		if((flip=1-flip) || victoryType==1 || victoryType==2)
 			y++;
@@ -677,15 +844,15 @@ TASK(void) VictoryText(MGLDraw *mgl,byte victoryType)
 		{
 			for(k=1;k<20;k++)
 			{
-				j=darkY*640;
-				for(i=0;i<640;i++)
+				j=darkY*SCRWID;
+				for(i=0;i<SCRWID;i++)
 				{
 					if(scr[i+j]>0)
 						scr[i+j]--;
 				}
 				darkY+=19;
-				if(darkY>479)
-					darkY-=480;
+				if(darkY>SCRHEI-1)
+					darkY-=SCRHEI;
 			}
 		}
 		JamulSoundUpdate();

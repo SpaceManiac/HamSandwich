@@ -57,8 +57,8 @@ byte SpellLevel(void)
 
 	if(player.fairyOn==FAIRY_CASTY)
 		lvl+=10;
-	if(lvl>50)
-		lvl=50;
+	if(lvl>MAX_PLAYERLEVEL)
+		lvl=MAX_PLAYERLEVEL;
 
 	return lvl;
 }
@@ -109,8 +109,8 @@ void CastSpell(Guy *me)
 
 	switch(player.casting)
 	{
-		case 0:	// energy barrage/storm
-			if(player.spell[0]==1)
+		case SPL_ENERGY:	// energy barrage/storm
+			if(player.spell[SPL_ENERGY]==1 || player.downgradeSpell[SPL_ENERGY])
 			{
 				FireBullet(me->x,me->y,me->facing,BLT_LASER);
 				if(SpellLevel()>35)
@@ -156,8 +156,8 @@ void CastSpell(Guy *me)
 			}
 			DoPlayerFacing(c,me);
 			break;
-		case 1:	// dragon's flame, liquify
-			if(player.spell[1]==1)
+		case SPL_FLAME:	// dragon's flame, liquify
+			if(player.spell[SPL_FLAME]==1 || player.downgradeSpell[SPL_FLAME])
 			{
 				FireBullet(me->x,me->y,me->facing,BLT_FLAME);
 				c=GetControls();
@@ -165,13 +165,20 @@ void CastSpell(Guy *me)
 				{
 					if(SpellLevel()<25)
 					{
-						player.wpnReload=1;
-						me->frm=2;
-						i=12-SpellLevel()/2;
-						if(i==0)
-							i=1;
+						if (ClassicMode())
+						{
+							me->frm=2;
+							i=12-SpellLevel()/2;
+							if(i==0)
+								i=1;
 
-						me->frmAdvance=(256*2)/(i);
+							me->frmAdvance=(256*2)/(i);
+						}
+						else
+						{
+							player.wpnReload = 1;
+							me->frmTimer = 4 - SpellLevel() / 8;
+						}
 					}
 					else
 					{
@@ -191,9 +198,9 @@ void CastSpell(Guy *me)
 				player.wpnReload=5;
 			}
 			break;
-		case 2: // seeker bolt/barrage
+		case SPL_SEEKER: // seeker bolt/barrage
 			FireBullet(me->x,me->y,me->facing,BLT_MISSILE);
-			if(player.spell[2]==2)
+			if(player.spell[SPL_SEEKER]==2 && !player.downgradeSpell[SPL_SEEKER])
 			{
 				FireBullet(me->x,me->y,(me->facing-1)&7,BLT_MISSILE);
 				FireBullet(me->x,me->y,(me->facing+1)&7,BLT_MISSILE);
@@ -204,7 +211,7 @@ void CastSpell(Guy *me)
 				player.wpnReload=2;
 			break;
 		case 3: // ice blast/beam
-			if(player.spell[3]==1)
+			if(player.spell[SPL_ICE]==1 || player.downgradeSpell[SPL_ICE])
 			{
 				FireBullet(me->x,me->y,me->facing,BLT_ICECLOUD);
 			}
@@ -216,9 +223,11 @@ void CastSpell(Guy *me)
 			player.wpnReload=15;
 			break;
 		case 4:	// inferno
-			if(player.spell[4]==1)
+			if(player.spell[SPL_INFERNO]==1 || player.downgradeSpell[SPL_INFERNO])
 			{
-				j=256/(SpellLevel()/4);
+				byte l = SpellLevel() / 4;
+				if (l < 1) l = 1;
+				j=256/(l);
 				for(i=0;i<256;i+=j)
 				{
 					c=me->facing*32+i;
@@ -240,7 +249,7 @@ void CastSpell(Guy *me)
 			}
 			break;
 		case 5: // summon ptero
-			if(player.spell[5]==1)
+			if(player.spell[SPL_SUMMON]==1 || player.downgradeSpell[SPL_SUMMON])
 			{
 				SetPlayerGlow(64);
 				MakeNormalSound(SND_PTEROSUMMON);
@@ -271,22 +280,22 @@ void CastSpell(Guy *me)
 			}
 			player.wpnReload=10;
 			break;
-		case 6:	// stone/steelskin
+		case SPL_ARMOR:	// stone/steelskin
 			SetPlayerGlow(40);
-			if(player.spell[6]==1)
+			if(player.spell[SPL_ARMOR]==1 || player.downgradeSpell[SPL_ARMOR])
 				player.stoneskin+=SpellLevel()*20;
 			else
 				player.stoneskin+=SpellLevel()*5;
 			MakeNormalSound(SND_STONESKIN);
 			player.wpnReload=10;
 			break;
-		case 7:	// berserk
+		case SPL_BERSERK:	// berserk
 			SetPlayerGlow(40);
 			player.berserk+=SpellLevel()*10;
 			MakeNormalSound(SND_BERSERK);
 			player.wpnReload=10;
 			break;
-		case 8: // healing
+		case SPL_HEAL: // healing
 			MakeNormalSound(SND_LOONYKEY);
 			if(player.life==player.maxLife)
 			{
@@ -294,7 +303,7 @@ void CastSpell(Guy *me)
 				return;
 			}
 			SetPlayerGlow(80);
-			if(player.spell[8]==1)
+			if(player.spell[SPL_HEAL]==1 || player.downgradeSpell[SPL_HEAL])
 			{
 				PlayerHeal(SpellLevel());
 				ExplodeParticles2(PART_SLIME,me->x,me->y,MGL_randoml(FIXAMT*20),SpellLevel(),6);
@@ -306,7 +315,7 @@ void CastSpell(Guy *me)
 			}
 			player.wpnReload=10;
 			break;
-		case 9: // Armageddon!
+		case SPL_ARMAGEDDON: // Armageddon!
 			BeginArmageddon();
 			break;
 	}

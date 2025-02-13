@@ -15,9 +15,6 @@
 #define EDITMODE_SPECIAL	10
 #define EDITMODE_TILELOAD	11
 
-#define MS_X (480)
-#define MS_Y (480)
-
 static char lastKey=0;
 
 static MGLDraw *editmgl;
@@ -48,9 +45,6 @@ byte InitEditor(void)
 	curMap=world.map[0];
 	curMapNum=0;
 
-	//mouseX=MS_X;
-	//mouseY=MS_Y;
-	//MS_moveTo(MS_X,MS_Y);
 	PutCamera(0,0);
 	gameStartTime=timeGetTime();
 	InitGuys(128);
@@ -104,7 +98,7 @@ void EnemyPickerClick(void)
 			return;
 		}
 		x+=202;
-		if(x>640-200)
+		if(x>SCRWID-200)
 		{
 			x=2;
 			y+=16;
@@ -464,12 +458,12 @@ void EditorMenuClick(void)
 	}
 	else if(editopt.plopMode==PLOP_ITEM)
 	{
-		if(mouseX>601 && mouseX<640 && mouseY>420)
+		if(mouseX>601 && mouseX<SCRWID && mouseY>420)
 			editMode=EDITMODE_PICKITEM;
 	}
 	else if(editopt.plopMode==PLOP_BADGUY)
 	{
-		if(mouseX>601 && mouseX<640 && mouseY>420)
+		if(mouseX>601 && mouseX<SCRWID && mouseY>420)
 			editMode=EDITMODE_PICKENEMY;
 	}
 
@@ -589,32 +583,23 @@ void EditorMenuClick(void)
 
 void UpdateMouse(void)
 {
-//	int msx,msy;
 	int cx,cy;
 
-	//MS_getPos(&msx,&msy);
-	//MS_moveTo(MS_X,MS_Y);
-
-	//mouseX+=(msx-MS_X);
-	//mouseY+=(msy-MS_Y);
-
 	editmgl->GetMouse(&mouseX,&mouseY);
-	//mouseX=MS_X;
-	//mouseY=MS_Y;
-
+	
 	if(mouseX<0)
 		mouseX=0;
 	if(mouseY<0)
 		mouseY=0;
-	if(mouseX>639)
-		mouseX=639;
-	if(mouseY>479)
-		mouseY=479;
+	if(mouseX>SCRWID-1)
+		mouseX=SCRWID-1;
+	if(mouseY>SCRHEI-1)
+		mouseY=SCRHEI-1;
 
 	GetCamera(&cx,&cy);
 
-	tileX=(mouseX+cx-320);
-	tileY=(mouseY+cy-240);
+	tileX=(mouseX+cx-HALFWID);
+	tileY=(mouseY+cy-HALFHEI);
 
 	if(tileX<0)
 		tileX=tileX/TILE_WIDTH-1;
@@ -800,8 +785,8 @@ void ShowTarget(void)
 	col=255-col;
 	GetCamera(&cx,&cy);
 
-	x1=tileX*TILE_WIDTH-(cx-320);
-	y1=tileY*TILE_HEIGHT-(cy-240);
+	x1=tileX*TILE_WIDTH-(cx-HALFWID);
+	y1=tileY*TILE_HEIGHT-(cy-HALFHEI);
 
 	x2=x1+TILE_WIDTH-1;
 	y2=y1+TILE_HEIGHT-1;
@@ -925,7 +910,7 @@ void RenderEnemyPickDisplay(void)
 			editmgl->Box(x,y,x+200,y+14,16);
 		Print(x+2,y+2,s,0,1);
 		x+=202;
-		if(x>640-200)
+		if(x>SCRWID-200)
 		{
 			x=2;
 			y+=16;
@@ -939,7 +924,7 @@ void RenderPickDisplay(void)
 	byte selected;
 	char s[32];
 
-	editmgl->FillBox(0,240,639,479,0);
+	editmgl->FillBox(0,HALFHEI,639,479,0);
 
 	selected=255;
 	for(i=0;i<20;i++)
@@ -1011,7 +996,7 @@ void RenderTerrainEditor(void)
 	int i,j;
 	byte selected;
 
-	editmgl->FillBox(0,240,639,479,0);
+	editmgl->FillBox(0,HALFHEI,639,479,0);
 
 	selected=255;
 	for(i=0;i<20;i++)
@@ -1047,13 +1032,13 @@ void ShowSpecials(void)
 		if(curMap->special[i].trigger)
 		{
 			Print(
-				curMap->special[i].x * TILE_WIDTH + 2 - sx + 320,
-				curMap->special[i].y * TILE_HEIGHT + 1 - sy + 240,
+				curMap->special[i].x * TILE_WIDTH + 2 - sx + HALFWID,
+				curMap->special[i].y * TILE_HEIGHT + 1 - sy + HALFHEI,
 				"Spcl", 0, 1);
 			sprintf(spclNum, "%03d", i);
 			Print(
-				curMap->special[i].x * TILE_WIDTH + 2 - sx + 320,
-				curMap->special[i].y * TILE_HEIGHT + 12 - sy + 240,
+				curMap->special[i].x * TILE_WIDTH + 2 - sx + HALFWID,
+				curMap->special[i].y * TILE_HEIGHT + 12 - sy + HALFHEI,
 				spclNum, 0, 1);
 		}
 }
@@ -1391,7 +1376,7 @@ void EditorSelectMap(byte w)
 {
 	curMap=world.map[w];
 	curMapNum=w;
-	PutCamera(320<<FIXSHIFT,240<<FIXSHIFT);
+	PutCamera(HALFWID<<FIXSHIFT,HALFHEI<<FIXSHIFT);
 	ExitGuys();
 	InitGuys(128);
 	AddMapGuys(curMap);

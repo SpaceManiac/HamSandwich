@@ -7,8 +7,8 @@
 mfont_t  *gameFont[3]={NULL,NULL,NULL};
 MGLDraw  *mgl=NULL;
 
-int scrx=320,scry=240,scrdx=0,scrdy=0;
-int rscrx=320<<FIXSHIFT,rscry=240<<FIXSHIFT;
+int scrx=HALFWID,scry=HALFHEI,scrdx=0,scrdy=0;
+int rscrx=HALFWID<<FIXSHIFT,rscry=HALFHEI<<FIXSHIFT;
 
 byte shakeTimer=0;
 
@@ -187,14 +187,14 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 	rscrx+=scrdx;
 	rscry+=scrdy;
 
-	if(rscrx<320<<FIXSHIFT)
-		rscrx=320<<FIXSHIFT;
-	if(rscrx>((map->width*TILE_WIDTH-320)<<FIXSHIFT))
-		rscrx=(map->width*TILE_WIDTH-320)<<FIXSHIFT;
-	if(rscry<(240-TILE_HEIGHT)<<FIXSHIFT)
-		rscry=(240-TILE_HEIGHT)<<FIXSHIFT;
-	if(rscry>((map->height*TILE_HEIGHT-240)<<FIXSHIFT))
-		rscry=(map->height*TILE_HEIGHT-240)<<FIXSHIFT;
+	if(rscrx<HALFWID<<FIXSHIFT)
+		rscrx=HALFWID<<FIXSHIFT;
+	if(rscrx>((map->width*TILE_WIDTH-HALFWID)<<FIXSHIFT))
+		rscrx=(map->width*TILE_WIDTH-HALFWID)<<FIXSHIFT;
+	if(rscry<(HALFHEI-TILE_HEIGHT)<<FIXSHIFT)
+		rscry=(HALFHEI-TILE_HEIGHT)<<FIXSHIFT;
+	if(rscry>((map->height*TILE_HEIGHT-HALFHEI)<<FIXSHIFT))
+		rscry=(map->height*TILE_HEIGHT-HALFHEI)<<FIXSHIFT;
 
 	if(scrx>desiredX+20)
 		scrdx=-((scrx-(desiredX+20))*FIXAMT/16);
@@ -268,7 +268,7 @@ void CenterPrintGlow(int y,const char *s,byte font)
 {
 	int x;
 
-	x=320-FontStrLen(s,gameFont[font])/2;
+	x=HALFWID-FontStrLen(s,gameFont[font])/2;
 	FontPrintStringGlow(x,y,s,gameFont[font]);
 }
 
@@ -301,12 +301,12 @@ void RenderItAll(world_t *world,Map *map,byte flags)
 	}
 	map->Render(world,scrx,scry,flags);
 
-	scrx-=320;
-	scry-=240;
+	scrx-=HALFWID;
+	scry-=HALFHEI;
 	dispList->Render();
 	dispList->ClearList();
-	scrx+=320;
-	scry+=240;
+	scrx+=HALFWID;
+	scry+=HALFHEI;
 }
 
 void SprDraw(int x,int y,int z,byte hue,char bright,sprite_t *spr,byte flags)
@@ -415,8 +415,8 @@ bool DisplayList::DrawSprite(int x,int y,int z,word hue,char bright,sprite_t *sp
 {
 	int i;
 
-	if((x-scrx+320)<-DISPLAY_XBORDER || (x-scrx+320)>640+DISPLAY_XBORDER ||
-	   (y-scry+240)<-DISPLAY_YBORDER || (y-scry+240)>480+DISPLAY_YBORDER)
+	if((x-scrx+HALFWID)<-DISPLAY_XBORDER || (x-scrx+HALFWID)>SCRWID+DISPLAY_XBORDER ||
+	   (y-scry+HALFHEI)<-DISPLAY_YBORDER || (y-scry+HALFHEI)>SCRHEI+DISPLAY_YBORDER)
 		return true;
 
 	i=GetOpenSlot();
@@ -528,10 +528,10 @@ void DrawBox(int x,int y,int x2,int y2,byte c)
 
 void DrawDebugBox(int x,int y,int x2,int y2)
 {
-	x-=scrx-320;
-	y-=scry-240;
-	x2-=scrx-320;
-	y2-=scry-240;
+	x-=scrx-HALFWID;
+	y-=scry-HALFHEI;
+	x2-=scrx-HALFWID;
+	y2-=scry-HALFHEI;
 	mgl->Box(x,y,x2,y2,255);
 	//mgl->Flip();
 }

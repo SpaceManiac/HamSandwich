@@ -150,7 +150,7 @@ void InitMessage(void)
 void NewBigMessage(const char *txt,int time)
 {
 	strncpy(bigMessage.msg,txt,32);
-	bigMessage.x=320-GetStrLength(bigMessage.msg,0)/2;
+	bigMessage.x=HALFWID-GetStrLength(bigMessage.msg,0)/2;
 	bigMessage.y=-100;
 	bigMessage.dy=0;
 	bigMessage.timer=time;
@@ -161,8 +161,8 @@ void NewBigMessage(const char *txt,int time)
 void NewMessage(const char *txt,int time)
 {
 	strncpy(message.msg,txt,32);
-	message.x=320-GetStrLength(message.msg,2)/2;
-	message.y=484;
+	message.x=HALFWID-GetStrLength(message.msg,2)/2;
+	message.y=SCRHEI+4;
 	message.dy=-8;
 	message.timer=time;
 	message.bright=-32;
@@ -422,7 +422,6 @@ void RenderSpeech(void)
 	char s[64];
 	int i;
 
-	//DrawFillBox(320-64*8/2,90,320+64*8/2,90+20*4+10,0);
 	GetIntfaceSpr(68)->Draw(180,86,GetDisplayMGL());
 
 	for(i=0;(i<=speechY && i<4);i++)
@@ -431,6 +430,6 @@ void RenderSpeech(void)
 		if(i==speechY)
 			s[speechX+1]='\0';
 
-		PrintGlow(320-64*8/2+5,i*20+95,s,2);
+		PrintGlow(HALFWID-64*8/2+5,i*20+95,s,2);
 	}
 }

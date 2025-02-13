@@ -5,6 +5,7 @@
 #include "options.h"
 #include "water.h"
 #include "appdata.h"
+#include "skills.h"
 
 #define PLYR_ACCEL	(FIXAMT)
 #define PLYR_DECEL	(FIXAMT*3/4)
@@ -58,15 +59,14 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.levelsPassed=0;
 		for(i=0;i<10;i++)
 			player.spell[i]=0;
-		player.boots=0;
-		player.hat=0;
-		player.staff=0;
+		player.boots=0 + BrutalMode();
+		player.hat = 0 + BrutalMode();
+		player.staff = 0 + BrutalMode();
 		player.money=0;
 		player.maxSpeed=FIXAMT*4;
 		player.defense=0;
 		player.damage=2;
-		player.maxLife=15;
-		player.maxMana=15;
+		PlayerUpdateLife();
 		player.gear=0;
 		player.gameClock=0;
 		player.overworldX=-2000;
@@ -76,6 +76,9 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.templePuzzleDone=0;
 		for(i=0;i<4;i++)
 			player.chaseFairy[i]=0;
+		for (i = 0; i < MAX_SKILLS; i++)
+			player.skill[i] = 0;
+		player.skillPts = 0;
 	}
 	if(initWhat>=INIT_WORLD) // initialize the things that go with each world
 	{
@@ -343,7 +346,7 @@ void PoisonPlayer(byte amt)
 
 void PlayerResetScore(void)
 {
-	if(!Challenging())
+	if(!Challenging() && ClassicMode())
 	{
 		player.score=player.prevScore;
 		player.level=player.prevLevel;
@@ -398,6 +401,14 @@ byte KeyChainAllCheck(void)
 		return 1;
 	}
 	return 0;
+}
+
+bool PlayerHasTier2Spell(void)
+{
+	for (int i = 0; i < 10; i++)
+		if (player.spell[i] == 2)
+			return true;
+	return false;
 }
 
 byte PlayerHasSpell(void)
@@ -619,12 +630,8 @@ byte PlayerHasAllSecrets(byte chapter)
 
 byte PlayerGetItem(byte itm,int x,int y)
 {
-	int cx,cy;
 	int i;
 
-	GetCamera(&cx,&cy);
-	cx<<=FIXSHIFT;
-	cy<<=FIXSHIFT;
 	if(itm<ITM_LETTERM || itm>ITM_LETTERC)
 		ChallengeEvent(CE_GET,itm);
 	switch(itm)
@@ -922,6 +929,46 @@ byte PlayerKeys(byte w)
 	return player.keys[w];
 }
 
+void PlayerUpdateLife(void)
+{
+	// classic, gain life and mana with levels
+	if (player.difficulty == Difficulty::CLASSIC || player.difficulty==Difficulty::BRUTAL_CLASSIC)
+	{
+		player.maxLife = 14 + player.level;
+		player.maxMana = 14 + player.level;
+	}
+	// modern, gain life and mana from skills
+	else if(player.difficulty==Difficulty::MODERN || player.difficulty==Difficulty::BRUTAL_MODERN)
+	{
+		player.maxLife = 14+player.skill[SKILL_LIFE]*10;
+		player.maxMana = 14+player.skill[SKILL_MANA]*10;
+	}
+	if (player.gear & GEAR_HEART)
+		player.maxLife *= 2;
+	if (player.gear & GEAR_MOON)
+		player.maxMana *= 2;
+}
+
+void PlayerLevelUp(int y)
+{
+	if (player.level == MAX_PLAYERLEVEL)
+		return;
+
+	AddParticle(GetGoodguy()->x, GetGoodguy()->y, FIXAMT * 20 + y * FIXAMT * 10, 0, 0, 0, 60, PART_LVLUP, 0);
+	MakeNormalSound(SND_LEVELUP);
+	player.experience -= player.needExp;
+	player.level++;
+	if (!ClassicMode())
+		player.skillPts++;
+	PlayerUpdateLife();
+	player.needExp = player.level * player.level * 10 + player.level * 10;
+	if (player.level == MAX_PLAYERLEVEL)
+	{
+		player.needExp = 0;
+		player.experience = 0;
+	}
+}
+
 void PlayerGetPoints(int amt)
 {
 	int y;
@@ -933,8 +980,10 @@ void PlayerGetPoints(int amt)
 	if(player.fairyOn==FAIRY_SMARTY)
 		amt=amt*5/4;
 
-	if(player.nightmare)
-		amt=amt*5;	// 5x XP in nightmare mode
+	if (player.nightmare)
+		amt = amt * 5;	// 5x XP in nightmare mode
+	else if (BrutalMode())
+		amt = amt * 2;	// 2x XP in brutal mode
 
 	ChallengeEvent(CE_POINTS,amt);
 	player.score+=amt;
@@ -944,24 +993,8 @@ void PlayerGetPoints(int amt)
 		y=0;
 		while(player.experience>=player.needExp)
 		{
-			AddParticle(GetGoodguy()->x,GetGoodguy()->y,FIXAMT*20+y*FIXAMT*10,0,0,0,60,PART_LVLUP,0);
-			MakeNormalSound(SND_LEVELUP);
+			PlayerLevelUp(y);
 			y++;
-			player.experience-=player.needExp;
-			player.level++;
-			player.maxLife=14+player.level;
-			if(player.gear&GEAR_HEART)
-				player.maxLife*=2;
-			player.maxMana=14+player.level;
-			if(player.gear&GEAR_MOON)
-				player.maxMana*=2;
-			player.needExp=player.level*player.level*10+player.level*10;
-			if(player.level==50)
-			{
-				player.needExp=0;
-				player.experience=0;
-				break;
-			}
 		}
 	}
 	else
@@ -1011,10 +1044,10 @@ void PlayerThrowHammer(Guy *me)
 			player.mana--;
 	}
 	ChallengeEvent(CE_SHOOT,player.hammers);
-	if(PlayerHasSword())
+	if(PlayerHasSword() && !player.disableSword)
 		SkullLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags);
 	else
-		HammerLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags);
+		HammerLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags,false);
 	player.reload=player.hamSpeed+2;
 }
 
@@ -1261,7 +1294,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	if(me->action==ACTION_BUSY)
 	{
 		// throw hammer if need be, use item if need be
-		if(me->seq==ANIM_ATTACK && me->frm==6 && player.reload==0 && player.hammers>0 && (player.gear&GEAR_SOCKS)==0)
+		if(me->seq==ANIM_ATTACK && me->frm==6 && player.reload==0 && player.hammers>0 && ((player.gear&GEAR_SOCKS)==0 || player.disableMoveNShoot))
 			PlayerThrowHammer(me);
 		if(me->seq==ANIM_ATTACK && me->frm==7 && (player.gear&GEAR_SOCKS)==0)
 			me->reload-=2;
@@ -1295,7 +1328,11 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	// not busy, let's see if you want to do something
 	c=GetControls();
-
+	dword mouseBtn = SDL_GetMouseState(nullptr, nullptr);
+	if (mouseBtn & SDL_BUTTON_LEFT)
+		c |= CONTROL_B1;
+	if (mouseBtn & SDL_BUTTON_RIGHT)
+		c |= CONTROL_B2;
 	DoPlayerFacing(c,me);
 
 	if(player.levelNum==1)
@@ -1315,7 +1352,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	if((c&CONTROL_B1) && player.reload==0)	// pushed hammer throw button
 	{
-		if(player.gear&GEAR_SOCKS)
+		if((player.gear&GEAR_SOCKS) && !player.disableMoveNShoot)
 		{
 			if(!(c&(CONTROL_LF|CONTROL_RT|CONTROL_UP|CONTROL_DN)))
 			{
@@ -1374,7 +1411,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			Clamp(&me->parent->dx,FIXAMT*3);
 		}
 
-		if(player.berserk && player.spell[7]==2)	// insane rage leaves a flame trail
+		if(player.berserk && player.spell[SPL_BERSERK]==2 && !player.downgradeSpell[SPL_BERSERK])	// insane rage leaves a flame trail
 		{
 			if((player.berserk&3)==0)
 				FireExactBullet(me->x,me->y,0,0,0,0,0,20,(byte)MGL_random(256),BLT_LIQUIFY);
@@ -1520,3 +1557,12 @@ int GetChallengeCrystals(void)
 	return chlgCrystals;
 }
 
+bool BrutalMode(void)
+{
+	return player.difficulty == Difficulty::BRUTAL_CLASSIC || player.difficulty == Difficulty::BRUTAL_MODERN;
+}
+
+bool ClassicMode(void)
+{
+	return player.difficulty == Difficulty::BRUTAL_CLASSIC || player.difficulty == Difficulty::CLASSIC;
+}

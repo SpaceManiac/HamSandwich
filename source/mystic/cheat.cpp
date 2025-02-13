@@ -2,7 +2,7 @@
 #include "challenge.h"
 
 #ifdef CHEAT
-#define NUM_CHEATS 17
+#define NUM_CHEATS 18
 #else
 #define NUM_CHEATS 9
 #endif
@@ -27,6 +27,7 @@ char cheatCode[NUM_CHEATS][16]={
 	"chapterwin",		// skip this chapter
 	"boss",				// go to final boss, if in chapter 4
 	"secretize",		// get all secrets
+	"mana",				// refill mana to full
 #endif
 	};
 
@@ -85,11 +86,11 @@ void DoCheat(byte w)
 			break;
 		case 2:	// meganuke
 			GetCamera(&cx,&cy);
-			cx-=320;
-			cy-=240;
+			cx-=HALFWID;
+			cy-=HALFHEI;
 			for(i=0;i<60;i++)
 			{
-				FireBullet((cx+MGL_random(640))<<FIXSHIFT,(cy+MGL_random(480))<<FIXSHIFT,
+				FireBullet((cx+MGL_random(SCRWID))<<FIXSHIFT,(cy+MGL_random(SCRHEI))<<FIXSHIFT,
 							0,BLT_BOOM);
 			}
 			ShakeScreen(10);	// make the screen shake!
@@ -116,7 +117,7 @@ void DoCheat(byte w)
 			MakeNormalSound(SND_CHEATWIN);
 			break;
 		case 7: // gain a level
-			if(player.level<50)
+			if(player.level<MAX_PLAYERLEVEL)
 				player.level++;
 			NewMessage("Level Up!",30);
 			break;
@@ -178,6 +179,9 @@ void DoCheat(byte w)
 			player.keychain[3]=1;
 			KeyChainAllCheck();
 			CheckForAllSecrets();
+			break;
+		case 17:
+			player.mana = player.maxMana;
 			break;
 	}
 }

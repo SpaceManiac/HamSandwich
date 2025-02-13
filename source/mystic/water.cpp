@@ -189,12 +189,12 @@ void WaterRipple(int x,int y,short amt)
 		return;
 
 	GetCamera(&camx,&camy);
-	if((x-camx+320)<0 || (x-camx+320)>640 ||
-	   (y-camy+240)<0 || (y-camy+240)>480)
+	if((x-camx+HALFWID)<0 || (x-camx+HALFWID)>SCRWID ||
+	   (y-camy+HALFHEI)<0 || (y-camy+HALFHEI)>SCRHEI)
 		return;
 
-	x+=320;
-	y+=240;
+	x+=HALFWID;
+	y+=HALFHEI;
 
 	x/=2;
 	y/=2;

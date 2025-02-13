@@ -118,7 +118,7 @@ void RenderFloorTile(int x,int y,int t,char light)
 		{
 			dst[i] = SprModifyLight(src[i], light);
 		}
-		dst += 640;
+		dst += SCRWID;
 		src += 32;
 	}
 }
@@ -184,7 +184,7 @@ void RenderFloorTileShadow(int x,int y,int t,char light)
 		{
 			dst[i] = SprModifyLight(src[i], light - 4 * (i > wid - darkpart));
 		}
-		dst += 640;
+		dst += SCRWID;
 		src += 32;
 	}
 }
@@ -239,7 +239,7 @@ void RenderFloorTileUnlit(int x,int y,int t)
 	{
 		hgt--;
 		memcpy(dst, src, wid);
-		dst += 640;
+		dst += SCRWID;
 		src += 32;
 	}
 }
@@ -297,7 +297,7 @@ void RenderFloorTileTrans(int x,int y,int t,char light)
 		{
 			if (src[i]) dst[i] = SprModifyLight(src[i], light);
 		}
-		dst += 640;
+		dst += SCRWID;
 		src += 32;
 	}
 }
@@ -334,7 +334,7 @@ inline void GouraudBoxWater(int x,int y,byte *src,char light0,char light1,char l
 	byte *dst,b;
 	int curLight,dlx,dly1,dly2,firstLight,lastLight;
 
-	dst=tileMGL->GetScreen()+x+y*640;
+	dst=tileMGL->GetScreen()+x+y*SCRWID;
 
 	curLight=light0*FIXAMT;
 
@@ -347,13 +347,13 @@ inline void GouraudBoxWater(int x,int y,byte *src,char light0,char light1,char l
 	{
 		dlx=(lastLight-firstLight)/GB_WID;
 		curLight=firstLight;
-		if(y+j>479)
+		if(y+j>SCRHEI-1)
 			return;	// all done!
 		if(y+j>=0)
 		{
 			for(i=0;i<GB_WID;i++)
 			{
-				if(x+i>=0 && x+i<640)
+				if(x+i>=0 && x+i<SCRWID)
 				{
 					b=*src;
 
@@ -378,7 +378,7 @@ inline void GouraudBoxWater(int x,int y,byte *src,char light0,char light1,char l
 			dst+=GB_WID;
 			src+=GB_WID;
 		}
-		dst+=(640-GB_WID);
+		dst+=(SCRWID-GB_WID);
 		src+=GB_WID;
 
 		firstLight+=dly1;
@@ -392,7 +392,7 @@ inline void GouraudBox(int x,int y,byte *src,char light0,char light1,char light2
 	byte *dst;
 	int curLight,dlx,dly1,dly2,firstLight,lastLight;
 
-	dst=tileMGL->GetScreen()+x+y*640;
+	dst=tileMGL->GetScreen()+x+y*SCRWID;
 
 	curLight=light0*FIXAMT;
 
@@ -405,13 +405,13 @@ inline void GouraudBox(int x,int y,byte *src,char light0,char light1,char light2
 	{
 		dlx=(lastLight-firstLight)/GB_WID;
 		curLight=firstLight;
-		if(y+j>479)
+		if(y+j>SCRHEI-1)
 			return;	// all done!
 		if(y+j>=0)
 		{
 			for(i=0;i<GB_WID;i++)
 			{
-				if(x+i>=0 && x+i<640)
+				if(x+i>=0 && x+i<SCRWID)
 				{
 					tmp=((*src)&31)+(curLight/FIXAMT);
 					if(tmp<0)
@@ -431,7 +431,7 @@ inline void GouraudBox(int x,int y,byte *src,char light0,char light1,char light2
 			dst+=GB_WID;
 			src+=GB_WID;
 		}
-		dst+=(640-GB_WID);
+		dst+=(SCRWID-GB_WID);
 		src+=GB_WID;
 
 		firstLight+=dly1;
@@ -445,7 +445,7 @@ inline void GouraudBoxTrans(int x,int y,byte *src,char light0,char light1,char l
 	byte *dst;
 	int curLight,dlx,dly1,dly2,firstLight,lastLight;
 
-	dst=tileMGL->GetScreen()+x+y*640;
+	dst=tileMGL->GetScreen()+x+y*SCRWID;
 
 	curLight=light0*FIXAMT;
 
@@ -458,13 +458,13 @@ inline void GouraudBoxTrans(int x,int y,byte *src,char light0,char light1,char l
 	{
 		dlx=(lastLight-firstLight)/GB_WID;
 		curLight=firstLight;
-		if(y+j>479)
+		if(y+j>SCRHEI-1)
 			return;	// all done!
 		if(y+j>=0)
 		{
 			for(i=0;i<GB_WID;i++)
 			{
-				if(x+i>=0 && x+i<640)
+				if(x+i>=0 && x+i<SCRWID)
 				{
 					if((*src)!=0)
 					{
@@ -487,7 +487,7 @@ inline void GouraudBoxTrans(int x,int y,byte *src,char light0,char light1,char l
 			dst+=GB_WID;
 			src+=GB_WID;
 		}
-		dst+=(640-GB_WID);
+		dst+=(SCRWID-GB_WID);
 		src+=GB_WID;
 
 		firstLight+=dly1;
@@ -512,7 +512,7 @@ void RenderFloorTileFancyWater(int x,int y,int t,byte water,byte shadow,char *th
 		return;
 	}
 
-	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>639 || y>479)
+	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>SCRWID-1 || y>SCRHEI-1)
 		return;	// no need to render
 
 	memcpy(light,theLight,9*sizeof(char));
@@ -589,7 +589,7 @@ void RenderFloorTileFancy(int x,int y,int t,byte shadow,char *theLight)
 	int i,j;
 	char light[9];
 
-	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>639 || y>479)
+	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>SCRWID-1 || y>SCRHEI-1)
 		return;	// no need to render
 
 	if(!opt.lightFX)
@@ -686,7 +686,7 @@ void RenderWallTileFancy(int x,int y,int t,char *theLight)
 	int i,j;
 	char light[9];
 
-	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>639 || y>479)
+	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>SCRWID-1 || y>SCRHEI-1)
 		return;	// no need to render
 
 	if(!opt.lightFX)
@@ -738,7 +738,7 @@ void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,char *theLi
 	int i,j;
 	char light[9];
 
-	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>639 || y>479)
+	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>SCRWID-1 || y>SCRHEI-1)
 		return;	// no need to render
 
 	if(!opt.lightFX)

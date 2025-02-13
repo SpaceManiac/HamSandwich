@@ -9,7 +9,7 @@
 #define SHOPDX 70
 #define SHOPDY 65
 
-sprite_set_t *shopSpr;
+sprite_set_t *shopSpr,*skillSpr;
 static byte armaBrt=0;
 
 char hatName[5][16]={
@@ -248,12 +248,14 @@ static byte reptCounter=0;
 
 void InitShop(void)
 {
-	shopSpr=new sprite_set_t("graphics/shop.jsp");
+	shopSpr = new sprite_set_t("graphics/shop.jsp");
+	skillSpr= new sprite_set_t("graphics/skills.jsp");
 }
 
 void ExitShop(void)
 {
 	delete shopSpr;
+	delete skillSpr;
 }
 
 sprite_t *GetShopSpr(byte spr)
@@ -261,14 +263,19 @@ sprite_t *GetShopSpr(byte spr)
 	return shopSpr->GetSprite(spr);
 }
 
+sprite_t* GetSkillSpr(byte spr)
+{
+	return skillSpr->GetSprite(spr);
+}
+
 void EnterShop(void)
 {
 	PlaySong(SONG_SHOP);
 	GetDisplayMGL()->LoadBMP("graphics/shop.bmp");
-	shopScr=(byte *)malloc(640*480);
+	shopScr=(byte *)malloc(SCRWID*SCRHEI);
 	if(!shopScr)
 		FatalError("Out of memory!!");
-	memcpy(shopScr,GetDisplayMGL()->GetScreen(),640*480);
+	memcpy(shopScr,GetDisplayMGL()->GetScreen(),SCRWID*SCRHEI);
 	oldc=255;
 	GetDisplayMGL()->LastKeyPressed();
 	reptCounter=3;
@@ -298,7 +305,7 @@ void RenderPlayerGear(int x,byte brt)
 
 	shopSpr->GetSprite(33)->DrawGhost(x,250,GetDisplayMGL(),0);
 
-	if(player.nightmare)
+	if(player.nightmare || BrutalMode())
 	{
 		shopSpr->GetSprite(28)->DrawColored(x-50,5,GetDisplayMGL(),0,4);
 		sprintf(s,"%02d",player.shieldStones);
@@ -548,11 +555,11 @@ void RenderPlayerGear(int x,byte brt)
 
 byte Owned(byte w)
 {
-	if(player.nightmare && w==0)
+	if((player.nightmare || BrutalMode()) && w == 0)
 		return (player.shieldStones==99);
-	else if(player.nightmare && w==5)
+	else if((player.nightmare || BrutalMode())  && w == 5)
 		return (player.powerStones==99);
-	else if(player.nightmare && w==10)
+	else if((player.nightmare || BrutalMode()) && w == 10)
 		return (player.spellStones==99);
 	else if(w>=0 && w<=3)
 		return (player.hat>=w+1);
@@ -577,12 +584,12 @@ void RenderShop(void)
 
 	mgl=GetDisplayMGL();
 
-	memcpy(mgl->GetScreen(),shopScr,640*480);
+	memcpy(mgl->GetScreen(),shopScr,SCRWID*SCRHEI);
 
 	for(i=0;i<5;i++)
 		for(j=0;j<5;j++)
 		{
-			if(player.nightmare)
+			if(player.nightmare || BrutalMode())
 			{
 				shopSpr->GetSprite(0+Owned(i+j*5))->Draw((i)*SHOPDX+SHOPX,SHOPY+j*SHOPDY,mgl);
 				if(i==0 && j==0)	// shield stone
@@ -621,7 +628,7 @@ void RenderShop(void)
 	RenderPlayerGear(450,armaBrt);
 	Print(2,2,"ITEM SHOP",0,0);
 
-	if(player.nightmare)
+	if(player.nightmare || BrutalMode())
 	{
 		if(shopCursor==0)
 			Print(5,100+5*56-20,"Shield Stone",0,2);
@@ -640,7 +647,7 @@ void RenderShop(void)
 			sprintf(s,"N/A");
 		else
 		{
-			if(player.nightmare)
+			if(player.nightmare || BrutalMode())
 			{
 				if(player.fairyOn==FAIRY_HAGGLY)
 					sprintf(s,"$%d",NightmarePrice(shopCursor)*9/10);
@@ -658,7 +665,7 @@ void RenderShop(void)
 		RightPrintGlow(10+345,100+5*56-20,s,2);
 	}
 
-	if(player.nightmare)
+	if(player.nightmare || BrutalMode())
 	{
 		if(shopCursor==0)
 			i=25*4;
@@ -699,7 +706,7 @@ void Buy(byte which)
 {
 	int prc;
 
-	if(player.nightmare && shopCursor==0)
+	if((player.nightmare || BrutalMode())  && shopCursor == 0)
 	{
 		prc=NightmarePrice(shopCursor);
 		if(player.fairyOn==FAIRY_HAGGLY)
@@ -714,7 +721,7 @@ void Buy(byte which)
 		MakeNormalSound(SND_PURCHASE);
 		return;
 	}
-	else if(player.nightmare && shopCursor==5)
+	else if((player.nightmare || BrutalMode()) && shopCursor == 5)
 	{
 		prc=NightmarePrice(shopCursor);
 		if(player.fairyOn==FAIRY_HAGGLY)
@@ -729,7 +736,7 @@ void Buy(byte which)
 		MakeNormalSound(SND_PURCHASE);
 		return;
 	}
-	else if(player.nightmare && shopCursor==10)
+	else if((player.nightmare || BrutalMode()) && shopCursor == 10)
 	{
 		prc=NightmarePrice(shopCursor);
 		if(player.fairyOn==FAIRY_HAGGLY)
@@ -846,7 +853,7 @@ byte UpdateShop(MGLDraw *mgl)
 		if(shopCursor==24)
 			return 1;	// exit
 
-		if(player.nightmare)
+		if(player.nightmare || BrutalMode())
 		{
 			prc=NightmarePrice(shopCursor);
 			if(player.fairyOn==FAIRY_HAGGLY)

@@ -645,6 +645,11 @@ TASK(void) LunaticDraw(void)
 		RenderPauseMenu();
 		if(gameMode==GAMEMODE_SPEECH)
 			RenderSpeech();
+
+		// TESTING TESTING
+		int msx, msy;
+		GetDisplayMGL()->GetMouse(&msx, &msy);
+		DrawMouseCursor(msx, msy);
 	}
 	else if(gameMode==GAMEMODE_SHOP)
 	{
@@ -739,6 +744,32 @@ void HandleKeyPresses(void)
 		if(player.spell[k])
 			player.curSpell=k;
 	}
+	// TESTING TESTING
+#ifdef CHEAT
+	if (lastKey == 'q')
+		player.level = 1;
+	if (lastKey == 'w')
+		player.level = 5;
+	if (lastKey == 'e')
+		player.level = 10;
+	if (lastKey == 'r')
+		player.level = 15;
+	if (lastKey == 't')
+		player.level = 20;
+	if (lastKey == 'y')
+		player.level = 25;
+	if (lastKey == 'u')
+		player.level = 30;
+	if (lastKey == 'i')
+		player.level = 35;
+	if (lastKey == 'o')
+		player.level = 40;
+	if (lastKey == 'p')
+		player.level = 45;
+	if (lastKey == '[')
+		player.level = 50;
+#endif
+
 	if(lastKey==27 && gameMode==GAMEMODE_PLAY && !windingUp && !windingDown && !newGame)
 	{
 		InitPauseMenu();

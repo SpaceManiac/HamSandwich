@@ -42,6 +42,6 @@ static char spellName[20][32]={
 void CastSpell(Guy *me);
 byte EnoughMana(void);
 byte SpellLevel(void);
-
+byte SpellLevel(byte spell);
 
 #endif
