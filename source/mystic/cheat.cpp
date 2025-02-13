@@ -182,6 +182,7 @@ void DoCheat(byte w)
 			break;
 		case 17:
 			player.mana = player.maxMana;
+			player.skillPts += 10;
 			break;
 	}
 }

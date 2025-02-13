@@ -4,6 +4,7 @@
 #include "fairy.h"
 #include "spell.h"
 #include "challenge.h"
+#include "skills.h"
 
 #define SPR_FLAME   0
 #define SPR_LASER   5
@@ -509,7 +510,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,me->dx/2,me->dy/2,1,map,world))
 			{
 				me->type=BLT_NONE;
-				ExplodeParticles(PART_HAMMER,me->x,me->y,me->z,4);
+				ExplodeParticles(PART_SNOW2,me->x,me->y,me->z,4);
 				MakeSound(SND_BULLETHIT,me->x,me->y,SND_CUTOFF,900);
 			}
 			break;
@@ -539,43 +540,60 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 		case BLT_HAMMER:
 		case BLT_HAMMER2:
 		case BLT_SKULL:
-			j=player.damage;
-			if(player.fairyOn==FAIRY_SMASHY && player.mana)
-				j=j*3/2;
-			if(me->lastHit==65535)
-				i=FindVictimNot(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,me->dx,me->dy,j,me->lastHit,map,world);
-			else
-				i=FindVictimNot(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,me->dx,me->dy,j/2,me->lastHit,map,world);
-			if(i!=65535)
+		{
+			j = player.damage;
+			if (player.fairyOn == FAIRY_SMASHY && player.mana)
+				j = j * 3 / 2;
+			bool critted = false;
+			if (!ClassicMode())
 			{
-				if(player.fairyOn==FAIRY_VAMPY)
+				float crit = SkillValue(SKILL_FIREBALL_CRIT);
+				if (Random(100) < (dword)crit)
 				{
-					if((!player.berserk && (MGL_random(2)==0)) ||
-						(player.berserk && (MGL_random(4)==0)))
+					j = (int)j * SkillValue(SKILL_CRITDMG) / 100.0f;
+					critted = true;
+				}
+			}
+			if (me->lastHit == 65535)
+				i = FindVictimNot(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 12, me->dx, me->dy, j, me->lastHit, map, world);
+			else
+				i = FindVictimNot(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 12, me->dx, me->dy, j / 2, me->lastHit, map, world);
+			if (i != 65535)
+			{
+				if (critted)
+				{
+					ExplodeParticles2(PART_SNOW2, me->x, me->y, me->z, 15, 4);
+					MakeSound(SND_PUMPKINDIE, me->x, me->y, SND_CUTOFF, 0);
+				}
+				if (player.fairyOn == FAIRY_VAMPY)
+				{
+					if ((!player.berserk && (MGL_random(2) == 0)) ||
+						(player.berserk && (MGL_random(4) == 0)))
 						PlayerHeal(1);	// heal 1 pt vampirism, 50% chance normally, 25% chance if berserk
 				}
-				me->lastHit=i;
-				if(player.gear&GEAR_BOUNCY)
+				me->lastHit = i;
+				if (player.gear & GEAR_BOUNCY)
 				{
-					me->facing=(byte)MGL_random(256);
-					me->dx=Cosine(me->facing)*10;
-					me->dy=Sine(me->facing)*10;
-					if(me->type==BLT_SKULL)
+					me->facing = (byte)MGL_random(256);
+					me->dx = Cosine(me->facing) * 10;
+					me->dy = Sine(me->facing) * 10;
+					if (me->type == BLT_SKULL)
 					{
-						me->facing=(me->facing+8)&255;
-						me->facing/=16;
+						me->facing = (me->facing + 8) & 255;
+						me->facing /= 16;
 					}
 					else
 					{
-						me->facing=(me->facing+16)&255;
-						me->facing/=32;
+						me->facing = (me->facing + 16) & 255;
+						me->facing /= 32;
 					}
 				}
 				else
-					me->type=BLT_NONE;
-				ExplodeParticles(PART_YELLOW,me->x,me->y,me->z,8);
-				MakeSound(SND_HAMMERBONK,me->x,me->y,SND_CUTOFF,900);
+					me->type = BLT_NONE;
+				ExplodeParticles(PART_YELLOW, me->x, me->y, me->z, 8);
+				MakeSound(SND_HAMMERBONK, me->x, me->y, SND_CUTOFF, 900);
 			}
+		}
 			break;
 		case BLT_MINIFBALL:
 			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,6,me->dx,me->dy,3,map,world))

@@ -43,5 +43,6 @@ void CastSpell(Guy *me);
 byte EnoughMana(void);
 byte SpellLevel(void);
 byte SpellLevel(byte spell);
+void ResetCastCounter(void);
 
 #endif

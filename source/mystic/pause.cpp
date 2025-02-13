@@ -189,7 +189,7 @@ void RenderSkillMenu(void)
 				RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 31, 32 * 5 + 10);
 				GetSkillSpr(0)->Draw(x + 20, y + 20, GetDisplayMGL());
 
-				DescribeSkill(0, SCRWID / 2 + 10, SCRHEI - 30 - 85);
+				DescribeSkill(i+j*5, SCRWID / 2 + 10, SCRHEI - 30 - 85);
 			}
 			else
 			{
@@ -673,13 +673,12 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			}
 			else // a skill
 			{
-				if (player.skillPts > 0 && player.skill[subcursor] < MAX_SKILL_LVL)
+				if (player.skillPts > 0 && player.skill[subcursor] < MAX_SKILL_LVL && (skillList[subcursor].spellReq==255 || player.spell[skillList[subcursor].spellReq]>0))
 				{
 					MakeNormalSound(SND_GETBRAIN);
 					player.skill[subcursor]++;
 					player.skillPts--;
 					PlayerUpdateLife();
-					// test comment
 				}
 			}
 		}

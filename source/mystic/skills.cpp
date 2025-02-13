@@ -2,29 +2,198 @@
 #include "display.h"
 #include "player.h"
 #include "hammusic.h"
+#include "spell.h"
 
 skill_t skillList[] = {
-	{"Kid Beefy","Increase your maximum Life by 10."},
-	{"Kid Magicky","I feel like this could've been named better somehow. Increase maximum Mana by 10."},
-	{"Critique","When you critically hit, deal 25% extra damage (a critical hit normally deals 50% extra damage)."},
-	{"Flaming Heap","Fireballs gain +5% chance to critically hit."},
-
+	{"Kid Beefy",
+		"Increase maximum Life",
+		"with your beefy muscles.",
+		"",
+		"",
+		14,10,"Life",SD_NUMBER,255},
+	{"Kid Magicky",
+		"I feel like this could've",
+		"been named better somehow.",
+		"Maximum Mana increased.",
+		"",
+		14,10,"Mana",SD_NUMBER,255},
+	{"Kid Fiery",
+		"Fireballs gain a chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5,"Chance",SD_PERCENT,255},
+	{"Kid Critic",
+		"Boost Critical Damage by",
+		"25% per point.",
+		"",
+		"",
+		150,25,"Damage",SD_PERCENT,255},
+	{"Kid Greedy",
+		"Chance to get Big Coins",
+		"increased by 1% per point.",
+		"",
+		"",
+		1,1,"Chance",SD_PERCENT,255},
+	// row 2
+	{"Energetic Casting",
+		"Energy spells cast much much",
+		"faster.",
+		"",
+		"",
+		0,30,"Bonus",SD_PERCENT,SPL_ENERGY},
+	{"Energy Drain",
+		"Energy spells recover Mana",
+		"when they kill an enemy.",
+		"",
+		"",
+		0,1,"Mana",SD_NUMBER,SPL_ENERGY},
+	{"Energy Barrier",
+		"When you stop casting Energy",
+		"spells, you are protected for",
+		"a short time per 20 bolts fired.",
+		"(1/4 time for Energy Storm)",
+		0,0.1f,"Time",SD_SECONDS,SPL_ENERGY},
+	{"blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5},
+	{"blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5},
+	// row 3
+	{"blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5},
+	{"blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5},
+	{"blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5},
+	{"blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5},
+	{"blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5},
+	// row 4
+	{"blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5},
+	{"blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5},
+	{"blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5},
+	{"blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5},
+	{"blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5},
+	// row 5
+	{"blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0, 5},
+	{ "blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5 },
+	{ "blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5 },
+	{ "blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5 },
+	{ "blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5 },
 };
 
 void DescribeSkill(byte skill,int x,int y)
 {
 	char txt[64];
-	switch (skill)
+
+	if (skillList[skill].spellReq != 255 && player.spell[skillList[skill].spellReq] == 0)
 	{
-		case SKILL_LIFE:
-			PrintBrightGlow(x, y, "Kid Beefy", 0, 2);
-			PrintBrightGlow(x, y + 20, "Increase maximum Life", 0, 1);
-			PrintBrightGlow(x, y + 32, "by 10 per point.", 0, 1);
-			if (player.skill[skill] > 0)
-			{
-				sprintf(txt, "[Current bonus: %d]", player.skill[skill] * 10);
-				PrintBrightGlow(x, y + 44, txt, 0, 1);
-			}
-			break;
+		PrintBrightGlow(x, y, "Unknown!", 10, 2);
+		PrintBrightGlow(x, y + 20, "You need to find a new", 0, 1);
+		PrintBrightGlow(x, y + 20+12, "spell to learn this skill.", 0, 1);
+		return;
 	}
+	PrintBrightGlow(x, y, skillList[skill].name, 10, 2);
+	int lines;
+	for (lines = 0; lines < 4; lines++)
+		PrintBrightGlow(x, y + 20 + 12 * lines, skillList[skill].desc[lines], 0, 1);
+	float total = SkillValue(skill);
+	char symbol='0';
+	
+	if(total-roundf(total)<0.1f)	// if it's nearly an integer, let's just show an integer
+		sprintf(txt, "[Rank %d/%d, %s: %d", player.skill[skill], MAX_SKILL_LVL, skillList[skill].statName, (int)total);
+	else
+		sprintf(txt, "[Rank %d/%d, %s: %0.1f", player.skill[skill], MAX_SKILL_LVL, skillList[skill].statName, total);
+	if (skillList[skill].displayType == SD_PERCENT)
+		strcat(txt, "%]");
+	else if (skillList[skill].displayType == SD_SECONDS)
+		strcat(txt, "s]");
+	else
+		strcat(txt, "]");
+
+	PrintBrightGlow(x, y + 20+12*4, txt, 0, 1);
+}
+
+float SkillValue(byte skill)
+{
+	return (float)player.skill[skill] * skillList[skill].amtPerPoint + skillList[skill].baseVal;
 }

@@ -23,29 +23,42 @@ byte spellCost[20]={
 	128,128,	// Armageddon
 };
 
+int castCounter;
+
+byte SpellCost(byte spell)
+{
+	byte cost;
+
+	if (player.downgradeSpell[player.casting])
+		cost=spellCost[player.casting * 2 + 1];
+	else
+		cost=spellCost[player.casting * 2 + (player.spell[player.casting] - 1)];
+
+	if (player.fairyOn == FAIRY_CHEAPY)
+	{
+		cost /= 2;	// half-price!
+		if (cost == 0)
+			cost = 1;
+	}
+	if (player.fairyOn == FAIRY_MIGHTY)
+	{
+		cost = cost * 9 / 10;	// 10% off
+		if (cost == 0)
+			cost = 1;
+	}
+	return cost;
+}
+
 byte EnoughMana(void)
 {
 	byte cost;
 
-	if(player.curSpell==0)
+	if (player.curSpell == 0)
 		return 1;
 	else
 	{
-		cost=spellCost[player.curSpell*2+(player.spell[player.curSpell]-1)];
-		if(player.fairyOn==FAIRY_CHEAPY)
-		{
-			cost/=2;	// half-price!
-			if(cost==0)
-				cost=1;
-		}
-		if(player.fairyOn==FAIRY_MIGHTY)
-		{
-			cost=cost*9/10;	// 10% off
-			if(cost==0)
-				cost=1;
-		}
-
-		return (player.mana>=cost);
+		cost = SpellCost(player.curSpell);
+		return (player.mana >= cost);
 	}
 }
 
@@ -63,30 +76,23 @@ byte SpellLevel(void)
 	return lvl;
 }
 
+void ResetCastCounter(void)
+{
+	castCounter = 0;
+}
+
 void CastSpell(Guy *me)
 {
 	byte c;
 	byte cost;
 	int i,j;
 	Guy *g;
+	int fakeLevel;
 
 	if(player.life==0)
 		return;	// no shooting when you're dead
+	cost = SpellCost(player.casting);
 
-	cost=spellCost[player.casting*2+(player.spell[player.casting]-1)];
-
-	if(player.fairyOn==FAIRY_CHEAPY)
-	{
-		cost/=2;	// half-price!
-		if(cost==0)
-			cost=1;
-	}
-	if(player.fairyOn==FAIRY_MIGHTY)
-	{
-		cost=cost*9/10;	// 10% off
-		if(cost==0)
-			cost=1;
-	}
 	if(player.mana-cost<0)
 	{
 		ExplodeParticles2(PART_HAMMER,me->x,me->y,me->z,4,8);
@@ -110,11 +116,19 @@ void CastSpell(Guy *me)
 	switch(player.casting)
 	{
 		case SPL_ENERGY:	// energy barrage/storm
+			if (ClassicMode())
+				fakeLevel = SpellLevel();
+			else
+				fakeLevel = 1 + (SkillValue(SKILL_ENERGYRATE) * 49) / 150;
 			if(player.spell[SPL_ENERGY]==1 || player.downgradeSpell[SPL_ENERGY])
 			{
 				FireBullet(me->x,me->y,me->facing,BLT_LASER);
-				if(SpellLevel()>35)
-					FireBullet(me->x,me->y,me->facing,BLT_LASER);
+				castCounter++;
+				if (ClassicMode() && fakeLevel > 35)
+				{
+					FireBullet(me->x, me->y, me->facing, BLT_LASER);
+					castCounter++;
+				}
 			}
 			else	// storm - shoot 8-ish ways
 			{
@@ -122,8 +136,9 @@ void CastSpell(Guy *me)
 				{
 					j=i*32-32+MGL_random(64);
 					j=j&255;
-					FireExactBullet(me->x,me->y,FIXAMT*20,Cosine(j)*(12+(SpellLevel()/10)),
-						Sine(j)*(12+(SpellLevel()/10)),0,0,30,j/16,BLT_LASER);
+					FireExactBullet(me->x,me->y,FIXAMT*20,Cosine(j)*(12+(fakeLevel/10)),
+						Sine(j)*(12+(fakeLevel/10)),0,0,30,j/16,BLT_LASER);
+					castCounter++;
 				}
 				MakeNormalSound(SND_BULLETFIRE);
 			}
@@ -134,25 +149,33 @@ void CastSpell(Guy *me)
 			c=GetControls();
 			if((c&CONTROL_B2) && (player.mana-cost>=0))	// fire is held
 			{
-				if(SpellLevel()<25)
+				if (fakeLevel < 25)
 				{
-					player.wpnReload=1;
-					me->frm=2;
-					i=12-SpellLevel()/2;
-					if(i==0)
-						i=1;
+					player.wpnReload = 1;
+					me->frm = 2;
+					i = 12 - fakeLevel / 2;
+					if (i == 0)
+						i = 1;
 
-					me->frmAdvance=(256*2)/(i);
+					me->frmAdvance = (256 * 2) / (i);
 				}
 				else
 				{
-					player.wpnReload=1;
-					me->frmTimer=0;
+					player.wpnReload = 1;
+					me->frmTimer = 0;
 				}
 			}
 			else
 			{
 				player.wpnReload=5;
+				if (!ClassicMode())
+				{
+					int frms = (int)(30.0f * SkillValue(SKILL_ENERGYBARRIER) * (castCounter/10));
+					if (player.spell[SPL_ENERGY] == 2 && !player.downgradeSpell[SPL_ENERGY])
+						frms /= 4;	// quarter as long for energy storm since it fires WAY more shots
+					if (frms > 255) frms = 255;
+					if (player.shield < (byte)frms) player.shield = (byte)frms;
+				}
 			}
 			DoPlayerFacing(c,me);
 			break;

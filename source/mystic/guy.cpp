@@ -1162,6 +1162,15 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 
 	if(hp<=0)
 	{
+		if (BulletHittingType() == BLT_LASER && !ClassicMode())
+		{
+			byte mana = SkillValue(SKILL_ENERGYMANA);
+			while (mana > 0)
+			{
+				if (player.mana <= player.maxMana)
+					player.mana ++;
+			}
+		}
 		hp=0;
 		seq=ANIM_DIE;
 		this->dx=0;
@@ -1216,18 +1225,40 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 				if(type==MONS_EGGSAC || type==MONS_MAMASPDR)
 					j/=8;	// quarter coins from egg sacs and mama spiders
 				j=MGL_random(j/5+2);
-				// don't allow it to be less than half the max
+				// don't allow it to be less than 1/10 the max
 				if(j<MonsterHP(type)/10)
 					j=MonsterHP(type)/10;
 
-				if(j>50)
-					j=50;	// max it at 50 coins per guy
+				int freeBig = 0;
+				if (j > 50)
+				{
+					freeBig = (j - 50) / 20;	// give guaranteed big coins for every 20 coins overage, in modern mode
+					j = 50;	// max it at 50 coins per guy
+				}
+
 				// 1% chance of 10-coin, up
-				for(i=0;i<j;i++)
-					if(MGL_random(100-70*(player.fairyOn==FAIRY_RICHEY)))
-						FireBullet(x,y,0,BLT_COIN);
+				for (i = 0; i < j; i++)
+				{
+					if (ClassicMode())
+					{
+						if (MGL_random(100 - 70 * (player.fairyOn == FAIRY_RICHEY)))
+							FireBullet(x, y, 0, BLT_COIN);
+						else
+							FireBullet(x, y, 0, BLT_BIGCOIN);
+					}
 					else
-						FireBullet(x,y,0,BLT_BIGCOIN);
+					{
+						float amt = SkillValue(SKILL_GREED);
+						amt *= 10;
+						if (freeBig > 0 || MGL_random(1000 - 700 * (player.fairyOn == FAIRY_RICHEY)) > (int)amt)
+						{
+							FireBullet(x, y, 0, BLT_COIN);
+							if(freeBig>0) freeBig--;
+						}
+						else
+							FireBullet(x, y, 0, BLT_BIGCOIN);
+					}
+				}
 				break;
 		}
 

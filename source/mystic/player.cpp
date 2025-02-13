@@ -1396,6 +1396,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		me->frmAdvance=200;
 		player.boredom=0;
 		player.casting=player.curSpell;	// so if you switch the active spell, it still casts this one
+		ResetCastCounter();
 		return;
 	}
 
