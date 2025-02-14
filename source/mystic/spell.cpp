@@ -231,12 +231,21 @@ void CastSpell(Guy *me)
 				FireBullet(me->x,me->y,(me->facing-1)&7,BLT_MISSILE);
 				FireBullet(me->x,me->y,(me->facing+1)&7,BLT_MISSILE);
 			}
-			if(SpellLevel()<25)
-				player.wpnReload=15-(SpellLevel()/2);
+			if (ClassicMode())
+			{
+				if (SpellLevel() < 25)
+					player.wpnReload = 15 - (SpellLevel() / 2);
+				else
+					player.wpnReload = 2;
+			}
 			else
-				player.wpnReload=2;
+			{
+				player.wpnReload = 15 - SkillValue(SKILL_SEEKER) * 6 / 2;
+				if (player.wpnReload < 1)
+					player.wpnReload = 1;
+			}
 			break;
-		case 3: // ice blast/beam
+		case SPL_ICE: // ice blast/beam
 			if(player.spell[SPL_ICE]==1 || player.downgradeSpell[SPL_ICE])
 			{
 				FireBullet(me->x,me->y,me->facing,BLT_ICECLOUD);
@@ -248,7 +257,7 @@ void CastSpell(Guy *me)
 			}
 			player.wpnReload=15;
 			break;
-		case 4:	// inferno
+		case SPL_INFERNO:	// inferno
 			if(player.spell[SPL_INFERNO]==1 || player.downgradeSpell[SPL_INFERNO])
 			{
 				byte l = SpellLevel() / 4;
@@ -274,7 +283,7 @@ void CastSpell(Guy *me)
 				MakeNormalSound(SND_INFERNAL);
 			}
 			break;
-		case 5: // summon ptero
+		case SPL_SUMMON: // summon ptero
 			if(player.spell[SPL_SUMMON]==1 || player.downgradeSpell[SPL_SUMMON])
 			{
 				SetPlayerGlow(64);

@@ -17,6 +17,11 @@
 #define SKILL_FLAMEON (8)
 #define SKILL_MELTARMOR (9)
 //row 3
+#define SKILL_SEEKER (10)
+#define SKILL_SEEKBOUNCE (11)
+#define SKILL_SEEKBOOM (12)
+#define SKILL_ICEPOWER (13)
+#define SKILL_ICECRIT	(14)
 //row 4
 //row 5
 

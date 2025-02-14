@@ -52,6 +52,7 @@
 #define BLT_SLIME	 39		// slug slime
 #define BLT_COMET	 40	// armageddon drops these from the sky
 #define BLT_COMETBOOM 41	// and they explode like this
+#define BLT_SEEKBOOM (42) // explosion when seekers kill, from a skill
 
 #define MAX_BULLETS 256
 

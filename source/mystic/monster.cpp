@@ -567,11 +567,13 @@ monsterType_t monsType[NUM_MONSTERS]=
 	};
 
 static byte kidSpr;
+sprite_set_t* shieldSpr;
 
 void InitMonsters(void)
 {
 	int i;
 
+	shieldSpr = new sprite_set_t("graphics/shield.jsp");
 	for(i=0;i<NUM_MONSTERS;i++)
 	{
 		monsType[i].spr=NULL;
@@ -585,6 +587,7 @@ void ExitMonsters(void)
 {
 	int i;
 
+	delete shieldSpr;
 	for(i=1;i<NUM_MONSTERS;i++)
 	{
 		if(monsType[i].spr && monsType[i].sprName[0]!='!')
@@ -787,13 +790,18 @@ void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char 
 	if(type==MONS_BOUAPHA)
 	{
 		shld=PlayerShield();
-		//if((shld<16) && (shld&2))	// it blinks when there is 1/2 second left
-		//	shld=0;
-		//curSpr=monsType[type].spr->GetSprite(464+(shld&7));
-		//if(shld)
-		//	SprDraw(x>>FIXSHIFT,(y>>FIXSHIFT)+1,1,255,bright,curSpr,DISPLAY_DRAWME|DISPLAY_GLOW);
-		if(shld&1)
-			return;	// blink on and off if the shield is up
+		if (shld > 0)
+		{
+			if ((shld < 16) && (shld & 2))	
+			{
+				// it blinks when there is 1/2 second left
+			}
+			else
+			{
+				curSpr = shieldSpr->GetSprite((shld & 7));
+				SprDraw(x >> FIXSHIFT, (y >> FIXSHIFT) + 1, 1, 255, bright, curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
+			}
+		}
 		if(PlayerIsPoisoned())
 		{
 			curSpr=monsType[type].spr->GetSprite(v);

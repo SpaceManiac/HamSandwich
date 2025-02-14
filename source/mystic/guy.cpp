@@ -5,6 +5,7 @@
 #include "spell.h"
 #include "challenge.h"
 #include <limits.h>
+#include "particle.h"
 
 Guy **guys;
 Guy *goodguy;
@@ -1115,12 +1116,24 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 
 	if(damage==-1000)	// freeze code
 	{
-		if(player.nightmare)
-			i=SpellLevel()*20-MonsterHP(type)/NIGHTMAREHP;	// the more hp, the harder to freeze
-		else if(BrutalMode())
-			i = SpellLevel() * 20 - MonsterHP(type) / BRUTALHP;	// the more hp, the harder to freeze
+		if (ClassicMode())
+		{
+			if (player.nightmare)
+				i = SpellLevel() * 20 - MonsterHP(type) / NIGHTMAREHP;	// the more hp, the harder to freeze
+			else if (BrutalMode())
+				i = SpellLevel() * 20 - MonsterHP(type) / BRUTALHP;	// the more hp, the harder to freeze
+			else
+				i = SpellLevel() * 20 - MonsterHP(type);	// the more hp, the harder to freeze
+		}
 		else
-			i=SpellLevel()*20-MonsterHP(type);	// the more hp, the harder to freeze
+		{
+			if (player.nightmare)
+				i =SkillValue(SKILL_ICEPOWER) - MonsterHP(type) / NIGHTMAREHP;	// the more hp, the harder to freeze
+			else if (BrutalMode())
+				i = SkillValue(SKILL_ICEPOWER) - MonsterHP(type) / BRUTALHP;	// the more hp, the harder to freeze
+			else
+				i =SkillValue(SKILL_ICEPOWER) - MonsterHP(type);	// the more hp, the harder to freeze
+		}
 		if(type!=MONS_BOUAPHA)
 			ShowEnemyLife(MonsterName(type),hp*128/MonsterHP(type),hp*128/MonsterHP(type),(byte)(hp>0));
 		if(i<0)
@@ -1134,18 +1147,10 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 
 	if (!ClassicMode())
 	{
+		float fDamage = damage;
 		if (melted)
-		{
-			float d = damage;
-			d = d * (100 + SkillValue(SKILL_MELTARMOR)) / 100.0f;
-			partialDamage += (byte)((d - floorf(d)) * 100.0f);
-			if (partialDamage >= 100)
-			{
-				d += 1;
-				partialDamage -= 100;
-			}
-			damage += (int)d;
-		}
+			fDamage = fDamage * (100 + SkillValue(SKILL_MELTARMOR)) / 100.0f;
+		
 		if (BulletHittingType() == BLT_FLAME || BulletHittingType() == BLT_LIQUIFY)
 		{
 			if (SkillValue(SKILL_MELTARMOR) > 0)
@@ -1155,7 +1160,42 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 					melted = 30 * 10;	// 10s max duration
 			}
 		}
+		if ((BulletHittingType() == BLT_MISSILE || BulletHittingType() == BLT_LILBOOM) && SkillValue(SKILL_SEEKBOOM)>0)
+			FireExactBullet(x, y, z, 0, 0, 0, 0, 7, 0, BLT_SEEKBOOM);
+
+		bool critted = false;
+		if (!ClassicMode())
+		{
+			float critChance = 0;
+			if(BulletHittingType()==BLT_HAMMER || BulletHittingType()==BLT_HAMMER2 || BulletHittingType()==BLT_SKULL)
+				critChance = SkillValue(SKILL_FIREBALL_CRIT);
+			if (frozen)
+				critChance += SkillValue(SKILL_ICECRIT);
+
+			if (Random(100) < (dword)critChance)
+			{
+				fDamage*=(SkillValue(SKILL_CRITDMG) / 100.0f);
+				critted = true;
+			}
+		}
+		partialDamage += (byte)((fDamage - floorf(fDamage)) * 100.0f);
+		if (partialDamage >= 100)
+		{
+			fDamage += 1;
+			partialDamage -= 100;
+		}
+		damage = (int)fDamage;
+
+		if (critted)
+		{
+			ExplodeParticles2(PART_SNOW2, x, y, z, 15, 4);
+			MakeSound(SND_PUMPKINDIE, x, y, SND_CUTOFF, 0);
+			AddNumberParticle(x, y, z, damage, 1);
+		}
+		else
+			AddNumberParticle(x, y, z, damage, 0);
 	}
+
 	if(type==MONS_BOUAPHA && damage>0)
 		ChallengeEvent(CE_OUCH,damage);
 	else if(type!=MONS_PTERO && type!=MONS_GOLEM)
@@ -1464,6 +1504,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 			guys[i]->mapy=(guys[i]->y>>FIXSHIFT)/TILE_HEIGHT;
 			guys[i]->frozen=0;
 			guys[i]->melted = 0;
+			guys[i]->partialDamage = 0;
 			if(type==MONS_BOUAPHA)	// special case: bouapha is the goodguy
 			{
 				goodguy=guys[i];

@@ -52,7 +52,6 @@ class DisplayList
 		void HookIn(int me);
 		int GetOpenSlot(void);
 
-
 		displayObj_t dispObj[MAX_DISPLAY_OBJS];
 		int head,nextfree;
 };

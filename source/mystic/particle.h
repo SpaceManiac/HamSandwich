@@ -21,6 +21,7 @@
 #define PART_LVLUP 14
 #define PART_COMPASS 15
 #define PART_FLOATER 16	// colored particles that float up in a ring
+#define PART_NUMBER 17
 
 class Particle
 {
@@ -47,7 +48,9 @@ void UpdateParticles(Map *map);
 void RenderParticles(void);
 
 void RenderParticle(int x,int y,byte *scrn,byte color,byte size);
+void RenderNumberParticles(void);
 
+void AddNumberParticle(int x, int y, int z, int value, byte color);
 void BlowSmoke(int x,int y,int z,int dz);
 void BlowWigglySmoke(int x,int y,int z,int dz);
 void SpurtParticles(byte type,bool left,int x,int y,int z,byte angle,byte force);

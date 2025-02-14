@@ -265,31 +265,31 @@ void RenderWeirdMenu(void)
 	x = SCRWID / 2 + 15;
 	y = 75;
 
-	RenderWeirdOption(x, y, "Shootin' Socks:", !player.disableMoveNShoot, (subcursor == 0), (player.gear & GEAR_SOCKS));
-	RenderWeirdOption(x, y + 20, "Pointy Hat:", !player.disableThorns, (subcursor == 1), (player.gear & GEAR_POINTY));
-	RenderWeirdOption(x, y + 40, "Energy Storm:", !player.downgradeSpell[SPL_ENERGY], (subcursor == 2), player.spell[SPL_ENERGY]==2);
-	RenderWeirdOption(x, y + 60, "Liquify:", !player.downgradeSpell[SPL_FLAME], (subcursor == 3), player.spell[SPL_FLAME]==2);
-	RenderWeirdOption(x, y + 80, "Seeker Swarm:", !player.downgradeSpell[SPL_SEEKER], (subcursor == 4), player.spell[SPL_SEEKER] == 2);
-	RenderWeirdOption(x, y + 100, "Ice Beam:", !player.downgradeSpell[SPL_ICE], (subcursor == 5), player.spell[SPL_ICE] == 2);
-	RenderWeirdOption(x, y + 120, "Hyper Inferno:", !player.downgradeSpell[SPL_INFERNO], (subcursor == 6), player.spell[SPL_INFERNO] == 2);
-	RenderWeirdOption(x, y + 140, "Summon Golem:", !player.downgradeSpell[SPL_SUMMON], (subcursor == 7), player.spell[SPL_SUMMON] == 2);
-	RenderWeirdOption(x, y + 160, "Steelskin:", !player.downgradeSpell[SPL_ARMOR], (subcursor == 8), player.spell[SPL_ARMOR] == 2);
-	RenderWeirdOption(x, y + 180, "Insane Rage:", !player.downgradeSpell[SPL_BERSERK], (subcursor == 9), player.spell[SPL_BERSERK] == 2);
-	RenderWeirdOption(x, y + 200, "Life Spell:", !player.downgradeSpell[SPL_HEAL], (subcursor == 10), player.spell[SPL_HEAL] == 2);
-	RenderWeirdOption(x, y + 220, "Sword Skulls:", !player.disableSword, (subcursor == 11), PlayerHasSword());
-	PrintBrightGlow(x, y + 240, "Exit", -16 + 32 * (subcursor==12), 2);
+	RenderWeirdOption(x, y, "Dmg Numbers:", !player.disableDmgNumbers, (subcursor == 0),true);
+	RenderWeirdOption(x, y + 20, "Shootin' Socks:", !player.disableMoveNShoot, (subcursor == 1), (player.gear & GEAR_SOCKS));
+	RenderWeirdOption(x, y + 40, "Pointy Hat:", !player.disableThorns, (subcursor == 2), (player.gear & GEAR_POINTY));
+	RenderWeirdOption(x, y + 60, "Energy Storm:", !player.downgradeSpell[SPL_ENERGY], (subcursor == 3), player.spell[SPL_ENERGY]==2);
+	RenderWeirdOption(x, y + 80, "Liquify:", !player.downgradeSpell[SPL_FLAME], (subcursor == 4), player.spell[SPL_FLAME]==2);
+	RenderWeirdOption(x, y + 100, "Seeker Swarm:", !player.downgradeSpell[SPL_SEEKER], (subcursor == 5), player.spell[SPL_SEEKER] == 2);
+	RenderWeirdOption(x, y + 120, "Ice Beam:", !player.downgradeSpell[SPL_ICE], (subcursor == 6), player.spell[SPL_ICE] == 2);
+	RenderWeirdOption(x, y + 140, "Hyper Inferno:", !player.downgradeSpell[SPL_INFERNO], (subcursor == 7), player.spell[SPL_INFERNO] == 2);
+	RenderWeirdOption(x, y + 160, "Summon Golem:", !player.downgradeSpell[SPL_SUMMON], (subcursor == 8), player.spell[SPL_SUMMON] == 2);
+	RenderWeirdOption(x, y + 180, "Steelskin:", !player.downgradeSpell[SPL_ARMOR], (subcursor == 9), player.spell[SPL_ARMOR] == 2);
+	RenderWeirdOption(x, y + 200, "Insane Rage:", !player.downgradeSpell[SPL_BERSERK], (subcursor == 10), player.spell[SPL_BERSERK] == 2);
+	RenderWeirdOption(x, y + 220, "Life Spell:", !player.downgradeSpell[SPL_HEAL], (subcursor == 11), player.spell[SPL_HEAL] == 2);
+	RenderWeirdOption(x, y + 240, "Sword Skulls:", !player.disableSword, (subcursor == 12), PlayerHasSword());
+	PrintBrightGlow(x, y + 260, "Exit", -16 + 32 * (subcursor==13), 2);
 
 	switch (subcursor)
 	{
-		case 0:
+		case 1:
 			if (!(player.gear & GEAR_SOCKS))
 				PrintBrightGlow(x, SCRHEI - 50, "Buy Shootin' Socks to enable this option.", 0, 1);
 			break;
-		case 1:
+		case 2:
 			if (!(player.gear & GEAR_POINTY))
 				PrintBrightGlow(x, SCRHEI - 50, "Buy the Pointy Hat to enable this option.", 0, 1);
 			break;
-		case 2:
 		case 3:
 		case 4:
 		case 5:
@@ -298,10 +298,11 @@ void RenderWeirdMenu(void)
 		case 8:
 		case 9:
 		case 10:
-			if (player.spell[subcursor-2]<2)
+		case 11:
+			if (player.spell[subcursor-3]<2)
 				PrintBrightGlow(x, SCRHEI - 50, "Find an advanced spell for this option.", 0, 1);
 			break;
-		case 11:
+		case 12:
 			if (!PlayerHasSword())
 				PrintBrightGlow(x, SCRHEI - 50, "You'll need something special for this!", 0, 1);
 			break;
@@ -566,13 +567,13 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			MakeNormalSound(SND_MENUCLICK);
 			subcursor--;
 			if (subcursor == 255)
-				subcursor = 12;
+				subcursor = 13;
 		}
 		if ((c & CONTROL_DN) && (!reptCounter))
 		{
 			MakeNormalSound(SND_MENUCLICK);
 			subcursor++;
-			if (subcursor > 12)
+			if (subcursor > 13)
 				subcursor = 0;
 		}
 		if (((c & CONTROL_B1) && (!(oldc & CONTROL_B1))) ||
@@ -581,14 +582,16 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			switch (subcursor)
 			{
 				case 0:
+					player.disableDmgNumbers = 1 - player.disableDmgNumbers;
+					break;
+				case 1:
 					if (player.gear & GEAR_SOCKS)
 						player.disableMoveNShoot = 1-player.disableMoveNShoot;
 					break;
-				case 1:
+				case 2:
 					if (player.gear & GEAR_POINTY)
 						player.disableThorns = 1-player.disableThorns;
 					break;
-				case 2:
 				case 3:
 				case 4:
 				case 5:
@@ -597,14 +600,15 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 				case 8:
 				case 9:
 				case 10:
+				case 11:
 					if (player.spell[subcursor-2]==2)
 						player.downgradeSpell[subcursor-2] = 1 - player.downgradeSpell[subcursor-2];
 					break;
-				case 11:
+				case 12:
 					if (PlayerHasSword())
 						player.disableSword = 1 - player.disableSword;
 					break;
-				case 12:
+				case 13:
 					subMode = SUBMODE_NONE;
 					break;
 			}

@@ -201,6 +201,22 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 			else
 				me->type=BLT_NONE;
 			break;
+		case BLT_MISSILE:
+			if(ClassicMode())
+				BulletRanOut(me, map, world);
+			else
+			{
+				int c = SkillValue(SKILL_SEEKBOUNCE);
+				if (MGL_random(100) < c)
+				{
+					me->x -= me->dx;
+					me->dx = -me->dx;
+					me->facing = ((byte)(8 - me->facing)) & 15;
+				}
+				else
+					BulletRanOut(me, map, world);
+			}
+			break;
 		default:
 			BulletRanOut(me,map,world);
 			break;
@@ -315,6 +331,22 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 				me->type=BLT_DEATHBEAM2;
 			else
 				me->type=BLT_NONE;
+			break;
+		case BLT_MISSILE:
+			if (ClassicMode())
+				BulletRanOut(me, map, world);
+			else
+			{
+				int c = SkillValue(SKILL_SEEKBOUNCE);
+				if (MGL_random(100) < c)
+				{
+					me->y -= me->dy;
+					me->dy = -me->dy;
+					me->facing = (16 - me->facing) & 15;
+				}
+				else
+					BulletRanOut(me, map, world);
+			}
 			break;
 		default:
 			BulletRanOut(me,map,world);
@@ -544,27 +576,13 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			j = player.damage;
 			if (player.fairyOn == FAIRY_SMASHY && player.mana)
 				j = j * 3 / 2;
-			bool critted = false;
-			if (!ClassicMode())
-			{
-				float crit = SkillValue(SKILL_FIREBALL_CRIT);
-				if (Random(100) < (dword)crit)
-				{
-					j = (int)j * SkillValue(SKILL_CRITDMG) / 100.0f;
-					critted = true;
-				}
-			}
+			
 			if (me->lastHit == 65535)
 				i = FindVictimNot(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 12, me->dx, me->dy, j, me->lastHit, map, world);
 			else
 				i = FindVictimNot(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 12, me->dx, me->dy, j / 2, me->lastHit, map, world);
 			if (i != 65535)
 			{
-				if (critted)
-				{
-					ExplodeParticles2(PART_SNOW2, me->x, me->y, me->z, 15, 4);
-					MakeSound(SND_PUMPKINDIE, me->x, me->y, SND_CUTOFF, 0);
-				}
 				if (player.fairyOn == FAIRY_VAMPY)
 				{
 					if ((!player.berserk && (MGL_random(2) == 0)) ||
@@ -604,7 +622,10 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_MISSILE:
-			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,0,0,SpellLevel()/5,map,world))
+			i = SpellLevel() / 5;
+			if (!ClassicMode())
+				i = SkillValue(SKILL_SEEKER)*2;
+			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,0,0,i,map,world))
 			{
 				BulletRanOut(me,map,world);	// detonate
 			}
@@ -669,8 +690,11 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_LILBOOM:
+			i = SpellLevel() / 10 + 1;
+			if (!ClassicMode())
+				i = SkillValue(SKILL_SEEKER) + 1;
 			if(FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,16,(8-MGL_random(17))<<FIXSHIFT,
-				(8-MGL_random(16))<<FIXSHIFT,SpellLevel()/10+1,map,world))
+				(8-MGL_random(16))<<FIXSHIFT,i,map,world))
 			{
 				// nothing much to do here, the victim will scream quite enough
 			}
@@ -737,6 +761,13 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 		case BLT_BOOM:
 			if(FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,64,(8-MGL_random(17))<<FIXSHIFT,
 				(8-MGL_random(16))<<FIXSHIFT,2,map,world))
+			{
+				// nothing much to do here, the victim will scream quite enough
+			}
+			break;
+		case BLT_SEEKBOOM:
+			if (FindVictims(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 64, (8 - MGL_random(17)) << FIXSHIFT,
+				(8 - MGL_random(16)) << FIXSHIFT, SkillValue(SKILL_SEEKBOOM), map, world))
 			{
 				// nothing much to do here, the victim will scream quite enough
 			}
@@ -1093,6 +1124,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 		case BLT_BOMB:
 			break;
 		case BLT_BOOM:
+		case BLT_SEEKBOOM:
 			map->BrightTorch((me->x/TILE_WIDTH)>>FIXSHIFT,
 							 (me->y/TILE_HEIGHT)>>FIXSHIFT,12,8);
 			HitBadguys(me,map,world);
@@ -1370,6 +1402,7 @@ void RenderBullet(bullet_t *me)
 			// invisible
 			break;
 		case BLT_BOOM:
+		case BLT_SEEKBOOM:
 			curSpr=bulletSpr->GetSprite(7-me->timer+SPR_BOOM);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
 					DISPLAY_DRAWME|DISPLAY_GLOW);
@@ -1588,6 +1621,7 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->timer=30*9+MGL_random(30*4);
 			break;
 		case BLT_BOOM:
+		case BLT_SEEKBOOM:
 			me->dx=0;
 			me->dy=0;
 			me->z=0;
@@ -1633,8 +1667,8 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			if(f<0)
 				f+=16;
 			me->facing=(byte)(f&15);
-			me->x+=((MGL_random(17)-8)<<FIXSHIFT);
-			me->y+=((MGL_random(17)-8)<<FIXSHIFT);
+			//me->x+=((MGL_random(17)-8)<<FIXSHIFT);
+			//me->y+=((MGL_random(17)-8)<<FIXSHIFT);
 			me->dx=Cosine(me->facing*16)*4;
 			me->dy=Sine(me->facing*16)*4;
 			MakeSound(SND_MISSILELAUNCH,me->x,me->y,SND_CUTOFF,1100);

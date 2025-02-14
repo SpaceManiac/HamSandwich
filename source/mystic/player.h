@@ -129,7 +129,8 @@ typedef struct player_t
 	byte disableSword;
 	byte disableThorns;
 	byte disableMoveNShoot;
-	byte expando[238-MAX_SKILLS];	// just in case!
+	byte disableDmgNumbers;
+	byte expando[237-MAX_SKILLS];	// just in case!
 } player_t;
 
 extern player_t player;

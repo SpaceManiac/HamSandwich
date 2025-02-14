@@ -283,6 +283,7 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 	int i;
 	char s[32];
 
+	RenderNumberParticles();
 	// draw the base console
 	intfaceSpr->GetSprite(0)->Draw(0,-1,mgl);
 	// life meter

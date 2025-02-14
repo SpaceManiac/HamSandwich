@@ -75,6 +75,10 @@ void Particle::Update(Map *map)
 		life--;
 		switch(type)
 		{
+			case PART_NUMBER:
+				x -= dx;	// we don't move by DX!
+				dz += FIXAMT * 7 / 8;
+				break;
 			case PART_FLOATER:
 				x-=dx;
 				y-=dy;	// it doesn't move that way
@@ -418,10 +422,57 @@ void RenderParticles(void)
 				ParticleDraw(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
 							 particleList[i]->z>>FIXSHIFT,particleList[i]->color,(particleList[i]->life/10),
 							 DISPLAY_DRAWME|DISPLAY_PARTICLE);
+			else if (particleList[i]->type == PART_NUMBER)
+			{
+				int x, y;
+				GetCamera(&x, &y);
+				x = (particleList[i]->x>>FIXSHIFT) - x + HALFWID;
+				y = (particleList[i]->y>>FIXSHIFT) - y + HALFWID-(particleList[i]->z>>FIXSHIFT);
+				char s[32];
+				sprintf(s, "%d", particleList[i]->dx);
+				CenterPrint(x, y, s, 0, 1);
+			}
 			else
 				ParticleDraw(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
 							 particleList[i]->z>>FIXSHIFT,particleList[i]->color,particleList[i]->size,
 							 DISPLAY_DRAWME|DISPLAY_PARTICLE);
+		}
+	}
+}
+
+void RenderNumberParticles(void)
+{
+	int i;
+
+	for (i = 0; i < maxParticles; i++)
+	{
+		if (particleList[i]->Alive())
+		{
+			if (particleList[i]->type == PART_NUMBER)
+			{
+				int x, y;
+				GetCamera(&x, &y);
+				x = (particleList[i]->x >> FIXSHIFT) - x + HALFWID;
+				y = (particleList[i]->y >> FIXSHIFT) - y + HALFHEI - (particleList[i]->z >> FIXSHIFT);
+				char s[32];
+				sprintf(s, "%d", particleList[i]->dx);
+				if (particleList[i]->color == 0)	// normal dmg
+				{
+					int wid=GetStrLength(s, 1);
+					int bright = 0;
+					if (particleList[i]->life < 30)
+						bright -= (30 - particleList[i]->life);
+					PrintBrightGlow(x-wid/2 + 1, y + 1, s, bright, 1);
+				}
+				else
+				{
+					int wid = GetStrLength(s, 2);
+					int bright = 0;
+					if (particleList[i]->life < 30)
+						bright -= (30 - particleList[i]->life);
+					PrintBrightGlow(x - wid / 2 + 1, y + 1, s, bright, 2);
+				}
+			}
 		}
 	}
 }
@@ -736,6 +787,30 @@ void FloaterParticles(int x,int y,byte color,int radius,int spread,byte count)
 			numLeft--;
 			if(!numLeft)
 				break;
+		}
+	}
+}
+
+void AddNumberParticle(int x, int y, int z, int value, byte color)
+{
+	if (player.disableDmgNumbers) return;
+
+	int i;
+	for (i = 0; i < maxParticles; i++)
+	{
+		if (!particleList[i]->Alive())
+		{
+			particleList[i]->x = x;
+			particleList[i]->y = y;
+			particleList[i]->z = z;
+			particleList[i]->dx = value;	// the number is stored in DX, so don't move by DX!
+			particleList[i]->dy = 0;
+			particleList[i]->dz = 4*FIXAMT;
+			particleList[i]->size = 0;
+			particleList[i]->life = 60;
+			particleList[i]->type = PART_NUMBER;
+			particleList[i]->color = color;
+			return;
 		}
 	}
 }
