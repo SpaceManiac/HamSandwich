@@ -1049,7 +1049,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			}
 			else
 			{
-				int time = (6 - SpellLevel() / 8) + 2;
+				int time = (6 - SkillValue(SKILL_FLAMEON)) + 1;
 				if ((me->timer % time) == 0)	// damage ticks happen faster as it levels up
 				{
 					HitBadguys(me, map, world);
@@ -1064,7 +1064,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				Clamp(&me->dx, FIXAMT * 10);
 				Clamp(&me->dy, FIXAMT * 10);
 				me->anim = ((32 - me->timer) / 8) + 1;
-				byte maxFrame = (SpellLevel() / 10) + 1;
+				byte maxFrame = (SkillValue(SKILL_FLAMEON)) + 1;
 				if (maxFrame > 4) maxFrame = 4;
 				if (me->anim > maxFrame)
 					me->anim = maxFrame;
@@ -1526,7 +1526,10 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			break;
 		case BLT_LIQUIFY:
 			me->anim=0;
-			me->timer=SpellLevel()*2;
+			if (ClassicMode())
+				me->timer = SpellLevel() * 2;
+			else
+				me->timer = 25+SkillValue(SKILL_FLAMEON) * 15;
 			me->z=0;
 			me->dx=0;
 			me->dy=0;
@@ -1660,7 +1663,7 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			if (ClassicMode())
 				me->timer = (SpellLevel() / 2) + 10 - MGL_random(4);
 			else
-				me->timer = (SpellLevel() / 3) + 20 - MGL_random(4);
+				me->timer = (SkillValue(SKILL_FLAMEON)*6) + 10 - MGL_random(4);
 			me->z=FIXAMT*20;
 			me->x+=((MGL_random(3)-1)<<FIXSHIFT)+Cosine(me->facing*32)*5;
 			me->y+=((MGL_random(3)-1)<<FIXSHIFT)+Sine(me->facing*32)*5;

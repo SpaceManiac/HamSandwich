@@ -56,6 +56,8 @@ class Guy
 		byte seq;
 		char bright;
 		word frozen;	// when non-zero, monster is encased in ice for a time
+		word melted;
+		byte partialDamage;
 
 		byte placed;	// if this monster was placed on the overworld, this is 1- makes it immobile
 		Guy *parent;

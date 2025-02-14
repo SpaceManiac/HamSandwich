@@ -196,6 +196,15 @@ void RenderSkillMenu(void)
 				RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 16, 32 * 5 + 6);
 				GetSkillSpr(0)->DrawColored(x + 20, y + 20, GetDisplayMGL(), 32 * 2 + 10, 0);
 			}
+			if (player.skill[i+j*5] > 0)
+			{
+				sprintf(s, "%d", player.skill[i+j*5]);
+				Print(x + 30-1, y + 30, s, -31, 1);
+				Print(x + 30+1, y + 30, s, -31, 1);
+				Print(x + 30, y + 30+1, s, -31, 1);
+				Print(x + 30, y + 30-1, s, -31, 1);
+				Print(x + 30, y + 30, s, 0, 1);
+			}
 
 			x += spacing;
 		}

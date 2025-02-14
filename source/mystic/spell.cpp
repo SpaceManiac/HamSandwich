@@ -30,7 +30,7 @@ byte SpellCost(byte spell)
 	byte cost;
 
 	if (player.downgradeSpell[player.casting])
-		cost=spellCost[player.casting * 2 + 1];
+		cost=spellCost[player.casting * 2];
 	else
 		cost=spellCost[player.casting * 2 + (player.spell[player.casting] - 1)];
 
@@ -197,10 +197,10 @@ void CastSpell(Guy *me)
 
 							me->frmAdvance=(256*2)/(i);
 						}
-						else
+						else // modern mode is always fast firing, but its damage ticks at an increasing rate with levels
 						{
 							player.wpnReload = 1;
-							me->frmTimer = 4 - SpellLevel() / 8;
+							me->frmTimer = 5 - SkillValue(SKILL_FLAMEON);
 						}
 					}
 					else
@@ -215,7 +215,10 @@ void CastSpell(Guy *me)
 			}
 			else
 			{
-				for(i=0;i<SpellLevel()/15+1;i++)
+				int cnt = SpellLevel() / 15 + 1;
+				if (!ClassicMode())
+					cnt = (int)((SkillValue(SKILL_FLAMEON)*1.2f)/2 + 1);
+				for(i=0;i<cnt;i++)
 					FireBullet(me->x+Cosine(me->facing*32)*32,me->y+Sine(me->facing*32)*32,me->facing*32,BLT_LIQUIFY);
 				MakeNormalSound(SND_FLAMEGO);
 				player.wpnReload=5;

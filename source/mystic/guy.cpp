@@ -436,6 +436,12 @@ void Guy::Update(Map *map,world_t *world)
 		return;
 
 	}
+	if (melted)
+	{
+		melted--;
+		if(MGL_random(3)==0)
+			ExplodeParticles2(PART_SHORTYELLOW, x - rectx + MGL_random(rectx2 - rectx), y - recty + MGL_random(recty2 - recty), MGL_random(10),1,2);
+	}
 
 	if(type==MONS_BOUAPHA)	// special case, player controls Bouapha
 		PlayerControlMe(this,&map->map[mapx+mapy*map->width],world);
@@ -1126,6 +1132,30 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		}
 	}
 
+	if (!ClassicMode())
+	{
+		if (melted)
+		{
+			float d = damage;
+			d = d * (100 + SkillValue(SKILL_MELTARMOR)) / 100.0f;
+			partialDamage += (byte)((d - floorf(d)) * 100.0f);
+			if (partialDamage >= 100)
+			{
+				d += 1;
+				partialDamage -= 100;
+			}
+			damage += (int)d;
+		}
+		if (BulletHittingType() == BLT_FLAME || BulletHittingType() == BLT_LIQUIFY)
+		{
+			if (SkillValue(SKILL_MELTARMOR) > 0)
+			{
+				melted += 15;	// 1/2 second per hit
+				if (melted > 30 * 10)
+					melted = 30 * 10;	// 10s max duration
+			}
+		}
+	}
 	if(type==MONS_BOUAPHA && damage>0)
 		ChallengeEvent(CE_OUCH,damage);
 	else if(type!=MONS_PTERO && type!=MONS_GOLEM)
@@ -1433,6 +1463,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 			guys[i]->mapx=(guys[i]->x>>FIXSHIFT)/TILE_WIDTH;
 			guys[i]->mapy=(guys[i]->y>>FIXSHIFT)/TILE_HEIGHT;
 			guys[i]->frozen=0;
+			guys[i]->melted = 0;
 			if(type==MONS_BOUAPHA)	// special case: bouapha is the goodguy
 			{
 				goodguy=guys[i];

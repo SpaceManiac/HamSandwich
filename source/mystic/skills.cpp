@@ -54,25 +54,25 @@ skill_t skillList[] = {
 		"a short time per 20 bolts fired.",
 		"(1/4 time for Energy Storm)",
 		0,0.1f,"Time",SD_SECONDS,SPL_ENERGY},
-	{"blank",
-		"Fireballs gain 5% chance to",
-		"Critically Hit per point.",
+	{"Flame On!",
+		"Flame spells are much",
+		"more potent. Damage-wise ",
+		"and whatnot.",
 		"",
-		"",
-		0,5},
-	{"blank",
-		"Fireballs gain 5% chance to",
-		"Critically Hit per point.",
-		"",
-		"",
-		0,5},
+		0,1,"Potency",SD_NUMBER,SPL_FLAME},
+	{"Unforging",
+		"Flame spells melt enemy armor,",
+		"increasing damage taken from all",
+		"attacks. Hit with more flames to",
+		"extend duration.",
+		0,7,"Damage",SD_PERCENT,SPL_FLAME},
 	// row 3
-	{"blank",
-		"Fireballs gain 5% chance to",
-		"Critically Hit per point.",
+	{"Seek n' Seek",
+		"Seekers have a chance to bounce",
+		"off of walls.",
 		"",
 		"",
-		0,5},
+		0,20,"Chance",SD_PERCENT,SPL_SEEKER},
 	{"blank",
 		"Fireballs gain 5% chance to",
 		"Critically Hit per point.",
@@ -179,7 +179,7 @@ void DescribeSkill(byte skill,int x,int y)
 	float total = SkillValue(skill);
 	char symbol='0';
 	
-	if(total-roundf(total)<0.1f)	// if it's nearly an integer, let's just show an integer
+	if(total-floorf(total)<0.1f)	// if it's nearly an integer, let's just show an integer
 		sprintf(txt, "[Rank %d/%d, %s: %d", player.skill[skill], MAX_SKILL_LVL, skillList[skill].statName, (int)total);
 	else
 		sprintf(txt, "[Rank %d/%d, %s: %0.1f", player.skill[skill], MAX_SKILL_LVL, skillList[skill].statName, total);

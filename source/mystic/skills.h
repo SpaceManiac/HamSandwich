@@ -14,6 +14,8 @@
 #define SKILL_ENERGYRATE (5)	// energy storm upgrades
 #define SKILL_ENERGYMANA (6)
 #define SKILL_ENERGYBARRIER (7)
+#define SKILL_FLAMEON (8)
+#define SKILL_MELTARMOR (9)
 //row 3
 //row 4
 //row 5
