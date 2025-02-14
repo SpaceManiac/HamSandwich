@@ -21,7 +21,7 @@ static const char credits[][64]={
 	"#",
 	"Programming",
 	"Mike Hommel",
-	"Tad \"SpaceManiac\" Hardesty",
+	"Tad 'SpaceManiac' Hardesty",
 	"%",
 	"Art",
 	"Mike Hommel",
@@ -113,7 +113,7 @@ static const char demoWinTxt[][64]={
 	};
 
 // once the credits have scrolled to END_OF_CREDITS pixels, they end
-#define END_OF_CREDITS 480*2+40
+#define END_OF_CREDITS 480*2+400
 #define END_OF_VICTORY 480*2-400
 #define END_OF_DEMOWIN 480-250
 #define END_OF_MADCAPWIN 480-300
