@@ -130,7 +130,8 @@ typedef struct player_t
 	byte disableThorns;
 	byte disableMoveNShoot;
 	byte disableDmgNumbers;
-	byte expando[237-MAX_SKILLS];	// just in case!
+	byte enableQuickCast;
+	byte expando[236-MAX_SKILLS];	// just in case!
 } player_t;
 
 extern player_t player;
@@ -193,6 +194,7 @@ void CheckForAllSecrets(void);
 byte PlayerHasAllSecrets(byte chapter);
 void SetChallengeCrystals(int amt);
 int GetChallengeCrystals(void);
+void BeginCast(Guy* me);
 
 bool BrutalMode(void);
 bool ClassicMode(void);

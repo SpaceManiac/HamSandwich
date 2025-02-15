@@ -176,29 +176,29 @@ void RenderSkillMenu(void)
 
 	PrintBrightGlow(SCRWID / 2 + 15, 32, "Mystic Skills",0,0);
 	int x, y;
-	int spacing = 60;
-	x = SCRWID / 2 + SCRWID / 4 - spacing*5/2+5;
-	y = 75;
+	int spacing = 50;
+	x = SCRWID / 2 + SCRWID / 4 - spacing*3+5;
+	y = 70;
 
-	for (int j = 0; j < 5; j++)
+	for (int j = 0; j < 6; j++)
 	{
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < 6; i++)
 		{
-			if (subcursor == i + j * 5)
+			if (subcursor == i + j * 6)
 			{
 				RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 31, 32 * 5 + 10);
 				GetSkillSpr(0)->Draw(x + 20, y + 20, GetDisplayMGL());
 
-				DescribeSkill(i+j*5, SCRWID / 2 + 10, SCRHEI - 30 - 85);
+				DescribeSkill(i+j*6, SCRWID / 2 + 10, SCRHEI - 30 - 85);
 			}
 			else
 			{
 				RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 16, 32 * 5 + 6);
 				GetSkillSpr(0)->DrawColored(x + 20, y + 20, GetDisplayMGL(), 32 * 2 + 10, 0);
 			}
-			if (player.skill[i+j*5] > 0)
+			if (player.skill[i+j*6] > 0)
 			{
-				sprintf(s, "%d", player.skill[i+j*5]);
+				sprintf(s, "%d", player.skill[i+j*6]);
 				Print(x + 30-1, y + 30, s, -31, 1);
 				Print(x + 30+1, y + 30, s, -31, 1);
 				Print(x + 30, y + 30+1, s, -31, 1);
@@ -208,7 +208,7 @@ void RenderSkillMenu(void)
 
 			x += spacing;
 		}
-		x = SCRWID / 2 + SCRWID / 4 - spacing * 5 / 2+5;
+		x = SCRWID / 2 + SCRWID / 4 - spacing * 3+5;
 		y += spacing;
 	}
 
@@ -218,19 +218,19 @@ void RenderSkillMenu(void)
 	if (giveUp == 0)	// only in the overworld
 	{
 		// reset skills
-		if (subcursor == 25)
+		if (subcursor == 36)
 			RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 60, SCRWID - 10, SCRHEI - 30 - 40, 32 * 5 + 31, 32 * 5 + 10);
 		else
 			RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 60, SCRWID - 10, SCRHEI - 30 - 40, 32 * 5 + 16, 32 * 5 + 6);
-		PrintBrightGlow(SCRWID - 80 + 4 + 6, SCRHEI - 30 - 60, "Reset", (subcursor == 25) * 31, 2);
+		PrintBrightGlow(SCRWID - 80 + 4 + 6, SCRHEI - 30 - 60, "Reset", (subcursor == 36) * 31, 2);
 	}
 
 	// exit
-	if (subcursor == 26)
+	if (subcursor == 37)
 		RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 35, SCRWID - 10, SCRHEI - 30 - 15, 32 * 5 + 31, 32 * 5 + 10);
 	else
 		RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 35, SCRWID - 10, SCRHEI - 30 - 15, 32 * 5 + 16, 32 * 5 + 6);
-	PrintBrightGlow(SCRWID - 80 + 4+12, SCRHEI - 30 - 35, "Exit", (subcursor == 26) * 31, 2);
+	PrintBrightGlow(SCRWID - 80 + 4+12, SCRHEI - 30 - 35, "Exit", (subcursor == 37) * 31, 2);
 }
 
 void RenderWeirdOption(int x, int y, const char* txt, bool on, byte cursorOn,bool active)
@@ -278,7 +278,8 @@ void RenderWeirdMenu(void)
 	RenderWeirdOption(x, y + 200, "Insane Rage:", !player.downgradeSpell[SPL_BERSERK], (subcursor == 10), player.spell[SPL_BERSERK] == 2);
 	RenderWeirdOption(x, y + 220, "Life Spell:", !player.downgradeSpell[SPL_HEAL], (subcursor == 11), player.spell[SPL_HEAL] == 2);
 	RenderWeirdOption(x, y + 240, "Sword Skulls:", !player.disableSword, (subcursor == 12), PlayerHasSword());
-	PrintBrightGlow(x, y + 260, "Exit", -16 + 32 * (subcursor==13), 2);
+	RenderWeirdOption(x, y + 260, "Quick Cast:", player.enableQuickCast, (subcursor == 13), true);
+	PrintBrightGlow(x, y + 280, "Exit", -16 + 32 * (subcursor==14), 2);
 
 	switch (subcursor)
 	{
@@ -305,6 +306,9 @@ void RenderWeirdMenu(void)
 		case 12:
 			if (!PlayerHasSword())
 				PrintBrightGlow(x, SCRHEI - 50, "You'll need something special for this!", 0, 1);
+			break;
+		case 13:
+			PrintBrightGlow(x, SCRHEI - 50, "Cast spells by pressing their number!", 0, 1);
 			break;
 	}
 }
@@ -601,14 +605,17 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 				case 9:
 				case 10:
 				case 11:
-					if (player.spell[subcursor-2]==2)
-						player.downgradeSpell[subcursor-2] = 1 - player.downgradeSpell[subcursor-2];
+					if (player.spell[subcursor-3]==2)
+						player.downgradeSpell[subcursor-3] = 1 - player.downgradeSpell[subcursor-3];
 					break;
 				case 12:
 					if (PlayerHasSword())
 						player.disableSword = 1 - player.disableSword;
 					break;
 				case 13:
+					player.enableQuickCast = 1 - player.enableQuickCast;
+					break;
+				case 14:
 					subMode = SUBMODE_NONE;
 					break;
 			}
@@ -619,49 +626,49 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		if ((c & CONTROL_UP) && (!reptCounter))
 		{
 			MakeNormalSound(SND_MENUCLICK);
-			if (subcursor < 5)
-				subcursor = 26;	// the exit button
-			else if (subcursor == 26)
+			if (subcursor < 6)
+				subcursor = 37;	// the exit button
+			else if (subcursor == 37)
 				subcursor--;
-			else if (subcursor == 25)
-				subcursor = 24;
+			else if (subcursor == 36)
+				subcursor = 35;
 			else
-				subcursor-=5;
-			if (giveUp != 0 && subcursor == 25)
-				subcursor = 24;
+				subcursor-=6;
+			if (giveUp != 0 && subcursor == 36)
+				subcursor = 35;
 		}
 		if ((c & CONTROL_DN) && (!reptCounter))
 		{
 			MakeNormalSound(SND_MENUCLICK);
-			if (subcursor == 26)
+			if (subcursor == 37)
 				subcursor = 0;
-			else if (subcursor == 25)
+			else if (subcursor == 36)
 				subcursor++;
-			else if (subcursor >= 20)
-				subcursor=25;
+			else if (subcursor >= 30)
+				subcursor=36;
 			else
-				subcursor+=5;
-			if (giveUp != 0 && subcursor == 25)
-				subcursor = 26;
+				subcursor+=6;
+			if (giveUp != 0 && subcursor == 36)
+				subcursor = 37;
 		}
 		if ((c & CONTROL_LF) && (!reptCounter))
 		{
-			if (subcursor < 25)	// not the two bottom buttons
+			if (subcursor < 36)	// not the two bottom buttons
 			{
 				MakeNormalSound(SND_MENUCLICK);
-				if ((subcursor % 5) == 0)
-					subcursor += 4;
+				if ((subcursor % 6) == 0)
+					subcursor += 5;
 				else
 					subcursor--;
 			}
 		}
 		if ((c & CONTROL_RT) && (!reptCounter))
 		{
-			if (subcursor < 25)
+			if (subcursor < 36)
 			{
 				MakeNormalSound(SND_MENUCLICK);
-				if ((subcursor % 5) == 4)
-					subcursor -= 4;
+				if ((subcursor % 6) == 5)
+					subcursor -= 5;
 				else
 					subcursor++;
 			}
@@ -669,17 +676,17 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		if (((c & CONTROL_B1) && (!(oldc & CONTROL_B1))) ||
 			((c & CONTROL_B2) && (!(oldc & CONTROL_B2))))
 		{
-			if (subcursor == 25)
+			if (subcursor == 36)
 			{
 				// reset skills
-				for (int i = 0; i < 25; i++)
+				for (int i = 0; i < 36; i++)
 				{
 					player.skillPts += player.skill[i];
 					player.skill[i] = 0;
 				}
 				MakeNormalSound(SND_BOBBYSPIN);
 			}
-			else if (subcursor == 26)
+			else if (subcursor == 37)
 			{
 				MakeNormalSound(SND_MENUSELECT);
 				subMode = SUBMODE_NONE;

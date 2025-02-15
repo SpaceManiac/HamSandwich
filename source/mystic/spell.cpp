@@ -113,6 +113,15 @@ void CastSpell(Guy *me)
 		player.life--;
 	}
 
+	c = GetControls();
+	bool spellHeld = (c & CONTROL_B2);
+	if (!ClassicMode() && player.enableQuickCast)
+	{
+		const Uint8* state = SDL_GetKeyboardState(nullptr);
+		if (state[SDL_SCANCODE_1 + player.casting])
+			spellHeld = true;	// hold down the spell # for quick cast
+	}
+
 	switch(player.casting)
 	{
 		case SPL_ENERGY:	// energy barrage/storm
@@ -146,8 +155,7 @@ void CastSpell(Guy *me)
 			me->z+=FIXAMT*MGL_random(4);
 			me->dx+=FIXAMT/2-MGL_random(65535);
 			me->dy+=FIXAMT/2-MGL_random(65535);
-			c=GetControls();
-			if((c&CONTROL_B2) && (player.mana-cost>=0))	// fire is held
+			if(spellHeld && (player.mana-cost>=0))	// fire is held
 			{
 				if (fakeLevel < 25)
 				{
@@ -183,8 +191,7 @@ void CastSpell(Guy *me)
 			if(player.spell[SPL_FLAME]==1 || player.downgradeSpell[SPL_FLAME])
 			{
 				FireBullet(me->x,me->y,me->facing,BLT_FLAME);
-				c=GetControls();
-				if(c&CONTROL_B2)	// fire is held
+				if(spellHeld)	// fire is held
 				{
 					if(SpellLevel()<25)
 					{
@@ -222,6 +229,11 @@ void CastSpell(Guy *me)
 					FireBullet(me->x+Cosine(me->facing*32)*32,me->y+Sine(me->facing*32)*32,me->facing*32,BLT_LIQUIFY);
 				MakeNormalSound(SND_FLAMEGO);
 				player.wpnReload=5;
+			}
+			if (!ClassicMode() && SkillValue(SKILL_BACKDRAFT) > 0)	// reflect nearby bullets
+			{
+				FloaterParticles(me->x, me->y, 4, SkillValue(SKILL_BACKDRAFT)+16, 0, 10);
+				BackdraftEffect(me, SkillValue(SKILL_BACKDRAFT)+16);	// cheating the radius a little to account for kid's pudge
 			}
 			break;
 		case SPL_SEEKER: // seeker bolt/barrage
@@ -261,24 +273,53 @@ void CastSpell(Guy *me)
 			if(player.spell[SPL_INFERNO]==1 || player.downgradeSpell[SPL_INFERNO])
 			{
 				byte l = SpellLevel() / 4;
+				if (!ClassicMode())
+					l = 2 + SkillValue(SKILL_INFERNO) * 2;
 				if (l < 1) l = 1;
-				j=256/(l);
+				j=256/l;
 				for(i=0;i<256;i+=j)
 				{
 					c=me->facing*32+i;
 					FireExactBullet(me->x,me->y,0,Cosine(c)*4,Sine(c)*4,0,0,i/8+1,0,BLT_BOMB);
+					if (!ClassicMode() && Random(100) < SkillValue(SKILL_MAYHEM))
+					{
+						int x, y;
+						x = me->x - HALFWID*FIXAMT + Random(SCRWID)*FIXAMT;
+						y = me->y - HALFHEI*FIXAMT + Random(SCRHEI)*FIXAMT;
+						FireExactBullet(x, y, 0, 0, 0, 0, 0, i / 8 + 1+Random(10), 0, BLT_BOMB);
+					}
 				}
 			}
 			else	// hyper inferno
 			{
-				for(i=0;i<8;i++)
+				int power = SpellLevel();
+				if (!ClassicMode())
+					power = 5+SkillValue(SKILL_INFERNO) * 9;
+				int adv = (32+17-10) - (power / 3);
+				i = 0;
+				for(i=0;i<256;i+=adv)
 				{
-					FireExactBullet(me->x,me->y,0,Cosine(i*32)*4,Sine(i*32)*4,0,0,8,0,BLT_BOMB);
-					FireExactBullet(me->x,me->y,0,Cosine(i*32)*6,Sine(i*32)*6,0,0,16,0,BLT_BOMB);
-					FireExactBullet(me->x+Cosine(i*32)*64,me->y+Sine(i*32)*48,0,0,0,0,0,14,i*32,BLT_LIQUIFY);
-					FireExactBullet(me->x+Cosine(i*32+16)*64,me->y+Sine(i*32+16)*48,0,0,0,0,0,14,i*32,BLT_LIQUIFY);
-					FireExactBullet(me->x+Cosine(i*32)*96,me->y+Sine(i*32)*72,0,0,0,0,0,20,i*32,BLT_LIQUIFY);
-					FireExactBullet(me->x+Cosine(i*32+16)*96,me->y+Sine(i*32+16)*72,0,0,0,0,0,20,i*32,BLT_LIQUIFY);
+					FireExactBullet(me->x,me->y,0,Cosine(i)*4,Sine(i)*4,0,0,8,0,BLT_BOMB);
+					FireExactBullet(me->x,me->y,0,Cosine(i)*6,Sine(i)*6,0,0,16,0,BLT_BOMB);
+					for(j=0;j<2;j++)
+						if (!ClassicMode() && Random(100) < SkillValue(SKILL_MAYHEM))
+						{
+							int x, y;
+							x = me->x - HALFWID * FIXAMT + Random(SCRWID) * FIXAMT;
+							y = me->y - HALFHEI * FIXAMT + Random(SCRHEI) * FIXAMT;
+							FireExactBullet(x, y, 0, 0, 0, 0, 0, 8+j*8+Random(10), 0, BLT_BOMB);
+						}
+
+					if (ClassicMode())
+						j = SpellLevel() * 14/50;
+					else
+						j = 4 + SkillValue(SKILL_INFERNO) * 2;
+
+					FireExactBullet(me->x+Cosine(i)*64,me->y+Sine(i)*48,0,0,0,0,0,j,i,BLT_LIQUIFY2);
+					FireExactBullet(me->x+Cosine(i+16)*64,me->y+Sine(i+16)*48,0,0,0,0,0,j,i,BLT_LIQUIFY2);
+					j = j * 20 / 14;
+					FireExactBullet(me->x+Cosine(i)*96,me->y+Sine(i)*72,0,0,0,0,0,j,i,BLT_LIQUIFY2);
+					FireExactBullet(me->x+Cosine(i+16)*96,me->y+Sine(i+16)*72,0,0,0,0,0,j,i,BLT_LIQUIFY2);
 				}
 				MakeNormalSound(SND_INFERNAL);
 			}

@@ -79,6 +79,13 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		for (i = 0; i < MAX_SKILLS; i++)
 			player.skill[i] = 0;
 		player.skillPts = 0;
+		player.enableQuickCast = 0;
+		player.disableDmgNumbers = 0;
+		player.disableMoveNShoot = 0;
+		player.disableSword = 0;
+		player.disableThorns = 0;
+		for (i = 0; i < 9; i++)
+			player.downgradeSpell[i] = 0;
 	}
 	if(initWhat>=INIT_WORLD) // initialize the things that go with each world
 	{
@@ -731,11 +738,20 @@ byte PlayerGetItem(byte itm,int x,int y)
 			return 0;
 			break;
 		case ITM_HEALTHPOT:
-			if(player.life==player.maxLife)
-				return 1;	// can't pick it up if fully healed
+			if (player.life == player.maxLife)
+			{
+				if(ClassicMode() || SkillValue(SKILL_POTIONS)==0 || player.mana==player.maxMana)
+					return 1;	// can't pick it up if fully healed. If you have potion skill, you can pick it up as long as your mana isn't full
+			}
 			MakeNormalSound(SND_LOONYKEY);
 			NewMessage("Life Potion!",75);
 			PlayerHeal(40);
+			if (!ClassicMode())
+			{
+				player.mana += SkillValue(SKILL_POTIONS);
+				if (player.mana > player.maxMana)
+					player.mana = player.maxMana;
+			}
 			//ExplodeParticles2(PART_SLIME,x,y,MGL_randoml(FIXAMT*20),10,6);
 			FloaterParticles(x,y,1,24,0,8);
 			return 0;
@@ -746,6 +762,8 @@ byte PlayerGetItem(byte itm,int x,int y)
 			MakeNormalSound(SND_FOOD);
 			NewMessage("Mana Restore Potion!",75);
 			player.mana+=25;
+			if (!ClassicMode())
+				player.mana += SkillValue(SKILL_POTIONS);
 			if(player.mana>player.maxMana)
 				player.mana=player.maxMana;
 			ManaParticles(x,y);
@@ -1115,6 +1133,24 @@ void ArmageddonUpdate(Map *map)
 	}
 }
 
+void BeginCast(Guy *me)
+{
+	if (me->action!=ACTION_BUSY && player.levelNum!=1 && player.wpnReload == 0 && player.spell[player.curSpell])	// pushed spell button
+	{
+		me->action = ACTION_BUSY;
+		if (player.curSpell < 4)
+			me->seq = ANIM_A2;
+		else
+			me->seq = ANIM_A1;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 200;
+		player.boredom = 0;
+		player.casting = player.curSpell;	// so if you switch the active spell, it still casts this one
+		ResetCastCounter();
+	}
+}
+
 void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 {
 	byte c;
@@ -1220,7 +1256,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	{
 		byte frame = GetMonsterFrameNum(MONS_BOUAPHA,me->seq,me->frm,me->facing);
 		if (frame != 254)
-			TrailMe(me->x, me->y, frame);
+			TrailMe(me->x, me->y, me->z, frame);
 		player.berserk--;
 	}
 	if(player.stoneskin)
@@ -1298,9 +1334,9 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			PlayerThrowHammer(me);
 		if(me->seq==ANIM_ATTACK && me->frm==7 && (player.gear&GEAR_SOCKS)==0)
 			me->reload-=2;
-		if(me->seq==ANIM_A1 && me->frm==2 && player.wpnReload==0)
+		if(me->seq==ANIM_A1 && me->frm==2 && player.wpnReload==0 && player.casting!=255)
 			CastSpell(me);
-		if(me->seq==ANIM_A2 && me->frm==4 && player.wpnReload==0)
+		if(me->seq==ANIM_A2 && me->frm==4 && player.wpnReload==0 && player.casting!=255)
 			CastSpell(me);
 
 		if(me->seq==ANIM_A3)
@@ -1386,17 +1422,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	if((c&CONTROL_B2) && player.wpnReload==0 && player.spell[player.curSpell])	// pushed spell button
 	{
-		me->action=ACTION_BUSY;
-		if(player.curSpell<4)
-			me->seq=ANIM_A2;
-		else
-			me->seq=ANIM_A1;
-		me->frm=0;
-		me->frmTimer=0;
-		me->frmAdvance=200;
-		player.boredom=0;
-		player.casting=player.curSpell;	// so if you switch the active spell, it still casts this one
-		ResetCastCounter();
+		BeginCast(me);
 		return;
 	}
 
@@ -1478,9 +1504,46 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		}
 	}
 
+	byte controls = c;
 	c=GetTaps();
-	if(c&CONTROL_B4)
+	// super cool execute move
+	if (!ClassicMode() && SkillValue(SKILL_MURDALIZE)>0 && me->action!=ACTION_BUSY && (((c & CONTROL_B4) && (controls & CONTROL_B3)) ||
+		((c & CONTROL_B3) && (controls & CONTROL_B4)))) // you hit both
 	{
+		int x, y;
+		x = me->x + Cosine(me->facing * 32) * 30;
+		y = me->y + Sine(me->facing * 32) * 30;
+		word id = FindMurdalizeGuy(x>>FIXSHIFT, y>>FIXSHIFT,MURDALIZE_RANGE);
+		if (id != 65535) // there is somebody in the target spot
+		{
+			byte frame = GetMonsterFrameNum(MONS_BOUAPHA, me->seq, me->frm, me->facing);
+			if (frame != 254)
+				TrailMe(me->x, me->y, me->z, frame);
+			me->action = ACTION_BUSY;
+			me->seq = ANIM_A1;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 200;
+			float a = atan2f(GetGuy(id)->y - me->y, GetGuy(id)->x - me->x) * 128.0f / 3.14159f;
+			if (a < 0)
+				a += 256;
+			me->facing = (a + 16) / 32;
+			if (me->facing > 7) me->facing -= 8;
+			me->dx = Cosine((int)a) * 10;
+			me->dy = Sine((int)a) * 10;
+			me->z = FIXAMT * HALFHEI;	// drop from the sky with the meteor!
+			me->dz = -FIXAMT * 20;
+			player.berserk = 20;
+			player.casting = 255;
+			player.boredom = 0;
+			GetGuy(id)->GetShot(0, 0, 1000000, CurrentMap(), world);
+			FireBullet(GetGuy(id)->x, GetGuy(id)->y, 0, BLT_COMETBOOM2);
+			MakeSound(SND_FLAMEGO, x, y, SND_CUTOFF, 100);
+		}
+	}
+	else if(c&CONTROL_B4)
+	{
+		
 		j=0;
 		for(i=0;i<10;i++)
 			if(player.spell[i]==0)
@@ -1499,7 +1562,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			}
 		}
 	}
-	if(c&CONTROL_B3)
+	else if(c&CONTROL_B3)
 	{
 		j=0;
 		for(i=0;i<10;i++)

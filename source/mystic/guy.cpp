@@ -367,10 +367,6 @@ void Guy::SeqFinished(void)
 	action=ACTION_IDLE;
 }
 
-void Guy::AttackThem(void)
-{
-}
-
 void Guy::NextFrame(void)
 {
 	frm++;
@@ -427,6 +423,16 @@ void Guy::Update(Map *map,world_t *world)
 
 	CalculateRect();
 
+	executable = false;
+	if (!ClassicMode() && hp>0 && (MonsterFlags(type) & MF_GOODGUY) == 0)	// only badguys can be executed, duh
+	{
+		float threshold = SkillValue(SKILL_MURDALIZE);
+		if (hp < (int)((float)MonsterHP(type) * threshold / 100.0f))	// life is below threshold
+		{
+			if (map->FindGuy(mapx, mapy, MURDALIZE_RANGE/TILE_WIDTH, goodguy))
+				executable = true;
+		}
+	}
 	if(frozen && hp>0)
 	{
 		bright=map->map[mapx+mapy*map->width].templight;
@@ -633,6 +639,7 @@ void Guy::OverworldUpdate(Map *map,world_t *world)
 
 	CalculateRect();
 
+	executable = false;
 	if(type==MONS_BOUAPHA)	// special case, player controls Bouapha
 		PlayerControlMe(this,&map->map[mapx+mapy*map->width],world);
 	else if(player.levelNum!=1)	// not on the overworld
@@ -798,6 +805,11 @@ void Guy::NoMoveUpdate(Map *map)
 void Guy::Render(byte light)
 {
 	MonsterDraw(x,y,z,type,seq,frm,facing,bright*(light>0),mind1,ouch,frozen);
+	if (executable)
+	{
+		sprite_t *curSpr = bulletSpr->GetSprite(145);	// shockwave sprite
+		SprDraw(x >> FIXSHIFT, (y >> FIXSHIFT)-1, 0, 255, 4, curSpr, DISPLAY_DRAWME);
+	}
 }
 
 void Guy::OverworldControl(Map *map,world_t *world)
@@ -1145,7 +1157,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		}
 	}
 
-	if (!ClassicMode())
+	if (!ClassicMode() && type!=MONS_BOUAPHA)
 	{
 		float fDamage = damage;
 		if (melted)
@@ -1205,8 +1217,10 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		ouch=4;
 	hp-=damage;
 
+	bool wasFrozen = false;
 	if(frozen)	// thaw when hit
 	{
+		wasFrozen = true;
 		if(frozen-damage*50<0)
 		{
 			if(frozen>5)
@@ -1305,7 +1319,6 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 					freeBig = (j - 50) / 20;	// give guaranteed big coins for every 20 coins overage, in modern mode
 					j = 50;	// max it at 50 coins per guy
 				}
-
 				// 1% chance of 10-coin, up
 				for (i = 0; i < j; i++)
 				{
@@ -1320,6 +1333,9 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 					{
 						float amt = SkillValue(SKILL_GREED);
 						amt *= 10;
+						if (!ClassicMode() && wasFrozen)
+							amt += SkillValue(SKILL_FREEZEMONEY) * 10;
+						
 						if (freeBig > 0 || MGL_random(1000 - 700 * (player.fairyOn == FAIRY_RICHEY)) > (int)amt)
 						{
 							FireBullet(x, y, 0, BLT_COIN);
@@ -1475,6 +1491,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 	for(i=0;i<maxGuys;i++)
 		if(guys[i]->type==MONS_NONE)
 		{
+			guys[i]->executable = false;
 			guys[i]->placed=0;
 			guys[i]->type=type;
 			guys[i]->x=x;
@@ -1487,7 +1504,8 @@ Guy *AddGuy(int x,int y,int z,byte type)
 			if(guys[i]->type!=MONS_BOUAPHA)
 				guys[i]->hp=MonsterHP(type);
 			else
-				guys[i]->hp=player.maxLife;
+				guys[i]->hp = player.maxLife;
+				
 			guys[i]->facing=2;
 			guys[i]->ouch=0;
 			guys[i]->dx=0;
@@ -1976,6 +1994,29 @@ word LockOnEvil(Map *map,int x,int y)
 					bestguy=i;
 					bestRange=range;
 				}
+			}
+		}
+
+	return bestguy;
+}
+
+word FindMurdalizeGuy(int x, int y,word maxRange)
+{
+	int i;
+	int bestRange, range;
+	word bestguy;
+
+	bestguy = 65535;
+	bestRange = maxRange;
+
+	for (i = 0; i < maxGuys; i++)
+		if (guys[i]->type && guys[i]->hp && guys[i]->executable)
+		{
+			range = abs(x - (guys[i]->x >> FIXSHIFT)) + abs(y - (guys[i]->y >> FIXSHIFT));
+			if ((range < bestRange))
+			{
+				bestguy = i;
+				bestRange = range;
 			}
 		}
 

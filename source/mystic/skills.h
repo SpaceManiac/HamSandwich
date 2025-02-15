@@ -10,22 +10,29 @@
 #define SKILL_FIREBALL_CRIT (2)
 #define SKILL_CRITDMG (3)
 #define SKILL_GREED (4)
+#define SKILL_POTIONS (5)
 //row 2
-#define SKILL_ENERGYRATE (5)	// energy storm upgrades
-#define SKILL_ENERGYMANA (6)
-#define SKILL_ENERGYBARRIER (7)
-#define SKILL_FLAMEON (8)
-#define SKILL_MELTARMOR (9)
+#define SKILL_ENERGYRATE (6)	// energy storm upgrades
+#define SKILL_ENERGYMANA (7)
+#define SKILL_ENERGYBARRIER (8)
+#define SKILL_FLAMEON (9)
+#define SKILL_MELTARMOR (10)
+#define SKILL_BACKDRAFT (11)
 //row 3
-#define SKILL_SEEKER (10)
-#define SKILL_SEEKBOUNCE (11)
-#define SKILL_SEEKBOOM (12)
-#define SKILL_ICEPOWER (13)
-#define SKILL_ICECRIT	(14)
+#define SKILL_SEEKER (12)
+#define SKILL_SEEKBOUNCE (13)
+#define SKILL_SEEKBOOM (14)
+#define SKILL_ICEPOWER (15)
+#define SKILL_ICECRIT	(16)
+#define SKILL_FREEZEMONEY 	(17)
 //row 4
+#define SKILL_INFERNO (18)
+#define SKILL_MAYHEM  (19)
 //row 5
+//row 6
+#define SKILL_MURDALIZE (35)
 
-#define MAX_SKILLS (25)
+#define MAX_SKILLS (36)
 
 #define MAX_SKILL_LVL (5)
 
@@ -33,6 +40,9 @@
 #define SD_NUMBER (0)
 #define SD_PERCENT (1)
 #define SD_SECONDS (2)
+#define SD_METERS	(3)
+
+#define MURDALIZE_RANGE (32*4)
 
 typedef struct skill_t
 {

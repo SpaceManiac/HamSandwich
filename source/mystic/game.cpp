@@ -8,6 +8,7 @@
 #include "options.h"
 #include "trivia.h"
 #include "palettes.h"
+#include "spell.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -741,8 +742,13 @@ void HandleKeyPresses(void)
 		if(k==0)
 			k=10;
 		k--;
-		if(player.spell[k])
-			player.curSpell=k;
+		if (player.spell[k])
+		{
+			player.curSpell = k;
+			if (!ClassicMode() && player.enableQuickCast)
+				BeginCast(GetGoodguy());
+		}
+		lastKey = 0;
 	}
 	// TESTING TESTING
 #ifdef CHEAT

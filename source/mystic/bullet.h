@@ -53,6 +53,9 @@
 #define BLT_COMET	 40	// armageddon drops these from the sky
 #define BLT_COMETBOOM 41	// and they explode like this
 #define BLT_SEEKBOOM (42) // explosion when seekers kill, from a skill
+#define BLT_REDFBALL (43)	// red fireball, for reflected shots with backdraft. Gets its damage from flame spells, not fireball
+#define BLT_COMETBOOM2 (44)	// murdalize explosion
+#define BLT_LIQUIFY2 (45)	// the liquifies that come from hyper inferno - same, but they scale with inferno skill
 
 #define MAX_BULLETS 256
 
@@ -74,6 +77,8 @@ typedef struct bullet_t
 	byte bright;
 } bullet_t;
 
+extern sprite_set_t* bulletSpr;
+
 void InitBullets(void);
 void ExitBullets(void);
 
@@ -92,6 +97,7 @@ byte Bulletable(Map *map,int x,int y);
 void BulletRanOut(bullet_t *me,Map *map,world_t *world);	// prototyped for interior use
 void SkullLaunch(int x,int y,byte facing,byte count,byte flags);
 void Armageddon(Map *map,int x,int y);
+void BackdraftEffect(Guy *me, int radius);
 
 byte BulletHittingType(void);
 

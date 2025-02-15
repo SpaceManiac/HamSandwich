@@ -61,7 +61,7 @@ void MakeItSnow(Map *map);
 void SpecialSnow(int x,int y);
 void AddParticle(int x,int y,int z,int dx,int dy,int dz,byte life,byte type,byte color);
 void ManaParticles(int x,int y);
-void TrailMe(int x,int y,byte f);
+void TrailMe(int x,int y,int z,byte f);
 void CompassTrail(int sx,int sy,int ex,int ey);
 void FloaterParticles(int x,int y,byte color,int radius,int spread,byte count);
 

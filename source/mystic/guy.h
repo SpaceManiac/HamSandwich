@@ -34,7 +34,6 @@ class Guy
 		byte CoconutBonk(int xx,int yy,Guy *him);
 		byte AttackCheck(byte size,int xx,int yy,Guy *him);
 		byte AttackCheck2(int xx,int yy,int xx2,int yy2,Guy *him);
-		void AttackThem(void);
 		void GetShot(int dx,int dy,int damage,Map *map,world_t *world);
 		void CalculateRect(void);
 
@@ -58,7 +57,7 @@ class Guy
 		word frozen;	// when non-zero, monster is encased in ice for a time
 		word melted;
 		byte partialDamage;
-
+		byte executable;	// can I be murdalized?
 		byte placed;	// if this monster was placed on the overworld, this is 1- makes it immobile
 		Guy *parent;
 		int hp;
@@ -81,6 +80,7 @@ byte FindVictim(int x,int y,byte size,int dx,int dy,int damage,Map *map,world_t 
 byte FindVictims(int x,int y,byte size,int dx,int dy,int damage,Map *map,world_t *world);
 byte FindGoodVictim(int x,int y,byte size,int dx,int dy,int damage,Map *map,world_t *world);
 word LockOnEvil(Map *map,int x,int y);
+word FindMurdalizeGuy(int x, int y, word maxRange);
 byte GetGuyPos(word guy,int *x,int *y);
 byte MonsterExists(byte type);
 void HealGoodguy(byte amt);

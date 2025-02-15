@@ -35,6 +35,12 @@ skill_t skillList[] = {
 		"",
 		"",
 		1,1,"Chance",SD_PERCENT,255},
+	{"Kid Thirsty",
+		"Both Life and Mana Potions",
+		"give you bonus mana.",
+		"Beware: This lets you drink",
+		"Life potions at full Life!",
+		0,5,"Mana",SD_NUMBER,255},
 	// row 2
 	{"Energetic Casting",
 		"Energy spells cast much much",
@@ -66,6 +72,12 @@ skill_t skillList[] = {
 		"all attacks. Hit with more",
 		"flames to extend duration.",
 		0,7,"Damage",SD_PERCENT,SPL_FLAME},
+	{"Backdraft",
+		"Casting a Flame spell melts",
+		"all nearby enemy bullets.",
+		"",
+		"",
+		0,16,"Radius",SD_METERS,SPL_FLAME},
 	// row 3
 	{"Seek Mystique",
 		"Seekers deal more damage and",
@@ -97,7 +109,25 @@ skill_t skillList[] = {
 		"Chance with all attacks.",
 		"",
 		0,10,"Chance",SD_PERCENT,SPL_ICE},
+	{"Frozen Assets",
+		"Killing a frozen enemy makes",
+		"the Coins it drops more likely",
+		"to be Big Coins.",
+		"",
+		0,5,"Chance",SD_PERCENT,SPL_ICE},
 	// row 4
+	{"Explodomancy",
+		"Inferno explodes more. Lots",
+		"more.",
+		"",
+		"",
+		0,1,"Exploditude",SD_NUMBER,SPL_INFERNO},
+	{"Mayhem",
+		"Every Inferno explosion that",
+		"occurs has a chance to make a",
+		"new explosion in a wildly random",
+		"location.",
+		0,10,"Chance",SD_PERCENT,SPL_INFERNO},
 	{"blank",
 		"Fireballs gain 5% chance to",
 		"Critically Hit per point.",
@@ -116,18 +146,12 @@ skill_t skillList[] = {
 		"",
 		"",
 		0,5},
-	{"blank",
+	{ "blank",
 		"Fireballs gain 5% chance to",
 		"Critically Hit per point.",
 		"",
 		"",
-		0,5},
-	{"blank",
-		"Fireballs gain 5% chance to",
-		"Critically Hit per point.",
-		"",
-		"",
-		0,5},
+		0,5 },
 	// row 5
 	{"blank",
 		"Fireballs gain 5% chance to",
@@ -159,6 +183,49 @@ skill_t skillList[] = {
 		"",
 		"",
 		0,5 },
+	{ "blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5 },
+	// row 6
+	{ "blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0, 5 },
+	{ "blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5 },
+	{ "blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5 },
+	{ "blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5 },
+	{ "blank",
+		"Fireballs gain 5% chance to",
+		"Critically Hit per point.",
+		"",
+		"",
+		0,5 },
+	{ "Murdalize",
+		"When a close enemy is at low",
+		"Life, press [Next+Previous]",
+		"to instantly destroy it!",
+		"",
+		0,3,"Life",SD_PERCENT,SPL_ARMAGEDDON},
 };
 
 void DescribeSkill(byte skill,int x,int y)
@@ -177,6 +244,8 @@ void DescribeSkill(byte skill,int x,int y)
 	for (lines = 0; lines < 4; lines++)
 		PrintBrightGlow(x, y + 20 + 12 * lines, skillList[skill].desc[lines], 0, 1);
 	float total = SkillValue(skill);
+	if (skillList[skill].displayType == SD_METERS)
+		total = total / 32.0f;
 	char symbol='0';
 	
 	if(total-floorf(total)<0.1f)	// if it's nearly an integer, let's just show an integer
@@ -187,6 +256,8 @@ void DescribeSkill(byte skill,int x,int y)
 		strcat(txt, "%]");
 	else if (skillList[skill].displayType == SD_SECONDS)
 		strcat(txt, "s]");
+	else if (skillList[skill].displayType == SD_METERS)
+		strcat(txt, "m]");
 	else
 		strcat(txt, "]");
 

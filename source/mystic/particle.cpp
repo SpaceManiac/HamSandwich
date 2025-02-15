@@ -264,7 +264,7 @@ void Particle::Update(Map *map)
 			return;
 		}
 
-		if(type==PART_GHOST)
+		if(type==PART_GHOST || type==PART_NUMBER)
 		{
 		}
 		else if(type==PART_SMOKE || type==PART_BOOM)
@@ -455,7 +455,13 @@ void RenderNumberParticles(void)
 				x = (particleList[i]->x >> FIXSHIFT) - x + HALFWID;
 				y = (particleList[i]->y >> FIXSHIFT) - y + HALFHEI - (particleList[i]->z >> FIXSHIFT);
 				char s[32];
-				sprintf(s, "%d", particleList[i]->dx);
+				if (particleList[i]->dx > 999999)	// too high, it's lethal
+				{
+					sprintf(s, "X");
+					particleList[i]->color = 1;	// and make it big
+				}
+				else
+					sprintf(s, "%d", particleList[i]->dx);
 				if (particleList[i]->color == 0)	// normal dmg
 				{
 					int wid=GetStrLength(s, 1);
@@ -627,7 +633,7 @@ void ManaParticles(int x,int y)
 	}
 }
 
-void TrailMe(int x,int y,byte f)
+void TrailMe(int x,int y,int z,byte f)
 {
 	int i;
 
@@ -638,7 +644,7 @@ void TrailMe(int x,int y,byte f)
 			particleList[i]->type=PART_GHOST;
 			particleList[i]->x=x;
 			particleList[i]->y=y;
-			particleList[i]->z=0;
+			particleList[i]->z=z;
 			particleList[i]->dx=0;
 			particleList[i]->dy=0;
 			particleList[i]->dz=0;
