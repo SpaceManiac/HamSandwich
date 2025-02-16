@@ -56,6 +56,7 @@
 #define BLT_REDFBALL (43)	// red fireball, for reflected shots with backdraft. Gets its damage from flame spells, not fireball
 #define BLT_COMETBOOM2 (44)	// murdalize explosion
 #define BLT_LIQUIFY2 (45)	// the liquifies that come from hyper inferno - same, but they scale with inferno skill
+#define BLT_LIQUIFY3 (46)	// the liquifies that come from berserk - same, but they scale with berserk skill
 
 #define MAX_BULLETS 256
 

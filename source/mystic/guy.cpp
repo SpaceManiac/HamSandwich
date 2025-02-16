@@ -6,6 +6,7 @@
 #include "challenge.h"
 #include <limits.h>
 #include "particle.h"
+#include "skills.h"
 
 Guy **guys;
 Guy *goodguy;
@@ -322,7 +323,12 @@ void Guy::SeqFinished(void)
 	{
 		if(type==MONS_BOUAPHA)
 		{
-			if(player.fairyOn==FAIRY_SAVEY && beenReborn==0)
+			byte rebirths = 0;
+			if (player.fairyOn == FAIRY_SAVEY)
+				rebirths++;
+			if (!ClassicMode() && SkillValue(SKILL_RESURRECT) > 0)
+				rebirths++;
+			if (player.fairyOn == FAIRY_SAVEY && beenReborn < rebirths)
 			{
 				seq=ANIM_A4;
 				frm=0;
@@ -332,7 +338,8 @@ void Guy::SeqFinished(void)
 				player.mana=player.maxMana/4;
 				hp=player.life;
 				player.shield=30*2;
-				beenReborn=1;
+				player.poison = 0;
+				beenReborn++;
 				if (player.experience > player.needExp / 4)	// lose 25% of the XP needed for next level
 					player.experience -= player.needExp / 4;
 				else
@@ -347,8 +354,30 @@ void Guy::SeqFinished(void)
 			else
 			{
 				// restart current level
-				SendMessageToGame(MSG_RESET,0);
-				ChallengeEvent(CE_DIE,0);
+				if (!ClassicMode() && SkillValue(SKILL_RESURRECT) > 0 && beenReborn < rebirths)
+				{
+					seq = ANIM_A4;
+					frm = 0;
+					frmAdvance = 128;
+					action = ACTION_BUSY;
+					player.life = (int)((float)player.maxLife * SkillValue(SKILL_RESURRECT) / 100.0f);
+					player.mana = (int)((float)player.maxMana * SkillValue(SKILL_RESURRECT) / 100.0f);
+					hp = player.life;
+					player.poison = 0;
+					player.shield = 30 * 2;
+					beenReborn++;
+					
+					x = lastSafeX;
+					y = lastSafeY;
+					// make resurrect sound
+					MakeNormalSound(SND_RESURRECT);
+					return;
+				}
+				else
+				{
+					SendMessageToGame(MSG_RESET, 0);
+					ChallengeEvent(CE_DIE, 0);
+				}
 			}
 		}
 
@@ -1031,8 +1060,20 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 	if(type==0)
 		return;	// shouldn't have a type 0 guy at all
 
-	if(type==MONS_BOUAPHA && PlayerShield())
+	if (type == MONS_BOUAPHA && PlayerShield())
+	{
+		if (!ClassicMode() && player.parry > 0)
+		{
+			byte amt=(byte)((float)SpellCost(SPL_ARMOR)*SkillValue(SKILL_PARRY)/100.0f);
+			player.mana += amt;
+			if (player.mana > player.maxMana)
+				player.mana = player.maxMana;
+			MakeSound(SND_UNAVAILABLE, x, y, SND_CUTOFF, 0);
+			FloaterParticles(x, y, 7, 32, 3, 16);
+			player.parry = 0;
+		}
 		return; // invincible when shielded
+	}
 
 	if((MonsterFlags(type)&MF_INVINCIBLE) && (damage!=-1000))	// invincible monsters can be frozen
 		return;	// invincible
@@ -1085,6 +1126,19 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 				i/=2;		// stoneskin cuts damage in half
 			else
 				i/=8;		// steelskin divides it by 8
+			if (!ClassicMode() && SkillValue(SKILL_REFLECT) && player.reload==0)
+			{
+				int n = SkillValue(SKILL_REFLECT);
+				for (j = 0; j < n; j++)
+				{
+					int angle = Random(256);
+
+					FireExactBullet(x, y, FIXAMT * 20,
+						Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
+						0, 30, (angle+16)/32, BLT_HAMMER);
+				}
+				player.reload = 3;
+			}
 		}
 
 		damage=i;
@@ -1197,20 +1251,20 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			FireExactBullet(x, y, z, 0, 0, 0, 0, 7, 0, BLT_SEEKBOOM);
 
 		bool critted = false;
-		if (!ClassicMode())
-		{
-			float critChance = 0;
-			if(BulletHittingType()==BLT_HAMMER || BulletHittingType()==BLT_HAMMER2 || BulletHittingType()==BLT_SKULL)
-				critChance = SkillValue(SKILL_FIREBALL_CRIT);
-			if (frozen)
-				critChance += SkillValue(SKILL_ICECRIT);
+		float critChance = 0;
+		if(BulletHittingType()==BLT_HAMMER || BulletHittingType()==BLT_HAMMER2 || BulletHittingType()==BLT_SKULL)
+			critChance = SkillValue(SKILL_FIREBALL_CRIT);
+		if (frozen)
+			critChance += SkillValue(SKILL_ICECRIT);
+		if (player.berserk)
+			critChance += SkillValue(SKILL_BERSERKCRIT);
 
-			if (Random(100) < (dword)critChance)
-			{
-				fDamage*=(SkillValue(SKILL_CRITDMG) / 100.0f);
-				critted = true;
-			}
+		if (Random(100) < (dword)critChance)
+		{
+			fDamage*=(SkillValue(SKILL_CRITDMG) / 100.0f);
+			critted = true;
 		}
+	
 		partialDamage += (byte)((fDamage - floorf(fDamage)) * 100.0f);
 		if (partialDamage >= 100)
 		{
@@ -1374,6 +1428,10 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		{
 			ChallengeEvent(CE_KILL,type);
 			PlayerGetPoints(MonsterPoints(type));
+			if (!ClassicMode() && player.berserk > 0 && SkillValue(SKILL_BLOODLUST) > 0)
+			{
+				PlayerHeal((byte)SkillValue(SKILL_BLOODLUST));
+			}
 		}
 	}
 	if(type!=MONS_BOUAPHA && type!=MONS_PTERO && type!=MONS_GOLEM)

@@ -33,7 +33,16 @@
 #define SKILL_HEALSUMMONS (22)
 #define SKILL_DISTRACTION (23)
 //row 5
+#define SKILL_ARMOR (24)
+#define SKILL_PARRY (25)
+#define SKILL_REFLECT (26)
+#define SKILL_BERSERK (27)
+#define SKILL_BLOODLUST (28)
+#define SKILL_BERSERKCRIT (29)
 //row 6
+#define SKILL_HEAL (30)
+#define SKILL_RESTORATION (31)
+#define SKILL_RESURRECT (32)
 #define SKILL_MURDALIZE (35)
 
 #define MAX_SKILLS (36)

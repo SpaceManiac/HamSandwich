@@ -44,5 +44,6 @@ byte EnoughMana(void);
 byte SpellLevel(void);
 byte SpellLevel(byte spell);
 void ResetCastCounter(void);
+byte SpellCost(byte spell);
 
 #endif

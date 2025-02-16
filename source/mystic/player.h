@@ -133,7 +133,9 @@ typedef struct player_t
 	byte enableQuickCast;
 	byte summonDmgBoost;
 	byte taunted;
-	byte expando[234-MAX_SKILLS];	// just in case!
+	byte parry;
+	byte resurrect;
+	byte expando[232-MAX_SKILLS];	// just in case!
 } player_t;
 
 extern player_t player;
@@ -197,6 +199,7 @@ byte PlayerHasAllSecrets(byte chapter);
 void SetChallengeCrystals(int amt);
 int GetChallengeCrystals(void);
 void BeginCast(Guy* me);
+void AddToRestorationBuffer(float amt);
 
 bool BrutalMode(void);
 bool ClassicMode(void);

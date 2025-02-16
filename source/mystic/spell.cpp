@@ -29,10 +29,10 @@ byte SpellCost(byte spell)
 {
 	byte cost;
 
-	if (player.downgradeSpell[player.casting])
-		cost=spellCost[player.casting * 2];
+	if (player.downgradeSpell[spell])
+		cost=spellCost[spell * 2];
 	else
-		cost=spellCost[player.casting * 2 + (player.spell[player.casting] - 1)];
+		cost=spellCost[spell * 2 + (player.spell[spell] - 1)];
 
 	if (player.fairyOn == FAIRY_CHEAPY)
 	{
@@ -328,15 +328,13 @@ void CastSpell(Guy *me)
 			}
 			break;
 		case SPL_SUMMON: // summon ptero
-			if (!ClassicMode() && SkillValue(SKILL_DISTRACTION) > 0)
-			{
-				player.taunted = (byte)(30.0f * SkillValue(SKILL_DISTRACTION));
-			}
 			if(player.spell[SPL_SUMMON]==1 || player.downgradeSpell[SPL_SUMMON])
 			{
 				SetPlayerGlow(64);
 				MakeNormalSound(SND_PTEROSUMMON);
 				AddGuy(me->x,me->y,FIXAMT*20,MONS_PTERO);
+				if (!ClassicMode() && SkillValue(SKILL_DISTRACTION) > 0)
+					player.taunted = (byte)(30.0f * SkillValue(SKILL_DISTRACTION));
 			}
 			else
 			{
@@ -353,6 +351,8 @@ void CastSpell(Guy *me)
 					g->seq=ANIM_A1;
 					g->frmAdvance=128;
 					g->action=ACTION_BUSY;
+					if (!ClassicMode() && SkillValue(SKILL_DISTRACTION) > 0)
+						player.taunted = (byte)(30.0f * SkillValue(SKILL_DISTRACTION));
 				}
 				else
 				{
@@ -364,22 +364,38 @@ void CastSpell(Guy *me)
 			player.wpnReload=10;
 			break;
 		case SPL_ARMOR:	// stone/steelskin
+			if(!ClassicMode() && SkillValue(SKILL_PARRY))
 			SetPlayerGlow(40);
-			if(player.spell[SPL_ARMOR]==1 || player.downgradeSpell[SPL_ARMOR])
-				player.stoneskin+=SpellLevel()*20;
-			else
-				player.stoneskin+=SpellLevel()*5;
-
-			if (!ClassicMode() && SkillValue(SKILL_HEALSUMMONS) > 0)
+			if (ClassicMode())
 			{
-				player.summonDmgBoost = 5 * 30;
+				if (player.spell[SPL_ARMOR] == 1 || player.downgradeSpell[SPL_ARMOR])
+					player.stoneskin += SpellLevel() * 20;
+				else
+					player.stoneskin += SpellLevel() * 5;
+			}
+			else
+			{
+				if (player.spell[SPL_ARMOR] == 1 || player.downgradeSpell[SPL_ARMOR])
+					player.stoneskin += (int)(SkillValue(SKILL_ARMOR) * 30.0f * 5.0f / 100.0f);
+				else
+					player.stoneskin += (int)(SkillValue(SKILL_ARMOR) * 50.0f / 100.0f);
+				if (SkillValue(SKILL_HEALSUMMONS) > 0)
+					player.summonDmgBoost = 5 * 30;
+				if (SkillValue(SKILL_PARRY) > 0)
+				{
+					player.parry = 15;
+					player.shield = 15;
+				}
 			}
 			MakeNormalSound(SND_STONESKIN);
 			player.wpnReload=10;
 			break;
 		case SPL_BERSERK:	// berserk
 			SetPlayerGlow(40);
-			player.berserk+=SpellLevel()*10;
+			if (ClassicMode())
+				player.berserk += SpellLevel() * 10;
+			else
+				player.berserk += (int)(SkillValue(SKILL_BERSERK) * 60);
 			MakeNormalSound(SND_BERSERK);
 			player.wpnReload=10;
 			break;
@@ -394,16 +410,35 @@ void CastSpell(Guy *me)
 			SetPlayerGlow(80);
 			if(player.spell[SPL_HEAL]==1 || player.downgradeSpell[SPL_HEAL])
 			{
-				if (!ClassicMode() && SkillValue(SKILL_HEALSUMMONS) > 0)
-					HealSummons(SpellLevel());
-				PlayerHeal(SpellLevel());
+				if (ClassicMode())
+					PlayerHeal(SpellLevel());
+				else
+				{
+					int heal = SkillValue(SKILL_HEAL) * 30.0f / 100.0f;
+					if(SkillValue(SKILL_HEALSUMMONS) > 0)
+						HealSummons(heal);
+					if (SkillValue(SKILL_RESTORATION) > 0)
+						AddToRestorationBuffer((float)heal);
+					else
+						PlayerHeal(heal);
+				}
 				ExplodeParticles2(PART_SLIME,me->x,me->y,MGL_randoml(FIXAMT*20),SpellLevel(),6);
 			}
 			else
 			{
-				if (!ClassicMode() && SkillValue(SKILL_HEALSUMMONS) > 0)
-					HealSummons(128);
-				PlayerHeal(128);
+				if(ClassicMode())
+					PlayerHeal(128);
+				else
+				{
+					int heal = SkillValue(SKILL_HEAL) * 64.0f / 100.0f;
+					if (SkillValue(SKILL_HEALSUMMONS) > 0)
+						HealSummons(heal);
+					if (SkillValue(SKILL_RESTORATION) > 0)
+						AddToRestorationBuffer((float)heal);
+					else
+						PlayerHeal(heal);
+					player.poison = 0;
+				}
 				ExplodeParticles2(PART_SLIME,me->x,me->y,MGL_randoml(FIXAMT*20),50,10);
 			}
 			player.wpnReload=10;

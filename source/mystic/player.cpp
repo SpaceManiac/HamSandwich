@@ -19,6 +19,13 @@ static byte vampyClock,compassClock;
 byte beenReborn;
 static byte fairyReload;
 static int chlgCrystals;
+float restorationBuffer;
+float restorationOutput;
+
+void AddToRestorationBuffer(float amt)
+{
+	restorationBuffer += amt;
+}
 
 void InitPlayer(byte initWhat,byte world,byte level)
 {
@@ -96,6 +103,8 @@ void InitPlayer(byte initWhat,byte world,byte level)
 				player.levelsPassed++;
 	}
 
+	restorationBuffer = 0;
+	restorationOutput = 0;
 	player.levelNum=level;
 	player.prevScore=player.score;	// back up the score (if you give up or die, it is reset)
 	player.prevLevel=player.level;
@@ -105,6 +114,8 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	for(i=0;i<4;i++)
 		player.keys[i]=0;
 
+	player.parry = 0;
+	player.taunted = 0;
 	player.summonDmgBoost = 0;
 	player.brains=0;
 	player.boredom=0;
@@ -346,10 +357,13 @@ byte PlayerIsPoisoned(void)
 
 void PoisonPlayer(byte amt)
 {
-	if(player.poison+amt>30*2)
-		player.poison=30*2;
-	else
-		player.poison+=amt;
+	if (player.life > 0 && player.shield == 0)
+	{
+		if (player.poison + amt > 30 * 2)
+			player.poison = 30 * 2;
+		else
+			player.poison += amt;
+	}
 }
 
 void PlayerResetScore(void)
@@ -1252,11 +1266,32 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			}
 		}
 	}
+	if (!ClassicMode() && SkillValue(SKILL_RESTORATION))
+	{
+		restorationBuffer += 1.0f / 90.0f;	// 1 life every 3 seconds
+		float maxPerTick = SkillValue(SKILL_RESTORATION) / 30.0f + 1.0f / 90.0f;	// at max, you can heal the 1 per 3s from restoration, plus your heal/s from your healing spell
 
+		float amt;
+		if (restorationBuffer > maxPerTick)
+			amt = maxPerTick;
+		else
+			amt = restorationBuffer;
+		restorationBuffer -= amt;
+		restorationOutput += amt;
+		if (restorationOutput >= 1)
+		{
+			byte amt = (byte)floor(restorationOutput);
+			PlayerHeal((byte)amt);
+			restorationOutput -= (float)amt;
+		}
+	}
 	if (player.summonDmgBoost)
 		player.summonDmgBoost--;
 	if (player.taunted)
 		player.taunted--;
+	if (player.parry > 0)
+		player.parry--;
+
 	if(player.berserk)
 	{
 		byte frame = GetMonsterFrameNum(MONS_BOUAPHA,me->seq,me->frm,me->facing);
@@ -1446,7 +1481,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		if(player.berserk && player.spell[SPL_BERSERK]==2 && !player.downgradeSpell[SPL_BERSERK])	// insane rage leaves a flame trail
 		{
 			if((player.berserk&3)==0)
-				FireExactBullet(me->x,me->y,0,0,0,0,0,20,(byte)MGL_random(256),BLT_LIQUIFY);
+				FireExactBullet(me->x,me->y,0,0,0,0,0,20,(byte)MGL_random(256),BLT_LIQUIFY3);
 		}
 
 		if(!(world->terrain[mapTile->floor].flags&TF_ICE))

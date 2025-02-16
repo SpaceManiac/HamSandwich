@@ -507,6 +507,7 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 		case BLT_FLAME2:
 		case BLT_LIQUIFY:
 		case BLT_LIQUIFY2:
+		case BLT_LIQUIFY3:
 			me->type=0;
 			BlowSmoke(me->x,me->y,me->z,FIXAMT);
 			break;
@@ -748,6 +749,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_LIQUIFY:
 		case BLT_LIQUIFY2:
+		case BLT_LIQUIFY3:
 			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,me->dx,me->dy,1,map,world))
 			{
 				// no noise, just let them scream
@@ -971,6 +973,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_LIQUIFY:
 		case BLT_LIQUIFY2:
+		case BLT_LIQUIFY3:
 			if(me->anim&1)
 				HitBadguys(me,map,world);
 			me->anim++;
@@ -1293,7 +1296,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 
 	// if you're in a wall even before moving, explode (to stop infinite bounces)
 	if((me->type==BLT_HAMMER || me->type==BLT_HAMMER2 || me->type==BLT_LASER || me->type==BLT_COIN ||
-		me->type==BLT_MINIFBALL || me->type==BLT_BIGYELLOW || me->type==BLT_BIGCOIN || me->type==BLT_LIQUIFY || me->type==BLT_LIQUIFY2
+		me->type==BLT_MINIFBALL || me->type==BLT_BIGYELLOW || me->type==BLT_BIGCOIN || me->type==BLT_LIQUIFY || me->type==BLT_LIQUIFY2 || me->type==BLT_LIQUIFY3
 		|| me->type==BLT_ICEBEAM || me->type==BLT_SKULL || me->type==BLT_DEATHBEAM || me->type==BLT_REDFBALL) &&
 		(!BulletCanGo(me->x,me->y,map,8)))
 	{
@@ -1404,6 +1407,7 @@ void RenderBullet(bullet_t *me)
 			break;
 		case BLT_LIQUIFY:
 		case BLT_LIQUIFY2:
+		case BLT_LIQUIFY3:
 			curSpr=bulletSpr->GetSprite(231+me->anim/2);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
 					DISPLAY_DRAWME|DISPLAY_GLOW);
@@ -1658,6 +1662,17 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 				me->timer = SpellLevel() * 2;
 			else
 				me->timer = 25 + SkillValue(SKILL_INFERNO) * 15;
+			me->z = 0;
+			me->dx = 0;
+			me->dy = 0;
+			me->dz = 0;
+			break;
+		case BLT_LIQUIFY3:
+			me->anim = 0;
+			if (ClassicMode())
+				me->timer = SpellLevel() * 2;
+			else
+				me->timer = 20 + SkillValue(SKILL_BERSERK) * 10;
 			me->z = 0;
 			me->dx = 0;
 			me->dy = 0;
