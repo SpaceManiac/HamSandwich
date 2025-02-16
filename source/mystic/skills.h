@@ -28,6 +28,10 @@
 //row 4
 #define SKILL_INFERNO (18)
 #define SKILL_MAYHEM  (19)
+#define SKILL_SHOCKWAVE (20)
+#define SKILL_SUMMON (21)
+#define SKILL_HEALSUMMONS (22)
+#define SKILL_DISTRACTION (23)
 //row 5
 //row 6
 #define SKILL_MURDALIZE (35)

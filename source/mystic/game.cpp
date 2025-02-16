@@ -648,9 +648,9 @@ TASK(void) LunaticDraw(void)
 			RenderSpeech();
 
 		// TESTING TESTING
-		int msx, msy;
-		GetDisplayMGL()->GetMouse(&msx, &msy);
-		DrawMouseCursor(msx, msy);
+		//int msx, msy;
+		//GetDisplayMGL()->GetMouse(&msx, &msy);
+		//DrawMouseCursor(msx, msy);
 	}
 	else if(gameMode==GAMEMODE_SHOP)
 	{

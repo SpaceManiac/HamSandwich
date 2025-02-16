@@ -270,6 +270,9 @@ void CastSpell(Guy *me)
 			player.wpnReload=15;
 			break;
 		case SPL_INFERNO:	// inferno
+			if (!ClassicMode())
+				StunAllOnscreen((byte)(SkillValue(SKILL_SHOCKWAVE) * 30));
+
 			if(player.spell[SPL_INFERNO]==1 || player.downgradeSpell[SPL_INFERNO])
 			{
 				byte l = SpellLevel() / 4;
@@ -325,6 +328,10 @@ void CastSpell(Guy *me)
 			}
 			break;
 		case SPL_SUMMON: // summon ptero
+			if (!ClassicMode() && SkillValue(SKILL_DISTRACTION) > 0)
+			{
+				player.taunted = (byte)(30.0f * SkillValue(SKILL_DISTRACTION));
+			}
 			if(player.spell[SPL_SUMMON]==1 || player.downgradeSpell[SPL_SUMMON])
 			{
 				SetPlayerGlow(64);
@@ -362,6 +369,11 @@ void CastSpell(Guy *me)
 				player.stoneskin+=SpellLevel()*20;
 			else
 				player.stoneskin+=SpellLevel()*5;
+
+			if (!ClassicMode() && SkillValue(SKILL_HEALSUMMONS) > 0)
+			{
+				player.summonDmgBoost = 5 * 30;
+			}
 			MakeNormalSound(SND_STONESKIN);
 			player.wpnReload=10;
 			break;
@@ -373,19 +385,24 @@ void CastSpell(Guy *me)
 			break;
 		case SPL_HEAL: // healing
 			MakeNormalSound(SND_LOONYKEY);
-			if(player.life==player.maxLife)
+			if(player.life==player.maxLife && (ClassicMode() || SkillValue(SKILL_HEALSUMMONS)==0))
 			{
 				player.mana+=cost;
 				return;
 			}
+			
 			SetPlayerGlow(80);
 			if(player.spell[SPL_HEAL]==1 || player.downgradeSpell[SPL_HEAL])
 			{
+				if (!ClassicMode() && SkillValue(SKILL_HEALSUMMONS) > 0)
+					HealSummons(SpellLevel());
 				PlayerHeal(SpellLevel());
 				ExplodeParticles2(PART_SLIME,me->x,me->y,MGL_randoml(FIXAMT*20),SpellLevel(),6);
 			}
 			else
 			{
+				if (!ClassicMode() && SkillValue(SKILL_HEALSUMMONS) > 0)
+					HealSummons(128);
 				PlayerHeal(128);
 				ExplodeParticles2(PART_SLIME,me->x,me->y,MGL_randoml(FIXAMT*20),50,10);
 			}

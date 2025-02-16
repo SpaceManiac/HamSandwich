@@ -48,6 +48,7 @@ class Guy
 		byte reload;
 
 		byte ouch;
+		byte stun;
 		byte action;
 		word frmTimer;
 		word frmAdvance;
@@ -97,6 +98,8 @@ word FindVictimNot(int x,int y,byte size,int dx,int dy,int damage,word who,Map *
 void FairyDoThing(byte what);
 byte PeepAtKid(int x,int y,Map *map,byte face);
 Guy *GetGuy(word ID);
+void StunAllOnscreen(byte duration);
+void HealSummons(byte amt);
 
 void WhackazoidUpdate(byte init);
 void WhackedAZoid(Map *map);

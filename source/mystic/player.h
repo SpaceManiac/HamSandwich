@@ -131,7 +131,9 @@ typedef struct player_t
 	byte disableMoveNShoot;
 	byte disableDmgNumbers;
 	byte enableQuickCast;
-	byte expando[236-MAX_SKILLS];	// just in case!
+	byte summonDmgBoost;
+	byte taunted;
+	byte expando[234-MAX_SKILLS];	// just in case!
 } player_t;
 
 extern player_t player;

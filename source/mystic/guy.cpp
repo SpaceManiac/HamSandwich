@@ -450,72 +450,81 @@ void Guy::Update(Map *map,world_t *world)
 			ExplodeParticles2(PART_SHORTYELLOW, x - rectx + MGL_random(rectx2 - rectx), y - recty + MGL_random(recty2 - recty), MGL_random(10),1,2);
 	}
 
-	if(type==MONS_BOUAPHA)	// special case, player controls Bouapha
-		PlayerControlMe(this,&map->map[mapx+mapy*map->width],world);
+	if (stun == 0)
+	{
+		if (type == MONS_BOUAPHA)	// special case, player controls Bouapha
+			PlayerControlMe(this, &map->map[mapx + mapy * map->width], world);
+		else
+			MonsterControl(map, world);
+	}
 	else
-		MonsterControl(map,world);
+	{
+		stun--;
+	}
 
 	if(ouch>0)
 		ouch--;
-
-	x+=dx;
-
-	if(!CanWalk(x,y,map,world))
+	if (stun == 0)
 	{
-		x-=dx;
-		if(type==MONS_BOUAPHA || type==MONS_TOWER || type==MONS_SPIDER || type==MONS_SLUG || type==MONS_BALL ||
-			type==MONS_INCAGOLD || type==MONS_INCAGOLD2 || type==MONS_LOG || type==MONS_INCABOSS || type==MONS_OCTOBOSS ||
-			type==MONS_GOAT1 || type==MONS_GOAT1B)
-			mind1=1;	// tell it that it hit a wall
-	}
+		x += dx;
 
-	y+=dy;
-
-	if(!CanWalk(x,y,map,world))
-	{
-		y-=dy;
-		if(type==MONS_BOUAPHA || type==MONS_TOWER || type==MONS_SPIDER || type==MONS_SLUG || type==MONS_BALL ||
-			type==MONS_INCAGOLD || type==MONS_INCAGOLD2 || type==MONS_LOG || type==MONS_INCABOSS || type==MONS_OCTOBOSS ||
-			type==MONS_GOAT1 || type==MONS_GOAT1B)
-			mind1+=2;	// tell it that it hit a wall
-	}
-
-	if(MonsterFlags(type)&MF_FLYING)
-	{
-		if(z<20*FIXAMT)	// go up if you need to
-			dz+=FIXAMT;
-		else
-			dz-=FIXAMT;
-
-		Clamp(&dz,FIXAMT*4);
-		z+=dz;
-
-		if(z<0)
-			z=0;
-	}
-	else
-	{
-		z+=dz;
-		if(z<0)
+		if (!CanWalk(x, y, map, world))
 		{
-			z=0;
-			dz=0;
+			x -= dx;
+			if (type == MONS_BOUAPHA || type == MONS_TOWER || type == MONS_SPIDER || type == MONS_SLUG || type == MONS_BALL ||
+				type == MONS_INCAGOLD || type == MONS_INCAGOLD2 || type == MONS_LOG || type == MONS_INCABOSS || type == MONS_OCTOBOSS ||
+				type == MONS_GOAT1 || type == MONS_GOAT1B)
+				mind1 = 1;	// tell it that it hit a wall
+		}
+
+		y += dy;
+
+		if (!CanWalk(x, y, map, world))
+		{
+			y -= dy;
+			if (type == MONS_BOUAPHA || type == MONS_TOWER || type == MONS_SPIDER || type == MONS_SLUG || type == MONS_BALL ||
+				type == MONS_INCAGOLD || type == MONS_INCAGOLD2 || type == MONS_LOG || type == MONS_INCABOSS || type == MONS_OCTOBOSS ||
+				type == MONS_GOAT1 || type == MONS_GOAT1B)
+				mind1 += 2;	// tell it that it hit a wall
+		}
+
+		if (MonsterFlags(type) & MF_FLYING)
+		{
+			if (z < 20 * FIXAMT)	// go up if you need to
+				dz += FIXAMT;
+			else
+				dz -= FIXAMT;
+
+			Clamp(&dz, FIXAMT * 4);
+			z += dz;
+
+			if (z < 0)
+				z = 0;
 		}
 		else
 		{
-			if(!(MonsterFlags(type)&MF_NOGRAV))
-				dz-=FIXAMT*2;
+			z += dz;
+			if (z < 0)
+			{
+				z = 0;
+				dz = 0;
+			}
+			else
+			{
+				if (!(MonsterFlags(type) & MF_NOGRAV))
+					dz -= FIXAMT * 2;
+			}
 		}
-	}
 
-	frmTimer+=frmAdvance;
-	while(frmTimer>255)
-	{
-		frmTimer-=255;
-		NextFrame();
+		frmTimer += frmAdvance;
+		while (frmTimer > 255)
+		{
+			frmTimer -= 255;
+			NextFrame();
+		}
+		if (type == MONS_NONE)
+			return;	// NextFrame may have killed you
 	}
-	if(type==MONS_NONE)
-		return;	// NextFrame may have killed you
 
 	mapx=(x>>FIXSHIFT)/TILE_WIDTH;
 	mapy=(y>>FIXSHIFT)/TILE_HEIGHT;
@@ -1107,7 +1116,19 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			// the damage is coming from a spell, most likely
 			if(!(MonsterFlags(type)&MF_GOODGUY))
 				damage=(damage*(100+player.spellStones*10))/100;
-			// goodguys get hit with full damage
+			else
+			{
+				if (!ClassicMode() && SkillValue(SKILL_HEALSUMMONS) > 0)
+				{
+					if (player.stoneskin)
+					{
+						if (player.spell[6] == 1)
+							damage /= 2;		// stoneskin cuts damage in half
+						else
+							damage /= 8;		// steelskin divides it by 8
+					}
+				}
+			}
 		}
 	}
 
@@ -1491,6 +1512,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 	for(i=0;i<maxGuys;i++)
 		if(guys[i]->type==MONS_NONE)
 		{
+			guys[i]->stun = 0;
 			guys[i]->executable = false;
 			guys[i]->placed=0;
 			guys[i]->type=type;
@@ -2148,7 +2170,7 @@ Guy *NearestEnemy(Guy *me)
 	for(i=0;i<maxGuys;i++)
 	{
 		if(guys[i]->type && (MonsterFlags(guys[i]->type)&MF_GOODGUY)!=f && (MonsterFlags(guys[i]->type)&(MF_NOHIT|MF_INVINCIBLE))==0
-			&& guys[i]->type!=MONS_FAIRY2)
+			&& guys[i]->type!=MONS_FAIRY2 && (player.taunted==0 || guys[i]->type!=MONS_BOUAPHA))
 		{
 			j=abs(me->x-guys[i]->x)+abs(me->y-guys[i]->y);
 			if(victim==NULL || j<range)
@@ -2230,6 +2252,39 @@ byte PeepAtKid(int x,int y,Map *map,byte face)
 	}
 
 	return 0;
+}
+
+void StunAllOnscreen(byte duration)
+{
+	int camx, camy;
+	GetCamera(&camx, &camy);
+	camx -= HALFWID+30;
+	camy -= HALFHEI+30;
+	camx *= FIXAMT;
+	camy *= FIXAMT;
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i]->hp>0 && (MonsterFlags(guys[i]->type) & MF_GOODGUY) == 0 && guys[i]->x >= camx && guys[i]->y >= camy && guys[i]->x < camx + (SCRWID + 60) * FIXAMT && guys[i]->y < camy + (SCRHEI + 60) * FIXAMT)
+		{
+			if(guys[i]->stun<duration)
+				guys[i]->stun = duration;
+		}
+	}
+}
+
+void HealSummons(byte amt)
+{
+	int v = (int)(amt * (100 + player.spellStones * 10)) / 100;
+
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i]->hp > 0 && (guys[i]->type == MONS_PTERO || guys[i]->type == MONS_GOLEM))
+		{
+			guys[i]->hp += amt;
+			if (guys[i]->hp > MonsterHP(guys[i]->type))
+				guys[i]->hp = MonsterHP(guys[i]->type);
+		}
+	}
 }
 
 Guy *GetGuy(word ID)

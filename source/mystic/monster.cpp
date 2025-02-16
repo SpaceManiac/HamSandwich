@@ -666,7 +666,15 @@ word MonsterHP(byte type)
 	{
 		if(monsType[type].flags&MF_GOODGUY)
 		{
-			return monsType[type].hp*(100+player.spellStones*10)/100;
+			if(ClassicMode())
+				return monsType[type].hp*(100+player.spellStones*10)/100;
+			else
+			{
+				int hp = monsType[type].hp;
+				if (type == MONS_GOLEM)
+					hp *= (1 + SkillValue(SKILL_SUMMON)) / 6;
+				return hp * (100 + player.spellStones * 10) / 100;
+			}
 		}
 		else
 		{
@@ -789,6 +797,7 @@ void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char 
 
 	if(type==MONS_BOUAPHA)
 	{
+		
 		shld=PlayerShield();
 		if (shld > 0)
 		{
@@ -802,16 +811,26 @@ void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char 
 				SprDraw(x >> FIXSHIFT, (y >> FIXSHIFT) + 1, 1, 255, bright, curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
 			}
 		}
+
+		if (player.taunted)
+		{
+			curSpr = monsType[type].spr->GetSprite(v);
+			if (!curSpr)
+				return;
+			SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 0, bright-10, curSpr, DISPLAY_DRAWME|DISPLAY_GLOW);
+			return;
+		}
+
 		if(PlayerIsPoisoned())
 		{
-			curSpr=monsType[type].spr->GetSprite(v);
+			curSpr = monsType[type].spr->GetSprite(v);
 			if(!curSpr)
 				return;
-			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,0,255,0,curSpr,DISPLAY_DRAWME|DISPLAY_SHADOW);
-			if(ouch==0)
-				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,1,bright-4,curSpr,DISPLAY_DRAWME);	// green
+			SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, 0, 255, 0, curSpr, DISPLAY_DRAWME | DISPLAY_SHADOW);
+			if (ouch == 0)
+				SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 1, bright - 4, curSpr, DISPLAY_DRAWME);	// green
 			else
-				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,4,bright,curSpr,DISPLAY_DRAWME);
+				SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 4, bright, curSpr, DISPLAY_DRAWME);
 			return;
 		}
 		if(player.stoneskin)
@@ -819,8 +838,8 @@ void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char 
 			curSpr=monsType[type].spr->GetSprite(v);
 			if(!curSpr)
 				return;
-			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,0,255,0,curSpr,DISPLAY_DRAWME|DISPLAY_SHADOW);
-			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,2-2*(player.spell[6]==2),bright-4+ouch*4,curSpr,DISPLAY_DRAWME);	// brown/grey
+			SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, 0, 255, 0, curSpr, DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 2 - 2 * (player.spell[6] == 2 && !player.downgradeSpell[6]), bright - 4 + ouch * 4, curSpr, DISPLAY_DRAWME);	// brown/grey
 			return;
 		}
 		if(player.berserk)
@@ -847,7 +866,17 @@ void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char 
 			if(frozen>30 || (frozen>0 && (frozen&1)==0))
 				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,7,bright+4,curSpr,DISPLAY_DRAWME);	// frozen blue
 			else
-				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright,curSpr,DISPLAY_DRAWME);
+			{
+				if (!ClassicMode() && (type == MONS_PTERO || type == MONS_GOLEM) && SkillValue(SKILL_HEALSUMMONS)>0 && player.stoneskin>0)
+				{
+					curSpr = monsType[type].spr->GetSprite(v);
+					if (!curSpr)
+						return;
+					SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 2 - 2 * (player.spell[6] == 2 && !player.downgradeSpell[6]), bright - 4 + ouch * 4, curSpr, DISPLAY_DRAWME);	// brown/grey
+				}
+				else
+					SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 255, bright, curSpr, DISPLAY_DRAWME);
+			}
 		}
 		else
 		{
@@ -1196,6 +1225,9 @@ void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 		MakeSound(SND_PTERODIE,me->x,me->y,SND_CUTOFF,1200);
 
+	if (player.summonDmgBoost > 0 && Random(5)==0)
+		ExplodeParticles2(PART_HAMMER, me->x, me->y, me->z, 1, 2);
+	
 	if(me->action==ACTION_BUSY)
 	{
 		if(me->seq==ANIM_ATTACK && me->frm==3 && me->reload==0)
@@ -1204,7 +1236,10 @@ void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			FaceGoodguy(me,goodguy);
 			MakeSound(SND_PTEROSHOOT,me->x,me->y,SND_CUTOFF,600);
 			FireBullet(me->x,me->y,me->facing*32,BLT_MINIFBALL);
-			me->reload=25-SpellLevel()/2+2;
+			if (ClassicMode())
+				me->reload = 25 - SpellLevel() / 2 + 2;
+			else
+				me->reload = 25 - SkillValue(SKILL_SUMMON) * 5 + 2;
 		}
 		if(me->seq==ANIM_ATTACK)
 		{
@@ -1242,7 +1277,10 @@ void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy)
 					// don't have to stop to shoot
 					MakeSound(SND_PTEROSHOOT,me->x,me->y,SND_CUTOFF,600);
 					FireBullet(me->x,me->y,me->facing*32,BLT_MINIFBALL);
-					me->reload=10-SpellLevel()/5+4;
+					if (ClassicMode())
+						me->reload = 10 - SpellLevel() / 5 + 4;
+					else
+						me->reload = 10 - SkillValue(SKILL_SUMMON) * 2 + 4;
 				}
 			}
 		}
@@ -1263,8 +1301,8 @@ void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	me->frmAdvance=256;
 	me->dx+=Cosine(me->facing*32);
 	me->dy+=Sine(me->facing*32);
-	Clamp(&me->dx,FIXAMT*10);
-	Clamp(&me->dy,FIXAMT*10);
+	Clamp(&me->dx,FIXAMT*(6+4*ClassicMode()));
+	Clamp(&me->dy,FIXAMT*(6+4*ClassicMode()));
 }
 
 void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy)
@@ -4787,6 +4825,9 @@ void AI_Golem(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		return;
 	}
 
+	if (player.summonDmgBoost > 0 && Random(5) == 0)
+		ExplodeParticles2(PART_HAMMER, me->x, me->y, me->z, 1, 2);
+
 	if(me->reload)
 		me->reload--;
 
@@ -4798,8 +4839,9 @@ void AI_Golem(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	else if(me->hp>0)
 	{
 		me->placed=15;
-		me->hp--;
-		if(me->hp==0)
+		x = (1 * (100 + player.spellStones * 10)) / 100;
+		me->hp-=x;
+		if(me->hp<=0)
 		{
 			me->seq=ANIM_DIE;
 			me->frm=0;

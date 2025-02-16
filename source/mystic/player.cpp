@@ -105,6 +105,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	for(i=0;i<4;i++)
 		player.keys[i]=0;
 
+	player.summonDmgBoost = 0;
 	player.brains=0;
 	player.boredom=0;
 	player.hammers=0;
@@ -1252,6 +1253,10 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		}
 	}
 
+	if (player.summonDmgBoost)
+		player.summonDmgBoost--;
+	if (player.taunted)
+		player.taunted--;
 	if(player.berserk)
 	{
 		byte frame = GetMonsterFrameNum(MONS_BOUAPHA,me->seq,me->frm,me->facing);

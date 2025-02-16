@@ -642,7 +642,20 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 		}
 		break;
 		case BLT_MINIFBALL:
-			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,6,me->dx,me->dy,3,map,world))
+			if (ClassicMode())
+				j = 3;
+			else
+			{
+				j = (SkillValue(SKILL_SUMMON) + 3) / 2;
+				if (player.summonDmgBoost)
+				{
+					j = j * (100 + SkillValue(SKILL_HEALSUMMONS));
+					if (Random(j % 100) >= 50)
+						j += 100;
+					j /= 100;
+				}
+			}
+			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,6,me->dx,me->dy,j,map,world))
 			{
 				me->type=BLT_NONE;
 				ExplodeParticles(PART_YELLOW,me->x,me->y,me->z,4);
@@ -818,7 +831,20 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_GOODSHOCK:
 			i=30*(3-(me->timer/2))+30;	// size expands as wave expands
-			if(FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,i,0,0,4,map,world))
+			if (ClassicMode())
+				j = 4;
+			else
+			{
+				j = (SkillValue(SKILL_SUMMON) + 3) / 2;
+				if (player.summonDmgBoost)
+				{
+					j = j * (100 + SkillValue(SKILL_HEALSUMMONS));
+					if (Random(j % 100) >= 50)
+						j += 100;
+					j = j / 100;
+				}
+			}
+			if(FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,i,0,0,j,map,world))
 			{
 				// don't disappear because Bouapha needs to get multipounded
 			}
