@@ -267,7 +267,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 
 void RenderControls(int x,int y,MGLDraw *mgl)
 {
-	char dirName[8][12]={"Up","Down","Left","Right","Fire","Spell","Prev Spl","Next Spl"};
+	static const char dirName[8][12]={"Up","Down","Left","Right","Fire","Spell","Prev Spl","Next Spl"};
 	char btnTxt[64];
 	int i;
 
