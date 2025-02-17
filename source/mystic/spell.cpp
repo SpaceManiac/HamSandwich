@@ -395,7 +395,11 @@ void CastSpell(Guy *me)
 			if (ClassicMode())
 				player.berserk += SpellLevel() * 10;
 			else
+			{
 				player.berserk += (int)(SkillValue(SKILL_BERSERK) * 60);
+				if (player.berserk > (int)SkillValue(SKILL_BERSERK) * 60 * 2)
+					player.berserk = (int)SkillValue(SKILL_BERSERK) * 60 * 2;
+			}
 			MakeNormalSound(SND_BERSERK);
 			player.wpnReload=10;
 			break;
@@ -444,7 +448,15 @@ void CastSpell(Guy *me)
 			player.wpnReload=10;
 			break;
 		case SPL_ARMAGEDDON: // Armageddon!
-			BeginArmageddon();
+			if(ClassicMode())
+				BeginArmageddon();
+			else
+			{
+				if (SkillValue(SKILL_MANAGETTIN) > 0 && ArmageddonIsUnderway())
+					MakeNormalSound(SND_FAILSPELL);	// no recasting dude!
+				else
+					BeginArmageddon();
+			}
 			break;
 	}
 }

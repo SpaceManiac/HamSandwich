@@ -200,6 +200,7 @@ void SetChallengeCrystals(int amt);
 int GetChallengeCrystals(void);
 void BeginCast(Guy* me);
 void AddToRestorationBuffer(float amt);
+bool ArmageddonIsUnderway(void);
 
 bool BrutalMode(void);
 bool ClassicMode(void);

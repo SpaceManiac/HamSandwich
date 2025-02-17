@@ -869,6 +869,7 @@ byte UpdateShop(MGLDraw *mgl)
 		if(player.money>=prc)
 		{
 			Buy(shopCursor);
+			PlayerUpdateLife();
 		}
 		else
 			MakeNormalSound(SND_UNAVAILABLE);

@@ -1203,23 +1203,25 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 
 	if(damage==-1000)	// freeze code
 	{
+		int monsHP = MonsterHP(type);
+		if (player.nightmare)
+			monsHP /= NIGHTMAREHP;
+		else if (BrutalMode())
+			monsHP /= BRUTALHP;
 		if (ClassicMode())
-		{
-			if (player.nightmare)
-				i = SpellLevel() * 20 - MonsterHP(type) / NIGHTMAREHP;	// the more hp, the harder to freeze
-			else if (BrutalMode())
-				i = SpellLevel() * 20 - MonsterHP(type) / BRUTALHP;	// the more hp, the harder to freeze
-			else
-				i = SpellLevel() * 20 - MonsterHP(type);	// the more hp, the harder to freeze
-		}
+			i = SpellLevel() * 20 - monsHP;	// the more hp, the harder to freeze
 		else
 		{
-			if (player.nightmare)
-				i =SkillValue(SKILL_ICEPOWER) - MonsterHP(type) / NIGHTMAREHP;	// the more hp, the harder to freeze
-			else if (BrutalMode())
-				i = SkillValue(SKILL_ICEPOWER) - MonsterHP(type) / BRUTALHP;	// the more hp, the harder to freeze
+			if (BulletHittingType() == BLT_ICECOMETBOOM)
+			{
+				i = SkillValue(SKILL_FIMBULWINTER) - monsHP;
+				if (i <= 0)
+					i = 1;
+			}
 			else
-				i =SkillValue(SKILL_ICEPOWER) - MonsterHP(type);	// the more hp, the harder to freeze
+			{
+				i = SkillValue(SKILL_ICEPOWER) - monsHP;	// the more hp, the harder to freeze
+			}
 		}
 		if(type!=MONS_BOUAPHA)
 			ShowEnemyLife(MonsterName(type),hp*128/MonsterHP(type),hp*128/MonsterHP(type),(byte)(hp>0));
@@ -1228,6 +1230,11 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		else
 		{
 			frozen+=i;
+			if (!ClassicMode())
+			{
+				if (frozen > 30 * 10)
+					frozen = 30 * 10;	// 10 second freeze cap
+			}
 			return;
 		}
 	}

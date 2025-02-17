@@ -101,6 +101,8 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 		case BLT_COMET:
 		case BLT_COMETBOOM:
 		case BLT_COMETBOOM2:
+		case BLT_ICECOMET:
+		case BLT_ICECOMETBOOM:
 			break;
 		case BLT_HAMMER:
 			me->type=BLT_NONE;
@@ -237,6 +239,8 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 		case BLT_COMET:
 		case BLT_COMETBOOM:
 		case BLT_COMETBOOM2:
+		case BLT_ICECOMET:
+		case BLT_ICECOMETBOOM:
 			break;
 		case BLT_HAMMER:
 			me->type=BLT_NONE;
@@ -377,6 +381,14 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 			me->dz=0;
 			MakeSound(SND_BOMBBOOM,me->x,me->y,SND_CUTOFF,200);
 			break;
+		case BLT_ICECOMET:
+			me->type = BLT_ICECOMETBOOM;
+			me->anim = 0;
+			me->timer = 18;	// 9 frames of animation
+			me->dz = 0;
+			MakeSound(SND_BOMBBOOM, me->x, me->y, SND_CUTOFF, 200);
+			break;
+		case BLT_ICECOMETBOOM:
 		case BLT_COMETBOOM:
 		case BLT_COMETBOOM2:
 			break;
@@ -546,6 +558,13 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 		case BLT_COMETBOOM2:
 			if(FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,64,(8-MGL_random(17))<<FIXSHIFT,
 				(8-MGL_random(16))<<FIXSHIFT,10,map,world))
+			{
+				// nothing much to do here, the victim will scream quite enough
+			}
+			break;
+		case BLT_ICECOMETBOOM:
+			if (FindVictims(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 64, (8 - MGL_random(17)) << FIXSHIFT,
+				(8 - MGL_random(16)) << FIXSHIFT, -1000, map, world))
 			{
 				// nothing much to do here, the victim will scream quite enough
 			}
@@ -923,6 +942,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 	switch(me->type)
 	{
 		case BLT_COMET:
+		case BLT_ICECOMET:
 			me->anim++;
 			if(me->anim==8)
 				me->anim=0;
@@ -932,6 +952,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			HitBadguys(me,map,world);
 			break;
 		case BLT_COMETBOOM2:
+		case BLT_ICECOMETBOOM:
 			me->anim++;
 			if(me->anim==1)
 				HitBadguys(me, map, world);
@@ -1371,11 +1392,21 @@ void RenderBullet(bullet_t *me)
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,0,curSpr,
 					DISPLAY_DRAWME|DISPLAY_GLOW);
 			break;
+		case BLT_ICECOMET:
+			curSpr = bulletSpr->GetSprite(SPR_COMET + me->anim);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 7, 0, curSpr,
+				DISPLAY_DRAWME);
+			break;
 		case BLT_COMETBOOM:
 		case BLT_COMETBOOM2:
 			curSpr=bulletSpr->GetSprite(SPR_COMETBOOM+me->anim/2);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,0,curSpr,
 					DISPLAY_DRAWME|DISPLAY_GLOW);
+			break;
+		case BLT_ICECOMETBOOM:
+			curSpr = bulletSpr->GetSprite(SPR_COMETBOOM + me->anim / 2);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 7, 0, curSpr,
+				DISPLAY_DRAWME);
 			break;
 		case BLT_SLIME:
 			curSpr=bulletSpr->GetSprite(259+(me->anim/16));
@@ -1624,12 +1655,14 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 	switch(me->type)
 	{
 		case BLT_COMETBOOM2:
+		case BLT_ICECOMETBOOM:
 			me->anim = 0;
 			me->timer = 18;
 			me->dx = me->dy = me->dz = 0;
 			me->z = 0;
 			break;
 		case BLT_COMET:
+		case BLT_ICECOMET:
 			me->anim=(byte)MGL_random(8);
 			me->timer=255;
 			me->z=400*FIXAMT+MGL_randoml(300*FIXAMT);
@@ -2175,10 +2208,18 @@ void Armageddon(Map *map,int x,int y)
 	if(x<0 || y<0 || x>=map->width*TILE_WIDTH*FIXAMT || y>=map->height*TILE_HEIGHT*FIXAMT)
 		return;
 
+	if (SkillValue(SKILL_MANAGETTIN) > 0)
+	{
+		if (Random(100) >= (int)SkillValue(SKILL_MANAGETTIN))
+			return;	// chance of no comet
+	}
 	//if(map->map[(x>>FIXSHIFT)/TILE_WIDTH+((y>>FIXSHIFT)/TILE_HEIGHT)*map->width].wall)
 	//	return;
 
-	FireBullet(x,y,0,BLT_COMET);
+	if(!ClassicMode() && SkillValue(SKILL_FIMBULWINTER)>0)
+		FireBullet(x,y,0,BLT_ICECOMET);
+	else
+		FireBullet(x, y, 0, BLT_COMET);
 	//FireExactBullet(x,y,0,0,0,0,0,14,0,BLT_LIQUIFY);
 	MakeSound(SND_FLAMEGO,x,y,SND_CUTOFF,100);
 }

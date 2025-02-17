@@ -57,7 +57,8 @@
 #define BLT_COMETBOOM2 (44)	// murdalize explosion
 #define BLT_LIQUIFY2 (45)	// the liquifies that come from hyper inferno - same, but they scale with inferno skill
 #define BLT_LIQUIFY3 (46)	// the liquifies that come from berserk - same, but they scale with berserk skill
-
+#define BLT_ICECOMET (47)
+#define BLT_ICECOMETBOOM (48)
 #define MAX_BULLETS 256
 
 // the special hammer flags for different powerups

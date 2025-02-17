@@ -1140,11 +1140,16 @@ void ArmageddonUpdate(Map *map)
 
 	if(armageddon>0)
 	{
+		if (!ClassicMode() && SkillValue(SKILL_MANAGETTIN) > 0)
+			player.mana = player.maxMana;
+
 		x=GetGoodguy()->x;
 		y=GetGoodguy()->y;
 		armageddon--;
 		Armageddon(map,x,y);
 		ShakeScreen(10);
+		if (!ClassicMode() && armageddon == 0 && SkillValue(SKILL_MANAGETTIN) > 0)
+			player.mana = 0;
 	}
 }
 
@@ -1644,6 +1649,11 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 void BeginArmageddon(void)
 {
 	armageddon=30*10;
+}
+
+bool ArmageddonIsUnderway(void)
+{
+	return (armageddon > 0);
 }
 
 byte GetVampyClock(void)
