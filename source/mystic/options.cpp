@@ -57,9 +57,16 @@ void InitOptions(void)
 		opt.musicVol=2;
 		opt.waterFX=1;
 		opt.lightFX=1;
+
+		for (int i = 0; i < (int)Achievement::NUM_ACHIEVES; i++)
+			opt.achieve[i] = 0;
 	}
 	else
 	{
+		// if you have an older save, with no achievements, we should reset them first just in case
+		// SDL_RWread will handle them being missing just fine (gives an error, but we don't care)
+		for (int i = 0; i < (int)Achievement::NUM_ACHIEVES; i++)
+			opt.achieve[i] = 0;
 		SDL_RWread(f,&opt,sizeof(option_t),1);
 		f.reset();
 	}

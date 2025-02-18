@@ -2,6 +2,7 @@
 #define OPTIONS_H
 
 #include "mgldraw.h"
+#include "achieves.h"
 
 typedef struct option_t
 {
@@ -10,6 +11,7 @@ typedef struct option_t
 	byte joyCtrl[4];
 	byte soundVol,musicVol;
 	byte waterFX,lightFX;
+	byte achieve[(int)Achievement::NUM_ACHIEVES];
 } option_t;
 
 extern option_t opt;

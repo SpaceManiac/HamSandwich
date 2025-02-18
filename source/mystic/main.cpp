@@ -21,6 +21,7 @@
 #include "options.h"
 #include "nag.h"
 #include "appdata.h"
+#include "achieves.h"
 
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
@@ -119,7 +120,10 @@ TASK(int) main(int argc, char* argv[])
 			case 3:	// options
 				AWAIT OptionsMenu(mainmgl);
 				break;
-			case 5:	// editor
+			case 5:
+				AWAIT AchieveMenu(mainmgl);
+				break;
+			case 6:	// editor
 #ifndef DEMO
 				AWAIT LunaticEditor(mainmgl);
 #endif

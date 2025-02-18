@@ -158,7 +158,7 @@ static dword startTime;
 void MainMenuDisplay(MGLDraw *mgl,title_t title)
 {
 	int i;
-	int orbY[]={217,268,319,364,419};
+	int orbY[]={217,268,319,364,419,430};
 
 	memcpy(mgl->GetScreen(),backgd,SCRWID*SCRHEI);
 
@@ -178,6 +178,13 @@ void MainMenuDisplay(MGLDraw *mgl,title_t title)
 
 		}
 	}
+
+	if(title.cursor==5)
+		planetSpr->GetSprite(0)->DrawGlow(350, orbY[5], mgl, title.titleBright);
+	if(title.cursor==5)
+		planetSpr->GetSprite(13)->DrawGlow(380, 410, mgl,title.titleBright);
+	else
+		planetSpr->GetSprite(12)->Draw(380, 410, mgl);
 
 #ifdef BETA
 	CenterPrint(HALFWID,40,"*BETA VERSION*",MGL_random(48)-24,0);
@@ -221,7 +228,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 		if((!oldc) || (reptCounter>10))
 			reptCounter=0;
 
-		if((c&CONTROL_UP) && (!reptCounter))
+		if((c&CONTROL_UP) && (!reptCounter) && title->cursor!=5)
 		{
 			(title->cursor)--;
 			if(title->cursor==255)
@@ -231,7 +238,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			MakeNormalSound(SND_MENUCLICK);
 			startTime=timeGetTime();	// reset the clock if any key is pressed
 		}
-		if((c&CONTROL_DN) && (!reptCounter))
+		if((c&CONTROL_DN) && (!reptCounter) && title->cursor!=5)
 		{
 			(title->cursor)++;
 			if(title->cursor==5)
@@ -240,6 +247,19 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 				title->cursor=3;
 			MakeNormalSound(SND_MENUCLICK);
 			startTime=timeGetTime();	// reset the clock if any key is pressed
+		}
+		if ((c & CONTROL_RT) && (!reptCounter))
+		{
+			title->cursor = 5;
+			MakeNormalSound(SND_MENUCLICK);
+			startTime = timeGetTime();	// reset the clock if any key is pressed
+		}
+		if ((c & CONTROL_LF) && (!reptCounter))
+		{
+			if(title->cursor==5)
+				title->cursor = 4;
+			MakeNormalSound(SND_MENUCLICK);
+			startTime = timeGetTime();	// reset the clock if any key is pressed
 		}
 		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
 		   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
@@ -260,7 +280,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 //#ifndef NDEBUG
 		if(c=='e')
 		{
-			title->cursor=5;
+			title->cursor=6;
 			return 1;
 		}
 //#endif
@@ -329,6 +349,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 
 			startTime = timeGetTime();
 		}
+		
 		now=timeGetTime();
 		if(now-startTime>1000*10)
 		{
