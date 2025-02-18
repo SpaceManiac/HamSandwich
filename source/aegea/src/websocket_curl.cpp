@@ -110,7 +110,7 @@ struct CurlWebSocket : public WebSocket
 				return nullptr;
 			}
 			buffer_offset += got;
-			buffer.data.resize(buffer.data.size() + meta->bytesleft);
+			buffer.data.resize(buffer_offset + meta->bytesleft);
 		} while (meta->bytesleft > 0);
 
 		buffer.data.resize(buffer_offset);
