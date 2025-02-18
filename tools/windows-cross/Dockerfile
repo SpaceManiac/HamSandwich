@@ -27,4 +27,5 @@ RUN apk add --no-cache zlib-dev
 
 # Let the ./container script automatically set the right toolchain.
 COPY toolchain.cmake /toolchain.cmake
+COPY wrap-mt /usr/local/bin/wrap-mt
 ENV CMAKE_TOOLCHAIN_FILE=/toolchain.cmake

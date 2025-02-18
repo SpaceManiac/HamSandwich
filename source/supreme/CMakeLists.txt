@@ -4,6 +4,7 @@ HamSandwich_add_executable(
 	ICON lunatic.ico
 	SOURCES ${sources}
 )
+target_sources(supreme PRIVATE supreme.manifest)
 target_link_libraries(supreme steam_api minizip)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
