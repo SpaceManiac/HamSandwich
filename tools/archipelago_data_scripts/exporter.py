@@ -31,6 +31,15 @@ class CSVProcessor:
         except (FileNotFoundError, ValueError) as e:
             print(f"Error processing defines: {e}")
 
+    @staticmethod
+    def format_flags_python(line: str) -> str:
+        # Split the line by commas and trim whitespace and quotes
+        flags = [flag.strip().strip('"') for flag in line.split(",")]
+        # Join the flags with the desired format
+        formatted_flags = " | ".join(f"LLFlags.{flag}" for flag in flags)
+        # Return the final string
+        return f"flags={formatted_flags}"
+
     def process_items(self):
         try:
             with open(INPUT_ITEMS, 'r') as input_file:
@@ -73,7 +82,7 @@ class CSVProcessor:
                     if itm_freq:
                         python_lines += f", {itm_freq}"
                     if itm_flags:
-                        python_lines += f", flags=[{itm_flags}]"
+                        python_lines += f", " + self.format_flags_python(itm_flags)
                     python_lines += "),\n"
 
                     # 2: tracker items ***********
@@ -165,7 +174,7 @@ class CSVProcessor:
                     if reg_map:
                         python_region_lines += f', \"{reg_map}\"'
                     if reg_flags:
-                            python_region_lines += f", flags=[{reg_flags}]"
+                            python_region_lines += f", " + self.format_flags_python(reg_flags)
                     python_region_lines += "),\n"
 
                     # 2: tracker region data
@@ -218,11 +227,11 @@ class CSVProcessor:
             quantity = match.group(2)
             if quantity:
                 if input_format == "python" :
-                    return f'state.has("{item}", world.player, {quantity})'
+                    return f'state.has("{item}", player, {quantity})'
                 if input_format == "lua":
                     return f'state:has("{item}", {quantity})'
             if input_format == "python":
-                return f'state.has("{item}", world.player)'
+                return f'state.has("{item}", player)'
             if input_format == "lua":
                 return f'state:has("{item}")'
 
@@ -234,13 +243,13 @@ class CSVProcessor:
                 return f'{function_name}({arguments})'
             if function_name=="can_reach":
                 if input_format == "python":
-                    return f'state.can_reach_region(\"{arguments}\", world.player)'
+                    return f'state.can_reach_region(\"{arguments}\", player)'
                 if input_format == "lua":
                     return f"{function_name}(\"{arguments}\")"
             if input_format == "python":
                 if arguments:
-                    return f'{function_name}(state, world, {arguments})'
-                return f'{function_name}(state, world)'
+                    return f'{function_name}(state, player, {arguments})'
+                return f'{function_name}(state, player)'
             if input_format == "lua":
                 if arguments:
                     return f"{function_name}(state, {arguments})"
@@ -302,7 +311,7 @@ loonyland_location_table = {\n"""
                     python_loc_lines += f"    \"{location_name}\": LLLocation(" \
                                     f"{location_id}, LLLocCat.{location_type}, {location_map_id}, \"{location_region}\""
                     if location_flags:
-                        python_loc_lines += f", flags=[{location_flags}]"
+                        python_loc_lines += f", " + self.format_flags_python(location_flags)
                     if location_base_item:
                        python_loc_lines +=  f", base_item=\"{location_base_item}\""
                     python_loc_lines += f"),\n"
@@ -496,7 +505,7 @@ loonyland_location_table = {\n"""
                         python_ent_lines += ", lambda state: "
                         python_ent_lines += self.parse_conditions(entrance_logic, "python")
                     if entrance_flags:
-                            python_ent_lines += f", flags=[{entrance_flags}]"
+                            python_ent_lines += f", " + self.format_flags_python(entrance_flags)
                     python_ent_lines += "),\n"
 
                     # 2: Tracker entrances

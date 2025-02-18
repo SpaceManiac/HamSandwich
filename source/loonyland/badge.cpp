@@ -1086,6 +1086,11 @@ static TASK(void) EarnBadgeTask(byte b)
 		AWAIT ShowGameMode(4,25);
 	}
 
+	if (ArchipelagoMode && apSlotData.win_condition == AP_WIN_BADGES && c >= apSlotData.badges_required)
+	{
+		WinArchipelago();
+	}
+
 	SaveOptions();
 	if(newlyEarned && c==40)
 	{
@@ -1423,10 +1428,6 @@ void BadgeCheck(byte event,int value,Map *map)
 	{
 		EarnBadge(BADGE_MASTER);
 		have++;
-	}
-	if (ArchipelagoMode && apSlotData.win_condition == AP_WIN_BADGES && have >= apSlotData.badges_required)
-	{
-		WinArchipelago();
 	}
 
 	then=timeGetTime();
