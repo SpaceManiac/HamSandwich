@@ -24,7 +24,7 @@ namespace filesystem = std::experimental::filesystem::v1;
 
 #define platform_mkdir(path) _mkdir(path)
 #else
-#define platform_mkdir(path) mkdir(path, 0777)
+#define platform_mkdir(path) mkdir(path, 0755)
 #endif
 
 static int mkdir_one(const char *path)
@@ -39,8 +39,7 @@ int vanilla::mkdir_parents(std::string_view path)
 	std::string copypath { path };
 	char *start = copypath.data();
 
-	int status = 0;
-	while (status == 0)
+	while (true)
 	{
 		size_t span = strcspn(start, "/\\");
 		if (span == strlen(start))
@@ -50,16 +49,17 @@ int vanilla::mkdir_parents(std::string_view path)
 		{
 			// skip the root directory and double-slashes
 			*next = '\0';
-			status = mkdir_one(copypath.c_str());
+			int status = mkdir_one(copypath.c_str());
+			if (status != 0)
+			{
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "mkdir_parents(\"%.*s\"): mkdir(\"%s\"): %s", (int)path.size(), path.data(), copypath.c_str(), strerror(errno));
+				return status;
+			}
 			*next = '/';
 		}
 		start = next + 1;
 	}
-
-	if (status != 0)
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "mkdir_parents(%s): %s", copypath.c_str(), strerror(errno));
-
-	return status;
+	return 0;
 }
 
 // ----------------------------------------------------------------------------
