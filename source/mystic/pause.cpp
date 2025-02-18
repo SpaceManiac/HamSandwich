@@ -184,28 +184,43 @@ void RenderSkillMenu(void)
 	{
 		for (int i = 0; i < 6; i++)
 		{
-			if (subcursor == i + j * 6)
+			if (skillList[i + j * 6].spellReq != 255 && player.spell[skillList[i + j * 6].spellReq] == 0)
 			{
-				RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 31, 32 * 5 + 10);
-				GetSkillSpr(0)->Draw(x + 20, y + 20, GetDisplayMGL());
+				if (subcursor == i + j * 6)
+				{
+					RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 31, 3);
+					BlitIconGlow(36, x + 4, y + 4, 0);
 
-				DescribeSkill(i+j*6, SCRWID / 2 + 10, SCRHEI - 30 - 85);
+					DescribeSkill(i + j * 6, SCRWID / 2 + 10, SCRHEI - 30 - 85);
+				}
+				else
+				{
+					RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 16, 0);
+					BlitIconGlow(36, x + 4, y + 4, -15);
+				}
 			}
 			else
 			{
-				RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 16, 32 * 5 + 6);
-				GetSkillSpr(0)->DrawColored(x + 20, y + 20, GetDisplayMGL(), 32 * 2 + 10, 0);
-			}
-			if (player.skill[i+j*6] > 0)
-			{
-				sprintf(s, "%d", player.skill[i+j*6]);
-				Print(x + 30-1, y + 30, s, -31, 1);
-				Print(x + 30+1, y + 30, s, -31, 1);
-				Print(x + 30, y + 30+1, s, -31, 1);
-				Print(x + 30, y + 30-1, s, -31, 1);
-				Print(x + 30, y + 30, s, 0, 1);
-			}
+				if (subcursor == i + j * 6)
+				{
+					RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 31, 32 * 7 + 3 + player.skill[i + j * 6] * 2);
+					BlitIconGlow(i + j * 6, x + 4, y + 4, 0);
 
+					DescribeSkill(i + j * 6, SCRWID / 2 + 10, SCRHEI - 30 - 85);
+				}
+				else
+				{
+					RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 16, player.skill[i + j * 6] ? 32 * 7 + player.skill[i + j * 6] * 2 : 0);
+					BlitIconGlow(i + j * 6, x + 4, y + 4, -15);
+				}
+				for (int k = 0; k < 5; k++)
+				{
+					int hgt = abs(2 - k) * 2;
+					if (k == 2) hgt = 1;
+					RenderSkillBox(x + 1 + k * 8, y + 39 - hgt, x + 1 + k * 8 + 5, y + 39 - hgt + 5, 32 * 5 + 16 + 15 * (subcursor == i + j * 6), 32 * 7 + 3 + (player.skill[i + j * 6] > k) * (10 + 8 * (subcursor == i + j * 6)));
+				}
+			}
+			
 			x += spacing;
 		}
 		x = SCRWID / 2 + SCRWID / 4 - spacing * 3+5;

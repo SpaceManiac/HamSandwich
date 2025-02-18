@@ -2081,84 +2081,59 @@ void FireExactBullet(int x,int y,int z,int dx,int dy,int dz,byte anim,byte timer
 		}
 }
 
-void HammerLaunch(int x,int y,byte facing,byte count,byte flags,bool reverse)
+void HammerLaunch(int x, int y, byte facing, byte count, byte flags)
 {
-	byte angle,newfacing;
-	int msx, msy;
+	byte angle, newfacing;
 
-	GetDisplayMGL()->GetMouse(&msx, &msy);
-	int camX, camY;
-	
-	GetCamera(&camX, &camY);
-	msx -= camX-HALFWID;
-	msy -= camY-HALFHEI;
-
-	msx <<= FIXSHIFT;
-	msy <<= FIXSHIFT;
-
-	if (0)
+	MakeSound(SND_HAMMERTOSS, x, y, SND_CUTOFF, 1200);
+	if (count == 1 || count == 3 || count == 5)	// 1,3,5 have direct forward fire
 	{
-		Guy* g = GetGoodguy();
-		float a = atan2f(msy - g->y, msx - g->x) * 128.0f / 3.14159f;
-
-		angle = (byte)a;
+		angle = facing * 32;
+		FireExactBullet(x, y, FIXAMT * 20,
+			Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
+			0, 30, facing, BLT_HAMMER + ((flags & HMR_REFLECT) > 0));
 	}
-	else
-		angle = facing*32;
-
-	if (reverse)
-		angle += 128;
-	byte visAngle = (byte)(angle + 15) / 32;
-	MakeSound(SND_HAMMERTOSS,x,y,SND_CUTOFF,1200);
-	if(count==1 || count==3 || count==5)	// 1,3,5 have direct forward fire
+	if (count == 2 || count == 4)	// these have slight off-angle double forward fire
 	{
-		FireExactBullet(x,y,FIXAMT*20,
-						Cosine(angle)*12,Sine(angle)*12,0,//FIXAMT*6,
-						0,30,visAngle,BLT_HAMMER+((flags&HMR_REFLECT)>0));
+		angle = facing * 32 - 8;
+		FireExactBullet(x, y, FIXAMT * 20,
+			Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
+			0, 30, facing, BLT_HAMMER + ((flags & HMR_REFLECT) > 0));
+		angle = facing * 32 + 8;
+		FireExactBullet(x, y, FIXAMT * 20,
+			Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
+			0, 30, facing, BLT_HAMMER + ((flags & HMR_REFLECT) > 0));
 	}
-	if(count==2 || count==4)	// these have slight off-angle double forward fire
+	if (count == 3 || count == 5)	// these have 45 degree angle fire
 	{
-		angle-=8;
-		visAngle = (byte)(angle + 15) / 32;
-		FireExactBullet(x,y,FIXAMT*20,
-						Cosine(angle)*12,Sine(angle)*12,0,//FIXAMT*6,
-						0,30,visAngle,BLT_HAMMER+((flags&HMR_REFLECT)>0));
-		angle += 16;
-		visAngle = (byte)(angle + 15) / 32;
-		FireExactBullet(x,y,FIXAMT*20,
-						Cosine(angle)*12,Sine(angle)*12,0,//FIXAMT*6,
-						0,30,visAngle,BLT_HAMMER+((flags&HMR_REFLECT)>0));
+		angle = facing * 32 - 32;
+		newfacing = ((byte)(facing - 1)) % 8;
+		FireExactBullet(x, y, FIXAMT * 20,
+			Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
+			0, 30, newfacing, BLT_HAMMER + ((flags & HMR_REFLECT) > 0));
+		angle = facing * 32 + 32;
+		newfacing = (facing + 1) % 8;
+		FireExactBullet(x, y, FIXAMT * 20,
+			Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
+			0, 30, newfacing, BLT_HAMMER + ((flags & HMR_REFLECT) > 0));
 	}
-	if(count==3 || count==5)	// these have 45 degree angle fire
+	if (count == 4 || count == 5)	// these add almost 90 degree off fire
 	{
-		angle -= 32;
-		visAngle = (byte)(angle + 15) / 32;
-		FireExactBullet(x,y,FIXAMT*20,
-						Cosine(angle)*12,Sine(angle)*12,0,//FIXAMT*6,
-						0,30,visAngle,BLT_HAMMER+((flags&HMR_REFLECT)>0));
-		angle += 64;
-		visAngle = (byte)(angle + 15) / 32;
-		FireExactBullet(x,y,FIXAMT*20,
-						Cosine(angle)*12,Sine(angle)*12,0,//FIXAMT*6,
-						0,30,visAngle,BLT_HAMMER+((flags&HMR_REFLECT)>0));
+		angle = facing * 32 - 56;
+		newfacing = ((byte)(facing - 2)) % 8;
+		FireExactBullet(x, y, FIXAMT * 20,
+			Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
+			0, 30, newfacing, BLT_HAMMER + ((flags & HMR_REFLECT) > 0));
+		angle = facing * 32 + 56;
+		newfacing = (facing + 2) % 8;
+		FireExactBullet(x, y, FIXAMT * 20,
+			Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
+			0, 30, newfacing, BLT_HAMMER + ((flags & HMR_REFLECT) > 0));
 	}
-	if(count==4 || count==5)	// these add almost 90 degree off fire
+	if (flags & HMR_REVERSE)
 	{
-		angle-=56;
-		visAngle = (byte)(angle + 15) / 32;
-		FireExactBullet(x,y,FIXAMT*20,
-						Cosine(angle)*12,Sine(angle)*12,0,//FIXAMT*6,
-						0,30,visAngle,BLT_HAMMER+((flags&HMR_REFLECT)>0));
-		angle+=56;
-		visAngle = (byte)(angle + 15) / 32;
-		FireExactBullet(x,y,FIXAMT*20,
-						Cosine(angle)*12,Sine(angle)*12,0,//FIXAMT*6,
-						0,30,visAngle,BLT_HAMMER+((flags&HMR_REFLECT)>0));
-	}
-	if(flags&HMR_REVERSE)
-	{
-		newfacing=((byte)(facing-4))%8;
-		HammerLaunch(x,y,newfacing,count,flags&(~HMR_REVERSE),true);
+		newfacing = ((byte)(facing - 4)) % 8;
+		HammerLaunch(x, y, newfacing, count, flags & (~HMR_REVERSE));
 	}
 }
 

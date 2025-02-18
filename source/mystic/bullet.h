@@ -94,7 +94,7 @@ void LaunchMegabeam(int x,int y,word owner);
 void FireBullet(int x,int y,byte facing,byte type);
 void FireBulletAfter(int x,int y,byte facing,byte type,bullet_t *thisone);
 void FireExactBullet(int x,int y,int z,int dx,int dy,int dz,byte anim,byte timer,byte facing,byte type);
-void HammerLaunch(int x,int y,byte facing,byte count,byte flags,bool reverse);
+void HammerLaunch(int x,int y,byte facing,byte count,byte flags);
 byte Bulletable(Map *map,int x,int y);
 void BulletRanOut(bullet_t *me,Map *map,world_t *world);	// prototyped for interior use
 void SkullLaunch(int x,int y,byte facing,byte count,byte flags);

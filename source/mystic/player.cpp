@@ -1080,7 +1080,7 @@ void PlayerThrowHammer(Guy *me)
 	if(PlayerHasSword() && !player.disableSword)
 		SkullLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags);
 	else
-		HammerLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags,false);
+		HammerLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags);
 	player.reload=player.hamSpeed+2;
 }
 

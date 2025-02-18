@@ -5,6 +5,7 @@
 #include "sound.h"
 #include "appdata.h"
 #include "pause.h"
+#include "skills.h"
 
 AchieveDef achieveDef[] = {
 	{
@@ -177,8 +178,19 @@ void RenderAchieveMenu(MGLDraw *mgl)
 	y = 60;
 	for (int i = 0; i < (int)Achievement::NUM_ACHIEVES; i++)
 	{
-		RenderSkillBox(x, y, x + 34, y + 34, 20, 4+27*(cursor==i));
-		RenderSkillBox(x+2, y+2, x + 32, y + 32, 16, 4);
+		if (cursor == i)
+		{
+			RenderSkillBox(x, y, x + 40, y + 40, 16, 31);
+			RenderSkillBox(x + 2, y + 2, x + 38, y + 38, 16, 5);
+			BlitIcon(0, x + 4, y + 4, 0, 5);
+		}
+		else
+		{
+			RenderSkillBox(x, y, x + 40, y + 40, 3*32+16, 3*32+4);
+			RenderSkillBox(x + 2, y + 2, x + 38, y + 38, 3*32+16, 3*32+4);
+			BlitIcon(0, x + 4, y + 4, 3, 0);
+		}
+		
 		x += 60;
 		if ((i%6)==5)
 		{

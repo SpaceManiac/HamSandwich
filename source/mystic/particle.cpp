@@ -468,6 +468,8 @@ void RenderNumberParticles(void)
 					int bright = 0;
 					if (particleList[i]->life < 30)
 						bright -= (30 - particleList[i]->life);
+					else
+						Print(x - wid / 2 + 2, y + 2, s, -31, 1);
 					PrintBrightGlow(x-wid/2 + 1, y + 1, s, bright, 1);
 				}
 				else
@@ -476,6 +478,8 @@ void RenderNumberParticles(void)
 					int bright = 0;
 					if (particleList[i]->life < 30)
 						bright -= (30 - particleList[i]->life);
+					else
+						Print(x - wid / 2 + 3, y + 3, s, -31, 2);
 					PrintBrightGlow(x - wid / 2 + 1, y + 1, s, bright, 2);
 				}
 			}
@@ -797,10 +801,23 @@ void FloaterParticles(int x,int y,byte color,int radius,int spread,byte count)
 	}
 }
 
-void AddNumberParticle(int x, int y, int z, int value, byte color)
+word AddNumberParticle(int x, int y, int z, int value, byte color,word ID)
 {
-	if (player.disableDmgNumbers) return;
+	if (player.disableDmgNumbers) return 65535;
 
+	if (ID != 65535 && particleList[ID]->type==PART_NUMBER)
+	{
+		particleList[ID]->x = x;
+		particleList[ID]->y = y;
+		particleList[ID]->z = z;
+		particleList[ID]->dy = 0;
+		particleList[ID]->dz = 4 * FIXAMT;
+		particleList[ID]->size = 0;
+		particleList[ID]->life = 60;
+		particleList[ID]->dx += value;	// add em up!
+		particleList[ID]->color = color;
+		return ID;
+	}
 	int i;
 	for (i = 0; i < maxParticles; i++)
 	{
@@ -816,7 +833,8 @@ void AddNumberParticle(int x, int y, int z, int value, byte color)
 			particleList[i]->life = 60;
 			particleList[i]->type = PART_NUMBER;
 			particleList[i]->color = color;
-			return;
+			return (word)i;
 		}
 	}
+	return 65535;
 }

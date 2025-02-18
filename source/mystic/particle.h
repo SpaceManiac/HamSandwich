@@ -50,7 +50,7 @@ void RenderParticles(void);
 void RenderParticle(int x,int y,byte *scrn,byte color,byte size);
 void RenderNumberParticles(void);
 
-void AddNumberParticle(int x, int y, int z, int value, byte color);
+word AddNumberParticle(int x, int y, int z, int value, byte color, word id);
 void BlowSmoke(int x,int y,int z,int dz);
 void BlowWigglySmoke(int x,int y,int z,int dz);
 void SpurtParticles(byte type,bool left,int x,int y,int z,byte angle,byte force);

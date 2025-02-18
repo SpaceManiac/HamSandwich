@@ -75,4 +75,9 @@ void DescribeSkill(byte skill, int x, int y);
 float SkillValue(byte skill);
 extern skill_t skillList[];
 
+void InitIcons(void);
+void BlitIcon(byte icon, int x, int y, byte color, char bright);
+void BlitIconGlow(byte icon, int x, int y, char bright);
+void ExitIcons(void);
+
 #endif

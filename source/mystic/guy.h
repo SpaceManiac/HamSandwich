@@ -63,6 +63,7 @@ class Guy
 		Guy *parent;
 		int hp;
 		byte type;
+		word myNumberParticle;
 		int rectx,recty,rectx2,recty2;	// for collision checks
 		word ID;	// just a copy of the guy's number
 };

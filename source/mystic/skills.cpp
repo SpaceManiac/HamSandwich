@@ -228,6 +228,8 @@ skill_t skillList[] = {
 		0,3,"Life",SD_PERCENT,SPL_ARMAGEDDON},
 };
 
+byte* iconBMP;
+
 void DescribeSkill(byte skill,int x,int y)
 {
 	char txt[64];
@@ -267,4 +269,73 @@ void DescribeSkill(byte skill,int x,int y)
 float SkillValue(byte skill)
 {
 	return (float)player.skill[skill] * skillList[skill].amtPerPoint + skillList[skill].baseVal;
+}
+
+void InitIcons(void)
+{
+	iconBMP = (byte*)malloc(640 * 480);
+	if (iconBMP)
+	{
+		GetDisplayMGL()->LoadBMP("graphics/icons.bmp");
+		memcpy(iconBMP, GetDisplayMGL()->GetScreen(), 640 * 480);
+	}
+}
+
+void BlitIcon(byte icon, int x, int y, byte color,char bright)
+{
+	int start = (icon % 20) * 32 + (icon / 20) * 32 * 640;
+	for(int j=0;j<32;j++)
+		for (int i = 0; i < 32; i++)
+		{
+			if (x + i >= 0 && y + j >= 0 && x + i < SCRWID && y + j < SCRHEI)
+			{
+				byte b = (iconBMP[start + i + j * 640]%32);
+				if (b != 0)
+				{
+					if (bright<0 && -bright>b)
+						b = 0;
+					else if (bright > 0 && b + bright > 31)
+						b = 31;
+					else
+						b += bright;
+					b += 32 * color;
+					GetDisplayMGL()->GetScreen()[(x + i) + (y + j) * SCRWID] = b;
+				}
+			}
+		}
+}
+
+void BlitIconGlow(byte icon, int x, int y, char bright)
+{
+	int start = (icon % 20) * 32 + (icon / 20) * 32 * 640;
+	for (int j = 0; j < 32; j++)
+		for (int i = 0; i < 32; i++)
+		{
+			if (x + i >= 0 && y + j >= 0 && x + i < SCRWID && y + j < SCRHEI)
+			{
+				byte b = (iconBMP[start + i + j * 640] & 31);
+				if (b != 0)
+				{
+					byte b2 = GetDisplayMGL()->GetScreen()[(x + i) + (y + j) * SCRWID];
+					byte col = (b2 & (~31));
+					b2 = (b2 & 31);
+					if (bright<0 && -bright>b)
+						b = 0;
+					else if (bright > 0 && b + bright > 31)
+						b = 31;
+					else
+						b += bright;
+					if (b2 + b > 31)
+						b2 = 31;
+					else
+						b2 += b;
+					GetDisplayMGL()->GetScreen()[(x + i) + (y + j) * SCRWID] = col+b2;
+				}
+			}
+		}
+}
+
+void ExitIcons(void)
+{
+	free(iconBMP);
 }

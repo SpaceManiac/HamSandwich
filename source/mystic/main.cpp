@@ -22,6 +22,7 @@
 #include "nag.h"
 #include "appdata.h"
 #include "achieves.h"
+#include "skills.h"
 
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
@@ -44,6 +45,7 @@ TASK(int) main(int argc, char* argv[])
 		CO_RETURN 0;
 
 	LunaticInit(mainmgl);
+	InitIcons();
 	AWAIT SplashScreen(mainmgl,"graphics/intro1.bmp",128,SND_INTRO1,0);
 
 #ifdef DEMO
@@ -64,6 +66,7 @@ TASK(int) main(int argc, char* argv[])
 				mainmgl->ClearScreen();
 				AWAIT mainmgl->Flip();
 				mainmgl->ClearScreen();
+				ExitIcons();
 				LunaticExit();
 				delete mainmgl;
 #ifdef DEMO
@@ -82,6 +85,7 @@ TASK(int) main(int argc, char* argv[])
 						mainmgl->ClearScreen();
 						mainmgl->Flip();
 						mainmgl->ClearScreen();
+						ExitIcons();
 						LunaticExit();
 						delete mainmgl;
 						ShellExecute(NULL,"open","http://hamumu.com/store.php?game=MYSTIC&src=demowin","","",SW_SHOWNORMAL);
@@ -102,6 +106,7 @@ TASK(int) main(int argc, char* argv[])
 						mainmgl->ClearScreen();
 						mainmgl->Flip();
 						mainmgl->ClearScreen();
+						ExitIcons();
 						LunaticExit();
 						delete mainmgl;
 						ShellExecute(NULL,"open","http://hamumu.com/store.php?game=MYSTIC&src=demowin","","",SW_SHOWNORMAL);

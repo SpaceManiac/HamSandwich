@@ -1283,11 +1283,11 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		if (critted)
 		{
 			ExplodeParticles2(PART_SNOW2, x, y, z, 15, 4);
-			MakeSound(SND_PUMPKINDIE, x, y, SND_CUTOFF, 0);
-			AddNumberParticle(x, y, z, damage, 1);
+			MakeSound(SND_BALLBOUNCE, x, y, SND_CUTOFF, 0);
+			myNumberParticle=AddNumberParticle(x, y, z, damage, 1, myNumberParticle);
 		}
 		else
-			AddNumberParticle(x, y, z, damage, 0);
+			myNumberParticle=AddNumberParticle(x, y, z, damage, 0, myNumberParticle);
 	}
 
 	if(type==MONS_BOUAPHA && damage>0)
@@ -1577,6 +1577,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 	for(i=0;i<maxGuys;i++)
 		if(guys[i]->type==MONS_NONE)
 		{
+			guys[i]->myNumberParticle = 65535;
 			guys[i]->stun = 0;
 			guys[i]->executable = false;
 			guys[i]->placed=0;

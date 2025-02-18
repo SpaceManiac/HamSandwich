@@ -9,7 +9,7 @@
 #define SHOPDX 70
 #define SHOPDY 65
 
-sprite_set_t *shopSpr,*skillSpr;
+sprite_set_t *shopSpr;
 static byte armaBrt=0;
 
 char hatName[5][16]={
@@ -249,13 +249,11 @@ static byte reptCounter=0;
 void InitShop(void)
 {
 	shopSpr = new sprite_set_t("graphics/shop.jsp");
-	skillSpr= new sprite_set_t("graphics/skills.jsp");
 }
 
 void ExitShop(void)
 {
 	delete shopSpr;
-	delete skillSpr;
 }
 
 sprite_t *GetShopSpr(byte spr)
@@ -263,10 +261,6 @@ sprite_t *GetShopSpr(byte spr)
 	return shopSpr->GetSprite(spr);
 }
 
-sprite_t* GetSkillSpr(byte spr)
-{
-	return skillSpr->GetSprite(spr);
-}
 
 void EnterShop(void)
 {

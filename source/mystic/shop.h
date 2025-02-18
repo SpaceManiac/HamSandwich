@@ -7,7 +7,6 @@
 void InitShop(void);
 void ExitShop(void);
 sprite_t *GetShopSpr(byte spr);
-sprite_t* GetSkillSpr(byte spr);
 void RenderPlayerGear(int x,byte brt);
 
 byte UpdateShop(MGLDraw *mgl);

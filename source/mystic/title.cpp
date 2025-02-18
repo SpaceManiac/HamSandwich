@@ -155,7 +155,7 @@ byte starColorTable[]={214,81,63,49,33,21,32,83,93};
 static dword startTime;
 
 
-void MainMenuDisplay(MGLDraw *mgl,title_t title)
+void MainMenuDisplay(MGLDraw *mgl,title_t title,bool hideAchieves)
 {
 	int i;
 	int orbY[]={217,268,319,364,419,430};
@@ -179,12 +179,15 @@ void MainMenuDisplay(MGLDraw *mgl,title_t title)
 		}
 	}
 
-	if(title.cursor==5)
-		planetSpr->GetSprite(0)->DrawGlow(350, orbY[5], mgl, title.titleBright);
-	if(title.cursor==5)
-		planetSpr->GetSprite(13)->DrawGlow(380, 410, mgl,title.titleBright);
-	else
-		planetSpr->GetSprite(12)->Draw(380, 410, mgl);
+	if (!hideAchieves)
+	{
+		if (title.cursor == 5)
+			planetSpr->GetSprite(0)->DrawGlow(350, orbY[5], mgl, title.titleBright);
+		if (title.cursor == 5)
+			planetSpr->GetSprite(13)->DrawGlow(380, 410, mgl, title.titleBright);
+		else
+			planetSpr->GetSprite(12)->Draw(380, 410, mgl);
+	}
 
 #ifdef BETA
 	CenterPrint(HALFWID,40,"*BETA VERSION*",MGL_random(48)-24,0);
@@ -327,7 +330,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 		lastTime+=TimeLength();
 		StartClock();
 		b=MainMenuUpdate(mgl,&title,&lastTime);
-		MainMenuDisplay(mgl,title);
+		MainMenuDisplay(mgl,title,false);
 		AWAIT mgl->Flip();
 		if(!mgl->Process())
 		{
@@ -382,7 +385,7 @@ void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 	int i;
 	char s[32];
 
-	MainMenuDisplay(mgl,title);
+	MainMenuDisplay(mgl,title,true);
 
 	for(i=0;i<5;i++)
 	{
@@ -557,7 +560,7 @@ void DifficultyPickerDisplay(MGLDraw* mgl, title_t title)
 	};
 	char s[32];
 
-	MainMenuDisplay(mgl, title);
+	MainMenuDisplay(mgl, title,true);
 	RenderSkillBox(380, 144, 636, 460, 31, 3);
 	PrintBrightGlow(400, 150, "Difficulty", 0, 0);
 
