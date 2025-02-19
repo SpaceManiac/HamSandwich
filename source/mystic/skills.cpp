@@ -348,3 +348,12 @@ void ExitIcons(void)
 {
 	free(iconBMP);
 }
+
+void ResetSkills(void)
+{
+	for (int i = 0; i < 36; i++)
+	{
+		player.skillPts += player.skill[i];
+		player.skill[i] = 0;
+	}
+}

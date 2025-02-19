@@ -69,7 +69,9 @@ void RenderPauseMenu(void)
 	else // modern menu
 	{
 		PrintBrightGlow(pauseX + 10, 240, "Cancel", -16 + (cursor == 0) * 16, 2);
-		PrintBrightGlow(pauseX + 10, 240+26*1, "Skills", -16 + (cursor == 1) * 16, 2);
+		char s[32];
+		sprintf(s, "Skills (%d)", player.skillPts);
+		PrintBrightGlow(pauseX + 10, 240+26*1, s, -16 + (cursor == 1) * 16, 2);
 		if (!Challenging())
 			PrintBrightGlow(pauseX + 10, 240+26*2, "Load", -16 + (cursor == 2) * 16, 2);
 
@@ -716,11 +718,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			if (subcursor == 36)
 			{
 				// reset skills
-				for (int i = 0; i < 36; i++)
-				{
-					player.skillPts += player.skill[i];
-					player.skill[i] = 0;
-				}
+				ResetSkills();
 				MakeNormalSound(SND_BOBBYSPIN);
 			}
 			else if (subcursor == 37)

@@ -79,5 +79,6 @@ void InitIcons(void);
 void BlitIcon(byte icon, int x, int y, byte color, char bright);
 void BlitIconGlow(byte icon, int x, int y, char bright);
 void ExitIcons(void);
+void ResetSkills(void);
 
 #endif

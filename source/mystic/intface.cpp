@@ -368,7 +368,7 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 	}
 
 	// cash
-	sprintf(s,"$%05d",player.money);
+	sprintf(s,"$%05d",TotalMoney());
 	PrintGlow(HALFWID,-1,s,2);
 
 	intfaceSpr->GetSprite(SPR_BRAINOMETER)->Draw(orbX,SCRHEI-1,mgl);

@@ -3,7 +3,7 @@
 #include "game.h"
 #include "intface.h"
 
-char speech[26*4][64]={
+char speech[28*4][64]={
 	// 0
 	"Welcome to Beginnerton!  This town is",
 	"really a tutorial on some basic game",
@@ -112,7 +112,7 @@ char speech[26*4][64]={
 	// 21
 	"Previous Spell: A or Gamepad Button 3",
 	"Next Spell: S or Gamepad Button 4",
-	"",
+	"Pause: ESC or Start",
 	"Visit Beginnerton above to learn more!",
 	// 22
 	"Welcome to Madcap Mode!  You can",
@@ -134,6 +134,16 @@ char speech[26*4][64]={
 	"can keep repeating this mode all",
 	"you want, or start a new game, or",
 	"whatever!  Sorry, no more prizes!",
+	// 26
+	"You're playing in Modern Mode! That",
+	"means you get Skill Points when you",
+	"level up. Press ESC or START to spend",
+	"your skill points.",
+	// 27
+	"You can reset your skills anytime as",
+	"long as you are in the Overworld!",
+	"You don't get stronger with levels",
+	"anymore, so don't forget your skills!",
 };
 
 byte speechX,speechY,curSpeech;
@@ -373,6 +383,22 @@ byte UpdateSpeech(MGLDraw *mgl)
 				oldc=c;
 				return 0;
 			}
+			if (curSpeech == 21 && !ClassicMode())
+			{
+				curSpeech = 26;
+				speechX = 0;
+				speechY = 0;
+				oldc = c;
+				return 0;
+			}
+			if (curSpeech == 26)
+			{
+				curSpeech = 27;
+				speechX = 0;
+				speechY = 0;
+				oldc = c;
+				return 0;
+			}
 			if(curSpeech==22)
 			{
 				curSpeech=23;
@@ -412,7 +438,12 @@ byte UpdateSpeech(MGLDraw *mgl)
 			speechY++;
 		}
 	}
-
+	UpdateGamepadStartAndSelect();
+	if (mgl->LastKeyPressed() == 27 || GamepadStartTapped() || GamepadSelectTapped())
+	{
+		oldc = c;
+		return 1;	// ESC cancels the speech
+	}
 	oldc=c;
 	return 0;
 }

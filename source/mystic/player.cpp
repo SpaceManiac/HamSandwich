@@ -44,6 +44,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.powerStones=0;
 		player.spellStones=0;
 		player.shieldStones=0;
+		player.skillStones = 0;
 		for(i=0;i<20;i++)
 			player.gotSpell[i]=0;
 
@@ -66,15 +67,18 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.levelsPassed=0;
 		for(i=0;i<10;i++)
 			player.spell[i]=0;
+		player.gear = 0;
 		player.boots=0 + BrutalMode();
 		player.hat = 0 + BrutalMode();
 		player.staff = 0 + BrutalMode();
-		player.money=0;
+		if (BrutalMode() && !ClassicMode())
+			player.gear |= GEAR_HEART;
+		player.bigMoney=0;
+		player.money = 0;
 		player.maxSpeed=FIXAMT*4;
 		player.defense=0;
 		player.damage=2;
 		PlayerUpdateLife();
-		player.gear=0;
 		player.gameClock=0;
 		player.overworldX=-2000;
 		player.rechargeClock=4;
@@ -110,7 +114,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	player.prevLevel=player.level;
 	player.prevExp=player.experience;
 	player.prevMoney=player.money;
-
+	player.prevBigMoney = player.bigMoney;
 	for(i=0;i<4;i++)
 		player.keys[i]=0;
 
@@ -186,6 +190,7 @@ void PlayerLoadGame(byte which)
 	player.prevMoney=player.money;
 	player.prevExp=player.experience;
 	player.prevLevel=player.level;
+	player.prevBigMoney = player.bigMoney;
 }
 
 void PlayerSaveGame(byte which)
@@ -194,6 +199,7 @@ void PlayerSaveGame(byte which)
 	int i;
 
 	player.prevMoney=player.money;
+	player.prevBigMoney = player.bigMoney;
 	auto f = AppdataOpen("mystic.sav");
 	if(!f)
 	{
@@ -374,6 +380,7 @@ void PlayerResetScore(void)
 		player.level=player.prevLevel;
 		player.experience=player.prevExp;
 		player.money=player.prevMoney;
+		player.bigMoney = player.prevBigMoney;
 	}
 }
 
@@ -735,17 +742,13 @@ byte PlayerGetItem(byte itm,int x,int y)
 			return 0;
 			break;
 		case ITM_COIN:
-			if(player.money<50000)
-				player.money++;
+			GainMoney(1);
 			MakeSound(SND_MONEY,x,y,SND_CUTOFF,500);
 			FloaterParticles(x,y,5,24,0,4);
 			return 0;
 			break;
 		case ITM_BIGCOIN:
-			if(player.money+10<50000)
-				player.money+=10;
-			else
-				player.money=50000;
+			GainMoney(10);
 			MakeSound(SND_MONEY,x,y,SND_CUTOFF,500);
 			MakeSound(SND_MONEY,x,y,SND_CUTOFF,500);
 			FloaterParticles(x,y,5,24,0,4);
@@ -1035,10 +1038,7 @@ void PlayerGetPoints(int amt)
 		if(amt<5)
 			amt=5;
 		amt/=5;
-		if(player.money+amt<=50000)
-			player.money+=amt;	// get money!
-		else
-			player.money=50000;
+		GainMoney(amt);
 	}
 }
 
@@ -1241,9 +1241,9 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	if(vampyClock>30*3 && player.fairyOn==FAIRY_HEALEY && player.life<player.maxLife/2 && player.life>0 && player.levelNum!=1)	// not on the hub level
 	{
 		vampyClock=0;
-		if(player.money>3)
+		if(CanAffordMoney(3))
 		{
-			player.money-=3;
+			GainMoney(-3);
 			player.life+=3;
 			GetGoodguy()->hp+=3;
 			ExplodeParticles2(PART_SLIME,me->x,me->y,MGL_randoml(FIXAMT*20),6,6);
@@ -1679,4 +1679,27 @@ bool BrutalMode(void)
 bool ClassicMode(void)
 {
 	return player.difficulty == Difficulty::BRUTAL_CLASSIC || player.difficulty == Difficulty::CLASSIC;
+}
+
+void GainMoney(int amt)
+{
+	int total = player.money + player.bigMoney * 65536;
+	total += amt;
+	if (total < 0) total = 0;
+	if (total > 9999999)
+		total = 9999999;
+	player.money = (word)(total % 65536);
+	player.bigMoney = (word)(total / 65536);
+}
+
+bool CanAffordMoney(int amt)
+{
+	int total = player.money + player.bigMoney * 65536;
+
+	return (total >= amt);
+}
+
+int TotalMoney(void)
+{
+	return player.money + player.bigMoney * 65536;
 }

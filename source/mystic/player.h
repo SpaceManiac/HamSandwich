@@ -134,8 +134,10 @@ typedef struct player_t
 	byte summonDmgBoost;
 	byte taunted;
 	byte parry;
-	byte resurrect;
-	byte expando[232-MAX_SKILLS];	// just in case!
+	word bigMoney;
+	word prevBigMoney;
+	byte skillStones;
+	byte expando[228-MAX_SKILLS];	// just in case!
 } player_t;
 
 extern player_t player;
@@ -201,6 +203,9 @@ int GetChallengeCrystals(void);
 void BeginCast(Guy* me);
 void AddToRestorationBuffer(float amt);
 bool ArmageddonIsUnderway(void);
+void GainMoney(int amt);
+bool CanAffordMoney(int amt);
+int TotalMoney(void);
 
 bool BrutalMode(void);
 bool ClassicMode(void);

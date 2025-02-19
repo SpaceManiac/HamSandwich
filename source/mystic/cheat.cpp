@@ -122,7 +122,7 @@ void DoCheat(byte w)
 			NewMessage("Level Up!",30);
 			break;
 		case 8: // money
-			player.money+=50000;
+			GainMoney(50000);
 			NewMessage("DINERO POR TODOS!",30);
 			break;
 		// THE REST ARE TEMP CHEATS!

@@ -483,6 +483,14 @@ challenge_t chal[]={
 		{GOAL_NONE,0}},
 	},
 
+	{255,5,0,"Reset Skills",0,
+		{{GOAL_NONE,0},
+		{GOAL_NONE,0},
+		{GOAL_NONE,0},
+		{GOAL_NONE,0},
+		{GOAL_NONE,0}},
+	},
+
 	{255,0,0,"Exit",0,
 		{{GOAL_NONE,0},
 		{GOAL_NONE,0},
@@ -505,6 +513,7 @@ static byte flipper=0;
 static byte forbidden[8];
 static byte nextChapter;
 static byte goalsDoneThisTime;
+static Difficulty chalDifficulty;
 
 void PickForbidden(void)
 {
@@ -698,6 +707,9 @@ byte MoveCursor(char dir,byte curs)
 		if(chal[curs].chapter>10 && chal[curs].chapter<20 && chal[curs].chapter!=15 && (chalData.bought[curs] || chal[curs].chapter>nextChapter))
 			c++;	// also skip over chapter headers for chapters you've bought or are too advanced
 
+		if (chal[curs].chapter == 255 && chal[curs].level == 5 && ClassicMode())
+			c++;	// skip over reset skills if you aren't in modern mode
+
 		if(chal[curs].chapter==15)	// skip the Super Bonus unless you've bought EVERYTHING else
 		{
 			for(i=0;i<curs;i++)
@@ -755,31 +767,25 @@ void ChallengeMenuRender(MGLDraw *mgl)
 			x=35-(abs(y-HALFHEI)*abs(y-HALFHEI))/128;
 			if(j==chalCursor)
 			{
-				//chalSpr->GetSprite(1)->Draw(x,15+y,mgl);
-
-				chalSpr->GetSprite(1)->Draw(x-4,11+y,mgl);
-				chalSpr->GetSprite(1)->Draw(x+4,19+y,mgl);
-
+				chalSpr->GetSprite(1)->Draw(x - 4, 11 + y, mgl);
+				chalSpr->GetSprite(1)->Draw(x + 4, 19 + y, mgl);
 			}
-			//else
+			if(chal[j].chapter==255)
+				chalSpr->GetSprite(1)->DrawColored(x,15+y,mgl,5,-20+(chalCursor==j)*15);
+			else if(!chalData.bought[j])
+				chalSpr->GetSprite(1)->DrawColored(x,15+y,mgl,4,-20+(chalCursor==j)*15);
+			else
 			{
-				if(chal[j].chapter==255)
-					chalSpr->GetSprite(1)->DrawColored(x,15+y,mgl,5,-20+(chalCursor==j)*15);
-				else if(!chalData.bought[j])
-					chalSpr->GetSprite(1)->DrawColored(x,15+y,mgl,4,-20+(chalCursor==j)*15);
-				else
-				{
-					if((chal[j].chapter%10)==0)	// blue for ch 1
-						chalSpr->GetSprite(1)->DrawColored(x,15+y,mgl,3,-20+(chalCursor==j)*15);
-					else if((chal[j].chapter%10)==1)	// green for ch 2
-						chalSpr->GetSprite(1)->DrawColored(x,15+y,mgl,1,-20+(chalCursor==j)*15);
-					else if((chal[j].chapter%10)==2)	// grey for ch 3
-						chalSpr->GetSprite(1)->DrawColored(x,15+y,mgl,0,-20+(chalCursor==j)*15);
-					else if((chal[j].chapter%10)==3)	// brown for ch 4
-						chalSpr->GetSprite(1)->DrawColored(x,15+y,mgl,2,-20+(chalCursor==j)*15);
-					else	// bonus levels are purple
-						chalSpr->GetSprite(1)->DrawColored(x,15+y,mgl,6,-20+(chalCursor==j)*15);
-				}
+				if((chal[j].chapter%10)==0)	// blue for ch 1
+					chalSpr->GetSprite(1)->DrawColored(x,15+y,mgl,3,-20+(chalCursor==j)*15);
+				else if((chal[j].chapter%10)==1)	// green for ch 2
+					chalSpr->GetSprite(1)->DrawColored(x,15+y,mgl,1,-20+(chalCursor==j)*15);
+				else if((chal[j].chapter%10)==2)	// grey for ch 3
+					chalSpr->GetSprite(1)->DrawColored(x,15+y,mgl,0,-20+(chalCursor==j)*15);
+				else if((chal[j].chapter%10)==3)	// brown for ch 4
+					chalSpr->GetSprite(1)->DrawColored(x,15+y,mgl,2,-20+(chalCursor==j)*15);
+				else	// bonus levels are purple
+					chalSpr->GetSprite(1)->DrawColored(x,15+y,mgl,6,-20+(chalCursor==j)*15);
 			}
 
 			Print(x-15-1,3+y-1,chal[j].name,-32,2);
@@ -886,7 +892,12 @@ void ChallengeMenuRender(MGLDraw *mgl)
 				PrintBrightGlow(5,400,"Clear all completed goals,",-4,2);
 				PrintBrightGlow(5,420,"stars, and purchased levels.",-4,2);
 			}
-
+			else if (chal[chalCursor].level == 5)	// reset goals
+			{
+				PrintBrightGlow(5, 380, "Reset Skills", -4, 2);
+				PrintBrightGlow(5, 400, "Reset your skill points,", -4, 2);
+				PrintBrightGlow(5, 420, "so you can re-assign them.", -4, 2);
+			}
 		}
 
 		if(fairyOn==1)
@@ -943,6 +954,14 @@ byte DoQuestion(void)
 			qLines=4;
 			asking=ASK_RESETSTAR;
 			qCursor=1;	// default to no
+			return 0;
+		}
+		else if (chal[chalCursor].level == 5)	// reset skills
+		{
+			fairyOn = 0;
+			oldc = 255;
+			ResetSkills();
+			MakeNormalSound(SND_BOBBYSPIN);
 			return 0;
 		}
 	}
@@ -1241,7 +1260,16 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 
 void LoadChallenge(void)
 {
-	auto f = AppdataOpen("challenge.sav");
+	owned::SDL_RWops f;
+
+	if(chalDifficulty==Difficulty::CLASSIC)
+		f = AppdataOpen("challenge.sav");
+	else if(chalDifficulty==Difficulty::MODERN)
+		f = AppdataOpen("challenge_m.sav");
+	else if (chalDifficulty == Difficulty::BRUTAL_CLASSIC)
+		f = AppdataOpen("challenge_bc.sav");
+	else if (chalDifficulty == Difficulty::BRUTAL_MODERN)
+		f = AppdataOpen("challenge_bm.sav");
 	if(!f)
 	{
 		ResetChallengeStats();
@@ -1257,7 +1285,16 @@ void LoadChallenge(void)
 
 void SaveChallenge(void)
 {
-	auto f = AppdataOpen_Write("challenge.sav");
+	owned::SDL_RWops f;
+
+	if (chalDifficulty == Difficulty::CLASSIC)
+		f = AppdataOpen_Write("challenge.sav");
+	else if (chalDifficulty == Difficulty::MODERN)
+		f = AppdataOpen_Write("challenge_m.sav");
+	else if (chalDifficulty == Difficulty::BRUTAL_CLASSIC)
+		f = AppdataOpen_Write("challenge_bc.sav");
+	else if (chalDifficulty == Difficulty::BRUTAL_MODERN)
+		f = AppdataOpen_Write("challenge_bm.sav");
 	if(f)
 	{
 		memcpy(&chalData.player,&player,sizeof(player_t));
@@ -1270,6 +1307,8 @@ void SaveChallenge(void)
 void InitChallengeMenu(MGLDraw *mgl)
 {
 	int i;
+
+	chalDifficulty = player.difficulty;	// the difficulty picker stores its value in here
 
 	GetDisplayMGL()->LoadBMP("graphics/shop.bmp");
 	backgd=(byte *)malloc(SCRWID*SCRHEI);
@@ -1635,9 +1674,7 @@ void CompleteGoals(void)
 			{
 				chalData.stars++;
 				chalData.totalStars++;
-				player.money+=10;
-				if(player.money>50000)
-					player.money=50000;
+				GainMoney(10);
 				chalData.goal[chalCursor][i]=1;
 			}
 		}

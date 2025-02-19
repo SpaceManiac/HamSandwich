@@ -698,18 +698,14 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 				if(me->type==BLT_COIN)
 				{
 					FloaterParticles(me->x,me->y,5,24,0,4);
-					if(player.money<50000)
-						player.money++;
+					GainMoney(1);
 					ChallengeEvent(CE_GET,ITM_COIN);
 				}
 				else
 				{
 					FloaterParticles(me->x,me->y,5,24,0,4);
 					FloaterParticles(me->x,me->y,5,32,-1,4);
-					if(player.money+10<50000)
-						player.money+=10;
-					else
-						player.money=50000;
+					GainMoney(10);
 					ChallengeEvent(CE_GET,ITM_BIGCOIN);
 					// double noise
 					MakeSound(SND_MONEY,me->x,me->y,SND_CUTOFF,500);

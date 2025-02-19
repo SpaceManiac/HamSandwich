@@ -805,7 +805,7 @@ word AddNumberParticle(int x, int y, int z, int value, byte color,word ID)
 {
 	if (player.disableDmgNumbers) return 65535;
 
-	if (ID != 65535 && particleList[ID]->type==PART_NUMBER)
+	if (ID != 65535 && particleList[ID]->type==PART_NUMBER && particleList[ID]->life>0)
 	{
 		particleList[ID]->x = x;
 		particleList[ID]->y = y;

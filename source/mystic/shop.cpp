@@ -51,7 +51,7 @@ char otherName[12][18]={
 	"Shootin' Socks",
 };
 
-char shopName[28][18]={
+char shopName[29][18]={
 	"Felt Hat",
 	"Moon Hat",
 	"Checkered Hat",
@@ -79,7 +79,8 @@ char shopName[28][18]={
 	"Exit",
 	"Power Stone",
 	"Shield Stone",
-	"Spell Stone"};
+	"Spell Stone",
+	"Skill Stone"};
 
 word price[25]={30, 120, 400,2000,1000, // hats (and a bonus)
 				70, 180, 600,3500,400, // staves (and a bonus)
@@ -99,7 +100,7 @@ dword gearTag[]={0,0,0,0,GEAR_POINTY,
 				GEAR_HEART,GEAR_MOON,GEAR_LAMP,GEAR_BOUNCY,GEAR_SOCKS,
 				GEAR_SOUL,GEAR_SUN,GEAR_WISDOM,GEAR_MAGNET,0};
 
-char itemDesc[28*4][64]={
+char itemDesc[29*4][64]={
 	"Mmmm, soft. This hat offers",
 	"slightly better protection",
 	"than the paper hat.",
@@ -239,6 +240,11 @@ char itemDesc[28*4][64]={
 	"these stones.  Each one will",
 	"add 10% to your spell",
 	"damage.",
+
+	"You can collect up to 99 of",
+	"these stones.  Each one will",
+	"grant you a Skill Point.",
+	"",
 };
 
 byte shopCursor=0;
@@ -289,6 +295,8 @@ word NightmarePrice(byte which)
 		return 200*(player.powerStones+2);
 	else if(which==10)
 		return 200*(player.spellStones+2);
+	else if (which == 15 && !ClassicMode())
+		return 200 * (player.skillStones + 2);
 	else
 		return price[which];
 }
@@ -302,21 +310,47 @@ void RenderPlayerGear(int x,byte brt)
 
 	if(player.nightmare || BrutalMode())
 	{
-		shopSpr->GetSprite(28)->DrawColored(x-50,5,GetDisplayMGL(),0,4);
-		sprintf(s,"%02d",player.shieldStones);
-		Print(x-32-1,21-1,s,-32,2);
-		Print(x-32+1,21+1,s,-32,2);
-		Print(x-32,21,s,0,2);
-		shopSpr->GetSprite(28)->DrawColored(x+30,5,GetDisplayMGL(),4,4);
-		sprintf(s,"%02d",player.powerStones);
-		Print(x+48-1,21-1,s,-32,2);
-		Print(x+48+1,21+1,s,-32,2);
-		Print(x+48,21,s,0,2);
-		shopSpr->GetSprite(28)->DrawColored(x+110,5,GetDisplayMGL(),1,4);
-		sprintf(s,"%02d",player.spellStones);
-		Print(x+128-1,21-1,s,-32,2);
-		Print(x+128+1,21+1,s,-32,2);
-		Print(x+128,21,s,0,2);
+		if (ClassicMode())
+		{
+			shopSpr->GetSprite(28)->DrawColored(x - 50, 5, GetDisplayMGL(), 0, 4);
+			sprintf(s, "%02d", player.shieldStones);
+			Print(x - 32 - 1, 21 - 1, s, -32, 2);
+			Print(x - 32 + 1, 21 + 1, s, -32, 2);
+			Print(x - 32, 21, s, 0, 2);
+			shopSpr->GetSprite(28)->DrawColored(x + 30, 5, GetDisplayMGL(), 4, 4);
+			sprintf(s, "%02d", player.powerStones);
+			Print(x + 48 - 1, 21 - 1, s, -32, 2);
+			Print(x + 48 + 1, 21 + 1, s, -32, 2);
+			Print(x + 48, 21, s, 0, 2);
+			shopSpr->GetSprite(28)->DrawColored(x + 110, 5, GetDisplayMGL(), 1, 4);
+			sprintf(s, "%02d", player.spellStones);
+			Print(x + 128 - 1, 21 - 1, s, -32, 2);
+			Print(x + 128 + 1, 21 + 1, s, -32, 2);
+			Print(x + 128, 21, s, 0, 2);
+		}
+		else
+		{
+			shopSpr->GetSprite(28)->DrawColored(x - 60, 5, GetDisplayMGL(), 0, 4);
+			sprintf(s, "%02d", player.shieldStones);
+			Print(x - 42 - 1, 21 - 1, s, -32, 2);
+			Print(x - 42 + 1, 21 + 1, s, -32, 2);
+			Print(x - 42, 21, s, 0, 2);
+			shopSpr->GetSprite(28)->DrawColored(x + 0, 5, GetDisplayMGL(), 4, 4);
+			sprintf(s, "%02d", player.powerStones);
+			Print(x + 18 - 1, 21 - 1, s, -32, 2);
+			Print(x + 18 + 1, 21 + 1, s, -32, 2);
+			Print(x + 18, 21, s, 0, 2);
+			shopSpr->GetSprite(28)->DrawColored(x + 60, 5, GetDisplayMGL(), 1, 4);
+			sprintf(s, "%02d", player.spellStones);
+			Print(x + 78 - 1, 21 - 1, s, -32, 2);
+			Print(x + 78 + 1, 21 + 1, s, -32, 2);
+			Print(x + 78, 21, s, 0, 2);
+			shopSpr->GetSprite(28)->DrawColored(x + 120, 5, GetDisplayMGL(), 7, 4);
+			sprintf(s, "%02d", player.skillStones);
+			Print(x + 138 - 1, 21 - 1, s, -32, 2);
+			Print(x + 138 + 1, 21 + 1, s, -32, 2);
+			Print(x + 138, 21, s, 0, 2);
+		}
 	}
 	// hat
 	shopSpr->GetSprite(1)->Draw(x-80,50,GetDisplayMGL());
@@ -531,7 +565,7 @@ void RenderPlayerGear(int x,byte brt)
 		Print(x-80,424,s,0,2);
 	}
 	// money
-	sprintf(s,"Money: $%d",player.money);
+	sprintf(s,"Money: $%d",TotalMoney());
 	Print(x-80+2,444+2,s,1,2);
 	Print(x-80,444,s,0,2);
 
@@ -556,6 +590,8 @@ byte Owned(byte w)
 		return (player.powerStones==99);
 	else if((player.nightmare || BrutalMode()) && w == 10)
 		return (player.spellStones==99);
+	else if ((player.nightmare || BrutalMode()) && w == 15 && !ClassicMode())
+		return (player.skillStones == 99);
 	else if(w>=0 && w<=3)
 		return (player.hat>=w+1);
 	else if(w>=5 && w<=8)
@@ -599,6 +635,10 @@ void RenderShop(void)
 				{
 					shopSpr->GetSprite(28)->DrawColored((i)*SHOPDX+SHOPX,SHOPY+j*SHOPDY,mgl,1,4);
 				}
+				else if (i == 0 && j == 3 && !ClassicMode())	// skill stone
+				{
+					shopSpr->GetSprite(28)->DrawColored((i)*SHOPDX + SHOPX, SHOPY + j * SHOPDY, mgl, 7, 4);
+				}
 				else
 				{
 					if(shopPic[i+j*5]!=0)
@@ -631,6 +671,8 @@ void RenderShop(void)
 			Print(5,100+5*56-20,"Power Stone",0,2);
 		else if(shopCursor==10)
 			Print(5,100+5*56-20,"Spell Stone",0,2);
+		else if (shopCursor == 15 && !ClassicMode())
+			Print(5, 100 + 5 * 56 - 20, "Skill Stone", 0, 2);
 		else
 			Print(5,100+5*56-20,shopName[(shopCursor)],0,2);
 	}
@@ -668,6 +710,8 @@ void RenderShop(void)
 			i=26*4;
 		else if(shopCursor==10)
 			i=27*4;
+		else if (shopCursor == 15 && !ClassicMode())
+			i = 28 * 4;
 		else
 			i=shopCursor*4;
 	}
@@ -711,7 +755,7 @@ void Buy(byte which)
 			MakeNormalSound(SND_UNAVAILABLE);
 			return;
 		}
-		player.money-=prc;
+		GainMoney(-prc);
 		player.shieldStones++;
 		MakeNormalSound(SND_PURCHASE);
 		return;
@@ -726,7 +770,7 @@ void Buy(byte which)
 			MakeNormalSound(SND_UNAVAILABLE);
 			return;
 		}
-		player.money-=prc;
+		GainMoney(-prc);
 		player.powerStones++;
 		MakeNormalSound(SND_PURCHASE);
 		return;
@@ -741,8 +785,24 @@ void Buy(byte which)
 			MakeNormalSound(SND_UNAVAILABLE);
 			return;
 		}
-		player.money-=prc;
+		GainMoney(-prc);
 		player.spellStones++;
+		MakeNormalSound(SND_PURCHASE);
+		return;
+	}
+	else if ((player.nightmare || BrutalMode()) && shopCursor == 15 && !ClassicMode())
+	{
+		prc = NightmarePrice(shopCursor);
+		if (player.fairyOn == FAIRY_HAGGLY)
+			prc = prc * 9 / 10;
+		if (player.skillStones == 99)
+		{
+			MakeNormalSound(SND_UNAVAILABLE);
+			return;
+		}
+		GainMoney(-prc);
+		player.skillStones++;
+		player.skillPts++;
 		MakeNormalSound(SND_PURCHASE);
 		return;
 	}
@@ -757,7 +817,7 @@ void Buy(byte which)
 		{
 			if(which+1>player.hat)
 			{
-				player.money-=prc;
+				GainMoney(-prc);
 				player.hat=which+1;
 				SetPlayerDefense();
 				MakeNormalSound(SND_PURCHASE);
@@ -768,7 +828,7 @@ void Buy(byte which)
 		{
 			if(which-4>player.staff)
 			{
-				player.money-=prc;
+				GainMoney(-prc);
 				player.staff=which-4;
 				SetPlayerDamage();
 				MakeNormalSound(SND_PURCHASE);
@@ -779,7 +839,7 @@ void Buy(byte which)
 		{
 			if(which-9>player.boots)
 			{
-				player.money-=prc;
+				GainMoney(-prc);
 				player.boots=which-9;
 				SetPlayerSpeed();
 				MakeNormalSound(SND_PURCHASE);
@@ -791,7 +851,7 @@ void Buy(byte which)
 	{
 		if((player.gear&gearTag[which])==0)
 		{
-			player.money-=prc;
+			GainMoney(-prc);
 			BuyGear(gearTag[which]);
 			MakeNormalSound(SND_PURCHASE);
 			return;
@@ -861,7 +921,7 @@ byte UpdateShop(MGLDraw *mgl)
 				prc=prc*9/10;
 		}
 
-		if(player.money>=prc)
+		if(CanAffordMoney(prc))
 			Buy(shopCursor);
 		else
 			MakeNormalSound(SND_UNAVAILABLE);

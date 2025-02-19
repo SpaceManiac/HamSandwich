@@ -354,6 +354,13 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 
 			startTime = timeGetTime();
 		}
+		if (b == 1 && title.cursor == 2)	// selected Challenge
+		{
+			if (!AWAIT DifficultyPicker(mgl, &title))	// pressed ESC on the slot picker
+				b = 0;
+
+			startTime = timeGetTime();
+		}
 		
 		now=timeGetTime();
 		if(now-startTime>1000*10)
