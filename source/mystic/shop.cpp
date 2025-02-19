@@ -278,6 +278,7 @@ void EnterShop(void)
 void LeaveShop(void)
 {
 	free(shopScr);
+	ResetInterface();
 }
 
 word NightmarePrice(byte which)
@@ -844,7 +845,7 @@ byte UpdateShop(MGLDraw *mgl)
 	}
 	if((c&CONTROL_B1) && (!(oldc&CONTROL_B1)))
 	{
-		if(shopCursor==24)
+		if (shopCursor == 24)
 			return 1;	// exit
 
 		if(player.nightmare || BrutalMode())
@@ -861,18 +862,16 @@ byte UpdateShop(MGLDraw *mgl)
 		}
 
 		if(player.money>=prc)
-		{
 			Buy(shopCursor);
-			PlayerUpdateLife();
-		}
 		else
 			MakeNormalSound(SND_UNAVAILABLE);
 	}
 	oldc=c;
 
 	JamulSoundUpdate();
-
-	if(mgl->LastKeyPressed()==27)
+	UpdateGamepadStartAndSelect();
+	if (mgl->LastKeyPressed() == 27 || GamepadSelectTapped() || GamepadStartTapped())
 		return 1;
+	
 	else return 0;
 }

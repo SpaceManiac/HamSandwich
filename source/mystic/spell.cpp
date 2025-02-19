@@ -252,7 +252,9 @@ void CastSpell(Guy *me)
 			}
 			else
 			{
-				player.wpnReload = 15 - SkillValue(SKILL_SEEKER) * 6 / 2;
+				i = SkillValue(SKILL_SEEKER) * 6 / 2;
+				if (i > 14) i = 14;
+				player.wpnReload = 15 - i;
 				if (player.wpnReload < 1)
 					player.wpnReload = 1;
 			}

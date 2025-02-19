@@ -6,6 +6,7 @@
 #include "appdata.h"
 #include "pause.h"
 #include "skills.h"
+#include "game.h"
 
 AchieveDef achieveDef[] = {
 	{
@@ -97,6 +98,13 @@ byte UpdateAchieveMenu(MGLDraw *mgl)
 	dword btn,j;
 	int i;
 
+	backY-=2;
+	if (backY < 0)
+		backY += 256;
+	backX--;
+	if (backX < 0)
+		backX += 256;
+
 	c=mgl->LastKeyPressed();
 	c2=GetControls()|GetArrows();
 
@@ -105,36 +113,46 @@ byte UpdateAchieveMenu(MGLDraw *mgl)
 
 	if((c2&CONTROL_UP) && (!(oldc&CONTROL_UP)))
 	{
-		cursor--;
-		if(cursor>5)
-			cursor=5;
+		if (cursor == 100)
+			cursor = (int)Achievement::NUM_ACHIEVES - 1;
+		else if (cursor > 5)
+			cursor -= 6;
+		else cursor = 100;
 	}
 	if((c2&CONTROL_DN) && (!(oldc&CONTROL_DN)))
 	{
-		cursor++;
-		if(cursor>5)
-			cursor=0;
-	}
-	if((c2&(CONTROL_B1|CONTROL_B2)) && (!(oldc&(CONTROL_B1|CONTROL_B2))))
-	{
-		switch(cursor)
+		if (cursor < (int)Achievement::NUM_ACHIEVES)
 		{
-			case 0:
-				MakeNormalSound(SND_GOATSHOOT);
-				break;
-			case 1:
-				
-				break;
-			case 2:
-				break;
-			case 3:
-				break;
-			case 4:
-				break;
-			case 5:
-				return 1;
-				break;
+			cursor += 6;
+			if (cursor > (int)Achievement::NUM_ACHIEVES - 1)
+				cursor = 100;
 		}
+		else cursor = 0;
+	}
+	if ((c2 & CONTROL_LF) && (!(oldc & CONTROL_LF)))
+	{
+		if (cursor != 100)
+		{
+			if (cursor % 6)
+				cursor--;
+			else
+				cursor += 5;
+		}
+	}
+	if ((c2 & CONTROL_RT) && (!(oldc & CONTROL_RT)))
+	{
+		if (cursor != 100)
+		{
+			if ((cursor % 6)<5)
+				cursor++;
+			else
+				cursor -= 5;
+		}
+	}
+	if((c2&CONTROL_B1) && (!(oldc&CONTROL_B1)))
+	{
+		if (cursor == 100)
+			return 1;
 	}
 
 	oldc=c2;
@@ -144,10 +162,9 @@ byte UpdateAchieveMenu(MGLDraw *mgl)
 
 void RenderAchieveMenu(MGLDraw *mgl)
 {
-	int x, y;
+	int x,y;
 
-	x = backX;
-	if (x > 0) x -= 256;
+	x = 0;
 	y = backY;
 	if (y > 0) y -= 256;
 	while (1)
@@ -159,13 +176,16 @@ void RenderAchieveMenu(MGLDraw *mgl)
 			x2 = SCRWID;
 		if (y2 > SCRHEI)
 			y2 = SCRHEI;
+		
 		for (int j = 0; j < (y2 - y); j++)
-			memcpy(&(mgl->GetScreen()[x + (j+y) * SCRWID]), &backgd[j * 256], x2 - x);
+		{
+			if(j+y>=0 && j+y<SCRHEI)
+				memcpy(&(mgl->GetScreen()[x + (j + y) * SCRWID]), &backgd[j * 256], x2 - x);
+		}
 		x += 256;
 		if (x >= SCRWID)
 		{
-			x = backX;
-			if (x > 0) x -= 256;
+			x = 0;
 			y += 256;
 			if (y >= SCRHEI)
 				break;
@@ -198,6 +218,19 @@ void RenderAchieveMenu(MGLDraw *mgl)
 			y += 60;
 		}
 	}
+
+	if (cursor == 100)
+	{
+		RenderSkillBox(SCRWID / 2 - 40, SCRHEI - 40-4, SCRWID / 2 + 40, SCRHEI - 40 + 20, 16, 31);
+		RenderSkillBox(SCRWID / 2 - 40+2, SCRHEI - 40-4+2, SCRWID / 2 + 40-2, SCRHEI - 40 + 20-2, 16, 5);
+	}
+	else
+	{
+		RenderSkillBox(SCRWID / 2 - 40, SCRHEI - 40-4, SCRWID / 2 + 40, SCRHEI - 40 + 20, 3*32+16, 3*32+4);
+		RenderSkillBox(SCRWID / 2 - 40 + 2, SCRHEI - 40 -4 + 2, SCRWID / 2 + 40 - 2, SCRHEI - 40 + 20 - 2, 3*32+16, 3*32+4);
+	}
+	int len = GetStrLength("Exit", 2);
+	PrintBrightGlow(SCRWID/2 - len/2, SCRHEI - 40-3, "Exit", (cursor == 100) * 31, 2);
 }
 
 TASK(void) AchieveMenu(MGLDraw *mgl)
@@ -214,19 +247,22 @@ TASK(void) AchieveMenu(MGLDraw *mgl)
 		PlaySong(SONG_SHOP);
 	InitAchieveMenu();
 
-	while(b==0)
+	while (b == 0)
 	{
-		lastTime+=TimeLength();
+		lastTime += TimeLength();
 		StartClock();
-		b=UpdateAchieveMenu(mgl);
+		while (lastTime >= TIME_PER_FRAME)
+		{
+			b = UpdateAchieveMenu(mgl);
+			lastTime -= TIME_PER_FRAME;
+		}
 		RenderAchieveMenu(mgl);
 		AWAIT mgl->Flip();
-		if(!mgl->Process())
+		if (!mgl->Process())
 		{
 			ExitAchieveMenu();
 			CO_RETURN;
 		}
-
 		EndClock();
 	}
 	ExitAchieveMenu();

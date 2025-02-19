@@ -776,7 +776,8 @@ void HandleKeyPresses(void)
 		player.level = 50;
 #endif
 
-	if(lastKey==27 && gameMode==GAMEMODE_PLAY && !windingUp && !windingDown && !newGame)
+	UpdateGamepadStartAndSelect();
+	if((lastKey==27 || GamepadSelectTapped() || GamepadStartTapped()) && gameMode == GAMEMODE_PLAY && !windingUp && !windingDown && !newGame)
 	{
 		InitPauseMenu();
 		gameMode=GAMEMODE_MENU;

@@ -23,12 +23,14 @@ byte saveChapter[5];
 byte saveHour[5],saveMin[5];
 Difficulty saveDiff[5];
 static byte armaBrt=0;
+static byte oldc = 255;
 
 void ResetPauseMenu(void)
 {
 	pauseX=-250;
 	subX=-250;
 	cursor=0;
+	oldc = 255;
 }
 
 void SetSubCursor(byte s)
@@ -188,6 +190,7 @@ void RenderSkillMenu(void)
 			{
 				if (subcursor == i + j * 6)
 				{
+					RenderSkillBox(x-2, y-2, x + 41, y + 41, 32 * 5 + 31, 32*5+8);
 					RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 31, 3);
 					BlitIconGlow(36, x + 4, y + 4, 0);
 
@@ -203,6 +206,7 @@ void RenderSkillMenu(void)
 			{
 				if (subcursor == i + j * 6)
 				{
+					RenderSkillBox(x - 2, y - 2, x + 41, y + 41, 32 * 7 + 31, 32 * 7 + 8);
 					RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 31, 32 * 7 + 3 + player.skill[i + j * 6] * 2);
 					BlitIconGlow(i + j * 6, x + 4, y + 4, 0);
 
@@ -415,7 +419,6 @@ void UpdateUnPausedMenu(void)
 byte UpdatePauseMenu(MGLDraw *mgl)
 {
 	byte c;
-	static byte oldc=0;
 	static byte reptCounter=0;
 
 	armaBrt++;
@@ -482,8 +485,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					effCursor--;
 		}
 
-		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
-		   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
+		if((c&CONTROL_B1) && (!(oldc&CONTROL_B1)))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 
@@ -552,8 +554,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			if(subcursor==5)
 				subcursor=0;
 		}
-		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
-		   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
+		if((c&CONTROL_B1) && (!(oldc&CONTROL_B1)))
 		{
 			if(effCursor==1)	// Load
 			{
@@ -586,30 +587,40 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			MakeNormalSound(SND_MENUCLICK);
 			subcursor--;
 			if (subcursor == 255)
-				subcursor = 13;
+				subcursor = 14;
 		}
 		if ((c & CONTROL_DN) && (!reptCounter))
 		{
 			MakeNormalSound(SND_MENUCLICK);
 			subcursor++;
-			if (subcursor > 13)
+			if (subcursor > 14)
 				subcursor = 0;
 		}
-		if (((c & CONTROL_B1) && (!(oldc & CONTROL_B1))) ||
-			((c & CONTROL_B2) && (!(oldc & CONTROL_B2))))
+		if ((c & CONTROL_B1) && (!(oldc & CONTROL_B1)))
 		{
 			switch (subcursor)
 			{
 				case 0:
+					MakeNormalSound(SND_MENUSELECT);
 					player.disableDmgNumbers = 1 - player.disableDmgNumbers;
 					break;
 				case 1:
 					if (player.gear & GEAR_SOCKS)
-						player.disableMoveNShoot = 1-player.disableMoveNShoot;
+					{
+						MakeNormalSound(SND_MENUSELECT);
+						player.disableMoveNShoot = 1 - player.disableMoveNShoot;
+					}
+					else
+						MakeNormalSound(SND_UNAVAILABLE);
 					break;
 				case 2:
 					if (player.gear & GEAR_POINTY)
-						player.disableThorns = 1-player.disableThorns;
+					{
+						MakeNormalSound(SND_MENUSELECT);
+						player.disableThorns = 1 - player.disableThorns;
+					}
+					else
+						MakeNormalSound(SND_UNAVAILABLE);
 					break;
 				case 3:
 				case 4:
@@ -620,17 +631,29 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 				case 9:
 				case 10:
 				case 11:
-					if (player.spell[subcursor-3]==2)
-						player.downgradeSpell[subcursor-3] = 1 - player.downgradeSpell[subcursor-3];
+					if (player.spell[subcursor - 3] == 2)
+					{
+						MakeNormalSound(SND_MENUSELECT);
+						player.downgradeSpell[subcursor - 3] = 1 - player.downgradeSpell[subcursor - 3];
+					}
+					else
+						MakeNormalSound(SND_UNAVAILABLE);
 					break;
 				case 12:
 					if (PlayerHasSword())
+					{
+						MakeNormalSound(SND_MENUSELECT);
 						player.disableSword = 1 - player.disableSword;
+					}
+					else
+						MakeNormalSound(SND_UNAVAILABLE);
 					break;
 				case 13:
+					MakeNormalSound(SND_MENUSELECT);
 					player.enableQuickCast = 1 - player.enableQuickCast;
 					break;
 				case 14:
+					MakeNormalSound(SND_MENUSELECT);
 					subMode = SUBMODE_NONE;
 					break;
 			}
@@ -688,8 +711,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					subcursor++;
 			}
 		}
-		if (((c & CONTROL_B1) && (!(oldc & CONTROL_B1))) ||
-			((c & CONTROL_B2) && (!(oldc & CONTROL_B2))))
+		if ((c & CONTROL_B1) && (!(oldc & CONTROL_B1)))
 		{
 			if (subcursor == 36)
 			{
@@ -708,20 +730,24 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			}
 			else // a skill
 			{
-				if (player.skillPts > 0 && player.skill[subcursor] < MAX_SKILL_LVL && (skillList[subcursor].spellReq==255 || player.spell[skillList[subcursor].spellReq]>0))
+				if (player.skillPts > 0 && player.skill[subcursor] < MAX_SKILL_LVL && (skillList[subcursor].spellReq == 255 || player.spell[skillList[subcursor].spellReq] > 0))
 				{
 					MakeNormalSound(SND_GETBRAIN);
 					player.skill[subcursor]++;
 					player.skillPts--;
 					PlayerUpdateLife();
 				}
+				else
+					MakeNormalSound(SND_UNAVAILABLE);
 			}
 		}
 	}
-	oldc=c;
 
+	oldc = c;
 	HandlePauseKeyPresses(mgl);
-	if(lastKey==27)	// hit ESC to exit pause menu
+	UpdateGamepadStartAndSelect();
+
+	if(((c&CONTROL_B2) && !(oldc&CONTROL_B2)) || lastKey==27 || GamepadSelectTapped() || GamepadStartTapped())	// hit ESC to exit pause menu
 	{
 		MakeNormalSound(SND_MENUSELECT);
 		if(subMode==SUBMODE_NONE)
@@ -730,5 +756,6 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			subMode=SUBMODE_NONE;
 		lastKey=0;
 	}
+	
 	return 1;
 }

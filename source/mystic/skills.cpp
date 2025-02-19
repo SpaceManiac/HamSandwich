@@ -3,6 +3,7 @@
 #include "player.h"
 #include "hammusic.h"
 #include "spell.h"
+#include "fairy.h"
 
 skill_t skillList[] = {
 	{"Kid Beefy",
@@ -268,7 +269,15 @@ void DescribeSkill(byte skill,int x,int y)
 
 float SkillValue(byte skill)
 {
-	return (float)player.skill[skill] * skillList[skill].amtPerPoint + skillList[skill].baseVal;
+	if (player.fairyOn == FAIRY_CASTY &&
+		(skill == SKILL_ENERGYRATE || skill == SKILL_FLAMEON || skill == SKILL_SEEKER ||
+			skill == SKILL_INFERNO || skill == SKILL_ICEPOWER || skill == SKILL_BERSERK ||
+			skill == SKILL_SUMMON || skill==SKILL_ARMOR || skill==SKILL_HEAL))	// 20% boost to skill value, for the skills that are equivalent to spell levels
+	{
+		return (float)player.skill[skill] * (skillList[skill].amtPerPoint*1.2f) + skillList[skill].baseVal;
+	}
+	else
+		return (float)player.skill[skill] * skillList[skill].amtPerPoint + skillList[skill].baseVal;
 }
 
 void InitIcons(void)

@@ -540,3 +540,38 @@ void DrawFillBox(int x,int y,int x2,int y2,byte c)
 {
 	mgl->FillBox(x,y,x2,y2,c);
 }
+
+byte startButtonState, selectButtonState;
+bool GamepadStartTapped(void)
+{
+	return (startButtonState == 2);
+}
+
+bool GamepadSelectTapped(void)
+{
+	return (selectButtonState == 2);
+}
+
+void UpdateGamepadStartAndSelect(void)
+{
+	dword d = GetGamepadButtons();
+	if (d & (1 << SDL_CONTROLLER_BUTTON_START))
+	{
+		if (startButtonState == 0)
+			startButtonState = 2;
+		else
+			startButtonState = 1;
+	}
+	else
+		startButtonState = 0;
+
+	if (d & (1 << SDL_CONTROLLER_BUTTON_BACK))
+	{
+		if (selectButtonState == 0)
+			selectButtonState = 2;
+		else
+			selectButtonState = 1;
+	}
+	else
+		selectButtonState = 0;
+}

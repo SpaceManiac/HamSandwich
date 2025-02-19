@@ -191,6 +191,19 @@ void DrawExperience(void)
 	}
 }
 
+void ResetInterface(bool fillLifeAndMana)
+{
+	PlayerUpdateLife();
+	if (fillLifeAndMana)
+	{
+		player.life = player.maxLife;
+		player.mana = player.maxMana;
+	}
+	
+	curLife = player.life;
+	curMana = player.mana;
+}
+
 void UpdateInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,byte wpn,byte ammo,
 					 byte hamSpeed)
 {
