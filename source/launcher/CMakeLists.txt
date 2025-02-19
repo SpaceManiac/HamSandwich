@@ -63,5 +63,5 @@ endif()
 
 install(TARGETS launcher COMPONENT launcher/executables)
 if(NOT APPLE)
-	install(TARGETS libcurl_shared ARCHIVE EXCLUDE_FROM_ALL COMPONENT launcher/executables)
+	install(TARGETS libcurl_shared LIBRARY RUNTIME EXCLUDE_FROM_ALL COMPONENT launcher/executables)
 endif()

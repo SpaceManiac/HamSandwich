@@ -23,3 +23,7 @@ add_library(jtjson STATIC
 )
 target_link_libraries(jtjson PRIVATE double-conversion)
 target_include_directories(jtjson PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+
+if (MSVC)
+    target_compile_options(jtjson PRIVATE "/Zc:__cplusplus")
+endif()
