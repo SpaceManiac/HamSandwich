@@ -6,11 +6,13 @@
 #include "appdata.h"
 #include "spell.h"
 #include "skills.h"
+#include "runes.h"
 
 #define SUBMODE_NONE	 0
 #define SUBMODE_SLOTPICK 1
 #define SUBMODE_SKILLS	 2
 #define SUBMODE_QOL		 3
+#define SUBMODE_RUNES	 4
 
 byte cursor=0;
 static byte subcursor=0,effCursor=0;
@@ -68,32 +70,38 @@ void RenderPauseMenu(void)
 	}
 	else // modern menu
 	{
+		int hgt = 23;
 		PrintBrightGlow(pauseX + 10, 240, "Cancel", -16 + (cursor == 0) * 16, 2);
 		char s[32];
 		sprintf(s, "Skills (%d)", player.skillPts);
-		PrintBrightGlow(pauseX + 10, 240+26*1, s, -16 + (cursor == 1) * 16, 2);
+		PrintBrightGlow(pauseX + 10, 240+hgt*1, s, -16 + (cursor == 1) * 16, 2);
+		PrintBrightGlow(pauseX + 10, 240 + hgt * 2, "Runes", -16 + (cursor == 2) * 16, 2);
+
 		if (!Challenging())
-			PrintBrightGlow(pauseX + 10, 240+26*2, "Load", -16 + (cursor == 2) * 16, 2);
+			PrintBrightGlow(pauseX + 10, 240+hgt*3, "Load", -16 + (cursor == 3) * 16, 2);
 
 		if (giveUp == 0)
-			PrintBrightGlow(pauseX + 10, 240+26*3, "Save", -16 + (cursor == 3) * 16, 2);
+			PrintBrightGlow(pauseX + 10, 240+hgt*4, "Save", -16 + (cursor == 4) * 16, 2);
 		else if (giveUp == 2)	// random battle
-			PrintBrightGlow(pauseX + 10, 240+26*3, "Run Away", -16 + (cursor == 3) * 16, 2);
+			PrintBrightGlow(pauseX + 10, 240+hgt*4, "Run Away", -16 + (cursor == 4) * 16, 2);
 		else 	// regular level
-			PrintBrightGlow(pauseX + 10, 240+26*3, "Give Up", -16 + (cursor == 3) * 16, 2);
+			PrintBrightGlow(pauseX + 10, 240+hgt*4, "Give Up", -16 + (cursor == 4) * 16, 2);
 
-		PrintBrightGlow(pauseX + 10, 240+26*4, "Sound:", -16 + (cursor == 4) * 16, 2);
-		PrintBrightGlow(pauseX + 10 + 90, 240+26*4, onoff[opt.soundVol], -16 + (cursor == 4) * 16, 2);
+		PrintBrightGlow(pauseX + 10, 240+hgt*5, "Sound:", -16 + (cursor == 5) * 16, 2);
+		PrintBrightGlow(pauseX + 10 + 90, 240+hgt*5, onoff[opt.soundVol], -16 + (cursor == 5) * 16, 2);
 
-		PrintBrightGlow(pauseX + 10, 240+26*5, "Music:", -16 + (cursor == 5) * 16, 2);
-		PrintBrightGlow(pauseX + 10 + 90, 240+26*5, onoff[opt.musicVol], -16 + (cursor == 5) * 16, 2);
-		PrintBrightGlow(pauseX + 10, 240 + 26 * 6, "Weird Settings", -16 + (cursor == 6) * 16, 2);
-		PrintBrightGlow(pauseX + 10, 240+26*7, "Quit Game", -16 + (cursor == 7) * 16, 2);
+		PrintBrightGlow(pauseX + 10, 240+hgt*6, "Music:", -16 + (cursor == 6) * 16, 2);
+		PrintBrightGlow(pauseX + 10 + 90, 240+hgt*6, onoff[opt.musicVol], -16 + (cursor == 6) * 16, 2);
+		PrintBrightGlow(pauseX + 10, 240 + hgt * 7, "Weird Settings", -16 + (cursor == 7) * 16, 2);
+		PrintBrightGlow(pauseX + 10, 240+hgt*8, "Quit Game", -16 + (cursor == 8) * 16, 2);
+
 		RenderSlotPickMenu();
 		if(subMode==SUBMODE_SKILLS)
 			RenderSkillMenu();
 		if (subMode == SUBMODE_QOL)
 			RenderWeirdMenu();
+		if (subMode == SUBMODE_RUNES)
+			RenderRuneMenu();
 	}
 }
 
@@ -252,6 +260,77 @@ void RenderSkillMenu(void)
 	else
 		RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 35, SCRWID - 10, SCRHEI - 30 - 15, 32 * 5 + 16, 32 * 5 + 6);
 	PrintBrightGlow(SCRWID - 80 + 4+12, SCRHEI - 30 - 35, "Exit", (subcursor == 37) * 31, 2);
+}
+
+void RenderRuneMenu(void)
+{
+	int i;
+	char s[32];
+
+	RenderSkillBox(SCRWID / 2, 30, SCRWID - 2, SCRHEI - 30, 5 * 32 + 20, 5 * 32 + 8);
+	RenderSkillBox(SCRWID / 2 + 2, 30 + 2, SCRWID - 2 - 2, SCRHEI - 30 - 2, 5 * 32 + 16, 5 * 32 + 8);
+
+	PrintBrightGlow(SCRWID / 2 + 15, 32, "Mystic Runes", 0, 0);
+	int x, y;
+	int spacing = 50;
+	x = SCRWID / 2 + SCRWID / 4 - spacing * 3 + 5;
+	y = 70;
+
+	for (int i = 0; i < (int)Rune::NUM_RUNES; i++)
+	{
+		
+		if (0)	// don't have this rune
+		{
+			if (subcursor == i)
+			{
+				BlitIcon(241, x + 4, y + 4, 0, 0);
+				DescribeRune((Rune)i, SCRWID / 2 + 10, SCRHEI - 30 - 85);
+			}
+			else
+			{
+				BlitIcon(241, x + 4, y + 4, 0, -15);
+			}
+		}
+		else
+		{
+			if (subcursor == i)
+			{
+				BlitIcon(241, x + 4, y + 4, 0, 0);
+
+				DescribeRune((Rune)i, SCRWID / 2 + 10, SCRHEI - 30 - 85);
+			}
+			else
+			{
+				BlitIcon(241, x + 4, y + 4, 0, -15);
+			}
+		}
+		if (subcursor == i)
+			BlitIconBit(558, 437, 558 + 41, 437 + 42, x, y, 255, 0);
+
+		x += spacing;
+		if (x > SCRWID - spacing)
+		{
+			x= SCRWID / 2 + SCRWID / 4 - spacing * 3 + 5;
+			y += spacing;
+		}
+	}
+
+	BlitIconBit(2, 467, 13, 477, SCRWID - 40-14, SCRHEI - 30 - 55, 255, 0);
+	sprintf(s, "%02d", player.runeStones);
+	PrintBrightGlow(SCRWID - 40, SCRHEI - 30 - 55, s, 31, 1);
+
+	// exit
+	if (subcursor == 37)
+	{
+		RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 35, SCRWID - 10, SCRHEI - 30 - 15, 32 * 5 + 31, 32 * 5 + 10);
+		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85, "Find Silent Runes hidden in the", 0, 1);
+		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85+ 14, "world. Enemies drop Runestones.", 0, 1);
+		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14*2, "Use them to awaken Silent", 0, 1);
+		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14*3, "Runes and to upgrade them.", 0, 1);
+	}
+	else
+		RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 35, SCRWID - 10, SCRHEI - 30 - 15, 32 * 5 + 16, 32 * 5 + 6);
+	PrintBrightGlow(SCRWID - 80 + 4 + 12, SCRHEI - 30 - 35, "Exit", (subcursor == 37) * 31, 2);
 }
 
 void RenderWeirdOption(int x, int y, const char* txt, bool on, byte cursorOn,bool active)
@@ -444,7 +523,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 	if((!oldc) || (reptCounter>10))
 		reptCounter=0;
 
-	byte maxCursor = 4 + (!ClassicMode()) * 3;
+	byte maxCursor = 4 + (!ClassicMode()) * 4;
 	byte loadSpot = 1 + (!ClassicMode());
 	if(subMode==SUBMODE_NONE)	// not in any submenu
 	{
@@ -471,20 +550,9 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		effCursor = cursor;
 		if (!ClassicMode())
 		{
+			byte conversions[] = { 0,5,8,1,2,6,3,7,4 };
 			// convert the cursor position into the classic equivalent if there is one, a new slot if not
-			if (cursor == 1)
-				effCursor = 5;
-			else if (cursor == 4)
-				effCursor = 6;
-			else if (cursor == 5)
-				effCursor = 3;
-			else if (cursor == 6)
-				effCursor = 7;
-			else if (cursor == 7)
-				effCursor = 4;
-			else
-				if (cursor > 0)
-					effCursor--;
+			effCursor = conversions[cursor];
 		}
 
 		if((c&CONTROL_B1) && (!(oldc&CONTROL_B1)))
@@ -536,6 +604,10 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					subMode = SUBMODE_QOL;
 					subcursor = 0;
 					MakeNormalSound(SND_BERSERK);
+					break;
+				case 8:	// runes
+					subMode = SUBMODE_RUNES;
+					subcursor = 0;
 					break;
 			}
 		}
@@ -737,6 +809,63 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 				}
 				else
 					MakeNormalSound(SND_UNAVAILABLE);
+			}
+		}
+	}
+	else if (subMode == SUBMODE_RUNES)
+	{
+		if ((c & CONTROL_UP) && (!reptCounter))
+		{
+			MakeNormalSound(SND_MENUCLICK);
+			if (subcursor < 6)
+				subcursor = 37;	// the exit button
+			else if (subcursor == 37)
+				subcursor=(int)Rune::NUM_RUNES-1;
+			else
+				subcursor -= 6;
+		}
+		if ((c & CONTROL_DN) && (!reptCounter))
+		{
+			MakeNormalSound(SND_MENUCLICK);
+			if (subcursor == 37)
+				subcursor = 0;
+			else if (subcursor >= (int)Rune::NUM_RUNES-6)
+				subcursor = 37;
+			else
+				subcursor += 6;
+		}
+		if ((c & CONTROL_LF) && (!reptCounter))
+		{
+			if (subcursor < 37)
+			{
+				MakeNormalSound(SND_MENUCLICK);
+				if ((subcursor % 6) == 0)
+					subcursor += 5;
+				else
+					subcursor--;
+			}
+		}
+		if ((c & CONTROL_RT) && (!reptCounter))
+		{
+			if (subcursor < 37)
+			{
+				MakeNormalSound(SND_MENUCLICK);
+				if ((subcursor % 6) == 5)
+					subcursor -= 5;
+				else
+					subcursor++;
+			}
+		}
+		if ((c & CONTROL_B1) && (!(oldc & CONTROL_B1)))
+		{
+			if (subcursor == 37)
+			{
+				MakeNormalSound(SND_MENUSELECT);
+				subMode = SUBMODE_NONE;
+			}
+			else // a rune
+			{
+				MakeNormalSound(SND_UNAVAILABLE);
 			}
 		}
 	}

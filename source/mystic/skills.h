@@ -78,6 +78,7 @@ extern skill_t skillList[];
 void InitIcons(void);
 void BlitIcon(byte icon, int x, int y, byte color, char bright);
 void BlitIconGlow(byte icon, int x, int y, char bright);
+void BlitIconBit(int srcx, int srcy, int srcx2, int srcy2, int x, int y, byte color, char bright);
 void ExitIcons(void);
 void ResetSkills(void);
 

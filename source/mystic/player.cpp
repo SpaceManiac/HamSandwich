@@ -38,6 +38,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	compassBigClock=0;
 	if(initWhat==INIT_GAME)	// initialize everything, this is to start a whole new game
 	{
+		player.runeStones = 0;
 		player.vaultOpened=0;
 		player.curSpell=0;
 		player.nightmare=0;
@@ -64,6 +65,9 @@ void InitPlayer(byte initWhat,byte world,byte level)
 			if(i<4)
 				player.lunacyKey[i]=0;
 		}
+		for (i = 0; i < (int)Rune::NUM_RUNES; i++)
+			player.runes[i] = 0;
+
 		player.levelsPassed=0;
 		for(i=0;i<10;i++)
 			player.spell[i]=0;

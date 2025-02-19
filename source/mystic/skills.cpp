@@ -314,6 +314,32 @@ void BlitIcon(byte icon, int x, int y, byte color,char bright)
 		}
 }
 
+void BlitIconBit(int srcx,int srcy,int srcx2,int srcy2, int x, int y, byte color, char bright)
+{
+	for (int j = srcy; j <= srcy2; j++)
+		for (int i = srcx; i <= srcx2; i++)
+		{
+			if (i >= 0 && j >= 0 && i < SCRWID && j < SCRHEI)
+			{
+				byte b = iconBMP[i + j * 640];
+				if (b != 0)
+				{
+					byte b2 = (b & (~31));
+					b = (b & 31);
+					if (bright<0 && -bright>b)
+						b = 0;
+					else if (bright > 0 && b + bright > 31)
+						b = 31;
+					else
+						b += bright;
+					if (color != 255)
+						b2 = color * 32;
+					GetDisplayMGL()->GetScreen()[(x + i-srcx) + (y + j-srcy) * SCRWID] = b+b2;
+				}
+			}
+		}
+}
+
 void BlitIconGlow(byte icon, int x, int y, char bright)
 {
 	int start = (icon % 20) * 32 + (icon / 20) * 32 * 640;

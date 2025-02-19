@@ -10,6 +10,7 @@
 #include "world.h"
 #include "intface.h"
 #include "skills.h"
+#include "runes.h"
 
 // secondary weapon defines
 #define WPN_NONE     0
@@ -137,7 +138,9 @@ typedef struct player_t
 	word bigMoney;
 	word prevBigMoney;
 	byte skillStones;
-	byte expando[228-MAX_SKILLS];	// just in case!
+	byte runes[(int)Rune::NUM_RUNES];
+	word runeStones;
+	byte expando[226-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
 } player_t;
 
 extern player_t player;

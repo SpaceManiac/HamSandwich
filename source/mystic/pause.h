@@ -10,6 +10,7 @@ void RenderPauseMenu(void);
 void RenderSlotPickMenu(void);
 void RenderSkillMenu(void);
 void RenderWeirdMenu(void);
+void RenderRuneMenu(void);
 byte UpdatePauseMenu(MGLDraw *mgl);
 void UpdateUnPausedMenu();
 void InitPauseMenu(void);
