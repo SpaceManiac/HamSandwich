@@ -1395,6 +1395,10 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 				if(j<MonsterHP(type)/10)
 					j=MonsterHP(type)/10;
 
+				if (!ClassicMode() && Random(1000) < MonsterHP(type))
+				{
+					FireBullet(x, y, 0, BLT_RUNESTONE);
+				}
 				int freeBig = 0;
 				if (j > 50)
 				{

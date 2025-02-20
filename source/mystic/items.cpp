@@ -35,6 +35,14 @@ void RenderItem(int x,int y,byte type,char bright)
 	{
 		case ITM_NONE:
 			break;
+		case ITM_SILENTRUNE:
+		{
+			b = (glowism % 8)/2;
+			if (b==3) b = 1;
+			SprDraw(x, y, 0, 255, bright + abs((glowism & 7) - 3), itmSpr->GetSprite(281+b), DISPLAY_DRAWME);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(281+b), DISPLAY_DRAWME | DISPLAY_SHADOW);
+		}
+			break;
 		case ITM_HAMMERUP:
 			SprDraw(x,y,0,255,bright+abs((glowism&7)-3),itmSpr->GetSprite(0),DISPLAY_DRAWME|DISPLAY_GLOW);
 			break;
@@ -226,6 +234,9 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 	switch(type)
 	{
 		case ITM_NONE:
+			break;
+		case ITM_SILENTRUNE:
+			itmSpr->GetSprite(281)->DrawBright(x, y, mgl, bright);
 			break;
 		case ITM_HAMMERUP:
 			itmSpr->GetSprite(0)->DrawBright(x,y,mgl,bright);

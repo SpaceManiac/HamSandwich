@@ -33,6 +33,7 @@
 #define ITM_LETTERI  26
 #define ITM_LETTERC	 27
 #define ITM_CHLGCRYSTAL 28
+#define ITM_SILENTRUNE 29
 
 #define ITM_SMLROCKS 30
 #define ITM_HOLETREE 31

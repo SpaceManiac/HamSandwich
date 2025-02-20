@@ -327,6 +327,7 @@ void RenderRuneMenu(void)
 		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85+ 14, "world. Enemies drop Runestones.", 0, 1);
 		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14*2, "Use them to awaken Silent", 0, 1);
 		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14*3, "Runes and to upgrade them.", 0, 1);
+		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14 * 4, "3 Runes may be equipped.", 0, 1);
 	}
 	else
 		RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 35, SCRWID - 10, SCRHEI - 30 - 15, 32 * 5 + 16, 32 * 5 + 6);

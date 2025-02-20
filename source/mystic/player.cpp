@@ -669,6 +669,13 @@ byte PlayerGetItem(byte itm,int x,int y)
 		ChallengeEvent(CE_GET,itm);
 	switch(itm)
 	{
+		case ITM_SILENTRUNE:
+			NewMessage("Rune!", 75);
+			playerGlow = 64;
+			FloaterParticles(x, y, 1, 32, -1, 8);
+			FloaterParticles(x, y, 1, 10, 1, 8);
+			return 0;
+			break;
 		case ITM_CHLGCRYSTAL:
 			chlgCrystals--;
 			if(chlgCrystals==0)

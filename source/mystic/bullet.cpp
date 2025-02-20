@@ -146,6 +146,7 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 		case BLT_COIN:	// reflects off walls
 		case BLT_BIGCOIN:
 		case BLT_BIGYELLOW:
+		case BLT_RUNESTONE:
 			me->x-=me->dx;
 			me->dx=-me->dx;
 			me->facing=((byte)(4-me->facing))&7;
@@ -284,6 +285,7 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 		case BLT_COIN:	// reflects off walls
 		case BLT_BIGCOIN:
 		case BLT_BIGYELLOW:
+		case BLT_RUNESTONE:
 			me->y-=me->dy;
 			me->dy=-me->dy;
 			me->facing=(8-me->facing)&7;
@@ -407,8 +409,7 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_COIN:
 		case BLT_BIGCOIN:
-			//if(me->dz<-FIXAMT)	// don't make it on small bounces, because it'd be annoying
-				//MakeSound(SND_HAMMERREFLECT,me->x,me->y,SND_CUTOFF,850); ching!
+		case BLT_RUNESTONE:
 			me->dz=-me->dz*7/8;
 			me->z=0;
 			x=(me->x>>FIXSHIFT)/TILE_WIDTH;
@@ -693,13 +694,21 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_COIN:
 		case BLT_BIGCOIN:
+		case BLT_RUNESTONE:
 			if(FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,0,0,0,map,world))
 			{
 				if(me->type==BLT_COIN)
 				{
 					FloaterParticles(me->x,me->y,5,24,0,4);
 					GainMoney(1);
+					MakeSound(SND_MONEY, me->x, me->y, SND_CUTOFF, 500);
 					ChallengeEvent(CE_GET,ITM_COIN);
+				}
+				else if (me->type == BLT_RUNESTONE)
+				{
+					if (player.runeStones < 50000)
+						player.runeStones++;
+					MakeSound(SND_CHLGCRYSTAL, me->x, me->y, SND_CUTOFF, 500);
 				}
 				else
 				{
@@ -708,10 +717,11 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 					GainMoney(10);
 					ChallengeEvent(CE_GET,ITM_BIGCOIN);
 					// double noise
+					MakeSound(SND_MONEY, me->x, me->y, SND_CUTOFF, 500);
 					MakeSound(SND_MONEY,me->x,me->y,SND_CUTOFF,500);
 				}
 				me->type=BLT_NONE;
-				MakeSound(SND_MONEY,me->x,me->y,SND_CUTOFF,500);
+				
 			}
 			if(GetGoodguy())
 			{
@@ -978,6 +988,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_COIN:
 		case BLT_BIGCOIN:
+		case BLT_RUNESTONE:
 			Dampen(&me->dx,FIXAMT/64);
 			Dampen(&me->dy,FIXAMT/64);
 			me->anim++;
@@ -1312,7 +1323,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 		return;
 
 	// if you're in a wall even before moving, explode (to stop infinite bounces)
-	if((me->type==BLT_HAMMER || me->type==BLT_HAMMER2 || me->type==BLT_LASER || me->type==BLT_COIN ||
+	if((me->type==BLT_HAMMER || me->type==BLT_HAMMER2 || me->type==BLT_LASER || me->type==BLT_COIN || me->type==BLT_RUNESTONE ||
 		me->type==BLT_MINIFBALL || me->type==BLT_BIGYELLOW || me->type==BLT_BIGCOIN || me->type==BLT_LIQUIFY || me->type==BLT_LIQUIFY2 || me->type==BLT_LIQUIFY3
 		|| me->type==BLT_ICEBEAM || me->type==BLT_SKULL || me->type==BLT_DEATHBEAM || me->type==BLT_REDFBALL) &&
 		(!BulletCanGo(me->x,me->y,map,8)))
@@ -1352,7 +1363,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 
 	// all gravity-affected bullets, get gravitized
 	if(me->type==BLT_BOMB || me->type==BLT_GRENADE
-		|| me->type==BLT_ROCK || me->type==BLT_EVILHAMMER || me->type==BLT_COIN
+		|| me->type==BLT_ROCK || me->type==BLT_EVILHAMMER || me->type==BLT_COIN || me->type==BLT_RUNESTONE
 		|| me->type==BLT_BIGCOIN)
 		me->dz-=FIXAMT;
 
@@ -1451,6 +1462,15 @@ void RenderBullet(bullet_t *me)
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
 					DISPLAY_DRAWME);
+			break;
+		case BLT_RUNESTONE:
+			if (me->timer < 30 && (me->timer & 1) == 0)
+				return;
+			curSpr = GetItemSprite(280);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 255, me->bright, curSpr,
+				DISPLAY_DRAWME);
 			break;
 		case BLT_HAMMER:
 		case BLT_HAMMER2:
@@ -1751,6 +1771,7 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			break;
 		case BLT_COIN:
 		case BLT_BIGCOIN:
+		case BLT_RUNESTONE:
 			me->facing=(byte)MGL_random(256);
 			f=MGL_randoml(3)+1;
 			me->dx=-FIXAMT*4+MGL_randoml(FIXAMT*8);

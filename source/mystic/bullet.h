@@ -59,6 +59,8 @@
 #define BLT_LIQUIFY3 (46)	// the liquifies that come from berserk - same, but they scale with berserk skill
 #define BLT_ICECOMET (47)
 #define BLT_ICECOMETBOOM (48)
+#define BLT_RUNESTONE (49)
+
 #define MAX_BULLETS 256
 
 // the special hammer flags for different powerups
