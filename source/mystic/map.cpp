@@ -146,7 +146,7 @@ void Map::Init(world_t *wrld)
 			map[i].item=0;
 
 		map[i].templight=-32;	// make it all black so it'll fade in
-		if(map[i].item==ITM_SKLDOOR && player.worldNum==2 && player.levelPassed[2][6]==1)
+		if(map[i].item==ITM_SKLDOOR && player.worldNum==2 && PlayerPassedLevel(2,6))
 			map[i].item=ITM_SKLDOOR2;
 
 		if(map[i].item==ITM_SPELLBOOK)
@@ -180,6 +180,8 @@ void Map::Init(world_t *wrld)
 			map[i].item=0;	// if you got the spellbook, take the coins away!
 		if(map[i].item>=ITM_LETTERM && map[i].item<=ITM_LETTERC && !Challenging())
 			map[i].item=0;	// remove MYSTIC letters when not in challenge mode
+		if (map[i].item ==ITM_SILENTRUNE && GotRuneInLevel(player.worldNum,player.levelNum))
+			map[i].item = 0;	// if you got the rune, then remove it
 		if(map[i].item==ITM_CHLGCRYSTAL)
 		{
 			if(Challenging())
@@ -193,7 +195,7 @@ void Map::Init(world_t *wrld)
 	{
 		for(i=0;i<MAX_SPECIAL;i++)
 			if(special[i].effect==SPC_GOTOMAP && (special[i].value==8 || special[i].value==10 ||
-				special[i].value==12 || special[i].value==14) && player.levelPassed[2][special[i].value])
+				special[i].value==12 || special[i].value==14) && PlayerPassedLevel(2,special[i].value))
 			{
 				special[i].effect=0;	// disable this special
 			}

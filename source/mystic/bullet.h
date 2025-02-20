@@ -38,7 +38,7 @@
 #define BLT_EVILHAMMER 25 // a grey hammer that is anti-bouapha
 #define BLT_COIN	 26	// a coin!  Good!
 #define BLT_ICECLOUD 27
-#define BLT_MINIFBALL 28	// a tiny friendly fireball, for pterodactyls
+#define BLT_MINIFBALL 28	// a tiny friendly fireball
 #define BLT_YELWAVE  29	// wavey thing
 #define BLT_BIGYELLOW 30	// big yellow bullet (same as grenade, but not lobbed or explosive)
 #define BLT_BIGCOIN  31
@@ -60,6 +60,7 @@
 #define BLT_ICECOMET (47)
 #define BLT_ICECOMETBOOM (48)
 #define BLT_RUNESTONE (49)
+#define BLT_PTEROSHOT (50)
 
 #define MAX_BULLETS 256
 

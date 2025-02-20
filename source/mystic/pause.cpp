@@ -279,33 +279,82 @@ void RenderRuneMenu(void)
 	for (int i = 0; i < (int)Rune::NUM_RUNES; i++)
 	{
 		
-		if (0)	// don't have this rune
+		if (RuneLevel((Rune)i) ==RUNE_EMPTY)
 		{
 			if (subcursor == i)
 			{
-				BlitIcon(241, x + 4, y + 4, 0, 0);
+				BlitIcon(40+(i%4), x + 4, y + 4 - 2, 0, -31);
 				DescribeRune((Rune)i, SCRWID / 2 + 10, SCRHEI - 30 - 85);
 			}
 			else
 			{
-				BlitIcon(241, x + 4, y + 4, 0, -15);
+				BlitIcon(40 + (i % 4), x + 4, y + 4, 0, -31);
 			}
 		}
 		else
 		{
+			byte rank = RuneLevel((Rune)i);
+			byte equipped = RuneEquipped((Rune)i);
+			byte glow = (byte)abs(Cosine((byte)(armaBrt+i*4)) * 8 >> FIXSHIFT);
+			byte col = 0;
+			if(rank==RUNE_RANK1)
+				col = 1;
+			if (rank == RUNE_RANK2)
+				col = 5;
+			else if (rank == RUNE_RANK3)
+				col = 6;
+			
+			byte stones = 1;
+			if (rank == RUNE_RANK2)
+				stones = 3;
+			else if (rank == RUNE_RANK3)
+				stones = 6;
+
+			if(equipped)
+				BlitIconBit(601,441,640,480, x+2, y+2 - 2*(subcursor==i), col, glow);
+			if (rank >= RUNE_RANK1)
+			{
+				for (byte j = 0; j < stones; j++)
+				{
+					byte a = (armaBrt+i*4) * (1 + (stones == 3) + (stones == 6)) + j * (256 / stones);
+					
+					int srcx, srcy;
+					srcx = 16 * (j % 3);
+					srcy = 480 - 16;
+					if(Sine(a)<0)
+						BlitIconBit(srcx, srcy, srcx + 15, srcy + 15, x + 20 - 8 + (Cosine(a) * 20 >> FIXSHIFT), y + 20 - 8 + (Sine(a) * 12 >> FIXSHIFT), equipped*col, glow*equipped - 6 * (subcursor != i));
+				}
+			}
 			if (subcursor == i)
 			{
-				BlitIcon(241, x + 4, y + 4, 0, 0);
-
+				BlitIcon(40 + (i % 4), x + 4, y + 4-2, 0, 0);
+				
 				DescribeRune((Rune)i, SCRWID / 2 + 10, SCRHEI - 30 - 85);
 			}
 			else
 			{
-				BlitIcon(241, x + 4, y + 4, 0, -15);
+				BlitIcon(40 + (i % 4), x + 4, y + 4, 0, -6);
+			}
+			
+			BlitIcon(100, x + 4, y + 4 - 2*(subcursor==i), col, -(col==0)*8+((col!=0)*glow) - 6 * (subcursor != i));
+			if (rank >= RUNE_RANK1)
+			{
+				for (byte j = 0; j < stones; j++)
+				{
+					byte a = (armaBrt+i*4)*(1+(stones==3)+(stones==6)) + j * (256 / stones);
+					
+					int srcx, srcy;
+					srcx = 16 * (j % 3);
+					srcy = 480 - 16;
+					if(Sine(a)>=0)
+						BlitIconBit(srcx, srcy, srcx+15, srcy+15, x + 20-8 + (Cosine(a) * 20 >> FIXSHIFT), y + 20-8 + (Sine(a) * 12 >> FIXSHIFT),equipped*col, equipped*glow - 6 * (subcursor != i));
+				}
 			}
 		}
+
+		// put the selection marker
 		if (subcursor == i)
-			BlitIconBit(558, 437, 558 + 41, 437 + 42, x, y, 255, 0);
+			BlitIconBit(558, 437, 558 + 41, 437 + 42, x, y-2, 255, 0);
 
 		x += spacing;
 		if (x > SCRWID - spacing)
@@ -315,19 +364,21 @@ void RenderRuneMenu(void)
 		}
 	}
 
-	BlitIconBit(2, 467, 13, 477, SCRWID - 40-14, SCRHEI - 30 - 55, 255, 0);
 	sprintf(s, "%02d", player.runeStones);
-	PrintBrightGlow(SCRWID - 40, SCRHEI - 30 - 55, s, 31, 1);
+	int len=GetStrLength(s, 1);
+	BlitIconBit(2, 467, 13, 477, SCRWID - 10 - len - 14, SCRHEI - 30 - 55, 255, 0);
+	PrintBrightGlow(SCRWID - 10-len, SCRHEI - 30 - 55, s, 31, 1);
 
 	// exit
 	if (subcursor == 37)
 	{
 		RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 35, SCRWID - 10, SCRHEI - 30 - 15, 32 * 5 + 31, 32 * 5 + 10);
 		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85, "Find Silent Runes hidden in the", 0, 1);
-		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85+ 14, "world. Enemies drop Runestones.", 0, 1);
-		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14*2, "Use them to awaken Silent", 0, 1);
-		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14*3, "Runes and to upgrade them.", 0, 1);
-		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14 * 4, "3 Runes may be equipped.", 0, 1);
+		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85+ 14, "world. Press Spell to awaken", 0, 1);
+		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14*2, "and upgrade them with", 0, 1);
+		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14*3, "Runestones. Press Fire to equip", 0, 1);
+		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14 * 4, "Awakened Runes.", 0, 1);
+		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14 * 5, "3 Runes may be equipped.", 0, 1);
 	}
 	else
 		RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 35, SCRWID - 10, SCRHEI - 30 - 15, 32 * 5 + 16, 32 * 5 + 6);
@@ -608,7 +659,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					break;
 				case 8:	// runes
 					subMode = SUBMODE_RUNES;
-					subcursor = 0;
+					subcursor = 37;
 					break;
 			}
 		}
@@ -866,7 +917,52 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			}
 			else // a rune
 			{
-				MakeNormalSound(SND_UNAVAILABLE);
+				if(RuneLevel((Rune)subcursor)==RUNE_EMPTY || RuneLevel((Rune)subcursor)==RUNE_ASLEEP)
+					MakeNormalSound(SND_UNAVAILABLE);
+				else
+				{
+					if (RuneEquipped((Rune)subcursor))
+					{
+						player.runes[subcursor] &= (~RUNE_EQUIPPED);
+						MakeNormalSound(SND_MENUSELECT);
+					}
+					else
+					{
+						if (RunesEquipped() >= 3)
+							MakeNormalSound(SND_UNAVAILABLE);
+						else
+							player.runes[subcursor] |= RUNE_EQUIPPED;
+					}
+				}
+			}
+		}
+		if ((c & CONTROL_B2) && (!(oldc & CONTROL_B2)))
+		{
+			if (subcursor == 37)
+			{
+				MakeNormalSound(SND_MENUSELECT);
+				subMode = SUBMODE_NONE;
+			}
+			else // a rune
+			{
+				if (RuneLevel((Rune)subcursor) == RUNE_EMPTY || RuneLevel((Rune)subcursor) == RUNE_RANK3)
+					MakeNormalSound(SND_UNAVAILABLE);
+				else
+				{
+					word price = 10;
+					if (RuneLevel((Rune)subcursor) == RUNE_RANK1)
+						price = 50;
+					else if (RuneLevel((Rune)subcursor) == RUNE_RANK2)
+						price = 100;
+					if (player.runeStones >= price)
+					{
+						player.runes[subcursor]++;
+						player.runeStones -= price;
+						MakeNormalSound(SND_FOOD);
+					}
+					else
+						MakeNormalSound(SND_UNAVAILABLE);
+				}
 			}
 		}
 	}

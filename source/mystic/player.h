@@ -19,6 +19,10 @@
 #define WPN_BOMBS	 3
 #define WPN_FLAME	 4
 
+// level passed bitflags
+#define LP_PASSED (1)
+#define LP_GOTRUNE (2)
+
 enum class Difficulty :byte
 {
 	CLASSIC,
@@ -209,6 +213,10 @@ bool ArmageddonIsUnderway(void);
 void GainMoney(int amt);
 bool CanAffordMoney(int amt);
 int TotalMoney(void);
+
+void GetRuneInLevel(void);
+bool GotRuneInLevel(byte world, byte level);
+void PickUpRune(void);
 
 bool BrutalMode(void);
 bool ClassicMode(void);

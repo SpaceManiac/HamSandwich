@@ -319,7 +319,8 @@ void BlitIconBit(int srcx,int srcy,int srcx2,int srcy2, int x, int y, byte color
 	for (int j = srcy; j <= srcy2; j++)
 		for (int i = srcx; i <= srcx2; i++)
 		{
-			if (i >= 0 && j >= 0 && i < SCRWID && j < SCRHEI)
+			if (i >= 0 && j >= 0 && i < SCRWID && j < SCRHEI &&
+				(x+i-srcx)>=0 && (x+i-srcx)<SCRWID && (y+j-srcy)>=0 && (y+j-srcy)<SCRHEI)
 			{
 				byte b = iconBMP[i + j * 640];
 				if (b != 0)

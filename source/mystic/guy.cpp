@@ -7,6 +7,7 @@
 #include <limits.h>
 #include "particle.h"
 #include "skills.h"
+#include "runes.h"
 
 Guy **guys;
 Guy *goodguy;
@@ -1094,6 +1095,11 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 
 	if(type==MONS_BOUAPHA)
 	{
+		if (Random(100) < RuneValue(Rune::BLOCK))
+		{
+			MakeSound(SND_ROCKBOUNCE,x,y,SND_CUTOFF,100);
+			return;
+		}
 		if(player.nightmare)
 		{
 			if(player.levelNum==11 && player.worldNum==3)
@@ -1244,7 +1250,9 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		float fDamage = damage;
 		if (melted)
 			fDamage = fDamage * (100 + SkillValue(SKILL_MELTARMOR)) / 100.0f;
-		
+		float v = RuneValue(Rune::FIREBALLS)+100;
+		fDamage = (fDamage * (v) / 100.0f);
+
 		if (BulletHittingType() == BLT_FLAME || BulletHittingType() == BLT_LIQUIFY)
 		{
 			if (SkillValue(SKILL_MELTARMOR) > 0)
@@ -1265,6 +1273,16 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			critChance += SkillValue(SKILL_ICECRIT);
 		if (player.berserk)
 			critChance += SkillValue(SKILL_BERSERKCRIT);
+		if (BulletHittingType() == BLT_LASER)
+			critChance += RuneValue(Rune::ENERGY);
+		if (BulletHittingType() == BLT_FLAME || BulletHittingType()==BLT_LIQUIFY)
+			critChance += RuneValue(Rune::FLAMEDMG);
+		if (BulletHittingType() == BLT_MISSILE)
+			critChance += RuneValue(Rune::SEEKER);
+		if(BulletHittingType()==BLT_PTEROSHOT || BulletHittingType()==BLT_GOODSHOCK)
+			critChance += RuneValue(Rune::SUMMON);
+		if(BulletHittingType()==BLT_BOOM || BulletHittingType()==BLT_LIQUIFY2)
+			critChance += RuneValue(Rune::INFERNO);
 
 		if (Random(100) < (dword)critChance)
 		{

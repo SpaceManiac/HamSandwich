@@ -130,6 +130,7 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_MINIFBALL:
+		case BLT_PTEROSHOT:
 		case BLT_YELWAVE:
 			me->type=BLT_NONE;
 			ExplodeParticles(PART_YELLOW,me->x,me->y,me->z,2);
@@ -269,6 +270,7 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_MINIFBALL:
+		case BLT_PTEROSHOT:
 		case BLT_YELWAVE:
 			me->type=BLT_NONE;
 			ExplodeParticles(PART_YELLOW,me->x,me->y,me->z,2);
@@ -476,6 +478,7 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 			me->type=BLT_NONE;
 			break;
 		case BLT_MINIFBALL:
+		case BLT_PTEROSHOT:
 		case BLT_YELWAVE:
 			me->type=BLT_NONE;
 			ExplodeParticles(PART_YELLOW,me->x,me->y,me->z,2);
@@ -663,6 +666,15 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 		}
 		break;
 		case BLT_MINIFBALL:
+			j = 3;
+			if (FindVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 6, me->dx, me->dy, j, map, world))
+			{
+				me->type = BLT_NONE;
+				ExplodeParticles(PART_YELLOW, me->x, me->y, me->z, 4);
+				MakeSound(SND_HAMMERBONK, me->x, me->y, SND_CUTOFF, 900);
+			}
+			break;
+		case BLT_PTEROSHOT:
 			if (ClassicMode())
 				j = 3;
 			else
@@ -984,6 +996,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			HitBadguys(me, map, world);
 			break;
 		case BLT_MINIFBALL:
+		case BLT_PTEROSHOT:
 			HitBadguys(me,map,world);
 			break;
 		case BLT_COIN:
@@ -1323,7 +1336,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 		return;
 
 	// if you're in a wall even before moving, explode (to stop infinite bounces)
-	if((me->type==BLT_HAMMER || me->type==BLT_HAMMER2 || me->type==BLT_LASER || me->type==BLT_COIN || me->type==BLT_RUNESTONE ||
+	if((me->type==BLT_HAMMER || me->type==BLT_HAMMER2 || me->type==BLT_LASER || me->type==BLT_COIN || me->type==BLT_RUNESTONE || me->type==BLT_PTEROSHOT ||
 		me->type==BLT_MINIFBALL || me->type==BLT_BIGYELLOW || me->type==BLT_BIGCOIN || me->type==BLT_LIQUIFY || me->type==BLT_LIQUIFY2 || me->type==BLT_LIQUIFY3
 		|| me->type==BLT_ICEBEAM || me->type==BLT_SKULL || me->type==BLT_DEATHBEAM || me->type==BLT_REDFBALL) &&
 		(!BulletCanGo(me->x,me->y,map,8)))
@@ -1624,6 +1637,7 @@ void RenderBullet(bullet_t *me)
 			break;
 		case BLT_SPINE:
 		case BLT_MINIFBALL:
+		case BLT_PTEROSHOT:
 			curSpr=bulletSpr->GetSprite(SPR_SPINE+(me->facing));
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
@@ -2009,6 +2023,7 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->dz=0;
 			break;
 		case BLT_MINIFBALL:
+		case BLT_PTEROSHOT:
 			me->anim=0;
 			me->timer=30;
 			me->z=FIXAMT*20;

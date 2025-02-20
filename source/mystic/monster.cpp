@@ -1235,7 +1235,7 @@ void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			// shoot
 			FaceGoodguy(me,goodguy);
 			MakeSound(SND_PTEROSHOOT,me->x,me->y,SND_CUTOFF,600);
-			FireBullet(me->x,me->y,me->facing*32,BLT_MINIFBALL);
+			FireBullet(me->x,me->y,me->facing*32,BLT_PTEROSHOT);
 			if (ClassicMode())
 				me->reload = 25 - SpellLevel() / 2 + 2;
 			else
@@ -1276,7 +1276,7 @@ void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				{
 					// don't have to stop to shoot
 					MakeSound(SND_PTEROSHOOT,me->x,me->y,SND_CUTOFF,600);
-					FireBullet(me->x,me->y,me->facing*32,BLT_MINIFBALL);
+					FireBullet(me->x,me->y,me->facing*32,BLT_PTEROSHOT);
 					if (ClassicMode())
 						me->reload = 10 - SpellLevel() / 5 + 4;
 					else

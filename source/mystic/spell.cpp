@@ -330,6 +330,8 @@ void CastSpell(Guy *me)
 			}
 			break;
 		case SPL_SUMMON: // summon ptero
+			
+			
 			if(player.spell[SPL_SUMMON]==1 || player.downgradeSpell[SPL_SUMMON])
 			{
 				SetPlayerGlow(64);
@@ -337,6 +339,8 @@ void CastSpell(Guy *me)
 				AddGuy(me->x,me->y,FIXAMT*20,MONS_PTERO);
 				if (!ClassicMode() && SkillValue(SKILL_DISTRACTION) > 0)
 					player.taunted = (byte)(30.0f * SkillValue(SKILL_DISTRACTION));
+				if (!ClassicMode() && Random(100) < RuneValue(Rune::PALS))
+					AddGuy(me->x, me->y, FIXAMT * 20, MONS_PTERO);
 			}
 			else
 			{
@@ -355,6 +359,8 @@ void CastSpell(Guy *me)
 					g->action=ACTION_BUSY;
 					if (!ClassicMode() && SkillValue(SKILL_DISTRACTION) > 0)
 						player.taunted = (byte)(30.0f * SkillValue(SKILL_DISTRACTION));
+					if (!ClassicMode() && Random(100) < RuneValue(Rune::PALS))
+						AddGuy(me->x, me->y, FIXAMT * 20, MONS_PTERO);
 				}
 				else
 				{

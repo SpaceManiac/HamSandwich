@@ -6,43 +6,69 @@
 
 enum class Rune :byte
 {
-	RUNE_DEFENSE,	// damage reduction 10/25/50%
-	RUNE_FIREBALLS,	// fireballs 10/25/50% damage
-	RUNE_RECOVER,	// heal 1 life per 5/3/1 second
-	RUNE_MANA,		// regain 1 mana per 5/3/1s
-	RUNE_NEW1,
-	RUNE_NEW2,
+	BLOCK,	// chance to not get hit 10/20/40
+	FIREBALLS,	// fireballs 10/25/50% damage
+	RECOVER,	// heal 1 life per 5/3/1 second
+	MANA,		// regain 1 mana per 5/3/1s
+	NEW1,
+	NEW2,
 
-	RUNE_ENERGY,	// energy spells 5/15/25% crit chance
-	RUNE_ENERGY2,	// energy spell 10/25/50% chance of free cost
+	ENERGY,	// energy spells 5/15/25% crit chance
+	ENERGY2,	// energy spell 10/25/50% chance of free cost
 
-	RUNE_FLAMEDMG,	// flames 5/15/25% crit chance
-	RUNE_FLAME3,	// flames go out sideways too
+	FLAMEDMG,	// flames 5/15/25% crit chance
+	FLAME3,	// flames go out sideways too
 
-	RUNE_SEEKER,	// seekers 5/15/25% crit chance
-	RUNE_SEEKER2,
+	SEEKER,	// seekers 5/15/25% crit chance
+	SEEKER2,
 
-	RUNE_ICECOST,	// ice spells cost 10/25/50% less
-	RUNE_ICE2,
+	ICECOST,	// ice spells cost 10/25/50% less
+	ICE2,
 
-	RUNE_INFERNO,	// inferno 5/15/25% crit chance
-	RUNE_INFERNO2,
+	INFERNO,	// inferno 5/15/25% crit chance
+	INFERNO2,
 
-	RUNE_SUMMON,	// summoned guys have 5/15/25% crit chance
-	RUNE_PALS,		// 25/50/100% chance to summon a ptero along with what you intend to summon
+	SUMMON,	// summoned guys have 5/15/25% crit chance
+	PALS,		// 25/50/100% chance to summon a ptero along with what you intend to summon
 
-	RUNE_ARMOR,		// armor spells cost 10/25/50% less
-	RUNE_ARMOR2,
+	ARMOR,		// armor spells cost 10/25/50% less
+	ARMOR2,
 
-	RUNE_BERSERK,	// berserk bonus
-	RUNE_BERSERK2,	// other
+	BERSERK,	// berserk bonus
+	BERSERK2,	// other
 
-	RUNE_HEAL,		// casting heal buffs your all damage by 5/15/25% for 10s
-	RUNE_HEAL2,
+	HEAL,		// casting heal buffs your all damage by 5/15/25% for 10s
+	HEAL2,
 
 	NUM_RUNES,
 };
 
+typedef struct RuneDef
+{
+	public:
+		char name[32];
+		char desc[2][64];
+		float value[3];
+		char numDesc[32];
+		byte numberType;
+} RuneDef;
+
+// rune status values
+#define RUNE_EMPTY (0)
+#define RUNE_ASLEEP (1)
+#define RUNE_RANK1 (2)
+#define RUNE_RANK2 (3)
+#define RUNE_RANK3 (4)
+#define RUNE_MASK	(7)
+#define RUNE_EQUIPPED (8)
+
 void DescribeRune(Rune r, int x, int y);
+
+char* RuneName(Rune r);
+int RuneValue(Rune r);
+
+byte RuneLevel(Rune r);
+bool RuneEquipped(Rune r);
+byte RunesEquipped(void);
 
 #endif

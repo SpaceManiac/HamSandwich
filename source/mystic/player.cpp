@@ -21,6 +21,7 @@ static byte fairyReload;
 static int chlgCrystals;
 float restorationBuffer;
 float restorationOutput;
+byte manaRuneValue;
 
 void AddToRestorationBuffer(float amt)
 {
@@ -36,6 +37,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	fairyReload=0;
 	compassClock=0;
 	compassBigClock=0;
+	manaRuneValue = 0;
 	if(initWhat==INIT_GAME)	// initialize everything, this is to start a whole new game
 	{
 		player.runeStones = 0;
@@ -107,7 +109,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.levelsPassed=0;
 		player.worldNum=world;
 		for(i=0;i<MAX_MAPS;i++)
-			if(player.levelPassed[world][i] && curWorld.map[i] && !(curWorld.map[i]->flags&MAP_SECRET))
+			if(PlayerPassedLevel(world,i) && curWorld.map[i] && !(curWorld.map[i]->flags&MAP_SECRET))
 				player.levelsPassed++;
 	}
 
@@ -390,18 +392,18 @@ void PlayerResetScore(void)
 
 byte PlayerPassedLevel(byte world,byte map)
 {
-	return player.levelPassed[world][map];
+	return (player.levelPassed[world][map]&LP_PASSED);
 }
 
 void PlayerWinLevel(byte w,byte l,byte isSecret)
 {
-	if(!player.levelPassed[w][l])
+	if(!player.levelPassed[w][l]&LP_PASSED)
 	{
 		player.complete[w]+=100;	// get some percentage points
 		if(!isSecret)
 			player.levelsPassed++;	// secret levels aren't counted in this (it's for triggering specials)
 	}
-	player.levelPassed[w][l]=1;
+	player.levelPassed[w][l] |= LP_PASSED;
 }
 
 byte GetPlayerWorld(void)
@@ -670,10 +672,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 	switch(itm)
 	{
 		case ITM_SILENTRUNE:
-			NewMessage("Rune!", 75);
-			playerGlow = 64;
-			FloaterParticles(x, y, 1, 32, -1, 8);
-			FloaterParticles(x, y, 1, 10, 1, 8);
+			PickUpRune();
 			return 0;
 			break;
 		case ITM_CHLGCRYSTAL:
@@ -1280,12 +1279,29 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 				if(player.mana<player.maxMana)
 					player.mana++;
 			}
+			if (!ClassicMode() && RuneValue(Rune::MANA))
+			{
+				manaRuneValue++;
+				if (manaRuneValue >= (int)RuneValue(Rune::MANA))
+				{
+					manaRuneValue -= (int)RuneValue(Rune::MANA);
+					if (player.mana < player.maxMana)
+						player.mana++;
+				}
+			}
 		}
 	}
-	if (!ClassicMode() && SkillValue(SKILL_RESTORATION))
+	if (!ClassicMode())
 	{
-		restorationBuffer += 1.0f / 90.0f;	// 1 life every 3 seconds
+		if(SkillValue(SKILL_RESTORATION))
+			restorationBuffer += 1.0f / 90.0f;	// 1 life every 3 seconds
+		
 		float maxPerTick = SkillValue(SKILL_RESTORATION) / 30.0f + 1.0f / 90.0f;	// at max, you can heal the 1 per 3s from restoration, plus your heal/s from your healing spell
+		if (RuneValue(Rune::RECOVER))
+		{
+			restorationBuffer += 1.0f / (RuneValue(Rune::RECOVER) * 30);	// 1 life every N seconds from recover
+			maxPerTick += 1.0f / (RuneValue(Rune::RECOVER) * 30);	// allow this to heal per tick
+		}
 
 		float amt;
 		if (restorationBuffer > maxPerTick)
@@ -1713,4 +1729,42 @@ bool CanAffordMoney(int amt)
 int TotalMoney(void)
 {
 	return player.money + player.bigMoney * 65536;
+}
+
+void GetRuneInLevel(void)
+{
+	player.levelPassed[player.worldNum][player.levelNum] |= LP_GOTRUNE;
+}
+
+bool GotRuneInLevel(byte world,byte level)
+{
+	return (player.levelPassed[world][level] & LP_GOTRUNE);
+}
+
+void PickUpRune(void)
+{
+	playerGlow = 64;
+	FloaterParticles(GetGoodguy()->x, GetGoodguy()->y, 1, 32, -1, 8);
+	FloaterParticles(GetGoodguy()->x, GetGoodguy()->y, 1, 10, 1, 8);
+	GetRuneInLevel();
+	MakeNormalSound(SND_ALLCHLGCRYSTAL);
+	byte num = Random((int)Rune::NUM_RUNES);
+	byte started = num;
+	while (1)
+	{
+		if (player.runes[num] == RUNE_EMPTY)
+			break;
+		num++;
+		if (num >= (byte)Rune::NUM_RUNES)
+			num = 0;
+		if (num == started) // there were no ungotten runes
+		{
+			NewMessage("The rune fades into the mists!", 75);
+			return;
+		}
+	}
+	char s[64];
+	sprintf(s, "%s Rune obtained!", RuneName((Rune)num));
+	player.runes[(int)num] = RUNE_ASLEEP;
+	NewMessage(s, 75);
 }
