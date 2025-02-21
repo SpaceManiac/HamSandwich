@@ -10,7 +10,7 @@
 #define ACTION_IDLE	0
 #define ACTION_BUSY 1
 
-class Guy
+class Guy final
 {
 	public:
 		Guy(void);
