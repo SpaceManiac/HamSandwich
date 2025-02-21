@@ -1,10 +1,11 @@
 #include "particle.h"
+#include <memory>
 #include "bullet.h"
 #include "monster.h"
 #include "player.h"
 
-Particle **particleList;
-int		maxParticles;
+static std::unique_ptr<Particle[]> particleList;
+static int maxParticles;
 static int snowCount=0;
 
 Particle::Particle(void)
@@ -302,23 +303,14 @@ bool Particle::Alive(void)
 
 void InitParticles(int max)
 {
-	int i;
-
-	maxParticles=max;
-
-	particleList=(Particle **)malloc(sizeof(Particle *)*maxParticles);
-	for(i=0;i<maxParticles;i++)
-		particleList[i]=new Particle();
+	particleList = std::make_unique<Particle[]>(max);
+	maxParticles = max;
 }
 
 void ExitParticles(void)
 {
-	int i;
-
-	for(i=0;i<maxParticles;i++)
-		delete particleList[i];
-
-	free(particleList);
+	maxParticles = 0;
+	particleList.reset();
 }
 
 void UpdateParticles(Map *map)
@@ -327,7 +319,7 @@ void UpdateParticles(Map *map)
 
 	snowCount=0;
 	for(i=0;i<maxParticles;i++)
-		particleList[i]->Update(map);
+		particleList[i].Update(map);
 }
 
 void RenderParticle(int x,int y,byte *scrn,byte color,byte size)
@@ -398,43 +390,43 @@ void RenderParticles(void)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(particleList[i]->Alive())
+		if(particleList[i].Alive())
 		{
-			if(particleList[i]->type==PART_SMOKE)
-				RenderSmoke(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-							 particleList[i]->z>>FIXSHIFT,(char)(particleList[i]->color),
-							 particleList[i]->size);
-			else if(particleList[i]->type==PART_BOOM)
-				RenderBoom(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-							 particleList[i]->z>>FIXSHIFT,(char)(particleList[i]->color),
-							 particleList[i]->size);
-			else if(particleList[i]->type==PART_LVLUP)
+			if(particleList[i].type==PART_SMOKE)
+				RenderSmoke(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+							 particleList[i].z>>FIXSHIFT,(char)(particleList[i].color),
+							 particleList[i].size);
+			else if(particleList[i].type==PART_BOOM)
+				RenderBoom(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+							 particleList[i].z>>FIXSHIFT,(char)(particleList[i].color),
+							 particleList[i].size);
+			else if(particleList[i].type==PART_LVLUP)
 			{
-				if(particleList[i]->life>20 || (particleList[i]->life&1))
-					RenderLvlUp(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-								 particleList[i]->z>>FIXSHIFT);
+				if(particleList[i].life>20 || (particleList[i].life&1))
+					RenderLvlUp(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+								 particleList[i].z>>FIXSHIFT);
 			}
-			else if(particleList[i]->type==PART_GHOST)
-				SprDraw(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-						particleList[i]->z>>FIXSHIFT,255,0,GetMonsterSprite2(MONS_BOUAPHA,particleList[i]->size),
+			else if(particleList[i].type==PART_GHOST)
+				SprDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+						particleList[i].z>>FIXSHIFT,255,0,GetMonsterSprite2(MONS_BOUAPHA,particleList[i].size),
 						DISPLAY_DRAWME|DISPLAY_GLOW);
-			else if(particleList[i]->type==PART_FLOATER)
-				ParticleDraw(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-							 particleList[i]->z>>FIXSHIFT,particleList[i]->color,(particleList[i]->life/10),
+			else if(particleList[i].type==PART_FLOATER)
+				ParticleDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+							 particleList[i].z>>FIXSHIFT,particleList[i].color,(particleList[i].life/10),
 							 DISPLAY_DRAWME|DISPLAY_PARTICLE);
-			else if (particleList[i]->type == PART_NUMBER)
+			else if (particleList[i].type == PART_NUMBER)
 			{
 				int x, y;
 				GetCamera(&x, &y);
-				x = (particleList[i]->x>>FIXSHIFT) - x + HALFWID;
-				y = (particleList[i]->y>>FIXSHIFT) - y + HALFWID-(particleList[i]->z>>FIXSHIFT);
+				x = (particleList[i].x>>FIXSHIFT) - x + HALFWID;
+				y = (particleList[i].y>>FIXSHIFT) - y + HALFWID-(particleList[i].z>>FIXSHIFT);
 				char s[32];
-				sprintf(s, "%d", particleList[i]->dx);
+				sprintf(s, "%d", particleList[i].dx);
 				CenterPrint(x, y, s, 0, 1);
 			}
 			else
-				ParticleDraw(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-							 particleList[i]->z>>FIXSHIFT,particleList[i]->color,particleList[i]->size,
+				ParticleDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+							 particleList[i].z>>FIXSHIFT,particleList[i].color,particleList[i].size,
 							 DISPLAY_DRAWME|DISPLAY_PARTICLE);
 		}
 	}
@@ -446,28 +438,28 @@ void RenderNumberParticles(void)
 
 	for (i = 0; i < maxParticles; i++)
 	{
-		if (particleList[i]->Alive())
+		if (particleList[i].Alive())
 		{
-			if (particleList[i]->type == PART_NUMBER)
+			if (particleList[i].type == PART_NUMBER)
 			{
 				int x, y;
 				GetCamera(&x, &y);
-				x = (particleList[i]->x >> FIXSHIFT) - x + HALFWID;
-				y = (particleList[i]->y >> FIXSHIFT) - y + HALFHEI - (particleList[i]->z >> FIXSHIFT);
+				x = (particleList[i].x >> FIXSHIFT) - x + HALFWID;
+				y = (particleList[i].y >> FIXSHIFT) - y + HALFHEI - (particleList[i].z >> FIXSHIFT);
 				char s[32];
-				if (particleList[i]->dx > 999999)	// too high, it's lethal
+				if (particleList[i].dx > 999999)	// too high, it's lethal
 				{
 					sprintf(s, "X");
-					particleList[i]->color = 1;	// and make it big
+					particleList[i].color = 1;	// and make it big
 				}
 				else
-					sprintf(s, "%d", particleList[i]->dx);
-				if (particleList[i]->color == 0)	// normal dmg
+					sprintf(s, "%d", particleList[i].dx);
+				if (particleList[i].color == 0)	// normal dmg
 				{
 					int wid=GetStrLength(s, 1);
 					int bright = 0;
-					if (particleList[i]->life < 30)
-						bright -= (30 - particleList[i]->life);
+					if (particleList[i].life < 30)
+						bright -= (30 - particleList[i].life);
 					else
 						Print(x - wid / 2 + 2, y + 2, s, -31, 1);
 					PrintBrightGlow(x-wid/2 + 1, y + 1, s, bright, 1);
@@ -476,8 +468,8 @@ void RenderNumberParticles(void)
 				{
 					int wid = GetStrLength(s, 2);
 					int bright = 0;
-					if (particleList[i]->life < 30)
-						bright -= (30 - particleList[i]->life);
+					if (particleList[i].life < 30)
+						bright -= (30 - particleList[i].life);
 					else
 						Print(x - wid / 2 + 3, y + 3, s, -31, 2);
 					PrintBrightGlow(x - wid / 2 + 1, y + 1, s, bright, 2);
@@ -492,18 +484,18 @@ void BlowSmoke(int x,int y,int z,int dz)
 	int i;
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->x=x;
-			particleList[i]->y=y;
-			particleList[i]->z=z;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=dz;
-			particleList[i]->life=6*4-MGL_random(8);
-			particleList[i]->size=16;
-			particleList[i]->color=64;
-			particleList[i]->type=PART_SMOKE;
+			particleList[i].x=x;
+			particleList[i].y=y;
+			particleList[i].z=z;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=dz;
+			particleList[i].life=6*4-MGL_random(8);
+			particleList[i].size=16;
+			particleList[i].color=64;
+			particleList[i].type=PART_SMOKE;
 			break;
 		}
 	}
@@ -514,18 +506,18 @@ void BlowWigglySmoke(int x,int y,int z,int dz)
 	int i;
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->x=x+MGL_randoml(FIXAMT*4)-FIXAMT*2;
-			particleList[i]->y=y+MGL_randoml(FIXAMT*4)-FIXAMT*2;
-			particleList[i]->z=z;
-			particleList[i]->dx=MGL_randoml(FIXAMT*2)-FIXAMT;
-			particleList[i]->dy=MGL_randoml(FIXAMT*2)-FIXAMT;
-			particleList[i]->dz=dz;
-			particleList[i]->life=6*4-MGL_random(8);
-			particleList[i]->size=16;
-			particleList[i]->color=64;
-			particleList[i]->type=PART_SMOKE;
+			particleList[i].x=x+MGL_randoml(FIXAMT*4)-FIXAMT*2;
+			particleList[i].y=y+MGL_randoml(FIXAMT*4)-FIXAMT*2;
+			particleList[i].z=z;
+			particleList[i].dx=MGL_randoml(FIXAMT*2)-FIXAMT;
+			particleList[i].dy=MGL_randoml(FIXAMT*2)-FIXAMT;
+			particleList[i].dz=dz;
+			particleList[i].life=6*4-MGL_random(8);
+			particleList[i].size=16;
+			particleList[i].color=64;
+			particleList[i].type=PART_SMOKE;
 			break;
 		}
 	}
@@ -537,19 +529,19 @@ void BlowUpGuy(int x,int y,int x2,int y2,int z,byte amt)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->x=(x+MGL_randoml(x2-x))<<FIXSHIFT;
-			particleList[i]->y=(y+MGL_randoml(y2-y))<<FIXSHIFT;
-			particleList[i]->z=z;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=0;
-			particleList[i]->life=7;
-			particleList[i]->size=0;
-			particleList[i]->color=64;
-			particleList[i]->type=PART_BOOM;
-			MakeSound(SND_BOMBBOOM,particleList[i]->x,particleList[i]->y,SND_CUTOFF,1800);
+			particleList[i].x=(x+MGL_randoml(x2-x))<<FIXSHIFT;
+			particleList[i].y=(y+MGL_randoml(y2-y))<<FIXSHIFT;
+			particleList[i].z=z;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=0;
+			particleList[i].life=7;
+			particleList[i].size=0;
+			particleList[i].color=64;
+			particleList[i].type=PART_BOOM;
+			MakeSound(SND_BOMBBOOM,particleList[i].x,particleList[i].y,SND_CUTOFF,1800);
 			if(!(--amt))
 				break;
 		}
@@ -575,9 +567,9 @@ void SpurtParticles(byte type,bool left,int x,int y,int z,byte angle,byte force)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->Go(type,x,y,z,angle,force);
+			particleList[i].Go(type,x,y,z,angle,force);
 			if(!--amt)
 				break;
 		}
@@ -592,9 +584,9 @@ void ExplodeParticles(byte type,int x,int y,int z,byte force)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->GoRandom(type,x,y,z,force);
+			particleList[i].GoRandom(type,x,y,z,force);
 			if(!--amt)
 				break;
 		}
@@ -610,9 +602,9 @@ void ExplodeParticles2(byte type,int x,int y,int z,byte num,byte force)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->GoRandom(type,x,y,z,force);
+			particleList[i].GoRandom(type,x,y,z,force);
 			if(!--num)
 				break;
 		}
@@ -627,10 +619,10 @@ void ManaParticles(int x,int y)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->GoRandom(PART_MANA,x,y,FIXAMT*10,2);
-			particleList[i]->dz=-((int)MGL_randoml(FIXAMT));
+			particleList[i].GoRandom(PART_MANA,x,y,FIXAMT*10,2);
+			particleList[i].dz=-((int)MGL_randoml(FIXAMT));
 			if(!--num)
 				break;
 		}
@@ -643,17 +635,17 @@ void TrailMe(int x,int y,int z,byte f)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->type=PART_GHOST;
-			particleList[i]->x=x;
-			particleList[i]->y=y;
-			particleList[i]->z=z;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=0;
-			particleList[i]->life=5;
-			particleList[i]->size=f;
+			particleList[i].type=PART_GHOST;
+			particleList[i].x=x;
+			particleList[i].y=y;
+			particleList[i].z=z;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=0;
+			particleList[i].life=5;
+			particleList[i].size=f;
 			break;
 		}
 	}
@@ -665,19 +657,19 @@ void AddParticle(int x,int y,int z,int dx,int dy,int dz,byte life,byte type,byte
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
 
-			particleList[i]->x=x;
-			particleList[i]->y=y;
-			particleList[i]->z=z;
-			particleList[i]->dx=dx;
-			particleList[i]->dy=dy;
-			particleList[i]->dz=dz;
-			particleList[i]->size=2;
-			particleList[i]->life=life;
-			particleList[i]->type=type;
-			particleList[i]->color=color;
+			particleList[i].x=x;
+			particleList[i].y=y;
+			particleList[i].z=z;
+			particleList[i].dx=dx;
+			particleList[i].dy=dy;
+			particleList[i].dz=dz;
+			particleList[i].size=2;
+			particleList[i].life=life;
+			particleList[i].type=type;
+			particleList[i].color=color;
 			break;
 		}
 	}
@@ -697,19 +689,19 @@ void MakeItSnow(Map *map)
 	cy-=HALFHEI;
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
 
-			particleList[i]->x=(MGL_random(SCRWID)+cx)<<FIXSHIFT;
-			particleList[i]->y=(MGL_random(SCRHEI)+cy)<<FIXSHIFT;
-			particleList[i]->z=(300+MGL_random(300))<<FIXSHIFT;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=0;
-			particleList[i]->size=2;
-			particleList[i]->life=50+MGL_random(50);
-			particleList[i]->type=PART_SNOW;
-			particleList[i]->color=31;
+			particleList[i].x=(MGL_random(SCRWID)+cx)<<FIXSHIFT;
+			particleList[i].y=(MGL_random(SCRHEI)+cy)<<FIXSHIFT;
+			particleList[i].z=(300+MGL_random(300))<<FIXSHIFT;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=0;
+			particleList[i].size=2;
+			particleList[i].life=50+MGL_random(50);
+			particleList[i].type=PART_SNOW;
+			particleList[i].color=31;
 			break;
 		}
 	}
@@ -721,18 +713,18 @@ void SpecialSnow(int x,int y)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
 
-			particleList[i]->x=x;
-			particleList[i]->y=y;
-			particleList[i]->z=(10+MGL_random(20))<<FIXSHIFT;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=0;
-			particleList[i]->size=2;
-			particleList[i]->life=20+MGL_random(30);
-			particleList[i]->type=PART_SNOW;
+			particleList[i].x=x;
+			particleList[i].y=y;
+			particleList[i].z=(10+MGL_random(20))<<FIXSHIFT;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=0;
+			particleList[i].size=2;
+			particleList[i].life=20+MGL_random(30);
+			particleList[i].type=PART_SNOW;
 			break;
 		}
 	}
@@ -780,19 +772,19 @@ void FloaterParticles(int x,int y,byte color,int radius,int spread,byte count)
 	numLeft=count;
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
 
-			particleList[i]->x=x+Cosine(ang)*radius;
-			particleList[i]->y=y+Sine(ang)*radius;
-			particleList[i]->z=0;
-			particleList[i]->dx=radius;	// dx=radius
-			particleList[i]->dy=spread;	// dy=spread (how rapidly they move outward or inward)
-			particleList[i]->dz=0;
-			particleList[i]->size=ang;
-			particleList[i]->life=29;
-			particleList[i]->type=PART_FLOATER;
-			particleList[i]->color=color*32+16;
+			particleList[i].x=x+Cosine(ang)*radius;
+			particleList[i].y=y+Sine(ang)*radius;
+			particleList[i].z=0;
+			particleList[i].dx=radius;	// dx=radius
+			particleList[i].dy=spread;	// dy=spread (how rapidly they move outward or inward)
+			particleList[i].dz=0;
+			particleList[i].size=ang;
+			particleList[i].life=29;
+			particleList[i].type=PART_FLOATER;
+			particleList[i].color=color*32+16;
 			ang+=(256/count);
 			numLeft--;
 			if(!numLeft)
@@ -805,34 +797,34 @@ word AddNumberParticle(int x, int y, int z, int value, byte color,word ID)
 {
 	if (player.disableDmgNumbers) return 65535;
 
-	if (ID != 65535 && particleList[ID]->type==PART_NUMBER && particleList[ID]->life>0)
+	if (ID != 65535 && particleList[ID].type==PART_NUMBER && particleList[ID].life>0)
 	{
-		particleList[ID]->x = x;
-		particleList[ID]->y = y;
-		particleList[ID]->z = z;
-		particleList[ID]->dy = 0;
-		particleList[ID]->dz = 4 * FIXAMT;
-		particleList[ID]->size = 0;
-		particleList[ID]->life = 60;
-		particleList[ID]->dx += value;	// add em up!
-		particleList[ID]->color = color;
+		particleList[ID].x = x;
+		particleList[ID].y = y;
+		particleList[ID].z = z;
+		particleList[ID].dy = 0;
+		particleList[ID].dz = 4 * FIXAMT;
+		particleList[ID].size = 0;
+		particleList[ID].life = 60;
+		particleList[ID].dx += value;	// add em up!
+		particleList[ID].color = color;
 		return ID;
 	}
 	int i;
 	for (i = 0; i < maxParticles; i++)
 	{
-		if (!particleList[i]->Alive())
+		if (!particleList[i].Alive())
 		{
-			particleList[i]->x = x;
-			particleList[i]->y = y;
-			particleList[i]->z = z;
-			particleList[i]->dx = value;	// the number is stored in DX, so don't move by DX!
-			particleList[i]->dy = 0;
-			particleList[i]->dz = 4*FIXAMT;
-			particleList[i]->size = 0;
-			particleList[i]->life = 60;
-			particleList[i]->type = PART_NUMBER;
-			particleList[i]->color = color;
+			particleList[i].x = x;
+			particleList[i].y = y;
+			particleList[i].z = z;
+			particleList[i].dx = value;	// the number is stored in DX, so don't move by DX!
+			particleList[i].dy = 0;
+			particleList[i].dz = 4*FIXAMT;
+			particleList[i].size = 0;
+			particleList[i].life = 60;
+			particleList[i].type = PART_NUMBER;
+			particleList[i].color = color;
 			return (word)i;
 		}
 	}
