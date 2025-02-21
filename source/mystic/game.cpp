@@ -127,12 +127,12 @@ byte InitLevel(byte map)
 	visFrms=0;
 	msgFromOtherModules=0;
 
-	InitGuys(128);
+	InitGuys(256);
 	InitBullets();
 	InitPlayer(INIT_LEVEL,0,map);
 	InitMessage();
 	NewBigMessage(curMap->name,100);
-	InitParticles(256);
+	InitParticles(1024);
 	lastKey=0;
 	curMap->Init(&curWorld);
 

@@ -155,6 +155,7 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_GRENADE:
 		case BLT_ICECLOUD:
+		case BLT_MINE:
 			me->x-=me->dx;
 			break;
 		case BLT_LASER:	// reflects off walls
@@ -295,6 +296,7 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_GRENADE:
 		case BLT_ICECLOUD:
+		case BLT_MINE:
 			me->y-=me->dy;
 			break;
 		case BLT_LASER:
@@ -458,6 +460,15 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 			me->timer=9;
 			MakeSound(SND_BOMBBOOM,me->x,me->y,SND_CUTOFF,950);
 			break;
+		case BLT_MINE:
+			me->dx = 0;
+			me->dy = 0;
+			me->dz = FIXAMT*40/60;
+			me->z = 0;
+			me->anim = 1;
+			me->timer = 30*30;
+			MakeSound(SND_ACIDSPLAT, me->x, me->y, SND_CUTOFF, 950);
+			break;
 		case BLT_SNOWBALL:
 		case BLT_BIGSNOW:
 			BulletRanOut(me,map,world);
@@ -535,6 +546,8 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 			me->type=BLT_BOOM;
 			me->timer=7;
 			me->anim=0;
+			if (!ClassicMode() && Random(100)<RuneValue(Rune::INFERNO2))
+				FireBullet(me->x, me->y, 0, BLT_MINE);
 			break;
 		case BLT_SHROOM:
 			me->x-=me->dx*2;
@@ -547,6 +560,10 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 			AddGuy(me->x,me->y,me->z,MONS_SHROOM);	// become a living shroom
 			me->type=BLT_NONE;	// all gone
 			MakeSound(SND_MISSILEBOOM,me->x,me->y,SND_CUTOFF,1000);
+			break;
+		case BLT_MINE:
+			me->type = 0;
+			BlowSmoke(me->x, me->y, me->z, FIXAMT);
 			break;
 	}
 }
@@ -784,6 +801,15 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 				// no noise, just let them scream
 			}
 			break;
+		case BLT_MINE:
+			if (FindVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 40, me->dx, me->dy, 0, map, world))
+			{
+				me->type = BLT_NONE;
+				FireExactBullet(me->x, me->y, 0, 0, 0, 0, 0, 7, 0, BLT_BOOM);	// detonate
+				MakeSound(SND_BOMBBOOM, me->x, me->y, SND_CUTOFF, 100);
+			}
+			break;
+			break;
 		case BLT_LIQUIFY:
 		case BLT_LIQUIFY2:
 		case BLT_LIQUIFY3:
@@ -959,6 +985,15 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 	// special things like animation
 	switch(me->type)
 	{
+		case BLT_MINE:
+			if (me->anim == 1)	// floating
+			{
+				if (me->z > 30*FIXAMT)
+					me->dz = 0;
+				if (me->timer < 30 * 30 - 60)	// 2s arming time
+					HitBadguys(me, map, world);
+			}
+			break;
 		case BLT_COMET:
 		case BLT_ICECOMET:
 			me->anim++;
@@ -1375,7 +1410,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 		BulletHitFloor(me,map,world);
 
 	// all gravity-affected bullets, get gravitized
-	if(me->type==BLT_BOMB || me->type==BLT_GRENADE
+	if(me->type==BLT_BOMB || me->type==BLT_GRENADE || (me->type==BLT_MINE && me->anim==0)
 		|| me->type==BLT_ROCK || me->type==BLT_EVILHAMMER || me->type==BLT_COIN || me->type==BLT_RUNESTONE
 		|| me->type==BLT_BIGCOIN)
 		me->dz-=FIXAMT;
@@ -1590,6 +1625,13 @@ void RenderBullet(bullet_t *me)
 					DISPLAY_DRAWME|DISPLAY_GLOW);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
+			break;
+		case BLT_MINE:
+			curSpr = bulletSpr->GetSprite(110+(me->anim==1)*Random(2));	// vibrate wildly when you are timing up
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 255, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_GLOW);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_SHADOW);
 			break;
 		case BLT_YELBOOM:
 			curSpr=bulletSpr->GetSprite(me->anim/2+SPR_YELBOOM);
@@ -1965,6 +2007,16 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->dx=Cosine(me->facing)*f;
 			me->dy=Sine(me->facing)*f;
 			me->dz=FIXAMT*20;
+			break;
+		case BLT_MINE:
+			me->anim = 0;
+			me->timer = 255;
+			me->z = 1;
+			me->facing = Random(256);
+			f = MGL_random(3) + 1;
+			me->dx = Cosine(me->facing) * f;
+			me->dy = Sine(me->facing) * f;
+			me->dz = FIXAMT * 10;
 			break;
 		case BLT_SHOCKWAVE:
 		case BLT_GOODSHOCK:

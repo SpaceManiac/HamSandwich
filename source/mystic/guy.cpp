@@ -466,7 +466,15 @@ void Guy::Update(Map *map,world_t *world)
 	if(frozen && hp>0)
 	{
 		bright=map->map[mapx+mapy*map->width].templight;
-
+		frostBite++;
+		if (frostBite >= 60)
+		{
+			frostBite = 0;
+			word tmpFrozen = frozen;
+			if (!ClassicMode() && RuneValue(Rune::FROSTBITE) > 0)
+				GetShot(0, 0, (int)RuneValue(Rune::FROSTBITE), map, world);
+			if (hp > 0) frozen = tmpFrozen;	// don't let this damage disrupt your freeze state
+		}
 		frozen--;
 		if(ouch>0)
 			ouch--;
@@ -1264,6 +1272,10 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		}
 		if ((BulletHittingType() == BLT_MISSILE || BulletHittingType() == BLT_LILBOOM) && SkillValue(SKILL_SEEKBOOM)>0)
 			FireExactBullet(x, y, z, 0, 0, 0, 0, 7, 0, BLT_SEEKBOOM);
+		if (BulletHittingType() == BLT_MISSILE || BulletHittingType() == BLT_LILBOOM || BulletHittingType() == BLT_SEEKBOOM)
+		{
+			
+		}
 
 		bool critted = false;
 		float critChance = 0;
@@ -1599,6 +1611,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 	for(i=0;i<maxGuys;i++)
 		if(guys[i]->type==MONS_NONE)
 		{
+			guys[i]->frostBite = 0;
 			guys[i]->myNumberParticle = 65535;
 			guys[i]->stun = 0;
 			guys[i]->executable = false;

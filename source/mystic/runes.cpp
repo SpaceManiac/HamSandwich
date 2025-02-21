@@ -94,11 +94,11 @@ RuneDef runeDef[] = {
 		SD_PERCENT,
 	},
 	{
-		"Siko Neato",
-		{"didn't make this yet",
+		"Siko Wiko",
+		{"I dunno yet",
 		 ""},
 		{10,25,50},
-		"Huh",
+		"Weaken",
 		SD_PERCENT,
 	},
 	{
@@ -110,12 +110,12 @@ RuneDef runeDef[] = {
 		SD_PERCENT,
 	},
 	{
-		"Icio Argento",
-		{"didn't make this yet",
-		 ""},
-		{10,25,50},
-		"Huh",
-		SD_PERCENT,
+		"Icio Chompus",
+		{"Frozen enemies suffer frostbite",
+		 "damage each second."},
+		{2,4,6},
+		"Damage",
+		SD_NUMBER,
 	},
 	{
 		"Infernus Critikus",
@@ -126,11 +126,11 @@ RuneDef runeDef[] = {
 		SD_PERCENT,
 	},
 	{
-		"Inferneri Jumbo",
-		{"didn't make this yet",
-		 ""},
-		{10,25,50},
-		"Huh",
+		"Inferneri Minus",
+		{"Each Inferno bomb has a chance to",
+		 "drop a mine that arms in 2s."},
+		{20,40,60},
+		"Chance",
 		SD_PERCENT,
 	},
 	{
@@ -252,7 +252,7 @@ void DescribeRune(Rune r,int x,int y)
 		char symbol = '0';
 
 		if (total - floorf(total) < 0.1f)	// if it's nearly an integer, let's just show an integer
-			sprintf(txt, "[ %s: %d", runeDef[(int)r].numDesc, (int)total);
+			sprintf(txt, "[%s: %d", runeDef[(int)r].numDesc, (int)total);
 		else
 			sprintf(txt, "[%s: %0.1f", runeDef[(int)r].numDesc, total);
 		if (runeDef[(int)r].numberType == SD_PERCENT)
@@ -271,36 +271,6 @@ void DescribeRune(Rune r,int x,int y)
 			PrintBrightGlow(x, y + 20 + 12 * 4, "Upgrade for 100 Runestones.", 0, 1);
 		// rank 3, there's nothing more to do
 	}
-/*	if (skillList[skill].spellReq != 255 && player.spell[skillList[skill].spellReq] == 0)
-	{
-		PrintBrightGlow(x, y, "Unknown!", 10, 2);
-		PrintBrightGlow(x, y + 20, "You need to find a new", 0, 1);
-		PrintBrightGlow(x, y + 20+12, "spell to learn this skill.", 0, 1);
-		return;
-	}
-	PrintBrightGlow(x, y, skillList[skill].name, 10, 2);
-	int lines;
-	for (lines = 0; lines < 4; lines++)
-		PrintBrightGlow(x, y + 20 + 12 * lines, skillList[skill].desc[lines], 0, 1);
-	float total = SkillValue(skill);
-	if (skillList[skill].displayType == SD_METERS)
-		total = total / 32.0f;
-	char symbol='0';
-	
-	if(total-floorf(total)<0.1f)	// if it's nearly an integer, let's just show an integer
-		sprintf(txt, "[Rank %d/%d, %s: %d", player.skill[skill], MAX_SKILL_LVL, skillList[skill].statName, (int)total);
-	else
-		sprintf(txt, "[Rank %d/%d, %s: %0.1f", player.skill[skill], MAX_SKILL_LVL, skillList[skill].statName, total);
-	if (skillList[skill].displayType == SD_PERCENT)
-		strcat(txt, "%]");
-	else if (skillList[skill].displayType == SD_SECONDS)
-		strcat(txt, "s]");
-	else if (skillList[skill].displayType == SD_METERS)
-		strcat(txt, "m]");
-	else
-		strcat(txt, "]");
-
-	PrintBrightGlow(x, y + 20+12*4, txt, 0, 1);*/
 }
 
 byte RuneLevel(Rune r)

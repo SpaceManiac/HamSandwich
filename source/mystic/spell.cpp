@@ -24,6 +24,7 @@ byte spellCost[20]={
 };
 
 int castCounter;
+byte flameCounter = 0;
 
 byte SpellCost(byte spell)
 {
@@ -104,7 +105,13 @@ void CastSpell(Guy *me)
 		// not enough mana to cast it!
 		return;
 	}
-	player.mana-=cost;
+	if (!ClassicMode() && player.casting == SPL_ENERGY && Random(100) < RuneValue(Rune::ENERGY2))
+	{
+		// free cast!
+	}
+	else
+		player.mana-=cost;
+
 	ChallengeEvent(CE_SPELL,cost);
 
 	if(player.fairyOn==FAIRY_CASTY && player.life>1)
@@ -191,6 +198,16 @@ void CastSpell(Guy *me)
 			if(player.spell[SPL_FLAME]==1 || player.downgradeSpell[SPL_FLAME])
 			{
 				FireBullet(me->x,me->y,me->facing,BLT_FLAME);
+				if (!ClassicMode())
+				{
+					flameCounter++;
+					if (RuneValue(Rune::FLAME3) > 0 && flameCounter >= (int)RuneValue(Rune::FLAME3))
+					{
+						flameCounter = 0;
+						FireBullet(me->x, me->y, (me->facing+2)&7, BLT_FLAME);
+						FireBullet(me->x, me->y, (me->facing+6)&7, BLT_FLAME);
+					}
+				}
 				if(spellHeld)	// fire is held
 				{
 					if(SpellLevel()<25)
@@ -227,6 +244,20 @@ void CastSpell(Guy *me)
 					cnt = (int)((SkillValue(SKILL_FLAMEON)*1.2f)/2 + 1);
 				for(i=0;i<cnt;i++)
 					FireBullet(me->x+Cosine(me->facing*32)*32,me->y+Sine(me->facing*32)*32,me->facing*32,BLT_LIQUIFY);
+				if (!ClassicMode())
+				{
+					flameCounter++;
+					if (RuneValue(Rune::FLAME3) > 0 && flameCounter >= (int)RuneValue(Rune::FLAME3))
+					{
+						flameCounter = 0;
+						byte f = (me->facing + 2) & 7;
+						for (i = 0; i < cnt; i++)
+							FireBullet(me->x + Cosine(f * 32) * 32, me->y + Sine(f * 32) * 32, f * 32, BLT_LIQUIFY);
+						f = (me->facing + 6) & 7;
+						for (i = 0; i < cnt; i++)
+							FireBullet(me->x + Cosine(f * 32) * 32, me->y + Sine(f * 32) * 32, f * 32, BLT_LIQUIFY);
+					}
+				}
 				MakeNormalSound(SND_FLAMEGO);
 				player.wpnReload=5;
 			}
@@ -330,8 +361,6 @@ void CastSpell(Guy *me)
 			}
 			break;
 		case SPL_SUMMON: // summon ptero
-			
-			
 			if(player.spell[SPL_SUMMON]==1 || player.downgradeSpell[SPL_SUMMON])
 			{
 				SetPlayerGlow(64);

@@ -46,7 +46,7 @@ class Guy
 		byte mind1;
 
 		byte reload;
-
+		byte frostBite;
 		byte ouch;
 		byte stun;
 		byte action;

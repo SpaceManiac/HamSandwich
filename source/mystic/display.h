@@ -12,7 +12,7 @@
    don't have to pass the mgldraw object everywhere, and also handles the display
    list and camera, so everything is drawn in sorted order (or not drawn). */
 
-#define MAX_DISPLAY_OBJS 1024
+#define MAX_DISPLAY_OBJS 2048
 
 #define DISPLAY_XBORDER 300
 #define DISPLAY_YBORDER 300

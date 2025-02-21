@@ -20,10 +20,10 @@ enum class Rune :byte
 	FLAME3,	// flames go out sideways too
 
 	SEEKER,	// seekers 5/15/25% crit chance
-	SEEKER2,
+	SEEKER2, // 
 
 	ICECOST,	// ice spells cost 10/25/50% less
-	ICE2,
+	FROSTBITE,
 
 	INFERNO,	// inferno 5/15/25% crit chance
 	INFERNO2,

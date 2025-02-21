@@ -61,8 +61,9 @@
 #define BLT_ICECOMETBOOM (48)
 #define BLT_RUNESTONE (49)
 #define BLT_PTEROSHOT (50)
+#define BLT_MINE	(51)
 
-#define MAX_BULLETS 256
+#define MAX_BULLETS 512
 
 // the special hammer flags for different powerups
 #define HMR_REVERSE 1
