@@ -29,6 +29,7 @@
 #define GAMEMODE_SHOP  3
 #define GAMEMODE_SPEECH 4
 #define GAMEMODE_FAIRY	5
+#define GAMEMODE_FARLEY 6
 
 // these are the messages you can send to the game
 #define MSG_NONE	  0
@@ -50,6 +51,7 @@
 #define LEVEL_LOADING 4
 #define LEVEL_SHOP	  5
 #define LEVEL_FAIRY	  6
+#define LEVEL_FARLEY  7
 
 // these are world outcomes
 #define WORLD_ABORT 5
@@ -74,6 +76,7 @@ byte GameStartup(void);
 void EnterStatusScreen(void);
 void EnterPictureDisplay(void);
 void EnterSpeechMode(void);
+void EnterFarleyMode(void);
 
 TASK(byte) LunaticRun(int *lastTime);
 TASK(void) LunaticDraw(void);

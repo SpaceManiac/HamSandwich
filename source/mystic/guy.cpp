@@ -647,6 +647,17 @@ void Guy::Update(Map *map,world_t *world)
 				oldmapy=mapy;	// don't let it switch the tile
 			}
 		}
+		if (player.worldNum == 0 && player.levelNum == 12 && (oldmapx != mapx || oldmapy != mapy) && !GotRuneInLevel(0,12))
+		{
+			if (map->map[0].wall==1 && map->map[1+13*map->width].floor==map->map[1+8*map->width].floor && map->map[10+1*map->width].floor==map->map[18+12*map->width].floor &&
+				map->map[18+12*map->width].floor==map->map[1+8*map->width].floor)	// all the runes match!
+			{
+				map->map[9 + 10 * map->width].item = ITM_SILENTRUNE;
+				map->TempTorch(9, 10, 20);
+				MakeNormalSound(SND_CHLGCRYSTAL);
+				map->map[0].wall = 2;
+			}
+		}
 
 		if(parent)	// riding a log
 		{
@@ -669,6 +680,27 @@ void Guy::Update(Map *map,world_t *world)
 		MakeSound(SND_MENUCLICK,(mapx*TILE_WIDTH)<<FIXSHIFT,(mapy*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1000);
 		map->map[mapx+mapy*map->width].floor=world->terrain[map->map[mapx+mapy*map->width].floor].next;
 	}
+	if ((oldmapx != mapx || oldmapy != mapy) &&
+		(world->terrain[map->map[mapx + mapy * map->width].floor].flags & TF_COMBOSTEP) && type==MONS_BOUAPHA)
+	{
+		MakeSound(SND_MENUCLICK, (mapx * TILE_WIDTH) << FIXSHIFT, (mapy * TILE_HEIGHT) << FIXSHIFT, SND_CUTOFF, 1000);
+		byte t1, t2;
+		t1 = map->map[mapx + mapy * map->width].floor;
+		t2 = world->terrain[map->map[mapx + mapy * map->width].floor].next;
+		for (int i = mapx - 1; i <= mapx + 1; i++)
+		{
+			for (int j = mapy - 1; j <= mapy + 1; j++)
+			{
+				if ((i == mapx || j == mapy) && i>=0 && j>=0 && i<map->width && j<map->height)	// only the + shape counts, not the diagonals
+				{
+					if(world->terrain[map->map[i + j * map->width].floor].flags& TF_COMBOSTEP)
+					{
+						map->map[i + j * map->width].floor = world->terrain[map->map[i + j * map->width].floor].next;	// trigger the next tile for all COMBOSTEP neighbors. Could be totally different setup, that's okay!
+					}
+				}
+			}
+		}
+	}
 	if(oldmapx!=mapx || oldmapy!=mapy)
 		SpecialStepCheck(map,mapx,mapy,this);
 
@@ -687,8 +719,8 @@ void Guy::OverworldUpdate(Map *map,world_t *world)
 	CalculateRect();
 
 	executable = false;
-	if(type==MONS_BOUAPHA)	// special case, player controls Bouapha
-		PlayerControlMe(this,&map->map[mapx+mapy*map->width],world);
+	if (type == MONS_BOUAPHA)	// special case, player controls Bouapha
+		PlayerControlMe(this, &map->map[mapx + mapy * map->width], world);
 	else if(player.levelNum!=1)	// not on the overworld
 		MonsterControl(map,world);
 	else
@@ -861,10 +893,12 @@ void Guy::Render(byte light)
 
 void Guy::OverworldControl(Map *map,world_t *world)
 {
-	if(type!=MONS_FRIENDLY && type!=MONS_FAIRY && type!=MONS_FAIRY2)
+	if(type!=MONS_FRIENDLY && type!=MONS_FAIRY && type!=MONS_FAIRY2 && type!=MONS_FARLEY)
 		AI_Overworld(this,map,world,goodguy);
 	else if(type==MONS_FRIENDLY)
 		AI_Friendly(this,map,world,goodguy);
+	else if (type == MONS_FARLEY)
+		AI_Farley(this, map, world, goodguy);
 	else if(type==MONS_FAIRY)
 		AI_Fairy(this,map,world,goodguy);
 	else
@@ -1136,7 +1170,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			i=1;
 		if(player.stoneskin)
 		{
-			if(player.spell[6]==1)
+			if(player.spell[6]==1 || (!ClassicMode() && player.downgradeSpell[6]))
 				i/=2;		// stoneskin cuts damage in half
 			else
 				i/=8;		// steelskin divides it by 8
@@ -1261,6 +1295,9 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		float v = RuneValue(Rune::FIREBALLS)+100;
 		fDamage = (fDamage * (v) / 100.0f);
 
+		if (player.stoneskin > 0)
+			fDamage = (fDamage * (RuneValue(Rune::ARMOR_DMG) + 100) / 100);
+		
 		if (BulletHittingType() == BLT_FLAME || BulletHittingType() == BLT_LIQUIFY)
 		{
 			if (SkillValue(SKILL_MELTARMOR) > 0)
@@ -1780,6 +1817,8 @@ void AddMapGuys(Map *map)
 				y=(map->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT;
 			}
 
+			if (map->badguy[i].type == MONS_FARLEY && player.worldNum == 0 && HighestWorldReached() == 0)
+				continue;	// don't put farley in world 0 if that's all you've reached
 			g=AddGuy(x,y,0,map->badguy[i].type);
 			if(g!=NULL)
 				g->placed=1;

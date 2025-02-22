@@ -21,6 +21,10 @@ void UpdateMessage(void);
 void RenderMessage(void);
 void NoRepeatNewMessage(const char *txt,int time);
 
+void InitFarley(void);
+byte UpdateFarley(MGLDraw *mgl);
+void RenderFarley(void);
+byte FarleyWorldChoice(void);
 
 void InitSpeech(byte spc);
 byte UpdateSpeech(MGLDraw *mgl);

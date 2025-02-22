@@ -83,8 +83,8 @@
 #define MONS_STICKCORPSE 63
 #define MONS_STICKBAT	 64
 #define MONS_DANCER		65
-
-#define NUM_MONSTERS  66
+#define MONS_FARLEY	  66
+#define NUM_MONSTERS  67
 
 // the animations
 #define ANIM_IDLE	0
@@ -159,6 +159,7 @@ void SetKidSprite(byte armageddon);
 void FaceGoodguy(Guy *me,Guy *goodguy);
 
 // ai functions for each monster type
+void AI_Farley(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Overworld(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy);

@@ -397,7 +397,7 @@ byte PlayerPassedLevel(byte world,byte map)
 
 void PlayerWinLevel(byte w,byte l,byte isSecret)
 {
-	if(!player.levelPassed[w][l]&LP_PASSED)
+	if(!PlayerPassedLevel(w, l))
 	{
 		player.complete[w]+=100;	// get some percentage points
 		if(!isSecret)
@@ -622,6 +622,12 @@ void CheckForAllSecrets(void)
 {
 	int i;
 
+	byte runes = 0;
+	for (i = 0; i < MAX_MAPS; i++)
+		if (player.levelPassed[player.worldNum][i] & LP_GOTRUNE)
+			runes++;
+	if (runes < 6)
+		return;	// gotta get all 6 runes in the chapter
 	for(i=0;i<9;i++)
 		if(player.gotSpell[i]==0)
 			return;
@@ -659,6 +665,12 @@ byte PlayerHasAllSecrets(byte chapter)
 		if(!(player.haveFairy&(1<<(i+chapter*4))))
 			return 0;
 	}
+
+	byte runes = 0;
+	for (i = 0; i < MAX_MAPS; i++)
+		if (player.levelPassed[chapter][i] & LP_GOTRUNE)
+			runes++;
+	if (runes < 6) return 0;
 
 	return (player.keychain[chapter]);	// it all hinges on this item now!
 }
@@ -1743,6 +1755,14 @@ bool GotRuneInLevel(byte world,byte level)
 
 void PickUpRune(void)
 {
+	if (ClassicMode())
+	{
+		NewMessage("I'm gonna pawn this sucker!", 75);
+		GainMoney(20);
+		MakeNormalSound(SND_MONEY);
+		GetRuneInLevel();
+		return;
+	}
 	playerGlow = 64;
 	FloaterParticles(GetGoodguy()->x, GetGoodguy()->y, 1, 32, -1, 8);
 	FloaterParticles(GetGoodguy()->x, GetGoodguy()->y, 1, 10, 1, 8);
@@ -1767,4 +1787,16 @@ void PickUpRune(void)
 	sprintf(s, "%s Rune obtained!", RuneName((Rune)num));
 	player.runes[(int)num] = RUNE_ASLEEP;
 	NewMessage(s, 75);
+}
+
+byte HighestWorldReached(void)
+{
+	byte world = 0;
+	if (PlayerPassedLevel(0, 14))
+		world++;
+	if (PlayerPassedLevel(1, 12))
+		world++;
+	if (PlayerPassedLevel(2, 15))
+		world++;
+	return world;
 }

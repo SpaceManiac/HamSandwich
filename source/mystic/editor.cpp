@@ -172,6 +172,8 @@ void TerrainMouseClick(void)
 			world.terrain[editopt.curFloor].flags^=TF_DESTRUCT;
 		if(mouseX>4 && mouseX<16 && mouseY>369 && mouseY<370+12)
 			world.terrain[editopt.curFloor].flags^=TF_TRANS;
+		if (mouseX > 320 && mouseX < 320+12 && mouseY>249 && mouseY < 249 + 12)
+			world.terrain[editopt.curFloor].flags ^= TF_COMBOSTEP;
 	}
 	else
 	{
@@ -846,6 +848,7 @@ void RenderTerrainInfo(byte which)
 	RenderCheckbox(5,346,world.terrain[which].flags&TF_STEP,"Changes when stepped on");
 	RenderCheckbox(5,358,world.terrain[which].flags&TF_DESTRUCT,"Changes when damaged");
 	RenderCheckbox(5,370,world.terrain[which].flags&TF_TRANS,"Transparent Roof");
+	RenderCheckbox(320, 250, world.terrain[which].flags & TF_COMBOSTEP, "Combo Step");
 
 	Print(5,386,"Next Terrain:",0,1);
 	RenderFloorTileUnlit(5,398,world.terrain[which].next);

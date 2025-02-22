@@ -150,11 +150,11 @@ RuneDef runeDef[] = {
 		SD_PERCENT,
 	},
 	{
-		"Armor-Up",
-		{"didn't make this yet",
-		 ""},
-		{10,25,50},
-		"Huh",
+		"Armis Harmus",
+		{"Boost your damage dealt when",
+		 "protected by an Armor spell."},
+		{5,15,25},
+		"Damage",
 		SD_PERCENT,
 	},
 	{
@@ -167,7 +167,7 @@ RuneDef runeDef[] = {
 	},
 	{
 		"Berz-Up",
-		{"didn't make this yet",
+		{"Berserk",
 		 ""},
 		{10,25,50},
 		"Huh",

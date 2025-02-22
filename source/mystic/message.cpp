@@ -3,7 +3,7 @@
 #include "game.h"
 #include "intface.h"
 
-char speech[28*4][64]={
+char speech[29*4][64]={
 	// 0
 	"Welcome to Beginnerton!  This town is",
 	"really a tutorial on some basic game",
@@ -144,6 +144,11 @@ char speech[28*4][64]={
 	"long as you are in the Overworld!",
 	"You don't get stronger with levels",
 	"anymore, so don't forget your skills!",
+	// 28
+	"I'm Farley the Ghost Bat! I can fly",
+	"you to previous chapters. Don't worry,",
+	"I can also fly you back."
+	"",
 };
 
 byte speechX,speechY,curSpeech;
@@ -422,6 +427,8 @@ byte UpdateSpeech(MGLDraw *mgl)
 					MakeNormalSound(SND_GETKEY);
 					player.keys[2]=1;
 				}
+				if (curSpeech == 28)
+					EnterFarleyMode();
 				return 1;
 			}
 		}
@@ -463,4 +470,80 @@ void RenderSpeech(void)
 
 		PrintGlow(HALFWID-64*8/2+5,i*20+95,s,2);
 	}
+}
+
+byte farleyCursor;
+byte farleyTicker;
+void InitFarley(void)
+{
+	farleyCursor = player.worldNum;
+	oldc = 255;	
+}
+
+byte UpdateFarley(MGLDraw *mgl)
+{
+	byte c = GetControls();
+	farleyTicker+=2;
+	int top = (int)HighestWorldReached();
+	if ((c & CONTROL_UP) && !(oldc & CONTROL_UP))
+	{
+		farleyCursor--;
+		if (farleyCursor > 200)
+			farleyCursor = top;
+	}
+	if ((c & CONTROL_DN) && !(oldc & CONTROL_DN))
+	{
+		farleyCursor++;
+		if (farleyCursor > top)
+			farleyCursor = 0;
+	}
+	if ((c & CONTROL_B1) && !(oldc & CONTROL_B1))
+	{
+		return 1;	// we're gonna stay here
+	}
+	oldc = c;
+	return 0;
+}
+
+void RenderFarley(void)
+{
+	char s[32];
+	int top = (int)HighestWorldReached();
+	for (int i = 0; i <= top; i++)
+	{
+		GetIntfaceSpr(68)->DrawBright(180, 30+i*110, GetDisplayMGL(),-10+(farleyCursor==i)*10);
+		sprintf(s, "Chapter %d", i + 1);
+		CenterPrintGlow(30 + i * 110 + 20, s, 0);
+		switch (i)
+		{
+			case 0:
+				strcpy(s, "Over the River");
+				break;
+			case 1:
+				strcpy(s, "Through The Woods");
+				break;
+			case 2:
+				strcpy(s, "Castle Heinous");
+				break;
+			case 3:
+				strcpy(s, "Beneath The Castle");
+				break;
+		}
+		CenterPrintGlow(30 + i * 110 + 60, s, 2);
+		if(i==player.worldNum)
+			CenterPrintGlow(30 + i * 110 + 80, "You are here!", 1);
+		if (farleyCursor == i)
+		{
+			BlitIconBit(558, 437, 558 + 12, 437 + 13, 50 + (Cosine(farleyTicker) * 4 >> FIXSHIFT), 30 + i * 110 - 10 + (Cosine(farleyTicker) * 4 >> FIXSHIFT), 255, 0);
+			BlitIconBit(558, 467, 558 + 13, 467 + 13, 50 + (Cosine(farleyTicker) * 4 >> FIXSHIFT), 30 + i * 110 + 98 - (Cosine(farleyTicker) * 4 >> FIXSHIFT), 255, 0);
+
+			BlitIconBit(588, 437, 588 + 12, 437 + 12, 50+520 - (Cosine(farleyTicker) * 4 >> FIXSHIFT), 30 + i * 110-10 + (Cosine(farleyTicker) * 4 >> FIXSHIFT), 255, 0);
+			BlitIconBit(588, 467, 588 + 12, 467 + 13, 50+520 - (Cosine(farleyTicker) * 4 >> FIXSHIFT), 30 + i * 110+98 - (Cosine(farleyTicker) * 4 >> FIXSHIFT), 255, 0);
+		}
+	}
+}
+
+byte FarleyWorldChoice(void)
+{
+	return farleyCursor;
 }

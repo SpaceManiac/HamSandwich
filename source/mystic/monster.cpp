@@ -564,6 +564,16 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{3,3,3,3,255},	// attack=shoot
 				{4,5,6,7,8,9,255},	// die
 			}},
+		{ "Farley The Ghost Bat",
+		 8,27,5,25,"graphics/bat.jsp",0,MF_FLYING|MF_GHOST,
+			{
+				{0,255},	// idle
+				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
+				{7,8,9,8,7,255},	// attack
+				{17,18,19,20,21,22,23,24,25,26,255},		// die
+				{10,11,12,12,12,12,12,11,10,255},	// diving attack
+				{13,14,15,15,16,255}	// bounce off during dive
+			} },
 	};
 
 static byte kidSpr;
@@ -859,6 +869,11 @@ void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char 
 	if(!(monsType[type].flags&MF_NOSHADOW))
 		SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,0,255,0,curSpr,DISPLAY_DRAWME|DISPLAY_SHADOW);
 
+	if (type == MONS_FARLEY)
+	{
+		SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z>>FIXSHIFT, 7, bright, curSpr, DISPLAY_DRAWME);
+		return;
+	}
 	if(ouch==0)
 	{
 		if(!(monsType[type].flags&MF_GHOST))
@@ -2209,6 +2224,38 @@ void AI_Friendly(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	me->frm=0;
 	me->frmTimer=0;
 	me->frmAdvance=1;
+}
+
+void AI_Farley(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	if (goodguy == NULL)
+		return;
+
+	// sometimes tap foot
+	if (goodguy->type == MONS_BOUAPHA && RangeToTarget(me, goodguy) < 32 * FIXAMT && me->mind1==0)
+	{
+		if (player.farley == 0)
+		{
+			player.farley = 1;
+			InitSpeech(28);	// introduce yourself
+		}
+		else
+		{
+			EnterFarleyMode();
+		}
+		me->mind1 = 1;
+	}
+	else if (RangeToTarget(me, goodguy) > 64 * FIXAMT)
+	{
+		me->mind1 = 0;	// once the player has moved away, any nearness again will trigger talking
+	}
+	if (me->seq != ANIM_MOVE)
+	{
+		me->seq = ANIM_MOVE;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 128;
+	}
 }
 
 void AI_Shroomlord(Guy *me,Map *map,world_t *world,Guy *goodguy)

@@ -144,7 +144,8 @@ typedef struct player_t
 	byte skillStones;
 	byte runes[(int)Rune::NUM_RUNES];
 	word runeStones;
-	byte expando[226-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
+	byte farley;
+	byte expando[225-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
 } player_t;
 
 extern player_t player;
@@ -213,6 +214,7 @@ bool ArmageddonIsUnderway(void);
 void GainMoney(int amt);
 bool CanAffordMoney(int amt);
 int TotalMoney(void);
+byte HighestWorldReached(void);
 
 void GetRuneInLevel(void);
 bool GotRuneInLevel(byte world, byte level);

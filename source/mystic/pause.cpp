@@ -336,7 +336,7 @@ void RenderRuneMenu(void)
 				BlitIcon(40 + (i % 4), x + 4, y + 4, 0, -6);
 			}
 			
-			BlitIcon(100, x + 4, y + 4 - 2*(subcursor==i), col, -(col==0)*8+((col!=0)*glow) - 6 * (subcursor != i));
+			BlitIcon(100+i, x + 4, y + 4 - 2*(subcursor==i), col, -(col==0)*8+((col!=0)*glow) - 6 * (subcursor != i));
 			if (rank >= RUNE_RANK1)
 			{
 				for (byte j = 0; j < stones; j++)
@@ -761,6 +761,8 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					{
 						MakeNormalSound(SND_MENUSELECT);
 						player.downgradeSpell[subcursor - 3] = 1 - player.downgradeSpell[subcursor - 3];
+						if (subcursor - 3 == 6 && player.downgradeSpell[subcursor - 3] == 0)	// you are disabling the downgrade for steelskin. Need to turn off your stoneskin if this is the case, because it's super cheating
+							player.stoneskin = 0;
 					}
 					else
 						MakeNormalSound(SND_UNAVAILABLE);

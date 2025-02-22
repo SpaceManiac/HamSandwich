@@ -231,6 +231,13 @@ void EnterSpeechMode(void)
 	GetTaps();	// clear the key tap buffer
 }
 
+void EnterFarleyMode(void)
+{
+	gameMode = GAMEMODE_FARLEY;
+	InitFarley();
+	GetTaps();
+}
+
 void AddGarbageTime(dword t)
 {
 	garbageTime+=t;
@@ -473,9 +480,21 @@ TASK(byte) LunaticRun(int *lastTime)
 		}
 		else if(gameMode==GAMEMODE_SPEECH)
 		{
-			if(UpdateSpeech(gamemgl)==1)
+			if(UpdateSpeech(gamemgl)==1 && gameMode!=GAMEMODE_FARLEY)
 			{
 				gameMode=GAMEMODE_PLAY;
+			}
+		}
+		else if (gameMode == GAMEMODE_FARLEY)
+		{
+			if (UpdateFarley(gamemgl) == 1)
+			{
+				gameMode = GAMEMODE_PLAY;
+				if (FarleyWorldChoice() != player.worldNum)
+				{
+					windingDown = 30;
+					windDownReason = LEVEL_FARLEY;
+				}
 			}
 		}
 		else	// gamemode_pic
@@ -646,20 +665,15 @@ TASK(void) LunaticDraw(void)
 		RenderPauseMenu();
 		if(gameMode==GAMEMODE_SPEECH)
 			RenderSpeech();
-
-		// TESTING TESTING
-		//int msx, msy;
-		//GetDisplayMGL()->GetMouse(&msx, &msy);
-		//DrawMouseCursor(msx, msy);
+		if (gameMode == GAMEMODE_FARLEY)
+			RenderFarley();
 	}
 	else if(gameMode==GAMEMODE_SHOP)
 	{
-		//gamemgl->ClearScreen();
 		RenderShop();
 	}
 	else if(gameMode==GAMEMODE_FAIRY)
 	{
-		//gamemgl->ClearScreen();
 		RenderFairyBox();
 	}
 	else
@@ -940,6 +954,22 @@ TASK(byte) LunaticWorld(byte world)
 		{
 			PlayerResetScore();
 			// don't do anything, play the same level
+		}
+		else if (result == LEVEL_FARLEY)
+		{
+			player.worldNum = FarleyWorldChoice();
+			InitPlayer(INIT_WORLD, player.worldNum, 1);
+			FreeWorld(&curWorld);
+			if (!LoadWorld(&curWorld, worldName[player.worldNum]))
+				CO_RETURN WORLD_ABORT;
+
+			worldNum = player.worldNum;
+			world = worldNum;
+			InitWorld(&curWorld, worldNum);
+			ResetPauseMenu();
+			player.overworldX = -2000;
+			mapNum = 1;
+			battle = 0;
 		}
 		else if(result==LEVEL_WIN)
 		{

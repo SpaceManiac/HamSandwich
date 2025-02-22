@@ -28,10 +28,10 @@ enum class Rune :byte
 	INFERNO,	// inferno 5/15/25% crit chance
 	INFERNO2,
 
-	SUMMON,	// summoned guys have 5/15/25% crit chance
+	SUMMON,		// summoned guys have 5/15/25% crit chance
 	PALS,		// 25/50/100% chance to summon a ptero along with what you intend to summon
 
-	ARMOR,		// armor spells cost 10/25/50% less
+	ARMOR_DMG,		// gain dmg while armored
 	ARMOR2,
 
 	BERSERK,	// berserk bonus
