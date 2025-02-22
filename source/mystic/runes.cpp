@@ -199,7 +199,7 @@ RuneDef runeDef[] = {
 	},
 };
 
-char* RuneName(Rune r)
+const char* RuneName(Rune r)
 {
 	if (r < Rune::NUM_RUNES)
 		return runeDef[(int)r].name;
@@ -242,7 +242,7 @@ void DescribeRune(Rune r,int x,int y)
 		else if (RuneLevel(r) == RUNE_RANK3)
 			sprintf(txt, "Wild %s", RuneName(r));
 		PrintBrightGlow(x, y, txt, 10, 2);
-		
+
 		PrintBrightGlow(x, y + 20, runeDef[(int)r].desc[0], 0, 1);
 		PrintBrightGlow(x, y + 20 + 12, runeDef[(int)r].desc[1], 0, 1);
 

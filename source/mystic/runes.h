@@ -20,7 +20,7 @@ enum class Rune :byte
 	FLAME3,	// flames go out sideways too
 
 	SEEKER,	// seekers 5/15/25% crit chance
-	SEEKER2, // 
+	SEEKER2, //
 
 	ICECOST,	// ice spells cost 10/25/50% less
 	FROSTBITE,
@@ -64,7 +64,7 @@ typedef struct RuneDef
 
 void DescribeRune(Rune r, int x, int y);
 
-char* RuneName(Rune r);
+const char* RuneName(Rune r);
 int RuneValue(Rune r);
 
 byte RuneLevel(Rune r);

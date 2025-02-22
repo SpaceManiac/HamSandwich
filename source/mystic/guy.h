@@ -15,7 +15,7 @@
 #define BRUTALDMG (5)
 #define BRUTALHP (5)
 
-class Guy
+class Guy final
 {
 	public:
 		Guy(void);
