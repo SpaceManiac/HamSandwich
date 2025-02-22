@@ -25,6 +25,32 @@ byte spellCost[20]={
 
 int castCounter;
 byte flameCounter = 0;
+float storedHealMana;
+
+byte HealCostIgnoringStoredMana(void)
+{
+	byte cost;
+
+	if (player.downgradeSpell[SPL_HEAL])
+		cost = spellCost[SPL_HEAL * 2];
+	else
+		cost = spellCost[SPL_HEAL * 2 + (player.spell[SPL_HEAL] - 1)];
+
+	if (player.fairyOn == FAIRY_CHEAPY)
+	{
+		cost /= 2;	// half-price!
+		if (cost == 0)
+			cost = 1;
+	}
+	if (player.fairyOn == FAIRY_MIGHTY)
+	{
+		cost = cost * 9 / 10;	// 10% off
+		if (cost == 0)
+			cost = 1;
+	}
+	
+	return cost;
+}
 
 byte SpellCost(byte spell)
 {
@@ -47,6 +73,14 @@ byte SpellCost(byte spell)
 		if (cost == 0)
 			cost = 1;
 	}
+	if (spell == SPL_HEAL && GetStoredHealMana() > 0)
+	{
+		if (cost > GetStoredHealMana())
+			cost -= GetStoredHealMana();
+		else
+			cost = 0;
+	}
+	
 	return cost;
 }
 
@@ -110,7 +144,13 @@ void CastSpell(Guy *me)
 		// free cast!
 	}
 	else
-		player.mana-=cost;
+	{
+		player.mana -= cost;
+		if (player.casting != SPL_HEAL)
+			StoreHealMana(cost);
+		else
+			ResetStoredHealMana();
+	}
 
 	ChallengeEvent(CE_SPELL,cost);
 
@@ -423,6 +463,11 @@ void CastSpell(Guy *me)
 					player.parry = 15;
 					player.shield = 15;
 				}
+				byte amt = (byte)RuneValue(Rune::ARMOR_BARRIER);
+				if (player.spell[SPL_ARMOR] == 2 && !player.downgradeSpell[SPL_ARMOR])
+					amt *= 2;
+				if (player.barrier<amt)
+					player.barrier = amt;
 			}
 			MakeNormalSound(SND_STONESKIN);
 			player.wpnReload=10;
@@ -442,7 +487,7 @@ void CastSpell(Guy *me)
 			break;
 		case SPL_HEAL: // healing
 			MakeNormalSound(SND_LOONYKEY);
-			if(player.life==player.maxLife && (ClassicMode() || SkillValue(SKILL_HEALSUMMONS)==0))
+			if(player.life==player.maxLife && ClassicMode())
 			{
 				player.mana+=cost;
 				return;
@@ -461,7 +506,7 @@ void CastSpell(Guy *me)
 					if (SkillValue(SKILL_RESTORATION) > 0)
 						AddToRestorationBuffer((float)heal);
 					else
-						PlayerHeal(heal);
+						PlayerHealWithSpell(heal);
 				}
 				ExplodeParticles2(PART_SLIME,me->x,me->y,MGL_randoml(FIXAMT*20),SpellLevel(),6);
 			}
@@ -477,7 +522,7 @@ void CastSpell(Guy *me)
 					if (SkillValue(SKILL_RESTORATION) > 0)
 						AddToRestorationBuffer((float)heal);
 					else
-						PlayerHeal(heal);
+						PlayerHealWithSpell(heal);
 					player.poison = 0;
 				}
 				ExplodeParticles2(PART_SLIME,me->x,me->y,MGL_randoml(FIXAMT*20),50,10);
@@ -496,4 +541,21 @@ void CastSpell(Guy *me)
 			}
 			break;
 	}
+}
+
+byte GetStoredHealMana(void)
+{
+	return (byte)storedHealMana;
+}
+
+void StoreHealMana(byte amt)
+{
+	storedHealMana += RuneValue(Rune::HEALSTORE) * (float)amt / 100.0f;
+	if (storedHealMana > 128)
+		storedHealMana = 128;	// we just cap at 128, because we don't want to bother checking which heal spell they're using. Doesn't matter
+}
+
+void ResetStoredHealMana(void)
+{
+	storedHealMana = 0;
 }

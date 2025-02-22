@@ -19,13 +19,13 @@ static byte vampyClock,compassClock;
 byte beenReborn;
 static byte fairyReload;
 static int chlgCrystals;
-float restorationBuffer;
-float restorationOutput;
+float restorationBuffer,spellRestorationBuffer;
+float spellRestorationOutput;	// separating the direct restoration from the Heal spell from others, because it can grant barrier
 byte manaRuneValue;
 
 void AddToRestorationBuffer(float amt)
 {
-	restorationBuffer += amt;
+	spellRestorationBuffer += amt;
 }
 
 void InitPlayer(byte initWhat,byte world,byte level)
@@ -113,8 +113,10 @@ void InitPlayer(byte initWhat,byte world,byte level)
 				player.levelsPassed++;
 	}
 
+	player.barrier = 0;
 	restorationBuffer = 0;
-	restorationOutput = 0;
+	spellRestorationBuffer = 0;
+	spellRestorationOutput = 0;
 	player.levelNum=level;
 	player.prevScore=player.score;	// back up the score (if you give up or die, it is reset)
 	player.prevLevel=player.level;
@@ -1119,6 +1121,32 @@ void PlayerHeal(byte amt)
 		player.life=player.maxLife;
 }
 
+void PlayerHealWithSpell(byte amt)
+{
+	if (player.life == 0)
+		return;
+
+	HealGoodguy(amt);
+
+	if (player.life + amt < player.maxLife)
+		player.life += amt;
+	else
+	{
+		amt -= (player.maxLife - player.life);
+		player.life = player.maxLife;
+		if (!ClassicMode())
+		{
+			byte limit = (byte)RuneValue(Rune::HEAL);
+			if (limit > 0)
+			{
+				player.barrier += amt;
+				if (player.barrier > limit)
+					player.barrier = limit;
+			}
+		}
+	}
+}
+
 byte GetTportClock(void)
 {
 	return tportclock;
@@ -1307,26 +1335,30 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	{
 		if(SkillValue(SKILL_RESTORATION))
 			restorationBuffer += 1.0f / 90.0f;	// 1 life every 3 seconds
-		
-		float maxPerTick = SkillValue(SKILL_RESTORATION) / 30.0f + 1.0f / 90.0f;	// at max, you can heal the 1 per 3s from restoration, plus your heal/s from your healing spell
 		if (RuneValue(Rune::RECOVER))
-		{
 			restorationBuffer += 1.0f / (RuneValue(Rune::RECOVER) * 30);	// 1 life every N seconds from recover
-			maxPerTick += 1.0f / (RuneValue(Rune::RECOVER) * 30);	// allow this to heal per tick
+		
+		if (restorationBuffer >= 1)
+		{
+			byte amt = (byte)floor(restorationBuffer);
+			PlayerHeal((byte)amt);
+			restorationBuffer-= (float)amt;
 		}
 
+		float maxPerTick = SkillValue(SKILL_RESTORATION) / 30.0f;	// at max, you can heal the heal/s from your healing spell
+		
 		float amt;
-		if (restorationBuffer > maxPerTick)
+		if (spellRestorationBuffer > maxPerTick)
 			amt = maxPerTick;
 		else
-			amt = restorationBuffer;
-		restorationBuffer -= amt;
-		restorationOutput += amt;
-		if (restorationOutput >= 1)
+			amt = spellRestorationBuffer;
+		spellRestorationBuffer -= amt;
+		spellRestorationOutput += amt;
+		if (spellRestorationOutput >= 1)
 		{
-			byte amt = (byte)floor(restorationOutput);
-			PlayerHeal((byte)amt);
-			restorationOutput -= (float)amt;
+			byte amt = (byte)floor(spellRestorationOutput);
+			PlayerHealWithSpell((byte)amt);
+			spellRestorationOutput -= (float)amt;
 		}
 	}
 	if (player.summonDmgBoost)
@@ -1408,6 +1440,10 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			MakeSound(SND_BOUAPHAOUCH,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
 		else if(me->seq==ANIM_DIE)	// so it doesn't do this if you're drowning
 			MakeSound(SND_BOUAPHADIE,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
+	}
+	if (me->ouch2 == 4)
+	{
+		MakeSound(SND_DEFLECT, me->x, me->y, SND_CUTOFF | SND_ONE, 2000);
 	}
 
 	// triggering stuff

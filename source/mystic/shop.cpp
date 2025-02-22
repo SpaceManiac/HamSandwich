@@ -544,7 +544,10 @@ void RenderPlayerGear(int x,byte brt)
 	}
 
 	// life
-	sprintf(s,"Life: %03d/%03d",player.life,player.maxLife);
+	if(!ClassicMode() && player.barrier>0)
+		sprintf(s,"Life: %03d/%03d +%d",player.life,player.maxLife,player.barrier);
+	else
+		sprintf(s, "Life: %03d/%03d", player.life, player.maxLife);
 	Print(x-80+2,384+2,s,1,2);
 	Print(x-80,384,s,0,2);
 	// mana

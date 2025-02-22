@@ -158,16 +158,18 @@ RuneDef runeDef[] = {
 		SD_PERCENT,
 	},
 	{
-		"Armor-Up2",
-		{"didn't make this yet",
-		 ""},
-		{10,25,50},
-		"Huh",
-		SD_PERCENT,
+		"Claustro Philis",
+		{"Armor spells also grant you",
+		 "a Barrier. Steelskin grants",
+		 "twice this amount."},
+		{5,15,25},
+		"Barrier",
+		SD_NUMBER,
 	},
 	{
 		"Berz-Up",
 		{"Berserk",
+		 "",
 		 ""},
 		{10,25,50},
 		"Huh",
@@ -176,25 +178,28 @@ RuneDef runeDef[] = {
 	{
 		"Berz-Up2",
 		{"didn't make this yet",
+		 "",
 		 ""},
 		{10,25,50},
 		"Huh",
 		SD_PERCENT,
 	},
 	{
-		"Heal-Up",
-		{"didn't make this yet",
-		 ""},
-		{10,25,50},
-		"Huh",
-		SD_PERCENT,
+		"Helius Bario",
+		{"Heal spells that overheal",
+		 "grant you a barrier, up to",
+		 "a limit."},
+		{20,50,100},
+		"Limit",
+		SD_NUMBER,
 	},
 	{
-		"Heal-Up2",
-		{"didn't make this yet",
-		 ""},
+		"Freebius Lyfus",
+		{"Casting a non-Heal spell lowers",
+		 "the cost of the next Heal spell",
+		 "by a % of the mana spent."},
 		{10,25,50},
-		"Huh",
+		"Mana Stored",
 		SD_PERCENT,
 	},
 };
@@ -245,6 +250,7 @@ void DescribeRune(Rune r,int x,int y)
 
 		PrintBrightGlow(x, y + 20, runeDef[(int)r].desc[0], 0, 1);
 		PrintBrightGlow(x, y + 20 + 12, runeDef[(int)r].desc[1], 0, 1);
+		PrintBrightGlow(x, y + 20 + 12*2, runeDef[(int)r].desc[2], 0, 1);
 
 		float total = runeDef[(int)r].value[RuneLevel(r) - RUNE_RANK1];
 		if (runeDef[(int)r].numberType == SD_METERS)
@@ -263,7 +269,7 @@ void DescribeRune(Rune r,int x,int y)
 			strcat(txt, "m]");
 		else
 			strcat(txt, "]");
-		PrintBrightGlow(x, y + 20 + 12*2, txt, 0, 1);
+		PrintBrightGlow(x, y + 20 + 12*3, txt, 0, 1);
 
 		if (RuneLevel(r) == RUNE_RANK1)
 			PrintBrightGlow(x, y + 20 + 12 * 4, "Upgrade for 50 Runestones.", 0, 1);

@@ -47,7 +47,7 @@ class Guy final
 
 		byte reload;
 		byte frostBite;
-		byte ouch;
+		byte ouch,ouch2;
 		byte stun;
 		byte action;
 		word frmTimer;

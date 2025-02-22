@@ -55,7 +55,7 @@ void ResetInterface(void)
 		bookSlide[i]=0;
 }
 
-void DrawLifeMeter(int x,int y,byte amt,byte max,byte mode)
+void DrawLifeMeter(int x,int y,byte amt,byte max,byte mode,byte barrier)
 {
 	byte c;
 
@@ -100,6 +100,15 @@ void DrawLifeMeter(int x,int y,byte amt,byte max,byte mode)
 			DrawFillBox(x+2,y+2,x+amt-2,y+2,c+8);
 			DrawFillBox(x+2,y+3,x+amt-2,y+MTRHGT-2,c+4);
 		}
+	}
+	if (barrier > 0)
+	{
+		if(barrier>1)
+			DrawFillBox(x+1, y + MTRHGT - 4, x + barrier-1, y + MTRHGT-4, 12);
+		DrawFillBox(x, y + MTRHGT - 3, x + barrier, y + MTRHGT-3, 24);
+		DrawFillBox(x, y + MTRHGT - 2, x + barrier, y + MTRHGT-1, 16);
+		if(barrier>1)
+			DrawFillBox(x+1, y + MTRHGT, x + barrier-1, y + MTRHGT, 12);
 	}
 }
 
@@ -300,9 +309,9 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 	// draw the base console
 	intfaceSpr->GetSprite(0)->Draw(0,-1,mgl);
 	// life meter
-	DrawLifeMeter(2,3,curLife,player.maxLife,0);
+	DrawLifeMeter(2,3,curLife,player.maxLife,0,player.barrier);
 	// mana meter
-	DrawLifeMeter(2,19,curMana,player.maxMana,1);
+	DrawLifeMeter(2,19,curMana,player.maxMana,1,0);
 
 	// hammer speed gauge
 	if(hamSpeed<HAMMER_MIN_SPEED)
@@ -324,7 +333,7 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 	if(monsTimer)
 	{
 		intfaceSpr->GetSprite(30)->Draw(0,monsY,mgl);
-		DrawLifeMeter(2,monsY+4,curMonsLife,128,0);
+		DrawLifeMeter(2,monsY+4,curMonsLife,128,0,0);
 		// if the monster is dead, the name blinks
 		Print(10,monsY-20,monsName,1,2);
 		if(monsAlive || (flip&2)==0)
@@ -358,11 +367,14 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 	{
 		if(player.spell[i])
 		{
-			intfaceSpr->GetSprite(11+i*2+(player.spell[i]==2))->
+			intfaceSpr->GetSprite(11+i*2+(player.spell[i]==2 && !player.downgradeSpell[i]))->
 				Draw(SCRWID-20-9*12+bookSlide[i]+i*12,22+bookSlide[i],mgl);
 			if(player.curSpell==i)
 			{
-				RightPrintGlow(SCRWID-2,-1,spellName[i*2+player.spell[i]-1],2);
+				byte b = player.spell[i] - 1;
+				if (player.downgradeSpell[i])
+					b = 0;
+				RightPrintGlow(SCRWID-2,-1,spellName[i*2+b],2);
 			}
 		}
 	}
@@ -378,6 +390,20 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 
 	if(player.levelNum==19 && player.worldNum==2)
 		WhackazoidDisplay();
+
+	if (!ClassicMode())
+	{
+		byte mana = GetStoredHealMana();
+		if (mana > 0)
+		{
+			RenderSkillBox(3, 80, 25, 100, 32 * 5 + 16, 32 * 5+10);
+			intfaceSpr->GetSprite(11 + 8 * 2 + (player.spell[8] == 2 && !player.downgradeSpell[8]))->Draw(3, 70, mgl);
+			DrawFillBox(20, 82, 23, 98, 0);
+			byte fill = (byte)((int)GetStoredHealMana() * 16 / (int)HealCostIgnoringStoredMana());
+			if (fill > 16) fill = 16;
+			DrawFillBox(20, 82+(16-fill), 23, 98, 32*1+16);
+		}
+	}
 }
 
 sprite_t *GetIntfaceSpr(byte spr)

@@ -788,7 +788,7 @@ byte GetMonsterFrameNum(byte type,byte seq,byte frm,byte facing)
 	return v;
 }
 
-void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char bright,byte mind1,byte ouch,word frozen)
+void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char bright,byte mind1,byte ouch,byte ouch2,word frozen)
 {
 	sprite_t *curSpr;
 	int v;
@@ -827,7 +827,7 @@ void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char 
 			curSpr = monsType[type].spr->GetSprite(v);
 			if (!curSpr)
 				return;
-			SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 0, bright-10, curSpr, DISPLAY_DRAWME|DISPLAY_GLOW);
+			SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 0, bright-10+ouch2*8+ouch*4, curSpr, DISPLAY_DRAWME|DISPLAY_GLOW);
 			return;
 		}
 
@@ -838,7 +838,7 @@ void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char 
 				return;
 			SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, 0, 255, 0, curSpr, DISPLAY_DRAWME | DISPLAY_SHADOW);
 			if (ouch == 0)
-				SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 1, bright - 4, curSpr, DISPLAY_DRAWME);	// green
+				SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 1, bright - 4+ouch2*8, curSpr, DISPLAY_DRAWME);	// green
 			else
 				SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 4, bright, curSpr, DISPLAY_DRAWME);
 			return;
@@ -849,7 +849,7 @@ void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char 
 			if(!curSpr)
 				return;
 			SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, 0, 255, 0, curSpr, DISPLAY_DRAWME | DISPLAY_SHADOW);
-			SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 2 - 2 * (player.spell[6] == 2 && !player.downgradeSpell[6]), bright - 4 + ouch * 4, curSpr, DISPLAY_DRAWME);	// brown/grey
+			SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 2 - 2 * (player.spell[6] == 2 && !player.downgradeSpell[6]), bright - 4 + ouch * 4+ouch2*8, curSpr, DISPLAY_DRAWME);	// brown/grey
 			return;
 		}
 		if(player.berserk)
@@ -887,22 +887,22 @@ void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char 
 					curSpr = monsType[type].spr->GetSprite(v);
 					if (!curSpr)
 						return;
-					SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 2 - 2 * (player.spell[6] == 2 && !player.downgradeSpell[6]), bright - 4 + ouch * 4, curSpr, DISPLAY_DRAWME);	// brown/grey
+					SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 2 - 2 * (player.spell[6] == 2 && !player.downgradeSpell[6]), bright - 4 + ouch * 4+ouch2*8, curSpr, DISPLAY_DRAWME);	// brown/grey
 				}
 				else
-					SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 255, bright, curSpr, DISPLAY_DRAWME);
+					SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 255, bright+ouch2*8, curSpr, DISPLAY_DRAWME);
 			}
 		}
 		else
 		{
 			if(frozen)
-				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,7,bright-4,curSpr,DISPLAY_DRAWME);	// frozen blue
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,7,bright-4+ouch2*8,curSpr,DISPLAY_DRAWME);	// frozen blue
 			else
-				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright,curSpr,DISPLAY_DRAWME|DISPLAY_GHOST);
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright+ouch2*8,curSpr,DISPLAY_DRAWME|DISPLAY_GHOST);
 		}
 	}
 	else
-		SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,4,bright,curSpr,DISPLAY_DRAWME);
+		SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,4,bright+ouch2*8,curSpr,DISPLAY_DRAWME);
 
 }
 
@@ -4249,8 +4249,7 @@ void AI_Boiler(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->ouch==4)
 	{
-		if(me->hp>0)
-			MakeSound(SND_BOILERHIT,me->x,me->y,SND_CUTOFF,1200);
+		
 	}
 
 	if(me->action==ACTION_BUSY)

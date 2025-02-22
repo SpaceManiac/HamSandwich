@@ -174,8 +174,8 @@
 #define SND_WACKOSTAB	134
 #define SND_WACKOOUCH	135
 #define SND_WACKODIE	136
-// boiler
-#define SND_BOILERHIT	137
+
+#define SND_DEFLECT		137
 // great pumpkin
 #define SND_GREATPKOUCH	138
 #define SND_GREATPKDIE	139

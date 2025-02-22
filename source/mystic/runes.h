@@ -32,13 +32,13 @@ enum class Rune :byte
 	PALS,		// 25/50/100% chance to summon a ptero along with what you intend to summon
 
 	ARMOR_DMG,		// gain dmg while armored
-	ARMOR2,
+	ARMOR_BARRIER,	// armor grants barrier
 
 	BERSERK,	// berserk bonus
 	BERSERK2,	// other
 
 	HEAL,		// casting heal buffs your all damage by 5/15/25% for 10s
-	HEAL2,
+	HEALSTORE,	// store a percent of mana spent on non-heals to make your next heal cheap/free
 
 	NUM_RUNES,
 };
@@ -47,7 +47,7 @@ typedef struct RuneDef
 {
 	public:
 		char name[32];
-		char desc[2][64];
+		char desc[3][64];
 		float value[3];
 		char numDesc[32];
 		byte numberType;

@@ -482,6 +482,8 @@ void Guy::Update(Map *map,world_t *world)
 		frozen--;
 		if(ouch>0)
 			ouch--;
+		if (ouch2 > 0)
+			ouch2--;
 		return;
 
 	}
@@ -506,6 +508,8 @@ void Guy::Update(Map *map,world_t *world)
 
 	if(ouch>0)
 		ouch--;
+	if (ouch2 > 0)
+		ouch2--;
 	if (stun == 0)
 	{
 		x += dx;
@@ -732,6 +736,8 @@ void Guy::OverworldUpdate(Map *map,world_t *world)
 
 	if(ouch>0)
 		ouch--;
+	if (ouch2 > 0)
+		ouch2--;
 
 	x+=dx;
 
@@ -887,7 +893,7 @@ void Guy::NoMoveUpdate(Map *map)
 
 void Guy::Render(byte light)
 {
-	MonsterDraw(x,y,z,type,seq,frm,facing,bright*(light>0),mind1,ouch,frozen);
+	MonsterDraw(x,y,z,type,seq,frm,facing,bright*(light>0),mind1,ouch,ouch2,frozen);
 	if (executable)
 	{
 		sprite_t *curSpr = bulletSpr->GetSprite(145);	// shockwave sprite
@@ -1143,7 +1149,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 	{
 		if (Random(100) < RuneValue(Rune::BLOCK))
 		{
-			MakeSound(SND_ROCKBOUNCE,x,y,SND_CUTOFF,100);
+			ouch2 = 4;
 			return;
 		}
 		if(player.nightmare)
@@ -1361,8 +1367,26 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			myNumberParticle=AddNumberParticle(x, y, z, damage, 0, myNumberParticle);
 	}
 
-	if(type==MONS_BOUAPHA && damage>0)
-		ChallengeEvent(CE_OUCH,damage);
+	if (type == MONS_BOUAPHA && damage > 0)
+	{
+		ChallengeEvent(CE_OUCH, damage);
+		if (!ClassicMode() && player.barrier > 0)
+		{
+			if (player.barrier > damage)
+			{
+				player.barrier -= damage;
+				damage = 0;
+				ouch2 = 4;
+			}
+			else
+			{
+				damage -= player.barrier;
+				player.barrier = 0;
+				if (damage == 0)
+					ouch2 = 4;
+			}
+		}
+	}
 	else if(type!=MONS_PTERO && type!=MONS_GOLEM)
 		ChallengeEvent(CE_HIT,damage);
 	formerHP=hp;
@@ -1664,6 +1688,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 
 			guys[i].facing=2;
 			guys[i].ouch=0;
+			guys[i].ouch2 = 0;
 			guys[i].dx=0;
 			guys[i].dy=0;
 			guys[i].dz=0;
