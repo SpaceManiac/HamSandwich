@@ -85,7 +85,7 @@ jobs:
   web-deploy:
     name: Deploy to GitHub Pages
     needs: web
-    if: github.event_name == 'push' && github.ref_name == 'Loonyland-Archipelago'
+    if: github.event_name == 'push' && github.ref_name == 'Loonyland-Archipelago2'
     permissions:
       pages: write  # To deploy to Pages
       id-token: write  # To verify the deployment originates from an appropriate source
