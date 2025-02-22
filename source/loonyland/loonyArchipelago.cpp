@@ -98,7 +98,7 @@ int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string 
 	ap = std::make_unique<ArchipelagoClient>("Loonyland", IPAddress, SlotName, Password);
 	ap->use_cache(&cache);
 	//AP_SetLocationCheckedCallback(SetLocationChecked);
-	ap->death_link_enable();
+
 
 	ArchipelagoMode = true;
 	ArchipelagoSeed = "";
@@ -307,19 +307,19 @@ void GetLocationScouts()
 					int tag = 0;
 					switch (item_id)
 					{
-					case MODE_BOWLING:
+					case MODE_BOWLING + AP_MODEMOD:
 						tag = 5;
 						break;
-					case MODE_SURVIVAL:
+					case MODE_SURVIVAL + AP_MODEMOD:
 						tag = 2;
 						break;
-					case MODE_BOSSBASH:
+					case MODE_BOSSBASH + AP_MODEMOD:
 						tag = 7;
 						break;
-					case MODE_LOONYBALL:
+					case MODE_LOONYBALL + AP_MODEMOD:
 						tag = 4;
 						break;
-					case MODE_REMIX:
+					case MODE_REMIX + AP_MODEMOD:
 						tag = 8;
 						break;
 					}
@@ -384,6 +384,13 @@ void SendCheckedLocPickup(std::string mapName, int mapNum, int x, int y, int ite
 	}
 	std::cout << "AP ITEM MISS: " << mapName << " " << x << " " << y << std::endl;
 	//give player the raw item
+	if (item_id == ITM_KEY)
+	{
+		if (player.keys[0] < 9)
+			player.keys[0]++;
+		MakeNormalSound(SND_KEYGET);
+		return;
+	}
 	for (auto item_data : basic_items)
 	{
 		if (item_data.second.ingame_ID == item_id)
@@ -494,23 +501,29 @@ void WinArchipelago()
 
 void DeathLinkReceived()
 {
-	//we kill the loony
-	ExpectingDeath = true;
-	player.hearts = 0;
-	if (goodguy != NULL)
+	if (apSlotData.deathlink)
 	{
-		goodguy->hp = 0;
-		goodguy->ouch = 4;
+		//we kill the loony
+		ExpectingDeath = true;
+		player.hearts = 0;
+		if (goodguy != NULL)
+		{
+			goodguy->hp = 0;
+			goodguy->ouch = 4;
+		}
 	}
 }
 
 void SendDeathLink()
 {
-	if (!ExpectingDeath)
+	if (apSlotData.deathlink)
 	{
-		ap->death_link_send();
+		if (!ExpectingDeath)
+		{
+			ap->death_link_send();
+		}
+		ExpectingDeath = false;
 	}
-	ExpectingDeath = false;
 }
 
 void Disconnect()
@@ -657,6 +670,7 @@ void UpdateArchipelago()
 		ArchipelagoSeed = ap->seed_name();
 		ArchipelagoSlotNum = ap->player_id();
 		SetupWorld();
+		ap->death_link_enable(apSlotData.deathlink);
 		reconnected = true;
 
 		/*for (int i = 0; i < NUM_BADGES; i++)
