@@ -11,7 +11,7 @@ enum class Rune :byte
 	RECOVER,	// heal 1 life per 5/3/1 second
 	MANA,		// regain 1 mana per 5/3/1s
 	NEW1,
-	NEW2,
+	MANAONKILL, // gain mana per kill
 
 	ENERGY,	// energy spells 5/15/25% crit chance
 	ENERGY2,	// energy spell 10/25/50% chance of free cost

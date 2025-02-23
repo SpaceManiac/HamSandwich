@@ -23,6 +23,8 @@
 #define LP_PASSED (1)
 #define LP_GOTRUNE (2)
 
+#define WATER_DAMAGE (10)	// damage taken when you fall in the water, in modern mode
+
 enum class Difficulty :byte
 {
 	CLASSIC,

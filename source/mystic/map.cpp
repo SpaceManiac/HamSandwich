@@ -200,6 +200,8 @@ void Map::Init(world_t *wrld)
 				special[i].effect=0;	// disable this special
 			}
 	}
+	if (player.worldNum == 1 && player.levelNum == 3)
+		MushAidPuzzleReset(this);
 
 	if(player.levelNum==19 && player.worldNum==2)
 		totalBrains=2;
@@ -2055,4 +2057,64 @@ byte MySpecialType(byte type,Map *map,int mapx,int mapy)
 		}
 	}
 	return 1;
+}
+
+byte mushAidStep = 0;
+byte mushAidCode[4];
+
+void MushAidPuzzleReset(Map *map)
+{
+	mushAidStep = 0;
+	for (int i = 0; i < 4; i++)
+		mushAidCode[i] = 0;
+	map->GetTile(35, 8)->floor = 120;
+	map->GetTile(33, 9)->floor = 127;
+	map->GetTile(37, 9)->floor = 124;
+	map->GetTile(35, 10)->floor = 126;
+	map->GetTile(33, 11)->floor = 122;
+	map->GetTile(37, 11)->floor = 125;
+	map->GetTile(35, 12)->floor = 121;
+}
+
+void MushAidPuzzleUpdate(Map *map)
+{
+	if (GotRuneInLevel(player.worldNum, player.levelNum))
+		return;
+
+	byte corrCode[4] = { 120,121,124,127 };
+	Guy* me = GetGoodguy();
+	mapTile_t* m = map->GetTile(me->mapx, me->mapy);
+	if (m->floor >= 120 && m->floor <= 127)	// one of the rune tiles, not lit
+	{
+		byte preFloor = m->floor;
+		if (m->floor >= 126) m->floor -= 20;	// light up
+		else m->floor += 20;	// also light up
+		if (me->mapx >= 33 && me->mapy >= 8 && me->mapx <= 37 && me->mapy <= 12 && mushAidStep<4)	// it's on the circle
+		{
+			mushAidCode[mushAidStep] = preFloor;
+			mushAidStep++;
+			MakeNormalSound(SND_CHLGCRYSTAL);
+			if(mushAidStep==4)
+			{
+				bool fail = false;
+				for (int i = 0; i < 4; i++)
+					if (mushAidCode[i] != corrCode[i])
+					{
+						fail = true;
+						break;
+					}
+				if (fail)
+				{
+					MushAidPuzzleReset(map);
+					AddGuy(40 * TILE_WIDTH*FIXAMT, 10 * TILE_HEIGHT*FIXAMT, 0, MONS_MUSH);
+				}
+				else
+				{
+					MakeNormalSound(SND_INFERNAL);
+					if(!GotRuneInLevel(player.worldNum,player.levelNum))
+						map->GetTile(35, 10)->item = ITM_SILENTRUNE;
+				}
+			}
+		}
+	}
 }

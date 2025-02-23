@@ -324,6 +324,27 @@ byte Guy::CanWalk(int xx,int yy,Map *map,world_t *world)
 
 void Guy::SeqFinished(void)
 {
+	if (!ClassicMode() && seq == ANIM_A3 && type == MONS_BOUAPHA)
+	{
+		if (player.life >= WATER_DAMAGE)
+		{
+			// if somehow your previous safe spot has changed to water, you're dead for real
+			if (!(curWorld.terrain[CurrentMap()->map[(lastSafeX / (FIXAMT*TILE_WIDTH)) + (lastSafeY / (FIXAMT*TILE_HEIGHT)) * CurrentMap()->width].floor].flags & TF_WATER) || PlayerCanWaterwalk())
+			{
+				x = lastSafeX;
+				y = lastSafeY;
+				player.life -= WATER_DAMAGE;
+				hp = player.life;
+				ouch = 4;
+				seq = ANIM_IDLE;
+				frm = 0;
+				frmAdvance = 128;
+				action = ACTION_IDLE;
+				return;
+			}
+		}
+
+	}
 	if((seq==ANIM_DIE) || (seq==ANIM_A3 && type==MONS_BOUAPHA))
 	{
 		if(type==MONS_BOUAPHA)
@@ -607,11 +628,14 @@ void Guy::Update(Map *map,world_t *world)
 
 		// standing on water!!!!!!!  DROWN!!!!
 		if((hp>0) && (world->terrain[map->map[mapx+mapy*map->width].floor].flags&TF_WATER)
-			&& (!PlayerCanWaterwalk()) && !parent)
+			&& (!PlayerCanWaterwalk()) && !parent && seq!=ANIM_A3)
 		{
 			facing=(4+facing)&7;
-			hp=0;
-			SetPlayerHP(hp);
+			if (ClassicMode())
+			{
+				hp = 0;
+				SetPlayerHP(hp);
+			}
 			seq=ANIM_A3;
 			dx=0;
 			dy=0;
@@ -637,6 +661,11 @@ void Guy::Update(Map *map,world_t *world)
 			}
 			burnFlip=1-burnFlip;
 		}
+		if (player.worldNum == 1 && player.levelNum == 3 && (oldmapx != mapx || oldmapy != mapy))
+		{
+			MushAidPuzzleUpdate(map);
+		}
+
 		if(player.worldNum==2 && player.levelNum==16 && (oldmapx!=mapx || oldmapy!=mapy) &&
 			mapx==11 && mapy==31 && map->map[mapx+mapy*map->width].floor==59)
 		{
@@ -1444,6 +1473,12 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			facing=2;	// these can only die facing forward, artistically speaking
 		if(type==MONS_PEEPBOMB || type==MONS_PEEPBOMB2)
 			facing=0;
+		if (!ClassicMode() && RuneValue(Rune::MANAONKILL) > 0 && !(MonsterFlags(type) & MF_GOODGUY))
+		{
+			player.mana += (byte)RuneValue(Rune::MANAONKILL);
+			if (player.mana > player.maxMana)
+				player.mana = player.maxMana;
+		}
 		// possible item drop
 		switch(type)
 		{

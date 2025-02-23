@@ -46,12 +46,12 @@ RuneDef runeDef[] = {
 		SD_PERCENT,
 	},
 	{
-		"I dunno",
-		{"didn't make this yet",
+		"Manos Mortis",
+		{"Killing enemies grants mana.",
 		 ""},
-		{10,25,50},
-		"Huh",
-		SD_PERCENT,
+		{1,2,4},
+		"Mana",
+		SD_NUMBER,
 	},
 	{
 		"Energo Zappo",

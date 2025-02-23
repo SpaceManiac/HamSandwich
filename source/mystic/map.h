@@ -110,7 +110,7 @@ class Map
 		byte FindGuy(int x,int y,byte size,Guy *g);
 		byte FindGuy2(int x,int y,byte size,Guy *g);
 		void SewerTrick(int x,int y);
-
+		mapTile_t* GetTile(int x, int y) { if (x >= 0 && y >= 0 && x < width && y < height) return &map[x + y * width]; else return nullptr; };
 		void SmoothLight(int x,int y);
 		void SmoothLights(void);
 
@@ -148,6 +148,8 @@ void OpenVaultDoor(Map *map);
 byte VaultPuzzleCheck(Map *map);
 void Cavernize(Map *map);
 void GetRidOfGoodStuff(Map *map);
+void MushAidPuzzleUpdate(Map* map);
+void MushAidPuzzleReset(Map* map);
 
 byte TemplePuzzle(Map *map);
 void ResetTemplePuzzle(Map *map);
