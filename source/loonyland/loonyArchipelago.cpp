@@ -99,7 +99,7 @@ int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string 
 	ap->use_cache(&cache);
 	//AP_SetLocationCheckedCallback(SetLocationChecked);
 
-
+	locationWait = false;
 	ArchipelagoMode = true;
 	ArchipelagoSeed = "";
 	ArchipelagoSlotNum = -1;
@@ -109,6 +109,7 @@ int ArchipelagoConnect(std::string IPAddress, std::string SlotName, std::string 
 void ItemsClear()
 {
 	itemsFound.clear();
+	in_logic_locs.clear();
 }
 void ItemReceived(int64_t  item_id, bool notif)
 {
@@ -245,7 +246,14 @@ void GivePlayerItem(int64_t item_id, bool loud)
 void GetLocationScouts()
 {
 	world_t world;
-	LoadWorld(&world, ("Archipelago/" + ArchipelagoSeed + "_" + std::to_string(ArchipelagoSlotNum) + "/ap.llw").c_str());
+	int stat;
+
+	stat = LoadWorld(&world, ("Archipelago/" + ArchipelagoSeed + "_" + std::to_string(ArchipelagoSlotNum) + "/ap.llw").c_str());
+
+	if (stat == 0)
+	{
+		return;
+	}
 
 	bool allGood = true;
 
@@ -604,7 +612,7 @@ void GetInfoFromAP()
 
 		locationScouts.push_back(loc.ID + loonyland_base_id);
 		in_logic_locs.insert(&loc);
-		if (loc.Type == "BADGE") {
+		if (loc.Type == "Badge") {
 			opt.meritBadge[loc.MapID] = MERIT_NO;
 		}
 	}
