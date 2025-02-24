@@ -94,6 +94,10 @@ void RenderSpclDialog(int msx,int msy,MGLDraw *mgl)
 	Print(136,244,"WinLevel",0,1);
 	DrawBox(134,258,204,272,16+15*(spcl->effect==SPC_PICTURE));
 	Print(136,260,"Show Pic",0,1);
+	DrawBox(134, 274, 204, 288, 16 + 15 * (spcl->effect == SPC_CHGITEM));
+	Print(136, 276, "ChgItem", 0, 1);
+	DrawBox(62, 274, 132, 288, 16 + 15 * (spcl->effect == SPC_CHGFLOOR));
+	Print(64, 276, "ChgFloor", 0, 1);
 
 	// trigger value
 	RenderValueAdjuster("Trigger Value",spcl->trigValue,210,12);
@@ -200,6 +204,10 @@ byte SpclDialogClick(int msx,int msy)
 		spcl->effect=SPC_EXIT;
 	if(msx>133 && msx<205 && msy>257 && msy<273)
 		spcl->effect=SPC_PICTURE;
+	if (msx > 133 && msx < 205 && msy>273 && msy < 289)
+		spcl->effect = SPC_CHGITEM;
+	if (msx > 61 && msx < 133 && msy>273 && msy < 289)
+		spcl->effect = SPC_CHGFLOOR;
 
 	// trigger value
 	i=spcl->trigValue;

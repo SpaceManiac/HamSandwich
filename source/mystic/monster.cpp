@@ -5873,7 +5873,12 @@ void AI_Incagold(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			me->dy=-FIXAMT*3/2;
 		}
 	}
-
+	if (Random(4)==0)
+		AddParticle(me->x, me->y, 40, 0, 0, me->ID, 10, PART_EYEGLOW, 32 * 4);
+	if (Random(4)==0)
+		AddParticle(me->x, me->y, 40, 0, 0, me->ID, 10, PART_EYEGLOW2, 32 * 4);
+	
+	
 	if(me->mind1)	// bumped a wall
 	{
 		me->mind1=0;

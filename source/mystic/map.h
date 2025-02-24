@@ -43,7 +43,9 @@
 #define SPC_GOTOMAP		7
 #define SPC_EXIT		8
 #define SPC_PICTURE		9
-#define SPC_MAXEFFECTS  10
+#define SPC_CHGITEM		10
+#define SPC_CHGFLOOR	11
+#define SPC_MAXEFFECTS  12
 
 // Map flags
 #define MAP_SNOWING		1
@@ -139,6 +141,7 @@ class Guy;
 void SpecialStepCheck(Map *map,int x,int y,Guy *me);
 void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim);
 
+void ChangeFloor(Map* map, int x, int y, byte newFloor);
 void ZapWall(Map *map,int x,int y,byte newFloor);
 void SpecialShootCheck(Map *map,int x,int y);
 void SpecialAnytimeCheck(Map *map);

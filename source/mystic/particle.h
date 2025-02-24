@@ -22,7 +22,8 @@
 #define PART_COMPASS 15
 #define PART_FLOATER 16	// colored particles that float up in a ring
 #define PART_NUMBER 17
-
+#define PART_EYEGLOW 18	// red ones for the incabots to be visible in the dark
+#define PART_EYEGLOW2 19 // the right eye of the above (which is left)
 class Particle
 {
 	public:
@@ -40,6 +41,7 @@ class Particle
 		int x,y,z;
 		int dx,dy,dz;
 		int life;
+		word data;
 };
 
 void InitParticles(int max);

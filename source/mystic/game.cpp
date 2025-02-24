@@ -764,31 +764,7 @@ void HandleKeyPresses(void)
 		}
 		lastKey = 0;
 	}
-	// TESTING TESTING
-#ifdef CHEAT
-	if (lastKey == 'q')
-		player.level = 1;
-	if (lastKey == 'w')
-		player.level = 5;
-	if (lastKey == 'e')
-		player.level = 10;
-	if (lastKey == 'r')
-		player.level = 15;
-	if (lastKey == 't')
-		player.level = 20;
-	if (lastKey == 'y')
-		player.level = 25;
-	if (lastKey == 'u')
-		player.level = 30;
-	if (lastKey == 'i')
-		player.level = 35;
-	if (lastKey == 'o')
-		player.level = 40;
-	if (lastKey == 'p')
-		player.level = 45;
-	if (lastKey == '[')
-		player.level = 50;
-#endif
+	
 
 	UpdateGamepadStartAndSelect();
 	if((lastKey==27 || GamepadSelectTapped() || GamepadStartTapped()) && gameMode == GAMEMODE_PLAY && !windingUp && !windingDown && !newGame)

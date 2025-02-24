@@ -1047,7 +1047,7 @@ void PlayerGetPoints(int amt)
 
 	ChallengeEvent(CE_POINTS,amt);
 	player.score+=amt;
-	if(player.level<50)// && player.levelPassed[player.worldNum][player.levelNum]==0)
+	if(player.level<50)
 	{
 		player.experience+=amt;
 		y=0;
@@ -1055,6 +1055,8 @@ void PlayerGetPoints(int amt)
 		{
 			PlayerLevelUp(y);
 			y++;
+			if (player.level == MAX_PLAYERLEVEL)
+				break;
 		}
 	}
 	else

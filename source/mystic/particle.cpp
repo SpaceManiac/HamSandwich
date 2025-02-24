@@ -64,18 +64,72 @@ void Particle::Update(Map *map)
 
 	if(life>0)
 	{
-		dz-=FIXAMT;
+		if (type != PART_EYEGLOW && type != PART_EYEGLOW2)
+		{
+			dz -= FIXAMT;
+			z += dz;
+			if (z < 0)
+			{
+				z = 0;
+				dz = -dz / 2;
+			}
+		}
 		x+=dx;
 		y+=dy;
-		z+=dz;
-		if(z<0)
-		{
-			z=0;
-			dz=-dz/2;
-		}
+		
 		life--;
 		switch(type)
 		{
+			case PART_EYEGLOW:
+			case PART_EYEGLOW2:
+			{
+				dx = 0;
+				dy = 0;
+				Guy* g = GetGuy(dz);
+				if (g)
+				{
+					char sway[] = { 0,1,2,2,3,2,2,1,0,-1,-2,-2,-3,-2,-2,-1 };
+
+					if (g->type == MONS_INCAGOLD)	// goes left n right
+					{
+						if (type == PART_EYEGLOW)
+							z = 55 * FIXAMT;
+						else
+							z = 48 * FIXAMT;
+						if (g->facing == 4)
+						{
+							x = g->x - 17 * FIXAMT;
+							z -= sway[g->frm] * FIXAMT;
+						}
+						else
+						{
+							x = g->x + 17 * FIXAMT;
+							z += sway[g->frm] * FIXAMT;
+						}
+					}
+					else // goes up n down
+					{
+						z = 64 * FIXAMT;
+						if (type == PART_EYEGLOW)
+							x = g->x - 7 * FIXAMT;
+						else
+							x = g->x + 7 * FIXAMT;
+						if (g->facing == 6)
+						{
+							y = g->y - 10 * FIXAMT;
+							x -= sway[g->frm] * FIXAMT;
+							z = 57 * FIXAMT;
+						}
+						else
+						{
+							y = g->y + 20 * FIXAMT;
+							x += sway[g->frm] * FIXAMT;
+						}
+						
+					}
+				}
+			}
+				break;
 			case PART_NUMBER:
 				x -= dx;	// we don't move by DX!
 				dz += FIXAMT * 7 / 8;
@@ -282,10 +336,19 @@ void Particle::Update(Map *map)
 			// brighten it appropriately
 			brt=map->map[mapx+mapy*map->width].templight;
 			c1=(color&(~31));	// c1 is the color range
-			color+=brt;
+			
+			if (type == PART_EYEGLOW || type == PART_EYEGLOW2)
+			{
+				if (brt < -10)	// glow in the dark
+					color = c1 + 10;
+				else
+					color = c1+0;
+			}
+			else
+				color += brt;
 			if(color>c1+31 || color<c1)
 			{
-				if(brt>0)
+				if(brt>=0)
 					color=c1+31;
 				else
 					color=c1;
@@ -423,6 +486,13 @@ void RenderParticles(void)
 				char s[32];
 				sprintf(s, "%d", particleList[i].dx);
 				CenterPrint(x, y, s, 0, 1);
+			}
+			else if (particleList[i].type == PART_EYEGLOW || particleList[i].type == PART_EYEGLOW2)
+			{
+				if((particleList[i].color&31)!=0)
+					ParticleDraw(particleList[i].x >> FIXSHIFT, particleList[i].y >> FIXSHIFT,
+						particleList[i].z >> FIXSHIFT, particleList[i].color, particleList[i].size,
+						DISPLAY_DRAWME | DISPLAY_PARTICLE);
 			}
 			else
 				ParticleDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,

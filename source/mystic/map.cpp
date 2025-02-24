@@ -906,6 +906,32 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 	}
 }
 
+void ChangeFloor(Map* map, int x, int y, byte newFloor)
+{
+	byte flr, wall;
+
+	// store these for looking for neighbors
+	flr = map->map[x + y * map->width].floor;
+	wall = map->map[x + y * map->width].wall;
+
+	// turn this square into the new floor. Ignore the wall, keep it the same
+	map->map[x + y * map->width].floor = newFloor;
+	
+	// recurse to all neighbors that match
+	if (x > 0 && map->map[x - 1 + y * map->width].wall == wall &&
+		map->map[x - 1 + y * map->width].floor == flr)
+		ChangeFloor(map, x - 1, y, newFloor);
+	if (x < map->width - 1 && map->map[x + 1 + y * map->width].wall == wall &&
+		map->map[x + 1 + y * map->width].floor == flr)
+		ChangeFloor(map, x + 1, y, newFloor);
+	if (y > 0 && map->map[x + (y - 1) * map->width].wall == wall &&
+		map->map[x + (y - 1) * map->width].floor == flr)
+		ChangeFloor(map, x, y - 1, newFloor);
+	if (y < map->height - 1 && map->map[x + (y + 1) * map->width].wall == wall &&
+		map->map[x + (y + 1) * map->width].floor == flr)
+		ChangeFloor(map, x, y + 1, newFloor);
+}
+
 void ZapWall(Map *map,int x,int y,byte newFloor)
 {
 	byte flr,wall;
@@ -1128,6 +1154,16 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 						(spcl->effectY*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1500);
 				ZapWall(map,spcl->effectX,spcl->effectY,spcl->value);
 			}
+			break;
+		case SPC_CHGFLOOR:
+			MakeSound(SND_WALLDOWN, (spcl->effectX * TILE_WIDTH) << FIXSHIFT,
+				(spcl->effectY * TILE_HEIGHT) << FIXSHIFT, SND_CUTOFF, 1500);
+			ChangeFloor(map, spcl->effectX, spcl->effectY, spcl->value);
+			break;
+		case SPC_CHGITEM:
+			MakeSound(SND_WALLDOWN, (spcl->effectX * TILE_WIDTH) << FIXSHIFT,
+				(spcl->effectY * TILE_HEIGHT) << FIXSHIFT, SND_CUTOFF, 1500);
+			map->map[spcl->effectX + spcl->effectY * map->width].item = spcl->value;
 			break;
 		case SPC_RAISEWALL:
 			if(!map->map[spcl->effectX+spcl->effectY*map->width].wall)
