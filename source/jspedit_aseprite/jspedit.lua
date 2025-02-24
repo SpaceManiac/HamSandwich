@@ -30,6 +30,17 @@ local function write_export_path(plugin, filename, value)
 	table.insert(plugin.preferences.export_paths, { filename, value })
 end
 
+local function deleteInvisible(sprite, layers)
+	for i = #layers, 1, -1 do
+		local layer = layers[i]
+		if not layer.isVisible then
+			sprite:deleteLayer(layer)
+		elseif layer.layers then
+			deleteInvisible(sprite, layer.layers)
+		end
+	end
+end
+
 local function import(plugin)
 	local dlg = Dialog("Import JSP")
 
@@ -183,6 +194,7 @@ local function export(plugin)
 
 			-- Duplicate sprite so we can flatten it.
 			local sprite = Sprite(site.sprite)
+			deleteInvisible(sprite, sprite.layers)
 			sprite:flatten()
 			sprite:setPalette(Palette { fromResource = "Dr. Lunatic" })
 			local layer = sprite.layers[1]
