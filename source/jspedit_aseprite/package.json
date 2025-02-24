@@ -1,0 +1,24 @@
+{
+	"name": "jspedit",
+	"displayName": "Hamumu JSP support",
+	"author": {
+		"name": "SpaceManiac",
+		"email": "tad@platymuus.com",
+		"url": "https://www.platymuus.com"
+	},
+	"contributors": [],
+	"license": "MIT",
+	"contributes": {
+		"palettes": [
+			{
+				"id": "Dr. Lunatic",
+				"path": "./palette.aseprite"
+			}
+		],
+		"scripts": [
+			{
+				"path": "./plugin.lua"
+			}
+		]
+	}
+}
