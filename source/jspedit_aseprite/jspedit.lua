@@ -135,21 +135,104 @@ local function export(plugin)
 			local destination = dlg.data.destination
 			local slice_name = dlg.data.origin_slice
 
-			local the_slice
-			if slice_name ~= origin_slice_none then
+			local origin_x, origin_y = 0, 0
+			if slice_name == origin_slice_none then
+				sprite_jspedit.origin_slice = nil
+			else
+				sprite_jspedit.origin_slice = slice_name
 				for _, slice in ipairs(site.sprite.slices) do
 					if slice.name == slice_name then
-						the_slice = slice
+						origin_x, origin_y = slice.bounds.x, slice.bounds.y
 						break
 					end
 				end
 			end
 
+			-- Duplicate sprite so we can flatten it.
+			local sprite = Sprite(site.sprite)
+			sprite:flatten()
+			sprite:setPalette(Palette { fromResource = "Dr. Lunatic" })
+			local layer = sprite.layers[1]
+			local frames = {}
+			for frm = 1, #sprite.frames do
+				-- Get image for frame
+				local cel = layer:cel(frm)
+				local image, ofs_x, ofs_y
+				if cel then
+					image = cel.image
+					ofs_x = origin_x - cel.position.x
+					ofs_y = origin_y - cel.position.y
+				else
+					image = Image(1, 1, ImageMode.INDEXED)
+					ofs_x, ofs_y = 0, 0
+				end
+
+				-- RLE-encode image
+				local data = ""
+				for y = 0, image.height - 1 do
+					local x = 0
+					while x < image.width do
+						local pixel = image:getPixel(x, y)
+						if pixel == 0 then
+							-- Begin transparent run
+							x = x + 1
+							local run = 1
+							while x < image.width and run < 127 and image:getPixel(x, y) == 0 do
+								x = x + 1
+								run = run + 1
+							end
+							data = data .. string.pack("B", run | 128)
+						else
+							-- Begin solid run
+							local pixels = string.pack("B", pixel)
+							x = x + 1
+							local run = 1
+							while x < image.width and run < 127 and image:getPixel(x, y) ~= 0 do
+								pixels = pixels .. string.pack("B", image:getPixel(x, y))
+								x = x + 1
+								run = run + 1
+							end
+							data = data .. string.pack("B", run) .. pixels
+						end
+					end
+				end
+
+				frames[frm] = {
+					width = image.width,
+					height = image.height,
+					ofs_x = ofs_x,
+					ofs_y = ofs_y,
+					data = data,
+				}
+			end
+
+			-- Write headers and data
+			local f <close> = io.open(destination, "wb")
+			if not f then
+				return
+			end
+			f:write(string.pack("<I2", #frames))
+			for frm = 1, #frames do
+				f:write(string.pack(
+					"<I2I2i2i2I4I4",
+					frames[frm].width,
+					frames[frm].height,
+					frames[frm].ofs_x,
+					frames[frm].ofs_y,
+					#frames[frm].data,
+					0
+				))
+			end
+			for frm = 1, #frames do
+				f:write(frames[frm].data)
+			end
+
 			-- success, close dialog and commit preferences
+			sprite:close()
 			dlg:close()
 			sprite_jspedit.export_filepath = destination
-			sprite_jspedit.origin_slice = slice_name
 			site.sprite.properties.jspedit = sprite_jspedit
+			app.sprite = site.sprite
 		end,
 	}
 
