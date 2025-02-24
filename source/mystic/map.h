@@ -150,7 +150,8 @@ void Cavernize(Map *map);
 void GetRidOfGoodStuff(Map *map);
 void MushAidPuzzleUpdate(Map* map);
 void MushAidPuzzleReset(Map* map);
-
+void AbandonedVillagePuzzleReset(Map* map);
+void AbandonedVillagePuzzle(Map* map);
 byte TemplePuzzle(Map *map);
 void ResetTemplePuzzle(Map *map);
 void CreateMaze(Map *map,byte wid,byte hei,byte mazewid,byte mazehei);

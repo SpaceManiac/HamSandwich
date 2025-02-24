@@ -662,9 +662,10 @@ void Guy::Update(Map *map,world_t *world)
 			burnFlip=1-burnFlip;
 		}
 		if (player.worldNum == 1 && player.levelNum == 3 && (oldmapx != mapx || oldmapy != mapy))
-		{
 			MushAidPuzzleUpdate(map);
-		}
+		
+		if (player.worldNum == 1 && player.levelNum == 5 && (oldmapx!=mapx || oldmapy!=mapy))
+			AbandonedVillagePuzzle(map);
 
 		if(player.worldNum==2 && player.levelNum==16 && (oldmapx!=mapx || oldmapy!=mapy) &&
 			mapx==11 && mapy==31 && map->map[mapx+mapy*map->width].floor==59)
@@ -1346,13 +1347,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 					melted = 30 * 10;	// 10s max duration
 			}
 		}
-		if ((BulletHittingType() == BLT_MISSILE || BulletHittingType() == BLT_LILBOOM) && SkillValue(SKILL_SEEKBOOM)>0)
-			FireExactBullet(x, y, z, 0, 0, 0, 0, 7, 0, BLT_SEEKBOOM);
-		if (BulletHittingType() == BLT_MISSILE || BulletHittingType() == BLT_LILBOOM || BulletHittingType() == BLT_SEEKBOOM)
-		{
-
-		}
-
+		
 		bool critted = false;
 		float critChance = 0;
 		if(BulletHittingType()==BLT_HAMMER || BulletHittingType()==BLT_HAMMER2 || BulletHittingType()==BLT_SKULL)
@@ -1461,6 +1456,9 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 					player.mana ++;
 			}
 		}
+		if (!ClassicMode() && (BulletHittingType() == BLT_MISSILE || BulletHittingType() == BLT_LILBOOM) && SkillValue(SKILL_SEEKBOOM) > 0)
+			FireExactBullet(x, y, z, 0, 0, 0, 0, 7, 0, BLT_SEEKBOOM);
+
 		hp=0;
 		seq=ANIM_DIE;
 		this->dx=0;

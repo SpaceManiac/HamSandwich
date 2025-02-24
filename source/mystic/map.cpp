@@ -202,6 +202,8 @@ void Map::Init(world_t *wrld)
 	}
 	if (player.worldNum == 1 && player.levelNum == 3)
 		MushAidPuzzleReset(this);
+	if (player.worldNum == 1 && player.levelNum == 5)
+		AbandonedVillagePuzzleReset(this);
 
 	if(player.levelNum==19 && player.worldNum==2)
 		totalBrains=2;
@@ -1206,8 +1208,21 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 			}
 			break;
 	}
-	if(spcl->trigger&TRG_MESSAGE)
-		NoRepeatNewMessage(spcl->msg,75);
+	if (spcl->trigger & TRG_MESSAGE)
+	{
+		if (spcl->msg[0] == '%')
+		{
+			byte n = (byte)atoi(&spcl->msg[1]);
+			InitSpeech(n);
+			EnterSpeechMode();
+			GetGoodguy()->dx = 0;
+			GetGoodguy()->dy = 0;	// stop it from retriggering
+			GetGoodguy()->x = ((GetGoodguy()->x / (TILE_WIDTH * FIXAMT)) * TILE_WIDTH+TILE_WIDTH/2) * FIXAMT;
+			GetGoodguy()->y = ((GetGoodguy()->y / (TILE_HEIGHT * FIXAMT)) * TILE_HEIGHT+TILE_HEIGHT/2) * FIXAMT;
+		}
+		else
+			NoRepeatNewMessage(spcl->msg, 75);
+	}
 	if(!(spcl->trigger&TRG_REPEATABLE))
 		spcl->trigger=0;	// can't trigger anymore
 }
@@ -2111,8 +2126,70 @@ void MushAidPuzzleUpdate(Map *map)
 				else
 				{
 					MakeNormalSound(SND_INFERNAL);
-					if(!GotRuneInLevel(player.worldNum,player.levelNum))
+					if (!GotRuneInLevel(player.worldNum, player.levelNum))
+					{
 						map->GetTile(35, 10)->item = ITM_SILENTRUNE;
+						map->TempTorch(35, 10, 16);
+					}
+				}
+			}
+		}
+	}
+}
+
+byte abandonPos = 0;
+
+void AbandonedVillagePuzzleReset(Map* map)
+{
+	abandonPos = 0;
+	for (int i = 0; i < 6; i++)
+		map->GetTile(57 + i, 6)->floor = 97;	// wipe the 'screen' of runes
+}
+
+void AbandonedVillagePuzzle(Map *map)
+{
+	/*
+	 57,6 is where the row of runes is
+	 55,8 is the upper left of the keyboard
+	 59,4 is the wall to zap
+	 22,30 is the book (should change the texture so it's obvious)
+	*/
+	byte code[] = { 127-20,128-20,129-20,122+20,123+20,130-20 };
+	if (GotRuneInLevel(player.worldNum, player.levelNum))
+		return;
+
+	Guy* me = GetGoodguy();
+	if (abandonPos<6 && me->mapx >= 55 && me->mapy >= 8 && me->mapx <= 61 && me->mapy <= 12)
+	{
+		mapTile_t* m = map->GetTile(me->mapx, me->mapy);
+		if (m->floor >= 120 && m->floor <= 130)	// a rune tile
+		{
+			byte lit = m->floor;
+			if (m->floor <= 125)
+				lit = m->floor + 20;
+			else
+				lit = m->floor - 20;
+			map->GetTile(57 + abandonPos, 6)->floor = lit;
+			MakeSound(SND_CHLGCRYSTAL, me->x, me->y, SND_CUTOFF, 100);
+			abandonPos++;
+			if (abandonPos == 6)	// filled the whole word
+			{
+				byte ok = 0;
+				for (abandonPos = 0; abandonPos < 6; abandonPos++)
+					if (map->GetTile(57 + abandonPos, 6)->floor == code[abandonPos])
+						ok++;
+				if (ok == 6)	// spelled it right!
+				{
+					ZapWall(map, 59, 5, 96);	// knock the wall down
+					MakeNormalSound(SND_INFERNAL);
+					map->GetTile(59,2)->item = ITM_SILENTRUNE;
+					map->TempTorch(59, 2, 16);
+					abandonPos = 6;
+				}
+				else
+				{
+					MakeNormalSound(SND_UNAVAILABLE);
+					AbandonedVillagePuzzleReset(map);
 				}
 			}
 		}

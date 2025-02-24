@@ -3,7 +3,7 @@
 #include "game.h"
 #include "intface.h"
 
-char speech[29*4][64]={
+char speech[30*4][64]={
 	// 0
 	"Welcome to Beginnerton!  This town is",
 	"really a tutorial on some basic game",
@@ -147,8 +147,13 @@ char speech[29*4][64]={
 	// 28
 	"I'm Farley the Ghost Bat! I can fly",
 	"you to previous chapters. Don't worry,",
-	"I can also fly you back."
+	"I can also fly you back.",
 	"",
+	// 29
+	"This book describes the Runic Tongue.",
+	"It looks like every rune has a letter",
+	"that it's equivalent to. There's even",
+	"a handy chart!",
 };
 
 byte speechX,speechY,curSpeech;
@@ -469,6 +474,33 @@ void RenderSpeech(void)
 			s[speechX+1]='\0';
 
 		PrintGlow(HALFWID-64*8/2+5,i*20+95,s,2);
+	}
+
+	if (curSpeech == 29)	// show the rune chart!
+	{
+		RenderSkillBox(170-2, 200-2, SCRWID - 170+2, 460+2, 16, 0);
+		RenderSkillBox(170, 200, SCRWID - 170, 460, 16, 27);
+		int rx, ry;
+		rx = 190;
+		ry = 215;
+		s[1] = '\0';
+		byte c;
+		for (int i = 0; i < 24; i++)
+		{
+			c = i;
+			if (c >= 16)
+				c++;	// we want to skip Q, so we have the whole alphabet except Q and Z
+			BlitIcon(100 + i, rx-12, ry, 0, -31);
+			s[0] = 'A' + c;
+			int len = GetStrLength(s, 0);
+			Print(rx + 35-len/2, ry, s, -31, 0);
+			rx += 72;
+			if (rx > SCRWID - 180 - 40)
+			{
+				rx = 190;
+				ry += 40;
+			}
+		}
 	}
 }
 
