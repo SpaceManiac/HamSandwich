@@ -9,7 +9,6 @@ function init(plugin)
 		end
 	}
 
-	--[[
 	plugin:newCommand {
 		id = "jsp_export",
 		title = "Export JSP",
@@ -18,5 +17,4 @@ function init(plugin)
 			dofile(app.fs.joinPath(plugin.path, "jspedit.lua")).export(plugin)
 		end
 	}
-	]]
 end
