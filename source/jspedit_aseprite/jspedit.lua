@@ -3,6 +3,33 @@
 local origin_slice_none <const> = "(top-left corner)"
 local origin_slice_imported <const> = "Origin"
 
+-- Export path cache.
+-- Can't use table because Aseprite assumes all keys are valid identifiers when
+-- serializing, rather than escaping with `["x"] = ` syntax.
+local function read_export_path(plugin, filename)
+	if not plugin.preferences.export_paths then
+		return
+	end
+	for _, entry in ipairs(plugin.preferences.export_paths) do
+		if entry[1] == filename then
+			return entry[2]
+		end
+	end
+end
+
+local function write_export_path(plugin, filename, value)
+	if not plugin.preferences.export_paths then
+		plugin.preferences.export_paths = {}
+	end
+	for _, entry in ipairs(plugin.preferences.export_paths) do
+		if entry[1] == filename then
+			entry[2] = value
+			return
+		end
+	end
+	table.insert(plugin.preferences.export_paths, { filename, value })
+end
+
 local function import(plugin)
 	local dlg = Dialog("Import JSP")
 
@@ -49,7 +76,6 @@ local function import(plugin)
 			local sprite = Sprite(max_x - min_x, max_y - min_y, ColorMode.INDEXED)
 			sprite:setPalette(Palette { fromResource = "Dr. Lunatic" })
 			sprite.properties.jspedit = {
-				export_filepath = source,
 				origin_slice = origin_slice_imported,
 			}
 
@@ -117,7 +143,7 @@ local function export(plugin)
 		id = "destination",
 		label = "Destination:",
 		filetypes = { "jsp" },
-		filename = sprite_jspedit.export_filepath,
+		filename = read_export_path(plugin, site.sprite.filename),
 		save = true,
 		focus = true,
 	}
@@ -136,10 +162,17 @@ local function export(plugin)
 			local slice_name = dlg.data.origin_slice
 
 			local origin_x, origin_y = 0, 0
+			local jspedit_props_changed = false
 			if slice_name == origin_slice_none then
-				sprite_jspedit.origin_slice = nil
+				if sprite_jspedit.origin_slice ~= nil then
+					sprite_jspedit.origin_slice = nil
+					jspedit_props_changed = true
+				end
 			else
-				sprite_jspedit.origin_slice = slice_name
+				if sprite_jspedit.origin_slice ~= slice_name then
+					sprite_jspedit.origin_slice = slice_name
+					jspedit_props_changed = true
+				end
 				for _, slice in ipairs(site.sprite.slices) do
 					if slice.name == slice_name then
 						origin_x, origin_y = slice.bounds.x, slice.bounds.y
@@ -230,9 +263,11 @@ local function export(plugin)
 			-- success, close dialog and commit preferences
 			sprite:close()
 			dlg:close()
-			sprite_jspedit.export_filepath = destination
-			site.sprite.properties.jspedit = sprite_jspedit
 			app.sprite = site.sprite
+			if jspedit_props_changed then
+				site.sprite.properties.jspedit = sprite_jspedit
+			end
+			write_export_path(plugin, site.sprite.filename, destination)
 		end,
 	}
 
