@@ -65,7 +65,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{20,21,22,23,24,25,26,27,28,29,30,31,255},	// die
 			}},
 		{"Egg Sac",
-		 20,19,150,100,"graphics/eggsac.jsp",0,MF_ONEFACE|MF_ENEMYWALK|MF_NOMOVE,
+		 20,19,150,100,"graphics/eggsac.jsp",0,MF_ONEFACE|MF_ENEMYWALK|MF_NOMOVE|MF_WALLWALK,
 			{
 				{0,0,0,0,0,0,0,0,1,2,1,0,255},	// idle
 				{0,255},	// move
@@ -101,7 +101,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,14,15,16,17,18,19,255},	// die
 			}},
 		{"Friendly",	// a friendly bystander
-		 9,4,100,0,"graphics/friendly.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_INVINCIBLE,
+		 9,4,100,0,"graphics/friendly.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_INVINCIBLE|MF_WALLWALK,
 			{
 				{0,255},	// idle (bald guy)
 				{1,255},	// move (blond hair)
@@ -145,7 +145,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{1,2,2,2,2,2,2,1,255},	// A1
 			}},
 		{"The Lookey-Loo",
-		 64,7,1000,2000,"graphics/lookyloo.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_SPRITEBOX,
+		 64,7,1000,2000,"graphics/lookyloo.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_SPRITEBOX|MF_WALLWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -194,7 +194,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,15,16,255},	// die
 			}},
 		{"Moss Grande",
-		 18,17,100,250,"graphics/mossgrnd.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_ENEMYWALK,
+		 18,17,100,250,"graphics/mossgrnd.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_ENEMYWALK|MF_WALLWALK,
 			{
 				{0,1,2,3,4,5,6,255},	// idle
 				{0,255},	// move=unused
@@ -228,7 +228,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{17,18,19,20,19,18,19,20,19,18,17,255},	// A2=angry
 			}},
 		{"The Thing",
-		 64,11,800,5000,"graphics/thething.jsp",0,MF_NOMOVE|MF_AQUATIC|MF_WATERWALK|MF_ENEMYWALK|MF_ONEFACE,
+		 64,11,800,5000,"graphics/thething.jsp",0,MF_NOMOVE|MF_AQUATIC|MF_WATERWALK|MF_ENEMYWALK|MF_ONEFACE|MF_WALLWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -237,7 +237,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{1,2,1,255},	// A1=blink
 			}},
 		{"Tentacle",
-		 32,1,500,100,"graphics/thingtent.jsp",0,MF_NOMOVE|MF_FREEWALK|MF_NOGRAV|MF_ENEMYWALK,
+		 32,1,500,100,"graphics/thingtent.jsp",0,MF_NOMOVE|MF_FREEWALK|MF_NOGRAV|MF_ENEMYWALK|MF_WALLWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -245,7 +245,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,0,0,0,0,255},	// die
 			}},
 		{"Tentacle",	// tentacle tip
-		 32,1,500,100,"graphics/thingtent2.jsp",0,MF_NOMOVE|MF_FREEWALK|MF_NOGRAV|MF_ENEMYWALK,
+		 32,1,500,100,"graphics/thingtent2.jsp",0,MF_NOMOVE|MF_FREEWALK|MF_NOGRAV|MF_ENEMYWALK|MF_WALLWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -253,7 +253,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,0,0,0,0,255},	// die
 			}},
 		{"Die Uberbat",
-		 64,7,1000,1000,"graphics/hugebat.jsp",0,MF_NOMOVE|MF_ENEMYWALK|MF_ONEFACE,
+		 64,7,1000,1000,"graphics/hugebat.jsp",0,MF_NOMOVE|MF_ENEMYWALK|MF_ONEFACE|MF_WALLWALK,
 			{
 				{0,0,255},	// idle
 				{0,255},	// move
@@ -261,7 +261,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{4,4,4,5,5,5,6,6,6,6,6,6,255},	// die
 			}},
 		{"Fairy",
-		 12,6,100,0,"graphics/fairy.jsp",0,MF_FLYING|MF_GOODGUY|MF_ENEMYWALK|MF_FREEWALK|MF_NOHIT,
+		 12,6,100,0,"graphics/fairy.jsp",0,MF_FLYING|MF_GOODGUY|MF_ENEMYWALK|MF_FREEWALK|MF_NOHIT|MF_WALLWALK,
 			{
 				{0,1,2,3,4,5,4,3,2,1,255},	// idle
 				{0,1,2,3,4,5,4,3,2,1,255},	// move
@@ -324,7 +324,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{16,17,18,19,20,21,22,255},	// die
 			}},
 		{"Blockhead Kiln",
-		 40,16,100,100,"graphics/incagen.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_ENEMYWALK,
+		 40,16,100,100,"graphics/incagen.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_ENEMYWALK|MF_WALLWALK,
 			{
 				{0,255},	// idle
 				{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,255},	// move=summon
@@ -390,7 +390,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,5,6,7,8,255},	// die
 			}},
 		{"Trapazoid",
-		 14,10,30,70,"graphics/trapazoid.jsp",0,MF_NOMOVE|MF_NOSHADOW,
+		 14,10,30,70,"graphics/trapazoid.jsp",0,MF_NOMOVE|MF_NOSHADOW|MF_WALLWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -398,7 +398,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{6,5,4,3,2,1,0,255},	// die (turn into dud trapazoid)
 			}},
 		{"Trapazoid2",
-		 14,10,30,70,"graphics/trapazoid.jsp",0,MF_NOHIT|MF_NOMOVE|MF_NOSHADOW|MF_ENEMYWALK|MF_FREEWALK,
+		 14,10,30,70,"graphics/trapazoid.jsp",0,MF_NOHIT|MF_NOMOVE|MF_NOSHADOW|MF_ENEMYWALK|MF_FREEWALK|MF_WALLWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -414,7 +414,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{32,33,34,35,36,37,38,39,40,255},	// die=explode
 			}},
 		{"Whackazoid",
-		 14,10,1,5,"graphics/trapazoid.jsp",0,MF_NOMOVE|MF_NOSHADOW,
+		 14,10,1,5,"graphics/trapazoid.jsp",0,MF_NOMOVE|MF_NOSHADOW|MF_WALLWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -458,7 +458,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// die
 			}},
 		{"Optimum Octon",
-		 90,15,200,300,"graphics/octoboss.jsp",0,MF_ONEFACE|MF_NOMOVE|MF_AQUATIC|MF_WATERWALK|MF_ENEMYWALK,
+		 90,15,200,300,"graphics/octoboss.jsp",0,MF_ONEFACE|MF_NOMOVE|MF_AQUATIC|MF_WATERWALK|MF_ENEMYWALK|MF_WALLWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -466,7 +466,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{1,2,3,4,5,6,7,8,9,255},	// die
 			}},
 		{"Octentacle",
-		 20,11,20,50,"graphics/octotent.jsp",0,MF_NOMOVE|MF_AQUATIC|MF_WATERWALK|MF_ENEMYWALK,
+		 20,11,20,50,"graphics/octotent.jsp",0,MF_NOMOVE|MF_AQUATIC|MF_WATERWALK|MF_ENEMYWALK|MF_WALLWALK,
 			{
 				{1,255},	// idle
 				{0,255},	// move
@@ -474,7 +474,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{6,5,4,3,2,1,0,255},	// die
 			}},
 		{"Octentacle",	// for the right side
-		 20,11,20,50,"graphics/octotent.jsp",0,MF_NOMOVE|MF_AQUATIC|MF_WATERWALK|MF_ENEMYWALK,
+		 20,11,20,50,"graphics/octotent.jsp",0,MF_NOMOVE|MF_AQUATIC|MF_WATERWALK|MF_ENEMYWALK|MF_WALLWALK,
 			{
 				{1,255},	// idle
 				{0,255},	// move

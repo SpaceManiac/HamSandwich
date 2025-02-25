@@ -935,10 +935,10 @@ TASK(byte) LunaticWorld(byte world)
 		else if (result == LEVEL_FARLEY)
 		{
 			player.worldNum = FarleyWorldChoice();
-			InitPlayer(INIT_WORLD, player.worldNum, 1);
 			FreeWorld(&curWorld);
 			if (!LoadWorld(&curWorld, worldName[player.worldNum]))
 				CO_RETURN WORLD_ABORT;
+			InitPlayer(INIT_WORLD, player.worldNum, 1);
 
 			worldNum = player.worldNum;
 			world = worldNum;

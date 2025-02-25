@@ -1771,6 +1771,8 @@ Guy *AddGuy(int x,int y,int z,byte type)
 		if(guys[i].type==MONS_NONE)
 		{
 			guys[i].birthState = 2;	// born - check for both wall and guy collisions and start with a tiny rect
+			if (MonsterFlags(type) & MF_WALLWALK)
+				guys[i].birthState = 0;	// wall walking enemies can spawn anywhere
 			guys[i].frostBite = 0;
 			guys[i].myNumberParticle = 65535;
 			guys[i].stun = 0;
