@@ -41,5 +41,7 @@ void EditorLoadWorld(char *fname);
 void EditorSaveWorld(char *fname);
 void EditorSelectMap(byte w);
 void EditorLoadTiles(char *fname);
+bool Editing(void);
+Map* EditorMap(void);
 
 #endif

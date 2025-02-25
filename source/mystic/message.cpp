@@ -555,7 +555,7 @@ void RenderFarley(void)
 				strcpy(s, "Through The Woods");
 				break;
 			case 2:
-				strcpy(s, "Castle Heinous");
+				strcpy(s, "Spooky Castle");
 				break;
 			case 3:
 				strcpy(s, "Beneath The Castle");

@@ -35,12 +35,24 @@ static byte msButton=0;
 static byte musicPlaying;
 
 byte editMode=EDITMODE_EDIT;
+bool amEditing;
 
 static editopt_t editopt={MAP_SHOWLIGHTS|MAP_SHOWWALLS|MAP_SHOWITEMS|MAP_SHOWBADGUYS|MAP_SHOWSPECIALS,
 						PLOP_FLOOR,1,1,0,0,1,1};
 
+bool Editing(void)
+{
+	return amEditing;
+}
+
+Map* EditorMap(void)
+{
+	return curMap;
+}
+
 byte InitEditor(void)
 {
+	amEditing = true;
 	NewWorld(&world,editmgl);
 	curMap=world.map[0];
 	curMapNum=0;
@@ -52,7 +64,7 @@ byte InitEditor(void)
 	lastKey=0;
 	InitPlayer(INIT_LEVEL,0,0);
 	StopSong();
-
+	
 	return 1;
 }
 
@@ -62,6 +74,7 @@ void ExitEditor(void)
 	FreeWorld(&world);
 	PurgeMonsterSprites();
 	InitSound();
+	amEditing = false;
 }
 
 void ItemPickerClick(void)

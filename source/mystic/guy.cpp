@@ -479,7 +479,7 @@ void Guy::NextFrame(void)
 		return;	// seqfinished may have killed the guy
 }
 
-void Guy::CalculateRect(void)
+void Guy::CalculateRect(Map *map)
 {
 	sprite_t *spr;
 	byte s;
@@ -512,7 +512,7 @@ void Guy::CalculateRect(void)
 	}
 	if (birthState == 2)	// just born, be tiny
 	{
-		byte result = (WalkCheckOnly(x, y, CurrentMap(), &curWorld));
+		byte result = (WalkCheckOnly(x, y, map, &curWorld));
 		if (result == BUMP_WALL)	// there's a wall here, we need to have a tiny rect until that stops
 		{
 			rectx = 0;
@@ -528,7 +528,7 @@ void Guy::CalculateRect(void)
 	else if (birthState == 1)
 	{
 		birthState = 0;
-		byte result = (WalkCheckOnly(x, y, CurrentMap(), &curWorld));
+		byte result = (WalkCheckOnly(x, y, map, &curWorld));
 		if (result == BUMP_NONE)
 			birthState = 0;	// we did it, we're in the clear!
 		else
@@ -545,7 +545,7 @@ void Guy::Update(Map *map,world_t *world)
 	oldmapx=mapx;
 	oldmapy=mapy;
 
-	CalculateRect();
+	CalculateRect(map);
 
 	executable = false;
 	if (!ClassicMode() && hp>0 && (MonsterFlags(type) & MF_GOODGUY) == 0)	// only badguys can be executed, duh
@@ -823,7 +823,7 @@ void Guy::OverworldUpdate(Map *map,world_t *world)
 	oldmapx=mapx;
 	oldmapy=mapy;
 
-	CalculateRect();
+	CalculateRect(map);
 
 	executable = false;
 	if (type == MONS_BOUAPHA)	// special case, player controls Bouapha
@@ -1800,7 +1800,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 			guys[i].mind1=0;
 			guys[i].reload=1;
 			guys[i].parent=NULL;
-			guys[i].CalculateRect();
+			guys[i].CalculateRect(CurrentMap());
 			guys[i].ID=i;
 			guys[i].mapx=(guys[i].x>>FIXSHIFT)/TILE_WIDTH;
 			guys[i].mapy=(guys[i].y>>FIXSHIFT)/TILE_HEIGHT;

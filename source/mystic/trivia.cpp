@@ -1119,7 +1119,7 @@ trivia_t trivia[NUM_TRIVIA]={
 	{TE_NONE,TE_NONE},
 	{0,0},
 	{"Other recommended reading?",
-	 "Ender's Game - Orson Scott Card",
+	 "Fifth Season - N.K. Jemisin",
 	 "The Dark Tower series - King",
 	 "Everything else - King!"}},
 	{2,15,	// the keep

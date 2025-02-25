@@ -9,6 +9,7 @@
 #include "trivia.h"
 #include "palettes.h"
 #include "spell.h"
+#include "editor.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -25,7 +26,7 @@ static byte waterFlip=0;
 char lastKey=0;
 
 MGLDraw *gamemgl;
-static Map		*curMap;
+static Map	*curMap;
 byte gameMode=GAMEMODE_PLAY;
 byte	mapToGoTo;
 byte	worldNum;
@@ -1080,5 +1081,8 @@ TASK(byte) LunaticGame(MGLDraw *mgl,byte load)
 
 Map *CurrentMap(void)
 {
-	return curMap;
+	if (Editing())
+		return EditorMap();
+	else
+		return curMap;
 }

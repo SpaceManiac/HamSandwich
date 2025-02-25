@@ -40,7 +40,7 @@ class Guy final
 		byte AttackCheck(byte size,int xx,int yy,Guy *him);
 		byte AttackCheck2(int xx,int yy,int xx2,int yy2,Guy *him);
 		void GetShot(int dx,int dy,int damage,Map *map,world_t *world);
-		void CalculateRect(void);
+		void CalculateRect(Map *map);
 
 		int x,y,z;
 		int dx,dy,dz;
