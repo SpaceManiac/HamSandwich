@@ -132,9 +132,6 @@ void DoCheat(byte w)
 				player.spell[i]=1;
 			for (i = 0; i < 24; i++)
 				player.runes[i] = RUNE_ASLEEP;
-			player.level = 49;
-			PlayerGetPoints(100000);
-			
 			break;
 		case 10:
 			for(i=0;i<9;i++)

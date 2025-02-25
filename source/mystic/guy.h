@@ -15,6 +15,10 @@
 #define BRUTALDMG (5)
 #define BRUTALHP (5)
 
+#define BUMP_WALL (0)
+#define BUMP_GUY  (1)
+#define BUMP_NONE (2)
+
 class Guy final
 {
 	public:
@@ -27,6 +31,7 @@ class Guy final
 		void OverworldUpdate(Map *map,world_t *world);
 		void Render(byte light);
 		byte CanWalk(int xx,int yy,Map *map,world_t *world);
+		byte WalkCheckOnly(int xx, int yy, Map* map, world_t* world);
 		void NextFrame(void);
 		void SeqFinished(void);
 		void MonsterControl(Map *map,world_t *world);
@@ -45,6 +50,7 @@ class Guy final
 		byte mind;		// brain variables for AI
 		byte mind1;
 
+		byte birthState;
 		byte reload;
 		byte frostBite;
 		byte ouch,ouch2;

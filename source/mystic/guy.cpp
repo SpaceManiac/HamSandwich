@@ -35,6 +35,8 @@ byte Guy::CoconutBonk(int xx,int yy,Guy *him)
 {
 	int x2,y2;
 
+	if (birthState >= 1 || him->birthState >= 1)
+		return 0;	// no collisions with newborns
 	if((MonsterFlags(him->type)&MF_ENEMYWALK) && (type!=MONS_BOUAPHA))
 		return 0;
 	if((MonsterFlags(him->type)&MF_FREEWALK) && (type==MONS_BOUAPHA))
@@ -322,6 +324,49 @@ byte Guy::CanWalk(int xx,int yy,Map *map,world_t *world)
 	return result;
 }
 
+byte Guy::WalkCheckOnly(int xx, int yy, Map* map, world_t* world)
+{
+	byte result;
+	int mapx1, mapx2, mapy1, mapy2;
+	int i, j;
+
+	xx >>= FIXSHIFT;
+	yy >>= FIXSHIFT;
+
+	mapx1 = (xx + rectx) / TILE_WIDTH;
+	mapy1 = (yy + recty) / TILE_HEIGHT;
+	mapx2 = (xx + rectx2) / TILE_WIDTH;
+	mapy2 = (yy + recty2) / TILE_HEIGHT;
+
+	// boundary conditions
+	if (mapx1 < 0 || mapy1 < 0 || mapx2 >= map->width || mapy2 >= map->height || xx < 0 || yy < 0)
+		return BUMP_WALL;
+
+	if (type == MONS_FAIRY2)
+		return BUMP_NONE;
+
+	for (i = mapx1; i <= mapx2; i++)
+	{
+		for (j = mapy1; j <= mapy2; j++)
+		{
+			if (!Walkable(this, i, j, map, world))
+			{
+				return BUMP_WALL;
+			}
+		}
+	}
+
+	for (i = 0; i < maxGuys; i++)
+		if ((&guys[i] != this) && (guys[i].type) && (guys[i].hp > 0) &&
+			(abs(guys[i].mapx - mapx) < 8) && (abs(guys[i].mapy - mapy) < 8))
+		{
+			if (CoconutBonk(xx, yy, &guys[i]))
+				return BUMP_GUY;	// hit heads with somebody
+		}
+
+	return BUMP_NONE;
+}
+
 void Guy::SeqFinished(void)
 {
 	if (!ClassicMode() && seq == ANIM_A3 && type == MONS_BOUAPHA)
@@ -464,6 +509,30 @@ void Guy::CalculateRect(void)
 		rectx2=s;
 		recty=-s*3/4;
 		recty2=s*3/4;
+	}
+	if (birthState == 2)	// just born, be tiny
+	{
+		byte result = (WalkCheckOnly(x, y, CurrentMap(), &curWorld));
+		if (result == BUMP_WALL)	// there's a wall here, we need to have a tiny rect until that stops
+		{
+			rectx = 0;
+			rectx2 = 0;
+			recty = 0;
+			recty2 = 0;
+		}
+		else if (result == BUMP_NONE)
+			birthState = 0;	// we did it, we're in the clear!
+		else
+			birthState = 1;	// we're good on walls now! So now we are just avoiding guy collisions
+	}
+	else if (birthState == 1)
+	{
+		birthState = 0;
+		byte result = (WalkCheckOnly(x, y, CurrentMap(), &curWorld));
+		if (result == BUMP_NONE)
+			birthState = 0;	// we did it, we're in the clear!
+		else
+			birthState = 1;
 	}
 }
 
@@ -1701,6 +1770,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 	for(i=0;i<maxGuys;i++)
 		if(guys[i].type==MONS_NONE)
 		{
+			guys[i].birthState = 2;	// born - check for both wall and guy collisions and start with a tiny rect
 			guys[i].frostBite = 0;
 			guys[i].myNumberParticle = 65535;
 			guys[i].stun = 0;

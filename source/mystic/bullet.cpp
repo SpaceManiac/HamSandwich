@@ -636,9 +636,9 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 				j = j * 3 / 2;
 			
 			if (me->lastHit == 65535)
-				i = FindVictimNot(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 12, me->dx, me->dy, j, me->lastHit, map, world);
+				i = FindVictimNot(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 16, me->dx, me->dy, j, me->lastHit, map, world);
 			else
-				i = FindVictimNot(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 12, me->dx, me->dy, j / 2, me->lastHit, map, world);
+				i = FindVictimNot(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 16, me->dx, me->dy, j / 2, me->lastHit, map, world);
 			if (i != 65535)
 			{
 				if (player.fairyOn == FAIRY_VAMPY)
@@ -1374,7 +1374,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 	if((me->type==BLT_HAMMER || me->type==BLT_HAMMER2 || me->type==BLT_LASER || me->type==BLT_COIN || me->type==BLT_RUNESTONE || me->type==BLT_PTEROSHOT ||
 		me->type==BLT_MINIFBALL || me->type==BLT_BIGYELLOW || me->type==BLT_BIGCOIN || me->type==BLT_LIQUIFY || me->type==BLT_LIQUIFY2 || me->type==BLT_LIQUIFY3
 		|| me->type==BLT_ICEBEAM || me->type==BLT_SKULL || me->type==BLT_DEATHBEAM || me->type==BLT_REDFBALL) &&
-		(!BulletCanGo(me->x,me->y,map,8)))
+		(!BulletCanGo(me->x,me->y,map,1)))
 	{
 		if(me->type==BLT_HAMMER2 || me->type==BLT_HAMMER)
 		{
@@ -1395,12 +1395,12 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 	b=0;
 
 	me->x+=me->dx;
-	if(!BulletCanGo(me->x,me->y,map,8))
+	if(!BulletCanGo(me->x,me->y,map,1))
 		BulletHitWallX(me,map,world);
 	else
 	{
 		me->y+=me->dy;
-		if(!BulletCanGo(me->x,me->y,map,8))
+		if(!BulletCanGo(me->x,me->y,map,1))
 			BulletHitWallY(me,map,world);
 	}
 
