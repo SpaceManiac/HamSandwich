@@ -860,13 +860,14 @@ TASK(byte) ChallengePlay(byte world,byte lvl)
 {
 	byte result;
 
+	FreeWorld(&curWorld);
 	if(!LoadWorld(&curWorld,worldName[world]))
 		CO_RETURN WORLD_ABORT;
 
+	InitWorld(&curWorld, worldNum);
 	InitPlayer(INIT_WORLD,world,0);
 
 	worldNum=world;
-	InitWorld(&curWorld,worldNum);
 	ResetPauseMenu();
 
 	mapNum=lvl;
@@ -938,6 +939,7 @@ TASK(byte) LunaticWorld(byte world)
 			FreeWorld(&curWorld);
 			if (!LoadWorld(&curWorld, worldName[player.worldNum]))
 				CO_RETURN WORLD_ABORT;
+			InitWorld(&curWorld, worldNum);
 			InitPlayer(INIT_WORLD, player.worldNum, 1);
 
 			worldNum = player.worldNum;
@@ -961,7 +963,6 @@ TASK(byte) LunaticWorld(byte world)
 				return WORLD_NAG;
 #else
 				player.worldNum++;
-				InitPlayer(INIT_WORLD,player.worldNum,1);
 				FreeWorld(&curWorld);
 				if(!LoadWorld(&curWorld,worldName[player.worldNum]))
 					CO_RETURN WORLD_ABORT;
@@ -969,6 +970,8 @@ TASK(byte) LunaticWorld(byte world)
 				worldNum=player.worldNum;
 				world=worldNum;
 				InitWorld(&curWorld,worldNum);
+				InitPlayer(INIT_WORLD, player.worldNum, 1);
+
 				ResetPauseMenu();
 				player.overworldX=-2000;
 				mapNum=1;
@@ -979,7 +982,7 @@ TASK(byte) LunaticWorld(byte world)
 			else if(player.worldNum==3 && mapNum==11)
 			{
 				AWAIT ShowVictoryAnim(4);
-				//return WORLD_QUITGAME;
+				
 				if(player.nightmare)
 				{
 					player.worldNum=3;
