@@ -22,8 +22,8 @@ enum class Rune :byte
 	SEEKER,	// seekers 5/15/25% crit chance
 	SEEKER2, //
 
-	ICECOST,	// ice spells cost 10/25/50% less
-	FROSTBITE,
+	ICESHARD,	// frozen enemies spit out ice shards when they thaw, which deal the damage they took while frozen
+	FROSTBITE,	// frozen enemies take DOT damage
 
 	INFERNO,	// inferno 5/15/25% crit chance
 	INFERNO2,

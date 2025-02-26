@@ -2291,8 +2291,16 @@ void AI_Shroomlord(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		}
 		if(me->seq==ANIM_DIE && me->frm==1 && me->frmTimer<64)
 		{
-			AddGuy(me->x+(32<<FIXSHIFT),me->y,0,MONS_SHROOM);
-			AddGuy(me->x-(32<<FIXSHIFT),me->y,0,MONS_SHROOM);
+			if (ClassicMode())
+			{
+				AddGuy(me->x + (32 << FIXSHIFT), me->y, 0, MONS_SHROOM);
+				AddGuy(me->x - (32 << FIXSHIFT), me->y, 0, MONS_SHROOM);
+			}
+			else
+			{
+				AddGuy(me->x, me->y, 0, MONS_SHROOM);
+				AddGuy(me->x, me->y, 0, MONS_SHROOM);
+			}
 			for(i=0;i<30;i++)
 				BlowWigglySmoke(me->x-32*FIXAMT+MGL_randoml(64*FIXAMT),
 								me->y-32*FIXAMT+MGL_randoml(64*FIXAMT),

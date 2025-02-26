@@ -103,10 +103,11 @@ RuneDef runeDef[] = {
 	},
 	{
 		"Isus Coldus",
-		{"didn't make this yet",
-		 ""},
-		{10,25,50},
-		"Huh",
+		{"Thawing an enemy spews ice",
+		 "shards for a portion of the",
+		 "damage taken while frozen."},
+		{25,50,100},
+		"Damage",
 		SD_PERCENT,
 	},
 	{
@@ -127,8 +128,9 @@ RuneDef runeDef[] = {
 	},
 	{
 		"Inferneri Minus",
-		{"Each Inferno bomb has a chance to",
-		 "drop a mine that arms in 2s."},
+		{"Each Inferno bomb has a",
+		 "chance to drop a mine that",
+		 "arms in 2s."},
 		{20,40,60},
 		"Chance",
 		SD_PERCENT,

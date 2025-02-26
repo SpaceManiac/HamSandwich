@@ -135,6 +135,10 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 			me->type=BLT_NONE;
 			ExplodeParticles(PART_YELLOW,me->x,me->y,me->z,2);
 			break;
+		case BLT_ICESHARD:
+			me->type = BLT_NONE;
+			ExplodeParticles(PART_SNOW2, me->x, me->y, me->z, 2);
+			break;
 		case BLT_HAMMER2:
 			ExplodeParticles(PART_YELLOW,me->x,me->y,me->z,3);
 		case BLT_EVILHAMMER:	// reflects off walls
@@ -275,6 +279,10 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 		case BLT_YELWAVE:
 			me->type=BLT_NONE;
 			ExplodeParticles(PART_YELLOW,me->x,me->y,me->z,2);
+			break;
+		case BLT_ICESHARD:
+			me->type = BLT_NONE;
+			ExplodeParticles(PART_SNOW2, me->x, me->y, me->z, 2);
 			break;
 		case BLT_HAMMER2:
 			ExplodeParticles(PART_YELLOW,me->x,me->y,me->z,3);
@@ -494,6 +502,10 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 			me->type=BLT_NONE;
 			ExplodeParticles(PART_YELLOW,me->x,me->y,me->z,2);
 			break;
+		case BLT_ICESHARD:
+			me->type = BLT_NONE;
+			ExplodeParticles(PART_SNOW2, me->x, me->y, me->z, 2);
+			break;
 		case BLT_HAMMER:
 		case BLT_HAMMER2:
 		case BLT_BIGYELLOW:
@@ -607,15 +619,13 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 		case BLT_ICECLOUD:
 			if(FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,20,0,0,-1000,map,world))
 			{
-				ExplodeParticles(PART_SNOW2,me->x,me->y,me->z,4);
-				MakeSound(SND_FROZEN,me->x,me->y,SND_CUTOFF,900);
+				// freezing is handled on the victim end
 			}
 			break;
 		case BLT_ICEBEAM:
 			if(FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,0,0,-1000,map,world))
 			{
-				ExplodeParticles(PART_SNOW2,me->x,me->y,me->z,4);
-				MakeSound(SND_FROZEN,me->x,me->y,SND_CUTOFF,900);
+				// freeze FX are on the victim end
 			}
 			break;
 		case BLT_DEATHBEAM:
@@ -688,6 +698,14 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			{
 				me->type = BLT_NONE;
 				ExplodeParticles(PART_YELLOW, me->x, me->y, me->z, 4);
+				MakeSound(SND_HAMMERBONK, me->x, me->y, SND_CUTOFF, 900);
+			}
+			break;
+		case BLT_ICESHARD:
+			if (FindVictimNot(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 6, me->dx, me->dy, me->anim,(word)me->dz, map, world)!=65535)
+			{
+				me->type = BLT_NONE;
+				ExplodeParticles(PART_SNOW2, me->x, me->y, me->z, 2);
 				MakeSound(SND_HAMMERBONK, me->x, me->y, SND_CUTOFF, 900);
 			}
 			break;
@@ -1032,6 +1050,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_MINIFBALL:
 		case BLT_PTEROSHOT:
+		case BLT_ICESHARD:
 			HitBadguys(me,map,world);
 			break;
 		case BLT_COIN:
@@ -1371,7 +1390,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 		return;
 
 	// if you're in a wall even before moving, explode (to stop infinite bounces)
-	if((me->type==BLT_HAMMER || me->type==BLT_HAMMER2 || me->type==BLT_LASER || me->type==BLT_COIN || me->type==BLT_RUNESTONE || me->type==BLT_PTEROSHOT ||
+	if((me->type==BLT_HAMMER || me->type==BLT_HAMMER2 || me->type==BLT_LASER || me->type==BLT_COIN || me->type==BLT_RUNESTONE || me->type==BLT_PTEROSHOT || me->type==BLT_ICESHARD ||
 		me->type==BLT_MINIFBALL || me->type==BLT_BIGYELLOW || me->type==BLT_BIGCOIN || me->type==BLT_LIQUIFY || me->type==BLT_LIQUIFY2 || me->type==BLT_LIQUIFY3
 		|| me->type==BLT_ICEBEAM || me->type==BLT_SKULL || me->type==BLT_DEATHBEAM || me->type==BLT_REDFBALL) &&
 		(!BulletCanGo(me->x,me->y,map,1)))
@@ -1404,7 +1423,8 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			BulletHitWallY(me,map,world);
 	}
 
-	me->z+=me->dz;
+	if(me->type!=BLT_ICESHARD)	// iceshard stores guy ID in DZ, don't use it
+		me->z+=me->dz;
 
 	if(me->z<0)
 		BulletHitFloor(me,map,world);
@@ -1685,6 +1705,13 @@ void RenderBullet(bullet_t *me)
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
 					DISPLAY_DRAWME);
+			break;
+		case BLT_ICESHARD:
+			curSpr = bulletSpr->GetSprite(SPR_SPINE + (me->facing));
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 0, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 0, me->bright+6, curSpr,
+				DISPLAY_DRAWME);
 			break;
 		case BLT_YELWAVE:
 			curSpr=bulletSpr->GetSprite(SPR_WAVE+(me->facing));

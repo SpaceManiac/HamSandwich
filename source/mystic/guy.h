@@ -41,6 +41,7 @@ class Guy final
 		byte AttackCheck2(int xx,int yy,int xx2,int yy2,Guy *him);
 		void GetShot(int dx,int dy,int damage,Map *map,world_t *world);
 		void CalculateRect(Map *map);
+		void IceShardSpew(Map* map, world_t* world);
 
 		int x,y,z;
 		int dx,dy,dz;
@@ -60,6 +61,7 @@ class Guy final
 		word frmAdvance;
 		byte frm;
 		byte seq;
+		word frzDamage;
 		char bright;
 		word frozen;	// when non-zero, monster is encased in ice for a time
 		word melted;

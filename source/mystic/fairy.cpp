@@ -106,10 +106,10 @@ static char fairyDesc[16*5][64]=
 		// chapter III
 		//#define FAIRY_RICHEY	(256)	// enemies drop more coins than normal
 		"Your enemies will",
-		"drop more coins than",
-		"usual, but your XP",
-		"will slowly drain",
-		"over time.",
+		"drop more coins and ",
+		"stones than usual,",
+		"but your XP will",
+		"drain over time.",
 
 		//#define FAIRY_SMARTY	(512)	// you earn 25% more XP per kill, but lose mana when hit as well as life (1/2 as much)
 		"Level up faster, but",

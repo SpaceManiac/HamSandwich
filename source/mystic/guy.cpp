@@ -356,14 +356,22 @@ byte Guy::WalkCheckOnly(int xx, int yy, Map* map, world_t* world)
 		}
 	}
 
+	byte myBS = birthState;
+	birthState = 0;
 	for (i = 0; i < maxGuys; i++)
+	{
+		Guy* him = &guys[i];
 		if ((&guys[i] != this) && (guys[i].type) && (guys[i].hp > 0) &&
 			(abs(guys[i].mapx - mapx) < 8) && (abs(guys[i].mapy - mapy) < 8))
 		{
 			if (CoconutBonk(xx, yy, &guys[i]))
+			{
+				birthState = myBS;
 				return BUMP_GUY;	// hit heads with somebody
+			}
 		}
-
+	}
+	birthState = myBS;
 	return BUMP_NONE;
 }
 
@@ -524,6 +532,8 @@ void Guy::CalculateRect(Map *map)
 			birthState = 0;	// we did it, we're in the clear!
 		else
 			birthState = 1;	// we're good on walls now! So now we are just avoiding guy collisions
+		if (birthState == 0)
+			CalculateRect(map);	// redo our rectangle if we are now a legit guy
 	}
 	else if (birthState == 1)
 	{
@@ -533,6 +543,39 @@ void Guy::CalculateRect(Map *map)
 			birthState = 0;	// we did it, we're in the clear!
 		else
 			birthState = 1;
+		if (birthState == 0)
+			CalculateRect(map);	// redo our rectangle if we are now a legit guy
+	}
+}
+
+void Guy::IceShardSpew(Map *map,world_t *world)
+{
+	if (!ClassicMode() && frzDamage >= 1 && RuneValue(Rune::ICESHARD) > 0)
+	{
+		byte shots;
+		float dmgEach;
+		if (frzDamage < 10)
+		{
+			shots = (byte)frzDamage;	// if there are less than 10, we just fire that many shots of 1 dmg each
+			dmgEach = 1;
+		}
+		else
+		{
+			shots = 10;
+			dmgEach = frzDamage / 10.0f;
+			if (dmgEach > 100) dmgEach = 100;
+		}
+		byte dmgUpChance = (byte)((dmgEach - floorf(dmgEach)) * 100.0f);
+		float angle = (float)Random(256);
+		for (byte i = 0; i < shots; i++)
+		{
+			byte myDam = (byte)dmgEach;
+			if (Random(100) < dmgUpChance) myDam++;
+			FireExactBullet(x, y, 20 * FIXAMT, Cosine((int)angle) * 16, Sine((int)angle) * 16, (int)ID, myDam, 30, (int)(angle / 16.0f), BLT_ICESHARD);
+			angle += (256.0f / (float)shots);
+			if (angle > 255)
+				angle -= 256;
+		}
 	}
 }
 
@@ -570,6 +613,8 @@ void Guy::Update(Map *map,world_t *world)
 			if (hp > 0) frozen = tmpFrozen;	// don't let this damage disrupt your freeze state
 		}
 		frozen--;
+		if(frozen==0)
+			IceShardSpew(map, world);
 		if(ouch>0)
 			ouch--;
 		if (ouch2 > 0)
@@ -1386,6 +1431,12 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			return;
 		else
 		{
+			if (frozen == 0)
+			{
+				frzDamage = 0;	// reset freeze damage each time you get frozen
+				ExplodeParticles(PART_SNOW2, x, y, z, 4);
+				MakeSound(SND_FROZEN, x, y, SND_CUTOFF, 900);
+			}
 			frozen+=i;
 			if (!ClassicMode())
 			{
@@ -1490,6 +1541,9 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 	bool wasFrozen = false;
 	if(frozen)	// thaw when hit
 	{
+		if(damage<9999 && frzDamage+damage<65000)	// don't let execution attacks count
+			frzDamage += damage;
+
 		wasFrozen = true;
 		if(frozen-damage*50<0)
 		{
@@ -1497,6 +1551,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 				frozen=5;	// so they can blink a bit
 			else
 				frozen=0;
+			IceShardSpew(map, world);
 		}
 		else
 			frozen-=damage*50;
@@ -1592,9 +1647,15 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 				if(j<MonsterHP(type)/10)
 					j=MonsterHP(type)/10;
 
-				if (!ClassicMode() && Random(1000) < MonsterHP(type))
+				if (!ClassicMode())
 				{
-					FireBullet(x, y, 0, BLT_RUNESTONE);
+					byte chance = (int)SkillValue(SKILL_GREED);
+					if (wasFrozen)
+						chance += (int)SkillValue(SKILL_FREEZEMONEY);
+					if (player.fairyOn == FAIRY_RICHEY)
+						chance *= 3;
+					if(Random(100)<chance)
+						FireBullet(x, y, 0, BLT_RUNESTONE);
 				}
 				int freeBig = 0;
 				if (j > 50)
@@ -1802,7 +1863,6 @@ Guy *AddGuy(int x,int y,int z,byte type)
 			guys[i].mind1=0;
 			guys[i].reload=1;
 			guys[i].parent=NULL;
-			guys[i].CalculateRect(CurrentMap());
 			guys[i].ID=i;
 			guys[i].mapx=(guys[i].x>>FIXSHIFT)/TILE_WIDTH;
 			guys[i].mapy=(guys[i].y>>FIXSHIFT)/TILE_HEIGHT;
@@ -1861,6 +1921,12 @@ Guy *AddGuy(int x,int y,int z,byte type)
 						break;
 				}
 			}
+			if (type == MONS_SHROOM)	// special case, they start out wandering in a random direction
+			{
+				guys[i].facing = Random(8);
+				guys[i].mind = 1;
+				guys[i].mind1 = 10;
+			}
 			if(type==MONS_OCTOBOSS && player.levelNum!=1)
 			{
 				g=AddGuy(x-FIXAMT*140,y-FIXAMT*100,0,MONS_OCTOTENT);
@@ -1891,6 +1957,8 @@ Guy *AddGuy(int x,int y,int z,byte type)
 			}
 			if(type==MONS_LOOKEYLOO)
 				guys[i].reload=255;
+
+			guys[i].CalculateRect(CurrentMap());
 
 			return &guys[i];
 		}
@@ -2248,10 +2316,21 @@ byte FindVictims(int x,int y,byte size,int dx,int dy,int damage,Map *map,world_t
 		if(guys[i].type && guys[i].hp && (MonsterFlags(guys[i].type)&(MF_GOODGUY|MF_NOHIT))==0 &&
 			(guys[i].type!=MONS_OCTOPUS || guys[i].mind==1))
 		{
-			if((damage!=-1000 || guys[i].frozen==0) && CheckHit(size,x,y,&guys[i]))
+			if (ClassicMode())
 			{
-				guys[i].GetShot(dx,dy,damage,map,world);
-				result=1;
+				if ((damage != -1000 || guys[i].frozen == 0) && CheckHit(size, x, y, &guys[i]))
+				{
+					guys[i].GetShot(dx, dy, damage, map, world);
+					result = 1;
+				}
+			}
+			else
+			{
+				if (CheckHit(size, x, y, &guys[i]))
+				{
+					guys[i].GetShot(dx, dy, damage, map, world);
+					result = 1;
+				}
 			}
 		}
 

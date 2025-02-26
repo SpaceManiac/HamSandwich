@@ -62,6 +62,7 @@
 #define BLT_RUNESTONE (49)
 #define BLT_PTEROSHOT (50)
 #define BLT_MINE	(51)
+#define BLT_ICESHARD (52)	// ice shards from frozen enemies, pass in how much damage for them to deal
 
 #define MAX_BULLETS 512
 
