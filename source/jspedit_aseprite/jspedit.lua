@@ -2,6 +2,10 @@
 -- In a separate file so it can be developed without restarting aseprite.
 local origin_slice_none <const> = "(top-left corner)"
 local origin_slice_imported <const> = "Origin"
+local palette_id <const> = "Dr. Lunatic"
+
+-------------------------------------------------------------------------------
+-- Helpers
 
 -- Export path cache.
 -- Can't use table because Aseprite assumes all keys are valid identifiers when
@@ -41,13 +45,132 @@ local function deleteInvisible(sprite, layers)
 	end
 end
 
+-------------------------------------------------------------------------------
+-- Import
+
+local function do_import_jsp(file)
+	-- Read frame count
+	local count = string.unpack("<I2", file:read(2))
+	local headers = {}
+	local min_x, min_y, max_x, max_y = math.maxinteger, math.maxinteger, math.mininteger, math.mininteger
+	for i = 1, count do
+		-- Read frame header
+		local width, height, ofs_x, ofs_y, size = string.unpack("<I2I2i2i2I4", file:read(16))
+		headers[i] = {
+			width = width,
+			height = height,
+			ofs_x = ofs_x,
+			ofs_y = ofs_y,
+			size = size,
+		}
+		min_x = math.min(min_x, -ofs_x)
+		min_y = math.min(min_y, -ofs_y)
+		max_x = math.max(max_x, -ofs_x + width)
+		max_y = math.max(max_y, -ofs_y + height)
+	end
+
+	-- Prepare sprite
+	local sprite = Sprite(max_x - min_x, max_y - min_y, ColorMode.INDEXED)
+	sprite:setPalette(Palette { fromResource = palette_id })
+	sprite.properties.jspedit = {
+		origin_slice = origin_slice_imported,
+	}
+	sprite:deleteCel(sprite.cels[1])
+
+	-- Read cels
+	for frm = 1, count do
+		local image = Image(headers[frm].width, headers[frm].height, ColorMode.INDEXED)
+		-- Read frame data
+		local data = file:read(headers[frm].size)
+		local src, x, y = 1, 0, 0
+		while src < #data do
+			local byte = string.byte(data, src)
+			if byte & 128 ~= 0 then
+				-- transparent run
+				x = x + (byte & 127)
+				src = src + 1
+			else
+				-- solid run
+				src = src + 1
+				for j = 1, byte do
+					image:drawPixel(x, y, string.byte(data, src))
+					x = x + 1
+					src = src + 1
+				end
+			end
+			if x >= headers[frm].width then
+				x = 0
+				y = y + 1
+			end
+		end
+
+		local frame = sprite.frames[frm] or sprite:newEmptyFrame()
+		sprite:newCel(sprite.layers[1], frame, image, Point(-headers[frm].ofs_x - min_x, -headers[frm].ofs_y - min_y))
+	end
+
+	-- Create slice to mark origin
+	local slice = sprite:newSlice(Rectangle(-min_x, -min_y, 16, 16))
+	slice.name = origin_slice_imported
+	slice.color = Color { r = 0, g = 255, b = 0 }
+
+	-- Success
+	return sprite
+end
+
+local function do_import_jft(file)
+	-- Read header
+	local
+		num_chars,
+		first_char,
+		height,
+		space_size,
+		gap_size,
+		gap_height,
+		data_size
+	= string.unpack("<BBBBBBxxI4", file:read(528))
+
+	-- Prepare sprite
+	local sprite = Sprite(1, height, ColorMode.INDEXED)
+	sprite:setPalette(Palette { fromResource = palette_id })
+	sprite.properties.jftedit = {
+		space_size = space_size,
+		gap_size = gap_size,
+		gap_height = gap_height,
+	}
+	sprite:deleteCel(sprite.cels[1])
+
+	-- Read cels
+	for i = 1, num_chars do
+		local width = string.unpack("<B", file:read(1))
+		if width > sprite.width then
+			sprite.width = width
+		end
+
+		local image = Image(width, height, ColorMode.INDEXED)
+		for y = 0, height - 1 do
+			for x = 0, width - 1 do
+				local pixel = string.unpack("<B", file:read(1))
+				if pixel ~= 0 then
+					image:drawPixel(x, y, pixel)
+				end
+			end
+		end
+
+		local frame = sprite.frames[frm] or sprite:newEmptyFrame()
+		sprite:newCel(sprite.layers[1], frame, image)
+	end
+
+	-- Success
+	return sprite
+end
+
 local function import(plugin)
-	local dlg = Dialog("Import JSP")
+	local dlg = Dialog("Import JSP or JFT")
 
 	dlg:file {
 		id = "source",
 		label = "Source:",
-		filetypes = { "jsp" },
+		filetypes = { "jsp", "jft" },
 		load = true,
 		focus = true,
 	}
@@ -59,74 +182,19 @@ local function import(plugin)
 			if not source then
 				return
 			end
-
-			local f <close> = io.open(source, "rb")
-			if not f then
+			-- Open file and route to relevant parser
+			local file <close> = io.open(source, "rb")
+			if not file then
 				return
 			end
-			-- Read frame count
-			local count = string.unpack("<I2", f:read(2))
-			local headers = {}
-			local min_x, min_y, max_x, max_y = math.maxinteger, math.maxinteger, math.mininteger, math.mininteger
-			for i = 1, count do
-				-- Read frame header
-				local width, height, ofs_x, ofs_y, size = string.unpack("<I2I2i2i2I4", f:read(16))
-				headers[i] = {
-					width = width,
-					height = height,
-					ofs_x = ofs_x,
-					ofs_y = ofs_y,
-					size = size,
-				}
-				min_x = math.min(min_x, -ofs_x)
-				min_y = math.min(min_y, -ofs_y)
-				max_x = math.max(max_x, -ofs_x + width)
-				max_y = math.max(max_y, -ofs_y + height)
+			if source:match(".jsp$") then
+				do_import_jsp(file)
+			elseif source:match(".jft$") then
+				do_import_jft(file)
+			else
+				return
 			end
-
-			local sprite = Sprite(max_x - min_x, max_y - min_y, ColorMode.INDEXED)
-			sprite:setPalette(Palette { fromResource = "Dr. Lunatic" })
-			sprite.properties.jspedit = {
-				origin_slice = origin_slice_imported,
-			}
-
-			sprite:deleteCel(sprite.cels[1])
-			for frm = 1, count do
-				local image = Image(headers[frm].width, headers[frm].height, ColorMode.INDEXED)
-				-- Read frame data
-				local data = f:read(headers[frm].size)
-				local src, x, y = 1, 0, 0
-				while src < #data do
-					local byte = string.byte(data, src)
-					if byte & 128 ~= 0 then
-						-- transparent run
-						x = x + (byte & 127)
-						src = src + 1
-					else
-						-- solid run
-						src = src + 1
-						for j = 1, byte do
-							image:drawPixel(x, y, string.byte(data, src))
-							x = x + 1
-							src = src + 1
-						end
-					end
-					if x >= headers[frm].width then
-						x = 0
-						y = y + 1
-					end
-				end
-
-				local frame = sprite.frames[frm] or sprite:newEmptyFrame()
-				sprite:newCel(sprite.layers[1], frame, image, Point(-headers[frm].ofs_x - min_x, -headers[frm].ofs_y - min_y))
-			end
-
-			-- Create slice to mark origin
-			local slice = sprite:newSlice(Rectangle(-min_x, -min_y, 16, 16))
-			slice.name = origin_slice_imported
-			slice.color = Color { r = 0, g = 255, b = 0 }
-
-			-- Success, close
+			-- Success
 			app.frame = 1
 			dlg:close()
 		end
@@ -196,7 +264,7 @@ local function export(plugin)
 			local sprite = Sprite(site.sprite)
 			deleteInvisible(sprite, sprite.layers)
 			sprite:flatten()
-			sprite:setPalette(Palette { fromResource = "Dr. Lunatic" })
+			sprite:setPalette(Palette { fromResource = palette_id })
 			local layer = sprite.layers[1]
 			local frames = {}
 			for frm = 1, #sprite.frames do

@@ -2,11 +2,11 @@
 function init(plugin)
 	plugin:newCommand {
 		id = "jsp_import",
-		title = "Import JSP",
+		title = "Import JSP or JFT",
 		group = "file_import_1",
 		onclick = function()
 			dofile(app.fs.joinPath(plugin.path, "jspedit.lua")).import(plugin)
-		end
+		end,
 	}
 
 	plugin:newCommand {
@@ -15,6 +15,9 @@ function init(plugin)
 		group = "file_export_1",
 		onclick = function()
 			dofile(app.fs.joinPath(plugin.path, "jspedit.lua")).export(plugin)
-		end
+		end,
+		onenabled = function ()
+			return app.sprite ~= nil
+		end,
 	}
 end
