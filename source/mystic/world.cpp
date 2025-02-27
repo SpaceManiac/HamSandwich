@@ -93,8 +93,11 @@ void InitWorld(world_t *world,byte worldNum)
 	complete=0;
 
 	for(i=1;i<MAX_MAPS;i++)
-		if(world->map[i])
-			complete+=100;		// each level is worth 100 points except the hub which is worth nothing
+		if (world->map[i])
+		{
+			complete += 100;		// each level is worth 100 points except the hub which is worth nothing
+			world->map[i]->ScanForContent();
+		}
 
 	PlayerSetWorldWorth(worldNum,complete);
 }

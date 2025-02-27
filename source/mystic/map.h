@@ -31,6 +31,7 @@
 #define TRG_REPEATABLE	256		// works more than once
 #define TRG_MESSAGE		512		// displays a message
 #define TRG_CHAIN		1024	// goes off if any special in an adjacent square goes off
+#define TRG_KILLONE		2048	// kill any one of the type
 
 //special effect choices
 #define SPC_NONE		0
@@ -45,7 +46,8 @@
 #define SPC_PICTURE		9
 #define SPC_CHGITEM		10
 #define SPC_CHGFLOOR	11
-#define SPC_MAXEFFECTS  12
+#define SPC_KILLSPCL	12
+#define SPC_MAXEFFECTS  13
 
 // Map flags
 #define MAP_SNOWING		1
@@ -98,6 +100,7 @@ class Map
 		Map(SDL_RWops *f);
 		~Map(void);
 
+		void ScanForContent(void);
 		byte Save(SDL_RWops *f);
 		void Init(world_t *wrld);
 		void Render(world_t *world,int camX,int camY,byte flags);
@@ -123,6 +126,7 @@ class Map
 		char name[32];
 		byte song;
 		byte flags;
+		byte contentFlags;
 		mapBadguy_t badguy[MAX_MAPMONS];
 		special_t   special[MAX_SPECIAL];
 
@@ -140,6 +144,7 @@ byte TempBrightCallback(int x,int y,int cx,int cy,int value,Map *map);
 class Guy;
 void SpecialStepCheck(Map *map,int x,int y,Guy *me);
 void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim);
+void SpecialKillCheck(Map* map, byte type);
 
 void ChangeFloor(Map* map, int x, int y, byte newFloor);
 void ZapWall(Map *map,int x,int y,byte newFloor);

@@ -4,6 +4,7 @@
 #include "jamulfmv.h"
 #include "game.h"
 #include "title.h"
+#include <string>
 
 static constexpr int DISPLAY_XBORDER = 300;
 static constexpr int DISPLAY_YBORDER = 300;
@@ -265,6 +266,19 @@ void CenterPrint(int midx,int y,const char *s,char bright,byte font)
 			FontPrintString(x,y,s,gameFont[font]);
 		else
 			FontPrintStringSolid(x,y,s,gameFont[font],0);
+	}
+}
+
+void CenterPrintCompressed(int midx, int y, std::string_view s, byte compression, char bright, byte font)
+{
+	int x;
+
+	x = midx - FontStrLen(s, gameFont[font]) * (int)compression/200;
+	
+	for (char ch : s)
+	{
+		FontPrintCharBright(x, y, ch, bright, gameFont[font]);
+		x += (CharWidth(ch, gameFont[font]) + gameFont[font]->gapSize)*compression/100;
 	}
 }
 

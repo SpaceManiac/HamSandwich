@@ -22,6 +22,9 @@
 // level passed bitflags
 #define LP_PASSED (1)
 #define LP_GOTRUNE (2)
+#define LP_GOTSPELL (4)
+#define LP_GOTFAIRY (8)
+#define LP_GOTSWORD (16)
 
 #define WATER_DAMAGE (10)	// damage taken when you fall in the water, in modern mode
 
@@ -222,6 +225,9 @@ void PlayerHealWithSpell(byte amt);
 
 void GetRuneInLevel(void);
 bool GotRuneInLevel(byte world, byte level);
+bool GotFairyBellInLevel(byte world, byte level);
+bool GotSpellInLevel(byte world, byte level);
+bool GotSwordInLevel(byte world, byte level);
 void PickUpRune(void);
 
 bool BrutalMode(void);

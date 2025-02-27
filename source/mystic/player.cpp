@@ -757,6 +757,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 				player.gotSpell[i]=1;
 			else
 				player.gotSpell[i+10]=1;
+			player.levelPassed[player.worldNum][player.levelNum] |= LP_GOTSPELL;
 
 			FloaterParticles(x,y,1,32,-1,16);
 			FloaterParticles(x,y,5,10,2,16);
@@ -857,6 +858,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 		case ITM_KEYCH1:
 			MakeNormalSound(SND_GETKEYCHAIN);
 			player.keychain[0]=1;
+			player.levelPassed[player.worldNum][player.levelNum] |= LP_GOTSWORD;
 			if(!KeyChainAllCheck())
 				NewMessage("A piece of the Armageddon Sword!",75);
 			playerGlow=127;
@@ -870,6 +872,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 		case ITM_KEYCH2:
 			MakeNormalSound(SND_GETKEYCHAIN);
 			player.keychain[1]=1;
+			player.levelPassed[player.worldNum][player.levelNum] |= LP_GOTSWORD;
 			if(!KeyChainAllCheck())
 				NewMessage("A piece of the Armageddon Sword!",75);
 			playerGlow=127;
@@ -883,6 +886,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 		case ITM_KEYCH3:
 			MakeNormalSound(SND_GETKEYCHAIN);
 			player.keychain[2]=1;
+			player.levelPassed[player.worldNum][player.levelNum] |= LP_GOTSWORD;
 			if(!KeyChainAllCheck())
 				NewMessage("A piece of the Armageddon Sword!",75);
 			playerGlow=127;
@@ -896,6 +900,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 		case ITM_KEYCH4:
 			MakeNormalSound(SND_GETKEYCHAIN);
 			player.keychain[3]=1;
+			player.levelPassed[player.worldNum][player.levelNum] |= LP_GOTSWORD;
 			if(!KeyChainAllCheck())
 				NewMessage("A piece of the Armageddon Sword!",75);
 			playerGlow=127;
@@ -917,6 +922,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 			return 0;
 			break;
 		case ITM_FAIRYBELL:
+			player.levelPassed[player.worldNum][player.levelNum] |= LP_GOTFAIRY;
 			MakeNormalSound(SND_FAIRYGET);
 			AddChaseFairy();
 			NewMessage("The bell awakens a fairy!",75);
@@ -1789,6 +1795,21 @@ void GetRuneInLevel(void)
 bool GotRuneInLevel(byte world,byte level)
 {
 	return (player.levelPassed[world][level] & LP_GOTRUNE);
+}
+
+bool GotFairyBellInLevel(byte world, byte level)
+{
+	return (player.levelPassed[world][level] & LP_GOTFAIRY);
+}
+
+bool GotSpellInLevel(byte world, byte level)
+{
+	return (player.levelPassed[world][level] & LP_GOTSPELL);
+}
+
+bool GotSwordInLevel(byte world, byte level)
+{
+	return (player.levelPassed[world][level] & LP_GOTSWORD);
 }
 
 void PickUpRune(void)

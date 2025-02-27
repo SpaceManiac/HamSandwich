@@ -62,6 +62,7 @@ void RenderSpclDialog(int msx,int msy,MGLDraw *mgl)
 	RenderCheckbox(62,110,spcl->trigger&TRG_HAVEBRAINS,"Have N brains");
 	RenderCheckbox(62,124,spcl->trigger&TRG_SHOOT,"Shoot item/wall");
 	RenderCheckbox(220,54,spcl->trigger&TRG_CHAIN,"Chain off neighbor Special");
+	RenderCheckbox(220, 68, spcl->trigger & TRG_KILLONE, "Kill one of type");
 
 	RenderCheckbox(62,148,spcl->trigger&TRG_REPEATABLE,"Multiple use");
 	RenderCheckbox(62,162,spcl->trigger&TRG_MESSAGE,"Show message");
@@ -98,6 +99,8 @@ void RenderSpclDialog(int msx,int msy,MGLDraw *mgl)
 	Print(136, 276, "ChgItem", 0, 1);
 	DrawBox(62, 274, 132, 288, 16 + 15 * (spcl->effect == SPC_CHGFLOOR));
 	Print(64, 276, "ChgFloor", 0, 1);
+	DrawBox(62, 290, 132, 304, 16 + 15 * (spcl->effect == SPC_KILLSPCL));
+	Print(64, 292, "KillSpcl", 0, 1);
 
 	// trigger value
 	RenderValueAdjuster("Trigger Value",spcl->trigValue,210,12);
@@ -182,6 +185,8 @@ byte SpclDialogClick(int msx,int msy)
 
 	if(msx>219 && msx<230 && msy>53 && msy<54+14)
 		spcl->trigger^=TRG_CHAIN;
+	if (msx > 219 && msx < 230 && msy>67 && msy < 68 + 14)
+		spcl->trigger ^= TRG_KILLONE;
 
 	// effect choices
 	if(msx>61 && msx<133 && msy>193 && msy<209)
@@ -208,6 +213,8 @@ byte SpclDialogClick(int msx,int msy)
 		spcl->effect = SPC_CHGITEM;
 	if (msx > 61 && msx < 133 && msy>273 && msy < 289)
 		spcl->effect = SPC_CHGFLOOR;
+	if (msx > 61 && msx < 133 && msy>289 && msy < 305)
+		spcl->effect = SPC_KILLSPCL;
 
 	// trigger value
 	i=spcl->trigValue;

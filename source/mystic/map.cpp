@@ -9,6 +9,8 @@
 int totalBrains;
 static world_t *world;
 byte brainX,brainY;
+byte outXes = 0;
+byte lastSpecialShown = 33;
 
 Map::Map(SDL_RWops *f)
 {
@@ -127,6 +129,8 @@ void Map::Init(world_t *wrld)
 	int i;
 	byte s;
 
+	outXes = 0;
+	lastSpecialShown = 33;
 	totalBrains=0;
 	SetChallengeCrystals(0);
 
@@ -865,33 +869,11 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 						if((!map[i+(j+1)*width].wall) ||
 							(world->terrain[map[i+(j+1)*width].floor].flags&TF_TRANS) || !(flags&MAP_SHOWWALLS))
 							RenderFloorTileFancy(scrX,scrY,m->floor,shdw,lites);
-						/*
-						// if there is a wall on the tile below this one, no
-						// point in rendering this floor (unless it is transparent
-						if((!map[i+(j+1)*width].wall) || (!(flags&MAP_SHOWWALLS) ||
-							(world->terrain[map[i+(j+1)*width].floor].flags&TF_TRANS)))
-						{
-							// if there's a wall to the right, draw a shadow on this tile
-							if((i<width-1) && (map[i+1+j*width].wall) &&
-								!(world->terrain[map[i+1+j*width].wall].flags&TF_NOSHADOW))
-								RenderFloorTileShadow(scrX,scrY,m->floor,lite);
-							else
-								RenderFloorTile(scrX,scrY,m->floor,lite);
-						}
-						*/
 					}
 					else
 					{
 						// if there's a wall to the right, draw a shadow on this tile
 						RenderFloorTileFancy(scrX,scrY,m->floor,shdw,lites);
-						/*
-						// if there's a wall to the right, draw a shadow on this tile
-						if((i<width-1) && (map[i+1+j*width].wall) &&
-							!(world->terrain[map[i+1+j*width].wall].flags&TF_NOSHADOW))
-							RenderFloorTileShadow(scrX,scrY,m->floor,lite);
-						else
-							RenderFloorTile(scrX,scrY,m->floor,lite);
-							*/
 					}
 				}
 			}
@@ -1026,13 +1008,25 @@ void SpecialShootCheck(Map *map,int x,int y)
 		}
 }
 
+void SpecialKillCheck(Map* map,byte type)
+{
+	int i;
+
+	for (i = 0; i < MAX_SPECIAL; i++)
+		if ((map->special[i].trigger & TRG_KILLONE) &&
+			map->special[i].trigValue==type)
+		{
+			SpecialTakeEffect(map, &map->special[i], NULL);
+		}
+}
+
 void SpecialAnytimeCheck(Map *map)
 {
 	int i;
 
 	for(i=0;i<MAX_SPECIAL;i++)
 		if((map->special[i].trigger) &&
-			(!(map->special[i].trigger&(TRG_SHOOT|TRG_STEP|TRG_ENEMYSTEP|TRG_NEAR|TRG_CHAIN))))
+			(!(map->special[i].trigger&(TRG_SHOOT|TRG_STEP|TRG_ENEMYSTEP|TRG_NEAR|TRG_CHAIN|TRG_KILLONE))))
 		{
 			SpecialTakeEffect(map,&map->special[i],NULL);
 		}
@@ -1057,6 +1051,7 @@ void SpecialAnytimeCheck(Map *map)
 	}
 }
 
+
 void RenderSpecialXes(MGLDraw *mgl,Map *map,byte world)
 {
 	int i;
@@ -1065,10 +1060,136 @@ void RenderSpecialXes(MGLDraw *mgl,Map *map,byte world)
 	GetCamera(&camx,&camy);
 	camx-=HALFWID;
 	camy-=HALFHEI;
-	for(i=0;i<MAX_SPECIAL;i++)
-		if(map->special[i].effect==SPC_GOTOMAP && PlayerPassedLevel(world,map->special[i].value))
-			DrawRedX(map->special[i].x*TILE_WIDTH-camx+TILE_WIDTH/2,
-					map->special[i].y*TILE_HEIGHT-camy+TILE_HEIGHT/2,mgl);
+	Guy* g = GetGoodguy();
+
+	bool outOfRange = true;
+	byte closest = 255;
+	int squareDist = 999 * 999;
+	for (i = 0; i < MAX_SPECIAL; i++)
+	{
+		int cx = map->special[i].x * TILE_WIDTH - camx + TILE_WIDTH / 2;
+		int cy = map->special[i].y * TILE_HEIGHT - camy + TILE_HEIGHT / 2;
+		if(map->special[i].effect == SPC_GOTOMAP)
+		{
+			if(ClassicMode() && PlayerPassedLevel(world, map->special[i].value))
+				DrawRedX(cx,cy, mgl);
+		
+			if(!ClassicMode() && map->special[i].value<MAX_MAPS && g)
+			{
+				int myDist = (abs(g->x / (TILE_WIDTH * FIXAMT) - map->special[i].x)* abs(g->x / (TILE_WIDTH * FIXAMT) - map->special[i].x)) +
+					(abs(g->y / (TILE_HEIGHT * FIXAMT) - map->special[i].y)* abs(g->y / (TILE_HEIGHT * FIXAMT) - map->special[i].y));
+
+				if (abs(g->x / (TILE_WIDTH * FIXAMT) - map->special[i].x) <= 6 &&
+					abs(g->y / (TILE_HEIGHT * FIXAMT) - map->special[i].y) <= 6)	// when player is close, add details
+				{
+					outOfRange = false;
+					if (closest == 255 || myDist < squareDist)
+					{
+						closest = (byte)i;
+						squareDist = myDist;
+					}
+				}
+			}
+		}
+	}
+	if (outOfRange)
+	{
+		if (outXes > 0)
+			outXes--;
+		else
+			lastSpecialShown = 33;	// after they full recede, stop showing it
+	}
+	else if(closest!=255)
+	{
+		if (lastSpecialShown != closest)
+		{
+			lastSpecialShown = closest;
+			outXes = 0;
+		}
+		else if (outXes < 40)
+		{
+			outXes += 2;
+			if (outXes > 40) outXes = 40;
+		}
+	}
+	byte mNum = map->special[lastSpecialShown].value;
+	if (!ClassicMode() && lastSpecialShown < 33)
+	{
+		int cx = map->special[lastSpecialShown].x * TILE_WIDTH - camx + TILE_WIDTH / 2;
+		int cy = map->special[lastSpecialShown].y * TILE_HEIGHT - camy + TILE_HEIGHT / 2;
+		Map* m = curWorld.map[mNum];
+		if (PlayerPassedLevel(world, mNum))
+		{
+			byte angList[] = { 96, 32, 0, 128 };
+			byte ang=0;
+			
+			if (m->contentFlags & LP_GOTFAIRY)
+			{
+				for(int xx=cx-1;xx<=cx+1;xx++)
+					for (int yy = cy - 1; yy <= cy + 1; yy++)
+					{
+						if(xx!=cx && yy!=cy)
+							GetItemSprite(173)->DrawBright(xx - 12 + Cosine(angList[ang]) * outXes / FIXAMT, yy + 16 + Sine(angList[ang]) * outXes / FIXAMT, mgl, -31);
+					}
+				if (GotFairyBellInLevel(world, mNum))
+					GetItemSprite(173)->DrawBright(cx - 12 + Cosine(angList[ang]) * outXes / FIXAMT, cy + 16 + Sine(angList[ang]) * outXes / FIXAMT, mgl, 0);
+				
+				ang++;
+			}
+			if (m->contentFlags & LP_GOTRUNE)
+			{
+				for (int xx = cx - 1; xx <= cx + 1; xx++)
+					for (int yy = cy - 1; yy <= cy + 1; yy++)
+					{
+						char b = -31;
+						if (xx!=cx && yy!=cy)
+							GetItemSprite(281)->DrawBright(xx + Cosine(angList[ang]) * outXes / FIXAMT, yy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, -31);
+					}
+				if (GotRuneInLevel(world, mNum))
+					GetItemSprite(281)->DrawBright(cx + Cosine(angList[ang]) * outXes / FIXAMT, cy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, 0);
+				ang++;
+			}
+			if (m->contentFlags & LP_GOTSPELL)
+			{
+				for (int xx = cx - 1; xx <= cx + 1; xx++)
+					for (int yy = cy - 1; yy <= cy + 1; yy++)
+					{
+						if (xx!=cx && yy!=cy)
+							GetItemSprite(43)->DrawBright(xx + Cosine(angList[ang]) * outXes / FIXAMT, yy + 12 + Sine(angList[ang]) * outXes / FIXAMT, mgl, -31);
+					}
+				if (GotSpellInLevel(world, mNum))
+					GetItemSprite(43)->DrawBright(cx + Cosine(angList[ang]) * outXes / FIXAMT, cy + 12 + Sine(angList[ang]) * outXes / FIXAMT, mgl, 0);
+				ang++;
+			}
+			if (m->contentFlags & LP_GOTSWORD)
+			{
+				for (int xx = cx - 1; xx <= cx + 1; xx++)
+					for (int yy = cy - 1; yy <= cy + 1; yy++)
+					{
+						if (xx != cx && yy != cy)
+							GetItemSprite(131)->DrawBright(xx + Cosine(angList[ang]) * outXes / FIXAMT, yy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, -31);
+					}
+				if (GotSwordInLevel(world, mNum))
+					GetItemSprite(131)->DrawBright(cx + Cosine(angList[ang]) * outXes / FIXAMT, cy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, 0);
+				ang++;
+			}
+		}
+		CenterPrintCompressed(cx + 1, cy - outXes + 1, m->name, outXes * 100 / 40, -31, 1);
+		CenterPrintCompressed(cx, cy - outXes, m->name, outXes * 100 / 40, 0, 1);
+	}
+	if (!ClassicMode())
+	{
+		for (i = 0; i < MAX_SPECIAL; i++)
+		{
+			int cx = map->special[i].x * TILE_WIDTH - camx + TILE_WIDTH / 2;
+			int cy = map->special[i].y * TILE_HEIGHT - camy + TILE_HEIGHT / 2;
+			if (map->special[i].effect == SPC_GOTOMAP)
+			{
+				if (PlayerPassedLevel(world, map->special[i].value))
+					DrawRedX(cx, cy, mgl);
+			}
+		}
+	}
 }
 
 void SpecialNeighborCheck(Map *map,special_t *spcl)
@@ -1241,6 +1362,15 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 				MakeNormalSound(SND_MESSAGE);
 				sprintf(s,"graphics/%s",spcl->msg);
 				GetDisplayMGL()->LoadBMP(s);
+			}
+			break;
+		case SPC_KILLSPCL:
+			for (int i = 0; i < MAX_SPECIAL; i++)
+			{
+				if (map->special[i].x == spcl->effectX && map->special[i].y == spcl->effectY)
+				{
+					map->special[i].trigger = 0;	// can no longer be triggered!
+				}
 			}
 			break;
 	}
@@ -2229,5 +2359,35 @@ void AbandonedVillagePuzzle(Map *map)
 				}
 			}
 		}
+	}
+}
+
+void Map::ScanForContent(void)
+{
+	contentFlags = LP_PASSED;	// this level can be passed... weirdly enough
+	for (int i = 0; i < 32; i++)
+	{
+		if (special[i].effect == SPC_CHGITEM)
+		{
+			if (special[i].value == ITM_FAIRYBELL)
+				contentFlags |= LP_GOTFAIRY;
+			if (special[i].value == ITM_SPELLBOOK)
+				contentFlags |= LP_GOTSPELL;
+			if (special[i].value == ITM_SILENTRUNE)
+				contentFlags |= LP_GOTRUNE;
+			if (special[i].value >=ITM_KEYCH1 && special[i].value<=ITM_KEYCH4)
+				contentFlags |= LP_GOTSWORD;
+		}
+	}
+	for (int i = 0; i < width * height; i++)
+	{
+		if (map[i].item  == ITM_SPELLBOOK)
+			contentFlags |= LP_GOTSPELL;
+		if (map[i].item == ITM_SILENTRUNE)
+			contentFlags |= LP_GOTRUNE;
+		if (map[i].item == ITM_FAIRYBELL)
+			contentFlags |= LP_GOTFAIRY;
+		if (map[i].item >= ITM_KEYCH1 && map[i].item <= ITM_KEYCH4)
+			contentFlags |= LP_GOTSWORD;
 	}
 }

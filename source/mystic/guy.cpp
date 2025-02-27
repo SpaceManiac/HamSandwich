@@ -1582,7 +1582,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		}
 		if (!ClassicMode() && (BulletHittingType() == BLT_MISSILE || BulletHittingType() == BLT_LILBOOM) && SkillValue(SKILL_SEEKBOOM) > 0)
 			FireExactBullet(x, y, z, 0, 0, 0, 0, 7, 0, BLT_SEEKBOOM);
-
+		SpecialKillCheck(map, type);
 		hp=0;
 		seq=ANIM_DIE;
 		this->dx=0;
@@ -1606,9 +1606,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		{
 			case MONS_PINKEYE:
 			case MONS_BOUAPHA:
-			case MONS_SERPENT:	// don't drop items, since you live on the water
 			case MONS_MICRO:	// fish, no drop
-			case MONS_MAGMAZOID:// don't drop items, since you live in the lava
 			case MONS_FRIENDLY:
 			case MONS_MUSH:
 			case MONS_LICH:
@@ -1624,7 +1622,6 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			case MONS_OCTOBOSS:
 			case MONS_OCTOTENT:
 			case MONS_OCTOTENT2:
-			case MONS_OCTOPUS:
 				break;
 			case MONS_GOAT1:
 			case MONS_GOAT1B:
@@ -1634,59 +1631,62 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 				map->map[mapx+mapy*map->width].item=ITM_BRAIN;
 				break;
 			default:
-				// drop cash!
-				j=MonsterHP(type);
-				if(type==MONS_STICKSHROOM || type==MONS_STICKSPIDER || type==MONS_STICKCORPSE || type==MONS_STICKBAT)
-					j=100;	// way more coins from stick monsters
-				if(type==MONS_BIGSPDR)
-					j*=2;	// double the coins from spitters
-				if(type==MONS_EGGSAC || type==MONS_MAMASPDR)
-					j/=8;	// quarter coins from egg sacs and mama spiders
-				j=MGL_random(j/5+2);
-				// don't allow it to be less than 1/10 the max
-				if(j<MonsterHP(type)/10)
-					j=MonsterHP(type)/10;
+				if (!(curWorld.terrain[map->map[mapx + mapy * map->width].floor].flags & (TF_WATER|TF_LAVA)))
+				{
+					// drop cash!
+					j = MonsterHP(type);
+					if (type == MONS_STICKSHROOM || type == MONS_STICKSPIDER || type == MONS_STICKCORPSE || type == MONS_STICKBAT)
+						j = 100;	// way more coins from stick monsters
+					if (type == MONS_BIGSPDR)
+						j *= 2;	// double the coins from spitters
+					if (type == MONS_EGGSAC || type == MONS_MAMASPDR)
+						j /= 8;	// quarter coins from egg sacs and mama spiders
+					j = MGL_random(j / 5 + 2);
+					// don't allow it to be less than 1/10 the max
+					if (j < MonsterHP(type) / 10)
+						j = MonsterHP(type) / 10;
 
-				if (!ClassicMode())
-				{
-					byte chance = (int)SkillValue(SKILL_GREED);
-					if (wasFrozen)
-						chance += (int)SkillValue(SKILL_FREEZEMONEY);
-					if (player.fairyOn == FAIRY_RICHEY)
-						chance *= 3;
-					if(Random(100)<chance)
-						FireBullet(x, y, 0, BLT_RUNESTONE);
-				}
-				int freeBig = 0;
-				if (j > 50)
-				{
-					freeBig = (j - 50) / 20;	// give guaranteed big coins for every 20 coins overage, in modern mode
-					j = 50;	// max it at 50 coins per guy
-				}
-				// 1% chance of 10-coin, up
-				for (i = 0; i < j; i++)
-				{
-					if (ClassicMode())
+					if (!ClassicMode())
 					{
-						if (MGL_random(100 - 70 * (player.fairyOn == FAIRY_RICHEY)))
-							FireBullet(x, y, 0, BLT_COIN);
-						else
-							FireBullet(x, y, 0, BLT_BIGCOIN);
+						byte chance = (int)SkillValue(SKILL_GREED);
+						if (wasFrozen)
+							chance += (int)SkillValue(SKILL_FREEZEMONEY);
+						if (player.fairyOn == FAIRY_RICHEY)
+							chance *= 3;
+						if (Random(100) < chance)
+							FireBullet(x, y, 0, BLT_RUNESTONE);
 					}
-					else
+					int freeBig = 0;
+					if (j > 50)
 					{
-						float amt = SkillValue(SKILL_GREED);
-						amt *= 10;
-						if (!ClassicMode() && wasFrozen)
-							amt += SkillValue(SKILL_FREEZEMONEY) * 10;
-
-						if (freeBig > 0 || MGL_random(1000 - 700 * (player.fairyOn == FAIRY_RICHEY)) > (int)amt)
+						freeBig = (j - 50) / 20;	// give guaranteed big coins for every 20 coins overage, in modern mode
+						j = 50;	// max it at 50 coins per guy
+					}
+					// 1% chance of 10-coin, up
+					for (i = 0; i < j; i++)
+					{
+						if (ClassicMode())
 						{
-							FireBullet(x, y, 0, BLT_COIN);
-							if(freeBig>0) freeBig--;
+							if (MGL_random(100 - 70 * (player.fairyOn == FAIRY_RICHEY)))
+								FireBullet(x, y, 0, BLT_COIN);
+							else
+								FireBullet(x, y, 0, BLT_BIGCOIN);
 						}
 						else
-							FireBullet(x, y, 0, BLT_BIGCOIN);
+						{
+							float amt = SkillValue(SKILL_GREED);
+							amt *= 10;
+							if (!ClassicMode() && wasFrozen)
+								amt += SkillValue(SKILL_FREEZEMONEY) * 10;
+
+							if (freeBig > 0 || MGL_random(1000 - 700 * (player.fairyOn == FAIRY_RICHEY)) > (int)amt)
+							{
+								FireBullet(x, y, 0, BLT_COIN);
+								if (freeBig > 0) freeBig--;
+							}
+							else
+								FireBullet(x, y, 0, BLT_BIGCOIN);
+						}
 					}
 				}
 				break;

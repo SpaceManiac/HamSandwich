@@ -275,7 +275,7 @@ static void FontPrintCharColor(int x, int y, dword c, byte color, char bright, c
 	}
 }
 
-static void FontPrintCharBright(int x, int y, dword c, char bright, const mfont_t *font)
+void FontPrintCharBright(int x, int y, dword c, char bright, const mfont_t *font)
 {
 	byte *dst, *src;
 	int scrWidth, scrHeight, chrWidth;
@@ -311,7 +311,7 @@ static void FontPrintCharBright(int x, int y, dword c, char bright, const mfont_
 	}
 }
 
-static void FontPrintCharSolid(int x, int y, byte c, const mfont_t *font, byte color)
+void FontPrintCharSolid(int x, int y, byte c, const mfont_t *font, byte color)
 {
 	byte *dst, *src;
 	int scrWidth, scrHeight, chrWidth;
@@ -563,7 +563,7 @@ static void FontPrintCharGlowLimited(int x, int y, int maxX, dword c, const mfon
 	}
 }
 
-static byte CharWidth(dword c, const mfont_t *font)
+byte CharWidth(dword c, const mfont_t *font)
 {
 	if (c == '\n')
 		return 0;

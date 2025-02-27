@@ -261,7 +261,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{4,4,4,5,5,5,6,6,6,6,6,6,255},	// die
 			}},
 		{"Fairy",
-		 12,6,100,0,"graphics/fairy.jsp",0,MF_FLYING|MF_GOODGUY|MF_ENEMYWALK|MF_FREEWALK|MF_NOHIT|MF_WALLWALK,
+		 12,6,100,0,"graphics/fairy.jsp",0,MF_FLYING|MF_GOODGUY|MF_ENEMYWALK|MF_FREEWALK|MF_NOHIT,
 			{
 				{0,1,2,3,4,5,4,3,2,1,255},	// idle
 				{0,1,2,3,4,5,4,3,2,1,255},	// move

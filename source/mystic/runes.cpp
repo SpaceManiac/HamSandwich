@@ -274,9 +274,9 @@ void DescribeRune(Rune r,int x,int y)
 		PrintBrightGlow(x, y + 20 + 12*3, txt, 0, 1);
 
 		if (RuneLevel(r) == RUNE_RANK1)
-			PrintBrightGlow(x, y + 20 + 12 * 4, "Upgrade for 50 Runestones.", 0, 1);
+			PrintBrightGlow(x, y + 20 + 12 * 4, "Upgrade for 20 Runestones.", 0, 1);
 		else if (RuneLevel(r) == RUNE_RANK2)
-			PrintBrightGlow(x, y + 20 + 12 * 4, "Upgrade for 100 Runestones.", 0, 1);
+			PrintBrightGlow(x, y + 20 + 12 * 4, "Upgrade for 30 Runestones.", 0, 1);
 		// rank 3, there's nothing more to do
 	}
 }

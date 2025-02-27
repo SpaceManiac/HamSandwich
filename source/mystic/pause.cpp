@@ -953,9 +953,9 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 				{
 					word price = 10;
 					if (RuneLevel((Rune)subcursor) == RUNE_RANK1)
-						price = 50;
+						price = 20;
 					else if (RuneLevel((Rune)subcursor) == RUNE_RANK2)
-						price = 100;
+						price = 30;
 					if (player.runeStones >= price)
 					{
 						player.runes[subcursor]++;

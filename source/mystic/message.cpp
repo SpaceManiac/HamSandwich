@@ -3,7 +3,7 @@
 #include "game.h"
 #include "intface.h"
 
-char speech[30*4][64]={
+char speech[31*4][64]={
 	// 0
 	"Welcome to Beginnerton!  This town is",
 	"really a tutorial on some basic game",
@@ -154,6 +154,11 @@ char speech[30*4][64]={
 	"It looks like every rune has a letter",
 	"that it's equivalent to. There's even",
 	"a handy chart!",
+	// 30
+	"Hmm, according to this book, ancient",
+	"numerologists assigned numbers to",
+	"each rune in addition to their",
+	"alphabetical value.",
 };
 
 byte speechX,speechY,curSpeech;
@@ -494,6 +499,27 @@ void RenderSpeech(void)
 			s[0] = 'A' + c;
 			int len = GetStrLength(s, 0);
 			Print(rx + 35-len/2, ry, s, -31, 0);
+			rx += 72;
+			if (rx > SCRWID - 180 - 40)
+			{
+				rx = 190;
+				ry += 40;
+			}
+		}
+	}
+	if (curSpeech == 30)	// show the rune number chart!
+	{
+		RenderSkillBox(170 - 2, 200 - 2, SCRWID - 170 + 2, 460 + 2, 16, 0);
+		RenderSkillBox(170, 200, SCRWID - 170, 460, 16, 27);
+		int rx, ry;
+		rx = 190;
+		ry = 215;
+		for (int i = 0; i < 24; i++)
+		{
+			BlitIcon(100 + i, rx - 12, ry, 0, -31);
+			sprintf(s, "%d", i+1);
+			int len = GetStrLength(s, 0);
+			Print(rx + 35 - len / 2, ry, s, -31, 0);
 			rx += 72;
 			if (rx > SCRWID - 180 - 40)
 			{

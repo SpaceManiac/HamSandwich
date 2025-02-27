@@ -715,16 +715,26 @@ void RenderWallTileFancy(int x,int y,int t,char *theLight)
 	light[2]=light[5];
 	light[1]=light[4];
 
-	if(j==9)
+	if(j==9 && t!=260)	// special case for castle wall tiles that I want water in
 	{
 		RenderFloorTileUnlit(x,y,t);
 		return;
 	}
 
-	GouraudBox(x,y,tiles[t],light[0],light[1],light[3],light[4]);
-	GouraudBox(x+GB_WID,y,tiles[t]+GB_WID,light[1],light[2],light[4],light[5]);
-	GouraudBox(x,y+GB_HEI,tiles[t]+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
-	GouraudBox(x+GB_WID,y+GB_HEI,tiles[t]+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
+	if (t == 260)
+	{
+		GouraudBoxWater(x, y, tiles[t], light[0], light[1], light[3], light[4], 0);
+		GouraudBoxWater(x + GB_WID, y, tiles[t] + GB_WID, light[1], light[2], light[4], light[5], 0);
+		GouraudBoxWater(x, y + GB_HEI, tiles[t] + GB_HEI * TILE_WIDTH, light[3], light[4], light[6], light[7], 0);
+		GouraudBoxWater(x + GB_WID, y + GB_HEI, tiles[t] + GB_WID + GB_HEI * TILE_WIDTH, light[4], light[5], light[7], light[8], 0);
+	}
+	else
+	{
+		GouraudBox(x, y, tiles[t], light[0], light[1], light[3], light[4]);
+		GouraudBox(x + GB_WID, y, tiles[t] + GB_WID, light[1], light[2], light[4], light[5]);
+		GouraudBox(x, y + GB_HEI, tiles[t] + GB_HEI * TILE_WIDTH, light[3], light[4], light[6], light[7]);
+		GouraudBox(x + GB_WID, y + GB_HEI, tiles[t] + GB_WID + GB_HEI * TILE_WIDTH, light[4], light[5], light[7], light[8]);
+	}
 }
 
 void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,char *theLight)
@@ -773,7 +783,7 @@ void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,char *theLi
 		light[7]=light[4];
 	}
 
-	if(j==9)
+	if(j==9 && t!=86)
 	{
 		if(trans)
 			RenderFloorTileTrans(x,y,t,0);
@@ -782,7 +792,14 @@ void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,char *theLi
 		return;
 	}
 
-	if(!trans)
+	if (t==86)
+	{
+		GouraudBoxWater(x, y, tiles[t], light[0], light[1], light[3], light[4],0);
+		GouraudBoxWater(x + GB_WID, y, tiles[t] + GB_WID, light[1], light[2], light[4], light[5],0);
+		GouraudBoxWater(x, y + GB_HEI, tiles[t] + GB_HEI * TILE_WIDTH, light[3], light[4], light[6], light[7],0);
+		GouraudBoxWater(x + GB_WID, y + GB_HEI, tiles[t] + GB_WID + GB_HEI * TILE_WIDTH, light[4], light[5], light[7], light[8],0);
+	}
+	else if(!trans)
 	{
 		GouraudBox(x,y,tiles[t],light[0],light[1],light[3],light[4]);
 		GouraudBox(x+GB_WID,y,tiles[t]+GB_WID,light[1],light[2],light[4],light[5]);
