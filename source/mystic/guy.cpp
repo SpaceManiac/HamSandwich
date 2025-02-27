@@ -792,6 +792,13 @@ void Guy::Update(Map *map,world_t *world)
 				map->map[mapx+mapy*map->width].floor=60;
 				OpenVaultDoor(map);
 			}
+			else if (VaultPuzzle2Check(map))
+			{
+				NewMessage("A side passage opened!", 60);
+				MakeNormalSound(SND_MENUCLICK);
+				map->map[mapx + mapy * map->width].floor = 60;
+				OpenVaultDoor2(map);
+			}
 			else
 			{
 				NewMessage("The switch won't budge!",60);

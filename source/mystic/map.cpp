@@ -11,6 +11,7 @@ static world_t *world;
 byte brainX,brainY;
 byte outXes = 0;
 byte lastSpecialShown = 33;
+bool vault2Opened;
 
 Map::Map(SDL_RWops *f)
 {
@@ -133,6 +134,7 @@ void Map::Init(world_t *wrld)
 	lastSpecialShown = 33;
 	totalBrains=0;
 	SetChallengeCrystals(0);
+	vault2Opened = false;
 
 	for(i=0;i<width*height;i++)
 	{
@@ -1395,58 +1397,32 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 
 byte VaultPuzzleCheck(Map *map)
 {
-
-	// X
-	if(map->map[2+33*map->width].floor==65)
-		return 0;
-	if(map->map[4+33*map->width].floor==64)
-		return 0;
-	if(map->map[6+33*map->width].floor==65)
-		return 0;
-	if(map->map[2+35*map->width].floor==64)
-		return 0;
-	if(map->map[4+35*map->width].floor==65)
-		return 0;
-	if(map->map[6+35*map->width].floor==64)
-		return 0;
-	if(map->map[2+37*map->width].floor==65)
-		return 0;
-	if(map->map[4+37*map->width].floor==64)
-		return 0;
-	if(map->map[6+37*map->width].floor==65)
-		return 0;
-
-	// V
-	if(map->map[9+33*map->width].floor==65)
-		return 0;
-	if(map->map[11+33*map->width].floor==64)
-		return 0;
-	if(map->map[13+33*map->width].floor==65)
-		return 0;
-	if(map->map[9+35*map->width].floor==65)
-		return 0;
-	if(map->map[11+35*map->width].floor==64)
-		return 0;
-	if(map->map[13+35*map->width].floor==65)
-		return 0;
-	if(map->map[9+37*map->width].floor==64)
-		return 0;
-	if(map->map[11+37*map->width].floor==65)
-		return 0;
-	if(map->map[13+37*map->width].floor==64)
-		return 0;
-
-	// I (the I is completely lenient about the corners in case you want to make it serif)
-	if(map->map[18+33*map->width].floor==65)
-		return 0;
-	if(map->map[16+35*map->width].floor==64)
-		return 0;
-	if(map->map[18+35*map->width].floor==65)
-		return 0;
-	if(map->map[20+35*map->width].floor==64)
-		return 0;
-	if(map->map[18+37*map->width].floor==65)
-		return 0;
+	if (map->map[29 + 46 * map->width].floor == 63)
+		return 0;	// don't let it repeat on the same visit to avoid messing up the switch
+	// X V I
+	byte code[] = {
+		1,0,1, 1,0,1, 2,1,2,
+		0,1,0, 1,0,1, 0,1,0,
+		1,0,1, 0,1,0, 2,1,2,
+	};
+	byte xTab[] = { 2,4,6,9,11,13,16,18,20 };
+	byte yTab[] = { 33,35,37 };
+	byte code2mustBe = 0;
+	for (int j = 0; j < 3; j++)
+		for (int i = 0; i < 9; i++)
+		{
+			if (code[i + j * 9] == 1 && map->map[xTab[i] + yTab[j] * map->width].floor != 64)	// must be on
+				return 0;
+			if (code[i + j * 9] == 0 && map->map[xTab[i] + yTab[j] * map->width].floor != 65)	// must be off
+				return 0;
+			if (code[i + j * 9] == 2)	// all code=2's must be the same, but either way
+			{
+				if (code2mustBe == 0)
+					code2mustBe = map->map[xTab[i] + yTab[j] * map->width].floor;
+				else if (map->map[xTab[i] + yTab[j] * map->width].floor != code2mustBe)
+					return 0;
+			}
+		}
 
 	return 1;
 }
@@ -1469,6 +1445,54 @@ void OpenVaultDoor(Map *map)
 			map->special[i].trigger=0;
 	}
 	player.vaultOpened=1;
+}
+
+byte VaultPuzzle2Check(Map* map)
+{
+	if (vault2Opened)
+		return 0;	// don't repeat on the same visit, so we can't mess up the switch position
+	// L I V
+	byte code[] = {
+		1,0,0, 2,1,2, 1,0,1,
+		1,0,0, 0,1,0, 1,0,1,
+		1,1,1, 2,1,2, 0,1,0
+	};
+	byte xTab[] = { 2,4,6,9,11,13,16,18,20 };
+	byte yTab[] = { 33,35,37 };
+	byte code2mustBe = 0;
+	for(int j=0;j<3;j++)
+		for (int i = 0; i < 9; i++)
+		{
+			if (code[i + j * 9] == 1 && map->map[xTab[i] + yTab[j] * map->width].floor != 64)	// must be on
+				return 0;
+			if (code[i + j * 9] == 0 && map->map[xTab[i] + yTab[j] * map->width].floor != 65)	// must be off
+				return 0;
+			if (code[i + j * 9] == 2)	// all code=2's must be the same, but either way
+			{
+				if (code2mustBe == 0)
+					code2mustBe = map->map[xTab[i] + yTab[j] * map->width].floor;
+				else if (map->map[xTab[i] + yTab[j] * map->width].floor != code2mustBe)
+					return 0;
+			}
+		}
+	return 1;
+}
+
+void OpenVaultDoor2(Map* map)
+{
+	// open the secret book passage
+	map->map[25 + 58 * map->width].wall = 0;
+	map->map[25 + 58 * map->width].floor = 0;
+	map->map[25 + 59 * map->width].wall = 0;
+	map->map[25 + 59 * map->width].floor = 0;
+	map->map[24 + 59 * map->width].wall = 24;
+	map->map[24 + 59 * map->width].floor = 154;
+	for(int i=19;i<=27;i++)
+		for (int j = 47; j <= 57; j++)
+		{
+			map->map[i+j * map->width].light = -6;	// lighten it up a bit
+		}
+	vault2Opened = true;
 }
 
 int TotalBrains(void)
