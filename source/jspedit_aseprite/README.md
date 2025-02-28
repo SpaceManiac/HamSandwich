@@ -1,6 +1,12 @@
-# Hamumu JSP support for Aseprite
+# JspEdit extension for Aseprite
 
-This is an extension for [Aseprite](https://www.aseprite.org/) that adds support for Dr. Lunatic engine `.jsp` sprite packs and `.jft` fonts.
+<a href="https://spacemaniac.itch.io/hamsandwich">
+<img alt="Available on itch.io" src="../../docs/available-on-itch.svg" height="100" align="right">
+</a>
+
+This is an extension for [Aseprite](https://www.aseprite.org/) that adds import and export support for `.jsp` sprite packs and `.jft` fonts.
+
+To install, download "**jspedit.aseprite-extension**" from [itch.io](https://spacemaniac.itch.io/hamsandwich). If it doesn't associate with Aseprite automatically, use **Edit > Preferences > Extensions > Add Extension**.
 
 To install from source, copy this directory into the Aseprite extension directory:
 

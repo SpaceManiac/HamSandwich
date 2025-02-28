@@ -46,6 +46,12 @@ local function deleteInvisible(sprite, layers)
 	end
 end
 
+local function get_version(plugin)
+	local f <close> = io.open(app.fs.joinPath(plugin.path, "package.json"), "r")
+	local package = json.decode(f:read("a"))
+	return package.version
+end
+
 -------------------------------------------------------------------------------
 -- Import
 
@@ -204,6 +210,11 @@ local function import(plugin)
 		end
 	}
 
+	dlg:label {
+		label = "Version:",
+		text = get_version(plugin),
+	}
+
 	dlg:show()
 end
 
@@ -348,6 +359,7 @@ local function export(plugin)
 			for frm = 1, #frames do
 				f:write(frames[frm].data)
 			end
+			f:close()
 
 			-- success, close dialog and commit preferences
 			sprite:close()
@@ -358,6 +370,11 @@ local function export(plugin)
 			end
 			write_export_path(plugin, site.sprite.filename, destination)
 		end,
+	}
+
+	dlg:label {
+		label = "Version:",
+		text = get_version(plugin),
 	}
 
 	dlg:show()
@@ -481,7 +498,7 @@ local function export_jft(plugin)
 			-- success, close dialog and commit preferences
 			sprite:close()
 			dlg:close()
-			if first_char ~= sprite_jftedit.first_char or space_size ~= sprite_jftedit.space_size or gap_size ~= sprite_jftedit.gap_size or sprite_jftedit ~= sprite_jftedit.gap_height then
+			if first_char ~= sprite_jftedit.first_char or space_size ~= sprite_jftedit.space_size or gap_size ~= sprite_jftedit.gap_size or gap_height ~= sprite_jftedit.gap_height then
 				sprite_jftedit.first_char = first_char
 				sprite_jftedit.space_size = space_size
 				sprite_jftedit.gap_size = gap_size
@@ -491,6 +508,11 @@ local function export_jft(plugin)
 			app.sprite = site.sprite
 			write_export_path(plugin, site.sprite.filename, destination)
 		end,
+	}
+
+	dlg:label {
+		label = "Version:",
+		text = get_version(plugin),
 	}
 
 	dlg:show()

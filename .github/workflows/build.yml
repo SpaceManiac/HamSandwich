@@ -103,3 +103,11 @@ jobs:
     - uses: actions/configure-pages@v5
     - uses: actions/deploy-pages@v4
       id: deployment
+  jspedit-aseprite:
+    name: JspEdit extension for Aseprite
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: tools/itch/build-jspedit-aseprite
+      - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
+        run: tools/bootstrap/butler push --if-changed build/jspedit.aseprite-extension "$ITCH_GAME:aseprite" --userversion="$(git rev-parse --short=10 HEAD)"
