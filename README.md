@@ -212,10 +212,14 @@ HamSandwich includes a quick-and-dirty JFT tool. Use it from the command line li
 - `./run jfttool path/to/font.jft` to extract a `.txt` and a series of `.png` files from a font
 - `./run jfttool path/to/font.txt` to re-pack a `.txt` and `.png`s into a font
 
+There is also an [Aseprite extension](source/jspedit_aseprite/) for JSP and JFT support.
+
 ### Editing `.jsp` sprite packs
 
 HamSandwich includes JspEdit, a GUI tool for editing `.jsp` files. The
 interface is reasonably self-explanatory. Run it with `./run jspedit`.
+
+There is also an [Aseprite extension](source/jspedit_aseprite/) for JSP and JFT support.
 
 ### Creating `.jsp` sprite packs from 3D models
 

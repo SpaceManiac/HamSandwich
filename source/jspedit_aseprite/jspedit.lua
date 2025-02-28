@@ -3,6 +3,7 @@
 local origin_slice_none <const> = "(top-left corner)"
 local origin_slice_imported <const> = "Origin"
 local palette_id <const> = "Dr. Lunatic"
+local font_max_chars <const> = 128
 
 -------------------------------------------------------------------------------
 -- Helpers
@@ -84,7 +85,7 @@ local function do_import_jsp(file)
 		local data = file:read(headers[frm].size)
 		local src, x, y = 1, 0, 0
 		while src < #data do
-			local byte = string.byte(data, src)
+			local byte = string.unpack("<B", data, src)
 			if byte & 128 ~= 0 then
 				-- transparent run
 				x = x + (byte & 127)
@@ -93,7 +94,7 @@ local function do_import_jsp(file)
 				-- solid run
 				src = src + 1
 				for j = 1, byte do
-					image:drawPixel(x, y, string.byte(data, src))
+					image:drawPixel(x, y, string.unpack("<B", data, src))
 					x = x + 1
 					src = src + 1
 				end
@@ -133,6 +134,7 @@ local function do_import_jft(file)
 	local sprite = Sprite(1, height, ColorMode.INDEXED)
 	sprite:setPalette(Palette { fromResource = palette_id })
 	sprite.properties.jftedit = {
+		first_char = first_char,
 		space_size = space_size,
 		gap_size = gap_size,
 		gap_height = gap_height,
@@ -140,7 +142,7 @@ local function do_import_jft(file)
 	sprite:deleteCel(sprite.cels[1])
 
 	-- Read cels
-	for i = 1, num_chars do
+	for chr = 1, num_chars do
 		local width = string.unpack("<B", file:read(1))
 		if width > sprite.width then
 			sprite.width = width
@@ -156,7 +158,7 @@ local function do_import_jft(file)
 			end
 		end
 
-		local frame = sprite.frames[frm] or sprite:newEmptyFrame()
+		local frame = sprite.frames[chr] or sprite:newEmptyFrame()
 		sprite:newCel(sprite.layers[1], frame, image)
 	end
 
@@ -240,6 +242,9 @@ local function export(plugin)
 		text = "Export",
 		onclick = function()
 			local destination = dlg.data.destination
+			if not destination or destination == "" then
+				return
+			end
 			local slice_name = dlg.data.origin_slice
 
 			local origin_x, origin_y = 0, 0
@@ -268,6 +273,7 @@ local function export(plugin)
 			deleteInvisible(sprite, sprite.layers)
 			sprite:flatten()
 			sprite:setPalette(Palette { fromResource = palette_id })
+
 			local layer = sprite.layers[1]
 			local frames = {}
 			for frm = 1, #sprite.frames do
@@ -357,7 +363,141 @@ local function export(plugin)
 	dlg:show()
 end
 
+local function export_jft(plugin)
+	local site = app.site
+	if not site.sprite then
+		return
+	end
+
+	local sprite_jftedit = site.sprite.properties.jftedit or {}
+
+	local dlg = Dialog("Export JFT")
+
+	dlg:file {
+		id = "destination",
+		label = "Destination:",
+		filetypes = { "jft" },
+		filename = read_export_path(plugin, site.sprite.filename),
+		save = true,
+		focus = true,
+	}
+
+	dlg:number {
+		id = "first_char",
+		label = "First character code:",
+		text = tostring(sprite_jftedit.first_char or 0),
+	}
+
+	dlg:number {
+		id = "space_size",
+		label = "Space width:",
+		text = tostring(sprite_jftedit.space_size or 0),
+	}
+
+	dlg:number {
+		id = "gap_size",
+		label = "Gap between characters:",
+		text = tostring(sprite_jftedit.gap_size or 0),
+	}
+
+	dlg:number {
+		id = "gap_height",
+		label = "Line height:",
+		text = tostring(sprite_jftedit.gap_height or 0),
+	}
+
+	dlg:button {
+		text = "Export",
+		onclick = function()
+			local destination = dlg.data.destination
+			if not destination or destination == "" then
+				return
+			end
+
+			-- Duplicate sprite so we can flatten it.
+			local sprite = Sprite(site.sprite)
+			deleteInvisible(sprite, sprite.layers)
+			sprite:flatten()
+			sprite:setPalette(Palette { fromResource = palette_id })
+
+			-- Fetch properties
+			local first_char = dlg.data.first_char
+			local space_size = dlg.data.space_size
+			local gap_size = dlg.data.gap_size
+			local gap_height = dlg.data.gap_height
+
+			local height = sprite.height
+			local num_chars = #sprite.frames
+			if num_chars > font_max_chars then
+				return error("Font cannot have more than " .. tostring(font_max_chars) .. " characters")
+			end
+
+			local layer = sprite.layers[1]
+			local data = ""
+			for chr = 1, num_chars do
+				-- Get image for frame
+				local cel = layer:cel(chr)
+				if cel then
+					-- Write width and pixels
+					local image = cel.image
+					local start_x = cel.bounds.x
+					local start_y = cel.bounds.y
+					local width = image.width
+					data = data .. string.pack("<B", width)
+					for y = 0, height - 1 do
+						for x = 0, width - 1 do
+							local pixel = image:getPixel(x - start_x, y - start_y)
+							if pixel >= 256 then
+								pixel = 0
+							end
+							data = data .. string.pack("<B", pixel)
+						end
+					end
+				else
+					-- Write zero-width missing character
+					data = data .. string.pack("<B", 0)
+				end
+			end
+
+			-- Write header and data
+			local f <close> = io.open(destination, "wb")
+			if not f then
+				return
+			end
+			f:write(string.pack(
+				"<BBBBBBxxI4c516",
+				num_chars,
+				first_char,
+				height,
+				space_size,
+				gap_size,
+				gap_height,
+				#data,
+				""
+			))
+			f:write(data)
+			f:close()
+
+			-- success, close dialog and commit preferences
+			sprite:close()
+			dlg:close()
+			if first_char ~= sprite_jftedit.first_char or space_size ~= sprite_jftedit.space_size or gap_size ~= sprite_jftedit.gap_size or sprite_jftedit ~= sprite_jftedit.gap_height then
+				sprite_jftedit.first_char = first_char
+				sprite_jftedit.space_size = space_size
+				sprite_jftedit.gap_size = gap_size
+				sprite_jftedit.gap_height = gap_height
+				site.sprite.properties.jftedit = sprite_jftedit
+			end
+			app.sprite = site.sprite
+			write_export_path(plugin, site.sprite.filename, destination)
+		end,
+	}
+
+	dlg:show()
+end
+
 return {
 	import = import,
 	export = export,
+	export_jft = export_jft,
 }
