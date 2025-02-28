@@ -109,7 +109,7 @@ local function do_import_jsp(file)
 	end
 
 	-- Create slice to mark origin
-	local slice = sprite:newSlice(Rectangle(-min_x, -min_y, 16, 16))
+	local slice = sprite:newSlice(Rectangle(-min_x - 16, -min_y - 12, 32, 24))
 	slice.name = origin_slice_imported
 	slice.color = Color { r = 0, g = 255, b = 0 }
 
@@ -254,7 +254,8 @@ local function export(plugin)
 				end
 				for _, slice in ipairs(site.sprite.slices) do
 					if slice.name == slice_name then
-						origin_x, origin_y = slice.bounds.x, slice.bounds.y
+						origin_x = math.floor(slice.bounds.x + slice.bounds.width / 2)
+						origin_y = math.floor(slice.bounds.y + slice.bounds.height / 2)
 						break
 					end
 				end
