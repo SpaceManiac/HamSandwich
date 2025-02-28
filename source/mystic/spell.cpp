@@ -478,9 +478,10 @@ void CastSpell(Guy *me)
 				player.berserk += SpellLevel() * 10;
 			else
 			{
-				player.berserk += (int)(SkillValue(SKILL_BERSERK) * 60);
-				if (player.berserk > (int)SkillValue(SKILL_BERSERK) * 60 * 2)
-					player.berserk = (int)SkillValue(SKILL_BERSERK) * 60 * 2;
+				int amt = SkillValue(SKILL_BERSERK) * 60;
+				player.berserk += amt;
+				if (player.berserk > amt*2)
+					player.berserk = amt*2;
 			}
 			MakeNormalSound(SND_BERSERK);
 			player.wpnReload=10;

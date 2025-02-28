@@ -127,7 +127,7 @@ byte InitLevel(byte map)
 	frmRate=30.0f;
 	visFrms=0;
 	msgFromOtherModules=0;
-
+	GetTaps();
 	InitGuys(256);
 	InitBullets();
 	InitPlayer(INIT_LEVEL,0,map);
@@ -484,6 +484,7 @@ TASK(byte) LunaticRun(int *lastTime)
 			if(UpdateSpeech(gamemgl)==1 && gameMode!=GAMEMODE_FARLEY)
 			{
 				gameMode=GAMEMODE_PLAY;
+				return LEVEL_PLAYING;
 			}
 		}
 		else if (gameMode == GAMEMODE_FARLEY)

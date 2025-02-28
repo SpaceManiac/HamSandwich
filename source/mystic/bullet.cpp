@@ -431,7 +431,7 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 				ExplodeParticles(PART_WATER,me->x,me->y,0,8);
 				me->type=BLT_NONE;
 			}
-			else if(world->terrain[map->map[x+y*map->width].floor].flags&TF_LAVA)
+			else if(player.worldNum==3 && world->terrain[map->map[x+y*map->width].floor].flags&TF_LAVA)
 			{
 				BlowWigglySmoke(me->x,me->y,0,FIXAMT*4);
 				BlowWigglySmoke(me->x,me->y,0,FIXAMT*2);

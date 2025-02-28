@@ -186,8 +186,16 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 {
 	int desiredX,desiredY;
 
-	desiredX=((x<<FIXSHIFT)+Cosine(facing)*80)>>FIXSHIFT;
-	desiredY=((y<<FIXSHIFT)+Sine(facing)*60)>>FIXSHIFT;
+	if (ClassicMode())
+	{
+		desiredX = ((x << FIXSHIFT) + Cosine(facing) * 80) >> FIXSHIFT;
+		desiredY = ((y << FIXSHIFT) + Sine(facing) * 60) >> FIXSHIFT;
+	}
+	else
+	{
+		desiredX = ((x << FIXSHIFT) + Cosine(facing) * 160) >> FIXSHIFT;
+		desiredY = ((y << FIXSHIFT) + Sine(facing) * 120) >> FIXSHIFT;
+	}
 
 	rscrx+=scrdx;
 	rscry+=scrdy;

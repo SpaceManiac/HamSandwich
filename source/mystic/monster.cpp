@@ -672,6 +672,7 @@ word MonsterPoints(byte type)
 
 word MonsterHP(byte type)
 {
+	word mul = 1;
 	if(player.nightmare)
 	{
 		if(monsType[type].flags&MF_GOODGUY)
@@ -688,10 +689,10 @@ word MonsterHP(byte type)
 		}
 		else
 		{
-			if(type==MONS_BOBBY)
-				return monsType[type].hp*(NIGHTMAREHP*3/4);
+			if (type == MONS_BOBBY)
+				mul = mul*NIGHTMAREHP * 3 / 4;
 			else
-				return monsType[type].hp*NIGHTMAREHP;
+				mul *= NIGHTMAREHP;
 		}
 	}
 	else if (BrutalMode())
@@ -703,13 +704,15 @@ word MonsterHP(byte type)
 		else
 		{
 			if (type == MONS_BOBBY)
-				return monsType[type].hp * (BRUTALHP * 3 / 4);
+				mul = mul * BRUTALHP * 3 / 4;
 			else
-				return monsType[type].hp * BRUTALHP;
+				mul *= BRUTALHP;
 		}
 	}
-	else
-		return monsType[type].hp;
+	if (!ClassicMode() && player.worldNum >= 2)
+		mul *= MODERNCHAP34HP;
+
+	return monsType[type].hp*mul;
 }
 
 char *MonsterName(byte type)
@@ -1343,7 +1346,7 @@ void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			y=me->y+Sine(me->facing*32)*16;
 			if(me->AttackCheck(16,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
 				goodguy->GetShot(Cosine(me->facing*32)*4,Sine(me->facing*32)*4,10,map,world);
-			me->reload=5;
+			me->reload=5+25*(!ClassicMode());
 		}
 		if(me->seq==ANIM_A1 && me->frm==3 && me->reload==0 && goodguy)
 		{
@@ -1374,14 +1377,14 @@ void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	{
 		if(goodguy)
 		{
-			if(RangeToTarget(me,goodguy)<(48*FIXAMT) && MGL_random(8)==0)
+			if(RangeToTarget(me,goodguy)<(48*FIXAMT) && MGL_random(8)==0 && me->reload==0)
 			{
 				// get him!
 				MakeSound(SND_SKELKICK,me->x,me->y,SND_CUTOFF,1200);
 				me->seq=ANIM_ATTACK;
 				me->frm=0;
 				me->frmTimer=0;
-				me->frmAdvance=64;
+				me->frmAdvance=64+(128*!ClassicMode());
 				me->action=ACTION_BUSY;
 				me->dx=0;
 				me->dy=0;

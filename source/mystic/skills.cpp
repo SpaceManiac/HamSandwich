@@ -177,7 +177,7 @@ skill_t skillList[] = {
 		"",
 		"",
 		"",
-		3,1,"Duration",SD_SECONDS,SPL_BERSERK},
+		2,0.5f,"Duration",SD_SECONDS,SPL_BERSERK},
 	{ "Bloodlust",
 		"While Berserking, you heal",
 		"with each kill. You have a",

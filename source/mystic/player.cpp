@@ -511,7 +511,7 @@ byte SpellBookForThisLevel(byte level,byte chapter)
 	byte i;
 
 	i=255;
-	switch(player.worldNum*50+player.levelNum)
+	switch(chapter*50+level)
 	{
 		case 11:
 		case 111:
@@ -1492,13 +1492,14 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	// not busy, let's see if you want to do something
 	c=GetControls();
+	byte taps = GetTaps();
 	dword mouseBtn = SDL_GetMouseState(nullptr, nullptr);
 	if (mouseBtn & SDL_BUTTON_LEFT)
 		c |= CONTROL_B1;
 	if (mouseBtn & SDL_BUTTON_RIGHT)
 		c |= CONTROL_B2;
 	DoPlayerFacing(c,me);
-
+	
 	if(player.levelNum==1)
 	{
 		// can't cast spells or even fake a fireball when on the overworld level
@@ -1542,7 +1543,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		player.boredom=0;
 		return;
 	}
-	if(player.levelNum==1 && player.wpnReload==1 && (c&CONTROL_B2) && player.haveFairy>0 && GetGameMode()==GAMEMODE_PLAY)
+	if(player.levelNum==1 && player.wpnReload==1 && (taps&CONTROL_B2) && player.haveFairy>0 && GetGameMode() == GAMEMODE_PLAY)
 	{
 		player.wpnReload=15;
 		SendMessageToGame(MSG_GOTOMAP,51);
@@ -1710,23 +1711,6 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			}
 		}
 	}
-
-	/*
-	// boredom handler
-	if(me->action==ACTION_IDLE)
-	{
-		player.boredom++;
-		if(player.boredom>200+MGL_random(3200))
-		{
-			MakeSound(SND_BOUAPHABORED,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
-			me->seq=ANIM_A2;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=64;
-			player.boredom=0;
-		}
-	}
-	*/
 }
 
 void BeginArmageddon(void)

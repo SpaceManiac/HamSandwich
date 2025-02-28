@@ -559,14 +559,33 @@ byte UpdateFarley(MGLDraw *mgl)
 	{
 		return 1;	// we're gonna stay here
 	}
+	UpdateGamepadStartAndSelect();
+	if (((c & CONTROL_B2) && !(oldc & CONTROL_B2)) || mgl->LastKeyPressed() == 27 || GamepadSelectTapped() || GamepadStartTapped())	// hit ESC to exit pause menu
+	{
+		farleyCursor = player.worldNum;
+		GetTaps();
+		return 1;
+	}
 	oldc = c;
 	return 0;
+}
+
+void OutlineFarleySprite(word spr, int x, int y, char bright)
+{
+	for(int i=x-1;i<=x+1;i++)
+		for (int j = y - 1; j <= y + 1; j++)
+		{
+			if(i!=x || j!=y)
+				GetItemSprite(spr)->DrawBright(i, j, GetDisplayMGL(), (bright==0)?-31:31);
+		}
+	GetItemSprite(spr)->DrawBright(x, y, GetDisplayMGL(), bright);
 }
 
 void RenderFarley(void)
 {
 	char s[32];
 	int top = (int)HighestWorldReached();
+	word w = 1;
 	for (int i = 0; i <= top; i++)
 	{
 		GetIntfaceSpr(68)->DrawBright(180, 30+i*110, GetDisplayMGL(),-10+(farleyCursor==i)*10);
@@ -598,6 +617,81 @@ void RenderFarley(void)
 			BlitIconBit(588, 437, 588 + 12, 437 + 12, 50+520 - (Cosine(farleyTicker) * 4 >> FIXSHIFT), 30 + i * 110-10 + (Cosine(farleyTicker) * 4 >> FIXSHIFT), 255, 0);
 			BlitIconBit(588, 467, 588 + 12, 467 + 13, 50+520 - (Cosine(farleyTicker) * 4 >> FIXSHIFT), 30 + i * 110+98 - (Cosine(farleyTicker) * 4 >> FIXSHIFT), 255, 0);
 		}
+		byte fairyCt=0;
+		for (int j = 0; j < 4; j++)
+		{
+			if (player.haveFairy & w)
+				fairyCt++;
+			w *= 2;
+		}
+		for (int j = 3; j >= 0; j--)
+			OutlineFarleySprite(173,64 + j * 16, 30 + i * 110 + 85, 0 - 31 * (j >= fairyCt));
+
+		fairyCt = 0;
+		for (int j = 0; j < MAX_MAPS; j++)
+			if (GotRuneInLevel(i,j))
+				fairyCt++;
+
+		for (int j = 5; j >= 0; j--)
+			OutlineFarleySprite(281,570 - 16 * 6 + j * 16, 30 + i * 110 + 85, 0 - 31 * (j >= fairyCt));
+
+		fairyCt = 0;
+		byte totalSpells = 0;
+		for (int j = 0; j < MAX_MAPS; j++)
+		{
+			byte b = SpellBookForThisLevel(j, i);
+			if (b != 255)
+			{
+				totalSpells++;
+				if (GotSpellInLevel(i, j))
+					fairyCt++;
+			}
+		}
+
+		for (int j = totalSpells-1; j >= 0; j--)
+			OutlineFarleySprite(45, 565 - 16 * totalSpells + j * 16, 30 + i * 110 + 45, 0 - 31 * (j >= fairyCt));
+
+		OutlineFarleySprite(131,160,30+i*110+85, 0-31*(player.keychain[i]==0));
+
+		/*
+		if (m->contentFlags & LP_GOTRUNE)
+		{
+			for (int xx = cx - 1; xx <= cx + 1; xx++)
+				for (int yy = cy - 1; yy <= cy + 1; yy++)
+				{
+					char b = -31;
+					if (xx != cx && yy != cy)
+						GetItemSprite(281)->DrawBright(xx + Cosine(angList[ang]) * outXes / FIXAMT, yy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, -31);
+				}
+			if (GotRuneInLevel(world, mNum))
+				GetItemSprite(281)->DrawBright(cx + Cosine(angList[ang]) * outXes / FIXAMT, cy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, 0);
+			ang++;
+		}
+		if (m->contentFlags & LP_GOTSPELL)
+		{
+			for (int xx = cx - 1; xx <= cx + 1; xx++)
+				for (int yy = cy - 1; yy <= cy + 1; yy++)
+				{
+					if (xx != cx && yy != cy)
+						GetItemSprite(43)->DrawBright(xx + Cosine(angList[ang]) * outXes / FIXAMT, yy + 12 + Sine(angList[ang]) * outXes / FIXAMT, mgl, -31);
+				}
+			if (GotSpellInLevel(world, mNum))
+				GetItemSprite(43)->DrawBright(cx + Cosine(angList[ang]) * outXes / FIXAMT, cy + 12 + Sine(angList[ang]) * outXes / FIXAMT, mgl, 0);
+			ang++;
+		}
+		if (m->contentFlags & LP_GOTSWORD)
+		{
+			for (int xx = cx - 1; xx <= cx + 1; xx++)
+				for (int yy = cy - 1; yy <= cy + 1; yy++)
+				{
+					if (xx != cx && yy != cy)
+						GetItemSprite(131)->DrawBright(xx + Cosine(angList[ang]) * outXes / FIXAMT, yy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, -31);
+				}
+			if (GotSwordInLevel(world, mNum))
+				GetItemSprite(131)->DrawBright(cx + Cosine(angList[ang]) * outXes / FIXAMT, cy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, 0);
+			ang++;
+		}
+		*/
 	}
 }
 

@@ -14,6 +14,7 @@
 #define NIGHTMAREDMG (10)
 #define BRUTALDMG (5)
 #define BRUTALHP (5)
+#define MODERNCHAP34HP (2)
 
 #define BUMP_WALL (0)
 #define BUMP_GUY  (1)

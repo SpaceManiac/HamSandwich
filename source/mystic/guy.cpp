@@ -763,8 +763,11 @@ void Guy::Update(Map *map,world_t *world)
 		if((hp>0) && (world->terrain[map->map[mapx+mapy*map->width].floor].flags&TF_LAVA)
 			&& (!PlayerCanWaterwalk()) && !parent && !PlayerShield())
 		{
-			BlowWigglySmoke(x,y,0,FIXAMT*2);
-			BlowWigglySmoke(x,y,0,FIXAMT*4);
+			if (player.worldNum == 3)	// spikes in chapter 3 don't make smoke
+			{
+				BlowWigglySmoke(x, y, 0, FIXAMT * 2);
+				BlowWigglySmoke(x, y, 0, FIXAMT * 4);
+			}
 			if(burnFlip)
 			{
 				GetShot(0,0,12,map,world);
@@ -780,6 +783,8 @@ void Guy::Update(Map *map,world_t *world)
 		
 		if (player.worldNum == 1 && player.levelNum == 5 && (oldmapx!=mapx || oldmapy!=mapy))
 			AbandonedVillagePuzzle(map);
+		if (player.worldNum == 2 && player.levelNum == 13 && (oldmapx != mapx || oldmapy != mapy))
+			GuestChamberPuzzleStep(map,mapx,mapy);
 
 		if(player.worldNum==2 && player.levelNum==16 && (oldmapx!=mapx || oldmapy!=mapy) &&
 			mapx==11 && mapy==31 && map->map[mapx+mapy*map->width].floor==59)
@@ -1417,6 +1422,8 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			monsHP /= NIGHTMAREHP;
 		else if (BrutalMode())
 			monsHP /= BRUTALHP;
+		if (!ClassicMode() && player.worldNum >= 2)	// chapter 3/4 in modern mode have enhanced HP
+			monsHP /= MODERNCHAP34HP;
 		if (ClassicMode())
 			i = SpellLevel() * 20 - monsHP;	// the more hp, the harder to freeze
 		else
@@ -1607,6 +1614,12 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			player.mana += (byte)RuneValue(Rune::MANAONKILL);
 			if (player.mana > player.maxMana)
 				player.mana = player.maxMana;
+		}
+		if (!ClassicMode() && player.berserk > 0 && RuneValue(Rune::BERSERK) > 0)
+		{
+			player.berserk += (word)(30.0f * RuneValue(Rune::BERSERK));
+			if (player.berserk > SkillValue(SKILL_BERSERK) * 60 * 2)
+				player.berserk = SkillValue(SKILL_BERSERK) * 60 * 2;
 		}
 		// possible item drop
 		switch(type)
