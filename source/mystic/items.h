@@ -37,7 +37,7 @@
 
 #define ITM_SMLROCKS 30
 #define ITM_HOLETREE 31
-#define ITM_IGLOO	 32
+#define ITM_IGLOO 32
 
 #define ITM_BOX		 50
 #define ITM_STUMP	 51
@@ -62,8 +62,8 @@
 #define ITM_HUT	     81
 #define ITM_SHOP     82
 #define ITM_TARGET	 83
-
-#define MAX_ITMS	 84
+#define ITM_LAVAROCK 84
+#define MAX_ITMS	 85
 
 // these defines are 1 greater than the highest item of that type
 // (that is, items 1 - X-1 are things the player can pick up, and items

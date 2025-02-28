@@ -14,6 +14,8 @@ typedef struct message_t
 	char msg[32];
 } message_t;
 
+void InitSpeechSystem(void);
+
 void InitMessage(void);
 void NewMessage(const char *txt,int time);
 void NewBigMessage(const char *txt,int time);

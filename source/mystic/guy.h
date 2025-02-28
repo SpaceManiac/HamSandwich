@@ -51,6 +51,8 @@ class Guy final
 
 		byte mind;		// brain variables for AI
 		byte mind1;
+		byte mind2;
+		byte mind3;
 
 		byte birthState;
 		byte reload;

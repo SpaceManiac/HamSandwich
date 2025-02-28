@@ -82,8 +82,9 @@ void RenderItem(int x,int y,byte type,char bright)
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(39),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(39),DISPLAY_DRAWME);
 			break;
-		case ITM_IGLOO:
-			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(42),DISPLAY_DRAWME);
+		case ITM_LAVAROCK:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(6), DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(6),DISPLAY_DRAWME);
 			break;
 		case ITM_HEALTHPOT:
 			SprDraw(x,y,0,255,bright+((glowism&7)==0)*2,itmSpr->GetSprite(156),DISPLAY_DRAWME);
@@ -310,8 +311,8 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 		case ITM_SKLDOOR2:
 			Print(x,y,"SKLDOOR2",0,2);
 			break;
-		case ITM_IGLOO:
-			itmSpr->GetSprite(42)->DrawBright(x,y,mgl,bright);
+		case ITM_LAVAROCK:
+			itmSpr->GetSprite(6)->DrawBright(x,y,mgl,bright);
 			break;
 		case ITM_DOOR1:
 			itmSpr->GetSprite(9)->DrawBright(x-14,y+11,mgl,bright);

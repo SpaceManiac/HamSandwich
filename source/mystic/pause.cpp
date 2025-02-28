@@ -607,6 +607,11 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			effCursor = conversions[cursor];
 		}
 
+		if ((c & CONTROL_B2) && (!(oldc & CONTROL_B2)))
+		{
+			GetTaps();
+			return 0;
+		}
 		if((c&CONTROL_B1) && (!(oldc&CONTROL_B1)))
 		{
 			MakeNormalSound(SND_MENUSELECT);
@@ -614,6 +619,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			switch(effCursor)
 			{
 				case 0: // cancel
+					GetTaps();
 					return 0;
 				case 1:	// Load
 					subMode=SUBMODE_SLOTPICK;
@@ -680,6 +686,11 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			if(subcursor==5)
 				subcursor=0;
 		}
+		if ((c & CONTROL_B2) && (!(oldc & CONTROL_B2)))
+		{
+			MakeNormalSound(SND_MENUSELECT);
+			subMode = SUBMODE_NONE;
+		}
 		if((c&CONTROL_B1) && (!(oldc&CONTROL_B1)))
 		{
 			if(effCursor==1)	// Load
@@ -721,6 +732,11 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			subcursor++;
 			if (subcursor > 14)
 				subcursor = 0;
+		}
+		if ((c & CONTROL_B2) && (!(oldc & CONTROL_B2)))
+		{
+			MakeNormalSound(SND_MENUSELECT);
+			subMode = SUBMODE_NONE;
 		}
 		if ((c & CONTROL_B1) && (!(oldc & CONTROL_B1)))
 		{
@@ -981,6 +997,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		else
 			subMode=SUBMODE_NONE;
 		lastKey=0;
+		GetTaps();
 	}
 	
 	return 1;

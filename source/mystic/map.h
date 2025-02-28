@@ -32,6 +32,7 @@
 #define TRG_MESSAGE		512		// displays a message
 #define TRG_CHAIN		1024	// goes off if any special in an adjacent square goes off
 #define TRG_KILLONE		2048	// kill any one of the type
+#define TRG_GETHURT		4096	// just take any damage
 
 //special effect choices
 #define SPC_NONE		0
@@ -145,6 +146,7 @@ class Guy;
 void SpecialStepCheck(Map *map,int x,int y,Guy *me);
 void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim);
 void SpecialKillCheck(Map* map, byte type);
+void SpecialOuchCheck(Map* map, byte type);
 
 void ChangeFloor(Map* map, int x, int y, byte newFloor);
 void ZapWall(Map *map,int x,int y,byte newFloor);
@@ -162,6 +164,7 @@ void MushAidPuzzleUpdate(Map* map);
 void MushAidPuzzleReset(Map* map);
 void AbandonedVillagePuzzleReset(Map* map);
 void AbandonedVillagePuzzle(Map* map);
+void LibraryPuzzle(Map* map);
 byte TemplePuzzle(Map *map);
 void ResetTemplePuzzle(Map *map);
 void CreateMaze(Map *map,byte wid,byte hei,byte mazewid,byte mazehei);

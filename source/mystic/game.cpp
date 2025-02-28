@@ -132,6 +132,7 @@ byte InitLevel(byte map)
 	InitBullets();
 	InitPlayer(INIT_LEVEL,0,map);
 	InitMessage();
+	InitSpeechSystem();
 	NewBigMessage(curMap->name,100);
 	InitParticles(1024);
 	lastKey=0;
@@ -235,6 +236,7 @@ void EnterSpeechMode(void)
 void EnterFarleyMode(void)
 {
 	gameMode = GAMEMODE_FARLEY;
+	MakeNormalSound(SND_BATDIVE);
 	InitFarley();
 	GetTaps();
 }

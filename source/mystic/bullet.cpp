@@ -160,6 +160,7 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 		case BLT_GRENADE:
 		case BLT_ICECLOUD:
 		case BLT_MINE:
+		case BLT_GLOB_BOMB:
 			me->x-=me->dx;
 			break;
 		case BLT_LASER:	// reflects off walls
@@ -305,6 +306,7 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 		case BLT_GRENADE:
 		case BLT_ICECLOUD:
 		case BLT_MINE:
+		case BLT_GLOB_BOMB:
 			me->y-=me->dy;
 			break;
 		case BLT_LASER:
@@ -467,6 +469,12 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 			me->anim=0;
 			me->timer=9;
 			MakeSound(SND_BOMBBOOM,me->x,me->y,SND_CUTOFF,950);
+			break;
+		case BLT_GLOB_BOMB:
+			MakeSound(SND_BOMBBOOM, me->x, me->y, SND_CUTOFF, 950);
+			for(int i=0;i<8;i++)
+				FireBullet(me->x - FIXAMT * 40 + MGL_randoml(FIXAMT * 81), me->y - FIXAMT * 30 + MGL_randoml(FIXAMT * 61), 0, BLT_SLIME);
+			me->type = 0;
 			break;
 		case BLT_MINE:
 			me->dx = 0;
@@ -1180,6 +1188,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				HitBadguys(me,map,world);
 			break;
 		case BLT_GRENADE:
+		case BLT_GLOB_BOMB:
 			me->anim=1-me->anim;
 			break;
 		case BLT_BIGYELLOW:
@@ -1430,7 +1439,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 		BulletHitFloor(me,map,world);
 
 	// all gravity-affected bullets, get gravitized
-	if(me->type==BLT_BOMB || me->type==BLT_GRENADE || (me->type==BLT_MINE && me->anim==0)
+	if(me->type==BLT_BOMB || me->type==BLT_GRENADE || (me->type==BLT_MINE && me->anim==0) || me->type==BLT_GLOB_BOMB
 		|| me->type==BLT_ROCK || me->type==BLT_EVILHAMMER || me->type==BLT_COIN || me->type==BLT_RUNESTONE
 		|| me->type==BLT_BIGCOIN)
 		me->dz-=FIXAMT;
@@ -1645,6 +1654,13 @@ void RenderBullet(bullet_t *me)
 					DISPLAY_DRAWME|DISPLAY_GLOW);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
+			break;
+			case BLT_GLOB_BOMB:
+			curSpr = bulletSpr->GetSprite(me->anim + SPR_GRENADE);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 7, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_GLOW);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 7, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_SHADOW);
 			break;
 		case BLT_MINE:
 			curSpr = bulletSpr->GetSprite(110+(me->anim==1)*Random(2));	// vibrate wildly when you are timing up
@@ -2035,6 +2051,15 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->dy=Sine(me->facing)*f;
 			me->dz=FIXAMT*20;
 			break;
+		case BLT_GLOB_BOMB:
+			me->anim = 0;
+			me->timer = 255;
+			me->z = FIXAMT * 80;
+			f = MGL_random(12) + 1;
+			me->dx = Cosine(me->facing) * f;
+			me->dy = Sine(me->facing) * f;
+			me->dz = FIXAMT * 20;
+			break;
 		case BLT_MINE:
 			me->anim = 0;
 			me->timer = 255;
@@ -2327,7 +2352,7 @@ void BackdraftEffect(Guy *me, int radius)
 	for (j = 0; j < MAX_BULLETS; j++)
 	{
 		bullet_t* b = &bullet[j];
-		if (b->type == BLT_ACID || b->type == BLT_FLAME2 || b->type == BLT_SPORE || b->type == BLT_SHROOM || b->type == BLT_GRENADE ||
+		if (b->type == BLT_ACID || b->type == BLT_FLAME2 || b->type == BLT_SPORE || b->type == BLT_SHROOM || b->type == BLT_GRENADE || b->type==BLT_GLOB_BOMB ||
 			b->type == BLT_ROCK || b->type == BLT_SPINE || b->type == BLT_YELWAVE || b->type == BLT_BIGYELLOW || b->type == BLT_SLIME)
 		{
 			int dist = ((b->x >> FIXSHIFT) - x) * ((b->x >> FIXSHIFT) - x) + ((b->y >> FIXSHIFT) - y) * ((b->y >> FIXSHIFT) - y);

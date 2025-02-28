@@ -145,7 +145,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{1,2,2,2,2,2,2,1,255},	// A1
 			}},
 		{"The Lookey-Loo",
-		 64,7,1000,2000,"graphics/lookyloo.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_SPRITEBOX|MF_WALLWALK,
+		 80,7,1000,2000,"graphics/lookyloo.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_SPRITEBOX|MF_WALLWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -565,7 +565,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{4,5,6,7,8,9,255},	// die
 			}},
 		{ "Farley The Ghost Bat",
-		 8,27,5,25,"graphics/bat.jsp",0,MF_FLYING|MF_GHOST,
+		 8,27,5,25,"graphics/bat.jsp",0,MF_FLYING,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -573,6 +573,16 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{17,18,19,20,21,22,23,24,25,26,255},		// die
 				{10,11,12,12,12,12,12,11,10,255},	// diving attack
 				{13,14,15,15,16,255}	// bounce off during dive
+			} },
+		{ "Gloopy Gus",
+		 12,19,300,300,"graphics/snail.jsp",0,0,
+			{
+				{0,255},	// idle
+				{1,2,3,4,2,1,0,255},	// move
+				{4,5,6,5,4,3,2,1,255},	// attack=spit goop
+				{5,6,7,8,9,10,11,12,13,14,15,16,17,18,255},	// die
+				{5,6,7,8,9,10,11,12,13,14,14,255},	// A1=go into shell
+				{13,12,11,10,9,8,7,6,5,255},	// A2=get out of shell
 			} },
 	};
 
@@ -791,30 +801,30 @@ byte GetMonsterFrameNum(byte type,byte seq,byte frm,byte facing)
 	return v;
 }
 
-void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char bright,byte mind1,byte ouch,byte ouch2,word frozen)
+void MonsterDraw(int x, int y, int z, byte type, byte seq, byte frm, byte facing, char bright, byte mind1, byte ouch, byte ouch2, word frozen)
 {
-	sprite_t *curSpr;
+	sprite_t* curSpr;
 	int v;
 	byte shld;
 
 	// load if not loaded
 	LoadMySprite(type);
 
-	v=monsType[type].anim[seq][frm];
+	v = monsType[type].anim[seq][frm];
 
-	if(v==254)
+	if (v == 254)
 		return;	// don't draw this frame
 
-	if(!(monsType[type].flags&MF_ONEFACE))
-		v+=facing*monsType[type].framesPerDir;
+	if (!(monsType[type].flags & MF_ONEFACE))
+		v += facing * monsType[type].framesPerDir;
 
-	if(type==MONS_BOUAPHA)
+	if (type == MONS_BOUAPHA)
 	{
-		
-		shld=PlayerShield();
+
+		shld = PlayerShield();
 		if (shld > 0)
 		{
-			if ((shld < 16) && (shld & 2))	
+			if ((shld < 16) && (shld & 2))
 			{
 				// it blinks when there is 1/2 second left
 			}
@@ -830,53 +840,53 @@ void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char 
 			curSpr = monsType[type].spr->GetSprite(v);
 			if (!curSpr)
 				return;
-			SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 0, bright-10+ouch2*8+ouch*4, curSpr, DISPLAY_DRAWME|DISPLAY_GLOW);
+			SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 0, bright - 10 + ouch2 * 8 + ouch * 4, curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
 			return;
 		}
 
-		if(PlayerIsPoisoned())
+		if (PlayerIsPoisoned())
 		{
 			curSpr = monsType[type].spr->GetSprite(v);
-			if(!curSpr)
+			if (!curSpr)
 				return;
 			SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, 0, 255, 0, curSpr, DISPLAY_DRAWME | DISPLAY_SHADOW);
 			if (ouch == 0)
-				SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 1, bright - 4+ouch2*8, curSpr, DISPLAY_DRAWME);	// green
+				SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 1, bright - 4 + ouch2 * 8, curSpr, DISPLAY_DRAWME);	// green
 			else
 				SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 4, bright, curSpr, DISPLAY_DRAWME);
 			return;
 		}
-		if(player.stoneskin)
+		if (player.stoneskin)
 		{
-			curSpr=monsType[type].spr->GetSprite(v);
-			if(!curSpr)
+			curSpr = monsType[type].spr->GetSprite(v);
+			if (!curSpr)
 				return;
 			SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, 0, 255, 0, curSpr, DISPLAY_DRAWME | DISPLAY_SHADOW);
-			SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 2 - 2 * (player.spell[6] == 2 && !player.downgradeSpell[6]), bright - 4 + ouch * 4+ouch2*8, curSpr, DISPLAY_DRAWME);	// brown/grey
+			SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 2 - 2 * (player.spell[6] == 2 && !player.downgradeSpell[6]), bright - 4 + ouch * 4 + ouch2 * 8, curSpr, DISPLAY_DRAWME);	// brown/grey
 			return;
 		}
-		if(player.berserk)
+		if (player.berserk)
 			return;	// don't draw the actual player when berserk, to give pure ghostliness
 	}
 
-	if(monsType[type].flags&MF_FACECMD)
-		v+=facing;
+	if (monsType[type].flags & MF_FACECMD)
+		v += facing;
 
-	if(type==MONS_FAIRY || type==MONS_FAIRY2)
-		v+=(6*8*(mind1-1));
+	if (type == MONS_FAIRY || type == MONS_FAIRY2)
+		v += (6 * 8 * (mind1 - 1));
 
-	curSpr=monsType[type].spr->GetSprite(v);
-	if(!curSpr)
+	curSpr = monsType[type].spr->GetSprite(v);
+	if (!curSpr)
 		return;
 
-	if(!(monsType[type].flags&MF_NOSHADOW))
-		SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,0,255,0,curSpr,DISPLAY_DRAWME|DISPLAY_SHADOW);
+	if (!(monsType[type].flags & MF_NOSHADOW))
+		SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, 0, 255, 0, curSpr, DISPLAY_DRAWME | DISPLAY_SHADOW);
 
-	if (type == MONS_FARLEY)
-	{
-		SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z>>FIXSHIFT, 7, bright, curSpr, DISPLAY_DRAWME);
-		return;
-	}
+	byte baseColor = 255;
+
+	if (type == MONS_FARLEY || type == MONS_GLOOPYGUS)
+		baseColor = 7;
+
 	if(ouch==0)
 	{
 		if(!(monsType[type].flags&MF_GHOST))
@@ -893,7 +903,7 @@ void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char 
 					SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 2 - 2 * (player.spell[6] == 2 && !player.downgradeSpell[6]), bright - 4 + ouch * 4+ouch2*8, curSpr, DISPLAY_DRAWME);	// brown/grey
 				}
 				else
-					SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, 255, bright+ouch2*8, curSpr, DISPLAY_DRAWME);
+					SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT, baseColor, bright+ouch2*8, curSpr, DISPLAY_DRAWME);
 			}
 		}
 		else
@@ -901,7 +911,7 @@ void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char 
 			if(frozen)
 				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,7,bright-4+ouch2*8,curSpr,DISPLAY_DRAWME);	// frozen blue
 			else
-				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright+ouch2*8,curSpr,DISPLAY_DRAWME|DISPLAY_GHOST);
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,baseColor,bright+ouch2*8,curSpr,DISPLAY_DRAWME|DISPLAY_GHOST);
 		}
 	}
 	else
@@ -2208,6 +2218,9 @@ void AI_Friendly(Guy *me,Map *map,world_t *world,Guy *goodguy)
 					break;
 				case 51:
 					InitSpeech(5);
+					break;
+				case 109:
+					InitSpeech(31);
 					break;
 				case 111:
 					InitSpeech(10);
@@ -6557,6 +6570,127 @@ void AI_Snail(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->dx=0;
 		me->dy=0;
 		me->reload=60;
+	}
+}
+
+void AI_GloopyGus(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	int i, x, y;
+	byte b;
+
+	if (me->reload)
+		me->reload--;
+
+	if (me->ouch == 4)
+	{
+		if (me->hp == 0)
+			MakeSound(SND_SNAILDIE, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_SNAILHIT, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->mind2<4 && me->seq == ANIM_ATTACK && me->frm >= 3 && me->frm <= 5)
+		{
+			// fire lots of acid
+			for (i = 0; i < 2; i++)
+			{
+				x = me->x + Cosine(me->facing * 32) * 20 - FIXAMT * 4 + MGL_randoml(FIXAMT * 4 + 1);
+				y = me->y + Sine(me->facing * 32) * 20 - FIXAMT * 4 + MGL_randoml(FIXAMT * 4 + 1);
+				b = me->facing * 32 - 4 + MGL_random(9);
+				FireExactBullet(x, y, FIXAMT * 15, Cosine(b) * 12, Sine(b) * 12, FIXAMT * 6, 0, 60, ((b + 16) & 255) / 32, BLT_ACID);
+			}
+		}
+		if (me->mind2 == 4 && me->seq == ANIM_ATTACK && me->frm == 3 && me->frmTimer<128)	// only fire one set please!
+		{
+			// fire glob bombs
+			MakeSound(SND_BOMBTHROW, me->x, me->y, SND_CUTOFF, 500);
+			for (i = 0; i < 3; i++)
+			{
+				x = me->x + Cosine(me->facing * 32) * 20 - FIXAMT * 4 + MGL_randoml(FIXAMT * 4 + 1);
+				y = me->y + Sine(me->facing * 32) * 20 - FIXAMT * 4 + MGL_randoml(FIXAMT * 4 + 1);
+				b = me->facing * 32 - 48 + 48*i;
+				int c = Random(12)+2;
+				FireExactBullet(x, y, FIXAMT * 15, Cosine(b) * c, Sine(b) * c, FIXAMT * 6, 0, 60, ((b + 16) & 255) / 32, BLT_GLOB_BOMB);
+			}
+		}
+		if (me->seq == ANIM_DIE)
+			me->frmAdvance = 256;
+		return;
+	}
+
+	me->mind3++;
+	if (me->mind3 >= 10)
+	{
+		FireBullet(me->x, me->y, 0, BLT_SLIME);
+		me->mind3 = 0;
+	}
+
+	if (me->mind == 0)		// when mind=0, singlemindedly lumber towards Bouapha
+	{
+		if (goodguy)
+		{
+			FaceGoodguy2(me, goodguy);
+
+			me->dx = Cosine(me->facing * 32) * 3;
+			me->dy = Sine(me->facing * 32) * 3;
+			if (me->seq != ANIM_MOVE)
+			{
+				me->seq = ANIM_MOVE;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+			}
+			if (MGL_random(64) == 0)
+			{
+				me->mind = 1;		// occasionally wander
+				me->mind1 = 1;
+			}
+		}
+		else
+		{
+			me->mind = 1;	// if there's no goodguy, get random
+			me->mind1 = 1;
+		}
+	}
+	else if (me->mind == 1)	// random wandering
+	{
+		if (!(me->mind1--))	// time to get a new direction
+		{
+			if ((goodguy) && MGL_random(3) == 0)
+				me->mind = 0;	// get back on track
+			else
+				me->facing = (byte)MGL_random(8);
+			me->mind1 = MGL_random(40) + 1;
+		}
+
+		me->dx = Cosine(me->facing * 32) * 2;
+		me->dy = Sine(me->facing * 32) * 2;
+		if (me->seq != ANIM_MOVE)
+		{
+			me->seq = ANIM_MOVE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+		}
+	}
+
+	// spit if close enough and you want to
+	if (goodguy && RangeToTarget(me, goodguy) < 400 * FIXAMT && me->reload == 0)
+	{
+		me->mind2++;
+		if (me->mind2 >= 5)
+			me->mind2 = 0;	// 4 spits and then a glob bombing
+		FaceGoodguy(me, goodguy);
+		me->seq = ANIM_ATTACK;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 128;
+		me->action = ACTION_BUSY;
+		me->dx = 0;
+		me->dy = 0;
+		me->reload = 60;
 	}
 }
 

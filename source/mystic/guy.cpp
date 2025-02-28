@@ -180,6 +180,8 @@ void TryToPush(Guy *me,int x,int y,Map *map,world_t *world)
 		map->map[destx+desty*map->width].floor=map->map[x+y*map->width].floor;
 		map->map[x+y*map->width].floor=world->terrain[map->map[x+y*map->width].floor].next;
 		map->map[x+y*map->width].wall=0;
+		if(player.worldNum==2 && player.levelNum==9)
+			LibraryPuzzle(map);
 	}
 }
 
@@ -1256,6 +1258,9 @@ void Guy::MonsterControl(Map *map,world_t *world)
 		case MONS_DANCER:
 			AI_Dancer(this,map,world,goodguy);
 			break;
+		case MONS_GLOOPYGUS:
+			AI_GloopyGus(this, map, world, goodguy);
+			break;
 	}
 }
 
@@ -1524,6 +1529,9 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		else
 			myNumberParticle=AddNumberParticle(x, y, z, damage, 0, myNumberParticle);
 	}
+
+	if(damage>0)
+		SpecialOuchCheck(map, type);
 
 	if (type == MONS_BOUAPHA && damage > 0)
 	{
@@ -1881,6 +1889,8 @@ Guy *AddGuy(int x,int y,int z,byte type)
 			guys[i].bright=0;
 			guys[i].mind=0;
 			guys[i].mind1=0;
+			guys[i].mind2 = 0;
+			guys[i].mind3 = 0;
 			guys[i].reload=1;
 			guys[i].parent=NULL;
 			guys[i].ID=i;
@@ -1938,6 +1948,9 @@ Guy *AddGuy(int x,int y,int z,byte type)
 					case 116:
 						// the wizard
 						guys[i].mind=ANIM_A1;
+						break;
+					case 109:
+						guys[i].mind = ANIM_IDLE;	// bald guy?
 						break;
 				}
 			}
@@ -2169,14 +2182,11 @@ void AddRandomGuy(Map *map,world_t *world,byte chapter,byte rnd)
 	// is that on Chapter 4, a new guy spawns every single frame. The presence
 	// of this bug has been confirmed on retail v3.7, so it will remain.
 	// Commented spawn rates: 0.5% and 1%. Actual spawn rates: 1.495% and 100%.
-	if(chapter<4)
-	{
-		if((rnd>0) && MGL_random(200))
-			return;	// only 1 in 200 chance of badguy appearing
-		if((rnd>0) && MGL_random(100))
-			return;	// only 1 in 100 chance of badguy appearing on final chapter
-	}
-
+	if((rnd>0) && MGL_random(200))
+		return;	// only 1 in 200 chance of badguy appearing
+	if((rnd>0) && MGL_random(100))
+		return;	// only 1 in 100 chance of badguy appearing on final chapter
+	
 	switch(chapter)
 	{
 		case 1:	// Over the River

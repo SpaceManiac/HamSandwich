@@ -12,7 +12,7 @@ byte brainX,brainY;
 byte outXes = 0;
 byte lastSpecialShown = 33;
 bool vault2Opened;
-byte guestProgress;
+byte guestProgress,libraryProgress;
 
 Map::Map(SDL_RWops *f)
 {
@@ -60,37 +60,6 @@ Map::Map(byte size,const char *name)
 	// temporary hack so I don't have to slap down ground myself
 	for(i=0;i<width*height;i++)
 		map[i].floor=(byte)MGL_random(2);
-
-	/*
-	// really temporary hack for the maze level
-	if(size==2)
-	{
-		int j,k,l,wid,hei;
-		wid=8;
-		hei=8;
-		for(i=0;i<128/wid;i++)
-			for(j=0;j<128/hei;j++)
-			{
-				for(k=0;k<wid;k++)
-					for(l=0;l<hei;l++)
-					{
-						if(k==0 || l==0 || k==wid-1 || l==hei-1)
-						{
-							map[i*wid+k+(j*wid+l)*width].floor=199;
-							map[i*wid+k+(j*wid+l)*width].wall=22;
-						}
-						if((k==0 && l==0) || (k==0 && l==hei-1))
-						{
-							map[i*wid+k+(j*wid+l)*width].floor=51;
-						}
-						if((k==wid-1 && l==0) || (k==wid-1 && l==hei-1))
-						{
-							map[i*wid+k+(j*wid+l)*width].floor=49;
-						}
-					}
-			}
-	}
-	*/
 }
 
 Map::Map(Map *m)
@@ -137,6 +106,7 @@ void Map::Init(world_t *wrld)
 	SetChallengeCrystals(0);
 	vault2Opened = false;
 	guestProgress = 0;
+	libraryProgress = 0;
 
 	for(i=0;i<width*height;i++)
 	{
@@ -1024,13 +994,25 @@ void SpecialKillCheck(Map* map,byte type)
 		}
 }
 
+void SpecialOuchCheck(Map* map, byte type)
+{
+	int i;
+
+	for (i = 0; i < MAX_SPECIAL; i++)
+		if ((map->special[i].trigger & TRG_GETHURT) &&
+			map->special[i].trigValue == type)
+		{
+			SpecialTakeEffect(map, &map->special[i], NULL);
+		}
+}
+
 void SpecialAnytimeCheck(Map *map)
 {
 	int i;
 
 	for(i=0;i<MAX_SPECIAL;i++)
 		if((map->special[i].trigger) &&
-			(!(map->special[i].trigger&(TRG_SHOOT|TRG_STEP|TRG_ENEMYSTEP|TRG_NEAR|TRG_CHAIN|TRG_KILLONE))))
+			(!(map->special[i].trigger&(TRG_SHOOT|TRG_STEP|TRG_ENEMYSTEP|TRG_NEAR|TRG_CHAIN|TRG_KILLONE|TRG_GETHURT))))
 		{
 			SpecialTakeEffect(map,&map->special[i],NULL);
 		}
@@ -1333,12 +1315,19 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 				victim->y=(spcl->effectY*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT;
 				victim->dx=0;
 				victim->dy=0;
-				if(victim->type==MONS_BOUAPHA)
+				if (victim->type == MONS_BOUAPHA)
 				{
-					PutCamera(victim->x,victim->y);
-					UpdateCamera(victim->x,victim->y,victim->facing,map);
+					PutCamera(victim->x, victim->y);
+					UpdateCamera(victim->x, victim->y, victim->facing, map);
 					SetTportClock(30);
 				}
+				else
+				{
+					victim->birthState = 2;	// restart them tiny in case they overlap something
+					if (MonsterFlags(victim->type) & MF_WALLWALK)
+						victim->birthState = 0;	// wall walking enemies can spawn anywhere
+				}
+
 				map->map[spcl->effectX+spcl->effectY*map->width].templight=34;
 				if(spcl->effectX>0)
 					map->map[spcl->effectX-1+spcl->effectY*map->width].templight=20;
@@ -2490,4 +2479,43 @@ void GuestChamberPuzzleStep(Map* map, int mapx, int mapy)
 		}
 
 	}
+}
+
+void LibraryPuzzle(Map* map)
+{
+	byte coords[] = {
+		63,69,
+		66,58,
+		70,67,
+		76,58,
+		79,54,
+	};
+
+	if (libraryProgress >= 5)
+		return;
+
+	byte status[5];
+	for (int i = 0; i < 5; i++)
+		status[i] = (map->map[coords[i * 2] + coords[i * 2 + 1] * map->width].floor == 116);
+
+	byte advance = true;
+	for (int i = 0; i < 5; i++)
+	{
+		if ((!status[i] && i <= libraryProgress) || (status[i] && i > libraryProgress))
+		{
+			advance = false;
+			break;
+		}
+	}
+	if (advance)
+	{
+		libraryProgress++;
+		if (libraryProgress == 5 && !GotRuneInLevel(player.worldNum, player.levelNum))
+		{
+			map->map[73 + 57 * map->width].item = ITM_SILENTRUNE;
+			MakeNormalSound(SND_INFERNAL);
+		}
+	}
+	else
+		libraryProgress = 0;
 }

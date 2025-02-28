@@ -3,7 +3,7 @@
 #include "game.h"
 #include "intface.h"
 
-char speech[31*4][64]={
+char speech[36*4][64]={
 	// 0
 	"Welcome to Beginnerton!  This town is",
 	"really a tutorial on some basic game",
@@ -159,6 +159,31 @@ char speech[31*4][64]={
 	"numerologists assigned numbers to",
 	"each rune in addition to their",
 	"alphabetical value.",
+	// 31
+	"Ugh, fine you caught me. I had hoped",
+	"I could just leave the lights off, but",
+	"you stumbled right into me. Yes, it is",
+	"I, Professor Dusseldorf, and I am",
+	// 32
+	"in fact reading romance novels. It's my",
+	"guilty pleasure. Look, if you don't spill",
+	"my secret, I will tell you another secret",
+	"about this library. Deal?",
+	// 33
+	"I'll assume that blank stare means yes.",
+	"Okay. In the Fiction section, there are",
+	"a series of shelves you can move. If you",
+	"push them all up, in order from left to",
+	// 34
+	"right, you will find a little surprise!",
+	"If you screw it up, just push them all",
+	"back down. Now let me get back to Lady",
+	"Cordelia and the Strapping Lad.",
+	// 35
+	"Go to the Fiction section, I'm trying",
+	"to read here!",
+	"Ugh, just push up the shelves from",
+	"left to right.",
 };
 
 byte speechX,speechY,curSpeech;
@@ -166,6 +191,12 @@ byte speechX,speechY,curSpeech;
 message_t bigMessage;
 message_t message;
 static byte oldc;
+byte romanceTalk = 0;
+
+void InitSpeechSystem(void)
+{
+	romanceTalk = 0;
+}
 
 void InitMessage(void)
 {
@@ -323,6 +354,11 @@ void InitSpeech(byte spc)
 		if(!MonsterExists(255))
 			spc=11;
 	}
+	if (spc == 31)
+	{
+		if (romanceTalk)
+			spc = 35;
+	}
 	curSpeech=spc;
 	speechX=0;
 	speechY=0;
@@ -428,6 +464,19 @@ byte UpdateSpeech(MGLDraw *mgl)
 				speechX=0;
 				speechY=0;
 				oldc=c;
+				return 0;
+			}
+			if (curSpeech >= 31 && curSpeech<=33)
+			{
+				if (curSpeech == 31)
+				{
+					CurrentMap()->LightSpecial(GetGoodguy()->x / (TILE_WIDTH * FIXAMT), GetGoodguy()->y / (TILE_HEIGHT * FIXAMT), 0, 20);
+					romanceTalk = 1;
+				}
+				curSpeech = curSpeech+1;
+				speechX = 0;
+				speechY = 0;
+				oldc = c;
 				return 0;
 			}
 			else
@@ -548,20 +597,27 @@ byte UpdateFarley(MGLDraw *mgl)
 		farleyCursor--;
 		if (farleyCursor > 200)
 			farleyCursor = top;
+		MakeNormalSound(SND_BATEYES);
 	}
 	if ((c & CONTROL_DN) && !(oldc & CONTROL_DN))
 	{
 		farleyCursor++;
 		if (farleyCursor > top)
 			farleyCursor = 0;
+		MakeNormalSound(SND_BATEYES);
 	}
 	if ((c & CONTROL_B1) && !(oldc & CONTROL_B1))
 	{
+		if (farleyCursor == player.worldNum)
+			MakeNormalSound(SND_BATEYES);
+		else
+			MakeNormalSound(SND_GOTOMAP);
 		return 1;	// we're gonna stay here
 	}
 	UpdateGamepadStartAndSelect();
 	if (((c & CONTROL_B2) && !(oldc & CONTROL_B2)) || mgl->LastKeyPressed() == 27 || GamepadSelectTapped() || GamepadStartTapped())	// hit ESC to exit pause menu
 	{
+		MakeNormalSound(SND_BATEYES);
 		farleyCursor = player.worldNum;
 		GetTaps();
 		return 1;

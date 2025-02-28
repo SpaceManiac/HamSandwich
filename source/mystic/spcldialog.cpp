@@ -63,6 +63,7 @@ void RenderSpclDialog(int msx,int msy,MGLDraw *mgl)
 	RenderCheckbox(62,124,spcl->trigger&TRG_SHOOT,"Shoot item/wall");
 	RenderCheckbox(220,54,spcl->trigger&TRG_CHAIN,"Chain off neighbor Special");
 	RenderCheckbox(220, 68, spcl->trigger & TRG_KILLONE, "Kill one of type");
+	RenderCheckbox(220, 82, spcl->trigger & TRG_GETHURT, "Get hurt");
 
 	RenderCheckbox(62,148,spcl->trigger&TRG_REPEATABLE,"Multiple use");
 	RenderCheckbox(62,162,spcl->trigger&TRG_MESSAGE,"Show message");
@@ -183,10 +184,12 @@ byte SpclDialogClick(int msx,int msy)
 	if(msx>61 && msx<72 && msy>161 && msy<162+14)
 		spcl->trigger^=TRG_MESSAGE;
 
-	if(msx>219 && msx<230 && msy>53 && msy<54+14)
-		spcl->trigger^=TRG_CHAIN;
+	if (msx > 219 && msx < 230 && msy>53 && msy < 54 + 14)
+		spcl->trigger ^= TRG_CHAIN;
 	if (msx > 219 && msx < 230 && msy>67 && msy < 68 + 14)
 		spcl->trigger ^= TRG_KILLONE;
+	if (msx > 219 && msx < 230 && msy>81 && msy < 82 + 14)
+		spcl->trigger ^= TRG_GETHURT;
 
 	// effect choices
 	if(msx>61 && msx<133 && msy>193 && msy<209)
