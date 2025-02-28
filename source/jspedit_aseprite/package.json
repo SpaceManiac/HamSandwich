@@ -1,13 +1,13 @@
 {
 	"name": "jspedit",
-	"displayName": "Hamumu JSP support",
+	"version": "0.2-dev",
+	"license": "MIT",
+	"displayName": "JspEdit extension for Aseprite",
 	"author": {
 		"name": "SpaceManiac",
 		"email": "tad@platymuus.com",
 		"url": "https://www.platymuus.com"
 	},
-	"contributors": [],
-	"license": "MIT",
 	"contributes": {
 		"palettes": [
 			{

@@ -1,0 +1,24 @@
+#!/bin/bash
+set -euo pipefail
+
+extension=$PWD/build/jspedit.aseprite-extension
+
+# Build ZIP
+rm -f "$extension"
+(
+	cd source/jspedit_aseprite
+	zip "$extension" -x '.gitignore' -x '__pref.lua' -r .
+)
+
+# Overwrite version.lua
+vdir=$PWD/build
+version=$(jq -r '.version' <source/jspedit_aseprite/package.json)
+version=${version/dev/git-$(git rev-parse --short=10 HEAD)}
+jq '.version = $version' --arg version "$version" <source/jspedit_aseprite/package.json >"$vdir/package.json"
+(
+	cd "$vdir"
+	zip "$extension" package.json
+)
+
+# Summarize
+ls -l "$extension"
