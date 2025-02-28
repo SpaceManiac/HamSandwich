@@ -187,14 +187,16 @@ local function import(plugin)
 			if not file then
 				return
 			end
+			local sprite
 			if source:match(".jsp$") then
-				do_import_jsp(file)
+				sprite = do_import_jsp(file)
 			elseif source:match(".jft$") then
-				do_import_jft(file)
+				sprite = do_import_jft(file)
 			else
 				return
 			end
 			-- Success
+			sprite.filename = app.fs.fileTitle(source)
 			app.frame = 1
 			dlg:close()
 		end
