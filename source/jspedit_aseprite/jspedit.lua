@@ -1,6 +1,6 @@
 -- Main script of JSP import/export.
 -- In a separate file so it can be developed without restarting aseprite.
-local origin_slice_none <const> = "(top-left corner)"
+local origin_slice_none <const> = "(none)"
 local origin_slice_imported <const> = "Origin"
 local palette_id <const> = "Dr. Lunatic"
 local font_max_chars <const> = 128
