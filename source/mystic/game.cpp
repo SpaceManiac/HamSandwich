@@ -219,18 +219,21 @@ void ExitLevel(void)
 void EnterStatusScreen(void)
 {
 	gameMode=GAMEMODE_MENU;
+	LockOutControls();
 }
 
 void EnterPictureDisplay(void)
 {
 	gameMode=GAMEMODE_PIC;
 	GetTaps();	// clear the key tap buffer
+	LockOutControls();
 }
 
 void EnterSpeechMode(void)
 {
 	gameMode=GAMEMODE_SPEECH;
 	GetTaps();	// clear the key tap buffer
+	LockOutControls();
 }
 
 void EnterFarleyMode(void)
@@ -239,6 +242,7 @@ void EnterFarleyMode(void)
 	MakeNormalSound(SND_BATDIVE);
 	InitFarley();
 	GetTaps();
+	LockOutControls();
 }
 
 void AddGarbageTime(dword t)
@@ -361,10 +365,12 @@ TASK(byte) LunaticRun(int *lastTime)
 				{
 					if(windDownReason==LEVEL_SHOP)
 					{
+						LockOutControls();
 						gameMode=GAMEMODE_SHOP;
 					}
 					else if(windDownReason==LEVEL_FAIRY)
 					{
+						LockOutControls();
 						gameMode=GAMEMODE_FAIRY;
 					}
 					else
@@ -774,6 +780,7 @@ void HandleKeyPresses(void)
 	if((lastKey==27 || GamepadSelectTapped() || GamepadStartTapped()) && gameMode == GAMEMODE_PLAY && !windingUp && !windingDown && !newGame)
 	{
 		InitPauseMenu();
+		LockOutControls();
 		gameMode=GAMEMODE_MENU;
 	}
 }

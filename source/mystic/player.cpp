@@ -22,6 +22,12 @@ static int chlgCrystals;
 float restorationBuffer,spellRestorationBuffer;
 float spellRestorationOutput;	// separating the direct restoration from the Heal spell from others, because it can grant barrier
 byte manaRuneValue;
+byte controlLockOut = 3;
+
+void LockOutControls(void)
+{
+	controlLockOut = 3;
+}
 
 void AddToRestorationBuffer(float amt)
 {
@@ -1493,13 +1499,22 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	// not busy, let's see if you want to do something
 	c=GetControls();
 	byte taps = GetTaps();
-	dword mouseBtn = SDL_GetMouseState(nullptr, nullptr);
-	if (mouseBtn & SDL_BUTTON_LEFT)
-		c |= CONTROL_B1;
-	if (mouseBtn & SDL_BUTTON_RIGHT)
-		c |= CONTROL_B2;
 	DoPlayerFacing(c,me);
-	
+	if (controlLockOut & 1)
+	{
+		if (!(c & CONTROL_B1))
+			controlLockOut &= ~1;	// you've released B1, we can unlock it
+		else
+			c &= ~CONTROL_B1;	// B1 is locked, you can't press it
+	}
+	if (controlLockOut & 2)	// same deal but for B2
+	{
+		if (!(c & CONTROL_B2))
+			controlLockOut &= ~2;
+		else
+			c &= ~CONTROL_B2;
+	}
+
 	if(player.levelNum==1)
 	{
 		// can't cast spells or even fake a fireball when on the overworld level

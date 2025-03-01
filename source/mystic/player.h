@@ -222,7 +222,7 @@ bool CanAffordMoney(int amt);
 int TotalMoney(void);
 byte HighestWorldReached(void);
 void PlayerHealWithSpell(byte amt);
-
+void LockOutControls(void);
 void GetRuneInLevel(void);
 bool GotRuneInLevel(byte world, byte level);
 bool GotFairyBellInLevel(byte world, byte level);
