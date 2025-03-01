@@ -20,4 +20,16 @@ function init(plugin)
 			return app.sprite ~= nil
 		end,
 	}
+
+	plugin:newCommand {
+		id = "jft_export",
+		title = "Export JFT",
+		group = "file_export_1",
+		onclick = function()
+			dofile(app.fs.joinPath(plugin.path, "jspedit.lua")).export_jft(plugin)
+		end,
+		onenabled = function ()
+			return app.sprite ~= nil
+		end,
+	}
 end
