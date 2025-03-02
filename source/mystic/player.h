@@ -151,7 +151,9 @@ typedef struct player_t
 	word runeStones;
 	byte farley;
 	byte barrier;
-	byte expando[224-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
+	byte storedFlames;
+	byte flameCounter;
+	byte expando[222-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
 } player_t;
 
 extern player_t player;

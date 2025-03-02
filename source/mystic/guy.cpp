@@ -787,7 +787,7 @@ void Guy::Update(Map *map,world_t *world)
 			AbandonedVillagePuzzle(map);
 		if (player.worldNum == 2 && player.levelNum == 13 && (oldmapx != mapx || oldmapy != mapy))
 			GuestChamberPuzzleStep(map,mapx,mapy);
-
+		
 		if(player.worldNum==2 && player.levelNum==16 && (oldmapx!=mapx || oldmapy!=mapy) &&
 			mapx==11 && mapy==31 && map->map[mapx+mapy*map->width].floor==59)
 		{
@@ -845,6 +845,9 @@ void Guy::Update(Map *map,world_t *world)
 	{
 		MakeSound(SND_MENUCLICK,(mapx*TILE_WIDTH)<<FIXSHIFT,(mapy*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1000);
 		map->map[mapx+mapy*map->width].floor=world->terrain[map->map[mapx+mapy*map->width].floor].next;
+
+		if (player.worldNum == 3 && player.levelNum == 7)
+			MinesPuzzle(map, mapx, mapy);
 	}
 	if ((oldmapx != mapx || oldmapy != mapy) &&
 		(world->terrain[map->map[mapx + mapy * map->width].floor].flags & TF_COMBOSTEP) && type==MONS_BOUAPHA)

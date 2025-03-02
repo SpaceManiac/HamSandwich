@@ -1518,6 +1518,13 @@ void Cavernize(Map *map)
 					&& map->map[i+(j+1)*map->width].floor<17 && map->map[i+j*map->width].wall==1)
 					map->map[i+j*map->width].wall=2;	// give it a lava tint
 			}
+			if (map->map[i + j * map->width].floor <= 4)	// basic floor
+			{
+				byte b = Random(2);
+				if (Random(7) == 0)
+					b = Random(3) + 2;
+				map->map[i + j * map->width].floor = b;
+			}
 			if(map->map[i+j*map->width].floor>4 && map->map[i+j*map->width].floor<17)
 			{
 				if(MGL_random(6)>0)
@@ -2429,56 +2436,56 @@ void GuestChamberPuzzleStep(Map* map, int mapx, int mapy)
 	if (map->map[mapx + mapy * map->width].floor != 121 || map->map[mapx+(mapy-1)*map->width].wall<81 || map->map[mapx+(mapy-1)*map->width].wall>(81+24))
 		return;	// we only count the letter teleporters here
 
-	// 1,35-12,49
-	// 121=teleporter, 120=lit up teleporter
-	// 67 = not yet spikes, 68=spikes
-	// 3,33 = destination after each letter
+		// 1,35-12,49
+		// 121=teleporter, 120=lit up teleporter
+		// 67 = not yet spikes, 68=spikes
+		// 3,33 = destination after each letter
 
-	if (guestProgress >= 8)
-	{
-		// if you're done, teleport to the end
-		MakeNormalSound(SND_TELEPORT);
-		GuestChamberTeleport(5, 55, map);
-		return;
-	}
-
-	byte c = map->map[mapx + (mapy - 1) * map->width].wall - 81;
-	if (c == code[guestProgress] - 'A')
-	{
-		guestProgress++;
-		MakeNormalSound(SND_LIGHTSON);
-		if(guestProgress<8)
-			GuestChamberTeleport(3, 33, map);
-		else
-			GuestChamberTeleport(5, 55, map);
-	}
-	else // uh oh, you are wrong
-	{
-		guestProgress = 0;
-		MakeNormalSound(SND_UNAVAILABLE);
-		GuestChamberTeleport(3, 33, map);
-		for (int i = 0; i < 5; i++)	// add 5 spikes
+		if (guestProgress >= 8)
 		{
-			byte tries = 255;
-			while (tries > 0)
+			// if you're done, teleport to the end
+			MakeNormalSound(SND_TELEPORT);
+			GuestChamberTeleport(5, 55, map);
+			return;
+		}
+
+		byte c = map->map[mapx + (mapy - 1) * map->width].wall - 81;
+		if (c == code[guestProgress] - 'A')
+		{
+			guestProgress++;
+			MakeNormalSound(SND_LIGHTSON);
+			if (guestProgress < 8)
+				GuestChamberTeleport(3, 33, map);
+			else
+				GuestChamberTeleport(5, 55, map);
+		}
+		else // uh oh, you are wrong
+		{
+			guestProgress = 0;
+			MakeNormalSound(SND_UNAVAILABLE);
+			GuestChamberTeleport(3, 33, map);
+			for (int i = 0; i < 5; i++)	// add 5 spikes
 			{
-				int x, y;
-				x = 1 + Random(13 - 1);
-				y = 35 + Random(50 - 35);
-				if (map->map[x + y * map->width].floor == 67)
+				byte tries = 255;
+				while (tries > 0)
 				{
-					tries = 0;
-					map->map[x + y * map->width].floor = 68;	// SPIKES!
-					if (Random(2))
+					int x, y;
+					x = 1 + Random(13 - 1);
+					y = 35 + Random(50 - 35);
+					if (map->map[x + y * map->width].floor == 67)
 					{
-						Guy* m = AddGuy((x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, Random(2) ? MONS_PEEPBOMB : MONS_PEEPBOMB2);
-						if (m) m->mind1 = (byte)Random(256);
+						tries = 0;
+						map->map[x + y * map->width].floor = 68;	// SPIKES!
+						if (Random(2))
+						{
+							Guy* m = AddGuy((x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, Random(2) ? MONS_PEEPBOMB : MONS_PEEPBOMB2);
+							if (m) m->mind1 = (byte)Random(256);
+						}
 					}
 				}
 			}
-		}
 
-	}
+		}
 }
 
 void LibraryPuzzle(Map* map)
@@ -2518,4 +2525,83 @@ void LibraryPuzzle(Map* map)
 	}
 	else
 		libraryProgress = 0;
+}
+
+void MinesPuzzle(Map* map,int x,int y)
+{
+	byte pos[5][10] = {
+		{ // floor 1
+			77,63,
+			76,62,
+			76,60,
+			76,64,
+			77,61,
+		},
+		{ // floor 2
+			9,7,
+			9,5,
+			8,6,
+			9,9,
+			8,8,
+		},
+		{ // floor 3
+			120,56,
+			121,55,
+			118,56,
+			117,55,
+			119,55,
+		},
+		{ // floor 4
+			124,122,
+			122,122,
+			123,123,
+			120,122,
+			121,123,
+		},
+		{ // floor 5
+			61,83,
+			60,82,
+			63,83,
+			62,82,
+			64,82,
+		},
+	};
+
+	byte myFloor = 6;
+
+	for (int i = 0; i < 5; i++)
+		for (int j = 0; j < 5; j++)
+			if (pos[i][j * 2] == x && pos[i][j * 2 + 1] == y)
+				myFloor = i;
+
+	byte correct = 0;
+	for (int i = 0; i < 5; i++)
+	{
+		if (myFloor == i)	// we only change stuff on your current floor
+		{
+			for (int num = 0; num < 5; num++)
+			{
+				if (map->map[pos[i][num * 2] + pos[i][num * 2 + 1] * map->width].floor >= 104 &&
+					(pos[i][num * 2] != x || pos[i][num * 2 + 1] != y))	// tile is lit, and it's not the one you stepped on, unlight it
+					map->map[pos[i][num * 2] + pos[i][num * 2 + 1] * map->width].floor -= 24;
+
+				if (map->map[pos[i][num * 2] + pos[i][num * 2 + 1] * map->width].floor < 104 &&
+					(pos[i][num * 2] == x && pos[i][num * 2 + 1] == y))	// tile is not lit, and it IS the one you stepped on, so keep it lit. No turning off
+					map->map[pos[i][num * 2] + pos[i][num * 2 + 1] * map->width].floor += 24;
+			}
+		}
+		if (map->map[pos[i][i * 2] + pos[i][i * 2 + 1] * map->width].floor >= 104)	// the correct one for this floor is lit, and we know at most one is lit
+			correct++;
+	}
+	if(correct==5 && map->map[56 + 96 * map->width].wall != 0 && !GotRuneInLevel(player.worldNum, player.levelNum))
+	{
+		for (int i = 94; i <= 96; i++)
+		{
+			map->map[56 + i * map->width].wall = 0;
+			map->map[56 + i * map->width].floor = 0;
+			MakeNormalSound(SND_WALLDOWN);
+			NewMessage("Something thunked!", 60);
+				
+		}
+	}
 }

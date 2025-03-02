@@ -175,5 +175,6 @@ void LightsOutPuzzle(Map *map,int x,int y);
 void OctoBossDeath(Map *map);
 byte MySpecialType(byte type,Map *map,int mapx,int mapy);
 void GuestChamberPuzzleStep(Map* map, int mapx, int mapy);
+void MinesPuzzle(Map* map,int x,int y);
 
 #endif

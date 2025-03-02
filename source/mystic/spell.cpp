@@ -24,7 +24,6 @@ byte spellCost[20]={
 };
 
 int castCounter;
-byte flameCounter = 0;
 float storedHealMana;
 
 byte HealCostIgnoringStoredMana(void)
@@ -145,19 +144,23 @@ void CastSpell(Guy *me)
 	}
 	else
 	{
-		player.mana -= cost;
-		if (player.casting != SPL_HEAL)
-			StoreHealMana(cost);
+		if (!ClassicMode() && player.casting == SPL_FLAME && player.storedFlames > 0)
+		{
+		}	// no cost, we're still using the stored flames
 		else
-			ResetStoredHealMana();
-	}
-
-	ChallengeEvent(CE_SPELL,cost);
-
-	if(player.fairyOn==FAIRY_CASTY && player.life>1)
-	{
-		GetGoodguy()->hp--;
-		player.life--;
+		{
+			player.mana -= cost;
+			if (player.casting != SPL_HEAL)
+				StoreHealMana(cost);
+			else
+				ResetStoredHealMana();
+			ChallengeEvent(CE_SPELL, cost);
+			if (player.fairyOn == FAIRY_CASTY && player.life > 1)
+			{
+				GetGoodguy()->hp--;
+				player.life--;
+			}
+		}
 	}
 
 	c = GetControls();
@@ -237,40 +240,36 @@ void CastSpell(Guy *me)
 		case SPL_FLAME:	// dragon's flame, liquify
 			if(player.spell[SPL_FLAME]==1 || player.downgradeSpell[SPL_FLAME])
 			{
-				FireBullet(me->x,me->y,me->facing,BLT_FLAME);
-				if (!ClassicMode())
+				if(ClassicMode())
+					FireBullet(me->x, me->y, me->facing, BLT_FLAME);
+				else
 				{
-					flameCounter++;
-					if (RuneValue(Rune::FLAME3) > 0 && flameCounter >= (int)RuneValue(Rune::FLAME3))
-					{
-						flameCounter = 0;
-						FireBullet(me->x, me->y, (me->facing+2)&7, BLT_FLAME);
-						FireBullet(me->x, me->y, (me->facing+6)&7, BLT_FLAME);
-					}
+					if (player.storedFlames == 0)
+						player.storedFlames = 5;
 				}
 				if(spellHeld)	// fire is held
 				{
-					if(SpellLevel()<25)
+					if (ClassicMode())
 					{
-						if (ClassicMode())
+						if (SpellLevel() < 25)
 						{
-							me->frm=2;
-							i=12-SpellLevel()/2;
-							if(i==0)
-								i=1;
+							me->frm = 2;
+							i = 12 - SpellLevel() / 2;
+							if (i == 0)
+								i = 1;
 
-							me->frmAdvance=(256*2)/(i);
+							me->frmAdvance = (256 * 2) / (i);
 						}
-						else // modern mode is always fast firing, but its damage ticks at an increasing rate with levels
+						else
 						{
 							player.wpnReload = 1;
-							me->frmTimer = 5 - SkillValue(SKILL_FLAMEON);
+							me->frmTimer = 0;
 						}
 					}
-					else
+					else // modern mode is always fast firing, but its damage ticks at an increasing rate with levels
 					{
-						player.wpnReload=1;
-						me->frmTimer=0;
+						player.wpnReload = 1;
+						me->frmTimer = 0; // 5 - SkillValue(SKILL_FLAMEON);
 					}
 				}
 				else
@@ -286,10 +285,10 @@ void CastSpell(Guy *me)
 					FireBullet(me->x+Cosine(me->facing*32)*32,me->y+Sine(me->facing*32)*32,me->facing*32,BLT_LIQUIFY);
 				if (!ClassicMode())
 				{
-					flameCounter++;
-					if (RuneValue(Rune::FLAME3) > 0 && flameCounter >= (int)RuneValue(Rune::FLAME3))
+					player.flameCounter++;
+					if (RuneValue(Rune::FLAME3) > 0 && player.flameCounter >= (int)RuneValue(Rune::FLAME3))
 					{
-						flameCounter = 0;
+						player.flameCounter = 0;
 						byte f = (me->facing + 2) & 7;
 						for (i = 0; i < cnt; i++)
 							FireBullet(me->x + Cosine(f * 32) * 32, me->y + Sine(f * 32) * 32, f * 32, BLT_LIQUIFY);
@@ -386,11 +385,7 @@ void CastSpell(Guy *me)
 							FireExactBullet(x, y, 0, 0, 0, 0, 0, 8+j*8+Random(10), 0, BLT_BOMB);
 						}
 
-					if (ClassicMode())
-						j = SpellLevel() * 14/50;
-					else
-						j = 4 + SkillValue(SKILL_INFERNO) * 2;
-
+					j = 14;
 					FireExactBullet(me->x+Cosine(i)*64,me->y+Sine(i)*48,0,0,0,0,0,j,i,BLT_LIQUIFY2);
 					FireExactBullet(me->x+Cosine(i+16)*64,me->y+Sine(i+16)*48,0,0,0,0,0,j,i,BLT_LIQUIFY2);
 					j = j * 20 / 14;
@@ -442,7 +437,7 @@ void CastSpell(Guy *me)
 			break;
 		case SPL_ARMOR:	// stone/steelskin
 			if(!ClassicMode() && SkillValue(SKILL_PARRY))
-			SetPlayerGlow(40);
+				SetPlayerGlow(40);
 			if (ClassicMode())
 			{
 				if (player.spell[SPL_ARMOR] == 1 || player.downgradeSpell[SPL_ARMOR])

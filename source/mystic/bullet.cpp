@@ -38,10 +38,13 @@
 bullet_t bullet[MAX_BULLETS];
 sprite_set_t *bulletSpr;
 byte bulletHittingType;
+byte flameDmgTick;
 
 void InitBullets(void)
 {
 	bulletSpr=new sprite_set_t("graphics/bullets.jsp");
+
+	flameDmgTick = 0;
 
 	memset(bullet,0,MAX_BULLETS*sizeof(bullet_t));
 }
@@ -53,7 +56,7 @@ void ExitBullets(void)
 
 byte Bulletable(Map *map,int x,int y)
 {
-	if(map->map[x+y*map->width].wall ||
+	if(x<0 || y<0 || x>=map->width || y>=map->height || map->map[x+y*map->width].wall ||
 		map->map[x+y*map->width].item>=MAX_SHOOTABLE_ITMS)
 		return 0;
 
@@ -1088,7 +1091,38 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			if(me->anim==4 && me->timer>13)
 			{
 				b=(me->facing-8+MGL_random(17))&255;
-				FireExactBullet(me->x+Cosine(b)*16,me->y+Sine(b)*16,0,0,0,0,0,me->timer,b,BLT_LIQUIFY);
+				if (!ClassicMode())
+				{
+					// ricochet off walls!
+					int x, y;
+					int map2x, map2y;
+					int mapx, mapy;
+					mapx = me->x / (TILE_WIDTH * FIXAMT);
+					mapy = me->y / (TILE_HEIGHT * FIXAMT);
+					x = me->x + Cosine(b) * 16;
+					y = me->y + Sine(b) * 16;
+					map2x = x / (TILE_WIDTH * FIXAMT);
+					map2y = y / (TILE_HEIGHT * FIXAMT);
+
+					if (!Bulletable(map, map2x, mapy))	// bounced moving horiz
+					{
+						b = 128 - b;
+						x = me->x + Cosine(b) * 16;
+						y = me->y + Sine(b) * 16;
+						map2x = x / (TILE_WIDTH * FIXAMT);
+						map2y = y / (TILE_HEIGHT * FIXAMT);
+					}
+					if (!Bulletable(map, mapx, map2y))	// bounced moving vert
+					{
+						b = 256 - b;
+						x = me->x + Cosine(b) * 16;
+						y = me->y + Sine(b) * 16;
+					}
+						
+					FireExactBullet(x, y, 0, 0, 0, 0, 0, me->timer, b, me->type);
+				}
+				else
+					FireExactBullet(me->x+Cosine(b)*16,me->y+Sine(b)*16,0,0,0,0,0,me->timer,b,me->type);
 			}
 			mapx=(me->x>>FIXSHIFT)/TILE_WIDTH;
 			mapy=(me->y>>FIXSHIFT)/TILE_HEIGHT;
@@ -1251,8 +1285,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			}
 			else
 			{
-				int time = (6 - SkillValue(SKILL_FLAMEON)) + 1;
-				if ((me->timer % time) == 0)	// damage ticks happen faster as it levels up
+				if(flameDmgTick==0)
 				{
 					HitBadguys(me, map, world);
 				}
@@ -1741,6 +1774,12 @@ void UpdateBullets(Map *map,world_t *world)
 {
 	int i;
 
+	byte max = (6 - SkillValue(SKILL_FLAMEON));
+	if (flameDmgTick > 0)
+		flameDmgTick--;
+	else
+		flameDmgTick = max;
+
 	for(i=0;i<MAX_BULLETS;i++)
 		if(bullet[i].type)
 			UpdateBullet(&bullet[i],map,world);
@@ -1820,7 +1859,12 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			if (ClassicMode())
 				me->timer = SpellLevel() * 2;
 			else
-				me->timer = 20 + SkillValue(SKILL_BERSERK) * 10;
+			{
+				byte dur = 20;
+				if (RuneValue(Rune::BERSERK2) > 0)
+					dur = (byte)(20.0f * RuneValue(Rune::BERSERK2) / 100.0f);
+				me->timer = dur;
+			}
 			me->z = 0;
 			me->dx = 0;
 			me->dy = 0;
@@ -1962,6 +2006,7 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			break;
 		case BLT_FLAME:
 			me->anim=0;
+			me->lastHit = 0;
 			if (ClassicMode())
 				me->timer = (SpellLevel() / 2) + 10 - MGL_random(4);
 			else
@@ -1969,8 +2014,17 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->z=FIXAMT*20;
 			me->x+=((MGL_random(3)-1)<<FIXSHIFT)+Cosine(me->facing*32)*5;
 			me->y+=((MGL_random(3)-1)<<FIXSHIFT)+Sine(me->facing*32)*5;
-			me->dx=Cosine(me->facing*32)*10;
-			me->dy=Sine(me->facing*32)*10;
+			if (!ClassicMode() && SkillValue(SKILL_FLAMEON)>0)	// spread increasing with points
+			{
+				byte range = SkillValue(SKILL_FLAMEON) * 4;
+				me->dx = Cosine((byte)(me->facing * 32-range+Random(range*2))) * 10;
+				me->dy = Sine((byte)(me->facing * 32-range+Random(range*2))) * 10;
+			}
+			else
+			{
+				me->dx = Cosine(me->facing * 32) * 10;
+				me->dy = Sine(me->facing * 32) * 10;
+			}
 			me->dz=-FIXAMT/2;
 			MakeSound(SND_FLAMEGO,me->x,me->y,SND_CUTOFF,1100);
 			break;
@@ -2324,14 +2378,11 @@ void Armageddon(Map *map,int x,int y)
 		if (Random(100) >= (int)SkillValue(SKILL_MANAGETTIN))
 			return;	// chance of no comet
 	}
-	//if(map->map[(x>>FIXSHIFT)/TILE_WIDTH+((y>>FIXSHIFT)/TILE_HEIGHT)*map->width].wall)
-	//	return;
-
+	
 	if(!ClassicMode() && SkillValue(SKILL_FIMBULWINTER)>0)
 		FireBullet(x,y,0,BLT_ICECOMET);
 	else
 		FireBullet(x, y, 0, BLT_COMET);
-	//FireExactBullet(x,y,0,0,0,0,0,14,0,BLT_LIQUIFY);
 	MakeSound(SND_FLAMEGO,x,y,SND_CUTOFF,100);
 }
 

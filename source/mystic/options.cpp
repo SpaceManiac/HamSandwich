@@ -264,6 +264,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 				j*=2;
 			}
 			oldBtn=btn;
+			c2 = 255;
 			break;
 	}
 

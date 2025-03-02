@@ -775,7 +775,6 @@ void HandleKeyPresses(void)
 		lastKey = 0;
 	}
 	
-
 	UpdateGamepadStartAndSelect();
 	if((lastKey==27 || GamepadSelectTapped() || GamepadStartTapped()) && gameMode == GAMEMODE_PLAY && !windingUp && !windingDown && !newGame)
 	{

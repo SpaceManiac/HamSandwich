@@ -119,6 +119,8 @@ void InitPlayer(byte initWhat,byte world,byte level)
 				player.levelsPassed++;
 	}
 
+	player.storedFlames = 0;
+	player.flameCounter = 0;
 	player.barrier = 0;
 	restorationBuffer = 0;
 	spellRestorationBuffer = 0;
@@ -631,11 +633,12 @@ void CheckForAllSecrets(void)
 	int i;
 
 	byte runes = 0;
-	for (i = 0; i < MAX_MAPS; i++)
-		if (player.levelPassed[player.worldNum][i] & LP_GOTRUNE)
-			runes++;
-	if (runes < 6)
-		return;	// gotta get all 6 runes in the chapter
+	for(int j=0;j<4;j++)
+		for (i = 0; i < MAX_MAPS; i++)
+			if (player.levelPassed[j][i] & LP_GOTRUNE)
+				runes++;
+	if (runes < 24)
+		return;	// gotta get all the runes
 	for(i=0;i<9;i++)
 		if(player.gotSpell[i]==0)
 			return;
@@ -1272,6 +1275,22 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		}
 	}
 
+	if (!ClassicMode() && player.storedFlames > 0)
+	{
+		player.storedFlames--;
+		FireBullet(me->x, me->y, me->facing, BLT_FLAME);
+		if (SkillValue(SKILL_FLAMEON) > 0 && Random(10) < SkillValue(SKILL_FLAMEON))	// up to 50% chance of a double flame as skill goes up
+			FireBullet(me->x, me->y, me->facing, BLT_FLAME);
+
+		player.flameCounter++;
+		if (RuneValue(Rune::FLAME3) > 0 && player.flameCounter >= (int)RuneValue(Rune::FLAME3))
+		{
+			player.flameCounter = 0;
+			FireBullet(me->x, me->y, (me->facing + 2) & 7, BLT_FLAME);
+			FireBullet(me->x, me->y, (me->facing + 6) & 7, BLT_FLAME);
+		}
+	}
+
 	vampyClock++;
 	if(vampyClock>30*3 && player.fairyOn==FAIRY_VAMPY && player.levelNum!=1)	// not on the hub level
 	{
@@ -1584,8 +1603,13 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 		if(player.berserk && player.spell[SPL_BERSERK]==2 && !player.downgradeSpell[SPL_BERSERK])	// insane rage leaves a flame trail
 		{
-			if((player.berserk&3)==0)
-				FireExactBullet(me->x,me->y,0,0,0,0,0,20,(byte)MGL_random(256),BLT_LIQUIFY3);
+			if ((player.berserk & 3) == 0)
+			{
+				byte dur = 20;
+				if (!ClassicMode() && RuneValue(Rune::BERSERK2) > 0)
+					dur = (byte)(20.0f * RuneValue(Rune::BERSERK2) / 100.0f);
+				FireExactBullet(me->x, me->y, 0, 0, 0, 0, 0, dur, (byte)MGL_random(256), BLT_LIQUIFY3);
+			}
 		}
 
 		if(!(world->terrain[mapTile->floor].flags&TF_ICE))
@@ -1649,10 +1673,9 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 
 	byte controls = c;
-	c=GetTaps();
 	// super cool execute move
-	if (!ClassicMode() && SkillValue(SKILL_MURDALIZE)>0 && me->action!=ACTION_BUSY && (((c & CONTROL_B4) && (controls & CONTROL_B3)) ||
-		((c & CONTROL_B3) && (controls & CONTROL_B4)))) // you hit both
+	if (!ClassicMode() && SkillValue(SKILL_MURDALIZE)>0 && me->action!=ACTION_BUSY && (((taps & CONTROL_B4) && (controls & CONTROL_B3)) ||
+		((taps & CONTROL_B3) && (controls & CONTROL_B4)))) // you hit both
 	{
 		int x, y;
 		x = me->x + Cosine(me->facing * 32) * 30;
@@ -1685,7 +1708,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			MakeSound(SND_FLAMEGO, x, y, SND_CUTOFF, 100);
 		}
 	}
-	else if(c&CONTROL_B4)
+	else if(taps&CONTROL_B4)
 	{
 		
 		j=0;
@@ -1706,7 +1729,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			}
 		}
 	}
-	else if(c&CONTROL_B3)
+	else if(taps&CONTROL_B3)
 	{
 		j=0;
 		for(i=0;i<10;i++)

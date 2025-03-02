@@ -289,14 +289,14 @@ void LeaveShop(void)
 
 word NightmarePrice(byte which)
 {
-	if(which==0)	// shield stones
-		return 200*(player.shieldStones+2);
-	else if(which==5)	// power stones
-		return 200*(player.powerStones+2);
-	else if(which==10)
-		return 200*(player.spellStones+2);
+	if (which == 0)	// shield stones
+		return 50 * (player.shieldStones + 2);
+	else if (which == 5)	// power stones
+		return 50 * (player.powerStones + 2);
+	else if (which == 10)
+		return 50 * (player.spellStones + 2);
 	else if (which == 15 && !ClassicMode())
-		return 200 * (player.skillStones + 2);
+		return 50 * (player.skillStones + 2);
 	else
 		return price[which];
 }
