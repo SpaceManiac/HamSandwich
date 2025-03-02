@@ -43,6 +43,7 @@ class Guy final
 		void GetShot(int dx,int dy,int damage,Map *map,world_t *world);
 		void CalculateRect(Map *map);
 		void IceShardSpew(Map* map, world_t* world);
+		void ResetRedRiver(void);
 
 		int x,y,z;
 		int dx,dy,dz;

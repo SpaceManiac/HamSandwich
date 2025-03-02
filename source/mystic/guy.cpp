@@ -377,6 +377,26 @@ byte Guy::WalkCheckOnly(int xx, int yy, Map* map, world_t* world)
 	return BUMP_NONE;
 }
 
+void Guy::ResetRedRiver(void)
+{
+	if (player.worldNum == 3 && player.levelNum == 12)	// died while riding the raft in red river rafting
+	{
+		parent = nullptr;
+		for (int i = 0; i < maxGuys; i++)
+		{
+			if (guys[i].type == MONS_LOG)	// delete the existing logs
+				guys[i].type = MONS_NONE;
+		}
+		AddGuy((29 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (1 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, MONS_LOG);
+		AddGuy((5 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (2 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, MONS_LOG);
+		x = (2 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+		y = (3 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+		parent = nullptr;
+		dx = 0;
+		dy = 0;
+	}
+}
+
 void Guy::SeqFinished(void)
 {
 	if (!ClassicMode() && seq == ANIM_A3 && type == MONS_BOUAPHA)
@@ -430,6 +450,7 @@ void Guy::SeqFinished(void)
 				y=lastSafeY;
 				// make resurrect sound
 				MakeNormalSound(SND_RESURRECT);
+				ResetRedRiver();
 				return;
 			}
 			else
@@ -452,6 +473,7 @@ void Guy::SeqFinished(void)
 					y = lastSafeY;
 					// make resurrect sound
 					MakeNormalSound(SND_RESURRECT);
+					ResetRedRiver();
 					return;
 				}
 				else

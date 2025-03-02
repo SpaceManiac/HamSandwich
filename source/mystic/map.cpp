@@ -297,13 +297,23 @@ void Map::Update(byte mode,world_t *world)
 				}
 			}
 			if(((player.worldNum==1 && player.levelNum==15) ||
-				(player.worldNum==3 && player.levelNum==12)) && map[i].item==ITM_BIGROCKS &&
+				(player.worldNum==3 && player.levelNum==12)) && (map[i].item==ITM_BIGROCKS || map[i].item==ITM_LAVAROCK) &&
 				world->terrain[map[i].floor].flags&(TF_WATER|TF_LAVA))	// river rapids
 			{
-				WaterRipple(x/FIXAMT+TILE_WIDTH/2,y/FIXAMT+TILE_HEIGHT/2-20,MGL_random(32*40));
+				WaterRipple(x/FIXAMT+TILE_WIDTH/2-10+Random(20), y / FIXAMT + TILE_HEIGHT / 2 - Random(20), MGL_random(32 * 40));
 			}
-			if(player.worldNum==3 && world->terrain[map[i].floor].flags&(TF_LAVA))
-				map[i].light=(char)MGL_random(9)-3;
+			if (player.worldNum == 3 && world->terrain[map[i].floor].flags & (TF_LAVA))
+			{
+				map[i].light = (char)MGL_random(9) - 3;
+				if (Random(3000) == 0)
+				{
+					int xx, yy;
+					xx = x / FIXAMT + Random(TILE_WIDTH);
+					yy = y / FIXAMT + Random(TILE_HEIGHT);
+					WaterRipple(xx,yy, Random(800)+500);
+					BlowWigglySmoke(xx*FIXAMT,yy*FIXAMT, 0, 8);
+				}
+			}
 		}
 		if(((i+1)/width)!=(i/width))
 		{

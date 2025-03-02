@@ -193,9 +193,13 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 	}
 	else
 	{
+		if (GetGoodguy() && GetGoodguy()->parent != nullptr)
+			facing = 64;	// just look down if riding a log
 		desiredX = ((x << FIXSHIFT) + Cosine(facing) * 160) >> FIXSHIFT;
 		desiredY = ((y << FIXSHIFT) + Sine(facing) * 120) >> FIXSHIFT;
+		
 	}
+	
 
 	rscrx+=scrdx;
 	rscry+=scrdy;

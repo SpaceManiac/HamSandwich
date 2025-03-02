@@ -6032,7 +6032,8 @@ void AI_Log(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			me->dx=0;
 		me->mind1=0;
 	}
-	WaterRipple(me->x/FIXAMT,me->y/FIXAMT,MGL_random(32*20));
+	for(int i=16;i<=28;i+=12)
+		WaterRipple(me->x/FIXAMT-8+Random(16), me->y / FIXAMT+i, MGL_random(32 * 50));
 	me->frmAdvance=64;
 }
 

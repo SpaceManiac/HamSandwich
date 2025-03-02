@@ -3,13 +3,18 @@
 #include "player.h"
 #include "options.h"
 
-#define WATER_WIDTH	(256)
-#define WATER_HEIGHT (256)
+#define WATER_WIDTH	(512)
+#define WATER_HEIGHT (512)
 #define WATERFIX (32)
 #define WATERDAMPEN (31)
 
+#define WATERBMP_WIDTH (256)
+#define WATERBMP_HEIGHT (256)
+
 short *water1,*water2;
-static byte *waterbkgd,scroll;
+static byte* waterbkgd;
+int scroll;
+int blorpX, blorpY, blorpTime;
 
 void InitWater(void)
 {
@@ -36,7 +41,7 @@ void InitWater(void)
 	{
 		water1[i]=0;
 		water2[i]=0;
-		waterbkgd[i]=src[(i%WATER_WIDTH)+(i/WATER_WIDTH)*width];
+		waterbkgd[i] = 0;// src[(i % WATER_WIDTH) + (i / WATER_WIDTH) * width];
 	}
 }
 
@@ -49,23 +54,26 @@ void ExitWater(void)
 void SetupWater(void)
 {
 	byte *src;
-	int width,i;
+	int width,i,j;
 
 	if((player.worldNum==1 && player.levelNum==15) ||
-		(player.worldNum==2 && player.levelNum==20) ||
-		(player.worldNum==3 && player.levelNum==12))
+		(player.worldNum==2 && player.levelNum==20))
 		GetDisplayMGL()->LoadBMP("graphics/rapid.bmp");
+	else if(player.worldNum == 3 && player.levelNum == 12)
+		GetDisplayMGL()->LoadBMP("graphics/water3.bmp");
 	else
 		GetDisplayMGL()->LoadBMP("graphics/water.bmp");
 
 	width=GetDisplayMGL()->GetWidth();
 	src=GetDisplayMGL()->GetScreen();
-	for(i=0;i<WATER_WIDTH*WATER_HEIGHT;i++)
+	for(j=0;j<WATER_HEIGHT;j++)
+		for(i=0;i<WATER_WIDTH;i++)
 	{
-		water1[i]=0;
-		water2[i]=0;
-		waterbkgd[i]=src[(i%WATER_WIDTH)+(i/WATER_WIDTH)*width];
+		water1[i+j*WATER_WIDTH]=0;
+		water2[i+j*WATER_WIDTH]=0;
+		waterbkgd[i+j*WATER_WIDTH]=src[(i%WATERBMP_WIDTH)+(j%WATERBMP_HEIGHT)*width];
 	}
+	blorpTime = 0;
 }
 
 inline short GetWaterBit(int x,int y)
@@ -101,10 +109,15 @@ void UpdateWater(void)
 	int i,j;
 	short *tmp;
 
-	if((player.worldNum==1 && player.levelNum==15) ||
-		(player.worldNum==2 && player.levelNum==20) ||
-		(player.worldNum==3 && player.levelNum==12))
+	if ((player.worldNum == 1 && player.levelNum == 15) ||
+		(player.worldNum == 2 && player.levelNum == 20) ||
+		(player.worldNum == 3 && player.levelNum == 12))
+	{
 		scroll--;
+		blorpY--;
+	}
+	if (scroll < 0)
+		scroll += WATER_HEIGHT;
 
 	if(!opt.waterFX)
 		return;
@@ -114,10 +127,10 @@ void UpdateWater(void)
 		(player.worldNum==3 && player.levelNum==12))
 	{
 		for(i=0;i<40;i++)
-			WaterBlop((byte)MGL_random(256),(byte)MGL_random(256),(byte)MGL_random(32));
+			WaterBlop(MGL_random(WATER_WIDTH),MGL_random(WATER_HEIGHT),(byte)MGL_random(WATER_WIDTH/8));
 	}
 	else
-		WaterBlop((byte)MGL_random(256),(byte)MGL_random(256),(byte)MGL_random(128));
+		WaterBlop(MGL_random(WATER_WIDTH),MGL_random(WATER_HEIGHT),(byte)MGL_random(WATER_WIDTH/2));
 
 	for(i=0;i<WATER_WIDTH;i++)
 		for(j=0;j<WATER_HEIGHT;j++)
@@ -144,6 +157,8 @@ byte WaterPixel(int x,int y)
 	y/=2;
 
 	y+=scroll;
+	if (y < 0)
+		y += WATER_HEIGHT;
 
 	x=x%WATER_WIDTH;
 	y=y%WATER_HEIGHT;
@@ -175,7 +190,7 @@ byte WaterPixel(int x,int y)
 		if(s+3>31)
 			return 31;
 		else
-			return (byte)s+32*4+3;
+			return (byte)s+32*4;
 	}
 	else
 		return (byte)s+32*3;
@@ -190,7 +205,7 @@ void WaterRipple(int x,int y,short amt)
 
 	GetCamera(&camx,&camy);
 	if((x-camx+HALFWID)<0 || (x-camx+HALFWID)>SCRWID ||
-	   (y-camy+HALFHEI)<0 || (y-camy+HALFHEI)>SCRHEI)
+	   (y-camy+HALFHEI)<0 || (y-camy+HALFHEI)>SCRHEI*2)
 		return;
 
 	x+=HALFWID;
@@ -200,6 +215,8 @@ void WaterRipple(int x,int y,short amt)
 	y/=2;
 
 	y+=scroll;
+	if (y < 0)
+		y += WATER_HEIGHT;
 
 //	x=x-camx;
 //	y=y-camy;
@@ -235,7 +252,7 @@ void WaterRipple(int x,int y,short amt)
 	water2[x+y*WATER_WIDTH]+=amt/2;
 }
 
-void WaterBlop(byte x,byte y,byte width)
+void WaterBlop(int x,int y,int width)
 {
 	int i,x2;
 	short s;
@@ -249,7 +266,7 @@ void WaterBlop(byte x,byte y,byte width)
 		x2=i;
 		if(x2>WATER_WIDTH)
 			x2-=WATER_WIDTH;
-		water2[((byte)(x2))+((byte)(y))*WATER_WIDTH]+=s;
+		water2[(x2%WATER_WIDTH)+(y%WATER_HEIGHT)*WATER_WIDTH]+=s;
 		if((i-x)<width/2)
 			s+=WATERFIX*3/4;
 		else if(s>1)
