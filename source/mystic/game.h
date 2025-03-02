@@ -71,9 +71,7 @@ void LunaticExit(void);
 byte InitLevel(byte map);
 void ExitLevel(void);
 
-byte GameStartup(void);
-
-void EnterStatusScreen(void);
+void PauseGame(void);
 void EnterPictureDisplay(void);
 void EnterSpeechMode(void);
 void EnterFarleyMode(void);
