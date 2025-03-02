@@ -12,7 +12,7 @@ byte brainX,brainY;
 byte outXes = 0;
 byte lastSpecialShown = 33;
 bool vault2Opened;
-byte guestProgress,libraryProgress;
+byte guestProgress,libraryProgress,batsProgress;
 
 Map::Map(SDL_RWops *f)
 {
@@ -107,6 +107,7 @@ void Map::Init(world_t *wrld)
 	vault2Opened = false;
 	guestProgress = 0;
 	libraryProgress = 0;
+	batsProgress = 0;
 
 	for(i=0;i<width*height;i++)
 	{
@@ -989,6 +990,8 @@ void SpecialShootCheck(Map *map,int x,int y)
 			map->special[i].x<=x+1 && map->special[i].y<=y+1)
 		{
 			SpecialTakeEffect(map,&map->special[i],NULL);
+			if (player.worldNum == 3 && player.levelNum == 10)
+				BatsPuzzle(map,map->special[i].x,map->special[i].y);
 		}
 }
 
@@ -1000,6 +1003,8 @@ void SpecialKillCheck(Map* map,byte type)
 		if ((map->special[i].trigger & TRG_KILLONE) &&
 			map->special[i].trigValue==type)
 		{
+			if (type == MONS_HUGEBAT2 && batsProgress < 3)
+				continue;	// killing huge bat 2 only counts if you have done all 3 mutagens
 			SpecialTakeEffect(map, &map->special[i], NULL);
 		}
 }
@@ -2613,5 +2618,73 @@ void MinesPuzzle(Map* map,int x,int y)
 			NewMessage("Something thunked!", 60);
 				
 		}
+	}
+}
+
+void BatsPuzzle(Map* map,int x,int y)
+{
+	if (x == 12 && y == 62)
+	{
+		ChangeAllGuysOfType(MONS_BAT, MONS_FIREBAT);
+		ChangeMind2OfType(MONS_BIGBAT, 1);
+		ChangeMind2OfType(MONS_BIGBAT2, 1);
+		ChangeMind2OfType(MONS_HUGEBAT, 1);
+		ChangeMind2OfType(MONS_HUGEBAT2, 1);
+		BlowUpGuy((x * TILE_WIDTH + TILE_WIDTH / 2-16),
+			(y * TILE_HEIGHT + TILE_HEIGHT / 2-16),
+			(x * TILE_WIDTH + TILE_WIDTH / 2+16),
+			(y * TILE_HEIGHT + TILE_HEIGHT / 2+16), 0, 4);
+
+		for (int i = 0; i < 100; i++)
+		{
+			int px, py;
+			px = (x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+			py = (y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+			px = px - (HALFWID + Random(SCRWID))*FIXAMT;
+			py = py - (HALFHEI + Random(SCRHEI)) * FIXAMT;
+			
+			BlowWigglySmoke(px, py, 0, 8);
+		}
+		batsProgress++;
+	}
+	if (x == 2 && y == 2)
+	{
+		ChangeAllGuysOfType(MONS_BIGBAT, MONS_BIGBAT2);
+		BlowUpGuy((x * TILE_WIDTH + TILE_WIDTH / 2 - 16),
+			(y * TILE_HEIGHT + TILE_HEIGHT / 2 - 16),
+			(x * TILE_WIDTH + TILE_WIDTH / 2 + 16),
+			(y * TILE_HEIGHT + TILE_HEIGHT / 2 + 16), 0, 4);
+
+		for (int i = 0; i < 100; i++)
+		{
+			int px, py;
+			px = (x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+			py = (y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+			px = px - (HALFWID + Random(SCRWID)) * FIXAMT;
+			py = py - (HALFHEI + Random(SCRHEI)) * FIXAMT;
+
+			BlowWigglySmoke(px, py, 0, 8);
+		}
+		batsProgress++;
+	}
+	if (x == 36 && y == 8)
+	{
+		ChangeAllGuysOfType(MONS_HUGEBAT,MONS_HUGEBAT2);
+		BlowUpGuy((x * TILE_WIDTH + TILE_WIDTH / 2 - 16),
+			(y * TILE_HEIGHT + TILE_HEIGHT / 2 - 16),
+			(x * TILE_WIDTH + TILE_WIDTH / 2 + 16),
+			(y * TILE_HEIGHT + TILE_HEIGHT / 2 + 16), 0, 4);
+
+		for (int i = 0; i < 100; i++)
+		{
+			int px, py;
+			px = (x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+			py = (y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+			px = px - (HALFWID + Random(SCRWID)) * FIXAMT;
+			py = py - (HALFHEI + Random(SCRHEI)) * FIXAMT;
+
+			BlowWigglySmoke(px, py, 0, 8);
+		}
+		batsProgress++;
 	}
 }

@@ -28,7 +28,8 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{20,21,22,23,24,255},	// attack
 				{7,8,9,10,11,12,13,14,15,16,255},		// die
 				{25,26,27,28,29,30,255},	// chomp/spit projectile
-				{31,32,32,32,31,255}	// point at bouapha
+				{31,32,32,32,31,255},	// point at bouapha
+				{16,15,14,13,12,11,10,9,8,7,255},	// undie
 			}},
 		{"Scary Bat",
 		 8,27,5,25,"graphics/bat.jsp",0,MF_FLYING,
@@ -584,6 +585,32 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{5,6,7,8,9,10,11,12,13,14,14,255},	// A1=go into shell
 				{13,12,11,10,9,8,7,6,5,255},	// A2=get out of shell
 			} },
+		{ "Firebat",
+		 8,27,15,40,"graphics/bat.jsp",0,MF_FLYING,
+			{
+				{0,255},	// idle
+				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
+				{7,8,9,8,7,255},	// attack
+				{17,18,19,20,21,22,23,24,25,26,255},		// die
+				{10,11,12,12,12,12,12,11,10,255},	// diving attack
+				{13,14,15,15,16,255}	// bounce off during dive
+			} },
+		{ "Scariest Bat",
+		 26,15,300,600,"graphics/bigbat.jsp",0,MF_FLYING | MF_NOMOVE | MF_ENEMYWALK,
+			{
+				{0,1,2,1,0,3,4,5,4,3,255},	// idle
+				{0,1,2,1,0,3,4,5,4,3,255},	// move
+				{6,7,8,8,7,7,6,255},	// attack=spit bat
+				{9,10,11,12,13,14,255},	// die
+			} },
+		{ "Somewhat Excessive Bat",
+		 64,7,1400,1400,"graphics/hugebat.jsp",0,MF_NOMOVE | MF_ENEMYWALK | MF_ONEFACE | MF_WALLWALK,
+			{
+				{0,0,255},	// idle
+				{0,255},	// move
+				{1,2,3,2,1,255},	// attack=spit bats
+				{4,4,4,5,5,5,6,6,6,6,6,6,255},	// die
+			} },
 	};
 
 static byte kidSpr;
@@ -884,8 +911,12 @@ void MonsterDraw(int x, int y, int z, byte type, byte seq, byte frm, byte facing
 
 	byte baseColor = 255;
 
-	if (type == MONS_FARLEY || type == MONS_GLOOPYGUS)
+	if (type == MONS_FARLEY || type == MONS_GLOOPYGUS || type==MONS_HUGEBAT2)
 		baseColor = 7;
+	if (type == MONS_FIREBAT)
+		baseColor = 4;
+	if (type == MONS_BIGBAT2)
+		baseColor = 5;
 
 	if(ouch==0)
 	{
@@ -1507,6 +1538,19 @@ void AI_Bat(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		return;	// can't do nothin' right now
 	}
 
+	byte spd = 8;
+	if (me->type == MONS_FIREBAT)
+	{
+		spd = 5;
+		me->mind2++;
+		if (me->mind2 >= 10)
+		{
+			me->mind2 = 0;
+			byte ang = Random(256);
+			FireExactBullet(me->x, me->y,FIXAMT*20,Cosine(ang)*4,Sine(ang)*4,0,0,12,ang, BLT_FLAME2);	// constantly spewing flame
+		}
+	}
+	
 	if(me->mind==0)		// when mind=0, singlemindedly zip towards Bouapha
 	{
 		if(goodguy)
@@ -1540,8 +1584,8 @@ void AI_Bat(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 			FaceGoodguy(me,goodguy);
 
-			me->dx=Cosine(me->facing*32)*8;
-			me->dy=Sine(me->facing*32)*8;
+			me->dx=Cosine(me->facing*32)*spd;
+			me->dy=Sine(me->facing*32)*spd;
 			if(me->seq!=ANIM_MOVE)
 			{
 				me->seq=ANIM_MOVE;
@@ -1572,8 +1616,8 @@ void AI_Bat(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			me->mind1=MGL_random(40)+1;
 		}
 
-		me->dx=Cosine(me->facing*32)*6;
-		me->dy=Sine(me->facing*32)*6;
+		me->dx=Cosine(me->facing*32)*spd*6/8;
+		me->dy=Sine(me->facing*32)*spd*6/8;
 		if(me->seq!=ANIM_MOVE)
 		{
 			me->seq=ANIM_MOVE;
@@ -1967,150 +2011,6 @@ void AI_MamaSpider(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->frm=0;
 		me->frmTimer=0;
 		me->frmAdvance=128;
-	}
-}
-
-void AI_Pygmy(Guy *me,Map *map,world_t *world,Guy *goodguy)
-{
-	int x,y;
-
-	if(me->reload)
-		me->reload--;
-
-	if(me->ouch==4)
-	{
-		if(me->hp>0)
-			MakeSound(SND_PYGMYOUCH,me->x,me->y,SND_CUTOFF,1200);
-		else
-			MakeSound(SND_PYGMYDIE,me->x,me->y,SND_CUTOFF,1200);
-	}
-
-	if(me->action==ACTION_BUSY)
-	{
-		if(me->seq==ANIM_ATTACK && me->frm==6 && me->reload==0 && goodguy)
-		{
-			x=me->x+Cosine(me->facing*32)*16;
-			y=me->y+Sine(me->facing*32)*16;
-			if(me->AttackCheck(16,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
-			{
-				goodguy->GetShot(Cosine(me->facing*32)*6,Sine(me->facing*32)*6,8,map,world);
-				me->reload=10;
-			}
-		}
-		return;	// can't do nothin' right now
-	}
-
-	if(me->mind==0)	// not currently aware of goodguy
-	{
-		me->frmAdvance=32;	// overcome the auto-128 frmAdvance of guy.cpp
-
-		if(me->seq==ANIM_MOVE)
-		{
-			me->seq=ANIM_IDLE;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=32;
-		}
-		if(me->mind1<101)
-			me->mind1++;
-
-		if(me->mind1>100 && MGL_random(200)==0)
-		{
-			switch(MGL_random(3))
-			{
-				case 0:
-					MakeSound(SND_PYGMYSPIN,me->x,me->y,SND_CUTOFF,1200);
-					me->seq=ANIM_A1;	// spin the spear
-					me->frm=0;
-					me->frmTimer=0;
-					me->frmAdvance=64;
-					me->mind1=0;
-					me->action=ACTION_BUSY;
-					break;
-				case 1:
-					MakeSound(SND_PYGMYYAWN,me->x,me->y,SND_CUTOFF,1200);
-					me->seq=ANIM_A2;	// yawn
-					me->frm=0;
-					me->frmTimer=0;
-					me->frmAdvance=64;
-					me->mind1=0;
-					me->action=ACTION_BUSY;
-					break;
-				case 2:
-					me->facing=(me->facing+(-1+MGL_random(3)))&7;	//change facing
-					me->mind1=0;
-					break;
-			}
-		}
-		if(goodguy)
-		{
-			if(RangeToTarget(me,goodguy)<256*FIXAMT || me->ouch>0)
-			{
-				// if the goodguy is near, or he shot me
-				me->mind=1;	// start hunting
-				if(me->ouch==0)
-					me->mind1=60;	// for 2 seconds minimum
-				else
-					me->mind1=120;	// 4 seconds, because they HATE getting shot
-				FaceGoodguy(me,goodguy);
-
-				// do angry animation
-				me->action=ACTION_BUSY;
-				me->seq=ANIM_A3;
-				me->frm=0;
-				me->frmTimer=0;
-				me->frmAdvance=255;	// very fast
-				MakeSound(SND_PYGMYANGRY,me->x,me->y,SND_CUTOFF,1200);
-			}
-		}
-		me->dx=0;
-		me->dy=0;
-	}
-	else
-	{
-		FaceGoodguy(me,goodguy);
-		if(!goodguy)
-		{
-			me->mind=0;	// go back to being bored, nothing to see here
-			me->mind1=0;
-			return;
-		}
-		if(RangeToTarget(me,goodguy)<(72*FIXAMT) && MGL_random(16)==0 && me->reload==0)
-		{
-			// spear him!
-			MakeSound(SND_PYGMYSTAB,me->x,me->y,SND_CUTOFF,1200);
-			me->seq=ANIM_ATTACK;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=255;
-			me->action=ACTION_BUSY;
-			me->dx=0;
-			me->dy=0;
-			me->reload=1;
-			return;
-		}
-
-		if(me->ouch && me->mind1<240)
-			me->mind1+=10;
-		if(me->mind1)
-			me->mind1--;
-		else
-		{
-			if(RangeToTarget(me,goodguy)>256*FIXAMT)
-				me->mind=0;	// get bored again
-			else
-				me->mind1=20;	// stay on trail a little longer
-			return;
-		}
-		me->dx=Cosine(me->facing*32)*4;
-		me->dy=Sine(me->facing*32)*4;
-		if(me->seq!=ANIM_MOVE)
-		{
-			me->seq=ANIM_MOVE;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=128;
-		}
 	}
 }
 
@@ -3799,7 +3699,29 @@ void AI_Lich(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	{
 		// make noise?
 	}
-
+	if (!ClassicMode())
+	{
+		me->mind2++;
+		if (me->mind2 >= 90)
+		{
+			mapTile_t* t = map->GetTile(me->x / (TILE_WIDTH * FIXAMT), me->y / (TILE_HEIGHT * FIXAMT));
+			if (!(world->terrain[t->floor].flags & TF_LAVA))
+			{
+				// if we're not on lava, it's bonehead time
+				Guy* g = AddGuy(me->x, me->y, 0, MONS_BONEHEAD);
+				if (g)
+				{
+					g->action = ACTION_BUSY;
+					g->seq = ANIM_A3;
+					g->frmAdvance = 256;
+					g->frm = 0;
+					g->frmTimer = 0;
+					MakeSound(SND_SKELREVIVE, g->x, g->y, SND_CUTOFF, 300);
+				}
+					me->mind2 = 0;
+			}
+		}
+	}
 	if(me->action==ACTION_BUSY)
 	{
 		if(me->seq==ANIM_ATTACK)
@@ -4793,7 +4715,9 @@ void AI_BigBat(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			if(me->frm==2 && me->frmTimer<32)
 			{
-				g=AddGuy(me->x,me->y,me->z,MONS_BAT);
+				if (me->type == MONS_BIGBAT2)
+					FireBullet(me->x, me->y, me->facing, BLT_GRENADE);
+				g=AddGuy(me->x,me->y,me->z,(me->mind2==1)?MONS_FIREBAT:MONS_BAT);
 				if(g)
 				{
 					if(!g->CanWalk(g->x,g->y,map,world))
@@ -5092,7 +5016,7 @@ void AI_HugeBat(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			x=me->x-FIXAMT*32;
 			y=me->y+FIXAMT*20;
-			g=AddGuy(x,y,FIXAMT*40,MONS_BAT);
+			g=AddGuy(x,y,FIXAMT*40,(me->mind2==1)?MONS_FIREBAT:MONS_BAT);
 			if(g)
 			{
 				g->facing=3;
@@ -5105,7 +5029,7 @@ void AI_HugeBat(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				g->dy=Sine(g->facing*32)*12;
 			}
 			x=me->x;
-			g=AddGuy(x,y,FIXAMT*40,MONS_BAT);
+			g = AddGuy(x, y, FIXAMT * 40, (me->mind2 == 1) ? MONS_FIREBAT : MONS_BAT);
 			if(g)
 			{
 				g->facing=2;
@@ -5118,7 +5042,7 @@ void AI_HugeBat(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				g->dy=Sine(g->facing*32)*12;
 			}
 			x=me->x+FIXAMT*32;
-			g=AddGuy(x,y,FIXAMT*40,MONS_BAT);
+			g = AddGuy(x, y, FIXAMT * 40, (me->mind2 == 1) ? MONS_FIREBAT : MONS_BAT);
 			if(g)
 			{
 				g->facing=1;
@@ -5129,6 +5053,12 @@ void AI_HugeBat(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				g->frmAdvance=128;
 				g->dx=Cosine(g->facing*32)*12;
 				g->dy=Sine(g->facing*32)*12;
+			}
+			if (me->type == MONS_HUGEBAT2)
+			{
+				FireBullet(me->x, me->y, Random(128+64) + 224, BLT_GLOB_BOMB);
+				FireBullet(me->x, me->y, Random(128+64) + 224, BLT_GLOB_BOMB);
+				FireBullet(me->x, me->y, Random(128+64) + 224, BLT_GLOB_BOMB);
 			}
 			me->reload=60;
 		}
@@ -6275,6 +6205,7 @@ void AI_PeepBomb(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				me->dy=0;
 				MakeSound(SND_BOMBBOOM,me->x,me->y,SND_CUTOFF,1200);
 				goodguy->GetShot(-Cosine(me->facing*8)*20,-Sine(me->facing*8)*20,30,map,world);
+				SpecialKillCheck(map, me->type);
 				me->action=ACTION_BUSY;
 			}
 		}

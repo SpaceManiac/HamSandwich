@@ -85,7 +85,10 @@
 #define MONS_DANCER		65
 #define MONS_FARLEY	  66
 #define MONS_GLOOPYGUS 67
-#define NUM_MONSTERS  68
+#define MONS_FIREBAT	68
+#define MONS_BIGBAT2	69
+#define MONS_HUGEBAT2	70
+#define NUM_MONSTERS  71
 
 // the animations
 #define ANIM_IDLE	0
@@ -171,7 +174,6 @@ void AI_BigSpider(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Zombie(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_EggSac(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_MamaSpider(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Pygmy(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Serpent(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Shroomlord(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Microfish(Guy *me,Map *map,world_t *world,Guy *goodguy);

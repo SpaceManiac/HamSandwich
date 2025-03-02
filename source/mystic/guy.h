@@ -113,6 +113,8 @@ byte PeepAtKid(int x,int y,Map *map,byte face);
 Guy *GetGuy(word ID);
 void StunAllOnscreen(byte duration);
 void HealSummons(byte amt);
+void ChangeAllGuysOfType(byte type, byte newType);
+void ChangeMind2OfType(byte type, byte newMind2);
 
 void WhackazoidUpdate(byte init);
 void WhackedAZoid(Map *map);

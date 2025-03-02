@@ -1116,6 +1116,7 @@ void Guy::MonsterControl(Map *map,world_t *world)
 			AI_Bonehead(this,map,world,goodguy);
 			break;
 		case MONS_BAT:
+		case MONS_FIREBAT:
 			AI_Bat(this,map,world,goodguy);
 			break;
 		case MONS_SPIDER:
@@ -1132,9 +1133,6 @@ void Guy::MonsterControl(Map *map,world_t *world)
 			break;
 		case MONS_MAMASPDR:
 			AI_MamaSpider(this,map,world,goodguy);
-			break;
-		case MONS_PYGMY:
-			AI_Pygmy(this,map,world,goodguy);
 			break;
 		case MONS_SERPENT:
 			AI_Serpent(this,map,world,goodguy);
@@ -1180,6 +1178,7 @@ void Guy::MonsterControl(Map *map,world_t *world)
 			AI_ThingTentacle(this,map,world,goodguy);
 			break;
 		case MONS_HUGEBAT:
+		case MONS_HUGEBAT2:
 			AI_HugeBat(this,map,world,goodguy);
 			break;
 		case MONS_FAIRY:
@@ -1189,6 +1188,7 @@ void Guy::MonsterControl(Map *map,world_t *world)
 			AI_Fairy2(this,map,world,goodguy);
 			break;
 		case MONS_BIGBAT:
+		case MONS_BIGBAT2:
 			AI_BigBat(this,map,world,goodguy);
 			break;
 		case MONS_OCTOPUS:
@@ -2802,5 +2802,27 @@ void WhackedAZoid(Map *map)
 			prizeAwarded++;
 			MakeNormalSound(SND_PURCHASE);
 		}
+	}
+}
+
+void ChangeAllGuysOfType(byte type, byte newType)
+{
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].type == type)
+		{
+			float pct = (float)guys[i].hp / (float)MonsterHP(guys[i].type);
+			guys[i].type = newType;
+			guys[i].hp= (word)((float)MonsterHP(newType)*pct);
+		}
+	}
+}
+
+void ChangeMind2OfType(byte type, byte newMind2)
+{
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].type == type)
+			guys[i].mind2 = newMind2;
 	}
 }

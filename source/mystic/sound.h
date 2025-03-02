@@ -71,7 +71,7 @@
 #define SND_SPD3CHOMP	56
 #define SND_SPD3SPEW	57
 // pygmy
-#define SND_PYGMYOUCH	58
+#define SND_SKELREVIVE  58
 #define SND_PYGMYDIE	59
 #define SND_PYGMYYAWN	60
 #define SND_PYGMYSPIN	61

@@ -1688,10 +1688,10 @@ void RenderBullet(bullet_t *me)
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
-			case BLT_GLOB_BOMB:
+		case BLT_GLOB_BOMB:
 			curSpr = bulletSpr->GetSprite(me->anim + SPR_GRENADE);
 			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 7, me->bright, curSpr,
-				DISPLAY_DRAWME | DISPLAY_GLOW);
+				DISPLAY_DRAWME);
 			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 7, me->bright, curSpr,
 				DISPLAY_DRAWME | DISPLAY_SHADOW);
 			break;
