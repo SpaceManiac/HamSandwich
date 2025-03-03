@@ -216,8 +216,9 @@ void ExitLevel(void)
 	PurgeMonsterSprites();
 }
 
-void EnterStatusScreen(void)
+void PauseGame(void)
 {
+	InitPauseMenu();
 	gameMode=GAMEMODE_MENU;
 	LockOutControls();
 }
@@ -774,13 +775,11 @@ void HandleKeyPresses(void)
 		}
 		lastKey = 0;
 	}
-	
+
 	UpdateGamepadStartAndSelect();
 	if((lastKey==27 || GamepadSelectTapped() || GamepadStartTapped()) && gameMode == GAMEMODE_PLAY && !windingUp && !windingDown && !newGame)
 	{
-		InitPauseMenu();
-		LockOutControls();
-		gameMode=GAMEMODE_MENU;
+		PauseGame();
 	}
 }
 
@@ -990,7 +989,7 @@ TASK(byte) LunaticWorld(byte world)
 			else if(player.worldNum==3 && mapNum==11)
 			{
 				AWAIT ShowVictoryAnim(4);
-				
+
 				if(player.nightmare)
 				{
 					player.worldNum=3;

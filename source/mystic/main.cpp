@@ -23,6 +23,7 @@
 #include "appdata.h"
 #include "achieves.h"
 #include "skills.h"
+#include "steam.h"
 
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
@@ -39,6 +40,7 @@ TASK(int) main(int argc, char* argv[])
 	}
 
 	AppdataInit(GetHamSandwichMetadata());
+	SteamManager::Init("3531250");
 	InitOptions();
 	MGLDraw *mainmgl=new MGLDraw("Kid Mystic", SCRWID, SCRHEI, windowedGame);
 	if(!mainmgl)
@@ -69,6 +71,7 @@ TASK(int) main(int argc, char* argv[])
 				ExitIcons();
 				LunaticExit();
 				delete mainmgl;
+				SteamManager::Quit();
 #ifdef DEMO
 				if(n==0)	// chose to buy
 					ShellExecute(NULL,"open","http://hamumu.com/store.php?game=MYSTIC&src=demoexit","","",SW_SHOWNORMAL);
