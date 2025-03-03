@@ -835,15 +835,14 @@ void Guy::Update(Map *map,world_t *world)
 				oldmapy=mapy;	// don't let it switch the tile
 			}
 		}
-		if (player.worldNum == 0 && player.levelNum == 12 && (oldmapx != mapx || oldmapy != mapy) && !GotRuneInLevel(0,12))
+		if (player.worldNum == 0 && player.levelNum == 4 && (oldmapx != mapx || oldmapy != mapy) && !GotRuneInLevel(player.worldNum,player.levelNum))
 		{
-			if (map->map[0].wall==1 && map->map[1+13*map->width].floor==map->map[1+8*map->width].floor && map->map[10+1*map->width].floor==map->map[18+12*map->width].floor &&
-				map->map[18+12*map->width].floor==map->map[1+8*map->width].floor)	// all the runes match!
+			if (map->map[1+4*map->width].floor==map->map[19+16*map->width].floor && map->map[17+2*map->width].floor==map->map[19+16*map->width].floor &&
+				map->map[13+13*map->width].floor==map->map[19+16*map->width].floor && map->map[3+17*map->width].item!=ITM_SILENTRUNE)	// all the runes match!
 			{
-				map->map[9 + 10 * map->width].item = ITM_SILENTRUNE;
-				map->TempTorch(9, 10, 20);
+				map->map[3 + 17 * map->width].item = ITM_SILENTRUNE;
+				map->TempTorch(3, 17, 20);
 				MakeNormalSound(SND_CHLGCRYSTAL);
-				map->map[0].wall = 2;
 			}
 		}
 

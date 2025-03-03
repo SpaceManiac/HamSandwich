@@ -79,6 +79,7 @@ Map::Map(Map *m)
 Map::~Map(void)
 {
 	free(map);
+	map = nullptr;
 }
 
 byte Map::Save(SDL_RWops *f)

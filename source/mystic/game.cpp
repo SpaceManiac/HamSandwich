@@ -869,7 +869,6 @@ TASK(byte) ChallengePlay(byte world,byte lvl)
 {
 	byte result;
 
-	FreeWorld(&curWorld);
 	if(!LoadWorld(&curWorld,worldName[world]))
 		CO_RETURN WORLD_ABORT;
 

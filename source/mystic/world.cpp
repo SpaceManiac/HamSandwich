@@ -81,8 +81,11 @@ void FreeWorld(world_t *world)
 	int i;
 
 	for(i=0;i<MAX_MAPS;i++)
-		if(world->map[i])
+		if (world->map[i])
+		{
 			delete world->map[i];
+			world->map[i] = nullptr;
+		}
 }
 
 void InitWorld(world_t *world,byte worldNum)

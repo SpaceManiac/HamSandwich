@@ -1868,6 +1868,7 @@ void PickUpRune(void)
 	sprintf(s, "%s Rune obtained!", RuneName((Rune)num));
 	player.runes[(int)num] = RUNE_ASLEEP;
 	NewMessage(s, 75);
+	CheckForAllSecrets();
 }
 
 byte HighestWorldReached(void)
