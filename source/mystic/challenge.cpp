@@ -14,14 +14,14 @@
 #define ASK_TRIVIA		5
 
 challenge_t chal[]={
-	{255,1,0,"Item Shop",0,
+	{255,1,0,"Item Shop",0,0,
 		{{GOAL_FINISH,0},
 		{GOAL_FINISH,0},
 		{GOAL_FINISH,0},
 		{GOAL_FINISH,0},
 		{GOAL_FINISH,0}},
 	},
-	{255,2,0,"Fairy Box",0,
+	{255,2,0,"Fairy Box",0,0,
 		{{GOAL_FINISH,0},
 		{GOAL_FINISH,0},
 		{GOAL_FINISH,0},
@@ -30,7 +30,7 @@ challenge_t chal[]={
 	},
 
 	// chapter 1
-	{0,3,0,"Grassy Knoll",30*60*2,
+	{0,3,0,"Grassy Knoll",LP_GOTSPELL,30*60*2,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,300},
 		{GOAL_MYSTIC,30*5},
@@ -38,7 +38,7 @@ challenge_t chal[]={
 		{GOAL_FINISH2,30*60+30*30}},
 	},
 
-	{0,2,0,"Mushy Hollow",30*60*2,
+	{0,2,0,"Mushy Hollow",LP_GOTSPELL,30*60*2,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,1000},
 		{GOAL_CRYSTALS,0},
@@ -46,7 +46,7 @@ challenge_t chal[]={
 		{GOAL_COMBO,10}},
 	},
 
-	{0,4,0,"Just A Puddle",30*60*2,
+	{0,4,0,"Just A Puddle",LP_GOTSPELL|LP_GOTRUNE,30*60*2,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,300},
 		{GOAL_NOHIT,0},
@@ -54,7 +54,7 @@ challenge_t chal[]={
 		{GOAL_CRYSTALS,0}},
 	},
 
-	{0,15,0,"The Docks",30*60*2,
+	{0,15,0,"The Docks",LP_GOTRUNE|LP_GOTFAIRY,30*60*2,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,400},
 		{GOAL_MYSTIC,30*4},
@@ -62,7 +62,7 @@ challenge_t chal[]={
 		{GOAL_NOHIT,0}},
 	},
 
-	{0,16,0,"Plants Gone Wild",30*60*2,
+	{0,16,0,"Plants Gone Wild",LP_GOTFAIRY|LP_GOTRUNE,30*60*2,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,2500},
 		{GOAL_MYSTIC,30*3},
@@ -70,7 +70,7 @@ challenge_t chal[]={
 		{GOAL_COMBO,20}},
 	},
 
-	{0,17,0,"Trick Shot Chlg",30*60*4,
+	{0,17,0,"Trick Shot Chlg",LP_GOTRUNE|LP_GOTFAIRY,30*60*4,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,450},
 		{GOAL_CRYSTALS,0},
@@ -78,7 +78,7 @@ challenge_t chal[]={
 		{GOAL_NOSHOOT,0}},
 	},
 
-	{0,5,5,"The Grasslands",30*60*3,
+	{0,5,5,"The Grasslands",LP_GOTSWORD|LP_GOTRUNE,30*60*3,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,1000},
 		{GOAL_KILLSOME,MONS_EGGSAC},
@@ -86,7 +86,7 @@ challenge_t chal[]={
 		{GOAL_FINISH2,30*60*2}},
 	},
 
-	{0,14,10,"The Bridge",30*60*3,
+	{0,14,10,"The Bridge",LP_GOTRUNE,30*60*3,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,2500},
 		{GOAL_KILLSOME,MONS_OCTOBOSS},
@@ -95,7 +95,7 @@ challenge_t chal[]={
 	},
 
 	//--------------------------------
-	{11,1,20,"Chapter 2",0,
+	{11,1,20,"Chapter 2",0,0,
 		{{GOAL_NONE,0},
 		{GOAL_NONE,0},
 		{GOAL_NONE,0},
@@ -103,7 +103,7 @@ challenge_t chal[]={
 		{GOAL_NONE,0}},
 	},
 
-	{1,2,0,"Creepy Creek",30*60*5,
+	{1,2,0,"Creepy Creek",LP_GOTSPELL|LP_GOTRUNE,30*60*5,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,2000},
 		{GOAL_MYSTIC,30*3+15},
@@ -111,7 +111,7 @@ challenge_t chal[]={
 		{GOAL_CRYSTALS,0}},
 	},
 
-	{1,3,0,"Mush-Aid",30*60*6,
+	{1,3,0,"Mush-Aid",LP_GOTSPELL|LP_GOTRUNE,30*60*6,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,10000},
 		{GOAL_CRYSTALS,0},
@@ -119,7 +119,7 @@ challenge_t chal[]={
 		{GOAL_COMBO,40}},
 	},
 
-	{1,5,0,"Abandoned Village",30*60*4,
+	{1,5,0,"Abandoned Village",LP_GOTRUNE|LP_GOTSPELL,30*60*4,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,2000},
 		{GOAL_FINISH2,30*2*60+30*30},
@@ -127,7 +127,7 @@ challenge_t chal[]={
 		{GOAL_COMBO,10}},
 	},
 
-	{1,6,0,"Spider's Lair",30*60*6,
+	{1,6,0,"Spider's Lair",LP_GOTSPELL,30*60*6,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,10000},
 		{GOAL_MYSTIC,30*6},
@@ -135,7 +135,7 @@ challenge_t chal[]={
 		{GOAL_NOSHOOT,0}},
 	},
 
-	{1,11,0,"Among The Hedges",30*60*5,
+	{1,11,0,"Among The Hedges",LP_GOTSPELL,30*60*5,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,2000},
 		{GOAL_FINISH2,30*60*4},
@@ -143,7 +143,7 @@ challenge_t chal[]={
 		{GOAL_NOSHOOT,0}},
 	},
 
-	{1,13,0,"Hidden Temple",30*60*4,
+	{1,13,0,"Hidden Temple",LP_GOTRUNE|LP_GOTFAIRY,30*60*4,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,1000},
 		{GOAL_COMBO,20},
@@ -151,7 +151,7 @@ challenge_t chal[]={
 		{GOAL_SCORE,3000}},
 	},
 
-	{1,14,5,"Lost In The Woods",30*60*10,
+	{1,14,5,"Lost In The Woods",LP_GOTFAIRY,30*60*10,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,2000},
 		{GOAL_MYSTIC,30*30},
@@ -159,7 +159,7 @@ challenge_t chal[]={
 		{GOAL_SCORE,8000}},
 	},
 
-	{1,15,5,"River Rafting",30*60*1,
+	{1,15,5,"River Rafting",LP_GOTRUNE|LP_GOTFAIRY,30*60*1,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,300},
 		{GOAL_MYSTIC,30*7},
@@ -167,7 +167,7 @@ challenge_t chal[]={
 		{GOAL_CRYSTALS,0}},
 	},
 
-	{1,16,5,"Temple Of Kings",30*60*5,
+	{1,16,5,"Temple Of Kings",LP_GOTRUNE|LP_GOTFAIRY,30*60*5,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,2000},
 		{GOAL_CRYSTALS,0},
@@ -175,7 +175,7 @@ challenge_t chal[]={
 		{GOAL_NOSHOOT,0}},
 	},
 
-	{1,4,10,"Hidden Clearing",30*60*3,
+	{1,4,10,"Hidden Clearing",LP_GOTSWORD,30*60*3,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,3000},
 		{GOAL_FINISH2,30*60*2+30*55},
@@ -183,7 +183,7 @@ challenge_t chal[]={
 		{GOAL_COMBO,30}},
 	},
 
-	{1,12,10,"Spooky Pass",30*60*3,
+	{1,12,10,"Spooky Pass",0,30*60*3,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,500},
 		{GOAL_COMBO,3},
@@ -192,7 +192,7 @@ challenge_t chal[]={
 	},
 
 	//--------------------------------
-	{12,1,20,"Chapter 3",0,
+	{12,1,20,"Chapter 3",0,0,
 		{{GOAL_NONE,0},
 		{GOAL_NONE,0},
 		{GOAL_NONE,0},
@@ -200,7 +200,7 @@ challenge_t chal[]={
 		{GOAL_NONE,0}},
 	},
 
-	{2,6,0,"The Gatehouse",30*60*4,
+	{2,6,0,"The Gatehouse",LP_GOTSPELL,30*60*4,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,5000},
 		{GOAL_COMBO,15},
@@ -208,7 +208,7 @@ challenge_t chal[]={
 		{GOAL_NOKILL,MONS_PEEPER}},
 	},
 
-	{2,9,0,"The Library",30*60*6,
+	{2,9,0,"The Library",LP_GOTRUNE|LP_GOTSPELL,30*60*6,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,12000},
 		{GOAL_MYSTIC,30*10},
@@ -216,7 +216,7 @@ challenge_t chal[]={
 		{GOAL_KILL,0}},
 	},
 
-	{2,11,0,"The Ballroom",30*60*6,
+	{2,11,0,"The Ballroom",LP_GOTRUNE|LP_GOTSPELL,30*60*6,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,50000},
 		{GOAL_KILL,0},
@@ -224,7 +224,7 @@ challenge_t chal[]={
 		{GOAL_FINISH2,30*60*5+30*30}},
 	},
 
-	{2,13,0,"Guest Chambers",30*60*10,
+	{2,13,0,"Guest Chambers",LP_GOTRUNE|LP_GOTSPELL,30*60*10,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,5000},
 		{GOAL_MYSTIC,25},
@@ -232,7 +232,7 @@ challenge_t chal[]={
 		{GOAL_NOSPELL,0}},
 	},
 
-	{2,16,0,"The Vault",30*60*3,
+	{2,16,0,"The Vault",LP_GOTRUNE|LP_GOTSPELL,30*60*3,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,500},
 		{GOAL_FINISH2,30*60*2+30*45},
@@ -240,7 +240,7 @@ challenge_t chal[]={
 		{GOAL_MYSTIC,30*2}},
 	},
 
-	{2,18,0,"Violent Eyes",30*60*5,
+	{2,18,0,"Violent Eyes",LP_GOTRUNE|LP_GOTFAIRY,30*60*5,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,700},
 		{GOAL_MYSTIC,30*3},
@@ -248,7 +248,7 @@ challenge_t chal[]={
 		{GOAL_NOSPELL,0}},
 	},
 
-	{2,17,5,"Twisty Passages",30*60*15,
+	{2,17,5,"Twisty Passages",LP_GOTFAIRY,30*60*15,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,3000},
 		{GOAL_CRYSTALS,0},
@@ -256,7 +256,7 @@ challenge_t chal[]={
 		{GOAL_KILL,0}},
 	},
 
-	{2,21,5,"Guardian Battle",30*60*3,
+	{2,21,5,"Guardian Battle",0,30*60*3,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,2000},
 		{GOAL_COMBO,2},
@@ -264,7 +264,7 @@ challenge_t chal[]={
 		{GOAL_CRYSTALS,0}},
 	},
 
-	{2,19,5,"Whack-A-Zoid",30*60*2,
+	{2,19,5,"Whack-A-Zoid",LP_GOTFAIRY,30*60*2,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,20000},
 		{GOAL_CRYSTALS,0},
@@ -272,7 +272,7 @@ challenge_t chal[]={
 		{GOAL_NOSHOOT,0}},
 	},
 
-	{2,20,5,"Castle Sewers",30*60*5,
+	{2,20,5,"Castle Sewers",LP_GOTRUNE|LP_GOTFAIRY,30*60*5,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,10000},
 		{GOAL_COMBO,25},
@@ -280,7 +280,7 @@ challenge_t chal[]={
 		{GOAL_KILL,0}},
 	},
 
-	{2,7,10,"Off The Deep End",30*60*5,
+	{2,7,10,"Off The Deep End",LP_GOTSWORD,30*60*5,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,5000},
 		{GOAL_COMBO,10},
@@ -288,7 +288,7 @@ challenge_t chal[]={
 		{GOAL_NOHIT,0}},
 	},
 
-	{2,15,10,"The Keep",30*60*5,
+	{2,15,10,"The Keep",0,30*60*5,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,15000},
 		{GOAL_COMBO,30},
@@ -297,7 +297,7 @@ challenge_t chal[]={
 	},
 
 	//--------------------------------
-	{13,1,20,"Chapter 4",0,
+	{13,1,20,"Chapter 4",0,0,
 		{{GOAL_NONE,0},
 		{GOAL_NONE,0},
 		{GOAL_NONE,0},
@@ -305,7 +305,7 @@ challenge_t chal[]={
 		{GOAL_NONE,0}},
 	},
 
-	{3,6,0,"Toasty Caverns",30*60*10,
+	{3,6,0,"Toasty Caverns",LP_GOTSPELL,30*60*10,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,10000},
 		{GOAL_NOSPELL,0},
@@ -313,7 +313,7 @@ challenge_t chal[]={
 		{GOAL_KILL,0}},
 	},
 
-	{3,7,0,"The Mines",30*60*8,
+	{3,7,0,"The Mines",LP_GOTRUNE|LP_GOTSPELL,30*60*8,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,200000},
 		{GOAL_COMBO,200},
@@ -321,7 +321,7 @@ challenge_t chal[]={
 		{GOAL_KILLSOME,MONS_MOSS}},
 	},
 
-	{3,15,0,"Gastro-Pods",30*60*5,
+	{3,15,0,"Gastro-Pods",LP_GOTRUNE|LP_GOTFAIRY,30*60*5,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,2000},
 		{GOAL_CRYSTALS,0},
@@ -329,7 +329,7 @@ challenge_t chal[]={
 		{GOAL_FINISH2,30*60*3+30*30}},
 	},
 
-	{3,9,0,"Obnoxiousness",30*60*6,
+	{3,9,0,"Obnoxiousness",LP_GOTRUNE|LP_GOTSPELL,30*60*6,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,10000},
 		{GOAL_COMBO,30},
@@ -337,7 +337,7 @@ challenge_t chal[]={
 		{GOAL_MYSTIC,30*4}},
 	},
 
-	{3,10,0,"Bats! Bats! Bats!",30*60*10,
+	{3,10,0,"Bats! Bats! Bats!",LP_GOTRUNE|LP_GOTSPELL,30*60*10,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,30000},
 		{GOAL_COMBO,50},
@@ -345,7 +345,7 @@ challenge_t chal[]={
 		{GOAL_KILLSOME,MONS_BIGBAT}},
 	},
 
-	{3,12,5,"Red River Rafting",30*60*5,
+	{3,12,5,"Red River Rafting",LP_GOTRUNE|LP_GOTFAIRY,30*60*5,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,1200},
 		{GOAL_FINISH2,30*60*4},
@@ -353,7 +353,7 @@ challenge_t chal[]={
 		{GOAL_KILL,0}},
 	},
 
-	{3,13,5,"Smashball",30*60*10,
+	{3,13,5,"Smashball",LP_GOTFAIRY,30*60*10,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,100},
 		{GOAL_KILL,0},
@@ -361,7 +361,7 @@ challenge_t chal[]={
 		{GOAL_MYSTIC,30}},
 	},
 
-	{3,14,5,"Puzzling Caverns",30*60*5,
+	{3,14,5,"Puzzling Caverns",LP_GOTRUNE|LP_GOTFAIRY,30*60*5,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,3000},
 		{GOAL_KILLSOME,MONS_SNAIL},
@@ -369,7 +369,7 @@ challenge_t chal[]={
 		{GOAL_CRYSTALS,0}},
 	},
 
-	{3,8,10,"Armageddon Shrine",30*60*2,
+	{3,8,10,"Armageddon Shrine",LP_GOTSWORD,30*60*2,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,1500},
 		{GOAL_FINISH2,30*60*1+30*53},
@@ -377,7 +377,7 @@ challenge_t chal[]={
 		{GOAL_NOSPELL,0}},
 	},
 
-	{3,11,15,"Bobby Khan",30*60*5,
+	{3,11,15,"Bobby Khan",0,30*60*5,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,5000},
 		{GOAL_FINISH2,30*60},
@@ -386,7 +386,7 @@ challenge_t chal[]={
 	},
 
 	// bonus levels --------------------------------------------------------------------------
-	{14,1,15,"Bonus Levels",0,
+	{14,1,15,"Bonus Levels",0,0,
 		{{GOAL_NONE,0},
 		{GOAL_NONE,0},
 		{GOAL_NONE,0},
@@ -394,7 +394,7 @@ challenge_t chal[]={
 		{GOAL_NONE,0}},
 	},
 
-	{4,19,0,"Ker-Splat!",30*60*3,
+	{4,19,0,"Ker-Splat!",0,30*60*3,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,10000},
 		{GOAL_KILL,0},
@@ -402,7 +402,7 @@ challenge_t chal[]={
 		{GOAL_GETALL,0}},
 	},
 
-	{4,18,0,"Stick Stream",30*60*1,
+	{4,18,0,"Stick Stream",0,30*60*1,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,500},
 		{GOAL_KILL,0},
@@ -410,7 +410,7 @@ challenge_t chal[]={
 		{GOAL_COMBO,4}},
 	},
 
-	{5,18,0,"Forging A Head",30*60*5,
+	{5,18,0,"Forging A Head",0,30*60*5,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,5000000},
 		{GOAL_COMBO,999},
@@ -418,7 +418,7 @@ challenge_t chal[]={
 		{GOAL_GETALL,0}},
 	},
 
-	{5,17,0,"Sticky Webs",30*60*1,
+	{5,17,0,"Sticky Webs",0,30*60*1,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,700},
 		{GOAL_NOSHOOT,0},
@@ -426,7 +426,7 @@ challenge_t chal[]={
 		{GOAL_COMBO,5}},
 	},
 
-	{6,23,0,"Jeepers Peepers",30*60*1,
+	{6,23,0,"Jeepers Peepers",0,30*60*1,
 		{{GOAL_FINISH,0},
 		{GOAL_NOHIT,0},
 		{GOAL_MYSTIC,30*10},
@@ -434,7 +434,7 @@ challenge_t chal[]={
 		{GOAL_GETALL,0}},
 	},
 
-	{6,22,0,"Stick Graveyard",30*60*5,
+	{6,22,0,"Stick Graveyard",0,30*60*5,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,5000},
 		{GOAL_CRYSTALS,0},
@@ -442,7 +442,7 @@ challenge_t chal[]={
 		{GOAL_FINISH2,30*60}},
 	},
 
-	{7,17,0,"Snailbait",30*60*5,
+	{7,17,0,"Snailbait",0,30*60*5,
 		{{GOAL_FINISH,0},
 		{GOAL_NOHIT,0},
 		{GOAL_NOKILL,255},
@@ -450,7 +450,7 @@ challenge_t chal[]={
 		{GOAL_GETALL,0}},
 	},
 
-	{7,16,0,"Subterranean Sticks",30*60*7,
+	{7,16,0,"Subterranean Sticks",0,30*60*7,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,6000},
 		{GOAL_MYSTIC,30*8},
@@ -458,7 +458,7 @@ challenge_t chal[]={
 		{GOAL_FINISH2,30*60*6}},
 	},
 
-	{15,1,40,"Super Bonus!!",0,
+	{15,1,40,"Super Bonus!!",0,0,
 		{{GOAL_NONE,0},
 		{GOAL_NONE,0},
 		{GOAL_NONE,0},
@@ -467,7 +467,7 @@ challenge_t chal[]={
 	},
 
 	//--------------------------------
-	{255,3,0,"Reset Character",0,
+	{255,3,0,"Reset Character",0,0,
 		{{GOAL_NONE,0},
 		{GOAL_NONE,0},
 		{GOAL_NONE,0},
@@ -475,7 +475,7 @@ challenge_t chal[]={
 		{GOAL_NONE,0}},
 	},
 
-	{255,4,0,"Reset Goals",0,
+	{255,4,0,"Reset Goals",0,0,
 		{{GOAL_NONE,0},
 		{GOAL_NONE,0},
 		{GOAL_NONE,0},
@@ -483,7 +483,7 @@ challenge_t chal[]={
 		{GOAL_NONE,0}},
 	},
 
-	{255,5,0,"Reset Skills",0,
+	{255,5,0,"Reset Skills",0,0,
 		{{GOAL_NONE,0},
 		{GOAL_NONE,0},
 		{GOAL_NONE,0},
@@ -491,7 +491,7 @@ challenge_t chal[]={
 		{GOAL_NONE,0}},
 	},
 
-	{255,0,0,"Exit",0,
+	{255,0,0,"Exit",0,0,
 		{{GOAL_NONE,0},
 		{GOAL_NONE,0},
 		{GOAL_NONE,0},
@@ -850,6 +850,32 @@ void ChallengeMenuRender(MGLDraw *mgl)
 				PrintBrightGlow(5,420,s,-4,2);
 				sprintf(s,"Top Combo: %d",chalData.topCombo[chalCursor]);
 				PrintBrightGlow(5,440,s,-4,2);
+
+				int x = 320;
+
+				if (chal[chalCursor].flags & LP_GOTFAIRY)
+				{
+					OutlineFarleySprite(173, x-8, 460, -31 + 31 * ((player.levelPassed[chal[chalCursor].chapter][chal[chalCursor].level] & LP_GOTFAIRY)!=0));
+					x -= 32;
+				}
+
+				if (chal[chalCursor].flags & LP_GOTSPELL)
+				{
+					OutlineFarleySprite(45, x, 445, -31 + 31 * ((player.levelPassed[chal[chalCursor].chapter][chal[chalCursor].level] & LP_GOTSPELL)!=0));
+					x -= 32;
+				}
+
+				if (chal[chalCursor].flags & LP_GOTSWORD)
+				{
+					OutlineFarleySprite(131, x+4, 465, -31 + 31 * ((player.levelPassed[chal[chalCursor].chapter][chal[chalCursor].level] & LP_GOTSWORD)!=0));
+					x -= 32;
+				}
+
+				if (chal[chalCursor].flags & LP_GOTRUNE)
+				{
+					OutlineFarleySprite(281, x, 440, -31 + 31 * ((player.levelPassed[chal[chalCursor].chapter][chal[chalCursor].level] & LP_GOTRUNE) != 0));
+					x -= 32;
+				}
 			}
 			else
 			{
@@ -911,6 +937,35 @@ void ChallengeMenuRender(MGLDraw *mgl)
 			RenderFairyBox();
 		if(fairyOn==3)	// question box
 			RenderQuestionBox(mgl);
+	}
+}
+
+void PauseChallengeRender(int offX)
+{
+	int i, y;
+	byte goalCount = 0;
+	y = 85;
+	char s[64];
+
+	GetShopSpr(34)->Draw(offX, 40, GetDisplayMGL());
+
+	CenterPrint(offX + 120+2, y - 35+2, "GOALS", -31, 2);
+	PrintGlow(offX + 120-GetStrLength("GOALS",2)/2, y - 35, "GOALS", 2);
+	for (i = 0; i < 5; i++)
+	{
+		if (!chalData.goal[chalCursor][i])
+		{
+			goalCount++;
+			sprintf(s, "* %s", GoalText(chal[chalCursor].goal[i].type, chal[chalCursor].goal[i].n));
+			PrintBright(offX + 5 + 1, y + 1, s, -31, 1);
+			PrintGlow(offX + 5, y, s, 1);
+			y += 25;
+		}
+	}
+	if (goalCount == 0)
+	{
+		PrintBright(offX + 5 + 1, y + 1, "All goals complete!", -31, 1);
+		PrintGlow(offX + 5, y, "All goals complete!", 1);
 	}
 }
 
@@ -1581,14 +1636,19 @@ byte ChallengeUpdate(void)
 void ChallengeRender(MGLDraw *mgl)
 {
 	char s[16];
-
+		
 	sprintf(s,"%d:%02d",(attempt.time/(30*60)),(attempt.time/30)%60);
+	Print(45+2, 32+2, s, -31, 2);
 	PrintGlow(45,32,s,2);
 	sprintf(s,"%05d",attempt.score);
+	Print(2 + 2, 60 + 2, s, -31, 2);
 	PrintGlow(2,60,s,2);
-	sprintf(s,"Combo x%d",attempt.curCombo);
-	if(attempt.curCombo>1)
-		PrintGlow(2,80,s,2);
+	if (attempt.curCombo > 1)
+	{
+		sprintf(s, "Combo x%d", attempt.curCombo);
+		Print(2 + 2, 80 + 2, s, -31, 2);
+		PrintGlow(2, 80, s, 2);
+	}
 }
 
 void RenderAGoal(int x,int y,byte goal,dword n)

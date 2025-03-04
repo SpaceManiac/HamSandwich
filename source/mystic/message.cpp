@@ -708,46 +708,6 @@ void RenderFarley(void)
 			OutlineFarleySprite(45, 565 - 16 * totalSpells + j * 16, 30 + i * 110 + 45, 0 - 31 * (j >= fairyCt));
 
 		OutlineFarleySprite(131,160,30+i*110+85, 0-31*(player.keychain[i]==0));
-
-		/*
-		if (m->contentFlags & LP_GOTRUNE)
-		{
-			for (int xx = cx - 1; xx <= cx + 1; xx++)
-				for (int yy = cy - 1; yy <= cy + 1; yy++)
-				{
-					char b = -31;
-					if (xx != cx && yy != cy)
-						GetItemSprite(281)->DrawBright(xx + Cosine(angList[ang]) * outXes / FIXAMT, yy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, -31);
-				}
-			if (GotRuneInLevel(world, mNum))
-				GetItemSprite(281)->DrawBright(cx + Cosine(angList[ang]) * outXes / FIXAMT, cy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, 0);
-			ang++;
-		}
-		if (m->contentFlags & LP_GOTSPELL)
-		{
-			for (int xx = cx - 1; xx <= cx + 1; xx++)
-				for (int yy = cy - 1; yy <= cy + 1; yy++)
-				{
-					if (xx != cx && yy != cy)
-						GetItemSprite(43)->DrawBright(xx + Cosine(angList[ang]) * outXes / FIXAMT, yy + 12 + Sine(angList[ang]) * outXes / FIXAMT, mgl, -31);
-				}
-			if (GotSpellInLevel(world, mNum))
-				GetItemSprite(43)->DrawBright(cx + Cosine(angList[ang]) * outXes / FIXAMT, cy + 12 + Sine(angList[ang]) * outXes / FIXAMT, mgl, 0);
-			ang++;
-		}
-		if (m->contentFlags & LP_GOTSWORD)
-		{
-			for (int xx = cx - 1; xx <= cx + 1; xx++)
-				for (int yy = cy - 1; yy <= cy + 1; yy++)
-				{
-					if (xx != cx && yy != cy)
-						GetItemSprite(131)->DrawBright(xx + Cosine(angList[ang]) * outXes / FIXAMT, yy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, -31);
-				}
-			if (GotSwordInLevel(world, mNum))
-				GetItemSprite(131)->DrawBright(cx + Cosine(angList[ang]) * outXes / FIXAMT, cy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, 0);
-			ang++;
-		}
-		*/
 	}
 }
 

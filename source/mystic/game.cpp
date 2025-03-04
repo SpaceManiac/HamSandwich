@@ -673,6 +673,8 @@ TASK(void) LunaticDraw(void)
 		RenderSpecialXes(gamemgl,curMap,worldNum);
 		RenderMessage();
 		PlayerRenderInterface(gamemgl);
+		if (Challenging())
+			ChallengeRender(gamemgl);
 		RenderPauseMenu();
 		if(gameMode==GAMEMODE_SPEECH)
 			RenderSpeech();
@@ -691,9 +693,6 @@ TASK(void) LunaticDraw(void)
 	{
 		// nothing to do for gamemode_pic
 	}
-
-	if(Challenging())
-		ChallengeRender(gamemgl);
 
 	if(DoTrivia())
 		RenderTrivia(gamemgl);

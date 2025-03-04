@@ -44,6 +44,7 @@ typedef struct challenge_t
 	byte chapter,level;
 	byte starCost;
 	char name[32];
+	word flags;
 	dword time;
 	goal_t goal[5];
 } challenge_t;
@@ -81,7 +82,7 @@ void ChallengeRender(MGLDraw *mgl);
 TASK(void) ChallengeTally(MGLDraw *mgl);
 byte CurrentLetter(void);
 byte DoTrivia(void);
-
+void PauseChallengeRender(int offX);
 void CheatChal(void);
 
 

@@ -40,11 +40,21 @@ void SetSubCursor(byte s)
 	subcursor=s;
 }
 
+void PrintPauseOption(int y, byte curSpot, const char* s)
+{
+	if(cursor==curSpot)
+		PrintBright(pauseX + 10+2, y+2, s, -31, 2);
+	PrintBrightGlow(pauseX + 10, y, s, -16 + (cursor == curSpot) * 16, 2);
+}
+
 void RenderPauseMenu(void)
 {
 	char onoff[6][8] = { "Off","I","II","III","IV","V" };
 	if(pauseX==-250)
 		return;
+
+	if(Challenging())
+		PauseChallengeRender(pauseX);
 
 	RenderPlayerGear(440-pauseX*2,armaBrt);
 
@@ -71,29 +81,27 @@ void RenderPauseMenu(void)
 	else // modern menu
 	{
 		int hgt = 23;
-		PrintBrightGlow(pauseX + 10, 240, "Cancel", -16 + (cursor == 0) * 16, 2);
+		PrintPauseOption(240, 0, "Cancel");
 		char s[32];
 		sprintf(s, "Skills (%d)", player.skillPts);
-		PrintBrightGlow(pauseX + 10, 240+hgt*1, s, -16 + (cursor == 1) * 16, 2);
-		PrintBrightGlow(pauseX + 10, 240 + hgt * 2, "Runes", -16 + (cursor == 2) * 16, 2);
-
-		if (!Challenging())
-			PrintBrightGlow(pauseX + 10, 240+hgt*3, "Load", -16 + (cursor == 3) * 16, 2);
+		PrintPauseOption(240 + hgt * 1, 1, s);
+		PrintPauseOption(240 + hgt * 2, 2, "Runes");
+		if(!Challenging())
+			PrintPauseOption(240 + hgt * 3, 3, "Load");
 
 		if (giveUp == 0)
-			PrintBrightGlow(pauseX + 10, 240+hgt*4, "Save", -16 + (cursor == 4) * 16, 2);
+			PrintPauseOption(240 + hgt * 4, 4, "Save");
 		else if (giveUp == 2)	// random battle
-			PrintBrightGlow(pauseX + 10, 240+hgt*4, "Run Away", -16 + (cursor == 4) * 16, 2);
+			PrintPauseOption(240 + hgt * 4, 4, "Run Away");
 		else 	// regular level
-			PrintBrightGlow(pauseX + 10, 240+hgt*4, "Give Up", -16 + (cursor == 4) * 16, 2);
+			PrintPauseOption(240 + hgt * 4, 4, "Give Up");
 
-		PrintBrightGlow(pauseX + 10, 240+hgt*5, "Sound:", -16 + (cursor == 5) * 16, 2);
-		PrintBrightGlow(pauseX + 10 + 90, 240+hgt*5, onoff[opt.soundVol], -16 + (cursor == 5) * 16, 2);
-
-		PrintBrightGlow(pauseX + 10, 240+hgt*6, "Music:", -16 + (cursor == 6) * 16, 2);
-		PrintBrightGlow(pauseX + 10 + 90, 240+hgt*6, onoff[opt.musicVol], -16 + (cursor == 6) * 16, 2);
-		PrintBrightGlow(pauseX + 10, 240 + hgt * 7, "Weird Settings", -16 + (cursor == 7) * 16, 2);
-		PrintBrightGlow(pauseX + 10, 240+hgt*8, "Quit Game", -16 + (cursor == 8) * 16, 2);
+		sprintf(s, "Sound: %s", onoff[opt.soundVol]);
+		PrintPauseOption(240 + hgt * 5, 5, s);
+		sprintf(s, "Music: %s", onoff[opt.musicVol]);
+		PrintPauseOption(240 + hgt * 6, 6, s);
+		PrintPauseOption(240 + hgt * 7, 7, "Weird Settings");
+		PrintPauseOption(240 + hgt * 8, 8, "Quit Game");
 
 		RenderSlotPickMenu();
 		if(subMode==SUBMODE_SKILLS)
