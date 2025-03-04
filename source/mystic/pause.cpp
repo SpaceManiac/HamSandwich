@@ -242,24 +242,24 @@ void RenderSkillMenu(void)
 	}
 
 	sprintf(s, "Points: %02d", player.skillPts);
-	PrintBrightGlow(SCRWID - 80, SCRHEI - 30 - 75, s, 31, 1);
+	PrintBrightGlow(SCRWID - 80, SCRHEI - 35 - 75, s, 31, 1);
 
 	if (giveUp == 0)	// only in the overworld
 	{
 		// reset skills
 		if (subcursor == 36)
-			RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 60, SCRWID - 10, SCRHEI - 30 - 40, 32 * 5 + 31, 32 * 5 + 10);
+			RenderSkillBox(SCRWID - 80, SCRHEI - 35 - 60, SCRWID - 10, SCRHEI - 35 - 40, 32 * 5 + 31, 32 * 5 + 10);
 		else
-			RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 60, SCRWID - 10, SCRHEI - 30 - 40, 32 * 5 + 16, 32 * 5 + 6);
-		PrintBrightGlow(SCRWID - 80 + 4 + 6, SCRHEI - 30 - 60, "Reset", (subcursor == 36) * 31, 2);
+			RenderSkillBox(SCRWID - 80, SCRHEI - 35 - 60, SCRWID - 10, SCRHEI - 35 - 40, 32 * 5 + 16, 32 * 5 + 6);
+		PrintBrightGlow(SCRWID - 80 + 4 + 6, SCRHEI - 35 - 60, "Reset", (subcursor == 36) * 31, 2);
 	}
 
 	// exit
 	if (subcursor == 37)
-		RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 35, SCRWID - 10, SCRHEI - 30 - 15, 32 * 5 + 31, 32 * 5 + 10);
+		RenderSkillBox(SCRWID - 80, SCRHEI - 35 - 35, SCRWID - 10, SCRHEI - 35 - 15, 32 * 5 + 31, 32 * 5 + 10);
 	else
-		RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 35, SCRWID - 10, SCRHEI - 30 - 15, 32 * 5 + 16, 32 * 5 + 6);
-	PrintBrightGlow(SCRWID - 80 + 4+12, SCRHEI - 30 - 35, "Exit", (subcursor == 37) * 31, 2);
+		RenderSkillBox(SCRWID - 80, SCRHEI - 35 - 35, SCRWID - 10, SCRHEI - 35 - 15, 32 * 5 + 16, 32 * 5 + 6);
+	PrintBrightGlow(SCRWID - 80 + 4+12, SCRHEI - 35 - 35, "Exit", (subcursor == 37) * 31, 2);
 }
 
 void RenderRuneMenu(void)

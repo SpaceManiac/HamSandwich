@@ -177,7 +177,7 @@ void ResetPlayerLevels(void)
 
 	for(i=0;i<6;i++)
 		for(j=0;j<MAX_MAPS;j++)
-			player.levelPassed[i][j]=0;
+			player.levelPassed[i][j]&=(~LP_PASSED);
 
 	player.templePuzzleDone=0;
 	player.lunacyKey[3]=0;

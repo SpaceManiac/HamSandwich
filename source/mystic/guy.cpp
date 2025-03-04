@@ -1624,6 +1624,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			{
 				if (player.mana <= player.maxMana)
 					player.mana ++;
+				mana--;
 			}
 		}
 		if (!ClassicMode() && (BulletHittingType() == BLT_MISSILE || BulletHittingType() == BLT_LILBOOM) && SkillValue(SKILL_SEEKBOOM) > 0)

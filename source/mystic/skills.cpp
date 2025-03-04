@@ -161,9 +161,9 @@ skill_t skillList[] = {
 		"",
 		100,100,"Duration",SD_PERCENT,SPL_ARMOR},
 	{"Perfect Peridot",
-		"For 0.5s after casting an Armor",
-		"spell, you are immune, and if",
-		"you are hit during this time,",
+		"For 0.5s after casting an",
+		"Armor spell, you are immune,",
+		"and if hit during this time,",
 		"some casting cost is refunded.",
 		0, 25,"Refund",SD_PERCENT,SPL_ARMOR},
 	{"Diamondskin",
@@ -181,8 +181,8 @@ skill_t skillList[] = {
 	{ "Bloodlust",
 		"While Berserking, you heal",
 		"with each kill. You have a",
-		"serious problem and need some",
-		"therapy.",
+		"serious problem and need",
+		"some therapy.",
 		0,2,"Heal",SD_NUMBER,SPL_BERSERK},
 	{ "Critical Velocity",
 		"All your attacks gain Critical",
@@ -200,14 +200,14 @@ skill_t skillList[] = {
 	{ "Restoration",
 		"You always heal for 1 Life",
 		"every 3 seconds, but your",
-		"Healing spells now also",
-		"heal over time.",
+		"Healing spells now also heal",
+		"over time.",
 		0,5,"Max Heal/s",SD_NUMBER,SPL_HEAL},
 	{ "Lifesaver",
 		"Once per level, you will return",
-		"from death. You come back with",
-		"a portion of your full Life and",
-		"Mana.",
+		"from death. You come back",
+		"with a portion of your full Life",
+		"and Mana.",
 		0,15,"Life/Mana",SD_PERCENT,SPL_HEAL},
 	{ "Fimbulwinter",
 		"Armageddon comets no longer",
@@ -216,9 +216,9 @@ skill_t skillList[] = {
 		"",
 		0,180,"Chilliness",SD_PERCENT,SPL_ARMAGEDDON},
 	{ "Mana Gettin'",
-		"Armageddon drops fewer comets,",
-		"but it grants you unlimited ",
-		"mana for its duration.",
+		"Armageddon drops fewer",
+		"comets, but it grants you",
+		"unlimited mana for its duration.",
 		"No recasting, smartypants!",
 		0,10,"Comets",SD_PERCENT,SPL_ARMAGEDDON},
 	{ "Murdalize",
@@ -249,21 +249,41 @@ void DescribeSkill(byte skill,int x,int y)
 	float total = SkillValue(skill);
 	if (skillList[skill].displayType == SD_METERS)
 		total = total / 32.0f;
-	char symbol='0';
-	
+		
 	if(total-floorf(total)<0.1f)	// if it's nearly an integer, let's just show an integer
 		sprintf(txt, "[Rank %d/%d, %s: %d", player.skill[skill], MAX_SKILL_LVL, skillList[skill].statName, (int)total);
 	else
 		sprintf(txt, "[Rank %d/%d, %s: %0.1f", player.skill[skill], MAX_SKILL_LVL, skillList[skill].statName, total);
 	if (skillList[skill].displayType == SD_PERCENT)
-		strcat(txt, "%]");
+		strcat(txt, "%");
 	else if (skillList[skill].displayType == SD_SECONDS)
-		strcat(txt, "s]");
+		strcat(txt, "s");
 	else if (skillList[skill].displayType == SD_METERS)
-		strcat(txt, "m]");
-	else
-		strcat(txt, "]");
+		strcat(txt, "m");
+	
+	if (player.skill[skill] < MAX_SKILL_LVL)
+	{
+		char txt2[30];
+		player.skill[skill]++;
+		float total = SkillValue(skill);
+		player.skill[skill]--;
+		if (skillList[skill].displayType == SD_METERS)
+			total = total / 32.0f;
+		char symbol = '0';
 
+		if (total - floorf(total) < 0.1f)	// if it's nearly an integer, let's just show an integer
+			sprintf(txt2, " -> %d", (int)total);
+		else
+			sprintf(txt2, " -> %0.1f", total);
+		if (skillList[skill].displayType == SD_PERCENT)
+			strcat(txt2, "%");
+		else if (skillList[skill].displayType == SD_SECONDS)
+			strcat(txt2, "s");
+		else if (skillList[skill].displayType == SD_METERS)
+			strcat(txt2, "m");
+		strcat(txt, txt2);
+	}
+	strcat(txt, "]");
 	PrintBrightGlow(x, y + 20+12*4, txt, 0, 1);
 }
 

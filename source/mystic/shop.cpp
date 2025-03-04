@@ -550,6 +550,15 @@ void RenderPlayerGear(int x,byte brt)
 		sprintf(s, "Life: %03d/%03d", player.life, player.maxLife);
 	Print(x-80+2,384+2,s,1,2);
 	Print(x-80,384,s,0,2);
+	// runestones
+	if (!ClassicMode())
+	{
+		BlitIconBit(2, 467, 13, 477, x-80+2+180,384+5, 255,-31);
+		BlitIconBit(2, 467, 13, 477, x - 80 + 180, 384+5, 255, 0);
+		sprintf(s, "%d", player.runeStones);
+		Print(x - 80 + 2 + 180 + 16, 384 + 2, s, 1, 2);
+		Print(x - 80 + 180 + 16, 384, s, 0, 2);
+	}
 	// mana
 	sprintf(s,"Mana: %03d/%03d",player.mana,player.maxMana);
 	Print(x-80+2,404+2,s,1,2);

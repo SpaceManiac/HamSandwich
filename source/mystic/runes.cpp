@@ -258,21 +258,56 @@ void DescribeRune(Rune r,int x,int y)
 		float total = runeDef[(int)r].value[RuneLevel(r) - RUNE_RANK1];
 		if (runeDef[(int)r].numberType == SD_METERS)
 			total = total / 32.0f;
-		char symbol = '0';
+		
+		if (RuneLevel(r) < RUNE_RANK3)	// gotta show what's next
+		{
+			if (total - floorf(total) < 0.1f)	// if it's nearly an integer, let's just show an integer
+				sprintf(txt, "[%s: %d", runeDef[(int)r].numDesc, (int)total);
+			else
+				sprintf(txt, "[%s: %0.1f", runeDef[(int)r].numDesc, total);
+			if (runeDef[(int)r].numberType == SD_PERCENT)
+				strcat(txt, "%");
+			else if (runeDef[(int)r].numberType == SD_SECONDS)
+				strcat(txt, "s");
+			else if (runeDef[(int)r].numberType == SD_METERS)
+				strcat(txt, "m");
 
-		if (total - floorf(total) < 0.1f)	// if it's nearly an integer, let's just show an integer
-			sprintf(txt, "[%s: %d", runeDef[(int)r].numDesc, (int)total);
+			float total = runeDef[(int)r].value[RuneLevel(r)+1 - RUNE_RANK1];
+			if (runeDef[(int)r].numberType == SD_METERS)
+				total = total / 32.0f;
+			strcat(txt, " -> ");
+			char txt2[36];
+			if (total - floorf(total) < 0.1f)	// if it's nearly an integer, let's just show an integer
+				sprintf(txt2, "%d", (int)total);
+			else
+				sprintf(txt2, "%0.1f", total);
+			if (runeDef[(int)r].numberType == SD_PERCENT)
+				strcat(txt2, "%]");
+			else if (runeDef[(int)r].numberType == SD_SECONDS)
+				strcat(txt2, "s]");
+			else if (runeDef[(int)r].numberType == SD_METERS)
+				strcat(txt2, "m]");
+			else
+				strcat(txt2, "]");
+			strcat(txt, txt2);
+			PrintBrightGlow(x, y + 20 + 12 * 3, txt, 0, 1);
+		}
 		else
-			sprintf(txt, "[%s: %0.1f", runeDef[(int)r].numDesc, total);
-		if (runeDef[(int)r].numberType == SD_PERCENT)
-			strcat(txt, "%]");
-		else if (runeDef[(int)r].numberType == SD_SECONDS)
-			strcat(txt, "s]");
-		else if (runeDef[(int)r].numberType == SD_METERS)
-			strcat(txt, "m]");
-		else
-			strcat(txt, "]");
-		PrintBrightGlow(x, y + 20 + 12*3, txt, 0, 1);
+		{
+			if (total - floorf(total) < 0.1f)	// if it's nearly an integer, let's just show an integer
+				sprintf(txt, "[%s: %d", runeDef[(int)r].numDesc, (int)total);
+			else
+				sprintf(txt, "[%s: %0.1f", runeDef[(int)r].numDesc, total);
+			if (runeDef[(int)r].numberType == SD_PERCENT)
+				strcat(txt, "%]");
+			else if (runeDef[(int)r].numberType == SD_SECONDS)
+				strcat(txt, "s]");
+			else if (runeDef[(int)r].numberType == SD_METERS)
+				strcat(txt, "m]");
+			else
+				strcat(txt, "]");
+			PrintBrightGlow(x, y + 20 + 12 * 3, txt, 0, 1);
+		}
 
 		if (RuneLevel(r) == RUNE_RANK1)
 			PrintBrightGlow(x, y + 20 + 12 * 4, "Upgrade for 20 Runestones.", 0, 1);
