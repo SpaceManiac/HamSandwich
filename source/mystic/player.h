@@ -27,6 +27,7 @@
 #define LP_GOTSWORD (16)
 
 #define WATER_DAMAGE (10)	// damage taken when you fall in the water, in modern mode
+#define MAX_RUNESTONES (9999)
 
 enum class Difficulty :byte
 {

@@ -394,14 +394,26 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 	if (!ClassicMode())
 	{
 		byte mana = GetStoredHealMana();
+		int y = 90;
 		if (mana > 0)
 		{
-			RenderSkillBox(3, 80, 25, 100, 32 * 5 + 16, 32 * 5+10);
-			intfaceSpr->GetSprite(11 + 8 * 2 + (player.spell[8] == 2 && !player.downgradeSpell[8]))->Draw(3, 70, mgl);
-			DrawFillBox(20, 82, 23, 98, 0);
+			RenderSkillBox(3, y, 25, y+20, 32 * 5 + 16, 32 * 5+10);
+			intfaceSpr->GetSprite(11 + 8 * 2 + (player.spell[8] == 2 && !player.downgradeSpell[8]))->Draw(3, y-10, mgl);
+			DrawFillBox(20, y+2, 23, y+18, 0);
 			byte fill = (byte)((int)GetStoredHealMana() * 16 / (int)HealCostIgnoringStoredMana());
 			if (fill > 16) fill = 16;
-			DrawFillBox(20, 82+(16-fill), 23, 98, 32*1+16);
+			DrawFillBox(20, y+2+(16-fill), 23, y+18, 32*1+16);
+			y += 40;
+		}
+		mana = GetStoredSeekerMana();
+		if (mana > 0)
+		{
+			RenderSkillBox(3, y, 25, y+20, 32 * 5 + 16, 32 * 5 + 10);
+			intfaceSpr->GetSprite(11 + SPL_SEEKER * 2 + (player.spell[SPL_SEEKER] == 2 && !player.downgradeSpell[SPL_SEEKER]))->Draw(3, y-10, mgl);
+			DrawFillBox(20, y+2, 23, y+18, 0);
+			byte fill = (byte)((int)GetStoredSeekerMana() * 16 / (int)SpellCost(SPL_SEEKER,true));
+			if (fill > 16) fill = 16;
+			DrawFillBox(20, y+2+ (16 - fill), 23, y+18, 32 * 1 + 16);
 		}
 	}
 }

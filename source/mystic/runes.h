@@ -20,13 +20,13 @@ enum class Rune :byte
 	FLAME3,	// flames go out sideways too
 
 	SEEKER,	// seekers 5/15/25% crit chance
-	SEEKER2, //
+	AUTOSEEKER, // non-seekers store mana, which casts seekers automatically
 
 	ICESHARD,	// frozen enemies spit out ice shards when they thaw, which deal the damage they took while frozen
 	FROSTBITE,	// frozen enemies take DOT damage
 
 	INFERNO,	// inferno 5/15/25% crit chance
-	INFERNO2,
+	INFERNO2,	// inferno mines
 
 	SUMMON,		// summoned guys have 5/15/25% crit chance
 	PALS,		// 25/50/100% chance to summon a ptero along with what you intend to summon

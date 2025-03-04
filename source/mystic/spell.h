@@ -44,10 +44,13 @@ byte EnoughMana(void);
 byte SpellLevel(void);
 byte SpellLevel(byte spell);
 void ResetCastCounter(void);
-byte SpellCost(byte spell);
+byte SpellCost(byte spell,bool forceDowngrade=false);
 byte HealCostIgnoringStoredMana(void);
 byte GetStoredHealMana(void);
+byte GetStoredSeekerMana(void);
 void ResetStoredHealMana(void);
+void ResetStoredSeekerMana(void);
 void StoreHealMana(byte amt);
+void StoreSeekerMana(byte amt);
 
 #endif

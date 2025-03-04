@@ -95,11 +95,12 @@ RuneDef runeDef[] = {
 		SD_PERCENT,
 	},
 	{
-		"Siko Wiko",
-		{"I dunno yet",
-		 ""},
+		"Otto Siko",
+		{"Casting non-seeker spells",
+		 "stores mana. Store enough",
+		 "and a Seeker casts itself."},
 		{10,25,50},
-		"Weaken",
+		"Mana Stored",
 		SD_PERCENT,
 	},
 	{

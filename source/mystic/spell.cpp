@@ -25,6 +25,7 @@ byte spellCost[20]={
 
 int castCounter;
 float storedHealMana;
+float storedSeekerMana;
 
 byte HealCostIgnoringStoredMana(void)
 {
@@ -51,11 +52,11 @@ byte HealCostIgnoringStoredMana(void)
 	return cost;
 }
 
-byte SpellCost(byte spell)
+byte SpellCost(byte spell,bool forceDowngrade)
 {
 	byte cost;
 
-	if (player.downgradeSpell[spell])
+	if (player.downgradeSpell[spell] || forceDowngrade)
 		cost=spellCost[spell * 2];
 	else
 		cost=spellCost[spell * 2 + (player.spell[spell] - 1)];
@@ -154,6 +155,9 @@ void CastSpell(Guy *me)
 				StoreHealMana(cost);
 			else
 				ResetStoredHealMana();
+			if (player.casting != SPL_SEEKER)
+				StoreSeekerMana(cost);
+
 			ChallengeEvent(CE_SPELL, cost);
 			if (player.fairyOn == FAIRY_CASTY && player.life > 1)
 			{
@@ -544,6 +548,11 @@ byte GetStoredHealMana(void)
 	return (byte)storedHealMana;
 }
 
+byte GetStoredSeekerMana(void)
+{
+	return (byte)storedSeekerMana;
+}
+
 void StoreHealMana(byte amt)
 {
 	storedHealMana += RuneValue(Rune::HEALSTORE) * (float)amt / 100.0f;
@@ -554,4 +563,21 @@ void StoreHealMana(byte amt)
 void ResetStoredHealMana(void)
 {
 	storedHealMana = 0;
+}
+
+
+void ResetStoredSeekerMana(void)
+{
+	storedSeekerMana = 0;
+}
+
+void StoreSeekerMana(byte amt)
+{
+	storedSeekerMana += RuneValue(Rune::AUTOSEEKER) * (float)amt / 100.0f;
+	byte cost = SpellCost(SPL_SEEKER, true);
+	while (storedSeekerMana >= cost)
+	{
+		storedSeekerMana -= (float)cost;
+		FireBullet(GetGoodguy()->x, GetGoodguy()->y, Random(8), BLT_MISSILE);
+	}
 }

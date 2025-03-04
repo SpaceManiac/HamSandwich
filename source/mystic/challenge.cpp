@@ -747,14 +747,13 @@ void ChallengeMenuRender(MGLDraw *mgl)
 		memcpy(mgl->GetScreen(),backgd,SCRWID*SCRHEI);
 		RenderPlayerGear(450,0);
 
-		sprintf(s,"%d",chalData.stars);
-		chalSpr->GetSprite(2)->Draw(620,20,mgl);
-		RightPrintGlow(600,2,s,2);
 		sprintf(s,"%d%% Complete",percent);
-		PrintGlow(365,2,s,2);
+		Print(365 + 2, 0, s, -31, 2);
+		PrintGlow(365,-2,s,2);
 
-		sprintf(s,"Level %d",player.level);
-		PrintGlow(365,22,s,2);
+		sprintf(s,"Lvl %d",player.level);
+		Print(SCRWID - 2 - GetStrLength(s, 2), 0, s, -31, 2);
+		RightPrintGlow(SCRWID-2,-2,s,2);
 
 		y=30+offY;
 		j=MoveCursor(-1,chalCursor);
@@ -817,17 +816,25 @@ void ChallengeMenuRender(MGLDraw *mgl)
 			y+=50;
 			j=MoveCursor(1,j);
 		}
-		chalSpr->GetSprite(0)->Draw(0,0,mgl);
-		chalSpr->GetSprite(0)->Draw(0,387,mgl);
+		chalSpr->GetSprite(0)->Draw(-1,0,mgl);
+		chalSpr->GetSprite(0)->Draw(-1,387,mgl);
 
-		Print(62,2,"Challenge",0,0);
-		Print(112,40,"Mode",0,0);
+		Print(62+2,2+2,"Challenge",-31,0);
+		Print(112+2,40+2,"Mode",-31,0);
+		Print(62, 2, "Challenge", 0, 0);
+		Print(112, 40, "Mode", 0, 0);
 
 		chalSpr->GetSprite(2)->Draw(40,27,mgl);
 		chalSpr->GetSprite(2)->Draw(93,65,mgl);
 
 		chalSpr->GetSprite(2)->Draw(308,27,mgl);
 		chalSpr->GetSprite(2)->Draw(255,65,mgl);
+
+		sprintf(s, "%d", chalData.stars);
+		chalSpr->GetSprite(2)->Draw(338, 65, mgl);
+		Print(320 - GetStrLength(s, 2) + 2, 50 + 2, s, -32, 2);
+		RightPrintGlow(320, 50, s, 2);
+
 
 		// display data about this challenge
 		if(chal[chalCursor].chapter!=255)

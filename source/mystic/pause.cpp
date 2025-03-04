@@ -576,7 +576,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		reptCounter=0;
 
 	byte maxCursor = 4 + (!ClassicMode()) * 4;
-	byte loadSpot = 1 + (!ClassicMode());
+	byte loadSpot = 1 + (!ClassicMode())*2;
 	if(subMode==SUBMODE_NONE)	// not in any submenu
 	{
 		if((c&CONTROL_UP) && (!reptCounter))

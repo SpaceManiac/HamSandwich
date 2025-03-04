@@ -119,6 +119,8 @@ void InitPlayer(byte initWhat,byte world,byte level)
 				player.levelsPassed++;
 	}
 
+	ResetStoredHealMana();
+	ResetStoredSeekerMana();
 	player.storedFlames = 0;
 	player.flameCounter = 0;
 	player.barrier = 0;

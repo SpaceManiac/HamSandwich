@@ -764,7 +764,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 				}
 				else if (me->type == BLT_RUNESTONE)
 				{
-					if (player.runeStones < 50000)
+					if (player.runeStones < MAX_RUNESTONES)
 						player.runeStones++;
 					MakeSound(SND_CHLGCRYSTAL, me->x, me->y, SND_CUTOFF, 500);
 				}

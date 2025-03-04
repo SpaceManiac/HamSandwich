@@ -301,6 +301,17 @@ word NightmarePrice(byte which)
 		return price[which];
 }
 
+void GearOutline(byte spr, int x, int y)
+{
+	for(int i=x-1;i<=x+1;i++)
+		for (int j = y - 1; j <= y + 1; j++)
+		{
+			if(i!=x || j!=y)
+				shopSpr->GetSprite(spr)->DrawBright(i, j, GetDisplayMGL(), -31);
+		}
+	shopSpr->GetSprite(spr)->Draw(x, y, GetDisplayMGL());
+}
+
 void RenderPlayerGear(int x,byte brt)
 {
 	char s[32];
@@ -332,29 +343,31 @@ void RenderPlayerGear(int x,byte brt)
 		{
 			shopSpr->GetSprite(28)->DrawColored(x - 60, 5, GetDisplayMGL(), 0, 4);
 			sprintf(s, "%02d", player.shieldStones);
-			Print(x - 42 - 1, 21 - 1, s, -32, 2);
-			Print(x - 42 + 1, 21 + 1, s, -32, 2);
-			Print(x - 42, 21, s, 0, 2);
+			Print(x - 45 - 1, 21 - 1, s, -32, 2);
+			Print(x - 45 + 1, 21 + 1, s, -32, 2);
+			Print(x - 45, 21, s, 0, 2);
 			shopSpr->GetSprite(28)->DrawColored(x + 0, 5, GetDisplayMGL(), 4, 4);
 			sprintf(s, "%02d", player.powerStones);
-			Print(x + 18 - 1, 21 - 1, s, -32, 2);
-			Print(x + 18 + 1, 21 + 1, s, -32, 2);
-			Print(x + 18, 21, s, 0, 2);
+			Print(x + 15 - 1, 21 - 1, s, -32, 2);
+			Print(x + 15 + 1, 21 + 1, s, -32, 2);
+			Print(x + 15, 21, s, 0, 2);
 			shopSpr->GetSprite(28)->DrawColored(x + 60, 5, GetDisplayMGL(), 1, 4);
 			sprintf(s, "%02d", player.spellStones);
-			Print(x + 78 - 1, 21 - 1, s, -32, 2);
-			Print(x + 78 + 1, 21 + 1, s, -32, 2);
-			Print(x + 78, 21, s, 0, 2);
+			Print(x + 75 - 1, 21 - 1, s, -32, 2);
+			Print(x + 75 + 1, 21 + 1, s, -32, 2);
+			Print(x + 75, 21, s, 0, 2);
 			shopSpr->GetSprite(28)->DrawColored(x + 120, 5, GetDisplayMGL(), 7, 4);
 			sprintf(s, "%02d", player.skillStones);
-			Print(x + 138 - 1, 21 - 1, s, -32, 2);
-			Print(x + 138 + 1, 21 + 1, s, -32, 2);
-			Print(x + 138, 21, s, 0, 2);
+			Print(x + 135 - 1, 21 - 1, s, -32, 2);
+			Print(x + 135 + 1, 21 + 1, s, -32, 2);
+			Print(x + 135, 21, s, 0, 2);
 		}
 	}
 	// hat
 	shopSpr->GetSprite(1)->Draw(x-80,50,GetDisplayMGL());
-	shopSpr->GetSprite(13+player.hat)->Draw(x-80,50,GetDisplayMGL());
+	//shopSpr->GetSprite(13 + player.hat)->DrawBright(x - 80+2, 50+2, GetDisplayMGL(),-31);
+	//shopSpr->GetSprite(13+player.hat)->Draw(x-80,50,GetDisplayMGL());
+	GearOutline(13 + player.hat, x - 80, 50);
 	if(player.gear&(GEAR_POINTY|GEAR_MAGNET))
 	{
 		if(player.gear&GEAR_POINTY)
@@ -388,21 +401,21 @@ void RenderPlayerGear(int x,byte brt)
 	if((player.gear&GEAR_HEART) && !(player.gear&GEAR_SOUL))
 	{
 		shopSpr->GetSprite(1)->Draw(x-80,106,GetDisplayMGL());
-		shopSpr->GetSprite(18)->Draw(x-80,106,GetDisplayMGL());
+		GearOutline(18, x - 80, 106);
 		Print(x-18,128,"Heart Pendant",1,2);
 		Print(x-20,126,"Heart Pendant",0,2);
 	}
 	else if(!(player.gear&GEAR_HEART) && (player.gear&GEAR_SOUL))
 	{
 		shopSpr->GetSprite(1)->Draw(x-80,106,GetDisplayMGL());
-		shopSpr->GetSprite(25)->Draw(x-80,106,GetDisplayMGL());
+		GearOutline(25, x - 80, 106);
 		Print(x-18,128,"Soul Pendant",1,2);
 		Print(x-20,126,"Soul Pendant",0,2);
 	}
 	else if((player.gear&GEAR_HEART) && (player.gear&GEAR_SOUL))
 	{
 		shopSpr->GetSprite(1)->Draw(x-80,106,GetDisplayMGL());
-		shopSpr->GetSprite(26)->Draw(x-80,106,GetDisplayMGL());
+		GearOutline(26, x - 80, 106);
 		Print(x-18,114,"Heart & Soul",1,2);
 		Print(x-18,134,"Pendant",1,2);
 		Print(x-20,112,"Heart & Soul",0,2);
@@ -413,21 +426,21 @@ void RenderPlayerGear(int x,byte brt)
 	if((player.gear&GEAR_MOON) && !(player.gear&GEAR_SUN))
 	{
 		shopSpr->GetSprite(1)->Draw(x-80,162,GetDisplayMGL());
-		shopSpr->GetSprite(19)->Draw(x-80,162,GetDisplayMGL());
+		GearOutline(19, x - 80, 162);
 		Print(x-18,184,"Moon Amulet",1,2);
 		Print(x-20,182,"Moon Amulet",0,2);
 	}
 	else if(!(player.gear&GEAR_MOON) && (player.gear&GEAR_SUN))
 	{
 		shopSpr->GetSprite(1)->Draw(x-80,162,GetDisplayMGL());
-		shopSpr->GetSprite(23)->Draw(x-80,162,GetDisplayMGL());
+		GearOutline(23, x - 80, 162);
 		Print(x-18,184,"Sun Amulet",1,2);
 		Print(x-20,182,"Sun Amulet",0,2);
 	}
 	else if((player.gear&GEAR_MOON) && (player.gear&GEAR_SUN))
 	{
 		shopSpr->GetSprite(1)->Draw(x-80,162,GetDisplayMGL());
-		shopSpr->GetSprite(24)->Draw(x-80,162,GetDisplayMGL());
+		GearOutline(24, x - 80, 162);
 		Print(x-18,170,"Sun & Moon",1,2);
 		Print(x-18,190,"Amulet",1,2);
 
@@ -439,21 +452,21 @@ void RenderPlayerGear(int x,byte brt)
 	if((player.gear&GEAR_LAMP) && !(player.gear&GEAR_WISDOM))
 	{
 		shopSpr->GetSprite(1)->Draw(x-80,218,GetDisplayMGL());
-		shopSpr->GetSprite(20)->Draw(x-80,218,GetDisplayMGL());
+		GearOutline(20, x - 80, 218);
 		Print(x-18,240,"Lantern",1,2);
 		Print(x-20,238,"Lantern",0,2);
 	}
 	else if(!(player.gear&GEAR_LAMP) && (player.gear&GEAR_WISDOM))
 	{
 		shopSpr->GetSprite(1)->Draw(x-80,218,GetDisplayMGL());
-		shopSpr->GetSprite(21)->Draw(x-80,218,GetDisplayMGL());
+		GearOutline(21, x - 80, 218);
 		Print(x-18,240,"Light Of Wisdom",1,2);
 		Print(x-20,238,"Light Of Wisdom",0,2);
 	}
 	else if((player.gear&GEAR_LAMP) && (player.gear&GEAR_WISDOM))
 	{
 		shopSpr->GetSprite(1)->Draw(x-80,218,GetDisplayMGL());
-		shopSpr->GetSprite(22)->Draw(x-80,218,GetDisplayMGL());
+		GearOutline(22, x - 80, 218);
 		Print(x-18,226,"Lantern Of",1,2);
 		Print(x-18,246,"Wisdom",1,2);
 
@@ -485,13 +498,13 @@ void RenderPlayerGear(int x,byte brt)
 
 		if(PlayerHasSword())
 		{
-			shopSpr->GetSprite(35)->Draw(x-80,274,GetDisplayMGL());
+			GearOutline(35, x - 80, 274);
 			Print(x-18,306,"Armageddon Swd",1,2);
 			Print(x-20,304,"Armageddon Swd",0,2);
 		}
 		else
 		{
-			shopSpr->GetSprite(3+player.staff)->Draw(x-80,274,GetDisplayMGL());
+			GearOutline(3 + player.staff, x - 80, 274);
 			Print(x-18,306,staffName[player.staff],1,2);
 			Print(x-20,304,staffName[player.staff],0,2);
 		}
@@ -500,20 +513,20 @@ void RenderPlayerGear(int x,byte brt)
 	{
 		if(PlayerHasSword())
 		{
-			shopSpr->GetSprite(35)->Draw(x-80,274,GetDisplayMGL());
+			GearOutline(35, x - 80, 274);
 			Print(x-18,296,"Armageddon Swd",1,2);
 			Print(x-20,294,"Armageddon Swd",0,2);
 		}
 		else
 		{
-			shopSpr->GetSprite(3+player.staff)->Draw(x-80,274,GetDisplayMGL());
+			GearOutline(3 + player.staff, x - 80, 274);
 			Print(x-18,296,staffName[player.staff],1,2);
 			Print(x-20,294,staffName[player.staff],0,2);
 		}
 	}
 	// boots
 	shopSpr->GetSprite(1)->Draw(x-80,330,GetDisplayMGL());
-	shopSpr->GetSprite(8+player.boots)->Draw(x-80,330,GetDisplayMGL());
+	GearOutline(8 + player.boots, x - 80, 330);
 	if(player.gear&(GEAR_FEATHER|GEAR_SOCKS))
 	{
 		if(player.gear&GEAR_SOCKS)
