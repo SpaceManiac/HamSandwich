@@ -37,7 +37,7 @@ jobs:
         run: make install/strip mode=release
   linux:
     name: Linux
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - run: ./container make install/strip mode=release
@@ -53,7 +53,7 @@ jobs:
         run: tools/bootstrap/butler push --if-changed build/install "$ITCH_GAME:macos" --userversion="$(git rev-parse --short=10 HEAD)"
   android:
     name: Android
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
       ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -73,7 +73,7 @@ jobs:
           tools/bootstrap/butler push --if-changed hamsandwich-android.apk "$ITCH_GAME:android" --userversion="$(git rev-parse --short=10 HEAD)"
   web:
     name: Web
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - run: make install/strip mode=release os=emscripten
@@ -98,14 +98,14 @@ jobs:
     concurrency:
       group: "pages"
       cancel-in-progress: true
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/configure-pages@v5
     - uses: actions/deploy-pages@v4
       id: deployment
   jspedit-aseprite:
     name: JspEdit extension for Aseprite
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - run: tools/itch/build-jspedit-aseprite
