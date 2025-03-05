@@ -655,11 +655,19 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			j = player.damage;
 			if (player.fairyOn == FAIRY_SMASHY && player.mana)
 				j = j * 3 / 2;
-			
+			if (!ClassicMode() && RuneValue(Rune::SHOTGUN) > 0)
+			{
+				j = j / 3;	// less damage for shotgun shots
+				if (j < 1) j = 1;
+			}
 			if (me->lastHit == 65535)
 				i = FindVictimNot(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 16, me->dx, me->dy, j, me->lastHit, map, world);
 			else
+			{
+				j /= 2;
+				if (j < 1) j = 1;
 				i = FindVictimNot(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 16, me->dx, me->dy, j / 2, me->lastHit, map, world);
+			}
 			if (i != 65535)
 			{
 				if (player.fairyOn == FAIRY_VAMPY)
@@ -2275,7 +2283,23 @@ void HammerLaunch(int x, int y, byte facing, byte count, byte flags)
 {
 	byte angle, newfacing;
 
+	
 	MakeSound(SND_HAMMERTOSS, x, y, SND_CUTOFF, 1200);
+	if (!ClassicMode() && RuneValue(Rune::SHOTGUN) > 0)
+	{
+		count += RuneValue(Rune::SHOTGUN);
+		for (int i = 0; i < count; i++)
+		{
+			byte a = facing * 32 - 24 + Random(48);
+			FireExactBullet(x - FIXAMT * 10 + Random(FIXAMT * 20), y - FIXAMT * 10 + Random(FIXAMT * 20), FIXAMT * 20, Cosine(a) * 16, Sine(a) * 16, 0, 0, 10, facing, BLT_HAMMER + ((flags & HMR_REFLECT) > 0));
+		}
+		if (flags & HMR_REVERSE)
+		{
+			newfacing = ((byte)(facing - 4)) % 8;
+			HammerLaunch(x, y, newfacing, count, flags & (~HMR_REVERSE));
+		}
+		return;
+	}
 	if (count == 1 || count == 3 || count == 5)	// 1,3,5 have direct forward fire
 	{
 		angle = facing * 32;

@@ -38,13 +38,13 @@ RuneDef runeDef[] = {
 		SD_SECONDS,
 	},
 	{
-		"dunno dude",
-		{"",
-		 "",
-		 ""},
-		{10,25,50},
-		"Chance",
-		SD_PERCENT,
+		"Shottus Gunis",
+		{"Fireball fire rate, damage,",
+		 "and range reduced, but fire",
+		 "a lot more fireballs."},
+		{3,6,10},
+		"Fireballs",
+		SD_NUMBER,
 	},
 	{
 		"Manos Mortis",
@@ -70,6 +70,15 @@ RuneDef runeDef[] = {
 		"Chance",
 		SD_PERCENT,
 	},
+	/*{
+		"Energo Cheepus",
+		{"Energy spells deal more",
+		 "damage by consuming your",
+		 "Shield or Barrier."},
+		{200,300,500},
+		"Damage",
+		SD_PERCENT,
+	},*/
 	{
 		"Scorchus Burnio",
 		{"Flame spells gain Critical",

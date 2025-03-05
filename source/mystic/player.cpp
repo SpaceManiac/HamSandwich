@@ -1124,7 +1124,10 @@ void PlayerThrowHammer(Guy *me)
 		SkullLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags);
 	else
 		HammerLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags);
-	player.reload=player.hamSpeed+2;
+	if (!ClassicMode() && RuneValue(Rune::SHOTGUN) > 0)
+		player.reload = player.hamSpeed * 2 + 4;
+	else
+		player.reload = player.hamSpeed + 2;
 }
 
 void PlayerHeal(byte amt)

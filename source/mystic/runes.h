@@ -10,7 +10,7 @@ enum class Rune :byte
 	FIREBALLS,	// fireballs 10/25/50% damage
 	RECOVER,	// heal 1 life per 5/3/1 second
 	MANA,		// regain 1 mana per 5/3/1s
-	NEW1,
+	SHOTGUN,	// shotgun!
 	MANAONKILL, // gain mana per kill
 
 	ENERGY,	// energy spells 5/15/25% crit chance

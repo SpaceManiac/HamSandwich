@@ -187,7 +187,7 @@ void CastSpell(Guy *me)
 			{
 				FireBullet(me->x,me->y,me->facing,BLT_LASER);
 				castCounter++;
-				if (ClassicMode() && fakeLevel > 35)
+				if (fakeLevel > 35)
 				{
 					FireBullet(me->x, me->y, me->facing, BLT_LASER);
 					castCounter++;
