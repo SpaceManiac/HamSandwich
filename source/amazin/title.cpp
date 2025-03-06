@@ -1,4 +1,5 @@
 #include "title.h"
+#include <string.h>
 #include "control.h"
 #include "display.h"
 #include "editor.h"

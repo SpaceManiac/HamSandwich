@@ -1,4 +1,5 @@
 #include "guy.h"
+#include <math.h>
 #include <memory>
 #include "player.h"
 #include "intface.h"
@@ -804,12 +805,12 @@ void Guy::Update(Map *map,world_t *world)
 		}
 		if (player.worldNum == 1 && player.levelNum == 3 && (oldmapx != mapx || oldmapy != mapy))
 			MushAidPuzzleUpdate(map);
-		
+
 		if (player.worldNum == 1 && player.levelNum == 5 && (oldmapx!=mapx || oldmapy!=mapy))
 			AbandonedVillagePuzzle(map);
 		if (player.worldNum == 2 && player.levelNum == 13 && (oldmapx != mapx || oldmapy != mapy))
 			GuestChamberPuzzleStep(map,mapx,mapy);
-		
+
 		if(player.worldNum==2 && player.levelNum==16 && (oldmapx!=mapx || oldmapy!=mapy) &&
 			mapx==11 && mapy==31 && map->map[mapx+mapy*map->width].floor==59)
 		{
@@ -1500,7 +1501,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 
 		if (player.stoneskin > 0)
 			fDamage = (fDamage * (RuneValue(Rune::ARMOR_DMG) + 100) / 100);
-		
+
 		if (BulletHittingType() == BLT_FLAME || BulletHittingType() == BLT_LIQUIFY)
 		{
 			if (SkillValue(SKILL_MELTARMOR) > 0)
@@ -1510,7 +1511,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 					melted = 30 * 10;	// 10s max duration
 			}
 		}
-		
+
 		bool critted = false;
 		float critChance = 0;
 		if(BulletHittingType()==BLT_HAMMER || BulletHittingType()==BLT_HAMMER2 || BulletHittingType()==BLT_SKULL)
@@ -2211,7 +2212,7 @@ void AddRandomGuy(Map *map,world_t *world,byte chapter,byte rnd)
 		return;	// only 1 in 200 chance of badguy appearing
 	if((rnd>0) && MGL_random(100))
 		return;	// only 1 in 100 chance of badguy appearing on final chapter
-	
+
 	switch(chapter)
 	{
 		case 1:	// Over the River

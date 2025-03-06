@@ -1,4 +1,5 @@
 #include "game.h"
+#include <string.h>
 #include "random.h"
 #include "level.h"
 #include "status.h"

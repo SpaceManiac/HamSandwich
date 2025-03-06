@@ -1,4 +1,5 @@
 #include "editor.h"
+#include <string.h>
 #include <sstream>
 #include <memory>
 #include <vector>
