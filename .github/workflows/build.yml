@@ -110,4 +110,4 @@ jobs:
       - uses: actions/checkout@v4
       - run: tools/itch/build-jspedit-aseprite
       - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
-        run: tools/bootstrap/butler push --if-changed build/jspedit.aseprite-extension "$ITCH_GAME:aseprite" --userversion="$(git rev-parse --short=10 HEAD)"
+        run: tools/bootstrap/butler push --if-changed build/jspedit.aseprite-extension "$ITCH_GAME:aseprite" --userversion="$(cat build/jspedit.aseprite-extension.version)"

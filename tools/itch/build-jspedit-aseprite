@@ -2,23 +2,35 @@
 set -euo pipefail
 
 extension=$PWD/build/jspedit.aseprite-extension
+source=$PWD/source/jspedit_aseprite
 
-# Build ZIP
 rm -f "$extension"
-(
-	cd source/jspedit_aseprite
-	zip "$extension" -x '.gitignore' -x '__pref.lua' -r .
-)
 
-# Overwrite version.lua
+# Add package.json with modified version field
+git_hash=$(git log -1 --format=%H -- "$source" "$0")
+short_git_hash=$(git rev-parse --short=10 "$git_hash")
+touch_date=$(git log -1 --date=format-local:%Y%m%d%H%M.%S --format=%ad "$git_hash" --)
+
 vdir=$PWD/build
-version=$(jq -r '.version' <source/jspedit_aseprite/package.json)
-version=${version/dev/git-$(git rev-parse --short=10 HEAD)}
-jq '.version = $version' --arg version "$version" <source/jspedit_aseprite/package.json >"$vdir/package.json"
+version=$(jq -r '.version' <"$source/package.json")
+version=${version/dev/git-"$short_git_hash"}
+jq '.version = $version' --arg version "$version" <"$source/package.json" >"$vdir/package.json"
+touch -t "$touch_date" "$vdir/package.json"
 (
 	cd "$vdir"
-	zip "$extension" package.json
+	zip -X "$extension" package.json
+)
+
+# Add contents
+mkdir -p build
+find "$extension" -type f -exec touch -t "$touch_date" '{}' +
+(
+	cd "$source"
+	TZ=UTC zip -X "$extension" --exclude '.gitignore' --exclude '__pref.lua' --exclude 'package.json' --recurse-paths .
 )
 
 # Summarize
+echo "$short_git_hash" >"$extension.version"
 ls -l "$extension"
+git log -1 "$git_hash" --
+sha256sum "$extension"
