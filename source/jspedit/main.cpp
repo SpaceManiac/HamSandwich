@@ -1,14 +1,16 @@
 #include <SDL.h>
 #include <SDL_image.h>
-#include <SDL_ttf.h>
 #include <string>
+#include <map>
 #include "globals.h"
 #include "editor.h"
+#include "jamulfont.h"
+#include "fontawesome.h"
 
-extern const size_t embed_vera_size;
-extern const unsigned char embed_vera[];
-extern const size_t embed_fontawesome_size;
-extern const unsigned char embed_fontawesome[];
+extern const size_t embed_verdana_size;
+extern const unsigned char embed_verdana[];
+extern const size_t embed_icons_size;
+extern const unsigned char embed_icons[];
 #if !defined(_WIN32) && !defined(__clang__)
 extern const size_t embed_game_icon_size;
 extern const unsigned char embed_game_icon[];
@@ -18,7 +20,8 @@ using namespace std;
 
 SDL_Window *window;
 SDL_Renderer *renderer;
-TTF_Font *gFont, *gIconFont;
+mfont_t gFontBuf, *gFont;
+SDL_Texture *gIcons;
 
 int DISPLAY_WIDTH = 1024;
 int DISPLAY_HEIGHT = 768;
@@ -26,12 +29,6 @@ int DISPLAY_HEIGHT = 768;
 int main(int argc, char** argv) {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
     IMG_Init(IMG_INIT_PNG);
-    if (TTF_Init()) printf("TTF_Init: %s\n", TTF_GetError());
-
-    gFont = TTF_OpenFontRW(SDL_RWFromConstMem(embed_vera, embed_vera_size), true, 14);
-    if (!gFont) printf("vera.ttf: %s\n", TTF_GetError());
-    gIconFont = TTF_OpenFontRW(SDL_RWFromConstMem(embed_fontawesome, embed_fontawesome_size), true, 14);
-    if (!gIconFont) printf("fontawesome.ttf: %s\n", TTF_GetError());
 
     window = SDL_CreateWindow("JspEdit 3", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DISPLAY_WIDTH, DISPLAY_HEIGHT, SDL_WINDOW_RESIZABLE);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
@@ -43,33 +40,80 @@ int main(int argc, char** argv) {
     SDL_FreeSurface(surface);
 #endif
 
+    SDL_Surface *icons = IMG_Load_RW(SDL_RWFromConstMem(embed_icons, embed_icons_size), true);
+    gIcons = SDL_CreateTextureFromSurface(renderer, icons);
+    SDL_FreeSurface(icons);
+
+    SDL_RWops *rwFont = SDL_RWFromConstMem(embed_verdana, embed_verdana_size);
+    gFont = &gFontBuf;
+    FontLoad(rwFont, gFont);
+    SDL_RWclose(rwFont);
+
     if (argc > 1) {
         editor::loadOnStartup(argv[1]);
     }
 
     editor::main();
 
-    TTF_CloseFont(gIconFont);
-    TTF_CloseFont(gFont);
+    SDL_DestroyTexture(gIcons);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     return 0;
 }
 
-void DrawText(SDL_Renderer *renderer, TTF_Font *font, int x, int y, Align align, SDL_Color color, const char* text) {
-    SDL_Surface *surface = TTF_RenderUTF8_Blended(font, text, color);
-    if (!surface) {
-        return;
+void DrawText(SDL_Renderer *renderer, int x, int y, Align align, SDL_Color color, std::string_view text) {
+    int width = 0;
+
+    for (char ch : text)
+    {
+        if (ch == ' ')
+            width += gFont->spaceSize;
+        else if (ch >= gFont->firstChar && ch < gFont->firstChar + gFont->numChars)
+            width += CharWidth(ch, gFont) + gFont->gapSize;
+        else
+            width += 16;
     }
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
 
-    SDL_Rect rect = { x, y, surface->w, surface->h };
     if (align == ALIGN_RIGHT)
-        rect.x -= surface->w;
+    {
+        x -= width;
+    }
     else if (align == ALIGN_CENTER)
-        rect.x -= surface->w / 2;
+    {
+        x -= width / 2;
+    }
 
-    SDL_RenderCopy(renderer, texture, nullptr, &rect);
-    SDL_DestroyTexture(texture);
-    SDL_FreeSurface(surface);
+    for (char ch : text)
+    {
+        if (ch == ' ')
+        {
+            x += gFont->spaceSize;
+        }
+        else if (ch >= gFont->firstChar && ch < gFont->firstChar + gFont->numChars)
+        {
+            const uint8_t* data = gFont->chars[ch - gFont->firstChar];
+            uint8_t charWidth = *data++;
+
+            SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+            for (int j = 0; j < gFont->height; ++j)
+            {
+                for (int i = 0; i < charWidth; ++i)
+                {
+                    if (*data++)
+                        SDL_RenderDrawPoint(renderer, x + i, y + j + 3);
+                }
+            }
+
+            x += charWidth + gFont->gapSize;
+        }
+        else if (ch > 0)
+        {
+            SDL_Rect source = { 15 * (ch - 1), 0, 15, 15 };
+            SDL_Rect dest = { x, y + 1, 15, 15 };
+
+            SDL_SetTextureColorMod(gIcons, color.r, color.g, color.b);
+            SDL_RenderCopy(renderer, gIcons, &source, &dest);
+            x += 16;
+        }
+    }
 }

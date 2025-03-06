@@ -33,9 +33,9 @@ public:
     void render();
     bool handleEvent(const SDL_Event &evt);
 
-    bool element(SDL_Rect rect, TTF_Font *font, const std::string &text, const std::string &desc, KbdShortcut shortcut);
+    bool element(SDL_Rect rect, const std::string &text, const std::string &desc, KbdShortcut shortcut);
     bool button(SDL_Rect rect, const std::string &text, const std::string &desc = "", KbdShortcut shortcut = {});
-    bool iconButton(int x, int y, FAChar ch, const std::string &desc = "", KbdShortcut shortcut = {});
+    bool iconButton(int x, int y, char ch, const std::string &desc = "", KbdShortcut shortcut = {});
 
     bool hotkey(KbdShortcut shortcut);
 
