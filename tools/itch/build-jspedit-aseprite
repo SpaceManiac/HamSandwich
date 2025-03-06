@@ -4,6 +4,7 @@ set -euo pipefail
 extension=$PWD/build/jspedit.aseprite-extension
 source=$PWD/source/jspedit_aseprite
 
+mkdir -p build
 rm -f "$extension"
 
 # Add package.json with modified version field
@@ -22,7 +23,6 @@ touch -t "$touch_date" "$vdir/package.json"
 )
 
 # Add contents
-mkdir -p build
 find "$extension" -type f -exec touch -t "$touch_date" '{}' +
 (
 	cd "$source"
@@ -32,5 +32,5 @@ find "$extension" -type f -exec touch -t "$touch_date" '{}' +
 # Summarize
 echo "$short_git_hash" >"$extension.version"
 ls -l "$extension"
-git log -1 "$git_hash" --
+git log -1 "$git_hash" -- | cat
 sha256sum "$extension"
