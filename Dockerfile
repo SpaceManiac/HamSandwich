@@ -11,7 +11,7 @@ SHELL ["/bin/bash", "-c"]
 
 # Install ImageMagick for icon conversion.
 # Install unzip for Ninja bootstrap.
-RUN apt-get install -y imagemagick unzip
+RUN apt-get install -y imagemagick unzip libfluidsynth-dev
 
 # Install a newer version of CMake from their binary releases.
 RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.21.2/cmake-3.21.2-linux-x86_64.tar.gz -O cmake.tar.gz && \

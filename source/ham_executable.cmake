@@ -273,6 +273,8 @@ function(HamSandwich_add_executable target_name)
 			OPTIONAL
 			DESTINATION "assets"
 			COMPONENT "${target_name}/assets"
+			PATTERN "Thumbs.db" EXCLUDE
+			PATTERN "Thumbs.db:encryptable" EXCLUDE
 		)
 	endif()
 endfunction()
