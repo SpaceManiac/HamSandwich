@@ -15,12 +15,24 @@ static void* originalUserdata = nullptr;
 static bool errorLogAttempted = false;
 static owned::SDL_RWops errorLog = nullptr;
 
+static const char *priorityPrefixes[] = {
+    "",
+    "VERBOSE: ",
+    "DEBUG: ",
+    "INFO: ",
+    "WARN: ",
+    "ERROR: ",
+    "CRITICAL: ",
+};
+static_assert(std::size(priorityPrefixes) == SDL_NUM_LOG_PRIORITIES);
+
 void HamLogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message)
 {
 	(void)userdata;
 	original(originalUserdata, category, priority, message);
-	if (errorLog && priority >= SDL_LOG_PRIORITY_WARN)
+	if (errorLog)
 	{
+		SDL_RWwrite(errorLog, priorityPrefixes[priority], 1, strlen(priorityPrefixes[priority]));
 		SDL_RWwrite(errorLog, message, 1, strlen(message));
 		SDL_RWwrite(errorLog, "\n", 1, 1);
 		// We should flush here but SDL_RWflush doesn't exist in SDL2.
