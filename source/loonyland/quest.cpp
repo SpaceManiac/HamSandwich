@@ -2135,7 +2135,7 @@ void UpdateChat(void)
 		curLine=4;
 	}
 
-	if(curChar<48)
+	if(curLine < 4 && curChar<48)
 	{
 		curChar++;
 		if(talk[curChat].line[curLine][curChar]=='\0')

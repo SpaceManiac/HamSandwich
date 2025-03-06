@@ -884,7 +884,7 @@ void ChangeFloor(Map* map, int x, int y, byte newFloor)
 
 	// turn this square into the new floor. Ignore the wall, keep it the same
 	map->map[x + y * map->width].floor = newFloor;
-	
+
 	// recurse to all neighbors that match
 	if (x > 0 && map->map[x - 1 + y * map->width].wall == wall &&
 		map->map[x - 1 + y * map->width].floor == flr)
@@ -1075,7 +1075,7 @@ void RenderSpecialXes(MGLDraw *mgl,Map *map,byte world)
 		{
 			if(ClassicMode() && PlayerPassedLevel(world, map->special[i].value))
 				DrawRedX(cx,cy, mgl);
-		
+
 			if(!ClassicMode() && map->special[i].value<MAX_MAPS && g)
 			{
 				int myDist = (abs(g->x / (TILE_WIDTH * FIXAMT) - map->special[i].x)* abs(g->x / (TILE_WIDTH * FIXAMT) - map->special[i].x)) +
@@ -1114,9 +1114,9 @@ void RenderSpecialXes(MGLDraw *mgl,Map *map,byte world)
 			if (outXes > 40) outXes = 40;
 		}
 	}
-	byte mNum = map->special[lastSpecialShown].value;
 	if (!ClassicMode() && lastSpecialShown < 33)
 	{
+		byte mNum = map->special[lastSpecialShown].value;
 		int cx = map->special[lastSpecialShown].x * TILE_WIDTH - camx + TILE_WIDTH / 2;
 		int cy = map->special[lastSpecialShown].y * TILE_HEIGHT - camy + TILE_HEIGHT / 2;
 		Map* m = curWorld.map[mNum];
@@ -1124,7 +1124,7 @@ void RenderSpecialXes(MGLDraw *mgl,Map *map,byte world)
 		{
 			byte angList[] = { 96, 32, 0, 128 };
 			byte ang=0;
-			
+
 			if (m->contentFlags & LP_GOTFAIRY)
 			{
 				for(int xx=cx-1;xx<=cx+1;xx++)
@@ -1135,7 +1135,7 @@ void RenderSpecialXes(MGLDraw *mgl,Map *map,byte world)
 					}
 				if (GotFairyBellInLevel(world, mNum))
 					GetItemSprite(173)->DrawBright(cx - 12 + Cosine(angList[ang]) * outXes / FIXAMT, cy + 16 + Sine(angList[ang]) * outXes / FIXAMT, mgl, 0);
-				
+
 				ang++;
 			}
 			if (m->contentFlags & LP_GOTRUNE)
@@ -1187,7 +1187,7 @@ void RenderSpecialXes(MGLDraw *mgl,Map *map,byte world)
 			int cy = map->special[i].y * TILE_HEIGHT - camy + TILE_HEIGHT / 2;
 			if (map->special[i].effect == SPC_GOTOMAP)
 			{
-				if (PlayerPassedLevel(world, map->special[i].value))
+				if (map->special[i].value < MAX_MAPS && PlayerPassedLevel(world, map->special[i].value))
 					DrawRedX(cx, cy, mgl);
 			}
 		}
@@ -2617,7 +2617,7 @@ void MinesPuzzle(Map* map,int x,int y)
 			map->map[56 + i * map->width].floor = 0;
 			MakeNormalSound(SND_WALLDOWN);
 			NewMessage("Something thunked!", 60);
-				
+
 		}
 	}
 }
@@ -2643,7 +2643,7 @@ void BatsPuzzle(Map* map,int x,int y)
 			py = (y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
 			px = px - (HALFWID + Random(SCRWID))*FIXAMT;
 			py = py - (HALFHEI + Random(SCRHEI)) * FIXAMT;
-			
+
 			BlowWigglySmoke(px, py, 0, 8);
 		}
 		batsProgress++;
