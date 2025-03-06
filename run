@@ -197,6 +197,11 @@ if ! test -f "$debugcommand"; then
 	fi
 fi
 
+# Set symbolizer for sanitizers.
+if symbolizer=$(command -v llvm-symbolizer); then
+	export ASAN_SYMBOLIZER_PATH=$symbolizer
+fi
+
 # Run the game executable or tool.
 mkdir -p "$debugdir"
 cd "$debugdir"

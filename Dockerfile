@@ -5,7 +5,7 @@ SHELL ["/bin/bash", "-c"]
 
 # Install unzip for Ninja bootstrap.
 # Install libfluidsynth-dev for SDL2_mixer build with MIDI support.
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y unzip libfluidsynth-dev
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y unzip libfluidsynth-dev clang-16
 
 # Install patchelf for setting SDL2's RPATH to '$ORIGIN' so PNG loading works.
 RUN wget -nv https://github.com/NixOS/patchelf/releases/download/0.14.5/patchelf-0.14.5-x86_64.tar.gz -O patchelf.tar.gz && \
@@ -15,7 +15,7 @@ RUN wget -nv https://github.com/NixOS/patchelf/releases/download/0.14.5/patchelf
 
 # Skip install-deps.sh to avoid having to code it to actually work inside this.
 ENV HSW_NO_INSTALL_DEPS=1 \
-	CC=gcc-14 \
-	CXX=g++-14
+	CC=clang-16 \
+	CXX=clang++-16
 
 # Volume management is left to container runtime; see `./container`.

@@ -51,6 +51,12 @@ else()
 	add_subdirectory(tools)
 endif()
 
+# Enable sanitizers in debug mode.
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT EMSCRIPTEN)
+	add_compile_options(-fsanitize=undefined,address,leak)
+	add_link_options(-fsanitize=undefined,address,leak)
+endif()
+
 # Include the source/ directories with all the actual programs.
 add_subdirectory("source")
 
