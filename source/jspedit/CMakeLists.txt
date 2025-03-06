@@ -1,7 +1,7 @@
 # Launcher executable.
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 add_executable(jspedit ${sources})
-target_link_libraries(jspedit lunaticpal_lib SDL2 SDL2_image SDL2_ttf tinyfiledialogs)
+target_link_libraries(jspedit lunaticpal_lib SDL2 SDL2_image ham tinyfiledialogs)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_compile_options(jspedit PRIVATE -Wall -Wextra -Wpedantic)
@@ -12,8 +12,8 @@ if(WIN32 AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 endif()
 
 # Embed the font.
-HamSandwich_embed_file(jspedit "${CMAKE_CURRENT_SOURCE_DIR}/vera.ttf" embed_vera)
-HamSandwich_embed_file(jspedit "${CMAKE_CURRENT_SOURCE_DIR}/fontawesome.ttf" embed_fontawesome)
+HamSandwich_embed_file(jspedit "${CMAKE_SOURCE_DIR}/assets/launcher/verdana.jft" embed_verdana)
+HamSandwich_embed_file(jspedit "${CMAKE_CURRENT_SOURCE_DIR}/icons.png" embed_icons)
 HamSandwich_executable_icon(jspedit "${CMAKE_CURRENT_SOURCE_DIR}/bomb.ico")
 
 # Embed icon in the launcher.

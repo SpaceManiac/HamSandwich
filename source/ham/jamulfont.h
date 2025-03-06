@@ -74,6 +74,8 @@ void FontPrintStringMultiline(int x, int y, std::string_view s, const mfont_t *f
 void FontPrintRectBlack(int x, int y, int x2, int y2, std::string_view s, int height, int bright, const mfont_t *font);
 void FontPrintRectBlack2(int x, int y, int x2, int y2, std::string_view s, int height, const mfont_t *font);
 
+byte CharWidth(dword c, const mfont_t *font);
+
 int FontStrLen(std::string_view s, const mfont_t *font);
 void FontSetColors(byte first, byte count, byte *data);
 TASK(bool) FontInputText(std::string_view prompt, char *buffer, int len, void (*renderScrn)(const mfont_t *), const mfont_t *font);

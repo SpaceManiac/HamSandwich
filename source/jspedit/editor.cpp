@@ -433,7 +433,7 @@ void Editor::convertAlpha() {
 void Editor::working(const std::string& text) {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 196);
     SDL_RenderFillRect(renderer, NULL);
-    DrawText(renderer, gFont, DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2 - 50, ALIGN_CENTER, { 0, 0, 0, 255 }, text.c_str());
+    DrawText(renderer, DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2 - 50, ALIGN_CENTER, { 0, 0, 0, 255 }, text.c_str());
     SDL_RenderPresent(renderer);
 }
 
@@ -527,19 +527,19 @@ void Editor::render() {
     if (FileInfo* file = getCurFile()) {
         JspFrame* frame = file->getCurFrame();
 
-        DrawText(renderer, gFont, 5, 65, ALIGN_LEFT, black, file->calcShortname().c_str());
+        DrawText(renderer, 5, 65, ALIGN_LEFT, black, file->calcShortname().c_str());
 
         vector<JspFrame> &frames = file->jsp.frames;
         std::ostringstream s;
         s << "Sprite count: " << frames.size();
-        DrawText(renderer, gFont, 5, 85, ALIGN_LEFT, black, s.str().c_str());
+        DrawText(renderer, 5, 85, ALIGN_LEFT, black, s.str().c_str());
         if (frame) {
             s.str(""); s << file->curSprite;
-            DrawText(renderer, gFont, 88, 110, ALIGN_CENTER, black, s.str().c_str());
+            DrawText(renderer, 88, 110, ALIGN_CENTER, black, s.str().c_str());
             s.str(""); s << "Size: (" << frame->surface->w << ", " << frame->surface->h << ")";
-            DrawText(renderer, gFont, 5, 135, ALIGN_LEFT, black, s.str().c_str());
+            DrawText(renderer, 5, 135, ALIGN_LEFT, black, s.str().c_str());
             s.str(""); s << "Origin: (" << frame->ofsX << ", " << frame->ofsY << ")";
-            DrawText(renderer, gFont, 5, 155, ALIGN_LEFT, black, s.str().c_str());
+            DrawText(renderer, 5, 155, ALIGN_LEFT, black, s.str().c_str());
         }
 
         x = 10; g = 34; y = 110;

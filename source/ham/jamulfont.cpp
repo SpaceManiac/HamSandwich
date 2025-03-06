@@ -563,7 +563,7 @@ static void FontPrintCharGlowLimited(int x, int y, int maxX, dword c, const mfon
 	}
 }
 
-static byte CharWidth(dword c, const mfont_t *font)
+byte CharWidth(dword c, const mfont_t *font)
 {
 	if (c == '\n')
 		return 0;
