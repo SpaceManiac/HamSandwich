@@ -1,4 +1,5 @@
 #include "game.h"
+#include <string.h>
 #include "cheat.h"
 #include "clock.h"
 #include "display.h"

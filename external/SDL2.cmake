@@ -1,10 +1,9 @@
 # SDL2, SDL2_image, and SDL2_mixer library targets
-add_library(SDL2 INTERFACE)
-add_library(SDL2_image INTERFACE)
-add_library(SDL2_mixer INTERFACE)
-add_library(SDL2_ttf INTERFACE)
-
 if(EMSCRIPTEN)
+	add_library(SDL2 INTERFACE)
+	add_library(SDL2_image INTERFACE)
+	add_library(SDL2_mixer INTERFACE)
+
 	target_compile_options(SDL2 INTERFACE -sUSE_SDL=2)
 	target_compile_options(SDL2_image INTERFACE -sUSE_SDL_IMAGE=2)
 	target_compile_options(SDL2_mixer INTERFACE -sUSE_SDL_MIXER=2 -sSDL2_IMAGE_FORMATS=['bmp'])
@@ -12,6 +11,10 @@ if(EMSCRIPTEN)
 	target_link_options(SDL2_image INTERFACE -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS=['bmp'])
 	target_link_options(SDL2_mixer INTERFACE -sUSE_SDL_MIXER=2)
 elseif(ANDROID)
+	add_library(SDL2 INTERFACE)
+	add_library(SDL2_image INTERFACE)
+	add_library(SDL2_mixer INTERFACE)
+
 	if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 		set(ANDROID_BUILD_TYPE "debug")
 	else()
@@ -22,13 +25,17 @@ elseif(ANDROID)
 	target_include_directories(SDL2 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/include")
 	target_link_libraries(SDL2 INTERFACE "${ANDROID_OBJDIR}/libSDL2.so")
 
-	target_include_directories(SDL2_image INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_image")
+	target_include_directories(SDL2_image INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_image/include")
 	target_link_libraries(SDL2_image INTERFACE "${ANDROID_OBJDIR}/libSDL2_image.so")
 
-	target_include_directories(SDL2_mixer INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_mixer")
+	target_include_directories(SDL2_mixer INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_mixer/include")
 	target_link_libraries(SDL2_mixer INTERFACE "${ANDROID_OBJDIR}/libSDL2_mixer.so")
 elseif(WIN32)
 	# On MSVC, use the official prebuilt binaries.
+	add_library(SDL2 INTERFACE)
+	add_library(SDL2_image INTERFACE)
+	add_library(SDL2_mixer INTERFACE)
+
 	if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 		set(SDL_PLATFORM "x86")
 	elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -48,11 +55,7 @@ elseif(WIN32)
 		URL https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.0.4-VC.zip
 		URL_HASH SHA256=258788438b7e0c8abb386de01d1d77efe79287d9967ec92fbb3f89175120f0b0
 	)
-	FetchContent_Declare(SDL2_ttf
-		URL https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-devel-2.0.15-VC.zip
-		URL_HASH SHA256=aab0d81f1aa6fe654be412efc85829f2b188165dca6c90eb4b12b673f93e054b
-	)
-	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf)
+	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer)
 
 	target_include_directories(SDL2 INTERFACE "${sdl2_SOURCE_DIR}/include")
 	set(sdl2_LIBS "${sdl2_SOURCE_DIR}/lib/${SDL_PLATFORM}")
@@ -78,18 +81,12 @@ elseif(WIN32)
 		"${sdl2_mixer_LIBS}/libvorbis-0.dll"
 		"${sdl2_mixer_LIBS}/libvorbisfile-3.dll"
 		TYPE BIN COMPONENT generic/executables)
-
-	target_include_directories(SDL2_ttf INTERFACE "${sdl2_ttf_SOURCE_DIR}/include")
-	target_link_directories(SDL2_ttf INTERFACE "${sdl2_ttf_SOURCE_DIR}/lib/${SDL_PLATFORM}")
-	target_link_libraries(SDL2_ttf INTERFACE "SDL2_ttf.lib")
-	install(FILES
-		"${sdl2_ttf_SOURCE_DIR}/lib/${SDL_PLATFORM}/SDL2_ttf.dll"
-		"${sdl2_ttf_SOURCE_DIR}/lib/${SDL_PLATFORM}/libfreetype-6.dll"
-		"${sdl2_ttf_SOURCE_DIR}/lib/${SDL_PLATFORM}/LICENSE.freetype.txt"
-		"${sdl2_ttf_SOURCE_DIR}/lib/${SDL_PLATFORM}/zlib1.dll"
-		TYPE BIN COMPONENT jspedit/executables)
 elseif(APPLE)
-	# Like Windows, use the official SDL2 prebuild binaries.
+	# Like Windows, use the official SDL2 prebuilt binaries.
+	add_library(SDL2 INTERFACE)
+	add_library(SDL2_image INTERFACE)
+	add_library(SDL2_mixer INTERFACE)
+
 	include(FetchContent)
 	FetchContent_Declare(SDL2
 		URL https://www.libsdl.org/release/SDL2-2.0.22.dmg
@@ -115,15 +112,7 @@ elseif(APPLE)
 		COMMAND cp -r dmg_mount dmg_content
 		COMMAND hdiutil unmount dmg_mount
 	)
-	FetchContent_Declare(SDL2_ttf
-		URL https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-2.0.15.dmg
-		URL_HASH SHA256=318bc896ea89e776a6cd07fc71aff11571e05631390fcdd360dc831cc88cf849
-		DOWNLOAD_NO_EXTRACT TRUE
-		PATCH_COMMAND hdiutil mount <DOWNLOADED_FILE> -mountpoint dmg_mount
-		COMMAND cp -r dmg_mount dmg_content
-		COMMAND hdiutil unmount dmg_mount
-	)
-	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf)
+	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer)
 
 	target_include_directories(SDL2 INTERFACE "${sdl2_SOURCE_DIR}/dmg_content/SDL2.framework/Headers")
 	target_compile_options(SDL2 INTERFACE -F "${sdl2_SOURCE_DIR}/dmg_content")  # so SDL_mixer finds <SDL2/SDL.h>
@@ -138,69 +127,47 @@ elseif(APPLE)
 	target_link_libraries(SDL2_mixer INTERFACE "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework/SDL2_mixer")
 	install(DIRECTORY "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework" TYPE BIN COMPONENT generic/executables)
 	install(FILES "${sdl2_mixer_SOURCE_DIR}/dmg_content/SDL2_mixer.framework/Frameworks/Ogg.framework/Resources/LICENSE.ogg-vorbis.txt" TYPE BIN COMPONENT generic/executables)
-
-	target_include_directories(SDL2_ttf INTERFACE "${sdl2_ttf_SOURCE_DIR}/dmg_content/SDL2_ttf.framework/Headers")
-	target_link_libraries(SDL2_ttf INTERFACE "${sdl2_ttf_SOURCE_DIR}/dmg_content/SDL2_ttf.framework/SDL2_ttf")
-	install(DIRECTORY "${sdl2_ttf_SOURCE_DIR}/dmg_content/SDL2_ttf.framework" TYPE BIN COMPONENT jspedit/executables)
-	install(FILES "${sdl2_ttf_SOURCE_DIR}/dmg_content/SDL2_ttf.framework/Frameworks/FreeType.framework/Resources/LICENSE.freetype.txt" TYPE BIN COMPONENT jspedit/executables)
 else()
-	# Use system libraries.
-	find_package(SDL2 REQUIRED)
-	find_library(SDL2_image_LIBRARIES SDL2_image REQUIRED)
-	find_library(SDL2_mixer_LIBRARIES SDL2_mixer REQUIRED)
-	find_library(SDL2_ttf_LIBRARIES SDL2_ttf REQUIRED)
-	target_link_libraries(SDL2 INTERFACE SDL2::SDL2)
-	target_link_libraries(SDL2_image INTERFACE ${SDL2_image_LIBRARIES})
-	target_link_libraries(SDL2_mixer INTERFACE ${SDL2_mixer_LIBRARIES})
-	target_link_libraries(SDL2_ttf INTERFACE ${SDL2_ttf_LIBRARIES})
+	# Compile SDL2 with options to include only the file formats we care about.
+	# Otherwise the versions that come with the Steam runtime will take a hard
+	# dependency on a variety of file formats we don't want to have to ship the
+	# .so files for in Itch versions.
+	set(SDL_SHARED ON CACHE BOOL "" FORCE)
+	set(SDL_STATIC OFF CACHE BOOL "" FORCE)
+	set(SDL2_DISABLE_INSTALL ON CACHE BOOL "" FORCE) # We'll handle it ourselves.
+	add_subdirectory("SDL2")
 
-	# Patch the rpath for the SDL library so that calls to `SDL_LoadObject` can find `libpng12.so.0`.
-	find_library(sdl2_original SDL2)
-	set(sdl2_with_rpath "${CMAKE_CURRENT_BINARY_DIR}/libSDL2-2.0.so.0")
-	add_custom_command(
-		OUTPUT "${sdl2_with_rpath}"
-		COMMAND "${CMAKE_COMMAND}" -E copy "${sdl2_original}" "${sdl2_with_rpath}"
-		COMMAND patchelf --set-rpath \$ORIGIN "${sdl2_with_rpath}"
-		DEPENDS "${sdl2_original}"
-		VERBATIM
+	# Images: BMP, PNG, ICO
+	set(SDL2IMAGE_BMP ON)
+	set(SDL2IMAGE_PNG ON)
+	set(SDL2IMAGE_BACKEND_STB ON)
+	add_subdirectory("SDL2_image")
+
+	# Sound effects: WAV, MP3 (not Mixer: Sun/NeXT)
+	# Music: Ogg, MIDI, WAV
+	set(SDL2MIXER_DEPS_SHARED ON)
+	set(SDL2MIXER_WAVE ON)
+	set(SDL2MIXER_VORBIS "STB")
+	set(SDL2MIXER_MIDI ON)
+	# Prefer Fluidsynth over Timidity for now because it can be passed a sf2 path directly rather than needing a .cfg file.
+	# TODO: Both require manual soundfont setup. Maybe bundle FluidR3_GM.sf2?
+	set(SDL2MIXER_MIDI_FLUIDSYNTH ON)
+	set(SDL2MIXER_MIDI_TIMIDITY OFF)
+	set(SDL2MIXER_MP3 OFF)  # TODO: https://github.com/SpaceManiac/HamSandwich/issues/21
+	set(SDL2MIXER_WAVPACK OFF)
+	set(SDL2MIXER_MOD OFF)
+	set(SDL2MIXER_OPUS OFF)
+	add_subdirectory("SDL2_mixer")
+
+	# Install relevant .so files
+	install(
+		TARGETS SDL2 SDL2_image SDL2_mixer
+		LIBRARY COMPONENT generic/executables
+		RUNTIME COMPONENT generic/executables
 	)
-	set(sdl2_rpath_depends "${sdl2_with_rpath}")
-	install(FILES "${sdl2_with_rpath}" TYPE BIN COMPONENT generic/executables)
 
-	# Install SDL2_image .so
-	install_as_soname(generic/executables ${SDL2_image_LIBRARIES})
-	find_library(png_LIBRARIES png REQUIRED)
-	install_as_soname(generic/executables ${png_LIBRARIES})
-	find_library(z_LIBRARIES z REQUIRED)
-	install_as_soname(generic/executables ${z_LIBRARIES})
-
-	# Install SDL2_mixer .so
-	install_as_soname(generic/executables ${SDL2_mixer_LIBRARIES})
-	find_library(ogg_LIBRARIES ogg REQUIRED)
-	find_library(vorbis_LIBRARIES vorbis REQUIRED)
-	find_library(vorbisfile_LIBRARIES vorbisfile REQUIRED)
-	install_as_soname(generic/executables ${ogg_LIBRARIES} ${vorbis_LIBRARIES} ${vorbisfile_LIBRARIES})
-	install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_mixer/external/libogg-1.3.2/COPYING" TYPE BIN COMPONENT generic/executables RENAME "LICENSE.ogg.txt")
-	install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_mixer/external/libvorbis-1.3.5/COPYING" TYPE BIN COMPONENT generic/executables RENAME "LICENSE.vorbis.txt")
-
-	# SDL2_ttf is only used by JspEdit.
-	# SDL2_ttf takes a *direct* dependency on libfreetype.so.6, so it needs RUNPATH set or else it might find the system's.
-	set(sdl2_ttf_with_rpath "${CMAKE_CURRENT_BINARY_DIR}/libSDL2_ttf-2.0.so.0")
-	add_custom_command(
-		OUTPUT "${sdl2_ttf_with_rpath}"
-		COMMAND "${CMAKE_COMMAND}" -E copy "${SDL2_ttf_LIBRARIES}" "${sdl2_ttf_with_rpath}"
-		COMMAND patchelf --set-rpath \$ORIGIN "${sdl2_ttf_with_rpath}"
-		DEPENDS "${SDL2_ttf_LIBRARIES}"
-		VERBATIM
-	)
-	list(APPEND sdl2_rpath_depends "${sdl2_ttf_with_rpath}")
-	install(FILES "${sdl2_ttf_with_rpath}" TYPE BIN COMPONENT jspedit/executables)
-
-	find_library(freetype_LIBRARIES freetype REQUIRED)
-	install_as_soname(jspedit/executables ${freetype_LIBRARIES})
-	if (EXISTS "/usr/share/doc/libfreetype6-dev/copyright")
-		install(FILES "/usr/share/doc/libfreetype6-dev/copyright" TYPE BIN COMPONENT jspedit/executables RENAME "LICENSE.freetype.txt")
-	endif()
+	# Install fluidsynth to Supreme only.
+	find_library(fluidsynth_LIBRARIES fluidsynth REQUIRED)
+	install_as_soname(supreme/executables ${fluidsynth_LIBRARIES})
+	install(FILES "/usr/share/doc/libfluidsynth-dev/copyright" RENAME "LICENSE.fluidsynth.txt" TYPE BIN COMPONENT supreme/executables)
 endif()
-
-add_custom_target(sdl2_rpath ALL DEPENDS "${sdl2_rpath_depends}")

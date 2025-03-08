@@ -1,4 +1,5 @@
 #include "intro.h"
+#include <string.h>
 #include "backgd.h"
 #include "display.h"
 #include "status.h"

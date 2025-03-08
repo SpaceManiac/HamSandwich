@@ -1,4 +1,5 @@
 #include "display.h"
+#include <string.h>
 #include "jamulfont.h"
 #include "backgd.h"
 #include "tile.h"

@@ -1,4 +1,5 @@
 #include "editor.h"
+#include <string.h>
 #include "display.h"
 #include "game.h"
 #include "loop.h"

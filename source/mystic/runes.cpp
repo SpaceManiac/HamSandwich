@@ -1,4 +1,5 @@
 #include "skills.h"
+#include <math.h>
 #include "display.h"
 #include "player.h"
 #include "hammusic.h"
@@ -260,7 +261,7 @@ void DescribeRune(Rune r,int x,int y)
 		float total = runeDef[(int)r].value[RuneLevel(r) - RUNE_RANK1];
 		if (runeDef[(int)r].numberType == SD_METERS)
 			total = total / 32.0f;
-		
+
 		if (RuneLevel(r) < RUNE_RANK3)	// gotta show what's next
 		{
 			if (total - floorf(total) < 0.1f)	// if it's nearly an integer, let's just show an integer

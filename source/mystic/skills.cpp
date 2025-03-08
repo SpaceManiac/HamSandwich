@@ -1,4 +1,5 @@
 #include "skills.h"
+#include <math.h>
 #include "display.h"
 #include "player.h"
 #include "hammusic.h"
@@ -249,7 +250,7 @@ void DescribeSkill(byte skill,int x,int y)
 	float total = SkillValue(skill);
 	if (skillList[skill].displayType == SD_METERS)
 		total = total / 32.0f;
-		
+
 	if(total-floorf(total)<0.1f)	// if it's nearly an integer, let's just show an integer
 		sprintf(txt, "[Rank %d/%d, %s: %d", player.skill[skill], MAX_SKILL_LVL, skillList[skill].statName, (int)total);
 	else
@@ -260,7 +261,7 @@ void DescribeSkill(byte skill,int x,int y)
 		strcat(txt, "s");
 	else if (skillList[skill].displayType == SD_METERS)
 		strcat(txt, "m");
-	
+
 	if (player.skill[skill] < MAX_SKILL_LVL)
 	{
 		char txt2[30];

@@ -1,4 +1,5 @@
 #include "cheat.h"
+#include <ctype.h>
 #include "options.h"
 #include "title.h"
 

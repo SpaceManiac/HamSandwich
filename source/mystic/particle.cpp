@@ -49,8 +49,8 @@ void Particle::GoRandom(byte type,int x,int y,int z,byte force)
 	this->x=x+MGL_randoml(32<<FIXSHIFT)-(16<<FIXSHIFT);
 	this->y=y+MGL_randoml(32<<FIXSHIFT)-(16<<FIXSHIFT);
 	this->z=z;
-	this->dx=(MGL_random(force)-force/2)<<FIXSHIFT;
-	this->dy=(MGL_random(force)-force/2)<<FIXSHIFT;
+	this->dx=(MGL_random(force)-force/2) * FIXAMT;
+	this->dy=(MGL_random(force)-force/2) * FIXAMT;
 	this->dz=MGL_random(force*2)<<FIXSHIFT;
 	this->life=MGL_random(force)+20;
 }
@@ -76,7 +76,7 @@ void Particle::Update(Map *map)
 		}
 		x+=dx;
 		y+=dy;
-		
+
 		life--;
 		switch(type)
 		{
@@ -125,7 +125,7 @@ void Particle::Update(Map *map)
 							y = g->y + 20 * FIXAMT;
 							x += sway[g->frm] * FIXAMT;
 						}
-						
+
 					}
 				}
 			}
@@ -336,7 +336,7 @@ void Particle::Update(Map *map)
 			// brighten it appropriately
 			brt=map->map[mapx+mapy*map->width].templight;
 			c1=(color&(~31));	// c1 is the color range
-			
+
 			if (type == PART_EYEGLOW || type == PART_EYEGLOW2)
 			{
 				if (brt < -10)	// glow in the dark

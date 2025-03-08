@@ -1,4 +1,5 @@
 #include "status.h"
+#include <string.h>
 #include "player.h"
 #include "backgd.h"
 #include "display.h"

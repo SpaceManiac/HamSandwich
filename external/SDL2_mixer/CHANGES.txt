@@ -1,3 +1,66 @@
+2.8.0:
+ * Added support for loading wavpack sound files (https://www.wavpack.com/)
+ * Added support for loading classic console sound files using Game_Music_Emu (https://github.com/libgme/game-music-emu)
+ * Use minimp3 instead of dr_mp3 as the default backend for MP3 music
+ * Use libxmp instead of modplug as the default backend for MOD music
+   To use libmodplug instead, configure using --enable-music-mod-modplug --disable-music-mod-xmp
+ * Added support for FLAC audio in Ogg containers
+ * Added Mix_PauseAudio() to pause and resume all audio playback
+ * Added Mix_GetNumTracks() and Mix_StartTrack() for managing tracks in GME files
+
+2.6.2:
+ * Updated autotools to use ax_compute_relative_paths, fixing homebrew on macOS
+
+2.6.1:
+ * Fixed issue with incorrect version reported by pkg-config
+
+2.6.0:
+ * Added support for building with CMake
+ * Added support for playing Ogg files using stb_vorbis, which is now the default Vorbis backend.
+   To use libvorbis instead, configure using --disable-music-ogg-stb --enable-music-ogg-vorbis
+ * Added support for playing FLAC files using dr_flac, which is now the default FLAC music backend.
+   To use libflac instead, configure using --disable-music-flac-drflac --enable-music-flac-libflac
+ * Added support for playing MP3 files using dr_mp3, which is now the default MP3 music backend.
+   To use libmpg123 instead, configure using --disable-music-mp3-drmp3 --enable-music-mp3-mpg123
+ * Added libxmp support for mod music playback. Modplug is still the default backend for MOD music.
+   To use libxmp instead, configure using --disable-music-mod-modplug --enable-music-mod-xmp
+ * Removed support for libmad as a MP3 music backend.
+ * Removed support for libmikmod as a MOD music backend.
+ * Added Mix_MasterVolume() for additional volume control over all channels
+ * Update Mix_Init() return value to match documentation, including MIXER_INIT_* flags for already-initialized modules
+ * Added Mix_HasMusicDecoder()
+ * Memory leak fixes and F32 format support to fluidsynth player
+ * Fixed distorted MIDI playback with FluidSynth if sample rate is out of library's limits
+ * Added Mix_ModMusicJumpToOrder() for mod music formats
+ * Enabled module internal loops in modplug player
+ * Respect original mp3 file offset
+ * Support setting soundfont via SDL_SOUNDFONTS in OSX native midi
+ * Fixed mp3 file detection
+ * Fixes to ogg playback on big-endian devices
+ * Added functions to get metadata information:
+    Mix_GetMusicTitle()
+    Mix_GetMusicTitleTag()
+    Mix_GetMusicArtistTag()
+    Mix_GetMusicAlbumTag()
+    Mix_GetMusicCopyrightTag()
+ * Add functions to get loop point information:
+    Mix_GetMusicLoopStartTime()
+    Mix_GetMusicLoopEndTime()
+    Mix_GetMusicLoopLengthTime()
+ * Added Mix_GetMusicVolume() and Mix_GetMusicPosition()
+ * Added Mix_MusicDuration() to return music duration in seconds
+ * Fixed music_mpg123 seek bug when sample rate of the file and the stream don't match
+ * Timidity improvements, added Mix_SetTimidityCfg()
+ * Improved mp3 tag detection/skipping
+ * Extended support for WAV files
+ * Allow rmid files be opened by native midi
+ * Fixed possible crash in win32 native midi
+ * Prevent clipping due to volume settings in modplug music
+ * Added looping support for Opus files
+ * Added looping support for FLAC files
+ * Improved OGG looping support
+ * Fixed loading Opus audio as audio chunks
+
 2.0.4:
 Ozkan Sezer - Wed, 10 Oct 2018 14:56:10
  * Removed smpeg support for mp3 music, now that it's replaced by libmpg123

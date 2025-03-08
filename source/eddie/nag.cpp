@@ -1,4 +1,5 @@
 #include "nag.h"
+#include <string.h>
 #include "game.h"
 #include "sound.h"
 #include "random.h"

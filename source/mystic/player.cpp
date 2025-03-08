@@ -1,4 +1,5 @@
 #include "player.h"
+#include <math.h>
 #include "spell.h"
 #include "fairy.h"
 #include "challenge.h"
@@ -1368,7 +1369,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			restorationBuffer += 1.0f / 90.0f;	// 1 life every 3 seconds
 		if (RuneValue(Rune::RECOVER))
 			restorationBuffer += 1.0f / (RuneValue(Rune::RECOVER) * 30);	// 1 life every N seconds from recover
-		
+
 		if (restorationBuffer >= 1)
 		{
 			byte amt = (byte)floor(restorationBuffer);
@@ -1377,7 +1378,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		}
 
 		float maxPerTick = SkillValue(SKILL_RESTORATION) / 30.0f;	// at max, you can heal the heal/s from your healing spell
-		
+
 		float amt;
 		if (spellRestorationBuffer > maxPerTick)
 			amt = maxPerTick;
@@ -1692,7 +1693,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 	else if(ButtonTapped(CONTROL_B4,false))
 	{
-		
+
 		j=0;
 		for(i=0;i<10;i++)
 			if(player.spell[i]==0)

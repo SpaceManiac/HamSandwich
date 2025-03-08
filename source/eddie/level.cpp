@@ -1,4 +1,5 @@
 #include "level.h"
+#include <string.h>
 #include "random.h"
 #include "backgd.h"
 #include "guy.h"

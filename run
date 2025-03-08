@@ -171,14 +171,14 @@ if test -z "$nobuild"; then
 				;;
 			jfttool|jspedit|lunaticpal|mini_xxd)
 				# Tool: build just that project. Don't bother installing it.
-				$container make preset="$preset" "$project" sdl2_rpath
+				$container make preset="$preset" "$project"
 				$container cmake --install "$cmakedir" --component generic/executables --config Debug
 				$container cmake --install "$cmakedir" --component "$project"/executables --config Debug
 				;;
 			*)
 				# Single game project: build the launcher and that project.
 				debugargs=("window")
-				$container make preset="$preset" "$project" launcher sdl2_rpath
+				$container make preset="$preset" "$project" launcher
 				# Install the launcher so that it can be used to download assets.
 				$container cmake --install "$cmakedir" --component Unspecified --config Debug
 				$container cmake --install "$cmakedir" --component generic/executables --config Debug
@@ -195,6 +195,11 @@ if ! test -f "$debugcommand"; then
 	if test "$os" = "linux"; then
 		patchelf --add-rpath "\$ORIGIN" "$debugcommand"
 	fi
+fi
+
+# Set symbolizer for sanitizers.
+if symbolizer=$(command -v llvm-symbolizer); then
+	export ASAN_SYMBOLIZER_PATH=$symbolizer
 fi
 
 # Run the game executable or tool.

@@ -492,7 +492,7 @@ TASK(byte) LunaticRun(int *lastTime)
 			if(UpdateSpeech(gamemgl)==1 && gameMode!=GAMEMODE_FARLEY)
 			{
 				gameMode=GAMEMODE_PLAY;
-				return LEVEL_PLAYING;
+				CO_RETURN LEVEL_PLAYING;
 			}
 		}
 		else if (gameMode == GAMEMODE_FARLEY)
