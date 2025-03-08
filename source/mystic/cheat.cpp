@@ -4,7 +4,7 @@
 #include "options.h"
 
 #ifdef CHEAT
-#define NUM_CHEATS 19
+#define NUM_CHEATS 20
 #else
 #define NUM_CHEATS 9
 #endif
@@ -30,7 +30,8 @@ char cheatCode[NUM_CHEATS][16]={
 	"boss",				// go to final boss, if in chapter 4
 	"secretize",		// get all secrets
 	"mana",				// refill mana to full
-	"chalice",			// get challenge mode
+	"chalice",			// give you all runes
+	"skillbor",			// 10 skill points
 #endif
 	};
 
@@ -125,7 +126,7 @@ void DoCheat(byte w)
 			NewMessage("Level Up!",30);
 			break;
 		case 8: // money
-			player.runeStones = 50000;
+			player.runeStones = MAX_RUNESTONES;
 			GainMoney(50000);
 			NewMessage("DINERO POR TODOS!",30);
 			break;
@@ -133,8 +134,6 @@ void DoCheat(byte w)
 		case 9:
 			for(i=0;i<10;i++)
 				player.spell[i]=1;
-			for (i = 0; i < 24; i++)
-				player.runes[i] = RUNE_ASLEEP;
 			break;
 		case 10:
 			for(i=0;i<9;i++)
@@ -188,11 +187,13 @@ void DoCheat(byte w)
 			break;
 		case 17:
 			player.mana = player.maxMana;
-			player.skillPts += 10;
 			break;
 		case 18:
-			opt.challenge = 1;
-			NewMessage("Challenge mode enabled", 30);
+			for (i = 0; i < 24; i++)
+				player.runes[i] = RUNE_ASLEEP;
+			break;
+		case 19:
+			player.skillPts += 10;
 			break;
 	}
 }
