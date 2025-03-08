@@ -1,8 +1,9 @@
 #include "cheat.h"
 #include "challenge.h"
+#include "options.h"
 
 #ifdef CHEAT
-#define NUM_CHEATS 18
+#define NUM_CHEATS 19
 #else
 #define NUM_CHEATS 9
 #endif
@@ -28,6 +29,7 @@ char cheatCode[NUM_CHEATS][16]={
 	"boss",				// go to final boss, if in chapter 4
 	"secretize",		// get all secrets
 	"mana",				// refill mana to full
+	"chalice",			// get challenge mode
 #endif
 	};
 
@@ -186,6 +188,10 @@ void DoCheat(byte w)
 		case 17:
 			player.mana = player.maxMana;
 			player.skillPts += 10;
+			break;
+		case 18:
+			opt.challenge = 1;
+			NewMessage("Challenge mode enabled", 30);
 			break;
 	}
 }

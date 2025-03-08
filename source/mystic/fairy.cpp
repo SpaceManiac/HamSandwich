@@ -206,6 +206,7 @@ void EnterFairyBox(void)
 		FatalError("Out of memory!!");
 	shopSpr->GetSprite(36)->Draw(278,200,GetDisplayMGL());
 	memcpy(shopScr,GetDisplayMGL()->GetScreen(),SCRWID*SCRHEI);
+	UpdateControls();
 }
 
 void LeaveFairyBox(void)
@@ -280,8 +281,6 @@ void RenderFairyBox(void)
 
 byte UpdateFairyBox(MGLDraw *mgl)
 {
-	byte c;
-	static byte reptCounter=0;
 	int i;
 
 	for(i=0;i<16;i++)
@@ -308,27 +307,21 @@ byte UpdateFairyBox(MGLDraw *mgl)
 			fairies[i].frm-=FIXAMT*10;
 	}
 
-	c=GetControls();
-
-	reptCounter++;
-	if((!oldc) || (reptCounter>10))
-		reptCounter=0;
-
-	if((c&CONTROL_UP) && (!reptCounter))
+	if(AutoRepeatTapped(CONTROL_UP))
 	{
 		MakeNormalSound(SND_MENUCLICK);
 		shopCursor-=4;
 		if(shopCursor>=16)
 			shopCursor+=16;
 	}
-	if((c&CONTROL_DN) && (!reptCounter))
+	if(AutoRepeatTapped(CONTROL_DN))
 	{
 		MakeNormalSound(SND_MENUCLICK);
 		shopCursor+=4;
 		if(shopCursor>=16)
 			shopCursor-=16;
 	}
-	if((c&CONTROL_LF) && (!reptCounter))
+	if(AutoRepeatTapped(CONTROL_LF))
 	{
 		MakeNormalSound(SND_MENUCLICK);
 		shopCursor--;
@@ -337,14 +330,14 @@ byte UpdateFairyBox(MGLDraw *mgl)
 		if(shopCursor>50)
 			shopCursor=3;
 	}
-	if((c&CONTROL_RT) && (!reptCounter))
+	if(AutoRepeatTapped(CONTROL_RT))
 	{
 		MakeNormalSound(SND_MENUCLICK);
 		shopCursor++;
 		if((shopCursor%4)==0)
 			shopCursor-=4;
 	}
-	if((c&CONTROL_B1) && (!(oldc&CONTROL_B1)))
+	if(AutoRepeatTapped(CONTROL_B1))
 	{
 		if(player.haveFairy&(1<<shopCursor))
 		{
@@ -356,16 +349,13 @@ byte UpdateFairyBox(MGLDraw *mgl)
 
 		return 1;
 	}
-	if((c&CONTROL_B2) && (!(oldc&CONTROL_B2)))
+	if(AutoRepeatTapped(CONTROL_B2))
 	{
 		FairyChange(player.fairyOn,0);
 		return 1;
 	}
-	oldc=c;
-
-	JamulSoundUpdate();
-
-	if(mgl->LastKeyPressed()==27)
+	
+	if(AutoRepeatTapped(CONTROL_ESCAPE))
 	{
 		FairyChange(player.fairyOn,0);
 		return 1;

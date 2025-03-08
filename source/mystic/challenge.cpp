@@ -500,7 +500,7 @@ challenge_t chal[]={
 	},
 };
 
-static byte oldc,chalCursor,numChals,fairyOn,challenging=0;
+static byte chalCursor,numChals,fairyOn,challenging=0;
 chalData_t chalData;
 attempt_t attempt;
 static sprite_set_t *chalSpr;
@@ -555,7 +555,7 @@ char *GoalText(byte goal,dword n)
 			sprintf(s,"Complete the level!");
 			break;
 		case GOAL_FINISH2:
-			sprintf(s,"Finish with %d:%02d remaining!",(n/(30*60)),(n/30)%60);
+			sprintf(s, "Finish with %d:%02d remaining!", (n / (30 * 60)), (n / 30) % 60);
 			break;
 		case GOAL_KILL:
 			sprintf(s,"Beat all badguys!");
@@ -845,7 +845,10 @@ void ChallengeMenuRender(MGLDraw *mgl)
 
 				sprintf(s,"Top Score: %05d",chalData.topScore[chalCursor]);
 				PrintBrightGlow(5,400,s,-4,2);
-				i=chal[chalCursor].time-chalData.topTime[chalCursor];
+				if (player.gear & GEAR_FEATHER)
+					i = chal[chalCursor].time*(100+HOURGLASS_BONUS)/100 - chalData.topTime[chalCursor];
+				else
+					i = chal[chalCursor].time - chalData.topTime[chalCursor];
 				sprintf(s,"Top Time: %d:%02d",(i/(60*30)),(i/30)%60);
 				PrintBrightGlow(5,420,s,-4,2);
 				sprintf(s,"Top Combo: %d",chalData.topCombo[chalCursor]);
@@ -995,7 +998,6 @@ byte DoQuestion(void)
 		else if(chal[chalCursor].level==3)	// reset character
 		{
 			fairyOn=3;
-			oldc=255;
 			strcpy(question[0],"Do you really want to");
 			strcpy(question[1],"reset your Challenge Mode");
 			strcpy(question[2],"character to level 1 with");
@@ -1008,7 +1010,6 @@ byte DoQuestion(void)
 		else if(chal[chalCursor].level==4)	// reset stats
 		{
 			fairyOn=3;
-			oldc=255;
 			strcpy(question[0],"Do you really want to");
 			strcpy(question[1],"reset all Challenge Mode");
 			strcpy(question[2],"stars and purchased");
@@ -1021,7 +1022,6 @@ byte DoQuestion(void)
 		else if (chal[chalCursor].level == 5)	// reset skills
 		{
 			fairyOn = 0;
-			oldc = 255;
 			ResetSkills();
 			MakeNormalSound(SND_BOBBYSPIN);
 			return 0;
@@ -1030,7 +1030,6 @@ byte DoQuestion(void)
 	else if(chal[chalCursor].chapter==15 && chalData.bought[chalCursor])
 	{
 		fairyOn=3;
-		oldc=255;
 		strcpy(question[0],"Hit Okay to turn on Trivia");
 		strcpy(question[1],"mode, or Cancel to disable it.");
 		strcpy(question[2],"Then play any level to see the");
@@ -1046,7 +1045,6 @@ byte DoQuestion(void)
 		{
 			byte goalCount;
 			fairyOn=3;
-			oldc=255;
 			sprintf(question[0],"%s (%d:%02d)",chal[chalCursor].name,(chal[chalCursor].time/(60*30)),(chal[chalCursor].time/30)%60);
 			strcpy(question[1],"");
 			j=2;
@@ -1084,7 +1082,6 @@ byte DoQuestion(void)
 			if(chal[chalCursor].chapter<10)
 			{
 				fairyOn=3;
-				oldc=255;
 				strcpy(question[0],chal[chalCursor].name);
 				strcpy(question[1],"");
 				strcpy(question[2],"You can buy access to this");
@@ -1097,7 +1094,6 @@ byte DoQuestion(void)
 			else if(chal[chalCursor].chapter<=nextChapter)	// this is a chapter header
 			{
 				fairyOn=3;
-				oldc=255;
 				strcpy(question[0],chal[chalCursor].name);
 				strcpy(question[1],"");
 				strcpy(question[2],"You can buy access to this");
@@ -1113,14 +1109,12 @@ byte DoQuestion(void)
 			else	// a chapter you can afford, but aren't allowed to buy yet
 			{
 				MakeNormalSound(SND_UNAVAILABLE);
-				oldc=255;
 				return 0;
 			}
 		}
 		else
 		{
 			MakeNormalSound(SND_UNAVAILABLE);
-			oldc=255;
 			return 0;
 		}
 	}
@@ -1129,11 +1123,11 @@ byte DoQuestion(void)
 
 byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 {
-	byte c;
-	static byte reptCounter=0;
-
 	while(*lastTime>=TIME_PER_FRAME)
 	{
+		JamulSoundUpdate();
+		UpdateControls();
+
 		if(offY>0)
 		{
 			offY-=4;
@@ -1151,7 +1145,6 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 			if(UpdateFairyBox(mgl))
 			{
 				fairyOn=0;
-				oldc=255;
 				mgl->LastKeyPressed();
 			}
 		}
@@ -1160,35 +1153,27 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 			if(UpdateShop(mgl))
 			{
 				fairyOn=0;
-				oldc=255;
 				mgl->LastKeyPressed();
 			}
 		}
 		else if(fairyOn==3)	// question
 		{
-			c=GetControls();
-
-			reptCounter++;
-			if((!oldc) || (reptCounter>10))
-				reptCounter=0;
-
-			if((c&CONTROL_LF) && (!reptCounter))
+			if(AutoRepeatTapped(CONTROL_LF))
 			{
 				qCursor=1-qCursor;
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if((c&CONTROL_RT) && (!reptCounter))
+			if(AutoRepeatTapped(CONTROL_RT))
 			{
 				qCursor=1-qCursor;
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))))
+			if(ButtonTapped(CONTROL_B1,true))
 			{
 				MakeNormalSound(SND_MENUSELECT);
 				if(qCursor==1)
 				{
 					fairyOn=0;
-					oldc=255;
 					mgl->LastKeyPressed();
 					if(asking==ASK_TRIVIA)
 						chalData.bought[63]=0;
@@ -1198,7 +1183,6 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 				{
 					case ASK_PLAY:
 						fairyOn=0;
-						oldc=255;
 						return 1;
 						break;
 					case ASK_BUY:
@@ -1207,7 +1191,7 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 						if(chal[chalCursor].chapter>10)
 						{
 							PickForbidden();
-							for(c=0;c<numChals;c++)
+							for(int c=0;c<numChals;c++)
 								if((chal[c].chapter==chal[chalCursor].chapter-10 ||
 									(chal[chalCursor].chapter==14 && chal[c].chapter>3))	&& chal[c].starCost==0)
 									chalData.bought[c]=1;
@@ -1216,93 +1200,79 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 						}
 						fairyOn=0;
 						MakeNormalSound(SND_PURCHASE);
-						oldc=255;
 						return 0;
 						break;
 					case ASK_RESETCHAR:
 						ResetChallengeCharacter();
 						fairyOn=0;
-						oldc=255;
 						return 0;
 						break;
 					case ASK_RESETSTAR:
 						ResetChallengeStats();
 						fairyOn=0;
-						oldc=255;
 						return 0;
 						break;
 					case ASK_TRIVIA:
 						chalData.bought[63]=1;
 						fairyOn=0;
-						oldc=255;
 						return 0;
 						break;
 				}
 			}
-			if(mgl->LastKeyPressed()==27)
+			if(ButtonTapped(CONTROL_ESCAPE,true))
 			{
 				MakeNormalSound(SND_MENUSELECT);
 				fairyOn=0;
-				oldc=255;
 				return 0;
 			}
-			oldc=c;
 		}
 		else
 		{
-			c=GetControls();
-
-			reptCounter++;
-			if((!oldc) || (reptCounter>10))
-				reptCounter=0;
-
-			if((c&CONTROL_UP) && (!reptCounter))
+			if(AutoRepeatTapped(CONTROL_UP))
 			{
 				chalCursor=MoveCursor(-1,chalCursor);
 				offY=-40;
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if((c&CONTROL_DN) && (!reptCounter))
+			if(AutoRepeatTapped(CONTROL_DN))
 			{
 				chalCursor=MoveCursor(1,chalCursor);
 				offY=40;
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if((c&CONTROL_LF) && (!reptCounter))
+			if(AutoRepeatTapped(CONTROL_LF))
 			{
-				for(c=0;c<5;c++)
+				for(int c=0;c<5;c++)
 					chalCursor=MoveCursor(-1,chalCursor);
 				offY=0;
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if((c&CONTROL_RT) && (!reptCounter))
+			if(AutoRepeatTapped(CONTROL_RT))
 			{
-				for(c=0;c<5;c++)
+				for(int c=0;c<5;c++)
 					chalCursor=MoveCursor(1,chalCursor);
 				offY=0;
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if(((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
+			if(ButtonTapped(CONTROL_B2,true))
 			{
 				EnterFairyBox();
 				fairyOn=1;
-				oldc=255;
 				return 0;
 			}
 
-			if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))))
+			if(ButtonTapped(CONTROL_B1,true))
 			{
 				MakeNormalSound(SND_MENUSELECT);
 				return DoQuestion();
 			}
-			oldc=c;
 		}
 		flipper=1-flipper;
 
 		*lastTime-=TIME_PER_FRAME;
 	}
 
-	if(mgl->LastKeyPressed()==27)
+	if(ButtonTapped(CONTROL_ESCAPE,true))
 	{
 		MakeNormalSound(SND_MENUSELECT);
 		if(fairyOn)
@@ -1316,7 +1286,6 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 		}
 	}
 
-	JamulSoundUpdate();
 	return 0;
 }
 
@@ -1385,7 +1354,6 @@ void InitChallengeMenu(MGLDraw *mgl)
 	numChals=i+1;
 
 	mgl->LastKeyPressed();
-	oldc=CONTROL_B1|CONTROL_B2;
 	chalCursor=0;
 	LoadChallenge();
 	fairyOn=0;
@@ -1413,6 +1381,8 @@ void InitAttempt(void)
 	attempt.score=0;
 	attempt.kills=0;
 	attempt.time=chal[chalCursor].time;
+	if (player.gear & GEAR_FEATHER)
+		attempt.time = attempt.time * (100+HOURGLASS_BONUS)/100;
 	attempt.comboClock=0;
 	attempt.curCombo=0;
 	attempt.curLetter=0;
@@ -1465,7 +1435,6 @@ TASK(byte) ChallengeMenu(MGLDraw *mgl)
 
 				player.life=player.maxLife;
 				player.mana=player.maxMana;
-				oldc=255;
 				mgl->LastKeyPressed();
 				b=0;
 				if(attempt.quit)
@@ -1795,16 +1764,15 @@ byte ChallengeTallyUpdate(MGLDraw *mgl,int *lastTime)
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		UpdateItems();
-		c=GetControls();
-
-		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
-		   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
+		UpdateControls();
+		
+		if(ButtonTapped(CONTROL_B1|CONTROL_B2,true))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			return 1;
 		}
-		oldc=c;
 		*lastTime-=TIME_PER_FRAME;
+		JamulSoundUpdate();
 	}
 
 	if(mgl->LastKeyPressed()==27)
@@ -1813,14 +1781,12 @@ byte ChallengeTallyUpdate(MGLDraw *mgl,int *lastTime)
 		return 1;
 	}
 
-	JamulSoundUpdate();
 	return 0;
 }
 
 void InitChallengeTally(MGLDraw *mgl)
 {
 	mgl->LastKeyPressed();
-	oldc=CONTROL_B1|CONTROL_B2;
 	if(attempt.bestCombo==1)
 		attempt.bestCombo=0;
 	CompleteGoals();

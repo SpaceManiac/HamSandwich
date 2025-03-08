@@ -139,7 +139,7 @@ void CastSpell(Guy *me)
 		// not enough mana to cast it!
 		return;
 	}
-	if (!ClassicMode() && player.casting == SPL_ENERGY && Random(100) < RuneValue(Rune::ENERGY2))
+	if (!ClassicMode() && player.casting == SPL_ENERGY && Random(100) < SkillValue(SKILL_ENERGYMANA))
 	{
 		// free cast!
 	}
@@ -167,14 +167,15 @@ void CastSpell(Guy *me)
 		}
 	}
 
-	c = GetControls();
-	bool spellHeld = (c & CONTROL_B2);
+	bool spellHeld = (ButtonHeld(CONTROL_B2,false));
+	
 	if (!ClassicMode() && player.enableQuickCast)
 	{
 		const Uint8* state = SDL_GetKeyboardState(nullptr);
 		if (state[SDL_SCANCODE_1 + player.casting])
 			spellHeld = true;	// hold down the spell # for quick cast
 	}
+	byte bulType = BLT_LASER;
 
 	switch(player.casting)
 	{
@@ -182,14 +183,29 @@ void CastSpell(Guy *me)
 			if (ClassicMode())
 				fakeLevel = SpellLevel();
 			else
+			{
 				fakeLevel = 1 + (SkillValue(SKILL_ENERGYRATE) * 49) / 150;
+				if (RuneValue(Rune::ENERGY2) > 0 && player.shield > 0)
+				{
+					bulType = BLT_LASER2;
+					player.shield--;
+				}
+				else if (RuneValue(Rune::ENERGY2) > 0 && player.barrier > 0)
+				{
+					bulType = BLT_LASER2;
+					if (player.barrier > 2)
+						player.barrier -= 2;
+					else
+						player.barrier = 0;
+				}
+			}
 			if(player.spell[SPL_ENERGY]==1 || player.downgradeSpell[SPL_ENERGY])
 			{
-				FireBullet(me->x,me->y,me->facing,BLT_LASER);
+				FireBullet(me->x,me->y,me->facing,bulType);
 				castCounter++;
 				if (fakeLevel > 35)
 				{
-					FireBullet(me->x, me->y, me->facing, BLT_LASER);
+					FireBullet(me->x, me->y, me->facing, bulType);
 					castCounter++;
 				}
 			}
@@ -200,7 +216,7 @@ void CastSpell(Guy *me)
 					j=i*32-32+MGL_random(64);
 					j=j&255;
 					FireExactBullet(me->x,me->y,FIXAMT*20,Cosine(j)*(12+(fakeLevel/10)),
-						Sine(j)*(12+(fakeLevel/10)),0,0,30,j/16,BLT_LASER);
+						Sine(j)*(12+(fakeLevel/10)),0,0,30,j/16,bulType);
 					castCounter++;
 				}
 				MakeNormalSound(SND_BULLETFIRE);
@@ -239,7 +255,7 @@ void CastSpell(Guy *me)
 					if (player.shield < (byte)frms) player.shield = (byte)frms;
 				}
 			}
-			DoPlayerFacing(c,me);
+			DoPlayerFacing(me);
 			break;
 		case SPL_FLAME:	// dragon's flame, liquify
 			if(player.spell[SPL_FLAME]==1 || player.downgradeSpell[SPL_FLAME])
@@ -278,7 +294,7 @@ void CastSpell(Guy *me)
 				}
 				else
 					player.wpnReload=5;
-				DoPlayerFacing(c,me);
+				DoPlayerFacing(me);
 			}
 			else
 			{

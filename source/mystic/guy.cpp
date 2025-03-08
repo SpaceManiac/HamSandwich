@@ -1617,7 +1617,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 
 	if(hp<=0)
 	{
-		if (BulletHittingType() == BLT_LASER && !ClassicMode())
+		/*if (BulletHittingType() == BLT_LASER && !ClassicMode())
 		{
 			byte mana = SkillValue(SKILL_ENERGYMANA);
 			while (mana > 0)
@@ -1626,7 +1626,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 					player.mana ++;
 				mana--;
 			}
-		}
+		}*/
 		if (!ClassicMode() && (BulletHittingType() == BLT_MISSILE || BulletHittingType() == BLT_LILBOOM) && SkillValue(SKILL_SEEKBOOM) > 0)
 			FireExactBullet(x, y, z, 0, 0, 0, 0, 7, 0, BLT_SEEKBOOM);
 		SpecialKillCheck(map, type);
@@ -1706,7 +1706,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 							chance += (int)SkillValue(SKILL_FREEZEMONEY);
 						if (player.fairyOn == FAIRY_RICHEY)
 							chance *= 3;
-						if (Random(100) < chance)
+						if (Random(100) < chance*2)
 							FireBullet(x, y, 0, BLT_RUNESTONE);
 					}
 					int freeBig = 0;

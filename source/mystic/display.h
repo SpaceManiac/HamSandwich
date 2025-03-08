@@ -92,8 +92,4 @@ void SetGamma(byte g);
 
 void EndingMovie(int frm);
 
-bool GamepadStartTapped(void);
-bool GamepadSelectTapped(void);
-void UpdateGamepadStartAndSelect(void);
-
 #endif

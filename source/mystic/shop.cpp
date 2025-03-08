@@ -3,6 +3,7 @@
 #include "player.h"
 #include "sound.h"
 #include "fairy.h"
+#include "challenge.h"
 
 #define SHOPX 10
 #define SHOPY 40
@@ -100,7 +101,7 @@ dword gearTag[]={0,0,0,0,GEAR_POINTY,
 				GEAR_HEART,GEAR_MOON,GEAR_LAMP,GEAR_BOUNCY,GEAR_SOCKS,
 				GEAR_SOUL,GEAR_SUN,GEAR_WISDOM,GEAR_MAGNET,0};
 
-char itemDesc[29*4][64]={
+char itemDesc[30*4][64]={
 	"Mmmm, soft. This hat offers",
 	"slightly better protection",
 	"than the paper hat.",
@@ -245,12 +246,15 @@ char itemDesc[29*4][64]={
 	"these stones.  Each one will",
 	"grant you a Skill Point.",
 	"",
+
+	"This ancient timepiece will",
+	"give you 20% more time in",
+	"Challenges. Magically.",
+	"",
 };
 
 byte shopCursor=0;
 byte *shopScr;
-static byte oldc=0;
-static byte reptCounter=0;
 
 void InitShop(void)
 {
@@ -276,9 +280,8 @@ void EnterShop(void)
 	if(!shopScr)
 		FatalError("Out of memory!!");
 	memcpy(shopScr,GetDisplayMGL()->GetScreen(),SCRWID*SCRHEI);
-	oldc=255;
 	GetDisplayMGL()->LastKeyPressed();
-	reptCounter=3;
+	UpdateControls();
 }
 
 void LeaveShop(void)
@@ -533,8 +536,16 @@ void RenderPlayerGear(int x,byte brt)
 		{
 			if(player.gear&GEAR_FEATHER)
 			{
-				Print(x-18,342,"Chicken Shootin'",1,2);
-				Print(x-20,340,"Chicken Shootin'",0,2);
+				if (Challenging())
+				{
+					Print(x - 18, 342, "Tickin' Shootin'", 1, 2);
+					Print(x - 20, 340, "Tickin' Shootin'", 0, 2);
+				}
+				else
+				{
+					Print(x - 18, 342, "Chicken Shootin'", 1, 2);
+					Print(x - 20, 340, "Chicken Shootin'", 0, 2);
+				}
 			}
 			else
 			{
@@ -544,8 +555,16 @@ void RenderPlayerGear(int x,byte brt)
 		}
 		else
 		{
-			Print(x-18,342,"Feathered",1,2);
-			Print(x-20,340,"Feathered",0,2);
+			if (Challenging())
+			{
+				Print(x - 18, 342, "Timely", 1, 2);
+				Print(x - 20, 340, "Timely", 0, 2);
+			}
+			else
+			{
+				Print(x - 18, 342, "Feathered", 1, 2);
+				Print(x - 20, 340, "Feathered", 0, 2);
+			}
 		}
 		Print(x-18,362,bootName[player.boots],1,2);
 		Print(x-20,360,bootName[player.boots],0,2);
@@ -664,6 +683,10 @@ void RenderShop(void)
 				{
 					shopSpr->GetSprite(28)->DrawColored((i)*SHOPDX + SHOPX, SHOPY + j * SHOPDY, mgl, 7, 4);
 				}
+				else if (i == 4 && j == 2 && Challenging()) // hourglass
+				{
+					shopSpr->GetSprite(38)->Draw((i)*SHOPDX + SHOPX, SHOPY + j * SHOPDY, mgl);
+				}
 				else
 				{
 					if(shopPic[i+j*5]!=0)
@@ -674,8 +697,10 @@ void RenderShop(void)
 			}
 			else
 			{
-				shopSpr->GetSprite(0+Owned(i+j*5))->Draw((i)*SHOPDX+SHOPX,SHOPY+j*SHOPDY,mgl);
-				if(shopPic[i+j*5]!=0)
+				shopSpr->GetSprite(0 + Owned(i + j * 5))->Draw((i)*SHOPDX + SHOPX, SHOPY + j * SHOPDY, mgl);
+				if (i == 4 && j == 2 && Challenging())	// hourglass
+					shopSpr->GetSprite(38)->Draw((i)*SHOPDX + SHOPX, SHOPY + j * SHOPDY, mgl);
+				else if(shopPic[i+j*5]!=0)
 					shopSpr->GetSprite(shopPic[i+j*5])->Draw((i)*SHOPDX+SHOPX,SHOPY+j*SHOPDY,mgl);
 				else // exit
 					PrintGlow(SHOPDX*i+SHOPX+8,SHOPY+SHOPDY*j+18,"Exit",2);
@@ -688,7 +713,9 @@ void RenderShop(void)
 	RenderPlayerGear(450,armaBrt);
 	Print(2,2,"ITEM SHOP",0,0);
 
-	if(player.nightmare || BrutalMode())
+	if(shopCursor==14 && Challenging())
+		Print(5, 100 + 5 * 56 - 20, "Magic Hourglass", 0, 2);
+	else if(player.nightmare || BrutalMode())
 	{
 		if(shopCursor==0)
 			Print(5,100+5*56-20,"Shield Stone",0,2);
@@ -729,12 +756,12 @@ void RenderShop(void)
 
 	if(player.nightmare || BrutalMode())
 	{
-		if(shopCursor==0)
-			i=25*4;
-		else if(shopCursor==5)
-			i=26*4;
-		else if(shopCursor==10)
-			i=27*4;
+		if (shopCursor == 0)
+			i = 25 * 4;
+		else if (shopCursor == 5)
+			i = 26 * 4;
+		else if (shopCursor == 10)
+			i = 27 * 4;
 		else if (shopCursor == 15 && !ClassicMode())
 			i = 28 * 4;
 		else
@@ -742,6 +769,9 @@ void RenderShop(void)
 	}
 	else
 		i=shopCursor*4;
+	if (shopCursor == 14 && Challenging())
+		i = 29 * 4;
+
 	PrintBrightGlow(5,110+5*56,itemDesc[i],-4,2);
 	PrintBrightGlow(5,110+20+5*56,itemDesc[i+1],-4,2);
 	PrintBrightGlow(5,110+40+5*56,itemDesc[i+2],-4,2);
@@ -888,31 +918,26 @@ void Buy(byte which)
 
 byte UpdateShop(MGLDraw *mgl)
 {
-	byte c;
+	dword c;
 	int prc;
 
 	armaBrt++;
-	c=GetControls();
-
-	reptCounter++;
-	if((!oldc) || (reptCounter>10))
-		reptCounter=0;
-
-	if((c&CONTROL_UP) && (!reptCounter))
+	
+	if(AutoRepeatTapped(CONTROL_UP))
 	{
 		MakeNormalSound(SND_MENUCLICK);
 		shopCursor-=5;
 		if(shopCursor>=25)
 			shopCursor+=25;
 	}
-	if((c&CONTROL_DN) && (!reptCounter))
+	if(AutoRepeatTapped(CONTROL_DN))
 	{
 		MakeNormalSound(SND_MENUCLICK);
 		shopCursor+=5;
 		if(shopCursor>=25)
 			shopCursor-=25;
 	}
-	if((c&CONTROL_LF) && (!reptCounter))
+	if(AutoRepeatTapped(CONTROL_LF))
 	{
 		MakeNormalSound(SND_MENUCLICK);
 		shopCursor--;
@@ -921,14 +946,14 @@ byte UpdateShop(MGLDraw *mgl)
 		if(shopCursor>50)
 			shopCursor=4;
 	}
-	if((c&CONTROL_RT) && (!reptCounter))
+	if(AutoRepeatTapped(CONTROL_RT))
 	{
 		MakeNormalSound(SND_MENUCLICK);
 		shopCursor++;
 		if((shopCursor%5)==0)
 			shopCursor-=5;
 	}
-	if((c&CONTROL_B1) && (!(oldc&CONTROL_B1)))
+	if(ButtonTapped(CONTROL_B1,true))
 	{
 		if (shopCursor == 24)
 			return 1;	// exit
@@ -951,11 +976,8 @@ byte UpdateShop(MGLDraw *mgl)
 		else
 			MakeNormalSound(SND_UNAVAILABLE);
 	}
-	oldc=c;
-
-	JamulSoundUpdate();
-	UpdateGamepadStartAndSelect();
-	if (mgl->LastKeyPressed() == 27 || GamepadSelectTapped() || GamepadStartTapped())
+		
+	if (ButtonTapped(CONTROL_ESCAPE,true))
 		return 1;
 	
 	else return 0;

@@ -14,7 +14,7 @@ SteamManager::~SteamManager() {}
 #include <steam/steam_api.h>
 #include "extern.h"
 #include "jamultypes.h"
-#include "control.h"
+#include "controlMystic.h"
 #include "options.h"
 #include "log.h"
 #include "string_extras.h"

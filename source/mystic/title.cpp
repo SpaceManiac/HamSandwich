@@ -144,7 +144,6 @@ char pickeroffset;
 byte offsetdir;
 byte curCustom;
 
-static byte oldc=0;
 mfont_t pickerFont;
 char customName[MAX_CUSTOM][32];
 char customFname[MAX_CUSTOM][32];
@@ -190,28 +189,18 @@ void MainMenuDisplay(MGLDraw *mgl,title_t title,bool hideAchieves)
 			planetSpr->GetSprite(12)->Draw(380, 410, mgl);
 	}
 
-#ifdef BETA
-	CenterPrint(HALFWID,40,"*BETA VERSION*",MGL_random(48)-24,0);
-	CenterPrint(HALFWID,80,"DO NOT DISTRIBUTE!",0,1);
-#endif
 #ifdef CHEAT
 	CenterPrint(HALFWID,80,"*CHEAT EDITION*",MGL_random(48)-24,0);
-#endif
-#ifdef DEMO
-	CenterPrint(400,140,"DEMO VERSION",title.titleBright,0);
-#endif
-#ifdef VALUE
-	CenterPrint(480,90,"*VALUE VERSION*",0,0);
 #endif
 }
 
 byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 {
-	byte c;
-	static byte reptCounter=10;
-
 	while(*lastTime>=TIME_PER_FRAME)
 	{
+		JamulSoundUpdate();
+		UpdateControls();
+
 		// update graphics
 		title->titleBright+=title->titleDir;
 		if(title->titleBright>8)
@@ -226,14 +215,8 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 		}
 
 		// now real updating
-		c=GetControls();
-		UpdateGamepadStartAndSelect();
-
-		reptCounter++;
-		if((!oldc) || (reptCounter>10))
-			reptCounter=0;
-
-		if((c&CONTROL_UP) && (!reptCounter) && title->cursor!=5)
+		
+		if(AutoRepeatTapped(CONTROL_UP) && title->cursor!=5)
 		{
 			(title->cursor)--;
 			if(title->cursor==255)
@@ -243,7 +226,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			MakeNormalSound(SND_MENUCLICK);
 			startTime=timeGetTime();	// reset the clock if any key is pressed
 		}
-		if((c&CONTROL_DN) && (!reptCounter) && title->cursor!=5)
+		if(AutoRepeatTapped(CONTROL_DN) && title->cursor!=5)
 		{
 			(title->cursor)++;
 			if(title->cursor==5)
@@ -253,45 +236,42 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			MakeNormalSound(SND_MENUCLICK);
 			startTime=timeGetTime();	// reset the clock if any key is pressed
 		}
-		if ((c & CONTROL_RT) && (!reptCounter))
+		if (AutoRepeatTapped(CONTROL_RT))
 		{
 			title->cursor = 5;
 			MakeNormalSound(SND_MENUCLICK);
 			startTime = timeGetTime();	// reset the clock if any key is pressed
 		}
-		if ((c & CONTROL_LF) && (!reptCounter))
+		if (AutoRepeatTapped(CONTROL_LF))
 		{
 			if(title->cursor==5)
 				title->cursor = 4;
 			MakeNormalSound(SND_MENUCLICK);
 			startTime = timeGetTime();	// reset the clock if any key is pressed
 		}
-		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) || GamepadStartTapped())
+		if(ButtonTapped(CONTROL_B1,true))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			startTime=timeGetTime();	// reset the clock if any key is pressed
 			return 1;
 		}
-		oldc=c;
 
-		c=mgl->LastKeyPressed();
-		if(c==27)
+		if(ButtonTapped(CONTROL_ESCAPE,true))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			startTime=timeGetTime();	// reset the clock if any key is pressed
 			return 3;
 		}
-//#ifndef NDEBUG
+#ifdef CHEAT
+		char c = mgl->LastKeyPressed();
 		if(c=='e')
 		{
 			title->cursor=6;
 			return 1;
 		}
-//#endif
+#endif
 		*lastTime-=TIME_PER_FRAME;
 	}
-
-	JamulSoundUpdate();
 
 	return 0;
 }
@@ -312,8 +292,6 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 
 	mgl->LastKeyPressed();
 	mgl->ClearScreen();
-	oldc=255;
-	UpdateGamepadStartAndSelect();
 	planetSpr=new sprite_set_t("graphics/title.jsp");
 
 	title.bouaphaX=SCRWID;
@@ -427,11 +405,11 @@ void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 
 byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 {
-	byte c=0;
-	static byte reptCounter=0;
-
 	while(*lastTime>=TIME_PER_FRAME)
 	{
+		UpdateControls();
+		JamulSoundUpdate();
+
 		// update graphics
 		title->titleBright+=title->titleDir;
 		if(title->titleBright>8)
@@ -446,28 +424,22 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 		}
 
 		// now real updating
-		c=GetControls();
-		UpdateGamepadStartAndSelect();
-
-		reptCounter++;
-		if((!oldc) || (reptCounter>10))
-			reptCounter=0;
-
-		if((c&CONTROL_UP) && (!reptCounter))
+		
+		if(AutoRepeatTapped(CONTROL_UP))
 		{
 			(title->savecursor)--;
 			if(title->savecursor==255)
 				title->savecursor=4;
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if((c&CONTROL_DN) && (!reptCounter))
+		if (AutoRepeatTapped(CONTROL_DN))
 		{
 			(title->savecursor)++;
 			if(title->savecursor==5)
 				title->savecursor=0;
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) || GamepadStartTapped())
+		if(ButtonTapped(CONTROL_B1,true))
 		{
 			if(title->saveChapter[title->savecursor]==0 || title->saveLevel[title->savecursor]==0)
 				MakeNormalSound(SND_ACIDSPLAT);
@@ -477,16 +449,15 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 				return 1;
 			}
 		}
-		if (mgl->LastKeyPressed() == 27 || ((c & CONTROL_B2) && !(oldc & CONTROL_B2)) || GamepadSelectTapped())
+		if (ButtonTapped(CONTROL_ESCAPE,true))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			return 2;
 		}
-		oldc=c;
+
 		*lastTime-=TIME_PER_FRAME;
 	}
 
-	JamulSoundUpdate();
 	return 0;
 }
 
@@ -495,8 +466,6 @@ void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 	player_t p;
 	int i;
 
-	UpdateGamepadStartAndSelect();
-	oldc = 255;
 	auto f = AppdataOpen("mystic.sav");
 	if(!f)
 	{
@@ -525,7 +494,6 @@ void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 		f.reset();
 	}
 	mgl->LastKeyPressed();
-	oldc=CONTROL_B1|CONTROL_B2;
 }
 
 TASK(byte) GameSlotPicker(MGLDraw *mgl,title_t *title)
@@ -610,11 +578,11 @@ void DifficultyPickerDisplay(MGLDraw* mgl, title_t title)
 
 byte DifficultyPickerUpdate(MGLDraw* mgl, title_t* title, int* lastTime)
 {
-	byte c=0;
-	static byte reptCounter = 0;
-
 	while (*lastTime >= TIME_PER_FRAME)
 	{
+		UpdateControls();
+		JamulSoundUpdate();
+
 		// update graphics
 		title->titleBright += title->titleDir;
 		if (title->titleBright > 8)
@@ -629,44 +597,36 @@ byte DifficultyPickerUpdate(MGLDraw* mgl, title_t* title, int* lastTime)
 		}
 
 		// now real updating
-		c = GetControls();
-		UpdateGamepadStartAndSelect();
-
-		reptCounter++;
-		if ((!oldc) || (reptCounter > 10))
-			reptCounter = 0;
-
-		if ((c & CONTROL_UP) && (!reptCounter))
+		
+		if (AutoRepeatTapped(CONTROL_UP))
 		{
 			(title->savecursor)--;
 			if (title->savecursor == 255)
 				title->savecursor = 3;
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if ((c & CONTROL_DN) && (!reptCounter))
+		if (AutoRepeatTapped(CONTROL_DN))
 		{
 			(title->savecursor)++;
 			if (title->savecursor == 4)
 				title->savecursor = 0;
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if (((c & CONTROL_B1) && (!(oldc & CONTROL_B1))) || GamepadStartTapped())
+		if (ButtonTapped(CONTROL_B1,true))
 		{
 			player.difficulty = (Difficulty)title->savecursor;
 			MakeNormalSound(SND_MENUSELECT);
 			return 1;
 		}
-		if (mgl->LastKeyPressed() == 27 || ((c & CONTROL_B2) && !(oldc & CONTROL_B2)) || GamepadSelectTapped())
+		if (ButtonTapped(CONTROL_ESCAPE|CONTROL_B2,true))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			return 2;
 		}
 
-		oldc = c;
 		*lastTime -= TIME_PER_FRAME;
 	}
 	
-	JamulSoundUpdate();
 	return 0;
 }
 
@@ -674,8 +634,6 @@ void InitDifficultyPicker(MGLDraw* mgl, title_t* title)
 {
 	title->savecursor = 0;
 	mgl->LastKeyPressed();
-	UpdateGamepadStartAndSelect();
-	oldc = 255;
 }
 
 TASK(byte) DifficultyPicker(MGLDraw* mgl, title_t* title)
@@ -747,7 +705,6 @@ TASK(void) Credits(MGLDraw *mgl,byte mode)
 	int y=-470;
 	static byte flip=0;
 	byte scroll=1;
-	byte c = 0;
 	dword startTime,endTime;
 
 	mgl->LastKeyPressed();
@@ -755,9 +712,9 @@ TASK(void) Credits(MGLDraw *mgl,byte mode)
 	mgl->LoadBMP("graphics/pal.bmp");
 	while(1)
 	{
-		UpdateGamepadStartAndSelect();
-		oldc = c;
-		c = GetControls();
+		UpdateControls();
+		JamulSoundUpdate();
+
 		startTime=timeGetTime();
 		mgl->ClearScreen();
 		CreditsRender(y,mode);
@@ -771,13 +728,11 @@ TASK(void) Credits(MGLDraw *mgl,byte mode)
 		AWAIT mgl->Flip();
 		if(!mgl->Process())
 			CO_RETURN;
-		if(mgl->LastKeyPressed() || GamepadStartTapped() || GamepadSelectTapped() || ((c&(CONTROL_B1|CONTROL_B2|CONTROL_B3|CONTROL_B4)) && !(oldc&(CONTROL_B1|CONTROL_B2|CONTROL_B3|CONTROL_B4))))
+		if(ButtonTapped(CONTROL_B1|CONTROL_B2|CONTROL_ESCAPE|CONTROL_B3|CONTROL_B4,true))
 			CO_RETURN;
 
 		if(y==END_OF_CREDITS-HALFHEI*3/2 && mode==0)
 			CO_RETURN;
-
-		JamulSoundUpdate();
 
 		endTime=timeGetTime();
 		while((endTime-startTime)<TIME_PER_FRAME)
@@ -869,7 +824,9 @@ TASK(void) VictoryText(MGLDraw *mgl,byte victoryType)
 	darkY=0;
 	while(1)
 	{
-		UpdateGamepadStartAndSelect();
+		UpdateControls();
+		JamulSoundUpdate();
+
 		startTime=timeGetTime();
 		memcpy(mgl->GetScreen(),scr,SCRWID*SCRHEI);
 		VictoryTextRender(y,victoryType);
@@ -879,11 +836,9 @@ TASK(void) VictoryText(MGLDraw *mgl,byte victoryType)
 		if(!mgl->Process())
 			break;
 
-		if (mgl->LastKeyPressed()==27 || GamepadStartTapped() || GamepadSelectTapped())
+		if (ButtonTapped(CONTROL_ESCAPE,true))
 			break;
 
-		if(mgl->LastKeyPressed()==27)
-			break;
 		if(y==length)
 			break;
 
@@ -902,8 +857,7 @@ TASK(void) VictoryText(MGLDraw *mgl,byte victoryType)
 					darkY-=SCRHEI;
 			}
 		}
-		JamulSoundUpdate();
-
+		
 		endTime=timeGetTime();
 		while((endTime-startTime)<TIME_PER_FRAME)
 			endTime=timeGetTime();
@@ -939,12 +893,15 @@ TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound,byte
 	tick=0;
 	while(!done)
 	{
-		UpdateGamepadStartAndSelect();
 		AWAIT mgl->Flip();
 		if(!mgl->Process())
 			CO_RETURN;
-		if(mgl->LastKeyPressed() || GamepadSelectTapped() || GamepadStartTapped())
+		UpdateControls();
+		JamulSoundUpdate();
+
+		if(ButtonTapped(CONTROL_ESCAPE|CONTROL_B1|CONTROL_B2,true))
 			mode=2;
+
 		EndClock();
 		tick+=TimeLength();
 		StartClock();

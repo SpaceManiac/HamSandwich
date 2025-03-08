@@ -33,6 +33,8 @@
 #define CE_POINTS	9	// earn N XP
 #define CE_QUIT		10	// chose to quit the game, so don't tally or even go back to challenge menu
 
+#define HOURGLASS_BONUS (20)	// percent of time the hourglass grants you
+
 typedef struct goal_t
 {
 	byte type;

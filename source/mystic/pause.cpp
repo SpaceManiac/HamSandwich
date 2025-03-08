@@ -25,14 +25,12 @@ byte saveChapter[5];
 byte saveHour[5],saveMin[5];
 Difficulty saveDiff[5];
 static byte armaBrt=0;
-static byte oldc = 255;
 
 void ResetPauseMenu(void)
 {
 	pauseX=-250;
 	subX=-250;
 	cursor=0;
-	oldc = 255;
 }
 
 void SetSubCursor(byte s)
@@ -473,15 +471,6 @@ void RenderWeirdMenu(void)
 	}
 }
 
-void HandlePauseKeyPresses(MGLDraw *mgl)
-{
-	char k;
-
-	k=mgl->LastKeyPressed();
-	if(k)
-		lastKey=k;
-}
-
 float CalcTotalPercent(player_t *p)
 {
 	int i,amt,total;
@@ -559,9 +548,6 @@ void UpdateUnPausedMenu(void)
 
 byte UpdatePauseMenu(MGLDraw *mgl)
 {
-	byte c;
-	static byte reptCounter=0;
-
 	armaBrt++;
 	if(pauseX<0)
 		pauseX+=25;
@@ -576,18 +562,12 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		if(subX>-250)
 			subX-=25;
 	}
-
-	c=GetControls();
-
-	reptCounter++;
-	if((!oldc) || (reptCounter>10))
-		reptCounter=0;
-
+	
 	byte maxCursor = 4 + (!ClassicMode()) * 4;
 	byte loadSpot = 1 + (!ClassicMode())*2;
 	if(subMode==SUBMODE_NONE)	// not in any submenu
 	{
-		if((c&CONTROL_UP) && (!reptCounter))
+		if(AutoRepeatTapped(CONTROL_UP))
 		{
 			cursor--;
 			if(cursor==255)
@@ -597,7 +577,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if((c&CONTROL_DN) && (!reptCounter))
+		if(AutoRepeatTapped(CONTROL_DN))
 		{
 			cursor++;
 			if(cursor>maxCursor)
@@ -615,19 +595,20 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			effCursor = conversions[cursor];
 		}
 
-		if ((c & CONTROL_B2) && (!(oldc & CONTROL_B2)))
+		if (ButtonTapped(CONTROL_B2, true))
 		{
-			GetTaps();
+			LockOutControl(CONTROL_B2, true);
 			return 0;
 		}
-		if((c&CONTROL_B1) && (!(oldc&CONTROL_B1)))
+		
+		if(ButtonTapped(CONTROL_B1,true))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 
 			switch(effCursor)
 			{
 				case 0: // cancel
-					GetTaps();
+					LockOutControl(CONTROL_B1, true);
 					return 0;
 				case 1:	// Load
 					subMode=SUBMODE_SLOTPICK;
@@ -680,26 +661,26 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 	}
 	else if(subMode==SUBMODE_SLOTPICK)
 	{
-		if((c&CONTROL_UP) && (!reptCounter))
+		if(AutoRepeatTapped(CONTROL_UP))
 		{
 			MakeNormalSound(SND_MENUCLICK);
 			subcursor--;
 			if(subcursor==255)
 				subcursor=4;
 		}
-		if((c&CONTROL_DN) && (!reptCounter))
+		if(AutoRepeatTapped(CONTROL_DN))
 		{
 			MakeNormalSound(SND_MENUCLICK);
 			subcursor++;
 			if(subcursor==5)
 				subcursor=0;
 		}
-		if ((c & CONTROL_B2) && (!(oldc & CONTROL_B2)))
+		if (ButtonTapped(CONTROL_B2,true))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			subMode = SUBMODE_NONE;
 		}
-		if((c&CONTROL_B1) && (!(oldc&CONTROL_B1)))
+		if(ButtonTapped(CONTROL_B1,true))
 		{
 			if(effCursor==1)	// Load
 			{
@@ -713,6 +694,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					PlayerLoadGame(subcursor);
 					MakeNormalSound(SND_LOADGAME);
 					subMode=SUBMODE_NONE;
+					LockOutControl(CONTROL_B1, true);
 					return 0;
 				}
 			}
@@ -727,26 +709,26 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 	}
 	else if (subMode == SUBMODE_QOL)
 	{
-		if ((c & CONTROL_UP) && (!reptCounter))
+		if (AutoRepeatTapped(CONTROL_UP))
 		{
 			MakeNormalSound(SND_MENUCLICK);
 			subcursor--;
 			if (subcursor == 255)
 				subcursor = 14;
 		}
-		if ((c & CONTROL_DN) && (!reptCounter))
+		if (AutoRepeatTapped(CONTROL_DN))
 		{
 			MakeNormalSound(SND_MENUCLICK);
 			subcursor++;
 			if (subcursor > 14)
 				subcursor = 0;
 		}
-		if ((c & CONTROL_B2) && (!(oldc & CONTROL_B2)))
+		if (ButtonTapped(CONTROL_B2,true))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			subMode = SUBMODE_NONE;
 		}
-		if ((c & CONTROL_B1) && (!(oldc & CONTROL_B1)))
+		if (ButtonTapped(CONTROL_B1,true))
 		{
 			switch (subcursor)
 			{
@@ -813,7 +795,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 	}
 	else if (subMode == SUBMODE_SKILLS)
 	{
-		if ((c & CONTROL_UP) && (!reptCounter))
+		if (AutoRepeatTapped(CONTROL_UP))
 		{
 			MakeNormalSound(SND_MENUCLICK);
 			if (subcursor < 6)
@@ -827,7 +809,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			if (giveUp != 0 && subcursor == 36)
 				subcursor = 35;
 		}
-		if ((c & CONTROL_DN) && (!reptCounter))
+		if (AutoRepeatTapped(CONTROL_DN))
 		{
 			MakeNormalSound(SND_MENUCLICK);
 			if (subcursor == 37)
@@ -841,7 +823,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			if (giveUp != 0 && subcursor == 36)
 				subcursor = 37;
 		}
-		if ((c & CONTROL_LF) && (!reptCounter))
+		if (AutoRepeatTapped(CONTROL_LF))
 		{
 			if (subcursor < 36)	// not the two bottom buttons
 			{
@@ -852,7 +834,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					subcursor--;
 			}
 		}
-		if ((c & CONTROL_RT) && (!reptCounter))
+		if (AutoRepeatTapped(CONTROL_RT))
 		{
 			if (subcursor < 36)
 			{
@@ -863,7 +845,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					subcursor++;
 			}
 		}
-		if ((c & CONTROL_B1) && (!(oldc & CONTROL_B1)))
+		if (ButtonTapped(CONTROL_B1,true))
 		{
 			if (subcursor == 36)
 			{
@@ -892,7 +874,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 	}
 	else if (subMode == SUBMODE_RUNES)
 	{
-		if ((c & CONTROL_UP) && (!reptCounter))
+		if (AutoRepeatTapped(CONTROL_UP))
 		{
 			MakeNormalSound(SND_MENUCLICK);
 			if (subcursor < 6)
@@ -902,7 +884,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			else
 				subcursor -= 6;
 		}
-		if ((c & CONTROL_DN) && (!reptCounter))
+		if (AutoRepeatTapped(CONTROL_DN))
 		{
 			MakeNormalSound(SND_MENUCLICK);
 			if (subcursor == 37)
@@ -912,7 +894,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			else
 				subcursor += 6;
 		}
-		if ((c & CONTROL_LF) && (!reptCounter))
+		if (AutoRepeatTapped(CONTROL_LF))
 		{
 			if (subcursor < 37)
 			{
@@ -923,7 +905,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					subcursor--;
 			}
 		}
-		if ((c & CONTROL_RT) && (!reptCounter))
+		if (AutoRepeatTapped(CONTROL_RT))
 		{
 			if (subcursor < 37)
 			{
@@ -934,7 +916,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					subcursor++;
 			}
 		}
-		if ((c & CONTROL_B1) && (!(oldc & CONTROL_B1)))
+		if (ButtonTapped(CONTROL_B1,true))
 		{
 			if (subcursor == 37)
 			{
@@ -962,7 +944,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 				}
 			}
 		}
-		if ((c & CONTROL_B2) && (!(oldc & CONTROL_B2)))
+		if (ButtonTapped(CONTROL_B2,true))
 		{
 			if (subcursor == 37)
 			{
@@ -993,19 +975,17 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		}
 	}
 
-	oldc = c;
-	HandlePauseKeyPresses(mgl);
-	UpdateGamepadStartAndSelect();
-
-	if(((c&CONTROL_B2) && !(oldc&CONTROL_B2)) || lastKey==27 || GamepadSelectTapped() || GamepadStartTapped())	// hit ESC to exit pause menu
+	if(ButtonTapped(CONTROL_B2|CONTROL_ESCAPE,true))
 	{
 		MakeNormalSound(SND_MENUSELECT);
-		if(subMode==SUBMODE_NONE)
+		if (subMode == SUBMODE_NONE)
+		{
+			LockOutControl(CONTROL_B2, true);
 			return 0;
+		}
 		else
 			subMode=SUBMODE_NONE;
 		lastKey=0;
-		GetTaps();
 	}
 	
 	return 1;

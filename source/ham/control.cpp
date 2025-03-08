@@ -9,16 +9,16 @@
 #include "owned_sdl.h"
 
 static constexpr int NUM_KEYBOARDS = 4;
-static constexpr int NUM_CONTROLS = 8;
 static constexpr int NUM_JOYBTNS = 4;
 
 static byte lastScanCode;
 
 // normal mapped controls: kbd, joystick, etc.
-static byte keyState, keyTap;
-static byte keyState2[NUM_KEYBOARDS];
+static dword keyState, keyTap;
+static dword keyState2[NUM_KEYBOARDS];
 // fixed arrow keys and return controls
-static byte arrowState, arrowTap;
+static dword arrowState, arrowTap;
+static dword lockOut;
 
 // joysticks
 static std::vector<owned::SDL_GameController> joysticks;
@@ -27,44 +27,50 @@ static byte oldJoy;
 
 // mappings
 static byte kb[NUM_CONTROLS][NUM_KEYBOARDS];
-static byte joyBtn[NUM_JOYBTNS];
+static byte joyBtn[NUM_CONTROLS];
 static byte playerUsesJoystick[NUM_KEYBOARDS] = { 3, 3, 3, 3 };
 
 static byte GetJoyState();
+static byte controlScheme;
 
-void InitControls(void)
+static dword rawGamepad;
+
+bool dpadToMove = true;
+byte stickDeadZone;	// measured in pct
+
+static dword controls, taps, menuTap;
+static byte reptCounter;
+
+void InitControls(byte scheme)
 {
+	controlScheme = scheme;
+	lockOut = 0;
 	lastScanCode=0;
 	keyState=0;
 	keyTap=0;
 	arrowState=0;
 	arrowTap=0;
 	oldJoy=0;
+	dpadToMove = true;
+	stickDeadZone = 20;
+	controls = 0;
+	taps = 0;
+	reptCounter = 0;
 	memset(keyState2, 0, sizeof(keyState2));
-
-	/*
-	for (int i = 0; i < SDL_NumJoysticks(); ++i) {
-		if (!SDL_IsGameController(i)) {
-			LogDebug("Skipping non-gamepad joystick: %s", SDL_JoystickNameForIndex(i));
-			continue;
-		}
-
-		owned::SDL_GameController joystick = owned::SDL_GameControllerOpen(i);
-		if (joystick) {
-			LogDebug("Gamepad init: %s", SDL_GameControllerName(joystick.get()));
-			joysticks.push_back(std::move(joystick));
-		}
-		else
-			LogError("SDL_GameControllerOpen(%d, %s): %s", i, SDL_GameControllerNameForIndex(i), SDL_GetError());
-	}
-	*/
 }
 
-byte GetKeyControls() {
+byte ControlScheme(void)
+{
+	return controlScheme;
+}
+
+byte GetKeyControls()
+{
 	return keyState;
 }
 
-byte GetControls() {
+byte GetControls()
+{
 	return keyState | GetJoyState() | SoftJoystickState();
 }
 
@@ -83,24 +89,28 @@ byte GetPlayerControls(byte player)
 	}
 }
 
-byte GetTaps() {
+byte GetTaps()
+{
 	GetJoyState();  // Updates keyTap.
 	byte result = keyTap;
 	keyTap = 0;
 	return result | SoftJoystickTaps();
 }
 
-byte GetArrows() {
+byte GetArrows()
+{
 	return arrowState;
 }
 
-byte GetArrowTaps() {
+byte GetArrowTaps()
+{
 	byte result = arrowTap;
 	arrowTap = 0;
 	return result;
 }
 
-byte LastScanCode() {
+byte LastScanCode()
+{
 	byte c = lastScanCode;
 	lastScanCode = 0;
 	return c;
@@ -212,19 +222,22 @@ bool ShowGamepadText()
 }
 
 // Options menu support.
-void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys) {
-	nkeys = std::min(nkeys, NUM_CONTROLS);
+void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys)
+{
+	nkeys = std::min(nkeys, (int)NUM_CONTROLS);
 	for (int i = 0; i < nkeys; ++i) {
 		kb[i][keyboard] = keys[i];
 	}
 }
 
-void SetJoystickBindings(int nbuttons, const byte* buttons) {
+void SetJoystickBindings(int nbuttons, const byte* buttons)
+{
 	SoftJoystickNumButtons(nbuttons);
-	memcpy(joyBtn, buttons, std::min(nbuttons, NUM_JOYBTNS));
+	memcpy(joyBtn, buttons, std::min(nbuttons, (int)NUM_CONTROLS));
 }
 
-void ControlSetUseJoystick(byte player, byte joystickNumber) {
+void ControlSetUseJoystick(byte player, byte joystickNumber)
+{
 	playerUsesJoystick[player] = joystickNumber;
 }
 
@@ -232,7 +245,7 @@ void ControlSetUseJoystick(byte player, byte joystickNumber) {
 void ControlKeyDown(SDL_Scancode k)
 {
 	int i,j;
-	byte bit;
+	dword bit;
 
 	lastScanCode=k;
 
@@ -252,7 +265,8 @@ void ControlKeyDown(SDL_Scancode k)
 	}
 
 	// always track arrows, no matter what the keys are, for menus
-	switch(k) {
+	switch(k)
+	{
 		case SDL_SCANCODE_UP:
 			arrowState |= CONTROL_UP;
 			arrowTap |= CONTROL_UP;
@@ -273,6 +287,10 @@ void ControlKeyDown(SDL_Scancode k)
 			arrowState |= CONTROL_B1;
 			arrowTap |= CONTROL_B1;
 			break;
+		case SDL_SCANCODE_ESCAPE:
+			arrowState |= CONTROL_ESCAPE;
+			arrowTap |= CONTROL_ESCAPE;
+			break;
 		default: break;
 	}
 }
@@ -280,7 +298,7 @@ void ControlKeyDown(SDL_Scancode k)
 void ControlKeyUp(SDL_Scancode k)
 {
 	int i,j;
-	byte bit;
+	dword bit;
 
 	for(i=0;i<NUM_KEYBOARDS;i++)
 	{
@@ -312,6 +330,9 @@ void ControlKeyUp(SDL_Scancode k)
 			break;
 		case SDL_SCANCODE_RETURN:
 			arrowState &= ~CONTROL_B1;
+			break;
+		case SDL_SCANCODE_ESCAPE:
+			arrowState &= ~CONTROL_ESCAPE;
 			break;
 		default: break;
 	}
@@ -452,4 +473,168 @@ static byte GetJoyState(void)
 SDL_GameController* ActiveController()
 {
 	return activeController;
+}
+
+//------------------------ MYSTIC MODE
+
+/*dword GetMysticControls(void)
+{
+	return controls;
+}
+
+dword GetMysticTaps(void)
+{
+	return taps;
+}
+*/
+
+/*dword AutoRepeatControls(void)
+{
+	dword c = 0;
+	for (int i = 0; i < NUM_CONTROLS; i++)
+	{
+		if ((taps & (1 << i)) || (reptCounter == 0 && (controls & (1 << i))))
+			c |= (1 << i);
+
+		if ((menuTap & (1 << i)) || (reptCounter == 0 && (arrowState & (1 << i))))
+			c |= (1 << i);
+	}
+	return c;	// returns any controls that are just tapped, or that have been held, but the repeat counter has expired
+}*/
+
+bool ButtonHeld(dword c,bool menu)
+{
+	return (menu && (arrowState & c)) || (controls & c);
+}
+
+bool AutoRepeatTapped(dword c,bool menu)
+{
+	if ((taps & c) || (menu && (menuTap&c)))
+	{
+		reptCounter = CONTROL_REPEAT_FRAMES;
+		return true;
+	}
+	if (reptCounter == 0 && ((controls & c) || (arrowState & c)))
+	{
+		reptCounter = CONTROL_REPEAT_FRAMES;
+		return true;
+	}
+	return false;
+}
+
+bool ButtonTapped(dword c,bool menu)
+{
+	if (taps & c) return true;
+	return menu && (menuTap & c);
+}
+
+dword RawGamepadToControls(void)
+{
+	dword c = 0;
+	for (int i = 0; i < NUM_CONTROLS; i++)
+	{
+		if (joyBtn[i] != 255)
+			c |= (rawGamepad & (1 << joyBtn[i]));
+	}
+	return c;
+}
+
+void UpdateControls(void)
+{
+	dword oldControls = controls;
+	byte oldMenu = arrowState;
+	taps = 0;
+	menuTap = 0;
+	UpdateRawJoystick();
+	controls = keyState | RawGamepadToControls();
+	
+	if (reptCounter > 0)
+		reptCounter--;
+
+	for (int i = 0; i < NUM_CONTROLS; i++)
+	{
+		if (i < 8)	// menu keys are only in the first 8 controls
+		{
+			if (!(oldMenu & (1 << i)) && (arrowState & (1 << i)))
+				menuTap |= (1 << i);
+		}
+		if (!(oldControls & (1 << i)) && (controls & (1 << i)))
+			taps |= (1 << i);	// if this is the first frame the control is down, then it is a tap
+		if(!(controls&(1<<i)))
+			lockOut&=(~(1<<i));	// if you've released a locked-out key, then we unlock it
+	}
+	if (oldControls == 0 || reptCounter >= CONTROL_REPEAT_FRAMES)
+		reptCounter = 0;
+
+	SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%d %d | %d %d\n", controls,taps,arrowState,menuTap);
+
+	controls &= (~lockOut);
+	taps &= (~lockOut);
+}
+
+void UpdateRawJoystick(void)
+{
+	int lx, ly, rx, ry;
+
+	rawGamepad = 0;
+	lx = ly = rx = ry = 0;
+	int ltpos = 0, rtpos = 0;
+	for (auto iter = joysticks.begin(); iter != joysticks.end(); ++iter)
+	{
+		SDL_GameController* gamepad = iter->get();
+		SDL_Joystick* joystick = SDL_GameControllerGetJoystick(gamepad);
+		if (!SDL_JoystickGetAttached(joystick))
+		{
+			// Drop disconnected joysticks.
+			LogDebug("Gamepad removed: %s", SDL_GameControllerName(gamepad));
+			if (activeController == gamepad)
+				activeController = nullptr;
+			iter = joysticks.erase(iter);
+			if (iter == joysticks.end())
+				break;
+			continue;
+		}
+		for (int i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++)
+		{
+			if (SDL_GameControllerGetButton(gamepad,(SDL_GameControllerButton)i))
+				rawGamepad |= (1 << i);
+		}
+
+		lx += SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX);
+		ly += SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY);
+		rx += SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTX);
+		ry += SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTY);
+		ltpos += SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
+		rtpos += SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+	}
+	short deadZone;
+	deadZone = SDL_JOYSTICK_AXIS_MAX * (short)stickDeadZone / 100;
+	if (lx < -deadZone)
+		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF));
+	if (ly < -deadZone)
+		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP));
+	if (lx > deadZone)
+		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT));
+	if (ly > deadZone)
+		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_DN));
+	if (rx < -deadZone)
+		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::RS_LF));
+	if (ry < -deadZone)
+		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::RS_UP));
+	if (rx > deadZone)
+		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::RS_RT));
+	if (ry > deadZone)
+		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::RS_DN));
+	if (ltpos > SDL_JOYSTICK_AXIS_MAX / 2)	// don't use dead zone for triggers, just halfway pressed is it
+		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LT));
+	if (rtpos > SDL_JOYSTICK_AXIS_MAX / 2)
+		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::RT));
+}
+
+void LockOutControl(dword c,bool locked)
+{
+	if (locked)
+		lockOut |= c;
+	else
+		lockOut &= (~c);
 }

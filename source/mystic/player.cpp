@@ -22,12 +22,6 @@ static int chlgCrystals;
 float restorationBuffer,spellRestorationBuffer;
 float spellRestorationOutput;	// separating the direct restoration from the Heal spell from others, because it can grant barrier
 byte manaRuneValue;
-byte controlLockOut = 3;
-
-void LockOutControls(void)
-{
-	controlLockOut = 3;
-}
 
 void AddToRestorationBuffer(float amt)
 {
@@ -1179,29 +1173,29 @@ void SetTportClock(byte tp)
 	tportclock=tp;
 }
 
-void DoPlayerFacing(byte c,Guy *me)
+void DoPlayerFacing(Guy *me)
 {
-	if(c&CONTROL_UP)
+	if(ButtonHeld(CONTROL_UP,false))
 	{
 		me->facing=6;
-		if(c&CONTROL_LF)
+		if(ButtonHeld(CONTROL_LF,false))
 			me->facing=5;
-		else if(c&CONTROL_RT)
+		else if(ButtonHeld(CONTROL_RT,false))
 			me->facing=7;
 	}
-	else if(c&CONTROL_DN)
+	else if(ButtonHeld(CONTROL_DN,false))
 	{
 		me->facing=2;
-		if(c&CONTROL_LF)
+		if(ButtonHeld(CONTROL_LF,false))
 			me->facing=3;
-		else if(c&CONTROL_RT)
+		else if(ButtonHeld(CONTROL_RT,false))
 			me->facing=1;
 	}
 	else
 	{
-		if(c&CONTROL_LF)
+		if(ButtonHeld(CONTROL_LF,false))
 			me->facing=4;
-		else if(c&CONTROL_RT)
+		else if(ButtonHeld(CONTROL_RT,false))
 			me->facing=0;
 	}
 }
@@ -1245,7 +1239,6 @@ void BeginCast(Guy *me)
 
 void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 {
-	byte c;
 	int i,j;
 	Guy *g;
 
@@ -1521,24 +1514,8 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 
 	// not busy, let's see if you want to do something
-	c=GetControls();
-	byte taps = GetTaps();
-	DoPlayerFacing(c,me);
-	if (controlLockOut & 1)
-	{
-		if (!(c & CONTROL_B1))
-			controlLockOut &= ~1;	// you've released B1, we can unlock it
-		else
-			c &= ~CONTROL_B1;	// B1 is locked, you can't press it
-	}
-	if (controlLockOut & 2)	// same deal but for B2
-	{
-		if (!(c & CONTROL_B2))
-			controlLockOut &= ~2;
-		else
-			c &= ~CONTROL_B2;
-	}
-
+	DoPlayerFacing(me);
+	
 	if(player.levelNum==1)
 	{
 		// can't cast spells or even fake a fireball when on the overworld level
@@ -1548,17 +1525,17 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 
 	// shooty provides backup shots
-	if((c&CONTROL_B1) && player.hammers>0 && player.fairyOn==FAIRY_SHOOTY && fairyReload==0)
+	if(ButtonHeld(CONTROL_B1,false) && player.hammers>0 && player.fairyOn == FAIRY_SHOOTY && fairyReload == 0)
 	{
 		fairyReload=15;
 		FairyDoThing(1);
 	}
 
-	if((c&CONTROL_B1) && player.reload==0)	// pushed hammer throw button
+	if(ButtonHeld(CONTROL_B1,false) && player.reload==0)	// pushed hammer throw button
 	{
 		if((player.gear&GEAR_SOCKS) && !player.disableMoveNShoot)
 		{
-			if(!(c&(CONTROL_LF|CONTROL_RT|CONTROL_UP|CONTROL_DN)))
+			if(!ButtonHeld(CONTROL_LF|CONTROL_RT|CONTROL_UP|CONTROL_DN,false))
 			{
 				me->seq=ANIM_ATTACK;	// even if unarmed
 				me->frm=0;
@@ -1568,7 +1545,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			}
 			if(player.hammers>0)
 				PlayerThrowHammer(me);
-			player.reload=player.hamSpeed+6;//-(4-(player.hamSpeed>>2));
+			player.reload=player.hamSpeed+6;
 		}
 		else
 		{
@@ -1582,26 +1559,26 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		player.boredom=0;
 		return;
 	}
-	if(player.levelNum==1 && player.wpnReload==1 && (taps&CONTROL_B2) && player.haveFairy>0 && GetGameMode() == GAMEMODE_PLAY)
+	if(player.levelNum==1 && player.wpnReload==1 && ButtonTapped(CONTROL_B2,false) && player.haveFairy>0 && GetGameMode() == GAMEMODE_PLAY)
 	{
 		player.wpnReload=15;
 		SendMessageToGame(MSG_GOTOMAP,51);
 	}
 
-	if((c&CONTROL_B2) && player.wpnReload==0 && player.spell[player.curSpell])	// pushed spell button
+	if(ButtonHeld(CONTROL_B2,false) && player.wpnReload==0 && player.spell[player.curSpell])	// pushed spell button
 	{
 		BeginCast(me);
 		return;
 	}
 
 	// if you are moving indeed
-	if(c&(CONTROL_UP|CONTROL_DN|CONTROL_LF|CONTROL_RT))
+	if(ButtonHeld(CONTROL_UP|CONTROL_DN|CONTROL_LF|CONTROL_RT,false))
 	{
 		if(me->parent)	// drift the raft
 		{
-			if(c&CONTROL_LF)
+			if(ButtonHeld(CONTROL_LF,false))
 				me->parent->dx-=FIXAMT/6;
-			if(c&CONTROL_RT)
+			if(ButtonHeld(CONTROL_RT,false))
 				me->parent->dx+=FIXAMT/6;
 			Clamp(&me->parent->dx,FIXAMT*3);
 		}
@@ -1677,10 +1654,10 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		}
 	}
 
-	byte controls = c;
 	// super cool execute move
-	if (!ClassicMode() && SkillValue(SKILL_MURDALIZE)>0 && me->action!=ACTION_BUSY && (((taps & CONTROL_B4) && (controls & CONTROL_B3)) ||
-		((taps & CONTROL_B3) && (controls & CONTROL_B4)))) // you hit both
+	if (!ClassicMode() && SkillValue(SKILL_MURDALIZE)>0 && me->action!=ACTION_BUSY &&
+		((ButtonTapped(CONTROL_B3,false) && ButtonTapped(CONTROL_B4,false)) ||
+		(ButtonTapped(CONTROL_B4,false) && ButtonHeld(CONTROL_B3,true)))) // you hit both
 	{
 		int x, y;
 		x = me->x + Cosine(me->facing * 32) * 30;
@@ -1713,7 +1690,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			MakeSound(SND_FLAMEGO, x, y, SND_CUTOFF, 100);
 		}
 	}
-	else if(taps&CONTROL_B4)
+	else if(ButtonTapped(CONTROL_B4,false))
 	{
 		
 		j=0;
@@ -1734,7 +1711,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			}
 		}
 	}
-	else if(taps&CONTROL_B3)
+	else if(ButtonTapped(CONTROL_B3,false))
 	{
 		j=0;
 		for(i=0;i<10;i++)

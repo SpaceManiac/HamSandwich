@@ -190,7 +190,6 @@ byte speechX,speechY,curSpeech;
 
 message_t bigMessage;
 message_t message;
-static byte oldc;
 byte romanceTalk = 0;
 
 void InitSpeechSystem(void)
@@ -363,16 +362,11 @@ void InitSpeech(byte spc)
 	speechX=0;
 	speechY=0;
 	EnterSpeechMode();
-	oldc=255;
 }
 
 byte UpdateSpeech(MGLDraw *mgl)
 {
-	byte c;
-
-	c=GetControls();
-
-	if((c&CONTROL_B1) && (!(oldc&CONTROL_B1)))
+	if(ButtonTapped(CONTROL_B1|CONTROL_B2,false))
 	{
 		if(speechY<4)
 			speechY=4;
@@ -383,7 +377,6 @@ byte UpdateSpeech(MGLDraw *mgl)
 				curSpeech=13;
 				speechX=0;
 				speechY=0;
-				oldc=c;
 				return 0;
 			}
 			if(curSpeech==13)
@@ -391,7 +384,6 @@ byte UpdateSpeech(MGLDraw *mgl)
 				curSpeech=16;
 				speechX=0;
 				speechY=0;
-				oldc=c;
 				return 0;
 			}
 			if(curSpeech==16)
@@ -399,7 +391,6 @@ byte UpdateSpeech(MGLDraw *mgl)
 				curSpeech=17;
 				speechX=0;
 				speechY=0;
-				oldc=c;
 				return 0;
 			}
 			if(curSpeech==2)
@@ -407,7 +398,6 @@ byte UpdateSpeech(MGLDraw *mgl)
 				curSpeech=14;
 				speechX=0;
 				speechY=0;
-				oldc=c;
 				return 0;
 			}
 			if(curSpeech==14)
@@ -415,7 +405,6 @@ byte UpdateSpeech(MGLDraw *mgl)
 				curSpeech=15;
 				speechX=0;
 				speechY=0;
-				oldc=c;
 				return 0;
 			}
 			if(curSpeech==18)
@@ -423,7 +412,6 @@ byte UpdateSpeech(MGLDraw *mgl)
 				curSpeech=19;
 				speechX=0;
 				speechY=0;
-				oldc=c;
 				return 0;
 			}
 			if(curSpeech==20)
@@ -431,7 +419,6 @@ byte UpdateSpeech(MGLDraw *mgl)
 				curSpeech=21;
 				speechX=0;
 				speechY=0;
-				oldc=c;
 				return 0;
 			}
 			if (curSpeech == 21 && !ClassicMode())
@@ -439,7 +426,6 @@ byte UpdateSpeech(MGLDraw *mgl)
 				curSpeech = 26;
 				speechX = 0;
 				speechY = 0;
-				oldc = c;
 				return 0;
 			}
 			if (curSpeech == 26)
@@ -447,7 +433,6 @@ byte UpdateSpeech(MGLDraw *mgl)
 				curSpeech = 27;
 				speechX = 0;
 				speechY = 0;
-				oldc = c;
 				return 0;
 			}
 			if(curSpeech==22)
@@ -455,7 +440,6 @@ byte UpdateSpeech(MGLDraw *mgl)
 				curSpeech=23;
 				speechX=0;
 				speechY=0;
-				oldc=c;
 				return 0;
 			}
 			if(curSpeech==3 || curSpeech==7)
@@ -463,7 +447,6 @@ byte UpdateSpeech(MGLDraw *mgl)
 				curSpeech++;
 				speechX=0;
 				speechY=0;
-				oldc=c;
 				return 0;
 			}
 			if (curSpeech >= 31 && curSpeech<=33)
@@ -476,7 +459,6 @@ byte UpdateSpeech(MGLDraw *mgl)
 				curSpeech = curSpeech+1;
 				speechX = 0;
 				speechY = 0;
-				oldc = c;
 				return 0;
 			}
 			else
@@ -504,13 +486,13 @@ byte UpdateSpeech(MGLDraw *mgl)
 			speechY++;
 		}
 	}
-	UpdateGamepadStartAndSelect();
-	if (mgl->LastKeyPressed() == 27 || GamepadStartTapped() || GamepadSelectTapped())
+
+	if (ButtonTapped(CONTROL_ESCAPE,false))
 	{
-		oldc = c;
+		UpdateControls();
 		return 1;	// ESC cancels the speech
 	}
-	oldc=c;
+	
 	return 0;
 }
 
@@ -584,29 +566,27 @@ byte farleyTicker;
 void InitFarley(void)
 {
 	farleyCursor = player.worldNum;
-	oldc = 255;	
 }
 
 byte UpdateFarley(MGLDraw *mgl)
 {
-	byte c = GetControls();
 	farleyTicker+=2;
 	int top = (int)HighestWorldReached();
-	if ((c & CONTROL_UP) && !(oldc & CONTROL_UP))
+	if (AutoRepeatTapped(CONTROL_UP))
 	{
 		farleyCursor--;
 		if (farleyCursor > 200)
 			farleyCursor = top;
 		MakeNormalSound(SND_BATEYES);
 	}
-	if ((c & CONTROL_DN) && !(oldc & CONTROL_DN))
+	if (AutoRepeatTapped(CONTROL_DN))
 	{
 		farleyCursor++;
 		if (farleyCursor > top)
 			farleyCursor = 0;
 		MakeNormalSound(SND_BATEYES);
 	}
-	if ((c & CONTROL_B1) && !(oldc & CONTROL_B1))
+	if (AutoRepeatTapped(CONTROL_B1))
 	{
 		if (farleyCursor == player.worldNum)
 			MakeNormalSound(SND_BATEYES);
@@ -614,15 +594,13 @@ byte UpdateFarley(MGLDraw *mgl)
 			MakeNormalSound(SND_GOTOMAP);
 		return 1;	// we're gonna stay here
 	}
-	UpdateGamepadStartAndSelect();
-	if (((c & CONTROL_B2) && !(oldc & CONTROL_B2)) || mgl->LastKeyPressed() == 27 || GamepadSelectTapped() || GamepadStartTapped())	// hit ESC to exit pause menu
+
+	if (AutoRepeatTapped(CONTROL_B2|CONTROL_ESCAPE))
 	{
 		MakeNormalSound(SND_BATEYES);
 		farleyCursor = player.worldNum;
-		GetTaps();
 		return 1;
 	}
-	oldc = c;
 	return 0;
 }
 

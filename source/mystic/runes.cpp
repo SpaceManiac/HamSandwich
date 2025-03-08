@@ -63,22 +63,14 @@ RuneDef runeDef[] = {
 		SD_PERCENT,
 	},
 	{
-		"Energo Cheepus",
-		{"Energy spells have a chance",
-		 "to cast for free."},
-		{10,25,50},
-		"Chance",
-		SD_PERCENT,
-	},
-	/*{
-		"Energo Cheepus",
+		"Energo Chompus",
 		{"Energy spells deal more",
 		 "damage by consuming your",
 		 "Shield or Barrier."},
 		{200,300,500},
 		"Damage",
 		SD_PERCENT,
-	},*/
+	},
 	{
 		"Scorchus Burnio",
 		{"Flame spells gain Critical",

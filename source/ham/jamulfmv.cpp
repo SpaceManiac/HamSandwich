@@ -5,6 +5,7 @@
 #include "clock.h"
 #include "appdata.h"
 #include "control.h"
+#include "jamulsound.h"
 
 // different kinds of flic chunks
 enum
@@ -325,6 +326,7 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 	playbackTime = timeGetTime() - 1;
 	do
 	{
+		JamulSoundUpdate();
 		currentTime = timeGetTime();
 
 		// If vsync time is faster than FLC framerate, idle.
@@ -354,14 +356,31 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 		}
 
 		AWAIT mgl->Flip();
-		k=mgl->LastKeyPressed();
-		// key #27 is escape
-		oldGamepadButtons = gamepadButtons;
-		gamepadButtons = GetGamepadButtons();
-	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) && (k!=27) && !(gamepadButtons & ~oldGamepadButtons & ((1 << SDL_CONTROLLER_BUTTON_START) | (1 << SDL_CONTROLLER_BUTTON_BACK))));
+		if (ControlScheme() == MYSTIC_CONTROL_SCHEME)
+		{
+			UpdateControls();
+			if (ButtonTapped(CONTROL_ESCAPE, true))
+			{
+				k = 27;
+				break;
+			}
+		}
+		else
+		{
+			k = mgl->LastKeyPressed();
+			// key #27 is escape
+			oldGamepadButtons = gamepadButtons;
+			gamepadButtons = GetGamepadButtons();
+			if ((k == 27) || (gamepadButtons & ~oldGamepadButtons & ((1 << SDL_CONTROLLER_BUTTON_START) | (1 << SDL_CONTROLLER_BUTTON_BACK))))
+			{
+				k = 27;
+				break;
+			}
+		}
+	} while((frmon<FLI_hdr.frames+1)&&(mgl->Process()) );
 
 	FLI_file.reset();
 	mgl->ResizeBuffer(oldWidth, oldHeight);
 
-	CO_RETURN k != 27;
+	CO_RETURN k!=27;
 }

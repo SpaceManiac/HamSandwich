@@ -167,7 +167,7 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 			me->x-=me->dx;
 			break;
 		case BLT_LASER:	// reflects off walls
-			//MakeSound(SND_BULLETREFLECT,me->x,me->y,SND_CUTOFF|SND_ONE,100);
+		case BLT_LASER2:
 			me->x-=me->dx;
 			me->dx=-me->dx;
 			me->dy+=-FIXAMT/4+MGL_random(FIXAMT/2);
@@ -313,7 +313,7 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 			me->y-=me->dy;
 			break;
 		case BLT_LASER:
-			//MakeSound(SND_BULLETREFLECT,me->x,me->y,SND_CUTOFF|SND_ONE,100);
+		case BLT_LASER2:
 			me->y-=me->dy;
 			me->dy=-me->dy;
 			me->dx+=-FIXAMT/4+MGL_random(FIXAMT/2);
@@ -625,6 +625,15 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 				me->type=BLT_NONE;
 				ExplodeParticles(PART_SNOW2,me->x,me->y,me->z,4);
 				MakeSound(SND_BULLETHIT,me->x,me->y,SND_CUTOFF,900);
+			}
+			break;
+		case BLT_LASER2:
+			j = (int)(RuneValue(Rune::ENERGY2) / 100.0f);
+			if (FindVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 8, me->dx / 2, me->dy / 2, j, map, world))
+			{
+				me->type = BLT_NONE;
+				ExplodeParticles(PART_SNOW2, me->x, me->y, me->z, 4);
+				MakeSound(SND_BULLETHIT, me->x, me->y, SND_CUTOFF, 900);
 			}
 			break;
 		case BLT_ICECLOUD:
@@ -1331,6 +1340,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				me->anim=4;
 			break;
 		case BLT_LASER:
+		case BLT_LASER2:
 			HitBadguys(me,map,world);
 			break;
 		case BLT_BOMB:
@@ -1440,7 +1450,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 		return;
 
 	// if you're in a wall even before moving, explode (to stop infinite bounces)
-	if((me->type==BLT_HAMMER || me->type==BLT_HAMMER2 || me->type==BLT_LASER || me->type==BLT_COIN || me->type==BLT_RUNESTONE || me->type==BLT_PTEROSHOT || me->type==BLT_ICESHARD ||
+	if((me->type==BLT_HAMMER || me->type==BLT_HAMMER2 || me->type==BLT_LASER || me->type==BLT_LASER2 || me->type==BLT_COIN || me->type==BLT_RUNESTONE || me->type==BLT_PTEROSHOT || me->type==BLT_ICESHARD ||
 		me->type==BLT_MINIFBALL || me->type==BLT_BIGYELLOW || me->type==BLT_BIGCOIN || me->type==BLT_LIQUIFY || me->type==BLT_LIQUIFY2 || me->type==BLT_LIQUIFY3
 		|| me->type==BLT_ICEBEAM || me->type==BLT_SKULL || me->type==BLT_DEATHBEAM || me->type==BLT_REDFBALL) &&
 		(!BulletCanGo(me->x,me->y,map,1)))
@@ -1644,6 +1654,13 @@ void RenderBullet(bullet_t *me)
 					DISPLAY_DRAWME);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
+			break;
+		case BLT_LASER2:
+			curSpr = bulletSpr->GetSprite(me->facing + SPR_LASER);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 6, me->bright, curSpr,
+				DISPLAY_DRAWME);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_SHADOW);
 			break;
 		case BLT_BOMB:
 			// invisible
@@ -2048,6 +2065,7 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			MakeSound(SND_FLAMEGO,me->x,me->y,SND_CUTOFF,1100);
 			break;
 		case BLT_LASER:
+		case BLT_LASER2:
 			me->anim=0;
 			me->timer=30;
 			me->z=FIXAMT*20-MGL_random(65535);

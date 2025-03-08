@@ -54,15 +54,12 @@ AchieveDef achieveDef[] = {
 };
 
 //-----------------------------------------------
-static byte oldc;
 static byte cursor;
-static dword oldBtn;
 byte* backgd;
 int backX, backY;
 
 void InitAchieveMenu(void)
 {
-	oldc=255;
 	cursor=0;
 
 	backX = 0;
@@ -93,8 +90,6 @@ void ExitAchieveMenu(void)
 
 byte UpdateAchieveMenu(MGLDraw *mgl)
 {
-	char c;
-	byte c2;
 	dword btn,j;
 	int i;
 
@@ -105,13 +100,10 @@ byte UpdateAchieveMenu(MGLDraw *mgl)
 	if (backX < 0)
 		backX += 256;
 
-	c=mgl->LastKeyPressed();
-	c2=GetControls()|GetArrows();
-
-	if(c==27)
+	if(ButtonTapped(CONTROL_ESCAPE,true))
 		return 1;
 
-	if((c2&CONTROL_UP) && (!(oldc&CONTROL_UP)))
+	if(AutoRepeatTapped(CONTROL_UP))
 	{
 		if (cursor == 100)
 			cursor = (int)Achievement::NUM_ACHIEVES - 1;
@@ -119,7 +111,7 @@ byte UpdateAchieveMenu(MGLDraw *mgl)
 			cursor -= 6;
 		else cursor = 100;
 	}
-	if((c2&CONTROL_DN) && (!(oldc&CONTROL_DN)))
+	if(AutoRepeatTapped(CONTROL_DN))
 	{
 		if (cursor < (int)Achievement::NUM_ACHIEVES)
 		{
@@ -129,7 +121,7 @@ byte UpdateAchieveMenu(MGLDraw *mgl)
 		}
 		else cursor = 0;
 	}
-	if ((c2 & CONTROL_LF) && (!(oldc & CONTROL_LF)))
+	if (AutoRepeatTapped(CONTROL_LF))
 	{
 		if (cursor != 100)
 		{
@@ -139,7 +131,7 @@ byte UpdateAchieveMenu(MGLDraw *mgl)
 				cursor += 5;
 		}
 	}
-	if ((c2 & CONTROL_RT) && (!(oldc & CONTROL_RT)))
+	if (AutoRepeatTapped(CONTROL_RT))
 	{
 		if (cursor != 100)
 		{
@@ -149,13 +141,11 @@ byte UpdateAchieveMenu(MGLDraw *mgl)
 				cursor -= 5;
 		}
 	}
-	if((c2&CONTROL_B1) && (!(oldc&CONTROL_B1)))
+	if(ButtonTapped(CONTROL_B1,true))
 	{
 		if (cursor == 100)
 			return 1;
 	}
-
-	oldc=c2;
 
 	return 0;
 }
@@ -238,9 +228,7 @@ TASK(void) AchieveMenu(MGLDraw *mgl)
 	byte b=0;
 	int lastTime=1;
 
-
 	mgl->LastKeyPressed();
-	oldc=CONTROL_B1|CONTROL_B2;
 
 	StartClock();
 	if(CurrentSong()!=SONG_SHOP && CurrentSong()!=SONG_INTRO)
@@ -253,6 +241,9 @@ TASK(void) AchieveMenu(MGLDraw *mgl)
 		StartClock();
 		while (lastTime >= TIME_PER_FRAME)
 		{
+			UpdateControls();
+			JamulSoundUpdate();
+
 			b = UpdateAchieveMenu(mgl);
 			lastTime -= TIME_PER_FRAME;
 		}

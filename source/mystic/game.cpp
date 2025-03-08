@@ -65,7 +65,6 @@ void LunaticInit(MGLDraw *mgl)
 {
 	gamemgl=mgl;
 
-	InitOptions();
 	InitCosSin();
 	InitDisplay(gamemgl);
 	InitSound();
@@ -74,7 +73,7 @@ void LunaticInit(MGLDraw *mgl)
 	InitItems();
 	InitInterface();
 	mgl->ClearKeys();
-	InitControls();
+	InitControls(MYSTIC_CONTROL_SCHEME);
 	InitPlayer(INIT_GAME,0,0);
 	InitShop();
 	battle=0;
@@ -127,7 +126,6 @@ byte InitLevel(byte map)
 	frmRate=30.0f;
 	visFrms=0;
 	msgFromOtherModules=0;
-	GetTaps();
 	InitGuys(256);
 	InitBullets();
 	InitPlayer(INIT_LEVEL,0,map);
@@ -220,21 +218,19 @@ void PauseGame(void)
 {
 	InitPauseMenu();
 	gameMode=GAMEMODE_MENU;
-	LockOutControls();
+	LockOutControl(CONTROL_B1 | CONTROL_B2, true);
 }
 
 void EnterPictureDisplay(void)
 {
 	gameMode=GAMEMODE_PIC;
-	GetTaps();	// clear the key tap buffer
-	LockOutControls();
+	LockOutControl(CONTROL_B1 | CONTROL_B2, true);
 }
 
 void EnterSpeechMode(void)
 {
 	gameMode=GAMEMODE_SPEECH;
-	GetTaps();	// clear the key tap buffer
-	LockOutControls();
+	LockOutControl(CONTROL_B1 | CONTROL_B2, true);
 }
 
 void EnterFarleyMode(void)
@@ -242,8 +238,7 @@ void EnterFarleyMode(void)
 	gameMode = GAMEMODE_FARLEY;
 	MakeNormalSound(SND_BATDIVE);
 	InitFarley();
-	GetTaps();
-	LockOutControls();
+	LockOutControl(CONTROL_B1 | CONTROL_B2, true);
 }
 
 void AddGarbageTime(dword t)
@@ -276,6 +271,8 @@ TASK(byte) LunaticRun(int *lastTime)
 
 	while(*lastTime>=TIME_PER_FRAME)
 	{
+		JamulSoundUpdate();
+		UpdateControls();
 
 		if(!gamemgl->Process())
 		{
@@ -366,12 +363,12 @@ TASK(byte) LunaticRun(int *lastTime)
 				{
 					if(windDownReason==LEVEL_SHOP)
 					{
-						LockOutControls();
+						LockOutControl(CONTROL_B1 | CONTROL_B2, true);
 						gameMode=GAMEMODE_SHOP;
 					}
 					else if(windDownReason==LEVEL_FAIRY)
 					{
-						LockOutControls();
+						LockOutControl(CONTROL_B1 | CONTROL_B2, true);
 						gameMode=GAMEMODE_FAIRY;
 					}
 					else
@@ -392,6 +389,7 @@ TASK(byte) LunaticRun(int *lastTime)
 				case 0:
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
+					UpdateControls();
 					break;
 				case 1:
 					break;
@@ -423,6 +421,7 @@ TASK(byte) LunaticRun(int *lastTime)
 						battle=0;
 						lastKey=0;
 						gameMode=GAMEMODE_PLAY;
+						UpdateControls();
 						break;
 					}
 					else if(battle==1 && (battleIsWon))
@@ -510,7 +509,7 @@ TASK(byte) LunaticRun(int *lastTime)
 		}
 		else	// gamemode_pic
 		{
-			if(GetTaps()&(CONTROL_B1|CONTROL_B2))
+			if(ButtonTapped(CONTROL_B1|CONTROL_ESCAPE|CONTROL_B2,true))
 			{
 				gameMode=GAMEMODE_PLAY;
 				// restore the palette
@@ -653,8 +652,7 @@ TASK(byte) LunaticRun(int *lastTime)
 	CDMessingTime=0;	// that's how long CD messing took
 	CDMessingTime+=garbageTime;	// time wasted with such things as playing animations
 	garbageTime=0;
-	JamulSoundUpdate();
-
+	
 	CO_RETURN LEVEL_PLAYING;
 }
 
@@ -775,11 +773,8 @@ void HandleKeyPresses(void)
 		lastKey = 0;
 	}
 
-	UpdateGamepadStartAndSelect();
-	if((lastKey==27 || GamepadSelectTapped() || GamepadStartTapped()) && gameMode == GAMEMODE_PLAY && !windingUp && !windingDown && !newGame)
-	{
+	if((ButtonTapped(CONTROL_ESCAPE,false)) && gameMode == GAMEMODE_PLAY && !windingUp && !windingDown && !newGame)
 		PauseGame();
-	}
 }
 
 TASK(byte) PlayALevel(byte map)

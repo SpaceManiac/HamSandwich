@@ -64,6 +64,7 @@
 #define BLT_MINE	(51)
 #define BLT_ICESHARD (52)	// ice shards from frozen enemies, pass in how much damage for them to deal
 #define BLT_GLOB_BOMB (53) // snail slime bomb
+#define BLT_LASER2 (54)	// enhanced energy barrage
 
 #define MAX_BULLETS 512
 
