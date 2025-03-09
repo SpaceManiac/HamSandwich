@@ -25,7 +25,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#pragma GCC diagnostic ignored "-Wstringop-overflow" // [jart]
+#ifndef _MSC_VER
+#  pragma GCC diagnostic ignored "-Wstringop-overflow" // [jart]
+#endif
 
 #include <climits>
 #include <locale>

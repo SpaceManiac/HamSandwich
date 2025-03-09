@@ -149,6 +149,9 @@ void ParticleUpdate(Particle *me)
 		{
 			me->type = ParticleType::None;
 		}
+		break;
+	default:
+		break;
 	}
 }
 
@@ -247,6 +250,9 @@ void ParticleRender(Particle *me)
 		break;
 	case ParticleType::Respawn:
 		ParticleDrawGlow(me->x >> 8, (me->y - me->z) >> 8, me->life);
+		break;
+	default:
+		break;
 	}
 }
 

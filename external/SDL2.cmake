@@ -136,6 +136,9 @@ else()
 	set(SDL_STATIC OFF CACHE BOOL "" FORCE)
 	set(SDL2_DISABLE_INSTALL ON CACHE BOOL "" FORCE) # We'll handle it ourselves.
 	add_subdirectory("SDL2")
+	if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
+		target_compile_options(SDL2 PRIVATE -Wno-unused-but-set-variable)
+	endif()
 
 	# Images: BMP, PNG, ICO
 	set(SDL2IMAGE_BMP ON)

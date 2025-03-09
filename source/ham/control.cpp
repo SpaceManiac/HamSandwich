@@ -9,7 +9,6 @@
 #include "owned_sdl.h"
 
 static constexpr int NUM_KEYBOARDS = 4;
-static constexpr int NUM_JOYBTNS = 4;
 
 static byte lastScanCode;
 
@@ -547,7 +546,7 @@ void UpdateControls(void)
 	menuTap = 0;
 	UpdateRawJoystick();
 	controls = keyState | RawGamepadToControls();
-	
+
 	if (reptCounter > 0)
 		reptCounter--;
 

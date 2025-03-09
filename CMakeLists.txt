@@ -4,6 +4,9 @@ cmake_minimum_required(VERSION 3.19.0)
 project("HamSandwich")
 
 cmake_policy(SET CMP0116 NEW)  # https://cmake.org/cmake/help/latest/policy/CMP0116.html
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.24)
+	cmake_policy(SET CMP0135 NEW)  # https://cmake.org/cmake/help/latest/policy/CMP0135.html
+endif()
 
 # Global settings pertaining to installation.
 set(CMAKE_CXX_STANDARD 17)
@@ -22,6 +25,11 @@ endif()
 
 if(APPLE)
 	set(CMAKE_INSTALL_RPATH "@executable_path")
+endif()
+
+# Let __cplusplus on MSVC work properly. https://devblogs.microsoft.com/cppblog/msvc-now-correctly-reports-__cplusplus/
+if(MSVC)
+	add_compile_options("/Zc:__cplusplus")
 endif()
 
 # Include external/, possibly including dependencies of host build tools.
@@ -52,7 +60,7 @@ else()
 endif()
 
 # Enable sanitizers in debug mode.
-if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT EMSCRIPTEN)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT EMSCRIPTEN AND NOT MSVC)
 	add_compile_options(-fsanitize=undefined,address,leak)
 	add_link_options(-fsanitize=undefined,address,leak)
 endif()

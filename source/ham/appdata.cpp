@@ -1,3 +1,4 @@
+#define _CRT_NONSTDC_NO_WARNINGS
 #include "appdata.h"
 #include <string>
 #include <vector>

@@ -720,9 +720,9 @@ void PlayerFireWeapon(Guy *me)
 	if(player.life==0)
 		return;	// no shooting when you're dead
 
-	if(player.weapon==WPN_NONE && player.wpnReload==0)
+	if(player.weapon==WPN_NONE)
 	{
-		if(player.ammo>=10)
+		if(player.wpnReload == 0 && player.ammo>=10)
 		{
 			MakeNormalSound(SND_FISHCAST);
 			player.ammo-=10;
