@@ -1403,7 +1403,6 @@ TASK(byte) ChallengeMenu(MGLDraw *mgl)
 	int lastTime=1;
 
 	InitChallengeMenu(mgl);
-	StopSong();
 	if(CurrentSong()!=SONG_SHOP)
 		PlaySong(SONG_SHOP);
 	while(b==0)

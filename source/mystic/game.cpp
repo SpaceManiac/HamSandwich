@@ -394,7 +394,7 @@ TASK(byte) LunaticRun(int *lastTime)
 				case 1:
 					break;
 				case 2:
-					StopSong();
+					StopPlayingSong();
 					if(mapNum)
 						mapToGoTo=1;
 					else

@@ -129,7 +129,6 @@ TASK(void) ShowVictoryAnim(byte world)
 			ReplaySong();
 			break;
 		case 11:
-			//PlaySong(SONG_INTRO);
 			StopSong();
 			MakeNormalSound(SONG_INTRO);
 			AWAIT FLI_play("graphics/Intro.flc",0,60,mgl);

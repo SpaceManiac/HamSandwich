@@ -64,6 +64,12 @@ void PlaySong(int sng)
 	ReplaySong();
 }
 
+void StopPlayingSong(void)
+{
+	StopSong();
+	curSong = 0;
+}
+
 void VolumeSong(byte hi)
 {
 	if(!SoundIsAvailable())

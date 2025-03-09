@@ -63,7 +63,7 @@ byte InitEditor(void)
 	musicPlaying=0;
 	lastKey=0;
 	InitPlayer(INIT_LEVEL,0,0);
-	StopSong();
+	StopPlayingSong();
 	
 	return 1;
 }
