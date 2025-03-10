@@ -24,6 +24,8 @@ RUN apk add --no-cache --no-scripts ninja-is-really-ninja
 RUN apk add --no-cache cmake llvm lld clang
 # host_tools requirements
 RUN apk add --no-cache zlib-dev
+# For butler
+RUN apk add --no-cache gcompat
 # For interactive use
 RUN apk add --no-cache make
 
