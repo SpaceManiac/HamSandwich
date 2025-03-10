@@ -15,6 +15,8 @@ build
 gen
 Build
 buildbot
+/VERSION.txt
+dist
 
 *.so
 *.so.*
@@ -22,6 +24,7 @@ buildbot
 *.exe
 *.o
 *.obj
+*.res
 *.lib
 *.a
 *.la
@@ -60,6 +63,11 @@ cmake-build-*
 xcuserdata
 *.xcworkspace
 
+# for QtCreator
+CMakeLists.txt.user
+build*/
+*.pro.user*
+
 # for Visual C++
 .vs
 Debug
@@ -95,9 +103,12 @@ VisualC/visualtest/testsprite2.exe
 VisualC/visualtest/testsprite2_sample.actions
 VisualC/visualtest/testsprite2_sample.config
 VisualC/visualtest/testsprite2_sample.parameters
+VisualC-GDK/**/Layout
+VisualC-GDK/shaders/*.h
 
 # for Android
 android-project/local.properties
+android-project/.gradle/
 
 test/checkkeys
 test/checkkeysthreads
@@ -169,6 +180,7 @@ test/testyuv
 test/torturethread
 
 builddir/
+!build-scripts/
 debian/*.debhelper.log
 debian/*.substvars
 debian/*.tar.gz

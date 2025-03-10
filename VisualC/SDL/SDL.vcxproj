@@ -44,22 +44,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
-  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
@@ -137,6 +121,7 @@
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <OmitDefaultLibName>true</OmitDefaultLibName>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -234,6 +219,7 @@
     <ClInclude Include="..\..\include\SDL_filesystem.h" />
     <ClInclude Include="..\..\include\SDL_gamecontroller.h" />
     <ClInclude Include="..\..\include\SDL_gesture.h" />
+    <ClInclude Include="..\..\include\SDL_guid.h" />
     <ClInclude Include="..\..\include\SDL_haptic.h" />
     <ClInclude Include="..\..\include\SDL_hints.h" />
     <ClInclude Include="..\..\include\SDL_hidapi.h" />
@@ -304,6 +290,7 @@
     <ClInclude Include="..\..\src\audio\winmm\SDL_winmm.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_directx.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_hid.h" />
+    <ClInclude Include="..\..\src\core\windows\SDL_immdevice.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_windows.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_xinput.h" />
     <ClInclude Include="..\..\src\dynapi\SDL_dynapi.h" />
@@ -319,7 +306,6 @@
     <ClInclude Include="..\..\src\events\SDL_gesture_c.h" />
     <ClInclude Include="..\..\src\events\SDL_keyboard_c.h" />
     <ClInclude Include="..\..\src\events\SDL_mouse_c.h" />
-    <ClInclude Include="..\..\src\events\SDL_sysevents.h" />
     <ClInclude Include="..\..\src\events\SDL_touch_c.h" />
     <ClInclude Include="..\..\src\events\SDL_windowevents_c.h" />
     <ClInclude Include="..\..\src\haptic\SDL_haptic_c.h" />
@@ -334,6 +320,7 @@
     <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapi_rumble.h" />
     <ClInclude Include="..\..\src\joystick\SDL_gamecontrollerdb.h" />
     <ClInclude Include="..\..\src\joystick\SDL_joystick_c.h" />
+    <ClInclude Include="..\..\src\joystick\SDL_steam_virtual_gamepad.h" />
     <ClInclude Include="..\..\src\joystick\SDL_sysjoystick.h" />
     <ClInclude Include="..\..\src\joystick\usb_ids.h" />
     <ClInclude Include="..\..\src\joystick\virtual\SDL_virtualjoystick_c.h" />
@@ -347,6 +334,7 @@
     <ClInclude Include="..\..\src\misc\SDL_sysurl.h" />
     <ClInclude Include="..\..\src\power\SDL_syspower.h" />
     <ClInclude Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.h" />
+    <ClInclude Include="..\..\src\render\direct3d12\SDL_shaders_d3d12.h" />
     <ClInclude Include="..\..\src\render\direct3d\SDL_shaders_d3d.h" />
     <ClInclude Include="..\..\src\render\opengles2\SDL_gles2funcs.h" />
     <ClInclude Include="..\..\src\render\opengles2\SDL_shaders_gles2.h" />
@@ -367,9 +355,11 @@
     <ClInclude Include="..\..\src\SDL_assert_c.h" />
     <ClInclude Include="..\..\src\SDL_dataqueue.h" />
     <ClInclude Include="..\..\src\SDL_error_c.h" />
+    <ClCompile Include="..\..\src\SDL_guid.c" />
     <ClInclude Include="..\..\src\SDL_hints_c.h" />
     <ClInclude Include="..\..\src\SDL_internal.h" />
     <ClInclude Include="..\..\src\SDL_list.h" />
+    <ClInclude Include="..\..\src\SDL_log_c.h" />
     <ClInclude Include="..\..\src\sensor\dummy\SDL_dummysensor.h" />
     <ClInclude Include="..\..\src\sensor\SDL_sensor_c.h" />
     <ClInclude Include="..\..\src\sensor\SDL_syssensor.h" />
@@ -388,7 +378,6 @@
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_platform.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_sdk_platform.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan.h" />
-    <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan.hpp" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan_android.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan_beta.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan_core.h" />
@@ -428,13 +417,18 @@
     <ClInclude Include="..\..\src\video\windows\SDL_windowsopengl.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsopengles.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsshape.h" />
-    <ClInclude Include="..\..\src\video\windows\SDL_windowstaskdialog.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsvideo.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsvulkan.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowswindow.h" />
     <ClInclude Include="..\..\src\video\windows\wmmsg.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_common.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_internal.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx_func.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_sse_func.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_std.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_std_func.h" />
   </ItemGroup>
   <ItemGroup>
@@ -453,6 +447,7 @@
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi_win32.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_hid.c" />
+    <ClCompile Include="..\..\src\core\windows\SDL_immdevice.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_windows.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_xinput.c" />
     <ClCompile Include="..\..\src\cpuinfo\SDL_cpuinfo.c" />
@@ -475,20 +470,28 @@
     <ClCompile Include="..\..\src\haptic\windows\SDL_windowshaptic.c" />
     <ClCompile Include="..\..\src\haptic\windows\SDL_xinputhaptic.c" />
     <ClCompile Include="..\..\src\hidapi\SDL_hidapi.c" />
+    <ClCompile Include="..\..\src\joystick\controller_type.c" />
     <ClCompile Include="..\..\src\joystick\dummy\SDL_sysjoystick.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapijoystick.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_combined.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_gamecube.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_luna.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_ps3.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_ps4.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_ps5.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_rumble.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_shield.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_stadia.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_steam.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_steamdeck.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_switch.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_wii.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360w.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xboxone.c" />
     <ClCompile Include="..\..\src\joystick\SDL_gamecontroller.c" />
     <ClCompile Include="..\..\src\joystick\SDL_joystick.c" />
+    <ClCompile Include="..\..\src\joystick\SDL_steam_virtual_gamepad.c" />
     <ClCompile Include="..\..\src\joystick\virtual\SDL_virtualjoystick.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_dinputjoystick.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_rawinputjoystick.c" />
@@ -523,6 +526,8 @@
     <ClCompile Include="..\..\src\power\SDL_power.c" />
     <ClCompile Include="..\..\src\power\windows\SDL_syspower.c" />
     <ClCompile Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.c" />
+    <ClCompile Include="..\..\src\render\direct3d12\SDL_render_d3d12.c" />
+    <ClCompile Include="..\..\src\render\direct3d12\SDL_shaders_d3d12.c" />
     <ClCompile Include="..\..\src\render\direct3d\SDL_render_d3d.c" />
     <ClCompile Include="..\..\src\render\direct3d11\SDL_render_d3d11.c" />
     <ClCompile Include="..\..\src\render\direct3d\SDL_shaders_d3d.c" />
@@ -548,13 +553,16 @@
     <ClCompile Include="..\..\src\SDL_error.c" />
     <ClCompile Include="..\..\src\SDL_hints.c" />
     <ClCompile Include="..\..\src\SDL_log.c" />
+    <ClCompile Include="..\..\src\SDL_utils.c" />
     <ClCompile Include="..\..\src\sensor\dummy\SDL_dummysensor.c" />
     <ClCompile Include="..\..\src\sensor\SDL_sensor.c" />
     <ClCompile Include="..\..\src\sensor\windows\SDL_windowssensor.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_crc16.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_crc32.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_getenv.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_iconv.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_malloc.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_mslibc.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_qsort.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_stdlib.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_string.c" />
@@ -605,7 +613,9 @@
     <ClCompile Include="..\..\src\video\windows\SDL_windowsvideo.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsvulkan.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowswindow.c" />
-    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb.c" />
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.c" />
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.c" />
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_std.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\main\windows\version.rc" />
