@@ -565,7 +565,9 @@ void UpdateControls(void)
 	if (oldControls == 0 || reptCounter >= CONTROL_REPEAT_FRAMES)
 		reptCounter = 0;
 
+#ifndef NDEBUG
 	SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%d %d | %d %d\n", controls,taps,arrowState,menuTap);
+#endif
 
 	controls &= (~lockOut);
 	taps &= (~lockOut);
