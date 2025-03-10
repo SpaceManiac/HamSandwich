@@ -108,6 +108,8 @@ void Verdana(ImGuiIO* io)
 			}
 		}
 	}
+
+	FontFree(&jamfont);
 }
 
 // Embedded metadata json and embedded icons for each game.
