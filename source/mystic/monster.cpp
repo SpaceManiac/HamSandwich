@@ -6635,7 +6635,14 @@ void AI_Ball(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			me->dy=-FIXAMT*4;
 		else
 			me->dy=-me->dy;
-		me->dx=(goodguy->dx/4)+Cosine(goodguy->facing*32)*2;
+		me->dx = (goodguy->dx / 4) + Cosine(goodguy->facing * 32) * 2;
+
+		if (!ClassicMode())
+		{
+			me->mind2++;
+			me->dx = (me->dx * (100 + me->mind2) / 100);
+			me->dy = (me->dy * (100 + me->mind2) / 100);	// gain 1% speed every bounce
+		}
 	}
 
 	if(me->mind1)
@@ -6657,12 +6664,24 @@ void AI_Ball(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(world->terrain[map->map[me->mapx+me->mapy*map->width].floor].flags&(TF_WATER|TF_LAVA))
 	{
 		FireBullet(me->x,me->y,0,BLT_BOOM);
-		me->type=MONS_NONE;
-		goodguy->GetShot(0,0,99999,map,world);
+		if (ClassicMode())
+		{
+			me->type = BLT_NONE;
+			goodguy->GetShot(0, 0, 9999, map, world);
+		}
+		else
+		{
+			me->dx = me->dy = 0;
+			me->z = FIXAMT * 100;
+			me->x = (8 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+			me->y = (57 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+			me->mind2 = 0;
+			goodguy->GetShot(0, 0, 90, map, world);
+		}
 	}
 
-	Clamp(&me->dx,FIXAMT*5);
-	Clamp(&me->dy,FIXAMT*5);
+	Clamp(&me->dx,FIXAMT*12);
+	Clamp(&me->dy,FIXAMT*12);
 }
 
 void AI_OctoBoss(Guy *me,Map *map,world_t *world,Guy *goodguy)

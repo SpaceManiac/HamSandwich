@@ -155,6 +155,8 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 		case BLT_BIGCOIN:
 		case BLT_BIGYELLOW:
 		case BLT_RUNESTONE:
+		case BLT_LIFEPOTION:
+		case BLT_MANAPOTION:
 			me->x-=me->dx;
 			me->dx=-me->dx;
 			me->facing=((byte)(4-me->facing))&7;
@@ -301,6 +303,8 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 		case BLT_BIGCOIN:
 		case BLT_BIGYELLOW:
 		case BLT_RUNESTONE:
+		case BLT_MANAPOTION:
+		case BLT_LIFEPOTION:
 			me->y-=me->dy;
 			me->dy=-me->dy;
 			me->facing=(8-me->facing)&7;
@@ -427,6 +431,8 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 		case BLT_COIN:
 		case BLT_BIGCOIN:
 		case BLT_RUNESTONE:
+		case BLT_LIFEPOTION:
+		case BLT_MANAPOTION:
 			me->dz=-me->dz*7/8;
 			me->z=0;
 			x=(me->x>>FIXSHIFT)/TILE_WIDTH;
@@ -770,6 +776,8 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 		case BLT_COIN:
 		case BLT_BIGCOIN:
 		case BLT_RUNESTONE:
+		case BLT_LIFEPOTION:
+		case BLT_MANAPOTION:
 			if(FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,0,0,0,map,world))
 			{
 				if(me->type==BLT_COIN)
@@ -785,6 +793,14 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 						player.runeStones++;
 					MakeSound(SND_CHLGCRYSTAL, me->x, me->y, SND_CUTOFF, 500);
 				}
+				else if (me->type == BLT_LIFEPOTION)
+				{
+					PlayerGetItem(ITM_HEALTHPOT, me->x, me->y);
+				}
+				else if (me->type == BLT_MANAPOTION)
+				{
+					PlayerGetItem(ITM_MANAPOT, me->x, me->y);
+				}
 				else
 				{
 					FloaterParticles(me->x,me->y,5,24,0,4);
@@ -798,7 +814,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 				me->type=BLT_NONE;
 				
 			}
-			if(GetGoodguy())
+			if(GetGoodguy() && me->type!=BLT_LIFEPOTION && me->type!=BLT_MANAPOTION)
 			{
 				if(player.gear&GEAR_MAGNET)
 				{
@@ -1083,6 +1099,8 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_COIN:
 		case BLT_BIGCOIN:
+		case BLT_LIFEPOTION:
+		case BLT_MANAPOTION:
 		case BLT_RUNESTONE:
 			Dampen(&me->dx,FIXAMT/64);
 			Dampen(&me->dy,FIXAMT/64);
@@ -1490,7 +1508,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 		BulletHitFloor(me,map,world);
 
 	// all gravity-affected bullets, get gravitized
-	if(me->type==BLT_BOMB || me->type==BLT_GRENADE || (me->type==BLT_MINE && me->anim==0) || me->type==BLT_GLOB_BOMB
+	if(me->type==BLT_BOMB || me->type==BLT_GRENADE || (me->type==BLT_MINE && me->anim==0) || me->type==BLT_GLOB_BOMB || me->type==BLT_LIFEPOTION || me->type==BLT_MANAPOTION
 		|| me->type==BLT_ROCK || me->type==BLT_EVILHAMMER || me->type==BLT_COIN || me->type==BLT_RUNESTONE
 		|| me->type==BLT_BIGCOIN)
 		me->dz-=FIXAMT;
@@ -1590,6 +1608,24 @@ void RenderBullet(bullet_t *me)
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
 					DISPLAY_DRAWME);
+			break;
+		case BLT_LIFEPOTION:
+			if (me->timer < 30 && (me->timer & 1) == 0)
+				return;
+			curSpr = GetItemSprite(156);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 255, me->bright+((me->timer&7)==0)*2, curSpr,
+				DISPLAY_DRAWME);
+			break;
+		case BLT_MANAPOTION:
+			if (me->timer < 30 && (me->timer & 1) == 0)
+				return;
+			curSpr = GetItemSprite(155);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 255, me->bright + ((me->timer & 7) == 0) * 2, curSpr,
+				DISPLAY_DRAWME);
 			break;
 		case BLT_RUNESTONE:
 			if (me->timer < 30 && (me->timer & 1) == 0)
@@ -1947,6 +1983,16 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->dz=MGL_randoml(FIXAMT*6)+FIXAMT*4;
 			me->z=FIXAMT/2;
 			me->timer=30*9+MGL_random(30*4);
+			break;
+		case BLT_LIFEPOTION:
+		case BLT_MANAPOTION:
+			me->facing = (byte)MGL_random(256);
+			f = MGL_randoml(3) + 1;
+			me->dx = -FIXAMT * 2 + MGL_randoml(FIXAMT * 4);
+			me->dy = -FIXAMT * 2 + MGL_randoml(FIXAMT * 4);
+			me->dz = MGL_randoml(FIXAMT * 6) + FIXAMT * 4;
+			me->z = FIXAMT / 2;
+			me->timer = 30 * 20;
 			break;
 		case BLT_BOOM:
 		case BLT_SEEKBOOM:

@@ -1597,7 +1597,13 @@ byte ChallengeUpdate(void)
 	attempt.time--;
 	if((attempt.time%30)==0 && attempt.score>0)
 		attempt.score--;
-
+	if (attempt.time == 30 * 30)	// last 30 seconds!
+	{
+		if(player.worldNum<2)
+			PlaySong(SONG_CHAP12FIGHT);
+		else
+			PlaySong(SONG_CHAP34FIGHT);
+	}
 	return 1;
 }
 
@@ -1607,7 +1613,8 @@ void ChallengeRender(MGLDraw *mgl)
 		
 	sprintf(s,"%d:%02d",(attempt.time/(30*60)),(attempt.time/30)%60);
 	Print(45+2, 32+2, s, -31, 2);
-	PrintGlow(45,32,s,2);
+	if(attempt.time>30*30 || ((attempt.time%4)<2))
+		PrintGlow(45,32,s,2);
 	sprintf(s,"%05d",attempt.score);
 	Print(2 + 2, 60 + 2, s, -31, 2);
 	PrintGlow(2,60,s,2);

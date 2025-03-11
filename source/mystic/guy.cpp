@@ -1709,6 +1709,13 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 							chance *= 3;
 						if (Random(100) < chance*2)
 							FireBullet(x, y, 0, BLT_RUNESTONE);
+						if (Random(500) < monsType[type].hp)
+						{
+							if (Random(2) == 0)
+								FireBullet(x, y, 0, BLT_LIFEPOTION);
+							else
+								FireBullet(x, y, 0, BLT_MANAPOTION);
+						}
 					}
 					int freeBig = 0;
 					if (j > 50)

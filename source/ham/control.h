@@ -111,9 +111,11 @@ bool AutoRepeatTapped(dword c,bool menu=true);
 bool ButtonTapped(dword c,bool menu);
 bool ButtonHeld(dword c,bool menu);
 dword RawGamepadToControls(void);
+dword GetRawGamepad(void);
 void UpdateControls(void);
 void UpdateRawJoystick(void);
 void LockOutControl(dword c,bool locked);
 byte ControlScheme(void);
+void SetDpadToMode(bool yep);
 
 #endif  // HAMCONTROL_H

@@ -771,9 +771,12 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 				{
 					lites[0]=lites[1]=lites[2]=lites[3]=lites[4]=lites[5]=lites[6]=lites[7]=lites[8]=0;
 				}
-				if(flags&MAP_SHOWITEMS)
-					RenderItem(scrX+camX+(TILE_WIDTH/2),scrY+camY+(TILE_HEIGHT/2),
-						m->item,lite);
+				if (flags & MAP_SHOWITEMS)
+					RenderItem(scrX + camX + (TILE_WIDTH / 2), scrY + camY + (TILE_HEIGHT / 2),
+						m->item, lite);
+				/*else if (m->item)
+					RenderItem(scrX + camX + (TILE_WIDTH / 2), scrY + camY + (TILE_HEIGHT / 2),
+						ITM_BIGCOIN, lite);*/
 
 				if(m->wall && (flags&MAP_SHOWWALLS))	// there is a wall on this tile
 				{
@@ -868,6 +871,7 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 				// put black in empty spaces
 				DrawFillBox(scrX,scrY,scrX+TILE_WIDTH-1,scrY+TILE_HEIGHT-1,0);
 			}
+
 			scrY+=TILE_HEIGHT;
 		}
 		scrX+=TILE_WIDTH;

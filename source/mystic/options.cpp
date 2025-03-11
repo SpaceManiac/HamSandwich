@@ -6,9 +6,26 @@
 #include "appdata.h"
 
 option_t opt;
+byte firstRightHandOption = (OPT_EXIT+1)/2;
+byte maxConfig;
+dword prevGamePad;
 
 void ApplyControlSettings()
 {
+	// force certain controls:
+	opt.joyCtrl[CTL_ID_UP] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP;
+	opt.joyCtrl[CTL_ID_DN] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_DN;
+	opt.joyCtrl[CTL_ID_LF] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF;
+	opt.joyCtrl[CTL_ID_RT] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT;
+	opt.joyCtrl[CTL_ID_ESCAPE] = SDL_CONTROLLER_BUTTON_START;
+
+	opt.key[CTL_ID_LF][2] = SDL_SCANCODE_LEFT;
+	opt.key[CTL_ID_RT][2] = SDL_SCANCODE_RIGHT;
+	opt.key[CTL_ID_UP][2] = SDL_SCANCODE_UP;
+	opt.key[CTL_ID_DN][2] = SDL_SCANCODE_DOWN;
+	opt.key[CTL_ID_ESCAPE][2] = SDL_SCANCODE_ESCAPE;
+	opt.key[CTL_ID_B1][2] = SDL_SCANCODE_RETURN;
+
 	for (int kbd = 0; kbd < 3; ++kbd)
 	{
 		byte keys[NUM_CONTROLS];
@@ -16,8 +33,9 @@ void ApplyControlSettings()
 			keys[k] = opt.key[k][kbd];
 		SetKeyboardBindings(kbd, NUM_CONTROLS, keys);
 	}
-
+	
 	SetJoystickBindings(NUM_CONTROLS, opt.joyCtrl);
+	SetDpadToMode(opt.dpadToMove);
 }
 
 void DefaultOptions(void)
@@ -29,6 +47,7 @@ void DefaultOptions(void)
 			opt.key[i][j] = 0;
 		opt.joyCtrl[i] = 255;
 	}
+	opt.dpadToMove = true;
 	opt.challenge = 0;
 	// these are the arrow keys,  including the unchangable ones
 	opt.key[CTL_ID_UP][0] = opt.key[CTL_ID_UP][1] = opt.key[CTL_ID_UP][2] = SDL_SCANCODE_UP;
@@ -71,7 +90,7 @@ void DefaultOptions(void)
 	opt.lightFX = 1;
 	for (int i = 0; i < (int)Achievement::NUM_ACHIEVES; i++)
 		opt.achieve[i] = 0;
-	for (int i = 0; i < (int)256; i++)
+	for (int i = 0; i < (int)OPT_EXPANSION_SIZE; i++)
 		opt.expansionSpace[i] = 0;
 }
 
@@ -125,7 +144,7 @@ void InitOptionsMenu(void)
 {
 	controlX=10;
 	cursor=0;
-	optMode=0;
+	optMode=OPTMODE_IDLE;
 }
 
 void ExitOptionsMenu(void)
@@ -135,6 +154,7 @@ void ExitOptionsMenu(void)
 byte UpdateOptionsMenu(MGLDraw *mgl)
 {
 	char c;
+	byte b;
 	dword btn,j;
 	int i;
 
@@ -142,38 +162,48 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 	
 	switch (optMode)
 	{
-	case 0:	// just going through options
-		if (ButtonTapped(CONTROL_ESCAPE,true))
+	case OPTMODE_IDLE:	// just going through options
+		if (ButtonTapped(CONTROL_ESCAPE, true))
 			return 1;
-		
+
 		if (AutoRepeatTapped(CONTROL_UP))
 		{
 			cursor--;
-			if (cursor > 5)
-				cursor = 5;
+			if (cursor == firstRightHandOption - 1)
+				cursor = OPT_EXIT;
+			else if (cursor > OPT_EXIT)
+				cursor = firstRightHandOption - 1;
 		}
 		if (AutoRepeatTapped(CONTROL_DN))
 		{
 			cursor++;
-			if (cursor > 5)
+			if (cursor == firstRightHandOption)
 				cursor = 0;
+			else if (cursor == OPT_EXIT + 1)
+				cursor = firstRightHandOption;
 		}
-		if (ButtonTapped(CONTROL_B2,true))
+		if (AutoRepeatTapped(CONTROL_LF | CONTROL_RT))
+		{
+			cursor += firstRightHandOption;
+			if (cursor > OPT_EXIT)
+				cursor -= firstRightHandOption * 2;
+		}
+		if (ButtonTapped(CONTROL_B2, true))
 		{
 			return 1;
 		}
-		if (ButtonTapped(CONTROL_B1,true))
+		if (ButtonTapped(CONTROL_B1, true))
 		{
 			switch (cursor)
 			{
-			case 0:
+			case OPT_SOUNDVOL:
 				opt.soundVol--;
 				if (opt.soundVol > 5)
 					opt.soundVol = 5;
 				VolumeSound(opt.soundVol);
 				MakeNormalSound(SND_GOATSHOOT);
 				break;
-			case 1:
+			case OPT_MUSICVOL:
 				opt.musicVol--;
 				if (opt.musicVol > 5)
 					opt.musicVol = 5;
@@ -184,42 +214,53 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 				if (opt.musicVol == 5)
 					ReplaySong();
 				break;
-			case 2:
+			case OPT_FANCYWATER:
 				opt.waterFX = 1 - opt.waterFX;
 				break;
-			case 3:
+			case OPT_FANCYLIGHTING:
 				opt.lightFX = 1 - opt.lightFX;
 				break;
-			case 4:
-				optMode = 1;
+			case OPT_DPADTOMOVE:
+				opt.dpadToMove = 1 - opt.dpadToMove;
+				SetDpadToMode(opt.dpadToMove);
+				break;
+			case OPT_CONFIG:
+				optMode = OPTMODE_KEYCONFIG;
+				maxConfig = 8;
 				controlX = 0;
 				controlY = 0;
 				break;
-			case 5:
+			case OPT_CONFIGCAST:
+				optMode = OPTMODE_QC_CONFIG;
+				maxConfig = 10;
+				controlX = 0;
+				controlY = 0;
+				break;
+			case OPT_EXIT:
 				return 1;
 				break;
 			}
 		}
 		break;
-	case 1:	// selecting keys to configure
-		if (ButtonTapped(CONTROL_B2|CONTROL_ESCAPE,true))
+	case OPTMODE_KEYCONFIG:	// selecting keys to configure
+		if (ButtonTapped(CONTROL_B2 | CONTROL_ESCAPE, true))
 		{
-			optMode = 0;
+			optMode = OPTMODE_IDLE;
 			controlX = 10;
 			ApplyControlSettings();
 			return 0;
 		}
-		
+
 		if (AutoRepeatTapped(CONTROL_UP))
 		{
 			controlY--;
-			if (controlY > 7)
-				controlY = 7;
+			if (controlY >= maxConfig)
+				controlY = maxConfig - 1;
 		}
 		if (AutoRepeatTapped(CONTROL_DN))
 		{
 			controlY++;
-			if (controlY > 7)
+			if (controlY >= maxConfig)
 				controlY = 0;
 		}
 		if (AutoRepeatTapped(CONTROL_LF))
@@ -234,68 +275,230 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 			if (controlX > 2)
 				controlX = 0;
 		}
-		if (ButtonTapped(CONTROL_B1,true))
+		if (ButtonTapped(CONTROL_B1, true))
 		{
 			if (controlX < 2)
 			{
 				// keyboard
-				optMode = 2;
+				optMode = OPTMODE_KEYBIND;
 				LastScanCode();
 			}
 			else if (controlY > 3)
 			{
 				btn = 0;
 				oldBtn = ~0;
-				optMode = 3;
+				optMode = OPTMODE_GAMEPADBIND;
 			}
 		}
 		break;
-	case 2: // entering a specific key
-		if (ButtonTapped(CONTROL_ESCAPE,true))	// ESC key
+	case OPTMODE_QC_CONFIG:	// selecting keys to configure
+		if (ButtonTapped(CONTROL_B2 | CONTROL_ESCAPE, true))
 		{
-			optMode = 1;
-			mgl->LastKeyPressed();
+			optMode = OPTMODE_IDLE;
+			controlX = 10;
+			ApplyControlSettings();
 			return 0;
 		}
-		c = LastScanCode();
 
-		if (c != 0)
+		if (AutoRepeatTapped(CONTROL_UP))
 		{
-			opt.key[controlY][controlX] = c;
-			optMode = 1;
-			mgl->LastKeyPressed();
+			controlY--;
+			if (controlY >= maxConfig)
+				controlY = maxConfig - 1;
 		}
-		break;
-	case 3: // pressing a joystick button
-		if (ButtonTapped(CONTROL_ESCAPE,true))
+		if (AutoRepeatTapped(CONTROL_DN))
 		{
-			optMode=1;
-			return 0;
+			controlY++;
+			if (controlY >= maxConfig)
+				controlY = 0;
 		}
-		/*btn = GetJoyButtons();
-
-		j=1;
-		for(i=0;i<16;i++)
+		if (AutoRepeatTapped(CONTROL_LF))
 		{
-			if((btn&j) && !(oldBtn&j))
+			controlX--;
+			if (controlX > 2)
+				controlX = 2;
+		}
+		if (AutoRepeatTapped(CONTROL_RT))
+		{
+			controlX++;
+			if (controlX > 2)
+				controlX = 0;
+		}
+		if (ButtonTapped(CONTROL_B1, true))
+		{
+			if (controlX < 2)
 			{
-				opt.joyCtrl[controlY-4]=i;
-				optMode=1;
-				c2=255;
+				// keyboard
+				optMode = OPTMODE_QC_KEYBIND;
+				LastScanCode();
+				UpdateControls();
 			}
-			j*=2;
+			else
+			{
+				btn = 0;
+				oldBtn = ~0;
+				optMode = OPTMODE_QC_GAMEPADBIND;
+				prevGamePad = GetRawGamepad();
+				UpdateControls();
+			}
 		}
-		oldBtn=btn;
-		*/
+		break;
+	case OPTMODE_KEYBIND: // entering a specific key
+	case OPTMODE_QC_KEYBIND:
+		if (ButtonTapped(CONTROL_ESCAPE, true))	// ESC key
+		{
+			optMode--; // takes us to KEYCONFIG or QC_CONFIG, as appropriate
+			UpdateControls();
+			mgl->LastKeyPressed();
+			return 0;
+		}
+		b = LastScanCode();
+
+		if (b != 0)
+		{
+			if (optMode == OPTMODE_QC_KEYBIND)
+			{
+				opt.key[controlY + CTL_ID_QC_1][controlX] = b;
+				for (int j = 0; j < NUM_CONTROLS; j++)
+				{
+					for (int k = 0; k < 2; k++)	// we only mess with the 2 changeable keyboards
+						if (j != CTL_ID_ESCAPE && j != (controlY+CTL_ID_QC_1) && opt.key[j][k] == b)
+							opt.key[j][k] = 0;	// unset any other place that uses this key. You can put multiple copies on the same action though, if you want to override something else there
+				}
+			}
+			else
+			{
+				opt.key[controlY][controlX] = b;
+				for (int j = 0; j < NUM_CONTROLS; j++)
+				{
+					for (int k = 0; k < 2; k++)	// we only mess with the 2 changeable keyboards
+						if (j != CTL_ID_ESCAPE && j != controlY && opt.key[j][k] == b)
+							opt.key[j][k] = 0;	// unset any other place that uses this key. You can put multiple copies on the same action though, if you want to override something else there
+				}
+			}
+			optMode--;
+			mgl->LastKeyPressed();
+			UpdateControls();
+			return 0;
+		}
+		break;
+	case OPTMODE_GAMEPADBIND: // pressing a joystick button
+	case OPTMODE_QC_GAMEPADBIND:
+		if (ButtonTapped(CONTROL_ESCAPE, true))
+		{
+			optMode -= 2;	// takes us to keyconfig or qc_config as appropriate
+			UpdateControls();
+			return 0;
+		}
+		else
+		{
+			dword g = GetRawGamepad();
+			dword taps = (g & (~prevGamePad));
+			prevGamePad = g;
+			if (taps != 0)
+			{
+				for (int i = 0; i <= (int)(RAWGAMEPADAXIS_BASE + RawGamepadAxis::RT); i++)
+				{
+					if ((i == RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_DN) ||
+						(i == RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP) ||
+						(i == RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF) ||
+						(i == RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT) ||
+						(i==SDL_CONTROLLER_BUTTON_START))
+						continue; // can't bind left stick movement, it's fixed to movement, or START which is fixed to pause/exit
+
+					if (taps & (1 << i))
+					{
+						if (optMode == OPTMODE_QC_GAMEPADBIND)
+						{
+							opt.joyCtrl[controlY + CTL_ID_QC_1] = i;
+							for (int j = 0; j < NUM_CONTROLS; j++)
+							{
+								if (j != CTL_ID_ESCAPE && j != controlY+CTL_ID_QC_1 && opt.joyCtrl[j] == i)
+									opt.joyCtrl[j] = 255;	// unset any other controls using the same button
+							}
+						}
+						else
+						{
+							opt.joyCtrl[controlY] = i;
+							for (int j = 0; j < NUM_CONTROLS; j++)
+							{
+								if (j != CTL_ID_ESCAPE && j != controlY && opt.joyCtrl[j] == i)
+									opt.joyCtrl[j] = 255;	// unset any other controls using the same button
+							}
+						}
+						optMode -= 2;
+						UpdateControls();
+						return 0;
+					}
+				}
+			}
+		}
 		break;
 	}
 
 	return 0;
 }
 
-void RenderGamepadButton(int x, int y, byte btn)
+void RenderGamepadButton(int x, int y, byte rawBtn)
 {
+	byte imgNum[] = {
+		8,	// SDL_CONTROLLER_BUTTON_A,
+		9,	// SDL_CONTROLLER_BUTTON_B,
+		10, // SDL_CONTROLLER_BUTTON_X,
+		11, // SDL_CONTROLLER_BUTTON_Y,
+		22, // SDL_CONTROLLER_BUTTON_BACK, (select button img)
+		24, // SDL_CONTROLLER_BUTTON_GUIDE, (just a ?, because I THINK this is the big "X" button on an xbox controller)
+		23, // SDL_CONTROLLER_BUTTON_START,
+		14, // SDL_CONTROLLER_BUTTON_LEFTSTICK,
+		15, // SDL_CONTROLLER_BUTTON_RIGHTSTICK,
+		12, // SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
+		13, // SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,
+		19, //SDL_CONTROLLER_BUTTON_DPAD_UP,
+		17, // SDL_CONTROLLER_BUTTON_DPAD_DOWN,
+		18, // SDL_CONTROLLER_BUTTON_DPAD_LEFT,
+		16, // SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
+		25, //SDL_CONTROLLER_BUTTON_MISC1,    /* Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture button, Amazon Luna microphone button */ - i just made up some weird symbol
+		26, //SDL_CONTROLLER_BUTTON_PADDLE1,  /* Xbox Elite paddle P1 */
+		27, //SDL_CONTROLLER_BUTTON_PADDLE2,  /* Xbox Elite paddle P3 */
+		28, //SDL_CONTROLLER_BUTTON_PADDLE3,  /* Xbox Elite paddle P2 */
+		29, // SDL_CONTROLLER_BUTTON_PADDLE4,  /* Xbox Elite paddle P4 */
+		30, //SDL_CONTROLLER_BUTTON_TOUCHPAD, /* PS4/PS5 touchpad button */
+		0,	// empty spot
+		0,	//	LS_UP,
+		1,	//	LS_DN,
+		2,	//	LS_LF,
+		3,	//	LS_RT,
+		4,	// RS_UP,
+		5, // RS_DN,
+		6, // RS_LF,
+		7, // RS_RT,
+		20, // LT,
+		21, //RT,
+	};
 
+	int sx, sy;
+	if (rawBtn == 255)
+	{
+		CenterPrint(x+8, y, "- - -", 0, 1);
+	}
+	else
+	{
+		sx = 384 + (imgNum[rawBtn] % 10) * 16;
+		sy = 416 + (imgNum[rawBtn] / 10) * 16;
+		if(opt.dpadToMove && ((rawBtn == RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_DN) ||
+				(rawBtn == RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF) ||
+				(rawBtn == RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP) ||
+				(rawBtn == RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT)))
+			{
+				BlitIconBit(sx, sy, sx + 15, sy + 15, x-10, y, 255, 0);
+				rawBtn = SDL_CONTROLLER_BUTTON_DPAD_UP + rawBtn - (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP);
+				sx = 384 + (imgNum[rawBtn] % 10) * 16;
+				sy = 416 + (imgNum[rawBtn] / 10) * 16;
+				BlitIconBit(sx, sy, sx + 15, sy + 15, x + 10, y, 255, 0);
+			}
+		else
+			BlitIconBit(sx, sy, sx + 15, sy + 15, x, y, 255, 0);
+	}
 }
 
 void RenderControls(int x,int y,MGLDraw *mgl)
@@ -309,16 +512,25 @@ void RenderControls(int x,int y,MGLDraw *mgl)
 	CenterPrint(x+150,y,"Keyboard1",0,1);
 	CenterPrint(x+250,y,"Keyboard2",0,1);
 	CenterPrint(x+350,y,"Gamepad",0,1);
+	
 	mgl->Box(x+98,y-2,x+198,y+260,16);
 	mgl->Box(x+198,y-2,x+298,y+260,16);
 	mgl->Box(x+298,y-2,x+398,y+260,16);
 
 	for(i=0;i<8;i++)
 	{
+		if((optMode==OPTMODE_KEYCONFIG || optMode==OPTMODE_GAMEPADBIND) && i<4)	// can't change gamepad movement, make it red
+			mgl->FillBox(x + 99 + 100 * 2, y + 20 + 1 + i * 30, x + 198 + 100 * 2, y + 20 + 29 + i * 30, 32 * 4 + 6);
+
 		if(controlY==i && controlX<3)
 		{
-			if(optMode==1)
-				mgl->FillBox(x+99+100*controlX,y+20+1+i*30,x+198+100*controlX,y+20+29+i*30,20);
+			if (optMode == OPTMODE_KEYCONFIG || optMode==OPTMODE_GAMEPADBIND)
+			{
+				if(controlX==2 && controlY<4)	// you can't change the controls for movement on gamepad
+					mgl->FillBox(x + 99 + 100 * controlX, y + 20 + 1 + i * 30, x + 198 + 100 * controlX, y + 20 + 29 + i * 30, 32*4+10);
+				else
+					mgl->FillBox(x + 99 + 100 * controlX, y + 20 + 1 + i * 30, x + 198 + 100 * controlX, y + 20 + 29 + i * 30, 20);
+			}
 			else
 			{
 				mgl->FillBox(x+99+100*controlX,y+20+1+i*30,x+198+100*controlX,y+20+29+i*30,31);
@@ -329,42 +541,29 @@ void RenderControls(int x,int y,MGLDraw *mgl)
 		mgl->Box(x,y+20+i*30,x+398,y+20+30+i*30,16);
 
 		CenterPrint(x+50,y+27+i*30,dirName[i],0,1);
-		if(optMode==1 || controlX!=0 || controlY!=i)
+		if(optMode==OPTMODE_KEYCONFIG || controlX!=0 || controlY!=i)
 			CenterPrint(x+150,y+27+i*30,ScanCodeText(opt.key[i][0]),0,1);
-		if(optMode==1 || controlX!=1 || controlY!=i)
+		if(optMode==OPTMODE_KEYCONFIG || controlX!=1 || controlY!=i)
 			CenterPrint(x+250,y+27+i*30,ScanCodeText(opt.key[i][1]),0,1);
+		if(optMode==OPTMODE_KEYCONFIG || controlX!=2 || controlY!=i)
+			RenderGamepadButton(x+350-8,y+27+i*30,opt.joyCtrl[i]);
+	}
 
-		if(i>3)
-		{
-			if(optMode==1 || controlX!=2 || controlY!=i)
-			{
-				sprintf(btnTxt,"Button %d",opt.joyCtrl[i-4]+1);
-				CenterPrint(x+350,y+27+i*30,btnTxt,0,1);
-			}
-		}
-		else
-		{
-			sprintf(btnTxt,"D-Pad %s",dirName[i]);
-			CenterPrint(x+350,y+27+i*30,btnTxt,0,1);
-		}
-	}
-	if(optMode==0)
+	if(optMode==OPTMODE_IDLE)
 	{
-		CenterPrint(x+200,y+292,"Move with arrow keys, ENTER to select",0,1);
-		CenterPrint(x+200,y+312,"ESC to return to main menu",0,1);
+		
 	}
-	else if(optMode==1)
+	else if(optMode==OPTMODE_KEYCONFIG)
 	{
-		CenterPrint(x+200,y+292,"Select with arrow keys, ENTER to set new control",0,1);
-		CenterPrint(x+200,y+312,"ESC to return to options",0,1);
+		CenterPrint(x+200,y+292,"Select a key or button to change",0,1);
 	}
-	else if(optMode==2)
+	else if(optMode==OPTMODE_KEYBIND)
 	{
 		sprintf(btnTxt,"Press a key for %s",dirName[controlY]);
 		CenterPrint(x+200,y+292,btnTxt,0,1);
 		CenterPrint(x+200,y+312,"ESC to cancel",0,1);
 	}
-	else if(optMode==3)
+	else if(optMode==OPTMODE_GAMEPADBIND)
 	{
 		sprintf(btnTxt,"Press a gamepad button for %s",dirName[controlY]);
 		CenterPrint(x+200,y+292,btnTxt,0,1);
@@ -372,34 +571,132 @@ void RenderControls(int x,int y,MGLDraw *mgl)
 	}
 }
 
+void RenderQuickCast(int x, int y, MGLDraw* mgl)
+{
+	char btnTxt[64];
+	int i;
+
+	mgl->FillBox(x, y - 2, x + 398, y + 20, 16);
+	CenterPrint(x + 50, y, "Quick Cast", 0, 1);
+	CenterPrint(x + 150, y, "Keyboard1", 0, 1);
+	CenterPrint(x + 250, y, "Keyboard2", 0, 1);
+	CenterPrint(x + 350, y, "Gamepad", 0, 1);
+
+	mgl->Box(x + 98, y - 2, x + 198, y + 320, 16);
+	mgl->Box(x + 198, y - 2, x + 298, y + 320, 16);
+	mgl->Box(x + 298, y - 2, x + 398, y + 320, 16);
+
+	for (i = 0; i < 10; i++)
+	{
+		if (controlY == i && controlX < 3)
+		{
+			if (optMode == OPTMODE_QC_CONFIG)
+			{
+				mgl->FillBox(x + 99 + 100 * controlX, y + 20 + 1 + i * 30, x + 198 + 100 * controlX, y + 20 + 29 + i * 30, 20);
+			}
+			else
+			{
+				mgl->FillBox(x + 99 + 100 * controlX, y + 20 + 1 + i * 30, x + 198 + 100 * controlX, y + 20 + 29 + i * 30, 31);
+				CenterPrint(x + 150 + controlX * 100, y + 27 + i * 30, "???", 0, 1);
+			}
+		}
+		mgl->FillBox(x, y + 20 + 1 + i * 30, x + 98, y + 20 + 29 + i * 30, 10);
+		mgl->Box(x, y + 20 + i * 30, x + 398, y + 20 + 30 + i * 30, 16);
+
+		sprintf(btnTxt, "Spell %d", i + 1);
+		CenterPrint(x + 50, y + 27 + i * 30, btnTxt, 0, 1);
+		if (optMode == OPTMODE_QC_CONFIG || controlX != 0 || controlY != i)
+			CenterPrint(x + 150, y + 27 + i * 30, (opt.key[i+CTL_ID_QC_1][0]==0)?"- - -":ScanCodeText(opt.key[i + CTL_ID_QC_1][0]), 0, 1);
+		if (optMode == OPTMODE_QC_CONFIG || controlX != 1 || controlY != i)
+			CenterPrint(x + 250, y + 27 + i * 30, (opt.key[i + CTL_ID_QC_1][1] == 0) ? "- - -" : ScanCodeText(opt.key[i+CTL_ID_QC_1][1]), 0, 1);
+		if (optMode == OPTMODE_QC_CONFIG || controlX != 2 || controlY != i)
+			RenderGamepadButton(x + 350 - 8, y + 27 + i * 30, opt.joyCtrl[i+CTL_ID_QC_1]);
+	}
+	if (optMode == OPTMODE_IDLE)
+	{
+
+	}
+	else if (optMode == OPTMODE_QC_CONFIG)
+	{
+		CenterPrint(x + 200, y + 322, "Select a key or button to change", 0, 1);
+	}
+	else if (optMode == OPTMODE_QC_KEYBIND)
+	{
+		sprintf(btnTxt, "Press a key for Quick Cast Spell %d", controlY+1);
+		CenterPrint(x + 200, y + 322, btnTxt, 0, 1);
+		CenterPrint(x + 200, y + 342, "ESC to cancel", 0, 1);
+	}
+	else if (optMode == OPTMODE_QC_GAMEPADBIND)
+	{
+		sprintf(btnTxt, "Press a gamepad button for Quick Cast Spell %d", controlY+1);
+		CenterPrint(x + 200, y + 322, btnTxt, 0, 1);
+		CenterPrint(x + 200, y + 342, "ESC or START to cancel", 0, 1);
+	}
+}
+
 void RenderOptionsMenu(MGLDraw *mgl)
 {
 	char onoff[6][8]={"Off","I","II","III","IV","V"};
 	char fxonoff[2][8]={"Off","On"};
+	char optionsList[][32] = {
+		"Sound:",
+		"Music:",
+		"Fancy Water:",
+		"Fancy Lighting:",
+		"D-Pad To Move:",
+		"Configure Controls",
+		"Configure Quick Cast",
+		"Exit To Main Menu",
+	};
+	char s[32];
 
 	mgl->ClearScreen();
 	CenterPrint(HALFWID,2,"Game Options",0,0);
 
-	DrawFillBox(250,40-1+20*cursor,390,40+17+20*cursor,10);
+	int x = HALFWID / 2+35;
+	int y = 40;
+	for (int i = 0; i <= OPT_EXIT; i++)
+	{
+		if (i==firstRightHandOption)
+		{
+			y = 40;
+			x = HALFWID+30+40;
+		}
+		if(cursor==i)
+			DrawFillBox(x-45, y-2, x+115, y+14, 10);
 
-	CenterPrint(HALFWID,40,"Sound",0,1);
-	Print(392,40,onoff[opt.soundVol],0,1);
-	CenterPrint(HALFWID,60,"Music",0,1);
-	Print(392,60,onoff[opt.musicVol],0,1);
-	CenterPrint(HALFWID,80,"Fancy Water:",0,1);
-	Print(392,80,fxonoff[opt.waterFX],0,1);
+		Print(x-40, y, optionsList[i], 0, 1);
+		
+		switch (i)
+		{
+			case OPT_SOUNDVOL:
+				sprintf(s, "%s", onoff[opt.soundVol]);
+				break;
+			case OPT_MUSICVOL:
+				sprintf(s, "%s", onoff[opt.musicVol]);
+				break;
+			case OPT_FANCYWATER:
+				sprintf(s, "%s", fxonoff[opt.waterFX]);
+				break;
+			case OPT_FANCYLIGHTING:
+				sprintf(s, "%s", fxonoff[opt.lightFX]);
+				break;
+			case OPT_DPADTOMOVE:
+				sprintf(s, "%s", fxonoff[opt.dpadToMove]);
+				break;
+			default:
+				s[0] = '\0';	// the rest have no bonus text
+				break;
+		}
+		Print(x + 135-50, y, s, 0, 1);
+		y += 20;
+	}
 
-	CenterPrint(HALFWID,100,"Fancy Lighting:",0,1);
-	Print(392,100,fxonoff[opt.lightFX],0,1);
-
-	//Print(500,120,"(You can turn these settings off",0,1);
-	//Print(500,135," if the game is slow or jerky, to",0,1);
-	//Print(500,150," get better performance)",0,1);
-
-	CenterPrint(HALFWID,120,"Configure Controls",0,1);
-	CenterPrint(HALFWID,140,"Exit To Main Menu",0,1);
-
-	RenderControls(120,170,mgl);
+	if ((optMode == OPTMODE_IDLE && cursor == OPT_CONFIGCAST) ||
+		optMode == OPTMODE_QC_CONFIG || optMode == OPTMODE_QC_GAMEPADBIND || optMode == OPTMODE_QC_KEYBIND)
+		RenderQuickCast(120, 130, mgl);
+	else
+		RenderControls(120,130,mgl);
 }
 
 TASK(void) OptionsMenu(MGLDraw *mgl)
