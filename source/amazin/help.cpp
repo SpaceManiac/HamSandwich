@@ -576,6 +576,9 @@ void HelpRender()
 			break;
 		case HelpType::RText:
 			RightPrintMultiline(g_Help[i].x, g_Help[i].y, g_Help[i].text);
+			break;
+		default:
+			break;
 		}
 	}
 	if (g_HelpPage == 0x16)

@@ -38,5 +38,5 @@ endif()
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	# STEAM_CALLBACK macro warns about this, but it seems fine in practice.
 	# Either way it's not for us to fix.
-	target_compile_options(steam_api INTERFACE -Wno-invalid-offsetof)
+	target_compile_options(steam_api INTERFACE -Wno-invalid-offsetof -Wno-gnu-zero-variadic-macro-arguments)
 endif()

@@ -44,16 +44,16 @@ elseif(WIN32)
 
 	include(FetchContent)
 	FetchContent_Declare(SDL2
-		URL https://www.libsdl.org/release/SDL2-devel-2.0.22-VC.zip
-		URL_HASH SHA256=32adc96d8b25e5671189f1f38a4fc7deb105fbb1b3ed78ffcb23f5b8f36b3922
+		URL https://www.libsdl.org/release/SDL2-devel-2.30.9-VC.zip
+		URL_HASH SHA256=8c91d91e5bcb997d062ec2b553c53832ebf95654d4aa35e8c02a954d4ce752ae
 	)
 	FetchContent_Declare(SDL2_image
-		URL https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.5-VC.zip
-		URL_HASH SHA256=a180f9b75c4d3fbafe02af42c42463cc7bc488e763cfd1ec2ffb75678b4387ac
+		URL https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.8.2-VC.zip
+		URL_HASH SHA256=d8d593c1f3b2ffc8968b7ae0ba8d0ecf7e44b7476c4c5533a8d523f7039acdd4
 	)
 	FetchContent_Declare(SDL2_mixer
-		URL https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.0.4-VC.zip
-		URL_HASH SHA256=258788438b7e0c8abb386de01d1d77efe79287d9967ec92fbb3f89175120f0b0
+		URL https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.8.0-VC.zip
+		URL_HASH SHA256=47a5713937f8d8b903a9c5555fef3ec73a793ef95abdd078773fc11fcb00ec8a
 	)
 	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer)
 
@@ -67,8 +67,6 @@ elseif(WIN32)
 	target_link_libraries(SDL2_image INTERFACE "${sdl2_image_LIBS}/SDL2_image.lib")
 	install(FILES
 		"${sdl2_image_LIBS}/SDL2_image.dll"
-		"${sdl2_image_LIBS}/libpng16-16.dll"
-		"${sdl2_image_LIBS}/zlib1.dll"
 		TYPE BIN COMPONENT generic/executables)
 
 	target_include_directories(SDL2_mixer INTERFACE "${sdl2_mixer_SOURCE_DIR}/include")
@@ -76,10 +74,6 @@ elseif(WIN32)
 	target_link_libraries(SDL2_mixer INTERFACE "${sdl2_mixer_LIBS}/SDL2_mixer.lib")
 	install(FILES
 		"${sdl2_mixer_LIBS}/SDL2_mixer.dll"
-		"${sdl2_mixer_LIBS}/LICENSE.ogg-vorbis.txt"
-		"${sdl2_mixer_LIBS}/libogg-0.dll"
-		"${sdl2_mixer_LIBS}/libvorbis-0.dll"
-		"${sdl2_mixer_LIBS}/libvorbisfile-3.dll"
 		TYPE BIN COMPONENT generic/executables)
 elseif(APPLE)
 	# Like Windows, use the official SDL2 prebuilt binaries.
@@ -89,24 +83,24 @@ elseif(APPLE)
 
 	include(FetchContent)
 	FetchContent_Declare(SDL2
-		URL https://www.libsdl.org/release/SDL2-2.0.22.dmg
-		URL_HASH SHA256=72974672b8359057aa2f6d467c8adae8182a6caedd660e3936e23c3c683c3801
+		URL https://www.libsdl.org/release/SDL2-2.30.9.dmg
+		URL_HASH SHA256=e8f69d97dcab8faf41654d915ee1451d38a155e31c20945e974643d8d776ca9b
 		DOWNLOAD_NO_EXTRACT TRUE
 		PATCH_COMMAND hdiutil mount <DOWNLOADED_FILE> -mountpoint dmg_mount
 		COMMAND cp -r dmg_mount dmg_content
 		COMMAND hdiutil unmount dmg_mount
 	)
 	FetchContent_Declare(SDL2_image
-		URL https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.5.dmg
-		URL_HASH SHA256=313b2b92544bc05cafeb7c566572d08c961f15f25877608ebf86658bd458d815
+		URL https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.8.2.dmg
+		URL_HASH SHA256=593f560ba4072144b52845abfe3b9dc267853539fd171b31a26d941faa2cd2b5
 		DOWNLOAD_NO_EXTRACT TRUE
 		PATCH_COMMAND hdiutil mount <DOWNLOADED_FILE> -mountpoint dmg_mount
 		COMMAND cp -r dmg_mount dmg_content
 		COMMAND hdiutil unmount dmg_mount
 	)
 	FetchContent_Declare(SDL2_mixer
-		URL https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.4.dmg
-		URL_HASH SHA256=ed9c904121ae763cf7d3c7bf08b95cd0e23d370f112c787a17e871bd2c764fe3
+		URL https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.8.0.dmg
+		URL_HASH SHA256=aea973d78f2949b0b2404379dfe775ac367c69485c1d25a5c59f109797f18adf
 		DOWNLOAD_NO_EXTRACT TRUE
 		PATCH_COMMAND hdiutil mount <DOWNLOADED_FILE> -mountpoint dmg_mount
 		COMMAND cp -r dmg_mount dmg_content
@@ -136,6 +130,9 @@ else()
 	set(SDL_STATIC OFF CACHE BOOL "" FORCE)
 	set(SDL2_DISABLE_INSTALL ON CACHE BOOL "" FORCE) # We'll handle it ourselves.
 	add_subdirectory("SDL2")
+	if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
+		target_compile_options(SDL2 PRIVATE -Wno-unused-but-set-variable)
+	endif()
 
 	# Images: BMP, PNG, ICO
 	set(SDL2IMAGE_BMP ON)

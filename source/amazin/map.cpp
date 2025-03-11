@@ -1243,6 +1243,9 @@ void ItemRender(ItemType item, byte itemAnim, int x, int y)
 			{
 				DisplayListAdd(g_ItemsJsp->GetSprite(((int)((itemAnim - 138) + ((int)(itemAnim - 138) >> 0x1f & 3U)) >> 2) + 31), x, y, 0, y, 0, DisplayEffect::Normal);
 			}
+			break;
+		default:
+			break;
 		}
 	}
 }

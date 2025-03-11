@@ -23,3 +23,7 @@ endif()
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
 	target_compile_options(ham PRIVATE -Wall -Wextra -Wpedantic)
 endif()
+
+if(EMSCRIPTEN)
+	target_compile_options(ham PRIVATE -Wno-dollar-in-identifier-extension -Wno-gnu-zero-variadic-macro-arguments)
+endif()

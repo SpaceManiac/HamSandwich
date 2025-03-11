@@ -9,7 +9,6 @@
 #include "owned_sdl.h"
 
 static constexpr int NUM_KEYBOARDS = 4;
-static constexpr int NUM_JOYBTNS = 4;
 
 static byte lastScanCode;
 
@@ -527,7 +526,7 @@ void UpdateControls(void)
 	menuTap = 0;
 	UpdateRawJoystick();
 	controls = keyState | RawGamepadToControls();
-	
+
 	if (reptCounter > 0)
 		reptCounter--;
 
@@ -546,6 +545,9 @@ void UpdateControls(void)
 	if (oldControls == 0 || reptCounter >= CONTROL_REPEAT_FRAMES)
 		reptCounter = 0;
 
+#ifndef NDEBUG
+	SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%d %d | %d %d\n", controls,taps,arrowState,menuTap);
+#endif
 	//SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%d %d | %d %d\n", controls,taps,arrowState,menuTap);
 
 	controls &= (~lockOut);

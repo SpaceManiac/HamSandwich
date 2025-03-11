@@ -282,7 +282,7 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 	int frmon=0;
 	fliheader FLI_hdr;
 	int scrWidth;
-	char k=0;
+	char k = 0;
 	dword playbackTime, currentTime;
 	dword oldGamepadButtons = ~0;
 	dword gamepadButtons = GetGamepadButtons();

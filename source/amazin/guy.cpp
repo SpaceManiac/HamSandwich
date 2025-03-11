@@ -316,6 +316,9 @@ void GetItem(Guy *me)
 	case ItemType::BigCandle:
 		g_Player[me->player - 1].candles = g_Player[me->player - 1].candles + 5;
 		PlaySound(0x1d, 0x5dc);
+		break;
+	default:
+		break;
 	}
 	switch (item)
 	{
@@ -680,6 +683,9 @@ void GuyRespawn(Guy *me)
 				PlayerGetPoints(me->player - 1, 100);
 			}
 			PlaySound(5, 2000);
+			break;
+		default:
+			break;
 		}
 		enemy = FindGuy1(me);
 	}
@@ -1507,6 +1513,7 @@ static void GuyUpdatePumpkin(Guy *me)
 	{
 		switch (me->type)
 		{
+		default:
 		case GuyType::Smoove:
 			speed = (unsigned int)g_MapNum * 0x20 + 0x180;
 			break;
@@ -1518,6 +1525,7 @@ static void GuyUpdatePumpkin(Guy *me)
 			break;
 		case GuyType::Pete:
 			speed = (unsigned int)g_MapNum * 0x20 + 0x300;
+			break;
 		}
 		if (g_SnowTimer != 0)
 		{
@@ -1847,6 +1855,7 @@ static void TitleUpdateGuyPumpkin(Guy *me)
 	{
 		switch (me->type)
 		{
+		default:
 		case GuyType::Smoove:
 			speed = 0x200;
 			break;
@@ -1858,6 +1867,7 @@ static void TitleUpdateGuyPumpkin(Guy *me)
 			break;
 		case GuyType::Pete:
 			speed = 0x200;
+			break;
 		}
 		me->frame = me->frame + 1;
 		if (6 < me->frame)
@@ -1982,6 +1992,9 @@ void GuyUpdate(Guy *me)
 		{
 			GuyUpdatePumpkinRetreat(me);
 		}
+		break;
+	default:
+		break;
 	}
 	return;
 }
