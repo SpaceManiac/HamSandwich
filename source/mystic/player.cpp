@@ -97,7 +97,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		for (i = 0; i < MAX_SKILLS; i++)
 			player.skill[i] = 0;
 		player.skillPts = 0;
-		player.enableQuickCast = 0;
+		player.unusedSUCKERREPLACE = 0;
 		player.disableDmgNumbers = 0;
 		player.disableMoveNShoot = 0;
 		player.disableSword = 0;
@@ -1176,27 +1176,27 @@ void SetTportClock(byte tp)
 
 void DoPlayerFacing(Guy *me)
 {
-	if(ButtonHeld(CONTROL_UP,false))
+	if(ButtonHeld(CONTROL_UP))
 	{
 		me->facing=6;
-		if(ButtonHeld(CONTROL_LF,false))
+		if(ButtonHeld(CONTROL_LF))
 			me->facing=5;
-		else if(ButtonHeld(CONTROL_RT,false))
+		else if(ButtonHeld(CONTROL_RT))
 			me->facing=7;
 	}
-	else if(ButtonHeld(CONTROL_DN,false))
+	else if(ButtonHeld(CONTROL_DN))
 	{
 		me->facing=2;
-		if(ButtonHeld(CONTROL_LF,false))
+		if(ButtonHeld(CONTROL_LF))
 			me->facing=3;
-		else if(ButtonHeld(CONTROL_RT,false))
+		else if(ButtonHeld(CONTROL_RT))
 			me->facing=1;
 	}
 	else
 	{
-		if(ButtonHeld(CONTROL_LF,false))
+		if(ButtonHeld(CONTROL_LF))
 			me->facing=4;
-		else if(ButtonHeld(CONTROL_RT,false))
+		else if(ButtonHeld(CONTROL_RT))
 			me->facing=0;
 	}
 }
@@ -1220,7 +1220,7 @@ void ArmageddonUpdate(Map *map)
 	}
 }
 
-void BeginCast(Guy *me)
+void BeginCast(Guy *me,byte spell)
 {
 	if (me->action!=ACTION_BUSY && player.levelNum!=1 && player.wpnReload == 0 && player.spell[player.curSpell])	// pushed spell button
 	{
@@ -1233,7 +1233,7 @@ void BeginCast(Guy *me)
 		me->frmTimer = 0;
 		me->frmAdvance = 200;
 		player.boredom = 0;
-		player.casting = player.curSpell;	// so if you switch the active spell, it still casts this one
+		player.casting = spell;	// so if you switch the active spell, it still casts this one
 		ResetCastCounter();
 	}
 }
@@ -1242,6 +1242,21 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 {
 	int i,j;
 	Guy *g;
+	byte wannaCast = 255;
+
+	for (int i = 0; i < 10; i++)
+	{
+		if (ButtonHeld(1 << (CTL_ID_QC_1 + i)))	// have a spell key held down
+		{
+			if (player.spell[i])
+			{
+				if (opt.quickCast == QUICKCAST_SELECTONLY || opt.quickCast == QUICKCAST_CASTANDSELECT)
+					player.curSpell = i;
+				if (opt.quickCast == QUICKCAST_CASTANDSELECT || opt.quickCast == QUICKCAST_CASTONLY)
+					wannaCast = (byte)i;
+			}
+		}
+	}
 
 	if(compassBigClock<30*20)
 		compassBigClock++;
@@ -1526,17 +1541,17 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 
 	// shooty provides backup shots
-	if(ButtonHeld(CONTROL_B1,false) && player.hammers>0 && player.fairyOn == FAIRY_SHOOTY && fairyReload == 0)
+	if(ButtonHeld(CONTROL_B1) && player.hammers>0 && player.fairyOn == FAIRY_SHOOTY && fairyReload == 0)
 	{
 		fairyReload=15;
 		FairyDoThing(1);
 	}
 
-	if(ButtonHeld(CONTROL_B1,false) && player.reload==0)	// pushed hammer throw button
+	if(ButtonHeld(CONTROL_B1) && player.reload==0)	// pushed hammer throw button
 	{
 		if((player.gear&GEAR_SOCKS) && !player.disableMoveNShoot)
 		{
-			if(!ButtonHeld(CONTROL_LF|CONTROL_RT|CONTROL_UP|CONTROL_DN,false))
+			if(!ButtonHeld(CONTROL_LF|CONTROL_RT|CONTROL_UP|CONTROL_DN))
 			{
 				me->seq=ANIM_ATTACK;	// even if unarmed
 				me->frm=0;
@@ -1560,26 +1575,29 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		player.boredom=0;
 		return;
 	}
-	if(player.levelNum==1 && player.wpnReload==1 && ButtonTapped(CONTROL_B2,false) && player.haveFairy>0 && GetGameMode() == GAMEMODE_PLAY)
+	if(player.levelNum==1 && player.wpnReload==1 && ButtonTapped(CONTROL_B2) && player.haveFairy>0 && GetGameMode() == GAMEMODE_PLAY)
 	{
 		player.wpnReload=15;
 		SendMessageToGame(MSG_GOTOMAP,51);
 	}
 
-	if(ButtonHeld(CONTROL_B2,false) && player.wpnReload==0 && player.spell[player.curSpell])	// pushed spell button
+	if (ButtonHeld(CONTROL_B2))
+		wannaCast = player.curSpell;
+
+	if(wannaCast!=255 && player.wpnReload == 0 && player.spell[wannaCast])	// pushed spell button
 	{
-		BeginCast(me);
+		BeginCast(me,wannaCast);
 		return;
 	}
 
 	// if you are moving indeed
-	if(ButtonHeld(CONTROL_UP|CONTROL_DN|CONTROL_LF|CONTROL_RT,false))
+	if(ButtonHeld(CONTROL_UP|CONTROL_DN|CONTROL_LF|CONTROL_RT))
 	{
 		if(me->parent)	// drift the raft
 		{
-			if(ButtonHeld(CONTROL_LF,false))
+			if(ButtonHeld(CONTROL_LF))
 				me->parent->dx-=FIXAMT/6;
-			if(ButtonHeld(CONTROL_RT,false))
+			if(ButtonHeld(CONTROL_RT))
 				me->parent->dx+=FIXAMT/6;
 			Clamp(&me->parent->dx,FIXAMT*3);
 		}
@@ -1657,8 +1675,8 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	// super cool execute move
 	if (!ClassicMode() && SkillValue(SKILL_MURDALIZE)>0 && me->action!=ACTION_BUSY &&
-		((ButtonTapped(CONTROL_B3,false) && ButtonTapped(CONTROL_B4,false)) ||
-		(ButtonTapped(CONTROL_B4,false) && ButtonHeld(CONTROL_B3,true)))) // you hit both
+		((ButtonTapped(CONTROL_B3) && ButtonTapped(CONTROL_B4)) ||
+		(ButtonTapped(CONTROL_B4) && ButtonHeld(CONTROL_B3)))) // you hit both
 	{
 		int x, y;
 		x = me->x + Cosine(me->facing * 32) * 30;
@@ -1691,7 +1709,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			MakeSound(SND_FLAMEGO, x, y, SND_CUTOFF, 100);
 		}
 	}
-	else if(ButtonTapped(CONTROL_B4,false))
+	else if(ButtonTapped(CONTROL_B4))
 	{
 
 		j=0;
@@ -1712,7 +1730,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			}
 		}
 	}
-	else if(ButtonTapped(CONTROL_B3,false))
+	else if(ButtonTapped(CONTROL_B3))
 	{
 		j=0;
 		for(i=0;i<10;i++)

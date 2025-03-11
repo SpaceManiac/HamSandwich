@@ -249,17 +249,18 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			MakeNormalSound(SND_MENUCLICK);
 			startTime = timeGetTime();	// reset the clock if any key is pressed
 		}
-		if(ButtonTapped(CONTROL_B1,true))
+		if(ButtonTapped(CONTROL_B1))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			startTime=timeGetTime();	// reset the clock if any key is pressed
 			return 1;
 		}
 
-		if(ButtonTapped(CONTROL_ESCAPE,true))
+		if(ButtonTapped(CONTROL_ESCAPE))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			startTime=timeGetTime();	// reset the clock if any key is pressed
+			UpdateControls();
 			return 3;
 		}
 #ifdef CHEAT
@@ -439,7 +440,7 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 				title->savecursor=0;
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if(ButtonTapped(CONTROL_B1,true))
+		if(ButtonTapped(CONTROL_B1))
 		{
 			if(title->saveChapter[title->savecursor]==0 || title->saveLevel[title->savecursor]==0)
 				MakeNormalSound(SND_ACIDSPLAT);
@@ -449,9 +450,10 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 				return 1;
 			}
 		}
-		if (ButtonTapped(CONTROL_ESCAPE,true))
+		if (ButtonTapped(CONTROL_ESCAPE))
 		{
 			MakeNormalSound(SND_MENUSELECT);
+			UpdateControls();
 			return 2;
 		}
 
@@ -612,15 +614,16 @@ byte DifficultyPickerUpdate(MGLDraw* mgl, title_t* title, int* lastTime)
 				title->savecursor = 0;
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if (ButtonTapped(CONTROL_B1,true))
+		if (ButtonTapped(CONTROL_B1))
 		{
 			player.difficulty = (Difficulty)title->savecursor;
 			MakeNormalSound(SND_MENUSELECT);
 			return 1;
 		}
-		if (ButtonTapped(CONTROL_ESCAPE|CONTROL_B2,true))
+		if (ButtonTapped(CONTROL_ESCAPE|CONTROL_B2))
 		{
 			MakeNormalSound(SND_MENUSELECT);
+			UpdateControls();
 			return 2;
 		}
 
@@ -728,8 +731,11 @@ TASK(void) Credits(MGLDraw *mgl,byte mode)
 		AWAIT mgl->Flip();
 		if(!mgl->Process())
 			CO_RETURN;
-		if(ButtonTapped(CONTROL_B1|CONTROL_B2|CONTROL_ESCAPE|CONTROL_B3|CONTROL_B4,true))
+		if (ButtonTapped(CONTROL_B1 | CONTROL_B2 | CONTROL_ESCAPE | CONTROL_B3 | CONTROL_B4))
+		{
+			UpdateControls();
 			CO_RETURN;
+		}
 
 		if(y==END_OF_CREDITS-HALFHEI*3/2 && mode==0)
 			CO_RETURN;
@@ -836,9 +842,11 @@ TASK(void) VictoryText(MGLDraw *mgl,byte victoryType)
 		if(!mgl->Process())
 			break;
 
-		if (ButtonTapped(CONTROL_ESCAPE,true))
+		if (ButtonTapped(CONTROL_ESCAPE))
+		{
+			UpdateControls();
 			break;
-
+		}
 		if(y==length)
 			break;
 
@@ -899,7 +907,7 @@ TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound,byte
 		UpdateControls();
 		JamulSoundUpdate();
 
-		if(ButtonTapped(CONTROL_ESCAPE|CONTROL_B1|CONTROL_B2,true))
+		if(ButtonTapped(CONTROL_ESCAPE|CONTROL_B1|CONTROL_B2))
 			mode=2;
 
 		EndClock();

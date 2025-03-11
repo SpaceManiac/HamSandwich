@@ -366,7 +366,7 @@ void InitSpeech(byte spc)
 
 byte UpdateSpeech(MGLDraw *mgl)
 {
-	if(ButtonTapped(CONTROL_B1|CONTROL_B2,false))
+	if(ButtonTapped(CONTROL_B1|CONTROL_B2))
 	{
 		if(speechY<4)
 			speechY=4;
@@ -487,8 +487,9 @@ byte UpdateSpeech(MGLDraw *mgl)
 		}
 	}
 
-	if (ButtonTapped(CONTROL_ESCAPE,false))
+	if (ButtonTapped(CONTROL_ESCAPE))
 	{
+		SetInMenu(false);
 		UpdateControls();
 		return 1;	// ESC cancels the speech
 	}
@@ -592,6 +593,8 @@ byte UpdateFarley(MGLDraw *mgl)
 			MakeNormalSound(SND_BATEYES);
 		else
 			MakeNormalSound(SND_GOTOMAP);
+		SetInMenu(false);
+		UpdateControls();
 		return 1;	// we're gonna stay here
 	}
 
@@ -599,6 +602,8 @@ byte UpdateFarley(MGLDraw *mgl)
 	{
 		MakeNormalSound(SND_BATEYES);
 		farleyCursor = player.worldNum;
+		SetInMenu(false);
+		UpdateControls();
 		return 1;
 	}
 	return 0;

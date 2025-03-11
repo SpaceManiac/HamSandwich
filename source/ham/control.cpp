@@ -34,10 +34,11 @@ static byte controlScheme;
 
 static dword rawGamepad;
 
-bool dpadToMove = true;
-byte stickDeadZone;	// measured in pct
+static bool dpadToMove = true;
+static byte stickDeadZone;	// measured in pct
+static bool playerInMenu = false;
 
-static dword controls, taps, menuTap, menuPress;
+static dword controls, taps, menuTap, menuControls, menuGamepad;
 static byte reptCounter;
 
 void InitControls(byte scheme)
@@ -47,7 +48,8 @@ void InitControls(byte scheme)
 	lastScanCode=0;
 	keyState=0;
 	keyTap=0;
-	menuPress = 0;
+	menuGamepad = 0;
+	menuControls = 0;
 	arrowState=0;
 	arrowTap=0;
 	oldJoy=0;
@@ -256,9 +258,16 @@ void ControlKeyDown(SDL_Scancode k)
 		{
 			if(k==kb[j][i])
 			{
-				keyState|=bit;
-				keyTap|=bit;
-				keyState2[i] |= bit;
+				if (playerInMenu && (k == SDL_SCANCODE_UP || k == SDL_SCANCODE_DOWN || k == SDL_SCANCODE_LEFT || k == SDL_SCANCODE_RIGHT || k == SDL_SCANCODE_ESCAPE || k == SDL_SCANCODE_RETURN))
+				{
+					// skip any key that overlaps the hardcoded menu controls
+				}
+				else
+				{
+					keyState |= bit;
+					keyTap |= bit;
+					keyState2[i] |= bit;
+				}
 			}
 			bit*=2;
 		}
@@ -476,19 +485,24 @@ SDL_GameController* ActiveController()
 }
 
 //------------------------ MYSTIC MODE
-bool ButtonHeld(dword c,bool menu)
+void SetInMenu(bool inMenu)
 {
-	return (menu && (menuPress & c)) || (controls & c);
+	playerInMenu = inMenu;
 }
 
-bool AutoRepeatTapped(dword c,bool menu)
+bool ButtonHeld(dword c)
 {
-	if ((taps & c) || (menu && (menuTap&c)))
+	return (playerInMenu && (menuControls & c)) || (controls & c);
+}
+
+bool AutoRepeatTapped(dword c)
+{
+	if ((taps & c) || (playerInMenu && (menuTap&c)))
 	{
 		reptCounter = CONTROL_REPEAT_FRAMES;
 		return true;
 	}
-	if (reptCounter == 0 && ((controls & c) || (menuPress & c)))
+	if (reptCounter == 0 && ((controls & c) || (playerInMenu && (menuControls & c))))
 	{
 		reptCounter = CONTROL_REPEAT_FRAMES;
 		return true;
@@ -496,10 +510,10 @@ bool AutoRepeatTapped(dword c,bool menu)
 	return false;
 }
 
-bool ButtonTapped(dword c,bool menu)
+bool ButtonTapped(dword c)
 {
 	if (taps & c) return true;
-	return menu && (menuTap & c);
+	return playerInMenu && (menuTap & c);
 }
 
 dword RawGamepadToControls(void)
@@ -520,21 +534,22 @@ dword GetRawGamepad(void)
 
 void UpdateControls(void)
 {
-	dword oldControls = controls;
-	byte oldMenu = menuPress;
+	dword oldMenu = menuControls;
+	byte oldControls = controls;
 	taps = 0;
 	menuTap = 0;
 	UpdateRawJoystick();
 	controls = keyState | RawGamepadToControls();
+	menuControls = arrowState | menuGamepad;
 
 	if (reptCounter > 0)
 		reptCounter--;
 
 	for (int i = 0; i < NUM_CONTROLS; i++)
 	{
-		if (i < 8)	// menu keys are only in the first 8 controls
+		if (i <= CTL_ID_ESCAPE)	// menu keys are only in the first 8 controls
 		{
-			if (!(oldMenu & (1 << i)) && (menuPress & (1 << i)))
+			if (!(oldMenu & (1 << i)) && (menuControls & (1 << i)))
 				menuTap |= (1 << i);
 		}
 		if (!(oldControls & (1 << i)) && (controls & (1 << i)))
@@ -542,13 +557,10 @@ void UpdateControls(void)
 		if(!(controls&(1<<i)))
 			lockOut&=(~(1<<i));	// if you've released a locked-out key, then we unlock it
 	}
-	if (oldControls == 0 || reptCounter >= CONTROL_REPEAT_FRAMES)
+	if ((oldControls == 0 && menuControls==0) || reptCounter >= CONTROL_REPEAT_FRAMES)
 		reptCounter = 0;
 
-#ifndef NDEBUG
-	SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%d %d | %d %d\n", controls,taps,arrowState,menuTap);
-#endif
-	//SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%d %d | %d %d\n", controls,taps,arrowState,menuTap);
+	//SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%d > %d %d | %d %d\n", (byte)playerInMenu, controls,taps,menuControls,menuTap);
 
 	controls &= (~lockOut);
 	taps &= (~lockOut);
@@ -561,7 +573,7 @@ void UpdateRawJoystick(void)
 	rawGamepad = 0;
 	lx = ly = rx = ry = 0;
 	int ltpos = 0, rtpos = 0;
-	menuPress = 0;
+	menuGamepad = 0;
 	for (auto iter = joysticks.begin(); iter != joysticks.end(); ++iter)
 	{
 		SDL_GameController* gamepad = iter->get();
@@ -583,20 +595,20 @@ void UpdateRawJoystick(void)
 			{
 				rawGamepad |= (1 << i);
 				if (i == SDL_CONTROLLER_BUTTON_DPAD_UP)
-					menuPress |= CONTROL_UP;
+					menuGamepad |= CONTROL_UP;
 				if (i == SDL_CONTROLLER_BUTTON_DPAD_DOWN)
-					menuPress |= CONTROL_DN;
+					menuGamepad |= CONTROL_DN;
 				if (i == SDL_CONTROLLER_BUTTON_DPAD_LEFT)
-					menuPress |= CONTROL_LF;
+					menuGamepad |= CONTROL_LF;
 				if (i == SDL_CONTROLLER_BUTTON_DPAD_RIGHT)
-					menuPress |= CONTROL_RT;
+					menuGamepad |= CONTROL_RT;
 				if (i == SDL_CONTROLLER_BUTTON_START)
-					menuPress |= CONTROL_ESCAPE;
+					menuGamepad |= CONTROL_ESCAPE;
 
 				if (i == SDL_CONTROLLER_BUTTON_A)
-					menuPress |= CONTROL_B1;
+					menuGamepad |= CONTROL_B1;
 				if (i == SDL_CONTROLLER_BUTTON_B)
-					menuPress |= CONTROL_B2;
+					menuGamepad |= CONTROL_B2;
 			}
 		}
 
@@ -612,22 +624,22 @@ void UpdateRawJoystick(void)
 	if (lx < -deadZone || (dpadToMove && (rawGamepad & (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT))))
 	{
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF));
-		menuPress |= CONTROL_LF;
+		menuGamepad |= CONTROL_LF;
 	}
 	if (ly < -deadZone || (dpadToMove && (rawGamepad & (1 << SDL_CONTROLLER_BUTTON_DPAD_UP))))
 	{
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP));
-		menuPress |= CONTROL_UP;
+		menuGamepad |= CONTROL_UP;
 	}
 	if (lx > deadZone || (dpadToMove && (rawGamepad & (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT))))
 	{
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT));
-		menuPress |= CONTROL_RT;
+		menuGamepad |= CONTROL_RT;
 	}
 	if (ly > deadZone || (dpadToMove && (rawGamepad & (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN))))
 	{
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_DN));
-		menuPress |= CONTROL_DN;
+		menuGamepad |= CONTROL_DN;
 	}
 	if (rx < -deadZone)
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::RS_LF));
@@ -641,6 +653,16 @@ void UpdateRawJoystick(void)
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LT));
 	if (rtpos > SDL_JOYSTICK_AXIS_MAX / 2)
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::RT));
+
+	// if you're in a menu, disable any gamepad buttons that overlap the menu buttons
+	if (playerInMenu)
+		rawGamepad &= ~((1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN) |
+			(1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT) |
+			(1 << SDL_CONTROLLER_BUTTON_DPAD_UP) |
+			(1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT) |
+			(1 << SDL_CONTROLLER_BUTTON_A) |
+			(1 << SDL_CONTROLLER_BUTTON_START) |
+			(1 << SDL_CONTROLLER_BUTTON_B));
 }
 
 void LockOutControl(dword c,bool locked)

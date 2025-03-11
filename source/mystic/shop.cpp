@@ -282,10 +282,12 @@ void EnterShop(void)
 	memcpy(shopScr,GetDisplayMGL()->GetScreen(),SCRWID*SCRHEI);
 	GetDisplayMGL()->LastKeyPressed();
 	UpdateControls();
+	SetInMenu(true);
 }
 
 void LeaveShop(void)
 {
+	SetInMenu(false);
 	free(shopScr);
 	ResetInterface();
 }
@@ -953,7 +955,7 @@ byte UpdateShop(MGLDraw *mgl)
 		if((shopCursor%5)==0)
 			shopCursor-=5;
 	}
-	if(ButtonTapped(CONTROL_B1,true))
+	if(ButtonTapped(CONTROL_B1))
 	{
 		if (shopCursor == 24)
 			return 1;	// exit
@@ -977,7 +979,7 @@ byte UpdateShop(MGLDraw *mgl)
 			MakeNormalSound(SND_UNAVAILABLE);
 	}
 		
-	if (ButtonTapped(CONTROL_ESCAPE,true))
+	if (ButtonTapped(CONTROL_ESCAPE))
 		return 1;
 	
 	else return 0;

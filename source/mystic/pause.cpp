@@ -410,6 +410,27 @@ void RenderWeirdOption(int x, int y, const char* txt, bool on, byte cursorOn,boo
 		PrintBrightGlow(x+200, y, "Off", -16+32 * cursorOn, 2);
 }
 
+void RenderWeirdOption2(int x, int y, const char* txt, byte on, byte cursorOn, bool active)
+{
+	if (!active)
+	{
+		char txt2[32];
+		strcpy(txt2, txt);
+		int len = strlen(txt2);
+		for (int i = 0; i < len; i++)
+			txt2[i] = (rand() % 2) ? '?' : ' ';
+		PrintBrightGlow(x, y, txt2, -16 + 32 * cursorOn, 2);
+		return;
+	}
+	PrintBrightGlow(x, y, txt, -16 + 32 * cursorOn, 2);
+	if (on==QUICKCAST_CASTANDSELECT)
+		PrintBrightGlow(x + 200, y, "Both", -16 + 32 * cursorOn, 2);
+	else if(on==QUICKCAST_CASTONLY)
+		PrintBrightGlow(x + 200, y, "Cast", -16 + 32 * cursorOn, 2);
+	else if (on == QUICKCAST_SELECTONLY)
+		PrintBrightGlow(x + 200, y, "Select", -16 + 32 * cursorOn, 2);
+}
+
 void RenderWeirdMenu(void)
 {
 	int i;
@@ -436,8 +457,8 @@ void RenderWeirdMenu(void)
 	RenderWeirdOption(x, y + 200, "Insane Rage:", !player.downgradeSpell[SPL_BERSERK], (subcursor == 10), player.spell[SPL_BERSERK] == 2);
 	RenderWeirdOption(x, y + 220, "Life Spell:", !player.downgradeSpell[SPL_HEAL], (subcursor == 11), player.spell[SPL_HEAL] == 2);
 	RenderWeirdOption(x, y + 240, "Sword Skulls:", !player.disableSword, (subcursor == 12), PlayerHasSword());
-	RenderWeirdOption(x, y + 260, "Quick Cast:", player.enableQuickCast, (subcursor == 13), true);
-	PrintBrightGlow(x, y + 280, "Exit", -16 + 32 * (subcursor==14), 2);
+	RenderWeirdOption2(x, y + 260, "Quick Cast:", opt.quickCast, (subcursor == 13), true);
+	PrintBrightGlow(x, y+280, "Exit", -16 + 32 * (subcursor==14), 2);
 
 	switch (subcursor)
 	{
@@ -466,7 +487,7 @@ void RenderWeirdMenu(void)
 				PrintBrightGlow(x, SCRHEI - 50, "You'll need something special for this!", 0, 1);
 			break;
 		case 13:
-			PrintBrightGlow(x, SCRHEI - 50, "Cast spells by pressing their number!", 0, 1);
+			PrintBrightGlow(x, SCRHEI - 50, "A shortcut to the Quick Cast setting.", 0, 1);
 			break;
 	}
 }
@@ -595,13 +616,13 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			effCursor = conversions[cursor];
 		}
 
-		if (ButtonTapped(CONTROL_B2, true))
+		if (ButtonTapped(CONTROL_B2))
 		{
 			LockOutControl(CONTROL_B2, true);
 			return 0;
 		}
 		
-		if(ButtonTapped(CONTROL_B1,true))
+		if(ButtonTapped(CONTROL_B1))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 
@@ -675,12 +696,12 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			if(subcursor==5)
 				subcursor=0;
 		}
-		if (ButtonTapped(CONTROL_B2,true))
+		if (ButtonTapped(CONTROL_B2))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			subMode = SUBMODE_NONE;
 		}
-		if(ButtonTapped(CONTROL_B1,true))
+		if(ButtonTapped(CONTROL_B1))
 		{
 			if(effCursor==1)	// Load
 			{
@@ -723,12 +744,12 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			if (subcursor > 14)
 				subcursor = 0;
 		}
-		if (ButtonTapped(CONTROL_B2,true))
+		if (ButtonTapped(CONTROL_B2))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			subMode = SUBMODE_NONE;
 		}
-		if (ButtonTapped(CONTROL_B1,true))
+		if (ButtonTapped(CONTROL_B1))
 		{
 			switch (subcursor)
 			{
@@ -784,7 +805,9 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					break;
 				case 13:
 					MakeNormalSound(SND_MENUSELECT);
-					player.enableQuickCast = 1 - player.enableQuickCast;
+					opt.quickCast++;
+					if (opt.quickCast > QUICKCAST_CASTONLY)
+						opt.quickCast = QUICKCAST_SELECTONLY;
 					break;
 				case 14:
 					MakeNormalSound(SND_MENUSELECT);
@@ -845,7 +868,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					subcursor++;
 			}
 		}
-		if (ButtonTapped(CONTROL_B1,true))
+		if (ButtonTapped(CONTROL_B1))
 		{
 			if (subcursor == 36)
 			{
@@ -916,7 +939,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					subcursor++;
 			}
 		}
-		if (ButtonTapped(CONTROL_B1,true))
+		if (ButtonTapped(CONTROL_B1))
 		{
 			if (subcursor == 37)
 			{
@@ -944,7 +967,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 				}
 			}
 		}
-		if (ButtonTapped(CONTROL_B2,true))
+		if (ButtonTapped(CONTROL_B2))
 		{
 			if (subcursor == 37)
 			{
@@ -975,7 +998,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		}
 	}
 
-	if(ButtonTapped(CONTROL_B2|CONTROL_ESCAPE,true))
+	if(ButtonTapped(CONTROL_B2|CONTROL_ESCAPE))
 	{
 		MakeNormalSound(SND_MENUSELECT);
 		if (subMode == SUBMODE_NONE)

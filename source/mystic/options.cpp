@@ -9,6 +9,7 @@ option_t opt;
 byte firstRightHandOption = (OPT_EXIT+1)/2;
 byte maxConfig;
 dword prevGamePad;
+static const char dirName[8][12] = { "Up","Down","Left","Right","Fire","Cast","Prev Spl","Next Spl" };
 
 void ApplyControlSettings()
 {
@@ -18,14 +19,14 @@ void ApplyControlSettings()
 	opt.joyCtrl[CTL_ID_LF] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF;
 	opt.joyCtrl[CTL_ID_RT] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT;
 	opt.joyCtrl[CTL_ID_ESCAPE] = SDL_CONTROLLER_BUTTON_START;
-
+		
 	opt.key[CTL_ID_LF][2] = SDL_SCANCODE_LEFT;
 	opt.key[CTL_ID_RT][2] = SDL_SCANCODE_RIGHT;
 	opt.key[CTL_ID_UP][2] = SDL_SCANCODE_UP;
 	opt.key[CTL_ID_DN][2] = SDL_SCANCODE_DOWN;
 	opt.key[CTL_ID_ESCAPE][2] = SDL_SCANCODE_ESCAPE;
 	opt.key[CTL_ID_B1][2] = SDL_SCANCODE_RETURN;
-
+	
 	for (int kbd = 0; kbd < 3; ++kbd)
 	{
 		byte keys[NUM_CONTROLS];
@@ -38,41 +39,42 @@ void ApplyControlSettings()
 	SetDpadToMode(opt.dpadToMove);
 }
 
-void DefaultOptions(void)
+void DefaultControls(void)
 {
-	// default values
 	for (int i = 0; i < NUM_CONTROLS; i++)
 	{
 		for (int j = 0; j < 3; j++)
 			opt.key[i][j] = 0;
 		opt.joyCtrl[i] = 255;
 	}
-	opt.dpadToMove = true;
-	opt.challenge = 0;
+	opt.dpadToMove = false;
 	// these are the arrow keys,  including the unchangable ones
-	opt.key[CTL_ID_UP][0] = opt.key[CTL_ID_UP][1] = opt.key[CTL_ID_UP][2] = SDL_SCANCODE_UP;
-	opt.key[CTL_ID_DN][0] = opt.key[CTL_ID_DN][1] = opt.key[CTL_ID_DN][2] = SDL_SCANCODE_DOWN;
-	opt.key[CTL_ID_LF][0] = opt.key[CTL_ID_LF][1] = opt.key[CTL_ID_LF][2] = SDL_SCANCODE_LEFT;
-	opt.key[CTL_ID_RT][0] = opt.key[CTL_ID_RT][1] = opt.key[CTL_ID_RT][2] = SDL_SCANCODE_RIGHT;
+	opt.key[CTL_ID_UP][0] = opt.key[CTL_ID_UP][2] = SDL_SCANCODE_UP;
+	opt.key[CTL_ID_DN][0] = opt.key[CTL_ID_DN][2] = SDL_SCANCODE_DOWN;
+	opt.key[CTL_ID_LF][0] = opt.key[CTL_ID_LF][2] = SDL_SCANCODE_LEFT;
+	opt.key[CTL_ID_RT][0] = opt.key[CTL_ID_RT][2] = SDL_SCANCODE_RIGHT;
+
+	opt.key[CTL_ID_UP][1] = 0;
+	opt.key[CTL_ID_DN][1] = 0;
+	opt.key[CTL_ID_LF][1] = 0;
+	opt.key[CTL_ID_RT][1] = 0;
 	// fire key
 	opt.key[CTL_ID_B1][0] = SDL_SCANCODE_LCTRL;	// CTRL
 	opt.key[CTL_ID_B1][1] = SDL_SCANCODE_Z;	// Z
-	opt.key[CTL_ID_B1][2] = SDL_SCANCODE_RETURN;	// enter
 	// spell key
 	opt.key[CTL_ID_B2][0] = SDL_SCANCODE_LSHIFT;	// leftshift
 	opt.key[CTL_ID_B2][1] = SDL_SCANCODE_X;	// X
-	opt.key[CTL_ID_B2][2] = 0;	// no unchangable key
 	// previous
 	opt.key[CTL_ID_B3][0] = SDL_SCANCODE_A;	// A
 	opt.key[CTL_ID_B3][1] = SDL_SCANCODE_F1;	// F1
-	opt.key[CTL_ID_B3][2] = 0;	// no unchangable key
 	// next
 	opt.key[CTL_ID_B4][0] = SDL_SCANCODE_S;	// S
 	opt.key[CTL_ID_B4][1] = SDL_SCANCODE_F2;	// F2
-	opt.key[CTL_ID_B4][2] = 0;	// no unchangable
 	opt.key[CTL_ID_ESCAPE][0] = SDL_SCANCODE_ESCAPE;
-	opt.key[CTL_ID_ESCAPE][1] = SDL_SCANCODE_ESCAPE;
-	opt.key[CTL_ID_ESCAPE][2] = SDL_SCANCODE_ESCAPE;
+	opt.key[CTL_ID_ESCAPE][1] = 0;
+	for (int i = 0; i < 10; i++)
+		opt.key[CTL_ID_QC_1 + i][0] = SDL_SCANCODE_1 + i;	// keys 1-0 on the keyboard are the default spell keys
+
 	// joystick buttons
 	opt.joyCtrl[CTL_ID_UP] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP;
 	opt.joyCtrl[CTL_ID_DN] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_DN;
@@ -83,9 +85,27 @@ void DefaultOptions(void)
 	opt.joyCtrl[CTL_ID_B3] = SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
 	opt.joyCtrl[CTL_ID_B4] = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
 	opt.joyCtrl[CTL_ID_ESCAPE] = SDL_CONTROLLER_BUTTON_START;
+	opt.joyCtrl[CTL_ID_QC_1] = RAWGAMEPADAXIS_BASE+RawGamepadAxis::LT;	// energy barrage
+	opt.joyCtrl[CTL_ID_QC_2] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::RT; // dragon's flame
+	opt.joyCtrl[CTL_ID_QC_3] = SDL_CONTROLLER_BUTTON_X; // seeker bolt
+	opt.joyCtrl[CTL_ID_QC_4] = SDL_CONTROLLER_BUTTON_Y; // ice
+	opt.joyCtrl[CTL_ID_QC_5] = SDL_CONTROLLER_BUTTON_LEFTSTICK; // inferno
+	opt.joyCtrl[CTL_ID_QC_6] = SDL_CONTROLLER_BUTTON_DPAD_RIGHT; // summon
+	opt.joyCtrl[CTL_ID_QC_7] = SDL_CONTROLLER_BUTTON_DPAD_LEFT; // stoneskin
+	opt.joyCtrl[CTL_ID_QC_8] = SDL_CONTROLLER_BUTTON_DPAD_DOWN; // berserk
+	opt.joyCtrl[CTL_ID_QC_9] = SDL_CONTROLLER_BUTTON_DPAD_UP; // heal
+	opt.joyCtrl[CTL_ID_QC_0] = SDL_CONTROLLER_BUTTON_RIGHTSTICK; // armageddon
 
-	opt.soundVol = 3;
-	opt.musicVol = 2;
+}
+
+void DefaultOptions(void)
+{
+	// default values
+	DefaultControls();
+
+	opt.challenge = 0;
+	opt.soundVol = 5;
+	opt.musicVol = 3;
 	opt.waterFX = 1;
 	opt.lightFX = 1;
 	for (int i = 0; i < (int)Achievement::NUM_ACHIEVES; i++)
@@ -163,7 +183,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 	switch (optMode)
 	{
 	case OPTMODE_IDLE:	// just going through options
-		if (ButtonTapped(CONTROL_ESCAPE, true))
+		if (ButtonTapped(CONTROL_ESCAPE))
 			return 1;
 
 		if (AutoRepeatTapped(CONTROL_UP))
@@ -188,11 +208,11 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 			if (cursor > OPT_EXIT)
 				cursor -= firstRightHandOption * 2;
 		}
-		if (ButtonTapped(CONTROL_B2, true))
+		if (ButtonTapped(CONTROL_B2))
 		{
 			return 1;
 		}
-		if (ButtonTapped(CONTROL_B1, true))
+		if (ButtonTapped(CONTROL_B1))
 		{
 			switch (cursor)
 			{
@@ -236,14 +256,42 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 				controlX = 0;
 				controlY = 0;
 				break;
+			case OPT_DEFAULTS:
+				optMode = OPTMODE_VERIFY_DEFAULTS;
+				cursor = 1;
+				break;
+			case OPT_SPELL_QUICK:
+				opt.quickCast++;
+				if (opt.quickCast > QUICKCAST_CASTONLY)
+					opt.quickCast = QUICKCAST_SELECTONLY;
+				break;
 			case OPT_EXIT:
 				return 1;
 				break;
 			}
 		}
 		break;
+	case OPTMODE_VERIFY_DEFAULTS:
+		if (ButtonTapped(CONTROL_ESCAPE | CONTROL_B2))
+		{
+			optMode = OPTMODE_IDLE;
+			cursor = OPT_DEFAULTS;
+		}
+		else if (AutoRepeatTapped(CONTROL_LF) || AutoRepeatTapped(CONTROL_RT))
+			cursor=1-cursor;
+		if (ButtonTapped(CONTROL_B1))
+		{
+			if (cursor == 0)
+			{
+				DefaultControls();
+				MakeNormalSound(SND_BOBBYSPIN);
+			}
+			optMode = OPTMODE_IDLE;
+			cursor = OPT_DEFAULTS;
+		}
+		break;
 	case OPTMODE_KEYCONFIG:	// selecting keys to configure
-		if (ButtonTapped(CONTROL_B2 | CONTROL_ESCAPE, true))
+		if (ButtonTapped(CONTROL_B2 | CONTROL_ESCAPE))
 		{
 			optMode = OPTMODE_IDLE;
 			controlX = 10;
@@ -275,24 +323,29 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 			if (controlX > 2)
 				controlX = 0;
 		}
-		if (ButtonTapped(CONTROL_B1, true))
+		if (ButtonTapped(CONTROL_B1))
 		{
 			if (controlX < 2)
 			{
 				// keyboard
 				optMode = OPTMODE_KEYBIND;
+				SetInMenu(false);
 				LastScanCode();
+				UpdateControls();
 			}
 			else if (controlY > 3)
 			{
 				btn = 0;
 				oldBtn = ~0;
 				optMode = OPTMODE_GAMEPADBIND;
+				SetInMenu(false);
+				prevGamePad = GetRawGamepad();
+				UpdateControls();
 			}
 		}
 		break;
 	case OPTMODE_QC_CONFIG:	// selecting keys to configure
-		if (ButtonTapped(CONTROL_B2 | CONTROL_ESCAPE, true))
+		if (ButtonTapped(CONTROL_B2 | CONTROL_ESCAPE))
 		{
 			optMode = OPTMODE_IDLE;
 			controlX = 10;
@@ -324,12 +377,13 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 			if (controlX > 2)
 				controlX = 0;
 		}
-		if (ButtonTapped(CONTROL_B1, true))
+		if (ButtonTapped(CONTROL_B1))
 		{
 			if (controlX < 2)
 			{
 				// keyboard
 				optMode = OPTMODE_QC_KEYBIND;
+				SetInMenu(false);
 				LastScanCode();
 				UpdateControls();
 			}
@@ -338,18 +392,21 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 				btn = 0;
 				oldBtn = ~0;
 				optMode = OPTMODE_QC_GAMEPADBIND;
+				SetInMenu(false);
 				prevGamePad = GetRawGamepad();
 				UpdateControls();
+				
 			}
 		}
 		break;
 	case OPTMODE_KEYBIND: // entering a specific key
 	case OPTMODE_QC_KEYBIND:
-		if (ButtonTapped(CONTROL_ESCAPE, true))	// ESC key
+		if (ButtonTapped(CONTROL_ESCAPE))	// ESC key
 		{
 			optMode--; // takes us to KEYCONFIG or QC_CONFIG, as appropriate
 			UpdateControls();
 			mgl->LastKeyPressed();
+			SetInMenu(true);
 			return 0;
 		}
 		b = LastScanCode();
@@ -379,15 +436,17 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 			optMode--;
 			mgl->LastKeyPressed();
 			UpdateControls();
+			SetInMenu(true);
 			return 0;
 		}
 		break;
 	case OPTMODE_GAMEPADBIND: // pressing a joystick button
 	case OPTMODE_QC_GAMEPADBIND:
-		if (ButtonTapped(CONTROL_ESCAPE, true))
+		if (ButtonTapped(CONTROL_ESCAPE))
 		{
 			optMode -= 2;	// takes us to keyconfig or qc_config as appropriate
 			UpdateControls();
+			SetInMenu(true);
 			return 0;
 		}
 		else
@@ -395,6 +454,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 			dword g = GetRawGamepad();
 			dword taps = (g & (~prevGamePad));
 			prevGamePad = g;
+
 			if (taps != 0)
 			{
 				for (int i = 0; i <= (int)(RAWGAMEPADAXIS_BASE + RawGamepadAxis::RT); i++)
@@ -428,6 +488,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 						}
 						optMode -= 2;
 						UpdateControls();
+						SetInMenu(true);
 						return 0;
 					}
 				}
@@ -503,71 +564,52 @@ void RenderGamepadButton(int x, int y, byte rawBtn)
 
 void RenderControls(int x,int y,MGLDraw *mgl)
 {
-	static const char dirName[8][12]={"Up","Down","Left","Right","Fire","Spell","Prev Spl","Next Spl"};
 	char btnTxt[64];
 	int i;
+	int yy;
+	int hgt = 23;
 
-	mgl->FillBox(x,y-2,x+398,y+20,16);
+	mgl->FillBox(x,y-2,x+398,y+14,16);
 	CenterPrint(x+50,y,"Control",0,1);
 	CenterPrint(x+150,y,"Keyboard1",0,1);
 	CenterPrint(x+250,y,"Keyboard2",0,1);
 	CenterPrint(x+350,y,"Gamepad",0,1);
 	
-	mgl->Box(x+98,y-2,x+198,y+260,16);
-	mgl->Box(x+198,y-2,x+298,y+260,16);
-	mgl->Box(x+298,y-2,x+398,y+260,16);
+	mgl->Box(x+98,y-2,x+198,y+15+hgt*8,16);
+	mgl->Box(x+198,y-2,x+298,y+15+hgt*8,16);
+	mgl->Box(x+298,y-2,x+398,y+15+hgt*8,16);
 
 	for(i=0;i<8;i++)
 	{
+		yy = y + 15 + i * hgt;
 		if((optMode==OPTMODE_KEYCONFIG || optMode==OPTMODE_GAMEPADBIND) && i<4)	// can't change gamepad movement, make it red
-			mgl->FillBox(x + 99 + 100 * 2, y + 20 + 1 + i * 30, x + 198 + 100 * 2, y + 20 + 29 + i * 30, 32 * 4 + 6);
+			mgl->FillBox(x + 99 + 100 * 2, yy, x + 198 + 100 * 2, yy+hgt-1, 32 * 4 + 6);
 
 		if(controlY==i && controlX<3)
 		{
 			if (optMode == OPTMODE_KEYCONFIG || optMode==OPTMODE_GAMEPADBIND)
 			{
 				if(controlX==2 && controlY<4)	// you can't change the controls for movement on gamepad
-					mgl->FillBox(x + 99 + 100 * controlX, y + 20 + 1 + i * 30, x + 198 + 100 * controlX, y + 20 + 29 + i * 30, 32*4+10);
+					mgl->FillBox(x + 99 + 100 * controlX, yy, x + 198 + 100 * controlX, yy+hgt-1, 32*4+10);
 				else
-					mgl->FillBox(x + 99 + 100 * controlX, y + 20 + 1 + i * 30, x + 198 + 100 * controlX, y + 20 + 29 + i * 30, 20);
+					mgl->FillBox(x + 99 + 100 * controlX, yy, x + 198 + 100 * controlX, yy+hgt-1, 20);
 			}
 			else
 			{
-				mgl->FillBox(x+99+100*controlX,y+20+1+i*30,x+198+100*controlX,y+20+29+i*30,31);
-				CenterPrint(x+150+controlX*100,y+27+i*30,"???",0,1);
+				mgl->FillBox(x+99+100*controlX,yy,x+198+100*controlX,yy+hgt-1,31);
+				CenterPrint(x+150+controlX*100,yy+6,"???",0,1);
 			}
 		}
-		mgl->FillBox(x,y+20+1+i*30,x+98,y+20+29+i*30,10);
-		mgl->Box(x,y+20+i*30,x+398,y+20+30+i*30,16);
+		mgl->FillBox(x,yy,x+98,yy+hgt-1,10);
+		mgl->Box(x,yy,x+398,yy+hgt,16);
 
-		CenterPrint(x+50,y+27+i*30,dirName[i],0,1);
+		CenterPrint(x+50,yy+6,dirName[i],0,1);
 		if(optMode==OPTMODE_KEYCONFIG || controlX!=0 || controlY!=i)
-			CenterPrint(x+150,y+27+i*30,ScanCodeText(opt.key[i][0]),0,1);
+			CenterPrint(x+150,yy+6,ScanCodeText(opt.key[i][0]),0,1);
 		if(optMode==OPTMODE_KEYCONFIG || controlX!=1 || controlY!=i)
-			CenterPrint(x+250,y+27+i*30,ScanCodeText(opt.key[i][1]),0,1);
+			CenterPrint(x+250,yy+6,ScanCodeText(opt.key[i][1]),0,1);
 		if(optMode==OPTMODE_KEYCONFIG || controlX!=2 || controlY!=i)
-			RenderGamepadButton(x+350-8,y+27+i*30,opt.joyCtrl[i]);
-	}
-
-	if(optMode==OPTMODE_IDLE)
-	{
-		
-	}
-	else if(optMode==OPTMODE_KEYCONFIG)
-	{
-		CenterPrint(x+200,y+292,"Select a key or button to change",0,1);
-	}
-	else if(optMode==OPTMODE_KEYBIND)
-	{
-		sprintf(btnTxt,"Press a key for %s",dirName[controlY]);
-		CenterPrint(x+200,y+292,btnTxt,0,1);
-		CenterPrint(x+200,y+312,"ESC to cancel",0,1);
-	}
-	else if(optMode==OPTMODE_GAMEPADBIND)
-	{
-		sprintf(btnTxt,"Press a gamepad button for %s",dirName[controlY]);
-		CenterPrint(x+200,y+292,btnTxt,0,1);
-		CenterPrint(x+200,y+312,"ESC or START to cancel",0,1);
+			RenderGamepadButton(x+350-8,yy+6,opt.joyCtrl[i]);
 	}
 }
 
@@ -575,62 +617,46 @@ void RenderQuickCast(int x, int y, MGLDraw* mgl)
 {
 	char btnTxt[64];
 	int i;
+	int hgt = 23;
+	int yy;
 
-	mgl->FillBox(x, y - 2, x + 398, y + 20, 16);
-	CenterPrint(x + 50, y, "Quick Cast", 0, 1);
+	mgl->FillBox(x, y - 2, x + 398, y + 14, 16);
+	CenterPrint(x + 50, y, "Spell", 0, 1);
 	CenterPrint(x + 150, y, "Keyboard1", 0, 1);
 	CenterPrint(x + 250, y, "Keyboard2", 0, 1);
 	CenterPrint(x + 350, y, "Gamepad", 0, 1);
 
-	mgl->Box(x + 98, y - 2, x + 198, y + 320, 16);
-	mgl->Box(x + 198, y - 2, x + 298, y + 320, 16);
-	mgl->Box(x + 298, y - 2, x + 398, y + 320, 16);
+	mgl->Box(x + 98, y - 2, x + 198, y + 15 + hgt * 10, 16);
+	mgl->Box(x + 198, y - 2, x + 298, y + 15 + hgt * 10, 16);
+	mgl->Box(x + 298, y - 2, x + 398, y + 15 + hgt * 10, 16);
 
 	for (i = 0; i < 10; i++)
 	{
+		yy = y + 15 + i * hgt;
+
 		if (controlY == i && controlX < 3)
 		{
 			if (optMode == OPTMODE_QC_CONFIG)
 			{
-				mgl->FillBox(x + 99 + 100 * controlX, y + 20 + 1 + i * 30, x + 198 + 100 * controlX, y + 20 + 29 + i * 30, 20);
+				mgl->FillBox(x + 99 + 100 * controlX, yy, x + 198 + 100 * controlX, yy+hgt-1, 20);
 			}
 			else
 			{
-				mgl->FillBox(x + 99 + 100 * controlX, y + 20 + 1 + i * 30, x + 198 + 100 * controlX, y + 20 + 29 + i * 30, 31);
-				CenterPrint(x + 150 + controlX * 100, y + 27 + i * 30, "???", 0, 1);
+				mgl->FillBox(x + 99 + 100 * controlX, yy, x + 198 + 100 * controlX, yy+hgt-1, 31);
+				CenterPrint(x + 150 + controlX * 100, yy+6, "???", 0, 1);
 			}
 		}
-		mgl->FillBox(x, y + 20 + 1 + i * 30, x + 98, y + 20 + 29 + i * 30, 10);
-		mgl->Box(x, y + 20 + i * 30, x + 398, y + 20 + 30 + i * 30, 16);
+		mgl->FillBox(x, yy, x + 98, yy + hgt - 1, 10);
+		mgl->Box(x, yy, x + 398, yy + hgt, 16);
 
 		sprintf(btnTxt, "Spell %d", i + 1);
-		CenterPrint(x + 50, y + 27 + i * 30, btnTxt, 0, 1);
+		CenterPrint(x + 50, yy+6, btnTxt, 0, 1);
 		if (optMode == OPTMODE_QC_CONFIG || controlX != 0 || controlY != i)
-			CenterPrint(x + 150, y + 27 + i * 30, (opt.key[i+CTL_ID_QC_1][0]==0)?"- - -":ScanCodeText(opt.key[i + CTL_ID_QC_1][0]), 0, 1);
+			CenterPrint(x + 150, yy+6, (opt.key[i+CTL_ID_QC_1][0]==0)?"- - -":ScanCodeText(opt.key[i + CTL_ID_QC_1][0]), 0, 1);
 		if (optMode == OPTMODE_QC_CONFIG || controlX != 1 || controlY != i)
-			CenterPrint(x + 250, y + 27 + i * 30, (opt.key[i + CTL_ID_QC_1][1] == 0) ? "- - -" : ScanCodeText(opt.key[i+CTL_ID_QC_1][1]), 0, 1);
+			CenterPrint(x + 250, yy+6, (opt.key[i + CTL_ID_QC_1][1] == 0) ? "- - -" : ScanCodeText(opt.key[i+CTL_ID_QC_1][1]), 0, 1);
 		if (optMode == OPTMODE_QC_CONFIG || controlX != 2 || controlY != i)
-			RenderGamepadButton(x + 350 - 8, y + 27 + i * 30, opt.joyCtrl[i+CTL_ID_QC_1]);
-	}
-	if (optMode == OPTMODE_IDLE)
-	{
-
-	}
-	else if (optMode == OPTMODE_QC_CONFIG)
-	{
-		CenterPrint(x + 200, y + 322, "Select a key or button to change", 0, 1);
-	}
-	else if (optMode == OPTMODE_QC_KEYBIND)
-	{
-		sprintf(btnTxt, "Press a key for Quick Cast Spell %d", controlY+1);
-		CenterPrint(x + 200, y + 322, btnTxt, 0, 1);
-		CenterPrint(x + 200, y + 342, "ESC to cancel", 0, 1);
-	}
-	else if (optMode == OPTMODE_QC_GAMEPADBIND)
-	{
-		sprintf(btnTxt, "Press a gamepad button for Quick Cast Spell %d", controlY+1);
-		CenterPrint(x + 200, y + 322, btnTxt, 0, 1);
-		CenterPrint(x + 200, y + 342, "ESC or START to cancel", 0, 1);
+			RenderGamepadButton(x + 350 - 8, yy+6, opt.joyCtrl[i+CTL_ID_QC_1]);
 	}
 }
 
@@ -638,37 +664,61 @@ void RenderOptionsMenu(MGLDraw *mgl)
 {
 	char onoff[6][8]={"Off","I","II","III","IV","V"};
 	char fxonoff[2][8]={"Off","On"};
+	char quickCast[3][16] = { "Select Only","Cast & Select","Cast Only" };
 	char optionsList[][32] = {
 		"Sound:",
 		"Music:",
 		"Fancy Water:",
 		"Fancy Lighting:",
+		"Quick Cast:",
 		"D-Pad To Move:",
 		"Configure Controls",
 		"Configure Quick Cast",
+		"Reset Controls",
 		"Exit To Main Menu",
 	};
-	char s[32];
+
+	char s[64];
+	bool dpadWarning=false;
 
 	mgl->ClearScreen();
 	CenterPrint(HALFWID,2,"Game Options",0,0);
 
-	int x = HALFWID / 2+35;
-	int y = 40;
-	for (int i = 0; i <= OPT_EXIT; i++)
+	if (optMode == OPTMODE_VERIFY_DEFAULTS)
 	{
-		if (i==firstRightHandOption)
+		CenterPrint(HALFWID, 50, "Really reset all controls?", 0, 1);
+		int x = HALFWID / 2 + 35;
+		int y = 70;
+		if (cursor == 0)
+			DrawFillBox(x - 45, y - 2, x + 115, y + 14, 10);
+		Print(x - 40, y, "Yes", 0, 1);
+		x = HALFWID + 30 + 40;
+		if (cursor == 1)
+			DrawFillBox(x - 45, y - 2, x + 115, y + 14, 10);
+		Print(x - 40, y, "No", 0, 1);
+	}
+	else
+	{
+		int x = HALFWID / 2;
+		int y = 50;
+		for (int i = 0; i <= OPT_EXIT; i++)
 		{
-			y = 40;
-			x = HALFWID+30+40;
-		}
-		if(cursor==i)
-			DrawFillBox(x-45, y-2, x+115, y+14, 10);
+			if (i == firstRightHandOption)
+			{
+				y = 50;
+				x = HALFWID + 30 + 40+35;
+			}
+			if (cursor == i)
+			{
+				if(cursor==OPT_SPELL_QUICK)
+					DrawFillBox(x - 45, y - 2, x + 185, y + 14, 10);
+				else
+					DrawFillBox(x - 45, y - 2, x + 115, y + 14, 10);
+			}
+			Print(x - 40, y, optionsList[i], 0, 1);
 
-		Print(x-40, y, optionsList[i], 0, 1);
-		
-		switch (i)
-		{
+			switch (i)
+			{
 			case OPT_SOUNDVOL:
 				sprintf(s, "%s", onoff[opt.soundVol]);
 				break;
@@ -684,19 +734,107 @@ void RenderOptionsMenu(MGLDraw *mgl)
 			case OPT_DPADTOMOVE:
 				sprintf(s, "%s", fxonoff[opt.dpadToMove]);
 				break;
+			case OPT_SPELL_QUICK:
+				sprintf(s, "%s", quickCast[opt.quickCast]);
+				break;
 			default:
 				s[0] = '\0';	// the rest have no bonus text
 				break;
+			}
+			Print(x + 135 - 50, y, s, 0, 1);
+			y += 20;
 		}
-		Print(x + 135-50, y, s, 0, 1);
-		y += 20;
 	}
 
 	if ((optMode == OPTMODE_IDLE && cursor == OPT_CONFIGCAST) ||
 		optMode == OPTMODE_QC_CONFIG || optMode == OPTMODE_QC_GAMEPADBIND || optMode == OPTMODE_QC_KEYBIND)
-		RenderQuickCast(120, 130, mgl);
+		RenderQuickCast(120, 160, mgl);
 	else
-		RenderControls(120,130,mgl);
+		RenderControls(120, 160, mgl);
+
+	if (optMode == OPTMODE_IDLE)
+	{
+		switch (cursor)
+		{
+			case OPT_SOUNDVOL:
+				CenterPrint(HALFWID, 460, "This is how loud the sound effects are. You know.", 0, 1);
+				break;
+			case OPT_MUSICVOL:
+				CenterPrint(HALFWID,460, "Hey man, is that Mystic Rock? Well turn it up, man!", 0, 1);
+				break;
+			case OPT_FANCYWATER:
+			case OPT_FANCYLIGHTING:
+				CenterPrint(HALFWID, 460, "This is a holdover from the Pentium 386 days. Leave it on.", 0, 1);
+				break;
+			case OPT_SPELL_QUICK:
+				if (opt.quickCast == QUICKCAST_CASTANDSELECT)
+					CenterPrint(HALFWID, 440, "Pressing a specific Spell button both casts the spell and selects it.", 0, 1);
+				else if (opt.quickCast == QUICKCAST_CASTONLY)
+					CenterPrint(HALFWID, 440, "Pressing a specific Spell button casts the spell immediately, without selecting it.", 0, 1);
+				else if (opt.quickCast == QUICKCAST_SELECTONLY)
+					CenterPrint(HALFWID, 440, "Pressing a specific Spell button only selects the spell, without casting it.", 0, 1);
+				
+				CenterPrint(HALFWID, 460, "Press the Cast button to cast your selected spell.", 0, 1);
+				break;
+			case OPT_DPADTOMOVE:
+				for (int i = CTL_ID_B1; i < NUM_CONTROLS; i++)
+				{
+					if (opt.joyCtrl[i] == SDL_CONTROLLER_BUTTON_DPAD_DOWN ||
+						opt.joyCtrl[i] == SDL_CONTROLLER_BUTTON_DPAD_UP ||
+						opt.joyCtrl[i] == SDL_CONTROLLER_BUTTON_DPAD_LEFT ||
+						opt.joyCtrl[i] == SDL_CONTROLLER_BUTTON_DPAD_RIGHT)
+						dpadWarning = true;
+				}
+				if (opt.dpadToMove && dpadWarning)
+				{
+					CenterPrint(HALFWID, 440, "*** WARNING: You have actions assigned to D-Pad directions! ***", 0, 1);
+					CenterPrint(HALFWID, 460, "Pressing those will also move you if D-Pad to move is on.", 0, 1);
+				}
+				else
+				{
+					CenterPrint(HALFWID, 440, "When disabled, only the Left Stick moves Kid Mystic,", 0, 1);
+					CenterPrint(HALFWID, 460, "so you can assign actions to the dpad directions.", 0, 1);
+				}
+				break;
+			case OPT_DEFAULTS:
+				CenterPrint(HALFWID, 440, "Resets all controls to their defaults in case you", 0, 1);
+				CenterPrint(HALFWID, 460, "made a terrible mess of things.", 0, 1);
+				break;
+		}
+			
+	}
+	else if (optMode == OPTMODE_QC_CONFIG)
+	{
+		CenterPrint(HALFWID, 460, "Select a key or button to change", 0, 1);
+	}
+	else if (optMode == OPTMODE_QC_KEYBIND)
+	{
+		sprintf(s, "Press a key for Spell %d", controlY + 1);
+		CenterPrint(HALFWID, 440, s, 0, 1);
+		CenterPrint(HALFWID, 460, "ESC to cancel", 0, 1);
+	}
+	else if (optMode == OPTMODE_QC_GAMEPADBIND)
+	{
+		sprintf(s, "Press a gamepad button for Spell %d", controlY + 1);
+		CenterPrint(HALFWID, 440, s, 0, 1);
+		CenterPrint(HALFWID, 460, "ESC or START to cancel", 0, 1);
+	}
+	else if (optMode == OPTMODE_KEYCONFIG)
+	{
+		CenterPrint(HALFWID, 460, "Select a key or button to change", 0, 1);
+	}
+	else if (optMode == OPTMODE_KEYBIND)
+	{
+		sprintf(s, "Press a key for %s", dirName[controlY]);
+		CenterPrint(HALFWID, 440, s, 0, 1);
+		CenterPrint(HALFWID, 460, "ESC to cancel", 0, 1);
+	}
+	else if (optMode == OPTMODE_GAMEPADBIND)
+	{
+		sprintf(s, "Press a gamepad button for %s", dirName[controlY]);
+		CenterPrint(HALFWID, 440, s, 0, 1);
+		CenterPrint(HALFWID, 460, "ESC or START to cancel", 0, 1);
+	}
 }
 
 TASK(void) OptionsMenu(MGLDraw *mgl)

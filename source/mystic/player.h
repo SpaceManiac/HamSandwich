@@ -141,7 +141,7 @@ typedef struct player_t
 	byte disableThorns;
 	byte disableMoveNShoot;
 	byte disableDmgNumbers;
-	byte enableQuickCast;
+	byte unusedSUCKERREPLACE;
 	byte summonDmgBoost;
 	byte taunted;
 	byte parry;
@@ -217,7 +217,7 @@ void CheckForAllSecrets(void);
 byte PlayerHasAllSecrets(byte chapter);
 void SetChallengeCrystals(int amt);
 int GetChallengeCrystals(void);
-void BeginCast(Guy* me);
+void BeginCast(Guy* me,byte spell);
 void AddToRestorationBuffer(float amt);
 bool ArmageddonIsUnderway(void);
 void GainMoney(int amt);

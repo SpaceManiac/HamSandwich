@@ -206,7 +206,9 @@ void EnterFairyBox(void)
 		FatalError("Out of memory!!");
 	shopSpr->GetSprite(36)->Draw(278,200,GetDisplayMGL());
 	memcpy(shopScr,GetDisplayMGL()->GetScreen(),SCRWID*SCRHEI);
+	SetInMenu(true);
 	UpdateControls();
+	LockOutControl(CONTROL_B1|CONTROL_B2, true);
 }
 
 void LeaveFairyBox(void)

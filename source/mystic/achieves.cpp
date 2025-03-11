@@ -100,7 +100,7 @@ byte UpdateAchieveMenu(MGLDraw *mgl)
 	if (backX < 0)
 		backX += 256;
 
-	if(ButtonTapped(CONTROL_ESCAPE,true))
+	if(ButtonTapped(CONTROL_ESCAPE))
 		return 1;
 
 	if(AutoRepeatTapped(CONTROL_UP))
@@ -141,7 +141,7 @@ byte UpdateAchieveMenu(MGLDraw *mgl)
 				cursor -= 5;
 		}
 	}
-	if(ButtonTapped(CONTROL_B1,true))
+	if(ButtonTapped(CONTROL_B1))
 	{
 		if (cursor == 100)
 			return 1;

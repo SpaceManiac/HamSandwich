@@ -6,7 +6,7 @@
 #ifdef CHEAT
 #define NUM_CHEATS 20
 #else
-#define NUM_CHEATS 9
+#define NUM_CHEATS 10
 #endif
 
 char cheatCode[NUM_CHEATS][16]={
@@ -19,6 +19,7 @@ char cheatCode[NUM_CHEATS][16]={
 	"liquefaction",		// waterwalk
 	"rutabaga",			// gain a level
 	"damedinero",		// free money
+	"chalice",			// unlock challenge mode
 #ifdef CHEAT
 	/* THE REST ARE TEMP CHEATS!! */
 	"one",				// all type 1 spells
@@ -30,7 +31,6 @@ char cheatCode[NUM_CHEATS][16]={
 	"boss",				// go to final boss, if in chapter 4
 	"secretize",		// get all secrets
 	"mana",				// refill mana to full
-	"chalice",			// give you all runes
 	"skillbor",			// 10 skill points
 #endif
 	};
@@ -130,26 +130,30 @@ void DoCheat(byte w)
 			GainMoney(50000);
 			NewMessage("DINERO POR TODOS!",30);
 			break;
-		// THE REST ARE TEMP CHEATS!
 		case 9:
+			opt.challenge = 1;
+			NewMessage("That wasn't much of a challenge!", 30);
+			break;
+		// THE REST ARE TEMP CHEATS!
+		case 10:
 			for(i=0;i<10;i++)
 				player.spell[i]=1;
 			break;
-		case 10:
+		case 11:
 			for(i=0;i<9;i++)
 				player.spell[i]=2;
 			break;
-		case 11:
+		case 12:
 			CheatChal();
 			NewMessage("Got 10 stars",30);
 			break;
-		case 12:
+		case 13:
 			PlayerGetPoints(10000);
 			break;
-		case 13:
+		case 14:
 			CheckForAllSecrets();
 			break;
-		case 14:	// auto-win level
+		case 15:	// auto-win level
 			if(player.worldNum==3)
 				break;
 			MakeNormalSound(SND_CHEATWIN);
@@ -168,13 +172,13 @@ void DoCheat(byte w)
 					break;
 			}
 			break;
-		case 15:
+		case 16:
 			if(player.worldNum==3)
 				SendMessageToGame(MSG_GOTOMAP,11);
 			if(player.worldNum==0)
 				SendMessageToGame(MSG_GOTOMAP,14);
 			break;
-		case 16:
+		case 17:
 			for(i=0;i<20;i++)
 				player.gotSpell[i]=1;
 			player.haveFairy=65535;
@@ -185,14 +189,10 @@ void DoCheat(byte w)
 			KeyChainAllCheck();
 			CheckForAllSecrets();
 			break;
-		case 17:
+		case 18:
 			player.mana = player.maxMana;
 			break;
-		case 18:
-			for (i = 0; i < 24; i++)
-				player.runes[i] = RUNE_ASLEEP;
-			break;
-		case 19:
+		case 20:
 			player.skillPts += 10;
 			break;
 	}

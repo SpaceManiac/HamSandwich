@@ -1153,6 +1153,7 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 			if(UpdateShop(mgl))
 			{
 				fairyOn=0;
+				SetInMenu(true);	// exiting the shop marks you not in a menu, but we are still in a menu
 				mgl->LastKeyPressed();
 			}
 		}
@@ -1168,7 +1169,7 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 				qCursor=1-qCursor;
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if(ButtonTapped(CONTROL_B1,true))
+			if(ButtonTapped(CONTROL_B1))
 			{
 				MakeNormalSound(SND_MENUSELECT);
 				if(qCursor==1)
@@ -1219,7 +1220,7 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 						break;
 				}
 			}
-			if(ButtonTapped(CONTROL_ESCAPE,true))
+			if(ButtonTapped(CONTROL_ESCAPE))
 			{
 				MakeNormalSound(SND_MENUSELECT);
 				fairyOn=0;
@@ -1254,14 +1255,14 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 				offY=0;
 				MakeNormalSound(SND_MENUCLICK);
 			}
-			if(ButtonTapped(CONTROL_B2,true))
+			if(ButtonTapped(CONTROL_B2))
 			{
 				EnterFairyBox();
 				fairyOn=1;
 				return 0;
 			}
 
-			if(ButtonTapped(CONTROL_B1,true))
+			if(ButtonTapped(CONTROL_B1))
 			{
 				MakeNormalSound(SND_MENUSELECT);
 				return DoQuestion();
@@ -1272,7 +1273,7 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 		*lastTime-=TIME_PER_FRAME;
 	}
 
-	if(ButtonTapped(CONTROL_ESCAPE,true))
+	if(ButtonTapped(CONTROL_ESCAPE))
 	{
 		MakeNormalSound(SND_MENUSELECT);
 		if(fairyOn)
@@ -1772,7 +1773,7 @@ byte ChallengeTallyUpdate(MGLDraw *mgl,int *lastTime)
 		UpdateItems();
 		UpdateControls();
 		
-		if(ButtonTapped(CONTROL_B1|CONTROL_B2,true))
+		if(ButtonTapped(CONTROL_B1|CONTROL_B2))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			return 1;

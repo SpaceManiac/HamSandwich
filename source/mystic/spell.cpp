@@ -9,6 +9,7 @@
 #include "particle.h"
 #include "fairy.h"
 #include "challenge.h"
+#include "options.h"
 
 byte spellCost[20]={
 	1,2,	// Energy Barrage/Storm
@@ -167,14 +168,16 @@ void CastSpell(Guy *me)
 		}
 	}
 
-	bool spellHeld = (ButtonHeld(CONTROL_B2,false));
-	
-	if (!ClassicMode() && player.enableQuickCast)
+	bool spellHeld = false;
+
+	if (player.curSpell == player.casting)
+		spellHeld = ButtonHeld(CONTROL_B2);
+	if (opt.quickCast == QUICKCAST_CASTANDSELECT || opt.quickCast == QUICKCAST_CASTONLY)
 	{
-		const Uint8* state = SDL_GetKeyboardState(nullptr);
-		if (state[SDL_SCANCODE_1 + player.casting])
-			spellHeld = true;	// hold down the spell # for quick cast
+		if (ButtonHeld(1 << (CTL_ID_QC_1 + player.casting)))
+			spellHeld = true;
 	}
+
 	byte bulType = BLT_LASER;
 
 	switch(player.casting)

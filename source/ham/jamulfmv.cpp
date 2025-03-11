@@ -359,9 +359,10 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 		if (ControlScheme() == MYSTIC_CONTROL_SCHEME)
 		{
 			UpdateControls();
-			if (ButtonTapped(CONTROL_ESCAPE, true))
+			if (ButtonTapped(CONTROL_ESCAPE|CONTROL_B1|CONTROL_B2))
 			{
 				k = 27;
+				UpdateControls();
 				break;
 			}
 		}

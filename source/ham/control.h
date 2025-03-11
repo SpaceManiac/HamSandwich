@@ -107,9 +107,9 @@ SDL_GameController* ActiveController();
 //dword GetMysticControls(void);
 //dword GetMysticTaps(void);
 //dword AutoRepeatControls(void);
-bool AutoRepeatTapped(dword c,bool menu=true);
-bool ButtonTapped(dword c,bool menu);
-bool ButtonHeld(dword c,bool menu);
+bool AutoRepeatTapped(dword c);
+bool ButtonTapped(dword c);
+bool ButtonHeld(dword c);
 dword RawGamepadToControls(void);
 dword GetRawGamepad(void);
 void UpdateControls(void);
@@ -117,5 +117,6 @@ void UpdateRawJoystick(void);
 void LockOutControl(dword c,bool locked);
 byte ControlScheme(void);
 void SetDpadToMode(bool yep);
+void SetInMenu(bool inMenu);
 
 #endif  // HAMCONTROL_H

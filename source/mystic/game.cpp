@@ -79,6 +79,7 @@ void LunaticInit(MGLDraw *mgl)
 	battle=0;
 	VolumeSound(opt.soundVol);
 	VolumeSong(opt.musicVol);
+	SetInMenu(true);
 }
 
 void LunaticExit(void)
@@ -199,6 +200,7 @@ byte InitLevel(byte map)
 		WhackazoidUpdate(1);
 	SetupWater();
 	InitTrivia();
+	SetInMenu(false);
 	return 1;
 }
 
@@ -209,32 +211,40 @@ void ExitLevel(void)
 	ExitGuys();
 	ExitBullets();
 	ExitParticles();
-
+	SetInMenu(true);
 	delete curMap;
 	PurgeMonsterSprites();
 }
 
 void PauseGame(void)
 {
+	SetInMenu(true);
 	InitPauseMenu();
+	UpdateControls();
 	gameMode=GAMEMODE_MENU;
-	LockOutControl(CONTROL_B1 | CONTROL_B2, true);
+	LockOutControl(CONTROL_B1 | CONTROL_B2|CONTROL_ESCAPE, true);
 }
 
 void EnterPictureDisplay(void)
 {
+	SetInMenu(true);
+	UpdateControls();
 	gameMode=GAMEMODE_PIC;
 	LockOutControl(CONTROL_B1 | CONTROL_B2, true);
 }
 
 void EnterSpeechMode(void)
 {
+	SetInMenu(true);
+	UpdateControls();
 	gameMode=GAMEMODE_SPEECH;
 	LockOutControl(CONTROL_B1 | CONTROL_B2, true);
 }
 
 void EnterFarleyMode(void)
 {
+	SetInMenu(true);
+	UpdateControls();
 	gameMode = GAMEMODE_FARLEY;
 	MakeNormalSound(SND_BATDIVE);
 	InitFarley();
@@ -389,6 +399,7 @@ TASK(byte) LunaticRun(int *lastTime)
 				case 0:
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
+					SetInMenu(false);
 					UpdateControls();
 					break;
 				case 1:
@@ -509,7 +520,7 @@ TASK(byte) LunaticRun(int *lastTime)
 		}
 		else	// gamemode_pic
 		{
-			if(ButtonTapped(CONTROL_B1|CONTROL_ESCAPE|CONTROL_B2,true))
+			if(ButtonTapped(CONTROL_B1|CONTROL_ESCAPE|CONTROL_B2))
 			{
 				gameMode=GAMEMODE_PLAY;
 				// restore the palette
@@ -758,22 +769,8 @@ void HandleKeyPresses(void)
 		SetGamma(k);
 		lastKey=0;
 	}
-	if(lastKey>='0' && lastKey<='9')
-	{
-		k=lastKey-'0';
-		if(k==0)
-			k=10;
-		k--;
-		if (player.spell[k])
-		{
-			player.curSpell = k;
-			if (!ClassicMode() && player.enableQuickCast)
-				BeginCast(GetGoodguy());
-		}
-		lastKey = 0;
-	}
 
-	if((ButtonTapped(CONTROL_ESCAPE,false)) && gameMode == GAMEMODE_PLAY && !windingUp && !windingDown && !newGame)
+	if((ButtonTapped(CONTROL_ESCAPE)) && gameMode == GAMEMODE_PLAY && !windingUp && !windingDown && !newGame)
 		PauseGame();
 }
 
