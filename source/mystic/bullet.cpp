@@ -2338,29 +2338,45 @@ void FireExactBullet(int x,int y,int z,int dx,int dy,int dz,byte anim,byte timer
 			bullet[i].timer=timer;
 			bullet[i].facing=facing;
 			bullet[i].type=type;
-			bullet[i].lastHit=65535;
+			bullet[i].lastHit = 65535;
+			bullet[i].target = 65535;
 			break;
 		}
 }
 
-void HammerLaunch(int x, int y, byte facing, byte count, byte flags)
+void HammerLaunch(int x, int y, byte facing, byte count, byte flags,bool skulls)
 {
 	byte angle, newfacing;
-
+	byte bulType;
+	byte timer = 30;
+	int speed = 12;
+	byte facingDivide = 32;
 	
-	MakeSound(SND_HAMMERTOSS, x, y, SND_CUTOFF, 1200);
+	if (skulls)
+	{
+		facingDivide = 16;
+		speed = 6;
+		timer = 60;
+		bulType = BLT_SKULL;
+		MakeSound(SND_SKELSHOOT, x, y, SND_CUTOFF, 1200);
+	}
+	else
+	{
+		bulType = BLT_HAMMER + ((flags & HMR_REFLECT) > 0);
+		MakeSound(SND_HAMMERTOSS, x, y, SND_CUTOFF, 1200);
+	}
 	if (!ClassicMode() && RuneValue(Rune::SHOTGUN) > 0)
 	{
 		count += RuneValue(Rune::SHOTGUN);
 		for (int i = 0; i < count; i++)
 		{
 			byte a = facing * 32 - 24 + Random(48);
-			FireExactBullet(x - FIXAMT * 10 + Random(FIXAMT * 20), y - FIXAMT * 10 + Random(FIXAMT * 20), FIXAMT * 20, Cosine(a) * 16, Sine(a) * 16, 0, 0, 10, facing, BLT_HAMMER + ((flags & HMR_REFLECT) > 0));
+			FireExactBullet(x - FIXAMT * 10 + Random(FIXAMT * 20), y - FIXAMT * 10 + Random(FIXAMT * 20), FIXAMT * 20, Cosine(a) * (speed*4/3), Sine(a) * (speed * 4 / 3), 0, 0, timer / 3, a / facingDivide, bulType);
 		}
 		if (flags & HMR_REVERSE)
 		{
 			newfacing = ((byte)(facing - 4)) % 8;
-			HammerLaunch(x, y, newfacing, count, flags & (~HMR_REVERSE));
+			HammerLaunch(x, y, newfacing, count, flags & (~HMR_REVERSE),skulls);
 		}
 		return;
 	}
@@ -2368,88 +2384,50 @@ void HammerLaunch(int x, int y, byte facing, byte count, byte flags)
 	{
 		angle = facing * 32;
 		FireExactBullet(x, y, FIXAMT * 20,
-			Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
-			0, 30, facing, BLT_HAMMER + ((flags & HMR_REFLECT) > 0));
+			Cosine(angle) * speed, Sine(angle) * speed, 0,
+			0, timer, angle/facingDivide, bulType);
 	}
 	if (count == 2 || count == 4)	// these have slight off-angle double forward fire
 	{
 		angle = facing * 32 - 8;
 		FireExactBullet(x, y, FIXAMT * 20,
-			Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
-			0, 30, facing, BLT_HAMMER + ((flags & HMR_REFLECT) > 0));
+			Cosine(angle) * speed, Sine(angle) * speed, 0,
+			0, timer, angle / facingDivide, bulType);
 		angle = facing * 32 + 8;
 		FireExactBullet(x, y, FIXAMT * 20,
-			Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
-			0, 30, facing, BLT_HAMMER + ((flags & HMR_REFLECT) > 0));
+			Cosine(angle) * speed, Sine(angle) * speed, 0,
+			0, timer, angle / facingDivide, bulType);
 	}
 	if (count == 3 || count == 5)	// these have 45 degree angle fire
 	{
 		angle = facing * 32 - 32;
 		newfacing = ((byte)(facing - 1)) % 8;
 		FireExactBullet(x, y, FIXAMT * 20,
-			Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
-			0, 30, newfacing, BLT_HAMMER + ((flags & HMR_REFLECT) > 0));
+			Cosine(angle) * speed, Sine(angle) * speed, 0,
+			0, timer, angle / facingDivide, bulType);
 		angle = facing * 32 + 32;
 		newfacing = (facing + 1) % 8;
 		FireExactBullet(x, y, FIXAMT * 20,
-			Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
-			0, 30, newfacing, BLT_HAMMER + ((flags & HMR_REFLECT) > 0));
+			Cosine(angle) * speed, Sine(angle) * speed, 0,
+			0, timer, angle / facingDivide, bulType);
 	}
 	if (count == 4 || count == 5)	// these add almost 90 degree off fire
 	{
 		angle = facing * 32 - 56;
 		newfacing = ((byte)(facing - 2)) % 8;
 		FireExactBullet(x, y, FIXAMT * 20,
-			Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
-			0, 30, newfacing, BLT_HAMMER + ((flags & HMR_REFLECT) > 0));
+			Cosine(angle) * speed, Sine(angle) * speed, 0,
+			0, timer, angle / facingDivide, bulType);
 		angle = facing * 32 + 56;
 		newfacing = (facing + 2) % 8;
 		FireExactBullet(x, y, FIXAMT * 20,
-			Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
-			0, 30, newfacing, BLT_HAMMER + ((flags & HMR_REFLECT) > 0));
+			Cosine(angle) * speed, Sine(angle) * speed, 0,
+			0, timer, angle / facingDivide, bulType);
 	}
 	if (flags & HMR_REVERSE)
 	{
 		newfacing = ((byte)(facing - 4)) % 8;
-		HammerLaunch(x, y, newfacing, count, flags & (~HMR_REVERSE));
-	}
-}
-
-void SkullLaunch(int x,int y,byte facing,byte count,byte flags)
-{
-	byte angle,newfacing;
-
-	MakeSound(SND_SKELSHOOT,x,y,SND_CUTOFF,1200);
-	if(count==1 || count==3 || count==5)	// 1,3,5 have direct forward fire
-	{
-		angle=facing*32;
-		FireBullet(x,y,angle,BLT_SKULL);
-	}
-	if(count==2 || count==4)	// these have slight off-angle double forward fire
-	{
-		angle=facing*32-8;
-		FireBullet(x,y,angle,BLT_SKULL);
-		angle=facing*32+8;
-		FireBullet(x,y,angle,BLT_SKULL);
-	}
-	if(count==3 || count==5)	// these have 45 degree angle fire
-	{
-		angle=facing*32-32;
-		FireBullet(x,y,angle,BLT_SKULL);
-		angle=facing*32+32;
-		FireBullet(x,y,angle,BLT_SKULL);
-	}
-	if(count==4 || count==5)	// these add almost 90 degree off fire
-	{
-		angle=facing*32-56;
-		FireBullet(x,y,angle,BLT_SKULL);
-		angle=facing*32+56;
-		FireBullet(x,y,angle,BLT_SKULL);
-	}
-	if(flags&HMR_REVERSE)
-	{
-		newfacing=((byte)(facing-4))%8;
-		SkullLaunch(x,y,newfacing,count,flags&(~HMR_REVERSE));
+		HammerLaunch(x, y, newfacing, count, flags & (~HMR_REVERSE),skulls);
 	}
 }
 
@@ -2478,7 +2456,6 @@ byte BulletHittingType(void)
 {
 	return bulletHittingType;
 }
-
 
 void BackdraftEffect(Guy *me, int radius)
 {

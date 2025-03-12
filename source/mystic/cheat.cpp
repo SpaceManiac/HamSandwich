@@ -151,7 +151,8 @@ void DoCheat(byte w)
 			PlayerGetPoints(10000);
 			break;
 		case 14:
-			CheckForAllSecrets();
+			player.keychain[0] = player.keychain[1] = player.keychain[2] = player.keychain[3] = 1;
+			SetKidSprite(1);
 			break;
 		case 15:	// auto-win level
 			if(player.worldNum==3)

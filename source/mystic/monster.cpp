@@ -847,7 +847,6 @@ void MonsterDraw(int x, int y, int z, byte type, byte seq, byte frm, byte facing
 
 	if (type == MONS_BOUAPHA)
 	{
-
 		shld = PlayerShield();
 		if (shld > 0)
 		{

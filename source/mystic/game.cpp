@@ -758,7 +758,6 @@ void HandleKeyPresses(void)
 		showStats=1-showStats;
 		lastKey=0;
 	}
-#endif
 	if(lastKey=='g')
 	{
 		k=GetGamma();
@@ -769,6 +768,7 @@ void HandleKeyPresses(void)
 		SetGamma(k);
 		lastKey=0;
 	}
+#endif
 
 	if((ButtonTapped(CONTROL_ESCAPE)) && gameMode == GAMEMODE_PLAY && !windingUp && !windingDown && !newGame)
 		PauseGame();

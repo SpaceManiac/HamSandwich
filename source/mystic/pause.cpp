@@ -616,12 +616,6 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			effCursor = conversions[cursor];
 		}
 
-		if (ButtonTapped(CONTROL_B2))
-		{
-			LockOutControl(CONTROL_B2, true);
-			return 0;
-		}
-		
 		if(ButtonTapped(CONTROL_B1))
 		{
 			MakeNormalSound(SND_MENUSELECT);
@@ -998,7 +992,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		}
 	}
 
-	if(ButtonTapped(CONTROL_B2|CONTROL_ESCAPE))
+	if(ButtonTapped(CONTROL_ESCAPE) || (ButtonTapped(CONTROL_B2) && subMode!=SUBMODE_RUNES))
 	{
 		MakeNormalSound(SND_MENUSELECT);
 		if (subMode == SUBMODE_NONE)

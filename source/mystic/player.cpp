@@ -1115,10 +1115,7 @@ void PlayerThrowHammer(Guy *me)
 			player.mana--;
 	}
 	ChallengeEvent(CE_SHOOT,player.hammers);
-	if(PlayerHasSword() && !player.disableSword)
-		SkullLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags);
-	else
-		HammerLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags);
+	HammerLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags,(PlayerHasSword() && !player.disableSword));
 	if (!ClassicMode() && RuneValue(Rune::SHOTGUN) > 0)
 		player.reload = player.hamSpeed * 2 + 4;
 	else
