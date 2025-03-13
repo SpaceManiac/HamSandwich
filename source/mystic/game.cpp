@@ -758,7 +758,7 @@ void HandleKeyPresses(void)
 		showStats=1-showStats;
 		lastKey=0;
 	}
-	if(lastKey=='g')
+	/*if (lastKey == 'g')
 	{
 		k=GetGamma();
 		k++;
@@ -767,7 +767,7 @@ void HandleKeyPresses(void)
 		GammaCorrect(gamemgl, k);
 		SetGamma(k);
 		lastKey=0;
-	}
+	}*/
 #endif
 
 	if((ButtonTapped(CONTROL_ESCAPE)) && gameMode == GAMEMODE_PLAY && !windingUp && !windingDown && !newGame)

@@ -2082,26 +2082,34 @@ void AddMapGuys(Map *map)
 		}
 	if(player.levelNum==1)
 	{
-		for(i=0;i<4;i++)
+		byte fairyLeft = 4;
+		word n = 1;
+		byte fairyID=0;
+		while (fairyLeft>0)
 		{
-			if(player.chaseFairy[i])
+			if (player.chaseFairy & n)
 			{
-				while(1)
+				while (1)
 				{
-					x=MGL_random(MAX_SPECIAL);
-					if(map->special[x].effect==SPC_GOTOMAP && abs(map->special[x].x-goodguy->mapx)+abs(map->special[x].y-goodguy->mapy)>3)
+					x = MGL_random(MAX_SPECIAL);
+					if (map->special[x].effect == SPC_GOTOMAP && abs(map->special[x].x - goodguy->mapx) + abs(map->special[x].y - goodguy->mapy) > 3)
 					{
-						y=x;
+						y = x;
 						break;
 					}
 				}
-				g=AddGuy((map->special[y].x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(map->special[y].y*TILE_HEIGHT+TILE_HEIGHT*3/2)*FIXAMT,0,MONS_FAIRY);
-				if(g)
+				g = AddGuy((map->special[y].x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (map->special[y].y * TILE_HEIGHT + TILE_HEIGHT * 3 / 2) * FIXAMT, 0, MONS_FAIRY);
+				if (g)
 				{
-					g->placed=1;
-					g->mind1=player.chaseFairy[i];
+					g->placed = 1;
+					g->mind1 = fairyID;
+					fairyLeft--;
 				}
 			}
+			if (n == 32768)
+				break;	// that's all of them
+			n *= 2;
+			fairyID++;
 		}
 	}
 }

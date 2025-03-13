@@ -22,7 +22,7 @@ static byte giveUp=0;	// which text should be shown for "Give Up"
 int pauseX=-250,subX=-250;
 byte saveLevel[5],saveNightmare[5];
 byte saveChapter[5];
-byte saveHour[5],saveMin[5];
+byte saveHour[5],saveMin[5],savePct[5];
 Difficulty saveDiff[5];
 static byte armaBrt=0;
 
@@ -144,7 +144,7 @@ void RenderSlotPickMenu(void)
 				else if (saveDiff[i] == Difficulty::BRUTAL_MODERN)
 					strcat(s, " [BM]");
 				PrintBrightGlow(subX+40,50+i*40,s,0,2);
-				sprintf(s,"%02d:%02d  Lvl: %02d",saveHour[i],saveMin[i],saveLevel[i]);
+				sprintf(s,"%02d:%02d  L%02d %d%%",saveHour[i],saveMin[i],saveLevel[i],savePct[i]);
 				PrintBrightGlow(subX+40,50+i*40+20,s,0,2);
 			}
 		}
@@ -170,7 +170,7 @@ void RenderSlotPickMenu(void)
 				else if (saveDiff[i] == Difficulty::BRUTAL_MODERN)
 					strcat(s, " [BM]");
 				PrintBright(subX+40,50+i*40,s,-32,2);
-				sprintf(s,"%02d:%02d  Lvl: %02d",saveHour[i],saveMin[i],saveLevel[i]);
+				sprintf(s,"%02d:%02d  L%02d %d%%",saveHour[i],saveMin[i],saveLevel[i],savePct[i]);
 				PrintBright(subX+40,50+i*40+20,s,-32,2);
 			}
 		}
@@ -529,6 +529,7 @@ void InitPauseMenu(void)
 			saveHour[i]=0;
 			saveMin[i]=0;
 			saveDiff[i] = Difficulty::UNUSED;
+			savePct[i] = 0;
 		}
 	}
 	else
@@ -541,6 +542,7 @@ void InitPauseMenu(void)
 			saveHour[i]=(byte)(p.gameClock/(30*60*60));
 			saveMin[i]=(byte)((p.gameClock/(30*60))%60);
 			saveDiff[i] = p.difficulty;
+			savePct[i] = CalcGamePercent(&p);
 			if(p.nightmare)
 				saveNightmare[i]=1;
 			else

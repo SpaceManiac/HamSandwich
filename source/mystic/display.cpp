@@ -281,6 +281,14 @@ void CenterPrint(int midx,int y,const char *s,char bright,byte font)
 	}
 }
 
+void CenterPrintItalics(int midx, int y, const char* s, char bright, byte font)
+{
+	int x;
+
+	x = midx - FontStrLen(s, gameFont[font]) / 2;
+	FontPrintStringItalicsBright(x, y, s, gameFont[font],bright);
+}
+
 void CenterPrintCompressed(int midx, int y, std::string_view s, byte compression, char bright, byte font)
 {
 	int x;

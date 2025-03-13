@@ -98,7 +98,8 @@ typedef struct player_t
 	byte levelsPassed;
 	byte worldNum;
 	int overworldX,overworldY;
-	byte chaseFairy[4];
+	word chaseFairy;
+	word UNUSED_WASTED_SPACE;
 	// values reset for each level
 	byte shield;
 	byte levelNum;
@@ -178,6 +179,7 @@ void PlayerLoseKey(byte w);
 void PlayerSetWorldWorth(byte world,int amt);
 float PlayerGetPercent(byte world);
 float PlayerGetGamePercent(void);
+int CalcGamePercent(player_t* p);
 void SetCustomName(const char *name);
 char *GetCustomName(void);
 byte PlayerHasLunacyKey(byte w);

@@ -62,6 +62,44 @@ byte Bulletable(Map *map,int x,int y)
 
 	return 1;
 }
+void BurnTreesInArea(Map *map,int x, int y, int x2, int y2)
+{
+	x /= FIXAMT;
+	y /= FIXAMT;
+	x2 /= FIXAMT;
+	y2 /= FIXAMT;
+	int i = x, j = y;
+	// we loop through each tile in the box, making sure we grab the end in case that's a new tile
+	while (1)
+	{
+		i = x;
+		while (1)
+		{
+			int tx, ty;
+			tx = i / TILE_WIDTH;
+			ty = j / TILE_HEIGHT;
+			mapTile_t* tile = map->GetTile(tx,ty);
+			if (tile && tile->item == ITM_TREE)
+			{
+				tile->item = ITM_BURNEDTREE;
+				for (int i = 0; i < 6; i++)
+					FireBullet((tx*TILE_WIDTH+TILE_WIDTH/2 - 24 + Random(48))*FIXAMT, (ty*TILE_HEIGHT+TILE_HEIGHT/2 - 16 + Random(32))*FIXAMT, 0, BLT_FAKELIQUIFY);
+			}
+
+			if (i == x2)
+				break;
+			i += TILE_WIDTH;
+			if (i > x2)
+				i = x2;
+		}
+		if (j == y2)
+			break;
+		j += TILE_HEIGHT;
+		if (j > y2)
+			j = y2;
+	}
+	
+}
 
 byte BulletCanGo(int xx,int yy,Map *map,byte size)
 {
@@ -180,6 +218,7 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_FLAME:
 		case BLT_FLAME2:
+			BurnTreesInArea(map, me->x - 8*FIXAMT, me->y - 8*FIXAMT, me->x + 8*FIXAMT, me->y + 8*FIXAMT);
 			me->x-=me->dx;
 			me->dy=((3-MGL_random(7))<<FIXSHIFT);
 			me->dx=0;
@@ -328,6 +367,7 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_FLAME:
 		case BLT_FLAME2:
+			BurnTreesInArea(map, me->x - 8*FIXAMT, me->y - 8*FIXAMT, me->x + 8*FIXAMT, me->y + 8*FIXAMT);
 			me->y-=me->dy;
 			me->dx=((3-MGL_random(7))<<FIXSHIFT);
 			me->dy=0;
@@ -564,6 +604,7 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 		case BLT_LIQUIFY:
 		case BLT_LIQUIFY2:
 		case BLT_LIQUIFY3:
+		case BLT_FAKELIQUIFY:
 			me->type=0;
 			BlowSmoke(me->x,me->y,me->z,FIXAMT);
 			break;
@@ -1112,6 +1153,16 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 		case BLT_SPINE:
 			HitBadguys(me,map,world);
 			break;
+		case BLT_FAKELIQUIFY:
+			if(Random(2))
+				me->anim++;
+			if (me->anim == 14)
+			{
+				me->type = BLT_NONE;
+				BlowSmoke(me->x, me->y, me->z, FIXAMT);
+			}
+			me->z += FIXAMT;
+			break;
 		case BLT_LIQUIFY:
 		case BLT_LIQUIFY2:
 		case BLT_LIQUIFY3:
@@ -1141,6 +1192,8 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 
 					if (!Bulletable(map, map2x, mapy))	// bounced moving horiz
 					{
+						BurnTreesInArea(map, me->x - 16*FIXAMT, me->y - 16*FIXAMT, me->x + 16*FIXAMT, me->y + 16*FIXAMT);
+
 						b = 128 - b;
 						x = me->x + Cosine(b) * 16;
 						y = me->y + Sine(b) * 16;
@@ -1149,6 +1202,8 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 					}
 					if (!Bulletable(map, mapx, map2y))	// bounced moving vert
 					{
+						BurnTreesInArea(map, me->x - 16*FIXAMT, me->y - 16*FIXAMT, me->x + 16*FIXAMT, me->y + 16*FIXAMT);
+
 						b = 256 - b;
 						x = me->x + Cosine(b) * 16;
 						y = me->y + Sine(b) * 16;
@@ -1368,6 +1423,8 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			map->BrightTorch((me->x/TILE_WIDTH)>>FIXSHIFT,
 							 (me->y/TILE_HEIGHT)>>FIXSHIFT,12,8);
 			HitBadguys(me,map,world);
+			if(me->timer==1)
+				BurnTreesInArea(map, me->x - 48*FIXAMT, me->y - 48*FIXAMT, me->x + 48*FIXAMT, me->y + 48*FIXAMT);
 			break;
 		case BLT_ICECLOUD:
 			me->anim=1-me->anim;
@@ -1592,6 +1649,7 @@ void RenderBullet(bullet_t *me)
 		case BLT_LIQUIFY:
 		case BLT_LIQUIFY2:
 		case BLT_LIQUIFY3:
+		case BLT_FAKELIQUIFY:
 			curSpr=bulletSpr->GetSprite(231+me->anim/2);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
 					DISPLAY_DRAWME|DISPLAY_GLOW);
@@ -1892,6 +1950,14 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->dx=0;
 			me->dy=0;
 			me->dz=0;
+			break;
+		case BLT_FAKELIQUIFY:
+			me->anim = 0;
+			me->timer = 40;
+			me->z = 0;
+			me->dx = 0;
+			me->dy = 0;
+			me->dz = 0;
 			break;
 		case BLT_LIQUIFY:
 			me->anim=0;

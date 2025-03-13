@@ -311,6 +311,59 @@ void FontPrintCharBright(int x, int y, dword c, char bright, const mfont_t *font
 	}
 }
 
+void FontPrintCharItalicsBright(int x, int y, dword c, char bright, const mfont_t* font)
+{
+	byte* dst, * src;
+	int scrWidth, scrHeight, chrWidth;
+	int i, j;
+
+	scrWidth = fontmgl->GetWidth();
+	scrHeight = fontmgl->GetHeight();
+	dst = fontmgl->GetScreen() + x + y * scrWidth;
+
+	if (c < font->firstChar || c >= (font->firstChar + font->numChars))
+		return; // unprintable
+
+	c -= font->firstChar;
+
+	chrWidth = *(font->chars[c]);
+	src = font->chars[c] + 1;
+	bool tilt = false;
+	x += font->height / 2;
+	dst += font->height / 2;
+	for (j = 0; j < font->height; j++)
+	{
+		for (i = 0; i < (*font->chars[c]); i++)
+		{
+			if (*src && (x >= 0) && (x < scrWidth) && (y >= 0) && (y < scrHeight))
+			{
+				byte b = (*dst + bright);
+				if ((b & (~31)) != ((*dst) & (~31)))
+				{
+					if (bright > 0)
+						b = 31;
+					else
+						b = 0;
+				}
+				*dst = b;
+			}
+			dst++;
+			src++;
+			x++;
+		}
+		y++;
+		x -= chrWidth;
+		dst += (scrWidth - chrWidth);
+		if (tilt)
+		{
+			x--;
+			dst--;
+		}
+		tilt = !tilt;
+
+	}
+}
+
 void FontPrintCharSolid(int x, int y, byte c, const mfont_t *font, byte color)
 {
 	byte *dst, *src;
@@ -618,6 +671,15 @@ void FontPrintStringDarkAdj(int x,int y, std::string_view s,int dark,const mfont
 		FontPrintCharGlow(x+1,y+1,s[i],0,font);
 		FontPrintCharDark2(x,y,s[i],d,font);
 		x+=CharWidth(s[i],font)+font->gapSize;
+	}
+}
+
+void FontPrintStringItalicsBright(int x, int y, std::string_view s, const mfont_t *font, char bright)
+{
+	for (char ch : s)
+	{
+		FontPrintCharItalicsBright(x, y, ch, bright, font);
+		x += CharWidth(ch, font) + font->gapSize;
 	}
 }
 

@@ -63,7 +63,8 @@
 #define ITM_SHOP     82
 #define ITM_TARGET	 83
 #define ITM_LAVAROCK 84
-#define MAX_ITMS	 85
+#define ITM_BURNEDTREE 85
+#define MAX_ITMS	 86
 
 // these defines are 1 greater than the highest item of that type
 // (that is, items 1 - X-1 are things the player can pick up, and items

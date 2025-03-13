@@ -133,7 +133,7 @@ typedef struct title_t
 	int optionsX;
 	byte cursor;
 	byte savecursor;
-	byte saveChapter[5], saveHour[5], saveMin[5], saveLevel[5], saveNightmare[5];
+	byte saveChapter[5], saveHour[5], saveMin[5], saveLevel[5], saveNightmare[5],savePercent[5];
 	Difficulty saveDiff[5];
 } title_t;
 
@@ -143,6 +143,7 @@ byte pickerpos;
 char pickeroffset;
 byte offsetdir;
 byte curCustom;
+byte challengePct[4];
 
 mfont_t pickerFont;
 char customName[MAX_CUSTOM][32];
@@ -398,7 +399,7 @@ void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 			else if (title.saveDiff[i] == Difficulty::BRUTAL_MODERN)
 				strcat(s, " [BM]");
 			PrintBrightGlow(430,200+i*50,s,-16+(title.savecursor==i)*16,2);
-			sprintf(s,"%02d:%02d  Lvl: %02d",title.saveHour[i],title.saveMin[i],title.saveLevel[i]);
+			sprintf(s,"%02d:%02d L%02d %d%%",title.saveHour[i],title.saveMin[i],title.saveLevel[i],title.savePercent[i]);
 			PrintBrightGlow(430,200+i*50+20,s,-16+(title.savecursor==i)*16,2);
 		}
 	}
@@ -492,6 +493,7 @@ void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 			title->saveMin[i]=(byte)((p.gameClock/(30*60))%60);
 			title->saveNightmare[i]=p.nightmare;
 			title->saveDiff[i] = p.difficulty;
+			title->savePercent[i] = CalcGamePercent(&p);
 		}
 		f.reset();
 	}
@@ -541,39 +543,45 @@ void DifficultyPickerDisplay(MGLDraw* mgl, title_t title)
 	char s[32];
 
 	MainMenuDisplay(mgl, title,true);
-	RenderSkillBox(380, 144, 636, 460, 31, 3);
+	RenderSkillBox(360, 144, 636, 460, 31, 3);
 	PrintBrightGlow(400, 150, "Difficulty", 0, 0);
 
 	for (i = 0; i < 4; i++)
 	{
-		PrintBrightGlow(400, 200 + i * 30, diffName[i], -16 + (title.savecursor == i) * 16, 2);
+		if (title.cursor == 2)	// challenge mode shows your % on that save
+		{
+			sprintf(s, "%s [%d%%]", diffName[i], challengePct[i]);
+			PrintBrightGlow(365, 200 + i * 30, s, -16 + (title.savecursor == i) * 16, 2);
+		}
+		else
+			PrintBrightGlow(380, 200 + i * 30, diffName[i], -16 + (title.savecursor == i) * 16, 2);
 	}
 	switch (title.savecursor)
 	{
 		case 0:
-			PrintBrightGlow(385, 200 + 4 * 30, "The original game from 20 years", 0, 1);
-			PrintBrightGlow(385, 200 + 4 * 30 + 14, "ago! Or rather the first remake", 0, 1);
-			PrintBrightGlow(385, 200 + 4 * 30 + 14*2, "from that time. Don't worry about", 0, 1);
-			PrintBrightGlow(385, 200 + 4 * 30 + 14*3, "the original.", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30, "The original game from 20 years", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14, "ago! Or rather the first remake", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14*2, "from that time. Don't worry about", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14*3, "the original version.", 0, 1);
 			break;
 		case 1:
-			PrintBrightGlow(385, 200 + 4 * 30, "It's 2025, can there be a game", 0, 1);
-			PrintBrightGlow(385, 200 + 4 * 30 + 14, "with no skill tree? Let's not find", 0, 1);
-			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 2, "out. This adds many tweaks to", 0, 1);
-			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 3, "spells and enemies and a skill", 0, 1);
-			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 4, "tree. It's probably easier, and", 0, 1);
-			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 5, "definitely smoother.", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30, "It's 2025, can there be a game with", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14, "no skill tree? Let's not find out.", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 2, "This adds many tweaks to spells and", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 3, "enemies and a skill tree.", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 4, "It's probably easier, and definitely", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 5, "smoother.", 0, 1);
 			break;
 		case 2:
 		case 3:
-			PrintBrightGlow(385, 200 + 4 * 30, "Brutal mode starts you in Madcap", 0, 1);
-			PrintBrightGlow(385, 200 + 4 * 30 + 14, "Mode, though it's not as hard", 0, 1);
-			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 2, "as the normal Madcap mode.", 0, 1);
-			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 3, "But you can still buy Madcap", 0, 1);
-			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 4, "Crystals, and you start with", 0, 1);
-			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 5, "the first Boots, Hat, and Staff.", 0, 1);
-			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 6, "Available in both Classic and", 0, 1);
-			PrintBrightGlow(385, 200 + 4 * 30 + 14 * 7, "Modern flavors.", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30, "Brutal mode starts you in Madcap", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14, "Mode, though it's not as hard as", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 2, "normal Madcap mode.", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 3, "But you can still buy Madcap", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 4, "Crystals, and you start with the", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 5, "first Boots, Hat, and Staff.", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 6, "Available in both Classic and Modern", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 7, "flavors.", 0, 1);
 			break;
 	}
 }
@@ -637,6 +645,7 @@ void InitDifficultyPicker(MGLDraw* mgl, title_t* title)
 {
 	title->savecursor = 0;
 	mgl->LastKeyPressed();
+	LoadChallengePercents(challengePct);
 }
 
 TASK(byte) DifficultyPicker(MGLDraw* mgl, title_t* title)

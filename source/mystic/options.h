@@ -32,6 +32,8 @@
 #define QUICKCAST_CASTANDSELECT (1)	// spell buttons cast the spell and leave that spell selected
 #define QUICKCAST_CASTONLY (2)	// spell buttons cast the spell without changing the selection
 
+#define ACHIEVE_GOT (255)
+
 typedef struct option_t
 {
 

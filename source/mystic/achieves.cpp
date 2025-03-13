@@ -7,48 +7,127 @@
 #include "pause.h"
 #include "skills.h"
 #include "game.h"
+#include "options.h"
 
 AchieveDef achieveDef[] = {
 	{
 		"Old Schoolkid",
 		"Prove you are a true classic.",
-		"Complete Classic Mode.",
+		"Completed Classic Mode.",
 		Progress::ONE_SHOT
 	},
 	{
 		"Modern Gamer",
 		"Hello, fellow children! I too am a gamer!",
-		"Complete Modern Mode.",
+		"Completed Modern Mode.",
 		Progress::ONE_SHOT
 	},
 	{
 		"Git Gud",
 		"Brutalize Bobby Khan.",
-		"Complete Brutal Mode (either Classic or Modern).",
+		"Completed Brutal Mode (either Classic or Modern).",
 		Progress::ONE_SHOT
 	},
 	{
 		"A little BIT kRaZy",
 		"Let's see if you're truly loco.",
-		"Complete Madcap Mode (either Classic or Modern).",
+		"Completed Madcap Mode (either Classic or Modern).",
 		Progress::ONE_SHOT
 	},
 	{
 		"Graduation Cap",
 		"Earn the angriest hat of them all.",
-		"Collect every single Stone in Madcap Mode. Wow, what a grind.",
+		"Collected every single Stone in Madcap Mode. Wow, what a grind.",
 		Progress::ONE_SHOT
 	},
 	{
 		"Kid Mystic's Pro Caster",
 		"Master the challenges of this world.",
-		"Complete Challenge Mode (either Classic or Modern).",
+		"Completed Challenge Mode (either Classic or Modern).",
 		Progress::ONE_SHOT
 	},
 	{
 		"Starkid",
 		"Just like Luigi, you gotta collect the stars.",
-		"Earn every star possible in Challenge Mode (either Classic or Modern).",
+		"Earned every star possible in Challenge Mode (either Classic or Modern).",
+		Progress::ONE_SHOT
+	},
+	{
+		"Rune Master",
+		"Build a rock collection!",
+		"Fully upgraded every Rune, just for fun. And this achievement.",
+		Progress::ONE_SHOT
+	},
+	{
+		"Caught 'Em All",
+		"You know who we want you to catch.",
+		"Caught every fairy!",
+		Progress::ONE_SHOT
+	},
+	{
+		"Forged In Air",
+		"This would be easier if a watery tart would just throw it at you.",
+		"Completed the Armageddon Sword!",
+		Progress::ONE_SHOT
+	},
+	{
+		"Take The L",
+		"This achievement was made by the makers of Spooky Castle's vault.",
+		"Reached level 50!",
+		Progress::ONE_SHOT
+	},
+	{
+		"Energetic Boss Rage",
+		"Hint",
+		"Defeat a boss with nothing but Energy Barrage.",
+		Progress::ONE_SHOT
+	},
+	{
+		"Amazing Blaze",
+		"Hedges and ONLY hedges.",
+		"Burn down every tree in Among The Hedges.",
+		Progress::ONE_SHOT
+	},
+	{
+		"seeker",
+		"Hint",
+		"",
+		Progress::ONE_SHOT
+	},
+	{
+		"ice",
+		"Hint",
+		"Freeze 20 enemies at once.",
+		Progress::ONE_SHOT
+	},
+	{
+		"inferno",
+		"Hint",
+		"",
+		Progress::ONE_SHOT
+	},
+	{
+		"summon",
+		"Hint",
+		"",
+		Progress::ONE_SHOT
+	},
+	{
+		"stoneskin",
+		"Hint",
+		"",
+		Progress::ONE_SHOT
+	},
+	{
+		"Blurred Cirque",
+		"Never stop never stopping!",
+		"Remained Berserk for 1 minute straight.",
+		Progress::ONE_SHOT
+	},
+	{
+		"Born Again",
+		"'Tis better to die a thousand deaths.",
+		"Died twice in one level, and lived to tell the tale.",
 		Progress::ONE_SHOT
 	},
 };
@@ -57,10 +136,13 @@ AchieveDef achieveDef[] = {
 static byte cursor;
 byte* backgd;
 int backX, backY;
+sprite_set_t* chalSpr;
 
 void InitAchieveMenu(void)
 {
 	cursor=0;
+
+	chalSpr = new sprite_set_t("graphics/chal.jsp");
 
 	backX = 0;
 	backY = 0;
@@ -85,6 +167,7 @@ void InitAchieveMenu(void)
 
 void ExitAchieveMenu(void)
 {
+	delete chalSpr;
 	free(backgd);
 }
 
@@ -188,19 +271,39 @@ void RenderAchieveMenu(MGLDraw *mgl)
 	y = 60;
 	for (int i = 0; i < (int)Achievement::NUM_ACHIEVES; i++)
 	{
+		byte col = 32 * 3;
+		if (opt.achieve[i] == ACHIEVE_GOT || (i%2))
+			col = 32 * 5;
+
 		if (cursor == i)
 		{
-			RenderSkillBox(x, y, x + 40, y + 40, 16, 31);
-			RenderSkillBox(x + 2, y + 2, x + 38, y + 38, 16, 5);
-			BlitIcon(0, x + 4, y + 4, 0, 5);
+			RenderSkillBox(x, y, x + 40, y + 40, 16, col+31);
+			RenderSkillBox(x + 2, y + 2, x + 38, y + 38, 16, col+5);
+			BlitIcon(0, x + 4, y + 4, col, 5);
+
+			RenderSkillBox(HALFWID - 250, SCRHEI - 160, HALFWID + 250, SCRHEI - 90, col+20, col + 4);
+			CenterPrintGlow(SCRHEI - 160, achieveDef[i].name, 2);
+			if (opt.achieve[i] == ACHIEVE_GOT || (i % 2))
+			{
+				chalSpr->GetSprite(2)->Draw(HALFWID - 250+20, SCRHEI - 160+10, mgl);
+				chalSpr->GetSprite(2)->Draw(HALFWID + 250-20, SCRHEI - 160+10, mgl);
+				CenterPrintItalics(HALFWID, SCRHEI - 135, achieveDef[i].hint, 7, 1);
+				CenterPrint(HALFWID, SCRHEI - 105, achieveDef[i].desc, 0, 1);
+			}
+			else
+			{
+				CenterPrintItalics(HALFWID, SCRHEI - 115, achieveDef[i].hint, 15, 1);
+			}
+			
 		}
 		else
 		{
-			RenderSkillBox(x, y, x + 40, y + 40, 3*32+16, 3*32+4);
-			RenderSkillBox(x + 2, y + 2, x + 38, y + 38, 3*32+16, 3*32+4);
+			RenderSkillBox(x, y, x + 40, y + 40, col+16, col+4);
+			RenderSkillBox(x + 2, y + 2, x + 38, y + 38, col+16, col+4);
 			BlitIcon(0, x + 4, y + 4, 3, 0);
 		}
 		
+
 		x += 60;
 		if ((i%6)==5)
 		{

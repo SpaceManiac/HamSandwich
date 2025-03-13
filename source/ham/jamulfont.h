@@ -53,6 +53,7 @@ void FontPrintStringSolidLimit(int x, int y, int maxX, std::string_view s, const
 void FontPrintStringDropShadow(int x, int y, std::string_view s, const mfont_t *font, byte shadowColor, byte shadowOffset);
 void FontPrintStringColor(int x, int y, std::string_view s, const mfont_t *font, byte color, char bright = 0);
 void FontPrintStringBright(int x, int y, std::string_view s, const mfont_t *font, char bright);
+void FontPrintStringItalicsBright(int x, int y, std::string_view s, const mfont_t* font, char bright);
 void FontPrintStringBrightLimit(int x, int y, int maxX, std::string_view s, const mfont_t *font, char bright);
 void FontPrintStringRect(int x, int y, int x2, int y2, std::string_view s, int height, const mfont_t *font);
 void FontPrintStringGlowRect(int x, int y, int x2, int y2, std::string_view s, int height, char bright, const mfont_t *font);
@@ -74,6 +75,7 @@ void FontPrintStringMultiline(int x, int y, std::string_view s, const mfont_t *f
 void FontPrintRectBlack(int x, int y, int x2, int y2, std::string_view s, int height, int bright, const mfont_t *font);
 void FontPrintRectBlack2(int x, int y, int x2, int y2, std::string_view s, int height, const mfont_t *font);
 
+void FontPrintCharItalicsBright(int x, int y, dword c, char bright, const mfont_t* font);
 void FontPrintCharBright(int x, int y, dword c, char bright, const mfont_t* font);
 void FontPrintCharSolid(int x, int y, byte c, const mfont_t* font, byte color);
 byte CharWidth(dword c, const mfont_t* font);

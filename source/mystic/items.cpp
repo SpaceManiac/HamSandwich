@@ -74,6 +74,9 @@ void RenderItem(int x,int y,byte type,char bright)
 		case ITM_TREE:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(2),DISPLAY_DRAWME);
 			break;
+		case ITM_BURNEDTREE:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(284), DISPLAY_DRAWME);
+			break;
 		case ITM_SKLDOOR2:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(40),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(40),DISPLAY_DRAWME);
@@ -304,6 +307,9 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 			break;
 		case ITM_TREE:
 			itmSpr->GetSprite(2)->DrawBright(x,y,mgl,bright);
+			break;
+		case ITM_BURNEDTREE:
+			itmSpr->GetSprite(284)->DrawBright(x, y, mgl, bright);
 			break;
 		case ITM_SKLDOOR:
 			Print(x,y,"SKLDOOR",0,2);

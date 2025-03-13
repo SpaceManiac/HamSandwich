@@ -90,14 +90,14 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.overworldX=-2000;
 		player.rechargeClock=4;
 		player.haveFairy=0;
+		player.chaseFairy = 0;
 		player.fairyOn=0;
 		player.templePuzzleDone=0;
-		for(i=0;i<4;i++)
-			player.chaseFairy[i]=0;
 		for (i = 0; i < MAX_SKILLS; i++)
 			player.skill[i] = 0;
 		player.skillPts = 0;
 		player.unusedSUCKERREPLACE = 0;
+		player.UNUSED_WASTED_SPACE = 0;
 		player.disableDmgNumbers = 0;
 		player.disableMoveNShoot = 0;
 		player.disableSword = 0;
@@ -352,6 +352,36 @@ float PlayerGetGamePercent(void)
 		amt+=player.complete[i];
 	}
 	return (float)amt/(float)total;
+}
+
+int CalcGamePercent(player_t* p)
+{
+	int runes=0, spells=0, swords=0, fairies=0;
+	for (int i = 0; i < (int)Rune::NUM_RUNES; i++)
+		if (p->runes[i] > RUNE_EMPTY)
+			runes++;
+	for (int i = 0; i < 10; i++)
+		spells += p->spell[i];
+	for (int i = 0; i < 16; i++)
+	{
+		if (player.haveFairy & (1 << i))
+		{
+			fairies++;
+			if (!(player.chaseFairy & (1 << i)))
+				fairies++;
+		}
+	}
+	swords = player.keychain[0] + player.keychain[1] + player.keychain[2] + player.keychain[3];
+	int totalNeeded = 24 + // runes
+		19 + // spells
+		4 + // swords
+		32; // fairies (2x, one for the bell, one for the fairy)
+	if (player.difficulty == Difficulty::CLASSIC || player.difficulty == Difficulty::BRUTAL_CLASSIC)
+	{	// classic has no runes
+		totalNeeded -= 24;
+		runes = 0;
+	}
+	return (runes + spells + swords + fairies)*100 / totalNeeded;
 }
 
 byte PlayerShield(void)
@@ -611,18 +641,7 @@ void AddChaseFairy(void)
 		player.haveFairy|=(1<<((FairyForThisLevel(player.worldNum*50+player.levelNum))-1));
 		return;
 	}
-	for(i=0;i<4;i++)
-	{
-		if(player.chaseFairy[i]==FairyForThisLevel(player.worldNum*50+player.levelNum))
-			player.chaseFairy[i]=0;
-	}
-
-	for(i=0;i<4;i++)
-		if(player.chaseFairy[i]==0)
-		{
-			player.chaseFairy[i]=FairyForThisLevel(player.worldNum*50+player.levelNum);
-			break;
-		}
+	player.chaseFairy |= (1<<FairyForThisLevel(player.worldNum * 50 + player.levelNum));
 }
 
 void CheckForAllSecrets(void)

@@ -306,4 +306,5 @@ void ResetSkills(void)
 		player.skillPts += player.skill[i];
 		player.skill[i] = 0;
 	}
+	PlayerUpdateLife();
 }

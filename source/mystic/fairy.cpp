@@ -246,9 +246,8 @@ void RenderFairyBox(void)
 				InstaRenderMonster2(i*FAIRYDX+FAIRYX+25+(fairies[i+j*4].x/FIXAMT),FAIRYY+j*FAIRYDY+40+(fairies[i+j*4].y/FIXAMT),MONS_FAIRY,0,(fairies[i+j*4].frm/FIXAMT),fairies[i].facing,(i+j*4+1),0+8*(shopCursor==i+j*4),mgl);
 			else
 			{
-				for(k=0;k<4;k++)
-					if(player.chaseFairy[k]==i+j*4+1)
-						shopSpr->GetSprite(0)->Draw((i)*FAIRYDX+FAIRYX,FAIRYY+j*FAIRYDY,mgl);	// make it gold
+				if(player.chaseFairy&w)
+					shopSpr->GetSprite(0)->Draw((i)*FAIRYDX+FAIRYX,FAIRYY+j*FAIRYDY,mgl);	// make it gold
 			}
 			w*=2;
 		}

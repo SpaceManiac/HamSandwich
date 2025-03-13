@@ -150,11 +150,9 @@ void Map::Init(world_t *wrld)
 		}
 		if(map[i].item==ITM_FAIRYBELL)
 		{
-			if(player.haveFairy&(1<<(FairyForThisLevel(player.levelNum+player.worldNum*50)-1)))
+			if((player.haveFairy&(1<<(FairyForThisLevel(player.levelNum+player.worldNum*50)-1))) ||
+				(player.chaseFairy & (1 << (FairyForThisLevel(player.levelNum + player.worldNum * 50) - 1))))
 				map[i].item=0;
-			for(s=0;s<4;s++)
-				if(player.chaseFairy[s]==FairyForThisLevel(player.levelNum+player.worldNum*50))
-					map[i].item=0;
 		}
 		if(player.worldNum==2 && player.levelNum==16 && player.vaultOpened && map[i].item==ITM_COIN)
 			map[i].item=0;	// if you got the spellbook, take the coins away!

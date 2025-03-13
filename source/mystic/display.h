@@ -66,6 +66,7 @@ void GetCamera(int *x,int *y);
 void UpdateCamera(int x,int y,byte facing,Map *map);
 void Print(int x,int y,const char *s,char bright,byte font);
 void CenterPrint(int midx,int y,const char *s,char bright,byte font);
+void CenterPrintItalics(int midx, int y, const char* s, char bright, byte font);
 void CenterPrintCompressed(int midx, int y, std::string_view s, byte compression, char bright, byte font);
 void PrintGlow(int x,int y,const char *s,byte font);
 void RightPrintGlow(int x,int y,const char *s,byte font);

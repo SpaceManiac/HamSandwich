@@ -5468,11 +5468,9 @@ void AI_Fairy(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			InitSpeech(18);
 		FairyCaughtText(me->mind1);
 
-		player.haveFairy|=(1<<(me->mind1-1));
-		for(i=0;i<4;i++)
-			if(player.chaseFairy[i]==me->mind1)
-				player.chaseFairy[i]=0;
-
+		player.haveFairy |= (1 << (me->mind1 - 1));
+		player.chaseFairy &= ~(1 << (me->mind1 - 1));
+		
 		CheckForAllSecrets();
 		me->type=MONS_NONE;
 		return;

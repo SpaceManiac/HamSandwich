@@ -35,6 +35,9 @@
 
 #define HOURGLASS_BONUS (20)	// percent of time the hourglass grants you
 
+#define MAX_CHALLENGE (64)
+#define MAX_COMBO_TIME (60)
+
 typedef struct goal_t
 {
 	byte type;
@@ -53,11 +56,11 @@ typedef struct challenge_t
 
 typedef struct chalData_t
 {
-	dword topScore[64];
-	dword topTime[64];
-	word topCombo[64];
-	byte goal[64][5];
-	byte bought[64];
+	dword topScore[MAX_CHALLENGE];
+	dword topTime[MAX_CHALLENGE];
+	word topCombo[MAX_CHALLENGE];
+	byte goal[MAX_CHALLENGE][5];
+	byte bought[MAX_CHALLENGE];
 	byte stars,totalStars;
 	player_t player;
 } chalData_t;
@@ -86,6 +89,6 @@ byte CurrentLetter(void);
 byte DoTrivia(void);
 void PauseChallengeRender(int offX);
 void CheatChal(void);
-
+void LoadChallengePercents(byte pcts[4]);
 
 #endif

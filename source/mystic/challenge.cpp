@@ -637,7 +637,7 @@ void ResetChallengeStats(void)
 {
 	int i,j;
 
-	for(i=0;i<64;i++)
+	for(i=0;i<MAX_CHALLENGE;i++)
 	{
 		chalData.topScore[i]=0;
 		chalData.topTime[i]=0;
@@ -1315,6 +1315,42 @@ void LoadChallenge(void)
 	}
 }
 
+void LoadChallengePercents(byte pcts[4])
+{
+	owned::SDL_RWops f;
+
+	int i = 0;
+	while ((chal[i].chapter != 255 || chal[i].level != 0))
+		i++;
+	numChals = i + 1;	// have to initialize this
+
+	for (i = 0; i < 4; i++)
+	{
+		if (i==0)
+			f = AppdataOpen("challenge.sav");
+		else if (i==1)
+			f = AppdataOpen("challenge_m.sav");
+		else if (i==2)
+			f = AppdataOpen("challenge_bc.sav");
+		else if (i==3)
+			f = AppdataOpen("challenge_bm.sav");
+		if (!f)
+		{
+			ResetChallengeStats();
+			ResetChallengeCharacter();
+		}
+		else
+		{
+			SDL_RWread(f, &chalData, 1, sizeof(chalData_t));
+			f.reset();
+			memcpy(&player, &chalData.player, sizeof(player_t));
+			CalcChallengePercent();
+			pcts[i] = percent;
+		}
+		
+	}
+}
+
 void SaveChallenge(void)
 {
 	owned::SDL_RWops f;
@@ -1479,7 +1515,7 @@ void ChallengeEvent(byte type,int n)
 				attempt.curCombo++;
 			if(attempt.curCombo>attempt.bestCombo)
 				attempt.bestCombo=attempt.curCombo;
-			attempt.comboClock=60;
+			attempt.comboClock=MAX_COMBO_TIME;
 			attempt.score+=attempt.curCombo*10;
 			g=GoalNumber(GOAL_NOKILL);
 			if(chal[chalCursor].goal[g].n==(dword)n || chal[chalCursor].goal[g].n==255)
@@ -1621,9 +1657,14 @@ void ChallengeRender(MGLDraw *mgl)
 	PrintGlow(2,60,s,2);
 	if (attempt.curCombo > 1)
 	{
+		int y = 80;
+		if (attempt.comboClock > 55)
+			y -= (attempt.comboClock - 55);
 		sprintf(s, "Combo x%d", attempt.curCombo);
-		Print(2 + 2, 80 + 2, s, -31, 2);
-		PrintGlow(2, 80, s, 2);
+		Print(2 + 2, y + 2, s, -31, 2);
+		PrintGlow(2, y, s, 2);
+		DrawFillBox(2+2, y + 24+2, 2 + (attempt.comboClock*3/2)+2, y + 24+1+2, 0);
+		DrawFillBox(2, y + 24, 2 + (attempt.comboClock*3/2), y + 24+1, 31);
 	}
 }
 

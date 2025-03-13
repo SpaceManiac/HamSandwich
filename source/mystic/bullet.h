@@ -67,6 +67,7 @@
 #define BLT_LASER2 (54)	// enhanced energy barrage
 #define BLT_LIFEPOTION (55)
 #define BLT_MANAPOTION (56)
+#define BLT_FAKELIQUIFY (57)	// a liquify flame that hurts nothing and doesn't spread
 
 #define MAX_BULLETS 512
 
@@ -108,6 +109,7 @@ byte Bulletable(Map *map,int x,int y);
 void BulletRanOut(bullet_t *me,Map *map,world_t *world);	// prototyped for interior use
 void Armageddon(Map *map,int x,int y);
 void BackdraftEffect(Guy *me, int radius);
+void BurnTreesInArea(Map* map, int x, int y, int x2, int y2);
 
 byte BulletHittingType(void);
 
