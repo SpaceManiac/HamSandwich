@@ -128,7 +128,8 @@ void CastSpell(Guy *me)
 	if(player.life==0)
 		return;	// no shooting when you're dead
 	cost = SpellCost(player.casting);
-
+	if(player.usedSpells[player.casting]==0)
+		player.usedSpells[player.casting]=1;
 	if(player.mana-cost<0)
 	{
 		ExplodeParticles2(PART_HAMMER,me->x,me->y,me->z,4,8);
@@ -367,18 +368,19 @@ void CastSpell(Guy *me)
 		case SPL_INFERNO:	// inferno
 			if (!ClassicMode())
 				StunAllOnscreen((byte)(SkillValue(SKILL_SHOCKWAVE) * 30));
-
+			player.timeSinceLastInferno = 0;
+			player.infernoKills = 0;
 			if(player.spell[SPL_INFERNO]==1 || player.downgradeSpell[SPL_INFERNO])
 			{
 				byte l = SpellLevel() / 4;
 				if (!ClassicMode())
-					l = 2 + SkillValue(SKILL_INFERNO) * 2;
+					l = 4 + SkillValue(SKILL_INFERNO)*8/5;
 				if (l < 1) l = 1;
 				j=256/l;
 				for(i=0;i<256;i+=j)
 				{
 					c=me->facing*32+i;
-					FireExactBullet(me->x,me->y,0,Cosine(c)*4,Sine(c)*4,0,0,i/8+1,0,BLT_BOMB);
+					FireExactBullet(me->x,me->y,0,Cosine(c)*4,Sine(c)*4,0,0,ClassicMode()?(i/8+1):i/16+1,0,BLT_BOMB);
 					if (!ClassicMode() && Random(100) < SkillValue(SKILL_MAYHEM))
 					{
 						int x, y;

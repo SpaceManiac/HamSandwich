@@ -5,6 +5,8 @@
 #include "guy.h"
 #include "water.h"
 #include "challenge.h"
+#include "achieves.h"
+#include "spell.h"
 
 int totalBrains;
 static world_t *world;
@@ -1267,6 +1269,25 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 				{
 					SendMessageToGame(MSG_WINLEVEL,0);
 					MakeNormalSound(SND_WINLEVEL);
+					bool ok = true;
+					for (int i = 0; i < 10; i++)
+						if ((i != SPL_SUMMON && i!=SPL_HEAL && i!=SPL_ARMOR && player.usedSpells[i]) ||
+							(i==SPL_SUMMON && player.usedSpells[i]!=1))	// you have to have cast summon, and summon=2 if you killed something with something else (stepping on spider, reflected shots, etc)
+						{
+							ok = false;
+							break;
+						}
+					if (ok && player.usedFireballs == 0 && player.summonKills >= 20)	// the only spells you used were summon, heal, and armor, and you used no fireballs, and summons got 20 kills
+						EarnAchieve(Achievement::SUMMON);
+					ok = true;
+					for (int i = 0; i < 10; i++)
+						if (i != SPL_ARMOR && player.usedSpells[i])
+						{
+							ok = false;
+							break;
+						}
+					if (ok && player.totalKills >= 20)
+						EarnAchieve(Achievement::STONESKIN);
 				}
 			}
 			else

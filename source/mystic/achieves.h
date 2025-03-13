@@ -26,6 +26,7 @@ enum class Achievement :byte
 	BERSERK,
 	HEAL,
 	NUM_ACHIEVES,
+	NONE,
 };
 
 enum class Progress :byte
@@ -38,6 +39,7 @@ class AchieveDef
 {
 	public:
 		char name[32];
+		byte icon;
 		char hint[128];
 		char desc[128];
 
@@ -47,5 +49,10 @@ class AchieveDef
 void InitAchieves(void);
 void ExitAchieves(void);
 TASK(void) AchieveMenu(MGLDraw *mgl);
+
+void InitAchieveSystem(void);
+void EarnAchieve(Achievement n);
+void UpdateAchieves(void);
+void RenderAchieves(void);
 
 #endif

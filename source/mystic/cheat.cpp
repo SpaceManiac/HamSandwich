@@ -192,9 +192,11 @@ void DoCheat(byte w)
 			break;
 		case 18:
 			player.mana = player.maxMana;
+			NewMessage("mana mana mana", 30);
 			break;
-		case 20:
+		case 19:
 			player.skillPts += 10;
+			NewMessage("SKILLBOR!!!", 30);
 			break;
 	}
 }

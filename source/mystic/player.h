@@ -99,8 +99,9 @@ typedef struct player_t
 	byte worldNum;
 	int overworldX,overworldY;
 	word chaseFairy;
-	word UNUSED_WASTED_SPACE;
 	// values reset for each level
+	byte usedFireballs;
+	byte seekerKills;
 	byte shield;
 	byte levelNum;
 	byte keys[4];
@@ -142,7 +143,7 @@ typedef struct player_t
 	byte disableThorns;
 	byte disableMoveNShoot;
 	byte disableDmgNumbers;
-	byte unusedSUCKERREPLACE;
+	byte timeSinceLastInferno;
 	byte summonDmgBoost;
 	byte taunted;
 	byte parry;
@@ -155,7 +156,12 @@ typedef struct player_t
 	byte barrier;
 	byte storedFlames;
 	byte flameCounter;
-	byte expando[222-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
+	byte infernoKills;
+	byte summonKills;
+	byte usedSpells[10];
+	byte totalKills;	// capped at 255 of course
+	word cumulativeBerserk;
+	byte expando[207-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
 } player_t;
 
 extern player_t player;

@@ -6,6 +6,7 @@
 #include "shop.h"
 #include "guy.h"
 #include "appdata.h"
+#include "achieves.h"
 
 #define ASK_RESETCHAR	1
 #define ASK_RESETSTAR	2
@@ -788,6 +789,7 @@ void ChallengeMenuRender(MGLDraw *mgl)
 			}
 
 			Print(x-15-1,3+y-1,chal[j].name,-32,2);
+			Print(x-15-1,3+y-1,chal[j].name,-32,2);
 			Print(x-15+1,3+y+1,chal[j].name,-32,2);
 			PrintGlow(x-15,3+y,chal[j].name,2);
 			if(chal[j].chapter!=255 && (chal[j].chapter!=15 || chalData.bought[j]==0))
@@ -1476,6 +1478,8 @@ TASK(byte) ChallengeMenu(MGLDraw *mgl)
 				if(attempt.quit)
 					b=1;
 				CalcChallengePercent();
+				if (percent == 100)
+					EarnAchieve(Achievement::MASTER_CHALLENGE);
 			}
 		}
 	}
@@ -1501,6 +1505,9 @@ byte GoalNumber(byte type)
 void ChallengeEvent(byte type,int n)
 {
 	byte g;
+
+	if (type == CE_SHOOT)
+		player.usedFireballs = 1;
 
 	if(!challenging)
 		return;
@@ -1753,6 +1760,16 @@ void CompleteGoals(void)
 	{
 		if(GoalIsDone(&chal[chalCursor].goal[i],(byte)i))
 		{
+			if (i == 0 && chal[chalCursor].chapter == 3 && chal[chalCursor].level == 11)	// beat bobby khan
+			{
+				EarnAchieve(Achievement::WIN_CHALLENGE);
+				if (BrutalMode())
+					EarnAchieve(Achievement::WINBRUTAL);
+				if (ClassicMode())
+					EarnAchieve(Achievement::WINCLASSIC);
+				else
+					EarnAchieve(Achievement::WINMODERN);
+			}
 			goalsDoneThisTime++;
 			if(chalData.goal[chalCursor][i]==0)
 			{

@@ -1,6 +1,7 @@
 #include "intface.h"
 #include "player.h"
 #include "spell.h"
+#include "achieves.h"
 
 #define SPR_LIFEMETER	0
 #define SPR_IFHAMMER	1
@@ -219,7 +220,8 @@ void UpdateInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 	int i;
 
 	flip++;
-
+	if(!GameIsPaused())
+		UpdateAchieves();
 	for(i=0;i<2;i++)
 	{
 		if(life>curLife)
@@ -416,6 +418,7 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 			DrawFillBox(20, y+2+ (16 - fill), 23, y+18, 32 * 1 + 16);
 		}
 	}
+	RenderAchieves();
 }
 
 sprite_t *GetIntfaceSpr(byte spr)

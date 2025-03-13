@@ -11,121 +11,121 @@
 
 AchieveDef achieveDef[] = {
 	{
-		"Old Schoolkid",
+		"Old Schoolkid",0,
 		"Prove you are a true classic.",
 		"Completed Classic Mode.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Modern Gamer",
+		"Modern Gamer",1,
 		"Hello, fellow children! I too am a gamer!",
 		"Completed Modern Mode.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Git Gud",
+		"Git Gud",2,
 		"Brutalize Bobby Khan.",
 		"Completed Brutal Mode (either Classic or Modern).",
 		Progress::ONE_SHOT
 	},
 	{
-		"A little BIT kRaZy",
+		"A little BIT kRaZy",3,
 		"Let's see if you're truly loco.",
 		"Completed Madcap Mode (either Classic or Modern).",
 		Progress::ONE_SHOT
 	},
 	{
-		"Graduation Cap",
+		"Graduation Cap",4,
 		"Earn the angriest hat of them all.",
-		"Collected every single Stone in Madcap Mode. Wow, what a grind.",
+		"Collected 99 of every type of Madcap Stone. Wow, what a grind.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Kid Mystic's Pro Caster",
+		"Kid Mystic's Pro Caster",5,
 		"Master the challenges of this world.",
-		"Completed Challenge Mode (either Classic or Modern).",
+		"Beat Bpbby Khan in Challenge Mode (either Classic or Modern).",
 		Progress::ONE_SHOT
 	},
 	{
-		"Starkid",
+		"Starkid",6,
 		"Just like Luigi, you gotta collect the stars.",
 		"Earned every star possible in Challenge Mode (either Classic or Modern).",
 		Progress::ONE_SHOT
 	},
 	{
-		"Rune Master",
+		"Rune Master",7,
 		"Build a rock collection!",
 		"Fully upgraded every Rune, just for fun. And this achievement.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Caught 'Em All",
+		"Caught 'Em All",8,
 		"You know who we want you to catch.",
 		"Caught every fairy!",
 		Progress::ONE_SHOT
 	},
 	{
-		"Forged In Air",
-		"This would be easier if a watery tart would just throw it at you.",
+		"Forged In Air",9,
+		"This would be easier if a watery tart just threw it at you.",
 		"Completed the Armageddon Sword!",
 		Progress::ONE_SHOT
 	},
 	{
-		"Take The L",
+		"Take The L",10,
 		"This achievement was made by the makers of Spooky Castle's vault.",
 		"Reached level 50!",
 		Progress::ONE_SHOT
 	},
 	{
-		"Energetic Boss Rage",
+		"Energetic Boss Rage",11,	// NOT IMPLEMENTED BECAUSE HMM
 		"Hint",
 		"Defeat a boss with nothing but Energy Barrage.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Amazing Blaze",
+		"Amazing Blaze",12,
 		"Hedges and ONLY hedges.",
 		"Burn down every tree in Among The Hedges.",
 		Progress::ONE_SHOT
 	},
 	{
-		"seeker",
-		"Hint",
-		"",
+		"Side Effects May Include Death",13,
+		"Seek without seeking.",
+		"Got 20 Seeker Bolt kills without casting a single Bolt.",
 		Progress::ONE_SHOT
 	},
 	{
-		"ice",
-		"Hint",
-		"Freeze 20 enemies at once.",
+		"Kid Medusa",14,
+		"Revenge is a dish best served cold.",
+		"Froze 20 enemies at once.",
 		Progress::ONE_SHOT
 	},
 	{
-		"inferno",
-		"Hint",
-		"",
+		"Mass Casualty Event",15,
+		"An infernal catastrophe.",
+		"Killed 20 enemies in one cast of Inferno.",
 		Progress::ONE_SHOT
 	},
 	{
-		"summon",
-		"Hint",
-		"",
+		"Take a Break",16,
+		"Let somebody else save Tulipton.",
+		"Your summons beat a level alone, with at least 20 kills.",
 		Progress::ONE_SHOT
 	},
 	{
-		"stoneskin",
-		"Hint",
-		"",
+		"Rubber v. Glue",17,
+		"Why are they hitting themselves?",
+		"Won a level with at least 20 kills, using only Armor spells.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Blurred Cirque",
+		"Blurred Cirque",18,
 		"Never stop never stopping!",
 		"Remained Berserk for 1 minute straight.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Born Again",
+		"Born Again",19,
 		"'Tis better to die a thousand deaths.",
 		"Died twice in one level, and lived to tell the tale.",
 		Progress::ONE_SHOT
@@ -272,18 +272,18 @@ void RenderAchieveMenu(MGLDraw *mgl)
 	for (int i = 0; i < (int)Achievement::NUM_ACHIEVES; i++)
 	{
 		byte col = 32 * 3;
-		if (opt.achieve[i] == ACHIEVE_GOT || (i%2))
+		if (opt.achieve[i] == ACHIEVE_GOT)
 			col = 32 * 5;
 
 		if (cursor == i)
 		{
 			RenderSkillBox(x, y, x + 40, y + 40, 16, col+31);
 			RenderSkillBox(x + 2, y + 2, x + 38, y + 38, 16, col+5);
-			BlitIcon(0, x + 4, y + 4, col, 5);
+			BlitIcon(achieveDef[i].icon, x + 4, y + 4, col, 5);
 
 			RenderSkillBox(HALFWID - 250, SCRHEI - 160, HALFWID + 250, SCRHEI - 90, col+20, col + 4);
 			CenterPrintGlow(SCRHEI - 160, achieveDef[i].name, 2);
-			if (opt.achieve[i] == ACHIEVE_GOT || (i % 2))
+			if (opt.achieve[i] == ACHIEVE_GOT)
 			{
 				chalSpr->GetSprite(2)->Draw(HALFWID - 250+20, SCRHEI - 160+10, mgl);
 				chalSpr->GetSprite(2)->Draw(HALFWID + 250-20, SCRHEI - 160+10, mgl);
@@ -300,7 +300,7 @@ void RenderAchieveMenu(MGLDraw *mgl)
 		{
 			RenderSkillBox(x, y, x + 40, y + 40, col+16, col+4);
 			RenderSkillBox(x + 2, y + 2, x + 38, y + 38, col+16, col+4);
-			BlitIcon(0, x + 4, y + 4, 3, 0);
+			BlitIcon(achieveDef[i].icon, x + 4, y + 4, 3, 0);
 		}
 		
 
@@ -360,4 +360,80 @@ TASK(void) AchieveMenu(MGLDraw *mgl)
 		EndClock();
 	}
 	ExitAchieveMenu();
+}
+
+//------------------------------------------------------- END OF MENU
+std::vector<Achievement> achieveQueue;
+Achievement achDisplayed;
+int achX;
+byte achState;
+
+#define ACH_WIDTH (280)
+
+void InitAchieveSystem(void)
+{
+	achieveQueue.clear();
+	achDisplayed = Achievement::NONE;
+}
+
+void EarnAchieve(Achievement n)
+{
+	if (opt.achieve[(int)n] == ACHIEVE_GOT)
+		return;
+
+	opt.achieve[(int)n] = ACHIEVE_GOT;
+	achieveQueue.push_back(n);
+}
+
+void UpdateAchieves(void)
+{
+	if (achDisplayed == Achievement::NONE)
+	{
+		if (achieveQueue.size() > 0)
+		{
+			achDisplayed = achieveQueue[0];
+			achieveQueue.erase(achieveQueue.begin());
+			achX = SCRWID;
+			achState = 0;	// coming out
+			MakeNormalSound(SND_TRIVIA);
+		}
+		else
+			return;
+	}
+
+	if (achState == 0)	// popping out
+	{
+		achX -= 16;
+		if (achX < SCRWID - ACH_WIDTH)
+		{
+			achX = SCRWID - ACH_WIDTH;
+			achState = 1;
+		}
+	}
+	else if (achState < 30 * 5)	// displaying
+	{
+		achState++;
+		if (achState == 150)
+			achState = 255;
+	}
+	else // going away
+	{
+		achX += 8;
+		if (achX > SCRWID)
+		{
+			achDisplayed = Achievement::NONE;
+		}
+	}
+}
+
+void RenderAchieves(void)
+{
+	if (achDisplayed != Achievement::NONE)
+	{
+		RenderSkillBox(achX+2, SCRHEI - 62+2, achX + ACH_WIDTH - 3, SCRHEI - 3, 0,0);
+		RenderSkillBox(achX, SCRHEI - 62, achX + ACH_WIDTH-5, SCRHEI - 5, 32 * 5 + 16, 32 * 5 + 5);
+		BlitIcon(achieveDef[(int)achDisplayed].icon, achX + ACH_WIDTH-5 - 2 - 32, SCRHEI - 5 - 2 - 32, 5, 0);
+		RightPrintGlow(achX + ACH_WIDTH-5, SCRHEI - 62, "Achievement Achieved!", 2);
+		RightPrintGlow(achX + ACH_WIDTH - 5 - 2 - 32 - 5, SCRHEI - 5 - 15, achieveDef[(int)achDisplayed].name, 1);
+	}
 }

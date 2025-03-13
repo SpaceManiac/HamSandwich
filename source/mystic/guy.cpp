@@ -10,6 +10,7 @@
 #include "particle.h"
 #include "skills.h"
 #include "runes.h"
+#include "achieves.h"
 
 namespace
 {
@@ -18,6 +19,7 @@ namespace
 	Guy *goodguy;
 	byte badguys;
 	int lastSafeX,lastSafeY;
+	word frozenGuys;
 }
 
 //------------------------------------------------------------------------
@@ -442,6 +444,9 @@ void Guy::SeqFinished(void)
 				player.shield=30*2;
 				player.poison = 0;
 				beenReborn++;
+				if (beenReborn == 2)
+					EarnAchieve(Achievement::HEAL);
+
 				if (player.experience > player.needExp / 4)	// lose 25% of the XP needed for next level
 					player.experience -= player.needExp / 4;
 				else
@@ -627,6 +632,8 @@ void Guy::Update(Map *map,world_t *world)
 	}
 	if(frozen && hp>0)
 	{
+		if(!(monsType[type].flags&MF_GOODGUY))
+			frozenGuys++;
 		bright=map->map[mapx+mapy*map->width].templight;
 		frostBite++;
 		if (frostBite >= 60)
@@ -1491,13 +1498,15 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		}
 	}
 
-	if (!ClassicMode() && type!=MONS_BOUAPHA)
+	if (!ClassicMode() && !(monsType[type].flags&MF_GOODGUY))
 	{
 		float fDamage = damage;
 		if (melted)
 			fDamage = fDamage * (100 + SkillValue(SKILL_MELTARMOR)) / 100.0f;
+		
 		float v = RuneValue(Rune::FIREBALLS)+100;
-		fDamage = (fDamage * (v) / 100.0f);
+		if(BulletHittingType()==BLT_HAMMER || BulletHittingType()==BLT_HAMMER2 || BulletHittingType()==BLT_SKULL)
+			fDamage = (fDamage * (v) / 100.0f);
 
 		if (player.stoneskin > 0)
 			fDamage = (fDamage * (RuneValue(Rune::ARMOR_DMG) + 100) / 100);
@@ -1528,6 +1537,10 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			critChance += RuneValue(Rune::SEEKER);
 		if(BulletHittingType()==BLT_PTEROSHOT || BulletHittingType()==BLT_GOODSHOCK)
 			critChance += RuneValue(Rune::SUMMON);
+		else if(player.usedSpells[SPL_SUMMON]==1)
+			player.usedSpells[SPL_SUMMON] = 2;	// you hit an enemy somehow other than minion power.
+		// The summon achievement checks for this - other checks for spellcasting can just check if non-zero, but this one checks if SPL_SUMMON=2 to mean you failed the summon challenge
+
 		if(BulletHittingType()==BLT_BOOM || BulletHittingType()==BLT_LIQUIFY2)
 			critChance += RuneValue(Rune::INFERNO);
 
@@ -1618,18 +1631,25 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 
 	if(hp<=0)
 	{
-		/*if (BulletHittingType() == BLT_LASER && !ClassicMode())
-		{
-			byte mana = SkillValue(SKILL_ENERGYMANA);
-			while (mana > 0)
-			{
-				if (player.mana <= player.maxMana)
-					player.mana ++;
-				mana--;
-			}
-		}*/
 		if (!ClassicMode() && (BulletHittingType() == BLT_MISSILE || BulletHittingType() == BLT_LILBOOM) && SkillValue(SKILL_SEEKBOOM) > 0)
 			FireExactBullet(x, y, z, 0, 0, 0, 0, 7, 0, BLT_SEEKBOOM);
+		if (BulletHittingType() == BLT_MISSILE || BulletHittingType() == BLT_LILBOOM || BulletHittingType() == BLT_SEEKBOOM)
+		{
+			player.seekerKills++;
+			if (player.seekerKills >= 20 && player.usedSpells[SPL_SEEKER] == 0)
+				EarnAchieve(Achievement::SEEKER);
+		}
+		if ((BulletHittingType() == BLT_BOOM || BulletHittingType() == BLT_LIQUIFY2) && player.timeSinceLastInferno < 30)	// you have 1 second since an inferno to get your kills
+		{
+			player.infernoKills++;
+			if (player.infernoKills >= 20)
+				EarnAchieve(Achievement::INFERNO);
+		}
+		if (BulletHittingType() == BLT_PTEROSHOT || BulletHittingType() == BLT_GOODSHOCK)
+			player.summonKills++;
+		if (!(monsType[type].flags & MF_GOODGUY) && player.totalKills < 255)
+			player.totalKills++;
+
 		SpecialKillCheck(map, type);
 		hp=0;
 		seq=ANIM_DIE;
@@ -1802,6 +1822,9 @@ void UpdateGuys(Map *map,world_t *world)
 {
 	int i;
 
+	if(player.timeSinceLastInferno<255)
+		player.timeSinceLastInferno++;
+	frozenGuys = 0;
 	badguys=0;
 	for(i=0;i<maxGuys;i++)
 		if(guys[i].type!=MONS_NONE)
@@ -1812,6 +1835,8 @@ void UpdateGuys(Map *map,world_t *world)
 			if(guys[i].type==MONS_BOUAPHA && player.berserk)
 				guys[i].Update(map,world);
 		}
+	if (frozenGuys >= 20)
+		EarnAchieve(Achievement::ICEBLAST);
 }
 
 void OverworldUpdateGuys(Map *map,world_t *world)

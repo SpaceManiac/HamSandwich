@@ -5,6 +5,7 @@
 #include "spell.h"
 #include "challenge.h"
 #include "skills.h"
+#include "achieves.h"
 
 #define SPR_FLAME   0
 #define SPR_LASER   5
@@ -84,6 +85,18 @@ void BurnTreesInArea(Map *map,int x, int y, int x2, int y2)
 				tile->item = ITM_BURNEDTREE;
 				for (int i = 0; i < 6; i++)
 					FireBullet((tx*TILE_WIDTH+TILE_WIDTH/2 - 24 + Random(48))*FIXAMT, (ty*TILE_HEIGHT+TILE_HEIGHT/2 - 16 + Random(32))*FIXAMT, 0, BLT_FAKELIQUIFY);
+				if (player.worldNum == 1 && player.levelNum == 11)	// Among the Hedges
+				{
+					byte gotEmAll = true;
+					for(int k=0;k<map->width*map->height;k++)
+						if (map->map[k].item == ITM_TREE)
+						{
+							gotEmAll = false;
+							break;
+						}
+					if (gotEmAll)
+						EarnAchieve(Achievement::DRAGONFLAME);
+				}
 			}
 
 			if (i == x2)
@@ -98,7 +111,6 @@ void BurnTreesInArea(Map *map,int x, int y, int x2, int y2)
 		if (j > y2)
 			j = y2;
 	}
-	
 }
 
 byte BulletCanGo(int xx,int yy,Map *map,byte size)
@@ -1433,42 +1445,26 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			HitBadguys(me,map,world);
 			break;
 		case BLT_MISSILE:
-		case BLT_SKULL:
 			me->anim++;
-			if(me->type==BLT_MISSILE)
+			if(me->timer==40)
+				me->target=LockOnEvil(map,me->x>>FIXSHIFT,me->y>>FIXSHIFT);
+			if(((me->anim>0) && (me->target!=65535)) ||
+				((me->anim>2) && (me->target==65535)))
 			{
-				if(me->timer==40)
-					me->target=LockOnEvil(map,me->x>>FIXSHIFT,me->y>>FIXSHIFT);
-				if(((me->anim>0) && (me->target!=65535)) ||
-					((me->anim>2) && (me->target==65535)))
-				{
-					BlowSmoke(me->x-me->dx,me->y-me->dy,me->z,FIXAMT/16);
-					me->anim=0;
-				}
+				BlowSmoke(me->x-me->dx,me->y-me->dy,me->z,FIXAMT/16);
+				me->anim=0;
 			}
-			else
-			{
-				if(me->timer==50)
-					me->target=LockOnEvil(map,me->x>>FIXSHIFT,me->y>>FIXSHIFT);
-				map->BrightTorch((me->x/TILE_WIDTH)>>FIXSHIFT,
-								 (me->y/TILE_HEIGHT)>>FIXSHIFT,8,4);
-			}
-
+			
 			HitBadguys(me,map,world);
 			if(!GetGuyPos(me->target,&mapx,&mapy))
 				me->target=65535;
 			else
 			{
-				if (me->type == BLT_MISSILE)
-				{
-					if (ClassicMode())
-						i = (FIXAMT / 8) * (SpellLevel() / 2) + FIXAMT / 4;
-					else
-						i = (FIXAMT / 8) * (SkillValue(SKILL_SEEKER)*4+5) + FIXAMT / 4;
-				}
+				if (ClassicMode())
+					i = (FIXAMT / 8) * (SpellLevel() / 2) + FIXAMT / 4;
 				else
-					i=FIXAMT;
-
+					i = (FIXAMT / 8) * (SkillValue(SKILL_SEEKER)*4+5) + FIXAMT / 4;
+				
 				if(me->x>mapx)
 					me->dx-=i;
 				else
@@ -1478,10 +1474,10 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				else
 					me->dy+=i;
 
-				if(me->type==BLT_MISSILE)
-					i=SpellLevel()/3+4;
+				if (ClassicMode())
+					i = SpellLevel() / 3 + 4;
 				else
-					i=8;
+					i = SkillValue(SKILL_SEEKER) * 3 + 6;
 				Clamp(&me->dx,i<<FIXSHIFT);
 				Clamp(&me->dy,i<<FIXSHIFT);
 
@@ -1518,6 +1514,71 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 					me->facing+=16;
 				if(me->facing>15)
 					me->facing-=16;
+			}
+			break;
+		case BLT_SKULL:
+			me->anim++;
+			if (me->anim == 10)
+				me->target = LockOnEvil(map, me->x >> FIXSHIFT, me->y >> FIXSHIFT);
+			map->BrightTorch((me->x / TILE_WIDTH) >> FIXSHIFT,
+				(me->y / TILE_HEIGHT) >> FIXSHIFT, 8, 4);
+			
+			HitBadguys(me, map, world);
+			if (!GetGuyPos(me->target, &mapx, &mapy))
+				me->target = 65535;
+			else
+			{
+				i = FIXAMT;
+				
+				if (me->x > mapx)
+					me->dx -= i;
+				else
+					me->dx += i;
+				if (me->y > mapy)
+					me->dy -= i;
+				else
+					me->dy += i;
+
+				i = 8;
+				if (!ClassicMode() && RuneValue(Rune::SHOTGUN) > 0)
+					i = 16;
+
+				Clamp(&me->dx, i << FIXSHIFT);
+				Clamp(&me->dy, i << FIXSHIFT);
+
+				if (me->dx > 0)
+				{
+					if (me->facing > 8)
+						me->facing++;
+					else
+						me->facing--;
+				}
+				if (me->dx < 0)
+				{
+					if (me->facing > 8)
+						me->facing--;
+					else
+						me->facing++;
+				}
+				if (me->dy > 0)
+				{
+					if (me->facing > 11 || me->facing < 4)
+						me->facing++;
+					else
+						me->facing--;
+				}
+				if (me->dy < 0)
+				{
+					if (me->facing > 11 || me->facing < 4)
+						me->facing--;
+					else
+						me->facing++;
+				}
+
+				if (me->facing > 200)
+					me->facing += 16;
+				if (me->facing > 15)
+					me->facing -= 16;
 			}
 			break;
 	}
@@ -2128,8 +2189,16 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->z=FIXAMT*20;
 			me->dz=0;
 			me->target=65535;
-			me->dx=Cosine(me->facing)*6;
-			me->dy=Sine(me->facing)*6;
+			if (!ClassicMode() && RuneValue(Rune::SHOTGUN) > 0)
+			{
+				me->dx = Cosine(me->facing) * 12;
+				me->dy = Sine(me->facing) * 12;
+			}
+			else
+			{
+				me->dx = Cosine(me->facing) * 6;
+				me->dy = Sine(me->facing) * 6;
+			}
 			me->facing=facing/16;
 			break;
 		case BLT_ACID:
@@ -2412,7 +2481,7 @@ void FireExactBullet(int x,int y,int z,int dx,int dy,int dz,byte anim,byte timer
 
 void HammerLaunch(int x, int y, byte facing, byte count, byte flags,bool skulls)
 {
-	byte angle, newfacing;
+	byte angle;
 	byte bulType;
 	byte timer = 30;
 	int speed = 12;
@@ -2437,11 +2506,11 @@ void HammerLaunch(int x, int y, byte facing, byte count, byte flags,bool skulls)
 		for (int i = 0; i < count; i++)
 		{
 			byte a = facing * 32 - 24 + Random(48);
-			FireExactBullet(x - FIXAMT * 10 + Random(FIXAMT * 20), y - FIXAMT * 10 + Random(FIXAMT * 20), FIXAMT * 20, Cosine(a) * (speed*4/3), Sine(a) * (speed * 4 / 3), 0, 0, timer / 3, a / facingDivide, bulType);
+			FireExactBullet(x - FIXAMT * 10 + Random(FIXAMT * 20), y - FIXAMT * 10 + Random(FIXAMT * 20), FIXAMT * 20, Cosine(a) * (speed*4/3), Sine(a) * (speed * 4 / 3), 0, 0, timer / 3, ((a + facingDivide / 2) / facingDivide) & (256/facingDivide - 1), bulType);
 		}
 		if (flags & HMR_REVERSE)
 		{
-			newfacing = ((byte)(facing - 4)) % 8;
+			byte newfacing = ((byte)(facing - 4)) % 8;
 			HammerLaunch(x, y, newfacing, count, flags & (~HMR_REVERSE),skulls);
 		}
 		return;
@@ -2451,48 +2520,44 @@ void HammerLaunch(int x, int y, byte facing, byte count, byte flags,bool skulls)
 		angle = facing * 32;
 		FireExactBullet(x, y, FIXAMT * 20,
 			Cosine(angle) * speed, Sine(angle) * speed, 0,
-			0, timer, angle/facingDivide, bulType);
+			0, timer, ((angle + facingDivide / 2) / facingDivide) & (256/facingDivide - 1), bulType);
 	}
 	if (count == 2 || count == 4)	// these have slight off-angle double forward fire
 	{
 		angle = facing * 32 - 8;
 		FireExactBullet(x, y, FIXAMT * 20,
 			Cosine(angle) * speed, Sine(angle) * speed, 0,
-			0, timer, angle / facingDivide, bulType);
+			0, timer, ((angle + facingDivide / 2) / facingDivide) & (256/facingDivide - 1), bulType);
 		angle = facing * 32 + 8;
 		FireExactBullet(x, y, FIXAMT * 20,
 			Cosine(angle) * speed, Sine(angle) * speed, 0,
-			0, timer, angle / facingDivide, bulType);
+			0, timer, ((angle + facingDivide / 2) / facingDivide) & (256/facingDivide - 1), bulType);
 	}
 	if (count == 3 || count == 5)	// these have 45 degree angle fire
 	{
 		angle = facing * 32 - 32;
-		newfacing = ((byte)(facing - 1)) % 8;
 		FireExactBullet(x, y, FIXAMT * 20,
 			Cosine(angle) * speed, Sine(angle) * speed, 0,
-			0, timer, angle / facingDivide, bulType);
+			0, timer, ((angle + facingDivide / 2) / facingDivide) & (256/facingDivide - 1), bulType);
 		angle = facing * 32 + 32;
-		newfacing = (facing + 1) % 8;
 		FireExactBullet(x, y, FIXAMT * 20,
 			Cosine(angle) * speed, Sine(angle) * speed, 0,
-			0, timer, angle / facingDivide, bulType);
+			0, timer, ((angle + facingDivide / 2) / facingDivide) & (256/facingDivide - 1), bulType);
 	}
 	if (count == 4 || count == 5)	// these add almost 90 degree off fire
 	{
 		angle = facing * 32 - 56;
-		newfacing = ((byte)(facing - 2)) % 8;
 		FireExactBullet(x, y, FIXAMT * 20,
 			Cosine(angle) * speed, Sine(angle) * speed, 0,
-			0, timer, angle / facingDivide, bulType);
+			0, timer, ((angle + facingDivide / 2) / facingDivide) & (256/facingDivide - 1), bulType);
 		angle = facing * 32 + 56;
-		newfacing = (facing + 2) % 8;
 		FireExactBullet(x, y, FIXAMT * 20,
 			Cosine(angle) * speed, Sine(angle) * speed, 0,
-			0, timer, angle / facingDivide, bulType);
+			0, timer, ((angle + facingDivide / 2) / facingDivide) & (256 / facingDivide - 1), bulType);
 	}
 	if (flags & HMR_REVERSE)
 	{
-		newfacing = ((byte)(facing - 4)) % 8;
+		byte newfacing = ((byte)(facing - 4)) % 8;
 		HammerLaunch(x, y, newfacing, count, flags & (~HMR_REVERSE),skulls);
 	}
 }

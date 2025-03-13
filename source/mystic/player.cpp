@@ -96,8 +96,6 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		for (i = 0; i < MAX_SKILLS; i++)
 			player.skill[i] = 0;
 		player.skillPts = 0;
-		player.unusedSUCKERREPLACE = 0;
-		player.UNUSED_WASTED_SPACE = 0;
 		player.disableDmgNumbers = 0;
 		player.disableMoveNShoot = 0;
 		player.disableSword = 0;
@@ -131,6 +129,13 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	for(i=0;i<4;i++)
 		player.keys[i]=0;
 
+	player.usedFireballs = 0;
+	for(i=0;i<10;i++)
+		player.usedSpells[i] = 0;
+	player.cumulativeBerserk = 0;
+	player.totalKills = 0;
+	player.timeSinceLastInferno = 255;
+	player.seekerKills = 0;
 	player.parry = 0;
 	player.taunted = 0;
 	player.summonDmgBoost = 0;
@@ -663,9 +668,14 @@ void CheckForAllSecrets(void)
 			return;
 	if((player.haveFairy&65535)!=65535)
 		return;
+	// if you got here, then you have every fairy
+	EarnAchieve(Achievement::ALL_FAIRIES);
+
 	for(i=0;i<4;i++)
 		if(player.keychain[i]==0)
 			return;
+	// if you got here, you have every piece of the sword
+	EarnAchieve(Achievement::GETSWORD);
 
 	// got em all!
 
@@ -1055,6 +1065,7 @@ void PlayerLevelUp(int y)
 	player.needExp = player.level * player.level * 10 + player.level * 10;
 	if (player.level == MAX_PLAYERLEVEL)
 	{
+		EarnAchieve(Achievement::LEVEL50);
 		player.needExp = 0;
 		player.experience = 0;
 	}
@@ -1431,13 +1442,19 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	if (player.parry > 0)
 		player.parry--;
 
-	if(player.berserk)
+	if (player.berserk)
 	{
-		byte frame = GetMonsterFrameNum(MONS_BOUAPHA,me->seq,me->frm,me->facing);
+		byte frame = GetMonsterFrameNum(MONS_BOUAPHA, me->seq, me->frm, me->facing);
 		if (frame != 254)
 			TrailMe(me->x, me->y, me->z, frame);
 		player.berserk--;
+		player.cumulativeBerserk++;
+		if (player.cumulativeBerserk >= 60 * 30 * 2)	// 1 minute = 2 minutes, because berserk double-updates you
+			EarnAchieve(Achievement::BERSERK);
 	}
+	else
+		player.cumulativeBerserk = 0;
+
 	if(player.stoneskin)
 		player.stoneskin--;
 

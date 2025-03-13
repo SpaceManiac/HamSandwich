@@ -37,7 +37,6 @@
 #define MSG_WINLEVEL  2
 #define MSG_RESET	  3
 #define MSG_LOADGAME  4
-#define MSG_WINGAME	  5
 #define MSG_BATTLE	  6
 #define MSG_SHOWANIM  7
 
@@ -83,8 +82,8 @@ TASK(byte) PlayALevel(byte map);
 
 TASK(byte) LunaticWorld(byte world);
 TASK(byte) LunaticGame(MGLDraw *mgl,byte load);
-void TrainingGame(MGLDraw *mgl);
 
+bool GameIsPaused(void);
 void SendMessageToGame(byte msg,int content);
 void AddGarbageTime(dword t);
 

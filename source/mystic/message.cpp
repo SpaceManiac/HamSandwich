@@ -131,7 +131,7 @@ char speech[36*4][64]={
 	"on the main menu.",
 	// 25
 	"Welcome back to Madcap Mode!  You",
-	"can keep repeating this mode all",
+	"can keep exploring this mode all",
 	"you want, or start a new game, or",
 	"whatever!  Sorry, no more prizes!",
 	// 26

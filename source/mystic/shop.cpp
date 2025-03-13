@@ -4,6 +4,7 @@
 #include "sound.h"
 #include "fairy.h"
 #include "challenge.h"
+#include "achieves.h"
 
 #define SHOPX 10
 #define SHOPY 40
@@ -798,6 +799,16 @@ void BuyGear(dword w)
 	}
 }
 
+void CheckStonePurchases(void)
+{
+	if (player.shieldStones == 99 && player.powerStones == 99 && player.spellStones == 99)
+	{
+		if (!ClassicMode() && player.skillStones < 99)
+			return;
+		EarnAchieve(Achievement::MASTER_MADCAP);
+	}
+}
+
 void Buy(byte which)
 {
 	int prc;
@@ -815,6 +826,7 @@ void Buy(byte which)
 		GainMoney(-prc);
 		player.shieldStones++;
 		MakeNormalSound(SND_PURCHASE);
+		CheckStonePurchases();
 		return;
 	}
 	else if((player.nightmare || BrutalMode()) && shopCursor == 5)
@@ -830,6 +842,7 @@ void Buy(byte which)
 		GainMoney(-prc);
 		player.powerStones++;
 		MakeNormalSound(SND_PURCHASE);
+		CheckStonePurchases();
 		return;
 	}
 	else if((player.nightmare || BrutalMode()) && shopCursor == 10)
@@ -845,6 +858,7 @@ void Buy(byte which)
 		GainMoney(-prc);
 		player.spellStones++;
 		MakeNormalSound(SND_PURCHASE);
+		CheckStonePurchases();
 		return;
 	}
 	else if ((player.nightmare || BrutalMode()) && shopCursor == 15 && !ClassicMode())
@@ -861,6 +875,7 @@ void Buy(byte which)
 		player.skillStones++;
 		player.skillPts++;
 		MakeNormalSound(SND_PURCHASE);
+		CheckStonePurchases();
 		return;
 	}
 

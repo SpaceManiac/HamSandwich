@@ -10,6 +10,7 @@
 #include "palettes.h"
 #include "spell.h"
 #include "editor.h"
+#include "achieves.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -80,6 +81,7 @@ void LunaticInit(MGLDraw *mgl)
 	VolumeSound(opt.soundVol);
 	VolumeSong(opt.musicVol);
 	SetInMenu(true);
+	InitAchieveSystem();
 }
 
 void LunaticExit(void)
@@ -264,6 +266,11 @@ byte WonTheBattle(void)
 		return 1;
 
 	return 0;
+}
+
+bool GameIsPaused(void)
+{
+	return(gameMode != GAMEMODE_PLAY);
 }
 
 byte GetGameMode(void)
@@ -617,15 +624,6 @@ TASK(byte) LunaticRun(int *lastTime)
 			battle=0;
 			newGame=0;
 		}
-		else if(msgFromOtherModules==MSG_WINGAME)
-		{
-			AWAIT ShowVictoryAnim(0);	// you killed the final boss
-			mapToGoTo=0;
-			windingDown=1;
-			windDownReason=LEVEL_WIN;
-			msgFromOtherModules=MSG_NONE;
-			AWAIT ShowVictoryAnim(4);
-		}
 		else if(msgFromOtherModules==MSG_BATTLE)
 		{
 			switch(player.worldNum)	// different chapters have different random levels
@@ -900,17 +898,9 @@ TASK(byte) LunaticWorld(byte world)
 
 		if(player.worldNum==3 && mapNum==18)
 		{
-			player.worldNum=0;
+			// you beat the happy stick dancers, so you move on to more madcap
+			EarnAchieve(Achievement::WINMADCAP);
 			player.nightmare=2;
-			FreeWorld(&curWorld);
-			if(!LoadWorld(&curWorld,worldName[player.worldNum]))
-				CO_RETURN WORLD_ABORT;
-			ResetPlayerLevels();
-			InitWorld(&curWorld,worldNum);
-			InitPlayer(INIT_WORLD,player.worldNum,1);
-
-			worldNum=player.worldNum;
-			world=worldNum;
 			ResetPauseMenu();
 			player.overworldX=-2000;
 			mapNum=1;
@@ -983,6 +973,7 @@ TASK(byte) LunaticWorld(byte world)
 
 				if(player.nightmare)
 				{
+					// send you to the happy stick dancers
 					player.worldNum=3;
 					player.levelNum=18;
 					mapNum=18;
@@ -993,6 +984,13 @@ TASK(byte) LunaticWorld(byte world)
 				}
 				else
 				{
+					if(ClassicMode())
+						EarnAchieve(Achievement::WINCLASSIC);
+					else
+						EarnAchieve(Achievement::WINMODERN);
+					if (BrutalMode())
+						EarnAchieve(Achievement::WINBRUTAL);
+
 					player.worldNum=0;
 					player.nightmare=1;
 					FreeWorld(&curWorld);

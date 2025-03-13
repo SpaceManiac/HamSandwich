@@ -2915,10 +2915,6 @@ void AI_TheThing(Guy *me,Map *map,world_t *world,Guy *goodguy)
 					  me->z,FIXAMT);
 			me->x+=((1-MGL_random(3))<<FIXSHIFT);
 			me->y+=((1-MGL_random(3))<<FIXSHIFT);
-			if(me->frm==14 && me->frmTimer<32)
-			{
-				SendMessageToGame(MSG_WINGAME,0);
-			}
 		}
 		if(me->seq==ANIM_ATTACK && me->frm==3 && me->frmTimer<32)
 		{
