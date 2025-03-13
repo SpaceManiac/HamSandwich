@@ -57,9 +57,6 @@ enum {
 
 #define CONTROL_REPEAT_FRAMES (10)	// how many frames between auto-repeats in menus
 
-extern bool dpadToMove;
-extern byte stickDeadZone;
-
 enum RawGamepadAxis :byte
 {
 	LS_UP,
