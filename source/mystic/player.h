@@ -68,17 +68,16 @@ enum class Difficulty :byte
 typedef struct player_t
 {
 	// values for the overall game
-	byte musicSettings;
-	int prevScore;	// so you can lose all your points when you die
+	byte saveVersion;
+	char saveCode[4];
 	int score;
-	byte levelPassed[6][MAX_MAPS];
-	byte keychain[4];
-		// total completion is how many "points" the world has in it
-	int  totalCompletion[6];
-		// complete is how many of those points the player has, to create a percentage complete display
-	int  complete[6];
-	char customName[32];
-	byte lunacyKey[4];
+	byte levelPassed[6][MAX_MAPS-6];
+	byte swordPiece[4];
+	int  UNUSED1[6];		
+	int  UNUSED2[6];
+	char UNUSED3[32];
+	byte UNUSED4[3];
+	byte bobbyDoorOpen;
 	byte prevLevel;	// in case you die
 	word prevExp;	// in case you die
 	word prevMoney;
@@ -161,7 +160,8 @@ typedef struct player_t
 	byte usedSpells[10];
 	byte totalKills;	// capped at 255 of course
 	word cumulativeBerserk;
-	byte expando[207-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
+	byte levelPassed2[6][6];	// the last 6 levels have to hide here to prevent old saves from breaking
+	byte expando[170-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
 } player_t;
 
 extern player_t player;
@@ -179,16 +179,10 @@ int  PlayerBrains(void);
 void SetPlayerHP(int hp);
 byte PlayerLevelsPassed(void);
 byte PlayerPassedLevel(byte world,byte map);
-byte PlayerKeyChain(byte w);
+byte PlayerHasSwordPiece(byte w);
 byte PlayerKeys(byte w);
 void PlayerLoseKey(byte w);
-void PlayerSetWorldWorth(byte world,int amt);
-float PlayerGetPercent(byte world);
-float PlayerGetGamePercent(void);
 int CalcGamePercent(player_t* p);
-void SetCustomName(const char *name);
-char *GetCustomName(void);
-byte PlayerHasLunacyKey(byte w);
 void PlayerHeal(byte amt);
 void PlayerLoadGame(byte which);
 void PlayerSaveGame(byte which);
@@ -196,8 +190,6 @@ byte GetPlayerWorld(void);
 byte PlayerShield(void);
 void PlayerGetPoints(int amt);
 void PlayerResetScore(void);
-byte PlayerGetMusicSettings(void);
-void PlayerSetMusicSettings(byte m);
 void SetPlayerGlow(byte v);
 byte GetPlayerGlow(void);
 byte PlayerPushMore(void);
@@ -216,7 +208,7 @@ void PlayerUpdateLife(void);
 byte PlayerHasSpell(void);
 void BeginArmageddon(void);
 void ArmageddonUpdate(Map *map);
-byte KeyChainAllCheck(void);
+byte SwordAllCheck(void);
 byte SpellBookForThisLevel(byte level,byte chapter);
 byte FairyForThisLevel(word lvl);
 byte GetVampyClock(void);
@@ -233,11 +225,18 @@ bool CanAffordMoney(int amt);
 int TotalMoney(void);
 byte HighestWorldReached(void);
 void PlayerHealWithSpell(byte amt);
+
 void GetRuneInLevel(void);
+void GetFairyBellInLevel(void);
+void GetSwordInLevel(void);
+void GetSpellInLevel(void);
 bool GotRuneInLevel(byte world, byte level);
 bool GotFairyBellInLevel(byte world, byte level);
 bool GotSpellInLevel(byte world, byte level);
 bool GotSwordInLevel(byte world, byte level);
+void ResetLevelPassedFlags(int chapter, int level, bool resetAll);
+byte* GetLevelPassedFlag(int chapter, int level);
+
 void PickUpRune(void);
 
 bool BrutalMode(void);

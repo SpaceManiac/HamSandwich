@@ -860,25 +860,25 @@ void ChallengeMenuRender(MGLDraw *mgl)
 
 				if (chal[chalCursor].flags & LP_GOTFAIRY)
 				{
-					OutlineFarleySprite(173, x-8, 460, -31 + 31 * ((player.levelPassed[chal[chalCursor].chapter][chal[chalCursor].level] & LP_GOTFAIRY)!=0));
+					OutlineFarleySprite(173, x-8, 460, -31 + 31 *GotFairyBellInLevel(chal[chalCursor].chapter,chal[chalCursor].level));
 					x -= 32;
 				}
 
 				if (chal[chalCursor].flags & LP_GOTSPELL)
 				{
-					OutlineFarleySprite(45, x, 445, -31 + 31 * ((player.levelPassed[chal[chalCursor].chapter][chal[chalCursor].level] & LP_GOTSPELL)!=0));
+					OutlineFarleySprite(45, x, 445, -31 + 31 * GotSpellInLevel(chal[chalCursor].chapter,chal[chalCursor].level));
 					x -= 32;
 				}
 
 				if (chal[chalCursor].flags & LP_GOTSWORD)
 				{
-					OutlineFarleySprite(131, x+4, 465, -31 + 31 * ((player.levelPassed[chal[chalCursor].chapter][chal[chalCursor].level] & LP_GOTSWORD)!=0));
+					OutlineFarleySprite(131, x+4, 465, -31 + 31 * GotSwordInLevel(chal[chalCursor].chapter,chal[chalCursor].level));
 					x -= 32;
 				}
 
 				if (chal[chalCursor].flags & LP_GOTRUNE)
 				{
-					OutlineFarleySprite(281, x, 440, -31 + 31 * ((player.levelPassed[chal[chalCursor].chapter][chal[chalCursor].level] & LP_GOTRUNE) != 0));
+					OutlineFarleySprite(281, x, 440, -31 + 31 * GotRuneInLevel(chal[chalCursor].chapter,chal[chalCursor].level));
 					x -= 32;
 				}
 			}

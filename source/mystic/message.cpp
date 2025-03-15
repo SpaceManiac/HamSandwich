@@ -3,7 +3,7 @@
 #include "game.h"
 #include "intface.h"
 
-char speech[36*4][64]={
+char speech[47*4][64]={
 	// 0
 	"Welcome to Beginnerton!  This town is",
 	"really a tutorial on some basic game",
@@ -184,6 +184,61 @@ char speech[36*4][64]={
 	"to read here!",
 	"Ugh, just push up the shelves from",
 	"left to right.",
+	// 36
+	"Oh dearie me! I'm just a helpless old",
+	"lady! Would you assist me in making my",
+	"famous Swamp Stew, young man? I need",
+	"you to throw these ingredients in",
+	// 37
+	"the pot in exactly this order. Please",
+	"don't make a mistake! Swamp Stew can",
+	"be a trifle... temperamental.",
+	"",
+	// 38
+	"Did you forget the recipe? Sometimes I",
+	"mix it up too! Almost seems like it's",
+	"always different. Here it is again: ",
+	"",
+	// 39
+	"Delightful, that's all the ingredients!",
+	"Now to cook it. Step on the button there",
+	"to light the fire. The longer you stay",
+	"on the button, the hotter it gets.",
+	// 40
+	"Once it's lit, there's enough wood for",
+	"10 seconds of cooking. You need to boil",
+	"it for 3 seconds and then keep it at a",
+	"simmer until it's done.",
+	// 41
+	"Oh no, the Octon Juice isn't even",	// tentacle attack
+	"cooked! This is definitely going to be",
+	"a problem.",
+	"",
+	// 42
+	"The stew is overheated! This can't be",	// magmazoids
+	"good!",
+	"",
+	"",
+	// 43
+	"Wait, what order did you put the",	// just explodes
+	"ingredients in? This is a disaster!",
+	"",
+	"",
+	// 44
+	"Ack, these are the wrong ingredients!",	// mushie attack
+	"This is mushroom feed, not Swamp Stew!",
+	"",
+	"",
+	// 45
+	"Delicious, this is perfect Swamp Stew!",
+	"Okay, full disclosure. I'm actually a",
+	"witch. I know, I know, I don't look a",
+	"day over hag. Anyway, since you were",
+	// 46
+	"so helpful, I'm gonna hex you up a nice",
+	"treat - a Rune Pouch! That will let you",
+	"equip one more rune at a time. Thanks",
+	"again, young lad.",
 };
 
 byte speechX,speechY,curSpeech;
@@ -690,7 +745,7 @@ void RenderFarley(void)
 		for (int j = totalSpells-1; j >= 0; j--)
 			OutlineFarleySprite(45, 565 - 16 * totalSpells + j * 16, 30 + i * 110 + 45, 0 - 31 * (j >= fairyCt));
 
-		OutlineFarleySprite(131,160,30+i*110+85, 0-31*(player.keychain[i]==0));
+		OutlineFarleySprite(131,160,30+i*110+85, 0-31*(player.swordPiece[i]==0));
 	}
 }
 

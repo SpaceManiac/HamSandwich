@@ -2,6 +2,7 @@
 #include "display.h"
 #include "player.h"
 #include "hammusic.h"
+#include "options.h"
 
 static int curSong;
 
@@ -44,7 +45,7 @@ void MakeNormalSound(int snd)
 
 void ReplaySong()
 {
-	if (!PlayerGetMusicSettings())
+	if (!SoundIsAvailable() || opt.musicVol==0)
 		return;
 
 	char s[64];

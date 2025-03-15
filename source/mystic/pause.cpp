@@ -492,20 +492,6 @@ void RenderWeirdMenu(void)
 	}
 }
 
-float CalcTotalPercent(player_t *p)
-{
-	int i,amt,total;
-
-	amt=0;
-	total=0;
-	for(i=0;i<1;i++)
-	{
-		total+=p->totalCompletion[i];
-		amt+=p->complete[i];
-	}
-	return (float)amt/(float)total;
-}
-
 void SetGiveUpText(byte gu)
 {
 	giveUp=gu;

@@ -101,8 +101,6 @@ void InitWorld(world_t *world,byte worldNum)
 			complete += 100;		// each level is worth 100 points except the hub which is worth nothing
 			world->map[i]->ScanForContent();
 		}
-
-	PlayerSetWorldWorth(worldNum,complete);
 }
 
 void GetWorldName(const char *fname,char *buf)

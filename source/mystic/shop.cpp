@@ -619,13 +619,13 @@ void RenderPlayerGear(int x,byte brt)
 	// armageddon stuff
 	b=abs(((brt/2)&31)-16)-8;
 	GetIntfaceSpr(67)->Draw(x+175,476,GetDisplayMGL());
-	if(player.keychain[0])
+	if(player.swordPiece[0])
 		GetIntfaceSpr(63)->DrawBright(x+175,476,GetDisplayMGL(),b);
-	if(player.keychain[3])
+	if(player.swordPiece[3])
 		GetIntfaceSpr(64)->DrawBright(x+175,476,GetDisplayMGL(),b);
-	if(player.keychain[1])
+	if(player.swordPiece[1])
 		GetIntfaceSpr(65)->DrawBright(x+175,476,GetDisplayMGL(),b);
-	if(player.keychain[2])
+	if(player.swordPiece[2])
 		GetIntfaceSpr(66)->DrawBright(x+175,476,GetDisplayMGL(),b);
 }
 

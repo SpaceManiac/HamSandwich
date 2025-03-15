@@ -186,7 +186,7 @@ void TerrainMouseClick(void)
 		if(mouseX>4 && mouseX<16 && mouseY>369 && mouseY<370+12)
 			world.terrain[editopt.curFloor].flags^=TF_TRANS;
 		if (mouseX > 320 && mouseX < 320+12 && mouseY>249 && mouseY < 249 + 12)
-			world.terrain[editopt.curFloor].flags ^= TF_COMBOSTEP;
+			world.terrain[editopt.curFloor].flags ^= TF_NOENEMY;
 	}
 	else
 	{
@@ -861,7 +861,7 @@ void RenderTerrainInfo(byte which)
 	RenderCheckbox(5,346,world.terrain[which].flags&TF_STEP,"Changes when stepped on");
 	RenderCheckbox(5,358,world.terrain[which].flags&TF_DESTRUCT,"Changes when damaged");
 	RenderCheckbox(5,370,world.terrain[which].flags&TF_TRANS,"Transparent Roof");
-	RenderCheckbox(320, 250, world.terrain[which].flags & TF_COMBOSTEP, "Combo Step");
+	RenderCheckbox(320, 250, world.terrain[which].flags & TF_NOENEMY, "No Enemies Allowed");
 
 	Print(5,386,"Next Terrain:",0,1);
 	RenderFloorTileUnlit(5,398,world.terrain[which].next);
@@ -1246,6 +1246,22 @@ static void HandleKeyPresses(void)
 				editopt.curBadguy++;
 				if(editopt.curBadguy>=NUM_MONSTERS)
 					editopt.curBadguy=1;
+				break;
+			case 'g':
+				{
+					mapTile_t* t = curMap->GetTile(tileX, tileY);
+					if (editopt.plopMode == PLOP_FLOOR && t)
+						editopt.curFloor = t->floor;
+					else if (editopt.plopMode == PLOP_WALL && t && t->wall != 0)
+					{
+						editopt.curWall = t->wall;
+						editopt.curWallFloor = t->floor;
+					}
+					else if (editopt.plopMode == PLOP_ITEM && t && t->item != 0)
+					{
+						editopt.curItem = t->item;
+					}
+				}
 				break;
 			case 8:
 				Delete(tileX,tileY);

@@ -195,6 +195,9 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 
 	result=1;
 
+	if (!(monsType[me->type].flags & MF_GOODGUY) && (world->terrain[m->floor].flags & TF_NOENEMY))
+		result = 0;	// badguys can't walk on this
+
 	if((me->type==MONS_BOUAPHA || me->type==MONS_LOG) && (!PlayerGetItem(m->item,me->x,me->y)))
 		m->item=ITM_NONE;
 
@@ -878,27 +881,7 @@ void Guy::Update(Map *map,world_t *world)
 		if (player.worldNum == 3 && player.levelNum == 7)
 			MinesPuzzle(map, mapx, mapy);
 	}
-	if ((oldmapx != mapx || oldmapy != mapy) &&
-		(world->terrain[map->map[mapx + mapy * map->width].floor].flags & TF_COMBOSTEP) && type==MONS_BOUAPHA)
-	{
-		MakeSound(SND_MENUCLICK, (mapx * TILE_WIDTH) << FIXSHIFT, (mapy * TILE_HEIGHT) << FIXSHIFT, SND_CUTOFF, 1000);
-		byte t1, t2;
-		t1 = map->map[mapx + mapy * map->width].floor;
-		t2 = world->terrain[map->map[mapx + mapy * map->width].floor].next;
-		for (int i = mapx - 1; i <= mapx + 1; i++)
-		{
-			for (int j = mapy - 1; j <= mapy + 1; j++)
-			{
-				if ((i == mapx || j == mapy) && i>=0 && j>=0 && i<map->width && j<map->height)	// only the + shape counts, not the diagonals
-				{
-					if(world->terrain[map->map[i + j * map->width].floor].flags& TF_COMBOSTEP)
-					{
-						map->map[i + j * map->width].floor = world->terrain[map->map[i + j * map->width].floor].next;	// trigger the next tile for all COMBOSTEP neighbors. Could be totally different setup, that's okay!
-					}
-				}
-			}
-		}
-	}
+	
 	if(oldmapx!=mapx || oldmapy!=mapy)
 		SpecialStepCheck(map,mapx,mapy,this);
 

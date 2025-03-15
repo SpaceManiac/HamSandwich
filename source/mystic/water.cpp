@@ -41,7 +41,7 @@ void InitWater(void)
 	{
 		water1[i]=0;
 		water2[i]=0;
-		waterbkgd[i] = 0;// src[(i % WATER_WIDTH) + (i / WATER_WIDTH) * width];
+		waterbkgd[i] = 32*3+5;// src[(i % WATER_WIDTH) + (i / WATER_WIDTH) * width];
 	}
 }
 
@@ -174,23 +174,35 @@ byte WaterPixel(int x,int y)
 	if(s>31)
 		s=31;
 
-	if(player.levelNum==20 && player.worldNum==2)
+	if (player.levelNum == 20 && player.worldNum == 2)
 	{
-		if(s-6<0)
+		if (s - 6 < 0)
 			return 0;
 		else
-			return (byte)s+32*1-6;
+			return (byte)s + 32 * 1 - 6;
 	}
-	else if(player.levelNum==22 && player.worldNum==2)
+	else if (player.levelNum == 22 && player.worldNum == 2)
 	{
-		return (byte)s+32*6;
+		return (byte)s + 32 * 6;
 	}
-	else if(player.worldNum==3)
+	else if (player.worldNum == 3)
 	{
-		if(s+3>31)
+		if (s + 3 > 31)
 			return 31;
 		else
-			return (byte)s+32*4;
+			return (byte)s + 32 * 4;
+	}
+	else if (player.worldNum == 0)
+	{
+		if (player.levelNum == 20 || (GetGoodguy() && GetGoodguy()->x < 38 * FIXAMT * TILE_WIDTH && GetGoodguy()->y>29 * FIXAMT * TILE_HEIGHT))
+		{
+			if (s < 4)
+				return (byte)0 + 32*5;
+			else
+				return (byte)s - 4 + 32*5;
+		}
+		else
+			return (byte)s + 32 * 3;
 	}
 	else
 		return (byte)s+32*3;

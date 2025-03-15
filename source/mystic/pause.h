@@ -14,7 +14,6 @@ void RenderRuneMenu(void);
 byte UpdatePauseMenu(MGLDraw *mgl);
 void UpdateUnPausedMenu();
 void InitPauseMenu(void);
-float CalcTotalPercent(player_t *p);
 void SetGiveUpText(byte gu);
 void SetSubCursor(byte s);
 void ResetPauseMenu(void);

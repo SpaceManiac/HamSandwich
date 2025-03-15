@@ -116,13 +116,13 @@ void Map::Init(world_t *wrld)
 	{
 		if(map[i].item==ITM_BRAIN)
 			totalBrains++;
-		if(map[i].item==ITM_KEYCH1 && PlayerKeyChain(0))	// keychains only appear once
+		if(map[i].item==ITM_SWORD1 && PlayerHasSwordPiece(0))	// keychains only appear once
 			map[i].item=0;
-		if(map[i].item==ITM_KEYCH2 && PlayerKeyChain(1))	// keychains only appear once
+		if(map[i].item==ITM_SWORD2 && PlayerHasSwordPiece(1))	// keychains only appear once
 			map[i].item=0;
-		if(map[i].item==ITM_KEYCH3 && PlayerKeyChain(2))	// keychains only appear once
+		if(map[i].item==ITM_SWORD3 && PlayerHasSwordPiece(2))	// keychains only appear once
 			map[i].item=0;
-		if(map[i].item==ITM_KEYCH4 && PlayerKeyChain(3))	// keychains only appear once
+		if(map[i].item==ITM_SWORD4 && PlayerHasSwordPiece(3))	// keychains only appear once
 			map[i].item=0;
 		if(map[i].item==ITM_SPELLBOOK && PlayerHasSpell())
 			map[i].item=0;
@@ -145,9 +145,9 @@ void Map::Init(world_t *wrld)
 				map[i].item=0;
 				*/
 		}
-		if(map[i].item>=ITM_KEYCH1 && map[i].item<=ITM_KEYCH4)
+		if(map[i].item>=ITM_SWORD1 && map[i].item<=ITM_SWORD4)
 		{
-			if(player.keychain[map[i].item-ITM_KEYCH1])
+			if(player.swordPiece[map[i].item-ITM_SWORD1])
 				map[i].item=0;
 		}
 		if(map[i].item==ITM_FAIRYBELL)
@@ -180,6 +180,8 @@ void Map::Init(world_t *wrld)
 				special[i].effect=0;	// disable this special
 			}
 	}
+	if (player.worldNum == 0 && player.levelNum == 20)
+		SwampStewSetup(this);
 	if (player.worldNum == 1 && player.levelNum == 3)
 		MushAidPuzzleReset(this);
 	if (player.worldNum == 1 && player.levelNum == 5)
@@ -314,6 +316,16 @@ void Map::Update(byte mode,world_t *world)
 					yy = y / FIXAMT + Random(TILE_HEIGHT);
 					WaterRipple(xx,yy, Random(800)+500);
 					BlowWigglySmoke(xx*FIXAMT,yy*FIXAMT, 0, 8);
+				}
+			}
+			else if (player.worldNum == 0 && player.levelNum == 20)
+			{
+				if (Random(300) == 0)
+				{
+					int xx, yy;
+					xx = x / FIXAMT + Random(TILE_WIDTH);
+					yy = y / FIXAMT + Random(TILE_HEIGHT);
+					WaterRipple(xx, yy, Random(800) + 500);
 				}
 			}
 		}
@@ -1038,10 +1050,9 @@ void SpecialAnytimeCheck(Map *map)
 		}
 	if(player.worldNum==3 && player.levelNum==1 && player.levelsPassed>=8)
 	{
-		if(player.lunacyKey[3]==0)
+		if(player.bobbyDoorOpen==0)
 		{
-			player.lunacyKey[3]=1;	// since lunacy keys aren't used, this is just a handy place to track
-									// whether or not this has happened
+			player.bobbyDoorOpen=1;
 			ShakeScreen(60);
 			MakeNormalSound(SND_BIGRUMBLE);
 		}
@@ -1230,10 +1241,7 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 	}
 	if(spcl->trigger&TRG_KEYCHAINS)
 	{
-		if((!PlayerKeyChain(0)) ||
-			(!PlayerKeyChain(1)) ||
-			(!PlayerKeyChain(2)) ||
-			(!PlayerKeyChain(3)))
+		if(!PlayerHasSword())
 			return;	// must have them all
 	}
 	if(spcl->trigger&TRG_PASSLEVELS)
@@ -1596,6 +1604,77 @@ void Cavernize(Map *map)
 						map->map[i+j*map->width].floor=23;
 					if(i!=map->width-1 && j!=map->height-1 && map->map[i+1+(j+1)*map->width].floor>4 && map->map[i+1+(j+1)*map->width].floor<17)
 						map->map[i+j*map->width].floor=21;
+				}
+			}
+		}
+}
+
+void Waterize(Map* map)
+{
+	byte result[] = { 188,187,185,194,186,189,193,197,184,192,190,198,191,195,196,199 };
+	byte lavaResult[] = { 0,18,19,27,20,34,28,30,17,25,33,31,26,29,32,35 };
+	byte v;
+	int i, j;
+
+	for (i = 0; i < map->width; i++)
+		for (j = 0; j < map->height; j++)
+		{
+			if (map->map[i + j * map->width].wall > 0 && map->map[i + j * map->width].floor > 183)
+			{
+				// this tile wants to be cavernized
+				v = 0;
+				if (i == 0 || map->map[i - 1 + j * map->width].wall > 0)
+					v += 1;
+				if (j == 0 || map->map[i + (j - 1) * map->width].wall > 0)
+					v += 2;
+				if (i == map->width - 1 || map->map[i + 1 + j * map->width].wall > 0)
+					v += 4;
+				if (j == map->height - 1 || map->map[i + (j + 1) * map->width].wall > 0)
+					v += 8;
+				map->map[i + j * map->width].floor = result[v];
+				if (j < map->height - 1 && map->map[i + (j + 1) * map->width].floor>4
+					&& map->map[i + (j + 1) * map->width].floor < 17 && map->map[i + j * map->width].wall == 1)
+					map->map[i + j * map->width].wall = 2;	// give it a lava tint
+			}
+			if (map->map[i + j * map->width].floor <= 4)	// basic floor
+			{
+				byte b = Random(2);
+				if (Random(7) == 0)
+					b = Random(3) + 2;
+				map->map[i + j * map->width].floor = b;
+			}
+			if (map->map[i + j * map->width].floor > 4 && map->map[i + j * map->width].floor < 17)
+			{
+				if (MGL_random(6) > 0)
+					map->map[i + j * map->width].floor = MGL_random(4) + 5;
+				else
+					map->map[i + j * map->width].floor = MGL_random(8) + 9;
+			}
+			if (map->map[i + j * map->width].floor < 5 || (map->map[i + j * map->width].floor > 16 && map->map[i + j * map->width].floor < 36))
+			{
+				v = 0;
+				if (i != 0 && map->map[i - 1 + j * map->width].floor > 4 && map->map[i - 1 + j * map->width].floor < 17)
+					v += 1;
+				if (j != 0 && map->map[i + (j - 1) * map->width].floor > 4 && map->map[i + (j - 1) * map->width].floor < 17)
+					v += 2;
+				if (i != map->width - 1 && map->map[i + 1 + (j)*map->width].floor > 4 && map->map[i + 1 + (j)*map->width].floor < 17)
+					v += 4;
+				if (j != map->height - 1 && map->map[i + (j + 1) * map->width].floor > 4 && map->map[i + (j + 1) * map->width].floor < 17)
+					v += 8;
+				if (v > 0)
+				{
+					map->map[i + j * map->width].floor = lavaResult[v];
+				}
+				else
+				{
+					if (i != 0 && j != 0 && map->map[i - 1 + (j - 1) * map->width].floor > 4 && map->map[i - 1 + (j - 1) * map->width].floor < 17)
+						map->map[i + j * map->width].floor = 24;
+					if (i != 0 && j != map->height - 1 && map->map[i - 1 + (j + 1) * map->width].floor > 4 && map->map[i - 1 + (j + 1) * map->width].floor < 17)
+						map->map[i + j * map->width].floor = 22;
+					if (i != map->width - 1 && j != 0 && map->map[i + 1 + (j - 1) * map->width].floor > 4 && map->map[i + 1 + (j - 1) * map->width].floor < 17)
+						map->map[i + j * map->width].floor = 23;
+					if (i != map->width - 1 && j != map->height - 1 && map->map[i + 1 + (j + 1) * map->width].floor > 4 && map->map[i + 1 + (j + 1) * map->width].floor < 17)
+						map->map[i + j * map->width].floor = 21;
 				}
 			}
 		}
@@ -2436,7 +2515,7 @@ void Map::ScanForContent(void)
 				contentFlags |= LP_GOTSPELL;
 			if (special[i].value == ITM_SILENTRUNE)
 				contentFlags |= LP_GOTRUNE;
-			if (special[i].value >=ITM_KEYCH1 && special[i].value<=ITM_KEYCH4)
+			if (special[i].value >=ITM_SWORD1 && special[i].value<=ITM_SWORD4)
 				contentFlags |= LP_GOTSWORD;
 		}
 	}
@@ -2448,7 +2527,7 @@ void Map::ScanForContent(void)
 			contentFlags |= LP_GOTRUNE;
 		if (map[i].item == ITM_FAIRYBELL)
 			contentFlags |= LP_GOTFAIRY;
-		if (map[i].item >= ITM_KEYCH1 && map[i].item <= ITM_KEYCH4)
+		if (map[i].item >= ITM_SWORD1 && map[i].item <= ITM_SWORD4)
 			contentFlags |= LP_GOTSWORD;
 	}
 }
@@ -2710,5 +2789,118 @@ void BatsPuzzle(Map* map,int x,int y)
 			BlowWigglySmoke(px, py, 0, 8);
 		}
 		batsProgress++;
+	}
+}
+
+void SwampSpawn(Map* map, byte type,int minx, int miny, int maxx, int maxy)
+{
+	int tries = 200;
+	while (tries-- > 0)
+	{
+		int x = Random(maxx - minx+1) + minx;
+		int y = Random(maxy - miny + 1) + miny;
+		mapTile_t* t = map->GetTile(x, y);
+		if (type == MONS_OCTOPUS && (t->floor < 20 || t->floor>23))
+			continue;	// on water only
+		else if (type!=MONS_OCTOPUS && t->floor >= 20 && t->floor < 74)	// not on water or water-edge tiles
+			continue;
+		if (world->terrain[t->floor].flags & TF_NOENEMY)
+			continue;
+		if (t->item || t->wall)
+			continue;
+
+		AddGuy((x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, type);
+		return;
+	}
+}
+
+void SwampItem(Map* map, byte type, int minx, int miny, int maxx, int maxy,bool requireSpclFloor)
+{
+	int tries = 200;
+	if (requireSpclFloor)
+		tries += 2000;	// let's just make mostly sure the key actually spawns
+	while (tries-- > 0)
+	{
+		int x = Random(maxx - minx + 1) + minx;
+		int y = Random(maxy - miny + 1) + miny;
+		mapTile_t* t = map->GetTile(x, y);
+		if (t->floor >= 20 && t->floor < 74)	// not on water or water-edge tiles
+			continue;
+		if (world->terrain[t->floor].flags & TF_NOENEMY)
+			continue;
+		if (requireSpclFloor && t->floor != 96)
+			continue;	// can only be a specific floor type, the grey/brown brick. Used for the keys so that they aren't just in dumb spots
+		if (t->item || t->wall)
+			continue;
+
+		t->item = type;
+		return;
+	}
+	// if you got here, then somehow it didn't spawn. That is bad for the key. So let's just put it in the center of the box and hope that spot is reachable (in the current version of the map as I write this, it super is!)
+	if(requireSpclFloor)
+		map->GetTile((minx + maxx) / 2, (miny + maxy) / 2)->item = type;
+}
+
+void SwampStewSetup(Map* map)
+{
+	// goodies and enemies can't spawn in (53,28-73,70)
+	// they also can't spawn on water-edge pieces 24-74, or of course on water 20-23
+	// also not on no-enemy tiles
+	// first key spawns at 61,64 when you chat with her
+	// cauldron is 65,62
+	// button is 67,62
+	// left zone is (13,42-53,71)
+	// middle zone is
+	// right zone is
+
+	byte coords[] =
+	{
+		13,42,53,71,	// the rectangle that contains zone1 (upper left)
+		37,73,95,103,	// zone2 (bottom middle)
+		73,27,111,72,	// zone3 (top right)
+	};
+
+	byte zone[3] = { 0,1,2 };
+	byte keyOrder[3] = { 0,1,2 };
+	byte flips = 10;
+	while ((flips--)>0)
+	{
+		byte first = Random(3);
+		byte second = (first + 1) % 3;
+		byte z = zone[first];
+		zone[first] = zone[second];
+		zone[second] = z;
+		first = Random(3);
+		second = (first + 1) % 3;
+		z = keyOrder[first];
+		keyOrder[first] = keyOrder[second];
+		keyOrder[second] = z;
+	}
+
+	// now zone[0-2] are randomized betwen 0,1,2 for what goes in them
+	for (int i = 0; i < 3; i++)	// fill each zone with what it wants [ JUST DOING ZONE 0 RIGHT NOW]
+	{
+		SwampItem(map, ITM_KEYR + keyOrder[i], coords[i * 4], coords[i * 4 + 1], coords[i * 4 + 2], coords[i * 4 + 3],true);
+
+		if (zone[i] == 0)	// grimbleweed, guarded by spiders
+		{
+			for (int j = 0; j < 15; j++)
+				SwampSpawn(map, MONS_BIGSPDR, coords[i * 4], coords[i * 4 + 1], coords[i * 4 + 2], coords[i * 4 + 3]);
+			for (int j = 0; j < 30; j++)
+				SwampSpawn(map, MONS_SPIDER, coords[i * 4], coords[i * 4 + 1], coords[i * 4 + 2], coords[i * 4 + 3]);
+			for (int j = 0; j < 12; j++)
+				SwampItem(map, ITM_GRIMBLEWEED, coords[i * 4], coords[i * 4 + 1], coords[i * 4 + 2], coords[i * 4 + 3],false);	
+		}
+		else if (zone[i] == 1)	// octons, and some mushrooms for spice
+		{
+			for (int j = 0; j < 12; j++)
+				SwampSpawn(map, MONS_OCTOPUS, coords[i * 4], coords[i * 4 + 1], coords[i * 4 + 2], coords[i * 4 + 3]);
+			for (int j = 0; j < 10; j++)
+				SwampSpawn(map, MONS_SHROOM, coords[i * 4], coords[i * 4 + 1], coords[i * 4 + 2], coords[i * 4 + 3]);
+		}
+		else if (zone[i] == 2)	// the third thing
+		{
+
+		}
 	}
 }

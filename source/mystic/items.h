@@ -16,10 +16,10 @@
 #define ITM_COIN	 9
 #define ITM_FLAME	 10
 #define ITM_BRAIN	 11
-#define ITM_KEYCH1	 12
-#define ITM_KEYCH2	 13
-#define ITM_KEYCH3	 14
-#define ITM_KEYCH4	 15
+#define ITM_SWORD1	 12
+#define ITM_SWORD2	 13
+#define ITM_SWORD3	 14
+#define ITM_SWORD4	 15
 #define ITM_KEY		 16
 #define ITM_KEYR     17
 #define ITM_KEYG	 18
@@ -37,9 +37,9 @@
 
 #define ITM_SMLROCKS 30
 #define ITM_HOLETREE 31
-#define ITM_IGLOO 32
+#define ITM_GRIMBLEWEED 32
 
-#define ITM_BOX		 50
+#define ITM_UNUSED	 50
 #define ITM_STUMP	 51
 #define ITM_BUSH	 52
 #define ITM_BIGROCKS 53
@@ -64,7 +64,8 @@
 #define ITM_TARGET	 83
 #define ITM_LAVAROCK 84
 #define ITM_BURNEDTREE 85
-#define MAX_ITMS	 86
+#define ITM_CAULDRON 86
+#define MAX_ITMS	 87
 
 // these defines are 1 greater than the highest item of that type
 // (that is, items 1 - X-1 are things the player can pick up, and items

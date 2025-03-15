@@ -41,67 +41,19 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	manaRuneValue = 0;
 	if(initWhat==INIT_GAME)	// initialize everything, this is to start a whole new game
 	{
-		player.runeStones = 0;
-		player.vaultOpened=0;
-		player.curSpell=0;
-		player.nightmare=0;
-		player.powerStones=0;
-		player.spellStones=0;
-		player.shieldStones=0;
-		player.skillStones = 0;
-		for(i=0;i<20;i++)
-			player.gotSpell[i]=0;
-
-		player.score=0;
-		player.musicSettings=2;
+		memset(&player, 0, sizeof(player_t));
 		player.level=1;
-		player.experience=0;
-		for(j=0;j<4;j++)
-			player.keychain[j]=0;
-
-		for(i=0;i<6;i++)
-		{
-			for(j=0;j<MAX_MAPS;j++)
-				player.levelPassed[i][j]=0;
-			player.totalCompletion[i]=100;
-			player.complete[i]=0;
-			if(i<4)
-				player.lunacyKey[i]=0;
-		}
-		for (i = 0; i < (int)Rune::NUM_RUNES; i++)
-			player.runes[i] = 0;
-
-		player.levelsPassed=0;
-		for(i=0;i<10;i++)
-			player.spell[i]=0;
-		player.gear = 0;
+		
 		player.boots=0 + BrutalMode();
 		player.hat = 0 + BrutalMode();
 		player.staff = 0 + BrutalMode();
 		if (BrutalMode() && !ClassicMode())
 			player.gear |= GEAR_HEART;
-		player.bigMoney=0;
-		player.money = 0;
 		player.maxSpeed=FIXAMT*4;
-		player.defense=0;
 		player.damage=2;
 		PlayerUpdateLife();
-		player.gameClock=0;
 		player.overworldX=-2000;
 		player.rechargeClock=4;
-		player.haveFairy=0;
-		player.chaseFairy = 0;
-		player.fairyOn=0;
-		player.templePuzzleDone=0;
-		for (i = 0; i < MAX_SKILLS; i++)
-			player.skill[i] = 0;
-		player.skillPts = 0;
-		player.disableDmgNumbers = 0;
-		player.disableMoveNShoot = 0;
-		player.disableSword = 0;
-		player.disableThorns = 0;
-		for (i = 0; i < 9; i++)
-			player.downgradeSpell[i] = 0;
 	}
 	if(initWhat>=INIT_WORLD) // initialize the things that go with each world
 	{
@@ -121,7 +73,6 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	spellRestorationBuffer = 0;
 	spellRestorationOutput = 0;
 	player.levelNum=level;
-	player.prevScore=player.score;	// back up the score (if you give up or die, it is reset)
 	player.prevLevel=player.level;
 	player.prevExp=player.experience;
 	player.prevMoney=player.money;
@@ -177,18 +128,18 @@ void ResetPlayerLevels(void)
 {
 	int i,j;
 
-	for(i=0;i<6;i++)
-		for(j=0;j<MAX_MAPS;j++)
-			player.levelPassed[i][j]&=(~LP_PASSED);
+	for (i = 0; i < 6; i++)
+		for (j = 0; j < MAX_MAPS; j++)
+			ResetLevelPassedFlags(i, j, false);
 
 	player.templePuzzleDone=0;
-	player.lunacyKey[3]=0;
+	player.bobbyDoorOpen=0;
 	player.vaultOpened=0;
 }
 
 byte PlayerHasSword(void)
 {
-	return(player.keychain[0] && player.keychain[1] && player.keychain[2] && player.keychain[3]);
+	return(player.swordPiece[0] && player.swordPiece[1] && player.swordPiece[2] && player.swordPiece[3]);
 }
 
 void PlayerLoadGame(byte which)
@@ -203,7 +154,6 @@ void PlayerLoadGame(byte which)
 		SDL_RWseek(f,sizeof(player_t)*which,RW_SEEK_SET);
 		SDL_RWread(f,&player,sizeof(player_t),1);
 		f.reset();
-		VolumeSong(player.musicSettings);
 	}
 	player.prevMoney=player.money;
 	player.prevExp=player.experience;
@@ -222,14 +172,6 @@ void PlayerSaveGame(byte which)
 	if(!f)
 	{
 		memset(p,0,sizeof(player_t)*5);	// make an empty player
-		for(i=0;i<6;i++)
-		{
-			p[0].totalCompletion[i]=100;
-			p[1].totalCompletion[i]=100;
-			p[2].totalCompletion[i]=100;
-			p[3].totalCompletion[i]=100;
-			p[4].totalCompletion[i]=100;
-		}
 		f=AppdataOpen_Write("mystic.sav");
 		SDL_RWwrite(f,p,sizeof(player_t),5);
 		f.reset();
@@ -310,11 +252,6 @@ void SetPlayerDefense(void)
 	}
 }
 
-void PlayerSetWorldWorth(byte world,int amt)
-{
-	player.totalCompletion[world]=amt;
-}
-
 void PlayerRenderInterface(MGLDraw *mgl)
 {
 	int b;
@@ -325,38 +262,6 @@ void PlayerRenderInterface(MGLDraw *mgl)
 
 	RenderInterface(player.life,player.hammerFlags,player.hammers,b,player.score,
 					player.weapon,player.ammo,player.hamSpeed,mgl);
-}
-
-void SetCustomName(const char *name)
-{
-	strncpy(player.customName,name,32);
-}
-
-char *GetCustomName(void)
-{
-	return player.customName;
-}
-
-float PlayerGetPercent(byte world)
-{
-	if(player.totalCompletion[world]==0)
-		return 1.0;
-	else
-		return (float)player.complete[world]/(float)player.totalCompletion[world];
-}
-
-float PlayerGetGamePercent(void)
-{
-	int i,amt,total;
-
-	amt=0;
-	total=0;
-	for(i=0;i<5;i++)
-	{
-		total+=player.totalCompletion[i];
-		amt+=player.complete[i];
-	}
-	return (float)amt/(float)total;
 }
 
 int CalcGamePercent(player_t* p)
@@ -376,7 +281,7 @@ int CalcGamePercent(player_t* p)
 				fairies++;
 		}
 	}
-	swords = player.keychain[0] + player.keychain[1] + player.keychain[2] + player.keychain[3];
+	swords = player.swordPiece[0] + player.swordPiece[1] + player.swordPiece[2] + player.swordPiece[3];
 	int totalNeeded = 24 + // runes
 		19 + // spells
 		4 + // swords
@@ -424,7 +329,6 @@ void PlayerResetScore(void)
 {
 	if(!Challenging() && ClassicMode())
 	{
-		player.score=player.prevScore;
 		player.level=player.prevLevel;
 		player.experience=player.prevExp;
 		player.money=player.prevMoney;
@@ -432,20 +336,14 @@ void PlayerResetScore(void)
 	}
 }
 
-byte PlayerPassedLevel(byte world,byte map)
-{
-	return (player.levelPassed[world][map]&LP_PASSED);
-}
-
 void PlayerWinLevel(byte w,byte l,byte isSecret)
 {
 	if(!PlayerPassedLevel(w, l))
 	{
-		player.complete[w]+=100;	// get some percentage points
 		if(!isSecret)
 			player.levelsPassed++;	// secret levels aren't counted in this (it's for triggering specials)
+		(*GetLevelPassedFlag(player.worldNum, player.levelNum)) |= LP_PASSED;
 	}
-	player.levelPassed[w][l] |= LP_PASSED;
 }
 
 byte GetPlayerWorld(void)
@@ -463,12 +361,9 @@ byte PlayerLevelsPassed(void)
 	return player.levelsPassed;
 }
 
-byte KeyChainAllCheck(void)
+byte SwordAllCheck(void)
 {
-	if(player.keychain[0]==1 &&
-		player.keychain[1]==1 &&
-		player.keychain[2]==1 &&
-		player.keychain[3]==1)
+	if(PlayerHasSword())
 	{
 		player.staff=4;	// max out the staff, so you can't buy new staves
 		player.spell[9]=1;
@@ -656,7 +551,7 @@ void CheckForAllSecrets(void)
 	byte runes = 0;
 	for(int j=0;j<4;j++)
 		for (i = 0; i < MAX_MAPS; i++)
-			if (player.levelPassed[j][i] & LP_GOTRUNE)
+			if (GotRuneInLevel(j,i))
 				runes++;
 	if (runes < 24)
 		return;	// gotta get all the runes
@@ -671,14 +566,12 @@ void CheckForAllSecrets(void)
 	// if you got here, then you have every fairy
 	EarnAchieve(Achievement::ALL_FAIRIES);
 
-	for(i=0;i<4;i++)
-		if(player.keychain[i]==0)
-			return;
+	if (!PlayerHasSword())
+		return;
 	// if you got here, you have every piece of the sword
 	EarnAchieve(Achievement::GETSWORD);
 
 	// got em all!
-
 	if(opt.challenge==0)
 	{
 		InitSpeech(24);
@@ -705,11 +598,11 @@ byte PlayerHasAllSecrets(byte chapter)
 
 	byte runes = 0;
 	for (i = 0; i < MAX_MAPS; i++)
-		if (player.levelPassed[chapter][i] & LP_GOTRUNE)
+		if (GotRuneInLevel(chapter,i))
 			runes++;
 	if (runes < 6) return 0;
 
-	return (player.keychain[chapter]);	// it all hinges on this item now!
+	return (player.swordPiece[chapter]);	// it all hinges on this item now!
 }
 
 byte PlayerGetItem(byte itm,int x,int y)
@@ -792,8 +685,8 @@ byte PlayerGetItem(byte itm,int x,int y)
 				player.gotSpell[i]=1;
 			else
 				player.gotSpell[i+10]=1;
-			player.levelPassed[player.worldNum][player.levelNum] |= LP_GOTSPELL;
-
+			GetSpellInLevel();
+			
 			FloaterParticles(x,y,1,32,-1,16);
 			FloaterParticles(x,y,5,10,2,16);
 			FloaterParticles(x,y,5,64,-3,16);
@@ -890,11 +783,11 @@ byte PlayerGetItem(byte itm,int x,int y)
 			FloaterParticles(x,y,3,24,0,8);
 			return 0;
 			break;
-		case ITM_KEYCH1:
+		case ITM_SWORD1:
 			MakeNormalSound(SND_GETKEYCHAIN);
-			player.keychain[0]=1;
-			player.levelPassed[player.worldNum][player.levelNum] |= LP_GOTSWORD;
-			if(!KeyChainAllCheck())
+			player.swordPiece[0]=1;
+			GetSwordInLevel();
+			if(!PlayerHasSword())
 				NewMessage("A piece of the Armageddon Sword!",75);
 			playerGlow=127;
 			FloaterParticles(x,y,5,32,-1,16);
@@ -904,11 +797,11 @@ byte PlayerGetItem(byte itm,int x,int y)
 			CheckForAllSecrets();
 			return 0;
 			break;
-		case ITM_KEYCH2:
+		case ITM_SWORD2:
 			MakeNormalSound(SND_GETKEYCHAIN);
-			player.keychain[1]=1;
-			player.levelPassed[player.worldNum][player.levelNum] |= LP_GOTSWORD;
-			if(!KeyChainAllCheck())
+			player.swordPiece[1]=1;
+			GetSwordInLevel();
+			if(!PlayerHasSword())
 				NewMessage("A piece of the Armageddon Sword!",75);
 			playerGlow=127;
 			FloaterParticles(x,y,5,32,-1,16);
@@ -918,11 +811,11 @@ byte PlayerGetItem(byte itm,int x,int y)
 			CheckForAllSecrets();
 			return 0;
 			break;
-		case ITM_KEYCH3:
+		case ITM_SWORD3:
 			MakeNormalSound(SND_GETKEYCHAIN);
-			player.keychain[2]=1;
-			player.levelPassed[player.worldNum][player.levelNum] |= LP_GOTSWORD;
-			if(!KeyChainAllCheck())
+			player.swordPiece[2]=1;
+			GetSwordInLevel();
+			if(!PlayerHasSword())
 				NewMessage("A piece of the Armageddon Sword!",75);
 			playerGlow=127;
 			FloaterParticles(x,y,5,32,-1,16);
@@ -932,11 +825,11 @@ byte PlayerGetItem(byte itm,int x,int y)
 			CheckForAllSecrets();
 			return 0;
 			break;
-		case ITM_KEYCH4:
+		case ITM_SWORD4:
 			MakeNormalSound(SND_GETKEYCHAIN);
-			player.keychain[3]=1;
-			player.levelPassed[player.worldNum][player.levelNum] |= LP_GOTSWORD;
-			if(!KeyChainAllCheck())
+			player.swordPiece[3]=1;
+			GetSwordInLevel();
+			if(!PlayerHasSword())
 				NewMessage("A piece of the Armageddon Sword!",75);
 			playerGlow=127;
 			FloaterParticles(x,y,5,32,-1,16);
@@ -944,20 +837,10 @@ byte PlayerGetItem(byte itm,int x,int y)
 			FloaterParticles(x,y,5,64,-3,16);
 			FloaterParticles(x,y,5,1,4,16);
 			CheckForAllSecrets();
-			return 0;
-			break;
-		case ITM_LOONYKEY:
-			MakeNormalSound(SND_LOONYKEY);
-			if(player.worldNum<4)
-			{
-				player.lunacyKey[player.worldNum]=1;
-				//ShowVictoryAnim(player.worldNum);
-			}
-			SendMessageToGame(MSG_WINLEVEL,1);	// win upon getting the key
 			return 0;
 			break;
 		case ITM_FAIRYBELL:
-			player.levelPassed[player.worldNum][player.levelNum] |= LP_GOTFAIRY;
+			GetFairyBellInLevel();
 			MakeNormalSound(SND_FAIRYGET);
 			AddChaseFairy();
 			NewMessage("The bell awakens a fairy!",75);
@@ -1009,20 +892,15 @@ byte PlayerPushMore(void)
 		return 0;
 }
 
-byte PlayerHasLunacyKey(byte w)
-{
-	return player.lunacyKey[w];
-}
-
 void PlayerLoseKey(byte w)
 {
 	if(player.keys[w])
 		player.keys[w]--;
 }
 
-byte PlayerKeyChain(byte w)
+byte PlayerHasSwordPiece(byte w)
 {
-	return player.keychain[w];
+	return player.swordPiece[w];
 }
 
 byte PlayerKeys(byte w)
@@ -1118,16 +996,6 @@ byte GetPlayerGlow(void)
 void SetPlayerGlow(byte v)
 {
 	playerGlow=v;
-}
-
-byte PlayerGetMusicSettings(void)
-{
-	return opt.musicVol;
-}
-
-void PlayerSetMusicSettings(byte m)
-{
-	player.musicSettings=MUSIC_OFF;
 }
 
 void PlayerThrowHammer(Guy *me)
@@ -1845,27 +1713,64 @@ int TotalMoney(void)
 
 void GetRuneInLevel(void)
 {
-	player.levelPassed[player.worldNum][player.levelNum] |= LP_GOTRUNE;
+	(*GetLevelPassedFlag(player.worldNum, player.levelNum)) |= LP_GOTRUNE;
+}
+
+void GetFairyBellInLevel(void)
+{
+	(*GetLevelPassedFlag(player.worldNum, player.levelNum)) |= LP_GOTFAIRY;
+}
+
+void GetSwordInLevel(void)
+{
+	(*GetLevelPassedFlag(player.worldNum, player.levelNum)) |= LP_GOTSWORD;
+}
+
+void GetSpellInLevel(void)
+{
+	(*GetLevelPassedFlag(player.worldNum, player.levelNum)) |= LP_GOTSPELL;
 }
 
 bool GotRuneInLevel(byte world,byte level)
 {
-	return (player.levelPassed[world][level] & LP_GOTRUNE);
+	return (*GetLevelPassedFlag(world,level)) & LP_GOTRUNE;
 }
 
 bool GotFairyBellInLevel(byte world, byte level)
 {
-	return (player.levelPassed[world][level] & LP_GOTFAIRY);
+	return (*GetLevelPassedFlag(world,level)) & LP_GOTFAIRY;
 }
 
 bool GotSpellInLevel(byte world, byte level)
 {
-	return (player.levelPassed[world][level] & LP_GOTSPELL);
+	return (*GetLevelPassedFlag(world,level)) & LP_GOTSPELL;
 }
 
 bool GotSwordInLevel(byte world, byte level)
 {
-	return (player.levelPassed[world][level] & LP_GOTSWORD);
+	return (*GetLevelPassedFlag(world,level)) & LP_GOTSWORD;
+}
+
+byte PlayerPassedLevel(byte world, byte map)
+{
+	return (*GetLevelPassedFlag(world,map)) & LP_PASSED;
+}
+
+
+byte* GetLevelPassedFlag(int chapter, int level)
+{
+	if (level < MAX_MAPS - 6)
+		return &player.levelPassed[chapter][level];
+	else
+		return &player.levelPassed2[chapter][level - MAX_MAPS - 6];
+}
+
+void ResetLevelPassedFlags(int chapter, int level, bool resetAll)
+{
+	if (!resetAll)
+		(*GetLevelPassedFlag(chapter, level)) &= (~LP_PASSED);
+	else
+		(*GetLevelPassedFlag(chapter, level)) = 0;
 }
 
 void PickUpRune(void)

@@ -20,6 +20,7 @@
 #define TF_DESTRUCT 512
 #define TF_TRANS    1024
 #define TF_COMBOSTEP 2048 // same as step, but it acts as though you stepped on all 4 of its immediate neighbors too. Only player can trigger it though
+#define TF_NOENEMY	4096
 
 typedef struct terrain_t
 {

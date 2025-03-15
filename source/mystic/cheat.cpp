@@ -151,7 +151,8 @@ void DoCheat(byte w)
 			PlayerGetPoints(10000);
 			break;
 		case 14:
-			player.keychain[0] = player.keychain[1] = player.keychain[2] = player.keychain[3] = 1;
+			player.swordPiece[0] = player.swordPiece[1] = player.swordPiece[2] = player.swordPiece[3] = 1;
+			SwordAllCheck();
 			SetKidSprite(1);
 			break;
 		case 15:	// auto-win level
@@ -183,11 +184,11 @@ void DoCheat(byte w)
 			for(i=0;i<20;i++)
 				player.gotSpell[i]=1;
 			player.haveFairy=65535;
-			player.keychain[0]=1;
-			player.keychain[1]=1;
-			player.keychain[2]=1;
-			player.keychain[3]=1;
-			KeyChainAllCheck();
+			player.swordPiece[0]=1;
+			player.swordPiece[1]=1;
+			player.swordPiece[2]=1;
+			player.swordPiece[3]=1;
+			SwordAllCheck();
 			CheckForAllSecrets();
 			break;
 		case 18:

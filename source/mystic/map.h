@@ -177,5 +177,6 @@ byte MySpecialType(byte type,Map *map,int mapx,int mapy);
 void GuestChamberPuzzleStep(Map* map, int mapx, int mapy);
 void MinesPuzzle(Map* map,int x,int y);
 void BatsPuzzle(Map* map,int x,int y);
+void SwampStewSetup(Map* map);
 
 #endif
