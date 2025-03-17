@@ -369,6 +369,8 @@ void RenderRuneMenu(void)
 			y += spacing;
 		}
 	}
+	sprintf(s, "%d/%d Runes equipped", RunesEquipped(), player.runePouches);
+	CenterPrint(HALFWID+HALFWID/2, y, s, 0, 2);
 
 	sprintf(s, "%02d", player.runeStones);
 	int len=GetStrLength(s, 1);
@@ -384,7 +386,6 @@ void RenderRuneMenu(void)
 		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14*2, "and upgrade them with", 0, 1);
 		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14*3, "Runestones. Press Fire to equip", 0, 1);
 		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14 * 4, "Awakened Runes.", 0, 1);
-		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14 * 5, "3 Runes may be equipped.", 0, 1);
 	}
 	else
 		RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 35, SCRWID - 10, SCRHEI - 30 - 15, 32 * 5 + 16, 32 * 5 + 6);
@@ -941,7 +942,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					}
 					else
 					{
-						if (RunesEquipped() >= 3)
+						if (RunesEquipped() >= player.runePouches)
 							MakeNormalSound(SND_UNAVAILABLE);
 						else
 							player.runes[subcursor] |= RUNE_EQUIPPED;

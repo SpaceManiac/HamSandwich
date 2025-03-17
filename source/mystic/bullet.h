@@ -68,6 +68,8 @@
 #define BLT_LIFEPOTION (55)
 #define BLT_MANAPOTION (56)
 #define BLT_FAKELIQUIFY (57)	// a liquify flame that hurts nothing and doesn't spread
+#define BLT_OCTONJUICE (58)
+#define BLT_OCTONJUICESPLAT (59)
 
 #define MAX_BULLETS 512
 

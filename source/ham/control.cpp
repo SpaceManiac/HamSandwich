@@ -560,8 +560,6 @@ void UpdateControls(void)
 	if ((oldControls == 0 && menuControls==0) || reptCounter >= CONTROL_REPEAT_FRAMES)
 		reptCounter = 0;
 
-	//SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%d > %d %d | %d %d\n", (byte)playerInMenu, controls,taps,menuControls,menuTap);
-
 	controls &= (~lockOut);
 	taps &= (~lockOut);
 }

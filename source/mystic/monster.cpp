@@ -107,8 +107,9 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// idle (bald guy)
 				{1,255},	// move (blond hair)
 				{2,255},	// fire (chick)
-				{0,255},	// die
-				{3,255}		// A1   (wizard)
+				{4,255},	// die
+				{3,255},	// A1   (wizard)
+				{4,255}		// A2 (witch)
 			}},
 		{"Pterodactyl",	// pterodactyl - kid mystic's little buddy
 		 10,11,15,5,"graphics/ptero.jsp",0,MF_FLYING|MF_ENEMYWALK|MF_FREEWALK|MF_GOODGUY,
@@ -611,6 +612,14 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{1,2,3,2,1,255},	// attack=spit bats
 				{4,4,4,5,5,5,6,6,6,6,6,6,255},	// die
 			} },
+		{ "Swamp Rot",
+		 10,8,5,5,"graphics/crazybush.jsp",0,0,
+			{
+				{0,255},	// idle
+				{1,2,1,0,3,4,3,0,255},	// move
+				{0,255},	// attack
+				{5,6,7,255},	// die
+			} },
 	};
 
 static byte kidSpr;
@@ -916,7 +925,11 @@ void MonsterDraw(int x, int y, int z, byte type, byte seq, byte frm, byte facing
 		baseColor = 4;
 	if (type == MONS_BIGBAT2)
 		baseColor = 5;
-
+	if (type == MONS_SWAMPWEED)
+	{
+		baseColor = 5;
+		bright -= 1;
+	}
 	if(ouch==0)
 	{
 		if(!(monsType[type].flags&MF_GHOST))
@@ -2112,6 +2125,43 @@ void AI_Friendly(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				case 13:
 					InitSpeech(3);
 					break;
+				case 20:
+					if (me->mind2 == 0)
+					{
+						byte state, temp, score;
+						word time;
+						GetSwampStats(&state, &temp, &time, &score);
+						if(state==1)
+							InitSpeech(39);
+						else if (state == 3)
+						{
+							if (score < 50)	// something terrible happened
+								InitSpeech(48);
+							else
+								InitSpeech(49);	// you did a decent job
+						}
+						else
+							InitSpeech(36);
+						me->mind2 = 1;
+					}
+					else if (me->mind2 == 1)
+					{
+						byte state, temp, score;
+						word time;
+						GetSwampStats(&state, &temp, &time, &score);
+						if (state == 3)	// cooking is over
+						{
+							if (score < 50)	// something terrible happened
+								InitSpeech(48);
+							else
+								InitSpeech(49);	// you did a decent job
+						}
+						else if (SwampPotIsFull())
+							InitSpeech(39);
+						else
+							InitSpeech(38);
+					}
+					break;
 				case 55:
 					InitSpeech(7);
 					break;
@@ -2206,16 +2256,8 @@ void AI_Shroomlord(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		}
 		if(me->seq==ANIM_DIE && me->frm==1 && me->frmTimer<64)
 		{
-			if (ClassicMode())
-			{
-				AddGuy(me->x + (32 << FIXSHIFT), me->y, 0, MONS_SHROOM);
-				AddGuy(me->x - (32 << FIXSHIFT), me->y, 0, MONS_SHROOM);
-			}
-			else
-			{
-				AddGuy(me->x, me->y, 0, MONS_SHROOM);
-				AddGuy(me->x, me->y, 0, MONS_SHROOM);
-			}
+			AddGuy(me->x, me->y, 0, MONS_SHROOM);
+			AddGuy(me->x, me->y, 0, MONS_SHROOM);
 			for(i=0;i<30;i++)
 				BlowWigglySmoke(me->x-32*FIXAMT+MGL_randoml(64*FIXAMT),
 								me->y-32*FIXAMT+MGL_randoml(64*FIXAMT),
@@ -5564,6 +5606,67 @@ void AI_CrazyBush(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 }
 
+void AI_SwampWeed(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	if (me->reload)
+		me->reload--;
+
+	if (me->ouch == 4)
+	{
+		if (me->hp > 0)
+			MakeSound(SND_BUSHOUCH, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_BUSHDIE, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		return;	// can't do nothin' right now
+	}
+
+	// mind2=1 to chase, 2 to go in a random direction
+
+	if (me->mind2==1 && RangeToTarget(me, goodguy) < (50 * FIXAMT) && MGL_random(8) == 0 && map->FindGuy(me->mapx, me->mapy, 5, goodguy))
+	{
+		// get him!
+		goodguy->GetShot(me->dx / 2, me->dy / 2, 2, map, world);
+		if (me->mind2 == 1)	// chasing, so go random a moment
+		{
+			me->facing = Random(8);
+			me->mind = Random(10) + 3;
+			me->mind2 = 2;
+		}
+	}
+
+	if(me->mind2==1)	// chasing
+		FaceGoodguy(me, goodguy);
+
+	if (me->mind1)	// bumped a wall, so go in a random direction
+	{
+		me->mind1 = 0;
+		me->mind2 = 2;	// random direction
+		me->facing = Random(8);
+		me->mind = Random(20) + 10;
+	}
+	if(me->mind2==2)	// going random for a bit
+	{
+		if (me->mind)
+			me->mind--;
+		if (!me->mind)	// time to go back to chasing
+			me->mind2 = 1;
+	}
+
+	me->dx = Cosine(me->facing * 32) * 5;
+	me->dy = Sine(me->facing * 32) * 5;
+	if (me->seq != ANIM_MOVE)
+	{
+		me->seq = ANIM_MOVE;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 128;
+	}
+}
+
 void AI_Octopus(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
@@ -6753,7 +6856,7 @@ void AI_OctoTentacle(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->reload)
 		me->reload--;
 
-	if(!me->parent || me->parent->hp==0)
+	if((!me->parent || me->parent->hp==0) && (player.worldNum!=0 || player.levelNum!=20))	// level 20, chapter 0, is where we have a stray tentacle
 	{
 		me->GetShot(0,0,255,map,world);
 	}
@@ -6851,61 +6954,68 @@ void AI_OctoTentacle(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		}
 	}
 
-	if(me->y<me->parent->y-FIXAMT*140)
+	if (me->parent)
 	{
-		me->dy=FIXAMT*4;
-		me->mind=1;
-		me->mind1=10;
-	}
-	if(me->y>me->parent->y+FIXAMT*140)
-	{
-		me->dy=-FIXAMT*4;
-		me->mind=1;
-		me->mind1=10;
-	}
-	if(me->type==MONS_OCTOTENT)	// left-side tentacle
-	{
-		if(me->x<me->parent->x-FIXAMT*220)
+		if (me->y < me->parent->y - FIXAMT * 140)
 		{
-			me->dx=FIXAMT*4;
-			me->mind=1;
-			me->mind1=10;
+			me->dy = FIXAMT * 4;
+			me->mind = 1;
+			me->mind1 = 10;
 		}
-		if(me->x>me->parent->x-FIXAMT*30)
+		if (me->y > me->parent->y + FIXAMT * 140)
 		{
-			me->dx=-FIXAMT*4;
-			me->mind=1;
-			me->mind1=10;
+			me->dy = -FIXAMT * 4;
+			me->mind = 1;
+			me->mind1 = 10;
+		}
+		if (me->type == MONS_OCTOTENT)	// left-side tentacle
+		{
+			if (me->x < me->parent->x - FIXAMT * 220)
+			{
+				me->dx = FIXAMT * 4;
+				me->mind = 1;
+				me->mind1 = 10;
+			}
+			if (me->x > me->parent->x - FIXAMT * 30)
+			{
+				me->dx = -FIXAMT * 4;
+				me->mind = 1;
+				me->mind1 = 10;
+			}
+		}
+		else
+		{
+			if (me->x > me->parent->x + FIXAMT * 220)
+			{
+				me->dx = -FIXAMT * 4;
+				me->mind = 1;
+				me->mind1 = 10;
+			}
+			if (me->x < me->parent->x + FIXAMT * 30)
+			{
+				me->dx = FIXAMT * 4;
+				me->mind = 1;
+				me->mind1 = 10;
+			}
+		}
+
+		if (RangeToTarget(me, me->parent) < FIXAMT * 100)
+		{
+			if (me->x < me->parent->x)
+				me->dx -= FIXAMT * 6;
+			if (me->x > me->parent->x)
+				me->dx += FIXAMT * 6;
+			if (me->y < me->parent->y)
+				me->dy -= FIXAMT * 6;
+			if (me->y > me->parent->y)
+				me->dy += FIXAMT * 6;
+			me->mind = 1;
+			me->mind1 = 10;
 		}
 	}
 	else
 	{
-		if(me->x>me->parent->x+FIXAMT*220)
-		{
-			me->dx=-FIXAMT*4;
-			me->mind=1;
-			me->mind1=10;
-		}
-		if(me->x<me->parent->x+FIXAMT*30)
-		{
-			me->dx=FIXAMT*4;
-			me->mind=1;
-			me->mind1=10;
-		}
-	}
-
-	if(RangeToTarget(me,me->parent)<FIXAMT*100)
-	{
-		if(me->x<me->parent->x)
-			me->dx-=FIXAMT*6;
-		if(me->x>me->parent->x)
-			me->dx+=FIXAMT*6;
-		if(me->y<me->parent->y)
-			me->dy-=FIXAMT*6;
-		if(me->y>me->parent->y)
-			me->dy+=FIXAMT*6;
-		me->mind=1;
-		me->mind1=10;
+		me->dx = me->dy = 0;
 	}
 }
 

@@ -3,7 +3,7 @@
 #include "game.h"
 #include "intface.h"
 
-char speech[47*4][64]={
+char speech[51*4][64]={
 	// 0
 	"Welcome to Beginnerton!  This town is",
 	"really a tutorial on some basic game",
@@ -201,9 +201,9 @@ char speech[47*4][64]={
 	"",
 	// 39
 	"Delightful, that's all the ingredients!",
-	"Now to cook it. Step on the button there",
-	"to light the fire. The longer you stay",
-	"on the button, the hotter it gets.",
+	"Now to cook it. Step on the button",
+	"there to light the fire. The longer you",
+	"stay on the button, the hotter it gets.",
 	// 40
 	"Once it's lit, there's enough wood for",
 	"10 seconds of cooking. You need to boil",
@@ -239,6 +239,26 @@ char speech[47*4][64]={
 	"treat - a Rune Pouch! That will let you",
 	"equip one more rune at a time. Thanks",
 	"again, young lad.",
+	// 47
+	"Well, you aren't exactly a chef, but",
+	"I do appreciate you trying to help.",
+	"Full disclosure: I'm actually a witch.",
+	"Crazy, right? So since you have been",	// wraps back up to 46
+	// 48
+	"Get outta here, you ruined my swamp",
+	"hovel! No stew for you! Or me, come",
+	"to think of it!",
+	"",
+	// 49
+	"I hope to see you again, Kid Mystic.",
+	"You're a good egg.",
+	"",
+	"",
+	// 50
+	"so helpful, I'll give you a big old",
+	"smooch. Come here cutie pie!",
+	"",
+	"Just kidding. Consent and all that.",
 };
 
 byte speechX,speechY,curSpeech;
@@ -504,6 +524,62 @@ byte UpdateSpeech(MGLDraw *mgl)
 				speechY=0;
 				return 0;
 			}
+			if (curSpeech == 36)
+			{
+				curSpeech = 37;
+				speechX = 0;
+				speechY = 0;
+				return 0;
+			}
+			if (curSpeech == 39)
+			{
+				SwampEnableCooking();
+				curSpeech = 40;
+				speechX = 0;
+				speechY = 0;
+				return 0;
+			}
+			if (curSpeech == 41)
+			{
+				// uncooked octon means big tentacle attack
+				SwampDestroyCauldron(0);
+				return 1;
+			}
+			if (curSpeech == 42)	// overheated stew means magmazoids
+			{
+				SwampDestroyCauldron(1);
+				return 1;
+			}
+			if (curSpeech == 43) // wrong order, stew explodes
+			{
+				SwampDestroyCauldron(2);
+				return 1;
+			}
+			if (curSpeech == 44) // wrong amounts, mushies
+			{
+				SwampDestroyCauldron(3);
+				return 1;
+			}
+			if (curSpeech == 45 || curSpeech == 47) // both victory speeches go to the end victory speech
+			{
+				if (GotRunePouchInLevel(player.worldNum, player.levelNum))
+					curSpeech = 50;
+				else
+					curSpeech = 46;
+				speechX = 0;
+				speechY = 0;
+				return 0;
+			}
+			if (curSpeech == 46)
+			{
+				// get rune pouch
+				CurrentMap()->GetTile(60, 62)->item = ITM_RUNEPOUCH;
+				CurrentMap()->BrightTorch(60, 62, 24,8);
+				MakeNormalSound(SND_MEGABEAMHIT);
+				FloaterParticles((60*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT, (62*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT, 6, 20, 2, 20);
+				return 1;
+			}
+			
 			if (curSpeech >= 31 && curSpeech<=33)
 			{
 				if (curSpeech == 31)
@@ -614,6 +690,11 @@ void RenderSpeech(void)
 				ry += 40;
 			}
 		}
+	}
+	if (curSpeech >= 37 && curSpeech <= 40)	// show the swamp recipe
+	{
+		RenderSwampRecipe();
+
 	}
 }
 

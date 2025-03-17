@@ -156,6 +156,12 @@ void Map::Init(world_t *wrld)
 				(player.chaseFairy & (1 << (FairyForThisLevel(player.levelNum + player.worldNum * 50) - 1))))
 				map[i].item=0;
 		}
+		if (map[i].item == ITM_RUNEPOUCH)
+			if (GotRunePouchInLevel(player.worldNum, player.levelNum))
+				map[i].item = 0;
+		if (map[i].item == ITM_SKILLSHARD)
+			if (GotSkillShardInLevel(player.worldNum, player.levelNum))
+				map[i].item = 0;
 		if(player.worldNum==2 && player.levelNum==16 && player.vaultOpened && map[i].item==ITM_COIN)
 			map[i].item=0;	// if you got the spellbook, take the coins away!
 		if(map[i].item>=ITM_LETTERM && map[i].item<=ITM_LETTERC && !Challenging())
@@ -191,6 +197,8 @@ void Map::Init(world_t *wrld)
 		totalBrains=2;
 	if(player.levelNum==12 && player.worldNum==1)
 		totalBrains=3;
+	if (player.levelNum == 20 && player.worldNum == 0)
+		totalBrains = 1;	// get a brain for cooking, even if you fail
 
 	world=wrld;
 	// pop in all the badguys
@@ -339,13 +347,11 @@ void Map::Update(byte mode,world_t *world)
 	}
 
 	if(player.worldNum==1 && player.levelNum==13 && player.templePuzzleDone==0)
-	{
 		TemplePuzzle(this);
-	}
 	if(player.worldNum==2 && player.levelNum==17)
-	{
 		LockedMazePuzzle(this);
-	}
+	if (player.worldNum == 0 && player.levelNum == 20)
+		SwampUpdate(this);
 
 	if(timeToAnim==2)
 		timeToAnim=0;
@@ -1188,6 +1194,30 @@ void RenderSpecialXes(MGLDraw *mgl,Map *map,byte world)
 					}
 				if (GotSwordInLevel(world, mNum))
 					GetItemSprite(131)->DrawBright(cx + Cosine(angList[ang]) * outXes / FIXAMT, cy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, 0);
+				ang++;
+			}
+			if (m->contentFlags & LP_GOTRUNEPOUCH)
+			{
+				for (int xx = cx - 1; xx <= cx + 1; xx++)
+					for (int yy = cy - 1; yy <= cy + 1; yy++)
+					{
+						if (xx != cx && yy != cy)
+							GetItemSprite(4)->DrawBright(xx + Cosine(angList[ang]) * outXes / FIXAMT, yy + 3 + Sine(angList[ang]) * outXes / FIXAMT, mgl, -31);
+					}
+				if (GotSwordInLevel(world, mNum))
+					GetItemSprite(4)->DrawBright(cx + Cosine(angList[ang]) * outXes / FIXAMT, cy + 3 + Sine(angList[ang]) * outXes / FIXAMT, mgl, 0);
+				ang++;
+			}
+			if (m->contentFlags & LP_GOTSKILLSHARD)
+			{
+				for (int xx = cx - 1; xx <= cx + 1; xx++)
+					for (int yy = cy - 1; yy <= cy + 1; yy++)
+					{
+						if (xx != cx && yy != cy)
+							GetItemSprite(71)->DrawBright(xx + Cosine(angList[ang]) * outXes / FIXAMT, yy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, -31);
+					}
+				if (GotSwordInLevel(world, mNum))
+					GetItemSprite(71)->DrawColored(cx + Cosine(angList[ang]) * outXes / FIXAMT, cy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, 6, 0);
 				ang++;
 			}
 		}
@@ -2517,6 +2547,10 @@ void Map::ScanForContent(void)
 				contentFlags |= LP_GOTRUNE;
 			if (special[i].value >=ITM_SWORD1 && special[i].value<=ITM_SWORD4)
 				contentFlags |= LP_GOTSWORD;
+			if (special[i].value == ITM_RUNEPOUCH)
+				contentFlags |= LP_GOTRUNEPOUCH;
+			if (special[i].value == ITM_SKILLSHARD)
+				contentFlags |= LP_GOTSKILLSHARD;
 		}
 	}
 	for (int i = 0; i < width * height; i++)
@@ -2527,6 +2561,10 @@ void Map::ScanForContent(void)
 			contentFlags |= LP_GOTRUNE;
 		if (map[i].item == ITM_FAIRYBELL)
 			contentFlags |= LP_GOTFAIRY;
+		if (map[i].item == ITM_RUNEPOUCH)
+			contentFlags |= LP_GOTRUNEPOUCH;
+		if (map[i].item == ITM_SKILLSHARD)
+			contentFlags |= LP_GOTSKILLSHARD;
 		if (map[i].item >= ITM_SWORD1 && map[i].item <= ITM_SWORD4)
 			contentFlags |= LP_GOTSWORD;
 	}
@@ -2792,6 +2830,18 @@ void BatsPuzzle(Map* map,int x,int y)
 	}
 }
 
+//--------------------------------------- SWAMP PUZZLE TECHNOLOGY IS REALLY BIG
+byte swampRecipe[6];
+byte potContents[3];
+byte potOrder[3],potPos;
+byte swampTicker;
+byte boilTemp, simmerTemp;
+byte swampTemp;
+word swampCookTime;
+word swampBoilTime, swampSimmerTime,swampPreheatTime;
+bool swampHaveHitBoil;
+byte swampScore;
+
 void SwampSpawn(Map* map, byte type,int minx, int miny, int maxx, int maxy)
 {
 	int tries = 200;
@@ -2814,11 +2864,9 @@ void SwampSpawn(Map* map, byte type,int minx, int miny, int maxx, int maxy)
 	}
 }
 
-void SwampItem(Map* map, byte type, int minx, int miny, int maxx, int maxy,bool requireSpclFloor)
+void SwampItem(Map* map, byte type, int minx, int miny, int maxx, int maxy)
 {
 	int tries = 200;
-	if (requireSpclFloor)
-		tries += 2000;	// let's just make mostly sure the key actually spawns
 	while (tries-- > 0)
 	{
 		int x = Random(maxx - minx + 1) + minx;
@@ -2828,17 +2876,12 @@ void SwampItem(Map* map, byte type, int minx, int miny, int maxx, int maxy,bool 
 			continue;
 		if (world->terrain[t->floor].flags & TF_NOENEMY)
 			continue;
-		if (requireSpclFloor && t->floor != 96)
-			continue;	// can only be a specific floor type, the grey/brown brick. Used for the keys so that they aren't just in dumb spots
 		if (t->item || t->wall)
 			continue;
 
 		t->item = type;
 		return;
 	}
-	// if you got here, then somehow it didn't spawn. That is bad for the key. So let's just put it in the center of the box and hope that spot is reachable (in the current version of the map as I write this, it super is!)
-	if(requireSpclFloor)
-		map->GetTile((minx + maxx) / 2, (miny + maxy) / 2)->item = type;
 }
 
 void SwampStewSetup(Map* map)
@@ -2848,7 +2891,7 @@ void SwampStewSetup(Map* map)
 	// also not on no-enemy tiles
 	// first key spawns at 61,64 when you chat with her
 	// cauldron is 65,62
-	// button is 67,62
+	// button is 68,61
 	// left zone is (13,42-53,71)
 	// middle zone is
 	// right zone is
@@ -2857,12 +2900,22 @@ void SwampStewSetup(Map* map)
 	{
 		13,42,53,71,	// the rectangle that contains zone1 (upper left)
 		37,73,95,103,	// zone2 (bottom middle)
-		73,27,111,72,	// zone3 (top right)
+		72,27,112,72,	// zone3 (top right)
 	};
 
 	byte zone[3] = { 0,1,2 };
-	byte keyOrder[3] = { 0,1,2 };
+	byte ingredientOrder[3] = { 0,1,2 };
 	byte flips = 10;
+
+	potContents[0] = potContents[1] = potContents[2] = 0;
+	potOrder[0] = potOrder[1] = potOrder[2] = 255;
+	potPos = 255;	// nothing put in pot yet
+	swampTicker = 0;
+	// temps are: red, yellow, green, purple, blue, cyan
+	boilTemp = Random(3) + 3;	// one of the top 3 temps
+	simmerTemp = Random(3) + 1; // one of the 3 temps just above red
+	if (boilTemp == simmerTemp) simmerTemp--;
+
 	while ((flips--)>0)
 	{
 		byte first = Random(3);
@@ -2872,35 +2925,441 @@ void SwampStewSetup(Map* map)
 		zone[second] = z;
 		first = Random(3);
 		second = (first + 1) % 3;
-		z = keyOrder[first];
-		keyOrder[first] = keyOrder[second];
-		keyOrder[second] = z;
+		z = ingredientOrder[first];
+		ingredientOrder[first] = ingredientOrder[second];
+		ingredientOrder[second] = z;
 	}
 
-	// now zone[0-2] are randomized betwen 0,1,2 for what goes in them
-	for (int i = 0; i < 3; i++)	// fill each zone with what it wants [ JUST DOING ZONE 0 RIGHT NOW]
+	for (int i = 0; i < 3; i++)
 	{
-		SwampItem(map, ITM_KEYR + keyOrder[i], coords[i * 4], coords[i * 4 + 1], coords[i * 4 + 2], coords[i * 4 + 3],true);
+		swampRecipe[i*2]=Random(7) + 5;	// amount you need, 5-11
+		swampRecipe[i*2+1]=ingredientOrder[i];	// which ingredient it is (0=grimbleweed, 1=octon juice, 2=toadstool)
+	}
+
+	byte keyForZone[4];
+	for (int i = 0; i < 4; i++) keyForZone[i] = 255;
+
+	keyForZone[3] = Random(3);			// first zone is just random (the key is in 'zone 3' which is the cabin)
+	keyForZone[keyForZone[3]] = keyForZone[3];	// this code looks insane, but we are setting the key that's in that first zone to anything other than itself
+	while (keyForZone[keyForZone[3]] == keyForZone[3])
+		keyForZone[keyForZone[3]] = Random(3);
+	keyForZone[keyForZone[keyForZone[3]]] = 0;	// and then in the zone that that 2nd key leads to, we need to put the last key
+	if (keyForZone[3] == 0 || keyForZone[keyForZone[3]] == 0)
+	{
+		keyForZone[keyForZone[keyForZone[3]]] = 1;
+		if (keyForZone[3] == 1 || keyForZone[keyForZone[3]] == 1)
+			keyForZone[keyForZone[keyForZone[3]]] = 2;
+	}
+	// and in whatever that last zone is, the key is 255, meaning don't add a key
+
+	// the first key is in the cabin
+	map->GetTile(61, 64)->item = ITM_KEYR + keyForZone[3];
+
+	std::vector<byte> goodies = {
+		ITM_HAMMERUP,
+		ITM_HAMMERUP,
+		ITM_HAMMERUP,
+		ITM_HAMMERUP,
+		ITM_HAMMERUP,
+		ITM_PANTS,
+		ITM_PANTS,
+		ITM_PANTS,
+		ITM_PANTS,
+		ITM_REFLECT,
+		ITM_REVERSE,
+	};
+	
+	// now zone[0-2] are randomized betwen 0,1,2 for what goes in them
+	for (int i = 0; i < 3; i++)	// fill each zone with what it wants
+	{
+		std::vector<byte> itemSpots;
+		byte spots = 0;
+		for (int j = coords[i * 4]; j <= coords[i * 4 + 2]; j++)
+			for (int k = coords[i * 4 + 1]; k <= coords[i * 4 + 3]; k++)
+			{
+				if (map->GetTile(j, k)->floor == 96)
+				{
+					itemSpots.push_back((byte)j);
+					itemSpots.push_back((byte)k);
+					spots++;
+				}
+			}
+		byte keySpot = Random(spots);
+		for (int j = 0; j < spots; j++)
+		{
+			if (j == keySpot && keyForZone[i]!=255)
+				map->GetTile(itemSpots[j * 2], itemSpots[j * 2 + 1])->item = ITM_KEYR + keyForZone[i];
+			else
+			{
+				byte n = (byte)Random(goodies.size());
+				map->GetTile(itemSpots[j * 2], itemSpots[j * 2 + 1])->item = goodies[n];
+				goodies[n] = Random(2)?ITM_HEALTHPOT:ITM_MANAPOT;	// as items get taken, their slot goes to a potion
+			}
+		}
 
 		if (zone[i] == 0)	// grimbleweed, guarded by spiders
 		{
-			for (int j = 0; j < 15; j++)
+			for (int j = 0; j < 10; j++)
 				SwampSpawn(map, MONS_BIGSPDR, coords[i * 4], coords[i * 4 + 1], coords[i * 4 + 2], coords[i * 4 + 3]);
 			for (int j = 0; j < 30; j++)
 				SwampSpawn(map, MONS_SPIDER, coords[i * 4], coords[i * 4 + 1], coords[i * 4 + 2], coords[i * 4 + 3]);
 			for (int j = 0; j < 12; j++)
-				SwampItem(map, ITM_GRIMBLEWEED, coords[i * 4], coords[i * 4 + 1], coords[i * 4 + 2], coords[i * 4 + 3],false);	
+				SwampItem(map, ITM_GRIMBLEWEED, coords[i * 4], coords[i * 4 + 1], coords[i * 4 + 2], coords[i * 4 + 3]);
 		}
-		else if (zone[i] == 1)	// octons, and some mushrooms for spice
+		else if (zone[i] == 1)	// octons, and some bushes for spice
 		{
 			for (int j = 0; j < 12; j++)
 				SwampSpawn(map, MONS_OCTOPUS, coords[i * 4], coords[i * 4 + 1], coords[i * 4 + 2], coords[i * 4 + 3]);
+			for (int j = 0; j < 20; j++)
+				SwampSpawn(map, MONS_SWAMPWEED, coords[i * 4], coords[i * 4 + 1], coords[i * 4 + 2], coords[i * 4 + 3]);
+		}
+		else if (zone[i] == 2)	// toadstools and the obvious guardians
+		{
+			for (int j = 0; j < 12; j++)
+				SwampItem(map, ITM_TOADSTOOL, coords[i * 4], coords[i * 4 + 1], coords[i * 4 + 2], coords[i * 4 + 3]);
 			for (int j = 0; j < 10; j++)
 				SwampSpawn(map, MONS_SHROOM, coords[i * 4], coords[i * 4 + 1], coords[i * 4 + 2], coords[i * 4 + 3]);
+			for (int j = 0; j < 5; j++)
+				SwampSpawn(map, MONS_SHRMLORD, coords[i * 4], coords[i * 4 + 1], coords[i * 4 + 2], coords[i * 4 + 3]);
 		}
-		else if (zone[i] == 2)	// the third thing
+	}
+
+	if (PlayerPassedLevel(player.worldNum, player.levelNum))
+	{
+		map->GetTile(61, 54)->floor = 86;
+		strcpy(map->special[1].msg, "Skip to cooking with button!");
+	}
+}
+
+bool SwampPotIsFull(void)
+{
+	return potPos == 2;
+}
+
+void SwampUpdate(Map* map)
+{
+	if (!GetGoodguy())
+		return;
+	int tx, ty, dx, dy;
+	if (swampTicker > 0)
+		swampTicker--;
+
+	
+	tx = GetGoodguy()->x / (TILE_WIDTH * FIXAMT);
+	ty = GetGoodguy()->y / (TILE_HEIGHT * FIXAMT);
+	if (PlayerPassedLevel(player.worldNum, player.levelNum))
+	{
+		if (tx == 61 && ty == 54 && (potPos < 3 || potPos==255))
 		{
+			potPos = 3;
+			player.puzzleVar[2] = 1;
+			map->GetTile(61, 54)->floor = 87;
+			MakeNormalSound(SND_CHEATWIN);	// snicker
+			potOrder[0] = swampRecipe[1];
+			potContents[swampRecipe[1]] = swampRecipe[0];
+			potOrder[1] = swampRecipe[3];
+			potContents[swampRecipe[3]] = swampRecipe[2];
+			potOrder[2] = swampRecipe[5];
+			potContents[swampRecipe[5]] = swampRecipe[4];	// put all the right stuff in the pot
+			map->GetTile(65, 56)->item = 0;	// open the door free of charge
+		}
+	}
+	byte putting = 255;
+	if (tx == 64 && ty == 62 && player.puzzleVar[0] > 0)	// left side of cauldron, grimbleweed
+	{
+		putting = 0;
+		dx = FIXAMT * 2;
+		dy = 0;
+	}
+	if (tx == 65 && ty == 63 && player.puzzleVar[1] > 0)	// bottom of cauldron, octon juice
+	{
+		putting = 1;
+		dx = 0;
+		dy = -FIXAMT * 2;
+	}
+	if (tx == 66 && ty == 62 && player.puzzleVar[2] > 0)	// right side of cauldron, toadstool
+	{
+		putting = 2;
+		dx = -FIXAMT * 3 / 2;
+		dy = 0;
+	}
+
+	if (putting != 255 && (potPos < 3 || potPos==255) && swampTicker == 0)	// we are putting in an ingredient!
+	{
+		swampTicker = 10;	// 3 ingredients per second
+		if (potPos == 255)	// this is your first ingredient
+		{
+			potPos = 0;
+		}
+		else if (potOrder[potPos] != putting)	// you are putting in a different ingredient than the previous one
+		{
+			for (int i = 0; i < potPos; i++)
+				if (potOrder[i] == putting)	// you have already put some of this in before, so you can't put it in again
+					putting = 255;
+			if (putting != 255)
+			{
+				potPos++;
+				potOrder[potPos] = putting;
+			}
+		}
+		if (putting != 255)
+		{
+			potOrder[potPos] = putting;
+			player.puzzleVar[putting]--;
+			potContents[putting]++;
+			MakeNormalSound(SND_PURCHASE);
+			AddParticle((tx * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (ty * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 20 * FIXAMT, dx, dy, FIXAMT * 4, 30, PART_INGREDIENT, putting);
 
 		}
 	}
+
+	// cooking is in action
+	if (potPos == 3) // not yet cooking, but done with ingredients
+	{
+		if (tx == 68 && ty == 61)	// button to cook
+		{
+			swampTemp = 0;
+			swampCookTime = 0;
+			potPos = 4;
+		}
+	}
+	else if (potPos == 4)	// already cooking
+	{
+		BlowWigglySmoke(65*TILE_WIDTH * FIXAMT + Random(TILE_WIDTH * FIXAMT),
+			62*TILE_HEIGHT*FIXAMT + Random(TILE_HEIGHT * FIXAMT), (32+MGL_random(32)) << FIXSHIFT, MGL_randoml(FIXAMT * 4));
+		
+		byte c[] = { 4,5,1,6,3,7 };	// colors for the flames
+		byte color = swampTemp / 40;
+		if (color > 5) color = 5;
+		AddParticle((65 * TILE_WIDTH + Random(TILE_WIDTH)) * FIXAMT, (62 * TILE_HEIGHT + TILE_HEIGHT) * FIXAMT, 0, 0, 0, 0, 10, PART_COLORFIRE, c[color]);
+		
+		if (Random(10) == 0)
+			map->TempTorch(64 + Random(3), 61 + Random(3), 5 + Random(12));
+		if (tx == 68 && ty == 61)	// button to cook
+		{
+			if (swampTemp < 6 * 40-3)
+				swampTemp += 3;
+			if (!swampHaveHitBoil)
+			{
+				swampPreheatTime++;	// note that preheat time is only legal if it is spent raising temp. You can't hover it up and down and then do a quick boil at the end
+				if (swampTemp >= boilTemp * 40)
+				{
+					swampHaveHitBoil = true;
+					swampBoilTime++;
+				}
+			}
+		}
+		else
+		{
+			if(swampTemp>1)
+				swampTemp -= 2;
+		}
+
+		if(swampHaveHitBoil) // once you have hit boil, you want to get as close to 3s of boil time as possible, and the rest of your time should be spent simmering, as much as possible
+		{
+			if (swampTemp >= boilTemp * 40 && swampTemp < (boilTemp + 1) * 40)
+				swampBoilTime++;
+			else if (swampTemp >= simmerTemp * 40 && swampTemp < (simmerTemp + 1) * 40)
+				swampSimmerTime++;
+		}
+		swampCookTime++;
+		if (swampCookTime == 10 * 30)	// 10s total cook!
+		{
+			potPos = 5;	// done cooking!
+			PlayerGetItem(ITM_BRAIN, 65, 62);
+			// report results
+			int s;
+			s = 130;	// better than perfect! Because there's some failure that's unavoidable as you shift between temps
+			s -= abs(swampBoilTime - 3 * 30); // minus the amount you over- or under-boiled
+			s -= abs(10 * 30 - swampPreheatTime - swampBoilTime - swampSimmerTime);	// minus the amount of time you spent not preheating, boiling, or simmering
+			if (s < 0) s = 0;
+			swampScore = s;
+
+			if (potOrder[0] != swampRecipe[1] || potOrder[1] != swampRecipe[3])	// you did things in the wrong order (you only have to check 2, obviously!)
+			{
+				swampScore = 0;	// total fail
+				InitSpeech(43);
+			}
+			else
+			{
+				// need to search the recipe to find out how much of each thing
+				byte needed[3];
+				for (int i = 0; i < 3; i++)
+				{
+					needed[swampRecipe[i * 2+1]] = swampRecipe[i * 2];
+				}
+				if (potContents[0] != needed[0] || potContents[1] != needed[1] || potContents[2] != needed[2])
+				{
+					swampScore = 0;	// total fail also
+					InitSpeech(44);
+				}
+				else // you got in the ingredients right, and in the right order
+				{
+					if (swampScore < 50)	// if you failed, then we need to know if it's under or over cooked
+					{
+						if (swampBoilTime < 30 * 3)
+							InitSpeech(41);	// undercooked
+						else
+							InitSpeech(42);	// overcooked
+
+					}
+					else if (swampScore < 75)
+						InitSpeech(47); // below 75% is fine, but she notes it is bad
+					else
+						InitSpeech(45); // above 75% is perfect, because cooking is hard
+				}
+			}
+		}
+		//SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%d > TT:%d B:%d S:%d F:%d\n", (byte)swampHaveHitBoil, swampCookTime, swampBoilTime, swampSimmerTime, 10 * 30 - swampBoilTime - swampSimmerTime);
+	}
 }
+
+void GetSwampTemps(byte* boil, byte* simmer)
+{
+	(*boil) = boilTemp;
+	(*simmer) = simmerTemp;
+}
+
+void SwampEnableCooking(void)
+{
+	potPos = 3;	// mark the putting-in phase over
+	swampTemp = 0;
+	swampCookTime = 0;
+	swampBoilTime = 0;	// you have cooked at the right temperature for 0 seconds
+	swampPreheatTime = 0;
+	swampSimmerTime = 0;
+	swampHaveHitBoil = false;
+	player.puzzleVar[2] = 1;	// the display only shows if puzzleVar is non-zero, so let's make sure one is
+}
+
+char swampTempNames[6][16] = {
+	"Red",
+	"Yellow",
+	"Green",
+	"Purple",
+	"Blue",
+	"Cyan",
+};
+
+void RenderSwampRecipe(void)
+{
+	char s[48];
+	RenderSkillBox(140 - 2, 200 - 2, SCRWID - 140 + 2, 460 + 2, 16, 0);
+	RenderSkillBox(140, 200, SCRWID - 140, 460, 16, 27);
+	CenterPrint(HALFWID, 200 + 5, "Swamp Stew", -31, 2);
+	CenterPrint(HALFWID,200+25,"For The Mystic Soul", -31, 2);
+	for (int i = 0; i < 3; i++)
+	{
+		if (swampRecipe[i * 2 + 1] == 0)
+			sprintf(s, "%d Grimbleweed", swampRecipe[i * 2]);
+		else if (swampRecipe[i * 2 + 1] == 1)
+			sprintf(s, "%d Octon Juice", swampRecipe[i * 2]);
+		else if (swampRecipe[i * 2 + 1] == 2)
+			sprintf(s, "%d Toadstools", swampRecipe[i * 2]);
+		CenterPrint(HALFWID, 200 + 60 + i * 40, s, -31, 2);
+	}
+	sprintf(s, "Boil over %s flame for", swampTempNames[boilTemp]);
+	CenterPrint(HALFWID, 200 + 50 + 3 * 40 + 20, s, -31, 2);
+	CenterPrint(HALFWID, 200 + 50 + 3 * 40 + 40, "3 seconds, then simmer", -31, 2);
+	sprintf(s, "over %s flame until done", swampTempNames[simmerTemp]);
+	CenterPrint(HALFWID, 200 + 50 + 3 * 40 + 60, s, -31, 2);
+}
+
+char* GetSwampTempName(byte temp)
+{
+	if (temp >= 0 && temp < 6)
+		return swampTempNames[temp];
+	else
+		return "???";
+}
+
+void GetSwampStats(byte *state,byte* temp, word* time,byte *score)
+{
+	if (potPos < 3 || potPos == 255)
+		(*state) = 0;	// putting in ingredients
+	else if (potPos == 3)
+		(*state) = 1;	// not yet cooking
+	else if (potPos == 4)
+		(*state) = 2;	// cooking
+	else if (potPos == 5)
+		(*state) = 3;	// done, score is now valid!
+	(*temp) = swampTemp;
+	(*time) = swampCookTime;
+	(*score) = swampScore;
+}
+
+void SwampDestroyCauldron(byte how)
+{
+	CurrentMap()->GetTile(65, 62)->item = 0;	// remove the cauldron
+	if (how != 3)	// mushie one does not make a water floor
+	{
+		CurrentMap()->GetTile(64, 62)->floor = 20;	// replace the + shape under the cauldron with swamp water
+		CurrentMap()->GetTile(65, 62)->floor = 20;
+		CurrentMap()->GetTile(66, 62)->floor = 20;
+		CurrentMap()->GetTile(65, 61)->floor = 20;
+		CurrentMap()->GetTile(65, 63)->floor = 20;
+		int tx, ty;
+		tx = GetGoodguy()->x / (TILE_WIDTH * FIXAMT);
+		ty = GetGoodguy()->y / (TILE_HEIGHT * FIXAMT);
+		if ((tx >= 64 && tx <= 66 && ty == 62) ||
+			(tx == 65 && ty >= 61 && ty <= 63))	// you are in what is now water
+		{
+			if (tx == 64 || tx == 66)
+				ty = 61;
+			else if (ty == 61)
+				tx = 66;
+			else
+			{
+				tx = 66;
+				ty = 63;
+			}
+			GetGoodguy()->x = (tx * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+			GetGoodguy()->y = (ty * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;	// move you to a non-water tile
+		}
+	}
+	BlowUpGuy((65 * TILE_WIDTH + TILE_WIDTH / 2-1),
+		(62 * TILE_HEIGHT + TILE_HEIGHT / 2-1),
+		(65 * TILE_WIDTH + TILE_WIDTH / 2+1),
+		(62 * TILE_HEIGHT + TILE_HEIGHT / 2+1), 0, 1);	// make an explosion on the cauldron
+	if (how == 0)	// tentacle
+	{
+		AddGuy((65 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT,
+			(62 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT,
+			0, MONS_OCTOTENT);
+	}
+	else if (how == 1) // magmazoids
+	{
+		AddGuy((64 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT,
+			(62 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT,
+			0, MONS_MAGMAZOID);
+		AddGuy((66 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT,
+			(62 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT,
+			0, MONS_MAGMAZOID);
+	}
+	else if (how == 2)	// explosions
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			int x, y;
+			x = (63 * TILE_WIDTH + Random(5 * TILE_WIDTH)) * FIXAMT;
+			y = (60 * TILE_HEIGHT + Random(5 * TILE_HEIGHT)) * FIXAMT;
+			FireBullet(x, y, 0, BLT_SHOCKWAVE);
+		}
+		BlowUpGuy((65 * TILE_WIDTH + TILE_WIDTH / 2 - TILE_WIDTH*4),
+			(62 * TILE_HEIGHT + TILE_HEIGHT / 2 - TILE_HEIGHT*4),
+			(65 * TILE_WIDTH + TILE_WIDTH / 2 + TILE_WIDTH*4),
+			(62 * TILE_HEIGHT + TILE_HEIGHT / 2 + TILE_HEIGHT*4), 0, 10);
+		MakeNormalSound(SND_INFERNAL);
+	}
+	else if (how == 3) // mushies
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			int x, y;
+			x = (63 * TILE_WIDTH + Random(5 * TILE_WIDTH)) * FIXAMT;
+			y = (60 * TILE_HEIGHT + Random(5 * TILE_HEIGHT)) * FIXAMT;
+			AddGuy(x, y, 0, MONS_SHRMLORD);
+		}
+	}
+}
+//---------------------------- END OF SWAMP PUZZLE

@@ -246,6 +246,14 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 			ExplodeParticles(PART_SLIME,me->x,me->y,me->z,6);
 			me->type=0;
 			break;
+		case BLT_OCTONJUICE:
+			MakeSound(SND_ACIDSPLAT, me->x, me->y, SND_CUTOFF, 950);
+			me->type = BLT_OCTONJUICESPLAT;
+			me->timer = 90 + Random(60);
+			me->anim = 0;
+			me->dx = 0;
+			me->dy = 0;
+			break;
 		case BLT_ENERGY:
 			MakeSound(SND_ENERGYBONK,me->x,me->y,SND_CUTOFF,950);
 			ExplodeParticles(PART_HAMMER,me->x,me->y,me->z,4);
@@ -395,6 +403,14 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 			ExplodeParticles(PART_SLIME,me->x,me->y,me->z,6);
 			me->type=0;
 			break;
+		case BLT_OCTONJUICE:
+			MakeSound(SND_ACIDSPLAT, me->x, me->y, SND_CUTOFF, 950);
+			me->type = BLT_OCTONJUICESPLAT;
+			me->timer = 90 + Random(60);
+			me->anim = 0;
+			me->dx = 0;
+			me->dy = 0;
+			break;
 		case BLT_ENERGY:
 			MakeSound(SND_ENERGYBONK,me->x,me->y,SND_CUTOFF,950);
 			ExplodeParticles(PART_HAMMER,me->x,me->y,me->z,4);
@@ -518,6 +534,24 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 			ExplodeParticles(PART_SLIME,me->x,me->y,me->z,6);
 			me->type=0;
 			break;
+		case BLT_OCTONJUICE:
+			MakeSound(SND_ACIDSPLAT, me->x, me->y, SND_CUTOFF, 950);
+			x = (me->x >> FIXSHIFT) / TILE_WIDTH;
+			y = (me->y >> FIXSHIFT) / TILE_HEIGHT;
+			if (world->terrain[map->map[x + y * map->width].floor].flags & TF_WATER)
+			{
+				ExplodeParticles(PART_WATER, me->x, me->y, 0, 8);
+				me->type = BLT_NONE;
+			}
+			else
+			{
+				me->type = BLT_OCTONJUICESPLAT;
+				me->timer = 90 + Random(60);
+				me->anim = 0;
+				me->dx = 0;
+				me->dy = 0;
+			}
+			break;
 		case BLT_SHROOM:
 			// detonate
 			BulletRanOut(me,map,world);
@@ -610,6 +644,10 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 			MakeSound(SND_ACIDSPLAT,me->x,me->y,SND_CUTOFF,850);
 			ExplodeParticles(PART_SLIME,me->x,me->y,me->z,6);
 			me->type=0;
+			break;
+		case BLT_OCTONJUICE:
+		case BLT_OCTONJUICESPLAT:
+			me->type = 0;
 			break;
 		case BLT_FLAME:
 		case BLT_FLAME2:
@@ -900,6 +938,16 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 				}
 			}
 			break;
+		case BLT_OCTONJUICE:
+		case BLT_OCTONJUICESPLAT:
+			if (FindGoodVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 8, 0, 0, 0, map, world))
+			{
+				MakeNormalSound(SND_ACIDSPLAT);
+				if(player.puzzleVar[1]<99)
+					player.puzzleVar[1]++;
+				me->type = BLT_NONE;
+			}
+			break;
 		case BLT_LILBOOM:
 			i = SpellLevel() / 10 + 1;
 			if (!ClassicMode())
@@ -1004,7 +1052,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_SHOCKWAVE:
 			i=30*(3-(me->timer/2))+30;	// size expands as wave expands
-			if(FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,i,0,0,12-6*(player.worldNum==1),map,world))
+			if(FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,i,0,0,12-6*(player.worldNum==1)-10*(player.worldNum==0), map, world))
 			{
 				// don't disappear because Bouapha needs to get multipounded
 			}
@@ -1430,6 +1478,14 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_BOMB:
 			break;
+		case BLT_OCTONJUICE:
+		case BLT_OCTONJUICESPLAT:
+			me->anim++;
+			if (me->anim >= 12 * 6 && me->type == BLT_OCTONJUICESPLAT)
+				me->type = 0;
+			else
+				HitBadguys(me, map, world);
+			break;
 		case BLT_BOOM:
 		case BLT_SEEKBOOM:
 			map->BrightTorch((me->x/TILE_WIDTH)>>FIXSHIFT,
@@ -1627,7 +1683,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 
 	// all gravity-affected bullets, get gravitized
 	if(me->type==BLT_BOMB || me->type==BLT_GRENADE || (me->type==BLT_MINE && me->anim==0) || me->type==BLT_GLOB_BOMB || me->type==BLT_LIFEPOTION || me->type==BLT_MANAPOTION
-		|| me->type==BLT_ROCK || me->type==BLT_EVILHAMMER || me->type==BLT_COIN || me->type==BLT_RUNESTONE
+		|| me->type==BLT_ROCK || me->type==BLT_EVILHAMMER || me->type==BLT_COIN || me->type==BLT_RUNESTONE || me->type==BLT_OCTONJUICE || me->type==BLT_OCTONJUICESPLAT
 		|| me->type==BLT_BIGCOIN)
 		me->dz-=FIXAMT;
 
@@ -1683,6 +1739,11 @@ void RenderBullet(bullet_t *me)
 			curSpr=bulletSpr->GetSprite(259+(me->anim/16));
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright-4,curSpr,
 					DISPLAY_DRAWME|DISPLAY_GLOW);
+			break;
+		case BLT_OCTONJUICESPLAT:
+			curSpr = bulletSpr->GetSprite(259 + (me->anim / 6));
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 6, me->bright, curSpr,
+				DISPLAY_DRAWME);
 			break;
 		case BLT_ICECLOUD:
 			// invisible... it just gives off steam
@@ -1786,6 +1847,14 @@ void RenderBullet(bullet_t *me)
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
 					DISPLAY_DRAWME);
+			break;
+		case BLT_OCTONJUICE:
+			v = me->facing * 7 + me->anim + SPR_ACID;
+			curSpr = bulletSpr->GetSprite(v);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 6, me->bright, curSpr,
+				DISPLAY_DRAWME);
 			break;
 		case BLT_MISSILE:
 			curSpr=bulletSpr->GetSprite(SPR_MISSILE+me->facing);
@@ -2210,6 +2279,16 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->dy=Sine(me->facing)*10;
 			me->facing=((me->facing+16)&255)/32;
 			break;
+		case BLT_OCTONJUICE:
+			me->anim = 0;
+			me->timer = 60;
+			me->z = FIXAMT * 10;
+			me->dz = Random(FIXAMT * 2)+FIXAMT*3;
+			f = Random(6) + 4;
+			me->dx = Cosine(me->facing) * f;
+			me->dy = Sine(me->facing) * f;
+			me->facing = ((me->facing + 16) & 255) / 32;
+			break;
 		case BLT_FLAME:
 			me->anim=0;
 			me->lastHit = 0;
@@ -2600,7 +2679,7 @@ void BackdraftEffect(Guy *me, int radius)
 	{
 		bullet_t* b = &bullet[j];
 		if (b->type == BLT_ACID || b->type == BLT_FLAME2 || b->type == BLT_SPORE || b->type == BLT_SHROOM || b->type == BLT_GRENADE || b->type==BLT_GLOB_BOMB ||
-			b->type == BLT_ROCK || b->type == BLT_SPINE || b->type == BLT_YELWAVE || b->type == BLT_BIGYELLOW || b->type == BLT_SLIME)
+			b->type == BLT_ROCK || b->type == BLT_SPINE || b->type == BLT_YELWAVE || b->type == BLT_BIGYELLOW || b->type == BLT_SLIME || b->type==BLT_GLOB_BOMB)
 		{
 			int dist = ((b->x >> FIXSHIFT) - x) * ((b->x >> FIXSHIFT) - x) + ((b->y >> FIXSHIFT) - y) * ((b->y >> FIXSHIFT) - y);
 			if (dist < maxDist)

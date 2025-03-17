@@ -24,6 +24,9 @@
 #define PART_NUMBER 17
 #define PART_EYEGLOW 18	// red ones for the incabots to be visible in the dark
 #define PART_EYEGLOW2 19 // the right eye of the above (which is left)
+#define PART_INGREDIENT 20
+#define PART_COLORFIRE 21 // colored fire for the cooking game
+
 class Particle
 {
 	public:

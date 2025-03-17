@@ -689,7 +689,7 @@ void Guy::Update(Map *map,world_t *world)
 			x -= dx;
 			if (type == MONS_BOUAPHA || type == MONS_TOWER || type == MONS_SPIDER || type == MONS_SLUG || type == MONS_BALL ||
 				type == MONS_INCAGOLD || type == MONS_INCAGOLD2 || type == MONS_LOG || type == MONS_INCABOSS || type == MONS_OCTOBOSS ||
-				type == MONS_GOAT1 || type == MONS_GOAT1B)
+				type == MONS_GOAT1 || type == MONS_GOAT1B || type==MONS_SWAMPWEED)
 				mind1 = 1;	// tell it that it hit a wall
 		}
 
@@ -700,7 +700,7 @@ void Guy::Update(Map *map,world_t *world)
 			y -= dy;
 			if (type == MONS_BOUAPHA || type == MONS_TOWER || type == MONS_SPIDER || type == MONS_SLUG || type == MONS_BALL ||
 				type == MONS_INCAGOLD || type == MONS_INCAGOLD2 || type == MONS_LOG || type == MONS_INCABOSS || type == MONS_OCTOBOSS ||
-				type == MONS_GOAT1 || type == MONS_GOAT1B)
+				type == MONS_GOAT1 || type == MONS_GOAT1B || type==MONS_SWAMPWEED)
 				mind1 += 2;	// tell it that it hit a wall
 		}
 
@@ -1276,6 +1276,9 @@ void Guy::MonsterControl(Map *map,world_t *world)
 		case MONS_GLOOPYGUS:
 			AI_GloopyGus(this, map, world, goodguy);
 			break;
+		case MONS_SWAMPWEED:
+			AI_SwampWeed(this, map, world, goodguy);
+			break;
 	}
 }
 
@@ -1658,6 +1661,14 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			if (player.berserk > SkillValue(SKILL_BERSERK) * 60 * 2)
 				player.berserk = SkillValue(SKILL_BERSERK) * 60 * 2;
 		}
+		if (player.worldNum == 0 && player.levelNum == 20 && type == MONS_OCTOPUS)	// time to spew juice
+		{
+			for (int i = 0; i < 8; i++)
+			{
+				byte a = i * 32 - 12 + Random(24);
+				FireBullet(x, y, a, BLT_OCTONJUICE);
+			}
+		}
 		// possible item drop
 		switch(type)
 		{
@@ -1992,6 +2003,9 @@ Guy *AddGuy(int x,int y,int z,byte type)
 						break;
 					case 109:
 						guys[i].mind = ANIM_IDLE;	// bald guy?
+						break;
+					case 20:
+						guys[i].mind = ANIM_A2;	// witch
 						break;
 				}
 			}

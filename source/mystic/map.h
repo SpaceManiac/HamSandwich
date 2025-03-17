@@ -178,5 +178,13 @@ void GuestChamberPuzzleStep(Map* map, int mapx, int mapy);
 void MinesPuzzle(Map* map,int x,int y);
 void BatsPuzzle(Map* map,int x,int y);
 void SwampStewSetup(Map* map);
+void RenderSwampRecipe(void);
+void SwampUpdate(Map* map);
+bool SwampPotIsFull(void);
+void SwampEnableCooking(void);
+void GetSwampStats(byte* state, byte* temp, word* time,byte *score);
+char* GetSwampTempName(byte temp);
+void GetSwampTemps(byte* boil, byte* simmer);
+void SwampDestroyCauldron(byte how);
 
 #endif

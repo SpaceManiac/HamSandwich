@@ -64,7 +64,7 @@ void Particle::Update(Map *map)
 
 	if(life>0)
 	{
-		if (type != PART_EYEGLOW && type != PART_EYEGLOW2)
+		if (type != PART_EYEGLOW && type != PART_EYEGLOW2 && type!=PART_INGREDIENT)
 		{
 			dz -= FIXAMT;
 			z += dz;
@@ -80,6 +80,20 @@ void Particle::Update(Map *map)
 		life--;
 		switch(type)
 		{
+			case PART_COLORFIRE:
+				size = (life) / 2;
+				if (size > 4)  size = 4;
+				break;
+			case PART_INGREDIENT:
+				dz -= FIXAMT / 2;
+				z += dz;
+				if (life == 1 || z<=0)
+				{
+					MakeSound(SND_ACIDSPLAT, x, y, SND_CUTOFF, 950);
+					ExplodeParticles(PART_SLIME, x, y, z, 12);
+					type = 0;
+				}
+				break;
 			case PART_EYEGLOW:
 			case PART_EYEGLOW2:
 			{
@@ -259,10 +273,12 @@ void Particle::Update(Map *map)
 					v=31;
 				if(v<8)
 					v=8;
-				if(player.worldNum==2 && player.levelNum==20)
-					color=32+v;
-				else if(player.worldNum==2 && player.levelNum==22)
-					color=32*6+v;
+				if (player.worldNum == 2 && player.levelNum == 20)
+					color = 32 + v;
+				else if (player.worldNum == 2 && player.levelNum == 22)
+					color = 32 * 6 + v;
+				else if (player.worldNum == 0 && player.levelNum == 20)
+					color = 32 * 5 + v;	// yellow water in swamp
 				else
 					color=96+v;
 				if(life>20)
@@ -319,7 +335,7 @@ void Particle::Update(Map *map)
 			return;
 		}
 
-		if(type==PART_GHOST || type==PART_NUMBER)
+		if(type==PART_GHOST || type==PART_NUMBER || type==PART_COLORFIRE)
 		{
 		}
 		else if(type==PART_SMOKE || type==PART_BOOM)
@@ -493,6 +509,29 @@ void RenderParticles(void)
 					ParticleDraw(particleList[i].x >> FIXSHIFT, particleList[i].y >> FIXSHIFT,
 						particleList[i].z >> FIXSHIFT, particleList[i].color, particleList[i].size,
 						DISPLAY_DRAWME | DISPLAY_PARTICLE);
+			}
+			else if (particleList[i].type == PART_INGREDIENT)
+			{
+				sprite_t* spr;
+				byte c = 255;
+				if (particleList[i].color == 0)	// grimbleweed
+					spr = GetItemSprite(1);
+				else if (particleList[i].color == 1)	// octon juice
+				{
+					spr = bulletSpr->GetSprite(90);
+					c = 6;
+				}
+				else if (particleList[i].color == 2)	// toadstool
+				{
+					spr = GetItemSprite(21+3);
+				}
+				SprDraw(particleList[i].x >> FIXSHIFT, particleList[i].y >> FIXSHIFT,
+					particleList[i].z >> FIXSHIFT, c, 0, spr,DISPLAY_DRAWME);
+			}
+			else if (particleList[i].type == PART_COLORFIRE)
+			{
+				SprDraw(particleList[i].x >> FIXSHIFT, particleList[i].y >> FIXSHIFT, particleList[i].z >> FIXSHIFT, particleList[i].color, 0, bulletSpr->GetSprite(particleList[i].size + 0),
+					DISPLAY_DRAWME);
 			}
 			else
 				ParticleDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,

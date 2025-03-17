@@ -24,7 +24,7 @@
 #define ITM_KEYR     17
 #define ITM_KEYG	 18
 #define ITM_KEYB	 19
-#define ITM_LOONYKEY 20
+#define ITM_TOADSTOOL 20
 #define ITM_FAIRYBELL 21
 #define ITM_LETTERM  22
 #define ITM_LETTERY	 23
@@ -38,7 +38,10 @@
 #define ITM_SMLROCKS 30
 #define ITM_HOLETREE 31
 #define ITM_GRIMBLEWEED 32
-
+#define ITM_RUNEPOUCH 33
+#define ITM_SKILLSHARD 34
+#define ITM_CATTAIL	 35
+// no longer walkable
 #define ITM_UNUSED	 50
 #define ITM_STUMP	 51
 #define ITM_BUSH	 52
@@ -47,6 +50,7 @@
 #define ITM_CHAIR1	 55
 #define ITM_CHAIR2   56
 
+// no longer shoot-through-able
 #define ITM_SKLDOOR	 69
 #define ITM_TREE	 70
 #define ITM_DOOR1	 71
@@ -65,7 +69,8 @@
 #define ITM_LAVAROCK 84
 #define ITM_BURNEDTREE 85
 #define ITM_CAULDRON 86
-#define MAX_ITMS	 87
+#define ITM_BIGROCK2 87
+#define MAX_ITMS	 88
 
 // these defines are 1 greater than the highest item of that type
 // (that is, items 1 - X-1 are things the player can pick up, and items

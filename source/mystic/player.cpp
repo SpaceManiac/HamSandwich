@@ -54,6 +54,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		PlayerUpdateLife();
 		player.overworldX=-2000;
 		player.rechargeClock=4;
+		player.runePouches = 1;
 	}
 	if(initWhat>=INIT_WORLD) // initialize the things that go with each world
 	{
@@ -111,6 +112,10 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	SetPlayerSpeed();
 	SetPlayerDamage();
 	SetPlayerDefense();
+	for(int i=0;i<3;i++)
+		player.puzzleVar[i] = 0;
+	if (player.runePouches == 0)
+		player.runePouches = 1;
 
 	if(PlayerHasSword())
 		SetKidSprite(1);
@@ -613,6 +618,47 @@ byte PlayerGetItem(byte itm,int x,int y)
 		ChallengeEvent(CE_GET,itm);
 	switch(itm)
 	{
+		case ITM_GRIMBLEWEED:
+			if (player.puzzleVar[0] < 99)
+				player.puzzleVar[0]++;
+			FloaterParticles(x, y, 1, 10, 1, 8);
+			MakeNormalSound(SND_BUSHOUCH);
+			return 0;
+			break;
+		case ITM_TOADSTOOL:
+			if (player.puzzleVar[2] < 99)
+				player.puzzleVar[2]++;
+			FloaterParticles(x, y, 1, 10, 1, 8);
+			MakeNormalSound(SND_BUSHOUCH);
+			return 0;
+			break;
+		case ITM_RUNEPOUCH:
+			GetRunePouchInLevel();
+			MakeNormalSound(SND_LOONYKEY);
+			if (!ClassicMode())
+				player.runePouches++;
+			else
+				GainMoney(100);
+			NewMessage("RUNE POUCH GET!", 75);
+			FloaterParticles(x, y, 1, 10, 1, 8);
+			return 0;
+			break;
+		case ITM_SKILLSHARD:
+			GetSkillShardInLevel();
+			if (!ClassicMode())
+			{
+				if (Challenging())
+					player.skillPts += 2;
+				else
+					player.skillPts++;
+			}
+			else
+				GainMoney(100);
+			MakeNormalSound(SND_INVINCCHEAT);
+			NewMessage("A SKILL SHARD!", 75);
+			FloaterParticles(x, y, 1, 10, 1, 8);
+			return 0;
+			break;
 		case ITM_SILENTRUNE:
 			PickUpRune();
 			return 0;
@@ -1731,6 +1777,26 @@ void GetSpellInLevel(void)
 	(*GetLevelPassedFlag(player.worldNum, player.levelNum)) |= LP_GOTSPELL;
 }
 
+void GetRunePouchInLevel(void)
+{
+	(*GetLevelPassedFlag(player.worldNum, player.levelNum)) |= LP_GOTRUNEPOUCH;
+}
+
+void GetSkillShardInLevel(void)
+{
+	(*GetLevelPassedFlag(player.worldNum, player.levelNum)) |= LP_GOTSKILLSHARD;
+}
+
+bool GotSkillShardInLevel(byte world, byte level)
+{
+	return (*GetLevelPassedFlag(world, level)) & LP_GOTSKILLSHARD;
+}
+
+bool GotRunePouchInLevel(byte world, byte level)
+{
+	return (*GetLevelPassedFlag(world, level)) & LP_GOTRUNEPOUCH;
+}
+
 bool GotRuneInLevel(byte world,byte level)
 {
 	return (*GetLevelPassedFlag(world,level)) & LP_GOTRUNE;
@@ -1768,25 +1834,24 @@ byte* GetLevelPassedFlag(int chapter, int level)
 void ResetLevelPassedFlags(int chapter, int level, bool resetAll)
 {
 	if (!resetAll)
-		(*GetLevelPassedFlag(chapter, level)) &= (~LP_PASSED);
+		(*GetLevelPassedFlag(chapter, level)) &= (~(LP_PASSED|LP_GOTSKILLSHARD));	// we reset skill shards as well
 	else
 		(*GetLevelPassedFlag(chapter, level)) = 0;
 }
 
 void PickUpRune(void)
 {
+	GetRuneInLevel();
 	if (ClassicMode())
 	{
 		NewMessage("I'm gonna pawn this sucker!", 75);
 		GainMoney(20);
 		MakeNormalSound(SND_MONEY);
-		GetRuneInLevel();
 		return;
 	}
 	playerGlow = 64;
 	FloaterParticles(GetGoodguy()->x, GetGoodguy()->y, 1, 32, -1, 8);
 	FloaterParticles(GetGoodguy()->x, GetGoodguy()->y, 1, 10, 1, 8);
-	GetRuneInLevel();
 	MakeNormalSound(SND_ALLCHLGCRYSTAL);
 	byte num = Random((int)Rune::NUM_RUNES);
 	byte started = num;

@@ -25,6 +25,8 @@
 #define LP_GOTSPELL (4)
 #define LP_GOTFAIRY (8)
 #define LP_GOTSWORD (16)
+#define LP_GOTRUNEPOUCH (32)
+#define LP_GOTSKILLSHARD (64)
 
 #define WATER_DAMAGE (10)	// damage taken when you fall in the water, in modern mode
 #define MAX_RUNESTONES (9999)
@@ -161,7 +163,9 @@ typedef struct player_t
 	byte totalKills;	// capped at 255 of course
 	word cumulativeBerserk;
 	byte levelPassed2[6][6];	// the last 6 levels have to hide here to prevent old saves from breaking
-	byte expando[170-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
+	byte puzzleVar[3];	// special vars for an in-level puzzle
+	byte runePouches;
+	byte expando[166-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
 } player_t;
 
 extern player_t player;
@@ -226,14 +230,19 @@ int TotalMoney(void);
 byte HighestWorldReached(void);
 void PlayerHealWithSpell(byte amt);
 
+void GetRunePouchInLevel(void);
 void GetRuneInLevel(void);
 void GetFairyBellInLevel(void);
 void GetSwordInLevel(void);
 void GetSpellInLevel(void);
+void GetSkillShardInLevel(void);
 bool GotRuneInLevel(byte world, byte level);
 bool GotFairyBellInLevel(byte world, byte level);
 bool GotSpellInLevel(byte world, byte level);
 bool GotSwordInLevel(byte world, byte level);
+bool GotRunePouchInLevel(byte world, byte level);
+bool GotSkillShardInLevel(byte world, byte level);
+
 void ResetLevelPassedFlags(int chapter, int level, bool resetAll);
 byte* GetLevelPassedFlag(int chapter, int level);
 

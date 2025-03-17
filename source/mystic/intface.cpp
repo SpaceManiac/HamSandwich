@@ -418,6 +418,96 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 			DrawFillBox(20, y+2+ (16 - fill), 23, y+18, 32 * 1 + 16);
 		}
 	}
+	if (player.puzzleVar[0] > 0 || player.puzzleVar[1] > 0 || player.puzzleVar[2] > 0)
+	{
+		if (player.worldNum == 0 && player.levelNum == 20)	// swamp witch ingredients
+		{
+			byte state;
+			byte temp;
+			word time;
+			byte score;
+			GetSwampStats(&state,&temp, &time,&score);
+
+			if (state == 0)	// ingredients
+			{
+				int y = HALFHEI - 50;
+				RenderSkillBox(SCRWID - 60, y, SCRWID + 4, y+114, 32 * 5 + 16, 32 * 5 + 4);
+				// grimbleweed
+				GetItemSprite(1)->Draw(SCRWID - 60 + 5 + 16, y+110 - 34 * 3 + 21, mgl);
+				sprintf(s, "%d", player.puzzleVar[0]);
+				Print(SCRWID - 60 + 3 + 32 - 5, y+110 - 34 * 3 + 5, s, 0, 2);
+				// octon juice
+				bulletSpr->GetSprite(262)->DrawColored(SCRWID - 60 + 5 + 16 - 4, y+110 - 34 * 2 + 18, mgl, 6, 0);
+				sprintf(s, "%d", player.puzzleVar[1]);
+				Print(SCRWID - 60 + 3 + 32 - 5, y+110 - 34 * 2 + 5, s, 0, 2);
+				// toadstools
+				GetItemSprite(21 + 3)->Draw(SCRWID - 60 + 5 + 16, y+110 - 34 + 21, mgl);
+				sprintf(s, "%d", player.puzzleVar[2]);
+				Print(SCRWID - 60 + 3 + 32 - 5, y+110 - 34 * 1 + 5, s, 0, 2);
+			}
+			else if (state == 2)	// cooking
+			{
+				int x, y;
+				GetCamera(&x, &y);
+				x = (65*TILE_WIDTH+TILE_WIDTH/2)  - x + HALFWID;
+				y = (62*TILE_HEIGHT+TILE_HEIGHT/2) - y + HALFHEI;
+				x -= 70;
+				y -= 60;
+				// time meter
+				RenderSkillBox(x, y-1, x+20, y+121, 31, 0);
+				DrawFillBox(x+1, y+120- (time * 120 / (30 * 10)), x+19, y+120, 24);	// cook timer
+				DrawFillBox(x-2, y+120 - (time * 120 / (30 * 10)), x+22, y+120- (time * 120 / (30 * 10)), 31);	// bar at the top of cook timer
+
+				// cook meter
+				x += 120;
+				RenderSkillBox(x, y-1, x+20, y+121, 31, 0);
+				byte c[] = { 4,5,1,6,3,7 };	// colors for the flames
+				int hgt = 120 / 6;
+				byte tempY = temp * 120 / (6*40);
+				byte boil, simmer;
+				GetSwampTemps(&boil, &simmer);
+				for (int i = 0; i < 6; i++)
+				{
+					int yy = y+120-hgt*i;
+					if (temp >= i * 40 && temp < (i + 1) * 40)
+						DrawFillBox(x + 1, yy - hgt, x + 19, yy, c[i] * 32 + 20);
+					else
+						DrawFillBox(x + 1, yy - hgt, x + 19, yy, c[i] * 32 + 8);
+					if (boil == i)
+						PrintGlow(x + 25, yy - hgt, "B", 2);
+					if (simmer == i)
+						PrintGlow(x + 25, yy - hgt, "S", 2);
+				}
+				DrawFillBox(x - 2, y + 120 - tempY, x + 22, y + 120 - tempY, 31);
+
+			}
+			else if (state == 3)	// finished!
+			{
+				int y = HALFHEI - 50;
+				RenderSkillBox(SCRWID - 60, y, SCRWID + 4, y+114, 32 * 5 + 16, 32 * 5 + 4);
+				CenterPrint(SCRWID - 30, y+5, "Quality", 0, 1);
+				if (score < 60)
+					sprintf(s, "F");
+				else if (score < 70)
+					sprintf(s, "D");
+				else if (score < 80)
+					sprintf(s, "C");
+				else if (score < 90)
+					sprintf(s, "B");
+				else if (score < 100)
+					sprintf(s, "A");
+				else
+					sprintf(s, "S!");
+				CenterPrint(SCRWID - 30+2, y+35+2, s, -31, 0);
+				CenterPrint(SCRWID - 30, y+35, s, 0, 0);
+
+				sprintf(s, "%02d%%", score);
+				CenterPrint(SCRWID - 30+2, y+75+2, s, -31, 2);
+				CenterPrint(SCRWID - 30, y+75, s, 0, 2);
+			}
+			// state=1 means no display
+		}
+	}
 	RenderAchieves();
 }
 

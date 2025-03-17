@@ -88,7 +88,8 @@
 #define MONS_FIREBAT	68
 #define MONS_BIGBAT2	69
 #define MONS_HUGEBAT2	70
-#define NUM_MONSTERS  71
+#define MONS_SWAMPWEED 71
+#define NUM_MONSTERS  72
 
 // the animations
 #define ANIM_IDLE	0
@@ -221,6 +222,7 @@ void AI_Snail(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Ball(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_OctoBoss(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_OctoTentacle(Guy *me,Map *map,world_t *world,Guy *goodguy);
+void AI_SwampWeed(Guy* me, Map* map, world_t* world, Guy* goodguy);
 // the goats
 void AI_Rammy(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Hoppy(Guy *me,Map *map,world_t *world,Guy *goodguy);

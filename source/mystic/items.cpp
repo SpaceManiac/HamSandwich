@@ -72,6 +72,22 @@ void RenderItem(int x,int y,byte type,char bright)
 			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(1), DISPLAY_DRAWME|DISPLAY_SHADOW);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(1),DISPLAY_DRAWME);
 			break;
+		case ITM_BIGROCK2:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(33), DISPLAY_DRAWME|DISPLAY_SHADOW);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(33), DISPLAY_DRAWME);
+			break;
+		case ITM_CATTAIL:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(34), DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(34), DISPLAY_DRAWME);
+			break;
+		case ITM_RUNEPOUCH:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(4), DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(4), DISPLAY_DRAWME);
+			break;
+		case ITM_SKILLSHARD:
+			SprDraw(x, y, 8, 6, bright, itmSpr->GetSprite(67 + (glowism & 7)), DISPLAY_DRAWME);	// a purple spinny crystal
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(67 + (glowism & 7)), DISPLAY_DRAWME | DISPLAY_SHADOW);
+			break;
 		case ITM_CAULDRON:
 			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(3), DISPLAY_DRAWME|DISPLAY_SHADOW);
 			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(3), DISPLAY_DRAWME);
@@ -137,9 +153,13 @@ void RenderItem(int x,int y,byte type,char bright)
 		case ITM_KEYB:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(20),DISPLAY_DRAWME);
 			break;
-		case ITM_LOONYKEY:
-			b=abs(16-int(glowism&31));
-			SprDraw(x,y,0,(glowism/32)&7,bright+b,itmSpr->GetSprite(25),DISPLAY_DRAWME);
+		case ITM_TOADSTOOL:
+		{
+			b = int((x+glowism+y*3) % 56) / 4;
+			byte anim[] = { 0,0,1,2,2,2,3,4,4,3,2,2,2,1 };
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(21 + anim[b]), DISPLAY_DRAWME);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(21 + anim[b]), DISPLAY_DRAWME|DISPLAY_SHADOW);
+		}
 			break;
 		case ITM_SMLROCKS:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(32),DISPLAY_DRAWME);
@@ -304,11 +324,23 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 		case ITM_KEYB:
 			itmSpr->GetSprite(20)->DrawBright(x,y,mgl,bright);
 			break;
-		case ITM_LOONYKEY:
-			itmSpr->GetSprite(25)->DrawBright(x,y,mgl,bright);
+		case ITM_TOADSTOOL:
+			itmSpr->GetSprite(21)->DrawBright(x,y,mgl,bright);
+			break;
+		case ITM_BIGROCK2:
+			itmSpr->GetSprite(33)->DrawBright(x, y, mgl, bright);
+			break;
+		case ITM_CATTAIL:
+			itmSpr->GetSprite(34)->DrawBright(x, y, mgl, bright);
 			break;
 		case ITM_GRIMBLEWEED:
 			itmSpr->GetSprite(1)->DrawBright(x,y,mgl,bright);
+			break;
+		case ITM_RUNEPOUCH:
+			itmSpr->GetSprite(4)->DrawBright(x, y, mgl, bright);
+			break;
+		case ITM_SKILLSHARD:
+			itmSpr->GetSprite(67)->DrawColored(x, y, mgl, 6, bright);
 			break;
 		case ITM_CAULDRON:
 			itmSpr->GetSprite(3)->DrawBright(x, y, mgl, bright);
