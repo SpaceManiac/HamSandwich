@@ -2968,7 +2968,7 @@ void SwampStewSetup(Map* map)
 		ITM_REFLECT,
 		ITM_REVERSE,
 	};
-	
+
 	// now zone[0-2] are randomized betwen 0,1,2 for what goes in them
 	for (int i = 0; i < 3; i++)	// fill each zone with what it wants
 	{
@@ -3044,7 +3044,7 @@ void SwampUpdate(Map* map)
 	if (swampTicker > 0)
 		swampTicker--;
 
-	
+
 	tx = GetGoodguy()->x / (TILE_WIDTH * FIXAMT);
 	ty = GetGoodguy()->y / (TILE_HEIGHT * FIXAMT);
 	if (PlayerPassedLevel(player.worldNum, player.levelNum))
@@ -3127,12 +3127,12 @@ void SwampUpdate(Map* map)
 	{
 		BlowWigglySmoke(65*TILE_WIDTH * FIXAMT + Random(TILE_WIDTH * FIXAMT),
 			62*TILE_HEIGHT*FIXAMT + Random(TILE_HEIGHT * FIXAMT), (32+MGL_random(32)) << FIXSHIFT, MGL_randoml(FIXAMT * 4));
-		
+
 		byte c[] = { 4,5,1,6,3,7 };	// colors for the flames
 		byte color = swampTemp / 40;
 		if (color > 5) color = 5;
 		AddParticle((65 * TILE_WIDTH + Random(TILE_WIDTH)) * FIXAMT, (62 * TILE_HEIGHT + TILE_HEIGHT) * FIXAMT, 0, 0, 0, 0, 10, PART_COLORFIRE, c[color]);
-		
+
 		if (Random(10) == 0)
 			map->TempTorch(64 + Random(3), 61 + Random(3), 5 + Random(12));
 		if (tx == 68 && ty == 61)	// button to cook
@@ -3265,7 +3265,7 @@ void RenderSwampRecipe(void)
 	CenterPrint(HALFWID, 200 + 50 + 3 * 40 + 60, s, -31, 2);
 }
 
-char* GetSwampTempName(byte temp)
+const char* GetSwampTempName(byte temp)
 {
 	if (temp >= 0 && temp < 6)
 		return swampTempNames[temp];

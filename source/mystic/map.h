@@ -183,7 +183,7 @@ void SwampUpdate(Map* map);
 bool SwampPotIsFull(void);
 void SwampEnableCooking(void);
 void GetSwampStats(byte* state, byte* temp, word* time,byte *score);
-char* GetSwampTempName(byte temp);
+const char* GetSwampTempName(byte temp);
 void GetSwampTemps(byte* boil, byte* simmer);
 void SwampDestroyCauldron(byte how);
 
