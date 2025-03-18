@@ -130,6 +130,30 @@ AchieveDef achieveDef[] = {
 		"Died twice in one level, and lived to tell the tale.",
 		Progress::ONE_SHOT
 	},
+	{
+		"Iron Chef",20,
+		"Don't be an idiot sandwich.",
+		"Cooked Swamp Stew to utter perfection.",
+		Progress::ONE_SHOT
+	},
+	{
+		"Skillbor",21,
+		"Kid Mystic is a game of skill.",
+		"Maxed out every single skill. What a clever build.",
+		Progress::ONE_SHOT
+	},
+	{
+		"achieveX",22,
+		"ya",
+		"na",
+		Progress::ONE_SHOT
+	},
+	{
+		"achieveY",23,
+		"ya",
+		"na",
+		Progress::ONE_SHOT
+	},
 };
 
 //-----------------------------------------------

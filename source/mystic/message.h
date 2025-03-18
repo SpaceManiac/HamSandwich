@@ -33,4 +33,7 @@ void InitSpeech(byte spc);
 byte UpdateSpeech(MGLDraw *mgl);
 void RenderSpeech(void);
 
+void RenderBasicControls(void);
+void RenderSpellControls(void);
+
 #endif

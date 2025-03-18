@@ -69,6 +69,7 @@ void CenterPrint(int midx,int y,const char *s,char bright,byte font);
 void CenterPrintItalics(int midx, int y, const char* s, char bright, byte font);
 void CenterPrintCompressed(int midx, int y, std::string_view s, byte compression, char bright, byte font);
 void PrintGlow(int x,int y,const char *s,byte font);
+void RightPrint(int x, int y, const char* s, char bright, byte font);
 void RightPrintGlow(int x,int y,const char *s,byte font);
 void CenterPrintGlow(int y,const char *s,byte font);
 void PrintBright(int x,int y,const char *s,char bright,byte font);

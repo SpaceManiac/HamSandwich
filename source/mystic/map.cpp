@@ -3174,6 +3174,8 @@ void SwampUpdate(Map* map)
 			s -= abs(10 * 30 - swampPreheatTime - swampBoilTime - swampSimmerTime);	// minus the amount of time you spent not preheating, boiling, or simmering
 			if (s < 0) s = 0;
 			swampScore = s;
+			if (swampScore >= 100)
+				EarnAchieve(Achievement::CHEF);
 
 			if (potOrder[0] != swampRecipe[1] || potOrder[1] != swampRecipe[3])	// you did things in the wrong order (you only have to check 2, obviously!)
 			{

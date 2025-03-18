@@ -281,6 +281,23 @@ void CenterPrint(int midx,int y,const char *s,char bright,byte font)
 	}
 }
 
+void RightPrint(int x, int y, const char* s, char bright, byte font)
+{
+	if (font == 0)
+	{
+		x -=FontStrLen(s, gameFont[0]);
+		FontPrintStringBright(x, y, s, gameFont[0], bright);
+	}
+	else
+	{
+		x -=FontStrLen(s, gameFont[font]);
+		if (bright == 0)
+			FontPrintString(x, y, s, gameFont[font]);
+		else
+			FontPrintStringSolid(x, y, s, gameFont[font], 0);
+	}
+}
+
 void CenterPrintItalics(int midx, int y, const char* s, char bright, byte font)
 {
 	int x;

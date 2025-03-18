@@ -2,6 +2,7 @@
 #include "sound.h"
 #include "game.h"
 #include "intface.h"
+#include "options.h"
 
 char speech[58*4][64]={
 	// 0
@@ -105,15 +106,15 @@ char speech[58*4][64]={
 	"to use and press Fire.  Pressing Spell",
 	"again lets you go fairyless.",
 	// 20
-	"Welcome to Kid Mystic!  Control the Kid",
-	"with the arrow keys or gamepad.",
-	"Fire: CTRL, Z, or Gamepad Button 1",
-	"Spell: SHIFT, X, or Gamepad Button 2",
+	"Welcome to Kid Mystic!  Remember the",
+	"handy controls below. You can also",
+	"change them, and many other things,",
+	"in the Options menu on the title screen.",
 	// 21
-	"Previous Spell: A or Gamepad Button 3",
-	"Next Spell: S or Gamepad Button 4",
-	"Pause: ESC or Start",
-	"Visit Beginnerton above to learn more!",
+	"",
+	"",
+	"",
+	"",
 	// 22
 	"Welcome to Madcap Mode!  You can",
 	"now go through the entire adventure",
@@ -554,7 +555,10 @@ byte UpdateSpeech(MGLDraw *mgl)
 			}
 			if(curSpeech==20)
 			{
-				curSpeech=21;
+				if (!ClassicMode())
+					curSpeech = 26;
+				else
+					return 1;
 				speechX=0;
 				speechY=0;
 				return 0;
@@ -757,7 +761,15 @@ void RenderSpeech(void)
 	if (curSpeech >= 37 && curSpeech <= 40)	// show the swamp recipe
 	{
 		RenderSwampRecipe();
-
+	}
+	if (curSpeech == 0 || curSpeech==13 || curSpeech==18 || curSpeech==19 ||
+		curSpeech==20 || curSpeech==26 || curSpeech==27)	// show basic controls
+	{
+		RenderBasicControls();
+	}
+	if (curSpeech == 14 || curSpeech == 15 || curSpeech==21 || curSpeech==51 || curSpeech==52)	// show spell buttons
+	{
+		RenderSpellControls();
 	}
 }
 
@@ -896,4 +908,126 @@ void RenderFarley(void)
 byte FarleyWorldChoice(void)
 {
 	return farleyCursor;
+}
+
+void RenderBasicControl(int y, char *s, byte btn)
+{
+	int x = 170 + 100;
+	bool started = false;
+	RightPrint(170 + 80+1, y+1, s, -31, 1);
+	RightPrint(170 + 80, y, s, 0, 1);
+	if (opt.key[btn][0] != 0)
+	{
+		Print(x+1, y+1, ScanCodeText(opt.key[btn][0]), -31, 1);
+		Print(x, y, ScanCodeText(opt.key[btn][0]), 0, 1);
+		x += GetStrLength(ScanCodeText(opt.key[btn][0]),1)+4;
+		started = true;
+	}
+	if (opt.key[btn][1] != 0)
+	{
+		if (started)
+		{
+			Print(x+1, y+1, "/", -31, 1);
+			Print(x, y, "/", 0, 1);
+			x += 10;
+		}
+		Print(x+1, y+1, ScanCodeText(opt.key[btn][1]), -31, 1);
+		Print(x, y, ScanCodeText(opt.key[btn][1]), 0, 1);
+		x += GetStrLength(ScanCodeText(opt.key[btn][1]),1) + 4;
+		started = true;
+	}
+	if(started)
+	{
+		Print(x+1, y+1, "/", -31, 1);
+		Print(x, y, "/", 0, 1);
+		x += 10;
+	}
+	RenderGamepadButton(x, y-3, opt.joyCtrl[btn]);
+}
+
+void RenderBasicControls(void)
+{
+	RenderSkillBox(170 - 2, 200 - 2, SCRWID - 170 + 2, 380 + 2, 31, 0);
+	RenderSkillBox(170, 200, SCRWID - 170, 380, 31, 6);
+
+	CenterPrint(HALFWID+1, 200 + 5+1, "CONTROLS", -31, 2);
+	CenterPrint(HALFWID, 200 + 5, "CONTROLS", 0, 2);
+
+	int x = 170 + 100;
+	int y = 200 + 40;
+	RightPrint(170 + 80+1, y+1, "Movement:", -31, 1);
+	RightPrint(170 + 80, y, "Movement:", 0, 1);
+	if (opt.key[CTL_ID_UP][0] != 0)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			Print(x+1, y+1, ScanCodeText(opt.key[CTL_ID_UP + i][0]), -31, 1);
+			Print(x, y, ScanCodeText(opt.key[CTL_ID_UP+i][0]), 0, 1);
+			x += GetStrLength(ScanCodeText(opt.key[CTL_ID_UP + i][0]),1) + 4;
+			if (i < 3)
+			{
+				Print(x+1, y+1, "/", -31, 1);
+				Print(x, y, "/", 0, 1);
+				x += 10;
+			}
+		}
+		y += 20;
+	}
+	if (opt.key[CTL_ID_UP][1] != 0)
+	{
+		x = 170 + 100;
+		for (int i = 0; i < 4; i++)
+		{
+			Print(x+1, y+1, ScanCodeText(opt.key[CTL_ID_UP + i][1]), -31, 1);
+			Print(x, y, ScanCodeText(opt.key[CTL_ID_UP + i][1]), 0, 1);
+			x += GetStrLength(ScanCodeText(opt.key[CTL_ID_UP + i][1]), 1) + 4;
+			if (i < 3)
+			{
+				Print(x + 1, y + 1, "/", -31, 1);
+				Print(x, y, "/", 0, 1);
+				x += 10;
+			}
+		}
+		y += 20;
+	}
+	x = 170 + 100;
+	byte dpadOK = opt.dpadToMove;
+	opt.dpadToMove = false;
+	for (int i = 0; i < 4; i++)
+	{
+		RenderGamepadButton(x, y-3, opt.joyCtrl[CTL_ID_UP + i]);
+		if(dpadOK)
+			RenderGamepadButton(x, y+20-3, SDL_CONTROLLER_BUTTON_DPAD_UP+i);
+		x += 20;
+	}
+	opt.dpadToMove = dpadOK;
+	y += 20+dpadOK*20+10;
+	RenderBasicControl(y, "Fire:", CTL_ID_B1);
+	RenderBasicControl(y+20, "Cast:", CTL_ID_B2);
+	RenderBasicControl(y+40, "Pause:", CTL_ID_ESCAPE);
+}
+
+void RenderSpellControls(void)
+{
+	RenderSkillBox(170 - 2, 200 - 2, SCRWID - 170 + 2, 460 + 2, 31, 0);
+	RenderSkillBox(170, 200, SCRWID - 170, 460, 31, 6);
+
+	CenterPrint(HALFWID + 1, 200 + 5 + 1, "SPELL CONTROLS", -31, 2);
+	CenterPrint(HALFWID, 200 + 5, "SPELL CONTROLS", 0, 2);
+
+	int x = 170 + 100;
+	int y = 200 + 30;
+	RenderBasicControl(y, "Cast:", CTL_ID_B2);
+	y += 17;
+	RenderBasicControl(y, "Prev Spell:", CTL_ID_B3);
+	y += 17;
+	RenderBasicControl(y, "Next Spell:", CTL_ID_B4);
+	y += 17;
+	for (int i = 0; i < 10; i++)
+	{
+		char s[32];
+		sprintf(s, "Spell #%d:", i + 1);
+		RenderBasicControl(y, s, CTL_ID_QC_1+i);
+		y += 17;
+	}
 }

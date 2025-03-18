@@ -872,6 +872,12 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					player.skill[subcursor]++;
 					player.skillPts--;
 					PlayerUpdateLife();
+					byte maxed = 0;
+					for (int i = 0; i < MAX_SKILLS; i++)
+						if (player.skill[i] == MAX_SKILL_LVL)
+							maxed++;
+					if (maxed == MAX_SKILLS)
+						EarnAchieve(Achievement::SKILLS);
 				}
 				else
 					MakeNormalSound(SND_UNAVAILABLE);

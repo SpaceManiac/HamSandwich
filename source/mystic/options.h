@@ -46,7 +46,6 @@ typedef struct option_t
 	byte quickCast;
 	byte expansionSpace[OPT_EXPANSION_SIZE];
 	byte achieve[(int)Achievement::NUM_ACHIEVES];
-	
 } option_t;
 
 extern option_t opt;
@@ -54,5 +53,6 @@ extern option_t opt;
 void InitOptions(void);
 void ExitOptions(void);
 TASK(void) OptionsMenu(MGLDraw *mgl);
+void RenderGamepadButton(int x, int y, byte rawBtn);
 
 #endif

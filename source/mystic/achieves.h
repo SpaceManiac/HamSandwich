@@ -25,6 +25,10 @@ enum class Achievement :byte
 	STONESKIN,
 	BERSERK,
 	HEAL,
+	CHEF,
+	SKILLS,
+	ACHX,
+	ACHY,
 	NUM_ACHIEVES,
 	NONE,
 };
