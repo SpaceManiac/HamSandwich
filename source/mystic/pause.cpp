@@ -501,42 +501,40 @@ void SetGiveUpText(byte gu)
 void InitPauseMenu(void)
 {
 	player_t p;
+	char s[32];
 	int i;
 
 	lastKey=0;
 	subMode=0;
 
-	auto f = AppdataOpen("mystic.sav");
-	if(!f)
+	for (int i = 0; i < 5; i++)
 	{
-		for(i=0;i<5;i++)
+		sprintf(s, "mystic%d.sav", i+1);
+		auto f = AppdataOpen(s);
+		if (!f)
 		{
-			saveLevel[i]=0;
-			saveChapter[i]=0;
-			saveHour[i]=0;
-			saveMin[i]=0;
+			saveLevel[i] = 0;
+			saveChapter[i] = 0;
+			saveHour[i] = 0;
+			saveMin[i] = 0;
 			saveDiff[i] = Difficulty::UNUSED;
 			savePct[i] = 0;
 		}
-	}
-	else
-	{
-		for(i=0;i<5;i++)
+		else
 		{
-			SDL_RWread(f,&p,sizeof(player_t),1);
-			saveLevel[i]=p.level;
-			saveChapter[i]=p.worldNum+1;
-			saveHour[i]=(byte)(p.gameClock/(30*60*60));
-			saveMin[i]=(byte)((p.gameClock/(30*60))%60);
+			SDL_RWread(f, &p, sizeof(player_t), 1);
+			saveLevel[i] = p.level;
+			saveChapter[i] = p.worldNum + 1;
+			saveHour[i] = (byte)(p.gameClock / (30 * 60 * 60));
+			saveMin[i] = (byte)((p.gameClock / (30 * 60)) % 60);
 			saveDiff[i] = p.difficulty;
 			savePct[i] = CalcGamePercent(&p);
-			if(p.nightmare)
-				saveNightmare[i]=1;
+			if (p.nightmare)
+				saveNightmare[i] = 1;
 			else
-				saveNightmare[i]=0;
+				saveNightmare[i] = 0;
+			f.reset();
 		}
-
-		f.reset();
 	}
 	MakeNormalSound(SND_PAUSE);
 	if(cursor==4 && (!giveUp))

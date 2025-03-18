@@ -468,34 +468,33 @@ void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 {
 	player_t p;
 	int i;
+	char s[32];
 
-	auto f = AppdataOpen("mystic.sav");
-	if(!f)
+	for (int i = 0; i < 5; i++)
 	{
-		for(i=0;i<5;i++)
+		sprintf(s, "mystic%d.sav", i+1);
+		auto f = AppdataOpen(s);
+		if (!f)
 		{
-			title->saveLevel[i]=0;
-			title->saveChapter[i]=0;
-			title->saveHour[i]=0;
-			title->saveMin[i]=0;
-			title->saveNightmare[i]=0;
+			title->saveLevel[i] = 0;
+			title->saveChapter[i] = 0;
+			title->saveHour[i] = 0;
+			title->saveMin[i] = 0;
+			title->saveNightmare[i] = 0;
 			title->saveDiff[i] = Difficulty::UNUSED;	// unused
 		}
-	}
-	else
-	{
-		for(i=0;i<5;i++)
+		else
 		{
-			SDL_RWread(f,&p,sizeof(player_t),1);
-			title->saveLevel[i]=p.level;
-			title->saveChapter[i]=p.worldNum+1;
-			title->saveHour[i]=(byte)(p.gameClock/(30*60*60));
-			title->saveMin[i]=(byte)((p.gameClock/(30*60))%60);
-			title->saveNightmare[i]=p.nightmare;
+			SDL_RWread(f, &p, sizeof(player_t), 1);
+			title->saveLevel[i] = p.level;
+			title->saveChapter[i] = p.worldNum + 1;
+			title->saveHour[i] = (byte)(p.gameClock / (30 * 60 * 60));
+			title->saveMin[i] = (byte)((p.gameClock / (30 * 60)) % 60);
+			title->saveNightmare[i] = p.nightmare;
 			title->saveDiff[i] = p.difficulty;
 			title->savePercent[i] = CalcGamePercent(&p);
+			f.reset();
 		}
-		f.reset();
 	}
 	mgl->LastKeyPressed();
 }

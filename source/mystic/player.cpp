@@ -155,14 +155,16 @@ byte PlayerHasSword(void)
 
 void PlayerLoadGame(byte which)
 {
-	auto f = AppdataOpen("mystic.sav");
+	char s[32];
+	sprintf(s, "mystic%d.sav", which+1);
+
+	auto f = AppdataOpen(s);
 	if(!f)
 	{
 		InitPlayer(INIT_GAME,0,0);
 	}
 	else
 	{
-		SDL_RWseek(f,sizeof(player_t)*which,RW_SEEK_SET);
 		SDL_RWread(f,&player,sizeof(player_t),1);
 		f.reset();
 	}
@@ -174,25 +176,13 @@ void PlayerLoadGame(byte which)
 
 void PlayerSaveGame(byte which)
 {
-	player_t p[5];
-	int i;
-
+	char s[32];
+	
 	player.prevMoney=player.money;
 	player.prevBigMoney = player.bigMoney;
-	auto f = AppdataOpen("mystic.sav");
-	if(!f)
-	{
-		memset(p,0,sizeof(player_t)*5);	// make an empty player
-		f=AppdataOpen_Write("mystic.sav");
-		SDL_RWwrite(f,p,sizeof(player_t),5);
-		f.reset();
-		f=AppdataOpen("mystic.sav");
-	}
-	SDL_RWread(f,p,sizeof(player_t),5);
-	f.reset();
-	memcpy(&p[which],&player,sizeof(player_t));
-	f=AppdataOpen_Write("mystic.sav");
-	SDL_RWwrite(f,p,sizeof(player_t),5);
+	sprintf(s, "mystic%d.sav", which+1);
+	auto f=AppdataOpen_Write(s);
+	SDL_RWwrite(f,&player,sizeof(player_t),1);
 	f.reset();
 	AppdataSync();
 }
