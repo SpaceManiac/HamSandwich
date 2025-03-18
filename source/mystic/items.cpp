@@ -271,7 +271,7 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 			itmSpr->GetSprite(0)->DrawBright(x,y,mgl,bright);
 			break;
 		case ITM_PANTS:
-			itmSpr->GetSprite(3)->DrawBright(x,y,mgl,bright);
+			itmSpr->GetSprite(59)->DrawBright(x,y,mgl,bright);
 			break;
 		case ITM_REVERSE:
 			itmSpr->GetSprite(4)->DrawBright(x,y,mgl,bright);

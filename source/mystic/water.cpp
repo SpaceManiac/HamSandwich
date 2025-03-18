@@ -194,7 +194,7 @@ byte WaterPixel(int x,int y)
 	}
 	else if (player.worldNum == 0)
 	{
-		if (player.levelNum == 20 || (GetGoodguy() && GetGoodguy()->x < 38 * FIXAMT * TILE_WIDTH && GetGoodguy()->y>29 * FIXAMT * TILE_HEIGHT))
+		if (player.levelNum == 20 || (player.levelNum==1 && (GetGoodguy() && GetGoodguy()->x < 38 * FIXAMT * TILE_WIDTH && GetGoodguy()->y>29 * FIXAMT * TILE_HEIGHT)))
 		{
 			if (s < 4)
 				return (byte)0 + 32*5;

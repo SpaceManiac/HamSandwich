@@ -1988,6 +1988,24 @@ Guy *AddGuy(int x,int y,int z,byte type)
 						// the blond guy
 						guys[i].mind=ANIM_MOVE;
 						break;
+					case 21:
+					{
+						// the various beginnerton folks
+						int tx, ty;
+						tx = x / (TILE_WIDTH * FIXAMT);
+						ty = y / (TILE_HEIGHT * FIXAMT);
+						if (tx == 34 && ty == 55)
+							guys[i].mind = ANIM_MOVE;
+						if (tx == 47 && ty == 54)
+							guys[i].mind = ANIM_IDLE;
+						if (tx == 17 && ty == 45)
+							guys[i].mind = ANIM_ATTACK;
+						if (tx == 13 && ty == 22)
+							guys[i].mind = ANIM_A3;
+						if (tx == 41 && ty == 24)
+							guys[i].mind = ANIM_A1;
+					}
+						break;
 					case 13:
 					case 51:
 					case 111:

@@ -109,7 +109,8 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{2,255},	// fire (chick)
 				{4,255},	// die
 				{3,255},	// A1   (wizard)
-				{4,255}		// A2 (witch)
+				{4,255},		// A2 (witch)
+				{5,255}		// A3 (another woman)
 			}},
 		{"Pterodactyl",	// pterodactyl - kid mystic's little buddy
 		 10,11,15,5,"graphics/ptero.jsp",0,MF_FLYING|MF_ENEMYWALK|MF_FREEWALK|MF_GOODGUY,
@@ -2120,7 +2121,10 @@ void AI_Friendly(Guy *me,Map *map,world_t *world,Guy *goodguy)
 					InitSpeech(1);
 					break;
 				case 11:
-					InitSpeech(2);
+					if (ClassicMode())
+						InitSpeech(2);
+					else
+						InitSpeech(51);
 					break;
 				case 13:
 					InitSpeech(3);
@@ -2161,6 +2165,31 @@ void AI_Friendly(Guy *me,Map *map,world_t *world,Guy *goodguy)
 						else
 							InitSpeech(38);
 					}
+					break;
+				case 21:
+				{
+					int tx, ty;
+					tx = me->x / (TILE_WIDTH * FIXAMT);
+					ty = me->y / (TILE_HEIGHT * FIXAMT);
+					if (tx == 34 && ty == 55)
+						InitSpeech(0);
+					if (tx == 47 && ty == 54)
+						InitSpeech(1);
+					if (tx == 17 && ty == 45)
+					{
+						if (me->mind2 == 0)
+						{
+							InitSpeech(55);
+							me->mind2 = 1;
+						}
+						else
+							InitSpeech(57);
+					}
+					if (tx == 13 && ty == 22)
+						InitSpeech(53);
+					if (tx == 41 && ty == 24)
+						InitSpeech(2);
+				}
 					break;
 				case 55:
 					InitSpeech(7);

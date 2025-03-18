@@ -3,7 +3,7 @@
 #include "game.h"
 #include "intface.h"
 
-char speech[51*4][64]={
+char speech[58*4][64]={
 	// 0
 	"Welcome to Beginnerton!  This town is",
 	"really a tutorial on some basic game",
@@ -259,6 +259,41 @@ char speech[51*4][64]={
 	"smooch. Come here cutie pie!",
 	"",
 	"Just kidding. Consent and all that.",
+	// 51
+	"Spellbooks teach you new spells.",
+	"Casting them uses up your mana (spell",
+	"power). As you gain levels, you get",
+	"skill points you can spend to improve",
+	// 52
+	"your spells as well as yourself. I",
+	"know this spell seems pretty sad",
+	"right now, but check it out at level",
+	"five!",
+	// 53
+	"The Monster Wilderness is full of tricks",
+	"and traps. Sometimes there are walls",
+	"you can push, or buttons to step on,",
+	"or walls you can shoot.",
+	// 54
+	"I've created a very very subtle obstacle",
+	"course for you here. Good luck figuring",
+	"out which walls are the trick ones!",
+	"I'm sneaky!",
+	// 55
+	"Oh, I see you're admiring my collection!",
+	"Yes, I have my own personal Fairy Bell",
+	"and Reflect Crystal! I keep them locked",
+	"up for safety.",
+	// 56
+	"In fact, they're so securely stored that",
+	"I just continue facing the other",
+	"direction. I feel no need to check that",
+	"they're still there.",
+	// 57
+	"They're still there, right? I'll just keep",
+	"facing this way and assume they are.",
+	"You'd let me know if they were gone, for",
+	"sure. Right? I can trust you.",
 };
 
 byte speechX,speechY,curSpeech;
@@ -466,6 +501,34 @@ byte UpdateSpeech(MGLDraw *mgl)
 				curSpeech=17;
 				speechX=0;
 				speechY=0;
+				return 0;
+			}
+			if (curSpeech == 51)
+			{
+				curSpeech = 52;
+				speechX = 0;
+				speechY = 0;
+				return 0;
+			}
+			if (curSpeech == 52)
+			{
+				curSpeech = 14;
+				speechX = 0;
+				speechY = 0;
+				return 0;
+			}
+			if (curSpeech == 53)
+			{
+				curSpeech = 54;
+				speechX = 0;
+				speechY = 0;
+				return 0;
+			}
+			if (curSpeech == 55)
+			{
+				curSpeech = 56;
+				speechX = 0;
+				speechY = 0;
 				return 0;
 			}
 			if(curSpeech==2)

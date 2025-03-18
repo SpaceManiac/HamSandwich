@@ -396,6 +396,7 @@ byte PlayerHasSpell(void)
 	{
 		case 11:
 		case 111:
+		case 21:	// this spell is in 2 different chapter 1 levels, because I remade beginnerton
 			i=0;	// energy barrage
 			break;
 		case 2:
