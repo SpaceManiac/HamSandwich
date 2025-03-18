@@ -41,9 +41,16 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	manaRuneValue = 0;
 	if(initWhat==INIT_GAME)	// initialize everything, this is to start a whole new game
 	{
+		Difficulty diff = player.difficulty;
 		memset(&player, 0, sizeof(player_t));
-		player.level=1;
+		player.saveVersion = SAVE_VERSION;
+		player.saveCode[0] = 'K';
+		player.saveCode[1] = 'I';
+		player.saveCode[2] = 'D';
+		player.saveCode[3] = '\0';
 
+		player.level=1;
+		player.difficulty = diff;
 		player.boots=0 + BrutalMode();
 		player.hat = 0 + BrutalMode();
 		player.staff = 0 + BrutalMode();
@@ -95,7 +102,6 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	player.boredom=0;
 	player.hammers=0;
 	player.hamSpeed=HAMMER_MIN_SPEED;
-	player.weapon=WPN_NONE;
 	player.ammo=0;
 	player.reload=5;
 	player.wpnReload=0;

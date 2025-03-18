@@ -12,12 +12,7 @@
 #include "skills.h"
 #include "runes.h"
 
-// secondary weapon defines
-#define WPN_NONE     0
-#define WPN_MISSILES 1
-#define WPN_AK8087	 2
-#define WPN_BOMBS	 3
-#define WPN_FLAME	 4
+#define SAVE_VERSION (1)
 
 // level passed bitflags
 #define LP_PASSED (1)
