@@ -43,7 +43,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	{
 		memset(&player, 0, sizeof(player_t));
 		player.level=1;
-		
+
 		player.boots=0 + BrutalMode();
 		player.hat = 0 + BrutalMode();
 		player.staff = 0 + BrutalMode();
@@ -734,7 +734,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 			else
 				player.gotSpell[i+10]=1;
 			GetSpellInLevel();
-			
+
 			FloaterParticles(x,y,1,32,-1,16);
 			FloaterParticles(x,y,5,10,2,16);
 			FloaterParticles(x,y,5,64,-3,16);
@@ -1480,7 +1480,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	// not busy, let's see if you want to do something
 	DoPlayerFacing(me);
-	
+
 	if(player.levelNum==1)
 	{
 		// can't cast spells or even fake a fireball when on the overworld level
@@ -1821,7 +1821,7 @@ bool GotSwordInLevel(byte world, byte level)
 
 byte PlayerPassedLevel(byte world, byte map)
 {
-	return (*GetLevelPassedFlag(world,map)) & LP_PASSED;
+	return map != 50 && ((*GetLevelPassedFlag(world,map)) & LP_PASSED);
 }
 
 
@@ -1830,7 +1830,7 @@ byte* GetLevelPassedFlag(int chapter, int level)
 	if (level < MAX_MAPS - 6)
 		return &player.levelPassed[chapter][level];
 	else
-		return &player.levelPassed2[chapter][level - MAX_MAPS - 6];
+		return &player.levelPassed2[chapter][level - (MAX_MAPS - 6)];
 }
 
 void ResetLevelPassedFlags(int chapter, int level, bool resetAll)
