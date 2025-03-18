@@ -16,9 +16,9 @@ char speech[58*4][64]={
 	"Each Speed Gem raises the rate of fire.",
 	// 2
 	"Spellbooks teach you new spells.",
-	"Casting them uses up your mana (spell",
-	"power). As you gain levels, your spells",
-	"become more powerful.",
+	"Casting them uses up your mana (the",
+	"blue bar). As you gain levels, your",
+	"spells become more powerful.",
 	// 3
 	"Psst, hey... thousands of years ago,",
 	"a great hero used a weapon known as",
@@ -70,20 +70,20 @@ char speech[58*4][64]={
 	"you can't have both!",
 	" ",
 	// 13
-	"You can launch fireballs by",
-	"pressing the Fire key or button 1",
-	"on the joystick.",
-	" ",
+	"You can launch fireballs by pressing",
+	"the Fire button. Shocking, I know.",
+	"Fireball upgrades only last for the",
+	"level you are in, unlike Spells.",
 	// 14
-	"To cast a spell, press the Spell key or",
-	"button 2 on the joystick.  You can",
-	"switch which spell to cast with the",
-	"Next and Previous keys, or button 3 & 4",
+	"To cast a spell, press the Cast button.",
+	"You can use the specific Spell buttons",
+	"to switch to other spells, or use",
+	"the Next and Previous buttons.",
 	// 15
-	"joystick, or by directly pushing",
-	"the number key for the spell you",
-	"want.  This Energy Barrage spell",
-	"is number 1.",
+	"In the options menu, you can change",
+	"between just selecting spells with those",
+	"buttons, or instantly casting them. Play",
+	"your own way!",
 	// 16
 	"One other thing... you can't leave",
 	"any area that you enter until you",
@@ -95,7 +95,7 @@ char speech[58*4][64]={
 	"give you an idea of how many remain.",
 	" ",
 	// 18
-	"You've just caught a fairy!  Fairies",
+	"You've just caught a fairy! Fairies",
 	"assist you with magical powers, but",
 	"some of them also have drawbacks.  You",
 	"can choose which fairy to equip by",
@@ -261,14 +261,14 @@ char speech[58*4][64]={
 	"Just kidding. Consent and all that.",
 	// 51
 	"Spellbooks teach you new spells.",
-	"Casting them uses up your mana (spell",
-	"power). As you gain levels, you get",
+	"Casting them uses up your mana (the",
+	"blue bar). As you gain levels, you get",
 	"skill points you can spend to improve",
 	// 52
 	"your spells as well as yourself. I",
 	"know this spell seems pretty sad",
 	"right now, but check it out at level",
-	"five!",
+	"five! Pause the game to adjust skills.",
 	// 53
 	"The Monster Wilderness is full of tricks",
 	"and traps. Sometimes there are walls",

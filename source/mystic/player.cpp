@@ -456,6 +456,7 @@ byte SpellBookForThisLevel(byte level,byte chapter)
 	{
 		case 11:
 		case 111:
+		case 21:
 			i=0;	// energy barrage
 			break;
 		case 2:
