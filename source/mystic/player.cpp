@@ -182,6 +182,11 @@ void PlayerSaveGame(byte which)
 	player.prevBigMoney = player.bigMoney;
 	sprintf(s, "mystic%d.sav", which+1);
 	auto f=AppdataOpen_Write(s);
+	player.saveVersion = SAVE_VERSION;
+	player.saveCode[0] = 'K';
+	player.saveCode[1] = 'I';
+	player.saveCode[2] = 'D';
+	player.saveCode[3] = '\0';
 	SDL_RWwrite(f,&player,sizeof(player_t),1);
 	f.reset();
 	AppdataSync();
