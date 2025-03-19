@@ -89,7 +89,9 @@
 #define MONS_BIGBAT2	69
 #define MONS_HUGEBAT2	70
 #define MONS_SWAMPWEED 71
-#define NUM_MONSTERS  72
+#define MONS_GHOSTSPITTER 72
+#define MONS_SPLITTER 73
+#define NUM_MONSTERS  74
 
 // the animations
 #define ANIM_IDLE	0
@@ -172,6 +174,8 @@ void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Bat(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Spider(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_BigSpider(Guy *me,Map *map,world_t *world,Guy *goodguy);
+void AI_GhostSpider(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Splitter(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Zombie(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_EggSac(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_MamaSpider(Guy *me,Map *map,world_t *world,Guy *goodguy);

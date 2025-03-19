@@ -1115,6 +1115,12 @@ void Guy::MonsterControl(Map *map,world_t *world)
 		case MONS_BIGSPDR:
 			AI_BigSpider(this,map,world,goodguy);
 			break;
+		case MONS_GHOSTSPITTER:
+			AI_GhostSpider(this, map, world, goodguy);
+			break;
+		case MONS_SPLITTER:
+			AI_Splitter(this, map, world, goodguy);
+			break;
 		case MONS_ZOMBIE:
 			AI_Zombie(this,map,world,goodguy);
 			break;
@@ -2002,7 +2008,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 							guys[i].mind = ANIM_ATTACK;
 						if (tx == 13 && ty == 22)
 							guys[i].mind = ANIM_A3;
-						if (tx == 41 && ty == 24)
+						if ((tx == 41 && ty == 24) || (tx==57 && ty==60))
 							guys[i].mind = ANIM_A1;
 					}
 						break;

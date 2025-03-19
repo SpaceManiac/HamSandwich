@@ -192,6 +192,8 @@ void Map::Init(world_t *wrld)
 		MushAidPuzzleReset(this);
 	if (player.worldNum == 1 && player.levelNum == 5)
 		AbandonedVillagePuzzleReset(this);
+	if (player.worldNum == 1 && player.levelNum == 11)
+		AmongHedgesPuzzleInit(this);
 
 	if(player.levelNum==19 && player.worldNum==2)
 		totalBrains=2;
@@ -352,7 +354,8 @@ void Map::Update(byte mode,world_t *world)
 		LockedMazePuzzle(this);
 	if (player.worldNum == 0 && player.levelNum == 20)
 		SwampUpdate(this);
-
+	if (player.worldNum == 1 && player.levelNum == 11)
+		AmongHedgesPuzzleUpdate(this);
 	if(timeToAnim==2)
 		timeToAnim=0;
 }
@@ -985,6 +988,8 @@ void RaiseWall(Map *map,int x,int y,byte newWall)
 void SpecialStepCheck(Map *map,int x,int y,Guy *me)
 {
 	int i;
+	if (me->type == MONS_GHOSTSPITTER)
+		return;	// ghost spitters can't step on triggers
 
 	for(i=0;i<MAX_SPECIAL;i++)
 	{
@@ -1016,6 +1021,8 @@ void SpecialShootCheck(Map *map,int x,int y)
 			if (player.worldNum == 3 && player.levelNum == 10)
 				BatsPuzzle(map,map->special[i].x,map->special[i].y);
 		}
+	if (player.worldNum == 1 && player.levelNum == 11)
+		AmongHedgesShootCheck(map, x, y);
 }
 
 void SpecialKillCheck(Map* map,byte type)
@@ -1204,7 +1211,7 @@ void RenderSpecialXes(MGLDraw *mgl,Map *map,byte world)
 						if (xx != cx && yy != cy)
 							GetItemSprite(4)->DrawBright(xx + Cosine(angList[ang]) * outXes / FIXAMT, yy + 3 + Sine(angList[ang]) * outXes / FIXAMT, mgl, -31);
 					}
-				if (GotSwordInLevel(world, mNum))
+				if (GotRunePouchInLevel(world, mNum))
 					GetItemSprite(4)->DrawBright(cx + Cosine(angList[ang]) * outXes / FIXAMT, cy + 3 + Sine(angList[ang]) * outXes / FIXAMT, mgl, 0);
 				ang++;
 			}
@@ -1216,7 +1223,7 @@ void RenderSpecialXes(MGLDraw *mgl,Map *map,byte world)
 						if (xx != cx && yy != cy)
 							GetItemSprite(71)->DrawBright(xx + Cosine(angList[ang]) * outXes / FIXAMT, yy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, -31);
 					}
-				if (GotSwordInLevel(world, mNum))
+				if (GotSkillShardInLevel(world, mNum))
 					GetItemSprite(71)->DrawColored(cx + Cosine(angList[ang]) * outXes / FIXAMT, cy + 8 + Sine(angList[ang]) * outXes / FIXAMT, mgl, 6, 0);
 				ang++;
 			}
@@ -1442,6 +1449,9 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 					map->special[i].trigger = 0;	// can no longer be triggered!
 				}
 			}
+			break;
+		case SPC_CHGMONS:
+			ChangeAllGuysOfType(spcl->effectX, spcl->value);
 			break;
 	}
 	if (spcl->trigger & TRG_MESSAGE)
@@ -3365,3 +3375,93 @@ void SwampDestroyCauldron(byte how)
 	}
 }
 //---------------------------- END OF SWAMP PUZZLE
+byte hedgePuzzleState=0;
+byte hedgePuzzleTimer;
+byte hedgeCoords[] = {
+		7,31,
+		10,36,
+		9,41,
+		15,39,
+		22,39,
+		25,32,
+		22,28,
+};
+void AmongHedgesPuzzleInit(Map* map)
+{
+	hedgePuzzleState = 0;
+}
+
+void AmongHedgesPuzzleUpdate(Map *map)
+{
+	int tx, ty;
+	if (!GetGoodguy())
+		return;
+	if (GotSkillShardInLevel(player.worldNum, player.levelNum))
+		return;
+	if (hedgePuzzleState == 8)
+		return;
+
+	if (hedgePuzzleState>0)	// timer ticking, shoot them all before it's gone
+	{
+		hedgePuzzleTimer--;
+		if (hedgePuzzleTimer == 0)
+		{
+			for (int i = 0; i < 7; i++)
+			{
+				map->GetTile(hedgeCoords[i * 2], hedgeCoords[i * 2 + 1])->wall = 0;
+				map->GetTile(hedgeCoords[i * 2], hedgeCoords[i * 2 + 1])->floor = 20;
+			}
+			map->GetTile(16, 33)->floor = 86;
+			hedgePuzzleState = 0;
+			MakeNormalSound(SND_UNAVAILABLE);
+		}
+		else if ((hedgePuzzleTimer % 30) == 0)
+			MakeNormalSound(SND_WORLDPICK);	// tick
+
+		return;
+	}
+	if (hedgePuzzleState == 0)
+	{
+		tx = GetGoodguy()->x / (TILE_WIDTH * FIXAMT);
+		ty = GetGoodguy()->y / (TILE_HEIGHT * FIXAMT);
+		if (tx == 16 && ty == 33)
+		{
+			hedgePuzzleState = 1;
+			hedgePuzzleTimer = 30 * 4;
+			MakeNormalSound(SND_PURGE);
+			for (int i = 0; i < 7; i++)
+			{
+				ExplodeParticles2(PART_WATER, hedgeCoords[i * 2] * TILE_WIDTH + TILE_WIDTH / 2, hedgeCoords[i * 2 + 1] * TILE_HEIGHT + TILE_HEIGHT / 2, 0, 20, 10);
+				map->GetTile(hedgeCoords[i * 2], hedgeCoords[i * 2 + 1])->wall = 31;
+				map->GetTile(hedgeCoords[i * 2], hedgeCoords[i * 2 + 1])->floor = 100;
+			}
+		}
+	}
+}
+
+void AmongHedgesShootCheck(Map* map, int x, int y)
+{
+	if (hedgePuzzleState == 8)
+		return;
+
+	for (int i = 0; i < 7; i++)
+	{
+		if (x >= hedgeCoords[i * 2] - 1 && x <= hedgeCoords[i * 2] + 1 &&
+			y >= hedgeCoords[i * 2 + 1] - 1 && y <= hedgeCoords[i * 2+1] + 1 &&
+			map->GetTile(x, y)->wall == 31)
+		{
+			MakeNormalSound(SND_PURCHASE);
+			hedgePuzzleState++;
+			map->GetTile(x, y)->wall = 29;
+			map->GetTile(x, y)->floor = 101;
+		}
+	}
+	if (hedgePuzzleState == 8)
+	{
+		map->GetTile(16, 26)->item = ITM_SKILLSHARD;
+		MakeNormalSound(SND_INFERNAL);
+		FloaterParticles((16 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (26 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 1, 32, -1, 16);
+		FloaterParticles((16 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (26 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 1, 10, 1, 16);
+		map->BrightTorch(16, 26, 20, 10);
+	}
+}

@@ -621,6 +621,22 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// attack
 				{5,6,7,255},	// die
 			} },
+		{"Ghost Spitter",
+		 8,21,10,50,"graphics/bigspdr.jsp",0,MF_GHOST,
+			{
+				{0,255},	// idle
+				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
+				{7,8,9,10,11,12,12,13,13,255},	// attack
+				{14,15,16,17,18,17,18,17,18,19,19,20,20,255},	// die
+			} },
+		{"Splitter",
+		 8,21,100,200,"graphics/bigspdr.jsp",0,0,
+			{
+				{0,255},	// idle
+				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
+				{7,8,9,10,11,12,12,13,13,255},	// attack
+				{14,15,16,17,18,17,18,17,18,19,19,20,20,255},	// die
+			} },
 	};
 
 static byte kidSpr;
@@ -931,6 +947,9 @@ void MonsterDraw(int x, int y, int z, byte type, byte seq, byte frm, byte facing
 		baseColor = 5;
 		bright -= 1;
 	}
+	if (type == MONS_SPLITTER)
+		baseColor = 4;
+
 	if(ouch==0)
 	{
 		if(!(monsType[type].flags&MF_GHOST))
@@ -1778,6 +1797,137 @@ void AI_BigSpider(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 }
 
+void AI_GhostSpider(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	int x, y;
+
+	if (me->reload)
+		me->reload--;
+
+	if (me->ouch == 4)
+	{
+		if (me->hp > 0)
+			MakeSound(SND_SPD2OUCH, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_SPD2DIE, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_ATTACK && me->frm == 6 && me->reload == 0)
+		{
+			// spit acid glob
+			MakeSound(SND_SPD2SPIT, me->x, me->y, SND_CUTOFF, 1200);
+			x = me->x + Cosine(me->facing * 32) * 8;
+			y = me->y + Sine(me->facing * 32) * 8;
+			FireBullet(x, y, me->facing * 32, BLT_GLOB_BOMB);
+			me->reload = 40;
+		}
+		return;	// can't do nothin' right now
+	}
+
+	if (goodguy)
+	{
+		if (RangeToTarget(me, goodguy) < (256 * FIXAMT) && MGL_random(32) == 0 && me->reload == 0)
+		{
+			FaceGoodguy(me, goodguy);
+			// spit on him!
+			me->seq = ANIM_ATTACK;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+			me->action = ACTION_BUSY;
+			me->dx = 0;
+			me->dy = 0;
+			me->reload = 0;
+			return;
+		}
+	}
+
+	if (me->mind)
+		me->mind--;
+	if (!me->mind)	// time to get a new direction
+	{
+		me->facing = (byte)MGL_random(8);
+		me->mind = MGL_random(120) + 1;
+	}
+
+	me->dx = Cosine(me->facing * 32) * 4;
+	me->dy = Sine(me->facing * 32) * 4;
+	if (me->seq != ANIM_MOVE)
+	{
+		me->seq = ANIM_MOVE;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 128;
+	}
+}
+
+void AI_Splitter(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	int x, y;
+
+	if (me->reload)
+		me->reload--;
+
+	if (me->ouch == 4)
+	{
+		if (me->hp > 0)
+			MakeSound(SND_SPD2OUCH, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_SPD2DIE, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_ATTACK && me->frm == 6 && me->reload == 0)
+		{
+			// spit acid glob
+			MakeSound(SND_SPD2SPIT, me->x, me->y, SND_CUTOFF, 1200);
+			x = me->x + Cosine(me->facing * 32) * 8;
+			y = me->y + Sine(me->facing * 32) * 8;
+			FireBullet(x, y, me->facing * 32-16, BLT_ENERGY);
+			FireBullet(x, y, me->facing * 32, BLT_ENERGY);
+			FireBullet(x, y, me->facing * 32 + 16, BLT_ENERGY);
+			me->reload = 20;
+		}
+		if (me->seq == ANIM_DIE && Random(5)==0)
+		{
+			AddGuy(me->x, me->y, 0, MONS_BIGSPDR);
+		}
+		return;	// can't do nothin' right now
+	}
+
+	if (goodguy)
+	{
+		if (RangeToTarget(me, goodguy) < (256 * FIXAMT) && MGL_random(16) == 0 && me->reload == 0)
+		{
+			FaceGoodguy(me, goodguy);
+			// spit on him!
+			me->seq = ANIM_ATTACK;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 192;
+			me->action = ACTION_BUSY;
+			me->dx = 0;
+			me->dy = 0;
+			me->reload = 0;
+			return;
+		}
+		FaceGoodguy(me, goodguy);
+	}
+
+	me->dx = Cosine(me->facing * 32) * 3;
+	me->dy = Sine(me->facing * 32) * 3;
+	if (me->seq != ANIM_MOVE)
+	{
+		me->seq = ANIM_MOVE;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 128;
+	}
+}
+
 void AI_Zombie(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
@@ -2189,6 +2339,8 @@ void AI_Friendly(Guy *me,Map *map,world_t *world,Guy *goodguy)
 						InitSpeech(53);
 					if (tx == 41 && ty == 24)
 						InitSpeech(2);
+					if (tx == 57 && ty == 60)
+						InitSpeech(3);
 				}
 					break;
 				case 55:

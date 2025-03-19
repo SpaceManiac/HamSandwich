@@ -48,7 +48,8 @@
 #define SPC_CHGITEM		10
 #define SPC_CHGFLOOR	11
 #define SPC_KILLSPCL	12
-#define SPC_MAXEFFECTS  13
+#define SPC_CHGMONS		13
+#define SPC_MAXEFFECTS  14
 
 // Map flags
 #define MAP_SNOWING		1
@@ -186,5 +187,8 @@ void GetSwampStats(byte* state, byte* temp, word* time,byte *score);
 const char* GetSwampTempName(byte temp);
 void GetSwampTemps(byte* boil, byte* simmer);
 void SwampDestroyCauldron(byte how);
+void AmongHedgesPuzzleInit(Map* map);
+void AmongHedgesPuzzleUpdate(Map* map);
+void AmongHedgesShootCheck(Map* map, int x, int y);
 
 #endif
