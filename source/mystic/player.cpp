@@ -680,13 +680,17 @@ byte PlayerGetItem(byte itm,int x,int y)
 			return 0;
 			break;
 		case ITM_HAMMERUP:
-			if(player.hammers<5)
+			if (player.hammers < 5)
+			{
 				player.hammers++;
-			MakeNormalSound(SND_HAMMERUP);
-			NewMessage("ENERGY ORB!",75);
-			FloaterParticles(x,y,5,32,-1,16);
-			FloaterParticles(x,y,5,10,1,16);
-			return 0;
+				MakeNormalSound(SND_HAMMERUP);
+				NewMessage("ENERGY ORB!", 75);
+				FloaterParticles(x, y, 5, 32, -1, 16);
+				FloaterParticles(x, y, 5, 10, 1, 16);
+				return 0;
+			}
+			else
+				return 1;	// can't pick it up if already at max
 			break;
 		case ITM_PANTS:
 			if(player.hamSpeed>0)
@@ -1620,6 +1624,23 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			me->frm=0;
 			me->frmTimer=0;
 			me->frmAdvance=128;
+		}
+	}
+
+	if (player.levelNum == 19 && player.worldNum == 1 && me->action != ACTION_BUSY &&
+		((ButtonTapped(CONTROL_B3) && ButtonTapped(CONTROL_B4)) ||
+			(ButtonTapped(CONTROL_B4) && ButtonHeld(CONTROL_B3)))) // you hit both, so drop a trap
+	{
+		if (player.hammers == 0)
+		{
+			MakeNormalSound(SND_FAILSPELL);
+			NewMessage("I'm out of Energy Orbs!", 30);
+		}
+		else
+		{
+			FireBullet(me->x, me->y, 0, BLT_GHOSTTRAP);
+			player.hammers--;
+			MakeNormalSound(SND_INCAGEN);
 		}
 	}
 

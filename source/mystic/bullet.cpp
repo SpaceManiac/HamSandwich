@@ -35,6 +35,7 @@
 #define SPR_SKULL	 243
 #define SPR_COMET	 271
 #define SPR_COMETBOOM 279
+#define SPR_GHOSTTRAP 289
 
 bullet_t bullet[MAX_BULLETS];
 sprite_set_t *bulletSpr;
@@ -645,10 +646,6 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 			ExplodeParticles(PART_SLIME,me->x,me->y,me->z,6);
 			me->type=0;
 			break;
-		case BLT_OCTONJUICE:
-		case BLT_OCTONJUICESPLAT:
-			me->type = 0;
-			break;
 		case BLT_FLAME:
 		case BLT_FLAME2:
 		case BLT_LIQUIFY:
@@ -1148,6 +1145,63 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 	// special things like animation
 	switch(me->type)
 	{
+		case BLT_GHOSTTRAP:
+			if (me->lastHit == 65535)	// not armed yet
+			{
+				if ((me->timer % 15) == 0)
+					me->anim++;
+				if (me->timer == 1)	// timer is the 2s until armed
+				{
+					me->anim = 5;
+					me->lastHit = 0;	// switch to armed mode
+					me->timer = 61;	// for 2s
+					MakeSound(SND_MEGABEAM, me->x, me->y, SND_CUTOFF, 600);
+				}
+			}
+			else if (me->lastHit == 0)	// armed, blink
+			{
+				if ((me->timer % 5) == 0)
+				{
+					me->anim = (6 + 5) - me->anim;	// blink between frame 5 and 6
+					FloaterParticles(me->x, me->y, 7, 64, 0, 20);
+				}
+				if (me->timer == 1)
+				{
+					// time ran out with no catch, be gone
+					BlowUpGuy(me->x>>FIXSHIFT, me->y>>FIXSHIFT, (me->x>>FIXSHIFT) + 1, (me->y>>FIXSHIFT) + 1, 0, 1);
+				}
+				Guy* g = FindNearestOfType(me->x>>FIXSHIFT, me->y>FIXSHIFT, MONS_GHOST);
+				if (g && abs(g->x - me->x) < 64 * FIXAMT && abs(g->y - me->y) < 48 * FIXAMT)
+				{
+					HauntedWoodsCatchGhost(g);
+					me->lastHit = 1;	// done capturing, close up
+					me->anim = 7;
+					me->timer = 20;
+				}
+			}
+			else if (me->lastHit == 1)	// closing
+			{
+				if ((me->timer % 3) == 0)
+				{
+					me->anim++;
+					if (me->anim == 11)
+					{
+						me->lastHit = 2;	// sit around forever
+						me->timer = 30;
+					}
+				}
+			}
+			else if (me->lastHit == 2)	// just sitting
+			{
+				if (Random(200) == 0)
+					me->dz = FIXAMT * 1 + Random(FIXAMT * 4);	// hop up and down sometimes
+				if ((me->timer % 4) == 0)
+				{
+					me->anim = 11 - me->anim;	// alternate between 0 and 11
+					me->timer += 4;
+				}
+			}
+			break;
 		case BLT_MINE:
 			if (me->anim == 1)	// floating
 			{
@@ -1486,6 +1540,9 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			else
 				HitBadguys(me, map, world);
 			break;
+		case BLT_ECTOPLASM:
+			me->anim++;
+			break;
 		case BLT_BOOM:
 		case BLT_SEEKBOOM:
 			map->BrightTorch((me->x/TILE_WIDTH)>>FIXSHIFT,
@@ -1664,28 +1721,30 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 	}
 
 	b=0;
-
-	me->x+=me->dx;
-	if(!BulletCanGo(me->x,me->y,map,1))
-		BulletHitWallX(me,map,world);
-	else
+	if (me->type != BLT_ECTOPLASM)	// ectoplasm can be in trees
 	{
-		me->y+=me->dy;
-		if(!BulletCanGo(me->x,me->y,map,1))
-			BulletHitWallY(me,map,world);
+		me->x += me->dx;
+		if (!BulletCanGo(me->x, me->y, map, 1))
+			BulletHitWallX(me, map, world);
+		else
+		{
+			me->y += me->dy;
+			if (!BulletCanGo(me->x, me->y, map, 1))
+				BulletHitWallY(me, map, world);
+		}
+
+		if (me->type != BLT_ICESHARD)	// iceshard stores guy ID in DZ, don't use it
+			me->z += me->dz;
+
+		if (me->z < 0)
+			BulletHitFloor(me, map, world);
+
+		// all gravity-affected bullets, get gravitized
+		if (me->type == BLT_BOMB || me->type == BLT_GRENADE || (me->type == BLT_MINE && me->anim == 0) || me->type == BLT_GLOB_BOMB || me->type == BLT_LIFEPOTION || me->type == BLT_MANAPOTION
+			|| me->type == BLT_ROCK || me->type == BLT_EVILHAMMER || me->type == BLT_COIN || me->type == BLT_RUNESTONE || me->type == BLT_OCTONJUICE || me->type == BLT_OCTONJUICESPLAT
+			|| me->type == BLT_BIGCOIN || me->type==BLT_GHOSTTRAP)
+			me->dz -= FIXAMT;
 	}
-
-	if(me->type!=BLT_ICESHARD)	// iceshard stores guy ID in DZ, don't use it
-		me->z+=me->dz;
-
-	if(me->z<0)
-		BulletHitFloor(me,map,world);
-
-	// all gravity-affected bullets, get gravitized
-	if(me->type==BLT_BOMB || me->type==BLT_GRENADE || (me->type==BLT_MINE && me->anim==0) || me->type==BLT_GLOB_BOMB || me->type==BLT_LIFEPOTION || me->type==BLT_MANAPOTION
-		|| me->type==BLT_ROCK || me->type==BLT_EVILHAMMER || me->type==BLT_COIN || me->type==BLT_RUNESTONE || me->type==BLT_OCTONJUICE || me->type==BLT_OCTONJUICESPLAT
-		|| me->type==BLT_BIGCOIN)
-		me->dz-=FIXAMT;
 
 	me->timer--;
 	if(!me->timer)
@@ -1740,9 +1799,24 @@ void RenderBullet(bullet_t *me)
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright-4,curSpr,
 					DISPLAY_DRAWME|DISPLAY_GLOW);
 			break;
+		case BLT_ECTOPLASM:
+			if (me->lastHit != 65535)	// lasthit = 65535 when they haven't been scanned
+			{
+				curSpr = bulletSpr->GetSprite(259 + (me->anim / 12));
+				SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 255, me->bright, curSpr,
+					DISPLAY_DRAWME | DISPLAY_GLOW);
+			}
+			break;
 		case BLT_OCTONJUICESPLAT:
 			curSpr = bulletSpr->GetSprite(259 + (me->anim / 6));
 			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 6, me->bright, curSpr,
+				DISPLAY_DRAWME);
+			break;
+		case BLT_GHOSTTRAP:
+			curSpr = bulletSpr->GetSprite(289+me->anim);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
+				DISPLAY_DRAWME|DISPLAY_SHADOW);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 255, me->bright, curSpr,
 				DISPLAY_DRAWME);
 			break;
 		case BLT_ICECLOUD:
@@ -2057,6 +2131,12 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 
 	switch(me->type)
 	{
+		case BLT_GHOSTTRAP:
+			me->timer = 61;
+			me->anim = 0;
+			me->dx = me->dy = me->dz = 0;
+			me->z = FIXAMT * 30;
+			break;
 		case BLT_COMETBOOM2:
 		case BLT_ICECOMETBOOM:
 			me->anim = 0;
@@ -2080,6 +2160,14 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->dx=0;
 			me->dy=0;
 			me->dz=0;
+			break;
+		case BLT_ECTOPLASM:
+			me->anim = 0;
+			me->timer = 12 * 12;
+			me->z = 0;
+			me->dx = 0;
+			me->dy = 0;
+			me->dz = 0;
 			break;
 		case BLT_FAKELIQUIFY:
 			me->anim = 0;
@@ -2691,6 +2779,25 @@ void BackdraftEffect(Guy *me, int radius)
 				//if (a > 255) a -= 256;
 			//	FireBullet(b->x, b->y, (byte)(a), BLT_REDFBALL);
 			}
+		}
+	}
+}
+
+void RevealEctoplasm(int x, int y)
+{
+	FloaterParticles(x, y, 7, 200, 0, 128);
+	MakeNormalSound(SND_LIGHTSON);
+	x >>= FIXSHIFT;
+	y >>= FIXSHIFT;
+	
+	for (int j = 0; j < MAX_BULLETS; j++)
+	{
+		bullet_t* b = &bullet[j];
+		if (b->type == BLT_ECTOPLASM && b->lastHit == 65535)
+		{
+			int dist = ((b->x >> FIXSHIFT) - x) * ((b->x >> FIXSHIFT) - x) + ((b->y >> FIXSHIFT) - y) * ((b->y >> FIXSHIFT) - y);
+			if (dist < 200*200)
+				b->lastHit = 0;	// reveal it!
 		}
 	}
 }

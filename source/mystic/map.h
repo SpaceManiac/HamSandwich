@@ -190,5 +190,11 @@ void SwampDestroyCauldron(byte how);
 void AmongHedgesPuzzleInit(Map* map);
 void AmongHedgesPuzzleUpdate(Map* map);
 void AmongHedgesShootCheck(Map* map, int x, int y);
+void LostInWoodsPuzzleStep(Map* map, int x, int y);
+void HauntedWoodsPuzzleInit(Map* map);
+void HauntedPuzzleGhostControl(Map* map, Guy* me);
+bool HauntedWoodsCastSpell(Map *map);
+void HauntedWoodsCatchGhost(Guy* me);
+byte HauntedWoodsGhosts(void);
 
 #endif

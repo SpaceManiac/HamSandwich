@@ -637,6 +637,14 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,12,13,13,255},	// attack
 				{14,15,16,17,18,17,18,17,18,19,19,20,20,255},	// die
 			} },
+		{"Ghost",
+		 8,27,5,25,"graphics/bat.jsp",0,MF_FLYING|MF_ENEMYWALK|MF_FREEWALK|MF_WALLWALK|MF_WATERWALK|MF_INVINCIBLE|MF_NOHIT|MF_NOSHADOW,
+			{
+				{254,255},	// idle
+				{254,255},	// move
+				{254,255},	// attack
+				{254,255},		// die
+			} },
 	};
 
 static byte kidSpr;
@@ -2357,6 +2365,20 @@ void AI_Friendly(Guy *me,Map *map,world_t *world,Guy *goodguy)
 					break;
 				case 116:
 					InitSpeech(12);
+					break;
+				case 69:
+					if (me->mind2 == 0)
+					{
+						InitSpeech(58);
+						me->mind2 = 1;
+					}
+					else
+					{
+						if (HauntedWoodsGhosts() == 0)
+							InitSpeech(65);
+						else
+							InitSpeech(63);
+					}
 					break;
 			}
 			me->mind1=1;
@@ -7962,4 +7984,37 @@ void AI_Dancer(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	me->mind++;
 	if(me->mind==13)
 		me->mind=0;
+}
+
+void AI_Ghost(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	HauntedPuzzleGhostControl(map, me);
+	switch (me->mind)
+	{
+		case 0:	// up
+			me->dx = 0;
+			me->dy = -FIXAMT * 2;
+			break;
+		case 1:	// down
+			me->dx = 0;
+			me->dy = FIXAMT * 2;
+			break;
+		case 2:	// left
+			me->dx = -FIXAMT*2;
+			me->dy = 0;
+			break;
+		case 3:	// right
+			me->dx = FIXAMT*2;
+			me->dy = 0;
+			break;
+	}
+	me->seq = ANIM_IDLE;
+	me->frm = 0;
+	me->frmAdvance = 0;
+	me->mind1++;
+	if (me->mind1 >= 6)
+	{
+		me->mind1 = 0;
+		FireBullet(me->x-16*FIXAMT+Random(32*FIXAMT), me->y-12*FIXAMT+Random(24*FIXAMT), 0, BLT_ECTOPLASM);
+	}
 }

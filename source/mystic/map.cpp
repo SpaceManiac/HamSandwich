@@ -201,6 +201,8 @@ void Map::Init(world_t *wrld)
 		totalBrains=3;
 	if (player.levelNum == 20 && player.worldNum == 0)
 		totalBrains = 1;	// get a brain for cooking, even if you fail
+	if (player.levelNum == 19 && player.worldNum == 1)
+		HauntedWoodsPuzzleInit(this);
 
 	world=wrld;
 	// pop in all the badguys
@@ -795,9 +797,9 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 				if (flags & MAP_SHOWITEMS)
 					RenderItem(scrX + camX + (TILE_WIDTH / 2), scrY + camY + (TILE_HEIGHT / 2),
 						m->item, lite);
-				/*else if (m->item)
+				else if (m->item)
 					RenderItem(scrX + camX + (TILE_WIDTH / 2), scrY + camY + (TILE_HEIGHT / 2),
-						ITM_BIGCOIN, lite);*/
+						ITM_BIGCOIN, lite);
 
 				if(m->wall && (flags&MAP_SHOWWALLS))	// there is a wall on this tile
 				{
@@ -3415,8 +3417,8 @@ void AmongHedgesPuzzleUpdate(Map *map)
 			hedgePuzzleState = 0;
 			MakeNormalSound(SND_UNAVAILABLE);
 		}
-		else if ((hedgePuzzleTimer % 30) == 0)
-			MakeNormalSound(SND_WORLDPICK);	// tick
+		else if (((hedgePuzzleTimer % 15) == 0) || (hedgePuzzleTimer<30 && (hedgePuzzleTimer%5)==0))
+			MakeNormalSound(SND_MENUCLICK);	// tick
 
 		return;
 	}
@@ -3464,4 +3466,145 @@ void AmongHedgesShootCheck(Map* map, int x, int y)
 		FloaterParticles((16 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (26 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 1, 10, 1, 16);
 		map->BrightTorch(16, 26, 20, 10);
 	}
+}
+
+void LostInWoodsPuzzleStep(Map* map, int x, int y)
+{
+	int pos;
+	if (GotSkillShardInLevel(player.worldNum, player.levelNum))
+		return;
+
+	mapTile_t* t = map->GetTile(x, y);
+	if (t->floor >= 120 && t->floor <= 123)
+	{
+		byte f = t->floor;
+		for (int i = 0; i < map->width * map->height; i++)
+		{
+			if (map->map[i].floor == f)
+			{
+				map->map[i].floor = f + 20;	// light up all matching symbols
+			}
+			if (map->map[i].floor == 96)	// the spot where the skill shard goes
+				pos = i;
+		}
+		MakeNormalSound(SND_INFERNAL);
+		if (map->map[pos - 2].floor >= 140 && map->map[pos + 2].floor >= 140 && map->map[pos - map->width * 2].floor >= 140 && map->map[pos + map->width * 2].floor >= 140)	// all 4 around the spot are lit up
+		{
+			map->map[pos].item = ITM_SKILLSHARD;
+			MakeNormalSound(SND_PURCHASE);
+			FloaterParticles(((pos%map->width) * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, ((pos/map->width) * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 1, 32, -1, 16);
+			FloaterParticles(((pos%map->width) * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, ((pos/map->width) * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 1, 10, 1, 16);
+		}
+	}
+}
+
+std::vector<byte> hauntedInfo;	// sets of 4 bytes: X,Y,direction it sends ghosts,and which 'track' it is
+byte hauntedWoodsGhosts;
+
+void HauntedWoodsPuzzleInit(Map* map)
+{
+	int nextTrack = 0;
+	for (int i = 0; i < map->width; i++)
+	{
+		for (int j = 0; j < map->height; j++)
+		{
+			mapTile_t* t = map->GetTile(i,j);
+			if (t->floor >= 120 && t->floor <= 123)	// ghost director tile
+			{
+				hauntedInfo.push_back((byte)i);
+				hauntedInfo.push_back((byte)j);
+				hauntedInfo.push_back(t->floor-120);	// 0,1,2,3 = up,down,left,right
+				byte foundTrack = false;
+				for (int k = 0; k < (int)hauntedInfo.size()-3; k += 4)
+				{
+					if (i == hauntedInfo[k] || j == hauntedInfo[k + 1])	// if we match the X or Y of an existing tile, then we are on its track
+					{
+						foundTrack = true;
+						hauntedInfo.push_back(hauntedInfo[k + 3]);	// give it the same ID as the existing one
+						break;
+					}
+				}
+				if (!foundTrack)
+					hauntedInfo.push_back(nextTrack++);
+
+				t->floor = Random(3);	// replace it with grass
+			}
+		}
+	}
+	hauntedWoodsGhosts = 3;
+
+	int usedTrack[3];
+	for (int i = 0; i < 3; i++)
+		usedTrack[i] = 999;
+	
+	for (int i = 0; i < 3; i++)	// add 3 ghosts of christmas past
+	{
+		bool bad = true;
+		while (bad)
+		{
+			bad = false;
+			int n = Random((int)(hauntedInfo.size() / 4))*4;
+			for (int j = 0; j < i; j++)	// make sure we are on a unique track
+			{
+				if (hauntedInfo[n+3] == usedTrack[j])
+				{
+					bad = true;
+					break;
+				}
+			}
+			if (!bad)
+			{
+				AddGuy((hauntedInfo[n] * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (hauntedInfo[n+1] * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, MONS_GHOST);
+				usedTrack[i] = hauntedInfo[n + 3];
+				break;
+			}
+		}
+	}
+}
+
+void HauntedPuzzleGhostControl(Map* map,Guy *me)
+{
+	int tx, ty;
+	tx = me->x / (TILE_WIDTH * FIXAMT);
+	ty = me->y / (TILE_HEIGHT * FIXAMT);
+
+	for(int i=0;i<(int)hauntedInfo.size();i+=4)
+	{
+		if (tx == hauntedInfo[i] && ty == hauntedInfo[i + 1])
+		{
+			me->mind = hauntedInfo[i + 2];	// tell it to go that direction
+		}
+	}
+}
+
+bool HauntedWoodsCastSpell(Map *map)
+{
+	if (player.worldNum != 1 || player.levelNum != 19 || hauntedWoodsGhosts == 0 || !GetGoodguy())
+		return true;	// you are free to cast a spell
+	RevealEctoplasm(GetGoodguy()->x, GetGoodguy()->y);
+	return false;
+}
+
+void HauntedWoodsCatchGhost(Guy* me)
+{
+	hauntedWoodsGhosts--;
+	me->type = 0;
+	FloaterParticles(me->x, me->y, 7, 16, 1, 10);
+	FloaterParticles(me->x, me->y, 7, 32, 1, 10);
+	FloaterParticles(me->x, me->y, 7, 48, 1, 10);
+	MakeNormalSound(SND_GOLEMDIE);
+	CurrentMap()->BrightTorch((me->x / (TILE_WIDTH * FIXAMT)), (me->y / (TILE_HEIGHT * FIXAMT)), 31, 10);
+	if (hauntedWoodsGhosts == 0)
+	{
+		for (int i = 0; i < CurrentMap()->width * CurrentMap()->height; i++)
+			CurrentMap()->map[i].light = 0;	// light the world up!
+		Guy *g=FindNearestOfType(0, 0, MONS_FRIENDLY);
+		if (g) g->mind2 = 1;	// make it so we don't get her initial speech if you skipped talking to her
+		InitSpeech(64);
+	}
+}
+
+byte HauntedWoodsGhosts(void)
+{
+	return hauntedWoodsGhosts;
 }

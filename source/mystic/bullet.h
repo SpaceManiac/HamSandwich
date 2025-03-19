@@ -70,6 +70,8 @@
 #define BLT_FAKELIQUIFY (57)	// a liquify flame that hurts nothing and doesn't spread
 #define BLT_OCTONJUICE (58)
 #define BLT_OCTONJUICESPLAT (59)
+#define BLT_ECTOPLASM (60)
+#define BLT_GHOSTTRAP (61)
 
 #define MAX_BULLETS 512
 
@@ -112,6 +114,7 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world);	// prototyped for inter
 void Armageddon(Map *map,int x,int y);
 void BackdraftEffect(Guy *me, int radius);
 void BurnTreesInArea(Map* map, int x, int y, int x2, int y2);
+void RevealEctoplasm(int x, int y);
 
 byte BulletHittingType(void);
 

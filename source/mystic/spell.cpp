@@ -141,6 +141,13 @@ void CastSpell(Guy *me)
 		// not enough mana to cast it!
 		return;
 	}
+
+	if (!HauntedWoodsCastSpell(CurrentMap()))
+	{
+		player.mana -= cost;
+		return;
+	}
+
 	if (!ClassicMode() && player.casting == SPL_ENERGY && Random(100) < SkillValue(SKILL_ENERGYMANA))
 	{
 		// free cast!

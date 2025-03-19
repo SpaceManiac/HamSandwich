@@ -1178,6 +1178,22 @@ static void HandleKeyPresses(void)
 			case 'c':
 				Cavernize(curMap);
 				break;
+			case 'd':
+				if (curMap->GetTile(0, 0)->light == 0)
+				{
+					for (x = 0; x < curMap->width * curMap->height; x++)
+					{
+						curMap->map[x].light = -31;
+					}
+				}
+				else
+				{
+					for (x = 0; x < curMap->width * curMap->height; x++)
+					{
+						curMap->map[x].light = 0;
+					}
+				}
+				break;
 			case 'f':
 				editMode=EDITMODE_FILE;
 				InitFileDialog();

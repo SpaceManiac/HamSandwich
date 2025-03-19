@@ -91,7 +91,8 @@
 #define MONS_SWAMPWEED 71
 #define MONS_GHOSTSPITTER 72
 #define MONS_SPLITTER 73
-#define NUM_MONSTERS  74
+#define MONS_GHOST	74
+#define NUM_MONSTERS  75
 
 // the animations
 #define ANIM_IDLE	0
@@ -166,6 +167,7 @@ void SetKidSprite(byte armageddon);
 void FaceGoodguy(Guy *me,Guy *goodguy);
 
 // ai functions for each monster type
+void AI_Ghost(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_GloopyGus(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Farley(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Overworld(Guy *me,Map *map,world_t *world,Guy *goodguy);

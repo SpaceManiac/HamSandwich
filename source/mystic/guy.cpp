@@ -820,6 +820,8 @@ void Guy::Update(Map *map,world_t *world)
 			AbandonedVillagePuzzle(map);
 		if (player.worldNum == 2 && player.levelNum == 13 && (oldmapx != mapx || oldmapy != mapy))
 			GuestChamberPuzzleStep(map,mapx,mapy);
+		if (player.worldNum == 1 && player.levelNum == 14 && (oldmapx != mapx || oldmapy != mapy))
+			LostInWoodsPuzzleStep(map, mapx, mapy);
 
 		if(player.worldNum==2 && player.levelNum==16 && (oldmapx!=mapx || oldmapy!=mapy) &&
 			mapx==11 && mapy==31 && map->map[mapx+mapy*map->width].floor==59)
@@ -1096,6 +1098,9 @@ void Guy::MonsterControl(Map *map,world_t *world)
 
 	switch(type)
 	{
+		case MONS_GHOST:
+			AI_Ghost(this, map, world, goodguy);
+			break;
 		case MONS_PINKEYE:
 			AI_Pinkeye(this,map,world,goodguy);
 			break;
@@ -1993,6 +1998,9 @@ Guy *AddGuy(int x,int y,int z,byte type)
 					case 1:
 						// the blond guy
 						guys[i].mind=ANIM_MOVE;
+						break;
+					case 69:
+						guys[i].mind = ANIM_A2;	// the witch
 						break;
 					case 21:
 					{

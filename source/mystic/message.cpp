@@ -4,7 +4,7 @@
 #include "intface.h"
 #include "options.h"
 
-char speech[58*4][64]={
+char speech[66*4][64]={
 	// 0
 	"Welcome to Beginnerton!  This town is",
 	"really a tutorial on some basic game",
@@ -295,6 +295,46 @@ char speech[58*4][64]={
 	"facing this way and assume they are.",
 	"You'd let me know if they were gone, for",
 	"sure. Right? I can trust you.",
+	// 58
+	"Ooh, Kid Mystic! Just who I was hoping",
+	"to see! I don't know if you've noticed, but",
+	"these woods are drained of magic. There's",
+	"ghosts a-roaming, and they feed on it.",
+	// 59
+	"Now, ghosts are invisible, as you know.",
+	"But you might not know that if you",
+	"try to cast a spell around one, it will",
+	"make their ectoplasm glow. Use that to",
+	// 60
+	"track them. I've made a batch of Ghost",
+	"Traps, so once you think you know where",
+	"a ghost is headed, press Next and Prev",
+	"at the same time to drop a trap.",
+	// 61
+	"It takes two seconds for a trap to arm,",
+	"so think ahead! The trap will burn out",
+	"two seconds later, so you better have",
+	"good aim. And one last little thing...",
+	// 62
+	"Each trap is powered by an Energy Orb, so",
+	"every time you put one out, you'll lose",
+	"one Fireball! Don't waste any traps!",
+	"Good luck, we need our magic back!",
+	// 63
+	"What are you waiting for, there's ghosts",
+	"afoot! Who you gonna call, me? No,",
+	"you do it! You want your magic back,",
+	"don't you?",
+	// 64
+	"We did it! The ghosts are trapped. I",
+	"definitely won't use them for any",
+	"nefarious purposes. I'm just glad the",
+	"magic is back. Come see me for a gift!",
+	// 65
+	"Thanks again, Kid. We make a great team.",
+	"",
+	"",
+	"",
 };
 
 byte speechX,speechY,curSpeech;
@@ -483,6 +523,13 @@ byte UpdateSpeech(MGLDraw *mgl)
 			speechY=4;
 		else
 		{
+			if (curSpeech >= 58 && curSpeech <= 61)
+			{
+				curSpeech++;
+				speechX = 0;
+				speechY = 0;
+				return 0;
+			}
 			if(curSpeech==1)
 			{
 				curSpeech=13;
@@ -767,7 +814,7 @@ void RenderSpeech(void)
 	{
 		RenderBasicControls();
 	}
-	if (curSpeech == 14 || curSpeech == 15 || curSpeech==21 || curSpeech==51 || curSpeech==52)	// show spell buttons
+	if (curSpeech == 14 || curSpeech == 15 || curSpeech==21 || curSpeech==51 || curSpeech==52 || curSpeech==60)	// show spell buttons
 	{
 		RenderSpellControls();
 	}
