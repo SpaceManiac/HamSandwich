@@ -321,7 +321,7 @@ byte ContinueRun(int *lastTime)
 
 TASK(void) ContinueRender(void)
 {
-	char s[4];
+	char s[16];
 
 	DrawBackgd();
 

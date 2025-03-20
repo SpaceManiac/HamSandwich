@@ -932,7 +932,10 @@ int main(int argc, char** argv)
 		if (game_selection_file)
 		{
 			char game_selection[256];
-			fgets(game_selection, sizeof game_selection, game_selection_file.get());
+			if (!fgets(game_selection, sizeof game_selection, game_selection_file.get()))
+			{
+				game_selection[0] = '\0';
+			}
 			// If the file exists but its content is invalid, select nothing.
 			// If the file didn't exist select the default (Supreme) as usual.
 			launcher.current_game = nullptr;

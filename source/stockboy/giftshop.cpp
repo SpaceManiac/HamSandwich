@@ -496,7 +496,7 @@ byte UpdateGiftShop(int *lastTime,MGLDraw *mgl)
 
 void RenderProfileStars2(int x,int y,profile_t *prof,MGLDraw *mgl)
 {
-	char s[10];
+	char s[16];
 
 	RenderStar(0,5,x*FIXAMT,y*FIXAMT,mgl);
 	sprintf(s,"%03d/%03d",prof->starsLeft,prof->stars);
