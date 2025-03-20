@@ -432,6 +432,15 @@ static std::string PrepareWorkshopFolder()
 
 	std::string destFolder = TempName();
 
+	std::string testFolder = destFolder;
+	testFolder.append("/");
+	if (!vanilla::mkdir_parents(testFolder))
+	{
+		destFolder = "appdata/tmp/supreme_";
+		destFolder += std::to_string(time(nullptr));
+		LogError("Workshop: Bad temporary directory, trying \"%s\" instead", destFolder.c_str());
+	}
+
 	for (const auto& file : files)
 	{
 		if (IncludeKind(file.kind))
@@ -475,7 +484,6 @@ static std::string PrepareWorkshopPreview()
 {
 	std::string pngFilename = TempName();
 	pngFilename.append(".png");
-	SDL_Log("Steam Workshop preview file: %s", pngFilename.c_str());
 
 	MGLDraw* mgl = GetDisplayMGL();
 	mgl->ClearScreen();
@@ -494,11 +502,20 @@ static std::string PrepareWorkshopPreview()
 
 	if (!mgl->SavePNG(pngFilename.c_str()))
 	{
-		LogError("Failed to save preview to %s\n", pngFilename.c_str());
-		return "";
+		LogError("Failed to save preview to %s", pngFilename.c_str());
+		pngFilename = "appdata/tmp/supreme_";
+		pngFilename += std::to_string(time(nullptr));
+		pngFilename += ".png";
+		LogError("Trying %s instead", pngFilename.c_str());
+		if (!mgl->SavePNG(pngFilename.c_str()))
+		{
+			LogError("Failed to save preview to %s", pngFilename.c_str());
+			return "";
+		}
 	}
-	mgl->ClearScreen();
 
+	mgl->ClearScreen();
+	SDL_Log("Steam Workshop preview file: %s", pngFilename.c_str());
 	return pngFilename;
 }
 
