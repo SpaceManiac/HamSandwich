@@ -50,9 +50,15 @@ based on HamSandwich.
 
 ### HamSandwich (since last release)
 
-* Fix SWC-only items appearing by mistake in some imported Dr. L worlds.
-* Add page numbers and multi-filtering (right-click category) to Monster, Sound, and Item lists.
+Nothing!
+
+### v9.5 (2025-03-19) - [Steam](https://store.steampowered.com/news/app/2547330/view/831582351143208832)
+
 * Allow loading `.ogg` files as custom sounds.
+* Add page numbers and multi-filtering (right-click on category) to Monster, Sound, and Item lists.
+* Add a fallback if Steam Workshop upload fails due to file permission issues.
+* Fix SWC-only items appearing by mistake in some imported Dr. L worlds.
+* Fix rare bugs with Suckers, Blowers, and Sphinx Arms with different AIs set.
 
 ### v9.4 (2024-08-10) - [Steam](https://store.steampowered.com/news/app/2547330/view/4370265995216804393)
 
