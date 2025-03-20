@@ -34,7 +34,7 @@ static int mkdir_one(const char *path)
 	return 0;
 }
 
-int vanilla::mkdir_parents(std::string_view path)
+bool vanilla::mkdir_parents(std::string_view path)
 {
 	std::string copypath { path };
 	char *start = copypath.data();
@@ -53,13 +53,13 @@ int vanilla::mkdir_parents(std::string_view path)
 			if (status != 0)
 			{
 				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "mkdir_parents(\"%.*s\"): mkdir(\"%s\"): %s", (int)path.size(), path.data(), copypath.c_str(), strerror(errno));
-				return status;
+				return false;
 			}
 			*next = '/';
 		}
 		start = next + 1;
 	}
-	return 0;
+	return true;
 }
 
 // ----------------------------------------------------------------------------
