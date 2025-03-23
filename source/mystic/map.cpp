@@ -152,9 +152,11 @@ void Map::Init(world_t *wrld)
 		}
 		if(map[i].item==ITM_FAIRYBELL)
 		{
-			if((player.haveFairy&(1<<(FairyForThisLevel(player.levelNum+player.worldNum*50)-1))) ||
-				(player.chaseFairy & (1 << (FairyForThisLevel(player.levelNum + player.worldNum * 50) - 1))))
-				map[i].item=0;
+			byte fairy = FairyForThisLevel(player.levelNum + player.worldNum * 50);
+			if (fairy && ((player.haveFairy & (1 << (fairy - 1))) || (player.chaseFairy & (1 << (fairy - 1)))))
+			{
+				map[i].item = 0;
+			}
 		}
 		if (map[i].item == ITM_RUNEPOUCH)
 			if (GotRunePouchInLevel(player.worldNum, player.levelNum))
@@ -3588,7 +3590,7 @@ void HauntedWoodsPuzzleInit(Map* map)
 	int usedTrack[3];
 	for (int i = 0; i < 3; i++)
 		usedTrack[i] = 999;
-	
+
 	for (int i = 0; i < 3; i++)	// add 3 ghosts of christmas past
 	{
 		bool bad = true;

@@ -916,7 +916,7 @@ byte UpdateSpeech(MGLDraw *mgl)
 				speechY = 0;
 				return 0;
 			}
-			
+
 			if (speechDef[curSpeech].nextSpeech != 0)
 			{
 				curSpeech = speechDef[curSpeech].nextSpeech;
@@ -951,7 +951,7 @@ byte UpdateSpeech(MGLDraw *mgl)
 		FinishSpeech();
 		return 1;	// ESC cancels the speech
 	}
-	
+
 	return 0;
 }
 
@@ -1181,7 +1181,7 @@ byte FarleyWorldChoice(void)
 	return farleyCursor;
 }
 
-void RenderBasicControl(int y, char *s, byte btn)
+void RenderBasicControl(int y, const char *s, byte btn)
 {
 	int x = 170 + 100;
 	bool started = false;
