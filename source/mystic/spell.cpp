@@ -176,6 +176,9 @@ void CastSpell(Guy *me)
 		}
 	}
 
+	if(player.castCount<255)
+		player.castCount++;
+
 	bool spellHeld = false;
 
 	if (player.curSpell == player.casting)

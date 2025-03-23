@@ -645,6 +645,14 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{254,255},	// attack
 				{254,255},		// die
 			} },
+		{"Horkbox",
+		 8,27,60*30,500,"graphics/bat.jsp",0, MF_ENEMYWALK|MF_NOMOVE|MF_NOGRAV,
+			{
+				{0,255},	// idle
+				{254,255},	// move
+				{254,255},	// attack
+				{254,255},		// die
+			} },
 	};
 
 static byte kidSpr;
@@ -744,6 +752,9 @@ word MonsterPoints(byte type)
 word MonsterHP(byte type)
 {
 	word mul = 1;
+	if (type == MONS_HORKBOX)
+		return monsType[type].hp;	// non-modifyable HP, because it's actually a timer
+
 	if(player.nightmare)
 	{
 		if(monsType[type].flags&MF_GOODGUY)
@@ -929,6 +940,13 @@ void MonsterDraw(int x, int y, int z, byte type, byte seq, byte frm, byte facing
 			return;	// don't draw the actual player when berserk, to give pure ghostliness
 	}
 
+	if (type == MONS_HORKBOX)
+	{
+		curSpr = GetItemSprite(285 + (mind1 == 1));
+		SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, 0, 255, 0, curSpr, DISPLAY_DRAWME | DISPLAY_SHADOW);
+		SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z>>FIXSHIFT, 255, bright, curSpr, DISPLAY_DRAWME);
+		return;
+	}
 	if (monsType[type].flags & MF_FACECMD)
 		v += facing;
 
@@ -2357,6 +2375,12 @@ void AI_Friendly(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				case 51:
 					InitSpeech(5);
 					break;
+				case 151:
+					if (PlayerPassedLevel(3, 19))
+						InitSpeech(70);
+					else
+						InitSpeech(66);
+					break;
 				case 109:
 					InitSpeech(31);
 					break;
@@ -2379,6 +2403,14 @@ void AI_Friendly(Guy *me,Map *map,world_t *world,Guy *goodguy)
 						else
 							InitSpeech(63);
 					}
+					break;
+				case 169:
+					if (player.puzzleVar[2] == 0)	// killed no boxes yet
+						InitSpeech(71);
+					else if (player.puzzleVar[2] == 7)	// killed all boxes
+						InitSpeech(76);
+					else
+						InitSpeech(73);	// anywhere in between
 					break;
 			}
 			me->mind1=1;
@@ -8016,5 +8048,213 @@ void AI_Ghost(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		me->mind1 = 0;
 		FireBullet(me->x-16*FIXAMT+Random(32*FIXAMT), me->y-12*FIXAMT+Random(24*FIXAMT), 0, BLT_ECTOPLASM);
+	}
+}
+
+static byte horkX, horkY;
+
+void AI_Horkbox(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	if (!GetGoodguy())
+		return;
+
+	// mind1=active or not
+	// mind2=timer for wild magic
+	// mind3=angle for flames
+
+	if (me->mind1 == 0)	// not yet active
+	{
+
+	}
+	else // active
+	{
+		if (player.puzzleVar[0] == HORK_LIFEDRAIN)
+		{
+			if (me->mind2 > 0)
+				me->mind2--;
+			else
+			{
+				me->mind2 = 15;
+				if (player.poison < 20)
+					player.poison = 20;
+			}
+		}
+		else if (player.puzzleVar[0] == HORK_MANADRAIN)
+		{
+			if (me->mind2 > 0)
+				me->mind2--;
+			else
+			{
+				me->mind2 = 15;
+				if (player.mana > 5)
+					player.mana -= 5;
+				else
+					player.mana = 0;
+			}
+		}
+		else if (player.puzzleVar[0] == HORK_NOFIREBALLS)
+		{
+			if (me->mind2 > 0)
+				me->mind2--;
+			else
+			{
+				me->mind2 = 15;
+				if (player.mana < player.maxMana-3)
+					player.mana += 3;
+				else
+					player.mana = player.maxMana;
+			}
+		}
+		else if (player.puzzleVar[0] == HORK_BOMBS)
+		{
+			if (me->mind2 > 0)
+				me->mind2--;
+			else
+			{
+				me->mind2 = 30;
+				byte f = (byte)Random(256);
+				byte d = (byte)Random(7)+1;
+				FireExactBullet(me->x, me->y, FIXAMT * 20, Cosine(f) * d, Sine(f) * d, FIXAMT * 15, 0, 255, f, BLT_GRENADE);
+			}
+		}
+		else if (player.puzzleVar[0] == HORK_FLAMES)
+		{
+			me->mind2++;
+			if (me->mind2 % 2)
+			{
+				me->mind3++;
+				FireExactBullet(me->x, me->y, FIXAMT * 10, Cosine(me->mind3) * 12, Sine(me->mind3) * 12, 0, 0, 20, (me->mind3 / 32), BLT_FLAME3);
+				me->mind3 += 85;
+				FireExactBullet(me->x, me->y, FIXAMT * 10, Cosine(me->mind3) * 12, Sine(me->mind3) * 12, 0, 0, 20, (me->mind3 / 32), BLT_FLAME3);
+				me->mind3 += 85;
+				FireExactBullet(me->x, me->y, FIXAMT * 10, Cosine(me->mind3) * 12, Sine(me->mind3) * 12, 0, 0, 20, (me->mind3 / 32), BLT_FLAME3);
+				me->mind3 += 86;
+			}
+		}
+		else if (player.puzzleVar[0] == HORK_TRAP)
+		{
+			me->mind2++;
+			if (me->mind2 == 30)
+			{
+				int tx, ty;
+				tx = GetGoodguy()->x / (FIXAMT * TILE_WIDTH);
+				ty = GetGoodguy()->y / (FIXAMT * TILE_HEIGHT);
+				if (map->GetTile(tx, ty)->item == 0)
+				{
+					map->GetTile(tx, ty)->item = ITM_BIGROCKS;	// trap you on a rock
+					horkX = tx;
+					horkY = ty;
+					MakeNormalSound(SND_SDZLPOUND);
+				}
+			}
+			else if (me->mind2 == 30 * 3)	// you get stuck for 2 seconds
+			{
+				if (map->GetTile(horkX, horkY)->item == ITM_BIGROCKS)
+				{
+					map->GetTile(horkX,horkY)->item = ITM_NONE;	// set you free
+					ExplodeParticles2(PART_DIRT, GetGoodguy()->x, GetGoodguy()->y, FIXAMT * 10, 20, 10);
+					MakeNormalSound(SND_MISSILEBOOM);
+				}
+			}
+			else if (me->mind2 == 30 * 5)	// and then free for 3 seconds
+				me->mind2 = 0;
+		}
+		else if (player.puzzleVar[0] == HORK_HEAL)
+		{
+			me->mind2++;
+			if (me->mind2 >= 30)
+			{
+				me->mind2 = 0;
+				HealBadguys(10);
+			}
+		}
+		if (me->mind > 0)	// timer for summons
+			me->mind--;
+		else
+		{
+			// the lower our health, the faster the summons come. Starts at every 3s, down to every 0.66s
+			int maxHork = 60 * 30 - 3 * 30 * 7 + player.puzzleVar[2] * 30 * 3;	// first horkbox is only 39s long, going up to 60s at max
+			me->mind = me->hp * (30 * 2 + 10) / maxHork + 20;
+			std::vector<byte> monsTable = { MONS_BONEHEAD,MONS_SPLITTER,MONS_GHOSTSPITTER,MONS_SLUG,MONS_PEEPER,MONS_BIGBAT,MONS_MAMASPDR,MONS_SHRMLORD };
+			int x=-1, y;
+			while (x == -1)
+			{
+				byte a = Random(256);
+				byte dist = Random(200);	// summon at a random spot within the circle
+				x = me->x + Cosine(a) * dist;
+				y = me->y + Sine(a) * dist;
+				mapTile_t* t = map->GetTile(x / (TILE_WIDTH * FIXAMT),y/(TILE_HEIGHT*FIXAMT));
+				if (!t || t->wall > 0 || t->item > 0)
+					x = -1;
+				else
+				{
+					Guy* g;
+					if (world->terrain[t->floor].flags & TF_LAVA)
+						g = AddGuy(x, y, 0, MONS_MAGMAZOID); // if it's lava, magmazoid time
+					else
+						g = AddGuy(x, y, 0, monsTable[(int)Random(monsTable.size())]);
+					if (g && g->type == MONS_PEEPER)
+						g->mind = 1;	// don't let them sleep
+				}
+			}
+		}
+		FloaterParticles(me->x, me->y, 0, 200, 0, 4);
+		if (me->z < 9 * FIXAMT)
+			me->dz += FIXAMT / 2;
+		else if (me->z > 11 * FIXAMT)
+			me->dz -= FIXAMT / 2;
+		if (me->z < 4 * FIXAMT && me->dz < 0)
+			me->dz = 0;
+		if (me->z > 15 * FIXAMT && me->dz > 0)
+			me->dz = 0;
+		if (GetGoodguy())
+		{
+			int dist = ((GetGoodguy()->x>>FIXSHIFT) - (me->x>>FIXSHIFT)) * ((GetGoodguy()->x>>FIXSHIFT) - (me->x>>FIXSHIFT)) +
+				((GetGoodguy()->y>>FIXSHIFT) - (me->y>>FIXSHIFT)) * ((GetGoodguy()->y>>FIXSHIFT) - (me->y>>FIXSHIFT));
+			if (dist > 200 * 200)	// you are not permitted to leave the ring
+			{
+				byte angle = (byte)(atan2f(GetGoodguy()->y - me->y, GetGoodguy()->x - me->x)*128.0f/3.14159f);
+				GetGoodguy()->dx = -Cosine(angle) * 4;
+				GetGoodguy()->dy = -Sine(angle) * 4;
+			}
+		}
+		if (me->hp > 0)
+		{
+			me->hp--;
+			if(me->hp<20 && (me->hp%2)==0)
+				BlowUpGuy(me->x/FIXAMT - 32, me->y/FIXAMT - 24, me->x/FIXAMT +32, me->y/FIXAMT + 24, 0, 1);
+			if (me->hp == 0)
+			{
+				BlowUpGuy(me->x / FIXAMT - 32, me->y / FIXAMT - 24, me->x / FIXAMT + 32, me->y / FIXAMT + 24, 0, 5);
+				me->type = MONS_NONE;
+				SpecialKillCheck(map, MONS_HORKBOX);
+				map->GetTile(me->x / (TILE_WIDTH * FIXAMT), me->y / (TILE_HEIGHT * FIXAMT))->item = ITM_BRAIN;
+				if (player.puzzleVar[0] == HORK_TRAP && map->GetTile(horkX, horkY)->item == ITM_BIGROCKS)
+				{
+					map->GetTile(horkX, horkY)->item = ITM_NONE;	// set you free
+					ExplodeParticles2(PART_DIRT, GetGoodguy()->x, GetGoodguy()->y, FIXAMT * 10, 20, 10);
+					MakeNormalSound(SND_MISSILEBOOM);
+				}
+				player.puzzleVar[0] = HORK_NONE;
+				HorkUpLoot(me->x, me->y);	// drop all the loot for the entire monster horde!
+				KillAllBadguys();
+				player.puzzleVar[2]++;
+				if (player.puzzleVar[2] == 7)
+				{
+					Guy* g = GetFirstFriendly();
+					if (g)
+					{
+						g->x = (31 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+						g->y = (99 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+					}
+					InitSpeech(75);
+				}
+				
+				MakeNormalSound(SND_PUMPKINDIE);
+				PlaySong(SONG_CHAP34LEVEL);
+				return;
+			}
+		}
+
 	}
 }

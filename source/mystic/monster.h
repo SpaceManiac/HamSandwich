@@ -92,7 +92,8 @@
 #define MONS_GHOSTSPITTER 72
 #define MONS_SPLITTER 73
 #define MONS_GHOST	74
-#define NUM_MONSTERS  75
+#define MONS_HORKBOX 75
+#define NUM_MONSTERS  76
 
 // the animations
 #define ANIM_IDLE	0
@@ -229,6 +230,7 @@ void AI_Ball(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_OctoBoss(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_OctoTentacle(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_SwampWeed(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Horkbox(Guy* me, Map* map, world_t* world, Guy* goodguy);
 // the goats
 void AI_Rammy(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Hoppy(Guy *me,Map *map,world_t *world,Guy *goodguy);

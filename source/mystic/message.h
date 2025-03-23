@@ -32,6 +32,7 @@ void OutlineFarleySprite(word spr, int x, int y, char bright);
 void InitSpeech(byte spc);
 byte UpdateSpeech(MGLDraw *mgl);
 void RenderSpeech(void);
+void FinishSpeech(void);
 
 void RenderBasicControls(void);
 void RenderSpellControls(void);

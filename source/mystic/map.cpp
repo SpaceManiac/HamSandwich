@@ -203,6 +203,8 @@ void Map::Init(world_t *wrld)
 		totalBrains = 1;	// get a brain for cooking, even if you fail
 	if (player.levelNum == 19 && player.worldNum == 1)
 		HauntedWoodsPuzzleInit(this);
+	if (player.levelNum == 7 && player.worldNum == 2)
+		DeepEndPuzzleInit();
 
 	world=wrld;
 	// pop in all the badguys
@@ -211,6 +213,9 @@ void Map::Init(world_t *wrld)
 		AddMapGuys(this);
 	else
 		AddBattleGuys(this,i);
+
+	if (player.levelNum == 19 && player.worldNum == 3)
+		HorkBoxInit(this);
 }
 
 void Map::SmoothLight(int x,int y)
@@ -1039,6 +1044,9 @@ void SpecialKillCheck(Map* map,byte type)
 				continue;	// killing huge bat 2 only counts if you have done all 3 mutagens
 			SpecialTakeEffect(map, &map->special[i], NULL);
 		}
+
+	if (player.worldNum == 2 && player.levelNum == 7)
+		DeepEndPuzzleKill(map, type);
 }
 
 void SpecialOuchCheck(Map* map, byte type)
@@ -1333,7 +1341,7 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 							ok = false;
 							break;
 						}
-					if (ok && player.totalKills >= 20)
+					if (ok && player.usedFireballs==0 && player.totalKills >= 20)	// you used no fireballs and no spell other than armor
 						EarnAchieve(Achievement::STONESKIN);
 				}
 			}
@@ -1356,7 +1364,17 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 		case SPC_CHGITEM:
 			MakeSound(SND_WALLDOWN, (spcl->effectX * TILE_WIDTH) << FIXSHIFT,
 				(spcl->effectY * TILE_HEIGHT) << FIXSHIFT, SND_CUTOFF, 1500);
-			map->map[spcl->effectX + spcl->effectY * map->width].item = spcl->value;
+			if ((spcl->value == ITM_RUNEPOUCH && GotRunePouchInLevel(player.worldNum, player.levelNum)) ||
+				(spcl->value == ITM_SILENTRUNE && GotRuneInLevel(player.worldNum, player.levelNum)) ||
+				(spcl->value == ITM_SPELLBOOK && GotSpellInLevel(player.worldNum, player.levelNum)) ||
+				(spcl->value == ITM_FAIRYBELL && GotFairyBellInLevel(player.worldNum, player.levelNum)) ||
+				(spcl->value == ITM_SKILLSHARD && GotSkillShardInLevel(player.worldNum, player.levelNum)))
+				//don't do it if you already got the special item
+			{
+
+			}
+			else
+				map->map[spcl->effectX + spcl->effectY * map->width].item = spcl->value;
 			break;
 		case SPC_RAISEWALL:
 			if(!map->map[spcl->effectX+spcl->effectY*map->width].wall)
@@ -1580,6 +1598,11 @@ int TotalBrains(void)
 	return totalBrains;
 }
 
+bool WallIsCavern(byte wall)
+{
+	return ((wall > 0 && wall < 3) || wall == 8 || wall == 10 || wall == 16);
+}
+
 void Cavernize(Map *map)
 {
 	byte result[]={188,187,185,194,186,189,193,197,184,192,190,198,191,195,196,199};
@@ -1590,17 +1613,17 @@ void Cavernize(Map *map)
 	for(i=0;i<map->width;i++)
 		for(j=0;j<map->height;j++)
 		{
-			if(map->map[i+j*map->width].wall>0 && map->map[i+j*map->width].floor>183)
+			if(WallIsCavern(map->map[i+j*map->width].wall) && map->map[i+j*map->width].floor>183)
 			{
 				// this tile wants to be cavernized
 				v=0;
-				if(i==0 || map->map[i-1+j*map->width].wall>0)
+				if(i==0 || WallIsCavern(map->map[i-1+j*map->width].wall))
 					v+=1;
-				if(j==0 || map->map[i+(j-1)*map->width].wall>0)
+				if(j==0 || WallIsCavern(map->map[i+(j-1)*map->width].wall))
 					v+=2;
-				if(i==map->width-1 || map->map[i+1+j*map->width].wall>0)
+				if(i==map->width-1 || WallIsCavern(map->map[i+1+j*map->width].wall))
 					v+=4;
-				if(j==map->height-1 || map->map[i+(j+1)*map->width].wall>0)
+				if(j==map->height-1 || WallIsCavern(map->map[i+(j+1)*map->width].wall))
 					v+=8;
 				map->map[i+j*map->width].floor=result[v];
 				if(j<map->height-1 && map->map[i+(j+1)*map->width].floor>4
@@ -2296,6 +2319,30 @@ void LockedMazePuzzle(Map *map)
 			map->special[i].effect=SPC_ZAPWALL;
 			strcpy(map->special[i].msg,"Ka-chunk!");
 			NewMessage("Something clanked...",60);
+		}
+	}
+}
+
+void LockedMazeSpikes(Map* map,int x,int y)
+{
+	mapTile_t* t = map->GetTile(x, y);
+	if (t && t->floor == 67)
+	{
+		t->floor = 68;
+		MakeNormalSound(SND_MENUCLICK);
+		int i;
+		int tnum=0;
+		for (i = 0; i < map->width * map->height; i++)
+		{
+			if (map->map[i].floor == 67)
+				return;	// not all spikes yet
+			if (map->map[i].floor == 63)	// this is where the shard goes
+				tnum = i;
+		}
+		if (!GotSkillShardInLevel(player.worldNum, player.levelNum))
+		{
+			MakeNormalSound(SND_INFERNAL);
+			map->map[tnum].item = ITM_SKILLSHARD;
 		}
 	}
 }
@@ -3607,4 +3654,90 @@ void HauntedWoodsCatchGhost(Guy* me)
 byte HauntedWoodsGhosts(void)
 {
 	return hauntedWoodsGhosts;
+}
+
+byte deepEndSeq;
+
+void DeepEndPuzzleInit(void)
+{
+	deepEndSeq = 0;
+}
+
+void DeepEndPuzzleKill(Map* map, byte type)
+{
+	//14,2,13
+	//52,41-50,41
+	if (GotSkillShardInLevel(player.worldNum, player.levelNum))
+		return;
+	if (type != MONS_EYEGUY && type != MONS_BONEHEAD && type != MONS_PEEPER)
+		return;	// minions dying or whatever is ignored
+	bool good = false;
+
+	if ((deepEndSeq == 0 && type == MONS_PEEPER) ||
+		(deepEndSeq == 1 && type == MONS_BONEHEAD) ||
+		(deepEndSeq == 2 && type == MONS_EYEGUY))
+		good = true;
+	if (good)
+	{
+		map->GetTile(52 - deepEndSeq, 41)->floor = 23;
+		map->GetTile(52 - deepEndSeq, 42)->floor = 34;
+		deepEndSeq++;
+	}
+	else
+	{
+		deepEndSeq = 0;
+		for (int i = 0; i < 3; i++)
+		{
+			map->GetTile(52 - i, 41)->floor = 35;
+			map->GetTile(52 - i, 42)->floor = 35;
+		}
+		if (GetGoodguy())	// if you are out on the gangplank, you need to be sent back or you'll be stuck
+		{
+			int tx, ty;
+			tx = GetGoodguy()->x / (TILE_WIDTH * FIXAMT);
+			ty = GetGoodguy()->y / (TILE_HEIGHT * FIXAMT);
+			if (tx >= 49 && tx <= 53 && ty == 41)
+			{
+				GetGoodguy()->x = (53 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+				GetGoodguy()->y = (41 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+			}
+		}
+	}
+}
+
+byte horkBoxBones = 0;
+void HorkBoxInit(Map* map)
+{
+	SetupHorkboxes();
+	horkBoxBones = 0;
+	player.puzzleVar[0] = HORK_NONE;
+	player.puzzleVar[2] = 0;	// how many boxes you've beaten. They get tougher as you go
+	totalBrains = 8;	// one per horkbox, which drop them on kill, and then you have to get one more from Madam Kromch
+}
+
+void HorkBoxBones(Map* map, int x, int y)
+{
+	// rib 40
+	// skull 41
+	// leg 129
+	// round 130
+	// foot 131
+	// teeth 132
+	byte seq[] = { 129,40,132,130,41,131,255 };
+	if (horkBoxBones < 6 && !GotSkillShardInLevel(player.worldNum,player.levelNum))
+	{
+		mapTile_t* t = map->GetTile(x, y);
+		if (t && t->floor == seq[horkBoxBones])
+		{
+			horkBoxBones++;
+			if (horkBoxBones == 6)
+			{
+				NewMessage("Something thunked...", 60);
+				ZapWall(map, 68, 71, 0);
+				MakeNormalSound(SND_INFERNAL);
+			}
+		}
+		else if (t && (t->floor == 40 || t->floor == 41 || (t->floor >= 129 && t->floor <= 132)))
+			horkBoxBones = 0;	// step on a wrong bone and you reset
+	}
 }

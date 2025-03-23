@@ -74,6 +74,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 
 	ResetStoredHealMana();
 	ResetStoredSeekerMana();
+	player.castCount = 0;
 	player.storedFlames = 0;
 	player.flameCounter = 0;
 	player.barrier = 0;
@@ -756,9 +757,22 @@ byte PlayerGetItem(byte itm,int x,int y)
 		case ITM_BIGCOIN:
 			GainMoney(10);
 			MakeSound(SND_MONEY,x,y,SND_CUTOFF,500);
-			MakeSound(SND_MONEY,x,y,SND_CUTOFF,500);
 			FloaterParticles(x,y,5,24,0,4);
 			FloaterParticles(x,y,5,32,0,4);
+			return 0;
+			break;
+		case ITM_DIAMOND:
+			GainMoney(100);
+			MakeSound(SND_MONEY, x, y, SND_CUTOFF, 500);
+			FloaterParticles(x, y, 5, 24, 0, 4);
+			FloaterParticles(x, y, 5, 32, 0, 4);
+			return 0;
+			break;
+		case ITM_MONEYBAG:
+			GainMoney(25);
+			MakeSound(SND_MONEY, x, y, SND_CUTOFF, 500);
+			FloaterParticles(x, y, 5, 24, 0, 4);
+			FloaterParticles(x, y, 5, 32, 0, 4);
 			return 0;
 			break;
 		case ITM_HEALTHPOT:
@@ -1060,11 +1074,19 @@ void PlayerThrowHammer(Guy *me)
 		return;	// no fireballs allowed
 	}
 
+	if (player.worldNum == 3 && player.levelNum == 19 && player.puzzleVar[0] == HORK_NOFIREBALLS)
+	{
+		player.reload = player.hamSpeed + 2;
+		BlowSmoke(me->x + Cosine(me->facing * 32) * 32, me->y + Sine(me->facing * 32) * 32, FIXAMT * 20, FIXAMT / 2);
+		return;	// no fireballs allowed
+	}
+
 	if(player.fairyOn==FAIRY_SMASHY)
 	{
 		if(player.mana>0)
 			player.mana--;
 	}
+	
 	ChallengeEvent(CE_SHOOT,player.hammers);
 	HammerLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags,(PlayerHasSword() && !player.disableSword));
 	if (!ClassicMode() && RuneValue(Rune::SHOTGUN) > 0)

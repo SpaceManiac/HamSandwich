@@ -308,6 +308,42 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 	char s[32];
 
 	RenderNumberParticles();
+	if (player.levelNum == 19 && player.worldNum == 3 && player.puzzleVar[0] != HORK_NONE)	// a horkbox is active!
+	{
+		Guy* g = GetGuy((word)player.puzzleVar[1]);
+		if (g)
+		{
+			int maxHork = 60 * 30 - 3 * 30 * 7 + player.puzzleVar[2] * 30 * 3;	// first horkbox is only 39s long, going up to 60s at max
+			int dist = g->hp*(SCRWID / 2) / maxHork;
+			DrawFillBox(SCRWID/2-dist, SCRHEI - 10, SCRWID/2+dist, SCRHEI, 32 * 4 + 16);
+			switch (player.puzzleVar[0])
+			{
+				case HORK_LIFEDRAIN:
+					strcpy(s, "Life Drain");
+					break;
+				case HORK_MANADRAIN:
+					strcpy(s, "Mana Drain");
+					break;
+				case HORK_NOFIREBALLS:
+					strcpy(s, "Fireproof");
+					break;
+				case HORK_BOMBS:
+					strcpy(s, "Boomstorm");
+					break;
+				case HORK_FLAMES:
+					strcpy(s, "Fricassee");
+					break;
+				case HORK_HEAL:
+					strcpy(s, "Monstrous Mending");
+					break;
+				case HORK_TRAP:
+					strcpy(s, "Stonegrasp");
+					break;
+			}
+			CenterPrint(HALFWID+2,SCRHEI - 20+2, s,-31, 2);
+			CenterPrintGlow(SCRHEI - 20, s, 2);
+		}
+	}
 	// draw the base console
 	intfaceSpr->GetSprite(0)->Draw(0,-1,mgl);
 	// life meter

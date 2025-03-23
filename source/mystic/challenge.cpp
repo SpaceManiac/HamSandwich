@@ -1506,8 +1506,8 @@ void ChallengeEvent(byte type,int n)
 {
 	byte g;
 
-	if (type == CE_SHOOT)
-		player.usedFireballs = 1;
+	if (type == CE_SHOOT && player.usedFireballs<255)
+		player.usedFireballs++;
 
 	if(!challenging)
 		return;
@@ -1592,6 +1592,12 @@ void ChallengeEvent(byte type,int n)
 					break;
 				case ITM_BIGCOIN:
 					attempt.score+=10;
+					break;
+				case ITM_MONEYBAG:
+					attempt.score += 25;
+					break;
+				case ITM_DIAMOND:
+					attempt.score += 100;
 					break;
 				case ITM_BRAIN:
 				case ITM_CHLGCRYSTAL:

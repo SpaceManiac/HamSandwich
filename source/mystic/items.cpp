@@ -119,6 +119,12 @@ void RenderItem(int x,int y,byte type,char bright)
 		case ITM_BIGCOIN:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(159+((glowism/4)&7)),DISPLAY_DRAWME);
 			break;
+		case ITM_MONEYBAG:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(287), DISPLAY_DRAWME);
+			break;
+		case ITM_DIAMOND:
+			SprDraw(x, y, 0, 0, bright, itmSpr->GetSprite(288 + ((glowism / 4) & 7)), DISPLAY_DRAWME);
+			break;
 		case ITM_COIN:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(147+((glowism/4)&7)),DISPLAY_DRAWME);
 			break;
@@ -274,10 +280,10 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 			itmSpr->GetSprite(59)->DrawBright(x,y,mgl,bright);
 			break;
 		case ITM_REVERSE:
-			itmSpr->GetSprite(4)->DrawBright(x,y,mgl,bright);
+			itmSpr->GetSprite(67)->DrawBright(x,y,mgl,bright);
 			break;
 		case ITM_REFLECT:
-			itmSpr->GetSprite(5)->DrawBright(x,y,mgl,bright);
+			itmSpr->GetSprite(75)->DrawBright(x,y,mgl,bright);
 			break;
 		case ITM_SPELLBOOK:
 			itmSpr->GetSprite(43)->DrawBright(x,y,mgl,bright);
@@ -290,6 +296,12 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 			break;
 		case ITM_BIGCOIN:
 			itmSpr->GetSprite(159)->DrawBright(x,y,mgl,bright);
+			break;
+		case ITM_MONEYBAG:
+			itmSpr->GetSprite(287)->DrawBright(x, y, mgl, bright);
+			break;
+		case ITM_DIAMOND:
+			itmSpr->GetSprite(288)->DrawColored(x, y, mgl, 0, bright+10);
 			break;
 		case ITM_COIN:
 			itmSpr->GetSprite(147)->DrawBright(x,y,mgl,bright);

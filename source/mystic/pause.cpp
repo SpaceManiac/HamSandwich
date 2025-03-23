@@ -370,7 +370,7 @@ void RenderRuneMenu(void)
 		}
 	}
 	sprintf(s, "%d/%d Runes equipped", RunesEquipped(), player.runePouches);
-	CenterPrint(HALFWID+HALFWID/2, y, s, 0, 2);
+	PrintBrightGlow(HALFWID+HALFWID/2-GetStrLength(s,2)/2, y, s, 0, 2);
 
 	sprintf(s, "%02d", player.runeStones);
 	int len=GetStrLength(s, 1);

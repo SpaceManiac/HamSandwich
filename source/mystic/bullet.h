@@ -72,6 +72,9 @@
 #define BLT_OCTONJUICESPLAT (59)
 #define BLT_ECTOPLASM (60)
 #define BLT_GHOSTTRAP (61)
+#define BLT_MONEYBAG (62)
+#define BLT_FLAME3	(63)	// evil flame, same as flame 2, but it doesn't randomize and slow down
+#define BLT_DIAMOND (64)
 
 #define MAX_BULLETS 512
 

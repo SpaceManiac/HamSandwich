@@ -160,7 +160,8 @@ typedef struct player_t
 	byte levelPassed2[6][6];	// the last 6 levels have to hide here to prevent old saves from breaking
 	byte puzzleVar[3];	// special vars for an in-level puzzle
 	byte runePouches;
-	byte expando[166-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
+	byte castCount;
+	byte expando[164-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
 } player_t;
 
 extern player_t player;

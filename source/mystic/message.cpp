@@ -4,337 +4,653 @@
 #include "intface.h"
 #include "options.h"
 
-char speech[66*4][64]={
-	// 0
-	"Welcome to Beginnerton!  This town is",
-	"really a tutorial on some basic game",
-	"features. There's a spell you might",
-	"want in here.",
-	// 1
-	"Fireballs are the weapon of choice.",
-	"Each Energy Orb you collect increases",
-	"the number you can launch at once.",
-	"Each Speed Gem raises the rate of fire.",
-	// 2
-	"Spellbooks teach you new spells.",
-	"Casting them uses up your mana (the",
-	"blue bar). As you gain levels, your",
-	"spells become more powerful.",
-	// 3
-	"Psst, hey... thousands of years ago,",
-	"a great hero used a weapon known as",
-	"the Armageddon Sword to defeat a",
-	"monstrous evil.  To keep this sword",
-	// 4
-	"from falling into evil hands, it was",
-	"broken into four pieces and hidden",
-	"throughout the land.  Four pieces,",
-	"four chapters... think about it.",
-	// 5
-	"The passage to Spooky Castle is",
-	"blocked right now.  I have a feeling",
-	"that it'll be cleared by the time you",
-	"recover the orbs from X more places.",
-	// 6
-	"The passage to Spooky Castle is",
-	"wide open now.  I can't think of a",
-	"logical reason why, but it is.",
-	"Good luck, Kid Mystic!!",
-	// 7
-	"My village was attacked by Mushies!",
-	"As the village librarian, it's my",
-	"job to remain here in case any heroes",
-	"happen along that want the key to",
-	// 8
-	"the village library.  You look",
-	"pretty heroic.  Here!",
-	" ",
-	" ",
-	// 9
-	"I hope you found something of",
-	"interest in our library.  I guess",
-	"I'll stay here and chronicle the",
-	"Mushie occupation of our village.",
-	// 10
-	"Welcome to the Spooky Dance-a-thon!",
-	"This nifty book is the prize for",
-	"whoever can stay dancing and/or",
-	"alive the longest!  Good luck!",
-	// 11
-	"You've won the Dance-a-thon!!",
-	"Way to go!  The book's all yours.",
-	" ",
-	" ",
-	// 12
-	"To the left is knowledge, and to",
-	"the right is wealth.  Choose wisely,",
-	"you can't have both!",
-	" ",
-	// 13
-	"You can launch fireballs by pressing",
-	"the Fire button. Shocking, I know.",
-	"Fireball upgrades only last for the",
-	"level you are in, unlike Spells.",
-	// 14
-	"To cast a spell, press the Cast button.",
-	"You can use the specific Spell buttons",
-	"to switch to other spells, or use",
-	"the Next and Previous buttons.",
-	// 15
-	"In the options menu, you can change",
-	"between just selecting spells with those",
-	"buttons, or instantly casting them. Play",
-	"your own way!",
-	// 16
-	"One other thing... you can't leave",
-	"any area that you enter until you",
-	"collect all the mystical green orbs",
-	"in it.  After all, that's what you're",
-	// 17
-	"here to do, right?  The Orbometer in",
-	"the lower right of the screen will",
-	"give you an idea of how many remain.",
-	" ",
-	// 18
-	"You've just caught a fairy! Fairies",
-	"assist you with magical powers, but",
-	"some of them also have drawbacks.  You",
-	"can choose which fairy to equip by",
-	// 19
-	"pressing the Spell key when you are in",
-	"the overworld.  Pick the one you want",
-	"to use and press Fire.  Pressing Spell",
-	"again lets you go fairyless.",
-	// 20
-	"Welcome to Kid Mystic!  Remember the",
-	"handy controls below. You can also",
-	"change them, and many other things,",
-	"in the Options menu on the title screen.",
-	// 21
-	"",
-	"",
-	"",
-	"",
-	// 22
-	"Welcome to Madcap Mode!  You can",
-	"now go through the entire adventure",
-	"again, keeping all the powerups and",
-	"levels you already earned... but",
-	// 23
-	"that won't be nearly enough!  Don't",
-	"forget to see what's new in the Shop,",
-	"because you will need it badly.",
-	"Good luck!",
-	// 24
-	"Congratulations!  You found all the",
-	"secret items in the game, so you've",
-	"unlocked Challenge Mode!  Try it out",
-	"on the main menu.",
-	// 25
-	"Welcome back to Madcap Mode!  You",
-	"can keep exploring this mode all",
-	"you want, or start a new game, or",
-	"whatever!  Sorry, no more prizes!",
-	// 26
-	"You're playing in Modern Mode! That",
-	"means you get Skill Points when you",
-	"level up. Press ESC or START to spend",
-	"your skill points.",
-	// 27
-	"You can reset your skills anytime as",
-	"long as you are in the Overworld!",
-	"You don't get stronger with levels",
-	"anymore, so don't forget your skills!",
-	// 28
-	"I'm Farley the Ghost Bat! I can fly",
-	"you to previous chapters. Don't worry,",
-	"I can also fly you back.",
-	"",
-	// 29
-	"This book describes the Runic Tongue.",
-	"It looks like every rune has a letter",
-	"that it's equivalent to. There's even",
-	"a handy chart!",
-	// 30
-	"Hmm, according to this book, ancient",
-	"numerologists assigned numbers to",
-	"each rune in addition to their",
-	"alphabetical value.",
-	// 31
-	"Ugh, fine you caught me. I had hoped",
-	"I could just leave the lights off, but",
-	"you stumbled right into me. Yes, it is",
-	"I, Professor Dusseldorf, and I am",
-	// 32
-	"in fact reading romance novels. It's my",
-	"guilty pleasure. Look, if you don't spill",
-	"my secret, I will tell you another secret",
-	"about this library. Deal?",
-	// 33
-	"I'll assume that blank stare means yes.",
-	"Okay. In the Fiction section, there are",
-	"a series of shelves you can move. If you",
-	"push them all up, in order from left to",
-	// 34
-	"right, you will find a little surprise!",
-	"If you screw it up, just push them all",
-	"back down. Now let me get back to Lady",
-	"Cordelia and the Strapping Lad.",
-	// 35
-	"Go to the Fiction section, I'm trying",
-	"to read here!",
-	"Ugh, just push up the shelves from",
-	"left to right.",
-	// 36
-	"Oh dearie me! I'm just a helpless old",
-	"lady! Would you assist me in making my",
-	"famous Swamp Stew, young man? I need",
-	"you to throw these ingredients in",
-	// 37
-	"the pot in exactly this order. Please",
-	"don't make a mistake! Swamp Stew can",
-	"be a trifle... temperamental.",
-	"",
-	// 38
-	"Did you forget the recipe? Sometimes I",
-	"mix it up too! Almost seems like it's",
-	"always different. Here it is again: ",
-	"",
-	// 39
-	"Delightful, that's all the ingredients!",
-	"Now to cook it. Step on the button",
-	"there to light the fire. The longer you",
-	"stay on the button, the hotter it gets.",
-	// 40
-	"Once it's lit, there's enough wood for",
-	"10 seconds of cooking. You need to boil",
-	"it for 3 seconds and then keep it at a",
-	"simmer until it's done.",
-	// 41
-	"Oh no, the Octon Juice isn't even",	// tentacle attack
-	"cooked! This is definitely going to be",
-	"a problem.",
-	"",
-	// 42
-	"The stew is overheated! This can't be",	// magmazoids
-	"good!",
-	"",
-	"",
-	// 43
-	"Wait, what order did you put the",	// just explodes
-	"ingredients in? This is a disaster!",
-	"",
-	"",
-	// 44
-	"Ack, these are the wrong ingredients!",	// mushie attack
-	"This is mushroom feed, not Swamp Stew!",
-	"",
-	"",
-	// 45
-	"Delicious, this is perfect Swamp Stew!",
-	"Okay, full disclosure. I'm actually a",
-	"witch. I know, I know, I don't look a",
-	"day over hag. Anyway, since you were",
-	// 46
-	"so helpful, I'm gonna hex you up a nice",
-	"treat - a Rune Pouch! That will let you",
-	"equip one more rune at a time. Thanks",
-	"again, young lad.",
-	// 47
-	"Well, you aren't exactly a chef, but",
-	"I do appreciate you trying to help.",
-	"Full disclosure: I'm actually a witch.",
-	"Crazy, right? So since you have been",	// wraps back up to 46
-	// 48
-	"Get outta here, you ruined my swamp",
-	"hovel! No stew for you! Or me, come",
-	"to think of it!",
-	"",
-	// 49
-	"I hope to see you again, Kid Mystic.",
-	"You're a good egg.",
-	"",
-	"",
-	// 50
-	"so helpful, I'll give you a big old",
-	"smooch. Come here cutie pie!",
-	"",
-	"Just kidding. Consent and all that.",
-	// 51
-	"Spellbooks teach you new spells.",
-	"Casting them uses up your mana (the",
-	"blue bar). As you gain levels, you get",
-	"skill points you can spend to improve",
-	// 52
-	"your spells as well as yourself. I",
-	"know this spell seems pretty sad",
-	"right now, but check it out at level",
-	"five! Pause the game to adjust skills.",
-	// 53
-	"The Monster Wilderness is full of tricks",
-	"and traps. Sometimes there are walls",
-	"you can push, or buttons to step on,",
-	"or walls you can shoot.",
-	// 54
-	"I've created a very very subtle obstacle",
-	"course for you here. Good luck figuring",
-	"out which walls are the trick ones!",
-	"I'm sneaky!",
-	// 55
-	"Oh, I see you're admiring my collection!",
-	"Yes, I have my own personal Fairy Bell",
-	"and Reflect Crystal! I keep them locked",
-	"up for safety.",
-	// 56
-	"In fact, they're so securely stored that",
-	"I just continue facing the other",
-	"direction. I feel no need to check that",
-	"they're still there.",
-	// 57
-	"They're still there, right? I'll just keep",
-	"facing this way and assume they are.",
-	"You'd let me know if they were gone, for",
-	"sure. Right? I can trust you.",
-	// 58
-	"Ooh, Kid Mystic! Just who I was hoping",
-	"to see! I don't know if you've noticed, but",
-	"these woods are drained of magic. There's",
-	"ghosts a-roaming, and they feed on it.",
-	// 59
-	"Now, ghosts are invisible, as you know.",
-	"But you might not know that if you",
-	"try to cast a spell around one, it will",
-	"make their ectoplasm glow. Use that to",
-	// 60
-	"track them. I've made a batch of Ghost",
-	"Traps, so once you think you know where",
-	"a ghost is headed, press Next and Prev",
-	"at the same time to drop a trap.",
-	// 61
-	"It takes two seconds for a trap to arm,",
-	"so think ahead! The trap will burn out",
-	"two seconds later, so you better have",
-	"good aim. And one last little thing...",
-	// 62
-	"Each trap is powered by an Energy Orb, so",
-	"every time you put one out, you'll lose",
-	"one Fireball! Don't waste any traps!",
-	"Good luck, we need our magic back!",
-	// 63
-	"What are you waiting for, there's ghosts",
-	"afoot! Who you gonna call, me? No,",
-	"you do it! You want your magic back,",
-	"don't you?",
-	// 64
-	"We did it! The ghosts are trapped. I",
-	"definitely won't use them for any",
-	"nefarious purposes. I'm just glad the",
-	"magic is back. Come see me for a gift!",
-	// 65
-	"Thanks again, Kid. We make a great team.",
-	"",
-	"",
-	"",
+typedef struct SpeechDef
+{
+	char text[4][64];
+	byte nextSpeech;
+} SpeechDef;
+
+std::vector<SpeechDef> speechDef = {
+	{
+		// 0
+		"Welcome to Beginnerton!  This town is",
+		"really a tutorial on some basic game",
+		"features. There's a spell you might",
+		"want in here.",
+		0,
+	},
+	{
+		// 1
+		"Fireballs are the weapon of choice.",
+		"Each Energy Orb you collect increases",
+		"the number you can launch at once.",
+		"Each Speed Gem raises the rate of fire.",
+		13,
+	},
+	{
+		// 2
+		"Spellbooks teach you new spells.",
+		"Casting them uses up your mana (the",
+		"blue bar). As you gain levels, your",
+		"spells become more powerful.",
+		14,
+	},
+	{
+		// 3
+		"Psst, hey... thousands of years ago,",
+		"a great hero used a weapon known as",
+		"the Armageddon Sword to defeat a",
+		"monstrous evil.  To keep this sword",
+		4,
+	},
+	{
+		// 4
+		"from falling into evil hands, it was",
+		"broken into four pieces and hidden",
+		"throughout the land.  Four pieces,",
+		"four chapters... think about it.",
+		0,
+	},
+	{
+		// 5
+		"The passage to Spooky Castle is",
+		"blocked right now.  I have a feeling",
+		"that it'll be cleared by the time you",
+		"recover the orbs from X more places.",
+		0,
+	},
+	{
+		// 6
+		"The passage to Spooky Castle is",
+		"wide open now.  I can't think of a",
+		"logical reason why, but it is.",
+		"Good luck, Kid Mystic!!",
+		0,
+	},
+	{
+		// 7
+		"My village was attacked by Mushies!",
+		"As the village librarian, it's my",
+		"job to remain here in case any heroes",
+		"happen along that want the key to",
+		8,
+	},
+	{
+		// 8
+		"the village library.  You look",
+		"pretty heroic.  Here!",
+		" ",
+		" ",
+		0,
+	},
+	{
+		// 9
+		"I hope you found something of",
+		"interest in our library.  I guess",
+		"I'll stay here and chronicle the",
+		"Mushie occupation of our village.",
+		0,
+	},
+	{
+		// 10
+		"Welcome to the Spooky Dance-a-thon!",
+		"This nifty book is the prize for",
+		"whoever can stay dancing and/or",
+		"alive the longest!  Good luck!",
+		0,
+	},
+	{
+		// 11
+		"You've won the Dance-a-thon!!",
+		"Way to go!  The book's all yours.",
+		" ",
+		" ",
+		0,
+	},
+	{
+		// 12
+		"To the left is knowledge, and to",
+		"the right is wealth.  Choose wisely,",
+		"you can't have both!",
+		" ",
+		0,
+	},
+	{
+		// 13
+		"You can launch fireballs by pressing",
+		"the Fire button. Shocking, I know.",
+		"Fireball upgrades only last for the",
+		"level you are in, unlike Spells.",
+		16,
+	},
+	{
+		// 14
+		"To cast a spell, press the Cast button.",
+		"You can use the specific Spell buttons",
+		"to switch to other spells, or use",
+		"the Next and Previous buttons.",
+		15,
+	},
+	{
+		// 15
+		"In the options menu, you can change",
+		"between just selecting spells with those",
+		"buttons, or instantly casting them. Play",
+		"your own way!",
+		0,
+	},
+	{
+		// 16
+		"One other thing... you can't leave",
+		"any area that you enter until you",
+		"collect all the mystical green orbs",
+		"in it.  After all, that's what you're",
+		17,
+	},
+	{
+		// 17
+		"here to do, right?  The Orbometer in",
+		"the lower right of the screen will",
+		"give you an idea of how many remain.",
+		" ",
+		0,
+	},
+	{
+		// 18
+		"You've just caught a fairy! Fairies",
+		"assist you with magical powers, but",
+		"some of them also have drawbacks.  You",
+		"can choose which fairy to equip by",
+		19,
+	},
+	{
+		// 19
+		"pressing the Spell key when you are in",
+		"the overworld.  Pick the one you want",
+		"to use and press Fire.  Pressing Spell",
+		"again lets you go fairyless.",
+		0,
+	},
+	{
+		// 20
+		"Welcome to Kid Mystic!  Remember the",
+		"handy controls below. You can also",
+		"change them, and many other things,",
+		"in the Options menu on the title screen.",
+		0,
+	},
+	{
+		// 21
+		"",
+		"",
+		"",
+		"",
+		0,
+	},
+	{
+		// 22
+		"Welcome to Madcap Mode!  You can",
+		"now go through the entire adventure",
+		"again, keeping all the powerups and",
+		"levels you already earned... but",
+		23,
+	},
+	{
+		// 23
+		"that won't be nearly enough!  Don't",
+		"forget to see what's new in the Shop,",
+		"because you will need it badly.",
+		"Good luck!",
+		0,
+	},
+	{
+		// 24
+		"Congratulations!  You found all the",
+		"secret items in the game, so you've",
+		"unlocked Challenge Mode!  Try it out",
+		"on the main menu.",
+		0,
+	},
+	{
+		// 25
+		"Welcome back to Madcap Mode!  You",
+		"can keep exploring this mode all",
+		"you want, or start a new game, or",
+		"whatever!  Sorry, no more prizes!",
+		0,
+	},
+	{
+		// 26
+		"You're playing in Modern Mode! That",
+		"means you get Skill Points when you",
+		"level up. Press ESC or START to spend",
+		"your skill points.",
+		27,
+	},
+	{
+		// 27
+		"You can reset your skills anytime as",
+		"long as you are in the Overworld!",
+		"You don't get stronger with levels",
+		"anymore, so don't forget your skills!",
+		0,
+	},
+	{
+		// 28
+		"I'm Farley the Ghost Bat! I can fly",
+		"you to previous chapters. Don't worry,",
+		"I can also fly you back.",
+		"",
+		0,
+	},
+	{
+		// 29
+		"This book describes the Runic Tongue.",
+		"It looks like every rune has a letter",
+		"that it's equivalent to. There's even",
+		"a handy chart!",
+		0,
+	},
+	{
+		// 30
+		"Hmm, according to this book, ancient",
+		"numerologists assigned numbers to",
+		"each rune in addition to their",
+		"alphabetical value.",
+		0,
+	},
+	{
+		// 31
+		"Ugh, fine you caught me. I had hoped",
+		"I could just leave the lights off, but",
+		"you stumbled right into me. Yes, it is",
+		"I, Professor Dusseldorf, and I am",
+		32,
+	},
+	{
+		// 32
+		"in fact reading romance novels. It's my",
+		"guilty pleasure. Look, if you don't spill",
+		"my secret, I will tell you another secret",
+		"about this library. Deal?",
+		33,
+	},
+	{
+		// 33
+		"I'll assume that blank stare means yes.",
+		"Okay. In the Fiction section, there are",
+		"a series of shelves you can move. If you",
+		"push them all up, in order from left to",
+		34,
+	},
+	{
+		// 34
+		"right, you will find a little surprise!",
+		"If you screw it up, just push them all",
+		"back down. Now let me get back to Lady",
+		"Cordelia and the Strapping Lad.",
+		0,
+	},
+	{
+		// 35
+		"Go to the Fiction section, I'm trying",
+		"to read here!",
+		"Ugh, just push up the shelves from",
+		"left to right.",
+		0,
+	},
+	{
+		// 36
+		"Oh dearie me! I'm just a helpless old",
+		"lady! Would you assist me in making my",
+		"famous Swamp Stew, young man? I need",
+		"you to throw these ingredients in",
+		37,
+	},
+	{
+		// 37
+		"the pot in exactly this order. Please",
+		"don't make a mistake! Swamp Stew can",
+		"be a trifle... temperamental.",
+		"",
+		0,
+	},
+	{
+		// 38
+		"Did you forget the recipe? Sometimes I",
+		"mix it up too! Almost seems like it's",
+		"always different. Here it is again: ",
+		"",
+		0,
+	},
+	{
+		// 39
+		"Delightful, that's all the ingredients!",
+		"Now to cook it. Step on the button",
+		"there to light the fire. The longer you",
+		"stay on the button, the hotter it gets.",
+		40,
+	},
+	{
+		// 40
+		"Once it's lit, there's enough wood for",
+		"10 seconds of cooking. You need to boil",
+		"it for 3 seconds and then keep it at a",
+		"simmer until it's done.",
+		0,
+	},
+	{
+		// 41
+		"Oh no, the Octon Juice isn't even",	// tentacle attack
+		"cooked! This is definitely going to be",
+		"a problem.",
+		"",
+		0,
+	},
+	{
+		// 42
+		"The stew is overheated! This can't be",	// magmazoids
+		"good!",
+		"",
+		"",
+		0,
+	},
+	{
+		// 43
+		"Wait, what order did you put the",	// just explodes
+		"ingredients in? This is a disaster!",
+		"",
+		"",
+		0,
+	},
+	{
+		// 44
+		"Ack, these are the wrong ingredients!",	// mushie attack
+		"This is mushroom feed, not Swamp Stew!",
+		"",
+		"",
+		0,
+	},
+	{
+		// 45
+		"Delicious, this is perfect Swamp Stew!",
+		"Okay, full disclosure. I'm actually a",
+		"witch. I know, I know, I don't look a",
+		"day over hag. Anyway, since you were",
+		0,
+	},
+	{
+		// 46
+		"so helpful, I'm gonna hex you up a nice",
+		"treat - a Rune Pouch! That will let you",
+		"equip one more rune at a time. Thanks",
+		"again, young lad.",
+		0,
+	},
+	{
+		// 47
+		"Well, you aren't exactly a chef, but",
+		"I do appreciate you trying to help.",
+		"Full disclosure: I'm actually a witch.",
+		"Crazy, right? So since you have been",	// wraps back up to 46
+		0,
+	},
+	{
+		// 48
+		"Get outta here, you ruined my swamp",
+		"hovel! No stew for you! Or me, come",
+		"to think of it!",
+		"",
+		0,
+	},
+	{
+		// 49
+		"I hope to see you again, Kid Mystic.",
+		"You're a good egg.",
+		"",
+		"",
+		0,
+	},
+	{
+		// 50
+		"so helpful, I'll give you a big old",
+		"smooch. Come here cutie pie!",
+		"",
+		"Just kidding. Consent and all that.",
+		0,
+	},
+	{
+		// 51
+		"Spellbooks teach you new spells.",
+		"Casting them uses up your mana (the",
+		"blue bar). As you gain levels, you get",
+		"skill points you can spend to improve",
+		52,
+	},
+	{
+		// 52
+		"your spells as well as yourself. I",
+		"know this spell seems pretty sad",
+		"right now, but check it out at level",
+		"five! Pause the game to adjust skills.",
+		14,
+	},
+	{
+		// 53
+		"The Monster Wilderness is full of tricks",
+		"and traps. Sometimes there are walls",
+		"you can push, or buttons to step on,",
+		"or walls you can shoot.",
+		54,
+	},
+	{
+		// 54
+		"I've created a very very subtle obstacle",
+		"course for you here. Good luck figuring",
+		"out which walls are the trick ones!",
+		"I'm sneaky!",
+		0,
+	},
+	{
+		// 55
+		"Oh, I see you're admiring my collection!",
+		"Yes, I have my own personal Fairy Bell",
+		"and Reflect Crystal! I keep them locked",
+		"up for safety.",
+		56,
+	},
+	{
+		// 56
+		"In fact, they're so securely stored that",
+		"I just continue facing the other",
+		"direction. I feel no need to check that",
+		"they're still there.",
+		0,
+	},
+	{
+		// 57
+		"They're still there, right? I'll just keep",
+		"facing this way and assume they are.",
+		"You'd let me know if they were gone, for",
+		"sure. Right? I can trust you.",
+		0,
+	},
+	{
+		// 58
+		"Ooh, Kid Mystic! Just who I was hoping",
+		"to see! I don't know if you've noticed, but",
+		"these woods are drained of magic. There's",
+		"ghosts a-roaming, and they feed on it.",
+		59,
+	},
+	{
+		// 59
+		"Now, ghosts are invisible, as you know.",
+		"But you might not know that if you",
+		"try to cast a spell around one, it will",
+		"make their ectoplasm glow. Use that to",
+		60,
+	},
+	{
+		// 60
+		"track them. I've made a batch of Ghost",
+		"Traps, so once you think you know where",
+		"a ghost is headed, press Next and Prev",
+		"at the same time to drop a trap.",
+		61,
+	},
+	{
+		// 61
+		"It takes two seconds for a trap to arm,",
+		"so think ahead! The trap will burn out",
+		"two seconds later, so you better have",
+		"good aim. And one last little thing...",
+		62,
+	},
+	{
+		// 62
+		"Each trap is powered by an Energy Orb, so",
+		"every time you put one out, you'll lose",
+		"one Fireball! Don't waste any traps!",
+		"Good luck, we need our magic back!",
+		0,
+	},
+	{
+		// 63
+		"What are you waiting for, there's ghosts",
+		"afoot! Who you gonna call, me? No,",
+		"you do it! You want your magic back,",
+		"don't you?",
+		0,
+	},
+	{
+		// 64
+		"We did it! The ghosts are trapped. I",
+		"definitely won't use them for any",
+		"nefarious purposes. I'm just glad the",
+		"magic is back. Come see me for a gift!",
+		0,
+	},
+	{
+		// 65
+		"Thanks again, Kid. We make a great team.",
+		"",
+		"",
+		"",
+		0,
+	},
+	{
+		// 66
+		"Psst, Kid! Come over here! I've found some-",
+		"thing. So you know how big evil monsters",
+		"can split their soul into pieces and store",
+		"it away so you can't truly destroy",
+		67,
+	},
+	{
+		// 67
+		"them? Well I think I just found Bobby",
+		"Khan's Horkbox collection! That's what",
+		"the soul storage boxes are called. It's",
+		"a perfectly cromulent word.",
+		68,
+	},
+	{
+		// 68
+		"And if you don't destroy these horkboxes,",
+		"Bobby Khan can just come back in one",
+		"of them! So get in there. And I have no",
+		"twisted agenda that relies on using the",
+		69,
+	},
+	{
+		// 69
+		"empty horkboxes for myself, so don't",
+		"worry about that. Just go smash them",
+		"all!",
+		"",
+		0,
+	},
+	{
+		// 70
+		"Hey Kid! Good work in there. I'm not",
+		"hanging around here to collect and use",
+		"the horkboxes for myself, so feel free",
+		"to ignore me and move on.",
+		0,
+	},
+	{
+		// 71
+		"Okay, that's a Horkbox right in there.",
+		"All you need to do is shoot it to",
+		"destabilize it. But it will take a minute",
+		"before it explodes...",
+		72,
+	},
+	{
+		// 72
+		"and it will definitely be spewing",
+		"monstrosities and wild magic the whole",
+		"time, so be ready! Each Horkbox has a",
+		"different kind of magic, and it's all bad.",
+		0,
+	},
+	{
+		// 73
+		"Make sure you find all the Horkboxes!",
+		"If even one is left, Bobby Khan could",
+		"escape. They're powered by Mystic Orbs,",
+		"so you're gonna want those anyway!",
+		0,
+	},
+	{
+		// 74
+		"There's a poem of sorts scrawled on the",
+		"wall here, presumably by a deranged",
+		"person who does not know much about",
+		"anatomy.",
+		0,
+	},
+	{
+		// 75
+		"Hey Kid, it's me again, Madam Kromch.",
+		"Now that all the horkboxes are gone,",
+		"why don't you come meet me in the",
+		"central chamber for your 'reward'?",
+		0,
+	},
+	{
+		// 76
+		"Muahahaha... it's time, Kid Mystic.",
+		"Time that I demonstrated my true power",
+		"to you! With all the handy help you've",
+		"given me, my power has only grown!",
+		77,
+	},
+	{
+		// 77
+		"And by that, I mean the power of",
+		"FRIENDSHIP! Thank you so much for all",
+		"things you've done to help me out when",
+		"you had problems of your own.",
+		78,
+	},
+	{
+		// 78
+		"Sorry, I don't know why I accidentally",
+		"put reward in quote marks. I have a",
+		"diagnosed speech impediment where I",
+		"always sound like a villain.",
+		79,
+	},
+	{
+		// 79
+		"I do have an actual reward for you.",
+		"It's my last Rune Pouch, and I want you",
+		"to have it. You've been a great friend",
+		"and we'll have to have lunch sometime!",
+		0,
+	},
 };
 
 byte speechX,speechY,curSpeech;
@@ -342,6 +658,7 @@ byte speechX,speechY,curSpeech;
 message_t bigMessage;
 message_t message;
 byte romanceTalk = 0;
+byte speechStartedAt = 0;
 
 void InitSpeechSystem(void)
 {
@@ -471,8 +788,6 @@ void RenderMessage(void)
 	Print(bigMessage.x,bigMessage.y,bigMessage.msg,b,0);
 }
 
-/* this is for NPC speech */
-
 void InitSpeech(byte spc)
 {
 	if(spc==7 && player.keys[2]==1)
@@ -481,20 +796,22 @@ void InitSpeech(byte spc)
 	if(spc==5)
 	{
 		// this guy tells you how many levels remain to clear.
-		if(player.levelsPassed==9)
+		if(player.levelsPassed>=9)
 			spc=6;
 		else
 		{
-			speech[23][22]='9'-player.levelsPassed;
+
+			speechDef[5].text[3][22]= '9' - player.levelsPassed;
+
 			if(player.levelsPassed==8)
 			{
-				speech[23][34]='.';
-				speech[23][35]=' ';
+				speechDef[5].text[3][34]='.';
+				speechDef[5].text[3][35]=' ';
 			}
 			else
 			{
-				speech[23][34]='s';
-				speech[23][35]='.';
+				speechDef[5].text[3][34]='s';
+				speechDef[5].text[3][35]='.';
 			}
 		}
 	}
@@ -509,10 +826,61 @@ void InitSpeech(byte spc)
 		if (romanceTalk)
 			spc = 35;
 	}
+	speechStartedAt = spc;
 	curSpeech=spc;
 	speechX=0;
 	speechY=0;
 	EnterSpeechMode();
+}
+
+void FinishSpeech(void)
+{
+	if (speechStartedAt == 76)
+	{
+		CurrentMap()->GetTile(31, 102)->item = ITM_RUNEPOUCH;
+		CurrentMap()->GetTile(31, 100)->item = ITM_BRAIN;
+		GetFirstFriendly()->type = MONS_NONE;	// she runs off
+	}
+	if (speechStartedAt == 39)
+		SwampEnableCooking();
+
+	if (speechStartedAt == 41)
+	{
+		// uncooked octon means big tentacle attack
+		SwampDestroyCauldron(0);
+	}
+	if (speechStartedAt == 42)	// overheated stew means magmazoids
+	{
+		SwampDestroyCauldron(1);
+	}
+	if (speechStartedAt == 43) // wrong order, stew explodes
+	{
+		SwampDestroyCauldron(2);
+	}
+	if (speechStartedAt == 44) // wrong amounts, mushies
+	{
+		SwampDestroyCauldron(3);
+	}
+	if (speechStartedAt == 46)
+	{
+		// get rune pouch
+		CurrentMap()->GetTile(60, 62)->item = ITM_RUNEPOUCH;
+		CurrentMap()->BrightTorch(60, 62, 24, 8);
+		MakeNormalSound(SND_MEGABEAMHIT);
+		FloaterParticles((60 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (62 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 6, 20, 2, 20);
+	}
+	if (speechStartedAt == 31 && romanceTalk == 0)
+	{
+		CurrentMap()->LightSpecial(GetGoodguy()->x / (TILE_WIDTH * FIXAMT), GetGoodguy()->y / (TILE_HEIGHT * FIXAMT), 0, 20);
+		romanceTalk = 1;
+	}
+	if (speechStartedAt == 7)
+	{
+		MakeNormalSound(SND_GETKEY);
+		player.keys[2] = 1;
+	}
+	if (speechStartedAt == 28)
+		EnterFarleyMode();
 }
 
 byte UpdateSpeech(MGLDraw *mgl)
@@ -523,156 +891,20 @@ byte UpdateSpeech(MGLDraw *mgl)
 			speechY=4;
 		else
 		{
-			if (curSpeech >= 58 && curSpeech <= 61)
-			{
-				curSpeech++;
-				speechX = 0;
-				speechY = 0;
-				return 0;
-			}
-			if(curSpeech==1)
-			{
-				curSpeech=13;
-				speechX=0;
-				speechY=0;
-				return 0;
-			}
-			if(curSpeech==13)
-			{
-				curSpeech=16;
-				speechX=0;
-				speechY=0;
-				return 0;
-			}
-			if(curSpeech==16)
-			{
-				curSpeech=17;
-				speechX=0;
-				speechY=0;
-				return 0;
-			}
-			if (curSpeech == 51)
-			{
-				curSpeech = 52;
-				speechX = 0;
-				speechY = 0;
-				return 0;
-			}
-			if (curSpeech == 52)
-			{
-				curSpeech = 14;
-				speechX = 0;
-				speechY = 0;
-				return 0;
-			}
-			if (curSpeech == 53)
-			{
-				curSpeech = 54;
-				speechX = 0;
-				speechY = 0;
-				return 0;
-			}
-			if (curSpeech == 55)
-			{
-				curSpeech = 56;
-				speechX = 0;
-				speechY = 0;
-				return 0;
-			}
-			if(curSpeech==2)
-			{
-				curSpeech=14;
-				speechX=0;
-				speechY=0;
-				return 0;
-			}
-			if(curSpeech==14)
-			{
-				curSpeech=15;
-				speechX=0;
-				speechY=0;
-				return 0;
-			}
-			if(curSpeech==18)
-			{
-				curSpeech=19;
-				speechX=0;
-				speechY=0;
-				return 0;
-			}
-			if(curSpeech==20)
+			if (curSpeech == 20)
 			{
 				if (!ClassicMode())
+				{
 					curSpeech = 26;
+					speechX = 0;
+					speechY = 0;
+					return 0;
+				}
 				else
+				{
+					FinishSpeech();
 					return 1;
-				speechX=0;
-				speechY=0;
-				return 0;
-			}
-			if (curSpeech == 21 && !ClassicMode())
-			{
-				curSpeech = 26;
-				speechX = 0;
-				speechY = 0;
-				return 0;
-			}
-			if (curSpeech == 26)
-			{
-				curSpeech = 27;
-				speechX = 0;
-				speechY = 0;
-				return 0;
-			}
-			if(curSpeech==22)
-			{
-				curSpeech=23;
-				speechX=0;
-				speechY=0;
-				return 0;
-			}
-			if(curSpeech==3 || curSpeech==7)
-			{
-				curSpeech++;
-				speechX=0;
-				speechY=0;
-				return 0;
-			}
-			if (curSpeech == 36)
-			{
-				curSpeech = 37;
-				speechX = 0;
-				speechY = 0;
-				return 0;
-			}
-			if (curSpeech == 39)
-			{
-				SwampEnableCooking();
-				curSpeech = 40;
-				speechX = 0;
-				speechY = 0;
-				return 0;
-			}
-			if (curSpeech == 41)
-			{
-				// uncooked octon means big tentacle attack
-				SwampDestroyCauldron(0);
-				return 1;
-			}
-			if (curSpeech == 42)	// overheated stew means magmazoids
-			{
-				SwampDestroyCauldron(1);
-				return 1;
-			}
-			if (curSpeech == 43) // wrong order, stew explodes
-			{
-				SwampDestroyCauldron(2);
-				return 1;
-			}
-			if (curSpeech == 44) // wrong amounts, mushies
-			{
-				SwampDestroyCauldron(3);
-				return 1;
+				}
 			}
 			if (curSpeech == 45 || curSpeech == 47) // both victory speeches go to the end victory speech
 			{
@@ -684,37 +916,17 @@ byte UpdateSpeech(MGLDraw *mgl)
 				speechY = 0;
 				return 0;
 			}
-			if (curSpeech == 46)
-			{
-				// get rune pouch
-				CurrentMap()->GetTile(60, 62)->item = ITM_RUNEPOUCH;
-				CurrentMap()->BrightTorch(60, 62, 24,8);
-				MakeNormalSound(SND_MEGABEAMHIT);
-				FloaterParticles((60*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT, (62*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT, 6, 20, 2, 20);
-				return 1;
-			}
 			
-			if (curSpeech >= 31 && curSpeech<=33)
+			if (speechDef[curSpeech].nextSpeech != 0)
 			{
-				if (curSpeech == 31)
-				{
-					CurrentMap()->LightSpecial(GetGoodguy()->x / (TILE_WIDTH * FIXAMT), GetGoodguy()->y / (TILE_HEIGHT * FIXAMT), 0, 20);
-					romanceTalk = 1;
-				}
-				curSpeech = curSpeech+1;
+				curSpeech = speechDef[curSpeech].nextSpeech;
 				speechX = 0;
 				speechY = 0;
 				return 0;
 			}
 			else
 			{
-				if(curSpeech==8)
-				{
-					MakeNormalSound(SND_GETKEY);
-					player.keys[2]=1;
-				}
-				if (curSpeech == 28)
-					EnterFarleyMode();
+				FinishSpeech();
 				return 1;
 			}
 		}
@@ -725,7 +937,7 @@ byte UpdateSpeech(MGLDraw *mgl)
 		if((speechX&1)==0)
 			MakeNormalSound(SND_CHAT);
 		speechX++;
-		if(speechX>=strlen(speech[curSpeech*4+speechY]))
+		if(speechX>=strlen(speechDef[curSpeech].text[speechY]))
 		{
 			speechX=0;
 			speechY++;
@@ -736,6 +948,7 @@ byte UpdateSpeech(MGLDraw *mgl)
 	{
 		SetInMenu(false);
 		UpdateControls();
+		FinishSpeech();
 		return 1;	// ESC cancels the speech
 	}
 	
@@ -751,7 +964,7 @@ void RenderSpeech(void)
 
 	for(i=0;(i<=speechY && i<4);i++)
 	{
-		strcpy(s,speech[curSpeech*4+i]);
+		strcpy(s,speechDef[curSpeech].text[i]);
 		if(i==speechY)
 			s[speechX+1]='\0';
 
@@ -817,6 +1030,17 @@ void RenderSpeech(void)
 	if (curSpeech == 14 || curSpeech == 15 || curSpeech==21 || curSpeech==51 || curSpeech==52 || curSpeech==60)	// show spell buttons
 	{
 		RenderSpellControls();
+	}
+	if (curSpeech == 74)
+	{
+		RenderSkillBox(60 - 2, 200 - 2, SCRWID - 60 + 2, 200+140 + 2, 32*2+4, 32*2+14);
+		RenderSkillBox(60, 200, SCRWID - 60, 200+140, 32*2+4, 32*2+14);
+		CenterPrint(HALFWID, 200 + 10, "Legbone's connected to the rib bone,", -31, 2);
+		CenterPrint(HALFWID, 200 + 30, "Rib bone's connected to the teeth bones", -31, 2);
+		CenterPrint(HALFWID, 200 + 50, "Teeth bones are stuck to the round bone", -31, 2);
+		CenterPrint(HALFWID, 200 + 70, "Round bone's connected to the skull bone", -31, 2);
+		CenterPrint(HALFWID, 200 + 90, "Skull bone's connected to the foot bone", -31, 2);
+		CenterPrint(HALFWID, 200 + 110, "Foot bone's connected to this wall here", -31, 2);
 	}
 }
 

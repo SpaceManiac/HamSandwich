@@ -63,6 +63,17 @@
 #define UPDATE_FADE		2
 #define UPDATE_FADEIN	3
 
+// horkbox effects
+#define HORK_NONE	(0)
+#define HORK_LIFEDRAIN (1)
+#define HORK_NOFIREBALLS (2)
+#define HORK_MANADRAIN (3)
+#define HORK_TRAP (4)
+#define HORK_HEAL (5)
+#define HORK_BOMBS (6)
+#define HORK_FLAMES (7)
+#define HORK_MAX (8)
+
 typedef struct special_t
 {
 	word trigger;
@@ -171,6 +182,7 @@ void ResetTemplePuzzle(Map *map);
 void CreateMaze(Map *map,byte wid,byte hei,byte mazewid,byte mazehei);
 void CreateLockedMaze(Map *map,byte wid,byte hei,byte mazewid,byte mazehei);
 void LockedMazePuzzle(Map *map);
+void LockedMazeSpikes(Map* map, int x, int y);
 byte SmashballCheck(Map *map);
 void LightsOutPuzzle(Map *map,int x,int y);
 void OctoBossDeath(Map *map);
@@ -196,5 +208,9 @@ void HauntedPuzzleGhostControl(Map* map, Guy* me);
 bool HauntedWoodsCastSpell(Map *map);
 void HauntedWoodsCatchGhost(Guy* me);
 byte HauntedWoodsGhosts(void);
+void DeepEndPuzzleInit(void);
+void DeepEndPuzzleKill(Map* map, byte type);
+void HorkBoxInit(Map* map);
+void HorkBoxBones(Map* map, int x, int y);
 
 #endif

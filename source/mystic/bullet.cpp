@@ -204,10 +204,12 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_COIN:	// reflects off walls
 		case BLT_BIGCOIN:
+		case BLT_MONEYBAG:
 		case BLT_BIGYELLOW:
 		case BLT_RUNESTONE:
 		case BLT_LIFEPOTION:
 		case BLT_MANAPOTION:
+		case BLT_DIAMOND:
 			me->x-=me->dx;
 			me->dx=-me->dx;
 			me->facing=((byte)(4-me->facing))&7;
@@ -235,6 +237,11 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 			me->x-=me->dx;
 			me->dy=((3-MGL_random(7))<<FIXSHIFT);
 			me->dx=0;
+			break;
+		case BLT_FLAME3:
+			BurnTreesInArea(map, me->x - 8 * FIXAMT, me->y - 8 * FIXAMT, me->x + 8 * FIXAMT, me->y + 8 * FIXAMT);
+			me->dx = 0;
+			me->dy = 0;
 			break;
 		case BLT_ROCK:	// reflects off walls
 			me->x-=me->dx;
@@ -361,6 +368,8 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_COIN:	// reflects off walls
 		case BLT_BIGCOIN:
+		case BLT_DIAMOND:
+		case BLT_MONEYBAG:
 		case BLT_BIGYELLOW:
 		case BLT_RUNESTONE:
 		case BLT_MANAPOTION:
@@ -392,6 +401,11 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 			me->y-=me->dy;
 			me->dx=((3-MGL_random(7))<<FIXSHIFT);
 			me->dy=0;
+			break;
+		case BLT_FLAME3:
+			BurnTreesInArea(map, me->x - 8 * FIXAMT, me->y - 8 * FIXAMT, me->x + 8 * FIXAMT, me->y + 8 * FIXAMT);
+			me->dx = 0;
+			me->dy = 0;
 			break;
 		case BLT_ROCK:	// reflects off walls
 			me->y-=me->dy;
@@ -499,6 +513,8 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_COIN:
 		case BLT_BIGCOIN:
+		case BLT_DIAMOND:
+		case BLT_MONEYBAG:
 		case BLT_RUNESTONE:
 		case BLT_LIFEPOTION:
 		case BLT_MANAPOTION:
@@ -648,6 +664,7 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_FLAME:
 		case BLT_FLAME2:
+		case BLT_FLAME3:
 		case BLT_LIQUIFY:
 		case BLT_LIQUIFY2:
 		case BLT_LIQUIFY3:
@@ -863,6 +880,8 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_COIN:
 		case BLT_BIGCOIN:
+		case BLT_DIAMOND:
+		case BLT_MONEYBAG:
 		case BLT_RUNESTONE:
 		case BLT_LIFEPOTION:
 		case BLT_MANAPOTION:
@@ -889,15 +908,29 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 				{
 					PlayerGetItem(ITM_MANAPOT, me->x, me->y);
 				}
-				else
+				else if(me->type==BLT_BIGCOIN)
 				{
 					FloaterParticles(me->x,me->y,5,24,0,4);
 					FloaterParticles(me->x,me->y,5,32,-1,4);
 					GainMoney(10);
 					ChallengeEvent(CE_GET,ITM_BIGCOIN);
-					// double noise
-					MakeSound(SND_MONEY, me->x, me->y, SND_CUTOFF, 500);
 					MakeSound(SND_MONEY,me->x,me->y,SND_CUTOFF,500);
+				}
+				else if (me->type == BLT_DIAMOND)
+				{
+					FloaterParticles(me->x, me->y, 5, 24, 0, 4);
+					FloaterParticles(me->x, me->y, 5, 32, -1, 4);
+					GainMoney(100);
+					ChallengeEvent(CE_GET, ITM_DIAMOND);
+					MakeSound(SND_MONEY, me->x, me->y, SND_CUTOFF, 500);
+				}
+				else if (me->type == BLT_MONEYBAG)
+				{
+					FloaterParticles(me->x, me->y, 5, 24, 0, 4);
+					FloaterParticles(me->x, me->y, 5, 32, -1, 4);
+					GainMoney(25);
+					ChallengeEvent(CE_GET, ITM_MONEYBAG);
+					MakeSound(SND_MONEY, me->x, me->y, SND_CUTOFF, 500);
 				}
 				me->type=BLT_NONE;
 				
@@ -979,6 +1012,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_FLAME2:
+		case BLT_FLAME3:
 			if(FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,me->dx,me->dy,1,map,world))
 			{
 				// no noise, just let him scream
@@ -1254,6 +1288,8 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_COIN:
 		case BLT_BIGCOIN:
+		case BLT_DIAMOND:
+		case BLT_MONEYBAG:
 		case BLT_LIFEPOTION:
 		case BLT_MANAPOTION:
 		case BLT_RUNESTONE:
@@ -1526,6 +1562,18 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			if(me->anim>4)
 				me->anim=4;
 			break;
+		case BLT_FLAME3:
+			if (me->timer & 1)	// every other frame
+				HitBadguys(me, map, world);
+			me->dz = 0;
+			Dampen(&me->dx, FIXAMT / 4);
+			Dampen(&me->dy, FIXAMT / 4);
+			Clamp(&me->dx, FIXAMT * 12);
+			Clamp(&me->dy, FIXAMT * 12);
+			me->anim = ((32 - me->timer) / 8) + 1;
+			if (me->anim > 4)
+				me->anim = 4;
+			break;
 		case BLT_LASER:
 		case BLT_LASER2:
 			HitBadguys(me,map,world);
@@ -1701,7 +1749,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 	// if you're in a wall even before moving, explode (to stop infinite bounces)
 	if((me->type==BLT_HAMMER || me->type==BLT_HAMMER2 || me->type==BLT_LASER || me->type==BLT_LASER2 || me->type==BLT_COIN || me->type==BLT_RUNESTONE || me->type==BLT_PTEROSHOT || me->type==BLT_ICESHARD ||
 		me->type==BLT_MINIFBALL || me->type==BLT_BIGYELLOW || me->type==BLT_BIGCOIN || me->type==BLT_LIQUIFY || me->type==BLT_LIQUIFY2 || me->type==BLT_LIQUIFY3
-		|| me->type==BLT_ICEBEAM || me->type==BLT_SKULL || me->type==BLT_DEATHBEAM || me->type==BLT_REDFBALL) &&
+		|| me->type==BLT_ICEBEAM || me->type==BLT_SKULL || me->type==BLT_DEATHBEAM || me->type==BLT_REDFBALL || me->type==BLT_MONEYBAG || me->type==BLT_DIAMOND) &&
 		(!BulletCanGo(me->x,me->y,map,1)))
 	{
 		if(me->type==BLT_HAMMER2 || me->type==BLT_HAMMER)
@@ -1742,7 +1790,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 		// all gravity-affected bullets, get gravitized
 		if (me->type == BLT_BOMB || me->type == BLT_GRENADE || (me->type == BLT_MINE && me->anim == 0) || me->type == BLT_GLOB_BOMB || me->type == BLT_LIFEPOTION || me->type == BLT_MANAPOTION
 			|| me->type == BLT_ROCK || me->type == BLT_EVILHAMMER || me->type == BLT_COIN || me->type == BLT_RUNESTONE || me->type == BLT_OCTONJUICE || me->type == BLT_OCTONJUICESPLAT
-			|| me->type == BLT_BIGCOIN || me->type==BLT_GHOSTTRAP)
+			|| me->type == BLT_BIGCOIN || me->type==BLT_GHOSTTRAP || me->type==BLT_MONEYBAG || me->type==BLT_DIAMOND)
 			me->dz -= FIXAMT;
 	}
 
@@ -1863,6 +1911,24 @@ void RenderBullet(bullet_t *me)
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
 					DISPLAY_DRAWME);
 			break;
+		case BLT_DIAMOND:
+			if (me->timer < 30 && (me->timer & 1) == 0)
+				return;
+			curSpr = GetItemSprite(288 + me->anim / 2);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 0, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 0, me->bright+10, curSpr,
+				DISPLAY_DRAWME);
+			break;
+		case BLT_MONEYBAG:
+			if (me->timer < 30 && (me->timer & 1) == 0)
+				return;
+			curSpr = GetItemSprite(287);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 255, me->bright, curSpr,
+				DISPLAY_DRAWME);
+			break;
 		case BLT_LIFEPOTION:
 			if (me->timer < 30 && (me->timer & 1) == 0)
 				return;
@@ -1945,6 +2011,11 @@ void RenderBullet(bullet_t *me)
 			curSpr=bulletSpr->GetSprite(me->anim+SPR_FLAME);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,0,curSpr,
 					DISPLAY_DRAWME|DISPLAY_GLOW);
+			break;
+		case BLT_FLAME3:
+			curSpr = bulletSpr->GetSprite(me->anim + SPR_FLAME);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 7, 0, curSpr,
+				DISPLAY_DRAWME);
 			break;
 		case BLT_LASER:
 			curSpr=bulletSpr->GetSprite(me->facing+SPR_LASER);
@@ -2258,12 +2329,14 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->dy=Sine(me->facing*32)*10;
 			break;
 		case BLT_COIN:
+		case BLT_DIAMOND:
 		case BLT_BIGCOIN:
+		case BLT_MONEYBAG:
 		case BLT_RUNESTONE:
 			me->facing=(byte)MGL_random(256);
-			f=MGL_randoml(3)+1;
-			me->dx=-FIXAMT*4+MGL_randoml(FIXAMT*8);
-			me->dy=-FIXAMT*4+MGL_randoml(FIXAMT*8);
+			f = Random(4) +1;
+			me->dx = Cosine(me->facing) * f;
+			me->dy = Sine(me->facing) * f;
 			me->dz=MGL_randoml(FIXAMT*6)+FIXAMT*4;
 			me->z=FIXAMT/2;
 			me->timer=30*9+MGL_random(30*4);
@@ -2271,9 +2344,9 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 		case BLT_LIFEPOTION:
 		case BLT_MANAPOTION:
 			me->facing = (byte)MGL_random(256);
-			f = MGL_randoml(3) + 1;
-			me->dx = -FIXAMT * 2 + MGL_randoml(FIXAMT * 4);
-			me->dy = -FIXAMT * 2 + MGL_randoml(FIXAMT * 4);
+			f = Random(4) + 1;
+			me->dx = Cosine(me->facing) * f;
+			me->dy = Sine(me->facing) * f;
 			me->dz = MGL_randoml(FIXAMT * 6) + FIXAMT * 4;
 			me->z = FIXAMT / 2;
 			me->timer = 30 * 20;
@@ -2402,6 +2475,7 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			MakeSound(SND_FLAMEGO,me->x,me->y,SND_CUTOFF,1100);
 			break;
 		case BLT_FLAME2:
+		case BLT_FLAME3:
 			me->anim=0;
 			me->timer=24-MGL_random(4);
 			me->z=FIXAMT*20;
@@ -2482,11 +2556,11 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 		case BLT_GLOB_BOMB:
 			me->anim = 0;
 			me->timer = 255;
-			me->z = FIXAMT * 80;
+			me->z = FIXAMT * 20;
 			f = MGL_random(12) + 1;
 			me->dx = Cosine(me->facing) * f;
 			me->dy = Sine(me->facing) * f;
-			me->dz = FIXAMT * 20;
+			me->dz = FIXAMT * 10;
 			break;
 		case BLT_MINE:
 			me->anim = 0;

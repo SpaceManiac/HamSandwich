@@ -22,6 +22,7 @@ namespace
 	word frozenGuys;
 }
 
+int lootCoins, lootBigCoins, lootRunestones, lootXP;
 //------------------------------------------------------------------------
 // CLASS GUY
 
@@ -822,7 +823,11 @@ void Guy::Update(Map *map,world_t *world)
 			GuestChamberPuzzleStep(map,mapx,mapy);
 		if (player.worldNum == 1 && player.levelNum == 14 && (oldmapx != mapx || oldmapy != mapy))
 			LostInWoodsPuzzleStep(map, mapx, mapy);
-
+		if (player.worldNum == 2 && player.levelNum == 17 && (oldmapx != mapx || oldmapy != mapy))
+			LockedMazeSpikes(map, oldmapx, oldmapy);	// gonna change the tile you just exited to spikes
+		if (player.worldNum == 3 && player.levelNum == 19 && (oldmapx != mapx || oldmapy != mapy))
+			HorkBoxBones(map, mapx, mapy);
+		
 		if(player.worldNum==2 && player.levelNum==16 && (oldmapx!=mapx || oldmapy!=mapy) &&
 			mapx==11 && mapy==31 && map->map[mapx+mapy*map->width].floor==59)
 		{
@@ -1290,6 +1295,9 @@ void Guy::MonsterControl(Map *map,world_t *world)
 		case MONS_SWAMPWEED:
 			AI_SwampWeed(this, map, world, goodguy);
 			break;
+		case MONS_HORKBOX:
+			AI_Horkbox(this, map, world, goodguy);
+			break;
 	}
 }
 
@@ -1303,6 +1311,28 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 	if(type==0)
 		return;	// shouldn't have a type 0 guy at all
 
+	if (type == MONS_HORKBOX)	// an uninjured horkbox just goes off when hit, does not take damage
+	{
+		if (player.puzzleVar[0] == HORK_NONE)	// no horkbox active, so go ahead and activate
+		{
+			int dist = ((GetGoodguy()->x >> FIXSHIFT) - (x >> FIXSHIFT)) * ((GetGoodguy()->x >> FIXSHIFT) - (x >> FIXSHIFT)) +
+				((GetGoodguy()->y >> FIXSHIFT) - (y >> FIXSHIFT)) * ((GetGoodguy()->y >> FIXSHIFT) - (y >> FIXSHIFT));
+			if (dist < 200 * 200)	// you have to be in the ring to activate it, so you don't get stuck behind a wall
+			{
+				mind1 = 1;
+				mind = 2 * 30;	// don't summon the first enemy for a moment
+				player.puzzleVar[0] = mind2;	// activate that horkbox effect
+				player.puzzleVar[1] = (byte)ID;	// id of the monster that's doing it. Note that this isn't strictly legal because ID is a word, but since Horkboxes only exist as placed monsters in a level,
+											// we know they will have less than 255 ID
+				hp = 60 * 30 - 3 * 30 * 7 + player.puzzleVar[2] * 30 * 3;	// first horkbox is only 39s long, going up to 60s at max
+				PlaySong(SONG_CHAP34FIGHT);
+				MakeNormalSound(SND_BERSERK);
+			}
+			return;
+		}
+		else // a horkbox is active (maybe this one!), so just ignore the shot
+			return;
+	}
 	if (type == MONS_BOUAPHA && PlayerShield())
 	{
 		if (!ClassicMode() && player.parry > 0)
@@ -1732,8 +1762,8 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 							chance += (int)SkillValue(SKILL_FREEZEMONEY);
 						if (player.fairyOn == FAIRY_RICHEY)
 							chance *= 3;
-						if (Random(100) < chance*2)
-							FireBullet(x, y, 0, BLT_RUNESTONE);
+						if (Random(100) < chance * 2)
+							lootRunestones++;
 						if (Random(500) < monsType[type].hp)
 						{
 							if (Random(2) == 0)
@@ -1748,15 +1778,16 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 						freeBig = (j - 50) / 20;	// give guaranteed big coins for every 20 coins overage, in modern mode
 						j = 50;	// max it at 50 coins per guy
 					}
+
 					// 1% chance of 10-coin, up
 					for (i = 0; i < j; i++)
 					{
 						if (ClassicMode())
 						{
 							if (MGL_random(100 - 70 * (player.fairyOn == FAIRY_RICHEY)))
-								FireBullet(x, y, 0, BLT_COIN);
+								lootCoins++;
 							else
-								FireBullet(x, y, 0, BLT_BIGCOIN);
+								lootBigCoins++;
 						}
 						else
 						{
@@ -1765,13 +1796,13 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 							if (!ClassicMode() && wasFrozen)
 								amt += SkillValue(SKILL_FREEZEMONEY) * 10;
 
-							if (freeBig > 0 || MGL_random(1000 - 700 * (player.fairyOn == FAIRY_RICHEY)) > (int)amt)
+							if (freeBig == 0 || MGL_random(1000 - 700 * (player.fairyOn == FAIRY_RICHEY)) > (int)amt)
+								lootCoins++;
+							else
 							{
-								FireBullet(x, y, 0, BLT_COIN);
+								lootBigCoins++;
 								if (freeBig > 0) freeBig--;
 							}
-							else
-								FireBullet(x, y, 0, BLT_BIGCOIN);
 						}
 					}
 				}
@@ -1782,11 +1813,21 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		if(type!=MONS_PTERO && type!=MONS_GOLEM && type!=MONS_BOUAPHA)
 		{
 			ChallengeEvent(CE_KILL,type);
-			PlayerGetPoints(MonsterPoints(type));
+			lootXP += MonsterPoints(type);
+			
 			if (!ClassicMode() && player.berserk > 0 && SkillValue(SKILL_BLOODLUST) > 0)
 			{
 				PlayerHeal((byte)SkillValue(SKILL_BLOODLUST));
 			}
+		}
+
+		if (player.worldNum == 3 && player.levelNum == 19 && player.puzzleVar[0] != HORK_NONE)	// a horkbox is active, so just accumulate the rewards
+		{
+
+		}
+		else // otherwise, dump em on the floor now
+		{
+			HorkUpLoot(x, y);
 		}
 	}
 	if(type!=MONS_BOUAPHA && type!=MONS_PTERO && type!=MONS_GOLEM)
@@ -1809,11 +1850,52 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 
 //-----------------------------------------------------------------------
 
+void HorkUpLoot(int x, int y)
+{
+	PlayerGetPoints(lootXP);
+	for (int i = 0; i < lootRunestones; i++)
+		FireBullet(x, y, 0, BLT_RUNESTONE);
+	while (lootBigCoins > 0)
+	{
+		if (lootBigCoins > 10)
+		{
+			lootBigCoins -= 10;
+			FireBullet(x, y, 0, BLT_DIAMOND);
+		}
+		else
+		{
+			FireBullet(x, y, 0, BLT_BIGCOIN);
+			lootBigCoins--;
+		}
+	}
+	while (lootCoins > 0)
+	{
+		if (lootCoins > 25)
+		{
+			FireBullet(x, y, 0, BLT_MONEYBAG);
+			lootCoins -= 25;
+		}
+		else
+		{
+			FireBullet(x, y, 0, BLT_COIN);
+			lootCoins--;
+		}
+	}
+	lootXP = 0;
+	lootRunestones = 0;
+	lootBigCoins = 0;
+	lootCoins = 0;
+}
+
 void InitGuys(int max)
 {
 	guys = std::make_unique<Guy[]>(max);
 	maxGuys = max;
 	goodguy = nullptr;
+	lootCoins = 0;
+	lootBigCoins = 0;
+	lootRunestones = 0;
+	lootXP = 0;
 }
 
 void ExitGuys(void)
@@ -1938,6 +2020,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 			guys[i].frm=0;
 			guys[i].frmTimer=0;
 			guys[i].frmAdvance=128;
+			guys[i].frzDamage = 0;
 			if(guys[i].type!=MONS_BOUAPHA)
 				guys[i].hp=MonsterHP(type);
 			else
@@ -2000,6 +2083,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 						guys[i].mind=ANIM_MOVE;
 						break;
 					case 69:
+					case 151:
 						guys[i].mind = ANIM_A2;	// the witch
 						break;
 					case 21:
@@ -2037,6 +2121,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 						guys[i].mind = ANIM_IDLE;	// bald guy?
 						break;
 					case 20:
+					case 169:
 						guys[i].mind = ANIM_A2;	// witch
 						break;
 				}
@@ -2473,7 +2558,7 @@ word LockOnEvil(Map *map,int x,int y)
 
 	for(i=0;i<maxGuys;i++)
 		if(guys[i].type && guys[i].hp && ((MonsterFlags(guys[i].type)&(MF_GOODGUY|MF_NOHIT|MF_INVINCIBLE))==0) &&
-			guys[i].type!=MONS_FRIENDLY)
+			guys[i].type!=MONS_FRIENDLY && guys[i].type!=MONS_HORKBOX)
 		{
 			range=abs(x-(guys[i].x>>FIXSHIFT))+abs(y-(guys[i].y>>FIXSHIFT));
 			if((range<bestRange) || (range<HALFWID+HALFHEI && MGL_random(32)==0))
@@ -2623,6 +2708,18 @@ void KillPinkeyes(void)
 		{
 			FireBullet(guys[i].x,guys[i].y,0,BLT_BOOM);
 			guys[i].type=MONS_NONE;
+		}
+}
+
+void KillAllBadguys(void)
+{
+	int i;
+
+	for (i = 0; i < maxGuys; i++)
+		if (guys[i].type !=MONS_HORKBOX && guys[i].type!=MONS_NONE && guys[i].type!=MONS_FRIENDLY && !(monsType[guys[i].type].flags&MF_GOODGUY))
+		{
+			FireBullet(guys[i].x, guys[i].y, 0, BLT_BOOM);
+			guys[i].type = MONS_NONE;
 		}
 }
 
@@ -2846,6 +2943,14 @@ void WhackedAZoid(Map *map)
 	byte prizeItm[8]={ITM_PANTS,ITM_BRAIN,ITM_PANTS,ITM_BRAIN,ITM_BIGCOIN,ITM_HAMMERUP,ITM_BIGCOIN,ITM_FAIRYBELL};
 
 	whacked++;
+	if (whacked > 75)
+		EarnAchieve(Achievement::WHACKAZOID);
+	if (whacked == 60 && !GotSkillShardInLevel(player.worldNum, player.levelNum))
+	{
+		map->GetTile(10, 13)->item = ITM_SKILLSHARD;
+		MakeNormalSound(SND_PURCHASE);
+		NewMessage("Super Skill Bonus Prize!", 60);
+	}
 
 	if(Challenging())
 	{
@@ -2895,4 +3000,57 @@ void ChangeMind2OfType(byte type, byte newMind2)
 		if (guys[i].type == type)
 			guys[i].mind2 = newMind2;
 	}
+}
+
+void SetupHorkboxes(void)
+{
+	std::vector<byte> types;
+	for (int i = 1; i < HORK_MAX; i++)	// skip HORK_NONE of course
+		types.push_back(i);
+
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].type == MONS_HORKBOX)
+		{
+			int n = Random((int)types.size());
+			guys[i].mind2 = types[n];
+			types.erase(types.begin() + n);
+			if (types.size() == 0)
+				break;	// can't do any more, better not have put it in any more
+		}
+	}
+}
+
+void HealBadguys(word amt)
+{
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].hp > 0 && guys[i].type!=MONS_NONE && guys[i].type != MONS_HORKBOX && !(monsType[guys[i].type].flags & MF_GOODGUY))
+		{
+			Guy* g = &guys[i];
+
+			word maxHP = MonsterHP(guys[i].type);
+			word healAmt = amt;
+			if (player.nightmare)
+				healAmt *= NIGHTMAREHP;
+			else if (BrutalMode())
+				healAmt *= BRUTALHP;
+			if (guys[i].hp <= maxHP - healAmt)
+				guys[i].hp += healAmt;
+			else
+				guys[i].hp = maxHP;
+			ShowEnemyLife(MonsterName(guys[i].type), guys[i].hp * 128 / maxHP, guys[i].hp * 128 / maxHP, (byte)(guys[i].hp > 0));
+
+		}
+	}
+}
+
+Guy *GetFirstFriendly(void)
+{
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].hp > 0 && guys[i].type == MONS_FRIENDLY)
+			return &guys[i];
+	}
+	return nullptr;
 }

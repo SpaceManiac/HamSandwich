@@ -106,6 +106,7 @@ Guy *NearestEnemy(Guy *me);
 Guy *GetGoodguy(void);
 byte BadguyCount(void);
 void KillPinkeyes(void);
+void KillAllBadguys(void);
 void FairyChange(word former,word now);
 word FindVictimNot(int x,int y,byte size,int dx,int dy,int damage,word who,Map *map,world_t *world);
 void FairyDoThing(byte what);
@@ -115,11 +116,15 @@ void StunAllOnscreen(byte duration);
 void HealSummons(byte amt);
 void ChangeAllGuysOfType(byte type, byte newType);
 void ChangeMind2OfType(byte type, byte newMind2);
+void HealBadguys(word amt);
 
 void WhackazoidUpdate(byte init);
 void WhackedAZoid(Map *map);
 void WhackazoidDisplay(void);
 byte MonsterExistsExcept(byte type);
 Guy *FindNearestOfType(int x,int y,byte type);
+void SetupHorkboxes(void);
+void HorkUpLoot(int x, int y);
+Guy* GetFirstFriendly(void);
 
 #endif

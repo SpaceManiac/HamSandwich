@@ -143,9 +143,9 @@ AchieveDef achieveDef[] = {
 		Progress::ONE_SHOT
 	},
 	{
-		"achieveX",22,
-		"ya",
-		"na",
+		"Whacking Day",22,
+		"Prove your carnival skills.",
+		"Got over 75 whacks in Whack-a-Zoid.",
 		Progress::ONE_SHOT
 	},
 	{

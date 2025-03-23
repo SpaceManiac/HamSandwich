@@ -27,7 +27,7 @@ enum class Achievement :byte
 	HEAL,
 	CHEF,
 	SKILLS,
-	ACHX,
+	WHACKAZOID,
 	ACHY,
 	NUM_ACHIEVES,
 	NONE,
