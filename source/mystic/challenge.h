@@ -32,6 +32,7 @@
 #define CE_GET		8	// get an item #N
 #define CE_POINTS	9	// earn N XP
 #define CE_QUIT		10	// chose to quit the game, so don't tally or even go back to challenge menu
+#define CE_SMASHBALL 11 // hit a wall in smashball
 
 #define HOURGLASS_BONUS (20)	// percent of time the hourglass grants you
 

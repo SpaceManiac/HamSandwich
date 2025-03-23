@@ -562,6 +562,8 @@ void UpdateControls(void)
 
 	controls &= (~lockOut);
 	taps &= (~lockOut);
+	menuTap &= (~lockOut);
+	menuControls &= (~lockOut);
 }
 
 void UpdateRawJoystick(void)

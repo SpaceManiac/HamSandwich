@@ -1536,6 +1536,14 @@ void ChallengeEvent(byte type,int n)
 				NewMessage("Monsters cleared!",60);
 			}
 			break;
+		case CE_SMASHBALL:
+			if (attempt.curCombo < 999)
+				attempt.curCombo++;
+			if (attempt.curCombo > attempt.bestCombo)
+				attempt.bestCombo = attempt.curCombo;
+			attempt.comboClock = MAX_COMBO_TIME;
+			attempt.score += attempt.curCombo * 10;
+			break;
 		case CE_SHOOT:
 			attempt.score-=n;
 			g=GoalNumber(GOAL_NOSHOOT);

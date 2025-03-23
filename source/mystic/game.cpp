@@ -250,7 +250,7 @@ void EnterFarleyMode(void)
 	gameMode = GAMEMODE_FARLEY;
 	MakeNormalSound(SND_BATDIVE);
 	InitFarley();
-	LockOutControl(CONTROL_B1 | CONTROL_B2, true);
+	LockOutControl(CONTROL_UP|CONTROL_DN|CONTROL_B1 | CONTROL_B2, true);
 }
 
 void AddGarbageTime(dword t)

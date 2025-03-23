@@ -44,6 +44,7 @@
 #define ITM_MONEYBAG 36
 #define ITM_DIAMOND 37
 
+
 // no longer walkable
 #define ITM_UNUSED	 50
 #define ITM_STUMP	 51

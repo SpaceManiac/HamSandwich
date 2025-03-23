@@ -265,6 +265,7 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 				m->floor=(byte)MGL_random(3);
 				MakeSound(SND_BOMBBOOM,(x*TILE_WIDTH)<<FIXSHIFT,(y*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1500);
 				ExplodeParticles(PART_DIRT,(x*TILE_WIDTH+TILE_WIDTH/2)<<FIXSHIFT,(y*TILE_HEIGHT+TILE_HEIGHT/2)<<FIXSHIFT,FIXAMT*10,20);
+				ChallengeEvent(CE_SMASHBALL, 1);
 			}
 
 			result=0;

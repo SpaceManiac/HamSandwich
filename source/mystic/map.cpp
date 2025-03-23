@@ -1004,7 +1004,7 @@ void SpecialStepCheck(Map *map,int x,int y,Guy *me)
 			map->special[i].x==x && map->special[i].y==y)
 		{
 			if((me->type==MONS_BOUAPHA && (map->special[i].trigger&TRG_STEP)) ||
-			   (me->type!=MONS_BOUAPHA && (map->special[i].trigger&TRG_ENEMYSTEP)))
+			   (me->type!=MONS_BOUAPHA && me->type!=MONS_FAIRY2 && !(monsType[me->type].flags&MF_GOODGUY) && (map->special[i].trigger & TRG_ENEMYSTEP)))
 				SpecialTakeEffect(map,&map->special[i],me);
 		}
 		else if((map->special[i].trigger&TRG_NEAR) && (me->type==MONS_BOUAPHA) &&
@@ -1417,6 +1417,8 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 				MakeSound(SND_TELEPORT,victim->x,victim->y,SND_CUTOFF,1500);
 				victim->x=(spcl->effectX*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT;
 				victim->y=(spcl->effectY*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT;
+				victim->mapx = victim->x / (TILE_WIDTH * FIXAMT);
+				victim->mapy = victim->y / (TILE_HEIGHT * FIXAMT);
 				victim->dx=0;
 				victim->dy=0;
 				if (victim->type == MONS_BOUAPHA)
@@ -1748,6 +1750,9 @@ void Waterize(Map* map)
 void GetRidOfGoodStuff(Map *map)
 {
 	int i;
+
+	if (player.worldNum == 3 && player.levelNum == 13)
+		return;	// smashball keeps its coins, they're bonus markers
 
 	for(i=0;i<map->width*map->height;i++)
 	{
@@ -3477,7 +3482,7 @@ void AmongHedgesPuzzleUpdate(Map *map)
 		{
 			hedgePuzzleState = 1;
 			hedgePuzzleTimer = 30 * 4;
-			MakeNormalSound(SND_PURGE);
+			MakeNormalSound(SND_FLUSH);
 			for (int i = 0; i < 7; i++)
 			{
 				ExplodeParticles2(PART_WATER, hedgeCoords[i * 2] * TILE_WIDTH + TILE_WIDTH / 2, hedgeCoords[i * 2 + 1] * TILE_HEIGHT + TILE_HEIGHT / 2, 0, 20, 10);

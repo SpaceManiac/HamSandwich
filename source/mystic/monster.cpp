@@ -7004,10 +7004,23 @@ void AI_Ball(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			me->dx = me->dy = 0;
 			me->z = FIXAMT * 100;
-			me->x = (8 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
-			me->y = (57 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+			if (me->x > 24*TILE_WIDTH*FIXAMT)	// if you are in 2nd room, respawn in 2nd room
+			{
+				me->x = (35 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+				me->y = (51 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+			}
+			else
+			{
+				me->x = (8 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+				me->y = (57 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+			}
 			me->mind2 = 0;
-			goodguy->GetShot(0, 0, 90, map, world);
+			int dmg = 90;
+			if (player.nightmare)
+				dmg *= NIGHTMAREDMG;
+			else if (BrutalMode())
+				dmg *= BRUTALDMG;
+			goodguy->GetShot(0, 0, dmg, map, world);
 		}
 	}
 
