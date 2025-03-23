@@ -178,7 +178,7 @@ void PlayerLoadGame(byte which)
 void PlayerSaveGame(byte which)
 {
 	char s[32];
-	
+
 	player.prevMoney=player.money;
 	player.prevBigMoney = player.bigMoney;
 	sprintf(s, "mystic%d.sav", which+1);
@@ -271,7 +271,7 @@ void PlayerRenderInterface(MGLDraw *mgl)
 					player.weapon,player.ammo,player.hamSpeed,mgl);
 }
 
-int CalcGamePercent(player_t* p)
+int CalcGamePercent(const player_t* p)
 {
 	int runes=0, spells=0, swords=0, fairies=0;
 	for (int i = 0; i < (int)Rune::NUM_RUNES; i++)
@@ -281,19 +281,19 @@ int CalcGamePercent(player_t* p)
 		spells += p->spell[i];
 	for (int i = 0; i < 16; i++)
 	{
-		if (player.haveFairy & (1 << i))
+		if (p->haveFairy & (1 << i))
 		{
 			fairies++;
-			if (!(player.chaseFairy & (1 << i)))
+			if (!(p->chaseFairy & (1 << i)))
 				fairies++;
 		}
 	}
-	swords = player.swordPiece[0] + player.swordPiece[1] + player.swordPiece[2] + player.swordPiece[3];
+	swords = p->swordPiece[0] + p->swordPiece[1] + p->swordPiece[2] + p->swordPiece[3];
 	int totalNeeded = 24 + // runes
 		19 + // spells
 		4 + // swords
 		32; // fairies (2x, one for the bell, one for the fairy)
-	if (player.difficulty == Difficulty::CLASSIC || player.difficulty == Difficulty::BRUTAL_CLASSIC)
+	if (p->difficulty == Difficulty::CLASSIC || p->difficulty == Difficulty::BRUTAL_CLASSIC)
 	{	// classic has no runes
 		totalNeeded -= 24;
 		runes = 0;

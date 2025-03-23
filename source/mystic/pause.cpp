@@ -7,6 +7,7 @@
 #include "spell.h"
 #include "skills.h"
 #include "runes.h"
+#include "string_extras.h"
 
 #define SUBMODE_NONE	 0
 #define SUBMODE_SLOTPICK 1
@@ -15,15 +16,19 @@
 #define SUBMODE_RUNES	 4
 
 byte cursor=0;
-static byte subcursor=0,effCursor=0;
+static byte subcursor=0, saveCursor=0, effCursor=0;
 static char lastKey=0;
 byte subMode;
 static byte giveUp=0;	// which text should be shown for "Give Up"
 int pauseX=-250,subX=-250;
+
+constexpr int NUM_SAVES = 250;
+int saveOffset = 0;  // 0, 5, 10, ...
 byte saveLevel[5],saveNightmare[5];
 byte saveChapter[5];
 byte saveHour[5],saveMin[5],savePct[5];
 Difficulty saveDiff[5];
+
 static byte armaBrt=0;
 
 void ResetPauseMenu(void)
@@ -35,7 +40,8 @@ void ResetPauseMenu(void)
 
 void SetSubCursor(byte s)
 {
-	subcursor=s;
+	saveCursor = s % 5;
+	saveOffset = (s / 5) * 5;
 }
 
 void PrintPauseOption(int y, byte curSpot, const char* s)
@@ -114,64 +120,64 @@ void RenderPauseMenu(void)
 void RenderSlotPickMenu(void)
 {
 	int i;
-	char s[32];
+	char s[64];
 
 	GetShopSpr(34)->Draw(subX,40,GetDisplayMGL());
 
 	for(i=0;i<5;i++)
 	{
-		s[0]='1'+i;
-		s[1]='\0';
-		if(subcursor==i)
+		sprintf(s, "%d", saveOffset + i + 1);
+		//FontPrintStringSolid(subX + 200 + 35 + 15 - 5 - GetStrLength(s, 0),50+i*40,s,gameFont[0],174);
+		PrintBrightGlow(subX + 200 + 35 + 15 - 5 - GetStrLength(s, 0),50+i*40,s,-16+(saveCursor==i)*16,0);
+
+		if(saveCursor==i)
 		{
-			PrintBrightGlow(subX+10,50+i*40,s,0,0);
 			if(saveChapter[i]==0 || saveLevel[i]==0)
 			{
-				PrintBrightGlow(subX+40,50+i*40,"Empty Slot",0,2);
+				PrintBrightGlow(subX+10,50+i*40,"Empty Slot",0,2);
 			}
 			else
 			{
-				if(!saveNightmare[i])
-					sprintf(s,"Chapter %d",saveChapter[i]);
-				else
-					sprintf(s,"Chapter %d!!!",saveChapter[i]);
+				auto dest = ham_sprintf(s, "Chapter %d", saveChapter[i]);
+				if(saveNightmare[i])
+					dest = ham_strcpy(dest, "!!!");
 				if (saveDiff[i] == Difficulty::CLASSIC)
-					strcat(s, " [C]");
+					dest = ham_strcpy(dest, " [C]");
 				else if (saveDiff[i] == Difficulty::MODERN)
-					strcat(s, " [M]");
+					dest = ham_strcpy(dest, " [M]");
 				else if (saveDiff[i] == Difficulty::BRUTAL_CLASSIC)
-					strcat(s, " [BC]");
+					dest = ham_strcpy(dest, " [BC]");
 				else if (saveDiff[i] == Difficulty::BRUTAL_MODERN)
-					strcat(s, " [BM]");
-				PrintBrightGlow(subX+40,50+i*40,s,0,2);
-				sprintf(s,"%02d:%02d  L%02d %d%%",saveHour[i],saveMin[i],saveLevel[i],savePct[i]);
-				PrintBrightGlow(subX+40,50+i*40+20,s,0,2);
+					dest = ham_strcpy(dest, " [BM]");
+				PrintBrightGlow(subX+10,50+i*40,s,0,2);
+
+				sprintf(s,"%02d:%02d L%02d %d%%",saveHour[i],saveMin[i],saveLevel[i],savePct[i]);
+				PrintBrightGlow(subX+10,50+i*40+20,s,0,2);
 			}
 		}
 		else
 		{
-			PrintBright(subX+10,50+i*40,s,-32,0);
 			if(saveChapter[i]==0 || saveLevel[i]==0)
 			{
-				PrintBright(subX+40,50+i*40,"Empty Slot",-32,2);
+				PrintBright(subX+10,50+i*40,"Empty Slot",-32,2);
 			}
 			else
 			{
-				if(!saveNightmare[i])
-					sprintf(s,"Chapter %d",saveChapter[i]);
-				else
-					sprintf(s,"Chapter %d!!!",saveChapter[i]);
+				auto dest = ham_sprintf(s, "Chapter %d", saveChapter[i]);
+				if(saveNightmare[i])
+					dest = ham_strcpy(dest, "!!!");
 				if (saveDiff[i] == Difficulty::CLASSIC)
-					strcat(s, " [C]");
+					dest = ham_strcpy(dest, " [C]");
 				else if (saveDiff[i] == Difficulty::MODERN)
-					strcat(s, " [M]");
+					dest = ham_strcpy(dest, " [M]");
 				else if (saveDiff[i] == Difficulty::BRUTAL_CLASSIC)
-					strcat(s, " [BC]");
+					dest = ham_strcpy(dest, " [BC]");
 				else if (saveDiff[i] == Difficulty::BRUTAL_MODERN)
-					strcat(s, " [BM]");
-				PrintBright(subX+40,50+i*40,s,-32,2);
-				sprintf(s,"%02d:%02d  L%02d %d%%",saveHour[i],saveMin[i],saveLevel[i],savePct[i]);
-				PrintBright(subX+40,50+i*40+20,s,-32,2);
+					dest = ham_strcpy(dest, " [BM]");
+
+				PrintBright(subX+10,50+i*40,s,-32,2);
+				sprintf(s,"%02d:%02d L%02d %d%%",saveHour[i],saveMin[i],saveLevel[i],savePct[i]);
+				PrintBright(subX+10,50+i*40+20,s,-32,2);
 			}
 		}
 	}
@@ -240,7 +246,7 @@ void RenderSkillMenu(void)
 					RenderSkillBox(x + 1 + k * 8, y + 39 - hgt, x + 1 + k * 8 + 5, y + 39 - hgt + 5, 32 * 5 + 16 + 15 * (subcursor == i + j * 6), 32 * 7 + 3 + (player.skill[i + j * 6] > k) * (10 + 8 * (subcursor == i + j * 6)));
 				}
 			}
-			
+
 			x += spacing;
 		}
 		x = SCRWID / 2 + SCRWID / 4 - spacing * 3+5;
@@ -284,7 +290,6 @@ void RenderRuneMenu(void)
 
 	for (int i = 0; i < (int)Rune::NUM_RUNES; i++)
 	{
-		
 		if (RuneLevel((Rune)i) ==RUNE_EMPTY)
 		{
 			if (subcursor == i)
@@ -309,7 +314,7 @@ void RenderRuneMenu(void)
 				col = 5;
 			else if (rank == RUNE_RANK3)
 				col = 6;
-			
+
 			byte stones = 1;
 			if (rank == RUNE_RANK2)
 				stones = 3;
@@ -323,7 +328,7 @@ void RenderRuneMenu(void)
 				for (byte j = 0; j < stones; j++)
 				{
 					byte a = (armaBrt+i*4) * (1 + (stones == 3) + (stones == 6)) + j * (256 / stones);
-					
+
 					int srcx, srcy;
 					srcx = 16 * (j % 3);
 					srcy = 480 - 16;
@@ -334,21 +339,21 @@ void RenderRuneMenu(void)
 			if (subcursor == i)
 			{
 				BlitIcon(40 + (i % 4), x + 4, y + 4-2, 0, 0);
-				
+
 				DescribeRune((Rune)i, SCRWID / 2 + 10, SCRHEI - 30 - 85);
 			}
 			else
 			{
 				BlitIcon(40 + (i % 4), x + 4, y + 4, 0, -6);
 			}
-			
+
 			BlitIcon(100+i, x + 4, y + 4 - 2*(subcursor==i), col, -(col==0)*8+((col!=0)*glow) - 6 * (subcursor != i));
 			if (rank >= RUNE_RANK1)
 			{
 				for (byte j = 0; j < stones; j++)
 				{
 					byte a = (armaBrt+i*4)*(1+(stones==3)+(stones==6)) + j * (256 / stones);
-					
+
 					int srcx, srcy;
 					srcx = 16 * (j % 3);
 					srcy = 480 - 16;
@@ -498,18 +503,12 @@ void SetGiveUpText(byte gu)
 	giveUp=gu;
 }
 
-void InitPauseMenu(void)
+static void GetSaves()
 {
-	player_t p;
-	char s[32];
-	int i;
-
-	lastKey=0;
-	subMode=0;
-
 	for (int i = 0; i < 5; i++)
 	{
-		sprintf(s, "mystic%d.sav", i+1);
+		char s[32];
+		sprintf(s, "mystic%d.sav", saveOffset + i + 1);
 		auto f = AppdataOpen(s);
 		if (!f)
 		{
@@ -522,20 +521,26 @@ void InitPauseMenu(void)
 		}
 		else
 		{
+			player_t p;
 			SDL_RWread(f, &p, sizeof(player_t), 1);
 			saveLevel[i] = p.level;
 			saveChapter[i] = p.worldNum + 1;
 			saveHour[i] = (byte)(p.gameClock / (30 * 60 * 60));
 			saveMin[i] = (byte)((p.gameClock / (30 * 60)) % 60);
+			saveNightmare[i] = p.nightmare;
 			saveDiff[i] = p.difficulty;
 			savePct[i] = CalcGamePercent(&p);
-			if (p.nightmare)
-				saveNightmare[i] = 1;
-			else
-				saveNightmare[i] = 0;
 			f.reset();
 		}
 	}
+}
+
+void InitPauseMenu(void)
+{
+	lastKey=0;
+	subMode=0;
+
+	GetSaves();
 	MakeNormalSound(SND_PAUSE);
 	if(cursor==4 && (!giveUp))
 		cursor=0;
@@ -570,7 +575,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		if(subX>-250)
 			subX-=25;
 	}
-	
+
 	byte maxCursor = 4 + (!ClassicMode()) * 4;
 	byte loadSpot = 1 + (!ClassicMode())*2;
 	if(subMode==SUBMODE_NONE)	// not in any submenu
@@ -614,7 +619,6 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					return 0;
 				case 1:	// Load
 					subMode=SUBMODE_SLOTPICK;
-					subcursor = 0;
 					break;
 				case 2: // Save
 					if(giveUp)
@@ -622,7 +626,6 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					else
 					{
 						subMode = SUBMODE_SLOTPICK;
-						subcursor = 0;
 					}
 					break;
 				case 3:	// music
@@ -663,19 +666,38 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 	}
 	else if(subMode==SUBMODE_SLOTPICK)
 	{
+		byte scan = LastScanCode();
 		if(AutoRepeatTapped(CONTROL_UP))
 		{
 			MakeNormalSound(SND_MENUCLICK);
-			subcursor--;
-			if(subcursor==255)
-				subcursor=4;
+			saveCursor--;
+			if(saveCursor==255)
+			{
+				saveCursor=4;
+				saveOffset = (saveOffset + NUM_SAVES - 5) % NUM_SAVES;
+				GetSaves();
+			}
 		}
 		if(AutoRepeatTapped(CONTROL_DN))
 		{
 			MakeNormalSound(SND_MENUCLICK);
-			subcursor++;
-			if(subcursor==5)
-				subcursor=0;
+			saveCursor++;
+			if(saveCursor==5)
+			{
+				saveCursor=0;
+				saveOffset = (saveOffset + 5) % NUM_SAVES;
+				GetSaves();
+			}
+		}
+		if (scan == SDL_SCANCODE_PAGEUP)
+		{
+			saveOffset = (saveOffset + NUM_SAVES - 5) % NUM_SAVES;
+			GetSaves();
+		}
+		if (scan == SDL_SCANCODE_PAGEDOWN)
+		{
+			saveOffset = (saveOffset + 5) % NUM_SAVES;
+			GetSaves();
 		}
 		if (ButtonTapped(CONTROL_B2))
 		{
@@ -686,14 +708,14 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		{
 			if(effCursor==1)	// Load
 			{
-				if(saveLevel[subcursor]==0 || saveChapter[subcursor]==0)
+				if(saveLevel[saveCursor]==0 || saveChapter[saveCursor]==0)
 				{
 					MakeNormalSound(SND_ACIDSPLAT);
 				}
 				else
 				{
 					SendMessageToGame(MSG_LOADGAME,0);
-					PlayerLoadGame(subcursor);
+					PlayerLoadGame(saveOffset + saveCursor);
 					MakeNormalSound(SND_LOADGAME);
 					subMode=SUBMODE_NONE;
 					LockOutControl(CONTROL_B1, true);
@@ -702,7 +724,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			}
 			else if(effCursor==2)	// Save
 			{
-				PlayerSaveGame(subcursor);
+				PlayerSaveGame(saveOffset + saveCursor);
 				MakeNormalSound(SND_SAVEGAME);
 				subMode=SUBMODE_NONE;
 				return 0;
@@ -1004,6 +1026,6 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			subMode=SUBMODE_NONE;
 		lastKey=0;
 	}
-	
+
 	return 1;
 }
