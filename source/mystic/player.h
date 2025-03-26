@@ -70,7 +70,7 @@ typedef struct player_t
 	int score;
 	byte levelPassed[6][MAX_MAPS-6];
 	byte swordPiece[4];
-	int  UNUSED1[6];		
+	int  UNUSED1[6];
 	int  UNUSED2[6];
 	char UNUSED3[32];
 	byte UNUSED4[3];
@@ -182,7 +182,7 @@ byte PlayerPassedLevel(byte world,byte map);
 byte PlayerHasSwordPiece(byte w);
 byte PlayerKeys(byte w);
 void PlayerLoseKey(byte w);
-int CalcGamePercent(player_t* p);
+int CalcGamePercent(const player_t* p);
 void PlayerHeal(byte amt);
 void PlayerLoadGame(byte which);
 void PlayerSaveGame(byte which);

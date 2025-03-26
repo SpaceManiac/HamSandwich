@@ -5,6 +5,7 @@
 #include "challenge.h"
 #include "options.h"
 #include "appdata.h"
+#include "string_extras.h"
 
 // special codes in the credits:
 // @ = use GirlsRWeird font
@@ -123,7 +124,7 @@ static const char demoWinTxt[][64]={
 // the most custom worlds it will handle
 #define MAX_CUSTOM 64
 
-typedef struct title_t
+struct title_t
 {
 	int bouaphaX;
 	int blueY;
@@ -133,9 +134,10 @@ typedef struct title_t
 	int optionsX;
 	byte cursor;
 	byte savecursor;
+	int saveOffset;
 	byte saveChapter[5], saveHour[5], saveMin[5], saveLevel[5], saveNightmare[5],savePercent[5];
 	Difficulty saveDiff[5];
-} title_t;
+};
 
 sprite_set_t *planetSpr;
 static int numRunsToMakeUp;
@@ -216,7 +218,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 		}
 
 		// now real updating
-		
+
 		if(AutoRepeatTapped(CONTROL_UP) && title->cursor!=5)
 		{
 			(title->cursor)--;
@@ -341,7 +343,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 
 			startTime = timeGetTime();
 		}
-		
+
 		now=timeGetTime();
 		if(now-startTime>1000*10)
 		{
@@ -369,6 +371,38 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 		CO_RETURN 255;	// ESC was pressed
 }
 
+static void GetSaves(title_t *title)
+{
+	for (int i = 0; i < 5; i++)
+	{
+		char s[32];
+		sprintf(s, "mystic%d.sav", title->saveOffset + i + 1);
+		auto f = AppdataOpen(s);
+		if (!f)
+		{
+			title->saveLevel[i] = 0;
+			title->saveChapter[i] = 0;
+			title->saveHour[i] = 0;
+			title->saveMin[i] = 0;
+			title->saveNightmare[i] = 0;
+			title->saveDiff[i] = Difficulty::UNUSED;	// unused
+		}
+		else
+		{
+			player_t p;
+			SDL_RWread(f, &p, sizeof(player_t), 1);
+			title->saveLevel[i] = p.level;
+			title->saveChapter[i] = p.worldNum + 1;
+			title->saveHour[i] = (byte)(p.gameClock / (30 * 60 * 60));
+			title->saveMin[i] = (byte)((p.gameClock / (30 * 60)) % 60);
+			title->saveNightmare[i] = p.nightmare;
+			title->saveDiff[i] = p.difficulty;
+			title->savePercent[i] = CalcGamePercent(&p);
+			f.reset();
+		}
+	}
+}
+
 void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 {
 	int i;
@@ -378,27 +412,28 @@ void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 
 	for(i=0;i<5;i++)
 	{
-		sprintf(s,"%d",i+1);
-		PrintBrightGlow(380,200+i*50,s,-16+(title.savecursor==i)*16,0);
+		sprintf(s,"%d",title.saveOffset + i +1);
+		PrintBrightGlow(380 - (title.saveOffset + i + 1 >= 100 ? 30 : title.saveOffset + i + 1 >= 10 ? 15 : 0), 200+i*50,s,-16+(title.savecursor==i)*16,0);
+
 		if(title.saveChapter[i]==0 || title.saveLevel[i]==0 || title.saveDiff[i]==Difficulty::UNUSED)
 		{
-			PrintBrightGlow(430,200+i*50,"Unused",-16+(title.savecursor==i)*16,2);
+			PrintBrightGlow(430,200+i*50,"Empty Slot",-16+(title.savecursor==i)*16,2);
 		}
 		else
 		{
+			auto dest = ham_sprintf(s, "Chapter %d", title.saveChapter[i]);
 			if(title.saveNightmare[i])
-				sprintf(s,"Chapter %d!!!",title.saveChapter[i]);
-			else
-				sprintf(s,"Chapter %d",title.saveChapter[i]);
+				dest = ham_strcpy(dest, "!!!");
 			if (title.saveDiff[i] == Difficulty::CLASSIC)
-				strcat(s, " [C]");
+				dest = ham_strcpy(dest, " [C]");
 			else if (title.saveDiff[i] == Difficulty::MODERN)
-				strcat(s, " [M]");
+				dest = ham_strcpy(dest, " [M]");
 			else if (title.saveDiff[i] == Difficulty::BRUTAL_CLASSIC)
-				strcat(s, " [BC]");
+				dest = ham_strcpy(dest, " [BC]");
 			else if (title.saveDiff[i] == Difficulty::BRUTAL_MODERN)
-				strcat(s, " [BM]");
+				dest = ham_strcpy(dest, " [BM]");
 			PrintBrightGlow(430,200+i*50,s,-16+(title.savecursor==i)*16,2);
+
 			sprintf(s,"%02d:%02d L%02d %d%%",title.saveHour[i],title.saveMin[i],title.saveLevel[i],title.savePercent[i]);
 			PrintBrightGlow(430,200+i*50+20,s,-16+(title.savecursor==i)*16,2);
 		}
@@ -426,20 +461,38 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 		}
 
 		// now real updating
-		
+		byte scan = LastScanCode();
 		if(AutoRepeatTapped(CONTROL_UP))
 		{
 			(title->savecursor)--;
 			if(title->savecursor==255)
+			{
 				title->savecursor=4;
+				title->saveOffset = (title->saveOffset + 250 - 5) % 250;
+				GetSaves(title);
+			}
 			MakeNormalSound(SND_MENUCLICK);
 		}
 		if (AutoRepeatTapped(CONTROL_DN))
 		{
 			(title->savecursor)++;
 			if(title->savecursor==5)
+			{
 				title->savecursor=0;
+				title->saveOffset = (title->saveOffset + 5) % 250;
+				GetSaves(title);
+			}
 			MakeNormalSound(SND_MENUCLICK);
+		}
+		if (scan == SDL_SCANCODE_PAGEUP)
+		{
+			title->saveOffset = (title->saveOffset + 250 - 5) % 250;
+			GetSaves(title);
+		}
+		if (scan == SDL_SCANCODE_PAGEDOWN)
+		{
+			title->saveOffset = (title->saveOffset + 5) % 250;
+			GetSaves(title);
 		}
 		if(ButtonTapped(CONTROL_B1))
 		{
@@ -466,36 +519,7 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 
 void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 {
-	player_t p;
-	int i;
-	char s[32];
-
-	for (int i = 0; i < 5; i++)
-	{
-		sprintf(s, "mystic%d.sav", i+1);
-		auto f = AppdataOpen(s);
-		if (!f)
-		{
-			title->saveLevel[i] = 0;
-			title->saveChapter[i] = 0;
-			title->saveHour[i] = 0;
-			title->saveMin[i] = 0;
-			title->saveNightmare[i] = 0;
-			title->saveDiff[i] = Difficulty::UNUSED;	// unused
-		}
-		else
-		{
-			SDL_RWread(f, &p, sizeof(player_t), 1);
-			title->saveLevel[i] = p.level;
-			title->saveChapter[i] = p.worldNum + 1;
-			title->saveHour[i] = (byte)(p.gameClock / (30 * 60 * 60));
-			title->saveMin[i] = (byte)((p.gameClock / (30 * 60)) % 60);
-			title->saveNightmare[i] = p.nightmare;
-			title->saveDiff[i] = p.difficulty;
-			title->savePercent[i] = CalcGamePercent(&p);
-			f.reset();
-		}
-	}
+	GetSaves(title);
 	mgl->LastKeyPressed();
 }
 
@@ -504,6 +528,7 @@ TASK(byte) GameSlotPicker(MGLDraw *mgl,title_t *title)
 	byte b=0;
 	int lastTime=1;
 
+	title->saveOffset=0;
 	title->savecursor=0;
 	InitGameSlotPicker(mgl,title);
 
@@ -521,9 +546,9 @@ TASK(byte) GameSlotPicker(MGLDraw *mgl,title_t *title)
 	if(b==1)	// something was selected
 	{
 		InitPlayer(INIT_GAME,0,0);
-		PlayerLoadGame(title->savecursor);
+		PlayerLoadGame(title->saveOffset + title->savecursor);
 		// make it remember which was picked so the pause menu will start on the same
-		SetSubCursor(title->savecursor);
+		SetSubCursor(title->saveOffset + title->savecursor);
 		CO_RETURN 1;
 	}
 	else
@@ -606,7 +631,7 @@ byte DifficultyPickerUpdate(MGLDraw* mgl, title_t* title, int* lastTime)
 		}
 
 		// now real updating
-		
+
 		if (AutoRepeatTapped(CONTROL_UP))
 		{
 			(title->savecursor)--;
@@ -636,7 +661,7 @@ byte DifficultyPickerUpdate(MGLDraw* mgl, title_t* title, int* lastTime)
 
 		*lastTime -= TIME_PER_FRAME;
 	}
-	
+
 	return 0;
 }
 
@@ -719,7 +744,7 @@ TASK(void) Credits(MGLDraw *mgl,byte mode)
 	dword startTime,endTime;
 
 	mgl->LastKeyPressed();
-	
+
 	mgl->LoadBMP("graphics/pal.bmp");
 	while(1)
 	{
@@ -873,7 +898,7 @@ TASK(void) VictoryText(MGLDraw *mgl,byte victoryType)
 					darkY-=SCRHEI;
 			}
 		}
-		
+
 		endTime=timeGetTime();
 		while((endTime-startTime)<TIME_PER_FRAME)
 			endTime=timeGetTime();
