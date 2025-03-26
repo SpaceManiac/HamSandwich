@@ -2259,7 +2259,7 @@ void AddMapGuys(Map *map)
 	{
 		byte fairyLeft = 4;
 		word n = 1;
-		byte fairyID=0;
+		byte fairyID=1;
 		while (fairyLeft>0)
 		{
 			if (player.chaseFairy & n)

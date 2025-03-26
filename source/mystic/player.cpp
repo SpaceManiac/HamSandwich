@@ -547,10 +547,10 @@ void AddChaseFairy(void)
 
 	if(Challenging())	// in challenge mode, you get the fairy immediately, no chasing
 	{
-		player.haveFairy|=(1<<((FairyForThisLevel(player.worldNum*50+player.levelNum))-1));
+		player.haveFairy|=(1<<(FairyForThisLevel(player.worldNum*50+player.levelNum)-1));
 		return;
 	}
-	player.chaseFairy |= (1<<FairyForThisLevel(player.worldNum * 50 + player.levelNum));
+	player.chaseFairy |= (1<<(FairyForThisLevel(player.worldNum * 50 + player.levelNum)-1));
 }
 
 void CheckForAllSecrets(void)
