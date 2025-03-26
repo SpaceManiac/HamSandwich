@@ -917,7 +917,7 @@ void FinishSpeech(void)
 	{
 		SwampDestroyCauldron(3);
 	}
-	if (speechStartedAt == 46)
+	if (speechStartedAt == 45 || speechStartedAt==47)
 	{
 		// get rune pouch
 		CurrentMap()->GetTile(60, 62)->item = ITM_RUNEPOUCH;
