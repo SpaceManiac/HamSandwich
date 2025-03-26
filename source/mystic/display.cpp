@@ -483,7 +483,7 @@ bool DisplayList::DrawSprite(int x,int y,int z,word hue,char bright,sprite_t *sp
 	{
 		// Use precise sprite boundaries.
 		rect.x = x - spr->ofsx;
-		rect.y = y - spr->ofsy;
+		rect.y = y - spr->ofsy-z;
 		rect.w = spr->width;
 		rect.h = spr->height;
 	}

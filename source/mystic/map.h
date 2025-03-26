@@ -123,6 +123,7 @@ class Map
 		void BrightTorch(int x,int y,char brt,byte size);
 		void LightSpecial(int x,int y,char brt,byte size);
 		void Update(byte mode,world_t *world);
+		void FillRect(int x, int y, int x2, int y2, byte flr,byte wall);
 		byte LOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,Map *));
 		byte TightLOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,Map *));
 		byte FindGuy(int x,int y,byte size,Guy *g);
@@ -212,5 +213,9 @@ void DeepEndPuzzleInit(void);
 void DeepEndPuzzleKill(Map* map, byte type);
 void HorkBoxInit(Map* map);
 void HorkBoxBones(Map* map, int x, int y);
+void OrderUpSetup(Map* map);
+void OrderUpUpdate(Map* map);
+void GetOrderUpStats(byte *state, byte *stews, byte *temp);
+void OrderUpSetState(byte s);
 
 #endif

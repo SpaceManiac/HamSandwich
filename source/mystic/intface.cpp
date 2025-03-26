@@ -454,8 +454,52 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 			DrawFillBox(20, y+2+ (16 - fill), 23, y+18, 32 * 1 + 16);
 		}
 	}
-	if (player.puzzleVar[0] > 0 || player.puzzleVar[1] > 0 || player.puzzleVar[2] > 0)
+	if (player.puzzleVar[0] > 0 || player.puzzleVar[1] > 0 || player.puzzleVar[2] > 0 || (player.worldNum==2 && player.levelNum==24))
 	{
+		if (player.worldNum == 2 && player.levelNum == 24)	// swamp witch ingredients again, but with a stew heat timer
+		{
+			byte state, temp, stews;
+			GetOrderUpStats(&state, &stews, &temp);
+			if (state == 1)	// ingredients when finding ingredients
+			{
+				int y = HALFHEI - 50;
+				RenderSkillBox(SCRWID - 60, y, SCRWID + 4, y + 114, 32 * 5 + 16, 32 * 5 + 4);
+				// grimbleweed
+				GetItemSprite(1)->Draw(SCRWID - 60 + 5 + 16, y + 110 - 34 * 3 + 21, mgl);
+				sprintf(s, "%d", player.puzzleVar[0]);
+				Print(SCRWID - 60 + 3 + 32 - 5, y + 110 - 34 * 3 + 5, s, 0, 2);
+				// octon juice
+				bulletSpr->GetSprite(262)->DrawColored(SCRWID - 60 + 5 + 16 - 4, y + 110 - 34 * 2 + 18, mgl, 6, 0);
+				sprintf(s, "%d", player.puzzleVar[1]);
+				Print(SCRWID - 60 + 3 + 32 - 5, y + 110 - 34 * 2 + 5, s, 0, 2);
+				// toadstools
+				GetItemSprite(21 + 3)->Draw(SCRWID - 60 + 5 + 16, y + 110 - 34 + 21, mgl);
+				sprintf(s, "%d", player.puzzleVar[2]);
+				Print(SCRWID - 60 + 3 + 32 - 5, y + 110 - 34 * 1 + 5, s, 0, 2);
+			}
+			else if (state == 2)	// delivering stew
+			{
+				int x = SCRWID - 30;
+				int y = HALFHEI - 40;
+				RenderSkillBox(x, y - 1, x + 20, y + 121, 31, 0);
+				byte c[] = { 4,5,1,6,3,7 };	// colors for the flames
+				int hgt = 120 / 6;
+				byte tempY = temp * 120 / (6 * 40);
+				for (int i = 0; i < 6; i++)
+				{
+					int yy = y + 120 - hgt * i;
+					if (temp >= i * 40 && temp < (i + 1) * 40)
+						DrawFillBox(x + 1, yy - hgt, x + 19, yy, c[i] * 32 + 20);
+					else
+						DrawFillBox(x + 1, yy - hgt, x + 19, yy, c[i] * 32 + 8);
+				}
+				DrawFillBox(x - 2, y + 120 - tempY, x + 22, y + 120 - tempY, 31);
+				GetItemSprite(5)->Draw(x, y - 10, mgl);
+				sprintf(s, "%d", stews);
+				RightPrint(x + 30+2, y - 20+2, s, -31, 2);
+				RightPrint(x + 30, y - 20, s, 0, 2);
+			}
+		}
 		if (player.worldNum == 0 && player.levelNum == 20)	// swamp witch ingredients
 		{
 			byte state;

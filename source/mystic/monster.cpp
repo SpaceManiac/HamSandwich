@@ -2412,6 +2412,24 @@ void AI_Friendly(Guy *me,Map *map,world_t *world,Guy *goodguy)
 					else
 						InitSpeech(73);	// anywhere in between
 					break;
+				case 124:
+				{
+					if (me->mapx == 2 && me->mapy == 109)
+					{
+						byte state, stews, temp;
+						GetOrderUpStats(&state, &stews, &temp);
+						if (state == 0)
+							InitSpeech(80);
+						else if (state == 1)	// getting ingredients
+						{
+							if (player.puzzleVar[0] >= 20 && player.puzzleVar[1] >= 20 && player.puzzleVar[2] >= 20)
+								InitSpeech(82);
+							else
+								InitSpeech(84);
+						}
+					}
+				}
+					break;
 			}
 			me->mind1=1;
 		}
@@ -6502,10 +6520,24 @@ void AI_PeepBomb(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		if(PeepAtKid(me->x,me->y,map,me->mind1))
 		{
 			MakeSound(SND_PEEPALARM,me->x,me->y,SND_CUTOFF|SND_ONE,3000);
-			me->mind=1;
-			me->dx=Cosine(me->mind1)*7;
-			me->dy=Sine(me->mind1)*7;
-			me->mind1=30;
+			if (player.worldNum == 2 && player.levelNum == 24)	// in the order up level, they don't pursue you, just teleport you away
+			{
+				byte state, temp, stew;
+				GetOrderUpStats(&state, &stew, &temp);
+				if (state == 2)
+				{
+					GetGoodguy()->x = (6 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+					GetGoodguy()->y = (77 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+					map->TempTorch(GetGoodguy()->x / (TILE_WIDTH * FIXAMT), GetGoodguy()->y / (TILE_HEIGHT * FIXAMT), 31);
+				}
+			}
+			else
+			{
+				me->mind = 1;
+				me->dx = Cosine(me->mind1) * 7;
+				me->dy = Sine(me->mind1) * 7;
+				me->mind1 = 30;
+			}
 		}
 	}
 	if(me->mind==1)	// chasing!

@@ -61,6 +61,10 @@ byte Guy::CoconutBonk(int xx,int yy,Guy *him)
 	return 0;
 }
 
+bool Guy::IsInTileRect(int tx, int ty, int tx2, int ty2)
+{
+	return (mapx >= tx && mapy >= ty && mapx <= tx2 && mapy <= ty2);
+}
 // checks to see if a rect of size, located at (xx,yy) hits HIM
 byte Guy::AttackCheck(byte size,int xx,int yy,Guy *him)
 {
@@ -1334,6 +1338,19 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		else // a horkbox is active (maybe this one!), so just ignore the shot
 			return;
 	}
+	if ((type == MONS_PEEPBOMB || type == MONS_PEEPBOMB2) && player.levelNum == 24 && player.worldNum == 2)	// can't hurt them in this level, it just makes them see you
+	{
+		byte state, temp, stews;
+		GetOrderUpStats(&state, &stews, &temp);
+		if (state == 2)	// don't teleport you unless you're in mode 2, delivering stew. That would be bad and weird
+		{
+			MakeSound(SND_PEEPALARM, x, y, SND_CUTOFF | SND_ONE, 3000);
+			GetGoodguy()->x = (6 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+			GetGoodguy()->y = (77 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+			map->TempTorch(GetGoodguy()->x / (TILE_WIDTH * FIXAMT), GetGoodguy()->y / (TILE_HEIGHT * FIXAMT), 31);
+		}
+		return;
+	}
 	if (type == MONS_BOUAPHA && PlayerShield())
 	{
 		if (!ClassicMode() && player.parry > 0)
@@ -1703,7 +1720,8 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			if (player.berserk > SkillValue(SKILL_BERSERK) * 60 * 2)
 				player.berserk = SkillValue(SKILL_BERSERK) * 60 * 2;
 		}
-		if (player.worldNum == 0 && player.levelNum == 20 && type == MONS_OCTOPUS)	// time to spew juice
+		if (type==MONS_OCTOPUS && ((player.worldNum == 0 && player.levelNum == 20) ||
+			(player.worldNum == 2 && player.levelNum == 24)))	// octopi spew juice here
 		{
 			for (int i = 0; i < 8; i++)
 			{
@@ -2124,6 +2142,23 @@ Guy *AddGuy(int x,int y,int z,byte type)
 					case 20:
 					case 169:
 						guys[i].mind = ANIM_A2;	// witch
+						break;
+					case 124:
+					{
+						int tx, ty;
+						tx = x / (TILE_WIDTH * FIXAMT);
+						ty = y / (TILE_HEIGHT * FIXAMT);
+						if (tx == 2 && ty == 109)
+							guys[i].mind = ANIM_A2;	// witch
+						else if (tx == 24 && ty == 49)
+							guys[i].mind = ANIM_MOVE;	// somebody else
+						else if (tx == 31 && ty == 63)
+							guys[i].mind = ANIM_IDLE;	// somebody else
+						else if (tx == 33 && ty == 70)
+							guys[i].mind = ANIM_ATTACK;	// somebody else
+						else if (tx == 55 && ty == 61)
+							guys[i].mind = ANIM_A3;	// somebody else
+					}
 						break;
 				}
 			}
@@ -3054,4 +3089,10 @@ Guy *GetFirstFriendly(void)
 			return &guys[i];
 	}
 	return nullptr;
+}
+
+void SetLastSafeXY(int x, int y)
+{
+	lastSafeX = x;
+	lastSafeY = y;
 }

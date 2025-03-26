@@ -44,6 +44,7 @@ class Guy final
 		void CalculateRect(Map *map);
 		void IceShardSpew(Map* map, world_t* world);
 		void ResetRedRiver(void);
+		bool IsInTileRect(int tx, int ty, int tx2, int ty2);
 
 		int x,y,z;
 		int dx,dy,dz;
@@ -117,6 +118,7 @@ void HealSummons(byte amt);
 void ChangeAllGuysOfType(byte type, byte newType);
 void ChangeMind2OfType(byte type, byte newMind2);
 void HealBadguys(word amt);
+void SetLastSafeXY(int x, int y);
 
 void WhackazoidUpdate(byte init);
 void WhackedAZoid(Map *map);

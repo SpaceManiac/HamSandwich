@@ -194,6 +194,8 @@ void Map::Init(world_t *wrld)
 		AbandonedVillagePuzzleReset(this);
 	if (player.worldNum == 1 && player.levelNum == 11)
 		AmongHedgesPuzzleInit(this);
+	if (player.worldNum == 2 && player.levelNum == 24)
+		OrderUpSetup(this);
 
 	if(player.levelNum==19 && player.worldNum==2)
 		totalBrains=2;
@@ -363,8 +365,24 @@ void Map::Update(byte mode,world_t *world)
 		SwampUpdate(this);
 	if (player.worldNum == 1 && player.levelNum == 11)
 		AmongHedgesPuzzleUpdate(this);
+	if (player.worldNum == 2 && player.levelNum == 24)
+		OrderUpUpdate(this);
+
 	if(timeToAnim==2)
 		timeToAnim=0;
+}
+
+void Map::FillRect(int x, int y, int x2, int y2, byte flr, byte wall)
+{
+	for(int i=x;i<=x2;i++)
+		for (int j = y; j <= y2; j++)
+		{
+			if (i >= 0 && i < width && j >= 0 && j < height)
+			{
+				map[i + j * width].floor = flr;
+				map[i + j * width].wall = wall;
+			}
+		}
 }
 
 void Map::LOSPoints(int x,int y,int curx,int cury,int *p1x,int *p1y,int *p2x,int *p2y)
@@ -3744,5 +3762,201 @@ void HorkBoxBones(Map* map, int x, int y)
 		}
 		else if (t && (t->floor == 40 || t->floor == 41 || (t->floor >= 129 && t->floor <= 132)))
 			horkBoxBones = 0;	// step on a wrong bone and you reset
+	}
+}
+
+byte orderUpTimer;
+byte orderUpTemp, orderUpState, orderUpStews;
+byte orderUpDeliveries;
+
+void OrderUpSetup(Map* map)
+{
+	totalBrains = 1;
+	// 14,99 - 46,126 = grimbleweed and toadstools
+	int toads = Random(10) + 23;
+	int grimbles = Random(10) + 23;
+	while (toads > 0 || grimbles>0)
+	{
+		int x, y;
+		x = Random(46 - 14+1) + 14;
+		y = Random(126 - 99+1) + 99;
+
+		mapTile_t* t = map->GetTile(x, y);
+		if (t && t->item == 0 && t->wall == 0)
+		{
+			if (toads > 0)
+			{
+				t->item = ITM_TOADSTOOL;
+				toads--;
+			}
+			else if (grimbles > 0)
+			{
+				t->item = ITM_GRIMBLEWEED;
+				grimbles--;
+			}
+		}
+	}
+	// the octons are already placed in the sewer beyond
+
+	orderUpTimer = 0;
+	orderUpState = 0;	// haven't talked to witch yet
+	orderUpStews = 0;
+	orderUpTemp = 0;
+	orderUpDeliveries = 0;
+	player.puzzleVar[0] = 0;
+	player.puzzleVar[1] = 0;
+	player.puzzleVar[2] = 0;
+	if (PlayerPassedLevel(player.worldNum, player.levelNum))
+	{
+		map->GetTile(1, 114)->wall = 0;
+		map->GetTile(1, 114)->floor = 0;
+	}
+}
+
+void OrderUpUpdate(Map* map)
+{
+	// water alternates flushing:
+	// 14,66-15,74,
+	// 18,58-19,74, 20,60-21,62, and a water gate at 18,57-19,57 (wall 61,flr 86 when wet, wall 62, flr 87 when dry)
+	//  22,63-28,65, 22,66-24,74
+	//  (130=begin filling, 85=begin draining)
+
+	if (!GetGoodguy())
+		return;
+	if ((orderUpState == 0 || orderUpState == 1) && player.puzzleVar[0]<99 && GetGoodguy()->mapx == 1 && GetGoodguy()->mapy == 115)
+	{
+		player.puzzleVar[0] = 99;
+		player.puzzleVar[1] = 99;
+		player.puzzleVar[2] = 99;
+		orderUpState = 1;
+		MakeNormalSound(SND_INFERNAL);
+	}
+	// if the water takes you, let's get you to safety instead of double-instakilling you
+	if (GetGoodguy()->IsInTileRect(14,66,15,74))
+		SetLastSafeXY(13*TILE_WIDTH*FIXAMT,70*TILE_HEIGHT*FIXAMT);
+	if (GetGoodguy()->IsInTileRect(18,58,21,74))
+		SetLastSafeXY(17 * TILE_WIDTH * FIXAMT, 69 * TILE_HEIGHT * FIXAMT);
+	if (GetGoodguy()->IsInTileRect(22,63,28,74))
+		SetLastSafeXY(23 * TILE_WIDTH * FIXAMT, 62 * TILE_HEIGHT * FIXAMT);
+	if (orderUpTimer == 0)	// empty them all
+	{
+		MakeSound(SND_FLUSH, (18 * TILE_WIDTH * FIXAMT), (70 * TILE_HEIGHT * FIXAMT), SND_CUTOFF, 100);
+		map->FillRect(14, 66, 15, 74, 85, 0);
+
+		map->FillRect(18, 58, 19, 74, 85, 0);
+		map->FillRect(20, 60, 21, 62, 85, 0);
+		map->FillRect(18, 57, 19, 57, 87, 62);
+
+		map->FillRect(22, 63, 24, 74, 85, 0);
+		map->FillRect(25, 71, 25, 74, 85, 0);
+		map->FillRect(26, 63, 28, 74, 85, 0);
+	}
+	else if (orderUpTimer == 30 * 2)
+	{
+		MakeSound(SND_FLUSH, (15 * TILE_WIDTH * FIXAMT), (70 * TILE_HEIGHT * FIXAMT), SND_CUTOFF, 100);
+		map->FillRect(14, 66, 15, 74, 130, 0);
+	}
+	else if (orderUpTimer == 30 * 4)
+	{
+		MakeSound(SND_FLUSH, (18 * TILE_WIDTH * FIXAMT), (60 * TILE_HEIGHT * FIXAMT), SND_CUTOFF, 100);
+		map->FillRect(18, 58, 19, 74, 130, 0);
+		map->FillRect(20, 60, 21, 62, 130, 0);
+		map->FillRect(18, 57, 19, 57, 86, 61);
+	}
+	else if (orderUpTimer == 30 * 6)
+	{
+		MakeSound(SND_FLUSH, (22 * TILE_WIDTH * FIXAMT), (66 * TILE_HEIGHT * FIXAMT), SND_CUTOFF, 100);
+		map->FillRect(22, 63, 24, 74, 130, 0);
+		map->FillRect(25, 71, 25, 74, 130, 0);
+		map->FillRect(26, 63, 28, 74, 130, 0);
+	}
+	else if (orderUpTimer == 30 * 8)
+		orderUpTimer = 255;
+
+	orderUpTimer++;
+	if (orderUpState == 2)	// delivering
+	{
+		if((orderUpTimer%10)==0 && orderUpTemp>0)
+			orderUpTemp--;
+
+		// delivery 1: 22,52-24,52 - bowl ends up at 21,49
+		if (GetGoodguy()->IsInTileRect(22, 52, 24, 52) && (orderUpDeliveries & 1) == 0)
+		{
+			orderUpDeliveries |= 1;
+			orderUpStews++;
+			map->GetTile(21, 49)->item = ITM_STEW;
+			if (orderUpTemp > 80)
+				NewMessage("Mmm, piping hot!", 60);
+			else
+				NewMessage("Bluh, lukewarm mush.", 60);
+		}
+		// delivery 2: 30,75-31,75 - bowl ends up at 33,72
+		if (GetGoodguy()->IsInTileRect(30,75,31,75) && (orderUpDeliveries & 2) == 0)
+		{
+			orderUpDeliveries |= 2;
+			orderUpStews++;
+			map->GetTile(33,72)->item = ITM_STEW;
+			if (orderUpTemp > 80)
+				NewMessage("Yikes, I'm burning my mouth!", 60);
+			else
+				NewMessage("Ugh, it's not hot.", 60);
+		}
+		// delivery 3: 36,68-37,68 - bowl ends up at 32,65
+		if (GetGoodguy()->IsInTileRect(36, 68, 37, 68) && (orderUpDeliveries & 4) == 0)
+		{
+			orderUpDeliveries |= 4;
+			orderUpStews++;
+			map->GetTile(32,65)->item = ITM_STEW;
+			if (orderUpTemp > 80)
+				NewMessage("Hoo, warm and delicious!", 60);
+			else
+				NewMessage("Gag! I guess it's food.", 60);
+		}
+		// delivery 4: 57,66-58,66 - bowl ends up at 55,63
+		if (GetGoodguy()->IsInTileRect(57,66,58,66) && (orderUpDeliveries & 8) == 0)
+		{
+			orderUpDeliveries |= 8;
+			orderUpStews++;
+			map->GetTile(55,63)->item = ITM_STEW;
+			if (orderUpTemp > 80)
+				NewMessage("Mmm, it's warming my belly.", 60);
+			else
+				NewMessage("This is cold and greasy.", 60);
+		}
+		if (orderUpStews == 4 && orderUpState==2)	// you got them all!
+		{
+			map->GetTile(5, 109)->item = ITM_BRAIN;
+			orderUpState = 3;
+			if (orderUpTemp > 0)
+			{
+				InitSpeech(85);
+				if (GotRunePouchInLevel(player.worldNum, player.levelNum))
+					map->GetTile(4, 111)->item = ITM_DIAMOND;
+				else
+					map->GetTile(4, 111)->item = ITM_RUNEPOUCH;
+			}
+			else
+				InitSpeech(86);
+		}
+	}
+}
+
+void GetOrderUpStats(byte* state, byte* stews, byte* temp)
+{
+	(*state) = orderUpState;
+	(*stews) = orderUpStews;
+	(*temp) = orderUpTemp;
+}
+
+void OrderUpSetState(byte s)
+{
+	orderUpState = s;
+	if (s == 2)	// delivering stew
+	{
+		player.puzzleVar[0] = 0;
+		player.puzzleVar[1] = 0;
+		player.puzzleVar[2] = 0;
+		orderUpTemp = 240;
+		CurrentMap()->GetTile(7, 111)->item = ITM_KEYR;
 	}
 }

@@ -43,7 +43,7 @@
 #define ITM_CATTAIL	 35
 #define ITM_MONEYBAG 36
 #define ITM_DIAMOND 37
-
+#define ITM_STEW	38
 
 // no longer walkable
 #define ITM_UNUSED	 50

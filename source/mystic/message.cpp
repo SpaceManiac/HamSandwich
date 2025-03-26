@@ -651,6 +651,62 @@ std::vector<SpeechDef> speechDef = {
 		"and we'll have to have lunch sometime!",
 		0,
 	},
+	{
+		// 80
+		"I've found the people who worked here in",
+		"the castle. They're all hiding out in this",
+		"basement! I thought I might cook them",
+		"a batch of my famous Swamp Stew.",
+		81,
+	},
+	{
+		// 81
+		"Can you bring me 20 Grimbleweed,",
+		"20 Octon Juice, and 20 Toadstools?",
+		"I'll handle the cooking this time, since",
+		"your take was... unique. I... loved it!",
+		0,
+	},
+	{
+		// 82
+		"Okay, the stew is ready! Now just because",
+		"they're trapped in a basement doesn't",
+		"mean we skimp on quality. You gotta",
+		"get this to them while it's hot! Luckily,",
+		83,
+	},
+	{
+		// 83
+		"I've set up handy teleporters. Unluckily,",
+		"I forgot to set up the other end of them,",
+		"so you can only use them one way.",
+		"Now go deliver this stew before it's cold!",
+		0,
+	},
+	{
+		// 84
+		"Go get those ingredients, we have hungry",
+		"people in here!",
+		"",
+		"",
+		0,
+	},
+	{
+		// 85
+		"Great work! We fed those poor refugees.",
+		"I've got a nice little prize for you,",
+		"so come on back here!",
+		"",
+		0,
+	},
+	{
+		// 86
+		"Well, you got them stew, but it was",
+		"more of a gazpacho by the time you",
+		"wandered it over to them.",
+		"Better luck next time, I guess!",
+		0,
+	},
 };
 
 byte speechX,speechY,curSpeech;
@@ -881,6 +937,10 @@ void FinishSpeech(void)
 	}
 	if (speechStartedAt == 28)
 		EnterFarleyMode();
+	if (speechStartedAt == 80)
+		OrderUpSetState(1);	// go collect ingredients
+	if (speechStartedAt == 82)
+		OrderUpSetState(2);	// go deliver stew
 }
 
 byte UpdateSpeech(MGLDraw *mgl)

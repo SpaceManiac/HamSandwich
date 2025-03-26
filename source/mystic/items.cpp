@@ -35,6 +35,9 @@ void RenderItem(int x,int y,byte type,char bright)
 	{
 		case ITM_NONE:
 			break;
+		case ITM_STEW:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(5), DISPLAY_DRAWME);
+			break;
 		case ITM_SILENTRUNE:
 		{
 			b = (glowism % 8)/2;
@@ -269,6 +272,9 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 	switch(type)
 	{
 		case ITM_NONE:
+			break;
+		case ITM_STEW:
+			itmSpr->GetSprite(5)->DrawBright(x, y, mgl, bright);
 			break;
 		case ITM_SILENTRUNE:
 			itmSpr->GetSprite(281)->DrawBright(x, y, mgl, bright);
