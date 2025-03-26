@@ -103,6 +103,7 @@ void Map::Init(world_t *wrld)
 	int i;
 	byte s;
 
+	world = wrld;
 	outXes = 0;
 	lastSpecialShown = 33;
 	totalBrains=0;
@@ -210,7 +211,6 @@ void Map::Init(world_t *wrld)
 	if (player.levelNum == 7 && player.worldNum == 2)
 		DeepEndPuzzleInit();
 
-	world=wrld;
 	// pop in all the badguys
 	i=BattleMode();
 	if(i==0)
@@ -3769,7 +3769,7 @@ void HorkBoxBones(Map* map, int x, int y)
 
 byte orderUpTimer;
 byte orderUpTemp, orderUpState, orderUpStews;
-byte orderUpDeliveries;
+byte orderUpDeliveries,orderUpHot;
 
 void OrderUpSetup(Map* map)
 {
@@ -3804,6 +3804,7 @@ void OrderUpSetup(Map* map)
 	orderUpState = 0;	// haven't talked to witch yet
 	orderUpStews = 0;
 	orderUpTemp = 0;
+	orderUpHot = 0;
 	orderUpDeliveries = 0;
 	player.puzzleVar[0] = 0;
 	player.puzzleVar[1] = 0;
@@ -3853,26 +3854,26 @@ void OrderUpUpdate(Map* map)
 		map->FillRect(25, 71, 25, 74, 85, 0);
 		map->FillRect(26, 63, 28, 74, 85, 0);
 	}
-	else if (orderUpTimer == 30 * 2)
+	else if (orderUpTimer == 30 * 1+15)
 	{
 		MakeSound(SND_FLUSH, (15 * TILE_WIDTH * FIXAMT), (70 * TILE_HEIGHT * FIXAMT), SND_CUTOFF, 100);
 		map->FillRect(14, 66, 15, 74, 130, 0);
 	}
-	else if (orderUpTimer == 30 * 4)
+	else if (orderUpTimer == 30 * 3)
 	{
 		MakeSound(SND_FLUSH, (18 * TILE_WIDTH * FIXAMT), (60 * TILE_HEIGHT * FIXAMT), SND_CUTOFF, 100);
 		map->FillRect(18, 58, 19, 74, 130, 0);
 		map->FillRect(20, 60, 21, 62, 130, 0);
 		map->FillRect(18, 57, 19, 57, 86, 61);
 	}
-	else if (orderUpTimer == 30 * 6)
+	else if (orderUpTimer == 30 * 4+15)
 	{
 		MakeSound(SND_FLUSH, (22 * TILE_WIDTH * FIXAMT), (66 * TILE_HEIGHT * FIXAMT), SND_CUTOFF, 100);
 		map->FillRect(22, 63, 24, 74, 130, 0);
 		map->FillRect(25, 71, 25, 74, 130, 0);
 		map->FillRect(26, 63, 28, 74, 130, 0);
 	}
-	else if (orderUpTimer == 30 * 8)
+	else if (orderUpTimer == 30 * 6)
 		orderUpTimer = 255;
 
 	orderUpTimer++;
@@ -3888,7 +3889,10 @@ void OrderUpUpdate(Map* map)
 			orderUpStews++;
 			map->GetTile(21, 49)->item = ITM_STEW;
 			if (orderUpTemp > 80)
+			{
 				NewMessage("Mmm, piping hot!", 60);
+				orderUpHot++;
+			}
 			else
 				NewMessage("Bluh, lukewarm mush.", 60);
 		}
@@ -3899,7 +3903,10 @@ void OrderUpUpdate(Map* map)
 			orderUpStews++;
 			map->GetTile(33,72)->item = ITM_STEW;
 			if (orderUpTemp > 80)
+			{
 				NewMessage("Yikes, I'm burning my mouth!", 60);
+				orderUpHot++;
+			}
 			else
 				NewMessage("Ugh, it's not hot.", 60);
 		}
@@ -3910,7 +3917,10 @@ void OrderUpUpdate(Map* map)
 			orderUpStews++;
 			map->GetTile(32,65)->item = ITM_STEW;
 			if (orderUpTemp > 80)
+			{
 				NewMessage("Hoo, warm and delicious!", 60);
+				orderUpHot++;
+			}
 			else
 				NewMessage("Gag! I guess it's food.", 60);
 		}
@@ -3921,7 +3931,10 @@ void OrderUpUpdate(Map* map)
 			orderUpStews++;
 			map->GetTile(55,63)->item = ITM_STEW;
 			if (orderUpTemp > 80)
+			{
 				NewMessage("Mmm, it's warming my belly.", 60);
+				orderUpHot++;
+			}
 			else
 				NewMessage("This is cold and greasy.", 60);
 		}
@@ -3929,6 +3942,8 @@ void OrderUpUpdate(Map* map)
 		{
 			map->GetTile(5, 109)->item = ITM_BRAIN;
 			orderUpState = 3;
+			if (orderUpHot == 4)
+				EarnAchieve(Achievement::DELIVERY);
 			if (orderUpTemp > 0)
 			{
 				InitSpeech(85);

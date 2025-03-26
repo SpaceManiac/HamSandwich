@@ -149,9 +149,9 @@ AchieveDef achieveDef[] = {
 		Progress::ONE_SHOT
 	},
 	{
-		"achieveY",23,
-		"ya",
-		"na",
+		"Delivery Boy",23,
+		"Make it hot like Papa John.",
+		"Fed all the Spooky Castle employees hot stew.",
 		Progress::ONE_SHOT
 	},
 };

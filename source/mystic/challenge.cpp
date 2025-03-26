@@ -87,6 +87,14 @@ challenge_t chal[]={
 		{GOAL_FINISH2,30*60*2}},
 	},
 
+	{0,20,5,"Swamp Stew",LP_GOTRUNEPOUCH| LP_GOTSKILLSHARD, 30 * 60 * 3,
+		{{GOAL_FINISH,0},
+		{GOAL_SCORE,1000},
+		{GOAL_KILLSOME,MONS_EGGSAC},
+		{GOAL_CRYSTALS,0},
+		{GOAL_FINISH2,30 * 60 * 2}},
+	},
+
 	{0,14,10,"The Bridge",LP_GOTRUNE,30*60*3,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,2500},

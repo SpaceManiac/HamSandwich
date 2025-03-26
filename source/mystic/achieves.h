@@ -28,7 +28,7 @@ enum class Achievement :byte
 	CHEF,
 	SKILLS,
 	WHACKAZOID,
-	ACHY,
+	DELIVERY,
 	NUM_ACHIEVES,
 	NONE,
 };
