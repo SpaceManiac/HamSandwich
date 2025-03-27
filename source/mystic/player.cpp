@@ -274,6 +274,7 @@ void PlayerRenderInterface(MGLDraw *mgl)
 int CalcGamePercent(const player_t* p)
 {
 	int runes=0, spells=0, swords=0, fairies=0;
+	int skillPts = 0, runePouches = 0;
 	for (int i = 0; i < (int)Rune::NUM_RUNES; i++)
 		if (p->runes[i] > RUNE_EMPTY)
 			runes++;
@@ -288,17 +289,27 @@ int CalcGamePercent(const player_t* p)
 				fairies++;
 		}
 	}
+	skillPts = player.skillPts;
+	for (int i = 0; i < MAX_SKILLS; i++)
+		skillPts += player.skill[i];
+	if (skillPts > 65) skillPts = 65;	// the extra skill points in madcap are above and beyond
+
 	swords = p->swordPiece[0] + p->swordPiece[1] + p->swordPiece[2] + p->swordPiece[3];
+	runePouches = player.runePouches;
 	int totalNeeded = 24 + // runes
 		19 + // spells
 		4 + // swords
-		32; // fairies (2x, one for the bell, one for the fairy)
+		32 + // fairies (2x, one for the bell, one for the fairy)
+		5 +	// rune pouches
+		65;	// skill points
 	if (p->difficulty == Difficulty::CLASSIC || p->difficulty == Difficulty::BRUTAL_CLASSIC)
 	{	// classic has no runes
-		totalNeeded -= 24;
+		totalNeeded -= 24+65+5;
+		skillPts = 0;
+		runePouches = 0;
 		runes = 0;
 	}
-	return (runes + spells + swords + fairies)*100 / totalNeeded;
+	return (runes + spells + swords + fairies+skillPts+runePouches)*100 / totalNeeded;
 }
 
 byte PlayerShield(void)
@@ -639,7 +650,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 		case ITM_RUNEPOUCH:
 			GetRunePouchInLevel();
 			MakeNormalSound(SND_LOONYKEY);
-			if (!ClassicMode())
+			if (!ClassicMode() && player.runePouches<5)
 				player.runePouches++;
 			else
 				GainMoney(100);
@@ -862,6 +873,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 			FloaterParticles(x,y,5,64,-3,16);
 			FloaterParticles(x,y,5,1,4,16);
 			CheckForAllSecrets();
+			SwordAllCheck();
 			return 0;
 			break;
 		case ITM_SWORD2:
@@ -876,6 +888,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 			FloaterParticles(x,y,5,64,-3,16);
 			FloaterParticles(x,y,5,1,4,16);
 			CheckForAllSecrets();
+			SwordAllCheck();
 			return 0;
 			break;
 		case ITM_SWORD3:
@@ -890,6 +903,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 			FloaterParticles(x,y,5,64,-3,16);
 			FloaterParticles(x,y,5,1,4,16);
 			CheckForAllSecrets();
+			SwordAllCheck();
 			return 0;
 			break;
 		case ITM_SWORD4:
@@ -904,6 +918,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 			FloaterParticles(x,y,5,64,-3,16);
 			FloaterParticles(x,y,5,1,4,16);
 			CheckForAllSecrets();
+			SwordAllCheck();
 			return 0;
 			break;
 		case ITM_FAIRYBELL:

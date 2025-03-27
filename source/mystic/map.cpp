@@ -193,9 +193,9 @@ void Map::Init(world_t *wrld)
 		SwampStewSetup(this);
 	if (player.worldNum == 1 && player.levelNum == 3)
 		MushAidPuzzleReset(this);
-	if (player.worldNum == 1 && player.levelNum == 5)
+	if (player.worldNum == 1 && player.levelNum == 5 && !ClassicMode())
 		AbandonedVillagePuzzleReset(this);
-	if (player.worldNum == 1 && player.levelNum == 11)
+	if (player.worldNum == 1 && player.levelNum == 11 && !ClassicMode())
 		AmongHedgesPuzzleInit(this);
 	if (player.worldNum == 2 && player.levelNum == 24)
 		OrderUpSetup(this);
@@ -208,7 +208,7 @@ void Map::Init(world_t *wrld)
 		totalBrains = 1;	// get a brain for cooking, even if you fail
 	if (player.levelNum == 19 && player.worldNum == 1)
 		HauntedWoodsPuzzleInit(this);
-	if (player.levelNum == 7 && player.worldNum == 2)
+	if (player.levelNum == 7 && player.worldNum == 2 && !ClassicMode())
 		DeepEndPuzzleInit();
 
 	// pop in all the badguys
@@ -1035,21 +1035,37 @@ void SpecialStepCheck(Map *map,int x,int y,Guy *me)
 	}
 }
 
-void SpecialShootCheck(Map *map,int x,int y)
+void SpecialShootCheck(Map *map,int x,int y,bool justThisTile)
 {
 	int i;
 
-	for(i=0;i<MAX_SPECIAL;i++)
-		if((map->special[i].trigger&TRG_SHOOT) &&
-			map->special[i].x>=x-1 && map->special[i].y>=y-1 &&
-			map->special[i].x<=x+1 && map->special[i].y<=y+1)
-		{
-			SpecialTakeEffect(map,&map->special[i],NULL);
-			if (player.worldNum == 3 && player.levelNum == 10)
-				BatsPuzzle(map,map->special[i].x,map->special[i].y);
-		}
-	if (player.worldNum == 1 && player.levelNum == 11)
-		AmongHedgesShootCheck(map, x, y);
+	if (justThisTile)
+	{
+		for (i = 0; i < MAX_SPECIAL; i++)
+			if ((map->special[i].trigger & TRG_SHOOT) &&
+				map->special[i].x == x && map->special[i].y == y)
+			{
+				SpecialTakeEffect(map, &map->special[i], NULL);
+				if (player.worldNum == 3 && player.levelNum == 10)
+					BatsPuzzle(map, map->special[i].x, map->special[i].y);
+			}
+		if (player.worldNum == 1 && player.levelNum == 11)
+			AmongHedgesShootCheck(map, x, y);
+	}
+	else
+	{
+		for (i = 0; i < MAX_SPECIAL; i++)
+			if ((map->special[i].trigger & TRG_SHOOT) &&
+				map->special[i].x >= x - 1 && map->special[i].y >= y - 1 &&
+				map->special[i].x <= x + 1 && map->special[i].y <= y + 1)
+			{
+				SpecialTakeEffect(map, &map->special[i], NULL);
+				if (player.worldNum == 3 && player.levelNum == 10)
+					BatsPuzzle(map, map->special[i].x, map->special[i].y);
+			}
+		if (player.worldNum == 1 && player.levelNum == 11)
+			AmongHedgesShootCheck(map, x, y);
+	}
 }
 
 void SpecialKillCheck(Map* map,byte type)
@@ -1569,6 +1585,9 @@ void OpenVaultDoor(Map *map)
 
 byte VaultPuzzle2Check(Map* map)
 {
+	if (ClassicMode())
+		return 0;
+
 	if (vault2Opened)
 		return 0;	// don't repeat on the same visit, so we can't mess up the switch position
 	// L I V
@@ -1600,6 +1619,9 @@ byte VaultPuzzle2Check(Map* map)
 
 void OpenVaultDoor2(Map* map)
 {
+	if (ClassicMode())
+		return;
+
 	// open the secret book passage
 	map->map[25 + 58 * map->width].wall = 0;
 	map->map[25 + 58 * map->width].floor = 0;
@@ -2499,6 +2521,9 @@ byte mushAidCode[4];
 
 void MushAidPuzzleReset(Map *map)
 {
+	if (ClassicMode())
+		return;
+
 	mushAidStep = 0;
 	for (int i = 0; i < 4; i++)
 		mushAidCode[i] = 0;
@@ -2513,6 +2538,9 @@ void MushAidPuzzleReset(Map *map)
 
 void MushAidPuzzleUpdate(Map *map)
 {
+	if (ClassicMode())
+		return;
+
 	if (GotRuneInLevel(player.worldNum, player.levelNum))
 		return;
 
@@ -2561,6 +2589,9 @@ byte abandonPos = 0;
 
 void AbandonedVillagePuzzleReset(Map* map)
 {
+	if (ClassicMode())
+		return;
+
 	abandonPos = 0;
 	for (int i = 0; i < 6; i++)
 		map->GetTile(57 + i, 6)->floor = 97;	// wipe the 'screen' of runes
@@ -2574,6 +2605,9 @@ void AbandonedVillagePuzzle(Map *map)
 	 59,4 is the wall to zap
 	 22,30 is the book (should change the texture so it's obvious)
 	*/
+	if (ClassicMode())
+		return;
+
 	byte code[] = { 127-20,128-20,129-20,122+20,123+20,130-20 };
 	if (GotRuneInLevel(player.worldNum, player.levelNum))
 		return;
@@ -2656,6 +2690,9 @@ void Map::ScanForContent(void)
 
 void GuestChamberTeleport(int toX, int toY,Map *map)
 {
+	if (ClassicMode())
+		return;
+
 	Guy* g = GetGoodguy();
 
 	map->TempTorch(g->x / (FIXAMT * TILE_WIDTH), g->y / (FIXAMT * TILE_HEIGHT), 20);
@@ -2670,6 +2707,9 @@ void GuestChamberTeleport(int toX, int toY,Map *map)
 
 void GuestChamberPuzzleStep(Map* map, int mapx, int mapy)
 {
+	if (ClassicMode())
+		return;
+
 	char code[] = "BONEHEAD";
 	Guy* g = GetGoodguy();
 	if (!g) return;
@@ -2730,6 +2770,9 @@ void GuestChamberPuzzleStep(Map* map, int mapx, int mapy)
 
 void LibraryPuzzle(Map* map)
 {
+	if (ClassicMode())
+		return;
+
 	byte coords[] = {
 		63,69,
 		66,58,
@@ -2769,6 +2812,9 @@ void LibraryPuzzle(Map* map)
 
 void MinesPuzzle(Map* map,int x,int y)
 {
+	if (ClassicMode())
+		return;
+
 	byte pos[5][10] = {
 		{ // floor 1
 			77,63,
@@ -2848,6 +2894,9 @@ void MinesPuzzle(Map* map,int x,int y)
 
 void BatsPuzzle(Map* map,int x,int y)
 {
+	if (ClassicMode())
+		return;
+
 	if (x == 12 && y == 62)
 	{
 		ChangeAllGuysOfType(MONS_BAT, MONS_FIREBAT);
@@ -3468,6 +3517,9 @@ void AmongHedgesPuzzleInit(Map* map)
 void AmongHedgesPuzzleUpdate(Map *map)
 {
 	int tx, ty;
+	if (ClassicMode())
+		return;
+
 	if (!GetGoodguy())
 		return;
 	if (GotSkillShardInLevel(player.worldNum, player.levelNum))
@@ -3515,6 +3567,9 @@ void AmongHedgesPuzzleUpdate(Map *map)
 
 void AmongHedgesShootCheck(Map* map, int x, int y)
 {
+	if (ClassicMode())
+		return;
+
 	if (hedgePuzzleState == 8)
 		return;
 
@@ -3542,6 +3597,9 @@ void AmongHedgesShootCheck(Map* map, int x, int y)
 
 void LostInWoodsPuzzleStep(Map* map, int x, int y)
 {
+	if (ClassicMode())
+		return;
+
 	int pos;
 	if (GotSkillShardInLevel(player.worldNum, player.levelNum))
 		return;
@@ -3575,6 +3633,9 @@ byte hauntedWoodsGhosts;
 
 void HauntedWoodsPuzzleInit(Map* map)
 {
+	if (ClassicMode())
+		return;
+
 	int nextTrack = 0;
 	for (int i = 0; i < map->width; i++)
 	{
@@ -3636,6 +3697,9 @@ void HauntedWoodsPuzzleInit(Map* map)
 
 void HauntedPuzzleGhostControl(Map* map,Guy *me)
 {
+	if (ClassicMode())
+		return;
+
 	int tx, ty;
 	tx = me->x / (TILE_WIDTH * FIXAMT);
 	ty = me->y / (TILE_HEIGHT * FIXAMT);
@@ -3651,6 +3715,9 @@ void HauntedPuzzleGhostControl(Map* map,Guy *me)
 
 bool HauntedWoodsCastSpell(Map *map)
 {
+	if (ClassicMode())
+		return true;
+
 	if (player.worldNum != 1 || player.levelNum != 19 || hauntedWoodsGhosts == 0 || !GetGoodguy())
 		return true;	// you are free to cast a spell
 	RevealEctoplasm(GetGoodguy()->x, GetGoodguy()->y);
@@ -3659,6 +3726,9 @@ bool HauntedWoodsCastSpell(Map *map)
 
 void HauntedWoodsCatchGhost(Guy* me)
 {
+	if (ClassicMode())
+		return;
+
 	hauntedWoodsGhosts--;
 	me->type = 0;
 	FloaterParticles(me->x, me->y, 7, 16, 1, 10);
@@ -3690,6 +3760,9 @@ void DeepEndPuzzleInit(void)
 
 void DeepEndPuzzleKill(Map* map, byte type)
 {
+	if (ClassicMode())
+		return;
+
 	//14,2,13
 	//52,41-50,41
 	if (GotSkillShardInLevel(player.worldNum, player.levelNum))
@@ -3731,10 +3804,15 @@ void DeepEndPuzzleKill(Map* map, byte type)
 }
 
 byte horkBoxBones = 0;
+word lastHorkIndex;
 void HorkBoxInit(Map* map)
 {
+	if (ClassicMode())
+		return;
+
 	SetupHorkboxes();
 	horkBoxBones = 0;
+	lastHorkIndex = 0;
 	player.puzzleVar[0] = HORK_NONE;
 	player.puzzleVar[2] = 0;	// how many boxes you've beaten. They get tougher as you go
 	totalBrains = 8;	// one per horkbox, which drop them on kill, and then you have to get one more from Madam Kromch
@@ -3748,13 +3826,17 @@ void HorkBoxBones(Map* map, int x, int y)
 	// round 130
 	// foot 131
 	// teeth 132
+	if (ClassicMode())
+		return;
+
 	byte seq[] = { 129,40,132,130,41,131,255 };
 	if (horkBoxBones < 6 && !GotSkillShardInLevel(player.worldNum,player.levelNum))
 	{
 		mapTile_t* t = map->GetTile(x, y);
-		if (t && t->floor == seq[horkBoxBones])
+		if (t && t->floor == seq[horkBoxBones] && (x+y*map->width)!=lastHorkIndex)
 		{
 			horkBoxBones++;
+			lastHorkIndex = x + y * map->width;
 			if (horkBoxBones == 6)
 			{
 				NewMessage("Something thunked...", 60);
@@ -3762,7 +3844,7 @@ void HorkBoxBones(Map* map, int x, int y)
 				MakeNormalSound(SND_INFERNAL);
 			}
 		}
-		else if (t && (t->floor == 40 || t->floor == 41 || (t->floor >= 129 && t->floor <= 132)))
+		else if ((x+y*map->width)!=lastHorkIndex && t && (t->floor == 40 || t->floor == 41 || (t->floor >= 129 && t->floor <= 132)))
 			horkBoxBones = 0;	// step on a wrong bone and you reset
 	}
 }
@@ -3773,6 +3855,9 @@ byte orderUpDeliveries,orderUpHot;
 
 void OrderUpSetup(Map* map)
 {
+	if (ClassicMode())
+		return;
+
 	totalBrains = 1;
 	// 14,99 - 46,126 = grimbleweed and toadstools
 	int toads = Random(10) + 23;
@@ -3824,7 +3909,7 @@ void OrderUpUpdate(Map* map)
 	//  22,63-28,65, 22,66-24,74
 	//  (130=begin filling, 85=begin draining)
 
-	if (!GetGoodguy())
+	if (!GetGoodguy() || ClassicMode())
 		return;
 	if ((orderUpState == 0 || orderUpState == 1) && player.puzzleVar[0]<99 && GetGoodguy()->mapx == 1 && GetGoodguy()->mapy == 115)
 	{

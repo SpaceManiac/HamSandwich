@@ -142,7 +142,7 @@ void CastSpell(Guy *me)
 		return;
 	}
 
-	if (!HauntedWoodsCastSpell(CurrentMap()))
+	if (0)//!HauntedWoodsCastSpell(CurrentMap()))
 	{
 		player.mana -= cost;
 		return;

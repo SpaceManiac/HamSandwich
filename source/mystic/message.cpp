@@ -641,7 +641,7 @@ std::vector<SpeechDef> speechDef = {
 		"put reward in quote marks. I have a",
 		"diagnosed speech impediment where I",
 		"always sound like a villain.",
-		79,
+		0,
 	},
 	{
 		// 79
@@ -705,6 +705,14 @@ std::vector<SpeechDef> speechDef = {
 		"more of a gazpacho by the time you",
 		"wandered it over to them.",
 		"Better luck next time, I guess!",
+		0,
+	},
+	{
+		// 87
+		"We should have lunch sometime!",
+		"Swamp Stew's on me!",
+		"",
+		"",
 		0,
 	},
 };
@@ -893,7 +901,8 @@ void FinishSpeech(void)
 {
 	if (speechStartedAt == 76)
 	{
-		CurrentMap()->GetTile(31, 102)->item = ITM_RUNEPOUCH;
+		if(!GotRunePouchInLevel(player.worldNum,player.levelNum))
+			CurrentMap()->GetTile(31, 102)->item = ITM_RUNEPOUCH;
 		CurrentMap()->GetTile(31, 100)->item = ITM_BRAIN;
 		GetFirstFriendly()->type = MONS_NONE;	// she runs off
 	}
@@ -920,10 +929,13 @@ void FinishSpeech(void)
 	if (speechStartedAt == 45 || speechStartedAt==47)
 	{
 		// get rune pouch
-		CurrentMap()->GetTile(60, 62)->item = ITM_RUNEPOUCH;
-		CurrentMap()->BrightTorch(60, 62, 24, 8);
-		MakeNormalSound(SND_MEGABEAMHIT);
-		FloaterParticles((60 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (62 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 6, 20, 2, 20);
+		if (!GotRunePouchInLevel(player.worldNum, player.levelNum))
+		{
+			CurrentMap()->GetTile(60, 62)->item = ITM_RUNEPOUCH;
+			CurrentMap()->BrightTorch(60, 62, 24, 8);
+			MakeNormalSound(SND_MEGABEAMHIT);
+			FloaterParticles((60 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (62 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 6, 20, 2, 20);
+		}
 	}
 	if (speechStartedAt == 31 && romanceTalk == 0)
 	{
@@ -977,6 +989,16 @@ byte UpdateSpeech(MGLDraw *mgl)
 				return 0;
 			}
 
+			if (curSpeech == 78)
+			{
+				if (!GotRunePouchInLevel(player.worldNum, player.levelNum))
+					curSpeech = 79;
+				else
+					curSpeech = 87;
+				speechX = 0;
+				speechY = 0;
+				return 0;
+			}
 			if (speechDef[curSpeech].nextSpeech != 0)
 			{
 				curSpeech = speechDef[curSpeech].nextSpeech;
@@ -1208,13 +1230,16 @@ void RenderFarley(void)
 		for (int j = 3; j >= 0; j--)
 			OutlineFarleySprite(173,64 + j * 16, 30 + i * 110 + 85, 0 - 31 * (j >= fairyCt));
 
-		fairyCt = 0;
-		for (int j = 0; j < MAX_MAPS; j++)
-			if (GotRuneInLevel(i,j))
-				fairyCt++;
+		if (!ClassicMode())
+		{
+			fairyCt = 0;
+			for (int j = 0; j < MAX_MAPS; j++)
+				if (GotRuneInLevel(i, j))
+					fairyCt++;
 
-		for (int j = 5; j >= 0; j--)
-			OutlineFarleySprite(281,570 - 16 * 6 + j * 16, 30 + i * 110 + 85, 0 - 31 * (j >= fairyCt));
+			for (int j = 5; j >= 0; j--)
+				OutlineFarleySprite(281, 570 - 16 * 6 + j * 16, 30 + i * 110 + 85, 0 - 31 * (j >= fairyCt));
+		}
 
 		fairyCt = 0;
 		byte totalSpells = 0;
@@ -1228,9 +1253,10 @@ void RenderFarley(void)
 					fairyCt++;
 			}
 		}
+		if (i == 0) totalSpells--;	// energy barrage is listed in 2 levels, because modern and classic use 2 different beginnertons
 
 		for (int j = totalSpells-1; j >= 0; j--)
-			OutlineFarleySprite(45, 565 - 16 * totalSpells + j * 16, 30 + i * 110 + 45, 0 - 31 * (j >= fairyCt));
+			OutlineFarleySprite(45, 565 - 16 * totalSpells + j * 16, 30 + i * 110 + 45+20*ClassicMode(), 0 - 31 * (j >= fairyCt));
 
 		OutlineFarleySprite(131,160,30+i*110+85, 0-31*(player.swordPiece[i]==0));
 	}

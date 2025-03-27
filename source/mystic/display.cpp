@@ -186,7 +186,7 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 {
 	int desiredX,desiredY;
 
-	if (ClassicMode())
+	if (0)//ClassicMode())
 	{
 		desiredX = ((x << FIXSHIFT) + Cosine(facing) * 80) >> FIXSHIFT;
 		desiredY = ((y << FIXSHIFT) + Sine(facing) * 60) >> FIXSHIFT;

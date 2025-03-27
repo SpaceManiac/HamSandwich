@@ -163,7 +163,7 @@ void SpecialOuchCheck(Map* map, byte type);
 
 void ChangeFloor(Map* map, int x, int y, byte newFloor);
 void ZapWall(Map *map,int x,int y,byte newFloor);
-void SpecialShootCheck(Map *map,int x,int y);
+void SpecialShootCheck(Map *map,int x,int y,bool justThisTile);
 void SpecialAnytimeCheck(Map *map);
 void RenderSpecialXes(MGLDraw *mgl,Map *map,byte world);
 int  TotalBrains(void);

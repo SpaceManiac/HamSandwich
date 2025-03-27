@@ -141,7 +141,7 @@ byte BulletCanGo(int xx,int yy,Map *map,byte size)
 		(Bulletable(map,mapx1,mapy2)));
 
 	if(!result)
-		SpecialShootCheck(map,mapx,mapy);
+		SpecialShootCheck(map,mapx,mapy,false);
 
 	return (byte)result;
 }

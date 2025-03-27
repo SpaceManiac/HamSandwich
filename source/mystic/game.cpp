@@ -46,21 +46,20 @@ word windingDown;
 byte windingUp;
 byte windDownReason;
 
-#ifndef VALUE
 char worldName[4][32]={
 	"river.dlw",
 	"forest.dlw",
 	"castle.dlw",
 	"under.dlw"
 };
-#else
-char worldName[4][32]={
-	"river_val.dlw",
-	"forest_val.dlw",
-	"castle.dlw",
-	"under.dlw"
+
+char worldName_m[4][32] = {
+	"river_m.dlw",
+	"forest_m.dlw",
+	"castle_m.dlw",
+	"under_m.dlw"
 };
-#endif
+
 
 void LunaticInit(MGLDraw *mgl)
 {
@@ -857,7 +856,7 @@ TASK(byte) ChallengePlay(byte world,byte lvl)
 {
 	byte result;
 
-	if(!LoadWorld(&curWorld,worldName[world]))
+	if(!LoadWorld(&curWorld,ClassicMode()?worldName[world]:worldName_m[world]))
 		CO_RETURN WORLD_ABORT;
 
 	InitWorld(&curWorld, worldNum);
@@ -878,7 +877,7 @@ TASK(byte) LunaticWorld(byte world)
 {
 	byte result;
 
-	if(!LoadWorld(&curWorld,worldName[world]))
+	if(!LoadWorld(&curWorld,ClassicMode()?worldName[world]:worldName_m[world]))
 		CO_RETURN WORLD_ABORT;
 
 	InitPlayer(INIT_WORLD,world,0);
@@ -925,7 +924,7 @@ TASK(byte) LunaticWorld(byte world)
 		{
 			player.worldNum = FarleyWorldChoice();
 			FreeWorld(&curWorld);
-			if (!LoadWorld(&curWorld, worldName[player.worldNum]))
+			if (!LoadWorld(&curWorld, ClassicMode() ? worldName[player.worldNum] : worldName_m[player.worldNum]))
 				CO_RETURN WORLD_ABORT;
 			InitWorld(&curWorld, worldNum);
 			InitPlayer(INIT_WORLD, player.worldNum, 1);
@@ -952,7 +951,7 @@ TASK(byte) LunaticWorld(byte world)
 #else
 				player.worldNum++;
 				FreeWorld(&curWorld);
-				if(!LoadWorld(&curWorld,worldName[player.worldNum]))
+				if(!LoadWorld(&curWorld, ClassicMode() ? worldName[player.worldNum] : worldName_m[player.worldNum]))
 					CO_RETURN WORLD_ABORT;
 
 				worldNum=player.worldNum;
@@ -994,7 +993,7 @@ TASK(byte) LunaticWorld(byte world)
 					player.worldNum=0;
 					player.nightmare=1;
 					FreeWorld(&curWorld);
-					if(!LoadWorld(&curWorld,worldName[player.worldNum]))
+					if(!LoadWorld(&curWorld, ClassicMode() ? worldName[player.worldNum] : worldName_m[player.worldNum]))
 						CO_RETURN WORLD_ABORT;
 					ResetPlayerLevels();
 					InitWorld(&curWorld,worldNum);

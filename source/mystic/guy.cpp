@@ -1815,7 +1815,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 							if (!ClassicMode() && wasFrozen)
 								amt += SkillValue(SKILL_FREEZEMONEY) * 10;
 
-							if (freeBig == 0 || MGL_random(1000 - 700 * (player.fairyOn == FAIRY_RICHEY)) > (int)amt)
+							if (freeBig == 0 && MGL_random(1000 - 700 * (player.fairyOn == FAIRY_RICHEY)) > (int)amt)
 								lootCoins++;
 							else
 							{
@@ -2557,6 +2557,17 @@ byte FindVictims(int x,int y,byte size,int dx,int dy,int damage,Map *map,world_t
 {
 	int i;
 	byte result=0;
+
+	int mx, my,mx2,my2;
+	mx = x / FIXAMT - size/2;
+	my = y / FIXAMT - size/2;
+	mx2 = x / FIXAMT + size / 2;
+	my2 = y / FIXAMT + size / 2;
+	for(i=mx;i<=mx2;i+=TILE_WIDTH)
+		for (int j = my; j <= my2; j += TILE_HEIGHT)
+		{
+			SpecialShootCheck(map, i / TILE_WIDTH, j / TILE_HEIGHT,true);
+		}
 
 	for(i=0;i<maxGuys;i++)
 		if(guys[i].type && guys[i].hp && (MonsterFlags(guys[i].type)&(MF_GOODGUY|MF_NOHIT))==0 &&
