@@ -1590,6 +1590,19 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_ECTOPLASM:
 			me->anim++;
+			if (Challenging())
+			{
+				if (GetGoodguy() && abs(GetGoodguy()->x - me->x) < 16 * FIXAMT && abs(GetGoodguy()->y - me->y) < 16 * FIXAMT)
+				{
+					me->type = 0;
+					MakeNormalSound(SND_FROZEN);
+					if (player.ectoplasm < 255)
+					{
+						player.ectoplasm++;
+						ChallengeEvent(CE_ECTOPLASM, player.ectoplasm);
+					}
+				}
+			}
 			break;
 		case BLT_BOOM:
 		case BLT_SEEKBOOM:

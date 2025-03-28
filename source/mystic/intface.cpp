@@ -453,6 +453,16 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 			if (fill > 16) fill = 16;
 			DrawFillBox(20, y+2+ (16 - fill), 23, y+18, 32 * 1 + 16);
 		}
+		if (player.ectoplasm > 0)
+		{
+			for(int i=-1;i<=1;i++)
+				for(int j=-1;j<=1;j++)
+					bulletSpr->GetSprite(262)->DrawBright(SCRWID - 20+i, HALFHEI+j, mgl, -31);
+			bulletSpr->GetSprite(262)->DrawGlow(SCRWID - 20, HALFHEI, mgl, 0);
+			sprintf(s, "%d", player.ectoplasm);
+			RightPrint(SCRWID - 3+2, HALFHEI +2, s, -31, 2);
+			RightPrint(SCRWID - 3, HALFHEI, s, 0, 2);
+		}
 	}
 	if (player.puzzleVar[0] > 0 || player.puzzleVar[1] > 0 || player.puzzleVar[2] > 0 || (player.worldNum==2 && player.levelNum==24))
 	{

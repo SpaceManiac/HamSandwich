@@ -19,6 +19,10 @@
 #define GOAL_CRYSTALS 12	// get all challenge crystals
 #define GOAL_NOKILL	13	// don't kill any of monster N
 #define GOAL_GETALL 14	// get all the other goals in one run
+#define GOAL_COOK	15 // cook at least N% quality
+#define GOAL_KILLONE 16 // kill one enemy of type N
+#define GOAL_ECTOPLASM 17 // collect N ectoplasm at once
+#define GOAL_GHOSTSNOSPELLS 18 // catch all ghosts without spells
 
 // challenge events
 #define CE_NONE		0	// nothing happened
@@ -33,10 +37,12 @@
 #define CE_POINTS	9	// earn N XP
 #define CE_QUIT		10	// chose to quit the game, so don't tally or even go back to challenge menu
 #define CE_SMASHBALL 11 // hit a wall in smashball
+#define CE_COOK		12 // cooked at quality level N%
+#define CE_ECTOPLASM 13 // collected N ectoplasm
 
 #define HOURGLASS_BONUS (20)	// percent of time the hourglass grants you
 
-#define MAX_CHALLENGE (64)
+#define MAX_CHALLENGE (80)
 #define MAX_COMBO_TIME (60)
 
 typedef struct goal_t

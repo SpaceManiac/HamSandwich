@@ -355,8 +355,6 @@ TASK(void) AchieveMenu(MGLDraw *mgl)
 	byte b=0;
 	int lastTime=1;
 
-	mgl->LastKeyPressed();
-
 	StartClock();
 	if(CurrentSong()!=SONG_SHOP && CurrentSong()!=SONG_INTRO)
 		PlaySong(SONG_SHOP);

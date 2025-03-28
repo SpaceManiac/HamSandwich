@@ -31,7 +31,15 @@ challenge_t chal[]={
 	},
 
 	// chapter 1
-	{0,3,0,"Grassy Knoll",LP_GOTSPELL,30*60*2,
+	{0,21,0,"Beginnerton",LP_GOTSPELL | LP_GOTFAIRY,30 * 60 * 3,
+		{{GOAL_FINISH,0},
+		{GOAL_SCORE,300},
+		{GOAL_MYSTIC,30 * 5},
+		{GOAL_NOHIT,0},
+		{GOAL_CRYSTALS,0}},
+	},
+
+	{0,3,0,"Grassy Knoll",LP_GOTSPELL|LP_GOTSKILLSHARD,30*60*2,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,300},
 		{GOAL_MYSTIC,30*5},
@@ -39,7 +47,7 @@ challenge_t chal[]={
 		{GOAL_FINISH2,30*60+30*30}},
 	},
 
-	{0,2,0,"Mushy Hollow",LP_GOTSPELL,30*60*2,
+	{0,2,0,"Mushy Hollow",LP_GOTSPELL|LP_GOTRUNE,30*60*2,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,1000},
 		{GOAL_CRYSTALS,0},
@@ -87,15 +95,15 @@ challenge_t chal[]={
 		{GOAL_FINISH2,30*60*2}},
 	},
 
-	{0,20,5,"Swamp Stew",LP_GOTRUNEPOUCH| LP_GOTSKILLSHARD, 30 * 60 * 3,
+	{0,20,5,"Swamp Stew",LP_GOTRUNEPOUCH| LP_GOTSKILLSHARD, 30 * 60 * 5,
 		{{GOAL_FINISH,0},
-		{GOAL_SCORE,1000},
-		{GOAL_KILLSOME,MONS_EGGSAC},
-		{GOAL_CRYSTALS,0},
-		{GOAL_FINISH2,30 * 60 * 2}},
+		{GOAL_COOK,85},
+		{GOAL_MYSTIC,30*5},
+		{GOAL_KILLONE,MONS_OCTOTENT},
+		{GOAL_KILL,0}},
 	},
 
-	{0,14,10,"The Bridge",LP_GOTRUNE,30*60*3,
+	{0,14,10,"The Bridge",0,30*60*3,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,2500},
 		{GOAL_KILLSOME,MONS_OCTOBOSS},
@@ -136,7 +144,7 @@ challenge_t chal[]={
 		{GOAL_COMBO,10}},
 	},
 
-	{1,6,0,"Spider's Lair",LP_GOTSPELL,30*60*6,
+	{1,6,0,"Spider's Lair",LP_GOTSPELL|LP_GOTSKILLSHARD,30*60*6,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,10000},
 		{GOAL_MYSTIC,30*6},
@@ -144,7 +152,7 @@ challenge_t chal[]={
 		{GOAL_NOSHOOT,0}},
 	},
 
-	{1,11,0,"Among The Hedges",LP_GOTSPELL,30*60*5,
+	{1,11,0,"Among The Hedges",LP_GOTSPELL|LP_GOTSKILLSHARD,30*60*5,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,2000},
 		{GOAL_FINISH2,30*60*4},
@@ -160,7 +168,7 @@ challenge_t chal[]={
 		{GOAL_SCORE,3000}},
 	},
 
-	{1,14,5,"Lost In The Woods",LP_GOTFAIRY,30*60*10,
+	{1,14,5,"Lost In The Woods",LP_GOTFAIRY|LP_GOTSKILLSHARD,30*60*10,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,2000},
 		{GOAL_MYSTIC,30*30},
@@ -184,7 +192,15 @@ challenge_t chal[]={
 		{GOAL_NOSHOOT,0}},
 	},
 
-	{1,4,10,"Hidden Clearing",LP_GOTSWORD,30*60*3,
+	{ 1,19,5,"Haunted Woods",LP_GOTRUNEPOUCH | LP_GOTSKILLSHARD, 30 * 60 * 5,
+		{{GOAL_FINISH,0},
+		{GOAL_ECTOPLASM,200},
+		{GOAL_GHOSTSNOSPELLS,0},
+		{GOAL_FINISH2,30*60*4+30*30},
+		{GOAL_COMBO,20}},
+	},
+
+	{1,4,10,"Hidden Clearing",LP_GOTSWORD|LP_GOTSKILLSHARD,30*60*3,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,3000},
 		{GOAL_FINISH2,30*60*2+30*55},
@@ -209,7 +225,7 @@ challenge_t chal[]={
 		{GOAL_NONE,0}},
 	},
 
-	{2,6,0,"The Gatehouse",LP_GOTSPELL,30*60*4,
+	{2,6,0,"The Gatehouse",LP_GOTSPELL|LP_GOTSKILLSHARD,30*60*4,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,5000},
 		{GOAL_COMBO,15},
@@ -257,7 +273,7 @@ challenge_t chal[]={
 		{GOAL_NOSPELL,0}},
 	},
 
-	{2,17,5,"Twisty Passages",LP_GOTFAIRY,30*60*15,
+	{2,17,5,"Twisty Passages",LP_GOTFAIRY|LP_GOTSKILLSHARD,30*60*15,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,3000},
 		{GOAL_CRYSTALS,0},
@@ -273,7 +289,7 @@ challenge_t chal[]={
 		{GOAL_CRYSTALS,0}},
 	},
 
-	{2,19,5,"Whack-A-Zoid",LP_GOTFAIRY,30*60*2,
+	{2,19,5,"Whack-A-Zoid",LP_GOTFAIRY|LP_GOTSKILLSHARD,30*60*2,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,20000},
 		{GOAL_CRYSTALS,0},
@@ -289,7 +305,15 @@ challenge_t chal[]={
 		{GOAL_KILL,0}},
 	},
 
-	{2,7,10,"Off The Deep End",LP_GOTSWORD,30*60*5,
+	{ 2,24,5,"Hot To Go",LP_GOTRUNEPOUCH | LP_GOTSKILLSHARD, 30 * 60 * 5,
+		{{GOAL_FINISH,0},
+		{GOAL_FINISH,0},
+		{GOAL_FINISH,0},
+		{GOAL_FINISH,0},
+		{GOAL_FINISH,0}},
+	},
+
+	{2,7,10,"Off The Deep End",LP_GOTSWORD|LP_GOTSKILLSHARD,30*60*5,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,5000},
 		{GOAL_COMBO,10},
@@ -314,7 +338,7 @@ challenge_t chal[]={
 		{GOAL_NONE,0}},
 	},
 
-	{3,6,0,"Toasty Caverns",LP_GOTSPELL,30*60*10,
+	{3,6,0,"Toasty Caverns",LP_GOTSPELL|LP_GOTSKILLSHARD,30*60*10,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,10000},
 		{GOAL_NOSPELL,0},
@@ -362,7 +386,7 @@ challenge_t chal[]={
 		{GOAL_KILL,0}},
 	},
 
-	{3,13,5,"Smashball",LP_GOTFAIRY,30*60*10,
+	{3,13,5,"Smashball",LP_GOTFAIRY|LP_GOTSKILLSHARD,30*60*10,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,100},
 		{GOAL_KILL,0},
@@ -378,7 +402,15 @@ challenge_t chal[]={
 		{GOAL_CRYSTALS,0}},
 	},
 
-	{3,8,10,"Armageddon Shrine",LP_GOTSWORD,30*60*2,
+	{ 3,19,5,"Horkboxes",LP_GOTRUNEPOUCH | LP_GOTSKILLSHARD, 30 * 60 * 5,
+		{{GOAL_FINISH,0},
+		{GOAL_FINISH,0},
+		{GOAL_FINISH,0},
+		{GOAL_FINISH,0},
+		{GOAL_FINISH,0}},
+	},
+
+	{3,8,10,"Armageddon Shrine",LP_GOTSWORD|LP_GOTSKILLSHARD,30*60*2,
 		{{GOAL_FINISH,0},
 		{GOAL_SCORE,1500},
 		{GOAL_FINISH2,30*60*1+30*53},
@@ -569,6 +601,9 @@ char *GoalText(byte goal,dword n)
 		case GOAL_KILL:
 			sprintf(s,"Beat all badguys!");
 			break;
+		case GOAL_ECTOPLASM:
+			sprintf(s, "Collect %d Ectoplasm",n);
+			break;
 		case GOAL_KILLSOME:
 			if(n==MONS_MOSS)
 				sprintf(s,"Defeat all %s!",MonsterName((byte)n));
@@ -589,6 +624,9 @@ char *GoalText(byte goal,dword n)
 			break;
 		case GOAL_NOSPELL:
 			sprintf(s,"Finish without using spells!");
+			break;
+		case GOAL_GHOSTSNOSPELLS:
+			sprintf(s, "Bust ghosts without spells!");
 			break;
 		case GOAL_NOHIT:
 			sprintf(s,"Finish without getting hit!");
@@ -614,8 +652,25 @@ char *GoalText(byte goal,dword n)
 					sprintf(s,"Don't hurt any %ss!",MonsterName((byte)n));
 			}
 			break;
+		case GOAL_KILLONE:
+			if (n == 255)
+			{
+				sprintf(s, "Kill a monster!");
+			}
+			else
+			{
+				char c = MonsterName((byte)n)[0];
+				if(c=='A' || c=='E' || c=='I' || c=='O' || c=='U')
+					sprintf(s, "Kill an %s!", MonsterName((byte)n));
+				else
+					sprintf(s, "Kill a %s!", MonsterName((byte)n));
+			}
+			break;
 		case GOAL_GETALL:
 			sprintf(s,"All goals in one run!");
+			break;
+		case GOAL_COOK:
+			sprintf(s, "Score at last %d%% on cooking!",n);
 			break;
 	}
 	return s;
@@ -624,9 +679,13 @@ char *GoalText(byte goal,dword n)
 void ResetChallengeCharacter(void)
 {
 	InitPlayer(INIT_GAME,0,0);
-	player.gotSpell[0]=1;
-	player.spell[0]=1;
-	player.haveFairy=FAIRY_GRABBY;
+	if (ClassicMode())
+	{
+		// in classic, you get the beginnerton stuff for free. You have to earn it in modern
+		player.gotSpell[0] = 1;
+		player.spell[0] = 1;
+		player.haveFairy = FAIRY_GRABBY;
+	}
 	player.templePuzzleDone=1;
 }
 
@@ -719,6 +778,15 @@ byte MoveCursor(char dir,byte curs)
 		if (chal[curs].chapter == 255 && chal[curs].level == 5 && ClassicMode())
 			c++;	// skip over reset skills if you aren't in modern mode
 
+		if (ClassicMode())
+		{
+			if ((chal[curs].chapter == 0 && chal[curs].level == 20) || // swamp stew
+				(chal[curs].chapter == 0 && chal[curs].level == 21) || // beginnerton
+				(chal[curs].chapter == 1 && chal[curs].level == 19) || // haunted woods
+				(chal[curs].chapter == 2 && chal[curs].level == 24) || // hot to go
+				(chal[curs].chapter == 3 && chal[curs].level == 19)) // horkboxes
+				c++;	// skip over rune pouch levels and beginnerton in classic mode
+		}
 		if(chal[curs].chapter==15)	// skip the Super Bonus unless you've bought EVERYTHING else
 		{
 			for(i=0;i<curs;i++)
@@ -887,6 +955,18 @@ void ChallengeMenuRender(MGLDraw *mgl)
 				if (chal[chalCursor].flags & LP_GOTRUNE)
 				{
 					OutlineFarleySprite(281, x, 440, -31 + 31 * GotRuneInLevel(chal[chalCursor].chapter,chal[chalCursor].level));
+					x -= 32;
+				}
+
+				if (chal[chalCursor].flags & LP_GOTRUNEPOUCH)
+				{
+					OutlineFarleySprite(4, x, 435, -31 + 31 * GotRuneInLevel(chal[chalCursor].chapter, chal[chalCursor].level));
+					x -= 32;
+				}
+
+				if (chal[chalCursor].flags & LP_GOTSKILLSHARD)
+				{
+					OutlineFarleySprite2(67, x, 440, -31 + 31 * GotRuneInLevel(chal[chalCursor].chapter, chal[chalCursor].level),6,0);
 					x -= 32;
 				}
 			}
@@ -1155,7 +1235,6 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 			if(UpdateFairyBox(mgl))
 			{
 				fairyOn=0;
-				mgl->LastKeyPressed();
 			}
 		}
 		else if(fairyOn==2)	// shop
@@ -1164,7 +1243,6 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 			{
 				fairyOn=0;
 				SetInMenu(true);	// exiting the shop marks you not in a menu, but we are still in a menu
-				mgl->LastKeyPressed();
 			}
 		}
 		else if(fairyOn==3)	// question
@@ -1185,7 +1263,6 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 				if(qCursor==1)
 				{
 					fairyOn=0;
-					mgl->LastKeyPressed();
 					if(asking==ASK_TRIVIA)
 						chalData.bought[63]=0;
 					return 0;
@@ -1438,6 +1515,12 @@ void InitAttempt(void)
 	for(i=0;i<5;i++)
 	{
 		attempt.goalOk[i]=1;
+		if (chal[chalCursor].goal[i].type == GOAL_COOK)
+			attempt.goalOk[i] = 0;	// failed until you succeed
+		if (chal[chalCursor].goal[i].type == GOAL_KILLONE)
+			attempt.goalOk[i] = 0;	// failed until you succeed
+		if (chal[chalCursor].goal[i].type == GOAL_ECTOPLASM)
+			attempt.goalOk[i] = 0;	// failed until you succeed
 		if(chal[chalCursor].goal[i].type==GOAL_MYSTIC)
 			attempt.letterMaxClock=chal[chalCursor].goal[i].n;
 	}
@@ -1524,6 +1607,16 @@ void ChallengeEvent(byte type,int n)
 	{
 		case CE_NONE:
 			break;
+		case CE_COOK:
+			g = GoalNumber(GOAL_COOK);
+			if (g!=255 && n >= chal[chalCursor].goal[g].n)
+				attempt.goalOk[g] = 1;
+			break;
+		case CE_ECTOPLASM:
+			g = GoalNumber(GOAL_ECTOPLASM);
+			if (g != 255 && n >= chal[chalCursor].goal[g].n)
+				attempt.goalOk[g] = 1;
+			break;
 		case CE_KILL:
 			attempt.kills++;
 			if(attempt.curCombo<999)
@@ -1533,7 +1626,7 @@ void ChallengeEvent(byte type,int n)
 			attempt.comboClock=MAX_COMBO_TIME;
 			attempt.score+=attempt.curCombo*10;
 			g=GoalNumber(GOAL_NOKILL);
-			if(chal[chalCursor].goal[g].n==(dword)n || chal[chalCursor].goal[g].n==255)
+			if(g!=255 && (chal[chalCursor].goal[g].n==(dword)n || chal[chalCursor].goal[g].n==255))
 				attempt.goalOk[g]=0;	// if you killed a forbidden guy, you are screwed
 			if(GoalNumber(GOAL_KILL)!=255 && !MonsterExists(255))
 			{
@@ -1543,6 +1636,9 @@ void ChallengeEvent(byte type,int n)
 				FloaterParticles(GetGoodguy()->x,GetGoodguy()->y,7,HALFWID/8,-1,64);
 				NewMessage("Monsters cleared!",60);
 			}
+			g = GoalNumber(GOAL_KILLONE);
+			if (g != 255 && (chal[chalCursor].goal[g].n == (dword)n || chal[chalCursor].goal[g].n == 255))
+				attempt.goalOk[g] = 1;
 			break;
 		case CE_SMASHBALL:
 			if (attempt.curCombo < 999)
@@ -1566,6 +1662,13 @@ void ChallengeEvent(byte type,int n)
 			g=GoalNumber(GOAL_NOSPELL);
 			if(g!=255)
 				attempt.goalOk[g]=0;	// no longer possible to get No Spell goal complete
+			if (HauntedWoodsGhosts() > 0)
+			{
+				// casting a spell before the ghosts are busted is a failure
+				g = GoalNumber(GOAL_GHOSTSNOSPELLS);
+				if (g != 255)
+					attempt.goalOk[g] = 0;
+			}
 			break;
 		case CE_OUCH:
 			attempt.score-=n;
@@ -1709,6 +1812,11 @@ byte GoalIsDone(goal_t *g,byte w)
 		case GOAL_NONE:
 			return 0;
 			break;
+		case GOAL_GHOSTSNOSPELLS:
+			if (attempt.goalOk[w])
+				return (HauntedWoodsGhosts() == 0);	// you busted all the ghosts, and you did so without spells
+			break;
+		case GOAL_ECTOPLASM:
 		case GOAL_FINISH:
 			if(attempt.goalOk[w])
 				return 1;
@@ -1738,6 +1846,14 @@ byte GoalIsDone(goal_t *g,byte w)
 			break;
 		case GOAL_MYSTIC:
 			if(attempt.curLetter==6)
+				return 1;
+			break;
+		case GOAL_KILLONE:
+			if (attempt.goalOk[w])
+				return 1;
+			break;
+		case GOAL_COOK:
+			if (attempt.goalOk[w])
 				return 1;
 			break;
 		case GOAL_NOSHOOT:
@@ -1853,19 +1969,13 @@ byte ChallengeTallyUpdate(MGLDraw *mgl,int *lastTime)
 		UpdateItems();
 		UpdateControls();
 		
-		if(ButtonTapped(CONTROL_B1|CONTROL_B2))
+		if (ButtonTapped(CONTROL_ESCAPE | CONTROL_B1 | CONTROL_B2))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			return 1;
 		}
 		*lastTime-=TIME_PER_FRAME;
 		UpdateSounds();
-	}
-
-	if(mgl->LastKeyPressed()==27)
-	{
-		MakeNormalSound(SND_MENUSELECT);
-		return 1;
 	}
 
 	return 0;

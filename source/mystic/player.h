@@ -161,7 +161,9 @@ typedef struct player_t
 	byte puzzleVar[3];	// special vars for an in-level puzzle
 	byte runePouches;
 	byte castCount;
-	byte expando[164-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
+	byte ectoplasm;
+	byte ectoClock;
+	byte expando[162-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
 } player_t;
 
 extern player_t player;

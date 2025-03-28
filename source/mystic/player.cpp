@@ -74,6 +74,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 
 	ResetStoredHealMana();
 	ResetStoredSeekerMana();
+	player.ectoplasm = 0;
 	player.castCount = 0;
 	player.storedFlames = 0;
 	player.flameCounter = 0;
@@ -1289,7 +1290,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			FireBullet(me->x, me->y, (me->facing + 6) & 7, BLT_FLAME);
 		}
 	}
-
+	
 	vampyClock++;
 	if(vampyClock>30*3 && player.fairyOn==FAIRY_VAMPY && player.levelNum!=1)	// not on the hub level
 	{
@@ -1365,6 +1366,14 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 	if (!ClassicMode())
 	{
+		if (player.ectoClock > 0)
+			player.ectoClock--;
+		else
+		{
+			player.ectoClock = 20;
+			if (player.ectoplasm > 0)
+				player.ectoplasm--;
+		}
 		if(SkillValue(SKILL_RESTORATION))
 			restorationBuffer += 1.0f / 90.0f;	// 1 life every 3 seconds
 		if (RuneValue(Rune::RECOVER))
@@ -1882,7 +1891,6 @@ byte PlayerPassedLevel(byte world, byte map)
 {
 	return map != 50 && ((*GetLevelPassedFlag(world,map)) & LP_PASSED);
 }
-
 
 byte* GetLevelPassedFlag(int chapter, int level)
 {

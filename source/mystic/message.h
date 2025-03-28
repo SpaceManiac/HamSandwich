@@ -28,6 +28,7 @@ byte UpdateFarley(MGLDraw *mgl);
 void RenderFarley(void);
 byte FarleyWorldChoice(void);
 void OutlineFarleySprite(word spr, int x, int y, char bright);
+void OutlineFarleySprite2(word spr, int x, int y, char bright, byte color, char actualBright);
 
 void InitSpeech(byte spc);
 byte UpdateSpeech(MGLDraw *mgl);

@@ -868,7 +868,8 @@ TASK(byte) ChallengePlay(byte world,byte lvl)
 	mapNum=lvl;
 	battle=0;
 	result=AWAIT PlayALevel(mapNum);
-
+	if (result == LEVEL_WIN)
+		PlayerWinLevel(worldNum, mapNum,false);
 	FreeWorld(&curWorld);
 	CO_RETURN 0;
 }

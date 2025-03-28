@@ -142,9 +142,10 @@ void CastSpell(Guy *me)
 		return;
 	}
 
-	if (0)//!HauntedWoodsCastSpell(CurrentMap()))
+	if (!HauntedWoodsCastSpell(CurrentMap()))
 	{
 		player.mana -= cost;
+		ChallengeEvent(CE_SPELL, cost);
 		return;
 	}
 

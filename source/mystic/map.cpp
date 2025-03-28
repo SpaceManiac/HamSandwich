@@ -3309,6 +3309,7 @@ void SwampUpdate(Map* map)
 			swampScore = s;
 			if (swampScore >= 100)
 				EarnAchieve(Achievement::CHEF);
+			ChallengeEvent(CE_COOK, swampScore);
 
 			if (potOrder[0] != swampRecipe[1] || potOrder[1] != swampRecipe[3])	// you did things in the wrong order (you only have to check 2, obviously!)
 			{
@@ -3730,6 +3731,7 @@ void HauntedWoodsCatchGhost(Guy* me)
 		return;
 
 	hauntedWoodsGhosts--;
+	ChallengeEvent(CE_KILL, MONS_GHOST);
 	me->type = 0;
 	FloaterParticles(me->x, me->y, 7, 16, 1, 10);
 	FloaterParticles(me->x, me->y, 7, 32, 1, 10);
