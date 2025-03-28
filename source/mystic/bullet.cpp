@@ -2492,8 +2492,8 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->anim=0;
 			me->timer=24-MGL_random(4);
 			me->z=FIXAMT*20;
-			me->x+=((MGL_random(3)-1)<<FIXSHIFT)+Cosine(me->facing)*5;
-			me->y+=((MGL_random(3)-1)<<FIXSHIFT)+Sine(me->facing)*5;
+			me->x+=((MGL_random(3)-1)*FIXAMT)+Cosine(me->facing)*5;
+			me->y+=((MGL_random(3)-1)*FIXAMT)+Sine(me->facing)*5;
 			me->dx=Cosine(me->facing)*10;
 			me->dy=Sine(me->facing)*10;
 			me->dz=-FIXAMT/2;
@@ -2504,8 +2504,8 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->anim=0;
 			me->timer=30;
 			me->z=FIXAMT*20-MGL_random(65535);
-			me->x+=((MGL_random(3)-1)<<FIXSHIFT);
-			me->y+=((MGL_random(3)-1)<<FIXSHIFT);
+			me->x+=((MGL_random(3)-1)*FIXAMT);
+			me->y+=((MGL_random(3)-1)*FIXAMT);
 			me->x+=FIXAMT/2-MGL_random(65535);
 			me->y+=FIXAMT/2-MGL_random(65535);
 			me->facing=me->facing*32+4-MGL_random(9);

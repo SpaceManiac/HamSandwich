@@ -2102,8 +2102,8 @@ void AI_MamaSpider(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		if(me->seq==ANIM_DIE)
 		{
 			if(MGL_random(2))
-				AddGuy(me->x+((-8+MGL_random(17))<<FIXSHIFT),
-						me->y+((-8+MGL_random(17))<<FIXSHIFT),0,MONS_SPIDER);
+				AddGuy(me->x+((-8+MGL_random(17))*FIXAMT),
+						me->y+((-8+MGL_random(17))*FIXAMT),0,MONS_SPIDER);
 		}
 		if(me->seq==ANIM_ATTACK && me->frm>4 && me->frm<8 && me->reload==0)
 		{
