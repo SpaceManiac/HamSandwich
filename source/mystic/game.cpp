@@ -46,20 +46,24 @@ word windingDown;
 byte windingUp;
 byte windDownReason;
 
-char worldName[4][32]={
+static const char worldName[4][32]={
 	"river.dlw",
 	"forest.dlw",
 	"castle.dlw",
 	"under.dlw"
 };
 
-char worldName_m[4][32] = {
+static const char worldName_m[4][32] = {
 	"river_m.dlw",
 	"forest_m.dlw",
 	"castle_m.dlw",
 	"under_m.dlw"
 };
 
+static const char* WorldName(int world)
+{
+	return ClassicMode() ? worldName[world] : worldName_m[world];
+}
 
 void LunaticInit(MGLDraw *mgl)
 {
@@ -660,7 +664,7 @@ TASK(byte) LunaticRun(int *lastTime)
 	CDMessingTime=0;	// that's how long CD messing took
 	CDMessingTime+=garbageTime;	// time wasted with such things as playing animations
 	garbageTime=0;
-	
+
 	CO_RETURN LEVEL_PLAYING;
 }
 
@@ -856,7 +860,7 @@ TASK(byte) ChallengePlay(byte world,byte lvl)
 {
 	byte result;
 
-	if(!LoadWorld(&curWorld,ClassicMode()?worldName[world]:worldName_m[world]))
+	if(!LoadWorld(&curWorld, WorldName(world)))
 		CO_RETURN WORLD_ABORT;
 
 	InitWorld(&curWorld, worldNum);
@@ -878,7 +882,7 @@ TASK(byte) LunaticWorld(byte world)
 {
 	byte result;
 
-	if(!LoadWorld(&curWorld,ClassicMode()?worldName[world]:worldName_m[world]))
+	if(!LoadWorld(&curWorld, WorldName(world)))
 		CO_RETURN WORLD_ABORT;
 
 	InitPlayer(INIT_WORLD,world,0);
@@ -925,7 +929,7 @@ TASK(byte) LunaticWorld(byte world)
 		{
 			player.worldNum = FarleyWorldChoice();
 			FreeWorld(&curWorld);
-			if (!LoadWorld(&curWorld, ClassicMode() ? worldName[player.worldNum] : worldName_m[player.worldNum]))
+			if (!LoadWorld(&curWorld, WorldName(world)))
 				CO_RETURN WORLD_ABORT;
 			InitWorld(&curWorld, worldNum);
 			InitPlayer(INIT_WORLD, player.worldNum, 1);
@@ -952,7 +956,7 @@ TASK(byte) LunaticWorld(byte world)
 #else
 				player.worldNum++;
 				FreeWorld(&curWorld);
-				if(!LoadWorld(&curWorld, ClassicMode() ? worldName[player.worldNum] : worldName_m[player.worldNum]))
+				if(!LoadWorld(&curWorld, WorldName(world)))
 					CO_RETURN WORLD_ABORT;
 
 				worldNum=player.worldNum;
@@ -994,7 +998,7 @@ TASK(byte) LunaticWorld(byte world)
 					player.worldNum=0;
 					player.nightmare=1;
 					FreeWorld(&curWorld);
-					if(!LoadWorld(&curWorld, ClassicMode() ? worldName[player.worldNum] : worldName_m[player.worldNum]))
+					if(!LoadWorld(&curWorld, WorldName(world)))
 						CO_RETURN WORLD_ABORT;
 					ResetPlayerLevels();
 					InitWorld(&curWorld,worldNum);
