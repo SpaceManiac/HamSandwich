@@ -671,7 +671,7 @@ byte EditorRun(int *lastTime)
 	{
 		if(!editmgl->Process())
 			return QUITGAME;
-
+		UpdateSounds();
 		// update everything here
 		EditorUpdateGuys(curMap);
 		curMap->Update(UPDATE_EDIT,&world);
@@ -681,9 +681,7 @@ byte EditorRun(int *lastTime)
 		numRunsToMakeUp++;
 		updFrameCount++;
 	}
-
-	JamulSoundUpdate();
-
+		
 	return CONTINUE;
 }
 

@@ -4,6 +4,8 @@
 #include "jamulsound.h"
 #include "jamultypes.h"
 
+#define MAX_SNDS_PER_FRAME (64)
+
 #define SND_MENUCLICK	0
 #define SND_MENUSELECT  1
 #define SND_PAUSE		2
@@ -308,5 +310,6 @@ void VolumeSong(byte hi);
 void VolumeSound(byte hi);
 int CurrentSong(void);
 void StopPlayingSong(void);
+void UpdateSounds(void);
 
 #endif

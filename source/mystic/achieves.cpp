@@ -369,7 +369,7 @@ TASK(void) AchieveMenu(MGLDraw *mgl)
 		while (lastTime >= TIME_PER_FRAME)
 		{
 			UpdateControls();
-			JamulSoundUpdate();
+			UpdateSounds();
 
 			b = UpdateAchieveMenu(mgl);
 			lastTime -= TIME_PER_FRAME;

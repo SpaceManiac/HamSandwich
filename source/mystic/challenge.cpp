@@ -1135,7 +1135,7 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 {
 	while(*lastTime>=TIME_PER_FRAME)
 	{
-		JamulSoundUpdate();
+		UpdateSounds();
 		UpdateControls();
 
 		if(offY>0)
@@ -1859,7 +1859,7 @@ byte ChallengeTallyUpdate(MGLDraw *mgl,int *lastTime)
 			return 1;
 		}
 		*lastTime-=TIME_PER_FRAME;
-		JamulSoundUpdate();
+		UpdateSounds();
 	}
 
 	if(mgl->LastKeyPressed()==27)

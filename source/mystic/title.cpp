@@ -201,7 +201,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 {
 	while(*lastTime>=TIME_PER_FRAME)
 	{
-		JamulSoundUpdate();
+		UpdateSounds();
 		UpdateControls();
 
 		// update graphics
@@ -445,7 +445,7 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 	while(*lastTime>=TIME_PER_FRAME)
 	{
 		UpdateControls();
-		JamulSoundUpdate();
+		UpdateSounds();
 
 		// update graphics
 		title->titleBright+=title->titleDir;
@@ -615,7 +615,7 @@ byte DifficultyPickerUpdate(MGLDraw* mgl, title_t* title, int* lastTime)
 	while (*lastTime >= TIME_PER_FRAME)
 	{
 		UpdateControls();
-		JamulSoundUpdate();
+		UpdateSounds();
 
 		// update graphics
 		title->titleBright += title->titleDir;
@@ -749,7 +749,7 @@ TASK(void) Credits(MGLDraw *mgl,byte mode)
 	while(1)
 	{
 		UpdateControls();
-		JamulSoundUpdate();
+		UpdateSounds();
 
 		startTime=timeGetTime();
 		mgl->ClearScreen();
@@ -864,7 +864,7 @@ TASK(void) VictoryText(MGLDraw *mgl,byte victoryType)
 	while(1)
 	{
 		UpdateControls();
-		JamulSoundUpdate();
+		UpdateSounds();
 
 		startTime=timeGetTime();
 		memcpy(mgl->GetScreen(),scr,SCRWID*SCRHEI);
@@ -938,7 +938,7 @@ TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound,byte
 		if(!mgl->Process())
 			CO_RETURN;
 		UpdateControls();
-		JamulSoundUpdate();
+		UpdateSounds();
 
 		if(ButtonTapped(CONTROL_ESCAPE|CONTROL_B1|CONTROL_B2))
 			mode=2;

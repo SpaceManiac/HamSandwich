@@ -287,7 +287,7 @@ TASK(byte) LunaticRun(int *lastTime)
 
 	while(*lastTime>=TIME_PER_FRAME)
 	{
-		JamulSoundUpdate();
+		UpdateSounds();
 		UpdateControls();
 
 		if(!gamemgl->Process())

@@ -343,3 +343,16 @@ void JamulSoundVolume(int v)
 {
 	sndVolume=v;
 }
+
+void JamulSoundChangeSoundVolume(int snd, int volume)
+{
+	int v = (volume + 255) * sndVolume / 255;
+
+	for (int i = 0; i < NUM_SOUNDS; i++)
+	{
+		if (schannel[i].soundNum == snd)
+		{
+			Mix_Volume(schannel[i].voice, v/2);
+		}
+	}
+}

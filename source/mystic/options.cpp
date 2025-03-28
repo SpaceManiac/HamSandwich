@@ -852,7 +852,7 @@ TASK(void) OptionsMenu(MGLDraw *mgl)
 	while(b==0)
 	{
 		UpdateControls();
-		JamulSoundUpdate();
+		UpdateSounds();
 
 		lastTime+=TimeLength();
 		StartClock();

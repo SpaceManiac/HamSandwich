@@ -1184,6 +1184,17 @@ void OutlineFarleySprite(word spr, int x, int y, char bright)
 	GetItemSprite(spr)->DrawBright(x, y, GetDisplayMGL(), bright);
 }
 
+void OutlineFarleySprite2(word spr, int x, int y, char bright,byte color,char actualBright)
+{
+	for (int i = x - 1; i <= x + 1; i++)
+		for (int j = y - 1; j <= y + 1; j++)
+		{
+			if (i != x || j != y)
+				GetItemSprite(spr)->DrawBright(i, j, GetDisplayMGL(), (bright == 0) ? -31 : 31);
+		}
+	GetItemSprite(spr)->DrawColored(x, y, GetDisplayMGL(), color, (bright==0)?actualBright:-31);
+}
+
 void RenderFarley(void)
 {
 	char s[32];
@@ -1220,6 +1231,8 @@ void RenderFarley(void)
 			BlitIconBit(588, 437, 588 + 12, 437 + 12, 50+520 - (Cosine(farleyTicker) * 4 >> FIXSHIFT), 30 + i * 110-10 + (Cosine(farleyTicker) * 4 >> FIXSHIFT), 255, 0);
 			BlitIconBit(588, 467, 588 + 12, 467 + 13, 50+520 - (Cosine(farleyTicker) * 4 >> FIXSHIFT), 30 + i * 110+98 - (Cosine(farleyTicker) * 4 >> FIXSHIFT), 255, 0);
 		}
+
+		// left side: fairies, sword, and rune pouch
 		byte fairyCt=0;
 		for (int j = 0; j < 4; j++)
 		{
@@ -1230,16 +1243,24 @@ void RenderFarley(void)
 		for (int j = 3; j >= 0; j--)
 			OutlineFarleySprite(173,64 + j * 16, 30 + i * 110 + 85, 0 - 31 * (j >= fairyCt));
 
+		OutlineFarleySprite(131, 155, 30 + i * 110 + 85, 0 - 31 * (player.swordPiece[i] == 0));
+
 		if (!ClassicMode())
 		{
 			fairyCt = 0;
 			for (int j = 0; j < MAX_MAPS; j++)
-				if (GotRuneInLevel(i, j))
+			{
+				if (GotRunePouchInLevel(i, j))
 					fairyCt++;
+			}
 
-			for (int j = 5; j >= 0; j--)
-				OutlineFarleySprite(281, 570 - 16 * 6 + j * 16, 30 + i * 110 + 85, 0 - 31 * (j >= fairyCt));
+			OutlineFarleySprite(4, 185, 30 + i * 110 + 55, 0 - 31 * (fairyCt == 0));
 		}
+
+		// right side: spells, runes, and skill shards
+		int spellY = 30 + i * 110 + 40 + 25 * ClassicMode();
+		int runeY = 30 + i * 110 + 65;
+		int shardY = 30 + i * 110 + 92;
 
 		fairyCt = 0;
 		byte totalSpells = 0;
@@ -1255,10 +1276,32 @@ void RenderFarley(void)
 		}
 		if (i == 0) totalSpells--;	// energy barrage is listed in 2 levels, because modern and classic use 2 different beginnertons
 
-		for (int j = totalSpells-1; j >= 0; j--)
-			OutlineFarleySprite(45, 565 - 16 * totalSpells + j * 16, 30 + i * 110 + 45+20*ClassicMode(), 0 - 31 * (j >= fairyCt));
+		for (int j = totalSpells - 1; j >= 0; j--)
+			OutlineFarleySprite(45, 565 - 16 * totalSpells + j * 16, spellY, 0 - 31 * (j >= fairyCt));
 
-		OutlineFarleySprite(131,160,30+i*110+85, 0-31*(player.swordPiece[i]==0));
+		if (!ClassicMode())
+		{
+			fairyCt = 0;
+			for (int j = 0; j < MAX_MAPS; j++)
+				if (GotRuneInLevel(i, j))
+					fairyCt++;
+
+			for (int j = 5; j >= 0; j--)
+				OutlineFarleySprite(281, 570 - 16 * 6 + j * 16, runeY, 0 - 31 * (j >= fairyCt));
+
+			fairyCt = 0;
+			for (int j = 0; j < MAX_MAPS; j++)
+				if (GotSkillShardInLevel(i, j))
+					fairyCt++;
+			int totalShards = 2;
+			if (i == 1 || i==2) totalShards = 5;
+			if (i == 3) totalShards = 4;
+
+			for (int j = totalShards-1; j >= 0; j--)
+				OutlineFarleySprite2(67, 565 - 10 * totalShards + j * 10, shardY, 0 - 31 * (j >= fairyCt),6,0);
+		}
+
+		
 	}
 }
 

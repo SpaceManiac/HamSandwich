@@ -113,7 +113,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{5,255}		// A3 (another woman)
 			}},
 		{"Pterodactyl",	// pterodactyl - kid mystic's little buddy
-		 10,11,15,5,"graphics/ptero.jsp",0,MF_FLYING|MF_ENEMYWALK|MF_FREEWALK|MF_GOODGUY,
+		 10,11,30,5,"graphics/ptero.jsp",0,MF_FLYING|MF_ENEMYWALK|MF_FREEWALK|MF_GOODGUY,
 			{
 				{0,1,2,6,3,4,5,4,3,6,2,1,255},	// idle
 				{0,1,2,6,3,4,5,4,3,6,2,1,255},	// move
@@ -766,6 +766,7 @@ word MonsterHP(byte type)
 				int hp = monsType[type].hp;
 				if (type == MONS_GOLEM)
 					hp *= (1 + SkillValue(SKILL_SUMMON)) / 6;
+				
 				return hp * (100 + player.spellStones * 10) / 100;
 			}
 		}
@@ -1347,22 +1348,6 @@ void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	
 	if(me->action==ACTION_BUSY)
 	{
-		if(me->seq==ANIM_ATTACK && me->frm==3 && me->reload==0)
-		{
-			// shoot
-			FaceGoodguy(me,goodguy);
-			MakeSound(SND_PTEROSHOOT,me->x,me->y,SND_CUTOFF,600);
-			FireBullet(me->x,me->y,me->facing*32,BLT_PTEROSHOT);
-			if (ClassicMode())
-				me->reload = 25 - SpellLevel() / 2 + 2;
-			else
-				me->reload = 25 - SkillValue(SKILL_SUMMON) * 5 + 2;
-		}
-		if(me->seq==ANIM_ATTACK)
-		{
-			Dampen(&me->dx,FIXAMT*2);
-			Dampen(&me->dy,FIXAMT*2);
-		}
 		if(me->seq==ANIM_DIE)
 		{
 			BlowWigglySmoke(me->x,me->y,me->z,0);
@@ -1416,8 +1401,9 @@ void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		}
 	}
 	me->frmAdvance=256;
-	me->dx+=Cosine(me->facing*32);
-	me->dy+=Sine(me->facing*32);
+	// a little randomness in the movement to keep them from all overlapping each other
+	me->dx += Cosine(me->facing * 32) - 10 + Random(20);
+	me->dy += Sine(me->facing * 32) - 10 + Random(20);
 	Clamp(&me->dx,FIXAMT*(6+4*ClassicMode()));
 	Clamp(&me->dy,FIXAMT*(6+4*ClassicMode()));
 }
@@ -5161,13 +5147,6 @@ void AI_Golem(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x+Cosine(me->facing*32)*32;
 			y=me->y+Sine(me->facing*32)*32;
 			FireBullet(x,y,me->facing,BLT_GOODSHOCK);
-			/*
-			if(goodguy)
-			{
-				if(me->AttackCheck(48,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
-					goodguy->GetShot(Cosine(me->facing*32)*6,Sine(me->facing*32)*6,15,map,world);
-			}
-			*/
 			me->reload=60;
 		}
 		if(me->seq==ANIM_A1)	// forming

@@ -42,5 +42,6 @@ void GoPlaySound(int num, long pan, long vol, int flags, int priority);
 bool JamulSoundStop(int which);
 
 void JamulSoundVolume(int v);
+void JamulSoundChangeSoundVolume(int snd, int volume);
 
 #endif  // JAMULSOUND_H
