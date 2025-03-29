@@ -8,6 +8,7 @@
 #include "skills.h"
 #include "game.h"
 #include "options.h"
+#include "steam.h"
 
 AchieveDef achieveDef[] = {
 	{
@@ -43,7 +44,7 @@ AchieveDef achieveDef[] = {
 	{
 		"Kid Mystic's Pro Caster",5,
 		"Master the challenges of this world.",
-		"Beat Bpbby Khan in Challenge Mode (either Classic or Modern).",
+		"Beat Bobby Khan in Challenge Mode (either Classic or Modern).",
 		Progress::ONE_SHOT
 	},
 	{
@@ -273,7 +274,7 @@ void RenderAchieveMenu(MGLDraw *mgl)
 			x2 = SCRWID;
 		if (y2 > SCRHEI)
 			y2 = SCRHEI;
-		
+
 		for (int j = 0; j < (y2 - y); j++)
 		{
 			if(j+y>=0 && j+y<SCRHEI)
@@ -288,9 +289,9 @@ void RenderAchieveMenu(MGLDraw *mgl)
 				break;
 		}
 	}
-	
+
 	CenterPrintGlow(2,"Achievements",0);
-	
+
 	x = SCRWID / 2 - 3 * 60+20;
 	y = 60;
 	for (int i = 0; i < (int)Achievement::NUM_ACHIEVES; i++)
@@ -318,7 +319,6 @@ void RenderAchieveMenu(MGLDraw *mgl)
 			{
 				CenterPrintItalics(HALFWID, SCRHEI - 115, achieveDef[i].hint, 15, 1);
 			}
-			
 		}
 		else
 		{
@@ -326,7 +326,6 @@ void RenderAchieveMenu(MGLDraw *mgl)
 			RenderSkillBox(x + 2, y + 2, x + 38, y + 38, col+16, col+4);
 			BlitIcon(achieveDef[i].icon, x + 4, y + 4, 3, 0);
 		}
-		
 
 		x += 60;
 		if ((i%6)==5)
@@ -400,6 +399,8 @@ void InitAchieveSystem(void)
 
 void EarnAchieve(Achievement n)
 {
+	Steam()->CompleteGoal((int)n);
+
 	if (opt.achieve[(int)n] == ACHIEVE_GOT)
 		return;
 

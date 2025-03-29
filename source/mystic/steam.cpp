@@ -121,7 +121,7 @@ public:
 		{
 			for (int goal = 0; goal < (int)Achievement::NUM_ACHIEVES; ++goal)
 			{
-				if (opt.achieve[goal])
+				if (opt.achieve[goal] == ACHIEVE_GOT)
 				{
 					CompleteGoal(goal);
 				}
