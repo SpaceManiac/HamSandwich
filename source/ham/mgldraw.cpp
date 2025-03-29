@@ -433,30 +433,17 @@ TASK(void) MGLDraw::FinishFlip(void)
 #ifndef __EMSCRIPTEN__
 				if (windowed)
 				{
-					// increase scale by 1
-					int scale = std::min(winWidth / xRes, winHeight / yRes) + 1;
-					int newWidth = xRes * scale, newHeight = yRes * scale;
-					// compare to desktop size
-					SDL_DisplayMode mode;
-					int index = SDL_GetWindowDisplayIndex(window);
-					if (index < 0)
+					// decrease scale by 1
+					int scale = std::min((winWidth - 1) / xRes, (winHeight - 1) / yRes);
+					if (scale < 1)
 					{
-						LogError("SDL_GetWindowDisplayIndex: %s", SDL_GetError());
-						SetWindowed(false);
-					}
-					else if (SDL_GetDesktopDisplayMode(index, &mode) < 0)
-					{
-						LogError("SDL_GetDesktopDisplayMode: %s", SDL_GetError());
-						SetWindowed(false);
-					}
-					else if (newWidth >= mode.w || newHeight >= mode.h)
-					{
-						// too big, go to fullscreen
+						// Already at minimum size, just go fullscreen
 						SetWindowed(false);
 					}
 					else
 					{
-						// bump up window size
+						// bump down window size
+						int newWidth = xRes * scale, newHeight = yRes * scale;
 						int px, py;
 						SDL_GetWindowPosition(window, &px, &py);
 						px -= (newWidth - winWidth) / 2;
@@ -470,8 +457,38 @@ TASK(void) MGLDraw::FinishFlip(void)
 				}
 				else
 				{
-					// just go to exact window size
-					SetWindowed(true);
+					// go to biggest window size that will fit on desktop
+					SDL_DisplayMode mode;
+					int index = SDL_GetWindowDisplayIndex(window);
+					if (index < 0)
+					{
+						LogError("SDL_GetWindowDisplayIndex: %s", SDL_GetError());
+						SetWindowed(true);
+					}
+					else if (SDL_GetDesktopDisplayMode(index, &mode) < 0)
+					{
+						LogError("SDL_GetDesktopDisplayMode: %s", SDL_GetError());
+						SetWindowed(true);
+					}
+					else
+					{
+						int scale = std::min((mode.w - 1) / xRes, (mode.h - 1) / yRes);
+						int newWidth = xRes * scale, newHeight = yRes * scale;
+						int px, py;
+						SDL_GetWindowPosition(window, &px, &py);
+
+						SDL_SetWindowFullscreen(window, 0);
+						SDL_SetWindowResizable(window, SDL_TRUE);  // Set now in case we started fullscreen.
+						windowed = true;
+
+						px -= (newWidth - winWidth) / 2;
+						py -= (newHeight - winHeight) / 2;
+						px = std::max(0, px);
+						py = std::max(0, py);
+						SDL_SetWindowPosition(window, px, py);
+
+						SDL_SetWindowSize(window, newWidth, newHeight);
+					}
 				}
 #else  // __EMSCRIPTEN__
 				EM_ASM(
