@@ -307,10 +307,10 @@ challenge_t chal[]={
 
 	{ 2,24,5,"Hot To Go",LP_GOTRUNEPOUCH | LP_GOTSKILLSHARD, 30 * 60 * 5,
 		{{GOAL_FINISH,0},
-		{GOAL_FINISH,0},
-		{GOAL_FINISH,0},
-		{GOAL_FINISH,0},
-		{GOAL_FINISH,0}},
+		{GOAL_COMBO,200},
+		{GOAL_MYSTIC,30*15},
+		{GOAL_CRYSTALS,0},
+		{GOAL_KILLSOME,MONS_OCTOPUS}},
 	},
 
 	{2,7,10,"Off The Deep End",LP_GOTSWORD|LP_GOTSKILLSHARD,30*60*5,
@@ -402,12 +402,12 @@ challenge_t chal[]={
 		{GOAL_CRYSTALS,0}},
 	},
 
-	{ 3,19,5,"Horkboxes",LP_GOTRUNEPOUCH | LP_GOTSKILLSHARD, 30 * 60 * 5,
+	{ 3,19,5,"Horkboxes",LP_GOTRUNEPOUCH | LP_GOTSKILLSHARD, 30 * 60 * 10,
 		{{GOAL_FINISH,0},
-		{GOAL_FINISH,0},
-		{GOAL_FINISH,0},
-		{GOAL_FINISH,0},
-		{GOAL_FINISH,0}},
+		{GOAL_COMBO,100},
+		{GOAL_SCORE,100000},
+		{GOAL_MYSTIC,30*2},
+		{GOAL_CRYSTALS,0}},
 	},
 
 	{3,8,10,"Armageddon Shrine",LP_GOTSWORD|LP_GOTSKILLSHARD,30*60*2,
@@ -1972,6 +1972,7 @@ byte ChallengeTallyUpdate(MGLDraw *mgl,int *lastTime)
 		if (ButtonTapped(CONTROL_ESCAPE | CONTROL_B1 | CONTROL_B2))
 		{
 			MakeNormalSound(SND_MENUSELECT);
+			LockOutControl(CONTROL_ESCAPE | CONTROL_B1 | CONTROL_B2, true);
 			return 1;
 		}
 		*lastTime-=TIME_PER_FRAME;

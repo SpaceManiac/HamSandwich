@@ -504,7 +504,7 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 				return 1;
 			}
 		}
-		if (ButtonTapped(CONTROL_ESCAPE))
+		if (ButtonTapped(CONTROL_B2|CONTROL_ESCAPE))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			UpdateControls();
