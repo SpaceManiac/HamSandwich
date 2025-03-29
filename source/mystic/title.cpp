@@ -412,7 +412,14 @@ void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 
 	for(i=0;i<5;i++)
 	{
-		sprintf(s,"%d",title.saveOffset + i +1);
+		if (title.saveOffset == 245)
+		{
+			sprintf(s, "Bk%d", i + 1);
+		}
+		else
+		{
+			sprintf(s, "%d", title.saveOffset + i + 1);
+		}
 		PrintBrightGlow(380 - (title.saveOffset + i + 1 >= 100 ? 30 : title.saveOffset + i + 1 >= 10 ? 15 : 0), 200+i*50,s,-16+(title.savecursor==i)*16,0);
 
 		if(title.saveChapter[i]==0 || title.saveLevel[i]==0 || title.saveDiff[i]==Difficulty::UNUSED)

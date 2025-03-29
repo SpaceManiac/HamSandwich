@@ -8,6 +8,7 @@
 #include "skills.h"
 #include "runes.h"
 #include "string_extras.h"
+#include "vfs.h"
 
 #define SUBMODE_NONE	 0
 #define SUBMODE_SLOTPICK 1
@@ -126,7 +127,14 @@ void RenderSlotPickMenu(void)
 
 	for(i=0;i<5;i++)
 	{
-		sprintf(s, "%d", saveOffset + i + 1);
+		if (saveOffset == 245)
+		{
+			sprintf(s, "Bk%d", i + 1);
+		}
+		else
+		{
+			sprintf(s, "%d", saveOffset + i + 1);
+		}
 		//FontPrintStringSolid(subX + 200 + 35 + 15 - 5 - GetStrLength(s, 0),50+i*40,s,gameFont[0],174);
 		PrintBrightGlow(subX + 200 + 35 + 15 - 5 - GetStrLength(s, 0),50+i*40,s,-16+(saveCursor==i)*16,0);
 
@@ -559,6 +567,17 @@ void UpdateUnPausedMenu(void)
 		subX-=25;
 }
 
+void AutoSave()
+{
+	// Overwrite BK5 with BK4, BK4 with BK3, BK3 with BK2, BK2 with BK1.
+	Vfs()->rename("mystic248.sav", "mystic249.sav");
+	Vfs()->rename("mystic247.sav", "mystic248.sav");
+	Vfs()->rename("mystic246.sav", "mystic247.sav");
+	Vfs()->rename("mystic245.sav", "mystic246.sav");
+	// Save to BK1.
+	PlayerSaveGame(245);
+}
+
 byte UpdatePauseMenu(MGLDraw *mgl)
 {
 	armaBrt++;
@@ -640,6 +659,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 						ReplaySong();
 					break;
 				case 4:	// quit game
+					AutoSave();
 					return 3;
 				case 5:	// skills
 					subMode = SUBMODE_SKILLS;
@@ -724,10 +744,17 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			}
 			else if(effCursor==2)	// Save
 			{
-				PlayerSaveGame(saveOffset + saveCursor);
-				MakeNormalSound(SND_SAVEGAME);
-				subMode=SUBMODE_NONE;
-				return 0;
+				if(saveOffset == 245)
+				{
+					MakeNormalSound(SND_ACIDSPLAT);
+				}
+				else
+				{
+					PlayerSaveGame(saveOffset + saveCursor);
+					MakeNormalSound(SND_SAVEGAME);
+					subMode=SUBMODE_NONE;
+					return 0;
+				}
 			}
 		}
 	}
