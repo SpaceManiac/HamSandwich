@@ -7,6 +7,7 @@
 #include "water.h"
 #include "appdata.h"
 #include "skills.h"
+#include "vfs.h"
 
 #define PLYR_ACCEL	(FIXAMT)
 #define PLYR_DECEL	(FIXAMT*3/4)
@@ -192,6 +193,17 @@ void PlayerSaveGame(byte which)
 	SDL_RWwrite(f,&player,sizeof(player_t),1);
 	f.reset();
 	AppdataSync();
+}
+
+void AutoSave()
+{
+	// Overwrite BK5 with BK4, BK4 with BK3, BK3 with BK2, BK2 with BK1.
+	Vfs()->rename("mystic248.sav", "mystic249.sav");
+	Vfs()->rename("mystic247.sav", "mystic248.sav");
+	Vfs()->rename("mystic246.sav", "mystic247.sav");
+	Vfs()->rename("mystic245.sav", "mystic246.sav");
+	// Save to BK1.
+	PlayerSaveGame(245);
 }
 
 void SetPlayerSpeed(void)
@@ -1102,7 +1114,7 @@ void PlayerThrowHammer(Guy *me)
 		if(player.mana>0)
 			player.mana--;
 	}
-	
+
 	ChallengeEvent(CE_SHOOT,player.hammers);
 	HammerLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags,(PlayerHasSword() && !player.disableSword));
 	if (!ClassicMode() && RuneValue(Rune::SHOTGUN) > 0)
@@ -1290,7 +1302,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			FireBullet(me->x, me->y, (me->facing + 6) & 7, BLT_FLAME);
 		}
 	}
-	
+
 	vampyClock++;
 	if(vampyClock>30*3 && player.fairyOn==FAIRY_VAMPY && player.levelNum!=1)	// not on the hub level
 	{

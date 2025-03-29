@@ -188,6 +188,7 @@ int CalcGamePercent(const player_t* p);
 void PlayerHeal(byte amt);
 void PlayerLoadGame(byte which);
 void PlayerSaveGame(byte which);
+void AutoSave();
 byte GetPlayerWorld(void);
 byte PlayerShield(void);
 void PlayerGetPoints(int amt);

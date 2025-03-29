@@ -406,15 +406,15 @@ TASK(byte) LunaticRun(int *lastTime)
 		{
 			switch(UpdatePauseMenu(gamemgl))
 			{
-				case 0:
+				case PauseResult::Resume:
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
 					SetInMenu(false);
 					UpdateControls();
 					break;
-				case 1:
+				case PauseResult::Pause:
 					break;
-				case 2:
+				case PauseResult::GiveUp:
 					StopPlayingSong();
 					if(mapNum)
 						mapToGoTo=1;
@@ -456,7 +456,7 @@ TASK(byte) LunaticRun(int *lastTime)
 					ChallengeEvent(CE_DIE,0);
 					CO_RETURN LEVEL_ABORT;
 					break;
-				case 3:
+				case PauseResult::Quit:
 					mapToGoTo=255;
 					lastKey=0;
 					ChallengeEvent(CE_QUIT,0);
@@ -944,7 +944,7 @@ TASK(byte) LunaticWorld(byte world)
 		}
 		else if(result==LEVEL_WIN)
 		{
-			 mapNum=player.levelNum;
+			mapNum=player.levelNum;
 			PlayerWinLevel(world,mapNum,curMapFlags&MAP_SECRET);
 			if((player.worldNum==0 && mapNum==14) ||
 				(player.worldNum==1 && mapNum==12) ||
@@ -1035,34 +1035,24 @@ TASK(byte) LunaticWorld(byte world)
 
 TASK(byte) LunaticGame(MGLDraw *mgl,byte load)
 {
-	byte b,worldResult;
-
 	if(!load)	// don't do this if loading a game, it was already done and the player was filled with values
 	{
 		InitPlayer(INIT_GAME,0,0);
 		AWAIT ShowVictoryAnim(0);
 	}
 
-	newGame=0;
-	if(load>0)	// continuing a saved game
-		worldResult=WORLD_LOAD;
-	else
+	newGame = (load == 0);
+	while (mgl->Process())
 	{
-		worldResult=0;
-		newGame=1;
-	}
-	while(1)
-	{
-		b=player.worldNum;
+		byte worldResult = AWAIT LunaticWorld(player.worldNum);
 
-		worldResult=AWAIT LunaticWorld(b);
-
-		if(worldResult==WORLD_QUITGAME || worldResult == WORLD_ABORT)
+		if (worldResult == WORLD_QUITGAME || worldResult == WORLD_ABORT)
 		{
+			AutoSave();  // No Challenging() check needed because ChallengePlay is separate.
 			mgl->LastKeyPressed();	// just to clear key buffer
 			break;
 		}
-		if(worldResult==WORLD_NAG)
+		else if (worldResult==WORLD_NAG)
 		{
 			ExitPlayer();
 			CO_RETURN 1;

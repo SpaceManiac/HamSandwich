@@ -54,7 +54,7 @@
 
 // these are world outcomes
 #define WORLD_ABORT 5
-#define WORLD_WIN	6
+//#define WORLD_WIN	6
 #define WORLD_PLAYING 7
 #define WORLD_LOAD	8
 #define WORLD_QUITGAME 9

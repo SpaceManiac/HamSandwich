@@ -8,7 +8,6 @@
 #include "skills.h"
 #include "runes.h"
 #include "string_extras.h"
-#include "vfs.h"
 
 #define SUBMODE_NONE	 0
 #define SUBMODE_SLOTPICK 1
@@ -567,18 +566,7 @@ void UpdateUnPausedMenu(void)
 		subX-=25;
 }
 
-void AutoSave()
-{
-	// Overwrite BK5 with BK4, BK4 with BK3, BK3 with BK2, BK2 with BK1.
-	Vfs()->rename("mystic248.sav", "mystic249.sav");
-	Vfs()->rename("mystic247.sav", "mystic248.sav");
-	Vfs()->rename("mystic246.sav", "mystic247.sav");
-	Vfs()->rename("mystic245.sav", "mystic246.sav");
-	// Save to BK1.
-	PlayerSaveGame(245);
-}
-
-byte UpdatePauseMenu(MGLDraw *mgl)
+PauseResult UpdatePauseMenu(MGLDraw *mgl)
 {
 	armaBrt++;
 	if(pauseX<0)
@@ -635,13 +623,13 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			{
 				case 0: // cancel
 					LockOutControl(CONTROL_B1, true);
-					return 0;
+					return PauseResult::Resume;
 				case 1:	// Load
 					subMode=SUBMODE_SLOTPICK;
 					break;
 				case 2: // Save
 					if(giveUp)
-						return 2;
+						return PauseResult::GiveUp;
 					else
 					{
 						subMode = SUBMODE_SLOTPICK;
@@ -659,8 +647,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 						ReplaySong();
 					break;
 				case 4:	// quit game
-					AutoSave();
-					return 3;
+					return PauseResult::Quit;
 				case 5:	// skills
 					subMode = SUBMODE_SKILLS;
 					subcursor = 0;
@@ -739,7 +726,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					MakeNormalSound(SND_LOADGAME);
 					subMode=SUBMODE_NONE;
 					LockOutControl(CONTROL_B1, true);
-					return 0;
+					return PauseResult::Resume;
 				}
 			}
 			else if(effCursor==2)	// Save
@@ -753,7 +740,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					PlayerSaveGame(saveOffset + saveCursor);
 					MakeNormalSound(SND_SAVEGAME);
 					subMode=SUBMODE_NONE;
-					return 0;
+					return PauseResult::Resume;
 				}
 			}
 		}
@@ -1047,12 +1034,12 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		if (subMode == SUBMODE_NONE)
 		{
 			LockOutControl(CONTROL_B2, true);
-			return 0;
+			return PauseResult::Resume;
 		}
 		else
 			subMode=SUBMODE_NONE;
 		lastKey=0;
 	}
 
-	return 1;
+	return PauseResult::Pause;
 }
