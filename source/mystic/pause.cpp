@@ -148,14 +148,7 @@ void RenderSlotPickMenu(void)
 				auto dest = ham_sprintf(s, "Chapter %d", saveChapter[i]);
 				if(saveNightmare[i])
 					dest = ham_strcpy(dest, "!!!");
-				if (saveDiff[i] == Difficulty::CLASSIC)
-					dest = ham_strcpy(dest, " [C]");
-				else if (saveDiff[i] == Difficulty::MODERN)
-					dest = ham_strcpy(dest, " [M]");
-				else if (saveDiff[i] == Difficulty::BRUTAL_CLASSIC)
-					dest = ham_strcpy(dest, " [BC]");
-				else if (saveDiff[i] == Difficulty::BRUTAL_MODERN)
-					dest = ham_strcpy(dest, " [BM]");
+				dest = ham_strcpy(dest, DifficultySuffix(saveDiff[i]));
 				PrintBrightGlow(subX+10,50+i*40,s,0,2);
 
 				sprintf(s,"%02d:%02d L%02d %d%%",saveHour[i],saveMin[i],saveLevel[i],savePct[i]);
@@ -173,16 +166,9 @@ void RenderSlotPickMenu(void)
 				auto dest = ham_sprintf(s, "Chapter %d", saveChapter[i]);
 				if(saveNightmare[i])
 					dest = ham_strcpy(dest, "!!!");
-				if (saveDiff[i] == Difficulty::CLASSIC)
-					dest = ham_strcpy(dest, " [C]");
-				else if (saveDiff[i] == Difficulty::MODERN)
-					dest = ham_strcpy(dest, " [M]");
-				else if (saveDiff[i] == Difficulty::BRUTAL_CLASSIC)
-					dest = ham_strcpy(dest, " [BC]");
-				else if (saveDiff[i] == Difficulty::BRUTAL_MODERN)
-					dest = ham_strcpy(dest, " [BM]");
-
+				dest = ham_strcpy(dest, DifficultySuffix(saveDiff[i]));
 				PrintBright(subX+10,50+i*40,s,-32,2);
+
 				sprintf(s,"%02d:%02d L%02d %d%%",saveHour[i],saveMin[i],saveLevel[i],savePct[i]);
 				PrintBright(subX+10,50+i*40+20,s,-32,2);
 			}

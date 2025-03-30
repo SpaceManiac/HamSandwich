@@ -431,14 +431,7 @@ void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 			auto dest = ham_sprintf(s, "Chapter %d", title.saveChapter[i]);
 			if(title.saveNightmare[i])
 				dest = ham_strcpy(dest, "!!!");
-			if (title.saveDiff[i] == Difficulty::CLASSIC)
-				dest = ham_strcpy(dest, " [C]");
-			else if (title.saveDiff[i] == Difficulty::MODERN)
-				dest = ham_strcpy(dest, " [M]");
-			else if (title.saveDiff[i] == Difficulty::BRUTAL_CLASSIC)
-				dest = ham_strcpy(dest, " [BC]");
-			else if (title.saveDiff[i] == Difficulty::BRUTAL_MODERN)
-				dest = ham_strcpy(dest, " [BM]");
+			dest = ham_strcpy(dest, DifficultySuffix(title.saveDiff[i]));
 			PrintBrightGlow(430,200+i*50,s,-16+(title.savecursor==i)*16,2);
 
 			sprintf(s,"%02d:%02d L%02d %d%%",title.saveHour[i],title.saveMin[i],title.saveLevel[i],title.savePercent[i]);
@@ -565,27 +558,28 @@ TASK(byte) GameSlotPicker(MGLDraw *mgl,title_t *title)
 void DifficultyPickerDisplay(MGLDraw* mgl, title_t title)
 {
 	int i;
-	char diffName[][16] = {
+	static const char diffName[][16] = {
 		"Classic",
 		"Modern",
 		"Brutal Classic",
 		"Brutal Modern",
+		"1999 Mode",
 	};
 	char s[32];
 
 	MainMenuDisplay(mgl, title,true);
 	RenderSkillBox(360, 144, 636, 460, 31, 3);
-	PrintBrightGlow(400, 150, "Difficulty", 0, 0);
+	PrintBrightGlow((360+636-GetStrLength("Difficulty", 0))/2, 150, "Difficulty", 0, 0);
 
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < (title.cursor == 2 ? 4 : 5); i++)
 	{
 		if (title.cursor == 2)	// challenge mode shows your % on that save
 		{
 			sprintf(s, "%s [%d%%]", diffName[i], challengePct[i]);
-			PrintBrightGlow(365, 200 + i * 30, s, -16 + (title.savecursor == i) * 16, 2);
+			PrintBrightGlow(370, 190 + i * 25, s, -16 + (title.savecursor == i) * 16, 2);
 		}
 		else
-			PrintBrightGlow(380, 200 + i * 30, diffName[i], -16 + (title.savecursor == i) * 16, 2);
+			PrintBrightGlow(370, 190 + i * 25, diffName[i], -16 + (title.savecursor == i) * 16, 2);
 	}
 	switch (title.savecursor)
 	{
@@ -643,13 +637,13 @@ byte DifficultyPickerUpdate(MGLDraw* mgl, title_t* title, int* lastTime)
 		{
 			(title->savecursor)--;
 			if (title->savecursor == 255)
-				title->savecursor = 3;
+				title->savecursor = (title->cursor == 2 ? 4 : 5) - 1;
 			MakeNormalSound(SND_MENUCLICK);
 		}
 		if (AutoRepeatTapped(CONTROL_DN))
 		{
 			(title->savecursor)++;
-			if (title->savecursor == 4)
+			if (title->savecursor >= (title->cursor == 2 ? 4 : 5))
 				title->savecursor = 0;
 			MakeNormalSound(SND_MENUCLICK);
 		}

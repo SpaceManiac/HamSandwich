@@ -2,6 +2,7 @@
 #include "water.h"
 #include "options.h"
 #include "recolor.h"
+#include "player.h"
 
 tile_t tiles[NUMTILES];
 MGLDraw *tileMGL;
@@ -506,7 +507,7 @@ void RenderFloorTileFancyWater(int x,int y,int t,byte water,byte shadow,char *th
 	int i,j;
 	char light[9];
 
-	if(!opt.lightFX)
+	if(!opt.lightFX || VeryClassicMode())
 	{
 		RenderFloorTileFancy(x,y,t,shadow,theLight);
 		return;
@@ -592,9 +593,9 @@ void RenderFloorTileFancy(int x,int y,int t,byte shadow,char *theLight)
 	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>SCRWID-1 || y>SCRHEI-1)
 		return;	// no need to render
 
-	if(!opt.lightFX)
+	if(!opt.lightFX || VeryClassicMode())
 	{
-		if(shadow==1)
+		if(shadow == 1 || shadow == 2 || shadow == 6)
 			RenderFloorTileShadow(x,y,t,theLight[4]);
 		else
 			RenderFloorTile(x,y,t,theLight[4]);
@@ -689,7 +690,7 @@ void RenderWallTileFancy(int x,int y,int t,char *theLight)
 	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>SCRWID-1 || y>SCRHEI-1)
 		return;	// no need to render
 
-	if(!opt.lightFX)
+	if(!opt.lightFX || VeryClassicMode())
 	{
 		RenderFloorTile(x,y,t,theLight[4]);
 		return;
@@ -751,7 +752,7 @@ void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,char *theLi
 	if(x<=-TILE_WIDTH || y<=-TILE_HEIGHT || x>SCRWID-1 || y>SCRHEI-1)
 		return;	// no need to render
 
-	if(!opt.lightFX)
+	if(!opt.lightFX || VeryClassicMode())
 	{
 		if(trans)
 			RenderFloorTileTrans(x,y,t,theLight[4]);

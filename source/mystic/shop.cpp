@@ -14,7 +14,7 @@
 sprite_set_t *shopSpr;
 static byte armaBrt=0;
 
-char hatName[5][16]={
+static const char hatName[5][16]={
 	"Paper Hat",
 	"Felt Hat",
 	"Moon Hat",
@@ -22,7 +22,7 @@ char hatName[5][16]={
 	"Steel Hat"
 };
 
-char staffName[5][16]={
+static const char staffName[5][16]={
 	"Balsa Staff",
 	"Pine Staff",
 	"Oak Staff",
@@ -30,7 +30,7 @@ char staffName[5][16]={
 	"Mystical Staff"
 };
 
-char bootName[5][18]={
+static const char bootName[5][18]={
 	"Orthopedic Boots",
 	"Leather Boots",
 	"Doc Merlins",
@@ -38,7 +38,7 @@ char bootName[5][18]={
 	"Air Lancelots"
 };
 
-char otherName[12][18]={
+static const char otherName[12][18]={
 	"Heart Pendant",
 	"Soul Pendant",
 	"Moon Amulet",
@@ -53,7 +53,7 @@ char otherName[12][18]={
 	"Shootin' Socks",
 };
 
-char shopName[29][18]={
+static const char shopName[29][18]={
 	"Felt Hat",
 	"Moon Hat",
 	"Checkered Hat",
@@ -631,7 +631,9 @@ void RenderPlayerGear(int x,byte brt)
 
 byte Owned(byte w)
 {
-	if((player.nightmare || BrutalMode()) && w == 0)
+	if (VeryClassicMode() && (w == 4 || w == 9 || w == 14 || w == 18 || w == 19 || w == 20 || w == 21 || w == 22 || w == 23))
+		return true;
+	else if((player.nightmare || BrutalMode()) && w == 0)
 		return (player.shieldStones==99);
 	else if((player.nightmare || BrutalMode())  && w == 5)
 		return (player.powerStones==99);
@@ -701,7 +703,11 @@ void RenderShop(void)
 			else
 			{
 				shopSpr->GetSprite(0 + Owned(i + j * 5))->Draw((i)*SHOPDX + SHOPX, SHOPY + j * SHOPDY, mgl);
-				if (i == 4 && j == 2 && Challenging())	// hourglass
+				if (VeryClassicMode() && ((i == 4) != (j == 4) || (i == 3 && j == 3)))
+				{
+					// excluded
+				}
+				else if (i == 4 && j == 2 && Challenging())	// hourglass
 					shopSpr->GetSprite(38)->Draw((i)*SHOPDX + SHOPX, SHOPY + j * SHOPDY, mgl);
 				else if(shopPic[i+j*5]!=0)
 					shopSpr->GetSprite(shopPic[i+j*5])->Draw((i)*SHOPDX+SHOPX,SHOPY+j*SHOPDY,mgl);
@@ -939,7 +945,7 @@ byte UpdateShop(MGLDraw *mgl)
 	int prc;
 
 	armaBrt++;
-	
+
 	if(AutoRepeatTapped(CONTROL_UP))
 	{
 		MakeNormalSound(SND_MENUCLICK);
@@ -993,9 +999,9 @@ byte UpdateShop(MGLDraw *mgl)
 		else
 			MakeNormalSound(SND_UNAVAILABLE);
 	}
-		
+
 	if (ButtonTapped(CONTROL_ESCAPE))
 		return 1;
-	
+
 	else return 0;
 }

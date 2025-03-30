@@ -1006,7 +1006,7 @@ byte PlayerKeys(byte w)
 void PlayerUpdateLife(void)
 {
 	// classic, gain life and mana with levels
-	if (player.difficulty == Difficulty::CLASSIC || player.difficulty==Difficulty::BRUTAL_CLASSIC)
+	if (player.difficulty == Difficulty::CLASSIC || player.difficulty==Difficulty::BRUTAL_CLASSIC || player.difficulty==Difficulty::VERY_CLASSIC)
 	{
 		player.maxLife = 14 + player.level;
 		player.maxMana = 14 + player.level;
@@ -1813,7 +1813,31 @@ bool BrutalMode(void)
 
 bool ClassicMode(void)
 {
-	return player.difficulty == Difficulty::BRUTAL_CLASSIC || player.difficulty == Difficulty::CLASSIC;
+	return player.difficulty == Difficulty::BRUTAL_CLASSIC || player.difficulty == Difficulty::CLASSIC || player.difficulty == Difficulty::VERY_CLASSIC;
+}
+
+bool VeryClassicMode()
+{
+	return player.difficulty == Difficulty::VERY_CLASSIC;
+}
+
+const char* DifficultySuffix(Difficulty diff)
+{
+	switch (diff)
+	{
+		case Difficulty::CLASSIC:
+			return " [C]";
+		case Difficulty::MODERN:
+			return " [M]";
+		case Difficulty::BRUTAL_CLASSIC:
+			return " [BC]";
+		case Difficulty::BRUTAL_MODERN:
+			return " [BM]";
+		case Difficulty::VERY_CLASSIC:
+			return " [99]";
+		default:
+			return "";
+	}
 }
 
 void GainMoney(int amt)

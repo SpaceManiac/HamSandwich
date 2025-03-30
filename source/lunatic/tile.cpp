@@ -574,7 +574,7 @@ void RenderFloorTileFancy(int x, int y, int t, byte shadow, char *theLight)
 
 	if (!opt.smoothLight)
 	{
-		if (shadow == 1 || shadow == 2)
+		if (shadow == 1 || shadow == 2 || shadow == 6)
 			RenderFloorTileShadow(x, y, t, theLight[4]);
 		else
 			RenderFloorTile(x, y, t, theLight[4]);

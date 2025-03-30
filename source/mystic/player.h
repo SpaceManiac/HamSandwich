@@ -26,15 +26,19 @@
 #define WATER_DAMAGE (10)	// damage taken when you fall in the water, in modern mode
 #define MAX_RUNESTONES (9999)
 
-enum class Difficulty :byte
+enum class Difficulty : byte
 {
 	CLASSIC,
 	MODERN,
 	BRUTAL_CLASSIC,
 	BRUTAL_MODERN,
+	VERY_CLASSIC,
 	// ironman?
+	// ^ serialized stable above this point
 	UNUSED,	// for a save slot that isn't used
 };
+
+const char* DifficultySuffix(Difficulty diff);
 
 #define HAMMER_UP_AMOUNT 3
 #define HAMMER_MIN_SPEED 12
@@ -249,5 +253,6 @@ void PickUpRune(void);
 
 bool BrutalMode(void);
 bool ClassicMode(void);
+bool VeryClassicMode();
 
 #endif

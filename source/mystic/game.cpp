@@ -50,19 +50,26 @@ static const char worldName[4][32]={
 	"river.dlw",
 	"forest.dlw",
 	"castle.dlw",
-	"under.dlw"
+	"under.dlw",
 };
 
 static const char worldName_m[4][32] = {
 	"river_m.dlw",
 	"forest_m.dlw",
 	"castle_m.dlw",
-	"under_m.dlw"
+	"under_m.dlw",
+};
+
+static const char worldName_99[4][32] = {
+	"river_99.dlw",
+	"forest_99.dlw",
+	"castle_99.dlw",
+	"under_99.dlw",
 };
 
 static const char* WorldName(int world)
 {
-	return ClassicMode() ? worldName[world] : worldName_m[world];
+	return VeryClassicMode() ? worldName_99[world] : ClassicMode() ? worldName[world] : worldName_m[world];
 }
 
 void LunaticInit(MGLDraw *mgl)
