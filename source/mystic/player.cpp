@@ -198,12 +198,12 @@ void PlayerSaveGame(byte which)
 void AutoSave()
 {
 	// Overwrite BK5 with BK4, BK4 with BK3, BK3 with BK2, BK2 with BK1.
+	Vfs()->rename("mystic249.sav", "mystic250.sav");
 	Vfs()->rename("mystic248.sav", "mystic249.sav");
 	Vfs()->rename("mystic247.sav", "mystic248.sav");
 	Vfs()->rename("mystic246.sav", "mystic247.sav");
-	Vfs()->rename("mystic245.sav", "mystic246.sav");
 	// Save to BK1.
-	PlayerSaveGame(245);
+	PlayerSaveGame(245); // mystic246.sav
 }
 
 void SetPlayerSpeed(void)
