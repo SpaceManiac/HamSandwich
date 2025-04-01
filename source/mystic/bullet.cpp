@@ -933,7 +933,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 					MakeSound(SND_MONEY, me->x, me->y, SND_CUTOFF, 500);
 				}
 				me->type=BLT_NONE;
-				
+
 			}
 			if(GetGoodguy() && me->type!=BLT_LIFEPOTION && me->type!=BLT_MANAPOTION)
 			{
@@ -1358,7 +1358,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 						x = me->x + Cosine(b) * 16;
 						y = me->y + Sine(b) * 16;
 					}
-						
+
 					FireExactBullet(x, y, 0, 0, 0, 0, 0, me->timer, b, me->type);
 				}
 				else
@@ -1628,7 +1628,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				BlowSmoke(me->x-me->dx,me->y-me->dy,me->z,FIXAMT/16);
 				me->anim=0;
 			}
-			
+
 			HitBadguys(me,map,world);
 			if(!GetGuyPos(me->target,&mapx,&mapy))
 				me->target=65535;
@@ -1638,7 +1638,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 					i = (FIXAMT / 8) * (SpellLevel() / 2) + FIXAMT / 4;
 				else
 					i = (FIXAMT / 8) * (SkillValue(SKILL_SEEKER)*4+5) + FIXAMT / 4;
-				
+
 				if(me->x>mapx)
 					me->dx-=i;
 				else
@@ -1696,14 +1696,14 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				me->target = LockOnEvil(map, me->x >> FIXSHIFT, me->y >> FIXSHIFT);
 			map->BrightTorch((me->x / TILE_WIDTH) >> FIXSHIFT,
 				(me->y / TILE_HEIGHT) >> FIXSHIFT, 8, 4);
-			
+
 			HitBadguys(me, map, world);
 			if (!GetGuyPos(me->target, &mapx, &mapy))
 				me->target = 65535;
 			else
 			{
 				i = FIXAMT;
-				
+
 				if (me->x > mapx)
 					me->dx -= i;
 				else
@@ -2471,8 +2471,8 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			else
 				me->timer = (SkillValue(SKILL_FLAMEON)*6) + 10 - MGL_random(4);
 			me->z=FIXAMT*20;
-			me->x+=((MGL_random(3)-1)<<FIXSHIFT)+Cosine(me->facing*32)*5;
-			me->y+=((MGL_random(3)-1)<<FIXSHIFT)+Sine(me->facing*32)*5;
+			me->x+=((MGL_random(3)-1)*FIXAMT)+Cosine(me->facing*32)*5;
+			me->y+=((MGL_random(3)-1)*FIXAMT)+Sine(me->facing*32)*5;
 			if (!ClassicMode() && SkillValue(SKILL_FLAMEON)>0)	// spread increasing with points
 			{
 				byte range = SkillValue(SKILL_FLAMEON) * 4;
@@ -2740,7 +2740,7 @@ void HammerLaunch(int x, int y, byte facing, byte count, byte flags,bool skulls)
 	byte timer = 30;
 	int speed = 12;
 	byte facingDivide = 32;
-	
+
 	if (skulls)
 	{
 		facingDivide = 16;
@@ -2829,7 +2829,7 @@ void Armageddon(Map *map,int x,int y)
 		if (Random(100) >= (int)SkillValue(SKILL_MANAGETTIN))
 			return;	// chance of no comet
 	}
-	
+
 	if(!ClassicMode() && SkillValue(SKILL_FIMBULWINTER)>0)
 		FireBullet(x,y,0,BLT_ICECOMET);
 	else
@@ -2876,7 +2876,7 @@ void RevealEctoplasm(int x, int y)
 	MakeNormalSound(SND_LIGHTSON);
 	x >>= FIXSHIFT;
 	y >>= FIXSHIFT;
-	
+
 	for (int j = 0; j < MAX_BULLETS; j++)
 	{
 		bullet_t* b = &bullet[j];
