@@ -495,13 +495,6 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			}
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if (AutoRepeatTapped(CONTROL_LF))
-		{
-			title->saveOffset = (title->saveOffset + 250 - 5) % 250;
-			GetSaves(title);
-			
-			MakeNormalSound(SND_MENUCLICK);
-		}
 		if (AutoRepeatTapped(CONTROL_DN))
 		{
 			(title->savecursor)++;
@@ -513,7 +506,14 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			}
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if (AutoRepeatTapped(CONTROL_RT))
+		if (AutoRepeatTapped(CONTROL_LF) || AutoRepeatTapped(CONTROL_B3))
+		{
+			title->saveOffset = (title->saveOffset + 250 - 5) % 250;
+			GetSaves(title);
+
+			MakeNormalSound(SND_MENUCLICK);
+		}
+		if (AutoRepeatTapped(CONTROL_RT) || AutoRepeatTapped(CONTROL_B4))
 		{
 			title->saveOffset = (title->saveOffset + 5) % 250;
 			GetSaves(title);
