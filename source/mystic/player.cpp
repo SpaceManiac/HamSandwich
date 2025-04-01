@@ -1834,7 +1834,7 @@ const char* DifficultySuffix(Difficulty diff)
 		case Difficulty::BRUTAL_MODERN:
 			return " [BM]";
 		case Difficulty::VERY_CLASSIC:
-			return " [99]";
+			return " ['99]";
 		default:
 			return "";
 	}

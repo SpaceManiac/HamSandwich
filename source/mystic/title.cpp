@@ -16,6 +16,7 @@ static const char credits[][64]={
 	"The Adventures Of",
 	"@KID MYSTIC",
 	"",
+	"Enchanted Edition",
 	"",
 	"A Hamumu Software Production",
 	"www.hamumu.com",
@@ -412,19 +413,35 @@ void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 
 	for(i=0;i<5;i++)
 	{
+		int x = 450;
 		if (title.saveOffset == 245)
 		{
 			sprintf(s, "Bk%d", i + 1);
+			if (i == 0)
+			{
+				CenterPrint(SCRWID - HALFWID / 2 + 1, 200 - 30 + 1, "Backups are saved automatically", -31, 1);
+				CenterPrint(SCRWID - HALFWID / 2 + 1, 200 - 18 + 1, "whenever you exit the game!", -31, 1);
+				CenterPrint(SCRWID - HALFWID / 2, 200 - 30, "Backups are saved automatically", 0, 1);
+				CenterPrint(SCRWID - HALFWID / 2, 200 - 18, "whenever you exit the game!", 0, 1);
+			}
 		}
 		else
 		{
 			sprintf(s, "%d", title.saveOffset + i + 1);
 		}
-		PrintBrightGlow(380 - (title.saveOffset + i + 1 >= 100 ? 30 : title.saveOffset + i + 1 >= 10 ? 15 : 0), 200+i*50,s,-16+(title.savecursor==i)*16,0);
+		if (title.savecursor == i)
+		{
+			x += 10;
+			GetItemSprite(7)->DrawGlow(x-5 - 20-GetStrLength(s,0), 200 + i * 50 + 22, mgl, title.titleBright);
+			RightPrint(x-5+ 2, 200 + i * 50 + 2, s, -31, 0);
+		}
+		RightPrint(x-5, 200 + i * 50, s, -16 + (title.savecursor == i) * 16, 0);
 
 		if(title.saveChapter[i]==0 || title.saveLevel[i]==0 || title.saveDiff[i]==Difficulty::UNUSED)
 		{
-			PrintBrightGlow(430,200+i*50,"Empty Slot",-16+(title.savecursor==i)*16,2);
+			if(title.savecursor==i)
+				PrintBright(x+2,200+i*50+2,"Empty Slot",-31,2);
+			PrintBrightGlow(x, 200 + i * 50, "Empty Slot", -16 + (title.savecursor == i) * 16, 2);
 		}
 		else
 		{
@@ -432,10 +449,15 @@ void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 			if(title.saveNightmare[i])
 				dest = ham_strcpy(dest, "!!!");
 			dest = ham_strcpy(dest, DifficultySuffix(title.saveDiff[i]));
-			PrintBrightGlow(430,200+i*50,s,-16+(title.savecursor==i)*16,2);
+			if (title.savecursor == i)
+				PrintBright(x + 2, 200 + i * 50 + 2, s, -31, 2);
+			PrintBrightGlow(x, 200 + i * 50, s, -16 + (title.savecursor == i) * 16, 2);
 
 			sprintf(s,"%02d:%02d L%02d %d%%",title.saveHour[i],title.saveMin[i],title.saveLevel[i],title.savePercent[i]);
-			PrintBrightGlow(430,200+i*50+20,s,-16+(title.savecursor==i)*16,2);
+
+			if(title.savecursor==i)
+				PrintBright(x+2, 200 + i * 50 + 20+2, s, -31, 2);
+			PrintBrightGlow(x,200+i*50+20,s,-16+(title.savecursor==i)*16,2);
 		}
 	}
 }
@@ -451,12 +473,12 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 		title->titleBright+=title->titleDir;
 		if(title->titleBright>8)
 		{
-			title->titleDir=-2;
+			title->titleDir=-1;
 			title->titleBright=8;
 		}
 		if(title->titleBright<-8)
 		{
-			title->titleDir=2;
+			title->titleDir=1;
 			title->titleBright=-8;
 		}
 
@@ -473,6 +495,13 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			}
 			MakeNormalSound(SND_MENUCLICK);
 		}
+		if (AutoRepeatTapped(CONTROL_LF))
+		{
+			title->saveOffset = (title->saveOffset + 250 - 5) % 250;
+			GetSaves(title);
+			
+			MakeNormalSound(SND_MENUCLICK);
+		}
 		if (AutoRepeatTapped(CONTROL_DN))
 		{
 			(title->savecursor)++;
@@ -484,16 +513,14 @@ byte GameSlotPickerUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			}
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if (scan == SDL_SCANCODE_PAGEUP)
-		{
-			title->saveOffset = (title->saveOffset + 250 - 5) % 250;
-			GetSaves(title);
-		}
-		if (scan == SDL_SCANCODE_PAGEDOWN)
+		if (AutoRepeatTapped(CONTROL_RT))
 		{
 			title->saveOffset = (title->saveOffset + 5) % 250;
 			GetSaves(title);
+
+			MakeNormalSound(SND_MENUCLICK);
 		}
+
 		if(ButtonTapped(CONTROL_B1))
 		{
 			if(title->saveChapter[title->savecursor]==0 || title->saveLevel[title->savecursor]==0)
@@ -571,42 +598,70 @@ void DifficultyPickerDisplay(MGLDraw* mgl, title_t title)
 	RenderSkillBox(360, 144, 636, 460, 31, 3);
 	PrintBrightGlow((360+636-GetStrLength("Difficulty", 0))/2, 150, "Difficulty", 0, 0);
 
+	int x;
 	for (i = 0; i < (title.cursor == 2 ? 4 : 5); i++)
 	{
+		x = 370;
 		if (title.cursor == 2)	// challenge mode shows your % on that save
 		{
 			sprintf(s, "%s [%d%%]", diffName[i], challengePct[i]);
-			PrintBrightGlow(370, 190 + i * 25, s, -16 + (title.savecursor == i) * 16, 2);
+			if (title.savecursor == i)
+			{
+				x += 20;
+				GetItemSprite(7)->DrawGlow(x - 16, 190 + i * 25 + 17, mgl, title.titleBright);
+				PrintBright(x + 2, 190 + i * 25 + 2, s, -31, 2);
+			}
+			PrintBrightGlow(x, 190 + i * 25, s, -16 + (title.savecursor == i) * 16, 2);
 		}
 		else
-			PrintBrightGlow(370, 190 + i * 25, diffName[i], -16 + (title.savecursor == i) * 16, 2);
+		{
+			if (title.savecursor == i)
+			{
+				x += 20;
+
+				GetItemSprite(7)->DrawGlow(x - 16, 190 + i * 25 +17, mgl,title.titleBright);
+				PrintBright(x + 2, 190 + i * 25 + 2, diffName[i], -31, 2);
+			}
+			PrintBrightGlow(x, 190 + i * 25, diffName[i], -16 + (title.savecursor == i) * 16, 2);
+		}
 	}
 	switch (title.savecursor)
 	{
 		case 0:
-			PrintBrightGlow(365, 200 + 4 * 30, "The original game from 20 years", 0, 1);
-			PrintBrightGlow(365, 200 + 4 * 30 + 14, "ago! Or rather the first remake", 0, 1);
-			PrintBrightGlow(365, 200 + 4 * 30 + 14*2, "from that time. Don't worry about", 0, 1);
-			PrintBrightGlow(365, 200 + 4 * 30 + 14*3, "the original version.", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30, "The homegrown remake of the", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14, "original game from 2004!", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14*2, "This added 4 levels to each chapter,", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14*3, "new enemies, and of course the", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 4, "world-renowned Fairy System.", 0, 1);
 			break;
 		case 1:
 			PrintBrightGlow(365, 200 + 4 * 30, "It's 2025, can there be a game with", 0, 1);
 			PrintBrightGlow(365, 200 + 4 * 30 + 14, "no skill tree? Let's not find out.", 0, 1);
-			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 2, "This adds many tweaks to spells and", 0, 1);
-			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 3, "enemies and a skill tree.", 0, 1);
-			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 4, "It's probably easier, and definitely", 0, 1);
-			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 5, "smoother.", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 2, "This adds many tweaks to levels,", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 3, "spells and enemies, along with runes,", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 4, "some new levels, and a skill tree.", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 5, "It's probably easier, and definitely", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 6, "smoother.", 0, 1);
 			break;
 		case 2:
 		case 3:
-			PrintBrightGlow(365, 200 + 4 * 30, "Brutal mode starts you in Madcap", 0, 1);
-			PrintBrightGlow(365, 200 + 4 * 30 + 14, "Mode, though it's not as hard as", 0, 1);
-			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 2, "normal Madcap mode.", 0, 1);
-			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 3, "But you can still buy Madcap", 0, 1);
-			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 4, "Crystals, and you start with the", 0, 1);
-			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 5, "first Boots, Hat, and Staff.", 0, 1);
-			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 6, "Available in both Classic and Modern", 0, 1);
-			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 7, "flavors.", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30, "Brutal mode enemies are five times", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14, "tougher and stronger. Luckily, you", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 2, "can buy Madcap Stones, and you", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 3, "start with the first upgrades for", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 4, "your Boots, Hat, and Staff.", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 5, "Available in both Classic and Modern", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 6, "flavors.", 0, 1);
+			break;
+		case 4:
+			PrintBrightGlow(365, 200 + 4 * 30, "The truly original game, released in", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14, "1999 as 'Spooky Castle: The", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 2, "Adventures of Kid Mystic', which", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 3, "people rightfully confused with 'The", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 4, "Adventures of Bouapha: Spooky", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 5, "Castle', my other game published by", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 6, "the same company! I just wanted to", 0, 1);
+			PrintBrightGlow(365, 200 + 4 * 30 + 14 * 7, "call it Kid Mystic, and now we do.", 0, 1);
 			break;
 	}
 }
@@ -622,12 +677,12 @@ byte DifficultyPickerUpdate(MGLDraw* mgl, title_t* title, int* lastTime)
 		title->titleBright += title->titleDir;
 		if (title->titleBright > 8)
 		{
-			title->titleDir = -2;
+			title->titleDir = -1;
 			title->titleBright = 8;
 		}
 		if (title->titleBright < -8)
 		{
-			title->titleDir = 2;
+			title->titleDir = 1;
 			title->titleBright = -8;
 		}
 
