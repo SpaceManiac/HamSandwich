@@ -12,145 +12,145 @@
 
 AchieveDef achieveDef[] = {
 	{
-		"Old Schoolkid",0,
+		"Old Schoolkid",37,
 		"Prove you are a true classic.",
 		"Completed Classic Mode.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Modern Gamer",1,
+		"Modern Gamer",38,
 		"Hello, fellow children! I too am a gamer!",
 		"Completed Modern Mode.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Git Gud",2,
+		"Git Gud",39,
 		"Brutalize Bobby Khan.",
 		"Completed Brutal Mode (either Classic or Modern).",
 		Progress::ONE_SHOT
 	},
 	{
-		"A little BIT kRaZy",3,
+		"A little BIT kRaZy",44,
 		"Let's see if you're truly loco.",
 		"Completed Madcap Mode (either Classic or Modern).",
 		Progress::ONE_SHOT
 	},
 	{
-		"Graduation Cap",4,
+		"Graduation Cap",45,
 		"Earn the angriest hat of them all.",
 		"Collected 99 of every type of Madcap Stone. Wow, what a grind.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Kid Mystic's Pro Caster",5,
+		"Kid Mystic's Pro Caster",46,
 		"Master the challenges of this world.",
 		"Beat Bobby Khan in Challenge Mode (either Classic or Modern).",
 		Progress::ONE_SHOT
 	},
 	{
-		"Starkid",6,
+		"Starkid",47,
 		"Just like Luigi, you gotta collect the stars.",
 		"Earned every star possible in Challenge Mode (either Classic or Modern).",
 		Progress::ONE_SHOT
 	},
 	{
-		"Rune Master",7,
+		"Rune Master",48,
 		"Build a rock collection!",
 		"Fully upgraded every Rune, just for fun. And this achievement.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Caught 'Em All",8,
+		"Caught 'Em All",49,
 		"You know who we want you to catch.",
 		"Caught every fairy!",
 		Progress::ONE_SHOT
 	},
 	{
-		"Forged In Air",9,
+		"Forged In Air",50,
 		"This would be easier if a watery tart just threw it at you.",
 		"Completed the Armageddon Sword!",
 		Progress::ONE_SHOT
 	},
 	{
-		"Take The L",10,
+		"Take The L",51,
 		"This achievement was made by the makers of Spooky Castle's vault.",
 		"Reached level 50!",
 		Progress::ONE_SHOT
 	},
 	{
-		"Energetic Boss Rage",11,	// NOT IMPLEMENTED BECAUSE HMM
+		"Energetic Boss Rage",6,	// NOT IMPLEMENTED BECAUSE HMM
 		"Hint",
 		"Defeat a boss with nothing but Energy Barrage.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Amazing Blaze",12,
+		"Amazing Blaze",2,
 		"Hedges and ONLY hedges.",
 		"Burn down every tree in Among The Hedges.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Side Effects May Include Death",13,
+		"Side Effects May Include Death",12,
 		"Seek without seeking.",
 		"Got 20 Seeker Bolt kills without casting a single Bolt.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Kid Medusa",14,
+		"Kid Medusa",15,
 		"Revenge is a dish best served cold.",
 		"Froze 20 enemies at once.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Mass Casualty Event",15,
+		"Mass Casualty Event",18,
 		"An infernal catastrophe.",
 		"Killed 20 enemies in one cast of Inferno.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Take a Break",16,
+		"Take a Break",21,
 		"Let somebody else save Tulipton.",
 		"Your summons beat a level alone, with at least 20 kills.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Rubber v. Glue",17,
+		"Rubber v. Glue",26,
 		"Why are they hitting themselves?",
 		"Won a level with at least 20 kills, using only Armor spells.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Blurred Cirque",18,
+		"Blurred Cirque",27,
 		"Never stop never stopping!",
 		"Remained Berserk for 1 minute straight.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Born Again",19,
+		"Born Again",30,
 		"'Tis better to die a thousand deaths.",
 		"Died twice in one level, and lived to tell the tale.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Iron Chef",20,
+		"Iron Chef",54,
 		"Don't be an idiot sandwich.",
 		"Cooked Swamp Stew to utter perfection.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Skillbor",21,
+		"Skillbor",25,
 		"Kid Mystic is a game of skill.",
 		"Maxed out every single skill. What a clever build.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Whacking Day",22,
+		"Whacking Day",53,
 		"Prove your carnival skills.",
 		"Got over 75 whacks in Whack-a-Zoid.",
 		Progress::ONE_SHOT
 	},
 	{
-		"Delivery Boy",23,
+		"Delivery Boy",52,
 		"Make it hot like Papa John.",
 		"Fed all the Spooky Castle employees hot stew.",
 		Progress::ONE_SHOT
@@ -302,9 +302,10 @@ void RenderAchieveMenu(MGLDraw *mgl)
 
 		if (cursor == i)
 		{
+			RenderSkillBox(x-2, y-2, x + 42, y + 42, col+31, col + 16);
 			RenderSkillBox(x, y, x + 40, y + 40, 16, col+31);
 			RenderSkillBox(x + 2, y + 2, x + 38, y + 38, 16, col+5);
-			BlitIcon(achieveDef[i].icon, x + 4, y + 4, col, 5);
+			BlitIconGlow(achieveDef[i].icon, x + 4, y + 4, 0);
 
 			RenderSkillBox(HALFWID - 250, SCRHEI - 160, HALFWID + 250, SCRHEI - 90, col+20, col + 4);
 			CenterPrintGlow(SCRHEI - 160, achieveDef[i].name, 2);
@@ -324,7 +325,7 @@ void RenderAchieveMenu(MGLDraw *mgl)
 		{
 			RenderSkillBox(x, y, x + 40, y + 40, col+16, col+4);
 			RenderSkillBox(x + 2, y + 2, x + 38, y + 38, col+16, col+4);
-			BlitIcon(achieveDef[i].icon, x + 4, y + 4, 3, 0);
+			BlitIconGlow(achieveDef[i].icon, x + 4, y + 4, -12);
 		}
 
 		x += 60;
