@@ -199,7 +199,7 @@
 #define SND_SANTAHIT	152
 // splash screen sounds
 #define SND_HAMUMU		153
-#define SND_XGAMES		154
+#define SND_STAIRS		154
 #define SND_FINAL		155
 
 #define SND_MONEY		156

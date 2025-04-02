@@ -321,6 +321,22 @@ void Map::Update(byte mode,world_t *world)
 						y+TILE_HEIGHT*FIXAMT/2-(10<<FIXSHIFT),80<<FIXSHIFT,FIXAMT*2);
 				}
 			}
+			if (player.worldNum == 2 && player.levelNum == 11 && !ClassicMode())
+			{
+				if (map[i].floor != 35 && (i / width) > 18 && (i / width) < 116)
+				{
+					if (i > 0 && map[i - 1].floor == 35)	// the leftmost tile of the row
+					{
+						int j = i;
+						while (map[j].floor != 35) j++;
+						map[j - 1].light = map[i].light;	// get the light from the far right of this row
+					}
+					else if (i > 0 && map[i - 1].floor != 35)	// any other tile
+					{
+						map[i - 1].light = map[i].light;
+					}
+				}
+			}
 			if(((player.worldNum==1 && player.levelNum==15) ||
 				(player.worldNum==3 && player.levelNum==12)) && (map[i].item==ITM_BIGROCKS || map[i].item==ITM_LAVAROCK) &&
 				world->terrain[map[i].floor].flags&(TF_WATER|TF_LAVA))	// river rapids
@@ -1452,9 +1468,21 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 					if(GetTportClock())
 						return;	// can't teleport yet
 				}
-				MakeSound(SND_TELEPORT,victim->x,victim->y,SND_CUTOFF,1500);
-				victim->x=(spcl->effectX*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT;
-				victim->y=(spcl->effectY*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT;
+				if (spcl->value == 0)	// classic teleport
+				{
+					MakeSound(SND_TELEPORT, victim->x, victim->y, SND_CUTOFF, 1500);
+				}
+				else // staircase teleport
+				{
+					if (victim->type == MONS_BOUAPHA)
+					{
+						for (int i = 0; i < map->width * map->height; i++)
+							map->map[i].templight = -31;	// go black briefly
+						MakeNormalSound(SND_STAIRS);
+					}
+				}
+				victim->x = (spcl->effectX * TILE_WIDTH + (TILE_WIDTH / 2)) << FIXSHIFT;
+				victim->y = (spcl->effectY * TILE_HEIGHT + (TILE_HEIGHT / 2)) << FIXSHIFT;
 				victim->mapx = victim->x / (TILE_WIDTH * FIXAMT);
 				victim->mapy = victim->y / (TILE_HEIGHT * FIXAMT);
 				victim->dx=0;
@@ -1472,15 +1500,18 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 						victim->birthState = 0;	// wall walking enemies can spawn anywhere
 				}
 
-				map->map[spcl->effectX+spcl->effectY*map->width].templight=34;
-				if(spcl->effectX>0)
-					map->map[spcl->effectX-1+spcl->effectY*map->width].templight=20;
-				if(spcl->effectX<map->width-1)
-					map->map[spcl->effectX+1+spcl->effectY*map->width].templight=20;
-				if(spcl->effectY>0)
-					map->map[spcl->effectX+(spcl->effectY-1)*map->width].templight=20;
-				if(spcl->effectY<map->height-1)
-					map->map[spcl->effectX+(spcl->effectY+1)*map->width].templight=20;
+				if (spcl->value == 0)	// classic teleport
+				{
+					map->map[spcl->effectX + spcl->effectY * map->width].templight = 34;
+					if (spcl->effectX > 0)
+						map->map[spcl->effectX - 1 + spcl->effectY * map->width].templight = 20;
+					if (spcl->effectX < map->width - 1)
+						map->map[spcl->effectX + 1 + spcl->effectY * map->width].templight = 20;
+					if (spcl->effectY > 0)
+						map->map[spcl->effectX + (spcl->effectY - 1) * map->width].templight = 20;
+					if (spcl->effectY < map->height - 1)
+						map->map[spcl->effectX + (spcl->effectY + 1) * map->width].templight = 20;
+				}
 			}
 			break;
 		case SPC_SUMMON:
