@@ -2295,7 +2295,10 @@ void AI_Friendly(Guy *me,Map *map,world_t *world,Guy *goodguy)
 						InitSpeech(51);
 					break;
 				case 13:
-					InitSpeech(3);
+					if(PlayerHasSword())
+						InitSpeech(88);
+					else
+						InitSpeech(3);
 					break;
 				case 20:
 					if (me->mind2 == 0)
@@ -2358,7 +2361,12 @@ void AI_Friendly(Guy *me,Map *map,world_t *world,Guy *goodguy)
 					if (tx == 41 && ty == 24)
 						InitSpeech(2);
 					if (tx == 57 && ty == 60)
-						InitSpeech(3);
+					{
+						if(PlayerHasSword())
+							InitSpeech(88);
+						else
+							InitSpeech(3);
+					}
 				}
 					break;
 				case 55:

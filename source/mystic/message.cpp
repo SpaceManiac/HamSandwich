@@ -715,6 +715,14 @@ std::vector<SpeechDef> speechDef = {
 		"",
 		0,
 	},
+	{
+		// 88
+		"Hey kid, nice sword! That reminds me",
+		"of a legend I once heard, but the",
+		"legendary sword was a lot cooler.",
+		"More skulls.",
+		0,
+	},
 };
 
 byte speechX,speechY,curSpeech;
