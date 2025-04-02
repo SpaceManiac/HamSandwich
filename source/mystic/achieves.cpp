@@ -79,7 +79,7 @@ AchieveDef achieveDef[] = {
 	},
 	{
 		"Energetic Boss Rage",6,	// NOT IMPLEMENTED BECAUSE HMM
-		"Hint",
+		"Tickle it to death.",
 		"Defeat a boss with nothing but Energy Barrage.",
 		Progress::ONE_SHOT
 	},
@@ -126,7 +126,7 @@ AchieveDef achieveDef[] = {
 		Progress::ONE_SHOT
 	},
 	{
-		"Born Again",30,
+		"Born Again",32,
 		"'Tis better to die a thousand deaths.",
 		"Died twice in one level, and lived to tell the tale.",
 		Progress::ONE_SHOT
@@ -139,8 +139,8 @@ AchieveDef achieveDef[] = {
 	},
 	{
 		"Skillbor",25,
-		"Kid Mystic is a game of skill.",
-		"Maxed out every single skill. What a clever build.",
+		"What a clever build.",
+		"Maxed out every single skill.",
 		Progress::ONE_SHOT
 	},
 	{
