@@ -11,7 +11,7 @@
 #include "challenge.h"
 #include "options.h"
 
-byte spellCost[20]={
+static const byte spellCost[10][2]={
 	1,2,	// Energy Barrage/Storm
 	2,15,	// Dragon's Flame/Liquify
 	7,10,	// Seeker Bolt/Barrage
@@ -32,10 +32,10 @@ byte HealCostIgnoringStoredMana(void)
 {
 	byte cost;
 
-	if (player.downgradeSpell[SPL_HEAL])
-		cost = spellCost[SPL_HEAL * 2];
+	if (player.downgradeSpell[SPL_HEAL] || !player.spell[SPL_HEAL])
+		cost = spellCost[SPL_HEAL][0];
 	else
-		cost = spellCost[SPL_HEAL * 2 + (player.spell[SPL_HEAL] - 1)];
+		cost = spellCost[SPL_HEAL][player.spell[SPL_HEAL] - 1];
 
 	if (player.fairyOn == FAIRY_CHEAPY)
 	{
@@ -49,7 +49,7 @@ byte HealCostIgnoringStoredMana(void)
 		if (cost == 0)
 			cost = 1;
 	}
-	
+
 	return cost;
 }
 
@@ -57,10 +57,10 @@ byte SpellCost(byte spell,bool forceDowngrade)
 {
 	byte cost;
 
-	if (player.downgradeSpell[spell] || forceDowngrade)
-		cost=spellCost[spell * 2];
+	if (player.downgradeSpell[spell] || forceDowngrade || !player.spell[spell])
+		cost=spellCost[spell][0];
 	else
-		cost=spellCost[spell * 2 + (player.spell[spell] - 1)];
+		cost=spellCost[spell][player.spell[spell] - 1];
 
 	if (player.fairyOn == FAIRY_CHEAPY)
 	{
@@ -81,7 +81,7 @@ byte SpellCost(byte spell,bool forceDowngrade)
 		else
 			cost = 0;
 	}
-	
+
 	return cost;
 }
 
@@ -519,7 +519,7 @@ void CastSpell(Guy *me)
 				player.mana+=cost;
 				return;
 			}
-			
+
 			SetPlayerGlow(80);
 			if(player.spell[SPL_HEAL]==1 || player.downgradeSpell[SPL_HEAL])
 			{
