@@ -401,22 +401,27 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 
 	// books
 	intfaceSpr->GetSprite(42)->Draw(SCRWID-197,-1,mgl);
+	byte mySpell = player.curSpell;
 	for(i=9;i>=0;i--)
 	{
 		if(player.spell[i])
 		{
+			player.curSpell = i;
 			intfaceSpr->GetSprite(11+i*2+(player.spell[i]==2 && !player.downgradeSpell[i]))->
-				Draw(SCRWID-20-9*12+bookSlide[i]+i*12,22+bookSlide[i],mgl);
-			if(player.curSpell==i)
+				DrawBright(SCRWID-20-9*12+bookSlide[i]+i*12,22+bookSlide[i],mgl,-10+10*EnoughMana());
+			if(mySpell==i)
 			{
 				byte b = player.spell[i] - 1;
 				if (player.downgradeSpell[i])
 					b = 0;
-				RightPrintGlow(SCRWID-2,-1,spellName[i*2+b],2);
+				if(EnoughMana())
+					RightPrintGlow(SCRWID-2,-1,spellName[i*2+b],2);
+				else
+					PrintBrightGlow(SCRWID - 2-GetStrLength(spellName[i*2+b],2), -1, spellName[i * 2 + b], -22, 2);
 			}
 		}
 	}
-
+	player.curSpell = mySpell;
 	// cash
 	sprintf(s,"$%05d",TotalMoney());
 	PrintGlow(HALFWID,-1,s,2);

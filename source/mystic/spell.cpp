@@ -89,13 +89,8 @@ byte EnoughMana(void)
 {
 	byte cost;
 
-	if (player.curSpell == 0)
-		return 1;
-	else
-	{
-		cost = SpellCost(player.curSpell);
-		return (player.mana >= cost);
-	}
+	cost = SpellCost(player.curSpell);
+	return (player.mana >= cost);
 }
 
 byte SpellLevel(void)
