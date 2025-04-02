@@ -1447,7 +1447,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 	else if(damage!=-1000)
 	{
 		i=BulletHittingType();
-		if(i==BLT_HAMMER || i==BLT_HAMMER2)
+		if(i==BLT_HAMMER || i==BLT_HAMMER2 || i==BLT_SKULL || i==BLT_MINIFBALL)
 		{
 			damage=(damage*(100+player.powerStones*10))/100;
 			if(player.fairyOn==FAIRY_BLOCKY)
