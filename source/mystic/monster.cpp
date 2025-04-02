@@ -724,6 +724,12 @@ void PurgeMonsterSprites(void)
 	}
 }
 
+bool IsABoss(byte type)
+{
+	return (type == MONS_OCTOBOSS || (type >= MONS_GOAT1 && type <= MONS_GOAT3) ||
+		type == MONS_LOOKEYLOO || type == MONS_BOBBY || type == MONS_HUGEBAT || type == MONS_HUGEBAT2 || type == MONS_LICH || type==MONS_INCABOSS);
+}
+
 byte MonsterSize(byte type)
 {
 	return monsType[type].size;

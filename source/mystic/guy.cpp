@@ -1695,6 +1695,15 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		if (!(monsType[type].flags & MF_GOODGUY) && player.totalKills < 255)
 			player.totalKills++;
 
+		if (IsABoss(type) && player.usedFireballs == 0)
+		{
+			bool ok = true;
+			for (int i = 0; i < 10; i++)
+				if (player.usedSpells[i] && i != SPL_ENERGY)
+					ok = false;
+			if (ok)
+				EarnAchieve(Achievement::ENERGYBARRAGE);
+		}
 		SpecialKillCheck(map, type);
 		hp=0;
 		seq=ANIM_DIE;

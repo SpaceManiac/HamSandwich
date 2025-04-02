@@ -164,6 +164,7 @@ void SetWaterwalk(word on);
 sprite_t *GetMonsterSprite2(byte type,byte frm);
 byte GetMonsterFrameNum(byte type,byte seq,byte frm,byte facing);
 void SetKidSprite(byte armageddon);
+bool IsABoss(byte type);
 
 void FaceGoodguy(Guy *me,Guy *goodguy);
 
