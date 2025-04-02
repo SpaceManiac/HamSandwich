@@ -1337,6 +1337,8 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 	switch(spcl->effect)
 	{
 		case SPC_GOTOMAP:
+			if (VeryClassicMode() && spcl->value != 50 && player.levelPassed[player.worldNum][spcl->value])
+				return;
 			//if((player.levelPassed[player.worldNum][spcl->value]==1) &&
 			//	player.worldNum==2 && (player.levelNum==8 || player.levelNum==10 || player.levelNum==12 || player.levelNum==14))
 			//	return;	// can't enter a guardian level that you've passed
@@ -1806,7 +1808,7 @@ void GetRidOfGoodStuff(Map *map)
 byte TemplePuzzle(Map *map)
 {
 	byte rtPiece[25]={91, 92, 93, 94, 95,
-		              111,112,113,114,115,
+					  111,112,113,114,115,
 					  131,132,133,134,135,
 					  151,152,153,154,155,
 					  146,147,148,149,150};
@@ -1854,7 +1856,7 @@ byte TemplePuzzle(Map *map)
 void ResetTemplePuzzle(Map *map)
 {
 	byte rtPiece[25]={91, 92, 93, 94, 95,
-		              111,112,113,114,115,
+					  111,112,113,114,115,
 					  131,132,133,134,135,
 					  151,152,153,154,155,
 					  146,147,148,149,150};

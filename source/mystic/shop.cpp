@@ -6,11 +6,6 @@
 #include "challenge.h"
 #include "achieves.h"
 
-#define SHOPX 10
-#define SHOPY 40
-#define SHOPDX 70
-#define SHOPDY 65
-
 sprite_set_t *shopSpr;
 static byte armaBrt=0;
 
@@ -84,25 +79,25 @@ static const char shopName[29][18]={
 	"Spell Stone",
 	"Skill Stone"};
 
-word price[25]={30, 120, 400,2000,1000, // hats (and a bonus)
+static const word price[25]={30, 120, 400,2000,1000, // hats (and a bonus)
 				70, 180, 600,3500,400, // staves (and a bonus)
 				20, 100, 250,2000,350, // boots (and a bonus)
 				800,1200,220,2200,700, // heart moon lantern, bonus bonus
 				900,750,1500,450, 0};  // heart2, moon2, lantern2, bonus, exit
 
-word shopPic[25]={14,15,16,17,32, // hats (and pointy)
+static const word shopPic[25]={14,15,16,17,32, // hats (and pointy)
 				  4, 5, 6, 7, 27, // staves (and compass)
 				  9, 10,11,12,29, // boots (and feathers)
 				  18,19,20,28,30, // heart moon lantern, crystal socks
 				  25,23,21,31,0}; // heart2, moon2, lantern2, headband, exit
 
-dword gearTag[]={0,0,0,0,GEAR_POINTY,
+static const dword gearTag[]={0,0,0,0,GEAR_POINTY,
 		        0,0,0,0,GEAR_COMPASS,
 				0,0,0,0,GEAR_FEATHER,
 				GEAR_HEART,GEAR_MOON,GEAR_LAMP,GEAR_BOUNCY,GEAR_SOCKS,
 				GEAR_SOUL,GEAR_SUN,GEAR_WISDOM,GEAR_MAGNET,0};
 
-char itemDesc[30*4][64]={
+static const char itemDesc[30][4][64]={
 	"Mmmm, soft. This hat offers",
 	"slightly better protection",
 	"than the paper hat.",
@@ -284,6 +279,11 @@ void EnterShop(void)
 	GetDisplayMGL()->LastKeyPressed();
 	UpdateControls();
 	SetInMenu(true);
+
+	if (VeryClassicMode() && shopCursor % 5 == 4 || shopCursor >= 20)
+	{
+		shopCursor = 0;
+	}
 }
 
 void LeaveShop(void)
@@ -631,9 +631,7 @@ void RenderPlayerGear(int x,byte brt)
 
 byte Owned(byte w)
 {
-	if (VeryClassicMode() && (w == 4 || w == 9 || w == 14 || w == 18 || w == 19 || w == 20 || w == 21 || w == 22 || w == 23))
-		return true;
-	else if((player.nightmare || BrutalMode()) && w == 0)
+	if((player.nightmare || BrutalMode()) && w == 0)
 		return (player.shieldStones==99);
 	else if((player.nightmare || BrutalMode())  && w == 5)
 		return (player.powerStones==99);
@@ -666,12 +664,18 @@ void RenderShop(void)
 
 	memcpy(mgl->GetScreen(),shopScr,SCRWID*SCRHEI);
 
-	for(i=0;i<5;i++)
-		for(j=0;j<5;j++)
+	int SHOPX = VeryClassicMode() ? 30 : 10;
+	int SHOPY = VeryClassicMode() ? 51 : 40;
+	int SHOPDX = VeryClassicMode() ? 80 : 70;
+	int SHOPDY = VeryClassicMode() ? 80 : 65;
+	int shopSize = VeryClassicMode() ? 4 : 5;
+
+	for(i=0;i<shopSize;i++)
+		for(j=0;j<shopSize;j++)
 		{
 			if(player.nightmare || BrutalMode())
 			{
-				shopSpr->GetSprite(0+Owned(i+j*5))->Draw((i)*SHOPDX+SHOPX,SHOPY+j*SHOPDY,mgl);
+				shopSpr->GetSprite(0 + Owned(i+j*5))->Draw((i)*SHOPDX+SHOPX,SHOPY+j*SHOPDY,mgl);
 				if(i==0 && j==0)	// shield stone
 				{
 					shopSpr->GetSprite(28)->DrawColored((i)*SHOPDX+SHOPX,SHOPY+j*SHOPDY,mgl,0,4);
@@ -703,13 +707,9 @@ void RenderShop(void)
 			else
 			{
 				shopSpr->GetSprite(0 + Owned(i + j * 5))->Draw((i)*SHOPDX + SHOPX, SHOPY + j * SHOPDY, mgl);
-				if (VeryClassicMode() && ((i == 4) != (j == 4) || (i == 3 && j == 3)))
-				{
-					// excluded
-				}
-				else if (i == 4 && j == 2 && Challenging())	// hourglass
+				if (i == 4 && j == 2 && Challenging())	// hourglass
 					shopSpr->GetSprite(38)->Draw((i)*SHOPDX + SHOPX, SHOPY + j * SHOPDY, mgl);
-				else if(shopPic[i+j*5]!=0)
+				else if(shopPic[i+j*5]!=0 && !(VeryClassicMode() && i == 3 && j == 3))
 					shopSpr->GetSprite(shopPic[i+j*5])->Draw((i)*SHOPDX+SHOPX,SHOPY+j*SHOPDY,mgl);
 				else // exit
 					PrintGlow(SHOPDX*i+SHOPX+8,SHOPY+SHOPDY*j+18,"Exit",2);
@@ -737,9 +737,11 @@ void RenderShop(void)
 		else
 			Print(5,100+5*56-20,shopName[(shopCursor)],0,2);
 	}
+	else if (VeryClassicMode() && shopCursor == 18)
+		Print(5,100+5*56-20,shopName[24],0,2);
 	else
 		Print(5,100+5*56-20,shopName[(shopCursor)],0,2);
-	if(shopCursor<24)
+	if(shopCursor != (VeryClassicMode() ? 18 : 24))
 	{
 		if(Owned(shopCursor))
 			sprintf(s,"N/A");
@@ -763,28 +765,30 @@ void RenderShop(void)
 		RightPrintGlow(10+345,100+5*56-20,s,2);
 	}
 
-	if(player.nightmare || BrutalMode())
+	if(Challenging() && shopCursor == 14)
+		i = 29;
+	else if(player.nightmare || BrutalMode())
 	{
 		if (shopCursor == 0)
-			i = 25 * 4;
+			i = 25;
 		else if (shopCursor == 5)
-			i = 26 * 4;
+			i = 26;
 		else if (shopCursor == 10)
-			i = 27 * 4;
+			i = 27;
 		else if (shopCursor == 15 && !ClassicMode())
-			i = 28 * 4;
+			i = 28;
 		else
-			i=shopCursor*4;
+			i = shopCursor;
 	}
+	else if (VeryClassicMode() && shopCursor == 18)
+		i = 24;
 	else
-		i=shopCursor*4;
-	if (shopCursor == 14 && Challenging())
-		i = 29 * 4;
+		i = shopCursor;
 
-	PrintBrightGlow(5,110+5*56,itemDesc[i],-4,2);
-	PrintBrightGlow(5,110+20+5*56,itemDesc[i+1],-4,2);
-	PrintBrightGlow(5,110+40+5*56,itemDesc[i+2],-4,2);
-	PrintBrightGlow(5,110+60+5*56,itemDesc[i+3],-4,2);
+	PrintBrightGlow(5,110+5*56,itemDesc[i][0],-4,2);
+	PrintBrightGlow(5,110+20+5*56,itemDesc[i][1],-4,2);
+	PrintBrightGlow(5,110+40+5*56,itemDesc[i][2],-4,2);
+	PrintBrightGlow(5,110+60+5*56,itemDesc[i][3],-4,2);
 }
 
 void BuyGear(dword w)
@@ -946,39 +950,42 @@ byte UpdateShop(MGLDraw *mgl)
 
 	armaBrt++;
 
+	int shopWidth = VeryClassicMode() ? 4 : 5;
+	int shopTotal = VeryClassicMode() ? 20 : 25;
+
 	if(AutoRepeatTapped(CONTROL_UP))
 	{
 		MakeNormalSound(SND_MENUCLICK);
 		shopCursor-=5;
-		if(shopCursor>=25)
-			shopCursor+=25;
+		if(shopCursor>=shopTotal)
+			shopCursor+=shopTotal;
 	}
 	if(AutoRepeatTapped(CONTROL_DN))
 	{
 		MakeNormalSound(SND_MENUCLICK);
 		shopCursor+=5;
-		if(shopCursor>=25)
-			shopCursor-=25;
+		if(shopCursor>=shopTotal)
+			shopCursor-=shopTotal;
 	}
 	if(AutoRepeatTapped(CONTROL_LF))
 	{
 		MakeNormalSound(SND_MENUCLICK);
-		shopCursor--;
-		if((shopCursor%5)==4)
-			shopCursor+=5;
-		if(shopCursor>50)
-			shopCursor=4;
+		if (shopCursor % 5 == 0)
+			shopCursor += shopWidth - 1;
+		else
+			shopCursor--;
 	}
 	if(AutoRepeatTapped(CONTROL_RT))
 	{
 		MakeNormalSound(SND_MENUCLICK);
-		shopCursor++;
-		if((shopCursor%5)==0)
-			shopCursor-=5;
+		if (shopCursor % 5 == shopWidth - 1)
+			shopCursor -= shopWidth - 1;
+		else
+			shopCursor++;
 	}
 	if(ButtonTapped(CONTROL_B1))
 	{
-		if (shopCursor == 24)
+		if (shopCursor == (VeryClassicMode() ? 18 : 24))
 			return 1;	// exit
 
 		if(player.nightmare || BrutalMode())

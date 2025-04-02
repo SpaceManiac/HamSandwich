@@ -326,7 +326,7 @@ byte Guy::CanWalk(int xx,int yy,Map *map,world_t *world)
 			{
 				if(CoconutBonk(xx,yy,&guys[i]))
 				{
-					if(type==MONS_BOUAPHA && guys[i].type==MONS_SPIDER && abs(dx)+abs(dy)>FIXAMT*4)
+					if(!VeryClassicMode() && type==MONS_BOUAPHA && guys[i].type==MONS_SPIDER && abs(dx)+abs(dy)>FIXAMT*4)
 					{
 						MakeSound(SND_ACIDSPLAT,x,y,SND_CUTOFF,20);
 						guys[i].GetShot(0,0,10,map,world);	// squish the spider!
@@ -832,7 +832,7 @@ void Guy::Update(Map *map,world_t *world)
 			LockedMazeSpikes(map, oldmapx, oldmapy);	// gonna change the tile you just exited to spikes
 		if (player.worldNum == 3 && player.levelNum == 19 && (oldmapx != mapx || oldmapy != mapy))
 			HorkBoxBones(map, mapx, mapy);
-		
+
 		if(player.worldNum==2 && player.levelNum==16 && (oldmapx!=mapx || oldmapy!=mapy) &&
 			mapx==11 && mapy==31 && map->map[mapx+mapy*map->width].floor==59)
 		{
@@ -893,7 +893,7 @@ void Guy::Update(Map *map,world_t *world)
 		if (player.worldNum == 3 && player.levelNum == 7)
 			MinesPuzzle(map, mapx, mapy);
 	}
-	
+
 	if(oldmapx!=mapx || oldmapy!=mapy)
 		SpecialStepCheck(map,mapx,mapy,this);
 
@@ -1548,7 +1548,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		float fDamage = damage;
 		if (melted)
 			fDamage = fDamage * (100 + SkillValue(SKILL_MELTARMOR)) / 100.0f;
-		
+
 		float v = RuneValue(Rune::FIREBALLS)+100;
 		if(BulletHittingType()==BLT_HAMMER || BulletHittingType()==BLT_HAMMER2 || BulletHittingType()==BLT_SKULL)
 			fDamage = (fDamage * (v) / 100.0f);
@@ -1833,7 +1833,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		{
 			ChallengeEvent(CE_KILL,type);
 			lootXP += MonsterPoints(type);
-			
+
 			if (!ClassicMode() && player.berserk > 0 && SkillValue(SKILL_BLOODLUST) > 0)
 			{
 				PlayerHeal((byte)SkillValue(SKILL_BLOODLUST));
@@ -2406,31 +2406,55 @@ void AddRandomGuy(Map *map,world_t *world,byte chapter,byte rnd)
 	switch(chapter)
 	{
 		case 1:	// Over the River
-			if(player.level>4)
-				x=MGL_random(7);
+			if (VeryClassicMode())
+			{
+				x = MGL_random(2);
+				if (x == 0)
+					t = MONS_BIGSPDR;
+				else
+					t = MONS_SHROOM;
+			}
 			else
-				x=MGL_random(6);
-			if(x<3)
-				t=MONS_BIGSPDR;
-			else if(x<6)
-				t=MONS_SHROOM;
-			else
-				t=MONS_CRAZYBUSH;
-			if(PlayerHasAllSecrets(chapter-1) && MGL_random(20)==0)
-				t=MONS_STICKSHROOM;
+			{
+				if(player.level>4)
+					x=MGL_random(7);
+				else
+					x=MGL_random(6);
+				if(x<3)
+					t=MONS_BIGSPDR;
+				else if(x<6)
+					t=MONS_SHROOM;
+				else
+					t=MONS_CRAZYBUSH;
+				if(PlayerHasAllSecrets(chapter-1) && MGL_random(20)==0)
+					t=MONS_STICKSHROOM;
+			}
 			break;
 		case 2:	// through the woods
-			x=MGL_random(6);
-			if(x<2)
-				t=MONS_BIGSPDR;
-			else if(x<4)
-				t=MONS_SHROOM;
-			else if(x<5)
-				t=MONS_SHRMLORD;
+			if (VeryClassicMode())
+			{
+				x = MGL_random(3);
+				if (x == 0)
+					t = MONS_BIGSPDR;
+				else if (x == 1)
+					t = MONS_SHROOM;
+				else
+					t = MONS_SHRMLORD;
+			}
 			else
-				t=MONS_INCABOT;
-			if(PlayerHasAllSecrets(chapter-1) && MGL_random(20)==0)
-				t=MONS_STICKSPIDER;
+			{
+				x=MGL_random(6);
+				if(x<2)
+					t=MONS_BIGSPDR;
+				else if(x<4)
+					t=MONS_SHROOM;
+				else if(x<5)
+					t=MONS_SHRMLORD;
+				else
+					t=MONS_INCABOT;
+				if(PlayerHasAllSecrets(chapter-1) && MGL_random(20)==0)
+					t=MONS_STICKSPIDER;
+			}
 			break;
 		case 3:	// Castle Heinous
 			x=MGL_random(5);
@@ -2444,15 +2468,26 @@ void AddRandomGuy(Map *map,world_t *world,byte chapter,byte rnd)
 				t=MONS_STICKCORPSE;
 			break;
 		case 4:
-			x=MGL_random(7);
-			if(x<3)
-				t=MONS_BONEHEAD;
-			else if(x<5)
-				t=MONS_BIGBAT;
+			if (VeryClassicMode())
+			{
+				x = MGL_random(5);
+				if (x < 3)
+					t = MONS_BONEHEAD;
+				else
+					t = MONS_BIGBAT;
+			}
 			else
-				t=MONS_SNAIL;
-			if(PlayerHasAllSecrets(chapter-1) && MGL_random(20)==0)
-				t=MONS_STICKBAT;
+			{
+				x=MGL_random(7);
+				if(x<3)
+					t=MONS_BONEHEAD;
+				else if(x<5)
+					t=MONS_BIGBAT;
+				else
+					t=MONS_SNAIL;
+				if(PlayerHasAllSecrets(chapter-1) && MGL_random(20)==0)
+					t=MONS_STICKBAT;
+			}
 			break;
 		default:
 			t=MONS_BONEHEAD;
