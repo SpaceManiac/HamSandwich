@@ -1258,13 +1258,14 @@ void AI_Overworld(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				SendMessageToGame(MSG_BATTLE,me->type);
 				return;
 			}
-			if(player.fairyOn==FAIRY_SCARY && RangeToTarget(me,goodguy)<250*FIXAMT)
+			if(player.fairyOn==FAIRY_SCARY)
 			{
 				FaceGoodguy(me,goodguy);
-				me->facing=(8-me->facing)&7;
+				me->facing=(me->facing+4)&7;
 			}
 			else
-				FaceGoodguy(me,goodguy);
+				FaceGoodguy(me, goodguy);
+			
 
 			me->dx=Cosine(me->facing*32)*3;
 			me->dy=Sine(me->facing*32)*3;
@@ -1311,7 +1312,7 @@ void AI_Overworld(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		if(player.fairyOn==FAIRY_SCARY && RangeToTarget(me,goodguy)<250*FIXAMT)
 		{
 			FaceGoodguy(me,goodguy);
-			me->facing=(8-me->facing)&7;
+			me->facing=(4+me->facing)&7;
 		}
 
 		me->dx=Cosine(me->facing*32)*3;
