@@ -456,8 +456,9 @@ void RenderWeirdMenu(void)
 	RenderWeirdOption(x, y + 200, "Insane Rage:", !player.downgradeSpell[SPL_BERSERK], (subcursor == 10), player.spell[SPL_BERSERK] == 2);
 	RenderWeirdOption(x, y + 220, "Life Spell:", !player.downgradeSpell[SPL_HEAL], (subcursor == 11), player.spell[SPL_HEAL] == 2);
 	RenderWeirdOption(x, y + 240, "Sword Skulls:", !player.disableSword, (subcursor == 12), PlayerHasSword());
-	RenderWeirdOption2(x, y + 260, "Quick Cast:", opt.quickCast, (subcursor == 13), true);
-	PrintBrightGlow(x, y+280, "Exit", -16 + 32 * (subcursor==14), 2);
+	RenderWeirdOption(x, y + 260, "Orb Compass:", !player.disableOrbRadar, (subcursor == 13), (player.gear & GEAR_COMPASS));
+	RenderWeirdOption2(x, y + 280, "Quick Cast:", opt.quickCast, (subcursor == 14), true);
+	PrintBrightGlow(x, y+300, "Exit", -16 + 32 * (subcursor==15), 2);
 
 	switch (subcursor)
 	{
@@ -738,13 +739,13 @@ PauseResult UpdatePauseMenu(MGLDraw *mgl)
 			MakeNormalSound(SND_MENUCLICK);
 			subcursor--;
 			if (subcursor == 255)
-				subcursor = 14;
+				subcursor = 15;
 		}
 		if (AutoRepeatTapped(CONTROL_DN))
 		{
 			MakeNormalSound(SND_MENUCLICK);
 			subcursor++;
-			if (subcursor > 14)
+			if (subcursor > 15)
 				subcursor = 0;
 		}
 		if (ButtonTapped(CONTROL_B2))
@@ -807,12 +808,21 @@ PauseResult UpdatePauseMenu(MGLDraw *mgl)
 						MakeNormalSound(SND_UNAVAILABLE);
 					break;
 				case 13:
+					if (player.gear & GEAR_COMPASS)
+					{
+						MakeNormalSound(SND_MENUSELECT);
+						player.disableOrbRadar = 1 - player.disableOrbRadar;
+					}
+					else
+						MakeNormalSound(SND_UNAVAILABLE);
+					break;
+				case 14:
 					MakeNormalSound(SND_MENUSELECT);
 					opt.quickCast++;
 					if (opt.quickCast > QUICKCAST_CASTONLY)
 						opt.quickCast = QUICKCAST_SELECTONLY;
 					break;
-				case 14:
+				case 15:
 					MakeNormalSound(SND_MENUSELECT);
 					subMode = SUBMODE_NONE;
 					break;

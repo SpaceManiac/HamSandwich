@@ -844,21 +844,37 @@ void CompassTrail(int sx,int sy,int ex,int ey)
 	int i;
 	int incx,incy,n;
 
-	sx=(sx*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT;
-	ex=(ex*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT;
-	sy=(sy*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
-	ey=(ey*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
+	if (player.disableOrbRadar)
+		return;
 
-	incx=(ex-sx)/10;
-	incy=(ey-sy)/10;
+	sx=(sx*TILE_WIDTH+TILE_WIDTH/2);
+	ex=(ex*TILE_WIDTH+TILE_WIDTH/2);
+	sy=(sy*TILE_HEIGHT+TILE_HEIGHT/2);
+	ey=(ey*TILE_HEIGHT+TILE_HEIGHT/2);
+
+	float dist=sqrtf((ex - sx) * (ex - sx) + (ey - sy) * (ey - sy));
+	incx=(ex-sx)*16*FIXAMT/dist;
+	incy=(ey-sy)*16*FIXAMT/dist;
+
+	sx *= FIXAMT;
+	sy *= FIXAMT;
+	ex *= FIXAMT;
+	ey *= FIXAMT;
 
 	n=MGL_randoml(FIXAMT);
 	sx=sx+(incx/FIXAMT)*n;
 	sy=sy+(incy/FIXAMT)*n;
+	int cx, cy;
 
-	for(i=0;i<10;i++)
+	GetCamera(&cx, &cy);
+	cx -= HALFWID;
+	cy -= HALFHEI;
+	cx *= FIXAMT;
+	cy *= FIXAMT;
+	while (sx!=ex || sy!=ey)
 	{
-		AddParticle(sx,sy,FIXAMT*20,0,0,0,20,PART_COMPASS,1);
+		if(sx>=cx && sx<cx+SCRWID*FIXAMT && sy>=cy && sy<cy+SCRHEI*FIXAMT)
+			AddParticle(sx,sy,FIXAMT*20,0,0,0,20,PART_COMPASS,1);
 		sx+=incx;
 		sy+=incy;
 		if(incx>0 && sx>ex)

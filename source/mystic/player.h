@@ -167,7 +167,8 @@ typedef struct player_t
 	byte castCount;
 	byte ectoplasm;
 	byte ectoClock;
-	byte expando[162-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
+	byte disableOrbRadar;
+	byte expando[161-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
 } player_t;
 
 extern player_t player;
