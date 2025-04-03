@@ -2,7 +2,7 @@
 #include "player.h"
 #include "guy.h"
 
-#define NUM_TRIVIA 212
+#define NUM_TRIVIA 244
 
 trivia_t trivia[NUM_TRIVIA]={
 	{0,2,	// mushy hollow
@@ -1907,15 +1907,303 @@ trivia_t trivia[NUM_TRIVIA]={
 	 "Mode, give it a try!  It's very",
 	 "intense. I even enjoy it myself!",
 	 "Now I leave you with..."}},
-	{3,16,	// subterranean sticks
-	{TC_TIMED2,TC_VAR,TC_NONE,TC_NONE},
-	{0,1,0,0},
+	{0,21,	// new beginnerton
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 5,0,0,0},
 	{TE_NONE,TE_NONE},
 	{0,0},
+	{"It has been 20 years since I",
+	 "last added trivia to this game.",
+	 "Hello player! I am glad you are",
+	 "back!"} },
+	{ 0,21,	// new beginnerton
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 15,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"After such a long time, it was",
+	 "a real challenge to edit the",
+	 "visuals or levels with broken",
+	 "and missing tools."} },
+	{ 0,21,	// new beginnerton
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 25,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"The new villagers and various items",
+	 "you see are only possible thanks",
+	 "to dedicated fans who have made",
+	 "new tools like JSPEdit!"} },
+	{ 0,21,	// new beginnerton
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 35,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"You may have noticed there are no",
+	 "new 3D models (except ones I stole",
+	 "from Dr. Lunatic). The truth is,",
+	 "I forgot how to make them!"} },
+	{ 0,21,	// new beginnerton
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 45,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"This new Beginnerton level is more",
+	 "than just a more-fun tutorial -",
+	 "it is needed so that every level",
+	 "can have exactly 2 collectibles."} },
+	{0,20,	// swamp stew
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 5,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"The only reason Madam Kromch's",
+	 "levels exist is because I needed",
+	 "exactly 4 more levels to fit in",
+	 "all the new collectibles!"} },
+	{ 0,20,	// swamp stew
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 15,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"I had a ton of fun making them,",
+	 "though. Each Kromch level has new",
+	 "mechanics that are as ridiculous",
+	 "as possible."} },
+	{ 0,20,	// swamp stew
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 15,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"This level is obviously based on",
+	 "cooking games. I didn't really",
+	 "think about existing cooking games",
+	 "though, I just did what seemed right."} },
+	{ 0,20,	// swamp stew
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 25,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"In this case that just means",
+	 "following a recipe correctly,",
+	 "combined with a skill-based",
+	 "minigame."} },
+	{ 0,20,	// swamp stew
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 35,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"It is not an easy minigame! It",
+	 "took me many tries to get an S",
+	 "rating. It relies heavily on",
+	 "knowing how long 3 seconds is."} },
+	{1,19,	// haunted woods
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 5,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"This level went through many",
+	 "design passes to figure out",
+	 "exactly how ghostbusting was",
+	 "going to work."} },
+	{1,19,	// haunted woods
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 15,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"Originally it wasn't even ghosts.",
+	 "It was going to be a hunting game,",
+	 "where you had to find tracks and",
+	 "follow them, along with other signs."} },
+	{1,19,	// haunted woods
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 25,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"I'm particularly pleased that an",
+	 "entirely new ghost mechanic is",
+	 "added in Challenge mode. I wish",
+	 "I had that in other levels!"} },
+	{1,19,	// haunted woods
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 45,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"I'm just happy all around with",
+	 "the challenges for this level.",
+	 "They completely change the",
+	 "ghost-hunting process."} },
+	{2,24,	// hot to go
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 10,0,0,0},
+	{TE_TIMELOCK,TE_NONE},
+	{30*1,0},
+	{"",
+	 "H",
+	 "",
+	 ""} },
+	{ 2,24,	// hot to go
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 10+15,0,0,0},
+	{TE_TIMELOCK,TE_NONE},
+	{30*1,0},
+	{"",
+	 "O",
+	 "",
+	 ""} },
+	{ 2,24,	// hot to go
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 11,0,0,0},
+	{TE_TIMELOCK,TE_NONE},
+	{30*1,0},
+	{"",
+	 "T",
+	 "",
+	 ""} },
+	{ 2,24,	// hot to go
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 11+15,0,0,0},
+	{TE_TIMELOCK,TE_NONE},
+	{30*1,0},
+	{"",
+	 "T",
+	 "",
+	 ""} },
+	{ 2,24,	// hot to go
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 12,0,0,0},
+	{TE_TIMELOCK,TE_NONE},
+	{30*1+10,0},
+	{"",
+	 "O",
+	 "",
+	 ""} },
+	{ 2,24,	// hot to go
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 12+30,0,0,0},
+	{TE_TIMELOCK,TE_NONE},
+	{20,0},
+	{"",
+	 "G",
+	 "",
+	 ""} },
+	{ 2,24,	// hot to go
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 13+10,0,0,0},
+	{TE_TIMELOCK,TE_NONE},
+	{30*3,0},
+	{"",
+	 "O!",
+	 "",
+	 ""} },
+	{ 2,24,	// hot to go
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 25,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"Originally, this level was",
+	 "called 'Order Up!', until I",
+	 "realized the obvious name",
+	 "choice."} },
+	{ 2,24,	// hot to go
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 35,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"The original concept was to be",
+	 "something more like Crazy Taxi,",
+	 "where you would get orders and",
+	 "bring them quickly for big bucks."} },
+	{ 2,24,	// hot to go
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 45,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"I even toyed with making it on",
+	 "water, steering a boat around,",
+	 "which would've been a 3D model!",
+	 "Too much work."}},
+	{2,24,	// hot to go
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 55,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"Instead, I had to come up with",
+	 "4 unique speed challenges, and",
+	 "I think I did it! The maze isn't",
+	 "very exciting, though."} },
+	{ 3,16,	// subterranean sticks
+	{TC_TIMED2,TC_VAR,TC_NONE,TC_NONE},
+	{0,1,0,0},
+	{TE_TIMELOCK,TE_NONE},
+	{30*2,0},
 	{"GOOD LUCK PASSING THE LEVEL",
 	 "WITH THESE PLASTERED ALL",
 	 "OVER THE SCREEN!!!!!!!!!!!",
-	 "HAHAHAHAHAHA SUCKER!!!!!!!"}},
+	 "HAHAHAHAHAHA SUCKER!!!!!!!"} },
+	{ 3,19,	// horkboxes
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 10,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"Here we are in the final and",
+	 "most story-packed new level.",
+	 "It also features my completely",
+	 "original idea of horkboxes."} },
+	{ 3,19,	// horkboxes
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 20,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"My wife found the term hork-",
+	 "boxes to be horribly offensive.",
+	 "She claimed to feel ill when",
+	 "hearing it. Hope you like it!"} },
+	{3,19,	// horkboxes
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 30,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"I feel like this level should",
+	 "have a clever name, like",
+	 "Horkbox Storage or something,",
+	 "but it's just Horkboxes."} },
+	{ 3,19,	// horkboxes
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 40,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"Yes, I realize Horkbox Storage",
+	 "is not clever, but it's got a",
+	 "very Kidmystical sound to it.",
+	 "Clearly naming your location."} },
+	{3,19,	// horkboxes
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 50,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"The Kid Mystic universe is my",
+	 "most straightforward world.",
+	 "Creating it feels like putting",
+	 "on a different sweater."} },
+	{ 3,19,	// horkboxes
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 60,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"Everything is still silly and",
+	 "self-referential, but it has a",
+	 "more childish, fairy-tale tone.",
+	 "Some things aren't even puns!"} },
+	{ 3,19,	// horkboxes
+	{TC_TIMED,TC_NONE,TC_NONE,TC_NONE},
+	{30 * 70,0,0,0},
+	{TE_NONE,TE_NONE},
+	{0,0},
+	{"Farewell, player. It was good",
+	 "talking to you again. We'll",
+	 "have another chat in 2045 when",
+	 "we remake this game again!"} },
 };
 
 typedef struct visTrivia_t
@@ -2010,10 +2298,9 @@ void TryToActivate(int t)
 			MakeNormalSound(SND_TRIVIA);
 			visTriv[i].x=MGL_random(SCRWID-240)+120;
 			visTriv[i].y=MGL_random(SCRHEI-120)+60;
-			if(t==NUM_TRIVIA-1)
-				visTriv[i].timer=30*2;
-			else
-				visTriv[i].timer=30*7;
+			visTriv[i].timer=30*7;
+			if(trivia[t].effect[0]==TE_TIMELOCK)
+				visTriv[i].timer = trivia[t].effectVal[0];
 			visTriv[i].size=0;
 			visTriv[i].which=t;
 			break;
@@ -2047,16 +2334,25 @@ void UpdateTrivia(void)
 		TryToActivate(i);
 	}
 
-	for(i=0;i<8;i++)
+	for (i = 0; i < 8; i++)
 	{
-		if(visTriv[i].timer)
+		if (visTriv[i].timer)
 		{
 			visTriv[i].timer--;
-			if(visTriv[i].size<30)
-				visTriv[i].size+=3;
+			if (visTriv[i].size < 30)
+				visTriv[i].size += 3;
 		}
-		else if(visTriv[i].size)
-			visTriv[i].size-=3;
+		else if (visTriv[i].size)
+			visTriv[i].size -= 3;
+	}
+	for(i=0;i<7;i++)
+	{
+		if (visTriv[i].timer > visTriv[i + 1].timer)	// this one is older than the one after it, swap the order
+		{
+			visTrivia_t vt = visTriv[i];
+			visTriv[i] = visTriv[i + 1];
+			visTriv[i+1] = vt;
+		}
 	}
 }
 

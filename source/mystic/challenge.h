@@ -43,6 +43,8 @@
 #define HOURGLASS_BONUS (20)	// percent of time the hourglass grants you
 
 #define MAX_CHALLENGE (80)
+#define TRIVIA_SLOT		(79)	// this slot is where we store whether trivia is turned on or not
+
 #define MAX_COMBO_TIME (60)
 
 typedef struct goal_t

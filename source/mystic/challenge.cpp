@@ -888,7 +888,7 @@ void ChallengeMenuRender(MGLDraw *mgl)
 			else if(chal[j].chapter==15)
 			{
 				// show a star indicating if Trivia mode is on
-				chalSpr->GetSprite(2+(chalData.bought[63]==0))->Draw(x+200+3*25,y+20,mgl);
+				chalSpr->GetSprite(2+(chalData.bought[TRIVIA_SLOT]==0))->Draw(x+200+3*25,y+20,mgl);
 			}
 
 			y+=50;
@@ -1264,7 +1264,7 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 				{
 					fairyOn=0;
 					if(asking==ASK_TRIVIA)
-						chalData.bought[63]=0;
+						chalData.bought[TRIVIA_SLOT]=0;
 					return 0;
 				}
 				switch(asking)
@@ -1301,7 +1301,7 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 						return 0;
 						break;
 					case ASK_TRIVIA:
-						chalData.bought[63]=1;
+						chalData.bought[TRIVIA_SLOT]=1;
 						fairyOn=0;
 						return 0;
 						break;
@@ -2028,7 +2028,7 @@ byte CurrentLetter(void)
 
 byte DoTrivia(void)
 {
-	return (challenging==1 && chalData.bought[63]==1);
+	return (challenging==1 && chalData.bought[TRIVIA_SLOT]==1);
 }
 
 void CheatChal(void)

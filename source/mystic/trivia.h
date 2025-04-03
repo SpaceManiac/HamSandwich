@@ -16,6 +16,7 @@
 #define TE_NONE		0	// no effect
 #define TE_VAR		1	// set var N
 #define TE_SUBTIME	2	// start the subtimer going with N seconds
+#define TE_TIMELOCK 3 // defines what duration this popup has, instead of default
 
 typedef struct trivia_t
 {
