@@ -75,6 +75,7 @@
 #define BLT_MONEYBAG (62)
 #define BLT_FLAME3	(63)	// evil flame, same as flame 2, but it doesn't randomize and slow down
 #define BLT_DIAMOND (64)
+#define BLT_GOLEMBOOM (65)	// same as boom, but comes from a golem dying, scales with the summon skill
 
 #define MAX_BULLETS 512
 

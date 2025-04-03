@@ -157,6 +157,7 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 		case BLT_COMETBOOM2:
 		case BLT_ICECOMET:
 		case BLT_ICECOMETBOOM:
+		case BLT_GOODSHOCK:
 			break;
 		case BLT_HAMMER:
 			me->type=BLT_NONE;
@@ -321,6 +322,7 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 		case BLT_COMETBOOM2:
 		case BLT_ICECOMET:
 		case BLT_ICECOMETBOOM:
+		case BLT_GOODSHOCK:
 			break;
 		case BLT_HAMMER:
 			me->type=BLT_NONE;
@@ -1060,6 +1062,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_BOOM:
+		case BLT_GOLEMBOOM:
 			if(FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,64,(8-MGL_random(17))<<FIXSHIFT,
 				(8-MGL_random(16))<<FIXSHIFT,2,map,world))
 			{
@@ -1605,6 +1608,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_BOOM:
+		case BLT_GOLEMBOOM:
 		case BLT_SEEKBOOM:
 			map->BrightTorch((me->x/TILE_WIDTH)>>FIXSHIFT,
 							 (me->y/TILE_HEIGHT)>>FIXSHIFT,12,8);
@@ -2048,6 +2052,7 @@ void RenderBullet(bullet_t *me)
 			// invisible
 			break;
 		case BLT_BOOM:
+		case BLT_GOLEMBOOM:
 		case BLT_SEEKBOOM:
 			curSpr=bulletSpr->GetSprite(7-me->timer+SPR_BOOM);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
@@ -2365,6 +2370,7 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->timer = 30 * 20;
 			break;
 		case BLT_BOOM:
+		case BLT_GOLEMBOOM:
 		case BLT_SEEKBOOM:
 			me->dx=0;
 			me->dy=0;

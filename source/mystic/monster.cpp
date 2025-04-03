@@ -759,22 +759,16 @@ word MonsterHP(byte type)
 {
 	word mul = 1;
 	if (type == MONS_HORKBOX)
-		return monsType[type].hp;	// non-modifyable HP, because it's actually a timer
+		return monsType[type].hp;	// non-modifiable HP, because it's actually a timer
+	int hp = monsType[type].hp;
+	if(!ClassicMode() && type==MONS_GOLEM)
+		hp *= (1 + SkillValue(SKILL_SUMMON)) / 6;
 
 	if(player.nightmare)
 	{
 		if(monsType[type].flags&MF_GOODGUY)
 		{
-			if(ClassicMode())
-				return monsType[type].hp*(100+player.spellStones*10)/100;
-			else
-			{
-				int hp = monsType[type].hp;
-				if (type == MONS_GOLEM)
-					hp *= (1 + SkillValue(SKILL_SUMMON)) / 6;
-				
-				return hp * (100 + player.spellStones * 10) / 100;
-			}
+			hp=hp*(100+player.spellStones*10)/100;
 		}
 		else
 		{
@@ -788,7 +782,7 @@ word MonsterHP(byte type)
 	{
 		if (monsType[type].flags & MF_GOODGUY)
 		{
-			return monsType[type].hp * (100 + player.spellStones * 10) / 100;
+			hp = hp * (100 + player.spellStones * 10) / 100;
 		}
 		else
 		{
@@ -801,7 +795,7 @@ word MonsterHP(byte type)
 	if (!ClassicMode() && player.worldNum >= 2)
 		mul *= MODERNCHAP34HP;
 
-	return monsType[type].hp*mul;
+	return hp*mul;
 }
 
 char *MonsterName(byte type)
@@ -1230,15 +1224,6 @@ void AI_Overworld(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->placed)	// placed enemies await bumping into player
 	{
-		if(goodguy)
-		{
-			if(RangeToTarget(me,goodguy)<(48*FIXAMT))
-			{
-				// do whatever is required
-				//void SendMessageToGame(byte msg,int content);
-				return;
-			}
-		}
 		return;
 	}
 
@@ -1394,12 +1379,20 @@ void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			}
 		}
 	}
-	else	// running home mode
+	else if(me->mind==1)	// running home mode
 	{
-		if(RangeToTarget(me,g)<128*FIXAMT && goodguy && RangeToTarget(me,goodguy)<300*FIXAMT)
+		if (RangeToTarget(me, g) < 128 * FIXAMT)
 		{
-			// got close enough, get violent again
-			me->mind=0;
+			if (goodguy && RangeToTarget(me, goodguy) < 300 * FIXAMT)
+			{
+				// got close enough, get violent again
+				me->mind = 0;
+			}
+			else // have no target or the target is too far to attack. If we are this close to kid, we should pick a random direction to head
+			{
+				me->mind = 2;	// wandering mode
+				me->mind1 = 2;
+			}
 		}
 		if(me->mind1==0)
 		{
@@ -1407,12 +1400,42 @@ void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			me->mind1=2;
 		}
 	}
+	else if (me->mind == 2) // wandering because you are close to the player and have no nearby target
+	{
+		if (goodguy && RangeToTarget(me, goodguy) < 300 * FIXAMT)
+		{
+			// got close enough, get violent again
+			me->mind = 0;
+		}
+		else if (RangeToTarget(me, g) >= 128 * FIXAMT)
+		{
+			// got too far from player, find him again
+			me->mind = 1;
+		}
+		if (me->mind1 == 0)
+		{
+			if (Random(2))
+				me->facing = (me->facing + 1) & 7;
+			else
+				me->facing = (me->facing - 1) & 7;
+			me->mind1 = 4;
+		}
+	}
+
 	me->frmAdvance=256;
 	// a little randomness in the movement to keep them from all overlapping each other
 	me->dx += Cosine(me->facing * 32) - 10 + Random(20);
 	me->dy += Sine(me->facing * 32) - 10 + Random(20);
-	Clamp(&me->dx,FIXAMT*(6+4*ClassicMode()));
-	Clamp(&me->dy,FIXAMT*(6+4*ClassicMode()));
+	if (!ClassicMode() && me->reload > 0)
+	{
+		Clamp(&me->dx, FIXAMT * 3);
+		Clamp(&me->dy, FIXAMT * 3);
+	}
+	else
+	{
+		Clamp(&me->dx, FIXAMT * (6 + 4 * ClassicMode()));
+		Clamp(&me->dy, FIXAMT * (6 + 4 * ClassicMode()));
+	}
 }
 
 void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy)
@@ -5162,7 +5185,10 @@ void AI_Golem(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x+Cosine(me->facing*32)*32;
 			y=me->y+Sine(me->facing*32)*32;
 			FireBullet(x,y,me->facing,BLT_GOODSHOCK);
-			me->reload=60;
+			if (ClassicMode())
+				me->reload = 60;
+			else
+				me->reload = 60 - SkillValue(SKILL_SUMMON) * 5;
 		}
 		if(me->seq==ANIM_A1)	// forming
 		{
@@ -5177,7 +5203,7 @@ void AI_Golem(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				y=me->y-32*FIXAMT+MGL_randoml(64*FIXAMT);
 				BlowWigglySmoke(x,y,me->z,0);
 				if(me->frmTimer<32 && MGL_random(2)==0)
-					FireExactBullet(x,y,0,0,0,0,0,3,0,BLT_BOMB);
+					FireBullet(x,y,0,BLT_GOLEMBOOM);
 			}
 		}
 		return;

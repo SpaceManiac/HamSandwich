@@ -1104,7 +1104,10 @@ void Guy::MonsterControl(Map *map,world_t *world)
 {
 	Guy *goodguy;
 
-	goodguy=NearestEnemy(this);
+	if (type == MONS_PTERO)
+		goodguy = NearestEnemy(this,true);	// pteros only target guys they can see
+	else
+		goodguy = NearestEnemy(this,false);
 
 	switch(type)
 	{
@@ -1580,7 +1583,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			critChance += RuneValue(Rune::FLAMEDMG);
 		if (BulletHittingType() == BLT_MISSILE)
 			critChance += RuneValue(Rune::SEEKER);
-		if(BulletHittingType()==BLT_PTEROSHOT || BulletHittingType()==BLT_GOODSHOCK)
+		if(BulletHittingType()==BLT_PTEROSHOT || BulletHittingType()==BLT_GOODSHOCK || BulletHittingType()==BLT_GOLEMBOOM)
 			critChance += RuneValue(Rune::SUMMON);
 		else if(player.usedSpells[SPL_SUMMON]==1)
 			player.usedSpells[SPL_SUMMON] = 2;	// you hit an enemy somehow other than minion power.
@@ -2814,7 +2817,7 @@ void KillAllBadguys(void)
 		}
 }
 
-Guy *NearestEnemy(Guy *me)
+Guy *NearestEnemy(Guy *me,bool LOS=false)
 {
 	Guy *victim=NULL;
 	int range=INT_MAX;
@@ -2824,12 +2827,17 @@ Guy *NearestEnemy(Guy *me)
 	f=MonsterFlags(me->type)&MF_GOODGUY;
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i].type && (MonsterFlags(guys[i].type)&MF_GOODGUY)!=f && (MonsterFlags(guys[i].type)&(MF_NOHIT|MF_INVINCIBLE))==0
+		if(guys[i].type && guys[i].hp>0 && (MonsterFlags(guys[i].type)&MF_GOODGUY)!=f && (MonsterFlags(guys[i].type)&(MF_NOHIT|MF_INVINCIBLE))==0
 			&& guys[i].type!=MONS_FAIRY2 && (player.taunted==0 || guys[i].type!=MONS_BOUAPHA))
 		{
 			j=abs(me->x-guys[i].x)+abs(me->y-guys[i].y);
 			if(victim==NULL || j<range)
 			{
+				if (LOS)	// must be in our line of sight
+				{
+					if (!CurrentMap()->FindGuy(me->mapx, me->mapy, 5, &guys[i]))
+						continue;
+				}
 				range=j;
 				victim=&guys[i];
 			}

@@ -103,7 +103,7 @@ byte MossCheck(int x,int y);
 void KillKids(Guy *g);
 void AddRandomGuy(Map *map,world_t *world,byte chapter,byte rnd);
 void AddBattleGuys(Map *map,byte t);
-Guy *NearestEnemy(Guy *me);
+Guy *NearestEnemy(Guy *me,bool LOS);
 Guy *GetGoodguy(void);
 byte BadguyCount(void);
 void KillPinkeyes(void);
