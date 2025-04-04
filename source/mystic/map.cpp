@@ -351,7 +351,7 @@ void Map::Update(byte mode,world_t *world)
 					int xx, yy;
 					xx = x / FIXAMT + Random(TILE_WIDTH);
 					yy = y / FIXAMT + Random(TILE_HEIGHT);
-					WaterRipple(xx,yy, Random(800)+500);
+					WaterRipple(xx,yy, Random(800)+1500);
 					BlowWigglySmoke(xx*FIXAMT,yy*FIXAMT, 0, 8);
 				}
 			}

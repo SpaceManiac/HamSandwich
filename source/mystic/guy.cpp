@@ -11,6 +11,7 @@
 #include "skills.h"
 #include "runes.h"
 #include "achieves.h"
+#include "water.h"
 
 namespace
 {
@@ -804,6 +805,9 @@ void Guy::Update(Map *map,world_t *world)
 		if((hp>0) && (world->terrain[map->map[mapx+mapy*map->width].floor].flags&TF_LAVA)
 			&& (!PlayerCanWaterwalk()) && !parent && !PlayerShield())
 		{
+			for (int i = 16; i <= 28; i += 12)
+				WaterRipple(x / FIXAMT - 8 + Random(16), y / FIXAMT + -8+Random(16), MGL_random(32 * 50));
+
 			if (player.worldNum == 3)	// spikes in chapter 3 don't make smoke
 			{
 				BlowWigglySmoke(x, y, 0, FIXAMT * 2);

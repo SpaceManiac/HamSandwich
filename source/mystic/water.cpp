@@ -104,10 +104,12 @@ inline byte GetWaterBkgdBit(int x,int y)
 	return waterbkgd[x+y*WATER_WIDTH];
 }
 
+byte flip = 0;
+
 void UpdateWater(void)
 {
-	int i,j;
-	short *tmp;
+	int i, j;
+	short* tmp;
 
 	if ((player.worldNum == 1 && player.levelNum == 15) ||
 		(player.worldNum == 2 && player.levelNum == 20) ||
@@ -119,29 +121,30 @@ void UpdateWater(void)
 	if (scroll < 0)
 		scroll += WATER_HEIGHT;
 
-	if(!opt.waterFX)
+	if (!opt.waterFX)
 		return;
 
-	if((player.worldNum==1 && player.levelNum==15) ||
-		(player.worldNum==2 && player.levelNum==20) ||
-		(player.worldNum==3 && player.levelNum==12))
+	if ((player.worldNum == 1 && player.levelNum == 15) ||
+		(player.worldNum == 2 && player.levelNum == 20) ||
+		(player.worldNum == 3 && player.levelNum == 12))
 	{
-		for(i=0;i<40;i++)
-			WaterBlop(MGL_random(WATER_WIDTH),MGL_random(WATER_HEIGHT),(byte)MGL_random(WATER_WIDTH/8));
+		for (i = 0; i < 40; i++)
+			WaterBlop(MGL_random(WATER_WIDTH), MGL_random(WATER_HEIGHT), (byte)MGL_random(WATER_WIDTH / 8));
 	}
 	else
-		WaterBlop(MGL_random(WATER_WIDTH),MGL_random(WATER_HEIGHT),(byte)MGL_random(WATER_WIDTH/2));
+		WaterBlop(MGL_random(WATER_WIDTH), MGL_random(WATER_HEIGHT), (byte)MGL_random(WATER_WIDTH / 2));
 
-	for(i=0;i<WATER_WIDTH;i++)
-		for(j=0;j<WATER_HEIGHT;j++)
+	int neighborDiv = 2;
+	int dampen = WATERDAMPEN;
+	for (i = 0; i < WATER_WIDTH; i++)
+		for (j = 0; j < WATER_HEIGHT; j++)
 		{
-			water2[i+j*WATER_WIDTH]=(GetWaterBit(i-1,j)+GetWaterBit(i+1,j)+GetWaterBit(i,j-1)+GetWaterBit(i,j+1))/2-water2[i+j*WATER_WIDTH];
-			water2[i+j*WATER_WIDTH]=water2[i+j*WATER_WIDTH]*WATERDAMPEN/WATERFIX;
+			water2[i + j * WATER_WIDTH] = (GetWaterBit(i - 1, j) + GetWaterBit(i + 1, j) + GetWaterBit(i, j - 1) + GetWaterBit(i, j + 1)) / neighborDiv - water2[i + j * WATER_WIDTH];
+			water2[i + j * WATER_WIDTH] = water2[i + j * WATER_WIDTH] * dampen / WATERFIX;
 		}
-
-	tmp=water1;
-	water1=water2;
-	water2=tmp;	// swap the pointers
+	tmp = water1;
+	water1 = water2;
+	water2 = tmp;	// swap the pointers	
 }
 
 byte WaterPixel(int x,int y)
@@ -167,12 +170,23 @@ byte WaterPixel(int x,int y)
 	yofs=GetWaterBit(x,y-1)-GetWaterBit(x,y+1);
 
 	s=GetWaterBkgdBit(x+xofs/WATERFIX,y+yofs/WATERFIX)&31;
-	s+=xofs/WATERFIX;	// shade it
+	
+	if (player.worldNum < 3)
+	{
+		s += xofs / WATERFIX;	// shade it
 
-    if(s<0)
-		s=0;
-	if(s>31)
-		s=31;
+		if (s < 0)
+			s = 0;
+		if (s > 31)
+			s = 31;
+	}
+	else
+	{
+		s += xofs / (WATERFIX*2);	// shade it
+		s += 4;
+		if (s < 0) s = 0;
+		if (s > 31) s = 31;
+	}
 
 	if (player.levelNum == 20 && player.worldNum == 2)
 	{

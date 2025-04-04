@@ -318,9 +318,29 @@ void GearOutline(byte spr, int x, int y)
 	shopSpr->GetSprite(spr)->Draw(x, y, GetDisplayMGL());
 }
 
+void RenderGearSlot(int x, int y, const char* line1, const char* line2, byte spr)
+{
+	// the box for the item
+	shopSpr->GetSprite(1)->Draw(x,y, GetDisplayMGL());
+	// the item
+	GearOutline(spr, x,y);
+	if (line1[0] == '\0')	// this is a one-liner
+	{
+		Print(x+60+2, y+15+2, line2, 1, 2);
+		Print(x+60, y+15, line2, 0, 2);
+	}
+	else
+	{
+		Print(x + 60+2, y + 5+2, line1, 1, 2);
+		Print(x + 60, y + 5, line1, 0, 2);
+		Print(x + 60+2, y + 25+2, line2, 1, 2);
+		Print(x + 60, y + 25, line2, 0, 2);
+	}
+}
+
 void RenderPlayerGear(int x,byte brt)
 {
-	char s[32];
+	char s[32],s2[32];
 	char b;
 
 	shopSpr->GetSprite(33)->DrawGhost(x,250,GetDisplayMGL(),0);
@@ -370,213 +390,86 @@ void RenderPlayerGear(int x,byte brt)
 		}
 	}
 	// hat
-	shopSpr->GetSprite(1)->Draw(x-80,50,GetDisplayMGL());
-	//shopSpr->GetSprite(13 + player.hat)->DrawBright(x - 80+2, 50+2, GetDisplayMGL(),-31);
-	//shopSpr->GetSprite(13+player.hat)->Draw(x-80,50,GetDisplayMGL());
-	GearOutline(13 + player.hat, x - 80, 50);
-	if(player.gear&(GEAR_POINTY|GEAR_MAGNET))
+
+	if (player.gear & GEAR_POINTY)
 	{
-		if(player.gear&GEAR_POINTY)
-		{
-			if(player.gear&GEAR_MAGNET)
-			{
-				Print(x-18,62,"Pointy Magnetic",1,2);
-				Print(x-20,60,"Pointy Magnetic",0,2);
-			}
-			else
-			{
-				Print(x-18,62,"Pointy",1,2);
-				Print(x-20,60,"Pointy",0,2);
-			}
-		}
+		if (player.gear & GEAR_MAGNET)
+			sprintf(s, "Pointy Magnetic");
 		else
-		{
-			Print(x-18,62,"Magnetic",1,2);
-			Print(x-20,60,"Magnetic",0,2);
-		}
-		Print(x-18,82,hatName[player.hat],1,2);
-		Print(x-20,80,hatName[player.hat],0,2);
+			sprintf(s, "Pointy");
 	}
+	else if (player.gear & GEAR_MAGNET)
+		sprintf(s, "Magnetic");
 	else
-	{
-		Print(x-18,72,hatName[player.hat],1,2);
-		Print(x-20,70,hatName[player.hat],0,2);
-	}
+		s[0] = '\0';
+	RenderGearSlot(x - 80, 50, s, hatName[player.hat], 13 + player.hat);
 
-	// heart pendant
-	if((player.gear&GEAR_HEART) && !(player.gear&GEAR_SOUL))
+	if (player.gear & GEAR_HEART)
 	{
-		shopSpr->GetSprite(1)->Draw(x-80,106,GetDisplayMGL());
-		GearOutline(18, x - 80, 106);
-		Print(x-18,128,"Heart Pendant",1,2);
-		Print(x-20,126,"Heart Pendant",0,2);
-	}
-	else if(!(player.gear&GEAR_HEART) && (player.gear&GEAR_SOUL))
-	{
-		shopSpr->GetSprite(1)->Draw(x-80,106,GetDisplayMGL());
-		GearOutline(25, x - 80, 106);
-		Print(x-18,128,"Soul Pendant",1,2);
-		Print(x-20,126,"Soul Pendant",0,2);
-	}
-	else if((player.gear&GEAR_HEART) && (player.gear&GEAR_SOUL))
-	{
-		shopSpr->GetSprite(1)->Draw(x-80,106,GetDisplayMGL());
-		GearOutline(26, x - 80, 106);
-		Print(x-18,114,"Heart & Soul",1,2);
-		Print(x-18,134,"Pendant",1,2);
-		Print(x-20,112,"Heart & Soul",0,2);
-		Print(x-20,132,"Pendant",0,2);
-	}
-
-	// moon amulet
-	if((player.gear&GEAR_MOON) && !(player.gear&GEAR_SUN))
-	{
-		shopSpr->GetSprite(1)->Draw(x-80,162,GetDisplayMGL());
-		GearOutline(19, x - 80, 162);
-		Print(x-18,184,"Moon Amulet",1,2);
-		Print(x-20,182,"Moon Amulet",0,2);
-	}
-	else if(!(player.gear&GEAR_MOON) && (player.gear&GEAR_SUN))
-	{
-		shopSpr->GetSprite(1)->Draw(x-80,162,GetDisplayMGL());
-		GearOutline(23, x - 80, 162);
-		Print(x-18,184,"Sun Amulet",1,2);
-		Print(x-20,182,"Sun Amulet",0,2);
-	}
-	else if((player.gear&GEAR_MOON) && (player.gear&GEAR_SUN))
-	{
-		shopSpr->GetSprite(1)->Draw(x-80,162,GetDisplayMGL());
-		GearOutline(24, x - 80, 162);
-		Print(x-18,170,"Sun & Moon",1,2);
-		Print(x-18,190,"Amulet",1,2);
-
-		Print(x-20,168,"Sun & Moon",0,2);
-		Print(x-20,188,"Amulet",0,2);
-	}
-
-	// lantern
-	if((player.gear&GEAR_LAMP) && !(player.gear&GEAR_WISDOM))
-	{
-		shopSpr->GetSprite(1)->Draw(x-80,218,GetDisplayMGL());
-		GearOutline(20, x - 80, 218);
-		Print(x-18,240,"Lantern",1,2);
-		Print(x-20,238,"Lantern",0,2);
-	}
-	else if(!(player.gear&GEAR_LAMP) && (player.gear&GEAR_WISDOM))
-	{
-		shopSpr->GetSprite(1)->Draw(x-80,218,GetDisplayMGL());
-		GearOutline(21, x - 80, 218);
-		Print(x-18,240,"Light Of Wisdom",1,2);
-		Print(x-20,238,"Light Of Wisdom",0,2);
-	}
-	else if((player.gear&GEAR_LAMP) && (player.gear&GEAR_WISDOM))
-	{
-		shopSpr->GetSprite(1)->Draw(x-80,218,GetDisplayMGL());
-		GearOutline(22, x - 80, 218);
-		Print(x-18,226,"Lantern Of",1,2);
-		Print(x-18,246,"Wisdom",1,2);
-
-		Print(x-20,224,"Lantern Of",0,2);
-		Print(x-20,244,"Wisdom",0,2);
-	}
-	// staff
-	shopSpr->GetSprite(1)->Draw(x-80,274,GetDisplayMGL());
-	if(player.gear&(GEAR_BOUNCY|GEAR_COMPASS))
-	{
-		if(player.gear&GEAR_BOUNCY)
-		{
-			if(player.gear&GEAR_COMPASS)
-			{
-				Print(x-18,286,"Bouncy Seekin'",1,2);
-				Print(x-20,284,"Bouncy Seekin'",0,2);
-			}
-			else
-			{
-				Print(x-18,286,"Bouncy",1,2);
-				Print(x-20,284,"Bouncy",0,2);
-			}
-		}
+		if (player.gear & GEAR_SOUL)
+			RenderGearSlot(x - 80, 106, "Heart & Soul", "Pendant", 26);
 		else
-		{
-			Print(x-18,286,"Seekin'",1,2);
-			Print(x-20,284,"Seekin'",0,2);
-		}
-
-		if(PlayerHasSword())
-		{
-			GearOutline(35, x - 80, 274);
-			Print(x-18,306,"Armageddon Swd",1,2);
-			Print(x-20,304,"Armageddon Swd",0,2);
-		}
-		else
-		{
-			GearOutline(3 + player.staff, x - 80, 274);
-			Print(x-18,306,staffName[player.staff],1,2);
-			Print(x-20,304,staffName[player.staff],0,2);
-		}
+			RenderGearSlot(x - 80, 106, "", "Heart Pendant", 18);
 	}
+	else if (player.gear & GEAR_SOUL)
+		RenderGearSlot(x - 80, 106, "", "Soul Pendant", 25);
+
+	if (player.gear & GEAR_MOON)
+	{
+		if (player.gear & GEAR_SUN)
+			RenderGearSlot(x - 80, 162, "Sun & Moon", "Amulet", 24);
+		else
+			RenderGearSlot(x - 80, 162, "", "Moon Amulet", 19);
+	}
+	else if (player.gear & GEAR_SUN)
+		RenderGearSlot(x - 80, 162, "", "Sun Amulet", 23);
+
+	if (player.gear & GEAR_LAMP)
+	{
+		if (player.gear & GEAR_WISDOM)
+			RenderGearSlot(x - 80, 218, "Lantern Of", "Wisdom", 22);
+		else
+			RenderGearSlot(x - 80, 218, "", "Lantern", 20);
+	}
+	else if (player.gear & GEAR_WISDOM)
+		RenderGearSlot(x - 80, 218, "", "Light Of Wisdom", 21);
+
+	s[0] = '\0';
+	if (player.gear & GEAR_BOUNCY)
+	{
+		if (player.gear & GEAR_COMPASS)
+			sprintf(s, "Bouncy Seekin'");
+		else
+			sprintf(s, "Bouncy");
+	}
+	else if (player.gear & GEAR_COMPASS)
+		sprintf(s, "Seekin'");
+	if (PlayerHasSword())
+		RenderGearSlot(x-80, 274, s, "Armageddon Swd", 35);
 	else
+		RenderGearSlot(x-80, 274, s, staffName[player.staff], 3 + player.staff);
+
+	s[0] = '\0';
+	if (player.gear & GEAR_FEATHER)
 	{
-		if(PlayerHasSword())
+		if (player.gear & GEAR_SOCKS)
 		{
-			GearOutline(35, x - 80, 274);
-			Print(x-18,296,"Armageddon Swd",1,2);
-			Print(x-20,294,"Armageddon Swd",0,2);
-		}
-		else
-		{
-			GearOutline(3 + player.staff, x - 80, 274);
-			Print(x-18,296,staffName[player.staff],1,2);
-			Print(x-20,294,staffName[player.staff],0,2);
-		}
-	}
-	// boots
-	shopSpr->GetSprite(1)->Draw(x-80,330,GetDisplayMGL());
-	GearOutline(8 + player.boots, x - 80, 330);
-	if(player.gear&(GEAR_FEATHER|GEAR_SOCKS))
-	{
-		if(player.gear&GEAR_SOCKS)
-		{
-			if(player.gear&GEAR_FEATHER)
-			{
-				if (Challenging())
-				{
-					Print(x - 18, 342, "Tickin' Shootin'", 1, 2);
-					Print(x - 20, 340, "Tickin' Shootin'", 0, 2);
-				}
-				else
-				{
-					Print(x - 18, 342, "Chicken Shootin'", 1, 2);
-					Print(x - 20, 340, "Chicken Shootin'", 0, 2);
-				}
-			}
+			if (Challenging())
+				sprintf(s, "Tickin' Shootin'");
 			else
-			{
-				Print(x-18,342,"Shootin'",1,2);
-				Print(x-20,340,"Shootin'",0,2);
-			}
+				sprintf(s, "Chicken Shootin'");
 		}
 		else
 		{
 			if (Challenging())
-			{
-				Print(x - 18, 342, "Timely", 1, 2);
-				Print(x - 20, 340, "Timely", 0, 2);
-			}
+				sprintf(s, "Timely");
 			else
-			{
-				Print(x - 18, 342, "Feathered", 1, 2);
-				Print(x - 20, 340, "Feathered", 0, 2);
-			}
+				sprintf(s, "Feathered");
 		}
-		Print(x-18,362,bootName[player.boots],1,2);
-		Print(x-20,360,bootName[player.boots],0,2);
 	}
-	else
-	{
-		Print(x-18,352,bootName[player.boots],1,2);
-		Print(x-20,350,bootName[player.boots],0,2);
-	}
+	else if (player.gear & GEAR_SOCKS)
+		sprintf(s, "Shootin'");
+	RenderGearSlot(x-80, 330, s, bootName[player.boots], 8 + player.boots);
 
 	// life
 	if(!ClassicMode() && player.barrier>0)
