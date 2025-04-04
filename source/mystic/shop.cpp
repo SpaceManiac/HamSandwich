@@ -900,8 +900,11 @@ byte UpdateShop(MGLDraw *mgl)
 			MakeNormalSound(SND_UNAVAILABLE);
 	}
 
-	if (ButtonTapped(CONTROL_ESCAPE))
+	if (ButtonTapped(CONTROL_ESCAPE | CONTROL_B2))
+	{
+		UpdateControls();
+		LockOutControl(CONTROL_ESCAPE | CONTROL_B2, true);
 		return 1;
-
-	else return 0;
+	}
+	return 0;
 }

@@ -1600,6 +1600,11 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		{
 			fDamage*=(SkillValue(SKILL_CRITDMG) / 100.0f);
 			critted = true;
+			if (BulletHittingType() == BLT_PTEROSHOT || BulletHittingType() == BLT_GOODSHOCK || BulletHittingType() == BLT_GOLEMBOOM)
+			{
+				if (RuneValue(Rune::SUMMON))
+					HealAllMinions(1);
+			}
 		}
 
 		partialDamage += (byte)((fDamage - floorf(fDamage)) * 100.0f);
@@ -1697,10 +1702,13 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			if (player.infernoKills >= 20)
 				EarnAchieve(Achievement::INFERNO);
 		}
-		if (BulletHittingType() == BLT_PTEROSHOT || BulletHittingType() == BLT_GOODSHOCK)
-			player.summonKills++;
+		
 		if (!(monsType[type].flags & MF_GOODGUY) && player.totalKills < 255)
+		{
 			player.totalKills++;
+			if (player.summonKills < 255 && (BulletHittingType() == BLT_PTEROSHOT || BulletHittingType() == BLT_GOODSHOCK || BulletHittingType()==BLT_GOLEMBOOM))
+				player.summonKills++;
+		}
 
 		if (IsABoss(type) && player.usedFireballs == 0)
 		{
@@ -3144,6 +3152,18 @@ void HealBadguys(word amt)
 				guys[i].hp = maxHP;
 			ShowEnemyLife(MonsterName(guys[i].type), guys[i].hp * 128 / maxHP, guys[i].hp * 128 / maxHP, (byte)(guys[i].hp > 0));
 
+		}
+	}
+}
+
+void HealAllMinions(int amt)
+{
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].hp > 0 && (guys[i].type == MONS_PTERO || guys[i].type == MONS_GOLEM))
+		{
+			if (guys[i].hp < MonsterHP(guys[i].type))
+				guys[i].hp++;
 		}
 	}
 }

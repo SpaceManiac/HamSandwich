@@ -1307,8 +1307,10 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 						break;
 				}
 			}
-			if(ButtonTapped(CONTROL_ESCAPE))
+			if(ButtonTapped(CONTROL_ESCAPE|CONTROL_B2))
 			{
+				UpdateControls();
+				LockOutControl(CONTROL_ESCAPE | CONTROL_B2, true);
 				MakeNormalSound(SND_MENUSELECT);
 				fairyOn=0;
 				return 0;

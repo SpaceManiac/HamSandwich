@@ -188,6 +188,10 @@ void DoCheat(byte w)
 			player.swordPiece[1]=1;
 			player.swordPiece[2]=1;
 			player.swordPiece[3]=1;
+			for (i = 0; i < (int)Rune::NUM_RUNES; i++)
+				player.runes[i] = RUNE_RANK3;
+			player.runePouches = 5;
+			player.skillPts = 180;
 			SwordAllCheck();
 			CheckForAllSecrets();
 			break;

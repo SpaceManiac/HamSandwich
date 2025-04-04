@@ -661,6 +661,8 @@ TASK(byte) LunaticRun(int *lastTime)
 		else if (msgFromOtherModules==MSG_SHOWANIM)
 		{
 			AWAIT ShowVictoryAnim(msgContent);
+			UpdateControls();
+			LockOutControl(CONTROL_ESCAPE | CONTROL_B2, true);
 			msgFromOtherModules=MSG_NONE;
 		}
 

@@ -99,6 +99,7 @@ word FindMurdalizeGuy(int x, int y, word maxRange);
 byte GetGuyPos(word guy,int *x,int *y);
 byte MonsterExists(byte type);
 void HealGoodguy(byte amt);
+void HealAllMinions(int amt);
 byte MossCheck(int x,int y);
 void KillKids(Guy *g);
 void AddRandomGuy(Map *map,world_t *world,byte chapter,byte rnd);

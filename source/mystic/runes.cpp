@@ -142,7 +142,8 @@ RuneDef runeDef[] = {
 	{
 		"Pterus Golemus",
 		{"Summoned minions gain Critical",
-		 "Chance."},
+		 "Chance, and minion Crits heal",
+		 "all minions for 1 Life."},
 		{5,15,25},
 		"Chance",
 		SD_PERCENT,

@@ -107,6 +107,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	player.hamSpeed=HAMMER_MIN_SPEED;
 	player.ammo=0;
 	player.reload=5;
+	player.summonKills = 0;
 	player.wpnReload=0;
 	player.hammerFlags=0;
 	player.life=player.maxLife;
@@ -1005,6 +1006,8 @@ byte PlayerKeys(byte w)
 
 void PlayerUpdateLife(void)
 {
+	byte formerMaxLife = player.maxLife;
+	byte formerMaxMana = player.maxMana;
 	// classic, gain life and mana with levels
 	if (player.difficulty == Difficulty::CLASSIC || player.difficulty==Difficulty::BRUTAL_CLASSIC || player.difficulty==Difficulty::VERY_CLASSIC)
 	{
@@ -1021,6 +1024,20 @@ void PlayerUpdateLife(void)
 		player.maxLife *= 2;
 	if (player.gear & GEAR_MOON)
 		player.maxMana *= 2;
+	int lifeDiff = player.maxLife - formerMaxLife;
+	int manaDiff = player.maxMana - formerMaxMana;
+	if (GetGoodguy())
+	{
+		if (lifeDiff > 0)
+			GetGoodguy()->hp += lifeDiff;
+		if (GetGoodguy()->hp > player.maxLife)
+			GetGoodguy()->hp = player.maxLife;
+		SetPlayerHP(GetGoodguy()->hp);
+	}
+	if (manaDiff > 0)
+		player.mana += manaDiff;
+	if (player.mana > player.maxMana)
+		player.mana = player.maxMana;
 }
 
 void PlayerLevelUp(int y)
