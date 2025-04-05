@@ -409,7 +409,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// die (turn into dud trapazoid)
 			}},
 		{"Peeping Bomb",
-		 13,41,20,50,"graphics/peepbomb.jsp",0,MF_FLYING|MF_ONEFACE|MF_FACECMD,
+		 13,41,20,50,"!43",0,MF_FLYING|MF_ONEFACE|MF_FACECMD,
 			{
 				{0,0,0,0,255},	// idle
 				{0,0,0,255},	// move
