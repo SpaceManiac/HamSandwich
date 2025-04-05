@@ -53,8 +53,7 @@ void InitControls(byte scheme)
 	arrowState=0;
 	arrowTap=0;
 	oldJoy=0;
-	dpadToMove = true;
-	stickDeadZone = 50;
+	stickDeadZone = 25;
 	controls = 0;
 	taps = 0;
 	reptCounter = 0;
@@ -621,22 +620,68 @@ void UpdateRawJoystick(void)
 	}
 	short deadZone;
 	deadZone = SDL_JOYSTICK_AXIS_MAX * (short)stickDeadZone / 100;
-	if (lx < -deadZone || (dpadToMove && (rawGamepad & (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT))))
+	
+	if (lx * lx + ly * ly > deadZone*deadZone)
+	{
+		double angle = atan2(ly, lx) * 180.0 / M_PI;
+		if (angle < 22.5 + -4 * 45)
+		{
+			rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF));
+		}
+		else if (angle < 22.5 + -3 * 45)
+		{
+			rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF));
+			rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP));
+		}
+		else if (angle < 22.5 + -2 * 45)
+		{
+			rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP));
+		}
+		else if (angle < 22.5 + -1 * 45)
+		{
+			rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT));
+			rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP));
+		}
+		else if (angle < 22.5 + 0 * 45)
+		{
+			rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT));
+		}
+		else if (angle < 22.5 + 1 * 45)
+		{
+			rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT));
+			rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_DN));
+		}
+		else if (angle < 22.5 + 2 * 45)
+		{
+			rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_DN));
+		}
+		else if (angle < 22.5 + 3 * 45)
+		{
+			rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_DN));
+			rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF));
+		}
+		else if (angle < 22.5 + 4 * 45)
+		{
+			rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF));
+		}
+	}
+
+	if (dpadToMove && (rawGamepad & (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT)))
 	{
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF));
 		menuGamepad |= CONTROL_LF;
 	}
-	if (ly < -deadZone || (dpadToMove && (rawGamepad & (1 << SDL_CONTROLLER_BUTTON_DPAD_UP))))
+	if (dpadToMove && (rawGamepad & (1 << SDL_CONTROLLER_BUTTON_DPAD_UP)))
 	{
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP));
 		menuGamepad |= CONTROL_UP;
 	}
-	if (lx > deadZone || (dpadToMove && (rawGamepad & (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT))))
+	if (dpadToMove && (rawGamepad & (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT)))
 	{
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT));
 		menuGamepad |= CONTROL_RT;
 	}
-	if (ly > deadZone || (dpadToMove && (rawGamepad & (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN))))
+	if (dpadToMove && (rawGamepad & (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN)))
 	{
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_DN));
 		menuGamepad |= CONTROL_DN;
