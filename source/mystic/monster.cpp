@@ -292,7 +292,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{45,45,45,17,17,255},	// A4=blocked a shot
 			}},
 		{"Fairy2",
-		 12,6,100,0,"graphics/fairy.jsp",0,MF_FLYING|MF_GOODGUY|MF_ENEMYWALK|MF_FREEWALK|MF_WALLWALK|MF_NOHIT,
+		 12,6,100,0,"!30",0,MF_FLYING|MF_GOODGUY|MF_ENEMYWALK|MF_FREEWALK|MF_WALLWALK|MF_NOHIT,
 			{
 				{0,1,2,3,4,5,4,3,2,1,255},	// idle
 				{0,1,2,3,4,5,4,3,2,1,255},	// move
@@ -343,7 +343,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{0,255},	// die=doesn't!
 			}},
 		{"Megablockhead V",
-		 11,16,20,75,"graphics/incagold.jsp",0,MF_NOMOVE|MF_INVINCIBLE,
+		 11,16,20,75,"!38",0,MF_NOMOVE|MF_INVINCIBLE,
 			{
 				{0,255},	// idle
 				{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,255},	// move
@@ -369,7 +369,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,13,13,14,14,14,15,15,15,15,15,15,15,15,15,15,15,15,14,13,255},	// A2=eyebeam
 			}},
 		{"Blocko Tongue",
-		 45,1,25,100,"graphics/log.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_ENEMYWALK,
+		 45,1,25,100,"!40",0,MF_NOMOVE|MF_ONEFACE|MF_ENEMYWALK,
 			{
 				{254,255},	// idle
 				{254,255},	// move
@@ -401,7 +401,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{6,5,4,3,2,1,0,255},	// die (turn into dud trapazoid)
 			}},
 		{"Trapazoid2",
-		 14,10,30,70,"graphics/trapazoid.jsp",0,MF_NOHIT|MF_NOMOVE|MF_NOSHADOW|MF_ENEMYWALK|MF_FREEWALK|MF_WALLWALK,
+		 14,10,30,70,"!45",0,MF_NOHIT|MF_NOMOVE|MF_NOSHADOW|MF_ENEMYWALK|MF_FREEWALK|MF_WALLWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -417,7 +417,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{32,33,34,35,36,37,38,39,40,255},	// die=explode
 			}},
 		{"Whackazoid",
-		 14,10,1,5,"graphics/trapazoid.jsp",0,MF_NOMOVE|MF_NOSHADOW|MF_WALLWALK,
+		 14,10,1,5,"!45",0,MF_NOMOVE|MF_NOSHADOW|MF_WALLWALK,
 			{
 				{0,255},	// idle
 				{0,255},	// move
@@ -443,7 +443,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,12,11,10,9,8,7,6,5,255},	// A2=get out of shell
 			}},
 		{"Sneaky Snail",	// in his shell
-		 12,19,45,60,"graphics/snail.jsp",0,MF_INVINCIBLE,
+		 12,19,45,60,"!50",0,MF_INVINCIBLE,
 			{
 				{14,255},	// idle
 				{1,2,3,4,2,1,0,255},	// move
@@ -568,7 +568,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{4,5,6,7,8,9,255},	// die
 			}},
 		{ "Farley The Ghost Bat",
-		 8,27,5,25,"graphics/bat.jsp",0,MF_FLYING,
+		 8,27,5,25,"!3",0,MF_FLYING,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -578,7 +578,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,14,15,15,16,255}	// bounce off during dive
 			} },
 		{ "Gloopy Gus",
-		 12,19,300,300,"graphics/snail.jsp",0,0,
+		 12,19,300,300,"!50",0,0,
 			{
 				{0,255},	// idle
 				{1,2,3,4,2,1,0,255},	// move
@@ -588,7 +588,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,12,11,10,9,8,7,6,5,255},	// A2=get out of shell
 			} },
 		{ "Firebat",
-		 8,27,15,40,"graphics/bat.jsp",0,MF_FLYING,
+		 8,27,15,40,"!3",0,MF_FLYING,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -598,7 +598,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{13,14,15,15,16,255}	// bounce off during dive
 			} },
 		{ "Scariest Bat",
-		 26,15,300,600,"graphics/bigbat.jsp",0,MF_FLYING | MF_NOMOVE | MF_ENEMYWALK,
+		 26,15,300,600,"!31",0,MF_FLYING | MF_NOMOVE | MF_ENEMYWALK,
 			{
 				{0,1,2,1,0,3,4,5,4,3,255},	// idle
 				{0,1,2,1,0,3,4,5,4,3,255},	// move
@@ -606,7 +606,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{9,10,11,12,13,14,255},	// die
 			} },
 		{ "Somewhat Excessive Bat",
-		 64,7,1400,1400,"graphics/hugebat.jsp",0,MF_NOMOVE | MF_ENEMYWALK | MF_ONEFACE | MF_WALLWALK,
+		 64,7,1400,1400,"!29",0,MF_NOMOVE | MF_ENEMYWALK | MF_ONEFACE | MF_WALLWALK,
 			{
 				{0,0,255},	// idle
 				{0,255},	// move
@@ -614,7 +614,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{4,4,4,5,5,5,6,6,6,6,6,6,255},	// die
 			} },
 		{ "Swamp Rot",
-		 10,8,5,5,"graphics/crazybush.jsp",0,0,
+		 10,8,5,5,"!34",0,0,
 			{
 				{0,255},	// idle
 				{1,2,1,0,3,4,3,0,255},	// move
@@ -622,7 +622,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{5,6,7,255},	// die
 			} },
 		{"Ghost Spitter",
-		 8,21,10,50,"graphics/bigspdr.jsp",0,MF_GHOST,
+		 8,21,10,50,"!5",0,MF_GHOST,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -630,7 +630,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{14,15,16,17,18,17,18,17,18,19,19,20,20,255},	// die
 			} },
 		{"Splitter",
-		 8,21,100,200,"graphics/bigspdr.jsp",0,0,
+		 8,21,100,200,"!5",0,0,
 			{
 				{0,255},	// idle
 				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
@@ -638,7 +638,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{14,15,16,17,18,17,18,17,18,19,19,20,20,255},	// die
 			} },
 		{"Ghost",
-		 8,27,5,25,"graphics/bat.jsp",0,MF_FLYING|MF_ENEMYWALK|MF_FREEWALK|MF_WALLWALK|MF_WATERWALK|MF_INVINCIBLE|MF_NOHIT|MF_NOSHADOW,
+		 8,27,5,25,"!3",0,MF_FLYING|MF_ENEMYWALK|MF_FREEWALK|MF_WALLWALK|MF_WATERWALK|MF_INVINCIBLE|MF_NOHIT|MF_NOSHADOW,
 			{
 				{254,255},	// idle
 				{254,255},	// move
@@ -646,7 +646,7 @@ monsterType_t monsType[NUM_MONSTERS]=
 				{254,255},		// die
 			} },
 		{"Horkbox",
-		 8,27,60*30,500,"graphics/bat.jsp",0, MF_ENEMYWALK|MF_NOMOVE|MF_NOGRAV,
+		 8,27,60*30,500,"!3",0, MF_ENEMYWALK|MF_NOMOVE|MF_NOGRAV,
 			{
 				{0,255},	// idle
 				{254,255},	// move
@@ -814,6 +814,13 @@ void LoadMySprite(byte type)
 
 	if(monsType[type].spr==NULL)
 	{
+		if (type == MONS_FRIENDLY)
+		{
+			if (ClassicMode())
+				sprintf(monsType[type].sprName, "graphics/friendly.jsp");
+			else
+				sprintf(monsType[type].sprName, "graphics/friendly2.jsp");
+		}
 		if(monsType[type].sprName[0]=='!')
 		{
 			// it's a repeat of someone else's sprite
@@ -829,7 +836,6 @@ void LoadMySprite(byte type)
 		if(monsType[type].spr==NULL)
 			FatalError("Out of memory!");
 	}
-
 }
 
 sprite_t *GetMonsterSprite(byte type,byte seq,byte frm,byte facing)

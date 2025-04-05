@@ -965,7 +965,7 @@ TASK(byte) LunaticWorld(byte world)
 #else
 				player.worldNum++;
 				FreeWorld(&curWorld);
-				if(!LoadWorld(&curWorld, WorldName(world)))
+				if(!LoadWorld(&curWorld, WorldName(player.worldNum)))
 					CO_RETURN WORLD_ABORT;
 
 				worldNum=player.worldNum;
@@ -1007,7 +1007,7 @@ TASK(byte) LunaticWorld(byte world)
 					player.worldNum=0;
 					player.nightmare=1;
 					FreeWorld(&curWorld);
-					if(!LoadWorld(&curWorld, WorldName(world)))
+					if(!LoadWorld(&curWorld, WorldName(player.worldNum)))
 						CO_RETURN WORLD_ABORT;
 					ResetPlayerLevels();
 					InitWorld(&curWorld,worldNum);

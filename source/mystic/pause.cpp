@@ -660,7 +660,6 @@ PauseResult UpdatePauseMenu(MGLDraw *mgl)
 	}
 	else if(subMode==SUBMODE_SLOTPICK)
 	{
-		byte scan = LastScanCode();
 		if(AutoRepeatTapped(CONTROL_UP))
 		{
 			MakeNormalSound(SND_MENUCLICK);
@@ -683,12 +682,12 @@ PauseResult UpdatePauseMenu(MGLDraw *mgl)
 				GetSaves();
 			}
 		}
-		if (scan == SDL_SCANCODE_PAGEUP)
+		if (AutoRepeatTapped(CONTROL_LF) || AutoRepeatTapped(CONTROL_B3))
 		{
 			saveOffset = (saveOffset + NUM_SAVES - 5) % NUM_SAVES;
 			GetSaves();
 		}
-		if (scan == SDL_SCANCODE_PAGEDOWN)
+		if (AutoRepeatTapped(CONTROL_RT) || AutoRepeatTapped(CONTROL_B4))
 		{
 			saveOffset = (saveOffset + 5) % NUM_SAVES;
 			GetSaves();

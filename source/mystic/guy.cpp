@@ -2284,6 +2284,12 @@ void AddMapGuys(Map *map)
 		byte fairyLeft = 4;
 		word n = 1;
 		byte fairyID=1;
+		// only the fairies for the current chapter are allowed
+		for (int i = 0; i < player.worldNum * 4; i++)
+		{
+			fairyID++;
+			n *= 2;
+		}
 		while (fairyLeft>0)
 		{
 			if (player.chaseFairy & n)
@@ -2309,6 +2315,8 @@ void AddMapGuys(Map *map)
 				break;	// that's all of them
 			n *= 2;
 			fairyID++;
+			if (fairyID > (player.worldNum + 1) * 4)
+				break;	// we only consider the fairies for this chapter
 		}
 	}
 }

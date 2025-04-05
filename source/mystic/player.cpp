@@ -530,6 +530,7 @@ byte FairyForThisLevel(word lvl)
 	switch(lvl)
 	{
 		case 12:
+		case 21:
 			return 1;	// grabby is in the hut in beginnerton
 		case 15:
 			return 2;	// runny is in The Docks
