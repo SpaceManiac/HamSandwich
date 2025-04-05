@@ -867,15 +867,17 @@ void InitSpeech(byte spc)
 
 	if(spc==5)
 	{
+		int needed = 9;
+		if (VeryClassicMode())
+			needed = 5;
 		// this guy tells you how many levels remain to clear.
-		if(player.levelsPassed>=9)
+		if(player.levelsPassed>=needed)
 			spc=6;
 		else
 		{
+			speechDef[5].text[3][22]= '0'+(needed - player.levelsPassed);
 
-			speechDef[5].text[3][22]= '9' - player.levelsPassed;
-
-			if(player.levelsPassed==8)
+			if(player.levelsPassed==needed-1)
 			{
 				speechDef[5].text[3][34]='.';
 				speechDef[5].text[3][35]=' ';

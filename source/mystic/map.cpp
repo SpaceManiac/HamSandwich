@@ -202,7 +202,7 @@ void Map::Init(world_t *wrld)
 
 	if(player.levelNum==19 && player.worldNum==2)
 		totalBrains=2;
-	if(player.levelNum==12 && player.worldNum==1)
+	if(player.levelNum==12 && player.worldNum==1 && !VeryClassicMode())
 		totalBrains=3;
 	if (player.levelNum == 20 && player.worldNum == 0)
 		totalBrains = 1;	// get a brain for cooking, even if you fail
