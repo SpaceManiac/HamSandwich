@@ -1092,7 +1092,7 @@ void PlayerGetPoints(int amt)
 				break;
 		}
 	}
-	else
+	else if(!VeryClassicMode())
 	{
 		if(amt<5)
 			amt=5;

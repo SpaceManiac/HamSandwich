@@ -983,8 +983,16 @@ TASK(byte) LunaticWorld(byte world)
 			else if(player.worldNum==3 && mapNum==11)
 			{
 				AWAIT ShowVictoryAnim(4);
-
-				if(player.nightmare)
+				if (VeryClassicMode())
+				{
+					// just return to chapter 4 I guess!
+					player.levelNum = 1;
+					mapNum = 1;
+					FreeWorld(&curWorld);
+					if (!LoadWorld(&curWorld, WorldName(player.worldNum)))
+						CO_RETURN WORLD_ABORT;
+				}
+				else if(player.nightmare)
 				{
 					// send you to the happy stick dancers
 					player.worldNum=3;
