@@ -151,9 +151,18 @@ void DoCheat(byte w)
 			PlayerGetPoints(10000);
 			break;
 		case 14:
-			player.swordPiece[0] = player.swordPiece[1] = player.swordPiece[2] = player.swordPiece[3] = 1;
-			SwordAllCheck();
-			SetKidSprite(1);
+			if (PlayerHasSword())
+			{
+				player.swordPiece[0] = 0;
+				SwordAllCheck();
+				SetKidSprite(0);
+			}
+			else
+			{
+				player.swordPiece[0] = player.swordPiece[1] = player.swordPiece[2] = player.swordPiece[3] = 1;
+				SwordAllCheck();
+				SetKidSprite(1);
+			}
 			break;
 		case 15:	// auto-win level
 			if(player.worldNum==3)
