@@ -139,12 +139,6 @@ void Map::Init(world_t *wrld)
 				map[i].item=0;
 			if(player.worldNum==2 && player.levelNum==16 && player.vaultOpened && !Challenging())
 				map[i].item=0;	// take it away if you've opened the vault before
-			/*
-			if(player.spell[s]==1 && player.worldNum<2)
-				map[i].item=0;
-			if(player.spell[s]==2 && player.worldNum>1)
-				map[i].item=0;
-				*/
 		}
 		if(map[i].item>=ITM_SWORD1 && map[i].item<=ITM_SWORD4)
 		{
@@ -1123,7 +1117,7 @@ void SpecialAnytimeCheck(Map *map)
 		{
 			SpecialTakeEffect(map,&map->special[i],NULL);
 		}
-	if(player.worldNum==3 && player.levelNum==1 && player.levelsPassed>=8)
+	if(player.worldNum==3 && player.levelNum==1 && (player.levelsPassed>=4+VeryClassicMode()?0:4))
 	{
 		if(player.bobbyDoorOpen==0)
 		{

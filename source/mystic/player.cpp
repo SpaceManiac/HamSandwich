@@ -316,13 +316,19 @@ int CalcGamePercent(const player_t* p)
 		32 + // fairies (2x, one for the bell, one for the fairy)
 		5 +	// rune pouches
 		65;	// skill points
-	if (p->difficulty == Difficulty::CLASSIC || p->difficulty == Difficulty::BRUTAL_CLASSIC)
+	if (p->difficulty == Difficulty::CLASSIC || p->difficulty == Difficulty::BRUTAL_CLASSIC || p->difficulty==Difficulty::VERY_CLASSIC)
 	{	// classic has no runes
 		totalNeeded -= 24+65+5;
 		skillPts = 0;
 		runePouches = 0;
 		runes = 0;
+		if (p->difficulty == Difficulty::VERY_CLASSIC)
+		{
+			fairies = 0;
+			totalNeeded -= 32;
+		}
 	}
+	
 	return (runes + spells + swords + fairies+skillPts+runePouches)*100 / totalNeeded;
 }
 
