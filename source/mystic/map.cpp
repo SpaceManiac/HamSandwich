@@ -1365,8 +1365,16 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 						SendMessageToGame(MSG_WINLEVEL,0);
 						MakeNormalSound(SND_WINLEVEL);
 					}
+					else if (VeryClassicMode())
+					{
+						// This will hit a !WonTheBattle() branch in game.cpp
+						// and will count as running away instead.
+						SendMessageToGame(MSG_WINLEVEL,0);
+					}
 					else
+					{
 						return;
+					}
 				}
 				else
 				{

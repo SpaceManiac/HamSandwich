@@ -328,7 +328,7 @@ int CalcGamePercent(const player_t* p)
 			totalNeeded -= 32;
 		}
 	}
-	
+
 	return (runes + spells + swords + fairies+skillPts+runePouches)*100 / totalNeeded;
 }
 
@@ -1868,9 +1868,8 @@ void GainMoney(int amt)
 {
 	int total = player.money + player.bigMoney * 65536;
 	total += amt;
-	if (total < 0) total = 0;
-	if (total > 9999999)
-		total = 9999999;
+	total = std::max(0, total);
+	total = std::min(total, VeryClassicMode() ? 65535 : 9999999);
 	player.money = (word)(total % 65536);
 	player.bigMoney = (word)(total / 65536);
 }
