@@ -988,6 +988,7 @@ TASK(byte) LunaticWorld(byte world)
 					// just return to chapter 4 I guess!
 					player.levelNum = 1;
 					mapNum = 1;
+					EarnAchieve(Achievement::WINCLASSIC);
 					FreeWorld(&curWorld);
 					if (!LoadWorld(&curWorld, WorldName(player.worldNum)))
 						CO_RETURN WORLD_ABORT;

@@ -14,7 +14,7 @@ AchieveDef achieveDef[] = {
 	{
 		"Old Schoolkid",37,
 		"Prove you are a true classic.",
-		"Completed Classic Mode.",
+		"Completed Classic Mode or 1999 Mode.",
 		Progress::ONE_SHOT
 	},
 	{

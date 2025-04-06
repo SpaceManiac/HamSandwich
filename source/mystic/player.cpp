@@ -1583,6 +1583,84 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		FairyDoThing(1);
 	}
 
+	// super cool execute move
+	if (!ClassicMode() && SkillValue(SKILL_MURDALIZE) > 0 && me->action != ACTION_BUSY &&
+		((ButtonTapped(CONTROL_B3) && ButtonHeld(CONTROL_B4)) ||
+			(ButtonTapped(CONTROL_B4) && ButtonHeld(CONTROL_B3)))) // you hit both
+	{
+		int x, y;
+		x = me->x + Cosine(me->facing * 32) * 30;
+		y = me->y + Sine(me->facing * 32) * 30;
+		word id = FindMurdalizeGuy(x >> FIXSHIFT, y >> FIXSHIFT, MURDALIZE_RANGE);
+		if (id != 65535) // there is somebody in the target spot
+		{
+			byte frame = GetMonsterFrameNum(MONS_BOUAPHA, me->seq, me->frm, me->facing);
+			if (frame != 254)
+				TrailMe(me->x, me->y, me->z, frame);
+			me->action = ACTION_BUSY;
+			me->seq = ANIM_A1;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 200;
+			float a = atan2f(GetGuy(id)->y - me->y, GetGuy(id)->x - me->x) * 128.0f / 3.14159f;
+			if (a < 0)
+				a += 256;
+			me->facing = (a + 16) / 32;
+			if (me->facing > 7) me->facing -= 8;
+			me->dx = Cosine((int)a) * 10;
+			me->dy = Sine((int)a) * 10;
+			me->z = FIXAMT * HALFHEI;	// drop from the sky with the meteor!
+			me->dz = -FIXAMT * 20;
+			player.berserk = 20;
+			player.casting = 255;
+			player.boredom = 0;
+			GetGuy(id)->GetShot(0, 0, 1000000, CurrentMap(), world);
+			FireBullet(GetGuy(id)->x, GetGuy(id)->y, 0, BLT_COMETBOOM2);
+			MakeSound(SND_FLAMEGO, x, y, SND_CUTOFF, 100);
+		}
+	}
+	else if (ButtonTapped(CONTROL_B4))
+	{
+
+		j = 0;
+		for (i = 0; i < 10; i++)
+			if (player.spell[i] == 0)
+				j++;
+
+		if (j < 10)
+		{
+			player.curSpell++;
+			if (player.curSpell == 10)
+				player.curSpell = 0;
+			while (player.spell[player.curSpell] == 0)
+			{
+				player.curSpell++;
+				if (player.curSpell == 10)
+					player.curSpell = 0;
+			}
+		}
+	}
+	else if (ButtonTapped(CONTROL_B3))
+	{
+		j = 0;
+		for (i = 0; i < 10; i++)
+			if (player.spell[i] == 0)
+				j++;
+
+		if (j < 10)
+		{
+			player.curSpell--;
+			if (player.curSpell == 255)
+				player.curSpell = 9;
+			while (player.spell[player.curSpell] == 0)
+			{
+				player.curSpell--;
+				if (player.curSpell == 255)
+					player.curSpell = 9;
+			}
+		}
+	}
+
 	if(ButtonHeld(CONTROL_B1) && player.reload==0)	// pushed hammer throw button
 	{
 		if((player.gear&GEAR_SOCKS) && !player.disableMoveNShoot)
@@ -1710,7 +1788,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 
 	if (player.levelNum == 19 && player.worldNum == 1 && me->action != ACTION_BUSY &&
-		((ButtonTapped(CONTROL_B3) && ButtonTapped(CONTROL_B4)) ||
+		((ButtonTapped(CONTROL_B3) && ButtonHeld(CONTROL_B4)) ||
 			(ButtonTapped(CONTROL_B4) && ButtonHeld(CONTROL_B3)))) // you hit both, so drop a trap
 	{
 		if (player.hammers == 0)
@@ -1723,84 +1801,6 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			FireBullet(me->x, me->y, 0, BLT_GHOSTTRAP);
 			player.hammers--;
 			MakeNormalSound(SND_INCAGEN);
-		}
-	}
-
-	// super cool execute move
-	if (!ClassicMode() && SkillValue(SKILL_MURDALIZE)>0 && me->action!=ACTION_BUSY &&
-		((ButtonTapped(CONTROL_B3) && ButtonTapped(CONTROL_B4)) ||
-		(ButtonTapped(CONTROL_B4) && ButtonHeld(CONTROL_B3)))) // you hit both
-	{
-		int x, y;
-		x = me->x + Cosine(me->facing * 32) * 30;
-		y = me->y + Sine(me->facing * 32) * 30;
-		word id = FindMurdalizeGuy(x>>FIXSHIFT, y>>FIXSHIFT,MURDALIZE_RANGE);
-		if (id != 65535) // there is somebody in the target spot
-		{
-			byte frame = GetMonsterFrameNum(MONS_BOUAPHA, me->seq, me->frm, me->facing);
-			if (frame != 254)
-				TrailMe(me->x, me->y, me->z, frame);
-			me->action = ACTION_BUSY;
-			me->seq = ANIM_A1;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 200;
-			float a = atan2f(GetGuy(id)->y - me->y, GetGuy(id)->x - me->x) * 128.0f / 3.14159f;
-			if (a < 0)
-				a += 256;
-			me->facing = (a + 16) / 32;
-			if (me->facing > 7) me->facing -= 8;
-			me->dx = Cosine((int)a) * 10;
-			me->dy = Sine((int)a) * 10;
-			me->z = FIXAMT * HALFHEI;	// drop from the sky with the meteor!
-			me->dz = -FIXAMT * 20;
-			player.berserk = 20;
-			player.casting = 255;
-			player.boredom = 0;
-			GetGuy(id)->GetShot(0, 0, 1000000, CurrentMap(), world);
-			FireBullet(GetGuy(id)->x, GetGuy(id)->y, 0, BLT_COMETBOOM2);
-			MakeSound(SND_FLAMEGO, x, y, SND_CUTOFF, 100);
-		}
-	}
-	else if(ButtonTapped(CONTROL_B4))
-	{
-
-		j=0;
-		for(i=0;i<10;i++)
-			if(player.spell[i]==0)
-				j++;
-
-		if(j<10)
-		{
-			player.curSpell++;
-			if(player.curSpell==10)
-				player.curSpell=0;
-			while(player.spell[player.curSpell]==0)
-			{
-				player.curSpell++;
-				if(player.curSpell==10)
-					player.curSpell=0;
-			}
-		}
-	}
-	else if(ButtonTapped(CONTROL_B3))
-	{
-		j=0;
-		for(i=0;i<10;i++)
-			if(player.spell[i]==0)
-				j++;
-
-		if(j<10)
-		{
-			player.curSpell--;
-			if(player.curSpell==255)
-				player.curSpell=9;
-			while(player.spell[player.curSpell]==0)
-			{
-				player.curSpell--;
-				if(player.curSpell==255)
-					player.curSpell=9;
-			}
 		}
 	}
 }
