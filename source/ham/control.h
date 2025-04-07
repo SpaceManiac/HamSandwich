@@ -101,9 +101,6 @@ typedef struct _SDL_GameController SDL_GameController;
 SDL_GameController* ActiveController();
 
 // mystic control mode --------------
-//dword GetMysticControls(void);
-//dword GetMysticTaps(void);
-//dword AutoRepeatControls(void);
 bool AutoRepeatTapped(dword c);
 bool ButtonTapped(dword c);
 bool ButtonHeld(dword c);

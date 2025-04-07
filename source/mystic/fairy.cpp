@@ -207,8 +207,8 @@ void EnterFairyBox(void)
 	shopSpr->GetSprite(36)->Draw(278,200,GetDisplayMGL());
 	memcpy(shopScr,GetDisplayMGL()->GetScreen(),SCRWID*SCRHEI);
 	SetInMenu(true);
+	LockOutControl(CONTROL_B1 | CONTROL_B2, true);
 	UpdateControls();
-	LockOutControl(CONTROL_B1|CONTROL_B2, true);
 }
 
 void LeaveFairyBox(void)
@@ -338,7 +338,7 @@ byte UpdateFairyBox(MGLDraw *mgl)
 		if((shopCursor%4)==0)
 			shopCursor-=4;
 	}
-	if(AutoRepeatTapped(CONTROL_B1))
+	if(ButtonTapped(CONTROL_B1))
 	{
 		if(player.haveFairy&(1<<shopCursor))
 		{
@@ -347,16 +347,15 @@ byte UpdateFairyBox(MGLDraw *mgl)
 		}
 		else
 			FairyChange(player.fairyOn,0);
-
 		return 1;
 	}
-	if(AutoRepeatTapped(CONTROL_B2))
+	if(ButtonTapped(CONTROL_B2))
 	{
 		FairyChange(player.fairyOn,0);
 		return 1;
 	}
 	
-	if(AutoRepeatTapped(CONTROL_ESCAPE))
+	if(ButtonTapped(CONTROL_ESCAPE))
 	{
 		FairyChange(player.fairyOn,0);
 		return 1;

@@ -39,6 +39,7 @@ static byte stickDeadZone;	// measured in pct
 static bool playerInMenu = false;
 
 static dword controls, taps, menuTap, menuControls, menuGamepad;
+static dword unlockedControls, unlockedMenuControls;
 static byte reptCounter;
 
 void InitControls(byte scheme)
@@ -533,13 +534,13 @@ dword GetRawGamepad(void)
 
 void UpdateControls(void)
 {
-	dword oldMenu = menuControls;
-	byte oldControls = controls;
+	dword oldMenu = unlockedMenuControls;
+	byte oldControls = unlockedControls;
 	taps = 0;
 	menuTap = 0;
 	UpdateRawJoystick();
-	controls = keyState | RawGamepadToControls();
-	menuControls = arrowState | menuGamepad;
+	unlockedControls = keyState | RawGamepadToControls();
+	unlockedMenuControls = arrowState | menuGamepad;
 
 	if (reptCounter > 0)
 		reptCounter--;
@@ -548,17 +549,19 @@ void UpdateControls(void)
 	{
 		if (i <= CTL_ID_ESCAPE)	// menu keys are only in the first 8 controls
 		{
-			if (!(oldMenu & (1 << i)) && (menuControls & (1 << i)))
+			if (!(oldMenu & (1 << i)) && (unlockedMenuControls & (1 << i)))
 				menuTap |= (1 << i);
 		}
-		if (!(oldControls & (1 << i)) && (controls & (1 << i)))
+		if (!(oldControls & (1 << i)) && (unlockedControls & (1 << i)))
 			taps |= (1 << i);	// if this is the first frame the control is down, then it is a tap
-		if(!(controls&(1<<i)))
+		if(!(unlockedControls&(1<<i)))
 			lockOut&=(~(1<<i));	// if you've released a locked-out key, then we unlock it
 	}
-	if ((oldControls == 0 && menuControls==0) || reptCounter >= CONTROL_REPEAT_FRAMES)
+	if ((unlockedControls == 0 && unlockedMenuControls==0) || reptCounter >= CONTROL_REPEAT_FRAMES)
 		reptCounter = 0;
 
+	controls = unlockedControls;
+	menuControls = unlockedMenuControls;
 	controls &= (~lockOut);
 	taps &= (~lockOut);
 	menuTap &= (~lockOut);
@@ -603,7 +606,6 @@ void UpdateRawJoystick(void)
 					menuGamepad |= CONTROL_RT;
 				if (i == SDL_CONTROLLER_BUTTON_START)
 					menuGamepad |= CONTROL_ESCAPE;
-
 				if (i == SDL_CONTROLLER_BUTTON_A)
 					menuGamepad |= CONTROL_B1;
 				if (i == SDL_CONTROLLER_BUTTON_B)
@@ -667,25 +669,14 @@ void UpdateRawJoystick(void)
 	}
 
 	if (dpadToMove && (rawGamepad & (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT)))
-	{
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF));
-		menuGamepad |= CONTROL_LF;
-	}
 	if (dpadToMove && (rawGamepad & (1 << SDL_CONTROLLER_BUTTON_DPAD_UP)))
-	{
-		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP));
-		menuGamepad |= CONTROL_UP;
-	}
+		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP));	
 	if (dpadToMove && (rawGamepad & (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT)))
-	{
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT));
-		menuGamepad |= CONTROL_RT;
-	}
 	if (dpadToMove && (rawGamepad & (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN)))
-	{
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_DN));
-		menuGamepad |= CONTROL_DN;
-	}
+
 	if (rx < -deadZone)
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::RS_LF));
 	if (ry < -deadZone)

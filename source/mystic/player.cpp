@@ -1689,9 +1689,8 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		player.boredom=0;
 		return;
 	}
-	if(player.levelNum==1 && player.wpnReload==1 && ButtonTapped(CONTROL_B2) && player.haveFairy>0 && GetGameMode() == GAMEMODE_PLAY)
+	if(player.levelNum==1 && ButtonTapped(CONTROL_B2) && player.haveFairy>0 && GetGameMode() == GAMEMODE_PLAY)
 	{
-		player.wpnReload=15;
 		SendMessageToGame(MSG_GOTOMAP,51);
 	}
 

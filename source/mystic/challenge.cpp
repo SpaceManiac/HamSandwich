@@ -1234,6 +1234,7 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 		{
 			if(UpdateFairyBox(mgl))
 			{
+				UpdateControls();
 				fairyOn=0;
 			}
 		}
@@ -1243,6 +1244,7 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 			{
 				fairyOn=0;
 				SetInMenu(true);	// exiting the shop marks you not in a menu, but we are still in a menu
+				UpdateControls();
 			}
 		}
 		else if(fairyOn==3)	// question
@@ -1309,8 +1311,8 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 			}
 			if(ButtonTapped(CONTROL_ESCAPE|CONTROL_B2))
 			{
-				UpdateControls();
 				LockOutControl(CONTROL_ESCAPE | CONTROL_B2, true);
+				UpdateControls();
 				MakeNormalSound(SND_MENUSELECT);
 				fairyOn=0;
 				return 0;
@@ -1488,6 +1490,7 @@ void InitChallengeMenu(MGLDraw *mgl)
 	challenging=1;
 	offY=0;
 
+	UpdateControls();
 	PickForbidden();
 	CalcChallengePercent();
 }
