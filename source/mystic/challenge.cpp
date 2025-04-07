@@ -966,7 +966,7 @@ void ChallengeMenuRender(MGLDraw *mgl)
 
 				if (chal[chalCursor].flags & LP_GOTSKILLSHARD)
 				{
-					OutlineFarleySprite2(67, x, 440, -31 + 31 * GotRuneInLevel(chal[chalCursor].chapter, chal[chalCursor].level),6,0);
+					OutlineFarleySprite2(67, x, 440, -31 + 31 * GotSkillShardInLevel(chal[chalCursor].chapter, chal[chalCursor].level),6,0);
 					x -= 32;
 				}
 			}

@@ -5892,6 +5892,8 @@ void AI_CrazyBush(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 void AI_SwampWeed(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
+	if (!goodguy) return;
+
 	if (me->reload)
 		me->reload--;
 
