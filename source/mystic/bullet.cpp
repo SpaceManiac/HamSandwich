@@ -2454,9 +2454,9 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->anim=0;
 			me->timer=30;
 			me->z=FIXAMT*10;
-			me->dz=FIXAMT*4;
-			me->dx=Cosine(me->facing)*10;
-			me->dy=Sine(me->facing)*10;
+			me->dz=FIXAMT*4;	// gotta keep it in the air longer for brutal mode
+			me->dx=Cosine(me->facing)*(10+3*BrutalMode());
+			me->dy=Sine(me->facing)*(10+3*BrutalMode());
 			me->facing=((me->facing+16)&255)/32;
 			break;
 		case BLT_OCTONJUICE:
@@ -2500,8 +2500,8 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->z=FIXAMT*20;
 			me->x+=((MGL_random(3)-1)*FIXAMT)+Cosine(me->facing)*5;
 			me->y+=((MGL_random(3)-1)*FIXAMT)+Sine(me->facing)*5;
-			me->dx=Cosine(me->facing)*10;
-			me->dy=Sine(me->facing)*10;
+			me->dx=Cosine(me->facing)*(10+3*BrutalMode());
+			me->dy=Sine(me->facing)*(10+3*BrutalMode());
 			me->dz=-FIXAMT/2;
 			MakeSound(SND_FLAMEGO,me->x,me->y,SND_CUTOFF,1100);
 			break;
@@ -2526,8 +2526,8 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->timer=30;
 			me->z=FIXAMT*20;
 			// this thing receives full 0-255 facings
-			me->dx=Cosine(me->facing)*8;
-			me->dy=Sine(me->facing)*8;
+			me->dx=Cosine(me->facing)*(8+2*BrutalMode());
+			me->dy=Sine(me->facing)*(8+2*BrutalMode());
 			me->dz=0;
 			break;
 		case BLT_MEGABEAM:
@@ -2551,8 +2551,8 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			me->anim=0;
 			me->timer=16;
 			me->z=FIXAMT*16;
-			me->dx=Cosine(me->facing)*4;
-			me->dy=Sine(me->facing)*4;
+			me->dx=Cosine(me->facing)*(4+2*BrutalMode());
+			me->dy=Sine(me->facing)*(4+2*BrutalMode());
 			me->dz=0;
 			break;
 		case BLT_SHROOM:

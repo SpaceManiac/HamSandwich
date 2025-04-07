@@ -758,8 +758,9 @@ word MonsterPoints(byte type)
 word MonsterHP(byte type)
 {
 	word mul = 1;
-	if (type == MONS_HORKBOX)
-		return monsType[type].hp;	// non-modifiable HP, because it's actually a timer
+	if (type == MONS_HORKBOX || type==MONS_BOUAPHA)
+		return monsType[type].hp;	// non-modifiable HP, because it's actually a timer (or Kid Mystic!)
+
 	int hp = monsType[type].hp;
 	if(!ClassicMode() && type==MONS_GOLEM)
 		hp *= (1 + SkillValue(SKILL_SUMMON)) / 6;
@@ -780,6 +781,10 @@ word MonsterHP(byte type)
 	}
 	else if (BrutalMode())
 	{
+		int brutalHP = BRUTALHP;
+		if (player.worldNum == 3)
+			brutalHP += BRUTALCHAP4HP;	// additive to the multiplier
+
 		if (monsType[type].flags & MF_GOODGUY)
 		{
 			hp = hp * (100 + player.spellStones * 10) / 100;
@@ -787,9 +792,9 @@ word MonsterHP(byte type)
 		else
 		{
 			if (type == MONS_BOBBY)
-				mul = mul * BRUTALHP * 3 / 4;
+				mul = mul * brutalHP * 3 / 4;
 			else
-				mul *= BRUTALHP;
+				mul *= brutalHP;
 		}
 	}
 	if (!ClassicMode() && player.worldNum >= 2)

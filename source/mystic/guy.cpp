@@ -1316,12 +1316,17 @@ void Guy::MonsterControl(Map *map,world_t *world)
 void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 {
 	int i,j,formerHP;
+	int brutalMul;
 
 	if(hp==0)
 		return;	// can't shoot a dead guy
 
 	if(type==0)
 		return;	// shouldn't have a type 0 guy at all
+
+	brutalMul = BRUTALDMG;
+	if (player.worldNum == 3)
+		brutalMul += BRUTALCHAP4DMG;
 
 	if (type == MONS_HORKBOX)	// an uninjured horkbox just goes off when hit, does not take damage
 	{
@@ -1407,7 +1412,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		else
 		{
 			if (BrutalMode())
-				i = damage * BRUTALDMG;
+				i = damage * brutalMul;
 			else
 				i = damage;
 		}
@@ -1475,6 +1480,16 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 				damage=(damage*(100+player.spellStones*10))/100;
 			else
 			{
+				if (player.nightmare)
+					damage *= NIGHTMAREDMG / 2;	// your minions suffer the enhanced damage, but half as much just because it used to be unmodified
+												// and they have no armor. They do gain life from spell stones, of course
+				else if (BrutalMode())
+				{
+					brutalMul = BRUTALDMG;
+					if (player.worldNum == 3)
+						brutalMul += BRUTALCHAP4DMG;
+					damage *= (brutalMul / 2);	// same thing with brutal
+				}
 				if (!ClassicMode() && SkillValue(SKILL_HEALSUMMONS) > 0)
 				{
 					if (player.stoneskin)
@@ -1510,7 +1525,12 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		if (player.nightmare)
 			monsHP /= NIGHTMAREHP;
 		else if (BrutalMode())
-			monsHP /= BRUTALHP;
+		{
+			brutalMul = BRUTALHP;
+			if (player.worldNum == 3)
+				brutalMul += BRUTALCHAP4HP;
+			monsHP /= brutalMul;
+		}
 		if (!ClassicMode() && player.worldNum >= 2)	// chapter 3/4 in modern mode have enhanced HP
 			monsHP /= MODERNCHAP34HP;
 		if (ClassicMode())
@@ -3153,7 +3173,12 @@ void HealBadguys(word amt)
 			if (player.nightmare)
 				healAmt *= NIGHTMAREHP;
 			else if (BrutalMode())
-				healAmt *= BRUTALHP;
+			{
+				int brutalMul = BRUTALHP;
+				if (player.worldNum == 3)
+					brutalMul += BRUTALCHAP4HP;
+				healAmt *= brutalMul;
+			}
 			if (guys[i].hp <= maxHP - healAmt)
 				guys[i].hp += healAmt;
 			else
