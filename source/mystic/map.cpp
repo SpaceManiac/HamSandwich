@@ -3083,7 +3083,7 @@ void SwampStewSetup(Map* map)
 	boilTemp = Random(3) + 3;	// one of the top 3 temps
 	simmerTemp = Random(3) + 1; // one of the 3 temps just above red
 	if (boilTemp == simmerTemp) simmerTemp--;
-
+	
 	while ((flips--)>0)
 	{
 		byte first = Random(3);
@@ -3230,6 +3230,7 @@ void SwampUpdate(Map* map)
 			potOrder[2] = swampRecipe[5];
 			potContents[swampRecipe[5]] = swampRecipe[4];	// put all the right stuff in the pot
 			map->GetTile(65, 56)->item = 0;	// open the door free of charge
+			SwampEnableCooking();
 		}
 	}
 	byte putting = 255;
@@ -3340,6 +3341,8 @@ void SwampUpdate(Map* map)
 			s = 130;	// better than perfect! Because there's some failure that's unavoidable as you shift between temps
 			s -= abs(swampBoilTime - 3 * 30); // minus the amount you over- or under-boiled
 			s -= abs(10 * 30 - swampPreheatTime - swampBoilTime - swampSimmerTime);	// minus the amount of time you spent not preheating, boiling, or simmering
+			if (swampBoilTime == 0 || swampSimmerTime == 0)
+				s = 0;	// you can't win if you never boiled or simmered
 			if (s < 0) s = 0;
 			swampScore = s;
 			if (swampScore >= 100)

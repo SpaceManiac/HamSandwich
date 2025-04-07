@@ -670,7 +670,7 @@ char *GoalText(byte goal,dword n)
 			sprintf(s,"All goals in one run!");
 			break;
 		case GOAL_COOK:
-			sprintf(s, "Score at last %d%% on cooking!",n);
+			sprintf(s, "Score over %d%% on cooking!",n);
 			break;
 	}
 	return s;
@@ -936,7 +936,7 @@ void ChallengeMenuRender(MGLDraw *mgl)
 
 				if (chal[chalCursor].flags & LP_GOTFAIRY)
 				{
-					OutlineFarleySprite(173, x-8, 460, -31 + 31 *GotFairyBellInLevel(chal[chalCursor].chapter,chal[chalCursor].level));
+					OutlineFarleySprite(173, x - 8, 460, -31 + 31 * GotFairyBellInLevel(chal[chalCursor].chapter, chal[chalCursor].level));
 					x -= 32;
 				}
 
@@ -960,7 +960,7 @@ void ChallengeMenuRender(MGLDraw *mgl)
 
 				if (chal[chalCursor].flags & LP_GOTRUNEPOUCH)
 				{
-					OutlineFarleySprite(4, x, 435, -31 + 31 * GotRuneInLevel(chal[chalCursor].chapter, chal[chalCursor].level));
+					OutlineFarleySprite(4, x, 435, -31 + 31 * GotRunePouchInLevel(chal[chalCursor].chapter, chal[chalCursor].level));
 					x -= 32;
 				}
 
