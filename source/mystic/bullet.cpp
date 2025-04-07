@@ -236,7 +236,7 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 		case BLT_FLAME2:
 			BurnTreesInArea(map, me->x - 8*FIXAMT, me->y - 8*FIXAMT, me->x + 8*FIXAMT, me->y + 8*FIXAMT);
 			me->x-=me->dx;
-			me->dy=((3-MGL_random(7))<<FIXSHIFT);
+			me->dy=((3-MGL_random(7))*FIXAMT);
 			me->dx=0;
 			break;
 		case BLT_FLAME3:
@@ -401,7 +401,7 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 		case BLT_FLAME2:
 			BurnTreesInArea(map, me->x - 8*FIXAMT, me->y - 8*FIXAMT, me->x + 8*FIXAMT, me->y + 8*FIXAMT);
 			me->y-=me->dy;
-			me->dx=((3-MGL_random(7))<<FIXSHIFT);
+			me->dx=((3-MGL_random(7))*FIXAMT);
 			me->dy=0;
 			break;
 		case BLT_FLAME3:
@@ -713,15 +713,15 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 	{
 		case BLT_COMETBOOM:
 		case BLT_COMETBOOM2:
-			if(FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,64,(8-MGL_random(17))<<FIXSHIFT,
-				(8-MGL_random(16))<<FIXSHIFT,10,map,world))
+			if(FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,64,(8-MGL_random(17))*FIXAMT,
+				(8-MGL_random(16))*FIXAMT,10,map,world))
 			{
 				// nothing much to do here, the victim will scream quite enough
 			}
 			break;
 		case BLT_ICECOMETBOOM:
-			if (FindVictims(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 64, (8 - MGL_random(17)) << FIXSHIFT,
-				(8 - MGL_random(16)) << FIXSHIFT, -1000, map, world))
+			if (FindVictims(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 64, (8 - MGL_random(17)) * FIXAMT,
+				(8 - MGL_random(16)) * FIXAMT, -1000, map, world))
 			{
 				// nothing much to do here, the victim will scream quite enough
 			}
@@ -984,8 +984,8 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			i = SpellLevel() / 10 + 1;
 			if (!ClassicMode())
 				i = SkillValue(SKILL_SEEKER) + 1;
-			if(FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,16,(8-MGL_random(17))<<FIXSHIFT,
-				(8-MGL_random(16))<<FIXSHIFT,i,map,world))
+			if(FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,16,(8-MGL_random(17)) * FIXAMT,
+				(8-MGL_random(16)) * FIXAMT,i,map,world))
 			{
 				// nothing much to do here, the victim will scream quite enough
 			}
@@ -1063,23 +1063,23 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_BOOM:
 		case BLT_GOLEMBOOM:
-			if(FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,64,(8-MGL_random(17))<<FIXSHIFT,
-				(8-MGL_random(16))<<FIXSHIFT,2,map,world))
+			if(FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,64,(8-MGL_random(17))*FIXAMT,
+				(8-MGL_random(16))*FIXAMT,2,map,world))
 			{
 				// nothing much to do here, the victim will scream quite enough
 			}
 			break;
 		case BLT_SEEKBOOM:
-			if (FindVictims(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 64, (8 - MGL_random(17)) << FIXSHIFT,
-				(8 - MGL_random(16)) << FIXSHIFT, SkillValue(SKILL_SEEKBOOM), map, world))
+			if (FindVictims(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 64, (8 - MGL_random(17)) * FIXAMT,
+				(8 - MGL_random(16)) * FIXAMT, SkillValue(SKILL_SEEKBOOM), map, world))
 			{
 				// nothing much to do here, the victim will scream quite enough
 			}
 			break;
 		case BLT_YELBOOM:
 			i=20*(5-(me->timer/2));	// size expands as boom expands
-			if(FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,i,(8-MGL_random(17))<<FIXSHIFT,
-				(8-MGL_random(16))<<FIXSHIFT,5,map,world))
+			if(FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,i,(8-MGL_random(17))*FIXAMT,
+				(8-MGL_random(16))*FIXAMT,5,map,world))
 			{
 				// don't disappear because Bouapha needs to get multipounded
 			}
