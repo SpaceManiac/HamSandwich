@@ -193,14 +193,14 @@
 #define SND_SDZLSLASH	147
 #define SND_SDZLPOUND	148
 #define SND_SDZLSPIT	149
-// Santa
-#define SND_SANTAOUCH	150
+
+#define SND_DIAMOND		150
 #define SND_SANTADIE	151
 #define SND_SANTAHIT	152
 // splash screen sounds
-#define SND_HAMUMU		153
+#define SND_BIGCOIN		153
 #define SND_STAIRS		154
-#define SND_FINAL		155
+#define SND_MONEYBAG	155
 
 #define SND_MONEY		156
 #define SND_ATTACKED	157

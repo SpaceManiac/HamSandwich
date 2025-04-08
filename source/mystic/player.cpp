@@ -788,21 +788,21 @@ byte PlayerGetItem(byte itm,int x,int y)
 			break;
 		case ITM_BIGCOIN:
 			GainMoney(10);
-			MakeSound(SND_MONEY,x,y,SND_CUTOFF,500);
+			MakeSound(SND_BIGCOIN,x,y,SND_CUTOFF,500);
 			FloaterParticles(x,y,5,24,0,4);
 			FloaterParticles(x,y,5,32,0,4);
 			return 0;
 			break;
 		case ITM_DIAMOND:
 			GainMoney(100);
-			MakeSound(SND_MONEY, x, y, SND_CUTOFF, 500);
+			MakeSound(SND_DIAMOND, x, y, SND_CUTOFF, 500);
 			FloaterParticles(x, y, 5, 24, 0, 4);
 			FloaterParticles(x, y, 5, 32, 0, 4);
 			return 0;
 			break;
 		case ITM_MONEYBAG:
 			GainMoney(25);
-			MakeSound(SND_MONEY, x, y, SND_CUTOFF, 500);
+			MakeSound(SND_MONEYBAG, x, y, SND_CUTOFF, 500);
 			FloaterParticles(x, y, 5, 24, 0, 4);
 			FloaterParticles(x, y, 5, 32, 0, 4);
 			return 0;

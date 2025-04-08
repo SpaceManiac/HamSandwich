@@ -916,7 +916,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 					FloaterParticles(me->x,me->y,5,32,-1,4);
 					GainMoney(10);
 					ChallengeEvent(CE_GET,ITM_BIGCOIN);
-					MakeSound(SND_MONEY,me->x,me->y,SND_CUTOFF,500);
+					MakeSound(SND_BIGCOIN,me->x,me->y,SND_CUTOFF,500);
 				}
 				else if (me->type == BLT_DIAMOND)
 				{
@@ -924,7 +924,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 					FloaterParticles(me->x, me->y, 5, 32, -1, 4);
 					GainMoney(100);
 					ChallengeEvent(CE_GET, ITM_DIAMOND);
-					MakeSound(SND_MONEY, me->x, me->y, SND_CUTOFF, 500);
+					MakeSound(SND_DIAMOND, me->x, me->y, SND_CUTOFF, 500);
 				}
 				else if (me->type == BLT_MONEYBAG)
 				{
@@ -932,7 +932,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 					FloaterParticles(me->x, me->y, 5, 32, -1, 4);
 					GainMoney(25);
 					ChallengeEvent(CE_GET, ITM_MONEYBAG);
-					MakeSound(SND_MONEY, me->x, me->y, SND_CUTOFF, 500);
+					MakeSound(SND_MONEYBAG, me->x, me->y, SND_CUTOFF, 500);
 				}
 				me->type=BLT_NONE;
 

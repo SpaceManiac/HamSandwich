@@ -11,7 +11,7 @@ void InitSound(void)
 {
 	JamulSoundPurge();
 	curSong=0;
-	memset(soundsThisFrame, 0, sizeof(byte) * MAX_SNDS_PER_FRAME);
+	memset(soundsThisFrame, 255, sizeof(byte) * MAX_SNDS_PER_FRAME);
 }
 
 void ExitSound(void)
