@@ -172,6 +172,7 @@ void OpenVaultDoor2(Map* map);
 byte VaultPuzzleCheck(Map* map);
 byte VaultPuzzle2Check(Map *map);
 void Cavernize(Map *map);
+void Treeify(Map* map);
 void GetRidOfGoodStuff(Map *map);
 void MushAidPuzzleUpdate(Map* map);
 void MushAidPuzzleReset(Map* map);

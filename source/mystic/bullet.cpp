@@ -81,7 +81,7 @@ void BurnTreesInArea(Map *map,int x, int y, int x2, int y2)
 			tx = i / TILE_WIDTH;
 			ty = j / TILE_HEIGHT;
 			mapTile_t* tile = map->GetTile(tx,ty);
-			if (tile && tile->item == ITM_TREE)
+			if (tile && (tile->item == ITM_TREE || tile->item==ITM_TREE2 || tile->item==ITM_DEADTREE || tile->item==ITM_DEADTREE2))
 			{
 				tile->item = ITM_BURNEDTREE;
 				for (int i = 0; i < 6; i++)
@@ -90,7 +90,7 @@ void BurnTreesInArea(Map *map,int x, int y, int x2, int y2)
 				{
 					byte gotEmAll = true;
 					for(int k=0;k<map->width*map->height;k++)
-						if (map->map[k].item == ITM_TREE)
+						if (map->map[k].item == ITM_TREE || map->map[k].item==ITM_TREE2)
 						{
 							gotEmAll = false;
 							break;

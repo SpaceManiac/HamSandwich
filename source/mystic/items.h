@@ -53,6 +53,7 @@
 #define ITM_POST	 54
 #define ITM_CHAIR1	 55
 #define ITM_CHAIR2   56
+#define ITM_BUSH2	 57
 
 // no longer shoot-through-able
 #define ITM_SKLDOOR	 69
@@ -74,7 +75,10 @@
 #define ITM_BURNEDTREE 85
 #define ITM_CAULDRON 86
 #define ITM_BIGROCK2 87
-#define MAX_ITMS	 88
+#define ITM_TREE2	 88
+#define ITM_DEADTREE 89
+#define ITM_DEADTREE2 90
+#define MAX_ITMS	 91
 
 // these defines are 1 greater than the highest item of that type
 // (that is, items 1 - X-1 are things the player can pick up, and items

@@ -96,7 +96,20 @@ void RenderItem(int x,int y,byte type,char bright)
 			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(3), DISPLAY_DRAWME);
 			break;
 		case ITM_TREE:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(2), DISPLAY_DRAWME | DISPLAY_SHADOW);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(2),DISPLAY_DRAWME);
+			break;
+		case ITM_TREE2:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(296), DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(296), DISPLAY_DRAWME);
+			break;
+		case ITM_DEADTREE:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(41), DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(41), DISPLAY_DRAWME);
+			break;
+		case ITM_DEADTREE2:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(42), DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(42), DISPLAY_DRAWME);
 			break;
 		case ITM_BURNEDTREE:
 			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(284), DISPLAY_DRAWME);
@@ -191,6 +204,9 @@ void RenderItem(int x,int y,byte type,char bright)
 			break;
 		case ITM_BUSH:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(30),DISPLAY_DRAWME);
+			break;
+		case ITM_BUSH2:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(297), DISPLAY_DRAWME);
 			break;
 		case ITM_BIGROCKS:
 			//SprDraw(x,y,0,255,bright,itmSpr->GetSprite(31),DISPLAY_DRAWME|DISPLAY_SHADOW);
@@ -366,6 +382,15 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 		case ITM_TREE:
 			itmSpr->GetSprite(2)->DrawBright(x,y,mgl,bright);
 			break;
+		case ITM_TREE2:
+			itmSpr->GetSprite(296)->DrawBright(x, y, mgl, bright);
+			break;
+		case ITM_DEADTREE:
+			itmSpr->GetSprite(41)->DrawBright(x, y, mgl, bright);
+			break;
+		case ITM_DEADTREE2:
+			itmSpr->GetSprite(42)->DrawBright(x, y, mgl, bright);
+			break;
 		case ITM_BURNEDTREE:
 			itmSpr->GetSprite(284)->DrawBright(x, y, mgl, bright);
 			break;
@@ -419,6 +444,9 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 			break;
 		case ITM_BUSH:
 			itmSpr->GetSprite(30)->DrawBright(x,y,mgl,bright);
+			break;
+		case ITM_BUSH2:
+			itmSpr->GetSprite(297)->DrawBright(x, y, mgl, bright);
 			break;
 		case ITM_BIGROCKS:
 			itmSpr->GetSprite(31)->DrawBright(x,y,mgl,bright);

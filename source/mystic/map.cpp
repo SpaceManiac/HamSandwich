@@ -1682,6 +1682,24 @@ bool WallIsCavern(byte wall)
 	return ((wall > 0 && wall < 3) || wall == 8 || wall == 10 || wall == 16);
 }
 
+void Treeify(Map* map)
+{
+	int i, j;
+	for (i = 0; i < map->width; i++)
+		for (j = 0; j < map->height; j++)
+		{
+			mapTile_t* t = map->GetTile(i, j);
+			if (t->item == ITM_TREE || t->item == ITM_TREE2)
+			{
+				t->item = Random(2) ? ITM_TREE : ITM_TREE2;
+			}
+			else if (t->item == ITM_BUSH || t->item == ITM_BUSH2)
+				t->item = Random(2) ? ITM_BUSH : ITM_BUSH2;
+			else if (t->item == ITM_DEADTREE || t->item == ITM_DEADTREE2)
+				t->item = Random(2) ? ITM_DEADTREE : ITM_DEADTREE2;
+		}
+}
+
 void Cavernize(Map *map)
 {
 	byte result[]={188,187,185,194,186,189,193,197,184,192,190,198,191,195,196,199};
@@ -3616,12 +3634,15 @@ void AmongHedgesShootCheck(Map* map, int x, int y)
 	{
 		if (x >= hedgeCoords[i * 2] - 1 && x <= hedgeCoords[i * 2] + 1 &&
 			y >= hedgeCoords[i * 2 + 1] - 1 && y <= hedgeCoords[i * 2+1] + 1 &&
-			map->GetTile(x, y)->wall == 31)
+			map->GetTile(hedgeCoords[i*2], hedgeCoords[i*2+1])->wall == 31)
 		{
+			x = hedgeCoords[i * 2];
+			y = hedgeCoords[i * 2 + 1];
 			MakeNormalSound(SND_PURCHASE);
 			hedgePuzzleState++;
 			map->GetTile(x, y)->wall = 29;
 			map->GetTile(x, y)->floor = 101;
+			break;
 		}
 	}
 	if (hedgePuzzleState == 8)

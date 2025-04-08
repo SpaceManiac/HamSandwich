@@ -1174,7 +1174,8 @@ static void HandleKeyPresses(void)
 		switch(k)
 		{
 			case 'c':
-				Cavernize(curMap);
+				//Cavernize(curMap);
+				Treeify(curMap);
 				break;
 			case 'd':
 				if (curMap->GetTile(0, 0)->light == 0)
