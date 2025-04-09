@@ -13,7 +13,7 @@ mfont_t  *gameFont[3]={NULL,NULL,NULL};
 MGLDraw  *mgl=NULL;
 
 int scrx=HALFWID,scry=HALFHEI,scrdx=0,scrdy=0;
-int rscrx=HALFWID<<FIXSHIFT,rscry=HALFHEI<<FIXSHIFT;
+int rscrx=HALFWID*FIXAMT,rscry=HALFHEI*FIXAMT;
 
 byte shakeTimer=0;
 
@@ -188,15 +188,15 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 
 	if (0)//ClassicMode())
 	{
-		desiredX = ((x << FIXSHIFT) + Cosine(facing) * 80) >> FIXSHIFT;
-		desiredY = ((y << FIXSHIFT) + Sine(facing) * 60) >> FIXSHIFT;
+		desiredX = ((x * FIXAMT) + Cosine(facing) * 80) >> FIXSHIFT;
+		desiredY = ((y * FIXAMT) + Sine(facing) * 60) >> FIXSHIFT;
 	}
 	else
 	{
 		if (GetGoodguy() && GetGoodguy()->parent != nullptr)
 			facing = 64;	// just look down if riding a log
-		desiredX = ((x << FIXSHIFT) + Cosine(facing) * 160) >> FIXSHIFT;
-		desiredY = ((y << FIXSHIFT) + Sine(facing) * 120) >> FIXSHIFT;
+		desiredX = ((x * FIXAMT) + Cosine(facing) * 160) >> FIXSHIFT;
+		desiredY = ((y * FIXAMT) + Sine(facing) * 120) >> FIXSHIFT;
 		
 	}
 	
@@ -204,14 +204,14 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 	rscrx+=scrdx;
 	rscry+=scrdy;
 
-	if(rscrx<HALFWID<<FIXSHIFT)
-		rscrx=HALFWID<<FIXSHIFT;
-	if(rscrx>((map->width*TILE_WIDTH-HALFWID)<<FIXSHIFT))
-		rscrx=(map->width*TILE_WIDTH-HALFWID)<<FIXSHIFT;
-	if(rscry<(HALFHEI-TILE_HEIGHT)<<FIXSHIFT)
-		rscry=(HALFHEI-TILE_HEIGHT)<<FIXSHIFT;
-	if(rscry>((map->height*TILE_HEIGHT-HALFHEI)<<FIXSHIFT))
-		rscry=(map->height*TILE_HEIGHT-HALFHEI)<<FIXSHIFT;
+	if(rscrx<HALFWID*FIXAMT)
+		rscrx=HALFWID*FIXAMT;
+	if(rscrx>((map->width*TILE_WIDTH-HALFWID)*FIXAMT))
+		rscrx=(map->width*TILE_WIDTH-HALFWID)*FIXAMT;
+	if(rscry<(HALFHEI-TILE_HEIGHT)*FIXAMT)
+		rscry=(HALFHEI-TILE_HEIGHT)*FIXAMT;
+	if(rscry>((map->height*TILE_HEIGHT-HALFHEI)*FIXAMT))
+		rscry=(map->height*TILE_HEIGHT-HALFHEI)*FIXAMT;
 
 	if(scrx>desiredX+20)
 		scrdx=-((scrx-(desiredX+20))*FIXAMT/16);
@@ -222,8 +222,8 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 	if(scry<desiredY-20)
 		scrdy=(((desiredY-20)-scry)*FIXAMT/16);
 
-	Dampen(&scrdx,1<<FIXSHIFT);
-	Dampen(&scrdy,1<<FIXSHIFT);
+	Dampen(&scrdx,1*FIXAMT);
+	Dampen(&scrdy,1*FIXAMT);
 
 	scrx=(rscrx>>FIXSHIFT);
 	scry=(rscry>>FIXSHIFT);

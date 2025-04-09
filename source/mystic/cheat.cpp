@@ -94,7 +94,7 @@ void DoCheat(byte w)
 			cy-=HALFHEI;
 			for(i=0;i<60;i++)
 			{
-				FireBullet((cx+MGL_random(SCRWID))<<FIXSHIFT,(cy+MGL_random(SCRHEI))<<FIXSHIFT,
+				FireBullet((cx+MGL_random(SCRWID))*FIXAMT,(cy+MGL_random(SCRHEI))*FIXAMT,
 							0,BLT_BOOM);
 			}
 			ShakeScreen(10);	// make the screen shake!

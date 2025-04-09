@@ -311,8 +311,8 @@ void Map::Update(byte mode,world_t *world)
 				if(map[i].item==ITM_HUT || map[i].item==ITM_SHOP)
 				{
 					if(MGL_random(3)==0)
-						BlowWigglySmoke(x+TILE_WIDTH*FIXAMT/2-(30<<FIXSHIFT),
-						y+TILE_HEIGHT*FIXAMT/2-(10<<FIXSHIFT),80<<FIXSHIFT,FIXAMT*2);
+						BlowWigglySmoke(x+TILE_WIDTH*FIXAMT/2-(30*FIXAMT),
+						y+TILE_HEIGHT*FIXAMT/2-(10*FIXAMT),80*FIXAMT,FIXAMT*2);
 				}
 			}
 			if (player.worldNum == 2 && player.levelNum == 11 && !ClassicMode())
@@ -519,7 +519,7 @@ byte PlaceItemCallback(int x,int y,int cx,int cy,int value,Map *map)
 		return 1;
 
 	map->map[x+y*map->width].item=(byte)value;
-	MakeSound(SND_ITEMDROP,(x*TILE_WIDTH)<<FIXSHIFT,(y*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,500);
+	MakeSound(SND_ITEMDROP,(x*TILE_WIDTH)*FIXAMT,(y*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,500);
 	return 0;	// all done, you placed the item
 }
 
@@ -1407,19 +1407,19 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 		case SPC_ZAPWALL:
 			if(map->map[spcl->effectX+spcl->effectY*map->width].wall)
 			{
-				MakeSound(SND_WALLDOWN,(spcl->effectX*TILE_WIDTH)<<FIXSHIFT,
-						(spcl->effectY*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1500);
+				MakeSound(SND_WALLDOWN,(spcl->effectX*TILE_WIDTH)*FIXAMT,
+						(spcl->effectY*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1500);
 				ZapWall(map,spcl->effectX,spcl->effectY,spcl->value);
 			}
 			break;
 		case SPC_CHGFLOOR:
-			MakeSound(SND_WALLDOWN, (spcl->effectX * TILE_WIDTH) << FIXSHIFT,
-				(spcl->effectY * TILE_HEIGHT) << FIXSHIFT, SND_CUTOFF, 1500);
+			MakeSound(SND_WALLDOWN, (spcl->effectX * TILE_WIDTH) *FIXAMT,
+				(spcl->effectY * TILE_HEIGHT) *FIXAMT, SND_CUTOFF, 1500);
 			ChangeFloor(map, spcl->effectX, spcl->effectY, spcl->value);
 			break;
 		case SPC_CHGITEM:
-			MakeSound(SND_WALLDOWN, (spcl->effectX * TILE_WIDTH) << FIXSHIFT,
-				(spcl->effectY * TILE_HEIGHT) << FIXSHIFT, SND_CUTOFF, 1500);
+			MakeSound(SND_WALLDOWN, (spcl->effectX * TILE_WIDTH) *FIXAMT,
+				(spcl->effectY * TILE_HEIGHT) *FIXAMT, SND_CUTOFF, 1500);
 			if ((spcl->value == ITM_RUNEPOUCH && GotRunePouchInLevel(player.worldNum, player.levelNum)) ||
 				(spcl->value == ITM_SILENTRUNE && GotRuneInLevel(player.worldNum, player.levelNum)) ||
 				(spcl->value == ITM_SPELLBOOK && GotSpellInLevel(player.worldNum, player.levelNum)) ||
@@ -1435,16 +1435,16 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 		case SPC_RAISEWALL:
 			if(!map->map[spcl->effectX+spcl->effectY*map->width].wall)
 			{
-				MakeSound(SND_WALLUP,(spcl->effectX*TILE_WIDTH)<<FIXSHIFT,
-						(spcl->effectY*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1500);
+				MakeSound(SND_WALLUP,(spcl->effectX*TILE_WIDTH)*FIXAMT,
+						(spcl->effectY*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1500);
 				RaiseWall(map,spcl->effectX,spcl->effectY,spcl->value);
 			}
 			break;
 		case SPC_TOGGLEWALL:
 			if(map->map[spcl->effectX+spcl->effectY*map->width].wall)
 			{
-				MakeSound(SND_WALLDOWN,(spcl->effectX*TILE_WIDTH)<<FIXSHIFT,
-						(spcl->effectY*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1500);
+				MakeSound(SND_WALLDOWN,(spcl->effectX*TILE_WIDTH)*FIXAMT,
+						(spcl->effectY*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1500);
 				// store what the wall looked like for later popping it back up
 				spcl->value=map->map[spcl->effectX+spcl->effectY*map->width].wall;
 				ZapWall(map,spcl->effectX,spcl->effectY,
@@ -1452,14 +1452,14 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 			}
 			else
 			{
-				MakeSound(SND_WALLUP,(spcl->effectX*TILE_WIDTH)<<FIXSHIFT,
-						(spcl->effectY*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1500);
+				MakeSound(SND_WALLUP,(spcl->effectX*TILE_WIDTH)*FIXAMT,
+						(spcl->effectY*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1500);
 				RaiseWall(map,spcl->effectX,spcl->effectY,spcl->value);
 			}
 			break;
 		case SPC_LIGHT:
-			MakeSound(SND_LIGHTSON,(spcl->effectX*TILE_WIDTH)<<FIXSHIFT,
-						(spcl->effectY*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1300);
+			MakeSound(SND_LIGHTSON,(spcl->effectX*TILE_WIDTH)*FIXAMT,
+						(spcl->effectY*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1300);
 			map->LightSpecial(spcl->effectX,spcl->effectY,spcl->value,abs(spcl->value)/2);
 			break;
 		case SPC_TELEPORT:
@@ -1483,8 +1483,8 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 						MakeNormalSound(SND_STAIRS);
 					}
 				}
-				victim->x = (spcl->effectX * TILE_WIDTH + (TILE_WIDTH / 2)) << FIXSHIFT;
-				victim->y = (spcl->effectY * TILE_HEIGHT + (TILE_HEIGHT / 2)) << FIXSHIFT;
+				victim->x = (spcl->effectX * TILE_WIDTH + (TILE_WIDTH / 2)) *FIXAMT;
+				victim->y = (spcl->effectY * TILE_HEIGHT + (TILE_HEIGHT / 2)) *FIXAMT;
 				victim->mapx = victim->x / (TILE_WIDTH * FIXAMT);
 				victim->mapy = victim->y / (TILE_HEIGHT * FIXAMT);
 				victim->dx=0;
@@ -1517,10 +1517,10 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 			}
 			break;
 		case SPC_SUMMON:
-			MakeSound(SND_TELEPORT,(spcl->effectX*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-					(spcl->effectY*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,SND_CUTOFF,1500);
-			AddGuy((spcl->effectX*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-					(spcl->effectY*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
+			MakeSound(SND_TELEPORT,(spcl->effectX*TILE_WIDTH+(TILE_WIDTH/2))*FIXAMT,
+					(spcl->effectY*TILE_HEIGHT+(TILE_HEIGHT/2))*FIXAMT,SND_CUTOFF,1500);
+			AddGuy((spcl->effectX*TILE_WIDTH+(TILE_WIDTH/2))*FIXAMT,
+					(spcl->effectY*TILE_HEIGHT+(TILE_HEIGHT/2))*FIXAMT,
 					64*FIXAMT,spcl->value);
 			break;
 		case SPC_PICTURE:
@@ -3313,7 +3313,7 @@ void SwampUpdate(Map* map)
 	else if (potPos == 4)	// already cooking
 	{
 		BlowWigglySmoke(65*TILE_WIDTH * FIXAMT + Random(TILE_WIDTH * FIXAMT),
-			62*TILE_HEIGHT*FIXAMT + Random(TILE_HEIGHT * FIXAMT), (32+MGL_random(32)) << FIXSHIFT, MGL_randoml(FIXAMT * 4));
+			62*TILE_HEIGHT*FIXAMT + Random(TILE_HEIGHT * FIXAMT), (32+MGL_random(32)) *FIXAMT, MGL_randoml(FIXAMT * 4));
 
 		byte c[] = { 4,5,1,6,3,7 };	// colors for the flames
 		byte color = swampTemp / 40;

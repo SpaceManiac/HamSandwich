@@ -2154,8 +2154,8 @@ void AI_MamaSpider(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				for(i=0;i<3;i++)
 				{
 					// spit acid glob
-					x=me->x+Cosine(me->facing*32)*20-FIXAMT*4+(MGL_random(9)<<FIXSHIFT);
-					y=me->y+Sine(me->facing*32)*20-FIXAMT*4+(MGL_random(9)<<FIXSHIFT);
+					x=me->x+Cosine(me->facing*32)*20-FIXAMT*4+(MGL_random(9)*FIXAMT);
+					y=me->y+Sine(me->facing*32)*20-FIXAMT*4+(MGL_random(9)*FIXAMT);
 					f=me->facing*32-16+MGL_random(33);
 
 					FireBullet(x,y,f,BLT_ACID);
@@ -2549,7 +2549,7 @@ void AI_Shroomlord(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			for(i=0;i<30;i++)
 				BlowWigglySmoke(me->x-32*FIXAMT+MGL_randoml(64*FIXAMT),
 								me->y-32*FIXAMT+MGL_randoml(64*FIXAMT),
-								MGL_random(64)<<FIXSHIFT,MGL_randoml(FIXAMT*4));
+								MGL_random(64)*FIXAMT,MGL_randoml(FIXAMT*4));
 		}
 		return;	// can't do nothin' right now
 	}
@@ -2669,8 +2669,8 @@ void AI_Moss(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			x=((me->x>>FIXSHIFT)/TILE_WIDTH);
 			y=((me->y>>FIXSHIFT)/TILE_HEIGHT);
-			me->x=(x*TILE_WIDTH+TILE_WIDTH/2)<<FIXSHIFT;
-			me->y=(y*TILE_HEIGHT+TILE_HEIGHT/2)<<FIXSHIFT;
+			me->x=(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT;
+			me->y=(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
 			me->dx=0;
 			me->dy=0;	// you are at your destination
 			me->reload=MGL_random(200)+55;
@@ -3111,8 +3111,8 @@ void AI_Mush(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				x=me->x>>FIXSHIFT;
 				y=me->y>>FIXSHIFT;
 				BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,1);
-				BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))<<FIXSHIFT,
-						  (y+me->recty+MGL_random(me->recty2-me->recty))<<FIXSHIFT,
+				BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))*FIXAMT,
+						  (y+me->recty+MGL_random(me->recty2-me->recty))*FIXAMT,
 						  me->z,FIXAMT);
 			}
 		}
@@ -3240,11 +3240,11 @@ void AI_TheThing(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x>>FIXSHIFT;
 			y=me->y>>FIXSHIFT;
 			BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,2);
-			BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))<<FIXSHIFT,
-					  (y+me->recty+MGL_random(me->recty2-me->recty))<<FIXSHIFT,
+			BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))*FIXAMT,
+					  (y+me->recty+MGL_random(me->recty2-me->recty))*FIXAMT,
 					  me->z,FIXAMT);
-			me->x+=((1-MGL_random(3))<<FIXSHIFT);
-			me->y+=((1-MGL_random(3))<<FIXSHIFT);
+			me->x+=((1-MGL_random(3))*FIXAMT);
+			me->y+=((1-MGL_random(3))*FIXAMT);
 		}
 		if(me->seq==ANIM_ATTACK && me->frm==3 && me->frmTimer<32)
 		{
@@ -3337,11 +3337,11 @@ void AI_ThingTentacle(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x>>FIXSHIFT;
 			y=me->y>>FIXSHIFT;
 			BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,1);
-			BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))<<FIXSHIFT,
-					  (y+me->recty+MGL_random(me->recty2-me->recty))<<FIXSHIFT,
+			BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))*FIXAMT,
+					  (y+me->recty+MGL_random(me->recty2-me->recty))*FIXAMT,
 					  me->z,FIXAMT);
-			me->x+=((1-MGL_random(3))<<FIXSHIFT);
-			me->y+=((1-MGL_random(3))<<FIXSHIFT);
+			me->x+=((1-MGL_random(3))*FIXAMT);
+			me->y+=((1-MGL_random(3))*FIXAMT);
 			me->facing=(me->facing+1-MGL_random(3))&15;
 			FlailLock(me);
 			if(me->frm==4 && me->parent->type==MONS_THINGTENT)	// kill parent (unless it's The Thing)
@@ -3960,11 +3960,11 @@ void AI_Roller(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	{
 		if(me->seq==ANIM_DIE)
 		{
-			FireBullet(me->x+((32-MGL_random(65))<<FIXSHIFT),me->y+((32-MGL_random(65))<<FIXSHIFT),
+			FireBullet(me->x+((32-MGL_random(65))*FIXAMT),me->y+((32-MGL_random(65))*FIXAMT),
 				(byte)MGL_random(8),BLT_ROCK);
-			FireBullet(me->x+((32-MGL_random(65))<<FIXSHIFT),me->y+((32-MGL_random(65))<<FIXSHIFT),
+			FireBullet(me->x+((32-MGL_random(65))*FIXAMT),me->y+((32-MGL_random(65))*FIXAMT),
 				(byte)MGL_random(8),BLT_ROCK);
-			FireBullet(me->x+((32-MGL_random(65))<<FIXSHIFT),me->y+((32-MGL_random(65))<<FIXSHIFT),
+			FireBullet(me->x+((32-MGL_random(65))*FIXAMT),me->y+((32-MGL_random(65))*FIXAMT),
 				(byte)MGL_random(8),BLT_ROCK);
 		}
 		return;
@@ -4082,8 +4082,8 @@ void AI_Lich(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x>>FIXSHIFT;
 			y=me->y>>FIXSHIFT;
 			BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,1);
-			BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))<<FIXSHIFT,
-					  (y+me->recty+MGL_random(me->recty2-me->recty))<<FIXSHIFT,
+			BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))*FIXAMT,
+					  (y+me->recty+MGL_random(me->recty2-me->recty))*FIXAMT,
 					  me->z,FIXAMT);
 		}
 		return;
@@ -4260,8 +4260,8 @@ void AI_DustDevil(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x>>FIXSHIFT;
 			y=me->y>>FIXSHIFT;
 			BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,1);
-			BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))<<FIXSHIFT,
-					  (y+me->recty+MGL_random(me->recty2-me->recty))<<FIXSHIFT,
+			BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))*FIXAMT,
+					  (y+me->recty+MGL_random(me->recty2-me->recty))*FIXAMT,
 					  me->z,FIXAMT);
 		}
 		return;
@@ -4319,8 +4319,8 @@ void AI_MechaBouapha(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x>>FIXSHIFT;
 			y=me->y>>FIXSHIFT;
 			BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,1);
-			BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))<<FIXSHIFT,
-					  (y+me->recty+MGL_random(me->recty2-me->recty))<<FIXSHIFT,
+			BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))*FIXAMT,
+					  (y+me->recty+MGL_random(me->recty2-me->recty))*FIXAMT,
 					  me->z,FIXAMT);
 		}
 		if(me->seq==ANIM_A1 && me->frm==7)
@@ -4545,8 +4545,8 @@ void AI_Boiler(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			x=me->x>>FIXSHIFT;
 			y=me->y>>FIXSHIFT;
 			BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,2);
-			BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))<<FIXSHIFT,
-					  (y+me->recty+MGL_random(me->recty2-me->recty))<<FIXSHIFT,
+			BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))*FIXAMT,
+					  (y+me->recty+MGL_random(me->recty2-me->recty))*FIXAMT,
 					  me->z,FIXAMT);
 			ShakeScreen(10);
 		}
@@ -4820,8 +4820,8 @@ void AI_Tower(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				x=me->x>>FIXSHIFT;
 				y=me->y>>FIXSHIFT;
 				BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,1);
-				BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))<<FIXSHIFT,
-						  (y+me->recty+MGL_random(me->recty2-me->recty))<<FIXSHIFT,
+				BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))*FIXAMT,
+						  (y+me->recty+MGL_random(me->recty2-me->recty))*FIXAMT,
 						  me->z,FIXAMT);
 			}
 		}
@@ -5390,8 +5390,8 @@ void AI_HugeBat(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				x=me->x>>FIXSHIFT;
 				y=me->y>>FIXSHIFT;
 				BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,1);
-				BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))<<FIXSHIFT,
-						  (y+me->recty+MGL_random(me->recty2-me->recty))<<FIXSHIFT,
+				BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))*FIXAMT,
+						  (y+me->recty+MGL_random(me->recty2-me->recty))*FIXAMT,
 						  me->z,FIXAMT);
 			}
 		}
@@ -5538,9 +5538,9 @@ void AI_BobbyKhan(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 			for(i=0;i<15;i++)
 			{
-				x=me->x+((400-MGL_random(801))<<FIXSHIFT);
-				y=me->y+((400-MGL_random(801))<<FIXSHIFT);
-				FireExactBullet(x,y,FIXAMT*160+(MGL_random(40)<<FIXSHIFT),
+				x=me->x+((400-MGL_random(801))*FIXAMT);
+				y=me->y+((400-MGL_random(801))*FIXAMT);
+				FireExactBullet(x,y,FIXAMT*160+(MGL_random(40)*FIXAMT),
 								0,0,0,0,30,2,BLT_ROCK);
 			}
 		}
@@ -5551,8 +5551,8 @@ void AI_BobbyKhan(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				x=me->x>>FIXSHIFT;
 				y=me->y>>FIXSHIFT;
 				BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,1);
-				BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))<<FIXSHIFT,
-						  (y+me->recty+MGL_random(me->recty2-me->recty))<<FIXSHIFT,
+				BlowSmoke((x+me->rectx+MGL_random(me->rectx2-me->rectx))*FIXAMT,
+						  (y+me->recty+MGL_random(me->recty2-me->recty))*FIXAMT,
 						  me->z,FIXAMT);
 			}
 		}

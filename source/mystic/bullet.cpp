@@ -1207,7 +1207,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 					// time ran out with no catch, be gone
 					BlowUpGuy(me->x>>FIXSHIFT, me->y>>FIXSHIFT, (me->x>>FIXSHIFT) + 1, (me->y>>FIXSHIFT) + 1, 0, 1);
 				}
-				Guy* g = FindNearestOfType(me->x>>FIXSHIFT, me->y>FIXSHIFT, MONS_GHOST);
+				Guy* g = FindNearestOfType(me->x>>FIXSHIFT, me->y>>FIXSHIFT, MONS_GHOST);
 				if (g && abs(g->x - me->x) < 64 * FIXAMT && abs(g->y - me->y) < 48 * FIXAMT)
 				{
 					HauntedWoodsCatchGhost(g);
@@ -1656,8 +1656,8 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 					i = SpellLevel() / 3 + 4;
 				else
 					i = SkillValue(SKILL_SEEKER) * 3 + 6;
-				Clamp(&me->dx,i<<FIXSHIFT);
-				Clamp(&me->dy,i<<FIXSHIFT);
+				Clamp(&me->dx,i*FIXAMT);
+				Clamp(&me->dy,i*FIXAMT);
 
 				if(me->dx>0)
 				{
@@ -1721,8 +1721,8 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				if (!ClassicMode() && RuneValue(Rune::SHOTGUN) > 0)
 					i = 16;
 
-				Clamp(&me->dx, i << FIXSHIFT);
-				Clamp(&me->dy, i << FIXSHIFT);
+				Clamp(&me->dx, i*FIXAMT);
+				Clamp(&me->dy, i*FIXAMT);
 
 				if (me->dx > 0)
 				{
@@ -2426,8 +2426,6 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			if(f<0)
 				f+=16;
 			me->facing=(byte)(f&15);
-			//me->x+=((MGL_random(17)-8)<<FIXSHIFT);
-			//me->y+=((MGL_random(17)-8)<<FIXSHIFT);
 			me->dx=Cosine(me->facing*16)*4;
 			me->dy=Sine(me->facing*16)*4;
 			MakeSound(SND_MISSILELAUNCH,me->x,me->y,SND_CUTOFF,1100);

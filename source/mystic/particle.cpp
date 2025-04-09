@@ -30,12 +30,12 @@ void Particle::Go(byte type,int x,int y,int z,byte angle,byte force)
 
 	if(fforce==0)
 		fforce=1;
-	this->x=x+MGL_randoml(32<<FIXSHIFT)-(16<<FIXSHIFT);
-	this->y=y+MGL_randoml(32<<FIXSHIFT)-(16<<FIXSHIFT);
+	this->x=x+MGL_randoml(32*FIXAMT)-(16*FIXAMT);
+	this->y=y+MGL_randoml(32*FIXAMT)-(16*FIXAMT);
 	this->z=z;
 	this->dx=Cosine(angle)*MGL_random(fforce);
 	this->dy=Sine(angle)*MGL_random(fforce);
-	this->dz=MGL_random(fforce*2)<<FIXSHIFT;
+	this->dz=MGL_random(fforce*2)*FIXAMT;
 	this->life=MGL_random(force)+10;
 }
 
@@ -46,12 +46,12 @@ void Particle::GoRandom(byte type,int x,int y,int z,byte force)
 	if(force==0)
 		return;
 
-	this->x=x+MGL_randoml(32<<FIXSHIFT)-(16<<FIXSHIFT);
-	this->y=y+MGL_randoml(32<<FIXSHIFT)-(16<<FIXSHIFT);
+	this->x=x+MGL_randoml(32*FIXAMT)-(16*FIXAMT);
+	this->y=y+MGL_randoml(32*FIXAMT)-(16*FIXAMT);
 	this->z=z;
 	this->dx=(MGL_random(force)-force/2) * FIXAMT;
 	this->dy=(MGL_random(force)-force/2) * FIXAMT;
-	this->dz=MGL_random(force*2)<<FIXSHIFT;
+	this->dz=MGL_random(force*2)*FIXAMT;
 	this->life=MGL_random(force)+20;
 }
 
@@ -329,7 +329,7 @@ void Particle::Update(Map *map)
 		}
 
 
-		if(x<0 || y<0 || x>=((map->width*TILE_WIDTH)<<FIXSHIFT) || y>=((map->height*TILE_HEIGHT)<<FIXSHIFT))
+		if(x<0 || y<0 || x>=((map->width*TILE_WIDTH)*FIXAMT) || y>=((map->height*TILE_HEIGHT)*FIXAMT))
 		{
 			life=0;
 			return;
@@ -640,8 +640,8 @@ void BlowUpGuy(int x,int y,int x2,int y2,int z,byte amt)
 	{
 		if(!particleList[i].Alive())
 		{
-			particleList[i].x=(x+MGL_randoml(x2-x))<<FIXSHIFT;
-			particleList[i].y=(y+MGL_randoml(y2-y))<<FIXSHIFT;
+			particleList[i].x=(x+MGL_randoml(x2-x))*FIXAMT;
+			particleList[i].y=(y+MGL_randoml(y2-y))*FIXAMT;
 			particleList[i].z=z;
 			particleList[i].dx=0;
 			particleList[i].dy=0;
@@ -801,9 +801,9 @@ void MakeItSnow(Map *map)
 		if(!particleList[i].Alive())
 		{
 
-			particleList[i].x=(MGL_random(SCRWID)+cx)<<FIXSHIFT;
-			particleList[i].y=(MGL_random(SCRHEI)+cy)<<FIXSHIFT;
-			particleList[i].z=(300+MGL_random(300))<<FIXSHIFT;
+			particleList[i].x=(MGL_random(SCRWID)+cx)*FIXAMT;
+			particleList[i].y=(MGL_random(SCRHEI)+cy)*FIXAMT;
+			particleList[i].z=(300+MGL_random(300))*FIXAMT;
 			particleList[i].dx=0;
 			particleList[i].dy=0;
 			particleList[i].dz=0;
@@ -827,7 +827,7 @@ void SpecialSnow(int x,int y)
 
 			particleList[i].x=x;
 			particleList[i].y=y;
-			particleList[i].z=(10+MGL_random(20))<<FIXSHIFT;
+			particleList[i].z=(10+MGL_random(20))*FIXAMT;
 			particleList[i].dx=0;
 			particleList[i].dy=0;
 			particleList[i].dz=0;

@@ -225,26 +225,26 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 			if(PlayerKeys(3))
 			{
 				m->item=ITM_NONE;
-				MakeSound(SND_DOOROPEN,(x*TILE_WIDTH)<<FIXSHIFT,(y*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1500);
+				MakeSound(SND_DOOROPEN,(x*TILE_WIDTH)*FIXAMT,(y*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1500);
 			}
 		if(m->item==ITM_DOOR1G || m->item==ITM_DOOR2G)
 			if(PlayerKeys(2))
 			{
 				m->item=ITM_NONE;
-				MakeSound(SND_DOOROPEN,(x*TILE_WIDTH)<<FIXSHIFT,(y*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1500);
+				MakeSound(SND_DOOROPEN,(x*TILE_WIDTH)*FIXAMT,(y*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1500);
 			}
 		if(m->item==ITM_DOOR1R || m->item==ITM_DOOR2R)
 			if(PlayerKeys(1))
 			{
 				m->item=ITM_NONE;
-				MakeSound(SND_DOOROPEN,(x*TILE_WIDTH)<<FIXSHIFT,(y*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1500);
+				MakeSound(SND_DOOROPEN,(x*TILE_WIDTH)*FIXAMT,(y*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1500);
 			}
 		if(m->item==ITM_DOOR1 || m->item==ITM_DOOR2)
 			if(PlayerKeys(0))
 			{
 				m->item=ITM_NONE;
 				PlayerLoseKey(0);
-				MakeSound(SND_DOOROPEN,(x*TILE_WIDTH)<<FIXSHIFT,(y*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1500);
+				MakeSound(SND_DOOROPEN,(x*TILE_WIDTH)*FIXAMT,(y*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1500);
 			}
 	}
 
@@ -268,8 +268,8 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 			{
 				m->wall=0;
 				m->floor=(byte)MGL_random(3);
-				MakeSound(SND_BOMBBOOM,(x*TILE_WIDTH)<<FIXSHIFT,(y*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1500);
-				ExplodeParticles(PART_DIRT,(x*TILE_WIDTH+TILE_WIDTH/2)<<FIXSHIFT,(y*TILE_HEIGHT+TILE_HEIGHT/2)<<FIXSHIFT,FIXAMT*10,20);
+				MakeSound(SND_BOMBBOOM,(x*TILE_WIDTH)*FIXAMT,(y*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1500);
+				ExplodeParticles(PART_DIRT,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,FIXAMT*10,20);
 				ChallengeEvent(CE_SMASHBALL, 1);
 			}
 
@@ -891,7 +891,7 @@ void Guy::Update(Map *map,world_t *world)
 		(world->terrain[map->map[mapx+mapy*map->width].floor].flags&TF_STEP) && !(MonsterFlags(type)&MF_FLYING) &&
 		MySpecialType(type,map,mapx,mapy))
 	{
-		MakeSound(SND_MENUCLICK,(mapx*TILE_WIDTH)<<FIXSHIFT,(mapy*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1000);
+		MakeSound(SND_MENUCLICK,(mapx*TILE_WIDTH)*FIXAMT,(mapy*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1000);
 		map->map[mapx+mapy*map->width].floor=world->terrain[map->map[mapx+mapy*map->width].floor].next;
 
 		if (player.worldNum == 3 && player.levelNum == 7)
@@ -2292,8 +2292,8 @@ void AddMapGuys(Map *map)
 			}
 			else
 			{
-				x=(map->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT;
-				y=(map->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT;
+				x=(map->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))*FIXAMT;
+				y=(map->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))*FIXAMT;
 			}
 
 			if (map->badguy[i].type == MONS_FARLEY && player.worldNum == 0 && HighestWorldReached() == 0)
@@ -2358,8 +2358,8 @@ void AddBattleGuys(Map *map,byte t)
 		{
 			if(map->badguy[i].type==MONS_BOUAPHA)
 			{
-				g=AddGuy((map->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-					   (map->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
+				g=AddGuy((map->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))*FIXAMT,
+					   (map->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))*FIXAMT,
 					   0,MONS_BOUAPHA);
 			}
 			else if(amt>0)
@@ -2430,8 +2430,8 @@ void AddBattleGuys(Map *map,byte t)
 						me=MONS_STICKBAT;
 						break;
 				}
-				g=AddGuy((map->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-					   (map->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
+				g=AddGuy((map->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))*FIXAMT,
+					   (map->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))*FIXAMT,
 					   0,me);
 
 				amt--;
@@ -2556,8 +2556,8 @@ void AddRandomGuy(Map *map,world_t *world,byte chapter,byte rnd)
 	if(abs(x*TILE_WIDTH-cx)<400 && abs(y*TILE_HEIGHT-cy)<400)
 		return;	// can't appear on screen!
 
-	g=AddGuy((x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-		   (y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
+	g=AddGuy((x*TILE_WIDTH+(TILE_WIDTH/2))*FIXAMT,
+		   (y*TILE_HEIGHT+(TILE_HEIGHT/2))*FIXAMT,
 		   0,t);
 
 	if(!g)

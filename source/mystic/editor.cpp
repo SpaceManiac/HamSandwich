@@ -218,8 +218,8 @@ void AddMapBadguy(int x,int y,byte type)
 		for(i=0;i<MAX_MAPMONS;i++)
 			if(curMap->badguy[i].type==MONS_BOUAPHA)
 			{
-				DeleteGuy((curMap->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-					   (curMap->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
+				DeleteGuy((curMap->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))*FIXAMT,
+					   (curMap->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))*FIXAMT,
 					   curMap->badguy[i].type);
 				curMap->badguy[i].type=0;
 			}
@@ -233,11 +233,11 @@ void AddMapBadguy(int x,int y,byte type)
 			curMap->badguy[i].x=x;
 			curMap->badguy[i].y=y;
 			GetCamera(&cx,&cy);
-			AddGuy((x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-				   (y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
+			AddGuy((x*TILE_WIDTH+(TILE_WIDTH/2))*FIXAMT,
+				   (y*TILE_HEIGHT+(TILE_HEIGHT/2))*FIXAMT,
 				   0,
 				   type);
-			PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			PutCamera(cx*FIXAMT,cy*FIXAMT);
 			return;
 		}
 }
@@ -269,8 +269,8 @@ void Delete(int x,int y)
 	for(i=0;i<MAX_MAPMONS;i++)
 		if((curMap->badguy[i].type) && (curMap->badguy[i].x==x) && (curMap->badguy[i].y==y))
 		{
-			DeleteGuy((x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-				   (y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
+			DeleteGuy((x*TILE_WIDTH+(TILE_WIDTH/2))*FIXAMT,
+				   (y*TILE_HEIGHT+(TILE_HEIGHT/2))*FIXAMT,
 				   curMap->badguy[i].type);
 			curMap->badguy[i].type=0;
 		}
@@ -1141,7 +1141,7 @@ static void HandleKeyPresses(void)
 			x-=TILE_WIDTH;
 			if(x<0)
 				x=0;
-			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
+			PutCamera(x*FIXAMT,y*FIXAMT);
 			break;
 		case SDL_SCANCODE_UP:
 		case SDL_SCANCODE_KP_8:
@@ -1149,7 +1149,7 @@ static void HandleKeyPresses(void)
 			y-=TILE_HEIGHT;
 			if(y<0)
 				y=0;
-			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
+			PutCamera(x*FIXAMT,y*FIXAMT);
 			break;
 		case SDL_SCANCODE_RIGHT:
 		case SDL_SCANCODE_KP_6:
@@ -1157,7 +1157,7 @@ static void HandleKeyPresses(void)
 			x+=TILE_WIDTH;
 			if(x>curMap->width*TILE_WIDTH)
 				x=curMap->width*TILE_WIDTH;
-			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
+			PutCamera(x*FIXAMT,y*FIXAMT);
 			break;
 		case SDL_SCANCODE_DOWN:
 		case SDL_SCANCODE_KP_2:
@@ -1165,7 +1165,7 @@ static void HandleKeyPresses(void)
 			y+=TILE_HEIGHT;
 			if(y>curMap->height*TILE_HEIGHT)
 				y=curMap->height*TILE_HEIGHT;
-			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
+			PutCamera(x*FIXAMT,y*FIXAMT);
 			break;
 	}
 
@@ -1423,7 +1423,7 @@ void EditorSelectMap(byte w)
 {
 	curMap=world.map[w];
 	curMapNum=w;
-	PutCamera(HALFWID<<FIXSHIFT,HALFHEI<<FIXSHIFT);
+	PutCamera(HALFWID*FIXAMT,HALFHEI*FIXAMT);
 	ExitGuys();
 	InitGuys(128);
 	AddMapGuys(curMap);
