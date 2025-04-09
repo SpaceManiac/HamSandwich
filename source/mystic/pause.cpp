@@ -380,7 +380,7 @@ void RenderRuneMenu(void)
 	{
 		RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 35, SCRWID - 10, SCRHEI - 30 - 15, 32 * 5 + 31, 32 * 5 + 10);
 		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85, "Find Silent Runes hidden in the", 0, 1);
-		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85+ 14, "world. Press Spell to awaken", 0, 1);
+		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85+ 14, "world. Press Cast to awaken", 0, 1);
 		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14*2, "and upgrade them with", 0, 1);
 		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14*3, "Runestones. Press Fire to equip", 0, 1);
 		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14 * 4, "Awakened Runes.", 0, 1);
@@ -1028,7 +1028,7 @@ PauseResult UpdatePauseMenu(MGLDraw *mgl)
 		MakeNormalSound(SND_MENUSELECT);
 		if (subMode == SUBMODE_NONE)
 		{
-			LockOutControl(CONTROL_B2, true);
+			LockOutControl(CONTROL_B2|CONTROL_ESCAPE, true);
 			return PauseResult::Resume;
 		}
 		else

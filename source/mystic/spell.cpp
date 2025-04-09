@@ -520,6 +520,12 @@ void CastSpell(Guy *me)
 				return;
 			}
 
+			if (!ClassicMode() && Random(100) < RuneValue(Rune::PALS))
+			{
+				AddGuy(me->x, me->y, FIXAMT * 20, MONS_PTERO);
+				MakeNormalSound(SND_PTEROSUMMON);
+			}
+
 			SetPlayerGlow(80);
 			if(player.spell[SPL_HEAL]==1 || player.downgradeSpell[SPL_HEAL])
 			{

@@ -1783,7 +1783,6 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			case MONS_BOUAPHA:
 			case MONS_MICRO:	// fish, no drop
 			case MONS_FRIENDLY:
-			case MONS_MUSH:
 			case MONS_LICH:
 			case MONS_THINGTENT:
 			case MONS_THINGTENTTIP:

@@ -232,9 +232,9 @@ void PauseGame(void)
 {
 	SetInMenu(true);
 	InitPauseMenu();
+	LockOutControl(CONTROL_B1 | CONTROL_B2 | CONTROL_ESCAPE, true);
 	UpdateControls();
 	gameMode=GAMEMODE_MENU;
-	LockOutControl(CONTROL_B1 | CONTROL_B2|CONTROL_ESCAPE, true);
 }
 
 void EnterPictureDisplay(void)

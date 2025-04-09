@@ -16,14 +16,14 @@
 #define BRUTALHP (5)
 #define MODERNCHAP34HP (2)
 #define BRUTALCHAP4DMG (2)	// is ADDED to BRUTALDMG in chapter 4, so you go from 5x to 7x
-#define BRUTALCHAP4HP (4)	// and BRUTALHP goes from 5x to 9x (20x is what madcap does, and in modern mode there's also the modern CHAP34 bonus, which is multiplied, so this is 18x)
+#define BRUTALCHAP4HP (3)	// and BRUTALHP goes from 5x to 8x (20x is what madcap does, and in modern mode there's also the modern CHAP34 bonus, which is multiplied, so this is 16x)
 #define BUMP_WALL (0)
 #define BUMP_GUY  (1)
 #define BUMP_NONE (2)
 
 class Guy final
 {
-	public:
+	public:                                                
 		Guy(void);
 		~Guy(void);
 

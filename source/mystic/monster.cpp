@@ -1357,16 +1357,30 @@ void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		}
 		return;
 	}
+	int rangeToEnemy = 999999;
+	int rangeToPlayer = 9999999;
+	if (goodguy)
+		rangeToEnemy = RangeToTarget(me, goodguy);
+	if (g)
+		rangeToPlayer = RangeToTarget(me, g);
+
+	if (rangeToPlayer > 500 * FIXAMT)	// got too far away, teleport home
+	{
+		me->x = g->x;
+		me->y = g->y;
+		me->birthState = 2;
+	}
+
 	if(me->mind==0)	// standard combat mode
 	{
-		if(goodguy==NULL || goodguy->type==MONS_FRIENDLY || RangeToTarget(me,g)>200*FIXAMT)
+		if(goodguy==NULL || goodguy->type==MONS_FRIENDLY || rangeToPlayer>200*FIXAMT)
 		{
 			// too far from goodguy, run home
 			me->mind=1;
 		}
 		else
 		{
-			if(RangeToTarget(me,goodguy)>300*FIXAMT)	// too far to fight, go home
+			if(rangeToEnemy>300*FIXAMT)	// too far to fight, go home
 			{
 				me->mind=1;
 			}
@@ -1377,7 +1391,7 @@ void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy)
 					FaceGoodguy2(me,goodguy);
 					me->mind1=2;
 				}
-				if(me->reload==0 && RangeToTarget(me,goodguy)<128*FIXAMT)
+				if(me->reload==0 && rangeToEnemy<128*FIXAMT)
 				{
 					// don't have to stop to shoot
 					MakeSound(SND_PTEROSHOOT,me->x,me->y,SND_CUTOFF,600);
@@ -1392,9 +1406,9 @@ void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 	else if(me->mind==1)	// running home mode
 	{
-		if (RangeToTarget(me, g) < 128 * FIXAMT)
+		if (rangeToPlayer < 128 * FIXAMT)
 		{
-			if (goodguy && RangeToTarget(me, goodguy) < 300 * FIXAMT)
+			if (goodguy && rangeToEnemy < 300 * FIXAMT)
 			{
 				// got close enough, get violent again
 				me->mind = 0;
@@ -1413,12 +1427,12 @@ void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 	else if (me->mind == 2) // wandering because you are close to the player and have no nearby target
 	{
-		if (goodguy && RangeToTarget(me, goodguy) < 300 * FIXAMT)
+		if (goodguy && rangeToEnemy < 300 * FIXAMT)
 		{
 			// got close enough, get violent again
 			me->mind = 0;
 		}
-		else if (RangeToTarget(me, g) >= 128 * FIXAMT)
+		else if (rangeToPlayer >= 128 * FIXAMT)
 		{
 			// got too far from player, find him again
 			me->mind = 1;
