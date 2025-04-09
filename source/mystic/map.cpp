@@ -3660,12 +3660,22 @@ void LostInWoodsPuzzleStep(Map* map, int x, int y)
 	if (ClassicMode())
 		return;
 
-	int pos;
+	int shardX,shardY;
 	if (GotSkillShardInLevel(player.worldNum, player.levelNum))
 		return;
 
+	shardX = shardY = 0;
+	for (int i = 0; i < map->width * map->height; i++)
+	{
+		if (map->map[i].floor == 96)	// the spot where the skill shard goes
+		{
+			shardX = i % map->width;
+			shardY = i / map->width;
+		}
+	}
+
 	mapTile_t* t = map->GetTile(x, y);
-	if (t->floor >= 120 && t->floor <= 123)
+	if (t->floor >= 120 && t->floor <= 123 && (x<shardX-2 || x>shardX+2 || y<shardY-2 || y>shardY+2))	// triggering the ones around the shard itself don't count!
 	{
 		byte f = t->floor;
 		for (int i = 0; i < map->width * map->height; i++)
@@ -3674,16 +3684,18 @@ void LostInWoodsPuzzleStep(Map* map, int x, int y)
 			{
 				map->map[i].floor = f + 20;	// light up all matching symbols
 			}
-			if (map->map[i].floor == 96)	// the spot where the skill shard goes
-				pos = i;
 		}
+
 		MakeNormalSound(SND_INFERNAL);
-		if (map->map[pos - 2].floor >= 140 && map->map[pos + 2].floor >= 140 && map->map[pos - map->width * 2].floor >= 140 && map->map[pos + map->width * 2].floor >= 140)	// all 4 around the spot are lit up
+		if (map->map[(shardX - 2)+shardY*map->width].floor >= 140 &&
+			map->map[(shardX+2)+shardY*map->width].floor >= 140 &&
+			map->map[shardX + (shardY-2) * map->width].floor >= 140 &&
+			map->map[shardX + (shardY+2) * map->width].floor >= 140)	// all 4 around the spot are lit up
 		{
-			map->map[pos].item = ITM_SKILLSHARD;
+			map->map[shardX+shardY*map->width].item = ITM_SKILLSHARD;
 			MakeNormalSound(SND_PURCHASE);
-			FloaterParticles(((pos%map->width) * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, ((pos/map->width) * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 1, 32, -1, 16);
-			FloaterParticles(((pos%map->width) * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, ((pos/map->width) * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 1, 10, 1, 16);
+			FloaterParticles((shardX * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (shardY * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 1, 32, -1, 16);
+			FloaterParticles((shardX * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (shardY * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 1, 10, 1, 16);
 		}
 	}
 }

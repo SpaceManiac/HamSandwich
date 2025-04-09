@@ -788,7 +788,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			{
 				j /= 2;
 				if (j < 1) j = 1;
-				i = FindVictimNot(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 16, me->dx, me->dy, j / 2, me->lastHit, map, world);
+				i = FindVictimNot(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 16, me->dx, me->dy, j, me->lastHit, map, world);
 			}
 			if (i != 65535)
 			{
