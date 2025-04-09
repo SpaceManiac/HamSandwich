@@ -1027,7 +1027,8 @@ void Guy::OverworldUpdate(Map *map,world_t *world)
 	if(oldmapx!=mapx || oldmapy!=mapy)
 		SpecialStepCheck(map,mapx,mapy,this);
 
-	bright=map->map[mapx+mapy*map->width].templight;
+	mapTile_t* tile = map->GetTile(mapx, mapy);
+	bright = tile ? tile->templight : -32;
 }
 
 // this is a very half-assed version of update to be called by the editor instead of the game
@@ -1037,7 +1038,9 @@ void Guy::EditorUpdate(Map *map)
 
 	mapx=(x>>FIXSHIFT)/TILE_WIDTH;
 	mapy=(y>>FIXSHIFT)/TILE_HEIGHT;
-	bright=map->map[mapx+mapy*map->width].templight;
+
+	mapTile_t* tile = map->GetTile(mapx, mapy);
+	bright = tile ? tile->templight : -32;
 }
 
 void Guy::NoMoveUpdate(Map *map)
@@ -1722,7 +1725,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			if (player.infernoKills >= 20)
 				EarnAchieve(Achievement::INFERNO);
 		}
-		
+
 		if (!(monsType[type].flags & MF_GOODGUY) && player.totalKills < 255)
 		{
 			player.totalKills++;
