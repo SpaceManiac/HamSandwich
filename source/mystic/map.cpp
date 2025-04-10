@@ -288,7 +288,7 @@ void Map::Update(byte mode,world_t *world)
 		else if(mode==UPDATE_GAME)
 		{
 			// make the lights approach what they are supposed to be
-			if (lightSpeed > 0)
+			if (lightSpeed > 0 || (player.worldNum == 3 && player.levelNum==11))
 			{
 				if (map[i].templight > map[i].light)
 				{
