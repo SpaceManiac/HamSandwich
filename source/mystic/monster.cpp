@@ -1343,15 +1343,19 @@ void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->mind1)
 		me->mind1--;
 
-	if(me->ouch==4)
-		MakeSound(SND_PTERODIE,me->x,me->y,SND_CUTOFF,1200);
-
+	if (me->ouch == 4)
+	{
+		if(me->hp==0)
+			MakeSound(SND_PTERODIE, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_PTEROOUCH, me->x, me->y, SND_CUTOFF, 1200);
+	}
 	if (player.summonDmgBoost > 0 && Random(5)==0)
 		ExplodeParticles2(PART_HAMMER, me->x, me->y, me->z, 1, 2);
 	
 	if(me->action==ACTION_BUSY)
 	{
-		if(me->seq==ANIM_DIE)
+		if(me->seq==ANIM_DIE && Random(2))
 		{
 			BlowWigglySmoke(me->x,me->y,me->z,0);
 		}
@@ -6780,10 +6784,11 @@ void AI_Snail(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int i,x,y;
 	byte b;
+	Guy* player = GetGoodguy();
 
 	if(me->type==MONS_SNAIL2)
 	{
-		if(goodguy && RangeToTarget(me,goodguy)>(260*FIXAMT))
+		if(player && RangeToTarget(me,player)>(260*FIXAMT))
 		{
 			MakeSound(SND_SNAILOUTSHELL,me->x,me->y,SND_CUTOFF,1200);
 			me->seq=ANIM_A2;
@@ -6836,7 +6841,7 @@ void AI_Snail(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		return;
 	}
 
-	if(goodguy && RangeToTarget(me,goodguy)<(240*FIXAMT))
+	if(goodguy && RangeToTarget(me,player)<(240*FIXAMT))
 	{
 		// hide in your shell!
 		MakeSound(SND_SNAILINSHELL,me->x,me->y,SND_CUTOFF,1200);

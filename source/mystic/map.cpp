@@ -15,6 +15,7 @@ byte outXes = 0;
 byte lastSpecialShown = 33;
 bool vault2Opened;
 byte guestProgress,libraryProgress,batsProgress;
+byte lightSpeed;
 
 Map::Map(SDL_RWops *f)
 {
@@ -103,6 +104,7 @@ void Map::Init(world_t *wrld)
 	int i;
 	byte s;
 
+	lightSpeed = 0;
 	world = wrld;
 	outXes = 0;
 	lastSpecialShown = 33;
@@ -269,6 +271,8 @@ void Map::Update(byte mode,world_t *world)
 
 	timeToReset=0;
 
+	if(lightSpeed>0)
+		lightSpeed--;
 	x=0;
 	y=0;
 	for(i=0;i<width*height;i++)
@@ -284,6 +288,21 @@ void Map::Update(byte mode,world_t *world)
 		else if(mode==UPDATE_GAME)
 		{
 			// make the lights approach what they are supposed to be
+			if (lightSpeed > 0)
+			{
+				if (map[i].templight > map[i].light)
+				{
+					map[i].templight -= 2;
+					if (map[i].templight < map[i].light)
+						map[i].templight = map[i].light;
+				}
+				else if (map[i].templight < map[i].light)
+				{
+					map[i].templight+=2;
+					if (map[i].templight > map[i].light)
+						map[i].templight = map[i].light;
+				}
+			}
 			if(map[i].templight>map[i].light)
 				map[i].templight--;
 			else if(map[i].templight<map[i].light)
@@ -1480,6 +1499,7 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 					{
 						for (int i = 0; i < map->width * map->height; i++)
 							map->map[i].templight = -31;	// go black briefly
+						lightSpeed = 10;
 						MakeNormalSound(SND_STAIRS);
 					}
 				}

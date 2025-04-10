@@ -225,8 +225,8 @@ skill_t skillList[] = {
 	{ "Murdalize",
 		"When a close enemy is at low",
 		"Life, press [Next+Previous]",
-		"to instantly destroy it!",
-		"",
+		"to instantly destroy it and",
+		"gain 5 Mana.",
 		0,3,"Life",SD_PERCENT,SPL_ARMAGEDDON},
 };
 

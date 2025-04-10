@@ -2858,7 +2858,8 @@ void BackdraftEffect(Guy *me, int radius)
 	{
 		bullet_t* b = &bullet[j];
 		if (b->type == BLT_ACID || b->type == BLT_FLAME2 || b->type == BLT_SPORE || b->type == BLT_SHROOM || b->type == BLT_GRENADE || b->type==BLT_GLOB_BOMB ||
-			b->type == BLT_ROCK || b->type == BLT_SPINE || b->type == BLT_YELWAVE || b->type == BLT_BIGYELLOW || b->type == BLT_SLIME || b->type==BLT_GLOB_BOMB)
+			b->type == BLT_ROCK || b->type == BLT_SPINE || b->type == BLT_YELWAVE || b->type == BLT_BIGYELLOW || b->type == BLT_SLIME || b->type==BLT_ENERGY ||
+			b->type==BLT_FLAME3)
 		{
 			int dist = ((b->x >> FIXSHIFT) - x) * ((b->x >> FIXSHIFT) - x) + ((b->y >> FIXSHIFT) - y) * ((b->y >> FIXSHIFT) - y);
 			if (dist < maxDist)

@@ -347,46 +347,47 @@ void RenderPlayerGear(int x,byte brt)
 
 	if(player.nightmare || BrutalMode())
 	{
+		int cx = 13;
 		if (ClassicMode())
 		{
 			shopSpr->GetSprite(28)->DrawColored(x - 50, 5, GetDisplayMGL(), 0, 4);
 			sprintf(s, "%02d", player.shieldStones);
-			Print(x - 32 - 1, 21 - 1, s, -32, 2);
-			Print(x - 32 + 1, 21 + 1, s, -32, 2);
-			Print(x - 32, 21, s, 0, 2);
+			CenterPrint(x - 35+cx - 1, 21 - 1, s, -32, 2);
+			CenterPrint(x - 35+cx + 1, 21 + 1, s, -32, 2);
+			CenterPrint(x - 35+cx, 21, s, 0, 2);
 			shopSpr->GetSprite(28)->DrawColored(x + 30, 5, GetDisplayMGL(), 4, 4);
 			sprintf(s, "%02d", player.powerStones);
-			Print(x + 48 - 1, 21 - 1, s, -32, 2);
-			Print(x + 48 + 1, 21 + 1, s, -32, 2);
-			Print(x + 48, 21, s, 0, 2);
+			CenterPrint(x + 45+cx - 1, 21 - 1, s, -32, 2);
+			CenterPrint(x + 45+cx + 1, 21 + 1, s, -32, 2);
+			CenterPrint(x + 45+cx, 21, s, 0, 2);
 			shopSpr->GetSprite(28)->DrawColored(x + 110, 5, GetDisplayMGL(), 1, 4);
 			sprintf(s, "%02d", player.spellStones);
-			Print(x + 128 - 1, 21 - 1, s, -32, 2);
-			Print(x + 128 + 1, 21 + 1, s, -32, 2);
-			Print(x + 128, 21, s, 0, 2);
+			CenterPrint(x + 125+cx - 1, 21 - 1, s, -32, 2);
+			CenterPrint(x + 125+cx + 1, 21 + 1, s, -32, 2);
+			CenterPrint(x + 125+cx, 21, s, 0, 2);
 		}
 		else
 		{
 			shopSpr->GetSprite(28)->DrawColored(x - 60, 5, GetDisplayMGL(), 0, 4);
 			sprintf(s, "%02d", player.shieldStones);
-			Print(x - 45 - 1, 21 - 1, s, -32, 2);
-			Print(x - 45 + 1, 21 + 1, s, -32, 2);
-			Print(x - 45, 21, s, 0, 2);
+			CenterPrint(x - 45+cx - 1, 21 - 1, s, -32, 2);
+			CenterPrint(x - 45+cx + 1, 21 + 1, s, -32, 2);
+			CenterPrint(x - 45+cx, 21, s, 0, 2);
 			shopSpr->GetSprite(28)->DrawColored(x + 0, 5, GetDisplayMGL(), 4, 4);
 			sprintf(s, "%02d", player.powerStones);
-			Print(x + 15 - 1, 21 - 1, s, -32, 2);
-			Print(x + 15 + 1, 21 + 1, s, -32, 2);
-			Print(x + 15, 21, s, 0, 2);
+			CenterPrint(x + 15+cx - 1, 21 - 1, s, -32, 2);
+			CenterPrint(x + 15+cx + 1, 21 + 1, s, -32, 2);
+			CenterPrint(x + 15+cx, 21, s, 0, 2);
 			shopSpr->GetSprite(28)->DrawColored(x + 60, 5, GetDisplayMGL(), 1, 4);
 			sprintf(s, "%02d", player.spellStones);
-			Print(x + 75 - 1, 21 - 1, s, -32, 2);
-			Print(x + 75 + 1, 21 + 1, s, -32, 2);
-			Print(x + 75, 21, s, 0, 2);
+			CenterPrint(x + 75+cx - 1, 21 - 1, s, -32, 2);
+			CenterPrint(x + 75+cx + 1, 21 + 1, s, -32, 2);
+			CenterPrint(x + 75+cx, 21, s, 0, 2);
 			shopSpr->GetSprite(28)->DrawColored(x + 120, 5, GetDisplayMGL(), 7, 4);
 			sprintf(s, "%02d", player.skillStones);
-			Print(x + 135 - 1, 21 - 1, s, -32, 2);
-			Print(x + 135 + 1, 21 + 1, s, -32, 2);
-			Print(x + 135, 21, s, 0, 2);
+			CenterPrint(x + 135+cx - 1, 21 - 1, s, -32, 2);
+			CenterPrint(x + 135+cx + 1, 21 + 1, s, -32, 2);
+			CenterPrint(x + 135+cx, 21, s, 0, 2);
 		}
 	}
 	// hat

@@ -195,7 +195,7 @@
 #define SND_SDZLSPIT	149
 
 #define SND_DIAMOND		150
-#define SND_SANTADIE	151
+#define SND_PTEROOUCH	151
 #define SND_SANTAHIT	152
 // splash screen sounds
 #define SND_BIGCOIN		153

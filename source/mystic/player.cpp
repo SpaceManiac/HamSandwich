@@ -1614,6 +1614,9 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			player.berserk = 20;
 			player.casting = 255;
 			player.boredom = 0;
+			player.mana += 5;
+			if (player.mana > player.maxMana)
+				player.mana = player.maxMana;
 			GetGuy(id)->GetShot(0, 0, 1000000, CurrentMap(), world);
 			FireBullet(GetGuy(id)->x, GetGuy(id)->y, 0, BLT_COMETBOOM2);
 			MakeSound(SND_FLAMEGO, x, y, SND_CUTOFF, 100);
