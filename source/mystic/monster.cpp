@@ -769,7 +769,10 @@ word MonsterHP(byte type)
 	{
 		if(monsType[type].flags&MF_GOODGUY)
 		{
-			hp=hp*(100+player.spellStones*10)/100;
+			if (ClassicMode())
+				hp = hp * (100 + player.spellStones * 10) / 100;
+			else
+				hp = hp*GetPowerStoneMultiplier(player.spellStones)/FIXAMT;
 		}
 		else
 		{
@@ -787,7 +790,10 @@ word MonsterHP(byte type)
 
 		if (monsType[type].flags & MF_GOODGUY)
 		{
-			hp = hp * (100 + player.spellStones * 10) / 100;
+			if (ClassicMode())
+				hp = hp * (100 + player.spellStones * 10) / 100;
+			else
+				hp = hp * GetPowerStoneMultiplier(player.spellStones) / FIXAMT;
 		}
 		else
 		{
@@ -5176,7 +5182,10 @@ void AI_Golem(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	else if(me->hp>0)
 	{
 		me->placed=15;
-		x = (1 * (100 + player.spellStones * 10)) / 100;
+		if (ClassicMode())
+			x = (1 * (100 + player.spellStones * 10)) / 100;
+		else
+			x = 1 * GetPowerStoneMultiplier(player.spellStones)/FIXAMT;
 		me->hp-=x;
 		if(me->hp<=0)
 		{
@@ -7099,11 +7108,7 @@ void AI_Ball(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				me->y = (57 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
 			}
 			me->mind2 = 0;
-			int dmg = 90;
-			if (player.nightmare)
-				dmg *= NIGHTMAREDMG;
-			else if (BrutalMode())
-				dmg *= BRUTALDMG;
+			int dmg = 70;
 			goodguy->GetShot(0, 0, dmg, map, world);
 		}
 	}

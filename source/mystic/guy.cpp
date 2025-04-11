@@ -1326,6 +1326,8 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 
 	if(type==0)
 		return;	// shouldn't have a type 0 guy at all
+	if (type == MONS_GOLEM && ouch > 0)
+		return;	// golems can only take damage when not already ouched, they have an invulnerability window
 
 	brutalMul = BRUTALDMG;
 	if (player.worldNum == 3)
@@ -1427,8 +1429,11 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			i=(i*3)/4;
 		if(player.fairyOn==FAIRY_TOUGHY)
 			i=i/2;
+		if (ClassicMode())
+			i = (i * (100 - player.shieldStones) / 100);
+		else
+			i = i * GetShieldStoneMultiplier(player.shieldStones) / FIXAMT;
 
-		i=(i*(100-player.shieldStones)/100);
 		if(i<1)
 			i=1;
 		if(player.stoneskin)
@@ -1464,7 +1469,11 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		i=BulletHittingType();
 		if(i==BLT_HAMMER || i==BLT_HAMMER2 || i==BLT_SKULL || i==BLT_MINIFBALL)
 		{
-			damage=(damage*(100+player.powerStones*10))/100;
+			if (ClassicMode())
+				damage = (damage * (100 + player.powerStones * 10)) / 100;
+			else 
+				damage = damage * GetPowerStoneMultiplier(player.powerStones) / FIXAMT;
+			
 			if(player.fairyOn==FAIRY_BLOCKY)
 			{
 				damage=damage*3/4;
@@ -1479,8 +1488,13 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		else
 		{
 			// the damage is coming from a spell, most likely
-			if(!(MonsterFlags(type)&MF_GOODGUY))
-				damage=(damage*(100+player.spellStones*10))/100;
+			if (!(MonsterFlags(type) & MF_GOODGUY))
+			{
+				if(ClassicMode())
+					damage = (damage * (100 + player.spellStones * 10)) / 100;
+				else
+					damage = damage * GetPowerStoneMultiplier(player.spellStones) / FIXAMT;
+			}
 			else
 			{
 				if (player.nightmare)
@@ -2979,8 +2993,12 @@ void StunAllOnscreen(byte duration)
 
 void HealSummons(byte amt)
 {
-	int v = (int)(amt * (100 + player.spellStones * 10)) / 100;
-
+	int v=amt;
+	if(ClassicMode())
+		v = (int)(amt * (100 + player.spellStones * 10)) / 100;
+	else
+		v = (int)amt * GetPowerStoneMultiplier(player.spellStones) / FIXAMT;
+	
 	for (int i = 0; i < maxGuys; i++)
 	{
 		if (guys[i].hp > 0 && (guys[i].type == MONS_PTERO || guys[i].type == MONS_GOLEM))

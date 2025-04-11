@@ -233,14 +233,16 @@ void DescribeRune(Rune r,int x,int y)
 
 	if (RuneLevel(r) == RUNE_EMPTY)
 	{
-		PrintBrightGlow(x, y, "Unknown!", 10, 2);
+		Print(x+1, y+1, "Unknown!", 1, 2);
+		PrintBrightGlow(x, y, "Unknown!", 0, 2);
 		PrintBrightGlow(x, y + 20, "You haven't found this", 0, 1);
 		PrintBrightGlow(x, y + 20 + 12, "Rune yet! Keep looking.", 0, 1);
 	}
 	else if (RuneLevel(r) == RUNE_ASLEEP)
 	{
 		sprintf(txt, "Sleeping %s", RuneName(r));
-		PrintBrightGlow(x, y, txt, 10, 2);
+		Print(x+1, y+1, txt, 1, 2);
+		PrintBrightGlow(x, y, txt, 0, 2);
 		PrintBrightGlow(x, y + 20, "You must awaken this rune", 0, 1);
 		PrintBrightGlow(x, y + 20 + 12, "with Runestones to see", 0, 1);
 		PrintBrightGlow(x, y + 20 + 12*2, "its power.", 0, 1);
@@ -254,7 +256,8 @@ void DescribeRune(Rune r,int x,int y)
 			sprintf(txt, "Gilded %s", RuneName(r));
 		else if (RuneLevel(r) == RUNE_RANK3)
 			sprintf(txt, "Wild %s", RuneName(r));
-		PrintBrightGlow(x, y, txt, 10, 2);
+		Print(x+1, y+1, txt, 1, 2);
+		PrintBrightGlow(x, y, txt, 0, 2);
 
 		PrintBrightGlow(x, y + 20, runeDef[(int)r].desc[0], 0, 1);
 		PrintBrightGlow(x, y + 20 + 12, runeDef[(int)r].desc[1], 0, 1);

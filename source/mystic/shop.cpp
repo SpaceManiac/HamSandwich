@@ -97,7 +97,7 @@ static const dword gearTag[]={0,0,0,0,GEAR_POINTY,
 				GEAR_HEART,GEAR_MOON,GEAR_LAMP,GEAR_BOUNCY,GEAR_SOCKS,
 				GEAR_SOUL,GEAR_SUN,GEAR_WISDOM,GEAR_MAGNET,0};
 
-static const char itemDesc[30][4][64]={
+static const char itemDesc[33][4][64]={
 	"Mmmm, soft. This hat offers",
 	"slightly better protection",
 	"than the paper hat.",
@@ -224,22 +224,22 @@ static const char itemDesc[30][4][64]={
 	"",
 
 	"You can collect up to 99 of",
-	"these stones.  Each one will",
+	"these stones. Each one will",
 	"block 1% of the damage you",
 	"take.",
 
 	"You can collect up to 99 of",
-	"these stones.  Each one will",
+	"these stones. Each one will",
 	"add 10% to your fireball",
 	"damage.",
 
 	"You can collect up to 99 of",
-	"these stones.  Each one will",
+	"these stones. Each one will",
 	"add 10% to your spell",
 	"damage.",
 
 	"You can collect up to 99 of",
-	"these stones.  Each one will",
+	"these stones. Each one will",
 	"grant you a Skill Point.",
 	"",
 
@@ -247,6 +247,21 @@ static const char itemDesc[30][4][64]={
 	"give you 20% more time in",
 	"Challenges. Magically.",
 	"",
+
+	"You can collect up to 99 of",
+	"these stones. Each one will",
+	"improve your armor, up to",
+	"99% damage reduction.",
+
+	"You can collect up to 99 of",
+	"these stones. Each one will",
+	"increase your fireball",
+	"damage, by up to 990%.",
+
+	"You can collect up to 99 of",
+	"these stones. Each one will",
+	"increase your spell damage,",
+	"by up to 990%.",
 };
 
 byte shopCursor=0;
@@ -678,7 +693,8 @@ void RenderShop(void)
 		i = 24;
 	else
 		i = shopCursor;
-
+	if (!ClassicMode() && i >= 25 && i <= 27)
+		i += 5;	// in modern mode, the description of the 3 % upgrade stones changes
 	PrintBrightGlow(5,110+5*56,itemDesc[i][0],-4,2);
 	PrintBrightGlow(5,110+20+5*56,itemDesc[i][1],-4,2);
 	PrintBrightGlow(5,110+40+5*56,itemDesc[i][2],-4,2);

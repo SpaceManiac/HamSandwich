@@ -258,7 +258,7 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 		case BLT_OCTONJUICE:
 			MakeSound(SND_ACIDSPLAT, me->x, me->y, SND_CUTOFF, 950);
 			me->type = BLT_OCTONJUICESPLAT;
-			me->timer = 90 + Random(60);
+			me->timer = 120;
 			me->anim = 0;
 			me->dx = 0;
 			me->dy = 0;
@@ -423,7 +423,7 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 		case BLT_OCTONJUICE:
 			MakeSound(SND_ACIDSPLAT, me->x, me->y, SND_CUTOFF, 950);
 			me->type = BLT_OCTONJUICESPLAT;
-			me->timer = 90 + Random(60);
+			me->timer = 120;
 			me->anim = 0;
 			me->dx = 0;
 			me->dy = 0;
@@ -565,7 +565,7 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 			else
 			{
 				me->type = BLT_OCTONJUICESPLAT;
-				me->timer = 90 + Random(60);
+				me->timer = 120;
 				me->anim = 0;
 				me->dx = 0;
 				me->dy = 0;
@@ -1586,7 +1586,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 		case BLT_OCTONJUICE:
 		case BLT_OCTONJUICESPLAT:
 			me->anim++;
-			if (me->anim >= 12 * 6 && me->type == BLT_OCTONJUICESPLAT)
+			if (me->anim >= 12 * 8 && me->type == BLT_OCTONJUICESPLAT)
 				me->type = 0;
 			else
 				HitBadguys(me, map, world);
@@ -1873,7 +1873,7 @@ void RenderBullet(bullet_t *me)
 			}
 			break;
 		case BLT_OCTONJUICESPLAT:
-			curSpr = bulletSpr->GetSprite(259 + (me->anim / 6));
+			curSpr = bulletSpr->GetSprite(259 + (me->anim / 8));
 			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 6, me->bright, curSpr,
 				DISPLAY_DRAWME);
 			break;

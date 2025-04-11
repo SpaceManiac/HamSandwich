@@ -255,5 +255,7 @@ void PickUpRune(void);
 bool BrutalMode(void);
 bool ClassicMode(void);
 bool VeryClassicMode();
+int GetShieldStoneMultiplier(int stones);
+int GetPowerStoneMultiplier(int stones);
 
 #endif

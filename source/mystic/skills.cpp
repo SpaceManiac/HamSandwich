@@ -50,7 +50,7 @@ skill_t skillList[] = {
 		"",
 		"",
 		0,30,"Bonus",SD_PERCENT,SPL_ENERGY},
-	{"Energy Management",
+	{"Energy Flow",
 		"Energy spells have a chance",
 		"to cast for free.",
 		"",
@@ -236,12 +236,14 @@ void DescribeSkill(byte skill,int x,int y)
 
 	if (skillList[skill].spellReq != 255 && player.spell[skillList[skill].spellReq] == 0)
 	{
-		PrintBrightGlow(x, y, "Unknown!", 10, 2);
+		Print(x+1, y+1, "Unknown!", 1, 2);
+		PrintBrightGlow(x, y, "Unknown!", 0, 2);
 		PrintBrightGlow(x, y + 20, "You need to find a new", 0, 1);
 		PrintBrightGlow(x, y + 20+12, "spell to learn this skill.", 0, 1);
 		return;
 	}
-	PrintBrightGlow(x, y, skillList[skill].name, 10, 2);
+	Print(x+1, y+1, skillList[skill].name, 1, 2);
+	PrintBrightGlow(x, y, skillList[skill].name, 0, 2);
 	int lines;
 	for (lines = 0; lines < 4; lines++)
 		PrintBrightGlow(x, y + 20 + 12 * lines, skillList[skill].desc[lines], 0, 1);
