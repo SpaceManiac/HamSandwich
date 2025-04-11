@@ -303,13 +303,13 @@ int CalcGamePercent(const player_t* p)
 				fairies++;
 		}
 	}
-	skillPts = player.skillPts;
+	skillPts = p->skillPts;
 	for (int i = 0; i < MAX_SKILLS; i++)
-		skillPts += player.skill[i];
+		skillPts += p->skill[i];
 	if (skillPts > 65) skillPts = 65;	// the extra skill points in madcap are above and beyond
 
 	swords = p->swordPiece[0] + p->swordPiece[1] + p->swordPiece[2] + p->swordPiece[3];
-	runePouches = player.runePouches;
+	runePouches = p->runePouches;
 	int totalNeeded = 24 + // runes
 		19 + // spells
 		4 + // swords

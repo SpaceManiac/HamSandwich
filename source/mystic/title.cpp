@@ -260,13 +260,13 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			return 1;
 		}
 
-		if(ButtonTapped(CONTROL_ESCAPE))
+		/*if (ButtonTapped(CONTROL_ESCAPE))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			startTime=timeGetTime();	// reset the clock if any key is pressed
 			UpdateControls();
 			return 3;
-		}
+		}*/
 #ifdef CHEAT
 		char c = mgl->LastKeyPressed();
 		if(c=='e')
