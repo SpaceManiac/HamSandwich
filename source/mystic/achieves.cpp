@@ -135,6 +135,10 @@ AchieveDef achieveDef[] = {
 
 CheatStoneDef cheatStones[6] = {
 	{
+		"Happy Stick!",
+		"The overworld is overrun with Happy Sticks.",
+	},
+	{
 		"Stamana",
 		"Regenerate Mana like it's stamina. Fast.",
 	},
@@ -151,12 +155,8 @@ CheatStoneDef cheatStones[6] = {
 		"Start every level with 2 Energy Orbs and Speed Gems.",
 	},
 	{
-		"Five",
-		"yo",
-	},
-	{
-		"Six",
-		"yo",
+		"Cosmic Rebirth",
+		"Nothing can stop Kid Mystic! Nothing!",
 	},
 };
 

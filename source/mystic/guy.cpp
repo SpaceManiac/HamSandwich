@@ -22,6 +22,7 @@ namespace
 	byte badguys;
 	int lastSafeX,lastSafeY;
 	word frozenGuys;
+	byte logX[2], logY[2];
 }
 
 int lootCoins, lootBigCoins, lootRunestones, lootXP;
@@ -394,6 +395,8 @@ byte Guy::WalkCheckOnly(int xx, int yy, Map* map, world_t* world)
 
 void Guy::ResetRedRiver(void)
 {
+	ResetLogs();
+	/*
 	if (player.worldNum == 3 && player.levelNum == 12)	// died while riding the raft in red river rafting
 	{
 		parent = nullptr;
@@ -410,6 +413,7 @@ void Guy::ResetRedRiver(void)
 		dx = 0;
 		dy = 0;
 	}
+	*/
 }
 
 void Guy::SeqFinished(void)
@@ -439,6 +443,8 @@ void Guy::SeqFinished(void)
 	{
 		if(type==MONS_BOUAPHA)
 		{
+			dx = 0;
+			dy = 0;
 			byte rebirths = 0;
 			if (player.fairyOn == FAIRY_SAVEY)
 				rebirths++;
@@ -482,6 +488,26 @@ void Guy::SeqFinished(void)
 					action = ACTION_BUSY;
 					player.life = (int)((float)player.maxLife * SkillValue(SKILL_RESURRECT) / 100.0f);
 					player.mana = (int)((float)player.maxMana * SkillValue(SKILL_RESURRECT) / 100.0f);
+					hp = player.life;
+					player.poison = 0;
+					player.shield = 30 * 2;
+					beenReborn++;
+
+					x = lastSafeX;
+					y = lastSafeY;
+					// make resurrect sound
+					MakeNormalSound(SND_RESURRECT);
+					ResetRedRiver();
+					return;
+				}
+				else if (CheatStoneOn(CheatStone::REBIRTH))
+				{
+					// unlimited cosmic rebirth
+					seq = ANIM_A4;
+					frm = 0;
+					frmAdvance = 128;
+					action = ACTION_BUSY;
+					player.life = player.maxLife;
 					hp = player.life;
 					player.poison = 0;
 					player.shield = 30 * 2;
@@ -880,14 +906,17 @@ void Guy::Update(Map *map,world_t *world)
 			x=parent->x;
 			y=parent->y+FIXAMT*4;
 		}
-		if(seq!=ANIM_DIE && seq!=ANIM_A3)
-		{
-			lastSafeX=x;
-			lastSafeY=y;
-		}
+		
 		if(player.worldNum==3 && player.levelNum==14 && (oldmapx!=mapx || oldmapy!=mapy) &&
 			(map->map[mapx+mapy*map->width].floor==72 || map->map[mapx+mapy*map->width].floor==73))
 			LightsOutPuzzle(map,mapx,mapy);
+
+		if (parent == nullptr && (oldmapx != mapx || oldmapy != mapy))
+		{
+			mapTile_t* t = map->GetTile(mapx, mapy);
+			if (t && !(world->terrain[t->floor].flags & (TF_LAVA | TF_WATER)) && t->wall == 0 && CanWalk(mapx * TILE_WIDTH + TILE_WIDTH / 2, y + TILE_HEIGHT + TILE_HEIGHT / 2, map, world))
+				SetLastSafeXY((mapx * TILE_WIDTH + TILE_WIDTH / 2)*FIXAMT, (mapy * TILE_HEIGHT + TILE_HEIGHT / 2)*FIXAMT);
+		}
 	}
 	if((oldmapx!=mapx || oldmapy!=mapy) &&
 		(world->terrain[map->map[mapx+mapy*map->width].floor].flags&TF_STEP) && !(MonsterFlags(type)&MF_FLYING) &&
@@ -900,9 +929,10 @@ void Guy::Update(Map *map,world_t *world)
 			MinesPuzzle(map, mapx, mapy);
 	}
 
-	if(oldmapx!=mapx || oldmapy!=mapy)
-		SpecialStepCheck(map,mapx,mapy,this);
-
+	if (oldmapx != mapx || oldmapy != mapy)
+	{
+		SpecialStepCheck(map, mapx, mapy, this);
+	}
 	bright=map->map[mapx+mapy*map->width].templight;
 }
 
@@ -2138,6 +2168,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 			{
 				goodguy=&guys[i];
 				PutCamera(x,y);
+				SetLastSafeXY(goodguy->x, goodguy->y);
 				if(player.fairyOn!=0)
 				{
 					g=AddGuy(guys[i].x,guys[i].y,0,MONS_FAIRY2);
@@ -2305,9 +2336,24 @@ void AddMapGuys(Map *map)
 	int x,y;
 	Guy *g;
 
+	logX[0] = logX[1] = logY[0] = logY[1] = 255;
+
 	for(i=0;i<MAX_MAPMONS;i++)
 		if(map->badguy[i].type)
 		{
+			if (map->badguy[i].type == MONS_LOG)
+			{
+				if (logX[0] != 255)
+				{
+					logX[1] = map->badguy[i].x;
+					logY[1] = map->badguy[i].y;
+				}
+				else
+				{
+					logX[0] = map->badguy[i].x;
+					logY[0] = map->badguy[i].y;
+				}
+			}
 			if(map->badguy[i].type==MONS_BOUAPHA && player.levelNum==1 && player.overworldX!=-2000)
 			{
 				x=player.overworldX;
@@ -2387,7 +2433,27 @@ void AddBattleGuys(Map *map,byte t)
 			}
 			else if(amt>0)
 			{
-				switch(t)
+				if (CheatStoneOn(CheatStone::HAPPYSTICK))
+				{
+					switch (Random(4))
+					{
+						case 0:
+							me = MONS_STICKSHROOM;
+							break;
+						case 1:
+							me = MONS_STICKSPIDER;
+							break;
+						case 2:
+							me = MONS_STICKCORPSE;
+							break;
+						case 3:
+							me = MONS_STICKBAT;
+							break;
+					}
+					if (Random(20) == 0)
+						me = MONS_DANCER;	// small chance of dancers!
+				}
+				else switch(t)
 				{
 					case MONS_INCABOT:
 						if(MGL_random(20)==0)
@@ -2572,6 +2638,24 @@ void AddRandomGuy(Map *map,world_t *world,byte chapter,byte rnd)
 			break;
 	}
 
+	if (CheatStoneOn(CheatStone::HAPPYSTICK))
+	{
+		switch (Random(4))
+		{
+			case 0:
+				t = MONS_STICKBAT;
+				break;
+			case 1:
+				t = MONS_STICKSHROOM;
+				break;
+			case 2:
+				t = MONS_STICKCORPSE;
+				break;
+			case 3:
+				t = MONS_STICKSPIDER;
+				break;
+		}
+	}
 	x=MGL_random(map->width);
 	y=MGL_random(map->height);
 	GetCamera(&cx,&cy);
@@ -3245,4 +3329,22 @@ void SetLastSafeXY(int x, int y)
 {
 	lastSafeX = x;
 	lastSafeY = y;
+}
+
+void ResetLogs(void)
+{
+	// remove all existing logs
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].type == MONS_LOG)
+			guys[i].type = MONS_NONE;
+		if (guys[i].type == MONS_BOUAPHA)
+			guys[i].parent = nullptr;
+	}
+	if (logX[0] != 255)
+		AddGuy((logX[0] * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT,
+			(logY[0] * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, MONS_LOG);
+	if (logX[1] != 255)
+		AddGuy((logX[1] * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT,
+			(logY[1] * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, MONS_LOG);
 }

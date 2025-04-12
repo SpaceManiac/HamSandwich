@@ -6344,6 +6344,8 @@ void AI_Log(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			// boarded!
 			me->mind=1;
 			goodguy->parent=me;
+			SetLastSafeXY(me->x - 70*FIXAMT, me->y);	// just so happens the only place I use logs is boarding them from the left side, so this works
+				// without this, you respawn within reach of them so they re-capture you
 		}
 	}
 	else	// drifting

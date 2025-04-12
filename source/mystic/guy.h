@@ -130,5 +130,6 @@ Guy *FindNearestOfType(int x,int y,byte type);
 void SetupHorkboxes(void);
 void HorkUpLoot(int x, int y);
 Guy* GetFirstFriendly(void);
+void ResetLogs(void);
 
 #endif

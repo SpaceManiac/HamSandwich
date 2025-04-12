@@ -35,12 +35,12 @@ enum class Achievement :byte
 
 enum class CheatStone :byte
 {
+	HAPPYSTICK,	// replace all overworld enemies with happy sticks
 	STAMANA,	// mana regenerates really fast
 	POTABLES,	// every enemy drops a potion
 	NONRANDOM,	// no random battles!
-	FIREUP,	
-	FIVE,
-	SIX,
+	FIREUP,		// start with fireballs in every level
+	REBIRTH,	// unlimited resurrection
 	NUM_CHEATSTONES,
 };
 
