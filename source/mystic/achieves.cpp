@@ -143,8 +143,8 @@ CheatStoneDef cheatStones[6] = {
 		"Regenerate Mana like it's stamina. Fast.",
 	},
 	{
-		"Potent Potables",
-		"Every enemy drops a potion.",
+		"Pickpocket",
+		"Hit enemies to shake 'em down for cash!",
 	},
 	{
 		"Monster Party",

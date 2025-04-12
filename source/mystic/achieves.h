@@ -37,7 +37,7 @@ enum class CheatStone :byte
 {
 	HAPPYSTICK,	// replace all overworld enemies with happy sticks
 	STAMANA,	// mana regenerates really fast
-	POTABLES,	// every enemy drops a potion
+	PICKPOCKET,	// get cash by hitting guys
 	NONRANDOM,	// no random battles!
 	FIREUP,		// start with fireballs in every level
 	REBIRTH,	// unlimited resurrection

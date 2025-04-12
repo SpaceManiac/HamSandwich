@@ -1743,6 +1743,31 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			frozen-=damage*50;
 	}
 
+	if (CheatStoneOn(CheatStone::PICKPOCKET) && !(monsType[type].flags & MF_GOODGUY) && Random(10)==0)
+	{
+		byte big = 0;
+		if (ClassicMode())
+		{
+			if (MGL_random(100 - 70 * (player.fairyOn == FAIRY_RICHEY)))
+				big = 0;
+			else
+				big = 1;
+		}
+		else
+		{
+			float amt = SkillValue(SKILL_GREED);
+			amt *= 10;
+			if (!ClassicMode() && wasFrozen)
+				amt += SkillValue(SKILL_FREEZEMONEY) * 10;
+
+			if (MGL_random(1000 - 700 * (player.fairyOn == FAIRY_RICHEY)) > (int)amt)
+				big = 0;
+			else
+				big = 1;
+		}
+		FireBullet(x, y, Random(256), big ? BLT_DIAMOND : BLT_MONEYBAG);
+	}
+
 	if(!(MonsterFlags(type)&MF_NOMOVE))
 	{
 		x+=dx;
@@ -1822,13 +1847,6 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 				byte a = i * 32 - 12 + Random(24);
 				FireBullet(x, y, a, BLT_OCTONJUICE);
 			}
-		}
-		if (CheatStoneOn(CheatStone::POTABLES))
-		{
-			if (Random(2) == 0)
-				FireBullet(x, y, 0, BLT_LIFEPOTION);
-			else
-				FireBullet(x, y, 0, BLT_MANAPOTION);
 		}
 		// possible item drop
 		switch(type)
