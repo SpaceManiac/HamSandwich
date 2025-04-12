@@ -166,6 +166,11 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		SetKidSprite(0);
 
 	armageddon=0;
+	if (CheatStoneOn(CheatStone::FIREUP) && player.levelNum!=1)	// not in the overworld
+	{
+		player.hammers = 2;
+		player.hamSpeed -=HAMMER_UP_AMOUNT*2;
+	}
 }
 
 void ExitPlayer(void)
@@ -1409,6 +1414,11 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	if(player.life>0)
 	{
+		if((player.rechargeClock%2) && (CheatStoneOn(CheatStone::STAMANA)))
+		{
+			if (player.mana < player.maxMana)
+				player.mana++;
+		}
 		if(player.rechargeClock>0)
 			player.rechargeClock--;
 		else

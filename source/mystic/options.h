@@ -5,7 +5,7 @@
 #include "achieves.h"
 #include "control.h"
 
-#define OPT_VERSION (1)
+#define OPT_VERSION (2)
 #define OPT_EXPANSION_SIZE (242)
 
 #define OPT_SOUNDVOL (0)
@@ -46,6 +46,7 @@ typedef struct option_t
 	byte quickCast;
 	byte expansionSpace[OPT_EXPANSION_SIZE];
 	byte achieve[(int)Achievement::NUM_ACHIEVES];
+	byte cheatStone[(int)CheatStone::NUM_CHEATSTONES];
 } option_t;
 
 extern option_t opt;
@@ -54,5 +55,5 @@ void InitOptions(void);
 void ExitOptions(void);
 TASK(void) OptionsMenu(MGLDraw *mgl);
 void RenderGamepadButton(int x, int y, byte rawBtn);
-
+bool CheatStoneOn(CheatStone c);
 #endif

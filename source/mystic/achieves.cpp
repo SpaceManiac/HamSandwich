@@ -15,145 +15,148 @@ AchieveDef achieveDef[] = {
 		"Old Schoolkid",37,
 		"Prove you are a true classic.",
 		"Completed Classic Mode or 1999 Mode.",
-		Progress::ONE_SHOT
 	},
 	{
 		"Modern Gamer",38,
 		"Hello, fellow children! I too am a gamer!",
 		"Completed Modern Mode.",
-		Progress::ONE_SHOT
 	},
 	{
 		"Git Gud",39,
 		"Brutalize Bobby Khan.",
 		"Completed Brutal Mode (either Classic or Modern).",
-		Progress::ONE_SHOT
 	},
 	{
 		"A little BIT kRaZy",44,
 		"Let's see if you're truly loco.",
 		"Completed Madcap Mode (either Classic or Modern).",
-		Progress::ONE_SHOT
 	},
 	{
 		"Graduation Cap",45,
 		"Earn the angriest hat of them all.",
 		"Collected 99 of every type of Madcap Stone. Wow, what a grind.",
-		Progress::ONE_SHOT
 	},
 	{
 		"Kid Mystic's Pro Caster",46,
 		"Master the challenges of this world.",
 		"Beat Bobby Khan in Challenge Mode (either Classic or Modern).",
-		Progress::ONE_SHOT
 	},
 	{
 		"Starkid",47,
 		"Just like Luigi, you gotta collect the stars.",
 		"Earned every star possible in Challenge Mode (either Classic or Modern).",
-		Progress::ONE_SHOT
 	},
 	{
 		"Rune Master",48,
 		"Build a rock collection!",
 		"Fully upgraded every Rune, just for fun. And this achievement.",
-		Progress::ONE_SHOT
 	},
 	{
 		"Caught 'Em All",49,
 		"You know who we want you to catch.",
 		"Caught every fairy!",
-		Progress::ONE_SHOT
 	},
 	{
 		"Forged In Air",50,
 		"This would be easier if a watery tart just threw it at you.",
 		"Completed the Armageddon Sword!",
-		Progress::ONE_SHOT
 	},
 	{
 		"Take The L",51,
 		"This achievement was made by the makers of Spooky Castle's vault.",
 		"Reached level 50!",
-		Progress::ONE_SHOT
 	},
 	{
-		"Energetic Boss Rage",6,	// NOT IMPLEMENTED BECAUSE HMM
+		"Energetic Boss Rage",6,
 		"Tickle it to death.",
 		"Defeat a boss with nothing but Energy Barrage.",
-		Progress::ONE_SHOT
 	},
 	{
 		"Amazing Blaze",2,
 		"Hedges and ONLY hedges.",
 		"Burn down every tree in Among The Hedges.",
-		Progress::ONE_SHOT
 	},
 	{
 		"Side Effects May Include Death",12,
 		"Seek without seeking.",
 		"Got 20 Seeker Bolt kills without casting a single Bolt.",
-		Progress::ONE_SHOT
 	},
 	{
 		"Kid Medusa",15,
 		"Revenge is a dish best served cold.",
 		"Froze 20 enemies at once.",
-		Progress::ONE_SHOT
 	},
 	{
 		"Mass Casualty Event",18,
 		"An infernal catastrophe.",
 		"Killed 20 enemies in one cast of Inferno.",
-		Progress::ONE_SHOT
 	},
 	{
 		"Take a Break",21,
 		"Let somebody else save Tulipton.",
 		"Your summons beat a level alone, with at least 20 kills.",
-		Progress::ONE_SHOT
 	},
 	{
 		"Rubber v. Glue",26,
 		"Why are they hitting themselves?",
 		"Won a level with at least 20 kills, using only Armor spells.",
-		Progress::ONE_SHOT
 	},
 	{
 		"Blurred Cirque",27,
 		"Never stop never stopping!",
 		"Remained Berserk for 1 minute straight.",
-		Progress::ONE_SHOT
 	},
 	{
 		"Born Again",32,
 		"'Tis better to die a thousand deaths.",
 		"Died twice in one level, and lived to tell the tale.",
-		Progress::ONE_SHOT
 	},
 	{
 		"Iron Chef",54,
 		"Don't be an idiot sandwich.",
 		"Cooked Swamp Stew to utter perfection.",
-		Progress::ONE_SHOT
 	},
 	{
 		"Skillbor",25,
 		"What a clever build.",
 		"Maxed out every single skill.",
-		Progress::ONE_SHOT
 	},
 	{
 		"Whacking Day",53,
 		"Prove your carnival skills.",
 		"Got over 75 whacks in Whack-a-Zoid.",
-		Progress::ONE_SHOT
 	},
 	{
 		"Delivery Boy",52,
 		"Make it hot like Papa John.",
 		"Fed all the Spooky Castle employees hot stew.",
-		Progress::ONE_SHOT
+	},
+};
+
+CheatStoneDef cheatStones[6] = {
+	{
+		"Stamana",
+		"Regenerate Mana like it's stamina. Fast.",
+	},
+	{
+		"Potent Potables",
+		"Every enemy drops a potion.",
+	},
+	{
+		"Monster Party",
+		"Overworld enemies won't attack you!",
+	},
+	{
+		"Fire Up!",
+		"Start every level with 2 Energy Orbs and Speed Gems.",
+	},
+	{
+		"Five",
+		"yo",
+	},
+	{
+		"Six",
+		"yo",
 	},
 };
 
@@ -162,6 +165,7 @@ static byte cursor;
 byte* backgd;
 int backX, backY;
 sprite_set_t* chalSpr;
+byte cheatNotice;
 
 void InitAchieveMenu(void)
 {
@@ -188,6 +192,7 @@ void InitAchieveMenu(void)
 			backgd[i * 256 + j] = b;
 		}
 	}
+	cheatNotice = 0;
 }
 
 void ExitAchieveMenu(void)
@@ -201,7 +206,15 @@ byte UpdateAchieveMenu(MGLDraw *mgl)
 	dword btn,j;
 	int i;
 
-	backY-=2;
+	if (cheatNotice)
+	{
+		cheatNotice--;
+		backY -= 4;
+		if (backY < 0)
+			backY += 256;
+	}
+
+	backY--;
 	if (backY < 0)
 		backY += 256;
 	backX--;
@@ -214,17 +227,17 @@ byte UpdateAchieveMenu(MGLDraw *mgl)
 	if(AutoRepeatTapped(CONTROL_UP))
 	{
 		if (cursor == 100)
-			cursor = (int)Achievement::NUM_ACHIEVES - 1;
+			cursor = (int)Achievement::NUM_ACHIEVES +6- 1;
 		else if (cursor > 5)
 			cursor -= 6;
 		else cursor = 100;
 	}
 	if(AutoRepeatTapped(CONTROL_DN))
 	{
-		if (cursor < (int)Achievement::NUM_ACHIEVES)
+		if (cursor < (int)Achievement::NUM_ACHIEVES+6)
 		{
 			cursor += 6;
-			if (cursor > (int)Achievement::NUM_ACHIEVES - 1)
+			if (cursor > (int)Achievement::NUM_ACHIEVES + 6 - 1)
 				cursor = 100;
 		}
 		else cursor = 0;
@@ -253,6 +266,22 @@ byte UpdateAchieveMenu(MGLDraw *mgl)
 	{
 		if (cursor == 100)
 			return 1;
+		else if (cursor >= (int)Achievement::NUM_ACHIEVES)
+		{
+			int n = cursor - (int)Achievement::NUM_ACHIEVES;
+			if (opt.cheatStone[n] == CHEATSTONE_OFF)
+			{
+				MakeNormalSound(SND_CHEATWIN);
+				opt.cheatStone[n] = CHEATSTONE_ON;
+			}
+			else if (opt.cheatStone[n] == CHEATSTONE_ON)
+			{
+				MakeNormalSound(SND_DOOROPEN);
+				opt.cheatStone[n] = CHEATSTONE_OFF;
+			}
+			else
+				MakeNormalSound(SND_UNAVAILABLE);
+		}
 	}
 
 	return 0;
@@ -307,18 +336,18 @@ void RenderAchieveMenu(MGLDraw *mgl)
 			RenderSkillBox(x + 2, y + 2, x + 38, y + 38, 16, col+5);
 			BlitIconGlow(achieveDef[i].icon, x + 4, y + 4, 0);
 
-			RenderSkillBox(HALFWID - 250, SCRHEI - 160, HALFWID + 250, SCRHEI - 90, col+20, col + 4);
-			CenterPrintGlow(SCRHEI - 160, achieveDef[i].name, 2);
+			RenderSkillBox(HALFWID - 250, SCRHEI - 130, HALFWID + 250, SCRHEI - 60, col+20, col + 4);
+			CenterPrintGlow(SCRHEI - 130, achieveDef[i].name, 2);
 			if (opt.achieve[i] == ACHIEVE_GOT)
 			{
-				chalSpr->GetSprite(2)->Draw(HALFWID - 250+20, SCRHEI - 160+10, mgl);
-				chalSpr->GetSprite(2)->Draw(HALFWID + 250-20, SCRHEI - 160+10, mgl);
-				CenterPrintItalics(HALFWID, SCRHEI - 135, achieveDef[i].hint, 7, 1);
-				CenterPrint(HALFWID, SCRHEI - 105, achieveDef[i].desc, 0, 1);
+				chalSpr->GetSprite(2)->Draw(HALFWID - 250+20, SCRHEI - 130+10, mgl);
+				chalSpr->GetSprite(2)->Draw(HALFWID + 250-20, SCRHEI - 130+10, mgl);
+				CenterPrintItalics(HALFWID, SCRHEI - 105, achieveDef[i].hint, 7, 1);
+				CenterPrint(HALFWID, SCRHEI - 75, achieveDef[i].desc, 0, 1);
 			}
 			else
 			{
-				CenterPrintItalics(HALFWID, SCRHEI - 115, achieveDef[i].hint, 15, 1);
+				CenterPrintItalics(HALFWID, SCRHEI - 85, achieveDef[i].hint, 15, 1);
 			}
 		}
 		else
@@ -336,6 +365,46 @@ void RenderAchieveMenu(MGLDraw *mgl)
 		}
 	}
 
+	for (int i = 0; i < 6; i++)
+	{
+		byte col = 32 * 3;
+		
+		if (cursor == i+(int)Achievement::NUM_ACHIEVES)
+		{
+			BlitIcon(60+opt.cheatStone[i], x + 4 + 2, y + 2, 5, -31);
+			BlitIcon(60+opt.cheatStone[i], x + 4, y, 5, 0);
+			if (opt.cheatStone[i] != CHEATSTONE_LOCKED)
+				BlitIcon(60+3+i, x + 4, y, 5, 0);
+
+			RenderSkillBox(HALFWID - 250, SCRHEI - 130, HALFWID + 250, SCRHEI - 60, col + 20, col + 4);
+			char s[64];
+			sprintf(s, "Cheatstone: %s", cheatStones[i].name);
+			CenterPrintGlow(SCRHEI - 130, s, 2);
+			if (opt.cheatStone[i]>CHEATSTONE_LOCKED)
+			{
+				CenterPrint(HALFWID, SCRHEI - 75, cheatStones[i].desc, 0, 1);
+			}
+			else
+			{
+				CenterPrintItalics(HALFWID, SCRHEI - 85, "Earn the 4 achievements above to unlock.", 15, 1);
+			}
+		}
+		else
+		{
+			BlitIcon(60 + opt.cheatStone[i], x + 4 + 2, y + 2, 3, -31);
+			BlitIcon(60 + opt.cheatStone[i], x + 4, y, 3, 0);
+			if(opt.cheatStone[i]!=CHEATSTONE_LOCKED)
+				BlitIcon(60 + 3 + i, x + 4, y, 3, 0);
+		}
+
+		x += 60;
+		if ((i % 6) == 5)
+		{
+			x = SCRWID / 2 - 3 * 60 + 20;
+			y += 60;
+		}
+	}
+
 	if (cursor == 100)
 	{
 		RenderSkillBox(SCRWID / 2 - 40, SCRHEI - 40-4, SCRWID / 2 + 40, SCRHEI - 40 + 20, 16, 31);
@@ -348,6 +417,17 @@ void RenderAchieveMenu(MGLDraw *mgl)
 	}
 	int len = GetStrLength("Exit", 2);
 	PrintBrightGlow(SCRWID/2 - len/2, SCRHEI - 40-3, "Exit", (cursor == 100) * 31, 2);
+	if (cheatNotice > 0)
+	{
+		x = SCRWID / 2 + (Cosine((cheatNotice * 8)&255)*25)/FIXAMT;
+		y = SCRHEI / 2 - 20 + (Sine((cheatNotice * 12)&255) * 25) / FIXAMT;
+
+		CenterPrint(x+2,y+2, "NEW CHEATSTONE!", -31, 0);
+		CenterPrint(x+2, y-2, "NEW CHEATSTONE!", -31, 0);
+		CenterPrint(x-2, y+2, "NEW CHEATSTONE!", -31, 0);
+		CenterPrint(x-2, y-2, "NEW CHEATSTONE!", -31, 0);
+		CenterPrint(x, y, "NEW CHEATSTONE!", 0, 0);
+	}
 }
 
 TASK(void) AchieveMenu(MGLDraw *mgl)
@@ -359,7 +439,11 @@ TASK(void) AchieveMenu(MGLDraw *mgl)
 	if(CurrentSong()!=SONG_SHOP && CurrentSong()!=SONG_INTRO)
 		PlaySong(SONG_SHOP);
 	InitAchieveMenu();
-
+	if (CheatStoneCheck())
+	{
+		MakeNormalSound(SND_MUSHMAD);
+		cheatNotice = 120;
+	}
 	while (b == 0)
 	{
 		lastTime += TimeLength();
@@ -396,6 +480,27 @@ void InitAchieveSystem(void)
 {
 	achieveQueue.clear();
 	achDisplayed = Achievement::NONE;
+}
+
+bool CheatStoneCheck(void)
+{
+	byte yay = false;
+
+	for (int j = 0; j < 6; j++)
+	{
+		byte count = 0;
+		for (int i = 0; i < 4; i++)
+		{
+			if (opt.achieve[i * 6 + j] == ACHIEVE_GOT)
+				count++;
+		}
+		if (count == 4 && opt.cheatStone[j] == CHEATSTONE_LOCKED)
+		{
+			opt.cheatStone[j] = CHEATSTONE_OFF;
+			yay = true;
+		}
+	}
+	return yay;
 }
 
 void EarnAchieve(Achievement n)

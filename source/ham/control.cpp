@@ -258,7 +258,7 @@ void ControlKeyDown(SDL_Scancode k)
 		{
 			if(k==kb[j][i])
 			{
-				if (playerInMenu && (k == SDL_SCANCODE_UP || k == SDL_SCANCODE_DOWN || k == SDL_SCANCODE_LEFT || k == SDL_SCANCODE_RIGHT || k == SDL_SCANCODE_ESCAPE || k == SDL_SCANCODE_RETURN))
+				if (playerInMenu && (k == SDL_SCANCODE_UP || k == SDL_SCANCODE_DOWN || k == SDL_SCANCODE_LEFT || k == SDL_SCANCODE_RIGHT || k == SDL_SCANCODE_ESCAPE || k == SDL_SCANCODE_RETURN || k==SDL_SCANCODE_SPACE))
 				{
 					// skip any key that overlaps the hardcoded menu controls
 				}
@@ -295,6 +295,10 @@ void ControlKeyDown(SDL_Scancode k)
 		case SDL_SCANCODE_RETURN:
 			arrowState |= CONTROL_B1;
 			arrowTap |= CONTROL_B1;
+			break;
+		case SDL_SCANCODE_SPACE:
+			arrowState |= CONTROL_B2;
+			arrowTap |= CONTROL_B2;
 			break;
 		case SDL_SCANCODE_ESCAPE:
 			arrowState |= CONTROL_ESCAPE;
@@ -339,6 +343,9 @@ void ControlKeyUp(SDL_Scancode k)
 			break;
 		case SDL_SCANCODE_RETURN:
 			arrowState &= ~CONTROL_B1;
+			break;
+		case SDL_SCANCODE_SPACE:
+			arrowState &= ~CONTROL_B2;
 			break;
 		case SDL_SCANCODE_ESCAPE:
 			arrowState &= ~CONTROL_ESCAPE;

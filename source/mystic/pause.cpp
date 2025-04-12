@@ -369,7 +369,87 @@ void RenderRuneMenu(void)
 	}
 	sprintf(s, "%d/%d Runes equipped", RunesEquipped(), player.runePouches);
 	PrintBrightGlow(HALFWID+HALFWID/2-GetStrLength(s,2)/2, y, s, 0, 2);
+	if (subcursor != 37)	// directions for your selected rune
+	{
+		byte rank = RuneLevel((Rune)subcursor);
+		byte equipped = RuneEquipped((Rune)subcursor);
+		byte cost = 0;
 
+		y += 25;
+		if (rank == RUNE_EMPTY || rank==RUNE_RANK3)
+			s[0] = '\0';
+		else if (rank == RUNE_ASLEEP)
+		{
+			cost = 10;
+			strcpy(s, "Awaken");
+		}
+		else if (rank == RUNE_RANK1)
+		{
+			cost = 20;
+			strcpy(s, "Upgrade");
+		}
+		else if (rank == RUNE_RANK2)
+		{
+			cost = 30;
+			strcpy(s, "Upgrade");
+		}
+		char s2[40];
+		if (player.runeStones < cost)
+		{
+			sprintf(s2, "Need %d more Runestones", cost - player.runeStones);
+			PrintBrightGlow(HALFWID + HALFWID / 2 - GetStrLength(s2, 1) / 2, y, s2, 0, 1);
+		}
+		else if(cost>0)
+		{
+			sprintf(s2, "%s (%d  ):", s,cost);
+			x = HALFWID + HALFWID / 2 - GetStrLength(s2, 1);
+			GetItemSprite(280)->Draw(HALFWID + HALFWID / 2 - 18, y+8, GetDisplayMGL());
+			PrintBrightGlow(x, y, s2, 0, 1);
+			x = HALFWID + HALFWID / 2 + 5;
+			Print(x, y, "Space", 0, 1);
+			x += GetStrLength("Space", 1) + 4;
+			Print(x, y, "/", 0, 1);
+			x += 10;
+			RenderGamepadButton(x, y - 3, SDL_CONTROLLER_BUTTON_B);
+		}
+
+		if (rank >= RUNE_RANK1)	// can be equipped
+		{
+			y += 15;
+			if (equipped)
+			{
+				sprintf(s2, "Unequip:");
+				x = HALFWID + HALFWID / 2 - GetStrLength(s2, 1);
+				PrintBrightGlow(x, y, s2, 0, 1);
+				x = HALFWID + HALFWID / 2 + 5;
+				Print(x, y, "Enter", 0, 1);
+				x += GetStrLength("Enter", 1) + 4;
+				Print(x, y, "/", 0, 1);
+				x += 10;
+				RenderGamepadButton(x, y - 3, SDL_CONTROLLER_BUTTON_A);
+			}
+			else
+			{
+				if (RunesEquipped() >= player.runePouches)
+				{
+					sprintf(s2, "Maximum runes equipped!");
+					PrintBrightGlow(HALFWID + HALFWID / 2-GetStrLength(s2,1)/2, y, s2, 0, 1);
+				}
+				else
+				{
+					sprintf(s2, "Equip:");
+					x = HALFWID + HALFWID / 2 - GetStrLength(s2, 1);
+					PrintBrightGlow(x, y, s2, 0, 1);
+					x = HALFWID + HALFWID / 2 + 5;
+					Print(x, y, "Enter", 0, 1);
+					x += GetStrLength("Enter", 1) + 4;
+					Print(x, y, "/", 0, 1);
+					x += 10;
+					RenderGamepadButton(x, y - 3, SDL_CONTROLLER_BUTTON_A);
+				}
+			}
+		}
+	}
 	sprintf(s, "%02d", player.runeStones);
 	int len=GetStrLength(s, 1);
 	BlitIconBit(2, 467, 13, 477, SCRWID - 10 - len - 14, SCRHEI - 30 - 55, 255, 0);
@@ -980,7 +1060,10 @@ PauseResult UpdatePauseMenu(MGLDraw *mgl)
 						if (RunesEquipped() >= player.runePouches)
 							MakeNormalSound(SND_UNAVAILABLE);
 						else
+						{
 							player.runes[subcursor] |= RUNE_EQUIPPED;
+							MakeNormalSound(SND_MENUSELECT);
+						}
 					}
 				}
 			}

@@ -19,13 +19,15 @@ void ApplyControlSettings()
 	opt.joyCtrl[CTL_ID_LF] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF;
 	opt.joyCtrl[CTL_ID_RT] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT;
 	opt.joyCtrl[CTL_ID_ESCAPE] = SDL_CONTROLLER_BUTTON_START;
-		
+
+	// menu controls
 	opt.key[CTL_ID_LF][2] = SDL_SCANCODE_LEFT;
 	opt.key[CTL_ID_RT][2] = SDL_SCANCODE_RIGHT;
 	opt.key[CTL_ID_UP][2] = SDL_SCANCODE_UP;
 	opt.key[CTL_ID_DN][2] = SDL_SCANCODE_DOWN;
 	opt.key[CTL_ID_ESCAPE][2] = SDL_SCANCODE_ESCAPE;
 	opt.key[CTL_ID_B1][2] = SDL_SCANCODE_RETURN;
+	opt.key[CTL_ID_B2][2] = SDL_SCANCODE_SPACE;
 	
 	for (int kbd = 0; kbd < 3; ++kbd)
 	{
@@ -110,6 +112,9 @@ void DefaultOptions(void)
 	opt.lightFX = 1;
 	for (int i = 0; i < (int)Achievement::NUM_ACHIEVES; i++)
 		opt.achieve[i] = 0;
+	for (int i = 0; i < (int)CheatStone::NUM_CHEATSTONES; i++)
+		opt.cheatStone[i] = CHEATSTONE_LOCKED;
+
 	for (int i = 0; i < (int)OPT_EXPANSION_SIZE; i++)
 		opt.expansionSpace[i] = 0;
 }
@@ -130,6 +135,7 @@ void InitOptions(void)
 			if (b != OPT_VERSION)	// this is an older version
 			{
 				// do whatever we need to do to update
+				// from version 1-2, nothing needed. It just won't be able to load the cheatstone data, but that's already been cleared by default options
 			}
 			SDL_RWread(f, &opt, sizeof(option_t), 1);
 		}
@@ -868,4 +874,9 @@ TASK(void) OptionsMenu(MGLDraw *mgl)
 		EndClock();
 	}
 	ExitOptionsMenu();
+}
+
+bool CheatStoneOn(CheatStone c)
+{
+	return opt.cheatStone[(int)c] == CHEATSTONE_ON;
 }

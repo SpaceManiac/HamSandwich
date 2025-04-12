@@ -4,7 +4,7 @@
 #include "options.h"
 
 #ifdef CHEAT
-#define NUM_CHEATS 20
+#define NUM_CHEATS 21
 #else
 #define NUM_CHEATS 10
 #endif
@@ -32,6 +32,7 @@ char cheatCode[NUM_CHEATS][16]={
 	"secretize",		// get all secrets
 	"mana",				// refill mana to full
 	"skillbor",			// 10 skill points
+	"stoney",			// toggle the unlocking of all 6 cheatstones
 #endif
 	};
 
@@ -211,6 +212,15 @@ void DoCheat(byte w)
 		case 19:
 			player.skillPts += 10;
 			NewMessage("SKILLBOR!!!", 30);
+			break;
+		case 20:
+			for (i = 0; i < 6; i++)
+			{
+				if (opt.cheatStone[i] == CHEATSTONE_LOCKED)
+					opt.cheatStone[i] = CHEATSTONE_OFF;
+				else
+					opt.cheatStone[i] = CHEATSTONE_LOCKED;
+			}
 			break;
 	}
 }

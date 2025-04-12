@@ -3,6 +3,7 @@
 #include "fairy.h"
 #include "spell.h"
 #include "water.h"
+#include "options.h"
 
 monsterType_t monsType[NUM_MONSTERS]=
 	{
@@ -1253,7 +1254,7 @@ void AI_Overworld(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			else
 				size=64*FIXAMT;
 
-			if(RangeToTarget(me,goodguy)<size && map->FindGuy(me->mapx,me->mapy,5,goodguy))
+			if(!CheatStoneOn(CheatStone::NONRANDOM) && RangeToTarget(me,goodguy)<size && map->FindGuy(me->mapx,me->mapy,5,goodguy))
 			{
 				// get him!
 				MakeNormalSound(SND_ATTACKED);
@@ -1294,7 +1295,7 @@ void AI_Overworld(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	{
 		if(goodguy)
 		{
-			if(RangeToTarget(me,goodguy)<(48*FIXAMT) && map->FindGuy(me->mapx,me->mapy,5,goodguy))
+			if(!CheatStoneOn(CheatStone::NONRANDOM) && RangeToTarget(me,goodguy)<(48*FIXAMT) && map->FindGuy(me->mapx,me->mapy,5,goodguy))
 			{
 				// get him!
 				MakeNormalSound(SND_ATTACKED);

@@ -33,10 +33,22 @@ enum class Achievement :byte
 	NONE,
 };
 
-enum class Progress :byte
+enum class CheatStone :byte
 {
-	ONE_SHOT,	// you just get it when you do the thing
+	STAMANA,	// mana regenerates really fast
+	POTABLES,	// every enemy drops a potion
+	NONRANDOM,	// no random battles!
+	FIREUP,	
+	FIVE,
+	SIX,
+	NUM_CHEATSTONES,
+};
 
+enum
+{
+	CHEATSTONE_LOCKED,	// haven't earned it
+	CHEATSTONE_OFF,
+	CHEATSTONE_ON,
 };
 
 class AchieveDef
@@ -46,8 +58,13 @@ class AchieveDef
 		byte icon;
 		char hint[128];
 		char desc[128];
+};
 
-		Progress progMethod;
+class CheatStoneDef
+{
+	public:
+		char name[32];
+		char desc[128];
 };
 
 void InitAchieves(void);
@@ -58,5 +75,6 @@ void InitAchieveSystem(void);
 void EarnAchieve(Achievement n);
 void UpdateAchieves(void);
 void RenderAchieves(void);
+bool CheatStoneCheck(void);
 
 #endif

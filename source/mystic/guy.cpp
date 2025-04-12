@@ -12,6 +12,7 @@
 #include "runes.h"
 #include "achieves.h"
 #include "water.h"
+#include "options.h"
 
 namespace
 {
@@ -320,7 +321,8 @@ byte Guy::CanWalk(int xx,int yy,Map *map,world_t *world)
 			break;
 	}
 
-	if(result)	// no wall collision, look for guy collision
+	// you don't collide with enemies on the overworld when using the no-battles cheatstone
+	if(result && (!CheatStoneOn(CheatStone::NONRANDOM) || player.levelNum!=1))	// no wall collision, look for guy collision
 		for(i=0;i<maxGuys;i++)
 			if((&guys[i]!=this) && (guys[i].type) && (guys[i].hp>0) &&
 				(abs(guys[i].mapx-mapx)<8) && (abs(guys[i].mapy-mapy)<8))
@@ -1451,7 +1453,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 
 					FireExactBullet(x, y, FIXAMT * 20,
 						Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
-						0, 30, (angle+16)/32, BLT_HAMMER);
+						0, 30, ((angle+16)/32)&7, BLT_HAMMER);
 				}
 				player.reload = 3;
 			}
@@ -1790,6 +1792,13 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 				byte a = i * 32 - 12 + Random(24);
 				FireBullet(x, y, a, BLT_OCTONJUICE);
 			}
+		}
+		if (CheatStoneOn(CheatStone::POTABLES))
+		{
+			if (Random(2) == 0)
+				FireBullet(x, y, 0, BLT_LIFEPOTION);
+			else
+				FireBullet(x, y, 0, BLT_MANAPOTION);
 		}
 		// possible item drop
 		switch(type)
