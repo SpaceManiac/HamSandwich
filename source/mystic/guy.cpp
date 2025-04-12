@@ -1761,6 +1761,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		seq=ANIM_DIE;
 		this->dx=0;
 		this->dy=0;
+		melted = 0;
 		frm=0;
 		frmAdvance=64;
 		frmTimer=0;

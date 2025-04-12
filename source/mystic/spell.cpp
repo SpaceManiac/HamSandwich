@@ -329,6 +329,8 @@ void CastSpell(Guy *me)
 				}
 				MakeNormalSound(SND_FLAMEGO);
 				player.wpnReload=5;
+				if (!ClassicMode())
+					player.wpnReload = 5 - SkillValue(SKILL_FLAMEON) / 2;
 			}
 			if (!ClassicMode() && SkillValue(SKILL_BACKDRAFT) > 0)	// reflect nearby bullets
 			{
