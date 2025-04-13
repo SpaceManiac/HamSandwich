@@ -914,7 +914,7 @@ void Guy::Update(Map *map,world_t *world)
 		if (parent == nullptr && (oldmapx != mapx || oldmapy != mapy))
 		{
 			mapTile_t* t = map->GetTile(mapx, mapy);
-			if (t && !(world->terrain[t->floor].flags & (TF_LAVA | TF_WATER)) && t->wall == 0 && CanWalk(mapx * TILE_WIDTH + TILE_WIDTH / 2, y + TILE_HEIGHT + TILE_HEIGHT / 2, map, world))
+			if (t && !(world->terrain[t->floor].flags & (TF_LAVA | TF_WATER)) && t->wall == 0 && CanWalk((mapx * TILE_WIDTH + TILE_WIDTH / 2)*FIXAMT, (mapy * TILE_HEIGHT + TILE_HEIGHT / 2)*FIXAMT, map, world))
 				SetLastSafeXY((mapx * TILE_WIDTH + TILE_WIDTH / 2)*FIXAMT, (mapy * TILE_HEIGHT + TILE_HEIGHT / 2)*FIXAMT);
 		}
 	}

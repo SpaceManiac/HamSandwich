@@ -6593,6 +6593,13 @@ void AI_PeepBomb(Guy *me,Map *map,world_t *world,Guy *goodguy)
 					GetGoodguy()->y = (77 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
 					map->TempTorch(GetGoodguy()->x / (TILE_WIDTH * FIXAMT), GetGoodguy()->y / (TILE_HEIGHT * FIXAMT), 31);
 				}
+				else
+				{
+					me->mind = 1;
+					me->dx = Cosine(me->mind1) * 7;
+					me->dy = Sine(me->mind1) * 7;
+					me->mind1 = 30;
+				}
 			}
 			else
 			{
