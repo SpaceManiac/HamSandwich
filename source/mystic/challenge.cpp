@@ -406,7 +406,7 @@ challenge_t chal[]={
 		{{GOAL_FINISH,0},
 		{GOAL_COMBO,100},
 		{GOAL_SCORE,100000},
-		{GOAL_MYSTIC,30*2},
+		{GOAL_MYSTIC,30*3},
 		{GOAL_CRYSTALS,0}},
 	},
 

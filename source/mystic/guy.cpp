@@ -696,7 +696,7 @@ void Guy::Update(Map *map,world_t *world)
 	{
 		melted--;
 		if(MGL_random(3)==0)
-			ExplodeParticles2(PART_SHORTYELLOW, x - rectx + MGL_random(rectx2 - rectx), y - recty + MGL_random(recty2 - recty), MGL_random(10),1,2);
+			ExplodeParticles2(PART_SHORTYELLOW, x - rectx + MGL_random(rectx2 - rectx+1), y - recty + MGL_random(recty2 - recty+1), MGL_random(10),1,2);
 	}
 
 	if (stun == 0)

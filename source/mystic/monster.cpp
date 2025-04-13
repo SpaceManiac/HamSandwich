@@ -8284,15 +8284,15 @@ void AI_Horkbox(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->mind--;
 		else
 		{
-			// the lower our health, the faster the summons come. Starts at every 3s, down to every 0.66s
+			// the lower our health, the faster the summons come. Starts at every 3s, down to every 1s
 			int maxHork = 60 * 30 - 3 * 30 * 7 + player.puzzleVar[2] * 30 * 3;	// first horkbox is only 39s long, going up to 60s at max
-			me->mind = me->hp * (30 * 2 + 10) / maxHork + 20;
+			me->mind = me->hp * (30 * 2) / maxHork + 30;
 			std::vector<byte> monsTable = { MONS_BONEHEAD,MONS_SPLITTER,MONS_GHOSTSPITTER,MONS_SLUG,MONS_PEEPER,MONS_BIGBAT,MONS_MAMASPDR,MONS_SHRMLORD };
 			int x=-1, y;
 			while (x == -1)
 			{
 				byte a = Random(256);
-				byte dist = Random(200);	// summon at a random spot within the circle
+				byte dist = Random(HORKBOX_RADIUS);	// summon at a random spot within the circle
 				x = me->x + Cosine(a) * dist;
 				y = me->y + Sine(a) * dist;
 				mapTile_t* t = map->GetTile(x / (TILE_WIDTH * FIXAMT),y/(TILE_HEIGHT*FIXAMT));
@@ -8310,7 +8310,7 @@ void AI_Horkbox(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				}
 			}
 		}
-		FloaterParticles(me->x, me->y, 0, 200, 0, 4);
+		FloaterParticles(me->x, me->y, 0, HORKBOX_RADIUS, 0, 4);
 		if (me->z < 9 * FIXAMT)
 			me->dz += FIXAMT / 2;
 		else if (me->z > 11 * FIXAMT)
@@ -8323,7 +8323,7 @@ void AI_Horkbox(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		{
 			int dist = ((GetGoodguy()->x>>FIXSHIFT) - (me->x>>FIXSHIFT)) * ((GetGoodguy()->x>>FIXSHIFT) - (me->x>>FIXSHIFT)) +
 				((GetGoodguy()->y>>FIXSHIFT) - (me->y>>FIXSHIFT)) * ((GetGoodguy()->y>>FIXSHIFT) - (me->y>>FIXSHIFT));
-			if (dist > 200 * 200)	// you are not permitted to leave the ring
+			if (dist > HORKBOX_RADIUS*HORKBOX_RADIUS)	// you are not permitted to leave the ring
 			{
 				byte angle = (byte)(atan2f(GetGoodguy()->y - me->y, GetGoodguy()->x - me->x)*128.0f/3.14159f);
 				GetGoodguy()->dx = -Cosine(angle) * 4;

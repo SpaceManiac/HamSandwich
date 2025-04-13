@@ -1315,16 +1315,19 @@ void SeedRNG(void)
 
 dword Random(dword range)
 {
+	if (range < 1) range = 1;
 	return std::uniform_int_distribution<dword>(0, range - 1)(mersenne);
 }
 
 int MGL_random(int range)
 {
+	if (range < 1) range = 1;
 	return std::uniform_int_distribution<int>(0, range - 1)(mersenne);
 }
 
 long MGL_randoml(long range)
 {
+	if (range < 1) range = 1;
 	return std::uniform_int_distribution<int>(0, range - 1)(mersenne);
 }
 

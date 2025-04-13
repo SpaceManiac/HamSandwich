@@ -128,6 +128,8 @@
 #define MF_GOODGUY   16384	// non-evil
 #define MF_NOHIT	 32768	// shots go through it
 
+#define HORKBOX_RADIUS (220)
+
 typedef struct monsterType_t
 {
 	char name[32];
