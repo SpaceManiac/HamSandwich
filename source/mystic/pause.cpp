@@ -1091,7 +1091,7 @@ PauseResult UpdatePauseMenu(MGLDraw *mgl)
 						player.runes[subcursor]++;
 						byte maxRunes = 0;
 						for (int i = 0; i < (int)Rune::NUM_RUNES; i++)
-							if (player.runes[i] == RUNE_RANK3)
+							if ((player.runes[i]&RUNE_MASK) == RUNE_RANK3)
 								maxRunes++;
 						if (maxRunes == (int)Rune::NUM_RUNES)
 							EarnAchieve(Achievement::MAX_RUNES);
