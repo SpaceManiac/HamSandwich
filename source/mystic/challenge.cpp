@@ -7,6 +7,7 @@
 #include "guy.h"
 #include "appdata.h"
 #include "achieves.h"
+#include "steam.h"
 
 #define ASK_RESETCHAR	1
 #define ASK_RESETSTAR	2
@@ -708,7 +709,7 @@ void ResetChallengeStats(void)
 	for(i=0;i<MAX_CHALLENGE;i++)
 	{
 		chalData.topScore[i]=0;
-		chalData.topTime[i]=0;
+		chalData.topTime[i]=UINT32_MAX;
 		chalData.topCombo[i]=0;
 		if(i<numChals && chal[i].starCost==0 && (chal[i].chapter==0 || chal[i].chapter==255))
 			chalData.bought[i]=1;
@@ -923,11 +924,15 @@ void ChallengeMenuRender(MGLDraw *mgl)
 
 				sprintf(s,"Top Score: %05d",chalData.topScore[chalCursor]);
 				PrintBrightGlow(5,400,s,-4,2);
-				if (player.gear & GEAR_FEATHER)
-					i = chal[chalCursor].time*(100+HOURGLASS_BONUS)/100 - chalData.topTime[chalCursor];
+				i = chalData.topTime[chalCursor];
+				if (i == UINT32_MAX)
+				{
+					strcpy(s,"Top Time: None");
+				}
 				else
-					i = chal[chalCursor].time - chalData.topTime[chalCursor];
-				sprintf(s,"Top Time: %d:%02d",(i/(60*30)),(i/30)%60);
+				{
+					sprintf(s,"Top Time: %d:%02d",(i/(60*30)),(i/30)%60);
+				}
 				PrintBrightGlow(5,420,s,-4,2);
 				sprintf(s,"Top Combo: %d",chalData.topCombo[chalCursor]);
 				PrintBrightGlow(5,440,s,-4,2);
@@ -1938,7 +1943,14 @@ void ChallengeTallyRender(MGLDraw *mgl)
 	i=0;
 	CenterPrint(HALFWID,2,"Challenge Results",0,0);
 
-	sprintf(s,"Time Left: %d:%02d",(attempt.time/(30*60)),(attempt.time/30)%60);
+	int timeLimit = chal[chalCursor].time;
+	if (player.gear & GEAR_FEATHER)
+	{
+		timeLimit = timeLimit * (100 + HOURGLASS_BONUS) / 100;
+	}
+	int timeTaken = timeLimit - attempt.time;
+
+	sprintf(s,"Time Taken: %d:%02d",(timeTaken/(30*60)),(timeTaken/30)%60);
 	Print(5,50,s,0,2);
 
 	sprintf(s,"Score: %05d",attempt.score);
@@ -1993,12 +2005,22 @@ void InitChallengeTally(MGLDraw *mgl)
 	if(attempt.bestCombo==1)
 		attempt.bestCombo=0;
 	CompleteGoals();
+
+	int timeLimit = chal[chalCursor].time;
+	if (player.gear & GEAR_FEATHER)
+	{
+		timeLimit = timeLimit * (100 + HOURGLASS_BONUS) / 100;
+	}
+	int timeTaken = timeLimit - attempt.time;
+
 	if(attempt.score>(int)chalData.topScore[chalCursor])
 		chalData.topScore[chalCursor]=attempt.score;
-	if(attempt.time>chalData.topTime[chalCursor] && attempt.goalOk[0])
-		chalData.topTime[chalCursor]=attempt.time;
+	if(attempt.goalOk[0] && timeTaken < chalData.topTime[chalCursor])
+		chalData.topTime[chalCursor] = timeTaken;
 	if(attempt.bestCombo>chalData.topCombo[chalCursor])
 		chalData.topCombo[chalCursor]=attempt.bestCombo;
+
+	Steam()->UploadChallengeScore(chalDifficulty, chal, numChals, &chalData);
 }
 
 TASK(void) ChallengeTally(MGLDraw *mgl)
