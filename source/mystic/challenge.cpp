@@ -1403,6 +1403,7 @@ void LoadChallenge(void)
 		SDL_RWread(f,&chalData,1,sizeof(chalData_t));
 		f.reset();
 		memcpy(&player,&chalData.player,sizeof(player_t));
+		player.difficulty = chalDifficulty;
 	}
 }
 
@@ -1438,7 +1439,6 @@ void LoadChallengePercents(byte pcts[4])
 			CalcChallengePercent();
 			pcts[i] = percent;
 		}
-		
 	}
 }
 
@@ -1784,7 +1784,7 @@ byte ChallengeUpdate(void)
 void ChallengeRender(MGLDraw *mgl)
 {
 	char s[16];
-		
+
 	sprintf(s,"%d:%02d",(attempt.time/(30*60)),(attempt.time/30)%60);
 	Print(45+2, 32+2, s, -31, 2);
 	if(attempt.time>30*30 || ((attempt.time%4)<2))
@@ -1973,7 +1973,7 @@ byte ChallengeTallyUpdate(MGLDraw *mgl,int *lastTime)
 	{
 		UpdateItems();
 		UpdateControls();
-		
+
 		if (ButtonTapped(CONTROL_ESCAPE | CONTROL_B1 | CONTROL_B2))
 		{
 			MakeNormalSound(SND_MENUSELECT);
