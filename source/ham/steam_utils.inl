@@ -3,6 +3,7 @@
 // steamapi and infect games that don't actually have a Steam mode.
 
 #include <stdint.h>
+#include <memory>
 #include <SDL.h>
 #include <steam/steam_api.h>
 
@@ -10,8 +11,10 @@
 // Leaderboard upload base
 class LeaderboardUploadJob
 {
-protected:
+public:
+	// Always relevant.
 	int32_t score = 0;
+	// Only observed if the leaderboard is new.
 	ELeaderboardSortMethod sortMethod = k_ELeaderboardSortMethodDescending;
 	ELeaderboardDisplayType displayType = k_ELeaderboardDisplayTypeNumeric;
 	ELeaderboardUploadScoreMethod uploadScoreMethod = k_ELeaderboardUploadScoreMethodKeepBest;
@@ -22,7 +25,7 @@ private:
 	CCallResult<LeaderboardUploadJob, LeaderboardFindResult_t> findLeaderboardCall;
 	CCallResult<LeaderboardUploadJob, LeaderboardScoreUploaded_t> uploadScoreCall;
 
-protected:
+public:
 	LeaderboardUploadJob() {}
 
 	// Try to add a detail. Returns false if you're out of space.
@@ -37,7 +40,6 @@ protected:
 		return false;
 	}
 
-public:
 	static void Send(const char* leaderboardId, std::unique_ptr<LeaderboardUploadJob> job)
 	{
 		// std::unique_ptr type enforces that we can call .release() and `delete` it later.
@@ -73,7 +75,7 @@ private:
 		else
 		{
 			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "FindOrCreateLeaderboard failed");
-			delete this;  // living on the edge
+			std::default_delete<LeaderboardUploadJob>()(this);
 		}
 	}
 
@@ -88,6 +90,6 @@ private:
 		{
 			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "UploadLeaderboardScore failed");
 		}
-		delete this;
+		std::default_delete<LeaderboardUploadJob>()(this);
 	}
 };
