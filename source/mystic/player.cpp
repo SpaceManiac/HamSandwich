@@ -171,6 +171,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.hammers = 2;
 		player.hamSpeed -=HAMMER_UP_AMOUNT*2;
 	}
+	CheckForAllSecrets();
 }
 
 void ExitPlayer(void)
@@ -630,6 +631,13 @@ void CheckForAllSecrets(void)
 	// if you got here, you have every piece of the sword
 	if(PlayerHasSword())
 		EarnAchieve(Achievement::GETSWORD);
+	int maxRunes = 0;
+	for (i = 0; i < (int)Rune::NUM_RUNES; i++)
+		if ((player.runes[i] & RUNE_MASK) == RUNE_RANK3)
+			maxRunes++;
+	if (maxRunes == (int)Rune::NUM_RUNES)
+		EarnAchieve(Achievement::MAX_RUNES);
+
 	if ((player.haveFairy & 65535) != 65535)
 		return;
 
@@ -645,6 +653,7 @@ void CheckForAllSecrets(void)
 				runes++;
 	if (runes < 24)
 		return;	// gotta get all the runes
+
 	for(i=0;i<9;i++)
 		if(player.gotSpell[i]==0)
 			return;
