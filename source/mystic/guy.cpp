@@ -1828,6 +1828,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		this->dx=0;
 		this->dy=0;
 		melted = 0;
+		stun = 0;
 		frm=0;
 		frmAdvance=64;
 		frmTimer=0;
