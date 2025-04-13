@@ -627,6 +627,17 @@ void CheckForAllSecrets(void)
 {
 	int i;
 
+	// if you got here, you have every piece of the sword
+	if(PlayerHasSword())
+		EarnAchieve(Achievement::GETSWORD);
+	if ((player.haveFairy & 65535) != 65535)
+		return;
+
+	// if you got here, then you have every fairy
+	EarnAchieve(Achievement::ALL_FAIRIES);
+	if (!PlayerHasSword())
+		return;
+
 	byte runes = 0;
 	for(int j=0;j<4;j++)
 		for (i = 0; i < MAX_MAPS; i++)
@@ -640,16 +651,7 @@ void CheckForAllSecrets(void)
 	for(i=10;i<19;i++)
 		if(player.gotSpell[i]==0)
 			return;
-	if((player.haveFairy&65535)!=65535)
-		return;
-	// if you got here, then you have every fairy
-	EarnAchieve(Achievement::ALL_FAIRIES);
-
-	if (!PlayerHasSword())
-		return;
-	// if you got here, you have every piece of the sword
-	EarnAchieve(Achievement::GETSWORD);
-
+		
 	// got em all!
 	if(opt.challenge==0)
 	{
