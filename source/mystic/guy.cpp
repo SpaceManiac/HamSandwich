@@ -659,7 +659,7 @@ void Guy::Update(Map *map,world_t *world)
 	CalculateRect(map);
 
 	executable = false;
-	if (!ClassicMode() && hp>0 && (MonsterFlags(type) & MF_GOODGUY) == 0)	// only badguys can be executed, duh
+	if (!ClassicMode() && hp>0 && type!=MONS_HORKBOX && (MonsterFlags(type) & (MF_GOODGUY|MF_INVINCIBLE)) == 0)	// only badguys can be executed, duh
 	{
 		float threshold = SkillValue(SKILL_MURDALIZE);
 		if (hp < (int)((float)MonsterHP(type) * threshold / 100.0f))	// life is below threshold
@@ -1352,6 +1352,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 {
 	int i,j,formerHP;
 	int brutalMul;
+	bool fatal = false;
 
 	if(hp==0)
 		return;	// can't shoot a dead guy
@@ -1360,6 +1361,9 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		return;	// shouldn't have a type 0 guy at all
 	if (type == MONS_GOLEM && ouch > 0)
 		return;	// golems can only take damage when not already ouched, they have an invulnerability window
+
+	if (damage > 999999)
+		fatal = true;	// just make this kill them, numbers don't matter
 
 	brutalMul = BRUTALDMG;
 	if (player.worldNum == 3)
@@ -1567,6 +1571,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		MakeSound(SND_BOBBYBLOCK,x,y,SND_CUTOFF,1200);
 		return;
 	}
+	if (fatal) damage = 1;
 
 	if(damage==-1000)	// freeze code
 	{
@@ -1683,7 +1688,8 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			partialDamage -= 100;
 		}
 		damage = (int)fDamage;
-
+		if (fatal)
+			damage = 1000000;
 		if (critted)
 		{
 			ExplodeParticles2(PART_SNOW2, x, y, z, 15, 4);
@@ -1719,6 +1725,9 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 	}
 	else if(type!=MONS_PTERO && type!=MONS_GOLEM)
 		ChallengeEvent(CE_HIT,damage);
+	if (fatal)
+		damage = hp;
+
 	formerHP=hp;
 	if(damage>0)
 		ouch=4;
@@ -1727,7 +1736,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 	bool wasFrozen = false;
 	if(frozen)	// thaw when hit
 	{
-		if(damage<9999 && frzDamage+damage<65000)	// don't let execution attacks count
+		if(!fatal && frzDamage+damage<65000)	// don't let execution attacks count
 			frzDamage += damage;
 
 		wasFrozen = true;

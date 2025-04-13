@@ -32,7 +32,7 @@ char cheatCode[NUM_CHEATS][16]={
 	"secretize",		// get all secrets
 	"mana",				// refill mana to full
 	"skillbor",			// 10 skill points
-	"stoney",			// toggle the unlocking of all 6 cheatstones
+	"stony",			// toggle the unlocking of all 6 cheatstones
 #endif
 	};
 
@@ -214,6 +214,7 @@ void DoCheat(byte w)
 			NewMessage("SKILLBOR!!!", 30);
 			break;
 		case 20:
+			NewMessage("Stoney, brah", 30);
 			for (i = 0; i < 6; i++)
 			{
 				if (opt.cheatStone[i] == CHEATSTONE_LOCKED)
