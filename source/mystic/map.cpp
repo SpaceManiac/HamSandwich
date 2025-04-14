@@ -761,7 +761,7 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 	endX=4;
 	endY=6;
 
-	if(player.levelNum==1 && player.worldNum==2)
+	if(player.levelNum==1 && (player.worldNum==2 || player.worldNum==3))
 	{
 		endY=10;
 		tileX=(camX/TILE_WIDTH)-8;
