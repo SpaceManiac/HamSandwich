@@ -1602,7 +1602,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 				i = SkillValue(SKILL_ICEPOWER) - monsHP;	// the more hp, the harder to freeze
 			}
 		}
-		if(type!=MONS_BOUAPHA)
+		if(type!=MONS_BOUAPHA && type!=MONS_FRIENDLY && type!=MONS_GOLEM && type!=MONS_PTERO)
 			ShowEnemyLife(MonsterName(type),hp*128/MonsterHP(type),hp*128/MonsterHP(type),(byte)(hp>0));
 		if(i<0)
 			return;
@@ -1977,7 +1977,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			HorkUpLoot(x, y);
 		}
 	}
-	if(type!=MONS_BOUAPHA && type!=MONS_PTERO && type!=MONS_GOLEM)
+	if(type!=MONS_BOUAPHA && type!=MONS_PTERO && type!=MONS_GOLEM && type!=MONS_FRIENDLY)
 		ShowEnemyLife(MonsterName(type),formerHP*128/MonsterHP(type),hp*128/MonsterHP(type),(byte)(hp>0));
 	else if(type==MONS_BOUAPHA)
 	{
@@ -3306,7 +3306,7 @@ void HealBadguys(word amt)
 {
 	for (int i = 0; i < maxGuys; i++)
 	{
-		if (guys[i].hp > 0 && guys[i].type!=MONS_NONE && guys[i].type != MONS_HORKBOX && !(monsType[guys[i].type].flags & MF_GOODGUY))
+		if (guys[i].hp > 0 && guys[i].type!=MONS_NONE && guys[i].type != MONS_HORKBOX && !(monsType[guys[i].type].flags & MF_GOODGUY) && guys[i].type!=MONS_FRIENDLY)
 		{
 			Guy* g = &guys[i];
 

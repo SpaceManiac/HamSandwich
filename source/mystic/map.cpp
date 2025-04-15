@@ -216,6 +216,25 @@ void Map::Init(world_t *wrld)
 
 	if (player.levelNum == 19 && player.worldNum == 3)
 		HorkBoxInit(this);
+
+	if (player.worldNum == 3 && player.levelNum == 1 && (player.levelsPassed >= 4 + (VeryClassicMode() ? 0 : 4)))
+	{
+		if (player.bobbyDoorOpen == 0)
+		{
+			player.bobbyDoorOpen = 1;
+			ShakeScreen(60);
+			MakeNormalSound(SND_BIGRUMBLE);
+		}
+		// make a bridge over the lava
+		map[63 + 12 * width].floor = 35;
+		map[64 + 12 * width].floor = 35;
+		map[63 + 13 * width].floor = 35;
+		map[64 + 13 * width].floor = 35;
+		map[63 + 14 * width].floor = 35;
+		map[64 + 14 * width].floor = 35;
+		// and open the door
+		map[61 + 8 * width].item = 80;
+	}
 }
 
 void Map::SmoothLight(int x,int y)
@@ -1136,24 +1155,6 @@ void SpecialAnytimeCheck(Map *map)
 		{
 			SpecialTakeEffect(map,&map->special[i],NULL);
 		}
-	if(player.worldNum==3 && player.levelNum==1 && (player.levelsPassed>=4+VeryClassicMode()?0:4))
-	{
-		if(player.bobbyDoorOpen==0)
-		{
-			player.bobbyDoorOpen=1;
-			ShakeScreen(60);
-			MakeNormalSound(SND_BIGRUMBLE);
-		}
-		// make a bridge over the lava
-		map->map[63+12*map->width].floor=35;
-		map->map[64+12*map->width].floor=35;
-		map->map[63+13*map->width].floor=35;
-		map->map[64+13*map->width].floor=35;
-		map->map[63+14*map->width].floor=35;
-		map->map[64+14*map->width].floor=35;
-		// and open the door
-		map->map[61+8*map->width].item=80;
-	}
 }
 
 
