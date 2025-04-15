@@ -162,7 +162,7 @@ static dword startTime;
 void MainMenuDisplay(MGLDraw *mgl,title_t title,bool hideAchieves)
 {
 	int i;
-	int orbY[]={217,268,319,364,419,430};
+	int orbY[]={237,288,339,384,439,450};
 
 	memcpy(mgl->GetScreen(),backgd,SCRWID*SCRHEI);
 
@@ -176,9 +176,9 @@ void MainMenuDisplay(MGLDraw *mgl,title_t title,bool hideAchieves)
 		if(i!=2 || opt.challenge)
 		{
 			if(title.cursor==i)
-				planetSpr->GetSprite(i*2+1+(title.cursor!=i))->DrawGlow(80,190,mgl,title.titleBright);
+				planetSpr->GetSprite(i*2+1+(title.cursor!=i))->DrawGlow(80,210,mgl,title.titleBright);
 			else
-				planetSpr->GetSprite(i*2+1+(title.cursor!=i))->Draw(80,190,mgl);
+				planetSpr->GetSprite(i*2+1+(title.cursor!=i))->Draw(80,210,mgl);
 
 		}
 	}
@@ -186,13 +186,15 @@ void MainMenuDisplay(MGLDraw *mgl,title_t title,bool hideAchieves)
 	if (!hideAchieves)
 	{
 		if (title.cursor == 5)
-			planetSpr->GetSprite(0)->DrawGlow(350, orbY[5], mgl, title.titleBright);
+			planetSpr->GetSprite(0)->DrawGlow(340, orbY[5], mgl, title.titleBright);
 		if (title.cursor == 5)
-			planetSpr->GetSprite(13)->DrawGlow(380, 410, mgl, title.titleBright);
+			planetSpr->GetSprite(13)->DrawGlow(370, 420, mgl, title.titleBright);
 		else
-			planetSpr->GetSprite(12)->Draw(380, 410, mgl);
+			planetSpr->GetSprite(12)->Draw(370, 420, mgl);
 	}
-
+	planetSpr->GetSprite(15)->DrawGlow(HALFWID + 60, 165, mgl, title.titleBright-8);
+	planetSpr->GetSprite(14)->DrawBright(HALFWID+60, 165, mgl,-2+title.titleBright/2);
+	
 #ifdef CHEAT
 	CenterPrint(HALFWID,80,"*CHEAT EDITION*",MGL_random(48)-24,0);
 #endif

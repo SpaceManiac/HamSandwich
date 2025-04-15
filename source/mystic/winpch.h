@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define CHEAT
+//#define CHEAT
 
 const int SCRWID = 640;
 const int SCRHEI = 480;

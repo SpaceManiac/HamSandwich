@@ -3312,6 +3312,8 @@ void HealBadguys(word amt)
 
 			word maxHP = MonsterHP(guys[i].type);
 			word healAmt = amt;
+			if (guys[i].hp == maxHP)
+				continue;	
 			if (player.nightmare)
 				healAmt *= NIGHTMAREHP;
 			else if (BrutalMode())

@@ -69,7 +69,7 @@ AchieveDef achieveDef[] = {
 	{
 		"Energetic Boss Rage",6,
 		"Tickle it to death.",
-		"Defeat a boss with nothing but Energy Barrage.",
+		"Defeat a boss with nothing but Energy spells.",
 	},
 	{
 		"Amazing Blaze",2,
