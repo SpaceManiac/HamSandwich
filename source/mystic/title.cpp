@@ -194,7 +194,7 @@ void MainMenuDisplay(MGLDraw *mgl,title_t title,bool hideAchieves)
 	}
 	planetSpr->GetSprite(15)->DrawGlow(HALFWID + 60, 165, mgl, title.titleBright-8);
 	planetSpr->GetSprite(14)->DrawBright(HALFWID+60, 165, mgl,-2+title.titleBright/2);
-	
+
 #ifdef CHEAT
 	CenterPrint(HALFWID,80,"*CHEAT EDITION*",MGL_random(48)-24,0);
 #endif
