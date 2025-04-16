@@ -269,7 +269,7 @@ byte MainMenuUpdate(MGLDraw *mgl,title_t *title,int *lastTime)
 			UpdateControls();
 			return 3;
 		}*/
-#ifdef CHEAT
+#if defined(CHEAT) || !defined(NDEBUG)
 		char c = mgl->LastKeyPressed();
 		if(c=='e')
 		{
