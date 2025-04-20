@@ -41,6 +41,7 @@ pyRegionHeader = """loonyland_region_table: dict[str, LLRegion] = {"""
 pyLocationHeader = """loonyland_location_table: dict[str, LLLocation] = {"""
 
 pyRulesHeader = """def set_rules(multiworld, world):
+    player = world.player
     access_rules: dict[str, CollectionRule] = {"""
 
 pyRulesFooter = """    for loc in multiworld.get_locations(world.player):
@@ -48,6 +49,7 @@ pyRulesFooter = """    for loc in multiworld.get_locations(world.player):
             add_rule(loc, access_rules[loc.name])"""
 
 pyEntranceHeader = """def set_entrance_rules(multiworld, world):
+    player = world.player
     loonyland_entrance_table: list[LLEntrance] = ["""
 
 pyEntranceFooter = """    for region in multiworld.get_regions(world.player):

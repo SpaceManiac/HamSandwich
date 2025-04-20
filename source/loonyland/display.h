@@ -9,6 +9,7 @@
 #include "map.h"
 #include "tile.h"
 #include <vector>
+#include <string>
 
 /* This file handles all screen displaying.  It's a go-between so that you
    don't have to pass the mgldraw object everywhere, and also handles the display

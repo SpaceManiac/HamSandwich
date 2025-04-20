@@ -3,6 +3,7 @@
 
 #include <string_view>
 #include "mgldraw.h"
+#include <string>
 
 // The interface from the rest of the game to the Archipelago module.
 class Archipelago

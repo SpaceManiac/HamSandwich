@@ -1381,12 +1381,14 @@ byte VampsUsed(void)
 
 void PlayerGetMonsterPoints(int level)
 {
-	int pp;
-
-	pp=player.firePower+player.fireRange+player.fireRate;
-	pp=level-pp;
-	if(pp<1)
-		pp=1;
+	int pp = level;
+	if (!ArchipelagoMode)
+	{
+		pp = player.firePower + player.fireRange + player.fireRate;
+		pp = level - pp;
+		if (pp < 1)
+			pp = 1;
+	}
 	player.monsterPoints+=pp;
 }
 
