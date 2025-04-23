@@ -1673,7 +1673,7 @@ void SpecialNeighborCheck(Map *map,special_t *spcl)
 	for(i=spcl->x-1;i<=spcl->x+1;i++)
 		for(j=spcl->y-1;j<=spcl->y+1;j++)
 		{
-			if(i!=spcl->x || j!=spcl->x)
+			if(i!=spcl->x || j!=spcl->y)
 				for(k=0;k<MAX_SPECIAL;k++)
 				{
 					if(map->special[k].x==i && map->special[k].y==j && (map->special[k].trigger&TRG_CHAIN))
