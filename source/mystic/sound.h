@@ -255,10 +255,9 @@
 #define SONG_BEATNIK	 203
 #define SONG_SHOP	     204
 #define SONG_INTRO		 205
-
-#define SONG_CHAP34MAP	 208
-#define SONG_CHAP34LEVEL 207
 #define SONG_CHAP34FIGHT 206
+#define SONG_CHAP34LEVEL 207
+#define SONG_CHAP34MAP	 208
 
 // back to sounds for some reason
 #define SND_OCTONSHOOT	209
@@ -296,6 +295,20 @@
 #define SND_TRIVIA		241
 #define SONG_HAPPYSTICK 242
 
+#define NEWSNG_CHAP12FIGHT 243
+#define NEWSNG_CHAP12LEVEL 244
+#define NEWSNG_CHAP12MAP	 245
+#define NEWSNG_BEATNIK	 246
+#define NEWSNG_SHOP	     247
+#define NEWSNG_INTRO		 248
+#define NEWSNG_CHAP34FIGHT	 249
+#define NEWSNG_CHAP34LEVEL 250
+#define NEWSNG_CHAP34MAP 251
+
+#define CLASSIC_SONG_START (SONG_CHAP12FIGHT)
+#define CLASSIC_SONG_END	(SONG_CHAP34MAP)
+#define MODERN_SONG_START	(NEWSNG_CHAP12FIGHT)
+
 // set this when done
 #define MAX_SOUND 100	// the most sounds used
 
@@ -309,6 +322,7 @@ void ReplaySong(void);
 void VolumeSong(byte hi);
 void VolumeSound(byte hi);
 int CurrentSong(void);
+int CurrentSongAdjusted(void);
 void StopPlayingSong(void);
 void UpdateSounds(void);
 

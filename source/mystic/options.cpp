@@ -97,7 +97,6 @@ void DefaultControls(void)
 	opt.joyCtrl[CTL_ID_QC_8] = SDL_CONTROLLER_BUTTON_DPAD_DOWN; // berserk
 	opt.joyCtrl[CTL_ID_QC_9] = SDL_CONTROLLER_BUTTON_DPAD_UP; // heal
 	opt.joyCtrl[CTL_ID_QC_0] = SDL_CONTROLLER_BUTTON_RIGHTSTICK; // armageddon
-
 }
 
 void DefaultOptions(void)
@@ -117,6 +116,7 @@ void DefaultOptions(void)
 
 	for (int i = 0; i < (int)OPT_EXPANSION_SIZE; i++)
 		opt.expansionSpace[i] = 0;
+	opt.classicMusic = 0;
 }
 
 void InitOptions(void)
@@ -147,6 +147,10 @@ void InitOptions(void)
 		f.reset();
 	}
 	ApplyControlSettings();
+	opt.lightFX = 1;	// in case you saved it with them turned off
+#ifdef NDEBUG
+	opt.classicMusic = 1;
+#endif
 }
 
 void ExitOptions(void)
@@ -243,8 +247,14 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 			case OPT_FANCYWATER:
 				opt.waterFX = 1 - opt.waterFX;
 				break;
-			case OPT_FANCYLIGHTING:
-				opt.lightFX = 1 - opt.lightFX;
+			case OPT_CLASSICMUSIC:
+#ifndef NDEBUG
+				StopSong();
+				opt.classicMusic = 1 - opt.classicMusic;
+				PlaySong(SONG_SHOP);
+#else
+				MakeNormalSound(SND_UNAVAILABLE);
+#endif
 				break;
 			case OPT_DPADTOMOVE:
 				opt.dpadToMove = 1 - opt.dpadToMove;
@@ -674,8 +684,8 @@ void RenderOptionsMenu(MGLDraw *mgl)
 	char optionsList[][32] = {
 		"Sound:",
 		"Music:",
+		"Classic Music:",
 		"Fancy Water:",
-		"Fancy Lighting:",
 		"Quick Cast:",
 		"D-Pad To Move:",
 		"Configure Controls",
@@ -731,11 +741,11 @@ void RenderOptionsMenu(MGLDraw *mgl)
 			case OPT_MUSICVOL:
 				sprintf(s, "%s", onoff[opt.musicVol]);
 				break;
+			case OPT_CLASSICMUSIC:
+				sprintf(s, "%s", fxonoff[opt.classicMusic]);
+				break;
 			case OPT_FANCYWATER:
 				sprintf(s, "%s", fxonoff[opt.waterFX]);
-				break;
-			case OPT_FANCYLIGHTING:
-				sprintf(s, "%s", fxonoff[opt.lightFX]);
 				break;
 			case OPT_DPADTOMOVE:
 				sprintf(s, "%s", fxonoff[opt.dpadToMove]);
@@ -769,8 +779,14 @@ void RenderOptionsMenu(MGLDraw *mgl)
 				CenterPrint(HALFWID,460, "Hey man, is that Mystic Rock? Well turn it up, man!", 0, 1);
 				break;
 			case OPT_FANCYWATER:
-			case OPT_FANCYLIGHTING:
 				CenterPrint(HALFWID, 460, "This is a holdover from the Pentium 386 days. Leave it on.", 0, 1);
+				break;
+			case OPT_CLASSICMUSIC:
+#ifdef NDEBUG
+				CenterPrint(HALFWID, 460, "This feature is locked to classic music for now.", 0, 1);
+#else
+				CenterPrint(HALFWID, 460, "Listen to the original Kid Mystic soundtrack, in all its lo-fi glory.", 0, 1);
+#endif
 				break;
 			case OPT_SPELL_QUICK:
 				if (opt.quickCast == QUICKCAST_CASTANDSELECT)
@@ -851,7 +867,7 @@ TASK(void) OptionsMenu(MGLDraw *mgl)
 	mgl->LastKeyPressed();
 	
 	StartClock();
-	if(CurrentSong()!=SONG_SHOP && CurrentSong()!=SONG_INTRO)
+	if(CurrentSongAdjusted()!=SONG_SHOP && CurrentSongAdjusted()!=SONG_INTRO)
 		PlaySong(SONG_SHOP);
 	InitOptionsMenu();
 

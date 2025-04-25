@@ -5,6 +5,7 @@
 #include "game.h"
 #include "title.h"
 #include <string>
+#include "options.h"
 
 static constexpr int DISPLAY_XBORDER = 300;
 static constexpr int DISPLAY_YBORDER = 300;
@@ -131,9 +132,9 @@ TASK(void) ShowVictoryAnim(byte world)
 			break;
 		case 11:
 			StopSong();
-			MakeNormalSound(SONG_INTRO);
+			MakeNormalSound(opt.classicMusic?SONG_INTRO:NEWSNG_INTRO);
 			AWAIT FLI_play("graphics/Intro.flc",0,60,mgl);
-			JamulSoundStop(SONG_INTRO);
+			JamulSoundStop(opt.classicMusic?SONG_INTRO:NEWSNG_INTRO);
 			if (CurrentSong())
 				ReplaySong();
 			break;

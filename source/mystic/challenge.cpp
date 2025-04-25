@@ -1543,7 +1543,7 @@ TASK(byte) ChallengeMenu(MGLDraw *mgl)
 	int lastTime=1;
 
 	InitChallengeMenu(mgl);
-	if(CurrentSong()!=SONG_SHOP)
+	if(CurrentSongAdjusted()!=SONG_SHOP)
 		PlaySong(SONG_SHOP);
 	while(b==0)
 	{
@@ -1569,7 +1569,7 @@ TASK(byte) ChallengeMenu(MGLDraw *mgl)
 					AWAIT ChallengePlay(chal[chalCursor].chapter,chal[chalCursor].level);
 				else
 					AWAIT ChallengePlay(chal[chalCursor].chapter-4,chal[chalCursor].level);
-				if(CurrentSong()!=SONG_SHOP)
+				if(CurrentSongAdjusted()!=SONG_SHOP)
 					PlaySong(SONG_SHOP);
 
 				player.life=player.maxLife;

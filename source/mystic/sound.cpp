@@ -92,7 +92,10 @@ void ReplaySong()
 		return;
 
 	char s[64];
-	sprintf(s, "sound/snd%03d.wav", curSong);
+	if(curSong>=MODERN_SONG_START)
+		sprintf(s, "sound/snd%03d.mp3", curSong);
+	else
+		sprintf(s, "sound/snd%03d.wav", curSong);
 	PlaySongFile(s);
 }
 
@@ -100,7 +103,11 @@ void PlaySong(int sng)
 {
 	if(!SoundIsAvailable())
 		return;
-
+	if (sng >= CLASSIC_SONG_START && sng <= CLASSIC_SONG_END)
+	{
+		if (!opt.classicMusic)
+			sng = (sng - CLASSIC_SONG_START) + MODERN_SONG_START;
+	}
 	if(sng == curSong)
 		return;	// no need, it's already playing our song
 
@@ -168,6 +175,14 @@ void VolumeSound(byte hi)
 			JamulSoundVolume(255);
 			break;
 	}
+}
+
+int CurrentSongAdjusted(void)
+{
+	if (curSong >= MODERN_SONG_START)
+		return (curSong - MODERN_SONG_START) + CLASSIC_SONG_START;
+	else
+		return curSong;
 }
 
 int CurrentSong(void)

@@ -436,7 +436,7 @@ TASK(void) AchieveMenu(MGLDraw *mgl)
 	int lastTime=1;
 
 	StartClock();
-	if(CurrentSong()!=SONG_SHOP && CurrentSong()!=SONG_INTRO)
+	if(CurrentSongAdjusted()!=SONG_SHOP && CurrentSongAdjusted()!=SONG_INTRO)
 		PlaySong(SONG_SHOP);
 	InitAchieveMenu();
 	if (CheatStoneCheck())

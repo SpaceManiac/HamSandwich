@@ -33,6 +33,7 @@ static const char credits[][64]={
 	"%",
 	"Music",
 	"Brent Christian",
+	"Thomas Reed",
 	"%",
 	"Level Design",
 	"Mike Hommel",
@@ -45,6 +46,8 @@ static const char credits[][64]={
 #include "../credits.inl"
 	"%",
 	"Testers",
+	"Ben Rose",
+	"Megadog",
 	"Corey 'Coolguy' Connolly",
 	"Micah Green",
 	"Bryan Harrington",
@@ -310,7 +313,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 	title.moonY=SCRHEI;
 	startTime=timeGetTime();
 	StartClock();
-	if(CurrentSong()!=SONG_SHOP && CurrentSong()!=SONG_INTRO)
+	if(CurrentSongAdjusted()!=SONG_SHOP && CurrentSongAdjusted()!=SONG_INTRO)
 		PlaySong(SONG_SHOP);
 	while(b==0)
 	{
