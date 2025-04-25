@@ -33,7 +33,7 @@ static const char credits[][64]={
 	"%",
 	"Music",
 	"Brent Christian",
-	"Thomas Reed",
+	"Taylor R.",
 	"%",
 	"Level Design",
 	"Mike Hommel",
