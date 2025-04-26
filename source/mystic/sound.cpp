@@ -70,7 +70,7 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 		return;	// too quiet to play
 	if (SoundAlreadyPlayed((byte)snd,vol))
 		return;
-		
+
 	GoPlaySound(snd,pan * 127 / SCRWID,vol * 255 / 5000,(byte)flags,priority);
 	MarkSoundPlayed(snd,vol);
 }
@@ -93,7 +93,7 @@ void ReplaySong()
 
 	char s[64];
 	if(curSong>=MODERN_SONG_START)
-		sprintf(s, "sound/snd%03d.mp3", curSong);
+		sprintf(s, "sound/snd%03d.ogg", curSong);
 	else
 		sprintf(s, "sound/snd%03d.wav", curSong);
 	PlaySongFile(s);
