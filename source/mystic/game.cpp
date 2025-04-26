@@ -782,6 +782,8 @@ void HandleKeyPresses(void)
 
 	if((ButtonTapped(CONTROL_ESCAPE)) && gameMode == GAMEMODE_PLAY && !windingUp && !windingDown && !newGame)
 		PauseGame();
+	if (GetGameIdle() && gameMode == GAMEMODE_PLAY)
+		PauseGame();
 }
 
 TASK(byte) PlayALevel(byte map)
