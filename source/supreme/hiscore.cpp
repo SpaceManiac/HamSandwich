@@ -382,7 +382,10 @@ dword ChecksumMap(Map *map)
 					AddToSum(map->special[i].effect[j].flags);
 					AddToSum(map->special[i].effect[j].x);
 					AddToSum(map->special[i].effect[j].y);
-					AddToSum(map->special[i].effect[j].value);
+					if (map->special[i].effect[j].type == EFF_SOUND)
+						AddToSum(SoundToDescIndex(map->special[i].effect[j].value));
+					else
+						AddToSum(map->special[i].effect[j].value);
 					AddToSum(map->special[i].effect[j].value2);
 				}
 			}
