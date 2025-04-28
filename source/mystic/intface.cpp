@@ -378,6 +378,14 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 			Print(9,monsY-21,monsName,0,2);
 	}
 
+	if (!ClassicMode() && player.skillPts > 0)
+	{
+		sprintf(s, "%d Skill Points!", player.skillPts);
+		PrintBright(44 + 1, 37 + 1, s, -31, 2);
+		if ((flip % 32) > 4)
+			PrintBrightGlow(44, 37, s, 0, 2);
+	}
+
 	// the keyring
 	if(PlayerKeys(3))
 		intfaceSpr->GetSprite(SPR_KEYRING+1)->Draw(KEYRINGX,KEYRINGY,mgl);
