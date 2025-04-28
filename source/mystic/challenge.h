@@ -39,6 +39,7 @@
 #define CE_SMASHBALL 11 // hit a wall in smashball
 #define CE_COOK		12 // cooked at quality level N%
 #define CE_ECTOPLASM 13 // collected N ectoplasm
+#define CE_CHEAT    14  // used a cheat
 
 #define HOURGLASS_BONUS (20)	// percent of time the hourglass grants you
 
@@ -86,6 +87,7 @@ typedef struct attempt_t
 	byte goalOk[5];
 	dword letterMaxClock;
 	byte quit;
+	bool cheated;
 } attempt_t;
 
 TASK(byte) ChallengeMenu(MGLDraw *mgl);

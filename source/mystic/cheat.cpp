@@ -79,6 +79,7 @@ void DoCheat(byte w)
 			MakeNormalSound(SND_CHEATWIN);
 			NewMessage("Lemme out!",30);
 			SendMessageToGame(MSG_WINLEVEL,0);
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 1:	// max hammer up
 			for(i=0;i<5;i++)
@@ -88,6 +89,7 @@ void DoCheat(byte w)
 			PlayerGetItem(ITM_REVERSE,0,0);
 			PlayerGetItem(ITM_REFLECT,0,0);
 			NewMessage("ULTRA FIRE UP!!",30);
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 2:	// meganuke
 			GetCamera(&cx,&cy);
@@ -99,6 +101,7 @@ void DoCheat(byte w)
 							0,BLT_BOOM);
 			}
 			ShakeScreen(10);	// make the screen shake!
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 3:	// all keys
 			for(i=0;i<3;i++)
@@ -107,33 +110,40 @@ void DoCheat(byte w)
 			PlayerGetItem(ITM_KEYG,0,0);
 			PlayerGetItem(ITM_KEYB,0,0);
 			NewMessage("I am the keymaster!",30);
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 4:	// restore health
 			PlayerHeal(128);
 			player.mana=128;
 			NewMessage("Aaaaah",30);
 			MakeNormalSound(SND_HEALTHCHEAT);
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 5:	// shield
 			player.stoneskin=30*20;
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 6:	// water-walk
 			ToggleWaterwalk();
 			MakeNormalSound(SND_CHEATWIN);
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 7: // gain a level
 			if(player.level<MAX_PLAYERLEVEL)
 				player.level++;
 			NewMessage("Level Up!",30);
+			// Not CE_CHEAT because this doesn't instantly grant HP or MP or score.
 			break;
 		case 8: // money
 			player.runeStones = MAX_RUNESTONES;
 			GainMoney(50000);
 			NewMessage("DINERO POR TODOS!",30);
+			// Not CE_CHEAT because GainMoney doesn't grant score.
 			break;
 		case 9:
 			opt.challenge = 1;
 			NewMessage("That wasn't much of a challenge!", 30);
+			// Not CE_CHEAT, obviously!
 			break;
 		// THE REST ARE TEMP CHEATS!
 		case 10:
@@ -150,6 +160,7 @@ void DoCheat(byte w)
 			break;
 		case 13:
 			PlayerGetPoints(10000);
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 14:
 			if (PlayerHasSword())
@@ -183,6 +194,7 @@ void DoCheat(byte w)
 					player.levelNum=15;
 					break;
 			}
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 16:
 			if(player.worldNum==3)
@@ -208,6 +220,7 @@ void DoCheat(byte w)
 		case 18:
 			player.mana = player.maxMana;
 			NewMessage("mana mana mana", 30);
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 19:
 			player.skillPts += 10;

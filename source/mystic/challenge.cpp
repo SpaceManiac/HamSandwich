@@ -8,6 +8,7 @@
 #include "appdata.h"
 #include "achieves.h"
 #include "steam.h"
+#include "options.h"
 
 #define ASK_RESETCHAR	1
 #define ASK_RESETSTAR	2
@@ -15,7 +16,7 @@
 #define ASK_BUY			4
 #define ASK_TRIVIA		5
 
-challenge_t chal[]={
+static challenge_t chal[]={
 	{255,1,0,"Item Shop",0,0,
 		{{GOAL_FINISH,0},
 		{GOAL_FINISH,0},
@@ -543,8 +544,8 @@ challenge_t chal[]={
 };
 
 static byte chalCursor,numChals,fairyOn,challenging=0;
-chalData_t chalData;
-attempt_t attempt;
+static chalData_t chalData;
+static attempt_t attempt;
 static sprite_set_t *chalSpr;
 static byte *backgd;
 static int offY;
@@ -1535,6 +1536,15 @@ void InitAttempt(void)
 			attempt.letterMaxClock=chal[chalCursor].goal[i].n;
 	}
 	attempt.quit=0;
+
+	// Stamana, FireUp, and Rebirth affect the player character and thus count as cheating.
+	// Pickpocket coins count towards the score, so it counts too.
+	// HappyStick and NonRandom have no effect in Challenge Mode.
+	attempt.cheated =
+		opt.cheatStone[(int)CheatStone::STAMANA] == CHEATSTONE_ON ||
+		opt.cheatStone[(int)CheatStone::PICKPOCKET] == CHEATSTONE_ON ||
+		opt.cheatStone[(int)CheatStone::FIREUP] == CHEATSTONE_ON ||
+		opt.cheatStone[(int)CheatStone::REBIRTH] == CHEATSTONE_ON;
 }
 
 TASK(byte) ChallengeMenu(MGLDraw *mgl)
@@ -1745,6 +1755,9 @@ void ChallengeEvent(byte type,int n)
 			break;
 		case CE_QUIT:
 			attempt.quit=1;
+			break;
+		case CE_CHEAT:
+			attempt.cheated = true;
 			break;
 	}
 	if(attempt.score<0)
@@ -2006,21 +2019,24 @@ void InitChallengeTally(MGLDraw *mgl)
 		attempt.bestCombo=0;
 	CompleteGoals();
 
-	int timeLimit = chal[chalCursor].time;
-	if (player.gear & GEAR_FEATHER)
+	if (!attempt.cheated)
 	{
-		timeLimit = timeLimit * (100 + HOURGLASS_BONUS) / 100;
+		int timeLimit = chal[chalCursor].time;
+		if (player.gear & GEAR_FEATHER)
+		{
+			timeLimit = timeLimit * (100 + HOURGLASS_BONUS) / 100;
+		}
+		int timeTaken = timeLimit - attempt.time;
+
+		if(attempt.score>(int)chalData.topScore[chalCursor])
+			chalData.topScore[chalCursor]=attempt.score;
+		if(attempt.goalOk[0] && timeTaken < chalData.topTime[chalCursor])
+			chalData.topTime[chalCursor] = timeTaken;
+		if(attempt.bestCombo>chalData.topCombo[chalCursor])
+			chalData.topCombo[chalCursor]=attempt.bestCombo;
+
+		Steam()->UploadChallengeScore(chalDifficulty, chal, numChals, &chalData);
 	}
-	int timeTaken = timeLimit - attempt.time;
-
-	if(attempt.score>(int)chalData.topScore[chalCursor])
-		chalData.topScore[chalCursor]=attempt.score;
-	if(attempt.goalOk[0] && timeTaken < chalData.topTime[chalCursor])
-		chalData.topTime[chalCursor] = timeTaken;
-	if(attempt.bestCombo>chalData.topCombo[chalCursor])
-		chalData.topCombo[chalCursor]=attempt.bestCombo;
-
-	Steam()->UploadChallengeScore(chalDifficulty, chal, numChals, &chalData);
 }
 
 TASK(void) ChallengeTally(MGLDraw *mgl)
