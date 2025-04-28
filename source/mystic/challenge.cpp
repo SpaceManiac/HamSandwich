@@ -1391,7 +1391,7 @@ void LoadChallenge(void)
 	owned::SDL_RWops f;
 
 	if(chalDifficulty==Difficulty::CLASSIC)
-		f = AppdataOpen("challenge.sav");
+		f = AppdataOpen("challenge_c.sav");
 	else if(chalDifficulty==Difficulty::MODERN)
 		f = AppdataOpen("challenge_m.sav");
 	else if (chalDifficulty == Difficulty::BRUTAL_CLASSIC)
@@ -1424,7 +1424,7 @@ void LoadChallengePercents(byte pcts[4])
 	for (i = 0; i < 4; i++)
 	{
 		if (i==0)
-			f = AppdataOpen("challenge.sav");
+			f = AppdataOpen("challenge_c.sav");
 		else if (i==1)
 			f = AppdataOpen("challenge_m.sav");
 		else if (i==2)
@@ -1452,7 +1452,7 @@ void SaveChallenge(void)
 	owned::SDL_RWops f;
 
 	if (chalDifficulty == Difficulty::CLASSIC)
-		f = AppdataOpen_Write("challenge.sav");
+		f = AppdataOpen_Write("challenge_c.sav");
 	else if (chalDifficulty == Difficulty::MODERN)
 		f = AppdataOpen_Write("challenge_m.sav");
 	else if (chalDifficulty == Difficulty::BRUTAL_CLASSIC)
