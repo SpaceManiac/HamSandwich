@@ -380,7 +380,10 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 
 	if (!ClassicMode() && player.skillPts > 0)
 	{
-		sprintf(s, "%d Skill Points!", player.skillPts);
+		if(player.skillPts==1)
+			sprintf(s, "%d Skill Point!", player.skillPts);
+		else
+			sprintf(s, "%d Skill Points!", player.skillPts);
 		PrintBright(44 + 1, 37 + 1, s, -31, 2);
 		if ((flip % 32) > 4)
 			PrintBrightGlow(44, 37, s, 0, 2);
