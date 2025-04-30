@@ -148,9 +148,6 @@ void InitOptions(void)
 	}
 	ApplyControlSettings();
 	opt.lightFX = 1;	// in case you saved it with them turned off
-#ifdef NDEBUG
-	opt.classicMusic = 1;
-#endif
 }
 
 void ExitOptions(void)
@@ -248,13 +245,9 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 				opt.waterFX = 1 - opt.waterFX;
 				break;
 			case OPT_CLASSICMUSIC:
-#ifndef NDEBUG
 				StopSong();
 				opt.classicMusic = 1 - opt.classicMusic;
 				PlaySong(SONG_SHOP);
-#else
-				MakeNormalSound(SND_UNAVAILABLE);
-#endif
 				break;
 			case OPT_DPADTOMOVE:
 				opt.dpadToMove = 1 - opt.dpadToMove;
@@ -782,11 +775,7 @@ void RenderOptionsMenu(MGLDraw *mgl)
 				CenterPrint(HALFWID, 460, "This is a holdover from the Pentium 386 days. Leave it on.", 0, 1);
 				break;
 			case OPT_CLASSICMUSIC:
-#ifdef NDEBUG
-				CenterPrint(HALFWID, 460, "This feature is locked to classic music for now.", 0, 1);
-#else
 				CenterPrint(HALFWID, 460, "Listen to the original Kid Mystic soundtrack, in all its lo-fi glory.", 0, 1);
-#endif
 				break;
 			case OPT_SPELL_QUICK:
 				if (opt.quickCast == QUICKCAST_CASTANDSELECT)
