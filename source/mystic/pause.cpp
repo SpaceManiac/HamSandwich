@@ -128,7 +128,9 @@ void RenderSlotPickMenu(void)
 	{
 		if (saveOffset == 245)
 		{
-			sprintf(s, "Bk%d", i + 1);
+			sprintf(s, "%d", i + 1);
+			PrintBrightGlow(subX + 200 + 35 + 15 - 8 - GetStrLength(s,0) - GetStrLength("BK", 2), 50 + i * 40, "BK", -16 + (saveCursor == i) * 16, 2);
+			sprintf(s, "  %d", i + 1);
 		}
 		else
 		{
@@ -538,7 +540,8 @@ void RenderWeirdMenu(void)
 	RenderWeirdOption(x, y + 240, "Sword Skulls:", !player.disableSword, (subcursor == 12), PlayerHasSword());
 	RenderWeirdOption(x, y + 260, "Orb Compass:", !player.disableOrbRadar, (subcursor == 13), (player.gear & GEAR_COMPASS));
 	RenderWeirdOption2(x, y + 280, "Quick Cast:", opt.quickCast, (subcursor == 14), true);
-	PrintBrightGlow(x, y+300, "Exit", -16 + 32 * (subcursor==15), 2);
+	RenderWeirdOption(x, y + 300, "Skill Pt Alert:", !player.disableSkillWarning, (subcursor == 15), true);
+	PrintBrightGlow(x, y+320, "Exit", -16 + 32 * (subcursor==16), 2);
 
 	switch (subcursor)
 	{
@@ -614,7 +617,6 @@ void InitPauseMenu(void)
 	lastKey=0;
 	subMode=0;
 
-	GetSaves();
 	MakeNormalSound(SND_PAUSE);
 	if(cursor==4 && (!giveUp))
 		cursor=0;
@@ -692,6 +694,10 @@ PauseResult UpdatePauseMenu(MGLDraw *mgl)
 					LockOutControl(CONTROL_B1, true);
 					return PauseResult::Resume;
 				case 1:	// Load
+					saveOffset = (opt.lastSaveSlotUsed/5)*5;	// even if it's a backup, we're gonna point you to the actual last place we saved
+					saveCursor = opt.lastSaveSlotUsed-saveOffset;
+					GetSaves();
+
 					subMode=SUBMODE_SLOTPICK;
 					break;
 				case 2: // Save
@@ -699,6 +705,9 @@ PauseResult UpdatePauseMenu(MGLDraw *mgl)
 						return PauseResult::GiveUp;
 					else
 					{
+						saveOffset = (player.lastLegitSaveSlot / 5) * 5;	// if you saved into a backup, we still want to suggest your last legit save slot for saving
+						saveCursor = player.lastLegitSaveSlot - saveOffset;
+						GetSaves();
 						subMode = SUBMODE_SLOTPICK;
 					}
 					break;
@@ -797,7 +806,7 @@ PauseResult UpdatePauseMenu(MGLDraw *mgl)
 			}
 			else if(effCursor==2)	// Save
 			{
-				if(saveOffset == 245)
+				if(saveOffset >= 245)
 				{
 					MakeNormalSound(SND_ACIDSPLAT);
 				}
@@ -806,6 +815,9 @@ PauseResult UpdatePauseMenu(MGLDraw *mgl)
 					PlayerSaveGame(saveOffset + saveCursor);
 					MakeNormalSound(SND_SAVEGAME);
 					subMode=SUBMODE_NONE;
+					opt.lastSaveSlotUsed = saveOffset + saveCursor;
+					player.lastLegitSaveSlot = opt.lastSaveSlotUsed;
+					player.movedSinceSave = 0;
 					return PauseResult::Resume;
 				}
 			}
@@ -818,13 +830,13 @@ PauseResult UpdatePauseMenu(MGLDraw *mgl)
 			MakeNormalSound(SND_MENUCLICK);
 			subcursor--;
 			if (subcursor == 255)
-				subcursor = 15;
+				subcursor = 16;
 		}
 		if (AutoRepeatTapped(CONTROL_DN))
 		{
 			MakeNormalSound(SND_MENUCLICK);
 			subcursor++;
-			if (subcursor > 15)
+			if (subcursor > 16)
 				subcursor = 0;
 		}
 		if (ButtonTapped(CONTROL_B2))
@@ -902,6 +914,10 @@ PauseResult UpdatePauseMenu(MGLDraw *mgl)
 						opt.quickCast = QUICKCAST_SELECTONLY;
 					break;
 				case 15:
+					MakeNormalSound(SND_MENUSELECT);
+					player.disableSkillWarning = 1-player.disableSkillWarning;
+					break;
+				case 16:
 					MakeNormalSound(SND_MENUSELECT);
 					subMode = SUBMODE_NONE;
 					break;

@@ -169,8 +169,10 @@ void MainMenuDisplay(MGLDraw *mgl,title_t title,bool hideAchieves)
 
 	memcpy(mgl->GetScreen(),backgd,SCRWID*SCRHEI);
 
-	Print(SCRWID-285,468,"Copyright 2004-2025, Hamumu Software",0,1);
-	Print(2,468,VERSION_NO,0,1);
+	if (!hideAchieves)
+		Print(SCRWID - 285, 468, "Copyright 2004-2025, Hamumu Software", 0, 1);
+
+	Print(2, 468, VERSION_NO, 0, 1);
 
 	for(i=0;i<5;i++)
 	{
@@ -424,10 +426,10 @@ void GameSlotPickerDisplay(MGLDraw *mgl,title_t title)
 			sprintf(s, "Bk%d", i + 1);
 			if (i == 0)
 			{
-				CenterPrint(SCRWID - HALFWID / 2 + 1, 200 - 30 + 1, "Backups are saved automatically", -31, 1);
-				CenterPrint(SCRWID - HALFWID / 2 + 1, 200 - 18 + 1, "whenever you exit the game!", -31, 1);
-				CenterPrint(SCRWID - HALFWID / 2, 200 - 30, "Backups are saved automatically", 0, 1);
-				CenterPrint(SCRWID - HALFWID / 2, 200 - 18, "whenever you exit the game!", 0, 1);
+				CenterPrint(SCRWID - HALFWID / 2 +10 + 1, 480 - 30 + 1, "Backups are saved automatically", -31, 1);
+				CenterPrint(SCRWID - HALFWID / 2 +10 + 1, 480 - 18 + 1, "whenever you exit the game!", -31, 1);
+				CenterPrint(SCRWID - HALFWID / 2+10, 480 - 30, "Backups are saved automatically", 0, 1);
+				CenterPrint(SCRWID - HALFWID / 2+10, 480 - 18, "whenever you exit the game!", 0, 1);
 			}
 		}
 		else
@@ -560,8 +562,9 @@ TASK(byte) GameSlotPicker(MGLDraw *mgl,title_t *title)
 	byte b=0;
 	int lastTime=1;
 
-	title->saveOffset=0;
-	title->savecursor=0;
+	title->saveOffset = (opt.lastSaveSlotUsed/5)*5;
+	title->savecursor = opt.lastSaveSlotUsed-title->saveOffset;
+	
 	InitGameSlotPicker(mgl,title);
 
 	while(b==0)
@@ -755,6 +758,9 @@ TASK(byte) DifficultyPicker(MGLDraw* mgl, title_t* title)
 	if (b == 1)	// something was selected
 	{
 		InitPlayer(INIT_GAME, 0, 0);
+		// we are resetting the last slot since we're starting fresh
+		if (title->cursor != 2)	// but not if we're going into challenge mode
+			opt.lastSaveSlotUsed = 0;
 		CO_RETURN 1;
 	}
 	else

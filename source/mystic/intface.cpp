@@ -378,7 +378,7 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 			Print(9,monsY-21,monsName,0,2);
 	}
 
-	if (!ClassicMode() && player.skillPts > 0)
+	if (!ClassicMode() && player.skillPts > 0 && !player.disableSkillWarning)
 	{
 		if(player.skillPts==1)
 			sprintf(s, "%d Skill Point!", player.skillPts);

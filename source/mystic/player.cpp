@@ -75,6 +75,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	manaRuneValue = 0;
 	if(initWhat==INIT_GAME)	// initialize everything, this is to start a whole new game
 	{
+		player.lastLegitSaveSlot = 0;
 		Difficulty diff = player.difficulty;
 		memset(&player, 0, sizeof(player_t));
 		player.saveVersion = SAVE_VERSION;
@@ -172,6 +173,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.hamSpeed -=HAMMER_UP_AMOUNT*2;
 	}
 	CheckForAllSecrets();
+	player.movedSinceSave = 1;	// you haven't saved yet, so you have 'moved since save'
 }
 
 void ExitPlayer(void)
@@ -215,12 +217,15 @@ void PlayerLoadGame(byte which)
 	player.prevExp=player.experience;
 	player.prevLevel=player.level;
 	player.prevBigMoney = player.bigMoney;
+	opt.lastSaveSlotUsed = which;
+	if (which < 245)
+		player.lastLegitSaveSlot = which;
 }
 
 void PlayerSaveGame(byte which)
 {
 	char s[32];
-
+	
 	player.prevMoney=player.money;
 	player.prevBigMoney = player.bigMoney;
 	sprintf(s, "mystic%d.sav", which+1);

@@ -1068,6 +1068,9 @@ TASK(byte) LunaticGame(MGLDraw *mgl,byte load)
 
 		if (worldResult == WORLD_QUITGAME || worldResult == WORLD_ABORT)
 		{
+			if (player.movedSinceSave)
+				opt.lastSaveSlotUsed = 245;	// if you didn't save before quitting, then the backup is the last save you saved
+				
 			AutoSave();  // No Challenging() check needed because ChallengePlay is separate.
 			mgl->LastKeyPressed();	// just to clear key buffer
 			break;

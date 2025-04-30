@@ -6,7 +6,7 @@
 #include "control.h"
 
 #define OPT_VERSION (2)
-#define OPT_EXPANSION_SIZE (241)
+#define OPT_EXPANSION_SIZE (240)
 
 #define OPT_SOUNDVOL (0)
 #define OPT_MUSICVOL (1)
@@ -45,6 +45,7 @@ typedef struct option_t
 	byte dpadToMove;
 	byte quickCast;
 	byte classicMusic;
+	byte lastSaveSlotUsed;
 	byte expansionSpace[OPT_EXPANSION_SIZE];
 	byte achieve[(int)Achievement::NUM_ACHIEVES];
 	byte cheatStone[(int)CheatStone::NUM_CHEATSTONES];

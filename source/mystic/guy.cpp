@@ -931,6 +931,8 @@ void Guy::Update(Map *map,world_t *world)
 
 	if (oldmapx != mapx || oldmapy != mapy)
 	{
+		if(type==MONS_BOUAPHA)
+			player.movedSinceSave = 1;
 		SpecialStepCheck(map, mapx, mapy, this);
 	}
 	bright=map->map[mapx+mapy*map->width].templight;
@@ -1056,8 +1058,12 @@ void Guy::OverworldUpdate(Map *map,world_t *world)
 			map->map[mapx+mapy*map->width].floor=world->terrain[map->map[mapx+mapy*map->width].floor].next;
 		}
 	}
-	if(oldmapx!=mapx || oldmapy!=mapy)
-		SpecialStepCheck(map,mapx,mapy,this);
+	if (oldmapx != mapx || oldmapy != mapy)
+	{
+		if (type == MONS_BOUAPHA)
+			player.movedSinceSave = 1;
+		SpecialStepCheck(map, mapx, mapy, this);
+	}
 
 	mapTile_t* tile = map->GetTile(mapx, mapy);
 	bright = tile ? tile->templight : -32;
