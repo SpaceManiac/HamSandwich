@@ -352,8 +352,8 @@ void RenderItAll(world_t *world,Map *map,byte flags)
 	if(shakeTimer)
 	{
 		shakeTimer--;
-		scrx-=2+MGL_random(5);
-		scry-=2+MGL_random(5);
+		scrx+=2-MGL_random(5);
+		scry+=2-MGL_random(5);
 	}
 	map->Render(world,scrx,scry,flags);
 
