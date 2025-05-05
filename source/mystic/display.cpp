@@ -15,6 +15,8 @@ MGLDraw  *mgl=NULL;
 
 int scrx=HALFWID,scry=HALFHEI,scrdx=0,scrdy=0;
 int rscrx=HALFWID*FIXAMT,rscry=HALFHEI*FIXAMT;
+int lookOfsX=0, lookOfsY = 0;
+short lookAngle = -1;
 
 byte shakeTimer=0;
 
@@ -178,6 +180,9 @@ void PutCamera(int x,int y)
 	rscry=y;
 	scrdx=0;
 	scrdy=0;
+	lookOfsX = 0;
+	lookOfsY = 0;
+	lookAngle=-1;
 
 	scrx=(rscrx>>FIXSHIFT);
 	scry=(rscry>>FIXSHIFT);
@@ -187,20 +192,36 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 {
 	int desiredX,desiredY;
 
+	desiredX = x;
+	desiredY = y;
 	if (0)//ClassicMode())
 	{
-		desiredX = ((x * FIXAMT) + Cosine(facing) * 80) >> FIXSHIFT;
-		desiredY = ((y * FIXAMT) + Sine(facing) * 60) >> FIXSHIFT;
+		lookAngle = facing;
 	}
 	else
 	{
 		if (GetGoodguy() && GetGoodguy()->parent != nullptr)
 			facing = 64;	// just look down if riding a log
-		desiredX = ((x * FIXAMT) + Cosine(facing) * 160) >> FIXSHIFT;
-		desiredY = ((y * FIXAMT) + Sine(facing) * 120) >> FIXSHIFT;
-		
+		lookAngle = facing;
 	}
-	
+
+	int desLookX, desLookY;
+	if (lookAngle == -1)
+	{
+		desLookX = 0;
+		desLookY = 0;
+	}
+	else
+	{
+		desLookX = Cosine(lookAngle) * 160;
+		desLookY = Sine(lookAngle) * 120;
+	}
+
+	lookOfsX = (lookOfsX * 3 + desLookX) / 4;
+	lookOfsY = (lookOfsY * 3 + desLookY) / 4;
+
+	desiredX = x + (lookOfsX>>FIXSHIFT);
+	desiredY = y + (lookOfsY>>FIXSHIFT);
 
 	rscrx+=scrdx;
 	rscry+=scrdy;

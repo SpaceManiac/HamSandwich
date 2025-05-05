@@ -1513,7 +1513,7 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 				if (victim->type == MONS_BOUAPHA)
 				{
 					PutCamera(victim->x, victim->y);
-					UpdateCamera(victim->x, victim->y, victim->facing, map);
+					UpdateCamera(victim->x>>FIXSHIFT, victim->y>FIXSHIFT, victim->facing, map);
 					SetTportClock(30);
 				}
 				else
