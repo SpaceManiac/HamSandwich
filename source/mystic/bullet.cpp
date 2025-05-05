@@ -64,8 +64,12 @@ byte Bulletable(Map *map,int x,int y)
 
 	return 1;
 }
+
 void BurnTreesInArea(Map *map,int x, int y, int x2, int y2)
 {
+	if (VeryClassicMode())
+		return;
+
 	x /= FIXAMT;
 	y /= FIXAMT;
 	x2 /= FIXAMT;
