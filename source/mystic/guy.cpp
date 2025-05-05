@@ -2072,8 +2072,11 @@ void UpdateGuys(Map *map,world_t *world)
 			if((MonsterFlags(guys[i].type)&MF_GOODGUY)==0)
 				badguys=1;
 			guys[i].Update(map,world);
-			if(guys[i].type==MONS_BOUAPHA && player.berserk)
-				guys[i].Update(map,world);
+			if (guys[i].type == MONS_BOUAPHA && player.berserk)
+			{
+				UpdateControls();
+				guys[i].Update(map, world);
+			}
 		}
 	if (frozenGuys >= 20)
 		EarnAchieve(Achievement::ICEBLAST);
