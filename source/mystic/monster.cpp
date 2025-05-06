@@ -2419,7 +2419,7 @@ void AI_Friendly(Guy *me,Map *map,world_t *world,Guy *goodguy)
 					if (tx == 13 && ty == 22)
 						InitSpeech(53);
 					if (tx == 41 && ty == 24)
-						InitSpeech(2);
+						InitSpeech(51);
 					if (tx == 57 && ty == 60)
 					{
 						if(PlayerHasSword())
