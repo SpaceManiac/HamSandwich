@@ -1669,7 +1669,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			critChance += RuneValue(Rune::SEEKER);
 		if(BulletHittingType()==BLT_PTEROSHOT || BulletHittingType()==BLT_GOODSHOCK || BulletHittingType()==BLT_GOLEMBOOM)
 			critChance += RuneValue(Rune::SUMMON);
-		else if(player.usedSpells[SPL_SUMMON]==1)
+		else if(player.usedSpells[SPL_SUMMON]==1 && BulletHittingType() != BLT_MINIFBALL)
 			player.usedSpells[SPL_SUMMON] = 2;	// you hit an enemy somehow other than minion power.
 		// The summon achievement checks for this - other checks for spellcasting can just check if non-zero, but this one checks if SPL_SUMMON=2 to mean you failed the summon challenge
 
