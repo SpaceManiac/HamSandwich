@@ -564,7 +564,7 @@ TASK(byte) GameSlotPicker(MGLDraw *mgl,title_t *title)
 
 	title->saveOffset = (opt.lastSaveSlotUsed/5)*5;
 	title->savecursor = opt.lastSaveSlotUsed-title->saveOffset;
-	
+
 	InitGameSlotPicker(mgl,title);
 
 	while(b==0)
@@ -813,17 +813,22 @@ TASK(void) Credits(MGLDraw *mgl,byte mode)
 	mgl->LastKeyPressed();
 
 	mgl->LoadBMP("graphics/pal.bmp");
+	startTime=timeGetTime();
 	while(1)
 	{
 		UpdateControls();
 		UpdateSounds();
 
-		startTime=timeGetTime();
 		mgl->ClearScreen();
 		CreditsRender(y,mode);
 
-		if(scroll)
-			y+=1;
+		endTime=timeGetTime();
+		if (endTime - startTime >= TIME_PER_FRAME)
+		{
+			startTime += TIME_PER_FRAME;
+			if(scroll)
+				y+=1;
+		}
 
 		if(y==END_OF_CREDITS-HALFHEI*3/2 && mode==1)
 			scroll=0;
@@ -839,10 +844,6 @@ TASK(void) Credits(MGLDraw *mgl,byte mode)
 
 		if(y==END_OF_CREDITS-HALFHEI*3/2 && mode==0)
 			CO_RETURN;
-
-		endTime=timeGetTime();
-		while((endTime-startTime)<TIME_PER_FRAME)
-			endTime=timeGetTime();
 	}
 }
 
