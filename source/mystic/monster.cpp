@@ -6352,7 +6352,7 @@ void AI_Log(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	{
 		if(me->dy<FIXAMT*3)
 			me->dy+=FIXAMT/8;
-		if(me->mind1&2)
+		if((me->mind1&2) && goodguy)
 		{
 			if(map->map[me->mapx+(me->mapy+1)*map->width].floor==53)
 			{

@@ -251,14 +251,27 @@ void RenderSkillMenu(void)
 	sprintf(s, "Points: %02d", player.skillPts);
 	PrintBrightGlow(SCRWID - 80, SCRHEI - 35 - 75, s, 31, 1);
 
-	if (giveUp == 0)	// only in the overworld
+	//if (giveUp == 0)	// only in the overworld
 	{
 		// reset skills
 		if (subcursor == 36)
 			RenderSkillBox(SCRWID - 80, SCRHEI - 35 - 60, SCRWID - 10, SCRHEI - 35 - 40, 32 * 5 + 31, 32 * 5 + 10);
 		else
 			RenderSkillBox(SCRWID - 80, SCRHEI - 35 - 60, SCRWID - 10, SCRHEI - 35 - 40, 32 * 5 + 16, 32 * 5 + 6);
-		PrintBrightGlow(SCRWID - 80 + 4 + 6, SCRHEI - 35 - 60, "Reset", (subcursor == 36) * 31, 2);
+		PrintBrightGlow(SCRWID - 80 + 4 + 6, SCRHEI - 35 - 60, "Reset", (subcursor == 36) * (giveUp?12:31), 2);
+		if (subcursor == 36)
+		{
+			if (giveUp == 0)
+			{
+				PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 20 + 12 * 3, "Press Fire to reset all skills", 0, 1);
+				PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 20 + 12 * 4, "and recover the points spent.", 0, 1);
+			}
+			else
+			{
+				PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 20 + 12 * 3, "You must be in the Overworld", 0, 1);
+				PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 20 + 12 * 4, "to reset your skills.", 0, 1);
+			}
+		}
 	}
 
 	// exit
@@ -937,8 +950,8 @@ PauseResult UpdatePauseMenu(MGLDraw *mgl)
 				subcursor = 35;
 			else
 				subcursor-=6;
-			if (giveUp != 0 && subcursor == 36)
-				subcursor = 35;
+			//if (giveUp != 0 && subcursor == 36)
+				//subcursor = 35;
 		}
 		if (AutoRepeatTapped(CONTROL_DN))
 		{
@@ -980,9 +993,16 @@ PauseResult UpdatePauseMenu(MGLDraw *mgl)
 		{
 			if (subcursor == 36)
 			{
-				// reset skills
-				ResetSkills();
-				MakeNormalSound(SND_BOBBYSPIN);
+				if (giveUp == 0)
+				{
+					// reset skills
+					ResetSkills();
+					MakeNormalSound(SND_BOBBYSPIN);
+				}
+				else
+				{
+					MakeNormalSound(SND_UNAVAILABLE);
+				}
 			}
 			else if (subcursor == 37)
 			{
