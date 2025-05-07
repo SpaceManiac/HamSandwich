@@ -1575,6 +1575,8 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 			byte n = (byte)atoi(&spcl->msg[1]);
 			InitSpeech(n);
 			EnterSpeechMode();
+			GetGoodguy()->x -= GetGoodguy()->dx;
+			GetGoodguy()->y -= GetGoodguy()->dy;	// bounce off the wall
 			GetGoodguy()->dx = 0;
 			GetGoodguy()->dy = 0;	// stop it from retriggering
 			GetGoodguy()->x = ((GetGoodguy()->x / (TILE_WIDTH * FIXAMT)) * TILE_WIDTH+TILE_WIDTH/2) * FIXAMT;

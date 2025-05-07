@@ -1371,6 +1371,9 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 	if (damage > 999999)
 		fatal = true;	// just make this kill them, numbers don't matter
 
+	if (type == MONS_GHOSTSPITTER && player.worldNum == 1 && player.levelNum == 6)
+		return;	// can't kill the ghost spitter in spider's lair
+
 	brutalMul = BRUTALDMG;
 	if (player.worldNum == 3)
 		brutalMul += BRUTALCHAP4DMG;

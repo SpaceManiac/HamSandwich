@@ -139,8 +139,8 @@ void CastSpell(Guy *me)
 
 	if (!HauntedWoodsCastSpell(CurrentMap()))
 	{
-		player.mana -= cost;
-		ChallengeEvent(CE_SPELL, cost);
+		player.mana -= 1;
+		ChallengeEvent(CE_SPELL, 1);
 		return;
 	}
 
