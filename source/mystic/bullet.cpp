@@ -561,7 +561,7 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 			MakeSound(SND_ACIDSPLAT, me->x, me->y, SND_CUTOFF, 950);
 			x = (me->x >> FIXSHIFT) / TILE_WIDTH;
 			y = (me->y >> FIXSHIFT) / TILE_HEIGHT;
-			if (world->terrain[map->map[x + y * map->width].floor].flags & TF_WATER)
+			if (x>=0 && y>=0 && x<map->width && y<map->height && (world->terrain[map->map[x + y * map->width].floor].flags & TF_WATER))
 			{
 				ExplodeParticles(PART_WATER, me->x, me->y, 0, 8);
 				me->type = BLT_NONE;

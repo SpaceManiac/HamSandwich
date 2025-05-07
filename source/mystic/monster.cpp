@@ -6585,21 +6585,9 @@ void AI_PeepBomb(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			MakeSound(SND_PEEPALARM,me->x,me->y,SND_CUTOFF|SND_ONE,3000);
 			if (player.worldNum == 2 && player.levelNum == 24)	// in the order up level, they don't pursue you, just teleport you away
 			{
-				byte state, temp, stew;
-				GetOrderUpStats(&state, &stew, &temp);
-				if (state == 2)
-				{
-					GetGoodguy()->x = (6 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
-					GetGoodguy()->y = (77 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
-					map->TempTorch(GetGoodguy()->x / (TILE_WIDTH * FIXAMT), GetGoodguy()->y / (TILE_HEIGHT * FIXAMT), 31);
-				}
-				else
-				{
-					me->mind = 1;
-					me->dx = Cosine(me->mind1) * 7;
-					me->dy = Sine(me->mind1) * 7;
-					me->mind1 = 30;
-				}
+				GetGoodguy()->x = (6 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+				GetGoodguy()->y = (77 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+				map->TempTorch(GetGoodguy()->x / (TILE_WIDTH * FIXAMT), GetGoodguy()->y / (TILE_HEIGHT * FIXAMT), 31);
 			}
 			else
 			{

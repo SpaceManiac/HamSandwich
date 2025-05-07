@@ -1402,7 +1402,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 	}
 	if ((type == MONS_PEEPBOMB || type == MONS_PEEPBOMB2) && player.levelNum == 24 && player.worldNum == 2)	// can't hurt them in this level, it just makes them see you
 	{
-		byte state, temp, stews;
+		/*byte state, temp, stews;
 		GetOrderUpStats(&state, &stews, &temp);
 		if (state == 2)	// don't teleport you unless you're in mode 2, delivering stew. That would be bad and weird
 		{
@@ -1410,7 +1410,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			GetGoodguy()->x = (6 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
 			GetGoodguy()->y = (77 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
 			map->TempTorch(GetGoodguy()->x / (TILE_WIDTH * FIXAMT), GetGoodguy()->y / (TILE_HEIGHT * FIXAMT), 31);
-		}
+		}*/ 
 		return;
 	}
 	if (type == MONS_BOUAPHA && PlayerShield())
