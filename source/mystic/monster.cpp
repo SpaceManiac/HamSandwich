@@ -6339,7 +6339,7 @@ void AI_Log(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->mind==0)	// waiting to be boarded)
 	{
-		if(goodguy && RangeToTarget(me,goodguy)<70*FIXAMT)
+		if(goodguy && goodguy->type==MONS_BOUAPHA && RangeToTarget(me,goodguy)<70*FIXAMT)
 		{
 			// boarded!
 			me->mind=1;
