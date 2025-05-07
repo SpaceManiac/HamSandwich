@@ -57,6 +57,9 @@ byte SpellCost(byte spell,bool forceDowngrade)
 {
 	byte cost;
 
+	if (!ClassicMode() && player.worldNum == 1 && player.levelNum == 19 && HauntedWoodsGhosts() > 0 && GetGoodguy())
+		return 1;	// all spells cost 1 in haunted woods when magic is blocked
+
 	if (player.downgradeSpell[spell] || forceDowngrade || !player.spell[spell])
 		cost=spellCost[spell][0];
 	else
