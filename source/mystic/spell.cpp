@@ -436,11 +436,20 @@ void CastSpell(Guy *me)
 			{
 				SetPlayerGlow(64);
 				MakeNormalSound(SND_PTEROSUMMON);
-				AddGuy(me->x,me->y,FIXAMT*20,MONS_PTERO);
+				if (CountGuysOfType(MONS_PTERO) > PTERO_LIMIT)
+				{
+					// don't summon, but heal them all to full
+					HealPterosToFull();
+				}
+				else
+				{
+					AddGuy(me->x, me->y, FIXAMT * 20, MONS_PTERO);
+					if (!ClassicMode() && Random(100) < RuneValue(Rune::PALS))
+						AddGuy(me->x, me->y, FIXAMT * 20, MONS_PTERO);
+				}
 				if (!ClassicMode() && SkillValue(SKILL_DISTRACTION) > 0)
 					player.taunted = (byte)(30.0f * SkillValue(SKILL_DISTRACTION));
-				if (!ClassicMode() && Random(100) < RuneValue(Rune::PALS))
-					AddGuy(me->x, me->y, FIXAMT * 20, MONS_PTERO);
+				
 			}
 			else
 			{

@@ -2104,6 +2104,18 @@ byte BadguyCount(void)
 	return badguys;
 }
 
+int CountGuysOfType(byte type)
+{
+	int i;
+	int total = 0;
+
+	for (i = 0; i < maxGuys; i++)
+		if (guys[i].type == type)
+			total++;
+
+	return total;
+}
+
 void EditorUpdateGuys(Map *map)
 {
 	int i;
@@ -3141,6 +3153,15 @@ void HealSummons(byte amt)
 			if (guys[i].hp > MonsterHP(guys[i].type))
 				guys[i].hp = MonsterHP(guys[i].type);
 		}
+	}
+}
+
+void HealPterosToFull(void)
+{
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].hp > 0 && guys[i].type == MONS_PTERO)
+			guys[i].hp = MonsterHP(MONS_PTERO);
 	}
 }
 

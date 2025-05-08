@@ -21,6 +21,8 @@
 #define BUMP_GUY  (1)
 #define BUMP_NONE (2)
 
+#define PTERO_LIMIT	(25)
+
 class Guy final
 {
 	public:                                                
@@ -108,6 +110,8 @@ void AddBattleGuys(Map *map,byte t);
 Guy *NearestEnemy(Guy *me,bool LOS);
 Guy *GetGoodguy(void);
 byte BadguyCount(void);
+int CountGuysOfType(byte type);
+void HealPterosToFull(void);
 void KillPinkeyes(void);
 void KillAllBadguys(void);
 void FairyChange(word former,word now);
