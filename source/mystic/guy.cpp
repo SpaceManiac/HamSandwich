@@ -420,7 +420,7 @@ void Guy::SeqFinished(void)
 {
 	if (!ClassicMode() && seq == ANIM_A3 && type == MONS_BOUAPHA)
 	{
-		if (player.life >= WATER_DAMAGE)
+		if (player.life > WATER_DAMAGE)
 		{
 			// if somehow your previous safe spot has changed to water, you're dead for real
 			if (!(curWorld.terrain[CurrentMap()->map[(lastSafeX / (FIXAMT*TILE_WIDTH)) + (lastSafeY / (FIXAMT*TILE_HEIGHT)) * CurrentMap()->width].floor].flags & TF_WATER) || PlayerCanWaterwalk())
