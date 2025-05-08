@@ -171,7 +171,8 @@ typedef struct player_t
 	byte disableSkillWarning;
 	byte movedSinceSave;
 	byte lastLegitSaveSlot;
-	byte expando[158-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
+	byte energyRamp;
+	byte expando[157-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
 } player_t;
 
 extern player_t player;

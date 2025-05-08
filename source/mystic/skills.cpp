@@ -46,9 +46,9 @@ skill_t skillList[] = {
 	// row 2
 	{"Energetic Casting",
 		"Energy spells cast much much",
-		"faster.",
-		"",
-		"",
+		"faster. They also deal 2% more",
+		"damage with each blast, until",
+		"you stop shooting (300% max).",
 		0,30,"Bonus",SD_PERCENT,SPL_ENERGY},
 	{"Energy Flow",
 		"Energy spells have a chance",

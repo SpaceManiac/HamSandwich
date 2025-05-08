@@ -109,6 +109,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 
 	ResetStoredHealMana();
 	ResetStoredSeekerMana();
+	player.energyRamp = 0;
 	player.ectoplasm = 0;
 	player.castCount = 0;
 	player.storedFlames = 0;

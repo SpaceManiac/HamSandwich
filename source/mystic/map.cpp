@@ -4064,7 +4064,7 @@ void OrderUpUpdate(Map* map)
 			orderUpTemp--;
 
 		// delivery 1: 22,52-24,52 - bowl ends up at 21,49
-		if (GetGoodguy()->IsInTileRect(22, 52, 24, 52) && (orderUpDeliveries & 1) == 0)
+		if (GetGoodguy()->IsInTileRect(22, 51, 24, 52) && (orderUpDeliveries & 1) == 0)
 		{
 			orderUpDeliveries |= 1;
 			orderUpStews++;
@@ -4078,7 +4078,7 @@ void OrderUpUpdate(Map* map)
 				NewMessage("Bluh, lukewarm mush.", 60);
 		}
 		// delivery 2: 30,75-31,75 - bowl ends up at 33,72
-		if (GetGoodguy()->IsInTileRect(30,75,31,75) && (orderUpDeliveries & 2) == 0)
+		if (GetGoodguy()->IsInTileRect(30,74,31,75) && (orderUpDeliveries & 2) == 0)
 		{
 			orderUpDeliveries |= 2;
 			orderUpStews++;
@@ -4092,7 +4092,7 @@ void OrderUpUpdate(Map* map)
 				NewMessage("Ugh, it's not hot.", 60);
 		}
 		// delivery 3: 36,68-37,68 - bowl ends up at 32,65
-		if (GetGoodguy()->IsInTileRect(36, 68, 37, 68) && (orderUpDeliveries & 4) == 0)
+		if (GetGoodguy()->IsInTileRect(36, 67, 37, 68) && (orderUpDeliveries & 4) == 0)
 		{
 			orderUpDeliveries |= 4;
 			orderUpStews++;
@@ -4106,7 +4106,7 @@ void OrderUpUpdate(Map* map)
 				NewMessage("Gag! I guess it's food.", 60);
 		}
 		// delivery 4: 57,66-58,66 - bowl ends up at 55,63
-		if (GetGoodguy()->IsInTileRect(57,66,58,66) && (orderUpDeliveries & 8) == 0)
+		if (GetGoodguy()->IsInTileRect(57,65,58,66) && (orderUpDeliveries & 8) == 0)
 		{
 			orderUpDeliveries |= 8;
 			orderUpStews++;

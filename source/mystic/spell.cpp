@@ -255,9 +255,12 @@ void CastSpell(Guy *me)
 					player.wpnReload = 1;
 					me->frmTimer = 0;
 				}
+				if(SkillValue(SKILL_ENERGYRATE)>0 && player.energyRamp<200)
+					player.energyRamp+=2;
 			}
 			else
 			{
+				player.energyRamp = 0;
 				player.wpnReload=5;
 				if (!ClassicMode())
 				{

@@ -737,7 +737,16 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_LASER:
-			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,me->dx/2,me->dy/2,1,map,world))
+			i = 1;
+			j = player.energyRamp;
+			while (j > 100)
+			{
+				i ++;
+				j -= 100;
+			}
+			if (j > 0 && Random(100) < j)
+				i++;
+			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,me->dx/2,me->dy/2,i,map,world))
 			{
 				me->type=BLT_NONE;
 				ExplodeParticles(PART_SNOW2,me->x,me->y,me->z,4);
@@ -745,7 +754,16 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_LASER2:
-			j = (int)(RuneValue(Rune::ENERGY2) / 100.0f);
+			i = 1;
+			j = player.energyRamp;
+			while (j > 100)
+			{
+				i ++;
+				j -= 100;
+			}
+			if (j > 0 && Random(100) < j)
+				i++;
+			j = (int)((i*RuneValue(Rune::ENERGY2)) / 100.0f);
 			if (FindVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 8, me->dx / 2, me->dy / 2, j, map, world))
 			{
 				me->type = BLT_NONE;
