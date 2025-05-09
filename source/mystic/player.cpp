@@ -637,28 +637,38 @@ void CheckForAllSecrets(void)
 	// if you got here, you have every piece of the sword
 	if(PlayerHasSword())
 		EarnAchieve(Achievement::GETSWORD);
-	int maxRunes = 0;
-	for (i = 0; i < (int)Rune::NUM_RUNES; i++)
-		if ((player.runes[i] & RUNE_MASK) == RUNE_RANK3)
-			maxRunes++;
-	if (maxRunes == (int)Rune::NUM_RUNES)
-		EarnAchieve(Achievement::MAX_RUNES);
+	if (!ClassicMode())
+	{
+		int maxRunes = 0;
+		for (i = 0; i < (int)Rune::NUM_RUNES; i++)
+			if ((player.runes[i] & RUNE_MASK) == RUNE_RANK3)
+				maxRunes++;
+		if (maxRunes == (int)Rune::NUM_RUNES)
+			EarnAchieve(Achievement::MAX_RUNES);
+	}
 
-	if ((player.haveFairy & 65535) != 65535)
-		return;
+	if (!VeryClassicMode())
+	{
+		if ((player.haveFairy & 65535) != 65535)
+			return;
+		// if you got here, then you have every fairy
+		EarnAchieve(Achievement::ALL_FAIRIES);
+	}
 
-	// if you got here, then you have every fairy
-	EarnAchieve(Achievement::ALL_FAIRIES);
 	if (!PlayerHasSword())
 		return;
-
-	byte runes = 0;
-	for(int j=0;j<4;j++)
-		for (i = 0; i < MAX_MAPS; i++)
-			if (GotRuneInLevel(j,i))
-				runes++;
-	if (runes < 24)
-		return;	// gotta get all the runes
+	if (!ClassicMode())
+	{
+		byte runes = 0;
+		for (int j = 0; j < 4; j++)
+			for (i = 0; i < MAX_MAPS; i++)
+				if (GotRuneInLevel(j, i))
+					runes++;
+		if (runes < 24)
+			return;	// gotta get all the runes
+		if (player.runePouches < 5)
+			return;	// need all the rune pouches
+	}
 
 	for(i=0;i<9;i++)
 		if(player.gotSpell[i]==0)
@@ -680,6 +690,9 @@ byte PlayerHasAllSecrets(byte chapter)
 	byte spells[4][5]={{0,1,2,3,255},{4,5,6,7,8},{0,3,4,7,8},{1,2,5,6,255}};
 	int i;
 
+	if (VeryClassicMode())
+		return 0;	// no stick monsters in very classic
+
 	for(i=0;i<5;i++)
 	{
 		if(spells[chapter][i]!=255 && !player.gotSpell[spells[chapter][i]+10*(chapter>1)])
@@ -692,11 +705,14 @@ byte PlayerHasAllSecrets(byte chapter)
 			return 0;
 	}
 
-	byte runes = 0;
-	for (i = 0; i < MAX_MAPS; i++)
-		if (GotRuneInLevel(chapter,i))
-			runes++;
-	if (runes < 6) return 0;
+	if (!ClassicMode())
+	{
+		byte runes = 0;
+		for (i = 0; i < MAX_MAPS; i++)
+			if (GotRuneInLevel(chapter, i))
+				runes++;
+		if (runes < 6) return 0;
+	}
 
 	return (player.swordPiece[chapter]);	// it all hinges on this item now!
 }
