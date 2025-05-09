@@ -922,11 +922,14 @@ void Guy::Update(Map *map,world_t *world)
 		(world->terrain[map->map[mapx+mapy*map->width].floor].flags&TF_STEP) && !(MonsterFlags(type)&MF_FLYING) &&
 		MySpecialType(type,map,mapx,mapy))
 	{
-		MakeSound(SND_MENUCLICK,(mapx*TILE_WIDTH)*FIXAMT,(mapy*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1000);
-		map->map[mapx+mapy*map->width].floor=world->terrain[map->map[mapx+mapy*map->width].floor].next;
+		if (type == MONS_BOUAPHA || player.worldNum != 2 || player.levelNum != 16)
+		{
+			MakeSound(SND_MENUCLICK, (mapx * TILE_WIDTH) * FIXAMT, (mapy * TILE_HEIGHT) * FIXAMT, SND_CUTOFF, 1000);
+			map->map[mapx + mapy * map->width].floor = world->terrain[map->map[mapx + mapy * map->width].floor].next;
 
-		if (player.worldNum == 3 && player.levelNum == 7)
-			MinesPuzzle(map, mapx, mapy);
+			if (player.worldNum == 3 && player.levelNum == 7)
+				MinesPuzzle(map, mapx, mapy);
+		}
 	}
 
 	if (oldmapx != mapx || oldmapy != mapy)
