@@ -3388,8 +3388,7 @@ void SwampUpdate(Map* map)
 			swampScore = s;
 			if (swampScore >= 100)
 				EarnAchieve(Achievement::CHEF);
-			ChallengeEvent(CE_COOK, swampScore);
-
+			
 			if (potOrder[0] != swampRecipe[1] || potOrder[1] != swampRecipe[3])	// you did things in the wrong order (you only have to check 2, obviously!)
 			{
 				swampScore = 0;	// total fail
@@ -3424,6 +3423,7 @@ void SwampUpdate(Map* map)
 						InitSpeech(45); // above 75% is perfect, because cooking is hard
 				}
 			}
+			ChallengeEvent(CE_COOK, swampScore);
 		}
 		//SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%d > TT:%d B:%d S:%d F:%d\n", (byte)swampHaveHitBoil, swampCookTime, swampBoilTime, swampSimmerTime, 10 * 30 - swampBoilTime - swampSimmerTime);
 	}
