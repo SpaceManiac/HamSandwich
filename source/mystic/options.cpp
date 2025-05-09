@@ -4,6 +4,7 @@
 #include "clock.h"
 #include "sound.h"
 #include "appdata.h"
+#include "steam.h"
 
 option_t opt;
 byte firstRightHandOption = (OPT_EXIT+1)/2;
@@ -28,7 +29,7 @@ void ApplyControlSettings()
 	opt.key[CTL_ID_ESCAPE][2] = SDL_SCANCODE_ESCAPE;
 	opt.key[CTL_ID_B1][2] = SDL_SCANCODE_RETURN;
 	opt.key[CTL_ID_B2][2] = SDL_SCANCODE_SPACE;
-	
+
 	for (int kbd = 0; kbd < 3; ++kbd)
 	{
 		byte keys[NUM_CONTROLS];
@@ -36,7 +37,7 @@ void ApplyControlSettings()
 			keys[k] = opt.key[k][kbd];
 		SetKeyboardBindings(kbd, NUM_CONTROLS, keys);
 	}
-	
+
 	SetJoystickBindings(NUM_CONTROLS, opt.joyCtrl);
 	SetDpadToMode(opt.dpadToMove);
 }
@@ -148,6 +149,7 @@ void InitOptions(void)
 	}
 	ApplyControlSettings();
 	opt.lightFX = 1;	// in case you saved it with them turned off
+	Steam()->ProfileReady();
 }
 
 void ExitOptions(void)
@@ -186,7 +188,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 	int i;
 
 	c = mgl->LastKeyPressed();
-	
+
 	switch (optMode)
 	{
 	case OPTMODE_IDLE:	// just going through options
@@ -404,7 +406,6 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 				SetInMenu(false);
 				prevGamePad = GetRawGamepad();
 				UpdateControls();
-				
 			}
 		}
 		break;
@@ -583,7 +584,7 @@ void RenderControls(int x,int y,MGLDraw *mgl)
 	CenterPrint(x+150,y,"Keyboard1",0,1);
 	CenterPrint(x+250,y,"Keyboard2",0,1);
 	CenterPrint(x+350,y,"Gamepad",0,1);
-	
+
 	mgl->Box(x+98,y-2,x+198,y+15+hgt*8,16);
 	mgl->Box(x+198,y-2,x+298,y+15+hgt*8,16);
 	mgl->Box(x+298,y-2,x+398,y+15+hgt*8,16);
@@ -784,7 +785,7 @@ void RenderOptionsMenu(MGLDraw *mgl)
 					CenterPrint(HALFWID, 440, "Pressing a specific Spell button casts the spell immediately, without selecting it.", 0, 1);
 				else if (opt.quickCast == QUICKCAST_SELECTONLY)
 					CenterPrint(HALFWID, 440, "Pressing a specific Spell button only selects the spell, without casting it.", 0, 1);
-				
+
 				CenterPrint(HALFWID, 460, "Press the Cast button to cast your selected spell.", 0, 1);
 				break;
 			case OPT_DPADTOMOVE:
@@ -812,7 +813,6 @@ void RenderOptionsMenu(MGLDraw *mgl)
 				CenterPrint(HALFWID, 460, "made a terrible mess of things.", 0, 1);
 				break;
 		}
-			
 	}
 	else if (optMode == OPTMODE_QC_CONFIG)
 	{
@@ -854,7 +854,7 @@ TASK(void) OptionsMenu(MGLDraw *mgl)
 	int lastTime=1;
 
 	mgl->LastKeyPressed();
-	
+
 	StartClock();
 	if(CurrentSongAdjusted()!=SONG_SHOP && CurrentSongAdjusted()!=SONG_INTRO)
 		PlaySong(SONG_SHOP);
