@@ -125,6 +125,12 @@ void CastSpell(Guy *me)
 
 	if(player.life==0)
 		return;	// no shooting when you're dead
+	if (player.casting==SPL_ARMAGEDDON && !ClassicMode() && SkillValue(SKILL_MANAGETTIN) > 0 && ArmageddonIsUnderway())
+	{
+		MakeNormalSound(SND_FAILSPELL);	// no recasting dude!
+		return;
+	}
+
 	cost = SpellCost(player.casting);
 	if(player.usedSpells[player.casting]==0)
 		player.usedSpells[player.casting]=1;
@@ -580,15 +586,7 @@ void CastSpell(Guy *me)
 			player.wpnReload=10;
 			break;
 		case SPL_ARMAGEDDON: // Armageddon!
-			if(ClassicMode())
-				BeginArmageddon();
-			else
-			{
-				if (SkillValue(SKILL_MANAGETTIN) > 0 && ArmageddonIsUnderway())
-					MakeNormalSound(SND_FAILSPELL);	// no recasting dude!
-				else
-					BeginArmageddon();
-			}
+			BeginArmageddon();
 			break;
 	}
 }
