@@ -1367,7 +1367,7 @@ void SpecialTakeEffect(Map *map,special_t *spcl,Guy *victim)
 	switch(spcl->effect)
 	{
 		case SPC_GOTOMAP:
-			if (VeryClassicMode() && spcl->value != 50 && player.levelPassed[player.worldNum][spcl->value])
+			if (VeryClassicMode() && spcl->value != 50 && (player.levelPassed[player.worldNum][spcl->value]&LP_PASSED))
 				return;
 			//if((player.levelPassed[player.worldNum][spcl->value]==1) &&
 			//	player.worldNum==2 && (player.levelNum==8 || player.levelNum==10 || player.levelNum==12 || player.levelNum==14))
