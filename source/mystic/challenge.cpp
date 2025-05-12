@@ -680,6 +680,9 @@ char *GoalText(byte goal,dword n)
 
 void ResetChallengeCharacter(void)
 {
+	word stars, total;
+	stars = player.chalStars;
+	total = player.chalTotalStars;
 	InitPlayer(INIT_GAME,0,0);
 	if (ClassicMode())
 	{
@@ -689,6 +692,8 @@ void ResetChallengeCharacter(void)
 		player.haveFairy = FAIRY_GRABBY;
 	}
 	player.templePuzzleDone=1;
+	player.chalStars = stars;
+	player.chalTotalStars = total;
 }
 
 void CalcChallengePercent(void)
