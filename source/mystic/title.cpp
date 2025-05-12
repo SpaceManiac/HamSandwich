@@ -170,7 +170,7 @@ void MainMenuDisplay(MGLDraw *mgl,title_t title,bool hideAchieves)
 	memcpy(mgl->GetScreen(),backgd,SCRWID*SCRHEI);
 
 	if (!hideAchieves)
-		Print(SCRWID - 285, 468, "Copyright 2004-2025, Hamumu Software", 0, 1);
+		RightPrint(SCRWID + 1, 468, "Copyright 2004-2025, Hamumu Games, Inc.", 0, 1);
 
 	Print(2, 468, VERSION_NO, 0, 1);
 
