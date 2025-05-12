@@ -270,7 +270,76 @@ Editor features:
 
 ## Kid Mystic
 
-### HamSandwich (2019–present)
+### [Steam edition](https://store.steampowered.com/app/3531250/Kid_Mystic_Enchanted_Edition/) special features
+
+* 24 Steam Achievements to collect!
+* [Challenge mode leaderboards][kmscore] for score, time, and combo for each difficulty.
+
+[kmscore]: https://steamcommunity.com/stats/3531250/leaderboards/16369368
+
+### HamSandwich (since last release)
+
+Nothing!
+
+### v4.1 (2025-05-11)
+
+* Camera direction shifts are more gentle now, perhaps helping with motion sickness? Let us know!
+* On startup, Steam will properly credit you for any missing achievements.
+* "Take a Break" achievement no longer fails if you use a pointy hat.
+* Pteros are now capped at 25 total, but trying to summon more now heals them all to full health.
+* Logs no longer accept non-human riders.
+* Fixed a crash that occurred if you died while riding a log, and the log then crashed into things before you finished dying.
+* Fixed possible crashes if Octon Juice goes off the map.
+* Fixed CPU usage spiking in the credits screen.
+* Modern Mode
+  * The Skill Reset button is now always shown in the menu, with a message explaining you can only use it in the overworld.
+  * Energy Barrage: Energetic Casting now makes the damage ramp up by 2% per 'shot', up to 300%, until you stop firing.
+  * Otto Siko: No longer fires off seekers when you fail to cast Armageddon, during Armageddon, with the Mana Gettin' skill.
+  * Fixed falling in water with exactly 10 life left breaking the game.
+  * Chapter 1
+    * Beginnerton: The villager who explains how to cast spells now has a modern explanation of it, instead of repeating his classic speech.
+    * Beginnerton: You can no longer shoot the shootable target from inside the house.
+    * Beginnerton: The shootable wall no longer looks the same as the pushable wall.
+  * Chapter 2
+    * Mush-Aid: The button that you step on, and enemies can't, now looks different from the ones for enemies.
+    * Spiders' Lair: the ghost spitter can no longer be killed, and cannot reach the skill shard.
+    * The Hidden Temple: The entry puzzle is now 1/3 solved for you, very modern!
+    * Haunted Woods: all spells cost 1 now when they are blocked by ghosts, so you don't have to watch which spell you are using.
+  * Chapter 3
+    * The Gatehouse: fixed a single bad tile that was impassable for no reason.
+    * The Guest Chambers: You can now exit The Skeletal Path multiple times.
+    * The Vault: Enemies can no longer trigger switches, which made it difficult to complete.
+    * Twisty Passages, All Alike: It is no longer possible for the spikey sign to go weird and cause a hole to appear in a wall.
+    * Hot To Go: Shooting Peeping Bombs no longer resets your position.
+    * Hot To Go: The trigger area for feeding a villager is now bigger, so you can't skip past it using Berserk.
+    * Hot To Go: Prevented collectibles from spawning in unreachable areas.
+  * Chapter 4
+    * Horkboxes (and possibly elsewhere): Changed how you are repositioned after triggering a speech dialog, fixing an infinite conversation.
+* Classic Mode
+  * Mush-Aid: Added the 'soft lock protection' similar to Modern Mode.
+  * Surprise guest monsters have returned to Classic Mode.
+* 1999 Mode
+  * You can no longer burn down trees, since you couldn't do that in 1999.
+  * The Vault: Giving Up after getting the spell no longer prevents you from re-entering.
+* Challenge Mode
+  * Earning Challenge mode is now possible by getting 100% in any mode, not just Modern mode.
+  * Swamp Stew: You no longer earn the star for good cooking if you fail for technical reasons.
+
+### v4.0: Enchanted Edition (2025-05-05)
+
+* Modern Mode!
+  * Choose how Kid Mystic's power grows in a new skill tree.
+  * Collect new Runestones for additional upgrades.
+  * Visit a new Beginnerton as well as a very special new level in each chapter.
+  * Customize your experience with new Weird Options.
+  * And other minor visual and convenience improvements.
+* Brutal Mode! For when the base game becomes too familiar.
+* 1999 Mode! Play the game as it was before the turn of the millennium, with all its frustrations.
+* 24 Achievements, and a path to unlocking special Cheatstones.
+* A remixed and remastered soundtrack! Or a classic soundtrack option for the purists.
+* Improved controller support.
+
+### HamSandwich (2019–2025)
 
 * Stop the intro music early if skipped
 * Stop the main menu music when entering the editor

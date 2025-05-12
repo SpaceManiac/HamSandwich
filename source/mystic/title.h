@@ -6,7 +6,7 @@
 
 struct title_t;
 
-#define VERSION_NO "Version 4.0"
+#define VERSION_NO "Version 4.1"
 
 TASK(byte) MainMenu(MGLDraw *mgl);
 TASK(void) Credits(MGLDraw *mgl,byte mode);
