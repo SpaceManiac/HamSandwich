@@ -699,8 +699,8 @@ void CalcChallengePercent(void)
 	for(i=0;i<numChals;i++)
 		if(chal[i].chapter>=0 && chal[i].chapter<=7)
 			n++;
-
-	percent=(byte)(chalData.totalStars*100/(n*5));
+	
+	percent=(byte)(player.chalTotalStars*100/(n*5));
 }
 
 void ResetChallengeStats(void)
@@ -719,8 +719,8 @@ void ResetChallengeStats(void)
 		for(j=0;j<5;j++)
 			chalData.goal[i][j]=0;
 	}
-	chalData.stars=0;
-	chalData.totalStars=0;
+	player.chalStars = 0;
+	player.chalTotalStars = 0;
 	CalcChallengePercent();
 	PickForbidden();
 }
@@ -910,7 +910,7 @@ void ChallengeMenuRender(MGLDraw *mgl)
 		chalSpr->GetSprite(2)->Draw(308,27,mgl);
 		chalSpr->GetSprite(2)->Draw(255,65,mgl);
 
-		sprintf(s, "%d", chalData.stars);
+		sprintf(s, "%d", player.chalStars);
 		chalSpr->GetSprite(2)->Draw(338, 65, mgl);
 		Print(320 - GetStrLength(s, 2) + 2, 50 + 2, s, -32, 2);
 		RightPrintGlow(320, 50, s, 2);
@@ -1173,7 +1173,7 @@ byte DoQuestion(void)
 			qCursor=0;	// default to yes
 			return 0;
 		}
-		else if(chalData.stars>=chal[chalCursor].starCost)
+		else if(player.chalStars>=chal[chalCursor].starCost)
 		{
 			if(chal[chalCursor].chapter<10)
 			{
@@ -1282,7 +1282,7 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 						return 1;
 						break;
 					case ASK_BUY:
-						chalData.stars-=chal[chalCursor].starCost;
+						player.chalStars-=chal[chalCursor].starCost;
 						chalData.bought[chalCursor]=1;
 						if(chal[chalCursor].chapter>10)
 						{
@@ -1410,6 +1410,15 @@ void LoadChallenge(void)
 		f.reset();
 		memcpy(&player,&chalData.player,sizeof(player_t));
 		player.difficulty = chalDifficulty;
+		if (chalData.formerStars > player.chalStars)
+			player.chalStars = chalData.formerStars;
+		chalData.formerStars = 0;
+		chalData.formerTotalStars = 0;
+		player.chalTotalStars = 0;
+		for (int i = 0; i < MAX_CHALLENGE; i++)
+			for (int j = 0; j < 5; j++)
+				if (chalData.goal[i][j])
+					player.chalTotalStars++;
 	}
 }
 
@@ -1442,6 +1451,16 @@ void LoadChallengePercents(byte pcts[4])
 			SDL_RWread(f, &chalData, 1, sizeof(chalData_t));
 			f.reset();
 			memcpy(&player, &chalData.player, sizeof(player_t));
+			if (chalData.formerStars > player.chalStars)
+				player.chalStars = chalData.formerStars;
+			chalData.formerStars = 0;
+			chalData.formerTotalStars = 0;
+			player.chalTotalStars = 0;
+			for (int i = 0; i < MAX_CHALLENGE; i++)
+				for (int j = 0; j < 5; j++)
+					if (chalData.goal[i][j])
+						player.chalTotalStars++;
+
 			CalcChallengePercent();
 			pcts[i] = percent;
 		}
@@ -1934,8 +1953,8 @@ void CompleteGoals(void)
 			goalsDoneThisTime++;
 			if(chalData.goal[chalCursor][i]==0)
 			{
-				chalData.stars++;
-				chalData.totalStars++;
+				player.chalStars++;
+				player.chalTotalStars++;
 				GainMoney(10);
 				chalData.goal[chalCursor][i]=1;
 			}
@@ -2076,5 +2095,5 @@ byte DoTrivia(void)
 
 void CheatChal(void)
 {
-	chalData.stars+=10;
+	player.chalStars+=10;
 }

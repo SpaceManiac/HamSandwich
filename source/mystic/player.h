@@ -172,7 +172,9 @@ typedef struct player_t
 	byte movedSinceSave;
 	byte lastLegitSaveSlot;
 	byte energyRamp;
-	byte expando[157-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
+	word chalStars;
+	word chalTotalStars;
+	byte expando[153-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
 } player_t;
 
 extern player_t player;
