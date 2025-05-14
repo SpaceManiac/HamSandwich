@@ -755,7 +755,7 @@ PauseResult UpdatePauseMenu(MGLDraw *mgl)
 					break;
 				case 8:	// runes
 					subMode = SUBMODE_RUNES;
-					subcursor = 37;
+					subcursor = 0;
 					break;
 			}
 		}
