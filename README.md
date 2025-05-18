@@ -27,7 +27,7 @@ See also:
 Builds of HamSandwich for Windows, Linux, MacOS, and Android can be downloaded
 from [HamSandwich on itch.io](https://spacemaniac.itch.io/hamsandwich), either
 directly or through the [itch.io app](https://itch.io/app) for auto-updates.
-Web builds of the game can be played on [GitHub Pages](https://spacemaniac.github.io/HamSandwich/)
+Web builds of the game can be played on [GitHub Pages](https://automaticfrenzy.github.io/HamSandwich/loonyland.html)
 or on itch.io.
 
 ## Getting help
