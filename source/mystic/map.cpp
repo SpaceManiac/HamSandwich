@@ -3859,6 +3859,7 @@ void DeepEndPuzzleKill(Map* map, byte type)
 	if (ClassicMode())
 		return;
 
+	// floor 35 is gone, 101 is forming
 	//14,2,13
 	//52,41-50,41
 	if (GotSkillShardInLevel(player.worldNum, player.levelNum))
@@ -3873,27 +3874,27 @@ void DeepEndPuzzleKill(Map* map, byte type)
 		good = true;
 	if (good)
 	{
-		map->GetTile(52 - deepEndSeq, 41)->floor = 23;
-		map->GetTile(52 - deepEndSeq, 42)->floor = 34;
+		for(int i=0;i<3;i++)
+			map->GetTile(40, 51-deepEndSeq*3-i)->floor = 101;
+		
 		deepEndSeq++;
+		MakeNormalSound(SND_WALLUP);
 	}
-	else
+	else if(deepEndSeq>0)
 	{
+		MakeNormalSound(SND_WALLDOWN);
 		deepEndSeq = 0;
-		for (int i = 0; i < 3; i++)
-		{
-			map->GetTile(52 - i, 41)->floor = 35;
-			map->GetTile(52 - i, 42)->floor = 35;
-		}
+		for (int i = 0; i < 9; i++)
+			map->GetTile(40, 51-i)->floor = 35;
 		if (GetGoodguy())	// if you are out on the gangplank, you need to be sent back or you'll be stuck
 		{
 			int tx, ty;
 			tx = GetGoodguy()->x / (TILE_WIDTH * FIXAMT);
 			ty = GetGoodguy()->y / (TILE_HEIGHT * FIXAMT);
-			if (tx >= 49 && tx <= 53 && ty == 41)
+			if (tx >= 39 && tx <= 41 && ty<=51 && ty>=40)
 			{
-				GetGoodguy()->x = (53 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
-				GetGoodguy()->y = (41 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+				GetGoodguy()->x = (40 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+				GetGoodguy()->y = (52 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
 			}
 		}
 	}

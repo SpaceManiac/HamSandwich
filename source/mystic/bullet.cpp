@@ -492,6 +492,8 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 			me->timer=18;	// 9 frames of animation
 			me->dz=0;
 			MakeSound(SND_BOMBBOOM,me->x,me->y,SND_CUTOFF,200);
+			BurnTreesInArea(map, me->x - 12 * FIXAMT, me->y - 12 * FIXAMT, me->x + 12 * FIXAMT, me->y + 12 * FIXAMT);
+			SpecialShootCheck(map, me->x/(TILE_WIDTH*FIXAMT), me->y/(TILE_HEIGHT*FIXAMT), false);
 			break;
 		case BLT_ICECOMET:
 			me->type = BLT_ICECOMETBOOM;
@@ -688,6 +690,7 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 			me->anim=0;
 			if (!ClassicMode() && Random(100)<RuneValue(Rune::INFERNO2))
 				FireBullet(me->x, me->y, 0, BLT_MINE);
+			SpecialShootCheck(map, me->x / (TILE_WIDTH * FIXAMT), me->y / (TILE_HEIGHT * FIXAMT), false);
 			break;
 		case BLT_SHROOM:
 			me->x-=me->dx*2;
