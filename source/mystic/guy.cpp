@@ -668,13 +668,13 @@ void Guy::Update(Map *map,world_t *world)
 				executable = true;
 		}
 	}
-	if(frozen && hp>0)
+	if (frozen && hp > 0)
 	{
-		if(!(monsType[type].flags&MF_GOODGUY))
+		if (!(monsType[type].flags & MF_GOODGUY))
 			frozenGuys++;
-		bright=map->map[mapx+mapy*map->width].templight;
+		bright = map->map[mapx + mapy * map->width].templight;
 		frostBite++;
-		if (frostBite >= 60)
+		if (frostBite >= 30)
 		{
 			frostBite = 0;
 			word tmpFrozen = frozen;
@@ -683,15 +683,17 @@ void Guy::Update(Map *map,world_t *world)
 			if (hp > 0) frozen = tmpFrozen;	// don't let this damage disrupt your freeze state
 		}
 		frozen--;
-		if(frozen==0)
+		if (frozen == 0)
 			IceShardSpew(map, world);
-		if(ouch>0)
+		if (ouch > 0)
 			ouch--;
 		if (ouch2 > 0)
 			ouch2--;
 		return;
-
 	}
+	else if (hasBeenFrozen)
+		hasBeenFrozen--;
+
 	if (melted)
 	{
 		melted--;
@@ -1629,8 +1631,8 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			frozen+=i;
 			if (!ClassicMode())
 			{
-				if (frozen > 30 * 10)
-					frozen = 30 * 10;	// 10 second freeze cap
+				if (frozen > 30 * 15)
+					frozen = 30 * 15;	// 15 second freeze cap
 			}
 			return;
 		}
@@ -1663,7 +1665,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		float critChance = 0;
 		if(BulletHittingType()==BLT_HAMMER || BulletHittingType()==BLT_HAMMER2 || BulletHittingType()==BLT_SKULL)
 			critChance = SkillValue(SKILL_FIREBALL_CRIT);
-		if (frozen)
+		if (hasBeenFrozen)
 			critChance += SkillValue(SKILL_ICECRIT);
 		if (player.berserk)
 			critChance += SkillValue(SKILL_BERSERKCRIT);
@@ -1745,14 +1747,16 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		ouch=4;
 	hp-=damage;
 
-	bool wasFrozen = false;
-	if(frozen)	// thaw when hit
+	if(frozen && BulletHittingType()!=BLT_ICESHARD)	// thaw when hit
 	{
+		hasBeenFrozen = FROZEN_GRACE_PERIOD;
 		if(!fatal && frzDamage+damage<65000)	// don't let execution attacks count
 			frzDamage += damage;
 
-		wasFrozen = true;
-		if(frozen-damage*50<0)
+		word dmgMul = 50;
+		if (!ClassicMode() && player.nightmare)
+			dmgMul = 10;
+		if(frozen-damage*dmgMul<0)
 		{
 			if(frozen>5)
 				frozen=5;	// so they can blink a bit
@@ -1761,7 +1765,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			IceShardSpew(map, world);
 		}
 		else
-			frozen-=damage*50;
+			frozen-=damage*dmgMul;
 	}
 
 	if (CheatStoneOn(CheatStone::PICKPOCKET) && !(monsType[type].flags & MF_GOODGUY) && Random(10)==0)
@@ -1778,7 +1782,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		{
 			float amt = SkillValue(SKILL_GREED);
 			amt *= 10;
-			if (!ClassicMode() && wasFrozen)
+			if (!ClassicMode() && hasBeenFrozen)
 				amt += SkillValue(SKILL_FREEZEMONEY) * 10;
 
 			if (MGL_random(1000 - 700 * (player.fairyOn == FAIRY_RICHEY)) > (int)amt)
@@ -1917,7 +1921,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 					if (!ClassicMode())
 					{
 						byte chance = (int)SkillValue(SKILL_GREED);
-						if (wasFrozen)
+						if (hasBeenFrozen)
 							chance += (int)SkillValue(SKILL_FREEZEMONEY);
 						if (player.fairyOn == FAIRY_RICHEY)
 							chance *= 3;
@@ -1952,7 +1956,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 						{
 							float amt = SkillValue(SKILL_GREED);
 							amt *= 10;
-							if (!ClassicMode() && wasFrozen)
+							if (!ClassicMode() && hasBeenFrozen)
 								amt += SkillValue(SKILL_FREEZEMONEY) * 10;
 
 							if (freeBig == 0 && MGL_random(1000 - 700 * (player.fairyOn == FAIRY_RICHEY)) > (int)amt)
@@ -2181,6 +2185,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 			guys[i].birthState = 2;	// born - check for both wall and guy collisions and start with a tiny rect
 			if (MonsterFlags(type) & MF_WALLWALK)
 				guys[i].birthState = 0;	// wall walking enemies can spawn anywhere
+			guys[i].hasBeenFrozen = 0;
 			guys[i].frostBite = 0;
 			guys[i].myNumberParticle = 65535;
 			guys[i].stun = 0;

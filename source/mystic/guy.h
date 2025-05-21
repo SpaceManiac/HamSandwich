@@ -23,6 +23,8 @@
 
 #define PTERO_LIMIT	(25)
 
+#define FROZEN_GRACE_PERIOD (15)	// you count as frozen for 1/2s after you have been frozen, for purposes of triggering 'die while frozen' effects
+
 class Guy final
 {
 	public:                                                
@@ -82,6 +84,7 @@ class Guy final
 		word myNumberParticle;
 		int rectx,recty,rectx2,recty2;	// for collision checks
 		word ID;	// just a copy of the guy's number
+		byte hasBeenFrozen;
 };
 
 void InitGuys(int max);
