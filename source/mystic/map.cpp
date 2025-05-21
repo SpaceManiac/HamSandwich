@@ -2789,59 +2789,70 @@ void GuestChamberPuzzleStep(Map* map, int mapx, int mapy)
 	char code[] = "BONEHEAD";
 	Guy* g = GetGoodguy();
 	if (!g) return;
-	if (map->map[mapx + mapy * map->width].floor != 121 || map->map[mapx+(mapy-1)*map->width].wall<81 || map->map[mapx+(mapy-1)*map->width].wall>(81+24))
+	if (mapy==0 || map->map[mapx + mapy * map->width].floor != 121
+		|| map->map[mapx+(mapy-1)*map->width].wall<81 || map->map[mapx+(mapy-1)*map->width].wall>(81+24))
 		return;	// we only count the letter teleporters here
 
-		// 1,35-12,49
-		// 121=teleporter, 120=lit up teleporter
-		// 67 = not yet spikes, 68=spikes
-		// 3,33 = destination after each letter
+	// 1,35-12,49
+	// 121=teleporter, 120=lit up teleporter
+	// 67 = not yet spikes, 68=spikes
+	// 3,33 = destination after each letter
 
+	if (guestProgress >= 8)
+	{
+		// if you're done, teleport to the end
+		MakeNormalSound(SND_TELEPORT);
+		GuestChamberTeleport(5, 55, map);
+		return;
+	}
+
+	byte c = map->map[mapx + (mapy - 1) * map->width].wall - 81;
+	if (c == code[guestProgress] - 'A')
+	{
+		guestProgress++;
+		MakeNormalSound(SND_LIGHTSON);
+		map->BrightTorch(mapx, mapy, 96, 6);
+		map->map[mapx + (mapy - 1) * map->width].floor = 71;
+		map->map[mapx + mapy * map->width].light = 10;
 		if (guestProgress >= 8)
-		{
-			// if you're done, teleport to the end
-			MakeNormalSound(SND_TELEPORT);
 			GuestChamberTeleport(5, 55, map);
-			return;
+	}
+	else // uh oh, you are wrong
+	{
+		guestProgress = 0;
+		MakeNormalSound(SND_UNAVAILABLE);
+		GuestChamberTeleport(3, 33, map);
+		for (int i = 0; i < map->width * map->height; i++)	// reset the lit-up walls
+		{
+			if (map->map[i].floor == 71)
+			{
+				map->map[i].floor = 69;
+				map->map[i+map->width].light = -31;
+			}
 		}
 
-		byte c = map->map[mapx + (mapy - 1) * map->width].wall - 81;
-		if (c == code[guestProgress] - 'A')
+		for (int i = 0; i < 5; i++)	// add 5 spikes
 		{
-			guestProgress++;
-			MakeNormalSound(SND_LIGHTSON);
-			if (guestProgress < 8)
-				GuestChamberTeleport(3, 33, map);
-			else
-				GuestChamberTeleport(5, 55, map);
-		}
-		else // uh oh, you are wrong
-		{
-			guestProgress = 0;
-			MakeNormalSound(SND_UNAVAILABLE);
-			GuestChamberTeleport(3, 33, map);
-			for (int i = 0; i < 5; i++)	// add 5 spikes
+			byte tries = 255;
+			while (tries > 0)
 			{
-				byte tries = 255;
-				while (tries > 0)
+				int x, y;
+				x = 1 + Random(13 - 1);
+				y = 35 + Random(50 - 35);
+				if (map->map[x + y * map->width].floor == 67)
 				{
-					int x, y;
-					x = 1 + Random(13 - 1);
-					y = 35 + Random(50 - 35);
-					if (map->map[x + y * map->width].floor == 67)
+					tries = 0;
+					map->map[x + y * map->width].floor = 68;	// SPIKES!
+					if (Random(2))
 					{
-						tries = 0;
-						map->map[x + y * map->width].floor = 68;	// SPIKES!
-						if (Random(2))
-						{
-							Guy* m = AddGuy((x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, Random(2) ? MONS_PEEPBOMB : MONS_PEEPBOMB2);
-							if (m) m->mind1 = (byte)Random(256);
-						}
+						Guy* m = AddGuy((x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, Random(2) ? MONS_PEEPBOMB : MONS_PEEPBOMB2);
+						if (m) m->mind1 = (byte)Random(256);
 					}
 				}
 			}
-
 		}
+
+	}
 }
 
 void LibraryPuzzle(Map* map)
