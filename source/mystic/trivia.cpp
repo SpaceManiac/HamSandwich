@@ -479,8 +479,8 @@ trivia_t trivia[NUM_TRIVIA]={
 	{30*19,0,0,0},
 	{TE_NONE,TE_NONE},
 	{0,0},
-	{"This level had to toned down",
-	 "a lot.  It's hard to dodge those",
+	{"This level had to be toned down",
+	 "a lot. It's hard to dodge those",
 	 "rocks!",
 	 ""}},
 	{1,15,	// river rafting
