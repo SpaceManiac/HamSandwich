@@ -182,22 +182,26 @@ byte InitLevel(byte map)
 	}
 	battleIsWon=0;
 
-	switch(curMap->song)
+	if (player.worldNum == 3 && player.levelNum == 11 && !opt.classicMusic)
+		PlaySong(NEWSNG_BOBBYKHAN);
+	else
 	{
+		switch (curMap->song)
+		{
 		case 1:
-			if(player.worldNum<2)
+			if (player.worldNum < 2)
 				PlaySong(SONG_CHAP12MAP);
 			else
 				PlaySong(SONG_CHAP34MAP);
 			break;
 		case 2:
-			if(player.worldNum<2)
+			if (player.worldNum < 2)
 				PlaySong(SONG_CHAP12LEVEL);
 			else
 				PlaySong(SONG_CHAP34LEVEL);
 			break;
 		case 3:
-			if(player.worldNum<2)
+			if (player.worldNum < 2)
 				PlaySong(SONG_CHAP12FIGHT);
 			else
 				PlaySong(SONG_CHAP34FIGHT);
@@ -205,6 +209,7 @@ byte InitLevel(byte map)
 		case 4:
 			PlaySong(SONG_HAPPYSTICK);
 			break;
+		}
 	}
 	if(player.levelNum==13 && player.worldNum==1)
 		ResetTemplePuzzle(curMap);
