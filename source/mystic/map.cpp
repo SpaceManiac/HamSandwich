@@ -2820,6 +2820,7 @@ void GuestChamberPuzzleStep(Map* map, int mapx, int mapy)
 	else // uh oh, you are wrong
 	{
 		guestProgress = 0;
+		
 		MakeNormalSound(SND_UNAVAILABLE);
 		GuestChamberTeleport(3, 33, map);
 		for (int i = 0; i < map->width * map->height; i++)	// reset the lit-up walls
@@ -2851,7 +2852,14 @@ void GuestChamberPuzzleStep(Map* map, int mapx, int mapy)
 				}
 			}
 		}
-
+		if (c == 1)	// while you were wrong, this is the first button, so let's start you off with it pre-done
+		{
+			guestProgress++;
+			MakeNormalSound(SND_LIGHTSON);
+			map->BrightTorch(mapx, mapy, 96, 6);
+			map->map[mapx + (mapy - 1) * map->width].floor = 71;
+			map->map[mapx + mapy * map->width].light = 10;
+		}
 	}
 }
 
@@ -3893,16 +3901,23 @@ void DeepEndPuzzleKill(Map* map, byte type)
 	}
 	else if(deepEndSeq>0)
 	{
-		MakeNormalSound(SND_WALLDOWN);
+		if(deepEndSeq>1 || type!=MONS_PEEPER)	// if you were on step 1, and killed an oculoid, just keep the bridge up and don't make noise about it
+			MakeNormalSound(SND_WALLDOWN);
 		deepEndSeq = 0;
-		for (int i = 0; i < 9; i++)
+		int start = 0;
+		if (type == MONS_PEEPER)
+		{
+			deepEndSeq = 1;
+			start = 3;	// if your kill was an oculoid, you have started the puzzle over with one step done
+		}
+		for (int i = start; i < 9; i++)
 			map->GetTile(40, 51-i)->floor = 35;
 		if (GetGoodguy())	// if you are out on the gangplank, you need to be sent back or you'll be stuck
 		{
 			int tx, ty;
 			tx = GetGoodguy()->x / (TILE_WIDTH * FIXAMT);
 			ty = GetGoodguy()->y / (TILE_HEIGHT * FIXAMT);
-			if (tx >= 39 && tx <= 41 && ty<=51 && ty>=40)
+			if (tx >= 39 && tx <= 41 && ty<=51-start && ty>=40)
 			{
 				GetGoodguy()->x = (40 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
 				GetGoodguy()->y = (52 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
@@ -3944,6 +3959,7 @@ void HorkBoxBones(Map* map, int x, int y)
 		if (t && t->floor == seq[horkBoxBones] && (x+y*map->width)!=lastHorkIndex)
 		{
 			horkBoxBones++;
+			MakeNormalSound(SND_MENUCLICK);
 			lastHorkIndex = x + y * map->width;
 			if (horkBoxBones == 6)
 			{
@@ -3952,8 +3968,24 @@ void HorkBoxBones(Map* map, int x, int y)
 				MakeNormalSound(SND_INFERNAL);
 			}
 		}
-		else if ((x+y*map->width)!=lastHorkIndex && t && (t->floor == 40 || t->floor == 41 || (t->floor >= 129 && t->floor <= 132)))
-			horkBoxBones = 0;	// step on a wrong bone and you reset
+		else if ((x + y * map->width) != lastHorkIndex && t && (t->floor == 40 || t->floor == 41 || (t->floor >= 129 && t->floor <= 132)))
+		{
+			if (t && t->floor == seq[0])
+			{
+				if (horkBoxBones > 1)
+					MakeNormalSound(SND_UNAVAILABLE);
+				horkBoxBones = 1;	// don't fully reset, reset but you get the first step done
+				lastHorkIndex = x + y * map->width;
+				MakeNormalSound(SND_MENUCLICK);
+			}
+			else
+			{
+				if(horkBoxBones>0)
+					MakeNormalSound(SND_UNAVAILABLE);
+				horkBoxBones = 0;	// step on a wrong bone and you reset
+				lastHorkIndex = 0;	// allow you step on whatever you want
+			}
+		}
 	}
 }
 
