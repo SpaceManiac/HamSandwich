@@ -3895,8 +3895,23 @@ void DeepEndPuzzleKill(Map* map, byte type)
 	{
 		for(int i=0;i<3;i++)
 			map->GetTile(40, 51-deepEndSeq*3-i)->floor = 101;
-		
 		deepEndSeq++;
+		if (deepEndSeq == 1)
+		{
+			map->GetTile(42, 50)->wall = 32;
+			map->GetTile(42, 50)->floor = 71;
+		}
+		if (deepEndSeq == 2)
+		{
+			map->GetTile(38, 47)->wall = 33;
+			map->GetTile(38, 47)->floor = 71;
+		}
+		if (deepEndSeq == 3)
+		{
+			map->GetTile(42, 44)->wall = 34;
+			map->GetTile(42, 44)->floor = 71;
+		}
+		
 		MakeNormalSound(SND_WALLUP);
 	}
 	else if(deepEndSeq>0)
@@ -3905,10 +3920,19 @@ void DeepEndPuzzleKill(Map* map, byte type)
 			MakeNormalSound(SND_WALLDOWN);
 		deepEndSeq = 0;
 		int start = 0;
+		map->GetTile(42, 50)->wall = 35;
+		map->GetTile(42, 50)->floor = 69;
+		map->GetTile(38, 47)->wall = 36;
+		map->GetTile(38, 47)->floor = 69;
+		map->GetTile(42, 44)->wall = 37;
+		map->GetTile(42, 44)->floor = 69;
+		
 		if (type == MONS_PEEPER)
 		{
 			deepEndSeq = 1;
 			start = 3;	// if your kill was an oculoid, you have started the puzzle over with one step done
+			map->GetTile(42, 50)->wall = 32;
+			map->GetTile(42, 50)->floor = 71;
 		}
 		for (int i = start; i < 9; i++)
 			map->GetTile(40, 51-i)->floor = 35;
