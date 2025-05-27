@@ -281,6 +281,30 @@ Editor features:
 
 Nothing!
 
+### v4.2 (2025-05-25)
+
+* A new final boss fight song! Turn off Classic Music to enjoy it.
+* Modern Mode
+  * Enemy freeze time limit increased to 15 seconds (was 10 seconds).
+  * Ice shards from the Icus Coldus rune no longer thaw enemies.
+  * Skills that trigger on a frozen enemy also trigger if it was only unfrozen in the past half-second.
+  * Fixed Frostbite to damage every second as intended (was every two seconds).
+  * Armageddon now burns trees.
+  * Armageddon and other explosions now do a better job of triggering on-hit switches.
+  * Fixed timing/typos on some commentary nodes.
+  * Chapter 1
+    * Beginnerton: A visual hint has been added to the Fairy Bell puzzle.
+  * Chapter 3
+    * Off The Deep End: Added more feedback and fixed confusing resets on the skill shard puzzle.
+    * The Guest Chambers: Added more feedback and fixed confusing resets on the skill shard puzzle.
+  * Chapter 4
+    * Puzzling Caverns: The rune puzzle now gives a hint when you fail.
+    * Horkboxes: Added more feedback and fixed confusing resets on the skill shard puzzle.
+  * Madcap
+    * Fix enemies being thawed 5x faster than intended by damage.
+* Challenge Mode
+  * Fix bugs in Modern Challenge Mode after collecting 256 stars.
+
 ### v4.1 (2025-05-11)
 
 * Camera direction shifts are more gentle now, perhaps helping with motion sickness? Let us know!
