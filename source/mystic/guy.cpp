@@ -3267,7 +3267,7 @@ void WhackedAZoid(Map *map)
 	whacked++;
 	if (whacked > 75)
 		EarnAchieve(Achievement::WHACKAZOID);
-	if (whacked == 60 && !GotSkillShardInLevel(player.worldNum, player.levelNum))
+	if (whacked == 60 && !ClassicMode() && !GotSkillShardInLevel(player.worldNum, player.levelNum))
 	{
 		map->GetTile(10, 13)->item = ITM_SKILLSHARD;
 		MakeNormalSound(SND_PURCHASE);

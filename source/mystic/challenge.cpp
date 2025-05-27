@@ -920,7 +920,6 @@ void ChallengeMenuRender(MGLDraw *mgl)
 		Print(320 - GetStrLength(s, 2) + 2, 50 + 2, s, -32, 2);
 		RightPrintGlow(320, 50, s, 2);
 
-
 		// display data about this challenge
 		if(chal[chalCursor].chapter!=255)
 		{
@@ -963,22 +962,25 @@ void ChallengeMenuRender(MGLDraw *mgl)
 					x -= 32;
 				}
 
-				if (chal[chalCursor].flags & LP_GOTRUNE)
+				if (!ClassicMode())
 				{
-					OutlineFarleySprite(281, x, 440, -31 + 31 * GotRuneInLevel(chal[chalCursor].chapter,chal[chalCursor].level));
-					x -= 32;
-				}
+					if (chal[chalCursor].flags & LP_GOTRUNE)
+					{
+						OutlineFarleySprite(281, x, 440, -31 + 31 * GotRuneInLevel(chal[chalCursor].chapter, chal[chalCursor].level));
+						x -= 32;
+					}
 
-				if (chal[chalCursor].flags & LP_GOTRUNEPOUCH)
-				{
-					OutlineFarleySprite(4, x, 435, -31 + 31 * GotRunePouchInLevel(chal[chalCursor].chapter, chal[chalCursor].level));
-					x -= 32;
-				}
+					if (chal[chalCursor].flags & LP_GOTRUNEPOUCH)
+					{
+						OutlineFarleySprite(4, x, 435, -31 + 31 * GotRunePouchInLevel(chal[chalCursor].chapter, chal[chalCursor].level));
+						x -= 32;
+					}
 
-				if (chal[chalCursor].flags & LP_GOTSKILLSHARD)
-				{
-					OutlineFarleySprite2(67, x, 440, -31 + 31 * GotSkillShardInLevel(chal[chalCursor].chapter, chal[chalCursor].level),6,0);
-					x -= 32;
+					if (chal[chalCursor].flags & LP_GOTSKILLSHARD)
+					{
+						OutlineFarleySprite2(67, x, 440, -31 + 31 * GotSkillShardInLevel(chal[chalCursor].chapter, chal[chalCursor].level), 6, 0);
+						x -= 32;
+					}
 				}
 			}
 			else
