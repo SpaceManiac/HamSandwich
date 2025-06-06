@@ -4171,7 +4171,7 @@ void AI_BigBadger(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->mind2=1;
 	if(me->mind2==0)	// tossing things down at player
 	{
-		if(goodguy->y<(me->y+FIXAMT*50))
+		if (goodguy && goodguy->y < (me->y + FIXAMT * 50))
 		{
 			// goodguy got close, get mighty
 			me->mind2=1;
@@ -4217,6 +4217,13 @@ void AI_BigBadger(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 	else	// normal fighting mode
 	{
+		if (goodguy == NULL)
+		{
+			me->dx = 0;
+			me->dy = 0;
+			return;
+		}
+
 		if(me->type==MONS_GORKA2 && Random(32)==0 && me->reload==0)
 		{
 			// slash
