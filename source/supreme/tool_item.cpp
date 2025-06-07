@@ -92,7 +92,7 @@ void ItemTool::Render(int msx,int msy)
 
 	MGLDraw* mgl = GetDisplayMGL();
 
-	char plopText[][12]={"Normal","Random","Cycle","BigRandom","BigCycle"};
+	static const char plopText[][12]={"Normal","Random","Cycle","BigRandom","BigCycle"};
 
 	for(i=0;i<4;i++)
 	{

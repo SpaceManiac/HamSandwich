@@ -83,7 +83,7 @@ void FloorTool::Render(int msx,int msy)
 	int minusBrush,plusBrush;
 	MGLDraw* mgl = GetDisplayMGL();
 
-	char plopText[][12]={"Normal","Random","Cycle","BigRandom","BigCycle"};
+	static const char plopText[][12]={"Normal","Random","Cycle","BigRandom","BigCycle"};
 
 	for(i=0;i<NUM_TILES;i++)
 	{

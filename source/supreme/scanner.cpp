@@ -12,10 +12,11 @@ byte noKeyTime;
 byte scanStarted;
 byte *backgd;
 char groupTxt[128],nameTxt[64];
-char themeNames[][16]={"Goodguy","Badguy","Spooky","Zombie","Vampire","Spider","Pygmy",
-					   "Zoid","Boss","Mini-Boss","Wacky","Pumpkin","Thingy","Veggy","Arctic","Desert",
-					   "Vehicle","Generator","Trap","Alien","High-Tech","Animal","Human",
-					   "Urban","Aquatic","Undersea","Flying","Body Parts"};
+static const char themeNames[][16] = {
+	"Goodguy", "Badguy", "Spooky", "Zombie", "Vampire", "Spider", "Pygmy",
+	"Zoid", "Boss", "Mini-Boss", "Wacky", "Pumpkin", "Thingy", "Veggy", "Arctic", "Desert",
+	"Vehicle", "Generator", "Trap", "Alien", "High-Tech", "Animal", "Human",
+	"Urban", "Aquatic", "Undersea", "Flying", "Body Parts"};
 static int monsY=0;
 
 void InitScan(void)

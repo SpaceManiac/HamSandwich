@@ -124,9 +124,9 @@ void SelectTool::Render(int msx,int msy)
 {
 	MGLDraw* mgl = GetDisplayMGL();
 	int minusBrush,plusBrush;
-	char plopText[][12]={"Toggle","Select","Unselect"};
-	char showText[][12]={"Outline","Mask"};
-	char clearText[][12]={"Select None","Select All"};
+	static const char plopText[][12]={"Toggle","Select","Unselect"};
+	static const char showText[][12]={"Outline","Mask"};
+	static const char clearText[][12]={"Select None","Select All"};
 
 	if(doing==1)
 		Print(mgl->GetWidth()-250, mgl->GetHeight()-70, "Click where you want to copy to!", 0, 1);

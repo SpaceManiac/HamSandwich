@@ -9,7 +9,7 @@
 #include "gallery.h"
 #include "steam.h"
 
-char goalDesc[][48]={
+static const char goalDesc[][48]={
 	"Good Score","earning 5,000 points",
 	"Crazy Score","earning 20,000 points",
 	"Abject Failure","getting ZERO points",

@@ -50,7 +50,7 @@ void AI_GoodTurret(Guy *me,Map *map,world_t *world,Guy *goodguy)
 void AI_Mattie2Brain(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	byte tempface;
-	byte faceTable[8]={5,4,0,1,2,3,0,6};
+	static const byte faceTable[8]={5,4,0,1,2,3,0,6};
 	int x,y;
 
 	if(me->ouch==4 && me->aiType==MONS_MAT2BRAIN)	// skull and head have their own ouch noises
@@ -193,8 +193,8 @@ void AI_Mattie2Tail(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	byte b;
 	int x,y;
-	short shootXTable[9]={-134,-124,-101,-57,0,67,113,134,143};
-	short shootYTable[9]={-51,-43,-24,-7,-11,-15,-29,-41,-46};
+	static const short shootXTable[9]={-134,-124,-101,-57,0,67,113,134,143};
+	static const short shootYTable[9]={-51,-43,-24,-7,-11,-15,-29,-41,-46};
 
 	if(me->reload)
 		me->reload--;

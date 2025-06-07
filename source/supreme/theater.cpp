@@ -5,14 +5,14 @@
 #include "dialogbits.h"
 #include "goal.h"
 
-typedef struct movie_t
+struct Movie
 {
 	char title[32];
 	char filename[16];
 	word sound;
-} movie_t;
+};
 
-movie_t movie[32]={
+static const Movie movie[32]={
 	{"Asylum Welcome Mat","asylumys.flc",SND_TZONE},
 	{"Asylum Unwelcome Mat","asylumno.flc",SND_TZONE},
 	{"Super Duper Zombie Defeated","asylum.flc",SND_VICTORY},
