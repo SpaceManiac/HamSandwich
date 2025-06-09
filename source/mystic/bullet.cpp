@@ -1396,7 +1396,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			mapy=(me->y>>FIXSHIFT)/TILE_HEIGHT;
 
 			map->BrightTorch(mapx,mapy,2,4);
-			if(world->terrain[map->map[mapx+mapy*map->width].floor].flags&TF_WATER)
+			if(mapx>=0 && mapy>=0 && mapx<map->width && mapy<=map->height && world->terrain[map->map[mapx+mapy*map->width].floor].flags&TF_WATER)
 				BulletRanOut(me,map,world);
 			break;
 		case BLT_ICEBEAM2:

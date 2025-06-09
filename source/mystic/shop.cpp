@@ -707,12 +707,11 @@ void BuyGear(dword w)
 	switch(w)
 	{
 		case GEAR_HEART:
-			player.maxLife=28+player.level*2;
+			PlayerUpdateLife();
 			PlayerHeal(128);
 			return;
 		case GEAR_MOON:
-			player.maxMana=28+player.level*2;
-			player.mana=28+player.level*2;
+			PlayerUpdateLife();
 			return;
 		default:
 			return;

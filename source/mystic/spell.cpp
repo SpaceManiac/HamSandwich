@@ -390,6 +390,7 @@ void CastSpell(Guy *me)
 				StunAllOnscreen((byte)(SkillValue(SKILL_SHOCKWAVE) * 30));
 			player.timeSinceLastInferno = 0;
 			player.infernoKills = 0;
+			
 			if(player.spell[SPL_INFERNO]==1 || player.downgradeSpell[SPL_INFERNO])
 			{
 				byte l = SpellLevel() / 4;
