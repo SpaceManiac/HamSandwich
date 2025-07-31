@@ -438,7 +438,7 @@ void RenderOptionsMenu(int x,int y)
 
 void RenderSetKey(int x,int y,byte t)
 {
-	char actName[7][16]={
+	static const char actName[7][16]={
 		"Up",
 		"Down",
 		"Left",
@@ -1388,7 +1388,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		byte r;
 
 		r=LastScanCode();
-		if(r==59)
+		if(r==SDL_SCANCODE_ESCAPE)
 		{
 			subMode=SUBMODE_OPTIONS;	// escape
 			MakeNormalSound(SND_MENUCANCEL);

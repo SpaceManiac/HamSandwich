@@ -254,7 +254,10 @@ static void OptionButton(int x,int y,int wid,const char *txt,byte spot)
 
 static void RenderSetKey(int x,int y,byte t)
 {
-	char actName[7][16]={
+	x -= 166;
+	y -= 90;
+
+	static const char actName[7][16]={
 		"Up",
 		"Down",
 		"Left",
@@ -341,7 +344,6 @@ void RenderOptionsMenu(int x,int y,byte *backScr)
 		RenderSetKey(x,y,0);
 	else if(subMode==SUBMODE_SETBTN)
 		RenderSetKey(x,y,1);
-
 }
 
 //----------------
