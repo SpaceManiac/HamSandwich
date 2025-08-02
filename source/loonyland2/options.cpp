@@ -14,6 +14,7 @@ static byte subMode;
 static byte darkness;
 static int offX;
 static byte oldc;
+static dword lastBtn = 0;
 
 options_t opt;
 
@@ -156,12 +157,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 					{
 						subMode=SUBMODE_SETBTN;
 						mgl->ClearKeys();
-						i=0;
-						while(i<10000 && GetJoyButtons())
-						{
-							i++;
-							SDL_Delay(1);
-						}
+						lastBtn = GetJoyButtons();
 						MakeNormalSound(SND_MENUSELECT);
 					}
 					else
@@ -209,9 +205,8 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 	}
 	else if(subMode==SUBMODE_SETBTN)
 	{
-		dword btn;
-
-		btn=GetJoyButtons();
+		dword btn = GetJoyButtons() & ~lastBtn;
+		lastBtn = GetJoyButtons();
 
 		j=1;
 		for(i=0;i<32;i++)
