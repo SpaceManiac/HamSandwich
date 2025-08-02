@@ -11,20 +11,20 @@ env:
 jobs:
   windows:
     name: Windows (MSVC)
-    runs-on: windows-2019
+    runs-on: windows-2025
     steps:
       - uses: actions/checkout@v4
       - name: Build Windows release
         shell: cmd
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
           cmake --preset windows-i686-release
-          cmake --build build/cmake-windows-i686-release16.0 --target install
+          cmake --build build/cmake-windows-i686-release17.0 --target install
       - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
         run: tools/bootstrap/butler push --if-changed build/install "${ENV:ITCH_GAME}:windows" ("--userversion=" + (git rev-parse --short=10 HEAD))
   mingw32:
     name: Windows (MINGW32)
-    runs-on: windows-2019
+    runs-on: windows-2025
     steps:
       - uses: actions/checkout@v4
       - uses: msys2/setup-msys2@v2
