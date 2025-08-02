@@ -3,7 +3,7 @@
 
 #include "display.h"
 
-#define VERSION_NO         "Version 9.5"
+#define VERSION_NO         "Version 9.6"
 #define COPYRIGHT_YEARS    "1998-2025"
 #define COPYRIGHT_COMPANY  "Hamumu Games, Inc."
 

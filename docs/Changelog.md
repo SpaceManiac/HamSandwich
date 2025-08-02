@@ -52,6 +52,11 @@ based on HamSandwich.
 
 Nothing!
 
+### v9.6 (2025-08-02) - [Steam](https://store.steampowered.com/news/app/2547330/view/525350155171399000)
+
+* Fix movie unlocking, high scores, and statistics not counting for some levels due to a bug introduced in Supreme 9.5.
+* JspEdit: Change font to match Supreme's editor.
+
 ### v9.5 (2025-03-19) - [Steam](https://store.steampowered.com/news/app/2547330/view/831582351143208832)
 
 * Allow loading `.ogg` files as custom sounds.
