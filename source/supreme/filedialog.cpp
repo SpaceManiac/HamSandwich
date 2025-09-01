@@ -213,7 +213,7 @@ void FindFilename(const char *str)
 			a=str[j];
 			if(a>='A' && a<='Z')
 				a=a+'a'-'A';
-			b=fnames[i][0];
+			b=fnames[i][j];
 			if(b>='A' && b<='Z')
 				b=b+'a'-'A';
 			if(a==b)
