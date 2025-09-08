@@ -66,7 +66,7 @@ void UpdateTiles(world_t *world)
 						if(world->map[lvl]->special[i].effect[j].value2!=0)
 							world->map[lvl]->special[i].effect[j].value2+=stitchTileOffset;
 					}
-					else if(world->map[lvl]->special[i].trigger[j].type==EFF_TILEVAR)
+					else if(world->map[lvl]->special[i].effect[j].type==EFF_TILEVAR)
 					{
 						SetStitchError("Warning: TileVar used.");
 					}
