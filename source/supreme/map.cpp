@@ -1585,10 +1585,16 @@ mapTile_t *Map::GetTile(int x,int y)
 {
 	static mapTile_t fake={65535,65535,0,0,0,0,0};
 
-	if(x<0 || y<0 || x>=width || y>=height)
-		return &fake;
-	else
-		return &map[x+y*width];
+	if (InRange(x, y))
+		return &map[x + y * width];
+	return &fake;
+}
+
+mapTile_t *Map::TryGetTile(int x, int y)
+{
+	if (InRange(x, y))
+		return &map[x + y * width];
+	return nullptr;
 }
 
 static const char lvlFlagName[][16] = {

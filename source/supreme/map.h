@@ -4,6 +4,7 @@
 #include "tile.h"
 #include "items.h"
 #include "special.h"
+#include "string_extras.h"
 
 constexpr int MAX_LIGHT = 16;
 constexpr int MIN_LIGHT = -32;
@@ -122,7 +123,15 @@ class Map
 
 		byte Keychains(void);	// return bitflags for which keychains are in this level
 
-		mapTile_t *GetTile(int x,int y);
+		// Returns true if the coordinate are valid.
+		bool InRange(int x, int y) const { return x >= 0 && y >= 0 && x < width && y < height; }
+		// Returns a dummy tile if the coordinates are invalid.
+		mapTile_t *GetTile(int x, int y);
+		// Returns `nullptr` if the coordinates are invalid.
+		mapTile_t *TryGetTile(int x, int y);
+		span<mapTile_t> Tiles() { return span{map, (size_t)(width * height)}; }
+		span<mapTile_t const> Tiles() const { return span{(const mapTile_t*)map, (size_t)(width * height)}; }
+
 		void FindNearBrain(int myx,int myy);
 		void FindNearCandle(int myx,int myy);
 

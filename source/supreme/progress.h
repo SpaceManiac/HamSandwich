@@ -3,6 +3,7 @@
 
 #include "mgldraw.h"
 #include "monster.h"
+#include <string_extras.h>
 
 // level progress flags
 #define LF_PASSED		2	// have passed it
@@ -60,6 +61,8 @@ typedef struct worldData_t	// contains your progress for one world
 	byte levels;		// how many levels are stored here - it only stores ones you've either
 						// passed, or accomplished something in
 	levelData_t *level;	// progress info for each level that HAS been passed only.
+
+	span<levelData_t> Levels() { return span{level, levels}; }
 } worldData_t;
 
 enum class HudChoice : byte  // SERIALIZED in the player profile.
