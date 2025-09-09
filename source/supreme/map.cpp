@@ -7,6 +7,8 @@
 #include "config.h"
 #include "log.h"
 #include "math_extras.h"
+#include <vector>
+#include <utility>
 
 #define NUM_STARS 400
 
@@ -1226,33 +1228,40 @@ void Map::TileChange(int x,int y,int floor,int wall,byte fx)
 		SmokeTile(x,y);
 }
 
-byte Map::ContiguousItemChange(int x,int y,byte item,byte fx)
+byte Map::ContiguousItemChange(int x0, int y0, byte item, byte fx)
 {
-	byte i;
-
-	if(x<0 || y<0 || x>=width || y>=height)
+	mapTile_t *target0 = TryGetTile(x0, y0);
+	if (!target0)
 		return 0;
+	byte oldItem = target0->item;
 
-	i=map[x+y*width].item;
+	if (oldItem == item)
+		return oldItem;  // Nothing to do.
 
-	if(i==item)
-		return i;
+	std::vector<std::pair<int, int>> pending;
+	pending.push_back({ x0, y0 });
 
-	if(fx)
-		SmokeTile(x,y);
+	while (!pending.empty())
+	{
+		auto [x, y] = pending.back();
+		pending.pop_back();
 
-	map[x+y*width].item=item;
+		mapTile_t *target = TryGetTile(x, y);
+		if (!target || target->item != oldItem)
+			continue;  // Out of bounds or doesn't match.
 
-	if(x>0 && map[x-1+y*width].item==i)
-		ContiguousItemChange(x-1,y,item,fx);
-	if(x<width-1 && map[x+1+y*width].item==i)
-		ContiguousItemChange(x+1,y,item,fx);
-	if(y>0 && map[x+(y-1)*width].item==i)
-		ContiguousItemChange(x,y-1,item,fx);
-	if(y<height-1 && map[x+(y+1)*width].item==i)
-		ContiguousItemChange(x,y+1,item,fx);
+		if (fx)
+			SmokeTile(x, y);
 
-	return i;
+		target->item = item;
+
+		pending.push_back({ x, y + 1 });
+		pending.push_back({ x, y - 1 });
+		pending.push_back({ x + 1, y });
+		pending.push_back({ x - 1, y });
+	}
+
+	return oldItem;
 }
 
 byte Map::AllItemChange(int x,int y,byte item,byte fx)
@@ -1281,37 +1290,40 @@ byte Map::AllItemChange(int x,int y,byte item,byte fx)
 	return i;
 }
 
-void Map::ContiguousTileChange(int x,int y,int floor,int wall,byte fx)
+void Map::ContiguousTileChange(int x0, int y0, int floor, int wall, byte fx)
 {
-	int preFloor,preWall;
-
-	if(x<0 || y<0 || x>=width || y>=height)
+	mapTile_t *target0 = TryGetTile(x0, y0);
+	if (!target0)
 		return;
+	int oldFloor = target0->floor;
+	int oldWall = target0->wall;
 
-	preFloor=map[x+y*width].floor;
-	preWall=map[x+y*width].wall;
+	if (oldFloor == floor && oldWall == wall)
+		return;  // Nothing to do.
 
-	if(preFloor==floor && preWall==wall)
-		return;
+	std::vector<std::pair<int, int>> pending;
+	pending.push_back({ x0, y0 });
 
-	if(fx)
-		SmokeTile(x,y);
+	while (!pending.empty())
+	{
+		auto [x, y] = pending.back();
+		pending.pop_back();
 
-	map[x+y*width].floor=floor;
-	map[x+y*width].wall=wall;
+		mapTile_t *target = TryGetTile(x, y);
+		if (!target || target->floor != oldFloor || target->wall != oldWall)
+			continue;  // Out of bounds or doesn't match.
 
-	if(x>0 && map[x-1+y*width].wall==preWall &&
-		map[x-1+y*width].floor==preFloor)
-		ContiguousTileChange(x-1,y,floor,wall,fx);
-	if(x<width-1 && map[x+1+y*width].wall==preWall &&
-		map[x+1+y*width].floor==preFloor)
-		ContiguousTileChange(x+1,y,floor,wall,fx);
-	if(y>0 && map[x+(y-1)*width].wall==preWall &&
-		map[x+(y-1)*width].floor==preFloor)
-		ContiguousTileChange(x,y-1,floor,wall,fx);
-	if(y<height-1 && map[x+(y+1)*width].wall==preWall &&
-		map[x+(y+1)*width].floor==preFloor)
-		ContiguousTileChange(x,y+1,floor,wall,fx);
+		if (fx)
+			SmokeTile(x, y);
+
+		target->floor = floor;
+		target->wall = wall;
+
+		pending.push_back({ x, y + 1 });
+		pending.push_back({ x, y - 1 });
+		pending.push_back({ x + 1, y });
+		pending.push_back({ x - 1, y });
+	}
 }
 
 void Map::AllTileChange(int x,int y,int floor,int wall,byte fx)
