@@ -153,56 +153,45 @@ void SaveTiles(std::ostream& f)
 
 void SaveTilesToBMP(const char *fname)
 {
-	char tmp[64];
-	int i,j;
-
-	strcpy(tmp,fname);
-	for(i=0;i<(int)strlen(tmp);i++)
-		if(tmp[i]>='A' && tmp[i]<='Z')
-			tmp[i]+='a'-'A';	// lowercase it
-
-	if(strlen(tmp)==0)
+	// Chop off .bmp to generate the base name.
+	std::string_view basename = fname;
+	if (basename.size() >= 4 && strcasecmp(&basename[basename.size() - 4], ".bmp") == 0)
 	{
-		strcpy(tmp,"mytiles.bmp");
+		basename.remove_suffix(4);
 	}
-	else if(strlen(tmp)<5)
+	else if (basename.empty())
 	{
-		strcat(tmp,".bmp");
-	}
-	else
-	{
-		if(strcmp(&tmp[strlen(tmp)-4],".bmp"))
-			strcat(tmp,".bmp");
+		basename = "mytiles";
 	}
 
-	GetDisplayMGL()->ClearScreen();
-	for(j=0;j<20;j++)
-		for(i=0;i<20;i++)
+	char tmp[128];
+	span<char> suffix = ham_strcpy(tmp, basename);
+
+	int tile = 0;
+	while (tile < numTiles)
+	{
+		// Save basename.bmp, basename2.bmp, basename3.bmp
+		if (tile == 0)
 		{
-			if(i+j*20>=numTiles)
-				break;
-			RenderFloorTileUnlit(i*TILE_WIDTH,j*TILE_HEIGHT,i+j*20);
+			ham_strcpy(suffix, ".bmp");
+		}
+		else
+		{
+			ham_sprintf(suffix, "%d.bmp", 1 + (tile / 400));
 		}
 
-	//GetDisplayMGL()->Flip();
-	GetDisplayMGL()->SaveBMP(tmp);
-
-	if(numTiles>400)
-	{
-		strcpy(&tmp[strlen(tmp)-4],"2.bmp");	// make filename2.bmp
 		GetDisplayMGL()->ClearScreen();
-		for(j=0;j<20;j++)
-			for(i=0;i<20;i++)
+		for (int j = 0; j < 20; j++)
+		{
+			for (int i = 0; i < 20; i++)
 			{
-				if(i+j*20+400>=numTiles)
+				if (++tile >= numTiles)
 					break;
-				RenderFloorTileUnlit(i*TILE_WIDTH,j*TILE_HEIGHT,i+j*20+400);
+				RenderFloorTileUnlit(i * TILE_WIDTH, j * TILE_HEIGHT, tile);
 			}
-
-		//GetDisplayMGL()->Flip();
+		}
 		GetDisplayMGL()->SaveBMP(tmp);
 	}
-	GetDisplayMGL()->ClearScreen();
 }
 
 static void LoadTile(std::istream &f, byte *t)
