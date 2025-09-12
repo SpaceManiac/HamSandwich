@@ -524,8 +524,8 @@ TASK(void) LunaticDraw(void)
 			PrintGlow(120,90,s,8,2);
 
 			int n = 0;
-			for(int i=0; i<MAX_SPECIAL; i++)
-				if(curMap->special[i].x!=255)
+			for (const special_t &special : curMap->special)
+				if(special.x!=255)
 					++n;
 
 			sprintf(s,"Fx %d", CountParticles());

@@ -1538,7 +1538,7 @@ void SpecialEffect(special_t *me,Map *map)
 					GetDisplayMGL()->RealizePalette();
 				break;
 			case EFF_OLDTOGGLE:
-				v=map->GetTile(me->effect[i].x,me->effect[i].y)->floor;
+				//v=map->GetTile(me->effect[i].x,me->effect[i].y)->floor;
 				v2=map->GetTile(me->effect[i].x,me->effect[i].y)->wall;
 
 				if(v2)	// there was a wall here
@@ -1711,45 +1711,43 @@ void InitSpecialsForPlay(void)
 
 void RenderSpecialXes(Map *map)
 {
-	int i,j,k;
+	int i;
 	int camx,camy;
-	byte c;
 
 	GetCamera(&camx,&camy);
 	camx-=320;
 	camy-=240;
 	for(i=0;i<numSpecials;i++)
 	{
-		if(spcl[i].x!=255)
+		const special_t &special = spcl[i];
+		if(special.x!=255)
 		{
-			for(j=0;j<NUM_EFFECTS;j++)
+			for(const effect_t &effect : special.effect)
 			{
-				if(spcl[i].effect[j].type==EFF_GOTOMAP ||
-					spcl[i].effect[j].type==EFF_WINLEVEL)
+				if(effect.type==EFF_GOTOMAP || effect.type==EFF_WINLEVEL)
 				{
-					if(LevelIsPassed(player.worldProg,spcl[i].effect[j].value))
+					if(LevelIsPassed(player.worldProg,effect.value))
 					{
-						c=0;
-						for(k=0;k<player.worldProg->levels;k++)
-							if(player.worldProg->level[k].levelNum==spcl[i].effect[j].value)
+						byte c=0;
+						for (const levelData_t &levelData : player.worldProg->Levels())
+							if(levelData.levelNum==effect.value)
 							{
-								c=((player.worldProg->level[k].flags&LF_CANDLES)!=0);
+								c=((levelData.flags&LF_CANDLES)!=0);
 								break;
 							}
 
+						byte k=0;
 						if(player.ability[ABIL_KEYCHAIN])
-							k=keyChainInLevel[spcl[i].effect[j].value]&(~player.worldProg->keychains);
-						else
-							k=0;
+							k=keyChainInLevel[effect.value]&(~player.worldProg->keychains);
 
 						if(k&15)
-							DrawRedX(spcl[i].x*TILE_WIDTH-camx+TILE_WIDTH/2-4+Random(9),
-								 spcl[i].y*TILE_HEIGHT-camy+TILE_HEIGHT/2-4+Random(9),c,GetDisplayMGL());
+							DrawRedX(special.x*TILE_WIDTH-camx+TILE_WIDTH/2-4+Random(9),
+								 special.y*TILE_HEIGHT-camy+TILE_HEIGHT/2-4+Random(9),c,GetDisplayMGL());
 						else
-							DrawRedX(spcl[i].x*TILE_WIDTH-camx+TILE_WIDTH/2,
-									 spcl[i].y*TILE_HEIGHT-camy+TILE_HEIGHT/2,c,GetDisplayMGL());
+							DrawRedX(special.x*TILE_WIDTH-camx+TILE_WIDTH/2,
+									 special.y*TILE_HEIGHT-camy+TILE_HEIGHT/2,c,GetDisplayMGL());
 
-						j=NUM_EFFECTS;
+						break;
 					}
 				}
 			}

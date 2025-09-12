@@ -269,17 +269,19 @@ void AI_Raft(Guy *me,Map *map,world_t *world,Guy *goodguy)
 						y--;
 						break;
 				}
-				if(x<0 || x>=map->width || y<0 || y>=map->height ||
-					map->map[x+y*map->width].wall>0 ||
-					(GetItem(map->map[x+y*map->width].item)->flags&IF_SOLID))
+				if (mapTile_t *tile = map->TryGetTile(x, y); tile &&
+					tile->wall == 0 &&
+					!(GetItem(tile->item)->flags & IF_SOLID))
+				{
+					tries=10;	// we're okay!
+				}
+				else
 				{
 					me->x-=me->dx;
 					me->y-=me->dy;
 					me->facing=(me->facing+2)&3;
 					tries++;
 				}
-				else
-					tries=10;	// we're okay!
 			}
 			while(tries<3);
 			if(tries<10)	// it failed and would've been in an infinite loop
@@ -303,10 +305,10 @@ void AI_Raft(Guy *me,Map *map,world_t *world,Guy *goodguy)
 							y--;
 							break;
 					}
-					if(x>=0 && x<map->width && y>=0 && y<map->height &&
-						map->map[x+y*map->width].wall==0 &&
-						!(GetItem(map->map[x+y*map->width].item)->flags&IF_SOLID) &&
-						!(GetTerrain(world,map->map[x+y*map->width].floor)->flags&(TF_SOLID|TF_WATER|TF_LAVA)))
+					if (mapTile_t *tile = map->TryGetTile(x, y); tile &&
+						tile->wall==0 &&
+						!(GetItem(tile->item)->flags&IF_SOLID) &&
+						!(GetTerrain(world,tile->floor)->flags&(TF_SOLID|TF_WATER|TF_LAVA)))
 					{
 						me->facing=tries;
 						me->x=(me->mapx*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT;
@@ -321,7 +323,6 @@ void AI_Raft(Guy *me,Map *map,world_t *world,Guy *goodguy)
 						goodguy->y=me->y+Sine(me->facing*64)*TILE_HEIGHT;
 						player.vehicle=0;
 						return;
-
 					}
 				}
 				if(tries==4)	// there was no spot to put the player
@@ -334,7 +335,7 @@ void AI_Raft(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 			}
 			// otherwise if it's not water, we're done
-			if(!(GetTerrain(world,map->map[x+y*map->width].floor)->flags&(TF_WATER|TF_LAVA)))
+			if(!(GetTerrain(world,map->GetTile(x, y)->floor)->flags&(TF_WATER|TF_LAVA)))
 			{
 				me->x=(me->mapx*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT;
 				me->y=(me->mapy*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;

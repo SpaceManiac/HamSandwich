@@ -159,22 +159,22 @@ static bool MustBeHamSandwichMap(const Map *map)
 	YES_IF(strlen(map->song) > 31);
 
 	int count = 0;
-	for (int i = 0; i < MAX_MAPMONS; ++i)
+	for (const mapBadguy_t &badguy : map->badguy)
 	{
-		if (map->badguy[i].type)
+		if (badguy.type)
 		{
 			++count;
 			YES_IF(count > UINT8_MAX);
-			YES_IF(map->badguy[i].x > UINT8_MAX);
-			YES_IF(map->badguy[i].y > UINT8_MAX);
-			YES_IF(map->badguy[i].type > UINT8_MAX);
-			YES_IF(map->badguy[i].item > UINT8_MAX);
+			YES_IF(badguy.x > UINT8_MAX);
+			YES_IF(badguy.y > UINT8_MAX);
+			YES_IF(badguy.type > UINT8_MAX);
+			YES_IF(badguy.item > UINT8_MAX);
 		}
 	}
 
 	for (int i = 0; i < MAX_SPECIAL; ++i)
 	{
-		const auto& spcl = map->special[i];
+		const special_t& spcl = map->special[i];
 		if (spcl.x != 255)
 		{
 			YES_IF(i > UINT8_MAX);
@@ -207,12 +207,12 @@ static bool MustBeHamSandwichMap(const Map *map)
 	YES_IF(map->numCandles > UINT16_MAX);
 	YES_IF(map->itemDrops > UINT16_MAX);
 
-	for (int i = 0, max = map->width * map->height; i < max; ++i)
+	for (const mapTile_t& tile : map->Tiles())
 	{
-		YES_IF(map->map[i].floor > UINT16_MAX);
-		YES_IF(map->map[i].wall > UINT16_MAX);
-		YES_IF(map->map[i].item > UINT8_MAX);
-		YES_IF(map->map[i].light < INT8_MIN || map->map[i].light > INT8_MAX);
+		YES_IF(tile.floor > UINT16_MAX);
+		YES_IF(tile.wall > UINT16_MAX);
+		YES_IF(tile.item > UINT8_MAX);
+		YES_IF(tile.light < INT8_MIN || tile.light > INT8_MAX);
 	}
 
 	return false;

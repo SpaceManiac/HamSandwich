@@ -1651,7 +1651,7 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 			return 1;
 			break;
 		case IE_MOVE:
-			curMap->map[x+y*curMap->width].opaque=1;
+			curMap->GetTile(x, y)->opaque = 1;
 			return 0;
 			break;
 	}
@@ -1663,8 +1663,8 @@ void MoveMovableItem(int x,int y,Map *map,world_t *world)
 	byte yes;
 	byte type;
 
-	type=map->map[x+y*map->width].item;
-	switch(items[map->map[x+y*map->width].item].effectAmt)
+	type=map->GetTile(x, y)->item;
+	switch(items[type].effectAmt)
 	{
 		case 0:
 			yes=TryToPushItem(x,y,x+1,y,curMap,&curWorld);

@@ -184,21 +184,21 @@ void LightTool::PlopOne(int centerx,int centery,int x,int y)
 
 	m=EditorGetMap();
 
-	if(x>=0 && y>=0 && x<m->width && y<m->height && m->map[x+y*m->width].select)
+	if (mapTile_t *target = m->TryGetTile(x, y); target && target->select)
 	{
 		switch(plopMode)
 		{
 			case LIGHTPLOP_SOLID:
-				m->map[x+y*m->width].light=CalcBright(bright);
+				target->light=CalcBright(bright);
 				break;
 			case LIGHTPLOP_FADE:
 				char b;
 
 				b=CalcBright(bright);
-				if(m->map[x+y*m->width].light<b)
-					m->map[x+y*m->width].light++;
-				else if(m->map[x+y*m->width].light>b)
-					m->map[x+y*m->width].light--;
+				if(target->light<b)
+					target->light++;
+				else if(target->light>b)
+					target->light--;
 				break;
 			case LIGHTPLOP_SMOOTH:
 				m->SmoothLight(x,y);
@@ -212,10 +212,10 @@ void LightTool::PlopOne(int centerx,int centery,int x,int y)
 				if(i>=0)
 				{
 
-					if(m->map[x+y*m->width].light<i)
-						m->map[x+y*m->width].light=i;
-					if(m->map[x+y*m->width].light>31)
-						m->map[x+y*m->width].light=31;
+					if(target->light<i)
+						target->light=i;
+					if(target->light>31)
+						target->light=31;
 				}
 				break;
 		}
@@ -280,9 +280,9 @@ void LightTool::SuckUp(int x,int y)
 
 	m=EditorGetMap();
 
-	if(x>=0 && y>=0 && x<m->width && y<m->height)
+	if (mapTile_t *target = m->TryGetTile(x, y); target)
 	{
-		bright=m->map[x+y*m->width].light;
+		bright = target->light;
 	}
 }
 
@@ -330,34 +330,30 @@ void LightTool::LOSPoints(int x,int y,int curx,int cury,int *p1x,int *p1y,int *p
 	}
 }
 
-byte LightTool::GetOpaque(int x,int y,mapTile_t *map,int width,int height)
+static byte GetOpaque(Map *map, int x, int y)
 {
-	if(x<0 || x>=width || y<0 || y>=height)
-		return 2;
+	if (const mapTile_t *tile = map->TryGetTile(x, y))
+		return tile->opaque;
 	else
-		return map[x+y*width].opaque;
+		return 2;
 }
 
-void LightTool::SetOpaque(int x,int y,byte opaque,mapTile_t *map,int width,int height)
+static void SetOpaque(Map *map, int x, int y, byte opaque)
 {
-	if(x<0 || x>=width || y<0 || y>=height)
-		return;
-	else
-		map[x+y*width].opaque=opaque;
+	if (mapTile_t *tile = map->TryGetTile(x, y))
+		tile->opaque = opaque;
 }
 
 void LightTool::LOS(int x,int y,int rx,int ry,int rx2,int ry2)
 {
 	int p1x,p1y,p2x,p2y;
 	int i,curx,cury;
-	int radius,width,height;
-	mapTile_t *map;
 
-	map=EditorGetMap()->map;
-	width=EditorGetMap()->width;
-	height=EditorGetMap()->height;
+	Map *map = EditorGetMap();
+	int width = map->width;
+	int height = map->height;
 
-	radius=(rx2-rx)/2+2;
+	int radius=(rx2-rx)/2+2;
 	if((ry2-ry)/2+2>radius)
 		radius=(ry2-ry)/2+2;
 
@@ -381,7 +377,7 @@ void LightTool::LOS(int x,int y,int rx,int ry,int rx2,int ry2)
 	// light up the center
 	PlopOne(x,y,x,y);
 
-	SetOpaque(x,y,0,map,width,height);
+	SetOpaque(map,x,y,0);
 
 	for(i=1;i<radius;i++)	// i is the radius of the square you are working with
 	{
@@ -396,17 +392,17 @@ void LightTool::LOS(int x,int y,int rx,int ry,int rx2,int ry2)
 
 				if(lineOfSight)
 				{
-					if(GetOpaque(p1x,p1y,map,width,height)+
-						GetOpaque(p2x,p2y,map,width,height)>=2)
+					if(GetOpaque(map,p1x,p1y)+
+						GetOpaque(map,p2x,p2y)>=2)
 					{
-						SetOpaque(curx,cury,1,map,width,height);
+						SetOpaque(map,curx,cury,1);
 					}
 					else
 					{
-						if(map[curx+cury*width].wall)	// there's a wall here, so opaque
-							SetOpaque(curx,cury,1,map,width,height);
+						if(map->GetTile(curx,cury)->wall)	// there's a wall here, so opaque
+							SetOpaque(map,curx,cury,1);
 						else
-							SetOpaque(curx,cury,0,map,width,height);
+							SetOpaque(map,curx,cury,0);
 						// do what you have to, it's in sight
 						PlopOne(x,y,curx,cury);
 					}
@@ -424,18 +420,18 @@ void LightTool::LOS(int x,int y,int rx,int ry,int rx2,int ry2)
 
 				if(lineOfSight)
 				{
-					if(GetOpaque(p1x,p1y,map,width,height)+
-						GetOpaque(p2x,p2y,map,width,height)>=2)
+					if(GetOpaque(map,p1x,p1y)+
+						GetOpaque(map,p2x,p2y)>=2)
 					{
-						SetOpaque(curx,cury,1,map,width,height);
+						SetOpaque(map,curx,cury,1);
 					}
 					else
 					{
-						if(map[curx+cury*width].wall)	// there's a wall here, so opaque
-							SetOpaque(curx,cury,1,map,width,height);
+						if(map->GetTile(curx,cury)->wall)	// there's a wall here, so opaque
+							SetOpaque(map,curx,cury,1);
 						else
 						{
-							SetOpaque(curx,cury,0,map,width,height);
+							SetOpaque(map,curx,cury,0);
 						}
 						// do what you have to, it's in sight
 						PlopOne(x,y,curx,cury);
@@ -470,9 +466,9 @@ void LightTool::Erase(void)
 		for(j=y-minusBrush;j<=y+plusBrush;j++)
 			for(i=x-minusBrush;i<=x+plusBrush;i++)
 			{
-				if(i>=0 && j>=0 && i<m->width && j<m->height && m->map[i+j*m->width].select)
+				if (mapTile_t *target = m->TryGetTile(i, j); target && target->select)
 				{
-					m->map[i+j*m->width].light=0;
+					target->light=0;
 				}
 			}
 

@@ -440,19 +440,19 @@ static void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 		case 3:	//SPC_RAISEWALL	3
 			me->effect[0].type=EFF_CHANGETILE;
 			me->effect[0].flags=EF_CONTIGUOUS;
-			me->effect[0].value=map->map[old->effectX+old->effectY*map->width].floor;
+			me->effect[0].value=map->GetTile(old->effectX, old->effectY)->floor;
 			me->effect[0].value2=old->value+199;
 			break;
 		case 4: // SPC_TOGGLEWALL	4
 			me->effect[0].type=EFF_OLDTOGGLE;
-			if(map->map[old->effectX+old->effectY*map->width].wall)
+			if(map->GetTile(old->effectX, old->effectY)->wall)
 			{
 				me->effect[0].value=old->value;
-				me->effect[0].value2=map->map[old->effectX+old->effectY*map->width].wall;
+				me->effect[0].value2=map->GetTile(old->effectX, old->effectY)->wall;
 			}
 			else
 			{
-				me->effect[0].value=map->map[old->effectX+old->effectY*map->width].floor;
+				me->effect[0].value=map->GetTile(old->effectX, old->effectY)->floor;
 				me->effect[0].value2=old->value+199;
 			}
 			break;
@@ -479,7 +479,7 @@ static void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 			break;
 		case 9:	//SPC_PICTURE		9
 			me->effect[0].type=EFF_PICTURE;
-			strcpy(me->effect[0].text,old->msg);
+			ham_strcpy(me->effect[0].text,old->msg);
 			me->effect[0].value=0;
 			break;
 		case 10:	//SPC_PLAYSONG	10
@@ -510,7 +510,7 @@ static void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 			me->effect[0].type=EFF_CHANGETILE;
 			me->effect[0].flags|=EF_CONTIGUOUS;
 			me->effect[0].value=old->value;
-			me->effect[0].value2=map->map[old->effectX+old->effectY*map->width].wall;
+			me->effect[0].value2=map->GetTile(old->effectX, old->effectY)->wall;
 			break;
 		case 16:	//SPC_PLAYSOUND2	16
 			me->effect[0].type=EFF_SOUND;

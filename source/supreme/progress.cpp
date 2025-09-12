@@ -162,7 +162,7 @@ void LoadProfile(const char *name)
 {
 	int i,j;
 
-	strcpy(profile.name,name);
+	ham_strcpy(profile.name,name);
 	sprintf(prfName,"profiles/%s.prf",profile.name);
 
 	// save this profile as the current one.
@@ -347,7 +347,7 @@ void DefaultControls(void)
 
 void DefaultProfile(const char *name)
 {
-	strcpy(profile.name,name);
+	ham_strcpy(profile.name,name);
 
 	profile.sound=255;
 	profile.music=128;
@@ -385,16 +385,13 @@ void DefaultLevelProgress(levelData_t *me,byte levelNum)
 
 levelData_t *GetLevelProgress(const char *fname,byte levelNum)
 {
-	worldData_t *w;
-	int i;
+	worldData_t *w = GetWorldProgress(fname);
 
-	w=GetWorldProgress(fname);
-
-	for(i=0;i<w->levels;i++)
+	for (levelData_t &level : w->Levels())
 	{
-		if(w->level[i].levelNum==levelNum)
+		if (level.levelNum==levelNum)
 		{
-			return &w->level[i];
+			return &level;
 		}
 	}
 
@@ -420,7 +417,7 @@ void DefaultWorldProgress(worldData_t *me,const char *fname)
 	if(me->level)
 		free(me->level);
 
-	strcpy(me->filename,fname);
+	ham_strcpy(me->filename,fname);
 	me->keychains=0;
 	me->percentage=0;
 	me->levelOn=0;
@@ -482,11 +479,10 @@ worldData_t *GetWorldProgressNoCreate(const char *fname)
 
 byte LevelsPassed(worldData_t *world)
 {
-	int i;
 	byte total=0;
 
-	for(i=0;i<world->levels;i++)
-		if((world->level[i].flags&LF_PASSED) && !(curWorld.map[world->level[i].levelNum]->flags&(MAP_SECRET|MAP_HUB)))
+	for (const levelData_t &level : world->Levels())
+		if((level.flags&LF_PASSED) && !(curWorld.map[level.levelNum]->flags&(MAP_SECRET|MAP_HUB)))
 			total++;
 
 	return total;
@@ -494,13 +490,11 @@ byte LevelsPassed(worldData_t *world)
 
 byte LevelIsPassed(worldData_t *world,byte level)
 {
-	int i;
-
 	if(world==NULL)
 		return 0;
 
-	for(i=0;i<world->levels;i++)
-		if(world->level[i].levelNum==level && (world->level[i].flags&LF_PASSED))
+	for (const levelData_t &levelData : world->Levels())
+		if (levelData.levelNum==level && (levelData.flags&LF_PASSED))
 			return 1;
 
 	return 0;
@@ -508,28 +502,23 @@ byte LevelIsPassed(worldData_t *world,byte level)
 
 void StoreWorldResults(worldData_t *me,world_t *world)
 {
-	float newpct;
-	int i,maxPts,pts;
-
-
-	newpct=0.0f;
-	pts=0;
-	maxPts=0;
-	for(i=0;i<world->numMaps;i++)
-		if(!(world->map[i]->flags&MAP_HUB))
+	int pts=0;
+	int maxPts=0;
+	for (const Map *map : world->Maps())
+		if(!(map->flags&MAP_HUB))
 			maxPts+=1000;
 
-	for(i=0;i<me->levels;i++)
+	for (const levelData_t &level : me->Levels())
 	{
-		if(me->level[i].flags&LF_PASSED)
+		if(level.flags&LF_PASSED)
 		{
 			pts+=800;
-			if(me->level[i].flags&LF_CANDLES)
+			if(level.flags&LF_CANDLES)
 				pts+=200;
 		}
 	}
 
-	newpct=(float)pts*100.0f/(float)maxPts;
+	float newpct=(float)pts*100.0f/(float)maxPts;
 
 	if(newpct>me->percentage)
 		me->percentage=newpct;

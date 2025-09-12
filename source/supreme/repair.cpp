@@ -11,96 +11,79 @@ int *swapTable;
 
 void RepairCustomSounds(int n)
 {
-	world_t *w;
-	int lvl;
-
-	w=EditorGetWorld();
-
 	// fix references inside other items
 	RepairItemToSound(n);
 
-	for(lvl=0;lvl<w->numMaps;lvl++)
+	for (Map *map : EditorGetWorld()->Maps())
 	{
 		// first, fix specials
-		RepairSpecialToSound(w->map[lvl]->special,n);
+		RepairSpecialToSound(map->special, n);
 	}
 }
 
 void RepairItems(int n)
 {
-	world_t *w;
-	int lvl,i;
-
-	w=EditorGetWorld();
-
 	// fix references inside other items
 	RepairItemToItem(n);
 
-	for(lvl=0;lvl<w->numMaps;lvl++)
+	for (Map *map : EditorGetWorld()->Maps())
 	{
 		// on each level, we need to fix item references
 
 		// first, fix specials
-		RepairSpecialToItem(w->map[lvl]->special,n);
+		RepairSpecialToItem(map->special,n);
 
 		// now fix the items in the map themselves
-		for(i=0;i<w->map[lvl]->width*w->map[lvl]->height;i++)
+		for (mapTile_t &target : map->Tiles())
 		{
-			if(w->map[lvl]->map[i].item==n)
-				w->map[lvl]->map[i].item=0;
-			else if(w->map[lvl]->map[i].item>n)
-				w->map[lvl]->map[i].item--;
+			if (target.item == n)
+				target.item = 0;
+			else if (target.item > n)
+				target.item--;
 		}
+
 		// then fix any reference of a guy holding them
-		for(i=0;i<MAX_MAPMONS;i++)
+		for (mapBadguy_t &badguy : map->badguy)
 		{
-			if(w->map[lvl]->badguy[i].item==n)
-				w->map[lvl]->badguy[i].item=0;
-			else if(w->map[lvl]->badguy[i].item>n && w->map[lvl]->badguy[i].item!=ITM_RANDOM)
-				w->map[lvl]->badguy[i].item--;
+			if (badguy.item == n)
+				badguy.item = 0;
+			else if (badguy.item > n && badguy.item != ITM_RANDOM)
+				badguy.item--;
 		}
 	}
 }
 
 void RepairLevels(void)
 {
-	world_t *w;
-	int lvl;
-
-	w=EditorGetWorld();
-
-	for(lvl=0;lvl<w->numMaps;lvl++)
+	for (Map *map : EditorGetWorld()->Maps())
 	{
 		// on each level, we need to fix level references, ironically
 
 		// fix specials
-		RepairSpecialToLevel(w->map[lvl]->special);
+		RepairSpecialToLevel(map->special);
 	}
 }
 
 void RepairTiles(void)
 {
-	world_t *w;
-	int lvl,i;
-
-	w=EditorGetWorld();
+	world_t *w = EditorGetWorld();
 
 	// fix references inside the tiles
 	RepairTileToTile(w);
 
-	for(lvl=0;lvl<w->numMaps;lvl++)
+	for (Map *map : w->Maps())
 	{
 		// on each level, we need to fix tile references
 
 		// first, fix specials
-		RepairSpecialToTile(w->map[lvl]->special);
+		RepairSpecialToTile(map->special);
 
 		// now fix the tiles in the map themselves
-		for(i=0;i<w->map[lvl]->width*w->map[lvl]->height;i++)
+		for (mapTile_t &tile : map->Tiles())
 		{
-			if(w->map[lvl]->map[i].wall!=0)
-				w->map[lvl]->map[i].wall=GetSwap(w->map[lvl]->map[i].wall);
-			w->map[lvl]->map[i].floor=GetSwap(w->map[lvl]->map[i].floor);
+			if(tile.wall!=0)
+				tile.wall=GetSwap(tile.wall);
+			tile.floor=GetSwap(tile.floor);
 		}
 	}
 

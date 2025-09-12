@@ -7,7 +7,7 @@ char stitchError[64];
 
 void SetStitchError(const char *txt)
 {
-	strcpy(stitchError,txt);
+	ham_strcpy(stitchError, txt);
 }
 
 const char *GetStitchError(void)
@@ -17,56 +17,54 @@ const char *GetStitchError(void)
 
 void UpdateTiles(world_t *world)
 {
-	int lvl,i,j;
-
-	for(i=0;i<world->numTiles;i++)
+	for (terrain_t &terrain : world->Terrain())
 	{
-		world->terrain[i].next+=stitchTileOffset;
+		terrain.next += stitchTileOffset;
 	}
 
-	for(lvl=0;lvl<world->numMaps;lvl++)
+	for (Map *map : world->Maps())
 	{
-		for(i=0;i<world->map[lvl]->width*world->map[lvl]->height;i++)
+		for (mapTile_t &tile : map->Tiles())
 		{
-			world->map[lvl]->map[i].floor+=stitchTileOffset;
-			if(world->map[lvl]->map[i].wall)
-				world->map[lvl]->map[i].wall+=stitchTileOffset;
+			tile.floor += stitchTileOffset;
+			if (tile.wall)
+				tile.wall += stitchTileOffset;
 		}
 
-		for(i=0;i<MAX_SPECIAL;i++)
+		for (special_t &special : map->special)
 		{
-			if(world->map[lvl]->special[i].x!=255)
+			if (special.x != 255)
 			{
-				for(j=0;j<NUM_TRIGGERS;j++)
+				for (trigger_t &trigger : special.trigger)
 				{
-					if(world->map[lvl]->special[i].trigger[j].type==TRG_FLOOR)
+					if(trigger.type==TRG_FLOOR)
 					{
-						world->map[lvl]->special[i].trigger[j].value+=stitchTileOffset;
+						trigger.value+=stitchTileOffset;
 					}
-					else if(world->map[lvl]->special[i].trigger[j].type==TRG_FLOORRECT)
+					else if(trigger.type==TRG_FLOORRECT)
 					{
-						world->map[lvl]->special[i].trigger[j].value+=stitchTileOffset;
+						trigger.value+=stitchTileOffset;
 					}
-					else if(world->map[lvl]->special[i].trigger[j].type==TRG_STEPTILE)
+					else if(trigger.type==TRG_STEPTILE)
 					{
-						world->map[lvl]->special[i].trigger[j].value2+=stitchTileOffset;
+						trigger.value2+=stitchTileOffset;
 					}
 				}
-				for(j=0;j<NUM_EFFECTS;j++)
+				for (effect_t &effect : special.effect)
 				{
-					if(world->map[lvl]->special[i].effect[j].type==EFF_CHANGETILE)
+					if(effect.type==EFF_CHANGETILE)
 					{
-						world->map[lvl]->special[i].effect[j].value+=stitchTileOffset;
-						if(world->map[lvl]->special[i].effect[j].value2!=0)
-							world->map[lvl]->special[i].effect[j].value2+=stitchTileOffset;
+						effect.value+=stitchTileOffset;
+						if(effect.value2!=0)
+							effect.value2+=stitchTileOffset;
 					}
-					else if(world->map[lvl]->special[i].effect[j].type==EFF_OLDTOGGLE)
+					else if(effect.type==EFF_OLDTOGGLE)
 					{
-						world->map[lvl]->special[i].effect[j].value+=stitchTileOffset;
-						if(world->map[lvl]->special[i].effect[j].value2!=0)
-							world->map[lvl]->special[i].effect[j].value2+=stitchTileOffset;
+						effect.value+=stitchTileOffset;
+						if(effect.value2!=0)
+							effect.value2+=stitchTileOffset;
 					}
-					else if(world->map[lvl]->special[i].effect[j].type==EFF_TILEVAR)
+					else if(effect.type==EFF_TILEVAR)
 					{
 						SetStitchError("Warning: TileVar used.");
 					}

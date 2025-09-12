@@ -309,7 +309,7 @@ void AddToSum(dword i)
 	AddToSum((byte)(i&255));
 }
 
-void AddToSum(char *s)
+void AddToSum(const char *s)
 {
 	int i;
 
@@ -317,10 +317,8 @@ void AddToSum(char *s)
 		AddToSum((byte)s[i]);
 }
 
-dword ChecksumMap(Map *map)
+dword ChecksumMap(const Map *map)
 {
-	int i,j;
-
 	ResetChecksum();
 
 	AddToSum(map->name);
@@ -332,61 +330,61 @@ dword ChecksumMap(Map *map)
 	AddToSum(map->height);
 	AddToSum(map->itemDrops);
 
-	for(i=0;i<map->width*map->height;i++)
+	for (const mapTile_t &target : map->Tiles())
 	{
-		AddToSum(map->map[i].floor);
-		AddToSum(map->map[i].item);
-		AddToSum(map->map[i].wall);
-		AddToSum(map->map[i].light);
+		AddToSum(target.floor);
+		AddToSum(target.item);
+		AddToSum(target.wall);
+		AddToSum(target.light);
 	}
 
-	for(i=0;i<MAX_MAPMONS;i++)
+	for (const mapBadguy_t &badguy : map->badguy)
 	{
-		if(map->badguy[i].type)
+		if (badguy.type)
 		{
-			if (map->badguy[i].type > UINT8_MAX)
-				AddToSum(map->badguy[i].type);
+			if (badguy.type > UINT8_MAX)
+				AddToSum(badguy.type);
 			else
-				AddToSum((byte) map->badguy[i].type);
-			AddToSum(map->badguy[i].x);
-			AddToSum(map->badguy[i].y);
-			AddToSum(map->badguy[i].item);
+				AddToSum((byte)badguy.type);
+			AddToSum(badguy.x);
+			AddToSum(badguy.y);
+			AddToSum(badguy.item);
 		}
 	}
 
-	for(i=0;i<MAX_SPECIAL;i++)
+	for (const special_t &special : map->special)
 	{
-		if(map->special[i].x!=255)
+		if(special.x!=255)
 		{
-			AddToSum(map->special[i].x);
-			AddToSum(map->special[i].y);
+			AddToSum(special.x);
+			AddToSum(special.y);
 
-			for(j=0;j<NUM_TRIGGERS;j++)
+			for (const trigger_t &trigger : special.trigger)
 			{
-				if(map->special[i].trigger[j].type)
+				if(trigger.type)
 				{
-					AddToSum(map->special[i].trigger[j].type);
-					AddToSum(map->special[i].trigger[j].flags);
-					AddToSum(map->special[i].trigger[j].x);
-					AddToSum(map->special[i].trigger[j].y);
-					AddToSum(map->special[i].trigger[j].value);
-					AddToSum(map->special[i].trigger[j].value2);
+					AddToSum(trigger.type);
+					AddToSum(trigger.flags);
+					AddToSum(trigger.x);
+					AddToSum(trigger.y);
+					AddToSum(trigger.value);
+					AddToSum(trigger.value2);
 				}
 			}
 
-			for(j=0;j<NUM_EFFECTS;j++)
+			for (const effect_t &effect : special.effect)
 			{
-				if(map->special[i].effect[j].type)
+				if(effect.type)
 				{
-					AddToSum(map->special[i].effect[j].type);
-					AddToSum(map->special[i].effect[j].flags);
-					AddToSum(map->special[i].effect[j].x);
-					AddToSum(map->special[i].effect[j].y);
-					if (map->special[i].effect[j].type == EFF_SOUND)
-						AddToSum(SoundToDescIndex(map->special[i].effect[j].value));
+					AddToSum(effect.type);
+					AddToSum(effect.flags);
+					AddToSum(effect.x);
+					AddToSum(effect.y);
+					if (effect.type == EFF_SOUND)
+						AddToSum(SoundToDescIndex(effect.value));
 					else
-						AddToSum(map->special[i].effect[j].value);
-					AddToSum(map->special[i].effect[j].value2);
+						AddToSum(effect.value);
+					AddToSum(effect.value2);
 				}
 			}
 		}
@@ -678,7 +676,7 @@ void CreateScore(dword score,Map *map)
 	saved[3]=SCORE_NEW;
 }
 
-void GetHiScores(byte time,Map *map)
+void GetHiScores(byte time,const Map *map)
 {
 	int i,me,num;
 	score_t *list;
@@ -893,7 +891,7 @@ byte TryHighScore(void)
 	return gotRecords;
 }
 
-byte GetTopScores(score_t *winners,Map *map)
+byte GetTopScores(score_t *winners,const Map *map)
 {
 	int i,cnt;
 
@@ -911,7 +909,7 @@ byte GetTopScores(score_t *winners,Map *map)
 	return cnt;
 }
 
-byte GetTopTimes(score_t *winners,Map *map)
+byte GetTopTimes(score_t *winners,const Map *map)
 {
 	int i,cnt;
 
@@ -982,17 +980,15 @@ void DeleteScores(Map *map)
 
 void EraseHighScores(world_t *world)
 {
-	int i;
-
 	if(!config.hiscores)
 		return;
 
 	if(!world)
 		return;
 
-	for(i=0;i<world->numMaps;i++)
+	for (Map *map : world->Maps())
 	{
-		DeleteScores(world->map[i]);
+		DeleteScores(map);
 	}
 	SaveHiScores();
 }

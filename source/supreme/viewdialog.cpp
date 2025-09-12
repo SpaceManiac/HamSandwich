@@ -98,8 +98,6 @@ void RenderViewDialog(int msx,int msy,MGLDraw *mgl)
 {
 	char s[32];
 	int x,y;
-	Map *m;
-	int t;
 
 	if (DLG_Y2 != GetDisplayMGL()->GetHeight())
 	{
@@ -114,19 +112,13 @@ void RenderViewDialog(int msx,int msy,MGLDraw *mgl)
 
 	RenderButtons(msx,msy,mgl);
 	EditorGetTileXY(&x,&y);
-	if(x<0 || x>=EditorGetMap()->width)
+
+	Map *m = EditorGetMap();
+	if(x<0 || x>=m->width)
 		x=0;
-	if(y<0 || y>=EditorGetMap()->height)
+	if(y<0 || y>=m->height)
 		y=0;
-
-	m=EditorGetMap();
-
-	if(x>=0 && y>=0 && x<m->width && y<m->height)
-	{
-		t=m->map[x+y*m->width].floor;
-	}
-	else
-		t=999;
+	int t = m->GetTile(x, y)->floor;
 
 	sprintf(s,"T#%03d (%03d,%03d)",t,x,y);
 

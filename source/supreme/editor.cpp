@@ -181,11 +181,11 @@ void Delete(int x,int y)
 		}
 	editorMap->GetTile(x,y)->item=0;
 
-	for(i=0;i<MAX_SPECIAL;i++)
-		if(editorMap->special[i].x==x && editorMap->special[i].y==y)
+	for (special_t &special : editorMap->special)
+		if(special.x==x && special.y==y)
 		{
-			memset(&editorMap->special[i],0,sizeof(special_t));
-			editorMap->special[i].x=255;
+			memset(&special,0,sizeof(special_t));
+			special.x=255;
 		}
 }
 
@@ -554,7 +554,6 @@ TASK(byte) EditorRun(int *lastTime)
 
 void ShowSpecials(void)
 {
-	int i;
 	int sx,sy;
 	char s[8];
 
@@ -562,53 +561,32 @@ void ShowSpecials(void)
 		return;
 
 	GetCamera(&sx,&sy);
-	for(i=0;i<MAX_SPECIAL;i++)
-		if(editorMap->special[i].x!=255)
+	for (int i=0;i<MAX_SPECIAL;i++)
+	{
+		const special_t &special = editorMap->special[i];
+		if (special.x!=255)
 		{
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
-				  editorMap->special[i].y*TILE_HEIGHT-sy+editmgl->GetHeight()/2-1,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
+				  special.y*TILE_HEIGHT-sy+editmgl->GetHeight()/2-1,
 				  "Spcl",-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
-				  editorMap->special[i].y*TILE_HEIGHT-sy+editmgl->GetHeight()/2+1,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
+				  special.y*TILE_HEIGHT-sy+editmgl->GetHeight()/2+1,
 				  "Spcl",-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
-				  editorMap->special[i].y*TILE_HEIGHT-sy+editmgl->GetHeight()/2,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
+				  special.y*TILE_HEIGHT-sy+editmgl->GetHeight()/2,
 				  "Spcl",0,1);
 			sprintf(s,"%03d",i);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
-				  editorMap->special[i].y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2-1,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
+				  special.y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2-1,
 				  s,-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
-				  editorMap->special[i].y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2+1,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
+				  special.y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2+1,
 				  s,-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
-				  editorMap->special[i].y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
+				  special.y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2,
 				  s,0,1);
 		}
-}
-
-void ShowSpecials2(void)
-{
-	int i;
-	int sx,sy;
-
-	if(!(displayFlags&MAP_SHOWSPECIALS))
-		return;
-
-	GetCamera(&sx,&sy);
-	for(i=0;i<MAX_SPECIAL;i++)
-		if(editorMap->special[i].x!=255)
-		{
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
-				  editorMap->special[i].y*TILE_HEIGHT+6-sy+editmgl->GetHeight()/2-1,
-				  "Spcl",-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
-				  editorMap->special[i].y*TILE_HEIGHT+6-sy+editmgl->GetHeight()/2+1,
-				  "Spcl",-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
-				  editorMap->special[i].y*TILE_HEIGHT+6-sy+editmgl->GetHeight()/2,
-				  "Spcl",0,1);
-		}
+	}
 }
 
 void EditorShowRect(void)
@@ -938,9 +916,12 @@ static TASK(void) HandleKeyPresses(void)
 				ViewMenuOn();
 				break;
 			case 'C':
-				for(x=0;x<editorMap->width*editorMap->height;x++)
-					editorMap->map[x].light=editorMap->GetTile(tileX,tileY)->light;
+			{
+				int8_t light = editorMap->GetTile(tileX,tileY)->light;
+				for (mapTile_t& target : editorMap->Tiles())
+					target.light = light;
 				break;
+			}
 			case 8:
 				Delete(tileX,tileY);
 				break;

@@ -964,9 +964,9 @@ byte GetRandomItemFromShop(byte shopNum,byte invalid1,byte invalid2,byte invalid
 void AddMapShopItem(Map *map,byte item,byte x,byte y,byte *itmnum)
 {
 	if(item!=255)
-		map->map[x+y*map->width].item=itmnum[shop[item].type];
+		map->GetTile(x, y)->item=itmnum[shop[item].type];
 	else
-		map->map[x+y*map->width].item=ITM_NONE;
+		map->GetTile(x, y)->item=ITM_NONE;
 }
 
 void SetupShops(Map *map)
@@ -1037,19 +1037,19 @@ void SetupShops(Map *map)
 			{
 				if(profile.progress.purchase[i+lockStart]&SIF_ACTIVE)
 				{
-					map->map[x+y*map->width].floor=369;
-					map->map[x+y*map->width].wall=371;
+					map->GetTile(x, y)->floor=369;
+					map->GetTile(x, y)->wall=371;
 				}
 				else
 				{
-					map->map[x+y*map->width].floor=370;
-					map->map[x+y*map->width].wall=372;
+					map->GetTile(x, y)->floor=370;
+					map->GetTile(x, y)->wall=372;
 				}
 			}
 			else
 			{
-				map->map[x+y*map->width].floor=373;
-				map->map[x+y*map->width].wall=374;
+				map->GetTile(x, y)->floor=373;
+				map->GetTile(x, y)->wall=374;
 			}
 		}
 		x+=3;

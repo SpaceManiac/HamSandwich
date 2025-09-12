@@ -168,9 +168,9 @@ void ItemTool::PlopOne(int x,int y)
 
 	m=EditorGetMap();
 
-	if(x>=0 && y>=0 && x<m->width && y<m->height && m->map[x+y*m->width].select && item[active]<256)//		m->map[x+y*m->width].wall==0)
+	if (mapTile_t *target = m->TryGetTile(x, y); target && target->select && item[active]<256)//		m->map[x+y*m->width].wall==0)
 	{
-		m->map[x+y*m->width].item=(byte)item[active];
+		target->item=(byte)item[active];
 		if(GetItem(item[active])->flags&IF_SOLID)
 		{
 			for(i=0;i<MAX_MAPMONS;i++)
@@ -265,10 +265,9 @@ void ItemTool::SuckUp(int x,int y)
 
 	m=EditorGetMap();
 
-	if(x>=0 && y>=0 && x<m->width && y<m->height)
+	if (mapTile_t *target = m->TryGetTile(x, y); target && target->item)
 	{
-		if(m->map[x+y*m->width].item)
-			item[active]=m->map[x+y*m->width].item;
+		item[active] = target->item;
 	}
 }
 
@@ -295,9 +294,9 @@ void ItemTool::Erase(void)
 		for(j=y-minusBrush;j<=y+plusBrush;j++)
 			for(i=x-minusBrush;i<=x+plusBrush;i++)
 			{
-				if(i>=0 && j>=0 && i<m->width && j<m->height && m->map[i+j*m->width].select)
+				if (mapTile_t *target = m->TryGetTile(i, j); target && target->select)
 				{
-					m->map[i+j*m->width].item=0;
+					target->item=0;
 				}
 			}
 

@@ -186,22 +186,20 @@ void WallTool::StartPlop(void)
 
 void WallTool::PlopOne(int x,int y)
 {
-	Map *m;
-	int i;
+	Map *m = EditorGetMap();
 
-	m=EditorGetMap();
-
-	if(x>=0 && y>=0 && x<m->width && y<m->height && m->map[x+y*m->width].select && tile[active][0]<800 && tile[active][1]<800)
+	if (mapTile_t *target = m->TryGetTile(x, y); target && target->select && tile[active][0]<800 && tile[active][1]<800)
 	{
-		m->map[x+y*m->width].floor=tile[active][1];
-		m->map[x+y*m->width].wall=tile[active][0];
-		m->map[x+y*m->width].item=0;	// no items here!
-		for(i=0;i<MAX_MAPMONS;i++)
-			if((m->badguy[i].type) && (m->badguy[i].x==x) && (m->badguy[i].y==y))
+		target->floor=tile[active][1];
+		target->wall=tile[active][0];
+		target->item=0;	// no items here!
+		for (mapBadguy_t &badguy : m->badguy)
+		{
+			if(badguy.type && badguy.x==x && badguy.y==y)
 			{
-				// get rid of anybody already on this space
-				m->badguy[i].type=0;
+				badguy.type=0;
 			}
+		}
 	}
 
 	if(plopMode==PLOP_RANDOM)
@@ -287,13 +285,10 @@ void WallTool::SuckUp(int x,int y)
 
 	m=EditorGetMap();
 
-	if(x>=0 && y>=0 && x<m->width && y<m->height)
+	if (mapTile_t *target = m->TryGetTile(x, y); target && target->wall)
 	{
-		if(m->map[x+y*m->width].wall)
-		{
-			tile[active][1]=m->map[x+y*m->width].floor;
-			tile[active][0]=m->map[x+y*m->width].wall;
-		}
+		tile[active][1] = target->floor;
+		tile[active][0] = target->wall;
 	}
 }
 
@@ -320,9 +315,9 @@ void WallTool::Erase(void)
 		for(j=y-minusBrush;j<=y+plusBrush;j++)
 			for(i=x-minusBrush;i<=x+plusBrush;i++)
 			{
-				if(i>=0 && j>=0 && i<m->width && j<m->height && m->map[i+j*m->width].select)
+				if (mapTile_t *target = m->TryGetTile(i, j); target && target->select)
 				{
-					m->map[i+j*m->width].wall=0;
+					target->wall = 0;
 				}
 			}
 

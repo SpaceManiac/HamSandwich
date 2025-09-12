@@ -118,14 +118,14 @@ void EraserTool::PlopOne(int x,int y)
 
 	m=EditorGetMap();
 
-	if(x>=0 && y>=0 && x<m->width && y<m->height && m->map[x+y*m->width].select)
+	if (mapTile_t *target = m->TryGetTile(x, y); target && target->select)
 	{
 		if(eraseFlag&EF_LIGHT)
-			m->map[x+y*m->width].light=0;
+			target->light=0;
 		if(eraseFlag&EF_WALL)
-			m->map[x+y*m->width].wall=0;
+			target->wall=0;
 		if(eraseFlag&EF_ITEM)
-			m->map[x+y*m->width].item=0;
+			target->item=0;
 		if(eraseFlag&EF_BADGUY)
 		{
 			int i;
@@ -136,13 +136,11 @@ void EraserTool::PlopOne(int x,int y)
 		}
 		if(eraseFlag&EF_SPECIAL)
 		{
-			int i;
-
-			for(i=0;i<MAX_SPECIAL;i++)
+			for (special_t &special : m->special)
 			{
-				if(m->special[i].x==x && m->special[i].y==y)
+				if(special.x==x && special.y==y)
 				{
-					m->special[i].x=255;
+					special.x=255;
 				}
 			}
 		}

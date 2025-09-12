@@ -556,19 +556,16 @@ void InitExportDialog(const world_t* world, const char* filename)
 		files.push_back({ FileKind::Root, filename });
 	}
 
-	for (int i = 0; i < world->numMaps; ++i)
+	for (const Map *map : world->Maps())
 	{
-		const Map* map = world->map[i];
 		AddDependency("music/", map->song);
 
-		for (int j = 0; j < MAX_SPECIAL; ++j)
+		for (const special_t &spcl : map->special)
 		{
-			const special_t& spcl = map->special[j];
 			if (spcl.x != 255)
 			{
-				for (int k = 0; k < NUM_EFFECTS; ++k)
+				for (const effect_t &effect : spcl.effect)
 				{
-					const effect_t& effect = spcl.effect[k];
 					byte type = effect.type;
 					if (type == EFF_PICTURE || type == EFF_MONSGRAPHICS || type == EFF_ITEMGRAPHICS)
 					{

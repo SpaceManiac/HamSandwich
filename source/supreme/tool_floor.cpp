@@ -154,10 +154,10 @@ void FloorTool::PlopOne(int x,int y)
 
 	m=EditorGetMap();
 
-	if(x>=0 && y>=0 && x<m->width && y<m->height && m->map[x+y*m->width].select && tile[active]<800)
+	if (mapTile_t *target = m->TryGetTile(x, y); target && target->select && tile[active]<800)
 	{
-		m->map[x+y*m->width].floor=tile[active];
-		m->map[x+y*m->width].wall=0;
+		target->floor=tile[active];
+		target->wall=0;
 	}
 
 	if(plopMode==PLOP_RANDOM)
@@ -240,9 +240,9 @@ void FloorTool::SuckUp(int x,int y)
 
 	m=EditorGetMap();
 
-	if(x>=0 && y>=0 && x<m->width && y<m->height)
+	if (mapTile_t *target = m->TryGetTile(x, y))
 	{
-		tile[active]=m->map[x+y*m->width].floor;
+		tile[active] = target->floor;
 	}
 }
 
@@ -269,10 +269,10 @@ void FloorTool::Erase(void)
 		for(j=y-minusBrush;j<=y+plusBrush;j++)
 			for(i=x-minusBrush;i<=x+plusBrush;i++)
 			{
-				if(i>=0 && j>=0 && i<m->width && j<m->height && m->map[i+j*m->width].select)
+				if (mapTile_t *target = m->TryGetTile(i, j); target && target->select)
 				{
-					m->map[i+j*m->width].floor=0;
-					m->map[i+j*m->width].wall=0;
+					target->floor=0;
+					target->wall=0;
 				}
 			}
 

@@ -19,7 +19,6 @@ SelectTool::~SelectTool(void)
 
 void SelectTool::Update(int msx,int msy)
 {
-	int i;
 	MGLDraw* mgl = GetDisplayMGL();
 	Map *m;
 
@@ -62,8 +61,8 @@ void SelectTool::Update(int msx,int msy)
 		{
 			m=EditorGetMap();
 
-			for(i=0;i<m->width*m->height;i++)
-				m->map[i].select=clearMode;
+			for (mapTile_t &target : m->Tiles())
+				target.select = clearMode;
 			clearMode=1-clearMode;
 		}
 		if(PointInRect(msx,msy,mgl->GetWidth()-144,mgl->GetHeight()-58,mgl->GetWidth()-144+140,mgl->GetHeight()-58+15))
@@ -93,20 +92,17 @@ void SelectTool::Update(int msx,int msy)
 			// invert selection
 			m=EditorGetMap();
 
-			for(i=0;i<m->width*m->height;i++)
-				m->map[i].select=1-m->map[i].select;
+			for (mapTile_t &target : m->Tiles())
+				target.select = !target.select;
 
-			for(i=0;i<m->width*m->height;i++)
-				if(m->map[i].select)
+			clearMode=1;
+			for (const mapTile_t &target : m->Tiles())
+				if(target.select)
 				{
 					clearMode=0;
-					i=0;
 					break;
 				}
-			if(i==m->width*m->height)
-				clearMode=1;
 		}
-
 	}
 
 	if(mgl->RMouseTap())
@@ -179,11 +175,10 @@ void SelectTool::SetInk(void)
 void SelectTool::StartPlop(void)
 {
 	int x,y;
-	Map *m;
+	EditorGetTileXY(&x,&y);
 
 	if(doing==1)
 	{
-		EditorGetTileXY(&x,&y);
 		lastX=x;
 		lastY=y;
 		doing=0;
@@ -195,7 +190,6 @@ void SelectTool::StartPlop(void)
 	}
 	if(doing==2)
 	{
-		EditorGetTileXY(&x,&y);
 		lastX=x;
 		lastY=y;
 		doing=0;
@@ -206,14 +200,13 @@ void SelectTool::StartPlop(void)
 		return;
 	}
 
-	m=EditorGetMap();
 	lastX=-1;
 	lastY=-1;
 
-	EditorGetTileXY(&x,&y);
-	if(x>=0 && y>=0 && x<m->width && y<m->height)
+	Map *m = EditorGetMap();
+	if (mapTile_t *tile = m->TryGetTile(x, y))
 	{
-		if(m->map[x+y*m->width].select)
+		if(tile->select)
 			toggleType=0;
 		else
 			toggleType=1;
@@ -226,22 +219,19 @@ void SelectTool::StartPlop(void)
 
 void SelectTool::PlopOne(int x,int y)
 {
-	Map *m;
-
-	m=EditorGetMap();
-
-	if(x>=0 && y>=0 && x<m->width && y<m->height)
+	Map *m = EditorGetMap();
+	if (mapTile_t *tile = m->GetTile(x, y))
 	{
 		if(plopMode==SELPLOP_ON)
-			m->map[x+y*m->width].select=1;
+			tile->select=1;
 		else if(plopMode==SELPLOP_OFF)
-			m->map[x+y*m->width].select=0;
-		if(plopMode==SELPLOP_TOGGLE)
+			tile->select=0;
+		else if(plopMode==SELPLOP_TOGGLE)
 		{
 			if(toggleType)
-				m->map[x+y*m->width].select=1;
+				tile->select=1;
 			else
-				m->map[x+y*m->width].select=0;
+				tile->select=0;
 		}
 	}
 }

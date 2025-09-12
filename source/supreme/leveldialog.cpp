@@ -159,36 +159,33 @@ static int BrainsForMonster(int type, int item)
 static void AutoBrainsClick(int id)
 {
 	// autocalc brains needed
-	int i,j;
-	Map *m;
-
-	m=world->map[mapNum];
+	Map *m = world->map[mapNum];
 	m->numBrains=0;
 
-	for(i=0;i<m->width*m->height;i++)
+	for (const mapTile_t &target : m->Tiles())
 	{
-		j=BrainsGiven(m->map[i].item);
-		if(j>0)
-			m->numBrains+=j;	// negative ones aren't counted
-	}
-	for(i=0;i<MAX_MAPMONS;i++)
-	{
-		m->numBrains += BrainsForMonster(m->badguy[i].type, m->badguy[i].item);
+		// negative ones aren't counted
+		m->numBrains += std::max(0, BrainsGiven(target.item));
 	}
 
-	for(i=0;i<MAX_SPECIAL;i++)
+	for (const mapBadguy_t &badguy : m->badguy)
 	{
-		if(m->special[i].x!=255)
+		m->numBrains += BrainsForMonster(badguy.type, badguy.item);
+	}
+
+	for (const special_t &special : m->special)
+	{
+		if (special.x!=255)
 		{
-			for(j=0;j<NUM_EFFECTS;j++)
+			for (const effect_t &effect : special.effect)
 			{
-				if(m->special[i].effect[j].type==EFF_ITEM && BrainsGiven(m->special[i].effect[j].value)>0)
-					m->numBrains+=BrainsGiven(m->special[i].effect[j].value);
-				if(m->special[i].effect[j].type==EFF_MONSITEM && BrainsGiven(m->special[i].effect[j].value2)>0)
-					m->numBrains+=BrainsGiven(m->special[i].effect[j].value2);
-				if(m->special[i].effect[j].type==EFF_SUMMON)
+				if(effect.type==EFF_ITEM && BrainsGiven(effect.value)>0)
+					m->numBrains+=BrainsGiven(effect.value);
+				if(effect.type==EFF_MONSITEM && BrainsGiven(effect.value2)>0)
+					m->numBrains+=BrainsGiven(effect.value2);
+				if(effect.type==EFF_SUMMON)
 				{
-					m->numBrains += BrainsForMonster(m->special[i].effect[j].value, m->special[i].effect[j].value2);
+					m->numBrains += BrainsForMonster(effect.value, effect.value2);
 				}
 			}
 		}
@@ -200,36 +197,33 @@ static void AutoBrainsClick(int id)
 static void AutoCandlesClick(int id)
 {
 	// autocalc candles needed
-	int i,j;
-	Map *m;
-
-	m=world->map[mapNum];
+	Map *m = world->map[mapNum];
 	m->numCandles=0;
 
-	for(i=0;i<m->width*m->height;i++)
+	for (const mapTile_t &target : m->Tiles())
 	{
-		j=CandlesGiven(m->map[i].item);
-		if(j>0)
-			m->numCandles+=j;	// negative ones aren't counted
-	}
-	for(i=0;i<MAX_MAPMONS;i++)
-	{
-		if(m->badguy[i].type)
-			m->numCandles += (CountsDouble(m->badguy[i].type) ? 2 : 1) * CandlesGiven(m->badguy[i].item);
+		// negative ones aren't counted
+		m->numCandles += std::max(CandlesGiven(target.item), 0);
 	}
 
-	for(i=0;i<MAX_SPECIAL;i++)
+	for (const mapBadguy_t &badguy : m->badguy)
 	{
-		if(m->special[i].x!=255)
+		if(badguy.type)
+			m->numCandles += (CountsDouble(badguy.type) ? 2 : 1) * CandlesGiven(badguy.item);
+	}
+
+	for (const special_t &special : m->special)
+	{
+		if (special.x!=255)
 		{
-			for(j=0;j<NUM_EFFECTS;j++)
+			for (const effect_t &effect : special.effect)
 			{
-				if(m->special[i].effect[j].type==EFF_ITEM && CandlesGiven(m->special[i].effect[j].value)>0)
-					m->numCandles+=CandlesGiven(m->special[i].effect[j].value);
-				if(m->special[i].effect[j].type==EFF_MONSITEM && CandlesGiven(m->special[i].effect[j].value2)>0)
-					m->numCandles+=CandlesGiven(m->special[i].effect[j].value2);
-				if(m->special[i].effect[j].type==EFF_SUMMON && CandlesGiven(m->special[i].effect[j].value2)>0)
-					m->numCandles += (CountsDouble(m->special[i].effect[j].value) ? 2 : 1) * CandlesGiven(m->special[i].effect[j].value2);
+				if(effect.type==EFF_ITEM && CandlesGiven(effect.value)>0)
+					m->numCandles+=CandlesGiven(effect.value);
+				if(effect.type==EFF_MONSITEM && CandlesGiven(effect.value2)>0)
+					m->numCandles+=CandlesGiven(effect.value2);
+				if(effect.type==EFF_SUMMON && CandlesGiven(effect.value2)>0)
+					m->numCandles += (CountsDouble(effect.value) ? 2 : 1) * CandlesGiven(effect.value2);
 			}
 		}
 	}
@@ -242,7 +236,6 @@ static void SlideClick(int id)
 	int i,j;
 	int dx,dy,tx,ty;
 	Map *m;
-	mapTile_t t;
 
 	m=world->map[mapNum];
 
@@ -257,12 +250,12 @@ static void SlideClick(int id)
 		dx=-1;
 
 	// slide the monsters
-	for(i=0;i<MAX_MAPMONS;i++)
+	for (mapBadguy_t &guy : m->badguy)
 	{
-		if(m->badguy[i].type)
+		if(guy.type)
 		{
-			m->badguy[i].x=SlideCoord(m->badguy[i].x,dx,m->width);
-			m->badguy[i].y=SlideCoord(m->badguy[i].y,dy,m->height);
+			guy.x=SlideCoord(guy.x,dx,m->width);
+			guy.y=SlideCoord(guy.y,dy,m->height);
 		}
 	}
 
@@ -276,9 +269,7 @@ static void SlideClick(int id)
 				for(i=0;i<m->width-1+(dx==0);i++)
 				{
 					tx=SlideCoord(i,dx,m->width);
-					memcpy(&t,&m->map[i+j*m->width],sizeof(mapTile_t));
-					memcpy(&m->map[i+j*m->width],&m->map[tx+ty*m->width],sizeof(mapTile_t));
-					memcpy(&m->map[tx+ty*m->width],&t,sizeof(mapTile_t));
+					std::swap(*m->GetTile(i, j), *m->GetTile(tx, ty));
 				}
 			}
 			else if(dx>0)
@@ -286,9 +277,7 @@ static void SlideClick(int id)
 				for(i=m->width-1;i>0;i--)
 				{
 					tx=SlideCoord(i,dx,m->width);
-					memcpy(&t,&m->map[i+j*m->width],sizeof(mapTile_t));
-					memcpy(&m->map[i+j*m->width],&m->map[tx+ty*m->width],sizeof(mapTile_t));
-					memcpy(&m->map[tx+ty*m->width],&t,sizeof(mapTile_t));
+					std::swap(*m->GetTile(i, j), *m->GetTile(tx, ty));
 				}
 			}
 		}
@@ -303,9 +292,7 @@ static void SlideClick(int id)
 				for(i=0;i<m->width-1+(dx==0);i++)
 				{
 					tx=SlideCoord(i,dx,m->width);
-					memcpy(&t,&m->map[i+j*m->width],sizeof(mapTile_t));
-					memcpy(&m->map[i+j*m->width],&m->map[tx+ty*m->width],sizeof(mapTile_t));
-					memcpy(&m->map[tx+ty*m->width],&t,sizeof(mapTile_t));
+					std::swap(*m->GetTile(i, j), *m->GetTile(tx, ty));
 				}
 			}
 			else if(dx>0)
@@ -313,9 +300,7 @@ static void SlideClick(int id)
 				for(i=m->width-1;i>0;i--)
 				{
 					tx=SlideCoord(i,dx,m->width);
-					memcpy(&t,&m->map[i+j*m->width],sizeof(mapTile_t));
-					memcpy(&m->map[i+j*m->width],&m->map[tx+ty*m->width],sizeof(mapTile_t));
-					memcpy(&m->map[tx+ty*m->width],&t,sizeof(mapTile_t));
+					std::swap(*m->GetTile(i, j), *m->GetTile(tx, ty));
 				}
 			}
 		}
@@ -376,7 +361,7 @@ byte ZoomTileColor(int x,int y)
 	mapTile_t *m;
 	int i;
 
-	m=&world->map[mapNum]->map[x+y*world->map[mapNum]->width];
+	m = world->map[mapNum]->GetTile(x, y);
 
 	for(i=0;i<MAX_MAPMONS;i++)
 		if(world->map[mapNum]->badguy[i].type &&
@@ -531,10 +516,10 @@ void LevelDialogYes(void)
 			// resize the map as requested
 			if(!m->Resize(desiredWidth,desiredHeight))
 				return;	// couldn't resize it
-			for(i=0;i<MAX_MAPMONS;i++)
+			for (mapBadguy_t &guy : m->badguy)
 			{
-				if(m->badguy[i].type && (m->badguy[i].x>=m->width || m->badguy[i].y>=m->height))
-					m->badguy[i].type=0;	// remove excess badguys
+				if(guy.type && (guy.x>=m->width || guy.y>=m->height))
+					guy.type=0;	// remove excess badguys
 			}
 			for(i=0;i<MAX_SPECIAL;i++)
 			{

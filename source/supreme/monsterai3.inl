@@ -353,7 +353,7 @@ void AI_Mattie2Body(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 }
 
-byte IsBunnyAble(mapTile_t *m,world_t *world)
+static byte IsBunnyAble(const mapTile_t *m, world_t *world)
 {
 	if(!(GetTerrain(world,m->floor)->flags&TF_BUNNY))
 		return 0;
@@ -466,19 +466,19 @@ void AI_BuddyBunny(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	//	me->x=x;
 	//	me->y=y;
 		// figure out which directions are valid bunny paths
-		if(me->mapx<map->width-1 && IsBunnyAble(&map->map[me->mapx+1+me->mapy*map->width],world))
+		if(me->mapx<map->width-1 && IsBunnyAble(map->GetTile(me->mapx+1, me->mapy),world))
 			ok[0]=1;
 		else
 			ok[0]=0;
-		if(me->mapy<map->height-1 && IsBunnyAble(&map->map[me->mapx+(me->mapy+1)*map->width],world))
+		if(me->mapy<map->height-1 && IsBunnyAble(map->GetTile(me->mapx, me->mapy+1),world))
 			ok[1]=1;
 		else
 			ok[1]=0;
-		if(me->mapx>0 && IsBunnyAble(&map->map[me->mapx-1+me->mapy*map->width],world))
+		if(me->mapx>0 && IsBunnyAble(map->GetTile(me->mapx-1, me->mapy),world))
 			ok[2]=1;
 		else
 			ok[2]=0;
-		if(me->mapy>0 && IsBunnyAble(&map->map[me->mapx+(me->mapy-1)*map->width],world))
+		if(me->mapy>0 && IsBunnyAble(map->GetTile(me->mapx, me->mapy-1),world))
 			ok[3]=1;
 		else
 			ok[3]=0;
@@ -1577,9 +1577,10 @@ void AI_MossRapido(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			case 0:
 				// left
-				if(x>0 && map->map[x-1+y*map->width].wall==0 &&
-					(GetTerrain(world,map->map[x-1+y*map->width].floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
-					!(GetItem(map->map[x-1+(y)*map->width].item)->flags&(IF_SOLID|IF_BULLETPROOF))
+				if (mapTile_t *tile = map->TryGetTile(x - 1, y); tile &&
+					tile->wall==0 &&
+					(GetTerrain(world,tile->floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
+					!(GetItem(tile->item)->flags&(IF_SOLID|IF_BULLETPROOF))
 					&& (!MossCheck(x-1,y)))
 				{
 					baby=AddBaby(me->x,me->y,0,MONS_MOSS2,me);
@@ -1597,9 +1598,10 @@ void AI_MossRapido(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				break;
 			case 1:
 				// right
-				if(x<map->width-1 && map->map[x+1+y*map->width].wall==0 &&
-					(GetTerrain(world,map->map[x+1+y*map->width].floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
-					!(GetItem(map->map[x+1+(y)*map->width].item)->flags&(IF_SOLID|IF_BULLETPROOF))
+				if (mapTile_t *tile = map->TryGetTile(x + 1, y); tile &&
+					tile->wall==0 &&
+					(GetTerrain(world,tile->floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
+					!(GetItem(tile->item)->flags&(IF_SOLID|IF_BULLETPROOF))
 					&& (!MossCheck(x+1,y)))
 				{
 					baby=AddBaby(me->x,me->y,0,MONS_MOSS2,me);
@@ -1617,9 +1619,10 @@ void AI_MossRapido(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				break;
 			case 2:
 				// up
-				if(y>0 && map->map[x+(y-1)*map->width].wall==0 &&
-					(GetTerrain(world,map->map[x+(y-1)*map->width].floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
-					!(GetItem(map->map[x+(y-1)*map->width].item)->flags&(IF_SOLID|IF_BULLETPROOF))
+				if (mapTile_t *tile = map->TryGetTile(x, y - 1); tile &&
+					tile->wall==0 &&
+					(GetTerrain(world,tile->floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
+					!(GetItem(tile->item)->flags&(IF_SOLID|IF_BULLETPROOF))
 					&& (!MossCheck(x,y-1)))
 				{
 					baby=AddBaby(me->x,me->y,0,MONS_MOSS2,me);
@@ -1637,9 +1640,10 @@ void AI_MossRapido(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				break;
 			case 3:
 				// down
-				if(y<map->height-1 && map->map[x+(y+1)*map->width].wall==0 &&
-					(GetTerrain(world,map->map[x+(y+1)*map->width].floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
-					!(GetItem(map->map[x+(y+1)*map->width].item)->flags&(IF_SOLID|IF_BULLETPROOF))
+				if (mapTile_t *tile = map->TryGetTile(x, y + 1); tile &&
+					tile->wall==0 &&
+					(GetTerrain(world,tile->floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
+					!(GetItem(tile->item)->flags&(IF_SOLID|IF_BULLETPROOF))
 					&& (!MossCheck(x,y+1)))
 				{
 					baby=AddBaby(me->x,me->y,0,MONS_MOSS2,me);

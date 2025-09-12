@@ -54,13 +54,13 @@ void LoadHiScores(void);
 
 byte TryHighScore(void);
 
-byte GetTopScores(score_t *winners,Map *map);
-byte GetTopTimes(score_t *winners,Map *map);
+byte GetTopScores(score_t *winners,const Map *map);
+byte GetTopTimes(score_t *winners,const Map *map);
 
 void CryptoTest(void);
 
 void EraseHighScores(world_t *world);
-dword ChecksumMap(Map *map);
+dword ChecksumMap(const Map *map);
 char *GetScoresToUpload(int *num,int *scoreSize);
 char *GetTimesToUpload(int *num,int *scoreSize);
 int CountScoresToUpload(void);

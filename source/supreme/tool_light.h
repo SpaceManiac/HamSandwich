@@ -34,8 +34,6 @@ class LightTool : public Tool
 		void PlopOne(int centerx,int centery,int x,int y);
 		void LOSPoints(int x,int y,int curx,int cury,int *p1x,int *p1y,int *p2x,int *p2y);
 		void LOS(int x,int y,int rx,int ry,int rx2,int ry2);
-		byte GetOpaque(int x,int y,mapTile_t *map,int width,int height);
-		void SetOpaque(int x,int y,byte opaque,mapTile_t *map,int width,int height);
 
 		char bright;	// brightness
 		byte random;	// randomness

@@ -569,7 +569,7 @@ byte Scan_Level(world_t *world,Map *map)
 
 static word var_checks[16],var_sets[16],tileVars;
 
-void Find_Text_Vars(char *txt,byte check)
+static void Find_Text_Vars(const char *txt,byte check)
 {
 	int i;
 
@@ -594,8 +594,6 @@ void Find_Text_Vars(char *txt,byte check)
 
 byte Scan_Vars(world_t *world)
 {
-	int i,j,k;
-
 	auto f = AppdataOpen_Write("var_scan.txt");
 	scanF = f.get();
 	if(!scanF)
@@ -603,65 +601,65 @@ byte Scan_Vars(world_t *world)
 
 	SDL_RWprintf(scanF,"World: %s\n\n\nVAR REFERENCES\n---------\n",world->map[0]->name);
 
-	for(i=0;i<16;i++)
+	for(int i=0;i<16;i++)
 	{
 		var_checks[i]=0;
 		var_sets[i]=0;
 	}
 	tileVars=0;
 
-	for(i=0;i<world->numMaps;i++)
+	for (Map *map : world->Maps())
 	{
-		for(j=0;j<MAX_SPECIAL;j++)
+		for (const special_t &special : map->special)
 		{
-			if(world->map[i]->special[j].x!=255)
+			if (special.x != 255)
 			{
-				for(k=0;k<NUM_TRIGGERS;k++)
+				for(int k=0;k<NUM_TRIGGERS;k++)
 				{
-					switch(world->map[i]->special[j].trigger[k].type)
+					switch(special.trigger[k].type)
 					{
 						case TRG_COMPVAR: // value is one, compared to value2
-							var_checks[world->map[i]->special[j].trigger[k].value2]++;
+							var_checks[special.trigger[k].value2]++;
 							[[fallthrough]];
 						case TRG_VAR:	// value
-							var_checks[world->map[i]->special[j].trigger[k].value]++;
+							var_checks[special.trigger[k].value]++;
 							break;
 						case TRG_EQUVAR:	// value, and a text thing
-							var_checks[world->map[i]->special[j].trigger[k].value]++;
+							var_checks[special.trigger[k].value]++;
 							[[fallthrough]];
 						case TRG_EQUATION:	// text thing
-							Find_Text_Vars(world->map[i]->special[j].effect[k].text,1);
+							Find_Text_Vars(special.effect[k].text,1);
 							break;
 					}
 				}
-				for(k=0;k<NUM_EFFECTS;k++)
+				for (const effect_t &effect : special.effect)
 				{
-					switch(world->map[i]->special[j].effect[k].type)
+					switch(effect.type)
 					{
 						case EFF_VAR:	// sets value, reads text
-							var_sets[world->map[i]->special[j].effect[k].value]++;
-							Find_Text_Vars(world->map[i]->special[j].effect[k].text,1);
+							var_sets[effect.value]++;
+							Find_Text_Vars(effect.text,1);
 							break;
 						case EFF_TILEVAR:	// sets a tilevar, checks V
 							tileVars++;
-							var_checks[world->map[i]->special[j].effect[k].value]++;
+							var_checks[effect.value]++;
 							break;
 						case EFF_ITEM:	// changes items, said items might change variables
-							if(world->map[i]->special[j].effect[k].value!=ITM_NONE &&
-								(GetItem(world->map[i]->special[j].effect[k].value)->effect==IE_INCVAR ||
-								GetItem(world->map[i]->special[j].effect[k].value)->effect==IE_DECVAR))
+							if(effect.value!=ITM_NONE &&
+								(GetItem(effect.value)->effect==IE_INCVAR ||
+								GetItem(effect.value)->effect==IE_DECVAR))
 							{
-								var_sets[GetItem(world->map[i]->special[j].effect[k].value)->effectAmt]++;
+								var_sets[GetItem(effect.value)->effectAmt]++;
 							}
 							break;
 						case EFF_SUMMON:	// summon a monster, who might hold a var-changing item
 						case EFF_MONSITEM:	// give a monster a possibly var-changing item
-							if(world->map[i]->special[j].effect[k].value2!=ITM_NONE &&
-								world->map[i]->special[j].effect[k].value2!=ITM_RANDOM &&
-								(GetItem(world->map[i]->special[j].effect[k].value2)->effect==IE_INCVAR ||
-								GetItem(world->map[i]->special[j].effect[k].value2)->effect==IE_DECVAR))
+							if(effect.value2!=ITM_NONE &&
+								effect.value2!=ITM_RANDOM &&
+								(GetItem(effect.value2)->effect==IE_INCVAR ||
+								GetItem(effect.value2)->effect==IE_DECVAR))
 							{
-								var_sets[GetItem(world->map[i]->special[j].effect[k].value2)->effectAmt]++;
+								var_sets[GetItem(effect.value2)->effectAmt]++;
 							}
 							break;
 					}
@@ -669,25 +667,24 @@ byte Scan_Vars(world_t *world)
 			}
 		}
 		// find var change items on the map
-		for(j=0;j<world->map[i]->width*world->map[i]->height;j++)
+		for (const mapTile_t &target : map->Tiles())
 		{
-			if(GetItem(world->map[i]->map[j].item)!=NULL &&
-				(GetItem(world->map[i]->map[j].item)->effect==IE_INCVAR ||
-				GetItem(world->map[i]->map[j].item)->effect==IE_DECVAR))
-				var_sets[GetItem(world->map[i]->map[j].item)->effectAmt]++;
+			item_t *item = GetItem(target.item);
+			if(item && (item->effect==IE_INCVAR || item->effect==IE_DECVAR))
+				var_sets[item->effectAmt]++;
 		}
 		// find var change items held by monsters
-		for(j=0;j<MAX_MAPMONS;j++)
+		for (const mapBadguy_t &badguy : map->badguy)
 		{
-			if(world->map[i]->badguy[j].type!=MONS_NONE && GetItem(world->map[i]->badguy[j].item)!=NULL &&
-				(GetItem(world->map[i]->badguy[j].item)->effect==IE_INCVAR ||
-				GetItem(world->map[i]->badguy[j].item)->effect==IE_DECVAR))
-				var_sets[GetItem(world->map[i]->badguy[j].item)->effectAmt]++;
+			if(badguy.type!=MONS_NONE && GetItem(badguy.item)!=NULL &&
+				(GetItem(badguy.item)->effect==IE_INCVAR ||
+				GetItem(badguy.item)->effect==IE_DECVAR))
+				var_sets[GetItem(badguy.item)->effectAmt]++;
 		}
 	}
 
 	SDL_RWprintf(scanF,"Tile vars: %d\n\nVars being checked:\n",tileVars);
-	for(i=0;i<16;i++)
+	for(int i=0;i<16;i++)
 	{
 		if(var_checks[i]>0)
 		{
@@ -698,7 +695,7 @@ byte Scan_Vars(world_t *world)
 		}
 	}
 	SDL_RWprintf(scanF,"\nVars being set:\n");
-	for(i=0;i<16;i++)
+	for(int i=0;i<16;i++)
 	{
 		if(var_sets[i]>0)
 		{
@@ -711,98 +708,100 @@ byte Scan_Vars(world_t *world)
 
 	SDL_RWprintf(scanF,"\nLEVEL DETAILS\n----------------\n\n");
 
-	for(i=0;i<world->numMaps;i++)
+	for(int i=0;i<world->numMaps;i++)
 	{
+		const Map *map = world->map[i];
 		SDL_RWprintf(scanF,"Level %d: %s -----------------\n\n",i,world->map[i]->name);
 
-		for(j=0;j<16;j++)
+		for(int j=0;j<16;j++)
 		{
 			var_checks[j]=0;
 			var_sets[j]=0;
 		}
 		tileVars=0;
 
-		for(j=0;j<MAX_SPECIAL;j++)
+		for(int j=0;j<MAX_SPECIAL;j++)
 		{
-			if(world->map[i]->special[j].x!=255)
+			const special_t &spcl = map->special[j];
+			if(spcl.x!=255)
 			{
-				for(k=0;k<NUM_TRIGGERS;k++)
+				for(int k=0;k<NUM_TRIGGERS;k++)
 				{
-					switch(world->map[i]->special[j].trigger[k].type)
+					switch(spcl.trigger[k].type)
 					{
 						case TRG_COMPVAR: // value is one, compared to value2
-							var_checks[world->map[i]->special[j].trigger[k].value2]++;
-							var_checks[world->map[i]->special[j].trigger[k].value]++;
-							SDL_RWprintf(scanF,"SPCL #%03d (%03d,%03d): TRG: Compare %s to %s\n",j,world->map[i]->special[j].x,world->map[i]->special[j].y,
-									VarName(world->map[i]->special[j].trigger[k].value),VarName(world->map[i]->special[j].trigger[k].value2));
+							var_checks[spcl.trigger[k].value2]++;
+							var_checks[spcl.trigger[k].value]++;
+							SDL_RWprintf(scanF,"SPCL #%03d (%03d,%03d): TRG: Compare %s to %s\n",j,spcl.x,spcl.y,
+									VarName(spcl.trigger[k].value),VarName(spcl.trigger[k].value2));
 							break;
 						case TRG_VAR:	// value
-							var_checks[world->map[i]->special[j].trigger[k].value]++;
-							SDL_RWprintf(scanF,"SPCL #%03d (%03d,%03d): TRG: Check value of %s\n",j,world->map[i]->special[j].x,world->map[i]->special[j].y,
-									VarName(world->map[i]->special[j].trigger[k].value));
+							var_checks[spcl.trigger[k].value]++;
+							SDL_RWprintf(scanF,"SPCL #%03d (%03d,%03d): TRG: Check value of %s\n",j,spcl.x,spcl.y,
+									VarName(spcl.trigger[k].value));
 							break;
 						case TRG_EQUVAR:	// value, and a text thing
-							var_checks[world->map[i]->special[j].trigger[k].value]++;
-							SDL_RWprintf(scanF,"SPCL #%03d (%03d,%03d): TRG: Equation compare \"%s\" to %s\n",j,world->map[i]->special[j].x,world->map[i]->special[j].y,
-									world->map[i]->special[j].effect[k].text,VarName(world->map[i]->special[j].trigger[k].value));
-							Find_Text_Vars(world->map[i]->special[j].effect[k].text,1);
+							var_checks[spcl.trigger[k].value]++;
+							SDL_RWprintf(scanF,"SPCL #%03d (%03d,%03d): TRG: Equation compare \"%s\" to %s\n",j,spcl.x,spcl.y,
+									spcl.effect[k].text,VarName(spcl.trigger[k].value));
+							Find_Text_Vars(spcl.effect[k].text,1);
 							break;
 						case TRG_EQUATION:	// text thing
-							Find_Text_Vars(world->map[i]->special[j].effect[k].text,1);
-							SDL_RWprintf(scanF,"SPCL #%03d (%03d,%03d): TRG: Equation check \"%s\"\n",j,world->map[i]->special[j].x,world->map[i]->special[j].y,
-									world->map[i]->special[j].effect[k].text);
+							Find_Text_Vars(spcl.effect[k].text,1);
+							SDL_RWprintf(scanF,"SPCL #%03d (%03d,%03d): TRG: Equation check \"%s\"\n",j,spcl.x,spcl.y,
+									spcl.effect[k].text);
 							break;
 					}
 				}
-				for(k=0;k<NUM_EFFECTS;k++)
+				for (const effect_t &effect : spcl.effect)
 				{
-					switch(world->map[i]->special[j].effect[k].type)
+					switch(effect.type)
 					{
 						case EFF_VAR:	// sets value, reads text
-							var_sets[world->map[i]->special[j].effect[k].value]++;
-							Find_Text_Vars(world->map[i]->special[j].effect[k].text,1);
-							SDL_RWprintf(scanF,"SPCL #%03d (%03d,%03d): EFF: Sets %s to \"%s\"\n",j,world->map[i]->special[j].x,world->map[i]->special[j].y,
-									VarName(world->map[i]->special[j].effect[k].value),world->map[i]->special[j].effect[k].text);
+							var_sets[effect.value]++;
+							Find_Text_Vars(effect.text,1);
+							SDL_RWprintf(scanF,"SPCL #%03d (%03d,%03d): EFF: Sets %s to \"%s\"\n",j,spcl.x,spcl.y,
+									VarName(effect.value),effect.text);
 							break;
 						case EFF_TILEVAR:	// sets a tilevar, checks V
 							tileVars++;
-							var_checks[world->map[i]->special[j].effect[k].value]++;
-							SDL_RWprintf(scanF,"SPCL #%03d (%03d,%03d): EFF: Tilevar reads %s\n",j,world->map[i]->special[j].x,world->map[i]->special[j].y,
-									VarName(world->map[i]->special[j].effect[k].value));
+							var_checks[effect.value]++;
+							SDL_RWprintf(scanF,"SPCL #%03d (%03d,%03d): EFF: Tilevar reads %s\n",j,spcl.x,spcl.y,
+									VarName(effect.value));
 							break;
 						case EFF_ITEM:	// changes items, said items might change variables
-							if(world->map[i]->special[j].effect[k].value!=ITM_NONE &&
-								(GetItem(world->map[i]->special[j].effect[k].value)->effect==IE_INCVAR ||
-								GetItem(world->map[i]->special[j].effect[k].value)->effect==IE_DECVAR))
+							if(effect.value!=ITM_NONE &&
+								(GetItem(effect.value)->effect==IE_INCVAR ||
+								GetItem(effect.value)->effect==IE_DECVAR))
 							{
-								var_sets[GetItem(world->map[i]->special[j].effect[k].value)->effectAmt]++;
+								var_sets[GetItem(effect.value)->effectAmt]++;
 								SDL_RWprintf(scanF,"SPCL #%03d (%03d,%03d): EFF: Creates item that incs/decs %s\n",j,
-									world->map[i]->special[j].x,world->map[i]->special[j].y,
-									VarName(GetItem(world->map[i]->special[j].effect[k].value)->effectAmt));
+									spcl.x,spcl.y,
+									VarName(GetItem(effect.value)->effectAmt));
 							}
 							break;
 						case EFF_SUMMON:	// summon a monster, who might hold a var-changing item
-							if(world->map[i]->special[j].effect[k].value2!=ITM_NONE &&
-								world->map[i]->special[j].effect[k].value2!=ITM_RANDOM &&
-								(GetItem(world->map[i]->special[j].effect[k].value2)->effect==IE_INCVAR ||
-								GetItem(world->map[i]->special[j].effect[k].value2)->effect==IE_DECVAR))
+							if(effect.value2!=ITM_NONE &&
+								effect.value2!=ITM_RANDOM &&
+								(GetItem(effect.value2)->effect==IE_INCVAR ||
+								GetItem(effect.value2)->effect==IE_DECVAR))
 							{
-								var_sets[GetItem(world->map[i]->special[j].effect[k].value2)->effectAmt]++;
+								var_sets[GetItem(effect.value2)->effectAmt]++;
 								SDL_RWprintf(scanF,"SPCL #%03d (%03d,%03d): EFF: Summons monster holding item that incs/decs %s\n",j,
-									world->map[i]->special[j].x,world->map[i]->special[j].y,
-									VarName(GetItem(world->map[i]->special[j].effect[k].value2)->effectAmt));
+									spcl.x,spcl.y,
+									VarName(GetItem(effect.value2)->effectAmt));
 							}
 							break;
 						case EFF_MONSITEM:	// give a monster a possibly var-changing item
-							if(world->map[i]->special[j].effect[k].value2!=ITM_NONE &&
-								world->map[i]->special[j].effect[k].value2!=ITM_RANDOM &&
-								(GetItem(world->map[i]->special[j].effect[k].value2)->effect==IE_INCVAR ||
-								GetItem(world->map[i]->special[j].effect[k].value2)->effect==IE_DECVAR))
+							if(effect.value2!=ITM_NONE &&
+								effect.value2!=ITM_RANDOM &&
+								(GetItem(effect.value2)->effect==IE_INCVAR ||
+								GetItem(effect.value2)->effect==IE_DECVAR))
 							{
-								var_sets[GetItem(world->map[i]->special[j].effect[k].value2)->effectAmt]++;
+								var_sets[GetItem(effect.value2)->effectAmt]++;
 								SDL_RWprintf(scanF,"SPCL #%03d (%03d,%03d): EFF: Changes monster item to item that incs/decs %s\n",j,
-									world->map[i]->special[j].x,world->map[i]->special[j].y,
-									VarName(GetItem(world->map[i]->special[j].effect[k].value2)->effectAmt));
+									spcl.x,spcl.y,
+									VarName(GetItem(effect.value2)->effectAmt));
 							}
 							break;
 					}
@@ -811,34 +810,35 @@ byte Scan_Vars(world_t *world)
 		}
 
 		// find var change items on the map
-		for(j=0;j<world->map[i]->width*world->map[i]->height;j++)
+		for(int j=0;j<map->width*map->height;j++)
 		{
-			if(GetItem(world->map[i]->map[j].item)!=NULL &&
-				(GetItem(world->map[i]->map[j].item)->effect==IE_INCVAR ||
-				GetItem(world->map[i]->map[j].item)->effect==IE_DECVAR))
+			item_t *item = GetItem(map->map[j].item);
+			if(item && (item->effect==IE_INCVAR || item->effect==IE_DECVAR))
 			{
-				var_sets[GetItem(world->map[i]->map[j].item)->effectAmt]++;
-				SDL_RWprintf(scanF,"ITM (%03d,%03d): '%s' incs/decs %s\n",j%world->map[i]->width,j/world->map[i]->width,
-						GetItem(world->map[i]->map[j].item)->name,VarName(GetItem(world->map[i]->map[j].item)->effectAmt));
+				var_sets[item->effectAmt]++;
+				SDL_RWprintf(scanF,"ITM (%03d,%03d): '%s' incs/decs %s\n",j%map->width,j/map->width,
+						item->name,VarName(item->effectAmt));
 			}
 		}
+
 		// find var change items held by monsters
-		for(j=0;j<MAX_MAPMONS;j++)
+		for(int j=0;j<MAX_MAPMONS;j++)
 		{
-			if(world->map[i]->badguy[j].type!=MONS_NONE && GetItem(world->map[i]->badguy[j].item)!=NULL &&
-				(GetItem(world->map[i]->badguy[j].item)->effect==IE_INCVAR ||
-				GetItem(world->map[i]->badguy[j].item)->effect==IE_DECVAR))
+			const mapBadguy_t &guy = map->badguy[j];
+			if(guy.type!=MONS_NONE && GetItem(guy.item)!=NULL &&
+				(GetItem(guy.item)->effect==IE_INCVAR ||
+				GetItem(guy.item)->effect==IE_DECVAR))
 			{
-				var_sets[GetItem(world->map[i]->badguy[j].item)->effectAmt]++;
-				SDL_RWprintf(scanF,"MONS (%03d,%03d): '%s' holds a '%s' that incs/decs %s\n",j%world->map[i]->width,j/world->map[i]->width,
-						MonsterName(world->map[i]->badguy[j].type),
-						GetItem(world->map[i]->badguy[j].item)->name,
-						VarName(GetItem(world->map[i]->badguy[j].item)->effectAmt));
+				var_sets[GetItem(guy.item)->effectAmt]++;
+				SDL_RWprintf(scanF,"MONS (%03d,%03d): '%s' holds a '%s' that incs/decs %s\n",j%map->width,j/map->width,
+						MonsterName(guy.type),
+						GetItem(guy.item)->name,
+						VarName(GetItem(guy.item)->effectAmt));
 			}
 		}
 
 		SDL_RWprintf(scanF,"Tile vars: %d\n\nVars being checked:\n",tileVars);
-		for(j=0;j<16;j++)
+		for(int j=0;j<16;j++)
 		{
 			if(var_checks[j]>0)
 			{
@@ -849,7 +849,7 @@ byte Scan_Vars(world_t *world)
 			}
 		}
 		SDL_RWprintf(scanF,"\nVars being set:\n");
-		for(j=0;j<16;j++)
+		for(int j=0;j<16;j++)
 		{
 			if(var_sets[j]>0)
 			{

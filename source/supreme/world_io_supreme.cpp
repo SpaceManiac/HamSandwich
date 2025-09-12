@@ -64,11 +64,11 @@ struct saveTile_t
 
 void LoadTerrain(world_t *world, const char *fname, SDL_RWops *f)
 {
-	for (int i = 0; i < world->numTiles; ++i)
+	for (terrain_t &terrain : world->Terrain())
 	{
 		io_terrain_t io_terrain;
 		SDL_RWread(f, &io_terrain, sizeof(io_terrain_t), 1);
-		world->terrain[i] = LoadOneTerrain(io_terrain);
+		terrain = LoadOneTerrain(io_terrain);
 	}
 
 	// In 2012, Shadowless Wall was added as an additional meaning of the
@@ -81,10 +81,10 @@ void LoadTerrain(world_t *world, const char *fname, SDL_RWops *f)
 	buf.append(".shadowless");
 	if (AppdataOpen(buf.c_str()))
 	{
-		for (int i = 0; i < world->numTiles; ++i)
+		for (terrain_t &terrain : world->Terrain())
 		{
-			if (world->terrain[i].flags & TF_TRANS)
-				world->terrain[i].flags |= TF_SHADOWLESS;
+			if (terrain.flags & TF_TRANS)
+				terrain.flags |= TF_SHADOWLESS;
 		}
 	}
 }
@@ -479,14 +479,14 @@ bool Supreme_SaveWorld(const world_t *world, SDL_RWops *f)
 
 	SaveTiles(f);
 
-	for(int i = 0; i < world->numTiles; ++i)
+	for (const terrain_t &terrain : world->Terrain())
 	{
-		io_terrain_t io_terrain = SaveOneTerrain(world->terrain[i]);
+		io_terrain_t io_terrain = SaveOneTerrain(terrain);
 		SDL_RWwrite(f, &io_terrain, sizeof(io_terrain_t), 1);
 	}
 
-	for(int i = 0; i < world->numMaps; i++)
-		SaveMap(f, world->map[i]);
+	for (Map *map : world->Maps())
+		SaveMap(f, map);
 
 	SaveItems(f);
 	SaveCustomSounds(f);

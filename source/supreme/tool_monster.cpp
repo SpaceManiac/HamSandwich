@@ -193,55 +193,51 @@ void MonsterTool::StartPlop(void)
 
 void MonsterTool::PlopOne(int x,int y)
 {
-	Map *m;
+	Map *m = EditorGetMap();
 
-	m=EditorGetMap();
-
-	if(x>=0 && y>=0 && x<m->width && y<m->height && m->map[x+y*m->width].select && monster[active] != MONS_NONE)
+	if (mapTile_t *target = m->TryGetTile(x, y); target && target->select && monster[active] != MONS_NONE)
 	{
-		int i;
-
-		if((!m->map[x+y*m->width].item || !(GetItem(m->map[x+y*m->width].item)->flags&IF_SOLID))
-			&& !m->map[x+y*m->width].wall)
+		if((!target->item || !(GetItem(target->item)->flags&IF_SOLID))
+			&& !target->wall)
 		{
-			for(i=0;i<MAX_MAPMONS;i++)
-				if((m->badguy[i].type) && (m->badguy[i].x==x) && (m->badguy[i].y==y))
+			for (mapBadguy_t &guy : m->badguy)
+				if(guy.type && guy.x==x && guy.y==y)
 				{
 					// get rid of anybody already on this space
-					m->badguy[i].type=0;
+					guy.type=0;
 				}
 
 			// only one bouapha allowed
 			if(monster[active]==MONS_BOUAPHA)
 			{
-				for(i=0;i<MAX_MAPMONS;i++)
-					if(m->badguy[i].type==MONS_BOUAPHA)
+				for (mapBadguy_t &guy : m->badguy)
+					if(guy.type==MONS_BOUAPHA)
 					{
-						m->badguy[i].type=0;
+						guy.type=0;
 					}
 			}
 
 			// now add the new guy
-			for(i=0;i<MAX_MAPMONS;i++)
-				if(m->badguy[i].type==0)
+			for (mapBadguy_t &guy : m->badguy)
+				if(guy.type==0)
 				{
-					m->badguy[i].type = monster[active];
-					m->badguy[i].x=x;
-					m->badguy[i].y=y;
+					guy.type = monster[active];
+					guy.x=x;
+					guy.y=y;
 					switch(itemMode)
 					{
 						case 0:
-							m->badguy[i].item=ITM_NONE;
+							guy.item=ITM_NONE;
 							break;
 						case 1:
-							m->badguy[i].item=ITM_RANDOM;
+							guy.item=ITM_RANDOM;
 							break;
 						case 2:
-							m->badguy[i].item=specificItem;
+							guy.item=specificItem;
 							break;
 					}
-					if(m->badguy[i].type==MONS_BOUAPHA)
-						m->badguy[i].item=ITM_NONE;	// bouapha can't drop items
+					if(guy.type==MONS_BOUAPHA)
+						guy.item=ITM_NONE;	// bouapha can't drop items
 					break;
 				}
 		}
@@ -326,15 +322,10 @@ void MonsterTool::ShowTarget(void)
 
 void MonsterTool::SuckUp(int x,int y)
 {
-	Map *m;
-	int i;
-
-	m=EditorGetMap();
-
-	for(i=0;i<MAX_MAPMONS;i++)
+	for (const mapBadguy_t &guy : EditorGetMap()->badguy)
 	{
-		if(m->badguy[i].type && m->badguy[i].x==x && m->badguy[i].y==y)
-			monster[active]=m->badguy[i].type;
+		if(guy.type && guy.x==x && guy.y==y)
+			monster[active]=guy.type;
 	}
 }
 
@@ -349,7 +340,7 @@ void MonsterTool::Erase(void)
 {
 	Map *m;
 	int x,y;
-	int i,j,k,minusBrush,plusBrush;
+	int k,minusBrush,plusBrush;
 
 	EditorGetTileXY(&x,&y);
 	m=EditorGetMap();
@@ -358,18 +349,13 @@ void MonsterTool::Erase(void)
 	{
 		minusBrush=brush/2;
 		plusBrush=(brush+1)/2;
-		for(j=y-minusBrush;j<=y+plusBrush;j++)
-			for(i=x-minusBrush;i<=x+plusBrush;i++)
-			{
-				if(i>=0 && j>=0 && i<m->width && j<m->height && m->map[i+j*m->width].select)
-				{
-					for(k=0;k<MAX_MAPMONS;k++)
-					{
-						if(m->badguy[k].type && m->badguy[k].x==x && m->badguy[k].y==y)
-							m->badguy[k].type=0;
-					}
-				}
-			}
+		int minX = x - minusBrush, maxX = x + plusBrush;
+		int minY = y - minusBrush, maxY = y + plusBrush;
+		for(k=0;k<MAX_MAPMONS;k++)
+		{
+			if(m->badguy[k].type && m->badguy[k].x >= minX && m->badguy[k].x <= maxX && m->badguy[k].y >= minY && m->badguy[k].y <= maxY)
+				m->badguy[k].type=0;
+		}
 
 		AddMapGuys(m);
 		MakeNormalSound(SND_MENUCLICK);

@@ -202,37 +202,37 @@ void DeleteUnusedTiles(int id)
 		if(GetItem(i)->flags&IF_TILE)
 			tileUsed[GetItem(i)->sprNum]=1;
 	}
-	for(i=0;i<world->numMaps;i++)
+	for (Map *map : world->Maps())
 	{
-		for(j=0;j<MAX_SPECIAL;j++)
+		for (const special_t &spcl : map->special)
 		{
-			if(world->map[i]->special[j].x!=255)
+			if(spcl.x!=255)
 			{
 				for(k=0;k<NUM_TRIGGERS;k++)
 				{
-					if(world->map[i]->special[j].trigger[k].type==TRG_FLOOR ||
-						world->map[i]->special[j].trigger[k].type==TRG_FLOORRECT)
+					if(spcl.trigger[k].type==TRG_FLOOR ||
+						spcl.trigger[k].type==TRG_FLOORRECT)
 					{
-						tileUsed[world->map[i]->special[j].trigger[k].value]=1;
+						tileUsed[spcl.trigger[k].value]=1;
 					}
-					if(world->map[i]->special[j].trigger[k].type==TRG_STEPTILE)
-						tileUsed[world->map[i]->special[j].trigger[k].value2]=1;
+					if(spcl.trigger[k].type==TRG_STEPTILE)
+						tileUsed[spcl.trigger[k].value2]=1;
 				}
 				for(k=0;k<NUM_EFFECTS;k++)
 				{
-					if(world->map[i]->special[j].effect[k].type==EFF_CHANGETILE ||
-						world->map[i]->special[j].effect[k].type==EFF_OLDTOGGLE)
+					if(spcl.effect[k].type==EFF_CHANGETILE ||
+						spcl.effect[k].type==EFF_OLDTOGGLE)
 					{
-						tileUsed[world->map[i]->special[j].effect[k].value]=1;
-						tileUsed[world->map[i]->special[j].effect[k].value2]=1;
+						tileUsed[spcl.effect[k].value]=1;
+						tileUsed[spcl.effect[k].value2]=1;
 					}
 				}
 			}
 		}
-		for(j=0;j<world->map[i]->width*world->map[i]->height;j++)
+		for (const mapTile_t &target : world->map[i]->Tiles())
 		{
-			tileUsed[world->map[i]->map[j].floor]=1;
-			tileUsed[world->map[i]->map[j].wall]=1;
+			tileUsed[target.floor]=1;
+			tileUsed[target.wall]=1;
 		}
 	}
 	for(i=0;i<world->numTiles;i++)

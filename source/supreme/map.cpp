@@ -31,7 +31,7 @@ Map::Map(byte width, byte height, const char *name)
 {
 	int i;
 
-	strcpy(this->name,name);
+	ham_strcpy(this->name,name);
 
 	map=(mapTile_t *)calloc(sizeof(mapTile_t)*width*height,1);
 	for(i=0;i<width*height;i++)
@@ -51,12 +51,12 @@ Map::Map(const Map *m)
 {
 	width=m->width;
 	height=m->height;
-	strcpy(song,m->song);
+	ham_strcpy(song,m->song);
 	flags=m->flags;
 	numBrains=m->numBrains;
 	numCandles=m->numCandles;
 	itemDrops=m->itemDrops;
-	strcpy(this->name,m->name);
+	ham_strcpy(this->name,m->name);
 
 	map=(mapTile_t *)calloc(sizeof(mapTile_t)*width*height,1);
 	memcpy(map,m->map,sizeof(mapTile_t)*width*height);
@@ -112,29 +112,29 @@ void Map::SmoothLight(int x,int y)
 	int v,c;
 
 	c=1;
-	v=map[x+y*width].light;
+	v=GetTile(x, y)->light;
 	if(x>0)
 	{
 		c++;
-		v+=map[x-1+y*width].light;
+		v+=GetTile(x-1, y)->light;
 	}
 	if(x<width-1)
 	{
 		c++;
-		v+=map[x+1+y*width].light;
+		v+=GetTile(x+1, y)->light;
 	}
 	if(y>0)
 	{
 		c++;
-		v+=map[x+(y-1)*width].light;
+		v+=GetTile(x, y-1)->light;
 	}
 	if(y<height-1)
 	{
 		c++;
-		v+=map[x+(y+1)*width].light;
+		v+=GetTile(x, y+1)->light;
 	}
 	v/=c;
-	map[x+y*width].light=v;
+	GetTile(x, y)->light=v;
 }
 
 void Map::SmoothLights(void)
@@ -287,7 +287,7 @@ byte Map::LOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,
 	if(!DoIt(x,y,x,y,value,this))
 		return 1; // DoIt returns zero if it wants you to quit
 
-	map[x+y*width].opaque=0;
+	GetTile(x, y)->opaque=0;
 
 	for(i=1;i<radius;i++)	// i is the radius of the square you are working with
 	{
@@ -298,10 +298,10 @@ byte Map::LOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,
 				if(curx<0 || curx>=width || cury<0 || cury>=height)
 					continue;
 				LOSPoints(x,y,curx,cury,&p1x,&p1y,&p2x,&p2y);
-				if(map[p1x+p1y*width].opaque+
-					map[p2x+p2y*width].opaque>=2)
+				if(GetTile(p1x, p1y)->opaque +
+					GetTile(p2x, p2y)->opaque >= 2)
 				{
-					map[curx+cury*width].opaque=1;
+					GetTile(curx, cury)->opaque=1;
 				}
 				else
 				{
@@ -655,14 +655,7 @@ byte TempDarkCallback(int x,int y,int cx,int cy,int value,Map *map)
 
 byte GlowCursorCallback(int x,int y,int cx,int cy,int value,Map *map)
 {
-	int b;
-
-	b=((cx-x)*(cx-x)+(cy-y)*(cy-y));
-	b=value-b;
-
-
 	map->GetTile(x,y)->templight=10;
-
 	return 1;
 }
 
@@ -750,19 +743,19 @@ void Map::Swap(int sx,int sy,int blkwidth,int blkheight,int dx,int dy)
 	free(tempMap);
 
 	// move all specials that are in the target zone
-	for(i=0;i<MAX_SPECIAL;i++)
+	for (special_t &spcl : special)
 	{
-		if(special[i].x>=sx && special[i].y>=sy && special[i].x<sx+blkwidth && special[i].y<sy+blkheight)
+		if(spcl.x>=sx && spcl.y>=sy && spcl.x<sx+blkwidth && spcl.y<sy+blkheight)
 		{
-			special[i].x=special[i].x-sx+dx;
-			special[i].y=special[i].y-sy+dy;
-			AdjustSpecialCoords(&special[i],-sx+dx,-sy+dy);
+			spcl.x=spcl.x-sx+dx;
+			spcl.y=spcl.y-sy+dy;
+			AdjustSpecialCoords(&spcl,-sx+dx,-sy+dy);
 		}
-		else if(special[i].x>=dx && special[i].y>=dy && special[i].x<dx+blkwidth && special[i].y<dy+blkheight)
+		else if(spcl.x>=dx && spcl.y>=dy && spcl.x<dx+blkwidth && spcl.y<dy+blkheight)
 		{
-			special[i].x=special[i].x+sx-dx;
-			special[i].y=special[i].y+sy-dy;
-			AdjustSpecialCoords(&special[i],sx-dx,sy-dy);
+			spcl.x=spcl.x+sx-dx;
+			spcl.y=spcl.y+sy-dy;
+			AdjustSpecialCoords(&spcl,sx-dx,sy-dy);
 		}
 	}
 
@@ -792,12 +785,12 @@ void Map::Copy(int sx,int sy,int blkwidth,int blkheight,int dx,int dy)
 	}
 
 	// move all specials that are in the target zone
-	for(i=0;i<MAX_SPECIAL;i++)
+	for (special_t &spcl : special)
 	{
-		if(special[i].x>=sx && special[i].y>=sy && special[i].x<sx+blkwidth && special[i].y<sy+blkheight)
+		if(spcl.x>=sx && spcl.y>=sy && spcl.x<sx+blkwidth && spcl.y<sy+blkheight)
 		{
-			special[i].x=special[i].x-sx+dx;
-			special[i].y=special[i].y-sy+dy;
+			spcl.x=spcl.x-sx+dx;
+			spcl.y=spcl.y-sy+dy;
 		}
 	}
 }
@@ -861,12 +854,6 @@ void Map::RenderStars(int camX, int camY)
 
 void Map::Render(world_t *world,int camX,int camY,byte flags)
 {
-	mapTile_t *m;
-
-	char lite;
-	char lites[9];
-	byte shdw;
-
 	int scrWidth = GetDisplayMGL()->GetWidth(), scrHeight = GetDisplayMGL()->GetHeight();
 	camX -= scrWidth/2;
 	camY -= scrHeight/2;
@@ -881,10 +868,8 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 		// +1 for roofs
 		for(int j = minTileY; j <= (camY + scrHeight) / TILE_HEIGHT + 1; ++j)
 		{
-			if(i>=0 && i<width && j>=0 && j<height)
+			if (mapTile_t *m = TryGetTile(i, j))
 			{
-				m=&map[i+j*width];
-
 				if((flags&MAP_SHOWSELECT) && !m->select)
 				{
 					if(((j%2) && (i%2)) || (!(j%2) && !(i%2)))
@@ -894,14 +879,14 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 				}
 				else
 				{
+					char lites[9];
 					if(!(flags&MAP_SHOWLIGHTS))	// we're ignoring lighting
 					{
 						memset(lites, 0, 9);
-						lite=0;
 					}
 					else
 					{
-						lite=m->templight;
+						char lite=m->templight;
 
 						lites[4]=lite;
 						if(i>0 && j>0)
@@ -1005,6 +990,7 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 					}
 					else
 					{
+						byte shdw;
 						// Shadow wall macro: used to determine both a wall is there and it's not marked shadowless
 #define SHADOW_WALL(WALL) ((WALL) && !(GetTerrain(world, (WALL))->flags&TF_SHADOWLESS))
 						if(config.shading==0)
@@ -1093,10 +1079,8 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 			int scrY = -ofsY - extents.up * TILE_HEIGHT;
 			for (int j = minTileY - extents.up; j <= (camY + scrHeight) / TILE_HEIGHT + extents.down; ++j)
 			{
-				if (i>=0 && i<width && j>=0 && j<height)
+				if (mapTile_t *m = TryGetTile(i, j))
 				{
-					m=&map[i+j*width];
-
 					if (m->item && !((flags&MAP_SHOWSELECT) && !m->select))
 					{
 						RenderItem(
@@ -1122,34 +1106,25 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 
 void Map::RenderSelect(world_t *world,int camX,int camY,byte flags)
 {
-	int i,j;
-
-	int tileX,tileY;
-	int ofsX,ofsY;
-	int scrX,scrY;
-	mapTile_t *m;
-
 	if(flags&MAP_SHOWSELECT)
 		return;
 
 	camX -= GetDisplayMGL()->GetWidth() / 2;
 	camY -= GetDisplayMGL()->GetHeight() / 2;
 
-	tileX=(camX/TILE_WIDTH)-1;
-	tileY=(camY/TILE_HEIGHT)-1;
-	ofsX=camX%TILE_WIDTH;
-	ofsY=camY%TILE_HEIGHT;
+	int tileX=(camX/TILE_WIDTH)-1;
+	int tileY=(camY/TILE_HEIGHT)-1;
+	int ofsX=camX%TILE_WIDTH;
+	int ofsY=camY%TILE_HEIGHT;
 
-	scrX=-ofsX-TILE_WIDTH;
-	for(i=tileX;i<tileX+(GetDisplayMGL()->GetWidth()/TILE_WIDTH+4);i++)
+	int scrX=-ofsX-TILE_WIDTH;
+	for(int i=tileX;i<tileX+(GetDisplayMGL()->GetWidth()/TILE_WIDTH+4);i++)
 	{
-		scrY=-ofsY-TILE_HEIGHT;
-		for(j=tileY;j<tileY+(GetDisplayMGL()->GetHeight()/TILE_HEIGHT+6);j++)
+		int scrY=-ofsY-TILE_HEIGHT;
+		for(int j=tileY;j<tileY+(GetDisplayMGL()->GetHeight()/TILE_HEIGHT+6);j++)
 		{
-			if(i>=0 && i<width && j>=0 && j<height)
+			if (mapTile_t *m = TryGetTile(i, j))
 			{
-				m=&map[i+j*width];
-
 				if(m->select)
 				{
 					if(i==0 || !map[i-1+j*width].select)
@@ -1198,34 +1173,26 @@ byte Map::Resize(byte w,byte h)
 
 byte Map::ItemChange(int x,int y,byte item,byte fx)
 {
-	byte i;
-
-	if(x<0 || y<0 || x>=width || y>=height)
+	if (mapTile_t *tile = TryGetTile(x, y))
+	{
+		if (fx && tile->item != item)
+			SmokeTile(x, y);
+		std::swap(tile->item, item);
+		return item;
+	}
+	else
 		return ITM_NONE;
-
-	i=map[x+y*width].item;
-	map[x+y*width].item=item;
-
-	if(fx && i!=item)
-		SmokeTile(x,y);
-
-	return i;
 }
 
 void Map::TileChange(int x,int y,int floor,int wall,byte fx)
 {
-	word preWall,preFloor;
-
-	if(x<0 || y<0 || x>=width || y>=height)
-		return;
-
-	preFloor=map[x+y*width].floor;
-	preWall=map[x+y*width].wall;
-	map[x+y*width].floor=floor;
-	map[x+y*width].wall=wall;
-
-	if(fx && (preFloor!=floor || preWall!=wall))
-		SmokeTile(x,y);
+	if (mapTile_t *tile = TryGetTile(x, y))
+	{
+		if (fx && (tile->floor != floor || tile->wall != wall))
+			SmokeTile(x,y);
+		tile->floor = floor;
+		tile->wall = wall;
+	}
 }
 
 byte Map::ContiguousItemChange(int x0, int y0, byte item, byte fx)
@@ -1374,140 +1341,69 @@ void Map::LightRect(int x,int y,int x2,int y2,char brt,byte perm)
 	}
 }
 
+static byte ItemKeychain(int itemId)
+{
+	const item_t *item = GetItem(itemId);
+	for (int i = 0; item->effect == IE_BECOME && i < 100; ++i)
+	{
+		item = GetItem(item->effectAmt);
+	}
+	if (item->effect == IE_KEYCHAIN)
+	{
+		return 1 << item->effectAmt;
+	}
+	return 0;
+}
+
 byte Map::Keychains(void)
 {
-	int i,j,k,x;
-	byte result=0;
-	byte flag[]={1,2,4,8};
+	byte result = 0;
 
-	for(i=0;i<width*height;i++)
+	for (const mapTile_t &tile : Tiles())
 	{
 		// first look for actual items
-		if(GetItem(map[i].item)->effect==IE_KEYCHAIN)
-		{
-			result|=flag[GetItem(map[i].item)->effectAmt];
-		}
-		if(GetItem(map[i].item)->effect==IE_BECOME)
-		{
-			j=GetItem(map[i].item)->effectAmt;
-			k=0;
-			while(GetItem(j)->effect==IE_BECOME)
-			{
-				k++;
-				j=GetItem(j)->effectAmt;
-				if(k==100)
-					break;
-			}
-			if(GetItem(j)->effect==IE_KEYCHAIN)
-				result|=flag[GetItem(j)->effectAmt];
-		}
+		result |= ItemKeychain(tile.item);
 	}
-	for(i=0;i<MAX_SPECIAL;i++)
+
+	for (special_t &spcl : special)
 	{
-		if(special[i].x!=255)
+		if(spcl.x!=255)
 		{
-			for(j=0;j<NUM_EFFECTS;j++)
+			for (effect_t &effect : spcl.effect)
 			{
-				if(special[i].effect[j].type==EFF_ITEM)
+				if(effect.type==EFF_ITEM)
 				{
-					if(GetItem(special[i].effect[j].value)->effect==IE_KEYCHAIN)
+					result |= ItemKeychain(effect.value);
+				}
+				if(effect.type==EFF_SUMMON)
+				{
+					if(effect.value2!=ITM_RANDOM)
 					{
-						result|=flag[GetItem(special[i].effect[j].value)->effectAmt];
-					}
-					if(GetItem(special[i].effect[j].value)->effect==IE_BECOME)
-					{
-						k=GetItem(special[i].effect[j].value)->effectAmt;
-						x=0;
-						while(GetItem(k)->effect==IE_BECOME)
-						{
-							k=GetItem(k)->effectAmt;
-							x++;
-							if(x==100)
-								break;
-						}
-						if(GetItem(k)->effect==IE_KEYCHAIN)
-							result|=flag[GetItem(k)->effectAmt];
+						if(effect.value2>ITM_RANDOM)
+							effect.value2=ITM_NONE;
+						result |= ItemKeychain(effect.value2);
 					}
 				}
-				if(special[i].effect[j].type==EFF_SUMMON)
+				if(effect.type==EFF_MONSITEM)
 				{
-					if(special[i].effect[j].value2!=ITM_RANDOM)
+					if(effect.value2!=ITM_RANDOM)
 					{
-						if(special[i].effect[j].value2>ITM_RANDOM)
-							special[i].effect[j].value2=ITM_NONE;
-						if(GetItem(special[i].effect[j].value2)->effect==IE_KEYCHAIN)
-						{
-							result|=flag[GetItem(special[i].effect[j].value2)->effectAmt];
-						}
-						if(GetItem(special[i].effect[j].value2)->effect==IE_BECOME)
-						{
-							k=GetItem(special[i].effect[j].value2)->effectAmt;
-							x=0;
-							while(GetItem(k)->effect==IE_BECOME)
-							{
-								k=GetItem(k)->effectAmt;
-								x++;
-								if(x==100)
-									break;
-							}
-							if(GetItem(k)->effect==IE_KEYCHAIN)
-								result|=flag[GetItem(k)->effectAmt];
-						}
-					}
-				}
-				if(special[i].effect[j].type==EFF_MONSITEM)
-				{
-					if(special[i].effect[j].value2!=ITM_RANDOM)
-					{
-						if(special[i].effect[j].value2>ITM_RANDOM)
-							special[i].effect[j].value2=ITM_NONE;
-						if(GetItem(special[i].effect[j].value2)->effect==IE_KEYCHAIN)
-						{
-							result|=flag[GetItem(special[i].effect[j].value2)->effectAmt];
-						}
-						if(GetItem(special[i].effect[j].value2)->effect==IE_BECOME)
-						{
-							k=GetItem(special[i].effect[j].value2)->effectAmt;
-							x=0;
-							while(GetItem(k)->effect==IE_BECOME)
-							{
-								k=GetItem(k)->effectAmt;
-								x++;
-								if(x==100)
-									break;
-							}
-							if(GetItem(k)->effect==IE_KEYCHAIN)
-								result|=flag[GetItem(k)->effectAmt];
-						}
+						if(effect.value2>ITM_RANDOM)
+							effect.value2=ITM_NONE;
+						result |= ItemKeychain(effect.value2);
 					}
 				}
 			}
 		}
 	}
-	for(i=0;i<MAX_MAPMONS;i++)
+
+	for (const mapBadguy_t &guy : badguy)
 	{
-		if(badguy[i].type)
+		if(guy.type)
 		{
-			if(badguy[i].item && badguy[i].item<ITM_RANDOM)
+			if(guy.item && guy.item<ITM_RANDOM)
 			{
-				if(GetItem(badguy[i].item)->effect==IE_KEYCHAIN)
-				{
-					result|=flag[GetItem(badguy[i].item)->effectAmt];
-				}
-				if(GetItem(badguy[i].item)->effect==IE_BECOME)
-				{
-					k=GetItem(badguy[i].item)->effectAmt;
-					x=0;
-					while(GetItem(k)->effect==IE_BECOME)
-					{
-						k=GetItem(k)->effectAmt;
-						x++;
-						if(x==100)
-							break;
-					}
-					if(GetItem(k)->effect==IE_KEYCHAIN)
-						result|=flag[GetItem(k)->effectAmt];
-				}
+				result |= ItemKeychain(guy.item);
 			}
 		}
 	}
@@ -1595,10 +1491,12 @@ byte Map::CompareRegions(int x,int y,int x2,int y2,int tx,int ty,byte checkMons)
 
 mapTile_t *Map::GetTile(int x,int y)
 {
-	static mapTile_t fake={65535,65535,0,0,0,0,0};
-
 	if (InRange(x, y))
 		return &map[x + y * width];
+
+	LogError("Map::GetTile(%d, %d) out of range of (%d, %d)", x, y, width, height);
+	static mapTile_t fake;
+	fake = {65535, 65535, 0, 0, 0, 0, 0};
 	return &fake;
 }
 

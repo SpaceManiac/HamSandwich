@@ -116,7 +116,7 @@ void SpecialTool::Erase(void)
 
 	if(x!=lastX || y!=lastY)
 	{
-		if(x>=0 && y>=0 && x<m->width && y<m->height && m->map[x+y*m->width].select)
+		if (mapTile_t *target = m->TryGetTile(x, y); target && target->select)
 		{
 			DeleteSpecial(GetSpecial((byte)x,(byte)y));
 		}

@@ -486,9 +486,8 @@ public:
 			AddDetail(PackWorldProgress(worldProgress));
 
 			score = 0;
-			for (int i = 0; i < world->numMaps; ++i)
+			for (const Map *map : world->Maps())
 			{
-				Map* map = world->map[i];
 				// Pack per-level top score, character, and difficulty into extra slots.
 				// HUB levels are skipped, but unscored levels get explicit zeroes.
 				if (!(map->flags & MAP_HUB))
@@ -522,9 +521,8 @@ public:
 
 			score = 0;
 			int mapsMissed = 0;
-			for (int i = 0; i < world->numMaps; ++i)
+			for (const Map *map : world->Maps())
 			{
-				Map* map = world->map[i];
 				// Pack per-level top time, character, and difficulty into extra slots.
 				// HUB levels are skipped, but unscored levels get explicit all-ones.
 				if (!(map->flags & MAP_HUB))

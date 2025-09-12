@@ -391,9 +391,8 @@ byte Ham_SaveWorld(const world_t* world, const char *fname)
 
 	hamworld::Section terrain;
 	terrain.write_varint(world->numTiles);
-	for (int i = 0; i < world->numTiles; ++i)
+	for (const terrain_t &t : world->Terrain())
 	{
-		terrain_t t = world->terrain[i];
 		terrain.write_varint(t.flags);
 		terrain.write_varint(t.next);
 		terrain.write_varint(0);  // no extension flags
@@ -527,10 +526,10 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 		else if (section_name == "terrain")
 		{
 			world->numTiles = section.read_varint();
-			for (size_t i = 0; i < world->numTiles; ++i)
+			for (terrain_t &terrain : world->Terrain())
 			{
-				world->terrain[i].flags = section.read_varint();
-				world->terrain[i].next = section.read_varint();
+				terrain.flags = section.read_varint();
+				terrain.next = section.read_varint();
 				section.read_varint();  // ignore extension flags
 			}
 		}
