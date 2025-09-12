@@ -36,7 +36,7 @@ void FloorTool::Update(int msx,int msy)
 				active=i;
 				if(mgl->RMouseDown())
 				{
-					tile[active]=800;
+					tile[active]=UINT16_MAX;
 				}
 				MakeNormalSound(SND_MENUCLICK);
 			}
@@ -154,7 +154,7 @@ void FloorTool::PlopOne(int x,int y)
 
 	m=EditorGetMap();
 
-	if (mapTile_t *target = m->TryGetTile(x, y); target && target->select && tile[active]<800)
+	if (mapTile_t *target = m->TryGetTile(x, y); target && target->select && tile[active]<UINT16_MAX)
 	{
 		target->floor=tile[active];
 		target->wall=0;

@@ -43,8 +43,8 @@ void WallTool::Update(int msx,int msy)
 				active=i;
 				if(mgl->RMouseDown())
 				{
-					tile[active][0]=800;
-					tile[active][1]=800;
+					tile[active][0]=UINT16_MAX;
+					tile[active][1]=UINT16_MAX;
 				}
 				MakeNormalSound(SND_MENUCLICK);
 			}
@@ -73,7 +73,7 @@ void WallTool::Update(int msx,int msy)
 				pickingTile=i;
 				active=i;
 				pickWallRoof=1;
-				if(tile[i][0]==800)
+				if(tile[i][0]==UINT16_MAX)
 				{
 					tile[i][0]=0;
 					tile[i][1]=0;
@@ -90,7 +90,7 @@ void WallTool::Update(int msx,int msy)
 				pickingTile=i;
 				active=i;
 				pickWallRoof=0;
-				if(tile[i][0]==800)
+				if(tile[i][0]==UINT16_MAX)
 				{
 					tile[i][0]=0;
 					tile[i][1]=0;
@@ -121,7 +121,7 @@ void WallTool::Render(int msx,int msy)
 
 	for(i=0;i<4;i++)
 	{
-		if(tile[i][0]<800 && tile[i][1]<800)
+		if(tile[i][0]<UINT16_MAX && tile[i][1]<UINT16_MAX)
 		{
 			RenderFloorTile(mgl->GetWidth()-144+i*(TILE_WIDTH+4),mgl->GetHeight()-56+TILE_HEIGHT,tile[i][0],0);
 			RenderFloorTile(mgl->GetWidth()-144+i*(TILE_WIDTH+4),mgl->GetHeight()-56,tile[i][1],0);
@@ -188,7 +188,7 @@ void WallTool::PlopOne(int x,int y)
 {
 	Map *m = EditorGetMap();
 
-	if (mapTile_t *target = m->TryGetTile(x, y); target && target->select && tile[active][0]<800 && tile[active][1]<800)
+	if (mapTile_t *target = m->TryGetTile(x, y); target && target->select && tile[active][0]<UINT16_MAX && tile[active][1]<UINT16_MAX)
 	{
 		target->floor=tile[active][1];
 		target->wall=tile[active][0];
