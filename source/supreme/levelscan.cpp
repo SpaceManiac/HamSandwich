@@ -830,10 +830,12 @@ byte Scan_Vars(world_t *world)
 				GetItem(guy.item)->effect==IE_DECVAR))
 			{
 				var_sets[GetItem(guy.item)->effectAmt]++;
-				SDL_RWprintf(scanF,"MONS (%03d,%03d): '%s' holds a '%s' that incs/decs %s\n",j%map->width,j/map->width,
-						MonsterName(guy.type),
-						GetItem(guy.item)->name,
-						VarName(GetItem(guy.item)->effectAmt));
+				SDL_RWprintf(scanF,"MONS (%03d,%03d): '%s' holds a '%s' that incs/decs %s\n",
+					guy.x, guy.y,
+					MonsterName(guy.type),
+					GetItem(guy.item)->name,
+					VarName(GetItem(guy.item)->effectAmt)
+				);
 			}
 		}
 
