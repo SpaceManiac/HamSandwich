@@ -9,11 +9,10 @@
 #include <fstream>
 #include <sstream>
 #include <SDL.h>
-#include <SDL_opengl.h>
 #include <SDL_image.h>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
-#include <imgui_impl_opengl2.h>
+#include <imgui_impl_sdlrenderer.h>
 #include <json.h>
 #include <curl/curl.h>
 #include "jamulfont.h"
@@ -124,28 +123,15 @@ const extern Icon embed_icons[];
 
 struct LoadedIcon
 {
-	GLuint texture = 0;
+	SDL_Texture* texture = nullptr;
 	int width = 0, height = 0;
 
 	LoadedIcon() {}
-	explicit LoadedIcon(SDL_Surface* img)
+	explicit LoadedIcon(SDL_Renderer *renderer, SDL_Surface *img)
 	{
 		width = img->w;
 		height = img->h;
-		glGenTextures(1, &texture);
-		glBindTexture(GL_TEXTURE_2D, texture);
-
-		// Setup filtering parameters for display
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
-
-		// Upload pixels into texture
-#if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-#endif
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->w, img->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixels);
+		texture = SDL_CreateTextureFromSurface(renderer, img);
 	}
 };
 
@@ -962,16 +948,10 @@ int main(int argc, char** argv)
 	}
 
 	// Setup window
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
+	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_ALLOW_HIGHDPI);
 	SDL_Window* window = SDL_CreateWindow("HamSandwich Launcher", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1024, 480, window_flags);
-	SDL_GLContext gl_context = SDL_GL_CreateContext(window);
-	SDL_GL_MakeCurrent(window, gl_context);
-	SDL_GL_SetSwapInterval(1); // Enable vsync
+	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
+	SDL_RenderSetVSync(renderer, 1); // Enable vsync
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -986,8 +966,8 @@ int main(int argc, char** argv)
 	//ImGui::StyleColorsClassic();
 
 	// Setup Platform/Renderer backends
-	ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-	ImGui_ImplOpenGL2_Init();
+	ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
+	ImGui_ImplSDLRenderer_Init(renderer);
 
 	// Load Fonts
 	// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
@@ -1016,7 +996,7 @@ int main(int argc, char** argv)
 			{
 				// For best results, bake a 32x32 PNG frame into the .ico file.
 				// OpenGL will handle any necessary up- or down-scaling.
-				game.loaded_icon = LoadedIcon(img.get());
+				game.loaded_icon = LoadedIcon(renderer, img.get());
 			}
 			else
 			{
@@ -1033,20 +1013,17 @@ int main(int argc, char** argv)
 			auto img = ReadIcoFile(owned::SDL_RWFromConstMem(icon->data, icon->size), 32);
 			if (img)
 			{
-				jspedit_icon = LoadedIcon(img.get());
+				jspedit_icon = LoadedIcon(renderer, img.get());
 			}
 		}
 	}
-
-	// Our state
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 0.00f);
 
 	// Main loop
 	bool done = false;
 	while (!done)
 	{
 		int running_downloads = launcher.update_transfers();
-		SDL_GL_SetSwapInterval(running_downloads ? 0 : 1); // Enable vsync iff nothing is downloading.
+		SDL_RenderSetVSync(renderer, running_downloads ? 0 : 1); // Enable vsync iff nothing is downloading.
 
 		// Poll and handle events (inputs, window resize, etc.)
 		// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -1073,7 +1050,7 @@ int main(int argc, char** argv)
 		SDL_GetWindowSize(window, &windowWidth, &windowHeight);
 
 		// Start the Dear ImGui frame
-		ImGui_ImplOpenGL2_NewFrame();
+		ImGui_ImplSDLRenderer_NewFrame();
 		ImGui_ImplSDL2_NewFrame();
 		ImGui::NewFrame();
 
@@ -1364,12 +1341,10 @@ int main(int argc, char** argv)
 
 		// Rendering
 		ImGui::Render();
-		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-		glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-		glClear(GL_COLOR_BUFFER_BIT);
-		//glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound
-		ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
-		SDL_GL_SwapWindow(window);
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		SDL_RenderClear(renderer);
+		ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+		SDL_RenderPresent(renderer);
 
 		if (launcher.current_game && launcher.current_game->is_ready_to_play())
 		{
@@ -1393,11 +1368,11 @@ int main(int argc, char** argv)
 	launcher.downloads.reset();
 	curl_global_cleanup();
 
-	ImGui_ImplOpenGL2_Shutdown();
+	ImGui_ImplSDLRenderer_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
 
-	SDL_GL_DeleteContext(gl_context);
+	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
 
