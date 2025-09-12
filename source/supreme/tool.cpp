@@ -250,14 +250,15 @@ TASK(void) ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl)
 							InitMapDialog(EditorGetWorld(),EditorGetMapNum());
 							break;
 						case MENU_TEST:
-							int cx,cy;
-							GetCamera(&cx,&cy);
+						{
+							auto [cx, cy] = GetCamera();
 							AWAIT TestLevel(EditorGetWorld(),EditorGetMapNum());
 							StopSong();
 							SetPlayerStart(-1,-1);
 							AddMapGuys(EditorGetMap());
 							PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
 							break;
+						}
 						case MENU_LEVEL:
 							SetEditMode(EDITMODE_LEVELMENU);
 							InitLevelDialog(EditorGetWorld(),EditorGetMapNum());

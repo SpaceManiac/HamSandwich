@@ -40,19 +40,13 @@ void SpecialTool::SetInk(void)
 
 void SpecialTool::StartPlop(void)
 {
-	int s;
-	Map *m;
-
-	lastX=-1;
-	lastY=-1;
-
-	EditorGetTileXY(&lastX,&lastY);
-	m=EditorGetMap();
+	EditorGetTileXY(&lastX, &lastY);
+	Map *m = EditorGetMap();
 
 	if(lastX<0 || lastY<0 || lastX>=m->width || lastY>=m->height)
 		return;
 
-	s=GetSpecial((byte)lastX,(byte)lastY);
+	int s=GetSpecial((byte)lastX,(byte)lastY);
 	if(s==-1)
 	{
 		s=NewSpecial((byte)lastX,(byte)lastY);
@@ -77,20 +71,18 @@ void SpecialTool::Plop(void)
 
 void SpecialTool::ShowTarget(void)
 {
-	int x1,x2,y1,y2,cx,cy;
 	static byte col=0;
-	int tileX,tileY;
-
 	col=255-col;
-	GetCamera(&cx,&cy);
 
-	EditorGetTileXY(&tileX,&tileY);
+	auto [cx, cy] = GetCamera();
 
-	x1=tileX*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2);
-	y1=tileY*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2);
+	auto [tileX, tileY] = EditorGetTileXY();
 
-	x2=x1+TILE_WIDTH-1;
-	y2=y1+TILE_HEIGHT-1;
+	int x1=tileX*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2);
+	int y1=tileY*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2);
+
+	int x2=x1+TILE_WIDTH-1;
+	int y2=y1+TILE_HEIGHT-1;
 
 	DrawBox(x1,y1,x2,y2,col);
 }
@@ -108,11 +100,8 @@ void SpecialTool::StartErase(void)
 
 void SpecialTool::Erase(void)
 {
-	Map *m;
-	int x,y;
-
-	EditorGetTileXY(&x,&y);
-	m=EditorGetMap();
+	auto [x, y] = EditorGetTileXY();
+	Map *m = EditorGetMap();
 
 	if(x!=lastX || y!=lastY)
 	{

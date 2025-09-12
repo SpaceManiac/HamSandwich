@@ -219,8 +219,6 @@ void BackupWorld(const char *name)
 
 TASK(void) UpdateMouse(void)
 {
-	int cx,cy;
-
 	editmgl->GetMouse(&mouseX,&mouseY);
 
 	if(mouseX<0)
@@ -232,7 +230,7 @@ TASK(void) UpdateMouse(void)
 	if(mouseY>=editmgl->GetHeight())
 		mouseY=editmgl->GetHeight()-1;
 
-	GetCamera(&cx,&cy);
+	auto [cx, cy] = GetCamera();
 
 	tileX=(mouseX+cx - editmgl->GetWidth()/2);
 	tileY=(mouseY+cy - editmgl->GetHeight()/2);
@@ -554,13 +552,10 @@ TASK(byte) EditorRun(int *lastTime)
 
 void ShowSpecials(void)
 {
-	int sx,sy;
-	char s[8];
-
 	if(!(displayFlags&MAP_SHOWSPECIALS))
 		return;
 
-	GetCamera(&sx,&sy);
+	auto [sx, sy] = GetCamera();
 	for (int i=0;i<MAX_SPECIAL;i++)
 	{
 		const special_t &special = editorMap->special[i];
@@ -575,6 +570,8 @@ void ShowSpecials(void)
 			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
 				  special.y*TILE_HEIGHT-sy+editmgl->GetHeight()/2,
 				  "Spcl",0,1);
+
+			char s[8];
 			sprintf(s,"%03d",i);
 			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
 				  special.y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2-1,
@@ -591,28 +588,22 @@ void ShowSpecials(void)
 
 void EditorShowRect(void)
 {
-	int x1,x2,y1,y2,cx,cy;
 	static byte col=0;
-
 	col=255-col;
 
-	x1=rectX1;
-	x2=rectX2;
-	y1=rectY1;
-	y2=rectY2;
+	int x1=rectX1;
+	int x2=rectX2;
+	int y1=rectY1;
+	int y2=rectY2;
 	if(x1>x2)
 	{
-		cx=x1;
-		x1=x2;
-		x2=cx;
+		std::swap(x1, x2);
 	}
 	if(y1>y2)
 	{
-		cy=y1;
-		y1=y2;
-		y2=cy;
+		std::swap(y1, y2);
 	}
-	GetCamera(&cx,&cy);
+	auto [cx, cy] = GetCamera();
 
 	x1=x1*TILE_WIDTH-(cx-editmgl->GetWidth()/2);
 	y1=y1*TILE_HEIGHT-(cy-editmgl->GetHeight()/2);
@@ -898,8 +889,8 @@ static TASK(void) HandleKeyPresses(void)
 				break;
 			case 't':
 			case 'T':
-				int cx,cy;
-				GetCamera(&cx,&cy);
+			{
+				auto [cx, cy] = GetCamera();
 				AWAIT TestLevel(EditorGetWorld(),EditorGetMapNum());
 				StopSong();
 				SetPlayerStart(-1,-1);
@@ -907,6 +898,7 @@ static TASK(void) HandleKeyPresses(void)
 				AddMapGuys(EditorGetMap());
 				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
 				break;
+			}
 			case 'b':
 			case 'B':
 				ToolBrushUp();
@@ -1176,6 +1168,11 @@ void EditorGetTileXY(int *x,int *y)
 {
 	*x=tileX;
 	*y=tileY;
+}
+
+std::pair<int, int> EditorGetTileXY()
+{
+	return {tileX, tileY};
 }
 
 Map *EditorGetMap(void)

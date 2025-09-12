@@ -212,6 +212,11 @@ void GetCamera(int *x,int *y)
 	*y=scry;
 }
 
+std::pair<int, int> GetCamera()
+{
+	return {scrx, scry};
+}
+
 void PutCamera(int x,int y)
 {
 	rscrx=x;

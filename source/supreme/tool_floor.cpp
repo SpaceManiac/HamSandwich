@@ -172,17 +172,14 @@ void FloorTool::PlopOne(int x,int y)
 
 void FloorTool::Plop(void)
 {
-	int x,y;
-	int i,j,minusBrush,plusBrush;
-
-	EditorGetTileXY(&x,&y);
+	auto [x, y] = EditorGetTileXY();
 
 	if(x!=lastX || y!=lastY)
 	{
-		minusBrush=brush/2;
-		plusBrush=(brush+1)/2;
-		for(j=y-minusBrush;j<=y+plusBrush;j++)
-			for(i=x-minusBrush;i<=x+plusBrush;i++)
+		int minusBrush=brush/2;
+		int plusBrush=(brush+1)/2;
+		for(int j=y-minusBrush;j<=y+plusBrush;j++)
+			for(int i=x-minusBrush;i<=x+plusBrush;i++)
 				PlopOne(i,j);
 
 		MakeNormalSound(SND_MENUCLICK);
@@ -203,30 +200,26 @@ void FloorTool::Plop(void)
 
 void FloorTool::ShowTarget(void)
 {
-	int x1,x2,y1,y2,cx,cy;
 	static byte col=0;
-	int tileX,tileY;
-	int tileX2,tileY2,minusBrush,plusBrush;
-
 	col=255-col;
-	GetCamera(&cx,&cy);
 
-	EditorGetTileXY(&tileX,&tileY);
+	auto [cx, cy] = GetCamera();
+	auto [tileX, tileY] = EditorGetTileXY();
 
-	minusBrush=brush/2;
-	plusBrush=(brush+1)/2;
+	int minusBrush=brush/2;
+	int plusBrush=(brush+1)/2;
 
-	tileX2=tileX+plusBrush;
-	tileY2=tileY+plusBrush;
+	int tileX2=tileX+plusBrush;
+	int tileY2=tileY+plusBrush;
 
 	tileX-=minusBrush;
 	tileY-=minusBrush;
 
-	x1=tileX*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2);
-	y1=tileY*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2);
+	int x1=tileX*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2);
+	int y1=tileY*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2);
 
-	x2=tileX2*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2)+TILE_WIDTH-1;
-	y2=tileY2*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2)+TILE_HEIGHT-1;
+	int x2=tileX2*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2)+TILE_WIDTH-1;
+	int y2=tileY2*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2)+TILE_HEIGHT-1;
 
 	DrawBox(x1,y1,x2,y1,col);
 	DrawBox(x1,y2,x2,y2,col);
@@ -255,19 +248,15 @@ void FloorTool::StartErase(void)
 
 void FloorTool::Erase(void)
 {
-	Map *m;
-	int x,y;
-	int i,j,minusBrush,plusBrush;
-
-	EditorGetTileXY(&x,&y);
-	m=EditorGetMap();
+	auto [x, y] = EditorGetTileXY();
+	Map *m = EditorGetMap();
 
 	if(x!=lastX || y!=lastY)
 	{
-		minusBrush=brush/2;
-		plusBrush=(brush+1)/2;
-		for(j=y-minusBrush;j<=y+plusBrush;j++)
-			for(i=x-minusBrush;i<=x+plusBrush;i++)
+		int minusBrush=brush/2;
+		int plusBrush=(brush+1)/2;
+		for(int j=y-minusBrush;j<=y+plusBrush;j++)
+			for(int i=x-minusBrush;i<=x+plusBrush;i++)
 			{
 				if (mapTile_t *target = m->TryGetTile(i, j); target && target->select)
 				{

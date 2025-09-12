@@ -119,8 +119,6 @@ void CheatKey(char c)
 
 void DoCheat(byte w)
 {
-	int cx,cy,i;
-
 	if(w==CHEAT_WINLEVEL && curMap->flags&MAP_HUB)
 	{
 		MakeNormalSound(SND_TURRETBZZT);
@@ -155,16 +153,18 @@ void DoCheat(byte w)
 			MakeNormalSound(SND_SHIELD);
 			break;
 		case CHEAT_BOOM:
-			GetCamera(&cx,&cy);
+		{
+			auto [cx, cy] = GetCamera();
 			cx-=320;
 			cy-=240;
-			for(i=0;i<60;i++)
+			for(int i=0;i<60;i++)
 			{
 				FireBullet((cx+Random(640))<<FIXSHIFT,(cy+Random(480))<<FIXSHIFT,
 							0,BLT_BOOM,1);
 			}
 			ShakeScreen(10);	// make the screen shake!
 			break;
+		}
 		case CHEAT_FREEZE:
 			player.timeStop=255;
 			break;

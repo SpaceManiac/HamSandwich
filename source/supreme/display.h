@@ -2,6 +2,7 @@
 #define DISPLAY_H
 
 #include <string_view>
+#include <utility>
 #include "mgldraw.h"
 #include "jamulspr.h"
 #include "jamulfont.h"
@@ -83,6 +84,7 @@ void DrawMouseCursor(int x,int y);
 
 void PutCamera(int x,int y);
 void GetCamera(int *x,int *y);
+std::pair<int, int> GetCamera();
 // call this once per gameloop, with the X and Y of the object you want the camera to track
 void UpdateCamera(int x,int y,int dx,int dy,Map *map);
 void Print(int x,int y,std::string_view s,char bright,byte font);

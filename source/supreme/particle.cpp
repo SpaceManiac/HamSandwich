@@ -1154,17 +1154,14 @@ void MakeItSnow(Map *map)
 {
 	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
 
-	int i;
-	int cx,cy;
-
 	// only 25% of particles may be snowflakes
 	if(Random(100)>30 || snowCount>maxParticles/4)
 		return;
 
-	GetCamera(&cx,&cy);
+	auto [cx, cy] = GetCamera();
 	cx-=320;
 	cy-=240;
-	for(i=0;i<maxParticles;i++)
+	for(int i=0;i<maxParticles;i++)
 	{
 		if(!particleList[i].Alive())
 		{
@@ -1187,17 +1184,14 @@ void MakeItRain(Map *map)
 {
 	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
 
-	int i;
-	int cx,cy;
-
 	// only 25% of particles may be rain
 	if(Random(100)>30 || snowCount>maxParticles/4)
 		return;
 
-	GetCamera(&cx,&cy);
+	auto [cx, cy] = GetCamera();
 	cx-=320;
 	cy-=240;
-	for(i=0;i<maxParticles;i++)
+	for(int i=0;i<maxParticles;i++)
 	{
 		if(!particleList[i].Alive())
 		{

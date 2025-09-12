@@ -97,7 +97,6 @@ void ExitViewDialog(void)
 void RenderViewDialog(int msx,int msy,MGLDraw *mgl)
 {
 	char s[32];
-	int x,y;
 
 	if (DLG_Y2 != GetDisplayMGL()->GetHeight())
 	{
@@ -111,7 +110,7 @@ void RenderViewDialog(int msx,int msy,MGLDraw *mgl)
 	mgl->Box(DLG_X,DLG_Y,DLG_X2,DLG_Y2,31);
 
 	RenderButtons(msx,msy,mgl);
-	EditorGetTileXY(&x,&y);
+	auto [x, y] = EditorGetTileXY();
 
 	Map *m = EditorGetMap();
 	if(x<0 || x>=m->width)

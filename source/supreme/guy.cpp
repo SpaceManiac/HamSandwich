@@ -2276,12 +2276,8 @@ void ShiftGuys(char dx,char dy,Map *map)
 
 void AddPygmy(Map *map,world_t *world,byte friendly)
 {
-	int x,y,i;
-	int cx,cy;
-	byte t;
-	Guy *g;
-
 	// decide which type to summon
+	byte t;
 	switch(Random(5))
 	{
 		case 0:
@@ -2299,16 +2295,16 @@ void AddPygmy(Map *map,world_t *world,byte friendly)
 			break;
 	}
 
-	GetCamera(&cx,&cy);
+	auto [cx, cy] = GetCamera();
 	// 30 tries to end up in a legal spot
-	for(i=0;i<30;i++)
+	for(int i=0;i<30;i++)
 	{
-		x=Random(map->width)*TILE_WIDTH+TILE_WIDTH/2;
-		y=Random(map->height)*TILE_HEIGHT+TILE_HEIGHT/2;
+		int x=Random(map->width)*TILE_WIDTH+TILE_WIDTH/2;
+		int y=Random(map->height)*TILE_HEIGHT+TILE_HEIGHT/2;
 		// make sure it's offscreen
 		if(x<cx-340 || x>cx+340 || y<cy-260 || y>cy+260)
 		{
-			g=AddGuy(x*FIXAMT,y*FIXAMT,0,t,friendly);
+			Guy *g=AddGuy(x*FIXAMT,y*FIXAMT,0,t,friendly);
 			if(g && (!g->CanWalk(g->x,g->y,map,world)))
 			{
 				RemoveGuy(g);
@@ -2326,20 +2322,16 @@ void AddPygmy(Map *map,world_t *world,byte friendly)
 
 void AddNinja(Map *map,world_t *world,byte friendly)
 {
-	int x,y,i;
-	int cx,cy;
-	Guy *g;
-
-	GetCamera(&cx,&cy);
+	auto [cx, cy] = GetCamera();
 	// 30 tries to end up in a legal spot
-	for(i=0;i<30;i++)
+	for(int i=0;i<30;i++)
 	{
-		x=Random(map->width)*TILE_WIDTH+TILE_WIDTH/2;
-		y=Random(map->height)*TILE_HEIGHT+TILE_HEIGHT/2;
+		int x=Random(map->width)*TILE_WIDTH+TILE_WIDTH/2;
+		int y=Random(map->height)*TILE_HEIGHT+TILE_HEIGHT/2;
 		// make sure it's offscreen
 		if(x<cx-340 || x>cx+340 || y<cy-260 || y>cy+260)
 		{
-			g=AddGuy(x*FIXAMT,y*FIXAMT,0,MONS_GINGER,friendly);
+			Guy *g=AddGuy(x*FIXAMT,y*FIXAMT,0,MONS_GINGER,friendly);
 			if(g && (!g->CanWalk(g->x,g->y,map,world)))
 			{
 				RemoveGuy(g);

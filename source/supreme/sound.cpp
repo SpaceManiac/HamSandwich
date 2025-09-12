@@ -386,9 +386,6 @@ int GlobalFlags()
 
 void MakeSound(int snd,int x,int y,int flags,int priority)
 {
-	long pan,vol;
-	int cx,cy;
-
 	if(snd==0)
 		return;
 
@@ -397,11 +394,11 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 	if(profile.sound==0)
 		return;
 
-	GetCamera(&cx,&cy);
+	auto [cx, cy] = GetCamera();
 	x>>=FIXSHIFT;
 	y>>=FIXSHIFT;
-	pan=(x-cx)*128/320;
-	vol=-(abs(y-cy)*128/240);
+	long pan=(x-cx)*128/320;
+	long vol=-(abs(y-cy)*128/240);
 	if(pan<-127)
 	{
 		vol+=(pan+127);

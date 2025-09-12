@@ -220,9 +220,7 @@ int WeaponMaxAmmo(byte wpn)
 
 byte PlayerGetWeapon(byte wpn,int x,int y)
 {
-	int cx,cy;
-
-	GetCamera(&cx,&cy);
+	auto [cx, cy] = GetCamera();
 	cx<<=FIXSHIFT;
 	cy<<=FIXSHIFT;
 
