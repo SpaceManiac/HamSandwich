@@ -344,8 +344,6 @@ void ExitMonsters(void);
 
 void PurgeMonsterSprites(void);
 
-const monsterType_t *GetMonsterType(dword type);
-
 void ChangeOffColor(dword type,byte from,byte to);
 byte MonsterSize(dword type);
 const byte *MonsterAnim(dword type,byte anim);
@@ -354,7 +352,10 @@ dword MonsterTheme(dword type);
 byte MonsterFrames(dword type,byte aiType);
 word MonsterHP(dword type);
 word MonsterPoints(dword type);
-char *MonsterName(short type);
+const char *MonsterName(short type);
+Monster_AIFunc MonsterAI(dword type);
+int8_t MonsterBrightnessChange(dword type);
+
 void MonsterDraw(
 	int x, int y, int z,
 	dword type, bool isBouapha,

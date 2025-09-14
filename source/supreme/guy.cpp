@@ -396,9 +396,9 @@ void Guy::NextFrame(void)
 	tp=type;
 
 	if(aiType==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
-		anim=GetMonsterType(MONS_PWRBOUAPHA)->anim[seq];
+		anim=MonsterAnim(MONS_PWRBOUAPHA, seq);
 	else if(aiType==MONS_BOUAPHA && player.weapon==WPN_MINISUB)
-		anim=GetMonsterType(MONS_MINISUB)->anim[seq];
+		anim=MonsterAnim(MONS_MINISUB, seq);
 	else
 		anim=MonsterAnim(type,seq);
 	if(anim[frm]==255)
@@ -911,8 +911,8 @@ void Guy::MonsterControl(Map *map,world_t *world)
 	if(type==MONS_NONE)
 		return;
 
-	if(GetMonsterType(aiType)->AI)
-		GetMonsterType(aiType)->AI(this,map,world,target);
+	if (Monster_AIFunc aiFunc = MonsterAI(aiType))
+		aiFunc(this,map,world,target);
 }
 
 void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
@@ -1363,13 +1363,13 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 	if(type==MONS_ANYBODY)
 	{
 		type=MONS_NOBODY;
-		while(type==MONS_NONE || type==MONS_NOBODY || (GetMonsterType(type)->theme==MT_NONE))
+		while(type==MONS_NONE || type==MONS_NOBODY || (MonsterTheme(type)==MT_NONE))
 			type=Random(NUM_MONSTERS);
 	}
 	else if(type==MONS_NONPLAYER)
 	{
 		type=MONS_NOBODY;
-		while(type==MONS_NONE || type==MONS_NOBODY || type==MONS_BOUAPHA || (GetMonsterType(type)->theme==MT_NONE))
+		while(type==MONS_NONE || type==MONS_NOBODY || type==MONS_BOUAPHA || (MonsterTheme(type)==MT_NONE))
 			type=Random(NUM_MONSTERS);
 	}
 	else if(type==MONS_BADGUY)
@@ -1378,7 +1378,7 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 		while(type==MONS_NONE || type==MONS_NOBODY || type==MONS_BOUAPHA || type==MONS_FRIENDLY || type==MONS_GOODTURRET ||
 				type==MONS_WIZARD || type==MONS_GOODROBOT || type==MONS_GOODROBOT2 ||
 				type==MONS_FRIENDLY2 || type==MONS_FOLLOWBUNNY || type==MONS_MINECART || type==MONS_RAFT ||
-				type==MONS_YUGO || type==MONS_PUNKBUNNY || (GetMonsterType(type)->theme==MT_NONE))
+				type==MONS_YUGO || type==MONS_PUNKBUNNY || (MonsterTheme(type)==MT_NONE))
 			type=Random(NUM_MONSTERS);
 	}
 	else if(type==MONS_GOODGUY)
@@ -1386,7 +1386,7 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 		type=MONS_NOBODY;
 		while(type==MONS_NONE || type==MONS_NOBODY || !(type==MONS_FRIENDLY || type==MONS_GOODTURRET ||
 				type==MONS_WIZARD || type==MONS_GOODROBOT || type==MONS_GOODROBOT2 ||
-				type==MONS_FRIENDLY2 || type==MONS_FOLLOWBUNNY || type==MONS_PUNKBUNNY || (GetMonsterType(type)->theme==MT_NONE)))
+				type==MONS_FRIENDLY2 || type==MONS_FOLLOWBUNNY || type==MONS_PUNKBUNNY || (MonsterTheme(type)==MT_NONE)))
 			type=Random(NUM_MONSTERS);
 	}
 	else if(type==MONS_TAGGED)
@@ -1478,9 +1478,9 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i].mapx=(guys[i].x>>FIXSHIFT)/TILE_WIDTH;
 			guys[i].mapy=(guys[i].y>>FIXSHIFT)/TILE_HEIGHT;
 			guys[i].item=ITM_RANDOM;
-			strcpy(guys[i].name,MonsterName(type));
+			ham_strcpy(guys[i].name,MonsterName(type));
 			guys[i].fromColor=255;
-			guys[i].brtChange=GetMonsterType(guys[i].type)->brtChg;
+			guys[i].brtChange=MonsterBrightnessChange(type);
 			guys[i].customSpr=nullptr;
 
 			if(type==MONS_ISOZOID && editing!=1)

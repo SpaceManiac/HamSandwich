@@ -56,11 +56,6 @@ void ExitMonsters(void)
 	}
 }
 
-const monsterType_t *GetMonsterType(dword type)
-{
-	return &monsType[type];
-}
-
 void ChangeOffColor(dword type,byte from,byte to)
 {
 	monsType[type].fromCol=from;
@@ -121,26 +116,85 @@ word MonsterHP(dword type)
 	return monsType[type].hp;
 }
 
-char *MonsterName(short type)
+const char *MonsterName(short type)
 {
-	static char tmp[16];
+	// These special monster IDs used in specials have hardcoded names.
+	switch (type)
+	{
+	case MONS_ANYBODY:
+		return "Anybody";
+	case MONS_GOODGUY:
+		return "Goodguy";
+	case MONS_BADGUY:
+		return "Badguy";
+	case MONS_NONPLAYER:
+		return "Non-player";
+	case MONS_PLAYER:
+		return "Player";
+	case MONS_TAGGED:
+		return "Tagged";
+	}
+	// These monsters have different names in the editor.
+	if (editing)
+	{
+		switch (type)
+		{
+		case MONS_ROLLER2:
+			return "Roly Poly Rvs";
+		case MONS_ROLLER4:
+			return "Rumbly Tumbly Rvs";
+		case MONS_SNOWBALL2:
+			return "Snowball Rvs";
+		case MONS_PUFFYFISH2:
+			return "Puffyfish Rvs";
+		case MONS_GENERATOR1:
+			return "Generator-1s";
+		case MONS_GENERATOR2:
+			return "Generator-5s";
+		case MONS_GENERATOR3:
+			return "Generator-15s";
+		case MONS_GENERATOR4:
+			return "Generator-30s";
+		case MONS_FRIENDLY2:
+			return "Buddy Bunny:Determined";
+		case MONS_FOLLOWBUNNY:
+			return "Buddy Bunny:Follow";
+		case MONS_SNKYSHRK2:
+			return "Sneaky Shark: Chest";
+		case MONS_UNDERZOID:
+			return "Aquazoid Underwater";
+		case MONS_PATCH2:
+			return "Pumpkin Patch Fast";
+		case MONS_UNDERMAGMA:
+			return "Magmazoid Underwater";
+		case MONS_PARKED2:
+			return "Parked Car2";
+		case MONS_TRAFFIC:
+			return "Traffic: Clockwise";
+		case MONS_TRAFFIC2:
+			return "Traffic: Counterclockwise";
+		case MONS_PATROLLR:
+			return "Patrol Mumble Horiz.";
+		case MONS_PATROLUD:
+			return "Patrol Mumble Vert.";
+		case MONS_DPATROLLR:
+			return "Death Patrol Horiz.";
+		case MONS_DPATROLUD:
+			return "Death Patrol Vert.";
+		}
+	}
+	// Otherwise the monster name is in its type definition.
+	return monsType[type].name;
+}
 
-	if(type==MONS_ANYBODY)
-		strcpy(tmp,"Anybody");
-	else if(type==MONS_GOODGUY)
-		strcpy(tmp,"Goodguy");
-	else if(type==MONS_BADGUY)
-		strcpy(tmp,"Badguy");
-	else if(type==MONS_NONPLAYER)
-		strcpy(tmp,"Non-player");
-	else if(type==MONS_PLAYER)
-		strcpy(tmp,"Player");
-	else if(type==MONS_TAGGED)
-		strcpy(tmp,"Tagged");
-	else
-		return monsType[type].name;
+Monster_AIFunc MonsterAI(dword type)
+{
+	return monsType[type].AI;
+}
 
-	return tmp;
+int8_t MonsterBrightnessChange(dword type)
+{
+	return monsType[type].brtChg;
 }
 
 void LoadMySprite(dword type)
@@ -482,7 +536,6 @@ inline void FaceGoodguy2(Guy *me,Guy *goodguy)
 		if(diff>4)
 		{
 			dir=-1;
-			diff=8-diff;
 		}
 		else
 			dir=1;
@@ -493,7 +546,6 @@ inline void FaceGoodguy2(Guy *me,Guy *goodguy)
 		if(diff>4)
 		{
 			dir=1;
-			diff=8-diff;
 		}
 		else
 			dir=-1;
@@ -547,7 +599,6 @@ inline void FaceGoodguy3(Guy *me,Guy *goodguy)
 		if(diff>4)
 		{
 			dir=-1;
-			diff=8-diff;
 		}
 		else
 			dir=1;
@@ -558,7 +609,6 @@ inline void FaceGoodguy3(Guy *me,Guy *goodguy)
 		if(diff>4)
 		{
 			dir=1;
-			diff=8-diff;
 		}
 		else
 			dir=-1;

@@ -67,29 +67,8 @@ byte InitEditor(void)
 	musicPlaying=0;
 	lastKey=0;
 	InitPlayer(0,"TEST");
-	// modify monsters for the editor
-	strcpy(MonsterName(MONS_ROLLER2),"Roly Poly Rvs");
-	strcpy(MonsterName(MONS_ROLLER4),"Rumbly Tumbly Rvs");
-	strcpy(MonsterName(MONS_SNOWBALL2),"Snowball Rvs");
-	strcpy(MonsterName(MONS_PUFFYFISH2),"Puffyfish Rvs");
-	strcpy(MonsterName(MONS_GENERATOR1),"Generator-1s");
-	strcpy(MonsterName(MONS_GENERATOR2),"Generator-5s");
-	strcpy(MonsterName(MONS_GENERATOR3),"Generator-15s");
-	strcpy(MonsterName(MONS_GENERATOR4),"Generator-30s");
-	strcpy(MonsterName(MONS_FRIENDLY2),"Buddy Bunny:Determined");
-	strcpy(MonsterName(MONS_FOLLOWBUNNY),"Buddy Bunny:Follow");
-	strcpy(MonsterName(MONS_SNKYSHRK2),"Sneaky Shark: Chest");
-	strcpy(MonsterName(MONS_UNDERZOID),"Aquazoid Underwater");
-	strcpy(MonsterName(MONS_PATCH2),"Pumpkin Patch Fast");
-	strcpy(MonsterName(MONS_UNDERMAGMA),"Magmazoid Underwater");
-	strcpy(MonsterName(MONS_PARKED2),"Parked Car2");
-	strcpy(MonsterName(MONS_TRAFFIC),"Traffic: Clockwise");
-	strcpy(MonsterName(MONS_TRAFFIC2),"Traffic: Counterclockwise");
-	strcpy(MonsterName(MONS_PATROLLR),"Patrol Mumble Horiz.");
-	strcpy(MonsterName(MONS_PATROLUD),"Patrol Mumble Vert.");
-	strcpy(MonsterName(MONS_DPATROLLR),"Death Patrol Horiz.");
-	strcpy(MonsterName(MONS_DPATROLUD),"Death Patrol Vert.");
 
+	// modify monsters for the editor
 	ChangeOffColor(MONS_SHARK,2,4);
 	ChangeOffColor(MONS_SNKYSHRK2,2,4);
 
@@ -132,26 +111,6 @@ void ExitEditor(void)
 	// change monsters back to normal
 	ChangeOffColor(MONS_SHARK,255,255);
 	ChangeOffColor(MONS_SNKYSHRK2,255,255);
-	strcpy(MonsterName(MONS_ROLLER2),"Roly Poly");
-	strcpy(MonsterName(MONS_ROLLER4),"Rumbly Tumbly");
-	strcpy(MonsterName(MONS_SNOWBALL2),"Snowball");
-	strcpy(MonsterName(MONS_GENERATOR1),"Generator");
-	strcpy(MonsterName(MONS_GENERATOR2),"Generator");
-	strcpy(MonsterName(MONS_GENERATOR3),"Generator");
-	strcpy(MonsterName(MONS_GENERATOR4),"Generator");
-	strcpy(MonsterName(MONS_FRIENDLY2),"Buddy Bunny");
-	strcpy(MonsterName(MONS_FOLLOWBUNNY),"Buddy Bunny");
-	strcpy(MonsterName(MONS_SNKYSHRK2),"Sneaky Shark");
-	strcpy(MonsterName(MONS_UNDERZOID),"Aquazoid");
-	strcpy(MonsterName(MONS_PATCH2),"Pumpkin Patch");
-	strcpy(MonsterName(MONS_UNDERMAGMA),"Magmazoid");
-	strcpy(MonsterName(MONS_PARKED2),"Parked Car");
-	strcpy(MonsterName(MONS_TRAFFIC),"Traffic");
-	strcpy(MonsterName(MONS_TRAFFIC2),"Traffic");
-	strcpy(MonsterName(MONS_PATROLLR),"Patrol Mumble");
-	strcpy(MonsterName(MONS_PATROLUD),"Patrol Mumble");
-	strcpy(MonsterName(MONS_DPATROLLR),"Death Patrol");
-	strcpy(MonsterName(MONS_DPATROLUD),"Death Patrol");
 
 	StopSong();
 	ExitGuys();
