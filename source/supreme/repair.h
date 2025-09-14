@@ -1,8 +1,6 @@
 #ifndef REPAIR_H
 #define REPAIR_H
 
-#include "mgldraw.h"
-
 // all of these repair functions are used
 // when a thing of that type is deleted.  It scratches out
 // any reference to the deleted object (or sets it to a default),

@@ -925,7 +925,7 @@ void AI_MattieSkullOrHead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			{
 				me->type=MONS_MATSKULL;
 				me->aiType=MONS_MATSKULL;
-				strcpy(me->name,MonsterName(me->type));
+				ham_strcpy(me->name,MonsterName(me->type));
 				if(!me->friendly)
 					player.enemiesSlain--;
 				me->hp=monsType[MONS_MATSKULL].hp;
@@ -935,7 +935,7 @@ void AI_MattieSkullOrHead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			{
 				me->type=MONS_MATBRAIN;
 				me->aiType=MONS_MATBRAIN;
-				strcpy(me->name,MonsterName(me->type));
+				ham_strcpy(me->name,MonsterName(me->type));
 				if(!me->friendly)
 					player.enemiesSlain--;
 				me->hp=monsType[MONS_MATBRAIN].hp;
@@ -1697,12 +1697,6 @@ void AI_Moss(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *baby;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -1837,12 +1831,6 @@ void AI_MossGrande(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *baby;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -2275,12 +2263,6 @@ void AI_TheThing(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -3333,7 +3315,7 @@ void AI_Zomboni(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				player.enemiesSlain--;
 				me->type=MONS_ZOMBIE;
 				me->aiType=MONS_ZOMBIE;
-				strcpy(me->name,MonsterName(me->type));
+				ham_strcpy(me->name,MonsterName(me->type));
 				me->mind=0;
 				me->mind1=0;
 				me->hp=20;
@@ -3798,12 +3780,6 @@ void AI_Djinni(Guy *me,Map *map,world_t *world,Guy *goodguy)
 void AI_MagicLamp(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -3857,7 +3833,7 @@ void AI_MagicLamp(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 void AI_Cactus(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
-	int i,x,y;
+	int i;
 	byte b;
 
 	if(me->reload)
@@ -3888,8 +3864,8 @@ void AI_Cactus(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 				for(i=0;i<12;i++)
 				{
-					x=me->x+Cosine(b)*32;
-					y=me->y+Sine(b)*32;
+					//x=me->x+Cosine(b)*32;
+					//y=me->y+Sine(b)*32;
 					FireBullet(me->x,me->y,b,BLT_SPINE,me->friendly);
 					b+=10;
 				}
@@ -4504,12 +4480,6 @@ void AI_Sphinx(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -4672,7 +4642,7 @@ void AI_CentiBody(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	{
 		me->type=MONS_CENTIHEAD;	// if you have no parent, time to get mean
 		me->aiType=MONS_CENTIHEAD;
-		strcpy(me->name,MonsterName(me->type));
+		ham_strcpy(me->name,MonsterName(me->type));
 		me->hp=40;	// with full HP
 		me->maxHP=40;
 		return;
@@ -5179,7 +5149,7 @@ void AI_DrLunatic(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			player.enemiesSlain--;
 			me->type=MONS_SDZL;	// become the Super Duper Zombie Lunatic
 			me->aiType=MONS_SDZL;
-			strcpy(me->name,monsType[me->type].name);
+			ham_strcpy(me->name,monsType[me->type].name);
 			me->hp=1000;
 			me->maxHP=1000;
 			me->mind=0;

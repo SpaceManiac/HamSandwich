@@ -112,16 +112,16 @@
 #define EVT_GET			6	// an item was picked up
 #define MAX_EVENTTYPES	7
 
-typedef struct trigger_t
+struct trigger_t
 {
 	byte flags;		// whether it must AND or OR with the next one, and if it's NOT
 	byte type;
 	byte x,y;	// coordinates of where it's triggered
 	int value;	// value of "N" in the trigger
 	int value2;	// another value for some triggers
-} trigger_t;
+};
 
-typedef struct effect_t
+struct effect_t
 {
 	byte flags;
 	byte type;
@@ -129,19 +129,19 @@ typedef struct effect_t
 	int value;
 	int value2;
 	char  text[32];
-} effect_t;
+};
 
-typedef struct special_t
+struct special_t
 {
 	byte x,y;	// where this special is actually kept
 	byte uses;
 	trigger_t trigger[NUM_TRIGGERS];
 	effect_t effect[NUM_EFFECTS];
-} special_t;
+};
 
 class Guy;
 
-typedef struct sEvent_t
+struct sEvent_t
 {
 	byte type;
 	int  value;	// guy #, bullet #, var #, item #
@@ -149,7 +149,7 @@ typedef struct sEvent_t
 	byte guyType;
 	byte guyFriendly;
 	Guy *victim;
-} sEvent_t;
+};
 
 void InitSpecials(special_t *list);
 void GetSpecialsFromMap(special_t *list);

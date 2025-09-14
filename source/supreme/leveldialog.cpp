@@ -565,7 +565,7 @@ byte LevelDialogKey(char key)
 			FileDialogKey(key);
 			if(FileDialogCommand()==FM_LOAD)
 			{
-				strcpy(world->map[mapNum]->song,GetFilename(""));
+				ham_strcpy(world->map[mapNum]->song,GetFilename(""));
 				ExitFileDialog();
 				mode=LDMODE_NORMAL;
 				LevelDialogButtons();
@@ -738,7 +738,7 @@ byte LevelDialogClick(int msx,int msy)
 			FileDialogClick(msx,msy);
 			if(FileDialogCommand()==FM_LOAD)
 			{
-				strcpy(world->map[mapNum]->song,GetFilename(""));
+				ham_strcpy(world->map[mapNum]->song,GetFilename(""));
 				ExitFileDialog();
 				mode=LDMODE_NORMAL;
 				LevelDialogButtons();

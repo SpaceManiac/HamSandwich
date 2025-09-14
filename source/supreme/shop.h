@@ -75,13 +75,13 @@ const char* GetPlayableCharacterName(int playAs);
 #define MODE_MANIC		5
 #define MODE_TEENY		6
 
-typedef struct shopItem_t
+struct shopItem_t
 {
 	byte shop;
 	word cost;
 	byte type;
 	byte item;	// which # of the items of "type" it is
-} shopItem_t;
+};
 
 class Map;
 

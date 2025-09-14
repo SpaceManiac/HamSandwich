@@ -294,11 +294,11 @@ void PlotStar(int x,int y,byte col,byte tx,byte ty,word tileNum)
 
 // disco tiles ---------------------------------------
 
-byte discoTab[]={1,3,4,5,6,7};
+static const byte discoTab[]={1,3,4,5,6,7};
 
 static inline byte PickDiscoColor(void)
 {
-	return discoTab[Random(6)]*32;
+	return discoTab[Random(std::size(discoTab))]*32;
 }
 
 // --- RENDERING!

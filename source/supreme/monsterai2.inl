@@ -521,13 +521,6 @@ void AI_Vampire(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 void AI_Coffin(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
-
 	if(me->ouch==4 && me->hp>0)
 	{
 		MakeSound(SND_VAMPOUCH,me->x,me->y,SND_CUTOFF,1200);
@@ -1469,12 +1462,6 @@ void AI_Countess(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	int x,y,i;
 	int xpos[]={-FIXAMT*50,0,FIXAMT*50};
 	int ypos[]={0,FIXAMT*50,0};
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -1670,12 +1657,6 @@ void AI_Countess(Guy *me,Map *map,world_t *world,Guy *goodguy)
 void AI_AlienEgg(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -2255,12 +2236,6 @@ void AI_Meaniebot(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -2399,12 +2374,6 @@ void AI_Robofactory(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -3015,12 +2984,6 @@ void AI_UltraPygmy(Guy *me,Map *map,world_t *world,Guy *goodguy)
 void AI_LoonyBot(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(!goodguy)
 		return;
@@ -3227,7 +3190,6 @@ void AI_LoonyGun(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			if(diff>8)
 			{
 				dir=-1;
-				diff=16-diff;
 			}
 			else
 				dir=1;
@@ -3238,7 +3200,6 @@ void AI_LoonyGun(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			if(diff>8)
 			{
 				dir=1;
-				diff=16-diff;
 			}
 			else
 				dir=-1;

@@ -5250,7 +5250,6 @@ void AI_Patrol(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			if(diff>4)
 			{
 				dir=-1;
-				diff=8-diff;
 			}
 			else
 				dir=1;
@@ -5261,7 +5260,6 @@ void AI_Patrol(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			if(diff>4)
 			{
 				dir=1;
-				diff=8-diff;
 			}
 			else
 				dir=-1;

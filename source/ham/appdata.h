@@ -1,10 +1,8 @@
 #ifndef APPDATA_H
 #define APPDATA_H
 
-#include <stdio.h>
 #include <vector>
 #include <string>
-#include <set>
 #include "owned_sdl.h"
 
 typedef struct SDL_RWops SDL_RWops;
@@ -27,9 +25,9 @@ vanilla::VfsStack* Vfs();
 owned::SDL_RWops AppdataOpen(const char* filename);
 // Open for writing.
 owned::SDL_RWops AppdataOpen_Write(const char* filename);
-// Delete
+// Delete file. Only applies to written files; cannot delete asset files.
 void AppdataDelete(const char* filename);
-// List a directory.
+// List the contents of a directory, mixing .
 std::vector<std::string> ListDirectory(const char* directory, const char* extension = nullptr, size_t maxlen = 0);
 
 // On platforms that need it, ensure appdata is really saved.

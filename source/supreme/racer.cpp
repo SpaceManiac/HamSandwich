@@ -14,7 +14,7 @@
 
 #define RACER_Y	(460*FIXAMT)
 
-typedef struct racer_t
+struct racer_t
 {
 	int x,y;
 	int dx,dy;
@@ -24,7 +24,7 @@ typedef struct racer_t
 
 	byte level;
 	dword distDone;
-} racer_t;
+};
 
 static int roadX[RACE_MAPHEIGHT],roadX2[RACE_MAPHEIGHT];
 static int roadY;

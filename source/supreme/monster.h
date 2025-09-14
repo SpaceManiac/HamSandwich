@@ -322,7 +322,7 @@ constexpr byte FRAME_END = 255;
 
 typedef void (*Monster_AIFunc)(Guy *,Map *,world_t *,Guy *);
 
-typedef struct monsterType_t
+struct monsterType_t
 {
 	char name[32];
 	byte fromCol,toCol;
@@ -337,7 +337,7 @@ typedef struct monsterType_t
 	word flags;
 	dword theme;
 	byte anim[NUM_ANIMS][ANIM_LENGTH];
-} monsterType_t;
+};
 
 void InitMonsters(void);
 void ExitMonsters(void);

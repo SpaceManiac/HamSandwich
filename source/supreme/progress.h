@@ -41,7 +41,7 @@
 // 20 points per star (50 total, 1000 points)
 
 
-typedef struct levelData_t	// contains your scores, etc for one level
+struct levelData_t	// contains your scores, etc for one level
 {
 	byte levelNum;		// because only passed levels are stored
 	byte flags;
@@ -49,9 +49,9 @@ typedef struct levelData_t	// contains your scores, etc for one level
 	float recordDestroy;
 	int   recordCombo;
 	dword recordBaseScore;
-} levelData_t;
+};
 
-typedef struct worldData_t	// contains your progress for one world
+struct worldData_t	// contains your progress for one world
 {
 	char filename[32];	// the world's filename
 	int  var[8];		// the 'global' variables for this world
@@ -63,7 +63,7 @@ typedef struct worldData_t	// contains your progress for one world
 	levelData_t *level;	// progress info for each level that HAS been passed only.
 
 	span<levelData_t> Levels() { return span{level, levels}; }
-} worldData_t;
+};
 
 enum class HudChoice : byte  // SERIALIZED in the player profile.
 {
@@ -76,7 +76,7 @@ enum class HudChoice : byte  // SERIALIZED in the player profile.
 };
 
 // WARNING: changing this struct's contents may break save compatibility or require modifications in Load/SaveProfile.
-typedef struct progress_t
+struct progress_t
 {
 	// total values for stats
 	dword totalCandles;
@@ -114,13 +114,13 @@ typedef struct progress_t
 	byte moreControl[2][2];
 	byte moreJoyCtrl[2];
 	byte expansion[1012];		// unused space for possible future expansion
-} progress_t;
+};
 
-typedef struct playList_t
+struct playList_t
 {
 	byte numSongs;
 	char *song;
-} playList_t;
+};
 
 // Difficulty levels. SERIALIZED in profile, specials, and leaderboards.
 enum : byte
@@ -134,7 +134,7 @@ enum : byte
 const char* GetDifficultyName(int difficulty);
 
 // WARNING: changing this struct's contents may break save compatibility or require modifications in Load/SaveProfile.
-typedef struct profile_t
+struct profile_t
 {
 	char name[16];
 	// important stuff
@@ -152,7 +152,7 @@ typedef struct profile_t
 	byte nameVerified;
 	progress_t progress;
 	char motd[1024];	// message of the day
-} profile_t;
+};
 
 extern profile_t profile;
 extern byte modeShopNum[10];

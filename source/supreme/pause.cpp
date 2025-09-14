@@ -30,11 +30,11 @@
 
 #define PE_CHEATS	50
 
-typedef struct pauseItem_t
+struct pauseItem_t
 {
 	byte effect;
 	char text[16];
-} pauseItem_t;
+};
 
 static const pauseItem_t gamePause[]={
 	{PE_CONTINUE,"Continue"},

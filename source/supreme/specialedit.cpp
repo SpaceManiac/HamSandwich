@@ -2308,7 +2308,7 @@ void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
 			}
 			if(FileDialogCommand()==FM_LOAD)
 			{
-				strcpy(spcl.effect[curEff].text,GetFilename(""));
+				ham_strcpy(spcl.effect[curEff].text,GetFilename(""));
 				mode=SMODE_NORMAL;
 				ReturnToSong();
 				SpecialEditSetupButtons();

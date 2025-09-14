@@ -126,7 +126,7 @@ void AI_Mattie2SkullOrHead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			{
 				me->type=MONS_MAT2SKULL;
 				me->aiType=MONS_MAT2SKULL;
-				strcpy(me->name,MonsterName(me->type));
+				ham_strcpy(me->name,MonsterName(me->type));
 				if(!me->friendly)
 					player.enemiesSlain--;
 				me->hp=monsType[MONS_MAT2SKULL].hp;
@@ -136,7 +136,7 @@ void AI_Mattie2SkullOrHead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			{
 				me->type=MONS_MAT2BRAIN;
 				me->aiType=MONS_MAT2BRAIN;
-				strcpy(me->name,MonsterName(me->type));
+				ham_strcpy(me->name,MonsterName(me->type));
 				if(!me->friendly)
 					player.enemiesSlain--;
 				me->hp=monsType[MONS_MAT2BRAIN].hp;
@@ -550,12 +550,6 @@ void AI_PygmyQueen(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y,i;
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -811,12 +805,6 @@ void AI_Generator(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->action==ACTION_BUSY)
 	{
@@ -1453,13 +1441,7 @@ void AI_MultiMoss(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *g;
-	byte f;
 	byte tries;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -1523,12 +1505,6 @@ void AI_MossRapido(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *baby;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -1808,12 +1784,6 @@ void AI_XenoMama(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -2152,12 +2122,6 @@ void AI_BigPumpkin(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -2510,7 +2474,7 @@ void AI_CrazyBone(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 void AI_Creepazoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
-	int x,y,i;
+	int i;
 
 	if(me->reload)
 		me->reload--;
@@ -2528,8 +2492,8 @@ void AI_Creepazoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		if(me->seq==ANIM_ATTACK && (me->frm>=5 && me->frm<=8) && goodguy)
 		{
 			// spit stuff
-			x=me->x+Cosine(me->facing*32)*8;
-			y=me->y+Sine(me->facing*32)*8;
+			//x=me->x+Cosine(me->facing*32)*8;
+			//y=me->y+Sine(me->facing*32)*8;
 			i=(me->facing*32+256-16+Random(33))&255;
 			FireExactBullet(me->x,me->y,FIXAMT*30,Cosine(i)*12,Sine(i)*12,0,0,16,i,BLT_SPORE,me->friendly);
 			me->reload=15;

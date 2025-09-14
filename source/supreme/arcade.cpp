@@ -28,15 +28,15 @@ static byte guyPic[]=
 	47,00,00,00,47,
 };
 
-typedef struct caveBul_t
+struct caveBul_t
 {
 	int x,y;
 	int dx,dy;
 	byte type;
 	byte clock;
-} caveBul_t;
+};
 
-typedef struct caveGuy_t
+struct caveGuy_t
 {
 	int x,y;
 	int dx,dy;
@@ -46,7 +46,7 @@ typedef struct caveGuy_t
 	byte mind;
 	byte reload;
 	byte stand;
-} caveGuy_t;
+};
 
 static byte oldc;
 static byte *map;
@@ -637,7 +637,6 @@ void AntTurnTo(byte desired,caveGuy_t *me)
 		if(diff>128)
 		{
 			dir=-1;
-			diff=256-diff;
 		}
 		else
 			dir=1;
@@ -648,7 +647,6 @@ void AntTurnTo(byte desired,caveGuy_t *me)
 		if(diff>128)
 		{
 			dir=1;
-			diff=256-diff;
 		}
 		else
 			dir=-1;

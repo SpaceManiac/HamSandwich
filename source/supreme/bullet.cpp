@@ -1045,7 +1045,6 @@ inline void BulletFaceGuy(bullet_t *me,Guy *goodguy)
 		if(diff>4)
 		{
 			dir=-1;
-			diff=8-diff;
 		}
 		else
 			dir=1;
@@ -1056,7 +1055,6 @@ inline void BulletFaceGuy(bullet_t *me,Guy *goodguy)
 		if(diff>4)
 		{
 			dir=1;
-			diff=8-diff;
 		}
 		else
 			dir=-1;
@@ -1083,7 +1081,6 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 
 	activeBulDX=me->dx;
 	activeBulDY=me->dy;
-	b=0;
 
 	if(map->flags&MAP_UNDERWATER)
 	{

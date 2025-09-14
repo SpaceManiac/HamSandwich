@@ -7,7 +7,7 @@
 #define NUMBULLETS	512
 #define NUMBADGUYS	128
 
-typedef struct spacePlayer_t
+struct spacePlayer_t
 {
 	int x,y;
 	int dx,dy;
@@ -18,18 +18,18 @@ typedef struct spacePlayer_t
 	byte comboClock;
 	byte combo;
 	byte invinc;
-} spacePlayer_t;
+};
 
-typedef struct spaceBullet_t
+struct spaceBullet_t
 {
 	int x,y;
 	int dx,dy;
 	byte clock;
 	byte type;
 	byte face;
-} spaceBullet_t;
+};
 
-typedef struct spaceBadguy_t
+struct spaceBadguy_t
 {
 	int x,y;
 	int dx,dy;
@@ -37,7 +37,7 @@ typedef struct spaceBadguy_t
 	byte face;
 	byte hp;
 	byte timer;
-} spaceBadguy_t;
+};
 
 // power ups
 #define SPU_BOMB		0

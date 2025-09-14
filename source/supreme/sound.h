@@ -406,12 +406,12 @@
 #define ST_VOCAL		16
 #define ST_CUSTOM		32
 
-typedef struct soundDesc_t
+struct soundDesc_t
 {
 	word num;
 	char name[32];
 	byte theme;
-} soundDesc_t;
+};
 
 void InitSound(void);
 void ExitSound(void);

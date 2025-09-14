@@ -16,13 +16,13 @@
 
 void PickQuestion(void);
 
-typedef struct question_t
+struct question_t
 {
 	char question[128];
 	byte right,wrong;
 	char rightAns[16][64];
 	char wrongAns[16][64];
-} question_t;
+};
 
 byte numQs[10];
 question_t *questions[10];	// 10 arrays, one for each level of question

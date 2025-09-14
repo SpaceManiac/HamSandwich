@@ -59,7 +59,7 @@ enum
 	UPDATE_FADEIN,
 };
 
-typedef struct mapTile_t
+struct mapTile_t
 {
 	word floor;
 	word wall;
@@ -68,15 +68,15 @@ typedef struct mapTile_t
 	char templight;
 	byte opaque;
 	byte select;
-} mapTile_t;
+};
 
 // SERIALIZED.
-typedef struct mapBadguy_t
+struct mapBadguy_t
 {
 	byte x,y;
 	dword type;
 	byte item;
-} mapBadguy_t;
+};
 
 struct world_t;
 
