@@ -832,6 +832,10 @@ void LoonyControlCommon(Guy *me,mapTile_t *mapTile,world_t *world)
 		if((player.timeToFinish%30)==0)
 			NovaGuys(GOOD,goodguy->x,goodguy->y,FIXAMT*50,0,20,0);
 	}
+	else
+	{
+		monsType[player.monsType].offc[0] = 255;
+	}
 	if(ModifierOn(MOD_GANGSTA) && ModifierOn(MOD_KNIGHT))
 	{
 		// randomly swap if you have both
