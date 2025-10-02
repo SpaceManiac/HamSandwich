@@ -192,7 +192,7 @@ void AdjustModifier(byte *me,byte w,char dir,byte *list)
 	while(1)
 	{
 		newMod+=dir;
-		if(newMod>MAX_MODS)
+		if(newMod>=MAX_MODS)
 		{
 			if(dir==1)
 				newMod=255;
