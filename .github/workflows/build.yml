@@ -45,7 +45,7 @@ jobs:
         run: tools/bootstrap/butler push --if-changed build/install "$ITCH_GAME:linux" --userversion="$(git rev-parse --short=10 HEAD)"
   mac:
     name: MacOS
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
       - run: make install/strip mode=release
