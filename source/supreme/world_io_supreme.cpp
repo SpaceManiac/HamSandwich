@@ -216,7 +216,7 @@ bool Supreme_LoadWorld(world_t *world, const char *fname, SDL_RWops *f)
 	SDL_RWread(f,&world->author,sizeof(char),32);
 	SDL_RWseek(f, 32, RW_SEEK_CUR);  // name of the world, not needed here
 	SDL_RWread(f,&world->numMaps,1,1);
-	SDL_RWread(f,&world->totalPoints,1,sizeof(int));
+	SDL_RWseek(f, sizeof(int), RW_SEEK_CUR);  // totalPoints
 	SDL_RWread(f,&world->numTiles,1,sizeof(word));	// tile count
 	SetNumTiles(world->numTiles);
 
@@ -468,13 +468,18 @@ static bool SaveMap(SDL_RWops *f, const Map* me)
 
 bool Supreme_SaveWorld(const world_t *world, SDL_RWops *f)
 {
+	int totalPoints=0;
+	for(int i = 1; i < MAX_MAPS; i++)
+		if(world->map[i] && (!(world->map[i]->flags&MAP_HUB)))
+			totalPoints+=100;	// each level is worth 100 points except hubs which is worth nothing
+
 	char code[9]="SUPREME!";
 	SDL_RWwrite(f,code,8,sizeof(char));	// identifier code
 
 	SDL_RWwrite(f,&world->author,sizeof(char),32);
 	SDL_RWwrite(f,&world->map[0]->name,sizeof(char),32);
 	SDL_RWwrite(f,&world->numMaps,1,1);
-	SDL_RWwrite(f,&world->totalPoints,1,sizeof(int));
+	SDL_RWwrite(f,&totalPoints,1,sizeof(int));
 	SDL_RWwrite(f,&world->numTiles,1,sizeof(word));
 
 	SaveTiles(f);

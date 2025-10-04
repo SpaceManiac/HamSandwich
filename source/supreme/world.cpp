@@ -93,9 +93,9 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 	}
 
 	SDL_RWread(f,&world->author,sizeof(char),32);
-	SDL_RWread(f,&code,sizeof(char),32);	// name of the world, not needed here
+	SDL_RWseek(f, 32, RW_SEEK_CUR);  // name of the world, not needed here
 	SDL_RWread(f,&world->numMaps,1,1);
-	SDL_RWread(f,&world->totalPoints,1,sizeof(int));
+	SDL_RWseek(f, sizeof(int), RW_SEEK_CUR);  // totalPoints
 	SDL_RWread(f,&world->numTiles,1,sizeof(word));	// tile count
 
 	if(world->numTiles+GetNumTiles()>NUMTILES)
@@ -241,13 +241,9 @@ bool MustBeHamSandwichWorld(const world_t *world)
 }
 #undef YES_IF
 
-bool SaveWorld(world_t *world, const char *fname)
+bool SaveWorld(const world_t *world, const char *fname)
 {
 	world->map[0]->flags|=MAP_HUB;
-	world->totalPoints=0;
-	for(int i = 1; i < MAX_MAPS; i++)
-		if(world->map[i] && (!(world->map[i]->flags&MAP_HUB)))
-			world->totalPoints+=100;	// each level is worth 100 points except hubs which is worth nothing
 
 	std::string namebuf;
 	if (MustBeHamSandwichWorld(world))

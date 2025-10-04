@@ -104,7 +104,6 @@ static void ConvertToNewWorld(world_t *world)
 
 	world->numMaps=oldWorld->numMaps;
 	strcpy(world->author,"Author Unknown!");
-	world->totalPoints=0;
 	world->numTiles=400;
 	memset(world->terrain,0,sizeof(terrain_t)*400);
 	for(i=0;i<200;i++)

@@ -45,7 +45,6 @@ struct terrain_t
 struct world_t
 {
 	byte numMaps;
-	int  totalPoints;
 	Map	 *map[MAX_MAPS];
 	word numTiles;
 	terrain_t terrain[NUMTILES];
@@ -60,7 +59,7 @@ extern byte keyChainInLevel[MAX_MAPS];
 
 byte NewWorld(world_t *world,MGLDraw *mgl);
 bool LoadWorld(world_t *world,const char *fname);
-bool SaveWorld(world_t *world,const char *fname);
+bool SaveWorld(const world_t *world,const char *fname);
 void FreeWorld(world_t *world);
 
 void InitWorld(world_t *world);
