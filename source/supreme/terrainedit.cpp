@@ -189,15 +189,14 @@ void ExitClick(int id)
 void DeleteUnusedTiles(int id)
 {
 	byte tileUsed[NUMTILES];
-	int i,j,k;
 
 	MakeNormalSound(SND_MENUCLICK);
 
-	for(i=0;i<world->numTiles;i++)
+	for(int i=0;i<world->numTiles;i++)
 		tileUsed[i]=0;
 
 	// find all tiles used by items
-	for(i=0;i<NumItems();i++)
+	for(int i=0;i<NumItems();i++)
 	{
 		if(GetItem(i)->flags&IF_TILE)
 			tileUsed[GetItem(i)->sprNum]=1;
@@ -208,7 +207,7 @@ void DeleteUnusedTiles(int id)
 		{
 			if(spcl.x!=255)
 			{
-				for(k=0;k<NUM_TRIGGERS;k++)
+				for(int k=0;k<NUM_TRIGGERS;k++)
 				{
 					if(spcl.trigger[k].type==TRG_FLOOR ||
 						spcl.trigger[k].type==TRG_FLOORRECT)
@@ -218,7 +217,7 @@ void DeleteUnusedTiles(int id)
 					if(spcl.trigger[k].type==TRG_STEPTILE)
 						tileUsed[spcl.trigger[k].value2]=1;
 				}
-				for(k=0;k<NUM_EFFECTS;k++)
+				for(int k=0;k<NUM_EFFECTS;k++)
 				{
 					if(spcl.effect[k].type==EFF_CHANGETILE ||
 						spcl.effect[k].type==EFF_OLDTOGGLE)
@@ -229,23 +228,22 @@ void DeleteUnusedTiles(int id)
 				}
 			}
 		}
-		for (const mapTile_t &target : world->map[i]->Tiles())
+		for (const mapTile_t &target : map->Tiles())
 		{
 			tileUsed[target.floor]=1;
 			tileUsed[target.wall]=1;
 		}
 	}
-	for(i=0;i<world->numTiles;i++)
+	for (const terrain_t &terrain : world->Terrain())
 	{
-		tileUsed[world->terrain[i].next]=1;
+		tileUsed[terrain.next]=1;
 	}
 
-	i=0;
-	while(i<world->numTiles)
+	for(int i = 0; i < world->numTiles;)
 	{
 		if(!tileUsed[i])
 		{
-			for(j=i;j<world->numTiles-1;j++)
+			for(int j=i;j<world->numTiles-1;j++)
 			{
 				world->terrain[j]=world->terrain[j+1];
 				tileUsed[j]=tileUsed[j+1];
