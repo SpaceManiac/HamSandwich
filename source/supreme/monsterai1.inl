@@ -4097,9 +4097,9 @@ void AI_Lich(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	{
 		if(goodguy)
 		{
-			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,55,0,0,1,map,world,me->friendly))
+			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,55,0,0,1,map,world,me->friendly))
 			{
-				PoisonVictim(GetLastGuyHit(),60);
+				PoisonVictim(victim,60);
 			}
 
 			// calculate desired location (want to be above Bouapha)
@@ -4435,11 +4435,11 @@ void AI_SphinxArm(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				x+=20;
 
 
-			if(FindVictim(x,y,60,Cosine(me->facing*32)*12,
+			if(Guy *victim = FindVictim(x,y,60,Cosine(me->facing*32)*12,
 								Sine(me->facing*32)*12,30,map,world,me->friendly))
 			{
-				GetLastGuyHit()->dx=Cosine(me->facing*32)*6;
-				GetLastGuyHit()->dx=Sine(me->facing*32)*6;
+				victim->dx=Cosine(me->facing*32)*6;
+				victim->dx=Sine(me->facing*32)*6;
 			}
 
 			if(RangeToTarget(me,goodguy)<1000*FIXAMT)

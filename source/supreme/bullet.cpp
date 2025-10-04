@@ -690,24 +690,24 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 	switch(me->type)
 	{
 		case BLT_SCANNER:
-			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,16,0,0,0,map,world,me->friendly))
+			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,16,0,0,0,map,world,me->friendly))
 			{
-				if(GetLastGuyHit()->aiType!=MONS_BOUAPHA)
+				if(victim->aiType!=MONS_BOUAPHA)
 				{
-					ScanGuy(GetLastGuyHit());
+					ScanGuy(victim);
 					me->type=BLT_SCANLOCK;
 					me->timer=60;
-					me->target=GetLastGuyHit()->ID;
+					me->target=victim->ID;
 				}
 			}
-			else if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,16,0,0,0,map,world,1-me->friendly))
+			else if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,16,0,0,0,map,world,1-me->friendly))
 			{
-				if(GetLastGuyHit()->aiType!=MONS_BOUAPHA)
+				if(victim->aiType!=MONS_BOUAPHA)
 				{
-					ScanGuy(GetLastGuyHit());
+					ScanGuy(victim);
 					me->type=BLT_SCANLOCK;
 					me->timer=60;
-					me->target=GetLastGuyHit()->ID;
+					me->target=victim->ID;
 				}
 			}
 			break;
@@ -830,10 +830,10 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_SPORE:
-			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,4,me->dx/2,me->dy/2,1,map,world,me->friendly))
+			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,4,me->dx/2,me->dy/2,1,map,world,me->friendly))
 			{
 
-				PoisonVictim(GetLastGuyHit(),30);
+				PoisonVictim(victim,30);
 				me->type=BLT_NONE;	// go away
 			}
 			break;
@@ -972,9 +972,9 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_FREEZE:
 		case BLT_FREEZE2:
-			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,me->dx,me->dy,0,map,world,me->friendly))
+			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,me->dx,me->dy,0,map,world,me->friendly))
 			{
-				if(FreezeGuy(GetLastGuyHit()))
+				if(FreezeGuy(victim))
 				{
 					MakeSound(SND_FREEZE,me->x,me->y,SND_CUTOFF,1400);
 				}
@@ -982,9 +982,9 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_MINDWIPE:
-			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,me->dx,me->dy,0,map,world,me->friendly))
+			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,me->dx,me->dy,0,map,world,me->friendly))
 			{
-				if(ControlMind(GetLastGuyHit()))
+				if(ControlMind(victim))
 				{
 					MakeSound(SND_ROBOBOUAPHAON,me->x,me->y,SND_CUTOFF,1400);
 				}
