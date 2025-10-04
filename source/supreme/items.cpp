@@ -1240,7 +1240,7 @@ void RepairItemToSound(int n)	// when sound N is deleted, repair references to i
 	}
 }
 
-void RepairItemToTile(void)	// when tiles are messed with, repair the references in items
+void RepairItemToTile(const SwapTable &table)	// when tiles are messed with, repair the references in items
 {
 	int i;
 
@@ -1248,7 +1248,7 @@ void RepairItemToTile(void)	// when tiles are messed with, repair the references
 	{
 		if(items[i].flags&IF_TILE)
 		{
-			items[i].sprNum=GetSwap(items[i].sprNum);
+			items[i].sprNum=table.GetSwap(items[i].sprNum);
 		}
 	}
 }

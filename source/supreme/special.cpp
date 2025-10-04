@@ -478,7 +478,7 @@ void RepairSpecialToSound(special_t *list,int n)
 	}
 }
 
-void RepairSpecialToLevel(special_t *list)
+void RepairSpecialToLevel(special_t *list, const SwapTable &table)
 {
 	int i,t;
 
@@ -490,7 +490,7 @@ void RepairSpecialToLevel(special_t *list)
 			{
 				if(list[i].trigger[t].type==TRG_PASSLEVEL)
 				{
-					list[i].trigger[t].value=GetSwap(list[i].trigger[t].value);
+					list[i].trigger[t].value=table.GetSwap(list[i].trigger[t].value);
 				}
 			}
 			for(t=0;t<NUM_EFFECTS;t++)
@@ -498,14 +498,14 @@ void RepairSpecialToLevel(special_t *list)
 				if(list[i].effect[t].type==EFF_WINLEVEL ||
 					list[i].effect[t].type==EFF_GOTOMAP)
 				{
-					list[i].effect[t].value=GetSwap(list[i].effect[t].value);
+					list[i].effect[t].value=table.GetSwap(list[i].effect[t].value);
 				}
 			}
 		}
 	}
 }
 
-void RepairSpecialToTile(special_t *list)
+void RepairSpecialToTile(special_t *list, const SwapTable &table)
 {
 	int i,t;
 
@@ -517,26 +517,26 @@ void RepairSpecialToTile(special_t *list)
 			{
 				if(list[i].trigger[t].type==TRG_FLOOR || list[i].trigger[t].type==TRG_FLOORRECT)
 				{
-					list[i].trigger[t].value=GetSwap(list[i].trigger[t].value);
+					list[i].trigger[t].value=table.GetSwap(list[i].trigger[t].value);
 				}
 				else if(list[i].trigger[t].type==TRG_STEPTILE)
 				{
-					list[i].trigger[t].value2=GetSwap(list[i].trigger[t].value2);
+					list[i].trigger[t].value2=table.GetSwap(list[i].trigger[t].value2);
 				}
 			}
 			for(t=0;t<NUM_EFFECTS;t++)
 			{
 				if(list[i].effect[t].type==EFF_CHANGETILE)
 				{
-					list[i].effect[t].value=GetSwap(list[i].effect[t].value);
+					list[i].effect[t].value=table.GetSwap(list[i].effect[t].value);
 					if(list[i].effect[t].value2!=0)
-						list[i].effect[t].value2=GetSwap(list[i].effect[t].value2);
+						list[i].effect[t].value2=table.GetSwap(list[i].effect[t].value2);
 				}
 				if(list[i].effect[t].type==EFF_OLDTOGGLE)
 				{
-					list[i].effect[t].value=GetSwap(list[i].effect[t].value);
+					list[i].effect[t].value=table.GetSwap(list[i].effect[t].value);
 					if(list[i].effect[t].value2!=0)
-						list[i].effect[t].value2=GetSwap(list[i].effect[t].value2);
+						list[i].effect[t].value2=table.GetSwap(list[i].effect[t].value2);
 				}
 			}
 		}

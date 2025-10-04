@@ -142,10 +142,9 @@ void DeleteClick(int id)
 
 	if(autoRepair)
 	{
-		InitSwapTable(NUMTILES);
-		DeleteBlockFromSwapTable(selMin,selMax);
-		RepairTiles();
-		ExitSwapTable();
+		SwapTable table{NUMTILES};
+		table.DeleteBlock(selMin,selMax);
+		RepairTiles(table);
 	}
 
 	world->numTiles-=(selMax-selMin+1);
@@ -252,10 +251,9 @@ void DeleteUnusedTiles(int id)
 
 			if(autoRepair)
 			{
-				InitSwapTable(NUMTILES);
-				DeleteBlockFromSwapTable(i,i);
-				RepairTiles();
-				ExitSwapTable();
+				SwapTable table{NUMTILES};
+				table.DeleteBlock(i,i);
+				RepairTiles(table);
 			}
 
 			world->numTiles--;
@@ -464,10 +462,9 @@ byte MoveTilesTo(int dest)
 
 	if(autoRepair)
 	{
-		InitSwapTable(NUMTILES);
-		SwapBlockInSwapTable(selMin,selMax,dest);
-		RepairTiles();
-		ExitSwapTable();
+		SwapTable table{NUMTILES};
+		table.SwapBlock(selMin,selMax,dest);
+		RepairTiles(table);
 	}
 
 	i=(selMax-selMin+1);

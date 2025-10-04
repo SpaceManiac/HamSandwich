@@ -320,11 +320,12 @@ byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y);
 byte TriggerItem(Guy *me,mapTile_t *m,int x,int y);
 byte BulletHitItem(byte bulType,mapTile_t *m,int x,int y);
 
+class SwapTable;
 void RepairItemToItem(int n);	// when item N is deleted, repair references to it and others in
 								// all items
 void RepairItemToSound(int n);	// when sound N is deleted, repair references to it and others in
 								// all items
-void RepairItemToTile(void);	// when tiles are messed with, repair the references in items
+void RepairItemToTile(const SwapTable &table);	// when tiles are messed with, repair the references in items
 
 struct ItemRenderExtents
 {

@@ -6,9 +6,6 @@
 #include "items.h"
 #include "editor.h"
 
-int swapSize;
-int *swapTable;
-
 void RepairCustomSounds(int n)
 {
 	// fix references inside other items
@@ -53,85 +50,73 @@ void RepairItems(int n)
 	}
 }
 
-void RepairLevels(void)
+void RepairLevels(const SwapTable &table)
 {
 	for (Map *map : EditorGetWorld()->Maps())
 	{
 		// on each level, we need to fix level references, ironically
 
 		// fix specials
-		RepairSpecialToLevel(map->special);
+		RepairSpecialToLevel(map->special, table);
 	}
 }
 
-void RepairTiles(void)
+void RepairTiles(const SwapTable &table)
 {
 	world_t *w = EditorGetWorld();
 
 	// fix references inside the tiles
-	RepairTileToTile(w);
+	RepairTileToTile(w, table);
 
 	for (Map *map : w->Maps())
 	{
 		// on each level, we need to fix tile references
 
 		// first, fix specials
-		RepairSpecialToTile(map->special);
+		RepairSpecialToTile(map->special, table);
 
 		// now fix the tiles in the map themselves
 		for (mapTile_t &tile : map->Tiles())
 		{
 			if(tile.wall!=0)
-				tile.wall=GetSwap(tile.wall);
-			tile.floor=GetSwap(tile.floor);
+				tile.wall=table.GetSwap(tile.wall);
+			tile.floor=table.GetSwap(tile.floor);
 		}
 	}
 
-	RepairItemToTile();
+	RepairItemToTile(table);
 }
 
-void InitSwapTable(int size)
+SwapTable::SwapTable(int size)
+	: swapTable(size)
 {
-	int i;
-
-	swapSize=size;
-	swapTable=new int[size];
-
-	for(i=0;i<size;i++)
+	for (int i = 0; i < size; ++i)
+	{
 		swapTable[i]=i;	// initialize each spot to itself
+	}
 }
 
-void ExitSwapTable(void)
+void SwapTable::Swap(int me,int you)
 {
-	delete[] swapTable;
-	swapTable=NULL;
+	std::swap(swapTable[me], swapTable[you]);
 }
 
-void SwapInSwapTable(int me,int you)
-{
-	int i;
-
-	i=swapTable[me];
-	swapTable[me]=swapTable[you];
-	swapTable[you]=i;
-}
-
-void DeleteFromSwapTable(int me)
+void SwapTable::Delete(int me)
 {
 	int i;
 
-	for(i=swapSize-1;i>me;i--)
+	for(i=swapTable.size()-1;i>me;i--)
 	{
 		swapTable[i]=swapTable[i-1];
 	}
 	swapTable[me]=0;
 }
 
-void DeleteBlockFromSwapTable(int me,int you)
+void SwapTable::DeleteBlock(int me,int you)
 {
 	int i;
 
-	for(i=swapSize-1;i>you;i--)
+	for(i=swapTable.size()-1;i>you;i--)
 	{
 		swapTable[i]=swapTable[i-(you-me+1)];
 	}
@@ -139,19 +124,19 @@ void DeleteBlockFromSwapTable(int me,int you)
 		swapTable[i]=0;
 }
 
-void SwapBlockInSwapTable(int me,int me2,int you)
+void SwapTable::SwapBlock(int me,int me2,int you)
 {
 	int i;
 
 	for(i=me;i<=me2;i++)
 	{
-		SwapInSwapTable(i,you+i-me);
+		Swap(i,you+i-me);
 	}
 }
 
-int GetSwap(int me)
+int SwapTable::GetSwap(int me) const
 {
-	if(me<0 || me>=swapSize)
+	if(me<0 || me>=(int)swapTable.size())
 		return 0;
 
 	return swapTable[me];

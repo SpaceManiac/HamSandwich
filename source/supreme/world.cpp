@@ -311,12 +311,12 @@ void InitWorld(world_t *world)
 {
 }
 
-void RepairTileToTile(world_t *w)
+void RepairTileToTile(world_t *w, const SwapTable &table)
 {
 	int i;
 
 	for(i=0;i<NUMTILES;i++)
-		w->terrain[i].next=GetSwap(w->terrain[i].next);
+		w->terrain[i].next=table.GetSwap(w->terrain[i].next);
 }
 
 void LocateKeychains(world_t *w)

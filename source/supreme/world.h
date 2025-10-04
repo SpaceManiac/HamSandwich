@@ -65,7 +65,8 @@ void FreeWorld(world_t *world);
 void InitWorld(world_t *world);
 bool GetWorldName(const char *fname, StringDestination name, StringDestination author);
 
-void RepairTileToTile(world_t *w);
+class SwapTable;
+void RepairTileToTile(world_t *w, const SwapTable &table);
 
 void LocateKeychains(world_t *w);
 

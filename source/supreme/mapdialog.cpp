@@ -118,10 +118,9 @@ void MapDialogYes(void)
 			// delete the map
 			if(mapNum!=0)	// can't delete the original one
 			{
-				InitSwapTable(world->numMaps);
-				DeleteFromSwapTable(mapNum);
-				RepairLevels();
-				ExitSwapTable();
+				SwapTable table{world->numMaps};
+				table.Delete(mapNum);
+				RepairLevels(table);
 				delete world->map[mapNum];
 				for(i=mapNum+1;i<=world->numMaps-1;i++)
 				{
@@ -325,13 +324,13 @@ byte MapDialogClick(int msx,int msy)
 			{
 				Map *m;
 
-				InitSwapTable(world->numMaps);
+				SwapTable table{world->numMaps};
 				if(mapNum==0)
 				{
 					m=world->map[world->numMaps-1];
 					world->map[world->numMaps-1]=world->map[mapNum];
 					world->map[mapNum]=m;
-					SwapInSwapTable(mapNum,world->numMaps-1);
+					table.Swap(mapNum,world->numMaps-1);
 					mapNum=world->numMaps-1;
 				}
 				else
@@ -339,13 +338,12 @@ byte MapDialogClick(int msx,int msy)
 					m=world->map[mapNum-1];
 					world->map[mapNum-1]=world->map[mapNum];
 					world->map[mapNum]=m;
-					SwapInSwapTable(mapNum,mapNum-1);
+					table.Swap(mapNum,mapNum-1);
 					mapNum--;
 				}
 				mapPos=(mapNum/MAX_MAPSHOW)*MAX_MAPSHOW;
 				EditorSelectMap(mapNum);
-				RepairLevels();
-				ExitSwapTable();
+				RepairLevels(table);
 			}
 		}
 		if(msx>400 && msy>92+17*5 && msx<400+56 && msy<92+17*5+15)
@@ -355,13 +353,13 @@ byte MapDialogClick(int msx,int msy)
 			{
 				Map *m;
 
-				InitSwapTable(world->numMaps);
+				SwapTable table{world->numMaps};
 				if(mapNum==world->numMaps-1)
 				{
 					m=world->map[0];
 					world->map[0]=world->map[mapNum];
 					world->map[mapNum]=m;
-					SwapInSwapTable(mapNum,0);
+					table.Swap(mapNum,0);
 					mapNum=0;
 				}
 				else
@@ -369,13 +367,12 @@ byte MapDialogClick(int msx,int msy)
 					m=world->map[mapNum+1];
 					world->map[mapNum+1]=world->map[mapNum];
 					world->map[mapNum]=m;
-					SwapInSwapTable(mapNum,mapNum+1);
+					table.Swap(mapNum,mapNum+1);
 					mapNum++;
 				}
 				mapPos=(mapNum/MAX_MAPSHOW)*MAX_MAPSHOW;
 				EditorSelectMap(mapNum);
-				RepairLevels();
-				ExitSwapTable();
+				RepairLevels(table);
 			}
 		}
 

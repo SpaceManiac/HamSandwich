@@ -166,13 +166,15 @@ class Map;
 void SlideSpecials(Map *map,int dx,int dy);
 int SlideCoord(int coord,int delta,int max);
 void SlideCombinedCoord(int *combo,int dx,int dy,int width,int height);
+
+class SwapTable;
 void RepairSpecialToItem(special_t *list,int n);	// repair all references to items in
 													// specials when item N is deleted
 void RepairSpecialToSound(special_t *list,int n);	// repair all references to sounds in
 													// specials when sound N is deleted
-void RepairSpecialToLevel(special_t *list);	// repair all references to levels in
+void RepairSpecialToLevel(special_t *list, const SwapTable &table);	// repair all references to levels in
 											// specials when the levels are moved around
-void RepairSpecialToTile(special_t *list);	// repair tile references
+void RepairSpecialToTile(special_t *list, const SwapTable &table);	// repair tile references
 
 byte CheckSpecial(special_t *me);	// returns 0 if the special has no triggers, 1 otherwise
 
