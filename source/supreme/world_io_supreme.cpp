@@ -182,7 +182,7 @@ Map *LoadMap(SDL_RWops *f)
 	SDL_RWread(f,me->song,32,sizeof(char));
 
 	SDL_RWread(f,&count,1,sizeof(byte));	// num badguys
-	memset(me->badguy,0,sizeof(mapBadguy_t)*MAX_MAPMONS);
+	me->badguy.fill({});
 	for (byte i = 0; i < count; ++i)
 	{
 		byte temp;
@@ -455,7 +455,7 @@ static bool SaveMap(SDL_RWops *f, const Map* me)
 		SDL_RWwrite(f, &temp, 1, sizeof(byte));
 		SDL_RWwrite(f, &me->badguy[i].item, 1, sizeof(byte));
 	}
-	SaveSpecials(f, me->special);
+	SaveSpecials(f, span{me->special.data(), me->special.size()});
 
 	SDL_RWwrite(f,&me->flags,1,sizeof(word));
 	SDL_RWwrite(f,&me->numBrains,1,sizeof(word));

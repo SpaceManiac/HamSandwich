@@ -39,8 +39,8 @@ Map::Map(byte width, byte height, const char *name)
 
 	strcpy(song,"");
 	flags=0;
-	memset(badguy,0,sizeof(mapBadguy_t)*MAX_MAPMONS);
-	memset(special,0,sizeof(special_t)*MAX_SPECIAL);
+	badguy.fill({});
+	special.fill({});
 	InitSpecials(special);
 	numBrains=0;
 	numCandles=0;
@@ -60,8 +60,8 @@ Map::Map(const Map *m)
 
 	map=(mapTile_t *)calloc(sizeof(mapTile_t)*width*height,1);
 	memcpy(map,m->map,sizeof(mapTile_t)*width*height);
-	memcpy(badguy,m->badguy,sizeof(mapBadguy_t)*MAX_MAPMONS);
-	memcpy(special,m->special,sizeof(special_t)*MAX_SPECIAL);
+	badguy = m->badguy;
+	special = m->special;
 }
 
 Map::~Map(void)

@@ -14,38 +14,33 @@
 #include "goal.h"
 #include "palettes.h"
 
-static special_t *spcl;
-static byte numSpecials;
+static span<special_t> spcl;  // Full special storage array.
+static int numSpecials;  // Specials >= this aren't set.
 
-void InitSpecials(special_t *list)
+void InitSpecials(span<special_t> list)
 {
-	int i;
-
-	spcl=list;
-	numSpecials=0;
-
-	for(i=0;i<MAX_SPECIAL;i++)
+	spcl = list;
+	numSpecials = 0;
+	for (special_t &me : list)
 	{
-		spcl[i].x=255;
+		me.x = 255;
 	}
 }
 
-void GetSpecialsFromMap(special_t *list)
+void GetSpecialsFromMap(span<special_t> list)
 {
-	int i,j;
-
-	spcl=list;
-	numSpecials=0;
-
-	for(i=0;i<MAX_SPECIAL;i++)
+	spcl = list;
+	numSpecials = 0;
+	for (size_t i = 0; i < spcl.size(); i++)
 	{
-		if(spcl[i].x!=255)
+		special_t &me = spcl[i];
+		if(me.x!=255)
 		{
 			numSpecials=i+1;
-			for(j=0;j<NUM_EFFECTS;j++)
-				if(spcl[i].effect[j].type==EFF_SUMMON && spcl[i].effect[j].value2>ITM_RANDOM)
+			for (effect_t &eff : me.effect)
+				if(eff.type==EFF_SUMMON && eff.value2>ITM_RANDOM)
 				{
-					spcl[i].effect[j].value2=ITM_NONE;
+					eff.value2=ITM_NONE;
 				}
 		}
 	}
@@ -53,9 +48,7 @@ void GetSpecialsFromMap(special_t *list)
 
 int NewSpecial(byte x,byte y)
 {
-	int i;
-
-	for(i=0;i<MAX_SPECIAL;i++)
+	for(int i=0;i<(int)spcl.size();i++)
 		if(spcl[i].x==255)
 		{
 			memset(&spcl[i],0,sizeof(special_t));
@@ -2052,36 +2045,29 @@ void AdjustSpecialEffectCoords(special_t *me,int dx,int dy)
 	}
 }
 
-byte CheckSpecial(special_t *me)
+bool CheckSpecial(const special_t &me)
 {
-	int i;
-	byte numT;
-
-	numT=0;
-	for(i=0;i<NUM_TRIGGERS;i++)
+	for (const trigger_t &trg : me.trigger)
 	{
-		if(me->trigger[i].type)
-			numT++;
+		if (trg.type)
+		{
+			return true;
+		}
 	}
-	if(numT==0)
-		return 0;
-
-	return 1;
+	return false;
 }
 
 void PrintSpecialComment(int x,int y,int mx,int my)
 {
-	int i,j;
-
-	for(i=0;i<MAX_SPECIAL;i++)
+	for (const special_t &me : spcl)
 	{
-		if(spcl[i].x==mx && spcl[i].y==my)
+		if(me.x==mx && me.y==my)
 		{
-			for(j=0;j<NUM_EFFECTS;j++)
+			for (const effect_t &eff : me.effect)
 			{
-				if(spcl[i].effect[j].type==EFF_MESSAGE && spcl[i].effect[j].text[0]=='/' && spcl[i].effect[j].text[1]=='/')
+				if(eff.type==EFF_MESSAGE && eff.text[0]=='/' && eff.text[1]=='/')
 				{
-					Print(x,y,&spcl[i].effect[j].text[2],0,1);
+					Print(x,y,&eff.text[2],0,1);
 				}
 			}
 		}

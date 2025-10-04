@@ -141,8 +141,8 @@ struct special_t
 
 class Guy;
 
-void InitSpecials(special_t *list);
-void GetSpecialsFromMap(special_t *list);
+void InitSpecials(span<special_t> list);
+void GetSpecialsFromMap(span<special_t> list);
 int NewSpecial(byte x,byte y);
 void DefaultTrigger(trigger_t *trig,int x,int y);
 void DefaultEffect(effect_t *eff,int x,int y,byte savetext);
@@ -166,7 +166,7 @@ void RepairSpecialToLevel(span<special_t> list, const SwapTable &table);	// repa
 											// specials when the levels are moved around
 void RepairSpecialToTile(span<special_t> list, const SwapTable &table);	// repair tile references
 
-byte CheckSpecial(special_t *me);	// returns 0 if the special has no triggers, 1 otherwise
+bool CheckSpecial(const special_t &me);	// returns 0 if the special has no triggers, 1 otherwise
 
 void PrintSpecialComment(int x,int y,int mx,int my);
 

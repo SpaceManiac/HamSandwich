@@ -546,7 +546,7 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 			map->numCandles = section.read_varint();
 			map->flags = section.read_varint();
 
-			memset(map->badguy, 0, sizeof(mapBadguy_t) * MAX_MAPMONS);
+			map->badguy.fill({});
 			size_t badguy_count = section.read_varint();
 			for (size_t i = 0; i < badguy_count; ++i)
 				LoadMapMons(&section, &map->badguy[i]);

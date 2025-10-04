@@ -505,7 +505,6 @@ void RenderLevelDialog(int msx,int msy,MGLDraw *mgl)
 
 void LevelDialogYes(void)
 {
-	int i;
 	Map *m;
 	switch(asking)
 	{
@@ -521,7 +520,7 @@ void LevelDialogYes(void)
 				if(guy.type && (guy.x>=m->width || guy.y>=m->height))
 					guy.type=0;	// remove excess badguys
 			}
-			for(i=0;i<MAX_SPECIAL;i++)
+			for(int i=0;i<MAX_SPECIAL;i++)
 			{
 				if(m->special[i].x!=255 && (m->special[i].x>=m->width || m->special[i].y>=m->height))
 				{

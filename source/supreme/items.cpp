@@ -837,12 +837,13 @@ void SetCustomItemSprites(const char* name)
 static void DetectCustomItemSprites(const world_t *world)
 {
 	// extract filename out of first special if possible
-	special_t* special = world->map[0]->special;
-
-	for (int i = 0; i < MAX_SPECIAL; ++i) {
-		for (int j = 0; j < NUM_EFFECTS; ++j) {
-			if (special[i].effect[j].type == EFF_ITEMGRAPHICS) {
-				SetCustomItemSprites(special[i].effect[j].text);
+	for (const special_t &me : world->map[0]->special)
+	{
+		for (const effect_t &eff : me.effect)
+		{
+			if (eff.type == EFF_ITEMGRAPHICS)
+			{
+				SetCustomItemSprites(eff.text);
 				return;
 			}
 		}

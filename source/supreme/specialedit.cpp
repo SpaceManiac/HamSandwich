@@ -189,7 +189,7 @@ static void ExitClick(int id)
 	if(rightClick)
 		return;
 
-	if(!CheckSpecial(&spcl))
+	if(!CheckSpecial(spcl))
 		spcl.x=255;
 	memcpy(GetSpecial(specialNum),&spcl,sizeof(special_t));
 	SetEditMode(EDITMODE_EDIT);
@@ -2551,7 +2551,7 @@ void SpecialEdit_Key(char k)
 			if(k==27)
 			{
 				SetEditMode(EDITMODE_EDIT);
-				if(!CheckSpecial(&spcl))
+				if(!CheckSpecial(spcl))
 					spcl.x=255;
 				memcpy(GetSpecial(specialNum),&spcl,sizeof(special_t));
 				PickedTile(-1);

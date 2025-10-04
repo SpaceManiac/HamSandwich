@@ -1,6 +1,7 @@
 #ifndef MAP_H
 #define MAP_H
 
+#include <array>
 #include "tile.h"
 #include "items.h"
 #include "special.h"
@@ -149,8 +150,8 @@ class Map
 		word numBrains;
 		word numCandles;
 		word itemDrops;	// how often items drop, a fixshifted percent
-		mapBadguy_t badguy[MAX_MAPMONS];
-		special_t   special[MAX_SPECIAL];
+		std::array<mapBadguy_t, MAX_MAPMONS> badguy;
+		std::array<special_t, MAX_SPECIAL> special;
 	private:
 		void LOSPoints(int x,int y,int curx,int cury,int *p1x,int *p1y,int *p2x,int *p2y);
 		void RenderStars(int camX, int camY);

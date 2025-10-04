@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <string>
 #include <string_view>
+#include <array>
 #include <SDL_stdinc.h>
 
 // A variant describing several possible places a string might be written.
@@ -52,6 +53,8 @@ public:
 	// This is the magic that safely constructs a span from a char array.
 	template<size_t N>
 	constexpr span(T (&arr)[N]) noexcept : _data(arr), _size(N) {}
+	template<size_t N>
+	constexpr span(std::array<T, N> &arr) noexcept : _data(arr.data()), _size(N) {}
 	constexpr span(const span& other) noexcept = default;
 	// Real std::span is constructible from std::string but we don't actually want that.
 
