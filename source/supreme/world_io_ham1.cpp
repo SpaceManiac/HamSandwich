@@ -77,8 +77,6 @@ static void SaveSound(hamworld::Section *f, const soundDesc_t *desc, size_t len,
 	f->write_varint(0);  // no extension flags
 }
 
-soundDesc_t *AddCustomSound(byte *, size_t);
-
 static void LoadSound(hamworld::Section *f)
 {
 	std::string name;

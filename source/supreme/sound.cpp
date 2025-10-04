@@ -342,14 +342,13 @@ static soundDesc_t soundInfo[MAX_SOUNDS]={
 	{SND_JACKDIE,"Jack Frost Die",ST_MONSTER},
 };
 
-static int numSounds,numCustom;
+static int numCustom;
 static byte *customSound[MAX_CUSTOM_SOUNDS];
 static int32_t customLength[MAX_CUSTOM_SOUNDS];
 
 void InitSound(void)
 {
 	JamulSoundPurge();
-	numSounds=NUM_ORIG_SOUNDS;
 	memset(customSound,0,sizeof(byte *)*MAX_CUSTOM_SOUNDS);
 	numCustom=0;
 }
@@ -472,23 +471,23 @@ long GetCustomLength(int n)
 	return customLength[n];
 }
 
-byte AddCustomSound(const char *fname)
+bool AddCustomSound(const char *fname)
 {
 	if(numCustom==MAX_CUSTOM_SOUNDS)
-		return 0;
+		return false;
 
 	auto f = AppdataOpen(fname);
 	if(!f)
-		return 0;
+		return false;
 	customLength[numCustom]=SDL_RWsize(f);
 	if(customLength[numCustom]<=0)
 	{
-		return 0;
+		return false;
 	}
 	customSound[numCustom]=(byte *)malloc(customLength[numCustom]);
 	if(!customSound[numCustom])
 	{
-		return 0;
+		return false;
 	}
 	SDL_RWread(f,customSound[numCustom],sizeof(byte),customLength[numCustom]);
 	f.reset();
@@ -506,7 +505,7 @@ byte AddCustomSound(const char *fname)
 	soundInfo[CUSTOM_SND_START+numCustom].theme=ST_CUSTOM;
 
 	numCustom++;
-	return 1;
+	return true;
 }
 
 soundDesc_t *AddCustomSound(byte *data, size_t length)
@@ -523,7 +522,7 @@ soundDesc_t *AddCustomSound(byte *data, size_t length)
 	return &soundInfo[CUSTOM_SND_START + (numCustom++)];
 }
 
-byte ReplaceCustomSound(int n,const char *fname)
+bool ReplaceCustomSound(int n,const char *fname)
 {
 	if(customSound[n])
 		free(customSound[n]);
@@ -531,21 +530,21 @@ byte ReplaceCustomSound(int n,const char *fname)
 
 	auto f = AppdataOpen(fname);
 	if(!f)
-		return 0;
+		return false;
 	customLength[n]=SDL_RWsize(f);
 	if(customLength[n]<=0)
 	{
-		return 0;
+		return false;
 	}
 	customSound[n]=(byte *)malloc(customLength[n]);
 	if(!customSound[n])
 	{
-		return 0;
+		return false;
 	}
 	SDL_RWread(f,customSound[n],sizeof(byte),customLength[n]);
 	f.reset();
 
-	return 1;
+	return true;
 }
 
 void DeleteCustomSound(int n)

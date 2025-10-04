@@ -418,28 +418,33 @@ struct soundDesc_t
 	SoundThemes theme;
 };
 
-void InitSound(void);
-void ExitSound(void);
+void InitSound();
+void ExitSound();
 void MakeSound(int snd,int x,int y,int flags,int priority);
 void MakeNormalSound(int snd);
-soundDesc_t *GetSoundInfo(int snd);
-int GetNumSounds(void);
-byte *GetCustomSound(int n);
-long GetCustomLength(int n);
-void ClearCustomSounds(void);
-byte AddCustomSound(const char *fname);
-int GetNumCustomSounds(void);
-void DeleteCustomSound(int n);
-byte ReplaceCustomSound(int n,const char *fname);
-void LoadCustomSounds(SDL_RWops *f);
-void SaveCustomSounds(SDL_RWops *f);
-
-int DescIndexToSound(int descIndex);
-int SoundToDescIndex(int snd);
-int GetCustomSoundByName(const char *name);
 void MakeSpaceSound(int snd,int priority);
 
+int GetNumSounds();
+soundDesc_t *GetSoundInfo(int snd);
+
+int GetNumCustomSounds();
+int GetCustomSoundByName(const char *name); // Returns global sound number.
+byte *GetCustomSound(int customN);
+long GetCustomLength(int customN);
+
+bool AddCustomSound(const char *fname);
+soundDesc_t *AddCustomSound(byte *, size_t);
+void DeleteCustomSound(int customN);
+bool ReplaceCustomSound(int customN, const char *fname);
+void ClearCustomSounds();
+
+void LoadCustomSounds(SDL_RWops *f);
+void SaveCustomSounds(SDL_RWops *f);
 int AppendCustomSounds(SDL_RWops *f);
+
+// .dlw handling
+int DescIndexToSound(int descIndex);
+int SoundToDescIndex(int snd);
 
 owned::SDL_RWops SoundLoadOverride(int num);
 
