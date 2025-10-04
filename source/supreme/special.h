@@ -3,9 +3,9 @@
 
 #include "mgldraw.h"
 #include <stdio.h>
+#include "string_extras.h"
 
 #define MAX_SPECIAL	250
-#define MAX_EVENT   128
 
 //special triggers
 #define TRG_NONE		0
@@ -141,16 +141,6 @@ struct special_t
 
 class Guy;
 
-struct sEvent_t
-{
-	byte type;
-	int  value;	// guy #, bullet #, var #, item #
-	int  x,y;
-	byte guyType;
-	byte guyFriendly;
-	Guy *victim;
-};
-
 void InitSpecials(special_t *list);
 void GetSpecialsFromMap(special_t *list);
 int NewSpecial(byte x,byte y);
@@ -168,17 +158,15 @@ int SlideCoord(int coord,int delta,int max);
 void SlideCombinedCoord(int *combo,int dx,int dy,int width,int height);
 
 class SwapTable;
-void RepairSpecialToItem(special_t *list,int n);	// repair all references to items in
+void RepairSpecialToItem(span<special_t> list,int n);	// repair all references to items in
 													// specials when item N is deleted
-void RepairSpecialToSound(special_t *list,int n);	// repair all references to sounds in
+void RepairSpecialToSound(span<special_t> list,int n);	// repair all references to sounds in
 													// specials when sound N is deleted
-void RepairSpecialToLevel(special_t *list, const SwapTable &table);	// repair all references to levels in
+void RepairSpecialToLevel(span<special_t> list, const SwapTable &table);	// repair all references to levels in
 											// specials when the levels are moved around
-void RepairSpecialToTile(special_t *list, const SwapTable &table);	// repair tile references
+void RepairSpecialToTile(span<special_t> list, const SwapTable &table);	// repair tile references
 
 byte CheckSpecial(special_t *me);	// returns 0 if the special has no triggers, 1 otherwise
-
-special_t *SpecialPointer(void);
 
 void PrintSpecialComment(int x,int y,int mx,int my);
 
