@@ -125,20 +125,22 @@ void ExitEditor(void)
 
 void Delete(int x,int y)
 {
-	int i;
-
-	if(x<0 || x>editorMap->width-1 || y<0 || y>editorMap->height-1)
+	mapTile_t *tile = editorMap->TryGetTile(x, y);
+	if (!tile)
 		return;
 
-	for(i=0;i<MAX_MAPMONS;i++)
-		if((editorMap->badguy[i].type) && (editorMap->badguy[i].x==x) && (editorMap->badguy[i].y==y))
+	tile->item=0;
+
+	for (mapBadguy_t &guy : editorMap->badguy)
+		if(guy.type && guy.x==x && guy.y==y)
 		{
-			DeleteGuy((x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-				   (y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
-				   editorMap->badguy[i].type);
-			editorMap->badguy[i].type=0;
+			DeleteGuy(
+				(x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
+				(y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
+				guy.type
+			);
+			guy.type=0;
 		}
-	editorMap->GetTile(x,y)->item=0;
 
 	for (special_t &special : editorMap->special)
 		if(special.x==x && special.y==y)

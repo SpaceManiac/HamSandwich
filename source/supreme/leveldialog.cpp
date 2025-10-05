@@ -360,18 +360,7 @@ void LevelDialogButtons(void)
 
 byte ZoomTileColor(int x,int y)
 {
-	mapTile_t *m;
-	int i;
-
-	m = world->map[mapNum]->GetTile(x, y);
-
-	for(i=0;i<MAX_MAPMONS;i++)
-		if(world->map[mapNum]->badguy[i].type &&
-			world->map[mapNum]->badguy[i].x==x &&
-			world->map[mapNum]->badguy[i].y==y)
-		{
-			return (4*32)+20;	// red=badguy
-		}
+	mapTile_t *m = world->map[mapNum]->GetTile(x, y);
 
 	if(GetItem(m->item)->flags&IF_SOLID)
 	{
@@ -403,14 +392,20 @@ byte ZoomTileColor(int x,int y)
 
 void RenderZoomMap(void)
 {
-	int i,j;
-
 	memset(mapZoom,0,MAX_MAPSIZE*MAX_MAPSIZE);
-	for(i=0;i<world->map[mapNum]->width;i++)
+	for(int i=0;i<world->map[mapNum]->width;i++)
 	{
-		for(j=0;j<world->map[mapNum]->height;j++)
+		for(int j=0;j<world->map[mapNum]->height;j++)
 		{
 			mapZoom[i+j*MAX_MAPSIZE]=ZoomTileColor(i,j);
+		}
+	}
+
+	for (const mapBadguy_t &guy : world->map[mapNum]->badguy)
+	{
+		if(guy.type)
+		{
+			mapZoom[guy.x+guy.y*MAX_MAPSIZE]=(4*32)+20;	// red=badguy
 		}
 	}
 }

@@ -163,21 +163,18 @@ void ItemTool::StartPlop(void)
 
 void ItemTool::PlopOne(int x,int y)
 {
-	Map *m;
-	int i;
-
-	m=EditorGetMap();
+	Map *m = EditorGetMap();
 
 	if (mapTile_t *target = m->TryGetTile(x, y); target && target->select && item[active]<256)//		m->map[x+y*m->width].wall==0)
 	{
 		target->item=(byte)item[active];
 		if(GetItem(item[active])->flags&IF_SOLID)
 		{
-			for(i=0;i<MAX_MAPMONS;i++)
-				if((m->badguy[i].type) && (m->badguy[i].x==x) && (m->badguy[i].y==y))
+			for (mapBadguy_t &guy : m->badguy)
+				if(guy.type && guy.x==x && guy.y==y)
 				{
 					// delete a guy if he's here - this item is solid
-					m->badguy[i].type=0;
+					guy.type=0;
 				}
 		}
 	}

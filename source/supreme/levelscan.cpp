@@ -512,11 +512,11 @@ byte Scan_Level(world_t *world,Map *map)
 	for(i=0;i<NUM_MONSTERS;i++)
 		itemCount[i]=0;
 
-	for(i=0;i<MAX_MAPMONS;i++)
+	for (const mapBadguy_t &guy : map->badguy)
 	{
-		if(map->badguy[i].type)
+		if(guy.type)
 		{
-			itemCount[map->badguy[i].type]++;
+			itemCount[guy.type]++;
 			totalMons++;
 		}
 	}
@@ -530,11 +530,11 @@ byte Scan_Level(world_t *world,Map *map)
 
 	totalMons=0;
 	memset(itemCount,0,MAX_ITEMS*sizeof(word));
-	for(i=0;i<map->width*map->height;i++)
+	for (const mapTile_t &tile : map->Tiles())
 	{
-		if(map->map[i].item!=ITM_NONE)
+		if(tile.item!=ITM_NONE)
 		{
-			itemCount[map->map[i].item]++;
+			itemCount[tile.item]++;
 			totalMons++;
 		}
 	}
@@ -822,9 +822,8 @@ byte Scan_Vars(world_t *world)
 		}
 
 		// find var change items held by monsters
-		for(int j=0;j<MAX_MAPMONS;j++)
+		for (const mapBadguy_t &guy : map->badguy)
 		{
-			const mapBadguy_t &guy = map->badguy[j];
 			if(guy.type!=MONS_NONE && GetItem(guy.item)!=NULL &&
 				(GetItem(guy.item)->effect==IE_INCVAR ||
 				GetItem(guy.item)->effect==IE_DECVAR))

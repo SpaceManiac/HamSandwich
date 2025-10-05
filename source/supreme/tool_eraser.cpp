@@ -128,11 +128,9 @@ void EraserTool::PlopOne(int x,int y)
 			target->item=0;
 		if(eraseFlag&EF_BADGUY)
 		{
-			int i;
-
-			for(i=0;i<MAX_MAPMONS;i++)
-				if((m->badguy[i].type) && (m->badguy[i].x==x) && (m->badguy[i].y==y))
-					m->badguy[i].type=0;
+			for (mapBadguy_t &guy : m->badguy)
+				if(guy.type && guy.x==x && guy.y==y)
+					guy.type=0;
 		}
 		if(eraseFlag&EF_SPECIAL)
 		{

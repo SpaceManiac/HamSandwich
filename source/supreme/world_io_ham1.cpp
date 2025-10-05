@@ -416,23 +416,23 @@ byte Ham_SaveWorld(const world_t* world, const char *fname)
 
 		// badguys
 		size_t badguy_count = 0;
-		for (size_t i = 0; i < MAX_MAPMONS; ++i)
-			if (map->badguy[i].type)
+		for (const mapBadguy_t &guy : map->badguy)
+			if (guy.type)
 				++badguy_count;
 		mapsec.write_varint(badguy_count);
-		for (size_t i = 0; i < MAX_MAPMONS; ++i)
-			if (map->badguy[i].type)
-				SaveMapMons(&mapsec, &map->badguy[i]);
+		for (const mapBadguy_t &guy : map->badguy)
+			if (guy.type)
+				SaveMapMons(&mapsec, &guy);
 
 		// specials
 		size_t special_count = 0;
-		for (size_t i = 0; i < MAX_SPECIAL; ++i)
-			if (map->special[i].x != 255)
+		for (const special_t &spcl : map->special)
+			if (spcl.x != 255)
 				++special_count;
 		mapsec.write_varint(special_count);
-		for (size_t i = 0; i < MAX_SPECIAL; ++i)
-			if (map->special[i].x != 255)
-				SaveMapSpecial(&mapsec, &map->special[i]);
+		for (const special_t &spcl : map->special)
+			if (spcl.x != 255)
+				SaveMapSpecial(&mapsec, &spcl);
 
 		// map data
 		SaveMapData(&mapsec, map);
