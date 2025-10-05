@@ -1,4 +1,11 @@
-int pickupX,pickupY;
+#include "winpch.h"
+#include "monsterai.h"
+#include "guy.h"
+#include "sound.h"
+#include "bullet.h"
+#include "player.h"
+
+static int pickupX, pickupY;
 
 void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
@@ -928,8 +935,8 @@ void AI_MattieSkullOrHead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				ham_strcpy(me->name,MonsterName(me->type));
 				if(!me->friendly)
 					player.enemiesSlain--;
-				me->hp=monsType[MONS_MATSKULL].hp;
-				me->maxHP=monsType[MONS_MATSKULL].hp;
+				me->hp=MonsterHP(MONS_MATSKULL);
+				me->maxHP=me->hp;
 			}
 			else
 			{
@@ -938,8 +945,8 @@ void AI_MattieSkullOrHead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				ham_strcpy(me->name,MonsterName(me->type));
 				if(!me->friendly)
 					player.enemiesSlain--;
-				me->hp=monsType[MONS_MATBRAIN].hp;
-				me->maxHP=monsType[MONS_MATBRAIN].hp;
+				me->hp=MonsterHP(MONS_MATBRAIN);
+				me->maxHP=me->hp;
 			}
 			me->seq=ANIM_IDLE;
 			me->frm=0;
@@ -2389,7 +2396,7 @@ void AI_ThingTentacle(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				FlailLock(g);
 				g=g->parent;
 			}
-			if(me->parent->aiType==MONS_THINGTENT)
+			if(me->parent && me->parent->aiType==MONS_THINGTENT)
 			{
 				me->x=me->parent->x+Cosine(me->parent->facing*16)*64;
 				me->y=me->parent->y+Sine(me->parent->facing*16)*44;
@@ -5149,7 +5156,7 @@ void AI_DrLunatic(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			player.enemiesSlain--;
 			me->type=MONS_SDZL;	// become the Super Duper Zombie Lunatic
 			me->aiType=MONS_SDZL;
-			ham_strcpy(me->name,monsType[me->type].name);
+			ham_strcpy(me->name,MonsterName(me->type));
 			me->hp=1000;
 			me->maxHP=1000;
 			me->mind=0;

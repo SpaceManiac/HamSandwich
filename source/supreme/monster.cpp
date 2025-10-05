@@ -13,7 +13,7 @@
  -MT_ANIMAL	 -MT_HUMAN		 -MT_URBAN		-MT_AQUATIC	 -MT_UNDERSEA
  -MT_FLYING  -MT_HIGHTECH	 -MT_BITS
 */
-extern monsterType_t monsType[NUM_MONSTERS]; // see monsterlist.cpp
+extern MonsterType monsType[NUM_MONSTERS]; // see monsterlist.cpp
 
 void InitMonsters(void)
 {
@@ -88,7 +88,7 @@ const byte *MonsterAnim(dword type,byte anim)
 	return monsType[type].anim[anim];
 }
 
-word MonsterFlags(dword type,byte aiType)
+word MonsterFlags(dword type,dword aiType)
 {
 	if(aiType==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
 		return monsType[MONS_PWRBOUAPHA].flags;
@@ -97,7 +97,7 @@ word MonsterFlags(dword type,byte aiType)
 	return monsType[type].flags;
 }
 
-byte MonsterFrames(dword type,byte aiType)
+byte MonsterFrames(dword type,dword aiType)
 {
 	if(aiType==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
 		return monsType[MONS_PWRBOUAPHA].framesPerDir;
@@ -460,7 +460,7 @@ dword MonsterTheme(dword type)
 // AI auxiliary functions to make it simple
 //---------------------------------------------
 
-inline void FaceGoodguy(Guy *me,Guy *goodguy)
+void FaceGoodguy(Guy *me,Guy *goodguy)
 {
 	if(goodguy->x<me->x-FIXAMT*16)
 	{
@@ -496,7 +496,7 @@ int RangeToTarget(Guy *me,Guy *goodguy)
 
 // this version doesn't insta-face, it rotates toward the right facing, and it has much
 // more leeway than the 16 pixels of the other (it's for bigger creatures)
-inline void FaceGoodguy2(Guy *me,Guy *goodguy)
+void FaceGoodguy2(Guy *me,Guy *goodguy)
 {
 	int desired;
 	int diff,dir;
@@ -553,7 +553,7 @@ inline void FaceGoodguy2(Guy *me,Guy *goodguy)
 	me->facing=(me->facing+dir)&7;
 }
 
-inline void FaceGoodguy3(Guy *me,Guy *goodguy)
+void FaceGoodguy3(Guy *me,Guy *goodguy)
 {
 	int desired;
 	int diff,dir;
@@ -677,11 +677,3 @@ void FlailLock(Guy *me)
 		me->facing=(parentangle+dir*2)&15;
 	}
 }
-
-// here be the AIs for each monster type
-//--------------------------------------------------------------------------------------
-
-#include "monsterai1.inl"
-#include "monsterai2.inl"
-#include "monsterai3.inl"
-#include "monsterai4.inl"

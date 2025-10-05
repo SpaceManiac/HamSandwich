@@ -1,3 +1,10 @@
+#include "winpch.h"
+#include "monsterai.h"
+#include "guy.h"
+#include "world.h"
+#include "player.h"
+#include "editor.h"
+
 void AI_MineCart(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
@@ -379,7 +386,6 @@ void AI_Raft(Guy *me,Map *map,world_t *world,Guy *goodguy)
 void AI_Vampire(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
-	dword d;
 
 	if(me->reload)
 		me->reload--;
@@ -389,10 +395,7 @@ void AI_Vampire(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		// get burned by the light!
 		if(map->GetTile(me->mapx,me->mapy)->light>0 && me->ouch==0 && me->hp>0)
 		{
-			d=monsType[me->type].flags;
-			monsType[me->type].flags=0;
-			me->GetShot(0,0,map->GetTile(me->mapx,me->mapy)->light,map,world);
-			monsType[me->type].flags=d;
+			me->GetShot(0,0,map->GetTile(me->mapx,me->mapy)->light,map,world, /* bypassInvincible */ true);
 			BlowSmoke(me->x,me->y,FIXAMT*10,Random(6)*FIXAMT);
 			BlowSmoke(me->x,me->y,FIXAMT*10,Random(6)*FIXAMT);
 			BlowSmoke(me->x,me->y,FIXAMT*10,Random(6)*FIXAMT);

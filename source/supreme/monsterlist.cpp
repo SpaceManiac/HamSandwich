@@ -1,7 +1,8 @@
 #include "monster.h"
+#include "monsterai.h"
 
 #define MT_WEIRD MT_BITS
-monsterType_t monsType[NUM_MONSTERS]=
+MonsterType monsType[NUM_MONSTERS]=
 	{
 		{"Null",255,255,0,NULL,
 		 0,0,0,0,"",0,0,0,{}},

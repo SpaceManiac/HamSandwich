@@ -1,3 +1,13 @@
+#include "winpch.h"
+#include "monsterai.h"
+#include "guy.h"
+#include "sound.h"
+#include "bullet.h"
+#include "player.h"
+#include "editor.h"
+#include "shop.h"
+#include "goal.h"
+
 void AI_Lazybones(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
@@ -339,7 +349,7 @@ void AI_Crazypants(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			if(!me->friendly)
 				player.enemiesSlain--;
-			me->hp=monsType[me->type].hp;
+			me->hp=MonsterHP(me->type);
 			me->mind++;
 			me->seq=ANIM_A2;
 			me->frm=0;

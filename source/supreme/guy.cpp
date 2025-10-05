@@ -914,12 +914,9 @@ void Guy::MonsterControl(Map *map,world_t *world)
 		aiFunc(this,map,world,target);
 }
 
-void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
+void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypassInvincible)
 {
 	int formerHP,newHP;
-	byte t;
-
-	t=type;
 
 	if(hp==0)
 		return;	// can't shoot a dead guy
@@ -930,7 +927,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 	if(aiType==MONS_BOUAPHA && PlayerShield())
 		return; // invincible when shielded
 
-	if(MonsterFlags(type,aiType)&MF_INVINCIBLE)
+	if(!bypassInvincible && (MonsterFlags(type,aiType)&MF_INVINCIBLE))
 		return;	// invincible
 
 	if(aiType==MONS_BOUAPHA && frozen)

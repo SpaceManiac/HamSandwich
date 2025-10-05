@@ -1,3 +1,9 @@
+#include "winpch.h"
+#include "monsterai.h"
+#include "guy.h"
+#include "sound.h"
+#include "bullet.h"
+#include "player.h"
 
 void AI_GoodTurret(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
@@ -129,8 +135,8 @@ void AI_Mattie2SkullOrHead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				ham_strcpy(me->name,MonsterName(me->type));
 				if(!me->friendly)
 					player.enemiesSlain--;
-				me->hp=monsType[MONS_MAT2SKULL].hp;
-				me->maxHP=monsType[MONS_MAT2SKULL].hp;
+				me->hp=MonsterHP(MONS_MAT2SKULL);
+				me->maxHP=me->hp;
 			}
 			else
 			{
@@ -139,8 +145,8 @@ void AI_Mattie2SkullOrHead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				ham_strcpy(me->name,MonsterName(me->type));
 				if(!me->friendly)
 					player.enemiesSlain--;
-				me->hp=monsType[MONS_MAT2BRAIN].hp;
-				me->maxHP=monsType[MONS_MAT2BRAIN].hp;
+				me->hp=MonsterHP(MONS_MAT2BRAIN);
+				me->maxHP=me->hp;
 			}
 			me->seq=ANIM_IDLE;
 			me->frm=0;
@@ -2348,7 +2354,7 @@ void AI_CrazyBone(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			if(me->friendly==0)
 				player.enemiesSlain--;
 			me->seq=ANIM_A3;
-			me->hp=monsType[me->type].hp;
+			me->hp=MonsterHP(me->type);
 			if(!me->CanWalk(me->x,me->y,map,world))
 			{
 				// nevermind if there's no room
