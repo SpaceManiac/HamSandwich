@@ -416,8 +416,16 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 	c=mgl->LastKeyPressed();
 	if(c==27)
 	{
+		// ESC = Exit
 		MakeNormalSound(SND_MENUSELECT);
 		cursor=4;
+		CO_RETURN 1;
+	}
+	else if (c == 'e')
+	{
+		// e = Editor
+		MakeNormalSound(SND_MENUSELECT);
+		cursor = 7;
 		CO_RETURN 1;
 	}
 
