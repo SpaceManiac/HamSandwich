@@ -336,10 +336,10 @@ void LocateKeychains(world_t *w)
 
 terrain_t *GetTerrain(world_t *w,word tile)
 {
-	static terrain_t tmp={0,0};
-
-	if(tile>799)
-		return &tmp;
-	else
+	if (tile < NUMTILES)
 		return &w->terrain[tile];
+
+	static terrain_t fake;
+	fake = {0, 0};
+	return &fake;
 }
