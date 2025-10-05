@@ -1453,7 +1453,7 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 					if(profile.progress.loonyKeysUsed>profile.progress.loonyKeys)
 						profile.progress.loonyKeysUsed=profile.progress.loonyKeys;
 				}
-				player.worldProg->keychains&=(!KC_LOONY);
+				player.worldProg->keychains&=(~KC_LOONY);
 			}
 			return 1;
 			break;
