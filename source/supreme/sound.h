@@ -6,6 +6,7 @@
 #include "jamultypes.h"
 #include "owned_sdl.h"
 #include "bitflags.h"
+#include "string_extras.h"
 
 #define SND_NONE		0
 #define SND_MENUCLICK	51
@@ -429,8 +430,7 @@ soundDesc_t *GetSoundInfo(int snd);
 
 int GetNumCustomSounds();
 int GetCustomSoundByName(const char *name); // Returns global sound number.
-byte *GetCustomSound(int customN);
-long GetCustomLength(int customN);
+span<const byte> GetCustomSound(int customN);
 
 bool AddCustomSound(const char *fname);
 soundDesc_t *AddCustomSound(byte *, size_t);

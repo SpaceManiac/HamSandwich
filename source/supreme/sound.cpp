@@ -344,7 +344,7 @@ static soundDesc_t soundInfo[MAX_SOUNDS]={
 
 static int numCustom;
 static byte *customSound[MAX_CUSTOM_SOUNDS];
-static int32_t customLength[MAX_CUSTOM_SOUNDS];
+static uint32_t customLength[MAX_CUSTOM_SOUNDS];
 
 void InitSound(void)
 {
@@ -461,14 +461,9 @@ int GetNumCustomSounds(void)
 	return numCustom;
 }
 
-byte *GetCustomSound(int n)
+span<const byte> GetCustomSound(int n)
 {
-	return customSound[n];
-}
-
-long GetCustomLength(int n)
-{
-	return customLength[n];
+	return {customSound[n], customLength[n]};
 }
 
 bool AddCustomSound(const char *fname)
@@ -646,14 +641,13 @@ void MakeSpaceSound(int snd,int priority)
 
 owned::SDL_RWops SoundLoadOverride(int num)
 {
-	if (num >= CUSTOM_SND_START && num < CUSTOM_SND_START+GetNumCustomSounds())
+	if (num >= CUSTOM_SND_START && num < CUSTOM_SND_START + GetNumCustomSounds())
 	{
-		byte* buf = GetCustomSound(num - CUSTOM_SND_START);
-		if (!buf)
-			return nullptr;
-
-		return owned::SDL_RWFromConstMem(buf, GetCustomLength(num - CUSTOM_SND_START));
+		span<const byte> buf = GetCustomSound(num - CUSTOM_SND_START);
+		if (!buf.empty())
+		{
+			return owned::SDL_RWFromConstMem(buf.data(), buf.size());
+		}
 	}
-
 	return nullptr;
 }

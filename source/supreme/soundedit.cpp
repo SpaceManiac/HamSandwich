@@ -484,9 +484,10 @@ void SoundEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 			for(int i=0;i<sndsInList-sndStart;i++)
 			{
 				int num = sndList[i + sndStart];
-				if (num >= CUSTOM_SND_START && GetCustomLength(num - CUSTOM_SND_START) > 0)
+				if (num >= CUSTOM_SND_START)
 				{
-					if (GetCustomSound(num - CUSTOM_SND_START)[0] == 'O')
+					span<const byte> data = GetCustomSound(num - CUSTOM_SND_START);
+					if (!data.empty() && data[0] == 'O')
 					{
 						DrawFillBox(x,y,x+156,y+16,3+32*3);
 					}

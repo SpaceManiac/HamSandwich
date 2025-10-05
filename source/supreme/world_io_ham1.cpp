@@ -69,11 +69,11 @@ static void LoadItem(hamworld::Section *f, item_t *item)
 	f->read_varint();  // ignore extension flags
 }
 
-static void SaveSound(hamworld::Section *f, const soundDesc_t *desc, size_t len, const byte *data)
+static void SaveSound(hamworld::Section *f, const soundDesc_t *desc, span<const byte> data)
 {
 	f->write_string(desc->name);
 	f->write_varint(desc->theme);
-	f->write_string({ (char*) data, len });
+	f->write_string({(const char*)data.data(), data.size()});
 	f->write_varint(0);  // no extension flags
 }
 
@@ -379,8 +379,7 @@ byte Ham_SaveWorld(const world_t* world, const char *fname)
 	for (int i = 0; i < GetNumCustomSounds(); ++i)
 	{
 		sound_definitions.write_string("");  // savename not yet implemented
-		SaveSound(&sound_definitions, GetSoundInfo(CUSTOM_SND_START + i),
-			GetCustomLength(i), GetCustomSound(i));
+		SaveSound(&sound_definitions, GetSoundInfo(CUSTOM_SND_START + i), GetCustomSound(i));
 	}
 
 	hamworld::Section rle_tilegfx;
