@@ -375,12 +375,12 @@ void DefaultProfile(const char *name)
 
 void DefaultLevelProgress(levelData_t *me,byte levelNum)
 {
-	me->flags=0;
 	me->levelNum=levelNum;
+	me->flags={};
 	me->percentage=0;
-	me->recordBaseScore=0;
 	me->recordCombo=0;
 	me->recordDestroy=0;
+	me->recordBaseScore=0;
 }
 
 levelData_t *GetLevelProgress(const char *fname,byte levelNum)
@@ -412,20 +412,16 @@ levelData_t *GetLevelProgress(const char *fname,byte levelNum)
 
 void DefaultWorldProgress(worldData_t *me,const char *fname)
 {
-	int i;
-
 	if(me->level)
 		free(me->level);
 
 	ham_strcpy(me->filename,fname);
-	me->keychains=0;
+	memset(me->var, 0, sizeof(me->var));
+	me->keychains={};
 	me->percentage=0;
 	me->levelOn=0;
-	me->level=NULL;
 	me->levels=0;
-
-	for(i=0;i<8;i++)
-		me->var[i]=0;
+	me->level=nullptr;
 }
 
 void ClearTestProgress(void)

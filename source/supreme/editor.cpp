@@ -39,7 +39,7 @@ namespace
 	byte viewMenu, editMenu;
 
 	byte musicPlaying;
-	word displayFlags;
+	MapRenderFlags displayFlags;
 
 	byte editMode = EDITMODE_EDIT;
 
@@ -90,7 +90,7 @@ byte InitEditor(void)
 		MAP_SHOWSPECIALS |
 		MAP_SHOWPICKUPS |
 		MAP_SHOWOTHERITEMS |
-		(zoom == 1 ? 0 : MAP_ZOOMOUT);
+		(zoom == 1 ? MapRenderFlags{} : MAP_ZOOMOUT);
 
 	InitSpecials(world.map[0]->special);
 	StopSong();
@@ -1175,7 +1175,7 @@ word GetDisplayFlags(void)
 	return displayFlags;
 }
 
-void ToggleDisplayFlag(word f)
+void ToggleDisplayFlag(MapRenderFlags f)
 {
 	displayFlags ^= f;
 	zoom = (displayFlags & MAP_ZOOMOUT) ? 2 : 1;

@@ -108,7 +108,7 @@ static void ConvertToNewWorld(world_t *world)
 	memset(world->terrain,0,sizeof(terrain_t)*400);
 	for(i=0;i<200;i++)
 	{
-		world->terrain[i].flags=oldWorld->terrain[i].flags;
+		world->terrain[i].flags=(TileFlags)oldWorld->terrain[i].flags;
 		world->terrain[i].next=(word)oldWorld->terrain[i].next;
 	}
 
@@ -188,7 +188,7 @@ static void AddTrigger(word flag,byte trigValue,special_t *me,char *msg,byte orI
 		{
 			me->trigger[i].x=me->x;
 			me->trigger[i].y=me->y;
-			me->trigger[i].flags=0;
+			me->trigger[i].flags={};
 			me->trigger[i].value=0;
 			me->trigger[i].value2=0;
 			if(i>0)
@@ -245,7 +245,7 @@ static void AddTrigger(word flag,byte trigValue,special_t *me,char *msg,byte orI
 					break;
 				case 512:	// message
 					me->effect[1].type=EFF_MESSAGE;
-					me->effect[1].flags=0;
+					me->effect[1].flags={};
 					strcpy(me->effect[1].text,msg);
 					break;
 				case 1024:	// TRG_CHAIN
@@ -381,7 +381,7 @@ static void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 		me->trigger[i].x=0;
 		me->trigger[i].y=0;
 		me->trigger[i].type=TRG_NONE;
-		me->trigger[i].flags=0;
+		me->trigger[i].flags={};
 		me->trigger[i].value=0;
 		me->trigger[i].value2=0;
 	}
@@ -390,9 +390,9 @@ static void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 		me->effect[i].x=0;
 		me->effect[i].y=0;
 		me->effect[i].type=EFF_NONE;
-		me->effect[i].flags=EFF_NONE;
-		me->effect[i].value=EFF_NONE;
-		me->effect[i].value2=EFF_NONE;
+		me->effect[i].flags={};
+		me->effect[i].value=0;
+		me->effect[i].value2=0;
 	}
 
 	me->uses=1;
@@ -419,7 +419,7 @@ static void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 
 	me->effect[0].x=old->effectX;
 	me->effect[0].y=old->effectY;
-	me->effect[0].flags=0;
+	me->effect[0].flags={};
 	me->effect[0].type=EFF_NONE;
 	me->effect[0].value=0;
 	me->effect[0].value2=0;
@@ -590,7 +590,7 @@ Map *ConvertToNewMap(old_map_t *old)
 	else
 		strcpy(m->song,"");
 
-	m->flags=0;
+	m->flags={};
 	if(old->flags&1)	// snowing
 		m->flags|=MAP_SNOWING;
 	if(old->flags&2)	// many items

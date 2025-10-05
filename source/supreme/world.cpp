@@ -340,6 +340,6 @@ terrain_t *GetTerrain(world_t *w,word tile)
 		return &w->terrain[tile];
 
 	static terrain_t fake;
-	fake = {0, 0};
+	fake = {{}, 0};
 	return &fake;
 }

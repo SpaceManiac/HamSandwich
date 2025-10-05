@@ -29,8 +29,8 @@ static world_t *world;
 static word curSound;
 static byte helpRemember;
 
-static const dword themes[] = {
-	0,
+static const SoundThemes themes[] = {
+	{},
 	ST_INTFACE,
 	ST_PLAYER,
 	ST_MONSTER,
@@ -48,7 +48,7 @@ static const char * const themeNames[] = {
 	"Custom Sounds",
 };
 static constexpr int NUM_THEMES = std::min(std::size(themes), std::size(themeNames));
-static dword curTheme;
+static SoundThemes curTheme;
 
 static word sndList[512];
 static word sndsInList,sndStart,sndsShown;
@@ -232,7 +232,7 @@ static void MakeSoundList(void)
 static void SetThemeRadio()
 {
 	for (int i = 0; i < NUM_THEMES; ++i)
-		SetButtonState(ID_PICKTHEME + i, (themes[i] == 0 ? curTheme == 0 : (curTheme & themes[i])) ? CHECK_ON : CHECK_OFF);
+		SetButtonState(ID_PICKTHEME + i, (themes[i] == 0 ? curTheme == 0 : bool(curTheme & themes[i])) ? CHECK_ON : CHECK_OFF);
 }
 
 static void PickThemeClick(int id)

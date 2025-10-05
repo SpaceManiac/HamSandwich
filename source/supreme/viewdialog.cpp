@@ -34,7 +34,7 @@ void ViewDialogButtons(void);
 
 static void ViewItemClick(int id)
 {
-	word flagNum[] = {
+	static const MapRenderFlags flagNum[] = {
 		MAP_SHOWWALLS, MAP_SHOWLIGHTS, MAP_SHOWBADGUYS,
 		MAP_SHOWSPECIALS, MAP_SHOWPICKUPS, MAP_SHOWOTHERITEMS, MAP_TEMPTORCH,
 		MAP_ZOOMOUT,

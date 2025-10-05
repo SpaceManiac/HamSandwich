@@ -11,7 +11,7 @@
 static constexpr int MAX_FILES = 18;
 
 static char newfname[FNAMELEN]="";
-static word menuItems;
+static FileDialogFlags menuItems;
 static int filePos;
 static byte asking,yesNo;
 static char question[64];
@@ -61,9 +61,9 @@ static void SortFilenames(void)
 	}
 }
 
-void FindFilename(const char *str);
+static void FindFilename(const char *str);
 
-void InitFileDialog(const char *dir, const char *ext, word menuItemsToShow,const char *defaultName)
+void InitFileDialog(const char *dir, const char *ext, FileDialogFlags menuItemsToShow,const char *defaultName)
 {
 	menuItems=menuItemsToShow;
 	asking=0;

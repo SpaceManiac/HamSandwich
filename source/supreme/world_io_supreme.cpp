@@ -37,7 +37,7 @@ struct io_terrain_t
 
 static terrain_t LoadOneTerrain(io_terrain_t io_terrain)
 {
-	terrain_t r = { io_terrain.flags, static_cast<word>(io_terrain.next & 0x3ff) };
+	terrain_t r = { (TileFlags)io_terrain.flags, static_cast<word>(io_terrain.next & 0x3ff) };
 	if (io_terrain.next & (1 << 15))
 		r.flags |= TF_SHADOWLESS;
 	return r;

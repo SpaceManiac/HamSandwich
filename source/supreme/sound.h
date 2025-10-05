@@ -5,6 +5,7 @@
 #include "jamulsound.h"
 #include "jamultypes.h"
 #include "owned_sdl.h"
+#include "bitflags.h"
 
 #define SND_NONE		0
 #define SND_MENUCLICK	51
@@ -399,18 +400,22 @@
 
 //--------------------------------
 
-#define ST_INTFACE		1
-#define ST_PLAYER		2
-#define ST_MONSTER		4
-#define ST_EFFECT		8
-#define ST_VOCAL		16
-#define ST_CUSTOM		32
+enum SoundThemes : byte
+{
+	ST_INTFACE = 1 << 0,
+	ST_PLAYER  = 1 << 1,
+	ST_MONSTER = 1 << 2,
+	ST_EFFECT  = 1 << 3,
+	ST_VOCAL   = 1 << 4,
+	ST_CUSTOM  = 1 << 5,
+};
+BITFLAGS(SoundThemes)
 
 struct soundDesc_t
 {
 	word num;
 	char name[32];
-	byte theme;
+	SoundThemes theme;
 };
 
 void InitSound(void);

@@ -15,8 +15,15 @@
 
 word moneyAmts[11]={25,75,1500,5000,2222,250,17,300,2,716,42};
 
-static const shopItem_t shop[NUMSHOPITEMS]={
+struct ShopItem
+{
+	byte shop;
+	word cost;
+	byte type;
+	byte item;	// which # of the items of "type" it is
+};
 
+static const ShopItem shop[NUMSHOPITEMS]={
 	// bones, bats, and beyond
 	{SHOP_SPOOKY,
 	 400,
@@ -1098,7 +1105,7 @@ void DefaultShopAvailability(void)
 	for(i=0;i<NUMSHOPITEMS;i++)
 	{
 		if(shop[i].type==SHOP_CHEAT || shop[i].type==SHOP_DONATION)
-			profile.progress.purchase[i]=0;	// not available!
+			profile.progress.purchase[i]={};	// not available!
 		else
 			profile.progress.purchase[i]=SIF_AVAILABLE;
 

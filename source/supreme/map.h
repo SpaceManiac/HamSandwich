@@ -6,6 +6,7 @@
 #include "items.h"
 #include "special.h"
 #include "string_extras.h"
+#include "bitflags.h"
 
 constexpr int MAX_LIGHT = 16;
 constexpr int MIN_LIGHT = -32;
@@ -17,7 +18,7 @@ constexpr int MAX_MAPMONS = 128;
 constexpr int MAX_MAPSIZE = 200;
 
 // Flags for calling map render.
-enum : word
+enum MapRenderFlags : word
 {
 	MAP_SHOWLIGHTS      = 1 << 0,
 	MAP_SHOWWALLS       = 1 << 1,
@@ -29,11 +30,12 @@ enum : word
 	MAP_TEMPTORCH       = 1 << 7,
 	MAP_ZOOMOUT         = 1 << 8,
 };
+BITFLAGS(MapRenderFlags)
 
-constexpr word MAP_SHOWITEMS = MAP_SHOWPICKUPS | MAP_SHOWOTHERITEMS;  // combine them in one
+constexpr MapRenderFlags MAP_SHOWITEMS = MAP_SHOWPICKUPS | MAP_SHOWOTHERITEMS;  // combine them in one
 
 // Map flags. SERIALIZED.
-enum : word
+enum LevelFlags : word
 {
 	MAP_SNOWING     = 1 << 0,
 	MAP_RAIN        = 1 << 1,
@@ -48,6 +50,7 @@ enum : word
 	MAP_WAVY        = 1 << 10,
 	MAP_OXYGEN      = 1 << 11,
 };
+BITFLAGS(LevelFlags)
 constexpr int NUM_LVL_FLAGS = 12;
 const char* MapFlagName(int flagIndex);  // expects 0, 1, 2, 3, not the constants above
 
@@ -91,8 +94,8 @@ class Map
 		~Map(void);
 
 		void Init(world_t *wrld);
-		void Render(world_t *world,int camX,int camY,byte flags);
-		void RenderSelect(world_t *world,int camX,int camY,byte flags);
+		void Render(world_t *world,int camX,int camY,MapRenderFlags flags);
+		void RenderSelect(world_t *world,int camX,int camY,MapRenderFlags flags);
 
 		byte DropItem(int x,int y,byte itm);
 		void PermaTorch(int x,int y,char brt);
@@ -146,7 +149,7 @@ class Map
 		mapTile_t *map;
 		char name[32];
 		char song[32];
-		word flags;
+		LevelFlags flags;
 		word numBrains;
 		word numCandles;
 		word itemDrops;	// how often items drop, a fixshifted percent

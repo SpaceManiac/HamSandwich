@@ -1,8 +1,9 @@
 #ifndef ITEMS_H
 #define ITEMS_H
 
-#include "jamulspr.h"
 #include <stdio.h>
+#include "jamulspr.h"
+#include "bitflags.h"
 
 #define ITM_NONE	 0
 #define ITM_HAMMERUP 1
@@ -168,46 +169,58 @@
 #define ITM_RANDOM	255		// the item number for random item drops
 
 // item flags
-#define IF_SHADOW      (1<<0)	// casts a shadow
-#define IF_GLOW        (1<<1)	// is glowy rather than solid
-#define IF_SOLID       (1<<2)	// can't walk through it
-#define IF_BULLETPROOF (1<<3)	// can't shoot through it
-#define IF_PICKUP      (1<<4)	// player can pick it up for some effect
-#define IF_LOONYCOLOR  (1<<5)	// using the loony color thing that loonykeys do
-#define IF_TILE        (1<<6)	// render a tile instead of a sprite
-#define IF_USERJSP     (1<<7)	// use custom item jsp
-#define IF_BUBBLES     (1<<8)	// spout bubbles
-#define IF_BIGMSG      (1<<9)	// display a big message
+enum ItemFlags : word
+{
+	IF_SHADOW      = 1 << 0, // casts a shadow
+	IF_GLOW        = 1 << 1, // is glowy rather than solid
+	IF_SOLID       = 1 << 2, // can't walk through it
+	IF_BULLETPROOF = 1 << 3, // can't shoot through it
+	IF_PICKUP      = 1 << 4, // player can pick it up for some effect
+	IF_LOONYCOLOR  = 1 << 5, // using the loony color thing that loonykeys do
+	IF_TILE        = 1 << 6, // render a tile instead of a sprite
+	IF_USERJSP     = 1 << 7, // use custom item jsp
+	IF_BUBBLES     = 1 << 8, // spout bubbles
+	IF_BIGMSG      = 1 << 9, // display a big message
+};
+BITFLAGS(ItemFlags)
 
 // themes
-#define IT_PICKUP	(1<<0)	// items you can collect
-#define IT_DECOR	(1<<1)	// not obstacles or bulletproof
-#define IT_OBSTACLE (1<<2)	// obstacles
-#define IT_BULLETPROOF (1<<3)	// obstacles you can't shoot through
-#define IT_DOOR		(1<<4)	// doors
-#define IT_TREE		(1<<5)	// vegetation
-#define IT_ROCK		(1<<6)	// rocks
-#define IT_CRATE	(1<<7)	// crates & barrels & trashcans
-#define IT_SIGN		(1<<8)	// signposts, etc
-#define IT_WEAPON	(1<<9)	// player pickup: weapons
-#define IT_POWERUP	(1<<10)	// player pickup: powerups
-#define IT_KEY		(1<<11)	// player pickup: keys
-#define IT_COLLECT	(1<<12)	// player pickup: collectibles
-#define IT_FOOD		(1<<13)	// player pickup: food
-#define IT_ENTRANCE	(1<<14)	// entrance type items, like hollow trees
-#define IT_CHAIR	(1<<15)	// chairs
-#define IT_CUSTOM	(1<<16)	// the custom theme, "My Theme"
+enum ItemThemes : dword
+{
+	IT_PICKUP	   = 1 << 0,	// items you can collect
+	IT_DECOR	   = 1 << 1,	// not obstacles or bulletproof
+	IT_OBSTACLE    = 1 << 2,	// obstacles
+	IT_BULLETPROOF = 1 << 3,	// obstacles you can't shoot through
+	IT_DOOR		   = 1 << 4,	// doors
+	IT_TREE		   = 1 << 5,	// vegetation
+	IT_ROCK		   = 1 << 6,	// rocks
+	IT_CRATE	   = 1 << 7,	// crates & barrels & trashcans
+	IT_SIGN		   = 1 << 8,	// signposts, etc
+	IT_WEAPON	   = 1 << 9,	// player pickup: weapons
+	IT_POWERUP	   = 1 << 10,	// player pickup: powerups
+	IT_KEY		   = 1 << 11,	// player pickup: keys
+	IT_COLLECT	   = 1 << 12,	// player pickup: collectibles
+	IT_FOOD		   = 1 << 13,	// player pickup: food
+	IT_ENTRANCE	   = 1 << 14,	// entrance type items, like hollow trees
+	IT_CHAIR	   = 1 << 15,	// chairs
+	IT_CUSTOM	   = 1 << 16,	// the custom theme, "My Theme"
+};
+BITFLAGS(ItemThemes)
 
 // triggers
-#define ITR_NONE	0	// can't be triggered
-#define ITR_GET		1	// triggered on pickup
-#define ITR_SHOOT	2	// triggers when shot (must be shootable)
-#define ITR_PLAYERBUMP	4	// triggers when stepped on/bumped into by player
-#define ITR_ENEMYBUMP 8	// triggers when bumped by an enemy
-#define ITR_FRIENDBUMP 16	// step/bump by friendly monster
-#define ITR_CHOP	32	// triggers when hit by machete or other chopper
-#define ITR_MINECART 64	// triggers when crashed into by a minecart
-#define ITR_ALWAYS	128	// triggers repeatedly, as fast as tiles animate
+enum ItemTriggers : word
+{
+	ITR_NONE       = 0,	// can't be triggered
+	ITR_GET        = 1 << 0,	// triggered on pickup
+	ITR_SHOOT      = 1 << 1,	// triggers when shot (must be shootable)
+	ITR_PLAYERBUMP = 1 << 2,	// triggers when stepped on/bumped into by player
+	ITR_ENEMYBUMP  = 1 << 3,	// triggers when bumped by an enemy
+	ITR_FRIENDBUMP = 1 << 4,	// step/bump by friendly monster
+	ITR_CHOP       = 1 << 5,	// triggers when hit by machete or other chopper
+	ITR_MINECART   = 1 << 6,	// triggers when crashed into by a minecart
+	ITR_ALWAYS     = 1 << 7,	// triggers repeatedly, as fast as tiles animate
+};
+BITFLAGS(ItemTriggers)
 
 // effects
 // what occurs when you pick up the item if it's a pickup,
@@ -271,9 +284,9 @@ struct item_t
 	byte fromColor,toColor;	// if you want it to use offcolors
 	char bright;	// if you don't want it to use normal brightness
 	byte rarity;	// if can be dropped by monsters, how often?
-	word flags;		// what special flags it has
-	dword theme;		// flags for which themes it goes in
-	word trigger;	// what triggers it
+	ItemFlags flags;		// what special flags it has
+	ItemThemes theme;		// flags for which themes it goes in
+	ItemTriggers trigger;	// what triggers it
 	byte effect;	// what it does when triggered
 	int effectAmt;	// a modifier for the effect
 	char msg[64];	// message when effect occurs

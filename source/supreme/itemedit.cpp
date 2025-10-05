@@ -51,7 +51,7 @@
 #define ID_RARITY	607
 #define ID_PICKSPR	608
 
-static const dword themes[]={
+static const ItemThemes themes[]={
 	IT_PICKUP,IT_DECOR,IT_OBSTACLE,IT_BULLETPROOF,IT_DOOR,IT_TREE,IT_ROCK,
 	IT_CRATE,IT_SIGN,IT_WEAPON,IT_POWERUP,IT_KEY,IT_COLLECT,IT_FOOD,IT_ENTRANCE,
 	IT_CHAIR,IT_CUSTOM};
@@ -76,8 +76,8 @@ static const char * const themeNames[] = {
 };
 static constexpr int NUM_THEMES = std::min(std::size(themes), std::size(themeNames));
 
-static const word flags[]={IF_SHADOW,IF_GLOW,IF_SOLID,IF_BULLETPROOF,IF_PICKUP,IF_LOONYCOLOR,IF_TILE,IF_USERJSP,IF_BUBBLES};
-static const word trigs[]={ITR_GET,ITR_SHOOT,ITR_PLAYERBUMP,ITR_ENEMYBUMP,ITR_FRIENDBUMP,ITR_CHOP,
+static const ItemFlags flags[]={IF_SHADOW,IF_GLOW,IF_SOLID,IF_BULLETPROOF,IF_PICKUP,IF_LOONYCOLOR,IF_TILE,IF_USERJSP,IF_BUBBLES};
+static const ItemTriggers trigs[]={ITR_GET,ITR_SHOOT,ITR_PLAYERBUMP,ITR_ENEMYBUMP,ITR_FRIENDBUMP,ITR_CHOP,
 				  ITR_MINECART,ITR_ALWAYS};
 
 static constexpr int ITEMS_PER_PAGE = 20;
@@ -172,13 +172,13 @@ static byte itemList[256];
 static word itemsInList,itemStart=0,itemsShown;
 static byte justPicking;
 static byte mode;
-static dword curTheme = IT_PICKUP;
+static ItemThemes curTheme = IT_PICKUP;
 static world_t *world;
 static byte curItem;
 static byte backColor;
 static byte realClick;
 
-static dword saveCurTheme = IT_PICKUP;
+static ItemThemes saveCurTheme = IT_PICKUP;
 static byte saveCurItem=1,rememberMode,helpRemember;
 static word saveItemStart=0;
 
@@ -474,7 +474,7 @@ static void MakeItemList(void)
 static void SetThemeRadio()
 {
 	for (int i = 0; i < NUM_THEMES; ++i)
-		SetButtonState(ID_PICKTHEME + i, (themes[i] == 0 ? curTheme == 0 : (curTheme & themes[i])) ? CHECK_ON : CHECK_OFF);
+		SetButtonState(ID_PICKTHEME + i, (themes[i] == 0 ? curTheme == 0 : bool(curTheme & themes[i])) ? CHECK_ON : CHECK_OFF);
 }
 
 static void PickThemeClick(int id)
@@ -930,7 +930,7 @@ void ItemEdit_Init(byte modeFrom,world_t *wrld,byte picking)
 	if(curItem>=NumItems())
 	{
 		curItem=ITM_HAMMERUP;
-		curTheme=0;
+		curTheme={};
 	}
 	backColor=1;
 	realClick=0;

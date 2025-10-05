@@ -2,6 +2,7 @@
 #define SHOP_H
 
 #include "mgldraw.h"
+#include "bitflags.h"
 
 #define SHOP_LOCKERS	0
 #define SHOP_SPOOKY		1
@@ -62,9 +63,13 @@ enum : byte
 const char* GetPlayableCharacterName(int playAs);
 
 // shop item flags (used in the player progress file)
-#define SIF_AVAILABLE	1
-#define SIF_BOUGHT		2
-#define SIF_ACTIVE		4	// for locker items that can be toggled, is it on or off?
+enum ShopItemFlags : byte
+{
+	SIF_AVAILABLE = 1 << 0,
+	SIF_BOUGHT    = 1 << 1,
+	SIF_ACTIVE    = 1 << 2, // for locker items that can be toggled, is it on or off?
+};
+BITFLAGS(ShopItemFlags)
 
 // modes you can buy in lockers
 #define MODE_DISCO		0
@@ -74,14 +79,6 @@ const char* GetPlayableCharacterName(int playAs);
 #define MODE_SPLATTER	4
 #define MODE_MANIC		5
 #define MODE_TEENY		6
-
-struct shopItem_t
-{
-	byte shop;
-	word cost;
-	byte type;
-	byte item;	// which # of the items of "type" it is
-};
 
 class Map;
 

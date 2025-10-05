@@ -23,7 +23,7 @@ static dword curMons;
 static byte rememberMode;
 static byte helpRemember;
 
-static const dword themes[]={
+static const MonsterThemes themes[]={
 	MT_GOOD,MT_EVIL,MT_SPOOKY,MT_ZOMBIE,MT_VAMPIRE,MT_SPIDER,MT_PYGMY,
 	MT_ZOID,MT_BOSS,MT_MINIBOSS,MT_WACKY,MT_PUMPKIN,MT_THINGY,MT_VEGGIE,
 	MT_ARCTIC,MT_DESERT,MT_VEHICLE,MT_GENERATE,MT_TRAP,MT_ALIEN,
@@ -31,14 +31,15 @@ static const dword themes[]={
 	MT_BITS
 };
 static constexpr int NUM_THEMES = std::size(themes);
-static dword curTheme = MT_GOOD;
+static MonsterThemes curTheme = MT_GOOD;
 
 static std::vector<dword> monsList;
 static word monsInList,monsStart,monsShown;
 static constexpr int MONSTERS_PER_PAGE = 18;
 static byte realClick;
 
-static dword saveCurMons=1,saveCurTheme=MT_GOOD;
+static dword saveCurMons=1;
+static MonsterThemes saveCurTheme=MT_GOOD;
 
 static void SetupMonsterDisplay(void);
 static void MakeMonsterList(void);
@@ -159,7 +160,7 @@ static void MakeMonsterList(void)
 static void SetThemeRadio()
 {
 	for (int i = 0; i < NUM_THEMES; ++i)
-		SetButtonState(ID_PICKTHEME + i, (themes[i] == 0 ? curTheme == 0 : (curTheme & themes[i])) ? CHECK_ON : CHECK_OFF);
+		SetButtonState(ID_PICKTHEME + i, (themes[i] == MT_NONE ? curTheme == MT_NONE : bool(curTheme & themes[i])) ? CHECK_ON : CHECK_OFF);
 }
 
 static void PickThemeClick(int id)

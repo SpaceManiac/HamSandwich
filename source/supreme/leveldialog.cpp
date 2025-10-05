@@ -46,8 +46,10 @@ static byte rClick;
 static byte mapNum,mode;
 static world_t *world;
 
-static word flagNum[]={MAP_SNOWING,MAP_RAIN,MAP_HUB,MAP_SECRET,MAP_TORCHLIT,MAP_WELLLIT,
-				MAP_STARS,MAP_UNDERWATER,MAP_LAVA,MAP_STEALTH,MAP_WAVY,MAP_OXYGEN};
+static const LevelFlags flagNum[]={
+	MAP_SNOWING,MAP_RAIN,MAP_HUB,MAP_SECRET,MAP_TORCHLIT,MAP_WELLLIT,
+	MAP_STARS,MAP_UNDERWATER,MAP_LAVA,MAP_STEALTH,MAP_WAVY,MAP_OXYGEN,
+};
 
 static byte *mapZoom;
 static byte desiredWidth,desiredHeight;

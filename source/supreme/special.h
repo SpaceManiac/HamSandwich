@@ -1,9 +1,10 @@
 #ifndef SPECIAL_H
 #define SPECIAL_H
 
-#include "mgldraw.h"
 #include <stdio.h>
+#include "mgldraw.h"
 #include "string_extras.h"
+#include "bitflags.h"
 
 #define MAX_SPECIAL	250
 
@@ -85,19 +86,28 @@
 #define EFF_MAX			38
 
 // trigger flags
-#define TF_NOT		1	// NOT this one
-#define TF_AND		2	// AND this one with the next (if not selected, it's OR)
-#define TF_LESS		4	// in triggers with "less/more/exactly", less \ both off means exactly
-#define TF_MORE		8	// in triggers with "less/more/exactly", more / both on is not valid!
+enum TriggerFlags : byte
+{
+	TF_NOT  = 1 << 0, // NOT this one
+	TF_AND  = 1 << 1, // AND this one with the next (if not selected, it's OR)
+	TF_LESS = 1 << 2, // in triggers with "less/more/exactly", less \ both off means exactly
+	TF_MORE = 1 << 3, // in triggers with "less/more/exactly", more / both on is not valid!
+};
+BITFLAGS(TriggerFlags)
 
 // effect flags
-#define EF_CONTIGUOUS	1	// contiguous effect, instead of single
-#define EF_PLAYER		1	// uses the same slot - affects player rather than special target
-#define EF_PERMLIGHT	1	// uses the same slot - permanent light rather than temporary
-#define EF_ALL			2	// instead of contiguous or single, this hits ALL tiles/items of the same type
-#define EF_TAGGED		2	// uses the same slot - affects the tagged monster instead of player or target
-#define EF_TOGGLE		4	// automatically modifies itself for repeat uses to toggle
-#define EF_NOFX			8	// doesn't show visual or audio effects when done
+enum EffectFlags : byte
+{
+	EF_NONE       = 0,
+	EF_CONTIGUOUS = 1 << 0, // contiguous effect, instead of single
+	EF_PLAYER     = 1 << 0, // uses the same slot - affects player rather than special target
+	EF_PERMLIGHT  = 1 << 0, // uses the same slot - permanent light rather than temporary
+	EF_ALL        = 1 << 1, // instead of contiguous or single, this hits ALL tiles/items of the same type
+	EF_TAGGED     = 1 << 1, // uses the same slot - affects the tagged monster instead of player or target
+	EF_TOGGLE     = 1 << 2, // automatically modifies itself for repeat uses to toggle
+	EF_NOFX       = 1 << 3, // doesn't show visual or audio effects when done
+};
+BITFLAGS(EffectFlags)
 
 // numbers in one special
 #define NUM_TRIGGERS	7
@@ -114,7 +124,7 @@
 
 struct trigger_t
 {
-	byte flags;		// whether it must AND or OR with the next one, and if it's NOT
+	TriggerFlags flags;		// whether it must AND or OR with the next one, and if it's NOT
 	byte type;
 	byte x,y;	// coordinates of where it's triggered
 	int value;	// value of "N" in the trigger
@@ -123,7 +133,7 @@ struct trigger_t
 
 struct effect_t
 {
-	byte flags;
+	EffectFlags flags;
 	byte type;
 	byte x,y;
 	int value;

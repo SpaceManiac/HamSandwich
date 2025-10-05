@@ -51,7 +51,7 @@ static soundDesc_t soundInfo[MAX_SOUNDS]={
 	{SND_BATDIVE,"Bat Dive",ST_MONSTER},
 	{SND_BATOUCH,"Bat Ouch",ST_MONSTER},
 	{SND_BATDIE,"Bat Die",ST_MONSTER},
-	{SND_SPD1OUCH,"",0},
+	{SND_SPD1OUCH,"",{}},
 	{SND_SPD1DIE,"Spider Die",ST_MONSTER},
 	{SND_SPD1GNAW,"Eensy Bite",ST_MONSTER},
 	{SND_SPD2OUCH,"Spider Ouch",ST_MONSTER},
@@ -77,7 +77,7 @@ static soundDesc_t soundInfo[MAX_SOUNDS]={
 	{SND_SERPENTDIE,"Zoid Die",ST_MONSTER},
 	{SND_SERPENTSPIT,"Zoid Spit",ST_MONSTER},
 	{SND_MATTIEOUCH,"Matilda Ouch",ST_MONSTER},
-	{SND_MATTIETRUEDIE,"",0},
+	{SND_MATTIETRUEDIE,"",{}},
 	{SND_MATTIEDIE,"Matilda Die",ST_MONSTER},
 	{SND_MATTIECLAW,"Matilda Claw",ST_MONSTER},
 	{SND_MATTIESHOOT,"Matilda Shoot",ST_MONSTER},
@@ -89,8 +89,8 @@ static soundDesc_t soundInfo[MAX_SOUNDS]={
 	{SND_PUMPKINDIE,"Pumpkin Pop",ST_MONSTER},
 	{SND_HAMMERUP,"Hammer Up",ST_INTFACE|ST_VOCAL|ST_PLAYER},
 	{SND_PANTS,"Pants!",ST_INTFACE|ST_VOCAL|ST_PLAYER},
-	{SND_REVERSE,"",0},
-	{SND_REFLECT,"",0},
+	{SND_REVERSE,"",{}},
+	{SND_REFLECT,"",{}},
 	{SND_WEAPON,"Get Weapon",ST_INTFACE|ST_PLAYER},
 	{SND_FOOD,"Get Food",ST_INTFACE|ST_PLAYER},
 	{SND_SHIELD,"Energy Shield",ST_INTFACE|ST_PLAYER},
@@ -366,7 +366,7 @@ void ClearCustomSounds(void)
 
 	for(i=0;i<MAX_CUSTOM_SOUNDS;i++)
 	{
-		soundInfo[i+CUSTOM_SND_START].theme=0;
+		soundInfo[i+CUSTOM_SND_START].theme={};
 		if(customSound[i])
 			free(customSound[i]);
 		customSound[i]=NULL;
@@ -562,7 +562,7 @@ void DeleteCustomSound(int n)
 		soundInfo[CUSTOM_SND_START+i].num=CUSTOM_SND_START+i;
 	}
 	customSound[MAX_CUSTOM_SOUNDS-1]=NULL;
-	soundInfo[CUSTOM_SND_START+MAX_CUSTOM_SOUNDS-1].theme=0;
+	soundInfo[CUSTOM_SND_START+MAX_CUSTOM_SOUNDS-1].theme={};
 	numCustom--;
 
 	JamulSoundPurge();

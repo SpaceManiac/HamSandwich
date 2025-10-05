@@ -4,11 +4,12 @@
 #include "map.h"
 #include "tile.h"
 #include "string_extras.h"
+#include "bitflags.h"
 
 constexpr int MAX_MAPS = 64;
 
 // terrain flags
-enum : dword
+enum TileFlags : dword
 {
 	TF_SOLID      = 1 << 0,
 	TF_ICE        = 1 << 1,
@@ -35,10 +36,11 @@ enum : dword
 	// Adding flag 1<<21 would leave room for 1024 tiles.
 	// Flag 1<<22 wouldn't leave room for 1000 tiles, so cannot be added.
 };
+BITFLAGS(TileFlags)
 
 struct terrain_t
 {
-	dword flags;
+	TileFlags flags;
 	word next;
 };
 

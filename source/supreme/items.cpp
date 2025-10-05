@@ -16,7 +16,7 @@
 #include "string_extras.h"
 
 static const item_t baseItems[]={
-	{"None",0,0,0,0,0,0,0,0,0,0,0,0,"",0},
+	{"None",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
 	{"Hammer Up",-2,0,0,0,0,0,
 		0,
 		IF_PICKUP,
@@ -193,53 +193,53 @@ static const item_t baseItems[]={
 		"Particle Accelerator!",SND_SPEEDUP},
 	{"Small Grey Rocks",-2,0,32,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR|IT_ROCK,
 		ITR_NONE,IE_NONE,0,
 		"",0},
 	{"Hollow Tree",0,-4,26,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR|IT_TREE|IT_ENTRANCE,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Igloo",0,-3,42,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR|IT_ENTRANCE,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Spider Web",4,-6,54,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Spider Web 2",-1,-10,55,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Spider Web 3",-3,-8,56,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Spider Web 4",-1,-9,57,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Grass",-2,-2,61,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR|IT_TREE,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Grass 2",-1,-3,62,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR|IT_TREE,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Tiny Hut",-1,-5,65,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR|IT_ENTRANCE,
 		ITR_NONE,IE_NONE,0,"",0},
 
@@ -277,7 +277,7 @@ static const item_t baseItems[]={
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Fallen Cone",0,-3,95,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Bubbles",0,-5,92,0,0,0,
@@ -597,7 +597,7 @@ static const item_t baseItems[]={
 		ITR_GET,IE_POWERUP,PU_AMMO2,"Ammo Pack!",SND_WEAPON},
 	{"Flat Rock",0,-3,107,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR|IT_ROCK,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Grey Rockpile",0,-4,108,0,0,0,
@@ -617,7 +617,7 @@ static const item_t baseItems[]={
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Seaweed3",0,4,110,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR|IT_TREE,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Freeze Ray",0,-4,112,0,0,0,
@@ -715,28 +715,28 @@ static const item_t baseItems[]={
 		IF_PICKUP,
 		IT_PICKUP|IT_WEAPON|IT_POWERUP,
 		ITR_GET,IE_POWERUP,PU_CHEESE,"Supreme Squeezy Cheese!",SND_WEAPON},
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused2
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused3
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused4
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused5
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused6
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused7
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused8
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused9
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused10
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused11
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused12
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused13
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused14
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused15
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused16
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused17
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused2
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused3
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused4
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused5
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused6
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused7
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused8
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused9
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused10
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused11
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused12
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused13
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused14
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused15
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused16
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused17
 };
 
-static item_t emptyItem=
+static const item_t emptyItem=
 	{"New Item",0,0,0,0,0,0,
 		0,
-		0,
+		{},
 		IT_CUSTOM,
 		ITR_NONE,IE_NONE,0,"",0};
 

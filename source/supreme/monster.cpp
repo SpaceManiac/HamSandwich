@@ -88,7 +88,7 @@ const byte *MonsterAnim(dword type,byte anim)
 	return monsType[type].anim[anim];
 }
 
-word MonsterFlags(dword type,dword aiType)
+MonsterFlags_ MonsterFlags(dword type,dword aiType)
 {
 	if(aiType==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
 		return monsType[MONS_PWRBOUAPHA].flags;
@@ -452,7 +452,7 @@ int InstaRenderScannedMonster(int x,int y,dword type,char bright,MGLDraw *mgl)
 	return curSpr->height;
 }
 
-dword MonsterTheme(dword type)
+MonsterThemes MonsterTheme(dword type)
 {
 	return monsType[type].theme;
 }

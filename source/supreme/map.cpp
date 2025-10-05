@@ -38,7 +38,7 @@ Map::Map(byte width, byte height, const char *name)
 		map[i].select=1;
 
 	strcpy(song,"");
-	flags=0;
+	flags={};
 	badguy.fill({});
 	special.fill({});
 	InitSpecials(special);
@@ -852,7 +852,7 @@ void Map::RenderStars(int camX, int camY)
 	}
 }
 
-void Map::Render(world_t *world,int camX,int camY,byte flags)
+void Map::Render(world_t *world,int camX,int camY,MapRenderFlags flags)
 {
 	int scrWidth = GetDisplayMGL()->GetWidth(), scrHeight = GetDisplayMGL()->GetHeight();
 	camX -= scrWidth/2;
@@ -1104,7 +1104,7 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 	}
 }
 
-void Map::RenderSelect(world_t *world,int camX,int camY,byte flags)
+void Map::RenderSelect(world_t *world,int camX,int camY,MapRenderFlags flags)
 {
 	if(flags&MAP_SHOWSELECT)
 		return;

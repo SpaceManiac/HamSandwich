@@ -3,18 +3,27 @@
 
 #include "mgldraw.h"
 #include "monster.h"
-#include <string_extras.h>
+#include "string_extras.h"
+#include "bitflags.h"
 
 // level progress flags
-#define LF_PASSED		2	// have passed it
-#define LF_CANDLES		4	// have collected all candles
+enum LevelProgressFlags : byte
+{
+	LF_PASSED  = 1 << 1, // have passed it
+	LF_CANDLES = 1 << 2, // have collected all candles
+};
+BITFLAGS(LevelProgressFlags)
 
 // keychain bitflags
-#define KC_KEYCH1		1
-#define KC_KEYCH2		2
-#define KC_KEYCH3		4
-#define KC_KEYCH4		8
-#define KC_LOONY		16
+enum KeychainFlags : byte
+{
+	KC_KEYCH1 = 1 << 0,
+	KC_KEYCH2 = 1 << 1,
+	KC_KEYCH3 = 1 << 2,
+	KC_KEYCH4 = 1 << 3,
+	KC_LOONY  = 1 << 4,
+};
+BITFLAGS(KeychainFlags)
 
 #define NUM_PLAYLISTS	4
 #define SONGNAME_LEN	128
@@ -44,7 +53,7 @@
 struct levelData_t	// contains your scores, etc for one level
 {
 	byte levelNum;		// because only passed levels are stored
-	byte flags;
+	LevelProgressFlags flags;
 	float percentage;
 	float recordDestroy;
 	int   recordCombo;
@@ -55,7 +64,7 @@ struct worldData_t	// contains your progress for one world
 {
 	char filename[32];	// the world's filename
 	int  var[8];		// the 'global' variables for this world
-	byte keychains;		// bitflags for each one, and the loonykey
+	KeychainFlags keychains;		// bitflags for each one, and the loonykey
 	float percentage;
 	byte levelOn;		// which level of this world you're on
 	byte levels;		// how many levels are stored here - it only stores ones you've either

@@ -397,7 +397,7 @@ void ShakeScreen(byte howlong)
 	shakeTimer=howlong;
 }
 
-void RenderItAll(world_t *world,Map *map,byte flags)
+void RenderItAll(world_t *world,Map *map,MapRenderFlags flags)
 {
 	if(shakeTimer)
 	{
@@ -418,37 +418,37 @@ void RenderItAll(world_t *world,Map *map,byte flags)
 		map->RenderSelect(world,scrx,scry,flags);
 }
 
-void SprDraw(int x,int y,int z,byte hue,char bright,const sprite_t *spr,word flags)
+void SprDraw(int x,int y,int z,byte hue,char bright,const sprite_t *spr,DisplayFlags flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,z,0,hue,bright,spr,flags);
 }
 
-void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,const sprite_t *spr,word flags)
+void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,const sprite_t *spr,DisplayFlags flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,z,fromHue,hue,bright,spr,flags|DISPLAY_OFFCOLOR);
 }
 
-void SprDrawTile(int x,int y,word tile,char light,word flags)
+void SprDrawTile(int x,int y,word tile,char light,DisplayFlags flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,0,0,tile,light,(const sprite_t *)1,flags|DISPLAY_TILESPRITE);
 }
 
-void WallDraw(int x,int y,word wall,word floor,const char *light,word flags)
+void WallDraw(int x,int y,word wall,word floor,const char *light,DisplayFlags flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,0,wall,floor,0,(const sprite_t *)light,flags);
 }
 
-void RoofDraw(int x,int y,word roof,const char *light,word flags)
+void RoofDraw(int x,int y,word roof,const char *light,DisplayFlags flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,TILE_HEIGHT,0,roof,0,(const sprite_t *)light,flags);
 }
 
-void ParticleDraw(int x,int y,int z,byte color,byte size,word flags)
+void ParticleDraw(int x,int y,int z,byte color,byte size,DisplayFlags flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,z,0,color,size,(const sprite_t *)1,flags);
@@ -531,7 +531,7 @@ void DisplayList::HookIn(int me)
 	}
 }
 
-bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,char bright,const sprite_t *spr,word flags)
+bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,char bright,const sprite_t *spr,DisplayFlags flags)
 {
 	SDL_Rect rect;
 	if (!spr || spr==(sprite_t*)1 || (flags&(DISPLAY_WALLTILE|DISPLAY_ROOFTILE)))
@@ -593,7 +593,7 @@ void DisplayList::ClearList(void)
 	{
 		dispObj[i].prev=-1;
 		dispObj[i].next=-1;
-		dispObj[i].flags=0;
+		dispObj[i].flags={};
 	}
 	head=-1;
 	nextfree=0;

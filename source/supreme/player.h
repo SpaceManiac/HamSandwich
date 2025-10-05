@@ -73,7 +73,7 @@ struct player_t
 	int coins;
 	int candles;
 	byte pushPower;	// for pushing pushy blocks
-	byte hammerFlags;
+	HammerFlags hammerFlags;
 	byte vehicle;
 	byte garlic;
 	byte speed;	// accelerated

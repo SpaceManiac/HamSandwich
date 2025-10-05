@@ -2577,7 +2577,7 @@ void FireExactBullet(int x,int y,int z,int dx,int dy,int dz,byte anim,byte timer
 		}
 }
 
-void HammerLaunch(int x,int y,byte facing,byte count,byte flags)
+void HammerLaunch(int x,int y,byte facing,byte count,HammerFlags flags)
 {
 	byte angle,newfacing;
 	byte type,spd,face,timer;

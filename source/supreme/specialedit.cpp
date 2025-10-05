@@ -925,9 +925,20 @@ static void PlayerTarget2Click(int id)
 
 	t=effStart + (id-ID_EFF0)/100;
 
-	spcl.effect[t].flags++;
-	if(spcl.effect[t].flags>EF_TAGGED)
-		spcl.effect[t].flags=0;
+	switch (spcl.effect[t].flags)
+	{
+		case EF_NONE: // Target
+			spcl.effect[t].flags = EF_PLAYER;
+			break;
+		case EF_PLAYER:
+			spcl.effect[t].flags = EF_TAGGED;
+			break;
+		case EF_TAGGED:
+		default:
+			spcl.effect[t].flags = EF_NONE; // Target
+			break;
+	}
+
 	SetupEffectButtons(t-effStart,(t-effStart)*38+264);
 }
 

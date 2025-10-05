@@ -270,55 +270,62 @@ constexpr byte FRAME_INVIS = 254;
 constexpr byte FRAME_END = 255;
 
 // flags
-#define MF_FLYING	 1
-#define MF_WATERWALK 2
-#define MF_ONEFACE	 4
-#define MF_ENEMYWALK 8	// other enemies can stomp all over this one (but not Bouapha)
-#define MF_NOMOVE	 16 // doesn't move when hit
-#define MF_AQUATIC	 32	// can ONLY move on water/lava, not land
-#define MF_INVINCIBLE 64 // totally invulnerable to harm
-#define MF_SPRITEBOX 128 // use the sprite's rect for collision checks instead of standard size-box method
-#define MF_FACECMD	 256 // this monster's "facing" value should just be added to the sprite number,
-						 // it's calculated by his AI (only useful for MF_ONEFACE monsters)
-#define MF_NOGRAV	 512
-#define MF_FREEWALK	 1024 // Bouapha can walk right through it
-#define MF_WALLWALK	 2048 // walk through walls
-#define MF_NOSHADOW	 4096 // doesn't cast a shadow
-#define MF_GHOST	 8192 // draw using ghost draw
-#define MF_NOHIT	 16384	// bullets pass through it
-#define MF_GLOW		 32768 // draw using glow draw
+enum MonsterFlags_ : word
+{
+	MF_FLYING     = 1 << 0,
+	MF_WATERWALK  = 1 << 1,
+	MF_ONEFACE    = 1 << 2,
+	MF_ENEMYWALK  = 1 << 3,	// other enemies can stomp all over this one (but not Bouapha)
+	MF_NOMOVE     = 1 << 4,	// doesn't move when hit
+	MF_AQUATIC    = 1 << 5,	// can ONLY move on water/lava, not land
+	MF_INVINCIBLE = 1 << 6, // totally invulnerable to harm
+	MF_SPRITEBOX  = 1 << 7,	// use the sprite's rect for collision checks instead of standard size-box method
+	MF_FACECMD    = 1 << 8,	// this monster's "facing" value should just be added to the sprite number, it's calculated by his AI (only useful for MF_ONEFACE monsters)
+	MF_NOGRAV     = 1 << 9,
+	MF_FREEWALK   = 1 << 10, // Bouapha can walk right through it
+	MF_WALLWALK   = 1 << 11, // walk through walls
+	MF_NOSHADOW   = 1 << 12, // doesn't cast a shadow
+	MF_GHOST      = 1 << 13, // draw using ghost draw
+	MF_NOHIT      = 1 << 14, // bullets pass through it
+	MF_GLOW       = 1 << 15, // draw using glow draw
+};
+BITFLAGS(MonsterFlags_)
 
-// themese
-#define MT_NONE		(0)
-#define MT_GOOD		(1<<0)
-#define MT_EVIL		(1<<1)
-#define MT_SPOOKY	(1<<2)
-#define MT_ZOMBIE	(1<<3)
-#define MT_VAMPIRE	(1<<4)
-#define MT_SPIDER	(1<<5)
-#define MT_PYGMY	(1<<6)
-#define MT_ZOID		(1<<7)
-#define MT_BOSS		(1<<8)
-#define MT_MINIBOSS (1<<9)
-#define MT_WACKY	(1<<10)
-#define MT_PUMPKIN	(1<<11)
-#define MT_THINGY	(1<<12)
-#define MT_VEGGIE	(1<<13)
-#define MT_ARCTIC	(1<<14)
-#define MT_DESERT   (1<<15)
-#define MT_VEHICLE	(1<<16)
-#define MT_GENERATE	(1<<17)
-#define MT_TRAP		(1<<18)
-#define MT_ALIEN	(1<<19)
-#define MT_HIGHTECH	(1<<20)
-#define MT_ANIMAL	(1<<21)
-#define MT_HUMAN	(1<<22)
-#define MT_URBAN	(1<<23)
-#define MT_AQUATIC	(1<<24)
-#define MT_UNDERSEA (1<<25)
-#define MT_FLYING	(1<<26)
-#define MT_BITS		(1<<27)
-#define NUM_MONSTHEMES	(28)
+// themes
+enum MonsterThemes : dword
+{
+	MT_NONE     = 0,
+	MT_GOOD		= 1 << 0,
+	MT_EVIL		= 1 << 1,
+	MT_SPOOKY	= 1 << 2,
+	MT_ZOMBIE	= 1 << 3,
+	MT_VAMPIRE	= 1 << 4,
+	MT_SPIDER	= 1 << 5,
+	MT_PYGMY	= 1 << 6,
+	MT_ZOID		= 1 << 7,
+	MT_BOSS		= 1 << 8,
+	MT_MINIBOSS = 1 << 9,
+	MT_WACKY	= 1 << 10,
+	MT_PUMPKIN	= 1 << 11,
+	MT_THINGY	= 1 << 12,
+	MT_VEGGIE	= 1 << 13,
+	MT_ARCTIC	= 1 << 14,
+	MT_DESERT   = 1 << 15,
+	MT_VEHICLE	= 1 << 16,
+	MT_GENERATE	= 1 << 17,
+	MT_TRAP		= 1 << 18,
+	MT_ALIEN	= 1 << 19,
+	MT_HIGHTECH	= 1 << 20,
+	MT_ANIMAL	= 1 << 21,
+	MT_HUMAN	= 1 << 22,
+	MT_URBAN	= 1 << 23,
+	MT_AQUATIC	= 1 << 24,
+	MT_UNDERSEA = 1 << 25,
+	MT_FLYING	= 1 << 26,
+	MT_BITS		= 1 << 27,
+};
+BITFLAGS(MonsterThemes)
+constexpr int NUM_MONSTHEMES = 28;
 
 typedef void (*Monster_AIFunc)(Guy *,Map *,world_t *,Guy *);
 
@@ -334,8 +341,8 @@ struct MonsterType
 	word points;
 	char sprName[32];
 	sprite_set_t *spr;
-	word flags;
-	dword theme;
+	MonsterFlags_ flags;
+	MonsterThemes theme;
 	byte anim[NUM_ANIMS][ANIM_LENGTH];
 };
 
@@ -347,8 +354,8 @@ void PurgeMonsterSprites(void);
 void ChangeOffColor(dword type,byte from,byte to);
 byte MonsterSize(dword type);
 const byte *MonsterAnim(dword type,byte anim);
-word MonsterFlags(dword type,dword aiType);
-dword MonsterTheme(dword type);
+MonsterFlags_ MonsterFlags(dword type,dword aiType);
+MonsterThemes MonsterTheme(dword type);
 byte MonsterFrames(dword type,dword aiType);
 word MonsterHP(dword type);
 word MonsterPoints(dword type);

@@ -47,13 +47,16 @@ static int saveTileStart=0;
 
 static char bmpFilename[FNAMELEN]="";
 
+static const TileFlags flags[]={
+	TF_SOLID,TF_ICE,TF_MUD,TF_WATER,TF_LAVA,TF_PUSHY,TF_PUSHON,TF_ANIM,TF_STEP,
+	TF_DESTRUCT,TF_TRANS,TF_MINECART,TF_BUNNY,TF_NOGHOST,TF_NOENEMY,TF_RUBBER,
+	TF_SHADOWLESS,
+};
+
 void TerrainSetupButtons(void);
 
 void FlagClick(int id)
 {
-	dword flags[]={TF_SOLID,TF_ICE,TF_MUD,TF_WATER,TF_LAVA,TF_PUSHY,TF_PUSHON,TF_ANIM,TF_STEP,
-				  TF_DESTRUCT,TF_TRANS,TF_MINECART,TF_BUNNY,TF_NOGHOST,TF_NOENEMY,TF_RUBBER,
-				  TF_SHADOWLESS};
 	int i;
 	byte b;
 
@@ -340,9 +343,6 @@ void SetNextTile(word n)
 void TerrainSetFlags(void)
 {
 	int i,j;
-	dword flags[]={TF_SOLID,TF_ICE,TF_MUD,TF_WATER,TF_LAVA,TF_PUSHY,TF_PUSHON,TF_ANIM,TF_STEP,
-				  TF_DESTRUCT,TF_TRANS,TF_MINECART,TF_BUNNY,TF_NOGHOST,TF_NOENEMY,TF_RUBBER,
-				  TF_SHADOWLESS};
 	constexpr int count = std::size(flags);
 
 	byte flagCount[count];	// count how many tiles have each flag set
@@ -540,7 +540,7 @@ void ImportTiles(void)
 
 	for(i=selMin;i<=selMax;i++)
 	{
-		world->terrain[dst].flags=0;
+		world->terrain[dst].flags={};
 		world->terrain[dst].next=0;
 		SetTile(dst,(i%20)*TILE_WIDTH,(i/20)*TILE_HEIGHT,bmpScr);
 		dst++;

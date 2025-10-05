@@ -5,7 +5,7 @@
 MonsterType monsType[NUM_MONSTERS]=
 	{
 		{"Null",255,255,0,NULL,
-		 0,0,0,0,"",0,0,0,{}},
+		 0,0,0,0,"",0,{},MT_NONE,{}},
 		{"Bouapha",255,255,0,NULL,
 		 11,29,128,0,"graphics/bouapha.jsp",0,MF_WATERWALK,
 		 MT_GOOD|MT_HUMAN,
@@ -21,7 +21,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 			}},
 		{"Bonehead",255,255,0,AI_Bonehead,
-		 8,38,10,50,"graphics/skeleton.jsp",0,0,
+		 8,38,10,50,"graphics/skeleton.jsp",0,{},
 		 MT_SPOOKY|MT_EVIL,
 			{
 				{0,255},	// idle
@@ -49,7 +49,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 			}},
 		{"Eensy Weensy",255,255,0,AI_Spider,
-		 4,22,1,10,"graphics/spider.jsp",0,0,
+		 4,22,1,10,"graphics/spider.jsp",0,{},
 		 MT_EVIL|MT_SPIDER|MT_ANIMAL,
 			{
 				{0,255},	// idle
@@ -63,7 +63,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 			}},
 		{"Spitter",255,255,0,AI_BigSpider,
-		 8,21,10,50,"graphics/bigspdr.jsp",0,0,
+		 8,21,10,50,"graphics/bigspdr.jsp",0,{},
 		 MT_EVIL|MT_SPIDER|MT_ANIMAL,
 			{
 				{0,255},	// idle
@@ -77,7 +77,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 			}},
 		{"Zombie",255,255,0,AI_Zombie,
-		 11,32,20,150,"graphics/zombie.jsp",0,0,
+		 11,32,20,150,"graphics/zombie.jsp",0,{},
 		 MT_SPOOKY|MT_ZOMBIE|MT_EVIL,
 			{
 				{0,255},	// idle
@@ -119,7 +119,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 			}},
 		{"Pygmy",255,255,0,AI_Pygmy,
-		 10,50,15,100,"graphics/pygmy.jsp",0,0,
+		 10,50,15,100,"graphics/pygmy.jsp",0,{},
 		 MT_EVIL|MT_PYGMY|MT_HUMAN,
 			{
 				{0,0,0,0,0,0,0,0,0,0,1,2,3,2,1,0,0,0,4,5,6,5,4,255},	// idle
@@ -245,7 +245,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 			}},
 		{"Ninjabread Man",255,255,0,AI_Ginger,
-		 12,33,50,300,"graphics/ginger.jsp",0,0,
+		 12,33,50,300,"graphics/ginger.jsp",0,{},
 		 MT_EVIL|MT_WACKY,
 			{
 				{0,255},	// idle
@@ -259,7 +259,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 			}},
 		{"PUMPKIN!",255,255,0,AI_Pumpkin,
-		 11,6,5,500,"graphics/pumpkin.jsp",0,0,
+		 11,6,5,500,"graphics/pumpkin.jsp",0,{},
 		 MT_EVIL|MT_PUMPKIN|MT_VEGGIE,
 			{
 				{0,255},	// idle
@@ -273,7 +273,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{1,2,3,4,5,0,255},	// move
 			}},
 		{"Thingie",255,255,0,AI_BabyThing,
-		 12,44,10,50,"graphics/babything.jsp",0,0,
+		 12,44,10,50,"graphics/babything.jsp",0,{},
 		 MT_EVIL|MT_THINGY,
 			{
 				{12,255},	// idle
@@ -329,7 +329,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 			}},
 		{"Shroom",255,255,0,AI_Shroom,
-		 15,23,10,50,"graphics/shroom.jsp",0,0,
+		 15,23,10,50,"graphics/shroom.jsp",0,{},
 		 MT_EVIL|MT_VEGGIE,
 			{
 				{0,255},	// idle
@@ -427,7 +427,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 			}},
 		{"Baby SEAL",255,255,0,AI_BabySeal,
-		 22,20,20,125,"graphics/babyseal.jsp",0,0,
+		 22,20,20,125,"graphics/babyseal.jsp",0,{},
 		 MT_EVIL|MT_ANIMAL|MT_ARCTIC,
 			{
 				{0,255},	// idle
@@ -455,7 +455,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 			}},
 		{"Snowguy",255,255,0,AI_Snowguy,
-		 26,36,40,200,"graphics/snowguy.jsp",0,0,
+		 26,36,40,200,"graphics/snowguy.jsp",0,{},
 		 MT_EVIL|MT_ARCTIC,
 			{
 				{0,255},	// idle
@@ -581,7 +581,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 			}},
 		{"Cacton",255,255,0,AI_Cactus,
-		 20,25,25,100,"graphics/cactus.jsp",0,0,
+		 20,25,25,100,"graphics/cactus.jsp",0,{},
 		 MT_EVIL|MT_VEGGIE|MT_DESERT,
 			{
 				{0,0,0,13,14,15,15,14,13,0,0,0,16,17,18,18,17,16,0,255},	// idle
@@ -637,7 +637,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 			}},
 		{"MechaBouapha",255,255,0,AI_MechaBouapha,
-		 20,24,250,1000,"graphics/mechabouapha.jsp",0,0,
+		 20,24,250,1000,"graphics/mechabouapha.jsp",0,{},
 		 MT_EVIL|MT_HIGHTECH|MT_HUMAN,
 			{
 				{0,255},	// idle
@@ -729,7 +729,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},	// attack
 			}},
 		{"Wacko",255,255,0,AI_Wacko,
-		 12,21,20,100,"graphics/wacko.jsp",0,0,
+		 12,21,20,100,"graphics/wacko.jsp",0,{},
 		 MT_EVIL|MT_HUMAN,
 			{
 				{0,255},	// idle
@@ -781,7 +781,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{1,2,3,4,5,6,7,8,9,255},	// attack=breathe
 			}},
 		{"Dr. Lunatic",255,255,0,AI_DrLunatic,
-		 40,21,50,10000,"graphics/dr-l.jsp",0,0,
+		 40,21,50,10000,"graphics/dr-l.jsp",0,{},
 		 MT_EVIL|MT_HUMAN|MT_BOSS,
 			{
 				{0,255},	// idle
@@ -809,7 +809,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{28,29,30,31,31,31,31,31,32,33,34,35,36,37,38,39,255},	// attack=slash
 			}},
 		{"Santa Claus",255,255,0,AI_Santa,
-		 18,25,100,500,"graphics/santa.jsp",0,0,
+		 18,25,100,500,"graphics/santa.jsp",0,{},
 		 MT_EVIL|MT_HUMAN|MT_WACKY|MT_ARCTIC,
 			{
 				{0,255},	// idle
@@ -851,7 +851,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{1,2,3,4,5,6,0,255},	// move
 			}},
 		{"Power Armor",255,255,0,NULL,	// in power armor
-		 20,14,128,0,"graphics/pwrarmor.jsp",0,0,
+		 20,14,128,0,"graphics/pwrarmor.jsp",0,{},
 		 MT_WEIRD,
 			{
 				{0,255},	// idle
@@ -865,7 +865,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,9,9,9,8,7,255},	// attack
 			}},
 		{"Vampire",255,255,0,AI_Vampire,
-		 12,13,60,500,"graphics/vampire.jsp",0,0,
+		 12,13,60,500,"graphics/vampire.jsp",0,{},
 		 MT_EVIL|MT_VAMPIRE|MT_SPOOKY,
 			{
 				{1,2,1,0,255},	// idle
@@ -921,7 +921,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},	// attack
 			}},
 		{"Lefty",255,255,0,AI_Lefty,
-		 9,28,10,100,"graphics/lefty.jsp",0,0,
+		 9,28,10,100,"graphics/lefty.jsp",0,{},
 		 MT_EVIL|MT_SPOOKY|MT_WACKY|MT_HUMAN,
 			{
 				{0,255},	// idle
@@ -935,7 +935,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{14,15,16,17,18,19,20,21,255},	// attack (punch)
 			}},
 		{"Pygmy Hunter",255,255,0,AI_Pygmy2,
-		 10,41,15,100,"graphics/pygmy2.jsp",0,0,
+		 10,41,15,100,"graphics/pygmy2.jsp",0,{},
 		 MT_EVIL|MT_PYGMY|MT_HUMAN,
 			{
 				{0,0,0,0,0,0,0,0,0,0,1,2,3,2,1,0,0,0,4,5,6,5,4,255},	// idle
@@ -949,7 +949,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{20,21,22,23,24,25,26,27,28,255},	// attack
 			}},
 		{"Pygmy Shaman",255,255,0,AI_Pygmy3,
-		 10,35,15,100,"graphics/pygmy3.jsp",0,0,
+		 10,35,15,100,"graphics/pygmy3.jsp",0,{},
 		 MT_EVIL|MT_PYGMY|MT_HUMAN,
 			{
 				{0,0,0,0,0,0,0,0,0,0,1,2,3,2,1,0,0,0,4,5,6,5,4,255},	// idle
@@ -1033,7 +1033,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{4,5,6,7,8,9,10,11,12,13,12,11,10,9,8,7,6,5,4,255},	// attack
 			}},
 		{"Xenoid",255,255,0,AI_BabyAlien,
-		 8,10,1,20,"graphics/babyalien.jsp",0,0,
+		 8,10,1,20,"graphics/babyalien.jsp",0,{},
 		 MT_EVIL|MT_SPIDER|MT_ALIEN,
 			{
 				{0,255},	// idle
@@ -1047,7 +1047,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,9,9,8,7,255},	// attack
 			}},
 		{"Xeno Hunter",255,255,0,AI_Alien,
-		 13,29,30,350,"graphics/alien.jsp",0,0,
+		 13,29,30,350,"graphics/alien.jsp",0,{},
 		 MT_EVIL|MT_ALIEN,
 			{
 				{0,255},	// idle
@@ -1089,7 +1089,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{10,11,11,11,12,13,14,14,15,255},	// attack
 			}},
 		{"MiniBot",255,255,0,AI_Minibot,
-		 10,6,5,50,"graphics/robot1.jsp",0,0,
+		 10,6,5,50,"graphics/robot1.jsp",0,{},
 		 MT_EVIL|MT_HIGHTECH,
 			{
 				{0,255},	// idle
@@ -1103,7 +1103,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,0,255},	// attack
 			}},
 		{"MeanieBot",255,255,0,AI_Meaniebot,
-		 13,10,30,100,"graphics/robot2.jsp",0,0,
+		 13,10,30,100,"graphics/robot2.jsp",0,{},
 		 MT_EVIL|MT_HIGHTECH,
 			{
 				{0,255},	// idle
@@ -1145,7 +1145,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},	// attack
 			}},
 		{"Doom Bunny",255,255,0,AI_Bunny,
-		 10,8,30,1000,"graphics/doombnny.jsp",0,0,
+		 10,8,30,1000,"graphics/doombnny.jsp",0,{},
 		 MT_EVIL|MT_WACKY|MT_ANIMAL,
 			{
 				{0,255},	// idle
@@ -1173,7 +1173,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,10,9,8,7,255},	// attack (left pound)
 			}},
 		{"Squash",255,255,0,AI_Squash,
-		 8,14,10,100,"graphics/squash.jsp",0,0,
+		 8,14,10,100,"graphics/squash.jsp",0,{},
 		 MT_EVIL|MT_VEGGIE|MT_PUMPKIN,
 			{
 				{0,255},	// idle
@@ -1187,7 +1187,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,9,8,7,255},	// attack
 			}},
 		{"UltraPygmy",255,255,0,AI_UltraPygmy,
-		 5,50,5,100,"graphics/pygmy4.jsp",0,0,
+		 5,50,5,100,"graphics/pygmy4.jsp",0,{},
 		 MT_EVIL|MT_PYGMY|MT_HUMAN|MT_WACKY,
 			{
 				{0,0,0,0,0,0,0,0,0,0,1,2,3,2,1,0,0,0,4,5,6,5,4,255},	// idle
@@ -1261,7 +1261,7 @@ MonsterType monsType[NUM_MONSTERS]=
 		// FUN PACK MONSTERS!
 
 		{"Buddy Bunny",2,0,3,AI_BuddyBunny,
-		 10,8,30,1000,"!83",0,0,
+		 10,8,30,1000,"!83",0,{},
 		 MT_GOOD|MT_ANIMAL,
 			{
 				{0,255},	// idle
@@ -1388,7 +1388,7 @@ MonsterType monsType[NUM_MONSTERS]=
 			}},
 
 		{"Pygmy Queen",4,7,3,AI_PygmyQueen,
-		 10,35,50,200,"!69",0,0,
+		 10,35,50,200,"!69",0,{},
 		 MT_EVIL|MT_PYGMY|MT_GENERATE|MT_HUMAN,
 			{
 				{0,0,0,0,0,0,0,0,0,0,1,2,3,2,1,0,0,0,4,5,6,5,4,255},	// idle
@@ -1402,7 +1402,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{20,21,22,22,22,21,20,255},	// attack
 			}},
 		{"Jalapeno",1,4,4,AI_Jalapeno,
-		 8,14,5,100,"!85",0,0,
+		 8,14,5,100,"!85",0,{},
 		 MT_EVIL|MT_VEGGIE|MT_PUMPKIN,
 			{
 				{0,255},	// idle
@@ -1486,7 +1486,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,9,9,9,9,9,8,7,255},		// attack
 			}},
 		{"Mad Millennium Bug",3,4,8,AI_MadBug,
-		 4,22,100,500,"!4",0,0,
+		 4,22,100,500,"!4",0,{},
 		 MT_EVIL|MT_ANIMAL|MT_SPIDER|MT_MINIBOSS|MT_WACKY,
 			{
 				{0,255},	// idle
@@ -1500,7 +1500,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{12,13,14,13,12,255},	// attack
 			}},
 		{"Wacky Wizard",4,3,0,AI_Wizard,
-		 18,25,200,500,"!59",0,0,
+		 18,25,200,500,"!59",0,{},
 		 MT_WACKY|MT_GOOD|MT_HUMAN,
 			{
 				{0,255},	// idle
@@ -1514,7 +1514,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,15,16,17,18,19,255},	// attack=smack
 			}},
 		{"Evil Clone",1,3,0,AI_EvilClone,
-		 11,29,128,0,"!1",0,0,
+		 11,29,128,0,"!1",0,{},
 		 MT_EVIL|MT_HUMAN,
 			{
 				{0,255},	// idle
@@ -1528,7 +1528,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,15,16,255},	// attack
 			}},
 		{"Bob The Biscuit",255,255,-7,AI_Bob,
-		 12,33,70,300,"!18",0,0,
+		 12,33,70,300,"!18",0,{},
 		 MT_EVIL|MT_WACKY,
 			{
 				{0,255},	// idle
@@ -1612,7 +1612,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},	// attack
 			}},
 		{"Boomkin",2,4,5,AI_Pumpkin,
-		 11,6,1,500,"!19",0,0,
+		 11,6,1,500,"!19",0,{},
 		 MT_EVIL|MT_VEGGIE|MT_PUMPKIN,
 			{
 				{0,255},	// idle
@@ -1640,7 +1640,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{11,12,13,14,15,16,17,18,255},	// attack=head crush
 			}},
 		{"BuddyBot",0,7,-2,AI_Minibot,
-		 10,6,5,50,"!79",0,0,
+		 10,6,5,50,"!79",0,{},
 		 MT_GOOD|MT_HIGHTECH,
 			{
 				{0,255},	// idle
@@ -1654,7 +1654,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,0,255},	// attack
 			}},
 		{"HelpyBot",0,7,-2,AI_Meaniebot,
-		 13,10,30,100,"!80",0,0,
+		 13,10,30,100,"!80",0,{},
 		 MT_GOOD|MT_HIGHTECH,
 			{
 				{0,255},	// idle
@@ -1724,7 +1724,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{3,4,5,6,7,8,9,255},	// attack
 			}},
 		{"Grabby Gnome",2,1,0,AI_Gnome,
-		 5,50,15,100,"!86",0,0,
+		 5,50,15,100,"!86",0,{},
 		 MT_EVIL|MT_WACKY|MT_PYGMY|MT_HUMAN,
 			{
 				{0,0,0,0,0,0,0,0,0,0,1,2,3,2,1,0,0,0,4,5,6,5,4,255},	// idle
@@ -1780,7 +1780,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{10,11,11,11,12,13,14,14,15,255},	// attack
 			}},
 		{"Jacko",255,255,-2,AI_BigPumpkin,	// big pumpkin
-		 14,1,30,500,"!52",0,0,
+		 14,1,30,500,"!52",0,{},
 		 MT_EVIL|MT_PUMPKIN|MT_VEGGIE,
 			{
 				{0,255},	// idle
@@ -1794,7 +1794,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,0,0,255},	// move
 			}},
 		{"Crazybone",0,3,0,AI_CrazyBone,
-		 8,38,10,100,"!2",0,0,
+		 8,38,10,100,"!2",0,{},
 		 MT_EVIL|MT_SPOOKY,
 			{
 				{0,255},	// idle
@@ -1850,7 +1850,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,9,9,9,9,8,7,255},	// attack
 			}},
 		{"Madman",5,2,1,AI_Madman,
-		 12,21,10,100,"!53",0,0,
+		 12,21,10,100,"!53",0,{},
 		 MT_EVIL|MT_HUMAN,
 			{
 				{0,255},	// idle
@@ -1864,7 +1864,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,255},	// attack=stab
 			}},
 		{"Pygmy Accountant",255,255,0,AI_PygmyAcct,
-		 10,41,25,100,"graphics/pygacct.jsp",0,0,
+		 10,41,25,100,"graphics/pygacct.jsp",0,{},
 		 MT_EVIL|MT_PYGMY|MT_HUMAN|MT_URBAN,
 			{
 				{0,0,0,0,0,0,0,0,0,0,1,2,3,2,1,0,0,0,4,5,6,5,4,255},	// idle
@@ -1878,7 +1878,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{24,25,26,27,28,29,30,31,255},	// attack
 			}},
 		{"Mr. Crazypants",255,255,0,AI_Crazypants,
-		 12,35,80,100,"graphics/crazypants.jsp",0,0,
+		 12,35,80,100,"graphics/crazypants.jsp",0,{},
 		 MT_EVIL|MT_HUMAN|MT_MINIBOSS,
 			{
 				{0,255},	// idle
@@ -1906,7 +1906,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{1,2,0,255},	// move
 			}},
 		{"Elite SEAL",1,4,0,AI_EliteSeal,
-		 22,20,50,125,"!31",0,0,
+		 22,20,50,125,"!31",0,{},
 		 MT_EVIL|MT_ANIMAL|MT_ARCTIC,
 			{
 				{0,255},	// idle
@@ -1920,7 +1920,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{6,6,9,10,13,14,255},	// attack=full auto
 			}},
 		{"Creeping Cone",255,255,0,AI_Cone,
-		 8,21,30,25,"graphics/cone.jsp",0,0,
+		 8,21,30,25,"graphics/cone.jsp",0,{},
 		 MT_EVIL|MT_URBAN|MT_WACKY|MT_TRAP,
 			{
 				{0,255},	// idle
@@ -1990,7 +1990,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{14,15,16,17,18,19,20,21,22,23,255},	// attack=snowball
 			}},
 		{"Spikey",6,4,5,AI_Spikey,
-		 12,13,200,500,"!63",0,0,
+		 12,13,200,500,"!63",0,{},
 		 MT_EVIL|MT_VAMPIRE|MT_SPOOKY,
 			{
 				{1,2,1,0,255},	// idle
@@ -2004,7 +2004,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{3,4,5,5,6,6,7,7,8,9,255},	// attack
 			}},
 		{"BomBot",0,4,-4,AI_Bombot,
-		 13,10,50,100,"!80",0,0,
+		 13,10,50,100,"!80",0,{},
 		 MT_EVIL|MT_HIGHTECH,
 			{
 				{0,255},	// idle
@@ -2018,7 +2018,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{5,6,6,6,6,6,5,255},	// attack
 			}},
 		{"Buddy Bunny",2,0,3,AI_FollowBunny,
-		 10,8,30,1000,"!83",0,0,
+		 10,8,30,1000,"!83",0,{},
 		 MT_GOOD|MT_ANIMAL,
 			{
 				{0,255},	// idle
@@ -2032,7 +2032,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{1,2,3,4,5,6,7,0,255},	// move
 			}},
 		{"Autozoid",255,255,0,AI_Autozoid,
-		 15,16,150,1000,"graphics/autozoid.jsp",0,0,
+		 15,16,150,1000,"graphics/autozoid.jsp",0,{},
 		 MT_EVIL|MT_ZOID|MT_URBAN|MT_VEHICLE,
 			{
 				{0,255},	// idle
@@ -2088,7 +2088,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{10,11,12,13,14,15,16,17,18,255},	// attack (crown spin)
 			}},
 		{"Mailboxer",255,255,0,AI_Mailboxer,
-		 12,32,40,1000,"graphics/mboxer.jsp",0,0,
+		 12,32,40,1000,"graphics/mboxer.jsp",0,{},
 		 MT_EVIL|MT_WACKY|MT_URBAN,
 			{
 				{0,1,2,3,2,1,0,4,5,6,5,4,255},	// idle
@@ -2144,7 +2144,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,0,0,255}, // die
 			}},
 		{"Punkin",255,255,0,AI_Punkin,
-		 9,10,10,1000,"graphics/punkin.jsp",0,0,
+		 9,10,10,1000,"graphics/punkin.jsp",0,{},
 		 MT_EVIL|MT_PUMPKIN|MT_VEGGIE|MT_URBAN,
 			{
 				{0,255},	// idle
@@ -2158,7 +2158,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,1,2,3,4,5,6,7,8,9,255},	// move
 			}},
 		{"Sea Cucumber",255,255,0,AI_SeaCuke,
-		 11,32,100,1000,"graphics/seacuke.jsp",0,0,
+		 11,32,100,1000,"graphics/seacuke.jsp",0,{},
 		 MT_EVIL|MT_VEGGIE|MT_UNDERSEA|MT_MINIBOSS,
 			{
 				{0,255},	// idle
@@ -2186,7 +2186,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,6,5,4,3,2,1,255},	// attack
 			}},
 		{"Starfish",255,255,0,AI_Starfish,
-		 11,31,15,1000,"graphics/starfish.jsp",0,0,
+		 11,31,15,1000,"graphics/starfish.jsp",0,{},
 		 MT_EVIL|MT_UNDERSEA|MT_ANIMAL,
 			{
 				{0,255},	// idle
@@ -2228,7 +2228,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,7,8,9,8,9,10,11,10,11,12,13,12,13,14,14,14,15,15,16,255},	// attack=full auto
 			}},
 		{"Wet Willy",255,255,0,AI_WetWilly,
-		 12,20,30,1000,"graphics/willy.jsp",0,0,
+		 12,20,30,1000,"graphics/willy.jsp",0,{},
 		 MT_EVIL|MT_URBAN|MT_WACKY,
 			{
 				{0,1,2,3,4,5,6,7,8,9,10,11,255},	// idle
@@ -2242,7 +2242,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{12,13,14,15,15,15,15,15,14,13,12,255},	// attack
 			}},
 		{"Crab Puff",255,255,0,AI_CrabPuff,
-		 7,5,1,1000,"graphics/puff.jsp",0,0,
+		 7,5,1,1000,"graphics/puff.jsp",0,{},
 		 MT_EVIL|MT_UNDERSEA|MT_ANIMAL,
 			{
 				{0,255},	// idle
@@ -2354,7 +2354,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,255},	// attack
 			}},
 		{"Mutant Zombie",0,1,0,AI_MutantZombie,
-		 11,32,30,150,"!6",0,0,
+		 11,32,30,150,"!6",0,{},
 		 MT_SPOOKY|MT_ZOMBIE|MT_EVIL,
 			{
 				{0,255},	// idle
@@ -2368,7 +2368,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,9,10,11,12,13,13,14,15,16,17,18,19,255},	// attack
 			}},
 		{"Whatsit",1,4,-4,AI_Whatsit,
-		 12,44,40,50,"!20",0,0,
+		 12,44,40,50,"!20",0,{},
 		 MT_THINGY|MT_EVIL,
 			{
 				{12,255},	// idle
@@ -2522,7 +2522,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{254,254,254,255},	// move
 			}},
 		{"The Beetles",7,0,-8,AI_Beetle,
-		 7,5,1,1000,"!161",0,0,
+		 7,5,1,1000,"!161",0,{},
 		 MT_EVIL|MT_DESERT|MT_ANIMAL,
 			{
 				{0,255},	// idle
@@ -2550,7 +2550,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{8,9,10,10,10,10,10,10,10,10,9,8,255},	// attack
 			}},
 		{"Frostbiter",1,7,3,AI_Frostbiter,
-		 8,21,10,50,"!5",0,0,
+		 8,21,10,50,"!5",0,{},
 		 MT_EVIL|MT_ARCTIC|MT_SPIDER|MT_ANIMAL,
 			{
 				{0,255},	// idle
@@ -2676,7 +2676,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,0,0,255},	// attack=hammer toss
 			}},
 		{"Shroomlord",255,255,0,AI_ShroomLord,
-		 15,14,40,300,"graphics/shrmlord.jsp",0,0,
+		 15,14,40,300,"graphics/shrmlord.jsp",0,{},
 		 MT_EVIL|MT_VEGGIE,
 			{
 				{0,255},	// idle
@@ -2713,7 +2713,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{1,2,3,2,1,255},	// attack=spit bats
 			}},
 		{"Werepuppy",255,255,0,AI_Werewolf,
-		 12,55,15,100,"graphics/wolfman.jsp",0,0,
+		 12,55,15,100,"graphics/wolfman.jsp",0,{},
 		 MT_EVIL|MT_SPOOKY|MT_ANIMAL,
 			{
 				{0,255},	// idle
@@ -2727,7 +2727,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{30,31,32,32,32,33,34,35,36,37,38,39,40,41,42,43,255},	// attack (pounce)
 			}},
 		{"Weremutt",2,4,0,AI_Werewolf,
-		 12,55,25,100,"!195",0,0,
+		 12,55,25,100,"!195",0,{},
 		 MT_EVIL|MT_SPOOKY|MT_ANIMAL,
 			{
 				{0,255},	// idle
@@ -2797,7 +2797,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{11,12,13,14,15,16,17,18,255},	// attack=head crush
 			}},
 		{"Pygmy Weatherman",6,3,5,AI_Weatherman,
-		 10,50,100,100,"!9",0,0,
+		 10,50,100,100,"!9",0,{},
 		 MT_EVIL|MT_PYGMY|MT_HUMAN|MT_MINIBOSS,
 			{
 				{0,0,0,0,0,0,0,0,0,0,1,2,3,2,1,0,0,0,4,5,6,5,4,255},	// idle
@@ -2839,7 +2839,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,7,8,8,9,10,11,12,12,13,255},	// attack
 			}},
 		{"Punk Bunny",255,255,0,AI_PunkBunny,
-		 8,16,40,100,"graphics/punkbunny.jsp",0,0,
+		 8,16,40,100,"graphics/punkbunny.jsp",0,{},
 		 MT_ANIMAL|MT_URBAN|MT_GOOD,
 			{
 				{0,255},	// idle
@@ -2881,7 +2881,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,9,9,9,9,9,9,8,8,8,7,255},	// attack
 			}},
 		{"Hot N' Sour",1,4,0,AI_HotShroom,
-		 15,23,10,50,"!24",0,0,
+		 15,23,10,50,"!24",0,{},
 		 MT_EVIL|MT_VEGGIE,
 			{
 				{0,255},	// idle
@@ -2909,7 +2909,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{4,5,6,7,8,9,10,11,12,255},	// attack=spit something small
 			}},
 		{"A Little Crazy",5,1,0,AI_MiniWacko,
-		 6,21,5,100,"graphics/miniwacko.jsp",0,0,
+		 6,21,5,100,"graphics/miniwacko.jsp",0,{},
 		 MT_EVIL|MT_HUMAN|MT_WACKY,
 			{
 				{0,255},	// idle

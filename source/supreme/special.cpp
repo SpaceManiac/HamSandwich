@@ -213,7 +213,7 @@ void DefaultTrigger(trigger_t *trig,int x,int y)
 
 void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 {
-	eff->flags=0;
+	eff->flags={};
 	eff->x=x;
 	eff->y=y;
 	if(!savetext)
@@ -1506,13 +1506,13 @@ void SpecialEffect(special_t *me,Map *map)
 				switch(me->effect[i].value2)
 				{
 					case 0:
-						map->flags|=w;
+						map->flags |= LevelFlags{w};
 						break;
 					case 1:
-						map->flags&=(~w);
+						map->flags &= ~LevelFlags{w};
 						break;
 					case 2:
-						map->flags^=w;
+						map->flags ^= LevelFlags{w};
 						break;
 				}
 				if((w2&(MAP_UNDERWATER|MAP_OXYGEN)) && !(map->flags&(MAP_UNDERWATER|MAP_OXYGEN)))

@@ -59,9 +59,9 @@ static void LoadItem(hamworld::Section *f, item_t *item)
 		}
 
 	item->rarity = f->read_varint();
-	item->flags = f->read_varint();
-	item->theme = f->read_varint();
-	item->trigger = f->read_varint();
+	item->flags = (ItemFlags)f->read_varint();
+	item->theme = (ItemThemes)f->read_varint();
+	item->trigger = (ItemTriggers)f->read_varint();
 	item->effect = f->read_varint();
 	item->effectAmt = f->read_varint();
 	item->sound = DescIndexToSound(f->read_varint());
@@ -178,7 +178,7 @@ static void LoadMapSpecial(hamworld::Section *f, special_t *spcl)
 	for (size_t i = 0; i < trigger_count; ++i)
 	{
 		trigger_t *elem = &spcl->trigger[i];
-		elem->flags = f->read_varint();
+		elem->flags = (TriggerFlags)f->read_varint();
 		elem->type = f->read_varint();
 		elem->x = f->read_varint();
 		elem->y = f->read_varint();
@@ -196,7 +196,7 @@ static void LoadMapSpecial(hamworld::Section *f, special_t *spcl)
 	for (size_t i = 0; i < effect_count; ++i)
 	{
 		effect_t *elem = &spcl->effect[i];
-		elem->flags = f->read_varint();
+		elem->flags = (EffectFlags)f->read_varint();
 		elem->type = f->read_varint();
 		elem->x = f->read_varint();
 		elem->y = f->read_varint();
@@ -528,7 +528,7 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 			world->numTiles = section.read_varint();
 			for (terrain_t &terrain : world->Terrain())
 			{
-				terrain.flags = section.read_varint();
+				terrain.flags = (TileFlags)section.read_varint();
 				terrain.next = section.read_varint();
 				section.read_varint();  // ignore extension flags
 			}
@@ -544,7 +544,7 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 			section.stream.read((char*) &map->itemDrops, 2);
 			map->numBrains = section.read_varint();
 			map->numCandles = section.read_varint();
-			map->flags = section.read_varint();
+			map->flags = (LevelFlags)section.read_varint();
 
 			map->badguy.fill({});
 			size_t badguy_count = section.read_varint();

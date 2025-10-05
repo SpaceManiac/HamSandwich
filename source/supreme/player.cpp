@@ -81,7 +81,7 @@ void InitPlayer(byte level,const char *fname)
 	player.ammo=0;
 	player.reload=10;
 	player.wpnReload=10;
-	player.hammerFlags=0;
+	player.hammerFlags={};
 	player.life=128;
 	player.shield=0;
 	playerGlow=0;
