@@ -29,13 +29,15 @@ bool Supreme_GetWorldName(SDL_RWops *f, StringDestination name, StringDestinatio
 
 // ----------------------------------------------------------------------------
 
-struct io_terrain_t
+// SERIALIZED.
+struct IoTerrain
 {
 	word flags;
 	word next;
 };
+static_assert(sizeof(IoTerrain) == 4);
 
-static terrain_t LoadOneTerrain(io_terrain_t io_terrain)
+static terrain_t LoadOneTerrain(IoTerrain io_terrain)
 {
 	terrain_t r = { (TileFlags)io_terrain.flags, static_cast<word>(io_terrain.next & 0x3ff) };
 	if (io_terrain.next & (1 << 15))
@@ -43,22 +45,23 @@ static terrain_t LoadOneTerrain(io_terrain_t io_terrain)
 	return r;
 }
 
-static io_terrain_t SaveOneTerrain(terrain_t terrain)
+static IoTerrain SaveOneTerrain(terrain_t terrain)
 {
-	io_terrain_t r = { static_cast<word>(terrain.flags & 0xffffff), terrain.next };
+	IoTerrain r = { static_cast<word>(terrain.flags & 0xffffff), terrain.next };
 	if (terrain.flags & TF_SHADOWLESS)
 		r.next |= (1 << 15);
 	return r;
 }
 
 // SERIALIZED.
-struct saveTile_t
+struct IoTile
 {
 	word floor;
 	word wall;
 	byte item;
 	char light;
 };
+static_assert(sizeof(IoTile) == 6);
 
 // ----------------------------------------------------------------------------
 
@@ -66,8 +69,8 @@ void LoadTerrain(world_t *world, const char *fname, SDL_RWops *f)
 {
 	for (terrain_t &terrain : world->Terrain())
 	{
-		io_terrain_t io_terrain;
-		SDL_RWread(f, &io_terrain, sizeof(io_terrain_t), 1);
+		IoTerrain io_terrain;
+		SDL_RWread(f, &io_terrain, sizeof(IoTerrain), 1);
 		terrain = LoadOneTerrain(io_terrain);
 	}
 
@@ -132,9 +135,9 @@ static void LoadMapData(SDL_RWops *f, Map *me)
 {
 	int pos,i;
 	int8_t readRun;
-	saveTile_t *mapCopy;
+	IoTile *mapCopy;
 
-	mapCopy=new saveTile_t[me->width*me->height];
+	mapCopy=new IoTile[me->width*me->height];
 
 	pos=0;
 	while(pos<me->width*me->height)
@@ -143,14 +146,14 @@ static void LoadMapData(SDL_RWops *f, Map *me)
 		if(readRun<0)	// repeat run
 		{
 			readRun=-readRun;
-			SDL_RWread(f,&mapCopy[pos],1,sizeof(saveTile_t));
+			SDL_RWread(f,&mapCopy[pos],1,sizeof(IoTile));
 			for(i=1;i<readRun;i++)
-				memcpy(&mapCopy[pos+i],&mapCopy[pos],sizeof(saveTile_t));
+				memcpy(&mapCopy[pos+i],&mapCopy[pos],sizeof(IoTile));
 			pos+=readRun;
 		}
 		else	// unique run
 		{
-			SDL_RWread(f,&mapCopy[pos],readRun,sizeof(saveTile_t));
+			SDL_RWread(f,&mapCopy[pos],readRun,sizeof(IoTile));
 			pos+=readRun;
 		}
 	}
@@ -324,11 +327,11 @@ static void SaveMapData(SDL_RWops *f, const Map *me)
 	int pos;
 	byte sameLength,diffLength;
 	int runStart,sameStart;
-	saveTile_t *m,*src;
+	IoTile *m,*src;
 	char writeRun;
-	saveTile_t *mapCopy;
+	IoTile *mapCopy;
 
-	mapCopy=new saveTile_t[me->width*me->height];
+	mapCopy=new IoTile[me->width*me->height];
 
 	for(pos=0;pos<me->width*me->height;pos++)
 	{
@@ -348,7 +351,7 @@ static void SaveMapData(SDL_RWops *f, const Map *me)
 	while(pos<me->width*me->height)
 	{
 		m=&mapCopy[pos];
-		if(!memcmp(m,src,sizeof(saveTile_t)))	// the tiles are identical
+		if(!memcmp(m,src,sizeof(IoTile)))	// the tiles are identical
 		{
 			sameLength++;
 			if(sameLength==128)	// max run length is 127
@@ -356,7 +359,7 @@ static void SaveMapData(SDL_RWops *f, const Map *me)
 				// write out the run, and start a new run with this last one
 				writeRun=-127;
 				SDL_RWwrite(f,&writeRun,1,sizeof(char));
-				SDL_RWwrite(f,src,1,sizeof(saveTile_t));
+				SDL_RWwrite(f,src,1,sizeof(IoTile));
 				sameStart=pos;
 				runStart=pos;
 				sameLength=1;
@@ -366,7 +369,7 @@ static void SaveMapData(SDL_RWops *f, const Map *me)
 			{
 				writeRun=sameStart-runStart;
 				SDL_RWwrite(f,&writeRun,1,sizeof(char));
-				SDL_RWwrite(f,&mapCopy[runStart],writeRun,sizeof(saveTile_t));
+				SDL_RWwrite(f,&mapCopy[runStart],writeRun,sizeof(IoTile));
 				runStart=sameStart;
 				diffLength=1;
 			}
@@ -384,7 +387,7 @@ static void SaveMapData(SDL_RWops *f, const Map *me)
 				{
 					writeRun=127;
 					SDL_RWwrite(f,&writeRun,1,sizeof(char));
-					SDL_RWwrite(f,&mapCopy[runStart],127,sizeof(saveTile_t));
+					SDL_RWwrite(f,&mapCopy[runStart],127,sizeof(IoTile));
 					diffLength=1;
 					runStart=pos;
 				}
@@ -393,7 +396,7 @@ static void SaveMapData(SDL_RWops *f, const Map *me)
 			{
 				writeRun=-sameLength;
 				SDL_RWwrite(f,&writeRun,1,sizeof(char));
-				SDL_RWwrite(f,src,1,sizeof(saveTile_t));
+				SDL_RWwrite(f,src,1,sizeof(IoTile));
 				sameStart=pos;
 				runStart=pos;
 				sameLength=1;
@@ -411,14 +414,14 @@ static void SaveMapData(SDL_RWops *f, const Map *me)
 		// final run is same run
 		writeRun=-sameLength;
 		SDL_RWwrite(f,&writeRun,1,sizeof(char));
-		SDL_RWwrite(f,src,1,sizeof(saveTile_t));
+		SDL_RWwrite(f,src,1,sizeof(IoTile));
 	}
 	else
 	{
 		// either it's one lonely unique tile, or a different run, either way...
 		writeRun=diffLength;
 		SDL_RWwrite(f,&writeRun,1,sizeof(char));
-		SDL_RWwrite(f,&mapCopy[runStart],writeRun,sizeof(saveTile_t));
+		SDL_RWwrite(f,&mapCopy[runStart],writeRun,sizeof(IoTile));
 	}
 	delete[] mapCopy;
 }
@@ -486,8 +489,8 @@ bool Supreme_SaveWorld(const world_t *world, SDL_RWops *f)
 
 	for (const terrain_t &terrain : world->Terrain())
 	{
-		io_terrain_t io_terrain = SaveOneTerrain(terrain);
-		SDL_RWwrite(f, &io_terrain, sizeof(io_terrain_t), 1);
+		IoTerrain io_terrain = SaveOneTerrain(terrain);
+		SDL_RWwrite(f, &io_terrain, sizeof(IoTerrain), 1);
 	}
 
 	for (Map *map : world->Maps())

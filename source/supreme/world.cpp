@@ -38,12 +38,6 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	return 1;
 }
 
-struct io_terrain_t
-{
-	word flags;
-	word next;
-};
-
 bool LoadWorld(world_t *world,const char *fname)
 {
 	char code[32];
@@ -224,8 +218,6 @@ bool MustBeHamSandwichWorld(const world_t *world)
 	YES_IF(strlen(world->author) > 31);
 	YES_IF(world->numMaps > UINT8_MAX);
 	YES_IF(world->numTiles > UINT16_MAX);
-
-	YES_IF(sizeof(io_terrain_t) != 4);
 
 	for(int i = 0; i < world->numMaps; ++i)
 	{
