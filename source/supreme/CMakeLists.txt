@@ -5,7 +5,7 @@ HamSandwich_add_executable(
 	SOURCES ${sources}
 )
 target_sources(supreme PRIVATE supreme.manifest)
-target_link_libraries(supreme steam_api minizip)
+target_link_libraries(supreme steam_api minizip strnatcmp)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
 	target_compile_options(supreme PRIVATE

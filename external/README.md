@@ -10,5 +10,6 @@ external/SDL2 | git-subtree | https://github.com/libsdl-org/SDL | release-2.0.22
 external/SDL2_image | git-subtree | https://github.com/libsdl-org/SDL_image | release-2.0.5
 external/SDL2_mixer | git-subtree | https://github.com/libsdl-org/SDL_mixer | release-2.0.4
 external/steamworks_sdk | manual | https://partner.steamgames.com/downloads/list | 1.57
+external/strnatcmp | manual | https://github.com/sourcefrog/natsort | f8a6b0cda6
 external/tinyfiledialogs | manual | https://sourceforge.net/projects/tinyfiledialogs/ | 1a5ded5653
 external/zlib | git-subtree | https://github.com/madler/zlib | v1.3.1
