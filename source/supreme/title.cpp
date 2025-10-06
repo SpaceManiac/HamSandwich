@@ -230,10 +230,10 @@ void MainMenuDisplay(MGLDraw *mgl)
 	Print(3,467,"Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY,1,1);
 	Print(2,466,"Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY,0,1);
 	// Steam edition info
-	/*const char* edition = SteamManager::Get()->DescribeEdition();
+	/*const char* edition = Steam()->DescribeEdition();
 	Print(SCRWID - GetStrLength(edition, 1), 20, edition, 1, 1);
 	Print(SCRWID - GetStrLength(edition, 1) - 1, 20-1, edition, 0, 1);*/
-	const char* workshopStatus = SteamManager::Get()->DescribeWorkshopStatus();
+	const char* workshopStatus = Steam()->DescribeWorkshopStatus();
 	Print(3, 3, workshopStatus, 1, 1);
 	Print(3-1, 3-1, workshopStatus, 0, 1);
 
@@ -494,7 +494,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 			CO_RETURN 6;	// start shopping!
 	}
 
-	mgl->LoadBMP(SteamManager::Get()->IsSteamEdition() ? "graphics/title_steam.bmp" : "graphics/title.bmp");
+	mgl->LoadBMP(Steam()->IsSteamEdition() ? "graphics/title_steam.bmp" : "graphics/title.bmp");
 	backgd=(byte *)malloc(640*480);
 	if(!backgd)
 		FatalError("Out of memory!");

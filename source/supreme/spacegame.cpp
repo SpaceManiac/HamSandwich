@@ -1016,7 +1016,7 @@ void SpaceGoodguyHit(void)
 			oldc=255;
 			coinsEarned=score/100;
 			profile.progress.totalCoins+=coinsEarned;
-			SteamManager::Get()->UploadArcadeScore("arcade/zappo_raiders", score);
+			Steam()->UploadArcadeScore("arcade/zappo_raiders", score);
 		}
 		spcPlyr.x=320*FIXAMT;
 		spcPlyr.y=240*FIXAMT;

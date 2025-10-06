@@ -347,7 +347,7 @@ TASK(void) NameEntry(MGLDraw *mgl,byte makeNew)
 
 	InitNameEntry(mgl);
 	if (FirstTime())
-		SteamManager::Get()->GetUsername(entry, sizeof entry);
+		Steam()->GetUsername(entry, sizeof entry);
 
 	while(!done)
 	{

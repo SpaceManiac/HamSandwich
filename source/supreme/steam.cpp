@@ -699,7 +699,7 @@ SteamManager* SteamManager::Init(const char* appId)
 	return gSteamManager.get();
 }
 
-SteamManager* SteamManager::Get()
+SteamManager* Steam()
 {
 	return gSteamManager.get();
 }

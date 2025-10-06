@@ -226,7 +226,7 @@ void LoadProfile(const char *name)
 		profile.progress.moreJoyCtrl[1]=3;
 	}
 
-	SteamManager::Get()->ProfileReady();
+	Steam()->ProfileReady();
 }
 
 byte FirstTime(void)

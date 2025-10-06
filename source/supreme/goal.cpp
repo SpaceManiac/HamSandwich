@@ -166,7 +166,7 @@ void CompleteGoal(byte goal)
 		return;
 
 	profile.progress.goal[goal]=1;
-	SteamManager::Get()->CompleteGoal(goal);
+	Steam()->CompleteGoal(goal);
 	coro::launch(std::bind(ShowGoalEarned, goal));
 
 	if(shopping)

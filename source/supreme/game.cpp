@@ -331,7 +331,7 @@ TASK(byte) LunaticRun(int *lastTime)
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
 					if (!shopping && !editing)
-						SteamManager::Get()->StartPlaytimeTracking(nullptr);
+						Steam()->StartPlaytimeTracking(nullptr);
 					break;
 				case PAUSE_GIVEUP:
 					SetPlayerStart(-1,-1);
@@ -342,7 +342,7 @@ TASK(byte) LunaticRun(int *lastTime)
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
 					if (!shopping && !editing)
-						SteamManager::Get()->StartPlaytimeTracking(nullptr);
+						Steam()->StartPlaytimeTracking(nullptr);
 					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_WORLDSEL:
@@ -356,7 +356,7 @@ TASK(byte) LunaticRun(int *lastTime)
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
 					if (!shopping && !editing)
-						SteamManager::Get()->StartPlaytimeTracking(nullptr);
+						Steam()->StartPlaytimeTracking(nullptr);
 					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_EXIT:
@@ -652,7 +652,7 @@ void PauseGame(void)
 		return;
 	InitPauseMenu();
 	gameMode=GAMEMODE_MENU;
-	SteamManager::Get()->StopPlaytimeTracking();
+	Steam()->StopPlaytimeTracking();
 }
 
 TASK(byte) PlayALevel(byte map)
@@ -739,11 +739,11 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 	if (!editing)
 	{
 		if (shopping)
-			SteamManager::Get()->SetPresenceShopping();
+			Steam()->SetPresenceShopping();
 		else
 		{
-			SteamManager::Get()->SetPresenceWorld(curWorld.map[0]->name);
-			SteamManager::Get()->StartPlaytimeTracking(fullName);
+			Steam()->SetPresenceWorld(curWorld.map[0]->name);
+			Steam()->StartPlaytimeTracking(fullName);
 		}
 	}
 
@@ -777,10 +777,10 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 
 	if (!editing && !shopping && (player.pendingLeaderboardUpload || player.worldProg->percentage != oldPercentage || player.worldProg->keychains != oldKeychains))
 	{
-		SteamManager::Get()->UploadWorldScore();
+		Steam()->UploadWorldScore();
 	}
 
-	SteamManager::Get()->SetPresenceNone();
+	Steam()->SetPresenceNone();
 	if(result==WORLD_QUITGAME || result==WORLD_SHOP)
 		CO_RETURN 0;
 	else

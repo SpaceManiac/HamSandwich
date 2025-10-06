@@ -97,7 +97,7 @@ byte InitEditor(void)
 	SetPlayerStart(-1,-1);
 	InitStars();
 
-	SteamManager::Get()->SetPresenceEditor();
+	Steam()->SetPresenceEditor();
 	return 1;
 }
 
@@ -120,7 +120,7 @@ void ExitEditor(void)
 
 	editmgl->ResizeBuffer(SCRWID, SCRHEI);
 
-	SteamManager::Get()->SetPresenceNone();
+	Steam()->SetPresenceNone();
 }
 
 void Delete(int x,int y)

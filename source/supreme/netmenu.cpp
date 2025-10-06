@@ -480,7 +480,7 @@ TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 		curButton = ButtonId::None;
 		for(int i=0; i<NUM_NET_BTNS; i++)
 		{
-			if ((!btn[i].steamOnly || SteamManager::Get()->IsSteamEdition()) && PointInRect(msx,msy,btn[i].x,btn[i].y,btn[i].x+btn[i].wid,btn[i].y+PBTN_HEIGHT))
+			if ((!btn[i].steamOnly || Steam()->IsSteamEdition()) && PointInRect(msx,msy,btn[i].x,btn[i].y,btn[i].x+btn[i].wid,btn[i].y+PBTN_HEIGHT))
 			{
 				curButton = btn[i].id;
 			}
@@ -528,7 +528,7 @@ TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 				curButton = ButtonId::LoonyChat;
 				break;
 			case ButtonId::LoonyChat:
-				curButton = SteamManager::Get()->IsSteamEdition() ? ButtonId::SteamWorkshop : ButtonId::Exit;
+				curButton = Steam()->IsSteamEdition() ? ButtonId::SteamWorkshop : ButtonId::Exit;
 				break;
 			case ButtonId::SteamWorkshop:
 				curButton = ButtonId::Exit;
@@ -550,7 +550,7 @@ TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 				curButton = ButtonId::LoonyChat;
 				break;
 			case ButtonId::Exit:
-				curButton = SteamManager::Get()->IsSteamEdition() ? ButtonId::SteamWorkshop : ButtonId::LoonyChat;
+				curButton = Steam()->IsSteamEdition() ? ButtonId::SteamWorkshop : ButtonId::LoonyChat;
 				break;
 			case ButtonId::None:
 				curButton = ButtonId::Exit;
@@ -588,14 +588,14 @@ TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 				{
 					case ButtonId::HamumuWebsite:
 						MakeNormalSound(SND_MENUSELECT);
-						if (SteamManager::Get()->IsSteamEdition())
-							SteamManager::Get()->OpenURLOverlay("https://store.steampowered.com/developer/Hamumu");
+						if (Steam()->IsSteamEdition())
+							Steam()->OpenURLOverlay("https://store.steampowered.com/developer/Hamumu");
 						else
 							SDL_OpenURL("https://hamumu.com");
 						break;
 					case ButtonId::HamSandwich:
 						MakeNormalSound(SND_MENUSELECT);
-						SteamManager::Get()->OpenURLOverlay("https://github.com/SpaceManiac/HamSandwich");
+						Steam()->OpenURLOverlay("https://github.com/SpaceManiac/HamSandwich");
 						break;
 					case ButtonId::LoonyChat:
 						MakeNormalSound(SND_MENUSELECT);
@@ -603,7 +603,7 @@ TASK(byte) UpdateNetMenu(int *lastTime,MGLDraw *mgl)
 						break;
 					case ButtonId::SteamWorkshop:
 						MakeNormalSound(SND_MENUSELECT);
-						SteamManager::Get()->OpenURLOverlay("https://steamcommunity.com/app/2547330/workshop/");
+						Steam()->OpenURLOverlay("https://steamcommunity.com/app/2547330/workshop/");
 						break;
 					case ButtonId::Upload:
 						if(profile.nameVerified)
@@ -1001,7 +1001,7 @@ void RenderNetMenu(MGLDraw *mgl)
 
 	for(i=0;i<NUM_NET_BTNS;i++)
 	{
-		if (!btn[i].steamOnly || SteamManager::Get()->IsSteamEdition())
+		if (!btn[i].steamOnly || Steam()->IsSteamEdition())
 		{
 			RenderNetButton(btn[i].x,btn[i].y,btn[i].wid,btn[i].txt,mgl, btn[i].id);
 		}

@@ -710,7 +710,7 @@ void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 		Print(midX, 53, saveZipResult, 0, 1);
 
 #ifdef HAS_STEAM_API
-		if (SteamManager::Get()->CanUploadToWorkshop())
+		if (Steam()->CanUploadToWorkshop())
 		{
 			y = 200;
 			Print(midX, y, "- OR -", 0, 1);
@@ -778,7 +778,7 @@ bool ExportDialogClick(int msx, int msy)
 		{
 			std::string url = "https://steamcommunity.com/sharedfiles/filedetails/?id=";
 			url.append(std::to_string(steamWorkshopUpload.workshopItemId));
-			//SteamManager::Get()->OpenUrl(url.c_str());
+			//Steam()->OpenUrl(url.c_str());
 			SteamFriends()->ActivateGameOverlayToWebPage(url.c_str());
 			break;
 		}
