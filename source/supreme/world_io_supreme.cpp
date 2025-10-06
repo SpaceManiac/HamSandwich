@@ -63,6 +63,15 @@ struct IoTile
 };
 static_assert(sizeof(IoTile) == 6);
 
+// SERIALIZED.
+struct IoSoundDesc
+{
+	word num;
+	char name[32];
+	byte theme;
+};
+static_assert(sizeof(IoSoundDesc) == 36);
+
 // ----------------------------------------------------------------------------
 
 void LoadTerrain(world_t *world, const char *fname, SDL_RWops *f)
@@ -206,6 +215,32 @@ Map *LoadMap(SDL_RWops *f)
 	LoadMapData(f, me);
 
 	return me;
+}
+
+static void LoadCustomSounds(SDL_RWops *f)
+{
+	ClearCustomSounds();
+
+	int numCustom;
+	SDL_RWread(f,&numCustom,1,sizeof(int));
+	for(int i=0;i<numCustom;i++)
+	{
+		IoSoundDesc ioDesc;
+		int32_t size;
+		byte *data;
+
+		SDL_RWread(f,&ioDesc,1,sizeof(IoSoundDesc));
+		SDL_RWread(f,&size,sizeof(int32_t),1);
+		data=(byte *)malloc(size);
+		SDL_RWread(f,data,sizeof(byte),size);
+
+		soundDesc_t *desc = AddCustomSound(data, size);
+		desc->num = CUSTOM_SND_START + i; // ioDesc.num always equals this in conforming .dlw files.
+		ham_strcpy(desc->name, ioDesc.name);
+		desc->theme = ST_CUSTOM; // ioDesc.theme always equals ST_CUSTOM in conforming .dlw files.
+		// Exception: rainbow.dlw has some extraneous sounds (with invalid data)
+		// which were previously hidden from the editor. Those show now.
+	}
 }
 
 bool Supreme_LoadWorld(world_t *world, const char *fname, SDL_RWops *f)
@@ -467,6 +502,25 @@ static bool SaveMap(SDL_RWops *f, const Map* me)
 
 	SaveMapData(f, me);
 	return true;
+}
+
+static void SaveCustomSounds(SDL_RWops *f)
+{
+	int numCustom = GetNumCustomSounds();
+	SDL_RWwrite(f,&numCustom,1,sizeof(int));
+	for(int i=0;i<numCustom;i++)
+	{
+		IoSoundDesc ioDesc;
+		ioDesc.num = CUSTOM_SND_START + i;
+		ham_strcpy(ioDesc.name, GetSoundInfo(CUSTOM_SND_START + i)->name);
+		ioDesc.theme = ST_CUSTOM;
+		span<const byte> sound = GetCustomSound(i);
+
+		uint32_t size = sound.size();
+		SDL_RWwrite(f,&ioDesc,1,sizeof(IoSoundDesc));	// write out the descriptor
+		SDL_RWwrite(f,&size,sizeof(int32_t),1);	// write out the data length
+		SDL_RWwrite(f,sound.data(),sizeof(byte),size);	// write out the data
+	}
 }
 
 bool Supreme_SaveWorld(const world_t *world, SDL_RWops *f)

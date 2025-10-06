@@ -564,35 +564,6 @@ void DeleteCustomSound(int n)
 											// references above N move down one
 }
 
-void SaveCustomSounds(SDL_RWops *f)
-{
-	int i;
-
-	SDL_RWwrite(f,&numCustom,1,sizeof(int));
-	for(i=0;i<numCustom;i++)
-	{
-		SDL_RWwrite(f,&soundInfo[CUSTOM_SND_START+i],1,sizeof(soundDesc_t));	// write out the descriptor
-		SDL_RWwrite(f,&customLength[i],sizeof(int32_t),1);	// write out the data length
-		SDL_RWwrite(f,customSound[i],sizeof(byte),customLength[i]);	// write out the data
-	}
-}
-
-void LoadCustomSounds(SDL_RWops *f)
-{
-	int i;
-
-	ClearCustomSounds();
-
-	SDL_RWread(f,&numCustom,1,sizeof(int));
-	for(i=0;i<numCustom;i++)
-	{
-		SDL_RWread(f,&soundInfo[CUSTOM_SND_START+i],1,sizeof(soundDesc_t));
-		SDL_RWread(f,&customLength[i],sizeof(int32_t),1);
-		customSound[i]=(byte *)malloc(customLength[i]);
-		SDL_RWread(f,customSound[i],sizeof(byte),customLength[i]);
-	}
-}
-
 int AppendCustomSounds(SDL_RWops *f)
 {
 	int i,more,start;

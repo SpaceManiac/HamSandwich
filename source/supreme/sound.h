@@ -438,8 +438,6 @@ void DeleteCustomSound(int customN);
 bool ReplaceCustomSound(int customN, const char *fname);
 void ClearCustomSounds();
 
-void LoadCustomSounds(SDL_RWops *f);
-void SaveCustomSounds(SDL_RWops *f);
 int AppendCustomSounds(SDL_RWops *f);
 
 // .dlw handling
