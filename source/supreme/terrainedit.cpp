@@ -549,6 +549,18 @@ void ImportTiles(void)
 	selMax=-1;
 }
 
+static void TerrainEditScroll(int msz)
+{
+	if (msz > 0)
+	{
+		tileStart = std::max(tileStart - 20 * msz, 0);
+	}
+	else if (msz < 0)
+	{
+		tileStart = std::min(tileStart - 20 * msz, (world->numTiles - 1) / 200 * 200);
+	}
+}
+
 void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl)
 {
 	int n;
@@ -577,6 +589,7 @@ void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl)
 	switch(mode)
 	{
 		case TMODE_SELECT:
+			TerrainEditScroll(scroll);
 			if(mgl->MouseDown())
 			{
 				// still holding
@@ -608,6 +621,7 @@ void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl)
 			TerrainSetFlags();
 			break;
 		case TMODE_NORMAL:
+			TerrainEditScroll(scroll);
 			if(mgl->MouseTap())
 			{
 				if(n>199)	// clicked outside the display
@@ -626,6 +640,7 @@ void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl)
 			}
 			break;
 		case TMODE_PICKNEXT:
+			TerrainEditScroll(scroll);
 			if(mgl->MouseTap())
 			{
 				if(n>199)
@@ -640,6 +655,7 @@ void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl)
 			}
 			break;
 		case TMODE_PICKDEST:
+			TerrainEditScroll(scroll);
 			if(mgl->MouseTap())
 			{
 				if(n>199)
@@ -723,6 +739,7 @@ void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl)
 			}
 			break;
 		case TMODE_PICKTILE:
+			TerrainEditScroll(scroll);
 			if(n<200)
 			{
 				selMin=n+tileStart;
