@@ -11,6 +11,7 @@ class Map;
 bool Supreme_GetWorldName(SDL_RWops *f, StringDestination name, StringDestination author);
 bool Supreme_LoadWorld(world_t *world, const char* fname, SDL_RWops *f);
 bool Supreme_SaveWorld(const world_t *world, SDL_RWops *f);
+bool Supreme_CanSaveWorld(const world_t *world);
 
 void LoadTerrain(world_t *world, const char *fname, SDL_RWops *f);
 Map *LoadMap(SDL_RWops *f);

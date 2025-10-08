@@ -7,6 +7,7 @@
 #include "viewdialog.h"
 #include "appdata.h"
 #include "string_extras.h"
+#include "world_io_supreme.h"
 
 static constexpr int MAX_FILES = 18;
 
@@ -77,7 +78,7 @@ void InitFileDialog(const char *dir, const char *ext, FileDialogFlags menuItemsT
 
 	if (menuItems & (FM_SAVE | FM_SAVEPACK))
 	{
-		hamSandwich = MustBeHamSandwichWorld(EditorGetWorld());
+		hamSandwich = !Supreme_CanSaveWorld(EditorGetWorld());
 	}
 }
 

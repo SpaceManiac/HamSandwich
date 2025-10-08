@@ -555,3 +555,102 @@ bool Supreme_SaveWorld(const world_t *world, SDL_RWops *f)
 
 	return true;
 }
+
+
+#define NO_IF(X) if(X) { return false; }
+// Checks for if a world *must* be saved as a HamSandwich format world.
+// The intent is to prefer the Supreme format when possible, and use the
+// newer HamSandwich format only for worlds which absolutely require it.
+// It might take a little work, but worlds which do not exceed the limits of
+// the relevant integer types should still "fit" in the Supreme format.
+
+// There are some lines checking sizeof() for simplicity. If you change them,
+// you can tweak the SaveWorld and LoadWorld functions to save/load the old
+// size and tweak those checks.
+
+static bool Supreme_CanSaveMap(const Map *map)
+{
+	NO_IF(map->width > 250);  // x=255 is special, so we need HSW in that case
+	NO_IF(map->height > 250);
+	NO_IF(strlen(map->name) > 31);
+	NO_IF(strlen(map->song) > 31);
+
+	int count = 0;
+	for (const mapBadguy_t &badguy : map->badguy)
+	{
+		if (badguy.type)
+		{
+			++count;
+			NO_IF(count > UINT8_MAX);
+			NO_IF(badguy.x > UINT8_MAX);
+			NO_IF(badguy.y > UINT8_MAX);
+			NO_IF(badguy.type > UINT8_MAX);
+			NO_IF(badguy.item > UINT8_MAX);
+		}
+	}
+
+	for (int i = 0; i < MAX_SPECIAL; ++i)
+	{
+		const special_t& spcl = map->special[i];
+		if (spcl.x != 255)
+		{
+			NO_IF(i > UINT8_MAX);
+			NO_IF(spcl.x > UINT8_MAX);
+			NO_IF(spcl.y > UINT8_MAX);
+			NO_IF(spcl.uses > UINT8_MAX);
+
+			for (int j = 0; j < NUM_TRIGGERS; ++j)
+			{
+				if (spcl.trigger[j].type)
+				{
+					NO_IF(j > 7);
+				}
+			}
+			for (int j = 0; j < NUM_EFFECTS; ++j)
+			{
+				if (spcl.effect[j].type)
+				{
+					NO_IF(j > 31);
+				}
+			}
+
+			NO_IF(sizeof(trigger_t) != 12);
+			NO_IF(sizeof(effect_t) != 44);
+		}
+	}
+
+	NO_IF(map->flags > UINT16_MAX);
+	NO_IF(map->numBrains > UINT16_MAX);
+	NO_IF(map->numCandles > UINT16_MAX);
+	NO_IF(map->itemDrops > UINT16_MAX);
+
+	for (const mapTile_t& tile : map->Tiles())
+	{
+		NO_IF(tile.floor > UINT16_MAX);
+		NO_IF(tile.wall > UINT16_MAX);
+		NO_IF(tile.item > UINT8_MAX);
+		NO_IF(tile.light < INT8_MIN || tile.light > INT8_MAX);
+	}
+
+	return true;
+}
+
+bool Supreme_CanSaveWorld(const world_t *world)
+{
+	// If any "legacy" limits are exceeded.
+	NO_IF(strlen(world->author) > 31);
+	NO_IF(world->numMaps > UINT8_MAX);
+	NO_IF(world->numTiles > UINT16_MAX);
+
+	for(int i = 0; i < world->numMaps; ++i)
+	{
+		NO_IF(!Supreme_CanSaveMap(world->map[i]));
+	}
+
+	// simply crossing our fingers that there are <65535 custom items...
+	NO_IF(sizeof(item_t) != 124);
+
+	NO_IF(sizeof(soundDesc_t) != 36);
+
+	return true;
+}
