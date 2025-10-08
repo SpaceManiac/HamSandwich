@@ -107,6 +107,9 @@ static void LoadSpecial(SDL_RWops *f, special_t *s)
 
 	memset(s,0,sizeof(special_t));
 
+	static_assert(sizeof(s->x) == 1);
+	static_assert(sizeof(s->y) == 1);
+	static_assert(sizeof(s->uses) == 1);
 	SDL_RWread(f,&s->x,1,sizeof(byte));
 	SDL_RWread(f,&s->y,1,sizeof(byte));
 	SDL_RWread(f,&s->uses,1,sizeof(byte));
@@ -116,6 +119,8 @@ static void LoadSpecial(SDL_RWops *f, special_t *s)
 	numTrig=b%8;
 	numEff=b/8;
 
+	static_assert(sizeof(trigger_t) == 12);
+	static_assert(sizeof(effect_t) == 44);
 	if(numTrig>0)
 		SDL_RWread(f,s->trigger,numTrig,sizeof(trigger_t));
 	if(numEff>0)
@@ -134,9 +139,10 @@ static void LoadSpecials(SDL_RWops *f, span<special_t> list)
 	SDL_RWread(f, &numSpecials, 1, sizeof(byte));	// num specials
 
 	size_t i = 0;
-	for(; i < numSpecials && i < list.size(); i++)
+	for(; i < numSpecials && i < list.size(); ++i)
 		LoadSpecial(f, &list[i]);
-	for(; i < list.size(); i++)
+	// TODO: could blow up here if numSpecials < list.size()
+	for(; i < list.size(); ++i)
 		list[i].x = 255;
 }
 
@@ -182,21 +188,27 @@ static void LoadMapData(SDL_RWops *f, Map *me)
 
 Map *LoadMap(SDL_RWops *f)
 {
-	byte count;
-
 	byte width, height;
 	SDL_RWread(f,&width,1,sizeof(byte));
 	SDL_RWread(f,&height,1,sizeof(byte));
 
 	Map *me = new Map(width, height, "");
 
+	static_assert(sizeof(me->name) == 32);
+	static_assert(sizeof(me->song) == 32);
 	SDL_RWread(f,me->name,32,sizeof(char));
 	SDL_RWread(f,me->song,32,sizeof(char));
 
+	byte count;
 	SDL_RWread(f,&count,1,sizeof(byte));	// num badguys
 	me->badguy.fill({});
+	// TODO: blows up if count > MAX_MAPMONS
 	for (byte i = 0; i < count; ++i)
 	{
+		static_assert(sizeof(me->badguy[i].x) == 1);
+		static_assert(sizeof(me->badguy[i].y) == 1);
+		static_assert(sizeof(me->badguy[i].item) == 1);
+
 		byte temp;
 		SDL_RWread(f,&me->badguy[i].x, 1, sizeof(byte));
 		SDL_RWread(f,&me->badguy[i].y, 1, sizeof(byte));
@@ -207,6 +219,10 @@ Map *LoadMap(SDL_RWops *f)
 
 	LoadSpecials(f, me->special);
 
+	static_assert(sizeof(me->flags) == 2);
+	static_assert(sizeof(me->numBrains) == 2);
+	static_assert(sizeof(me->numCandles) == 2);
+	static_assert(sizeof(me->itemDrops) == 2);
 	SDL_RWread(f,&me->flags,1,sizeof(word));
 	SDL_RWread(f,&me->numBrains,1,sizeof(word));
 	SDL_RWread(f,&me->numCandles,1,sizeof(word));
@@ -321,12 +337,14 @@ static void SaveSpecials(SDL_RWops *f, span<const special_t> list)
 {
 	// First, count specials that actually exist.
 	byte numSpecials = 0;
-	for (size_t i = 0; i < list.size(); i++)
+	for (const special_t &spcl : list)
 	{
-		if (list[i].x != 255)
+		if (spcl.x != 255)
 		{
 			if (numSpecials == UINT8_MAX)
 			{
+				// Supreme_CanSaveMap should be false if this is true, but this
+				// code is still called when saving the .dlw_old backup.
 				LogError("WARNING: in Supreme save, can't save more than 255 specials");
 				break;
 			}
@@ -337,22 +355,23 @@ static void SaveSpecials(SDL_RWops *f, span<const special_t> list)
 	SDL_RWwrite(f,&numSpecials,1,sizeof(byte));	// num specials
 
 	// Now, write those out.
-	for (size_t i = 0; i < list.size(); i++)
+	for (special_t spcl : list) // Intentional copy.
 	{
-		if (list[i].x != 255)
+		if (spcl.x != 255)
 		{
-			special_t copy = list[i];
-			for (int j=0;j<NUM_EFFECTS;j++)
+			for (effect_t &eff : spcl.effect)
 			{
-				if (copy.effect[j].type==EFF_SUMMON && copy.effect[j].value2>ITM_RANDOM)
+				if (eff.type==EFF_SUMMON && eff.value2>ITM_RANDOM)
 				{
-					copy.effect[j].value2=ITM_NONE;
+					eff.value2=ITM_NONE;
 				}
 			}
-			SaveSpecial(f, &copy);
+			SaveSpecial(f, &spcl);
 
 			if (--numSpecials == 0)
+			{
 				break;  // Everything we could write has been written.
+			}
 		}
 	}
 }
@@ -461,47 +480,68 @@ static void SaveMapData(SDL_RWops *f, const Map *me)
 	delete[] mapCopy;
 }
 
-static bool SaveMap(SDL_RWops *f, const Map* me)
+static void SaveMap(SDL_RWops *f, const Map* me)
 {
-	int i;
-	byte count;
-
 	SDL_RWwrite(f,&me->width,1,sizeof(byte));
 	SDL_RWwrite(f,&me->height,1,sizeof(byte));
 	SDL_RWwrite(f,me->name,32,sizeof(char));
 	SDL_RWwrite(f,me->song,32,sizeof(char));
 
-	count=0;
-	for(i=0;i<MAX_MAPMONS;i++)
-		if(me->badguy[i].type)
-			count=i+1;
-	SDL_RWwrite(f,&count,1,sizeof(byte));	// num badguys
-	for (byte i = 0; i < count; ++i)
+	byte count = 0;
+	for (const mapBadguy_t &guy : me->badguy)
 	{
-		byte temp = me->badguy[i].type;
-		if (me->badguy[i].type > UINT8_MAX)
+		if (guy.type > UINT8_MAX)
 		{
 			LogError(
 				"WARNING: in Supreme save, can't save monster '%s' with ID %u > 255",
-				MonsterName(me->badguy[i].type),
-				me->badguy[i].type
+				MonsterName(guy.type),
+				guy.type
 			);
-			temp = 0;
 		}
-		SDL_RWwrite(f, &me->badguy[i].x, 1, sizeof(byte));
-		SDL_RWwrite(f, &me->badguy[i].y, 1, sizeof(byte));
-		SDL_RWwrite(f, &temp, 1, sizeof(byte));
-		SDL_RWwrite(f, &me->badguy[i].item, 1, sizeof(byte));
+		else if (guy.type)
+		{
+			if (count == UINT8_MAX)
+			{
+				LogError("Warning: in Supreme save, can't save more than 255 guys");
+			}
+			++count;
+		}
 	}
+
+	SDL_RWwrite(f,&count,1,sizeof(byte));	// num badguys
+	for (const mapBadguy_t &guy : me->badguy)
+	{
+		if (guy.type && guy.type <= UINT8_MAX)
+		{
+			static_assert(sizeof(guy.x) == 1);
+			static_assert(sizeof(guy.y) == 1);
+			static_assert(sizeof(guy.item) == 1);
+
+			byte temp = guy.type;
+			SDL_RWwrite(f, &guy.x, 1, sizeof(byte));
+			SDL_RWwrite(f, &guy.y, 1, sizeof(byte));
+			SDL_RWwrite(f, &temp, 1, sizeof(byte));
+			SDL_RWwrite(f, &guy.item, 1, sizeof(byte));
+
+			if (--count == 0)
+			{
+				break; // Wrote all that we could.
+			}
+		}
+	}
+
 	SaveSpecials(f, span{me->special.data(), me->special.size()});
 
+	static_assert(sizeof(me->flags) == 2);
+	static_assert(sizeof(me->numBrains) == 2);
+	static_assert(sizeof(me->numCandles) == 2);
+	static_assert(sizeof(me->itemDrops) == 2);
 	SDL_RWwrite(f,&me->flags,1,sizeof(word));
 	SDL_RWwrite(f,&me->numBrains,1,sizeof(word));
 	SDL_RWwrite(f,&me->numCandles,1,sizeof(word));
 	SDL_RWwrite(f,&me->itemDrops,1,sizeof(word));
 
 	SaveMapData(f, me);
-	return true;
 }
 
 static void SaveCustomSounds(SDL_RWops *f)
@@ -575,13 +615,13 @@ static bool Supreme_CanSaveMap(const Map *map)
 	NO_IF(strlen(map->name) > 31);
 	NO_IF(strlen(map->song) > 31);
 
-	int count = 0;
+	int i = 0;
 	for (const mapBadguy_t &badguy : map->badguy)
 	{
 		if (badguy.type)
 		{
-			++count;
-			NO_IF(count > UINT8_MAX);
+			++i;
+			NO_IF(i > UINT8_MAX);
 			NO_IF(badguy.x > UINT8_MAX);
 			NO_IF(badguy.y > UINT8_MAX);
 			NO_IF(badguy.type > UINT8_MAX);
@@ -589,33 +629,39 @@ static bool Supreme_CanSaveMap(const Map *map)
 		}
 	}
 
-	for (int i = 0; i < MAX_SPECIAL; ++i)
+	i = 0;
+	for (const special_t &spcl : map->special)
 	{
-		const special_t& spcl = map->special[i];
 		if (spcl.x != 255)
 		{
+			++i;
 			NO_IF(i > UINT8_MAX);
 			NO_IF(spcl.x > UINT8_MAX);
 			NO_IF(spcl.y > UINT8_MAX);
 			NO_IF(spcl.uses > UINT8_MAX);
 
-			for (int j = 0; j < NUM_TRIGGERS; ++j)
+			int j = 0;
+			for (const trigger_t &trg : spcl.trigger)
 			{
-				if (spcl.trigger[j].type)
+				++j;
+				if (trg.type)
 				{
 					NO_IF(j > 7);
 				}
 			}
-			for (int j = 0; j < NUM_EFFECTS; ++j)
+			j = 0;
+			for (const effect_t &eff : spcl.effect)
 			{
-				if (spcl.effect[j].type)
+				++j;
+				if (eff.type)
 				{
 					NO_IF(j > 31);
 				}
 			}
 
-			NO_IF(sizeof(trigger_t) != 12);
-			NO_IF(sizeof(effect_t) != 44);
+			// If sizeof changes, break down load, save, and here by field to keep things working.
+			static_assert(sizeof(trigger_t) == 12);
+			static_assert(sizeof(effect_t) == 44);
 		}
 	}
 
@@ -635,22 +681,39 @@ static bool Supreme_CanSaveMap(const Map *map)
 	return true;
 }
 
+// Returns false if any limits of the `SUPREME!` .dlw format are exceeded.
 bool Supreme_CanSaveWorld(const world_t *world)
 {
-	// If any "legacy" limits are exceeded.
+	// Basics
 	NO_IF(strlen(world->author) > 31);
+	NO_IF(strlen(world->map[0]->name) > 31);
 	NO_IF(world->numMaps > UINT8_MAX);
 	NO_IF(world->numTiles > UINT16_MAX);
 
-	for(int i = 0; i < world->numMaps; ++i)
+	// No conditions on tilegfx.
+
+	// Terrain
+	for (const terrain_t &terrain : world->Terrain())
 	{
-		NO_IF(!Supreme_CanSaveMap(world->map[i]));
+		NO_IF(terrain.flags >= (1 << 22)); // See comments in TileFlags enum.
+		NO_IF(terrain.next > UINT16_MAX);
 	}
 
-	// simply crossing our fingers that there are <65535 custom items...
-	NO_IF(sizeof(item_t) != 124);
+	// Maps
+	for (const Map *map : world->Maps())
+	{
+		NO_IF(!Supreme_CanSaveMap(map));
+	}
 
-	NO_IF(sizeof(soundDesc_t) != 36);
+	// Items
+	NO_IF(NumItems() > UINT8_MAX);
+	// If sizeof changes, break down load, save, and here by field to keep things working.
+	static_assert(sizeof(item_t) == 124);
+
+	// Custom sounds
+	NO_IF(GetNumCustomSounds() > 64); // Classic MAX_CUSTOM_SOUNDS.
+	// If sizeof changes, break down load, save, and here by field to keep things working.
+	static_assert(sizeof(soundDesc_t) == 36);
 
 	return true;
 }
