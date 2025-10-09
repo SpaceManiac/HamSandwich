@@ -306,8 +306,6 @@ void UpdateItems(void);
 byte GetRandomItem(void);
 void SetupRandomItems(void);
 int GetTotalRarity(void);
-void SaveItems(SDL_RWops *f);
-void LoadItems(SDL_RWops *f);
 void DeleteItem(int itm);
 int NumCustomSprites(void);
 int NumItemSprites(void);

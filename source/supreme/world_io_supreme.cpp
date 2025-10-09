@@ -233,6 +233,32 @@ Map *LoadMap(SDL_RWops *f)
 	return me;
 }
 
+static void LoadItems(SDL_RWops *f)
+{
+	ExitItems();
+	InitItems();
+
+	word changedItems;
+	SDL_RWread(f,&changedItems,1,sizeof(word));
+
+	int i = 0;
+	for (; i < changedItems; ++i)
+	{
+		byte curItem = 0;
+		SDL_RWread(f, &curItem, 1, sizeof(byte));
+		if (curItem == 255)
+		{
+			break;
+		}
+		SDL_RWread(f, GetItem(curItem), 1, sizeof(item_t));
+	}
+	for (; i < changedItems; ++i)
+	{
+		byte curItem = NewItem();
+		SDL_RWread(f, GetItem(curItem), 1, sizeof(item_t));
+	}
+}
+
 static void LoadCustomSounds(SDL_RWops *f)
 {
 	ClearCustomSounds();
@@ -542,6 +568,47 @@ static void SaveMap(SDL_RWops *f, const Map* me)
 	SDL_RWwrite(f,&me->itemDrops,1,sizeof(word));
 
 	SaveMapData(f, me);
+}
+
+static void SaveItems(SDL_RWops *f)
+{
+	int i;
+	word changedItems;
+	byte b;
+	word numItems = NumItems();
+
+	changedItems=numItems-NUM_ORIGINAL_ITEMS;
+	for(i=0;i<NUM_ORIGINAL_ITEMS;i++)
+	{
+		// has this item been modified in some way?
+		if(memcmp(GetItem(i),GetBaseItem(i),sizeof(item_t)))
+			changedItems++;
+	}
+
+	SDL_RWwrite(f,&changedItems,1,sizeof(word));
+	for(i=0;i<NUM_ORIGINAL_ITEMS;i++)
+	{
+		if(memcmp(GetItem(i),GetBaseItem(i),sizeof(item_t)))
+		{
+			// this item is changed, write it out
+			b=(byte)i;
+			SDL_RWwrite(f,&b,1,sizeof(byte));	// write the item number
+			item_t item = *GetItem(i);
+			item.sound = SoundToDescIndex(item.sound);
+			SDL_RWwrite(f,&item,1,sizeof(item_t));
+		}
+	}
+	if(numItems>NUM_ORIGINAL_ITEMS)
+	{
+		b=255;	// indicating custom items are beginning here
+		SDL_RWwrite(f,&b,1,sizeof(byte));
+		for(i=NUM_ORIGINAL_ITEMS;i<numItems;i++)
+		{
+			item_t item = *GetItem(i);
+			item.sound = SoundToDescIndex(item.sound);
+			SDL_RWwrite(f,&item,1,sizeof(item_t));
+		}
+	}
 }
 
 static void SaveCustomSounds(SDL_RWops *f)
