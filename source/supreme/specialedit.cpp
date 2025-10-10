@@ -1316,7 +1316,7 @@ static void SetupTriggerButtons(int t,int y)
 			break;
 		case TRG_STEP:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If",NULL);
-			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,55,y+17,140,14,MonsterName(spcl.trigger[t].value),MonsterClick);
+			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,55,y+17,140,14,MonsterName(trigger.value),MonsterClick);
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+2+100*t,0,200,y+17,1,1,"steps within",NULL);
 			sprintf(s,"%d",trigger.value2);
 			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+3+100*t,0,300,y+17,40,14,s,Number2Click);
