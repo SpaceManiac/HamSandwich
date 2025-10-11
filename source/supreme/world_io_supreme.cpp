@@ -303,12 +303,12 @@ static bool LoadCustomSounds(SDL_RWops *f)
 		data=(byte *)malloc(size);
 		SDL_RWread(f,data,sizeof(byte),size);
 
-		soundDesc_t *desc = AddCustomSound(data, size);
+		SoundDesc *desc = AddCustomSound(data, size);
 		if (!desc)
 		{
 			return false;
 		}
-		desc->num = CUSTOM_SND_START + i; // ioDesc.num always equals this in conforming .dlw files.
+		//desc->num = CUSTOM_SND_START + i; // ioDesc.num always equals this in conforming .dlw files.
 		ham_strcpy(desc->name, ioDesc.name);
 		desc->theme = ST_CUSTOM; // ioDesc.theme always equals ST_CUSTOM in conforming .dlw files.
 		// Exception: rainbow.dlw has some extraneous sounds (with invalid data)

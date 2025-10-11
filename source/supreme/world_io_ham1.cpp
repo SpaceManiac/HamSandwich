@@ -69,7 +69,7 @@ static void LoadItem(hamworld::Section *f, item_t *item)
 	f->read_varint();  // ignore extension flags
 }
 
-static void SaveSound(hamworld::Section *f, const soundDesc_t *desc, span<const byte> data)
+static void SaveSound(hamworld::Section *f, const SoundDesc *desc, span<const byte> data)
 {
 	f->write_string(desc->name);
 	f->write_varint(desc->theme);
@@ -87,7 +87,7 @@ static void LoadSound(hamworld::Section *f)
 	byte *data = (byte *) malloc(size);
 	f->stream.read((char*) data, size);
 
-	soundDesc_t *desc = AddCustomSound(data, size);
+	SoundDesc *desc = AddCustomSound(data, size);
 	if (desc)
 		ham_strcpy(desc->name, name);
 

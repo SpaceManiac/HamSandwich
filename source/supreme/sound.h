@@ -412,9 +412,8 @@ enum SoundThemes : byte
 };
 BITFLAGS(SoundThemes)
 
-struct soundDesc_t
+struct SoundDesc
 {
-	word num;
 	char name[32];
 	SoundThemes theme;
 };
@@ -426,14 +425,14 @@ void MakeNormalSound(int snd);
 void MakeSpaceSound(int snd,int priority);
 
 int GetNumSounds();
-soundDesc_t *GetSoundInfo(int snd);
+SoundDesc *GetSoundInfo(int snd);
 
 int GetNumCustomSounds();
 int GetCustomSoundByName(const char *name); // Returns global sound number.
 span<const byte> GetCustomSound(int customN);
 
 bool AddCustomSound(const char *fname);
-soundDesc_t *AddCustomSound(byte *, size_t);
+SoundDesc *AddCustomSound(byte *, size_t);
 void DeleteCustomSound(int customN);
 bool ReplaceCustomSound(int customN, const char *fname);
 void ClearCustomSounds();
