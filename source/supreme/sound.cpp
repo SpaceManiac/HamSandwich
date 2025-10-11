@@ -564,29 +564,6 @@ void DeleteCustomSound(int n)
 											// references above N move down one
 }
 
-int AppendCustomSounds(SDL_RWops *f)
-{
-	int i,more,start;
-
-	SDL_RWread(f,&more,1,sizeof(int));
-
-	if(numCustom+more>MAX_CUSTOM_SOUNDS)
-		return -1;
-
-	start=numCustom;
-	numCustom+=more;
-	for(i=start;i<numCustom;i++)
-	{
-		SDL_RWread(f,&soundInfo[CUSTOM_SND_START+i],1,sizeof(soundDesc_t));
-		soundInfo[CUSTOM_SND_START+i].num=CUSTOM_SND_START+i;
-		SDL_RWread(f,&customLength[i],sizeof(int32_t),1);
-		customSound[i]=(byte *)malloc(customLength[i]);
-		SDL_RWread(f,customSound[i],sizeof(byte),customLength[i]);
-	}
-
-	return (start);
-}
-
 int GetCustomSoundByName(const char *name)
 {
 	int i;

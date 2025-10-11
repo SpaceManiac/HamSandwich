@@ -7,6 +7,7 @@
 #include "sound.h"
 #include "log.h"
 #include "monster.h"
+#include "worldstitch.h"
 
 bool Supreme_GetWorldName(SDL_RWops *f, StringDestination name, StringDestination author)
 {
@@ -74,7 +75,7 @@ static_assert(sizeof(IoSoundDesc) == 36);
 
 // ----------------------------------------------------------------------------
 
-void LoadTerrain(world_t *world, const char *fname, SDL_RWops *f)
+static void LoadTerrain(world_t *world, const char *fname, SDL_RWops *f)
 {
 	for (terrain_t &terrain : world->Terrain())
 	{
@@ -186,7 +187,7 @@ static void LoadMapData(SDL_RWops *f, Map *me)
 	delete[] mapCopy;
 }
 
-Map *LoadMap(SDL_RWops *f)
+static Map *LoadMap(SDL_RWops *f)
 {
 	byte width, height;
 	SDL_RWread(f,&width,1,sizeof(byte));
@@ -235,9 +236,6 @@ Map *LoadMap(SDL_RWops *f)
 
 static void LoadItems(SDL_RWops *f)
 {
-	ExitItems();
-	InitItems();
-
 	word changedItems;
 	SDL_RWread(f,&changedItems,1,sizeof(word));
 
@@ -254,35 +252,69 @@ static void LoadItems(SDL_RWops *f)
 	}
 	for (; i < changedItems; ++i)
 	{
-		byte curItem = NewItem();
+		int curItem = NewItem();
 		SDL_RWread(f, GetItem(curItem), 1, sizeof(item_t));
 	}
 }
 
-static void LoadCustomSounds(SDL_RWops *f)
+static bool AppendItems(SDL_RWops *f)
 {
-	ClearCustomSounds();
+	word changedItems;
+	SDL_RWread(f,&changedItems,1,sizeof(word));
 
+	int i = 0;
+	for (; i < changedItems; ++i)
+	{
+		byte curItem = 0;
+		SDL_RWread(f, &curItem, 1, sizeof(byte));
+		if (curItem == 255)
+		{
+			break;
+		}
+		// throw away any mods of regular items
+		item_t garbage;
+		SDL_RWread(f, &garbage, 1, sizeof(item_t));
+	}
+	for (; i < changedItems; ++i)
+	{
+		int curItem = NewItem();
+		if (curItem == -1)
+		{
+			return false;
+		}
+		SDL_RWread(f, GetItem(curItem), 1, sizeof(item_t));
+	}
+	return true;
+}
+
+static bool LoadCustomSounds(SDL_RWops *f)
+{
 	int numCustom;
 	SDL_RWread(f,&numCustom,1,sizeof(int));
-	for(int i=0;i<numCustom;i++)
+	for (int i = 0; i < numCustom; ++i)
 	{
 		IoSoundDesc ioDesc;
 		int32_t size;
 		byte *data;
 
+		static_assert(sizeof(IoSoundDesc) == 36);
 		SDL_RWread(f,&ioDesc,1,sizeof(IoSoundDesc));
 		SDL_RWread(f,&size,sizeof(int32_t),1);
 		data=(byte *)malloc(size);
 		SDL_RWread(f,data,sizeof(byte),size);
 
 		soundDesc_t *desc = AddCustomSound(data, size);
+		if (!desc)
+		{
+			return false;
+		}
 		desc->num = CUSTOM_SND_START + i; // ioDesc.num always equals this in conforming .dlw files.
 		ham_strcpy(desc->name, ioDesc.name);
 		desc->theme = ST_CUSTOM; // ioDesc.theme always equals ST_CUSTOM in conforming .dlw files.
 		// Exception: rainbow.dlw has some extraneous sounds (with invalid data)
 		// which were previously hidden from the editor. Those show now.
 	}
+	return true;
 }
 
 bool Supreme_LoadWorld(world_t *world, const char *fname, SDL_RWops *f)
@@ -300,11 +332,11 @@ bool Supreme_LoadWorld(world_t *world, const char *fname, SDL_RWops *f)
 	SDL_RWread(f,&world->numTiles,1,sizeof(word));	// tile count
 
 	world->tilegfx.LoadTiles(f, world->numTiles);
+
 	LoadTerrain(world, fname, f);
 
 	for(int i = 0; i < MAX_MAPS; i++)
 		world->map[i]=NULL;
-
 	for(int i = 0; i < world->numMaps; i++)
 	{
 		world->map[i] = LoadMap(f);
@@ -314,8 +346,72 @@ bool Supreme_LoadWorld(world_t *world, const char *fname, SDL_RWops *f)
 		}
 	}
 
+	ExitItems();
+	InitItems();
 	LoadItems(f);
+
+	ClearCustomSounds();
 	LoadCustomSounds(f);
+
+	SetupRandomItems();
+	return true;
+}
+
+bool BeginAppendWorld(world_t *world, const char *fname)
+{
+	int i;
+	char code[32];
+
+	auto f = AppdataOpen(fname);
+	if(!f)
+	{
+		SetStitchError("File Not Found");
+		return false;
+	}
+
+	SDL_RWread(f,code,sizeof(char),8);
+	code[8]='\0';
+	if(strcmp(code,"SUPREME!"))
+	{
+		SetStitchError("Must be a Supreme world.");
+		return false;
+	}
+
+	SDL_RWread(f,&world->author,sizeof(char),32);
+	SDL_RWseek(f, 32, RW_SEEK_CUR);  // name of the world, not needed here
+	SDL_RWread(f,&world->numMaps,1,1);
+	SDL_RWseek(f, sizeof(int), RW_SEEK_CUR);  // totalPoints
+	SDL_RWread(f,&world->numTiles,1,sizeof(word));	// tile count
+
+	world->tilegfx.LoadTiles(f.get(), world->numTiles);
+	LoadTerrain(world, fname, f.get());
+
+	for(i=0;i<MAX_MAPS;i++)
+		world->map[i]=NULL;
+
+	for(i=0;i<world->numMaps;i++)
+	{
+		world->map[i] = LoadMap(f.get());
+		if(!world->map[i])
+		{
+			SetStitchError("Unable to load a level.");
+			for(int j=0;j<i;j++)
+				delete world->map[j];
+			return false;
+		}
+	}
+
+	if(!AppendItems(f.get()))
+	{
+		SetStitchError("Too many custom items!");
+		return false;
+	}
+	if(!LoadCustomSounds(f.get()))
+	{
+		SetStitchError("Too many custom sounds!");
+		return false;
+	}
+	CalculateItemRenderExtents();
 	SetupRandomItems();
 	return true;
 }
@@ -778,8 +874,6 @@ bool Supreme_CanSaveWorld(const world_t *world)
 
 	// Custom sounds
 	NO_IF(GetNumCustomSounds() > 64); // Classic MAX_CUSTOM_SOUNDS.
-	// If sizeof changes, break down load, save, and here by field to keep things working.
-	static_assert(sizeof(soundDesc_t) == 36);
 
 	return true;
 }

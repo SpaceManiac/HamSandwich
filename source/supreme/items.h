@@ -313,8 +313,6 @@ int BrainsGiven(int type);
 int CandlesGiven(int type);
 int FindItemByName(const char *name);
 
-byte AppendItems(SDL_RWops *f);
-
 struct mapTile_t;
 void UpdateItem(mapTile_t *m,int width,int offset);
 

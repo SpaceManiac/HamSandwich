@@ -10,7 +10,6 @@
 #include "shop.h"
 #include "vars.h"
 #include "goal.h"
-#include "worldstitch.h"
 #include "log.h"
 #include "math_extras.h"
 #include "string_extras.h"
@@ -1065,48 +1064,6 @@ byte GetRandomItem(void)
 int GetTotalRarity(void)
 {
 	return totalRare;
-}
-
-byte AppendItems(SDL_RWops *f)
-{
-	int i;
-	word changedItems;
-	byte getNumber;
-	byte curItem;
-	item_t garbage;
-
-	stitchItemOffset=numItems;
-
-	SDL_RWread(f,&changedItems,1,sizeof(word));
-
-	getNumber=1;
-	for(i=0;i<changedItems;i++)
-	{
-		if(getNumber)
-		{
-			SDL_RWread(f,&curItem,1,sizeof(byte));
-			if(curItem==255)
-			{
-				getNumber=0;
-				curItem=numItems;
-			}
-		}
-		if(curItem<NUM_ORIGINAL_ITEMS)
-			SDL_RWread(f,&garbage,1,sizeof(item_t));	// throw away any mods of regular items
-		else
-		{
-			SDL_RWread(f,&items[curItem],1,sizeof(item_t));
-			curItem++;
-			numItems++;
-		}
-		if(curItem>=MAX_ITEMS)
-		{
-			CalculateItemRenderExtents();
-			return 0;
-		}
-	}
-	CalculateItemRenderExtents();
-	return 1;
 }
 
 const item_t *GetBaseItem(int type)

@@ -1,9 +1,10 @@
 #include "worldstitch.h"
 #include "editor.h"
+#include "world_io_supreme.h"
 
-world_t *world2;
-int stitchTileOffset,stitchSoundOffset,stitchItemOffset;
-char stitchError[64];
+static world_t *world2;
+static int stitchTileOffset,stitchSoundOffset,stitchItemOffset;
+static char stitchError[64];
 
 void SetStitchError(const char *txt)
 {
@@ -203,8 +204,8 @@ byte AddWorldIn(world_t *world1,const char *fname)
 
 	EditorSaveWorld("worlds/backup_load.dlw");
 	stitchTileOffset = world1->tilegfx.numTiles;
-	stitchSoundOffset = 0;
-	stitchItemOffset = 0;
+	stitchSoundOffset = NumItems();
+	stitchItemOffset = GetNumCustomSounds();
 
 	SetStitchError("No problems!  Append OK!");
 	world2=(world_t *)malloc(sizeof(world_t));

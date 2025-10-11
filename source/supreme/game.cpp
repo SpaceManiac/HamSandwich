@@ -826,7 +826,7 @@ TASK(void) TestLevel(world_t *world,byte level)
 		else if(result==WORLD_QUITGAME || result==WORLD_ABORT)
 			break;
 	}
-	memset(&curWorld,0,sizeof(world_t));
+	curWorld = {};
 	InitGuys(256);
 	GetSpecialsFromMap(EditorGetMap()->special);
 	editing=1;

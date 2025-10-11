@@ -73,7 +73,6 @@ void RepairTileToTile(world_t *w, const SwapTable &table);
 
 void LocateKeychains(world_t *w);
 
-byte BeginAppendWorld(world_t *world,const char *fname);
 terrain_t *GetTerrain(world_t *w,word tile);
 
 #endif

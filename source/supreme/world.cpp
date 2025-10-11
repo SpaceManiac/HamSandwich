@@ -66,65 +66,6 @@ bool LoadWorld(world_t *world,const char *fname)
 	}
 }
 
-byte BeginAppendWorld(world_t *world,const char *fname)
-{
-	int i;
-	char code[32];
-
-	auto f = AppdataOpen(fname);
-	if(!f)
-	{
-		SetStitchError("File Not Found");
-		return 0;
-	}
-
-	SDL_RWread(f,code,sizeof(char),8);
-	code[8]='\0';
-	if(strcmp(code,"SUPREME!"))
-	{
-		SetStitchError("Must be a Supreme world.");
-		return 0;
-	}
-
-	SDL_RWread(f,&world->author,sizeof(char),32);
-	SDL_RWseek(f, 32, RW_SEEK_CUR);  // name of the world, not needed here
-	SDL_RWread(f,&world->numMaps,1,1);
-	SDL_RWseek(f, sizeof(int), RW_SEEK_CUR);  // totalPoints
-	SDL_RWread(f,&world->numTiles,1,sizeof(word));	// tile count
-
-	world->tilegfx.LoadTiles(f.get(), world->numTiles);
-	LoadTerrain(world, fname, f.get());
-
-	for(i=0;i<MAX_MAPS;i++)
-		world->map[i]=NULL;
-
-	for(i=0;i<world->numMaps;i++)
-	{
-		world->map[i] = LoadMap(f.get());
-		if(!world->map[i])
-		{
-			SetStitchError("Unable to load a level.");
-			for(int j=0;j<i;j++)
-				delete world->map[j];
-			return 0;
-		}
-	}
-
-	if(!AppendItems(f.get()))
-	{
-		SetStitchError("Too many custom items!");
-		return 0;
-	}
-	stitchSoundOffset=AppendCustomSounds(f.get());
-	if(stitchSoundOffset==-1)
-	{
-		SetStitchError("Too many custom sounds!");
-		return 0;
-	}
-	SetupRandomItems();
-	return 1;
-}
-
 bool SaveWorld(const world_t *world, const char *fname)
 {
 	world->map[0]->flags|=MAP_HUB;
