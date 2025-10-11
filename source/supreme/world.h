@@ -48,6 +48,7 @@ struct world_t
 {
 	byte numMaps;
 	Map	 *map[MAX_MAPS];
+	Tilegfx tilegfx;
 	word numTiles;
 	terrain_t terrain[NUMTILES];
 	char author[32];

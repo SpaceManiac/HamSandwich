@@ -9,7 +9,7 @@ FloorTool::FloorTool(void)
 	brush=0;
 	plopMode=PLOP_NORMAL;
 	for (int i = 0; i < NUM_TILES; ++i)
-		tile[i] = i % GetNumTiles();
+		tile[i] = i % EditorGetWorld()->tilegfx.numTiles;
 	lastX=-1;
 	lastY=-1;
 }

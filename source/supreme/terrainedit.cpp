@@ -140,7 +140,7 @@ void DeleteClick(int id)
 	for(i=selMin;i<world->numTiles-(selMax-selMin+1);i++)
 	{
 		world->terrain[i]=world->terrain[i+(selMax-selMin+1)];
-		memcpy(GetTileData(i),GetTileData(i+(selMax-selMin+1)),TILE_WIDTH*TILE_HEIGHT);
+		memcpy(world->tilegfx.GetTileData(i),world->tilegfx.GetTileData(i+(selMax-selMin+1)),TILE_WIDTH*TILE_HEIGHT);
 	}
 
 	if(autoRepair)
@@ -151,7 +151,7 @@ void DeleteClick(int id)
 	}
 
 	world->numTiles-=(selMax-selMin+1);
-	SetNumTiles(world->numTiles);
+	world->tilegfx.numTiles = world->numTiles;
 
 	selMin=0;
 	selMax=0;
@@ -249,7 +249,7 @@ void DeleteUnusedTiles(int id)
 			{
 				world->terrain[j]=world->terrain[j+1];
 				tileUsed[j]=tileUsed[j+1];
-				memcpy(GetTileData(j),GetTileData(j+1),TILE_WIDTH*TILE_HEIGHT);
+				memcpy(world->tilegfx.GetTileData(j),world->tilegfx.GetTileData(j+1),TILE_WIDTH*TILE_HEIGHT);
 			}
 
 			if(autoRepair)
@@ -260,7 +260,7 @@ void DeleteUnusedTiles(int id)
 			}
 
 			world->numTiles--;
-			SetNumTiles(world->numTiles);
+			world->tilegfx.numTiles = world->numTiles;
 		}
 		else
 			i++;
@@ -443,21 +443,21 @@ byte MoveTilesTo(int dest)
 	for(i=selMin;i<=selMax;i++)
 	{
 		tempTerrain[i-selMin]=world->terrain[i];
-		memcpy(&tempImg[(i-selMin)*TILE_WIDTH*TILE_HEIGHT],GetTileData(i),TILE_WIDTH*TILE_HEIGHT);
+		memcpy(&tempImg[(i-selMin)*TILE_WIDTH*TILE_HEIGHT],world->tilegfx.GetTileData(i),TILE_WIDTH*TILE_HEIGHT);
 	}
 
 	// now swap the other ones over them
 	for(i=dest;i<dest+(selMax-selMin+1);i++)
 	{
 		world->terrain[i-dest+selMin]=world->terrain[i];
-		memcpy(GetTileData(i-dest+selMin),GetTileData(i),TILE_WIDTH*TILE_HEIGHT);
+		memcpy(world->tilegfx.GetTileData(i-dest+selMin),world->tilegfx.GetTileData(i),TILE_WIDTH*TILE_HEIGHT);
 	}
 
 	// now paste the moved ones over those!
 	for(i=dest;i<dest+(selMax-selMin+1);i++)
 	{
 		world->terrain[i]=tempTerrain[i-dest];
-		memcpy(GetTileData(i),&tempImg[(i-dest)*TILE_WIDTH*TILE_HEIGHT],TILE_WIDTH*TILE_HEIGHT);
+		memcpy(world->tilegfx.GetTileData(i),&tempImg[(i-dest)*TILE_WIDTH*TILE_HEIGHT],TILE_WIDTH*TILE_HEIGHT);
 	}
 
 	if(autoRepair)
@@ -536,13 +536,13 @@ void ImportTiles(void)
 	}
 	dst=world->numTiles;
 	world->numTiles+=(selMax-selMin+1);
-	SetNumTiles(world->numTiles);
+	world->tilegfx.numTiles = world->numTiles;
 
 	for(i=selMin;i<=selMax;i++)
 	{
 		world->terrain[dst].flags={};
 		world->terrain[dst].next=0;
-		SetTile(dst,(i%20)*TILE_WIDTH,(i/20)*TILE_HEIGHT,bmpScr);
+		world->tilegfx.SetTile(dst, &bmpScr[(i%20)*TILE_WIDTH + ((i/20)*TILE_HEIGHT) * 640], 640);
 		dst++;
 	}
 	selMin=-1;
@@ -691,7 +691,7 @@ void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl)
 				if(n==FM_SAVE)
 				{
 					ExitFileDialog();
-					SaveTilesToBMP(GetFilename("tilegfx/"));
+					world->tilegfx.SaveTilesToBMP(GetFilename("tilegfx/"));
 					mode=TMODE_NORMAL;
 				}
 				if(n==FM_EXIT)

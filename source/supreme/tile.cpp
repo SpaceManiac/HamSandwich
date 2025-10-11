@@ -7,9 +7,8 @@
 #include "ioext.h"
 #include "recolor.h"
 
-static tile_t tiles[NUMTILES];
 static MGLDraw *tileMGL;
-static int numTiles;
+static const Tilegfx *current;
 
 #define SCRWID (tileMGL->GetWidth())
 #define SCRHEI (tileMGL->GetHeight())
@@ -24,40 +23,37 @@ void ExitTiles(void)
 	// nothing to do
 }
 
-byte *GetTileData(int t)
+void SetCurrentTilegfx(const Tilegfx *gfx)
 {
-	return tiles[t];
+	current = gfx;
 }
 
-void SetTiles(byte *scrn)
+void Tilegfx::SetTiles(const byte *src, int width, int height)
 {
-	int i,j;
-	int x,y;
-
-	x=0;
-	y=0;
-	for(i=0;i<400;i++)
+	int perRow = width / TILE_WIDTH;
+	int rows = height / TILE_HEIGHT;
+	int tiles = std::min(perRow * rows, NUMTILES);
+	for (int tile = 0; tile < tiles; ++tile)
 	{
-		for(j=0;j<TILE_HEIGHT;j++)
-			memcpy(&tiles[i][j*TILE_WIDTH],&scrn[x+(y+j)*SCRWID],TILE_WIDTH);
-		x+=TILE_WIDTH;
-		if(x>=SCRWID)
+		byte *dest = GetTileData(tile);
+		int x = TILE_WIDTH * (tile % perRow);
+		int y = TILE_HEIGHT * (tile / perRow);
+		for (int yy = 0; yy < TILE_HEIGHT; ++yy, ++y)
 		{
-			x=0;
-			y+=TILE_HEIGHT;
+			memcpy(&dest[yy * TILE_WIDTH], &src[y * width + x], TILE_WIDTH);
 		}
 	}
 }
 
-void SetTile(int t,int x,int y,byte *src)
+void Tilegfx::SetTile(int t, const byte *src, int pitch)
 {
 	int i;
 
 	for(i=0;i<TILE_HEIGHT;i++)
-		memcpy(&tiles[t][i*TILE_WIDTH],&src[x+(y+i)*SCRWID],TILE_WIDTH);
+		memcpy(&tiles[t][i*TILE_WIDTH],&src[i*pitch],TILE_WIDTH);
 }
 
-static void SaveTile(std::ostream& f, byte *t)
+static void SaveTile(std::ostream& f, const byte *t)
 {
 	int row,i;
 	byte size,c;
@@ -139,19 +135,19 @@ static void SaveTile(std::ostream& f, byte *t)
 }
 
 
-void SaveTiles(SDL_RWops *f)
+void Tilegfx::SaveTiles(SDL_RWops *f) const
 {
 	SdlRwStream stream(f);
 	SaveTiles(stream);
 }
 
-void SaveTiles(std::ostream& f)
+void Tilegfx::SaveTiles(std::ostream& f) const
 {
 	for (int i = 0; i < numTiles; ++i)
-		SaveTile(f, tiles[i]);
+		SaveTile(f, &tiles[i][0]);
 }
 
-void SaveTilesToBMP(const char *fname)
+void Tilegfx::SaveTilesToBMP(const char *fname) const
 {
 	// Chop off .bmp to generate the base name.
 	std::string_view basename = fname;
@@ -233,33 +229,17 @@ static void LoadTile(std::istream &f, byte *t)
 	}
 }
 
-void LoadTiles(SDL_RWops *f)
+void Tilegfx::LoadTiles(SDL_RWops *f, int numTiles)
 {
 	SdlRwStream stream(f);
-	LoadTiles(stream);
+	LoadTiles(stream, numTiles);
 }
 
-void LoadTiles(std::istream &f)
+void Tilegfx::LoadTiles(std::istream &f, int numTiles)
 {
+	this->numTiles = numTiles;
 	for (int i = 0; i < numTiles; ++i)
-		LoadTile(f, tiles[i]);
-}
-
-void AppendTiles(int start,SDL_RWops *f)
-{
-	SdlRwStream stream(f);
-	for(int i=start;i<numTiles;i++)
-		LoadTile(stream, tiles[i]);
-}
-
-void SetNumTiles(int n)
-{
-	numTiles=n;
-}
-
-word GetNumTiles(void)
-{
-	return numTiles;
+		LoadTile(f, &tiles[i][0]);
 }
 
 void RenderEmptyTile(int x,int y,char light)
@@ -285,7 +265,7 @@ void PlotStar(int x,int y,byte col,byte tx,byte ty,word tileNum)
 {
 	byte *dst;
 
-	if(tiles[tileNum][tx+ty*TILE_WIDTH]==0)
+	if(current->GetTileData(tileNum)[tx+ty*TILE_WIDTH]==0)
 	{
 		dst=tileMGL->GetScreen()+x+y*tileMGL->GetWidth();
 		*dst=col;
@@ -313,11 +293,12 @@ byte ModifyDiscoColor(byte color, byte disco)
 
 void RenderFloorTile(int x, int y, int t, char light)
 {
-	byte *dst, *src;
+	byte *dst;
+	const byte *src;
 	int wid, hgt;
 	byte disco = PickDiscoColor();
 
-	if (t >= numTiles)
+	if (t >= current->numTiles)
 	{
 		return RenderEmptyTile(x, y, 0);
 	}
@@ -334,7 +315,7 @@ void RenderFloorTile(int x, int y, int t, char light)
 			return;
 
 		dst = tileMGL->GetScreen() + y * SCRWID;
-		src = tiles[t] - x;
+		src = current->GetTileData(t) - x;
 	}
 	else if (x > SCRWID - TILE_WIDTH)
 	{
@@ -342,13 +323,13 @@ void RenderFloorTile(int x, int y, int t, char light)
 		if (wid < 1)
 			return;
 		dst = tileMGL->GetScreen() + x + y * SCRWID;
-		src = tiles[t];
+		src = current->GetTileData(t);
 	}
 	else
 	{
 		wid = TILE_WIDTH;
 		dst = tileMGL->GetScreen() + x + y * SCRWID;
-		src = tiles[t];
+		src = current->GetTileData(t);
 	}
 
 	if (y < 0)
@@ -398,11 +379,12 @@ void RenderFloorTile(int x, int y, int t, char light)
 
 void RenderFloorTileShadow(int x, int y, int t, char light)
 {
-	byte *dst, *src;
+	byte *dst;
+	const byte *src;
 	int wid, hgt, darkpart;
 	byte disco = PickDiscoColor();
 
-	if (t >= numTiles)
+	if (t >= current->numTiles)
 	{
 		return RenderEmptyTile(x, y, 0);
 	}
@@ -415,7 +397,7 @@ void RenderFloorTileShadow(int x, int y, int t, char light)
 
 		darkpart = 8;
 		dst = tileMGL->GetScreen() + y * SCRWID;
-		src = tiles[t] - x;
+		src = current->GetTileData(t) - x;
 	}
 	else if (x > SCRWID - TILE_WIDTH)
 	{
@@ -424,13 +406,13 @@ void RenderFloorTileShadow(int x, int y, int t, char light)
 			return;
 		darkpart = 8 - (x - (SCRWID - TILE_WIDTH));
 		dst = tileMGL->GetScreen() + x + y * SCRWID;
-		src = tiles[t];
+		src = current->GetTileData(t);
 	}
 	else
 	{
 		wid = TILE_WIDTH;
 		dst = tileMGL->GetScreen() + x + y * SCRWID;
-		src = tiles[t];
+		src = current->GetTileData(t);
 		darkpart = 8; // shadows are 8 pixels wide I guess
 	}
 
@@ -465,10 +447,11 @@ void RenderFloorTileShadow(int x, int y, int t, char light)
 
 void RenderFloorTileUnlit(int x, int y, int t)
 {
-	byte *dst, *src;
+	byte *dst;
+	const byte *src;
 	int wid, hgt;
 
-	if (t >= numTiles)
+	if (t >= current->numTiles)
 	{
 		return RenderEmptyTile(x, y, 0);
 	}
@@ -480,7 +463,7 @@ void RenderFloorTileUnlit(int x, int y, int t)
 			return;
 
 		dst = tileMGL->GetScreen() + y * SCRWID;
-		src = tiles[t] - x;
+		src = current->GetTileData(t) - x;
 	}
 	else if (x > SCRWID - TILE_WIDTH)
 	{
@@ -488,13 +471,13 @@ void RenderFloorTileUnlit(int x, int y, int t)
 		if (wid < 1)
 			return;
 		dst = tileMGL->GetScreen() + x + y * SCRWID;
-		src = tiles[t];
+		src = current->GetTileData(t);
 	}
 	else
 	{
 		wid = TILE_WIDTH;
 		dst = tileMGL->GetScreen() + x + y * SCRWID;
-		src = tiles[t];
+		src = current->GetTileData(t);
 	}
 
 	if (y < 0)
@@ -522,11 +505,12 @@ void RenderFloorTileUnlit(int x, int y, int t)
 
 void RenderFloorTileTrans(int x, int y, int t, char light)
 {
-	byte *dst, *src;
+	byte *dst;
+	const byte *src;
 	int wid, hgt;
 	byte disco = PickDiscoColor();
 
-	if (t >= numTiles)
+	if (t >= current->numTiles)
 	{
 		return RenderEmptyTile(x, y, 0);
 	}
@@ -538,7 +522,7 @@ void RenderFloorTileTrans(int x, int y, int t, char light)
 			return;
 
 		dst = tileMGL->GetScreen() + y * SCRWID;
-		src = tiles[t] - x;
+		src = current->GetTileData(t) - x;
 	}
 	else if (x > SCRWID - TILE_WIDTH)
 	{
@@ -546,13 +530,13 @@ void RenderFloorTileTrans(int x, int y, int t, char light)
 		if (wid < 1)
 			return;
 		dst = tileMGL->GetScreen() + x + y * SCRWID;
-		src = tiles[t];
+		src = current->GetTileData(t);
 	}
 	else
 	{
 		wid = TILE_WIDTH;
 		dst = tileMGL->GetScreen() + x + y * SCRWID;
-		src = tiles[t];
+		src = current->GetTileData(t);
 	}
 
 	if (y < 0)
@@ -587,7 +571,7 @@ void RenderFloorTileTrans(int x, int y, int t, char light)
 #define GB_WID	(TILE_WIDTH/2)
 #define GB_HEI	(TILE_HEIGHT/2)
 
-inline void GouraudBox(int x,int y,byte *src,char light0,char light1,char light2,char light3)
+inline void GouraudBox(int x,int y,const byte *src,char light0,char light1,char light2,char light3)
 {
 	int i,j,tmp;
 	byte *dst;
@@ -638,7 +622,7 @@ inline void GouraudBox(int x,int y,byte *src,char light0,char light1,char light2
 	}
 }
 
-inline void GouraudBoxTrans(int x,int y,byte *src,char light0,char light1,char light2,char light3)
+inline void GouraudBoxTrans(int x,int y,const byte *src,char light0,char light1,char light2,char light3)
 {
 	int i,j,tmp;
 	byte *dst;
@@ -692,7 +676,7 @@ inline void GouraudBoxTrans(int x,int y,byte *src,char light0,char light1,char l
 	}
 }
 
-inline void GouraudBoxDiscoTrans(int x,int y,byte *src,char light0,char light1,char light2,char light3)
+inline void GouraudBoxDiscoTrans(int x,int y,const byte *src,char light0,char light1,char light2,char light3)
 {
 	int i,j,tmp;
 	byte *dst;
@@ -749,7 +733,7 @@ inline void GouraudBoxDiscoTrans(int x,int y,byte *src,char light0,char light1,c
 	}
 }
 
-inline void GouraudBoxDisco(int x,int y,byte *src,char light0,char light1,char light2,char light3)
+inline void GouraudBoxDisco(int x,int y,const byte *src,char light0,char light1,char light2,char light3)
 {
 	int i,j,tmp;
 	byte *dst;
@@ -883,10 +867,10 @@ void RenderFloorTileFancy(int x,int y,int t,byte shadow,const char *theLight)
 
 	if(profile.progress.purchase[modeShopNum[MODE_DISCO]]&SIF_ACTIVE)
 	{
-		GouraudBoxDisco(x,y,tiles[t],light[0],light[1],light[3],light[4]);
-		GouraudBoxDisco(x+GB_WID,y,tiles[t]+GB_WID,light[1],light[2],light[4],light[5]);
-		GouraudBoxDisco(x,y+GB_HEI,tiles[t]+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
-		GouraudBoxDisco(x+GB_WID,y+GB_HEI,tiles[t]+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
+		GouraudBoxDisco(x,y,current->GetTileData(t),light[0],light[1],light[3],light[4]);
+		GouraudBoxDisco(x+GB_WID,y,current->GetTileData(t)+GB_WID,light[1],light[2],light[4],light[5]);
+		GouraudBoxDisco(x,y+GB_HEI,current->GetTileData(t)+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
+		GouraudBoxDisco(x+GB_WID,y+GB_HEI,current->GetTileData(t)+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
 	}
 	else if (j == 9 && shadow == 0)
 	{
@@ -894,10 +878,10 @@ void RenderFloorTileFancy(int x,int y,int t,byte shadow,const char *theLight)
 	}
 	else
 	{
-		GouraudBox(x,y,tiles[t],light[0],light[1],light[3],light[4]);
-		GouraudBox(x+GB_WID,y,tiles[t]+GB_WID,light[1],light[2],light[4],light[5]);
-		GouraudBox(x,y+GB_HEI,tiles[t]+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
-		GouraudBox(x+GB_WID,y+GB_HEI,tiles[t]+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
+		GouraudBox(x,y,current->GetTileData(t),light[0],light[1],light[3],light[4]);
+		GouraudBox(x+GB_WID,y,current->GetTileData(t)+GB_WID,light[1],light[2],light[4],light[5]);
+		GouraudBox(x,y+GB_HEI,current->GetTileData(t)+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
+		GouraudBox(x+GB_WID,y+GB_HEI,current->GetTileData(t)+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
 	}
 }
 
@@ -942,10 +926,10 @@ void RenderWallTileFancy(int x,int y,int t,const char *theLight)
 
 	if(profile.progress.purchase[modeShopNum[MODE_DISCO]]&SIF_ACTIVE)
 	{
-		GouraudBoxDisco(x,y,tiles[t],light[0],light[1],light[3],light[4]);
-		GouraudBoxDisco(x+GB_WID,y,tiles[t]+GB_WID,light[1],light[2],light[4],light[5]);
-		GouraudBoxDisco(x,y+GB_HEI,tiles[t]+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
-		GouraudBoxDisco(x+GB_WID,y+GB_HEI,tiles[t]+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
+		GouraudBoxDisco(x,y,current->GetTileData(t),light[0],light[1],light[3],light[4]);
+		GouraudBoxDisco(x+GB_WID,y,current->GetTileData(t)+GB_WID,light[1],light[2],light[4],light[5]);
+		GouraudBoxDisco(x,y+GB_HEI,current->GetTileData(t)+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
+		GouraudBoxDisco(x+GB_WID,y+GB_HEI,current->GetTileData(t)+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
 	}
 	else if (j == 9)
 	{
@@ -953,10 +937,10 @@ void RenderWallTileFancy(int x,int y,int t,const char *theLight)
 	}
 	else
 	{
-		GouraudBox(x,y,tiles[t],light[0],light[1],light[3],light[4]);
-		GouraudBox(x+GB_WID,y,tiles[t]+GB_WID,light[1],light[2],light[4],light[5]);
-		GouraudBox(x,y+GB_HEI,tiles[t]+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
-		GouraudBox(x+GB_WID,y+GB_HEI,tiles[t]+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
+		GouraudBox(x,y,current->GetTileData(t),light[0],light[1],light[3],light[4]);
+		GouraudBox(x+GB_WID,y,current->GetTileData(t)+GB_WID,light[1],light[2],light[4],light[5]);
+		GouraudBox(x,y+GB_HEI,current->GetTileData(t)+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
+		GouraudBox(x+GB_WID,y+GB_HEI,current->GetTileData(t)+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
 	}
 }
 
@@ -1000,17 +984,17 @@ void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,const char 
 	{
 		if(!trans)
 		{
-			GouraudBoxDisco(x,y,tiles[t],light[0],light[1],light[3],light[4]);
-			GouraudBoxDisco(x+GB_WID,y,tiles[t]+GB_WID,light[1],light[2],light[4],light[5]);
-			GouraudBoxDisco(x,y+GB_HEI,tiles[t]+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
-			GouraudBoxDisco(x+GB_WID,y+GB_HEI,tiles[t]+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
+			GouraudBoxDisco(x,y,current->GetTileData(t),light[0],light[1],light[3],light[4]);
+			GouraudBoxDisco(x+GB_WID,y,current->GetTileData(t)+GB_WID,light[1],light[2],light[4],light[5]);
+			GouraudBoxDisco(x,y+GB_HEI,current->GetTileData(t)+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
+			GouraudBoxDisco(x+GB_WID,y+GB_HEI,current->GetTileData(t)+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
 		}
 		else
 		{
-			GouraudBoxDiscoTrans(x,y,tiles[t],light[0],light[1],light[3],light[4]);
-			GouraudBoxDiscoTrans(x+GB_WID,y,tiles[t]+GB_WID,light[1],light[2],light[4],light[5]);
-			GouraudBoxDiscoTrans(x,y+GB_HEI,tiles[t]+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
-			GouraudBoxDiscoTrans(x+GB_WID,y+GB_HEI,tiles[t]+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
+			GouraudBoxDiscoTrans(x,y,current->GetTileData(t),light[0],light[1],light[3],light[4]);
+			GouraudBoxDiscoTrans(x+GB_WID,y,current->GetTileData(t)+GB_WID,light[1],light[2],light[4],light[5]);
+			GouraudBoxDiscoTrans(x,y+GB_HEI,current->GetTileData(t)+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
+			GouraudBoxDiscoTrans(x+GB_WID,y+GB_HEI,current->GetTileData(t)+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
 		}
 	}
 	else if (j == 9)
@@ -1024,17 +1008,17 @@ void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,const char 
 	{
 		if(!trans)
 		{
-			GouraudBox(x,y,tiles[t],light[0],light[1],light[3],light[4]);
-			GouraudBox(x+GB_WID,y,tiles[t]+GB_WID,light[1],light[2],light[4],light[5]);
-			GouraudBox(x,y+GB_HEI,tiles[t]+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
-			GouraudBox(x+GB_WID,y+GB_HEI,tiles[t]+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
+			GouraudBox(x,y,current->GetTileData(t),light[0],light[1],light[3],light[4]);
+			GouraudBox(x+GB_WID,y,current->GetTileData(t)+GB_WID,light[1],light[2],light[4],light[5]);
+			GouraudBox(x,y+GB_HEI,current->GetTileData(t)+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
+			GouraudBox(x+GB_WID,y+GB_HEI,current->GetTileData(t)+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
 		}
 		else
 		{
-			GouraudBoxTrans(x,y,tiles[t],light[0],light[1],light[3],light[4]);
-			GouraudBoxTrans(x+GB_WID,y,tiles[t]+GB_WID,light[1],light[2],light[4],light[5]);
-			GouraudBoxTrans(x,y+GB_HEI,tiles[t]+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
-			GouraudBoxTrans(x+GB_WID,y+GB_HEI,tiles[t]+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
+			GouraudBoxTrans(x,y,current->GetTileData(t),light[0],light[1],light[3],light[4]);
+			GouraudBoxTrans(x+GB_WID,y,current->GetTileData(t)+GB_WID,light[1],light[2],light[4],light[5]);
+			GouraudBoxTrans(x,y+GB_HEI,current->GetTileData(t)+GB_HEI*TILE_WIDTH,light[3],light[4],light[6],light[7]);
+			GouraudBoxTrans(x+GB_WID,y+GB_HEI,current->GetTileData(t)+GB_WID+GB_HEI*TILE_WIDTH,light[4],light[5],light[7],light[8]);
 		}
 	}
 }

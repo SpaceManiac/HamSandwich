@@ -53,6 +53,7 @@ namespace
 byte InitEditor(void)
 {
 	NewWorld(&world,editmgl);
+	SetCurrentTilegfx(&world.tilegfx);
 	editorMap=world.map[0];
 	curMapNum=0;
 
@@ -853,6 +854,7 @@ static TASK(void) HandleKeyPresses(void)
 			{
 				auto [cx, cy] = GetCamera();
 				AWAIT TestLevel(EditorGetWorld(),EditorGetMapNum());
+				SetCurrentTilegfx(&world.tilegfx);
 				StopSong();
 				SetPlayerStart(-1,-1);
 				ExitPlayer();

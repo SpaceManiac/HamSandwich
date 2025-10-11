@@ -202,9 +202,9 @@ byte AddWorldIn(world_t *world1,const char *fname)
 	int i;
 
 	EditorSaveWorld("worlds/backup_load.dlw");
-	stitchTileOffset=0;
-	stitchSoundOffset=0;
-	stitchItemOffset=0;
+	stitchTileOffset = world1->tilegfx.numTiles;
+	stitchSoundOffset = 0;
+	stitchItemOffset = 0;
 
 	SetStitchError("No problems!  Append OK!");
 	world2=(world_t *)malloc(sizeof(world_t));
@@ -215,6 +215,15 @@ byte AddWorldIn(world_t *world1,const char *fname)
 		LoadWorld(world1,"worlds/backup_load.dlw");
 		EditorSelectMap(0);
 		free(world2);
+		return 0;
+	}
+	if(world1->numTiles + world2->numTiles>NUMTILES)
+	{
+		FreeWorld(world1);
+		LoadWorld(world1,"worlds/backup_load.dlw");
+		EditorSelectMap(0);
+		free(world2);
+		SetStitchError("Too many tiles!");
 		return 0;
 	}
 	if(world2->numMaps+world1->numMaps>MAX_MAPS)	// would be too many maps
@@ -231,13 +240,23 @@ byte AddWorldIn(world_t *world1,const char *fname)
 	UpdateItems(world2);
 	UpdateSpecials(world2,world1->numMaps);
 
-	for(i=0;i<world2->numMaps;i++)	// now copy the maps over
+	// now copy the maps over
+	for(i=0;i<world2->numMaps;i++)
 		world1->map[i+world1->numMaps]=world2->map[i];
-
 	world1->numMaps+=world2->numMaps;
+
+	// copy terrain
 	for(i=0;i<world2->numTiles;i++)
 		world1->terrain[stitchTileOffset+i]=world2->terrain[i];
 	world1->numTiles+=world2->numTiles;
+
+	// copy tilegfx
+	memcpy(
+		world1->tilegfx.GetTileData(world1->tilegfx.numTiles),
+		world2->tilegfx.GetTileData(0),
+		TILE_WIDTH * TILE_HEIGHT * world2->tilegfx.numTiles
+	);
+	world1->tilegfx.numTiles += world2->tilegfx.numTiles;
 
 	free(world2);
 	EditorSelectMap(0);

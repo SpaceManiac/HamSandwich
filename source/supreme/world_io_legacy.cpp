@@ -147,8 +147,8 @@ bool Legacy_LoadWorld(world_t *world, SDL_RWops *f)
 	SDL_RWread(f,&oldWorld->numMaps,1,1);
 	SDL_RWread(f,&oldWorld->totalPoints,1,4);
 
-	SetNumTiles(400);
-	SDL_RWread(f, GetTileData(0), 32 * 24, 400);
+	world->tilegfx.numTiles = 400;
+	SDL_RWread(f, world->tilegfx.GetTileData(0), 32 * 24, 400);
 
 	SDL_RWread(f,oldWorld->terrain,200,sizeof(old_terrain_t));
 

@@ -383,8 +383,8 @@ byte Ham_SaveWorld(const world_t* world, const char *fname)
 	}
 
 	hamworld::Section rle_tilegfx;
-	rle_tilegfx.write_varint(world->numTiles);
-	SaveTiles(rle_tilegfx.stream);
+	rle_tilegfx.write_varint(world->tilegfx.numTiles);
+	world->tilegfx.SaveTiles(rle_tilegfx.stream);
 
 	hamworld::Section terrain;
 	terrain.write_varint(world->numTiles);
@@ -517,8 +517,8 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 		}
 		else if (section_name == "rle_tilegfx")
 		{
-			SetNumTiles(section.read_varint());
-			LoadTiles(section.stream);
+			int numTiles = section.read_varint();
+			world->tilegfx.LoadTiles(section.stream, numTiles);
 		}
 		else if (section_name == "terrain")
 		{

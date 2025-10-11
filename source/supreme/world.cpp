@@ -19,8 +19,8 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	world->numMaps=1;
 	mgl->LoadBMP("tilegfx/tiles.bmp");
 	world->numTiles=400;
-	SetNumTiles(400);
-	SetTiles(mgl->GetScreen());
+	world->tilegfx.numTiles = world->numTiles;
+	world->tilegfx.SetTiles(mgl->GetScreen(), mgl->GetWidth(), mgl->GetHeight());
 
 	// reset all the terrain
 	memset(world->terrain,0,sizeof(terrain_t)*NUMTILES);
@@ -92,16 +92,7 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 	SDL_RWseek(f, sizeof(int), RW_SEEK_CUR);  // totalPoints
 	SDL_RWread(f,&world->numTiles,1,sizeof(word));	// tile count
 
-	if(world->numTiles+GetNumTiles()>NUMTILES)
-	{
-		SetStitchError("Too many tiles!");
-		return 0;
-	}
-
-	stitchTileOffset=GetNumTiles();
-	SetNumTiles(world->numTiles+stitchTileOffset);
-
-	AppendTiles(stitchTileOffset, f.get());
+	world->tilegfx.LoadTiles(f.get(), world->numTiles);
 	LoadTerrain(world, fname, f.get());
 
 	for(i=0;i<MAX_MAPS;i++)
@@ -202,6 +193,7 @@ void FreeWorld(world_t *world)
 
 void InitWorld(world_t *world)
 {
+	SetCurrentTilegfx(&world->tilegfx);
 }
 
 void RepairTileToTile(world_t *w, const SwapTable &table)

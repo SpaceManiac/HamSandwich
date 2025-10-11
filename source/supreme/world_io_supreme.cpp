@@ -298,9 +298,8 @@ bool Supreme_LoadWorld(world_t *world, const char *fname, SDL_RWops *f)
 	SDL_RWread(f,&world->numMaps,1,1);
 	SDL_RWseek(f, sizeof(int), RW_SEEK_CUR);  // totalPoints
 	SDL_RWread(f,&world->numTiles,1,sizeof(word));	// tile count
-	SetNumTiles(world->numTiles);
 
-	LoadTiles(f);
+	world->tilegfx.LoadTiles(f, world->numTiles);
 	LoadTerrain(world, fname, f);
 
 	for(int i = 0; i < MAX_MAPS; i++)
@@ -646,7 +645,7 @@ bool Supreme_SaveWorld(const world_t *world, SDL_RWops *f)
 	SDL_RWwrite(f,&totalPoints,1,sizeof(int));
 	SDL_RWwrite(f,&world->numTiles,1,sizeof(word));
 
-	SaveTiles(f);
+	world->tilegfx.SaveTiles(f);
 
 	for (const terrain_t &terrain : world->Terrain())
 	{
