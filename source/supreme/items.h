@@ -293,17 +293,19 @@ struct item_t
 	word sound;		// sound when effect occurs
 };
 
+enum MapRenderFlags : word;
+
 void InitItems(void);
 void ExitItems(void);
-void RenderItem(int x,int y,byte type,char bright,byte flags);
-void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl);
-void DrawRedX(int x,int y,byte candle,MGLDraw *mgl);
+void RenderItem(int x,int y,int type,char bright,MapRenderFlags flags);
+void InstaRenderItem(int x,int y,int type,char bright,MGLDraw *mgl);
+void DrawRedX(int x,int y,bool candle,MGLDraw *mgl);
 item_t *GetItem(int type);
 const item_t *GetBaseItem(int type);
 word NumItems(void);
 int NewItem(void);
 void UpdateItems(void);
-byte GetRandomItem(void);
+int GetRandomItem(void);
 void SetupRandomItems(void);
 int GetTotalRarity(void);
 void DeleteItem(int itm);

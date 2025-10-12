@@ -1,6 +1,7 @@
 #include "winpch.h"
 #include "items.h"
 #include <algorithm>
+#include <vector>
 #include <ctype.h>
 #include "display.h"
 #include "player.h"
@@ -731,6 +732,7 @@ static const item_t baseItems[]={
 	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused16
 	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused17
 };
+static_assert(std::size(baseItems) == NUM_ORIGINAL_ITEMS);
 
 static const item_t emptyItem=
 	{"New Item",0,0,0,0,0,0,
@@ -739,23 +741,18 @@ static const item_t emptyItem=
 		IT_CUSTOM,
 		ITR_NONE,IE_NONE,0,"",0};
 
-sprite_set_t *itmSpr;
-sprite_set_t *customItmSpr;
+static sprite_set_t *itmSpr;
+static sprite_set_t *customItmSpr;
 static byte glowism;
-static byte rndItem;
-static word numItems;
-static item_t *items;
+static int rndItem;
+static std::vector<item_t> items;
 static int totalRare;
 
 static char customSpriteFilename[64] = "";
 
 void InitItems(void)
 {
-	numItems=NUM_ORIGINAL_ITEMS;
-	items=new item_t[256];
-
-	memset(items,0,256*sizeof(item_t));
-	memcpy(items,baseItems,sizeof(item_t)*NUM_ORIGINAL_ITEMS);
+	items.assign(std::begin(baseItems), std::end(baseItems));
 
 	itmSpr=new sprite_set_t("graphics/items.jsp");
 	customItmSpr=NULL;
@@ -770,11 +767,12 @@ void InitItems(void)
 void ExitItems(void)
 {
 	delete itmSpr;
-	if (customItmSpr) {
+	if (customItmSpr)
+	{
 		delete customItmSpr;
 		customItmSpr = NULL;
 	}
-	delete[] items;
+	items.clear();
 }
 
 int NumItemSprites(void)
@@ -784,32 +782,24 @@ int NumItemSprites(void)
 
 int NewItem(void)
 {
-	if(numItems==MAX_ITEMS)
+	if(items.size()==MAX_ITEMS)
 		return -1;
 
-	items[numItems]=emptyItem;
-	numItems++;
+	items.push_back(emptyItem);
 
-	return numItems-1;
+	return items.size()-1;
 }
 
 void DeleteItem(int itm)
 {
-	int i;
-
 	if(itm<NUM_ORIGINAL_ITEMS)
 		return;
-	if(itm>=numItems)
+	if(itm>=NumItems())
 		return;
 
 	RepairItems(itm);
 
-	for(i=itm;i<numItems-1;i++)
-	{
-		memcpy(&items[i],&items[i+1],sizeof(item_t));
-	}
-	items[numItems-1]=emptyItem;
-	numItems--;
+	items.erase(items.begin() + itm);
 }
 
 void SetCustomItemSprites(const char* name)
@@ -851,7 +841,8 @@ static void DetectCustomItemSprites(const world_t *world)
 
 sprite_set_t* CustomItemSprites()
 {
-	if (customItmSpr == NULL) {
+	if (customItmSpr == NULL)
+	{
 		DetectCustomItemSprites(editing ? EditorGetWorld() : &curWorld);
 	}
 	return customItmSpr;
@@ -862,7 +853,7 @@ int NumCustomSprites(void)
 	return CustomItemSprites() ? customItmSpr->GetCount() : 0;
 }
 
-void RenderItem(int x,int y,byte type,char bright,byte flags)
+void RenderItem(int x,int y,int type,char bright,MapRenderFlags flags)
 {
 	sprite_t* sprite;
 	byte b;
@@ -873,7 +864,7 @@ void RenderItem(int x,int y,byte type,char bright,byte flags)
 	if(type==ITM_RANDOM)
 		type=rndItem;
 
-	if(type>=numItems || type==0)
+	if(type>=NumItems() || type==0)
 		return;
 
 	if(!(flags&MAP_SHOWPICKUPS))
@@ -933,7 +924,7 @@ void RenderItem(int x,int y,byte type,char bright,byte flags)
 	}
 }
 
-void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
+void InstaRenderItem(int x,int y,int type,char bright,MGLDraw *mgl)
 {
 	sprite_t* sprite;
 	byte b;
@@ -941,7 +932,7 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 	if(type==ITM_RANDOM)
 		type=rndItem;
 
-	if(type>=numItems || type==0)
+	if(type>=NumItems() || type==0)
 		return;
 
 
@@ -953,7 +944,7 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 		else
 			sprite = itmSpr->GetSprite(8);
 	} else
-			sprite = itmSpr->GetSprite(items[type].sprNum);
+		sprite = itmSpr->GetSprite(items[type].sprNum);
 
 	if(items[type].flags&IF_TILE)
 	{
@@ -996,7 +987,7 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 
 }
 
-void DrawRedX(int x,int y,byte candle,MGLDraw *mgl)
+void DrawRedX(int x,int y,bool candle,MGLDraw *mgl)
 {
 	if (profile.progress.hudChoice == HudChoice::Classic)
 		itmSpr->GetSprite(8)->Draw(x - 5, y, mgl);
@@ -1006,14 +997,14 @@ void DrawRedX(int x,int y,byte candle,MGLDraw *mgl)
 
 item_t *GetItem(int type)
 {
-	if(type<0 || type>=numItems)
+	if(type<0 || type>=NumItems())
 		return NULL;
 	return &items[type];
 }
 
 word NumItems(void)
 {
-	return numItems;
+	return items.size();
 }
 
 void UpdateItems(void)
@@ -1029,19 +1020,16 @@ void UpdateItems(void)
 
 void SetupRandomItems(void)
 {
-	int i;
-
 	totalRare=0;
-	for(i=0;i<numItems;i++)
+	for (const item_t &item : items)
 	{
-		totalRare+=items[i].rarity;
+		totalRare += item.rarity;
 	}
-
 	if(totalRare==0)
 		totalRare=1;
 }
 
-byte GetRandomItem(void)
+int GetRandomItem(void)
 {
 	int i,last;
 	int rareNum,curRare;
@@ -1049,7 +1037,7 @@ byte GetRandomItem(void)
 	rareNum=Random(totalRare);
 	curRare=0;
 	last=0;
-	for(i=0;i<numItems;i++)
+	for(i=0;i<NumItems();i++)
 	{
 		curRare+=items[i].rarity;
 		if(items[i].rarity>0 && rareNum<=curRare)
@@ -1075,7 +1063,7 @@ const item_t *GetBaseItem(int type)
 
 int BrainsGiven(int type)
 {
-	if(type<0 || type>=numItems)
+	if(type<0 || type>=NumItems())
 		return 0;
 	if(items[type].effect!=IE_BRAIN)
 		return 0;
@@ -1084,7 +1072,7 @@ int BrainsGiven(int type)
 
 int CandlesGiven(int type)
 {
-	if(type<0 || type>=numItems)
+	if(type<0 || type>=NumItems())
 		return 0;
 	if(items[type].effect!=IE_CANDLE)
 		return 0;
@@ -1096,7 +1084,7 @@ void RepairItemToItem(int n)	// when item N is deleted, repair references to it 
 {
 	int i;
 
-	for(i=0;i<numItems;i++)
+	for(i=0;i<NumItems();i++)
 	{
 		if(items[i].effect==IE_BECOME)
 		{
@@ -1113,7 +1101,7 @@ void RepairItemToSound(int n)	// when sound N is deleted, repair references to i
 {
 	int i;
 
-	for(i=0;i<numItems;i++)
+	for(i=0;i<NumItems();i++)
 	{
 		if(items[i].sound==n)
 			items[i].sound=0;
@@ -1126,7 +1114,7 @@ void RepairItemToTile(const SwapTable &table)	// when tiles are messed with, rep
 {
 	int i;
 
-	for(i=0;i<numItems;i++)
+	for(i=0;i<NumItems();i++)
 	{
 		if(items[i].flags&IF_TILE)
 		{
@@ -1715,7 +1703,7 @@ int FindItemByName(const char *name)
 {
 	int i;
 
-	for(i=0;i<numItems;i++)
+	for(i=0;i<NumItems();i++)
 	{
 		if(!strcmp(name,items[i].name))
 			return i;
@@ -1752,13 +1740,13 @@ void CalculateItemRenderExtents()
 	// Calculate the union bounding box of item sprites so we know how far away
 	// to search for items to draw, with no pop-in and minimal overdraw.
 	SDL_Rect everything = {};
-	for (int type = 0; type < numItems; ++type)
+	for (const item_t &item : items)
 	{
 		SDL_Rect rect;
-		if (items[type].flags & IF_TILE)
+		if (item.flags & IF_TILE)
 		{
-			rect.x = items[type].xofs;
-			rect.y = items[type].yofs+1;
+			rect.x = item.xofs;
+			rect.y = item.yofs+1;
 			rect.w = 32;
 			rect.h = 32;
 		}
@@ -1766,32 +1754,32 @@ void CalculateItemRenderExtents()
 		{
 			sprite_t* spr;
 
-			if (items[type].flags & IF_USERJSP)
+			if (item.flags & IF_USERJSP)
 			{
 				sprite_set_t* custom = CustomItemSprites();
 				if (custom)
-					spr = custom->GetSprite(items[type].sprNum < custom->GetCount() ? items[type].sprNum : 0);
+					spr = custom->GetSprite(item.sprNum < custom->GetCount() ? item.sprNum : 0);
 				else
 					spr = itmSpr->GetSprite(8); // red X indicating invalid custom JSP file
 			}
 			else
-				spr = itmSpr->GetSprite(items[type].sprNum);
+				spr = itmSpr->GetSprite(item.sprNum);
 
 			if (spr)
 			{
 				// Use precise sprite boundaries.
-				rect.x = items[type].xofs - spr->ofsx;
-				rect.y = 0 - spr->ofsy - std::clamp(-items[type].yofs+1, -DISPLAY_YBORDER, DISPLAY_YBORDER);
+				rect.x = item.xofs - spr->ofsx;
+				rect.y = 0 - spr->ofsy - std::clamp(-item.yofs+1, -DISPLAY_YBORDER, DISPLAY_YBORDER);
 				rect.w = spr->width;
 				rect.h = spr->height;
 
 				SDL_UnionRect(&everything, &rect, &everything);
 
-				if(items[type].flags&IF_SHADOW)
+				if(item.flags&IF_SHADOW)
 				{
 					// Use precise shadow sprite boundaries.
-					rect.x = items[type].xofs - spr->ofsx - spr->height/2;
-					rect.y = 0 - spr->ofsy/2 - std::clamp(-items[type].yofs+1, -DISPLAY_YBORDER, DISPLAY_YBORDER);
+					rect.x = item.xofs - spr->ofsx - spr->height/2;
+					rect.y = 0 - spr->ofsy/2 - std::clamp(-item.yofs+1, -DISPLAY_YBORDER, DISPLAY_YBORDER);
 					rect.w = spr->height/2 + spr->width;
 					rect.h = spr->height/2;
 
