@@ -325,7 +325,7 @@ dword ChecksumMap(const Map *map)
 
 	AddToSum(map->numBrains);
 	AddToSum(map->numCandles);
-	AddToSum(map->flags);
+	AddToSum((word)map->flags); static_assert(sizeof(map->flags) == sizeof(word));
 	AddToSum(map->width);
 	AddToSum(map->height);
 	AddToSum(map->itemDrops);
@@ -364,7 +364,7 @@ dword ChecksumMap(const Map *map)
 				if(trigger.type)
 				{
 					AddToSum(trigger.type);
-					AddToSum(trigger.flags);
+					AddToSum((byte)trigger.flags); static_assert(sizeof(trigger.flags) == sizeof(byte));
 					AddToSum(trigger.x);
 					AddToSum(trigger.y);
 					AddToSum(trigger.value);
@@ -377,7 +377,7 @@ dword ChecksumMap(const Map *map)
 				if(effect.type)
 				{
 					AddToSum(effect.type);
-					AddToSum(effect.flags);
+					AddToSum((byte)effect.flags); static_assert(sizeof(effect.flags) == sizeof(byte));
 					AddToSum(effect.x);
 					AddToSum(effect.y);
 					if (effect.type == EFF_SOUND)
