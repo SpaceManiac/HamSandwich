@@ -12,9 +12,14 @@ class MGLDraw;
 
 class sprite_t
 {
+	sprite_t(const sprite_t &) = delete;
+	void operator=(const sprite_t &) = delete;
 public:
 	sprite_t();
-	explicit sprite_t(byte *info);
+	explicit sprite_t(const byte *info) noexcept;
+
+	sprite_t(sprite_t &&) noexcept = default;
+	sprite_t &operator=(sprite_t &&) noexcept = default;
 
 	bool LoadData(SDL_RWops *f);
 	bool SaveData(SDL_RWops *f) const;
@@ -37,7 +42,6 @@ public:
 	int16_t ofsx;
 	int16_t ofsy;
 protected:
-	dword size;
 	std::vector<byte> data;
 };
 
@@ -53,7 +57,7 @@ public:
 	const sprite_t* GetSprite(int which) const;
 	word GetCount() const;
 protected:
-	std::vector<std::unique_ptr<sprite_t>> spr;
+	std::vector<sprite_t> spr;
 };
 
 void NewComputerSpriteFix(const char *fname);
