@@ -1712,6 +1712,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					DropItem(subcursor);
 					MakeNormalSound(SND_EQUIP);
 					SortEquipment();
+					PlayerCalcStats();
 				}
 			}
 			subMode=SUBMODE_EQUIP;
