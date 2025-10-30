@@ -740,7 +740,7 @@ void AI_Cryozoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	int x,y;
 	byte ang;
 
-	if(SpecificSkillLevel(SKILL_CRYOZOID)==0)
+	if(SpecificSkillLevel(SKILL_CRYOZOID)==0 && me->hp > 0)
 	{
 		me->hp=0;
 		DoMove(me,ANIM_DIE,128,1,0,0);	// die!

@@ -1204,7 +1204,8 @@ void LoonyControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 					me->frmTimer=0;
 					return;
 				}
-				if(((player.whirlClock+5)%((byte)SpecificSkillVal(0,SKILL_WHIRL)))==0)
+				byte whirlLevel = SpecificSkillVal(0, SKILL_WHIRL);
+				if(whirlLevel && (player.whirlClock+5) % whirlLevel == 0)
 				{
 					LoonyWhirlHit(me,world);
 				}

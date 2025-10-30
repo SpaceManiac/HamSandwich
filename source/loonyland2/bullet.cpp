@@ -1289,12 +1289,12 @@ void SetupAxeBullet(void)
 		bulDef[BLT_AXE].spawnDelay=0;
 
 	bulDef[BLT_DRAINMASTER].timer=(int)SpecificSkillVal(1,SKILL_DRAIN);
-	bulDef[BLT_BRAMBLE2].timer=(int)SpecificSkillVal(1,SKILL_BRAMBLES);
+	bulDef[BLT_BRAMBLE2].timer=std::max(1, (int)SpecificSkillVal(1,SKILL_BRAMBLES));
 
 	bulDef[BLT_GALE2].speed=(word)SpecificSkillVal(0,SKILL_GALE);
 	bulDef[BLT_GALE2].dspeed=(word)SpecificSkillVal(1,SKILL_GALE);
 
-	bulDef[BLT_BURNFLAME2].timer=(int)SpecificSkillVal(1,SKILL_BURNINATE);
+	bulDef[BLT_BURNFLAME2].timer=std::max(1, (int)SpecificSkillVal(1,SKILL_BURNINATE));
 	bulDef[BLT_BURNINATE].damage=(int)(SpecificSkillVal(0,SKILL_BURNINATE)*(SpellDamageBoost(SC_FIRE))/100.0f);
 
 	bulDef[BLT_TORNADO].timer=30*(int)SpecificSkillVal(1,SKILL_TORNADO);
@@ -1303,7 +1303,7 @@ void SetupAxeBullet(void)
 	bulDef[BLT_SHOCKORB].timer=(int)SpecificSkillVal(1,SKILL_SHOCK);
 	bulDef[BLT_SHOCKORB].partDelay=CalcShockRate(30);
 
-	bulDef[BLT_BLIZZARD].size=(byte)SpecificSkillVal(1,SKILL_ICECUBE);
+	bulDef[BLT_BLIZZARD].size=std::max((byte)52, (byte)SpecificSkillVal(1,SKILL_ICECUBE));
 	bulDef[BLT_BLIZZARD].spawnDmg=(byte)((SpecificSkillLevel(SKILL_ICECUBE))*(SpellDamageBoost(SC_ICE))/100.0f);
 	bulDef[BLT_BLIZZARD].timer=(word)(SpecificSkillVal(0,SKILL_ICECUBE)*30);
 	bulDef[BLT_BLIZZARD].spawnRate=10-(SpecificSkillLevel(SKILL_ICECUBE)/2);
@@ -1629,7 +1629,7 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 				{
 					if(me->owner==goodguy->ID)
 					{
-						b->timer=(word)SpecificSkillVal(0,SKILL_FLAME);
+						b->timer=std::max((word)1, (word)SpecificSkillVal(0,SKILL_FLAME));
 					}
 				}
 				if(b)
@@ -2242,17 +2242,19 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			me->pSpawnTimer--;
 			if(!me->pSpawnTimer)
 			{
-				int t;
-
 				me->pSpawnTimer=bulDef[me->type].partDelay;
-				t=BulletFindTargetClosest(me->team,me->x,me->y,0,100*FIXAMT,map,world);
-				if(t!=0 && curMap->CheckLOS(mapx,mapy,8,GetGuy(t-1)->mapx,GetGuy(t-1)->mapy))
+				word staticSkill = (word)SpecificSkillVal(1,SKILL_STATIC);
+				if (staticSkill > 0)
 				{
-					bulletHittingType=me->type;
-					meleeAttacker=NULL;
-					GetGuy(t-1)->GetShotReal(0,0,ShockDmg((word)SpecificSkillVal(1,SKILL_STATIC),GOOD),map,world);
-					TalentPoint(TLT_ELECTROCUTION,(word)SpecificSkillVal(1,SKILL_STATIC));
-					LightningBolt(me->x,me->y-me->z,GetGuy(t-1)->x,GetGuy(t-1)->y-FIXAMT*20);
+					int t=BulletFindTargetClosest(me->team,me->x,me->y,0,100*FIXAMT,map,world);
+					if(t!=0 && curMap->CheckLOS(mapx,mapy,8,GetGuy(t-1)->mapx,GetGuy(t-1)->mapy))
+					{
+						bulletHittingType=me->type;
+						meleeAttacker=NULL;
+						GetGuy(t-1)->GetShotReal(0,0,ShockDmg(staticSkill,GOOD),map,world);
+						TalentPoint(TLT_ELECTROCUTION,staticSkill);
+						LightningBolt(me->x,me->y-me->z,GetGuy(t-1)->x,GetGuy(t-1)->y-FIXAMT*20);
+					}
 				}
 			}
 		}

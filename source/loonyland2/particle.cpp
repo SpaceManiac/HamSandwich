@@ -1267,7 +1267,7 @@ void ParticleBoom(byte type,int x,int y,int z)
 				if(!particleList[i]->Alive())
 				{
 					amt=rand()%256;
-					force=rand()%((byte)SpecificSkillVal(1,SKILL_ICECUBE));
+					force=rand()%bulDef[BLT_BLIZZARD].size;
 					particleList[i]->x=x+Cosine(amt)*force;
 					particleList[i]->y=y+Sine(amt)*force;
 					particleList[i]->z=z;
