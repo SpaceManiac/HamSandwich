@@ -24,8 +24,12 @@ RUN apk add --no-cache --no-scripts ninja-is-really-ninja
 RUN apk add --no-cache cmake llvm lld clang
 # host_tools requirements
 RUN apk add --no-cache zlib-dev
+# Dev convenience.
+RUN apk add --no-cache make gcompat
 
 # Let the ./container script automatically set the right toolchain.
 COPY toolchain.cmake /toolchain.cmake
 COPY wrap-mt /usr/local/bin/wrap-mt
-ENV CMAKE_TOOLCHAIN_FILE=/toolchain.cmake
+ENV CMAKE_TOOLCHAIN_FILE=/toolchain.cmake \
+	HSW_NO_INSTALL_DEPS=1 \
+	os=windows
