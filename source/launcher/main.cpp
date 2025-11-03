@@ -951,7 +951,8 @@ int main(int argc, char** argv)
 	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_ALLOW_HIGHDPI);
 	SDL_Window* window = SDL_CreateWindow("HamSandwich Launcher", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1024, 480, window_flags);
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
-	SDL_RenderSetVSync(renderer, 1); // Enable vsync
+	bool vsync = true; // Enable vsync initially.
+	SDL_RenderSetVSync(renderer, vsync);
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -1023,7 +1024,12 @@ int main(int argc, char** argv)
 	while (!done)
 	{
 		int running_downloads = launcher.update_transfers();
-		SDL_RenderSetVSync(renderer, running_downloads ? 0 : 1); // Enable vsync iff nothing is downloading.
+		bool newVsync = running_downloads == 0; // Enable vsync iff nothing is downloading.
+		if (vsync != newVsync)
+		{
+			vsync = newVsync;
+			SDL_RenderSetVSync(renderer, vsync);
+		}
 
 		// Poll and handle events (inputs, window resize, etc.)
 		// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
