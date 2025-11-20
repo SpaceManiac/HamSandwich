@@ -774,16 +774,16 @@ void DebugAPCommand() {
 }
 
 void GetRoomInfo() {
-	apSlotData.win_condition = ap->room_info("slot_data")["WinCondition"].getNumber();
-	apSlotData.badges_required = ap->room_info("slot_data")["BadgesRequired"].getNumber();
-	apSlotData.difficulty = ap->room_info("slot_data")["Difficulty"].getNumber();
-	apSlotData.long_checks = ap->room_info("slot_data")["LongChecks"].getNumber();
-	apSlotData.multi_save = ap->room_info("slot_data")["MultipleSaves"].getNumber();
-	apSlotData.remix = ap->room_info("slot_data")["Remix"].getNumber();
-	apSlotData.overpowered_cheats = ap->room_info("slot_data")["OverpoweredCheats"].getNumber();
-	apSlotData.badges = ap->room_info("slot_data")["Badges"].getNumber();
-	apSlotData.dolls = ap->room_info("slot_data")["Dolls"].getNumber();
-	apSlotData.deathlink = ap->room_info("slot_data")["DeathLink"].getNumber();
+	apSlotData.win_condition = ap->room_info("slot_data")["win_condition"].getNumber();
+	apSlotData.badges_required = ap->room_info("slot_data")["badges_required"].getNumber();
+	apSlotData.difficulty = ap->room_info("slot_data")["difficulty"].getNumber();
+	apSlotData.long_checks = ap->room_info("slot_data")["long_checks"].getNumber();
+	apSlotData.multi_save = ap->room_info("slot_data")["multisave"].getNumber();
+	apSlotData.remix = ap->room_info("slot_data")["remix"].getNumber();
+	apSlotData.overpowered_cheats = ap->room_info("slot_data")["overpowered_cheats"].getNumber();
+	apSlotData.badges = ap->room_info("slot_data")["badges"].getNumber();
+	apSlotData.dolls = ap->room_info("slot_data")["dolls"].getNumber();
+	apSlotData.deathlink = ap->room_info("slot_data")["death_link"].getNumber();
 
 	opt.difficulty = apSlotData.difficulty;
 
