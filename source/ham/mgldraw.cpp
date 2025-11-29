@@ -315,6 +315,23 @@ inline void MGLDraw::StartFlip(void)
 
 void MGLDraw::ResizeBuffer(int w, int h, bool clamp)
 {
+	if (w < 0 && h < 0)
+	{
+		// (-1, -1) means use window size.
+		w = winWidth;
+		h = winHeight;
+	}
+	else if (w < 0)
+	{
+		// (-1, 480) means fixed height, full-window width.
+		w = h * winWidth / winHeight;
+	}
+	else if (h < 0)
+	{
+		// (640, -1) means fixed width, full-window height.
+		h = w * winHeight / winWidth;
+	}
+
 	if (xRes == w && yRes == h)
 		return;
 
@@ -1103,7 +1120,15 @@ bool MGLDraw::LoadBMP(const char *name)
 	return true;
 }
 
-bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
+bool MGLDraw::LoadBMPResize(const char *name)
+{
+	if (!LoadBMP(name, pal, true))
+		return false;
+	RealizePalette();
+	return true;
+}
+
+bool MGLDraw::LoadBMP(const char *name, PALETTE pal, bool resize)
 {
 	owned::SDL_RWops rw = AppdataOpen(name);
 	if (!rw) {
@@ -1156,6 +1181,11 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal)
 		b = b2;
 
 		SDL_FreeFormat(format);
+	}
+
+	if (resize)
+	{
+		ResizeBuffer(b->w, b->h);
 	}
 
 	// 8-bit image suitable for loading directly into `srcn`.

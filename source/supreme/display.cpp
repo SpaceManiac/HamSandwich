@@ -98,6 +98,7 @@ void LoadText(const char *nm,byte mode)
 	switch(mode)
 	{
 		case TEXTFILE_NORMAL:
+			GetDisplayMGL()->ResizeBuffer(640, 480);
 			GetDisplayMGL()->ClearScreen();
 			for(y=0;y<32;y++)
 			{
@@ -113,7 +114,7 @@ void LoadText(const char *nm,byte mode)
 			}
 			break;
 		case TEXTFILE_YERFDOG:
-			GetDisplayMGL()->LoadBMP("graphics/yerfmsg.bmp");
+			GetDisplayMGL()->LoadBMPResize("graphics/yerfmsg.bmp");
 			y=26;
 			while(stream.getline(line, std::size(line)) && y<270-18)
 			{
@@ -122,7 +123,7 @@ void LoadText(const char *nm,byte mode)
 			}
 			break;
 		case TEXTFILE_COMPUTER:
-			GetDisplayMGL()->LoadBMP("graphics/profmenu.bmp");
+			GetDisplayMGL()->LoadBMPResize("graphics/profmenu.bmp");
 			y=10;
 			while(stream.getline(line, std::size(line)) && y<480-30)
 			{
@@ -158,7 +159,7 @@ TASK(void) ShowImageOrFlic(const char *str,byte nosnd,byte mode)
 		if(!nosnd)
 			MakeNormalSound(SND_MESSAGE);
 		sprintf(nm,"user/%s",fname);
-		GetDisplayMGL()->LoadBMP(nm);
+		GetDisplayMGL()->LoadBMPResize(nm);
 		CO_RETURN;
 	}
 	if((fname[strlen(fname)-3]=='t' || fname[strlen(fname)-3]=='T') &&

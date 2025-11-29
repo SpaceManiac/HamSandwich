@@ -1159,8 +1159,8 @@ void MakeItSnow(Map *map)
 		return;
 
 	auto [cx, cy] = GetCamera();
-	cx-=320;
-	cy-=240;
+	cx-=wid/2;
+	cy-=hei/2;
 	for(int i=0;i<maxParticles;i++)
 	{
 		if(!particleList[i].Alive())
@@ -1189,8 +1189,8 @@ void MakeItRain(Map *map)
 		return;
 
 	auto [cx, cy] = GetCamera();
-	cx-=320;
-	cy-=240;
+	cx-=wid/2;
+	cy-=hei/2;
 	for(int i=0;i<maxParticles;i++)
 	{
 		if(!particleList[i].Alive())

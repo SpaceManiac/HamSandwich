@@ -709,6 +709,7 @@ TASK(byte) PlayALevel(byte map)
 		AWAIT Tally(gamemgl,lastLevelName,0);
 	}
 	ExitLevel();
+	gamemgl->ResizeBuffer(SCRWID, SCRHEI);
 	CO_RETURN exitcode;
 }
 

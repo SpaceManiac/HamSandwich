@@ -1700,8 +1700,8 @@ void InitSpecialsForPlay(void)
 void RenderSpecialXes(Map *map)
 {
 	auto [camx, camy] = GetCamera();
-	camx-=320;
-	camy-=240;
+	camx -= GetDisplayMGL()->GetWidth() / 2;
+	camy -= GetDisplayMGL()->GetHeight() / 2;
 	for(int i=0;i<numSpecials;i++)
 	{
 		const special_t &special = spcl[i];
