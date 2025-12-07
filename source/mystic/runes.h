@@ -65,7 +65,7 @@ typedef struct RuneDef
 void DescribeRune(Rune r, int x, int y);
 
 const char* RuneName(Rune r);
-int RuneValue(Rune r);
+float RuneValue(Rune r);
 
 byte RuneLevel(Rune r);
 bool RuneEquipped(Rune r);

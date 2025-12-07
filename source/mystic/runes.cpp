@@ -220,7 +220,7 @@ const char* RuneName(Rune r)
 		return "????";
 }
 
-int RuneValue(Rune r)
+float RuneValue(Rune r)
 {
 	if (!RuneEquipped(r))
 		return 0;
