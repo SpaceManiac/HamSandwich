@@ -38,7 +38,7 @@ extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
 void AfterFlip()
 {
-	SteamManager::Get()->Update();
+	Steam()->Update();
 }
 
 TASK(int) main(int argc, char* argv[])

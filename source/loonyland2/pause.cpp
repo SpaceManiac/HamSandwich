@@ -39,6 +39,7 @@ static char helpTxt[4][64];
 static char askingTxt[64];
 static char statText[6][32],statNum[6];
 static byte statClock[3];
+static dword lastBtn = 0;
 
 void NewStatText(byte n)
 {
@@ -438,7 +439,7 @@ void RenderOptionsMenu(int x,int y)
 
 void RenderSetKey(int x,int y,byte t)
 {
-	char actName[7][16]={
+	static const char actName[7][16]={
 		"Up",
 		"Down",
 		"Left",
@@ -1356,12 +1357,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					{
 						subMode=SUBMODE_SETBTN;
 						mgl->ClearKeys();
-						i=0;
-						while(i<10000 && GetJoyButtons())
-						{
-							i++;
-							SDL_Delay(1);
-						}
+						lastBtn = GetJoyButtons();
 						MakeNormalSound(SND_MENUSELECT);
 					}
 					else
@@ -1388,7 +1384,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		byte r;
 
 		r=LastScanCode();
-		if(r==59)
+		if(r==SDL_SCANCODE_ESCAPE)
 		{
 			subMode=SUBMODE_OPTIONS;	// escape
 			MakeNormalSound(SND_MENUCANCEL);
@@ -1409,9 +1405,8 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 	}
 	else if(subMode==SUBMODE_SETBTN)
 	{
-		dword btn;
-
-		btn=GetJoyButtons();
+		dword btn = GetJoyButtons() & ~lastBtn;
+		lastBtn = GetJoyButtons();
 
 		j=1;
 		for(i=0;i<16;i++)
@@ -1717,6 +1712,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					DropItem(subcursor);
 					MakeNormalSound(SND_EQUIP);
 					SortEquipment();
+					PlayerCalcStats();
 				}
 			}
 			subMode=SUBMODE_EQUIP;

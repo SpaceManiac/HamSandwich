@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <string>
 #include <string_view>
+#include <array>
 #include <SDL_stdinc.h>
 
 // A variant describing several possible places a string might be written.
@@ -48,21 +49,26 @@ class span
 	size_t _size;
 public:
 	constexpr span() noexcept : _data(nullptr), _size(0) {}
-	constexpr span(SDL_OUT_Z_CAP(count) T* first, size_t count) : _data(first), _size(count) {}
+	constexpr span(SDL_OUT_Z_CAP(count) T* first, size_t count) noexcept : _data(first), _size(count) {}
 	// This is the magic that safely constructs a span from a char array.
 	template<size_t N>
 	constexpr span(T (&arr)[N]) noexcept : _data(arr), _size(N) {}
+	template<size_t N>
+	constexpr span(std::array<T, N> &arr) noexcept : _data(arr.data()), _size(N) {}
 	constexpr span(const span& other) noexcept = default;
 	// Real std::span is constructible from std::string but we don't actually want that.
 
 	constexpr span& operator=(const span& other) noexcept = default;
 
-	constexpr T& operator[](size_t idx) const { return _data[idx]; }
+	constexpr T& operator[](size_t idx) const noexcept { return _data[idx]; }
 	constexpr T* data() const noexcept { return _data; }
 	constexpr size_t size() const noexcept { return _size; }
 	constexpr bool empty() const noexcept { return _size == 0; }
 
-	constexpr span subspan(size_t offset, size_t count = SIZE_MAX)
+	constexpr T* begin() const noexcept { return _data; }
+	constexpr T* end() const noexcept { return _data + _size; }
+
+	constexpr span subspan(size_t offset, size_t count = SIZE_MAX) const noexcept
 	{
 		return span(_data + offset, count == SIZE_MAX ? _size - offset : count);
 	}

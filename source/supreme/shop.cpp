@@ -15,8 +15,15 @@
 
 word moneyAmts[11]={25,75,1500,5000,2222,250,17,300,2,716,42};
 
-static const shopItem_t shop[NUMSHOPITEMS]={
+struct ShopItem
+{
+	byte shop;
+	word cost;
+	byte type;
+	byte item;	// which # of the items of "type" it is
+};
 
+static const ShopItem shop[NUMSHOPITEMS]={
 	// bones, bats, and beyond
 	{SHOP_SPOOKY,
 	 400,
@@ -964,9 +971,9 @@ byte GetRandomItemFromShop(byte shopNum,byte invalid1,byte invalid2,byte invalid
 void AddMapShopItem(Map *map,byte item,byte x,byte y,byte *itmnum)
 {
 	if(item!=255)
-		map->map[x+y*map->width].item=itmnum[shop[item].type];
+		map->GetTile(x, y)->item=itmnum[shop[item].type];
 	else
-		map->map[x+y*map->width].item=ITM_NONE;
+		map->GetTile(x, y)->item=ITM_NONE;
 }
 
 void SetupShops(Map *map)
@@ -1037,19 +1044,19 @@ void SetupShops(Map *map)
 			{
 				if(profile.progress.purchase[i+lockStart]&SIF_ACTIVE)
 				{
-					map->map[x+y*map->width].floor=369;
-					map->map[x+y*map->width].wall=371;
+					map->GetTile(x, y)->floor=369;
+					map->GetTile(x, y)->wall=371;
 				}
 				else
 				{
-					map->map[x+y*map->width].floor=370;
-					map->map[x+y*map->width].wall=372;
+					map->GetTile(x, y)->floor=370;
+					map->GetTile(x, y)->wall=372;
 				}
 			}
 			else
 			{
-				map->map[x+y*map->width].floor=373;
-				map->map[x+y*map->width].wall=374;
+				map->GetTile(x, y)->floor=373;
+				map->GetTile(x, y)->wall=374;
 			}
 		}
 		x+=3;
@@ -1098,7 +1105,7 @@ void DefaultShopAvailability(void)
 	for(i=0;i<NUMSHOPITEMS;i++)
 	{
 		if(shop[i].type==SHOP_CHEAT || shop[i].type==SHOP_DONATION)
-			profile.progress.purchase[i]=0;	// not available!
+			profile.progress.purchase[i]={};	// not available!
 		else
 			profile.progress.purchase[i]=SIF_AVAILABLE;
 

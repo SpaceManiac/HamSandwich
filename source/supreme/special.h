@@ -1,11 +1,12 @@
 #ifndef SPECIAL_H
 #define SPECIAL_H
 
-#include "mgldraw.h"
 #include <stdio.h>
+#include "mgldraw.h"
+#include "string_extras.h"
+#include "bitflags.h"
 
 #define MAX_SPECIAL	250
-#define MAX_EVENT   128
 
 //special triggers
 #define TRG_NONE		0
@@ -85,19 +86,28 @@
 #define EFF_MAX			38
 
 // trigger flags
-#define TF_NOT		1	// NOT this one
-#define TF_AND		2	// AND this one with the next (if not selected, it's OR)
-#define TF_LESS		4	// in triggers with "less/more/exactly", less \ both off means exactly
-#define TF_MORE		8	// in triggers with "less/more/exactly", more / both on is not valid!
+enum TriggerFlags : byte
+{
+	TF_NOT  = 1 << 0, // NOT this one
+	TF_AND  = 1 << 1, // AND this one with the next (if not selected, it's OR)
+	TF_LESS = 1 << 2, // in triggers with "less/more/exactly", less \ both off means exactly
+	TF_MORE = 1 << 3, // in triggers with "less/more/exactly", more / both on is not valid!
+};
+BITFLAGS(TriggerFlags)
 
 // effect flags
-#define EF_CONTIGUOUS	1	// contiguous effect, instead of single
-#define EF_PLAYER		1	// uses the same slot - affects player rather than special target
-#define EF_PERMLIGHT	1	// uses the same slot - permanent light rather than temporary
-#define EF_ALL			2	// instead of contiguous or single, this hits ALL tiles/items of the same type
-#define EF_TAGGED		2	// uses the same slot - affects the tagged monster instead of player or target
-#define EF_TOGGLE		4	// automatically modifies itself for repeat uses to toggle
-#define EF_NOFX			8	// doesn't show visual or audio effects when done
+enum EffectFlags : byte
+{
+	EF_NONE       = 0,
+	EF_CONTIGUOUS = 1 << 0, // contiguous effect, instead of single
+	EF_PLAYER     = 1 << 0, // uses the same slot - affects player rather than special target
+	EF_PERMLIGHT  = 1 << 0, // uses the same slot - permanent light rather than temporary
+	EF_ALL        = 1 << 1, // instead of contiguous or single, this hits ALL tiles/items of the same type
+	EF_TAGGED     = 1 << 1, // uses the same slot - affects the tagged monster instead of player or target
+	EF_TOGGLE     = 1 << 2, // automatically modifies itself for repeat uses to toggle
+	EF_NOFX       = 1 << 3, // doesn't show visual or audio effects when done
+};
+BITFLAGS(EffectFlags)
 
 // numbers in one special
 #define NUM_TRIGGERS	7
@@ -112,47 +122,37 @@
 #define EVT_GET			6	// an item was picked up
 #define MAX_EVENTTYPES	7
 
-typedef struct trigger_t
+struct trigger_t
 {
-	byte flags;		// whether it must AND or OR with the next one, and if it's NOT
+	TriggerFlags flags;		// whether it must AND or OR with the next one, and if it's NOT
 	byte type;
 	byte x,y;	// coordinates of where it's triggered
 	int value;	// value of "N" in the trigger
 	int value2;	// another value for some triggers
-} trigger_t;
+};
 
-typedef struct effect_t
+struct effect_t
 {
-	byte flags;
+	EffectFlags flags;
 	byte type;
 	byte x,y;
 	int value;
 	int value2;
 	char  text[32];
-} effect_t;
+};
 
-typedef struct special_t
+struct special_t
 {
 	byte x,y;	// where this special is actually kept
 	byte uses;
 	trigger_t trigger[NUM_TRIGGERS];
 	effect_t effect[NUM_EFFECTS];
-} special_t;
+};
 
 class Guy;
 
-typedef struct sEvent_t
-{
-	byte type;
-	int  value;	// guy #, bullet #, var #, item #
-	int  x,y;
-	byte guyType;
-	byte guyFriendly;
-	Guy *victim;
-} sEvent_t;
-
-void InitSpecials(special_t *list);
-void GetSpecialsFromMap(special_t *list);
+void InitSpecials(span<special_t> list);
+void GetSpecialsFromMap(span<special_t> list);
 int NewSpecial(byte x,byte y);
 void DefaultTrigger(trigger_t *trig,int x,int y);
 void DefaultEffect(effect_t *eff,int x,int y,byte savetext);
@@ -166,17 +166,17 @@ class Map;
 void SlideSpecials(Map *map,int dx,int dy);
 int SlideCoord(int coord,int delta,int max);
 void SlideCombinedCoord(int *combo,int dx,int dy,int width,int height);
-void RepairSpecialToItem(special_t *list,int n);	// repair all references to items in
+
+class SwapTable;
+void RepairSpecialToItem(span<special_t> list,int n);	// repair all references to items in
 													// specials when item N is deleted
-void RepairSpecialToSound(special_t *list,int n);	// repair all references to sounds in
+void RepairSpecialToSound(span<special_t> list,int n);	// repair all references to sounds in
 													// specials when sound N is deleted
-void RepairSpecialToLevel(special_t *list);	// repair all references to levels in
+void RepairSpecialToLevel(span<special_t> list, const SwapTable &table);	// repair all references to levels in
 											// specials when the levels are moved around
-void RepairSpecialToTile(special_t *list);	// repair tile references
+void RepairSpecialToTile(span<special_t> list, const SwapTable &table);	// repair tile references
 
-byte CheckSpecial(special_t *me);	// returns 0 if the special has no triggers, 1 otherwise
-
-special_t *SpecialPointer(void);
+bool CheckSpecial(const special_t &me);	// returns 0 if the special has no triggers, 1 otherwise
 
 void PrintSpecialComment(int x,int y,int mx,int my);
 

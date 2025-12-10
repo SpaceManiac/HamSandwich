@@ -81,7 +81,7 @@ void InitPlayer(byte level,const char *fname)
 	player.ammo=0;
 	player.reload=10;
 	player.wpnReload=10;
-	player.hammerFlags=0;
+	player.hammerFlags={};
 	player.life=128;
 	player.shield=0;
 	playerGlow=0;
@@ -220,9 +220,7 @@ int WeaponMaxAmmo(byte wpn)
 
 byte PlayerGetWeapon(byte wpn,int x,int y)
 {
-	int cx,cy;
-
-	GetCamera(&cx,&cy);
+	auto [cx, cy] = GetCamera();
 	cx<<=FIXSHIFT;
 	cy<<=FIXSHIFT;
 

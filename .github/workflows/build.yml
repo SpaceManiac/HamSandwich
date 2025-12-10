@@ -11,20 +11,20 @@ env:
 jobs:
   windows:
     name: Windows (MSVC)
-    runs-on: windows-2019
+    runs-on: windows-2025
     steps:
       - uses: actions/checkout@v4
       - name: Build Windows release
         shell: cmd
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
           cmake --preset windows-i686-release
-          cmake --build build/cmake-windows-i686-release16.0 --target install
+          cmake --build build/cmake-windows-i686-release17.0 --target install
       - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
         run: tools/bootstrap/butler push --if-changed build/install "${ENV:ITCH_GAME}:windows" ("--userversion=" + (git rev-parse --short=10 HEAD))
   mingw32:
     name: Windows (MINGW32)
-    runs-on: windows-2019
+    runs-on: windows-2025
     steps:
       - uses: actions/checkout@v4
       - uses: msys2/setup-msys2@v2
@@ -37,23 +37,23 @@ jobs:
         run: make install/strip mode=release
   linux:
     name: Linux
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - run: ./container make install/strip mode=release
       - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
         run: tools/bootstrap/butler push --if-changed build/install "$ITCH_GAME:linux" --userversion="$(git rev-parse --short=10 HEAD)"
-  mac:
-    name: MacOS
-    runs-on: macos-13
-    steps:
-      - uses: actions/checkout@v4
-      - run: make install/strip mode=release
-      - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
-        run: tools/bootstrap/butler push --if-changed build/install "$ITCH_GAME:macos" --userversion="$(git rev-parse --short=10 HEAD)"
+  # mac:
+  #   name: MacOS
+  #   runs-on: macos-14
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - run: make install/strip mode=release
+  #     - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
+  #       run: tools/bootstrap/butler push --if-changed build/install "$ITCH_GAME:macos" --userversion="$(git rev-parse --short=10 HEAD)"
   android:
     name: Android
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
       ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -73,7 +73,7 @@ jobs:
           tools/bootstrap/butler push --if-changed hamsandwich-android.apk "$ITCH_GAME:android" --userversion="$(git rev-parse --short=10 HEAD)"
   web:
     name: Web
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - run: make install/strip mode=release os=emscripten
@@ -98,16 +98,16 @@ jobs:
     concurrency:
       group: "pages"
       cancel-in-progress: true
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/configure-pages@v5
     - uses: actions/deploy-pages@v4
       id: deployment
   jspedit-aseprite:
     name: JspEdit extension for Aseprite
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - run: tools/itch/build-jspedit-aseprite
       - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
-        run: tools/bootstrap/butler push --if-changed build/jspedit.aseprite-extension "$ITCH_GAME:aseprite" --userversion="$(git rev-parse --short=10 HEAD)"
+        run: tools/bootstrap/butler push --if-changed build/jspedit.aseprite-extension "$ITCH_GAME:aseprite" --userversion="$(cat build/jspedit.aseprite-extension.version)"

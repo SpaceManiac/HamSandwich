@@ -36,7 +36,7 @@
 // if I'm not mistaken, this number is NOT used by windows as a window event
 #define INTERNET_EVENT	(WM_USER+1)
 
-typedef struct mySock_t
+struct mySock_t
 {
 	byte state;
 	SOCKET s;
@@ -50,7 +50,7 @@ typedef struct mySock_t
 	int reqSent;
 	char request[1024];
 	byte error;
-} mySock_t;
+};
 
 mySock_t sock[NUM_SOCKETS];
 char errorDisp[128];

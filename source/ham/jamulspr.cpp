@@ -77,33 +77,29 @@ static inline int ResolveConstrainY2(MGLDraw* mgl)
 // -------------------------------------------------------------------------
 
 // CONSTRUCTORS & DESTRUCTORS
-sprite_t::sprite_t(void)
+sprite_t::sprite_t()
 	: width(0)
 	, height(0)
 	, ofsx(0)
 	, ofsy(0)
-	, size(0)
 {
 }
 
-sprite_t::sprite_t(byte *info)
+sprite_t::sprite_t(const byte *info) noexcept
 {
 	memcpy(&width,&info[0],2);
 	memcpy(&height,&info[2],2);
 	memcpy(&ofsx,&info[4],2);
 	memcpy(&ofsy,&info[6],2);
+	dword size;
 	memcpy(&size,&info[8],4);
+	data.resize(size);
 }
 
 // REGULAR MEMBER FUNCTIONS
 bool sprite_t::LoadData(SDL_RWops *f)
 {
-	if(size==0)
-		return true;
-
-	data.resize(size);
-
-	if(SDL_RWread(f,data.data(),1,size)!=size)
+	if(SDL_RWread(f,data.data(),1,data.size())!=data.size())
 	{
 		return false;
 	}
@@ -112,13 +108,10 @@ bool sprite_t::LoadData(SDL_RWops *f)
 
 bool sprite_t::SaveData(SDL_RWops *f) const
 {
-	if(size==0)
-		return true;
-
 	if(data.empty())
 		return true;
 
-	if(SDL_RWwrite(f,data.data(),1,size)!=size)
+	if(SDL_RWwrite(f,data.data(),1,data.size())!=data.size())
 	{
 		return false;
 	}
@@ -131,6 +124,7 @@ void sprite_t::GetHeader(byte *buffer) const
 	memcpy(&buffer[2],&height,2);
 	memcpy(&buffer[4],&ofsx,2);
 	memcpy(&buffer[6],&ofsy,2);
+	dword size = data.size();
 	memcpy(&buffer[8],&size,4);
 }
 
@@ -1050,7 +1044,7 @@ void sprite_t::DrawShadow(int x, int y, MGLDraw *mgl) const
 // -------------------------------------------------------------------------
 
 // CONSTRUCTORS & DESTRUCTORS
-sprite_set_t::sprite_set_t(void)
+sprite_set_t::sprite_set_t()
 {
 }
 
@@ -1075,25 +1069,23 @@ bool sprite_set_t::Load(const char *fname)
 	word count;
 	SDL_RWread(f, &count, 2, 1);
 
-	spr.resize(count);
-
 	// allocate a buffer to load sprites into
 	std::vector<byte> buffer(SPRITE_INFO_SIZE*count);
 
 	// read in the sprite headers
 	if(SDL_RWread(f,buffer.data(),SPRITE_INFO_SIZE,count)!=count)
 	{
-		spr.clear();
 		return false;
 	}
 
 	// allocate the sprites and read in the data for them
+	spr.reserve(count);
 	for(i=0;i<count;i++)
 	{
-		spr[i] = std::make_unique<sprite_t>(&buffer[i*SPRITE_INFO_SIZE]);
-		if(!spr[i]->LoadData(f.get()))
+		spr.emplace_back(&buffer[i*SPRITE_INFO_SIZE]);
+		if(!spr.back().LoadData(f.get()))
 		{
-			spr[i] = nullptr;
+			spr.pop_back();
 			return false;
 		}
 	}
@@ -1115,7 +1107,7 @@ bool sprite_set_t::Save(const char *fname) const
 	std::vector<byte> buffer(SPRITE_INFO_SIZE*count);
 
 	for(i=0;i<count;i++)
-		spr[i]->GetHeader(&buffer[i*SPRITE_INFO_SIZE]);
+		spr[i].GetHeader(&buffer[i*SPRITE_INFO_SIZE]);
 
 	// write the sprites out
 	if(SDL_RWwrite(f,buffer.data(),SPRITE_INFO_SIZE,count)!=count)
@@ -1126,7 +1118,7 @@ bool sprite_set_t::Save(const char *fname) const
 	// write the sprite data
 	for(i=0;i<count;i++)
 	{
-		if(!spr[i]->SaveData(f.get()))
+		if(!spr[i].SaveData(f.get()))
 		{
 			return false;
 		}
@@ -1138,15 +1130,15 @@ bool sprite_set_t::Save(const char *fname) const
 
 sprite_t* sprite_set_t::GetSprite(int which)
 {
-	if (which >= 0 && (size_t)which < spr.size() && spr[which])
-		return spr[which].get();
+	if (which >= 0 && (size_t)which < spr.size())
+		return &spr[which];
 	return nullptr;
 }
 
 const sprite_t* sprite_set_t::GetSprite(int which) const
 {
-	if (which >= 0 && (size_t)which < spr.size() && spr[which])
-		return spr[which].get();
+	if (which >= 0 && (size_t)which < spr.size())
+		return &spr[which];
 	return nullptr;
 }
 

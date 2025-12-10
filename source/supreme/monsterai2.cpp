@@ -1,3 +1,10 @@
+#include "winpch.h"
+#include "monsterai.h"
+#include "guy.h"
+#include "world.h"
+#include "player.h"
+#include "editor.h"
+
 void AI_MineCart(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
@@ -269,17 +276,19 @@ void AI_Raft(Guy *me,Map *map,world_t *world,Guy *goodguy)
 						y--;
 						break;
 				}
-				if(x<0 || x>=map->width || y<0 || y>=map->height ||
-					map->map[x+y*map->width].wall>0 ||
-					(GetItem(map->map[x+y*map->width].item)->flags&IF_SOLID))
+				if (mapTile_t *tile = map->TryGetTile(x, y); tile &&
+					tile->wall == 0 &&
+					!(GetItem(tile->item)->flags & IF_SOLID))
+				{
+					tries=10;	// we're okay!
+				}
+				else
 				{
 					me->x-=me->dx;
 					me->y-=me->dy;
 					me->facing=(me->facing+2)&3;
 					tries++;
 				}
-				else
-					tries=10;	// we're okay!
 			}
 			while(tries<3);
 			if(tries<10)	// it failed and would've been in an infinite loop
@@ -303,10 +312,10 @@ void AI_Raft(Guy *me,Map *map,world_t *world,Guy *goodguy)
 							y--;
 							break;
 					}
-					if(x>=0 && x<map->width && y>=0 && y<map->height &&
-						map->map[x+y*map->width].wall==0 &&
-						!(GetItem(map->map[x+y*map->width].item)->flags&IF_SOLID) &&
-						!(GetTerrain(world,map->map[x+y*map->width].floor)->flags&(TF_SOLID|TF_WATER|TF_LAVA)))
+					if (mapTile_t *tile = map->TryGetTile(x, y); tile &&
+						tile->wall==0 &&
+						!(GetItem(tile->item)->flags&IF_SOLID) &&
+						!(GetTerrain(world,tile->floor)->flags&(TF_SOLID|TF_WATER|TF_LAVA)))
 					{
 						me->facing=tries;
 						me->x=(me->mapx*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT;
@@ -321,7 +330,6 @@ void AI_Raft(Guy *me,Map *map,world_t *world,Guy *goodguy)
 						goodguy->y=me->y+Sine(me->facing*64)*TILE_HEIGHT;
 						player.vehicle=0;
 						return;
-
 					}
 				}
 				if(tries==4)	// there was no spot to put the player
@@ -334,7 +342,7 @@ void AI_Raft(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 			}
 			// otherwise if it's not water, we're done
-			if(!(GetTerrain(world,map->map[x+y*map->width].floor)->flags&(TF_WATER|TF_LAVA)))
+			if(!(GetTerrain(world,map->GetTile(x, y)->floor)->flags&(TF_WATER|TF_LAVA)))
 			{
 				me->x=(me->mapx*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT;
 				me->y=(me->mapy*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
@@ -378,7 +386,6 @@ void AI_Raft(Guy *me,Map *map,world_t *world,Guy *goodguy)
 void AI_Vampire(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
-	dword d;
 
 	if(me->reload)
 		me->reload--;
@@ -388,10 +395,7 @@ void AI_Vampire(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		// get burned by the light!
 		if(map->GetTile(me->mapx,me->mapy)->light>0 && me->ouch==0 && me->hp>0)
 		{
-			d=monsType[me->type].flags;
-			monsType[me->type].flags=0;
-			me->GetShot(0,0,map->GetTile(me->mapx,me->mapy)->light,map,world);
-			monsType[me->type].flags=d;
+			me->GetShot(0,0,map->GetTile(me->mapx,me->mapy)->light,map,world, /* bypassInvincible */ true);
 			BlowSmoke(me->x,me->y,FIXAMT*10,Random(6)*FIXAMT);
 			BlowSmoke(me->x,me->y,FIXAMT*10,Random(6)*FIXAMT);
 			BlowSmoke(me->x,me->y,FIXAMT*10,Random(6)*FIXAMT);
@@ -520,13 +524,6 @@ void AI_Vampire(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 void AI_Coffin(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
-
 	if(me->ouch==4 && me->hp>0)
 	{
 		MakeSound(SND_VAMPOUCH,me->x,me->y,SND_CUTOFF,1200);
@@ -1468,12 +1465,6 @@ void AI_Countess(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	int x,y,i;
 	int xpos[]={-FIXAMT*50,0,FIXAMT*50};
 	int ypos[]={0,FIXAMT*50,0};
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -1669,12 +1660,6 @@ void AI_Countess(Guy *me,Map *map,world_t *world,Guy *goodguy)
 void AI_AlienEgg(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -2254,12 +2239,6 @@ void AI_Meaniebot(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -2398,12 +2377,6 @@ void AI_Robofactory(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -3014,12 +2987,6 @@ void AI_UltraPygmy(Guy *me,Map *map,world_t *world,Guy *goodguy)
 void AI_LoonyBot(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(!goodguy)
 		return;
@@ -3226,7 +3193,6 @@ void AI_LoonyGun(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			if(diff>8)
 			{
 				dir=-1;
-				diff=16-diff;
 			}
 			else
 				dir=1;
@@ -3237,7 +3203,6 @@ void AI_LoonyGun(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			if(diff>8)
 			{
 				dir=1;
-				diff=16-diff;
 			}
 			else
 				dir=-1;

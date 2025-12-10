@@ -14,6 +14,7 @@ static byte subMode;
 static byte darkness;
 static int offX;
 static byte oldc;
+static dword lastBtn = 0;
 
 options_t opt;
 
@@ -156,12 +157,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 					{
 						subMode=SUBMODE_SETBTN;
 						mgl->ClearKeys();
-						i=0;
-						while(i<10000 && GetJoyButtons())
-						{
-							i++;
-							SDL_Delay(1);
-						}
+						lastBtn = GetJoyButtons();
 						MakeNormalSound(SND_MENUSELECT);
 					}
 					else
@@ -209,9 +205,8 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 	}
 	else if(subMode==SUBMODE_SETBTN)
 	{
-		dword btn;
-
-		btn=GetJoyButtons();
+		dword btn = GetJoyButtons() & ~lastBtn;
+		lastBtn = GetJoyButtons();
 
 		j=1;
 		for(i=0;i<32;i++)
@@ -254,7 +249,10 @@ static void OptionButton(int x,int y,int wid,const char *txt,byte spot)
 
 static void RenderSetKey(int x,int y,byte t)
 {
-	char actName[7][16]={
+	x -= 166;
+	y -= 90;
+
+	static const char actName[7][16]={
 		"Up",
 		"Down",
 		"Left",
@@ -341,7 +339,6 @@ void RenderOptionsMenu(int x,int y,byte *backScr)
 		RenderSetKey(x,y,0);
 	else if(subMode==SUBMODE_SETBTN)
 		RenderSetKey(x,y,1);
-
 }
 
 //----------------

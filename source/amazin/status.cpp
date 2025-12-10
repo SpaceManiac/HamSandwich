@@ -23,7 +23,7 @@ void StatusRender()
 	bool bVar1;
 	byte i;
 	sprite_t *spr;
-	char buf[16];
+	char buf[32];
 	int x;
 	int y;
 

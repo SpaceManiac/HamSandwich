@@ -47,13 +47,16 @@ static int saveTileStart=0;
 
 static char bmpFilename[FNAMELEN]="";
 
+static const TileFlags flags[]={
+	TF_SOLID,TF_ICE,TF_MUD,TF_WATER,TF_LAVA,TF_PUSHY,TF_PUSHON,TF_ANIM,TF_STEP,
+	TF_DESTRUCT,TF_TRANS,TF_MINECART,TF_BUNNY,TF_NOGHOST,TF_NOENEMY,TF_RUBBER,
+	TF_SHADOWLESS,
+};
+
 void TerrainSetupButtons(void);
 
 void FlagClick(int id)
 {
-	dword flags[]={TF_SOLID,TF_ICE,TF_MUD,TF_WATER,TF_LAVA,TF_PUSHY,TF_PUSHON,TF_ANIM,TF_STEP,
-				  TF_DESTRUCT,TF_TRANS,TF_MINECART,TF_BUNNY,TF_NOGHOST,TF_NOENEMY,TF_RUBBER,
-				  TF_SHADOWLESS};
 	int i;
 	byte b;
 
@@ -137,19 +140,18 @@ void DeleteClick(int id)
 	for(i=selMin;i<world->numTiles-(selMax-selMin+1);i++)
 	{
 		world->terrain[i]=world->terrain[i+(selMax-selMin+1)];
-		memcpy(GetTileData(i),GetTileData(i+(selMax-selMin+1)),TILE_WIDTH*TILE_HEIGHT);
+		memcpy(world->tilegfx.GetTileData(i),world->tilegfx.GetTileData(i+(selMax-selMin+1)),TILE_WIDTH*TILE_HEIGHT);
 	}
 
 	if(autoRepair)
 	{
-		InitSwapTable(NUMTILES);
-		DeleteBlockFromSwapTable(selMin,selMax);
-		RepairTiles();
-		ExitSwapTable();
+		SwapTable table{NUMTILES};
+		table.DeleteBlock(selMin,selMax);
+		RepairTiles(table);
 	}
 
 	world->numTiles-=(selMax-selMin+1);
-	SetNumTiles(world->numTiles);
+	world->tilegfx.numTiles = world->numTiles;
 
 	selMin=0;
 	selMax=0;
@@ -189,79 +191,76 @@ void ExitClick(int id)
 void DeleteUnusedTiles(int id)
 {
 	byte tileUsed[NUMTILES];
-	int i,j,k;
 
 	MakeNormalSound(SND_MENUCLICK);
 
-	for(i=0;i<world->numTiles;i++)
+	for(int i=0;i<world->numTiles;i++)
 		tileUsed[i]=0;
 
 	// find all tiles used by items
-	for(i=0;i<NumItems();i++)
+	for(int i=0;i<NumItems();i++)
 	{
 		if(GetItem(i)->flags&IF_TILE)
 			tileUsed[GetItem(i)->sprNum]=1;
 	}
-	for(i=0;i<world->numMaps;i++)
+	for (Map *map : world->Maps())
 	{
-		for(j=0;j<MAX_SPECIAL;j++)
+		for (const special_t &spcl : map->special)
 		{
-			if(world->map[i]->special[j].x!=255)
+			if(spcl.x!=255)
 			{
-				for(k=0;k<NUM_TRIGGERS;k++)
+				for(int k=0;k<NUM_TRIGGERS;k++)
 				{
-					if(world->map[i]->special[j].trigger[k].type==TRG_FLOOR ||
-						world->map[i]->special[j].trigger[k].type==TRG_FLOORRECT)
+					if(spcl.trigger[k].type==TRG_FLOOR ||
+						spcl.trigger[k].type==TRG_FLOORRECT)
 					{
-						tileUsed[world->map[i]->special[j].trigger[k].value]=1;
+						tileUsed[spcl.trigger[k].value]=1;
 					}
-					if(world->map[i]->special[j].trigger[k].type==TRG_STEPTILE)
-						tileUsed[world->map[i]->special[j].trigger[k].value2]=1;
+					if(spcl.trigger[k].type==TRG_STEPTILE)
+						tileUsed[spcl.trigger[k].value2]=1;
 				}
-				for(k=0;k<NUM_EFFECTS;k++)
+				for(int k=0;k<NUM_EFFECTS;k++)
 				{
-					if(world->map[i]->special[j].effect[k].type==EFF_CHANGETILE ||
-						world->map[i]->special[j].effect[k].type==EFF_OLDTOGGLE)
+					if(spcl.effect[k].type==EFF_CHANGETILE ||
+						spcl.effect[k].type==EFF_OLDTOGGLE)
 					{
-						tileUsed[world->map[i]->special[j].effect[k].value]=1;
-						tileUsed[world->map[i]->special[j].effect[k].value2]=1;
+						tileUsed[spcl.effect[k].value]=1;
+						tileUsed[spcl.effect[k].value2]=1;
 					}
 				}
 			}
 		}
-		for(j=0;j<world->map[i]->width*world->map[i]->height;j++)
+		for (const mapTile_t &target : map->Tiles())
 		{
-			tileUsed[world->map[i]->map[j].floor]=1;
-			tileUsed[world->map[i]->map[j].wall]=1;
+			tileUsed[target.floor]=1;
+			tileUsed[target.wall]=1;
 		}
 	}
-	for(i=0;i<world->numTiles;i++)
+	for (const terrain_t &terrain : world->Terrain())
 	{
-		tileUsed[world->terrain[i].next]=1;
+		tileUsed[terrain.next]=1;
 	}
 
-	i=0;
-	while(i<world->numTiles)
+	for(int i = 0; i < world->numTiles;)
 	{
 		if(!tileUsed[i])
 		{
-			for(j=i;j<world->numTiles-1;j++)
+			for(int j=i;j<world->numTiles-1;j++)
 			{
 				world->terrain[j]=world->terrain[j+1];
 				tileUsed[j]=tileUsed[j+1];
-				memcpy(GetTileData(j),GetTileData(j+1),TILE_WIDTH*TILE_HEIGHT);
+				memcpy(world->tilegfx.GetTileData(j),world->tilegfx.GetTileData(j+1),TILE_WIDTH*TILE_HEIGHT);
 			}
 
 			if(autoRepair)
 			{
-				InitSwapTable(NUMTILES);
-				DeleteBlockFromSwapTable(i,i);
-				RepairTiles();
-				ExitSwapTable();
+				SwapTable table{NUMTILES};
+				table.DeleteBlock(i,i);
+				RepairTiles(table);
 			}
 
 			world->numTiles--;
-			SetNumTiles(world->numTiles);
+			world->tilegfx.numTiles = world->numTiles;
 		}
 		else
 			i++;
@@ -344,9 +343,6 @@ void SetNextTile(word n)
 void TerrainSetFlags(void)
 {
 	int i,j;
-	dword flags[]={TF_SOLID,TF_ICE,TF_MUD,TF_WATER,TF_LAVA,TF_PUSHY,TF_PUSHON,TF_ANIM,TF_STEP,
-				  TF_DESTRUCT,TF_TRANS,TF_MINECART,TF_BUNNY,TF_NOGHOST,TF_NOENEMY,TF_RUBBER,
-				  TF_SHADOWLESS};
 	constexpr int count = std::size(flags);
 
 	byte flagCount[count];	// count how many tiles have each flag set
@@ -447,29 +443,28 @@ byte MoveTilesTo(int dest)
 	for(i=selMin;i<=selMax;i++)
 	{
 		tempTerrain[i-selMin]=world->terrain[i];
-		memcpy(&tempImg[(i-selMin)*TILE_WIDTH*TILE_HEIGHT],GetTileData(i),TILE_WIDTH*TILE_HEIGHT);
+		memcpy(&tempImg[(i-selMin)*TILE_WIDTH*TILE_HEIGHT],world->tilegfx.GetTileData(i),TILE_WIDTH*TILE_HEIGHT);
 	}
 
 	// now swap the other ones over them
 	for(i=dest;i<dest+(selMax-selMin+1);i++)
 	{
 		world->terrain[i-dest+selMin]=world->terrain[i];
-		memcpy(GetTileData(i-dest+selMin),GetTileData(i),TILE_WIDTH*TILE_HEIGHT);
+		memcpy(world->tilegfx.GetTileData(i-dest+selMin),world->tilegfx.GetTileData(i),TILE_WIDTH*TILE_HEIGHT);
 	}
 
 	// now paste the moved ones over those!
 	for(i=dest;i<dest+(selMax-selMin+1);i++)
 	{
 		world->terrain[i]=tempTerrain[i-dest];
-		memcpy(GetTileData(i),&tempImg[(i-dest)*TILE_WIDTH*TILE_HEIGHT],TILE_WIDTH*TILE_HEIGHT);
+		memcpy(world->tilegfx.GetTileData(i),&tempImg[(i-dest)*TILE_WIDTH*TILE_HEIGHT],TILE_WIDTH*TILE_HEIGHT);
 	}
 
 	if(autoRepair)
 	{
-		InitSwapTable(NUMTILES);
-		SwapBlockInSwapTable(selMin,selMax,dest);
-		RepairTiles();
-		ExitSwapTable();
+		SwapTable table{NUMTILES};
+		table.SwapBlock(selMin,selMax,dest);
+		RepairTiles(table);
 	}
 
 	i=(selMax-selMin+1);
@@ -541,17 +536,29 @@ void ImportTiles(void)
 	}
 	dst=world->numTiles;
 	world->numTiles+=(selMax-selMin+1);
-	SetNumTiles(world->numTiles);
+	world->tilegfx.numTiles = world->numTiles;
 
 	for(i=selMin;i<=selMax;i++)
 	{
-		world->terrain[dst].flags=0;
+		world->terrain[dst].flags={};
 		world->terrain[dst].next=0;
-		SetTile(dst,(i%20)*TILE_WIDTH,(i/20)*TILE_HEIGHT,bmpScr);
+		world->tilegfx.SetTile(dst, &bmpScr[(i%20)*TILE_WIDTH + ((i/20)*TILE_HEIGHT) * 640], 640);
 		dst++;
 	}
 	selMin=-1;
 	selMax=-1;
+}
+
+static void TerrainEditScroll(int msz)
+{
+	if (msz > 0)
+	{
+		tileStart = std::max(tileStart - 20 * msz, 0);
+	}
+	else if (msz < 0)
+	{
+		tileStart = std::min(tileStart - 20 * msz, (world->numTiles - 1) / 200 * 200);
+	}
 }
 
 void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl)
@@ -582,6 +589,7 @@ void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl)
 	switch(mode)
 	{
 		case TMODE_SELECT:
+			TerrainEditScroll(scroll);
 			if(mgl->MouseDown())
 			{
 				// still holding
@@ -613,6 +621,7 @@ void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl)
 			TerrainSetFlags();
 			break;
 		case TMODE_NORMAL:
+			TerrainEditScroll(scroll);
 			if(mgl->MouseTap())
 			{
 				if(n>199)	// clicked outside the display
@@ -631,6 +640,7 @@ void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl)
 			}
 			break;
 		case TMODE_PICKNEXT:
+			TerrainEditScroll(scroll);
 			if(mgl->MouseTap())
 			{
 				if(n>199)
@@ -645,6 +655,7 @@ void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl)
 			}
 			break;
 		case TMODE_PICKDEST:
+			TerrainEditScroll(scroll);
 			if(mgl->MouseTap())
 			{
 				if(n>199)
@@ -680,7 +691,7 @@ void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl)
 				if(n==FM_SAVE)
 				{
 					ExitFileDialog();
-					SaveTilesToBMP(GetFilename("tilegfx/"));
+					world->tilegfx.SaveTilesToBMP(GetFilename("tilegfx/"));
 					mode=TMODE_NORMAL;
 				}
 				if(n==FM_EXIT)
@@ -728,6 +739,7 @@ void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl)
 			}
 			break;
 		case TMODE_PICKTILE:
+			TerrainEditScroll(scroll);
 			if(n<200)
 			{
 				selMin=n+tileStart;

@@ -87,10 +87,9 @@ install(FILES "LICENSE.md" RENAME "LICENSE.HamSandwich.txt" TYPE BIN COMPONENT g
 
 # Install Itch metadata.
 if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT EMSCRIPTEN)
+	set(pathext "")
 	if(CMAKE_HOST_WIN32)
 		set(pathext ".bat")
-	else()
-		set(pathext "")
 	endif()
 
 	if(APPLE)

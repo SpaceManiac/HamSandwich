@@ -6,149 +6,117 @@
 #include "items.h"
 #include "editor.h"
 
-int swapSize;
-int *swapTable;
-
 void RepairCustomSounds(int n)
 {
-	world_t *w;
-	int lvl;
-
-	w=EditorGetWorld();
-
 	// fix references inside other items
 	RepairItemToSound(n);
 
-	for(lvl=0;lvl<w->numMaps;lvl++)
+	for (Map *map : EditorGetWorld()->Maps())
 	{
 		// first, fix specials
-		RepairSpecialToSound(w->map[lvl]->special,n);
+		RepairSpecialToSound(map->special, n);
 	}
 }
 
 void RepairItems(int n)
 {
-	world_t *w;
-	int lvl,i;
-
-	w=EditorGetWorld();
-
 	// fix references inside other items
 	RepairItemToItem(n);
 
-	for(lvl=0;lvl<w->numMaps;lvl++)
+	for (Map *map : EditorGetWorld()->Maps())
 	{
 		// on each level, we need to fix item references
 
 		// first, fix specials
-		RepairSpecialToItem(w->map[lvl]->special,n);
+		RepairSpecialToItem(map->special,n);
 
 		// now fix the items in the map themselves
-		for(i=0;i<w->map[lvl]->width*w->map[lvl]->height;i++)
+		for (mapTile_t &target : map->Tiles())
 		{
-			if(w->map[lvl]->map[i].item==n)
-				w->map[lvl]->map[i].item=0;
-			else if(w->map[lvl]->map[i].item>n)
-				w->map[lvl]->map[i].item--;
+			if (target.item == n)
+				target.item = 0;
+			else if (target.item > n)
+				target.item--;
 		}
+
 		// then fix any reference of a guy holding them
-		for(i=0;i<MAX_MAPMONS;i++)
+		for (mapBadguy_t &badguy : map->badguy)
 		{
-			if(w->map[lvl]->badguy[i].item==n)
-				w->map[lvl]->badguy[i].item=0;
-			else if(w->map[lvl]->badguy[i].item>n && w->map[lvl]->badguy[i].item!=ITM_RANDOM)
-				w->map[lvl]->badguy[i].item--;
+			if (badguy.item == n)
+				badguy.item = 0;
+			else if (badguy.item > n && badguy.item != ITM_RANDOM)
+				badguy.item--;
 		}
 	}
 }
 
-void RepairLevels(void)
+void RepairLevels(const SwapTable &table)
 {
-	world_t *w;
-	int lvl;
-
-	w=EditorGetWorld();
-
-	for(lvl=0;lvl<w->numMaps;lvl++)
+	for (Map *map : EditorGetWorld()->Maps())
 	{
 		// on each level, we need to fix level references, ironically
 
 		// fix specials
-		RepairSpecialToLevel(w->map[lvl]->special);
+		RepairSpecialToLevel(map->special, table);
 	}
 }
 
-void RepairTiles(void)
+void RepairTiles(const SwapTable &table)
 {
-	world_t *w;
-	int lvl,i;
-
-	w=EditorGetWorld();
+	world_t *w = EditorGetWorld();
 
 	// fix references inside the tiles
-	RepairTileToTile(w);
+	RepairTileToTile(w, table);
 
-	for(lvl=0;lvl<w->numMaps;lvl++)
+	for (Map *map : w->Maps())
 	{
 		// on each level, we need to fix tile references
 
 		// first, fix specials
-		RepairSpecialToTile(w->map[lvl]->special);
+		RepairSpecialToTile(map->special, table);
 
 		// now fix the tiles in the map themselves
-		for(i=0;i<w->map[lvl]->width*w->map[lvl]->height;i++)
+		for (mapTile_t &tile : map->Tiles())
 		{
-			if(w->map[lvl]->map[i].wall!=0)
-				w->map[lvl]->map[i].wall=GetSwap(w->map[lvl]->map[i].wall);
-			w->map[lvl]->map[i].floor=GetSwap(w->map[lvl]->map[i].floor);
+			if(tile.wall!=0)
+				tile.wall=table.GetSwap(tile.wall);
+			tile.floor=table.GetSwap(tile.floor);
 		}
 	}
 
-	RepairItemToTile();
+	RepairItemToTile(table);
 }
 
-void InitSwapTable(int size)
+SwapTable::SwapTable(int size)
+	: swapTable(size)
 {
-	int i;
-
-	swapSize=size;
-	swapTable=new int[size];
-
-	for(i=0;i<size;i++)
+	for (int i = 0; i < size; ++i)
+	{
 		swapTable[i]=i;	// initialize each spot to itself
+	}
 }
 
-void ExitSwapTable(void)
+void SwapTable::Swap(int me,int you)
 {
-	delete[] swapTable;
-	swapTable=NULL;
+	std::swap(swapTable[me], swapTable[you]);
 }
 
-void SwapInSwapTable(int me,int you)
-{
-	int i;
-
-	i=swapTable[me];
-	swapTable[me]=swapTable[you];
-	swapTable[you]=i;
-}
-
-void DeleteFromSwapTable(int me)
+void SwapTable::Delete(int me)
 {
 	int i;
 
-	for(i=swapSize-1;i>me;i--)
+	for(i=swapTable.size()-1;i>me;i--)
 	{
 		swapTable[i]=swapTable[i-1];
 	}
 	swapTable[me]=0;
 }
 
-void DeleteBlockFromSwapTable(int me,int you)
+void SwapTable::DeleteBlock(int me,int you)
 {
 	int i;
 
-	for(i=swapSize-1;i>you;i--)
+	for(i=swapTable.size()-1;i>you;i--)
 	{
 		swapTable[i]=swapTable[i-(you-me+1)];
 	}
@@ -156,19 +124,19 @@ void DeleteBlockFromSwapTable(int me,int you)
 		swapTable[i]=0;
 }
 
-void SwapBlockInSwapTable(int me,int me2,int you)
+void SwapTable::SwapBlock(int me,int me2,int you)
 {
 	int i;
 
 	for(i=me;i<=me2;i++)
 	{
-		SwapInSwapTable(i,you+i-me);
+		Swap(i,you+i-me);
 	}
 }
 
-int GetSwap(int me)
+int SwapTable::GetSwap(int me) const
 {
-	if(me<0 || me>=swapSize)
+	if(me<0 || me>=(int)swapTable.size())
 		return 0;
 
 	return swapTable[me];

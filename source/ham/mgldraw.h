@@ -69,8 +69,10 @@ public:
 
 	// Load an image and store its palette to the primary palette.
 	bool LoadBMP(const char *name);
+	// Load an image and also resize the buffer to match.
+	bool LoadBMPResize(const char *name);
 	// Load an image and store its palette to `pal`.
-	bool LoadBMP(const char *name, PALETTE pal);
+	bool LoadBMP(const char *name, PALETTE pal, bool resize = false);
 	// Save an image with the current contents of the screen.
 	bool SaveBMP(const char *name);
 	bool SavePNG(const char *name);

@@ -56,8 +56,6 @@ public:
 	explicit Load(const char* fname);
 	~Load();
 
-	int version();
-
 	bool header(StringDestination author, StringDestination name, StringDestination app);
 	bool section(std::string* name, Section* section);
 };

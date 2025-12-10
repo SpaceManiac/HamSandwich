@@ -296,7 +296,7 @@ local function export(plugin)
 					ofs_x = origin_x - cel.position.x
 					ofs_y = origin_y - cel.position.y
 				else
-					image = Image(1, 1, ImageMode.INDEXED)
+					image = Image(1, 1, ColorMode.INDEXED)
 					ofs_x, ofs_y = 0, 0
 				end
 

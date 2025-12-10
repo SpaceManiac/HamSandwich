@@ -374,7 +374,7 @@ static void PrepWorld()
 	noScoresAtAll=0;
 	FetchScores(0);
 	Vfs()->query_bottom(s, &worldMeta);
-	SteamManager::Get()->PrepWorldLeaderboard(s);
+	Steam()->PrepWorldLeaderboard(s);
 }
 
 static void SelectLastWorld(void)
@@ -510,11 +510,11 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			{
 				curButton = ButtonId::ViewInWorkshop;
 			}
-			else if (PointInRect(msx,msy,180,419,180+150,419+WBTN_HEIGHT) && !list[choice].dimmed && SteamManager::Get()->LeaderboardIdScore())
+			else if (PointInRect(msx,msy,180,419,180+150,419+WBTN_HEIGHT) && !list[choice].dimmed && Steam()->LeaderboardIdScore())
 			{
 				curButton = ButtonId::SteamLeaderboardScore;
 			}
-			else if (PointInRect(msx,msy,180,443,180+150,443+WBTN_HEIGHT) && !list[choice].dimmed && SteamManager::Get()->LeaderboardIdTime())
+			else if (PointInRect(msx,msy,180,443,180+150,443+WBTN_HEIGHT) && !list[choice].dimmed && Steam()->LeaderboardIdTime())
 			{
 				curButton = ButtonId::SteamLeaderboardTime;
 			}
@@ -590,7 +590,7 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 						curButton = ButtonId::RecordScoresTimes;
 					break;
 				case ButtonId::SteamLeaderboardTime:
-					if (SteamManager::Get()->LeaderboardIdScore())
+					if (Steam()->LeaderboardIdScore())
 						curButton = ButtonId::SteamLeaderboardScore;
 					else if (worldMeta.steamWorkshopId)
 						curButton = ButtonId::ViewInWorkshop;
@@ -634,15 +634,15 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				case ButtonId::RecordScoresTimes:
 					if (worldMeta.steamWorkshopId)
 						curButton = ButtonId::ViewInWorkshop;
-					else if (SteamManager::Get()->LeaderboardIdScore())
+					else if (Steam()->LeaderboardIdScore())
 						curButton = ButtonId::SteamLeaderboardScore;
-					else if (SteamManager::Get()->LeaderboardIdTime())
+					else if (Steam()->LeaderboardIdTime())
 						curButton = ButtonId::SteamLeaderboardTime;
 					break;
 				case ButtonId::ViewInWorkshop:
-					if (SteamManager::Get()->LeaderboardIdScore())
+					if (Steam()->LeaderboardIdScore())
 						curButton = ButtonId::SteamLeaderboardScore;
-					else if (SteamManager::Get()->LeaderboardIdTime())
+					else if (Steam()->LeaderboardIdTime())
 						curButton = ButtonId::SteamLeaderboardTime;
 					break;
 				default: break;
@@ -669,7 +669,7 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				case ButtonId::ResetHighScores:
 					if (!list[choice].dimmed)
 					{
-						if (SteamManager::Get()->LeaderboardIdScore())
+						if (Steam()->LeaderboardIdScore())
 							curButton = ButtonId::SteamLeaderboardScore;
 						else if (worldMeta.steamWorkshopId)
 							curButton = ButtonId::ViewInWorkshop;
@@ -680,9 +680,9 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				case ButtonId::ExitToMenu:
 					if (!list[choice].dimmed)
 					{
-						if (SteamManager::Get()->LeaderboardIdTime())
+						if (Steam()->LeaderboardIdTime())
 							curButton = ButtonId::SteamLeaderboardTime;
-						else if (SteamManager::Get()->LeaderboardIdScore())
+						else if (Steam()->LeaderboardIdScore())
 							curButton = ButtonId::SteamLeaderboardScore;
 						else if (worldMeta.steamWorkshopId)
 							curButton = ButtonId::ViewInWorkshop;
@@ -838,18 +838,18 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				case ButtonId::ViewInWorkshop: {
 					std::string url = "https://steamcommunity.com/sharedfiles/filedetails/?id=";
 					url.append(std::to_string(worldMeta.steamWorkshopId));
-					SteamManager::Get()->OpenURLOverlay(url.c_str());
+					Steam()->OpenURLOverlay(url.c_str());
 					break;
 				}
 
 				case ButtonId::SteamLeaderboardScore:
-					AWAIT ViewWorldLeaderboard(mgl, &tmpWorld, WorldLeaderboardKind::Score, SteamManager::Get()->LeaderboardIdScore());
+					AWAIT ViewWorldLeaderboard(mgl, &tmpWorld, WorldLeaderboardKind::Score, Steam()->LeaderboardIdScore());
 					mouseZ=mgl->mouse_z;
 					oldc = ~0;
 					CO_RETURN WS_CONTINUE;
 
 				case ButtonId::SteamLeaderboardTime:
-					AWAIT ViewWorldLeaderboard(mgl, &tmpWorld, WorldLeaderboardKind::Time, SteamManager::Get()->LeaderboardIdTime());
+					AWAIT ViewWorldLeaderboard(mgl, &tmpWorld, WorldLeaderboardKind::Time, Steam()->LeaderboardIdTime());
 					mouseZ=mgl->mouse_z;
 					oldc = ~0;
 					CO_RETURN WS_CONTINUE;
@@ -1241,11 +1241,11 @@ void RenderWorldSelect(MGLDraw *mgl)
 			RenderWorldSelectButton(180,395,150, "View in Workshop", mgl, ButtonId::ViewInWorkshop);
 		}
 
-		if (SteamManager::Get()->LeaderboardIdScore())
+		if (Steam()->LeaderboardIdScore())
 		{
 			RenderWorldSelectButton(180,419,150, "Steam Top Scores", mgl, ButtonId::SteamLeaderboardScore);
 		}
-		if (SteamManager::Get()->LeaderboardIdTime())
+		if (Steam()->LeaderboardIdTime())
 		{
 			RenderWorldSelectButton(180,443,150, "Steam Top Times", mgl, ButtonId::SteamLeaderboardTime);
 		}

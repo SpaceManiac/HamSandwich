@@ -14,7 +14,7 @@
 
 #define RACER_Y	(460*FIXAMT)
 
-typedef struct racer_t
+struct racer_t
 {
 	int x,y;
 	int dx,dy;
@@ -24,7 +24,7 @@ typedef struct racer_t
 
 	byte level;
 	dword distDone;
-} racer_t;
+};
 
 static int roadX[RACE_MAPHEIGHT],roadX2[RACE_MAPHEIGHT];
 static int roadY;
@@ -94,7 +94,7 @@ byte RaceDie(void)
 		profile.progress.totalCoins+=coinsEarned;
 		MakeNormalSound(SND_BOMBBOOM);
 
-		SteamManager::Get()->UploadArcadeScore("arcade/cave_zoomer", score);
+		Steam()->UploadArcadeScore("arcade/cave_zoomer", score);
 		return 1;
 	}
 	racer.speed=minSpeed;

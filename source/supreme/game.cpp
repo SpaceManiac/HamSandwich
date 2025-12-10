@@ -331,7 +331,7 @@ TASK(byte) LunaticRun(int *lastTime)
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
 					if (!shopping && !editing)
-						SteamManager::Get()->StartPlaytimeTracking(nullptr);
+						Steam()->StartPlaytimeTracking(nullptr);
 					break;
 				case PAUSE_GIVEUP:
 					SetPlayerStart(-1,-1);
@@ -342,7 +342,7 @@ TASK(byte) LunaticRun(int *lastTime)
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
 					if (!shopping && !editing)
-						SteamManager::Get()->StartPlaytimeTracking(nullptr);
+						Steam()->StartPlaytimeTracking(nullptr);
 					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_WORLDSEL:
@@ -356,7 +356,7 @@ TASK(byte) LunaticRun(int *lastTime)
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
 					if (!shopping && !editing)
-						SteamManager::Get()->StartPlaytimeTracking(nullptr);
+						Steam()->StartPlaytimeTracking(nullptr);
 					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_EXIT:
@@ -524,8 +524,8 @@ TASK(void) LunaticDraw(void)
 			PrintGlow(120,90,s,8,2);
 
 			int n = 0;
-			for(int i=0; i<MAX_SPECIAL; i++)
-				if(curMap->special[i].x!=255)
+			for (const special_t &special : curMap->special)
+				if(special.x!=255)
 					++n;
 
 			sprintf(s,"Fx %d", CountParticles());
@@ -652,7 +652,7 @@ void PauseGame(void)
 		return;
 	InitPauseMenu();
 	gameMode=GAMEMODE_MENU;
-	SteamManager::Get()->StopPlaytimeTracking();
+	Steam()->StopPlaytimeTracking();
 }
 
 TASK(byte) PlayALevel(byte map)
@@ -709,6 +709,7 @@ TASK(byte) PlayALevel(byte map)
 		AWAIT Tally(gamemgl,lastLevelName,0);
 	}
 	ExitLevel();
+	gamemgl->ResizeBuffer(SCRWID, SCRHEI);
 	CO_RETURN exitcode;
 }
 
@@ -739,11 +740,11 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 	if (!editing)
 	{
 		if (shopping)
-			SteamManager::Get()->SetPresenceShopping();
+			Steam()->SetPresenceShopping();
 		else
 		{
-			SteamManager::Get()->SetPresenceWorld(curWorld.map[0]->name);
-			SteamManager::Get()->StartPlaytimeTracking(fullName);
+			Steam()->SetPresenceWorld(curWorld.map[0]->name);
+			Steam()->StartPlaytimeTracking(fullName);
 		}
 	}
 
@@ -777,10 +778,10 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 
 	if (!editing && !shopping && (player.pendingLeaderboardUpload || player.worldProg->percentage != oldPercentage || player.worldProg->keychains != oldKeychains))
 	{
-		SteamManager::Get()->UploadWorldScore();
+		Steam()->UploadWorldScore();
 	}
 
-	SteamManager::Get()->SetPresenceNone();
+	Steam()->SetPresenceNone();
 	if(result==WORLD_QUITGAME || result==WORLD_SHOP)
 		CO_RETURN 0;
 	else
@@ -826,7 +827,7 @@ TASK(void) TestLevel(world_t *world,byte level)
 		else if(result==WORLD_QUITGAME || result==WORLD_ABORT)
 			break;
 	}
-	memset(&curWorld,0,sizeof(world_t));
+	curWorld = {};
 	InitGuys(256);
 	GetSpecialsFromMap(EditorGetMap()->special);
 	editing=1;

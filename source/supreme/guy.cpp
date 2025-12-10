@@ -13,7 +13,6 @@ static std::unique_ptr<bool[]> changed;
 static int maxGuys;
 
 Guy *goodguy;
-static Guy *guyHit;
 static Guy *nobody;
 
 static byte oldPlayAs;
@@ -396,9 +395,9 @@ void Guy::NextFrame(void)
 	tp=type;
 
 	if(aiType==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
-		anim=GetMonsterType(MONS_PWRBOUAPHA)->anim[seq];
+		anim=MonsterAnim(MONS_PWRBOUAPHA, seq);
 	else if(aiType==MONS_BOUAPHA && player.weapon==WPN_MINISUB)
-		anim=GetMonsterType(MONS_MINISUB)->anim[seq];
+		anim=MonsterAnim(MONS_MINISUB, seq);
 	else
 		anim=MonsterAnim(type,seq);
 	if(anim[frm]==255)
@@ -911,16 +910,13 @@ void Guy::MonsterControl(Map *map,world_t *world)
 	if(type==MONS_NONE)
 		return;
 
-	if(GetMonsterType(aiType)->AI)
-		GetMonsterType(aiType)->AI(this,map,world,target);
+	if (Monster_AIFunc aiFunc = MonsterAI(aiType))
+		aiFunc(this,map,world,target);
 }
 
-void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
+void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypassInvincible)
 {
 	int formerHP,newHP;
-	byte t;
-
-	t=type;
 
 	if(hp==0)
 		return;	// can't shoot a dead guy
@@ -931,7 +927,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 	if(aiType==MONS_BOUAPHA && PlayerShield())
 		return; // invincible when shielded
 
-	if(MonsterFlags(type,aiType)&MF_INVINCIBLE)
+	if(!bypassInvincible && (MonsterFlags(type,aiType)&MF_INVINCIBLE))
 		return;	// invincible
 
 	if(aiType==MONS_BOUAPHA && frozen)
@@ -1136,7 +1132,6 @@ void InitGuys(int max)
 	maxGuys = max;
 
 	goodguy = nullptr;
-	guyHit = nullptr;
 	nobody = nullptr;
 
 	oldPlayAs = profile.playAs;
@@ -1147,7 +1142,6 @@ void ExitGuys(void)
 	profile.playAs = oldPlayAs;
 
 	nobody = nullptr;
-	guyHit = nullptr;
 	goodguy = nullptr;
 
 	maxGuys = 0;
@@ -1363,13 +1357,13 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 	if(type==MONS_ANYBODY)
 	{
 		type=MONS_NOBODY;
-		while(type==MONS_NONE || type==MONS_NOBODY || (GetMonsterType(type)->theme==MT_NONE))
+		while(type==MONS_NONE || type==MONS_NOBODY || (MonsterTheme(type)==MT_NONE))
 			type=Random(NUM_MONSTERS);
 	}
 	else if(type==MONS_NONPLAYER)
 	{
 		type=MONS_NOBODY;
-		while(type==MONS_NONE || type==MONS_NOBODY || type==MONS_BOUAPHA || (GetMonsterType(type)->theme==MT_NONE))
+		while(type==MONS_NONE || type==MONS_NOBODY || type==MONS_BOUAPHA || (MonsterTheme(type)==MT_NONE))
 			type=Random(NUM_MONSTERS);
 	}
 	else if(type==MONS_BADGUY)
@@ -1378,7 +1372,7 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 		while(type==MONS_NONE || type==MONS_NOBODY || type==MONS_BOUAPHA || type==MONS_FRIENDLY || type==MONS_GOODTURRET ||
 				type==MONS_WIZARD || type==MONS_GOODROBOT || type==MONS_GOODROBOT2 ||
 				type==MONS_FRIENDLY2 || type==MONS_FOLLOWBUNNY || type==MONS_MINECART || type==MONS_RAFT ||
-				type==MONS_YUGO || type==MONS_PUNKBUNNY || (GetMonsterType(type)->theme==MT_NONE))
+				type==MONS_YUGO || type==MONS_PUNKBUNNY || (MonsterTheme(type)==MT_NONE))
 			type=Random(NUM_MONSTERS);
 	}
 	else if(type==MONS_GOODGUY)
@@ -1386,7 +1380,7 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 		type=MONS_NOBODY;
 		while(type==MONS_NONE || type==MONS_NOBODY || !(type==MONS_FRIENDLY || type==MONS_GOODTURRET ||
 				type==MONS_WIZARD || type==MONS_GOODROBOT || type==MONS_GOODROBOT2 ||
-				type==MONS_FRIENDLY2 || type==MONS_FOLLOWBUNNY || type==MONS_PUNKBUNNY || (GetMonsterType(type)->theme==MT_NONE)))
+				type==MONS_FRIENDLY2 || type==MONS_FOLLOWBUNNY || type==MONS_PUNKBUNNY || (MonsterTheme(type)==MT_NONE)))
 			type=Random(NUM_MONSTERS);
 	}
 	else if(type==MONS_TAGGED)
@@ -1478,9 +1472,9 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i].mapx=(guys[i].x>>FIXSHIFT)/TILE_WIDTH;
 			guys[i].mapy=(guys[i].y>>FIXSHIFT)/TILE_HEIGHT;
 			guys[i].item=ITM_RANDOM;
-			strcpy(guys[i].name,MonsterName(type));
+			ham_strcpy(guys[i].name,MonsterName(type));
 			guys[i].fromColor=255;
-			guys[i].brtChange=GetMonsterType(guys[i].type)->brtChg;
+			guys[i].brtChange=MonsterBrightnessChange(type);
 			guys[i].customSpr=nullptr;
 
 			if(type==MONS_ISOZOID && editing!=1)
@@ -1895,12 +1889,7 @@ byte CheckHit(byte size,int xx,int yy,Guy *him)
 	return 0;
 }
 
-Guy *GetLastGuyHit(void)
-{
-	return guyHit;
-}
-
-byte FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world,byte friendly)
+Guy *FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world,byte friendly)
 {
 	int i;
 
@@ -1917,52 +1906,47 @@ byte FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t
 				}
 				else if(damage>0)
 					guys[i].GetShot(dx,dy,damage,map,world);
-				guyHit=&guys[i];
-				return 1;
+				return &guys[i];
 			}
 		}
 
-	return 0;
+	return nullptr;
 }
 
 // this doesn't quit when it finds one victim, it keeps going
-byte FindVictims(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world,byte friendly)
+Guy *FindVictims(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world,byte friendly)
 {
-	int i;
-	byte result=0;
+	Guy *guyHit = nullptr;
 
-	for(i=0;i<maxGuys;i++)
+	for(int i=0;i<maxGuys;i++)
 		if(guys[i].type && guys[i].hp && (guys[i].friendly!=friendly))
 		{
 			if(CheckHit(size,x,y,&guys[i]))
 			{
 				guys[i].GetShot(dx,dy,damage,map,world);
 				guyHit=&guys[i];
-				result=1;
 			}
 		}
 
-	return result;
+	return guyHit;
 }
 
 // Same as above, but won't hit someone who is currently in ouch mode (to avoid rapid rehits)
-byte FindVictims2(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world,byte friendly)
+Guy *FindVictims2(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world,byte friendly)
 {
-	int i;
-	byte result=0;
+	Guy *guyHit = nullptr;
 
-	for(i=0;i<maxGuys;i++)
+	for(int i=0;i<maxGuys;i++)
 		if(guys[i].type && guys[i].hp && (guys[i].friendly!=friendly) && guys[i].ouch==0)
 		{
 			if(CheckHit(size,x,y,&guys[i]))
 			{
 				guys[i].GetShot(dx,dy,damage,map,world);
 				guyHit=&guys[i];
-				result=1;
 			}
 		}
 
-	return result;
+	return guyHit;
 }
 
 word LockOnEvil(int x,int y)
@@ -2276,12 +2260,8 @@ void ShiftGuys(char dx,char dy,Map *map)
 
 void AddPygmy(Map *map,world_t *world,byte friendly)
 {
-	int x,y,i;
-	int cx,cy;
-	byte t;
-	Guy *g;
-
 	// decide which type to summon
+	byte t;
 	switch(Random(5))
 	{
 		case 0:
@@ -2299,16 +2279,16 @@ void AddPygmy(Map *map,world_t *world,byte friendly)
 			break;
 	}
 
-	GetCamera(&cx,&cy);
+	auto [cx, cy] = GetCamera();
 	// 30 tries to end up in a legal spot
-	for(i=0;i<30;i++)
+	for(int i=0;i<30;i++)
 	{
-		x=Random(map->width)*TILE_WIDTH+TILE_WIDTH/2;
-		y=Random(map->height)*TILE_HEIGHT+TILE_HEIGHT/2;
+		int x=Random(map->width)*TILE_WIDTH+TILE_WIDTH/2;
+		int y=Random(map->height)*TILE_HEIGHT+TILE_HEIGHT/2;
 		// make sure it's offscreen
 		if(x<cx-340 || x>cx+340 || y<cy-260 || y>cy+260)
 		{
-			g=AddGuy(x*FIXAMT,y*FIXAMT,0,t,friendly);
+			Guy *g=AddGuy(x*FIXAMT,y*FIXAMT,0,t,friendly);
 			if(g && (!g->CanWalk(g->x,g->y,map,world)))
 			{
 				RemoveGuy(g);
@@ -2326,20 +2306,16 @@ void AddPygmy(Map *map,world_t *world,byte friendly)
 
 void AddNinja(Map *map,world_t *world,byte friendly)
 {
-	int x,y,i;
-	int cx,cy;
-	Guy *g;
-
-	GetCamera(&cx,&cy);
+	auto [cx, cy] = GetCamera();
 	// 30 tries to end up in a legal spot
-	for(i=0;i<30;i++)
+	for(int i=0;i<30;i++)
 	{
-		x=Random(map->width)*TILE_WIDTH+TILE_WIDTH/2;
-		y=Random(map->height)*TILE_HEIGHT+TILE_HEIGHT/2;
+		int x=Random(map->width)*TILE_WIDTH+TILE_WIDTH/2;
+		int y=Random(map->height)*TILE_HEIGHT+TILE_HEIGHT/2;
 		// make sure it's offscreen
 		if(x<cx-340 || x>cx+340 || y<cy-260 || y>cy+260)
 		{
-			g=AddGuy(x*FIXAMT,y*FIXAMT,0,MONS_GINGER,friendly);
+			Guy *g=AddGuy(x*FIXAMT,y*FIXAMT,0,MONS_GINGER,friendly);
 			if(g && (!g->CanWalk(g->x,g->y,map,world)))
 			{
 				RemoveGuy(g);

@@ -7,11 +7,12 @@
 #include "viewdialog.h"
 #include "appdata.h"
 #include "string_extras.h"
+#include "world_io_supreme.h"
 
 static constexpr int MAX_FILES = 18;
 
 static char newfname[FNAMELEN]="";
-static word menuItems;
+static FileDialogFlags menuItems;
 static int filePos;
 static byte asking,yesNo;
 static char question[64];
@@ -61,9 +62,9 @@ static void SortFilenames(void)
 	}
 }
 
-void FindFilename(const char *str);
+static void FindFilename(const char *str);
 
-void InitFileDialog(const char *dir, const char *ext, word menuItemsToShow,const char *defaultName)
+void InitFileDialog(const char *dir, const char *ext, FileDialogFlags menuItemsToShow,const char *defaultName)
 {
 	menuItems=menuItemsToShow;
 	asking=0;
@@ -77,7 +78,7 @@ void InitFileDialog(const char *dir, const char *ext, word menuItemsToShow,const
 
 	if (menuItems & (FM_SAVE | FM_SAVEPACK))
 	{
-		hamSandwich = MustBeHamSandwichWorld(EditorGetWorld());
+		hamSandwich = !Supreme_CanSaveWorld(EditorGetWorld());
 	}
 }
 
@@ -213,7 +214,7 @@ void FindFilename(const char *str)
 			a=str[j];
 			if(a>='A' && a<='Z')
 				a=a+'a'-'A';
-			b=fnames[i][0];
+			b=fnames[i][j];
 			if(b>='A' && b<='Z')
 				b=b+'a'-'A';
 			if(a==b)

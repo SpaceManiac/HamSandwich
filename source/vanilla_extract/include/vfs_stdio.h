@@ -6,7 +6,8 @@
 namespace vanilla
 {
 	// Given a path like "foo/bar/baz", mkdir "foo" then "foo/bar", but not "baz".
-	int mkdir_parents(std::string_view path);
+	// Returns true on success; logs and returns false on failure.
+	bool mkdir_parents(std::string_view path);
 
 	std::unique_ptr<WriteVfs> open_stdio(std::string_view prefix);
 }

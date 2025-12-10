@@ -270,59 +270,66 @@ constexpr byte FRAME_INVIS = 254;
 constexpr byte FRAME_END = 255;
 
 // flags
-#define MF_FLYING	 1
-#define MF_WATERWALK 2
-#define MF_ONEFACE	 4
-#define MF_ENEMYWALK 8	// other enemies can stomp all over this one (but not Bouapha)
-#define MF_NOMOVE	 16 // doesn't move when hit
-#define MF_AQUATIC	 32	// can ONLY move on water/lava, not land
-#define MF_INVINCIBLE 64 // totally invulnerable to harm
-#define MF_SPRITEBOX 128 // use the sprite's rect for collision checks instead of standard size-box method
-#define MF_FACECMD	 256 // this monster's "facing" value should just be added to the sprite number,
-						 // it's calculated by his AI (only useful for MF_ONEFACE monsters)
-#define MF_NOGRAV	 512
-#define MF_FREEWALK	 1024 // Bouapha can walk right through it
-#define MF_WALLWALK	 2048 // walk through walls
-#define MF_NOSHADOW	 4096 // doesn't cast a shadow
-#define MF_GHOST	 8192 // draw using ghost draw
-#define MF_NOHIT	 16384	// bullets pass through it
-#define MF_GLOW		 32768 // draw using glow draw
+enum MonsterFlags_ : word
+{
+	MF_FLYING     = 1 << 0,
+	MF_WATERWALK  = 1 << 1,
+	MF_ONEFACE    = 1 << 2,
+	MF_ENEMYWALK  = 1 << 3,	// other enemies can stomp all over this one (but not Bouapha)
+	MF_NOMOVE     = 1 << 4,	// doesn't move when hit
+	MF_AQUATIC    = 1 << 5,	// can ONLY move on water/lava, not land
+	MF_INVINCIBLE = 1 << 6, // totally invulnerable to harm
+	MF_SPRITEBOX  = 1 << 7,	// use the sprite's rect for collision checks instead of standard size-box method
+	MF_FACECMD    = 1 << 8,	// this monster's "facing" value should just be added to the sprite number, it's calculated by his AI (only useful for MF_ONEFACE monsters)
+	MF_NOGRAV     = 1 << 9,
+	MF_FREEWALK   = 1 << 10, // Bouapha can walk right through it
+	MF_WALLWALK   = 1 << 11, // walk through walls
+	MF_NOSHADOW   = 1 << 12, // doesn't cast a shadow
+	MF_GHOST      = 1 << 13, // draw using ghost draw
+	MF_NOHIT      = 1 << 14, // bullets pass through it
+	MF_GLOW       = 1 << 15, // draw using glow draw
+};
+BITFLAGS(MonsterFlags_)
 
-// themese
-#define MT_NONE		(0)
-#define MT_GOOD		(1<<0)
-#define MT_EVIL		(1<<1)
-#define MT_SPOOKY	(1<<2)
-#define MT_ZOMBIE	(1<<3)
-#define MT_VAMPIRE	(1<<4)
-#define MT_SPIDER	(1<<5)
-#define MT_PYGMY	(1<<6)
-#define MT_ZOID		(1<<7)
-#define MT_BOSS		(1<<8)
-#define MT_MINIBOSS (1<<9)
-#define MT_WACKY	(1<<10)
-#define MT_PUMPKIN	(1<<11)
-#define MT_THINGY	(1<<12)
-#define MT_VEGGIE	(1<<13)
-#define MT_ARCTIC	(1<<14)
-#define MT_DESERT   (1<<15)
-#define MT_VEHICLE	(1<<16)
-#define MT_GENERATE	(1<<17)
-#define MT_TRAP		(1<<18)
-#define MT_ALIEN	(1<<19)
-#define MT_HIGHTECH	(1<<20)
-#define MT_ANIMAL	(1<<21)
-#define MT_HUMAN	(1<<22)
-#define MT_URBAN	(1<<23)
-#define MT_AQUATIC	(1<<24)
-#define MT_UNDERSEA (1<<25)
-#define MT_FLYING	(1<<26)
-#define MT_BITS		(1<<27)
-#define NUM_MONSTHEMES	(28)
+// themes
+enum MonsterThemes : dword
+{
+	MT_NONE     = 0,
+	MT_GOOD		= 1 << 0,
+	MT_EVIL		= 1 << 1,
+	MT_SPOOKY	= 1 << 2,
+	MT_ZOMBIE	= 1 << 3,
+	MT_VAMPIRE	= 1 << 4,
+	MT_SPIDER	= 1 << 5,
+	MT_PYGMY	= 1 << 6,
+	MT_ZOID		= 1 << 7,
+	MT_BOSS		= 1 << 8,
+	MT_MINIBOSS = 1 << 9,
+	MT_WACKY	= 1 << 10,
+	MT_PUMPKIN	= 1 << 11,
+	MT_THINGY	= 1 << 12,
+	MT_VEGGIE	= 1 << 13,
+	MT_ARCTIC	= 1 << 14,
+	MT_DESERT   = 1 << 15,
+	MT_VEHICLE	= 1 << 16,
+	MT_GENERATE	= 1 << 17,
+	MT_TRAP		= 1 << 18,
+	MT_ALIEN	= 1 << 19,
+	MT_HIGHTECH	= 1 << 20,
+	MT_ANIMAL	= 1 << 21,
+	MT_HUMAN	= 1 << 22,
+	MT_URBAN	= 1 << 23,
+	MT_AQUATIC	= 1 << 24,
+	MT_UNDERSEA = 1 << 25,
+	MT_FLYING	= 1 << 26,
+	MT_BITS		= 1 << 27,
+};
+BITFLAGS(MonsterThemes)
+constexpr int NUM_MONSTHEMES = 28;
 
 typedef void (*Monster_AIFunc)(Guy *,Map *,world_t *,Guy *);
 
-typedef struct monsterType_t
+struct MonsterType
 {
 	char name[32];
 	byte fromCol,toCol;
@@ -334,27 +341,28 @@ typedef struct monsterType_t
 	word points;
 	char sprName[32];
 	sprite_set_t *spr;
-	word flags;
-	dword theme;
+	MonsterFlags_ flags;
+	MonsterThemes theme;
 	byte anim[NUM_ANIMS][ANIM_LENGTH];
-} monsterType_t;
+};
 
 void InitMonsters(void);
 void ExitMonsters(void);
 
 void PurgeMonsterSprites(void);
 
-const monsterType_t *GetMonsterType(dword type);
-
 void ChangeOffColor(dword type,byte from,byte to);
 byte MonsterSize(dword type);
 const byte *MonsterAnim(dword type,byte anim);
-word MonsterFlags(dword type,byte aiType);
-dword MonsterTheme(dword type);
-byte MonsterFrames(dword type,byte aiType);
+MonsterFlags_ MonsterFlags(dword type,dword aiType);
+MonsterThemes MonsterTheme(dword type);
+byte MonsterFrames(dword type,dword aiType);
 word MonsterHP(dword type);
 word MonsterPoints(dword type);
-char *MonsterName(short type);
+const char *MonsterName(short type);
+Monster_AIFunc MonsterAI(dword type);
+int8_t MonsterBrightnessChange(dword type);
+
 void MonsterDraw(
 	int x, int y, int z,
 	dword type, bool isBouapha,
@@ -367,186 +375,11 @@ void MonsterDraw(
 void InstaRenderMonster(int x,int y,dword type,char bright,MGLDraw *mgl);
 int InstaRenderScannedMonster(int x,int y,dword type,char bright,MGLDraw *mgl);
 const sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing);
+
+void FaceGoodguy(Guy *me,Guy *goodguy);
+void FaceGoodguy2(Guy *me,Guy *goodguy);
+void FaceGoodguy3(Guy *me,Guy *goodguy);
 int RangeToTarget(Guy *me,Guy *goodguy);
-
-// ai functions for each monster type
-void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Bat(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Spider(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_BigSpider(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Zombie(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_EggSac(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_MamaSpider(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Pygmy(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Serpent(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Ginger(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Pumpkin(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_BabyThing(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Moss(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_MossGrande(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Magmazoid(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Shroom(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Mush(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_SuperZombie(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_StickMan(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_BabySeal(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Isozoid(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Snowguy(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Penguin(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Zomboni(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Geozoid(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Mumble(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Djinni(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_MagicLamp(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Cactus(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Roller(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Lich(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_DustDevil(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_MechaBouapha(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Freakazoid(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_CentiBody(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_CentiHead(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Wacko(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Boiler(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_GreatPumpkin(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Ultrazoid(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Santa(Guy *me,Map *map,world_t *world,Guy *goodguy);
-
-	//Matilda's AIs
-void AI_MattieBrain(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_MattieSkullOrHead(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_MattieClaw(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_MattieTail(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_MattieBody(Guy *me,Map *map,world_t *world,Guy *goodguy);
-	// The Thing's AIs
-void AI_TheThing(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_ThingTentacle(Guy *me,Map *map,world_t *world,Guy *goodguy);
-	// Sven & Bjorn's AI
-void AI_Yeti(Guy *me,Map *map,world_t *world,Guy *goodguy);
-	// Sphinxter's AIs
-void AI_SphinxArm(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Sphinx(Guy *me,Map *map,world_t *world,Guy *goodguy);
-	// Asylum bosses' AIs
-void AI_DrLunatic(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_SDZL(Guy *me,Map *map,world_t *world,Guy *goodguy);
-
-// expansion monsters
-void AI_MineCart(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Raft(Guy *me,Map *map,world_t *world,Guy *goodguy);
-
-void AI_Vampire(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Coffin(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Ghost(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Burner(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Lefty(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Pygmy2(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Pygmy3(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Pumpkinstein(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Knight(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Triceroid(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Countess(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_AlienEgg(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_BabyAlien(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Alien(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Robopumpkin(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_ShockTrooper(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Minibot(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Meaniebot(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Robofactory(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Turret(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Bunny(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Kongor(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Squash(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_UltraPygmy(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_LoonyShip(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_LoonyGun(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_LoonyBot(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_LoonyCore(Guy *me,Map *map,world_t *world,Guy *goodguy);
-
-// fun pack monsters
-void AI_GoodTurret(Guy *me,Map *map,world_t *world,Guy *goodguy);
-
-void AI_Mattie2Brain(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Mattie2SkullOrHead(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Mattie2Tail(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Mattie2Body(Guy *me,Map *map,world_t *world,Guy *goodguy);
-
-void AI_BuddyBunny(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_PygmyQueen(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Jalapeno(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Generator(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Shark(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_MadBug(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Wizard(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_EvilClone(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Bob(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_MultiMoss(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_MossRapido(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Snowball(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Snowblower(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_XenoMama(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Gnome(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Nobody(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_BigPumpkin(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_RockTrooper(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_CrazyBone(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Creepazoid(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Lazybones(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_StareyBat(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Madman(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_PygmyAcct(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Crazypants(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Yerfdog(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_EliteSeal(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Cone(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_PygmyDiver(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Puffyfish(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Yeti2(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Spikey(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Bombot(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_FollowBunny(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Autozoid(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Chest(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Jellofish(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_KingCone(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Mailboxer(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Piranha(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Yugo(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Punkin(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_SeaCuke(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Sneaky2(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Starfish(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Underzoid(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_WetSeal(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_WetWilly(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_CrabPuff(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Patch(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Patty(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Dozer(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_MutantZombie(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Whatsit(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_ShockGhost(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Mechazoid(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Sucker(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Blower(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Beetle(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Scarab(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Frostbiter(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_UnderMagmazoid(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_ParkedCar(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Traffic(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_ShroomLord(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_BigBat(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_HugeBat(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Werewolf(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Patrol(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Weatherman(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_HunterEgg(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_PunkBunny(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Skeleton(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Microzoid(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_HotShroom(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_MiniWacko(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_JackFrost(Guy *me,Map *map,world_t *world,Guy *goodguy);
+void FlailLock(Guy *me);
 
 #endif

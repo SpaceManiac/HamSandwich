@@ -1,6 +1,7 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
+#include <utility>
 #include "world.h"
 #include "map.h"
 #include "game.h"
@@ -48,6 +49,7 @@ void SetEditMode(byte m);
 void PickedTile(int t);
 
 void EditorGetTileXY(int *x,int *y);
+std::pair<int, int> EditorGetTileXY();
 void SetEditPickerRect(int wid,int hei);
 Map *EditorGetMap(void);
 byte EditorShowMonsItems(void);
@@ -55,7 +57,7 @@ byte EditorGetSelectMode(void);
 void EditorSetSelectMode(byte mode);
 byte EditorGetMapNum(void);
 word GetDisplayFlags(void);
-void ToggleDisplayFlag(word f);
+void ToggleDisplayFlag(MapRenderFlags f);
 void ViewMenuOn(void);
 void ViewMenuOff(void);
 

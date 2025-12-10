@@ -43,8 +43,8 @@ void WallTool::Update(int msx,int msy)
 				active=i;
 				if(mgl->RMouseDown())
 				{
-					tile[active][0]=800;
-					tile[active][1]=800;
+					tile[active][0]=UINT16_MAX;
+					tile[active][1]=UINT16_MAX;
 				}
 				MakeNormalSound(SND_MENUCLICK);
 			}
@@ -73,7 +73,7 @@ void WallTool::Update(int msx,int msy)
 				pickingTile=i;
 				active=i;
 				pickWallRoof=1;
-				if(tile[i][0]==800)
+				if(tile[i][0]==UINT16_MAX)
 				{
 					tile[i][0]=0;
 					tile[i][1]=0;
@@ -90,7 +90,7 @@ void WallTool::Update(int msx,int msy)
 				pickingTile=i;
 				active=i;
 				pickWallRoof=0;
-				if(tile[i][0]==800)
+				if(tile[i][0]==UINT16_MAX)
 				{
 					tile[i][0]=0;
 					tile[i][1]=0;
@@ -121,7 +121,7 @@ void WallTool::Render(int msx,int msy)
 
 	for(i=0;i<4;i++)
 	{
-		if(tile[i][0]<800 && tile[i][1]<800)
+		if(tile[i][0]<UINT16_MAX && tile[i][1]<UINT16_MAX)
 		{
 			RenderFloorTile(mgl->GetWidth()-144+i*(TILE_WIDTH+4),mgl->GetHeight()-56+TILE_HEIGHT,tile[i][0],0);
 			RenderFloorTile(mgl->GetWidth()-144+i*(TILE_WIDTH+4),mgl->GetHeight()-56,tile[i][1],0);
@@ -186,22 +186,20 @@ void WallTool::StartPlop(void)
 
 void WallTool::PlopOne(int x,int y)
 {
-	Map *m;
-	int i;
+	Map *m = EditorGetMap();
 
-	m=EditorGetMap();
-
-	if(x>=0 && y>=0 && x<m->width && y<m->height && m->map[x+y*m->width].select && tile[active][0]<800 && tile[active][1]<800)
+	if (mapTile_t *target = m->TryGetTile(x, y); target && target->select && tile[active][0]<UINT16_MAX && tile[active][1]<UINT16_MAX)
 	{
-		m->map[x+y*m->width].floor=tile[active][1];
-		m->map[x+y*m->width].wall=tile[active][0];
-		m->map[x+y*m->width].item=0;	// no items here!
-		for(i=0;i<MAX_MAPMONS;i++)
-			if((m->badguy[i].type) && (m->badguy[i].x==x) && (m->badguy[i].y==y))
+		target->floor=tile[active][1];
+		target->wall=tile[active][0];
+		target->item=0;	// no items here!
+		for (mapBadguy_t &badguy : m->badguy)
+		{
+			if(badguy.type && badguy.x==x && badguy.y==y)
 			{
-				// get rid of anybody already on this space
-				m->badguy[i].type=0;
+				badguy.type=0;
 			}
+		}
 	}
 
 	if(plopMode==PLOP_RANDOM)
@@ -216,19 +214,15 @@ void WallTool::PlopOne(int x,int y)
 
 void WallTool::Plop(void)
 {
-	Map *m;
-	int x,y;
-	int i,j,minusBrush,plusBrush;
-
-	EditorGetTileXY(&x,&y);
-	m=EditorGetMap();
+	auto [x, y] = EditorGetTileXY();
+	Map *m = EditorGetMap();
 
 	if(x!=lastX || y!=lastY)
 	{
-		minusBrush=brush/2;
-		plusBrush=(brush+1)/2;
-		for(j=y-minusBrush;j<=y+plusBrush;j++)
-			for(i=x-minusBrush;i<=x+plusBrush;i++)
+		int minusBrush=brush/2;
+		int plusBrush=(brush+1)/2;
+		for(int j=y-minusBrush;j<=y+plusBrush;j++)
+			for(int i=x-minusBrush;i<=x+plusBrush;i++)
 				PlopOne(i,j);
 
 		MakeNormalSound(SND_MENUCLICK);
@@ -250,30 +244,27 @@ void WallTool::Plop(void)
 
 void WallTool::ShowTarget(void)
 {
-	int x1,x2,y1,y2,cx,cy;
 	static byte col=0;
-	int tileX,tileY;
-	int tileX2,tileY2,minusBrush,plusBrush;
-
 	col=255-col;
-	GetCamera(&cx,&cy);
 
-	EditorGetTileXY(&tileX,&tileY);
+	auto [cx, cy] = GetCamera();
 
-	minusBrush=brush/2;
-	plusBrush=(brush+1)/2;
+	auto [tileX, tileY] = EditorGetTileXY();
 
-	tileX2=tileX+plusBrush;
-	tileY2=tileY+plusBrush;
+	int minusBrush=brush/2;
+	int plusBrush=(brush+1)/2;
+
+	int tileX2=tileX+plusBrush;
+	int tileY2=tileY+plusBrush;
 
 	tileX-=minusBrush;
 	tileY-=minusBrush;
 
-	x1=tileX*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2);
-	y1=tileY*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2);
+	int x1=tileX*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2);
+	int y1=tileY*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2);
 
-	x2=tileX2*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2)+TILE_WIDTH-1;
-	y2=tileY2*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2)+TILE_HEIGHT-1;
+	int x2=tileX2*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2)+TILE_WIDTH-1;
+	int y2=tileY2*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2)+TILE_HEIGHT-1;
 
 	DrawBox(x1,y1,x2,y1,col);
 	DrawBox(x1,y2,x2,y2,col);
@@ -287,13 +278,10 @@ void WallTool::SuckUp(int x,int y)
 
 	m=EditorGetMap();
 
-	if(x>=0 && y>=0 && x<m->width && y<m->height)
+	if (mapTile_t *target = m->TryGetTile(x, y); target && target->wall)
 	{
-		if(m->map[x+y*m->width].wall)
-		{
-			tile[active][1]=m->map[x+y*m->width].floor;
-			tile[active][0]=m->map[x+y*m->width].wall;
-		}
+		tile[active][1] = target->floor;
+		tile[active][0] = target->wall;
 	}
 }
 
@@ -306,23 +294,19 @@ void WallTool::StartErase(void)
 
 void WallTool::Erase(void)
 {
-	Map *m;
-	int x,y;
-	int i,j,minusBrush,plusBrush;
-
-	EditorGetTileXY(&x,&y);
-	m=EditorGetMap();
+	auto [x, y] = EditorGetTileXY();
+	Map *m = EditorGetMap();
 
 	if(x!=lastX || y!=lastY)
 	{
-		minusBrush=brush/2;
-		plusBrush=(brush+1)/2;
-		for(j=y-minusBrush;j<=y+plusBrush;j++)
-			for(i=x-minusBrush;i<=x+plusBrush;i++)
+		int minusBrush=brush/2;
+		int plusBrush=(brush+1)/2;
+		for(int j=y-minusBrush;j<=y+plusBrush;j++)
+			for(int i=x-minusBrush;i<=x+plusBrush;i++)
 			{
-				if(i>=0 && j>=0 && i<m->width && j<m->height && m->map[i+j*m->width].select)
+				if (mapTile_t *target = m->TryGetTile(i, j); target && target->select)
 				{
-					m->map[i+j*m->width].wall=0;
+					target->wall = 0;
 				}
 			}
 

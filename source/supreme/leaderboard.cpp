@@ -395,8 +395,8 @@ TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t* world, WorldLeaderb
 				{
 					int mapsMissed = -(INT32_MAX - score.score - world->numMaps);
 					int totalMaps = 0;
-					for (int j = 0; j < world->numMaps; ++j)
-						if (!(world->map[j]->flags & MAP_HUB))
+					for (const Map* map : world->Maps())
+						if (!(map->flags & MAP_HUB))
 							++totalMaps;
 					snprintf(buf, sizeof(buf), "(%d to go)", mapsMissed);
 				}

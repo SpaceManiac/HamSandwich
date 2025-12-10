@@ -4,11 +4,12 @@
 #include "map.h"
 #include "tile.h"
 #include "string_extras.h"
+#include "bitflags.h"
 
 constexpr int MAX_MAPS = 64;
 
 // terrain flags
-enum : dword
+enum TileFlags : dword
 {
 	TF_SOLID      = 1 << 0,
 	TF_ICE        = 1 << 1,
@@ -35,40 +36,43 @@ enum : dword
 	// Adding flag 1<<21 would leave room for 1024 tiles.
 	// Flag 1<<22 wouldn't leave room for 1000 tiles, so cannot be added.
 };
+BITFLAGS(TileFlags)
 
 struct terrain_t
 {
-	dword flags;
+	TileFlags flags;
 	word next;
 };
 
 struct world_t
 {
 	byte numMaps;
-	int  totalPoints;
 	Map	 *map[MAX_MAPS];
+	Tilegfx tilegfx;
 	word numTiles;
 	terrain_t terrain[NUMTILES];
 	char author[32];
+
+	span<Map *const> Maps() const { return span{map, numMaps}; }
+	span<terrain_t> Terrain() { return span{terrain, numTiles}; }
+	span<terrain_t const> Terrain() const { return span{terrain, numTiles}; }
 };
 
 extern byte keyChainInLevel[MAX_MAPS];
 
 byte NewWorld(world_t *world,MGLDraw *mgl);
 bool LoadWorld(world_t *world,const char *fname);
-bool SaveWorld(world_t *world,const char *fname);
+bool SaveWorld(const world_t *world,const char *fname);
 void FreeWorld(world_t *world);
 
 void InitWorld(world_t *world);
 bool GetWorldName(const char *fname, StringDestination name, StringDestination author);
 
-void RepairTileToTile(world_t *w);
+class SwapTable;
+void RepairTileToTile(world_t *w, const SwapTable &table);
 
 void LocateKeychains(world_t *w);
 
-byte BeginAppendWorld(world_t *world,const char *fname);
 terrain_t *GetTerrain(world_t *w,word tile);
-
-bool MustBeHamSandwichWorld(const world_t *world);
 
 #endif

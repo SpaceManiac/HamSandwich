@@ -1,9 +1,12 @@
 #ifndef MAP_H
 #define MAP_H
 
+#include <array>
 #include "tile.h"
 #include "items.h"
 #include "special.h"
+#include "string_extras.h"
+#include "bitflags.h"
 
 constexpr int MAX_LIGHT = 16;
 constexpr int MIN_LIGHT = -32;
@@ -15,7 +18,7 @@ constexpr int MAX_MAPMONS = 128;
 constexpr int MAX_MAPSIZE = 200;
 
 // Flags for calling map render.
-enum : word
+enum MapRenderFlags : word
 {
 	MAP_SHOWLIGHTS      = 1 << 0,
 	MAP_SHOWWALLS       = 1 << 1,
@@ -27,11 +30,12 @@ enum : word
 	MAP_TEMPTORCH       = 1 << 7,
 	MAP_ZOOMOUT         = 1 << 8,
 };
+BITFLAGS(MapRenderFlags)
 
-constexpr word MAP_SHOWITEMS = MAP_SHOWPICKUPS | MAP_SHOWOTHERITEMS;  // combine them in one
+constexpr MapRenderFlags MAP_SHOWITEMS = MAP_SHOWPICKUPS | MAP_SHOWOTHERITEMS;  // combine them in one
 
 // Map flags. SERIALIZED.
-enum : word
+enum LevelFlags : word
 {
 	MAP_SNOWING     = 1 << 0,
 	MAP_RAIN        = 1 << 1,
@@ -46,6 +50,7 @@ enum : word
 	MAP_WAVY        = 1 << 10,
 	MAP_OXYGEN      = 1 << 11,
 };
+BITFLAGS(LevelFlags)
 constexpr int NUM_LVL_FLAGS = 12;
 const char* MapFlagName(int flagIndex);  // expects 0, 1, 2, 3, not the constants above
 
@@ -58,7 +63,7 @@ enum
 	UPDATE_FADEIN,
 };
 
-typedef struct mapTile_t
+struct mapTile_t
 {
 	word floor;
 	word wall;
@@ -67,15 +72,15 @@ typedef struct mapTile_t
 	char templight;
 	byte opaque;
 	byte select;
-} mapTile_t;
+};
 
 // SERIALIZED.
-typedef struct mapBadguy_t
+struct mapBadguy_t
 {
 	byte x,y;
 	dword type;
 	byte item;
-} mapBadguy_t;
+};
 
 struct world_t;
 
@@ -89,8 +94,8 @@ class Map
 		~Map(void);
 
 		void Init(world_t *wrld);
-		void Render(world_t *world,int camX,int camY,byte flags);
-		void RenderSelect(world_t *world,int camX,int camY,byte flags);
+		void Render(world_t *world,int camX,int camY,MapRenderFlags flags);
+		void RenderSelect(world_t *world,int camX,int camY,MapRenderFlags flags);
 
 		byte DropItem(int x,int y,byte itm);
 		void PermaTorch(int x,int y,char brt);
@@ -122,7 +127,15 @@ class Map
 
 		byte Keychains(void);	// return bitflags for which keychains are in this level
 
-		mapTile_t *GetTile(int x,int y);
+		// Returns true if the coordinate are valid.
+		bool InRange(int x, int y) const { return x >= 0 && y >= 0 && x < width && y < height; }
+		// Returns a dummy tile if the coordinates are invalid.
+		mapTile_t *GetTile(int x, int y);
+		// Returns `nullptr` if the coordinates are invalid.
+		mapTile_t *TryGetTile(int x, int y);
+		span<mapTile_t> Tiles() { return span{map, (size_t)(width * height)}; }
+		span<mapTile_t const> Tiles() const { return span{(const mapTile_t*)map, (size_t)(width * height)}; }
+
 		void FindNearBrain(int myx,int myy);
 		void FindNearCandle(int myx,int myy);
 
@@ -136,12 +149,12 @@ class Map
 		mapTile_t *map;
 		char name[32];
 		char song[32];
-		word flags;
+		LevelFlags flags;
 		word numBrains;
 		word numCandles;
 		word itemDrops;	// how often items drop, a fixshifted percent
-		mapBadguy_t badguy[MAX_MAPMONS];
-		special_t   special[MAX_SPECIAL];
+		std::array<mapBadguy_t, MAX_MAPMONS> badguy;
+		std::array<special_t, MAX_SPECIAL> special;
 	private:
 		void LOSPoints(int x,int y,int curx,int cury,int *p1x,int *p1y,int *p2x,int *p2y);
 		void RenderStars(int camX, int camY);

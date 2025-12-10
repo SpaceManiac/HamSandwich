@@ -2,12 +2,14 @@
 #define DISPLAY_H
 
 #include <string_view>
+#include <utility>
 #include "mgldraw.h"
 #include "jamulspr.h"
 #include "jamulfont.h"
 #include "cossin.h"
 #include "map.h"
 #include "tile.h"
+#include "bitflags.h"
 
 /* This file handles all screen displaying.  It's a go-between so that you
    don't have to pass the mgldraw object everywhere, and also handles the display
@@ -19,7 +21,7 @@ constexpr int DISPLAY_XBORDER = 128;
 constexpr int DISPLAY_YBORDER = 128;
 
 // Display object flags.
-enum : word
+enum DisplayFlags : word
 {
 	DISPLAY_DRAWME      = 1 << 0,
 	DISPLAY_SHADOW      = 1 << 1,
@@ -33,6 +35,7 @@ enum : word
 	DISPLAY_OFFCOLOR    = 1 << 9,
 	DISPLAY_TILESPRITE  = 1 << 10,
 };
+BITFLAGS(DisplayFlags)
 
 // Text file display modes.
 // SERIALIZED in special effect Show Pic/Movie.
@@ -50,7 +53,7 @@ struct displayObj_t
 	const sprite_t *spr;
 	word hue;
 	char bright;
-	word flags;
+	DisplayFlags flags;
 	char light[9];
 	int prev,next;
 };
@@ -61,7 +64,7 @@ class DisplayList
 		DisplayList(void);
 		~DisplayList(void);
 
-		bool DrawSprite(int x,int y,int z,int z2,word hue,char bright,const sprite_t *spr,word flags);
+		bool DrawSprite(int x,int y,int z,int z2,word hue,char bright,const sprite_t *spr,DisplayFlags flags);
 		void ClearList(void);
 		void Render(void);
 	private:
@@ -83,6 +86,7 @@ void DrawMouseCursor(int x,int y);
 
 void PutCamera(int x,int y);
 void GetCamera(int *x,int *y);
+std::pair<int, int> GetCamera();
 // call this once per gameloop, with the X and Y of the object you want the camera to track
 void UpdateCamera(int x,int y,int dx,int dy,Map *map);
 void Print(int x,int y,std::string_view s,char bright,byte font);
@@ -96,16 +100,16 @@ void PrintUnGlowRect(int x,int y,int x2,int y2,int height,std::string_view s,byt
 void PrintLimited(int x,int y,int maxX,std::string_view s,char bright,byte font);
 void PrintGlowLimited(int x,int y,int maxX,std::string_view s,char bright,byte font);
 void CenterPrint(int x,int y,std::string_view s,char bright,byte font);
-void RenderItAll(world_t *world,Map *map,byte flags);
+void RenderItAll(world_t *world,Map *map,MapRenderFlags flags);
 int GetStrLength(std::string_view s,byte font);
 
-void SprDraw(int x,int y,int z,byte hue,char bright,const sprite_t *spr,word flags);
-void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,const sprite_t *spr,word flags);
-void SprDrawTile(int x,int y,word tile,char light,word flags);	// use a tile as a sprite
+void SprDraw(int x,int y,int z,byte hue,char bright,const sprite_t *spr,DisplayFlags flags);
+void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,const sprite_t *spr,DisplayFlags flags);
+void SprDrawTile(int x,int y,word tile,char light,DisplayFlags flags);	// use a tile as a sprite
 
-void WallDraw(int x,int y,word wall,word floor,const char *light,word flags);
-void RoofDraw(int x,int y,word roof,const char *light,word flags);
-void ParticleDraw(int x,int y,int z,byte type,byte size,word flags);
+void WallDraw(int x,int y,word wall,word floor,const char *light,DisplayFlags flags);
+void RoofDraw(int x,int y,word roof,const char *light,DisplayFlags flags);
+void ParticleDraw(int x,int y,int z,byte type,byte size,DisplayFlags flags);
 void LightningDraw(int x,int y,int x2,int y2,byte bright,char range);
 
 void DrawBox(int x,int y,int x2,int y2,byte c);

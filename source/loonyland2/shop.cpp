@@ -304,6 +304,7 @@ byte ButtonPressed(byte btn)
 							if(player.shopInv[shopType][cursor-100].count==0)
 								player.shopInv[shopType][cursor-100].type=IT_NONE;
 							SortShop(SHOP_STASH);
+							AllPotionCheck();
 						}
 						else
 							MakeNormalSound(SND_CANTBUY);
@@ -342,6 +343,7 @@ byte ButtonPressed(byte btn)
 								TalentPoint(TLT_HAGGLING,cost);
 								player.shopInv[shopType][cursor-100].type=IT_NONE;
 								NewChat(66);
+								AllPotionCheck();
 							}
 							else
 							{
@@ -414,7 +416,10 @@ byte ButtonPressed(byte btn)
 							}
 						}
 						if(ok)
+						{
 							MakeNormalSound(SND_JUNKGET);
+							AllPotionCheck();
+						}
 						else
 							MakeNormalSound(SND_CANTBUY);
 						SortShop(SHOP_STASH);

@@ -269,7 +269,7 @@ int DoTheMath(int start,byte action,int num)
 			break;
 		case VA_TILE:
 			if(start>=0 && start<curMap->width && num>=0 && num<curMap->height)
-				return curMap->map[start+num*curMap->width].floor;
+				return curMap->GetTile(start, num)->floor;
 			else
 				return 0;
 			break;

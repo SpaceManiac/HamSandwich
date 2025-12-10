@@ -19,8 +19,8 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	world->numMaps=1;
 	mgl->LoadBMP("tilegfx/tiles.bmp");
 	world->numTiles=400;
-	SetNumTiles(400);
-	SetTiles(mgl->GetScreen());
+	world->tilegfx.numTiles = world->numTiles;
+	world->tilegfx.SetTiles(mgl->GetScreen(), mgl->GetWidth(), mgl->GetHeight());
 
 	// reset all the terrain
 	memset(world->terrain,0,sizeof(terrain_t)*NUMTILES);
@@ -37,12 +37,6 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 		return 0;
 	return 1;
 }
-
-struct io_terrain_t
-{
-	word flags;
-	word next;
-};
 
 bool LoadWorld(world_t *world,const char *fname)
 {
@@ -72,185 +66,12 @@ bool LoadWorld(world_t *world,const char *fname)
 	}
 }
 
-byte BeginAppendWorld(world_t *world,const char *fname)
-{
-	int i;
-	char code[32];
-
-	auto f = AppdataOpen(fname);
-	if(!f)
-	{
-		SetStitchError("File Not Found");
-		return 0;
-	}
-
-	SDL_RWread(f,code,sizeof(char),8);
-	code[8]='\0';
-	if(strcmp(code,"SUPREME!"))
-	{
-		SetStitchError("Must be a Supreme world.");
-		return 0;
-	}
-
-	SDL_RWread(f,&world->author,sizeof(char),32);
-	SDL_RWread(f,&code,sizeof(char),32);	// name of the world, not needed here
-	SDL_RWread(f,&world->numMaps,1,1);
-	SDL_RWread(f,&world->totalPoints,1,sizeof(int));
-	SDL_RWread(f,&world->numTiles,1,sizeof(word));	// tile count
-
-	if(world->numTiles+GetNumTiles()>NUMTILES)
-	{
-		SetStitchError("Too many tiles!");
-		return 0;
-	}
-
-	stitchTileOffset=GetNumTiles();
-	SetNumTiles(world->numTiles+stitchTileOffset);
-
-	AppendTiles(stitchTileOffset, f.get());
-	LoadTerrain(world, fname, f.get());
-
-	for(i=0;i<MAX_MAPS;i++)
-		world->map[i]=NULL;
-
-	for(i=0;i<world->numMaps;i++)
-	{
-		world->map[i] = LoadMap(f.get());
-		if(!world->map[i])
-		{
-			SetStitchError("Unable to load a level.");
-			for(int j=0;j<i;j++)
-				delete world->map[j];
-			return 0;
-		}
-	}
-
-	if(!AppendItems(f.get()))
-	{
-		SetStitchError("Too many custom items!");
-		return 0;
-	}
-	stitchSoundOffset=AppendCustomSounds(f.get());
-	if(stitchSoundOffset==-1)
-	{
-		SetStitchError("Too many custom sounds!");
-		return 0;
-	}
-	SetupRandomItems();
-	return 1;
-}
-
-#define YES_IF(X) if(X) { return true; }
-// Checks for if a world *must* be saved as a HamSandwich format world.
-// The intent is to prefer the Supreme format when possible, and use the
-// newer HamSandwich format only for worlds which absolutely require it.
-// It might take a little work, but worlds which do not exceed the limits of
-// the relevant integer types should still "fit" in the Supreme format.
-
-// There are some lines checking sizeof() for simplicity. If you change them,
-// you can tweak the SaveWorld and LoadWorld functions to save/load the old
-// size and tweak those checks.
-
-static bool MustBeHamSandwichMap(const Map *map)
-{
-	YES_IF(map->width > 250);  // x=255 is special, so we need HSW in that case
-	YES_IF(map->height > 250);
-	YES_IF(strlen(map->name) > 31);
-	YES_IF(strlen(map->song) > 31);
-
-	int count = 0;
-	for (int i = 0; i < MAX_MAPMONS; ++i)
-	{
-		if (map->badguy[i].type)
-		{
-			++count;
-			YES_IF(count > UINT8_MAX);
-			YES_IF(map->badguy[i].x > UINT8_MAX);
-			YES_IF(map->badguy[i].y > UINT8_MAX);
-			YES_IF(map->badguy[i].type > UINT8_MAX);
-			YES_IF(map->badguy[i].item > UINT8_MAX);
-		}
-	}
-
-	for (int i = 0; i < MAX_SPECIAL; ++i)
-	{
-		const auto& spcl = map->special[i];
-		if (spcl.x != 255)
-		{
-			YES_IF(i > UINT8_MAX);
-			YES_IF(spcl.x > UINT8_MAX);
-			YES_IF(spcl.y > UINT8_MAX);
-			YES_IF(spcl.uses > UINT8_MAX);
-
-			for (int j = 0; j < NUM_TRIGGERS; ++j)
-			{
-				if (spcl.trigger[j].type)
-				{
-					YES_IF(j > 7);
-				}
-			}
-			for (int j = 0; j < NUM_EFFECTS; ++j)
-			{
-				if (spcl.effect[j].type)
-				{
-					YES_IF(j > 31);
-				}
-			}
-
-			YES_IF(sizeof(trigger_t) != 12);
-			YES_IF(sizeof(effect_t) != 44);
-		}
-	}
-
-	YES_IF(map->flags > UINT16_MAX);
-	YES_IF(map->numBrains > UINT16_MAX);
-	YES_IF(map->numCandles > UINT16_MAX);
-	YES_IF(map->itemDrops > UINT16_MAX);
-
-	for (int i = 0, max = map->width * map->height; i < max; ++i)
-	{
-		YES_IF(map->map[i].floor > UINT16_MAX);
-		YES_IF(map->map[i].wall > UINT16_MAX);
-		YES_IF(map->map[i].item > UINT8_MAX);
-		YES_IF(map->map[i].light < INT8_MIN || map->map[i].light > INT8_MAX);
-	}
-
-	return false;
-}
-
-bool MustBeHamSandwichWorld(const world_t *world)
-{
-	// If any "legacy" limits are exceeded.
-	YES_IF(strlen(world->author) > 31);
-	YES_IF(world->numMaps > UINT8_MAX);
-	YES_IF(world->numTiles > UINT16_MAX);
-
-	YES_IF(sizeof(io_terrain_t) != 4);
-
-	for(int i = 0; i < world->numMaps; ++i)
-	{
-		YES_IF(MustBeHamSandwichMap(world->map[i]));
-	}
-
-	// simply crossing our fingers that there are <65535 custom items...
-	YES_IF(sizeof(item_t) != 124);
-
-	YES_IF(sizeof(soundDesc_t) != 36);
-
-	return false;
-}
-#undef YES_IF
-
-bool SaveWorld(world_t *world, const char *fname)
+bool SaveWorld(const world_t *world, const char *fname)
 {
 	world->map[0]->flags|=MAP_HUB;
-	world->totalPoints=0;
-	for(int i = 1; i < MAX_MAPS; i++)
-		if(world->map[i] && (!(world->map[i]->flags&MAP_HUB)))
-			world->totalPoints+=100;	// each level is worth 100 points except hubs which is worth nothing
 
 	std::string namebuf;
-	if (MustBeHamSandwichWorld(world))
+	if (!Supreme_CanSaveWorld(world))
 	{
 		// Save HamSandwich world.
 		printf("Saving HamSandwich world: %s\n", fname);
@@ -313,14 +134,15 @@ void FreeWorld(world_t *world)
 
 void InitWorld(world_t *world)
 {
+	SetCurrentTilegfx(&world->tilegfx);
 }
 
-void RepairTileToTile(world_t *w)
+void RepairTileToTile(world_t *w, const SwapTable &table)
 {
 	int i;
 
 	for(i=0;i<NUMTILES;i++)
-		w->terrain[i].next=GetSwap(w->terrain[i].next);
+		w->terrain[i].next=table.GetSwap(w->terrain[i].next);
 }
 
 void LocateKeychains(world_t *w)
@@ -340,10 +162,10 @@ void LocateKeychains(world_t *w)
 
 terrain_t *GetTerrain(world_t *w,word tile)
 {
-	static terrain_t tmp={0,0};
-
-	if(tile>799)
-		return &tmp;
-	else
+	if (tile < NUMTILES)
 		return &w->terrain[tile];
+
+	static terrain_t fake;
+	fake = {{}, 0};
+	return &fake;
 }

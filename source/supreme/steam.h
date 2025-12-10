@@ -16,7 +16,6 @@ public:
 	SteamManager() {}
 	virtual ~SteamManager() {}
 	static SteamManager* Init(const char* appId);
-	static SteamManager* Get();
 	static void Quit();
 
 	// Useful stuff
@@ -47,5 +46,6 @@ public:
 	virtual void SetPresenceEditor() {}
 	virtual void SetPresenceShopping() {}
 };
+SteamManager* Steam();
 
 #endif

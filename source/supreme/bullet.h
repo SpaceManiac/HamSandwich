@@ -8,6 +8,7 @@
 #include "particle.h"
 #include "sound.h"
 #include "world.h"
+#include "bitflags.h"
 
 // SERIALIZED in the Summon/Change Bullet special effects. Add to end, don't reorder.
 enum BulletType : byte
@@ -74,7 +75,7 @@ enum BulletType : byte
 };
 
 // the special hammer flags for different powerups
-enum : byte
+enum HammerFlags : byte
 {
 	HMR_REVERSE   = 1 << 0,
 	HMR_REFLECT   = 1 << 1,
@@ -85,6 +86,7 @@ enum : byte
 	HMR_NOSKID    = 1 << 6, // another cheat
 	HMR_LIGHT     = 1 << 7, // another cheat
 };
+BITFLAGS(HammerFlags)
 
 struct bullet_t
 {
@@ -115,7 +117,7 @@ void LaunchMegabeam(int x, int y, word owner);
 void FireBullet(int x, int y, byte facing, byte type, byte friendly);
 void FireBulletAfter(int x, int y, byte facing, byte type, bullet_t *thisone, byte friendly);
 void FireExactBullet(int x, int y, int z, int dx, int dy, int dz, byte anim, byte timer, byte facing, byte type, byte friendly);
-void HammerLaunch(int x, int y, byte facing, byte count, byte flags);
+void HammerLaunch(int x, int y, byte facing, byte count, HammerFlags flags);
 byte Bulletable(Map *map, int x, int y);
 void BulletRanOut(bullet_t *me, Map *map, world_t *world); // prototyped for interior use
 void ReflectShot(void);

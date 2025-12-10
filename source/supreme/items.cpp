@@ -1,6 +1,7 @@
 #include "winpch.h"
 #include "items.h"
 #include <algorithm>
+#include <vector>
 #include <ctype.h>
 #include "display.h"
 #include "player.h"
@@ -10,13 +11,12 @@
 #include "shop.h"
 #include "vars.h"
 #include "goal.h"
-#include "worldstitch.h"
 #include "log.h"
 #include "math_extras.h"
 #include "string_extras.h"
 
 static const item_t baseItems[]={
-	{"None",0,0,0,0,0,0,0,0,0,0,0,0,"",0},
+	{"None",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
 	{"Hammer Up",-2,0,0,0,0,0,
 		0,
 		IF_PICKUP,
@@ -193,53 +193,53 @@ static const item_t baseItems[]={
 		"Particle Accelerator!",SND_SPEEDUP},
 	{"Small Grey Rocks",-2,0,32,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR|IT_ROCK,
 		ITR_NONE,IE_NONE,0,
 		"",0},
 	{"Hollow Tree",0,-4,26,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR|IT_TREE|IT_ENTRANCE,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Igloo",0,-3,42,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR|IT_ENTRANCE,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Spider Web",4,-6,54,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Spider Web 2",-1,-10,55,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Spider Web 3",-3,-8,56,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Spider Web 4",-1,-9,57,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Grass",-2,-2,61,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR|IT_TREE,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Grass 2",-1,-3,62,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR|IT_TREE,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Tiny Hut",-1,-5,65,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR|IT_ENTRANCE,
 		ITR_NONE,IE_NONE,0,"",0},
 
@@ -277,7 +277,7 @@ static const item_t baseItems[]={
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Fallen Cone",0,-3,95,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Bubbles",0,-5,92,0,0,0,
@@ -597,7 +597,7 @@ static const item_t baseItems[]={
 		ITR_GET,IE_POWERUP,PU_AMMO2,"Ammo Pack!",SND_WEAPON},
 	{"Flat Rock",0,-3,107,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR|IT_ROCK,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Grey Rockpile",0,-4,108,0,0,0,
@@ -617,7 +617,7 @@ static const item_t baseItems[]={
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Seaweed3",0,4,110,0,0,0,
 		0,
-		0,
+		{},
 		IT_DECOR|IT_TREE,
 		ITR_NONE,IE_NONE,0,"",0},
 	{"Freeze Ray",0,-4,112,0,0,0,
@@ -715,48 +715,44 @@ static const item_t baseItems[]={
 		IF_PICKUP,
 		IT_PICKUP|IT_WEAPON|IT_POWERUP,
 		ITR_GET,IE_POWERUP,PU_CHEESE,"Supreme Squeezy Cheese!",SND_WEAPON},
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused2
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused3
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused4
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused5
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused6
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused7
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused8
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused9
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused10
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused11
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused12
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused13
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused14
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused15
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused16
-	{"New Item",0,0,0,0,0,0,0,0,0,ITR_NONE,IE_NONE,0,"",0},	// unused17
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused2
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused3
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused4
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused5
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused6
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused7
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused8
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused9
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused10
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused11
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused12
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused13
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused14
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused15
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused16
+	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused17
 };
+static_assert(std::size(baseItems) == NUM_ORIGINAL_ITEMS);
 
-static item_t emptyItem=
+static const item_t emptyItem=
 	{"New Item",0,0,0,0,0,0,
 		0,
-		0,
+		{},
 		IT_CUSTOM,
 		ITR_NONE,IE_NONE,0,"",0};
 
-sprite_set_t *itmSpr;
-sprite_set_t *customItmSpr;
+static sprite_set_t *itmSpr;
+static sprite_set_t *customItmSpr;
 static byte glowism;
-static byte rndItem;
-static word numItems;
-static item_t *items;
+static int rndItem;
+static std::vector<item_t> items;
 static int totalRare;
 
 static char customSpriteFilename[64] = "";
 
 void InitItems(void)
 {
-	numItems=NUM_ORIGINAL_ITEMS;
-	items=new item_t[256];
-
-	memset(items,0,256*sizeof(item_t));
-	memcpy(items,baseItems,sizeof(item_t)*NUM_ORIGINAL_ITEMS);
+	items.assign(std::begin(baseItems), std::end(baseItems));
 
 	itmSpr=new sprite_set_t("graphics/items.jsp");
 	customItmSpr=NULL;
@@ -771,11 +767,12 @@ void InitItems(void)
 void ExitItems(void)
 {
 	delete itmSpr;
-	if (customItmSpr) {
+	if (customItmSpr)
+	{
 		delete customItmSpr;
 		customItmSpr = NULL;
 	}
-	delete[] items;
+	items.clear();
 }
 
 int NumItemSprites(void)
@@ -785,32 +782,24 @@ int NumItemSprites(void)
 
 int NewItem(void)
 {
-	if(numItems==MAX_ITEMS)
+	if(items.size()==MAX_ITEMS)
 		return -1;
 
-	items[numItems]=emptyItem;
-	numItems++;
+	items.push_back(emptyItem);
 
-	return numItems-1;
+	return items.size()-1;
 }
 
 void DeleteItem(int itm)
 {
-	int i;
-
 	if(itm<NUM_ORIGINAL_ITEMS)
 		return;
-	if(itm>=numItems)
+	if(itm>=NumItems())
 		return;
 
 	RepairItems(itm);
 
-	for(i=itm;i<numItems-1;i++)
-	{
-		memcpy(&items[i],&items[i+1],sizeof(item_t));
-	}
-	items[numItems-1]=emptyItem;
-	numItems--;
+	items.erase(items.begin() + itm);
 }
 
 void SetCustomItemSprites(const char* name)
@@ -837,12 +826,13 @@ void SetCustomItemSprites(const char* name)
 static void DetectCustomItemSprites(const world_t *world)
 {
 	// extract filename out of first special if possible
-	special_t* special = world->map[0]->special;
-
-	for (int i = 0; i < MAX_SPECIAL; ++i) {
-		for (int j = 0; j < NUM_EFFECTS; ++j) {
-			if (special[i].effect[j].type == EFF_ITEMGRAPHICS) {
-				SetCustomItemSprites(special[i].effect[j].text);
+	for (const special_t &me : world->map[0]->special)
+	{
+		for (const effect_t &eff : me.effect)
+		{
+			if (eff.type == EFF_ITEMGRAPHICS)
+			{
+				SetCustomItemSprites(eff.text);
 				return;
 			}
 		}
@@ -851,7 +841,8 @@ static void DetectCustomItemSprites(const world_t *world)
 
 sprite_set_t* CustomItemSprites()
 {
-	if (customItmSpr == NULL) {
+	if (customItmSpr == NULL)
+	{
 		DetectCustomItemSprites(editing ? EditorGetWorld() : &curWorld);
 	}
 	return customItmSpr;
@@ -862,7 +853,7 @@ int NumCustomSprites(void)
 	return CustomItemSprites() ? customItmSpr->GetCount() : 0;
 }
 
-void RenderItem(int x,int y,byte type,char bright,byte flags)
+void RenderItem(int x,int y,int type,char bright,MapRenderFlags flags)
 {
 	sprite_t* sprite;
 	byte b;
@@ -873,7 +864,7 @@ void RenderItem(int x,int y,byte type,char bright,byte flags)
 	if(type==ITM_RANDOM)
 		type=rndItem;
 
-	if(type>=numItems || type==0)
+	if(type>=NumItems() || type==0)
 		return;
 
 	if(!(flags&MAP_SHOWPICKUPS))
@@ -933,7 +924,7 @@ void RenderItem(int x,int y,byte type,char bright,byte flags)
 	}
 }
 
-void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
+void InstaRenderItem(int x,int y,int type,char bright,MGLDraw *mgl)
 {
 	sprite_t* sprite;
 	byte b;
@@ -941,7 +932,7 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 	if(type==ITM_RANDOM)
 		type=rndItem;
 
-	if(type>=numItems || type==0)
+	if(type>=NumItems() || type==0)
 		return;
 
 
@@ -953,7 +944,7 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 		else
 			sprite = itmSpr->GetSprite(8);
 	} else
-			sprite = itmSpr->GetSprite(items[type].sprNum);
+		sprite = itmSpr->GetSprite(items[type].sprNum);
 
 	if(items[type].flags&IF_TILE)
 	{
@@ -996,7 +987,7 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 
 }
 
-void DrawRedX(int x,int y,byte candle,MGLDraw *mgl)
+void DrawRedX(int x,int y,bool candle,MGLDraw *mgl)
 {
 	if (profile.progress.hudChoice == HudChoice::Classic)
 		itmSpr->GetSprite(8)->Draw(x - 5, y, mgl);
@@ -1006,14 +997,14 @@ void DrawRedX(int x,int y,byte candle,MGLDraw *mgl)
 
 item_t *GetItem(int type)
 {
-	if(type<0 || type>=numItems)
+	if(type<0 || type>=NumItems())
 		return NULL;
 	return &items[type];
 }
 
 word NumItems(void)
 {
-	return numItems;
+	return items.size();
 }
 
 void UpdateItems(void)
@@ -1029,19 +1020,16 @@ void UpdateItems(void)
 
 void SetupRandomItems(void)
 {
-	int i;
-
 	totalRare=0;
-	for(i=0;i<numItems;i++)
+	for (const item_t &item : items)
 	{
-		totalRare+=items[i].rarity;
+		totalRare += item.rarity;
 	}
-
 	if(totalRare==0)
 		totalRare=1;
 }
 
-byte GetRandomItem(void)
+int GetRandomItem(void)
 {
 	int i,last;
 	int rareNum,curRare;
@@ -1049,7 +1037,7 @@ byte GetRandomItem(void)
 	rareNum=Random(totalRare);
 	curRare=0;
 	last=0;
-	for(i=0;i<numItems;i++)
+	for(i=0;i<NumItems();i++)
 	{
 		curRare+=items[i].rarity;
 		if(items[i].rarity>0 && rareNum<=curRare)
@@ -1066,124 +1054,6 @@ int GetTotalRarity(void)
 	return totalRare;
 }
 
-void SaveItems(SDL_RWops *f)
-{
-	int i;
-	word changedItems;
-	byte b;
-
-	changedItems=numItems-NUM_ORIGINAL_ITEMS;
-	for(i=0;i<NUM_ORIGINAL_ITEMS;i++)
-	{
-		// has this item been modified in some way?
-		if(memcmp(&items[i],&baseItems[i],sizeof(item_t)))
-			changedItems++;
-	}
-
-	SDL_RWwrite(f,&changedItems,1,sizeof(word));
-	for(i=0;i<NUM_ORIGINAL_ITEMS;i++)
-	{
-		if(memcmp(&items[i],&baseItems[i],sizeof(item_t)))
-		{
-			// this item is changed, write it out
-			b=(byte)i;
-			SDL_RWwrite(f,&b,1,sizeof(byte));	// write the item number
-			item_t item = items[i];
-			item.sound = SoundToDescIndex(item.sound);
-			SDL_RWwrite(f,&item,1,sizeof(item_t));
-		}
-	}
-	if(numItems>NUM_ORIGINAL_ITEMS)
-	{
-		b=255;	// indicating custom items are beginning here
-		SDL_RWwrite(f,&b,1,sizeof(byte));
-		for(i=NUM_ORIGINAL_ITEMS;i<numItems;i++)
-		{
-			item_t item = items[i];
-			item.sound = SoundToDescIndex(item.sound);
-			SDL_RWwrite(f,&item,1,sizeof(item_t));
-		}
-	}
-}
-
-void LoadItems(SDL_RWops *f)
-{
-	int i;
-	word changedItems;
-	byte getNumber;
-	word curItem;
-
-	ExitItems();
-	InitItems();
-
-	SDL_RWread(f,&changedItems,1,sizeof(word));
-
-	getNumber=1;
-	for(i=0;i<changedItems;i++)
-	{
-		if(getNumber)
-		{
-			curItem=0;
-			SDL_RWread(f,&curItem,1,sizeof(byte));
-			if(curItem==255)
-			{
-				getNumber=0;
-				curItem=NUM_ORIGINAL_ITEMS;
-			}
-		}
-		SDL_RWread(f,&items[curItem],1,sizeof(item_t));
-		items[curItem].sound = DescIndexToSound(items[curItem].sound);
-		curItem++;
-	}
-
-	if(getNumber==1)	// there were no custom items
-		numItems=NUM_ORIGINAL_ITEMS;
-	else
-		numItems=curItem;
-}
-
-byte AppendItems(SDL_RWops *f)
-{
-	int i;
-	word changedItems;
-	byte getNumber;
-	byte curItem;
-	item_t garbage;
-
-	stitchItemOffset=numItems;
-
-	SDL_RWread(f,&changedItems,1,sizeof(word));
-
-	getNumber=1;
-	for(i=0;i<changedItems;i++)
-	{
-		if(getNumber)
-		{
-			SDL_RWread(f,&curItem,1,sizeof(byte));
-			if(curItem==255)
-			{
-				getNumber=0;
-				curItem=numItems;
-			}
-		}
-		if(curItem<NUM_ORIGINAL_ITEMS)
-			SDL_RWread(f,&garbage,1,sizeof(item_t));	// throw away any mods of regular items
-		else
-		{
-			SDL_RWread(f,&items[curItem],1,sizeof(item_t));
-			curItem++;
-			numItems++;
-		}
-		if(curItem>=MAX_ITEMS)
-		{
-			CalculateItemRenderExtents();
-			return 0;
-		}
-	}
-	CalculateItemRenderExtents();
-	return 1;
-}
-
 const item_t *GetBaseItem(int type)
 {
 	if(type<0 || type>=NUM_ORIGINAL_ITEMS)
@@ -1193,7 +1063,7 @@ const item_t *GetBaseItem(int type)
 
 int BrainsGiven(int type)
 {
-	if(type<0 || type>=numItems)
+	if(type<0 || type>=NumItems())
 		return 0;
 	if(items[type].effect!=IE_BRAIN)
 		return 0;
@@ -1202,7 +1072,7 @@ int BrainsGiven(int type)
 
 int CandlesGiven(int type)
 {
-	if(type<0 || type>=numItems)
+	if(type<0 || type>=NumItems())
 		return 0;
 	if(items[type].effect!=IE_CANDLE)
 		return 0;
@@ -1214,7 +1084,7 @@ void RepairItemToItem(int n)	// when item N is deleted, repair references to it 
 {
 	int i;
 
-	for(i=0;i<numItems;i++)
+	for(i=0;i<NumItems();i++)
 	{
 		if(items[i].effect==IE_BECOME)
 		{
@@ -1231,7 +1101,7 @@ void RepairItemToSound(int n)	// when sound N is deleted, repair references to i
 {
 	int i;
 
-	for(i=0;i<numItems;i++)
+	for(i=0;i<NumItems();i++)
 	{
 		if(items[i].sound==n)
 			items[i].sound=0;
@@ -1240,15 +1110,15 @@ void RepairItemToSound(int n)	// when sound N is deleted, repair references to i
 	}
 }
 
-void RepairItemToTile(void)	// when tiles are messed with, repair the references in items
+void RepairItemToTile(const SwapTable &table)	// when tiles are messed with, repair the references in items
 {
 	int i;
 
-	for(i=0;i<numItems;i++)
+	for(i=0;i<NumItems();i++)
 	{
 		if(items[i].flags&IF_TILE)
 		{
-			items[i].sprNum=GetSwap(items[i].sprNum);
+			items[i].sprNum=table.GetSwap(items[i].sprNum);
 		}
 	}
 }
@@ -1452,7 +1322,7 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 					if(profile.progress.loonyKeysUsed>profile.progress.loonyKeys)
 						profile.progress.loonyKeysUsed=profile.progress.loonyKeys;
 				}
-				player.worldProg->keychains&=(!KC_LOONY);
+				player.worldProg->keychains&=(~KC_LOONY);
 			}
 			return 1;
 			break;
@@ -1651,7 +1521,7 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 			return 1;
 			break;
 		case IE_MOVE:
-			curMap->map[x+y*curMap->width].opaque=1;
+			curMap->GetTile(x, y)->opaque = 1;
 			return 0;
 			break;
 	}
@@ -1663,8 +1533,8 @@ void MoveMovableItem(int x,int y,Map *map,world_t *world)
 	byte yes;
 	byte type;
 
-	type=map->map[x+y*map->width].item;
-	switch(items[map->map[x+y*map->width].item].effectAmt)
+	type=map->GetTile(x, y)->item;
+	switch(items[type].effectAmt)
 	{
 		case 0:
 			yes=TryToPushItem(x,y,x+1,y,curMap,&curWorld);
@@ -1833,7 +1703,7 @@ int FindItemByName(const char *name)
 {
 	int i;
 
-	for(i=0;i<numItems;i++)
+	for(i=0;i<NumItems();i++)
 	{
 		if(!strcmp(name,items[i].name))
 			return i;
@@ -1870,13 +1740,13 @@ void CalculateItemRenderExtents()
 	// Calculate the union bounding box of item sprites so we know how far away
 	// to search for items to draw, with no pop-in and minimal overdraw.
 	SDL_Rect everything = {};
-	for (int type = 0; type < numItems; ++type)
+	for (const item_t &item : items)
 	{
 		SDL_Rect rect;
-		if (items[type].flags & IF_TILE)
+		if (item.flags & IF_TILE)
 		{
-			rect.x = items[type].xofs;
-			rect.y = items[type].yofs+1;
+			rect.x = item.xofs;
+			rect.y = item.yofs+1;
 			rect.w = 32;
 			rect.h = 32;
 		}
@@ -1884,32 +1754,32 @@ void CalculateItemRenderExtents()
 		{
 			sprite_t* spr;
 
-			if (items[type].flags & IF_USERJSP)
+			if (item.flags & IF_USERJSP)
 			{
 				sprite_set_t* custom = CustomItemSprites();
 				if (custom)
-					spr = custom->GetSprite(items[type].sprNum < custom->GetCount() ? items[type].sprNum : 0);
+					spr = custom->GetSprite(item.sprNum < custom->GetCount() ? item.sprNum : 0);
 				else
 					spr = itmSpr->GetSprite(8); // red X indicating invalid custom JSP file
 			}
 			else
-				spr = itmSpr->GetSprite(items[type].sprNum);
+				spr = itmSpr->GetSprite(item.sprNum);
 
 			if (spr)
 			{
 				// Use precise sprite boundaries.
-				rect.x = items[type].xofs - spr->ofsx;
-				rect.y = 0 - spr->ofsy - std::clamp(-items[type].yofs+1, -DISPLAY_YBORDER, DISPLAY_YBORDER);
+				rect.x = item.xofs - spr->ofsx;
+				rect.y = 0 - spr->ofsy - std::clamp(-item.yofs+1, -DISPLAY_YBORDER, DISPLAY_YBORDER);
 				rect.w = spr->width;
 				rect.h = spr->height;
 
 				SDL_UnionRect(&everything, &rect, &everything);
 
-				if(items[type].flags&IF_SHADOW)
+				if(item.flags&IF_SHADOW)
 				{
 					// Use precise shadow sprite boundaries.
-					rect.x = items[type].xofs - spr->ofsx - spr->height/2;
-					rect.y = 0 - spr->ofsy/2 - std::clamp(-items[type].yofs+1, -DISPLAY_YBORDER, DISPLAY_YBORDER);
+					rect.x = item.xofs - spr->ofsx - spr->height/2;
+					rect.y = 0 - spr->ofsy/2 - std::clamp(-item.yofs+1, -DISPLAY_YBORDER, DISPLAY_YBORDER);
 					rect.w = spr->height/2 + spr->width;
 					rect.h = spr->height/2;
 

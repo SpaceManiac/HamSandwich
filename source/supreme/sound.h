@@ -5,6 +5,8 @@
 #include "jamulsound.h"
 #include "jamultypes.h"
 #include "owned_sdl.h"
+#include "bitflags.h"
+#include "string_extras.h"
 
 #define SND_NONE		0
 #define SND_MENUCLICK	51
@@ -399,42 +401,45 @@
 
 //--------------------------------
 
-#define ST_INTFACE		1
-#define ST_PLAYER		2
-#define ST_MONSTER		4
-#define ST_EFFECT		8
-#define ST_VOCAL		16
-#define ST_CUSTOM		32
-
-typedef struct soundDesc_t
+enum SoundThemes : byte
 {
-	word num;
-	char name[32];
-	byte theme;
-} soundDesc_t;
+	ST_INTFACE = 1 << 0,
+	ST_PLAYER  = 1 << 1,
+	ST_MONSTER = 1 << 2,
+	ST_EFFECT  = 1 << 3,
+	ST_VOCAL   = 1 << 4,
+	ST_CUSTOM  = 1 << 5,
+};
+BITFLAGS(SoundThemes)
 
-void InitSound(void);
-void ExitSound(void);
+struct SoundDesc
+{
+	char name[32];
+	SoundThemes theme;
+};
+
+void InitSound();
+void ExitSound();
 void MakeSound(int snd,int x,int y,int flags,int priority);
 void MakeNormalSound(int snd);
-soundDesc_t *GetSoundInfo(int snd);
-int GetNumSounds(void);
-byte *GetCustomSound(int n);
-long GetCustomLength(int n);
-void ClearCustomSounds(void);
-byte AddCustomSound(const char *fname);
-int GetNumCustomSounds(void);
-void DeleteCustomSound(int n);
-byte ReplaceCustomSound(int n,const char *fname);
-void LoadCustomSounds(SDL_RWops *f);
-void SaveCustomSounds(SDL_RWops *f);
-
-int DescIndexToSound(int descIndex);
-int SoundToDescIndex(int snd);
-int GetCustomSoundByName(const char *name);
 void MakeSpaceSound(int snd,int priority);
 
-int AppendCustomSounds(SDL_RWops *f);
+int GetNumSounds();
+SoundDesc *GetSoundInfo(int snd);
+
+int GetNumCustomSounds();
+int GetCustomSoundByName(const char *name); // Returns global sound number.
+span<const byte> GetCustomSound(int customN);
+
+bool AddCustomSound(const char *fname);
+SoundDesc *AddCustomSound(byte *, size_t);
+void DeleteCustomSound(int customN);
+bool ReplaceCustomSound(int customN, const char *fname);
+void ClearCustomSounds();
+
+// .dlw handling
+int DescIndexToSound(int descIndex);
+int SoundToDescIndex(int snd);
 
 owned::SDL_RWops SoundLoadOverride(int num);
 

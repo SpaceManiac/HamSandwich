@@ -104,12 +104,11 @@ static void ConvertToNewWorld(world_t *world)
 
 	world->numMaps=oldWorld->numMaps;
 	strcpy(world->author,"Author Unknown!");
-	world->totalPoints=0;
 	world->numTiles=400;
 	memset(world->terrain,0,sizeof(terrain_t)*400);
 	for(i=0;i<200;i++)
 	{
-		world->terrain[i].flags=oldWorld->terrain[i].flags;
+		world->terrain[i].flags=(TileFlags)oldWorld->terrain[i].flags;
 		world->terrain[i].next=(word)oldWorld->terrain[i].next;
 	}
 
@@ -148,8 +147,8 @@ bool Legacy_LoadWorld(world_t *world, SDL_RWops *f)
 	SDL_RWread(f,&oldWorld->numMaps,1,1);
 	SDL_RWread(f,&oldWorld->totalPoints,1,4);
 
-	SetNumTiles(400);
-	SDL_RWread(f, GetTileData(0), 32 * 24, 400);
+	world->tilegfx.numTiles = 400;
+	SDL_RWread(f, world->tilegfx.GetTileData(0), 32 * 24, 400);
 
 	SDL_RWread(f,oldWorld->terrain,200,sizeof(old_terrain_t));
 
@@ -189,7 +188,7 @@ static void AddTrigger(word flag,byte trigValue,special_t *me,char *msg,byte orI
 		{
 			me->trigger[i].x=me->x;
 			me->trigger[i].y=me->y;
-			me->trigger[i].flags=0;
+			me->trigger[i].flags={};
 			me->trigger[i].value=0;
 			me->trigger[i].value2=0;
 			if(i>0)
@@ -246,7 +245,7 @@ static void AddTrigger(word flag,byte trigValue,special_t *me,char *msg,byte orI
 					break;
 				case 512:	// message
 					me->effect[1].type=EFF_MESSAGE;
-					me->effect[1].flags=0;
+					me->effect[1].flags={};
 					strcpy(me->effect[1].text,msg);
 					break;
 				case 1024:	// TRG_CHAIN
@@ -382,7 +381,7 @@ static void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 		me->trigger[i].x=0;
 		me->trigger[i].y=0;
 		me->trigger[i].type=TRG_NONE;
-		me->trigger[i].flags=0;
+		me->trigger[i].flags={};
 		me->trigger[i].value=0;
 		me->trigger[i].value2=0;
 	}
@@ -391,9 +390,9 @@ static void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 		me->effect[i].x=0;
 		me->effect[i].y=0;
 		me->effect[i].type=EFF_NONE;
-		me->effect[i].flags=EFF_NONE;
-		me->effect[i].value=EFF_NONE;
-		me->effect[i].value2=EFF_NONE;
+		me->effect[i].flags={};
+		me->effect[i].value=0;
+		me->effect[i].value2=0;
 	}
 
 	me->uses=1;
@@ -420,7 +419,7 @@ static void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 
 	me->effect[0].x=old->effectX;
 	me->effect[0].y=old->effectY;
-	me->effect[0].flags=0;
+	me->effect[0].flags={};
 	me->effect[0].type=EFF_NONE;
 	me->effect[0].value=0;
 	me->effect[0].value2=0;
@@ -440,19 +439,19 @@ static void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 		case 3:	//SPC_RAISEWALL	3
 			me->effect[0].type=EFF_CHANGETILE;
 			me->effect[0].flags=EF_CONTIGUOUS;
-			me->effect[0].value=map->map[old->effectX+old->effectY*map->width].floor;
+			me->effect[0].value=map->GetTile(old->effectX, old->effectY)->floor;
 			me->effect[0].value2=old->value+199;
 			break;
 		case 4: // SPC_TOGGLEWALL	4
 			me->effect[0].type=EFF_OLDTOGGLE;
-			if(map->map[old->effectX+old->effectY*map->width].wall)
+			if(map->GetTile(old->effectX, old->effectY)->wall)
 			{
 				me->effect[0].value=old->value;
-				me->effect[0].value2=map->map[old->effectX+old->effectY*map->width].wall;
+				me->effect[0].value2=map->GetTile(old->effectX, old->effectY)->wall;
 			}
 			else
 			{
-				me->effect[0].value=map->map[old->effectX+old->effectY*map->width].floor;
+				me->effect[0].value=map->GetTile(old->effectX, old->effectY)->floor;
 				me->effect[0].value2=old->value+199;
 			}
 			break;
@@ -479,7 +478,7 @@ static void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 			break;
 		case 9:	//SPC_PICTURE		9
 			me->effect[0].type=EFF_PICTURE;
-			strcpy(me->effect[0].text,old->msg);
+			ham_strcpy(me->effect[0].text,old->msg);
 			me->effect[0].value=0;
 			break;
 		case 10:	//SPC_PLAYSONG	10
@@ -510,7 +509,7 @@ static void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 			me->effect[0].type=EFF_CHANGETILE;
 			me->effect[0].flags|=EF_CONTIGUOUS;
 			me->effect[0].value=old->value;
-			me->effect[0].value2=map->map[old->effectX+old->effectY*map->width].wall;
+			me->effect[0].value2=map->GetTile(old->effectX, old->effectY)->wall;
 			break;
 		case 16:	//SPC_PLAYSOUND2	16
 			me->effect[0].type=EFF_SOUND;
@@ -591,7 +590,7 @@ Map *ConvertToNewMap(old_map_t *old)
 	else
 		strcpy(m->song,"");
 
-	m->flags=0;
+	m->flags={};
 	if(old->flags&1)	// snowing
 		m->flags|=MAP_SNOWING;
 	if(old->flags&2)	// many items

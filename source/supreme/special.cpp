@@ -14,43 +14,33 @@
 #include "goal.h"
 #include "palettes.h"
 
-static special_t *spcl;
-static byte numSpecials;
+static span<special_t> spcl;  // Full special storage array.
+static int numSpecials;  // Specials >= this aren't set.
 
-special_t *SpecialPointer(void)
+void InitSpecials(span<special_t> list)
 {
-	return spcl;
-}
-
-void InitSpecials(special_t *list)
-{
-	int i;
-
-	spcl=list;
-	numSpecials=0;
-
-	for(i=0;i<MAX_SPECIAL;i++)
+	spcl = list;
+	numSpecials = 0;
+	for (special_t &me : list)
 	{
-		spcl[i].x=255;
+		me.x = 255;
 	}
 }
 
-void GetSpecialsFromMap(special_t *list)
+void GetSpecialsFromMap(span<special_t> list)
 {
-	int i,j;
-
-	spcl=list;
-	numSpecials=0;
-
-	for(i=0;i<MAX_SPECIAL;i++)
+	spcl = list;
+	numSpecials = 0;
+	for (size_t i = 0; i < spcl.size(); i++)
 	{
-		if(spcl[i].x!=255)
+		special_t &me = spcl[i];
+		if(me.x!=255)
 		{
 			numSpecials=i+1;
-			for(j=0;j<NUM_EFFECTS;j++)
-				if(spcl[i].effect[j].type==EFF_SUMMON && spcl[i].effect[j].value2>ITM_RANDOM)
+			for (effect_t &eff : me.effect)
+				if(eff.type==EFF_SUMMON && eff.value2>ITM_RANDOM)
 				{
-					spcl[i].effect[j].value2=ITM_NONE;
+					eff.value2=ITM_NONE;
 				}
 		}
 	}
@@ -58,9 +48,7 @@ void GetSpecialsFromMap(special_t *list)
 
 int NewSpecial(byte x,byte y)
 {
-	int i;
-
-	for(i=0;i<MAX_SPECIAL;i++)
+	for(int i=0;i<(int)spcl.size();i++)
 		if(spcl[i].x==255)
 		{
 			memset(&spcl[i],0,sizeof(special_t));
@@ -225,7 +213,7 @@ void DefaultTrigger(trigger_t *trig,int x,int y)
 
 void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 {
-	eff->flags=0;
+	eff->flags={};
 	eff->x=x;
 	eff->y=y;
 	if(!savetext)
@@ -389,154 +377,143 @@ void SlideCombinedCoord(int *combo,int dx,int dy,int width,int height)
 
 void SlideSpecials(Map *map,int dx,int dy)
 {
-	int i,offX,offY;
-
-	for(i=0;i<MAX_SPECIAL;i++)
+	for (special_t &me : map->special)
 	{
-		if(map->special[i].x!=255)
+		if(me.x!=255)
 		{
-			offX=-map->special[i].x;
-			offY=-map->special[i].y;
+			int offX=-me.x;
+			int offY=-me.y;
 
-			map->special[i].x=(byte)SlideCoord(map->special[i].x,dx,map->width);
-			map->special[i].y=(byte)SlideCoord(map->special[i].y,dy,map->height);
+			me.x=(byte)SlideCoord(me.x,dx,map->width);
+			me.y=(byte)SlideCoord(me.y,dy,map->height);
 
-			offX+=map->special[i].x;
-			offY+=map->special[i].y;
+			offX+=me.x;
+			offY+=me.y;
 
-			AdjustSpecialCoords(&map->special[i],offX,offY);
-			AdjustSpecialEffectCoords(&map->special[i],offX,offY);
+			AdjustSpecialCoords(&me,offX,offY);
+			AdjustSpecialEffectCoords(&me,offX,offY);
 		}
 	}
 }
 
-void RepairSpecialToItem(special_t *list,int n)
+void RepairSpecialToItem(span<special_t> list, int n)
 {
-	int i,t;
-
-	for(i=0;i<MAX_SPECIAL;i++)
+	for (special_t &me : list)
 	{
-		if(list[i].x!=255)
+		if(me.x!=255)
 		{
-			for(t=0;t<NUM_TRIGGERS;t++)
+			for (trigger_t &trg : me.trigger)
 			{
-				if(list[i].trigger[t].type==TRG_HAVEITEM || list[i].trigger[t].type==TRG_ITEM || list[i].trigger[t].type==TRG_ITEMS || list[i].trigger[t].type==TRG_ITEMRECT)
+				if(trg.type==TRG_HAVEITEM || trg.type==TRG_ITEM || trg.type==TRG_ITEMS || trg.type==TRG_ITEMRECT)
 				{
-					if(list[i].trigger[t].value==n)
-						list[i].trigger[t].value=0;
-					else if(list[i].trigger[t].value>n)
-						list[i].trigger[t].value--;
+					if(trg.value==n)
+						trg.value=0;
+					else if(trg.value>n)
+						trg.value--;
 				}
 			}
-			for(t=0;t<NUM_EFFECTS;t++)
+			for (effect_t &eff : me.effect)
 			{
-				if(list[i].effect[t].type==EFF_ITEM)
+				if(eff.type==EFF_ITEM)
 				{
-					if(list[i].effect[t].value==n)
-						list[i].effect[t].value=0;
-					else if(list[i].effect[t].value>n)
-						list[i].effect[t].value--;
+					if(eff.value==n)
+						eff.value=0;
+					else if(eff.value>n)
+						eff.value--;
 				}
-				if(list[i].effect[t].type==EFF_SUMMON)
+				if(eff.type==EFF_SUMMON)
 				{
-					if(list[i].effect[t].value2==n)
-						list[i].effect[t].value2=0;
-					else if(list[i].effect[t].value2>n && list[i].effect[t].value2!=ITM_RANDOM)
-						list[i].effect[t].value2--;
+					if(eff.value2==n)
+						eff.value2=0;
+					else if(eff.value2>n && eff.value2!=ITM_RANDOM)
+						eff.value2--;
 				}
-				if(list[i].effect[t].type==EFF_MONSITEM)
+				if(eff.type==EFF_MONSITEM)
 				{
-					if(list[i].effect[t].value2==n)
-						list[i].effect[t].value2=0;
-					else if(list[i].effect[t].value2>n && list[i].effect[t].value2!=ITM_RANDOM)
-						list[i].effect[t].value2--;
-				}
-			}
-		}
-	}
-}
-
-void RepairSpecialToSound(special_t *list,int n)
-{
-	int i,t;
-
-	for(i=0;i<MAX_SPECIAL;i++)
-	{
-		if(list[i].x!=255)
-		{
-			for(t=0;t<NUM_EFFECTS;t++)
-			{
-				if(list[i].effect[t].type==EFF_SOUND)
-				{
-					if(list[i].effect[t].value==n)
-						list[i].effect[t].value=0;
-					else if(list[i].effect[t].value>n)
-						list[i].effect[t].value--;
+					if(eff.value2==n)
+						eff.value2=0;
+					else if(eff.value2>n && eff.value2!=ITM_RANDOM)
+						eff.value2--;
 				}
 			}
 		}
 	}
 }
 
-void RepairSpecialToLevel(special_t *list)
+void RepairSpecialToSound(span<special_t> list, int n)
 {
-	int i,t;
-
-	for(i=0;i<MAX_SPECIAL;i++)
+	for (special_t &me : list)
 	{
-		if(list[i].x!=255)
+		if(me.x!=255)
 		{
-			for(t=0;t<NUM_TRIGGERS;t++)
+			for (effect_t &eff : me.effect)
 			{
-				if(list[i].trigger[t].type==TRG_PASSLEVEL)
+				if(eff.type==EFF_SOUND)
 				{
-					list[i].trigger[t].value=GetSwap(list[i].trigger[t].value);
-				}
-			}
-			for(t=0;t<NUM_EFFECTS;t++)
-			{
-				if(list[i].effect[t].type==EFF_WINLEVEL ||
-					list[i].effect[t].type==EFF_GOTOMAP)
-				{
-					list[i].effect[t].value=GetSwap(list[i].effect[t].value);
+					if(eff.value==n)
+						eff.value=0;
+					else if(eff.value>n)
+						eff.value--;
 				}
 			}
 		}
 	}
 }
 
-void RepairSpecialToTile(special_t *list)
+void RepairSpecialToLevel(span<special_t> list, const SwapTable &table)
 {
-	int i,t;
-
-	for(i=0;i<MAX_SPECIAL;i++)
+	for (special_t &me : list)
 	{
-		if(list[i].x!=255)
+		if(me.x!=255)
 		{
-			for(t=0;t<NUM_TRIGGERS;t++)
+			for (trigger_t &trg : me.trigger)
 			{
-				if(list[i].trigger[t].type==TRG_FLOOR || list[i].trigger[t].type==TRG_FLOORRECT)
+				if(trg.type==TRG_PASSLEVEL)
 				{
-					list[i].trigger[t].value=GetSwap(list[i].trigger[t].value);
-				}
-				else if(list[i].trigger[t].type==TRG_STEPTILE)
-				{
-					list[i].trigger[t].value2=GetSwap(list[i].trigger[t].value2);
+					trg.value=table.GetSwap(trg.value);
 				}
 			}
-			for(t=0;t<NUM_EFFECTS;t++)
+			for (effect_t &eff : me.effect)
 			{
-				if(list[i].effect[t].type==EFF_CHANGETILE)
+				if(eff.type==EFF_WINLEVEL || eff.type==EFF_GOTOMAP)
 				{
-					list[i].effect[t].value=GetSwap(list[i].effect[t].value);
-					if(list[i].effect[t].value2!=0)
-						list[i].effect[t].value2=GetSwap(list[i].effect[t].value2);
+					eff.value=table.GetSwap(eff.value);
 				}
-				if(list[i].effect[t].type==EFF_OLDTOGGLE)
+			}
+		}
+	}
+}
+
+void RepairSpecialToTile(span<special_t> list, const SwapTable &table)
+{
+	for (special_t &me : list)
+	{
+		if(me.x!=255)
+		{
+			for (trigger_t &trg : me.trigger)
+			{
+				if(trg.type==TRG_FLOOR || trg.type==TRG_FLOORRECT)
 				{
-					list[i].effect[t].value=GetSwap(list[i].effect[t].value);
-					if(list[i].effect[t].value2!=0)
-						list[i].effect[t].value2=GetSwap(list[i].effect[t].value2);
+					trg.value=table.GetSwap(trg.value);
+				}
+				else if(trg.type==TRG_STEPTILE)
+				{
+					trg.value2=table.GetSwap(trg.value2);
+				}
+			}
+			for (effect_t &eff : me.effect)
+			{
+				if(eff.type==EFF_CHANGETILE)
+				{
+					eff.value=table.GetSwap(eff.value);
+					if(eff.value2!=0)
+						eff.value2=table.GetSwap(eff.value2);
+				}
+				if(eff.type==EFF_OLDTOGGLE)
+				{
+					eff.value=table.GetSwap(eff.value);
+					if(eff.value2!=0)
+						eff.value2=table.GetSwap(eff.value2);
 				}
 			}
 		}
@@ -545,9 +522,20 @@ void RepairSpecialToTile(special_t *list)
 
 
 //------------------------------------  GAMEPLAY!
-sEvent_t events[MAX_EVENT];
-int nextEvent;
-static Guy *victim,*tagged;
+struct SpecialEvent
+{
+	Guy *victim;
+	int  value;	// guy #, bullet #, var #, item #
+	int  x,y;
+	byte type;
+	byte guyType;
+	byte guyFriendly;
+};
+
+static constexpr int MAX_EVENT = 128;
+static SpecialEvent events[MAX_EVENT];
+static int nextEvent;
+static Guy *victim, *tagged;
 
 Guy *TaggedMonster(void)
 {
@@ -606,7 +594,7 @@ static byte TeleportGuy(Guy *victim,int x,int y,Map *map,byte noFX, bool sphinxE
 
 void ClearEvents(void)
 {
-	memset(events,0,sizeof(sEvent_t)*MAX_EVENT);
+	memset(events,0,sizeof(events));
 	nextEvent=0;
 }
 
@@ -1518,13 +1506,13 @@ void SpecialEffect(special_t *me,Map *map)
 				switch(me->effect[i].value2)
 				{
 					case 0:
-						map->flags|=w;
+						map->flags |= LevelFlags{w};
 						break;
 					case 1:
-						map->flags&=(~w);
+						map->flags &= ~LevelFlags{w};
 						break;
 					case 2:
-						map->flags^=w;
+						map->flags ^= LevelFlags{w};
 						break;
 				}
 				if((w2&(MAP_UNDERWATER|MAP_OXYGEN)) && !(map->flags&(MAP_UNDERWATER|MAP_OXYGEN)))
@@ -1538,7 +1526,7 @@ void SpecialEffect(special_t *me,Map *map)
 					GetDisplayMGL()->RealizePalette();
 				break;
 			case EFF_OLDTOGGLE:
-				v=map->GetTile(me->effect[i].x,me->effect[i].y)->floor;
+				//v=map->GetTile(me->effect[i].x,me->effect[i].y)->floor;
 				v2=map->GetTile(me->effect[i].x,me->effect[i].y)->wall;
 
 				if(v2)	// there was a wall here
@@ -1711,45 +1699,40 @@ void InitSpecialsForPlay(void)
 
 void RenderSpecialXes(Map *map)
 {
-	int i,j,k;
-	int camx,camy;
-	byte c;
-
-	GetCamera(&camx,&camy);
-	camx-=320;
-	camy-=240;
-	for(i=0;i<numSpecials;i++)
+	auto [camx, camy] = GetCamera();
+	camx -= GetDisplayMGL()->GetWidth() / 2;
+	camy -= GetDisplayMGL()->GetHeight() / 2;
+	for(int i=0;i<numSpecials;i++)
 	{
-		if(spcl[i].x!=255)
+		const special_t &special = spcl[i];
+		if(special.x!=255)
 		{
-			for(j=0;j<NUM_EFFECTS;j++)
+			for(const effect_t &effect : special.effect)
 			{
-				if(spcl[i].effect[j].type==EFF_GOTOMAP ||
-					spcl[i].effect[j].type==EFF_WINLEVEL)
+				if(effect.type==EFF_GOTOMAP || effect.type==EFF_WINLEVEL)
 				{
-					if(LevelIsPassed(player.worldProg,spcl[i].effect[j].value))
+					if(LevelIsPassed(player.worldProg,effect.value))
 					{
-						c=0;
-						for(k=0;k<player.worldProg->levels;k++)
-							if(player.worldProg->level[k].levelNum==spcl[i].effect[j].value)
+						byte c=0;
+						for (const levelData_t &levelData : player.worldProg->Levels())
+							if(levelData.levelNum==effect.value)
 							{
-								c=((player.worldProg->level[k].flags&LF_CANDLES)!=0);
+								c=((levelData.flags&LF_CANDLES)!=0);
 								break;
 							}
 
+						byte k=0;
 						if(player.ability[ABIL_KEYCHAIN])
-							k=keyChainInLevel[spcl[i].effect[j].value]&(~player.worldProg->keychains);
-						else
-							k=0;
+							k=keyChainInLevel[effect.value]&(~player.worldProg->keychains);
 
 						if(k&15)
-							DrawRedX(spcl[i].x*TILE_WIDTH-camx+TILE_WIDTH/2-4+Random(9),
-								 spcl[i].y*TILE_HEIGHT-camy+TILE_HEIGHT/2-4+Random(9),c,GetDisplayMGL());
+							DrawRedX(special.x*TILE_WIDTH-camx+TILE_WIDTH/2-4+Random(9),
+								 special.y*TILE_HEIGHT-camy+TILE_HEIGHT/2-4+Random(9),c,GetDisplayMGL());
 						else
-							DrawRedX(spcl[i].x*TILE_WIDTH-camx+TILE_WIDTH/2,
-									 spcl[i].y*TILE_HEIGHT-camy+TILE_HEIGHT/2,c,GetDisplayMGL());
+							DrawRedX(special.x*TILE_WIDTH-camx+TILE_WIDTH/2,
+									 special.y*TILE_HEIGHT-camy+TILE_HEIGHT/2,c,GetDisplayMGL());
 
-						j=NUM_EFFECTS;
+						break;
 					}
 				}
 			}
@@ -2062,36 +2045,29 @@ void AdjustSpecialEffectCoords(special_t *me,int dx,int dy)
 	}
 }
 
-byte CheckSpecial(special_t *me)
+bool CheckSpecial(const special_t &me)
 {
-	int i;
-	byte numT;
-
-	numT=0;
-	for(i=0;i<NUM_TRIGGERS;i++)
+	for (const trigger_t &trg : me.trigger)
 	{
-		if(me->trigger[i].type)
-			numT++;
+		if (trg.type)
+		{
+			return true;
+		}
 	}
-	if(numT==0)
-		return 0;
-
-	return 1;
+	return false;
 }
 
 void PrintSpecialComment(int x,int y,int mx,int my)
 {
-	int i,j;
-
-	for(i=0;i<MAX_SPECIAL;i++)
+	for (const special_t &me : spcl)
 	{
-		if(spcl[i].x==mx && spcl[i].y==my)
+		if(me.x==mx && me.y==my)
 		{
-			for(j=0;j<NUM_EFFECTS;j++)
+			for (const effect_t &eff : me.effect)
 			{
-				if(spcl[i].effect[j].type==EFF_MESSAGE && spcl[i].effect[j].text[0]=='/' && spcl[i].effect[j].text[1]=='/')
+				if(eff.type==EFF_MESSAGE && eff.text[0]=='/' && eff.text[1]=='/')
 				{
-					Print(x,y,&spcl[i].effect[j].text[2],0,1);
+					Print(x,y,&eff.text[2],0,1);
 				}
 			}
 		}

@@ -39,7 +39,7 @@ namespace
 	byte viewMenu, editMenu;
 
 	byte musicPlaying;
-	word displayFlags;
+	MapRenderFlags displayFlags;
 
 	byte editMode = EDITMODE_EDIT;
 
@@ -53,6 +53,7 @@ namespace
 byte InitEditor(void)
 {
 	NewWorld(&world,editmgl);
+	SetCurrentTilegfx(&world.tilegfx);
 	editorMap=world.map[0];
 	curMapNum=0;
 
@@ -67,29 +68,8 @@ byte InitEditor(void)
 	musicPlaying=0;
 	lastKey=0;
 	InitPlayer(0,"TEST");
-	// modify monsters for the editor
-	strcpy(MonsterName(MONS_ROLLER2),"Roly Poly Rvs");
-	strcpy(MonsterName(MONS_ROLLER4),"Rumbly Tumbly Rvs");
-	strcpy(MonsterName(MONS_SNOWBALL2),"Snowball Rvs");
-	strcpy(MonsterName(MONS_PUFFYFISH2),"Puffyfish Rvs");
-	strcpy(MonsterName(MONS_GENERATOR1),"Generator-1s");
-	strcpy(MonsterName(MONS_GENERATOR2),"Generator-5s");
-	strcpy(MonsterName(MONS_GENERATOR3),"Generator-15s");
-	strcpy(MonsterName(MONS_GENERATOR4),"Generator-30s");
-	strcpy(MonsterName(MONS_FRIENDLY2),"Buddy Bunny:Determined");
-	strcpy(MonsterName(MONS_FOLLOWBUNNY),"Buddy Bunny:Follow");
-	strcpy(MonsterName(MONS_SNKYSHRK2),"Sneaky Shark: Chest");
-	strcpy(MonsterName(MONS_UNDERZOID),"Aquazoid Underwater");
-	strcpy(MonsterName(MONS_PATCH2),"Pumpkin Patch Fast");
-	strcpy(MonsterName(MONS_UNDERMAGMA),"Magmazoid Underwater");
-	strcpy(MonsterName(MONS_PARKED2),"Parked Car2");
-	strcpy(MonsterName(MONS_TRAFFIC),"Traffic: Clockwise");
-	strcpy(MonsterName(MONS_TRAFFIC2),"Traffic: Counterclockwise");
-	strcpy(MonsterName(MONS_PATROLLR),"Patrol Mumble Horiz.");
-	strcpy(MonsterName(MONS_PATROLUD),"Patrol Mumble Vert.");
-	strcpy(MonsterName(MONS_DPATROLLR),"Death Patrol Horiz.");
-	strcpy(MonsterName(MONS_DPATROLUD),"Death Patrol Vert.");
 
+	// modify monsters for the editor
 	ChangeOffColor(MONS_SHARK,2,4);
 	ChangeOffColor(MONS_SNKYSHRK2,2,4);
 
@@ -111,14 +91,14 @@ byte InitEditor(void)
 		MAP_SHOWSPECIALS |
 		MAP_SHOWPICKUPS |
 		MAP_SHOWOTHERITEMS |
-		(zoom == 1 ? 0 : MAP_ZOOMOUT);
+		(zoom == 1 ? MapRenderFlags{} : MAP_ZOOMOUT);
 
 	InitSpecials(world.map[0]->special);
 	StopSong();
 	SetPlayerStart(-1,-1);
 	InitStars();
 
-	SteamManager::Get()->SetPresenceEditor();
+	Steam()->SetPresenceEditor();
 	return 1;
 }
 
@@ -132,26 +112,6 @@ void ExitEditor(void)
 	// change monsters back to normal
 	ChangeOffColor(MONS_SHARK,255,255);
 	ChangeOffColor(MONS_SNKYSHRK2,255,255);
-	strcpy(MonsterName(MONS_ROLLER2),"Roly Poly");
-	strcpy(MonsterName(MONS_ROLLER4),"Rumbly Tumbly");
-	strcpy(MonsterName(MONS_SNOWBALL2),"Snowball");
-	strcpy(MonsterName(MONS_GENERATOR1),"Generator");
-	strcpy(MonsterName(MONS_GENERATOR2),"Generator");
-	strcpy(MonsterName(MONS_GENERATOR3),"Generator");
-	strcpy(MonsterName(MONS_GENERATOR4),"Generator");
-	strcpy(MonsterName(MONS_FRIENDLY2),"Buddy Bunny");
-	strcpy(MonsterName(MONS_FOLLOWBUNNY),"Buddy Bunny");
-	strcpy(MonsterName(MONS_SNKYSHRK2),"Sneaky Shark");
-	strcpy(MonsterName(MONS_UNDERZOID),"Aquazoid");
-	strcpy(MonsterName(MONS_PATCH2),"Pumpkin Patch");
-	strcpy(MonsterName(MONS_UNDERMAGMA),"Magmazoid");
-	strcpy(MonsterName(MONS_PARKED2),"Parked Car");
-	strcpy(MonsterName(MONS_TRAFFIC),"Traffic");
-	strcpy(MonsterName(MONS_TRAFFIC2),"Traffic");
-	strcpy(MonsterName(MONS_PATROLLR),"Patrol Mumble");
-	strcpy(MonsterName(MONS_PATROLUD),"Patrol Mumble");
-	strcpy(MonsterName(MONS_DPATROLLR),"Death Patrol");
-	strcpy(MonsterName(MONS_DPATROLUD),"Death Patrol");
 
 	StopSong();
 	ExitGuys();
@@ -161,31 +121,33 @@ void ExitEditor(void)
 
 	editmgl->ResizeBuffer(SCRWID, SCRHEI);
 
-	SteamManager::Get()->SetPresenceNone();
+	Steam()->SetPresenceNone();
 }
 
 void Delete(int x,int y)
 {
-	int i;
-
-	if(x<0 || x>editorMap->width-1 || y<0 || y>editorMap->height-1)
+	mapTile_t *tile = editorMap->TryGetTile(x, y);
+	if (!tile)
 		return;
 
-	for(i=0;i<MAX_MAPMONS;i++)
-		if((editorMap->badguy[i].type) && (editorMap->badguy[i].x==x) && (editorMap->badguy[i].y==y))
-		{
-			DeleteGuy((x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-				   (y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
-				   editorMap->badguy[i].type);
-			editorMap->badguy[i].type=0;
-		}
-	editorMap->GetTile(x,y)->item=0;
+	tile->item=0;
 
-	for(i=0;i<MAX_SPECIAL;i++)
-		if(editorMap->special[i].x==x && editorMap->special[i].y==y)
+	for (mapBadguy_t &guy : editorMap->badguy)
+		if(guy.type && guy.x==x && guy.y==y)
 		{
-			memset(&editorMap->special[i],0,sizeof(special_t));
-			editorMap->special[i].x=255;
+			DeleteGuy(
+				(x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
+				(y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
+				guy.type
+			);
+			guy.type=0;
+		}
+
+	for (special_t &special : editorMap->special)
+		if(special.x==x && special.y==y)
+		{
+			memset(&special,0,sizeof(special_t));
+			special.x=255;
 		}
 }
 
@@ -219,8 +181,6 @@ void BackupWorld(const char *name)
 
 TASK(void) UpdateMouse(void)
 {
-	int cx,cy;
-
 	editmgl->GetMouse(&mouseX,&mouseY);
 
 	if(mouseX<0)
@@ -232,7 +192,7 @@ TASK(void) UpdateMouse(void)
 	if(mouseY>=editmgl->GetHeight())
 		mouseY=editmgl->GetHeight()-1;
 
-	GetCamera(&cx,&cy);
+	auto [cx, cy] = GetCamera();
 
 	tileX=(mouseX+cx - editmgl->GetWidth()/2);
 	tileY=(mouseY+cy - editmgl->GetHeight()/2);
@@ -554,87 +514,58 @@ TASK(byte) EditorRun(int *lastTime)
 
 void ShowSpecials(void)
 {
-	int i;
-	int sx,sy;
-	char s[8];
-
 	if(!(displayFlags&MAP_SHOWSPECIALS))
 		return;
 
-	GetCamera(&sx,&sy);
-	for(i=0;i<MAX_SPECIAL;i++)
-		if(editorMap->special[i].x!=255)
+	auto [sx, sy] = GetCamera();
+	for (int i=0;i<MAX_SPECIAL;i++)
+	{
+		const special_t &special = editorMap->special[i];
+		if (special.x!=255)
 		{
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
-				  editorMap->special[i].y*TILE_HEIGHT-sy+editmgl->GetHeight()/2-1,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
+				  special.y*TILE_HEIGHT-sy+editmgl->GetHeight()/2-1,
 				  "Spcl",-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
-				  editorMap->special[i].y*TILE_HEIGHT-sy+editmgl->GetHeight()/2+1,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
+				  special.y*TILE_HEIGHT-sy+editmgl->GetHeight()/2+1,
 				  "Spcl",-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
-				  editorMap->special[i].y*TILE_HEIGHT-sy+editmgl->GetHeight()/2,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
+				  special.y*TILE_HEIGHT-sy+editmgl->GetHeight()/2,
 				  "Spcl",0,1);
+
+			char s[8];
 			sprintf(s,"%03d",i);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
-				  editorMap->special[i].y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2-1,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
+				  special.y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2-1,
 				  s,-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
-				  editorMap->special[i].y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2+1,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
+				  special.y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2+1,
 				  s,-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
-				  editorMap->special[i].y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
+				  special.y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2,
 				  s,0,1);
 		}
-}
-
-void ShowSpecials2(void)
-{
-	int i;
-	int sx,sy;
-
-	if(!(displayFlags&MAP_SHOWSPECIALS))
-		return;
-
-	GetCamera(&sx,&sy);
-	for(i=0;i<MAX_SPECIAL;i++)
-		if(editorMap->special[i].x!=255)
-		{
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
-				  editorMap->special[i].y*TILE_HEIGHT+6-sy+editmgl->GetHeight()/2-1,
-				  "Spcl",-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
-				  editorMap->special[i].y*TILE_HEIGHT+6-sy+editmgl->GetHeight()/2+1,
-				  "Spcl",-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
-				  editorMap->special[i].y*TILE_HEIGHT+6-sy+editmgl->GetHeight()/2,
-				  "Spcl",0,1);
-		}
+	}
 }
 
 void EditorShowRect(void)
 {
-	int x1,x2,y1,y2,cx,cy;
 	static byte col=0;
-
 	col=255-col;
 
-	x1=rectX1;
-	x2=rectX2;
-	y1=rectY1;
-	y2=rectY2;
+	int x1=rectX1;
+	int x2=rectX2;
+	int y1=rectY1;
+	int y2=rectY2;
 	if(x1>x2)
 	{
-		cx=x1;
-		x1=x2;
-		x2=cx;
+		std::swap(x1, x2);
 	}
 	if(y1>y2)
 	{
-		cy=y1;
-		y1=y2;
-		y2=cy;
+		std::swap(y1, y2);
 	}
-	GetCamera(&cx,&cy);
+	auto [cx, cy] = GetCamera();
 
 	x1=x1*TILE_WIDTH-(cx-editmgl->GetWidth()/2);
 	y1=y1*TILE_HEIGHT-(cy-editmgl->GetHeight()/2);
@@ -920,15 +851,17 @@ static TASK(void) HandleKeyPresses(void)
 				break;
 			case 't':
 			case 'T':
-				int cx,cy;
-				GetCamera(&cx,&cy);
+			{
+				auto [cx, cy] = GetCamera();
 				AWAIT TestLevel(EditorGetWorld(),EditorGetMapNum());
+				SetCurrentTilegfx(&world.tilegfx);
 				StopSong();
 				SetPlayerStart(-1,-1);
 				ExitPlayer();
 				AddMapGuys(EditorGetMap());
 				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
 				break;
+			}
 			case 'b':
 			case 'B':
 				ToolBrushUp();
@@ -938,9 +871,12 @@ static TASK(void) HandleKeyPresses(void)
 				ViewMenuOn();
 				break;
 			case 'C':
-				for(x=0;x<editorMap->width*editorMap->height;x++)
-					editorMap->map[x].light=editorMap->GetTile(tileX,tileY)->light;
+			{
+				int8_t light = editorMap->GetTile(tileX,tileY)->light;
+				for (mapTile_t& target : editorMap->Tiles())
+					target.light = light;
 				break;
+			}
 			case 8:
 				Delete(tileX,tileY);
 				break;
@@ -1197,6 +1133,11 @@ void EditorGetTileXY(int *x,int *y)
 	*y=tileY;
 }
 
+std::pair<int, int> EditorGetTileXY()
+{
+	return {tileX, tileY};
+}
+
 Map *EditorGetMap(void)
 {
 	return editorMap;
@@ -1238,7 +1179,7 @@ word GetDisplayFlags(void)
 	return displayFlags;
 }
 
-void ToggleDisplayFlag(word f)
+void ToggleDisplayFlag(MapRenderFlags f)
 {
 	displayFlags ^= f;
 	zoom = (displayFlags & MAP_ZOOMOUT) ? 2 : 1;

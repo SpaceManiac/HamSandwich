@@ -432,6 +432,15 @@ static std::string PrepareWorkshopFolder()
 
 	std::string destFolder = TempName();
 
+	std::string testFolder = destFolder;
+	testFolder.append("/");
+	if (!vanilla::mkdir_parents(testFolder))
+	{
+		destFolder = "appdata/tmp/supreme_";
+		destFolder += std::to_string(time(nullptr));
+		LogError("Workshop: Bad temporary directory, trying \"%s\" instead", destFolder.c_str());
+	}
+
 	for (const auto& file : files)
 	{
 		if (IncludeKind(file.kind))
@@ -475,7 +484,6 @@ static std::string PrepareWorkshopPreview()
 {
 	std::string pngFilename = TempName();
 	pngFilename.append(".png");
-	SDL_Log("Steam Workshop preview file: %s", pngFilename.c_str());
 
 	MGLDraw* mgl = GetDisplayMGL();
 	mgl->ClearScreen();
@@ -494,11 +502,20 @@ static std::string PrepareWorkshopPreview()
 
 	if (!mgl->SavePNG(pngFilename.c_str()))
 	{
-		LogError("Failed to save preview to %s\n", pngFilename.c_str());
-		return "";
+		LogError("Failed to save preview to %s", pngFilename.c_str());
+		pngFilename = "appdata/tmp/supreme_";
+		pngFilename += std::to_string(time(nullptr));
+		pngFilename += ".png";
+		LogError("Trying %s instead", pngFilename.c_str());
+		if (!mgl->SavePNG(pngFilename.c_str()))
+		{
+			LogError("Failed to save preview to %s", pngFilename.c_str());
+			return "";
+		}
 	}
-	mgl->ClearScreen();
 
+	mgl->ClearScreen();
+	SDL_Log("Steam Workshop preview file: %s", pngFilename.c_str());
 	return pngFilename;
 }
 
@@ -539,19 +556,16 @@ void InitExportDialog(const world_t* world, const char* filename)
 		files.push_back({ FileKind::Root, filename });
 	}
 
-	for (int i = 0; i < world->numMaps; ++i)
+	for (const Map *map : world->Maps())
 	{
-		const Map* map = world->map[i];
 		AddDependency("music/", map->song);
 
-		for (int j = 0; j < MAX_SPECIAL; ++j)
+		for (const special_t &spcl : map->special)
 		{
-			const special_t& spcl = map->special[j];
 			if (spcl.x != 255)
 			{
-				for (int k = 0; k < NUM_EFFECTS; ++k)
+				for (const effect_t &effect : spcl.effect)
 				{
-					const effect_t& effect = spcl.effect[k];
 					byte type = effect.type;
 					if (type == EFF_PICTURE || type == EFF_MONSGRAPHICS || type == EFF_ITEMGRAPHICS)
 					{
@@ -696,7 +710,7 @@ void RenderExportDialog(MGLDraw *mgl, int msx, int msy)
 		Print(midX, 53, saveZipResult, 0, 1);
 
 #ifdef HAS_STEAM_API
-		if (SteamManager::Get()->CanUploadToWorkshop())
+		if (Steam()->CanUploadToWorkshop())
 		{
 			y = 200;
 			Print(midX, y, "- OR -", 0, 1);
@@ -764,7 +778,7 @@ bool ExportDialogClick(int msx, int msy)
 		{
 			std::string url = "https://steamcommunity.com/sharedfiles/filedetails/?id=";
 			url.append(std::to_string(steamWorkshopUpload.workshopItemId));
-			//SteamManager::Get()->OpenUrl(url.c_str());
+			//Steam()->OpenUrl(url.c_str());
 			SteamFriends()->ActivateGameOverlayToWebPage(url.c_str());
 			break;
 		}

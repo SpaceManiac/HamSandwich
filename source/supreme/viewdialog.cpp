@@ -34,7 +34,7 @@ void ViewDialogButtons(void);
 
 static void ViewItemClick(int id)
 {
-	word flagNum[] = {
+	static const MapRenderFlags flagNum[] = {
 		MAP_SHOWWALLS, MAP_SHOWLIGHTS, MAP_SHOWBADGUYS,
 		MAP_SHOWSPECIALS, MAP_SHOWPICKUPS, MAP_SHOWOTHERITEMS, MAP_TEMPTORCH,
 		MAP_ZOOMOUT,
@@ -97,9 +97,6 @@ void ExitViewDialog(void)
 void RenderViewDialog(int msx,int msy,MGLDraw *mgl)
 {
 	char s[32];
-	int x,y;
-	Map *m;
-	int t;
 
 	if (DLG_Y2 != GetDisplayMGL()->GetHeight())
 	{
@@ -113,20 +110,14 @@ void RenderViewDialog(int msx,int msy,MGLDraw *mgl)
 	mgl->Box(DLG_X,DLG_Y,DLG_X2,DLG_Y2,31);
 
 	RenderButtons(msx,msy,mgl);
-	EditorGetTileXY(&x,&y);
-	if(x<0 || x>=EditorGetMap()->width)
+	auto [x, y] = EditorGetTileXY();
+
+	Map *m = EditorGetMap();
+	if(x<0 || x>=m->width)
 		x=0;
-	if(y<0 || y>=EditorGetMap()->height)
+	if(y<0 || y>=m->height)
 		y=0;
-
-	m=EditorGetMap();
-
-	if(x>=0 && y>=0 && x<m->width && y<m->height)
-	{
-		t=m->map[x+y*m->width].floor;
-	}
-	else
-		t=999;
+	int t = m->GetTile(x, y)->floor;
 
 	sprintf(s,"T#%03d (%03d,%03d)",t,x,y);
 

@@ -189,7 +189,7 @@ static void ExitClick(int id)
 	if(rightClick)
 		return;
 
-	if(!CheckSpecial(&spcl))
+	if(!CheckSpecial(spcl))
 		spcl.x=255;
 	memcpy(GetSpecial(specialNum),&spcl,sizeof(special_t));
 	SetEditMode(EDITMODE_EDIT);
@@ -925,9 +925,20 @@ static void PlayerTarget2Click(int id)
 
 	t=effStart + (id-ID_EFF0)/100;
 
-	spcl.effect[t].flags++;
-	if(spcl.effect[t].flags>EF_TAGGED)
-		spcl.effect[t].flags=0;
+	switch (spcl.effect[t].flags)
+	{
+		case EF_NONE: // Target
+			spcl.effect[t].flags = EF_PLAYER;
+			break;
+		case EF_PLAYER:
+			spcl.effect[t].flags = EF_TAGGED;
+			break;
+		case EF_TAGGED:
+		default:
+			spcl.effect[t].flags = EF_NONE; // Target
+			break;
+	}
+
 	SetupEffectButtons(t-effStart,(t-effStart)*38+264);
 }
 
@@ -1305,7 +1316,7 @@ static void SetupTriggerButtons(int t,int y)
 			break;
 		case TRG_STEP:
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"If",NULL);
-			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,55,y+17,140,14,MonsterName(spcl.trigger[t].value),MonsterClick);
+			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+1+100*t,0,55,y+17,140,14,MonsterName(trigger.value),MonsterClick);
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+2+100*t,0,200,y+17,1,1,"steps within",NULL);
 			sprintf(s,"%d",trigger.value2);
 			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+3+100*t,0,300,y+17,40,14,s,Number2Click);
@@ -2308,7 +2319,7 @@ void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
 			}
 			if(FileDialogCommand()==FM_LOAD)
 			{
-				strcpy(spcl.effect[curEff].text,GetFilename(""));
+				ham_strcpy(spcl.effect[curEff].text,GetFilename(""));
 				mode=SMODE_NORMAL;
 				ReturnToSong();
 				SpecialEditSetupButtons();
@@ -2551,7 +2562,7 @@ void SpecialEdit_Key(char k)
 			if(k==27)
 			{
 				SetEditMode(EDITMODE_EDIT);
-				if(!CheckSpecial(&spcl))
+				if(!CheckSpecial(spcl))
 					spcl.x=255;
 				memcpy(GetSpecial(specialNum),&spcl,sizeof(special_t));
 				PickedTile(-1);

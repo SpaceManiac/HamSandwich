@@ -98,6 +98,7 @@ void LoadText(const char *nm,byte mode)
 	switch(mode)
 	{
 		case TEXTFILE_NORMAL:
+			GetDisplayMGL()->ResizeBuffer(640, 480);
 			GetDisplayMGL()->ClearScreen();
 			for(y=0;y<32;y++)
 			{
@@ -113,7 +114,7 @@ void LoadText(const char *nm,byte mode)
 			}
 			break;
 		case TEXTFILE_YERFDOG:
-			GetDisplayMGL()->LoadBMP("graphics/yerfmsg.bmp");
+			GetDisplayMGL()->LoadBMPResize("graphics/yerfmsg.bmp");
 			y=26;
 			while(stream.getline(line, std::size(line)) && y<270-18)
 			{
@@ -122,7 +123,7 @@ void LoadText(const char *nm,byte mode)
 			}
 			break;
 		case TEXTFILE_COMPUTER:
-			GetDisplayMGL()->LoadBMP("graphics/profmenu.bmp");
+			GetDisplayMGL()->LoadBMPResize("graphics/profmenu.bmp");
 			y=10;
 			while(stream.getline(line, std::size(line)) && y<480-30)
 			{
@@ -158,7 +159,7 @@ TASK(void) ShowImageOrFlic(const char *str,byte nosnd,byte mode)
 		if(!nosnd)
 			MakeNormalSound(SND_MESSAGE);
 		sprintf(nm,"user/%s",fname);
-		GetDisplayMGL()->LoadBMP(nm);
+		GetDisplayMGL()->LoadBMPResize(nm);
 		CO_RETURN;
 	}
 	if((fname[strlen(fname)-3]=='t' || fname[strlen(fname)-3]=='T') &&
@@ -210,6 +211,11 @@ void GetCamera(int *x,int *y)
 {
 	*x=scrx;
 	*y=scry;
+}
+
+std::pair<int, int> GetCamera()
+{
+	return {scrx, scry};
 }
 
 void PutCamera(int x,int y)
@@ -392,7 +398,7 @@ void ShakeScreen(byte howlong)
 	shakeTimer=howlong;
 }
 
-void RenderItAll(world_t *world,Map *map,byte flags)
+void RenderItAll(world_t *world,Map *map,MapRenderFlags flags)
 {
 	if(shakeTimer)
 	{
@@ -413,37 +419,37 @@ void RenderItAll(world_t *world,Map *map,byte flags)
 		map->RenderSelect(world,scrx,scry,flags);
 }
 
-void SprDraw(int x,int y,int z,byte hue,char bright,const sprite_t *spr,word flags)
+void SprDraw(int x,int y,int z,byte hue,char bright,const sprite_t *spr,DisplayFlags flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,z,0,hue,bright,spr,flags);
 }
 
-void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,const sprite_t *spr,word flags)
+void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,const sprite_t *spr,DisplayFlags flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,z,fromHue,hue,bright,spr,flags|DISPLAY_OFFCOLOR);
 }
 
-void SprDrawTile(int x,int y,word tile,char light,word flags)
+void SprDrawTile(int x,int y,word tile,char light,DisplayFlags flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,0,0,tile,light,(const sprite_t *)1,flags|DISPLAY_TILESPRITE);
 }
 
-void WallDraw(int x,int y,word wall,word floor,const char *light,word flags)
+void WallDraw(int x,int y,word wall,word floor,const char *light,DisplayFlags flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,0,wall,floor,0,(const sprite_t *)light,flags);
 }
 
-void RoofDraw(int x,int y,word roof,const char *light,word flags)
+void RoofDraw(int x,int y,word roof,const char *light,DisplayFlags flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,TILE_HEIGHT,0,roof,0,(const sprite_t *)light,flags);
 }
 
-void ParticleDraw(int x,int y,int z,byte color,byte size,word flags)
+void ParticleDraw(int x,int y,int z,byte color,byte size,DisplayFlags flags)
 {
 	// this call returns whether it worked or not, but frankly, we don't care
 	dispList->DrawSprite(x,y,z,0,color,size,(const sprite_t *)1,flags);
@@ -526,7 +532,7 @@ void DisplayList::HookIn(int me)
 	}
 }
 
-bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,char bright,const sprite_t *spr,word flags)
+bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,char bright,const sprite_t *spr,DisplayFlags flags)
 {
 	SDL_Rect rect;
 	if (!spr || spr==(sprite_t*)1 || (flags&(DISPLAY_WALLTILE|DISPLAY_ROOFTILE)))
@@ -588,7 +594,7 @@ void DisplayList::ClearList(void)
 	{
 		dispObj[i].prev=-1;
 		dispObj[i].next=-1;
-		dispObj[i].flags=0;
+		dispObj[i].flags={};
 	}
 	head=-1;
 	nextfree=0;

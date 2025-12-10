@@ -89,21 +89,21 @@
 #define HELPLEN		(14)
 #define INV_SIZE	(TI_MAX+4)
 
-typedef struct txtRoom_t
+struct txtRoom_t
 {
 	char name[MAX_LINELEN];
 	char desc[8][MAX_LINELEN];
 	byte item[TI_MAX+4];
 	byte exit[4];
-} txtRoom_t;
+};
 
-typedef struct txtItem_t
+struct txtItem_t
 {
 	char typeName[4][16];	// the name as it must be typed in, up to 4 options
 	char name[32];			// the name as described in game
 	char desc[4][MAX_LINELEN];
 	dword flags;
-} txtItem_t;
+};
 
 static const char helpTxt[HELPLEN][MAX_LINELEN]={
 	"Type 2-word commands to do things, always 'VERB NOUN'.  For example,",

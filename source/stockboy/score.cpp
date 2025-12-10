@@ -42,7 +42,7 @@ void Score_Init(void)
 void Score_ApplyPoints(void)
 {
 	int i,j;
-	
+
 	for(i=0;i<8;i++)
 		if(pointDisp[i].pts==0)
 		{
@@ -62,7 +62,7 @@ void Score_ApplyPoints(void)
 	player.score+=pointDisp[0].pts;
 	for(i=0;i<7;i++)
 		pointDisp[i]=pointDisp[i+1];
-	
+
 	pointDisp[7].pts=0;
 	for(j=0;j<8;j++)
 		pointDisp[7].pts+=curPoints[j];
@@ -163,7 +163,7 @@ void Score_Render(void)
 {
 	int i,n;
 	int x;
-	char s[16];
+	char s[32];
 	byte started;
 
 	if(comboTimer)

@@ -1,3 +1,9 @@
+#include "winpch.h"
+#include "monsterai.h"
+#include "guy.h"
+#include "sound.h"
+#include "bullet.h"
+#include "player.h"
 
 void AI_GoodTurret(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
@@ -50,7 +56,7 @@ void AI_GoodTurret(Guy *me,Map *map,world_t *world,Guy *goodguy)
 void AI_Mattie2Brain(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	byte tempface;
-	byte faceTable[8]={5,4,0,1,2,3,0,6};
+	static const byte faceTable[8]={5,4,0,1,2,3,0,6};
 	int x,y;
 
 	if(me->ouch==4 && me->aiType==MONS_MAT2BRAIN)	// skull and head have their own ouch noises
@@ -126,21 +132,21 @@ void AI_Mattie2SkullOrHead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			{
 				me->type=MONS_MAT2SKULL;
 				me->aiType=MONS_MAT2SKULL;
-				strcpy(me->name,MonsterName(me->type));
+				ham_strcpy(me->name,MonsterName(me->type));
 				if(!me->friendly)
 					player.enemiesSlain--;
-				me->hp=monsType[MONS_MAT2SKULL].hp;
-				me->maxHP=monsType[MONS_MAT2SKULL].hp;
+				me->hp=MonsterHP(MONS_MAT2SKULL);
+				me->maxHP=me->hp;
 			}
 			else
 			{
 				me->type=MONS_MAT2BRAIN;
 				me->aiType=MONS_MAT2BRAIN;
-				strcpy(me->name,MonsterName(me->type));
+				ham_strcpy(me->name,MonsterName(me->type));
 				if(!me->friendly)
 					player.enemiesSlain--;
-				me->hp=monsType[MONS_MAT2BRAIN].hp;
-				me->maxHP=monsType[MONS_MAT2BRAIN].hp;
+				me->hp=MonsterHP(MONS_MAT2BRAIN);
+				me->maxHP=me->hp;
 			}
 			me->seq=ANIM_IDLE;
 			me->frm=0;
@@ -193,8 +199,8 @@ void AI_Mattie2Tail(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	byte b;
 	int x,y;
-	short shootXTable[9]={-134,-124,-101,-57,0,67,113,134,143};
-	short shootYTable[9]={-51,-43,-24,-7,-11,-15,-29,-41,-46};
+	static const short shootXTable[9]={-134,-124,-101,-57,0,67,113,134,143};
+	static const short shootYTable[9]={-51,-43,-24,-7,-11,-15,-29,-41,-46};
 
 	if(me->reload)
 		me->reload--;
@@ -353,7 +359,7 @@ void AI_Mattie2Body(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 }
 
-byte IsBunnyAble(mapTile_t *m,world_t *world)
+static byte IsBunnyAble(const mapTile_t *m, world_t *world)
 {
 	if(!(GetTerrain(world,m->floor)->flags&TF_BUNNY))
 		return 0;
@@ -466,19 +472,19 @@ void AI_BuddyBunny(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	//	me->x=x;
 	//	me->y=y;
 		// figure out which directions are valid bunny paths
-		if(me->mapx<map->width-1 && IsBunnyAble(&map->map[me->mapx+1+me->mapy*map->width],world))
+		if(me->mapx<map->width-1 && IsBunnyAble(map->GetTile(me->mapx+1, me->mapy),world))
 			ok[0]=1;
 		else
 			ok[0]=0;
-		if(me->mapy<map->height-1 && IsBunnyAble(&map->map[me->mapx+(me->mapy+1)*map->width],world))
+		if(me->mapy<map->height-1 && IsBunnyAble(map->GetTile(me->mapx, me->mapy+1),world))
 			ok[1]=1;
 		else
 			ok[1]=0;
-		if(me->mapx>0 && IsBunnyAble(&map->map[me->mapx-1+me->mapy*map->width],world))
+		if(me->mapx>0 && IsBunnyAble(map->GetTile(me->mapx-1, me->mapy),world))
 			ok[2]=1;
 		else
 			ok[2]=0;
-		if(me->mapy>0 && IsBunnyAble(&map->map[me->mapx+(me->mapy-1)*map->width],world))
+		if(me->mapy>0 && IsBunnyAble(map->GetTile(me->mapx, me->mapy-1),world))
 			ok[3]=1;
 		else
 			ok[3]=0;
@@ -550,12 +556,6 @@ void AI_PygmyQueen(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y,i;
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -811,12 +811,6 @@ void AI_Generator(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->action==ACTION_BUSY)
 	{
@@ -1453,13 +1447,7 @@ void AI_MultiMoss(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *g;
-	byte f;
 	byte tries;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -1523,12 +1511,6 @@ void AI_MossRapido(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *baby;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -1577,9 +1559,10 @@ void AI_MossRapido(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			case 0:
 				// left
-				if(x>0 && map->map[x-1+y*map->width].wall==0 &&
-					(GetTerrain(world,map->map[x-1+y*map->width].floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
-					!(GetItem(map->map[x-1+(y)*map->width].item)->flags&(IF_SOLID|IF_BULLETPROOF))
+				if (mapTile_t *tile = map->TryGetTile(x - 1, y); tile &&
+					tile->wall==0 &&
+					(GetTerrain(world,tile->floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
+					!(GetItem(tile->item)->flags&(IF_SOLID|IF_BULLETPROOF))
 					&& (!MossCheck(x-1,y)))
 				{
 					baby=AddBaby(me->x,me->y,0,MONS_MOSS2,me);
@@ -1597,9 +1580,10 @@ void AI_MossRapido(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				break;
 			case 1:
 				// right
-				if(x<map->width-1 && map->map[x+1+y*map->width].wall==0 &&
-					(GetTerrain(world,map->map[x+1+y*map->width].floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
-					!(GetItem(map->map[x+1+(y)*map->width].item)->flags&(IF_SOLID|IF_BULLETPROOF))
+				if (mapTile_t *tile = map->TryGetTile(x + 1, y); tile &&
+					tile->wall==0 &&
+					(GetTerrain(world,tile->floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
+					!(GetItem(tile->item)->flags&(IF_SOLID|IF_BULLETPROOF))
 					&& (!MossCheck(x+1,y)))
 				{
 					baby=AddBaby(me->x,me->y,0,MONS_MOSS2,me);
@@ -1617,9 +1601,10 @@ void AI_MossRapido(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				break;
 			case 2:
 				// up
-				if(y>0 && map->map[x+(y-1)*map->width].wall==0 &&
-					(GetTerrain(world,map->map[x+(y-1)*map->width].floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
-					!(GetItem(map->map[x+(y-1)*map->width].item)->flags&(IF_SOLID|IF_BULLETPROOF))
+				if (mapTile_t *tile = map->TryGetTile(x, y - 1); tile &&
+					tile->wall==0 &&
+					(GetTerrain(world,tile->floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
+					!(GetItem(tile->item)->flags&(IF_SOLID|IF_BULLETPROOF))
 					&& (!MossCheck(x,y-1)))
 				{
 					baby=AddBaby(me->x,me->y,0,MONS_MOSS2,me);
@@ -1637,9 +1622,10 @@ void AI_MossRapido(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				break;
 			case 3:
 				// down
-				if(y<map->height-1 && map->map[x+(y+1)*map->width].wall==0 &&
-					(GetTerrain(world,map->map[x+(y+1)*map->width].floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
-					!(GetItem(map->map[x+(y+1)*map->width].item)->flags&(IF_SOLID|IF_BULLETPROOF))
+				if (mapTile_t *tile = map->TryGetTile(x, y + 1); tile &&
+					tile->wall==0 &&
+					(GetTerrain(world,tile->floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
+					!(GetItem(tile->item)->flags&(IF_SOLID|IF_BULLETPROOF))
 					&& (!MossCheck(x,y+1)))
 				{
 					baby=AddBaby(me->x,me->y,0,MONS_MOSS2,me);
@@ -1804,12 +1790,6 @@ void AI_XenoMama(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -2148,12 +2128,6 @@ void AI_BigPumpkin(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 	Guy *g;
-	byte f;
-
-	if(me->mindControl)
-		f=2;
-	else
-		f=me->friendly;
 
 	if(me->reload)
 		me->reload--;
@@ -2380,7 +2354,7 @@ void AI_CrazyBone(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			if(me->friendly==0)
 				player.enemiesSlain--;
 			me->seq=ANIM_A3;
-			me->hp=monsType[me->type].hp;
+			me->hp=MonsterHP(me->type);
 			if(!me->CanWalk(me->x,me->y,map,world))
 			{
 				// nevermind if there's no room
@@ -2506,7 +2480,7 @@ void AI_CrazyBone(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 void AI_Creepazoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
-	int x,y,i;
+	int i;
 
 	if(me->reload)
 		me->reload--;
@@ -2524,8 +2498,8 @@ void AI_Creepazoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		if(me->seq==ANIM_ATTACK && (me->frm>=5 && me->frm<=8) && goodguy)
 		{
 			// spit stuff
-			x=me->x+Cosine(me->facing*32)*8;
-			y=me->y+Sine(me->facing*32)*8;
+			//x=me->x+Cosine(me->facing*32)*8;
+			//y=me->y+Sine(me->facing*32)*8;
 			i=(me->facing*32+256-16+Random(33))&255;
 			FireExactBullet(me->x,me->y,FIXAMT*30,Cosine(i)*12,Sine(i)*12,0,0,16,i,BLT_SPORE,me->friendly);
 			me->reload=15;

@@ -1,3 +1,13 @@
+#include "winpch.h"
+#include "monsterai.h"
+#include "guy.h"
+#include "sound.h"
+#include "bullet.h"
+#include "player.h"
+#include "editor.h"
+#include "shop.h"
+#include "goal.h"
+
 void AI_Lazybones(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
@@ -339,7 +349,7 @@ void AI_Crazypants(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			if(!me->friendly)
 				player.enemiesSlain--;
-			me->hp=monsType[me->type].hp;
+			me->hp=MonsterHP(me->type);
 			me->mind++;
 			me->seq=ANIM_A2;
 			me->frm=0;
@@ -1494,16 +1504,13 @@ void AI_Autozoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 		x=(me->x+me->dx)/(TILE_WIDTH*FIXAMT);
 		y=(me->y+me->dy)/(TILE_HEIGHT*FIXAMT);
-		if(x>=0 && y>=0 && x<map->width && y<map->height &&
-			!map->map[x+y*map->width].wall &&
-			(!(GetTerrain(world,map->map[x+y*map->width].floor)->flags&TF_MINECART)))
+		if (mapTile_t *tile = map->TryGetTile(x, y); tile && !tile->wall && !(GetTerrain(world, tile->floor)->flags & TF_MINECART))
 		{
 			// you would've gone offroad
 			me->dx=0;
 			me->dy=0;
 			me->facing=Random(8);
 		}
-
 	}
 
 	Clamp(&me->dx,FIXAMT*10);
@@ -2048,19 +2055,18 @@ void AI_Yugo(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				for(x=me->mapx-1;x<=me->mapx+1;x++)
 					for(y=me->mapy-1;y<=me->mapy+1;y++)
 					{
-						if(x>=0 && y>=0 && x<map->width && y<map->height &&
-							(GetTerrain(world,map->map[x+y*map->width].floor)->flags&TF_MINECART) &&
-							(map->map[x+y*map->width].wall==0) &&
-							(!(GetItem(map->map[x+y*map->width].item)->flags&(IF_SOLID|IF_BULLETPROOF)))
-							)
+						if (mapTile_t *tile = map->TryGetTile(x, y); tile &&
+							(GetTerrain(world, tile->floor)->flags & TF_MINECART) &&
+							tile->wall == 0 &&
+							!(GetItem(tile->item)->flags & (IF_SOLID | IF_BULLETPROOF)))
 						{
 							// found a spot that IS minecart neighboring
-							me->x=(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT;
-							me->y=(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
-							me->mapx=x;
-							me->mapy=y;
-							x=me->mapx+2;
-							y=me->mapy+2;
+							me->x = (x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+							me->y = (y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+							me->mapx = x;
+							me->mapy = y;
+							x = me->mapx + 2;
+							y = me->mapy + 2;
 						}
 					}
 			}
@@ -2089,9 +2095,9 @@ void AI_Yugo(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 		x=(me->x+me->dx)/(TILE_WIDTH*FIXAMT);
 		y=(me->y+me->dy)/(TILE_HEIGHT*FIXAMT);
-		if(x>=0 && y>=0 && x<map->width && y<map->height &&
-			!map->map[x+y*map->width].wall &&
-			(!(GetTerrain(world,map->map[x+y*map->width].floor)->flags&TF_MINECART)))
+		if (mapTile_t *tile = map->TryGetTile(x, y); tile &&
+			!tile->wall &&
+			!(GetTerrain(world,tile->floor)->flags & TF_MINECART))
 		{
 			// you would've gotten off of driveable terrain
 			me->mind3=0;
@@ -5254,7 +5260,6 @@ void AI_Patrol(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			if(diff>4)
 			{
 				dir=-1;
-				diff=8-diff;
 			}
 			else
 				dir=1;
@@ -5265,7 +5270,6 @@ void AI_Patrol(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			if(diff>4)
 			{
 				dir=1;
-				diff=8-diff;
 			}
 			else
 				dir=-1;
