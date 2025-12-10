@@ -50,6 +50,7 @@ elseif(WIN32)
 	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer)
 
 	target_include_directories(SDL2 INTERFACE "${sdl2_SOURCE_DIR}/include")
+	target_compile_definitions(SDL2 INTERFACE SDL_DISABLE_MM3DNOW_H)
 	set(sdl2_LIBS "${sdl2_SOURCE_DIR}/lib/${SDL_PLATFORM}")
 	target_link_libraries(SDL2 INTERFACE "${sdl2_LIBS}/SDL2main.lib" "${sdl2_LIBS}/SDL2.lib")
 	install(FILES "${sdl2_LIBS}/SDL2.dll" TYPE BIN COMPONENT generic/executables)
