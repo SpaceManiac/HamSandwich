@@ -308,6 +308,21 @@ void LeaveShop(void)
 	ResetInterface();
 }
 
+word Price(byte which)
+{
+	if (VeryClassicMode())
+	{
+		// 1999 mode: best hat, staff, and boots are cheaper.
+		if (which == 3)
+			return 1500; // down from 2000
+		else if (which == 8)
+			return 2500; // down from 3500
+		else if (which == 13)
+			return 1000; // down from 2000
+	}
+	return price[which];
+}
+
 word NightmarePrice(byte which)
 {
 	if (which == 0)	// shield stones
@@ -319,7 +334,7 @@ word NightmarePrice(byte which)
 	else if (which == 15 && !ClassicMode())
 		return 50 * (player.skillStones + 2);
 	else
-		return price[which];
+		return Price(which);
 }
 
 void GearOutline(byte spr, int x, int y)
@@ -666,9 +681,9 @@ void RenderShop(void)
 			else
 			{
 				if(player.fairyOn==FAIRY_HAGGLY)
-					sprintf(s,"$%d",price[shopCursor]*9/10);
+					sprintf(s,"$%d",Price(shopCursor)*9/10);
 				else
-					sprintf(s,"$%d",price[shopCursor]);
+					sprintf(s,"$%d",Price(shopCursor));
 			}
 		}
 		RightPrintGlow(10+345,100+5*56-20,s,2);
@@ -798,7 +813,7 @@ void Buy(byte which)
 		return;
 	}
 
-	prc=price[shopCursor];
+	prc=Price(shopCursor);
 	if(player.fairyOn==FAIRY_HAGGLY)
 		prc=prc*9/10;
 
@@ -905,7 +920,7 @@ byte UpdateShop(MGLDraw *mgl)
 		}
 		else
 		{
-			prc=price[shopCursor];
+			prc=Price(shopCursor);
 			if(player.fairyOn==FAIRY_HAGGLY)
 				prc=prc*9/10;
 		}
