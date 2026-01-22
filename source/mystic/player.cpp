@@ -151,7 +151,10 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	playerGlow=0;
 	player.pushPower=0;
 	player.poison=0;
-	player.needExp=player.level*player.level*10+player.level*10;
+	if (VeryClassicMode())
+		player.needExp = player.level * 100;
+	else
+		player.needExp = player.level * player.level * 10 + player.level * 10;
 	player.stoneskin=0;
 	player.berserk=0;
 	SetPlayerSpeed();
@@ -226,7 +229,7 @@ void PlayerLoadGame(byte which)
 void PlayerSaveGame(byte which)
 {
 	char s[32];
-	
+
 	player.prevMoney=player.money;
 	player.prevBigMoney = player.bigMoney;
 	sprintf(s, "mystic%d.sav", which+1);
@@ -676,7 +679,7 @@ void CheckForAllSecrets(void)
 	for(i=10;i<19;i++)
 		if(player.gotSpell[i]==0)
 			return;
-		
+
 	// got em all!
 	if(opt.challenge==0)
 	{
@@ -1130,7 +1133,10 @@ void PlayerLevelUp(int y)
 	if (!ClassicMode())
 		player.skillPts++;
 	PlayerUpdateLife();
-	player.needExp = player.level * player.level * 10 + player.level * 10;
+	if (VeryClassicMode())
+		player.needExp = player.level * 100;
+	else
+		player.needExp = player.level * player.level * 10 + player.level * 10;
 	if (player.level == MAX_PLAYERLEVEL)
 	{
 		EarnAchieve(Achievement::LEVEL50);
