@@ -119,16 +119,6 @@ void Map::Init(world_t *wrld)
 	{
 		if(map[i].item==ITM_BRAIN)
 			totalBrains++;
-		if(map[i].item==ITM_SWORD1 && PlayerHasSwordPiece(0))	// keychains only appear once
-			map[i].item=0;
-		if(map[i].item==ITM_SWORD2 && PlayerHasSwordPiece(1))	// keychains only appear once
-			map[i].item=0;
-		if(map[i].item==ITM_SWORD3 && PlayerHasSwordPiece(2))	// keychains only appear once
-			map[i].item=0;
-		if(map[i].item==ITM_SWORD4 && PlayerHasSwordPiece(3))	// keychains only appear once
-			map[i].item=0;
-		if(map[i].item==ITM_SPELLBOOK && PlayerHasSpell())
-			map[i].item=0;
 
 		map[i].templight=-32;	// make it all black so it'll fade in
 		if(map[i].item==ITM_SKLDOOR && player.worldNum==2 && PlayerPassedLevel(2,6))
@@ -149,7 +139,7 @@ void Map::Init(world_t *wrld)
 		}
 		if(map[i].item==ITM_FAIRYBELL)
 		{
-			byte fairy = FairyForThisLevel(player.levelNum + player.worldNum * 50);
+			byte fairy = FairyForThisLevel(player.levelNum, player.worldNum);
 			if (fairy && ((player.haveFairy & (1 << (fairy - 1))) || (player.chaseFairy & (1 << (fairy - 1)))))
 			{
 				map[i].item = 0;
@@ -2820,7 +2810,7 @@ void GuestChamberPuzzleStep(Map* map, int mapx, int mapy)
 	else // uh oh, you are wrong
 	{
 		guestProgress = 0;
-		
+
 		MakeNormalSound(SND_UNAVAILABLE);
 		GuestChamberTeleport(3, 33, map);
 		for (int i = 0; i < map->width * map->height; i++)	// reset the lit-up walls
@@ -3143,7 +3133,7 @@ void SwampStewSetup(Map* map)
 	boilTemp = Random(3) + 3;	// one of the top 3 temps
 	simmerTemp = Random(3) + 1; // one of the 3 temps just above red
 	if (boilTemp == simmerTemp) simmerTemp--;
-	
+
 	while ((flips--)>0)
 	{
 		byte first = Random(3);
@@ -3407,7 +3397,7 @@ void SwampUpdate(Map* map)
 			swampScore = s;
 			if (swampScore >= 100)
 				EarnAchieve(Achievement::CHEF);
-			
+
 			if (potOrder[0] != swampRecipe[1] || potOrder[1] != swampRecipe[3])	// you did things in the wrong order (you only have to check 2, obviously!)
 			{
 				swampScore = 0;	// total fail
@@ -3911,7 +3901,7 @@ void DeepEndPuzzleKill(Map* map, byte type)
 			map->GetTile(42, 44)->wall = 34;
 			map->GetTile(42, 44)->floor = 71;
 		}
-		
+
 		MakeNormalSound(SND_WALLUP);
 	}
 	else if(deepEndSeq>0)
@@ -3926,7 +3916,7 @@ void DeepEndPuzzleKill(Map* map, byte type)
 		map->GetTile(38, 47)->floor = 69;
 		map->GetTile(42, 44)->wall = 37;
 		map->GetTile(42, 44)->floor = 69;
-		
+
 		if (type == MONS_PEEPER)
 		{
 			deepEndSeq = 1;

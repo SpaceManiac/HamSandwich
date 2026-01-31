@@ -469,154 +469,88 @@ bool PlayerHasTier2Spell(void)
 	return false;
 }
 
-byte PlayerHasSpell(void)
+byte SpellBookForThisLevel(byte level, byte chapter)
 {
-	int i;
-
-	switch(player.worldNum*50+player.levelNum)
+	switch ((chapter + 1) * 100 + level)
 	{
-		case 11:
-		case 111:
-		case 21:	// this spell is in 2 different chapter 1 levels, because I remade beginnerton
-			i=0;	// energy barrage
-			break;
-		case 2:
-		case 156:
-			i=1;	// dragon's flame
-			break;
-		case 3:
-		case 157:
-			i=2;	// Seeker bolt
-			break;
-		case 4:
-		case 106:
-			i=3;	// ice blast
-			break;
-		case 52:
-		case 113:
-			i=4;	// inferno
-			break;
-		case 56:
-		case 159:
-			i=5;	// summon
-			break;
-		case 61:
-		case 160:
-			i=6;	// stoneskin
-			break;
-		case 55:
-		case 116:
-			i=7;	// berserk
-			break;
-		case 53:
-		case 109:
-			i=8;	// healing
-			break;
-		case 10:
-			i=9;	// armageddon
-			break;
+		case 1'11:		// Ch1 (Classic) Magical Wisdom
+		case 1'21:		// Ch1 (Modern) Beginnerton
+			return 0;	// -> Energy Barrage
+		case 3'11:		// Ch3 The Ballroom
+			return 0;	// -> Energy Storm
+		case 1'02:		// Ch1 Mushy Hollow
+			return 1;	// -> Dragon's Flame
+		case 4'06:		// Ch4 Toasty Caverns
+			return 1;	// -> Liquefy
+		case 1'03:		// Ch1 Grassy Knoll
+			return 2;	// -> Seeker Bolt
+		case 4'07:		// Ch4 The Mines
+			return 2;	// -> Seeker Swarm
+		case 1'04:		// Ch1 Just a Puddle
+			return 3;	// -> Ice Blast
+		case 3'06:		// Ch3 The Gatehouse
+			return 3;	// -> Ice Beam
+		case 2'02:		// Ch2 Creepy Creek
+			return 4;	// -> Inferno
+		case 3'13:		// Ch3 The Guest Chambers
+			return 4;	// -> Hyper Inferno
+		case 2'06:		// Ch2 Spider's Lair
+			return 5;	// -> Summon Ptero
+		case 4'09:		// Ch4 The Caves Of Obnoxiousness
+			return 5;	// -> Summon Golem
+		case 2'11:		// Ch2 Among the Hedges
+			return 6;	// -> Stoneskin
+		case 4'10:		// Ch4 Bats! Bats! Bats!
+			return 6;	// -> Steelskin
+		case 2'05:		// Ch2 Abandoned Village
+			return 7;	// -> Berserk
+		case 3'16:		// Ch3 The Vault
+			return 7;	// -> Insane Rage
+		case 2'03:		// Ch2 Mush-Aid
+			return 8;	// -> Healing
+		case 3'09:		// Ch3 The Library
+			return 8;	// -> Life
 	}
-
-	if(player.gotSpell[i+10*(player.worldNum>1)])
-		return 1;
-	/*
-	if(player.worldNum<2 && player.spell[i]>=1)
-		return 1;
-	if(player.spell[i]>=2)
-		return 1;
-	*/
-	return 0;
+	return 255;
 }
 
-byte SpellBookForThisLevel(byte level,byte chapter)
+byte FairyForThisLevel(byte level, byte chapter)
 {
-	byte i;
-
-	i=255;
-	switch(chapter*50+level)
+	switch((chapter + 1) * 100 + level)
 	{
-		case 11:
-		case 111:
-		case 21:
-			i=0;	// energy barrage
-			break;
-		case 2:
-		case 156:
-			i=1;	// dragon's flame
-			break;
-		case 3:
-		case 157:
-			i=2;	// Seeker bolt
-			break;
-		case 4:
-		case 106:
-			i=3;	// ice blast
-			break;
-		case 52:
-		case 113:
-			i=4;	// inferno
-			break;
-		case 56:
-		case 159:
-			i=5;	// summon
-			break;
-		case 61:
-		case 160:
-			i=6;	// stoneskin
-			break;
-		case 55:
-		case 116:
-			i=7;	// berserk
-			break;
-		case 53:
-		case 109:
-			i=8;	// healing
-			break;
-		case 1000:
-			i=9;	// armageddon
-			break;
-	}
-	return i;
-}
-
-byte FairyForThisLevel(word lvl)
-{
-	switch(lvl)
-	{
-		case 12:
-		case 21:
+		case 1'12:
+		case 1'21:
 			return 1;	// grabby is in the hut in beginnerton
-		case 15:
+		case 1'15:
 			return 2;	// runny is in The Docks
-		case 16:
+		case 1'16:
 			return 3;	// casty is in Plants Gone Wild
-		case 17:
+		case 1'17:
 			return 4;	// blocky is in Trick Shot Challenge
-		case 50+13:
+		case 2'13:
 			return 5;	// vampy is in hidden temple
-		case 50+14:
+		case 2'14:
 			return 6;	// smashy is in lost in the woods
-		case 50+15:
+		case 2'15:
 			return 7;	// cheapy is in log ride
-		case 50+16:
+		case 2'16:
 			return 8;	// toughy is in temple of kings
-		case 50*2+17:
+		case 3'17:
 			return 9;	// richey is in twisty passages
-		case 50*2+18:
+		case 3'18:
 			return 10;	// smarty is in the peeping bomb level
-		case 50*2+19:
+		case 3'19:
 			return 11;	// healey is in whack-a-zoid
-		case 50*2+20:
+		case 3'20:
 			return 12;	// savey is in the sewers
-		case 50*3+12:
+		case 4'12:
 			return 13;	// shooty is in red river rafting
-		case 50*3+13:
+		case 4'13:
 			return 14; 	// haggly is in smashball
-		case 50*3+14:
+		case 4'14:
 			return 15;	// scary is in puzzling caverns
-		case 50*3+15:
+		case 4'15:
 			return 16;	// mighty is in gastro-pods
-
 	}
 	return 0;
 }
@@ -627,10 +561,10 @@ void AddChaseFairy(void)
 
 	if(Challenging())	// in challenge mode, you get the fairy immediately, no chasing
 	{
-		player.haveFairy|=(1<<(FairyForThisLevel(player.worldNum*50+player.levelNum)-1));
+		player.haveFairy|=(1<<(FairyForThisLevel(player.levelNum, player.worldNum)-1));
 		return;
 	}
-	player.chaseFairy |= (1<<(FairyForThisLevel(player.worldNum * 50 + player.levelNum)-1));
+	player.chaseFairy |= (1<<(FairyForThisLevel(player.levelNum, player.worldNum)-1));
 }
 
 void CheckForAllSecrets(void)

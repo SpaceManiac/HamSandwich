@@ -908,7 +908,7 @@ void Guy::Update(Map *map,world_t *world)
 			x=parent->x;
 			y=parent->y+FIXAMT*4;
 		}
-		
+
 		if(player.worldNum==3 && player.levelNum==14 && (oldmapx!=mapx || oldmapy!=mapy) &&
 			(map->map[mapx+mapy*map->width].floor==72 || map->map[mapx+mapy*map->width].floor==73))
 			LightsOutPuzzle(map,mapx,mapy);
@@ -1415,7 +1415,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			GetGoodguy()->x = (6 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
 			GetGoodguy()->y = (77 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
 			map->TempTorch(GetGoodguy()->x / (TILE_WIDTH * FIXAMT), GetGoodguy()->y / (TILE_HEIGHT * FIXAMT), 31);
-		}*/ 
+		}*/
 		return;
 	}
 	if (type == MONS_BOUAPHA && PlayerShield())
@@ -1521,9 +1521,9 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		{
 			if (ClassicMode())
 				damage = (damage * (100 + player.powerStones * 10)) / 100;
-			else 
+			else
 				damage = damage * GetPowerStoneMultiplier(player.powerStones) / FIXAMT;
-			
+
 			if(player.fairyOn==FAIRY_BLOCKY)
 			{
 				damage=damage*3/4;
@@ -3152,7 +3152,7 @@ void HealSummons(byte amt)
 		v = (int)(amt * (100 + player.spellStones * 10)) / 100;
 	else
 		v = (int)amt * GetPowerStoneMultiplier(player.spellStones) / FIXAMT;
-	
+
 	for (int i = 0; i < maxGuys; i++)
 	{
 		if (guys[i].hp > 0 && (guys[i].type == MONS_PTERO || guys[i].type == MONS_GOLEM))
@@ -3288,7 +3288,7 @@ void WhackedAZoid(Map *map)
 		if(whacked>=prizeLevel[prizeAwarded])
 		{
 			if(prizeItm[prizeAwarded]==ITM_FAIRYBELL &&
-				(player.haveFairy&(1<<(FairyForThisLevel(player.levelNum+player.worldNum*50)-1))))
+				(player.haveFairy&(1<<(FairyForThisLevel(player.levelNum, player.worldNum)-1))))
 			{
 				map->map[prizeX[prizeAwarded]+14*map->width].item=ITM_BIGCOIN;	// replace fairy bell
 			}
@@ -3354,7 +3354,7 @@ void HealBadguys(word amt)
 			word maxHP = MonsterHP(guys[i].type);
 			word healAmt = amt;
 			if (guys[i].hp == maxHP)
-				continue;	
+				continue;
 			if (player.nightmare)
 				healAmt *= NIGHTMAREHP;
 			else if (BrutalMode())
