@@ -129,7 +129,7 @@ void Map::Init(world_t *wrld)
 			s=SpellBookForThisLevel(player.levelNum,player.worldNum);
 			if(player.gotSpell[s+(player.worldNum>1)*10])
 				map[i].item=0;
-			if(player.worldNum==2 && player.levelNum==16 && player.vaultOpened && !Challenging())
+			if(player.worldNum==2 && player.levelNum==16 && player.vaultOpened && !VeryClassicMode() && !Challenging())
 				map[i].item=0;	// take it away if you've opened the vault before
 		}
 		if(map[i].item>=ITM_SWORD1 && map[i].item<=ITM_SWORD4)
@@ -151,7 +151,7 @@ void Map::Init(world_t *wrld)
 		if (map[i].item == ITM_SKILLSHARD)
 			if (GotSkillShardInLevel(player.worldNum, player.levelNum))
 				map[i].item = 0;
-		if(player.worldNum==2 && player.levelNum==16 && player.vaultOpened && map[i].item==ITM_COIN)
+		if(player.worldNum==2 && player.levelNum==16 && player.vaultOpened && !VeryClassicMode() && map[i].item==ITM_COIN)
 			map[i].item=0;	// if you got the spellbook, take the coins away!
 		if(map[i].item>=ITM_LETTERM && map[i].item<=ITM_LETTERC && !Challenging())
 			map[i].item=0;	// remove MYSTIC letters when not in challenge mode
