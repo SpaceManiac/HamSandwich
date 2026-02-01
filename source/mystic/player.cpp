@@ -485,7 +485,7 @@ byte SpellBookForThisLevel(byte level, byte chapter)
 		case 1'03:		// Ch1 Grassy Knoll
 			return 2;	// -> Seeker Bolt
 		case 4'07:		// Ch4 The Mines
-			return 2;	// -> Seeker Swarm
+			return VeryClassicMode() ? 4 : 2;	// -> Seeker Swarm normally, Hyper Inferno in 1999 mode
 		case 1'04:		// Ch1 Just a Puddle
 			return 3;	// -> Ice Blast
 		case 3'06:		// Ch3 The Gatehouse
@@ -493,7 +493,7 @@ byte SpellBookForThisLevel(byte level, byte chapter)
 		case 2'02:		// Ch2 Creepy Creek
 			return 4;	// -> Inferno
 		case 3'13:		// Ch3 The Guest Chambers
-			return 4;	// -> Hyper Inferno
+			return VeryClassicMode() ? 2 : 4;	// -> Hyper Inferno normally, Seeker Swarm in 1999 mode
 		case 2'06:		// Ch2 Spider's Lair
 			return 5;	// -> Summon Ptero
 		case 4'09:		// Ch4 The Caves Of Obnoxiousness
