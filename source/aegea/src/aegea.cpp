@@ -73,11 +73,53 @@ namespace
 
 // ------------------------------------------------------------------------
 
+static void append_safe_filename(std::string *dest, std::string_view key)
+{
+	// https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file
+	if (key.length() > 3)
+	{
+		char pfx_array[4] = { key[0], key[1], key[2], 0 };
+		for (int i = 0; i < 3; ++i)
+		{
+			if (pfx_array[i] >= 'a' && pfx_array[i] <= 'z')
+			{
+				pfx_array[i] += 'A' - 'a';
+			}
+		}
+
+		std::string_view pfx = pfx_array;
+		// Do not use the following reserved names for the name of a file
+		if (pfx == "CON" || pfx == "PRN" || pfx == "AUX" || pfx == "NUL" || pfx == "COM" || pfx == "LPT")
+		{
+			dest->push_back('_');
+		}
+	}
+	for (char ch : key)
+	{
+		// The following reserved characters
+		// Integer value zero
+		// Characters whose integer representations are in the range from 1 through 31
+		if (ch == '<' || ch == '>' || ch == ':' || ch == '"' || ch == '/' || ch == '\\' || ch == '|' || ch == '?' || ch == '*' || ch == 0 || (ch >= 1 && ch <= 31))
+		{
+			dest->push_back('_');
+		}
+		else
+		{
+			dest->push_back(ch);
+		}
+	}
+	// Do not end a file or directory name with a space or a period
+	while (!dest->empty() && (dest->back() == ' ' || dest->back() == '.'))
+	{
+		dest->pop_back();
+	}
+}
+
 std::string ArchipelagoCache::FileSystem::read(std::string_view key)
 {
 	std::string filename { prefix };
 	filename.append("/");
-	filename.append(key);
+	append_safe_filename(&filename, key);
 	filename.append(".cache");
 
 	std::ifstream ifs(filename, std::ios::in | std::ios::binary | std::ios::ate);
@@ -100,7 +142,7 @@ void ArchipelagoCache::FileSystem::write(std::string_view key, std::string_view 
 
 	std::string filename { prefix };
 	filename.append("/");
-	filename.append(key);
+	append_safe_filename(&filename, key);
 	filename.append(".cache");
 
 	std::string tempFilename = filename;
