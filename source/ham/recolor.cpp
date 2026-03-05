@@ -1,4 +1,6 @@
 #include "recolor.h"
+#include <string.h>
+#include <algorithm>
 
 // ----------------------------------------------------------------------------
 // Basic color manipulation
@@ -52,4 +54,96 @@ byte SprModifyGhostBright(byte src, byte dst, int8_t bright)
 byte SprModifyGlow(byte src, byte dst, int8_t bright)
 {
 	return SprModifyLight(src, (dst & 31) + bright);
+}
+
+// ----------------------------------------------------------------------------
+
+Recolor Recolor::Bright(int8_t bright)
+{
+	Recolor result;
+	memset(result.bright, bright, sizeof(result.bright));
+	return result;
+}
+
+Recolor Recolor::Colored(byte color, int8_t bright)
+{
+	Recolor result;
+	memset(result.hueAndMode, color, sizeof(result.hueAndMode));
+	memset(result.bright, bright, sizeof(result.bright));
+	return result;
+}
+
+Recolor Recolor::OffColor(byte fromColor, byte toColor, int8_t bright)
+{
+	Recolor result;
+	result.hueAndMode[fromColor] = toColor;
+	memset(result.bright, bright, sizeof(result.bright));
+	return result;
+}
+
+Recolor Recolor::Ghost(int8_t bright)
+{
+	Recolor result;
+	result.hueAndMode[Gray] = (byte)Mode::Ghost << HUE_BITS;
+	memset(result.bright, bright, sizeof(result.bright));
+	result.bright[Gray] = 0;
+	return result;
+}
+
+Recolor Recolor::GhostBright(int8_t bright)
+{
+	Recolor result;
+	result.hueAndMode[Gray] = (byte)Mode::Ghost << HUE_BITS;
+	memset(result.bright, bright, sizeof(result.bright));
+	// GhostBright is when you DON'T set result.bright[Gray] = 0;
+	return result;
+}
+
+Recolor Recolor::Glow(int8_t bright)
+{
+	Recolor result;
+	for (int i = 0; i < 7; ++i)
+	{
+		result.hueAndMode[i] |= (byte)Mode::Glow << HUE_BITS;
+	}
+	memset(result.bright, bright, sizeof(result.bright));
+	return result;
+}
+
+Recolor::Hue Recolor::GetHue(Hue fromHue)
+{
+	return (Hue)(hueAndMode[fromHue] & HUE_MASK);
+}
+
+void Recolor::SetHue(Hue fromHue, Hue toHue)
+{
+	hueAndMode[fromHue] = (hueAndMode[fromHue] & ~HUE_MASK) | (byte)toHue;
+}
+
+Recolor::Mode Recolor::GetMode(Hue hue)
+{
+	return (Mode)((hueAndMode[hue] & ~HUE_MASK) >> HUE_BITS);
+}
+
+void Recolor::SetMode(Hue hue, Mode mode)
+{
+	hueAndMode[hue] = (hueAndMode[hue] & HUE_MASK) | ((byte)mode << HUE_BITS);
+}
+
+byte Recolor::Apply(byte color, byte underlying)
+{
+	byte hue = hueAndMode[color >> 5] & HUE_MASK;
+	Mode mode = Mode(hueAndMode[color >> 5] >> HUE_BITS);
+	uint8_t brightChange = bright[color >> 5];
+
+	switch (mode)
+	{
+		default:
+		case Mode::Normal:
+			return SprModifyLight(SprModifyColor(color, hue), brightChange);
+		case Mode::Ghost:
+			return SprModifyLight(underlying, (color & 31) + brightChange);
+		case Mode::Glow:
+			return SprModifyLight(color, (underlying & 31) + brightChange);
+	}
 }

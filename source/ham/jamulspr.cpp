@@ -138,6 +138,7 @@ void sprite_t::GetCoords(int x,int y,int *rx,int *ry,int *rx2,int *ry2) const
 
 void sprite_t::Draw(int x, int y, MGLDraw *mgl) const
 {
+	return Draw(x, y, mgl, Recolor());
 	const byte *src;
 	byte *dst, b, skip;
 	int pitch;
@@ -245,6 +246,7 @@ void sprite_t::Draw(int x, int y, MGLDraw *mgl) const
 
 void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright) const
 {
+	return Draw(x, y, mgl, Recolor::Bright(bright));
 	const byte *src;
 	byte *dst, b, skip;
 	int pitch;
@@ -364,6 +366,7 @@ void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright) const
 
 void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright) const
 {
+	return Draw(x, y, mgl, Recolor::Colored(color, bright));
 	const byte *src;
 	byte *dst, b, skip;
 	int pitch;
@@ -474,6 +477,7 @@ void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright) 
 
 void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toColor, char bright) const
 {
+	return Draw(x, y, mgl, Recolor::OffColor(fromColor, toColor, bright));
 	const byte *src;
 	byte *dst, b, skip;
 	int pitch;
@@ -591,6 +595,7 @@ void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toC
 // Default in Spooky Castle, Lunatic, Supreme, Eddie, Mystic, Sleepless.
 void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright) const
 {
+	return Draw(x, y, mgl, Recolor::Ghost(bright));
 	const byte *src;
 	byte *dst, b, skip;
 	int pitch;
@@ -704,6 +709,7 @@ void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright) const
 // Default in Stockboy, Loonyland, Loonyland 2.
 void sprite_t::DrawGhostBright(int x, int y, MGLDraw *mgl, char bright) const
 {
+	return Draw(x, y, mgl, Recolor::GhostBright(bright));
 	const byte *src;
 	byte *dst, b, skip;
 	int pitch;
@@ -814,6 +820,7 @@ void sprite_t::DrawGhostBright(int x, int y, MGLDraw *mgl, char bright) const
 
 void sprite_t::DrawGlow(int x, int y, MGLDraw *mgl, char bright) const
 {
+	return Draw(x, y, mgl, Recolor::Glow(bright));
 	const byte *src;
 	byte *dst, b, skip;
 	int pitch;
@@ -1030,6 +1037,116 @@ void sprite_t::DrawShadow(int x, int y, MGLDraw *mgl) const
 			srcx -= width - alternate;
 			srcy += alternate;
 			dst += (alternate ? pitch : 1);
+			dst -= width;
+			if (srcy >= constrainY)
+				noDraw = 0;
+			if (srcy > constrainY2)
+				return;
+		}
+	}
+}
+
+void sprite_t::Draw(int x, int y, MGLDraw *mgl, Recolor recolor) const
+{
+	const byte *src;
+	byte *dst, b, skip;
+	int pitch;
+	int srcx, srcy;
+	byte noDraw;
+	int i;
+
+	x -= ofsx;
+	y -= ofsy;
+	int constrainX2 = ResolveConstrainX2(mgl);
+	int constrainY2 = ResolveConstrainY2(mgl);
+	if (x > constrainX2 || y > constrainY2)
+		return; // whole sprite is offscreen
+
+	pitch = mgl->GetWidth();
+	src = data.data();
+	dst = mgl->GetScreen() + x + y*pitch;
+
+	srcx = x;
+	srcy = y;
+	if (srcy < constrainY)
+		noDraw = 1;
+	else
+		noDraw = 0;
+	while (srcy < height + y)
+	{
+		if ((*src)&128) // transparent run
+		{
+			b = (*src)&127;
+			srcx += b;
+			dst += b;
+			src++;
+		}
+		else // solid run
+		{
+			b = *src;
+			src++;
+			if (srcx < constrainX - b || srcx > constrainX2)
+			{
+				// don't draw this line
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else if (srcx < constrainX)
+			{
+				// skip some of the beginning
+				skip = (constrainX - srcx);
+				src += skip;
+				srcx += skip;
+				dst += skip;
+				b -= skip;
+				if (srcx > constrainX2 - b)
+				{
+					skip = (b - (constrainX2 - srcx)) - 1;
+					if (!noDraw)
+						for (i = 0; i < b - skip; ++i)
+							dst[i] = recolor.Apply(src[i], dst[i]);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+				else
+				{
+					if (!noDraw)
+						for (i = 0; i < b; ++i)
+							dst[i] = recolor.Apply(src[i], dst[i]);
+					src += b;
+					srcx += b;
+					dst += b;
+				}
+			}
+			else if (srcx > constrainX2 - b)
+			{
+				// skip some of the end
+				skip = (srcx - (constrainX2 - b)) - 1;
+				if (!noDraw)
+					for (i = 0; i < b - skip; ++i)
+						dst[i] = recolor.Apply(src[i], dst[i]);
+				src += b;
+				srcx += b;
+				dst += b;
+			}
+			else
+			{
+				// do it all!
+				if (!noDraw)
+					for (i = 0; i < b; ++i)
+						dst[i] = recolor.Apply(src[i], dst[i]);
+				srcx += b;
+				src += b;
+				dst += b;
+			}
+		}
+		if (srcx >= width + x)
+		{
+			srcx = x;
+			srcy++;
+			dst += pitch;
 			dst -= width;
 			if (srcy >= constrainY)
 				noDraw = 0;

@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include "jamultypes.h"
+#include "recolor.h"
 
 typedef struct SDL_RWops SDL_RWops;
 
@@ -32,6 +33,7 @@ public:
 	void DrawGhost(int x, int y, MGLDraw *mgl, char bright) const;
 	void DrawGhostBright(int x, int y, MGLDraw *mgl, char bright) const;
 	void DrawGlow(int x, int y, MGLDraw *mgl, char bright) const;
+	void Draw(int x, int y, MGLDraw *mgl, Recolor recolor) const;
 	// this makes half-height tilted black shadows (they darken by 4)
 	void DrawShadow(int x, int y, MGLDraw *mgl) const;
 
