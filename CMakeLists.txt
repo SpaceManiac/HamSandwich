@@ -61,8 +61,27 @@ endif()
 
 # Enable sanitizers in debug mode.
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT EMSCRIPTEN AND NOT MSVC)
-	add_compile_options(-fsanitize=undefined,address,leak)
-	add_link_options(-fsanitize=undefined,address,leak)
+	add_compile_options(-fsanitize=undefined)
+	add_link_options(-fsanitize=undefined)
+
+	# Because we build inside a container and run outside it, we must use
+	# -shared-libasan and install the .so file.
+	execute_process(
+		COMMAND
+			"${CMAKE_CXX_COMPILER}"
+			--print-file-name
+			libclang_rt.asan-x86_64.so
+		OUTPUT_VARIABLE asan_so
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+	)
+	if(IS_ABSOLUTE "${asan_so}")
+		install(FILES "${asan_so}" TYPE BIN COMPONENT generic/executables)
+		add_compile_options(-fsanitize=address,leak -shared-libasan)
+		add_link_options(-fsanitize=address,leak -shared-libasan)
+		message(STATUS "ASan found: ${asan_so}")
+	else()
+		message(WARNING "ASan not found")
+	endif()
 endif()
 
 # Include the source/ directories with all the actual programs.
