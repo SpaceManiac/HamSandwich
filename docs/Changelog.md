@@ -298,6 +298,7 @@ Editor features:
   * Potions can now be picked up even when your health/mana is full.
   * Disable interface indicators when out of mana and when a spellbook is tier 2.
   * Fix Mama Spider and Mush The Shroom to not drop cash due to being considered bosses.
+  * Allow healing spells to be cast at full health.
 
 ### v4.2 (2025-05-25)
 

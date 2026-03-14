@@ -390,7 +390,7 @@ void CastSpell(Guy *me)
 				StunAllOnscreen((byte)(SkillValue(SKILL_SHOCKWAVE) * 30));
 			player.timeSinceLastInferno = 0;
 			player.infernoKills = 0;
-			
+
 			if(player.spell[SPL_INFERNO]==1 || player.downgradeSpell[SPL_INFERNO])
 			{
 				byte l = SpellLevel() / 4;
@@ -459,7 +459,7 @@ void CastSpell(Guy *me)
 				}
 				if (!ClassicMode() && SkillValue(SKILL_DISTRACTION) > 0)
 					player.taunted = (byte)(30.0f * SkillValue(SKILL_DISTRACTION));
-				
+
 			}
 			else
 			{
@@ -538,7 +538,7 @@ void CastSpell(Guy *me)
 			break;
 		case SPL_HEAL: // healing
 			MakeNormalSound(SND_LOONYKEY);
-			if(player.life==player.maxLife && ClassicMode())
+			if(player.life==player.maxLife && ClassicMode() && !VeryClassicMode())
 			{
 				player.mana+=cost;
 				return;
