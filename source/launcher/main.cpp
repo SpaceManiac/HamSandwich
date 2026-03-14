@@ -950,9 +950,10 @@ int main(int argc, char** argv)
 	}
 
 	// Setup window
-	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_ALLOW_HIGHDPI);
+	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
 	SDL_Window* window = SDL_CreateWindow("HamSandwich Launcher", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1024, 480, window_flags);
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
+	SDL_ShowWindow(window);
 	bool vsync = true; // Enable vsync initially.
 	SDL_RenderSetVSync(renderer, vsync);
 
