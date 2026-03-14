@@ -72,7 +72,7 @@ Compiling and running:
     4. See `./run --help` for more.
 2. Run `git pull` to fetch changes which have been published here.
 
-### Windows (Visual Studio 2019 or newer)
+### Windows (Visual Studio 2022 or newer)
 
 1. When installing Visual Studio, choose the "Desktop development with C++" workload.
 2. Download the code:

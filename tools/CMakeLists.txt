@@ -1,7 +1,7 @@
 # HamSandwich tools directory CMake project file.
 # Tools must be built for the host platform rather than the target platform.
-# Minimum version is based on what is available in VS 2019.
-cmake_minimum_required(VERSION 3.19.0)
+# Minimum version is based on what is available in SteamRT 3 Sniper.
+cmake_minimum_required(VERSION 3.25.1)
 project("HamSandwich tools")
 
 set(export_cmake "${CMAKE_CURRENT_BINARY_DIR}/host_tools_exports.cmake")

@@ -3,4 +3,4 @@ name = "HamSandwich Launcher"
 path = "launcher.exe"
 
 [[prereqs]]
-name = "vcredist-2019-x86"
+name = "vcredist-v14-x86"

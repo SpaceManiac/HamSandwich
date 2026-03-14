@@ -1,6 +1,6 @@
 # HamSandwich root CMake project file.
-# Minimum version is based on what is available in VS 2019.
-cmake_minimum_required(VERSION 3.19.0)
+# Minimum version is based on what is available in SteamRT 3 Sniper.
+cmake_minimum_required(VERSION 3.25.1)
 project("HamSandwich")
 
 cmake_policy(SET CMP0116 NEW)  # https://cmake.org/cmake/help/latest/policy/CMP0116.html
