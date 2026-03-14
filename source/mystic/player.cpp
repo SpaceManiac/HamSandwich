@@ -816,7 +816,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 			return 0;
 			break;
 		case ITM_HEALTHPOT:
-			if (player.life == player.maxLife)
+			if (player.life == player.maxLife && !VeryClassicMode())
 			{
 				if(ClassicMode() || SkillValue(SKILL_POTIONS)==0 || player.mana==player.maxMana)
 					return 1;	// can't pick it up if fully healed. If you have potion skill, you can pick it up as long as your mana isn't full
@@ -835,7 +835,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 			return 0;
 			break;
 		case ITM_MANAPOT:
-			if(player.mana==player.maxMana)
+			if(player.mana==player.maxMana && !VeryClassicMode())
 				return 1;	// can't pick it up if fully magicked
 			MakeNormalSound(SND_FOOD);
 			NewMessage("Mana Restore Potion!",75);
