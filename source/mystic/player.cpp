@@ -8,6 +8,7 @@
 #include "appdata.h"
 #include "skills.h"
 #include "vfs.h"
+#include "string_extras.h"
 
 #define PLYR_ACCEL	(FIXAMT)
 #define PLYR_DECEL	(FIXAMT*3/4)
@@ -25,14 +26,14 @@ float restorationBuffer,spellRestorationBuffer;
 float spellRestorationOutput;	// separating the direct restoration from the Heal spell from others, because it can grant barrier
 byte manaRuneValue;
 
-int shieldStoneMultiplier[100] = {
+static const int shieldStoneMultiplier[100] = {
 	65536,62557,59714,57000,54409,51936,49576,47322,45171,43118,41159,39288,37502,35798,34171,32617,31135,29720,28369,27080,25849,
 	24674,23552,22482,21460,20485,19554,18665,17817,17007,16234,15496,14792,14119,13478,12865,12280,11722,11189,10681,10195,9732,
 	9290,8867,8464,8080,7712,7362,7027,6708,6403,6112,5834,5569,5316,5074,4844,4623,4413,4213,4021,3838,3664,3497,3338,3187,3042,
 	2904,2772,2646,2525,2411,2301,2197,2097,2001,1910,1824,1741,1662,1586,1514,1445,1379,1317,1257,1200,1145,1093,1044,996,951,
 	908,866,827,789,754,719,687,655 };
 
-int powerStoneMultiplier[100] = {
+static const int powerStoneMultiplier[100] = {
 	65536,67137,68776,70456,72177,73939,75745,77595,79490,81431,83420,85457,87544,89683,91873,94117,96415,98770,101182,103653,106185,
 	108778,111434,114156,116944,119800,122726,125723,128793,131939,135161,138462,141844,145308,148857,152492,156216,160031,163940,167944,
 	172045,176247,180551,184961,189478,194106,198846,203702,208677,213774,218995,224343,229822,235435,241185,247075,253109,259291,265623,
@@ -202,21 +203,35 @@ byte PlayerHasSword(void)
 	return(player.swordPiece[0] && player.swordPiece[1] && player.swordPiece[2] && player.swordPiece[3]);
 }
 
+static bool LoadOldGame(byte which)
+{
+	if (which < 5)
+	{
+		if (auto f = AppdataOpen("mystic.sav"))
+		{
+			static_assert(sizeof(player_t) == 624);
+			SDL_RWseek(f, sizeof(player_t) * which, RW_SEEK_SET);
+			SDL_RWread(f, &player, sizeof(player_t), 1);
+			player.difficulty = Difficulty::CLASSIC;
+			return true;
+		}
+	}
+	return false;
+}
+
 void PlayerLoadGame(byte which)
 {
 	char s[32];
-	sprintf(s, "mystic%d.sav", which+1);
-
-	auto f = AppdataOpen(s);
-	if(!f)
+	ham_sprintf(s, "mystic%d.sav", which+1);
+	if (auto f = AppdataOpen(s))
+	{
+		SDL_RWread(f,&player,sizeof(player_t),1);
+	}
+	else if (!LoadOldGame(which))
 	{
 		InitPlayer(INIT_GAME,0,0);
 	}
-	else
-	{
-		SDL_RWread(f,&player,sizeof(player_t),1);
-		f.reset();
-	}
+
 	player.prevMoney=player.money;
 	player.prevExp=player.experience;
 	player.prevLevel=player.level;
@@ -232,7 +247,7 @@ void PlayerSaveGame(byte which)
 
 	player.prevMoney=player.money;
 	player.prevBigMoney = player.bigMoney;
-	sprintf(s, "mystic%d.sav", which+1);
+	ham_sprintf(s, "mystic%d.sav", which+1);
 	auto f=AppdataOpen_Write(s);
 	player.saveVersion = SAVE_VERSION;
 	player.saveCode[0] = 'K';

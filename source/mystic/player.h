@@ -66,7 +66,7 @@ const char* DifficultySuffix(Difficulty diff);
 #define GEAR_FEATHER (1024)
 #define GEAR_SOCKS	 (2048)
 
-typedef struct player_t
+struct player_t
 {
 	// values for the overall game
 	byte saveVersion;
@@ -175,7 +175,7 @@ typedef struct player_t
 	word chalStars;
 	word chalTotalStars;
 	byte expando[153-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
-} player_t;
+};
 
 extern player_t player;
 extern byte beenReborn;

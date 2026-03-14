@@ -595,21 +595,45 @@ void SetGiveUpText(byte gu)
 
 static void GetSaves()
 {
+	// Clear list
+	for (int i = 0; i < 5; i++)
+	{
+		saveLevel[i] = 0;
+		saveChapter[i] = 0;
+		saveHour[i] = 0;
+		saveMin[i] = 0;
+		saveNightmare[i] = 0;
+		saveDiff[i] = Difficulty::UNUSED;
+		savePct[i] = 0;
+	}
+
+	// Use pre-Enchanted mystic.sav if it exists
+	if (saveOffset == 0)
+	{
+		if (auto f = AppdataOpen("mystic.sav"))
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				player_t p;
+				static_assert(sizeof(player_t) == 624);
+				SDL_RWread(f, &p, sizeof(player_t), 1);
+				saveLevel[i] = p.level;
+				saveChapter[i] = p.worldNum + 1;
+				saveHour[i] = (byte)(p.gameClock / (30 * 60 * 60));
+				saveMin[i] = (byte)((p.gameClock / (30 * 60)) % 60);
+				saveNightmare[i] = p.nightmare;
+				saveDiff[i] = Difficulty::CLASSIC;
+				savePct[i] = CalcGamePercent(&p);
+			}
+		}
+	}
+
+	// But prefer new mysticN.sav
 	for (int i = 0; i < 5; i++)
 	{
 		char s[32];
-		sprintf(s, "mystic%d.sav", saveOffset + i + 1);
-		auto f = AppdataOpen(s);
-		if (!f)
-		{
-			saveLevel[i] = 0;
-			saveChapter[i] = 0;
-			saveHour[i] = 0;
-			saveMin[i] = 0;
-			saveDiff[i] = Difficulty::UNUSED;
-			savePct[i] = 0;
-		}
-		else
+		ham_sprintf(s, "mystic%d.sav", saveOffset + i + 1);
+		if (auto f = AppdataOpen(s))
 		{
 			player_t p;
 			SDL_RWread(f, &p, sizeof(player_t), 1);

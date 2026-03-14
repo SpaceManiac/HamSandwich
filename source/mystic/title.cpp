@@ -381,21 +381,45 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 
 static void GetSaves(title_t *title)
 {
+	// Clear list
+	for (int i = 0; i < 5; i++)
+	{
+		title->saveLevel[i] = 0;
+		title->saveChapter[i] = 0;
+		title->saveHour[i] = 0;
+		title->saveMin[i] = 0;
+		title->saveNightmare[i] = 0;
+		title->saveDiff[i] = Difficulty::UNUSED;
+		title->savePercent[i] = 0;
+	}
+
+	// Use pre-Enchanted mystic.sav if it exists
+	if (title->saveOffset == 0)
+	{
+		if (auto f = AppdataOpen("mystic.sav"))
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				player_t p;
+				static_assert(sizeof(player_t) == 624);
+				SDL_RWread(f, &p, sizeof(player_t), 1);
+				title->saveLevel[i] = p.level;
+				title->saveChapter[i] = p.worldNum + 1;
+				title->saveHour[i] = (byte)(p.gameClock / (30 * 60 * 60));
+				title->saveMin[i] = (byte)((p.gameClock / (30 * 60)) % 60);
+				title->saveNightmare[i] = p.nightmare;
+				title->saveDiff[i] = Difficulty::CLASSIC;
+				title->savePercent[i] = CalcGamePercent(&p);
+			}
+		}
+	}
+
+	// But prefer new mysticN.sav
 	for (int i = 0; i < 5; i++)
 	{
 		char s[32];
-		sprintf(s, "mystic%d.sav", title->saveOffset + i + 1);
-		auto f = AppdataOpen(s);
-		if (!f)
-		{
-			title->saveLevel[i] = 0;
-			title->saveChapter[i] = 0;
-			title->saveHour[i] = 0;
-			title->saveMin[i] = 0;
-			title->saveNightmare[i] = 0;
-			title->saveDiff[i] = Difficulty::UNUSED;	// unused
-		}
-		else
+		ham_sprintf(s, "mystic%d.sav", title->saveOffset + i + 1);
+		if (auto f = AppdataOpen(s))
 		{
 			player_t p;
 			SDL_RWread(f, &p, sizeof(player_t), 1);
@@ -406,7 +430,6 @@ static void GetSaves(title_t *title)
 			title->saveNightmare[i] = p.nightmare;
 			title->saveDiff[i] = p.difficulty;
 			title->savePercent[i] = CalcGamePercent(&p);
-			f.reset();
 		}
 	}
 }
