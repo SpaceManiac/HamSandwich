@@ -296,6 +296,7 @@ Editor features:
   * Fix Vault spellbook trick not working.
   * Swap Hyper Inferno and Seeker Swarm spellbooks back to their 1999 positions.
   * Potions can now be picked up even when your health/mana is full.
+  * Disable interface indicators when out of mana and when a spellbook is tier 2.
 
 ### v4.2 (2025-05-25)
 

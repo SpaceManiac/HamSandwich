@@ -78,7 +78,7 @@ void DrawLifeMeter(int x,int y,byte amt,byte max,byte mode,byte barrier)
 	}
 	else
 	{
-		if(EnoughMana())
+		if(EnoughMana() || VeryClassicMode())
 			c=111;
 		else
 			c=207;
@@ -209,7 +209,7 @@ void ResetInterface(bool fillLifeAndMana)
 		player.life = player.maxLife;
 		player.mana = player.maxMana;
 	}
-	
+
 	curLife = player.life;
 	curMana = player.mana;
 }
@@ -418,7 +418,7 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 		if(player.spell[i])
 		{
 			player.curSpell = i;
-			intfaceSpr->GetSprite(11+i*2+(player.spell[i]==2 && !player.downgradeSpell[i]))->
+			intfaceSpr->GetSprite(11+i*2+(player.spell[i]==2 && !player.downgradeSpell[i]) && !VeryClassicMode())->
 				DrawBright(SCRWID-20-9*12+bookSlide[i]+i*12,22+bookSlide[i],mgl,-10+10*EnoughMana());
 			if(mySpell==i)
 			{
