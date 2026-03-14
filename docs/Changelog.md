@@ -290,7 +290,11 @@ Editor features:
 
 ### HamSandwich (since last release)
 
-Nothing!
+* 1999 Mode
+  * Fix inaccurate XP requirement scaling
+  * Fix inaccurate shop prices for Steel Hat, Mystical Staff, and Air Lancelots
+  * Fix Vault spellbook trick not working
+  * Swap Hyper Inferno and Seeker Swarm spellbooks back to their 1999 positions
 
 ### v4.2 (2025-05-25)
 
