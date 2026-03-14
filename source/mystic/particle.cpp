@@ -1,4 +1,5 @@
 #include "particle.h"
+#include <math.h>
 #include <memory>
 #include "bullet.h"
 #include "monster.h"

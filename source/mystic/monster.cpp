@@ -1,4 +1,5 @@
 #include "monster.h"
+#include <math.h>
 #include "player.h"
 #include "fairy.h"
 #include "spell.h"
@@ -1268,7 +1269,7 @@ void AI_Overworld(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			}
 			else
 				FaceGoodguy(me, goodguy);
-			
+
 
 			me->dx=Cosine(me->facing*32)*3;
 			me->dy=Sine(me->facing*32)*3;
@@ -1359,7 +1360,7 @@ void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 	if (player.summonDmgBoost > 0 && Random(5)==0)
 		ExplodeParticles2(PART_HAMMER, me->x, me->y, me->z, 1, 2);
-	
+
 	if(me->action==ACTION_BUSY)
 	{
 		if(me->seq==ANIM_DIE && Random(2))
@@ -1660,7 +1661,7 @@ void AI_Bat(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			FireExactBullet(me->x, me->y,FIXAMT*20,Cosine(ang)*4,Sine(ang)*4,0,0,12,ang, BLT_FLAME2);	// constantly spewing flame
 		}
 	}
-	
+
 	if(me->mind==0)		// when mind=0, singlemindedly zip towards Bouapha
 	{
 		if(goodguy)
@@ -1797,7 +1798,7 @@ void AI_Spider(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->facing=(byte)MGL_random(8);
 		me->mind=MGL_random(40)+1;
 	}
-	
+
 	me->dx=Cosine(me->facing*32)*spd;
 	me->dy=Sine(me->facing*32)*spd;
 	if(me->seq!=ANIM_MOVE)
@@ -4545,7 +4546,7 @@ void AI_Boiler(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->ouch==4)
 	{
-		
+
 	}
 
 	if(me->action==ACTION_BUSY)
@@ -5820,7 +5821,7 @@ void AI_Fairy(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 		player.haveFairy |= (1 << (me->mind1 - 1));
 		player.chaseFairy &= ~(1 << (me->mind1 - 1));
-		
+
 		CheckForAllSecrets();
 		me->type=MONS_NONE;
 		return;
@@ -6241,8 +6242,8 @@ void AI_Incagold(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		AddParticle(me->x, me->y, 40, 0, 0, me->ID, 10, PART_EYEGLOW, 32 * 4);
 	if (Random(4)==0)
 		AddParticle(me->x, me->y, 40, 0, 0, me->ID, 10, PART_EYEGLOW2, 32 * 4);
-	
-	
+
+
 	if(me->mind1)	// bumped a wall
 	{
 		me->mind1=0;
@@ -8349,7 +8350,7 @@ void AI_Horkbox(Guy* me, Map* map, world_t* world, Guy* goodguy)
 					}
 					InitSpeech(75);
 				}
-				
+
 				MakeNormalSound(SND_PUMPKINDIE);
 				PlaySong(SONG_CHAP34LEVEL);
 				return;
