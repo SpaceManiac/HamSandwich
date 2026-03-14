@@ -1903,6 +1903,11 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 				map->map[mapx+mapy*map->width].item=ITM_BRAIN;
 				break;
 			default:
+				if (VeryClassicMode() && (type == MONS_BIGSPDR || type == MONS_MUSH))
+				{
+					// In 1999 mode, Mama Spider and Mush the Shroom are bosses like the list above, and drop no coins.
+					break;
+				}
 				if (!(curWorld.terrain[map->map[mapx + mapy * map->width].floor].flags & (TF_WATER|TF_LAVA)))
 				{
 					// drop cash!
