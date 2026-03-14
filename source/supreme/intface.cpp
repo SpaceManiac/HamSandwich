@@ -3,41 +3,37 @@
 #include "player.h"
 #include "shop.h"
 
-enum {
-	SPR_LIFEMETER   = 0,
-	SPR_RAGEGAUGE   = 1,
-	SPR_SCORE       = 2,
-	SPR_WEAPONBOX   = 3,
-	SPR_BRAINOMETER = 4,
-	SPR_HAMMERBOX   = 5,
-	SPR_KEYBOX      = 6,
-	SPR_POWERUP     = 7,
-	SPR_OXYGAUGE    = 8,
-	SPR_ENEMYLIFE   = 11,
-	SPR_NUMBERS     = 12,
-	SPR_COINBOX     = 62,
-	SPR_STEALTH     = 63,
-	SPR_WPNNAME     = 22,
-	SPR_LOONYKEY    = 50,
-	SPR_CANDLE      = 51,
-	SPR_KEYCH       = 52,
-	SPR_BRAIN       = 56,
-	SPR_RAGE        = 57,
-	SPR_VARBAR      = 64,
-	SPR_TIME		= 65,
-	SPR_LOCK		= 66,
-};
+constexpr int SPR_LIFEMETER   = 0;
+constexpr int SPR_RAGEGAUGE   = 1;
+constexpr int SPR_SCORE       = 2;
+constexpr int SPR_WEAPONBOX   = 3;
+constexpr int SPR_BRAINOMETER = 4;
+constexpr int SPR_HAMMERBOX   = 5;
+constexpr int SPR_KEYBOX      = 6;
+constexpr int SPR_POWERUP     = 7;
+constexpr int SPR_OXYGAUGE    = 8;
+constexpr int SPR_ENEMYLIFE   = 11;
+constexpr int SPR_NUMBERS     = 12;
+constexpr int SPR_COINBOX     = 62;
+constexpr int SPR_STEALTH     = 63;
+constexpr int SPR_WPNNAME     = 22;
+constexpr int SPR_LOONYKEY    = 50;
+constexpr int SPR_CANDLE      = 51;
+constexpr int SPR_KEYCH       = 52;
+constexpr int SPR_BRAIN       = 56;
+constexpr int SPR_RAGE        = 57;
+constexpr int SPR_VARBAR      = 64;
+constexpr int SPR_TIME        = 65;
+constexpr int SPR_LOCK        = 66;
 
-enum {
-	OLD_SPR_LIFEMETER   = 0,
-	OLD_SPR_IFHAMMER    = 1,
-	OLD_SPR_MINIGAUGE   = 2,
-	OLD_SPR_NUMBERS     = 3,
-	OLD_SPR_WEAPONS     = 13,
-	OLD_SPR_KEYRING     = 29,
-	OLD_SPR_BRAINOMETER = 40,
-	OLD_SPR_RAGEGAUGE   = 47,
-};
+constexpr int OLD_SPR_LIFEMETER   = 0;
+constexpr int OLD_SPR_IFHAMMER    = 1;
+constexpr int OLD_SPR_MINIGAUGE   = 2;
+constexpr int OLD_SPR_NUMBERS     = 3;
+constexpr int OLD_SPR_WEAPONS     = 13;
+constexpr int OLD_SPR_KEYRING     = 29;
+constexpr int OLD_SPR_BRAINOMETER = 40;
+constexpr int OLD_SPR_RAGEGAUGE   = 47;
 
 constexpr int KEYRINGX = 40;
 constexpr int KEYRINGY = 38;
