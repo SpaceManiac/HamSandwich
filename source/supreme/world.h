@@ -53,9 +53,9 @@ struct world_t
 	terrain_t terrain[NUMTILES];
 	char author[32];
 
-	span<Map *const> Maps() const { return span{map, numMaps}; }
-	span<terrain_t> Terrain() { return span{terrain, numTiles}; }
-	span<terrain_t const> Terrain() const { return span{terrain, numTiles}; }
+	std::span<Map *const> Maps() const { return std::span{map, numMaps}; }
+	std::span<terrain_t> Terrain() { return std::span{terrain, numTiles}; }
+	std::span<terrain_t const> Terrain() const { return std::span{terrain, numTiles}; }
 };
 
 extern byte keyChainInLevel[MAX_MAPS];

@@ -308,7 +308,7 @@ public:
 	void UploadHighScore(const highScore_t* score, uint8_t subMode) override
 	{
 		char buffer[64];
-		span<char> dest = buffer;
+		std::span<char> dest = buffer;
 		dest = ham_sprintf(dest, "highscore/%d", score->mode);
 		if (subMode != 255)
 		{

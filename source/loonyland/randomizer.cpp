@@ -549,7 +549,7 @@ void RenderRandomizerMenu(MGLDraw* mgl)
 	}
 
 	char genBuf[64];
-	span<char> remaining = ham_strcpy(genBuf, "Generate");
+	std::span<char> remaining = ham_strcpy(genBuf, "Generate");
 	if (genTries)
 	{
 		remaining = ham_sprintf(remaining, ": %d tries", genTries);

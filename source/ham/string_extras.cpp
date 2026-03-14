@@ -34,7 +34,7 @@ void StringDestination::assign(std::string_view s)
 	memcpy(ptr, s.data(), len);
 }
 
-span<char> ham_strcpy(span<char> dst, std::string_view src)
+std::span<char> ham_strcpy(std::span<char> dst, std::string_view src)
 {
 	// Do like strlcpy, then return the remainder of the buffer.
 	if (dst.size() > 0)
@@ -47,7 +47,7 @@ span<char> ham_strcpy(span<char> dst, std::string_view src)
 	return dst;
 }
 
-span<char> ham_sprintf(span<char> dst, const char* format, ...)
+std::span<char> ham_sprintf(std::span<char> dst, const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);

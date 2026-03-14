@@ -161,7 +161,7 @@ void Tilegfx::SaveTilesToBMP(const char *fname) const
 	}
 
 	char tmp[128];
-	span<char> suffix = ham_strcpy(tmp, basename);
+	std::span<char> suffix = ham_strcpy(tmp, basename);
 
 	int tile = 0;
 	while (tile < numTiles)

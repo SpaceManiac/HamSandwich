@@ -130,7 +130,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	LogDebug("renderer: %s", info.name);
 
 	char flagbuf[64];
-	span<char> dst = ham_strcpy(flagbuf, "  flags:");
+	std::span<char> dst = ham_strcpy(flagbuf, "  flags:");
 	if (info.flags & SDL_RENDERER_SOFTWARE)
 		dst = ham_strcpy(dst, " software");
 	if (info.flags & SDL_RENDERER_ACCELERATED)

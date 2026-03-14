@@ -14,10 +14,10 @@
 #include "goal.h"
 #include "palettes.h"
 
-static span<special_t> spcl;  // Full special storage array.
+static std::span<special_t> spcl;  // Full special storage array.
 static int numSpecials;  // Specials >= this aren't set.
 
-void InitSpecials(span<special_t> list)
+void InitSpecials(std::span<special_t> list)
 {
 	spcl = list;
 	numSpecials = 0;
@@ -27,7 +27,7 @@ void InitSpecials(span<special_t> list)
 	}
 }
 
-void GetSpecialsFromMap(span<special_t> list)
+void GetSpecialsFromMap(std::span<special_t> list)
 {
 	spcl = list;
 	numSpecials = 0;
@@ -396,7 +396,7 @@ void SlideSpecials(Map *map,int dx,int dy)
 	}
 }
 
-void RepairSpecialToItem(span<special_t> list, int n)
+void RepairSpecialToItem(std::span<special_t> list, int n)
 {
 	for (special_t &me : list)
 	{
@@ -440,7 +440,7 @@ void RepairSpecialToItem(span<special_t> list, int n)
 	}
 }
 
-void RepairSpecialToSound(span<special_t> list, int n)
+void RepairSpecialToSound(std::span<special_t> list, int n)
 {
 	for (special_t &me : list)
 	{
@@ -460,7 +460,7 @@ void RepairSpecialToSound(span<special_t> list, int n)
 	}
 }
 
-void RepairSpecialToLevel(span<special_t> list, const SwapTable &table)
+void RepairSpecialToLevel(std::span<special_t> list, const SwapTable &table)
 {
 	for (special_t &me : list)
 	{
@@ -484,7 +484,7 @@ void RepairSpecialToLevel(span<special_t> list, const SwapTable &table)
 	}
 }
 
-void RepairSpecialToTile(span<special_t> list, const SwapTable &table)
+void RepairSpecialToTile(std::span<special_t> list, const SwapTable &table)
 {
 	for (special_t &me : list)
 	{

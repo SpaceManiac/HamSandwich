@@ -461,7 +461,7 @@ int GetNumCustomSounds(void)
 	return numCustom;
 }
 
-span<const byte> GetCustomSound(int n)
+std::span<const byte> GetCustomSound(int n)
 {
 	return {customSound[n], customLength[n]};
 }
@@ -588,7 +588,7 @@ owned::SDL_RWops SoundLoadOverride(int num)
 {
 	if (num >= CUSTOM_SND_START && num < CUSTOM_SND_START + GetNumCustomSounds())
 	{
-		span<const byte> buf = GetCustomSound(num - CUSTOM_SND_START);
+		std::span<const byte> buf = GetCustomSound(num - CUSTOM_SND_START);
 		if (!buf.empty())
 		{
 			return owned::SDL_RWFromConstMem(buf.data(), buf.size());

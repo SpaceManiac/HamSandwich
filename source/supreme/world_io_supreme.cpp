@@ -134,7 +134,7 @@ static void LoadSpecial(SDL_RWops *f, special_t *s)
 	}
 }
 
-static void LoadSpecials(SDL_RWops *f, span<special_t> list)
+static void LoadSpecials(SDL_RWops *f, std::span<special_t> list)
 {
 	byte numSpecials;
 	SDL_RWread(f, &numSpecials, 1, sizeof(byte));	// num specials
@@ -454,7 +454,7 @@ static void SaveSpecial(SDL_RWops *f, const special_t *s)
 	}
 }
 
-static void SaveSpecials(SDL_RWops *f, span<const special_t> list)
+static void SaveSpecials(SDL_RWops *f, std::span<const special_t> list)
 {
 	// First, count specials that actually exist.
 	byte numSpecials = 0;
@@ -651,7 +651,7 @@ static void SaveMap(SDL_RWops *f, const Map* me)
 		}
 	}
 
-	SaveSpecials(f, span{me->special.data(), me->special.size()});
+	SaveSpecials(f, std::span{me->special.data(), me->special.size()});
 
 	static_assert(sizeof(me->flags) == 2);
 	static_assert(sizeof(me->numBrains) == 2);
@@ -716,7 +716,7 @@ static void SaveCustomSounds(SDL_RWops *f)
 		ioDesc.num = CUSTOM_SND_START + i;
 		ham_strcpy(ioDesc.name, GetSoundInfo(CUSTOM_SND_START + i)->name);
 		ioDesc.theme = ST_CUSTOM;
-		span<const byte> sound = GetCustomSound(i);
+		std::span<const byte> sound = GetCustomSound(i);
 
 		uint32_t size = sound.size();
 		SDL_RWwrite(f,&ioDesc,1,sizeof(IoSoundDesc));	// write out the descriptor

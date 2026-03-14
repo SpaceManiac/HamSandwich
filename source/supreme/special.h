@@ -151,8 +151,8 @@ struct special_t
 
 class Guy;
 
-void InitSpecials(span<special_t> list);
-void GetSpecialsFromMap(span<special_t> list);
+void InitSpecials(std::span<special_t> list);
+void GetSpecialsFromMap(std::span<special_t> list);
 int NewSpecial(byte x,byte y);
 void DefaultTrigger(trigger_t *trig,int x,int y);
 void DefaultEffect(effect_t *eff,int x,int y,byte savetext);
@@ -168,15 +168,17 @@ int SlideCoord(int coord,int delta,int max);
 void SlideCombinedCoord(int *combo,int dx,int dy,int width,int height);
 
 class SwapTable;
-void RepairSpecialToItem(span<special_t> list,int n);	// repair all references to items in
-													// specials when item N is deleted
-void RepairSpecialToSound(span<special_t> list,int n);	// repair all references to sounds in
-													// specials when sound N is deleted
-void RepairSpecialToLevel(span<special_t> list, const SwapTable &table);	// repair all references to levels in
-											// specials when the levels are moved around
-void RepairSpecialToTile(span<special_t> list, const SwapTable &table);	// repair tile references
+// repair all references to items in specials when item N is deleted
+void RepairSpecialToItem(std::span<special_t> list,int n);
+// repair all references to sounds in specials when sound N is deleted
+void RepairSpecialToSound(std::span<special_t> list,int n);
+// repair all references to levels in specials when the levels are moved around
+void RepairSpecialToLevel(std::span<special_t> list, const SwapTable &table);
+// repair tile references
+void RepairSpecialToTile(std::span<special_t> list, const SwapTable &table);
 
-bool CheckSpecial(const special_t &me);	// returns 0 if the special has no triggers, 1 otherwise
+// returns 0 if the special has no triggers, 1 otherwise
+bool CheckSpecial(const special_t &me);
 
 void PrintSpecialComment(int x,int y,int mx,int my);
 

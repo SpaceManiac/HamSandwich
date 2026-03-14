@@ -69,7 +69,7 @@ static void LoadItem(hamworld::Section *f, item_t *item)
 	f->read_varint();  // ignore extension flags
 }
 
-static void SaveSound(hamworld::Section *f, const SoundDesc *desc, span<const byte> data)
+static void SaveSound(hamworld::Section *f, const SoundDesc *desc, std::span<const byte> data)
 {
 	f->write_string(desc->name);
 	f->write_varint(desc->theme);

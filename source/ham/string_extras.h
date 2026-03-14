@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 #include <array>
+#include <span>
 #include <SDL_stdinc.h>
 
 // A variant describing several possible places a string might be written.
@@ -38,47 +39,16 @@ public:
 	void assign(std::string_view s);
 };
 
-// A cheap standin for std::span, which isn't available until C++20.
-// `span<char>` is suitable for fixed-size output buffers.
-// Prefer `std::string` instead for growable output buffers.
-// Prefer `std::string_view` instead for string inputs.
-template<class T>
-class span
-{
-	T* _data;
-	size_t _size;
-public:
-	constexpr span() noexcept : _data(nullptr), _size(0) {}
-	constexpr span(SDL_OUT_Z_CAP(count) T* first, size_t count) noexcept : _data(first), _size(count) {}
-	// This is the magic that safely constructs a span from a char array.
-	template<size_t N>
-	constexpr span(T (&arr)[N]) noexcept : _data(arr), _size(N) {}
-	template<size_t N>
-	constexpr span(std::array<T, N> &arr) noexcept : _data(arr.data()), _size(N) {}
-	constexpr span(const span& other) noexcept = default;
-	// Real std::span is constructible from std::string but we don't actually want that.
-
-	constexpr span& operator=(const span& other) noexcept = default;
-
-	constexpr T& operator[](size_t idx) const noexcept { return _data[idx]; }
-	constexpr T* data() const noexcept { return _data; }
-	constexpr size_t size() const noexcept { return _size; }
-	constexpr bool empty() const noexcept { return _size == 0; }
-
-	constexpr T* begin() const noexcept { return _data; }
-	constexpr T* end() const noexcept { return _data + _size; }
-
-	constexpr span subspan(size_t offset, size_t count = SIZE_MAX) const noexcept
-	{
-		return span(_data + offset, count == SIZE_MAX ? _size - offset : count);
-	}
-};
-
 // Like strlcpy. Always leaves a null terminator. Returns the remaining slice of the buffer.
 // Use in preference to strcpy, strcat, strncpy, strncat, strlcpy, strlcat.
-span<char> ham_strcpy(span<char> dst, std::string_view src);
+std::span<char> ham_strcpy(std::span<char> dst, std::string_view src);
+// To avoid mistakes. Use operator= or .assign instead.
+void ham_strcpy(std::string& dst, std::string_view src) = delete;
+
 // Like sprintf or snprintf but auto-detects destination buffer length.
-span<char> ham_sprintf(span<char> dst, SDL_PRINTF_FORMAT_STRING const char* format, ...) SDL_PRINTF_VARARG_FUNC(2);
+std::span<char> ham_sprintf(std::span<char> dst, SDL_PRINTF_FORMAT_STRING const char* format, ...) SDL_PRINTF_VARARG_FUNC(2);
+// To avoid mistakes. Use .clear() and string_appendf instead.
+void ham_sprintf(std::string& dst, SDL_PRINTF_FORMAT_STRING const char* format, ...) SDL_PRINTF_VARARG_FUNC(2) = delete;
 
 // sprintf-style append to a std::string.
 void string_appendf(std::string* buffer, SDL_PRINTF_FORMAT_STRING const char* format, ...) SDL_PRINTF_VARARG_FUNC(2);

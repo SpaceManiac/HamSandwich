@@ -454,7 +454,7 @@ void DiffChooseDisplay(MGLDraw *mgl)
 		if (desc != nullptr)
 		{
 			char together[512];
-			span<char> dst = together;
+			std::span<char> dst = together;
 			for (i = 0; i < 8; i++)
 			{
 				dst = ham_sprintf(dst, "%s ", desc[i]);
@@ -805,7 +805,7 @@ bool MenuItemKnown(MainMenuResult action)
 	}
 }
 
-void SetMenu(span<const MenuItem> newMenu)
+void SetMenu(std::span<const MenuItem> newMenu)
 {
 	menu.assign(newMenu.data(), newMenu.data() + newMenu.size());
 	for (auto& item : menu)

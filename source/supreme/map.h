@@ -133,8 +133,8 @@ class Map
 		mapTile_t *GetTile(int x, int y);
 		// Returns `nullptr` if the coordinates are invalid.
 		mapTile_t *TryGetTile(int x, int y);
-		span<mapTile_t> Tiles() { return span{map, (size_t)(width * height)}; }
-		span<mapTile_t const> Tiles() const { return span{(const mapTile_t*)map, (size_t)(width * height)}; }
+		std::span<mapTile_t> Tiles() { return std::span{map, (size_t)(width * height)}; }
+		std::span<mapTile_t const> Tiles() const { return std::span{(const mapTile_t*)map, (size_t)(width * height)}; }
 
 		void FindNearBrain(int myx,int myy);
 		void FindNearCandle(int myx,int myy);

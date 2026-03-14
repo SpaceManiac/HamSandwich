@@ -429,7 +429,7 @@ SoundDesc *GetSoundInfo(int snd);
 
 int GetNumCustomSounds();
 int GetCustomSoundByName(const char *name); // Returns global sound number.
-span<const byte> GetCustomSound(int customN);
+std::span<const byte> GetCustomSound(int customN);
 
 bool AddCustomSound(const char *fname);
 SoundDesc *AddCustomSound(byte *, size_t);

@@ -71,7 +71,7 @@ struct worldData_t	// contains your progress for one world
 						// passed, or accomplished something in
 	levelData_t *level;	// progress info for each level that HAS been passed only.
 
-	span<levelData_t> Levels() { return span{level, levels}; }
+	std::span<levelData_t> Levels() { return std::span{level, levels}; }
 };
 
 enum class HudChoice : byte  // SERIALIZED in the player profile.

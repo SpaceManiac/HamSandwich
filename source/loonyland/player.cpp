@@ -1792,7 +1792,7 @@ void HandlePoison(Guy *me)
 	}
 }
 
-void DescribeSave(span<char> dst, const player_t* player)
+void DescribeSave(std::span<char> dst, const player_t* player)
 {
 	// Slot number and area name
 	dst = ham_sprintf(dst, "%d: %s", player->lastSave + 1, player->areaName);
