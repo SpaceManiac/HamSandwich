@@ -25,12 +25,6 @@
 				"DepotPath" "installers/loonyland_install.EXE/"
 				"Recursive" "1"
 			}
-			"FileMapping"
-			{
-				"LocalPath" "editor/*"
-				"DepotPath" "installers/loonyland_editor.exe/"
-				"Recursive" "1"
-			}
 		}
 		"2876903"
 		{

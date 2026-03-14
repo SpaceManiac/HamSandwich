@@ -16,14 +16,9 @@ fi
 7z x installers/loonyland_install.EXE -o"build/dist/loonyland"
 innoextract build/dist/loonyland/setup.0 --output-dir "build/dist/loonyland"  # implied app/
 rm "build/dist/loonyland/app/loonyland.exe"
-# Pre-extract loonyland_editor.exe
-# shellcheck disable=SC2016
-7z x installers/loonyland_editor.exe -o"build/dist/loonyland/editor" \
-	-x'!$PLUGINSDIR' -x'!*.exe'
 
 for platform in itch-linux itch-windows; do
 	rsync --mkpath --archive build/dist/loonyland/app/ build/dist/loonyland/$platform/installers/loonyland_install.EXE/
-	rsync --mkpath --archive build/dist/loonyland/editor/ build/dist/loonyland/$platform/installers/loonyland_editor.exe/
 done
 
 # Linux executables
