@@ -290,6 +290,7 @@ Editor features:
 
 ### HamSandwich (since last release)
 
+* Fix Options menu navigation controls being too sensitive on some configurations.
 * 1999 Mode
   * Fix inaccurate XP requirement scaling.
   * Fix inaccurate shop prices for Steel Hat, Mystical Staff, and Air Lancelots.

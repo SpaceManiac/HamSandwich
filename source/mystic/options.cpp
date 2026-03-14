@@ -5,6 +5,7 @@
 #include "sound.h"
 #include "appdata.h"
 #include "steam.h"
+#include "game.h"
 
 option_t opt;
 byte firstRightHandOption = (OPT_EXIT+1)/2;
@@ -862,12 +863,20 @@ TASK(void) OptionsMenu(MGLDraw *mgl)
 
 	while(b==0)
 	{
-		UpdateControls();
 		UpdateSounds();
 
 		lastTime+=TimeLength();
 		StartClock();
-		b=UpdateOptionsMenu(mgl);
+		while (lastTime >= TIME_PER_FRAME)
+		{
+			UpdateControls();
+			b=UpdateOptionsMenu(mgl);
+			if (b != 0)
+			{
+				break;
+			}
+			lastTime -= TIME_PER_FRAME;
+		}
 		RenderOptionsMenu(mgl);
 		AWAIT mgl->Flip();
 		if(!mgl->Process())
