@@ -60,7 +60,7 @@ else()
 endif()
 
 # Enable sanitizers in debug mode.
-if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT EMSCRIPTEN AND NOT MSVC)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND LINUX)
 	add_compile_options(-fsanitize=undefined)
 	add_link_options(-fsanitize=undefined)
 
