@@ -899,14 +899,7 @@ void InitMonsters(void)
 
 void ExitMonsters(void)
 {
-	int i;
-
-	for(i=1;i<NUM_MONSTERS;i++)
-	{
-		if(monsType[i].spr)
-			delete monsType[i].spr;
-		monsType[i].spr=NULL;
-	}
+	PurgeMonsterSprites();
 }
 
 void PurgeMonsterSprites(void)

@@ -1312,9 +1312,10 @@ void ExitMonsters(void)
 
 	for (i = 1; i < NUM_MONSTERS; i++)
 	{
-		if (i == MONS_BJORN)
-			monsType[i].spr = NULL; // he uses the same sprites as MONS_SVEN
-		if (monsType[i].spr)
+		// repeat graphics monsters do not delete their sprites
+		if (monsType[i].sprName[0] == '!')
+			monsType[i].spr = NULL;
+		else if (monsType[i].spr)
 			delete monsType[i].spr;
 		monsType[i].spr = NULL;
 	}
