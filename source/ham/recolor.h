@@ -39,6 +39,7 @@ public:
 		Normal = 0,
 		Ghost = 1,
 		Glow = 2,
+		Loony = 3,
 	};
 
 	Recolor()
@@ -53,6 +54,7 @@ public:
 	static Recolor Ghost(int8_t bright = 0);
 	static Recolor GhostBright(int8_t bright = 0);
 	static Recolor Glow(int8_t bright = 0);
+	static Recolor Loony(int8_t bright = 0);
 
 	Hue GetHue(Hue fromHue);
 	void SetHue(Hue fromHue, Hue toHue);

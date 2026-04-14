@@ -1,6 +1,7 @@
 #include "recolor.h"
 #include <string.h>
 #include <algorithm>
+#include <SDL_timer.h>
 
 // ----------------------------------------------------------------------------
 // Basic color manipulation
@@ -110,6 +111,14 @@ Recolor Recolor::Glow(int8_t bright)
 	return result;
 }
 
+Recolor Recolor::Loony(int8_t bright)
+{
+	Recolor result;
+	memset(result.hueAndMode, (byte)Mode::Loony << HUE_BITS, sizeof(result.hueAndMode));
+	memset(result.bright, bright, sizeof(result.bright));
+	return result;
+}
+
 Recolor::Hue Recolor::GetHue(Hue fromHue)
 {
 	return (Hue)(hueAndMode[fromHue] & HUE_MASK);
@@ -145,5 +154,15 @@ byte Recolor::Apply(byte color, byte underlying)
 			return SprModifyLight(underlying, (color & 31) + brightChange);
 		case Mode::Glow:
 			return SprModifyLight(color, (underlying & 31) + brightChange);
+		case Mode::Loony:
+		{
+			// NOTE: differs from Keys of Lunacy in two ways:
+			// 1. Keys do not animate while the game is paused.
+			// 2. Keys animate at double speed in Manic Mode.
+			// Fixing this is left as an exercise to whoever actually uses this feature.
+			uint64_t timer = SDL_GetTicks64() * 30 / 1000;
+			brightChange += abs((int)(16 - (timer & 31)));
+			return SprModifyLight(SprModifyColor(color, (timer & 255) / 32), brightChange);
+		}
 	}
 }
