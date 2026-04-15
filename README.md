@@ -101,6 +101,11 @@ Compiling and running:
 
 To cross-compile for Windows, use `tools/windows-cross/container make`.
 
+#### Visual Studio Code configuration
+
+Copy `.vscode/settings.linux.json` to `.vscode/settings.json` to configure the
+CMake extension to configure and build using the container.
+
 ### MacOS
 
 1. In Terminal, run `git clone https://github.com/SpaceManiac/HamSandwich`.
