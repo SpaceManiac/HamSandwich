@@ -26,20 +26,6 @@ elif command -v pacman >/dev/null 2>&1; then
 	SYS=arch
 elif command -v apk >/dev/null 2>&1; then
 	SYS=alpine
-elif command -v port >/dev/null 2>&1; then
-	SYS=macports
-elif command -v brew >/dev/null 2>&1; then
-	SYS=homebrew
-else
-	mkdir -p "build"
-	WARNFILE="build/.install-deps-warning"
-	if ! test -f "$WARNFILE"; then
-		echo "Automatic dependency installation is not available for your platform."
-		echo "Press Enter to continue anyways, or Ctrl-C to cancel."
-		read -r
-		touch "$WARNFILE"
-	fi
-	exit
 fi
 
 # Helper functions
@@ -123,18 +109,9 @@ deps_msys_clang64() {
 	fi
 }
 
-# shellcheck disable=SC2086
 deps_ubuntu() {
 	local wanted=(
-		unzip
-		make
-		g++
-		patchelf
-		zlib1g-dev
-		libsdl2-dev
-		libsdl2-mixer-dev
-		libsdl2-image-dev
-		libsdl2-ttf-dev
+		podman
 	)
 	local needed
 	needed=$(
@@ -143,24 +120,16 @@ deps_ubuntu() {
 	)
 	if test "$needed"; then
 		show_banner
-		echo "+ sudo apt-get update && sudo apt-get install" $needed
+		echo "+ sudo apt-get update && sudo apt-get install" "$needed"
 		sudo DEBIAN_FRONTEND=noninteractive apt-get update
+		# shellcheck disable=SC2086
 		sudo DEBIAN_FRONTEND=noninteractive apt-get install $needed
 	fi
 }
 
 deps_arch() {
 	local wanted=(
-		unzip
-		make
-		gcc
-		gcc-libs
-		patchelf
-		zlib
-		sdl2
-		sdl2_image
-		sdl2_mixer
-		sdl2_ttf
+		podman
 	)
 	local needed
 	needed=$(pacman_needed "${wanted[@]}")
@@ -174,31 +143,13 @@ deps_arch() {
 deps_alpine() {
 	# Note: non-autoinstalled dependency on `bash` and `sudo` packages.
 	wanted=(
-		make
-		g++
-		patchelf
-		zlib-dev
-		sdl2-dev
-		sdl2_mixer-dev
-		libvorbis-dev
-		sdl2_image-dev
-		libpng-dev
-		sdl2_ttf-dev
-		openssl-dev
+		podman
 	)
 	if ! apk info -e "${wanted[@]}" >/dev/null; then
 		show_banner
 		echo_and sudo apk add -t hamsandwich-deps "${wanted[@]}"
 	fi
 	# Use `sudo apk del hamsandwich-deps` to revert.
-}
-
-deps_macports() {
-	:
-}
-
-deps_homebrew() {
-	:
 }
 
 # Install dependencies for the correct system
