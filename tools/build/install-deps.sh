@@ -6,14 +6,16 @@ if test "${HSW_NO_INSTALL_DEPS:-}"; then
 	exit
 fi
 
-mkdir -p "build"
-
 # Check for supported system
 if test "${MSYSTEM:-}"; then
 	if test "$MSYSTEM" = "MINGW32"; then
-		SYS=mingw32
+		SYS=msys_mingw32
 	elif test "$MSYSTEM" = "MINGW64"; then
-		SYS=mingw64
+		SYS=msys_mingw64
+	elif test "$MSYSTEM" = "UCRT64"; then
+		SYS=msys_ucrt64
+	elif test "$MSYSTEM" = "CLANG64"; then
+		SYS=msys_clang64
 	else
 		echo "The project cannot be built in '$MSYSTEM' mode. Return to the Start Menu and open 'MSYS2 MinGW x86' or 'MSYS2 MinGW x64'." >&2
 		exit 1
@@ -29,6 +31,7 @@ elif command -v port >/dev/null 2>&1; then
 elif command -v brew >/dev/null 2>&1; then
 	SYS=homebrew
 else
+	mkdir -p "build"
 	WARNFILE="build/.install-deps-warning"
 	if ! test -f "$WARNFILE"; then
 		echo "Automatic dependency installation is not available for your platform."
@@ -56,7 +59,7 @@ pacman_needed() {
 }
 
 # Systems
-deps_mingw32() {
+deps_msys_mingw32() {
 	local wanted=(
 		make
 		mingw-w64-i686-cmake
@@ -72,12 +75,44 @@ deps_mingw32() {
 	fi
 }
 
-deps_mingw64() {
+deps_msys_mingw64() {
 	local wanted=(
 		make
 		mingw-w64-x86_64-cmake
 		mingw-w64-x86_64-ninja
 		mingw-w64-x86_64-gcc
+	)
+	local needed
+	needed=$(pacman_needed "${wanted[@]}")
+	if test "$needed"; then
+		show_banner
+		# shellcheck disable=SC2086
+		echo_and pacman -S --noconfirm $needed
+	fi
+}
+
+deps_msys_ucrt64() {
+	local wanted=(
+		make
+		mingw-w64-ucrt-x86_64-cmake
+		mingw-w64-ucrt-x86_64-ninja
+		mingw-w64-ucrt-x86_64-gcc
+	)
+	local needed
+	needed=$(pacman_needed "${wanted[@]}")
+	if test "$needed"; then
+		show_banner
+		# shellcheck disable=SC2086
+		echo_and pacman -S --noconfirm $needed
+	fi
+}
+
+deps_msys_clang64() {
+	local wanted=(
+		make
+		mingw-w64-clang-x86_64-cmake
+		mingw-w64-clang-x86_64-ninja
+		mingw-w64-clang-x86_64-clang
 	)
 	local needed
 	needed=$(pacman_needed "${wanted[@]}")

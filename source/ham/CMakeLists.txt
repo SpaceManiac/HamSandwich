@@ -12,7 +12,7 @@ if(ANDROID)
 	target_link_libraries(ham log)
 endif()
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT EMSCRIPTEN AND NOT MSVC)
-	target_link_libraries(ham m c stdc++)
+	target_link_libraries(ham m stdc++)
 endif()
 target_include_directories(ham INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 

@@ -11,6 +11,12 @@ arch := i686
 else ifeq ($(MSYSTEM),MINGW64)
 os := windows
 arch := x86_64
+else ifeq ($(MSYSTEM),UCRT64)
+os := windows
+arch := x86_64
+else ifeq ($(MSYSTEM),CLANG64)
+os := windows
+arch := x86_64
 else ifneq ($(MSYSTEM),)
 $(error The project cannot be built in '$(MSYSTEM)' mode. Return to the Start Menu and open 'MSYS2 MinGW x86' or 'MSYS2 MinGW x64')
 else ifeq ($(shell uname -sm),Linux x86_64)
