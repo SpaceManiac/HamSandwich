@@ -40,16 +40,9 @@
 		},
 		{
 			"name": "windows-i686-release",
-			"inherits": "i686-base",
+			"inherits": "windows-i686-debug",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
-			},
-			"vendor": {
-				"microsoft.com/VisualStudioSettings/CMake/1.0": {
-					"hostOS": [
-						"Windows"
-					]
-				}
 			}
 		},
 		{
@@ -65,16 +58,9 @@
 		},
 		{
 			"name": "windows-x86_64-release",
-			"inherits": "base",
+			"inherits": "windows-x86_64-debug",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
-			},
-			"vendor": {
-				"microsoft.com/VisualStudioSettings/CMake/1.0": {
-					"hostOS": [
-						"Windows"
-					]
-				}
 			}
 		},
 		{
@@ -93,17 +79,9 @@
 		},
 		{
 			"name": "linux-x86_64-release",
-			"inherits": "base",
+			"inherits": "linux-x86_64-debug",
 			"cacheVariables": {
-				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja",
 				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
-			},
-			"vendor": {
-				"microsoft.com/VisualStudioSettings/CMake/1.0": {
-					"hostOS": [
-						"Linux"
-					]
-				}
 			}
 		},
 		{
@@ -122,17 +100,9 @@
 		},
 		{
 			"name": "macos-x86_64-release",
-			"inherits": "base",
+			"inherits": "macos-x86_64-debug",
 			"cacheVariables": {
-				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja",
 				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
-			},
-			"vendor": {
-				"microsoft.com/VisualStudioSettings/CMake/1.0": {
-					"hostOS": [
-						"macOS"
-					]
-				}
 			}
 		},
 		{
@@ -152,18 +122,9 @@
 		},
 		{
 			"name": "emscripten-i686-release",
-			"inherits": "i686-base",
-			"toolchainFile": "build/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+			"inherits": "emscripten-i686-debug",
 			"cacheVariables": {
-				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja",
 				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
-			},
-			"vendor": {
-				"microsoft.com/VisualStudioSettings/CMake/1.0": {
-					"hostOS": [
-						"Linux"
-					]
-				}
 			}
 		},
 		{
