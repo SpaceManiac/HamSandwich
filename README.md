@@ -42,37 +42,14 @@ Support is available:
 
 ## Building
 
-The recommended way to compile the games is [MinGW on Windows](#windows-mingw).
+The recommended way to compile the games is [Visual Studio on Windows](#windows-visual-studio).
 You can also build for one of the platforms listed below. Prefer to use Git to
 download the source code rather than downloading a ZIP archive as doing so
 makes it much easier to stay up-to-date and to publish your mods.
 
-### Windows (MinGW)
+### Windows (Visual Studio)
 
-First-time setup:
-
-1. Install MSYS2, an environment for compiling C++ code.
-    1. Visit <https://www.msys2.org/> and download and run the latest "msys2-x86_64" installer.
-    2. Choose a relatively short path with no spaces (such as `C:\msys64` or `D:\tools\msys2`).
-    3. After installation finishes, run `pacman -Syu` in the console that opens.
-    4. When asked to do so, close the console and reopen it from the Start Menu (MSYS2 64bit > MSYS2 MinGW x86).
-    5. Run `pacman -Syu` again.
-2. Use `cd` to select the directory where HamSandwich will go.
-    1. For example, if you want the code to go in `C:/projects/HamSandwich`, run `cd C:/projects`.
-3. Run `pacman -S git` to install git, a tool used for source code collaboration.
-4. Run `git clone https://github.com/SpaceManiac/HamSandwich` to download the code.
-5. Run `cd HamSandwich` to enter the directory.
-
-Compiling and running:
-
-1. Run `./run` to compile and run the launcher, or `./run <project>` to compile and run one game.
-    1. For example, to run Supreme With Cheese, write `./run supreme`.
-    2. To compile without running, write `make` or `make <project>`.
-    3. To debug, use `./run tool=gdb <project>`.
-    4. See `./run --help` for more.
-2. Run `git pull` to fetch changes which have been published here.
-
-### Windows (Visual Studio 2022 or newer)
+Requires [Visual Studio 2022 or newer](https://visualstudio.microsoft.com/).
 
 1. When installing Visual Studio, choose the "Desktop development with C++" workload.
 2. Download the code:
@@ -90,20 +67,47 @@ Compiling and running:
 5. Click the button to compile and run the game.
 6. To run in windowed mode, go to "Debug" > "Debug and Launch Settings for (game)" and add `, "args": ["window"]`.
 
+### Windows (MinGW)
+
+First-time setup:
+
+1. Install MSYS2, an environment for compiling C++ code.
+    1. Visit <https://www.msys2.org/> and download and run the latest "msys2-x86_64" installer.
+    2. Choose a relatively short path with no spaces (such as `C:\msys64` or `D:\tools\msys2`).
+    3. After installation finishes, run `pacman -Syu` in the console that opens.
+    4. When asked to do so, close the console and reopen it from the Start Menu ("MSYS2 CLANG64").
+    5. Run `pacman -Syu` again.
+2. Use `cd` to select the directory where HamSandwich will go.
+    1. For example, if you want the code to go in `C:/projects/HamSandwich`, run `cd C:/projects`.
+3. Run `pacman -S git` to install git, a tool used for source code collaboration.
+4. Run `git clone https://github.com/SpaceManiac/HamSandwich` to download the code.
+5. Run `cd HamSandwich` to enter the directory.
+
+Compiling and running:
+
+1. Run `./run` to compile and run the launcher, or `./run <project>` to compile and run one game.
+    1. For example, to run Supreme With Cheese, write `./run supreme`.
+    2. To compile without running, write `make` or `make <project>`.
+    3. To debug, use `./run tool=gdb <project>`.
+    4. See `./run --help` for more.
+2. Run `git pull` to fetch changes which have been published here.
+
 ### Linux
 
-1. Use `git` to clone the repository.
-2. Use `make` and `./run` as described above to build and run the games.
-3. If not on Ubuntu, Arch, or another supported distribution, install dependencies manually:
-    * CMake, Ninja, and GCC.
-    * Development libraries for SDL2, SDL2_mixer, and SDL2_image.
+1. Install `podman` for the containerized build environment.
+2. Use `git` to clone the repository.
+3. Use `./run` to compile and run the launcher, or `./run <project>` to compile and run one game.
+4. To compile without running, use `./container make`.
+
+To cross-compile for Windows, use `tools/windows-cross/container make`.
 
 ### MacOS
 
 1. In Terminal, run `git clone https://github.com/SpaceManiac/HamSandwich`.
     1. If you get the prompt to install XCode: accept it, wait for it to finish, then run the command again.
-3. Enter the repository with `cd HamSandwich`.
-2. Use `make` and `./run` as described above to build and run the game.
+2. Enter the repository with `cd HamSandwich`.
+3. Use `./run` to compile and run the launcher, or `./run <project>` to compile and run one game.
+4. To compile without running, use `./container make`.
 
 ### Android
 
@@ -124,8 +128,6 @@ Compiling and running:
 
 See [Modding](#modding) below for information on how to bundle worlds and other
 assets, and [Publish to Web](#publish-to-web) for how to publish to GitHub Pages.
-
-[Emscripten SDK]: https://emscripten.org/docs/getting_started/downloads.html
 
 ## Modding
 
