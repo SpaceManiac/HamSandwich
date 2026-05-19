@@ -47,6 +47,11 @@ static void ObtainFilenames(const char *dir, const char *ext)
 
 static void SortFilenames(void)
 {
+	if (fnames.empty())
+	{
+		return;
+	}
+
 	bool flip = true;
 	while(flip)
 	{

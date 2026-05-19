@@ -50,7 +50,9 @@ based on HamSandwich.
 
 ### HamSandwich (since last release)
 
-Nothing!
+* Fix crash when changing too many tiles or items with the "change touching" mode.
+* Fix some bugs with worlds using more than 800 tiles.
+* Fix crash when opening a file dialog with no results.
 
 ### v9.6 (2025-08-02) - [Steam](https://store.steampowered.com/news/app/2547330/view/525350155171399000)
 
