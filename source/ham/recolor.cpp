@@ -2,6 +2,7 @@
 #include <string.h>
 #include <algorithm>
 #include <SDL_timer.h>
+#include <SDL_version.h>
 
 // ----------------------------------------------------------------------------
 // Basic color manipulation
@@ -138,6 +139,10 @@ void Recolor::SetMode(Hue hue, Mode mode)
 {
 	hueAndMode[hue] = (hueAndMode[hue] & HUE_MASK) | ((byte)mode << HUE_BITS);
 }
+
+#if !SDL_VERSION_ATLEAST(2, 0, 18)
+#define SDL_GetTicks64 SDL_GetTicks
+#endif
 
 byte Recolor::Apply(byte color, byte underlying)
 {
