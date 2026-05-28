@@ -27,8 +27,15 @@ See also:
 Builds of HamSandwich for Windows, Linux, MacOS, and Android can be downloaded
 from [HamSandwich on itch.io](https://spacemaniac.itch.io/hamsandwich), either
 directly or through the [itch.io app](https://itch.io/app) for auto-updates.
+
 Web builds of the game can be played on [GitHub Pages](https://spacemaniac.github.io/HamSandwich/)
-or on itch.io.
+or on [itch.io](https://spacemaniac.itch.io/hamsandwich).
+
+Steam builds with achievements and leaderboards are available for:
+
+* [Dr. Lunatic Supreme With Steam](https://store.steampowered.com/app/2547330/Dr_Lunatic_Supreme_With_Steam/)
+* [Loonyland: Halloween Hill](https://store.steampowered.com/app/2876900/Loonyland_Halloween_Hill/)
+* [Kid Mystic: Enchanted Edition](https://store.steampowered.com/app/3531250/Kid_Mystic_Enchanted_Edition/)
 
 ## Getting help
 
