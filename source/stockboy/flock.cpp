@@ -6,10 +6,10 @@
 #define CIRCLE_SIZE	32
 #define FLOCK_MINDIST	(FIXAMT*20)
 
-sprite_set_t *fsp;
+static sprite_set_t *fsp;
 
-flock_t flock[FLOCK_SIZE];
-circle_t circle[2];
+static flock_t flock[FLOCK_SIZE];
+static circle_t circle[2];
 static word tick=0;
 
 void CreateFlockMember(byte n)
@@ -80,7 +80,7 @@ void UpdateFlockMember(flock_t *me)
 		me->brightChg=1;
 
 	me->angle+=me->angAdj;
-	
+
 	dxAdj=Cosine(me->angle)/2;
 	dyAdj=Sine(me->angle)/2;
 
