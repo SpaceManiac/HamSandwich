@@ -292,7 +292,12 @@ Editor features:
 
 ### HamSandwich (since last release)
 
+Nothing!
+
+### v4.3 (2026-05-30)
+
 * Fix Options menu navigation controls being too sensitive on some configurations.
+* Fix crash on Liquify going off the map.
 * 1999 Mode
   * Fix inaccurate XP requirement scaling.
   * Fix inaccurate shop prices for Steel Hat, Mystical Staff, and Air Lancelots.
@@ -302,6 +307,13 @@ Editor features:
   * Disable interface indicators when out of mana and when a spellbook is tier 2.
   * Fix Mama Spider and Mush The Shroom to not drop cash due to being considered bosses.
   * Allow healing spells to be cast at full health.
+* Classic Mode
+  * Whackazoid: Remove skill shard from Whackazoid.
+* Modern Mode
+  * Fix max life being set wrong when buying Heart Pendant and Soul Pendant.
+  * Fix incorrect behavior of Lyfus Uppus rank 3, Magikus Uppus rank 3, and Zerko Killus below rank 3.
+* Challenge Mode
+  * Fix Classic Challenge showing icons for Modern-only collectibles.
 
 ### v4.2 (2025-05-25)
 

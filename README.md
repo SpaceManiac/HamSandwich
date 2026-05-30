@@ -119,7 +119,7 @@ CMake extension to configure and build using the container.
     1. If you get the prompt to install XCode: accept it, wait for it to finish, then run the command again.
 2. Enter the repository with `cd HamSandwich`.
 3. Use `./run` to compile and run the launcher, or `./run <project>` to compile and run one game.
-4. To compile without running, use `./container make`.
+4. To compile without running, use `make`.
 
 ### Android
 
