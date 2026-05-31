@@ -1,16 +1,5 @@
 # SDL2, SDL2_image, and SDL2_mixer library targets
-if(EMSCRIPTEN)
-	add_library(SDL2 INTERFACE)
-	add_library(SDL2_image INTERFACE)
-	add_library(SDL2_mixer INTERFACE)
-
-	target_compile_options(SDL2 INTERFACE -sUSE_SDL=2)
-	target_compile_options(SDL2_image INTERFACE -sUSE_SDL_IMAGE=2)
-	target_compile_options(SDL2_mixer INTERFACE -sUSE_SDL_MIXER=2 -sSDL2_IMAGE_FORMATS=['bmp'])
-	target_link_options(SDL2 INTERFACE -sUSE_SDL=2)
-	target_link_options(SDL2_image INTERFACE -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS=['bmp'])
-	target_link_options(SDL2_mixer INTERFACE -sUSE_SDL_MIXER=2)
-elseif(ANDROID)
+if(ANDROID)
 	add_library(SDL2 INTERFACE)
 	add_library(SDL2_image INTERFACE)
 	add_library(SDL2_mixer INTERFACE)
@@ -127,11 +116,17 @@ else()
 	# Otherwise the versions that come with the Steam runtime will take a hard
 	# dependency on a variety of file formats we don't want to have to ship the
 	# .so files for in Itch versions.
-	set(SDL_SHARED ON CACHE BOOL "" FORCE)
-	set(SDL_STATIC OFF CACHE BOOL "" FORCE)
+	if(EMSCRIPTEN)
+		set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+		set(SDL_STATIC ON CACHE BOOL "" FORCE)
+		set(BUILD_SHARED_LIBS OFF)
+	else()
+		set(SDL_SHARED ON CACHE BOOL "" FORCE)
+		set(SDL_STATIC OFF CACHE BOOL "" FORCE)
+	endif()
 	set(SDL2_DISABLE_INSTALL ON CACHE BOOL "" FORCE) # We'll handle it ourselves.
 	add_subdirectory("SDL2")
-	if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
+	if(NOT EMSCRIPTEN AND (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang"))
 		target_compile_options(SDL2 PRIVATE -Wno-unused-but-set-variable)
 	endif()
 
@@ -146,10 +141,16 @@ else()
 	set(SDL2MIXER_DEPS_SHARED ON)
 	set(SDL2MIXER_WAVE ON)
 	set(SDL2MIXER_VORBIS "STB")
-	set(SDL2MIXER_MIDI ON)
 	# Prefer Fluidsynth over Timidity for now because it can be passed a sf2 path directly rather than needing a .cfg file.
 	# TODO: Both require manual soundfont setup. Maybe bundle FluidR3_GM.sf2?
-	set(SDL2MIXER_MIDI_FLUIDSYNTH ON)
+	if(EMSCRIPTEN)
+		# TODO: MIDI support for web
+		set(SDL2MIXER_MIDI OFF)
+		set(SDL2MIXER_MIDI_FLUIDSYNTH OFF)
+	else()
+		set(SDL2MIXER_MIDI ON)
+		set(SDL2MIXER_MIDI_FLUIDSYNTH ON)
+	endif()
 	set(SDL2MIXER_MIDI_TIMIDITY OFF)
 	set(SDL2MIXER_MP3 OFF)  # TODO: https://github.com/SpaceManiac/HamSandwich/issues/21
 	set(SDL2MIXER_WAVPACK OFF)
@@ -157,15 +158,21 @@ else()
 	set(SDL2MIXER_OPUS OFF)
 	add_subdirectory("SDL2_mixer")
 
-	# Install relevant .so files
-	install(
-		TARGETS SDL2 SDL2_image SDL2_mixer
-		LIBRARY COMPONENT generic/executables
-		RUNTIME COMPONENT generic/executables
-	)
+	if(NOT EMSCRIPTEN)
+		# Install relevant .so files
+		install(
+			TARGETS SDL2 SDL2_image SDL2_mixer
+			LIBRARY COMPONENT generic/executables
+			RUNTIME COMPONENT generic/executables
+		)
 
-	# Install fluidsynth to Supreme only.
-	find_library(fluidsynth_LIBRARIES fluidsynth REQUIRED)
-	install_as_soname(supreme/executables ${fluidsynth_LIBRARIES})
-	install(FILES "/usr/share/doc/libfluidsynth-dev/copyright" RENAME "LICENSE.fluidsynth.txt" TYPE BIN COMPONENT supreme/executables)
+		# Install fluidsynth to Supreme only.
+		find_library(fluidsynth_LIBRARIES fluidsynth REQUIRED)
+		install_as_soname(supreme/executables ${fluidsynth_LIBRARIES})
+		install(FILES "/usr/share/doc/libfluidsynth-dev/copyright" RENAME "LICENSE.fluidsynth.txt" TYPE BIN COMPONENT supreme/executables)
+	endif()
+
+	if(EMSCRIPTEN)
+		add_library(SDL2 ALIAS SDL2-static)
+	endif()
 endif()
