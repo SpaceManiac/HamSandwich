@@ -16,18 +16,18 @@ namespace coro {
 
 struct executor {
 	// the task which should wake on the next frame
-	std::stack<coroutine_handle<>> awake_next_frame;
+	std::stack<std::coroutine_handle<>> awake_next_frame;
 
 	// stack of tasks which are waiting to be launched
 	std::stack<std::function<task<void>()>> launching;
 
 	// map from awaitee to everything it should wake when done
-	std::map<coroutine_handle<>, std::set<coroutine_handle<>>> wake_on_done;
+	std::map<std::coroutine_handle<>, std::set<std::coroutine_handle<>>> wake_on_done;
 
 	bool frame() {
 		//printf(" frame: %lu\n", awake_next_frame.size());
 
-		std::queue<coroutine_handle<>> awake;
+		std::queue<std::coroutine_handle<>> awake;
 
 		while (!launching.empty()) {
 			launching.top()();
@@ -42,7 +42,7 @@ struct executor {
 
 		// while anything is awake, attempt to resume it
 		while (!awake.empty()) {
-			coroutine_handle<> current = awake.front();
+			std::coroutine_handle<> current = awake.front();
 			//printf("  resume %p\n", current.address());
 			awake.pop();
 
@@ -53,7 +53,7 @@ struct executor {
 				//printf("  done\n");
 				auto it = wake_on_done.find(current);
 				if (it != wake_on_done.end()) {
-					for (coroutine_handle<> h : it->second) {
+					for (std::coroutine_handle<> h : it->second) {
 						//printf("    wakes %p\n", h.address());
 						awake.push(h);
 					}
@@ -83,7 +83,7 @@ struct executor {
 		return !awake_next_frame.empty();
 	}
 
-	bool schedule(coroutine_handle<> awaiter, coroutine_handle<> awaitee) {
+	bool schedule(std::coroutine_handle<> awaiter, std::coroutine_handle<> awaitee) {
 		//printf("schedule(): %p awaits on %p\n", awaiter.address(), awaitee.address());
 		wake_on_done[awaitee].insert(awaiter);
 		return true;  // return control to resume()r
@@ -97,7 +97,7 @@ struct flip_awaiter {
 		return false;
 	}
 
-	void await_suspend(coroutine_handle<> h) {
+	void await_suspend(std::coroutine_handle<> h) {
 		//printf("  flip_awaiter::await_suspend(%p)\n", h.address());
 		g_executor.awake_next_frame.push(h);
 	}
@@ -116,7 +116,7 @@ void launch(std::function<task<void>()> entry_point) {
 	g_executor.launching.push(entry_point);
 }
 
-bool __schedule(coroutine_handle<> awaiter, coroutine_handle<> awaitee) {
+bool __schedule(std::coroutine_handle<> awaiter, std::coroutine_handle<> awaitee) {
 	g_executor.schedule(awaiter, awaitee);
 	return true;
 }

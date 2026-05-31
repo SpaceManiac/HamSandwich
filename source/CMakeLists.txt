@@ -11,12 +11,11 @@ elseif(EMSCRIPTEN)
 		--use-preload-cache
 		-sENVIRONMENT=web
 		-sFORCE_FILESYSTEM=1
-		-sEXTRA_EXPORTED_RUNTIME_METHODS=['ENV']
+		-sEXPORTED_RUNTIME_METHODS=['ENV']
 	)
 	# Coroutine support
 	add_compile_options(
 		-DUSE_COROUTINES
-		-fcoroutines-ts
 		-Werror=unused-result
 	)
 elseif(ANDROID)

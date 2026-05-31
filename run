@@ -145,6 +145,11 @@ debugcommand="$debugdir/$project$debugext"
 debugargs=()
 debugenvs=()
 
+if test "$os" = "emscripten"; then
+	debugdir="$PWD/build/webroot"
+	emrun="$PWD/build/emsdk/upstream/emscripten/emrun"
+fi
+
 # Build and install
 cmake() {
 	tools/bootstrap/cmake "$@"
@@ -152,7 +157,6 @@ cmake() {
 if test -z "$nobuild"; then
 	if test "$os" = "emscripten"; then
 		# Web.
-		debugdir="$PWD/build/webroot"
 		if test "$project" != "launcher"; then
 			# Single project: build and install just that project.
 			make preset="$preset" "$project"
@@ -233,10 +237,10 @@ case "$tool" in
 	emrun)
 		echo "==== Hosting $project ($preset) ===="
 		if test "$project" = "launcher"; then
-			emrun --serve_after_close --serve_after_exit "$debugdir/index.html"
+			"$emrun" --serve-after-close --serve-after-exit "$debugdir/index.html"
 		else
 			# TODO: Serve out of CMake dir, so non-installed projects work
-			emrun --serve_after_close "$debugdir/$project.html"
+			"$emrun" --serve-after-close "$debugdir/$project.html"
 		fi
 		;;
 	two)

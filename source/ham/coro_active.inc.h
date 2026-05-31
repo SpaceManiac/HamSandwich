@@ -1,18 +1,16 @@
 // The meat of the coroutine header. In a separate file so that changes to it
 // don't cause recompiles on platforms where it isn't in use.
 
-#ifndef __cpp_coroutines
+#if !defined(__cpp_coroutines) && !(defined(__cpp_impl_coroutine) && defined(__cpp_lib_coroutine))
 #error "Asked for coroutines, but there's not compiler support."
 #endif
 
 #include <stdio.h>
-#include <experimental/coroutine>
+#include <coroutine>
 
 namespace coro {
 
-using namespace std::experimental::coroutines_v1;
-
-bool __schedule(coroutine_handle<> awaiter, coroutine_handle<> awaitee);
+bool __schedule(std::coroutine_handle<> awaiter, std::coroutine_handle<> awaitee);
 
 template<typename T>
 struct shared_state {
@@ -28,7 +26,7 @@ struct shared_state<void> {
 template<typename Result>
 class task_base {
 public:
-	coroutine_handle<> handle;
+	std::coroutine_handle<> handle;
 	std::shared_ptr<shared_state<Result>> state;
 
 	void await_resume_checks() {
@@ -44,7 +42,7 @@ public:
 
 public:
 	task_base(
-		coroutine_handle<> handle,
+		std::coroutine_handle<> handle,
 		std::shared_ptr<shared_state<Result>> state
 	) : handle(handle), state(state) {}
 
@@ -59,7 +57,7 @@ public:
 		return state->filled;
 	}
 
-	bool await_suspend(coroutine_handle<> h) {
+	bool await_suspend(std::coroutine_handle<> h) {
 		//printf("  task(%p)::await_suspend(%p)\n", handle.address(), h.address());
 		//return g_executor.schedule(h, handle);
 		return __schedule(h, handle);
@@ -68,7 +66,7 @@ public:
 
 template<typename Result>
 struct task : public task_base<Result> {
-	task(coroutine_handle<> handle, std::shared_ptr<shared_state<Result>> state)
+	task(std::coroutine_handle<> handle, std::shared_ptr<shared_state<Result>> state)
 		: task_base<Result>(handle, state) {}
 
 	Result await_resume() {
@@ -83,7 +81,7 @@ struct task : public task_base<Result> {
 
 template<>
 struct task<void> : public task_base<void> {
-	task(coroutine_handle<> handle, std::shared_ptr<shared_state<void>> state)
+	task(std::coroutine_handle<> handle, std::shared_ptr<shared_state<void>> state)
 		: task_base<void>(handle, state) {}
 
 	void await_resume() {
@@ -99,12 +97,12 @@ protected:
 public:
 	promise_base() : state(std::make_shared<shared_state<Result>>()) {}
 
-	suspend_never initial_suspend() {
+	std::suspend_never initial_suspend() {
 		//printf("  promise_base::initial_suspend()\n");
 		return {};
 	}
 
-	suspend_always final_suspend() noexcept {
+	std::suspend_always final_suspend() noexcept {
 		//printf("  promise_base::final_suspend()\n");
 		return {};
 	}
@@ -116,7 +114,7 @@ public:
 	task<Result> get_return_object() {
 		//printf("  promise<T>::get_return_object\n");
 		return {
-			coroutine_handle<promise_base<Result>>::from_promise(*this),
+			std::coroutine_handle<promise_base<Result>>::from_promise(*this),
 			this->state
 		};
 	}
@@ -148,7 +146,7 @@ void launch(std::function<task<void>()> entry_point);
 coro::task<int> coro__main(int argc, char** argv);
 
 template<typename Result, typename ...Arg>
-struct std::experimental::coroutine_traits<coro::task<Result>, Arg...> {
+struct std::coroutine_traits<coro::task<Result>, Arg...> {
 	typedef coro::promise<Result> promise_type;
 };
 

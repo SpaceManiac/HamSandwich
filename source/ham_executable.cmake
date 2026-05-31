@@ -244,14 +244,13 @@ function(HamSandwich_add_executable target_name)
 					"${CMAKE_COMMAND}" -E env
 					"EMSCRIPTEN_ROOT_PATH=${EMSCRIPTEN_ROOT_PATH}"
 					"${python}"
-					"${CMAKE_SOURCE_DIR}/tools/emscripten/file_packager_deps.py"
+					"${EMSCRIPTEN_ROOT_PATH}/tools/file_packager.py"
 					"${data}"
+					"--depfile=${data_d}"
 					"--js-output=${data_js}"
 					"--from-emcc"
 					"--preload"
 					"${CMAKE_SOURCE_DIR}/assets/${target_name}@"
-				DEPENDS
-					"${CMAKE_SOURCE_DIR}/tools/emscripten/file_packager_deps.py"
 				DEPFILE "${data_d}"
 				VERBATIM
 			)
