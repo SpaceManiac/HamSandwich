@@ -86,6 +86,8 @@ void SaveConfig()
 	g_Config.registrationIdx = 0;
 	auto f = AppdataOpen_Write("amazin.cfg");
 	SDL_RWwrite(f, &g_Config, 1, 0x2ec);
+	f.reset();
+	AppdataSync();
 }
 
 void ApplyKeyConfigs()

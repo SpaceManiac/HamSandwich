@@ -1238,6 +1238,7 @@ bool MGLDraw::SaveBMP(const char *name)
 		surface->format->palette->colors[i] = { thePal[i].r, thePal[i].g, thePal[i].b, thePal[i].a };
 	}
 	SDL_SaveBMP_RW(surface, AppdataOpen_Write(name).release(), SDL_TRUE);
+	AppdataSync();
 	SDL_FreeSurface(surface);
 	return true;
 }

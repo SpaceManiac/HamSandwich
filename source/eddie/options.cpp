@@ -55,6 +55,8 @@ void ExitOptions(void)
 	if(f)
 	{
 		SDL_RWwrite(f, &options,1,sizeof(options_t));
+		f.reset();
+		AppdataSync();
 	}
 }
 

@@ -84,6 +84,8 @@ namespace
 		{
 			auto f = AppdataOpen_Write(workshopDataFilename.c_str());
 			SDL_RWprintf(f.get(), "workshop_item_id=%" PRIu64 "\n", workshopItemId);
+			f.reset();
+			AppdataSync();
 		}
 
 		void CreateCallback(CreateItemResult_t* result, bool)

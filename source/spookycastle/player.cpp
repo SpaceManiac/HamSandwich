@@ -104,6 +104,7 @@ void PlayerSaveGame(byte which)
 	f=AppdataOpen_Write("loony.sav");
 	SDL_RWwrite(f,p,sizeof(player_t),3);
 	f.reset();
+	AppdataSync();
 }
 
 void PlayerSetWorldWorth(byte world,int amt)

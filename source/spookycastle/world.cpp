@@ -73,6 +73,7 @@ byte SaveWorld(world_t *world,const char *fname)
 		world->map[i]->Save(f.get());
 
 	f.reset();
+	AppdataSync();
 	return 1;
 }
 

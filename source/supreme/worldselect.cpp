@@ -996,6 +996,7 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				SDL_RWwrite(output, &item, sizeof(dword), 1);
 			}
 			output.reset();
+			AppdataSync();
 
 			FetchScores(0);
 		}

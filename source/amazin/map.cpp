@@ -85,6 +85,8 @@ void MapSave(const char *fname)
 {
 	auto f = AppdataOpen_Write(fname);
 	SDL_RWwrite(f, g_Map, 0x10a, 8);
+	f.reset();
+	AppdataSync();
 }
 
 void MapClear(GameMode theme)

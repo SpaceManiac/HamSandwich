@@ -263,6 +263,8 @@ void CryptoTest(void)
 	SDL_RWprintf(f.get(),"name: %s\nchecksum: %u\n\n",test.name,test.scoreChecksum);
 	SDL_RWprintf(f.get(),"memcmp: %d\n",memcmp(&test,&test2,sizeof(score_t)));
 	ExitCrypto();
+	f.reset();
+	AppdataSync();
 }
 
 // --------------- CHECKSUMMING FUNCTIONS
