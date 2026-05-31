@@ -418,15 +418,15 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 		if(player.spell[i])
 		{
 			player.curSpell = i;
-			intfaceSpr->GetSprite(11+i*2+(player.spell[i]==2 && !player.downgradeSpell[i]) && !VeryClassicMode())->
-				DrawBright(SCRWID-20-9*12+bookSlide[i]+i*12,22+bookSlide[i],mgl,-10+10*EnoughMana());
+			bool upgraded = player.spell[i]==2 && !player.downgradeSpell[i] && !VeryClassicMode();
+			intfaceSpr->GetSprite(11 + i*2 + upgraded)->DrawBright(SCRWID-20-9*12+bookSlide[i]+i*12, 22+bookSlide[i], mgl, -10+10*EnoughMana());
 			if(mySpell==i)
 			{
 				byte b = player.spell[i] - 1;
 				if (player.downgradeSpell[i])
 					b = 0;
 				if(EnoughMana())
-					RightPrintGlow(SCRWID-2,-1,spellName[i*2+b],2);
+					RightPrintGlow(SCRWID-2, -1, spellName[i*2+b], 2);
 				else
 					PrintBrightGlow(SCRWID - 2-GetStrLength(spellName[i*2+b],2), -1, spellName[i * 2 + b], -22, 2);
 			}

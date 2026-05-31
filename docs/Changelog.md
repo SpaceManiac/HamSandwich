@@ -292,7 +292,7 @@ Editor features:
 
 ### HamSandwich (since last release)
 
-Nothing!
+* Fix spellbooks being invisible in the HUD due to a bug introduced in Kid Mystic 4.3.
 
 ### v4.3 (2026-05-30)
 
