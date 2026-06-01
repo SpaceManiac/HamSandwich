@@ -118,7 +118,7 @@
 			"name": "emscripten-i686-release",
 			"inherits": "emscripten-i686-debug",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+				"CMAKE_BUILD_TYPE": "Release"
 			}
 		},
 		{
