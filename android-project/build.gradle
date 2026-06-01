@@ -26,7 +26,6 @@ subprojects {
 apply plugin: 'com.android.application'
 
 dependencies {
-	implementation project(':android-project:SDL2')
 	implementation 'androidx.appcompat:appcompat:1.4.1'
 	implementation 'com.google.android.material:material:1.5.0'
 	implementation 'com.google.android.gms:play-services-basement:18.0.1'
@@ -52,6 +51,9 @@ android {
 	}
 
 	sourceSets.main {
+		// Include SDL3 Java sources as well.
+		java.srcDir '../external/SDL2/android-project/app/src/main/java'
+		// Include Android-specific assets.
 		assets.srcDir "../assets/android"
 		// Our CMake build puts assets to embed in the .apk here at build time.
 		assets.srcDir "${buildDir}/intermediates/cxx/hamsandwich-assets"
@@ -81,11 +83,7 @@ android {
 // Building this project depends on building SDL2 first.
 // Merging assets depends on building first.
 tasks.configureEach { task ->
-	if (task.name == 'buildCMakeDebug') {
-		task.dependsOn ':android-project:SDL2:externalNativeBuildDebug'
-	} else if (task.name == 'buildCMakeRelWithDebInfo') {
-		task.dependsOn ':android-project:SDL2:externalNativeBuildRelease'
-	} else if (task.name == 'mergeDebugAssets') {
+	if (task.name == 'mergeDebugAssets') {
 		task.dependsOn ':android-project:buildCMakeDebug'
 	} else if (task.name == 'mergeReleaseAssets') {
 		task.dependsOn ':android-project:buildCMakeRelWithDebInfo'

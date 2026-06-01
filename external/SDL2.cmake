@@ -1,25 +1,5 @@
 # SDL2, SDL2_image, and SDL2_mixer library targets
-if(ANDROID)
-	add_library(SDL2 INTERFACE)
-	add_library(SDL2_image INTERFACE)
-	add_library(SDL2_mixer INTERFACE)
-
-	if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-		set(ANDROID_BUILD_TYPE "debug")
-	else()
-		set(ANDROID_BUILD_TYPE "release")
-	endif()
-	set(ANDROID_OBJDIR "${CMAKE_CURRENT_SOURCE_DIR}/../build/android/SDL2/intermediates/ndkBuild/${ANDROID_BUILD_TYPE}/obj/local/${ANDROID_ABI}")
-
-	target_include_directories(SDL2 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/include")
-	target_link_libraries(SDL2 INTERFACE "${ANDROID_OBJDIR}/libSDL2.so")
-
-	target_include_directories(SDL2_image INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_image/include")
-	target_link_libraries(SDL2_image INTERFACE "${ANDROID_OBJDIR}/libSDL2_image.so")
-
-	target_include_directories(SDL2_mixer INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/SDL2_mixer/include")
-	target_link_libraries(SDL2_mixer INTERFACE "${ANDROID_OBJDIR}/libSDL2_mixer.so")
-elseif(WIN32)
+if(WIN32)
 	# On MSVC, use the official prebuilt binaries.
 	add_library(SDL2 INTERFACE)
 	add_library(SDL2_image INTERFACE)
@@ -143,10 +123,9 @@ else()
 	set(SDL2MIXER_VORBIS "STB")
 	# Prefer Fluidsynth over Timidity for now because it can be passed a sf2 path directly rather than needing a .cfg file.
 	# TODO: Both require manual soundfont setup. Maybe bundle FluidR3_GM.sf2?
-	if(EMSCRIPTEN)
-		# TODO: MIDI support for web
+	if(EMSCRIPTEN OR ANDROID)
+		# TODO: MIDI support for web, Android
 		set(SDL2MIXER_MIDI OFF)
-		set(SDL2MIXER_MIDI_FLUIDSYNTH OFF)
 	else()
 		set(SDL2MIXER_MIDI ON)
 		set(SDL2MIXER_MIDI_FLUIDSYNTH ON)
@@ -165,7 +144,9 @@ else()
 			LIBRARY COMPONENT generic/executables
 			RUNTIME COMPONENT generic/executables
 		)
+	endif()
 
+	if(SDL2MIXER_MIDI_FLUIDSYNTH)
 		# Install fluidsynth to Supreme only.
 		find_library(fluidsynth_LIBRARIES fluidsynth REQUIRED)
 		install_as_soname(supreme/executables ${fluidsynth_LIBRARIES})
