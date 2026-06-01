@@ -66,9 +66,6 @@
 		{
 			"name": "linux-x86_64-debug",
 			"inherits": "base",
-			"cacheVariables": {
-				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja"
-			},
 			"vendor": {
 				"microsoft.com/VisualStudioSettings/CMake/1.0": {
 					"hostOS": [
@@ -109,9 +106,6 @@
 			"name": "emscripten-i686-debug",
 			"inherits": "i686-base",
 			"toolchainFile": "build/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-			"cacheVariables": {
-				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja"
-			},
 			"vendor": {
 				"microsoft.com/VisualStudioSettings/CMake/1.0": {
 					"hostOS": [
