@@ -178,17 +178,17 @@ public class LauncherActivity extends AppCompatActivity implements UiThreadHandl
 
 		int i = 0;
 		String internal = new File(getApplicationContext().getFilesDir(), "appdata/" + game.id).getAbsolutePath();
-		if ("mounted".equals(Environment.getExternalStorageState())) {
-			intent.putExtra("ENV.HSW_APPDATA", new File(getApplicationContext().getExternalFilesDir(null), "appdata/" + game.id).getAbsolutePath());
-			intent.putExtra("ENV.HSW_ASSETS_" + (i++), "@stdio@" + internal);
-		} else {
-			intent.putExtra("ENV.HSW_APPDATA", internal);
-		}
-		intent.putExtra("ENV.HSW_ASSETS_" + (i++), "@android@assets/" + game.id);
 		for (Asset asset : game.assets) {
 			if (asset.required || asset.checkbox.isChecked()) {
 				intent.putExtra("ENV.HSW_ASSETS_" + (i++), asset.mountpoint + "@" + asset.kind + "@" + asset.file.getAbsolutePath());
 			}
+		}
+		intent.putExtra("ENV.HSW_ASSETS_" + (i++), "@android@assets/" + game.id);
+		if ("mounted".equals(Environment.getExternalStorageState())) {
+			intent.putExtra("ENV.HSW_ASSETS_" + (i++), "@stdio@" + internal);
+			intent.putExtra("ENV.HSW_APPDATA", new File(getApplicationContext().getExternalFilesDir(null), "appdata/" + game.id).getAbsolutePath());
+		} else {
+			intent.putExtra("ENV.HSW_APPDATA", internal);
 		}
 		// Sentinel to end iteration in case we go from more assets to fewer.
 		// Not 100% sure this is needed? But just in case.
