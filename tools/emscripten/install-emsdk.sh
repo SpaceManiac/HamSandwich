@@ -2,25 +2,13 @@
 # install-emsdk.sh - bootstrap and install a private copy of emsdk
 set -euo pipefail
 
-TAG=5.0.7
-
-mkdir -p "build"
-
-FIRST_TIME=
-if [ ! -d build/emsdk ]; then
-	FIRST_TIME=1
-	echo "==== Bootstrapping Emscripten SDK ===="
-	git clone -n https://github.com/emscripten-core/emsdk build/emsdk
+if test -d external/emsdk/upstream; then
+	# Subsequent uses (including upgrades), be quiet
+	external/emsdk/emsdk install latest >/dev/null
+else
+	# First use, log loudly
+	echo "==== Installing Emscripten ===="
+	external/emsdk/emsdk install latest
 fi
-pushd build/emsdk >/dev/null
-
-if [ -n "$FIRST_TIME" ] || [ "$(git log -n1 --pretty=%H)" != "$(git log -n1 --pretty=%H "$TAG")" ]; then
-	echo "==== Installing emsdk $TAG ===="
-	git fetch -q
-	git checkout -q "$TAG"
-	./emsdk install latest-upstream
-	./emsdk activate latest-upstream >/dev/null
-fi
-
-source ./emsdk_env.sh 2>/dev/null
-popd >/dev/null
+# NOTE: activate is mandatory! The .emscripten file it outputs is load-bearing.
+external/emsdk/emsdk activate latest >/dev/null

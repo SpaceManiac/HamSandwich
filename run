@@ -130,7 +130,7 @@ fi
 tools/build/install-deps.sh
 if test -z "$tool" && test "$os" = "emscripten"; then
 	tool=emrun
-	source ./tools/emscripten/install-emsdk.sh
+	source tools/emscripten/install-emsdk.sh
 fi
 
 debugext=
@@ -147,7 +147,7 @@ debugenvs=()
 
 if test "$os" = "emscripten"; then
 	debugdir="$PWD/build/webroot"
-	emrun="$PWD/build/emsdk/upstream/emscripten/emrun"
+	emrun="$PWD/external/emsdk/upstream/emscripten/emrun"
 fi
 
 # Build and install

@@ -105,7 +105,7 @@
 		{
 			"name": "emscripten-i686-debug",
 			"inherits": "i686-base",
-			"toolchainFile": "build/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+			"toolchainFile": "external/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
 			"vendor": {
 				"microsoft.com/VisualStudioSettings/CMake/1.0": {
 					"hostOS": [
