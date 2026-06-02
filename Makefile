@@ -29,10 +29,12 @@ else
 $(error Unknown system '$(shell uname -sm)'; set preset= manually.)
 endif  # uname -sm
 else ifndef arch
-ifneq (,$(filter $(os),windows emscripten))
+ifneq (,$(filter $(os),windows))
 arch := i686
 else ifneq (,$(filter $(os),linux macos))
 arch := x86_64
+else ifneq (,$(filter $(os),emscripten))
+arch := wasm32
 else
 $(error Unknown os '$(os)'; set arch= manually.)
 endif  # filter on os

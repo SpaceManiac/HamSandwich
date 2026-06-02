@@ -6,7 +6,7 @@ show_help() {
 	echo "Usage: $0 [<setting=value>] <project> [-- <arguments>]"
 	echo "Settings:"
 	echo "    os=             One of:  windows  linux  macos  emscripten"
-	echo "    arch=           One of:  i686  x86_64"
+	echo "    arch=           One of:  i686  x86_64  wasm32"
 	echo "    mode=           One of:  debug  release"
 	echo "    preset=         Set os, arch, and mode together, ex: windows-i686-release"
 	echo "    nobuild=1       Skip compiling before running."
@@ -116,11 +116,14 @@ if test -z "$preset"; then
 	elif test -z "$arch"; then
 		# Use default architecture for chosen OS.
 		case "$os" in
-			windows|emscripten)
+			windows)
 				arch=i686
 				;;
 			linux|macos)
 				arch=x86_64
+				;;
+			emscripten)
+				arch=wasm32
 				;;
 		esac
 	fi

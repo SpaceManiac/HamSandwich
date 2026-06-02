@@ -103,7 +103,7 @@
 			}
 		},
 		{
-			"name": "emscripten-i686-debug",
+			"name": "emscripten-wasm32-debug",
 			"inherits": "i686-base",
 			"toolchainFile": "external/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
 			"vendor": {
@@ -115,8 +115,8 @@
 			}
 		},
 		{
-			"name": "emscripten-i686-release",
-			"inherits": "emscripten-i686-debug",
+			"name": "emscripten-wasm32-release",
+			"inherits": "emscripten-wasm32-debug",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release"
 			}
