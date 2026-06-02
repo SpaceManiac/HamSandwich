@@ -10,7 +10,6 @@
 #include "appdata.h"
 #include "extern.h"
 #include "ico.h"
-#include "openurl.h"
 #include "string_extras.h"
 
 #include <SDL_image.h>
@@ -1223,11 +1222,7 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal, bool resize)
 
 bool MGLDraw::SaveBMP(const char *name)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 5)
 	SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, xRes, yRes, 8, SDL_PIXELFORMAT_INDEX8);
-#else
-	SDL_Surface* surface = SDL_CreateRGBSurface(0, xRes, yRes, 8, 0, 0, 0, 0);
-#endif
 	SDL_LockSurface(surface);
 	uint8_t* pixels = (uint8_t*)surface->pixels;
 	for (int y = 0; y < yRes; ++y)
@@ -1245,11 +1240,7 @@ bool MGLDraw::SaveBMP(const char *name)
 
 bool MGLDraw::SavePNG(const char* name)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 5)
 	SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, xRes, yRes, 8, SDL_PIXELFORMAT_INDEX8);
-#else
-	SDL_Surface* surface = SDL_CreateRGBSurface(0, xRes, yRes, 8, 0, 0, 0, 0);
-#endif
 	SDL_LockSurface(surface);
 	uint8_t* pixels = (uint8_t*)surface->pixels;
 	for (int y = 0; y < yRes; ++y)

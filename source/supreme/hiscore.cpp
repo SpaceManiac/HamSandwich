@@ -10,10 +10,6 @@
 #include "steam.h"
 #include "string_extras.h"
 
-#if __linux__ || __EMSCRIPTEN__
-#include <unistd.h>
-#endif
-
 // ---------------- Encrypting scores into strings!
 
 static const char ctab[]=

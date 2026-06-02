@@ -96,10 +96,6 @@ void string_appendf(std::string* buffer, const char* format, ...)
 	va_end(args);
 }
 
-#ifdef __EMSCRIPTEN__
-#define SDL_vasprintf vasprintf
-#endif
-
 size_t SDL_RWprintf(SDL_RWops* rw, const char* format, ...)
 {
 	va_list args;

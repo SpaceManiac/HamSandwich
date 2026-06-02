@@ -15,9 +15,6 @@
 #include "appdata.h"
 #include "string_extras.h"
 #include <stdlib.h>
-#if __linux__ || __EMSCRIPTEN__
-#include <unistd.h>
-#endif
 
 byte showStats=0,spookIt=0;
 dword gameStartTime,visFrameCount,updFrameCount;

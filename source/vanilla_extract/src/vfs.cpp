@@ -2,11 +2,6 @@
 #include <string.h>
 #include <SDL.h>
 
-#ifdef __ANDROID__
-#include <SDL_system.h>
-#include <unistd.h>
-#endif
-
 namespace vanilla {
 
 #ifndef __GNUC__

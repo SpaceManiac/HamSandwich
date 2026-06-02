@@ -14,9 +14,6 @@
 #include "comicbook.h"
 #include "customworld.h"
 #include "appdata.h"
-#if __linux__ || __EMSCRIPTEN__
-#include <unistd.h>
-#endif
 
 #define PBTN_HEIGHT	26
 

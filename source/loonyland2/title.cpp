@@ -12,10 +12,6 @@
 #include "appdata.h"
 #include "ioext.h"
 
-#if __linux__ || __EMSCRIPTEN__
-#include <unistd.h>
-#endif
-
 #ifdef DIRECTORS
 #define VERSION_NO	"Version 1.2CE"
 #else

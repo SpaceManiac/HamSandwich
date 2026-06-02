@@ -12,9 +12,6 @@
 #include "recordbook.h"
 #include "shop.h"
 #include "appdata.h"
-#if __linux__ || __EMSCRIPTEN__
-#include <unistd.h>
-#endif
 
 constexpr int PBTN_HEIGHT = 19;
 

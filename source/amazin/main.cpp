@@ -10,7 +10,6 @@
 #include "guy.h"
 #include "title.h"
 #include "loop.h"
-#include "openurl.h"
 
 MGLDraw *mgl;
 
