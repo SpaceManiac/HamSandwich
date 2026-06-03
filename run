@@ -151,12 +151,12 @@ debugenvs=()
 if test "$os" = "emscripten"; then
 	debugdir="$PWD/build/webroot"
 	emrun="$PWD/external/emsdk/upstream/emscripten/emrun"
+	if ! test -f "$emrun"; then
+		emrun="$emrun.py"
+	fi
 fi
 
 # Build and install
-cmake() {
-	tools/bootstrap/cmake "$@"
-}
 if test -z "$nobuild"; then
 	if test "$os" = "emscripten"; then
 		# Web.

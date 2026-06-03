@@ -46,12 +46,15 @@ endif  # preset
 $(shell tools/build/install-deps.sh >&2)
 ifeq ($(os),emscripten)
 $(shell tools/emscripten/install-emsdk.sh >&2)
+# Suppress behavior where MSYS2's python uses `/` instead of `\` to separate paths,
+# ultimately causing Emscripten to ignore `-lidbfs.js`.
+MSYSTEM :=
 endif
 
 # Variables
-CMAKE ?= tools/bootstrap/cmake
-BUILD_DIR = build/cmake-$(preset)
-BUILD_NINJA = $(BUILD_DIR)/build.ninja
+CMAKE ?= cmake
+BUILD_DIR := build/cmake-$(preset)
+BUILD_NINJA := $(BUILD_DIR)/build.ninja
 
 ifeq ($(MAKECMDGOALS),)
 # If no targets were specified, synthesize a default target.
